@@ -1,0 +1,11 @@
+create libcarrier.a
+addlib libsodium.a
+addlib libpj.a
+addlib libpjlib-util.a
+addlib libpjnath.a
+addlib libpjmedia.a
+addlib libelacommon.a
+addlib libelacarrier.a
+addlib libelasession.a
+save
+end
