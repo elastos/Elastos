@@ -1,0 +1,58 @@
+namespace elacp;
+
+table userinfo {
+    avatar : bool = false;
+    name   : string;
+    descr  : string;
+    phone  : string;
+    gender : string;
+    email  : string;
+    region : string;
+}
+
+table friendreq {
+    name   : string;
+    descr  : string;
+    hello  : string;
+}
+
+table frienddel {
+    pad    : uint8;
+}
+
+table friendmsg {
+    ext    : string;
+    msg    : [ubyte];
+}
+
+table invitereq {
+    ext    : string;
+    tid    : long;
+    data   : [uint8];
+}
+
+table invitersp {
+    ext    : string;
+    tid    : long;
+    status : int;
+    reason : string;
+    data   : [uint8];
+}
+
+union anybody {
+    userinfo,
+    friendreq,
+    frienddel,
+    friendmsg,
+    invitereq,
+    invitersp
+}
+
+table packet
+{
+    type   : uint8;
+    body   : anybody;
+}
+
+root_type packet;
+

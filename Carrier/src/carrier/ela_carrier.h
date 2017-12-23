@@ -1275,32 +1275,32 @@ int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
 #define ELAF_DHT                                  6
 
 
-#define ELAERRINVALID_ARGS                       1
-#define ELAERROUT_OF_MEMORY                      2
-#define ELAERRBUFFER_TOO_SMALL                   3
-#define ELAERRBAD_PERSISTENT_DATA                4
-#define ELAERRINVALID_PERSISTENCE_FILE           5
-#define ELAERRINVALID_CONTROL_PACKET             6
-#define ELAERRINVALID_CREDENTIAL                 7
-#define ELAERRSERVER_FAILED                      8
-#define ELAERRALREADY_RUN                        9
-#define ELAERRNOT_READY                          10
-#define ELAERRNOT_EXIST                          11
-#define ELAERRALREADY_EXIST                      12
-#define ELAERRNO_MATCHED_REQUEST                 13
-#define ELAERRINVALID_USERID                     14
-#define ELAERRINVALID_NODEID                     15
-#define ELAERRINVALID_APPID                      16
-#define ELAERRINVALID_DESCRIPTOR                 17
-#define ELAERRWRONG_STATE                        18
-#define ELAERRBUSY                               19
-#define ELAERRLANGUAGE_BINDING                   20
-#define ELAERRENCRYPT                            21
-#define ELAERRSDP_TOO_LONG                       22
-#define ELAERRINVALID_SDP                        23
-#define ELAERRNOT_IMPLEMENTED                    24
-#define ELAERRLIMIT_EXCEEDED                     25
-#define ELAERRUNKNOWN                            26
+#define ELAERR_INVALID_ARGS                       1
+#define ELAERR_OUT_OF_MEMORY                      2
+#define ELAERR_BUFFER_TOO_SMALL                   3
+#define ELAERR_BAD_PERSISTENT_DATA                4
+#define ELAERR_INVALID_PERSISTENCE_FILE           5
+#define ELAERR_INVALID_CONTROL_PACKET             6
+#define ELAERR_INVALID_CREDENTIAL                 7
+#define ELAERR_SERVER_FAILED                      8
+#define ELAERR_ALREADY_RUN                        9
+#define ELAERR_NOT_READY                          10
+#define ELAERR_NOT_EXIST                          11
+#define ELAERR_ALREADY_EXIST                      12
+#define ELAERR_NO_MATCHED_REQUEST                 13
+#define ELAERR_INVALID_USERID                     14
+#define ELAERR_INVALID_NODEID                     15
+#define ELAERR_INVALID_APPID                      16
+#define ELAERR_INVALID_DESCRIPTOR                 17
+#define ELAERR_WRONG_STATE                        18
+#define ELAERR_BUSY                               19
+#define ELAERR_LANGUAGE_BINDING                   20
+#define ELAERR_ENCRYPT                            21
+#define ELAERR_SDP_TOO_LONG                       22
+#define ELAERR_INVALID_SDP                        23
+#define ELAERR_NOT_IMPLEMENTED                    24
+#define ELAERR_LIMIT_EXCEEDED                     25
+#define ELAERR_UNKNOWN                            26
 
 #define ELA_MK_ERROR(facility, code)  (0x80000000 | ((facility) << 24) | \
                     ((((code) & 0x80000000) >> 8) | ((code) & 0x7FFFFFFF)))
