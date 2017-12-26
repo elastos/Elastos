@@ -30,6 +30,8 @@ typedef struct Preferences {
 } Preferences;
 
 struct ElaCarrier {
+    void *reserved;  // reserved for session.
+
     DHT dht;
 
     Preferences pref;
