@@ -8,6 +8,8 @@
 
 #include "ela_carrier.h"
 
+#define ELA_MAX_EXTENSION_NAME_LEN      31
+
 typedef struct HistoryItem {
     HashEntry he;
     char key[ELA_MAX_ID_LEN + ELA_MAX_EXTENSION_NAME_LEN + 4];

@@ -19,7 +19,6 @@
 #include <ids_heap.h>
 
 #include "ela_session.h"
-#include "transport.h"
 #include "stream_handler.h"
 
 #ifdef __cplusplus
@@ -28,11 +27,24 @@ extern "C" {
 
 #define MAX_STREAM_ID       256
 
+typedef void Timer;
+typedef bool TimerCallback(void *user_data);
+
 typedef struct SessionExtension     SessionExtension;
 typedef struct TransportWorker      TransportWorker;
 typedef struct ElaTransport         ElaTransport;
 typedef struct ElaSession           ElaSession;
 typedef struct ElaStream            ElaStream;
+
+typedef struct IceTransportOptions {
+    const char *stun_host;
+    const char *stun_port;
+    const char *turn_host;
+    const char *turn_port;
+    const char *turn_username;
+    const char *turn_password;
+    const char *turn_realm;
+} IceTransportOptions;
 
 struct ElaCarrier       {
     void                    *extension;
@@ -42,7 +54,7 @@ struct ElaCarrier       {
 struct SessionExtension {
     ElaCarrier              *carrier;
 
-    ElaCallbacks            *callbacks;
+    ElaCallbacks            callbacks;
     void                    *callbacks_context;
 
     ElaSessionRequestCallback *request_callback;
@@ -197,6 +209,8 @@ TransportWorker *session_get_worker(ElaSession *session)
 {
     return session->worker;
 }
+
+void ela_set_error(int error);
 
 #ifdef __cplusplus
 }

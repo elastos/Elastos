@@ -11,6 +11,14 @@
 #include "dht_callbacks.h"
 #include "dht.h"
 
+#define ELA_MAX_TURN_SERVER_LEN         63
+
+#define ELA_MAX_TURN_USERNAME_LEN       63 
+
+#define ELA_MAX_TURN_PASSWORD_LEN       63 
+
+#define ELA_MAX_TURN_REALM_LEN          127
+
 typedef struct DHT {
     uint8_t padding[32];  // reserved for DHT.
 } DHT;
@@ -72,5 +80,19 @@ typedef struct TransactedCallback {
     void *callback_func;
     void *callback_context;
 } TransactedCallback;
+
+typedef struct ElaTurnServer {
+    char server[ELA_MAX_TURN_USERNAME_LEN + 1];
+    uint16_t port;
+    char username[ELA_MAX_TURN_USERNAME_LEN + 1];
+    char password[ELA_MAX_TURN_PASSWORD_LEN + 1];
+    char realm[ELA_MAX_TURN_REALM_LEN + 1];
+} ElaTurnServer;
+
+CARRIER_API
+int ela_get_turn_server(ElaCarrier *carrier, ElaTurnServer *turn_server);
+
+CARRIER_API
+void ela_set_error(int error);
 
 #endif /* __ELA_CARRIER_IMPL_H__ */

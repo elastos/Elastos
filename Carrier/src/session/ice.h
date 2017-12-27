@@ -18,7 +18,6 @@
 #endif
 
 #include "session.h"
-#include "transport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,7 +87,7 @@ typedef struct IceHandler {
     } remote;
 } IceHandler;
 
-int ice_transport_create(IceTransport **transport);
+int ice_transport_create(ElaTransport **transport);
 
 #ifdef __cplusplus
 }

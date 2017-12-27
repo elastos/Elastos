@@ -26,8 +26,10 @@
 #include "flex_buffer.h"
 #include "ela_session.h"
 #include "ice.h"
-#include "transport.h"
 #include "session.h"
+
+#define DEFAULT_KEEPALIVE_INTERVAL      30000 /* 30 seconds */
+#define DEFAULT_TIMEOUT_INTERVAL        120000 /* 120 seconds */
 
 #define MAX_HOST_CANDIDATES 4
 #define KA_INTERVAL         25
@@ -545,6 +547,18 @@ static void ice_worker_destroy_timer(TransportWorker *base, Timer *tmr)
                                        &timer->entry, timer->entry.id);
     else
         pj_timer_heap_cancel(worker->cfg.stun_cfg.timer_heap, &timer->entry);
+}
+
+static int transport_workerid(void)
+{
+    static int workerid = 0;
+
+    if (++workerid == INT_MAX) {
+        workerid = 0;
+        ++workerid;
+    }
+
+    return workerid;
 }
 
 static
@@ -1138,8 +1152,6 @@ static int ice_stream_get_info(ElaStream *base, ElaTransportInfo *info)
         info->topology = ElaNetworkTopology_LAN;
     }
 
-    info->transport = ElaTransportType_ICE;
-
     return 0;
 }
 
@@ -1683,6 +1695,8 @@ static int ice_transport_create_session(ElaTransport *base, ElaSession **session
     *session = (ElaSession *)s;
     return 0;
 }
+
+
 
 int ice_transport_create(ElaTransport **transport)
 {

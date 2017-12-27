@@ -16,11 +16,11 @@ CONFIG_OPTIONS = --prefix=$(DIST_DIR) \
         --disable-av
 
 define configure
+    $(BUILD_DIR)/patch/toxcore.sh $(SRC_DIR)
     if [ ! -e $(SRC_DIR)/configure ]; then \
         cd $(SRC_DIR) && ./autogen.sh; \
     fi
-    cd $(SRC_DIR) && CFLAGS="$(CFLAGS) -fvisibility=hidden -DCARRIER_BUILD" $(CONFIG_COMMAND) $(CONFIG_OPTIONS)
-    #$(BUILD_DIR)/patch/toxcore.sh $(BUILD_DIR) $(SRC_DIR)
+    cd $(SRC_DIR) && $(CONFIG_COMMAND) $(CONFIG_OPTIONS)
 endef
 
 include modules/rules.mk

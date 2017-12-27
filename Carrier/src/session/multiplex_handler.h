@@ -11,7 +11,6 @@
 #include "bitset.h"
 #include "socket.h"
 #include "flex_buffer.h"
-#include "transport.h"
 #include "session.h"
 #include "ela_session.h"
 

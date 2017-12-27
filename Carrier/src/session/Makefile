@@ -10,7 +10,7 @@ INSTALL_LIBRARY_PATH = $(DESTDIR)$(PREFIX)/$(LIBRARY_PATH)
 
 INSTALL ?= cp -a
 
-CFLAGS := $(CFLAGS) -I. -I../common -Itransport -I$(INSTALL_INCLUDE_PATH) -DCARRIER_BUILD -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
+CFLAGS := $(CFLAGS) -I. -I../common -I$(INSTALL_INCLUDE_PATH) -DCARRIER_BUILD -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
 LIBS   := -lelacommon -lelacarrier -lpjmedia -lpjnath -lpjlib-util -lpj
 
 ifeq ($(HOST), Android)
@@ -34,7 +34,7 @@ else
 endif
 
 PSEUDOTCP_SRCS = pseudotcp/pseudotcp.c pseudotcp/glist.c pseudotcp/gqueue.c
-SRCS = session.c crypto_handler.c reliable_handler.c multiplex_handler.c portforwarding.c transport.c fdset.c udp_eventfd.c  ice.c $(PSEUDOTCP_SRCS)
+SRCS = session.c crypto_handler.c reliable_handler.c multiplex_handler.c portforwarding.c fdset.c udp_eventfd.c  ice.c $(PSEUDOTCP_SRCS)
 
 OBJS = $(SRCS:.c=.o)
 
@@ -77,4 +77,4 @@ clean:
 	rm -rf $(DYLIBNAME) $(STLIBNAME) 
 	rm -rf *.o *.lo
 	rm -rf pseudotcp/*.o pseudotcp/*.lo
-	rm -rf transport/*.o transport/*.lo
+

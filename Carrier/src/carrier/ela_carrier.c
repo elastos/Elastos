@@ -89,8 +89,8 @@ bool ela_address_is_valid(const char *address)
     return is_valid_address(address);
 }
 
-void ela_log_init(ElaCarrierLogLevel level, const char *log_file,
-                      void (*log_printer)(const char *format, va_list args))
+void ela_log_init(ElaLogLevel level, const char *log_file,
+                  void (*log_printer)(const char *format, va_list args))
 {
 #if !defined(__ANDROID__)
     vlog_init(level, log_file, log_printer);
@@ -212,7 +212,7 @@ static ElaPresenceStatus get_presence_status(int user_status)
     else if (user_status > ElaPresenceStatus_Busy)
         presence = ElaPresenceStatus_Busy;
     else
-        presence = (ElaCarrierPresenceStatus)user_status;
+        presence = (ElaPresenceStatus)user_status;
 
     return presence;
 }
@@ -662,7 +662,7 @@ static void notify_friends(ElaCarrier *w)
 
         if (friends_iterator_next(&it, &fi) == 1) {
             if (w->callbacks.friend_list) {
-                memcpy(&_fi, &fi->info, sizeof(ElaCarrierFriendInfo));
+                memcpy(&_fi, &fi->info, sizeof(ElaFriendInfo));
                 w->callbacks.friend_list(w, &_fi, w->context);
             }
 
@@ -798,8 +798,6 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
 static void notify_friend_presence(ElaCarrier *w, const char *friendid,
                                    ElaPresenceStatus presence)
 {
-    HashtableIterator it;
-
     assert(w);
     assert(friendid);
 
@@ -1082,7 +1080,7 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
         return;
     }
 
-    callback_func = (ElaCarrierFriendInviteResponseCallback *)tcb->callback_func;
+    callback_func = (ElaFriendInviteResponseCallback *)tcb->callback_func;
     callback_ctxt = tcb->callback_context;
     assert(callback_func);
 
@@ -1380,7 +1378,7 @@ int ela_get_self_info(ElaCarrier *w, ElaUserInfo *info)
         return -1;
     }
 
-    memcpy(info, &w->me, sizeof(ElaCarrierUserInfo));
+    memcpy(info, &w->me, sizeof(ElaUserInfo));
 
     return 0;
 }
@@ -1433,7 +1431,7 @@ int ela_get_self_presence(ElaCarrier *w, ElaPresenceStatus *status)
     else if (presence_status > ElaPresenceStatus_Busy)
         *status = ElaPresenceStatus_None;
     else
-        *status = (ElaCarrierPresenceStatus)presence_status;
+        *status = (ElaPresenceStatus)presence_status;
 
     return 0;
 }
@@ -1489,7 +1487,7 @@ int ela_get_friend_info(ElaCarrier *w, const char *friendid,
     }
     assert(!strcmp(friendid, fi->info.user_info.userid));
 
-    memcpy(info, &fi->info, sizeof(ElaCarrierFriendInfo));
+    memcpy(info, &fi->info, sizeof(ElaFriendInfo));
 
     deref(fi);
 

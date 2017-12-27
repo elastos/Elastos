@@ -15,7 +15,7 @@ fi
 
 while [ x"$1" != x ]; do
 case "$1" in
-    "pjsip"  | "libsodium" | "toxcore" | "carrier")
+    "libsodium" | "toxcore" | "flatcc" | "pjsip" | "carrier")
         TARGET_MODULE="$1"
         shift;;
 
@@ -31,7 +31,7 @@ case "$1" in
     *)
         echo "Usage: $0 [ module ] [ build ] [ target ]"
         echo "module options(default: carrier):"
-        echo "    pjsip        | libsodium    | toxcore  | carrier"
+        echo "    libsodium    | toxcore      | flatcc   | pjsip    | carrier"
         echo ""
         echo "target options(default install)"
         echo "    source       | config       | make     | install"

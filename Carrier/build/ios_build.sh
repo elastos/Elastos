@@ -18,7 +18,7 @@ case "$1" in
         TARGET_ARCH="$1"
         shift;;
 
-    "pjsip" | "libsodium" | "toxcore" | "carrier")
+    "libsodium" | "toxcore" | "flatcc" | "pjsip" | "carrier")
         TARGET_MODULE="$1"
         shift;;
 
@@ -34,7 +34,7 @@ case "$1" in
     *)
         echo "Usage: $0 [ module ] [ arch ] [ target ] [  build ]"
         echo "module options(default carrier):"
-        echo "    pjsip        | libsodium    | toxcore | carrier"
+        echo "    libsodium    | toxcore      | flatcc  | pjsip   | carrier"
         echo ""
         echo "arch options(default $(uname -m)):"
         echo "    x86          | x86_64       | arm64   | arm"

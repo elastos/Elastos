@@ -31,7 +31,7 @@ case "$1" in
         echo "Error: arch $1 not support yet"
         exit 1;;
 
-    "pjsip" | "libsodium" | "toxcore" | "carrier")
+    "libsodium" | "toxcore" | "flatcc" | "pjsip" | "carrier")
         TARGET_MODULE=$1
         shift;;
 
@@ -47,7 +47,7 @@ case "$1" in
     *)
         echo "Usage: $0 [ module ] [ arch ] [ target ] [ build ]"
         echo "module options(default carrier):"
-        echo "    pjsip        | libsodium  |  toxcore   | carrier"
+        echo "    libsodium    |  toxcore     | flatcc   | pjsip   | carrier"
         echo ""
         echo "Default arch (arm(v7a):"
         echo "    arm(v7a)     | arm64(aarch64)"

@@ -13,7 +13,7 @@ INSTALL_BINARY_PATH  = $(DESTDIR)$(PREFIX)/$(BINARY_PATH)
 INSTALL ?= cp -a
 FLATCC  ?= flatcc
 
-CFLAGS := $(CFLAGS) -DCARRIER_BUILD -I. -I../../common -Idht -I$(INSTALL_INCLUDE_PATH) -fvisibility=hidden -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
+CFLAGS := $(CFLAGS) -DCARRIER_BUILD -DELASTOS_BUILD -I. -I../common -Idht -I$(INSTALL_INCLUDE_PATH) -fvisibility=hidden -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
 LDFLAGS := $(LDFLAGS) -fvisibility=hidden
 LIBS   := -lelacommon -ltoxcore -lsodium -lm -lflatcc -lflatccrt
 

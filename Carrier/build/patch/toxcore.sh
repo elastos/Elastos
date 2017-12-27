@@ -1,11 +1,11 @@
 #!/bin/sh
 
-#argv1 $(BUILD_DIR)
-#argv2 $(SRC_DIR)
+#argv1: SRC_DIR
 
-BUILD_DIR=$1
-shift
 SRC_DIR=$1
 shift
 
-#cp ${BUILD_DIR}/patch/toxcore/* ${SRC_DIR}/toxcore/.
+echo "SRC_DIR: ${SRC_DIR}"
+
+cd ${SRC_DIR}/.. &&
+patch -s -p0 < "${SRC_DIR}/../../../../patch/toxcore.patch"

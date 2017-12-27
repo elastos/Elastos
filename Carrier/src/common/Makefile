@@ -1,4 +1,4 @@
-LIBNAME = libwcommon
+LIBNAME = libelacommon
 
 PREFIX ?= /usr/local
 INCLUDE_PATH ?= include

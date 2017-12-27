@@ -15,15 +15,15 @@
 #include "services.h"
 #include "session.h"
 #include "socket.h"
-#include "transport.h"
 #include "stream_handler.h"
 #include "multiplex_handler.h"
 #include "flex_buffer.h"
+#include "ice.h"
 
 #define SDP_MAX_LEN                 2048
 static const char *extension_name = "session";
 
-static void friend_invite(Carrier *w, const char *from, const char *sdp,
+static void friend_invite(ElaCarrier *w, const char *from, const char *sdp,
                           size_t len, void *context)
 {
     SessionExtension *ext;
@@ -40,7 +40,7 @@ static void friend_invite(Carrier *w, const char *from, const char *sdp,
         ext->request_callback(w, from, sdp, len, ext->context);
 }
 
-static void remove_transport(ElaCarrier *);
+static void remove_transport(ElaTransport *);
 
 static void extension_destroy(void *p)
 {
@@ -83,7 +83,6 @@ static int add_transport(SessionExtension *ext)
 int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *context)
 {
     SessionExtension *ext;
-    ElaCallbacks callbacks;
     int rc;
 
     if (!w) {
@@ -109,7 +108,7 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
 
     ext->request_callback = callback;
     ext->context = context;
-    ext->create_transport = transport_create;
+    ext->create_transport = ice_transport_create;
 
     rc = ids_heap_init((IdsHeap *)&ext->stream_ids, MAX_STREAM_ID);
     if (rc < 0) {
@@ -159,9 +158,6 @@ restop_workers:
         // Hold the zombie worker object and clear on transport destroy.
     }
 
-    if (transport->worker)
-        transport->worker->stop(transport->worker);
-
     deref(transport);
 }
 
@@ -173,9 +169,11 @@ void ela_session_cleanup(ElaCarrier *w)
     if (!w || !w->extension)
          return;
 
-    if (w->transport) {
-        remove_transport(w->transport);
-        w->transport = NULL;
+    ext = w->extension;
+
+    if (ext->transport) {
+        remove_transport(ext->transport);
+        ext->transport = NULL;
     }
 
     deref(ext);
@@ -217,6 +215,7 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
     SessionExtension *ext;
     ElaSession *ws;
     ElaTransport *transport;
+    IceTransportOptions *opts = NULL;
     int rc;
 
     if (!w || !address) {
@@ -383,7 +382,7 @@ int ela_session_request(ElaSession *ws,
         return -1;
     }
 
-    w = &session_get_extension(ws)->carrier;
+    w = session_get_extension(ws)->carrier;
     assert(w);
 
     if (list_size(ws->streams) == 0) {
@@ -439,7 +438,7 @@ reprepare:
     ext_to = (char *)alloca(ELA_MAX_ID_LEN + strlen(extension_name) + 2);
     strcpy(ext_to, ws->to);
     strcat(ext_to, ":");
-    strcat(ws->to, extension_name)
+    strcat(ws->to, extension_name);
 
     rc = ela_invite_friend(w, ext_to, sdp, rc + 1,
                            friend_invite_response, (void *)ws);
@@ -465,7 +464,7 @@ int ela_session_reply_request(ElaSession *ws,
         return -1;
     }
 
-    w = &session_get_extension(ws)->carrier;
+    w = session_get_extension(ws)->carrier;
     assert(w);
 
     ws->offerer = 0;
@@ -694,7 +693,7 @@ int ela_session_add_stream(ElaSession *ws, ElaStreamType type,
         s->compress = 1;
     if (options & ELA_STREAM_PLAIN)
         s->unencrypt = 1;
-    if (options & ELA_STREAM_RELIABLE && ws->transport->type != ElaTransportType_TCP)
+    if (options & ELA_STREAM_RELIABLE)
         s->reliable = 1;
     if (options & ELA_STREAM_MULTIPLEXING)
         s->multiplexing = 1;
@@ -1214,8 +1213,7 @@ int ela_streamopen_port_forwarding(ElaSession *ws, int stream,
         return -1;
     }
 
-    if (protocol == PortForwardingProtocol_TCP && !s->reliable &&
-        stream_get_transport(s)->type != ElaTransportType_TCP) {
+    if (protocol == PortForwardingProtocol_TCP && !s->reliable) {
         deref(s);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_WRONG_STATE));
         return -1;

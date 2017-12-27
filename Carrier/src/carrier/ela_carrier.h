@@ -975,7 +975,7 @@ bool ela_is_ready(ElaCarrier *carrier);
  * \~English
  * An application-defined function that iterate the each friends list item.
  *
- * ElaCarrierFriendsIterateCallback is the callback function type.
+ * ElaFriendsIterateCallback is the callback function type.
  *
  * @param
  *      info        [in] A pointer to ElaFriendInfo structure that
@@ -987,8 +987,8 @@ bool ela_is_ready(ElaCarrier *carrier);
  *      Return true to continue iterate next friend user info,
  *      false to stop iterate.
  */
-typedef bool ElaCarrierFriendsIterateCallback(const ElaFriendInfo *info,
-                                              void *context);
+typedef bool ElaFriendsIterateCallback(const ElaFriendInfo *info,
+                                       void *context);
 /**
  * \~English
  * Get friends list. For each friend will call the application defined
@@ -997,7 +997,7 @@ typedef bool ElaCarrierFriendsIterateCallback(const ElaFriendInfo *info,
  * @param
  *      carrier     [in] a handle to the Carrier node instance.
  * @param
- *      callback    [in] a pointer to ElaCarrierFriendsIterateCallback function.
+ *      callback    [in] a pointer to ElaFriendsIterateCallback function.
  * @param
  *      context     [in] the application defined context data.
  *
@@ -1007,7 +1007,7 @@ typedef bool ElaCarrierFriendsIterateCallback(const ElaFriendInfo *info,
  */
 CARRIER_API
 int ela_get_friends(ElaCarrier *carrier,
-                    ElaCarrierFriendsIterateCallback *callback, void *context);
+                    ElaFriendsIterateCallback *callback, void *context);
 
 /**
  * \~English
@@ -1212,7 +1212,7 @@ typedef void ElaFriendInviteResponseCallback(ElaCarrier *carrier,
  * @param
  *      len         [in] The data length in bytes.
  * @param
- *      callback    [in] A pointer to ElaCarrierFriendInviteResponseCallback
+ *      callback    [in] A pointer to ElaFriendInviteResponseCallback
  *                       function to receive the invite response.
  * @param
  *      context      [in] The application defined context data.
@@ -1225,7 +1225,7 @@ typedef void ElaFriendInviteResponseCallback(ElaCarrier *carrier,
 CARRIER_API
 int ela_invite_friend(ElaCarrier *carrier, const char *to,
                       const char *data, size_t len,
-                      ElaCarrierFriendInviteResponseCallback *callback,
+                      ElaFriendInviteResponseCallback *callback,
                       void *context);
 
 /**
@@ -1329,6 +1329,9 @@ int ela_get_error(void);
  */
 CARRIER_API
 void ela_clear_error(void);
+
+//CARRIER_API
+//void ela_set_error(int error);
 
 #ifdef __cplusplus
 }
