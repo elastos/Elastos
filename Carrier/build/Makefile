@@ -14,7 +14,7 @@ $(MODULE):
 
 ifneq (, $(strip $(NEED_DEPS)))
 
-toxcore: libsodium
+toxcore: libsodium flatcc
 carrier: libsodium toxcore pjsip confuse CUnit
 
 endif

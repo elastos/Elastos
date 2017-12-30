@@ -46,6 +46,9 @@ typedef struct IceTransportOptions {
     const char *turn_realm;
 } IceTransportOptions;
 
+typedef void (*friend_invite_callback)(ElaCarrier *, const char *from,
+                      const char *data, size_t len, void *context);
+
 struct ElaCarrier       {
     void                    *extension;
     uint8_t                 padding[1]; // the rest fields belong to Carrier self.
@@ -54,8 +57,8 @@ struct ElaCarrier       {
 struct SessionExtension {
     ElaCarrier              *carrier;
 
-    ElaCallbacks            callbacks;
-    void                    *callbacks_context;
+    friend_invite_callback  friend_invite_cb;
+    void                    *friend_invite_context;
 
     ElaSessionRequestCallback *request_callback;
     void                    *context;

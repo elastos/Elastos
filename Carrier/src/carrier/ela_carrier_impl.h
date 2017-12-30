@@ -38,7 +38,7 @@ typedef struct Preferences {
 } Preferences;
 
 struct ElaCarrier {
-    void *reserved;  // reserved for session.
+    void *session;  // reserved for session.
 
     DHT dht;
 
@@ -68,6 +68,17 @@ struct ElaCarrier {
     int running;
     int quit;
 };
+
+typedef void (*friend_invite_callback)(ElaCarrier *, const char *,
+                                       const char *, size_t, void *);
+typedef struct SessionExtension {
+    ElaCarrier              *carrier;
+
+    friend_invite_callback  friend_invite_cb;
+    void                    *friend_invite_context;
+
+    uint8_t                 reserved[1];
+} SessionExtension;
 
 typedef struct FriendLabelItem {
     uint32_t friend_number;

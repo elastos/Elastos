@@ -645,8 +645,6 @@ void ela_kill(ElaCarrier *w)
 
 static void notify_idle(ElaCarrier *w)
 {
-    //TODO: notify for session.
-
     if (w->callbacks.idle)
         w->callbacks.idle(w, w->context);
 }
@@ -687,8 +685,6 @@ static void notify_connection_cb(bool connected, void *context)
     w->connection_status = (connected ? ElaConnectionStatus_Connected :
                                         ElaConnectionStatus_Disconnected);
 
-    //TODO: notify for session.
-
     if (w->callbacks.connection_status)
         w->callbacks.connection_status(w, w->connection_status, w->context);
 }
@@ -705,8 +701,6 @@ static void notify_friend_info(ElaCarrier *w, uint32_t friend_number,
 
     userid = info->user_info.userid;
 
-    //TODO: notify for session.
-    
     if (friends_exist(w->friends, friend_number)) {
         if (w->callbacks.friend_info)
             w->callbacks.friend_info(w, userid, info, w->context);
@@ -758,8 +752,6 @@ static void notify_friend_connection(ElaCarrier *w, const char *friendid,
     assert(w);
     assert(friendid);
 
-    //tell session
-
     if (w->callbacks.friend_connection)
         w->callbacks.friend_connection(w, friendid, status, w->context);
 }
@@ -800,8 +792,6 @@ static void notify_friend_presence(ElaCarrier *w, const char *friendid,
 {
     assert(w);
     assert(friendid);
-
-    //TODO: tell session 
 
     if (w->callbacks.friend_presence)
         w->callbacks.friend_presence(w, friendid, presence, w->context);
@@ -905,8 +895,6 @@ static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
 
     memcpy(&tmpfi, fi, sizeof(tmpfi));
 
-    //TODO: notify for session. 
-
     if (w->callbacks.friend_added)
         w->callbacks.friend_added(w, &tmpfi, w->context);
 }
@@ -921,13 +909,9 @@ static void notify_friend_removed(ElaCarrier *w, const char *friendid,
     store_savedata(w);
 
     if (status == ElaConnectionStatus_Connected) {
-        //TODO: notify for session.
-
         if (w->callbacks.friend_connection)
             w->callbacks.friend_connection(w, friendid, status, w->context);
     }
-
-    //TODO: notify for session.
 
     if (w->callbacks.friend_removed)
         w->callbacks.friend_removed(w, friendid, w->context);
@@ -990,9 +974,7 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     msg  = elacp_get_raw_data(cp);
     len  = elacp_get_raw_data_length(cp);
 
-    if (name) {
-        //TODO: for session.
-    } else {
+    if (!name) {
         if (w->callbacks.friend_message)
             w->callbacks.friend_message(w, friendid, msg, len, w->context);
     }
@@ -1037,7 +1019,11 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     tansaction_history_put_invite(w->thistory, from, tid);
 
     if (name) {
-        //TODO: for session.
+        if (strcmp(name, "session") == 0) {
+            SessionExtension *ext = (SessionExtension *)w->session;
+            if (ext->friend_invite_cb)
+                ext->friend_invite_cb(w, friendid, data, len, ext);
+        }
     } else {
         if (w->callbacks.friend_invite)
             w->callbacks.friend_invite(w, friendid, data, len, w->context);
@@ -1449,12 +1435,27 @@ bool ela_is_ready(ElaCarrier *w)
 int ela_get_friends(ElaCarrier *w,
                     ElaFriendsIterateCallback *callback, void *context)
 {
+    HashtableIterator it;
+
     if (!w || !callback) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
 
-    //TODO: for session. 
+    friends_iterate(w->friends, &it);
+    while(friends_iterator_has_next(&it)) {
+        FriendInfo *fi;
+
+        if (friends_iterator_next(&it, &fi) == 1) {
+            ElaFriendInfo wfi;
+
+            memcpy(&wfi, &fi->info, sizeof(ElaFriendInfo));
+            deref(fi);
+
+            if (!callback(&wfi, context))
+                return 0;
+        }
+    }
 
     /* Friend list is end */
     callback(NULL, context);
@@ -2063,12 +2064,6 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to,
     return 0;
 }
 
-/* Tox authenticate schema.
- *
- * Realm: base58(nonce).auth.orchid
- * Username: base58(self_public_key)
- * Password: HMAC-SHA256(SharedKey(self_secret_key, TURN_PublicKey), nonce)
- */
 int ela_get_turn_server(ElaCarrier *w, ElaTurnServer *turn_server)
 {
     uint8_t secret_key[PUBLIC_KEY_BYTES];

@@ -102,9 +102,8 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
         return -1;
     }
 
-    memset(&ext->callbacks, 0, sizeof(ElaCallbacks));
-    ext->callbacks.friend_invite = friend_invite;
-    ext->callbacks_context = context;
+    ext->friend_invite_cb = friend_invite;
+    ext->friend_invite_context = ext;
 
     ext->request_callback = callback;
     ext->context = context;
@@ -1065,7 +1064,7 @@ ssize_t ela_stream_write_channel(ElaSession *ws, int stream,
     return written;
 }
 
-int ela_streampend_channel(ElaSession *ws, int stream, int channel)
+int ela_stream_pend_channel(ElaSession *ws, int stream, int channel)
 {
     int rc;
     ElaStream *s;
@@ -1093,7 +1092,7 @@ int ela_streampend_channel(ElaSession *ws, int stream, int channel)
     return rc < 0 ? -1 : 0;
 }
 
-int ela_streamresume_channel(ElaSession *ws, int stream, int channel)
+int ela_stream_resume_channel(ElaSession *ws, int stream, int channel)
 {
     int rc;
     ElaStream *s;
@@ -1193,7 +1192,7 @@ void ela_session_remove_service(ElaSession *ws, const char *service)
         services_remove(ws->portforwarding.services, service);
 }
 
-int ela_streamopen_port_forwarding(ElaSession *ws, int stream,
+int ela_stream_open_port_forwarding(ElaSession *ws, int stream,
         const char *service, PortForwardingProtocol protocol,
         const char *host, const char *port)
 {
@@ -1234,7 +1233,7 @@ int ela_streamopen_port_forwarding(ElaSession *ws, int stream,
     return rc < 0 ? -1 : rc;
 }
 
-int ela_streamclose_port_forwarding(ElaSession *ws, int stream,
+int ela_stream_close_port_forwarding(ElaSession *ws, int stream,
                                     int portforwarding)
 {
     int rc;
