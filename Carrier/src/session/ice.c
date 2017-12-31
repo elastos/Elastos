@@ -1715,7 +1715,7 @@ int ice_transport_create(ElaTransport **transport)
         return rc;
     }
 
-    t->base.create_sessioin = ice_transport_create_session;
+    t->base.create_session = ice_transport_create_session;
     t->base.create_worker = ice_worker_create;
 
     vlogD("Session: ICE transport created.");

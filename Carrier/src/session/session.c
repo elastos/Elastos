@@ -102,6 +102,7 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
         return -1;
     }
 
+    ext->carrier = w;
     ext->friend_invite_cb = friend_invite;
     ext->friend_invite_context = ext;
 
@@ -160,7 +161,6 @@ restop_workers:
     deref(transport);
 }
 
-
 void ela_session_cleanup(ElaCarrier *w)
 {
     SessionExtension *ext;
@@ -214,7 +214,8 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
     SessionExtension *ext;
     ElaSession *ws;
     ElaTransport *transport;
-    IceTransportOptions *opts = NULL;
+    IceTransportOptions opts;
+    ElaTurnServer turn_server;
     int rc;
 
     if (!w || !address) {
@@ -222,15 +223,13 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
         return NULL;
     }
 
-    //TODO: get opts; 
-
     ext = w->extension;
     if (!ext) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return NULL;
     }
 
-    if (ela_is_friend(w, address)) {
+    if (!ela_is_friend(w, address)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         vlogE("Session: %s is not friend yet.", address);
         return NULL;
@@ -243,7 +242,7 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
         return NULL;
     }
 
-    rc = transport->create_sessioin(transport, &ws);
+    rc = transport->create_session(transport, &ws);
     if (rc != 0) {
         ela_set_error(rc);
         return NULL;
@@ -259,7 +258,22 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
     ws->transport = transport;
     ws->to = strdup(address);
 
-    rc = transport->create_worker(opts, &ws->worker);
+    rc = ela_get_turn_server(w, &turn_server);
+    if (rc < 0) {
+        deref(ws);
+        ela_set_error(rc);
+        return NULL;
+    }
+
+    opts.stun_host = turn_server.server;
+    opts.stun_port = NULL;
+    opts.turn_host = turn_server.server;
+    opts.turn_port = NULL;
+    opts.turn_username = turn_server.username;
+    opts.turn_password = turn_server.password;
+    opts.turn_realm = turn_server.realm;
+
+    rc = transport->create_worker(&opts, &ws->worker);
     if (rc < 0) {
         deref(ws);
         ela_set_error(rc);
@@ -437,7 +451,7 @@ reprepare:
     ext_to = (char *)alloca(ELA_MAX_ID_LEN + strlen(extension_name) + 2);
     strcpy(ext_to, ws->to);
     strcat(ext_to, ":");
-    strcat(ws->to, extension_name);
+    strcat(ext_to, extension_name);
 
     rc = ela_invite_friend(w, ext_to, sdp, rc + 1,
                            friend_invite_response, (void *)ws);
@@ -525,7 +539,7 @@ reprepare:
     strcat(ext_to, ":");
     strcat(ext_to, extension_name);
 
-    rc = ela_reply_friend_invite(w, ws->to, status, reason,
+    rc = ela_reply_friend_invite(w, ext_to, status, reason,
                                  local_sdp, sdp_len);
 
     vlogD("Session: Session reply to %s %s.", ws->to,
