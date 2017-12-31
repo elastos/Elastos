@@ -1,6 +1,8 @@
 include environ/$(HOST)-$(ARCH).mk
 
 SRC_DIR  = $(ROOT_DIR)/src
+APPS_DIR = $(ROOT_DIR)/apps
+TESTS_DIR = $(ROOT_DIR)/tests
 
 define source-fetch
     @echo "Dummy source fetch ..."
@@ -11,13 +13,13 @@ define configure
 endef
 
 define compile
-    for m in $(SRC_DIR);  do \
+    for m in $(SRC_DIR) $(APPS_DIR) $(TESTS_DIR);  do \
         cd $$m && PREFIX=$(DIST_DIR) make; \
     done
 endef
 
 define install
-    for m in $(SRC_DIR); do \
+    for m in $(SRC_DIR) $(APPS_DIR) $(TESTS_DIR); do \
         cd $$m && PREFIX=$(DIST_DIR) make install; \
     done
     ./scripts/carrier.sh "postInstall" $(HOST) $(DIST_DIR)
@@ -32,7 +34,7 @@ define uninstall
 endef
 
 define make-clean
-    for m in $(SRC_DIR); do \
+    for m in $(SRC_DIR) $(APPS_DIR) $(TESTS_DIR); do \
         cd $$m && PREFIX=$(DIST_DIR) make clean; \
     done
 endef
