@@ -192,7 +192,7 @@ int dht_new(const char *data_location, bool udp_enabled, DHT *dht)
     fclose(fp);
 
     tox_options_default(&options);
-    options.local_discovery_enabled = false;
+    options.local_discovery_enabled = true;
     options.ipv6_enabled = false;
     options.udp_enabled = udp_enabled;
     options.log_callback = log_cb;

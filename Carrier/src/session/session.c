@@ -169,6 +169,7 @@ void ela_session_cleanup(ElaCarrier *w)
          return;
 
     ext = w->extension;
+    w->extension = NULL;
 
     if (ext->transport) {
         remove_transport(ext->transport);
@@ -238,7 +239,7 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
     transport = ext->transport;
     if (!transport) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
-        vlogE("Session: session not intialized yet.");
+        vlogE("Session: Transport not intialized yet.");
         return NULL;
     }
 
