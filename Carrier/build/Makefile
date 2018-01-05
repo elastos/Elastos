@@ -13,9 +13,13 @@ $(MODULE):
 	make -f modules/$@.mk $(TARGET)
 
 ifneq (, $(strip $(NEED_DEPS)))
+toxcore: libsodium
 
-toxcore: libsodium flatcc
-carrier: libsodium toxcore pjsip confuse CUnit
+ifneq (, $(findstring $(HOST), iOS Android))
+carrier: libsodium toxcore flatcc pjsip
+else
+carrier: libsodium toxcore flatcc pjsip confuse CUnit
+endif
 
 endif
 

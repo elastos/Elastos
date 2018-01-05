@@ -5,7 +5,7 @@
 postInstallProduct() {
     case $1 in
        "Android")
-            cd $2/lib && ${AR} -M <$2/../../../../scripts/libcarrier.mri
+            cd $2/lib && ${AR} -M <$2/../../../scripts/libcarrier.mri
             ;;
        *)
             ;;
