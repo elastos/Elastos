@@ -1,5 +1,8 @@
 create libcarrier.a
 addlib libsodium.a
+addlib libtoxcore.a
+addlib libflatcc.a
+addlib libflatccrt.a
 addlib libpj.a
 addlib libpjlib-util.a
 addlib libpjnath.a

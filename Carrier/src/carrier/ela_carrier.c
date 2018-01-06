@@ -2165,7 +2165,7 @@ int ela_get_error(void)
 void ela_clear_error(void)
 {
 #if defined(_WIN32) || defined(_WIN64) || defined(__linux__)
-    ela_error = WSUCCESS;
+    ela_error = ELASUCCESS;
 #elif defined(__APPLE__)
     (void)pthread_setspecific(ela_error, 0);
 #else

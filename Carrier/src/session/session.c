@@ -410,7 +410,7 @@ int ela_session_request(ElaSession *ws,
         return -1;
     }
 
-    crypto_new_keypair(ws->public_key, ws->secret_key);
+    crypto_create_keypair(ws->public_key, ws->secret_key);
     crypto_random_nonce(ws->nonce);
     crypto_random_nonce(ws->credential);
 
@@ -487,7 +487,7 @@ int ela_session_reply_request(ElaSession *ws,
         return -1;
     }
 
-    crypto_new_keypair(ws->public_key, ws->secret_key);
+    crypto_create_keypair(ws->public_key, ws->secret_key);
     crypto_random_nonce(ws->nonce);
     crypto_random_nonce(ws->credential);
 

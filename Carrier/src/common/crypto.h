@@ -140,7 +140,7 @@ ssize_t crypto_decrypt2(const uint8_t *key, const uint8_t *nonce,
                         uint8_t *encrypted, size_t length, uint8_t *plain);
 
 COMMON_API
-int crypto_new_keypair(uint8_t *public_key, uint8_t *secret_key);
+int crypto_create_keypair(uint8_t *public_key, uint8_t *secret_key);
 
 #ifdef __cplusplus
 }

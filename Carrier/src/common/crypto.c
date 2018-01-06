@@ -206,7 +206,7 @@ ssize_t crypto_decrypt2(const uint8_t *key, const uint8_t *nonce,
     return length;
 }
 
-int crypto_new_keypair(uint8_t *public_key, uint8_t *secret_key)
+int crypto_create_keypair(uint8_t *public_key, uint8_t *secret_key)
 {
     return crypto_box_keypair(public_key, secret_key);
 }
