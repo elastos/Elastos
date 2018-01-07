@@ -4,13 +4,9 @@
 #argv2: ARCH
 #argv3: HOST_COMPILER
 
-CFLAGS="${CFLAGS} -fvisibility=hidden -DELASTOS_BUILD"
-
 getConfigureCmd() {
     case $1,$2 in
         "Darwin",*)
-            CFLAGS="${CFLAGS} -Wno-logical-op-parentheses"
-            CFLAGS="${CFLAGS} -Wno-tautological-constant-out-of-range-compare"
             _TOOL="./configure"
             ;;
         "Linux","x86_64"| "Raspbian","armv7l")
@@ -33,7 +29,7 @@ getConfigureCmd() {
             exit 1;;
     esac
 
-    echo "CFLAGS=\"${CFLAGS}\" ${_TOOL}"
+    echo ${_TOOL}
 }
 
 if [ x"$1" = x"command" ]; then
