@@ -1246,11 +1246,6 @@ char *ela_get_userid(ElaCarrier *w, char *userid, size_t len)
     return ela_get_nodeid(w, userid, len);
 }
 
-char *ela_get_login(ElaCarrier *w, char *login, size_t len)
-{
-    return ela_get_nodeid(w, login, len);
-}
-
 int ela_set_self_nospam(ElaCarrier *w, uint32_t nospam)
 {
     int rc;
@@ -1367,20 +1362,6 @@ int ela_get_self_info(ElaCarrier *w, ElaUserInfo *info)
     memcpy(info, &w->me, sizeof(ElaUserInfo));
 
     return 0;
-}
-
-int ela_set_node_info(ElaCarrier *w, const ElaNodeInfo *info)
-{
-    //TODO: Not supported yet.
-    ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_IMPLEMENTED));
-    return -1;
-}
-
-int ela_get_node_info(ElaCarrier *w, ElaNodeInfo *info)
-{
-    //TODO: Not supported yet.
-    ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_IMPLEMENTED));
-    return -1;
 }
 
 int ela_set_self_presence(ElaCarrier *w, ElaPresenceStatus status)

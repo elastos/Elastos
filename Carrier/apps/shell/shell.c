@@ -449,18 +449,6 @@ static void get_userid(ElaCarrier *w, int argc, char *argv[])
     output("User ID: %s\n", id);
 }
 
-static void get_loginname(ElaCarrier *w, int argc, char *argv[])
-{
-    if (argc != 1) {
-        output("Invalid command syntax.\n");
-        return;
-    }
-
-    char login[ELA_MAX_LOGIN_LEN+1] = {0};
-    ela_get_login(w, login, sizeof(login));
-    output("Login name: %s\n", login);
-}
-
 static void display_user_info(const ElaUserInfo *info)
 {
     output("           ID: %s\n", info->userid);
@@ -1532,7 +1520,6 @@ struct command {
     { "address",    get_address,            "address" },
     { "nodeid",     get_nodeid,             "nodeid" },
     { "userid",     get_userid,             "userid" },
-    { "loginname",  get_loginname,          "loginname" },
     { "me",         self_info,              "me [set] [name | description | gender | phone | email | region] [value]" },
     { "nospam",     self_nospam,            "nospam [ value ]" },
     { "presence",   self_presence,          "presence [ none | away | busy ]" },
@@ -1978,7 +1965,6 @@ int main(int argc, char *argv[])
     }
 
     output("Carrier node identities:\n");
-    output("     Login: %s\n", ela_get_login(w, buf, sizeof(buf)));
     output("   Node ID: %s\n", ela_get_nodeid(w, buf, sizeof(buf)));
     output("   User ID: %s\n", ela_get_userid(w, buf, sizeof(buf)));
     output("   Address: %s\n\n", ela_get_address(w, buf, sizeof(buf)));

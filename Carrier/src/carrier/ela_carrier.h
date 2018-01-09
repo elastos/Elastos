@@ -783,25 +783,6 @@ char *ela_get_nodeid(ElaCarrier *carrier, char *nodeid, size_t len);
 CARRIER_API
 char *ela_get_userid(ElaCarrier *carrier, char *userid, size_t len);
 
-/**
- * \~English
- * Get user login name associated with this Carrier node.
- *
- * @param
- *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      login       [out] The buffer that will receive the login name.
- *                        The buffer size should at least
- *                        (ELA_MAX_LOGIN_LEN + 1) bytes.
- * @param
- *      len         [in] The buffer size of login name.
- *
- * @return
- *      The login string pointer, or NULL if buffer is too small.
- */
-CARRIER_API
-char *ela_get_login(ElaCarrier *carrier, char *login, size_t len);
-
 /******************************************************************************
  * Client information
  *****************************************************************************/
@@ -880,44 +861,6 @@ int ela_set_self_info(ElaCarrier *carrier, const ElaUserInfo *info);
  */
 CARRIER_API
 int ela_get_self_info(ElaCarrier *carrier, ElaUserInfo *info);
-
-/**
- * \~English
- * Set node information.
- *
- * As node information changed, client would update node information
- * to Carrier network.
- * This function is reserved for futher compatibility.
- *
- * @param
- *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      info        [in] The ElaNodeInfo pointer to the updated node info.
- *
- * @return
- *      0 on success, or -1 if an error occurred. The specific error code
- *      can be retrieved by calling ela_get_error().
- */
-CARRIER_API
-int ela_set_node_info(ElaCarrier *carrier, const ElaNodeInfo *info);
-
-/**
- * \~English
- * Get node information.
- *
- * This function is reserved for futher compatibility.
- *
- * @param
- *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      info        [in] The ElaNodeInfo pointer to receive the node info.
- *
- * @return
- *      0 on success, or -1 if an error occurred. The specific error code
- *      can be retrieved by calling ela_get_error().
- */
-CARRIER_API
-int ela_get_node_info(ElaCarrier *carrier, ElaNodeInfo *info);
 
 /**
  * \~English
@@ -1329,9 +1272,6 @@ int ela_get_error(void);
  */
 CARRIER_API
 void ela_clear_error(void);
-
-//CARRIER_API
-//void ela_set_error(int error);
 
 #ifdef __cplusplus
 }
