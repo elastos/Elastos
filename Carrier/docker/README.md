@@ -1,4 +1,4 @@
-##HOW TO USE Dockerfile
+## HOW TO USE Dockerfile
 
 1. cd to directory with Dockerfile
 2. docker build .
