@@ -22,7 +22,6 @@ public class Stream {
     public static int PROPERTY_PORT_FORWARDING = 0x10;
 
     /* Jni native methods */
-    private native boolean set_stream_type(int streamId, StreamType type);
     private native boolean get_transport_info(int streamId, TransportInfo info);
     private native int write_stream_data(int streamId, byte[] data);
 
@@ -47,27 +46,6 @@ public class Stream {
 
     int getStreamId() {
         return streamId;
-    }
-
-    /**
-     * Set the carrier stream type.
-     *
-     * This function has not effect on connected streams. Application can change
-     * the stream type before start session.
-     *
-     * @param
-     *      type        New stream type defined in StreamType
-     *
-     * @throws
-     *      ElastosException
-     */
-    public void setType(StreamType type) throws ElastosException {
-
-        if (!set_stream_type(streamId, type)) {
-            throw new ElastosException(get_error_code());
-        }
-
-        this.type = type;
     }
 
     /**

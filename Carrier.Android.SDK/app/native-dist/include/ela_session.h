@@ -343,8 +343,6 @@ typedef enum ElaStreamState {
  * Portforwarding supported protocols.
  */
 typedef enum PortForwardingProtocol {
-    /** UDP protocol. */
-    PortForwardingProtocol_UDP = 0,
     /** TCP protocol. */
     PortForwardingProtocol_TCP = 1
 } PortForwardingProtocol;
@@ -639,29 +637,6 @@ int ela_session_add_service(ElaSession *session, const char *service,
  */
 CARRIER_API
 void ela_session_remove_service(ElaSession *session, const char *service);
-
-/**
- * \~English
- * Set the carrier stream type.
- *
- * This function has not effect on connected streams.
- * Application can change the stream type before start session.
- *
- * @param
- *      session     [in] The handle to the ElaSession.
- * @param
- *      stream      [in] The stream ID.
- * @param
- *      type        [in] New stream type defined in ElaStreamType.
- *
- * @return
- *      0 on success, or -1 if an error occurred.
- *      The specific error code can be retrieved by calling
- *      ela_get_error().
- */
-CARRIER_API
-int ela_stream_set_type(ElaSession *session, int stream,
-        ElaStreamType type);
 
 /**
  * \~English

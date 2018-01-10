@@ -10,29 +10,6 @@
 #include "sessionUtils.h"
 
 static
-jboolean setStreamType(JNIEnv* env, jobject thiz, jint jstreamId, jobject jtype)
-{
-    assert(jstreamId > 0);
-    assert(jtype);
-
-    ElaStreamType type;
-    if (!getNativeStreamType(env, jtype, &type)) {
-        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
-        return JNI_FALSE;
-    }
-
-    int result = ela_stream_set_type(getSession(env, thiz), jstreamId,
-                                     (ElaStreamType)type);
-    if (result < 0) {
-        logE("Call ela_stream_set_type API error");
-        setErrorCode(ela_get_error());
-        return JNI_FALSE;
-    }
-
-    return JNI_TRUE;
-}
-
-static
 jboolean getTransportInfo(JNIEnv *env, jobject thiz, jint jstreamId, jobject jtransportInfo)
 {
     assert(jstreamId > 0);
@@ -241,7 +218,6 @@ jint getErrorCode(JNIEnv* env, jclass clazz)
 
 static const char* gClassName = "org/elastos/carrier/session/Stream";
 static JNINativeMethod gMethods[] = {
-        {"set_stream_type",       "(I"_S("StreamType;)Z"),         (void*)setStreamType    },
         {"get_transport_info",    "(I"_S("TransportInfo;)Z"),      (void*)getTransportInfo },
         {"write_stream_data",     "(I[B)I",                        (void*)writeData        },
         {"open_channel",          "(I"_J("String;)I"),             (void*)openChannel      },

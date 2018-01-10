@@ -5,11 +5,6 @@ package org.elastos.carrier.session;
  */
 public enum PortForwardingProtocol {
     /**
-     * UDP protocol.
-     */
-    UDP,
-
-    /**
      * TCP protocol.
      */
     TCP;
@@ -28,8 +23,6 @@ public enum PortForwardingProtocol {
      */
     public static PortForwardingProtocol valueOf(int protocol) {
         switch (protocol) {
-            case 0:
-                return UDP;
             case 1:
                 return TCP;
             default:
@@ -47,7 +40,6 @@ public enum PortForwardingProtocol {
         switch (this) {
             case TCP:
                 return 1;
-            case UDP:
             default:
                 return 0;
         }
