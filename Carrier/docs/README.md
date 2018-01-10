@@ -1,3 +1,3 @@
-##How to build documentation
+## How to build documentation
 
 make html
