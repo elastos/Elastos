@@ -12,7 +12,6 @@ Elastos Carrier is a decentralized peer to peer communication framework.
 
 Execute following command to install all pre-requirements.
 
-    ```
     sudo apt-get update
     sudo apt-get install build-essential autoconf automake autopoint libtool flex bison libncurses5-dev
     curl -L -o /tmp/flatcc-0.5.0.tar.gz https://github.com/dvidelabs/flatcc/archive/v0.5.0.tar.gz
