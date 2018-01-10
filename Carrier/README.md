@@ -110,7 +110,7 @@ will cause the build process failed.
 
 ### Ubuntu
 
-1. Install Pre-Requirements
+#### 1. Install Pre-Requirements
 
 ```shell
 $ sudo apt-get update
@@ -120,7 +120,7 @@ $ python /tmp/get-pip.py
 $ pip install breathe
 ```
 
-2. Build
+#### 2. Build
 
 Change to `$(SRC_ROOT)/docs` directory, run:
 
