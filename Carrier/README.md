@@ -86,7 +86,7 @@ Then you can start the Docker image:
 $ docker run -tiv $(SRC_ROOT):/home/elastos/Projects --tmpfs=/tmp elastos-dev /bin/bash
 ```
 
-3. Build in docker
+#### 3. Build in docker
 
 ```shell
 $ cd ~/Projects/build
