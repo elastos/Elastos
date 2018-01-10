@@ -6,7 +6,8 @@ TODO
 
 ## Build
 
-TODO
+- Ubuntu: TODO
+- MacOS: TODO
 
 ## Usage
 
