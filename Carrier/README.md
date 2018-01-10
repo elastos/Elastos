@@ -8,7 +8,7 @@ Elastos Carrier is a decentralized peer to peer communication framework.
 
 ### Ubuntu
 
-##### 1. Install Pre-Requirements
+#### 1. Install Pre-Requirements
 
 Execute following command to install all pre-requirements.
 
@@ -22,7 +22,7 @@ $ cd /tmp/flatcc-0.5.0/build/install && cmake ../.. -DFLATCC_INSTALL=on
 $ cd /tmp/flatcc-0.5.0/build/install && make install
 ```
 
-##### 2. Build
+#### 2. Build
 
 Change to `$(SRC_ROOT)/build` directory, and run:
 
@@ -38,7 +38,7 @@ $ ./linux_build.sh help
 
 ### MacOS
 
-##### 1. Install Pre-Requirements
+#### 1. Install Pre-Requirements
 
 You need to install the following packages on your Mac to build from the source:
 
@@ -48,7 +48,7 @@ autoconf automake libtool shtool pkg-config gettext
 
 You can use brew or build the packages from the source code.
 
-##### 2. Build
+#### 2. Build
 
 Change to `$(SRC_ROOT)/build` directory, and run:
 
@@ -64,7 +64,7 @@ $ ./darwin_build.sh help
 
 ### Using pre-configured Docker image
 
-##### 1. Prepare the Docker image
+#### 1. Prepare the Docker image
 
 Change to `$(SRC_ROOT)`/docker directory, and run:
 
@@ -78,7 +78,7 @@ After the Docker image build finish, the tag the new image:
 $ docker tag THE-NEW-GENERATED-IMAGE-ID elastos-dev
 ```
 
-##### 2. Start Docker image
+#### 2. Start Docker image
 
 Then you can start the Docker image:
 
