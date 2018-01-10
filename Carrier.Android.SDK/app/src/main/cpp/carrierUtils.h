@@ -19,10 +19,6 @@ int getNativeUserInfo(JNIEnv* env, jobject juserInfo, ElaUserInfo* ui);
 
 int newJavaUserInfo(JNIEnv* env, const ElaUserInfo* userInfo, jobject* juserInfo);
 
-int getNativeNodeInfo(JNIEnv* env, jobject jnodeInfo, ElaNodeInfo* ni);
-
-int newJavaNodeInfo(JNIEnv* env, const ElaNodeInfo* ni, jobject* jnodeInfo);
-
 int newJavaFriendInfo(JNIEnv* env, const ElaFriendInfo* friendInfo, jobject* jfriendInfo);
 
 int newJavaConnectionStatus(JNIEnv* env, ElaConnectionStatus status, jobject* jstatus);

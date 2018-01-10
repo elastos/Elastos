@@ -97,56 +97,6 @@ int newJavaUserInfo(JNIEnv* env, const ElaUserInfo* userInfo, jobject* juserInfo
     return 1;
 }
 
-int getNativeNodeInfo(JNIEnv* env, jobject jnodeInfo, ElaNodeInfo* ni)
-{
-    jclass clazz = (*env)->GetObjectClass(env, jnodeInfo);
-    if (!clazz) {
-        logE("Java class 'NodeInfo' not found");
-        return 0;
-    }
-
-    if (!getString(env, clazz, jnodeInfo, "getNodeId", ni->nodeid, sizeof(ni->nodeid)) ||
-        !getString(env, clazz, jnodeInfo, "getName", ni->name, sizeof(ni->name)) ||
-        !getString(env, clazz, jnodeInfo, "getDescription", ni->description, sizeof(ni->description))) {
-
-        logE("At least one method of class 'NodeInfo' missing");
-        return 0;
-    }
-    return 1;
-}
-
-int newJavaNodeInfo(JNIEnv* env, const ElaNodeInfo* ni, jobject* jnodeInfo)
-{
-    jclass clazz = (*env)->FindClass(env, _T("NodeInfo"));
-    if (!clazz) {
-        logE("Java class 'NodeInfo' not found");
-        return 0;
-    }
-
-    jmethodID contor = (*env)->GetMethodID(env, clazz, "<init>", "()V");
-    if (!contor) {
-        logE("Contructor NodeInfo() not found");
-        return 0;
-    }
-
-    jobject jobj = (*env)->NewObject(env, clazz, contor);
-    if (!jobj) {
-        logE("New class NodeInfo object error");
-        return 0;
-    }
-
-    if (!setString(env, clazz, jobj, "setNodeId", ni->nodeid) ||
-        !setString(env, clazz, jobj, "setName", ni->name) ||
-        !setString(env, clazz, jobj, "setDescription", ni->description)) {
-
-        logE("At least one method of class 'NodeInfo' missing");
-        (*env)->DeleteLocalRef(env, jobj);
-        return 0;
-    }
-    *jnodeInfo = jobj;
-    return 1;
-}
-
 int newJavaPresenceStatus(JNIEnv* env, ElaPresenceStatus status, jobject* jpresence)
 {
     jclass clazz = (*env)->FindClass(env, _T("PresenceStatus"));

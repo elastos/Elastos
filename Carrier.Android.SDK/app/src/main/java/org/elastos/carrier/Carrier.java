@@ -427,18 +427,6 @@ public class Carrier {
 	}
 
 	/**
-	 * Get login identifier associated with the carrier node instance.
-     *
-	 * @return
-	 * 		the login identifier
-	 */
-	public String getLogin() throws ElastosException {
-		String login = getNodeId();
-		Log.d(TAG, "Current carrier login name: " + login);
-		return login;
-	}
-
-	/**
 	 * Update self nospam for Carrier node address.
 	 *
 	 * Update the 4-byte nospam part of the Carrier address with host byte order

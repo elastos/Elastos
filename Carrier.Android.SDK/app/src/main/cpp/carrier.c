@@ -166,47 +166,6 @@ jobject getSelfInfo(JNIEnv* env, jobject thiz)
 }
 
 static
-jboolean setNodeInfo(JNIEnv* env, jobject thiz, jobject jnodeInfo)
-{
-    assert(jnodeInfo);
-
-    ElaNodeInfo ni;
-    if (!getNativeNodeInfo(env, jnodeInfo, &ni)) {
-        logE("Construct C-structured NodeInfo object error");
-        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
-        return JNI_FALSE;
-    }
-
-    int result = ela_set_node_info(getCarrier(env, thiz), &ni);
-    if (result < 0) {
-        logE("Call ela_set_node_info API error");
-        setErrorCode(ela_get_error());
-        return JNI_FALSE;
-    }
-    return JNI_TRUE;
-}
-
-static
-jobject getNodeInfo(JNIEnv* env, jobject thiz)
-{
-    ElaNodeInfo ni;
-    int result = ela_get_node_info(getCarrier(env, thiz), &ni);
-    if (result < 0) {
-        logE("Call ela_get_node_info API error");
-        setErrorCode(ela_get_error());
-        return NULL;
-    }
-
-    jobject jnodeInfo = NULL;
-    if (!newJavaNodeInfo(env, &ni, &jnodeInfo)) {
-        logE("Construct java NodeInfo object error");
-        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
-        return NULL;
-    }
-    return jnodeInfo;
-}
-
-static
 jboolean setPresence(JNIEnv *env, jobject thiz, jobject jpresence)
 {
     //TODO;
@@ -619,8 +578,6 @@ static JNINativeMethod gMethods[] = {
         {"get_node_id",        "()"_J("String;"),                  (void *) getNodeId          },
         {"set_self_info",      "("_W("UserInfo;)Z"),               (void *) setSelfInfo        },
         {"get_self_info",      "()"_W("UserInfo;"),                (void *) getSelfInfo        },
-        {"set_node_info",      "("_W("NodeInfo;)Z"),               (void *) setNodeInfo        },
-        {"get_node_info",      "()"_W("NodeInfo;"),                (void *) getNodeInfo        },
         {"is_ready",           "()Z",                              (void *) isReady            },
         {"get_friends",        "("_W("FriendsIterator;")_J("Object;)Z"), (void *) getFriends   },
         {"get_friend",         "("_J("String;)")_W("FriendInfo;"), (void *) getFriend          },
