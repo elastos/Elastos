@@ -1,0 +1,8 @@
+.DS_Store
+/DerivedData
+/Build
+xcuserdata
+/NativeDistribution/libs/*/*.a
+/Docs
+
+/Products
