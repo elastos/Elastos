@@ -21,10 +21,7 @@ fi
 # argv3: BUILD
 # argv4: DIST_DIR
 packDevDist() {
-    FILES="include/ela_carrier.h "
-    for header in ext session; do
-        FILES="${FILES} include/ela_${header}.h "
-    done
+    FILES="include/ela_carrier.h include/ela_session.h"
 
     case $1 in
         "Linux" | "Raspbian")
@@ -41,7 +38,8 @@ packDevDist() {
             done
             ;;
         "iOS")
-            for lib in sodium pj pjlib-util pjnath pjmedia elacommon elacarrier elasession; do
+            for lib in sodium toxcore flatcc flatccrt pj pjlib-util pjnath pjmedia \
+                       elacommon elacarrier elasession; do
                 FILES="${FILES} lib/lib${lib}.a " 
             done
             ;;
