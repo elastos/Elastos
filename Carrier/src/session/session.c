@@ -878,34 +878,6 @@ ssize_t ela_stream_write(ElaSession *ws, int stream,
     return sent < 0 ? -1: sent;
 }
 
-int ela_stream_set_type(ElaSession *ws, int stream, ElaStreamType type)
-{
-    ElaStream *s;
-
-    if (!ws || stream <= 0 || type < ElaStreamType_text ||
-        type > ElaStreamType_message) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-        return -1;
-    }
-
-    s = get_stream(ws, stream);
-    if (!s) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
-        return -1;
-    }
-
-    if (s->state != ElaStreamState_initialized) {
-        deref(s);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_WRONG_STATE));
-        return -1;
-    }
-
-    s->type = type;
-    deref(s);
-
-    return 0;
-}
-
 int ela_stream_get_type(ElaSession *ws, int stream, ElaStreamType *type)
 {
     ElaStream *s;
@@ -1147,8 +1119,7 @@ int ela_session_add_service(ElaSession *ws, const char *service,
     size_t port_len;
 
     if (!ws || !service || !*service || !host || !*host|| !port || !*port ||
-        protocol < PortForwardingProtocol_UDP ||
-        protocol > PortForwardingProtocol_TCP) {
+        protocol != PortForwardingProtocol_TCP) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -1215,8 +1186,7 @@ int ela_stream_open_port_forwarding(ElaSession *ws, int stream,
     ElaStream *s;
 
     if (!ws || stream <= 0 || !service || !*service || !port || !*port ||
-        protocol < PortForwardingProtocol_UDP ||
-        protocol > PortForwardingProtocol_TCP) {
+        protocol != PortForwardingProtocol_TCP) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }

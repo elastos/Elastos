@@ -1434,8 +1434,6 @@ static void session_add_service(ElaCarrier *w, int argc, char *argv[])
 
     if (strcmp(argv[2], "tcp") == 0)
         protocol = PortForwardingProtocol_TCP;
-    else if (strcmp(argv[2], "udp") == 0)
-        protocol = PortForwardingProtocol_UDP;
     else {
         output("Unknown protocol %s.\n", argv[2]);
         return;
@@ -1469,8 +1467,6 @@ static void portforwarding_open(ElaCarrier *w, int argc, char *argv[])
 
     if (strcmp(argv[3], "tcp") == 0)
         protocol = PortForwardingProtocol_TCP;
-    else if (strcmp(argv[3], "udp") == 0)
-        protocol = PortForwardingProtocol_UDP;
     else {
         output("Unknown protocol %s.\n", argv[3]);
         return;

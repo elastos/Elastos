@@ -1,8 +1,8 @@
 include environ/$(HOST)-$(ARCH).mk
 
-PACKAGE_NAME   = master.zip
-PACKAGE_URL    = https://github.com/dvidelabs/flatcc/archive/$(PACKAGE_NAME)
-SRC_DIR        = $(DEPS_DIR)/flatcc-master
+PACKAGE_NAME   = flatcc-0.5.0.tar.gz
+PACKAGE_URL    = https://github.com/dvidelabs/flatcc/archive/v0.5.0.tar.gz
+SRC_DIR        = $(DEPS_DIR)/flatcc-0.5.0
 FLATCC_MK      = $(SRC_DIR)/flatcc.mk
 
 define compile

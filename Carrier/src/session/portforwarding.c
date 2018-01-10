@@ -333,9 +333,7 @@ rescan_portforwardings:
                 continue;
             }
 
-            if (pf->protocol == PortForwardingProtocol_UDP) {
-                //TODO;
-            } else if (pf->protocol == PortForwardingProtocol_TCP) {
+            if (pf->protocol == PortForwardingProtocol_TCP) {
                 handle_tcp_portofrwarding(pf, handler);
             }
 
@@ -400,8 +398,7 @@ int portforwarding_open(PortForwardingWorker *worker, const char *service,
 
     assert(worker);
     assert(service);
-    assert(protocol == PortForwardingProtocol_TCP ||
-           protocol == PortForwardingProtocol_UDP);
+    assert(protocol == PortForwardingProtocol_TCP);
     assert(host && port);
 
     pf = (PortForwarding *)rc_zalloc(sizeof(PortForwarding) + strlen(service) + 1,
@@ -409,7 +406,7 @@ int portforwarding_open(PortForwardingWorker *worker, const char *service,
     if (!pf)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    type = protocol == PortForwardingProtocol_UDP ? SOCK_DGRAM : SOCK_STREAM;
+    type = protocol == PortForwardingProtocol_TCP ? SOCK_STREAM : SOCK_DGRAM;
     pf->sock = socket_create(type, host, port);
 
     if (pf->sock == INVALID_SOCKET) {

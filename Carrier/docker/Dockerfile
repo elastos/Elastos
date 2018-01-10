@@ -48,11 +48,11 @@ RUN set -ex                                                                     
     curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py                 && \
     python /tmp/get-pip.py                                                          && \
     pip install breathe                                                             && \
-    curl -L -o /tmp/flatcc-master.zip https://github.com/dvidelabs/flatcc/archive/master.zip && \
-    cd /tmp && unzip flatcc-master.zip                                              && \
-    mkdir -p /tmp/flatcc-master/build/install                                       && \
-    cd /tmp/flatcc-master/build/install && cmake ../.. -DCMAKE_BUILD_TYPE=Release -DFLATCC_INSTALL=on && \
-    cd /tmp/flatcc-master/build/install && make install                             && \
+    curl -L -o /tmp/flatcc-0.5.0.tar.gz https://github.com/dvidelabs/flatcc/archive/v0.5.0.tar.gz && \
+    cd /tmp && tar xzvf flatcc-0.5.0.tar.gz                                         && \
+    mkdir -p /tmp/flatcc-0.5.0/build/install                                        && \
+    cd /tmp/flatcc-0.5.0/build/install && cmake ../.. -DFLATCC_INSTALL=on           && \
+    cd /tmp/flatcc-0.5.0/build/install && make install                              && \
     rm -rf /tmp/*                                                                   && \
     rm -rf /var/lib/apt/list/*
 

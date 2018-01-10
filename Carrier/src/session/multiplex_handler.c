@@ -903,8 +903,7 @@ int multiplex_handler_open_portforwarding(Multiplexer *mux,
     MultiplexHandler *handler = HANDLER(mux);
 
     assert(service && *service);
-    assert(protocol >= PortForwardingProtocol_UDP &&
-           protocol <= PortForwardingProtocol_TCP);
+    assert(protocol == PortForwardingProtocol_TCP);
     assert(host && *host && port && *port);
 
     if (!handler->worker)
