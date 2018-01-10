@@ -48,12 +48,6 @@ extern "C" {
 
 /**
  * \~English
- * Carrier user login name max length.
- */
-#define ELA_MAX_LOGIN_LEN               45
-
-/**
- * \~English
  * Carrier user name max length.
  */
 #define ELA_MAX_USER_NAME_LEN           63
@@ -301,28 +295,6 @@ typedef enum ElaPresenceStatus {
      */
     ElaPresenceStatus_Busy,
 } ElaPresenceStatus;
-
-/**
- * \~English
- * A structure representing the Carrier node information.
- */
-typedef struct ElaNodeInfo {
-    /**
-     * \~English
-     * The node id. Read only to application.
-     */
-    char nodeid[ELA_MAX_ID_LEN+1];
-    /**
-     * \~English
-     * The node name.
-     */
-    char name[ELA_MAX_NODE_NAME_LEN+1];
-    /**
-     * \~English
-     * The node description.
-     */
-    char description[ELA_MAX_NODE_DESCRIPTION_LEN+1];
-} ElaNodeInfo;
 
 /**
  * \~English
