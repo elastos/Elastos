@@ -273,12 +273,13 @@ func (this *TXNPool) MaybeAcceptTransaction(txn *tx.Transaction) error {
 func (this *TXNPool) RemoveTransaction(txn *tx.Transaction) {
 	txHash := txn.Hash()
 	for i := range txn.Outputs {
-		in := tx.UTXOTxInput{
+		input := tx.UTXOTxInput{
 			ReferTxID:          txHash,
 			ReferTxOutputIndex: uint16(i),
 		}
-		input := in.ToString()
-		if txn, ok := this.inputUTXOList[input]; ok {
+
+		txn := this.getInputUTXOList(&input)
+		if txn != nil {
 			this.removeTransaction(txn)
 		}
 	}
