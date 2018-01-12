@@ -123,6 +123,40 @@ int get_friend_number(ElaCarrier *w, const char *friendid, uint32_t *friend_numb
     return rc;
 }
 
+static void fill_empty_user_desc(ElaCarrier *w)
+{
+    ElaCP *cp;
+    uint8_t *data;
+    size_t data_len;
+
+    assert(w);
+
+    cp = elacp_create(ELACP_TYPE_USERINFO, NULL);
+    if (!cp) {
+        vlogE("Carrier: Out of memory!!!");
+        return;
+    }
+
+    elacp_set_has_avatar(cp, false);
+    elacp_set_name(cp, "");
+    elacp_set_descr(cp, "");
+    elacp_set_gender(cp, "");
+    elacp_set_phone(cp, "");
+    elacp_set_email(cp, "");
+    elacp_set_region(cp, "");
+
+    data = elacp_encode(cp, &data_len);
+    elacp_free(cp);
+
+    if (!data) {
+        vlogE("Carrier: Encode user desc to packet error");
+        return;
+    }
+
+    dht_self_set_desc(&w->dht, data, data_len);
+    free(data);
+}
+
 static
 int unpack_user_desc(const uint8_t *desc, size_t desc_len, ElaUserInfo *info,
                      bool *changed)
@@ -238,6 +272,8 @@ static void get_self_info_cb(const uint8_t *address, const uint8_t *public_key,
 
     if (desc_len > 0)
         unpack_user_desc(desc, desc_len, ui, NULL);
+    else
+        fill_empty_user_desc(w);
 }
 
 static bool friends_iterate_cb(uint32_t friend_number,
@@ -910,7 +946,8 @@ static void notify_friend_removed(ElaCarrier *w, const char *friendid,
 
     if (status == ElaConnectionStatus_Connected) {
         if (w->callbacks.friend_connection)
-            w->callbacks.friend_connection(w, friendid, status, w->context);
+            w->callbacks.friend_connection(w, friendid,
+                                ElaConnectionStatus_Disconnected, w->context);
     }
 
     if (w->callbacks.friend_removed)
@@ -940,6 +977,8 @@ void handle_friend_remove(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     strcpy(friendid, fi->info.user_info.userid);
     status = fi->info.status;
+
+    vlogD("Carrier: Friend %s removed from friend list.", friendid);
 
     deref(fi);
 
@@ -2054,18 +2093,26 @@ int ela_get_turn_server(ElaCarrier *w, ElaTurnServer *turn_server)
     uint8_t digest[SHA256_BYTES];
     size_t text_len = sizeof(turn_server->realm);
     int rc;
+    int times = 0;
 
     if (!w || !turn_server) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
 
+redo_get_tcp_relay:
     rc = dht_get_random_tcp_relay(&w->dht, turn_server->server,
                                   sizeof(turn_server->server), public_key);
     if (rc < 0) {
-        vlogE("Carrier: Get turn server address and public key error");
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
-        return -1;
+        if (++times < 5) {
+            usleep(1000);
+            //BUGBUG: Try to get tcp relay again and again.
+            goto redo_get_tcp_relay;
+        } else {
+            vlogE("Carrier: Get turn server address and public key error");
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
+            return -1;
+        }
     }
 
     {
