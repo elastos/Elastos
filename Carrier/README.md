@@ -72,7 +72,7 @@ Change to `$(SRC_ROOT)`/docker directory, and run:
 $ docker build .
 ```
 
-After the Docker image build finish, the tag the new image:
+After the Docker image build finish, then tag the new image:
 
 ```shell
 $ docker tag THE-NEW-GENERATED-IMAGE-ID elastos-dev
@@ -91,6 +91,74 @@ $ docker run -tiv $(SRC_ROOT):/home/elastos/Projects --tmpfs=/tmp elastos-dev /b
 ```shell
 $ cd ~/Projects/build
 $ ./linux_build.sh
+```
+
+## Cross-compilation
+
+### Android
+
+You need to get android NDK packages to build carrier NDKs for several targets, and of which will be built into Android Java carrier SDK.
+
+#### Build on Linux
+
+##### 1. Prepare enviroment
+
+Download android NDK package for Linux (r13b or higher), and unzip it to $YOUR-PATH/TO.
+
+Add the following command to ${HOME}/.bashrc to setup $ANDROID_NDK_HOME enviroment.
+
+```
+export ANDROID_NDK_HOME=YOUR-PATH/TO/android-ndk-r13b
+```
+
+Then run the command to make effect.
+
+```
+source ${HOME}/.bashrc
+```
+
+##### 2. Cross-compilation build
+
+Run the build script with wanted target name under ${SRC_ROOT}/build. For example, the following command is to build Carrier NDK for armv7 target.
+
+```
+./android_build.sh arm
+```
+
+Currently, you can 'cross-'build Carrier NDKs for arm, arm64, x86 and x86_64 targets.
+
+For more build options, run build script with "help" option.
+
+```
+./android_build.sh help
+```
+
+#### Build on MacOS
+
+You also can build android Carrier NDKs on MacOS with the same steps on Linux except for using android NDKs packages for Darwin.
+
+### iOS
+
+You shold build iOS Carrier NDKs on MacOS with xCode supported.
+
+Run the following command to build Carrier NDK for arm64:
+
+```
+./ios_build.sh arm64
+```
+
+or, use following command:
+
+```
+./ios_build.sh x86_64
+```
+
+to build Carrier NDK for x86_64 target.
+
+For more build options, run build script with "help" option.
+
+```
+./ios_build.sh help
 ```
 
 ## Test
