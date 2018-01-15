@@ -318,7 +318,7 @@ static bool friends_iterate_cb(uint32_t friend_number,
     return true;
 }
 
-static const char *data_filename = "orchiddata";
+static const char *data_filename = "eladata";
 
 static int load_savedata(ElaCarrier *w)
 {
@@ -370,7 +370,7 @@ static int load_savedata(ElaCarrier *w)
 
     pos = data;
     if (memcmp(pos, w->public_key, DHT_PUBLIC_KEY_SIZE) != 0) {
-        vlogE("Carrier: Deprecated orchid data.");
+        vlogE("Carrier: Deprecated carrier data.");
         return -1;
     }
     pos += DHT_PUBLIC_KEY_SIZE;
