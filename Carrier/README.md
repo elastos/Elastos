@@ -105,15 +105,15 @@ You need to get android NDK packages to build carrier NDKs for several targets, 
 
 Download android NDK package for Linux (r13b or higher), and unzip it to $YOUR-PATH/TO.
 
-Add the following command to ${HOME}/.bashrc to setup $ANDROID_NDK_HOME enviroment.
+Add the following command to ${HOME}/.bashrc to setup $ANDROID_NDK_HOME environment.
 
-```
+```shell
 export ANDROID_NDK_HOME=YOUR-PATH/TO/android-ndk-r13b
 ```
 
 Then run the command to make effect.
 
-```
+```shell
 source ${HOME}/.bashrc
 ```
 
@@ -121,7 +121,7 @@ source ${HOME}/.bashrc
 
 Run the build script with wanted target name under ${SRC_ROOT}/build. For example, the following command is to build Carrier NDK for armv7 target.
 
-```
+```shell
 ./android_build.sh arm
 ```
 
@@ -129,7 +129,7 @@ Currently, you can 'cross-'build Carrier NDKs for arm, arm64, x86 and x86_64 tar
 
 For more build options, run build script with "help" option.
 
-```
+```shell
 ./android_build.sh help
 ```
 
@@ -159,6 +159,36 @@ For more build options, run build script with "help" option.
 
 ```
 ./ios_build.sh help
+```
+
+### RaspberryPi
+
+#### 1. Prepare environment
+
+The cross-compilation for RaspberryPi should be done on Linux platform. You need to download raspberry toolchains from https://github.com/raspberrypi/tools to $YOUR-PATH/TO. then, add the following command to ${HOME}/.bashrc to setup RASPBERRY_TOOLCHAIN_HOME environment.
+
+```shell
+export RASPBERRY_TOOLCHAIN_HOME=YOUR-PATH/TO/arm-bcm2708
+```
+
+Then run the command to make effect.
+
+```shell
+source ${HOME}/.bashrc
+```
+
+##### 2. Cross-compilation build
+
+Run the build script with 'armv7l' option to build Carrier NDK for raspberry target.
+
+```shell
+./linux_build.sh armv7l
+```
+
+For more build options, run build script with "help" option.
+
+```shell
+./linux_build.sh armv7l help
 ```
 
 ## Test
