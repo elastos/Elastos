@@ -188,8 +188,8 @@ int dht_new(const char *data_location, bool udp_enabled, DHT *dht)
             //TODO: error number.
             return -1;
         }
+        fclose(fp);
     }
-    fclose(fp);
 
     tox_options_default(&options);
     options.local_discovery_enabled = true;
