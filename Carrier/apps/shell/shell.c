@@ -1865,7 +1865,6 @@ int main(int argc, char *argv[])
     };
 
     signal(SIGINT, signal_handler);
-    signal(SIGKILL, signal_handler);
     signal(SIGHUP, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGSEGV, signal_handler);
