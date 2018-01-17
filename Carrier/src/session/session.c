@@ -262,7 +262,6 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
     rc = ela_get_turn_server(w, &turn_server);
     if (rc < 0) {
         deref(ws);
-        ela_set_error(rc);
         return NULL;
     }
 

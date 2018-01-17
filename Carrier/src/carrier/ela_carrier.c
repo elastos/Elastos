@@ -955,37 +955,6 @@ static void notify_friend_removed(ElaCarrier *w, const char *friendid,
 }
 
 static
-void handle_friend_remove(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
-{
-    FriendInfo *fi;
-    char friendid[ELA_MAX_ID_LEN + 1];
-    ElaConnectionStatus status;
-
-    assert(w);
-    assert(friend_number != UINT32_MAX);
-    assert(cp);
-    assert(elacp_get_type(cp) == ELACP_TYPE_FRIEND_REMOVE);
-
-    dht_friend_delete(&w->dht, friend_number);
-
-    fi = friends_remove(w->friends, friend_number);
-    if (!fi) {
-        vlogE("Carrier: Unknown friend number %lu, friend remove dropped.",
-              friend_number);
-        return;
-    }
-
-    strcpy(friendid, fi->info.user_info.userid);
-    status = fi->info.status;
-
-    vlogD("Carrier: Friend %s removed from friend list.", friendid);
-
-    deref(fi);
-
-    notify_friend_removed(w, friendid, status);
-}
-
-static
 void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 {
     FriendInfo *fi;
@@ -1139,9 +1108,6 @@ void notify_friend_message_cb(uint32_t friend_number, const uint8_t *message,
     switch(elacp_get_type(cp)) {
     case ELACP_TYPE_MESSAGE:
         handle_friend_message(w, friend_number, cp);
-        break;
-    case ELACP_TYPE_FRIEND_REMOVE:
-        handle_friend_remove(w, friend_number, cp);
         break;
     case ELACP_TYPE_INVITE_REQUEST:
         handle_invite_request(w, friend_number, cp);
@@ -1724,22 +1690,19 @@ int ela_accept_friend(ElaCarrier *w, const char *userid)
     return 0;
 }
 
-int ela_remove_friend(ElaCarrier *w, const char *userid)
+int ela_remove_friend(ElaCarrier *w, const char *friendid)
 {
     uint32_t friend_number;
     FriendInfo *fi;
     ElaConnectionStatus status;
-    ElaCP *cp;
     int rc;
-    uint8_t *data;
-    size_t data_len;
 
-    if (!w || !userid) {
+    if (!w || !friendid) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
 
-    if (!is_valid_key(userid)) {
+    if (!is_valid_key(friendid)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -1749,7 +1712,7 @@ int ela_remove_friend(ElaCarrier *w, const char *userid)
         return -1;
     }
 
-    rc = get_friend_number(w, userid, &friend_number);
+    rc = get_friend_number(w, friendid, &friend_number);
     if (rc < 0) {
         ela_set_error(rc);
         return -1;
@@ -1760,24 +1723,7 @@ int ela_remove_friend(ElaCarrier *w, const char *userid)
         return -1;
     }
 
-    cp = elacp_create(ELACP_TYPE_FRIEND_REMOVE, NULL);
-    if (!cp) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return -1;
-    }
-
-    data = elacp_encode(cp, &data_len);
-    elacp_free(cp);
-
-    if (!data) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return -1;
-    }
-
-    dht_friend_message(&w->dht, friend_number, data, data_len);
     dht_friend_delete(&w->dht, friend_number);
-
-    free(data);
 
     fi = friends_remove(w->friends, friend_number);
     assert(fi);
@@ -1786,7 +1732,7 @@ int ela_remove_friend(ElaCarrier *w, const char *userid)
 
     deref(fi);
 
-    notify_friend_removed(w, userid, status);
+    notify_friend_removed(w, friendid, status);
 
     return 0;
 }
@@ -2109,7 +2055,7 @@ redo_get_tcp_relay:
             //BUGBUG: Try to get tcp relay again and again.
             goto redo_get_tcp_relay;
         } else {
-            vlogE("Carrier: Get turn server address and public key error");
+            vlogE("Carrier: Get turn server address and public key error (%d)", rc);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
             return -1;
         }

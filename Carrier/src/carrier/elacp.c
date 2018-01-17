@@ -36,10 +36,6 @@ struct ElaCPFriendReq {
     const char *hello;
 };
 
-struct ElaCPFriendDel {
-    ElaCP header;
-};
-
 struct ElaCPFriendMsg {
     ElaCP headr;
     size_t len;
@@ -66,14 +62,12 @@ struct ElaCPInviteRsp {
 
 #define pktinfo pkt.u.pkt_info
 #define pktfreq pkt.u.pkt_freq
-#define pktfdel pkt.u.pkt_fdel
 #define pktfmsg pkt.u.pkt_fmsg
 #define pktireq pkt.u.pkt_ireq
 #define pktirsp pkt.u.pkt_irsp
 
 #define tblinfo tbl.u.tbl_info
 #define tblfreq tbl.u.tbl_freq
-#define tblfdel tbl.u.tbl_fdel
 #define tblfmsg tbl.u.tbl_fmsg
 #define tblireq tbl.u.tbl_ireq
 #define tblirsp tbl.u.tbl_irsp
@@ -83,7 +77,6 @@ struct elacp_packet_t {
         struct ElaCP          *cp;
         struct ElaCPUserInfo  *pkt_info;
         struct ElaCPFriendReq *pkt_freq;
-        struct ElaCPFriendDel *pkt_fdel;
         struct ElaCPFriendMsg *pkt_fmsg;
         struct ElaCPInviteReq *pkt_ireq;
         struct ElaCPInviteRsp *pkt_irsp;
@@ -94,7 +87,6 @@ struct elacp_table_t {
     union {
         elacp_userinfo_table_t  tbl_info;
         elacp_friendreq_table_t tbl_freq;
-        elacp_frienddel_table_t tbl_fdel;
         elacp_friendmsg_table_t tbl_fmsg;
         elacp_invitereq_table_t tbl_ireq;
         elacp_invitersp_table_t tbl_irsp;
@@ -112,9 +104,6 @@ ElaCP *elacp_create(uint8_t type, const char *ext_name)
         break;
     case ELACP_TYPE_FRIEND_REQUEST:
         len = sizeof(struct ElaCPFriendReq);
-        break;
-    case ELACP_TYPE_FRIEND_REMOVE:
-        len = sizeof(struct ElaCPFriendDel);
         break;
     case ELACP_TYPE_MESSAGE:
         len = sizeof(struct ElaCPFriendMsg);
@@ -733,12 +722,6 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
         ref = elacp_friendreq_end(&builder);
         break;
 
-    case ELACP_TYPE_FRIEND_REMOVE:
-        elacp_frienddel_start(&builder);
-        elacp_frienddel_pad_add(&builder, 0);
-        ref = elacp_frienddel_end(&builder);
-        break;
-
     case ELACP_TYPE_MESSAGE:
         elacp_friendmsg_start(&builder);
         if (cp->ext) {
@@ -798,9 +781,6 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
     case ELACP_TYPE_FRIEND_REQUEST:
         body = elacp_anybody_as_friendreq(ref);
         break;
-    case ELACP_TYPE_FRIEND_REMOVE:
-        body = elacp_anybody_as_frienddel(ref);
-        break;
     case ELACP_TYPE_MESSAGE:
         body = elacp_anybody_as_friendmsg(ref);
         break;
@@ -846,7 +826,6 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
     switch(type) {
     case ELACP_TYPE_USERINFO:
     case ELACP_TYPE_FRIEND_REQUEST:
-    case ELACP_TYPE_FRIEND_REMOVE:
     case ELACP_TYPE_MESSAGE:
     case ELACP_TYPE_INVITE_REQUEST:
     case ELACP_TYPE_INVITE_RESPONSE:
@@ -886,10 +865,6 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
         pktfreq->name  = elacp_friendreq_name(tblfreq);
         pktfreq->descr = elacp_friendreq_descr(tblfreq);
         pktfreq->hello = elacp_friendreq_hello(tblfreq);
-        break;
-
-    case ELACP_TYPE_FRIEND_REMOVE:
-        tblfdel = elacp_packet_body(packet);
         break;
 
     case ELACP_TYPE_MESSAGE:

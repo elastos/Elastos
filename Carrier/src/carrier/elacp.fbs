@@ -16,10 +16,6 @@ table friendreq {
     hello  : string;
 }
 
-table frienddel {
-    pad    : uint8;
-}
-
 table friendmsg {
     ext    : string;
     msg    : [ubyte];
@@ -42,7 +38,6 @@ table invitersp {
 union anybody {
     userinfo,
     friendreq,
-    frienddel,
     friendmsg,
     invitereq,
     invitersp

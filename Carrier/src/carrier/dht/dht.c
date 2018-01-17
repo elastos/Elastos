@@ -610,7 +610,7 @@ int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,
     rc = tox_self_get_random_tcp_relay(tox, ip, public_key);
     if (rc < 0) {
         vlogE("DHT: get random_tcp relay error or no tcp relay connected");
-        return -1;
+        return rc;
     }
 
     in_addr.s_addr = *((uint32_t *)ip);
