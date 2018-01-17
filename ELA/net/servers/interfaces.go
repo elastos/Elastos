@@ -447,6 +447,14 @@ func GetTransactionPool(param map[string]interface{}) map[string]interface{} {
 
 func GetBlockInfo(block *ledger.Block) BlockInfo {
 	hash := block.Hash()
+	auxInfo := &AuxInfo{
+		Version:    block.Blockdata.AuxPow.ParBlockHeader.Version,
+		PrevBlock:  BytesToHexString(new(Uint256).ToArrayReverse()),
+		MerkleRoot: BytesToHexString(block.Blockdata.AuxPow.ParBlockHeader.MerkleRoot.ToArrayReverse()),
+		Timestamp:  block.Blockdata.AuxPow.ParBlockHeader.Timestamp,
+		Bits:       0,
+		Nonce:      block.Blockdata.AuxPow.ParBlockHeader.Nonce,
+	}
 	blockHead := &BlockHead{
 		Version:          block.Blockdata.Version,
 		PrevBlockHash:    BytesToHexString(block.Blockdata.PrevBlockHash.ToArrayReverse()),
@@ -455,6 +463,7 @@ func GetBlockInfo(block *ledger.Block) BlockInfo {
 		Timestamp:        block.Blockdata.Timestamp,
 		Height:           block.Blockdata.Height,
 		Nonce:            block.Blockdata.Nonce,
+		AuxPow:           auxInfo,
 
 		Hash: BytesToHexString(hash.ToArrayReverse()),
 	}
