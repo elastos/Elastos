@@ -78,6 +78,15 @@ type Transactions struct {
 	Hash              string
 }
 
+type AuxInfo struct {
+	Version    int32
+	PrevBlock  string
+	MerkleRoot string
+	Timestamp  uint32
+	Bits       uint32
+	Nonce      uint32
+}
+
 type BlockHead struct {
 	Version          uint32
 	PrevBlockHash    string
@@ -86,8 +95,7 @@ type BlockHead struct {
 	Bits             uint32
 	Height           uint32
 	Nonce            uint32
-	//AuxPow           AuxPowInfo
-
+	AuxPow           *AuxInfo
 	Hash string
 }
 
