@@ -12,6 +12,9 @@ getConfigureCmd() {
         "Linux","x86_64"| "Raspbian","armv7l")
             _TOOL="./configure --enable-epoll=yes"
             ;;
+        "Linux",*)
+            _TOOL="./configure --enable-epoll=yes --host=$3"
+            ;;
         "Android",*)
             _TOOL="./configure --host=$3 --enable-epoll=yes --disable-rt"
             ;;
