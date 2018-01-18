@@ -19,7 +19,7 @@ $ curl -L -o /tmp/flatcc-0.5.0.tar.gz https://github.com/dvidelabs/flatcc/archiv
 $ cd /tmp && tar xzvf flatcc-0.5.0.tar.gz
 $ mkdir -p /tmp/flatcc-0.5.0/build/install
 $ cd /tmp/flatcc-0.5.0/build/install && cmake ../.. -DFLATCC_INSTALL=on
-$ cd /tmp/flatcc-0.5.0/build/install && make install
+$ cd /tmp/flatcc-0.5.0/build/install && sudo make install
 ```
 
 #### 2. Build
