@@ -1,4 +1,4 @@
-create libcarrier.a
+create libcarrier-native.a
 addlib libsodium.a
 addlib libtoxcore.a
 addlib libflatcc.a

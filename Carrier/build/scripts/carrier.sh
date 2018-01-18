@@ -30,7 +30,7 @@ packDevDist() {
             done
             ;;
         "Android")
-            FILES="${FILES} $(ls lib/libelacarrier.a)"
+            FILES="${FILES} $(ls lib/libcarrier-native.a)"
             ;;
         "Darwin")
             for lib in common carrier session; do
