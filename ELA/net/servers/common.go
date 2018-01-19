@@ -96,6 +96,8 @@ type BlockHead struct {
 	Height           uint32
 	Nonce            uint32
 	AuxPow           *AuxInfo
+	Difficulty       string
+	BlockSize        int
 	Hash string
 }
 
