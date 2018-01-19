@@ -464,6 +464,8 @@ func GetBlockInfo(block *ledger.Block) BlockInfo {
 		Height:           block.Blockdata.Height,
 		Nonce:            block.Blockdata.Nonce,
 		AuxPow:           auxInfo,
+		Difficulty:       ledger.CalcCurrentDifficulty(block.Blockdata.Bits),
+		BlockSize:        block.GetSize(),
 
 		Hash: BytesToHexString(hash.ToArrayReverse()),
 	}
