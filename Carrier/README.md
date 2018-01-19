@@ -214,8 +214,8 @@ will cause the build process failed.
 $ sudo apt-get update
 $ sudo apt-get install doxygen python-sphinx graphviz
 $ curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
-$ python /tmp/get-pip.py
-$ pip install breathe
+$ sudo python /tmp/get-pip.py
+$ sudo pip install breathe
 ```
 
 #### 2. Build
