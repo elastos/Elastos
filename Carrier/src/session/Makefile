@@ -10,7 +10,7 @@ INSTALL_LIBRARY_PATH = $(DESTDIR)$(PREFIX)/$(LIBRARY_PATH)
 
 INSTALL ?= cp -a
 
-CFLAGS := $(CFLAGS) -I. -I../common -I$(INSTALL_INCLUDE_PATH) -DCARRIER_BUILD -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
+CFLAGS := $(CFLAGS) -I. -I../common -I../carrier -I$(INSTALL_INCLUDE_PATH) -DCARRIER_BUILD -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
 LIBS   := -lelacommon -lelacarrier -lpjmedia -lpjnath -lpjlib-util -lpj -lm
 
 ifeq ($(HOST), Android)

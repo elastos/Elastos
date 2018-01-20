@@ -11,6 +11,7 @@
 #include <vlog.h>
 
 #include "ela_session.h"
+#include "ela_turnserver.h"
 #include "portforwarding.h"
 #include "services.h"
 #include "session.h"

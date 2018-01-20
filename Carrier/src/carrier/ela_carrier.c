@@ -17,6 +17,7 @@
 
 #include "ela_carrier.h"
 #include "ela_carrier_impl.h"
+#include "ela_turnserver.h"
 #include "friends.h"
 #include "tcallbacks.h"
 #include "thistory.h"

@@ -46,16 +46,6 @@ typedef struct IceTransportOptions {
     const char *turn_realm;
 } IceTransportOptions;
 
-typedef struct ElaTurnServer {
-    char server[64];
-    uint16_t port;
-    char username[64];
-    char password[64];
-    char realm[128];
-} ElaTurnServer;
-
-int ela_get_turn_server(ElaCarrier *carrier, ElaTurnServer *turn_server);
-
 typedef void (*friend_invite_callback)(ElaCarrier *, const char *from,
                       const char *data, size_t len, void *context);
 
