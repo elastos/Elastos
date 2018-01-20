@@ -36,6 +36,7 @@ typedef struct IceWorker {
     int                 turn_port;
     pj_str_t            turn_username;
     pj_str_t            turn_password;
+    pj_str_t            turn_realm;
     pj_bool_t           turn_fingerprint;
 
     pj_caching_pool     cp;

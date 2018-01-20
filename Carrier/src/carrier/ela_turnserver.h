@@ -3,7 +3,7 @@
 
 #define ELA_MAX_TURN_SERVER_LEN         63
 
-#define ELA_MAX_TURN_USERNAME_LEN       63
+#define ELA_MAX_TURN_USERNAME_LEN       127
 
 #define ELA_MAX_TURN_PASSWORD_LEN       63
 

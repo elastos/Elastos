@@ -258,6 +258,9 @@ int ice_worker_init(IceWorker *worker, IceTransportOptions *opts)
     if (opts->turn_password)
         pj_strdup2_with_null(worker->pool, &worker->turn_password, opts->turn_password);
 
+    if (opts->turn_realm)
+        pj_strdup2_with_null(worker->pool, &worker->turn_realm, opts->turn_realm);
+
     /* Create timer heap for timer stuff */
     status = pj_timer_heap_create(worker->pool, 100, &worker->cfg.stun_cfg.timer_heap);
     if (status != PJ_SUCCESS) {
@@ -287,31 +290,34 @@ int ice_worker_init(IceWorker *worker, IceTransportOptions *opts)
 
     /* Configure STUN/srflx & TURN candidate resolution */
     if (worker->stun_server.slen) {
-        worker->cfg.stun.server = worker->stun_server;
-        worker->cfg.stun.port = worker->stun_port;
+        worker->cfg.stun_tp_cnt = 1;
+        pj_ice_strans_stun_cfg_default(&worker->cfg.stun_tp[0]);
+        worker->cfg.stun_tp[0].af = pj_AF_INET();
+        worker->cfg.stun_tp[0].server = worker->stun_server;
+        worker->cfg.stun_tp[0].port = worker->stun_port;
     }
 
     if (worker->turn_server.slen) {
-        worker->cfg.turn.server = worker->turn_server;
-        worker->cfg.turn.port = worker->turn_port;
+        worker->cfg.turn_tp_cnt = 1;
+        pj_ice_strans_turn_cfg_default(&worker->cfg.turn_tp[0]);
+        worker->cfg.turn_tp[0].af = pj_AF_INET();
+        worker->cfg.turn_tp[0].server = worker->turn_server;
+        worker->cfg.turn_tp[0].port = worker->turn_port;
 
         /* For this demo app, configure longer STUN keep-alive time
          * so that it does't clutter the screen output.
          */
-        worker->cfg.stun.cfg.ka_interval = KA_INTERVAL;
-        worker->cfg.stun.cfg.ka_interval = KA_INTERVAL;
-        worker->cfg.turn.alloc_param.ka_interval = KA_INTERVAL;
+        worker->cfg.stun_tp[0].cfg.ka_interval = KA_INTERVAL;
+        worker->cfg.stun_tp[0].cfg.ka_interval = KA_INTERVAL;
+        worker->cfg.turn_tp[0].alloc_param.ka_interval = KA_INTERVAL;
 
-        worker->cfg.turn.auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
-        if (opts->turn_realm && *opts->turn_realm)
-            pj_strdup2_with_null(worker->pool,
-                                 &worker->cfg.turn.auth_cred.data.static_cred.realm,
-                                 opts->turn_realm);
-        worker->cfg.turn.auth_cred.data.static_cred.username = worker->turn_username;
-        worker->cfg.turn.auth_cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
-        worker->cfg.turn.auth_cred.data.static_cred.data = worker->turn_password;
+        worker->cfg.turn_tp[0].auth_cred.type = PJ_STUN_AUTH_CRED_STATIC;
+        worker->cfg.turn_tp[0].auth_cred.data.static_cred.realm = worker->turn_realm;
+        worker->cfg.turn_tp[0].auth_cred.data.static_cred.username = worker->turn_username;
+        worker->cfg.turn_tp[0].auth_cred.data.static_cred.data_type = PJ_STUN_PASSWD_PLAIN;
+        worker->cfg.turn_tp[0].auth_cred.data.static_cred.data = worker->turn_password;
 
-        worker->cfg.turn.conn_type = PJ_TURN_TP_UDP;
+        worker->cfg.turn_tp[0].conn_type = PJ_TURN_TP_UDP;
     }
 
     // The read_key and write_key are used for reporting state changed.

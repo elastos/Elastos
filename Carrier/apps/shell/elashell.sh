@@ -3,13 +3,6 @@
 HOST="$(uname -s)"
 ARCH="$(uname -m)"
 
-if [ $# != 0 ]; then
-    echo "Error: Invalid command syntax."
-    echo "Usage: elashell.sh"
-    echo ""
-    exit 1
-fi
-
 BUILD=debug
 
 case "${HOST}" in
