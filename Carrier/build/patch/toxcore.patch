@@ -1,6 +1,6 @@
 diff -ru c-toxcore-0.1.10/toxcore/DHT.c c-toxcore-0.1.10.patch/toxcore/DHT.c
 --- c-toxcore-0.1.10/toxcore/DHT.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/DHT.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/DHT.c	2018-01-20 11:52:01.000000000 +0800
 @@ -1211,7 +1211,7 @@
      }
  
@@ -63,7 +63,7 @@ diff -ru c-toxcore-0.1.10/toxcore/DHT.c c-toxcore-0.1.10.patch/toxcore/DHT.c
      memcpy(data + 1, queried_client_id, CRYPTO_PUBLIC_KEY_SIZE);
 diff -ru c-toxcore-0.1.10/toxcore/LAN_discovery.c c-toxcore-0.1.10.patch/toxcore/LAN_discovery.c
 --- c-toxcore-0.1.10/toxcore/LAN_discovery.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/LAN_discovery.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/LAN_discovery.c	2018-01-20 11:52:01.000000000 +0800
 @@ -364,7 +364,7 @@
  
  int send_LANdiscovery(uint16_t port, DHT *dht)
@@ -75,7 +75,7 @@ diff -ru c-toxcore-0.1.10/toxcore/LAN_discovery.c c-toxcore-0.1.10.patch/toxcore
  
 diff -ru c-toxcore-0.1.10/toxcore/Messenger.c c-toxcore-0.1.10.patch/toxcore/Messenger.c
 --- c-toxcore-0.1.10/toxcore/Messenger.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/Messenger.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/Messenger.c	2018-01-20 11:52:01.000000000 +0800
 @@ -3154,3 +3154,14 @@
  
      return ret;
@@ -93,7 +93,7 @@ diff -ru c-toxcore-0.1.10/toxcore/Messenger.c c-toxcore-0.1.10.patch/toxcore/Mes
 +
 diff -ru c-toxcore-0.1.10/toxcore/Messenger.h c-toxcore-0.1.10.patch/toxcore/Messenger.h
 --- c-toxcore-0.1.10/toxcore/Messenger.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/Messenger.h	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/Messenger.h	2018-01-20 11:52:01.000000000 +0800
 @@ -774,4 +774,8 @@
   * of out_list will be truncated to list_size. */
  uint32_t copy_friendlist(const Messenger *m, uint32_t *out_list, uint32_t list_size);
@@ -105,7 +105,7 @@ diff -ru c-toxcore-0.1.10/toxcore/Messenger.h c-toxcore-0.1.10.patch/toxcore/Mes
  #endif
 diff -ru c-toxcore-0.1.10/toxcore/TCP_client.c c-toxcore-0.1.10.patch/toxcore/TCP_client.c
 --- c-toxcore-0.1.10/toxcore/TCP_client.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/TCP_client.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/TCP_client.c	2018-01-20 11:52:01.000000000 +0800
 @@ -27,6 +27,10 @@
  
  #include "TCP_client.h"
@@ -176,7 +176,7 @@ diff -ru c-toxcore-0.1.10/toxcore/TCP_client.c c-toxcore-0.1.10.patch/toxcore/TC
  }
 diff -ru c-toxcore-0.1.10/toxcore/TCP_connection.c c-toxcore-0.1.10.patch/toxcore/TCP_connection.c
 --- c-toxcore-0.1.10/toxcore/TCP_connection.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/TCP_connection.c	2018-01-16 21:48:16.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/TCP_connection.c	2018-01-20 11:52:01.000000000 +0800
 @@ -1489,3 +1489,58 @@
      free(tcp_c->connections);
      free(tcp_c);
@@ -238,7 +238,7 @@ diff -ru c-toxcore-0.1.10/toxcore/TCP_connection.c c-toxcore-0.1.10.patch/toxcor
 +
 diff -ru c-toxcore-0.1.10/toxcore/TCP_connection.h c-toxcore-0.1.10.patch/toxcore/TCP_connection.h
 --- c-toxcore-0.1.10/toxcore/TCP_connection.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/TCP_connection.h	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/TCP_connection.h	2018-01-20 11:52:01.000000000 +0800
 @@ -219,5 +219,9 @@
  void do_tcp_connections(TCP_Connections *tcp_c, void *userdata);
  void kill_tcp_connections(TCP_Connections *tcp_c);
@@ -251,7 +251,7 @@ diff -ru c-toxcore-0.1.10/toxcore/TCP_connection.h c-toxcore-0.1.10.patch/toxcor
  
 diff -ru c-toxcore-0.1.10/toxcore/TCP_server.c c-toxcore-0.1.10.patch/toxcore/TCP_server.c
 --- c-toxcore-0.1.10/toxcore/TCP_server.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/TCP_server.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/TCP_server.c	2018-01-20 11:52:01.000000000 +0800
 @@ -27,6 +27,10 @@
  
  #include "TCP_server.h"
@@ -345,7 +345,7 @@ diff -ru c-toxcore-0.1.10/toxcore/TCP_server.c c-toxcore-0.1.10.patch/toxcore/TC
  }
 diff -ru c-toxcore-0.1.10/toxcore/net_crypto.c c-toxcore-0.1.10.patch/toxcore/net_crypto.c
 --- c-toxcore-0.1.10/toxcore/net_crypto.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/net_crypto.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/net_crypto.c	2018-01-20 11:52:01.000000000 +0800
 @@ -216,13 +216,13 @@
          return 1;
      }
@@ -426,7 +426,7 @@ diff -ru c-toxcore-0.1.10/toxcore/net_crypto.c c-toxcore-0.1.10.patch/toxcore/ne
 +
 diff -ru c-toxcore-0.1.10/toxcore/net_crypto.h c-toxcore-0.1.10.patch/toxcore/net_crypto.h
 --- c-toxcore-0.1.10/toxcore/net_crypto.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/net_crypto.h	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/net_crypto.h	2018-01-20 11:52:01.000000000 +0800
 @@ -423,6 +423,8 @@
  
  void kill_net_crypto(Net_Crypto *c);
@@ -439,8 +439,8 @@ diff -ru c-toxcore-0.1.10/toxcore/net_crypto.h c-toxcore-0.1.10.patch/toxcore/ne
  #endif
 diff -ru c-toxcore-0.1.10/toxcore/network.c c-toxcore-0.1.10.patch/toxcore/network.c
 --- c-toxcore-0.1.10/toxcore/network.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/network.c	2018-01-16 21:41:36.000000000 +0800
-@@ -419,7 +419,8 @@
++++ c-toxcore-0.1.10.patch/toxcore/network.c	2018-01-20 11:53:09.000000000 +0800
+@@ -419,11 +419,12 @@
          return -1;
      }
  
@@ -450,6 +450,11 @@ diff -ru c-toxcore-0.1.10/toxcore/network.c c-toxcore-0.1.10.patch/toxcore/netwo
  
      loglogdata(net->log, "O=>", data, length, ip_port, res);
  
+-    return res;
++    return res > 0 ? (res - ela_magic_size()) : res;
+ }
+
+ /* Function to receive data
 @@ -441,7 +442,7 @@
      socklen_t addrlen = sizeof(addr);
  #endif
@@ -591,7 +596,7 @@ diff -ru c-toxcore-0.1.10/toxcore/network.c c-toxcore-0.1.10.patch/toxcore/netwo
      }
 diff -ru c-toxcore-0.1.10/toxcore/network.h c-toxcore-0.1.10.patch/toxcore/network.h
 --- c-toxcore-0.1.10/toxcore/network.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/network.h	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/network.h	2018-01-20 11:52:01.000000000 +0800
 @@ -39,6 +39,80 @@
  #include <string.h>
  #include <time.h>
@@ -675,7 +680,7 @@ diff -ru c-toxcore-0.1.10/toxcore/network.h c-toxcore-0.1.10.patch/toxcore/netwo
  //Windows XP
 diff -ru c-toxcore-0.1.10/toxcore/onion.c c-toxcore-0.1.10.patch/toxcore/onion.c
 --- c-toxcore-0.1.10/toxcore/onion.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/onion.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/onion.c	2018-01-20 11:52:01.000000000 +0800
 @@ -287,8 +287,8 @@
   */
  int send_onion_packet(Networking_Core *net, const Onion_Path *path, IP_Port dest, const uint8_t *data, uint16_t length)
@@ -749,7 +754,7 @@ diff -ru c-toxcore-0.1.10/toxcore/onion.c c-toxcore-0.1.10.patch/toxcore/onion.c
      memcpy(data + 1 + RETURN_1, packet + 1 + RETURN_2, length - (1 + RETURN_2));
 diff -ru c-toxcore-0.1.10/toxcore/onion_announce.c c-toxcore-0.1.10.patch/toxcore/onion_announce.c
 --- c-toxcore-0.1.10/toxcore/onion_announce.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/onion_announce.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/onion_announce.c	2018-01-20 11:52:01.000000000 +0800
 @@ -149,8 +149,8 @@
          return -1;
      }
@@ -774,7 +779,7 @@ diff -ru c-toxcore-0.1.10/toxcore/onion_announce.c c-toxcore-0.1.10.patch/toxcor
          return -1;
 diff -ru c-toxcore-0.1.10/toxcore/onion_client.c c-toxcore-0.1.10.patch/toxcore/onion_client.c
 --- c-toxcore-0.1.10/toxcore/onion_client.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/onion_client.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/onion_client.c	2018-01-20 11:52:01.000000000 +0800
 @@ -346,8 +346,8 @@
                                       const uint8_t *data, uint16_t length)
  {
@@ -797,7 +802,7 @@ diff -ru c-toxcore-0.1.10/toxcore/onion_client.c c-toxcore-0.1.10.patch/toxcore/
  
 diff -ru c-toxcore-0.1.10/toxcore/ping.c c-toxcore-0.1.10.patch/toxcore/ping.c
 --- c-toxcore-0.1.10/toxcore/ping.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/ping.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/ping.c	2018-01-20 11:52:01.000000000 +0800
 @@ -60,7 +60,7 @@
  
  int send_ping_request(PING *ping, IP_Port ipp, const uint8_t *public_key)
@@ -834,7 +839,7 @@ diff -ru c-toxcore-0.1.10/toxcore/ping.c c-toxcore-0.1.10.patch/toxcore/ping.c
  static int handle_ping_request(void *object, IP_Port source, const uint8_t *packet, uint16_t length, void *userdata)
 diff -ru c-toxcore-0.1.10/toxcore/tox.c c-toxcore-0.1.10.patch/toxcore/tox.c
 --- c-toxcore-0.1.10/toxcore/tox.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/tox.c	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/tox.c	2018-01-20 11:52:01.000000000 +0800
 @@ -1549,3 +1549,23 @@
      SET_ERROR_PARAMETER(error, TOX_ERR_GET_PORT_NOT_BOUND);
      return 0;
@@ -861,7 +866,7 @@ diff -ru c-toxcore-0.1.10/toxcore/tox.c c-toxcore-0.1.10.patch/toxcore/tox.c
 +
 diff -ru c-toxcore-0.1.10/toxcore/tox.h c-toxcore-0.1.10.patch/toxcore/tox.h
 --- c-toxcore-0.1.10/toxcore/tox.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10.patch/toxcore/tox.h	2018-01-16 21:41:36.000000000 +0800
++++ c-toxcore-0.1.10.patch/toxcore/tox.h	2018-01-20 11:52:01.000000000 +0800
 @@ -2940,6 +2940,18 @@
   */
  uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
