@@ -193,7 +193,7 @@ func GenesisBlockInit() (*Block, error) {
 		Programs:   []*program.Program{},
 	}
 
-	foundationProgramHash, err := ToScriptHash(FoundationAddress)
+	foundationProgramHash, err := Uint68FromAddress(FoundationAddress)
 	if err != nil {
 		return nil, err
 	}

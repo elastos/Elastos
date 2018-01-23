@@ -11,7 +11,6 @@ import (
 	"Elastos.ELA/core/asset"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"
-	"Elastos.ELA/core/validation"
 	. "Elastos.ELA/errors"
 )
 
@@ -63,9 +62,9 @@ func CheckTransactionSanity(txn *tx.Transaction) ErrCode {
 		return ErrTransactionBalance
 	}
 
-	if err := CheckTransactionContracts(txn); err != nil {
+	if err := CheckTransactionSignature(txn); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
-		return ErrTransactionContracts
+		return ErrTransactionSignature
 	}
 
 	return Success
@@ -266,13 +265,13 @@ func CheckTransactionBalance(Tx *tx.Transaction) error {
 	return nil
 }
 
-func CheckAttributeProgram(Tx *tx.Transaction) error {
+func CheckAttributeProgram(txn *tx.Transaction) error {
 	//TODO: implement CheckAttributeProgram
 	return nil
 }
 
-func CheckTransactionContracts(Tx *tx.Transaction) error {
-	flag, err := validation.VerifySignableData(Tx)
+func CheckTransactionSignature(txn *tx.Transaction) error {
+	flag, err := tx.VerifySignature(txn)
 	if flag && err == nil {
 		return nil
 	} else {
