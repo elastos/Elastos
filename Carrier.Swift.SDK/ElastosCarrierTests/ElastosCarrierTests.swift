@@ -1,10 +1,3 @@
-//
-//  ElastosCarrierTests.swift
-//  ElastosCarrierTests
-//
-//  Created by tang zhilong on 8/1/2018.
-//  Copyright © 2018 org.elastos. All rights reserved.
-//
 
 import XCTest
 @testable import ElastosCarrier

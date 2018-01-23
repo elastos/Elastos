@@ -8,7 +8,7 @@ import Foundation
  * to connect with. The bootstrap nodes help Carrier nodes be connected to
  * the others with more higher possibilities.
  */
-internal struct CBootstrap {
+internal struct CBootstrapNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -30,11 +30,11 @@ internal struct CBootstrap {
 
     /**
      * \~English
-     * The unique public address to provide for Carrier nodes, terminated
+     * The unique public key to provide for Carrier nodes, terminated
      * by null-string.
-     * The length of public address is 64 bytes.
+     * The length of public key is 64 bytes.
      */
-    var address: UnsafePointer<Int8>?
+    var public_key: UnsafePointer<Int8>?
 
     init() {}
 }
@@ -74,13 +74,13 @@ internal struct COptions {
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
-    var bootstraps_size: Int32 = 0
+    var bootstraps_size: Int = 0
 
     /**
      * \~English
      * The array of bootstrap nodes.
      */
-    var bootstraps: UnsafePointer<CBootstrap>?
+    var bootstraps: UnsafePointer<[CBootstrapNode]>?
 
     init() {}
 }

@@ -64,7 +64,6 @@ internal var CCandidateType_ServerReflexive: CCandidateType { get { return CCand
 internal var CCandidateType_PeerReflexive: CCandidateType { get { return CCandidateType(2) } }
 internal var CCandidateType_Relayed: CCandidateType { get { return CCandidateType(3) } }
 
-
 internal struct CNetworkTopology : RawRepresentable, Equatable {
 
     init(_ rawValue: UInt32) {
@@ -80,8 +79,6 @@ internal struct CNetworkTopology : RawRepresentable, Equatable {
 internal var CNetworkTopology_LAN: CNetworkTopology { get { return CNetworkTopology(0) } }
 internal var CNetworkTopology_P2P: CNetworkTopology { get { return CNetworkTopology(1) } }
 internal var CNetworkTopology_RELAYED: CNetworkTopology { get { return CNetworkTopology(2) } }
-internal var CNetWorkTopology_CS: CNetworkTopology { get { return CNetworkTopology(3) } }
-
 
 internal struct CAddressInfo {
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A360378020161AAF001A666E /* BootstrapNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360377F20161AAF001A666E /* BootstrapNode.swift */; };
 		A3B497C12003736300420421 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B497B72003736200420421 /* ElastosCarrier.framework */; };
 		A3B497C62003736300420421 /* ElastosCarrierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497C52003736300420421 /* ElastosCarrierTests.swift */; };
 		A3B497C82003736300420421 /* ElastosCarrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497BA2003736300420421 /* ElastosCarrier.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -62,6 +63,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A360377F20161AAF001A666E /* BootstrapNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootstrapNode.swift; path = Carrier/BootstrapNode.swift; sourceTree = "<group>"; };
 		A3B497B72003736200420421 /* ElastosCarrier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3B497BA2003736300420421 /* ElastosCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrier.h; sourceTree = "<group>"; };
 		A3B497BB2003736300420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -96,10 +98,6 @@
 		A3B498072003B3A400420421 /* NetworkTopology.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkTopology.swift; path = Session/NetworkTopology.swift; sourceTree = "<group>"; };
 		A3B498162003B3AE00420421 /* CarrierError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CarrierError.swift; path = Exceptions/CarrierError.swift; sourceTree = "<group>"; };
 		A3B4981820045F0A00420421 /* PresenceStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PresenceStatus.swift; path = Carrier/PresenceStatus.swift; sourceTree = "<group>"; };
-		A3B498232005B0DF00420421 /* ElastosCarrier_macOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrier_macOS.h; sourceTree = "<group>"; };
-		A3B498242005B0DF00420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A3B4982E2005B0DF00420421 /* ElastosCarrier_macOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElastosCarrier_macOSTests.swift; sourceTree = "<group>"; };
-		A3B498302005B0DF00420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A3B498392005BE7600420421 /* libelasession.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelasession.a; path = NativeDistributions/libs/libelasession.a; sourceTree = "<group>"; };
 		A3B4983A2005BE7600420421 /* libelacommon.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libelacommon.a; path = NativeDistributions/libs/libelacommon.a; sourceTree = "<group>"; };
 		A3B4983B2005BE7600420421 /* libpjlib-util.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libpjlib-util.a"; path = "NativeDistributions/libs/libpjlib-util.a"; sourceTree = "<group>"; };
@@ -120,6 +118,7 @@
 			files = (
 				A3B498442005BE7600420421 /* libelasession.a in Frameworks */,
 				A3B498452005BE7600420421 /* libelacommon.a in Frameworks */,
+				A3B4984E2005BE7600420421 /* libelacarrier.a in Frameworks */,
 				A3B498462005BE7600420421 /* libpjlib-util.a in Frameworks */,
 				A3B498472005BE7600420421 /* libsodium.a in Frameworks */,
 				A3B498482005BE7600420421 /* libpj.a in Frameworks */,
@@ -128,7 +127,6 @@
 				A3B4984B2005BE7600420421 /* libflatcc.a in Frameworks */,
 				A3B4984C2005BE7600420421 /* libpjnath.a in Frameworks */,
 				A3B4984D2005BE7600420421 /* libtoxcore.a in Frameworks */,
-				A3B4984E2005BE7600420421 /* libelacarrier.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,8 +147,6 @@
 				A3B497D22003755700420421 /* NativeDistributions */,
 				A3B497B92003736300420421 /* ElastosCarrier */,
 				A3B497C42003736300420421 /* ElastosCarrierTests */,
-				A3B498222005B0DF00420421 /* ElastosCarrier macOS */,
-				A3B4982D2005B0DF00420421 /* ElastosCarrier macOSTests */,
 				A3B497B82003736200420421 /* Products */,
 				A3B498382005BE7500420421 /* Frameworks */,
 			);
@@ -217,6 +213,7 @@
 		A3B497DA200375EE00420421 /* Carrier */ = {
 			isa = PBXGroup;
 			children = (
+				A360377F20161AAF001A666E /* BootstrapNode.swift */,
 				A3B4981820045F0A00420421 /* PresenceStatus.swift */,
 				A3B497E22003763500420421 /* Callbacks.swift */,
 				A3B497E32003763500420421 /* ConnectionStatus.swift */,
@@ -264,24 +261,6 @@
 				A3B498162003B3AE00420421 /* CarrierError.swift */,
 			);
 			name = Exceptions;
-			sourceTree = "<group>";
-		};
-		A3B498222005B0DF00420421 /* ElastosCarrier macOS */ = {
-			isa = PBXGroup;
-			children = (
-				A3B498232005B0DF00420421 /* ElastosCarrier_macOS.h */,
-				A3B498242005B0DF00420421 /* Info.plist */,
-			);
-			path = "ElastosCarrier macOS";
-			sourceTree = "<group>";
-		};
-		A3B4982D2005B0DF00420421 /* ElastosCarrier macOSTests */ = {
-			isa = PBXGroup;
-			children = (
-				A3B4982E2005B0DF00420421 /* ElastosCarrier_macOSTests.swift */,
-				A3B498302005B0DF00420421 /* Info.plist */,
-			);
-			path = "ElastosCarrier macOSTests";
 			sourceTree = "<group>";
 		};
 		A3B498382005BE7500420421 /* Frameworks */ = {
@@ -428,6 +407,7 @@
 				A3B498112003B3A500420421 /* StreamState.swift in Sources */,
 				A3B498122003B3A500420421 /* Session.swift in Sources */,
 				A3B497E82003763600420421 /* LogLevel.swift in Sources */,
+				A360378020161AAF001A666E /* BootstrapNode.swift in Sources */,
 				A3B497F52003779300420421 /* CCarrier.swift in Sources */,
 				A3B498142003B3A500420421 /* NetworkTopology.swift in Sources */,
 				A3B497F02003763600420421 /* CarrierDelegate.swift in Sources */,

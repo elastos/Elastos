@@ -9,8 +9,7 @@ public class CarrierOptions: NSObject {
     private var _persistentLocation: String?
     private var _udpEnabled: Bool = true
 
-    private var _bootstrapSize: Int = 0
-    //TODO: private var _bootstraps: BootstrapNode?
+    private var _bootstrapNodes: [BootstrapNode]?
 
     /**
         The application defined persistent data location.
@@ -39,18 +38,31 @@ public class CarrierOptions: NSObject {
         }
     }
 
-    //TODO
+    public var bootstrapNodes: [BootstrapNode]? {
+        set {
+            _bootstrapNodes = newValue
+        }
+        get {
+            return _bootstrapNodes
+        }
+    }
 }
 
 internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COptions {
     var cOptions = COptions()
+    var cNodes: UnsafeMutablePointer<[CBootstrapNode]>?
 
     cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
-    //TODO:
+    cOptions.udp_enabled = options.udpEnabled
+    (cNodes, cOptions.bootstraps_size) = convertBootstrapNodesToCBootstrapNodes(options.bootstrapNodes!)
+
+    cOptions.bootstraps = UnsafePointer<[CBootstrapNode]>(cNodes)
 
     return cOptions
 }
 
 internal func cleanupCOptions(_ cOptions : COptions) {
     deallocCString(cOptions.persistent_location)
+    cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
+    UnsafeMutablePointer<[CBootstrapNode]>(mutating: cOptions.bootstraps)?.deallocate(capacity: cOptions.bootstraps_size)
 }
