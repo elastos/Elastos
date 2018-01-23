@@ -11,14 +11,8 @@ import:
   - leveldb/iterator
   - leveldb/opt
 - package: github.com/itchyny/base58-go
-- package: github.com/urfave/cli
-- package: github.com/bitly/go-simplejson
-- package: github.com/whyrusleeping/tar-utils
-- package: github.com/dnaproject/gopass
 - package: github.com/gorilla/websocket
 - package: github.com/pborman/uuid
-- package: github.com/mitchellh/go-homedir
 - package: github.com/pebbe/zmq4
-- package: github.com/yuin/gopher-lua
 ignore:
   - golang.org/x/sys/unix
