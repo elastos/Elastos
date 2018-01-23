@@ -568,7 +568,7 @@ ElaCarrier *ela_new(const ElaOptions *opts,
     w->pref.data_location = strdup(opts->persistent_location);
     w->pref.bootstraps_size = opts->bootstraps_size;
 
-    w->pref.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode)
+    w->pref.bootstraps = (BootstrapNodeBuf *)calloc(1, sizeof(BootstrapNodeBuf)
                          * opts->bootstraps_size);
     if (!w->pref.bootstraps) {
         deref(w);
@@ -577,13 +577,36 @@ ElaCarrier *ela_new(const ElaOptions *opts,
     }
 
     for (i = 0; i < opts->bootstraps_size; i++) {
-        Bootstrap *b = &opts->bootstraps[i];
-        BootstrapNode *bi = &w->pref.bootstraps[i];
+        BootstrapNode *b = &opts->bootstraps[i];
+        BootstrapNodeBuf *bi = &w->pref.bootstraps[i];
         char *endptr = NULL;
         ssize_t len;
 
-        bi->ipv4 = b->ipv4 ? strdup(b->ipv4) : NULL;
-        bi->ipv6 = b->ipv6 ? strdup(b->ipv6) : NULL;
+        if (b->ipv4 && strlen(b->ipv4) > MAX_IPV4_ADDRESS_LEN) {
+            vlogE("Carrier: Bootstrap ipv4 address (%s) too long", b->ipv4);
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+
+        if (b->ipv6 && strlen(b->ipv6) > MAX_IPV6_ADDRESS_LEN) {
+            vlogE("Carrier: Bootstrap ipv4 address (%s) too long", b->ipv6);
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+
+        if (!b->ipv4 && !b->ipv6) {
+            vlogE("Carrier: Bootstrap ipv4 and ipv6 address both empty");
+            deref(w);
+            ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+            return NULL;
+        }
+
+        if (b->ipv4)
+            strcpy(bi->ipv4, b->ipv4);
+        if (b->ipv6)
+            strcpy(bi->ipv6, b->ipv6);
 
         bi->port = (int)strtol(b->port, &endptr, 10);
         if (*endptr) {
@@ -593,10 +616,10 @@ ElaCarrier *ela_new(const ElaOptions *opts,
             return NULL;
         }
 
-        len = base58_decode(b->address, strlen(b->address), bi->public_key,
+        len = base58_decode(b->public_key, strlen(b->public_key), bi->public_key,
                             sizeof(bi->public_key));
         if (len != DHT_PUBLIC_KEY_SIZE) {
-            vlogE("Carrier: Invalid bootstrap address (%s)", b->address);
+            vlogE("Carrier: Invalid bootstrap public key (%s)", b->public_key);
             deref(w);
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
             return NULL;
@@ -1130,7 +1153,7 @@ static void connect_to_bootstraps(ElaCarrier *w)
     int i;
 
     for (i = 0; i < w->pref.bootstraps_size; i++) {
-        BootstrapNode *bi = &w->pref.bootstraps[i];
+        BootstrapNodeBuf *bi = &w->pref.bootstraps[i];
         char id[ELA_MAX_ID_LEN + 1] = {0};
         size_t id_len = sizeof(id);
         int rc;
@@ -1139,13 +1162,13 @@ static void connect_to_bootstraps(ElaCarrier *w)
         rc = dht_bootstrap(&w->dht, bi->ipv4, bi->ipv6, bi->port, bi->public_key);
         if (rc < 0) {
             vlogW("Carrier: Try to connect to bootstrap "
-                  "[ipv4:%s, ipv6:%s, port:%d, address:%s] error.",
-                  bi->ipv4 ? bi->ipv4 : "N/A", bi->ipv6 ? bi->ipv6 : "N/A",
+                  "[ipv4:%s, ipv6:%s, port:%d, public_key:%s] error.",
+                  *bi->ipv4 ? bi->ipv4 : "N/A", *bi->ipv6 ? bi->ipv6 : "N/A",
                   bi->port, id);
         } else {
             vlogT("Carrier: Try to connect to bootstrap "
-                  "[ipv4:%s, ipv6:%s, port:%d, address:%s] succeess.",
-                  bi->ipv4 ? bi->ipv4 : "N/A", bi->ipv6 ? bi->ipv6 : "N/A",
+                  "[ipv4:%s, ipv6:%s, port:%d, public_key:%s] succeess.",
+                  *bi->ipv4 ? bi->ipv4 : "N/A", *bi->ipv6 ? bi->ipv6 : "N/A",
                   bi->port, id);
         }
     }

@@ -247,11 +247,11 @@ int dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
     TOX_ERR_BOOTSTRAP error;
 
     assert(dht);
-    assert(ipv4 || ipv6);
+    assert(*ipv4 || *ipv6);
     assert(port > 0);
     assert(address);
 
-    if (ipv4) {
+    if (*ipv4) {
         success = tox_bootstrap(tox, ipv4, (uint16_t)port, address, &error);
         if (!success) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv4, port, error);
@@ -265,16 +265,16 @@ int dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
         }
     }
 
-    if (ipv6) {
+    if (*ipv6) {
         success = tox_bootstrap(tox, ipv6, (uint16_t)port, address, &error);
         if (!success) {
-            vlogE("DHT: add bootstrap %s:%d error (%d).", ipv4, port, error);
+            vlogE("DHT: add bootstrap %s:%d error (%d).", ipv6, port, error);
             return DHT_ERROR(ERR_BOOTSTRAP, error);
         }
 
         success = tox_add_tcp_relay(tox, ipv6, (uint16_t)port, address, &error);
         if (!success)  {
-            vlogE("DHT: add tcp relay %s:%d error (%d).", ipv4, port, error);
+            vlogE("DHT: add tcp relay %s:%d error (%d).", ipv6, port, error);
             return DHT_ERROR(ERR_BOOTSTRAP, error);
         }
     }

@@ -11,22 +11,25 @@
 #include "dht_callbacks.h"
 #include "dht.h"
 
+#define MAX_IPV4_ADDRESS_LEN (15)
+#define MAX_IPV6_ADDRESS_LEN (47)
+
 typedef struct DHT {
     uint8_t padding[32];  // reserved for DHT.
 } DHT;
 
-typedef struct BootstrapNode {
-    char *ipv4;
-    char *ipv6;
+typedef struct BootstrapNodeBuf {
+    char ipv4[MAX_IPV4_ADDRESS_LEN + 1];
+    char ipv6[MAX_IPV6_ADDRESS_LEN + 1];
     uint16_t port;
     uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
-} BootstrapNode;
+} BootstrapNodeBuf;
 
 typedef struct Preferences {
     char *data_location;
     bool udp_enabled;
     int bootstraps_size;
-    BootstrapNode *bootstraps;
+    BootstrapNodeBuf *bootstraps;
 } Preferences;
 
 struct ElaCarrier {

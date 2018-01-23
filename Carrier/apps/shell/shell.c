@@ -1917,7 +1917,7 @@ int main(int argc, char *argv[])
     opts.udp_enabled = cfg->udp_enabled;
     opts.persistent_location = cfg->datadir;
     opts.bootstraps_size = cfg->bootstraps_size;
-    opts.bootstraps = (Bootstrap *)calloc(1, sizeof(Bootstrap) * opts.bootstraps_size);
+    opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
     if (!opts.bootstraps) {
         fprintf(stderr, "out of memory.");
         deref(cfg);
@@ -1925,13 +1925,13 @@ int main(int argc, char *argv[])
     }
 
     for (i = 0 ; i < cfg->bootstraps_size; i++) {
-        Bootstrap *b = &opts.bootstraps[i];
+        BootstrapNode *b = &opts.bootstraps[i];
         BootstrapNode *node = cfg->bootstraps[i];
 
         b->ipv4 = node->ipv4;
         b->ipv6 = node->ipv6;
         b->port = node->port;
-        b->address = node->address;
+        b->public_key = node->public_key;
     }
 
     memset(&callbacks, 0, sizeof(callbacks));

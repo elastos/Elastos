@@ -4,12 +4,7 @@
 #include <stdbool.h>
 #include <rc_mem.h>
 
-typedef struct {
-    char *ipv4;
-    char *ipv6;
-    char *port;
-    char *address;
-} BootstrapNode;
+#include <ela_carrier.h>
 
 typedef struct {
     bool udp_enabled;
