@@ -2,7 +2,6 @@ package ChainStore
 
 import (
 	"fmt"
-	"sort"
 	"sync"
 	"time"
 	"bytes"
@@ -29,10 +28,6 @@ var (
 )
 
 type persistTask interface{}
-type persistHeaderTask struct {
-	header *Header
-	reply  chan bool
-}
 
 type rollbackBlockTask struct {
 	blockHash Uint256
@@ -99,12 +94,6 @@ func (self *ChainStore) loop() {
 		case t := <-self.taskCh:
 			now := time.Now()
 			switch task := t.(type) {
-			case *persistHeaderTask:
-				self.handlePersistHeaderTask(task.header)
-				task.reply <- true
-				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle header exetime: %g \n", tcall)
-
 			case *persistBlockTask:
 				self.handlePersistBlockTask(task.block, task.ledger)
 				task.reply <- true
@@ -300,6 +289,7 @@ func (bd *ChainStore) getHeaderWithCache(hash Uint256) *Header {
 
 	return h
 }
+
 func (bd *ChainStore) GetCurrentBlockHash() Uint256 {
 	hash, err := bd.GetBlockHash(bd.currentBlockHeight)
 	if err != nil {
@@ -307,44 +297,6 @@ func (bd *ChainStore) GetCurrentBlockHash() Uint256 {
 	}
 
 	return hash
-}
-
-func (bd *ChainStore) verifyHeader(header *Header) bool {
-	prevHeader := bd.getHeaderWithCache(header.Blockdata.PrevBlockHash)
-
-	if prevHeader == nil {
-		log.Error("[verifyHeader] failed, not found prevHeader.")
-		return false
-	}
-
-	// Fixme Consider the forking case
-	if prevHeader.Blockdata.Height+1 != header.Blockdata.Height {
-		log.Error("[verifyHeader] failed, prevHeader.Height + 1 != header.Height")
-		return false
-	}
-
-	if prevHeader.Blockdata.Timestamp > header.Blockdata.Timestamp {
-		log.Error("[verifyHeader] failed, prevHeader.Timestamp >= header.Timestamp")
-		return false
-	}
-
-	return true
-}
-
-func (self *ChainStore) AddHeaders(headers []Header, ledger *Ledger) error {
-
-	sort.Slice(headers, func(i, j int) bool {
-		return headers[i].Blockdata.Height < headers[j].Blockdata.Height
-	})
-
-	for i := 0; i < len(headers); i++ {
-		reply := make(chan bool)
-		self.taskCh <- &persistHeaderTask{header: &headers[i], reply: reply}
-		<-reply
-	}
-
-	return nil
-
 }
 
 func (db *ChainStore) RollbackBlock(blockHash Uint256) error {
@@ -563,25 +515,6 @@ func (bd *ChainStore) addHeader(header *Header) {
 	bd.mu.Unlock()
 
 	log.Debug("[addHeader]: finish, header height:", header.Blockdata.Height)
-}
-
-func (self *ChainStore) handlePersistHeaderTask(header *Header) {
-	//if header.Blockdata.Height != uint32(len(self.headerIndex)) {
-	//	return
-	//}
-
-	//if config.Parameters.ConsensusType == "pow" {
-	if !self.verifyHeader(header) {
-		return
-	}
-
-	self.addHeader(header)
-	//} else {
-	//	if !self.verifyHeader(header) {
-	//		return
-	//	}
-	//	self.addHeader(header)
-	//}
 }
 
 func (self *ChainStore) SaveBlock(b *Block, ledger *Ledger) error {
