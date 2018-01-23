@@ -82,7 +82,7 @@ Data types
 Bootstrap
 #########
 
-.. doxygenstruct:: Bootstrap
+.. doxygenstruct:: BootstrapNode
    :project: CarrierAPI
    :members:
 
