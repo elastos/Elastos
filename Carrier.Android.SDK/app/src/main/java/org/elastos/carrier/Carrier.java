@@ -114,7 +114,7 @@ public class Carrier {
 			private String ipv4;
 			private String ipv6;
 			private String port;
-			private String address;
+			private String publicKey;
 
 			public BootstrapNode setIpv4(String ipv4) {
 				this.ipv4 = ipv4;
@@ -143,13 +143,13 @@ public class Carrier {
 				return port;
 			}
 
-			public BootstrapNode setAddress(String address) {
-				this.address = address;
+			public BootstrapNode setPublicKey(String publicKey) {
+				this.publicKey = publicKey;
 				return this;
 			}
 
-			public String getAddress() {
-				return address;
+			public String getPubicKey() {
+				return publicKey;
 			}
 		}
 

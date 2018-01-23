@@ -8,7 +8,7 @@ typedef struct BootstrapHelper {
     char *ipv4;
     char *ipv6;
     char *port;
-    char *address;
+    char *public_key;
 } BootstrapHelper;
 
 typedef struct OptionsHelper {

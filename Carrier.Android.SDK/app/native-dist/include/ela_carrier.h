@@ -118,7 +118,7 @@ typedef struct ElaCarrier ElaCarrier;
  * to connect with. The bootstrap nodes help Carrier nodes be connected to
  * the others with more higher possibilities.
  */
-typedef struct Bootstrap {
+typedef struct BootstrapNode {
     /**
      * \~English
      * The ip address supported with ipv4 protocol.
@@ -140,12 +140,12 @@ typedef struct Bootstrap {
 
     /**
      * \~English
-     * The unique public address to provide for Carrier nodes, terminated
+     * The unique public key to provide for Carrier nodes, terminated
      * by null-string.
-     * The length of public address is 64 bytes.
+     * The length of public key is 64 bytes.
      */
-    const char *address;
-} Bootstrap;
+    const char *public_key;
+} BootstrapNode;
 
 /**
  * \~English
@@ -187,7 +187,7 @@ typedef struct ElaOptions {
      * \~English
      * The array of bootstrap nodes.
      */
-    Bootstrap *bootstraps;
+    BootstrapNode *bootstraps;
 } ElaOptions;
 
 /**

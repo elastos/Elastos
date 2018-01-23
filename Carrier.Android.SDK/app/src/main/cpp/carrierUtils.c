@@ -72,7 +72,7 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
         if (!getStringExt(env, jnodeClazz, jnode, "getIpv4", &node->ipv4) ||
             !getStringExt(env, jnodeClazz, jnode, "getIpv6", &node->ipv6) ||
             !getStringExt(env, jnodeClazz, jnode, "getPort", &node->port) ||
-            !getStringExt(env, jnodeClazz, jnode, "getAddress", &node->address)) {
+            !getStringExt(env, jnodeClazz, jnode, "getPublicKey", &node->public_key)) {
 
             logE("At least one getter method of class 'Carrier.BootstrapNode' mismatched");
 
@@ -105,8 +105,8 @@ void cleanupOptionsHelper(OptionsHelper* opts)
                 free(node->ipv6);
             if (node->port)
                 free(node->port);
-            if (node->address)
-                free(node->address);
+            if (node->public_key)
+                free(node->public_key);
         }
 
         free(opts->bootstraps);

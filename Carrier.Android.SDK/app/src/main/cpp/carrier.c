@@ -33,7 +33,7 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
         .udp_enabled = true,
         .persistent_location = helper.persistent_location,
         .bootstraps_size = helper.bootstraps_size,
-        .bootstraps = (Bootstrap *)helper.bootstraps,
+        .bootstraps = (BootstrapNode *)helper.bootstraps,
     };
 
     if (!handlerCtxtSet(hc, env, thiz, jcallbacks)) {
