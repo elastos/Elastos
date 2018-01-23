@@ -1,8 +1,8 @@
 package org.elastos.carrier.session;
 
-import android.util.Log;
-import org.elastos.carrier.exceptions.ElastosException;
 import org.elastos.carrier.Carrier;
+import org.elastos.carrier.Log;
+import org.elastos.carrier.exceptions.ElastosException;
 
 /**
  * The class representing Carrier session manager.
@@ -124,6 +124,7 @@ public class Manager {
      *      The new Session object
      *
      * @throws
+     *      IllegalArgumentException
      * 		ElastosException
      */
     public Session newSession(String to) throws ElastosException {

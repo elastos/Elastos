@@ -1,21 +1,26 @@
 #include <jni.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <ela_carrier.h>
 #include "utilsExt.h"
 #include "log.h"
 #include "carrierUtils.h"
 
-#define _T(type)  "org/elastos/carrier/"type
+#define _T(type)  "org/elastos/carrier/"#type
 
 int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
 {
-    jclass clazz = (*env)->GetObjectClass(env, jopts);
+    jclass clazz;
+    jobjectArray jnodes;
+    jsize size;
+    int rc;
+    int i;
+
+    clazz = (*env)->GetObjectClass(env, jopts);
     if (!clazz) {
         logE("Java class 'Carrier::Options' not found");
         return 0;
     }
-
-    //TODO: for bootstrap nodes.
 
     if (!getBoolean(env, clazz, jopts, "getUdpEnabled", &opts->udp_enabled) ||
         !getStringExt(env, clazz, jopts, "getPersistentLocation",&opts->persistent_location)) {
@@ -23,19 +28,96 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
         logE("At least one getter method of class 'Carrier.Options' mismatched");
         return 0;
     }
+
+    rc = callObjectMethod(env, clazz, jopts, "getBootstrapNodes", "()["_W("BootstrapNode;"),
+                          &jnodes);
+    if (!rc) {
+        logE("call method Carrier::Options::getBootstrapNodes error");
+        return 0;
+    }
+
+    size = (*env)->GetArrayLength(env, jnodes);
+    if (size == 0) {
+        (*env)->DeleteLocalRef(env, jnodes);
+        opts->bootstraps_size = 0;
+        opts->bootstraps = NULL;
+        return 1;
+    }
+
+    opts->bootstraps_size = (size_t)size;
+    opts->bootstraps = (BootstrapHelper *)calloc(1, sizeof(BootstrapHelper) * size);
+    if (!opts->bootstraps) {
+        (*env)->DeleteLocalRef(env, jnodes);
+        return 0;
+    }
+
+    for (i = 0; i < (int)size; i++) {
+        BootstrapHelper *node = &opts->bootstraps[i];
+        jclass  jnodeClazz;
+        jobject jnode;
+
+        jnode = (*env)->GetObjectArrayElement(env, jnodes, i);
+        if (!jnode) {
+            (*env)->DeleteLocalRef(env, jnodes);
+            return 0;
+        }
+
+        jnodeClazz = (*env)->GetObjectClass(env, jnode);
+        if (!jnodeClazz) {
+            (*env)->DeleteLocalRef(env, jnode);
+            (*env)->DeleteLocalRef(env, jnodes);
+            return 0;
+        }
+
+        if (!getStringExt(env, jnodeClazz, jnode, "getIpv4", &node->ipv4) ||
+            !getStringExt(env, jnodeClazz, jnode, "getIpv6", &node->ipv6) ||
+            !getStringExt(env, jnodeClazz, jnode, "getPort", &node->port) ||
+            !getStringExt(env, jnodeClazz, jnode, "getAddress", &node->address)) {
+
+            logE("At least one getter method of class 'Carrier.BootstrapNode' mismatched");
+
+            (*env)->DeleteLocalRef(env, jnode);
+            (*env)->DeleteLocalRef(env, jnodes);
+            return 0;
+        }
+
+        (*env)->DeleteLocalRef(env, jnode);
+    }
+
+    (*env)->DeleteLocalRef(env, jnodes);
     return 1;
 }
 
 void cleanupOptionsHelper(OptionsHelper* opts)
 {
+    int i;
+
     if (opts->persistent_location)
         free(opts->persistent_location);
-    //TODO:
+
+    if (opts->bootstraps) {
+        for (i = 0; i < opts->bootstraps_size; i++) {
+            BootstrapHelper *node = &opts->bootstraps[i];
+
+            if (node->ipv4)
+                free(node->ipv4);
+            if (node->ipv6)
+                free(node->ipv6);
+            if (node->port)
+                free(node->port);
+            if (node->address)
+                free(node->address);
+        }
+
+        free(opts->bootstraps);
+    }
 }
 
 int getNativeUserInfo(JNIEnv* env, jobject juserInfo, ElaUserInfo* ui)
 {
-    jclass clazz = (*env)->GetObjectClass(env, juserInfo);
+    jclass clazz;
+
+    clazz = (*env)->GetObjectClass(env, juserInfo);
     if (!clazz) {
         logE("Java class 'UserInfo' not found");
         return 0;
@@ -58,7 +140,7 @@ int getNativeUserInfo(JNIEnv* env, jobject juserInfo, ElaUserInfo* ui)
 
 int setJavaUserInfo(JNIEnv *env, jclass clazz, jobject jinfo, const ElaUserInfo *userInfo)
 {
-    return (setBoolean(env, clazz, jinfo, "setHasAvatar", !!userInfo->has_avatar) &&
+    return (setBoolean(env, clazz, jinfo, "setHasAvatar", userInfo->has_avatar) &&
             setString(env, clazz, jinfo, "setUserId", userInfo->userid) &&
             setString(env, clazz, jinfo, "setName", userInfo->name) &&
             setString(env, clazz, jinfo, "setDescription", userInfo->description) &&
@@ -70,18 +152,22 @@ int setJavaUserInfo(JNIEnv *env, jclass clazz, jobject jinfo, const ElaUserInfo 
 
 int newJavaUserInfo(JNIEnv* env, const ElaUserInfo* userInfo, jobject* juserInfo)
 {
-    jclass clazz = (*env)->FindClass(env, _T("UserInfo"));
+    jclass clazz;
+    jmethodID contor;
+    jobject jobj;
+
+    clazz = (*env)->FindClass(env, _T("UserInfo"));
     if (!clazz) {
         logE("Java class 'UserInfo' not found");
         return 0;
     }
-    jmethodID contor = (*env)->GetMethodID(env, clazz, "<init>", "()V");
+    contor = (*env)->GetMethodID(env, clazz, "<init>", "()V");
     if (!contor) {
         logE("Contructor UserInfo() not found");
         return 0;
     }
 
-    jobject jobj = (*env)->NewObject(env, clazz, contor);
+    jobj = (*env)->NewObject(env, clazz, contor);
     if (!jobj) {
         logE("New class UserInfo object error");
         return 0;
@@ -99,16 +185,21 @@ int newJavaUserInfo(JNIEnv* env, const ElaUserInfo* userInfo, jobject* juserInfo
 
 int newJavaPresenceStatus(JNIEnv* env, ElaPresenceStatus status, jobject* jpresence)
 {
-    jclass clazz = (*env)->FindClass(env, _T("PresenceStatus"));
+    jclass clazz;
+    jobject jobj;
+    int rc;
+
+    assert(jpresence);
+
+    clazz = (*env)->FindClass(env, _T("PresenceStatus"));
     if (!clazz) {
         logE("Java class 'PresenceStatus' not found");
         return 0;
     }
 
-    jobject jobj = NULL;
-    int result = callStaticObjectMethod(env, clazz, "valueOf", "(I)"_W("PresenceStatus;"),
-                                        &jobj, status);
-    if (!result) {
+    rc = callStaticObjectMethod(env, clazz, "valueOf", "(I)"_W("PresenceStatus;"),
+                                &jobj, status);
+    if (!rc) {
         logE("call static method PresenceStatus::valueOf error");
         return 0;
     }
@@ -117,18 +208,43 @@ int newJavaPresenceStatus(JNIEnv* env, ElaPresenceStatus status, jobject* jprese
     return 1;
 }
 
+int newNativePresenceStatus(JNIEnv *env, jobject jpresence, ElaPresenceStatus *presence)
+{
+    jclass clazz;
+    int rc;
+    int value;
+
+    clazz = (*env)->GetObjectClass(env, jpresence);
+    if (!clazz) {
+        logE("Java Enum 'PresenceStatus' not found");
+        return 0;
+    }
+
+    rc = callIntMethod(env, clazz, jpresence, "value", "()I", &value);
+    if (!rc) {
+        logE("call method PresenceStatus::value error");
+        return 0;
+    }
+
+    *presence = (ElaPresenceStatus)value;
+    return 1;
+}
+
 int newJavaConnectionStatus(JNIEnv* env, ElaConnectionStatus status, jobject* jstatus)
 {
-    jclass clazz = (*env)->FindClass(env, _T("ConnectionStatus"));
+    jclass clazz;
+    jobject jobj;
+    int rc;
+
+    clazz = (*env)->FindClass(env, _T("ConnectionStatus"));
     if (!clazz) {
         logE("Java class 'ConnectionStatus' not found");
         return 0;
     }
 
-    jobject jobj = NULL;
-    int result = callStaticObjectMethod(env, clazz, "valueOf", "(I)"_W("ConnectionStatus;"),
-            &jobj, status);
-    if (!result) {
+    rc = callStaticObjectMethod(env, clazz, "valueOf", "(I)"_W("ConnectionStatus;"),
+                                &jobj, status);
+    if (!rc) {
         logE("call static method ConnectionStatus::valueOf error");
         return 0;
     }
@@ -139,66 +255,70 @@ int newJavaConnectionStatus(JNIEnv* env, ElaConnectionStatus status, jobject* js
 
 int newJavaFriendInfo(JNIEnv* env, const ElaFriendInfo* friendInfo, jobject* jfriendInfo)
 {
-    // new FriendInfo object.
-    jclass clazz = (*env)->FindClass(env, _T("FriendInfo"));
+    jclass clazz;
+    jmethodID contor;
+    jobject jobj;
+    jstring jlabel;
+    jobject jpresence;
+    jobject jconnection;
+    int rc;
+
+    clazz = (*env)->FindClass(env, _T("FriendInfo"));
     if (!clazz) {
         logE("Java class 'FriendInfo' not found");
         return 0;
     }
-    jmethodID contor = (*env)->GetMethodID(env, clazz, "<init>", "()V");
+    contor = (*env)->GetMethodID(env, clazz, "<init>", "()V");
     if (!contor) {
         logE("Contructor FriendInfo() not found");
         return 0;
     }
-    jobject jobj = (*env)->NewObject(env, clazz, contor);
+    jobj = (*env)->NewObject(env, clazz, contor);
     if (!jobj) {
         logE("New class FriendInfo object error");
         return 0;
     }
 
     // setUserInfo.
-    jobject juserInfo = NULL;
     if (!setJavaUserInfo(env, clazz, jobj, &friendInfo->user_info)) {
         logE("Set UserInfo of Friend Object error");
         goto errorExit;
     }
 
     // setLabel.
-    jobject jlabel = (*env)->NewStringUTF(env, friendInfo->label);
+    jlabel = (*env)->NewStringUTF(env, friendInfo->label);
     if (!jlabel) {
         logE("Convert from C-chars to Java string error");
         goto errorExit;
     }
-    int result = callVoidMethod(env, clazz, jobj, "setLabel", "("_J("String;)V"), jlabel);
+    rc = callVoidMethod(env, clazz, jobj, "setLabel", "("_J("String;)V"), jlabel);
     (*env)->DeleteLocalRef(env, jlabel);
-    if (!result) {
+    if (!rc) {
         logE("Call method 'void FriendInfo::setLabel(String label)' error");
         goto errorExit;
     }
 
     // setPresence.
-    jobject jpresence = NULL;
     if (!newJavaPresenceStatus(env, friendInfo->presence, &jpresence)) {
         logE("Construct Java PresenceStatuss object error");
         goto errorExit;
     }
-    result = callVoidMethod(env, clazz, jobj, "setPresence", "("_W("PresenceStatus;)V"),
-                            jpresence);
+    rc = callVoidMethod(env, clazz, jobj, "setPresence", "("_W("PresenceStatus;)V"),
+                        jpresence);
     (*env)->DeleteLocalRef(env, jpresence);
-    if (!result) {
+    if (!rc) {
         logE("Call method FriendInfo::setPresence error");
         goto errorExit;
     }
 
-    jobject jconnection = NULL;
     if (!newJavaConnectionStatus(env, friendInfo->status, &jconnection)) {
         logE("Construct Java ConnectionStatus object error");
         goto errorExit;
     }
-    result = callVoidMethod(env, clazz, jobj, "setConnectionStatus", "("_W("ConnectionStatus;)V"),
+    rc = callVoidMethod(env, clazz, jobj, "setConnectionStatus", "("_W("ConnectionStatus;)V"),
                             jconnection);
     (*env)->DeleteLocalRef(env, jconnection);
-    if (!result) {
+    if (!rc) {
         logE("Call method FriendInfo::setConnectionStatus error");
         goto errorExit;
     }

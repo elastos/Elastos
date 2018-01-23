@@ -3,15 +3,17 @@
 #include <stdlib.h>
 
 #include "utils.h"
-#include "log.h"
 
 int setIntField(JNIEnv* env, jobject jobj, const char* name, int value)
 {
-    jclass* jcls = (*env)->GetObjectClass(env, jobj);
+    jclass* jcls;
+    jfieldID fieldid;
+
+    jcls = (*env)->GetObjectClass(env, jobj);
     if (!jcls)
         return 0;
 
-    jfieldID fieldid = (*env)->GetFieldID(env, jcls, name, "I");
+    fieldid = (*env)->GetFieldID(env, jcls, name, "I");
     if (!fieldid)
         return 0;
 
@@ -21,11 +23,14 @@ int setIntField(JNIEnv* env, jobject jobj, const char* name, int value)
 
 int setLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t value)
 {
-    jclass* jcls = (*env)->GetObjectClass(env, jobj);
+    jclass* jcls;
+    jfieldID fieldid;
+
+    jcls = (*env)->GetObjectClass(env, jobj);
     if (!jcls)
         return 0;
 
-    jfieldID fieldid = (*env)->GetFieldID(env, jcls, name, "J");
+    fieldid = (*env)->GetFieldID(env, jcls, name, "J");
     if (!fieldid)
         return 0;
 
@@ -35,11 +40,14 @@ int setLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t value)
 
 int getLongField(JNIEnv* env, jobject jobj, const char* name, uint64_t* value)
 {
-    jclass* jcls = (*env)->GetObjectClass(env, jobj);
+    jclass* jcls;
+    jfieldID fieldid;
+
+    jcls = (*env)->GetObjectClass(env, jobj);
     if (!jcls)
         return 0;
 
-    jfieldID  fieldid = (*env)->GetFieldID(env, jcls, name, "J");
+    fieldid = (*env)->GetFieldID(env, jcls, name, "J");
     if (!fieldid)
         return 0;
 
@@ -51,7 +59,9 @@ int getString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName,
               char* buf, int length)
 {
     jstring jresult = NULL;
-    memset(buf, 0, length);
+    const char *result;
+
+    memset(buf, 0, (size_t)length);
 
     if (!callStringMethod(env, clazz, jobj, methodName, "()"_J("String;"), &jresult))
         return 0;
@@ -59,7 +69,7 @@ int getString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName,
     if (!jresult)
         return 1;
 
-    const char* result = (*env)->GetStringUTFChars(env, jresult, NULL);
+    result = (*env)->GetStringUTFChars(env, jresult, NULL);
     if (!result || strlen(result) >= length) {
         if (result) (*env)->ReleaseStringUTFChars(env, jresult, result);
         (*env)->DeleteLocalRef(env, jresult);
@@ -74,18 +84,22 @@ int getString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName,
 
 int setString(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, const char* value)
 {
-    jstring jvalue = (*env)->NewStringUTF(env, value);
+    jstring jvalue;
+    int rc;
+
+    jvalue = (*env)->NewStringUTF(env, value);
     if (!jvalue)
         return 0;
 
-    int result = callVoidMethod(env, clazz, jobj, methodName, "("_J("String;)V"), jvalue);
+    rc = callVoidMethod(env, clazz, jobj, methodName, "("_J("String;)V"), jvalue);
     (*env)->DeleteLocalRef(env, jvalue);
-    return !!result;
+    return rc != 0;
 }
 
 int getStringExt(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, char** value)
 {
     jstring jresult = NULL;
+    const char *result;
     *value = NULL;
 
     if (!callStringMethod(env, clazz, jobj, methodName, "()"_J("String;"), &jresult))
@@ -94,7 +108,7 @@ int getStringExt(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName
     if (!jresult)
         return 1;
 
-    const char* result = (*env)->GetStringUTFChars(env, jresult, NULL);
+    result = (*env)->GetStringUTFChars(env, jresult, NULL);
     if (!result) {
         (*env)->DeleteLocalRef(env, jresult);
         return 0;

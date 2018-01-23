@@ -75,22 +75,22 @@ static
 void onSessionRequestCompleteCb(ElaSession* session, int status, const char* reason,
                                 const char* sdp, size_t len, void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv *env;
+    jstring jreason = NULL;
+    jstring jsdp = NULL;
+
     assert(session);
     assert(status == 0 || (status != 0 && reason));
     assert(sdp);
     assert(len > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return;
     }
-
-    jstring jreason = NULL;
-    jstring jsdp = NULL;
 
     if (status != 0) { // error scenario.
         jreason = (*env)->NewStringUTF(env, reason);
@@ -122,9 +122,12 @@ void onSessionRequestCompleteCb(ElaSession* session, int status, const char* rea
 static
 jboolean sessionRequest(JNIEnv* env, jobject thiz, jobject jhandler)
 {
-    assert(jhandler != NULL);
+    CallbackContext *cc;
+    int rc;
 
-    CallbackContext* cc = (CallbackContext*)calloc(1, sizeof(*cc));
+    assert(jhandler);
+
+    cc = (CallbackContext*)calloc(1, sizeof(*cc));
     if (!cc) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
@@ -136,8 +139,8 @@ jboolean sessionRequest(JNIEnv* env, jobject thiz, jobject jhandler)
         return JNI_FALSE;
     }
 
-    int result = ela_session_request(getSession(env, thiz), onSessionRequestCompleteCb, cc);
-    if (result < 0) {
+    rc = ela_session_request(getSession(env, thiz), onSessionRequestCompleteCb, cc);
+    if (rc < 0) {
         logE("Call ela_session_request API error");
         setErrorCode(ela_get_error());
         callbackCtxtCleanup(cc, env);
@@ -150,10 +153,12 @@ jboolean sessionRequest(JNIEnv* env, jobject thiz, jobject jhandler)
 
 static
 jboolean sessionReplyRequest(JNIEnv* env, jobject thiz, jint jstatus, jstring jreason) {
+    const char *reason = NULL;
+    int rc;
+
     assert(jstatus == 0 || (jstatus != 0 && jreason));
 
-    const char *reason = NULL;
-    if (jreason != NULL) {
+    if (!jreason) {
         reason = (*env)->GetStringUTFChars(env, jreason, NULL);
         if (!reason) {
             setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
@@ -161,11 +166,11 @@ jboolean sessionReplyRequest(JNIEnv* env, jobject thiz, jint jstatus, jstring jr
         }
     }
 
-    int result = ela_session_reply_request(getSession(env, thiz), jstatus, reason);
-    if (reason != NULL)
+    rc = ela_session_reply_request(getSession(env, thiz), jstatus, reason);
+    if (reason)
         (*env)->ReleaseStringUTFChars(env, jreason, reason);
 
-    if (result < 0) {
+    if (rc < 0) {
         logE("Call ela_session_reply_request API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -177,18 +182,21 @@ jboolean sessionReplyRequest(JNIEnv* env, jobject thiz, jint jstatus, jstring jr
 static
 jboolean sessionStart(JNIEnv* env, jobject thiz, jstring jsdp)
 {
-    assert(jsdp != NULL);
+    const char *sdp;
+    int rc;
 
-    const char* sdp = (*env)->GetStringUTFChars(env, jsdp, NULL);
+    assert(jsdp);
+
+    sdp = (*env)->GetStringUTFChars(env, jsdp, NULL);
     if (!sdp) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return JNI_FALSE;
     }
 
-    int result = ela_session_start(getSession(env, thiz), sdp, strlen(sdp));
+    rc = ela_session_start(getSession(env, thiz), sdp, strlen(sdp));
     (*env)->ReleaseStringUTFChars(env, jsdp, sdp);
 
-    if (result < 0) {
+    if (rc < 0) {
         logE("Call ela_session_start API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -201,20 +209,22 @@ static
 void onStreamDataCallback(ElaSession* ws, int stream,
                          const void* data, size_t len, void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv *env;
+    jbyteArray jdata;
+
     assert(ws);
     assert(stream > 0);
     assert(data);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return ;
     }
 
-    jbyteArray jdata = (*env)->NewByteArray(env, (jsize)len);
+    jdata = (*env)->NewByteArray(env, (jsize)len);
     if (!jdata) {
         detachJvm(env, needDetach);
         return;
@@ -235,19 +245,20 @@ static
 void onStateChangedCallback(ElaSession* ws, int stream, ElaStreamState state,
                             void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv *env;
+    jobject jstate;
+
     assert(ws);
     assert(stream > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return ;
     }
 
-    jobject jstate = NULL;
     if (!newJavaStreamState(env, state, &jstate)) {
         detachJvm(env, needDetach);
         return;
@@ -268,27 +279,29 @@ static
 bool onChannelOpenCallback(ElaSession *ws, int stream, int channel,
                            const char* cookie, void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+    jstring jcookie;
+    jboolean jresult;
+
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
     assert(cookie);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current callback thread to JVM error");
         return false;
     }
 
-    jstring jcookie = (*env)->NewStringUTF(env, cookie);
+    jcookie = (*env)->NewStringUTF(env, cookie);
     if (!jcookie) {
         detachJvm(env, needDetach);
         return false;
     }
 
-    jboolean jresult;
     if (!callBooleanMethod(env, cc->clazz, cc->handler, "onChannelOpen",
                            "("_S("Stream;I")_J("String;)Z"),
                            &jresult,
@@ -307,14 +320,15 @@ static
 void onChannelOpenedCallback(ElaSession* ws, int stream, int channel,
                              void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return ;
@@ -333,20 +347,21 @@ static
 void onChannelCloseCallback(ElaSession* ws, int stream, int channel,
                             CloseReason reason, void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+    jobject jreason;
+
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return;
     }
 
-    jobject jreason = NULL;
     if (!newJavaCloseReason(env, reason, &jreason)) {
         detachJvm(env, needDetach);
         return;
@@ -367,27 +382,29 @@ static
 bool onChannelDataCallback(ElaSession* ws, int stream, int channel,
                            const void* data, size_t len, void *context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+    jbyteArray jdata;
+    jboolean jresult;
+
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return false;
     }
 
-    jbyteArray jdata = (*env)->NewByteArray(env, (jsize)len);
+    jdata = (*env)->NewByteArray(env, (jsize)len);
     if (!jdata) {
         detachJvm(env, needDetach);
         return false;
     }
     (*env)->SetByteArrayRegion(env, jdata, 0, (jsize)len, data);
 
-    jboolean jresult = 0;
     if (!callVoidMethod(env, cc->clazz, cc->handler, "onChannelData",
                         "("_S("Stream;I[B)Z"),
                         &jresult, cc->object, channel, jdata)) {
@@ -405,14 +422,15 @@ static
 void onChannelPendingCallback(ElaSession* ws, int stream, int channel,
                               void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return ;
@@ -429,16 +447,17 @@ void onChannelPendingCallback(ElaSession* ws, int stream, int channel,
 
 static
 void onChannelResumeCallback(ElaSession* ws, int stream, int channel,
-                              void* context)
+                             void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+
     assert(ws);
     assert(stream > 0);
     assert(channel > 0);
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach current thread to JVM error");
         return ;
@@ -457,23 +476,27 @@ static
 jobject addStream(JNIEnv* env, jobject thiz, jobject jtype, jint joptions,
                   jobject jhandler)
 {
+    ElaStreamType type;
+    jobject jstream;
+    CallbackContext* cc;
+    ElaSession* session;
+    int streamId;
+
     assert(jtype != NULL);
     assert(jhandler != NULL);
 
-    ElaStreamType type;
     if (!getNativeStreamType(env, jtype, &type)) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return NULL;
     }
 
     // new java carrier stream object.
-    jobject jstream = NULL;
     if (!newJavaStream(env, jtype, &jstream)) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return NULL;
     }
 
-    CallbackContext* cc = (CallbackContext*)calloc(1, sizeof(*cc));
+    cc = (CallbackContext*)calloc(1, sizeof(*cc));
     if (!cc) {
         (*env)->DeleteLocalRef(env, jstream);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
@@ -498,8 +521,8 @@ jobject addStream(JNIEnv* env, jobject thiz, jobject jtype, jint joptions,
             .channel_resume  = onChannelResumeCallback
     };
 
-    ElaSession* session = getSession(env, thiz);
-    int streamId = ela_session_add_stream(session, type, joptions, &cbs, cc);
+    session = getSession(env, thiz);
+    streamId = ela_session_add_stream(session, type, joptions, &cbs, cc);
     if (streamId < 0) {
         logE("Call ela_session_add_stream API error");
         callbackCtxtCleanup(cc, env);
@@ -519,14 +542,17 @@ jobject addStream(JNIEnv* env, jobject thiz, jobject jtype, jint joptions,
 static
 jboolean removeStream(JNIEnv* env, jobject thiz, jint streamId, jobject jstream)
 {
-    int result = ela_session_remove_stream(getSession(env, thiz), streamId);
-    if (result < 0) {
+    CallbackContext* cc;
+    int rc;
+
+    rc = ela_session_remove_stream(getSession(env, thiz), streamId);
+    if (rc < 0) {
         logE("Call ela_session_remove_stream API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
     }
 
-    CallbackContext* cc = (CallbackContext*)getStreamCookie(env, jstream);
+    cc = (CallbackContext*)getStreamCookie(env, jstream);
     if (cc) {
         callbackCtxtCleanup(cc, env);
         free(cc);
@@ -539,18 +565,19 @@ static
 jboolean addService(JNIEnv* env, jobject thiz, jstring jservice, jobject jprotocol,
                     jstring jhost, jstring jport)
 {
+    PortForwardingProtocol protocol;
+    const char* service;
+    const char* host;
+    const char* port;
+    int rc;
+
     assert(jservice);
     assert(jprotocol);
 
-    PortForwardingProtocol protocol;
     if (!getNativeProtocol(env, jprotocol, &protocol)) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return JNI_FALSE;
     }
-
-    const char* service = NULL;
-    const char* host = NULL;
-    const char* port = NULL;
 
     service = (*env)->GetStringUTFChars(env, jservice, NULL);
     host    = (*env)->GetStringUTFChars(env, jhost, NULL);
@@ -561,13 +588,13 @@ jboolean addService(JNIEnv* env, jobject thiz, jstring jservice, jobject jprotoc
         goto errorExit;
     }
 
-    int result = ela_session_add_service(getSession(env, thiz), service, protocol, host, port);
+    rc = ela_session_add_service(getSession(env, thiz), service, protocol, host, port);
 
     (*env)->ReleaseStringUTFChars(env, jservice, service);
     (*env)->ReleaseStringUTFChars(env, jhost, host);
     (*env)->ReleaseStringUTFChars(env, jport, port);
 
-    if (result < 0) {
+    if (rc < 0) {
         logE("Call ela_session_add_service API error");
         return JNI_FALSE;
     }
@@ -585,9 +612,11 @@ errorExit:
 static
 void removeService(JNIEnv* env, jobject thiz, jstring jservice)
 {
+    const char *service;
+
     assert(jservice);
 
-    const char* service = (*env)->GetStringUTFChars(env, jservice, NULL);
+    service = (*env)->GetStringUTFChars(env, jservice, NULL);
     if (!service) {
         ela_session_remove_service(getSession(env, thiz), service);
         (*env)->ReleaseStringUTFChars(env, jservice, service);

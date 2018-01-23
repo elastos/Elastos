@@ -1,1 +1,0 @@
-add JNI implement here.

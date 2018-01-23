@@ -1,6 +1,6 @@
 package org.elastos.carrier.session;
 
-import android.util.Log;
+import org.elastos.carrier.Log;
 import org.elastos.carrier.exceptions.ElastosException;
 
 /**

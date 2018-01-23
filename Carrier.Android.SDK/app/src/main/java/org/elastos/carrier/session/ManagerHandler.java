@@ -8,7 +8,7 @@ import org.elastos.carrier.Carrier;
 public interface ManagerHandler {
 
     /**
-     * An callback function that handle session requests.
+     * An callback function that handle session request.
      *
      * @param
      *      carrier     A handle to the Carrier node instance

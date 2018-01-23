@@ -181,7 +181,7 @@ typedef struct ElaOptions {
      * There must have at least one bootstrap node for the very first time
      * to create carrier instance.
      */
-    int bootstraps_size;
+    size_t bootstraps_size;
 
     /**
      * \~English

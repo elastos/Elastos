@@ -1,8 +1,7 @@
 package org.elastos.carrier.session;
 
-import android.util.Log;
+import org.elastos.carrier.Log;
 import org.elastos.carrier.exceptions.ElastosException;
-import org.elastos.carrier.Carrier;
 
 /**
  * The class representing Carrier session conversion with friends.
@@ -72,6 +71,7 @@ public class Session {
      *                  session response
      *
      * @throws
+     *      IllegalArgumentException
      *      ElastosException
      */
     public void request(SessionRequestCompleteHandler handler)
@@ -97,6 +97,7 @@ public class Session {
      *      reason      The error message if status is error, or null if success
      *
      * @throws
+     *      IllegalArgumentException
      *      ElastosException
      */
     public void replyRequest(int status, String reason) throws ElastosException {
@@ -124,6 +125,7 @@ public class Session {
      *      sdp         The remote user's SDP.  Reference: https://tools.ietf.org/html/rfc4566
      *
      * @throws
+     *      IllegalArgumentException
      *      ElastosException
      */
     public void start(String sdp) throws ElastosException {
@@ -162,6 +164,7 @@ public class Session {
      *      The new added carrier stream
      *
      * @throws
+     *      IllegalArgumentException
      *      ElastosException
      */
     public Stream addStream(StreamType type, int options, StreamHandler handler)
@@ -188,6 +191,7 @@ public class Session {
      *      stream      The Stream to be removed
      *
      * @throws
+     *      IllegalArgumentException
      *      ElastosException
      */
     public void removeStream(Stream stream) throws ElastosException {
@@ -217,6 +221,7 @@ public class Session {
      *      port        The port of the service
      *
      * @throws
+     *      IllegalArgumentException
      *      ElastosException
      */
     public void addService(String service, PortForwardingProtocol protocol, String host, String port)

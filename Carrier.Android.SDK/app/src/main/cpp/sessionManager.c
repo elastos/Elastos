@@ -20,9 +20,15 @@ typedef struct CallbackContext {
 static CallbackContext callbackContext;
 
 static
-void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char* sdp, size_t len,
-                              void* context)
+void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char* sdp,
+                              size_t len, void* context)
 {
+    CallbackContext* cc = (CallbackContext*)context;
+    int needDetach = 0;
+    JNIEnv* env;
+    jstring jfrom;
+    jstring jsdp;
+
     assert(carrier);
     assert(from);
     assert(sdp);
@@ -30,22 +36,19 @@ void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char*
     (void)carrier;
     (void)len;
 
-    CallbackContext* cc = (CallbackContext*)context;
-
-    int needDetach = 0;
-    JNIEnv* env = attachJvm(&needDetach);
+    env = attachJvm(&needDetach);
     if (!env) {
         logE("Attach JVM error");
         return;
     }
 
-    jstring jfrom = (*env)->NewStringUTF(env, from);
+    jfrom = (*env)->NewStringUTF(env, from);
     if (!jfrom) {
         detachJvm(env, needDetach);
         return;
     }
 
-    jstring jsdp = (*env)->NewStringUTF(env, sdp);
+    jsdp = (*env)->NewStringUTF(env, sdp);
     if (!jsdp) {
         (*env)->DeleteLocalRef(env, jfrom);
         detachJvm(env, needDetach);
@@ -68,15 +71,16 @@ static
 bool callbackCtxtSet(CallbackContext* hc, JNIEnv* env, jobject jcarrier, jobject jhandler)
 {
 
-    jclass lclazz = (*env)->GetObjectClass(env, jhandler);
+    jclass lclazz;
+    jclass  gclazz;
+    jobject gjcarrier;
+    jobject gjhandler;
+
+    lclazz = (*env)->GetObjectClass(env, jhandler);
     if (!lclazz) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return false;
     }
-
-    jclass  gclazz = NULL;
-    jobject gjcarrier = NULL;
-    jobject gjhandler = NULL;
 
     gclazz    = (*env)->NewGlobalRef(env, lclazz);
     gjcarrier = (*env)->NewGlobalRef(env, jcarrier);
@@ -117,24 +121,26 @@ void callbackCtxtCleanup(CallbackContext* cc, JNIEnv* env)
 static
 jboolean sessionMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jhandler)
 {
+    CallbackContext *hc = NULL;
+    int rc;
+
     assert(jcarrier);
 
     (void)clazz;
 
     memset(&callbackContext, 0, sizeof(callbackContext));
 
-    CallbackContext *hc = NULL;
+
     if (jhandler) {
         hc = (CallbackContext*)&callbackContext;
-
         if (!callbackCtxtSet(hc, env, jcarrier, jhandler)) {
             setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
             return JNI_FALSE;
         }
     }
 
-    int result = ela_session_init(getCarrier(env, jcarrier), onSessionRequestCallback, hc);
-    if (result < 0) {
+    rc = ela_session_init(getCarrier(env, jcarrier), onSessionRequestCallback, hc);
+    if (rc < 0) {
         logE("Call ela_session_init API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -157,18 +163,22 @@ void sessionMgrCleanup(JNIEnv* env, jclass clazz, jobject jcarrier)
 static
 jobject createSession(JNIEnv* env, jobject thiz, jobject jcarrier, jstring jto, jobject jtype)
 {
+    const char *to;
+    ElaSession *session;
+    jobject jsession;
+
     assert(jcarrier);
     assert(jto);
 
     (void)thiz;
 
-    const char* to = (*env)->GetStringUTFChars(env, jto, NULL);
+    to = (*env)->GetStringUTFChars(env, jto, NULL);
     if (!to) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return NULL;
     }
 
-    ElaSession* session = ela_session_new(getCarrier(env, jcarrier), to);
+    session = ela_session_new(getCarrier(env, jcarrier), to);
     (*env)->ReleaseStringUTFChars(env, jto, to);
     if (!session) {
         logE("Call ela_session_new API error");
@@ -176,7 +186,6 @@ jobject createSession(JNIEnv* env, jobject thiz, jobject jcarrier, jstring jto, 
         return NULL;
     }
 
-    jobject jsession = NULL;
     if (!newJavaSession(env, session, jto, &jsession)) {
         ela_session_close(session);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));

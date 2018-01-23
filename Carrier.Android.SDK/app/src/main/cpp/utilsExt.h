@@ -21,7 +21,7 @@ int getBoolean(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, 
 static inline
 int setBoolean(JNIEnv* env, jclass clazz, jobject jobj, const char* methodName, int value)
 {
-    return callVoidMethod(env, clazz, jobj, methodName, "(Z)V", value);
+    return callVoidMethod(env, clazz, jobj, methodName, "(Z)V", (jboolean)value);
 }
 
 int setIntField(JNIEnv* env, jobject jobj, const char* name, int value);

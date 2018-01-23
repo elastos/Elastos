@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 #include <ela_carrier.h>
 #include "log.h"
 #include "utils.h"
@@ -16,9 +17,13 @@ static
 jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallbacks)
 {
     OptionsHelper helper;
-    memset(&helper, 0, sizeof(helper));
+    ElaCarrier *carrier;
+    HandlerContext *hc = &handlerContext;
 
-    if (!getOptionsHelper(env, joptions, &helper )) {
+    memset(&helper, 0, sizeof(helper));
+    memset(hc, 0, sizeof(*hc));
+
+    if (!getOptionsHelper(env, joptions, &helper)) {
         cleanupOptionsHelper(&helper);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return JNI_FALSE;
@@ -28,11 +33,8 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
         .udp_enabled = true,
         .persistent_location = helper.persistent_location,
         .bootstraps_size = helper.bootstraps_size,
-        .bootstraps = helper.bootstraps
+        .bootstraps = (Bootstrap *)helper.bootstraps,
     };
-
-    HandlerContext *hc = &handlerContext;
-    memset(hc, 0, sizeof(*hc));
 
     if (!handlerCtxtSet(hc, env, thiz, jcallbacks)) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
@@ -40,7 +42,7 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
         return JNI_FALSE;
     }
 
-    ElaCarrier* carrier = ela_new(&opts, &carrierCallbacks, hc);
+    carrier = ela_new(&opts, &carrierCallbacks, hc);
     cleanupOptionsHelper(&helper);
     if (!carrier) {
         logE("Call ela_new API error");
@@ -57,15 +59,16 @@ jboolean carrierInit(JNIEnv* env, jobject thiz, jobject joptions, jobject jcallb
 static
 jboolean carrierRun(JNIEnv* env, jobject thiz, jint jinterval)
 {
-    assert(jinterval >= 0);
+    HandlerContext *hc = getContext(env, thiz);
+    int rc;
 
-    HandlerContext* hc = getContext(env, thiz);
+    assert(jinterval >= 0);
     assert(hc->nativeCarrier);
 
     hc->env = env;
 
-    int result = ela_run(hc->nativeCarrier, jinterval);
-    if (result < 0) {
+    rc = ela_run(hc->nativeCarrier, jinterval);
+    if (rc < 0) {
         logE("Call ela_run API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -93,6 +96,7 @@ jstring getNodeId(JNIEnv* env, jobject thiz)
 {
     char nodeIdBuf[ELA_MAX_ID_LEN + 1];
     char* nodeId = NULL;
+    jstring jnodeId;
 
     nodeId = ela_get_nodeid(getCarrier(env, thiz), nodeIdBuf, sizeof(nodeIdBuf));
     if (!nodeId) {
@@ -101,7 +105,7 @@ jstring getNodeId(JNIEnv* env, jobject thiz)
         return NULL;
     }
 
-    jstring jnodeId = (*env)->NewStringUTF(env, nodeId);
+    jnodeId = (*env)->NewStringUTF(env, nodeId);
     if (!jnodeId) {
         logE("Can not convert C-string(%s) to JAVA-String", nodeId);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
@@ -111,33 +115,75 @@ jstring getNodeId(JNIEnv* env, jobject thiz)
 }
 
 static
-jboolean setNospam(JNIEnv *env, jobject thiz, jobject jnospam)
+jboolean setNospam(JNIEnv *env, jobject thiz, jbyteArray jnospam)
 {
-    //TODO;
-    return JNI_FALSE;
+    int rc;
+    uint32_t nospam = 0;
+    jbyte *value;
+    jsize jsize;
+
+    value = (*env)->GetByteArrayElements(env, jnospam, NULL);
+    jsize = (*env)->GetArrayLength(env, jnospam);
+    assert(value);
+    assert(jsize == 4);
+
+    //TODO: need to think over again.
+    nospam = ntohl(*(uint32_t *)value);
+
+    rc = ela_set_self_nospam(getCarrier(env, thiz), (uint32_t)nospam);
+    if (rc < 0) {
+        logE("Call ela_set_self_nospam API error");
+        setErrorCode(ela_get_error());
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
 }
 
 static
-jobject getNospam(JNIEnv *env, jobject thiz)
+jbyteArray getNospam(JNIEnv *env, jobject thiz)
 {
-    //TODO;
-    return NULL;
+    int rc;
+    uint32_t nospam;
+    jbyteArray value;
+
+    rc = ela_get_self_nospam(getCarrier(env, thiz), &nospam);
+    if (rc < 0) {
+        logE("Call ela_get_self_nospam API error");
+        setErrorCode(ela_get_error());
+        return NULL;
+    }
+
+    //TODO: as setNospam.
+    nospam = htonl(nospam);
+
+    value = (*env)->NewByteArray(env, sizeof(nospam));
+    if (value == NULL) {
+        logE("New java byteArray error");
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        return NULL;
+    }
+
+    (*env)->SetByteArrayRegion(env, value, 0, sizeof(nospam), (jbyte *)&nospam);
+    return value;
 }
 
 static
 jboolean setSelfInfo(JNIEnv* env, jobject thiz, jobject juserInfo)
 {
+    ElaUserInfo ui;
+    int rc;
+
     assert(juserInfo);
 
-    ElaUserInfo ui;
     if (!getNativeUserInfo(env, juserInfo, &ui)) {
         logE("Construct C-structured USerInfo object error");
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         return JNI_FALSE;
     }
 
-    int result = ela_set_self_info(getCarrier(env, thiz), &ui);
-    if (result < 0) {
+    rc = ela_set_self_info(getCarrier(env, thiz), &ui);
+    if (rc < 0) {
         logE("Call ela_set_self_info API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -149,14 +195,16 @@ static
 jobject getSelfInfo(JNIEnv* env, jobject thiz)
 {
     ElaUserInfo ui;
-    int result = ela_get_self_info(getCarrier(env, thiz), &ui);
-    if (result < 0) {
+    jobject juserInfo;
+    int rc;
+
+    rc = ela_get_self_info(getCarrier(env, thiz), &ui);
+    if (rc < 0) {
         logE("Call ela_get_self_info API error");
         setErrorCode(ela_get_error());
         return NULL;
     }
 
-    jobject juserInfo = NULL;
     if (!newJavaUserInfo(env, &ui, &juserInfo)) {
         logE("Construct java UserInfo object error");
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
@@ -168,31 +216,63 @@ jobject getSelfInfo(JNIEnv* env, jobject thiz)
 static
 jboolean setPresence(JNIEnv *env, jobject thiz, jobject jpresence)
 {
-    //TODO;
-    return JNI_FALSE;
+    ElaPresenceStatus presence;
+    int rc;
+
+    if (!newNativePresenceStatus(env, jpresence, &presence)) {
+        logE("Construct native PresenceStatus error");
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        return JNI_FALSE;
+    }
+
+    rc = ela_set_self_presence(getCarrier(env, thiz), presence);
+    if (rc < 0) {
+        logE("Call ela_set_self_presence API error");
+        setErrorCode(ela_get_error());
+        return JNI_FALSE;
+    }
+
+    return JNI_TRUE;
 }
 
 static
 jobject getPresence(JNIEnv *env, jobject thiz)
 {
-    //TODO;
-    return NULL;
+    ElaPresenceStatus presence;
+    jobject jpresence;
+    int rc;
+
+    rc = ela_get_self_presence(getCarrier(env, thiz), &presence);
+    if (rc < 0) {
+        logE("Call ela_get_self_presence API error");
+        setErrorCode(ela_get_error());
+        return NULL;
+    }
+
+    if (!newJavaPresenceStatus(env, presence, &jpresence)) {
+        logE("Construct java PresenceStatus error");
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        return NULL;
+    }
+
+    return jpresence;
 }
 
 static
 jboolean isReady(JNIEnv *env, jobject thiz)
 {
-    return ela_is_ready(getCarrier(env, thiz));
+    return (jboolean) ela_is_ready(getCarrier(env, thiz));
 }
 
 static
 bool friendIteratedCallback(const ElaFriendInfo* friendInfo, void* context)
 {
+    jobject jfriendInfo = NULL;
+
     ARG(context, 0, JNIEnv*, env);
     ARG(context, 1, jobject, jiterator);
     ARG(context, 2, jobject, jcontext);
 
-    jobject jfriendInfo = NULL;
     if (friendInfo) {
         if (!newJavaFriendInfo(env, friendInfo, &jfriendInfo)) {
             logE("Construct Java FriendInfo object error");
@@ -216,16 +296,17 @@ bool friendIteratedCallback(const ElaFriendInfo* friendInfo, void* context)
 static
 jboolean getFriends(JNIEnv* env, jobject thiz, jobject friendIterator, jobject context)
 {
-    assert(friendIterator);
-
     void* argv[] = {
         env,
         friendIterator,
         context
     };
+    int rc;
 
-    int result = ela_get_friends(getCarrier(env, thiz), friendIteratedCallback, (void*)argv);
-    if (result < 0) {
+    assert(friendIterator);
+
+    rc = ela_get_friends(getCarrier(env, thiz), friendIteratedCallback, (void*)argv);
+    if (rc < 0) {
         logE("Call ela_get_friends API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -236,24 +317,28 @@ jboolean getFriends(JNIEnv* env, jobject thiz, jobject friendIterator, jobject c
 static
 jobject getFriend(JNIEnv* env, jobject thiz, jstring jfriendId)
 {
+    const char *friendId;
+    ElaFriendInfo fi;
+    jobject jfriendInfo = NULL;
+    int rc;
+
     assert(jfriendId);
 
-    const char *friendId = (*env)->GetStringUTFChars(env, jfriendId, NULL);
+    friendId = (*env)->GetStringUTFChars(env, jfriendId, NULL);
     if (!friendId) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
     }
 
-    ElaFriendInfo fi;
-    int result = ela_get_friend_info(getCarrier(env, thiz), friendId, &fi);
+    rc = ela_get_friend_info(getCarrier(env, thiz), friendId, &fi);
     (*env)->ReleaseStringUTFChars(env, jfriendId, friendId);
-    if (result < 0) {
+
+    if (rc < 0) {
         logE("Call ela_get_friend_info API error");
         setErrorCode(ela_get_error());
         return NULL;
     }
 
-    jobject jfriendInfo = NULL;
     if (!newJavaFriendInfo(env, &fi, &jfriendInfo)) {
         logE("Construct java FriendInfo object error");
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
@@ -265,25 +350,30 @@ jobject getFriend(JNIEnv* env, jobject thiz, jstring jfriendId)
 static
 jboolean labelFriend(JNIEnv* env, jobject thiz, jstring jfriendId, jstring jlabel)
 {
+    const char *friendId;
+    const char *label;
+    int rc;
+
     assert(jfriendId);
     assert(jlabel);
 
-    const char* friendId = (*env)->GetStringUTFChars(env, jfriendId, NULL);
+    friendId = (*env)->GetStringUTFChars(env, jfriendId, NULL);
     if (!friendId) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
-    const char* label = (*env)->GetStringUTFChars(env, jlabel, NULL);
+    label = (*env)->GetStringUTFChars(env, jlabel, NULL);
     if (!label) {
         (*env)->ReleaseStringUTFChars(env, jfriendId, friendId);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    int result = ela_set_friend_label(getCarrier(env, thiz), friendId, label);
+    rc = ela_set_friend_label(getCarrier(env, thiz), friendId, label);
     (*env)->ReleaseStringUTFChars(env, jfriendId, friendId);
     (*env)->ReleaseStringUTFChars(env, jlabel, label);
-    if (result < 0) {
+
+    if (rc < 0) {
         logE("Call ela_set_friend_label API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -294,42 +384,51 @@ jboolean labelFriend(JNIEnv* env, jobject thiz, jstring jfriendId, jstring jlabe
 static
 jboolean isFriend(JNIEnv* env, jobject thiz, jstring juserId)
 {
+    const char *userId;
+    bool rc;
+
     assert(juserId);
 
-    const char* userId = (*env)->GetStringUTFChars(env, juserId, NULL);
+    userId = (*env)->GetStringUTFChars(env, juserId, NULL);
     if (!userId) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    bool result = ela_is_friend(getCarrier(env, thiz), userId);
+    rc = ela_is_friend(getCarrier(env, thiz), userId);
     (*env)->ReleaseStringUTFChars(env, juserId, userId);
-    return (jboolean)result;
+
+    return (jboolean)rc;
 }
 
 static
 jboolean addFriend(JNIEnv* env, jobject thiz, jstring juserId, jstring jhello)
 {
+    const char *userId;
+    const char *hello;
+    int rc;
+
     assert(juserId);
     assert(jhello);
 
-    const char *userId = (*env)->GetStringUTFChars(env, juserId, NULL);
+    userId = (*env)->GetStringUTFChars(env, juserId, NULL);
     if (!userId) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    const char* hello = (*env)->GetStringUTFChars(env, jhello, NULL);
+    hello = (*env)->GetStringUTFChars(env, jhello, NULL);
     if (!hello) {
         (*env)->ReleaseStringUTFChars(env, juserId, userId);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    int result = ela_add_friend(getCarrier(env, thiz), userId, hello);
+    rc = ela_add_friend(getCarrier(env, thiz), userId, hello);
     (*env)->ReleaseStringUTFChars(env, juserId, userId);
     (*env)->ReleaseStringUTFChars(env, jhello, hello);
-    if (result < 0) {
+
+    if (rc < 0) {
         logE("Call ela_add_friend API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -340,17 +439,19 @@ jboolean addFriend(JNIEnv* env, jobject thiz, jstring juserId, jstring jhello)
 static
 jboolean acceptFriend(JNIEnv* env, jobject thiz, jstring juserId)
 {
-    const char* userId = (*env)->GetStringUTFChars(env, juserId, NULL);
+    const char* userId;
+    int rc;
+
+    userId = (*env)->GetStringUTFChars(env, juserId, NULL);
     if (!userId) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    int result = ela_accept_friend(getCarrier(env, thiz), userId);
-
+    rc = ela_accept_friend(getCarrier(env, thiz), userId);
     (*env)->ReleaseStringUTFChars(env, juserId, userId);
 
-    if (result < 0) {
+    if (rc < 0) {
         logE("Call ela_accept_friend API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -361,17 +462,21 @@ jboolean acceptFriend(JNIEnv* env, jobject thiz, jstring juserId)
 static
 jboolean removeFriend(JNIEnv* env, jobject thiz, jstring jfriendId)
 {
+    const char *friendId;
+    int rc;
+
     assert(jfriendId);
 
-    const char *friendId = (*env)->GetStringUTFChars(env, jfriendId, NULL);
+    friendId = (*env)->GetStringUTFChars(env, jfriendId, NULL);
     if (!friendId) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    int result = ela_remove_friend(getCarrier(env, thiz), friendId);
+    rc = ela_remove_friend(getCarrier(env, thiz), friendId);
     (*env)->ReleaseStringUTFChars(env, jfriendId, friendId);
-    if (result < 0) {
+
+    if (rc < 0) {
         logE("Call ela_remove_friend API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -382,26 +487,31 @@ jboolean removeFriend(JNIEnv* env, jobject thiz, jstring jfriendId)
 static
 jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jstring jmsg)
 {
+    const char *to;
+    const char *msg;
+    int rc;
+
     assert(jto);
     assert(jmsg);
 
-    const char *to = (*env)->GetStringUTFChars(env, jto, NULL);
+    to = (*env)->GetStringUTFChars(env, jto, NULL);
     if (!to) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    const char* msg = (*env)->GetStringUTFChars(env, jmsg, NULL);
+    msg = (*env)->GetStringUTFChars(env, jmsg, NULL);
     if (!msg) {
         (*env)->ReleaseStringUTFChars(env, jto, to);
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
 
-    int result = ela_send_friend_message(getCarrier(env, thiz), to, msg, strlen(msg));
+    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, strlen(msg));
     (*env)->ReleaseStringUTFChars(env, jto, to);
     (*env)->ReleaseStringUTFChars(env, jmsg, msg);
-    if (result < 0) {
+
+    if (rc < 0) {
         logE("Call ela_send_friend_message API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -413,6 +523,10 @@ static
 void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
                               const char* reason, const char* data, size_t length, void* context)
 {
+    jstring jfrom = NULL;
+    jstring jreason = NULL;
+    jstring jdata = NULL;
+
     (void)carrier;
     (void)length;
 
@@ -422,18 +536,14 @@ void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
     ARG(context, 3, jobject, jcontext);
     free(context);
 
-    jstring jfrom = (*env)->NewStringUTF(env, from);
-    if (!jfrom) {
+    jfrom = (*env)->NewStringUTF(env, from);
+    if (!jfrom)
         goto cleanup;
-    }
 
-    jstring jreason = NULL;
-    jstring jdata = NULL;
-    if (status != 0) {
+    if (status != 0)
         jreason = (*env)->NewStringUTF(env, reason);
-    } else {
+    else
         jdata = (*env)->NewStringUTF(env, data);
-    }
 
     if (!jreason && !jdata) {
         (*env)->DeleteLocalRef(env, jfrom);
@@ -460,14 +570,16 @@ static
 jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
                       jobject jresponseHandler)
 {
-    assert(jto);
-    assert(jdata);
-    assert(jresponseHandler);
-
     const char* to = NULL;
     const char* data = NULL;
     jobject gjcarrier = NULL;
     jobject gjhandler = NULL;
+    void** argv;
+    int rc;
+
+    assert(jto);
+    assert(jdata);
+    assert(jresponseHandler);
 
     to = (*env)->GetStringUTFChars(env, jto, NULL);
     data = (*env)->GetStringUTFChars(env, jdata, NULL);
@@ -483,7 +595,7 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
         goto errorExit;
     }
 
-    void** argv = (void**)calloc(1, sizeof(void*) * 4);
+    argv = (void**)calloc(1, sizeof(void*) * 4);
     if (!argv) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         goto errorExit;
@@ -492,15 +604,15 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
     argv[1] = gjcarrier;
     argv[2] = gjhandler;
 
-    int result = ela_invite_friend(getCarrier(env, thiz), to, data, strlen(data),
-                                   friendInviteRspCallback, (void*)argv);
+    rc  = ela_invite_friend(getCarrier(env, thiz), to, data, strlen(data),
+                            friendInviteRspCallback, (void*)argv);
 
     (*env)->ReleaseStringUTFChars(env, jto, to);
     (*env)->ReleaseStringUTFChars(env, jdata, data);
     to = NULL;
     data = NULL;
 
-    if (result < 0) {
+    if (rc < 0) {
         logE("Call ela_invite_friend API error");
         setErrorCode(ela_get_error());
         free(argv);
@@ -520,18 +632,20 @@ static
 jboolean replyFriendInvite(JNIEnv* env, jobject thiz, jstring jto, jint jstatus,
                            jstring jreason, jstring jdata)
 {
+    const char *to = NULL;
+    const char *reason = NULL;
+    const char *data = NULL;
+    int rc;
+
     assert(jto);
     assert(jstatus == 0 || (jstatus != 0 && jreason != NULL));
-    assert(jstatus == 0 && jdata != NULL);
+    assert((jstatus == 0 && jdata != NULL) || (jstatus != 0));
 
-    const char *to = (*env)->GetStringUTFChars(env, jto, NULL);
+    to = (*env)->GetStringUTFChars(env, jto, NULL);
     if (!to) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return JNI_FALSE;
     }
-
-    const char* reason = NULL;
-    const char* data = NULL;
 
     if (jstatus != 0) {
         reason = (*env)->GetStringUTFChars(env, jreason, NULL);
@@ -545,14 +659,14 @@ jboolean replyFriendInvite(JNIEnv* env, jobject thiz, jstring jto, jint jstatus,
         return JNI_FALSE;
     }
 
-    int result = ela_reply_friend_invite(getCarrier(env, thiz), to, jstatus, reason,
-                                         data, strlen(data));
+    rc  = ela_reply_friend_invite(getCarrier(env, thiz), to, jstatus, reason,
+                                  data, strlen(data));
 
     (*env)->ReleaseStringUTFChars(env, jto, to);
     if (data)   (*env)->ReleaseStringUTFChars(env, jdata, data);
     if (reason) (*env)->ReleaseStringUTFChars(env, jreason, reason);
 
-    if (result < 0) {
+    if (rc < 0) {
         logE("Call ela_reply_friend_invite API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
@@ -575,9 +689,13 @@ static JNINativeMethod gMethods[] = {
                                                                    (void *) carrierInit        },
         {"native_run",         "(I)Z",                             (void *) carrierRun         },
         {"native_kill",        "()V",                              (void *) carrierKill        },
-        {"get_node_id",        "()"_J("String;"),                  (void *) getNodeId          },
+        {"get_node_id",        "()"_J("(String;)"),                (void *) getNodeId          },
+        {"set_nospam",         "([B)Z",                            (void *) setNospam          },
+        {"get_nospam",         "()[B",                             (void *) getNospam          },
         {"set_self_info",      "("_W("UserInfo;)Z"),               (void *) setSelfInfo        },
         {"get_self_info",      "()"_W("UserInfo;"),                (void *) getSelfInfo        },
+        {"set_presence",       "("_W("PresenceStatus;)Z"),         (void *) setPresence        },
+        {"get_presence",       "()"_W("PresenceStatus;"),          (void *) getPresence        },
         {"is_ready",           "()Z",                              (void *) isReady            },
         {"get_friends",        "("_W("FriendsIterator;")_J("Object;)Z"), (void *) getFriends   },
         {"get_friend",         "("_J("String;)")_W("FriendInfo;"), (void *) getFriend          },

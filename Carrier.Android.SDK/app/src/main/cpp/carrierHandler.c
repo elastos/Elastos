@@ -28,6 +28,7 @@ static
 void cbOnConnection(ElaCarrier* carrier, ElaConnectionStatus status, void* context)
 {
     HandlerContext *hc = (HandlerContext *) context;
+    jobject jstatus = NULL;
 
     assert(carrier);
     assert(context);
@@ -35,7 +36,6 @@ void cbOnConnection(ElaCarrier* carrier, ElaConnectionStatus status, void* conte
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jobject jstatus = NULL;
     if (!newJavaConnectionStatus(hc->env, status, &jstatus)) {
         logE("Construct java Connection object error");
         return;
@@ -72,15 +72,16 @@ void cbOnReady(ElaCarrier* carrier, void* context)
 static
 void cbOnSelfInfoChanged(ElaCarrier* carrier, const ElaUserInfo* userInfo, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jobject juserInfo;
+
     assert(carrier);
     assert(userInfo);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jobject juserInfo = NULL;
     if (!newJavaUserInfo(hc->env, userInfo, &juserInfo)) {
         logE("Construct Java UserInfo object error");
         return;
@@ -98,14 +99,16 @@ void cbOnSelfInfoChanged(ElaCarrier* carrier, const ElaUserInfo* userInfo, void*
 static
 bool cbFriendsIterated(ElaCarrier* carrier, const ElaFriendInfo* friendInfo, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jobject jfriendInfo = NULL;
+    jboolean result;
+
     assert(carrier);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jobject jfriendInfo = NULL;
     if (friendInfo) {
         if (!newJavaFriendInfo(hc->env, friendInfo, &jfriendInfo)) {
             logE("Construct Java FriendInfo object error");
@@ -113,7 +116,6 @@ bool cbFriendsIterated(ElaCarrier* carrier, const ElaFriendInfo* friendInfo, voi
         }
     }
 
-    jboolean result = JNI_FALSE;
     if (!callBooleanMethod(hc->env, hc->clazz, hc->callbacks,
                            "onFriendsIterated",
                            "("_W("Carrier;")_W("FriendInfo;)Z"),
@@ -128,9 +130,11 @@ bool cbFriendsIterated(ElaCarrier* carrier, const ElaFriendInfo* friendInfo, voi
 
 static
 void cbOnFriendConnectionChanged(ElaCarrier *carrier, const char *friendId,
-                            const ElaConnectionStatus status, void *context)
+                                 ElaConnectionStatus status, void *context)
 {
     HandlerContext *hc = (HandlerContext *) context;
+    jstring jfriendId;
+    jobject jstatus;
 
     assert(carrier);
     assert(context);
@@ -138,13 +142,12 @@ void cbOnFriendConnectionChanged(ElaCarrier *carrier, const char *friendId,
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
+    jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
     if (!jfriendId) {
         logE("New Java String object error");
         return;
     }
 
-    jobject jstatus = NULL;
     if (!newJavaConnectionStatus(hc->env, status, &jstatus)) {
         logE("Construct java Connection object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
@@ -166,21 +169,24 @@ static
 void cbOnFriendInfoChanged(ElaCarrier* carrier, const char* friendId,
                            const ElaFriendInfo* friendInfo, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jfriendId;
+    jobject jfriendInfo;
+
     assert(carrier);
     assert(friendId);
     assert(friendInfo);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
+    jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
     if (!jfriendId) {
         logE("New Java String object error");
         return;
     }
-    jobject jfriendInfo = NULL;
+
     if (!newJavaFriendInfo(hc->env, friendInfo, &jfriendInfo)) {
         logE("Construct Java FriendInfo object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
@@ -201,21 +207,24 @@ static
 void cbOnFriendPresence(ElaCarrier* carrier, const char* friendId,
                         ElaPresenceStatus status, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jfriendId;
+    jobject jpresence;
+
     assert(carrier);
     assert(friendId);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
+    jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
     if (!jfriendId) {
         logE("New Java String object error");
         return;
     }
-    jobject jstatus = NULL;
-    if (!newJavaPresenceStatus(hc->env, status, &jstatus)) {
+
+    if (!newJavaPresenceStatus(hc->env, status, &jpresence)) {
         logE("Construct java PresenceStatus object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
         return;
@@ -224,26 +233,27 @@ void cbOnFriendPresence(ElaCarrier* carrier, const char* friendId,
     if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
                         "onFriendPresence",
                         "("_W("Carrier;")_J("String;")_J("String;)V"),
-                        hc->carrier, jfriendId, jstatus)){
+                        hc->carrier, jfriendId, jpresence)){
         logE("Call Carrier.Callbacks.onFriendPresence error");
     }
 
     (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
-    (*hc->env)->DeleteLocalRef(hc->env, jstatus);
+    (*hc->env)->DeleteLocalRef(hc->env, jpresence);
 }
 
 static
 void cbOnFriendAdded(ElaCarrier* carrier, const ElaFriendInfo* friendInfo, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jobject jfriendInfo;
+
     assert(carrier);
     assert(friendInfo);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jobject jfriendInfo = NULL;
     if (!newJavaFriendInfo(hc->env, friendInfo, &jfriendInfo)){
         logE("Construct Java UserInfo object error");
         return;
@@ -261,15 +271,17 @@ void cbOnFriendAdded(ElaCarrier* carrier, const ElaFriendInfo* friendInfo, void*
 static
 void cbOnFriendRemoved(ElaCarrier* carrier, const char* friendId, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jfriendId;
+
     assert(carrier);
     assert(friendId);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
+    jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
     if (!jfriendId) {
         logE("New Java String object error");
         return;
@@ -288,27 +300,30 @@ static
 void cbOnFriendRequest(ElaCarrier* carrier, const char* userId, const ElaUserInfo* userInfo,
                        const char* hello, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring juserId;
+    jobject juserInfo;
+    jstring jhello;
+
     assert(carrier);
     assert(userId);
     assert(userInfo);
     assert(context);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring juserId = (*hc->env)->NewStringUTF(hc->env, userId);
+    juserId = (*hc->env)->NewStringUTF(hc->env, userId);
     if (!juserId) {
         logE("New Java String object error");
         return;
     }
-    jobject juserInfo = NULL;
     if (!newJavaUserInfo(hc->env, userInfo, &juserInfo)) {
         logE("Construct Java UserInfo object error");
         (*hc->env)->DeleteLocalRef(hc->env, juserId);
         return;
     }
-    jstring jhello = (*hc->env)->NewStringUTF(hc->env, hello);
+    jhello = (*hc->env)->NewStringUTF(hc->env, hello);
     if (!jhello) {
         logE("New Java String object error");
         (*hc->env)->DeleteLocalRef(hc->env, juserId);
@@ -322,6 +337,7 @@ void cbOnFriendRequest(ElaCarrier* carrier, const char* userId, const ElaUserInf
                         hc->carrier, juserId, juserInfo, jhello)) {
         logE("Call Carrier.Callbacks.OnFriendRequest error");
     }
+
     (*hc->env)->DeleteLocalRef(hc->env, juserId);
     (*hc->env)->DeleteLocalRef(hc->env, juserInfo);
     (*hc->env)->DeleteLocalRef(hc->env, jhello);
@@ -331,21 +347,24 @@ static
 void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const char* message, size_t length,
                        void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jfriendId;
+    jstring jmessage;
+
     assert(carrier);
     assert(friendId);
     assert(message);
     assert(length > 0);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
+    jfriendId = (*hc->env)->NewStringUTF(hc->env, friendId);
     if (!jfriendId) {
         logE("New Java String object error");
         return;
     }
-    jstring jmessage = (*hc->env)->NewStringUTF(hc->env, message);
+    jmessage = (*hc->env)->NewStringUTF(hc->env, message);
     if (!jmessage) {
         logE("New Java String object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
@@ -367,22 +386,25 @@ static
 void cbOnFriendInviteRquest(ElaCarrier* carrier, const char* from, const char* hello,
                             size_t length, void* context)
 {
+    HandlerContext* hc = (HandlerContext*)context;
+    jstring jfrom;
+    jstring jhello;
+
     (void)length;
 
     assert(carrier);
     assert(from);
     assert(hello);
 
-    HandlerContext* hc = (HandlerContext*)context;
     assert(carrier == hc->nativeCarrier);
     assert(hc->env);
 
-    jstring jfrom = (*hc->env)->NewStringUTF(hc->env, from);
+    jfrom = (*hc->env)->NewStringUTF(hc->env, from);
     if (!jfrom) {
         logE("New java String object error");
         return;
     }
-    jstring jhello = (*hc->env)->NewStringUTF(hc->env, hello);
+    jhello = (*hc->env)->NewStringUTF(hc->env, hello);
     if (!jhello) {
         logE("New java String object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfrom);
