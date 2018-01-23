@@ -79,11 +79,11 @@ func (pow *PowService) CollectTransactions(MsgBlock *ledger.Block) int {
 }
 
 func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*tx.Transaction, error) {
-	minerProgramHash, err := ToScriptHash(addr)
+	minerProgramHash, err := Uint68FromAddress(addr)
 	if err != nil {
 		return nil, err
 	}
-	foundationProgramHash, err := ToScriptHash(ledger.FoundationAddress)
+	foundationProgramHash, err := Uint68FromAddress(ledger.FoundationAddress)
 	if err != nil {
 		return nil, err
 	}

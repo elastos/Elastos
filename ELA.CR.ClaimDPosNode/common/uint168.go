@@ -90,7 +90,7 @@ func (f *Uint168) ToAddress() (string, error) {
 	return string(encoded), nil
 }
 
-func Uint168ParseFromBytes(f []byte) (Uint168, error) {
+func Uint168FromBytes(f []byte) (Uint168, error) {
 
 	if len(f) != UINT168SIZE {
 		return Uint168{}, errors.New("[Common]: Uint168ParseFromBytes err, len != 21")
@@ -103,7 +103,7 @@ func Uint168ParseFromBytes(f []byte) (Uint168, error) {
 	return Uint168(hash), nil
 }
 
-func ToScriptHash(address string) (Uint168, error) {
+func Uint68FromAddress(address string) (Uint168, error) {
 	encoding := base58.BitcoinEncoding
 
 	decoded, err := encoding.Decode([]byte(address))
@@ -113,7 +113,7 @@ func ToScriptHash(address string) (Uint168, error) {
 
 	x, _ := new(big.Int).SetString(string(decoded), 10)
 
-	ph, err := Uint168ParseFromBytes(x.Bytes()[0:21])
+	ph, err := Uint168FromBytes(x.Bytes()[0:21])
 	if err != nil {
 		return Uint168{}, err
 	}

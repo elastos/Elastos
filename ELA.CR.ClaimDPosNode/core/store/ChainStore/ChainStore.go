@@ -1,32 +1,27 @@
 package ChainStore
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/common/serialization"
-	. "Elastos.ELA/core/asset"
-	"Elastos.ELA/core/contract/program"
-	. "Elastos.ELA/core/ledger"
-	. "Elastos.ELA/core/store"
-	. "Elastos.ELA/core/store/LevelDBStore"
-	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/core/validation"
-	"Elastos.ELA/events"
-
-	"bytes"
-	"container/list"
-	"errors"
 	"fmt"
 	"sort"
 	"sync"
 	"time"
+	"bytes"
+	"errors"
+	"container/list"
+
+	"Elastos.ELA/events"
+	. "Elastos.ELA/common"
+	"Elastos.ELA/common/log"
+	. "Elastos.ELA/core/asset"
+	. "Elastos.ELA/core/store"
+	. "Elastos.ELA/core/ledger"
+	tx "Elastos.ELA/core/transaction"
+	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/core/contract/program"
+	. "Elastos.ELA/core/store/LevelDBStore"
 )
 
-const (
-	HeaderHashListCount = 2000
-	CleanCacheThreshold = 2
-	TaskChanCap         = 4
-)
+const TaskChanCap = 4
 
 var (
 	ErrDBNotFound = errors.New("leveldb: not found")
@@ -322,34 +317,6 @@ func (bd *ChainStore) verifyHeader(header *Header) bool {
 		return false
 	}
 
-	if prevHeader.Blockdata.Height+1 != header.Blockdata.Height {
-		log.Error("[verifyHeader] failed, prevHeader.Height + 1 != header.Height")
-		return false
-	}
-
-	if prevHeader.Blockdata.Timestamp >= header.Blockdata.Timestamp {
-		log.Error("[verifyHeader] failed, prevHeader.Timestamp >= header.Timestamp")
-		return false
-	}
-
-	flag, err := validation.VerifySignableData(header.Blockdata)
-	if flag == false || err != nil {
-		log.Error("[verifyHeader] failed, VerifySignableData failed.")
-		log.Error(err)
-		return false
-	}
-
-	return true
-}
-
-func (bd *ChainStore) powVerifyHeader(header *Header) bool {
-	prevHeader := bd.getHeaderWithCache(header.Blockdata.PrevBlockHash)
-
-	if prevHeader == nil {
-		log.Error("[verifyHeader] failed, not found prevHeader.")
-		return false
-	}
-
 	// Fixme Consider the forking case
 	if prevHeader.Blockdata.Height+1 != header.Blockdata.Height {
 		log.Error("[verifyHeader] failed, prevHeader.Height + 1 != header.Height")
@@ -360,15 +327,6 @@ func (bd *ChainStore) powVerifyHeader(header *Header) bool {
 		log.Error("[verifyHeader] failed, prevHeader.Timestamp >= header.Timestamp")
 		return false
 	}
-
-	//flag, err := validation.VerifySignableData(header.Blockdata)
-	//if flag == false || err != nil {
-	//	log.Error("[verifyHeader] failed, VerifySignableData failed.")
-	//	log.Error(err)
-	//	return false
-	//}
-
-	//pow verify
 
 	return true
 }
@@ -613,7 +571,7 @@ func (self *ChainStore) handlePersistHeaderTask(header *Header) {
 	//}
 
 	//if config.Parameters.ConsensusType == "pow" {
-	if !self.powVerifyHeader(header) {
+	if !self.verifyHeader(header) {
 		return
 	}
 

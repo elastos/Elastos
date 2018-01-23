@@ -650,7 +650,7 @@ func GetBalanceByAddr(param map[string]interface{}) map[string]interface{} {
 	}
 
 	var programHash Uint168
-	programHash, err := ToScriptHash(param["addr"].(string))
+	programHash, err := Uint68FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -669,7 +669,7 @@ func GetBalanceByAsset(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := ToScriptHash(param["addr"].(string))
+	programHash, err := Uint68FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -693,7 +693,7 @@ func GetUnspends(param map[string]interface{}) map[string]interface{} {
 	}
 	var programHash Uint168
 
-	programHash, err := ToScriptHash(param["addr"].(string))
+	programHash, err := Uint68FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -731,7 +731,7 @@ func GetUnspendOutput(param map[string]interface{}) map[string]interface{} {
 
 	}
 
-	programHash, err := ToScriptHash(param["addr"].(string))
+	programHash, err := Uint68FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
