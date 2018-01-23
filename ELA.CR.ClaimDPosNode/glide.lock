@@ -1,10 +1,6 @@
-hash: 8d41f8c70f407912659ac25e005e8559aabe135d306045a39f900471be424186
-updated: 2018-01-16T11:03:48.812156+08:00
+hash: 146b1f976c2ea967ae9164bc147f8ab559cbe15cc5c2f9b31eb04ad95438d881
+updated: 2018-01-23T14:33:44.041105+08:00
 imports:
-- name: github.com/bitly/go-simplejson
-  version: da1a8928f709389522c8023062a3739f3b4af419
-- name: github.com/dnaproject/gopass
-  version: 3d5cac4c3c49028515a6f149131ef897100b71c2
 - name: github.com/golang/crypto
   version: 08a7dbd3d99261d9ae86ef1b3b8bdb0382fb82cd
   subpackages:
@@ -16,8 +12,6 @@ imports:
   version: a91eba7f97777409bc2c443f5534d41dd20c5720
 - name: github.com/itchyny/base58-go
   version: 4b24a7dfa1bfba3724ffb3598b1c6ded1cff087f
-- name: github.com/mitchellh/go-homedir
-  version: b8bc1bf767474819792c23f32d8286a45736f1c6
 - name: github.com/pborman/uuid
   version: 1b00554d822231195d1babd97ff4a781231955c9
 - name: github.com/pebbe/zmq4
@@ -37,10 +31,4 @@ imports:
   - leveldb/storage
   - leveldb/table
   - leveldb/util
-- name: github.com/urfave/cli
-  version: 4b90d79a682b4bf685762c7452db20f2a676ecb2
-- name: github.com/whyrusleeping/tar-utils
-  version: e8a5890cfc9d59a203361237581468780d945b6e
-- name: github.com/yuin/gopher-lua
-  version: 609c9cd2697344dec90fe0543c6493e3b8da3435
 testImports: []
