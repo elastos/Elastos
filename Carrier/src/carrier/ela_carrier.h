@@ -142,7 +142,7 @@ typedef struct BootstrapNode {
      * \~English
      * The unique public key to provide for Carrier nodes, terminated
      * by null-string.
-     * The length of public key is 64 bytes.
+     * The length of public key is about 45 bytes.
      */
     const char *public_key;
 } BootstrapNode;
