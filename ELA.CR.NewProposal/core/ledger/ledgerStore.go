@@ -18,7 +18,6 @@ type ILedgerStore interface {
 	IsDoubleSpend(tx *tx.Transaction) bool
 
 	//SaveHeader(header *Header,ledger *Ledger) error
-	AddHeaders(headers []Header, ledger *Ledger) error
 	GetHeader(hash Uint256) (*Header, error)
 
 	RollbackBlock(blockHash Uint256) error
