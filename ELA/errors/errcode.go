@@ -10,7 +10,7 @@ const (
 	ErrAssetPrecision       ErrCode = 45005
 	ErrTransactionBalance   ErrCode = 45006
 	ErrAttributeProgram     ErrCode = 45007
-	ErrTransactionContracts ErrCode = 45008
+	ErrTransactionSignature ErrCode = 45008
 	ErrTransactionPayload   ErrCode = 45009
 	ErrDoubleSpend          ErrCode = 45010
 	ErrTxHashDuplicate      ErrCode = 45011
@@ -54,7 +54,7 @@ var ErrMap = map[ErrCode]string{
 	ErrAssetPrecision:       "INTERNAL ERROR, ErrAssetPrecision",
 	ErrTransactionBalance:   "INTERNAL ERROR, ErrTransactionBalance",
 	ErrAttributeProgram:     "INTERNAL ERROR, ErrAttributeProgram",
-	ErrTransactionContracts: "INTERNAL ERROR, ErrTransactionContracts",
+	ErrTransactionSignature: "INTERNAL ERROR, ErrTransactionSignature",
 	ErrTransactionPayload:   "INTERNAL ERROR, ErrTransactionPayload",
 	ErrDoubleSpend:          "INTERNAL ERROR, ErrDoubleSpend",
 	ErrTxHashDuplicate:      "INTERNAL ERROR, ErrTxHashDuplicate",

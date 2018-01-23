@@ -1,31 +1,9 @@
 package common
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
-	"github.com/golang/crypto/ripemd160"
-	"io"
+	"encoding/hex"
 )
-
-func ToCodeHash(code []byte, signType int) (Uint168, error) {
-	temp := sha256.Sum256(code)
-	md := ripemd160.New()
-	io.WriteString(md, string(temp[:]))
-	f := md.Sum(nil)
-
-	if signType == 1 {
-		f = append([]byte{33}, f...)
-	} else if signType == 2 {
-		f = append([]byte{18}, f...)
-	}
-
-	hash, err := Uint168ParseFromBytes(f)
-	if err != nil {
-		return Uint168{}, errors.New("[Common] , ToCodeHash err.")
-	}
-	return hash, nil
-}
 
 func BytesToHexString(data []byte) string {
 	return hex.EncodeToString(data)
