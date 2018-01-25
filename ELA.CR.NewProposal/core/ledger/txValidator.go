@@ -32,11 +32,6 @@ func CheckTransactionSanity(txn *tx.Transaction) ErrCode {
 		return ErrInvalidOutput
 	}
 
-	if err := CheckTransactionUTXOLock(txn); err != nil {
-		log.Warn("[CheckTransactionUTXOLock],", err)
-		return ErrUTXOLocked
-	}
-
 	if err := CheckAssetPrecision(txn); err != nil {
 		log.Warn("[CheckAssetPrecesion],", err)
 		return ErrAssetPrecision
@@ -55,16 +50,6 @@ func CheckTransactionSanity(txn *tx.Transaction) ErrCode {
 	// check iterms above for Coinbase transaction
 	if txn.IsCoinBaseTx() {
 		return Success
-	}
-
-	if err := CheckTransactionBalance(txn); err != nil {
-		log.Warn("[CheckTransactionBalance],", err)
-		return ErrTransactionBalance
-	}
-
-	if err := CheckTransactionSignature(txn); err != nil {
-		log.Warn("[CheckTransactionSignature],", err)
-		return ErrTransactionSignature
 	}
 
 	return Success
@@ -88,6 +73,20 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 		return ErrDoubleSpend
 	}
 
+	if err := CheckTransactionUTXOLock(txn); err != nil {
+		log.Warn("[CheckTransactionUTXOLock],", err)
+		return ErrUTXOLocked
+	}
+
+	if err := CheckTransactionBalance(txn); err != nil {
+		log.Warn("[CheckTransactionBalance],", err)
+		return ErrTransactionBalance
+	}
+
+	if err := CheckTransactionSignature(txn); err != nil {
+		log.Warn("[CheckTransactionSignature],", err)
+		return ErrTransactionSignature
+	}
 	// check referenced Output value
 	for _, input := range txn.UTXOInputs {
 		referHash := input.ReferTxID
