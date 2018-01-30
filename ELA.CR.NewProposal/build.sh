@@ -27,29 +27,6 @@ install_package_ubuntu()
     sudo apt-get install -y $PKG_NAME
 }
 
-install_source_ubuntu()
-{
-    if [ -f "/usr/local/lib/libzmq.so.5.1.2" ]; then
-        echo "INFO: /usr/local/lib/libzmq.so.5.1.2 exist."
-        return
-    fi
-
-    mkdir -p $SRC_PATH/deps/
-    cd $SRC_PATH/deps/
-
-    echo "Downloading zeromq..."
-    wget -q "https://github.com/zeromq/libzmq/releases/download/v4.2.2/zeromq-4.2.2.tar.gz" -O zeromq-4.2.2.tar.gz
-    tar xf zeromq-4.2.2.tar.gz
-
-    echo "Building zeromq..."
-    cd zeromq-4.2.2
-    ./configure -q
-    make -s -j$NCPU
-
-    echo "Installing zeromq..."
-    sudo make -s install
-    sudo ldconfig
-}
 
 install_package_macosx()
 {
@@ -138,10 +115,6 @@ setenv()
         NCPU=$(($(grep '^processor' /proc/cpuinfo | wc -l) * 2))
     elif [ "$(uname -s)" == "Darwin" ]; then
         NCPU=$(($(sysctl -n hw.ncpu) * 2))
-    fi
-
-    if [ "$OS_NAME" == "Linux" ]; then
-        install_source_ubuntu
     fi
 }
 
