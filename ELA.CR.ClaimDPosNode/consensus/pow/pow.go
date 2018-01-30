@@ -47,7 +47,6 @@ type msgBlock struct {
 type PowService struct {
 	PayToAddr     string
 	MsgBlock      msgBlock
-	ZMQPublish    chan bool
 	Mutex         sync.Mutex
 	logDictionary string
 	started       bool
@@ -375,7 +374,6 @@ func NewPowService(logDictionary string, localNet protocol.Noder) *PowService {
 		started:       false,
 		manualMining:  false,
 		MsgBlock:      msgBlock{BlockData: make(map[string]*ledger.Block)},
-		ZMQPublish:    make(chan bool, 1),
 		localNet:      localNet,
 		logDictionary: logDictionary,
 	}
@@ -383,8 +381,7 @@ func NewPowService(logDictionary string, localNet protocol.Noder) *PowService {
 	pow.blockPersistCompletedSubscriber = ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
 	pow.RollbackTransactionSubscriber = ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
 
-	go pow.ZMQServer()
-	log.Trace("pow Service Init succeed and ZMQServer start succeed")
+	log.Trace("pow Service Init succeed")
 	return pow
 }
 
@@ -409,8 +406,6 @@ out:
 			continue
 		}
 
-		// push notifyed message into ZMQ
-		pow.ZMQPublish <- true
 
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {
@@ -425,7 +420,6 @@ out:
 				if isOrphan || !inMainChain {
 					continue
 				}
-				//pow.ZMQClientSend(*msgBlock)
 				pow.BroadcastBlock(msgBlock)
 			}
 		}
