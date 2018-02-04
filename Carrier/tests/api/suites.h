@@ -65,7 +65,7 @@ typedef struct TestSuite {
 
 TestSuite suites[] = {
     DEFINE_CARRIER_TESTSUITES,
- //   DEFINE_SESSION_TESTSUITES,
+    DEFINE_SESSION_TESTSUITES,
     DEFINE_TESTSUITE_NULL
 };
 
