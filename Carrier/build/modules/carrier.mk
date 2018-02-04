@@ -2,7 +2,7 @@ include environ/$(HOST)-$(ARCH).mk
 
 SRC_DIR  = $(ROOT_DIR)/src
 APPS_DIR = $(ROOT_DIR)/apps
-#TESTS_DIR = $(ROOT_DIR)/tests
+TESTS_DIR = $(ROOT_DIR)/tests
 
 define source-fetch
     @echo "Dummy source fetch ..."
