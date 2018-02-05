@@ -605,7 +605,7 @@ diff -ru c-toxcore-0.1.10/toxcore/network.h c-toxcore-0.1.10.patch/toxcore/netwo
 +#include <alloca.h>
 +#include <arpa/inet.h>
 +
-+static const uint32_t _w_magic = 0x77686973; //'whis';
++static const uint32_t _w_magic = 0x69766567; //'ELAC';
 +
 +static inline
 +size_t ela_magic_size(void)
