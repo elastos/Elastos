@@ -185,7 +185,7 @@ func GenesisBlockInit() (*Block, error) {
 				AssetType: 0x00,
 			},
 			Amount:     0 * 100000000,
-			Controller: Uint168{},
+			Controller: EmptyValue,
 		},
 		Attributes: []*tx.TxAttribute{},
 		UTXOInputs: []*tx.UTXOTxInput{},
