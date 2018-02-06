@@ -12,6 +12,14 @@ type BalanceTxInput struct {
 	ProgramHash common.Uint168
 }
 
+func (self BalanceTxInput) String() string {
+	return "BalanceTxInput: {\n\t\t" +
+		"AssetID: " + self.AssetID.String() + "\n\t\t" +
+		"Value: " + self.Value.String() + "\n\t\t" +
+		"ProgramHash: " + self.ProgramHash.String() + "\n\t\t" +
+		"}"
+}
+
 func (bi *BalanceTxInput) Serialize(w io.Writer)  {
 	bi.AssetID.Serialize(w)
 	bi.Value.Serialize(w)

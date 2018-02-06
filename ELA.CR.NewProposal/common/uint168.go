@@ -15,7 +15,13 @@ import (
 //In fact, It is UINT168 now.
 const UINT168SIZE = 21
 
+var EmptyValue = Uint168{}
+
 type Uint168 [UINT168SIZE]uint8
+
+func (self Uint168) String() string {
+	return BytesToHexString(self.ToArray())
+}
 
 func (u *Uint168) CompareTo(o Uint168) int {
 	x := u.ToArray()
@@ -33,6 +39,13 @@ func (u *Uint168) CompareTo(o Uint168) int {
 	return 0
 }
 
+func (u *Uint168) Valid() bool {
+	if u[0] == 18 || u[0] == 33 || *u == EmptyValue {
+		return true
+	}
+	return false
+}
+
 func (u *Uint168) ToArray() []byte {
 	var x = make([]byte, UINT168SIZE)
 	for i := 0; i < UINT168SIZE; i++ {
@@ -41,6 +54,7 @@ func (u *Uint168) ToArray() []byte {
 
 	return x
 }
+
 func (u *Uint168) ToArrayReverse() []byte {
 	var x = make([]byte, UINT168SIZE)
 	for i, j := 0, UINT168SIZE-1; i < j; i, j = i+1, j-1 {
@@ -48,11 +62,17 @@ func (u *Uint168) ToArrayReverse() []byte {
 	}
 	return x
 }
-func (u *Uint168) Serialize(w io.Writer) (int, error) {
-	b_buf := bytes.NewBuffer([]byte{})
-	binary.Write(b_buf, binary.LittleEndian, u)
 
-	len, err := w.Write(b_buf.Bytes())
+func (u *Uint168) Serialize(w io.Writer) (int, error) {
+	buf := bytes.NewBuffer([]byte{})
+	binary.Write(buf, binary.LittleEndian, u)
+
+	bytes := buf.Bytes()
+	if !u.Valid() {
+		return 0, errors.New("[Uint168] serialize failed, unknown prefix")
+	}
+
+	len, err := w.Write(bytes)
 
 	if err != nil {
 		return 0, err
@@ -61,7 +81,7 @@ func (u *Uint168) Serialize(w io.Writer) (int, error) {
 	return len, nil
 }
 
-func (f *Uint168) Deserialize(r io.Reader) error {
+func (u *Uint168) Deserialize(r io.Reader) error {
 	p := make([]byte, UINT168SIZE)
 	n, err := r.Read(p)
 
@@ -69,14 +89,22 @@ func (f *Uint168) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	b_buf := bytes.NewBuffer(p)
-	binary.Read(b_buf, binary.LittleEndian, f)
+	buf := bytes.NewBuffer(p)
+	binary.Read(buf, binary.LittleEndian, u)
+
+	if !u.Valid() {
+		return errors.New("[Uint168] deserialize failed, unknown prefix")
+	}
 
 	return nil
 }
 
-func (f *Uint168) ToAddress() (string, error) {
-	data := f.ToArray()
+func (u *Uint168) ToAddress() (string, error) {
+	if !u.Valid() {
+		return "", errors.New("[Uint168] to address failed, unknown prefix")
+	}
+
+	data := u.ToArray()
 	temp := sha256.Sum256(data)
 	temps := sha256.Sum256(temp[:])
 	data = append(data, temps[0:4]...)
@@ -87,20 +115,25 @@ func (f *Uint168) ToAddress() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(encoded), nil
 }
 
-func Uint168FromBytes(f []byte) (Uint168, error) {
-
-	if len(f) != UINT168SIZE {
-		return Uint168{}, errors.New("[Common]: Uint168ParseFromBytes err, len != 21")
+func Uint168FromBytes(bytes []byte) (Uint168, error) {
+	if len(bytes) != UINT168SIZE {
+		return Uint168{}, errors.New("Uint168FromBytes err, len != 21")
 	}
 
-	var hash [UINT168SIZE]uint8
+	if bytes[0] != 18 && bytes[0] != 33 {
+		return Uint168{}, errors.New("invalid address type, unknown prefix")
+	}
+
+	var hash = Uint168{}
 	for i := 0; i < UINT168SIZE; i++ {
-		hash[i] = f[i]
+		hash[i] = bytes[i]
 	}
-	return Uint168(hash), nil
+
+	return hash, nil
 }
 
 func Uint68FromAddress(address string) (Uint168, error) {
