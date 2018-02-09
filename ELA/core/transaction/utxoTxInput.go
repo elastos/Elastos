@@ -19,6 +19,14 @@ type UTXOTxInput struct {
 	Sequence uint32
 }
 
+func (self UTXOTxInput) String() string {
+	return "UTXOTxInput: {\n\t\t" +
+		"ReferTxID: " + self.ReferTxID.String() + "\n\t\t" +
+		"ReferTxOutputIndex: " + fmt.Sprint(self.ReferTxOutputIndex) + "\n\t\t" +
+		"Sequence: " + fmt.Sprint(self.Sequence) + "\n\t\t" +
+		"}"
+}
+
 func (ui *UTXOTxInput) Serialize(w io.Writer) {
 	ui.ReferTxID.Serialize(w)
 	serialization.WriteUint16(w, ui.ReferTxOutputIndex)
@@ -49,7 +57,7 @@ func (ui *UTXOTxInput) Deserialize(r io.Reader) error {
 }
 
 func (ui *UTXOTxInput) ToString() string {
-	return fmt.Sprintf("%x%x", ui.ReferTxID.ToString(), ui.ReferTxOutputIndex)
+	return fmt.Sprintf("%x%x", ui.ReferTxID.String(), ui.ReferTxOutputIndex)
 }
 
 func (ui *UTXOTxInput) Equals(other *UTXOTxInput) bool {
