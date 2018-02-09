@@ -264,18 +264,19 @@ func (bd *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	if err != nil {
 		return Uint256{}, err
 	}
-	blockHash, err_get := bd.Get(queryKey.Bytes())
-	if err_get != nil {
+	blockHash, err := bd.Get(queryKey.Bytes())
+	if err != nil {
 		//TODO: implement error process
-		return Uint256{}, err_get
+		return Uint256{}, err
 	}
-	blockHash256, err_parse := Uint256ParseFromBytes(blockHash)
-	if err_parse != nil {
-		return Uint256{}, err_parse
+	blockHash256, err := Uint256ParseFromBytes(blockHash)
+	if err != nil {
+		return Uint256{}, err
 	}
 
 	return blockHash256, nil
 }
+
 func (bd *ChainStore) getHeaderWithCache(hash Uint256) *Header {
 	for e := bd.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)

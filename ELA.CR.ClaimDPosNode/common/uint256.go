@@ -43,10 +43,10 @@ func (u *Uint256) ToArrayReverse() []byte {
 	return x
 }
 func (u *Uint256) Serialize(w io.Writer) (int, error) {
-	b_buf := bytes.NewBuffer([]byte{})
-	binary.Write(b_buf, binary.LittleEndian, u)
+	buf := bytes.NewBuffer([]byte{})
+	binary.Write(buf, binary.LittleEndian, u)
 
-	len, err := w.Write(b_buf.Bytes())
+	len, err := w.Write(buf.Bytes())
 
 	if err != nil {
 		return 0, err
@@ -63,14 +63,14 @@ func (u *Uint256) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	b_buf := bytes.NewBuffer(p)
-	binary.Read(b_buf, binary.LittleEndian, u)
+	buf := bytes.NewBuffer(p)
+	binary.Read(buf, binary.LittleEndian, u)
 
 	return nil
 }
 
-func (u *Uint256) ToString() string {
-	return string(u.ToArray())
+func (u *Uint256) String() string {
+	return BytesToHexString(u.ToArray())
 }
 
 func Uint256ParseFromBytes(f []byte) (Uint256, error) {
