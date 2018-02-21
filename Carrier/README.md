@@ -109,11 +109,12 @@ You need to get android NDK packages to build carrier NDKs for several targets, 
 ##### 1. Prepare enviroment
 
 Download android NDK package for Linux (r13b or higher), and unzip it to $YOUR-PATH/TO.
+Latest Stable Version (r16b): https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
 
 Add the following command to ${HOME}/.bashrc to setup $ANDROID_NDK_HOME environment.
 
 ```shell
-export ANDROID_NDK_HOME=YOUR-PATH/TO/android-ndk-r13b
+export ANDROID_NDK_HOME=YOUR-PATH/TO/android-ndk-r16b
 ```
 
 Then run the command to make effect.
