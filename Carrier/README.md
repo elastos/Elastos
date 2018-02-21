@@ -22,6 +22,11 @@ $ cd /tmp/flatcc-0.5.0/build/install && cmake ../.. -DFLATCC_INSTALL=on
 $ cd /tmp/flatcc-0.5.0/build/install && sudo make install
 ```
 
+To clone the repository in your environment:
+```shell
+$ cd ~
+$ git clone --recurse-submodules https://github.com/elastos/Elastos.NET.Carrier.Native.SDK.git
+```
 #### 2. Build
 
 Change to `$(SRC_ROOT)/build` directory, and run:
