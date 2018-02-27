@@ -76,12 +76,6 @@ extern "C" {
 
 /**
  * \~English
- * Carrier user password max length.
- */
-#define ELA_MAX_PASSWORD_LEN            63
-
-/**
- * \~English
  * Carrier user description max length.
  */
 #define ELA_MAX_USER_DESCRIPTION_LEN    127
@@ -522,7 +516,7 @@ typedef struct ElaCallbacks {
      *      context     [in] The application defined context data.
      */
     void (*friend_presence)(ElaCarrier *carrier, const char *friendid,
-                            ElaPresenceStatus status, void *context);
+                            ElaPresenceStatus presence, void *context);
 
     /**
      * \~English
@@ -581,7 +575,7 @@ typedef struct ElaCallbacks {
      * @param
      *      carrier     [in] A handle to the Carrier node instance.
      * @param
-     *      from        [in] The id(userid@nodeid) from who send the message.
+     *      from        [in] The user id from who send the message.
      * @param
      *      msg         [in] The message content.
      * @param
@@ -870,7 +864,7 @@ int ela_get_self_info(ElaCarrier *carrier, ElaUserInfo *info);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_set_self_presence(ElaCarrier *carrier, ElaPresenceStatus status);
+int ela_set_self_presence(ElaCarrier *carrier, ElaPresenceStatus presence);
 
 /**
  * \~English
@@ -886,7 +880,7 @@ int ela_set_self_presence(ElaCarrier *carrier, ElaPresenceStatus status);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_get_self_presence(ElaCarrier *carrier, ElaPresenceStatus *status);
+int ela_get_self_presence(ElaCarrier *carrier, ElaPresenceStatus *presence);
 
 /**
  * \~English

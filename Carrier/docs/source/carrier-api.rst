@@ -22,12 +22,6 @@ ELA_MAX_USER_NAME_LEN
 .. doxygendefine:: ELA_MAX_USER_NAME_LEN
    :project: CarrierAPI
 
-ELA_MAX_PASSWORD_LEN
-####################
-
-.. doxygendefine:: ELA_MAX_PASSWORD_LEN
-   :project: CarrierAPI
-
 ELA_MAX_USER_DESCRIPTION_LEN
 ############################
 
