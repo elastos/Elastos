@@ -22,11 +22,6 @@ $ cd /tmp/flatcc-0.5.0/build/install && cmake ../.. -DFLATCC_INSTALL=on
 $ cd /tmp/flatcc-0.5.0/build/install && sudo make install
 ```
 
-To clone the repository in your environment:
-```shell
-$ cd ~
-$ git clone --recurse-submodules https://github.com/elastos/Elastos.NET.Carrier.Native.SDK.git
-```
 #### 2. Build
 
 Change to `$(SRC_ROOT)/build` directory, and run:
@@ -108,8 +103,7 @@ You need to get android NDK packages to build carrier NDKs for several targets, 
 
 ##### 1. Prepare enviroment
 
-Download android NDK package for Linux (r13b or higher), and unzip it to $YOUR-PATH/TO.
-Latest Stable Version (r16b): https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
+Download android NDK package for Linux (r13b or higher, suggested for r16b), and unzip it to $YOUR-PATH/TO.
 
 Add the following command to ${HOME}/.bashrc to setup $ANDROID_NDK_HOME environment.
 
