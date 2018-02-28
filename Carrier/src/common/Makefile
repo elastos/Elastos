@@ -20,6 +20,7 @@ ifneq (,$(findstring $(HOST), Darwin iOS))
 else
 ifneq (, $(findstring $(HOST), Android))
 	CFLAGS := $(CFLAGS) -Iandroid
+        LDFLAGS := $(LDFLAGS) -llog
 endif
 endif
 
