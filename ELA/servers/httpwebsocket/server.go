@@ -28,8 +28,8 @@ var instance *WebSocketServer
 
 var (
 	PushBlockFlag    = true
-	PushRawBlockFlag = false
-	PushBlockTxsFlag = false
+	PushRawBlockFlag = true
+	PushBlockTxsFlag = true
 	PushNewTxsFlag   = true
 )
 
@@ -46,14 +46,15 @@ type WebSocketServer struct {
 }
 
 func StartServer() {
+	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
+	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
+
 	instance = &WebSocketServer{
 		Upgrader:    websocket.Upgrader{},
 		SessionList: &SessionList{OnlineList: make(map[string]*Session)},
 	}
 	instance.Start()
 
-	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
-	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
 }
 
 func (server *WebSocketServer) Start() {
@@ -287,6 +288,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	}
 
 	resp := ResponsePack(Success, result)
+	resp["Action"] = action
 
 	data, err := json.Marshal(resp)
 	if err != nil {
