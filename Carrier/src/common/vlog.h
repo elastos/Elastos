@@ -41,7 +41,7 @@ extern "C" {
 #if defined(__ANDROID__)
 
 #include <android/log.h>
-#define LOG_TAG "wmcore"
+#define LOG_TAG "carrier"
 
 #define vlogF(format, args...) \
     __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, format, ##args)
