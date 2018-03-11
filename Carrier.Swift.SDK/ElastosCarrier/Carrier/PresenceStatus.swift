@@ -25,7 +25,7 @@ import Foundation
 /**
     Carrier node presence status to friends
  */
-@objc(ELACarrierConnectionStatus)
+@objc(ELACarrierPresenceStatus)
 
 public enum CarrierPresenceStatus : Int, CustomStringConvertible {
 

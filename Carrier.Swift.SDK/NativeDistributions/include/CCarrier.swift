@@ -102,7 +102,7 @@ internal struct COptions {
      * \~English
      * The array of bootstrap nodes.
      */
-    var bootstraps: UnsafePointer<[CBootstrapNode]>?
+    var bootstraps: UnsafePointer<CBootstrapNode>?
 
     init() {}
 }
