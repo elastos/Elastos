@@ -72,13 +72,13 @@ public class CarrierOptions: NSObject {
 
 internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COptions {
     var cOptions = COptions()
-    var cNodes: UnsafeMutablePointer<[CBootstrapNode]>?
+    var cNodes: UnsafeMutablePointer<CBootstrapNode>?
 
     cOptions.persistent_location = createCStringDuplicate(options.persistentLocation)
     cOptions.udp_enabled = options.udpEnabled
     (cNodes, cOptions.bootstraps_size) = convertBootstrapNodesToCBootstrapNodes(options.bootstrapNodes!)
 
-    cOptions.bootstraps = UnsafePointer<[CBootstrapNode]>(cNodes)
+    cOptions.bootstraps = UnsafePointer<CBootstrapNode>(cNodes)
 
     return cOptions
 }
@@ -86,5 +86,5 @@ internal func convertCarrierOptionsToCOptions(_ options : CarrierOptions) -> COp
 internal func cleanupCOptions(_ cOptions : COptions) {
     deallocCString(cOptions.persistent_location)
     cleanupCBootstrap(cOptions.bootstraps!, cOptions.bootstraps_size)
-    UnsafeMutablePointer<[CBootstrapNode]>(mutating: cOptions.bootstraps)?.deallocate(capacity: cOptions.bootstraps_size)
+    UnsafeMutablePointer<CBootstrapNode>(mutating: cOptions.bootstraps)?.deallocate(capacity: cOptions.bootstraps_size)
 }

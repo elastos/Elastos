@@ -30,14 +30,10 @@ public class BootstrapNode: NSObject {
     private var _port       : String?
     private var _publicKey  : String?
 
-    internal override init() {
-        super.init()
-    }
-
     /**
         Ipv4 address.
      */
-    public internal(set) var ipv4: String?  {
+    public var ipv4: String?  {
         set {
             _ipv4 = newValue
         }
@@ -49,7 +45,7 @@ public class BootstrapNode: NSObject {
     /**
         Ipv6 address.
      */
-    public internal(set) var ipv6: String?  {
+    public var ipv6: String?  {
         set {
             _ipv6 = newValue
         }
@@ -61,7 +57,7 @@ public class BootstrapNode: NSObject {
     /**
         Port.
      */
-    public internal(set) var port: String?  {
+    public var port: String?  {
         set {
             _port = newValue
         }
@@ -73,7 +69,7 @@ public class BootstrapNode: NSObject {
     /**
         public address.
      */
-    public internal(set) var publicKey: String?  {
+    public var publicKey: String?  {
         set {
             _publicKey = newValue
         }
@@ -95,17 +91,17 @@ public class BootstrapNode: NSObject {
     }
 }
 
-internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -> (UnsafeMutablePointer<[CBootstrapNode]>?, Int) {
-    var cNodes: UnsafeMutablePointer<[CBootstrapNode]>?
+internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -> (UnsafeMutablePointer<CBootstrapNode>?, Int) {
+    var cNodes: UnsafeMutablePointer<CBootstrapNode>?
 
-    cNodes = UnsafeMutablePointer<[CBootstrapNode]>.allocate(capacity: nodes.count)
+    cNodes = UnsafeMutablePointer<CBootstrapNode>.allocate(capacity: nodes.count)
     if cNodes == nil {
         return (nil, 0)
     }
 
     for (index, node) in nodes.enumerated() {
-        var cNode: CBootstrapNode = cNodes!.pointee[index]
 
+        var cNode = CBootstrapNode()
         node.ipv4?.withCString { (ipv4) in
             cNode.ipv4 = UnsafePointer<Int8>(strdup(ipv4))
         }
@@ -118,16 +114,17 @@ internal func convertBootstrapNodesToCBootstrapNodes(_ nodes: [BootstrapNode]) -
         node.publicKey?.withCString { (publicKey) in
             cNode.public_key = UnsafePointer<Int8>(strdup(publicKey));
         }
+        
+        (cNodes! + index).initialize(to: cNode)
     }
 
     return (cNodes, nodes.count)
 }
 
-internal func cleanupCBootstrap(_ cNodes: UnsafePointer<[CBootstrapNode]>, _ count: Int) -> Void {
+internal func cleanupCBootstrap(_ cNodes: UnsafePointer<CBootstrapNode>, _ count: Int) -> Void {
 
     for index in 0..<count {
-        let cNode: CBootstrapNode = cNodes.pointee[index]
-
+        let cNode: CBootstrapNode = (cNodes + index).pointee
         if cNode.ipv4 != nil {
             free(UnsafeMutablePointer<Int8>(mutating: cNode.ipv4))
         }
