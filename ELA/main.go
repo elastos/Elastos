@@ -65,6 +65,7 @@ func main() {
 	//var blockChain *ledger.Blockchain
 	var err error
 	var noder protocol.Noder
+	log.Trace("Node version: ", config.Version)
 	log.Info("1. BlockChain init")
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
