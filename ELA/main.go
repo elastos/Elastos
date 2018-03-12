@@ -53,11 +53,11 @@ func handleLogFile() {
 
 }
 
-func startConsensus() {
-	servers.Pow = pow.NewPowService("logPow")
+func startConsensus(noder protocol.Noder) {
+	servers.LocalPow = pow.NewPowService("logPow", noder)
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
-		go servers.Pow.Start()
+		go servers.LocalPow.Start()
 	}
 }
 

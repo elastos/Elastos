@@ -48,7 +48,7 @@ type PowService struct {
 	MsgBlock      msgBlock
 	Mutex         sync.Mutex
 	logDictionary string
-	started       bool
+	Started       bool
 	manualMining  bool
 
 	blockPersistCompletedSubscriber events.Subscriber
@@ -227,12 +227,12 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 func (pow *PowService) ManualMining(n uint32) ([]*common.Uint256, error) {
 	pow.Mutex.Lock()
 
-	if pow.started || pow.manualMining {
+	if pow.Started || pow.manualMining {
 		pow.Mutex.Unlock()
 		return nil, errors.New("Server is already CPU mining.")
 	}
 
-	pow.started = true
+	pow.Started = true
 	pow.manualMining = true
 	pow.Mutex.Unlock()
 
@@ -268,7 +268,7 @@ func (pow *PowService) ManualMining(n uint32) ([]*common.Uint256, error) {
 				i++
 				if i == n {
 					pow.Mutex.Lock()
-					pow.started = false
+					pow.Started = false
 					pow.manualMining = false
 					pow.Mutex.Unlock()
 					return blockHashes, nil
@@ -314,13 +314,13 @@ func (pow *PowService) BroadcastBlock(MsgBlock *Block) error {
 func (pow *PowService) Start() {
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
-	if pow.started || pow.manualMining {
-		log.Trace("cpuMining is already started")
+	if pow.Started || pow.manualMining {
+		log.Trace("cpuMining is already Started")
 	}
 
 	pow.quit = make(chan struct{})
 	pow.wg.Add(1)
-	pow.started = true
+	pow.Started = true
 
 	go pow.cpuMining()
 }
@@ -330,13 +330,13 @@ func (pow *PowService) Halt() {
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
 
-	if !pow.started || pow.manualMining {
+	if !pow.Started || pow.manualMining {
 		return
 	}
 
 	close(pow.quit)
 	pow.wg.Wait()
-	pow.started = false
+	pow.Started = false
 }
 
 func (pow *PowService) RollbackTransaction(v interface{}) {
@@ -367,7 +367,7 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 func NewPowService(logDictionary string) *PowService {
 	pow := &PowService{
 		PayToAddr:     config.Parameters.PowConfiguration.PayToAddr,
-		started:       false,
+		Started:       false,
 		manualMining:  false,
 		MsgBlock:      msgBlock{BlockData: make(map[string]*Block)},
 		logDictionary: logDictionary,
