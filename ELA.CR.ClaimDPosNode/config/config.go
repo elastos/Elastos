@@ -19,7 +19,8 @@ const (
 
 var (
 	Parameters configParams
-	mainNet    = &ChainParams{
+	Version    string
+	mainNet = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
 		PowLimitBits:       0x1f0008ff,
