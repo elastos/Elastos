@@ -57,10 +57,6 @@ var (
 
 type PowConfiguration struct {
 	PayToAddr        string `json:"PayToAddr"`
-	MiningServerIP   string `josn:"MiningServerIP"`
-	MiningServerPort int    `josn:"MiningServerPort"`
-	MiningSelfPort   int    `josn:"MiningSelfPort"`
-	TestNet          bool   `json:"testnet"`
 	AutoMining       bool   `json:"AutoMining"`
 	MinerInfo        string `json:"MinerInfo"`
 	MinTxFee         int    `json:"MinTxFee"`
