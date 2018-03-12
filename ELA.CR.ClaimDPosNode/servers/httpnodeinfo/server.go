@@ -29,18 +29,18 @@ type NgbNodeInfo struct {
 	NbrAddr string
 }
 
-var node = servers.NodeForServers
-
 var templates = template.Must(template.New("info").Parse(page))
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	var ngbrNodersInfo []NgbNodeInfo
+	var node = servers.NodeForServers
+
 	ngbrNoders := node.GetNeighborNoder()
 
 	for i := 0; i < len(ngbrNoders); i++ {
 		ngbrNodersInfo = append(ngbrNodersInfo, NgbNodeInfo{
 			NgbId:   fmt.Sprintf("0x%x", ngbrNoders[i].ID()),
-			NbrAddr: ngbrNoders[i].Addr() + ":" + strconv.Itoa(ngbrNoders[i].HttpInfoPort()),
+			NbrAddr: ngbrNoders[i].Addr(),
 		})
 	}
 
