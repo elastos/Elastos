@@ -124,9 +124,9 @@ func (node *node) GetNeighborHeights() ([]uint64, uint64) {
 }
 
 func (node *node) GetNeighborNoder() []Noder {
+
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
-
 	nodes := []Noder{}
 	for _, n := range node.nbrNodes.List {
 		if n.State() == ESTABLISH {
