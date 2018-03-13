@@ -6,10 +6,10 @@
       "127.0.0.1:30338",
       "127.0.0.1:20338"
     ],
-    "HttpInfoPort": 30333,
+    "HttpInfoPort": 20333,
     "HttpInfoStart": true,
-    "HttpRestPort": 30334,
-    "HttpWsPort": 30335,
+    "HttpRestPort": 20334,
+    "HttpWsPort": 20335,
     "WsHeartbeatInterval": 60,
     "HttpJsonPort": 20336,
     "SPVService": true,
