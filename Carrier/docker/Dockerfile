@@ -16,7 +16,7 @@ RUN set -ex                                                                     
     groupadd -f -g $USER_GID $USER_NAME                                             && \
     useradd -lm -p $DEFAULT_PASSWORD -u $USER_UID -g $USER_GID $USER_NAME           && \
     usermod -aG sudo $USER_NAME                                                     && \
-    echo 'D' > /etc/debian_chroot                                                 && \
+    echo 'D' > /etc/debian_chroot                                                   && \
     apt-get update && apt-get install -y                                               \
         sudo \
         vim \
@@ -25,6 +25,7 @@ RUN set -ex                                                                     
         libtool \
         build-essential \
         net-tools \
+        fakeroot \
         tofrodos \
         flex \
         bison \
