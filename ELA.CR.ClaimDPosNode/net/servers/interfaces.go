@@ -420,7 +420,7 @@ func SubmitBlock(param map[string]interface{}) map[string]interface{} {
 	if _, _, err := ledger.DefaultLedger.Blockchain.AddBlock(&block); err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
-	if err := NodeForServers.Xmit(&block); err != nil {
+	if err := NodeForServers.Relay(nil, &block); err != nil {
 		return ResponsePack(InternalError, "")
 	}
 

@@ -99,7 +99,6 @@ type Noder interface {
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
 
-	Xmit(interface{}) error
 	GetNeighborHeights() ([]uint64, uint64)
 	WaitForSyncFinish()
 	CleanSubmittedTransactions(block *ledger.Block) error
