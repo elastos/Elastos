@@ -50,6 +50,18 @@
 #define TURN_SERVER_USER_SUFFIX         "auth.tox"
 #define TURN_REALM                      "elastos.org"
 
+#if defined(__ANDROID__)
+extern int PJ_JNI_OnLoad(void *vm, void* reserved);
+
+bool ela_android_onload(void *vm, void *reserved)
+{
+    int rc;
+
+    rc = PJ_JNI_OnLoad(vm, reserved);
+    return (rc >= 0);
+}
+#endif
+
 const char* ela_get_version(void)
 {
     return "elacarrier-5.0.1";
