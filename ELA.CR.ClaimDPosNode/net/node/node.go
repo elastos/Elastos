@@ -21,6 +21,7 @@ import (
 	"encoding/binary"
 	"bytes"
 	"crypto/sha256"
+	"Elastos.ELA/bloom"
 )
 
 type Semaphore chan struct{}
@@ -34,22 +35,23 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	state    uint32   // node state
-	id       uint64   // The nodes's id
-	version  uint32   // The network protocol the node used
-	services uint64   // The services the node supplied
-	relay    bool     // The relay capability of the node (merge into capbility flag)
-	height   uint64   // The node latest block height
-	txnCnt   uint64   // The transactions be transmit by this node
-	rxTxnCnt uint64   // The transaction received by this node
+	state    uint32 // node state
+	id       uint64 // The nodes's id
+	version  uint32 // The network protocol the node used
+	services uint64 // The services the node supplied
+	relay    bool   // The relay capability of the node (merge into capbility flag)
+	height   uint64 // The node latest block height
+	txnCnt   uint64 // The transactions be transmit by this node
+	rxTxnCnt uint64 // The transaction received by this node
 	// TODO does this channel should be a buffer channel
-	chF   chan func() error // Channel used to operate the node without lock
-	link                    // The link status and infomation
-	local *node             // The pointer to local node
-	nbrNodes                // The neighbor node connect with currently node except itself
-	eventQueue              // The event queue to notice notice other modules
-	TXNPool                 // Unconfirmed transaction pool
-	idCache                 // The buffer to store the id of the items which already be processed
+	chF    chan func() error // Channel used to operate the node without lock
+	link                     // The link status and infomation
+	local  *node             // The pointer to local node
+	nbrNodes                 // The neighbor node connect with currently node except itself
+	eventQueue               // The event queue to notice notice other modules
+	TXNPool                  // Unconfirmed transaction pool
+	idCache                  // The buffer to store the id of the items which already be processed
+	fitler *bloom.Filter     // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -345,6 +347,10 @@ func (node *node) WaitForSyncFinish() {
 
 func (node *node) GetLastRXTime() time.Time {
 	return node.Time
+}
+
+func (node *node) LoadFilter(filter *bloom.Filter) {
+	node.fitler = filter
 }
 
 func (node *node) Relay(frmnode Noder, message interface{}) error {

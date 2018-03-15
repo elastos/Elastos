@@ -14,7 +14,7 @@ import (
 
 // Transaction message
 type trn struct {
-	messageHeader
+	Header
 	// TBD
 	//txn []byte
 	txn transaction.Transaction
@@ -43,9 +43,9 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 	log.Debug()
 	var msg trn
 
-	msg.messageHeader.Magic = config.Parameters.Magic
+	msg.Header.Magic = config.Parameters.Magic
 	cmd := "tx"
-	copy(msg.messageHeader.CMD[0:len(cmd)], cmd)
+	copy(msg.Header.CMD[0:len(cmd)], cmd)
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	txn.Serialize(tmpBuffer)
 	msg.txn = *txn
@@ -59,9 +59,9 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 	s2 := s[:]
 	s = sha256.Sum256(s2)
 	buf := bytes.NewBuffer(s[:4])
-	binary.Read(buf, binary.LittleEndian, &(msg.messageHeader.Checksum))
-	msg.messageHeader.Length = uint32(len(b.Bytes()))
-	log.Debug("The message payload length is ", msg.messageHeader.Length)
+	binary.Read(buf, binary.LittleEndian, &(msg.Header.Checksum))
+	msg.Header.Length = uint32(len(b.Bytes()))
+	log.Debug("The message payload length is ", msg.Header.Length)
 
 	m, err := msg.Serialization()
 	if err != nil {
@@ -73,7 +73,7 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 }
 
 func (msg trn) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+	hdrBuf, err := msg.Header.Serialization()
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (msg trn) Serialization() ([]byte, error) {
 
 func (msg *trn) Deserialization(p []byte) error {
 	buf := bytes.NewBuffer(p)
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	err = msg.txn.Deserialize(buf)
 	if err != nil {
 		return err

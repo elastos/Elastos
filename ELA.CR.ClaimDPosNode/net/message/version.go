@@ -14,7 +14,7 @@ import (
 )
 
 type version struct {
-	messageHeader
+	Header
 	Body struct {
 		Version      uint32
 		Services     uint64
@@ -72,7 +72,7 @@ func NewVersion(n Noder) ([]byte, error) {
 }
 
 func (msg version) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+	hdrBuf, err := msg.Header.Serialization()
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (msg version) Serialization() ([]byte, error) {
 func (msg *version) Deserialization(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	if err != nil {
 		log.Warn("Parse version message hdr error")
 		return errors.New("Parse version message hdr error")
