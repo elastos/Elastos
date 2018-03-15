@@ -93,9 +93,3 @@ func (header *Header) GetCMD() string {
 	end := bytes.IndexByte(header.CMD[:], 0)
 	return string(header.CMD[:end])
 }
-
-func (header *Header) Handle(peer *Peer) error {
-	// SPV wallet will not support all message handling, include filterload/blocksreq/ etc.
-	// if met a message that wallet not support, this method will be used by default.
-	return nil
-}
