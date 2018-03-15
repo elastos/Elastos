@@ -251,7 +251,8 @@ func (bf *Filter) AddOutPoint(outpoint *tx.OutPoint) {
 func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 	// Check if the filter matches the hash of the tx.
 	// This is useful for finding transactions when they appear in a block.
-	matched := bf.matches(txn.Hash()[:])
+	hash := txn.Hash()
+	matched := bf.matches(hash[:])
 
 	for i, txOut := range txn.Outputs {
 		if !bf.matches(txOut.ProgramHash[:]) {
@@ -259,7 +260,7 @@ func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 		}
 
 		matched = true
-		bf.addOutPoint(tx.NewOutPoint(*txn.Hash(), uint16(i)))
+		bf.addOutPoint(tx.NewOutPoint(hash, uint16(i)))
 		break
 	}
 

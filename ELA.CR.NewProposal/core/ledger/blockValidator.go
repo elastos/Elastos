@@ -70,7 +70,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 	}
 
-	var tharray []*Uint256
+	var tharray []Uint256
 	for _, txn := range transactions {
 		txhash := txn.Hash()
 		tharray = append(tharray, txhash)
@@ -89,10 +89,10 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	existingTxHashes := make(map[Uint256]struct{})
 	for _, txn := range transactions {
 		txHash := txn.Hash()
-		if _, exists := existingTxHashes[*txHash]; exists {
+		if _, exists := existingTxHashes[txHash]; exists {
 			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
 		}
-		existingTxHashes[*txHash] = struct{}{}
+		existingTxHashes[txHash] = struct{}{}
 	}
 
 	for _, txVerify := range transactions {

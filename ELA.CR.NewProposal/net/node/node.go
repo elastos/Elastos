@@ -344,7 +344,7 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 				log.Debug("TX transaction message")
 				txn := message.(*transaction.Transaction)
 
-				if nbr.ExistHash(*txn.Hash()) {
+				if nbr.ExistHash(txn.Hash()) {
 					continue
 				}
 
@@ -364,7 +364,7 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 				log.Debug("TX block message")
 				block := message.(*ledger.Block)
 
-				if nbr.ExistHash(*block.Hash()) {
+				if nbr.ExistHash(block.Hash()) {
 					continue
 				}
 

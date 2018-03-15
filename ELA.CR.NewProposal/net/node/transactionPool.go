@@ -182,10 +182,10 @@ func (this *TXNPool) addtxnList(txn *transaction.Transaction) bool {
 	this.Lock()
 	defer this.Unlock()
 	txnHash := txn.Hash()
-	if _, ok := this.txnList[*txnHash]; ok {
+	if _, ok := this.txnList[txnHash]; ok {
 		return false
 	}
-	this.txnList[*txnHash] = txn
+	this.txnList[txnHash] = txn
 	ledger.DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
 	return true
 }
@@ -194,10 +194,10 @@ func (this *TXNPool) deltxnList(tx *transaction.Transaction) bool {
 	this.Lock()
 	defer this.Unlock()
 	txHash := tx.Hash()
-	if _, ok := this.txnList[*txHash]; !ok {
+	if _, ok := this.txnList[txHash]; !ok {
 		return false
 	}
-	delete(this.txnList, *tx.Hash())
+	delete(this.txnList, tx.Hash())
 	return true
 }
 
@@ -254,7 +254,7 @@ func (this *TXNPool) MaybeAcceptTransaction(txn *tx.Transaction) error {
 	// Don't accept the transaction if it already exists in the pool.  This
 	// applies to orphan transactions as well.  This check is intended to
 	// be a quick check to weed out duplicates.
-	if txn := this.GetTransaction(*txHash); txn != nil {
+	if txn := this.GetTransaction(txHash); txn != nil {
 		return fmt.Errorf("already have transaction")
 	}
 
@@ -274,7 +274,7 @@ func (this *TXNPool) RemoveTransaction(txn *tx.Transaction) {
 	txHash := txn.Hash()
 	for i := range txn.Outputs {
 		input := tx.UTXOTxInput{
-			ReferTxID:          *txHash,
+			ReferTxID:          txHash,
 			ReferTxOutputIndex: uint16(i),
 		}
 
