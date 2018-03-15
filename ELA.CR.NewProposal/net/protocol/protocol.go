@@ -6,12 +6,12 @@ import (
 	"net"
 	"time"
 
-	"Elastos.ELA/bloom"
 	"Elastos.ELA/common"
 	"Elastos.ELA/core/ledger"
 	"Elastos.ELA/core/transaction"
 	. "Elastos.ELA/errors"
 	"Elastos.ELA/events"
+	"Elastos.ELA/bloom"
 )
 
 type NodeAddr struct {
@@ -88,6 +88,7 @@ type Noder interface {
 	ConnectSeeds()
 	Connect(nodeAddr string) error
 	LoadFilter(filter *bloom.Filter)
+	GetFilter() *bloom.Filter
 	Tx(buf []byte)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool

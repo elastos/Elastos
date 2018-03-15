@@ -59,7 +59,7 @@ func NewFilter(elements, tweak uint32, fprate float64) *Filter {
 	// Calculate the size of the filter in bytes for the given number of
 	// elements and false positive rate.
 	//
-	// Equivalent to m = -(n*ln(p) / ln(2)^2), where m is in bits.
+	// Equivalent to m = -(n*ln(p) / ln(2)^2), where m is in Bits.
 	// Then clamp it to the maximum filter size and convert to bytes.
 	dataLen := uint32(-1 * float64(elements) * math.Log(fprate) / ln2Squared)
 	dataLen = minUint32(dataLen, MaxFilterLoadFilterSize*8) / 8
@@ -126,7 +126,7 @@ func (bf *Filter) hash(hashNum uint32, data []byte) uint32 {
 	// difference between hashNum values.
 	//
 	// Note that << 3 is equivalent to multiplying by 8, but is faster.
-	// Thus the returned hash is brought into range of the number of bits
+	// Thus the returned hash is brought into range of the number of Bits
 	// the filter has and returned.
 	mm := MurmurHash3(hashNum*0xfba4c795+bf.Tweak, data)
 	return mm % (uint32(len(bf.Filter)) << 3)
@@ -251,8 +251,7 @@ func (bf *Filter) AddOutPoint(outpoint *tx.OutPoint) {
 func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 	// Check if the filter matches the hash of the tx.
 	// This is useful for finding transactions when they appear in a block.
-	hash := txn.Hash()
-	matched := bf.matches(hash[:])
+	matched := bf.matches(txn.Hash()[:])
 
 	for i, txOut := range txn.Outputs {
 		if !bf.matches(txOut.ProgramHash[:]) {
@@ -260,7 +259,7 @@ func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 		}
 
 		matched = true
-		bf.addOutPoint(tx.NewOutPoint(txn.Hash(), uint16(i)))
+		bf.addOutPoint(tx.NewOutPoint(*txn.Hash(), uint16(i)))
 		break
 	}
 

@@ -1,15 +1,18 @@
 package message
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/binary"
+	"errors"
+
+	"Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/transaction"
 	. "Elastos.ELA/errors"
 	. "Elastos.ELA/net/protocol"
-	"bytes"
-	"crypto/sha256"
-	"encoding/binary"
-	"errors"
+	"Elastos.ELA/core/ledger"
 )
 
 // Transaction message
@@ -25,7 +28,7 @@ func (msg trn) Handle(node Noder) error {
 	log.Debug()
 	log.Debug("RX Transaction message")
 	tx := &msg.txn
-	if !node.LocalNode().ExistedID(tx.Hash()) {
+	if !node.LocalNode().ExistedID(*tx.Hash()) {
 		if errCode := node.LocalNode().AppendToTxnPool(&(msg.txn)); errCode != Success {
 			return errors.New("[message] VerifyTransaction failed when AppendToTxnPool.")
 		}
@@ -37,6 +40,16 @@ func (msg trn) Handle(node Noder) error {
 	}
 
 	return nil
+}
+
+func NewTxnFromHash(hash common.Uint256) (*transaction.Transaction, error) {
+	txn, err := ledger.DefaultLedger.GetTransactionWithHash(hash)
+	if err != nil {
+		log.Error("Get transaction with hash error: ", err.Error())
+		return nil, err
+	}
+
+	return txn, nil
 }
 
 func NewTxn(txn *transaction.Transaction) ([]byte, error) {

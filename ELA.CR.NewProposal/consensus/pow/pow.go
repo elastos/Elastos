@@ -214,12 +214,12 @@ func (pow *PowService) GenerateBlock(addr string) (*ledger.Block, error) {
 	msgBlock.Transactions[0].Outputs[0].Value = reward_foundation
 	msgBlock.Transactions[0].Outputs[1].Value = Fixed64(reward) - reward_foundation
 
-	txHash := []Uint256{}
+	txHash := []*Uint256{}
 	for _, tx := range msgBlock.Transactions {
 		txHash = append(txHash, tx.Hash())
 	}
 	txRoot, _ := crypto.ComputeRoot(txHash)
-	msgBlock.Blockdata.TransactionsRoot = txRoot
+	msgBlock.Blockdata.TransactionsRoot = *txRoot
 
 	msgBlock.Blockdata.Bits, err = ledger.CalcNextRequiredDifficulty(ledger.DefaultLedger.Blockchain.BestChain, time.Now())
 	log.Info("difficulty: ", msgBlock.Blockdata.Bits)
@@ -266,8 +266,7 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 					continue
 				}
 				pow.BroadcastBlock(msgBlock)
-				h := msgBlock.Hash()
-				blockHashes[i] = &h
+				blockHashes[i] = msgBlock.Hash()
 				i++
 				if i == n {
 					pow.Mutex.Lock()
@@ -290,7 +289,7 @@ func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) b
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if MsgBlock.Blockdata.PrevBlockHash.CompareTo(*ledger.DefaultLedger.Blockchain.BestChain.Hash) != 0 {
+			if MsgBlock.Blockdata.PrevBlockHash.CompareTo(ledger.DefaultLedger.Blockchain.BestChain.Hash) != 0 {
 				return false
 			}
 			//UpdateBlockTime(msgBlock, m.server.blockManager)

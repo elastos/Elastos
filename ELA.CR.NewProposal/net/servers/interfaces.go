@@ -538,7 +538,6 @@ func SendRawTransaction(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidTransaction, "")
 	}
 	var hash Uint256
-	hash = txn.Hash()
 	if errCode := VerifyAndSendTx(&txn); errCode != Success {
 		return ResponsePack(errCode, "")
 	}
