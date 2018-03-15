@@ -118,7 +118,7 @@ typedef struct ElaTransportInfo {
  * @param
  *      carrier     [in] A handle to the ElaCarrier node instance.
  * @param
- *      from        [in] The id(userid@nodeid) from who send the message.
+ *      from        [in] The id from who send the message.
  * @param
  *      sdp         [in] The remote users SDP. End the null terminal.
  *                       Reference: https://tools.ietf.org/html/rfc4566
@@ -139,8 +139,6 @@ typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
  *
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      options     [in] A pointer to a valid ElaSessionOptions structure.
  * @param
  *      callback    [in] A pointer to the application-defined function of type
  *                       ElaSessionRequestCallback.
@@ -202,7 +200,7 @@ void ela_session_close(ElaSession *session);
 
 /**
  * \~English
- * Get the remote peer id (userid or userid@nodeid) of the session.
+ * Get the remote peer id of the session.
  *
  * @param
  *      session     [in] A handle to the carrier session.

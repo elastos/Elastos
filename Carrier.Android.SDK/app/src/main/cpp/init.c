@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include "log.h"
 #include "utils.h"
+#include "ela_carrier.h"
 
 extern int registerCarrierMethods(JNIEnv* env);
 extern int registerCarrierSessionManagerMethods(JNIEnv* env);
@@ -34,8 +35,6 @@ extern void unregisterCarrierMethods(JNIEnv* env);
 extern void unregisterCarrierSessionManagerMethods(JNIEnv* env);
 extern void unregisterCarrierSessionMethods(JNIEnv* env);
 extern void unregisterCarrierStreamMethods(JNIEnv* env);
-
-extern jint PJ_JNI_OnLoad(JavaVM* vm, void* reserved);
 
 static jclass gClazzLoader = NULL;
 
@@ -104,7 +103,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
     setJvm(vm);
 
-    PJ_JNI_OnLoad(vm, reserved);
+    ela_android_onload(vm, reserved);
 
     logI("Android java JNI loaded");
 
