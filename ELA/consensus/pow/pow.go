@@ -310,8 +310,7 @@ func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) b
 }
 
 func (pow *PowService) BroadcastBlock(MsgBlock *ledger.Block) error {
-	pow.localNet.Xmit(MsgBlock)
-	return nil
+	return pow.localNet.Relay(nil, MsgBlock)
 }
 
 func (pow *PowService) Start() {
