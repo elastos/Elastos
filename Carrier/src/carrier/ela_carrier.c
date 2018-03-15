@@ -113,6 +113,34 @@ bool ela_address_is_valid(const char *address)
     return is_valid_address(address);
 }
 
+char *ela_get_id_by_address(const char *address, char *userid, size_t len)
+{
+    uint8_t addr[DHT_ADDRESS_SIZE];
+    ssize_t addr_len;
+    char *ret_userid;
+    size_t userid_len = ELA_MAX_ID_LEN + 1;
+
+    if (len <= ELA_MAX_ID_LEN) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return NULL;
+    }
+
+    addr_len = base58_decode(address, strlen(address), addr, sizeof(addr));
+    if (addr_len != DHT_ADDRESS_SIZE) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return NULL;
+    }
+
+    memset(userid, 0, len);
+    ret_userid = base58_encode(addr, DHT_PUBLIC_KEY_SIZE, userid, &userid_len);
+    if (ret_userid == NULL) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return NULL;
+    }
+
+    return ret_userid;
+}
+
 void ela_log_init(ElaLogLevel level, const char *log_file,
                   void (*log_printer)(const char *format, va_list args))
 {

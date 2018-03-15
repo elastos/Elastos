@@ -191,6 +191,12 @@ ela_get_userid
 .. doxygenfunction:: ela_get_userid
    :project: CarrierAPI
 
+ela_get_id_by_address
+~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenfunction:: ela_get_id_by_address
+   :project: CarrierAPI
+
 ela_set_self_nospam
 ~~~~~~~~~~~~~~~~~~~
 

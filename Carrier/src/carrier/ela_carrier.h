@@ -652,6 +652,25 @@ bool ela_id_is_valid(const char *id);
 
 /**
  * \~English
+ * Extract carrier userid (or nodeid) from the carrier address.
+ *
+ * @param
+ *      address     [in] the carrier address to be check.
+ * @param
+ *      userid      [in] the buffer to save the extracted userid.
+ * @param
+ *      len         [in] the length of buffer.
+ *
+ * @return
+ *      If no error occurs, return the pointer of extraced userid.
+ *      Otherwise, return NULL, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+CARRIER_API
+char *ela_get_id_by_address(const char *address, char *userid, size_t len);
+
+/**
+ * \~English
  * Create a new Carrier node instance. after creating the instance, it's
  * ready for connection to Carrier network.
  *
