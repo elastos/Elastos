@@ -76,12 +76,6 @@ extern "C" {
 
 /**
  * \~English
- * Carrier user password max length.
- */
-#define ELA_MAX_PASSWORD_LEN            63
-
-/**
- * \~English
  * Carrier user description max length.
  */
 #define ELA_MAX_USER_DESCRIPTION_LEN    127
@@ -522,7 +516,7 @@ typedef struct ElaCallbacks {
      *      context     [in] The application defined context data.
      */
     void (*friend_presence)(ElaCarrier *carrier, const char *friendid,
-                            ElaPresenceStatus status, void *context);
+                            ElaPresenceStatus presence, void *context);
 
     /**
      * \~English
@@ -581,7 +575,7 @@ typedef struct ElaCallbacks {
      * @param
      *      carrier     [in] A handle to the Carrier node instance.
      * @param
-     *      from        [in] The id(userid@nodeid) from who send the message.
+     *      from        [in] The user id from who send the message.
      * @param
      *      msg         [in] The message content.
      * @param
@@ -611,6 +605,18 @@ typedef struct ElaCallbacks {
                           const char *data, size_t len, void *context);
 
 } ElaCallbacks;
+
+/**
+ *\~English
+ * Make initialization on Android platform.
+ *
+ * @return
+ *      true if initialization succeeded, or false if not.
+ */
+#if defined(__ANDROID__)
+CARRIER_API
+bool ela_android_onload(void *vm, void *reserved);
+#endif
 
 /**
  * \~English
@@ -655,6 +661,25 @@ bool ela_address_is_valid(const char *address);
  */
 CARRIER_API
 bool ela_id_is_valid(const char *id);
+
+/**
+ * \~English
+ * Extract carrier userid (or nodeid) from the carrier address.
+ *
+ * @param
+ *      address     [in] the carrier address to be check.
+ * @param
+ *      userid      [in] the buffer to save the extracted userid.
+ * @param
+ *      len         [in] the length of buffer.
+ *
+ * @return
+ *      If no error occurs, return the pointer of extraced userid.
+ *      Otherwise, return NULL, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+CARRIER_API
+char *ela_get_id_by_address(const char *address, char *userid, size_t len);
 
 /**
  * \~English
@@ -870,7 +895,7 @@ int ela_get_self_info(ElaCarrier *carrier, ElaUserInfo *info);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_set_self_presence(ElaCarrier *carrier, ElaPresenceStatus status);
+int ela_set_self_presence(ElaCarrier *carrier, ElaPresenceStatus presence);
 
 /**
  * \~English
@@ -886,7 +911,7 @@ int ela_set_self_presence(ElaCarrier *carrier, ElaPresenceStatus status);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_get_self_presence(ElaCarrier *carrier, ElaPresenceStatus *status);
+int ela_get_self_presence(ElaCarrier *carrier, ElaPresenceStatus *presence);
 
 /**
  * \~English
