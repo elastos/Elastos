@@ -385,20 +385,20 @@ func (tx *Transaction) GetDataContent() []byte {
 	return GetDataContent(tx)
 }
 
-func (tx *Transaction) Hash() *Uint256 {
+func (tx *Transaction) Hash() Uint256 {
 	if tx.hash == nil {
 		tx.hash = new(Uint256)
 		*tx.hash = Sha256D(tx.GetDataContent())
 	}
-	return tx.hash
+	return *tx.hash
 
 }
 func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }
 
-func (tx *Transaction) SetHash(hash *Uint256) {
-	tx.hash = hash
+func (tx *Transaction) SetHash(hash Uint256) {
+	tx.hash = &hash
 }
 
 func (tx *Transaction) GetReference() (map[*UTXOTxInput]*TxOutput, error) {

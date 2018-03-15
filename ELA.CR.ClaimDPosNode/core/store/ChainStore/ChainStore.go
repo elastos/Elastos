@@ -162,10 +162,10 @@ func (bd *ChainStore) InitLedgerStoreWithGenesisBlock(genesisBlock *Block) (uint
 	// GenesisBlock should exist in chain
 	// Or the bookkeepers are not consistent with the chain
 	hash := genesisBlock.Hash()
-	if !bd.IsBlockInStore(*hash) {
+	if !bd.IsBlockInStore(hash) {
 		return 0, errors.New("genesis block is not consistent with the chain")
 	}
-	bd.ledger.Blockchain.GenesisHash = *hash
+	bd.ledger.Blockchain.GenesisHash = hash
 	//bd.headerIndex[0] = hash
 
 	// Get Current Block
@@ -277,7 +277,7 @@ func (bd *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	return blockHash256, nil
 }
 
-func (bd *ChainStore) getHeaderWithCache(hash *Uint256) *Header {
+func (bd *ChainStore) getHeaderWithCache(hash Uint256) *Header {
 	for e := bd.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		eh := n.Blockdata.Hash()
@@ -286,7 +286,7 @@ func (bd *ChainStore) getHeaderWithCache(hash *Uint256) *Header {
 		}
 	}
 
-	h, _ := bd.GetHeader(*hash)
+	h, _ := bd.GetHeader(hash)
 
 	return h
 }
@@ -457,7 +457,7 @@ func (bd *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 
 	// Deserialize transaction
 	for i, txn := range b.Transactions {
-		tmp, _, err := bd.GetTransaction(*txn.Hash())
+		tmp, _, err := bd.GetTransaction(txn.Hash())
 		if err != nil {
 			return nil, err
 		}
@@ -669,7 +669,7 @@ func (bd *ChainStore) RemoveHeaderListElement(hash Uint256) {
 	for e := bd.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		h := n.Blockdata.Hash()
-		if h.CompareTo(&hash) == 0 {
+		if h.CompareTo(hash) == 0 {
 			bd.headerIdx.Remove(e)
 		}
 	}

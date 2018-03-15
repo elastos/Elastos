@@ -28,7 +28,7 @@ func (msg trn) Handle(node Noder) error {
 	log.Debug()
 	log.Debug("RX Transaction message")
 	tx := &msg.txn
-	if !node.LocalNode().ExistedID(*tx.Hash()) {
+	if !node.LocalNode().ExistedID(tx.Hash()) {
 		if errCode := node.LocalNode().AppendToTxnPool(&(msg.txn)); errCode != Success {
 			return errors.New("[message] VerifyTransaction failed when AppendToTxnPool.")
 		}

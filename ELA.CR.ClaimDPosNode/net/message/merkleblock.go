@@ -34,7 +34,8 @@ func NewMerkleBlockMsg(block *ledger.Block, filter *Filter) ([]byte, error) {
 		} else {
 			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x00)
 		}
-		mBlock.AllHashes = append(mBlock.AllHashes, tx.Hash())
+		txHash := tx.Hash()
+		mBlock.AllHashes = append(mBlock.AllHashes, &txHash)
 	}
 
 	// Calculate the number of merkle branches (height) in the tree.

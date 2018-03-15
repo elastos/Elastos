@@ -6,7 +6,6 @@ import (
 	"Elastos.ELA/common/serialization"
 	"Elastos.ELA/core/auxpow"
 	"Elastos.ELA/core/contract/program"
-	"crypto/sha256"
 	"errors"
 	"Elastos.ELA/core/signature"
 )
@@ -120,11 +119,7 @@ func (bd *Blockdata) GetPrograms() []*program.Program {
 }
 
 func (bd *Blockdata) Hash() Uint256 {
-	temp := sha256.Sum256(bd.GetDataContent())
-	f := sha256.Sum256(temp[:])
-	hash := Uint256(f)
-
-	return hash
+	return Sha256D(bd.GetDataContent())
 }
 
 func (bd *Blockdata) GetDataContent() []byte {
