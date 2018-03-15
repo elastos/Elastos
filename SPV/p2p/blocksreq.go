@@ -20,37 +20,17 @@ func NewBlocksReqMsg(locator []*Uint256, hashStop Uint256) ([]byte, error) {
 	msg.BlockLocator = locator
 	msg.HashStop = hashStop
 
-	buf := new(bytes.Buffer)
-	err := serialization.WriteUint32(buf, msg.Count)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, hash := range msg.BlockLocator {
-		_, err := hash.Serialize(buf)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	_, err = msg.HashStop.Serialize(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	msg.Header = *BuildHeader("getblocks", buf.Bytes())
-
-	return msg.Serialize()
+	return BuildMessage("getblocks", body)
 }
 
 func (br *BlocksReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, br.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, br.Count)
+	err := serialization.WriteUint32(buf, br.Count)
 	if err != nil {
 		return nil, err
 	}

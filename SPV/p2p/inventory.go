@@ -33,35 +33,17 @@ func NewBlockHashesInventoryMsg(blockHashes []*Uint256) ([]byte, error) {
 	}
 	msg.Data = data.Bytes()
 
-	buf := new(bytes.Buffer)
-	err := serialization.WriteUint8(buf, msg.Type)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	err = serialization.WriteUint32(buf, msg.Count)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteVarBytes(buf, msg.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	msg.Header = *BuildHeader("inv", buf.Bytes())
-
-	return msg.Serialize()
+	return BuildMessage("inv", body)
 }
 
 func (inv *Inventory) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, inv.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint8(buf, inv.Type)
+	err := serialization.WriteUint8(buf, inv.Type)
 	if err != nil {
 		return nil, err
 	}

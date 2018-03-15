@@ -12,25 +12,20 @@ type Txn struct {
 }
 
 func NewTxnMsg(txn tx.Transaction) ([]byte, error) {
-	tx := new(Txn)
-	tx.Transaction = txn
+	msg := new(Txn)
+	msg.Transaction = txn
 
-	buf := new(bytes.Buffer)
-	txn.Serialize(buf)
-
-	tx.Header = *BuildHeader("tx", buf.Bytes())
-
-	return tx.Serialize()
-}
-
-func (txn *Txn) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, txn.Header)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	err = txn.Transaction.Serialize(buf)
+	return BuildMessage("tx", body)
+}
+
+func (txn *Txn) Serialize() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := txn.Transaction.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}

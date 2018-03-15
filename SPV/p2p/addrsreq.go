@@ -5,9 +5,5 @@ type AddrsReq struct {
 }
 
 func NewAddrsReqMsg() ([]byte, error) {
-	addrReq := new(AddrsReq)
-
-	addrReq.Header = *NewHeader("getaddr", EmptyMsgSum, 0)
-
-	return addrReq.Serialize()
+	return NewHeader("getaddr", EmptyMsgSum, 0).Serialize()
 }

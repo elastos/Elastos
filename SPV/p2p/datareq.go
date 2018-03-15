@@ -19,30 +19,17 @@ func NewDataReqMsg(invType uint8, hash Uint256) ([]byte, error) {
 	msg.Type = invType
 	msg.Hash = hash
 
-	buf := new(bytes.Buffer)
-	err := serialization.WriteUint8(buf, msg.Type)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = msg.Hash.Serialize(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	msg.Header = *BuildHeader("getdata", buf.Bytes())
-
-	return msg.Serialize()
+	return BuildMessage("getdata", body)
 }
 
 func (dr *DataReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, dr.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint8(buf, dr.Type)
+	err := serialization.WriteUint8(buf, dr.Type)
 	if err != nil {
 		return nil, err
 	}

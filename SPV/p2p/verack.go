@@ -5,6 +5,5 @@ type VerAck struct {
 }
 
 func NewVerAckMsg() ([]byte, error) {
-	header := NewHeader("verack", EmptyMsgSum, 0)
-	return header.Serialize()
+	return NewHeader("verack", EmptyMsgSum, 0).Serialize()
 }

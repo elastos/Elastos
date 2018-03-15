@@ -18,22 +18,17 @@ func NewPingMsg() ([]byte, error) {
 
 	ping.Height = uint64(db.GetBlockchain().Height())
 
-	buf := new(bytes.Buffer)
-	serialization.WriteUint64(buf, ping.Height)
-
-	ping.Header = *BuildHeader("ping", buf.Bytes())
-
-	return ping.Serialize()
-}
-
-func (p *Ping) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, p.Header)
+	body, err := ping.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	err = serialization.WriteUint64(buf, p.Height)
+	return BuildMessage("ping", body)
+}
+
+func (p *Ping) Serialize() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := serialization.WriteUint64(buf, p.Height)
 	if err != nil {
 		return nil, err
 	}

@@ -16,30 +16,17 @@ func NewAddrsMsg(addrs []PeerAddr) ([]byte, error) {
 	msg.Count = uint64(len(addrs))
 	msg.PeerAddrs = addrs
 
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, msg.Count)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	err = binary.Write(buf, binary.LittleEndian, msg.PeerAddrs)
-	if err != nil {
-		return nil, err
-	}
-
-	msg.Header = *BuildHeader("addr", buf.Bytes())
-
-	return msg.Serialize()
+	return BuildMessage("addr", body)
 }
 
 func (addrs *Addrs) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, addrs.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = binary.Write(buf, binary.LittleEndian, addrs.Count)
+	err := binary.Write(buf, binary.LittleEndian, addrs.Count)
 	if err != nil {
 		return nil, err
 	}

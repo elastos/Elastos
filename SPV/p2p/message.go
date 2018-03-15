@@ -3,7 +3,6 @@ package p2p
 import (
 	"errors"
 	"fmt"
-
 )
 
 var listeners *Listeners
@@ -11,6 +10,15 @@ var listeners *Listeners
 type Message interface {
 	Serialize() ([]byte, error)
 	Deserialize(msg []byte) error
+}
+
+func BuildMessage(cmd string, body []byte) ([]byte, error) {
+	hdr, err := BuildHeader(cmd, body).Serialize()
+	if err != nil {
+		return nil, err
+	}
+
+	return append(hdr, body...), nil
 }
 
 func HandleMessage(peer *Peer, buf []byte) error {

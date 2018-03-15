@@ -1,9 +1,6 @@
 package p2p
 
 import (
-	"bytes"
-
-	"SPVWallet/core/serialization"
 	"SPVWallet/db"
 )
 
@@ -12,14 +9,14 @@ type Pong struct {
 }
 
 func NewPongMsg() ([]byte, error) {
-	ping := new(Ping)
+	pong := new(Pong)
 
-	ping.Height = uint64(db.GetBlockchain().Height())
+	pong.Height = uint64(db.GetBlockchain().Height())
 
-	buf := new(bytes.Buffer)
-	serialization.WriteUint64(buf, ping.Height)
+	body, err := pong.Serialize()
+	if err != nil {
+		return nil, err
+	}
 
-	ping.Header = *BuildHeader("pong", buf.Bytes())
-
-	return ping.Serialize()
+	return BuildMessage("pong", body)
 }

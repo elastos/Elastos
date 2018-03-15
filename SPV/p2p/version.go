@@ -34,23 +34,12 @@ func NewVersionMsg(peer *Peer) ([]byte, error) {
 	// build msg content
 	msg.VersionContent = *newVersionContent(peer)
 
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, msg.VersionContent)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	// Fake public key
-	pk := new(crypto.PublicKey)
-	err = pk.Serialize(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	// build msg header
-	msg.Header = *BuildHeader("version", buf.Bytes())
-
-	return msg.Serialize()
+	return BuildMessage("version", body)
 }
 
 // Only local peer will use this method, so the parameters are fixed
@@ -71,12 +60,7 @@ func newVersionContent(peer *Peer) *VersionContent {
 
 func (v *Version) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, v.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = binary.Write(buf, binary.LittleEndian, v.VersionContent)
+	err := binary.Write(buf, binary.LittleEndian, v.VersionContent)
 	if err != nil {
 		return nil, err
 	}

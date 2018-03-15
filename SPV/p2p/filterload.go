@@ -16,35 +16,22 @@ type FilterLoad struct {
 }
 
 func NewFilterLoadMsg(filter *bloom.Filter) ([]byte, error) {
-	fl := new(FilterLoad)
-	fl.Filter = filter.Filter
-	fl.HashFuncs = filter.HashFuncs
-	fl.Tweak = filter.Tweak
+	msg := new(FilterLoad)
+	msg.Filter = filter.Filter
+	msg.HashFuncs = filter.HashFuncs
+	msg.Tweak = filter.Tweak
 
-	buf := bytes.NewBuffer(fl.Filter)
-	err := serialization.WriteUint32(buf, fl.HashFuncs)
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	err = serialization.WriteUint32(buf, fl.Tweak)
-	if err != nil {
-		return nil, err
-	}
-
-	fl.Header = *BuildHeader("filterload", buf.Bytes())
-
-	return fl.Serialize()
+	return BuildMessage("filterload", body)
 }
 
 func (fl *FilterLoad) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, fl.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteVarBytes(buf, fl.Filter)
+	err := serialization.WriteVarBytes(buf, fl.Filter)
 	if err != nil {
 		return nil, err
 	}
