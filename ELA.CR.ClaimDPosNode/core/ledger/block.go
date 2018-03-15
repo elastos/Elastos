@@ -62,8 +62,8 @@ func (b *Block) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	var txhash Uint256
-	var tharray []Uint256
+	var txhash *Uint256
+	var tharray []*Uint256
 	for i = 0; i < Len; i++ {
 		transaction := new(tx.Transaction)
 		transaction.Deserialize(r)
@@ -72,10 +72,11 @@ func (b *Block) Deserialize(r io.Reader) error {
 		tharray = append(tharray, txhash)
 	}
 
-	b.Blockdata.TransactionsRoot, err = crypto.ComputeRoot(tharray)
+	merkleRoot, err := crypto.ComputeRoot(tharray)
 	if err != nil {
 		return errors.New("Block Deserialize merkleTree compute failed")
 	}
+	b.Blockdata.TransactionsRoot = *merkleRoot
 
 	return nil
 }
@@ -106,8 +107,8 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	var txhash Uint256
-	var tharray []Uint256
+	var txhash *Uint256
+	var tharray []*Uint256
 	for i = 0; i < Len; i++ {
 		txhash.Deserialize(r)
 		transaction := new(tx.Transaction)
@@ -116,10 +117,11 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 		tharray = append(tharray, txhash)
 	}
 
-	b.Blockdata.TransactionsRoot, err = crypto.ComputeRoot(tharray)
+	merkleRoot, err := crypto.ComputeRoot(tharray)
 	if err != nil {
 		return errors.New("Block Deserialize merkleTree compute failed")
 	}
+	b.Blockdata.TransactionsRoot = *merkleRoot
 
 	return nil
 }
@@ -149,12 +151,12 @@ func (b *Block) GetPrograms() []*program.Program {
 	return b.Blockdata.GetPrograms()
 }
 
-func (b *Block) Hash() Uint256 {
+func (b *Block) Hash() *Uint256 {
 	if b.hash == nil {
 		b.hash = new(Uint256)
 		*b.hash = b.Blockdata.Hash()
 	}
-	return *b.hash
+	return b.hash
 }
 
 func (b *Block) Verify() error {
@@ -205,7 +207,7 @@ func GenesisBlockInit() (*Block, error) {
 
 	trans.Outputs = []*tx.TxOutput{
 		{
-			AssetID:     systemToken.Hash(),
+			AssetID:     *systemToken.Hash(),
 			Value:       3300 * 10000 * 100000000,
 			ProgramHash: foundationProgramHash,
 		},
@@ -220,7 +222,7 @@ func GenesisBlockInit() (*Block, error) {
 		Blockdata:    genesisBlockdata,
 		Transactions: []*tx.Transaction{trans, systemToken},
 	}
-	txHashes := []Uint256{}
+	txHashes := []*Uint256{}
 	for _, tx := range genesisBlock.Transactions {
 		txHashes = append(txHashes, tx.Hash())
 	}
@@ -228,14 +230,14 @@ func GenesisBlockInit() (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[GenesisBlock], merkle root error")
 	}
-	genesisBlock.Blockdata.TransactionsRoot = merkleRoot
+	genesisBlock.Blockdata.TransactionsRoot = *merkleRoot
 
 	return genesisBlock, nil
 }
 
 func (b *Block) RebuildMerkleRoot() error {
 	txs := b.Transactions
-	transactionHashes := []Uint256{}
+	transactionHashes := []*Uint256{}
 	for _, tx := range txs {
 		transactionHashes = append(transactionHashes, tx.Hash())
 	}
@@ -243,7 +245,7 @@ func (b *Block) RebuildMerkleRoot() error {
 	if err != nil {
 		return errors.New("[Block] , RebuildMerkleRoot ComputeRoot failed.")
 	}
-	b.Blockdata.TransactionsRoot = hash
+	b.Blockdata.TransactionsRoot = *hash
 	return nil
 
 }

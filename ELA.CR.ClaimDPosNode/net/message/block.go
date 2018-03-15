@@ -2,12 +2,10 @@ package message
 
 import (
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/protocol"
 	"bytes"
-	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 )
@@ -29,14 +27,14 @@ func (msg block) Handle(node Noder) error {
 		return errors.New("received headers message from unknown peer")
 	}
 
-	if ledger.DefaultLedger.BlockInLedger(hash) {
+	if ledger.DefaultLedger.BlockInLedger(*hash) {
 		ReceiveDuplicateBlockCnt++
 		log.Trace("Receive ", ReceiveDuplicateBlockCnt, " duplicated block.")
 		return nil
 	}
 
-	ledger.DefaultLedger.Store.RemoveHeaderListElement(hash)
-	node.LocalNode().DeleteRequestedBlock(hash)
+	ledger.DefaultLedger.Store.RemoveHeaderListElement(*hash)
+	node.LocalNode().DeleteRequestedBlock(*hash)
 	isOrphan := false
 	var err error
 	_, isOrphan, err = ledger.DefaultLedger.Blockchain.AddBlock(&msg.blk)
@@ -47,15 +45,15 @@ func (msg block) Handle(node Noder) error {
 	}
 	//relay
 	if node.LocalNode().IsSyncHeaders() == false {
-		if !node.LocalNode().ExistedID(hash) {
+		if !node.LocalNode().ExistedID(*hash) {
 			node.LocalNode().Relay(node, &msg.blk)
 			log.Debug("Relay block")
 		}
 	}
 
 	if isOrphan == true && node.LocalNode().IsSyncHeaders() == false {
-		if !node.LocalNode().RequestedBlockExisted(hash) {
-			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+		if !node.LocalNode().RequestedBlockExisted(*hash) {
+			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(hash)
 			locator, _ := ledger.DefaultLedger.Blockchain.LatestBlockLocator()
 			SendMsgSyncBlockHeaders(node, locator, *orphanRoot)
 		}
@@ -64,42 +62,37 @@ func (msg block) Handle(node Noder) error {
 	return nil
 }
 
-func ReqBlkData(node Noder, hash common.Uint256) error {
-	node.LocalNode().AddRequestedBlock(hash)
-	var msg dataReq
-	msg.hash = hash
-	msg.Header.Magic = config.Parameters.Magic
-	copy(msg.Header.CMD[0:7], "getdata")
-	p := bytes.NewBuffer([]byte{})
-	msg.hash.Serialize(p)
-	s := sha256.Sum256(p.Bytes())
-	s2 := s[:]
-	s = sha256.Sum256(s2)
-	buf := bytes.NewBuffer(s[:4])
-	binary.Read(buf, binary.LittleEndian, &(msg.Header.Checksum))
-	msg.Header.Length = uint32(len(p.Bytes()))
-	log.Debug("The message payload length is ", msg.Header.Length)
+func NewBlockFromHash(hash common.Uint256) (*ledger.Block, error) {
+	bk, err := ledger.DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		log.Errorf("Get Block error: %s, block hash: %x", err.Error(), hash)
+		return nil, err
+	}
+	return bk, nil
+}
 
-	sendBuf, err := msg.Serialization()
+func NewBlock(bk *ledger.Block) ([]byte, error) {
+	log.Debug()
+	var msg block
+	msg.blk = *bk
+
+	body, err := msg.Serialization()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
-		return err
+		return nil, err
 	}
 
-	node.Tx(sendBuf)
-
-	return nil
+	return BuildMessage("block", body)
 }
 
 func (msg block) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialization()
+	buf := new(bytes.Buffer)
+	err := msg.blk.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}
-	buf := bytes.NewBuffer(hdrBuf)
-	msg.blk.Serialize(buf)
 
-	return buf.Bytes(), err
+	return buf.Bytes(), nil
 }
 
 func (msg *block) Deserialization(p []byte) error {

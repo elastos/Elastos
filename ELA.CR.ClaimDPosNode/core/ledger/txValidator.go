@@ -58,7 +58,7 @@ func CheckTransactionSanity(txn *tx.Transaction) ErrCode {
 // CheckTransactionContext verifys a transaction with history transaction in ledger
 func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 	// check if duplicated with transaction in ledger
-	if exist := ledger.Store.IsTxHashDuplicate(txn.Hash()); exist {
+	if exist := ledger.Store.IsTxHashDuplicate(*txn.Hash()); exist {
 		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
 		return ErrTxHashDuplicate
 	}
@@ -124,7 +124,7 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 		coinbaseInputHash := txn.UTXOInputs[0].ReferTxID
 		coinbaseInputIndex := txn.UTXOInputs[0].ReferTxOutputIndex
 		//TODO :check sequence
-		if coinbaseInputHash.CompareTo(zeroHash) != 0 || coinbaseInputIndex != math.MaxUint16 {
+		if coinbaseInputHash.CompareTo(&zeroHash) != 0 || coinbaseInputIndex != math.MaxUint16 {
 			return errors.New("invalid coinbase input")
 		}
 
@@ -137,7 +137,7 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 	for i, utxoin := range txn.UTXOInputs {
 		referTxnHash := utxoin.ReferTxID
 		referTxnOutIndex := utxoin.ReferTxOutputIndex
-		if (referTxnHash.CompareTo(zeroHash) == 0) && (referTxnOutIndex == math.MaxUint16) {
+		if (referTxnHash.CompareTo(&zeroHash) == 0) && (referTxnOutIndex == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
 		for j := 0; j < i; j++ {

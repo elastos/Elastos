@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {
+func getBtcCoinbase(msgBlockHash *Uint256) *auxpow.BtcTx {
 	var magic [4]byte        // 4 byte
-	var auxBlockHash Uint256 // 32 byte
+	var auxBlockHash *Uint256 // 32 byte
 	var merkleSize int32     // 4 byte
 	var merkleNonce int32    // 4 byte
 
@@ -44,7 +44,7 @@ func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {
 	return coinbase
 }
 
-func generateAuxPow(msgBlockHash Uint256) *auxpow.AuxPow {
+func generateAuxPow(msgBlockHash *Uint256) *auxpow.AuxPow {
 	auxMerkleBranch := make([]Uint256, 0)
 	auxMerkleIndex := 0
 	parCoinbaseTx := getBtcCoinbase(msgBlockHash)
