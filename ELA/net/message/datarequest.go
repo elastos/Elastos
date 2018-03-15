@@ -13,7 +13,7 @@ import (
 )
 
 type dataReq struct {
-	messageHeader
+	Header
 	hash common.Uint256
 }
 
@@ -50,9 +50,9 @@ func NewBlock(bk *ledger.Block) ([]byte, error) {
 	log.Debug()
 	var msg block
 	msg.blk = *bk
-	msg.messageHeader.Magic = config.Parameters.Magic
+	msg.Header.Magic = config.Parameters.Magic
 	cmd := "block"
-	copy(msg.messageHeader.CMD[0:len(cmd)], cmd)
+	copy(msg.Header.CMD[0:len(cmd)], cmd)
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	bk.Serialize(tmpBuffer)
 	p := new(bytes.Buffer)
@@ -65,9 +65,9 @@ func NewBlock(bk *ledger.Block) ([]byte, error) {
 	s2 := s[:]
 	s = sha256.Sum256(s2)
 	buf := bytes.NewBuffer(s[:4])
-	binary.Read(buf, binary.LittleEndian, &(msg.messageHeader.Checksum))
-	msg.messageHeader.Length = uint32(len(p.Bytes()))
-	log.Debug("The message payload length is ", msg.messageHeader.Length)
+	binary.Read(buf, binary.LittleEndian, &(msg.Header.Checksum))
+	msg.Header.Length = uint32(len(p.Bytes()))
+	log.Debug("The message payload length is ", msg.Header.Length)
 
 	m, err := msg.Serialization()
 	if err != nil {
@@ -80,7 +80,7 @@ func NewBlock(bk *ledger.Block) ([]byte, error) {
 
 func (msg *dataReq) Deserialization(p []byte) error {
 	buf := bytes.NewBuffer(p)
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	if err != nil {
 		log.Warn("Parse datareq message hdr error")
 		return errors.New("Parse datareq message hdr error")
@@ -100,7 +100,7 @@ func (msg *dataReq) Deserialization(p []byte) error {
 }
 
 func (msg dataReq) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+	hdrBuf, err := msg.Header.Serialization()
 	if err != nil {
 		return nil, err
 	}

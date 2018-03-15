@@ -11,7 +11,7 @@ import (
 )
 
 type blocksReq struct {
-	messageHeader
+	Header
 	p struct {
 		len       uint32
 		hashStart []Uint256
@@ -43,7 +43,7 @@ func (msg blocksReq) Handle(node Noder) error {
 }
 
 func (msg blocksReq) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+	hdrBuf, err := msg.Header.Serialization()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (msg blocksReq) Serialization() ([]byte, error) {
 
 func (msg *blocksReq) Deserialization(p []byte) error {
 	buf := bytes.NewBuffer(p)
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	if err != nil {
 		return err
 	}

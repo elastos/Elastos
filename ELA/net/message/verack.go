@@ -9,7 +9,7 @@ import (
 )
 
 type verACK struct {
-	messageHeader
+	Header
 	// No payload
 }
 
@@ -18,7 +18,7 @@ func NewVerack() ([]byte, error) {
 	// Fixme the check is the []byte{0} instead of 0
 	var sum []byte
 	sum = []byte{0x5d, 0xf6, 0xe0, 0xe2}
-	msg.messageHeader.init("verack", sum, 0)
+	msg.Header.init("verack", sum, 0)
 
 	buf, err := msg.Serialization()
 	if err != nil {

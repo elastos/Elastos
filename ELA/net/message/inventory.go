@@ -22,7 +22,7 @@ type InvPayload struct {
 }
 
 type Inv struct {
-	messageHeader
+	Header
 	P InvPayload
 }
 
@@ -142,7 +142,7 @@ func (msg Inv) Handle(node Noder) error {
 }
 
 func (msg Inv) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+	hdrBuf, err := msg.Header.Serialization()
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (msg Inv) Serialization() ([]byte, error) {
 }
 
 func (msg *Inv) Deserialization(p []byte) error {
-	err := msg.messageHeader.Deserialization(p)
+	err := msg.Header.Deserialization(p)
 	if err != nil {
 		return err
 	}

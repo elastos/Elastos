@@ -13,7 +13,7 @@ import (
 )
 
 type block struct {
-	messageHeader
+	Header
 	blk ledger.Block
 	// TBD
 	//event *events.Event
@@ -68,17 +68,17 @@ func ReqBlkData(node Noder, hash common.Uint256) error {
 	node.LocalNode().AddRequestedBlock(hash)
 	var msg dataReq
 	msg.hash = hash
-	msg.messageHeader.Magic = config.Parameters.Magic
-	copy(msg.messageHeader.CMD[0:7], "getdata")
+	msg.Header.Magic = config.Parameters.Magic
+	copy(msg.Header.CMD[0:7], "getdata")
 	p := bytes.NewBuffer([]byte{})
 	msg.hash.Serialize(p)
 	s := sha256.Sum256(p.Bytes())
 	s2 := s[:]
 	s = sha256.Sum256(s2)
 	buf := bytes.NewBuffer(s[:4])
-	binary.Read(buf, binary.LittleEndian, &(msg.messageHeader.Checksum))
-	msg.messageHeader.Length = uint32(len(p.Bytes()))
-	log.Debug("The message payload length is ", msg.messageHeader.Length)
+	binary.Read(buf, binary.LittleEndian, &(msg.Header.Checksum))
+	msg.Header.Length = uint32(len(p.Bytes()))
+	log.Debug("The message payload length is ", msg.Header.Length)
 
 	sendBuf, err := msg.Serialization()
 	if err != nil {
@@ -92,7 +92,7 @@ func ReqBlkData(node Noder, hash common.Uint256) error {
 }
 
 func (msg block) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+	hdrBuf, err := msg.Header.Serialization()
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (msg block) Serialization() ([]byte, error) {
 func (msg *block) Deserialization(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	if err != nil {
 		log.Warn("Parse block message hdr error")
 		return errors.New("Parse block message hdr error")

@@ -1,15 +1,17 @@
 package protocol
 
 import (
+	"bytes"
+	"encoding/binary"
+	"net"
+	"time"
+
+	"Elastos.ELA/bloom"
 	"Elastos.ELA/common"
 	"Elastos.ELA/core/ledger"
 	"Elastos.ELA/core/transaction"
 	. "Elastos.ELA/errors"
 	"Elastos.ELA/events"
-	"bytes"
-	"encoding/binary"
-	"net"
-	"time"
 )
 
 type NodeAddr struct {
@@ -33,15 +35,15 @@ const (
 )
 
 const (
-	MAXBUFLEN         = 1024 * 16 // Fixme The maximum buffer to receive message
-	PROTOCOLVERSION   = 0
-	KEEPALIVETIMEOUT  = 3
-	DIALTIMEOUT       = 6
-	CONNMONITOR       = 6
-	MAXSYNCHDRREQ     = 2 //Max Concurrent Sync Header Request
-	MaxOutBoundCount  = 8
-	DefaultMaxPeers   = 125
-	MAXIDCACHED       = 5000
+	MAXBUFLEN        = 1024 * 16 // Fixme The maximum buffer to receive message
+	PROTOCOLVERSION  = 0
+	KEEPALIVETIMEOUT = 3
+	DIALTIMEOUT      = 6
+	CONNMONITOR      = 6
+	MAXSYNCHDRREQ    = 2 //Max Concurrent Sync Header Request
+	MaxOutBoundCount = 8
+	DefaultMaxPeers  = 125
+	MAXIDCACHED      = 5000
 )
 
 // The node state
@@ -85,6 +87,7 @@ type Noder interface {
 		port uint16, nonce uint64, relay uint8, height uint64)
 	ConnectSeeds()
 	Connect(nodeAddr string) error
+	LoadFilter(filter *bloom.Filter)
 	Tx(buf []byte)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
