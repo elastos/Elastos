@@ -275,38 +275,6 @@ func (node *node) SetHeight(height uint64) {
 	node.height = height
 }
 
-func (node *node) Xmit(message interface{}) error {
-	log.Debug()
-	var buffer []byte
-	var err error
-	switch message.(type) {
-	case *transaction.Transaction:
-		log.Debug("TX transaction message")
-		txn := message.(*transaction.Transaction)
-		buffer, err = NewTxn(txn)
-		if err != nil {
-			log.Error("Error New Tx message: ", err)
-			return err
-		}
-		node.txnCnt++
-	case *ledger.Block:
-		log.Debug("TX block message")
-		block := message.(*ledger.Block)
-		buffer, err = NewBlock(block)
-		if err != nil {
-			log.Error("Error New Block message: ", err)
-			return err
-		}
-	default:
-		log.Warn("Unknown Xmit message type")
-		return errors.New("Unknown Xmit message type")
-	}
-
-	node.nbrNodes.Broadcast(buffer)
-
-	return nil
-}
-
 func (node *node) GetAddr() string {
 	return node.addr
 }
@@ -360,46 +328,71 @@ func (node *node) GetFilter() *bloom.Filter {
 
 func (node *node) Relay(frmnode Noder, message interface{}) error {
 	log.Debug()
-	if node.LocalNode().IsSyncHeaders() == true {
+	if frmnode != nil && node.LocalNode().IsSyncHeaders() == true {
 		return nil
-	}
-	var buffer []byte
-	var err error
-	isHash := false
-	switch message.(type) {
-	case *transaction.Transaction:
-		log.Debug("TX transaction message")
-		txn := message.(*transaction.Transaction)
-		buffer, err = NewTxn(txn)
-		if err != nil {
-			log.Error("Error New Tx message: ", err)
-			return err
-		}
-		node.txnCnt++
-	case *ledger.Block:
-		log.Debug("TX block message")
-		blkpayload := message.(*ledger.Block)
-		buffer, err = NewBlock(blkpayload)
-		if err != nil {
-			log.Error("Error new block message: ", err)
-			return err
-		}
-	default:
-		log.Warn("Unknown Relay message type")
-		return errors.New("Unknown Relay message type")
 	}
 
 	node.nbrNodes.RLock()
-	for _, n := range node.nbrNodes.List {
-		if n.state == Establish && n.relay == true &&
-			n.id != frmnode.GetID() {
-			if isHash && n.ExistHash(message.(Uint256)) {
-				continue
+
+	var buf []byte
+	var err error
+	for _, nbr := range node.nbrNodes.List {
+		if nbr.state == Establish && nbr.GetID() != frmnode.GetID() {
+
+			switch message.(type) {
+			case *transaction.Transaction:
+				log.Debug("TX transaction message")
+				txn := message.(*transaction.Transaction)
+
+				if nbr.ExistHash(*txn.Hash()) {
+					continue
+				}
+
+				if nbr.relay || (nbr.GetFilter().IsLoaded() && nbr.GetFilter().MatchTxAndUpdate(txn)) {
+					if len(buf) == 0 {
+						buf, err = NewTxn(txn)
+					}
+				}
+				if err != nil {
+					log.Error("Error New Tx message: ", err)
+					return err
+				}
+				node.txnCnt++
+				nbr.Tx(buf)
+
+			case *ledger.Block:
+				log.Debug("TX block message")
+				block := message.(*ledger.Block)
+
+				if nbr.ExistHash(*block.Hash()) {
+					continue
+				}
+
+				if nbr.GetFilter().IsLoaded() {
+					msg, err := NewMerkleBlockMsg(block, nbr.GetFilter())
+					if err != nil {
+						log.Error("Error New Block message: ", err)
+						return err
+					}
+					nbr.Tx(msg)
+				} else if nbr.relay {
+					if len(buf) == 0 {
+						buf, err = NewBlock(block)
+						if err != nil {
+							log.Error("Error New Block message: ", err)
+							return err
+						}
+					}
+					nbr.Tx(buf)
+				}
+			default:
+				log.Warn("Unknown Xmit message type")
+				return errors.New("Unknown Xmit message type")
 			}
-			n.Tx(buffer)
 		}
 	}
 	node.nbrNodes.RUnlock()
+
 	return nil
 }
 

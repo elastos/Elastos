@@ -13,16 +13,6 @@ type nbrNodes struct {
 	List map[uint64]*node
 }
 
-func (nm *nbrNodes) Broadcast(buf []byte) {
-	nm.RLock()
-	defer nm.RUnlock()
-	for _, node := range nm.List {
-		if node.state == Establish && node.relay == true {
-			node.Tx(buf)
-		}
-	}
-}
-
 func (nm *nbrNodes) NodeExisted(uid uint64) bool {
 	_, ok := nm.List[uid]
 	return ok
