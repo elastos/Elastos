@@ -27,14 +27,14 @@ func (msg block) Handle(node Noder) error {
 		return errors.New("received headers message from unknown peer")
 	}
 
-	if ledger.DefaultLedger.BlockInLedger(*hash) {
+	if ledger.DefaultLedger.BlockInLedger(hash) {
 		ReceiveDuplicateBlockCnt++
 		log.Trace("Receive ", ReceiveDuplicateBlockCnt, " duplicated block.")
 		return nil
 	}
 
-	ledger.DefaultLedger.Store.RemoveHeaderListElement(*hash)
-	node.LocalNode().DeleteRequestedBlock(*hash)
+	ledger.DefaultLedger.Store.RemoveHeaderListElement(hash)
+	node.LocalNode().DeleteRequestedBlock(hash)
 	isOrphan := false
 	var err error
 	_, isOrphan, err = ledger.DefaultLedger.Blockchain.AddBlock(&msg.blk)
@@ -45,15 +45,15 @@ func (msg block) Handle(node Noder) error {
 	}
 	//relay
 	if node.LocalNode().IsSyncHeaders() == false {
-		if !node.LocalNode().ExistedID(*hash) {
+		if !node.LocalNode().ExistedID(hash) {
 			node.LocalNode().Relay(node, &msg.blk)
 			log.Debug("Relay block")
 		}
 	}
 
 	if isOrphan == true && node.LocalNode().IsSyncHeaders() == false {
-		if !node.LocalNode().RequestedBlockExisted(*hash) {
-			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(hash)
+		if !node.LocalNode().RequestedBlockExisted(hash) {
+			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
 			locator, _ := ledger.DefaultLedger.Blockchain.LatestBlockLocator()
 			SendMsgSyncBlockHeaders(node, locator, *orphanRoot)
 		}
