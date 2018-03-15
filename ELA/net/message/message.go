@@ -11,6 +11,7 @@ import (
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	. "Elastos.ELA/net/protocol"
+	"SPVWallet/core"
 )
 
 type Messager interface {
@@ -20,6 +21,15 @@ type Messager interface {
 	Handle(Noder) error
 }
 
+func BuildMessage(cmd string, body []byte) ([]byte, error) {
+	hdr, err := BuildHeader(cmd, body).Serialization()
+	if err != nil {
+		return nil, err
+	}
+
+	return append(hdr, body...), nil
+}
+
 // The network communication message header
 type Header struct {
 	Magic uint32
@@ -27,6 +37,26 @@ type Header struct {
 	CMD      [MSGCMDLEN]byte // The message type
 	Length   uint32
 	Checksum [CHECKSUMLEN]byte
+}
+
+func NewHeader(cmd string, checksum []byte, length int) *Header {
+	header := new(Header)
+	// Write Magic
+	header.Magic = config.Parameters.Magic
+	// Write CMD
+	copy(header.CMD[:len(cmd)], cmd)
+	// Write length
+	header.Length = uint32(length)
+	// Write checksum
+	copy(header.Checksum[:], checksum[:CHECKSUMLEN])
+
+	return header
+}
+
+func BuildHeader(cmd string, msg []byte) *Header {
+	// Calculate checksum
+	checksum := core.Sha256D(msg)
+	return NewHeader(cmd, checksum[:], len(msg))
 }
 
 // Alloc different message stucture

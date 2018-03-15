@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 
+	"Elastos.ELA/bloom"
 	"Elastos.ELA/common/serialization"
 	"Elastos.ELA/net/protocol"
-	"Elastos.ELA/bloom"
 )
 
 type FilterLoad struct {
@@ -16,14 +16,23 @@ type FilterLoad struct {
 	Tweak     uint32
 }
 
-func (fl *FilterLoad) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, fl.Header)
+func NewFilterLoadMsg(filter *bloom.Filter) ([]byte, error) {
+	msg := new(FilterLoad)
+	msg.Filter = filter.Filter
+	msg.HashFuncs = filter.HashFuncs
+	msg.Tweak = filter.Tweak
+
+	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	err = serialization.WriteVarBytes(buf, fl.Filter)
+	return BuildMessage("filterload", body)
+}
+
+func (fl *FilterLoad) Serialize() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := serialization.WriteVarBytes(buf, fl.Filter)
 	if err != nil {
 		return nil, err
 	}

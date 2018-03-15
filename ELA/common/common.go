@@ -1,6 +1,7 @@
 package common
 
 import (
+	"crypto/sha256"
 	"errors"
 	"encoding/hex"
 )
@@ -62,4 +63,9 @@ func ToByteArray(source []uint16) []byte {
 	}
 
 	return dst
+}
+
+func Sha256D(data []byte) [32]byte {
+	once := sha256.Sum256(data)
+	return sha256.Sum256(once[:])
 }

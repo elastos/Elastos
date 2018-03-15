@@ -154,7 +154,7 @@ func (db *ChainStore) PersistUnspendUTXOs(b *Block) error {
 			}
 
 			u := tx.UTXOUnspent{
-				Txid:  txn.Hash(),
+				Txid:  *txn.Hash(),
 				Index: uint32(index),
 				Value: value,
 			}
@@ -245,7 +245,7 @@ func (db *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 				}
 			}
 			u := tx.UTXOUnspent{
-				Txid:  txn.Hash(),
+				Txid:  *txn.Hash(),
 				Index: uint32(index),
 				Value: value,
 			}
@@ -282,7 +282,7 @@ func (db *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 					}
 				}
 				u := tx.UTXOUnspent{
-					Txid:  referTxn.Hash(),
+					Txid:  *referTxn.Hash(),
 					Index: uint32(index),
 					Value: referTxnOutput.Value,
 				}
@@ -314,7 +314,7 @@ func (db *ChainStore) PersistTransactions(b *Block) error {
 		}
 		if txn.TxType == tx.RegisterAsset {
 			regPayload := txn.Payload.(*payload.RegisterAsset)
-			if err := db.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
+			if err := db.PersistAsset(*txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
@@ -328,7 +328,7 @@ func (db *ChainStore) RollbackTransactions(b *Block) error {
 			return err
 		}
 		if txn.TxType == tx.RegisterAsset {
-			if err := db.RollbackAsset(txn.Hash()); err != nil {
+			if err := db.RollbackAsset(*txn.Hash()); err != nil {
 				return err
 			}
 		}
@@ -372,7 +372,7 @@ func (db *ChainStore) PersistUnspend(b *Block) error {
 		}
 		txnHash := txn.Hash()
 		for index := range txn.Outputs {
-			unspents[txnHash] = append(unspents[txnHash], uint16(index))
+			unspents[*txnHash] = append(unspents[*txnHash], uint16(index))
 		}
 		if !txn.IsCoinBaseTx() {
 			for index, input := range txn.UTXOInputs {

@@ -51,7 +51,7 @@ type node struct {
 	eventQueue               // The event queue to notice notice other modules
 	TXNPool                  // Unconfirmed transaction pool
 	idCache                  // The buffer to store the id of the items which already be processed
-	fitler *bloom.Filter     // The bloom filter of a spv node
+	filter *bloom.Filter     // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -176,6 +176,7 @@ func InitNode() Noder {
 	n.TXNPool.init()
 	n.eventQueue.init()
 	n.idCache.init()
+	n.filter = new(bloom.Filter)
 	n.cachedHashes = make([]Uint256, 0)
 	n.nodeDisconnectSubscriber = n.eventQueue.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, n.NodeDisconnect)
 	n.RequestedBlockList = make(map[Uint256]time.Time)
@@ -350,7 +351,11 @@ func (node *node) GetLastRXTime() time.Time {
 }
 
 func (node *node) LoadFilter(filter *bloom.Filter) {
-	node.fitler = filter
+	node.filter.Reload(filter.Filter, filter.HashFuncs, filter.Tweak)
+}
+
+func (node *node) GetFilter() *bloom.Filter {
+	return node.filter
 }
 
 func (node *node) Relay(frmnode Noder, message interface{}) error {

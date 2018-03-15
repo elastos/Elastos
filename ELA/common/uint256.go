@@ -11,7 +11,7 @@ const UINT256SIZE int = 32
 
 type Uint256 [UINT256SIZE]uint8
 
-func (u *Uint256) CompareTo(o Uint256) int {
+func (u *Uint256) CompareTo(o *Uint256) int {
 	x := u.ToArray()
 	y := o.ToArray()
 
