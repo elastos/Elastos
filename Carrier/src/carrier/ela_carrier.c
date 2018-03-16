@@ -1116,7 +1116,7 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     if (name) {
         if (strcmp(name, "session") == 0) {
             SessionExtension *ext = (SessionExtension *)w->session;
-            if (ext->friend_invite_cb)
+            if (ext && ext->friend_invite_cb)
                 ext->friend_invite_cb(w, friendid, data, len, ext);
         }
     } else {
