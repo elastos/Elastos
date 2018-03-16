@@ -45,6 +45,18 @@
 #define SDP_MAX_LEN                 2048
 static const char *extension_name = "session";
 
+#if defined(__ANDROID__)
+extern int PJ_JNI_OnLoad(void *vm, void* reserved);
+
+bool ela_session_jni_onload(void *vm, void *reserved)
+{
+    int rc;
+
+    rc = PJ_JNI_OnLoad(vm, reserved);
+    return (rc >= 0);
+}
+#endif
+
 static void friend_invite(ElaCarrier *w, const char *from, const char *sdp,
                           size_t len, void *context)
 {

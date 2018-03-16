@@ -607,18 +607,6 @@ typedef struct ElaCallbacks {
 } ElaCallbacks;
 
 /**
- *\~English
- * Make initialization on Android platform.
- *
- * @return
- *      true if initialization succeeded, or false if not.
- */
-#if defined(__ANDROID__)
-CARRIER_API
-bool ela_android_onload(void *vm, void *reserved);
-#endif
-
-/**
  * \~English
  * initialize log options for Carrier. The default level to control log output
  * is 'Info'.
