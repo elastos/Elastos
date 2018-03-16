@@ -8,7 +8,7 @@ CONFIG_COMMAND = $(shell scripts/pjsip.sh "command" $(HOST) $(ARCH))
 LIBRARY_SUFFIX = $(shell scripts/pjsip.sh "suffix"  $(HOST) $(ARCH))
 
 ifeq (Android,$(HOST))
-CFLAGS := $(CFLAGS) -DJNI_OnLoad=PJ_JNI_OnLoad
+CFLAGS := $(CFLAGS) -DJNI_OnLoad=PJ_JNI_OnLoad -DPJ_TERM_HAS_COLOR=0
 export CFLAGS
 endif
 
