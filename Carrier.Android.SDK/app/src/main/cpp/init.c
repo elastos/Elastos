@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include "log.h"
 #include "utils.h"
-#include "ela_carrier.h"
+#include "ela_session.h"
 
 extern int registerCarrierMethods(JNIEnv* env);
 extern int registerCarrierSessionManagerMethods(JNIEnv* env);
@@ -103,7 +103,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
 
     setJvm(vm);
 
-    ela_android_onload(vm, reserved);
+    ela_session_jni_onload(vm, reserved);
 
     logI("Android java JNI loaded");
 
