@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	. "SPVWallet/core"
+	"SPVWallet/log"
 
 	"github.com/boltdb/bolt"
 )
@@ -30,9 +31,6 @@ type Headers interface {
 	Close()
 }
 
-// Instance of headers DB
-var headersDb *HeadersDB
-
 // HeadersDB implements Headers using bolt DB
 type HeadersDB struct {
 	sync.RWMutex
@@ -45,29 +43,25 @@ var (
 	KEYChainTip = []byte("ChainTip")
 )
 
-func GetHeadersDB() (Headers, error) {
-	if headersDb == nil {
-		db, err := bolt.Open("headers.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
-		if err != nil {
-			return nil, err
-		}
-
-		db.Update(func(btx *bolt.Tx) error {
-			_, err := btx.CreateBucketIfNotExists(BKTHeaders)
-			if err != nil {
-				return err
-			}
-			_, err = btx.CreateBucketIfNotExists(BKTChainTip)
-			if err != nil {
-				return err
-			}
-			return nil
-		})
-
-		headersDb = &HeadersDB{DB: db}
+func NewHeadersDB() (Headers, error) {
+	db, err := bolt.Open("headers.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
+	if err != nil {
+		return nil, err
 	}
 
-	return headersDb, nil
+	db.Update(func(btx *bolt.Tx) error {
+		_, err := btx.CreateBucketIfNotExists(BKTHeaders)
+		if err != nil {
+			return err
+		}
+		_, err = btx.CreateBucketIfNotExists(BKTChainTip)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return &HeadersDB{DB: db}, nil
 }
 
 // Add a new header to blockchain
@@ -75,6 +69,7 @@ func (db *HeadersDB) Add(header *Header) error {
 	db.Lock()
 	defer db.Unlock()
 
+	log.Info("Headers db add header:", header.Hash().String())
 	return db.Update(func(tx *bolt.Tx) error {
 
 		bytes, err := header.Bytes()
@@ -106,6 +101,7 @@ func (db *HeadersDB) GetHeader(hash *Uint256) (header *Header, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
+	log.Info("Headers db get header:", hash.String())
 	err = db.View(func(tx *bolt.Tx) error {
 
 		header, err = getHeader(tx, hash)
@@ -128,6 +124,7 @@ func (db *HeadersDB) GetTip() (header *Header, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
+	log.Info("Headers db get tip")
 	err = db.View(func(tx *bolt.Tx) error {
 
 		header, err = getTip(tx)
@@ -139,6 +136,7 @@ func (db *HeadersDB) GetTip() (header *Header, err error) {
 	})
 
 	if err != nil {
+		log.Error("Headers db get tip err,", err)
 		return nil, err
 	}
 
@@ -150,6 +148,7 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 	db.Lock()
 	defer db.Unlock()
 
+	log.Info("Headers db rollback")
 	err = db.View(func(tx *bolt.Tx) error {
 
 		var newTip *Header
@@ -179,6 +178,7 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 	})
 
 	if err != nil {
+		log.Info("Headers db rollback err,", err)
 		return nil, err
 	}
 
@@ -188,7 +188,8 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 // Close db
 func (db *HeadersDB) Close() {
 	db.Lock()
-	db.Close()
+	db.DB.Close()
+	log.Info("Headers DB closed")
 }
 
 func getHeader(tx *bolt.Tx, hash *Uint256) (*Header, error) {

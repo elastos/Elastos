@@ -2,13 +2,12 @@ package main
 
 import (
 	"os"
-	"fmt"
-
 	"encoding/binary"
-	"SPVWallet/db"
-	"SPVWallet/p2p"
 	"SPVWallet/wallet"
 	"SPVWallet/log"
+	"SPVWallet/p2p"
+	"os/signal"
+	"fmt"
 )
 
 /*
@@ -28,17 +27,46 @@ func main() {
 
 	file, err := wallet.OpenKeystoreFile()
 	if err != nil {
-		fmt.Println("Keystore.dat file not found, please create your wallet using wallet-cli first")
+		log.Error("Keystore.dat file not found, please create your wallet using wallet-cli first")
 		os.Exit(0)
 	}
 
-	// Initiate blockchain
-	db.InitBlockchain()
-
-	// Initiate P2P network
+	// Initiate SPV service
 	iv, _ := file.GetIV()
-	p2p.Init(binary.LittleEndian.Uint64(iv))
+	spv, err := wallet.InitSPV(binary.LittleEndian.Uint64(iv))
+	if err != nil {
+		log.Error("Initiate SPV service failed,", err)
+		os.Exit(0)
+	}
 
-	// Start SPV wallet
-	p2p.Start()
+	// Init listeners
+	p2p.SetListeners(&p2p.Listeners{
+		OnVersion:     spv.OnVersion,
+		OnVerAck:      spv.OnVerAck,
+		OnPing:        spv.OnPing,
+		OnPong:        spv.OnPong,
+		OnAddrs:       spv.OnAddrs,
+		OnAddrsReq:    spv.OnAddrsReq,
+		OnInventory:   spv.OnInventory,
+		OnMerkleBlock: spv.OnMerkleBlock,
+		OnTxn:         spv.OnTxn,
+		OnNotFound:    spv.OnNotFound,
+		OnDisconnect:  spv.OnDisconnect,
+	})
+
+	// Handle interrupt signal
+	stop := make(chan int, 1)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			fmt.Println("SPVWallet shutting down...")
+			spv.Stop()
+			stop <- 1
+		}
+	}()
+
+	spv.Start()
+
+	<-stop
 }

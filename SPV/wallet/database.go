@@ -21,7 +21,7 @@ var instance Database
 
 func GetDatabase() (Database, error) {
 	if instance == nil {
-		dataStore, err := GetSQLiteDB()
+		dataStore, err := NewSQLiteDB()
 		if err != nil {
 			return nil, err
 		}

@@ -4,6 +4,8 @@ import (
 	"sync"
 	"time"
 	"net"
+	"SPVWallet/p2p/msg"
+	"SPVWallet/log"
 )
 
 const (
@@ -23,6 +25,7 @@ type ConnManager struct {
 
 func newConnManager(onDiscardAddr func(add string)) *ConnManager {
 	cm := new(ConnManager)
+	cm.retryList = make(map[string]int)
 	cm.OnDiscardAddr = onDiscardAddr
 	return cm
 }
@@ -57,8 +60,10 @@ func (cm *ConnManager) removeAddrFromConnectingList(addr string) {
 }
 
 func (cm *ConnManager) connectPeer(addr string) {
+	log.Info("Connect peer addr:", addr)
 	conn, err := net.DialTimeout("tcp", addr, time.Second*ConnTimeOut)
 	if err != nil {
+		log.Error("Connect to addr ", addr, " failed, err", err)
 		cm.retry(addr)
 		return
 	}
@@ -69,7 +74,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 	go remote.Read()
 
 	// Send version message to remote peer
-	msg, err := NewVersionMsg(GetPeerManager().Local())
+	msg, err := msg.NewVersionMsg(NewVersionData(LocalPeer()))
 	go remote.Send(msg)
 }
 

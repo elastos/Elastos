@@ -3,22 +3,50 @@ package p2p
 import (
 	"errors"
 	"fmt"
+	"time"
+
+	. "SPVWallet/p2p/msg"
 )
 
 var listeners *Listeners
+
+type Listeners struct {
+	OnVersion     func(peer *Peer, msg *Version) error
+	OnVerAck      func(peer *Peer, msg *VerAck) error
+	OnAddrs       func(peer *Peer, msg *Addrs) error
+	OnAddrsReq    func(peer *Peer, msg *AddrsReq) error
+	OnPing        func(peer *Peer, msg *Ping) error
+	OnPong        func(peer *Peer, msg *Pong) error
+	OnInventory   func(peer *Peer, msg *Inventory) error
+	OnMerkleBlock func(peer *Peer, msg *MerkleBlock) error
+	OnTxn         func(peer *Peer, msg *Txn) error
+	OnNotFound    func(peer *Peer, msg *NotFound) error
+	OnDisconnect  func(peer *Peer)
+}
 
 type Message interface {
 	Serialize() ([]byte, error)
 	Deserialize(msg []byte) error
 }
 
-func BuildMessage(cmd string, body []byte) ([]byte, error) {
-	hdr, err := BuildHeader(cmd, body).Serialize()
-	if err != nil {
-		return nil, err
-	}
+func SetListeners(ls *Listeners) {
+	listeners = ls
+}
 
-	return append(hdr, body...), nil
+// Only local peer will use this method, so the parameters are fixed
+func NewVersionData(peer *Peer) VersionData {
+	content := new(VersionData)
+	content.Version = peer.Version()
+	content.Services = peer.Services()
+	content.TimeStamp = uint32(time.Now().UnixNano())
+	content.Port = peer.Port()
+	content.HttpInfoPort = 0
+	content.Cap[0] = 0x00
+	content.Nonce = peer.ID()
+	content.UserAgent = 0x00
+	content.Height = peer.Height()
+	content.Relay = peer.Relay()
+	return *content
 }
 
 func HandleMessage(peer *Peer, buf []byte) error {

@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"SPVWallet/bloom"
+	"SPVWallet/log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -14,8 +15,6 @@ const (
 	DriverName = "sqlite3"
 	DBName     = "./wallet.db"
 )
-
-var sqliteDb *SQLiteDB
 
 type SQLiteDB struct {
 	*sync.RWMutex
@@ -29,51 +28,47 @@ type SQLiteDB struct {
 	filterLock *sync.Mutex
 }
 
-func GetSQLiteDB() (DataStore, error) {
-	if sqliteDb == nil {
-		db, err := sql.Open(DriverName, DBName)
-		if err != nil {
-			fmt.Println("Open data db error:", err)
-			return nil, err
-		}
-		// Use the save lock
-		lock := new(sync.RWMutex)
+func NewSQLiteDB() (DataStore, error) {
+	db, err := sql.Open(DriverName, DBName)
+	if err != nil {
+		fmt.Println("Open data db error:", err)
+		return nil, err
+	}
+	// Use the save lock
+	lock := new(sync.RWMutex)
 
-		// Create scripts db
-		scriptsDB, err := NewScriptDB(db, lock)
-		if err != nil {
-			return nil, err
-		}
-		// Create UTXOs db
-		utxosDB, err := NewUTXOsDB(db, lock)
-		if err != nil {
-			return nil, err
-		}
-		// Create STXOs db
-		stxosDB, err := NewSTXOsDB(db, lock)
-		if err != nil {
-			return nil, err
-		}
-		// Create TXNs db
-		txnsDB, err := NewTXNsDB(db, lock)
-		if err != nil {
-			return nil, err
-		}
-
-		sqliteDb = &SQLiteDB{
-			RWMutex: lock,
-			DB:      db,
-
-			scripts: scriptsDB,
-			utxos:   utxosDB,
-			stxos:   stxosDB,
-			txns:    txnsDB,
-
-			filterLock: new(sync.Mutex),
-		}
+	// Create scripts db
+	scriptsDB, err := NewScriptDB(db, lock)
+	if err != nil {
+		return nil, err
+	}
+	// Create UTXOs db
+	utxosDB, err := NewUTXOsDB(db, lock)
+	if err != nil {
+		return nil, err
+	}
+	// Create STXOs db
+	stxosDB, err := NewSTXOsDB(db, lock)
+	if err != nil {
+		return nil, err
+	}
+	// Create TXNs db
+	txnsDB, err := NewTXNsDB(db, lock)
+	if err != nil {
+		return nil, err
 	}
 
-	return sqliteDb, nil
+	return &SQLiteDB{
+		RWMutex: lock,
+		DB:      db,
+
+		scripts: scriptsDB,
+		utxos:   utxosDB,
+		stxos:   stxosDB,
+		txns:    txnsDB,
+
+		filterLock: new(sync.Mutex),
+	}, nil
 }
 
 func (db *SQLiteDB) Scripts() Scripts {
@@ -121,4 +116,5 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 func (db *SQLiteDB) Close() {
 	db.Lock()
 	db.DB.Close()
+	log.Info("SQLite DB closed")
 }

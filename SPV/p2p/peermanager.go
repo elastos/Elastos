@@ -1,14 +1,11 @@
 package p2p
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"time"
 	"net"
 
-	"SPVWallet/core/transaction"
-	"SPVWallet/db"
+	"SPVWallet/p2p/msg"
+	"SPVWallet/log"
 )
 
 const (
@@ -18,32 +15,45 @@ const (
 	MaxOutboundCount   = 6
 )
 
-var instance *PeerManager
-
 type PeerManager struct {
 	*Peers
-	*SyncManager
 	addrManager *AddrManager
 	connManager *ConnManager
 }
 
-func GetPeerManager() *PeerManager {
-	if instance == nil {
-		fmt.Errorf("Peer manager was not initialized, please run Init(localPeer *Peer) frist")
-		os.Exit(0)
-	}
-
-	return instance
+func NewPeerManager(walletId uint64) *PeerManager {
+	// Initiate PeerManager
+	pm := new(PeerManager)
+	pm.Peers = newPeers(walletId)
+	pm.addrManager = newAddrManager()
+	pm.connManager = newConnManager(pm.OnDiscardAddr)
+	return pm
 }
 
 func (pm *PeerManager) Start() {
-	pm.connectPeers()
+	log.Info("PeerManager start")
+	pm.ConnectPeers()
 	go pm.listenConnection()
-	go pm.keepUpdate()
 }
 
-func (pm *PeerManager) needMorePeers() bool {
+func (pm *PeerManager) NeedMorePeers() bool {
 	return pm.PeersCount() < MinConnCount
+}
+
+func (pm *PeerManager) ConnectPeer(addr string) {
+	pm.connManager.Connect(addr)
+}
+
+func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
+	// Add peer to list
+	pm.addConnectedPeer(peer)
+
+	// Mark addr as connected
+	pm.addrManager.addConnectedAddr(peer.Addr().TCPAddr())
+}
+
+func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {
+	pm.connManager.removeAddrFromConnectingList(peer.Addr().TCPAddr())
 }
 
 func (pm *PeerManager) DisconnectPeer(peer *Peer) {
@@ -58,7 +68,7 @@ func (pm *PeerManager) OnDiscardAddr(addr string) {
 	pm.addrManager.DiscardAddr(addr)
 }
 
-func (pm *PeerManager) RandPeerAddrs() []PeerAddr {
+func (pm *PeerManager) RandPeerAddrs() []msg.PeerAddr {
 	peers := pm.ConnectedPeers()
 
 	count := len(peers)
@@ -66,7 +76,7 @@ func (pm *PeerManager) RandPeerAddrs() []PeerAddr {
 		count = MaxOutboundCount
 	}
 
-	addrs := make([]PeerAddr, count)
+	addrs := make([]msg.PeerAddr, count)
 	for count > 0 {
 		count--
 		addrs = append(addrs, *peers[count].Addr())
@@ -75,9 +85,10 @@ func (pm *PeerManager) RandPeerAddrs() []PeerAddr {
 	return addrs
 }
 
-func (pm *PeerManager) connectPeers() {
-	if pm.needMorePeers() {
+func (pm *PeerManager) ConnectPeers() {
+	if pm.NeedMorePeers() {
 		addrs := pm.addrManager.GetIdleAddrs(MaxOutboundCount)
+		log.Info("PeerManager connect peers addrs, ", addrs)
 		for _, addr := range addrs {
 			go pm.connManager.connectPeer(addr)
 		}
@@ -103,191 +114,4 @@ func (pm *PeerManager) listenConnection() {
 		peer := NewPeer(conn)
 		go peer.Read()
 	}
-}
-
-func (pm *PeerManager) keepUpdate() {
-	ticker := time.NewTicker(time.Second * InfoUpdateDuration)
-	defer ticker.Stop()
-	for range ticker.C {
-
-		// Update peers info
-		for _, peer := range pm.ConnectedPeers() {
-			if peer.State() == ESTABLISH {
-
-				// Disconnect inactive peer
-				if peer.LastActive().Before(
-					time.Now().Add(-time.Second * InfoUpdateDuration * KeepAliveTimeout)) {
-					pm.DisconnectPeer(peer)
-					continue
-				}
-
-				// Send ping message to peer
-				msg, err := NewPingMsg()
-				if err != nil {
-					fmt.Println("Failed to build ping message, ", err)
-					return
-				}
-				go peer.Send(msg)
-			}
-		}
-
-		// Keep connections
-		pm.connectPeers()
-
-		// Keep synchronizing blocks
-		pm.SyncBlocks()
-	}
-}
-
-func (pm *PeerManager) OnVersion(peer *Peer, v *Version) error {
-	// Check if handshake with itself
-	if v.Nonce == pm.Local().ID() {
-		peer.Disconnect()
-		return errors.New("Peer handshake with itself")
-	}
-
-	if v.Version < PeerVersion {
-		peer.Disconnect()
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", PeerVersion))
-	}
-
-	if v.Services/ServiceSPV&1 == 0 {
-		peer.Disconnect()
-		return errors.New("SPV service not enabled on connected peer")
-	}
-
-	if peer.State() != INIT && peer.State() != HAND {
-		return errors.New("Unknow status to received version")
-	}
-
-	// Remove duplicate peer connection
-	knownPeer, ok := pm.RemovePeer(v.Nonce)
-	if ok {
-		fmt.Println("Reconnect peer ", v.Nonce)
-		knownPeer.Disconnect()
-	}
-
-	// Update peer info with version message
-	peer.Update(v)
-
-	// Add peer to list
-	pm.addConnectedPeer(peer)
-
-	// Mark addr as connected
-	pm.addrManager.addConnectedAddr(peer.Addr().TCPAddr())
-
-	var msg []byte
-	if peer.State() == INIT {
-		peer.SetState(HANDSHAKE)
-		msg, _ = NewVersionMsg(peer)
-	} else if peer.State() == HAND {
-		peer.SetState(HANDSHAKED)
-		msg, _ = NewVerAckMsg()
-	}
-
-	go peer.Send(msg)
-
-	return nil
-}
-
-func (pm *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
-	if peer.State() != HANDSHAKE && peer.State() != HANDSHAKED {
-		return errors.New("Unknow status to received verack")
-	}
-
-	if peer.State() == HANDSHAKE {
-		msg, _ := NewVerAckMsg()
-		go peer.Send(msg)
-	}
-
-	peer.SetState(ESTABLISH)
-
-	// Remove from connecting list
-	pm.connManager.removeAddrFromConnectingList(peer.Addr().TCPAddr())
-
-	msg, _ := NewFilterLoadMsg(db.GetBlockchain().GetFilter())
-	go peer.Send(msg)
-
-	if pm.needMorePeers() {
-		msg, _ := NewAddrsReqMsg()
-		go peer.Send(msg)
-	}
-
-	return nil
-}
-
-func (pm *PeerManager) OnPing(peer *Peer, p *Ping) error {
-	peer.SetHeight(p.Height)
-
-	msg, err := NewPongMsg()
-	if err != nil {
-		fmt.Println("Failed to build pong message")
-		return err
-	}
-
-	go peer.Send(msg)
-
-	return nil
-}
-
-func (pm *PeerManager) OnPong(peer *Peer, p *Pong) error {
-	peer.SetHeight(p.Height)
-	return nil
-}
-
-func (pm *PeerManager) OnAddrs(peer *Peer, addrs *Addrs) error {
-	for _, addr := range addrs.PeerAddrs {
-		// Skip local peer
-		if addr.ID == pm.Local().ID() {
-			continue
-		}
-		// Skip peer already connected
-		if pm.EstablishedPeer(addr.ID) {
-			continue
-		}
-		// Skip invalid port
-		if addr.Port == 0 {
-			continue
-		}
-		// Handle new address
-		if pm.needMorePeers() {
-			pm.connManager.Connect(addr.TCPAddr())
-		}
-	}
-
-	return nil
-}
-
-func (pm *PeerManager) OnAddrsReq(peer *Peer, req *AddrsReq) error {
-	addrs := pm.RandPeerAddrs()
-	msg, err := NewAddrsMsg(addrs)
-	if err != nil {
-		return err
-	}
-
-	go peer.Send(msg)
-
-	return nil
-}
-
-func (pm *PeerManager) OnInventory(peer *Peer, inv *Inventory) error {
-	switch inv.Type {
-	case TRANSACTION:
-		// Do nothing, transaction inventory is not supported
-	case BLOCK:
-		return pm.HandleBlockInvMsg(inv, peer)
-	}
-	return nil
-}
-
-func (pm *PeerManager) SendTransaction(txn *transaction.Transaction) error {
-	txnMsg, err := NewTxnMsg(*txn)
-	if err != nil {
-		return err
-	}
-
-	// Broadcast transaction to connected peers
-	pm.Broadcast(txnMsg)
-
-	return nil
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"SPVWallet/config"
+	. "SPVWallet/p2p/msg"
 )
 
 const (
@@ -27,19 +28,6 @@ const (
 	ESTABLISH
 	INACTIVITY
 )
-
-type Listeners struct {
-	OnVersion     func(peer *Peer, msg *Version) error
-	OnVerAck      func(peer *Peer, msg *VerAck) error
-	OnAddrs       func(peer *Peer, msg *Addrs) error
-	OnAddrsReq    func(peer *Peer, msg *AddrsReq) error
-	OnPing        func(peer *Peer, msg *Ping) error
-	OnPong        func(peer *Peer, msg *Pong) error
-	OnInventory   func(peer *Peer, msg *Inventory) error
-	OnMerkleBlock func(peer *Peer, msg *MerkleBlock) error
-	OnTxn         func(peer *Peer, msg *Txn) error
-	OnNotFound    func(peer *Peer, msg *NotFound) error
-}
 
 type PeerState struct {
 	sync.RWMutex
@@ -181,7 +169,7 @@ func (peer *Peer) Read() {
 	}
 
 DISCONNECT:
-	GetPeerManager().DisconnectPeer(peer)
+	listeners.OnDisconnect(peer)
 }
 
 func (peer *Peer) unpackMessage(buf []byte) {
@@ -210,7 +198,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 
 		if header.Magic != config.Config().Magic {
 			fmt.Println("Magic not match, disconnect peer")
-			GetPeerManager().DisconnectPeer(peer)
+			listeners.OnDisconnect(peer)
 			return
 		}
 
@@ -248,6 +236,6 @@ func (peer *Peer) Send(msg []byte) {
 	_, err := peer.conn.Write(msg)
 	if err != nil {
 		fmt.Errorf("Error sending message to peer ", err)
-		GetPeerManager().DisconnectPeer(peer)
+		listeners.OnDisconnect(peer)
 	}
 }

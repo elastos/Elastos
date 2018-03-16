@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"SPVWallet/config"
+	"SPVWallet/log"
 )
 
 const (
@@ -116,6 +117,7 @@ func (am *AddrManager) DiscardAddr(addr string) {
 	am.Lock()
 	defer am.Unlock()
 
+	log.Info("AddrManager discard addr:", addr)
 	for i, cache := range am.cached {
 		if cache == addr {
 			am.cached = append(am.cached[:i], am.cached[i+1:]...)

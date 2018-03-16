@@ -4,9 +4,14 @@ import (
 	"sync"
 )
 
+var local *Peer
+
+func LocalPeer() *Peer {
+	return local
+}
+
 type Peers struct {
 	sync.RWMutex
-	local    *Peer
 	syncPeer *Peer
 	peers    map[uint64]*Peer
 }
@@ -22,7 +27,7 @@ func (p *Peers) initLocalPeer(id uint64) {
 	p.Lock()
 	defer p.Unlock()
 
-	p.local = &Peer{
+	local = &Peer{
 		id:       id,
 		version:  PeerVersion,
 		port:     SPVPeerPort,
@@ -35,7 +40,7 @@ func (p *Peers) Local() *Peer {
 	p.RLock()
 	defer p.RUnlock()
 
-	return p.local
+	return local
 }
 
 func (p *Peers) addConnectedPeer(peer *Peer) {

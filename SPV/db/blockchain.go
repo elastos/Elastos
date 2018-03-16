@@ -3,9 +3,7 @@ package db
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"math/big"
-	"os"
 	"sync"
 
 	. "SPVWallet/core"
@@ -25,8 +23,6 @@ const (
 
 var PowLimit = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
-var blockchain *Blockchain
-
 type Blockchain struct {
 	sync.RWMutex
 	state ChainState
@@ -34,33 +30,28 @@ type Blockchain struct {
 	DataStore
 }
 
-func InitBlockchain() error {
-	headersDB, err := GetHeadersDB()
+func NewBlockchain() (*Blockchain, error) {
+	headersDB, err := NewHeadersDB()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	sqliteDb, err := GetSQLiteDB()
+	sqliteDb, err := NewSQLiteDB()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	blockchain = &Blockchain{
+	return &Blockchain{
 		state:     SYNCING,
 		Headers:   headersDB,
 		DataStore: sqliteDb,
-	}
-
-	return nil
+	}, nil
 }
 
-func GetBlockchain() *Blockchain {
-	if blockchain == nil {
-		fmt.Errorf("Blockchain has not initialized, please run InitBlockchain() first")
-		os.Exit(0)
-	}
-
-	return blockchain
+func (bc *Blockchain) Close() {
+	bc.Lock()
+	bc.Headers.Close()
+	bc.DataStore.Close()
 }
 
 func (bc *Blockchain) SetChainState(state ChainState) {
@@ -71,15 +62,15 @@ func (bc *Blockchain) SetChainState(state ChainState) {
 }
 
 func (bc *Blockchain) IsSyncing() bool {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.RLock()
+	defer bc.RUnlock()
 
 	return bc.state == SYNCING
 }
 
 func (bc *Blockchain) Height() uint32 {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.RLock()
+	defer bc.RUnlock()
 
 	tip, err := bc.Headers.GetTip()
 	if err != nil {
@@ -90,8 +81,8 @@ func (bc *Blockchain) Height() uint32 {
 }
 
 func (bc *Blockchain) ChainTip() *Header {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.RLock()
+	defer bc.RUnlock()
 
 	tip, err := bc.Headers.GetTip()
 	if err != nil { // Empty blockchain, return empty header
@@ -101,8 +92,8 @@ func (bc *Blockchain) ChainTip() *Header {
 }
 
 func (bc *Blockchain) IsKnownBlock(hash Uint256) bool {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.RLock()
+	defer bc.RUnlock()
 
 	header, err := bc.Headers.GetHeader(&hash)
 	if header == nil || err != nil {
@@ -112,8 +103,8 @@ func (bc *Blockchain) IsKnownBlock(hash Uint256) bool {
 }
 
 func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.RLock()
+	defer bc.RUnlock()
 
 	var ret []*Uint256
 	parent, err := bc.Headers.GetTip()

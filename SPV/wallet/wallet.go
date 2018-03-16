@@ -15,7 +15,6 @@ import (
 	tx "SPVWallet/core/transaction"
 	"SPVWallet/core/transaction/payload"
 	"SPVWallet/log"
-	"SPVWallet/p2p"
 )
 
 var SystemAssetId = *getSystemAssetId()
@@ -311,7 +310,7 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 func (wallet *WalletImpl) SendTransaction(txn *tx.Transaction) error {
 
 	// Send transaction through P2P network
-	p2p.GetPeerManager().SendTransaction(txn)
+	spv.SendTransaction(txn)
 
 	return nil
 }
@@ -339,7 +338,7 @@ func getSystemAssetId() *Uint256 {
 
 func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
 	var availableUTXOs []*UTXO
-	var currentHeight = GetBlockchain().Height()
+	var currentHeight = spv.chain.Height()
 	for _, utxo := range utxos {
 		if utxo.LockTime > 0 {
 			if utxo.LockTime > currentHeight {
@@ -369,6 +368,6 @@ func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*tx.Input
 		Inputs:     inputs,
 		Outputs:    outputs,
 		Programs:   []*pg.Program{program},
-		LockTime:   GetBlockchain().Height(),
+		LockTime:   spv.chain.Height(),
 	}
 }
