@@ -26,6 +26,12 @@
 #ifndef	_IFADDRS_H_
 #define	_IFADDRS_H_
 
+#include "common_export.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct ifaddrs {
 	struct ifaddrs  *ifa_next;
 	const char      *ifa_name;
@@ -44,13 +50,14 @@ struct ifaddrs {
 #define	ifa_broadaddr	ifa_dstaddr	/* broadcast address interface */
 #endif
 
-#include <sys/cdefs.h>
-
-__BEGIN_DECLS
-//extern int getifaddrs(struct ifaddrs **ifap);
-//extern void freeifaddrs(struct ifaddrs *ifa);
+COMMON_API
 int getifaddrs(struct ifaddrs **ifap);
+
+COMMON_API
 void freeifaddrs(struct ifaddrs *ifa);
-__END_DECLS
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
