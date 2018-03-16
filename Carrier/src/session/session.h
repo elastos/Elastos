@@ -96,7 +96,8 @@ struct ElaTransport {
     SessionExtension        *ext;
     List                    *workers;
 
-    int (*create_worker)   (IceTransportOptions *opts, TransportWorker **worker);
+    int (*create_worker)   (ElaTransport *transport, IceTransportOptions *opts,
+                            TransportWorker **worker);
     int (*create_session)  (ElaTransport *transport, ElaSession **session);
 };
 

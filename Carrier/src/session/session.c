@@ -295,7 +295,7 @@ ElaSession *ela_session_new(ElaCarrier *w, const char *address)
     opts.turn_password = turn_server.password;
     opts.turn_realm = turn_server.realm;
 
-    rc = transport->create_worker(&opts, &ws->worker);
+    rc = transport->create_worker(transport, &opts, &ws->worker);
     if (rc < 0) {
         deref(ws);
         ela_set_error(rc);

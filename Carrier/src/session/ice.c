@@ -590,13 +590,16 @@ static int transport_workerid(void)
 }
 
 static
-int ice_worker_create(IceTransportOptions *opts, TransportWorker **worker)
+int ice_worker_create(ElaTransport *transport, IceTransportOptions *opts,
+                      TransportWorker **worker)
 {
     IceWorker *w;
     int rc;
 
     assert(opts);
     assert(worker);
+
+    prepare_thread_context((IceTransport *)transport);
 
     w = (IceWorker *)rc_zalloc(sizeof(IceWorker), ice_worker_destroy);
     if (!w)
