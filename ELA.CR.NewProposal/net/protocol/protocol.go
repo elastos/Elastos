@@ -36,7 +36,7 @@ const (
 
 const (
 	MAXBUFLEN        = 1024 * 16 // Fixme The maximum buffer to receive message
-	PROTOCOLVERSION  = 0
+	PROTOCOLVERSION  = 1
 	KEEPALIVETIMEOUT = 3
 	DIALTIMEOUT      = 6
 	CONNMONITOR      = 6
@@ -60,22 +60,22 @@ var ReceiveDuplicateBlockCnt uint64 //an index to detecting networking status
 
 type Noder interface {
 	Version() uint32
-	GetID() uint64
+	ID() uint64
 	Services() uint64
-	GetAddr() string
-	GetAddr16() ([16]byte, error)
-	GetPort() uint16
-	GetHttpInfoPort() int
+	Addr() string
+	Addr16() ([16]byte, error)
+	Port() uint16
+	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
-	GetState() uint32
-	GetRelay() bool
+	State() uint32
+	IsRelay() bool
 	SetState(state uint32)
 	CompareAndSetState(old, new uint32) bool
 	LocalNode() Noder
 	DelNbrNode(id uint64) (Noder, bool)
 	AddNbrNode(Noder)
 	CloseConn()
-	GetHeight() uint64
+	Height() uint64
 	GetConnectionCnt() uint
 	GetConn() net.Conn
 	GetTxnPool(bool) map[common.Uint256]*transaction.Transaction

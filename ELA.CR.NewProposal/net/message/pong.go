@@ -36,7 +36,7 @@ func NewPongMsg() ([]byte, error) {
 	binary.Read(buf, binary.LittleEndian, &(msg.Header.Checksum))
 	msg.Header.Length = uint32(len(b.Bytes()))
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -49,8 +49,8 @@ func (msg pong) Handle(node Noder) error {
 	return nil
 }
 
-func (msg pong) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialization()
+func (msg pong) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Header.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (msg pong) Serialization() ([]byte, error) {
 
 }
 
-func (msg *pong) Deserialization(p []byte) error {
+func (msg *pong) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	if err != nil {

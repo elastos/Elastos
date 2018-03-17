@@ -18,7 +18,7 @@ const (
 
 var (
 	Parameters configParams
-	mainNet = &ChainParams{
+	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
 		PowLimitBits:       0x1f0008ff,
@@ -74,6 +74,7 @@ type Configuration struct {
 	RestKeyPath         string           `json:"RestKeyPath"`
 	HttpInfoPort        uint16           `json:"HttpInfoPort"`
 	HttpInfoStart       bool             `json:"HttpInfoStart"`
+	SPVService          bool             `json:"SPVService"`
 	HttpWsPort          int              `json:"HttpWsPort"`
 	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
 	HttpJsonPort        int              `json:"HttpJsonPort"`

@@ -38,8 +38,8 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(ngbrNoders); i++ {
 		ngbrNodersInfo = append(ngbrNodersInfo, NgbNodeInfo{
-			NgbId:   fmt.Sprintf("0x%x", ngbrNoders[i].GetID()),
-			NbrAddr: ngbrNoders[i].GetAddr() + ":" + strconv.Itoa(ngbrNoders[i].GetHttpInfoPort()),
+			NgbId:   fmt.Sprintf("0x%x", ngbrNoders[i].ID()),
+			NbrAddr: ngbrNoders[i].Addr() + ":" + strconv.Itoa(ngbrNoders[i].HttpInfoPort()),
 		})
 	}
 
@@ -51,7 +51,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 		HttpWsPort:   config.Parameters.HttpWsPort,
 		HttpJsonPort: config.Parameters.HttpJsonPort,
 		NodePort:     config.Parameters.NodePort,
-		NodeId:       fmt.Sprintf("0x%x", node.GetID()),
+		NodeId:       fmt.Sprintf("0x%x", node.ID()),
 	}
 
 	err := templates.ExecuteTemplate(w, "info", pageInfo)

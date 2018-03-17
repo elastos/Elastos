@@ -87,7 +87,7 @@ func (node *node) rx() {
 			node.Time = t
 			unpackNodeBuf(node, buf[0:len])
 		case io.EOF:
-			log.Error("Rx io.EOF: ", err, ", node id is ", node.GetID())
+			log.Error("Rx io.EOF: ", err, ", node id is ", node.ID())
 			goto DISCONNECT
 		default:
 			log.Error("Read connection error ", err)
@@ -299,7 +299,7 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 func (node *node) Tx(buf []byte) {
 	log.Debugf("TX buf length: %d\n%x", len(buf), buf)
 
-	if node.GetState() == Inactive {
+	if node.State() == Inactive {
 		return
 	}
 	_, err := node.conn.Write(buf)

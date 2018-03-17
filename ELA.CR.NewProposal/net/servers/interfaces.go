@@ -190,14 +190,14 @@ func GetNeighbors(param map[string]interface{}) map[string]interface{} {
 
 func GetNodeState(param map[string]interface{}) map[string]interface{} {
 	n := NodeInfo{
-		State:    uint(NodeForServers.GetState()),
+		State:    uint(NodeForServers.State()),
 		Time:     NodeForServers.GetTime(),
-		Port:     NodeForServers.GetPort(),
-		ID:       NodeForServers.GetID(),
+		Port:     NodeForServers.Port(),
+		ID:       NodeForServers.ID(),
 		Version:  NodeForServers.Version(),
 		Services: NodeForServers.Services(),
-		Relay:    NodeForServers.GetRelay(),
-		Height:   NodeForServers.GetHeight(),
+		Relay:    NodeForServers.IsRelay(),
+		Height:   NodeForServers.Height(),
 		TxnCnt:   NodeForServers.GetTxnCnt(),
 		RxTxnCnt: NodeForServers.GetRxTxnCnt(),
 	}
@@ -255,9 +255,9 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 func GenerateAuxBlock(addr string) (*ledger.Block, string, bool) {
 	msgBlock := &ledger.Block{}
 
-	if NodeForServers.GetHeight() == 0 || PreChainHeight != NodeForServers.GetHeight() || (time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS && Pow.GetTransactionCount() != PreTransactionCount) {
-		if PreChainHeight != NodeForServers.GetHeight() {
-			PreChainHeight = NodeForServers.GetHeight()
+	if NodeForServers.Height() == 0 || PreChainHeight != NodeForServers.Height() || (time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS && Pow.GetTransactionCount() != PreTransactionCount) {
+		if PreChainHeight != NodeForServers.Height() {
+			PreChainHeight = NodeForServers.Height()
 			PreTime = time.Now().Unix()
 			PreTransactionCount = Pow.GetTransactionCount()
 		}
@@ -279,7 +279,7 @@ func GenerateAuxBlock(addr string) (*ledger.Block, string, bool) {
 		Pow.MsgBlock.BlockData[curHashStr] = msgBlock
 		Pow.MsgBlock.Mutex.Unlock()
 
-		PreChainHeight = NodeForServers.GetHeight()
+		PreChainHeight = NodeForServers.Height()
 		PreTime = time.Now().Unix()
 		PreTransactionCount = currentTxsCount // Don't Call GetTransactionCount()
 
@@ -314,7 +314,7 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 
 	SendToAux := AuxBlock{
 		ChainId:           1,
-		Height:            NodeForServers.GetHeight(),
+		Height:            NodeForServers.Height(),
 		CoinBaseValue:     1,                                          //transaction content
 		Bits:              fmt.Sprintf("%x", msgBlock.Blockdata.Bits), //difficulty
 		Hash:              curHashStr,
@@ -340,7 +340,7 @@ func GetInfo(param map[string]interface{}) map[string]interface{} {
 	}{
 		Version:        config.Parameters.Version,
 		Balance:        0,
-		Blocks:         NodeForServers.GetHeight(),
+		Blocks:         NodeForServers.Height(),
 		Timeoffset:     0,
 		Connections:    NodeForServers.GetConnectionCnt(),
 		Testnet:        config.Parameters.PowConfiguration.TestNet,

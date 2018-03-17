@@ -76,7 +76,7 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 	msg.Header.Length = uint32(len(b.Bytes()))
 	log.Debug("The message payload length is ", msg.Header.Length)
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -85,8 +85,8 @@ func NewTxn(txn *transaction.Transaction) ([]byte, error) {
 	return m, nil
 }
 
-func (msg trn) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialization()
+func (msg trn) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Header.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (msg trn) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *trn) Deserialization(p []byte) error {
+func (msg *trn) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	err = msg.txn.Deserialize(buf)
