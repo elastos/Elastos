@@ -17,8 +17,9 @@ import (
 )
 
 type InvPayload struct {
-	Cnt     uint32
-	Blk     []byte
+	Type uint8
+	Cnt  uint32
+	Blk  []byte
 }
 
 type Inv struct {
@@ -81,7 +82,7 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 	msg.Length = uint32(len(p.Bytes()))
 	log.Debug("The message payload length is ", msg.Length)
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -141,8 +142,8 @@ func (msg Inv) Handle(node Noder) error {
 	return nil
 }
 
-func (msg Inv) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialization()
+func (msg Inv) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Header.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -152,8 +153,8 @@ func (msg Inv) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *Inv) Deserialization(p []byte) error {
-	err := msg.Header.Deserialization(p)
+func (msg *Inv) Deserialize(p []byte) error {
+	err := msg.Header.Deserialize(p)
 	if err != nil {
 		return err
 	}
@@ -175,6 +176,7 @@ func (msg *Inv) Deserialization(p []byte) error {
 
 func NewInv(inv *InvPayload) ([]byte, error) {
 	var msg Inv
+	msg.P.Type = inv.Type
 	msg.P.Blk = inv.Blk
 	msg.P.Cnt = inv.Cnt
 	msg.Magic = config.Parameters.Magic
@@ -196,7 +198,7 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 	binary.Read(buf, binary.LittleEndian, &(msg.Checksum))
 	msg.Length = uint32(len(b.Bytes()))
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -206,6 +208,7 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 }
 
 func (msg *InvPayload) Serialization(w io.Writer) {
+	serialization.WriteUint8(w, msg.Type)
 	serialization.WriteUint32(w, msg.Cnt)
 
 	binary.Write(w, binary.LittleEndian, msg.Blk)

@@ -17,7 +17,7 @@ func newGetAddr() ([]byte, error) {
 	sum = []byte{0x5d, 0xf6, 0xe0, 0xe2}
 	msg.init("getaddr", sum, 0)
 
-	buf, err := msg.Serialization()
+	buf, err := msg.Serialize()
 	if err != nil {
 		return nil, err
 	}

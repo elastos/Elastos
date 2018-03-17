@@ -76,7 +76,7 @@ func NewBlock(bk *ledger.Block) ([]byte, error) {
 	var msg block
 	msg.blk = *bk
 
-	body, err := msg.Serialization()
+	body, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -85,7 +85,7 @@ func NewBlock(bk *ledger.Block) ([]byte, error) {
 	return BuildMessage("block", body)
 }
 
-func (msg block) Serialization() ([]byte, error) {
+func (msg block) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := msg.blk.Serialize(buf)
 	if err != nil {
@@ -95,7 +95,7 @@ func (msg block) Serialization() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (msg *block) Deserialization(p []byte) error {
+func (msg *block) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
 	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))

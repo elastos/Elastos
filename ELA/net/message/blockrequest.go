@@ -42,8 +42,8 @@ func (msg blocksReq) Handle(node Noder) error {
 	return nil
 }
 
-func (msg blocksReq) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialization()
+func (msg blocksReq) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Header.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (msg blocksReq) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *blocksReq) Deserialization(p []byte) error {
+func (msg *blocksReq) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
 	if err != nil {
@@ -152,7 +152,8 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 	}
 
 	return &InvPayload{
-		Cnt: count,
-		Blk: tmpBuffer.Bytes(),
+		Type: BLOCK,
+		Cnt:  count,
+		Blk:  tmpBuffer.Bytes(),
 	}, nil
 }

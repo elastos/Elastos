@@ -22,7 +22,7 @@ func (nm *nbrNodes) AddNbrNode(n Noder) {
 	nm.Lock()
 	defer nm.Unlock()
 
-	if nm.NodeExisted(n.GetID()) {
+	if nm.NodeExisted(n.ID()) {
 		fmt.Printf("Insert a existed node\n")
 	} else {
 		node, err := n.(*node)
@@ -30,7 +30,7 @@ func (nm *nbrNodes) AddNbrNode(n Noder) {
 			fmt.Println("Convert the noder error when add node")
 			return
 		}
-		nm.List[n.GetID()] = node
+		nm.List[n.ID()] = node
 	}
 }
 
@@ -86,15 +86,15 @@ func (node *node) GetNeighborAddrs() ([]NodeAddr, uint64) {
 	var i uint64
 	var addrs []NodeAddr
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() != Establish {
+		if n.State() != Establish {
 			continue
 		}
 		var addr NodeAddr
-		addr.IpAddr, _ = n.GetAddr16()
+		addr.IpAddr, _ = n.Addr16()
 		addr.Time = n.GetTime()
 		addr.Services = n.Services()
-		addr.Port = n.GetPort()
-		addr.ID = n.GetID()
+		addr.Port = n.Port()
+		addr.ID = n.ID()
 		addrs = append(addrs, addr)
 
 		i++
@@ -110,8 +110,8 @@ func (node *node) GetNeighborHeights() ([]uint64, uint64) {
 	var i uint64
 	heights := []uint64{}
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() == Establish {
-			height := n.GetHeight()
+		if n.State() == Establish {
+			height := n.Height()
 			heights = append(heights, height)
 			i++
 		}
@@ -125,7 +125,7 @@ func (node *node) GetNeighborNoder() []Noder {
 
 	nodes := []Noder{}
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			node := n
 			nodes = append(nodes, node)
 		}
@@ -138,7 +138,7 @@ func (node *node) GetNbrNodeCnt() uint32 {
 	defer node.nbrNodes.RUnlock()
 	var count uint32
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			count++
 		}
 	}
@@ -149,7 +149,7 @@ func (node *node) RandGetANbr() Noder {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			return n
 		}
 	}
@@ -161,7 +161,7 @@ func (node *node) IsNeighborNoder(n Noder) bool {
 	defer node.nbrNodes.RUnlock()
 
 	for _, noder := range node.nbrNodes.List {
-		if n.GetID() == noder.GetID() {
+		if n.ID() == noder.ID() {
 			return true
 		}
 	}
