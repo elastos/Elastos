@@ -16,13 +16,13 @@ import (
 
 type Messager interface {
 	Verify([]byte) error
-	Serialization() ([]byte, error)
-	Deserialization([]byte) error
+	Serialize() ([]byte, error)
+	Deserialize([]byte) error
 	Handle(Noder) error
 }
 
 func BuildMessage(cmd string, body []byte) ([]byte, error) {
-	hdr, err := BuildHeader(cmd, body).Serialization()
+	hdr, err := BuildHeader(cmd, body).Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -172,6 +172,8 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 		return err
 	}
 
+	log.Debug("Receive message type:", s)
+
 	if s == "inv" || s == "block" {
 		node.LocalNode().AcqSyncBlkReqSem()
 		msg := AllocMsg(s, len)
@@ -181,7 +183,7 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 		}
 		// Todo attach a node pointer to each message
 		// Todo drop the message when verify/deseria packet error
-		msg.Deserialization(buf[:len])
+		msg.Deserialize(buf[:len])
 		msg.Verify(buf[MSGHDRLEN:len])
 
 		errr := msg.Handle(node)
@@ -195,7 +197,7 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 		}
 		// Todo attach a node pointer to each message
 		// Todo drop the message when verify/deseria packet error
-		msg.Deserialization(buf[:len])
+		msg.Deserialize(buf[:len])
 		msg.Verify(buf[MSGHDRLEN:len])
 
 		errr := msg.Handle(node)
@@ -205,7 +207,7 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 
 func ValidMsgHdr(buf []byte) bool {
 	var h Header
-	h.Deserialization(buf)
+	h.Deserialize(buf)
 	//TODO: verify hdr checksum
 	if h.Magic != config.Parameters.Magic {
 		return false
@@ -215,7 +217,7 @@ func ValidMsgHdr(buf []byte) bool {
 
 func PayloadLen(buf []byte) int {
 	var h Header
-	h.Deserialization(buf)
+	h.Deserialize(buf)
 	return int(h.Length)
 }
 
@@ -249,7 +251,7 @@ func (hdr Header) Verify(buf []byte) error {
 	return nil
 }
 
-func (msg *Header) Deserialization(p []byte) error {
+func (msg *Header) Deserialize(p []byte) error {
 
 	buf := bytes.NewBuffer(p[0:MSGHDRLEN])
 	err := binary.Read(buf, binary.LittleEndian, msg)
@@ -258,7 +260,7 @@ func (msg *Header) Deserialization(p []byte) error {
 
 // FIXME how to avoid duplicate serial/deserial function as
 // most of them are the same
-func (hdr Header) Serialization() ([]byte, error) {
+func (hdr Header) Serialize() ([]byte, error) {
 	var buf bytes.Buffer
 	err := binary.Write(&buf, binary.LittleEndian, hdr)
 	if err != nil {

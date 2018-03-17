@@ -27,7 +27,7 @@ func ReqBlkData(node Noder, hash common.Uint256) error {
 	msg.reqType = BLOCK
 	msg.hash = hash
 
-	body, err := msg.Serialization()
+	body, err := msg.Serialize()
 	if err != nil {
 		return err
 	}
@@ -52,10 +52,12 @@ func (msg dataReq) Handle(node Noder) error {
 			log.Debug("Can't get block from hash: ", hash, " ,send not found message")
 			//call notfound message
 			b, err := NewNotFound(hash)
-			node.Tx(b)
+			go node.Tx(b)
 			return err
 		}
 		log.Debug("block height is ", block.Blockdata.Height, " ,hash is ", hash)
+
+		log.Debug("Receive block data request, node.filter.isLoaded:", node.GetFilter().IsLoaded())
 
 		var buf []byte
 		if node.GetFilter().IsLoaded() {
@@ -82,7 +84,7 @@ func (msg dataReq) Handle(node Noder) error {
 	return nil
 }
 
-func (msg *dataReq) Deserialization(p []byte) error {
+func (msg *dataReq) Deserialize(p []byte) error {
 	buf := bytes.NewReader(p)
 	err := binary.Read(buf, binary.LittleEndian, &msg.Header)
 	if err != nil {
@@ -101,7 +103,7 @@ func (msg *dataReq) Deserialization(p []byte) error {
 	return nil
 }
 
-func (msg dataReq) Serialization() ([]byte, error) {
+func (msg dataReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := serialization.WriteUint8(buf, msg.reqType)
 	if err != nil {

@@ -95,9 +95,9 @@ func (node *node) IsAddrInNbrList(addr string) bool {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() == Hand || n.GetState() == HandShake || n.GetState() == Establish {
-			addr := n.GetAddr()
-			port := n.GetPort()
+		if n.State() == Hand || n.State() == HandShake || n.State() == Establish {
+			addr := n.Addr()
+			port := n.Port()
 			na := addr + ":" + strconv.Itoa(int(port))
 			if strings.Compare(na, addr) == 0 {
 				return true
@@ -149,8 +149,9 @@ func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 
 func NewNode() *node {
 	n := node{
-		state: Init,
-		chF:   make(chan func() error),
+		state:  Init,
+		filter: new(bloom.Filter),
+		chF:    make(chan func() error),
 	}
 	runtime.SetFinalizer(&n, rmNode)
 	go n.backend()
@@ -165,6 +166,9 @@ func InitNode() Noder {
 	n.SyncHdrReqSem = MakeSemaphore(MAXSYNCHDRREQ)
 
 	n.link.port = uint16(Parameters.NodePort)
+	if Parameters.SPVService {
+		n.services += 1 << 2
+	}
 	n.relay = true
 	idHash := sha256.Sum256([]byte(IPv4Addr() + strconv.Itoa(Parameters.NodePort)))
 	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(n.id))
@@ -206,11 +210,11 @@ func (node *node) backend() {
 	}
 }
 
-func (node *node) GetID() uint64 {
+func (node *node) ID() uint64 {
 	return node.id
 }
 
-func (node *node) GetState() uint32 {
+func (node *node) State() uint32 {
 	return atomic.LoadUint32(&(node.state))
 }
 
@@ -218,11 +222,11 @@ func (node *node) GetConn() net.Conn {
 	return node.conn
 }
 
-func (node *node) GetPort() uint16 {
+func (node *node) Port() uint16 {
 	return node.port
 }
 
-func (node *node) GetHttpInfoPort() int {
+func (node *node) HttpInfoPort() int {
 	return int(node.httpInfoPort)
 }
 
@@ -230,7 +234,7 @@ func (node *node) SetHttpInfoPort(nodeInfoPort uint16) {
 	node.httpInfoPort = nodeInfoPort
 }
 
-func (node *node) GetRelay() bool {
+func (node *node) IsRelay() bool {
 	return node.relay
 }
 
@@ -266,7 +270,7 @@ func (node *node) LocalNode() Noder {
 	return node.local
 }
 
-func (node *node) GetHeight() uint64 {
+func (node *node) Height() uint64 {
 	return node.height
 }
 
@@ -275,11 +279,11 @@ func (node *node) SetHeight(height uint64) {
 	node.height = height
 }
 
-func (node *node) GetAddr() string {
+func (node *node) Addr() string {
 	return node.addr
 }
 
-func (node *node) GetAddr16() ([16]byte, error) {
+func (node *node) Addr16() ([16]byte, error) {
 	var result [16]byte
 	ip := net.ParseIP(node.addr).To16()
 	if ip == nil {
@@ -332,12 +336,10 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 		return nil
 	}
 
-	node.nbrNodes.RLock()
-
 	var buf []byte
 	var err error
-	for _, nbr := range node.nbrNodes.List {
-		if nbr.state == Establish && nbr.GetID() != frmnode.GetID() {
+	for _, nbr := range node.GetNeighborNoder() {
+		if frmnode == nil || nbr.ID() != frmnode.ID() {
 
 			switch message.(type) {
 			case *transaction.Transaction:
@@ -348,7 +350,7 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 					continue
 				}
 
-				if nbr.relay || (nbr.GetFilter().IsLoaded() && nbr.GetFilter().MatchTxAndUpdate(txn)) {
+				if nbr.IsRelay() || (nbr.GetFilter().IsLoaded() && nbr.GetFilter().MatchTxAndUpdate(txn)) {
 					if len(buf) == 0 {
 						buf, err = NewTxn(txn)
 					}
@@ -375,7 +377,7 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 						return err
 					}
 					nbr.Tx(msg)
-				} else if nbr.relay {
+				} else if nbr.IsRelay() {
 					if len(buf) == 0 {
 						buf, err = NewBlock(block)
 						if err != nil {
@@ -391,7 +393,6 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 			}
 		}
 	}
-	node.nbrNodes.RUnlock()
 
 	return nil
 }
@@ -451,13 +452,13 @@ func (node *node) GetBestHeightNoder() Noder {
 	defer node.nbrNodes.RUnlock()
 	var bestnode Noder
 	for _, n := range node.nbrNodes.List {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			if bestnode == nil {
 				if !n.IsSyncFailed() {
 					bestnode = n
 				}
 			} else {
-				if (n.GetHeight() > bestnode.GetHeight()) && !n.IsSyncFailed() {
+				if (n.Height() > bestnode.Height()) && !n.IsSyncFailed() {
 					bestnode = n
 				}
 			}

@@ -88,7 +88,7 @@ func (node *node) SyncBlks() {
 func (node *node) SendPingToNbr() {
 	noders := node.local.GetNeighborNoder()
 	for _, n := range noders {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			buf, err := NewPingMsg()
 			if err != nil {
 				log.Error("failed build a new ping message")
@@ -103,7 +103,7 @@ func (node *node) HeartBeatMonitor() {
 	noders := node.local.GetNeighborNoder()
 	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
 	for _, n := range noders {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			t := n.GetLastRXTime()
 			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KEEPALIVETIMEOUT)) {
 				log.Warn("keepalive timeout!!!")
@@ -139,7 +139,7 @@ func (node *node) ConnectSeeds() {
 			}
 			node.nbrNodes.Unlock()
 			if found {
-				if n.GetState() == Establish {
+				if n.State() == Establish {
 					if node.LocalNode().NeedMoreAddresses() {
 						n.ReqNeighborList()
 					}
@@ -169,11 +169,11 @@ func (node *node) ConnectNode() {
 
 func getNodeAddr(n *node) NodeAddr {
 	var addr NodeAddr
-	addr.IpAddr, _ = n.GetAddr16()
+	addr.IpAddr, _ = n.Addr16()
 	addr.Time = n.GetTime()
 	addr.Services = n.Services()
-	addr.Port = n.GetPort()
-	addr.ID = n.GetID()
+	addr.Port = n.Port()
+	addr.ID = n.ID()
 	return addr
 }
 

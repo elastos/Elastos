@@ -39,7 +39,7 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 	msg.Header.Length = uint32(len(p.Bytes()))
 	log.Debug("The message payload length is ", msg.Length)
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -48,8 +48,8 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 	return m, nil
 }
 
-func (msg notFound) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialization()
+func (msg notFound) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Header.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (msg notFound) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *notFound) Deserialization(p []byte) error {
+func (msg *notFound) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
 	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))

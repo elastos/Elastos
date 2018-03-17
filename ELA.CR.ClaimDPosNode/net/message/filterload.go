@@ -7,6 +7,7 @@ import (
 	"Elastos.ELA/bloom"
 	"Elastos.ELA/common/serialization"
 	"Elastos.ELA/net/protocol"
+	"Elastos.ELA/common/log"
 )
 
 type FilterLoad struct {
@@ -76,6 +77,7 @@ func (fl *FilterLoad) Deserialize(msg []byte) error {
 }
 
 func (fl *FilterLoad) Handle(node protocol.Noder) error {
+	log.Debug(">>>>> FilterLoad message received:", *fl)
 	node.LoadFilter(bloom.LoadFilter(fl.Filter, fl.HashFuncs, fl.Tweak))
 	return nil
 }
