@@ -2,10 +2,9 @@ package httpwebsocket
 
 import (
 	"errors"
+	"github.com/gorilla/websocket"
 	"sync"
 	"time"
-
-	"github.com/gorilla/websocket"
 )
 
 type Session struct {
@@ -32,7 +31,7 @@ func (s *Session) Send(data []byte) error {
 	return s.Connection.WriteMessage(websocket.TextMessage, data)
 }
 
-func (s *Session) IsTimeOut() bool {
+func (s *Session) SessionTimeoverCheck() bool {
 	nCurTime := time.Now().Unix()
 	if nCurTime-s.LastActive > SessionTimeOut { //sec
 		return true
@@ -45,7 +44,6 @@ func (sl *SessionList) CloseSession(session *Session) {
 	delete(sl.OnlineList, session.SessionId)
 	session.Connection.Close()
 	session.SessionId = ""
-	session = nil
 }
 
 func (sl *SessionList) ForEachSession(visit func(*Session)) {

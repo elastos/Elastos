@@ -58,7 +58,7 @@ type ProgramInfo struct {
 	Parameter string
 }
 
-type TransactionInfo struct {
+type Transactions struct {
 	TxType         TransactionType
 	PayloadVersion byte
 	Payload        PayloadInfo
@@ -104,7 +104,7 @@ type BlockHead struct {
 type BlockInfo struct {
 	Hash          string
 	BlockData     *BlockHead
-	Transactions  []*TransactionInfo
+	Transactions  []*Transactions
 	Confirmations uint32
 	MinerInfo     string
 }
