@@ -11,25 +11,26 @@ func LocalPeer() *Peer {
 }
 
 type Peers struct {
-	sync.RWMutex
-	syncPeer *Peer
-	peers    map[uint64]*Peer
+	syncPeerLock *sync.Mutex
+	syncPeer     *Peer
+
+	peersLock *sync.RWMutex
+	peers     map[uint64]*Peer
 }
 
 func newPeers(walletId uint64) *Peers {
 	peers := new(Peers)
 	peers.initLocalPeer(walletId)
+	peers.syncPeerLock = new(sync.Mutex)
+	peers.peersLock = new(sync.RWMutex)
 	peers.peers = make(map[uint64]*Peer)
 	return peers
 }
 
 func (p *Peers) initLocalPeer(id uint64) {
-	p.Lock()
-	defer p.Unlock()
-
 	local = &Peer{
 		id:       id,
-		version:  PeerVersion,
+		version:  ProtocolVersion,
 		port:     SPVPeerPort,
 		services: 0x00,
 		relay:    0x00,
@@ -37,49 +38,50 @@ func (p *Peers) initLocalPeer(id uint64) {
 }
 
 func (p *Peers) Local() *Peer {
-	p.RLock()
-	defer p.RUnlock()
-
 	return local
 }
 
-func (p *Peers) addConnectedPeer(peer *Peer) {
-	p.Lock()
-	defer p.Unlock()
+func (p *Peers) AddPeer(peer *Peer) {
+	p.peersLock.Lock()
+	defer p.peersLock.Unlock()
 
 	p.peers[peer.ID()] = peer
 }
 
 func (p *Peers) Exist(peer *Peer) bool {
-	p.RLock()
-	defer p.RUnlock()
+	p.peersLock.RLock()
+	defer p.peersLock.RUnlock()
 
 	_, ok := p.peers[peer.ID()]
 	return ok
 }
 
 func (p *Peers) RemovePeer(id uint64) (*Peer, bool) {
-	p.Lock()
-	defer p.Unlock()
+	p.peersLock.Lock()
+	defer p.peersLock.Unlock()
+
+	if p.syncPeer != nil && id == p.syncPeer.ID() {
+		p.syncPeer = nil
+	}
 
 	peer, ok := p.peers[id]
 	delete(p.peers, id)
 
-	if peer.ID() == p.syncPeer.ID() {
-		p.syncPeer = nil
-	}
 	return peer, ok
 }
 
 func (p *Peers) PeersCount() int {
+	p.peersLock.RLock()
+	defer p.peersLock.RUnlock()
+
 	return len(p.peers)
 }
 
 func (p *Peers) ConnectedPeers() []*Peer {
-	p.RLock()
-	defer p.RUnlock()
+	p.peersLock.RLock()
+	defer p.peersLock.RUnlock()
 
-	peers := make([]*Peer, len(p.peers))
+	peers := make([]*Peer, 0)
 	for _, v := range p.peers {
 		peers = append(peers, v)
 	}
@@ -87,8 +89,8 @@ func (p *Peers) ConnectedPeers() []*Peer {
 }
 
 func (p *Peers) EstablishedPeer(id uint64) bool {
-	p.Lock()
-	defer p.Unlock()
+	p.peersLock.RLock()
+	defer p.peersLock.RUnlock()
 
 	peer, ok := p.peers[id]
 	if !ok {
@@ -99,8 +101,8 @@ func (p *Peers) EstablishedPeer(id uint64) bool {
 }
 
 func (p *Peers) GetBestPeer() *Peer {
-	p.RLock()
-	defer p.RLock()
+	p.peersLock.RLock()
+	defer p.peersLock.RUnlock()
 
 	return p.getBestPeer()
 }
@@ -127,48 +129,9 @@ func (p *Peers) getBestPeer() *Peer {
 	return bestPeer
 }
 
-func (p *Peers) SetSyncPeer(peer *Peer) {
-	p.Lock()
-	defer p.Unlock()
-
-	p.syncPeer = peer
-}
-
-func (p *Peers) GetSyncPeer() *Peer {
-	p.RLock()
-	defer p.RUnlock()
-
-	if p.syncPeer == nil {
-		p.syncPeer = p.getBestPeer()
-	}
-	return p.syncPeer
-}
-
-func (p *Peers) IsSyncPeer(peer *Peer) bool {
-	p.Lock()
-	defer p.Unlock()
-
-	return p.isSyncPeer(peer)
-}
-
-func (p *Peers) isSyncPeer(peer *Peer) bool {
-	if p.syncPeer == nil || peer == nil {
-		return false
-	}
-
-	return p.syncPeer.ID() == peer.ID()
-}
-
-func (p *Peers) HasSyncPeer() bool {
-	p.Lock()
-	defer p.Unlock()
-
-	return p.syncPeer == nil
-}
-
 func (p *Peers) Broadcast(msg []byte) {
-	p.RLock()
-	defer p.RUnlock()
+	p.peersLock.RLock()
+	defer p.peersLock.RUnlock()
 
 	for _, peer := range p.peers {
 
@@ -184,4 +147,32 @@ func (p *Peers) Broadcast(msg []byte) {
 
 		go peer.Send(msg)
 	}
+}
+
+func (p *Peers) SetSyncPeer(peer *Peer) {
+	p.syncPeerLock.Lock()
+	defer p.syncPeerLock.Unlock()
+
+	p.syncPeer = peer
+}
+
+func (p *Peers) GetSyncPeer() *Peer {
+	p.syncPeerLock.Lock()
+	defer p.syncPeerLock.Unlock()
+
+	if p.syncPeer == nil {
+		p.syncPeer = p.getBestPeer()
+	}
+	return p.syncPeer
+}
+
+func (p *Peers) IsSyncPeer(peer *Peer) bool {
+	p.syncPeerLock.Lock()
+	defer p.syncPeerLock.Unlock()
+
+	if p.syncPeer == nil || peer == nil {
+		return false
+	}
+
+	return p.syncPeer.ID() == peer.ID()
 }

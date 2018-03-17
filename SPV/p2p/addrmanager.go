@@ -94,7 +94,7 @@ func (am *AddrManager) AddAddr(addr string) {
 	am.saveCached()
 }
 
-func (am *AddrManager) addConnectedAddr(addr string) {
+func (am *AddrManager) AddConnectedAddr(addr string) {
 	am.Lock()
 	defer am.Unlock()
 

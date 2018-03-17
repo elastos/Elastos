@@ -22,12 +22,12 @@ var logger *log.Logger
 
 func Init() {
 	writers := []io.Writer{}
-	logFile, err := OpenLogFile()
-	if err != nil {
-		fmt.Println("error: open log file failed")
-		os.Exit(1)
-	}
-	writers = append(writers, logFile)
+	//logFile, err := OpenLogFile()
+	//if err != nil {
+	//	fmt.Println("error: open log file failed")
+	//	os.Exit(1)
+	//}
+	//writers = append(writers, logFile)
 	writers = append(writers, os.Stdout)
 	logger = log.New(io.MultiWriter(writers...), "", log.Ldate|log.Lmicroseconds)
 }
@@ -57,12 +57,24 @@ func Info(msg ...interface{}) {
 	logger.Output(CallDepth, color(GREEN, fmt.Sprint(msg)))
 }
 
+func Infof(format string, msg ...interface{}) {
+	logger.Output(CallDepth, color(GREEN, fmt.Sprintf(format, msg)))
+}
+
 func Trace(msg ...interface{}) {
 	logger.Output(CallDepth, color(BLUE, fmt.Sprint(msg)))
 }
 
+func Tracef(format string, msg ...interface{}) {
+	logger.Output(CallDepth, color(BLUE, fmt.Sprintf(format, msg)))
+}
+
 func Error(msg ...interface{}) {
 	logger.Output(CallDepth, color(RED, fmt.Sprint(msg)))
+}
+
+func Errorf(format string, msg ...interface{}) {
+	logger.Output(CallDepth, color(RED, fmt.Sprintf(format, msg)))
 }
 
 func color(code, msg string) string {

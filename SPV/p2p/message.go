@@ -2,10 +2,10 @@ package p2p
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	. "SPVWallet/p2p/msg"
+	"SPVWallet/log"
 )
 
 var listeners *Listeners
@@ -40,31 +40,31 @@ func NewVersionData(peer *Peer) VersionData {
 	content.Services = peer.Services()
 	content.TimeStamp = uint32(time.Now().UnixNano())
 	content.Port = peer.Port()
-	content.HttpInfoPort = 0
-	content.Cap[0] = 0x00
 	content.Nonce = peer.ID()
-	content.UserAgent = 0x00
 	content.Height = peer.Height()
 	content.Relay = peer.Relay()
 	return *content
 }
 
-func HandleMessage(peer *Peer, buf []byte) error {
+func HandleMessage(peer *Peer, buf []byte) {
 	if len(buf) < HEADERLEN {
-		return errors.New("Message length is not enough")
+		log.Error("Message length is not enough")
+		return
 	}
 
 	msg, err := makeMessage(buf)
 	if err != nil {
-		return err
+		log.Error("Make message error,", err)
+		return
 	}
 
 	err = msg.Deserialize(buf)
 	if err != nil {
-		return errors.New(fmt.Sprint("Deserialize message err:", err))
+		log.Error("Deserialize message err:", err)
+		return
 	}
 
-	return allocateMessage(peer, msg)
+	allocateMessage(peer, msg)
 }
 
 func parseHeader(buf []byte) (*Header, error) {
@@ -82,6 +82,7 @@ func makeMessage(buf []byte) (Message, error) {
 		return nil, err
 	}
 
+	log.Info("Receive message:", hdr.GetCMD())
 	var msg Message
 
 	switch hdr.GetCMD() {
@@ -112,28 +113,32 @@ func makeMessage(buf []byte) (Message, error) {
 	return msg, nil
 }
 
-func allocateMessage(peer *Peer, msg Message) error {
+func allocateMessage(peer *Peer, msg Message) {
+	var err error
 	switch msg.(type) {
 	case *Version:
-		return listeners.OnVersion(peer, msg.(*Version))
+		err = listeners.OnVersion(peer, msg.(*Version))
 	case *VerAck:
-		return listeners.OnVerAck(peer, msg.(*VerAck))
+		err = listeners.OnVerAck(peer, msg.(*VerAck))
 	case *Ping:
-		return listeners.OnPing(peer, msg.(*Ping))
+		err = listeners.OnPing(peer, msg.(*Ping))
 	case *Pong:
-		return listeners.OnPong(peer, msg.(*Pong))
+		err = listeners.OnPong(peer, msg.(*Pong))
 	case *AddrsReq:
-		return listeners.OnAddrsReq(peer, msg.(*AddrsReq))
+		err = listeners.OnAddrsReq(peer, msg.(*AddrsReq))
 	case *Addrs:
-		return listeners.OnAddrs(peer, msg.(*Addrs))
+		err = listeners.OnAddrs(peer, msg.(*Addrs))
 	case *Inventory:
-		return listeners.OnInventory(peer, msg.(*Inventory))
+		err = listeners.OnInventory(peer, msg.(*Inventory))
 	case *MerkleBlock:
-		return listeners.OnMerkleBlock(peer, msg.(*MerkleBlock))
+		err = listeners.OnMerkleBlock(peer, msg.(*MerkleBlock))
 	case *Txn:
-		return listeners.OnTxn(peer, msg.(*Txn))
+		err = listeners.OnTxn(peer, msg.(*Txn))
 	case *NotFound:
-		return listeners.OnNotFound(peer, msg.(*NotFound))
+		err = listeners.OnNotFound(peer, msg.(*NotFound))
 	}
-	return nil
+
+	if err != nil {
+		log.Error("Allocate message error,", err)
+	}
 }

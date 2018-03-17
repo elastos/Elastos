@@ -17,5 +17,6 @@ Log
 *.db
 *.txn
 *.bin
+*.csv
 spv-wallet
 wallet-cli

@@ -5,18 +5,20 @@ import (
 	"io"
 	"net"
 	"strings"
+	"strconv"
 	"sync"
 	"time"
 
 	"SPVWallet/config"
+	"SPVWallet/log"
 	. "SPVWallet/p2p/msg"
 )
 
 const (
-	PeerVersion = 1 // The min p2p protocol version to support spv
-	SPVPeerPort = 20866
-	ServiceSPV  = 1 << 2
-	MaxBufLen   = 1024 * 16
+	ProtocolVersion = 1 // The min p2p protocol version to support spv
+	SPVPeerPort     = 20866
+	ServiceSPV      = 1 << 2
+	MaxBufLen       = 1024 * 16
 )
 
 // Peer states
@@ -48,11 +50,30 @@ func (ps *PeerState) State() int {
 	return ps.state
 }
 
+func (ps *PeerState) String() string {
+	switch ps.state {
+	case INIT:
+		return "INIT"
+	case HAND:
+		return "HAND"
+	case HANDSHAKE:
+		return "HANDSHAKE"
+	case HANDSHAKED:
+		return "HANDSHAKED"
+	case ESTABLISH:
+		return "ESTABLISH"
+	case INACTIVITY:
+		return "INACTIVITY"
+	}
+	return "Unknown peer state"
+}
+
 type Peer struct {
 	// info
 	id         uint64
 	version    uint32
 	services   uint64
+	ip16       [16]byte
 	port       uint16
 	lastActive time.Time
 	height     uint64
@@ -62,6 +83,20 @@ type Peer struct {
 	conn net.Conn
 
 	msgBuf MsgBuf
+}
+
+func (peer *Peer) String() string {
+	return "Peer: {" +
+		"\n\tID:" + fmt.Sprint(peer.id) +
+		"\n\tVersion:" + fmt.Sprint(peer.version) +
+		"\n\tServices:" + fmt.Sprint(peer.services) +
+		"\n\tPort:" + fmt.Sprint(peer.port) +
+		"\n\tLastActive:" + fmt.Sprint(peer.lastActive) +
+		"\n\tHeight:" + fmt.Sprint(peer.height) +
+		"\n\tRelay:" + fmt.Sprint(peer.relay) +
+		"\n\tState:" + peer.PeerState.String() +
+		"\n\tAddr:" + peer.Addr().TCPAddr() +
+		"\n}"
 }
 
 type MsgBuf struct {
@@ -83,9 +118,24 @@ func (buf *MsgBuf) Reset() {
 }
 
 func NewPeer(conn net.Conn) *Peer {
+	ip16, port := addrFromConn(conn)
 	return &Peer{
 		conn: conn,
+		ip16: ip16,
+		port: port,
 	}
+}
+
+func addrFromConn(conn net.Conn) ([16]byte, uint16) {
+	fullAddr := conn.RemoteAddr().String()
+	portIndex := strings.LastIndex(fullAddr, ":")
+	port, _ := strconv.ParseUint(string([]byte(fullAddr)[portIndex+1:]), 10, 16)
+	ip := net.ParseIP(string([]byte(fullAddr)[:portIndex])).To16()
+
+	ip16 := [16]byte{}
+	copy(ip16[:], ip[:])
+
+	return ip16, uint16(port)
 }
 
 func (peer *Peer) ID() uint64 {
@@ -101,14 +151,7 @@ func (peer *Peer) Services() uint64 {
 }
 
 func (peer *Peer) IP16() [16]byte {
-	fullAddr := peer.conn.RemoteAddr().String()
-	portIndex := strings.LastIndex(fullAddr, ":")
-	ip := net.ParseIP(string([]byte(fullAddr)[:portIndex])).To16()
-
-	ip16 := [16]byte{}
-	copy(ip16[:], ip[:])
-
-	return ip16
+	return peer.ip16
 }
 
 func (peer *Peer) Port() uint16 {
@@ -120,7 +163,7 @@ func (peer *Peer) LastActive() time.Time {
 }
 
 func (peer *Peer) Addr() *PeerAddr {
-	return NewPeerAddr(peer.services, peer.IP16(), peer.port, peer.id)
+	return NewPeerAddr(peer.services, peer.ip16, peer.port, peer.id)
 }
 
 func (peer *Peer) Relay() uint8 {
@@ -132,7 +175,7 @@ func (peer *Peer) Disconnect() {
 	peer.conn.Close()
 }
 
-func (peer *Peer) Update(msg *Version) {
+func (peer *Peer) SetInfo(msg *Version) {
 	peer.id = msg.Nonce
 	peer.version = msg.Version
 	peer.services = msg.Services
@@ -160,10 +203,10 @@ func (peer *Peer) Read() {
 			peer.lastActive = time.Now()
 			peer.unpackMessage(buf[:len])
 		case io.EOF:
-			fmt.Errorf("Read peer io.EOF: %s, peer id is %d ", err.Error(), peer.ID())
+			log.Error("Read peer io.EOF:", err, ", peer id is", peer.ID())
 			goto DISCONNECT
 		default:
-			fmt.Errorf("Read peer connection error ", err.Error())
+			log.Error("Read peer connection error ", err.Error())
 			goto DISCONNECT
 		}
 	}
@@ -173,7 +216,6 @@ DISCONNECT:
 }
 
 func (peer *Peer) unpackMessage(buf []byte) {
-
 	if len(buf) == 0 {
 		return
 	}

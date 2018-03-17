@@ -8,6 +8,7 @@ import (
 
 	. "SPVWallet/core"
 	tx "SPVWallet/core/transaction"
+	"SPVWallet/log"
 )
 
 type ChainState int
@@ -42,7 +43,7 @@ func NewBlockchain() (*Blockchain, error) {
 	}
 
 	return &Blockchain{
-		state:     SYNCING,
+		state:     WAITING,
 		Headers:   headersDB,
 		DataStore: sqliteDb,
 	}, nil
@@ -77,6 +78,7 @@ func (bc *Blockchain) Height() uint32 {
 		return 0
 	}
 
+	log.Info("Chain height:", tip.Height)
 	return tip.Height
 }
 

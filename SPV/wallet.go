@@ -7,7 +7,6 @@ import (
 	"SPVWallet/log"
 	"SPVWallet/p2p"
 	"os/signal"
-	"fmt"
 )
 
 /*
@@ -60,7 +59,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Println("SPVWallet shutting down...")
+			log.Trace("SPVWallet shutting down...")
 			spv.Stop()
 			stop <- 1
 		}

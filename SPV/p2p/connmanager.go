@@ -10,7 +10,7 @@ import (
 
 const (
 	ConnTimeOut   = 5
-	RetryDuration = 30
+	RetryDuration = 15
 	MaxRetryCount = 5
 )
 
@@ -34,10 +34,13 @@ func (cm *ConnManager) Connect(addr string) {
 	cm.Lock()
 	defer cm.Unlock()
 
-	if !cm.inConnList(addr) {
-		cm.connList = append(cm.connList, addr)
-		go cm.connectPeer(addr)
+	if cm.inConnList(addr) {
+		log.Info("ConnManager addr in connection list,", addr)
+		return
 	}
+
+	cm.connList = append(cm.connList, addr)
+	go cm.connectPeer(addr)
 }
 
 func (cm *ConnManager) inConnList(addr string) bool {
@@ -60,7 +63,6 @@ func (cm *ConnManager) removeAddrFromConnectingList(addr string) {
 }
 
 func (cm *ConnManager) connectPeer(addr string) {
-	log.Info("Connect peer addr:", addr)
 	conn, err := net.DialTimeout("tcp", addr, time.Second*ConnTimeOut)
 	if err != nil {
 		log.Error("Connect to addr ", addr, " failed, err", err)
@@ -79,6 +81,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 }
 
 func (cm *ConnManager) retry(addr string) {
+	log.Info("Put into retry queue ", addr)
 	cm.Lock()
 	retryTimes, ok := cm.retryList[addr]
 	if !ok {
@@ -86,6 +89,7 @@ func (cm *ConnManager) retry(addr string) {
 	} else {
 		retryTimes += 1
 	}
+	log.Info("Retry times:", retryTimes)
 	if retryTimes > MaxRetryCount {
 		cm.removeAddrFromConnectingList(addr)
 		cm.Unlock()
@@ -96,6 +100,7 @@ func (cm *ConnManager) retry(addr string) {
 	cm.retryList[addr] = retryTimes
 	cm.Unlock()
 
+	log.Info("Wait for retry ", addr)
 	time.Sleep(time.Second * RetryDuration)
 	cm.connectPeer(addr)
 }

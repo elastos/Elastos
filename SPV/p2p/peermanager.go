@@ -45,11 +45,12 @@ func (pm *PeerManager) ConnectPeer(addr string) {
 }
 
 func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
+	log.Info("PeerManager add connected peer:", peer)
 	// Add peer to list
-	pm.addConnectedPeer(peer)
+	pm.Peers.AddPeer(peer)
 
 	// Mark addr as connected
-	pm.addrManager.addConnectedAddr(peer.Addr().TCPAddr())
+	pm.addrManager.AddConnectedAddr(peer.Addr().TCPAddr())
 }
 
 func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {
@@ -57,6 +58,7 @@ func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {
 }
 
 func (pm *PeerManager) DisconnectPeer(peer *Peer) {
+	log.Trace("PeerManager disconnect peer:", peer.String())
 	peer, ok := pm.RemovePeer(peer.ID())
 	if ok {
 		peer.Disconnect()
@@ -71,6 +73,7 @@ func (pm *PeerManager) OnDiscardAddr(addr string) {
 func (pm *PeerManager) RandPeerAddrs() []msg.PeerAddr {
 	peers := pm.ConnectedPeers()
 
+	log.Info("Rand peer addrs, connected peers:", peers)
 	count := len(peers)
 	if count > MaxOutboundCount {
 		count = MaxOutboundCount
@@ -88,9 +91,8 @@ func (pm *PeerManager) RandPeerAddrs() []msg.PeerAddr {
 func (pm *PeerManager) ConnectPeers() {
 	if pm.NeedMorePeers() {
 		addrs := pm.addrManager.GetIdleAddrs(MaxOutboundCount)
-		log.Info("PeerManager connect peers addrs, ", addrs)
 		for _, addr := range addrs {
-			go pm.connManager.connectPeer(addr)
+			go pm.ConnectPeer(addr)
 		}
 	}
 }

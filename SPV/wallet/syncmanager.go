@@ -3,8 +3,6 @@ package wallet
 import (
 	"bytes"
 	"errors"
-	"fmt"
-	"sync"
 	"time"
 
 	. "SPVWallet/core"
@@ -12,6 +10,8 @@ import (
 	"SPVWallet/db"
 	. "SPVWallet/p2p"
 	. "SPVWallet/p2p/msg"
+	"SPVWallet/log"
+	"fmt"
 )
 
 const (
@@ -20,7 +20,6 @@ const (
 )
 
 type SyncManager struct {
-	sync.Mutex
 	TxnMemCache
 
 	blockLocator   []*Uint256
@@ -57,6 +56,7 @@ func (sm *SyncManager) clear() {
 }
 
 func (sm *SyncManager) startSync() {
+	log.Info("SyncManger start sync")
 	// Clear data cache
 	sm.clear()
 	// Check if blockchain need sync
@@ -75,25 +75,29 @@ func (sm *SyncManager) needSync() bool {
 	if bestPeer == nil { // no peers connected, return true
 		return true
 	}
+	log.Info("Best peer height:", bestPeer.Height())
 	return bestPeer.Height() > uint64(spv.chain.Height())
 }
 
 func (sm *SyncManager) requestBlocks() {
+	log.Info("SyncManager request blocks")
 	// Current blocks request was not finished
 	if sm.blockLocator != nil {
+		log.Error("SyncManager current request not finished")
 		return
 	}
 	// Get sync peer
 	syncPeer := spv.pm.GetSyncPeer()
 	if syncPeer == nil {
 		// If sync peer is nil at this point, that meas no peer connected
+		log.Error("SyncManager no sync peer connected")
 		return
 	}
 	// Request blocks returns a inventory message witch contains block hashes
 	sm.blockLocator = spv.chain.GetBlockLocatorHashes()
 	msg, err := NewBlocksReqMsg(sm.blockLocator, Uint256{})
 	if err != nil {
-		fmt.Println("Sync blocks new blocks request message failed, ", err)
+		log.Error("Sync blocks new blocks request message failed, ", err)
 		return
 	}
 
@@ -101,23 +105,28 @@ func (sm *SyncManager) requestBlocks() {
 }
 
 func (sm *SyncManager) HandleBlockInvMsg(inv *Inventory, peer *Peer) error {
-	sm.Lock()
-	defer sm.Unlock()
-
 	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil ||
 		spv.pm.GetSyncPeer().ID() != peer.ID() {
 		sm.changeSyncPeerAndRestart()
+		log.Error("Receive message from non sync peer, disconnect")
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
 
 	dataLen := len(inv.Data)
 	if dataLen != int(inv.Count)*UINT256SIZE {
-		return errors.New("Invalid block inventory data size")
+		log.Error("Invalid block inventory data size:", dataLen)
+		sm.changeSyncPeerAndRestart()
+		return errors.New(fmt.Sprint("Invalid block inventory data size:", dataLen))
 	}
 
 	for i := 0; i < dataLen; i += UINT256SIZE {
 		var blockHash Uint256
-		blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
+		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
+		if err != nil {
+			sm.changeSyncPeerAndRestart()
+			log.Error("Deserialize block hash error,", err)
+			return err
+		}
 		if !spv.chain.IsKnownBlock(blockHash) {
 			<-time.After(time.Millisecond * 50)
 			// Save start and stop block for connect headers method
@@ -134,6 +143,7 @@ func (sm *SyncManager) HandleBlockInvMsg(inv *Inventory, peer *Peer) error {
 }
 
 func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error {
+	log.Info("SyncManager request block hash:", hash.String())
 	// Add to request queue
 	sm.requestQueue[hash] = time.Now()
 
@@ -169,9 +179,6 @@ func (sm *SyncManager) checkTimeOut() {
 }
 
 func (sm *SyncManager) changeSyncPeerAndRestart() {
-	sm.Lock()
-	defer sm.Unlock()
-
 	// Disconnect sync peer
 	syncPeer := spv.pm.GetSyncPeer()
 	spv.pm.DisconnectPeer(syncPeer)

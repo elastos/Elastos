@@ -7,10 +7,10 @@ import (
 
 	"SPVWallet/core"
 	"SPVWallet/db"
+	"SPVWallet/log"
 	"SPVWallet/p2p"
 	"SPVWallet/p2p/msg"
 	tx "SPVWallet/core/transaction"
-	"SPVWallet/log"
 )
 
 var spv *SPV
@@ -29,9 +29,9 @@ func InitSPV(walletId uint64) (*SPV, error) {
 }
 
 type SPV struct {
+	*SyncManager
 	chain *db.Blockchain
 	pm    *p2p.PeerManager
-	*SyncManager
 }
 
 func (spv *SPV) Start() {
@@ -80,35 +80,44 @@ func (spv *SPV) keepUpdate() {
 }
 
 func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
+	log.Info("SPV OnVersion")
 	// Check if handshake with itself
 	if v.Nonce == spv.pm.Local().ID() {
-		peer.Disconnect()
+		log.Error("Peer handshake with itself")
+		spv.pm.DisconnectPeer(peer)
 		return errors.New("Peer handshake with itself")
 	}
 
-	if v.Version < p2p.PeerVersion {
-		peer.Disconnect()
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", p2p.PeerVersion))
-	}
-
-	if v.Services/p2p.ServiceSPV&1 == 0 {
-		peer.Disconnect()
-		return errors.New("SPV service not enabled on connected peer")
-	}
-
+	log.Info("OnVersion ID checked")
 	if peer.State() != p2p.INIT && peer.State() != p2p.HAND {
+		log.Error("Unknow status to received version")
 		return errors.New("Unknow status to received version")
 	}
 
+	log.Info("OnVersion State checked")
 	// Remove duplicate peer connection
 	knownPeer, ok := spv.pm.RemovePeer(v.Nonce)
 	if ok {
-		fmt.Println("Reconnect peer ", v.Nonce)
+		log.Trace("Reconnect peer ", v.Nonce)
 		knownPeer.Disconnect()
 	}
 
-	// Update peer info with version message
-	peer.Update(v)
+	log.Info("Is known peer:", ok)
+
+	// Set peer info with version message
+	peer.SetInfo(v)
+
+	if v.Version < p2p.ProtocolVersion {
+		spv.pm.DisconnectPeer(peer)
+		log.Error("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion)
+		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion))
+	}
+
+	if v.Services/p2p.ServiceSPV&1 == 0 {
+		spv.pm.DisconnectPeer(peer)
+		log.Error("SPV service not enabled on connected peer")
+		return errors.New("SPV service not enabled on connected peer")
+	}
 
 	// Add to connected peer
 	spv.pm.AddConnectedPeer(peer)
@@ -213,6 +222,7 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 	case msg.TRANSACTION:
 		// Do nothing, transaction inventory is not supported
 	case msg.BLOCK:
+		log.Info("SPV receive block inventory")
 		return spv.HandleBlockInvMsg(inv, peer)
 	}
 	return nil

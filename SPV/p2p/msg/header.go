@@ -9,6 +9,7 @@ import (
 
 	"SPVWallet/config"
 	"SPVWallet/core"
+	"SPVWallet/log"
 )
 
 const (
@@ -55,6 +56,7 @@ func BuildMessage(cmd string, body []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	log.Info("Build message:", cmd)
 	return append(hdr, body...), nil
 }
 

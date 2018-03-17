@@ -16,10 +16,7 @@ type VersionData struct {
 	Services     uint64
 	TimeStamp    uint32
 	Port         uint16
-	HttpInfoPort uint16
-	Cap          [32]byte
 	Nonce        uint64
-	UserAgent    uint8
 	Height       uint64
 	Relay        uint8
 }
