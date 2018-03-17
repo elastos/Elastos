@@ -92,6 +92,7 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 	defer db.filterLock.Unlock()
 
 	addrs := db.scripts.GetFilter().GetScriptHashes()
+	log.Trace("GetFilter addrs:", addrs)
 	utxos, _ := db.utxos.GetAll()
 	stxos, _ := db.stxos.GetAll()
 
@@ -110,6 +111,7 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 		filter.AddOutPoint(&stxo.Op)
 	}
 
+	log.Trace("Bloom filter:", *filter)
 	return filter
 }
 

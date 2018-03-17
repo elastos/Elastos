@@ -7,7 +7,7 @@ import (
 	"encoding/binary"
 )
 
-const UINT256SIZE int = 32
+const UINT256SIZE = 32
 
 type Uint256 [UINT256SIZE]uint8
 

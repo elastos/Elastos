@@ -3,6 +3,8 @@ package wallet
 import (
 	"bytes"
 	"errors"
+	"fmt"
+	"sync"
 	"time"
 
 	. "SPVWallet/core"
@@ -11,7 +13,6 @@ import (
 	. "SPVWallet/p2p"
 	. "SPVWallet/p2p/msg"
 	"SPVWallet/log"
-	"fmt"
 )
 
 const (
@@ -20,11 +21,13 @@ const (
 )
 
 type SyncManager struct {
-	TxnMemCache
+	lock sync.Mutex
+	*MemCache
 
 	blockLocator   []*Uint256
 	startHash      *Uint256
 	stopHash       *Uint256
+	queueLock      sync.RWMutex
 	requestQueue   map[Uint256]time.Time
 	blockTxns      map[Uint256][]Uint256
 	receivedBlocks map[Uint256]*MerkleBlock
@@ -32,9 +35,16 @@ type SyncManager struct {
 	retryTimes     int
 }
 
+func NewSyncManager() *SyncManager {
+	sm := new(SyncManager)
+	sm.MemCache = NewMemCache()
+	sm.clear()
+	return sm
+}
+
 func (sm *SyncManager) SyncBlocks() {
-	sm.Lock()
-	defer sm.Unlock()
+	sm.lock.Lock()
+	defer sm.lock.Unlock()
 
 	// Check if blockchain is in syncing state
 	if spv.chain.IsSyncing() {
@@ -91,6 +101,11 @@ func (sm *SyncManager) requestBlocks() {
 	if syncPeer == nil {
 		// If sync peer is nil at this point, that meas no peer connected
 		log.Error("SyncManager no sync peer connected")
+		go func() {
+			// Restart sync after a while
+			time.Sleep(time.Second * SyncReqTimeout)
+			sm.startSync()
+		}()
 		return
 	}
 	// Request blocks returns a inventory message witch contains block hashes
@@ -104,18 +119,21 @@ func (sm *SyncManager) requestBlocks() {
 	go syncPeer.Send(msg)
 }
 
-func (sm *SyncManager) HandleBlockInvMsg(inv *Inventory, peer *Peer) error {
-	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil ||
-		spv.pm.GetSyncPeer().ID() != peer.ID() {
-		sm.changeSyncPeerAndRestart()
+func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
+	sm.lock.Lock()
+	defer sm.lock.Unlock()
+
+	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
+
 		log.Error("Receive message from non sync peer, disconnect")
+		sm.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
 
 	dataLen := len(inv.Data)
 	if dataLen != int(inv.Count)*UINT256SIZE {
-		log.Error("Invalid block inventory data size:", dataLen)
-		sm.changeSyncPeerAndRestart()
+		log.Error(">>>>> Invalid block inventory data size:", dataLen)
+		sm.ChangeSyncPeerAndRestart()
 		return errors.New(fmt.Sprint("Invalid block inventory data size:", dataLen))
 	}
 
@@ -123,9 +141,14 @@ func (sm *SyncManager) HandleBlockInvMsg(inv *Inventory, peer *Peer) error {
 		var blockHash Uint256
 		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
 		if err != nil {
-			sm.changeSyncPeerAndRestart()
-			log.Error("Deserialize block hash error,", err)
+			log.Error(">>>>> Deserialize block hash error,", err)
+			sm.ChangeSyncPeerAndRestart()
 			return err
+		}
+		// Check if block already in orphan pool
+		if block, ok := spv.IsOrphanBlock(blockHash); ok {
+			sm.RequestBlockTxns(peer, block)
+			return nil
 		}
 		if !spv.chain.IsKnownBlock(blockHash) {
 			<-time.After(time.Millisecond * 50)
@@ -142,10 +165,46 @@ func (sm *SyncManager) HandleBlockInvMsg(inv *Inventory, peer *Peer) error {
 	return nil
 }
 
-func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error {
-	log.Info("SyncManager request block hash:", hash.String())
+func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
+	txIds, err := CheckMerkleBlock(block)
+	if err != nil {
+		log.Error("Invalid merkle block received:", err)
+		sm.ChangeSyncPeerAndRestart()
+		return err
+	}
+
+	// If all blocks received and no more txn to request, submit received block and txn data
+	if sm.RequestFinished() && len(txIds) == 0 {
+		return sm.submitData()
+	}
+
+	var blockTxns = make([]Uint256, len(txIds))
+	for i, txId := range txIds {
+		blockTxns[i] = *txId
+	}
+	sm.blockTxns[*block.BlockHeader.Hash()] = blockTxns
+
+	for _, txId := range blockTxns {
+		if txn, ok := sm.IsOrphanTxn(txId); ok {
+			sm.TxnReceived(&txId, txn)
+		} else {
+			spv.sendRequest(peer, TRANSACTION, txId)
+		}
+	}
+
+	return nil
+}
+
+func (sm *SyncManager) addToRequestQueue(hash Uint256) {
 	// Add to request queue
+	log.Trace(">>>>> Add to request queue:", hash.String())
+	sm.queueLock.Lock()
 	sm.requestQueue[hash] = time.Now()
+	sm.queueLock.Unlock()
+}
+
+func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error {
+	sm.addToRequestQueue(hash)
 
 	msg, err := NewDataReqMsg(msgType, hash)
 	if err != nil {
@@ -169,7 +228,8 @@ func (sm *SyncManager) checkTimeOut() {
 			if time.Now().Sub(startTime).Seconds() > SyncReqTimeout {
 				// To many retry times, change a sync peer, and restart syncing
 				if sm.retryTimes > MaxRetryTimes {
-					sm.changeSyncPeerAndRestart()
+					log.Error(">>>>> Request timeout, disconnect")
+					sm.ChangeSyncPeerAndRestart()
 					return
 				}
 				sm.retryTimes++
@@ -178,18 +238,44 @@ func (sm *SyncManager) checkTimeOut() {
 	}
 }
 
-func (sm *SyncManager) changeSyncPeerAndRestart() {
+func (sm *SyncManager) ChangeSyncPeerAndRestart() {
 	// Disconnect sync peer
 	syncPeer := spv.pm.GetSyncPeer()
+	log.Trace(">>>>> SyncManager change sync peer, disconnect peer", syncPeer)
 	spv.pm.DisconnectPeer(syncPeer)
 
 	// Restart
 	sm.startSync()
 }
 
-func (sm *SyncManager) inRequestQueue(hash Uint256) bool {
+func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
+	sm.queueLock.Lock()
+	defer sm.queueLock.Unlock()
+
 	_, ok := sm.requestQueue[hash]
+	log.Trace(">>>>> In request queue", ok, ", hash:", hash.String())
 	return ok
+}
+
+func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
+	spv.queueLock.Lock()
+	delete(spv.requestQueue, *blockHash)
+	spv.receivedBlocks[*blockHash] = block
+	spv.queueLock.Unlock()
+}
+
+func (sm *SyncManager) TxnReceived(txId *Uint256, txn *Txn) {
+	spv.queueLock.Lock()
+	delete(spv.requestQueue, *txId)
+	spv.receivedTxns[*txId] = txn
+	spv.queueLock.Unlock()
+}
+
+func (sm *SyncManager) RequestFinished() bool {
+	spv.queueLock.RLock()
+	defer spv.queueLock.RUnlock()
+
+	return len(sm.requestQueue) == 0
 }
 
 func (sm *SyncManager) submitData() error {
@@ -203,7 +289,8 @@ func (sm *SyncManager) submitData() error {
 	err = sm.saveToDB(connectedHeaders)
 	if err != nil {
 		// If anything goes wrong, change a sync peer and restart
-		sm.changeSyncPeerAndRestart()
+		log.Error(">>>>> Save headers failed, disconnect")
+		sm.ChangeSyncPeerAndRestart()
 		return err
 	}
 
@@ -229,7 +316,8 @@ func (sm *SyncManager) connectHeaders() ([]Uint256, error) {
 		previousHash := header.BlockHeader.Previous
 
 		if _, ok := sm.receivedBlocks[previousHash]; !ok {
-			sm.changeSyncPeerAndRestart()
+			log.Error(">>>>> Connect received headers failed, disconnect")
+			sm.ChangeSyncPeerAndRestart()
 			return nil, errors.New("Sync manager connect headers failed")
 		}
 		// Set stop hash to previous for next loop

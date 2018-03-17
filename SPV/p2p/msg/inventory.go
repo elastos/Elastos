@@ -53,7 +53,7 @@ func (inv *Inventory) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	err = serialization.WriteVarBytes(buf, inv.Data)
+	err = binary.Write(buf, binary.LittleEndian, inv.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,8 @@ func (inv *Inventory) Deserialize(msg []byte) error {
 		return err
 	}
 
-	inv.Data, err = serialization.ReadVarBytes(buf)
+	inv.Data = make([]byte, inv.Count*UINT256SIZE)
+	err = binary.Read(buf, binary.LittleEndian, &inv.Data)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"SPVWallet/core"
 	"SPVWallet/db"
 	"SPVWallet/log"
 	"SPVWallet/p2p"
@@ -22,7 +21,7 @@ func InitSPV(walletId uint64) (*SPV, error) {
 	if err != nil {
 		return nil, err
 	}
-	spv.SyncManager = new(SyncManager)
+	spv.SyncManager = NewSyncManager()
 	spv.pm = p2p.NewPeerManager(walletId)
 
 	return spv, nil
@@ -57,6 +56,7 @@ func (spv *SPV) keepUpdate() {
 				// Disconnect inactive peer
 				if peer.LastActive().Before(
 					time.Now().Add(-time.Second * p2p.InfoUpdateDuration * p2p.KeepAliveTimeout)) {
+					log.Trace(">>>>> SPV disconnect inactive peer,", peer)
 					spv.pm.DisconnectPeer(peer)
 					continue
 				}
@@ -83,18 +83,16 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	log.Info("SPV OnVersion")
 	// Check if handshake with itself
 	if v.Nonce == spv.pm.Local().ID() {
-		log.Error("Peer handshake with itself")
+		log.Error(">>>> SPV disconnect peer, peer handshake with itself")
 		spv.pm.DisconnectPeer(peer)
 		return errors.New("Peer handshake with itself")
 	}
 
-	log.Info("OnVersion ID checked")
 	if peer.State() != p2p.INIT && peer.State() != p2p.HAND {
 		log.Error("Unknow status to received version")
 		return errors.New("Unknow status to received version")
 	}
 
-	log.Info("OnVersion State checked")
 	// Remove duplicate peer connection
 	knownPeer, ok := spv.pm.RemovePeer(v.Nonce)
 	if ok {
@@ -108,14 +106,14 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	peer.SetInfo(v)
 
 	if v.Version < p2p.ProtocolVersion {
+		log.Error(">>>>> SPV disconnect peer, To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion)
 		spv.pm.DisconnectPeer(peer)
-		log.Error("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion)
 		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion))
 	}
 
 	if v.Services/p2p.ServiceSPV&1 == 0 {
+		log.Error(">>>>> SPV disconnect peer, spv service not enabled on connected peer")
 		spv.pm.DisconnectPeer(peer)
-		log.Error("SPV service not enabled on connected peer")
 		return errors.New("SPV service not enabled on connected peer")
 	}
 
@@ -223,7 +221,7 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 		// Do nothing, transaction inventory is not supported
 	case msg.BLOCK:
 		log.Info("SPV receive block inventory")
-		return spv.HandleBlockInvMsg(inv, peer)
+		return spv.HandleBlockInvMsg(peer, inv)
 	}
 	return nil
 }
@@ -252,6 +250,12 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 		return err
 	}
 
+	if spv.chain.IsSyncing() && !spv.InRequestQueue(*blockHash) {
+		// Put non syncing blocks into orphan pool
+		spv.AddOrphanBlock(*blockHash, block)
+		return nil
+	}
+
 	if !spv.chain.IsSyncing() {
 		// Check if new block can connect to previous
 		tip := spv.chain.ChainTip()
@@ -268,33 +272,16 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 		spv.startHash = blockHash
 		spv.stopHash = blockHash
 
-	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil ||
-		spv.pm.GetSyncPeer().ID() != peer.ID() || !spv.inRequestQueue(*blockHash) {
+	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
 
-		spv.changeSyncPeerAndRestart()
+		log.Error(">>>>> Receive message from non sync peer, disconnect")
+		spv.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
 
-	txIds, err := CheckMerkleBlock(block)
-	if err != nil {
-		return err
-	}
+	spv.BlockReceived(blockHash, block)
 
-	delete(spv.requestQueue, *blockHash)
-	spv.receivedBlocks[*blockHash] = block
-
-	// If all blocks received and no more txn to request, submit received block and txn data
-	if len(spv.requestQueue) == 0 && len(txIds) == 0 {
-		return spv.submitData()
-	}
-
-	var blockTxns = make([]core.Uint256, len(txIds))
-	for i, txId := range txIds {
-		blockTxns[i] = *txId
-		spv.sendRequest(peer, msg.TRANSACTION, *txId)
-	}
-
-	spv.blockTxns[*blockHash] = blockTxns
+	spv.RequestBlockTxns(peer, block)
 
 	return nil
 }
@@ -302,26 +289,31 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	txId := txn.Transaction.Hash()
 
+	if spv.chain.IsSyncing() && !spv.InRequestQueue(*txId) {
+		// Put non syncing txns into orphan pool
+		spv.AddOrphanTxn(*txId, txn)
+		return nil
+	}
+
 	if !spv.chain.IsSyncing() {
 		// Check if transaction already received
-		if spv.TxnMemCache.Cached(*txId) {
+		if spv.MemCache.TxCached(*txId) {
 			return errors.New("Received transaction already cached")
 		}
 		// Put txn into unconfirmed txnpool
 		return spv.chain.CommitUnconfirmedTxn(txn.Transaction)
 
-	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil ||
-		spv.pm.GetSyncPeer().ID() != peer.ID() || !spv.inRequestQueue(*txId) {
+	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
 
-		spv.changeSyncPeerAndRestart()
+		log.Error(">>>>> Receive message from non sync peer, disconnect")
+		spv.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
 
-	delete(spv.requestQueue, *txId)
-	spv.receivedTxns[*txId] = txn
+	spv.TxnReceived(txId, txn)
 
 	// All request finished, submit received block and txn data
-	if len(spv.requestQueue) == 0 {
+	if spv.RequestFinished() {
 		return spv.submitData()
 	}
 
@@ -329,7 +321,8 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 }
 
 func (spv *SPV) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
-	spv.changeSyncPeerAndRestart()
+	log.Error(">>>>> Receive not found message, disconnect")
+	spv.ChangeSyncPeerAndRestart()
 	return nil
 }
 

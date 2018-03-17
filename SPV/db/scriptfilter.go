@@ -45,7 +45,7 @@ func (filter *ScriptFilter) DeleteScript(hash core.Uint168) {
 }
 
 func (filter *ScriptFilter) GetScriptHashes() []core.Uint168 {
-	var scriptHashes = make([]core.Uint168, len(filter.scripts))
+	var scriptHashes = make([]core.Uint168, 0)
 	for scriptHash := range filter.scripts {
 		scriptHashes = append(scriptHashes, scriptHash)
 	}

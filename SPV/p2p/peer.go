@@ -212,6 +212,7 @@ func (peer *Peer) Read() {
 	}
 
 DISCONNECT:
+	log.Trace(">>>>> Peer IO error, disconnect peer,", peer)
 	listeners.OnDisconnect(peer)
 }
 
@@ -239,7 +240,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 		}
 
 		if header.Magic != config.Config().Magic {
-			fmt.Println("Magic not match, disconnect peer")
+			log.Error(">>>>> Magic not match, disconnect peer")
 			listeners.OnDisconnect(peer)
 			return
 		}
@@ -277,7 +278,7 @@ func (peer *Peer) Send(msg []byte) {
 
 	_, err := peer.conn.Write(msg)
 	if err != nil {
-		fmt.Errorf("Error sending message to peer ", err)
+		log.Error(">>>>> Error sending message to peer ", err)
 		listeners.OnDisconnect(peer)
 	}
 }
