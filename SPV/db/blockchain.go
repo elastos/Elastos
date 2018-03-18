@@ -8,7 +8,6 @@ import (
 
 	. "SPVWallet/core"
 	tx "SPVWallet/core/transaction"
-	"SPVWallet/log"
 )
 
 type ChainState int
@@ -78,7 +77,6 @@ func (bc *Blockchain) Height() uint32 {
 		return 0
 	}
 
-	log.Info("Chain height:", tip.Height)
 	return tip.Height
 }
 

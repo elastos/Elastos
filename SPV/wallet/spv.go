@@ -240,7 +240,7 @@ func (spv *SPV) SendTransaction(txn *tx.Transaction) error {
 
 func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 	blockHash := block.BlockHeader.Hash()
-	log.Trace(">>>>>> Receive merkle block hash:", blockHash.String())
+	log.Trace(">>>>> Receive merkle block hash:", blockHash.String())
 
 	if spv.chain.IsKnownBlock(*blockHash) {
 		return errors.New(fmt.Sprint("Received block that already known,", blockHash.String()))
@@ -283,13 +283,12 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 
 	spv.BlockReceived(blockHash, block)
 
-	spv.RequestBlockTxns(peer, block)
-
-	return nil
+	return spv.RequestBlockTxns(peer, block)
 }
 
 func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	txId := txn.Transaction.Hash()
+	log.Trace(">>>>>> Receive transaction hash:", txId.String())
 
 	if spv.chain.IsSyncing() && !spv.InRequestQueue(*txId) {
 		// Put non syncing txns into orphan pool

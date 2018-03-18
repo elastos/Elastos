@@ -69,7 +69,7 @@ func (db *HeadersDB) Add(header *Header) error {
 	db.Lock()
 	defer db.Unlock()
 
-	log.Info("Headers db add header:", header.Hash().String())
+	log.Trace("Headers db add header:", header.Hash().String())
 	return db.Update(func(tx *bolt.Tx) error {
 
 		bytes, err := header.Bytes()
@@ -101,7 +101,6 @@ func (db *HeadersDB) GetHeader(hash *Uint256) (header *Header, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	log.Info("Headers db get header:", hash.String())
 	err = db.View(func(tx *bolt.Tx) error {
 
 		header, err = getHeader(tx, hash)
@@ -124,7 +123,6 @@ func (db *HeadersDB) GetTip() (header *Header, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	log.Info("Headers db get tip")
 	err = db.View(func(tx *bolt.Tx) error {
 
 		header, err = getTip(tx)
@@ -148,7 +146,6 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 	db.Lock()
 	defer db.Unlock()
 
-	log.Info("Headers db rollback")
 	err = db.View(func(tx *bolt.Tx) error {
 
 		var newTip *Header
@@ -178,7 +175,7 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 	})
 
 	if err != nil {
-		log.Info("Headers db rollback err,", err)
+		log.Error("Headers db rollback err,", err)
 		return nil, err
 	}
 

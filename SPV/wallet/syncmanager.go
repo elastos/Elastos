@@ -85,12 +85,10 @@ func (sm *SyncManager) needSync() bool {
 	if bestPeer == nil { // no peers connected, return true
 		return true
 	}
-	log.Info("Best peer height:", bestPeer.Height())
 	return bestPeer.Height() > uint64(spv.chain.Height())
 }
 
 func (sm *SyncManager) requestBlocks() {
-	log.Info("SyncManager request blocks")
 	// Current blocks request was not finished
 	if sm.blockLocator != nil {
 		log.Error("SyncManager current request not finished")
@@ -123,9 +121,14 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 	sm.lock.Lock()
 	defer sm.lock.Unlock()
 
-	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
+	log.Trace(">>>> Handle inv message:", *inv)
 
+	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
 		log.Error("Receive message from non sync peer, disconnect")
+		log.Error("BLock locator is nil:", sm.blockLocator == nil)
+		log.Error("Sync peer:", spv.pm.GetSyncPeer())
+		log.Error("From peer:", peer)
+
 		sm.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
@@ -137,6 +140,8 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		return errors.New(fmt.Sprint("Invalid block inventory data size:", dataLen))
 	}
 
+	log.Trace(">>>>> Inventory data length:", dataLen)
+	var reqList []Uint256
 	for i := 0; i < dataLen; i += UINT256SIZE {
 		var blockHash Uint256
 		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
@@ -150,17 +155,23 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 			sm.RequestBlockTxns(peer, block)
 			return nil
 		}
+		// Add block hashes to request queue
 		if !spv.chain.IsKnownBlock(blockHash) {
-			<-time.After(time.Millisecond * 50)
 			// Save start and stop block for connect headers method
 			if sm.startHash == nil {
 				sm.startHash = &blockHash
 			}
 			sm.stopHash = &blockHash
 
-			// Send request message
-			sm.sendRequest(peer, BLOCK, blockHash)
+			sm.addToRequestQueue(blockHash)
+			reqList = append(reqList, blockHash)
 		}
+	}
+
+	// Send request message
+	for _, hash := range reqList {
+		<-time.After(time.Millisecond * 50)
+		sm.sendRequest(peer, BLOCK, hash)
 	}
 	return nil
 }
@@ -182,14 +193,16 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 	var blockTxns = make([]Uint256, len(txIds))
 	for i, txId := range txIds {
 		blockTxns[i] = *txId
+		sm.addToRequestQueue(*txId)
 	}
 	sm.blockTxns[*block.BlockHeader.Hash()] = blockTxns
 
 	for _, txId := range blockTxns {
+		<-time.After(time.Millisecond * 50)
 		if txn, ok := sm.IsOrphanTxn(txId); ok {
 			sm.TxnReceived(&txId, txn)
 		} else {
-			spv.sendRequest(peer, TRANSACTION, txId)
+			sm.sendRequest(peer, TRANSACTION, txId)
 		}
 	}
 
@@ -205,8 +218,6 @@ func (sm *SyncManager) addToRequestQueue(hash Uint256) {
 }
 
 func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error {
-	sm.addToRequestQueue(hash)
-
 	msg, err := NewDataReqMsg(msgType, hash)
 	if err != nil {
 		return err
@@ -259,7 +270,6 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 }
 
 func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
-	log.Trace(">>>>> Block received hash:", blockHash.String())
 	spv.queueLock.Lock()
 	delete(spv.requestQueue, *blockHash)
 	spv.receivedBlocks[*blockHash] = block
@@ -267,7 +277,6 @@ func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
 }
 
 func (sm *SyncManager) TxnReceived(txId *Uint256, txn *Txn) {
-	log.Trace(">>>>> Transaction received hash:", txId.String())
 	spv.queueLock.Lock()
 	delete(spv.requestQueue, *txId)
 	spv.receivedTxns[*txId] = txn
@@ -304,6 +313,7 @@ func (sm *SyncManager) submitData() error {
 }
 
 func (sm *SyncManager) connectHeaders() ([]Uint256, error) {
+	log.Trace(">>>>> Connect headers")
 	headersCount := len(sm.receivedBlocks)
 	connectedHeaders := make([]Uint256, headersCount)
 	for {
@@ -313,6 +323,7 @@ func (sm *SyncManager) connectHeaders() ([]Uint256, error) {
 
 		// All headers connected, return connected headers in height ASC order
 		if *sm.stopHash == *sm.startHash {
+			log.Trace(">>>>> Headers connected length:", len(connectedHeaders))
 			return connectedHeaders, nil
 		}
 
