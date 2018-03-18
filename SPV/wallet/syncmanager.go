@@ -175,6 +175,7 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 
 	// If all blocks received and no more txn to request, submit received block and txn data
 	if sm.RequestFinished() && len(txIds) == 0 {
+		log.Trace(">>>>> Request finished submit data")
 		return sm.submitData()
 	}
 
@@ -258,6 +259,7 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 }
 
 func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
+	log.Trace(">>>>> Block received hash:", blockHash.String())
 	spv.queueLock.Lock()
 	delete(spv.requestQueue, *blockHash)
 	spv.receivedBlocks[*blockHash] = block
@@ -265,6 +267,7 @@ func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
 }
 
 func (sm *SyncManager) TxnReceived(txId *Uint256, txn *Txn) {
+	log.Trace(">>>>> Transaction received hash:", txId.String())
 	spv.queueLock.Lock()
 	delete(spv.requestQueue, *txId)
 	spv.receivedTxns[*txId] = txn

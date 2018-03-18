@@ -20,7 +20,7 @@ type Header struct {
 	AuxPow     AuxPow
 }
 
-func (header *Header) Serialize(w io.Writer) error {
+func (header *Header) SerializeWithoutAux(w io.Writer) error {
 	err := WriteUint32(w, header.Version)
 	if err != nil {
 		return err
@@ -56,6 +56,15 @@ func (header *Header) Serialize(w io.Writer) error {
 		return err
 	}
 
+	return nil
+}
+
+func (header *Header) Serialize(w io.Writer) error {
+	err := header.SerializeWithoutAux(w)
+	if err != nil {
+		return err
+	}
+
 	err = header.AuxPow.Serialize(w)
 	if err != nil {
 		return err
@@ -66,7 +75,7 @@ func (header *Header) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (header *Header) Deserialize(r io.Reader) error {
+func (header *Header) DeserializeWithoutAux(r io.Reader) error {
 	var err error
 	//Version
 	header.Version, err = ReadUint32(r)
@@ -107,6 +116,16 @@ func (header *Header) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (header *Header) Deserialize(r io.Reader) error {
+	err := header.DeserializeWithoutAux(r)
+	if err != nil {
+		return err
+	}
+
 	// AuxPow
 	err = header.AuxPow.Deserialize(r)
 	if err != nil {
@@ -119,8 +138,9 @@ func (header *Header) Deserialize(r io.Reader) error {
 }
 
 func (header *Header) Hash() *Uint256 {
-	bytes, _ := header.Bytes()
-	hash := Uint256(Sha256D(bytes))
+	buf := new(bytes.Buffer)
+	header.SerializeWithoutAux(buf)
+	hash := Uint256(Sha256D(buf.Bytes()))
 	return &hash
 }
 

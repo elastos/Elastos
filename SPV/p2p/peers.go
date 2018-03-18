@@ -2,7 +2,6 @@ package p2p
 
 import (
 	"sync"
-	"SPVWallet/log"
 )
 
 var local *Peer
@@ -127,8 +126,6 @@ func (p *Peers) getBestPeer() *Peer {
 		}
 	}
 
-	log.Trace("Peers get best peer:", bestPeer)
-
 	return bestPeer
 }
 
@@ -167,7 +164,6 @@ func (p *Peers) GetSyncPeer() *Peer {
 		p.syncPeer = p.getBestPeer()
 	}
 
-	log.Trace("Peers get sync peer:", p.syncPeer)
 	return p.syncPeer
 }
 
