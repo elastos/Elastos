@@ -204,6 +204,7 @@ internal func getNativeHandlers() -> CCallbacks {
     callbacks.self_info = onSelfInfoChanged
     callbacks.friend_list = onFriendIterated
     callbacks.friend_info = onFriendInfoChanged
+    callbacks.friend_connection = onFriendConnectionChanged
     callbacks.friend_presence = onFriendPresence
     callbacks.friend_request = onFriendRequest
     callbacks.friend_added = onFriendAdded
