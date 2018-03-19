@@ -8,10 +8,10 @@ import (
 	"errors"
 	"fmt"
 
+	. "Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	. "Elastos.ELA/net/protocol"
-	"SPVWallet/core"
 )
 
 type Messager interface {
@@ -55,7 +55,7 @@ func NewHeader(cmd string, checksum []byte, length int) *Header {
 
 func BuildHeader(cmd string, msg []byte) *Header {
 	// Calculate checksum
-	checksum := core.Sha256D(msg)
+	checksum := Sha256D(msg)
 	return NewHeader(cmd, checksum[:], len(msg))
 }
 
