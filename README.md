@@ -1,4 +1,4 @@
-# IPFS is Blockchain Powered Internet
+# Elastos is Blockchain Powered Internet
 
 
 Welcome to Elastos! Why not [watch a video intrudction](https://youtu.be/2aOWfV-CZhs) to get started? 
@@ -28,7 +28,6 @@ Welcome to Elastos! Why not [watch a video intrudction](https://youtu.be/2aOWfV-
 **Elastos is a work in progress!**
 
 ## Community
-
 
 ## Projects
 
