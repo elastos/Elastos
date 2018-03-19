@@ -16,7 +16,6 @@ import (
 
 const (
 	ProtocolVersion = 1 // The min p2p protocol version to support spv
-	SPVPeerPort     = 20866
 	ServiceSPV      = 1 << 2
 	MaxBufLen       = 1024 * 16
 )

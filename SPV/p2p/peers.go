@@ -2,6 +2,7 @@ package p2p
 
 import (
 	"sync"
+	"SPVWallet/config"
 )
 
 var local *Peer
@@ -31,7 +32,7 @@ func (p *Peers) initLocalPeer(id uint64) {
 	local = &Peer{
 		id:       id,
 		version:  ProtocolVersion,
-		port:     SPVPeerPort,
+		port:     config.Config().Port,
 		services: 0x00,
 		relay:    0x00,
 	}
