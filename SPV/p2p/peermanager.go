@@ -61,8 +61,10 @@ func (pm *PeerManager) DisconnectPeer(peer *Peer) {
 	log.Trace("PeerManager disconnect peer:", peer.String())
 	peer, ok := pm.RemovePeer(peer.ID())
 	if ok {
+		addr := peer.Addr().TCPAddr()
 		peer.Disconnect()
-		pm.addrManager.DisconnectedAddr(peer.Addr().TCPAddr())
+		pm.connManager.removeAddrFromConnectingList(addr)
+		pm.addrManager.DisconnectedAddr(addr)
 	}
 }
 

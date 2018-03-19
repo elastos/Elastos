@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	CachedAddrsFile = "cached_addrs.csv"
+	CachedAddrsFile = "addrs.cache"
 )
 
 type AddrManager struct {
