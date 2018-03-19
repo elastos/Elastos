@@ -3,7 +3,9 @@
 
 Welcome to Elastos! Why not [Elastos Talk: Smart-Web Powered by Blockchain -Rong Chen 10.9.2017](https://youtu.be/2aOWfV-CZhs) to get started? 
 
-A [video demo for Elasltos RT](https://youtu.be/skewtq-kUQY) running on iOS (Mar 19, 2018)
+[Elastos Introduction slides](https://www.slideshare.net/RongChen34/elastos-intro)
+
+A [video demo for Elasltos RT](https://youtu.be/skewtq-kUQY) running on iOS (Mar 19, 2018). [Source code]( https://github.com/elastos/Elastos.RT/tree/master/Sources/Elastos/LibCore/tests/HelloCarDemo)
 
 ## Table of Contents
 
