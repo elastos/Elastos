@@ -1,7 +1,9 @@
 # Elastos is Blockchain Powered Internet
 
 
-Welcome to Elastos! Why not [watch a video intrudction](https://youtu.be/2aOWfV-CZhs) to get started? 
+Welcome to Elastos! Why not [Elastos Talk: Smart-Web Powered by Blockchain -Rong Chen 10.9.2017](https://youtu.be/2aOWfV-CZhs) to get started? 
+
+A [video demo for Elasltos RT](https://youtu.be/skewtq-kUQY) running on iOS (Mar 19, 2018)
 
 ## Table of Contents
 
@@ -16,6 +18,7 @@ Welcome to Elastos! Why not [watch a video intrudction](https://youtu.be/2aOWfV-
 - [License](#license)
 
 ## Overview
+
 
 ### Quick Summary
 
