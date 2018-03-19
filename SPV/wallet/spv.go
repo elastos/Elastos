@@ -24,6 +24,20 @@ func InitSPV(walletId uint64) (*SPV, error) {
 	spv.SyncManager = NewSyncManager()
 	spv.pm = p2p.NewPeerManager(walletId)
 
+	// Init listeners
+	p2p.SetListeners(&p2p.Listeners{
+		OnVersion:     spv.OnVersion,
+		OnVerAck:      spv.OnVerAck,
+		OnPing:        spv.OnPing,
+		OnPong:        spv.OnPong,
+		OnAddrs:       spv.OnAddrs,
+		OnAddrsReq:    spv.OnAddrsReq,
+		OnInventory:   spv.OnInventory,
+		OnMerkleBlock: spv.OnMerkleBlock,
+		OnTxn:         spv.OnTxn,
+		OnNotFound:    spv.OnNotFound,
+		OnDisconnect:  spv.OnDisconnect,
+	})
 	return spv, nil
 }
 
@@ -85,6 +99,7 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	if v.Nonce == spv.pm.Local().ID() {
 		log.Error(">>>> SPV disconnect peer, peer handshake with itself")
 		spv.pm.DisconnectPeer(peer)
+		spv.pm.OnDiscardAddr(peer.Addr().TCPAddr())
 		return errors.New("Peer handshake with itself")
 	}
 
