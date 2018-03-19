@@ -57,8 +57,6 @@ func (msg dataReq) Handle(node Noder) error {
 		}
 		log.Debug("block height is ", block.Blockdata.Height, " ,hash is ", hash)
 
-		log.Debug("Receive block data request, node.filter.isLoaded:", node.GetFilter().IsLoaded())
-
 		var buf []byte
 		if node.GetFilter().IsLoaded() {
 			buf, err = NewMerkleBlockMsg(block, node.GetFilter())

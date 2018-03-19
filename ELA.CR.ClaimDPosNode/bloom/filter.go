@@ -4,7 +4,7 @@ import (
 	"math"
 	"sync"
 
-	"SPVWallet/core"
+	. "Elastos.ELA/common"
 	tx "Elastos.ELA/core/transaction"
 )
 
@@ -220,7 +220,7 @@ func (bf *Filter) Add(data []byte) {
 // AddHash adds the passed chainhash.Hash to the Filter.
 //
 // This function is safe for concurrent access.
-func (bf *Filter) AddHash(hash *core.Uint256) {
+func (bf *Filter) AddHash(hash *Uint256) {
 	bf.mtx.Lock()
 	bf.add(hash[:])
 	bf.mtx.Unlock()
