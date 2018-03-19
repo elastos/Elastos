@@ -256,11 +256,11 @@ func accountAction(context *cli.Context) {
 		os.Exit(2)
 	}
 
-	// show account info
-	if context.Bool("account") {
+	// list accounts
+	if context.Bool("list") {
 		if err := showAccountInfo([]byte(pass)); err != nil {
-			fmt.Println("error: show account info failed, ", err)
-			cli.ShowCommandHelpAndExit(context, "account", 3)
+			fmt.Println("error: list accounts info failed, ", err)
+			cli.ShowCommandHelpAndExit(context, "list", 3)
 		}
 		return
 	}
@@ -314,6 +314,10 @@ func NewCommand() *cli.Command {
 			cli.BoolFlag{
 				Name:  "create, c",
 				Usage: "create wallet",
+			},
+			cli.BoolFlag{
+				Name:  "list, l",
+				Usage: "list all accounts",
 			},
 			cli.BoolFlag{
 				Name:  "changepassword",
