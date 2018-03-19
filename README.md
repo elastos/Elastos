@@ -1,7 +1,7 @@
 # Elastos is Blockchain Powered Internet
 
 
-Welcome to Elastos! Why not [watch a video intrudction](https://youtu.be/2aOWfV-CZhs) to get started? 
+Welcome to Elastos! Why not [watch a video introduction](https://youtu.be/2aOWfV-CZhs) to get started? 
 
 ## Table of Contents
 
