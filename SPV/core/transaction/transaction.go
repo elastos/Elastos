@@ -11,7 +11,6 @@ import (
 	"SPVWallet/core/serialization"
 	"SPVWallet/core/contract/program"
 	"SPVWallet/core/transaction/payload"
-	"SPVWallet/log"
 )
 
 //for different transaction types with different payload format

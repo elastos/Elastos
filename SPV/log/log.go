@@ -13,9 +13,10 @@ const (
 
 	CallDepth = 4
 
-	BLUE  = "0;34"
-	RED   = "0;31"
-	GREEN = "0;32"
+	BLUE   = "0;34"
+	RED    = "0;31"
+	GREEN  = "0;32"
+	YELLOW = "0;33"
 )
 
 var logger *log.Logger
@@ -56,29 +57,37 @@ func OpenLogFile() (*os.File, error) {
 }
 
 func Info(msg ...interface{}) {
-	logger.Output(CallDepth, color(GREEN, fmt.Sprint(msg)))
+	logger.Output(CallDepth, color(GREEN, "[INFO]", fmt.Sprint(msg...)))
 }
 
 func Infof(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(GREEN, fmt.Sprintf(format, msg)))
+	logger.Output(CallDepth, color(GREEN, "[INFO]", fmt.Sprintf(format, msg...)))
 }
 
 func Trace(msg ...interface{}) {
-	logger.Output(CallDepth, color(BLUE, fmt.Sprint(msg)))
+	logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprint(msg...)))
 }
 
 func Tracef(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(BLUE, fmt.Sprintf(format, msg)))
+	logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintf(format, msg...)))
 }
 
 func Error(msg ...interface{}) {
-	logger.Output(CallDepth, color(RED, fmt.Sprint(msg)))
+	logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprint(msg...)))
 }
 
 func Errorf(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(RED, fmt.Sprintf(format, msg)))
+	logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintf(format, msg...)))
 }
 
-func color(code, msg string) string {
-	return fmt.Sprintf("\033[%sm%s\033[m", code, msg)
+func Debug(msg ...interface{}) {
+	logger.Output(CallDepth, color(YELLOW, "[DEBUG]", fmt.Sprint(msg...)))
+}
+
+func Debugf(format string, msg ...interface{}) {
+	logger.Output(CallDepth, color(YELLOW, "[ERROR]", fmt.Sprintf(format, msg...)))
+}
+
+func color(color, level, msg string) string {
+	return fmt.Sprintf("\033[%sm%-7s\033[m %s", color, level, msg)
 }
