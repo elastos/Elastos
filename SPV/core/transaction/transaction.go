@@ -1,15 +1,17 @@
 package transaction
 
 import (
-	"io"
-	"fmt"
-	"bytes"
 	"errors"
+	"bytes"
+	"fmt"
+	"io"
+
 	"SPVWallet/crypto"
 	. "SPVWallet/core"
 	"SPVWallet/core/serialization"
 	"SPVWallet/core/contract/program"
 	"SPVWallet/core/transaction/payload"
+	"SPVWallet/log"
 )
 
 //for different transaction types with different payload format
@@ -217,11 +219,16 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 	}
 
 	switch tx.TxType {
+	case CoinBase:
+		tx.Payload = new(payload.CoinBase)
 	case RegisterAsset:
 		tx.Payload = new(payload.RegisterAsset)
 	case TransferAsset:
 		tx.Payload = new(payload.TransferAsset)
+	case Record:
+		tx.Payload = new(payload.Record)
 	case Deploy:
+		tx.Payload = new(payload.DeployCode)
 	default:
 		return errors.New("[Transaction], invalid transaction type.")
 	}

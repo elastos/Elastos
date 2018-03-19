@@ -85,7 +85,12 @@ func (sm *SyncManager) needSync() bool {
 	if bestPeer == nil { // no peers connected, return true
 		return true
 	}
-	return bestPeer.Height() > uint64(spv.chain.Height())
+	log.Info(">>>>> Best peer height:", bestPeer.Height())
+
+	needSync := bestPeer.Height() > uint64(spv.chain.Height())
+
+	log.Trace(">>>>> Need Syn:", needSync)
+	return needSync
 }
 
 func (sm *SyncManager) requestBlocks() {
@@ -163,6 +168,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 			}
 			sm.stopHash = &blockHash
 
+			log.Trace(">>>>> Add block request:", blockHash.String())
 			sm.addToRequestQueue(blockHash)
 			reqList = append(reqList, blockHash)
 		}
@@ -193,6 +199,7 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 	var blockTxns = make([]Uint256, len(txIds))
 	for i, txId := range txIds {
 		blockTxns[i] = *txId
+		log.Trace(">>>>> Add transaction request:", txId.String())
 		sm.addToRequestQueue(*txId)
 	}
 	sm.blockTxns[*block.BlockHeader.Hash()] = blockTxns
@@ -287,7 +294,9 @@ func (sm *SyncManager) RequestFinished() bool {
 	spv.queueLock.RLock()
 	defer spv.queueLock.RUnlock()
 
-	return len(sm.requestQueue) == 0
+	finished := len(sm.requestQueue) == 0
+	log.Trace("Block request finished:", finished)
+	return finished
 }
 
 func (sm *SyncManager) submitData() error {

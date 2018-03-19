@@ -20,14 +20,16 @@ const (
 
 var logger *log.Logger
 
-func Init() {
+func Init(logToFile bool) {
 	writers := []io.Writer{}
-	logFile, err := OpenLogFile()
-	if err != nil {
-		fmt.Println("error: open log file failed")
-		os.Exit(1)
+	if logToFile {
+		logFile, err := OpenLogFile()
+		if err != nil {
+			fmt.Println("error: open log file failed")
+			os.Exit(1)
+		}
+		writers = append(writers, logFile)
 	}
-	writers = append(writers, logFile)
 	writers = append(writers, os.Stdout)
 	logger = log.New(io.MultiWriter(writers...), "", log.Ldate|log.Lmicroseconds)
 }

@@ -8,6 +8,7 @@ import (
 
 	. "SPVWallet/core"
 	tx "SPVWallet/core/transaction"
+	"SPVWallet/log"
 )
 
 type ChainState int
@@ -65,6 +66,7 @@ func (bc *Blockchain) IsSyncing() bool {
 	bc.RLock()
 	defer bc.RUnlock()
 
+	log.Trace(">>>>> Chain Syncing:", bc.state == SYNCING)
 	return bc.state == SYNCING
 }
 
@@ -77,6 +79,7 @@ func (bc *Blockchain) Height() uint32 {
 		return 0
 	}
 
+	log.Trace(">>>>> Chain height:", tip.Height)
 	return tip.Height
 }
 

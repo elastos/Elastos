@@ -1,9 +1,10 @@
 package msg
 
 import (
-	tx "SPVWallet/core/transaction"
 	"bytes"
 	"encoding/binary"
+
+	tx "SPVWallet/core/transaction"
 )
 
 type Txn struct {
