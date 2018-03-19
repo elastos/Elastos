@@ -18,5 +18,6 @@ Log
 *.txn
 *.bin
 *.csv
+*.cache
 spv-wallet
 wallet-cli

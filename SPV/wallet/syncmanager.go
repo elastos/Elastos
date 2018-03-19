@@ -155,28 +155,30 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 			sm.ChangeSyncPeerAndRestart()
 			return err
 		}
-		// Check if block already in orphan pool
-		if block, ok := spv.IsOrphanBlock(blockHash); ok {
-			sm.RequestBlockTxns(peer, block)
-			return nil
-		}
 		// Add block hashes to request queue
-		if !spv.chain.IsKnownBlock(blockHash) {
-			// Save start and stop block for connect headers method
-			if sm.startHash == nil {
-				sm.startHash = &blockHash
-			}
-			sm.stopHash = &blockHash
+		sm.addToRequestQueue(blockHash)
 
-			log.Trace(">>>>> Add block request:", blockHash.String())
-			sm.addToRequestQueue(blockHash)
-			reqList = append(reqList, blockHash)
+		// Save start and stop block for connect headers method
+		if sm.startHash == nil {
+			sm.startHash = &blockHash
 		}
+		sm.stopHash = &blockHash
+
+		log.Trace(">>>>> Add block request:", blockHash.String())
+		reqList = append(reqList, blockHash)
 	}
 
 	// Send request message
 	for _, hash := range reqList {
 		<-time.After(time.Millisecond * 50)
+		// Check if block already in orphan pool
+		if block, ok := spv.IsOrphanBlock(hash); ok {
+			sm.BlockReceived(&hash, block)
+			err := sm.RequestBlockTxns(peer, block)
+			if err != nil {
+				return err
+			}
+		}
 		sm.sendRequest(peer, BLOCK, hash)
 	}
 	return nil
@@ -218,7 +220,6 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 
 func (sm *SyncManager) addToRequestQueue(hash Uint256) {
 	// Add to request queue
-	log.Trace(">>>>> Add to request queue:", hash.String())
 	sm.queueLock.Lock()
 	sm.requestQueue[hash] = time.Now()
 	sm.queueLock.Unlock()
@@ -260,7 +261,7 @@ func (sm *SyncManager) checkTimeOut() {
 func (sm *SyncManager) ChangeSyncPeerAndRestart() {
 	// Disconnect sync peer
 	syncPeer := spv.pm.GetSyncPeer()
-	log.Trace(">>>>> SyncManager change sync peer, disconnect peer", syncPeer)
+	log.Trace(">>>>> SyncManager change sync peer, disconnect ", syncPeer)
 	spv.pm.DisconnectPeer(syncPeer)
 
 	// Restart
@@ -272,7 +273,7 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 	defer sm.queueLock.Unlock()
 
 	_, ok := sm.requestQueue[hash]
-	log.Trace(">>>>> In request queue", ok, ", hash:", hash.String())
+	log.Trace(">>>>> In request queue: ", ok, ", hash: ", hash.String())
 	return ok
 }
 
@@ -295,7 +296,7 @@ func (sm *SyncManager) RequestFinished() bool {
 	defer spv.queueLock.RUnlock()
 
 	finished := len(sm.requestQueue) == 0
-	log.Trace("Block request finished:", finished)
+	log.Trace("Block request finished: ", finished)
 	return finished
 }
 
