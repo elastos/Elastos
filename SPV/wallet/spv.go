@@ -10,6 +10,7 @@ import (
 	"SPVWallet/p2p"
 	"SPVWallet/p2p/msg"
 	tx "SPVWallet/core/transaction"
+	"sync"
 )
 
 var spv *SPV
@@ -17,6 +18,7 @@ var spv *SPV
 func InitSPV(walletId uint64) (*SPV, error) {
 	var err error
 	spv = new(SPV)
+	spv.msgLock = new(sync.Mutex)
 	spv.chain, err = db.NewBlockchain()
 	if err != nil {
 		return nil, err
@@ -43,8 +45,9 @@ func InitSPV(walletId uint64) (*SPV, error) {
 
 type SPV struct {
 	*SyncManager
-	chain *db.Blockchain
-	pm    *p2p.PeerManager
+	msgLock *sync.Mutex
+	chain   *db.Blockchain
+	pm      *p2p.PeerManager
 }
 
 func (spv *SPV) Start() {
@@ -94,6 +97,9 @@ func (spv *SPV) keepUpdate() {
 }
 
 func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	log.Info("SPV OnVersion")
 	// Check if handshake with itself
 	if v.Nonce == spv.pm.Local().ID() {
@@ -151,6 +157,9 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 }
 
 func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	if peer.State() != p2p.HANDSHAKE && peer.State() != p2p.HANDSHAKED {
 		return errors.New("Unknow status to received verack")
 	}
@@ -177,6 +186,9 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 }
 
 func (spv *SPV) OnPing(peer *p2p.Peer, p *msg.Ping) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	peer.SetHeight(p.Height)
 
 	msg, err := msg.NewPongMsg(spv.chain.Height())
@@ -191,11 +203,17 @@ func (spv *SPV) OnPing(peer *p2p.Peer, p *msg.Ping) error {
 }
 
 func (spv *SPV) OnPong(peer *p2p.Peer, p *msg.Pong) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	peer.SetHeight(p.Height)
 	return nil
 }
 
 func (spv *SPV) OnAddrs(peer *p2p.Peer, addrs *msg.Addrs) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	for _, addr := range addrs.PeerAddrs {
 		// Skip local peer
 		if addr.ID == spv.pm.Local().ID() {
@@ -219,6 +237,9 @@ func (spv *SPV) OnAddrs(peer *p2p.Peer, addrs *msg.Addrs) error {
 }
 
 func (spv *SPV) OnAddrsReq(peer *p2p.Peer, req *msg.AddrsReq) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	addrs := spv.pm.RandPeerAddrs()
 	msg, err := msg.NewAddrsMsg(addrs)
 	if err != nil {
@@ -231,6 +252,9 @@ func (spv *SPV) OnAddrsReq(peer *p2p.Peer, req *msg.AddrsReq) error {
 }
 
 func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	switch inv.Type {
 	case msg.TRANSACTION:
 		// Do nothing, transaction inventory is not supported
@@ -254,6 +278,9 @@ func (spv *SPV) SendTransaction(txn *tx.Transaction) error {
 }
 
 func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	blockHash := block.BlockHeader.Hash()
 	log.Trace("Receive merkle block hash:", blockHash.String())
 
@@ -302,8 +329,11 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 }
 
 func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	txId := txn.Transaction.Hash()
-	log.Trace(">Receive transaction hash:", txId.String())
+	log.Trace("Receive transaction hash: ", txId.String())
 
 	if spv.chain.IsSyncing() && !spv.InRequestQueue(*txId) {
 		// Put non syncing txns into orphan pool
@@ -331,13 +361,16 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	// All request finished, submit received block and txn data
 	if spv.RequestFinished() {
 		log.Trace("Request finished submit data")
-		return spv.submitData()
+		return spv.SubmitData()
 	}
 
 	return nil
 }
 
 func (spv *SPV) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
+	spv.msgLock.Lock()
+	defer spv.msgLock.Unlock()
+
 	log.Error("Receive not found message, disconnect")
 	spv.ChangeSyncPeerAndRestart()
 	return nil

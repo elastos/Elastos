@@ -21,7 +21,6 @@ const (
 )
 
 type SyncManager struct {
-	lock sync.Mutex
 	*MemCache
 
 	blockLocator   []*Uint256
@@ -43,9 +42,6 @@ func NewSyncManager() *SyncManager {
 }
 
 func (sm *SyncManager) SyncBlocks() {
-	sm.lock.Lock()
-	defer sm.lock.Unlock()
-
 	// Check if blockchain is in syncing state
 	if spv.chain.IsSyncing() {
 		return
@@ -119,13 +115,10 @@ func (sm *SyncManager) requestBlocks() {
 		return
 	}
 
-	go syncPeer.Send(msg)
+	syncPeer.Send(msg)
 }
 
 func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
-	sm.lock.Lock()
-	defer sm.lock.Unlock()
-
 	log.Trace(">>>> Handle inv msg data count:", inv.Count, ", length:", len(inv.Data))
 
 	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
@@ -165,7 +158,6 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 
 	// Send request message
 	for _, hash := range reqList {
-		<-time.After(time.Millisecond * 50)
 		// Check if block already in orphan pool
 		if block, ok := spv.IsOrphanBlock(hash); ok {
 			sm.BlockReceived(&hash, block)
@@ -190,7 +182,7 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 	// If all blocks received and no more txn to request, submit received block and txn data
 	if sm.RequestFinished() && len(txIds) == 0 {
 		log.Trace("Request finished submit data")
-		return sm.submitData()
+		return sm.SubmitData()
 	}
 
 	var blockTxns = make([]Uint256, len(txIds))
@@ -202,7 +194,6 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 	sm.blockTxns[*block.BlockHeader.Hash()] = blockTxns
 
 	for _, txId := range blockTxns {
-		<-time.After(time.Millisecond * 50)
 		if txn, ok := sm.IsOrphanTxn(txId); ok {
 			sm.TxnReceived(&txId, txn)
 		} else {
@@ -225,7 +216,7 @@ func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error
 	if err != nil {
 		return err
 	}
-	go peer.Send(msg)
+	peer.Send(msg)
 
 	return nil
 }
@@ -273,29 +264,32 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 }
 
 func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
-	spv.queueLock.Lock()
+	sm.queueLock.Lock()
 	delete(spv.requestQueue, *blockHash)
 	spv.receivedBlocks[*blockHash] = block
-	spv.queueLock.Unlock()
+	sm.queueLock.Unlock()
 }
 
 func (sm *SyncManager) TxnReceived(txId *Uint256, txn *Txn) {
-	spv.queueLock.Lock()
+	sm.queueLock.Lock()
 	delete(spv.requestQueue, *txId)
 	spv.receivedTxns[*txId] = txn
-	spv.queueLock.Unlock()
+	sm.queueLock.Unlock()
 }
 
 func (sm *SyncManager) RequestFinished() bool {
-	spv.queueLock.RLock()
-	defer spv.queueLock.RUnlock()
+	sm.queueLock.RLock()
+	defer sm.queueLock.RUnlock()
 
 	finished := len(sm.requestQueue) == 0
 	log.Trace("Block request finished: ", finished)
 	return finished
 }
 
-func (sm *SyncManager) submitData() error {
+func (sm *SyncManager) SubmitData() error {
+	sm.queueLock.RLock()
+	defer sm.queueLock.RUnlock()
+
 	// Connect headers
 	connectedHeaders, err := sm.connectHeaders()
 	if err != nil {
