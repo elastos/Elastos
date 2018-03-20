@@ -214,12 +214,14 @@ func CheckMerkleBranch(hash Uint256, merkleBranch []Uint256, index int) Uint256 
 			temp := make([]uint8, 0)
 			temp = append(temp, it[:]...)
 			temp = append(temp, hash[:]...)
-			hash = Uint256(sha256.Sum256(temp))
+			once := sha256.Sum256(temp)
+			hash = Uint256(sha256.Sum256(once[:]))
 		} else {
 			temp := make([]uint8, 0)
 			temp = append(temp, hash[:]...)
 			temp = append(temp, it[:]...)
-			hash = Uint256(sha256.Sum256(temp))
+			once := sha256.Sum256(temp)
+			hash = Uint256(sha256.Sum256(once[:]))
 		}
 		index >>= 1
 	}
