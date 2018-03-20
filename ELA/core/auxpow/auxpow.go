@@ -1,17 +1,18 @@
 package auxpow
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"io"
 	"strings"
+
+	. "Elastos.ELA/common"
+	"Elastos.ELA/common/serialization"
 )
 
 var (
-	AuxPowChainID         = 1
+	AuxPowChainID         = 6
 	pchMergedMiningHeader = []byte{0xfa, 0xbe, 'm', 'm'}
 )
 
