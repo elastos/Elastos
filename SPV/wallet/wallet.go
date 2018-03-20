@@ -10,10 +10,10 @@ import (
 	"SPVWallet/core/asset"
 	. "SPVWallet/core"
 	"SPVWallet/crypto"
-	. "SPVWallet/db"
 	pg "SPVWallet/core/contract/program"
 	tx "SPVWallet/core/transaction"
 	"SPVWallet/core/transaction/payload"
+	. "SPVWallet/db"
 	"SPVWallet/log"
 )
 
@@ -336,7 +336,7 @@ func getSystemAssetId() *Uint256 {
 
 func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
 	var availableUTXOs []*UTXO
-	var currentHeight = spv.chain.Height()
+	var currentHeight = wallet.ChainHeight()
 	for _, utxo := range utxos {
 		if utxo.LockTime > 0 {
 			if utxo.LockTime > currentHeight {
@@ -366,6 +366,6 @@ func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*tx.Input
 		Inputs:     inputs,
 		Outputs:    outputs,
 		Programs:   []*pg.Program{program},
-		LockTime:   spv.chain.Height(),
+		LockTime:   wallet.ChainHeight(),
 	}
 }

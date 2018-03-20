@@ -15,6 +15,7 @@ type Database interface {
 	GetAddressUTXOs(address *Uint168) ([]*UTXO, error)
 	GetAddressSTXOs(address *Uint168) ([]*STXO, error)
 	GetTxns() ([]*Txn, error)
+	ChainHeight() uint32
 	Reset() error
 }
 
@@ -90,6 +91,13 @@ func (db *DatabaseImpl) GetTxns() ([]*Txn, error) {
 	defer db.lock.RUnlock()
 
 	return db.DataStore.TXNs().GetAll()
+}
+
+func (db *DatabaseImpl) ChainHeight() uint32 {
+	db.lock.RLock()
+	defer db.lock.RUnlock()
+
+	return db.DataStore.Info().ChainHeight()
 }
 
 func (db *DatabaseImpl) Reset() error {

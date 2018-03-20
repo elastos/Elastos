@@ -7,6 +7,7 @@ import (
 )
 
 type DataStore interface {
+	Info() Info
 	Scripts() Scripts
 	UTXOs() UTXOs
 	STXOs() STXOs
@@ -16,6 +17,23 @@ type DataStore interface {
 	GetFilter() *bloom.Filter
 
 	Close()
+}
+
+type Info interface {
+	// get chain height
+	ChainHeight() uint32
+
+	// save chain height
+	SaveChainHeight(height uint32)
+
+	// put key and value into db
+	Put(key string, data []byte) error
+
+	// get value by key
+	Get(key string) ([]byte, error)
+
+	// delete value by key
+	Delete(key string) error
 }
 
 type Scripts interface {

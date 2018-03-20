@@ -69,7 +69,7 @@ func (db *HeadersDB) Add(header *Header) error {
 	db.Lock()
 	defer db.Unlock()
 
-	log.Trace("Headers db add header:", header.Hash().String(), ", height:", header.Height)
+	log.Trace("Headers db add header: ", header.Hash().String(), ", height:", header.Height)
 	return db.Update(func(tx *bolt.Tx) error {
 
 		bytes, err := header.Bytes()

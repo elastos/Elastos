@@ -20,6 +20,7 @@ type SQLiteDB struct {
 	*sync.RWMutex
 	*sql.DB
 
+	info    Info
 	scripts Scripts
 	utxos   UTXOs
 	stxos   STXOs
@@ -37,6 +38,11 @@ func NewSQLiteDB() (DataStore, error) {
 	// Use the save lock
 	lock := new(sync.RWMutex)
 
+	// Create info db
+	infoDB, err := NewInfoDB(db, lock)
+	if err != nil {
+		return nil, err
+	}
 	// Create scripts db
 	scriptsDB, err := NewScriptDB(db, lock)
 	if err != nil {
@@ -62,6 +68,7 @@ func NewSQLiteDB() (DataStore, error) {
 		RWMutex: lock,
 		DB:      db,
 
+		info:    infoDB,
 		scripts: scriptsDB,
 		utxos:   utxosDB,
 		stxos:   stxosDB,
@@ -69,6 +76,10 @@ func NewSQLiteDB() (DataStore, error) {
 
 		filterLock: new(sync.Mutex),
 	}, nil
+}
+
+func (db *SQLiteDB) Info() Info {
+	return db.info
 }
 
 func (db *SQLiteDB) Scripts() Scripts {

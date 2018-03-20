@@ -176,21 +176,21 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 	}
 
 	// Save transactions first
-	err = bc.commitTxns(header, txns)
-	if err != nil {
-		return err
-	}
-
-	return bc.Headers.Add(&header)
-}
-
-func (bc *Blockchain) commitTxns(header Header, txns []tx.Transaction) error {
 	for _, txn := range txns {
 		err := bc.commitTxn(bc.Scripts().GetFilter(), header.Height, txn)
 		if err != nil {
 			return err
 		}
 	}
+
+	// Save header to db
+	err = bc.Headers.Add(&header)
+	if err != nil {
+		return err
+	}
+
+	// Save current chain height
+	bc.DataStore.Info().SaveChainHeight(header.Height)
 
 	return nil
 }
@@ -243,6 +243,8 @@ func (bc *Blockchain) rollbackTo(forkPoint Uint256) error {
 		}
 
 		if removed.Previous.IsEqual(&forkPoint) {
+			// Save current chain height
+			bc.DataStore.Info().SaveChainHeight(removed.Height - 1)
 			log.Debug("Blockchain rollback finished, current height:", removed.Height-1)
 			return nil
 		}
