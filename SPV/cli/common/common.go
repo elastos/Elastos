@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	. "SPVWallet/core"
+	tx "SPVWallet/core/transaction"
 	walt "SPVWallet/wallet"
 
 	"github.com/urfave/cli"
@@ -61,16 +62,16 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 
 	// only one address return it
 	if len(scripts) == 1 {
-		programHash, _ := Uint168FromBytes(scripts[0])
+		programHash, _ := tx.ToProgramHash(scripts[0])
 		return programHash.ToAddress()
 	}
 
 	// print out addresses in wallet
-	fmt.Printf("%-5s %34s %32s\n", "INDEX", "ADDRESS", "BALANCE")
+	fmt.Printf("%5s %34s %32s\n", "INDEX", "ADDRESS", "BALANCE")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 	for i, script := range scripts {
 		balance := Fixed64(0)
-		programHash, err := Uint168FromBytes(script)
+		programHash, err := tx.ToProgramHash(script)
 		if err != nil {
 			return "", errors.New("parse address script failed")
 		}
@@ -83,7 +84,7 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 			balance += utxo.Value
 		}
 
-		fmt.Printf("%-5s %34s %-32s\n", i+1, address, balance.String())
+		fmt.Printf("%5d %34s %-32s\n", i+1, address, balance.String())
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 	}
 
@@ -95,7 +96,7 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 		index = getInput(len(scripts))
 	}
 
-	programHash, _ := Uint168FromBytes(scripts[index])
+	programHash, _ := tx.ToProgramHash(scripts[index])
 	return programHash.ToAddress()
 }
 

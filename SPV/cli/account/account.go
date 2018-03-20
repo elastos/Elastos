@@ -91,7 +91,7 @@ func showAccountInfo(password []byte) error {
 		// print content
 		publicKey := account.PublicKey()
 		publicKeyBytes, _ := publicKey.EncodePoint(true)
-		fmt.Printf("%-5d %-34s %-66s %6s\n", i, account.Address(), BytesToHexString(publicKeyBytes), accountType)
+		fmt.Printf("%5d %-34s %-66s %6s\n", i, account.Address(), BytesToHexString(publicKeyBytes), accountType)
 		// print divider line
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 66), "------")
 	}
@@ -124,7 +124,7 @@ func listBalanceInfo(wallet Wallet) error {
 			balance += utxo.Value
 		}
 
-		fmt.Printf("%-5d %34s %-32s\n", i+1, address, balance.String())
+		fmt.Printf("%5d %34s %-32s\n", i+1, address, balance.String())
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 	}
 	return nil
