@@ -19,6 +19,19 @@ import (
 	"github.com/urfave/cli"
 )
 
+func listTransactions(c *cli.Context, wallet walt.Wallet) error {
+	txns, err := wallet.GetTxns()
+	if err != nil {
+		return errors.New("get transactions failed: " + err.Error())
+	}
+
+	for i, txn := range txns {
+		fmt.Printf("%3d | HASH: %s\n", i+1, txn.TxId.String())
+	}
+
+	return nil
+}
+
 func createTransaction(c *cli.Context, wallet walt.Wallet) error {
 
 	feeStr := c.String("fee")
@@ -269,11 +282,19 @@ func transactionAction(context *cli.Context) {
 		os.Exit(2)
 	}
 
+	// list add transactions
+	if context.Bool("list") {
+		if err := listTransactions(context, wallet); err != nil {
+			fmt.Println("error:", err)
+			cli.ShowCommandHelpAndExit(context, "list", 700)
+		}
+	}
+
 	// create transaction
 	if context.Bool("create") {
 		if err := createTransaction(context, wallet); err != nil {
 			fmt.Println("error:", err)
-			os.Exit(701)
+			cli.ShowCommandHelpAndExit(context, "create", 701)
 		}
 	}
 
@@ -281,7 +302,7 @@ func transactionAction(context *cli.Context) {
 	if context.Bool("sign") {
 		if err := signTransaction([]byte(pass), context, wallet); err != nil {
 			fmt.Println("error:", err)
-			os.Exit(702)
+			cli.ShowCommandHelpAndExit(context, "sign", 702)
 		}
 	}
 
@@ -289,7 +310,8 @@ func transactionAction(context *cli.Context) {
 	if context.Bool("send") {
 		if err := sendTransaction(context, wallet); err != nil {
 			fmt.Println("error:", err)
-			os.Exit(703)
+			cli.ShowCommandHelpAndExit(context, "send", 703)
+
 		}
 	}
 }
@@ -302,6 +324,10 @@ func NewCommand() *cli.Command {
 		Description: "create, sign or send transaction",
 		ArgsUsage:   "[args]",
 		Flags: append(CommonFlags,
+			cli.BoolFlag{
+				Name:  "list",
+				Usage: "list out all transactions",
+			},
 			cli.BoolFlag{
 				Name: "create",
 				Usage: "use [--from] --to --amount --fee [--lock], or [--from] --file --fee [--lock]\n" +

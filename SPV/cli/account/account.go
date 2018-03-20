@@ -44,7 +44,7 @@ func changePassword(password []byte, wallet Wallet) error {
 		return err
 	}
 
-	err = wallet.OpenKeystore(oldPassword)
+	err = wallet.VerifyPassword(oldPassword)
 	if err != nil {
 		return err
 	}
@@ -234,6 +234,15 @@ func getPublicKeys(content string) ([]*crypto.PublicKey, error) {
 	return publicKeys, nil
 }
 
+func resetData(wallet Wallet) error {
+	err := wallet.Reset()
+	if err != nil {
+		return err
+	}
+	fmt.Println("Wallet data has been reset")
+	return listBalanceInfo(wallet)
+}
+
 func accountAction(context *cli.Context) {
 	if context.NumFlags() == 0 {
 		cli.ShowSubcommandHelp(context)
@@ -300,6 +309,14 @@ func accountAction(context *cli.Context) {
 		}
 		return
 	}
+
+	// reset all data in blockchain, including headers and transactions
+	if context.Bool("reset") {
+		if err := resetData(wallet); err != nil {
+			fmt.Println("error: reset wallet data failed:", err)
+			cli.ShowCommandHelpAndExit(context, "reset", 6)
+		}
+	}
 }
 
 func NewCommand() *cli.Command {
@@ -341,6 +358,10 @@ func NewCommand() *cli.Command {
 			cli.BoolFlag{
 				Name:  "balance, b",
 				Usage: "list balances",
+			},
+			cli.BoolFlag{
+				Name:  "reset",
+				Usage: "clear all data, including blockchain, utxos stxos and transactions",
 			},
 		),
 		Action: accountAction,
