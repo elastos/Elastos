@@ -100,7 +100,7 @@ func (pm *PeerManager) ConnectPeers() {
 }
 
 func (pm *PeerManager) listenConnection() {
-	listener, err := net.Listen("tcp", fmt.Sprint(":", pm.Local().port))
+	listener, err := net.Listen("tcp", fmt.Sprint(":", pm.Local().Port()))
 	if err != nil {
 		fmt.Println("Start peer listening err, ", err.Error())
 		return

@@ -163,7 +163,7 @@ func (peer *Peer) LastActive() time.Time {
 }
 
 func (peer *Peer) Addr() *PeerAddr {
-	return NewPeerAddr(peer.services, peer.ip16, peer.port, peer.id)
+	return NewPeerAddr(peer.services, peer.ip16, SPVPort, peer.id)
 }
 
 func (peer *Peer) Relay() uint8 {

@@ -1,9 +1,7 @@
 package p2p
 
 import (
-	"fmt"
 	"net"
-	"strings"
 	"sync"
 	"time"
 
@@ -33,21 +31,9 @@ func newConnManager(onDiscardAddr func(add string)) *ConnManager {
 	return cm
 }
 
-func toSPVAddr(addr string) string {
-	host := addr
-	portIndex := strings.LastIndex(addr, ":")
-	if portIndex > 0 {
-		host = string([]byte(addr)[:portIndex])
-	}
-	return fmt.Sprint(host, ":", SPVPort)
-}
-
 func (cm *ConnManager) Connect(addr string) {
 	cm.Lock()
 	defer cm.Unlock()
-
-	// Convert addr to SPV addr
-	addr = toSPVAddr(addr)
 
 	if cm.inConnList(addr) {
 		log.Info("ConnManager addr in connection list,", addr)
