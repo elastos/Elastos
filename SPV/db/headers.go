@@ -33,7 +33,7 @@ type Headers interface {
 
 // HeadersDB implements Headers using bolt DB
 type HeadersDB struct {
-	sync.RWMutex
+	*sync.RWMutex
 	*bolt.DB
 }
 
@@ -61,7 +61,7 @@ func NewHeadersDB() (Headers, error) {
 		return nil
 	})
 
-	return &HeadersDB{DB: db}, nil
+	return &HeadersDB{RWMutex: new(sync.RWMutex), DB: db}, nil
 }
 
 // Add a new header to blockchain
@@ -69,7 +69,7 @@ func (db *HeadersDB) Add(header *Header) error {
 	db.Lock()
 	defer db.Unlock()
 
-	log.Trace("Headers db add header:", header.Hash().String())
+	log.Trace("Headers db add header:", header.Hash().String(), ", height:", header.Height)
 	return db.Update(func(tx *bolt.Tx) error {
 
 		bytes, err := header.Bytes()
@@ -156,17 +156,22 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 			return err
 		}
 
-		// Rollback at the beginning, remove chain tip and return
+		// No headers in db, return
+		if removed.Height == 0 {
+			return nil
+		}
+
+		err = tx.Bucket(BKTHeaders).Delete(removed.Hash().Bytes())
+		if err != nil {
+			return err
+		}
+
+		// Rollback at the beginning, delete chain tip and return
 		if removed.Height == 1 {
 			return tx.Bucket(BKTChainTip).Delete(KEYChainTip)
 		}
 
 		newTip, err = getHeader(tx, &removed.Previous)
-		if err != nil {
-			return err
-		}
-
-		err = tx.Bucket(BKTHeaders).Delete(removed.Hash().Bytes())
 		if err != nil {
 			return err
 		}
@@ -191,7 +196,7 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 func (db *HeadersDB) Close() {
 	db.Lock()
 	db.DB.Close()
-	log.Info("Headers DB closed")
+	log.Debug("Headers DB closed")
 }
 
 func getHeader(tx *bolt.Tx, hash *Uint256) (*Header, error) {

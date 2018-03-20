@@ -1,7 +1,6 @@
 package db
 
 import (
-	"bytes"
 	"errors"
 	"math/big"
 	"sync"
@@ -167,11 +166,6 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 		return err
 	}
 
-	log.Debug(">>>>> Chain tip height:", tip.Height)
-	log.Debug(">>>>> Commit block height:", header.Height)
-	log.Debug(">>>>> Commit block previous:", header.Previous.String())
-	log.Debug(">>>>> Commit block previous is known:", bc.isKnownBlock(header.Previous))
-
 	// Check if commit block is a reorganize block, if so rollback to the fork point
 	if header.Height < tip.Height {
 
@@ -243,29 +237,14 @@ func (bc *Blockchain) rollbackTo(forkPoint Uint256) error {
 			return err
 		}
 		// Rollbakc TXNs and UTXOs STXOs with it
-		storedTxns, err := bc.TXNs().GetAllFrom(removed.Height)
-		for _, storedTxn := range storedTxns {
-			var txn tx.Transaction
-			err = txn.Deserialize(bytes.NewReader(storedTxn.RawData))
-			if err != nil {
-				return err
-			}
-
-			// Rollback UTXOs
-			for index := range txn.Outputs {
-				bc.UTXOs().Delete(tx.NewOutPoint(*txn.Hash(), uint16(index)))
-			}
-
-			// Rollback STXOs
-			for _, input := range txn.Inputs {
-				bc.STXOs().Delete(tx.NewOutPoint(input.ReferTxID, input.ReferTxOutputIndex))
-			}
-
-			bc.TXNs().Delete(&storedTxn.TxId)
+		err = bc.DataStore.Rollback(removed.Height)
+		if err != nil {
+			log.Error("Rollback database failed, height: ", removed.Height, ", error: ", err)
+			return err
 		}
 
 		if removed.Previous.IsEqual(&forkPoint) {
-			log.Debug(">>>>> Blockchain rollback finished, current height:", removed.Height-1)
+			log.Debug("Blockchain rollback finished, current height:", removed.Height-1)
 			return nil
 		}
 	}

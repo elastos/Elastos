@@ -97,7 +97,7 @@ func (db *TXNsDB) GetAllFrom(height uint32) ([]*Txn, error) {
 	defer db.RUnlock()
 
 	var txns []*Txn
-	rows, err := db.Query("SELECT Hash, Height, RawData FROM TXNs WHERE Height>=?", height)
+	rows, err := db.Query("SELECT Hash, Height, RawData FROM TXNs WHERE Height=?", height)
 	if err != nil {
 		return txns, err
 	}

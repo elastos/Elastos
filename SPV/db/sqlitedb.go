@@ -87,6 +87,48 @@ func (db *SQLiteDB) TXNs() TXNs {
 	return db.txns
 }
 
+func (db *SQLiteDB) Rollback(height uint32) error {
+	db.filterLock.Lock()
+	defer db.filterLock.Unlock()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Rollback UTXOs
+	stmt, err := tx.Prepare("DELETE FROM UTXOs WHERE AtHeight=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(height)
+	if err != nil {
+		return err
+	}
+
+	// Rollback STXOs
+	stmt, err = tx.Prepare("DELETE FROM STXOs WHERE SpendHeight=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(height)
+	if err != nil {
+		return err
+	}
+
+	// Rollback TXNs
+	stmt, err = tx.Prepare("DELETE FROM TXNs WHERE height=?")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(height)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (db *SQLiteDB) GetFilter() *bloom.Filter {
 	db.filterLock.Lock()
 	defer db.filterLock.Unlock()
@@ -118,5 +160,5 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 func (db *SQLiteDB) Close() {
 	db.Lock()
 	db.DB.Close()
-	log.Info("SQLite DB closed")
+	log.Debug("SQLite DB closed")
 }

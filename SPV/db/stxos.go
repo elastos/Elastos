@@ -8,7 +8,7 @@ import (
 	tx "SPVWallet/core/transaction"
 )
 
-const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS UTXOs(
+const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS STXOs(
 				OutPoint BLOB NOT NULL PRIMARY KEY,
 				Value BLOB NOT NULL,
 				LockTime INTEGER NOT NULL,

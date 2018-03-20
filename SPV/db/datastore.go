@@ -12,6 +12,7 @@ type DataStore interface {
 	STXOs() STXOs
 	TXNs() TXNs
 
+	Rollback(height uint32) error
 	GetFilter() *bloom.Filter
 
 	Close()
