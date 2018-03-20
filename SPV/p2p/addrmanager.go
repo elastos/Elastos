@@ -42,7 +42,9 @@ func newAddrManager() *AddrManager {
 	addrs := strings.Split(strings.TrimSpace(string(data)), "\n")
 
 	for _, addr := range addrs {
-		am.cached = append(am.cached, addr)
+		if len(strings.TrimSpace(addr)) != 0 {
+			am.cached = append(am.cached, addr)
+		}
 	}
 
 	return am
@@ -83,18 +85,6 @@ func (am *AddrManager) GetIdleAddrs(count int) []string {
 }
 
 func (am *AddrManager) AddAddr(addr string) {
-	am.Lock()
-	defer am.Unlock()
-
-	if am.isSeed(addr) || am.isCached(addr) {
-		return
-	}
-
-	am.cached = append(am.cached, addr)
-	am.saveCached()
-}
-
-func (am *AddrManager) AddConnectedAddr(addr string) {
 	am.Lock()
 	defer am.Unlock()
 

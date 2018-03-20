@@ -16,6 +16,7 @@ import (
 
 const (
 	ProtocolVersion = 1 // The min p2p protocol version to support spv
+	SPVPort         = 20866
 	ServiceSPV      = 1 << 2
 	MaxBufLen       = 1024 * 16
 )
@@ -126,10 +127,10 @@ func NewPeer(conn net.Conn) *Peer {
 }
 
 func addrFromConn(conn net.Conn) ([16]byte, uint16) {
-	fullAddr := conn.RemoteAddr().String()
-	portIndex := strings.LastIndex(fullAddr, ":")
-	port, _ := strconv.ParseUint(string([]byte(fullAddr)[portIndex+1:]), 10, 16)
-	ip := net.ParseIP(string([]byte(fullAddr)[:portIndex])).To16()
+	addr := conn.RemoteAddr().String()
+	portIndex := strings.LastIndex(addr, ":")
+	port, _ := strconv.ParseUint(string([]byte(addr)[portIndex+1:]), 10, 16)
+	ip := net.ParseIP(string([]byte(addr)[:portIndex])).To16()
 
 	ip16 := [16]byte{}
 	copy(ip16[:], ip[:])
@@ -202,10 +203,10 @@ func (peer *Peer) Read() {
 			peer.lastActive = time.Now()
 			peer.unpackMessage(buf[:len])
 		case io.EOF:
-			log.Error("Read peer io.EOF:", err, ", peer id is", peer.ID())
+			log.Error("Read peer io.EOF:", err, ", peer id is: ", peer.ID())
 			goto DISCONNECT
 		default:
-			log.Error("Read peer connection error ", err.Error())
+			log.Error("Read peer connection error: ", err.Error())
 			goto DISCONNECT
 		}
 	}

@@ -126,13 +126,9 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 	sm.lock.Lock()
 	defer sm.lock.Unlock()
 
-	log.Trace(">>>> Handle inv message:", *inv)
+	log.Trace(">>>> Handle inv msg data count:", inv.Count, ", length:", len(inv.Data))
 
 	if sm.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
-		log.Error("Receive message from non sync peer, disconnect")
-		log.Error("BLock locator is nil:", sm.blockLocator == nil)
-		log.Error("Sync peer:", spv.pm.GetSyncPeer())
-		log.Error("From peer:", peer)
 
 		sm.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
@@ -145,7 +141,6 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		return errors.New(fmt.Sprint("Invalid block inventory data size:", dataLen))
 	}
 
-	log.Trace(">>>>> Inventory data length:", dataLen)
 	var reqList []Uint256
 	for i := 0; i < dataLen; i += UINT256SIZE {
 		var blockHash Uint256

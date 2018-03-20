@@ -50,7 +50,7 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 	pm.Peers.AddPeer(peer)
 
 	// Mark addr as connected
-	pm.addrManager.AddConnectedAddr(peer.Addr().TCPAddr())
+	pm.addrManager.AddAddr(peer.Addr().TCPAddr())
 }
 
 func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {
