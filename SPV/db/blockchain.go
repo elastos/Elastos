@@ -78,7 +78,7 @@ func (bc *Blockchain) Height() uint32 {
 		return 0
 	}
 
-	log.Trace(">>>>> Chain height:", tip.Height)
+	log.Trace("Chain height:", tip.Height)
 	return tip.Height
 }
 
@@ -168,8 +168,7 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 
 	// Check if commit block is a reorganize block, if so rollback to the fork point
 	if header.Height < tip.Height {
-
-		log.Debug(">>>>> Blockchain rollback to:", header.Previous.String())
+		log.Debug("Blockchain rollback to:", header.Previous.String())
 		err = bc.rollbackTo(header.Previous)
 		if err != nil {
 			return err

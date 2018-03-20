@@ -70,7 +70,7 @@ func (spv *SPV) keepUpdate() {
 				// Disconnect inactive peer
 				if peer.LastActive().Before(
 					time.Now().Add(-time.Second * p2p.InfoUpdateDuration * p2p.KeepAliveTimeout)) {
-					log.Trace(">>>>> SPV disconnect inactive peer,", peer)
+					log.Trace("SPV disconnect inactive peer,", peer)
 					spv.pm.DisconnectPeer(peer)
 					continue
 				}
@@ -121,13 +121,13 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	peer.SetInfo(v)
 
 	if v.Version < p2p.ProtocolVersion {
-		log.Error(">>>>> SPV disconnect peer, To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion)
+		log.Error("SPV disconnect peer, To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion)
 		spv.pm.DisconnectPeer(peer)
 		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion))
 	}
 
 	if v.Services/p2p.ServiceSPV&1 == 0 {
-		log.Error(">>>>> SPV disconnect peer, spv service not enabled on connected peer")
+		log.Error("SPV disconnect peer, spv service not enabled on connected peer")
 		spv.pm.DisconnectPeer(peer)
 		return errors.New("SPV service not enabled on connected peer")
 	}
@@ -255,7 +255,7 @@ func (spv *SPV) SendTransaction(txn *tx.Transaction) error {
 
 func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 	blockHash := block.BlockHeader.Hash()
-	log.Trace(">>>>> Receive merkle block hash:", blockHash.String())
+	log.Trace("Receive merkle block hash:", blockHash.String())
 
 	if spv.chain.IsKnownBlock(*blockHash) {
 		return errors.New(fmt.Sprint("Received block that already known,", blockHash.String()))
@@ -268,7 +268,7 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 
 	if spv.chain.IsSyncing() && !spv.InRequestQueue(*blockHash) {
 		// Put non syncing blocks into orphan pool
-		log.Trace(">>>>> Add block to orphan pool hash:", blockHash.String())
+		log.Trace("Add block to orphan pool hash:", blockHash.String())
 		spv.AddOrphanBlock(*blockHash, block)
 		return nil
 	}
@@ -291,7 +291,7 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 
 	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
 
-		log.Error(">>>>> Receive message from non sync peer, disconnect")
+		log.Error("Receive message from non sync peer, disconnect")
 		spv.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
@@ -303,7 +303,7 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 
 func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	txId := txn.Transaction.Hash()
-	log.Trace(">>>>>> Receive transaction hash:", txId.String())
+	log.Trace(">Receive transaction hash:", txId.String())
 
 	if spv.chain.IsSyncing() && !spv.InRequestQueue(*txId) {
 		// Put non syncing txns into orphan pool
@@ -321,7 +321,7 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 
 	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
 
-		log.Error(">>>>> Receive message from non sync peer, disconnect")
+		log.Error("Receive message from non sync peer, disconnect")
 		spv.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
@@ -330,7 +330,7 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 
 	// All request finished, submit received block and txn data
 	if spv.RequestFinished() {
-		log.Trace(">>>>> Request finished submit data")
+		log.Trace("Request finished submit data")
 		return spv.submitData()
 	}
 
@@ -338,7 +338,7 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 }
 
 func (spv *SPV) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
-	log.Error(">>>>> Receive not found message, disconnect")
+	log.Error("Receive not found message, disconnect")
 	spv.ChangeSyncPeerAndRestart()
 	return nil
 }

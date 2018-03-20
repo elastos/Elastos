@@ -45,7 +45,7 @@ func (pm *PeerManager) ConnectPeer(addr string) {
 }
 
 func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
-	log.Trace(">>>>> PeerManager add connected peer:", peer)
+	log.Trace("PeerManager add connected peer:", peer)
 	// Add peer to list
 	pm.Peers.AddPeer(peer)
 

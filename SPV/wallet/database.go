@@ -22,11 +22,6 @@ var instance Database
 
 func GetDatabase() (Database, error) {
 	if instance == nil {
-		headers, err := NewHeadersDB()
-		if err != nil {
-			return nil, err
-		}
-
 		dataStore, err := NewSQLiteDB()
 		if err != nil {
 			return nil, err
@@ -34,7 +29,6 @@ func GetDatabase() (Database, error) {
 
 		instance = &DatabaseImpl{
 			lock:      new(sync.RWMutex),
-			Headers:   headers,
 			DataStore: dataStore,
 		}
 	}
@@ -44,7 +38,6 @@ func GetDatabase() (Database, error) {
 
 type DatabaseImpl struct {
 	lock *sync.RWMutex
-	Headers
 	DataStore
 
 	filter *ScriptFilter
@@ -103,8 +96,13 @@ func (db *DatabaseImpl) Reset() error {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
+	headers, err := NewHeadersDB()
+	if err != nil {
+		return err
+	}
+
 	for {
-		header, err := db.Headers.Rollback()
+		header, err := headers.Rollback()
 		if err != nil {
 			return err
 		}

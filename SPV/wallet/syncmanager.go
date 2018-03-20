@@ -85,11 +85,11 @@ func (sm *SyncManager) needSync() bool {
 	if bestPeer == nil { // no peers connected, return true
 		return true
 	}
-	log.Info(">>>>> Best peer height:", bestPeer.Height())
+	log.Info("Best peer height:", bestPeer.Height())
 
 	needSync := bestPeer.Height() > uint64(spv.chain.Height())
 
-	log.Trace(">>>>> Need Syn:", needSync)
+	log.Trace("Need Syn:", needSync)
 	return needSync
 }
 
@@ -136,7 +136,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 
 	dataLen := len(inv.Data)
 	if dataLen != int(inv.Count)*UINT256SIZE {
-		log.Error(">>>>> Invalid block inventory data size:", dataLen)
+		log.Error("Invalid block inventory data size:", dataLen)
 		sm.ChangeSyncPeerAndRestart()
 		return errors.New(fmt.Sprint("Invalid block inventory data size:", dataLen))
 	}
@@ -146,7 +146,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		var blockHash Uint256
 		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
 		if err != nil {
-			log.Error(">>>>> Deserialize block hash error,", err)
+			log.Error("Deserialize block hash error,", err)
 			sm.ChangeSyncPeerAndRestart()
 			return err
 		}
@@ -159,7 +159,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		}
 		sm.stopHash = &blockHash
 
-		log.Trace(">>>>> Add block request:", blockHash.String())
+		log.Trace("Add block request:", blockHash.String())
 		reqList = append(reqList, blockHash)
 	}
 
@@ -189,14 +189,14 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 
 	// If all blocks received and no more txn to request, submit received block and txn data
 	if sm.RequestFinished() && len(txIds) == 0 {
-		log.Trace(">>>>> Request finished submit data")
+		log.Trace("Request finished submit data")
 		return sm.submitData()
 	}
 
 	var blockTxns = make([]Uint256, len(txIds))
 	for i, txId := range txIds {
 		blockTxns[i] = *txId
-		log.Trace(">>>>> Add transaction request:", txId.String())
+		log.Trace("Add transaction request:", txId.String())
 		sm.addToRequestQueue(*txId)
 	}
 	sm.blockTxns[*block.BlockHeader.Hash()] = blockTxns
@@ -243,7 +243,7 @@ func (sm *SyncManager) checkTimeOut() {
 			if time.Now().Sub(startTime).Seconds() > SyncReqTimeout {
 				// To many retry times, change a sync peer, and restart syncing
 				if sm.retryTimes > MaxRetryTimes {
-					log.Error(">>>>> Request timeout, disconnect")
+					log.Error("Request timeout, disconnect")
 					sm.ChangeSyncPeerAndRestart()
 					return
 				}
@@ -256,7 +256,7 @@ func (sm *SyncManager) checkTimeOut() {
 func (sm *SyncManager) ChangeSyncPeerAndRestart() {
 	// Disconnect sync peer
 	syncPeer := spv.pm.GetSyncPeer()
-	log.Trace(">>>>> SyncManager change sync peer, disconnect ", syncPeer)
+	log.Trace("SyncManager change sync peer, disconnect ", syncPeer)
 	spv.pm.DisconnectPeer(syncPeer)
 
 	// Restart
@@ -268,7 +268,7 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 	defer sm.queueLock.Unlock()
 
 	_, ok := sm.requestQueue[hash]
-	log.Trace(">>>>> In request queue: ", ok, ", hash: ", hash.String())
+	log.Trace("In request queue: ", ok, ", hash: ", hash.String())
 	return ok
 }
 
@@ -306,7 +306,7 @@ func (sm *SyncManager) submitData() error {
 	err = sm.saveToDB(connectedHeaders)
 	if err != nil {
 		// If anything goes wrong, change a sync peer and restart
-		log.Error(">>>>> Save headers failed, disconnect")
+		log.Error("Save headers failed, disconnect")
 		sm.ChangeSyncPeerAndRestart()
 		return err
 	}
@@ -318,7 +318,7 @@ func (sm *SyncManager) submitData() error {
 }
 
 func (sm *SyncManager) connectHeaders() ([]Uint256, error) {
-	log.Trace(">>>>> Connect headers")
+	log.Trace("Connect headers")
 	headersCount := len(sm.receivedBlocks)
 	connectedHeaders := make([]Uint256, headersCount)
 	for {
@@ -328,14 +328,14 @@ func (sm *SyncManager) connectHeaders() ([]Uint256, error) {
 
 		// All headers connected, return connected headers in height ASC order
 		if *sm.stopHash == *sm.startHash {
-			log.Trace(">>>>> Headers connected length:", len(connectedHeaders))
+			log.Trace("Headers connected length:", len(connectedHeaders))
 			return connectedHeaders, nil
 		}
 
 		previousHash := header.BlockHeader.Previous
 
 		if _, ok := sm.receivedBlocks[previousHash]; !ok {
-			log.Error(">>>>> Connect received headers failed, disconnect")
+			log.Error("Connect received headers failed, disconnect")
 			sm.ChangeSyncPeerAndRestart()
 			return nil, errors.New("Sync manager connect headers failed")
 		}

@@ -88,8 +88,8 @@ func (db *SQLiteDB) TXNs() TXNs {
 }
 
 func (db *SQLiteDB) Rollback(height uint32) error {
-	db.filterLock.Lock()
-	defer db.filterLock.Unlock()
+	db.Lock()
+	defer db.Unlock()
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -134,7 +134,6 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 	defer db.filterLock.Unlock()
 
 	addrs := db.scripts.GetFilter().GetScriptHashes()
-	log.Trace("GetFilter addrs:", addrs)
 	utxos, _ := db.utxos.GetAll()
 	stxos, _ := db.stxos.GetAll()
 
