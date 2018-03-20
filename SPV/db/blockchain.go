@@ -25,7 +25,7 @@ const (
 var PowLimit = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
 type Blockchain struct {
-	sync.RWMutex
+	lock  *sync.RWMutex
 	state ChainState
 	Headers
 	DataStore
@@ -43,6 +43,7 @@ func NewBlockchain() (*Blockchain, error) {
 	}
 
 	return &Blockchain{
+		lock:      new(sync.RWMutex),
 		state:     WAITING,
 		Headers:   headersDB,
 		DataStore: sqliteDb,
@@ -50,29 +51,28 @@ func NewBlockchain() (*Blockchain, error) {
 }
 
 func (bc *Blockchain) Close() {
-	bc.Lock()
+	bc.lock.Lock()
 	bc.Headers.Close()
 	bc.DataStore.Close()
 }
 
 func (bc *Blockchain) SetChainState(state ChainState) {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.lock.Lock()
+	defer bc.lock.Unlock()
 
 	bc.state = state
 }
 
 func (bc *Blockchain) IsSyncing() bool {
-	bc.RLock()
-	defer bc.RUnlock()
+	bc.lock.RLock()
+	defer bc.lock.RUnlock()
 
-	log.Trace(">>>>> Chain Syncing:", bc.state == SYNCING)
 	return bc.state == SYNCING
 }
 
 func (bc *Blockchain) Height() uint32 {
-	bc.RLock()
-	defer bc.RUnlock()
+	bc.lock.RLock()
+	defer bc.lock.RUnlock()
 
 	tip, err := bc.Headers.GetTip()
 	if err != nil {
@@ -84,8 +84,8 @@ func (bc *Blockchain) Height() uint32 {
 }
 
 func (bc *Blockchain) ChainTip() *Header {
-	bc.RLock()
-	defer bc.RUnlock()
+	bc.lock.RLock()
+	defer bc.lock.RUnlock()
 
 	tip, err := bc.Headers.GetTip()
 	if err != nil { // Empty blockchain, return empty header
@@ -95,9 +95,13 @@ func (bc *Blockchain) ChainTip() *Header {
 }
 
 func (bc *Blockchain) IsKnownBlock(hash Uint256) bool {
-	bc.RLock()
-	defer bc.RUnlock()
+	bc.lock.RLock()
+	defer bc.lock.RUnlock()
 
+	return bc.isKnownBlock(hash)
+}
+
+func (bc *Blockchain) isKnownBlock(hash Uint256) bool {
 	header, err := bc.Headers.GetHeader(&hash)
 	if header == nil || err != nil {
 		return false
@@ -106,8 +110,8 @@ func (bc *Blockchain) IsKnownBlock(hash Uint256) bool {
 }
 
 func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
-	bc.RLock()
-	defer bc.RUnlock()
+	bc.lock.RLock()
+	defer bc.lock.RUnlock()
 
 	var ret []*Uint256
 	parent, err := bc.Headers.GetTip()
@@ -147,15 +151,15 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 }
 
 func (bc *Blockchain) CommitUnconfirmedTxn(txn tx.Transaction) error {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.lock.Lock()
+	defer bc.lock.Unlock()
 
 	return bc.commitTxn(bc.Scripts().GetFilter(), 0, txn)
 }
 
 func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
-	bc.Lock()
-	defer bc.Unlock()
+	bc.lock.Lock()
+	defer bc.lock.Unlock()
 
 	// Get current chain tip
 	tip, err := bc.Headers.GetTip()
@@ -163,8 +167,15 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 		return err
 	}
 
+	log.Debug(">>>>> Chain tip height:", tip.Height)
+	log.Debug(">>>>> Commit block height:", header.Height)
+	log.Debug(">>>>> Commit block previous:", header.Previous.String())
+	log.Debug(">>>>> Commit block previous is known:", bc.isKnownBlock(header.Previous))
+
 	// Check if commit block is a reorganize block, if so rollback to the fork point
-	if header.Height < tip.Height && bc.IsKnownBlock(header.Previous) {
+	if header.Height < tip.Height {
+
+		log.Debug(">>>>> Blockchain rollback to:", header.Previous.String())
 		err = bc.rollbackTo(header.Previous)
 		if err != nil {
 			return err
@@ -254,6 +265,7 @@ func (bc *Blockchain) rollbackTo(forkPoint Uint256) error {
 		}
 
 		if removed.Previous.IsEqual(&forkPoint) {
+			log.Debug(">>>>> Blockchain rollback finished, current height:", removed.Height-1)
 			return nil
 		}
 	}

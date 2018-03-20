@@ -146,7 +146,7 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 	db.Lock()
 	defer db.Unlock()
 
-	err = db.View(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 
 		var newTip *Header
 		var newTipBytes []byte
@@ -154,6 +154,11 @@ func (db *HeadersDB) Rollback() (removed *Header, err error) {
 		removed, err = getTip(tx)
 		if err != nil {
 			return err
+		}
+
+		// Rollback at the beginning, remove chain tip and return
+		if removed.Height == 1 {
+			return tx.Bucket(BKTChainTip).Delete(KEYChainTip)
 		}
 
 		newTip, err = getHeader(tx, &removed.Previous)
