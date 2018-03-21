@@ -22,10 +22,12 @@ type ElaBlockHeader struct {
 }
 
 //Serialize the blockheader
-func (bd *ElaBlockHeader) Serialize(w io.Writer) {
+func (bd *ElaBlockHeader) Serialize(w io.Writer) error {
 	bd.SerializeUnsigned(w)
 	bd.AuxPow.Serialize(w)
 	w.Write([]byte{byte(1)})
+
+	return nil
 }
 
 //Serialize the blockheader data without program

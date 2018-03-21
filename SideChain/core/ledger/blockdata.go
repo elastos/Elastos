@@ -1,13 +1,14 @@
 package ledger
 
 import (
+	"crypto/sha256"
+	"errors"
 	"io"
+
 	. "Elastos.ELA.SideChain/common"
 	"Elastos.ELA.SideChain/common/serialization"
 	"Elastos.ELA.SideChain/core/auxpow"
 	"Elastos.ELA.SideChain/core/contract/program"
-	"crypto/sha256"
-	"errors"
 	"Elastos.ELA.SideChain/core/signature"
 )
 
@@ -19,7 +20,7 @@ type Blockdata struct {
 	Bits             uint32
 	Height           uint32
 	Nonce            uint32
-	AuxPow           auxpow.AuxPow
+	SideAuxPow       auxpow.SideAuxPow
 	Program          *program.Program
 
 	hash Uint256
@@ -28,7 +29,7 @@ type Blockdata struct {
 //Serialize the blockheader
 func (bd *Blockdata) Serialize(w io.Writer) {
 	bd.SerializeUnsigned(w)
-	bd.AuxPow.Serialize(w)
+	bd.SideAuxPow.Serialize(w)
 	w.Write([]byte{byte(1)})
 }
 
@@ -49,7 +50,7 @@ func (bd *Blockdata) SerializeUnsigned(w io.Writer) error {
 func (bd *Blockdata) Deserialize(r io.Reader) error {
 	//REVD：Blockdata Deserialize
 	bd.DeserializeUnsigned(r)
-	bd.AuxPow.Deserialize(r)
+	bd.SideAuxPow.Deserialize(r)
 	p := make([]byte, 1)
 	n, _ := r.Read(p)
 	if n > 0 {
