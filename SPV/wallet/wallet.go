@@ -308,7 +308,7 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 func (wallet *WalletImpl) SendTransaction(txn *tx.Transaction) error {
 
 	// Send transaction through P2P network
-	spv.SendTransaction(txn)
+	//spv.SendTransaction(txn)
 
 	return nil
 }
