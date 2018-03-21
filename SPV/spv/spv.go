@@ -1,4 +1,4 @@
-package wallet
+package spv
 
 import (
 	"errors"
@@ -265,8 +265,8 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 	return nil
 }
 
-func (spv *SPV) SendTransaction(txn *tx.Transaction) error {
-	txnMsg, err := msg.NewTxnMsg(*txn)
+func (spv *SPV) SendTransaction(txn tx.Transaction) error {
+	txnMsg, err := msg.NewTxnMsg(txn)
 	if err != nil {
 		return err
 	}

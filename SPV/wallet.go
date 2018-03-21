@@ -2,10 +2,12 @@ package main
 
 import (
 	"os"
-	"encoding/binary"
-	"SPVWallet/wallet"
-	"SPVWallet/log"
 	"os/signal"
+	"encoding/binary"
+
+	"SPVWallet/log"
+	"SPVWallet/spv"
+	"SPVWallet/wallet"
 )
 
 /*
@@ -31,7 +33,7 @@ func main() {
 
 	// Initiate SPV service
 	iv, _ := file.GetIV()
-	spv, err := wallet.InitSPV(binary.LittleEndian.Uint64(iv))
+	service, err := spv.InitSPV(binary.LittleEndian.Uint64(iv))
 	if err != nil {
 		log.Error("Initiate SPV service failed,", err)
 		os.Exit(0)
@@ -44,12 +46,12 @@ func main() {
 	go func() {
 		for range c {
 			log.Trace("SPVWallet shutting down...")
-			spv.Stop()
+			service.Stop()
 			stop <- 1
 		}
 	}()
 
-	spv.Start()
+	service.Start()
 
 	<-stop
 }
