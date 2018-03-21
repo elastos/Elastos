@@ -3,7 +3,6 @@ package ledger
 import (
 	. "Elastos.ELA.SideChain/common"
 	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/core/auxpow"
 	tx "Elastos.ELA.SideChain/core/transaction"
 	"Elastos.ELA.SideChain/crypto"
 	. "Elastos.ELA.SideChain/errors"
@@ -21,9 +20,9 @@ const (
 
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Blockdata
-	if !header.AuxPow.Check(header.Hash(), auxpow.AuxPowChainID) {
-		return errors.New("[PowCheckBlockSanity] block check proof is failed")
-	}
+	// if !header.SideAuxPow.AuxPow.Check(header.Hash(), auxpow.AuxPowChainID) {
+	// 	return errors.New("[PowCheckBlockSanity] block check proof is failed")
+	// }
 	if CheckProofOfWork(header, powLimit) != nil {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed.")
 	}
@@ -141,7 +140,6 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 		}
 	}
 
-
 	// for _, txVerify := range block.Transactions {
 	// 	if errCode := CheckTransactionContext(txVerify, ledger); errCode != ErrNoError {
 	// 		fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
@@ -167,7 +165,7 @@ func CheckProofOfWork(bd *Blockdata, powLimit *big.Int) error {
 	// The block hash must be less than the claimed target.
 	var hash Uint256
 
-	hash = bd.AuxPow.ParBlockHeader.Hash()
+	hash = bd.SideAuxPow.AuxPow.ParBlockHeader.Hash()
 
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {

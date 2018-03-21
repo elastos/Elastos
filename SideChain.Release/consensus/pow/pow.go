@@ -1,7 +1,6 @@
 package pow
 
 import (
-	"Elastos.ELA.SideChain/net/protocol"
 	"encoding/binary"
 	"errors"
 	"math"
@@ -9,6 +8,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"Elastos.ELA.SideChain/net/protocol"
 
 	. "Elastos.ELA.SideChain/common"
 	"Elastos.ELA.SideChain/common/config"
@@ -167,7 +168,7 @@ func (pow *PowService) GenerateBlock(addr string) (*ledger.Block, error) {
 		Bits:             config.Parameters.ChainParam.PowLimitBits,
 		Height:           nextBlockHeight,
 		Nonce:            0,
-		AuxPow:           auxpow.AuxPow{},
+		SideAuxPow:       auxpow.SideAuxPow{},
 	}
 
 	msgBlock := &ledger.Block{
@@ -302,7 +303,7 @@ func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) b
 		auxPow.ParBlockHeader.Nonce = i
 		hash := auxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if ledger.HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			MsgBlock.Blockdata.AuxPow = *auxPow
+			MsgBlock.Blockdata.SideAuxPow.AuxPow = *auxPow
 			return true
 		}
 	}
@@ -405,7 +406,6 @@ out:
 			log.Trace("generage block err", err)
 			continue
 		}
-
 
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {

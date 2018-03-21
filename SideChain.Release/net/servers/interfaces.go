@@ -236,7 +236,7 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 	auxPow := param["auxpow"].(string)
 	temp, _ := HexStringToBytes(auxPow)
 	r := bytes.NewBuffer(temp)
-	Pow.MsgBlock.BlockData[blockHash].Blockdata.AuxPow.Deserialize(r)
+	Pow.MsgBlock.BlockData[blockHash].Blockdata.SideAuxPow.AuxPow.Deserialize(r)
 	_, _, err := ledger.DefaultLedger.Blockchain.AddBlock(Pow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
@@ -450,12 +450,12 @@ func GetTransactionPool(param map[string]interface{}) map[string]interface{} {
 func GetBlockInfo(block *ledger.Block) BlockInfo {
 	hash := block.Hash()
 	auxInfo := &AuxInfo{
-		Version:    block.Blockdata.AuxPow.ParBlockHeader.Version,
+		Version:    block.Blockdata.SideAuxPow.AuxPow.ParBlockHeader.Version,
 		PrevBlock:  BytesToHexString(new(Uint256).ToArrayReverse()),
-		MerkleRoot: BytesToHexString(block.Blockdata.AuxPow.ParBlockHeader.MerkleRoot.ToArrayReverse()),
-		Timestamp:  block.Blockdata.AuxPow.ParBlockHeader.Timestamp,
+		MerkleRoot: BytesToHexString(block.Blockdata.SideAuxPow.AuxPow.ParBlockHeader.MerkleRoot.ToArrayReverse()),
+		Timestamp:  block.Blockdata.SideAuxPow.AuxPow.ParBlockHeader.Timestamp,
 		Bits:       0,
-		Nonce:      block.Blockdata.AuxPow.ParBlockHeader.Nonce,
+		Nonce:      block.Blockdata.SideAuxPow.AuxPow.ParBlockHeader.Nonce,
 	}
 	blockHead := &BlockHead{
 		Version:          block.Blockdata.Version,
