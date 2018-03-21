@@ -14,93 +14,14 @@ import (
 	. "SPVWallet/cli/common"
 
 	"github.com/urfave/cli"
-	"SPVWallet/core/transaction"
 )
 
 const (
 	MinMultiSignKeys = 3
 )
 
-func createWallet(password []byte) error {
-
-	var err error
-	password, err = GetPassword(password, true)
-	if err != nil {
-		return err
-	}
-
-	_, err = Create(password)
-	if err != nil {
-		return err
-	}
-	return showAccountInfo(password)
-}
-
-func changePassword(password []byte, wallet Wallet) error {
-
-	// Verify old password
-	oldPassword, err := GetPassword(password, false)
-	if err != nil {
-		return err
-	}
-
-	err = wallet.VerifyPassword(oldPassword)
-	if err != nil {
-		return err
-	}
-
-	// Input new password
-	fmt.Println("--PLEASE INPUT NEW PASSWORD--")
-	newPassword, err := GetPassword(nil, true)
-	if err != nil {
-		return err
-	}
-
-	if err := wallet.ChangePassword(oldPassword, newPassword); err != nil {
-		return errors.New("failed to change password")
-	}
-
-	fmt.Println("--PASSWORD CHANGED SUCCESSFUL--")
-
-	return nil
-}
-
-func showAccountInfo(password []byte) error {
-
-	var err error
-	password, err = GetPassword(password, false)
-	if err != nil {
-		return err
-	}
-
-	keyStore, err := OpenKeystore(password)
-	if err != nil {
-		return err
-	}
-
-	// print header
-	fmt.Printf("%5s %34s %66s %6s\n", "INDEX", "ADDRESS", "PUBLIC KEY", "TYPE")
-	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 66), "------")
-
-	// print accounts
-	for i, account := range keyStore.GetAccounts() {
-		accountType := "SUB"
-		if i == 0 {
-			accountType = "MASTER"
-		}
-		// print content
-		publicKey := account.PublicKey()
-		publicKeyBytes, _ := publicKey.EncodePoint(true)
-		fmt.Printf("%5d %-34s %-66s %6s\n", i, account.Address(), BytesToHexString(publicKeyBytes), accountType)
-		// print divider line
-		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 66), "------")
-	}
-
-	return nil
-}
-
 func listBalanceInfo(wallet Wallet) error {
-	scripts, err := wallet.GetScripts()
+	addrs, err := wallet.GetAddrs()
 	if err != nil {
 		log.Error("Get addresses error:", err)
 		return errors.New("get wallet addresses failed")
@@ -109,22 +30,17 @@ func listBalanceInfo(wallet Wallet) error {
 	fmt.Printf("%5s %34s %-32s\n", "INDEX", "ADDRESS", "BALANCE")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 
-	for i, script := range scripts {
+	for i, addr := range addrs {
 		balance := Fixed64(0)
-		programHash, err := transaction.ToProgramHash(script)
+		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
 		if err != nil {
-			return errors.New("parse address script failed")
-		}
-		address, _ := programHash.ToAddress()
-		UTXOs, err := wallet.GetAddressUTXOs(programHash)
-		if err != nil {
-			return errors.New("get " + address + " UTXOs failed")
+			return errors.New("get " + addr.String() + " UTXOs failed")
 		}
 		for _, utxo := range UTXOs {
 			balance += utxo.Value
 		}
 
-		fmt.Printf("%5d %34s %-32s\n", i+1, address, balance.String())
+		fmt.Printf("%5d %34s %-32s\n", i+1, addr.String(), balance.String())
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 	}
 	return nil
@@ -234,30 +150,12 @@ func getPublicKeys(content string) ([]*crypto.PublicKey, error) {
 	return publicKeys, nil
 }
 
-func resetData(wallet Wallet) error {
-	err := wallet.Reset()
-	if err != nil {
-		return err
-	}
-	fmt.Println("Wallet data has been reset")
-	return listBalanceInfo(wallet)
-}
-
 func accountAction(context *cli.Context) {
 	if context.NumFlags() == 0 {
 		cli.ShowSubcommandHelp(context)
 		os.Exit(0)
 	}
 	pass := context.String("password")
-
-	// create wallet
-	if context.Bool("create") {
-		if err := createWallet([]byte(pass)); err != nil {
-			fmt.Println("error: create wallet failed,", err)
-			cli.ShowCommandHelpAndExit(context, "create", 1)
-		}
-		return
-	}
 
 	wallet, err := Open()
 	if err != nil {
@@ -267,18 +165,9 @@ func accountAction(context *cli.Context) {
 
 	// list accounts
 	if context.Bool("list") {
-		if err := showAccountInfo([]byte(pass)); err != nil {
+		if err := ShowAccountInfo([]byte(pass)); err != nil {
 			fmt.Println("error: list accounts info failed, ", err)
 			cli.ShowCommandHelpAndExit(context, "list", 3)
-		}
-		return
-	}
-
-	// change password
-	if context.Bool("changepassword") {
-		if err := changePassword([]byte(pass), wallet); err != nil {
-			fmt.Println("error: change password failed, ", err)
-			cli.ShowCommandHelpAndExit(context, "changepassword", 4)
 		}
 		return
 	}
@@ -309,29 +198,17 @@ func accountAction(context *cli.Context) {
 		}
 		return
 	}
-
-	// reset all data in blockchain, including headers and transactions
-	if context.Bool("reset") {
-		if err := resetData(wallet); err != nil {
-			fmt.Println("error: reset wallet data failed:", err)
-			cli.ShowCommandHelpAndExit(context, "reset", 6)
-		}
-	}
 }
 
-func NewCommand() *cli.Command {
-	return &cli.Command{
+func NewCommand() cli.Command {
+	return cli.Command{
 		Name:      "account",
 		ShortName: "a",
 		Usage:     "account [command] [args]",
-		Description: "create wallet, change password, new sub account, create multisig address\n" +
-			"\tdelete account, list address's balances or reset wallet",
+		Description: "new sub account, create multisig address\n" +
+			"\tdelete account, list address's balances",
 		ArgsUsage: "[args]",
 		Flags: append(CommonFlags,
-			cli.BoolFlag{
-				Name:  "create, c",
-				Usage: "create wallet",
-			},
 			cli.BoolFlag{
 				Name:  "list, l",
 				Usage: "list all accounts",
@@ -358,10 +235,6 @@ func NewCommand() *cli.Command {
 			cli.BoolFlag{
 				Name:  "balance, b",
 				Usage: "list balances",
-			},
-			cli.BoolFlag{
-				Name:  "reset",
-				Usage: "clear all data, including blockchain, utxos stxos and transactions",
 			},
 		),
 		Action: accountAction,

@@ -2,11 +2,11 @@ package main
 
 import (
 	"os"
-	"sort"
 
 	"SPVWallet/log"
 	"SPVWallet/cli/account"
 	"SPVWallet/cli/transaction"
+	"SPVWallet/cli/wallet"
 
 	"github.com/urfave/cli"
 )
@@ -28,11 +28,12 @@ func main() {
 	app.HideVersion = false
 	//commands
 	app.Commands = []cli.Command{
-		*account.NewCommand(),
-		*transaction.NewCommand(),
+		wallet.NewCreateCommand(),
+		wallet.NewChangePasswordCommand(),
+		wallet.NewResetCommand(),
+		account.NewCommand(),
+		transaction.NewCommand(),
 	}
-	sort.Sort(cli.CommandsByName(app.Commands))
-	sort.Sort(cli.FlagsByName(app.Flags))
 
 	app.Run(os.Args)
 }

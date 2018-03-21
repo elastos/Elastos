@@ -316,8 +316,8 @@ func transactionAction(context *cli.Context) {
 	}
 }
 
-func NewCommand() *cli.Command {
-	return &cli.Command{
+func NewCommand() cli.Command {
+	return cli.Command{
 		Name:        "transaction",
 		ShortName:   "tx",
 		Usage:       "use [--create, --sign, --send], to create, sign or send a transaction",

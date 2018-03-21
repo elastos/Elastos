@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	. "SPVWallet/core"
-	tx "SPVWallet/core/transaction"
 	walt "SPVWallet/wallet"
 
 	"github.com/urfave/cli"
@@ -54,37 +53,65 @@ func GetPassword(password []byte, confirmed bool) ([]byte, error) {
 	return password, nil
 }
 
+func ShowAccountInfo(password []byte) error {
+
+	var err error
+	password, err = GetPassword(password, false)
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := walt.OpenKeystore(password)
+	if err != nil {
+		return err
+	}
+
+	// print header
+	fmt.Printf("%5s %34s %66s %6s\n", "INDEX", "ADDRESS", "PUBLIC KEY", "TYPE")
+	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 66), "------")
+
+	// print accounts
+	for i, account := range keyStore.GetAccounts() {
+		accountType := "SUB"
+		if i == 0 {
+			accountType = "MASTER"
+		}
+		// print content
+		publicKey := account.PublicKey()
+		publicKeyBytes, _ := publicKey.EncodePoint(true)
+		fmt.Printf("%5d %-34s %-66s %6s\n", i+1, account.Address(), BytesToHexString(publicKeyBytes), accountType)
+		// print divider line
+		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 66), "------")
+	}
+
+	return nil
+}
+
 func SelectAccount(wallet walt.Wallet) (string, error) {
-	scripts, err := wallet.GetScripts()
-	if err != nil || len(scripts) == 0 {
+	addrs, err := wallet.GetAddrs()
+	if err != nil || len(addrs) == 0 {
 		return "", errors.New("fail to load wallet addresses")
 	}
 
 	// only one address return it
-	if len(scripts) == 1 {
-		programHash, _ := tx.ToProgramHash(scripts[0])
-		return programHash.ToAddress()
+	if len(addrs) == 1 {
+		return addrs[0].String(), nil
 	}
 
 	// print out addresses in wallet
 	fmt.Printf("%5s %34s %32s\n", "INDEX", "ADDRESS", "BALANCE")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
-	for i, script := range scripts {
+	for i, addr := range addrs {
 		balance := Fixed64(0)
-		programHash, err := tx.ToProgramHash(script)
+		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
 		if err != nil {
-			return "", errors.New("parse address script failed")
-		}
-		address, _ := programHash.ToAddress()
-		UTXOs, err := wallet.GetAddressUTXOs(programHash)
-		if err != nil {
-			return "", errors.New("get " + address + " UTXOs failed")
+			return "", errors.New("get " + addr.String() + " UTXOs failed")
 		}
 		for _, utxo := range UTXOs {
 			balance += utxo.Value
 		}
 
-		fmt.Printf("%5d %34s %-32s\n", i+1, address, balance.String())
+		fmt.Printf("%5d %34s %-32s\n", i+1, addr.String(), balance.String())
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 	}
 
@@ -93,11 +120,10 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 
 	index := -1
 	for index == -1 {
-		index = getInput(len(scripts))
+		index = getInput(len(addrs))
 	}
 
-	programHash, _ := tx.ToProgramHash(scripts[index])
-	return programHash.ToAddress()
+	return addrs[index].String(), nil
 }
 
 func getInput(max int) int {
