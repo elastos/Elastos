@@ -46,6 +46,7 @@ public class TestOptions extends Options {
             node.setIpv4("52.80.187.125");
             node.setPort("33445");
             node.setPublicKey("3khtxZo89SBScAMaHhTvD68pPHiKxgZT6hTCSZZVgNEm");
+            arrayList.add(node);
 
             setBootstrapNodes(arrayList);
         } catch (Exception e){

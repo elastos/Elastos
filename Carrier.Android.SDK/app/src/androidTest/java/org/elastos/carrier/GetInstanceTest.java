@@ -45,7 +45,7 @@ public class GetInstanceTest extends AbstractCarrierHandler {
 			handler.synch.await();
 
 			assertEquals(carrier, Carrier.getInstance());
-			//assertEquals(options.getAppId(), whisper.getAppId());
+			assertEquals(carrier.getNodeId(), carrier.getUserId());
 
 			carrier.kill();
 			assertEquals(null, Carrier.getInstance());

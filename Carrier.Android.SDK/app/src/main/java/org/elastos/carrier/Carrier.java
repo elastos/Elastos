@@ -170,7 +170,7 @@ public class Carrier {
 				return this;
 			}
 
-			public String getPubicKey() {
+			public String getPublicKey() {
 				return publicKey;
 			}
 		}

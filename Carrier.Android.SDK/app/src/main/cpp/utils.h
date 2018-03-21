@@ -27,9 +27,9 @@
 
 #define ARG(ctxt, index, type, value)  type value = (type) ((void**)ctxt)[index]
 
-#define _J(type)  "Ljava/lang/"#type
-#define _W(type)  "Lorg/elastos/carrier/"#type
-#define _S(type)  "Lorg/elastos/carrier/session/"#type
+#define _J(type)  "Ljava/lang/"type
+#define _W(type)  "Lorg/elastos/carrier/"type
+#define _S(type)  "Lorg/elastos/carrier/session/"type
 
 void setErrorCode(int errno);
 int _getErrorCode(void);

@@ -183,7 +183,7 @@ void sessionMgrCleanup(JNIEnv* env, jclass clazz, jobject jcarrier)
 }
 
 static
-jobject createSession(JNIEnv* env, jobject thiz, jobject jcarrier, jstring jto, jobject jtype)
+jobject createSession(JNIEnv* env, jobject thiz, jobject jcarrier, jstring jto)
 {
     const char *to;
     ElaSession *session;
@@ -230,7 +230,7 @@ static const char* gClassName = "org/elastos/carrier/session/Manager";
 static JNINativeMethod gMethods[] = {
         {"native_init",      "("_W("Carrier;")_S("ManagerHandler;)Z"),  (void*)sessionMgrInit   },
         {"native_cleanup",   "("_W("Carrier;)V"),                       (void*)sessionMgrCleanup},
-        {"create_session",   "("_W("Carrier;")_J("String;")_S("Session;"),
+        {"create_session",   "("_W("Carrier;")_J("String;)")_S("Session;"),
                                                                         (void*)createSession    },
         {"get_error_code",   "()I",                                     (void*)getErrorCode     },
 };

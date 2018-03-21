@@ -29,7 +29,7 @@ import org.elastos.carrier.session.StreamState;
 import org.elastos.carrier.session.StreamType;
 
 public class RobotService extends Service {
-	private static final String TAG = "RobotServiceWhisper";
+	private static final String TAG = "RobotServiceCarrier";
 
 	static final int MSG_TEST = 1;
 	static final int MSG_REQ_ROBOT_ID = 2;
@@ -149,7 +149,7 @@ public class RobotService extends Service {
 			carrierInst.start(10000);
 			handler.synch.await();
 
-			Log.i(TAG, "whisper instance for robot created");
+			Log.i(TAG, "Carrier instance for robot created");
 		} catch (ElastosException e) {
 			e.printStackTrace();
 		}
@@ -204,7 +204,6 @@ public class RobotService extends Service {
 
 	void initSessionManager(Message msg) {
 		try {
-			int transports = msg.getData().getInt("transports");
 			sessionMgr = Manager.getInstance(carrierInst, new ManagerHandler() {
 				@Override
 				public void onSessionRequest(Carrier carrier, String from, String sdp) {
@@ -286,7 +285,7 @@ public class RobotService extends Service {
 			TestStreamHandler streamHandler = new TestStreamHandler();
 			activeStream = activeSession.addStream(StreamType.Text, 0, streamHandler);
 		} catch (ElastosException e) {
-			Log.i(TAG, "WhisperException (error: " + e.getErrorCode() + ")");
+			Log.i(TAG, "ElastosException (error: " + e.getErrorCode() + ")");
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.elastos.carrier.robot.RobotProxy;
+import org.elastos.carrier.robot.RobotService;
 import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.ElastosException;
@@ -22,8 +23,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
-public class FriendRequestTest {
-	private static final String TAG = "FriendRequestTest";
+public class FriendAddTest {
+	private static final String TAG = "FriendAddTest";
 	private static Carrier carrierInst;
 	private static TestOptions options;
 	private static TestHandler handler;
@@ -73,7 +74,10 @@ public class FriendRequestTest {
 			TestReceiver receiver = new TestReceiver();
 			robotProxy = RobotProxy.getRobot(getAppContext());
 			robotProxy.bindRobot(receiver);
+			Log.i(TAG, "RobotProxy starting.....");
 			receiver.synch.await();
+
+			Log.i(TAG, "RobotProxy started.");
 
 			carrierInst = Carrier.getInstance(options, handler);
 			carrierInst.start(1000);

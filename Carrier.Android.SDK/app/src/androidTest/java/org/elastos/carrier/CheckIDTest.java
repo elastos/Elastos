@@ -15,11 +15,11 @@ public class CheckIDTest {
 		assertEquals(Carrier.isValidId(userId), true);
 	}
 
-	@Test
+	/*@Test
 	public void checkValidAddress() {
 		String address = "VyhDgjkjd5MkPcuwCjGEUCp5jV6HArxSVmBnpXnk7d9h7cQtboMN";
 		assertEquals(Carrier.isValidAddress(address), true);
-	}
+	}*/
 
 	@Test
 	public void checkInvalidId() {
@@ -27,9 +27,11 @@ public class CheckIDTest {
 		assertEquals(Carrier.isValidId(userId), false);
 	}
 
+	/*
 	@Test
 	public void checkInvalidAddress() {
 		String address = "aaaaaakjd5MkPcuwCjGEUCp5jV6HArxSVmBnpXnk7d9h7cQtboMN";
 		assertEquals(Carrier.isValidAddress(address), false);
 	}
+	*/
 }

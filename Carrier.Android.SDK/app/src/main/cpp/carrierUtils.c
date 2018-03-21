@@ -28,12 +28,13 @@
 #include "log.h"
 #include "carrierUtils.h"
 
-#define _T(type)  "org/elastos/carrier/"#type
+#define _T(type)  "org/elastos/carrier/"type
 
 int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
 {
     jclass clazz;
-    jobjectArray jnodes;
+    jclass bNClazz;
+    jobject jnodes;
     jsize size;
     int rc;
     int i;
@@ -51,14 +52,25 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
         return 0;
     }
 
-    rc = callObjectMethod(env, clazz, jopts, "getBootstrapNodes", "()["_W("BootstrapNode;"),
-                          &jnodes);
+    rc = callObjectMethod(env, clazz, jopts, "getBootstrapNodes", "()Ljava/util/List;", &jnodes);
     if (!rc) {
         logE("call method Carrier::Options::getBootstrapNodes error");
         return 0;
     }
 
-    size = (*env)->GetArrayLength(env, jnodes);
+    bNClazz = (*env)->GetObjectClass(env, jnodes);
+    if (!bNClazz) {
+        logE("Java class 'java/util/List' not found");
+        (*env)->DeleteLocalRef(env, jnodes);
+        return 0;
+    }
+
+    rc = callIntMethod(env, bNClazz, jnodes, "size", "()I", (int *)&size);
+    if (!rc) {
+        (*env)->DeleteLocalRef(env, jnodes);
+        return 0;
+    }
+
     if (size == 0) {
         (*env)->DeleteLocalRef(env, jnodes);
         opts->bootstraps_size = 0;
@@ -78,8 +90,9 @@ int getOptionsHelper(JNIEnv* env, jobject jopts, OptionsHelper* opts)
         jclass  jnodeClazz;
         jobject jnode;
 
-        jnode = (*env)->GetObjectArrayElement(env, jnodes, i);
-        if (!jnode) {
+        rc = callObjectMethod(env, bNClazz, jnodes, "get",
+                              "(I)"_J("Object;"), &jnode, i);
+        if (!rc) {
             (*env)->DeleteLocalRef(env, jnodes);
             return 0;
         }
