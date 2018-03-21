@@ -173,10 +173,10 @@ func accountAction(context *cli.Context) {
 	}
 
 	// new sub account
-	if context.Bool("newsubaccount") {
+	if context.Bool("new") {
 		if err := newSubAccount([]byte(pass), wallet); err != nil {
 			fmt.Println("error: new sub account failed, ", err)
-			cli.ShowCommandHelpAndExit(context, "newsubaccount", 5)
+			cli.ShowCommandHelpAndExit(context, "new", 5)
 		}
 		return
 	}
@@ -214,11 +214,7 @@ func NewCommand() cli.Command {
 				Usage: "list all accounts",
 			},
 			cli.BoolFlag{
-				Name:  "changepassword",
-				Usage: "change wallet password",
-			},
-			cli.BoolFlag{
-				Name:  "newsubaccount",
+				Name:  "new, n",
 				Usage: "create a new sub account",
 			},
 			cli.StringFlag{
