@@ -19,5 +19,5 @@ Log
 *.bin
 *.csv
 *.cache
-spv-wallet
-wallet-cli
+ela-wallet
+service

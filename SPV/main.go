@@ -8,6 +8,7 @@ import (
 	"SPVWallet/log"
 	"SPVWallet/spv"
 	"SPVWallet/wallet"
+	"SPVWallet/rpc"
 )
 
 /*
@@ -39,6 +40,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	// Start RPC service
+	server := rpc.InitServer(&rpc.Listeners{
+		AddToFilter:     service.AddToFilter,
+		SendTransaction: service.SendTransaction,
+	})
+
 	// Handle interrupt signal
 	stop := make(chan int, 1)
 	c := make(chan os.Signal, 1)
@@ -47,11 +54,13 @@ func main() {
 		for range c {
 			log.Trace("SPVWallet shutting down...")
 			service.Stop()
+			server.Close()
 			stop <- 1
 		}
 	}()
 
 	service.Start()
+	server.Start()
 
 	<-stop
 }

@@ -15,6 +15,7 @@ import (
 	"SPVWallet/core/transaction/payload"
 	. "SPVWallet/db"
 	"SPVWallet/log"
+	"SPVWallet/rpc"
 )
 
 var SystemAssetId = *getSystemAssetId()
@@ -107,6 +108,9 @@ func (wallet *WalletImpl) NewSubAccount(password []byte) (*Uint168, error) {
 		return nil, err
 	}
 
+	// Notify SPV service to reload bloom filter with the new address
+	rpc.GetClient().AddToFilter(account.ProgramHash().ToArray())
+
 	return account.ProgramHash(), nil
 }
 
@@ -125,6 +129,9 @@ func (wallet *WalletImpl) AddMultiSignAccount(M int, publicKeys ...*crypto.Publi
 	if err != nil {
 		return nil, err
 	}
+
+	// Notify SPV service to reload bloom filter with the new address
+	rpc.GetClient().AddToFilter(programHash.ToArray())
 
 	return programHash, nil
 }
@@ -308,7 +315,7 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 func (wallet *WalletImpl) SendTransaction(txn *tx.Transaction) error {
 
 	// Send transaction through P2P network
-	//spv.SendTransaction(txn)
+	rpc.GetClient().SendTransaction(txn)
 
 	return nil
 }

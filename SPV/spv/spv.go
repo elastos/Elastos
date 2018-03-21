@@ -265,6 +265,17 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 	return nil
 }
 
+func (spv *SPV) AddToFilter(hash []byte) error {
+	filter := spv.chain.GetFilter()
+	filter.Add(hash)
+
+	// Broadcast filterload message to connected peers
+	buf, _ := msg.NewFilterLoadMsg(spv.chain.GetFilter())
+	spv.pm.Broadcast(buf)
+
+	return nil
+}
+
 func (spv *SPV) SendTransaction(txn tx.Transaction) error {
 	txnMsg, err := msg.NewTxnMsg(txn)
 	if err != nil {
