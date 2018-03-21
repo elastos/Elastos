@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -29,18 +28,6 @@ type link struct {
 	lastActive   time.Time // The latest time the node activity
 	connCnt      uint64    // The connection count
 	*MsgReader
-}
-
-func IPv4Addr() string {
-	host, _ := os.Hostname()
-	addrs, _ := net.LookupIP(host)
-	for _, addr := range addrs {
-		if ipv4 := addr.To4(); ipv4 != nil {
-			log.Info("IPv4: ", ipv4)
-			return ipv4.String()
-		}
-	}
-	return ""
 }
 
 func (link *link) CloseConn() {
