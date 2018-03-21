@@ -208,12 +208,12 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 		return nil, errors.New("[Wallet], Available token is not enough")
 	}
 
-	script, err := wallet.GetScript(spender)
+	addr, err := wallet.GetAddress(spender)
 	if err != nil {
 		return nil, errors.New("[Wallet], Get spenders redeem script failed")
 	}
 
-	return wallet.newTransaction(script, txInputs, txOutputs), nil
+	return wallet.newTransaction(addr.Script(), txInputs, txOutputs), nil
 }
 
 func (wallet *WalletImpl) Sign(password []byte, txn *tx.Transaction) (*tx.Transaction, error) {

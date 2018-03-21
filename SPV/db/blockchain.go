@@ -153,7 +153,7 @@ func (bc *Blockchain) CommitUnconfirmedTxn(txn tx.Transaction) error {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
-	return bc.commitTxn(bc.Scripts().GetFilter(), 0, txn)
+	return bc.commitTxn(bc.Addrs().GetFilter(), 0, txn)
 }
 
 func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
@@ -177,7 +177,7 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 
 	// Save transactions first
 	for _, txn := range txns {
-		err := bc.commitTxn(bc.Scripts().GetFilter(), header.Height, txn)
+		err := bc.commitTxn(bc.Addrs().GetFilter(), header.Height, txn)
 		if err != nil {
 			return err
 		}
@@ -195,7 +195,7 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 	return nil
 }
 
-func (bc *Blockchain) commitTxn(filter *ScriptFilter, height uint32, txn tx.Transaction) error {
+func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transaction) error {
 	txId := txn.Hash()
 	// Save UTXOs
 	for index, output := range txn.Outputs {

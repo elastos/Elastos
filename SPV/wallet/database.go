@@ -9,8 +9,8 @@ import (
 
 type Database interface {
 	AddAddress(address *Uint168, script []byte) error
-	GetScript(address *Uint168) ([]byte, error)
-	GetScripts() ([][]byte, error)
+	GetAddress(address *Uint168) (*Addr, error)
+	GetAddrs() ([]*Addr, error)
 	DeleteAddress(address *Uint168) error
 	GetAddressUTXOs(address *Uint168) ([]*UTXO, error)
 	GetAddressSTXOs(address *Uint168) ([]*STXO, error)
@@ -41,35 +41,35 @@ type DatabaseImpl struct {
 	lock *sync.RWMutex
 	DataStore
 
-	filter *ScriptFilter
+	filter *AddrFilter
 }
 
 func (db *DatabaseImpl) AddAddress(address *Uint168, script []byte) error {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	return db.DataStore.Scripts().Put(address, script)
+	return db.DataStore.Addrs().Put(address, script)
 }
 
-func (db *DatabaseImpl) GetScript(address *Uint168) ([]byte, error) {
+func (db *DatabaseImpl) GetAddress(address *Uint168) (*Addr, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 
-	return db.DataStore.Scripts().Get(address)
+	return db.DataStore.Addrs().Get(address)
 }
 
-func (db *DatabaseImpl) GetScripts() ([][]byte, error) {
+func (db *DatabaseImpl) GetAddrs() ([]*Addr, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 
-	return db.DataStore.Scripts().GetAll()
+	return db.DataStore.Addrs().GetAll()
 }
 
 func (db *DatabaseImpl) DeleteAddress(address *Uint168) error {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	return db.DataStore.Scripts().Delete(address)
+	return db.DataStore.Addrs().Delete(address)
 }
 
 func (db *DatabaseImpl) GetAddressUTXOs(address *Uint168) ([]*UTXO, error) {

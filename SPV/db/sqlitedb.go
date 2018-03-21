@@ -20,11 +20,11 @@ type SQLiteDB struct {
 	*sync.RWMutex
 	*sql.DB
 
-	info    Info
-	scripts Scripts
-	utxos   UTXOs
-	stxos   STXOs
-	txns    TXNs
+	info  Info
+	addrs Addrs
+	utxos UTXOs
+	stxos STXOs
+	txns  TXNs
 
 	filterLock *sync.Mutex
 }
@@ -43,8 +43,8 @@ func NewSQLiteDB() (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Create scripts db
-	scriptsDB, err := NewScriptDB(db, lock)
+	// Create addrs db
+	addrsDB, err := NewAddrsDB(db, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +68,11 @@ func NewSQLiteDB() (DataStore, error) {
 		RWMutex: lock,
 		DB:      db,
 
-		info:    infoDB,
-		scripts: scriptsDB,
-		utxos:   utxosDB,
-		stxos:   stxosDB,
-		txns:    txnsDB,
+		info:  infoDB,
+		addrs: addrsDB,
+		utxos: utxosDB,
+		stxos: stxosDB,
+		txns:  txnsDB,
 
 		filterLock: new(sync.Mutex),
 	}, nil
@@ -82,8 +82,8 @@ func (db *SQLiteDB) Info() Info {
 	return db.info
 }
 
-func (db *SQLiteDB) Scripts() Scripts {
-	return db.scripts
+func (db *SQLiteDB) Addrs() Addrs {
+	return db.addrs
 }
 
 func (db *SQLiteDB) UTXOs() UTXOs {
@@ -144,7 +144,7 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 	db.filterLock.Lock()
 	defer db.filterLock.Unlock()
 
-	addrs := db.scripts.GetFilter().GetScriptHashes()
+	addrs := db.addrs.GetFilter().GetScriptHashes()
 	utxos, _ := db.utxos.GetAll()
 	stxos, _ := db.stxos.GetAll()
 

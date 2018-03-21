@@ -8,7 +8,7 @@ import (
 
 type DataStore interface {
 	Info() Info
-	Scripts() Scripts
+	Addrs() Addrs
 	UTXOs() UTXOs
 	STXOs() STXOs
 	TXNs() TXNs
@@ -36,21 +36,21 @@ type Info interface {
 	Delete(key string) error
 }
 
-type Scripts interface {
-	// put a script to database
+type Addrs interface {
+	// put a address to database
 	Put(hash *Uint168, script []byte) error
 
-	// get a script from database
-	Get(hash *Uint168) ([]byte, error)
+	// get a address from database
+	Get(hash *Uint168) (*Addr, error)
 
-	// get all scripts from database
-	GetAll() ([][]byte, error)
+	// get all addresss from database
+	GetAll() ([]*Addr, error)
 
-	// delete a script from database
+	// delete a address from database
 	Delete(hash *Uint168) error
 
-	// get scripts filter
-	GetFilter() *ScriptFilter
+	// get addresss filter
+	GetFilter() *AddrFilter
 }
 
 type UTXOs interface {
@@ -60,7 +60,7 @@ type UTXOs interface {
 	// get a utxo from database
 	Get(outPoint *tx.OutPoint) (*UTXO, error)
 
-	// get utxos of the given script hash from database
+	// get utxos of the given address hash from database
 	GetAddrAll(hash *Uint168) ([]*UTXO, error)
 
 	// Get all UTXOs in database
@@ -77,7 +77,7 @@ type STXOs interface {
 	// get a stxo from database
 	Get(outPoint *tx.OutPoint) (*STXO, error)
 
-	// get stxos of the given script hash from database
+	// get stxos of the given address hash from database
 	GetAddrAll(hash *Uint168) ([]*STXO, error)
 
 	// Get all STXOs in database
