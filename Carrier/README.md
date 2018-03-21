@@ -53,6 +53,7 @@ You can use brew or build the packages from the source code.
 Change to `$(SRC_ROOT)/build` directory, and run:
 
 ```shell
+export PATH=${PATH}:/usr/local/opt/gettext/bin
 $ ./darwin_build.sh
 ```
 
