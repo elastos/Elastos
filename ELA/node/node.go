@@ -170,7 +170,7 @@ func InitLocalNode() Noder {
 		LocalNode.services += SPVService
 	}
 	LocalNode.relay = true
-	idHash := sha256.Sum256([]byte(IPv4Addr() + strconv.Itoa(Parameters.NodePort)))
+	idHash := sha256.Sum256([]byte(strconv.Itoa(int(time.Now().UnixNano()))))
 	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(LocalNode.id))
 
 	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
