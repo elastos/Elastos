@@ -16,8 +16,8 @@ type ElaBlockHeader struct {
 	TransactionsRoot Uint256
 	Timestamp        uint32
 	Bits             uint32
-	Height           uint32
 	Nonce            uint32
+	Height           uint32
 	AuxPow           AuxPow
 }
 

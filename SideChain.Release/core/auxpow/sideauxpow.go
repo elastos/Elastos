@@ -5,8 +5,21 @@ import (
 )
 
 type SideAuxPow struct {
-	SideAuxBlockTx      Uint256
 	SideAuxMerkleBranch []Uint256
 	SideAuxMerkleIndex  uint32
-	MainBlockHeader     ElaBlockHeader
+	SideAuxBlockTx      ElaTx
+	ElaBlockHeader      ElaBlockHeader
+}
+
+func NewSideAuxPow(sideAuxMerkleBranch []Uint256,
+	sideAuxMerkleIndex uint32,
+	sideAuxBlockTx ElaTx,
+	elaBlockHeader ElaBlockHeader) *SideAuxPow {
+
+	return &SideAuxPow{
+		SideAuxMerkleBranch: sideAuxMerkleBranch,
+		SideAuxMerkleIndex:  sideAuxMerkleIndex,
+		SideAuxBlockTx:      sideAuxBlockTx,
+		ElaBlockHeader:      elaBlockHeader,
+	}
 }

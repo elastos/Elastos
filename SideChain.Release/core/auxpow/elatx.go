@@ -1,6 +1,8 @@
 package auxpow
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"errors"
 	"io"
 
@@ -13,23 +15,31 @@ import (
 //and transaction process methods
 type TransactionType byte
 
-const SideAuxPowPayloadVersion byte = 0x00
+const (
+	CoinBase      TransactionType = 0x00
+	RegisterAsset TransactionType = 0x01
+	TransferAsset TransactionType = 0x02
+	Record        TransactionType = 0x03
+	Deploy        TransactionType = 0x04
+	SideMining    TransactionType = 0x05
+)
 
-type SideAuxPowPayload struct {
-	SideAuxPowData []byte
+const SideMiningPayloadVersion byte = 0x00
+
+type SideMiningPayload struct {
+	SideBlockHash common.Uint256
 }
 
-func (a *SideAuxPowPayload) Data(version byte) []byte {
-	return a.SideAuxPowData
+func (a *SideMiningPayload) Data(version byte) []byte {
+	return a.SideBlockHash[:]
 }
 
-func (a *SideAuxPowPayload) Serialize(w io.Writer, version byte) error {
-	return serialization.WriteVarBytes(w, a.SideAuxPowData)
+func (a *SideMiningPayload) Serialize(w io.Writer, version byte) error {
+	return serialization.WriteVarBytes(w, a.SideBlockHash[:])
 }
 
-func (a *SideAuxPowPayload) Deserialize(r io.Reader, version byte) error {
-	temp, err := serialization.ReadVarBytes(r)
-	a.SideAuxPowData = temp
+func (a *SideMiningPayload) Deserialize(r io.Reader, version byte) error {
+	err := a.SideBlockHash.Deserialize(r)
 	return err
 }
 
@@ -55,13 +65,13 @@ func IsValidAttributeType(usage TransactionAttributeUsage) bool {
 
 func (tx *TxAttribute) Serialize(w io.Writer) error {
 	if err := serialization.WriteUint8(w, byte(tx.Usage)); err != nil {
-		return errors.New("Transaction attribute Usage serialization error.")
+		return errors.New("ElaTx attribute Usage serialization error.")
 	}
 	if !IsValidAttributeType(tx.Usage) {
 		return errors.New("[TxAttribute error] Unsupported attribute Description.")
 	}
 	if err := serialization.WriteVarBytes(w, tx.Data); err != nil {
-		return errors.New("Transaction attribute Data serialization error.")
+		return errors.New("ElaTx attribute Data serialization error.")
 	}
 	return nil
 }
@@ -69,7 +79,7 @@ func (tx *TxAttribute) Serialize(w io.Writer) error {
 func (tx *TxAttribute) Deserialize(r io.Reader) error {
 	val, err := serialization.ReadBytes(r, 1)
 	if err != nil {
-		return errors.New("Transaction attribute Usage deserialization error.")
+		return errors.New("ElaTx attribute Usage deserialization error.")
 	}
 	tx.Usage = TransactionAttributeUsage(val[0])
 	if !IsValidAttributeType(tx.Usage) {
@@ -77,7 +87,7 @@ func (tx *TxAttribute) Deserialize(r io.Reader) error {
 	}
 	tx.Data, err = serialization.ReadVarBytes(r)
 	if err != nil {
-		return errors.New("Transaction attribute Data deserialization error.")
+		return errors.New("ElaTx attribute Data deserialization error.")
 	}
 	return nil
 }
@@ -207,10 +217,10 @@ func (o *TxOutput) Deserialize(r io.Reader) error {
 	return nil
 }
 
-type Transaction struct {
+type ElaTx struct {
 	TxType         TransactionType
 	PayloadVersion byte
-	Payload        SideAuxPowPayload
+	Payload        SideMiningPayload
 	Attributes     []*TxAttribute
 	UTXOInputs     []*UTXOTxInput
 	BalanceInputs  []*BalanceTxInput
@@ -219,32 +229,51 @@ type Transaction struct {
 	Programs       []*program.Program
 }
 
-//Serialize the Transaction
-func (tx *Transaction) Serialize(w io.Writer) error {
+func NewSideMiningTx(sideMiningPayload SideMiningPayload, currentHeight uint32) *ElaTx {
+	return &ElaTx{
+		TxType:         SideMining,
+		PayloadVersion: SideMiningPayloadVersion,
+		Payload:        sideMiningPayload,
+		UTXOInputs: []*UTXOTxInput{
+			{
+				ReferTxID:          common.Uint256{},
+				ReferTxOutputIndex: 0x0000,
+				Sequence:           0x00000000,
+			},
+		},
+		BalanceInputs: []*BalanceTxInput{},
+		Attributes:    []*TxAttribute{},
+		LockTime:      currentHeight,
+		Programs:      []*program.Program{},
+	}
+}
+
+//Serialize the ElaTx
+func (tx *ElaTx) Serialize(w io.Writer) error {
 
 	err := tx.SerializeUnsigned(w)
 	if err != nil {
-		return errors.New("Transaction txSerializeUnsigned Serialize failed.")
+		return errors.New("ElaTx txSerializeUnsigned Serialize failed.")
 	}
-	//Serialize  Transaction's programs
+	//Serialize  ElaTx's programs
 	lens := uint64(len(tx.Programs))
 	err = serialization.WriteVarUint(w, lens)
 	if err != nil {
-		return errors.New("Transaction WriteVarUint failed.")
+		return errors.New("ElaTx WriteVarUint failed.")
 	}
 	if lens > 0 {
 		for _, p := range tx.Programs {
 			err = p.Serialize(w)
 			if err != nil {
-				return errors.New("Transaction Programs Serialize failed.")
+				return errors.New("ElaTx Programs Serialize failed.")
 			}
 		}
 	}
 	return nil
 }
 
-//Serialize the Transaction data without contracts
-func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
+//Serialize the ElaTx data without contracts
+func (tx *ElaTx) SerializeUnsigned(w io.Writer) error {
 	//txType
 	w.Write([]byte{byte(tx.TxType)})
 	//PayloadVersion
@@ -254,7 +283,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	//[]*txAttribute
 	err := serialization.WriteVarUint(w, uint64(len(tx.Attributes)))
 	if err != nil {
-		return errors.New("Transaction item txAttribute length serialization failed.")
+		return errors.New("ElaTx item txAttribute length serialization failed.")
 	}
 	if len(tx.Attributes) > 0 {
 		for _, attr := range tx.Attributes {
@@ -264,7 +293,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	//[]*UTXOInputs
 	err = serialization.WriteVarUint(w, uint64(len(tx.UTXOInputs)))
 	if err != nil {
-		return errors.New("Transaction item UTXOInputs length serialization failed.")
+		return errors.New("ElaTx item UTXOInputs length serialization failed.")
 	}
 	if len(tx.UTXOInputs) > 0 {
 		for _, utxo := range tx.UTXOInputs {
@@ -275,7 +304,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	//[]*Outputs
 	err = serialization.WriteVarUint(w, uint64(len(tx.Outputs)))
 	if err != nil {
-		return errors.New("Transaction item Outputs length serialization failed.")
+		return errors.New("ElaTx item Outputs length serialization failed.")
 	}
 	if len(tx.Outputs) > 0 {
 		for _, output := range tx.Outputs {
@@ -291,8 +320,8 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	return nil
 }
 
-//deserialize the Transaction
-func (tx *Transaction) Deserialize(r io.Reader) error {
+//deserialize the ElaTx
+func (tx *ElaTx) Deserialize(r io.Reader) error {
 	// tx deserialize
 	err := tx.DeserializeUnsigned(r)
 	if err != nil {
@@ -320,7 +349,7 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
+func (tx *ElaTx) DeserializeUnsigned(r io.Reader) error {
 	var txType [1]byte
 	_, err := io.ReadFull(r, txType[:])
 	if err != nil {
@@ -330,14 +359,14 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	return tx.DeserializeUnsignedWithoutType(r)
 }
 
-func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
+func (tx *ElaTx) DeserializeUnsignedWithoutType(r io.Reader) error {
 	var payloadVersion [1]byte
 	_, err := io.ReadFull(r, payloadVersion[:])
 	tx.PayloadVersion = payloadVersion[0]
 	if err != nil {
 		return err
 	}
-	tx.Payload = SideAuxPowPayload{}
+	tx.Payload = SideMiningPayload{}
 	err = tx.Payload.Deserialize(r, tx.PayloadVersion)
 	if err != nil {
 		return errors.New("Payload Parse error")
@@ -396,4 +425,15 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 	}
 
 	return nil
+}
+
+func (tx *ElaTx) Hash() common.Uint256 {
+	buf := new(bytes.Buffer)
+	tx.SerializeUnsigned(buf)
+
+	temp := sha256.Sum256(buf.Bytes())
+	f := sha256.Sum256(temp[:])
+	hash := common.Uint256(f)
+
+	return hash
 }
