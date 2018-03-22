@@ -24,10 +24,11 @@ const (
 var PowLimit = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
 type Blockchain struct {
-	lock  *sync.RWMutex
-	state ChainState
+	lock       *sync.RWMutex
+	state      ChainState
 	Headers
 	DataStore
+	OnRollback func(height uint32)
 }
 
 func NewBlockchain() (*Blockchain, error) {
@@ -257,6 +258,8 @@ func (bc *Blockchain) rollbackTo(forkPoint Uint256) error {
 			log.Error("Rollback database failed, height: ", removed.Height, ", error: ", err)
 			return err
 		}
+		// Notify on rollback callback
+		bc.OnRollback(removed.Height)
 
 		if removed.Previous.IsEqual(&forkPoint) {
 			// Save current chain height

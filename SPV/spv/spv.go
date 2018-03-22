@@ -21,6 +21,9 @@ func InitSPV(walletId uint64) (*SPV, error) {
 	if err != nil {
 		return nil, err
 	}
+	spv.OnTxCommit = OnTxCommit
+	spv.chain.OnRollback = OnRollback
+	spv.OnBlockCommit = OnBlockCommit
 	spv.SyncManager = NewSyncManager()
 	spv.pm = p2p.NewPeerManager(walletId)
 
@@ -43,8 +46,10 @@ func InitSPV(walletId uint64) (*SPV, error) {
 
 type SPV struct {
 	*SyncManager
-	chain *db.Blockchain
-	pm    *p2p.PeerManager
+	chain         *db.Blockchain
+	OnTxCommit    func(txn tx.Transaction)
+	OnBlockCommit func(msg.MerkleBlock, []tx.Transaction)
+	pm            *p2p.PeerManager
 }
 
 func (spv *SPV) Start() {
@@ -56,6 +61,10 @@ func (spv *SPV) Start() {
 func (spv *SPV) Stop() {
 	spv.chain.Close()
 	log.Info("SPV service stopped...")
+}
+
+func (spv *SPV) BlockChain() *db.Blockchain {
+	return spv.chain
 }
 
 func (spv *SPV) keepUpdate() {
@@ -339,6 +348,9 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 		}
 		if fPositive {
 			spv.handleFPositive(1)
+		} else {
+			//	Notify on transaction callback
+			spv.OnTxCommit(txn.Transaction)
 		}
 
 	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {

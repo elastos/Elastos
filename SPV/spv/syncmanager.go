@@ -119,7 +119,7 @@ func (sm *SyncManager) requestBlocks() {
 		return
 	}
 
-	syncPeer.Send(msg)
+	go syncPeer.Send(msg)
 }
 
 func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
@@ -220,7 +220,7 @@ func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error
 	if err != nil {
 		return err
 	}
-	peer.Send(msg)
+	go peer.Send(msg)
 
 	return nil
 }
@@ -301,7 +301,7 @@ func (sm *SyncManager) CommitData() error {
 	}
 
 	// Save received blocks and txns to database
-	err = sm.saveToDB(connectedHeaders)
+	err = sm.commitToDB(connectedHeaders)
 	if err != nil {
 		// If anything goes wrong, change a sync peer and restart
 		log.Error("Save headers failed, disconnect")
@@ -341,12 +341,13 @@ func (sm *SyncManager) connectHeaders() ([]Uint256, error) {
 	}
 }
 
-func (sm *SyncManager) saveToDB(hashes []Uint256) error {
+func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 	// Get block txns and put header and txns into database in order,
 	// for each block save txns first and save block header
 	// if anything goes wrong, try to rollback and return error
 	for _, hash := range hashes {
-		header := sm.receivedBlocks[hash].BlockHeader
+		block := sm.receivedBlocks[hash]
+		header := block.BlockHeader
 		txnHashes := sm.blockTxns[hash]
 		txns := make([]tx.Transaction, len(txnHashes))
 		for i, hash := range txnHashes {
@@ -360,6 +361,8 @@ func (sm *SyncManager) saveToDB(hashes []Uint256) error {
 			return err
 		}
 		sm.handleFPositive(fPositives)
+		// Notify block commit callback
+		spv.OnBlockCommit(*block, txns)
 	}
 	return nil
 }

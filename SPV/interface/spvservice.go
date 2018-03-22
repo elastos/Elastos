@@ -18,27 +18,3 @@ func NewSPVService(clientId uint64) (SPVService, error) {
 		clientId: clientId,
 	}, nil
 }
-
-type SPVServiceImpl struct {
-	clientId uint64
-}
-
-func (service *SPVServiceImpl) RegisterAccount(address string) error {
-	return nil
-}
-
-func (service *SPVServiceImpl) OnTransactionConfirmed(callback func(msg.MerkleBlock, []tx.Transaction)) {
-
-}
-
-func (service *SPVServiceImpl) VerifyTransaction(block msg.MerkleBlock, txs []tx.Transaction) error {
-	return nil
-}
-
-func (service *SPVServiceImpl) SendTransaction(tx tx.Transaction) error {
-	return nil
-}
-
-func (service *SPVServiceImpl) Start() error {
-	return nil
-}
