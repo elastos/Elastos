@@ -18,20 +18,21 @@ func getSideMiningTx(msgBlockHash Uint256) *auxpow.ElaTx {
 
 func generateSideAuxPow(msgBlockHash Uint256) *auxpow.SideAuxPow {
 	sideAuxMerkleBranch := make([]Uint256, 0)
-	sideAuxMerkleIndex := uint32(0)
+	sideAuxMerkleIndex := 0
 	sideAuxBlockTx := getSideMiningTx(msgBlockHash)
 	elaBlockHeader := auxpow.ElaBlockHeader{
 		Version:          0x7fffffff,
 		PrevBlockHash:    Uint256{},
 		TransactionsRoot: sideAuxBlockTx.Hash(),
 		Timestamp:        uint32(time.Now().Unix()),
-		Bits:             0, // do not care about parent block diff
-		Nonce:            0, // to be solved
+		Bits:             0,
+		Nonce:            0,
 		Height:           0,
 		AuxPow:           auxpow.AuxPow{},
 	}
 
 	elahash := elaBlockHeader.Hash()
+	// fake a btc blockheader and coinbase
 	newAuxPow := generateAuxPow(elahash)
 	elaBlockHeader.AuxPow = *newAuxPow
 

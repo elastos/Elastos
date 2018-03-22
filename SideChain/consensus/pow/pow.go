@@ -120,7 +120,7 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
 	txAttr := tx.NewTxAttribute(tx.Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
-	log.Trace("txAttr", txAttr)
+	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }
@@ -283,8 +283,8 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 }
 
 func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) bool {
-	// fake a btc blockheader and coinbase
-	auxPow := generateAuxPow(MsgBlock.Hash())
+	// fake a mainchain blockheader
+	sideAuxPow := generateSideAuxPow(MsgBlock.Hash())
 	header := MsgBlock.Blockdata
 	targetDifficulty := ledger.CompactToBig(header.Bits)
 
@@ -300,10 +300,10 @@ func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) b
 			// Non-blocking select to fall through
 		}
 
-		auxPow.ParBlockHeader.Nonce = i
-		hash := auxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
+		sideAuxPow.AuxPow.ParBlockHeader.Nonce = i
+		hash := sideAuxPow.AuxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if ledger.HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			MsgBlock.Blockdata.SideAuxPow.AuxPow = *auxPow
+			MsgBlock.Blockdata.SideAuxPow = *sideAuxPow
 			return true
 		}
 	}
