@@ -24,6 +24,7 @@ const (
 type SyncManager struct {
 	*MemCache
 
+	dataLock       sync.RWMutex
 	blockLocator   []*Uint256
 	startHash      *Uint256
 	stopHash       *Uint256
@@ -65,12 +66,13 @@ func (sm *SyncManager) clear() {
 
 func (sm *SyncManager) startSync() {
 	log.Info("SyncManger start sync")
-	// Clear data cache
+	// Clear data first
 	sm.clear()
 	// Check if blockchain need sync
 	if sm.needSync() {
 		// Set blockchain state to syncing
 		spv.chain.SetChainState(db.SYNCING)
+		// Request blocks
 		sm.requestBlocks()
 	} else {
 		spv.chain.SetChainState(db.WAITING)
@@ -306,7 +308,6 @@ func (sm *SyncManager) CommitData() error {
 		sm.ChangeSyncPeerAndRestart()
 		return err
 	}
-
 	// Continue syncing blocks
 	sm.startSync()
 
