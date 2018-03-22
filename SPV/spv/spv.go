@@ -174,8 +174,7 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 	// Remove from connecting list
 	spv.pm.RemoveFromConnectingList(peer)
 
-	buf, _ := msg.NewFilterLoadMsg(spv.chain.GetFilter())
-	go peer.Send(buf)
+	spv.broadcastFilterLoad()
 
 	if spv.pm.NeedMorePeers() {
 		buf, _ := msg.NewAddrsReqMsg()
@@ -265,14 +264,14 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 	return nil
 }
 
-func (spv *SPV) AddToFilter(hash []byte) error {
-	filter := spv.chain.GetFilter()
-	filter.Add(hash)
-
+func (spv *SPV) broadcastFilterLoad() {
 	// Broadcast filterload message to connected peers
 	buf, _ := msg.NewFilterLoadMsg(spv.chain.GetFilter())
 	spv.pm.Broadcast(buf)
+}
 
+func (spv *SPV) NotifyNewAddress(hash []byte) error {
+	spv.broadcastFilterLoad()
 	return nil
 }
 
@@ -358,7 +357,13 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 			return errors.New("Received transaction already cached")
 		}
 		// Put txn into unconfirmed txnpool
-		return spv.chain.CommitUnconfirmedTxn(txn.Transaction)
+		fPositive, err := spv.chain.CommitUnconfirmedTxn(txn.Transaction)
+		if err != nil {
+			return err
+		}
+		if fPositive {
+			spv.handleFPositive(1)
+		}
 
 	} else if spv.blockLocator == nil || spv.pm.GetSyncPeer() == nil || spv.pm.GetSyncPeer().ID() != peer.ID() {
 
@@ -372,7 +377,7 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	// All request finished, submit received block and txn data
 	if spv.RequestFinished() {
 		log.Trace("Request finished submit data")
-		return spv.SubmitData()
+		return spv.CommitData()
 	}
 
 	return nil

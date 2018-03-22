@@ -11,8 +11,8 @@ import (
 )
 
 type Listeners struct {
-	AddToFilter     func(hash []byte) error
-	SendTransaction func(tx.Transaction) error
+	NotifyNewAddress func(hash []byte) error
+	SendTransaction  func(tx.Transaction) error
 }
 
 var listeners *Listeners
@@ -22,8 +22,8 @@ func InitServer(ls *Listeners) *Server {
 	server := &Server{
 		Server: http.Server{Addr: ":" + RPCPort},
 		methods: map[string]func(Req) Resp{
-			"addtofilter":     AddToFilter,
-			"sendtransaction": SendTransaction,
+			"notifynewaddress": NotifyNewAddress,
+			"sendtransaction":  SendTransaction,
 		},
 	}
 	http.HandleFunc("/", server.handle)

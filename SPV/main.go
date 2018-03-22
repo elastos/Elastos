@@ -42,8 +42,8 @@ func main() {
 
 	// Start RPC service
 	server := rpc.InitServer(&rpc.Listeners{
-		AddToFilter:     service.AddToFilter,
-		SendTransaction: service.SendTransaction,
+		NotifyNewAddress: service.NotifyNewAddress,
+		SendTransaction:  service.SendTransaction,
 	})
 
 	// Handle interrupt signal

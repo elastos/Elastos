@@ -19,10 +19,10 @@ func GetClient() *Client {
 	return &Client{url: RPCAddr}
 }
 
-func (client *Client) AddToFilter(hash []byte) error {
+func (client *Client) NotifyNewAddress(hash []byte) error {
 	resp := client.send(
 		&Req{
-			Method: "addtofilter",
+			Method: "notifynewaddress",
 			Params: map[string]interface{}{"address": hex.EncodeToString(hash)},
 		},
 	)

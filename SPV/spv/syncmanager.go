@@ -16,8 +16,9 @@ import (
 )
 
 const (
-	SyncReqTimeout = 15
-	MaxRetryTimes  = 10
+	SyncReqTimeout    = 15
+	MaxRetryTimes     = 10
+	MaxFalsePositives = 7
 )
 
 type SyncManager struct {
@@ -32,6 +33,7 @@ type SyncManager struct {
 	receivedBlocks map[Uint256]*MerkleBlock
 	receivedTxns   map[Uint256]*Txn
 	retryTimes     int
+	fPositives     int
 }
 
 func NewSyncManager() *SyncManager {
@@ -182,7 +184,7 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 	// If all blocks received and no more txn to request, submit received block and txn data
 	if sm.RequestFinished() && len(txIds) == 0 {
 		log.Trace("Request finished submit data")
-		return sm.SubmitData()
+		return sm.CommitData()
 	}
 
 	var blockTxns = make([]Uint256, len(txIds))
@@ -286,7 +288,7 @@ func (sm *SyncManager) RequestFinished() bool {
 	return finished
 }
 
-func (sm *SyncManager) SubmitData() error {
+func (sm *SyncManager) CommitData() error {
 	sm.queueLock.RLock()
 	defer sm.queueLock.RUnlock()
 
@@ -352,10 +354,19 @@ func (sm *SyncManager) saveToDB(hashes []Uint256) error {
 		}
 
 		// Commit block data to blockchain
-		err := spv.chain.CommitBlock(header, txns)
+		fPositives, err := spv.chain.CommitBlock(header, txns)
 		if err != nil {
 			return err
 		}
+		sm.handleFPositive(fPositives)
 	}
 	return nil
+}
+
+func (sm *SyncManager) handleFPositive(fPositives int) {
+	sm.fPositives += fPositives
+	if sm.fPositives > MaxFalsePositives {
+		spv.broadcastFilterLoad()
+		sm.fPositives = 0
+	}
 }

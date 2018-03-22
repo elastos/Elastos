@@ -109,7 +109,7 @@ func (wallet *WalletImpl) NewSubAccount(password []byte) (*Uint168, error) {
 	}
 
 	// Notify SPV service to reload bloom filter with the new address
-	rpc.GetClient().AddToFilter(account.ProgramHash().ToArray())
+	rpc.GetClient().NotifyNewAddress(account.ProgramHash().ToArray())
 
 	return account.ProgramHash(), nil
 }
@@ -131,7 +131,7 @@ func (wallet *WalletImpl) AddMultiSignAccount(M int, publicKeys ...*crypto.Publi
 	}
 
 	// Notify SPV service to reload bloom filter with the new address
-	rpc.GetClient().AddToFilter(programHash.ToArray())
+	rpc.GetClient().NotifyNewAddress(programHash.ToArray())
 
 	return programHash, nil
 }

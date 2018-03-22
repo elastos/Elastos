@@ -7,7 +7,7 @@ import (
 	tx "SPVWallet/core/transaction"
 )
 
-func AddToFilter(req Req) Resp {
+func NotifyNewAddress(req Req) Resp {
 	data, ok := req.Params["address"]
 	if !ok {
 		return FunctionError("Address parameter not exist")
@@ -18,11 +18,11 @@ func AddToFilter(req Req) Resp {
 		if err != nil {
 			return FunctionError(err.Error())
 		}
-		err = listeners.AddToFilter(addr)
+		err = listeners.NotifyNewAddress(addr)
 		if err != nil {
 			return FunctionError(err.Error())
 		}
-		return Success("Address has add to filter")
+		return Success("New address received")
 	default:
 		return FunctionError("Invalid data type")
 	}

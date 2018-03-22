@@ -163,7 +163,6 @@ func (db *SQLiteDB) GetFilter() *bloom.Filter {
 		filter.AddOutPoint(&stxo.Op)
 	}
 
-	log.Trace("Bloom filter:", *filter)
 	return filter
 }
 

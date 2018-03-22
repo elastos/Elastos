@@ -149,21 +149,22 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 	return ret
 }
 
-func (bc *Blockchain) CommitUnconfirmedTxn(txn tx.Transaction) error {
+func (bc *Blockchain) CommitUnconfirmedTxn(txn tx.Transaction) (bool, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
 	return bc.commitTxn(bc.Addrs().GetFilter(), 0, txn)
 }
 
-func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
+// Commit block commits a block and transactions with it, return false positive counts
+func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) (int, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
 	// Get current chain tip
 	tip, err := bc.Headers.GetTip()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Check if commit block is a reorganize block, if so rollback to the fork point
@@ -171,32 +172,38 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) error {
 		log.Debug("Blockchain rollback to:", header.Previous.String())
 		err = bc.rollbackTo(header.Previous)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
 
+	fPositives := 0
 	// Save transactions first
 	for _, txn := range txns {
-		err := bc.commitTxn(bc.Addrs().GetFilter(), header.Height, txn)
+		fPositive, err := bc.commitTxn(bc.Addrs().GetFilter(), header.Height, txn)
 		if err != nil {
-			return err
+			return 0, err
+		}
+		if fPositive {
+			fPositives++
 		}
 	}
 
 	// Save header to db
 	err = bc.Headers.Add(&header)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Save current chain height
 	bc.DataStore.Info().SaveChainHeight(header.Height)
 
-	return nil
+	return fPositives, nil
 }
 
-func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transaction) error {
+// Commit a transaction to database, return if the committed transaction is a false positive
+func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transaction) (bool, error) {
 	txId := txn.Hash()
+	hits := 0
 	// Save UTXOs
 	for index, output := range txn.Outputs {
 		if filter.ContainAddress(output.ProgramHash) {
@@ -206,8 +213,9 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 			utxo := ToStordUTXO(txId, height, index, output)
 			err := bc.UTXOs().Put(&output.ProgramHash, utxo)
 			if err != nil {
-				return err
+				return false, err
 			}
+			hits++
 		}
 	}
 
@@ -216,16 +224,24 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 		// Create output
 		outpoint := tx.NewOutPoint(input.ReferTxID, input.ReferTxOutputIndex)
 		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
-		bc.STXOs().FromUTXO(outpoint, txId, height)
+		err := bc.STXOs().FromUTXO(outpoint, txId, height)
+		if err == nil {
+			hits++
+		}
+	}
+
+	// If no hits, no need to save transaction
+	if hits == 0 {
+		return true, nil
 	}
 
 	// Save transaction
 	err := bc.TXNs().Put(ToStordTxn(&txn, height))
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return false, nil
 }
 
 func (bc *Blockchain) rollbackTo(forkPoint Uint256) error {
