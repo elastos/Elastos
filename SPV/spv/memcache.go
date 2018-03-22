@@ -41,7 +41,7 @@ func (cache *MemCache) addToCache(hash Uint256) {
 	cache.hashMap[hash] = cache.index
 	// Increase index
 	cache.lastTxn = hash
-	cache.index = cache.index + 1%MaxMemCacheSize
+	cache.index = (cache.index + 1) % MaxMemCacheSize
 }
 
 func (cache *MemCache) TxCached(txId Uint256) bool {
