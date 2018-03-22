@@ -162,9 +162,12 @@ func (ap *AuxPow) Check(hashAuxBlock Uint256, chainId int) bool {
 		return false
 	}
 
-	hashAuxBlockBytes := hashAuxBlock.ToArrayReverse()
-	hashAuxBlockReverse, _ := Uint256ParseFromBytes(hashAuxBlockBytes)
-	auxRootHash := CheckMerkleBranch(hashAuxBlockReverse, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
+	if len(ap.AuxMerkleBranch) > 0 {
+		hashAuxBlockBytes := hashAuxBlock.ToArrayReverse()
+		hashAuxBlock, _ = Uint256ParseFromBytes(hashAuxBlockBytes)
+	}
+
+	auxRootHash := CheckMerkleBranch(hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
 
 	script := ap.ParCoinbaseTx.TxIn[0].SignatureScript
 	scriptStr := hex.EncodeToString(script)

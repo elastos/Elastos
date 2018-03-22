@@ -3,7 +3,6 @@ package ledger
 import (
 	. "Elastos.ELA.SideChain/common"
 	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/core/auxpow"
 	tx "Elastos.ELA.SideChain/core/transaction"
 	"Elastos.ELA.SideChain/crypto"
 	. "Elastos.ELA.SideChain/errors"
@@ -21,11 +20,11 @@ const (
 
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Blockdata
-	if !header.SideAuxPow.AuxPow.Check(header.Hash(), auxpow.AuxPowChainID) {
-		return errors.New("[PowCheckBlockSanity] block check proof is failed")
+	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
+		return errors.New("[PowCheckBlockSanity] sideAuxPow check failed")
 	}
 	if CheckProofOfWork(header, powLimit) != nil {
-		return errors.New("[PowCheckBlockSanity] block check proof is failed.")
+		return errors.New("[PowCheckBlockSanity] proof of work check failed.")
 	}
 
 	// A block timestamp must not have a greater precision than one second.
