@@ -5,6 +5,7 @@ import (
 
 	"SPVWallet/core"
 	tx "SPVWallet/core/transaction"
+	"fmt"
 )
 
 type UTXO struct {
@@ -19,6 +20,16 @@ type UTXO struct {
 
 	// Block height where this tx was confirmed, 0 for unconfirmed
 	AtHeight uint32
+}
+
+func (utxo *UTXO) String() string {
+	return fmt.Sprint(
+		"UTXO:{",
+		"Op:{TxID:", utxo.Op.TxID.String(), ", Index:", utxo.Op.Index, "},",
+		"Value:", utxo.Value.String(), ",",
+		"LockTime:", utxo.LockTime, ",",
+		"AtHeight:", utxo.AtHeight,
+		"}")
 }
 
 func (utxo *UTXO) IsEqual(alt *UTXO) bool {

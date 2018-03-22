@@ -72,7 +72,7 @@ type UTXOs interface {
 
 type STXOs interface {
 	// Move a UTXO to STXO
-	FromUTXO(outPoint *tx.OutPoint, spendHeight uint32, spendTxId *Uint256) error
+	FromUTXO(outPoint *tx.OutPoint, spendTxId *Uint256, spendHeight uint32) error
 
 	// get a stxo from database
 	Get(outPoint *tx.OutPoint) (*STXO, error)

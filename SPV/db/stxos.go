@@ -32,7 +32,7 @@ func NewSTXOsDB(db *sql.DB, lock *sync.RWMutex) (STXOs, error) {
 }
 
 // Move a UTXO to STXO
-func (db *STXOsDB) FromUTXO(outPoint *tx.OutPoint, spendHeight uint32, spendTxId *Uint256) error {
+func (db *STXOsDB) FromUTXO(outPoint *tx.OutPoint, spendTxId *Uint256, spendHeight uint32) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -43,21 +43,19 @@ func (db *STXOsDB) FromUTXO(outPoint *tx.OutPoint, spendHeight uint32, spendTxId
 
 	stmt, err := tx.Prepare(
 		`INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash, SpendHash, SpendHeight)
-				VALUES(SELECT OutPoint, Value, LockTime, AtHeight, ScriptHash FROM UTXOs WHERE OutPoint=?,?,?)`)
+				SELECT UTXOs.OutPoint, UTXOs.Value, UTXOs.LockTime, UTXOs.AtHeight, UTXOs.ScriptHash, ?, ? FROM UTXOs
+				WHERE OutPoint=?`)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(spendTxId.Bytes(), spendHeight, outPoint.Bytes())
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(outPoint.Bytes(), spendTxId.Bytes(), spendHeight)
-	if err != nil {
-		return err
-	}
-
-	stmt, err = tx.Prepare("DELETE FROM UTXOs WHERE OutPoint=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(outPoint.Bytes())
+	_, err = tx.Exec("DELETE FROM UTXOs WHERE OutPoint=?", outPoint.Bytes())
 	if err != nil {
 		return err
 	}
@@ -94,7 +92,7 @@ func (db *STXOsDB) Get(outPoint *tx.OutPoint) (*STXO, error) {
 		return nil, err
 	}
 
-	return &STXO{UTXO: utxo, SpendTxid: *spendHash, SpendHeight: spendHeight}, nil
+	return &STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight}, nil
 }
 
 // get stxos of the given script hash from database
@@ -154,7 +152,7 @@ func (db *STXOsDB) getSTXOs(rows *sql.Rows) ([]*STXO, error) {
 			return stxos, err
 		}
 
-		stxos = append(stxos, &STXO{UTXO: utxo, SpendTxid: *spendHash, SpendHeight: spendHeight})
+		stxos = append(stxos, &STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight})
 	}
 
 	return stxos, nil

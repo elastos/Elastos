@@ -1,6 +1,9 @@
 package db
 
-import "SPVWallet/core"
+import (
+	"SPVWallet/core"
+	"fmt"
+)
 
 type STXO struct {
 	// When it used to be a UTXO
@@ -10,9 +13,20 @@ type STXO struct {
 	SpendHeight uint32
 
 	// The tx that consumed it
-	SpendTxid core.Uint256
+	SpendTxId core.Uint256
 }
 
+func (stxo *STXO) String() string {
+	return fmt.Sprint(
+		"STXO:{",
+		"UTXO:{",
+		"Op:{TxID:", stxo.Op.TxID.String(), ", Index:", stxo.Op.Index, "},",
+		"Value:", stxo.Value.String(), ",",
+		"LockTime:", stxo.LockTime, ",",
+		"AtHeight:", stxo.AtHeight, "},",
+		"SendHeight:", stxo.SpendHeight, ",",
+		"SpendTxId:", stxo.SpendTxId.String(), "}")
+}
 func (stxo *STXO) IsEqual(alt *STXO) bool {
 	if alt == nil {
 		return stxo == nil
@@ -26,7 +40,7 @@ func (stxo *STXO) IsEqual(alt *STXO) bool {
 		return false
 	}
 
-	if !stxo.SpendTxid.IsEqual(&alt.SpendTxid) {
+	if !stxo.SpendTxId.IsEqual(&alt.SpendTxId) {
 		return false
 	}
 

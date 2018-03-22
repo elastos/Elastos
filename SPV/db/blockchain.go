@@ -216,7 +216,7 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 		// Create output
 		outpoint := tx.NewOutPoint(input.ReferTxID, input.ReferTxOutputIndex)
 		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
-		bc.STXOs().FromUTXO(outpoint, height, txId)
+		bc.STXOs().FromUTXO(outpoint, txId, height)
 	}
 
 	// Save transaction
