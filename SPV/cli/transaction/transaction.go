@@ -3,17 +3,17 @@ package transaction
 import (
 	"os"
 	"fmt"
-	"bufio"
 	"bytes"
+	"bufio"
 	"errors"
 	"strings"
 	"strconv"
 	"io/ioutil"
 
-	"SPVWallet/log"
 	. "SPVWallet/core"
 	. "SPVWallet/cli/common"
 	tx "SPVWallet/core/transaction"
+	"SPVWallet/log"
 	walt "SPVWallet/wallet"
 
 	"github.com/urfave/cli"
@@ -32,76 +32,86 @@ func listTransactions(c *cli.Context, wallet walt.Wallet) error {
 	return nil
 }
 
-func createTransaction(c *cli.Context, wallet walt.Wallet) error {
+func CreateTransaction(c *cli.Context, wallet walt.Wallet) error {
+	txn, err := createTransaction(c, wallet)
+	if err != nil {
+		return err
+	}
+	return output(txn)
+}
 
+func createTransaction(c *cli.Context, wallet walt.Wallet) (*tx.Transaction, error) {
 	feeStr := c.String("fee")
 	if feeStr == "" {
-		return errors.New("use --fee to specify transfer fee")
+		return nil, errors.New("use --fee to specify transfer fee")
 	}
 
 	fee, err := StringToFixed64(feeStr)
 	if err != nil {
-		return errors.New("invalid transaction fee")
+		return nil, errors.New("invalid transaction fee")
 	}
 
 	from := c.String("from")
 	if from == "" {
 		from, err = SelectAccount(wallet)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
+	var txn *tx.Transaction
+
 	multiOutput := c.String("file")
 	if multiOutput != "" {
-		return createMultiOutputTransaction(c, wallet, multiOutput, from, fee)
+		txn, err = createMultiOutputTransaction(c, wallet, multiOutput, from, fee)
+		if err != nil {
+			return nil, err
+		}
+		return txn, nil
 	}
 
 	to := c.String("to")
 	if to == "" {
-		return errors.New("use --to to specify receiver address")
+		return nil, errors.New("use --to to specify receiver address")
 	}
 
 	amountStr := c.String("amount")
 	if amountStr == "" {
-		return errors.New("use --amount to specify transfer amount")
+		return nil, errors.New("use --amount to specify transfer amount")
 	}
 
 	amount, err := StringToFixed64(amountStr)
 	if err != nil {
-		return errors.New("invalid transaction amount")
+		return nil, errors.New("invalid transaction amount")
 	}
 
 	lockStr := c.String("lock")
-	var txn *tx.Transaction
 	if lockStr == "" {
 		txn, err = wallet.CreateTransaction(from, to, amount, fee)
 		if err != nil {
-			return errors.New("create transaction failed: " + err.Error())
+			return nil, errors.New("create transaction failed: " + err.Error())
 		}
 	} else {
 		lock, err := strconv.ParseUint(lockStr, 10, 32)
 		if err != nil {
-			return errors.New("invalid lock height")
+			return nil, errors.New("invalid lock height")
 		}
 		txn, err = wallet.CreateLockedTransaction(from, to, amount, fee, uint32(lock))
 		if err != nil {
-			return errors.New("create transaction failed: " + err.Error())
+			return nil, errors.New("create transaction failed: " + err.Error())
 		}
 	}
 
-	output(txn)
-
-	return nil
+	return txn, nil
 }
 
-func createMultiOutputTransaction(c *cli.Context, wallet walt.Wallet, path, from string, fee *Fixed64) error {
+func createMultiOutputTransaction(c *cli.Context, wallet walt.Wallet, path, from string, fee *Fixed64) (*tx.Transaction, error) {
 	if _, err := os.Stat(path); err != nil {
-		return errors.New("invalid multi output file path")
+		return nil, errors.New("invalid multi output file path")
 	}
 	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
 	if err != nil {
-		return errors.New("open multi output file failed")
+		return nil, errors.New("open multi output file failed")
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -109,12 +119,12 @@ func createMultiOutputTransaction(c *cli.Context, wallet walt.Wallet, path, from
 	for scanner.Scan() {
 		columns := strings.Split(scanner.Text(), ",")
 		if len(columns) < 2 {
-			return errors.New(fmt.Sprint("invalid multi output line:", columns))
+			return nil, errors.New(fmt.Sprint("invalid multi output line:", columns))
 		}
 		amountStr := strings.TrimSpace(columns[1])
 		amount, err := StringToFixed64(amountStr)
 		if err != nil {
-			return errors.New("invalid multi output transaction amount: " + amountStr)
+			return nil, errors.New("invalid multi output transaction amount: " + amountStr)
 		}
 		address := strings.TrimSpace(columns[0])
 		multiOutput = append(multiOutput, &walt.Output{address, amount})
@@ -126,55 +136,70 @@ func createMultiOutputTransaction(c *cli.Context, wallet walt.Wallet, path, from
 	if lockStr == "" {
 		txn, err = wallet.CreateMultiOutputTransaction(from, fee, multiOutput...)
 		if err != nil {
-			return errors.New("create multi output transaction failed: " + err.Error())
+			return nil, errors.New("create multi output transaction failed: " + err.Error())
 		}
 	} else {
 		lock, err := strconv.ParseUint(lockStr, 10, 32)
 		if err != nil {
-			return errors.New("invalid lock height")
+			return nil, errors.New("invalid lock height")
 		}
 		txn, err = wallet.CreateLockedMultiOutputTransaction(from, fee, uint32(lock), multiOutput...)
 		if err != nil {
-			return errors.New("create multi output transaction failed: " + err.Error())
+			return nil, errors.New("create multi output transaction failed: " + err.Error())
 		}
 	}
 
-	output(txn)
-
-	return nil
+	return txn, nil
 }
 
-func signTransaction(password []byte, context *cli.Context, wallet walt.Wallet) error {
-
+func SignTransaction(password []byte, context *cli.Context, wallet walt.Wallet) error {
 	txn, err := getTransaction(context)
 	if err != nil {
 		return err
 	}
 
+	txn, err = signTransaction(password, wallet, txn)
+	if err != nil {
+		return err
+	}
+
+	return output(txn)
+}
+
+func signTransaction(password []byte, wallet walt.Wallet, txn *tx.Transaction) (*tx.Transaction, error) {
 	haveSign, needSign, err := txn.GetSignStatus()
 	if haveSign == needSign {
-		return errors.New("transaction was fully signed, no need more sign")
+		return nil, errors.New("transaction was fully signed, no need more sign")
 	}
 
 	password, err = GetPassword(password, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	_, err = wallet.Sign(password, txn)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	output(txn)
-
-	return nil
+	return txn, nil
 }
 
-func sendTransaction(context *cli.Context, wallet walt.Wallet) error {
-	txn, err := getTransaction(context)
-	if err != nil {
-		return err
+func SendTransaction(password []byte, context *cli.Context, wallet walt.Wallet) error {
+	content, err := getContent(context)
+
+	var txn *tx.Transaction
+	if content == nil {
+		// Create transaction with command line arguments
+		txn, err = createTransaction(context, wallet)
+		if err != nil {
+			return err
+		}
+		// Sign transaction
+		txn, err = signTransaction(password, wallet, txn)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = wallet.SendTransaction(txn)
@@ -187,8 +212,7 @@ func sendTransaction(context *cli.Context, wallet walt.Wallet) error {
 	return nil
 }
 
-func getTransaction(context *cli.Context) (*tx.Transaction, error) {
-
+func getContent(context *cli.Context) (*string, error) {
 	var content string
 	// If parameter with file path is not empty, read content from file
 	if filePath := strings.TrimSpace(context.String("file")); filePath != "" {
@@ -217,8 +241,16 @@ func getTransaction(context *cli.Context) (*tx.Transaction, error) {
 			return nil, errors.New("transaction hex string is empty")
 		}
 	}
+	return &content, nil
+}
 
-	rawData, err := HexStringToBytes(content)
+func getTransaction(context *cli.Context) (*tx.Transaction, error) {
+	content, err := getContent(context)
+	if err != nil {
+		return nil, err
+	}
+
+	rawData, err := HexStringToBytes(*content)
 	if err != nil {
 		return nil, errors.New("decode transaction content failed")
 	}
@@ -292,7 +324,7 @@ func transactionAction(context *cli.Context) {
 
 	// create transaction
 	if context.Bool("create") {
-		if err := createTransaction(context, wallet); err != nil {
+		if err := CreateTransaction(context, wallet); err != nil {
 			fmt.Println("error:", err)
 			cli.ShowCommandHelpAndExit(context, "create", 701)
 		}
@@ -300,7 +332,7 @@ func transactionAction(context *cli.Context) {
 
 	// sign transaction
 	if context.Bool("sign") {
-		if err := signTransaction([]byte(pass), context, wallet); err != nil {
+		if err := SignTransaction([]byte(pass), context, wallet); err != nil {
 			fmt.Println("error:", err)
 			cli.ShowCommandHelpAndExit(context, "sign", 702)
 		}
@@ -308,7 +340,7 @@ func transactionAction(context *cli.Context) {
 
 	// send transaction
 	if context.Bool("send") {
-		if err := sendTransaction(context, wallet); err != nil {
+		if err := SendTransaction([]byte(pass), context, wallet); err != nil {
 			fmt.Println("error:", err)
 			cli.ShowCommandHelpAndExit(context, "send", 703)
 
@@ -335,11 +367,13 @@ func NewCommand() cli.Command {
 			},
 			cli.BoolFlag{
 				Name:  "sign",
-				Usage: "use --content to specify the transaction file path or it's content",
+				Usage: "use --hex or --file to pass the transaction content or transaction file path",
 			},
 			cli.BoolFlag{
-				Name:  "send",
-				Usage: "use --content to specify the transaction file path or it's content",
+				Name: "send",
+				Usage: "use --hex or --file to pass the transaction content or transaction file path\n" +
+					"\tor use [--from] --to --amount --fee [--lock], or [--from] --file --fee [--lock]\n" +
+					"\tto create a standard transaction, or multi output transaction and send it",
 			},
 			cli.StringFlag{
 				Name: "from",
