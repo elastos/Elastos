@@ -28,13 +28,19 @@ func generateSideAuxPow(msgBlockHash Uint256) *auxpow.SideAuxPow {
 		Bits:             0, // do not care about parent block diff
 		Nonce:            0, // to be solved
 		Height:           0,
+		AuxPow:           auxpow.AuxPow{},
 	}
-	auxPow := auxpow.NewSideAuxPow(
+
+	elahash := elaBlockHeader.Hash()
+	newAuxPow := generateAuxPow(elahash)
+	elaBlockHeader.AuxPow = *newAuxPow
+
+	sideAuxPow := auxpow.NewSideAuxPow(
 		sideAuxMerkleBranch,
 		sideAuxMerkleIndex,
 		*sideAuxBlockTx,
 		elaBlockHeader,
 	)
 
-	return auxPow
+	return sideAuxPow
 }

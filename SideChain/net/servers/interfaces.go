@@ -1,7 +1,7 @@
 package servers
 
 import (
-	"ELA/core/auxpow"
+	"Elastos.ELA.SideChain/core/auxpow"
 	"bytes"
 	"fmt"
 	"time"
