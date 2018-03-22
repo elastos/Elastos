@@ -26,6 +26,7 @@ public class FriendMessageTest {
 	private static TestHandler handler;
 	private static RobotProxy robotProxy;
 	private static String robotId;
+	private static String robotAddress;
 
 	private static Context getAppContext() {
 		return InstrumentationRegistry.getTargetContext();
@@ -40,23 +41,22 @@ public class FriendMessageTest {
 
 		String from;
 		String msgBody;
+		ConnectionStatus friendStatus;
 
 		public void onReady(Carrier carrier) {
 			synch.wakeup();
 		}
 
-		public void onFriendAdded(Carrier carrier, FriendInfo info) {
+		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
+			from = friendId;
+			friendStatus = status;
 			synch.wakeup();
 		}
 
-		public void onFriendRemoved(Carrier carrier, String friendId) {
-			synch.wakeup();
-		}
-
-		public void onFriendMessage(Carrier whisper, String from, String message) {
-			this.msgBody = message;
-			this.from = from.split("@")[0];
-			Log.i(TAG, "this.from " + this.from);
+		public void onFriendMessage(Carrier whisper, String friendId, String message) {
+			msgBody = message;
+			from = friendId;
+			Log.i(TAG, "Get a message (" + message + ") from (" + friendId + ")");
 			synch.wakeup();
 		}
 	}
@@ -65,7 +65,8 @@ public class FriendMessageTest {
 		private Synchronizer synch = new Synchronizer();
 
 		@Override
-		public void onReceived(String userId) {
+		public void onReceived(String address, String userId) {
+			robotAddress = address;
 			robotId = userId;
 			synch.wakeup();
 		}
@@ -146,9 +147,8 @@ public class FriendMessageTest {
 	private void makeFriendAnyWay(String userId) {
 		try {
 			if (!carrierInst.isFriend(userId)) {
-				carrierInst.addFriend(robotId, "auto confirmed");
-				handler.synch.await(); // for friend request reply.
-				handler.synch.await(); // for friend added.
+				carrierInst.addFriend(robotAddress, "auto confirmed");
+				handler.synch.await(); // for friend connected.
 			}
 		} catch (ElastosException e) {
 			e.printStackTrace();
@@ -165,7 +165,7 @@ public class FriendMessageTest {
 			carrierInst.sendFriendMessage(robotId, TAG);
 			robotProxy.waitForMessageArrival();
 
-			robotProxy.tellRobotSendMeMessage(carrierInst.getUserId(), hello);
+			robotProxy.tellRobotSendMessage(carrierInst.getUserId(), hello);
 			handler.synch.await();
 
 			assertEquals(handler.from, robotId);

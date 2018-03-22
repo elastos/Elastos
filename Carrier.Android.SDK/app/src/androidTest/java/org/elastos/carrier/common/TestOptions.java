@@ -8,10 +8,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.elastos.carrier.Carrier.Options;
+import org.elastos.carrier.Log;
 
 public class TestOptions extends Options {
     public TestOptions(String path) {
         super();
+
+        File file = new File(path);
+        if (file.exists()) {
+            Log.i("TestOptions", "Delete Path:  " + path);
+            file.delete();
+        }
+        file.mkdir();
 
         try {
             setUdpEnabled(true);
@@ -52,11 +60,5 @@ public class TestOptions extends Options {
         } catch (Exception e){
             e.printStackTrace();
         }
-
-        File file = new File(path + "/.dhtdata");
-        file.delete();
-
-        file = new File(path + "/.dhtdata");
-        file.delete();
     }
 }

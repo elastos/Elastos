@@ -30,27 +30,29 @@ public class FriendAddTest {
 	private static TestHandler handler;
 	private static RobotProxy robotProxy;
 	private static String robotId;
+	private static String robotAddress;
 
 	private static Context getAppContext() {
 		return InstrumentationRegistry.getTargetContext();
 	}
 
 	private static String getAppPath() {
-		return getAppContext().getFilesDir().getAbsolutePath();
+		return getAppContext().getFilesDir().getAbsolutePath() + "-1";
 	}
 
 	static class TestHandler extends AbstractCarrierHandler {
 		Synchronizer synch = new Synchronizer();
+		String from;
+		ConnectionStatus friendStatus;
 
 		public void onReady(Carrier carrier) {
+			Log.i(TAG, "FriendAddTest on ready");
 			synch.wakeup();
 		}
 
-		public void onFriendRemoved(Carrier carrier, String friendId) {
-			synch.wakeup();
-		}
-
-		public void onFriendAdded(Carrier carrier, FriendInfo info) {
+		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
+			from = friendId;
+			friendStatus = status;
 			synch.wakeup();
 		}
 	}
@@ -59,7 +61,8 @@ public class FriendAddTest {
 		private Synchronizer synch = new Synchronizer();
 
 		@Override
-		public void onReceived(String userId) {
+		public void onReceived(String address, String userId) {
+			robotAddress = address;
 			robotId = userId;
 			synch.wakeup();
 		}
@@ -74,14 +77,13 @@ public class FriendAddTest {
 			TestReceiver receiver = new TestReceiver();
 			robotProxy = RobotProxy.getRobot(getAppContext());
 			robotProxy.bindRobot(receiver);
-			Log.i(TAG, "RobotProxy starting.....");
 			receiver.synch.await();
-
-			Log.i(TAG, "RobotProxy started.");
 
 			carrierInst = Carrier.getInstance(options, handler);
 			carrierInst.start(1000);
 			handler.synch.await();
+
+			Log.i(TAG, "carrier client is ready now");
 		} catch (ElastosException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -114,7 +116,7 @@ public class FriendAddTest {
 	private void makeFriendAnyWay(String userId) {
 		try {
 			if (!carrierInst.isFriend(userId)) {
-				carrierInst.addFriend(robotId, "auto confirmed");
+				carrierInst.addFriend(robotAddress, "auto confirmed");
 				handler.synch.await(); // for friend request reply.
 				handler.synch.await(); // for friend added.
 			}
@@ -124,53 +126,34 @@ public class FriendAddTest {
 		}
 	}
 
+	@Test
+	public void testAddedFriendAndAccepted() {
+		removeFriendAnyWay(robotId);
+
+		try {
+			Thread.sleep(100);
+		} catch (Exception e) {
+		}
+
+		try {
+			assertEquals(carrierInst.isFriend(robotId), false);
+
+			carrierInst.addFriend(robotAddress, "hello");
+			robotProxy.waitForRequestArrival();
+			robotProxy.testRobotAcceptFriend(carrierInst.getUserId());
+
+			handler.synch.await(); // for friend connection.;
+			assertEquals(handler.from, robotId);
+			assertEquals(handler.friendStatus, ConnectionStatus.Connected);
+			assertEquals(carrierInst.isFriend(handler.from), true);
+		} catch (ElastosException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+	}
+
 	/*
-	@Test
-	public void testConfirmFriendRequest() {
-		removeFriendAnyWay(robotId);
-
-		try {
-			carrierInst.friendRequest(robotId, "hello");
-			robotProxy.waitForRequestArrival();
-			robotProxy.tellRobotConfirmFriendRequest(carrierInst.getUserId(), "2017-12-12,12:12");
-
-			handler.synch.await(); // for response;
-			assertEquals(handler.from, robotId);
-			assertEquals(handler.status, 0);
-			assertNull(handler.reason);
-			assertEquals(handler.entrusted, false);
-
-			handler.synch.await(); // for friend added.
-			assertTrue(whisperInst.isFriend(robotId));
-		} catch (WhisperException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
-	}
-
-	@Test
-	public void testRejectFriendRequest() {
-		removeFriendAnyWay(robotId);
-
-		try {
-			whisperInst.friendRequest(robotId, "hello");
-			robotProxy.waitForRequestArrival();
-			robotProxy.tellRobotRejectFriendRequest(whisperInst.getUserId(), "test error");
-			handler.synch.await();
-
-			assertEquals(handler.from, robotId);
-			assertEquals(handler.status, -1);
-			assertNotNull(handler.reason);
-			assertNull(handler.expire);
-			assertEquals(handler.entrusted, false);
-		} catch (WhisperException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
-	}
-	*/
-
-	@Test
+	//@Test
 	public void testAlreadyBeFriend() {
 		makeFriendAnyWay(robotId);
 
@@ -181,4 +164,5 @@ public class FriendAddTest {
 			assertTrue(true);
 		}
 	}
+	*/
 }

@@ -254,7 +254,7 @@ public class Carrier {
 	private native boolean label_friend(String userId, String label);
 	private native boolean is_friend(String userId);
 
-	private native boolean add_friend(String userid, String hello);
+	private native boolean add_friend(String address, String hello);
 	private native boolean accept_friend(String userId);
 	private native boolean remove_friend(String userId);
 

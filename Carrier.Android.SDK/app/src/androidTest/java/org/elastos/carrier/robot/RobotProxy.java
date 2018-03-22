@@ -30,7 +30,7 @@ public class RobotProxy {
 	private Synchronizer waitObj;
 
 	public interface RobotIdReceiver {
-		public void onReceived(String robotId);
+		public void onReceived(String robotAddress, String robotId);
 	}
 
 	private ServiceConnection connection = new ServiceConnection() {
@@ -61,7 +61,8 @@ public class RobotProxy {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 				case RobotService.MSG_RSP_ROBOT_ID:
-					robotIdReceiver.onReceived(msg.getData().getString("robotId"));
+					robotIdReceiver.onReceived(msg.getData().getString("address"),
+												msg.getData().getString("robotId"));
 					break;
 
 				case RobotService.MSG_REQ_FRIEND_ARRIVAL:
@@ -138,12 +139,11 @@ public class RobotProxy {
 		waitObj.await();
 	}
 
-	public void tellRobotConfirmFriendRequest(String me, String expire) {
+	public void testRobotAcceptFriend(String me) {
 		try {
 			Message msg = Message.obtain(null, RobotService.MSG_CONFIRM_FRIEND_REQUEST);
 			Bundle req = new Bundle();
 			req.putString("to", me);
-			req.putString("expire", expire);
 			msg.setData(req);
 			robotMsger.send(msg);
 		} catch (Exception e) {
@@ -151,7 +151,7 @@ public class RobotProxy {
 		}
 	}
 
-	public void tellRobotSendMeMessage(String me, String message) {
+	public void tellRobotSendMessage(String me, String message) {
 		try {
 			Message msg = Message.obtain(null, RobotService.MSG_SEND_ME_MESSAGE);
 			Bundle req = new Bundle();

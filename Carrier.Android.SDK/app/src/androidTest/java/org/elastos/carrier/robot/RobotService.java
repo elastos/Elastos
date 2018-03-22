@@ -11,8 +11,6 @@ import android.os.Message;
 import android.os.Handler;
 import android.os.Bundle;
 
-import junit.framework.Test;
-
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.common.Synchronizer;
 
@@ -29,7 +27,7 @@ import org.elastos.carrier.session.StreamState;
 import org.elastos.carrier.session.StreamType;
 
 public class RobotService extends Service {
-	private static final String TAG = "RobotServiceCarrier";
+	private static final String TAG = "RobotService";
 
 	static final int MSG_TEST = 1;
 	static final int MSG_REQ_ROBOT_ID = 2;
@@ -37,13 +35,13 @@ public class RobotService extends Service {
 	static final int MSG_REQ_FRIEND_ARRIVAL = 4;
 	static final int MSG_MESSAGE_ARRIVAL = 5;
 	static final int MSG_CONFIRM_FRIEND_REQUEST = 6;
-	static final int MSG_SEND_ME_MESSAGE = 8;
-	static final int MSG_SESSION_MANAGER_INIT = 9;
-	static final int MSG_SESSION_MANAGER_CLEANUP = 10;
-	static final int MSG_SESSION_MANAGER_INITIALIZED = 11;
-	static final int MSG_SESSION_REQUEST_ARRIVAL = 12;
-	static final int MSG_REPLY_SESSION_REQUST_AND_START = 13;
-	static final int MSG_SESSION_CONNECTED = 14;
+	static final int MSG_SEND_ME_MESSAGE = 7;
+	static final int MSG_SESSION_MANAGER_INIT = 8;
+	static final int MSG_SESSION_MANAGER_CLEANUP = 9;
+	static final int MSG_SESSION_MANAGER_INITIALIZED = 10;
+	static final int MSG_SESSION_REQUEST_ARRIVAL = 11;
+	static final int MSG_REPLY_SESSION_REQUST_AND_START = 12;
+	static final int MSG_SESSION_CONNECTED = 13;
 
 	private Messenger messenger;
 	private TestOptions options;
@@ -57,14 +55,14 @@ public class RobotService extends Service {
 	private Stream  activeStream;
 
 	private String getAppPath() {
-		Log.i(TAG, "service App path: " + getFilesDir().getAbsolutePath());
-		return getFilesDir().getAbsolutePath();
+		return getFilesDir().getAbsolutePath() + "-2";
 	}
 
 	class TestHandler extends AbstractCarrierHandler {
 		private Synchronizer synch = new Synchronizer();
 
 		public void onReady(Carrier carrier) {
+			Log.i(TAG, "Robot is ready now...");
 			synch.wakeup();
 		}
 
@@ -119,7 +117,7 @@ public class RobotService extends Service {
 					replyRobotId(msg);
 					break;
 				case MSG_CONFIRM_FRIEND_REQUEST:
-					confirmFriendRequest(msg);
+					acceptFriend(msg);
 					break;
 				case MSG_SEND_ME_MESSAGE:
 					sendTestMessage(msg);
@@ -143,6 +141,8 @@ public class RobotService extends Service {
 	public void onCreate() {
 		messenger = new Messenger(new IncomingHandler());
 		options = new TestOptions(getAppPath());
+
+		Log.i(TAG, "Robot App path: " + getAppPath());
 		TestHandler handler = new TestHandler();
 		try {
 			carrierInst = Carrier.getInstance(options, handler);
@@ -172,6 +172,7 @@ public class RobotService extends Service {
 		try {
 			Message rsp = Message.obtain(null, RobotService.MSG_RSP_ROBOT_ID);
 			Bundle data = new Bundle();
+			data.putString("address", carrierInst.getAddress());
 			data.putString("robotId", carrierInst.getUserId());
 			rsp.setData(data);
 
@@ -180,10 +181,9 @@ public class RobotService extends Service {
 			e.printStackTrace();
 		}
 	}
-	void confirmFriendRequest(Message msg) {
+	void acceptFriend(Message msg) {
 		try {
 			String to = msg.getData().getString("to");
-			String expire = msg.getData().getString("expire");
 
 			carrierInst.AcceptFriend(to);
 		} catch (Exception e) {
