@@ -43,10 +43,8 @@ func VerifySignature(txn *Transaction) (bool, error) {
 			// Remove length byte and sign type byte
 			publicKeyBytes := code[1:len(code)-1]
 			content := txn.GetDataContent()
-			// Remove length byte
-			signature := param[1:]
 
-			return checkStandardSignature(publicKeyBytes, content, signature)
+			return checkStandardSignature(publicKeyBytes, content, param)
 
 		} else if signType == MULTISIG {
 			publicKeys, err := txn.GetMultiSignPublicKeys()
@@ -64,11 +62,15 @@ func VerifySignature(txn *Transaction) (bool, error) {
 }
 
 func checkStandardSignature(publicKeyBytes, content, signature []byte) (bool, error) {
+	if len(signature) != SignatureScriptLength {
+		return false, errors.New("Invalid signature length")
+	}
+
 	publicKey, err := crypto.DecodePoint(publicKeyBytes)
 	if err != nil {
 		return false, err
 	}
-	err = crypto.Verify(*publicKey, content, signature)
+	err = crypto.Verify(*publicKey, content, signature[1:])
 	if err == nil {
 		return false, err
 	}
