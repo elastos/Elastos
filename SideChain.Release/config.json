@@ -29,10 +29,10 @@
       "MiningServerPort": 5555,
       "MiningSelfPort": 20339,
       "TestNet": true,
-      "AutoMining": false,
+      "AutoMining": true,
       "MinerInfo": "ELA",
       "MinTxFee": 100,
-      "ActiveNet": "RegNet"
+      "ActiveNet": "MainNet"
     }
   }
 }
