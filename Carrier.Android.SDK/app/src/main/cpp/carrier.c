@@ -114,6 +114,29 @@ void carrierKill(JNIEnv* env, jobject thiz)
 }
 
 static
+jstring getAddress(JNIEnv* env, jobject thiz)
+{
+    char addrBuf[ELA_MAX_ADDRESS_LEN + 1];
+    char *address = NULL;
+    jstring jaddress;
+
+    address = ela_get_address(getCarrier(env, thiz), addrBuf, sizeof(addrBuf));
+    if (!address) {
+        logE("Call ela_get_address API error");
+        setErrorCode(ela_get_error());
+        return NULL;
+    }
+
+    jaddress = (*env)->NewStringUTF(env, address);
+    if (!jaddress) {
+        logE("Can not convert C-string(%s) to JAVA-String", address);
+        setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
+        return NULL;
+    }
+    return jaddress;
+}
+
+static
 jstring getNodeId(JNIEnv* env, jobject thiz)
 {
     char nodeIdBuf[ELA_MAX_ID_LEN + 1];
@@ -711,6 +734,7 @@ static JNINativeMethod gMethods[] = {
                                                                    (void *) carrierInit        },
         {"native_run",         "(I)Z",                             (void *) carrierRun         },
         {"native_kill",        "()V",                              (void *) carrierKill        },
+        {"get_address",        "()"_J("String;"),                  (void *) getAddress         },
         {"get_node_id",        "()"_J("String;"),                  (void *) getNodeId          },
         {"set_nospam",         "([B)Z",                            (void *) setNospam          },
         {"get_nospam",         "()[B",                             (void *) getNospam          },
