@@ -28,7 +28,7 @@ func main() {
 
 	file, err := wallet.OpenKeystoreFile()
 	if err != nil {
-		log.Error("Keystore.dat file not found, please create your wallet using wallet-cli first")
+		log.Error("Keystore.dat file not found, please create your wallet using ela-wallet first")
 		os.Exit(0)
 	}
 

@@ -20,5 +20,10 @@ cd ../github.com/
 mkdir mattn
 cd mattn
 git clone https://github.com/mattn/go-sqlite3.git
+cd ../
+mkdir boltdb
+cd boltdb
+git clone https://github.com/boltdb/bolt.git
 cd ../../SPVWallet/
 go install github.com/mattn/go-sqlite3
+go install github.com/boltdb/bolt
