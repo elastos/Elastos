@@ -526,6 +526,32 @@ func GetBlockByHash(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(error, result)
 }
 
+func SendRawTransactionInfo(param map[string]interface{}) map[string]interface{} {
+	if !checkParam(param, "Info") {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	infoBytes, err := HexStringToBytes(param["Info"].(string))
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var txInfo Transactions
+	txInfo.Deserialize(bytes.NewReader(infoBytes))
+
+	txn, err := txInfo.ToTransaction()
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	var hash Uint256
+	hash = txn.Hash()
+	if errCode := VerifyAndSendTx(txn); errCode != Success {
+		return ResponsePack(errCode, "")
+	}
+
+	return ResponsePack(Success, BytesToHexString(hash.ToArrayReverse()))
+}
+
 func SendRawTransaction(param map[string]interface{}) map[string]interface{} {
 	if !checkParam(param, "Data") {
 		return ResponsePack(InvalidParams, "")
@@ -663,7 +689,7 @@ func GetBalanceByAddr(param map[string]interface{}) map[string]interface{} {
 	}
 
 	var programHash Uint168
-	programHash, err := Uint68FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -682,7 +708,7 @@ func GetBalanceByAsset(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint68FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -706,7 +732,7 @@ func GetUnspends(param map[string]interface{}) map[string]interface{} {
 	}
 	var programHash Uint168
 
-	programHash, err := Uint68FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -744,7 +770,7 @@ func GetUnspendOutput(param map[string]interface{}) map[string]interface{} {
 
 	}
 
-	programHash, err := Uint68FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(param["addr"].(string))
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}

@@ -1,13 +1,27 @@
-package transaction
+package validation
 
 import (
-	"errors"
-
-	"Elastos.ELA.SideChain/crypto"
 	. "Elastos.ELA.SideChain/core/signature"
+	. "Elastos.ELA.SideChain/core/transaction"
+	"Elastos.ELA.SideChain/crypto"
+	"Elastos.ELA.SideChain/spv"
+	"errors"
 )
 
 func VerifySignature(txn *Transaction) (bool, error) {
+
+	if txn.IsIssueTokenTx() {
+		if len(txn.Attributes) <= 0 || txn.Attributes[0].Usage != SpvInfo {
+			return false, errors.New("Invalid attribute for issue token.")
+		}
+
+		if err := spv.VerifyTransaction(txn.Attributes[0].Data, txn); err != nil {
+			return false, errors.New("Issue token transaction validate failed.")
+		}
+
+		return true, nil
+	}
+
 	hashes, err := txn.GetProgramHashes()
 	if err != nil {
 		return false, err
@@ -41,7 +55,7 @@ func VerifySignature(txn *Transaction) (bool, error) {
 		}
 		if signType == STANDARD {
 			// Remove length byte and sign type byte
-			publicKeyBytes := code[1:len(code)-1]
+			publicKeyBytes := code[1 : len(code)-1]
 			content := txn.GetDataContent()
 			// Remove length byte
 			signature := param[1:]
@@ -90,7 +104,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	signatureCount := 0
 	for i := 0; i < len(param); i += SignatureScriptLength {
 		// Remove length byte
-		sign := param[i:i+SignatureScriptLength][1:]
+		sign := param[i : i+SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		index := -1
 		for i, publicKey := range publicKeys {

@@ -1,20 +1,22 @@
 package transaction
 
 import (
+	"Elastos.ELA.SideChain/common"
 	"Elastos.ELA.SideChain/common/serialization"
 	"errors"
-	"io"
 	"fmt"
-	"Elastos.ELA.SideChain/common"
+	"io"
 )
 
 type TransactionAttributeUsage byte
 
 const (
-	Nonce          TransactionAttributeUsage = 0x00
-	Script         TransactionAttributeUsage = 0x20
-	DescriptionUrl TransactionAttributeUsage = 0x81
-	Description    TransactionAttributeUsage = 0x90
+	Nonce           TransactionAttributeUsage = 0x00
+	Script          TransactionAttributeUsage = 0x20
+	DescriptionUrl  TransactionAttributeUsage = 0x81
+	Description     TransactionAttributeUsage = 0x90
+	TargetPublicKey TransactionAttributeUsage = 0xA0
+	SpvInfo         TransactionAttributeUsage = 0xA1
 )
 
 func (self TransactionAttributeUsage) Name() string {
@@ -27,6 +29,10 @@ func (self TransactionAttributeUsage) Name() string {
 		return "DescriptionUrl"
 	case Description:
 		return "Description"
+	case TargetPublicKey:
+		return "TargetPublicKey"
+	case SpvInfo:
+		return "SpvInfo"
 	default:
 		return "Unknown"
 	}
@@ -34,7 +40,8 @@ func (self TransactionAttributeUsage) Name() string {
 
 func IsValidAttributeType(usage TransactionAttributeUsage) bool {
 	return usage == Nonce || usage == Script ||
-		usage == DescriptionUrl || usage == Description
+		usage == DescriptionUrl || usage == Description ||
+		usage == TargetPublicKey || usage == SpvInfo
 }
 
 type TxAttribute struct {

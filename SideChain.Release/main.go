@@ -18,6 +18,7 @@ import (
 	"Elastos.ELA.SideChain/net/servers/httpnodeinfo"
 	"Elastos.ELA.SideChain/net/servers/httprestful"
 	"Elastos.ELA.SideChain/net/servers/httpwebsocket"
+	"Elastos.ELA.SideChain/spv"
 )
 
 const (
@@ -84,7 +85,10 @@ func main() {
 		goto ERROR
 	}
 
-	log.Info("2. Start the P2P networks")
+	log.Info("2. SPV module init")
+	spv.SpvInit()
+
+	log.Info("3. Start the P2P networks")
 	noder = node.InitNode()
 	noder.WaitForSyncFinish()
 
@@ -93,7 +97,7 @@ func main() {
 
 	handleLogFile()
 
-	log.Info("3. --Start the RPC service")
+	log.Info("4. --Start the RPC service")
 	go httpjsonrpc.StartRPCServer()
 	go httprestful.StartServer()
 	go httpwebsocket.StartServer()

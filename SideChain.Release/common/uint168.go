@@ -136,7 +136,7 @@ func Uint168FromBytes(bytes []byte) (Uint168, error) {
 	return hash, nil
 }
 
-func Uint68FromAddress(address string) (Uint168, error) {
+func Uint168FromAddress(address string) (Uint168, error) {
 	encoding := base58.BitcoinEncoding
 
 	decoded, err := encoding.Decode([]byte(address))

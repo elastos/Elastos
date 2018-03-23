@@ -1,23 +1,23 @@
 package ledger
 
 import (
-	"io"
-	"time"
 	"bytes"
-	"errors"
-	"math/rand"
 	"encoding/binary"
+	"errors"
+	"io"
+	"math/rand"
+	"time"
 
-	"Elastos.ELA.SideChain/crypto"
 	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/asset"
-	"Elastos.ELA.SideChain/common/log"
 	"Elastos.ELA.SideChain/common/config"
+	"Elastos.ELA.SideChain/common/log"
+	"Elastos.ELA.SideChain/common/serialization"
+	"Elastos.ELA.SideChain/core/asset"
+	"Elastos.ELA.SideChain/core/contract/program"
 	"Elastos.ELA.SideChain/core/signature"
 	tx "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/contract/program"
 	"Elastos.ELA.SideChain/core/transaction/payload"
+	"Elastos.ELA.SideChain/crypto"
 )
 
 const (
@@ -193,7 +193,7 @@ func GenesisBlockInit() (*Block, error) {
 		Programs:   []*program.Program{},
 	}
 
-	foundationProgramHash, err := Uint68FromAddress(FoundationAddress)
+	foundationProgramHash, err := Uint168FromAddress(FoundationAddress)
 	if err != nil {
 		return nil, err
 	}

@@ -1,15 +1,15 @@
 package httpjsonrpc
 
 import (
-	"strconv"
 	"net/http"
+	"strconv"
 
-	"Elastos.ELA.SideChain/common/log"
 	. "Elastos.ELA.SideChain/common/config"
-	. "Elastos.ELA.SideChain/net/servers"
-	"io/ioutil"
-	"encoding/json"
+	"Elastos.ELA.SideChain/common/log"
 	"Elastos.ELA.SideChain/errors"
+	. "Elastos.ELA.SideChain/net/servers"
+	"encoding/json"
+	"io/ioutil"
 )
 
 //an instance of the multiplexer
@@ -31,6 +31,7 @@ func StartRPCServer() {
 	mainMux["getneighbors"] = GetNeighbors
 	mainMux["getnodestate"] = GetNodeState
 	mainMux["sendrawtransaction"] = SendRawTransaction
+	mainMux["sendrawtransactioninfo"] = SendRawTransactionInfo
 	mainMux["submitblock"] = SubmitBlock
 
 	// mining interfaces
