@@ -10,6 +10,7 @@ import (
 	"Elastos.ELA.SideChain/core/transaction/payload"
 	. "Elastos.ELA.SideChain/errors"
 	. "Elastos.ELA.SideChain/net/protocol"
+	"io"
 )
 
 const TlsPort = 443
@@ -122,7 +123,11 @@ type NodeInfo struct {
 	RxTxnCnt uint64 // The transaction received by this NodeForServers
 }
 
-type PayloadInfo interface{}
+type PayloadInfo interface {
+	Data(version byte) string
+	Serialize(w io.Writer, version byte) error
+	Deserialize(r io.Reader, version byte) error
+}
 
 type CoinbaseInfo struct {
 	CoinbaseData string
@@ -132,6 +137,12 @@ type RegisterAssetInfo struct {
 	Asset      *asset.Asset
 	Amount     string
 	Controller string
+}
+
+type TransferAssetInfo struct {
+}
+
+type IssueTokenInfo struct {
 }
 
 func TransPayloadToHex(p Payload) PayloadInfo {

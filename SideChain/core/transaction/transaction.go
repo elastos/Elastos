@@ -1,16 +1,16 @@
 package transaction
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"errors"
 	"io"
 	"sort"
-	"bytes"
-	"errors"
-	"crypto/sha256"
 
 	. "Elastos.ELA.SideChain/common"
-	. "Elastos.ELA.SideChain/core/signature"
 	"Elastos.ELA.SideChain/common/serialization"
 	"Elastos.ELA.SideChain/core/contract/program"
+	. "Elastos.ELA.SideChain/core/signature"
 	"Elastos.ELA.SideChain/core/transaction/payload"
 	"fmt"
 )
@@ -25,6 +25,7 @@ const (
 	TransferAsset TransactionType = 0x02
 	Record        TransactionType = 0x03
 	Deploy        TransactionType = 0x04
+	IssueToken    TransactionType = 0x05
 )
 
 func (self TransactionType) Name() string {
@@ -39,6 +40,8 @@ func (self TransactionType) Name() string {
 		return "Record"
 	case Deploy:
 		return "Deploy"
+	case IssueToken:
+		return "IssueToken"
 	default:
 		return "Unknown"
 	}
@@ -240,6 +243,8 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		tx.Payload = new(payload.Record)
 	case Deploy:
 		tx.Payload = new(payload.DeployCode)
+	case IssueToken:
+		tx.Payload = new(payload.IssueToken)
 	default:
 		return errors.New("[Transaction], invalid transaction type.")
 	}
@@ -396,6 +401,11 @@ func (tx *Transaction) Hash() Uint256 {
 	return *tx.hash
 
 }
+
+func (tx *Transaction) IsIssueTokenTx() bool {
+	return tx.TxType == IssueToken
+}
+
 func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }

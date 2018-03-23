@@ -2,7 +2,7 @@ package payload
 
 import "io"
 
-const TransferAssetayloadVersion byte = 0x00
+const TransferAssetPayloadVersion byte = 0x00
 
 type TransferAsset struct {
 }

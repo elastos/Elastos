@@ -1,17 +1,18 @@
 package ledger
 
 import (
+	"errors"
 	"fmt"
 	"math"
-	"errors"
 
 	"Elastos.ELA.SideChain/common"
-	. "Elastos.ELA.SideChain/errors"
+	"Elastos.ELA.SideChain/common/config"
 	"Elastos.ELA.SideChain/common/log"
 	"Elastos.ELA.SideChain/core/asset"
-	"Elastos.ELA.SideChain/common/config"
 	tx "Elastos.ELA.SideChain/core/transaction"
 	"Elastos.ELA.SideChain/core/transaction/payload"
+	"Elastos.ELA.SideChain/core/validation"
+	. "Elastos.ELA.SideChain/errors"
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -131,6 +132,10 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 		return nil
 	}
 
+	if txn.IsIssueTokenTx() {
+		return nil
+	}
+
 	if len(txn.UTXOInputs) <= 0 {
 		return errors.New("transaction has no inputs")
 	}
@@ -197,6 +202,9 @@ func CheckTransactionUTXOLock(txn *tx.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
+	if txn.IsIssueTokenTx() {
+		return nil
+	}
 	if len(txn.UTXOInputs) <= 0 {
 		return errors.New("Transaction has no inputs")
 	}
@@ -258,6 +266,9 @@ func CheckAssetPrecision(Tx *tx.Transaction) error {
 }
 
 func CheckTransactionBalance(Tx *tx.Transaction) error {
+	if Tx.IsIssueTokenTx() {
+		return nil
+	}
 	// TODO: check coinbase balance 30%-70%
 	for _, v := range Tx.Outputs {
 		if v.Value <= common.Fixed64(0) {
@@ -284,7 +295,7 @@ func CheckAttributeProgram(txn *tx.Transaction) error {
 }
 
 func CheckTransactionSignature(txn *tx.Transaction) error {
-	flag, err := tx.VerifySignature(txn)
+	flag, err := validation.VerifySignature(txn)
 	if flag && err == nil {
 		return nil
 	} else {
@@ -310,6 +321,7 @@ func CheckTransactionPayload(Tx *tx.Transaction) error {
 	case *payload.Record:
 	case *payload.DeployCode:
 	case *payload.CoinBase:
+	case *payload.IssueToken:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
