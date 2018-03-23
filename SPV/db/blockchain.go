@@ -156,7 +156,7 @@ func (bc *Blockchain) CommitUnconfirmedTxn(txn tx.Transaction) (bool, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
-	return bc.commitTxn(bc.Addrs().GetFilter(), 0, txn)
+	return bc.commitTxn(bc.Addrs().GetAddrFilter(), 0, txn)
 }
 
 // Commit block commits a block and transactions with it, return false positive counts
@@ -182,7 +182,7 @@ func (bc *Blockchain) CommitBlock(header Header, proof Proof, txns []tx.Transact
 	fPositives := 0
 	// Save transactions first
 	for _, txn := range txns {
-		fPositive, err := bc.commitTxn(bc.Addrs().GetFilter(), header.Height, txn)
+		fPositive, err := bc.commitTxn(bc.Addrs().GetAddrFilter(), header.Height, txn)
 		if err != nil {
 			return 0, err
 		}

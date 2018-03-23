@@ -114,17 +114,30 @@ func (db *AddrsDB) Delete(hash *Uint168) error {
 }
 
 // get Addrs filter
-func (db *AddrsDB) GetFilter() *AddrFilter {
+func (db *AddrsDB) GetAddrFilter() *AddrFilter {
 	db.RLock()
 	defer db.RUnlock()
 
 	return db.getFilter()
 }
 
+// reload filter from db
+func (db *AddrsDB) ReloadAddrFilter() *AddrFilter {
+	db.RLock()
+	defer db.RUnlock()
+
+	return db.loadFilter()
+}
+
 func (db *AddrsDB) getFilter() *AddrFilter {
 	if db.filter == nil {
-		Addrs, _ := db.getAll()
-		db.filter = NewAddrFilter(Addrs)
+		db.loadFilter()
 	}
+	return db.filter
+}
+
+func (db *AddrsDB) loadFilter() *AddrFilter {
+	Addrs, _ := db.getAll()
+	db.filter = NewAddrFilter(Addrs)
 	return db.filter
 }

@@ -162,11 +162,11 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 	return tx.Commit()
 }
 
-func (db *SQLiteDB) GetFilter() *bloom.Filter {
+func (db *SQLiteDB) GetBloomFilter() *bloom.Filter {
 	db.filterLock.Lock()
 	defer db.filterLock.Unlock()
 
-	addrs := db.addrs.GetFilter().GetScriptHashes()
+	addrs := db.addrs.GetAddrFilter().GetScriptHashes()
 	utxos, _ := db.utxos.GetAll()
 	stxos, _ := db.stxos.GetAll()
 

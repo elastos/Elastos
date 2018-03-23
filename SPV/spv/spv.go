@@ -249,11 +249,13 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 
 func (spv *SPV) broadcastFilterLoad() {
 	// Broadcast filterload message to connected peers
-	buf, _ := msg.NewFilterLoadMsg(spv.chain.GetFilter())
+	buf, _ := msg.NewFilterLoadMsg(spv.chain.GetBloomFilter())
 	spv.pm.Broadcast(buf)
 }
 
 func (spv *SPV) NotifyNewAddress(hash []byte) error {
+	// Reload address filter to include new address
+	spv.chain.Addrs().ReloadAddrFilter()
 	spv.broadcastFilterLoad()
 	return nil
 }

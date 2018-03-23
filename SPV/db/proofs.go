@@ -31,7 +31,7 @@ func (db *ProofsDB) Put(proof *Proof) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("INSERT OR REPLACE INTO Proofs(BlockHash, Hieght, RawData) VALUES(?,?)")
+	stmt, err := db.Prepare("INSERT OR REPLACE INTO Proofs(BlockHash, Height, RawData) VALUES(?,?,?)")
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func (db *ProofsDB) Put(proof *Proof) error {
 		return err
 	}
 
-	_, err = stmt.Exec(proof.BlockHash.Bytes(), proofBytes)
+	_, err = stmt.Exec(proof.BlockHash.Bytes(), proof.Height, proofBytes)
 	if err != nil {
 		return err
 	}

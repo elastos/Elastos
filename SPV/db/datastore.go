@@ -16,7 +16,7 @@ type DataStore interface {
 	Queue() Queue
 
 	Rollback(height uint32) error
-	GetFilter() *bloom.Filter
+	GetBloomFilter() *bloom.Filter
 
 	Close()
 }
@@ -52,7 +52,10 @@ type Addrs interface {
 	Delete(hash *Uint168) error
 
 	// get addresss filter
-	GetFilter() *AddrFilter
+	GetAddrFilter() *AddrFilter
+
+	// reload filter from db
+	ReloadAddrFilter() *AddrFilter
 }
 
 type UTXOs interface {
