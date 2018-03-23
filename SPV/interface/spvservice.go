@@ -1,14 +1,16 @@
 package _interface
 
 import (
-	"SPVWallet/p2p/msg"
+	"SPVWallet/core"
 	tx "SPVWallet/core/transaction"
+	"SPVWallet/db"
 )
 
 type SPVService interface {
 	RegisterAccount(address string) error
-	OnTransactionConfirmed(func(msg.MerkleBlock, []tx.Transaction))
-	VerifyTransaction(msg.MerkleBlock, []tx.Transaction) error
+	OnTransactionConfirmed(func(db.Proof, tx.Transaction))
+	SubmitTransactionReceipt(txHash core.Uint256) error
+	VerifyTransaction(db.Proof, tx.Transaction) error
 	SendTransaction(tx.Transaction) error
 	Start() error
 }

@@ -13,6 +13,7 @@ type DataStore interface {
 	STXOs() STXOs
 	Proofs() Proofs
 	TXNs() TXNs
+	Queue() Queue
 
 	Rollback(height uint32) error
 	GetFilter() *bloom.Filter
@@ -120,4 +121,15 @@ type TXNs interface {
 
 	// Delete a transaction from the db
 	Delete(txId *Uint256) error
+}
+
+type Queue interface {
+	// Put a queue item to database
+	Put(item *QueueItem) error
+
+	// Get confirmed items on the given height
+	GetConfirmed(height uint32) ([]*QueueItem, error)
+
+	// Delete confirmed item in queue
+	Delete(txHash *Uint256) error
 }

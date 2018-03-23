@@ -24,11 +24,13 @@ const (
 var PowLimit = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
 type Blockchain struct {
-	lock       *sync.RWMutex
-	state      ChainState
+	lock          *sync.RWMutex
+	state         ChainState
 	Headers
 	DataStore
-	OnRollback func(height uint32)
+	OnTxCommit    func(txn tx.Transaction)
+	OnBlockCommit func(Header, Proof, []tx.Transaction)
+	OnRollback    func(height uint32)
 }
 
 func NewBlockchain() (*Blockchain, error) {
@@ -201,6 +203,9 @@ func (bc *Blockchain) CommitBlock(header Header, proof Proof, txns []tx.Transact
 		return 0, err
 	}
 
+	// Notify block commit callback
+	bc.OnBlockCommit(header, proof, txns)
+
 	// Save current chain height
 	bc.DataStore.Info().SaveChainHeight(header.Height)
 
@@ -247,6 +252,9 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 	if err != nil {
 		return false, err
 	}
+
+	//	Notify on transaction commit callback
+	bc.OnTxCommit(txn)
 
 	return false, nil
 }

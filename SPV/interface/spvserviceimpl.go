@@ -1,6 +1,7 @@
 package _interface
 
 import (
+	"bytes"
 	"errors"
 
 	"SPVWallet/core"
@@ -8,14 +9,14 @@ import (
 	"SPVWallet/db"
 	"SPVWallet/p2p/msg"
 	"SPVWallet/spv"
+	"SPVWallet/log"
 )
 
 type SPVServiceImpl struct {
 	*spv.SPV
-	clientId   uint64
-	addrFilter *db.AddrFilter
-	spvProofs  map[core.Uint256]*SPVProof
-	callback   func(msg.MerkleBlock, []tx.Transaction)
+	clientId uint64
+	accounts []*core.Uint168
+	callback func(db.Proof, tx.Transaction)
 }
 
 func (service *SPVServiceImpl) RegisterAccount(address string) error {
@@ -23,65 +24,58 @@ func (service *SPVServiceImpl) RegisterAccount(address string) error {
 	if err != nil {
 		return errors.New("Invalid address format")
 	}
-	if service.addrFilter == nil {
-		service.addrFilter = db.NewAddrFilter(nil)
-	}
-	service.addrFilter.AddAddr(db.NewAddr(account, nil))
+	service.accounts = append(service.accounts, account)
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTransactionConfirmed(callback func(msg.MerkleBlock, []tx.Transaction)) {
+func (service *SPVServiceImpl) OnTransactionConfirmed(callback func(db.Proof, tx.Transaction)) {
 	service.callback = callback
 }
 
-func (service *SPVServiceImpl) VerifyTransaction(block msg.MerkleBlock, txs []tx.Transaction) error {
+func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash core.Uint256) error {
+	return service.BlockChain().Queue().Delete(&txHash)
+}
+
+func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transaction) error {
 	if service.SPV == nil {
 		return errors.New("SPV service not started")
 	}
-	blockHash := block.BlockHeader.Hash()
 
 	// Check if block is on the main chain
-	if !service.BlockChain().IsKnownBlock(*blockHash) {
+	if !service.BlockChain().IsKnownBlock(proof.BlockHash) {
 		return errors.New("can not find block on main chain")
 	}
 
+	// Get Header from main chain
+	header, err := service.BlockChain().GetHeader(&proof.BlockHash)
+	if err != nil {
+		return errors.New("can not get block from main chain")
+	}
+
 	// Check if merkleroot is match
-	txIds, err := spv.CheckMerkleBlock(&block)
+	merkleBlock := &msg.MerkleBlock{
+		BlockHeader: *header,
+		Proof:       proof,
+	}
+	txIds, err := spv.CheckMerkleBlock(merkleBlock)
 	if err != nil {
 		return errors.New("check merkle branch failed, " + err.Error())
 	}
 	if len(txIds) == 0 {
-		return errors.New("no transactions found")
+		return errors.New("invalid transaction proof, no transactions found")
 	}
 
-	// Check if transactions hashes are match
-	matches := 0
+	// Check if transaction hash is match
+	match := false
 	for _, txId := range txIds {
-		for _, tx := range txs {
-			if *txId == *tx.Hash() {
-				matches++
-			}
+		if *txId == *tx.Hash() {
+			match = true
 		}
 	}
-	if matches != len(txs) {
-		return errors.New("transaction hash not match")
+	if !match {
+		return errors.New("transaction hash not match proof")
 	}
 
-	// Check if transactions hits the registered accounts
-	if !service.addrFilter.IsLoaded() {
-		return errors.New("no account registered")
-	}
-	for _, tx := range txs {
-		match := false
-		for _, output := range tx.Outputs {
-			if service.addrFilter.ContainAddress(output.ProgramHash) {
-				match = true
-			}
-		}
-		if !match {
-			return errors.New("transaction not related with registered account")
-		}
-	}
 	return nil
 }
 
@@ -103,23 +97,94 @@ func (service *SPVServiceImpl) Start() error {
 	if err != nil {
 		return err
 	}
+
+	// Register accounts
+	if len(service.accounts) == 0 {
+		return errors.New("No account registered")
+	}
+	for _, account := range service.accounts {
+		service.BlockChain().Addrs().Put(account, nil)
+	}
+
+	// Set callback
 	service.SPV.SetOnBlockCommitListener(service.onBlockCommit)
+
+	// Start SPV service
 	service.SPV.Start()
 
 	return nil
 }
 
-func (service *SPVServiceImpl) onBlockCommit(block msg.MerkleBlock, txs []tx.Transaction) {
-	// Save SPV proof
-	hash := *block.BlockHeader.Hash()
-	height := block.BlockHeader.Height
-	proof := NewSPVProof(block, txs)
-	service.spvProofs[hash] = proof
+func (service *SPVServiceImpl) onBlockCommit(header db.Header, proof db.Proof, txs []tx.Transaction) {
+	// If no transactions return
+	if len(txs) == 0 {
+		return
+	}
 
-	// Look up for confirmed blocks
-	for _, proof := range service.spvProofs {
-		if height > proof.confirmHeight {
-			service.callback(proof.MerkleBlock, proof.txs)
+	// If no transaction match registered account return
+	var matchedTxs []tx.Transaction
+	for _, tx := range txs {
+		for _, output := range tx.Outputs {
+			if service.BlockChain().Addrs().GetFilter().ContainAddress(output.ProgramHash) {
+				matchedTxs = append(matchedTxs, tx)
+			}
 		}
 	}
+	if len(matchedTxs) == 0 {
+		return
+	}
+
+	// Queue transactions
+	for _, tx := range txs {
+		item := &db.QueueItem{
+			TxHash:        *tx.Hash(),
+			BlockHash:     *header.Hash(),
+			Height:        header.Height,
+			ConfirmHeight: getConfirmHeight(header, tx),
+		}
+
+		// Save to queue db
+		service.BlockChain().Queue().Put(item)
+	}
+
+	// Look up for confirmed transactions
+	confirmedItems, err := service.BlockChain().Queue().GetConfirmed(header.Height)
+	if err != nil {
+		return
+	}
+	for _, item := range confirmedItems {
+		//	Get proof from db
+		proof, err := service.BlockChain().Proofs().Get(&item.BlockHash)
+		if err != nil {
+			log.Error("Query merkle proof failed, block hash:", item.BlockHash.String())
+			return
+		}
+		//	Get transaction from db
+		txn, err := service.BlockChain().TXNs().Get(&item.TxHash)
+		if err != nil {
+			log.Error("Query transaction failed, tx hash:", item.TxHash.String())
+			return
+		}
+		proof = getTransactionProof(proof, txn.TxId)
+
+		var tx tx.Transaction
+		err = tx.Deserialize(bytes.NewReader(txn.RawData))
+		if err != nil {
+			log.Error("Deserialize stord transaction failed, hash: ", txn.TxId.String())
+			return
+		}
+		// Trigger callback
+		service.callback(*proof, tx)
+	}
+}
+
+func getConfirmHeight(header db.Header, tx tx.Transaction) uint32 {
+	// TODO user can set confirmations attribute in transaction,
+	// if the confirmation attribute is set, use it instead of default value
+	return header.Height + DefaultConfirmations
+}
+
+func getTransactionProof(proof *db.Proof, txHash core.Uint256) *db.Proof {
+	// TODO Pick out the merkle proof of the transaction
+	return nil
 }

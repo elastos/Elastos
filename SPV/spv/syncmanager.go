@@ -361,8 +361,6 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 			return err
 		}
 		sm.handleFPositive(fPositives)
-		// Notify block commit callback
-		spv.OnBlockCommit(*block, txns)
 	}
 	return nil
 }

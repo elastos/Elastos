@@ -9,7 +9,7 @@ import (
 
 const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(
 				Hash BLOB NOT NULL PRIMARY KEY,
-				Script BLOB UNIQUE NOT NULL
+				Script BLOB
 			);`
 
 type AddrsDB struct {

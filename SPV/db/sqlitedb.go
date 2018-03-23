@@ -26,6 +26,7 @@ type SQLiteDB struct {
 	stxos  STXOs
 	proofs Proofs
 	txns   TXNs
+	queue  Queue
 
 	filterLock *sync.Mutex
 }
@@ -69,6 +70,11 @@ func NewSQLiteDB() (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Create Queue db
+	queueDB, err := NewQueueDB(db, lock)
+	if err != nil {
+		return nil, err
+	}
 
 	return &SQLiteDB{
 		RWMutex: lock,
@@ -80,6 +86,7 @@ func NewSQLiteDB() (DataStore, error) {
 		stxos:  stxosDB,
 		proofs: proofsDB,
 		txns:   txnsDB,
+		queue:  queueDB,
 
 		filterLock: new(sync.Mutex),
 	}, nil
@@ -109,6 +116,10 @@ func (db *SQLiteDB) TXNs() TXNs {
 	return db.txns
 }
 
+func (db *SQLiteDB) Queue() Queue {
+	return db.queue
+}
+
 func (db *SQLiteDB) Rollback(height uint32) error {
 	db.Lock()
 	defer db.Unlock()
@@ -119,25 +130,31 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 	}
 
 	// Rollback Proofs
-	_, err = tx.Exec("DELETE FROM Proofs WHERE Height=?")
+	_, err = tx.Exec("DELETE FROM Proofs WHERE Height=?", height)
 	if err != nil {
 		return err
 	}
 
 	// Rollback UTXOs
-	_, err = tx.Exec("DELETE FROM UTXOs WHERE AtHeight=?")
+	_, err = tx.Exec("DELETE FROM UTXOs WHERE AtHeight=?", height)
 	if err != nil {
 		return err
 	}
 
 	// Rollback STXOs
-	_, err = tx.Exec("DELETE FROM STXOs WHERE SpendHeight=?")
+	_, err = tx.Exec("DELETE FROM STXOs WHERE SpendHeight=?", height)
 	if err != nil {
 		return err
 	}
 
 	// Rollback TXNs
-	_, err = tx.Exec("DELETE FROM TXNs WHERE Height=?")
+	_, err = tx.Exec("DELETE FROM TXNs WHERE Height=?", height)
+	if err != nil {
+		return err
+	}
+
+	// Rollback Queue
+	_, err = tx.Exec("DELETE FROM Queue WHERE Height=?", height)
 	if err != nil {
 		return err
 	}

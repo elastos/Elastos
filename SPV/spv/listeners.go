@@ -1,22 +1,22 @@
 package spv
 
 import (
-	"SPVWallet/p2p/msg"
 	tx "SPVWallet/core/transaction"
+	"SPVWallet/db"
 )
 
 func (spv *SPV) SetOnTxCommitListener(listener func(txn tx.Transaction)) {
 	if listener == nil {
 		return
 	}
-	spv.OnTxCommit = listener
+	spv.chain.OnTxCommit = listener
 }
 
-func (spv *SPV) SetOnBlockCommitListener(listener func(msg.MerkleBlock, []tx.Transaction)) {
+func (spv *SPV) SetOnBlockCommitListener(listener func(db.Header, db.Proof, []tx.Transaction)) {
 	if listener == nil {
 		return
 	}
-	spv.OnBlockCommit = listener
+	spv.chain.OnBlockCommit = listener
 }
 
 func (spv *SPV) SetOnRollbackListener(listener func(uint32)) {
@@ -28,6 +28,6 @@ func (spv *SPV) SetOnRollbackListener(listener func(uint32)) {
 
 func OnTxCommit(tx.Transaction) {}
 
-func OnBlockCommit(msg.MerkleBlock, []tx.Transaction) {}
+func OnBlockCommit(db.Header, db.Proof, []tx.Transaction) {}
 
 func OnRollback(uint32) {}
