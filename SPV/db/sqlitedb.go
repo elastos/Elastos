@@ -13,18 +13,19 @@ import (
 
 const (
 	DriverName = "sqlite3"
-	DBName     = "./wallet.db"
+	DBName     = "./spv_wallet.db"
 )
 
 type SQLiteDB struct {
 	*sync.RWMutex
 	*sql.DB
 
-	info  Info
-	addrs Addrs
-	utxos UTXOs
-	stxos STXOs
-	txns  TXNs
+	info   Info
+	addrs  Addrs
+	utxos  UTXOs
+	stxos  STXOs
+	proofs Proofs
+	txns   TXNs
 
 	filterLock *sync.Mutex
 }
@@ -58,6 +59,11 @@ func NewSQLiteDB() (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Create Proofs db
+	proofsDB, err := NewProofsDB(db, lock)
+	if err != nil {
+		return nil, err
+	}
 	// Create TXNs db
 	txnsDB, err := NewTXNsDB(db, lock)
 	if err != nil {
@@ -68,11 +74,12 @@ func NewSQLiteDB() (DataStore, error) {
 		RWMutex: lock,
 		DB:      db,
 
-		info:  infoDB,
-		addrs: addrsDB,
-		utxos: utxosDB,
-		stxos: stxosDB,
-		txns:  txnsDB,
+		info:   infoDB,
+		addrs:  addrsDB,
+		utxos:  utxosDB,
+		stxos:  stxosDB,
+		proofs: proofsDB,
+		txns:   txnsDB,
 
 		filterLock: new(sync.Mutex),
 	}, nil
@@ -94,6 +101,10 @@ func (db *SQLiteDB) STXOs() STXOs {
 	return db.stxos
 }
 
+func (db *SQLiteDB) Proofs() Proofs {
+	return db.proofs
+}
+
 func (db *SQLiteDB) TXNs() TXNs {
 	return db.txns
 }
@@ -107,32 +118,26 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 		return err
 	}
 
-	// Rollback UTXOs
-	stmt, err := tx.Prepare("DELETE FROM UTXOs WHERE AtHeight=?")
+	// Rollback Proofs
+	_, err = tx.Exec("DELETE FROM Proofs WHERE Height=?")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(height)
+
+	// Rollback UTXOs
+	_, err = tx.Exec("DELETE FROM UTXOs WHERE AtHeight=?")
 	if err != nil {
 		return err
 	}
 
 	// Rollback STXOs
-	stmt, err = tx.Prepare("DELETE FROM STXOs WHERE SpendHeight=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(height)
+	_, err = tx.Exec("DELETE FROM STXOs WHERE SpendHeight=?")
 	if err != nil {
 		return err
 	}
 
 	// Rollback TXNs
-	stmt, err = tx.Prepare("DELETE FROM TXNs WHERE height=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(height)
+	_, err = tx.Exec("DELETE FROM TXNs WHERE Height=?")
 	if err != nil {
 		return err
 	}

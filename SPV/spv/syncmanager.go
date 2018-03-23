@@ -356,7 +356,7 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 		}
 
 		// Commit block data to blockchain
-		fPositives, err := spv.chain.CommitBlock(header, txns)
+		fPositives, err := spv.chain.CommitBlock(header, block.Proof, txns)
 		if err != nil {
 			return err
 		}

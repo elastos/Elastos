@@ -11,10 +11,8 @@ import (
 
 type MerkleBlock struct {
 	Header
-	BlockHeader  db.Header
-	Transactions uint32
-	Hashes       []*Uint256
-	Flags        []byte
+	BlockHeader db.Header
+	db.Proof
 }
 
 func (mb *MerkleBlock) Serialize() ([]byte, error) {
@@ -42,6 +40,9 @@ func (mb *MerkleBlock) Serialize() ([]byte, error) {
 	}
 
 	err = serialization.WriteVarBytes(buf, mb.Flags)
+	if err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }

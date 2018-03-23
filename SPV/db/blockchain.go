@@ -158,7 +158,7 @@ func (bc *Blockchain) CommitUnconfirmedTxn(txn tx.Transaction) (bool, error) {
 }
 
 // Commit block commits a block and transactions with it, return false positive counts
-func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) (int, error) {
+func (bc *Blockchain) CommitBlock(header Header, proof Proof, txns []tx.Transaction) (int, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
@@ -187,6 +187,12 @@ func (bc *Blockchain) CommitBlock(header Header, txns []tx.Transaction) (int, er
 		if fPositive {
 			fPositives++
 		}
+	}
+
+	// Save merkle proof
+	err = bc.DataStore.Proofs().Put(&proof)
+	if err != nil {
+		return 0, err
 	}
 
 	// Save header to db
