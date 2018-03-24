@@ -120,10 +120,10 @@ public class FriendMessageTest {
 		}
 	}
 
-	private void removeFriendAnyWay(String userId) {
+	private void removeFriendAnyWay() {
 		try {
-			if (carrierInst.isFriend(userId))
-				carrierInst.removeFriend(userId);
+			if (carrierInst.isFriend(robotId))
+				carrierInst.removeFriend(robotId);
 
 			robotProxy.tellRobotRemoveFriend(carrierInst.getUserId());
 		} catch (ElastosException e) {
@@ -134,7 +134,7 @@ public class FriendMessageTest {
 
 	@Test
 	public void testSendStrangeAMessage() {
-		removeFriendAnyWay(robotId);
+		removeFriendAnyWay();
 
 		try {
 			String hello = "test send friend message";
@@ -146,12 +146,12 @@ public class FriendMessageTest {
 		}
 	}
 
-	private void makeFriendAnyWay(String userId) {
+	private void makeFriendAnyWay() {
 		try {
-			if (!carrierInst.isFriend(userId)) {
+			if (!carrierInst.isFriend(robotId))
 				carrierInst.addFriend(robotAddress, "auto-accepted");
-				handler.synch.await(); // for friend added.
-			}
+
+			handler.synch.await(); // for friend added.
 		} catch (ElastosException e) {
 			e.printStackTrace();
 			assertTrue(false);
@@ -160,7 +160,7 @@ public class FriendMessageTest {
 
 	@Test
 	public void testSendFriendMessage() {
-		makeFriendAnyWay(robotId);
+		makeFriendAnyWay();
 
 		try {
 			String hello = "test send friend message";

@@ -177,12 +177,9 @@ public class RobotProxy {
 		}
 	}
 
-	public void tellRobotInitSessionManager(int transports) {
+	public void tellRobotInitSessionManager() {
 		try {
 			Message msg = Message.obtain(null, RobotService.MSG_SESSION_MANAGER_INIT);
-			Bundle req = new Bundle();
-			req.putInt("transports", transports);
-			msg.setData(req);
 			robotMsger.send(msg);
 		} catch (Exception e) {
 			e.printStackTrace();

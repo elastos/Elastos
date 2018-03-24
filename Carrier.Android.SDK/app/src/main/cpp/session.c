@@ -180,7 +180,7 @@ jboolean sessionReplyRequest(JNIEnv* env, jobject thiz, jint jstatus, jstring jr
 
     assert(jstatus == 0 || (jstatus != 0 && jreason));
 
-    if (!jreason) {
+    if (jreason) {
         reason = (*env)->GetStringUTFChars(env, jreason, NULL);
         if (!reason) {
             setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
