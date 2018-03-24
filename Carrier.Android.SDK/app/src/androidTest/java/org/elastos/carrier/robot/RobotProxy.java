@@ -66,6 +66,7 @@ public class RobotProxy {
 					break;
 
 				case RobotService.MSG_REQ_FRIEND_ARRIVAL:
+					Log.i(TAG, "friend request arrived.");
 					waitObj.wakeup();
 					break;
 
@@ -139,11 +140,23 @@ public class RobotProxy {
 		waitObj.await();
 	}
 
-	public void testRobotAcceptFriend(String me) {
+	public void tellRobotRemoveFriend(String me) {
 		try {
-			Message msg = Message.obtain(null, RobotService.MSG_CONFIRM_FRIEND_REQUEST);
+			Message msg = Message.obtain(null, RobotService.MSG_REMOVE_FRIEND);
 			Bundle req = new Bundle();
-			req.putString("to", me);
+			req.putString("friendId", me);
+			msg.setData(req);
+			robotMsger.send(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void tellRobotAcceptFriend(String me) {
+		try {
+			Message msg = Message.obtain(null, RobotService.MSG_ACCEPT_FRIEND);
+			Bundle req = new Bundle();
+			req.putString("userId", me);
 			msg.setData(req);
 			robotMsger.send(msg);
 		} catch (Exception e) {
@@ -153,7 +166,7 @@ public class RobotProxy {
 
 	public void tellRobotSendMessage(String me, String message) {
 		try {
-			Message msg = Message.obtain(null, RobotService.MSG_SEND_ME_MESSAGE);
+			Message msg = Message.obtain(null, RobotService.MSG_SEND_MESSAGE);
 			Bundle req = new Bundle();
 			req.putString("to", me);
 			req.putString("message", message);

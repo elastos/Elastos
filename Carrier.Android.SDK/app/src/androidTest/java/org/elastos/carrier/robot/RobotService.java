@@ -34,14 +34,15 @@ public class RobotService extends Service {
 	static final int MSG_RSP_ROBOT_ID = 3;
 	static final int MSG_REQ_FRIEND_ARRIVAL = 4;
 	static final int MSG_MESSAGE_ARRIVAL = 5;
-	static final int MSG_CONFIRM_FRIEND_REQUEST = 6;
-	static final int MSG_SEND_ME_MESSAGE = 7;
-	static final int MSG_SESSION_MANAGER_INIT = 8;
-	static final int MSG_SESSION_MANAGER_CLEANUP = 9;
-	static final int MSG_SESSION_MANAGER_INITIALIZED = 10;
-	static final int MSG_SESSION_REQUEST_ARRIVAL = 11;
-	static final int MSG_REPLY_SESSION_REQUST_AND_START = 12;
-	static final int MSG_SESSION_CONNECTED = 13;
+	static final int MSG_REMOVE_FRIEND = 6;
+	static final int MSG_ACCEPT_FRIEND = 7;
+	static final int MSG_SEND_MESSAGE = 8;
+	static final int MSG_SESSION_MANAGER_INIT = 9;
+	static final int MSG_SESSION_MANAGER_CLEANUP = 10;
+	static final int MSG_SESSION_MANAGER_INITIALIZED = 11;
+	static final int MSG_SESSION_REQUEST_ARRIVAL = 1;
+	static final int MSG_REPLY_SESSION_REQUST_AND_START = 13;
+	static final int MSG_SESSION_CONNECTED = 14;
 
 	private Messenger messenger;
 	private TestOptions options;
@@ -55,21 +56,20 @@ public class RobotService extends Service {
 	private Stream  activeStream;
 
 	private String getAppPath() {
-		return getFilesDir().getAbsolutePath() + "-2";
+		return getFilesDir().getAbsolutePath() + "-robot";
 	}
 
 	class TestHandler extends AbstractCarrierHandler {
 		private Synchronizer synch = new Synchronizer();
 
 		public void onReady(Carrier carrier) {
-			Log.i(TAG, "Robot is ready now...");
 			synch.wakeup();
 		}
 
 		public void onFriendRequest(Carrier carrier, String userId, UserInfo info, String hello) {
 			try {
 
-				if (hello.equals("auto confirmed")) {
+				if (hello.equals("auto-accepted")) {
 					carrierInst.AcceptFriend(userId);
 				} else {
 					Message msg = Message.obtain(null, RobotService.MSG_REQ_FRIEND_ARRIVAL);
@@ -109,17 +109,20 @@ public class RobotService extends Service {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 				case MSG_TEST:
-					Log.i(TAG, "Received test hello message:");
+					Log.i(TAG, "Received test message:");
 					Log.i(TAG, "hello: " + msg.getData().getString("hello"));
 					break;
 				case MSG_REQ_ROBOT_ID:
 					proxyMsger = msg.replyTo;
 					replyRobotId(msg);
 					break;
-				case MSG_CONFIRM_FRIEND_REQUEST:
+				case MSG_REMOVE_FRIEND:
+					removeFriend(msg);
+					break;
+				case MSG_ACCEPT_FRIEND:
 					acceptFriend(msg);
 					break;
-				case MSG_SEND_ME_MESSAGE:
+				case MSG_SEND_MESSAGE:
 					sendTestMessage(msg);
 					break;
 				case MSG_SESSION_MANAGER_INIT:
@@ -142,14 +145,13 @@ public class RobotService extends Service {
 		messenger = new Messenger(new IncomingHandler());
 		options = new TestOptions(getAppPath());
 
-		Log.i(TAG, "Robot App path: " + getAppPath());
 		TestHandler handler = new TestHandler();
 		try {
 			carrierInst = Carrier.getInstance(options, handler);
 			carrierInst.start(10000);
 			handler.synch.await();
 
-			Log.i(TAG, "Carrier instance for robot created");
+			Log.i(TAG, "Carrier instance of robot created");
 		} catch (ElastosException e) {
 			e.printStackTrace();
 		}
@@ -181,11 +183,24 @@ public class RobotService extends Service {
 			e.printStackTrace();
 		}
 	}
+
+	void removeFriend(Message msg) {
+		try {
+			String friendId = msg.getData().getString("friendId");
+
+			if (carrierInst.isFriend(friendId))
+				carrierInst.removeFriend(friendId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	void acceptFriend(Message msg) {
 		try {
-			String to = msg.getData().getString("to");
+			String userId = msg.getData().getString("userId");
 
-			carrierInst.AcceptFriend(to);
+			if (!carrierInst.isFriend(userId))
+				carrierInst.AcceptFriend(userId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -258,7 +273,6 @@ public class RobotService extends Service {
 						break;
 				}
 			} catch (ElastosException e) {
-				Log.i(TAG, "eeeeee: " + e.getErrorCode());
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -270,7 +284,6 @@ public class RobotService extends Service {
 			try {
 				stream.writeData(data);
 			} catch (ElastosException e) {
-				Log.e(TAG, "write data error: " + e.getErrorCode());
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -285,7 +298,6 @@ public class RobotService extends Service {
 			TestStreamHandler streamHandler = new TestStreamHandler();
 			activeStream = activeSession.addStream(StreamType.Text, 0, streamHandler);
 		} catch (ElastosException e) {
-			Log.i(TAG, "ElastosException (error: " + e.getErrorCode() + ")");
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();

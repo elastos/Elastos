@@ -46,14 +46,15 @@ public class FriendAddTest {
 		ConnectionStatus friendStatus;
 
 		public void onReady(Carrier carrier) {
-			Log.i(TAG, "FriendAddTest on ready");
 			synch.wakeup();
 		}
 
 		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
+			Log.i(TAG, "friendid:" + friendId + "connection changed to: " + status);
 			from = friendId;
 			friendStatus = status;
-			synch.wakeup();
+			if (friendStatus == ConnectionStatus.Connected)
+				synch.wakeup();
 		}
 	}
 
@@ -84,6 +85,7 @@ public class FriendAddTest {
 			handler.synch.await();
 
 			Log.i(TAG, "carrier client is ready now");
+
 		} catch (ElastosException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -103,10 +105,10 @@ public class FriendAddTest {
 
 	private void removeFriendAnyWay(String userId) {
 		try {
-			if (carrierInst.isFriend(userId)) {
+			if (carrierInst.isFriend(userId))
 				carrierInst.removeFriend(userId);
-				handler.synch.await();
-			}
+
+			robotProxy.tellRobotRemoveFriend(carrierInst.getUserId());
 		} catch (ElastosException e) {
 			e.printStackTrace();
 			assertTrue(false);
@@ -116,8 +118,7 @@ public class FriendAddTest {
 	private void makeFriendAnyWay(String userId) {
 		try {
 			if (!carrierInst.isFriend(userId)) {
-				carrierInst.addFriend(robotAddress, "auto confirmed");
-				handler.synch.await(); // for friend request reply.
+				carrierInst.addFriend(robotAddress, "auto-accepted");
 				handler.synch.await(); // for friend added.
 			}
 		} catch (ElastosException e) {
@@ -140,9 +141,11 @@ public class FriendAddTest {
 
 			carrierInst.addFriend(robotAddress, "hello");
 			robotProxy.waitForRequestArrival();
-			robotProxy.testRobotAcceptFriend(carrierInst.getUserId());
+			robotProxy.tellRobotAcceptFriend(carrierInst.getUserId());
 
 			handler.synch.await(); // for friend connection.;
+			Log.i(TAG, "Robot connected");
+
 			assertEquals(handler.from, robotId);
 			assertEquals(handler.friendStatus, ConnectionStatus.Connected);
 			assertEquals(carrierInst.isFriend(handler.from), true);
@@ -152,17 +155,15 @@ public class FriendAddTest {
 		}
 	}
 
-	/*
-	//@Test
+	@Test
 	public void testAlreadyBeFriend() {
 		makeFriendAnyWay(robotId);
 
 		try {
-			carrierInst.addFriend(robotId, "hello");
+			carrierInst.addFriend(robotAddress, "hello");
 		} catch (ElastosException e) {
 			assertEquals(e.getErrorCode(), 0x8100000c);
 			assertTrue(true);
 		}
 	}
-	*/
 }

@@ -15,10 +15,8 @@ public class TestOptions extends Options {
         super();
 
         File file = new File(path);
-        if (file.exists()) {
-            Log.i("TestOptions", "Delete Path:  " + path);
+        if (file.exists())
             file.delete();
-        }
         file.mkdir();
 
         try {
