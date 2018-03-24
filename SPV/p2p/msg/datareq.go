@@ -2,14 +2,11 @@ package msg
 
 import (
 	"bytes"
-	"encoding/binary"
-
 	. "SPVWallet/core"
 	"SPVWallet/core/serialization"
 )
 
 type DataReq struct {
-	Header
 	Type uint8
 	Hash Uint256
 }
@@ -43,12 +40,8 @@ func (dr *DataReq) Serialize() ([]byte, error) {
 }
 
 func (dr *DataReq) Deserialize(msg []byte) error {
+	var err error
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &dr.Header)
-	if err != nil {
-		return err
-	}
-
 	dr.Type, err = serialization.ReadUint8(buf)
 	if err != nil {
 		return err

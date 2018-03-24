@@ -6,7 +6,6 @@ import (
 )
 
 type Addrs struct {
-	Header
 	Count     uint64
 	PeerAddrs []PeerAddr
 }
@@ -41,12 +40,7 @@ func (addrs *Addrs) Serialize() ([]byte, error) {
 
 func (addrs *Addrs) Deserialize(msg []byte) error {
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &addrs.Header)
-	if err != nil {
-		return err
-	}
-
-	err = binary.Read(buf, binary.LittleEndian, &addrs.Count)
+	err := binary.Read(buf, binary.LittleEndian, &addrs.Count)
 	if err != nil {
 		return err
 	}

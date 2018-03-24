@@ -34,9 +34,9 @@ func SetListeners(ls *Listeners) {
 }
 
 // Only local peer will use this method, so the parameters are fixed
-func NewVersionData() VersionData {
+func NewVersion() Version {
 	peer := LocalPeer()
-	content := new(VersionData)
+	content := new(Version)
 	content.Version = peer.Version()
 	content.Services = peer.Services()
 	content.TimeStamp = uint32(time.Now().UnixNano())
@@ -59,7 +59,7 @@ func HandleMessage(peer *Peer, buf []byte) {
 		return
 	}
 
-	err = msg.Deserialize(buf)
+	err = msg.Deserialize(buf[HEADERLEN:])
 	if err != nil {
 		log.Error("Deserialize message err:", err)
 		return

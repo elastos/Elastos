@@ -2,13 +2,10 @@ package msg
 
 import (
 	"bytes"
-	"encoding/binary"
-
 	tx "SPVWallet/core/transaction"
 )
 
 type Txn struct {
-	Header
 	tx.Transaction
 }
 
@@ -36,12 +33,7 @@ func (txn *Txn) Serialize() ([]byte, error) {
 
 func (txn *Txn) Deserialize(msg []byte) error {
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &txn.Header)
-	if err != nil {
-		return err
-	}
-
-	err = txn.Transaction.Deserialize(buf)
+	err := txn.Transaction.Deserialize(buf)
 	if err != nil {
 		return err
 	}

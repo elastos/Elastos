@@ -2,27 +2,19 @@ package msg
 
 import (
 	"bytes"
-	"encoding/binary"
-
 	. "SPVWallet/core"
 	"SPVWallet/core/serialization"
 	"SPVWallet/db"
 )
 
 type MerkleBlock struct {
-	Header
 	BlockHeader db.Header
 	db.Proof
 }
 
 func (mb *MerkleBlock) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, mb.Header)
-	if err != nil {
-		return nil, err
-	}
-
-	err = mb.BlockHeader.Serialize(buf)
+	err := mb.BlockHeader.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +41,7 @@ func (mb *MerkleBlock) Serialize() ([]byte, error) {
 
 func (mb *MerkleBlock) Deserialize(msg []byte) error {
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &mb.Header)
-	if err != nil {
-		return err
-	}
-
-	err = mb.BlockHeader.Deserialize(buf)
+	err := mb.BlockHeader.Deserialize(buf)
 	if err != nil {
 		return err
 	}

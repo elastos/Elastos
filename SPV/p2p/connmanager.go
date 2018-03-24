@@ -77,7 +77,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 	go remote.Read()
 
 	// Send version message to remote peer
-	msg, err := msg.NewVersionMsg(NewVersionData())
+	msg, err := msg.NewVersionMsg(NewVersion())
 	go remote.Send(msg)
 }
 

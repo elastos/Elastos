@@ -2,13 +2,10 @@ package msg
 
 import (
 	"bytes"
-	"encoding/binary"
-
 	"SPVWallet/core/serialization"
 )
 
 type Ping struct {
-	Header
 	Height uint64
 }
 
@@ -36,12 +33,8 @@ func (p *Ping) Serialize() ([]byte, error) {
 }
 
 func (p *Ping) Deserialize(msg []byte) error {
+	var err error
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &p.Header)
-	if err != nil {
-		return err
-	}
-
 	p.Height, err = serialization.ReadUint64(buf)
 	return err
 }

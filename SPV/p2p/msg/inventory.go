@@ -13,7 +13,6 @@ const (
 )
 
 type Inventory struct {
-	Header
 	Type  uint8
 	Count uint32
 	Data  []byte
@@ -62,12 +61,8 @@ func (inv *Inventory) Serialize() ([]byte, error) {
 }
 
 func (inv *Inventory) Deserialize(msg []byte) error {
+	var err error
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &inv.Header)
-	if err != nil {
-		return err
-	}
-
 	inv.Type, err = serialization.ReadUint8(buf)
 	if err != nil {
 		return err

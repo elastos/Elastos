@@ -7,11 +7,6 @@ import (
 )
 
 type Version struct {
-	Header
-	VersionData
-}
-
-type VersionData struct {
 	Version      uint32
 	Services     uint64
 	TimeStamp    uint32
@@ -21,13 +16,8 @@ type VersionData struct {
 	Relay        uint8
 }
 
-func NewVersionMsg(data VersionData) ([]byte, error) {
-	msg := new(Version)
-
-	// build msg content
-	msg.VersionData = data
-
-	body, err := msg.Serialize()
+func NewVersionMsg(data Version) ([]byte, error) {
+	body, err := data.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +27,7 @@ func NewVersionMsg(data VersionData) ([]byte, error) {
 
 func (v *Version) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, v.VersionData)
+	err := binary.Write(buf, binary.LittleEndian, v)
 	if err != nil {
 		return nil, err
 	}
@@ -47,13 +37,7 @@ func (v *Version) Serialize() ([]byte, error) {
 
 func (v *Version) Deserialize(buf []byte) error {
 	msg := bytes.NewBuffer(buf)
-
-	err := binary.Read(msg, binary.LittleEndian, &v.Header)
-	if err != nil {
-		return errors.New("Deserialize version message header error")
-	}
-
-	err = binary.Read(msg, binary.LittleEndian, &v.VersionData)
+	err := binary.Read(msg, binary.LittleEndian, v)
 	if err != nil {
 		return errors.New("Deserialize version message content error")
 	}

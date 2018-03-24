@@ -146,7 +146,7 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	if peer.State() == p2p.INIT {
 		peer.SetState(p2p.HANDSHAKE)
 		peer.SetHeight(uint64(spv.chain.Height()))
-		buf, _ = msg.NewVersionMsg(p2p.NewVersionData())
+		buf, _ = msg.NewVersionMsg(p2p.NewVersion())
 	} else if peer.State() == p2p.HAND {
 		peer.SetState(p2p.HANDSHAKED)
 		buf, _ = msg.NewVerAckMsg()

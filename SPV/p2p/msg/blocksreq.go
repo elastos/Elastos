@@ -4,11 +4,9 @@ import (
 	"bytes"
 	. "SPVWallet/core"
 	"SPVWallet/core/serialization"
-	"encoding/binary"
 )
 
 type BlocksReq struct {
-	Header
 	Count        uint32
 	BlockLocator []*Uint256
 	HashStop     Uint256
@@ -51,12 +49,8 @@ func (br *BlocksReq) Serialize() ([]byte, error) {
 }
 
 func (br *BlocksReq) Deserialize(msg []byte) error {
+	var err error
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &br.Header)
-	if err != nil {
-		return err
-	}
-
 	br.Count, err = serialization.ReadUint32(buf)
 	if err != nil {
 		return err

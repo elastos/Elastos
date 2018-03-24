@@ -2,14 +2,11 @@ package msg
 
 import (
 	"bytes"
-	"encoding/binary"
-
 	"SPVWallet/bloom"
 	"SPVWallet/core/serialization"
 )
 
 type FilterLoad struct {
-	Header
 	Filter    []byte
 	HashFuncs uint32
 	Tweak     uint32
@@ -50,12 +47,8 @@ func (fl *FilterLoad) Serialize() ([]byte, error) {
 }
 
 func (fl *FilterLoad) Deserialize(msg []byte) error {
+	var err error
 	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &fl.Header)
-	if err != nil {
-		return err
-	}
-
 	fl.Filter, err = serialization.ReadVarBytes(buf)
 	if err != nil {
 		return err
