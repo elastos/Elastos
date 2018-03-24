@@ -163,7 +163,7 @@ func (peer *Peer) LastActive() time.Time {
 }
 
 func (peer *Peer) Addr() *PeerAddr {
-	return NewPeerAddr(peer.services, peer.ip16, SPVPort, peer.id)
+	return NewPeerAddr(peer.services, peer.ip16, peer.port, peer.id)
 }
 
 func (peer *Peer) Relay() uint8 {
@@ -179,7 +179,12 @@ func (peer *Peer) SetInfo(msg *Version) {
 	peer.id = msg.Nonce
 	peer.version = msg.Version
 	peer.services = msg.Services
-	peer.port = msg.Port
+	// Check if peer enabled spv service
+	if peer.services/ServiceSPV&1 == 1 {
+		peer.port = SPVPort
+	} else {
+		peer.port = msg.Port
+	}
 	peer.lastActive = time.Now()
 	peer.height = msg.Height
 	peer.relay = msg.Relay

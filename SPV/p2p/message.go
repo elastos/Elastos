@@ -34,7 +34,8 @@ func SetListeners(ls *Listeners) {
 }
 
 // Only local peer will use this method, so the parameters are fixed
-func NewVersionData(peer *Peer) VersionData {
+func NewVersionData() VersionData {
+	peer := LocalPeer()
 	content := new(VersionData)
 	content.Version = peer.Version()
 	content.Services = peer.Services()
