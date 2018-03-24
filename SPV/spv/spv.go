@@ -27,20 +27,8 @@ func InitSPV(walletId uint64) (*SPV, error) {
 	spv.SyncManager = NewSyncManager()
 	spv.pm = p2p.NewPeerManager(walletId)
 
-	// Init listeners
-	p2p.SetListeners(&p2p.Listeners{
-		OnVersion:     spv.OnVersion,
-		OnVerAck:      spv.OnVerAck,
-		OnPing:        spv.OnPing,
-		OnPong:        spv.OnPong,
-		OnAddrs:       spv.OnAddrs,
-		OnAddrsReq:    spv.OnAddrsReq,
-		OnInventory:   spv.OnInventory,
-		OnMerkleBlock: spv.OnMerkleBlock,
-		OnTxn:         spv.OnTxn,
-		OnNotFound:    spv.OnNotFound,
-		OnDisconnect:  spv.OnDisconnect,
-	})
+	// Register message callback
+	p2p.RegisterCallback(spv.handleMessage)
 	return spv, nil
 }
 
@@ -48,6 +36,36 @@ type SPV struct {
 	*SyncManager
 	chain *db.Blockchain
 	pm    *p2p.PeerManager
+}
+
+func (spv *SPV) handleMessage(peer *p2p.Peer, message p2p.Message) {
+	var err error
+	switch message.(type) {
+	case *msg.Version:
+		err = spv.OnVersion(peer, message.(*msg.Version))
+	case *msg.VerAck:
+		err = spv.OnVerAck(peer, message.(*msg.VerAck))
+	case *msg.Ping:
+		err = spv.OnPing(peer, message.(*msg.Ping))
+	case *msg.Pong:
+		err = spv.OnPong(peer, message.(*msg.Pong))
+	case *msg.AddrsReq:
+		err = spv.OnAddrsReq(peer, message.(*msg.AddrsReq))
+	case *msg.Addrs:
+		err = spv.OnAddrs(peer, message.(*msg.Addrs))
+	case *msg.Inventory:
+		err = spv.OnInventory(peer, message.(*msg.Inventory))
+	case *msg.MerkleBlock:
+		err = spv.OnMerkleBlock(peer, message.(*msg.MerkleBlock))
+	case *msg.Txn:
+		err = spv.OnTxn(peer, message.(*msg.Txn))
+	case *msg.NotFound:
+		err = spv.OnNotFound(peer, message.(*msg.NotFound))
+	}
+
+	if err != nil {
+		log.Error("Handle message error,", err)
+	}
 }
 
 func (spv *SPV) Start() {
@@ -344,8 +362,4 @@ func (spv *SPV) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
 	log.Error("Receive not found message, disconnect")
 	spv.ChangeSyncPeerAndRestart()
 	return nil
-}
-
-func (spv *SPV) OnDisconnect(peer *p2p.Peer) {
-	spv.pm.DisconnectPeer(peer)
 }

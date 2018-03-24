@@ -51,6 +51,9 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 
 	// Mark addr as connected
 	pm.addrManager.AddAddr(peer.Addr().TCPAddr())
+
+	// Listen peer disconnect
+	peer.OnDisconnect = pm.DisconnectPeer
 }
 
 func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {

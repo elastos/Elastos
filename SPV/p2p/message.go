@@ -8,29 +8,15 @@ import (
 	"SPVWallet/log"
 )
 
-var listeners *Listeners
-
-type Listeners struct {
-	OnVersion     func(peer *Peer, msg *Version) error
-	OnVerAck      func(peer *Peer, msg *VerAck) error
-	OnAddrs       func(peer *Peer, msg *Addrs) error
-	OnAddrsReq    func(peer *Peer, msg *AddrsReq) error
-	OnPing        func(peer *Peer, msg *Ping) error
-	OnPong        func(peer *Peer, msg *Pong) error
-	OnInventory   func(peer *Peer, msg *Inventory) error
-	OnMerkleBlock func(peer *Peer, msg *MerkleBlock) error
-	OnTxn         func(peer *Peer, msg *Txn) error
-	OnNotFound    func(peer *Peer, msg *NotFound) error
-	OnDisconnect  func(peer *Peer)
-}
+var callback func(peer *Peer, msg Message)
 
 type Message interface {
 	Serialize() ([]byte, error)
 	Deserialize(msg []byte) error
 }
 
-func SetListeners(ls *Listeners) {
-	listeners = ls
+func RegisterCallback(msgCallback func(peer *Peer, msg Message)) {
+	callback = msgCallback
 }
 
 // Only local peer will use this method, so the parameters are fixed
@@ -65,7 +51,7 @@ func HandleMessage(peer *Peer, buf []byte) {
 		return
 	}
 
-	allocateMessage(peer, msg)
+	callback(peer, msg)
 }
 
 func parseHeader(buf []byte) (*Header, error) {
@@ -112,34 +98,4 @@ func makeMessage(buf []byte) (Message, error) {
 	}
 
 	return msg, nil
-}
-
-func allocateMessage(peer *Peer, msg Message) {
-	var err error
-	switch msg.(type) {
-	case *Version:
-		err = listeners.OnVersion(peer, msg.(*Version))
-	case *VerAck:
-		err = listeners.OnVerAck(peer, msg.(*VerAck))
-	case *Ping:
-		err = listeners.OnPing(peer, msg.(*Ping))
-	case *Pong:
-		err = listeners.OnPong(peer, msg.(*Pong))
-	case *AddrsReq:
-		err = listeners.OnAddrsReq(peer, msg.(*AddrsReq))
-	case *Addrs:
-		err = listeners.OnAddrs(peer, msg.(*Addrs))
-	case *Inventory:
-		err = listeners.OnInventory(peer, msg.(*Inventory))
-	case *MerkleBlock:
-		err = listeners.OnMerkleBlock(peer, msg.(*MerkleBlock))
-	case *Txn:
-		err = listeners.OnTxn(peer, msg.(*Txn))
-	case *NotFound:
-		err = listeners.OnNotFound(peer, msg.(*NotFound))
-	}
-
-	if err != nil {
-		log.Error("Allocate message error,", err)
-	}
 }
