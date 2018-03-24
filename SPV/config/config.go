@@ -15,7 +15,6 @@ var config *Configuration // The single instance of config
 
 type Configuration struct {
 	Magic    uint32
-	Port     uint16
 	SeedList []string
 }
 

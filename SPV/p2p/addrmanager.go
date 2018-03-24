@@ -7,7 +7,6 @@ import (
 	"strings"
 	"sync"
 
-	"SPVWallet/config"
 	"SPVWallet/log"
 )
 
@@ -22,16 +21,7 @@ type AddrManager struct {
 	connected map[string]byte
 }
 
-func toSPVAddr(addr string) string {
-	host := addr
-	portIndex := strings.LastIndex(addr, ":")
-	if portIndex > 0 {
-		host = string([]byte(addr)[:portIndex])
-	}
-	return fmt.Sprint(host, ":", SPVPort)
-}
-
-func newAddrManager() *AddrManager {
+func newAddrManager(seeds []string) *AddrManager {
 	am := &AddrManager{
 		seeds:     make([]string, 0),
 		cached:    make([]string, 0),
@@ -39,8 +29,7 @@ func newAddrManager() *AddrManager {
 	}
 
 	// Read seed list from config file
-	for _, addr := range config.Config().SeedList {
-		addr = toSPVAddr(addr)
+	for _, addr := range seeds {
 		am.seeds = append(am.seeds, addr)
 	}
 

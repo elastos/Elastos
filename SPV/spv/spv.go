@@ -4,17 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"strings"
 
+	"SPVWallet/config"
+	tx "SPVWallet/core/transaction"
 	"SPVWallet/db"
 	"SPVWallet/log"
 	"SPVWallet/p2p"
 	"SPVWallet/p2p/msg"
-	tx "SPVWallet/core/transaction"
 )
 
 var spv *SPV
 
-func InitSPV(walletId uint64) (*SPV, error) {
+func InitSPV(clientId uint64) (*SPV, error) {
 	var err error
 	spv = new(SPV)
 	spv.chain, err = db.NewBlockchain()
@@ -25,11 +27,27 @@ func InitSPV(walletId uint64) (*SPV, error) {
 	spv.chain.OnBlockCommit = OnBlockCommit
 	spv.chain.OnRollback = OnRollback
 	spv.SyncManager = NewSyncManager()
-	spv.pm = p2p.NewPeerManager(walletId)
+
+	// Convert seed addresses to SPVServerPort according to the SPV protocol
+	seeds := toSPVAddr(config.Config().SeedList)
+	spv.pm = p2p.NewPeerManager(clientId, SPVClientPort, seeds)
 
 	// Register message callback
 	p2p.RegisterCallback(spv.handleMessage)
 	return spv, nil
+}
+
+func toSPVAddr(seeds []string) []string {
+	var addrs = make([]string, len(seeds))
+	for i, seed := range seeds {
+		portIndex := strings.LastIndex(seed, ":")
+		if portIndex > 0 {
+			addrs[i] = fmt.Sprint(string([]byte(seed)[:portIndex]), ":", SPVServerPort)
+		} else {
+			addrs[i] = fmt.Sprint(seed, ":", SPVServerPort)
+		}
+	}
+	return addrs
 }
 
 type SPV struct {
@@ -146,14 +164,11 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion))
 	}
 
-	if v.Services/p2p.ServiceSPV&1 == 0 {
+	if v.Services/ServiveSPV&1 == 0 {
 		log.Error("SPV disconnect peer, spv service not enabled on connected peer")
 		spv.pm.DisconnectPeer(peer)
 		return errors.New("SPV service not enabled on connected peer")
 	}
-
-	// Add to connected peer
-	spv.pm.AddConnectedPeer(peer)
 
 	var message p2p.Message
 	if peer.State() == p2p.INIT {
@@ -181,8 +196,8 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 
 	peer.SetState(p2p.ESTABLISH)
 
-	// Remove from connecting list
-	spv.pm.RemoveFromConnectingList(peer)
+	// Add to connected peer
+	spv.pm.AddConnectedPeer(peer)
 
 	spv.broadcastFilterLoad()
 

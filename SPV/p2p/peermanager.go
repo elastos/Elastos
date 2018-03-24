@@ -21,11 +21,11 @@ type PeerManager struct {
 	connManager *ConnManager
 }
 
-func NewPeerManager(walletId uint64) *PeerManager {
+func NewPeerManager(clientId uint64, localPort uint16, seeds []string) *PeerManager {
 	// Initiate PeerManager
 	pm := new(PeerManager)
-	pm.Peers = newPeers(walletId)
-	pm.addrManager = newAddrManager()
+	pm.Peers = newPeers(clientId, localPort)
+	pm.addrManager = newAddrManager(seeds)
 	pm.connManager = newConnManager(pm.OnDiscardAddr)
 	return pm
 }
@@ -49,15 +49,20 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 	// Add peer to list
 	pm.Peers.AddPeer(peer)
 
+	addr := peer.Addr().TCPAddr()
+
+	// Remove addr from connecting list
+	pm.connManager.removeAddrFromConnectingList(addr)
+
 	// Mark addr as connected
-	pm.addrManager.AddAddr(peer.Addr().TCPAddr())
+	pm.addrManager.AddAddr(addr)
 
 	// Listen peer disconnect
 	peer.OnDisconnect = pm.DisconnectPeer
 }
 
 func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {
-	pm.connManager.removeAddrFromConnectingList(peer.Addr().TCPAddr())
+
 }
 
 func (pm *PeerManager) DisconnectPeer(peer *Peer) {

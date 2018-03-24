@@ -16,8 +16,6 @@ import (
 
 const (
 	ProtocolVersion = 1 // The min p2p protocol version to support spv
-	SPVPort         = 20866
-	ServiceSPV      = 1 << 2
 	MaxBufLen       = 1024 * 16
 )
 
@@ -159,6 +157,10 @@ func (peer *Peer) Port() uint16 {
 	return peer.port
 }
 
+func (peer *Peer) SetPort(port uint16) {
+	peer.port = port
+}
+
 func (peer *Peer) LastActive() time.Time {
 	return peer.lastActive
 }
@@ -180,12 +182,6 @@ func (peer *Peer) SetInfo(msg *Version) {
 	peer.id = msg.Nonce
 	peer.version = msg.Version
 	peer.services = msg.Services
-	// Check if peer enabled spv service
-	if peer.services/ServiceSPV&1 == 1 {
-		peer.port = SPVPort
-	} else {
-		peer.port = msg.Port
-	}
 	peer.lastActive = time.Now()
 	peer.height = msg.Height
 	peer.relay = msg.Relay

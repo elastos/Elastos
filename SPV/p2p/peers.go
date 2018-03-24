@@ -2,7 +2,6 @@ package p2p
 
 import (
 	"sync"
-	"SPVWallet/config"
 )
 
 var local *Peer
@@ -19,20 +18,20 @@ type Peers struct {
 	peers     map[uint64]*Peer
 }
 
-func newPeers(walletId uint64) *Peers {
+func newPeers(clientId uint64, localPort uint16) *Peers {
 	peers := new(Peers)
-	peers.initLocalPeer(walletId)
+	peers.initLocalPeer(clientId, localPort)
 	peers.syncPeerLock = new(sync.Mutex)
 	peers.peersLock = new(sync.RWMutex)
 	peers.peers = make(map[uint64]*Peer)
 	return peers
 }
 
-func (p *Peers) initLocalPeer(id uint64) {
+func (p *Peers) initLocalPeer(id uint64, localPort uint16) {
 	local = &Peer{
 		id:       id,
 		version:  ProtocolVersion,
-		port:     config.Config().Port,
+		port:     localPort,
 		services: 0x00,
 		relay:    0x00,
 	}
