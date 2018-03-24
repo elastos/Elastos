@@ -13,6 +13,7 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/howeyc/gopass"
+	"SPVWallet/db"
 )
 
 var CommonFlags = []cli.Flag{
@@ -98,21 +99,10 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 		return addrs[0].String(), nil
 	}
 
-	// print out addresses in wallet
-	fmt.Printf("%5s %34s %32s\n", "INDEX", "ADDRESS", "BALANCE")
-	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
-	for i, addr := range addrs {
-		balance := Fixed64(0)
-		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
-		if err != nil {
-			return "", errors.New("get " + addr.String() + " UTXOs failed")
-		}
-		for _, utxo := range UTXOs {
-			balance += utxo.Value
-		}
-
-		fmt.Printf("%5d %34s %-32s\n", i+1, addr.String(), balance.String())
-		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
+	// show accounts
+	err = ShowAccount(addrs, wallet)
+	if err != nil {
+		return "", err
 	}
 
 	// select address by index input
@@ -124,6 +114,34 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 	}
 
 	return addrs[index].String(), nil
+}
+
+func ShowAccount(addrs []*db.Addr, wallet walt.Wallet) error {
+	// print header
+	fmt.Printf("%5s %34s %-10s %12s\n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)")
+	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 23))
+
+	currentHeight := wallet.ChainHeight()
+	for i, addr := range addrs {
+		available := Fixed64(0)
+		locked := Fixed64(0)
+		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
+		if err != nil {
+			return errors.New("get " + addr.String() + " UTXOs failed")
+		}
+		for _, utxo := range UTXOs {
+			if utxo.LockTime <= currentHeight {
+				available += utxo.Value
+			} else {
+				locked += utxo.Value
+			}
+		}
+
+		fmt.Printf("%5d %34s %-10s %12s\n", i+1, addr.String(), available.String(), "("+locked.String()+")")
+		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 23))
+	}
+
+	return nil
 }
 
 func getInput(max int) int {

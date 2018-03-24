@@ -26,24 +26,8 @@ func listBalanceInfo(wallet Wallet) error {
 		log.Error("Get addresses error:", err)
 		return errors.New("get wallet addresses failed")
 	}
-	// print header
-	fmt.Printf("%5s %34s %-32s\n", "INDEX", "ADDRESS", "BALANCE")
-	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
 
-	for i, addr := range addrs {
-		balance := Fixed64(0)
-		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
-		if err != nil {
-			return errors.New("get " + addr.String() + " UTXOs failed")
-		}
-		for _, utxo := range UTXOs {
-			balance += utxo.Value
-		}
-
-		fmt.Printf("%5d %34s %-32s\n", i+1, addr.String(), balance.String())
-		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 32))
-	}
-	return nil
+	return ShowAccount(addrs, wallet)
 }
 
 func newSubAccount(password []byte, wallet Wallet) error {
