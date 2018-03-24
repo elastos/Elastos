@@ -1,4 +1,4 @@
-package msg
+package p2p
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-type PeerAddr struct {
+type Addr struct {
 	Time     int64
 	Services uint64
 	IP       [16]byte
@@ -14,8 +14,8 @@ type PeerAddr struct {
 	ID       uint64 // Unique ID
 }
 
-func NewPeerAddr(services uint64, ip [16]byte, port uint16, id uint64) *PeerAddr {
-	return &PeerAddr{
+func NewPeerAddr(services uint64, ip [16]byte, port uint16, id uint64) *Addr {
+	return &Addr{
 		Time:     time.Now().UnixNano(),
 		Services: services,
 		IP:       ip,
@@ -24,7 +24,7 @@ func NewPeerAddr(services uint64, ip [16]byte, port uint16, id uint64) *PeerAddr
 	}
 }
 
-func (addr *PeerAddr) TCPAddr() string {
+func (addr *Addr) String() string {
 	var ip net.IP = addr.IP[:]
 	return fmt.Sprint(ip.String(), ":", addr.Port)
 }

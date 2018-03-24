@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	. "SPVWallet/core"
-	. "SPVWallet/p2p/msg"
+	. "SPVWallet/msg"
 )
 
 const MaxMemCacheSize = 500

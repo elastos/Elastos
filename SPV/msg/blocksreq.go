@@ -20,38 +20,42 @@ func NewBlocksReq(locator []*Uint256, hashStop Uint256) *BlocksReq {
 	return blocksReq
 }
 
-func (br *BlocksReq) Serialize() ([]byte, error) {
+func (msg *BlocksReq) CMD() string {
+	return "getblocks"
+}
+
+func (msg *BlocksReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint32(buf, br.Count)
+	err := serialization.WriteUint32(buf, msg.Count)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, hash := range br.BlockLocator {
+	for _, hash := range msg.BlockLocator {
 		_, err := hash.Serialize(buf)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	_, err = br.HashStop.Serialize(buf)
+	_, err = msg.HashStop.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}
 
-	return BuildMessage("getblocks", buf.Bytes())
+	return buf.Bytes(), nil
 }
 
-func (br *BlocksReq) Deserialize(msg []byte) error {
+func (msg *BlocksReq) Deserialize(body []byte) error {
 	var err error
-	buf := bytes.NewReader(msg)
-	br.Count, err = serialization.ReadUint32(buf)
+	buf := bytes.NewReader(body)
+	msg.Count, err = serialization.ReadUint32(buf)
 	if err != nil {
 		return err
 	}
 
-	locator := make([]*Uint256, br.Count)
-	for i := uint32(0); i < br.Count; i++ {
+	locator := make([]*Uint256, msg.Count)
+	for i := uint32(0); i < msg.Count; i++ {
 		var hash Uint256
 		err := hash.Deserialize(buf)
 		if err != nil {
@@ -61,7 +65,7 @@ func (br *BlocksReq) Deserialize(msg []byte) error {
 		locator = append(locator, &hash)
 	}
 
-	err = br.HashStop.Deserialize(buf)
+	err = msg.HashStop.Deserialize(buf)
 	if err != nil {
 		return err
 	}

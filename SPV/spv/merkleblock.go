@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	. "SPVWallet/core"
-	"SPVWallet/p2p/msg"
+	"SPVWallet/msg"
 )
 
 func MakeMerkleParent(left *Uint256, right *Uint256) (*Uint256, error) {

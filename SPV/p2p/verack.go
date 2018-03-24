@@ -1,9 +1,13 @@
-package msg
+package p2p
 
 type VerAck struct{}
 
+func (msg *VerAck) CMD() string {
+	return "verack"
+}
+
 func (msg *VerAck) Serialize() ([]byte, error) {
-	return NewHeader("verack", EmptyMsgSum, 0).Serialize()
+	return nil, nil
 }
 
 func (msg *VerAck) Deserialize(body []byte) error {

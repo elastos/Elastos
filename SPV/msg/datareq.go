@@ -18,30 +18,34 @@ func NewDataReq(invType uint8, hash Uint256) *DataReq {
 	return dataReq
 }
 
-func (dr *DataReq) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := serialization.WriteUint8(buf, dr.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = dr.Hash.Serialize(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("getdata", buf.Bytes())
+func (msg *DataReq) CMD() string {
+	return "getdata"
 }
 
-func (dr *DataReq) Deserialize(msg []byte) error {
+func (msg *DataReq) Serialize() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := serialization.WriteUint8(buf, msg.Type)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = msg.Hash.Serialize(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (msg *DataReq) Deserialize(body []byte) error {
 	var err error
-	buf := bytes.NewReader(msg)
-	dr.Type, err = serialization.ReadUint8(buf)
+	buf := bytes.NewReader(body)
+	msg.Type, err = serialization.ReadUint8(buf)
 	if err != nil {
 		return err
 	}
 
-	err = dr.Hash.Deserialize(buf)
+	err = msg.Hash.Deserialize(buf)
 	if err != nil {
 		return err
 	}

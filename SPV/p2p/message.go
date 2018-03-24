@@ -4,13 +4,14 @@ import (
 	"errors"
 	"time"
 
-	. "SPVWallet/p2p/msg"
+	. "SPVWallet/msg"
 	"SPVWallet/log"
 )
 
 var callback func(peer *Peer, msg Message)
 
 type Message interface {
+	CMD() string
 	Serialize() ([]byte, error)
 	Deserialize(msg []byte) error
 }

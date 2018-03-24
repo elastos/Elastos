@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 
-	"SPVWallet/p2p/msg"
 	"SPVWallet/log"
 )
 
@@ -49,7 +48,7 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 	// Add peer to list
 	pm.Peers.AddPeer(peer)
 
-	addr := peer.Addr().TCPAddr()
+	addr := peer.Addr().String()
 
 	// Remove addr from connecting list
 	pm.connManager.removeAddrFromConnectingList(addr)
@@ -69,7 +68,7 @@ func (pm *PeerManager) DisconnectPeer(peer *Peer) {
 	log.Trace("PeerManager disconnect peer:", peer.String())
 	peer, ok := pm.RemovePeer(peer.ID())
 	if ok {
-		addr := peer.Addr().TCPAddr()
+		addr := peer.Addr().String()
 		peer.Disconnect()
 		pm.connManager.removeAddrFromConnectingList(addr)
 		pm.addrManager.DisconnectedAddr(addr)
@@ -80,7 +79,7 @@ func (pm *PeerManager) OnDiscardAddr(addr string) {
 	pm.addrManager.DiscardAddr(addr)
 }
 
-func (pm *PeerManager) RandPeerAddrs() []msg.PeerAddr {
+func (pm *PeerManager) RandAddrs() []Addr {
 	peers := pm.ConnectedPeers()
 
 	log.Info("Rand peer addrs, connected peers:", peers)
@@ -89,7 +88,7 @@ func (pm *PeerManager) RandPeerAddrs() []msg.PeerAddr {
 		count = MaxOutboundCount
 	}
 
-	addrs := make([]msg.PeerAddr, count)
+	addrs := make([]Addr, count)
 	for count > 0 {
 		count--
 		addrs = append(addrs, *peers[count].Addr())

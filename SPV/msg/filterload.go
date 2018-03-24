@@ -20,40 +20,44 @@ func NewFilterLoad(filter *bloom.Filter) *FilterLoad {
 	return filterLoad
 }
 
-func (fl *FilterLoad) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := serialization.WriteVarBytes(buf, fl.Filter)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, fl.HashFuncs)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, fl.Tweak)
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("filterload", buf.Bytes())
+func (msg *FilterLoad) CMD() string {
+	return "filterload"
 }
 
-func (fl *FilterLoad) Deserialize(msg []byte) error {
+func (msg *FilterLoad) Serialize() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := serialization.WriteVarBytes(buf, msg.Filter)
+	if err != nil {
+		return nil, err
+	}
+
+	err = serialization.WriteUint32(buf, msg.HashFuncs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = serialization.WriteUint32(buf, msg.Tweak)
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (msg *FilterLoad) Deserialize(body []byte) error {
 	var err error
-	buf := bytes.NewReader(msg)
-	fl.Filter, err = serialization.ReadVarBytes(buf)
+	buf := bytes.NewReader(body)
+	msg.Filter, err = serialization.ReadVarBytes(buf)
 	if err != nil {
 		return err
 	}
 
-	fl.HashFuncs, err = serialization.ReadUint32(buf)
+	msg.HashFuncs, err = serialization.ReadUint32(buf)
 	if err != nil {
 		return err
 	}
 
-	fl.Tweak, err = serialization.ReadUint32(buf)
+	msg.Tweak, err = serialization.ReadUint32(buf)
 	if err != nil {
 		return err
 	}

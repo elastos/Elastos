@@ -1,4 +1,4 @@
-package msg
+package p2p
 
 import (
 	"bytes"
@@ -19,9 +19,7 @@ const (
 	HEADERLEN   = 24
 )
 
-var (
-	EmptyMsgSum = []byte{0x5d, 0xf6, 0xe0, 0xe2}
-)
+var Magic uint32
 
 type Header struct {
 	Magic    uint32
@@ -33,7 +31,7 @@ type Header struct {
 func NewHeader(cmd string, checksum []byte, length int) *Header {
 	header := new(Header)
 	// Write Magic
-	header.Magic = config.Config().Magic
+	header.Magic = Magic
 	// Write CMD
 	copy(header.CMD[:len(cmd)], cmd)
 	// Write length
@@ -44,19 +42,23 @@ func NewHeader(cmd string, checksum []byte, length int) *Header {
 	return header
 }
 
-func BuildHeader(cmd string, msg []byte) *Header {
+func BuildHeader(cmd string, body []byte) *Header {
 	// Calculate checksum
-	checksum := core.Sha256D(msg)
-	return NewHeader(cmd, checksum[:], len(msg))
+	checksum := core.Sha256D(body)
+	return NewHeader(cmd, checksum[:], len(body))
 }
 
-func BuildMessage(cmd string, body []byte) ([]byte, error) {
-	hdr, err := BuildHeader(cmd, body).Serialize()
+func BuildMessage(msg Message) ([]byte, error) {
+	body, err := msg.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	hdr, err := BuildHeader(msg.CMD(), body).Serialize()
 	if err != nil {
 		return nil, err
 	}
 
-	log.Info("Send message:", cmd)
+	log.Info("Send message:", msg.CMD())
 	return append(hdr, body...), nil
 }
 

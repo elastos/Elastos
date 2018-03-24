@@ -11,7 +11,6 @@ import (
 
 	"SPVWallet/config"
 	"SPVWallet/log"
-	. "SPVWallet/p2p/msg"
 )
 
 const (
@@ -94,7 +93,7 @@ func (peer *Peer) String() string {
 		"\n\tHeight:" + fmt.Sprint(peer.height) +
 		"\n\tRelay:" + fmt.Sprint(peer.relay) +
 		"\n\tState:" + peer.PeerState.String() +
-		"\n\tAddr:" + peer.Addr().TCPAddr() +
+		"\n\tAddr:" + peer.Addr().String() +
 		"\n}"
 }
 
@@ -165,7 +164,7 @@ func (peer *Peer) LastActive() time.Time {
 	return peer.lastActive
 }
 
-func (peer *Peer) Addr() *PeerAddr {
+func (peer *Peer) Addr() *Addr {
 	return NewPeerAddr(peer.services, peer.ip16, peer.port, peer.id)
 }
 
@@ -278,7 +277,7 @@ func (peer *Peer) Send(msg Message) {
 		return
 	}
 
-	buf, err := msg.Serialize()
+	buf, err := BuildMessage(msg)
 	if err != nil {
 		log.Error("Serialize message failed, ", err)
 		return

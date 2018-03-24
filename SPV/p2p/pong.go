@@ -1,4 +1,4 @@
-package msg
+package p2p
 
 import (
 	"bytes"
@@ -16,11 +16,15 @@ func NewPong(height uint32) *Pong {
 	return pong
 }
 
-func (p *Pong) Serialize() ([]byte, error) {
+func (msg *Pong) CMD() string {
+	return "pong"
+}
+
+func (msg *Pong) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint64(buf, p.Height)
+	err := serialization.WriteUint64(buf, msg.Height)
 	if err != nil {
 		return nil, err
 	}
-	return BuildMessage("pong", buf.Bytes())
+	return buf.Bytes(), nil
 }

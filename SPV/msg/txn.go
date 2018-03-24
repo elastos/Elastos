@@ -13,19 +13,23 @@ func NewTxn(tx tx.Transaction) *Txn {
 	return &Txn{Transaction: tx}
 }
 
-func (txn *Txn) Serialize() ([]byte, error) {
+func (msg *Txn) CMD() string {
+	return "tx"
+}
+
+func (msg *Txn) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := txn.Transaction.Serialize(buf)
+	err := msg.Transaction.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}
 
-	return BuildMessage("tx", buf.Bytes())
+	return buf.Bytes(), nil
 }
 
-func (txn *Txn) Deserialize(msg []byte) error {
-	buf := bytes.NewReader(msg)
-	err := txn.Transaction.Deserialize(buf)
+func (msg *Txn) Deserialize(body []byte) error {
+	buf := bytes.NewReader(body)
+	err := msg.Transaction.Deserialize(buf)
 	if err != nil {
 		return err
 	}

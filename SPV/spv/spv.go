@@ -11,7 +11,7 @@ import (
 	"SPVWallet/db"
 	"SPVWallet/log"
 	"SPVWallet/p2p"
-	"SPVWallet/p2p/msg"
+	"SPVWallet/msg"
 )
 
 var spv *SPV
@@ -28,8 +28,11 @@ func InitSPV(clientId uint64) (*SPV, error) {
 	spv.chain.OnRollback = OnRollback
 	spv.SyncManager = NewSyncManager()
 
+	// Set Magic number of the P2P network
+	p2p.Magic = config.Config().Magic
 	// Convert seed addresses to SPVServerPort according to the SPV protocol
 	seeds := toSPVAddr(config.Config().SeedList)
+	// Create peer manager of the P2P network
 	spv.pm = p2p.NewPeerManager(clientId, SPVClientPort, seeds)
 
 	// Register message callback
@@ -59,18 +62,18 @@ type SPV struct {
 func (spv *SPV) handleMessage(peer *p2p.Peer, message p2p.Message) {
 	var err error
 	switch message.(type) {
-	case *msg.Version:
-		err = spv.OnVersion(peer, message.(*msg.Version))
-	case *msg.VerAck:
-		err = spv.OnVerAck(peer, message.(*msg.VerAck))
-	case *msg.Ping:
-		err = spv.OnPing(peer, message.(*msg.Ping))
-	case *msg.Pong:
-		err = spv.OnPong(peer, message.(*msg.Pong))
-	case *msg.AddrsReq:
-		err = spv.OnAddrsReq(peer, message.(*msg.AddrsReq))
-	case *msg.Addrs:
-		err = spv.OnAddrs(peer, message.(*msg.Addrs))
+	case *p2p.Version:
+		err = spv.OnVersion(peer, message.(*p2p.Version))
+	case *p2p.VerAck:
+		err = spv.OnVerAck(peer, message.(*p2p.VerAck))
+	case *p2p.Ping:
+		err = spv.OnPing(peer, message.(*p2p.Ping))
+	case *p2p.Pong:
+		err = spv.OnPong(peer, message.(*p2p.Pong))
+	case *p2p.AddrsReq:
+		err = spv.OnAddrsReq(peer, message.(*p2p.AddrsReq))
+	case *p2p.Addrs:
+		err = spv.OnAddrs(peer, message.(*p2p.Addrs))
 	case *msg.Inventory:
 		err = spv.OnInventory(peer, message.(*msg.Inventory))
 	case *msg.MerkleBlock:
@@ -119,7 +122,7 @@ func (spv *SPV) keepUpdate() {
 				}
 
 				// Send ping message to peer
-				go peer.Send(msg.NewPing(spv.chain.Height()))
+				go peer.Send(p2p.NewPing(spv.chain.Height()))
 			}
 		}
 
@@ -131,13 +134,13 @@ func (spv *SPV) keepUpdate() {
 	}
 }
 
-func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
+func (spv *SPV) OnVersion(peer *p2p.Peer, v *p2p.Version) error {
 	log.Info("SPV OnVersion")
 	// Check if handshake with itself
 	if v.Nonce == spv.pm.Local().ID() {
 		log.Error(">>>> SPV disconnect peer, peer handshake with itself")
 		spv.pm.DisconnectPeer(peer)
-		spv.pm.OnDiscardAddr(peer.Addr().TCPAddr())
+		spv.pm.OnDiscardAddr(peer.Addr().String())
 		return errors.New("Peer handshake with itself")
 	}
 
@@ -177,7 +180,7 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 		message = p2p.NewVersion()
 	} else if peer.State() == p2p.HAND {
 		peer.SetState(p2p.HANDSHAKED)
-		message = new(msg.VerAck)
+		message = new(p2p.VerAck)
 	}
 
 	go peer.Send(message)
@@ -185,13 +188,13 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	return nil
 }
 
-func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
+func (spv *SPV) OnVerAck(peer *p2p.Peer, va *p2p.VerAck) error {
 	if peer.State() != p2p.HANDSHAKE && peer.State() != p2p.HANDSHAKED {
 		return errors.New("Unknow status to received verack")
 	}
 
 	if peer.State() == p2p.HANDSHAKE {
-		go peer.Send(new(msg.VerAck))
+		go peer.Send(new(p2p.VerAck))
 	}
 
 	peer.SetState(p2p.ESTABLISH)
@@ -202,24 +205,24 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 	spv.broadcastFilterLoad()
 
 	if spv.pm.NeedMorePeers() {
-		go peer.Send(new(msg.AddrsReq))
+		go peer.Send(new(p2p.AddrsReq))
 	}
 
 	return nil
 }
 
-func (spv *SPV) OnPing(peer *p2p.Peer, p *msg.Ping) error {
+func (spv *SPV) OnPing(peer *p2p.Peer, p *p2p.Ping) error {
 	peer.SetHeight(p.Height)
-	go peer.Send(msg.NewPong(spv.chain.Height()))
+	go peer.Send(p2p.NewPong(spv.chain.Height()))
 	return nil
 }
 
-func (spv *SPV) OnPong(peer *p2p.Peer, p *msg.Pong) error {
+func (spv *SPV) OnPong(peer *p2p.Peer, p *p2p.Pong) error {
 	peer.SetHeight(p.Height)
 	return nil
 }
 
-func (spv *SPV) OnAddrs(peer *p2p.Peer, addrs *msg.Addrs) error {
+func (spv *SPV) OnAddrs(peer *p2p.Peer, addrs *p2p.Addrs) error {
 	for _, addr := range addrs.PeerAddrs {
 		// Skip local peer
 		if addr.ID == spv.pm.Local().ID() {
@@ -235,16 +238,16 @@ func (spv *SPV) OnAddrs(peer *p2p.Peer, addrs *msg.Addrs) error {
 		}
 		// Handle new address
 		if spv.pm.NeedMorePeers() {
-			spv.pm.ConnectPeer(addr.TCPAddr())
+			spv.pm.ConnectPeer(addr.String())
 		}
 	}
 
 	return nil
 }
 
-func (spv *SPV) OnAddrsReq(peer *p2p.Peer, req *msg.AddrsReq) error {
-	addrs := spv.pm.RandPeerAddrs()
-	go peer.Send(msg.NewAddrs(addrs))
+func (spv *SPV) OnAddrsReq(peer *p2p.Peer, req *p2p.AddrsReq) error {
+	addrs := spv.pm.RandAddrs()
+	go peer.Send(p2p.NewAddrs(addrs))
 	return nil
 }
 

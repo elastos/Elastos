@@ -1,9 +1,13 @@
-package msg
+package p2p
 
 type AddrsReq struct{}
 
+func (msg *AddrsReq) CMD() string {
+	return "getaddr"
+}
+
 func (msg *AddrsReq) Serialize() ([]byte, error) {
-	return NewHeader("getaddr", EmptyMsgSum, 0).Serialize()
+	return nil, nil
 }
 
 func (msg *AddrsReq) Deserialize(body []byte) error {

@@ -1,4 +1,4 @@
-package msg
+package p2p
 
 import (
 	"bytes"
@@ -16,19 +16,23 @@ type Version struct {
 	Relay     uint8
 }
 
-func (v *Version) Serialize() ([]byte, error) {
+func (msg *Version) CMD() string {
+	return "version"
+}
+
+func (msg *Version) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, v)
+	err := binary.Write(buf, binary.LittleEndian, msg)
 	if err != nil {
 		return nil, err
 	}
 
-	return BuildMessage("version", buf.Bytes())
+	return buf.Bytes(), nil
 }
 
-func (v *Version) Deserialize(buf []byte) error {
-	msg := bytes.NewBuffer(buf)
-	err := binary.Read(msg, binary.LittleEndian, v)
+func (msg *Version) Deserialize(body []byte) error {
+	buf := bytes.NewBuffer(body)
+	err := binary.Read(buf, binary.LittleEndian, msg)
 	if err != nil {
 		return errors.New("Deserialize version message content error")
 	}

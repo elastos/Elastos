@@ -7,7 +7,7 @@ import (
 	"SPVWallet/core"
 	tx "SPVWallet/core/transaction"
 	"SPVWallet/db"
-	"SPVWallet/p2p/msg"
+	"SPVWallet/msg"
 	"SPVWallet/spv"
 	"SPVWallet/log"
 )
