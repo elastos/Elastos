@@ -264,7 +264,7 @@ func (wallet *WalletImpl) signStandardTransaction(txn *tx.Transaction) (*tx.Tran
 		return nil, errors.New("[Wallet], Invalid signer")
 	}
 	// Sign transaction
-	signedTx, err := account.Sign(txn)
+	signedTx, err := account.SignTx(txn)
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +299,7 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 		return nil, errors.New("[Wallet], Invalid multi sign signer")
 	}
 	// Sign transaction
-	signedTx, err := account.Sign(txn)
+	signedTx, err := account.SignTx(txn)
 	if err != nil {
 		return nil, err
 	}

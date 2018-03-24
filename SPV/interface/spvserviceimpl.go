@@ -103,7 +103,7 @@ func (service *SPVServiceImpl) Start() error {
 		return errors.New("No account registered")
 	}
 	for _, account := range service.accounts {
-		service.BlockChain().Addrs().Put(account, nil)
+		service.BlockChain().Addrs().Put(account, RegisteredAccountScript)
 	}
 
 	// Set callback
@@ -125,7 +125,7 @@ func (service *SPVServiceImpl) onBlockCommit(header db.Header, proof db.Proof, t
 	var matchedTxs []tx.Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
-			if service.BlockChain().Addrs().GetFilter().ContainAddress(output.ProgramHash) {
+			if service.BlockChain().Addrs().GetAddrFilter().ContainAddress(output.ProgramHash) {
 				matchedTxs = append(matchedTxs, tx)
 			}
 		}

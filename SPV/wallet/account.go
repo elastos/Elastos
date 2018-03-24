@@ -3,20 +3,20 @@ package wallet
 import (
 	"bytes"
 
-	. "SPVWallet/crypto"
+	"SPVWallet/crypto"
 	. "SPVWallet/core"
 	tx "SPVWallet/core/transaction"
 )
 
 type Account struct {
 	privateKey   []byte
-	publicKey    *PublicKey
+	publicKey    *crypto.PublicKey
 	redeemScript []byte
 	programHash  *Uint168
 	address      string
 }
 
-func NewAccount(privateKey []byte, publicKey *PublicKey) (*Account, error) {
+func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error) {
 	signatureRedeemScript, err := tx.CreateStandardRedeemScript(publicKey)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (a *Account) PrivateKey() []byte {
 	return a.privateKey
 }
 
-func (a *Account) PublicKey() *PublicKey {
+func (a *Account) PublicKey() *crypto.PublicKey {
 	return a.publicKey
 }
 
@@ -61,13 +61,16 @@ func (a *Account) Address() string {
 	return a.address
 }
 
-func (a *Account) Sign(txn *tx.Transaction) ([]byte, error) {
+func (a *Account) SignTx(txn *tx.Transaction) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
-	signedData, err := Sign(a.privateKey, buf.Bytes())
+	return a.Sign(buf.Bytes())
+}
+
+func (a *Account) Sign(data []byte) ([]byte, error) {
+	signature, err := crypto.Sign(a.privateKey, data)
 	if err != nil {
 		return nil, err
 	}
-
-	return signedData, nil
+	return signature, nil
 }

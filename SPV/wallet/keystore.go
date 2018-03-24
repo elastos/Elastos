@@ -16,15 +16,13 @@ const (
 )
 
 type Keystore interface {
-	ChangePassword(oldPassword, newPassword []byte) error
+	ChangePassword(old, new []byte) error
 
 	MainAccount() *Account
 	NewAccount() *Account
 	GetAccounts() []*Account
 	GetAccountByIndex(index int) *Account
 	GetAccountByProgramHash(programHash *Uint168) *Account
-
-	Close()
 }
 
 type KeystoreImpl struct {
@@ -268,10 +266,6 @@ func (store *KeystoreImpl) GetAccountByProgramHash(programHash *Uint168) *Accoun
 		}
 	}
 	return nil
-}
-
-func (store *KeystoreImpl) Close() {
-	store.KeystoreFile.Lock()
 }
 
 func (store *KeystoreImpl) encryptMasterKey(passwordKey, masterKey []byte) ([]byte, error) {
