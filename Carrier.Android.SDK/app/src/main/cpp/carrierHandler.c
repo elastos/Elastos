@@ -179,7 +179,7 @@ void cbOnFriendConnectionChanged(ElaCarrier *carrier, const char *friendId,
     if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
                         "onFriendConnection",
                         "("_W("Carrier;")_J("String;")_W("ConnectionStatus;)V"),
-            hc->carrier, jstatus)) {
+            hc->carrier, jfriendId, jstatus)) {
         logE("Call Carrier.Callbacks.OnFriendConnection error");
     }
 
