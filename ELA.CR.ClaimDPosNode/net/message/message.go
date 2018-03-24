@@ -173,6 +173,11 @@ func HandleNodeMsg(node Noder, buf []byte, len int) error {
 	}
 
 	log.Debug("Receive message type:", s)
+	if err := FilterMessage(node, s); err != nil {
+		log.Error("Filter message error:", err)
+		node.CloseConn()
+		return err
+	}
 
 	if s == "inv" || s == "block" {
 		node.LocalNode().AcqSyncBlkReqSem()
