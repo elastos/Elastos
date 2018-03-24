@@ -167,7 +167,7 @@ func InitNode() Noder {
 
 	n.link.port = uint16(Parameters.NodePort)
 	if Parameters.SPVService {
-		n.services += 1 << 2
+		n.services += SPVService
 	}
 	n.relay = true
 	idHash := sha256.Sum256([]byte(IPv4Addr() + strconv.Itoa(Parameters.NodePort)))
@@ -184,7 +184,7 @@ func InitNode() Noder {
 	n.cachedHashes = make([]Uint256, 0)
 	n.nodeDisconnectSubscriber = n.eventQueue.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, n.NodeDisconnect)
 	n.RequestedBlockList = make(map[Uint256]time.Time)
-	go n.initConnection()
+	n.initConnection()
 	go n.updateConnection()
 	go n.updateNodeInfo()
 
@@ -224,6 +224,10 @@ func (node *node) GetConn() net.Conn {
 
 func (node *node) Port() uint16 {
 	return node.port
+}
+
+func (node *node) LocalPort() uint16 {
+	return node.localPort
 }
 
 func (node *node) HttpInfoPort() int {

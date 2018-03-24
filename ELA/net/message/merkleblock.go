@@ -92,6 +92,9 @@ func (mb *MerkleBlock) Serialize() ([]byte, error) {
 	}
 
 	err = serialization.WriteVarBytes(buf, mb.Flags)
+	if err != nil {
+		return nil, err
+	}
 
 	return buf.Bytes(), nil
 }

@@ -56,6 +56,11 @@ const (
 	Inactive   = 5
 )
 
+const (
+	SPVPort    = 20866
+	SPVService = 1 << 2
+)
+
 var ReceiveDuplicateBlockCnt uint64 //an index to detecting networking status
 
 type Noder interface {
@@ -65,6 +70,7 @@ type Noder interface {
 	Addr() string
 	Addr16() ([16]byte, error)
 	Port() uint16
+	LocalPort() uint16
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
 	State() uint32
