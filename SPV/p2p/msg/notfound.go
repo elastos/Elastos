@@ -16,7 +16,7 @@ func (nf *NotFound) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("notfound", buf.Bytes())
 }
 
 func (nf *NotFound) Deserialize(msg []byte) error {

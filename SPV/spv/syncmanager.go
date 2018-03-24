@@ -113,13 +113,8 @@ func (sm *SyncManager) requestBlocks() {
 	}
 	// Request blocks returns a inventory message witch contains block hashes
 	sm.blockLocator = spv.chain.GetBlockLocatorHashes()
-	msg, err := NewBlocksReqMsg(sm.blockLocator, Uint256{})
-	if err != nil {
-		log.Error("Sync blocks new blocks request message failed, ", err)
-		return
-	}
 
-	go syncPeer.Send(msg)
+	go syncPeer.Send(NewBlocksReq(sm.blockLocator, Uint256{}))
 }
 
 func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
@@ -216,12 +211,7 @@ func (sm *SyncManager) addToRequestQueue(hash Uint256) {
 }
 
 func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error {
-	msg, err := NewDataReqMsg(msgType, hash)
-	if err != nil {
-		return err
-	}
-	go peer.Send(msg)
-
+	go peer.Send(NewDataReq(msgType, hash))
 	return nil
 }
 

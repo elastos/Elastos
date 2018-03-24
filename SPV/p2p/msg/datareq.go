@@ -11,17 +11,11 @@ type DataReq struct {
 	Hash Uint256
 }
 
-func NewDataReqMsg(invType uint8, hash Uint256) ([]byte, error) {
-	msg := new(DataReq)
-	msg.Type = invType
-	msg.Hash = hash
-
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("getdata", body)
+func NewDataReq(invType uint8, hash Uint256) *DataReq {
+	dataReq := new(DataReq)
+	dataReq.Type = invType
+	dataReq.Hash = hash
+	return dataReq
 }
 
 func (dr *DataReq) Serialize() ([]byte, error) {
@@ -36,7 +30,7 @@ func (dr *DataReq) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("getdata", buf.Bytes())
 }
 
 func (dr *DataReq) Deserialize(msg []byte) error {

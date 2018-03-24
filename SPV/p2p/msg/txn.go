@@ -9,16 +9,8 @@ type Txn struct {
 	tx.Transaction
 }
 
-func NewTxnMsg(txn tx.Transaction) ([]byte, error) {
-	msg := new(Txn)
-	msg.Transaction = txn
-
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("tx", body)
+func NewTxn(tx tx.Transaction) *Txn {
+	return &Txn{Transaction: tx}
 }
 
 func (txn *Txn) Serialize() ([]byte, error) {
@@ -28,7 +20,7 @@ func (txn *Txn) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("tx", buf.Bytes())
 }
 
 func (txn *Txn) Deserialize(msg []byte) error {

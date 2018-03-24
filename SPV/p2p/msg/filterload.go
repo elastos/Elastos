@@ -12,18 +12,12 @@ type FilterLoad struct {
 	Tweak     uint32
 }
 
-func NewFilterLoadMsg(filter *bloom.Filter) ([]byte, error) {
-	msg := new(FilterLoad)
-	msg.Filter = filter.Filter
-	msg.HashFuncs = filter.HashFuncs
-	msg.Tweak = filter.Tweak
-
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("filterload", body)
+func NewFilterLoad(filter *bloom.Filter) *FilterLoad {
+	filterLoad := new(FilterLoad)
+	filterLoad.Filter = filter.Filter
+	filterLoad.HashFuncs = filter.HashFuncs
+	filterLoad.Tweak = filter.Tweak
+	return filterLoad
 }
 
 func (fl *FilterLoad) Serialize() ([]byte, error) {
@@ -43,7 +37,7 @@ func (fl *FilterLoad) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("filterload", buf.Bytes())
 }
 
 func (fl *FilterLoad) Deserialize(msg []byte) error {

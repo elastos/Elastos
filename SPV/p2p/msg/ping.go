@@ -9,17 +9,10 @@ type Ping struct {
 	Height uint64
 }
 
-func NewPingMsg(height uint32) ([]byte, error) {
+func NewPing(height uint32) *Ping {
 	ping := new(Ping)
-
 	ping.Height = uint64(height)
-
-	body, err := ping.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("ping", body)
+	return ping
 }
 
 func (p *Ping) Serialize() ([]byte, error) {
@@ -28,8 +21,7 @@ func (p *Ping) Serialize() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return buf.Bytes(), nil
+	return BuildMessage("ping", buf.Bytes())
 }
 
 func (p *Ping) Deserialize(msg []byte) error {

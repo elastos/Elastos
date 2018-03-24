@@ -18,28 +18,6 @@ type Inventory struct {
 	Data  []byte
 }
 
-func NewBlockHashesInventoryMsg(blockHashes []*Uint256) ([]byte, error) {
-	msg := new(Inventory)
-	msg.Type = BLOCK
-	msg.Count = uint32(len(blockHashes))
-
-	data := new(bytes.Buffer)
-	for _, hash := range blockHashes {
-		_, err := hash.Serialize(data)
-		if err != nil {
-			return nil, err
-		}
-	}
-	msg.Data = data.Bytes()
-
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("inv", body)
-}
-
 func (inv *Inventory) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := serialization.WriteUint8(buf, inv.Type)
@@ -57,7 +35,7 @@ func (inv *Inventory) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("inv", buf.Bytes())
 }
 
 func (inv *Inventory) Deserialize(msg []byte) error {

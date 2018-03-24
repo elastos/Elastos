@@ -83,12 +83,7 @@ func (spv *SPV) keepUpdate() {
 				}
 
 				// Send ping message to peer
-				msg, err := msg.NewPingMsg(spv.chain.Height())
-				if err != nil {
-					fmt.Println("Failed to build ping message, ", err)
-					return
-				}
-				go peer.Send(msg)
+				go peer.Send(msg.NewPing(spv.chain.Height()))
 			}
 		}
 
@@ -142,17 +137,17 @@ func (spv *SPV) OnVersion(peer *p2p.Peer, v *msg.Version) error {
 	// Add to connected peer
 	spv.pm.AddConnectedPeer(peer)
 
-	var buf []byte
+	var message p2p.Message
 	if peer.State() == p2p.INIT {
 		peer.SetState(p2p.HANDSHAKE)
 		peer.SetHeight(uint64(spv.chain.Height()))
-		buf, _ = msg.NewVersionMsg(p2p.NewVersion())
+		message = p2p.NewVersion()
 	} else if peer.State() == p2p.HAND {
 		peer.SetState(p2p.HANDSHAKED)
-		buf, _ = msg.NewVerAckMsg()
+		message = new(msg.VerAck)
 	}
 
-	go peer.Send(buf)
+	go peer.Send(message)
 
 	return nil
 }
@@ -163,8 +158,7 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 	}
 
 	if peer.State() == p2p.HANDSHAKE {
-		msg, _ := msg.NewVerAckMsg()
-		go peer.Send(msg)
+		go peer.Send(new(msg.VerAck))
 	}
 
 	peer.SetState(p2p.ESTABLISH)
@@ -175,8 +169,7 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 	spv.broadcastFilterLoad()
 
 	if spv.pm.NeedMorePeers() {
-		buf, _ := msg.NewAddrsReqMsg()
-		go peer.Send(buf)
+		go peer.Send(new(msg.AddrsReq))
 	}
 
 	return nil
@@ -184,15 +177,7 @@ func (spv *SPV) OnVerAck(peer *p2p.Peer, va *msg.VerAck) error {
 
 func (spv *SPV) OnPing(peer *p2p.Peer, p *msg.Ping) error {
 	peer.SetHeight(p.Height)
-
-	msg, err := msg.NewPongMsg(spv.chain.Height())
-	if err != nil {
-		fmt.Println("Failed to build pong message")
-		return err
-	}
-
-	go peer.Send(msg)
-
+	go peer.Send(msg.NewPong(spv.chain.Height()))
 	return nil
 }
 
@@ -226,13 +211,7 @@ func (spv *SPV) OnAddrs(peer *p2p.Peer, addrs *msg.Addrs) error {
 
 func (spv *SPV) OnAddrsReq(peer *p2p.Peer, req *msg.AddrsReq) error {
 	addrs := spv.pm.RandPeerAddrs()
-	msg, err := msg.NewAddrsMsg(addrs)
-	if err != nil {
-		return err
-	}
-
-	go peer.Send(msg)
-
+	go peer.Send(msg.NewAddrs(addrs))
 	return nil
 }
 
@@ -249,8 +228,7 @@ func (spv *SPV) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 
 func (spv *SPV) broadcastFilterLoad() {
 	// Broadcast filterload message to connected peers
-	buf, _ := msg.NewFilterLoadMsg(spv.chain.GetBloomFilter())
-	spv.pm.Broadcast(buf)
+	spv.pm.Broadcast(msg.NewFilterLoad(spv.chain.GetBloomFilter()))
 }
 
 func (spv *SPV) NotifyNewAddress(hash []byte) error {
@@ -260,15 +238,9 @@ func (spv *SPV) NotifyNewAddress(hash []byte) error {
 	return nil
 }
 
-func (spv *SPV) SendTransaction(txn tx.Transaction) error {
-	txnMsg, err := msg.NewTxnMsg(txn)
-	if err != nil {
-		return err
-	}
-
+func (spv *SPV) SendTransaction(tx tx.Transaction) error {
 	// Broadcast transaction to connected peers
-	spv.pm.Broadcast(txnMsg)
-
+	spv.pm.Broadcast(msg.NewTxn(tx))
 	return nil
 }
 

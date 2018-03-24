@@ -130,7 +130,7 @@ func (p *Peers) getBestPeer() *Peer {
 	return bestPeer
 }
 
-func (p *Peers) Broadcast(msg []byte) {
+func (p *Peers) Broadcast(msg Message) {
 	p.peersLock.RLock()
 	defer p.peersLock.RUnlock()
 

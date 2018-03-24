@@ -34,17 +34,17 @@ func SetListeners(ls *Listeners) {
 }
 
 // Only local peer will use this method, so the parameters are fixed
-func NewVersion() Version {
+func NewVersion() *Version {
 	peer := LocalPeer()
-	content := new(Version)
-	content.Version = peer.Version()
-	content.Services = peer.Services()
-	content.TimeStamp = uint32(time.Now().UnixNano())
-	content.Port = peer.Port()
-	content.Nonce = peer.ID()
-	content.Height = peer.Height()
-	content.Relay = peer.Relay()
-	return *content
+	version := new(Version)
+	version.Version = peer.Version()
+	version.Services = peer.Services()
+	version.TimeStamp = uint32(time.Now().UnixNano())
+	version.Port = peer.Port()
+	version.Nonce = peer.ID()
+	version.Height = peer.Height()
+	version.Relay = peer.Relay()
+	return version
 }
 
 func HandleMessage(peer *Peer, buf []byte) {

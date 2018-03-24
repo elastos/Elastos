@@ -276,12 +276,18 @@ func (peer *Peer) unpackMessage(buf []byte) {
 	}
 }
 
-func (peer *Peer) Send(msg []byte) {
+func (peer *Peer) Send(msg Message) {
 	if peer.State() == INACTIVITY {
 		return
 	}
 
-	_, err := peer.conn.Write(msg)
+	buf, err := msg.Serialize()
+	if err != nil {
+		log.Error("Serialize message failed, ", err)
+		return
+	}
+
+	_, err = peer.conn.Write(buf)
 	if err != nil {
 		log.Error("Error sending message to peer ", err)
 		listeners.OnDisconnect(peer)

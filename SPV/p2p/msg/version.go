@@ -7,22 +7,13 @@ import (
 )
 
 type Version struct {
-	Version      uint32
-	Services     uint64
-	TimeStamp    uint32
-	Port         uint16
-	Nonce        uint64
-	Height       uint64
-	Relay        uint8
-}
-
-func NewVersionMsg(data Version) ([]byte, error) {
-	body, err := data.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("version", body)
+	Version   uint32
+	Services  uint64
+	TimeStamp uint32
+	Port      uint16
+	Nonce     uint64
+	Height    uint64
+	Relay     uint8
 }
 
 func (v *Version) Serialize() ([]byte, error) {
@@ -32,7 +23,7 @@ func (v *Version) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("version", buf.Bytes())
 }
 
 func (v *Version) Deserialize(buf []byte) error {

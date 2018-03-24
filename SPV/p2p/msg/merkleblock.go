@@ -36,7 +36,7 @@ func (mb *MerkleBlock) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("merkleblock", buf.Bytes())
 }
 
 func (mb *MerkleBlock) Deserialize(msg []byte) error {

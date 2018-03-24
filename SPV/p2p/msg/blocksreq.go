@@ -12,18 +12,12 @@ type BlocksReq struct {
 	HashStop     Uint256
 }
 
-func NewBlocksReqMsg(locator []*Uint256, hashStop Uint256) ([]byte, error) {
-	msg := new(BlocksReq)
-	msg.Count = uint32(len(locator))
-	msg.BlockLocator = locator
-	msg.HashStop = hashStop
-
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("getblocks", body)
+func NewBlocksReq(locator []*Uint256, hashStop Uint256) *BlocksReq {
+	blocksReq := new(BlocksReq)
+	blocksReq.Count = uint32(len(locator))
+	blocksReq.BlockLocator = locator
+	blocksReq.HashStop = hashStop
+	return blocksReq
 }
 
 func (br *BlocksReq) Serialize() ([]byte, error) {
@@ -45,7 +39,7 @@ func (br *BlocksReq) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("getblocks", buf.Bytes())
 }
 
 func (br *BlocksReq) Deserialize(msg []byte) error {

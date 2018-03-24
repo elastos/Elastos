@@ -10,17 +10,11 @@ type Addrs struct {
 	PeerAddrs []PeerAddr
 }
 
-func NewAddrsMsg(addrs []PeerAddr) ([]byte, error) {
+func NewAddrs(addrs []PeerAddr) *Addrs {
 	msg := new(Addrs)
 	msg.Count = uint64(len(addrs))
 	msg.PeerAddrs = addrs
-
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	return BuildMessage("addr", body)
+	return msg
 }
 
 func (addrs *Addrs) Serialize() ([]byte, error) {
@@ -35,7 +29,7 @@ func (addrs *Addrs) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return BuildMessage("addr", buf.Bytes())
 }
 
 func (addrs *Addrs) Deserialize(msg []byte) error {

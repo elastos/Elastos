@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"SPVWallet/p2p/msg"
 	"SPVWallet/log"
 )
 
@@ -77,8 +76,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 	go remote.Read()
 
 	// Send version message to remote peer
-	msg, err := msg.NewVersionMsg(NewVersion())
-	go remote.Send(msg)
+	go remote.Send(NewVersion())
 }
 
 func (cm *ConnManager) retry(addr string) {
