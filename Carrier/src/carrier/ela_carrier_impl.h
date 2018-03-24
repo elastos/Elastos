@@ -27,6 +27,7 @@
 
 #include <crypto.h>
 #include <linkedhashtable.h>
+#include <linkedlist.h>
 
 #include "ela_carrier.h"
 
@@ -50,9 +51,20 @@ typedef struct BootstrapNodeBuf {
 typedef struct Preferences {
     char *data_location;
     bool udp_enabled;
-    int bootstraps_size;
+    size_t bootstraps_size;
     BootstrapNodeBuf *bootstraps;
 } Preferences;
+
+typedef enum FriendEventType {
+    FriendEventType_Added,
+    FriendEventType_Removed
+} FriendEventType;
+
+typedef struct FriendEvent {
+    ListEntry le;
+    FriendEventType type;
+    ElaFriendInfo fi;
+} FriendEvent;
 
 struct ElaCarrier {
     void *session;  // reserved for session.
@@ -75,6 +87,7 @@ struct ElaCarrier {
 
     DHTCallbacks dht_callbacks;
 
+    List *friend_events; // for friend_added/removed.
     Hashtable *friends;
 
     Hashtable *tcallbacks;

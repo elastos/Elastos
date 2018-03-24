@@ -36,6 +36,7 @@
 #include <base58.h>
 #include <vlog.h>
 #include <crypto.h>
+#include <linkedlist.h>
 
 #include "ela_carrier.h"
 #include "ela_carrier_impl.h"
@@ -588,6 +589,9 @@ static void ela_destroy(void *argv)
     if (w->friends)
         deref(w->friends);
 
+    if (w->friend_events)
+        deref(w->friend_events);
+
     dht_kill(&w->dht);
 }
 
@@ -685,6 +689,13 @@ ElaCarrier *ela_new(const ElaOptions *opts,
 
     w->friends = friends_create();
     if (!w->friends) {
+        deref(w);
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return NULL;
+    }
+
+    w->friend_events = list_create(1, NULL);
+    if (!w->friend_events) {
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
@@ -996,7 +1007,7 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
 
 static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
 {
-    ElaFriendInfo tmpfi;
+    FriendEvent *event;
 
     assert(w);
     assert(fi);
@@ -1004,29 +1015,86 @@ static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
     dht_store_savedata(&w->dht);
     store_savedata(w);
 
-    memcpy(&tmpfi, fi, sizeof(tmpfi));
+    event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
+    if (event) {
+        event->type = FriendEventType_Added;
+        memcpy(&event->fi, fi, sizeof(*fi));
 
-    if (w->callbacks.friend_added)
-        w->callbacks.friend_added(w, &tmpfi, w->context);
+        event->le.data = event;
+        list_push_tail(w->friend_events, &event->le);
+    }
 }
 
-static void notify_friend_removed(ElaCarrier *w, const char *friendid,
-                                  ElaConnectionStatus status)
+static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
 {
+    FriendEvent *event;
+
     assert(w);
-    assert(friendid);
+    assert(fi);
 
     dht_store_savedata(&w->dht);
     store_savedata(w);
 
-    if (status == ElaConnectionStatus_Connected) {
-        if (w->callbacks.friend_connection)
-            w->callbacks.friend_connection(w, friendid,
-                                ElaConnectionStatus_Disconnected, w->context);
-    }
+    event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
+    if (event) {
+        event->type = FriendEventType_Removed;
+        memcpy(&event->fi, fi, sizeof(*fi));
 
-    if (w->callbacks.friend_removed)
-        w->callbacks.friend_removed(w, friendid, w->context);
+        event->le.data = event;
+        list_push_tail(w->friend_events, &event->le);
+    }
+}
+
+static void do_friend_event(ElaCarrier *w, FriendEvent *event)
+{
+    assert(w);
+    assert(event);
+
+    switch(event->type) {
+    case FriendEventType_Added:
+        if (w->callbacks.friend_added)
+            w->callbacks.friend_added(w, &event->fi, w->context);
+        break;
+
+    case FriendEventType_Removed:
+        if (event->fi.status == ElaConnectionStatus_Connected) {
+            if (w->callbacks.friend_connection)
+                w->callbacks.friend_connection(w, event->fi.user_info.userid,
+                                ElaConnectionStatus_Disconnected, w->context);
+        }
+
+        if (w->callbacks.friend_removed)
+            w->callbacks.friend_removed(w, event->fi.user_info.userid, w->context);
+        break;
+
+    default:
+        assert(0);
+    }
+}
+
+static void do_friend_events(ElaCarrier *w)
+{
+    List *events = w->friend_events;
+    ListIterator it;
+
+redo_events:
+    list_iterate(events, &it);
+    while (list_iterator_has_next(&it)) {
+        FriendEvent *event;
+        int rc;
+
+        rc = list_iterator_next(&it, (void **)&event);
+        if (rc == 0)
+            break;
+
+        if (rc == -1)
+            goto redo_events;
+
+        do_friend_event(w, event);
+        list_iterator_remove(&it);
+
+        deref(event);
+    }
 }
 
 static
@@ -1266,6 +1334,8 @@ int ela_run(ElaCarrier *w, int interval)
         tmp.tv_usec = idle_interval * 1000;
 
         timeradd(&expire, &tmp, &expire);
+
+        do_friend_events(w);
 
         if (idle_interval > 0)
             notify_idle(w);
@@ -1807,7 +1877,7 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
 
     deref(fi);
 
-    notify_friend_removed(w, friendid, status);
+    notify_friend_removed(w, &fi->info);
 
     return 0;
 }
