@@ -44,7 +44,7 @@ The headers under directory "include" are public header files from Carrier nativ
 
 After importing dependencies from Carrier native, you need Android Studio to open this project and build Carrier Android SDK.
 
-### 4. Output
+### 4. Output (To complete)
 
 The output distributions after build include Carrier jar package and JNI shared libraries to each CPU arch, where the structure listed below:
 
@@ -66,7 +66,7 @@ build/outputs
 
 ## Basic Tests
 
-All basic tests are located under directory "app/src/androidTest". And you can run the tests on Android Studio.
+All basic tests are located under directory "app/src/androidTest". You can run the tests on Android Studio. Before running tests, you need to uncomment "service" configuration in AndroidMinifest.xml.
 
 ## Build Docs
 
@@ -78,7 +78,7 @@ Sinserely thanks to all teams and projects that we relying on directly or indire
 
 ## Contributing
 
-We welcome contributions to the Elastos Android Project (or Native Project) in many forms.
+We welcome contributions to the Elastos Carrier Android Project (or Native Project) in many forms.
 
 ## License
 
