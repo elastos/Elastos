@@ -110,6 +110,18 @@ typedef struct ElaTransportInfo {
 /* Global session APIs */
 
 /**
+ *\~English
+ * Make initialization on Android platform.
+ *
+ * @return
+ *      true if initialization succeeded, or false if not.
+ */
+#if defined(__ANDROID__)
+CARRIER_API
+bool ela_session_jni_onload(void *vm, void *reserved);
+#endif
+
+/**
  * \~English
  * An application-defined function that handle session requests.
  *
