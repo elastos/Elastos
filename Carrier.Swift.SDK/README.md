@@ -48,7 +48,7 @@ The headers under directory "include" are public header files from Carrier nativ
 
 After importing dependencies from Carrier native, you need Xcode to open this project and build Carrier iOS SDK.
 
-### 4. Output (To complete)
+### 4. Output
 
 You can use Xcode to produce ElastosCarrier.framework.
 
