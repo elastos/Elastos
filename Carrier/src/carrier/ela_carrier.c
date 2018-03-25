@@ -541,7 +541,7 @@ static int store_savedata(ElaCarrier *w)
             memcpy(pos, &fi->friend_number, sizeof(uint32_t));
             pos += sizeof(uint32_t);
             memcpy(pos, fi->info.label, strlen(fi->info.label) + 1);
-            pos += sizeof(fi->info.label) + 1;
+            pos += strlen(fi->info.label) + 1;
 
             deref(fi);
         }
