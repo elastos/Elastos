@@ -24,12 +24,7 @@ func (msg *DataReq) CMD() string {
 
 func (msg *DataReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint8(buf, msg.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = msg.Hash.Serialize(buf)
+	err := serialization.WriteElements(buf, msg.Type, msg.Hash)
 	if err != nil {
 		return nil, err
 	}
@@ -38,14 +33,8 @@ func (msg *DataReq) Serialize() ([]byte, error) {
 }
 
 func (msg *DataReq) Deserialize(body []byte) error {
-	var err error
 	buf := bytes.NewReader(body)
-	msg.Type, err = serialization.ReadUint8(buf)
-	if err != nil {
-		return err
-	}
-
-	err = msg.Hash.Deserialize(buf)
+	err := serialization.ReadElements(buf, &msg.Type, &msg.Hash)
 	if err != nil {
 		return err
 	}

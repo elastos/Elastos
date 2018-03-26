@@ -27,29 +27,13 @@ func NewProof(blockHash Uint256, height, transactions uint32, hashes []*Uint256,
 
 func (p *Proof) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	_, err := p.BlockHash.Serialize(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, p.Height)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, p.Transactions)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, hash := range p.Hashes {
-		_, err := hash.Serialize(buf)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	err = serialization.WriteVarBytes(buf, p.Flags)
+	err := serialization.WriteElements(buf,
+		p.BlockHash,
+		p.Height,
+		p.Transactions,
+		p.Hashes,
+		p.Flags,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -15,7 +15,7 @@ func (msg *NotFound) CMD() string {
 
 func (msg *NotFound) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	_, err := msg.Hash.Serialize(buf)
+	err := msg.Hash.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}

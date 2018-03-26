@@ -3,7 +3,7 @@ package msg
 import (
 	"bytes"
 
-	"SPVWallet/core/serialization"
+	"encoding/binary"
 )
 
 type Pong struct {
@@ -22,7 +22,7 @@ func (msg *Pong) CMD() string {
 
 func (msg *Pong) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint64(buf, msg.Height)
+	err := binary.Write(buf, binary.LittleEndian, msg.Height)
 	if err != nil {
 		return nil, err
 	}

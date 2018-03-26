@@ -26,19 +26,7 @@ func (msg *BlocksReq) CMD() string {
 
 func (msg *BlocksReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint32(buf, msg.Count)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, hash := range msg.BlockLocator {
-		_, err := hash.Serialize(buf)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	_, err = msg.HashStop.Serialize(buf)
+	err := serialization.WriteElements(buf, msg.Count, msg.BlockLocator, msg.HashStop)
 	if err != nil {
 		return nil, err
 	}

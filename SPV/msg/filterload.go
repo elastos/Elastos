@@ -26,17 +26,7 @@ func (msg *FilterLoad) CMD() string {
 
 func (msg *FilterLoad) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteVarBytes(buf, msg.Filter)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, msg.HashFuncs)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, msg.Tweak)
+	err := serialization.WriteElements(buf, msg.Filter, msg.HashFuncs, msg.Tweak)
 	if err != nil {
 		return nil, err
 	}
@@ -45,19 +35,8 @@ func (msg *FilterLoad) Serialize() ([]byte, error) {
 }
 
 func (msg *FilterLoad) Deserialize(body []byte) error {
-	var err error
 	buf := bytes.NewReader(body)
-	msg.Filter, err = serialization.ReadVarBytes(buf)
-	if err != nil {
-		return err
-	}
-
-	msg.HashFuncs, err = serialization.ReadUint32(buf)
-	if err != nil {
-		return err
-	}
-
-	msg.Tweak, err = serialization.ReadUint32(buf)
+	err := serialization.ReadElements(buf, &msg.Filter, &msg.HashFuncs, &msg.Tweak)
 	if err != nil {
 		return err
 	}

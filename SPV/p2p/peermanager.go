@@ -202,7 +202,7 @@ func (spv *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
 }
 
 func (spv *PeerManager) OnAddrs(peer *Peer, addrs *Addrs) error {
-	for _, addr := range addrs.PeerAddrs {
+	for _, addr := range addrs.Addrs {
 		// Skip local peer
 		if addr.ID == spv.Local().ID() {
 			continue

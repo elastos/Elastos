@@ -2,7 +2,7 @@ package msg
 
 import (
 	"bytes"
-	"SPVWallet/core/serialization"
+	"encoding/binary"
 )
 
 type Ping struct {
@@ -21,7 +21,7 @@ func (msg *Ping) CMD() string {
 
 func (msg *Ping) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint64(buf, msg.Height)
+	err := binary.Write(buf, binary.LittleEndian, msg.Height)
 	if err != nil {
 		return nil, err
 	}
@@ -29,8 +29,6 @@ func (msg *Ping) Serialize() ([]byte, error) {
 }
 
 func (msg *Ping) Deserialize(body []byte) error {
-	var err error
 	buf := bytes.NewReader(body)
-	msg.Height, err = serialization.ReadUint64(buf)
-	return err
+	return binary.Read(buf, binary.LittleEndian, &msg.Height)
 }

@@ -2,7 +2,6 @@ package core
 
 import (
 	"io"
-	"bytes"
 	"errors"
 	"encoding/binary"
 )
@@ -39,6 +38,7 @@ func (u *Uint256) Bytes() []byte {
 
 	return x
 }
+
 func (u *Uint256) BytesReverse() []byte {
 	var x = make([]byte, UINT256SIZE)
 	for i, j := 0, UINT256SIZE-1; i < j; i, j = i+1, j-1 {
@@ -46,31 +46,13 @@ func (u *Uint256) BytesReverse() []byte {
 	}
 	return x
 }
-func (u *Uint256) Serialize(w io.Writer) (int, error) {
-	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.LittleEndian, u)
 
-	len, err := w.Write(buf.Bytes())
-
-	if err != nil {
-		return 0, err
-	}
-
-	return len, nil
+func (u *Uint256) Serialize(w io.Writer) error {
+	return binary.Write(w, binary.LittleEndian, u)
 }
 
 func (u *Uint256) Deserialize(r io.Reader) error {
-	p := make([]byte, UINT256SIZE)
-	n, err := r.Read(p)
-
-	if n <= 0 || err != nil {
-		return err
-	}
-
-	buf := bytes.NewBuffer(p)
-	binary.Read(buf, binary.LittleEndian, u)
-
-	return nil
+	return binary.Read(r, binary.LittleEndian, u)
 }
 
 func (u *Uint256) String() string {
@@ -82,19 +64,8 @@ func Uint256FromBytes(f []byte) (*Uint256, error) {
 		return nil, errors.New("[Common]: Uint256ParseFromBytes err, len != 32")
 	}
 
-	var hash [32]uint8
-	for i := 0; i < 32; i++ {
-		hash[i] = f[i]
-	}
-	value := Uint256(hash)
-	return &value, nil
-}
+	var hash Uint256
+	copy(hash[:], f)
 
-func Uint256FromString(hash string) (*Uint256, error) {
-	hashBytes, err := HexStringToBytesReverse(hash)
-	if err != nil {
-		return nil, err
-	}
-
-	return Uint256FromBytes(hashBytes)
+	return &hash, nil
 }

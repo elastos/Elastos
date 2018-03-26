@@ -24,17 +24,7 @@ func (msg *Inventory) CMD() string {
 
 func (msg *Inventory) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint8(buf, msg.Type)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialization.WriteUint32(buf, msg.Count)
-	if err != nil {
-		return nil, err
-	}
-
-	err = binary.Write(buf, binary.LittleEndian, msg.Data)
+	err := serialization.WriteElements(buf, msg.Type, msg.Count, msg.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -43,14 +33,8 @@ func (msg *Inventory) Serialize() ([]byte, error) {
 }
 
 func (msg *Inventory) Deserialize(body []byte) error {
-	var err error
 	buf := bytes.NewReader(body)
-	msg.Type, err = serialization.ReadUint8(buf)
-	if err != nil {
-		return err
-	}
-
-	msg.Count, err = serialization.ReadUint32(buf)
+	err := serialization.ReadElements(buf, &msg.Type, &msg.Count)
 	if err != nil {
 		return err
 	}

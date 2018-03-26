@@ -98,7 +98,7 @@ func (header *Header) Deserialize(buf []byte) error {
 		return errors.New("Unexpected length of CMD")
 	}
 
-	hdr := bytes.NewBuffer(buf[:HEADERLEN])
+	hdr := bytes.NewReader(buf[:HEADERLEN])
 	return binary.Read(hdr, binary.LittleEndian, header)
 }
 

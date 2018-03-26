@@ -21,42 +21,15 @@ type Header struct {
 }
 
 func (header *Header) SerializeWithoutAux(w io.Writer) error {
-	err := WriteUint32(w, header.Version)
-	if err != nil {
-		return err
-	}
-
-	_, err = header.Previous.Serialize(w)
-	if err != nil {
-		return err
-	}
-
-	_, err = header.MerkleRoot.Serialize(w)
-	if err != nil {
-		return err
-	}
-
-	err = WriteUint32(w, header.Timestamp)
-	if err != nil {
-		return err
-	}
-
-	err = WriteUint32(w, header.Bits)
-	if err != nil {
-		return err
-	}
-
-	err = WriteUint32(w, header.Nonce)
-	if err != nil {
-		return err
-	}
-
-	err = WriteUint32(w, header.Height)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return WriteElements(w,
+		header.Version,
+		header.Previous,
+		header.MerkleRoot,
+		header.Timestamp,
+		header.Bits,
+		header.Nonce,
+		header.Height,
+	)
 }
 
 func (header *Header) Serialize(w io.Writer) error {
@@ -76,48 +49,15 @@ func (header *Header) Serialize(w io.Writer) error {
 }
 
 func (header *Header) DeserializeWithoutAux(r io.Reader) error {
-	var err error
-	//Version
-	header.Version, err = ReadUint32(r)
-	if err != nil {
-		return err
-	}
-
-	//PrevBlockHash
-	err = header.Previous.Deserialize(r)
-	if err != nil {
-		return err
-	}
-
-	//TransactionsRoot
-	err = header.MerkleRoot.Deserialize(r)
-	if err != nil {
-		return err
-	}
-
-	//Timestamp
-	header.Timestamp, err = ReadUint32(r)
-	if err != nil {
-		return err
-	}
-
-	//Bits
-	header.Bits, err = ReadUint32(r)
-	if err != nil {
-		return err
-	}
-	//Nonce
-	header.Nonce, err = ReadUint32(r)
-	if err != nil {
-		return err
-	}
-	//Height
-	header.Height, err = ReadUint32(r)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ReadElements(r,
+		&header.Version,
+		&header.Previous,
+		&header.MerkleRoot,
+		&header.Timestamp,
+		&header.Bits,
+		&header.Nonce,
+		&header.Height,
+	)
 }
 
 func (header *Header) Deserialize(r io.Reader) error {
@@ -154,10 +94,10 @@ func (header *Header) Bytes() ([]byte, error) {
 }
 
 func HeaderFromBytes(headerBytes []byte) (*Header, error) {
-	var header Header
+	var header = new(Header)
 	err := header.Deserialize(bytes.NewReader(headerBytes))
 	if err != nil {
 		return nil, err
 	}
-	return &header, nil
+	return header, nil
 }

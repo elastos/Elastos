@@ -46,7 +46,7 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		return err
 	}
 
-	_, err = ap.ParentHash.Serialize(w)
+	err = ap.ParentHash.Serialize(w)
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 	}
 
 	for _, amb := range ap.AuxMerkleBranch {
-		_, err = amb.Serialize(w)
+		err = amb.Serialize(w)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 	}
 
 	for _, pcbm := range ap.ParCoinBaseMerkle {
-		_, err = pcbm.Serialize(w)
+		err = pcbm.Serialize(w)
 		if err != nil {
 			return err
 		}

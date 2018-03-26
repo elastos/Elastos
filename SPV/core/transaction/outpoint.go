@@ -14,12 +14,7 @@ type OutPoint struct {
 }
 
 func (op *OutPoint) Serialize(w io.Writer) error {
-	_, err := op.TxID.Serialize(w)
-	if err != nil {
-		return err
-	}
-
-	err = serialization.WriteUint16(w, op.Index)
+	err := serialization.WriteElements(w, op.TxID, op.Index)
 	if err != nil {
 		return err
 	}
@@ -28,12 +23,7 @@ func (op *OutPoint) Serialize(w io.Writer) error {
 }
 
 func (op *OutPoint) Deserialize(r io.Reader) error {
-	err := op.TxID.Deserialize(r)
-	if err != nil {
-		return err
-	}
-
-	op.Index, err = serialization.ReadUint16(r)
+	err := serialization.ReadElements(r, &op.TxID, &op.Index)
 	if err != nil {
 		return err
 	}

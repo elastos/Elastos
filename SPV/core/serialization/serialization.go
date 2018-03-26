@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"math"
+	"SPVWallet/core"
 )
 
 var ErrRange = errors.New("value out of range")
@@ -240,4 +241,79 @@ func byteXReader(reader io.Reader, x uint64) ([]byte, error) {
 		return p[:], nil
 	}
 	return p, err
+}
+
+func WriteElements(writer io.Writer, elements ...interface{}) error {
+	for _, e := range elements {
+		err := WriteElement(writer, e)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func WriteElement(writer io.Writer, element interface{}) (err error) {
+	switch e := element.(type) {
+	case core.Uint256:
+		err = e.Serialize(writer)
+	case []core.Uint256:
+		for _, v := range e {
+			err = WriteElement(writer, v)
+			if err != nil {
+				return err
+			}
+		}
+	case []*core.Uint256:
+		for _, v := range e {
+			err = WriteElement(writer, *v)
+			if err != nil {
+				return err
+			}
+		}
+	case []byte:
+		err = WriteVarBytes(writer, e)
+	default:
+		err = binary.Write(writer, binary.LittleEndian, e)
+	}
+	return err
+}
+
+func ReadElements(reader io.Reader, elements ...interface{}) error {
+	for _, e := range elements {
+		err := ReadElement(reader, e)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ReadElement(reader io.Reader, element interface{}) (err error) {
+	switch e := element.(type) {
+	case *core.Uint256:
+		err = (*e).Deserialize(reader)
+	case *[]core.Uint256:
+		for i, v := range *e {
+			err = v.Deserialize(reader)
+			if err != nil {
+				return err
+			}
+			(*e)[i] = v
+		}
+	case *[]*core.Uint256:
+		for i, v := range *e {
+			v = new(core.Uint256)
+			err = (*v).Deserialize(reader)
+			if err != nil {
+				return err
+			}
+			(*e)[i] = v
+		}
+	case *[]byte:
+		*e, err = ReadVarBytes(reader)
+	default:
+		err = binary.Read(reader, binary.LittleEndian, e)
+	}
+	return err
 }

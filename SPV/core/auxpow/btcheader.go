@@ -23,12 +23,12 @@ func (bh *BtcHeader) Serialize(w io.Writer) error {
 		return err
 	}
 
-	_, err = bh.Previous.Serialize(w)
+	err = bh.Previous.Serialize(w)
 	if err != nil {
 		return err
 	}
 
-	_, err = bh.MerkleRoot.Serialize(w)
+	err = bh.MerkleRoot.Serialize(w)
 	if err != nil {
 		return err
 	}
