@@ -345,7 +345,7 @@ func ManualMining(param Params) map[string]interface{} {
 		//ret[i] = hash.ToString()
 		w := new(bytes.Buffer)
 		hash.Serialize(w)
-		ret[i] = BytesToHexString(w.Bytes())
+		ret[i] = BytesToHexString(BytesReverse(w.Bytes()))
 	}
 
 	return ResponsePack(Success, ret)
