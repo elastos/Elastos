@@ -1,5 +1,9 @@
 package _interface
 
+import (
+	"SPVWallet/crypto"
+)
+
 type Keystore interface {
 	Open(password string) (Keystore, error)
 	ChangePassword(old, new string) error
@@ -10,4 +14,9 @@ type Keystore interface {
 
 type Account interface {
 	Sign(data []byte) ([]byte, error)
+	PublicKey() *crypto.PublicKey
+}
+
+func NewKeystore() Keystore {
+	return &KeystoreImpl{}
 }
