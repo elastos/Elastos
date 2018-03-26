@@ -4,7 +4,10 @@ import "SPVWallet/p2p"
 
 type P2PClient interface {
 	Start()
-	RegisterCallback(func(peer *p2p.Peer, msg p2p.Message))
+	HandleVersion(callback func(v *p2p.Version) error)
+	PeerConnected(callback func(peer *p2p.Peer))
+	MakeMessage(callback func(cmd string) (p2p.Message, error))
+	HandleMessage(callback func(peer *p2p.Peer, msg p2p.Message) error)
 	PeerManager() *p2p.PeerManager
 }
 

@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"SPVWallet/log"
+	"errors"
 )
 
 const (
@@ -14,15 +15,17 @@ const (
 	MaxOutboundCount   = 6
 )
 
+var pm *PeerManager
+
 type PeerManager struct {
 	*Peers
 	addrManager *AddrManager
 	connManager *ConnManager
 }
 
-func NewPeerManager(clientId uint64, localPort uint16, seeds []string) *PeerManager {
+func InitPeerManager(clientId uint64, localPort uint16, seeds []string) *PeerManager {
 	// Initiate PeerManager
-	pm := new(PeerManager)
+	pm = new(PeerManager)
 	pm.Peers = newPeers(clientId, localPort)
 	pm.addrManager = newAddrManager(seeds)
 	pm.connManager = newConnManager(pm.OnDiscardAddr)
@@ -125,4 +128,104 @@ func (pm *PeerManager) listenConnection() {
 		peer := NewPeer(conn)
 		go peer.Read()
 	}
+}
+
+func (spv *PeerManager) OnVersion(peer *Peer, v *Version) error {
+	log.Info("SPV OnVersion")
+	// Check if handshake with itself
+	if v.Nonce == spv.Local().ID() {
+		log.Error(">>>> SPV disconnect peer, peer handshake with itself")
+		spv.DisconnectPeer(peer)
+		spv.OnDiscardAddr(peer.Addr().String())
+		return errors.New("Peer handshake with itself")
+	}
+
+	if peer.State() != INIT && peer.State() != HAND {
+		log.Error("Unknow status to received version")
+		return errors.New("Unknow status to received version")
+	}
+
+	// Remove duplicate peer connection
+	knownPeer, ok := spv.RemovePeer(v.Nonce)
+	if ok {
+		log.Trace("Reconnect peer ", v.Nonce)
+		knownPeer.Disconnect()
+	}
+
+	log.Info("Is known peer:", ok)
+
+	// Set peer info with version message
+	peer.SetInfo(v)
+
+	// Handle version message
+	if err := onHandleVersion(v); err != nil {
+		spv.DisconnectPeer(peer)
+		return err
+	}
+
+	var message Message
+	if peer.State() == INIT {
+		peer.SetState(HANDSHAKE)
+		message = NewVersion()
+	} else if peer.State() == HAND {
+		peer.SetState(HANDSHAKED)
+		message = new(VerAck)
+	}
+
+	go peer.Send(message)
+
+	return nil
+}
+
+func (spv *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
+	if peer.State() != HANDSHAKE && peer.State() != HANDSHAKED {
+		return errors.New("Unknow status to received verack")
+	}
+
+	if peer.State() == HANDSHAKE {
+		go peer.Send(new(VerAck))
+	}
+
+	peer.SetState(ESTABLISH)
+
+	// Add to connected peer
+	spv.AddConnectedPeer(peer)
+
+	// Notify peer connected
+	onPeerConnected(peer)
+
+	if spv.NeedMorePeers() {
+		go peer.Send(new(AddrsReq))
+	}
+
+	return nil
+}
+
+func (spv *PeerManager) OnAddrs(peer *Peer, addrs *Addrs) error {
+	for _, addr := range addrs.PeerAddrs {
+		// Skip local peer
+		if addr.ID == spv.Local().ID() {
+			continue
+		}
+		// Skip peer already connected
+		if spv.EstablishedPeer(addr.ID) {
+			continue
+		}
+		// Skip invalid port
+		if addr.Port == 0 {
+			continue
+		}
+		// Handle new address
+		if spv.NeedMorePeers() {
+			spv.ConnectPeer(addr.String())
+		}
+	}
+
+	return nil
+}
+
+func (spv *PeerManager) OnAddrsReq(peer *Peer, req *AddrsReq) error {
+	addrs := spv.RandAddrs()
+	go peer.Send(NewAddrs(addrs))
+	return nil
 }

@@ -352,13 +352,16 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 		}
 		sm.handleFPositive(fPositives)
 	}
+	// Update local peer height
+	spv.updateLocalHeight()
 	return nil
 }
 
 func (sm *SyncManager) handleFPositive(fPositives int) {
 	sm.fPositives += fPositives
 	if sm.fPositives > MaxFalsePositives {
-		spv.broadcastFilterLoad()
+		// Broadcast filterload message to connected peers
+		spv.pm.Broadcast(NewFilterLoad(spv.chain.GetBloomFilter()))
 		sm.fPositives = 0
 	}
 }

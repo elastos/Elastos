@@ -1,14 +1,15 @@
 package p2p
 
 import (
-	"errors"
 	"time"
 
-	. "SPVWallet/msg"
 	"SPVWallet/log"
 )
 
-var callback func(peer *Peer, msg Message)
+var onMakeMessage func(cmd string) (Message, error)
+var onHandleVersion func(v *Version) error
+var onPeerConnected func(peer *Peer)
+var onHandleMessage func(peer *Peer, msg Message) error
 
 type Message interface {
 	CMD() string
@@ -16,8 +17,20 @@ type Message interface {
 	Deserialize(msg []byte) error
 }
 
-func RegisterCallback(msgCallback func(peer *Peer, msg Message)) {
-	callback = msgCallback
+func OnMakeMessage(callback func(cmd string) (Message, error)) {
+	onMakeMessage = callback
+}
+
+func OnHandleVersion(callback func(v *Version) error) {
+	onHandleVersion = callback
+}
+
+func OnPeerConnected(callback func(peer *Peer)) {
+	onPeerConnected = callback
+}
+
+func OnHandleMessage(callback func(peer *Peer, msg Message) error) {
+	onHandleMessage = callback
 }
 
 // Only local peer will use this method, so the parameters are fixed
@@ -52,7 +65,7 @@ func HandleMessage(peer *Peer, buf []byte) {
 		return
 	}
 
-	callback(peer, msg)
+	handleMessage(peer, msg)
 }
 
 func parseHeader(buf []byte) (*Header, error) {
@@ -73,30 +86,39 @@ func makeMessage(buf []byte) (Message, error) {
 	log.Info("Receive message:", hdr.GetCMD())
 	var msg Message
 
-	switch hdr.GetCMD() {
+	cmd := hdr.GetCMD()
+	switch cmd {
 	case "version":
 		msg = new(Version)
 	case "verack":
 		msg = new(VerAck)
-	case "ping":
-		msg = new(Ping)
-	case "pong":
-		msg = new(Pong)
 	case "getaddr":
 		msg = new(AddrsReq)
 	case "addr":
 		msg = new(Addrs)
-	case "inv":
-		msg = new(Inventory)
-	case "tx":
-		msg = new(Txn)
-	case "merkleblock":
-		msg = new(MerkleBlock)
-	case "notfound":
-		msg = new(NotFound)
 	default:
-		return nil, errors.New("Received unsupported message, CMD " + hdr.GetCMD())
+		return onMakeMessage(cmd)
 	}
 
 	return msg, nil
+}
+
+func handleMessage(peer *Peer, msg Message) {
+	var err error
+	switch msg := msg.(type) {
+	case *Version:
+		err = pm.OnVersion(peer, msg)
+	case *VerAck:
+		err = pm.OnVerAck(peer, msg)
+	case *AddrsReq:
+		err = pm.OnAddrsReq(peer, msg)
+	case *Addrs:
+		err = pm.OnAddrs(peer, msg)
+	default:
+		err = onHandleMessage(peer, msg)
+	}
+
+	if err != nil {
+		log.Error("Handle message error,", err)
+	}
 }
