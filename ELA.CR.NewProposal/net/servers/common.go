@@ -4,12 +4,12 @@ import (
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/consensus/pow"
+	"Elastos.ELA/core/asset"
 	. "Elastos.ELA/core/transaction"
 	tx "Elastos.ELA/core/transaction"
+	"Elastos.ELA/core/transaction/payload"
 	. "Elastos.ELA/errors"
 	. "Elastos.ELA/net/protocol"
-	"Elastos.ELA/core/asset"
-	"Elastos.ELA/core/transaction/payload"
 )
 
 const TlsPort = 443
@@ -98,7 +98,7 @@ type BlockHead struct {
 	AuxPow           *AuxInfo
 	Difficulty       string
 	BlockSize        int
-	Hash string
+	Hash             string
 }
 
 type BlockInfo struct {
@@ -134,6 +134,10 @@ type RegisterAssetInfo struct {
 	Controller string
 }
 
+type SideMiningInfo struct {
+	SideBlockHash string
+}
+
 func TransPayloadToHex(p Payload) PayloadInfo {
 	switch object := p.(type) {
 	case *payload.CoinBase:
@@ -145,6 +149,10 @@ func TransPayloadToHex(p Payload) PayloadInfo {
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(object.Controller.ToArrayReverse())
+		return obj
+	case *payload.SideMining:
+		obj := new(SideMiningInfo)
+		obj.SideBlockHash = object.SideBlockHash.String()
 		return obj
 	case *payload.TransferAsset:
 	case *payload.Record:
