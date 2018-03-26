@@ -299,10 +299,9 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	type AuxBlock struct {
-		ChainId           int    `json:"chainid"`
+	type SideAuxBlock struct {
+		GenesisHash       string `json:"genesishash"`
 		Height            uint64 `json:"height"`
-		CoinBaseValue     int    `json:"coinbasevalue"`
 		Bits              string `json:"bits"`
 		Hash              string `json:"hash"`
 		PreviousBlockHash string `json:"previousblockhash"`
@@ -310,13 +309,18 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 
 	Pow.PayToAddr = param["paytoaddress"].(string)
 
+	genesisHash, err := ledger.DefaultLedger.Store.GetBlockHash(uint32(0))
+	if err != nil {
+		return ResponsePack(Error, "Get genesis hash failed")
+	}
+	genesisHashStr := BytesToHexString(genesisHash.ToArray())
+
 	preHash := ledger.DefaultLedger.Blockchain.CurrentBlockHash()
 	preHashStr := BytesToHexString(preHash.ToArray())
 
-	SendToAux := AuxBlock{
-		ChainId:           auxpow.AuxPowChainID,
+	SendToAux := SideAuxBlock{
+		GenesisHash:       genesisHashStr,
 		Height:            NodeForServers.GetHeight(),
-		CoinBaseValue:     1,                                          //transaction content
 		Bits:              fmt.Sprintf("%x", msgBlock.Blockdata.Bits), //difficulty
 		Hash:              curHashStr,
 		PreviousBlockHash: preHashStr,
