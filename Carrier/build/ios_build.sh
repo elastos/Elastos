@@ -5,12 +5,12 @@ TARGET_MAKE="install"
 TARGET_BUILD="debug"
 TARGET_MODULE="carrier"
 
-set -eo pipefail
-
 if [ x"$(uname -s)" != x"Darwin" ] && [ x"$(uname -s)" != x"iOS" ]; then
     echo "Error: $0 should run on Darwin OS"
     exit 1
 fi
+
+set -eo pipefail
 
 while [ x"$1" != x ]; do
 case "$1" in

@@ -6,12 +6,12 @@ TARGET_MAKE="install"
 TARGET_BUILD="debug"
 TARGET_MODULE="carrier"
 
-set -e
-
 if [ x"$(uname -s)" != x"Linux" ]; then
     echo "Error: $0 should run on Linux"
     exit 1
 fi
+
+set -e
 
 while [ x"$1" != x ]; do
 case "$1" in

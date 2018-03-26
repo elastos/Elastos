@@ -1,13 +1,13 @@
 #!/bin/sh
 
-set -e
-
 RUN_HOST=$(uname -s)
 
 if [ ${RUN_HOST} != "Linux" ] && [ ${RUN_HOST} != "Darwin" ]; then
     echo "Error: This script should run on Linux/Darwin"
     exit 1
 fi
+
+set -e
 
 darwin_build() {
     for arch in "x86_64"; do

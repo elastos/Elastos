@@ -6,8 +6,6 @@ TARGET_MAKE="install"
 TARGET_BUILD="debug"
 TARGET_MODULE="carrier"
 
-set -e
-
 if [ x"$(uname -s)" != x"Linux" ] && [ x"$(uname -s)" != x"Darwin" ]; then
     echo "Error: $0 should run on Linux/Darwin with Android-NDK"
     exit 1
@@ -17,6 +15,8 @@ if [ -z "${ANDROID_NDK_HOME}" ]; then
     echo "Error: ANDROID_NDK_HOME environment not set"
     exit 1
 fi
+
+set -e
 
 TARGET_TOOLCHAIN="arm-linux-androideabi-4.9"
 TARGET_API="24"
