@@ -64,24 +64,23 @@ public class FriendInfo extends UserInfo {
 		return label;
 	}
 
-
 	/**
 	 * Set friend's connection status.
 	 *
 	 * This function will be called in Java JNI only.
 	 *
 	 * @param
-	 * 		status		The PresenceStatus object.
+	 * 		status		The ConnectionStatus object.
      */
 	void setConnectionStatus(ConnectionStatus status) {
 		this.connection = status;
 	}
 
 	/**
-	 * Get friend's presence status.
+	 * Get friend's connection status.
 	 *
 	 * @return
-	 * 		The PresenceStatus object.
+	 * 		The ConnectionStatus object.
      */
 	public ConnectionStatus getConnectionStatus() {
 		return this.connection;

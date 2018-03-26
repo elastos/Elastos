@@ -307,7 +307,7 @@ public class Carrier {
 	 */
 	public static boolean isValidAddress(String address) {
 		try {
-			return Base58.decode(address).length == 32;
+			return Base58.decode(address).length == 38;
 		} catch (Exception e) {
 			return false;
 		}
