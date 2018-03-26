@@ -1,17 +1,17 @@
 package ledger
 
 import (
+	"errors"
 	"fmt"
 	"math"
-	"errors"
 
 	"Elastos.ELA/common"
-	. "Elastos.ELA/errors"
+	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/asset"
-	"Elastos.ELA/common/config"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"
+	. "Elastos.ELA/errors"
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -310,6 +310,7 @@ func CheckTransactionPayload(Tx *tx.Transaction) error {
 	case *payload.Record:
 	case *payload.DeployCode:
 	case *payload.CoinBase:
+	case *payload.SideMining:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
