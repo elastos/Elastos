@@ -10,6 +10,7 @@ import (
 	"Elastos.ELA.SideChain/core/transaction/payload"
 	. "Elastos.ELA.SideChain/errors"
 	. "Elastos.ELA.SideChain/net/protocol"
+	"bytes"
 	"io"
 )
 
@@ -143,6 +144,11 @@ type TransferAssetInfo struct {
 }
 
 type IssueTokenInfo struct {
+	Proof string
+}
+
+type TransferCrossChainAssetInfo struct {
+	PublicKeys map[string]uint64
 }
 
 func TransPayloadToHex(p Payload) PayloadInfo {
@@ -160,6 +166,19 @@ func TransPayloadToHex(p Payload) PayloadInfo {
 	case *payload.TransferAsset:
 	case *payload.Record:
 	case *payload.DeployCode:
+	case *payload.IssueToken:
+		obj := new(IssueTokenInfo)
+		proofBuf := new(bytes.Buffer)
+		err := object.Proof.Serialize(proofBuf)
+		if err != nil {
+			return nil
+		}
+		obj.Proof = BytesToHexString(proofBuf.Bytes())
+		return obj
+	case *payload.TransferCrossChainAsset:
+		obj := new(TransferCrossChainAssetInfo)
+		obj.PublicKeys = object.PublicKeys
+		return obj
 	}
 	return nil
 }
