@@ -75,7 +75,6 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		log.Error("HTTP JSON RPC Handle - json.Unmarshal: ", err)
 		return
 	}
-
 	//get the corresponding function
 	function, method, ok := checkMethod(request)
 	if !ok {
@@ -83,11 +82,19 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params, ok := checkParams(request)
-	if !ok {
-		Error(w, errors.InvalidParams, method)
-		return
+	var params map[string]interface{}
+
+	if request["method"] == "createauxblock" || request["method"] == "submitauxblock" {
+		params = fixAuxInterfaces(request)
+	} else {
+		params, ok = checkParams(request)
+		if !ok {
+			Error(w, errors.InvalidParams, method)
+			return
+		}
+
 	}
+
 
 	response := function(params)
 	data, err := json.Marshal(map[string]interface{}{
@@ -142,4 +149,18 @@ func Error(w http.ResponseWriter, code errors.ErrCode, method interface{}) {
 		"result": code.Message(),
 	})
 	w.Write(data)
+}
+
+func fixAuxInterfaces(request map[string]interface{}) map[string]interface{}{
+	method := request["method"].(string)
+	params := request["params"].([]interface{})
+	if method == "createauxblock" {
+		return map[string]interface{}{"paytoaddress": params[0].(string)}
+	}
+
+	if method == "submitauxblock" {
+		return map[string]interface{}{"blockhash": params[0], "auxpow": params[1]}
+	}
+
+	return map[string]interface{}{"no method": "false"}
 }
