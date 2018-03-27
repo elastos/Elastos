@@ -28,6 +28,7 @@ const (
 
 	STANDARD = 0xAC
 	MULTISIG = 0xAE
+	CROSSCHAIN = 0xAF
 )
 
 func (self TransactionType) Name() string {

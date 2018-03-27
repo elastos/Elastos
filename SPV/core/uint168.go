@@ -99,7 +99,7 @@ func Uint168FromBytes(bytes []byte) (*Uint168, error) {
 		return nil, errors.New("Uint168FromBytes err, len != 21")
 	}
 
-	if bytes[0] != 18 && bytes[0] != 33 {
+	if bytes[0] != 18 && bytes[0] != 33 && bytes[0] != 75 {
 		return nil, errors.New("invalid address type, unknown prefix")
 	}
 

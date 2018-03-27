@@ -26,6 +26,8 @@ func ToProgramHash(code []byte) (*Uint168, error) {
 		f = append([]byte{33}, f...)
 	} else if signType == MULTISIG {
 		f = append([]byte{18}, f...)
+	} else if signType == CROSSCHAIN {
+		f = append([]byte{75}, f...)
 	}
 
 	return Uint168FromBytes(f)
