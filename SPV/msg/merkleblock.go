@@ -23,7 +23,7 @@ func (msg *MerkleBlock) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	err = serialization.WriteElements(buf, msg.Transactions, msg.Hashes, msg.Flags)
+	err = serialization.WriteElements(buf, msg.Transactions, uint32(len(msg.Hashes)), msg.Hashes, msg.Flags)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,12 @@ func (msg *MerkleBlock) Deserialize(body []byte) error {
 		return err
 	}
 
-	msg.Hashes = make([]*Uint256, msg.Transactions)
+	hashes, err := serialization.ReadUint32(buf)
+	if err != nil {
+		return err
+	}
+
+	msg.Hashes = make([]*Uint256, hashes)
 	err = serialization.ReadElements(buf, &msg.Hashes, &msg.Flags)
 	if err != nil {
 		return err

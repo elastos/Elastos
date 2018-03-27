@@ -70,10 +70,10 @@ func inDeadZone(pos, size uint32) bool {
 // OK I don't know why I'm just not in to recursion OK?
 func CheckMerkleBlock(m *msg.MerkleBlock) ([]*Uint256, error) {
 	if m.Transactions == 0 {
-		return nil, nil
+		return nil, fmt.Errorf("No transactions in merkleblock")
 	}
 	if len(m.Flags) == 0 {
-		return nil, nil
+		return nil, fmt.Errorf("No flag bits")
 	}
 	var s []merkleNode // the stack
 	var r []*Uint256   // slice to return; txids we care about

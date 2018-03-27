@@ -55,13 +55,13 @@ func HandleMessage(peer *Peer, buf []byte) {
 
 	msg, err := makeMessage(buf)
 	if err != nil {
-		log.Error("Make message error,", err)
+		log.Error("Make message error, ", err)
 		return
 	}
 
 	err = msg.Deserialize(buf[HEADERLEN:])
 	if err != nil {
-		log.Error("Deserialize message err:", err)
+		log.Error("Deserialize message ", msg.CMD(), " error: ", err)
 		return
 	}
 

@@ -29,6 +29,7 @@ func (p *Proof) Serialize(w io.Writer) error {
 		p.BlockHash,
 		p.Height,
 		p.Transactions,
+		uint32(len(p.Hashes)),
 		p.Hashes,
 		p.Flags,
 	)
@@ -40,31 +41,19 @@ func (p *Proof) Serialize(w io.Writer) error {
 }
 
 func (p *Proof) Deserialize(r io.Reader) error {
-	err := p.BlockHash.Deserialize(r)
+	err := serialization.ReadElements(r,
+		&p.BlockHash,
+		&p.Height,
+		&p.Transactions,
+	)
+
+	hashes, err := serialization.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
-	p.Height, err = serialization.ReadUint32(r)
-	if err != nil {
-		return err
-	}
-
-	p.Transactions, err = serialization.ReadUint32(r)
-	if err != nil {
-		return err
-	}
-
-	for i := uint32(0); i < p.Transactions; i++ {
-		var txId Uint256
-		err := txId.Deserialize(r)
-		if err != nil {
-			return err
-		}
-		p.Hashes = append(p.Hashes, &txId)
-	}
-
-	p.Flags, err = serialization.ReadVarBytes(r)
+	p.Hashes = make([]*Uint256, hashes)
+	err = serialization.ReadElements(r, &p.Hashes, &p.Flags)
 	if err != nil {
 		return err
 	}
