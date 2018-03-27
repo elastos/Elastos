@@ -112,7 +112,7 @@ func Debug(msg ...interface{}) {
 
 func Debugf(format string, msg ...interface{}) {
 	if level >= LevelDebug {
-		logger.Output(CallDepth, color(GREEN, "[ERROR]", fmt.Sprintf(format, msg...)))
+		logger.Output(CallDepth, color(GREEN, "[DEBUG]", fmt.Sprintf(format, msg...)))
 	}
 }
 

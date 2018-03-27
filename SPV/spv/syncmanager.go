@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	SyncReqTimeout    = 15
-	MaxRetryTimes     = 10
+	RequestTimeout    = 15
+	MaxRetryTimes     = 6
 	MaxFalsePositives = 7
 )
 
@@ -29,11 +29,10 @@ type SyncManager struct {
 	startHash      *Uint256
 	stopHash       *Uint256
 	queueLock      sync.RWMutex
-	requestQueue   map[Uint256]time.Time
-	blockTxns      map[Uint256][]Uint256
+	requestQueue   map[Uint256]*request
+	blockTxns      map[Uint256][]*request
 	receivedBlocks map[Uint256]*MerkleBlock
 	receivedTxns   map[Uint256]*Txn
-	retryTimes     int
 	fPositives     int
 }
 
@@ -57,11 +56,21 @@ func (sm *SyncManager) clear() {
 	sm.blockLocator = nil
 	sm.startHash = nil
 	sm.stopHash = nil
-	sm.requestQueue = make(map[Uint256]time.Time)
-	sm.blockTxns = make(map[Uint256][]Uint256)
+	sm.clearRequests()
+	sm.requestQueue = make(map[Uint256]*request)
+	sm.blockTxns = make(map[Uint256][]*request)
 	sm.receivedBlocks = make(map[Uint256]*MerkleBlock)
 	sm.receivedTxns = make(map[Uint256]*Txn)
-	sm.retryTimes = 0
+}
+
+func (sm *SyncManager) clearRequests() {
+	if sm.requestQueue != nil {
+		sm.queueLock.Lock()
+		for _, request := range sm.requestQueue {
+			request.finish()
+		}
+		sm.queueLock.Unlock()
+	}
 }
 
 func (sm *SyncManager) startSync() {
@@ -89,7 +98,7 @@ func (sm *SyncManager) needSync() bool {
 
 	needSync := bestPeer.Height() > uint64(spv.chain.Height())
 
-	log.Trace("Need Syn:", needSync)
+	log.Trace("Need Sync:", needSync)
 	return needSync
 }
 
@@ -106,7 +115,7 @@ func (sm *SyncManager) requestBlocks() {
 		log.Error("SyncManager no sync peer connected")
 		go func() {
 			// Restart sync after a while
-			time.Sleep(time.Second * SyncReqTimeout)
+			time.Sleep(time.Second * RequestTimeout)
 			sm.startSync()
 		}()
 		return
@@ -133,7 +142,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		return errors.New(fmt.Sprint("Invalid block inventory data size:", dataLen))
 	}
 
-	var reqList []Uint256
+	var reqList []*request
 	for i := 0; i < dataLen; i += UINT256SIZE {
 		var blockHash Uint256
 		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
@@ -142,8 +151,14 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 			sm.ChangeSyncPeerAndRestart()
 			return err
 		}
+		// Create request
+		request := &request{
+			hash:      blockHash,
+			reqType:   BLOCK,
+			onTimeout: sm.ChangeSyncPeerAndRestart,
+		}
 		// Add block hashes to request queue
-		sm.addToRequestQueue(blockHash)
+		sm.addToRequestQueue(request)
 
 		// Save start and stop block for connect headers method
 		if sm.startHash == nil {
@@ -152,20 +167,20 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		sm.stopHash = &blockHash
 
 		log.Trace("Add block request:", blockHash.String())
-		reqList = append(reqList, blockHash)
+		reqList = append(reqList, request)
 	}
 
 	// Send request message
-	for _, hash := range reqList {
+	for _, request := range reqList {
 		// Check if block already in orphan pool
-		if block, ok := spv.IsOrphanBlock(hash); ok {
-			sm.BlockReceived(&hash, block)
+		if block, ok := spv.IsOrphanBlock(request.hash); ok {
+			sm.BlockReceived(&request.hash, block)
 			err := sm.RequestBlockTxns(peer, block)
 			if err != nil {
 				return err
 			}
 		}
-		sm.sendRequest(peer, BLOCK, hash)
+		request.start()
 	}
 	return nil
 }
@@ -184,64 +199,44 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 		return sm.CommitData()
 	}
 
-	var blockTxns = make([]Uint256, len(txIds))
+	var blockTxns = make([]*request, len(txIds))
 	for i, txId := range txIds {
-		blockTxns[i] = *txId
-		log.Trace("Add transaction request:", txId.String())
-		sm.addToRequestQueue(*txId)
+		request := &request{
+			hash:      *txId,
+			reqType:   TRANSACTION,
+			onTimeout: sm.ChangeSyncPeerAndRestart,
+		}
+		blockTxns[i] = request
+		sm.addToRequestQueue(request)
 	}
 	sm.blockTxns[*block.BlockHeader.Hash()] = blockTxns
 
-	for _, txId := range blockTxns {
-		if txn, ok := sm.IsOrphanTxn(txId); ok {
-			sm.TxnReceived(&txId, txn)
+	for _, request := range blockTxns {
+		if txn, ok := sm.IsOrphanTxn(request.hash); ok {
+			sm.TxnReceived(&request.hash, txn)
 		} else {
-			sm.sendRequest(peer, TRANSACTION, txId)
+			request.start()
 		}
 	}
 
 	return nil
 }
 
-func (sm *SyncManager) addToRequestQueue(hash Uint256) {
+func (sm *SyncManager) addToRequestQueue(request *request) {
 	// Add to request queue
 	sm.queueLock.Lock()
-	sm.requestQueue[hash] = time.Now()
+	sm.requestQueue[request.hash] = request
 	sm.queueLock.Unlock()
 }
 
-func (sm *SyncManager) sendRequest(peer *Peer, msgType byte, hash Uint256) error {
-	go peer.Send(NewDataReq(msgType, hash))
-	return nil
-}
-
-func (sm *SyncManager) checkTimeOut() {
-	ticker := time.NewTicker(SyncReqTimeout)
-	defer ticker.Stop()
-	for range ticker.C {
-		// Not requests return
-		if len(sm.requestQueue) == 0 {
-			return
-		}
-
-		for _, startTime := range sm.requestQueue {
-			if time.Now().Sub(startTime).Seconds() > SyncReqTimeout {
-				// To many retry times, change a sync peer, and restart syncing
-				if sm.retryTimes > MaxRetryTimes {
-					log.Error("Request timeout, disconnect")
-					sm.ChangeSyncPeerAndRestart()
-					return
-				}
-				sm.retryTimes++
-			}
-		}
-	}
+func (sm *SyncManager) onRequestTimeout() {
+	sm.clear()
+	sm.ChangeSyncPeerAndRestart()
 }
 
 func (sm *SyncManager) ChangeSyncPeerAndRestart() {
 	// Disconnect sync peer
 	syncPeer := spv.pm.GetSyncPeer()
-	log.Trace("SyncManager change sync peer, disconnect ", syncPeer)
 	spv.pm.DisconnectPeer(syncPeer)
 
 	// Restart
@@ -259,16 +254,24 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 
 func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
 	sm.queueLock.Lock()
-	delete(spv.requestQueue, *blockHash)
-	spv.receivedBlocks[*blockHash] = block
+	sm.finishRequest(*blockHash)
+	sm.receivedBlocks[*blockHash] = block
 	sm.queueLock.Unlock()
 }
 
 func (sm *SyncManager) TxnReceived(txId *Uint256, txn *Txn) {
 	sm.queueLock.Lock()
-	delete(spv.requestQueue, *txId)
-	spv.receivedTxns[*txId] = txn
+	sm.finishRequest(*txId)
+	sm.receivedTxns[*txId] = txn
 	sm.queueLock.Unlock()
+}
+
+func (sm *SyncManager) finishRequest(hash Uint256) {
+	request, ok := sm.requestQueue[hash]
+	if ok {
+		request.finish()
+	}
+	delete(sm.requestQueue, hash)
 }
 
 func (sm *SyncManager) RequestFinished() bool {
@@ -338,10 +341,10 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 	for _, hash := range hashes {
 		block := sm.receivedBlocks[hash]
 		header := block.BlockHeader
-		txnHashes := sm.blockTxns[hash]
-		txns := make([]tx.Transaction, len(txnHashes))
-		for i, hash := range txnHashes {
-			txn := sm.receivedTxns[hash]
+		txnRequests := sm.blockTxns[hash]
+		txns := make([]tx.Transaction, len(txnRequests))
+		for i, request := range txnRequests {
+			txn := sm.receivedTxns[request.hash]
 			txns[i] = txn.Transaction
 		}
 

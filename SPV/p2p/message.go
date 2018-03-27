@@ -83,7 +83,7 @@ func makeMessage(buf []byte) (Message, error) {
 		return nil, err
 	}
 
-	log.Info("Receive message:", hdr.GetCMD())
+	log.Debug("Receive message: ", hdr.GetCMD())
 	var msg Message
 
 	cmd := hdr.GetCMD()

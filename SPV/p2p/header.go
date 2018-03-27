@@ -58,7 +58,7 @@ func BuildMessage(msg Message) ([]byte, error) {
 		return nil, err
 	}
 
-	log.Info("Send message:", msg.CMD())
+	log.Debug("Send message: ", msg.CMD())
 	return append(hdr, body...), nil
 }
 

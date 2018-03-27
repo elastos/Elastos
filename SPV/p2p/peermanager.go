@@ -63,11 +63,10 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 	peer.OnDisconnect = pm.DisconnectPeer
 }
 
-func (pm *PeerManager) RemoveFromConnectingList(peer *Peer) {
-
-}
-
 func (pm *PeerManager) DisconnectPeer(peer *Peer) {
+	if peer == nil {
+		return
+	}
 	log.Trace("PeerManager disconnect peer:", peer.String())
 	peer, ok := pm.RemovePeer(peer.ID())
 	if ok {
