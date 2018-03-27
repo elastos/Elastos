@@ -326,10 +326,10 @@ bool friendIteratedCallback(const ElaFriendInfo* friendInfo, void* context)
     }
 
     jboolean result = JNI_FALSE;
-    if (!callBooleanMethod(env, NULL, jiterator, "onContent",
+    if (!callBooleanMethod(env, NULL, jiterator, "onIterated",
                        "("_W("FriendInfo;")_J("Object;)Z"),
                        &result, jfriendInfo, jcontext)) {
-        logE("Call method boolean onContent(FriendInfo, Object error");
+        logE("Call method boolean onIterated(FriendInfo, Object error");
     }
 
     if (jfriendInfo)

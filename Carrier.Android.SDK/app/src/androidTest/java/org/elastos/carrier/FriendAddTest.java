@@ -17,6 +17,8 @@ import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.exceptions.ElastosException;
 
+import java.util.List;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -117,10 +119,11 @@ public class FriendAddTest {
 
 	private void makeFriendAnyWay() {
 		try {
-			if (!carrierInst.isFriend(robotId))
+			if (!carrierInst.isFriend(robotId)) {
 				carrierInst.addFriend(robotAddress, "auto-accepted");
+				handler.synch.await(); // for friend connected
+			}
 
-			handler.synch.await(); // for friend connected
 		} catch (ElastosException e) {
 			e.printStackTrace();
 			assertTrue(false);
@@ -165,5 +168,21 @@ public class FriendAddTest {
 			assertEquals(e.getErrorCode(), 0x8100000c);
 			assertTrue(true);
 		}
+	}
+
+	@Test
+	public void testGetFriends() {
+		List<FriendInfo> friends = null;
+		makeFriendAnyWay();
+
+		try {
+			friends = carrierInst.getFriends();
+		} catch (ElastosException e) {
+			e.getErrorCode();
+			assertTrue(false);
+		}
+
+		assertNotNull(friends);
+		assertTrue(friends.size() > 0);
 	}
 }

@@ -4,7 +4,6 @@ import android.support.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.elastos.carrier.Carrier;
 
 import static org.junit.Assert.assertEquals;
 
