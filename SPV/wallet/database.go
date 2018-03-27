@@ -8,7 +8,7 @@ import (
 )
 
 type Database interface {
-	AddAddress(address *Uint168, script []byte) error
+	AddAddress(address *Uint168, script []byte, addrType int) error
 	GetAddress(address *Uint168) (*Addr, error)
 	GetAddrs() ([]*Addr, error)
 	DeleteAddress(address *Uint168) error
@@ -44,11 +44,11 @@ type DatabaseImpl struct {
 	filter *AddrFilter
 }
 
-func (db *DatabaseImpl) AddAddress(address *Uint168, script []byte) error {
+func (db *DatabaseImpl) AddAddress(address *Uint168, script []byte, addrType int) error {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
-	return db.DataStore.Addrs().Put(address, script)
+	return db.DataStore.Addrs().Put(address, script, addrType)
 }
 
 func (db *DatabaseImpl) GetAddress(address *Uint168) (*Addr, error) {

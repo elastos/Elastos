@@ -9,7 +9,8 @@ import (
 
 const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(
 				Hash BLOB NOT NULL PRIMARY KEY,
-				Script BLOB
+				Script BLOB,
+				Type INTEGER NOT NULL
 			);`
 
 type AddrsDB struct {
@@ -27,20 +28,20 @@ func NewAddrsDB(db *sql.DB, lock *sync.RWMutex) (Addrs, error) {
 }
 
 // put a script to database
-func (db *AddrsDB) Put(hash *Uint168, script []byte) error {
+func (db *AddrsDB) Put(hash *Uint168, script []byte, addrType int) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("INSERT OR REPLACE INTO Addrs(Hash, Script) VALUES(?,?)")
+	stmt, err := db.Prepare("INSERT OR REPLACE INTO Addrs(Hash, Script, Type) VALUES(?,?,?)")
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(hash.ToArray(), script)
+	_, err = stmt.Exec(hash.ToArray(), script, addrType)
 	if err != nil {
 		return err
 	}
 
-	db.getFilter().AddAddr(NewAddr(hash, script))
+	db.getFilter().AddAddr(NewAddr(hash, script, addrType))
 
 	return nil
 }
@@ -50,14 +51,15 @@ func (db *AddrsDB) Get(hash *Uint168) (*Addr, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	row := db.QueryRow(`SELECT Script FROM Addrs WHERE Hash=?`, hash.ToArray())
+	row := db.QueryRow(`SELECT Script, Type FROM Addrs WHERE Hash=?`, hash.ToArray())
 	var script []byte
-	err := row.Scan(&script)
+	var addrType int
+	err := row.Scan(&script, &addrType)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Addr{hash: hash, script: script}, nil
+	return NewAddr(hash, script, addrType), nil
 }
 
 // get all Addrs from database
@@ -71,7 +73,7 @@ func (db *AddrsDB) GetAll() ([]*Addr, error) {
 func (db *AddrsDB) getAll() ([]*Addr, error) {
 	var addrs []*Addr
 
-	rows, err := db.Query("SELECT Hash, Script FROM Addrs")
+	rows, err := db.Query("SELECT Hash, Script, Type FROM Addrs")
 	if err != nil {
 		return addrs, err
 	}
@@ -80,7 +82,8 @@ func (db *AddrsDB) getAll() ([]*Addr, error) {
 	for rows.Next() {
 		var hashBytes []byte
 		var script []byte
-		err = rows.Scan(&hashBytes, &script)
+		var addrType int
+		err = rows.Scan(&hashBytes, &script, &addrType)
 		if err != nil {
 			return addrs, err
 		}
@@ -88,7 +91,7 @@ func (db *AddrsDB) getAll() ([]*Addr, error) {
 		if err != nil {
 			return addrs, err
 		}
-		addrs = append(addrs, NewAddr(hash, script))
+		addrs = append(addrs, NewAddr(hash, script, addrType))
 	}
 
 	return addrs, nil

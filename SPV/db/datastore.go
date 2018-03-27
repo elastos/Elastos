@@ -40,7 +40,7 @@ type Info interface {
 
 type Addrs interface {
 	// put a address to database
-	Put(hash *Uint168, script []byte) error
+	Put(hash *Uint168, script []byte, addrType int) error
 
 	// get a address from database
 	Get(hash *Uint168) (*Addr, error)

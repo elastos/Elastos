@@ -55,7 +55,6 @@ func GetPassword(password []byte, confirmed bool) ([]byte, error) {
 }
 
 func ShowAccountInfo(password []byte) error {
-
 	var err error
 	password, err = GetPassword(password, false)
 	if err != nil {
@@ -118,8 +117,8 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 
 func ShowAccount(addrs []*db.Addr, wallet walt.Wallet) error {
 	// print header
-	fmt.Printf("%5s %34s %-10s %12s\n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)")
-	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 23))
+	fmt.Printf("%5s %34s %-10s %12s %6s\n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)", "TYPE")
+	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 23), "------")
 
 	currentHeight := wallet.ChainHeight()
 	for i, addr := range addrs {
@@ -137,8 +136,8 @@ func ShowAccount(addrs []*db.Addr, wallet walt.Wallet) error {
 			}
 		}
 
-		fmt.Printf("%5d %34s %-10s %12s\n", i+1, addr.String(), available.String(), "("+locked.String()+")")
-		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 23))
+		fmt.Printf("%5d %34s %-10s %12s %6s\n", i+1, addr.String(), available.String(), "("+locked.String()+")", addr.TypeName())
+		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 23), "------")
 	}
 
 	return nil

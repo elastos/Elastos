@@ -103,7 +103,7 @@ func (service *SPVServiceImpl) Start() error {
 		return errors.New("No account registered")
 	}
 	for _, account := range service.accounts {
-		service.BlockChain().Addrs().Put(account, RegisteredAccountScript)
+		service.BlockChain().Addrs().Put(account, RegisteredAccountScript, db.TypeNotify)
 	}
 
 	// Set callback

@@ -63,7 +63,7 @@ func Create(password []byte) (Wallet, error) {
 	}
 
 	mainAccount := keyStore.GetAccountByIndex(0)
-	database.AddAddress(mainAccount.ProgramHash(), mainAccount.RedeemScript())
+	database.AddAddress(mainAccount.ProgramHash(), mainAccount.RedeemScript(), TypeMaster)
 
 	wallet = &WalletImpl{
 		Database: database,
@@ -103,7 +103,7 @@ func (wallet *WalletImpl) NewSubAccount(password []byte) (*Uint168, error) {
 	}
 
 	account := wallet.Keystore.NewAccount()
-	err = wallet.AddAddress(account.ProgramHash(), account.RedeemScript())
+	err = wallet.AddAddress(account.ProgramHash(), account.RedeemScript(), TypeSub)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +125,7 @@ func (wallet *WalletImpl) AddMultiSignAccount(M int, publicKeys ...*crypto.Publi
 		return nil, errors.New("[Wallet], CreateMultiSignAddress failed")
 	}
 
-	err = wallet.AddAddress(programHash, redeemScript)
+	err = wallet.AddAddress(programHash, redeemScript, TypeMulti)
 	if err != nil {
 		return nil, err
 	}
