@@ -141,11 +141,9 @@ func (am *AddrManager) isConnected(addr string) bool {
 
 func (am *AddrManager) saveCached() {
 	var cached string
-	for i, addr := range am.cached {
+	for _, addr := range am.cached {
 		cached += string(addr)
-		if i != 0 {
-			cached += "\n"
-		}
+		cached += "\n"
 	}
 
 	file, err := os.OpenFile(CachedAddrsFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
