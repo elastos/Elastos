@@ -84,6 +84,12 @@ func (mb *MerkleBlock) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
+	// Write hashes length
+	err = serialization.WriteUint32(buf, uint32(len(mb.Hashes)))
+	if err != nil {
+		return nil, err
+	}
+
 	for _, hash := range mb.Hashes {
 		_, err := hash.Serialize(buf)
 		if err != nil {
@@ -116,7 +122,12 @@ func (mb *MerkleBlock) Deserialize(msg []byte) error {
 		return err
 	}
 
-	for i := uint32(0); i < mb.Transactions; i++ {
+	hashes, err := serialization.ReadUint32(buf)
+	if err != nil {
+		return err
+	}
+
+	for i := uint32(0); i < hashes; i++ {
 		var txId Uint256
 		err := txId.Deserialize(buf)
 		if err != nil {
