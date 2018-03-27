@@ -27,7 +27,7 @@
             "MiningServerPort": 5555,
             "MiningSelfPort": 20339,
             "TestNet": true,
-            "AutoMining": true,
+            "AutoMining": false,
             "MinerInfo": "ELA",
             "MinTxFee": 100,
             "ActiveNet": "MainNet"
