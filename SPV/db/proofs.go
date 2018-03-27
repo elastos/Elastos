@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	. "SPVWallet/core"
+	"bytes"
 )
 
 const CreateProofsDB = `CREATE TABLE IF NOT EXISTS Proofs(
@@ -37,13 +38,13 @@ func (db *ProofsDB) Put(proof *Proof) error {
 	}
 	defer stmt.Close()
 
-	var proofBytes []byte
-	proofBytes, err = proof.Serialize()
+	buf := new(bytes.Buffer)
+	err = proof.Serialize(buf)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(proof.BlockHash.Bytes(), proof.Height, proofBytes)
+	_, err = stmt.Exec(proof.BlockHash.Bytes(), proof.Height, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -64,7 +65,7 @@ func (db *ProofsDB) Get(blockHash *Uint256) (*Proof, error) {
 	}
 
 	var proof Proof
-	err = proof.Deserialize(rawData)
+	err = proof.Deserialize(bytes.NewReader(rawData))
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +92,7 @@ func (db *ProofsDB) GetAll() ([]*Proof, error) {
 		}
 
 		var proof Proof
-		err = proof.Deserialize(rawData)
+		err = proof.Deserialize(bytes.NewReader(rawData))
 		if err != nil {
 			return nil, err
 		}

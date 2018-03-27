@@ -1,10 +1,9 @@
 package db
 
 import (
-	"bytes"
-
 	. "SPVWallet/core"
 	"SPVWallet/core/serialization"
+	"io"
 )
 
 type Proof struct {
@@ -25,9 +24,8 @@ func NewProof(blockHash Uint256, height, transactions uint32, hashes []*Uint256,
 	}
 }
 
-func (p *Proof) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := serialization.WriteElements(buf,
+func (p *Proof) Serialize(w io.Writer) error {
+	err := serialization.WriteElements(w,
 		p.BlockHash,
 		p.Height,
 		p.Transactions,
@@ -35,39 +33,38 @@ func (p *Proof) Serialize() ([]byte, error) {
 		p.Flags,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return buf.Bytes(), nil
+	return nil
 }
 
-func (mb *Proof) Deserialize(buf []byte) error {
-	reader := bytes.NewReader(buf)
-	err := mb.BlockHash.Deserialize(reader)
+func (p *Proof) Deserialize(r io.Reader) error {
+	err := p.BlockHash.Deserialize(r)
 	if err != nil {
 		return err
 	}
 
-	mb.Height, err = serialization.ReadUint32(reader)
+	p.Height, err = serialization.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
-	mb.Transactions, err = serialization.ReadUint32(reader)
+	p.Transactions, err = serialization.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
-	for i := uint32(0); i < mb.Transactions; i++ {
+	for i := uint32(0); i < p.Transactions; i++ {
 		var txId Uint256
-		err := txId.Deserialize(reader)
+		err := txId.Deserialize(r)
 		if err != nil {
 			return err
 		}
-		mb.Hashes = append(mb.Hashes, &txId)
+		p.Hashes = append(p.Hashes, &txId)
 	}
 
-	mb.Flags, err = serialization.ReadVarBytes(reader)
+	p.Flags, err = serialization.ReadVarBytes(r)
 	if err != nil {
 		return err
 	}
