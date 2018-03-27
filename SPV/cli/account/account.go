@@ -166,10 +166,10 @@ func accountAction(context *cli.Context) {
 	}
 
 	// add multi sign account
-	if pubKeysStr := context.String("createmultisigaccount"); pubKeysStr != "" {
+	if pubKeysStr := context.String("addmultisig"); pubKeysStr != "" {
 		if err := addMultiSignAccount(context, wallet, pubKeysStr); err != nil {
 			fmt.Println("error: add multi sign account failed, ", err)
-			cli.ShowCommandHelpAndExit(context, "createmultisigaccount", 5)
+			cli.ShowCommandHelpAndExit(context, "addmultisig", 5)
 		}
 		return
 	}
@@ -186,24 +186,23 @@ func accountAction(context *cli.Context) {
 
 func NewCommand() cli.Command {
 	return cli.Command{
-		Name:      "account",
-		ShortName: "a",
-		Usage:     "account [command] [args]",
-		Description: "new sub account, create multisig address\n" +
-			"\tdelete account, list address's balances",
-		ArgsUsage: "[args]",
+		Name:        "account",
+		ShortName:   "a",
+		Usage:       "account [command] [args]",
+		Description: "commands to create new sub account or multisig account and show accounts balances",
+		ArgsUsage:   "[args]",
 		Flags: append(CommonFlags,
 			cli.BoolFlag{
 				Name:  "list, l",
-				Usage: "list all accounts",
+				Usage: "list all accounts, including address, public key and type",
 			},
 			cli.BoolFlag{
 				Name:  "new, n",
 				Usage: "create a new sub account",
 			},
 			cli.StringFlag{
-				Name: "createmultisigaccount",
-				Usage: "add a multi-sign account with other signers public keys\n" +
+				Name: "addmultisig, multi",
+				Usage: "add a multi-sign account with signers public keys\n" +
 					"\tuse -m to specify how many signatures are needed to create a valid transaction\n" +
 					"\tby default M is public keys / 2 + 1, witch means greater than half",
 			},
@@ -214,7 +213,7 @@ func NewCommand() cli.Command {
 			},
 			cli.BoolFlag{
 				Name:  "balance, b",
-				Usage: "list balances",
+				Usage: "show accounts balances",
 			},
 		),
 		Action: accountAction,

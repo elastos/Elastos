@@ -19,11 +19,11 @@ func init() {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "ELA SPV WALLET"
+	app.Name = "ELASTOS SPV WALLET"
 	app.Version = Version
-	app.HelpName = "ELA SPV WALLET"
-	app.Usage = "command line tool for the light implementation of SPV wallet"
-	app.UsageText = "wallet [global option] command [command options] [args]"
+	app.HelpName = "ELASTOS SPV WALLET HELP"
+	app.Usage = "command line user interface"
+	app.UsageText = "[global option] command [command options] [args]"
 	app.HideHelp = false
 	app.HideVersion = false
 	//commands
