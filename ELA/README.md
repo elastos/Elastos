@@ -85,8 +85,6 @@ If you did not see any error message, congratulations, you have made the ELA ful
 ## Build on Ubuntu
 
 ### Check OS version
-
-### Check OS version
 Make sure your ubuntu version is 16.04+
 ```shell
 $ cat /etc/issue
