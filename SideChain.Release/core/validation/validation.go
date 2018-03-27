@@ -11,11 +11,7 @@ import (
 func VerifySignature(txn *Transaction) (bool, error) {
 
 	if txn.IsIssueTokenTx() {
-		if len(txn.Attributes) <= 0 || txn.Attributes[0].Usage != SpvInfo {
-			return false, errors.New("Invalid attribute for issue token.")
-		}
-
-		if err := spv.VerifyTransaction(txn.Attributes[0].Data, txn); err != nil {
+		if err := spv.VerifyTransaction(txn); err != nil {
 			return false, errors.New("Issue token transaction validate failed.")
 		}
 

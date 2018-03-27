@@ -6,6 +6,7 @@ import (
 	"Elastos.ELA.SideChain/core/contract/program"
 	. "Elastos.ELA.SideChain/core/transaction"
 	"Elastos.ELA.SideChain/core/transaction/payload"
+	"bytes"
 	"errors"
 	"io"
 )
@@ -23,14 +24,24 @@ func (i *CoinbaseInfo) Deserialize(r io.Reader, version byte) error {
 }
 
 func (i *IssueTokenInfo) Data(version byte) string {
-	return ""
+	return i.Proof
 }
 
 func (i *IssueTokenInfo) Serialize(w io.Writer, version byte) error {
+	if err := serialization.WriteVarString(w, i.Proof); err != nil {
+		return errors.New("Transaction IssueTokenInfo serialization failed.")
+	}
+
 	return nil
 }
 
 func (i *IssueTokenInfo) Deserialize(r io.Reader, version byte) error {
+	value, err := serialization.ReadVarString(r)
+	if err != nil {
+		return errors.New("Transaction IssueTokenInfo deserialization failed.")
+	}
+	i.Proof = value
+
 	return nil
 }
 
@@ -55,6 +66,61 @@ func (i TransferAssetInfo) Serialize(w io.Writer, version byte) error {
 }
 
 func (i TransferAssetInfo) Deserialize(r io.Reader, version byte) error {
+	return nil
+}
+
+func (a *TransferCrossChainAssetInfo) Data(version byte) string {
+	return ""
+}
+
+func (a *TransferCrossChainAssetInfo) Serialize(w io.Writer, version byte) error {
+	if a.PublicKeys == nil {
+		return errors.New("Invalid publickey map")
+	}
+
+	if err := serialization.WriteVarUint(w, uint64(len(a.PublicKeys))); err != nil {
+		return errors.New("publicKey map's length serialize failed")
+	}
+
+	for k, v := range a.PublicKeys {
+		if err := serialization.WriteVarString(w, k); err != nil {
+			return errors.New("publicKey map's key serialize failed")
+		}
+
+		if err := serialization.WriteVarUint(w, v); err != nil {
+			return errors.New("publicKey map's value serialize failed")
+		}
+	}
+
+	return nil
+}
+
+func (a *TransferCrossChainAssetInfo) Deserialize(r io.Reader, version byte) error {
+	if a.PublicKeys == nil {
+		return errors.New("Invalid public key map")
+	}
+
+	length, err := serialization.ReadVarUint(r, 0)
+	if err != nil {
+		return errors.New("publicKey map's length deserialize failed")
+	}
+
+	a.PublicKeys = nil
+	a.PublicKeys = make(map[string]uint64)
+	for i := uint64(0); i < length; i++ {
+		k, err := serialization.ReadVarString(r)
+		if err != nil {
+			return errors.New("publicKey map's key deserialize failed")
+		}
+
+		v, err := serialization.ReadVarUint(r, 0)
+		if err != nil {
+			return errors.New("publicKey map's value deserialize failed")
+		}
+
+		a.PublicKeys[k] = v
+	}
+
 	return nil
 }
 
@@ -427,6 +493,8 @@ func (t *Transactions) Deserialize(r io.Reader) error {
 		t.Payload = new(TransferAssetInfo)
 	case IssueToken:
 		t.Payload = new(IssueTokenInfo)
+	case TransferCrossChainAsset:
+		t.Payload = new(TransferCrossChainAssetInfo)
 	default:
 		return errors.New("Invalid transaction type.")
 	}
@@ -590,7 +658,20 @@ func PayloadInfoToTransPayload(p PayloadInfo) (Payload, error) {
 	case *TransferAssetInfo:
 		return new(payload.TransferAsset), nil
 	case *IssueTokenInfo:
-		return new(payload.IssueToken), nil
+		obj := new(payload.IssueToken)
+		proofBytes, err := HexStringToBytes(object.Proof)
+		if err != nil {
+			return nil, err
+		}
+		err = obj.Proof.Deserialize(bytes.NewReader(proofBytes))
+		if err != nil {
+			return nil, err
+		}
+		return obj, nil
+	case *TransferCrossChainAssetInfo:
+		obj := new(payload.TransferCrossChainAsset)
+		obj.PublicKeys = object.PublicKeys
+		return obj, nil
 	}
 
 	return nil, errors.New("Invalid payload type.")
