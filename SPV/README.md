@@ -23,12 +23,15 @@ $ git clone https://github.com/elastos/Elastos.SPVWallet.git
 ##### 1. Set up configuration file `config.json`
 ```
 {
-  "Magic": 1234567,
+  "PrintLevel": 4,
+  "Magic": 7630401,
   "SeedList": [
     "127.0.0.1:20338"
   ]
 }
 ```
+`PrintLevel` is to control which level of messages can be print out on the console, levels are 0~5, the higher level print out more messages, if set `PrintLevel` to 5 or greater, logs will be save to file.
+
 `Magic` is the identify number of the peer to peer network, peers in the same network should be using the same Magic number.
 
 `SeedList` is the seed peer addresses in the peer to peer network, SPV service will connect to the peer to peer network through these seed peers.

@@ -24,7 +24,7 @@ verify transactions with block headers and update accounts balance.
 
 func main() {
 	// Initiate log
-	log.Init(false)
+	log.Init()
 
 	file, err := wallet.OpenKeystoreFile()
 	if err != nil {

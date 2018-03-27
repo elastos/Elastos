@@ -240,7 +240,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 			return
 		}
 
-		if header.Magic != config.Config().Magic {
+		if header.Magic != config.Values().Magic {
 			log.Error("Magic not match, disconnect peer")
 			peer.OnDisconnect(peer)
 			return

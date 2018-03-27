@@ -14,7 +14,7 @@ import (
 var Version string
 
 func init() {
-	log.Init(false)
+	log.Init()
 }
 
 func main() {

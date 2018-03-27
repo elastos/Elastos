@@ -6,6 +6,7 @@ import (
 	"log"
 	"fmt"
 	"time"
+	"SPVWallet/config"
 )
 
 const (
@@ -13,17 +14,28 @@ const (
 
 	CallDepth = 4
 
+	WHITE  = "0;0"
 	BLUE   = "0;34"
 	RED    = "0;31"
 	GREEN  = "0;32"
 	YELLOW = "0;33"
 )
 
+const (
+	LevelTrace = 1
+	LevelWarn  = 2
+	LevelError = 3
+	LevelDebug = 4
+	LevelFile  = 5
+)
+
+var level uint8
 var logger *log.Logger
 
-func Init(logToFile bool) {
+func Init() {
 	writers := []io.Writer{}
-	if logToFile {
+	level = config.Values().PrintLevel
+	if level >= LevelFile {
 		logFile, err := OpenLogFile()
 		if err != nil {
 			fmt.Println("error: open log file failed")
@@ -57,35 +69,51 @@ func OpenLogFile() (*os.File, error) {
 }
 
 func Info(msg ...interface{}) {
-	logger.Output(CallDepth, color(GREEN, "[INFO]", fmt.Sprint(msg...)))
+	Infof("%s", fmt.Sprint(msg...))
 }
 
 func Infof(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(GREEN, "[INFO]", fmt.Sprintf(format, msg...)))
+	logger.Output(CallDepth, color(WHITE, "[INFO]", fmt.Sprintf(format, msg...)))
 }
 
 func Trace(msg ...interface{}) {
-	logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprint(msg...)))
+	Tracef("%s", fmt.Sprint(msg...))
 }
 
 func Tracef(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintf(format, msg...)))
+	if level >= LevelTrace {
+		logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintf(format, msg...)))
+	}
+}
+
+func Warn(msg ...interface{}) {
+	Warnf("%s", fmt.Sprint(msg...))
+}
+
+func Warnf(format string, msg ...interface{}) {
+	if level >= LevelWarn {
+		logger.Output(CallDepth, color(YELLOW, "[WARN]", fmt.Sprintf(format, msg...)))
+	}
 }
 
 func Error(msg ...interface{}) {
-	logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprint(msg...)))
+	Errorf("%s", fmt.Sprint(msg...))
 }
 
 func Errorf(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintf(format, msg...)))
+	if level >= LevelError {
+		logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintf(format, msg...)))
+	}
 }
 
 func Debug(msg ...interface{}) {
-	logger.Output(CallDepth, color(YELLOW, "[DEBUG]", fmt.Sprint(msg...)))
+	Debugf("%s", fmt.Sprint(msg...))
 }
 
 func Debugf(format string, msg ...interface{}) {
-	logger.Output(CallDepth, color(YELLOW, "[ERROR]", fmt.Sprintf(format, msg...)))
+	if level >= LevelDebug {
+		logger.Output(CallDepth, color(GREEN, "[ERROR]", fmt.Sprintf(format, msg...)))
+	}
 }
 
 func color(color, level, msg string) string {

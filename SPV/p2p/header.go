@@ -64,7 +64,7 @@ func BuildMessage(msg Message) ([]byte, error) {
 
 func (header *Header) Verify(buf []byte) error {
 	// Verify magic
-	if header.Magic != config.Config().Magic {
+	if header.Magic != config.Values().Magic {
 		return errors.New(fmt.Sprint("Unmatched magic number ", header.Magic))
 	}
 

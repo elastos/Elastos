@@ -29,9 +29,9 @@ func InitSPV(clientId uint64) (*SPV, error) {
 	spv.SyncManager = NewSyncManager()
 
 	// Set Magic number of the P2P network
-	p2p.Magic = config.Config().Magic
+	p2p.Magic = config.Values().Magic
 	// Convert seed addresses to SPVServerPort according to the SPV protocol
-	seeds := toSPVAddr(config.Config().SeedList)
+	seeds := toSPVAddr(config.Values().SeedList)
 	// Create peer manager of the P2P network
 	spv.pm = p2p.InitPeerManager(clientId, SPVClientPort, seeds)
 

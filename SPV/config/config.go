@@ -11,14 +11,15 @@ const (
 	ConfigFilename = "./config.json"
 )
 
-var config *Configuration // The single instance of config
+var config *Config // The single instance of config
 
-type Configuration struct {
-	Magic    uint32
-	SeedList []string
+type Config struct {
+	PrintLevel uint8
+	Magic      uint32
+	SeedList   []string
 }
 
-func (config *Configuration) readConfigFile() error {
+func (config *Config) readConfigFile() error {
 	data, err := ioutil.ReadFile(ConfigFilename)
 	if err != nil {
 		return err
@@ -33,9 +34,9 @@ func (config *Configuration) readConfigFile() error {
 	return nil
 }
 
-func Config() *Configuration {
+func Values() *Config {
 	if config == nil {
-		config = new(Configuration)
+		config = new(Config)
 		err := config.readConfigFile()
 		if err != nil {
 			fmt.Println("Read config file error:", err)
