@@ -2,8 +2,9 @@ package node
 
 import (
 	"net"
-	"Elastos.ELA/common/log"
 	"fmt"
+
+	"Elastos.ELA/common/log"
 	"Elastos.ELA/net/protocol"
 	"Elastos.ELA/common/config"
 )
