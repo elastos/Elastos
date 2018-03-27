@@ -16,6 +16,7 @@ type request struct {
 }
 
 func (r *request) start() {
+	r.doneChan = make(chan byte)
 	go r.send()
 }
 
@@ -33,6 +34,7 @@ func (r *request) send() {
 		r.send()
 	case <-r.doneChan:
 		timer.Stop()
+
 	}
 }
 

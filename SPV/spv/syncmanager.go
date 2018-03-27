@@ -279,7 +279,7 @@ func (sm *SyncManager) RequestFinished() bool {
 	defer sm.queueLock.RUnlock()
 
 	finished := len(sm.requestQueue) == 0
-	log.Trace("Block request finished: ", finished)
+	log.Trace("Request finished: ", finished)
 	return finished
 }
 
