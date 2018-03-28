@@ -193,7 +193,7 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 	// Create transaction inputs
 	var txInputs []*tx.Input // The inputs in transaction
 	for _, utxo := range availableUTXOs {
-		txInputs = append(txInputs, InputFromStoreUTXO(utxo))
+		txInputs = append(txInputs, InputFromStoredUTXO(utxo))
 		if utxo.Value < totalOutputValue {
 			totalOutputValue -= utxo.Value
 		} else if utxo.Value == totalOutputValue {

@@ -5,7 +5,7 @@ import (
 	"SPVWallet/db"
 )
 
-func (spv *SPV) SetOnTxCommitListener(listener func(txn tx.Transaction)) {
+func (spv *SPV) SetOnTxCommitListener(listener func(tx.Transaction)) {
 	if listener == nil {
 		return
 	}

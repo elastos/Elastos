@@ -68,7 +68,7 @@ func inDeadZone(pos, size uint32) bool {
 // If there's any problem return an error.  Checks self-consistency only.
 // doing it with a stack instead of recursion.  Because...
 // OK I don't know why I'm just not in to recursion OK?
-func CheckMerkleBlock(m *msg.MerkleBlock) ([]*Uint256, error) {
+func CheckMerkleBlock(m msg.MerkleBlock) ([]*Uint256, error) {
 	if m.Transactions == 0 {
 		return nil, fmt.Errorf("No transactions in merkleblock")
 	}

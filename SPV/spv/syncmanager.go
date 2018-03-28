@@ -187,7 +187,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 }
 
 func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
-	txIds, err := CheckMerkleBlock(block)
+	txIds, err := CheckMerkleBlock(*block)
 	if err != nil {
 		log.Error("Invalid merkle block received:", err)
 		sm.ChangeSyncPeerAndRestart()
@@ -357,7 +357,7 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 		}
 
 		// Commit block data to blockchain
-		fPositives, err := spv.chain.CommitBlock(header, block.GetProof(), txns)
+		fPositives, err := spv.chain.CommitBlock(header, *block.GetProof(), txns)
 		if err != nil {
 			return err
 		}

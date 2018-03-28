@@ -25,7 +25,10 @@ func (msg *MerkleBlock) Serialize() ([]byte, error) {
 		return nil, err
 	}
 
-	err = serialization.WriteElements(buf, msg.Transactions, uint32(len(msg.Hashes)), msg.Hashes, msg.Flags)
+	err = serialization.WriteElements(buf,
+		msg.Transactions,
+		uint32(len(msg.Hashes)),
+		msg.Hashes, msg.Flags)
 	if err != nil {
 		return nil, err
 	}
@@ -51,16 +54,11 @@ func (msg *MerkleBlock) Deserialize(body []byte) error {
 	}
 
 	msg.Hashes = make([]*Uint256, hashes)
-	err = serialization.ReadElements(buf, &msg.Hashes, &msg.Flags)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return serialization.ReadElements(buf, &msg.Hashes, &msg.Flags)
 }
 
-func (msg *MerkleBlock) GetProof() db.Proof {
-	return db.Proof{
+func (msg *MerkleBlock) GetProof() *db.Proof {
+	return &db.Proof{
 		BlockHash:    *msg.BlockHeader.Hash(),
 		Height:       msg.BlockHeader.Height,
 		Transactions: msg.Transactions,

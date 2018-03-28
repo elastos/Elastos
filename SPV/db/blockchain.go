@@ -222,7 +222,7 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 			if txn.TxType == tx.CoinBase {
 				output.OutputLock = height + 100
 			}
-			utxo := ToStordUTXO(txId, height, index, output)
+			utxo := ToStoredUTXO(txId, height, index, output)
 			err := bc.UTXOs().Put(&output.ProgramHash, utxo)
 			if err != nil {
 				return false, err
@@ -248,7 +248,7 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 	}
 
 	// Save transaction
-	err := bc.TXNs().Put(ToStordTxn(&txn, height))
+	err := bc.TXNs().Put(ToStoredTxn(txn, height))
 	if err != nil {
 		return false, err
 	}

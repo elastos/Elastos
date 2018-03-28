@@ -15,7 +15,7 @@ type Proof struct {
 }
 
 func (p *Proof) Serialize(w io.Writer) error {
-	err := serialization.WriteElements(w,
+	return serialization.WriteElements(w,
 		p.BlockHash,
 		p.Height,
 		p.Transactions,
@@ -23,11 +23,6 @@ func (p *Proof) Serialize(w io.Writer) error {
 		p.Hashes,
 		p.Flags,
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (p *Proof) Deserialize(r io.Reader) error {
@@ -43,10 +38,5 @@ func (p *Proof) Deserialize(r io.Reader) error {
 	}
 
 	p.Hashes = make([]*Uint256, hashes)
-	err = serialization.ReadElements(r, &p.Hashes, &p.Flags)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return serialization.ReadElements(r, &p.Hashes, &p.Flags)
 }
