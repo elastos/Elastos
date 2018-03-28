@@ -168,3 +168,6 @@ If you did not see any error message, congratulations, you have made the ELA ful
 ## Run on Ubuntu
 
 - run ./node to run the node program.
+
+# Config the node
+See the [documentation](./docs/config.json.md) about config.json
