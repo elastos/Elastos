@@ -8,8 +8,10 @@ import (
 )
 
 type MerkleBlock struct {
-	BlockHeader db.Header
-	db.Proof
+	BlockHeader  db.Header
+	Transactions uint32
+	Hashes       []*Uint256
+	Flags        []byte
 }
 
 func (msg *MerkleBlock) CMD() string {
@@ -55,4 +57,14 @@ func (msg *MerkleBlock) Deserialize(body []byte) error {
 	}
 
 	return nil
+}
+
+func (msg *MerkleBlock) GetProof() db.Proof {
+	return db.Proof{
+		BlockHash:    *msg.BlockHeader.Hash(),
+		Height:       msg.BlockHeader.Height,
+		Transactions: msg.Transactions,
+		Hashes:       msg.Hashes,
+		Flags:        msg.Flags,
+	}
 }

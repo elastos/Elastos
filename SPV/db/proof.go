@@ -14,16 +14,6 @@ type Proof struct {
 	Flags        []byte
 }
 
-func NewProof(blockHash Uint256, height, transactions uint32, hashes []*Uint256, flags []byte) *Proof {
-	return &Proof{
-		BlockHash:    blockHash,
-		Height:       height,
-		Transactions: transactions,
-		Hashes:       hashes,
-		Flags:        flags,
-	}
-}
-
 func (p *Proof) Serialize(w io.Writer) error {
 	err := serialization.WriteElements(w,
 		p.BlockHash,

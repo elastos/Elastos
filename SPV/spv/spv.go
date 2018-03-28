@@ -291,8 +291,16 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 
 	// All request finished, submit received block and txn data
 	if spv.RequestFinished() {
-		log.Trace("Request finished submit data")
-		return spv.CommitData()
+
+		err := spv.CommitData()
+		if err != nil {
+			return err
+		}
+
+		// Continue syncing
+		spv.startSync()
+
+		return nil
 	}
 
 	return nil

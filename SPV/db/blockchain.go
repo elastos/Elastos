@@ -203,11 +203,11 @@ func (bc *Blockchain) CommitBlock(header Header, proof Proof, txns []tx.Transact
 		return 0, err
 	}
 
-	// Notify block commit callback
-	bc.OnBlockCommit(header, proof, txns)
-
 	// Save current chain height
 	bc.DataStore.Info().SaveChainHeight(header.Height)
+
+	// Notify block commit callback
+	go bc.OnBlockCommit(header, proof, txns)
 
 	return fPositives, nil
 }
@@ -254,7 +254,7 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 	}
 
 	//	Notify on transaction commit callback
-	bc.OnTxCommit(txn)
+	go bc.OnTxCommit(txn)
 
 	return false, nil
 }
@@ -273,7 +273,7 @@ func (bc *Blockchain) rollbackTo(forkPoint Uint256) error {
 			return err
 		}
 		// Notify on rollback callback
-		bc.OnRollback(removed.Height)
+		go bc.OnRollback(removed.Height)
 
 		if removed.Previous.IsEqual(&forkPoint) {
 			// Save current chain height

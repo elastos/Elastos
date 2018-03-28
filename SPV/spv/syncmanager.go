@@ -64,13 +64,13 @@ func (sm *SyncManager) clear() {
 }
 
 func (sm *SyncManager) clearRequests() {
+	sm.queueLock.Lock()
 	if sm.requestQueue != nil {
-		sm.queueLock.Lock()
 		for _, request := range sm.requestQueue {
 			request.finish()
 		}
-		sm.queueLock.Unlock()
 	}
+	sm.queueLock.Unlock()
 }
 
 func (sm *SyncManager) startSync() {
@@ -179,8 +179,9 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 			if err != nil {
 				return err
 			}
+		} else {
+			request.start()
 		}
-		request.start()
 	}
 	return nil
 }
@@ -195,8 +196,16 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 
 	// If all blocks received and no more txn to request, submit received block and txn data
 	if sm.RequestFinished() && len(txIds) == 0 {
-		log.Trace("Request finished submit data")
-		return sm.CommitData()
+
+		err := sm.CommitData()
+		if err != nil {
+			return err
+		}
+
+		// Continue syncing
+		sm.startSync()
+
+		return nil
 	}
 
 	var blockTxns = make([]*request, len(txIds))
@@ -284,6 +293,7 @@ func (sm *SyncManager) RequestFinished() bool {
 }
 
 func (sm *SyncManager) CommitData() error {
+	log.Trace("Commit data")
 	sm.queueLock.RLock()
 	defer sm.queueLock.RUnlock()
 
@@ -301,8 +311,6 @@ func (sm *SyncManager) CommitData() error {
 		sm.ChangeSyncPeerAndRestart()
 		return err
 	}
-	// Continue syncing blocks
-	sm.startSync()
 
 	return nil
 }
@@ -349,7 +357,7 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 		}
 
 		// Commit block data to blockchain
-		fPositives, err := spv.chain.CommitBlock(header, block.Proof, txns)
+		fPositives, err := spv.chain.CommitBlock(header, block.GetProof(), txns)
 		if err != nil {
 			return err
 		}

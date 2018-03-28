@@ -34,10 +34,11 @@ func (r *request) send() {
 		r.send()
 	case <-r.doneChan:
 		timer.Stop()
-
 	}
 }
 
 func (r *request) finish() {
-	r.doneChan <- 1
+	if r.doneChan != nil {
+		r.doneChan <- 1
+	}
 }
