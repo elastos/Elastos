@@ -1,7 +1,6 @@
 package auxpow
 
 import (
-	"ELA/core/auxpow"
 	"io"
 
 	. "Elastos.ELA.SideChain/common"
@@ -98,7 +97,7 @@ func (sap *SideAuxPow) Deserialize(r io.Reader) error {
 
 func (sap *SideAuxPow) SideAuxPowCheck(hashAuxBlock Uint256) bool {
 	mainBlockHeader := sap.MainBlockHeader
-	if !mainBlockHeader.AuxPow.Check(mainBlockHeader.Hash(), auxpow.AuxPowChainID) {
+	if !mainBlockHeader.AuxPow.Check(mainBlockHeader.Hash(), AuxPowChainID) {
 		return false
 	}
 
