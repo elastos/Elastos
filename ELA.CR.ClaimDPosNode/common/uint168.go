@@ -40,7 +40,7 @@ func (u *Uint168) CompareTo(o Uint168) int {
 }
 
 func (u *Uint168) Valid() bool {
-	if u[0] == 18 || u[0] == 33 || *u == EmptyValue {
+	if u[0] == 18 || u[0] == 33 || u[0] == 75 || *u == EmptyValue {
 		return true
 	}
 	return false
@@ -124,7 +124,7 @@ func Uint168FromBytes(bytes []byte) (Uint168, error) {
 		return Uint168{}, errors.New("Uint168FromBytes err, len != 21")
 	}
 
-	if bytes[0] != 18 && bytes[0] != 33 {
+	if bytes[0] != 18 && bytes[0] != 33 && bytes[0] != 75 {
 		return Uint168{}, errors.New("invalid address type, unknown prefix")
 	}
 
