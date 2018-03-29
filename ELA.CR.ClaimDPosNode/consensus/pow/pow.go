@@ -1,7 +1,6 @@
 package pow
 
 import (
-	"Elastos.ELA/net/protocol"
 	"encoding/binary"
 	"errors"
 	"math"
@@ -9,6 +8,8 @@ import (
 	"sort"
 	"sync"
 	"time"
+
+	"Elastos.ELA/net/protocol"
 
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/config"
@@ -119,7 +120,7 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
 	txAttr := tx.NewTxAttribute(tx.Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
-	log.Trace("txAttr", txAttr)
+	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }
@@ -405,7 +406,6 @@ out:
 			log.Trace("generage block err", err)
 			continue
 		}
-
 
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {
