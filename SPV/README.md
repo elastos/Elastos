@@ -3,29 +3,94 @@
 ## Summary
 Elastos SPV wallet is a SPV (Simplified Payment Verification) wallet implementation of the Elastos digital currency, using command line as the user interface.
 
-## Build
-##### 1. Download source code to the following path `$GOPATH/src/`
+
+## Build on Mac
+
+### Check OS version
+
+Make sure the OSX version is 16.7+
+
+```shell
+$ uname -srm
+Darwin 16.7.0 x86_64
 ```
+
+### Install Go distribution 1.9
+
+Use Homebrew to install Golang 1.9.
+```shell
+$ brew install go@1.9
+```
+> If you install older version, such as v1.8, you may get missing math/bits package error when build.
+
+### Setup basic workspace
+In this instruction we use ~/dev/src as our working directory. If you clone the source code to a different directory, please make sure you change other environment variables accordingly (not recommended).
+
+```shell
+$ mkdir ~/dev/bin
+$ mkdir ~/dev/src
+```
+
+### Set correct environment variables.
+
+```shell
+export GOROOT=/usr/local/opt/go@1.9/libexec
+export GOPATH=$HOME/dev
+export GOBIN=$GOPATH/bin
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOBIN:$PATH
+```
+
+### Install Glide
+
+Glide is a package manager for Golang. We use Glide to install dependent packages.
+
+```shell
+$ brew install --ignore-dependencies glide
+```
+
+### Check Go version and glide version
+Check the golang and glider version. Make sure they are the following version number or above.
+```shell
+$ go version
+go version go1.9.2 darwin/amd64
+
+$ glide --version
+glide version 0.13.1
+```
+If you cannot see the version number, there must be something wrong when install.
+
+### Clone source code to $GOPATH/src folder
+Make sure you are in the folder of `$GOPATH/src`
+```shell
 $ git clone https://github.com/elastos/Elastos.SPVWallet.git
 ```
 
-##### 2. Go into `$GOPATH/src/SPVWallet` and run `glide install`, this will automatically download and install project dependencies.
+If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.SPVWallet/makefile
 
-##### 3. Install bolt and sqlite database by using the commands blow, this will make the `go build` progress far more fester.
-```
+### Glide install
+
+Run `glide update && glide install` to download project dependencies.
+
+### Install bolt and sqlite database
+This will make the `make` progress far more fester.
+```shell
 go install SPVWallet/vendor/github.com/boltdb/bolt
 go install SPVWallet/vendor/github.com/mattn/go-sqlite3
 ```
-##### 3. Run `make` to build the executable files `service` and `ela-wallet`
 
-### Executable files
+### Make
 
-- `service` is the SPV (Simplified Payment Verification) service running background, communicating with the Elastos peer to peer network and keep updating with the blockchain of Elastos digital currency.
+Run `make` to build the executable files `service` and `ela-wallet`
 
-- `ela-wallet` is the command line user interface to communicate with the SPV service, witch can create accounts, build sign or send a transaction, or check your account balance.
+> `service` is the SPV (Simplified Payment Verification) service running background, communicating with the Elastos peer to peer network and keep updating with the blockchain of Elastos digital currency.
 
-## Usage
-##### 1. Set up configuration file `config.json`
+> `ela-wallet` is the command line user interface to communicate with the SPV service, witch can create accounts, build sign or send a transaction, or check your account balance.
+
+## Run on Mac
+
+### Set up configuration file
+A file named `config.json` should be placed in the same folder with `service` with the parameters as below.
 ```
 {
   "PrintLevel": 4,
@@ -35,14 +100,15 @@ go install SPVWallet/vendor/github.com/mattn/go-sqlite3
   ]
 }
 ```
-`PrintLevel` is to control which level of messages can be print out on the console, levels are 0~5, the higher level print out more messages, if set `PrintLevel` to 5 or greater, logs will be save to file.
+> `PrintLevel` is to control which level of messages can be print out on the console, levels are 0~5, the higher level print out more messages, if set `PrintLevel` to 5 or greater, logs will be save to file.
 
-`Magic` is the identify number of the peer to peer network, peers in the same network should be using the same Magic number.
+> `Magic` is the identify number of the peer to peer network, peers in the same network should be using the same Magic number.
 
-`SeedList` is the seed peer addresses in the peer to peer network, SPV service will connect to the peer to peer network through these seed peers.
+> `SeedList` is the seed peer addresses in the peer to peer network, SPV service will connect to the peer to peer network through these seed peers.
 
-##### 2. Run `./ela-wallet create` and enter password on the command line tool to create your wallet and master account.
-```
+### Create your wallet
+Run `./ela-wallet create` and enter password on the command line tool to create your wallet and master account.
+```shell
 INPUT PASSWORD:
 CONFIRM PASSWORD:
 INDEX                            ADDRESS                                                         PUBLIC KEY   TYPE
@@ -50,21 +116,29 @@ INDEX                            ADDRESS                                        
     1 ERpTjzeVnyuCyddRLPK2ednuSK3rdNKjHP 02d790d4021ad89e1c4b0d4b4874467a0bc4100793aed41537e6ee8980efe85c1a MASTER
 ----- ---------------------------------- ------------------------------------------------------------------ ------
 ```
-##### 3. Run `./service` to start the SPV service
-```
+
+### Start SPV service
+Run `./service` to start the SPV service
+```shell
 2018/03/26 23:20:50.995624 [INFO]  PeerManager start
 2018/03/26 23:20:50.995804 [INFO]  SPV service started...
 2018/03/26 23:20:50.995813 [DEBUG] RPC server started...
 ...
 ```
-##### 4. Run `./ela-wallet account -b` to show your account balance.
+
+### See account balance
+Run `./ela-wallet account -b` to show your account balance.
+```shell
+INDEX                            ADDRESS BALANCE                           (LOCKED)   TYPE
+----- ---------------------------------- ------------------------------------------ ------
+    1 ERpTjzeVnyuCyddRLPK2ednuSK3rdNKjHP 0                             (0.29299850) MASTER
+----- ---------------------------------- ------------------------------------------ ------
+    2 EUyNwnAh5SzzTtAPV1HkXzjUEbw2YqKsUM 0                                      (0)    SUB
+----- ---------------------------------- ------------------------------------------ ------
 ```
-INDEX                            ADDRESS BALANCE        (LOCKED)
------ ---------------------------------- -----------------------
-    1 ERpTjzeVnyuCyddRLPK2ednuSK3rdNKjHP 0                   (0)
------ ---------------------------------- -----------------------
-```
-##### 5. To see `help` menu, just run `./ela-wallet` or `./ela-wallet -h`
+
+### Help menu
+To see `help` menu, just run `./ela-wallet` or `./ela-wallet -h`
 ```
 NAME:
    ELASTOS SPV WALLET - command line user interface
@@ -87,7 +161,8 @@ GLOBAL OPTIONS:
    --help, -h     show help
    --version, -v  print the version
 ```
-##### 6. Show sub commands help by input sub command name like `./ela-wallet account`
+
+See sub commands help by input sub command name like `./ela-wallet account`
 ```
 NAME:
    ELASTOS SPV WALLET HELP account - account [command] [args]
@@ -111,7 +186,8 @@ OPTIONS:
 
 ## Develop
 ##### This project can be used as a reference to build your own apps, it provides several interfaces for developers.
-##### 1. keystore
+
+### keystore
 - Keystore is a file based storage to save the account information, including `Password` `MasterKey` `PrivateKey` etc. in AES encrypted format. Keystore interface is a help to create a keystore file storage and master the accounts within it. The interface methods are listed below.
 
 ```
@@ -145,7 +221,8 @@ type Account interface {
 	PublicKey() *crypto.PublicKey
 }
 ```
-##### 2. P2P client
+
+### P2P client
 - P2P client is the interface to interactive with the peer to peer network implementation, use this to join the peer to peer network and make communication with other peers.
 
 ```
@@ -173,7 +250,8 @@ type P2PClient interface {
 	PeerManager() *p2p.PeerManager
 }
 ```
-##### 3. SPV service
+
+### SPV service
 - SPV service is the interface to interactive with the SPV (Simplified Payment Verification) service implementation running background, you can register specific accounts that you are interested in and receive transaction notifications of these accounts.
 
 ```
