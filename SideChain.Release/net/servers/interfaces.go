@@ -595,6 +595,29 @@ func GetBlockHash(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, BytesToHexString(hash.ToArrayReverse()))
 }
 
+func GetBlockTransactionsDetail(block *ledger.Block, filter func(*tx.Transaction) bool) interface{} {
+	var trans []*Transactions
+	for i := 0; i < len(block.Transactions); i++ {
+		if filter(block.Transactions[i]) {
+			continue
+		}
+
+		trans = append(trans, TransArrayByteToHexString(block.Transactions[i]))
+	}
+	hash := block.Hash()
+	type BlockTransactions struct {
+		Hash         string
+		Height       uint32
+		Transactions []*Transactions
+	}
+	b := BlockTransactions{
+		Hash:         BytesToHexString(hash.ToArrayReverse()),
+		Height:       block.Blockdata.Height,
+		Transactions: trans,
+	}
+	return b
+}
+
 func GetBlockTransactions(block *ledger.Block, filter func(*tx.Transaction) bool) interface{} {
 	trans := make([]string, len(block.Transactions))
 	for i := 0; i < len(block.Transactions); i++ {
@@ -637,7 +660,7 @@ func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
-	return ResponsePack(Success, GetBlockTransactions(block, func(*tx.Transaction) bool {return false}))
+	return ResponsePack(Success, GetBlockTransactions(block, func(*tx.Transaction) bool { return false }))
 }
 
 func GetDestroyedTransactionsByHeight(param map[string]interface{}) map[string]interface{} {
@@ -661,7 +684,7 @@ func GetDestroyedTransactionsByHeight(param map[string]interface{}) map[string]i
 	}
 
 	destroyHash, err := Uint168FromAddress(config.Parameters.DestroyAddr)
-	return ResponsePack(Success, GetBlockTransactions(block, func(tran *tx.Transaction) bool {
+	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *tx.Transaction) bool {
 		for _, output := range tran.Outputs {
 			if output.ProgramHash == destroyHash {
 				return false
