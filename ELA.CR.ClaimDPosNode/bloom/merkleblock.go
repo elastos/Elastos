@@ -1,7 +1,3 @@
-// Copyright (c) 2013-2016 The btcsuite developers
-// Use of this source code is governed by an ISC
-// license that can be found in the LICENSE file.
-
 package bloom
 
 import (
@@ -9,7 +5,7 @@ import (
 )
 
 // MBlock is used to house intermediate information needed to generate a
-// wire.MsgMerkleBlock according to a filter.
+// MerkleBlock according to a filter.
 type MBlock struct {
 	NumTx       uint32
 	AllHashes   []*Uint256
