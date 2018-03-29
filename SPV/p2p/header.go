@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"SPVWallet/config"
 	"SPVWallet/core"
 	"SPVWallet/log"
 )
@@ -64,7 +63,7 @@ func BuildMessage(msg Message) ([]byte, error) {
 
 func (header *Header) Verify(buf []byte) error {
 	// Verify magic
-	if header.Magic != config.Values().Magic {
+	if header.Magic != Magic {
 		return errors.New(fmt.Sprint("Unmatched magic number ", header.Magic))
 	}
 

@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"SPVWallet/config"
 	"SPVWallet/log"
 )
 
@@ -240,7 +239,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 			return
 		}
 
-		if header.Magic != config.Values().Magic {
+		if header.Magic != Magic {
 			log.Error("Magic not match, disconnect peer")
 			peer.OnDisconnect(peer)
 			return
