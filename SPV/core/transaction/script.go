@@ -10,7 +10,7 @@ import (
 	"SPVWallet/crypto"
 	. "SPVWallet/core"
 
-	"golang.org/x/crypto/ripemd160"
+	"github.com/golang/crypto/ripemd160"
 )
 
 type OpCode byte

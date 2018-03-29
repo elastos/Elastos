@@ -9,11 +9,11 @@ import (
 	"strconv"
 
 	. "SPVWallet/core"
+	"SPVWallet/db"
 	walt "SPVWallet/wallet"
 
 	"github.com/urfave/cli"
-	"github.com/howeyc/gopass"
-	"SPVWallet/db"
+	"github.com/AlexpanXX/gopass"
 )
 
 var CommonFlags = []cli.Flag{

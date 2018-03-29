@@ -9,8 +9,13 @@ Elastos SPV wallet is a SPV (Simplified Payment Verification) wallet implementat
 $ git clone https://github.com/elastos/Elastos.SPVWallet.git
 ```
 
-##### 2. Go into `$GOPATH/src/SPVWallet` and run `make install`, this will automatically download and install project dependencies.
+##### 2. Go into `$GOPATH/src/SPVWallet` and run `glide install`, this will automatically download and install project dependencies.
 
+##### 3. Install bolt and sqlite database by using the commands blow, this will make the `go build` progress far more fester.
+```
+go install SPVWallet/vendor/github.com/boltdb/bolt
+go install SPVWallet/vendor/github.com/mattn/go-sqlite3
+```
 ##### 3. Run `make` to build the executable files `service` and `ela-wallet`
 
 ### Executable files

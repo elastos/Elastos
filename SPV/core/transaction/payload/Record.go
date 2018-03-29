@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"Elastos.ELA/common/serialization"
 	"errors"
 	"io"
+
+	"SPVWallet/core/serialization"
 )
 
 const RecordPayloadVersion byte = 0x00

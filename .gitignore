@@ -19,5 +19,7 @@ Log
 *.bin
 *.csv
 *.cache
+*.lock
+vendor/
 ela-wallet
 service

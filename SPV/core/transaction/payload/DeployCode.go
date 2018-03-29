@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"Elastos.ELA/common/serialization"
-	. "Elastos.ELA/core/code"
 	"io"
+
+	. "SPVWallet/core/code"
+	"SPVWallet/core/serialization"
 )
 
 const DeployCodePayloadVersion byte = 0x00

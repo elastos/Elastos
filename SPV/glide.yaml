@@ -1,0 +1,13 @@
+package: SPVWallet
+import:
+- package: github.com/AlexpanXX/gopass
+- package: github.com/boltdb/bolt
+- package: github.com/itchyny/base58-go
+- package: github.com/mattn/go-sqlite3
+- package: github.com/urfave/cli
+- package: github.com/golang/crypto
+  subpackages:
+  - ripemd160
+  - ssh/terminal
+ignore:
+  - golang.org/x/sys/unix
