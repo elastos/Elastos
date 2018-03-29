@@ -284,7 +284,7 @@ func CheckAttributeProgram(txn *tx.Transaction) error {
 }
 
 func CheckTransactionSignature(txn *tx.Transaction) error {
-	flag, err := tx.VerifySignature(txn)
+	flag, err := VerifySignature(txn)
 	if flag && err == nil {
 		return nil
 	} else {

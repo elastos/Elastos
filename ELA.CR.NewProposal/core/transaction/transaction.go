@@ -512,7 +512,7 @@ func (tx *Transaction) GetMultiSignPublicKeys() ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(code) < MinMultiSignCodeLength || code[len(code)-1] != MULTISIG {
+	if len(code) < MinMultiSignCodeLength || (code[len(code)-1] != MULTISIG && code[len(code)-1] != CROSSCHAIN) {
 		return nil, errors.New("not a valid multi sign transaction code, length not enough")
 	}
 	// remove last byte MULTISIG
