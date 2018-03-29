@@ -20,3 +20,5 @@ deps/
 /node
 debug
 .vscode
+*.bin
+*.db
