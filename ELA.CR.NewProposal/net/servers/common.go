@@ -122,6 +122,11 @@ type NodeInfo struct {
 	RxTxnCnt uint64 // The transaction received by this NodeForServers
 }
 
+type ArbitratorGroupInfo struct {
+	OnDutyArbitratorIndex int
+	Arbitrators []string
+}
+
 type PayloadInfo interface{}
 
 type CoinbaseInfo struct {

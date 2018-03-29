@@ -1,13 +1,15 @@
-package transaction
+package ledger
 
 import (
 	"errors"
 
 	"Elastos.ELA/crypto"
 	. "Elastos.ELA/core/signature"
+	tx "Elastos.ELA/core/transaction"
+	"Elastos.ELA/core/transaction/payload"
 )
 
-func VerifySignature(txn *Transaction) (bool, error) {
+func VerifySignature(txn *tx.Transaction) (bool, error) {
 	hashes, err := txn.GetProgramHashes()
 	if err != nil {
 		return false, err
@@ -55,6 +57,16 @@ func VerifySignature(txn *Transaction) (bool, error) {
 			}
 			return checkMultiSignSignatures(code, param, txn.GetDataContent(), publicKeys)
 
+		} else if signType == CROSSCHAIN {
+			publicKeys, err := txn.GetMultiSignPublicKeys()
+			if err != nil {
+				return false, err
+			}
+			if err = checkCrossChainArbitrators(txn, publicKeys); err != nil {
+				return false, err
+			}
+
+			return checkMultiSignSignatures(code, param, txn.GetDataContent(), publicKeys)
 		} else {
 			return false, errors.New("unknown signature type")
 		}
@@ -113,4 +125,44 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	}
 
 	return true, nil
+}
+
+func checkCrossChainArbitrators(txn *tx.Transaction, publicKeys [][]byte) error {
+	withdrawPayload, ok := txn.Payload.(*payload.WithdrawToken)
+	if !ok {
+		return errors.New("Invalid payload type.")
+	}
+
+	hash, err := DefaultLedger.Store.GetBlockHash(uint32(withdrawPayload.BlockHeight))
+	if err != nil {
+		return err
+	}
+
+	block, err := DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return err
+	}
+
+	arbitrators, err := block.GetArbitrators()
+	if err != nil {
+		return err
+	}
+	if len(arbitrators) != len(publicKeys) {
+		return errors.New("Invalid arbitrator account.")
+	}
+
+	for arbitrator := range arbitrators {
+		found := false
+		for pk := range publicKeys {
+			if arbitrator == pk {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return errors.New("Invalid cross chain arbitrators")
+		}
+	}
+	return nil
 }
