@@ -8,9 +8,9 @@ import (
 	"sort"
 
 	. "Elastos.ELA/common"
-	. "Elastos.ELA/core/signature"
 	"Elastos.ELA/common/serialization"
 	"Elastos.ELA/core/contract/program"
+	. "Elastos.ELA/core/signature"
 	"Elastos.ELA/core/transaction/payload"
 )
 
@@ -24,6 +24,7 @@ const (
 	TransferAsset TransactionType = 0x02
 	Record        TransactionType = 0x03
 	Deploy        TransactionType = 0x04
+	SideMining    TransactionType = 0x05
 )
 
 func (self TransactionType) Name() string {
@@ -38,6 +39,8 @@ func (self TransactionType) Name() string {
 		return "Record"
 	case Deploy:
 		return "Deploy"
+	case SideMining:
+		return "SideMining"
 	default:
 		return "Unknown"
 	}
@@ -239,6 +242,8 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		tx.Payload = new(payload.Record)
 	case Deploy:
 		tx.Payload = new(payload.DeployCode)
+	case SideMining:
+		tx.Payload = new(payload.SideMining)
 	default:
 		return errors.New("[Transaction], invalid transaction type.")
 	}
@@ -349,6 +354,7 @@ func (tx *Transaction) GetProgramHashes() ([]Uint168, error) {
 	case TransferAsset:
 	case Record:
 	case Deploy:
+	case SideMining:
 	default:
 	}
 

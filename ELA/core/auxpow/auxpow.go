@@ -1,17 +1,18 @@
 package auxpow
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"io"
 	"strings"
+
+	. "Elastos.ELA/common"
+	"Elastos.ELA/common/serialization"
 )
 
 var (
-	AuxPowChainID         = 1
+	AuxPowChainID         = 6
 	pchMergedMiningHeader = []byte{0xfa, 0xbe, 'm', 'm'}
 )
 
@@ -50,13 +51,25 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		return err
 	}
 
-	idx := uint32(ap.AuxMerkleIndex)
+	count := uint64(len(ap.ParCoinBaseMerkle))
+	err = serialization.WriteVarUint(w, count)
+	if err != nil {
+		return err
+	}
+
+	for _, pcbm := range ap.ParCoinBaseMerkle {
+		_, err = pcbm.Serialize(w)
+		if err != nil {
+			return err
+		}
+	}
+	idx := uint32(ap.ParMerkleIndex)
 	err = serialization.WriteUint32(w, idx)
 	if err != nil {
 		return err
 	}
 
-	count := uint64(len(ap.AuxMerkleBranch))
+	count = uint64(len(ap.AuxMerkleBranch))
 	err = serialization.WriteVarUint(w, count)
 	if err != nil {
 		return err
@@ -69,23 +82,10 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		}
 	}
 
-	idx = uint32(ap.ParMerkleIndex)
+	idx = uint32(ap.AuxMerkleIndex)
 	err = serialization.WriteUint32(w, idx)
 	if err != nil {
 		return err
-	}
-
-	count = uint64(len(ap.ParCoinBaseMerkle))
-	err = serialization.WriteVarUint(w, count)
-	if err != nil {
-		return err
-	}
-
-	for _, pcbm := range ap.ParCoinBaseMerkle {
-		_, err = pcbm.Serialize(w)
-		if err != nil {
-			return err
-		}
 	}
 
 	err = ap.ParBlockHeader.Serialize(w)
@@ -106,13 +106,29 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 		return err
 	}
 
+	count, err := serialization.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+
+	ap.ParCoinBaseMerkle = make([]Uint256, count)
+	for i := uint64(0); i < count; i++ {
+		temp := Uint256{}
+		err = temp.Deserialize(r)
+		if err != nil {
+			return err
+		}
+		ap.ParCoinBaseMerkle[i] = temp
+
+	}
+
 	temp, err := serialization.ReadUint32(r)
 	if err != nil {
 		return err
 	}
-	ap.AuxMerkleIndex = int(temp)
+	ap.ParMerkleIndex = int(temp)
 
-	count, err := serialization.ReadVarUint(r, 0)
+	count, err = serialization.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -131,23 +147,7 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	ap.ParMerkleIndex = int(temp)
-
-	count, err = serialization.ReadVarUint(r, 0)
-	if err != nil {
-		return err
-	}
-
-	ap.ParCoinBaseMerkle = make([]Uint256, count)
-	for i := uint64(0); i < count; i++ {
-		temp := Uint256{}
-		err = temp.Deserialize(r)
-		if err != nil {
-			return err
-		}
-		ap.ParCoinBaseMerkle[i] = temp
-
-	}
+	ap.AuxMerkleIndex = int(temp)
 
 	err = ap.ParBlockHeader.Deserialize(r)
 	if err != nil {
@@ -162,12 +162,17 @@ func (ap *AuxPow) Check(hashAuxBlock Uint256, chainId int) bool {
 		return false
 	}
 
-	auxRootHash := CheckMerkleBranch(hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
+	if len(ap.AuxMerkleBranch) > 0 {
+		hashAuxBlockBytes := hashAuxBlock.ToArrayReverse()
+		hashAuxBlock, _ = Uint256ParseFromBytes(hashAuxBlockBytes)
+	}
+
+	auxRootHashReverse := CheckMerkleBranch(hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
 
 	script := ap.ParCoinbaseTx.TxIn[0].SignatureScript
 	scriptStr := hex.EncodeToString(script)
 	//fixme reverse
-	auxRootHashStr := hex.EncodeToString(auxRootHash.ToArray())
+	auxRootHashStr := hex.EncodeToString(auxRootHashReverse.ToArray())
 	pchMergedMiningHeaderStr := hex.EncodeToString(pchMergedMiningHeader)
 
 	headerIndex := strings.Index(scriptStr, pchMergedMiningHeaderStr)
@@ -213,12 +218,14 @@ func CheckMerkleBranch(hash Uint256, merkleBranch []Uint256, index int) Uint256 
 			temp := make([]uint8, 0)
 			temp = append(temp, it[:]...)
 			temp = append(temp, hash[:]...)
-			hash = Uint256(sha256.Sum256(temp))
+			once := sha256.Sum256(temp)
+			hash = Uint256(sha256.Sum256(once[:]))
 		} else {
 			temp := make([]uint8, 0)
 			temp = append(temp, hash[:]...)
 			temp = append(temp, it[:]...)
-			hash = Uint256(sha256.Sum256(temp))
+			once := sha256.Sum256(temp)
+			hash = Uint256(sha256.Sum256(once[:]))
 		}
 		index >>= 1
 	}
