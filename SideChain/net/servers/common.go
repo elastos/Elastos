@@ -148,7 +148,7 @@ type IssueTokenInfo struct {
 }
 
 type TransferCrossChainAssetInfo struct {
-	Addresses map[string]uint64
+	AddressesMap map[string]uint64
 }
 
 func TransPayloadToHex(p Payload) PayloadInfo {
@@ -177,7 +177,7 @@ func TransPayloadToHex(p Payload) PayloadInfo {
 		return obj
 	case *payload.TransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.Addresses = object.Addresses
+		obj.AddressesMap = object.AddressesMap
 		return obj
 	}
 	return nil
