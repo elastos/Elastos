@@ -50,7 +50,7 @@ func (db *QueueDB) GetConfirmed(height uint32) ([]*QueueItem, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	sql := "SELECT TxHash, BlockHash, Height, ConfirmHeight FROM Queue WHERE ConfirmHeight>=?"
+	sql := "SELECT TxHash, BlockHash, Height, ConfirmHeight FROM Queue WHERE ConfirmHeight<=?"
 	rows, err := db.Query(sql, height)
 	if err != nil {
 		return nil, err
