@@ -25,8 +25,9 @@ const (
 	TransferAsset           TransactionType = 0x02
 	Record                  TransactionType = 0x03
 	Deploy                  TransactionType = 0x04
-	IssueToken              TransactionType = 0x05
-	TransferCrossChainAsset TransactionType = 0x06
+	IssueToken              TransactionType = 0x06
+	WithdrawToken           TransactionType = 0x07
+	TransferCrossChainAsset TransactionType = 0x08
 )
 
 func (self TransactionType) Name() string {
@@ -43,6 +44,8 @@ func (self TransactionType) Name() string {
 		return "Deploy"
 	case IssueToken:
 		return "IssueToken"
+	case WithdrawToken:
+		return "WithdrawToken"
 	case TransferCrossChainAsset:
 		return "TransferCrossChainAsset"
 	default:

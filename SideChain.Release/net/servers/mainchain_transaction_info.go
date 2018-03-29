@@ -74,15 +74,15 @@ func (a *TransferCrossChainAssetInfo) Data(version byte) string {
 }
 
 func (a *TransferCrossChainAssetInfo) Serialize(w io.Writer, version byte) error {
-	if a.Addresses == nil {
-		return errors.New("Invalid address map")
+	if a.AddressesMap == nil {
+		return errors.New("Invalid publickey map")
 	}
 
-	if err := serialization.WriteVarUint(w, uint64(len(a.Addresses))); err != nil {
-		return errors.New("address map's length serialize failed")
+	if err := serialization.WriteVarUint(w, uint64(len(a.AddressesMap))); err != nil {
+		return errors.New("publicKey map's length serialize failed")
 	}
 
-	for k, v := range a.Addresses {
+	for k, v := range a.AddressesMap {
 		if err := serialization.WriteVarString(w, k); err != nil {
 			return errors.New("address map's key serialize failed")
 		}
@@ -96,17 +96,13 @@ func (a *TransferCrossChainAssetInfo) Serialize(w io.Writer, version byte) error
 }
 
 func (a *TransferCrossChainAssetInfo) Deserialize(r io.Reader, version byte) error {
-	if a.Addresses == nil {
-		return errors.New("Invalid address key map")
-	}
-
 	length, err := serialization.ReadVarUint(r, 0)
 	if err != nil {
 		return errors.New("address map's length deserialize failed")
 	}
 
-	a.Addresses = nil
-	a.Addresses = make(map[string]uint64)
+	a.AddressesMap = nil
+	a.AddressesMap = make(map[string]uint64)
 	for i := uint64(0); i < length; i++ {
 		k, err := serialization.ReadVarString(r)
 		if err != nil {
@@ -118,7 +114,7 @@ func (a *TransferCrossChainAssetInfo) Deserialize(r io.Reader, version byte) err
 			return errors.New("address map's value deserialize failed")
 		}
 
-		a.Addresses[k] = v
+		a.AddressesMap[k] = v
 	}
 
 	return nil
@@ -670,7 +666,7 @@ func PayloadInfoToTransPayload(p PayloadInfo) (Payload, error) {
 		return obj, nil
 	case *TransferCrossChainAssetInfo:
 		obj := new(payload.TransferCrossChainAsset)
-		obj.Addresses = object.Addresses
+		obj.AddressesMap = object.AddressesMap
 		return obj, nil
 	}
 
