@@ -251,3 +251,13 @@ func (b *Block) RebuildMerkleRoot() error {
 func (bd *Block) SerializeUnsigned(w io.Writer) error {
 	return bd.Blockdata.SerializeUnsigned(w)
 }
+
+func (b *Block) GetArbitrators() ([][]byte, error) {
+	//todo finish this when arbitrator election scenario is done
+	return nil, nil
+}
+
+func (b *Block) GetCurrentArbitratorIndex() (int, error) {
+	//todo finish this when arbitrator election scenario is done
+	return 0, nil
+}

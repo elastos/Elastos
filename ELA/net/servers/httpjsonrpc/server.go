@@ -32,6 +32,7 @@ func StartRPCServer() {
 	mainMux["getnodestate"] = GetNodeState
 	mainMux["sendrawtransaction"] = SendRawTransaction
 	mainMux["submitblock"] = SubmitBlock
+	mainMux["getarbitratorgroupbyheight"] = GetArbitratorGroupByHeight
 
 	// mining interfaces
 	mainMux["getinfo"] = GetInfo
