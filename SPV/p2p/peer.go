@@ -84,7 +84,7 @@ type Peer struct {
 }
 
 func (peer *Peer) String() string {
-	return "Peer: {" +
+	return "\nPeer: {" +
 		"\n\tID:" + fmt.Sprint(peer.id) +
 		"\n\tVersion:" + fmt.Sprint(peer.version) +
 		"\n\tServices:" + fmt.Sprint(peer.services) +

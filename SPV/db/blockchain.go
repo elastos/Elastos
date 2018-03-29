@@ -219,10 +219,11 @@ func (bc *Blockchain) commitTxn(filter *AddrFilter, height uint32, txn tx.Transa
 	// Save UTXOs
 	for index, output := range txn.Outputs {
 		if filter.ContainAddress(output.ProgramHash) {
+			var lockTime uint32
 			if txn.TxType == tx.CoinBase {
-				output.OutputLock = height + 100
+				lockTime = height + 100
 			}
-			utxo := ToStoredUTXO(txId, height, index, output)
+			utxo := ToStoredUTXO(txId, height, index, output.Value, lockTime)
 			err := bc.UTXOs().Put(&output.ProgramHash, utxo)
 			if err != nil {
 				return false, err

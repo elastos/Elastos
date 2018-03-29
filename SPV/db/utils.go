@@ -17,11 +17,11 @@ func ToStoredTxn(tx Transaction, height uint32) *Txn {
 	return txn
 }
 
-func ToStoredUTXO(txId *Uint256, height uint32, index int, output *Output) *UTXO {
+func ToStoredUTXO(txId *Uint256, height uint32, index int, value Fixed64, lockTime uint32) *UTXO {
 	utxo := new(UTXO)
 	utxo.Op = *NewOutPoint(*txId, uint16(index))
-	utxo.Value = output.Value
-	utxo.LockTime = output.OutputLock
+	utxo.Value = value
+	utxo.LockTime = lockTime
 	utxo.AtHeight = height
 	return utxo
 }

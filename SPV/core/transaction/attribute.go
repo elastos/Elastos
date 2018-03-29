@@ -44,11 +44,11 @@ type Attribute struct {
 	Size  uint32
 }
 
-func (self Attribute) String() string {
+func (attr Attribute) String() string {
 	return "Attribute: {\n\t\t" +
-		"Usage: " + self.Usage.Name() + "\n\t\t" +
-		"Data: " + core.BytesToHexString(self.Data) + "\n\t\t" +
-		"Size: " + fmt.Sprint(self.Size) + "\n\t" +
+		"Usage: " + attr.Usage.Name() + "\n\t\t" +
+		"Data: " + core.BytesToHexString(attr.Data) + "\n\t\t" +
+		"Size: " + fmt.Sprint(attr.Size) + "\n\t" +
 		"}"
 }
 
@@ -58,36 +58,36 @@ func NewAttribute(u AttributeUsage, d []byte) Attribute {
 	return tx
 }
 
-func (u *Attribute) GetSize() uint32 {
-	if u.Usage == DescriptionUrl {
-		return uint32(len([]byte{(byte(0xff))}) + len([]byte{(byte(0xff))}) + len(u.Data))
+func (attr *Attribute) GetSize() uint32 {
+	if attr.Usage == DescriptionUrl {
+		return uint32(len([]byte{(byte(0xff))}) + len([]byte{(byte(0xff))}) + len(attr.Data))
 	}
 	return 0
 }
 
-func (tx *Attribute) Serialize(w io.Writer) error {
-	if err := serialization.WriteUint8(w, byte(tx.Usage)); err != nil {
+func (attr *Attribute) Serialize(w io.Writer) error {
+	if err := serialization.WriteUint8(w, byte(attr.Usage)); err != nil {
 		return errors.New("Transaction attribute Usage serialization error.")
 	}
-	if !IsValidAttributeType(tx.Usage) {
+	if !IsValidAttributeType(attr.Usage) {
 		return errors.New("[Attribute] error: Unsupported attribute Description.")
 	}
-	if err := serialization.WriteVarBytes(w, tx.Data); err != nil {
+	if err := serialization.WriteVarBytes(w, attr.Data); err != nil {
 		return errors.New("Transaction attribute Data serialization error.")
 	}
 	return nil
 }
 
-func (tx *Attribute) Deserialize(r io.Reader) error {
+func (attr *Attribute) Deserialize(r io.Reader) error {
 	val, err := serialization.ReadBytes(r, 1)
 	if err != nil {
 		return errors.New("Transaction attribute Usage deserialization error.")
 	}
-	tx.Usage = AttributeUsage(val[0])
-	if !IsValidAttributeType(tx.Usage) {
+	attr.Usage = AttributeUsage(val[0])
+	if !IsValidAttributeType(attr.Usage) {
 		return errors.New("[Attribute] error: Unsupported attribute Description.")
 	}
-	tx.Data, err = serialization.ReadVarBytes(r)
+	attr.Data, err = serialization.ReadVarBytes(r)
 	if err != nil {
 		return errors.New("Transaction attribute Data deserialization error.")
 	}

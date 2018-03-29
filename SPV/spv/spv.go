@@ -248,7 +248,7 @@ func (spv *SPV) OnMerkleBlock(peer *p2p.Peer, block *msg.MerkleBlock) error {
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
 	// Mark block as received
-	spv.BlockReceived(blockHash, block)
+	spv.BlockReceived(*blockHash, block)
 
 	return spv.RequestBlockTxns(peer, block)
 }
@@ -258,7 +258,7 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	defer spv.dataLock.Unlock()
 
 	txId := txn.Transaction.Hash()
-	log.Trace("Receive transaction hash: ", txId.String())
+	log.Debug("Receive transaction hash: ", txId.String())
 
 	if spv.chain.IsSyncing() && !spv.InRequestQueue(*txId) {
 		// Put non syncing txns into orphan pool
@@ -287,7 +287,7 @@ func (spv *SPV) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 		return errors.New("Receive message from non sync peer, disconnect")
 	}
 
-	spv.TxnReceived(txId, txn)
+	spv.TxnReceived(*txId, txn)
 
 	// All request finished, submit received block and txn data
 	if spv.RequestFinished() {

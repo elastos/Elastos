@@ -3,6 +3,8 @@ package _interface
 import (
 	"bytes"
 	"errors"
+	"os"
+	"os/signal"
 
 	"SPVWallet/core"
 	tx "SPVWallet/core/transaction"
@@ -53,9 +55,11 @@ func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transacti
 	}
 
 	// Check if merkleroot is match
-	merkleBlock := &msg.MerkleBlock{
-		BlockHeader: *header,
-		Proof:       proof,
+	merkleBlock := msg.MerkleBlock{
+		BlockHeader:  *header,
+		Transactions: proof.Transactions,
+		Hashes:       proof.Hashes,
+		Flags:        proof.Flags,
 	}
 	txIds, err := spv.CheckMerkleBlock(merkleBlock)
 	if err != nil {
@@ -70,6 +74,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transacti
 	for _, txId := range txIds {
 		if *txId == *tx.Hash() {
 			match = true
+			break
 		}
 	}
 	if !match {
@@ -109,8 +114,22 @@ func (service *SPVServiceImpl) Start() error {
 	// Set callback
 	service.SPV.SetOnBlockCommitListener(service.onBlockCommit)
 
+	// Handle interrupt signal
+	stop := make(chan int, 1)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+	go func() {
+		for range signals {
+			log.Trace("SPV service shutting down...")
+			service.Stop()
+			stop <- 1
+		}
+	}()
+
 	// Start SPV service
 	service.SPV.Start()
+
+	<-stop
 
 	return nil
 }
@@ -168,11 +187,12 @@ func (service *SPVServiceImpl) onBlockCommit(header db.Header, proof db.Proof, t
 		proof = getTransactionProof(proof, txn.TxId)
 
 		var tx tx.Transaction
-		err = tx.Deserialize(bytes.NewReader(txn.RawData))
+		err = tx.DeserializeUnsigned(bytes.NewReader(txn.RawData))
 		if err != nil {
 			log.Error("Deserialize stord transaction failed, hash: ", txn.TxId.String())
 			return
 		}
+
 		// Trigger callback
 		service.callback(*proof, tx)
 	}
@@ -186,5 +206,5 @@ func getConfirmHeight(header db.Header, tx tx.Transaction) uint32 {
 
 func getTransactionProof(proof *db.Proof, txHash core.Uint256) *db.Proof {
 	// TODO Pick out the merkle proof of the transaction
-	return nil
+	return proof
 }

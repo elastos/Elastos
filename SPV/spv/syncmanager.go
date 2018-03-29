@@ -32,7 +32,7 @@ type SyncManager struct {
 	requestQueue   map[Uint256]*request
 	blockTxns      map[Uint256][]*request
 	receivedBlocks map[Uint256]*MerkleBlock
-	receivedTxns   map[Uint256]*Txn
+	receivedTxns   map[Uint256]*tx.Transaction
 	fPositives     int
 }
 
@@ -60,7 +60,7 @@ func (sm *SyncManager) clear() {
 	sm.requestQueue = make(map[Uint256]*request)
 	sm.blockTxns = make(map[Uint256][]*request)
 	sm.receivedBlocks = make(map[Uint256]*MerkleBlock)
-	sm.receivedTxns = make(map[Uint256]*Txn)
+	sm.receivedTxns = make(map[Uint256]*tx.Transaction)
 }
 
 func (sm *SyncManager) clearRequests() {
@@ -174,7 +174,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 	for _, request := range reqList {
 		// Check if block already in orphan pool
 		if block, ok := spv.IsOrphanBlock(request.hash); ok {
-			sm.BlockReceived(&request.hash, block)
+			sm.BlockReceived(request.hash, block)
 			err := sm.RequestBlockTxns(peer, block)
 			if err != nil {
 				return err
@@ -222,7 +222,7 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *MerkleBlock) error {
 
 	for _, request := range blockTxns {
 		if txn, ok := sm.IsOrphanTxn(request.hash); ok {
-			sm.TxnReceived(&request.hash, txn)
+			sm.TxnReceived(request.hash, txn)
 		} else {
 			request.start()
 		}
@@ -261,17 +261,17 @@ func (sm *SyncManager) InRequestQueue(hash Uint256) bool {
 	return ok
 }
 
-func (sm *SyncManager) BlockReceived(blockHash *Uint256, block *MerkleBlock) {
+func (sm *SyncManager) BlockReceived(blockHash Uint256, block *MerkleBlock) {
 	sm.queueLock.Lock()
-	sm.finishRequest(*blockHash)
-	sm.receivedBlocks[*blockHash] = block
+	sm.finishRequest(blockHash)
+	sm.receivedBlocks[blockHash] = block
 	sm.queueLock.Unlock()
 }
 
-func (sm *SyncManager) TxnReceived(txId *Uint256, txn *Txn) {
+func (sm *SyncManager) TxnReceived(txId Uint256, txn *Txn) {
 	sm.queueLock.Lock()
-	sm.finishRequest(*txId)
-	sm.receivedTxns[*txId] = txn
+	sm.finishRequest(txId)
+	sm.receivedTxns[txId] = &txn.Transaction
 	sm.queueLock.Unlock()
 }
 
@@ -352,8 +352,7 @@ func (sm *SyncManager) commitToDB(hashes []Uint256) error {
 		txnRequests := sm.blockTxns[hash]
 		txns := make([]tx.Transaction, len(txnRequests))
 		for i, request := range txnRequests {
-			txn := sm.receivedTxns[request.hash]
-			txns[i] = txn.Transaction
+			txns[i] = *sm.receivedTxns[request.hash]
 		}
 
 		// Commit block data to blockchain

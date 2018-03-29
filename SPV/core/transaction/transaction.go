@@ -28,8 +28,8 @@ const (
 
 	PUSH1 = 0x51
 
-	STANDARD = 0xAC
-	MULTISIG = 0xAE
+	STANDARD   = 0xAC
+	MULTISIG   = 0xAE
 	CROSSCHAIN = 0xAF
 )
 
@@ -90,8 +90,6 @@ type Transaction struct {
 	Outputs        []*Output
 	LockTime       uint32
 	Programs       []*program.Program
-
-	hash *Uint256
 }
 
 func (tx *Transaction) String() string {
@@ -317,20 +315,12 @@ func (tx *Transaction) GetPrograms() []*program.Program {
 	return tx.Programs
 }
 
-func (tx *Transaction) Bytes() []byte {
-	buf := new(bytes.Buffer)
-	tx.Serialize(buf)
-	return buf.Bytes()
-}
-
 func (tx *Transaction) Hash() *Uint256 {
-	if tx.hash == nil {
-		tx.hash = new(Uint256)
-		buf := new(bytes.Buffer)
-		tx.SerializeUnsigned(buf)
-		*tx.hash = Sha256D(buf.Bytes())
-	}
-	return tx.hash
+	var hash Uint256
+	buf := new(bytes.Buffer)
+	tx.SerializeUnsigned(buf)
+	hash = Sha256D(buf.Bytes())
+	return &hash
 }
 
 func (tx *Transaction) IsCoinBaseTx() bool {
@@ -468,7 +458,7 @@ func (tx *Transaction) AppendSignature(signerIndex int, signature []byte) error 
 		tx.SerializeUnsigned(buf)
 		for i := 0; i < len(param); i += SignatureScriptLength {
 			// Remove length byte
-			sign := param[i : i+SignatureScriptLength][1:]
+			sign := param[i: i+SignatureScriptLength][1:]
 			publicKey := publicKeys[signerIndex][1:]
 			pubKey, err := crypto.DecodePoint(publicKey)
 			if err != nil {
