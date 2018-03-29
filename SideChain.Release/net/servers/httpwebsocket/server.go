@@ -276,7 +276,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 		}
 	case "sendblocktransactions":
 		if block, ok := v.(*ledger.Block); ok {
-			result = GetBlockTransactions(block)
+			result = GetBlockTransactions(block, func(*transaction.Transaction) bool {return false})
 		}
 	case "sendnewtransaction":
 		if trx, ok := v.(*transaction.Transaction); ok {

@@ -33,6 +33,7 @@ func StartRPCServer() {
 	mainMux["sendrawtransaction"] = SendRawTransaction
 	mainMux["sendrawtransactioninfo"] = SendRawTransactionInfo
 	mainMux["submitblock"] = SubmitBlock
+	mainMux["getdestroyedtransactions"] = GetDestroyedTransactionsByHeight
 
 	// mining interfaces
 	mainMux["getinfo"] = GetInfo

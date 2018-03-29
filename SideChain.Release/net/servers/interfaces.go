@@ -595,9 +595,12 @@ func GetBlockHash(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, BytesToHexString(hash.ToArrayReverse()))
 }
 
-func GetBlockTransactions(block *ledger.Block) interface{} {
+func GetBlockTransactions(block *ledger.Block, filter func(*tx.Transaction) bool) interface{} {
 	trans := make([]string, len(block.Transactions))
 	for i := 0; i < len(block.Transactions); i++ {
+		if filter(block.Transactions[i]) {
+			continue
+		}
 		h := block.Transactions[i].Hash()
 		trans[i] = BytesToHexString(h.ToArrayReverse())
 	}
@@ -634,7 +637,38 @@ func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
-	return ResponsePack(Success, GetBlockTransactions(block))
+	return ResponsePack(Success, GetBlockTransactions(block, func(*tx.Transaction) bool {return false}))
+}
+
+func GetDestroyedTransactionsByHeight(param map[string]interface{}) map[string]interface{} {
+	if !checkParam(param, "height") {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	hash, err := ledger.DefaultLedger.Store.GetBlockHash(uint32(height))
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+
+	}
+	block, err := ledger.DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+
+	destroyHash, err := Uint168FromAddress(config.Parameters.DestroyAddr)
+	return ResponsePack(Success, GetBlockTransactions(block, func(tran *tx.Transaction) bool {
+		for _, output := range tran.Outputs {
+			if output.ProgramHash == destroyHash {
+				return false
+			}
+		}
+		return true
+	}))
 }
 
 func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
