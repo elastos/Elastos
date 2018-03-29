@@ -21,12 +21,15 @@ import (
 type TransactionType byte
 
 const (
-	CoinBase      TransactionType = 0x00
-	RegisterAsset TransactionType = 0x01
-	TransferAsset TransactionType = 0x02
-	Record        TransactionType = 0x03
-	Deploy        TransactionType = 0x04
-	SideMining    TransactionType = 0x05
+	CoinBase                TransactionType = 0x00
+	RegisterAsset           TransactionType = 0x01
+	TransferAsset           TransactionType = 0x02
+	Record                  TransactionType = 0x03
+	Deploy                  TransactionType = 0x04
+	SideMining              TransactionType = 0x05
+	IssueToken              TransactionType = 0x06
+	WithdrawToken           TransactionType = 0x07
+	TransferCrossChainAsset TransactionType = 0x08
 )
 
 func (self TransactionType) Name() string {
@@ -43,6 +46,12 @@ func (self TransactionType) Name() string {
 		return "Deploy"
 	case SideMining:
 		return "SideMining"
+	case IssueToken:
+		return "IssueToken"
+	case WithdrawToken:
+		return "WithdrawToken"
+	case TransferCrossChainAsset:
+		return "TransferCrossChainAsset"
 	default:
 		return "Unknown"
 	}
@@ -246,6 +255,10 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		tx.Payload = new(payload.DeployCode)
 	case SideMining:
 		tx.Payload = new(payload.SideMining)
+	case WithdrawToken:
+		tx.Payload = new(payload.WithdrawToken)
+	case TransferCrossChainAsset:
+		tx.Payload = new(payload.TransferCrossChainAsset)
 	default:
 		return errors.New("[Transaction], invalid transaction type.")
 	}
@@ -357,6 +370,8 @@ func (tx *Transaction) GetProgramHashes() ([]Uint168, error) {
 	case Record:
 	case Deploy:
 	case SideMining:
+	case WithdrawToken:
+	case TransferCrossChainAsset:
 	default:
 	}
 
