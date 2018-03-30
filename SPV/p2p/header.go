@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"SPVWallet/core"
-	"SPVWallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (

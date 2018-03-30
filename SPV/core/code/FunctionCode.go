@@ -3,8 +3,8 @@ package code
 import (
 	"io"
 
-	. "SPVWallet/core/contract"
-	"SPVWallet/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/core/contract"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 type FunctionCode struct {

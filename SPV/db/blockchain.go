@@ -5,9 +5,9 @@ import (
 	"math/big"
 	"sync"
 
-	. "SPVWallet/core"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/log"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 type ChainState int

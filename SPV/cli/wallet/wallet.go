@@ -2,8 +2,8 @@ package wallet
 
 import (
 	"fmt"
-	. "SPVWallet/wallet"
-	. "SPVWallet/cli/common"
+	. "github.com/elastos/Elastos.ELA.SPV/wallet"
+	. "github.com/elastos/Elastos.ELA.SPV/cli/common"
 
 	"github.com/urfave/cli"
 )

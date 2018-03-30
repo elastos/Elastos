@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"SPVWallet/log"
-	"SPVWallet/cli/account"
-	"SPVWallet/cli/transaction"
-	"SPVWallet/cli/wallet"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/cli/account"
+	"github.com/elastos/Elastos.ELA.SPV/cli/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/cli/wallet"
 
 	"github.com/urfave/cli"
 )

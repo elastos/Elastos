@@ -3,8 +3,8 @@ package wallet
 import (
 	"sync"
 
-	. "SPVWallet/core"
-	. "SPVWallet/db"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/db"
 )
 
 type Database interface {

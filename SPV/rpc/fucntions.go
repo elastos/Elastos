@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 
-	tx "SPVWallet/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
 func NotifyNewAddress(req Req) Resp {

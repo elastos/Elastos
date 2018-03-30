@@ -3,9 +3,9 @@ package wallet
 import (
 	"bytes"
 
-	"SPVWallet/crypto"
-	. "SPVWallet/core"
-	tx "SPVWallet/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
 type Account struct {

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	. "SPVWallet/core"
-	"SPVWallet/log"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/boltdb/bolt"
 )

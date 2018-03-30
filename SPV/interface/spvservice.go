@@ -1,9 +1,9 @@
 package _interface
 
 import (
-	"SPVWallet/core"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/db"
 )
 
 /*

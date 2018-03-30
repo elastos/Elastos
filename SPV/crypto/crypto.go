@@ -10,7 +10,7 @@ import (
 	"io"
 	"math/big"
 
-	"SPVWallet/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 const (

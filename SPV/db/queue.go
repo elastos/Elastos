@@ -4,7 +4,7 @@ import (
 	"sync"
 	"database/sql"
 
-	. "SPVWallet/core"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 const CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(

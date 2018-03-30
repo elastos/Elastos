@@ -1,7 +1,7 @@
 package db
 
 import (
-	"SPVWallet/core"
+	"github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 type Txn struct {

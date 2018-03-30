@@ -7,15 +7,15 @@ import (
 	"strconv"
 	"math/rand"
 
-	"SPVWallet/core/asset"
-	. "SPVWallet/core"
-	"SPVWallet/crypto"
-	pg "SPVWallet/core/contract/program"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/core/transaction/payload"
-	. "SPVWallet/db"
-	"SPVWallet/log"
-	"SPVWallet/rpc"
+	"github.com/elastos/Elastos.ELA.SPV/core/asset"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	pg "github.com/elastos/Elastos.ELA.SPV/core/contract/program"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/rpc"
 )
 
 var SystemAssetId = *getSystemAssetId()

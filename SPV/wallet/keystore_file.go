@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
-	. "SPVWallet/core"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 const (

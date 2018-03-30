@@ -4,41 +4,27 @@ import (
 	"sync"
 )
 
-var local *Peer
-
-func LocalPeer() *Peer {
-	return local
-}
-
 type Peers struct {
 	syncPeerLock *sync.Mutex
 	syncPeer     *Peer
 
 	peersLock *sync.RWMutex
+	local     *Peer
 	peers     map[uint64]*Peer
 }
 
-func newPeers(clientId uint64, localPort uint16) *Peers {
+func newPeers(initLocal func(peer *Peer)) *Peers {
 	peers := new(Peers)
-	peers.initLocalPeer(clientId, localPort)
+	peers.local = new(Peer)
+	initLocal(peers.local)
 	peers.syncPeerLock = new(sync.Mutex)
 	peers.peersLock = new(sync.RWMutex)
 	peers.peers = make(map[uint64]*Peer)
 	return peers
 }
 
-func (p *Peers) initLocalPeer(id uint64, localPort uint16) {
-	local = &Peer{
-		id:       id,
-		version:  ProtocolVersion,
-		port:     localPort,
-		services: 0x00,
-		relay:    0x00,
-	}
-}
-
 func (p *Peers) Local() *Peer {
-	return local
+	return p.local
 }
 
 func (p *Peers) AddPeer(peer *Peer) {

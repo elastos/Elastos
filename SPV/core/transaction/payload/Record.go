@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"SPVWallet/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 const RecordPayloadVersion byte = 0x00

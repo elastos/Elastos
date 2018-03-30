@@ -3,7 +3,7 @@ package p2p
 import (
 	"time"
 
-	"SPVWallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 var onMakeMessage func(cmd string) (Message, error)
@@ -35,7 +35,7 @@ func OnHandleMessage(callback func(peer *Peer, msg Message) error) {
 
 // Only local peer will use this method, so the parameters are fixed
 func NewVersion() *Version {
-	peer := LocalPeer()
+	peer := pm.Local()
 	version := new(Version)
 	version.Version = peer.Version()
 	version.Services = peer.Services()

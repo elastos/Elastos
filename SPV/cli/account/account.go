@@ -7,11 +7,11 @@ import (
 	"strings"
 	"io/ioutil"
 
-	"SPVWallet/log"
-	"SPVWallet/crypto"
-	. "SPVWallet/wallet"
-	. "SPVWallet/core"
-	. "SPVWallet/cli/common"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	. "github.com/elastos/Elastos.ELA.SPV/wallet"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/cli/common"
 
 	"github.com/urfave/cli"
 )

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	. "SPVWallet/core"
-	"SPVWallet/msg"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/msg"
 )
 
 func MakeMerkleParent(left *Uint256, right *Uint256) (*Uint256, error) {

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"strconv"
 
-	. "SPVWallet/core"
-	"SPVWallet/db"
-	walt "SPVWallet/wallet"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/db"
+	walt "github.com/elastos/Elastos.ELA.SPV/wallet"
 
 	"github.com/urfave/cli"
 	"github.com/AlexpanXX/gopass"

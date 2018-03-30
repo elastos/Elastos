@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"io"
 
-	. "SPVWallet/core"
-	. "SPVWallet/core/serialization"
-	. "SPVWallet/core/auxpow"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/core/auxpow"
 )
 
 type Header struct {

@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/log"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"os"
 )
 

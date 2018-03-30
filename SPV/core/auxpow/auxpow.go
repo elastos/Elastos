@@ -7,8 +7,8 @@ import (
 	"io"
 	"strings"
 
-	. "SPVWallet/core"
-	"SPVWallet/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 var (

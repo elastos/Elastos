@@ -1,8 +1,8 @@
 package spv
 
 import (
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/db"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/db"
 )
 
 func (spv *SPV) SetOnTxCommitListener(listener func(tx.Transaction)) {

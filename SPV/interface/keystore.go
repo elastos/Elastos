@@ -1,7 +1,7 @@
 package _interface
 
 import (
-	"SPVWallet/crypto"
+	"github.com/elastos/Elastos.ELA.SPV/crypto"
 )
 
 /*

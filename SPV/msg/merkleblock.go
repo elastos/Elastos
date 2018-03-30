@@ -2,9 +2,9 @@ package msg
 
 import (
 	"bytes"
-	. "SPVWallet/core"
-	"SPVWallet/core/serialization"
-	"SPVWallet/db"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/db"
 )
 
 type MerkleBlock struct {

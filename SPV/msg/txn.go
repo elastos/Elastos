@@ -2,7 +2,7 @@ package msg
 
 import (
 	"bytes"
-	tx "SPVWallet/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
 type Txn struct {

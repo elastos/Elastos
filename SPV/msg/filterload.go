@@ -2,8 +2,8 @@ package msg
 
 import (
 	"bytes"
-	"SPVWallet/bloom"
-	"SPVWallet/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 type FilterLoad struct {

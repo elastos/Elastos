@@ -3,7 +3,7 @@ package p2p
 import (
 	"bytes"
 	"encoding/binary"
-	"SPVWallet/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 type Addrs struct {

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 	"math"
-	"SPVWallet/core"
+	"github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 var ErrRange = errors.New("value out of range")

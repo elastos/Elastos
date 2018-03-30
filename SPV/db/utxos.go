@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"sync"
 
-	. "SPVWallet/core"
-	tx "SPVWallet/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
 const CreateUTXOsDB = `CREATE TABLE IF NOT EXISTS UTXOs(

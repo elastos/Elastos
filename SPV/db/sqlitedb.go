@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"SPVWallet/bloom"
-	"SPVWallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	_ "github.com/mattn/go-sqlite3"
 )

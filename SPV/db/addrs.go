@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"sync"
 
-	. "SPVWallet/core"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(

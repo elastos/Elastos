@@ -6,12 +6,12 @@ import (
 	"time"
 	"strings"
 
-	"SPVWallet/config"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/db"
-	"SPVWallet/log"
-	"SPVWallet/p2p"
-	"SPVWallet/msg"
+	"github.com/elastos/Elastos.ELA.SPV/config"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/p2p"
+	"github.com/elastos/Elastos.ELA.SPV/msg"
 )
 
 var spv *SPV
@@ -19,6 +19,7 @@ var spv *SPV
 func InitSPV(clientId uint64) (*SPV, error) {
 	var err error
 	spv = new(SPV)
+	spv.clientId = clientId
 	spv.chain, err = db.NewBlockchain()
 	if err != nil {
 		return nil, err
@@ -33,7 +34,7 @@ func InitSPV(clientId uint64) (*SPV, error) {
 	// Convert seed addresses to SPVServerPort according to the SPV protocol
 	seeds := toSPVAddr(config.Values().SeedList)
 	// Create peer manager of the P2P network
-	spv.pm = p2p.InitPeerManager(clientId, SPVClientPort, seeds)
+	spv.pm = p2p.InitPeerManager(spv.initLocalPeer, seeds)
 
 	// Register callbacks
 	p2p.OnMakeMessage(spv.makeMessage)
@@ -58,8 +59,17 @@ func toSPVAddr(seeds []string) []string {
 
 type SPV struct {
 	*SyncManager
-	chain *db.Blockchain
-	pm    *p2p.PeerManager
+	clientId uint64
+	chain    *db.Blockchain
+	pm       *p2p.PeerManager
+}
+
+func (spv *SPV) initLocalPeer(peer *p2p.Peer) {
+	peer.SetID(spv.clientId)
+	peer.SetVersion(p2p.ProtocolVersion)
+	peer.SetPort(SPVClientPort)
+	peer.SetServices(0x00)
+	peer.SetRelay(0x00)
 }
 
 func (spv *SPV) makeMessage(cmd string) (message p2p.Message, err error) {

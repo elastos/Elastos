@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 
-	. "SPVWallet/core"
-	"SPVWallet/core/contract/program"
-	"SPVWallet/core/serialization"
-	"SPVWallet/core/transaction/payload"
-	"SPVWallet/crypto"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/contract/program"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA.SPV/crypto"
 )
 
 //for different transaction types with different payload format

@@ -1,8 +1,8 @@
-# Elastos SPV wallet
+# Elastos SPV
 
 ## Summary
-Elastos SPV wallet is a SPV (Simplified Payment Verification) wallet implementation of the Elastos digital currency, using command line as the user interface.
-
+Elastos SPV is a SPV (Simplified Payment Verification) implementation of the Elastos digital currency, using command line as the user interface.
+This project also include a light wallet implementation and several interfaces for developers, the SDK interface is in progress.
 
 ## Build on Mac
 
@@ -61,12 +61,12 @@ glide version 0.13.1
 If you cannot see the version number, there must be something wrong when install.
 
 ### Clone source code to $GOPATH/src folder
-Make sure you are in the folder of `$GOPATH/src`
+Make sure you are in the folder of `$GOPATH/src/github.com/elastos/`
 ```shell
-$ git clone https://github.com/elastos/Elastos.SPVWallet.git
+$ git clone https://github.com/elastos/Elastos.ELA.SPV.git
 ```
 
-If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.SPVWallet/makefile
+If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.github.com/elastos/Elastos.ELA.SPV/makefile
 
 ### Glide install
 
@@ -75,8 +75,8 @@ Run `glide update && glide install` to download project dependencies.
 ### Install bolt and sqlite database
 This will make the `make` progress far more fester.
 ```shell
-go install SPVWallet/vendor/github.com/boltdb/bolt
-go install SPVWallet/vendor/github.com/mattn/go-sqlite3
+go install github.com/elastos/Elastos.ELA.SPV/vendor/github.com/boltdb/bolt
+go install github.com/elastos/Elastos.ELA.SPV/vendor/github.com/mattn/go-sqlite3
 ```
 
 ### Make

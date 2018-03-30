@@ -1,14 +1,14 @@
 package main
 
 import (
-	i "SPVWallet/interface"
+	i "github.com/elastos/Elastos.ELA.SPV/interface"
 	"crypto/rand"
 	"encoding/binary"
 	"bytes"
-	"SPVWallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"os"
-	"SPVWallet/db"
-	tx "SPVWallet/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/db"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
 var spv i.SPVService

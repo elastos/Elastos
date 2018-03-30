@@ -5,8 +5,8 @@ import (
 	"errors"
 	"io"
 
-	. "SPVWallet/core"
-	"SPVWallet/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 //Contract address is the hash of contract program .

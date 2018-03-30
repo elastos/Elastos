@@ -4,7 +4,7 @@ import (
 	"io"
 	"errors"
 
-	"SPVWallet/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 //AssetType

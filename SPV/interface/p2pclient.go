@@ -1,12 +1,15 @@
 package _interface
 
-import "SPVWallet/p2p"
+import "github.com/elastos/Elastos.ELA.SPV/p2p"
 
 /*
 P2P client is the interface to interactive with the peer to peer network implementation,
 use this to join the peer to peer network and make communication with other peers.
 */
 type P2PClient interface {
+	// In this method you will set the peer parameters like clientId, port, services, relay etc.
+	InitLocalPeer(func(*p2p.Peer))
+
 	// Start the P2P client
 	Start()
 
@@ -26,11 +29,9 @@ type P2PClient interface {
 	PeerManager() *p2p.PeerManager
 }
 
-func NewP2PClient(clientId uint64, magic uint32, port uint16, seeds []string) P2PClient {
+func NewP2PClient(magic uint32, seeds []string) P2PClient {
 	client := new(P2PClientImpl)
-	client.id = clientId
 	client.magic = magic
-	client.port = port
 	client.seeds = seeds
 	return client
 }

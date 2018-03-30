@@ -3,8 +3,8 @@ package payload
 import (
 	"io"
 
-	. "SPVWallet/core/code"
-	"SPVWallet/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/core/code"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 const DeployCodePayloadVersion byte = 0x00

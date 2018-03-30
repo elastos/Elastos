@@ -6,12 +6,12 @@ import (
 	"os"
 	"os/signal"
 
-	"SPVWallet/core"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/db"
-	"SPVWallet/msg"
-	"SPVWallet/spv"
-	"SPVWallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/msg"
+	"github.com/elastos/Elastos.ELA.SPV/spv"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 type SPVServiceImpl struct {

@@ -4,8 +4,8 @@ import (
 	"io"
 	"bytes"
 
-	"SPVWallet/core"
-	"SPVWallet/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 type OutPoint struct {

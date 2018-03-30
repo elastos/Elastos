@@ -1,8 +1,8 @@
 package db
 
 import (
-	. "SPVWallet/core"
-	"SPVWallet/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 	"io"
 )
 

@@ -7,8 +7,8 @@ import (
 	"errors"
 	"crypto/sha256"
 
-	"SPVWallet/crypto"
-	. "SPVWallet/core"
+	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 
 	"github.com/golang/crypto/ripemd160"
 )

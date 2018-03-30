@@ -7,12 +7,12 @@ import (
 	"sync"
 	"time"
 
-	. "SPVWallet/core"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/db"
-	. "SPVWallet/p2p"
-	. "SPVWallet/msg"
-	"SPVWallet/log"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/db"
+	. "github.com/elastos/Elastos.ELA.SPV/p2p"
+	. "github.com/elastos/Elastos.ELA.SPV/msg"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (

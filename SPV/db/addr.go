@@ -1,6 +1,6 @@
 package db
 
-import . "SPVWallet/core"
+import . "github.com/elastos/Elastos.ELA.SPV/core"
 
 const (
 	TypeMaster = 0

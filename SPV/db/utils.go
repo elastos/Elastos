@@ -3,8 +3,8 @@ package db
 import (
 	"bytes"
 
-	. "SPVWallet/core/transaction"
-	. "SPVWallet/core"
+	. "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 func ToStoredTxn(tx Transaction, height uint32) *Txn {

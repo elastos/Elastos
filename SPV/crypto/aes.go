@@ -6,7 +6,7 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 
-	. "SPVWallet/core"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 func ToAesKey(pwd []byte) []byte {

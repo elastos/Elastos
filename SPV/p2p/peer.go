@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"SPVWallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (
@@ -139,12 +139,24 @@ func (peer *Peer) ID() uint64 {
 	return peer.id
 }
 
+func (peer *Peer) SetID(id uint64) {
+	peer.id = id
+}
+
 func (peer *Peer) Version() uint32 {
 	return peer.version
 }
 
+func (peer *Peer) SetVersion(version uint32) {
+	peer.version = version
+}
+
 func (peer *Peer) Services() uint64 {
 	return peer.services
+}
+
+func (peer *Peer) SetServices(servcies uint64) {
+	peer.services = servcies
 }
 
 func (peer *Peer) IP16() [16]byte {
@@ -169,6 +181,10 @@ func (peer *Peer) Addr() *Addr {
 
 func (peer *Peer) Relay() uint8 {
 	return peer.relay
+}
+
+func (peer *Peer) SetRelay(relay uint8) {
+	peer.relay = relay
 }
 
 func (peer *Peer) Disconnect() {

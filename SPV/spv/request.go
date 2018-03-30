@@ -3,8 +3,8 @@ package spv
 import (
 	"time"
 
-	. "SPVWallet/core"
-	. "SPVWallet/msg"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/msg"
 )
 
 type request struct {

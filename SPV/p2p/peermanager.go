@@ -1,11 +1,11 @@
 package p2p
 
 import (
+	"errors"
 	"fmt"
 	"net"
 
-	"SPVWallet/log"
-	"errors"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (
@@ -23,10 +23,10 @@ type PeerManager struct {
 	connManager *ConnManager
 }
 
-func InitPeerManager(clientId uint64, localPort uint16, seeds []string) *PeerManager {
+func InitPeerManager(initLocal func(peer *Peer), seeds []string) *PeerManager {
 	// Initiate PeerManager
 	pm = new(PeerManager)
-	pm.Peers = newPeers(clientId, localPort)
+	pm.Peers = newPeers(initLocal)
 	pm.addrManager = newAddrManager(seeds)
 	pm.connManager = newConnManager(pm.OnDiscardAddr)
 	return pm
@@ -133,7 +133,7 @@ func (spv *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	log.Info("SPV OnVersion")
 	// Check if handshake with itself
 	if v.Nonce == spv.Local().ID() {
-		log.Error(">>>> SPV disconnect peer, peer handshake with itself")
+		log.Error("SPV disconnect peer, peer handshake with itself")
 		spv.DisconnectPeer(peer)
 		spv.OnDiscardAddr(peer.Addr().String())
 		return errors.New("Peer handshake with itself")

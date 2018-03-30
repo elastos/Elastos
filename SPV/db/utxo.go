@@ -3,8 +3,8 @@ package db
 import (
 	"sort"
 
-	"SPVWallet/core"
-	tx "SPVWallet/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/core"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"fmt"
 )
 

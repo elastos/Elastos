@@ -5,10 +5,10 @@ import (
 	"os/signal"
 	"encoding/binary"
 
-	"SPVWallet/log"
-	"SPVWallet/spv"
-	"SPVWallet/wallet"
-	"SPVWallet/rpc"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/spv"
+	"github.com/elastos/Elastos.ELA.SPV/wallet"
+	"github.com/elastos/Elastos.ELA.SPV/rpc"
 )
 
 /*

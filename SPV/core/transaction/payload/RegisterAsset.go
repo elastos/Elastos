@@ -4,8 +4,8 @@ import (
 	"io"
 	"errors"
 
-	"SPVWallet/core"
-	"SPVWallet/core/asset"
+	"github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/core/asset"
 )
 
 type RegisterAsset struct {

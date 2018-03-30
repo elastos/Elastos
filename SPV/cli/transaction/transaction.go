@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"io/ioutil"
 
-	. "SPVWallet/core"
-	. "SPVWallet/cli/common"
-	tx "SPVWallet/core/transaction"
-	"SPVWallet/log"
-	walt "SPVWallet/wallet"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/cli/common"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	walt "github.com/elastos/Elastos.ELA.SPV/wallet"
 
 	"github.com/urfave/cli"
 )

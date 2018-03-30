@@ -1,7 +1,7 @@
 package _interface
 
 import (
-	"SPVWallet/wallet"
+	"github.com/elastos/Elastos.ELA.SPV/wallet"
 )
 
 type KeystoreImpl struct {

@@ -2,7 +2,7 @@ package msg
 
 import (
 	"bytes"
-	"SPVWallet/core"
+	"github.com/elastos/Elastos.ELA.SPV/core"
 )
 
 type NotFound struct {

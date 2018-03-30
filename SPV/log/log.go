@@ -6,7 +6,7 @@ import (
 	"log"
 	"fmt"
 	"time"
-	"SPVWallet/config"
+	"github.com/elastos/Elastos.ELA.SPV/config"
 )
 
 const (
