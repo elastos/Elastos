@@ -3,8 +3,8 @@ package code
 import (
 	"io"
 
-	. "Elastos.ELA.SideChain/core/contract"
-	"Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/contract"
 )
 
 type FunctionCode struct {

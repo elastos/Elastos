@@ -1,18 +1,19 @@
 package node
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/core/ledger"
-	"Elastos.ELA.SideChain/core/transaction"
-	tx "Elastos.ELA.SideChain/core/transaction"
-	. "Elastos.ELA.SideChain/errors"
-	"Elastos.ELA.SideChain/events"
 	"bytes"
 	"errors"
 	"fmt"
 	"sync"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 )
 
 var (

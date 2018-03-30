@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"SPVWallet/core/serialization"
 	"errors"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
 )
 
 type TransferCrossChainAsset struct {

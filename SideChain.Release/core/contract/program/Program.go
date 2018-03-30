@@ -1,11 +1,11 @@
 package program
 
 import (
-	"io"
 	"errors"
+	"io"
 
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 type Program struct {

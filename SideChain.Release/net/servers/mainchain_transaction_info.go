@@ -1,14 +1,15 @@
 package servers
 
 import (
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/contract/program"
-	. "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/core/transaction/payload"
 	"bytes"
 	"errors"
 	"io"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
 )
 
 func (i *CoinbaseInfo) Data(version byte) string {

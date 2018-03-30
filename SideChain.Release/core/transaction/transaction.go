@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"io"
 	"sort"
 
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/contract/program"
-	. "Elastos.ELA.SideChain/core/signature"
-	"Elastos.ELA.SideChain/core/transaction/payload"
-	"fmt"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/signature"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
 )
 
 //for different transaction types with different payload format

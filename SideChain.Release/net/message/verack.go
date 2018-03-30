@@ -1,11 +1,12 @@
 package message
 
 import (
-	"Elastos.ELA.SideChain/common/log"
-	. "Elastos.ELA.SideChain/net/protocol"
 	"encoding/hex"
 	"errors"
 	"strconv"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/protocol"
 )
 
 type verACK struct {

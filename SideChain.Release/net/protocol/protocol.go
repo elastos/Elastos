@@ -1,15 +1,16 @@
 package protocol
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/ledger"
-	"Elastos.ELA.SideChain/core/transaction"
-	. "Elastos.ELA.SideChain/errors"
-	"Elastos.ELA.SideChain/events"
 	"bytes"
 	"encoding/binary"
 	"net"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 )
 
 type NodeAddr struct {
@@ -33,15 +34,15 @@ const (
 )
 
 const (
-	MAXBUFLEN         = 1024 * 16 // Fixme The maximum buffer to receive message
-	PROTOCOLVERSION   = 0
-	KEEPALIVETIMEOUT  = 3
-	DIALTIMEOUT       = 6
-	CONNMONITOR       = 6
-	MAXSYNCHDRREQ     = 2 //Max Concurrent Sync Header Request
-	MaxOutBoundCount  = 8
-	DefaultMaxPeers   = 125
-	MAXIDCACHED       = 5000
+	MAXBUFLEN        = 1024 * 16 // Fixme The maximum buffer to receive message
+	PROTOCOLVERSION  = 0
+	KEEPALIVETIMEOUT = 3
+	DIALTIMEOUT      = 6
+	CONNMONITOR      = 6
+	MAXSYNCHDRREQ    = 2 //Max Concurrent Sync Header Request
+	MaxOutBoundCount = 8
+	DefaultMaxPeers  = 125
+	MAXIDCACHED      = 5000
 )
 
 // The node state

@@ -1,8 +1,9 @@
 package node
 
 import (
-	"Elastos.ELA.SideChain/events"
 	"fmt"
+
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 )
 
 type eventQueue struct {

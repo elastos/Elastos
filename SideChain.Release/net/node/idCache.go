@@ -1,9 +1,10 @@
 package node
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/net/protocol"
 	"sync"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/net/protocol"
 )
 
 type idCache struct {

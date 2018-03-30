@@ -1,20 +1,19 @@
 package servers
 
 import (
-	"Elastos.ELA.SideChain/core/auxpow"
 	"bytes"
 	"fmt"
+	"strconv"
 	"time"
 
-	"strconv"
-
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/core/ledger"
-	tx "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/core/transaction/payload"
-	. "Elastos.ELA.SideChain/errors"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/core/auxpow"
+	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 )
 
 const (

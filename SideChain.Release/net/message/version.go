@@ -1,26 +1,27 @@
 package message
 
 import (
-	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/core/ledger"
-	. "Elastos.ELA.SideChain/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/protocol"
 )
 
 type version struct {
 	messageHeader
 	Body struct {
-		Version      uint32
-		Services     uint64
-		TimeStamp    uint32
-		Port         uint16
-		Nonce        uint64
+		Version   uint32
+		Services  uint64
+		TimeStamp uint32
+		Port      uint16
+		Nonce     uint64
 		// TODO remove tempory to get serilization function passed
 		StartHeight uint64
 		// FIXME check with the specify relay type length

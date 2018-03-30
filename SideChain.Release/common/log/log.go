@@ -1,7 +1,6 @@
 package log
 
 import (
-	"Elastos.ELA.SideChain/common/config"
 	"bytes"
 	"errors"
 	"fmt"
@@ -14,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
 )
 
 const (

@@ -1,9 +1,10 @@
 package transaction
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 type UTXOUnspent struct {

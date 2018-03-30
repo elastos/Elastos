@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"Elastos.ELA.SideChain/common/serialization"
-	. "Elastos.ELA.SideChain/core/code"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/code"
 )
 
 const DeployCodePayloadVersion byte = 0x00

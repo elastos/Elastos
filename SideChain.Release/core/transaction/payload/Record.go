@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"Elastos.ELA.SideChain/common/serialization"
 	"errors"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 const RecordPayloadVersion byte = 0x00

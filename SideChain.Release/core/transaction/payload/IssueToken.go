@@ -1,10 +1,11 @@
 package payload
 
 import (
-	spvdb "SPVWallet/db"
 	"bytes"
 	"errors"
 	"io"
+
+	spvdb "github.com/elastos/Elastos.ELA.SPV/db"
 )
 
 const IssueTokenPayloadVersion byte = 0x00

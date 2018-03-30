@@ -8,16 +8,16 @@ import (
 	"math/rand"
 	"time"
 
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/asset"
-	"Elastos.ELA.SideChain/core/contract/program"
-	"Elastos.ELA.SideChain/core/signature"
-	tx "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/core/transaction/payload"
-	"Elastos.ELA.SideChain/crypto"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/core/asset"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
+	"github.com/elastos/Elastos.ELA.SideChain/core/signature"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA.SideChain/crypto"
 )
 
 const (

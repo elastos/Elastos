@@ -1,11 +1,12 @@
 package pow
 
 import (
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/auxpow"
 	"bytes"
 	"encoding/binary"
 	"time"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/core/auxpow"
 )
 
 func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {

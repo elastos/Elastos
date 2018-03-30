@@ -1,10 +1,11 @@
 package transaction
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
 	"fmt"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 type UTXOTxInput struct {

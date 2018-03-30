@@ -1,9 +1,9 @@
 package transaction
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/contract/program"
-	"Elastos.ELA.SideChain/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
 )
 
 func NewCoinBaseTransaction(coinBasePayload *payload.CoinBase, currentHeight uint32) (*Transaction, error) {
