@@ -1,13 +1,13 @@
 package ledger
 
 import (
-	"Elastos.ELA.SideChain/common/config"
 	"errors"
 	"math/big"
 	"time"
 
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/log"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
 )
 
 var (
@@ -159,7 +159,6 @@ func CompactToBig(compact uint32) *big.Int {
 
 	return bn
 }
-
 
 func CalcCurrentDifficulty(currentBits uint32) string {
 	var genesisBlockBits uint32 = config.Parameters.ChainParam.PowLimitBits

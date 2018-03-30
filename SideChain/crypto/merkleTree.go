@@ -1,10 +1,11 @@
 package crypto
 
 import (
-	. "Elastos.ELA.SideChain/common"
 	"bytes"
 	"crypto/sha256"
 	"errors"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
 )
 
 type MerkleTree struct {

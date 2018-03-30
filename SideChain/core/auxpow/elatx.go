@@ -6,9 +6,9 @@ import (
 	"errors"
 	"io"
 
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/contract/program"
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
 )
 
 //for different transaction types with different payload format

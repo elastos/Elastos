@@ -1,7 +1,7 @@
 package LevelDBStore
 
 import (
-	. "Elastos.ELA.SideChain/core/store"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/store"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/filter"

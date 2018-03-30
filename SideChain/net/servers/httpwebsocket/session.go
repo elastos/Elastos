@@ -2,9 +2,10 @@ package httpwebsocket
 
 import (
 	"errors"
-	"github.com/gorilla/websocket"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Session struct {

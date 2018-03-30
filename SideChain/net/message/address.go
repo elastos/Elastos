@@ -1,15 +1,16 @@
 package message
 
 import (
-	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	. "Elastos.ELA.SideChain/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"net"
 	"strconv"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/protocol"
 )
 
 type addr struct {

@@ -1,15 +1,16 @@
 package message
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/core/ledger"
-	. "Elastos.ELA.SideChain/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/protocol"
 )
 
 type block struct {

@@ -3,8 +3,8 @@ package pow
 import (
 	"time"
 
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/auxpow"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/core/auxpow"
 )
 
 func getSideMiningTx(msgBlockHash Uint256) *auxpow.ElaTx {

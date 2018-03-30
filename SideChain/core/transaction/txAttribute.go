@@ -1,20 +1,21 @@
 package transaction
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
 	"errors"
 	"fmt"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 type TransactionAttributeUsage byte
 
 const (
-	Nonce           TransactionAttributeUsage = 0x00
-	Script          TransactionAttributeUsage = 0x20
-	DescriptionUrl  TransactionAttributeUsage = 0x81
-	Description     TransactionAttributeUsage = 0x90
+	Nonce          TransactionAttributeUsage = 0x00
+	Script         TransactionAttributeUsage = 0x20
+	DescriptionUrl TransactionAttributeUsage = 0x81
+	Description    TransactionAttributeUsage = 0x90
 )
 
 func (self TransactionAttributeUsage) Name() string {

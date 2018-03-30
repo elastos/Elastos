@@ -1,9 +1,9 @@
 package ledger
 
 import (
-	. "Elastos.ELA.SideChain/common"
-	. "Elastos.ELA.SideChain/core/asset"
-	tx "Elastos.ELA.SideChain/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/asset"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
 )
 
 // ILedgerStore provides func with store package.

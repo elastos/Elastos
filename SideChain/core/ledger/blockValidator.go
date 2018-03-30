@@ -1,11 +1,11 @@
 package ledger
 
 import (
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/config"
-	tx "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/crypto"
-	. "Elastos.ELA.SideChain/errors"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/crypto"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 
 	"errors"
 	"fmt"

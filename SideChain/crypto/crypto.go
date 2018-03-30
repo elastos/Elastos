@@ -1,14 +1,15 @@
 package crypto
 
 import (
-	"Elastos.ELA.SideChain/common/serialization"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"io"
 	"math/big"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/sha256"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 const (

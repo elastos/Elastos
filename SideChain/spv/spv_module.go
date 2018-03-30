@@ -1,14 +1,15 @@
 package spv
 
 import (
-	tx "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/core/transaction/payload"
-	spvtx "SPVWallet/core/transaction"
-	spvdb "SPVWallet/db"
-	"SPVWallet/interface"
 	"bytes"
 	"errors"
 	"math/rand"
+
+	spvtx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	spvdb "github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/interface"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
 )
 
 var spvService *_interface.SPVServiceImpl

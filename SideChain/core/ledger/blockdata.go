@@ -5,11 +5,11 @@ import (
 	"errors"
 	"io"
 
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/auxpow"
-	"Elastos.ELA.SideChain/core/contract/program"
-	"Elastos.ELA.SideChain/core/signature"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/core/auxpow"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
+	"github.com/elastos/Elastos.ELA.SideChain/core/signature"
 )
 
 type Blockdata struct {

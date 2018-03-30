@@ -1,9 +1,10 @@
 package asset
 
 import (
-	"Elastos.ELA.SideChain/common/serialization"
 	"errors"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 //AssetType

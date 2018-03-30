@@ -1,11 +1,12 @@
 package validation
 
 import (
-	. "Elastos.ELA.SideChain/core/signature"
-	. "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/crypto"
-	"Elastos.ELA.SideChain/spv"
 	"errors"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/core/signature"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/crypto"
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 )
 
 func VerifySignature(txn *Transaction) (bool, error) {

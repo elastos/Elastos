@@ -1,27 +1,27 @@
 package httpwebsocket
 
 import (
-	"net"
-	"sync"
-	"time"
 	"bytes"
-	"strconv"
 	"context"
-	"net/http"
 	"crypto/tls"
 	"encoding/json"
+	"net"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
 
-	"Elastos.ELA.SideChain/events"
-	. "Elastos.ELA.SideChain/common"
-	. "Elastos.ELA.SideChain/errors"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/core/ledger"
-	. "Elastos.ELA.SideChain/net/servers"
-	. "Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	. "github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/servers"
 
-	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/pborman/uuid"
 )
 
 var instance *WebSocketServer
@@ -276,7 +276,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 		}
 	case "sendblocktransactions":
 		if block, ok := v.(*ledger.Block); ok {
-			result = GetBlockTransactions(block, func(*transaction.Transaction) bool {return false})
+			result = GetBlockTransactions(block, func(*transaction.Transaction) bool { return false })
 		}
 	case "sendnewtransaction":
 		if trx, ok := v.(*transaction.Transaction); ok {

@@ -1,14 +1,13 @@
 package signature
 
 import (
-	"io"
 	"bytes"
-	"errors"
 	"crypto/sha256"
+	"errors"
+	"io"
 
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/contract/program"
-
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/core/contract/program"
 	"github.com/golang/crypto/ripemd160"
 )
 

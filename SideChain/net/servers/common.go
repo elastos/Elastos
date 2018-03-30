@@ -1,17 +1,18 @@
 package servers
 
 import (
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/log"
-	"Elastos.ELA.SideChain/consensus/pow"
-	"Elastos.ELA.SideChain/core/asset"
-	. "Elastos.ELA.SideChain/core/transaction"
-	tx "Elastos.ELA.SideChain/core/transaction"
-	"Elastos.ELA.SideChain/core/transaction/payload"
-	. "Elastos.ELA.SideChain/errors"
-	. "Elastos.ELA.SideChain/net/protocol"
 	"bytes"
 	"io"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	"github.com/elastos/Elastos.ELA.SideChain/consensus/pow"
+	"github.com/elastos/Elastos.ELA.SideChain/core/asset"
+	. "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/protocol"
 )
 
 const TlsPort = 443

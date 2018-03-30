@@ -1,9 +1,6 @@
 package httprestful
 
 import (
-	. "Elastos.ELA.SideChain/common/config"
-	"Elastos.ELA.SideChain/common/log"
-	. "Elastos.ELA.SideChain/net/servers"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -13,7 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	. "Elastos.ELA.SideChain/errors"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/common/config"
+	"github.com/elastos/Elastos.ELA.SideChain/common/log"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	. "github.com/elastos/Elastos.ELA.SideChain/net/servers"
 )
 
 const (
@@ -21,20 +22,19 @@ const (
 	Api_GetblockTxsByHeight = "/api/v1/block/transactions/height/:height"
 	Api_Getblockbyheight    = "/api/v1/block/details/height/:height"
 	Api_Getblockbyhash      = "/api/v1/block/details/hash/:hash"
-	Api_Getblockheight     = "/api/v1/block/height"
-	Api_Getblockhash       = "/api/v1/block/hash/:height"
-	Api_GetTotalIssued     = "/api/v1/totalissued/:assetid"
-	Api_Gettransaction     = "/api/v1/transaction/:hash"
-	Api_Getasset           = "/api/v1/asset/:hash"
-	Api_GetBalanceByAddr   = "/api/v1/asset/balances/:addr"
-	Api_GetBalancebyAsset  = "/api/v1/asset/balance/:addr/:assetid"
-	Api_GetUTXObyAsset     = "/api/v1/asset/utxo/:addr/:assetid"
-	Api_GetUTXObyAddr      = "/api/v1/asset/utxos/:addr"
-	Api_SendRawTransaction = "/api/v1/transaction"
-	Api_GetTransactionPool = "/api/v1/transactionpool"
-	Api_Restart            = "/api/v1/restart"
+	Api_Getblockheight      = "/api/v1/block/height"
+	Api_Getblockhash        = "/api/v1/block/hash/:height"
+	Api_GetTotalIssued      = "/api/v1/totalissued/:assetid"
+	Api_Gettransaction      = "/api/v1/transaction/:hash"
+	Api_Getasset            = "/api/v1/asset/:hash"
+	Api_GetBalanceByAddr    = "/api/v1/asset/balances/:addr"
+	Api_GetBalancebyAsset   = "/api/v1/asset/balance/:addr/:assetid"
+	Api_GetUTXObyAsset      = "/api/v1/asset/utxo/:addr/:assetid"
+	Api_GetUTXObyAddr       = "/api/v1/asset/utxos/:addr"
+	Api_SendRawTransaction  = "/api/v1/transaction"
+	Api_GetTransactionPool  = "/api/v1/transactionpool"
+	Api_Restart             = "/api/v1/restart"
 )
-
 
 type Action struct {
 	sync.RWMutex

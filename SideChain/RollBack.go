@@ -1,14 +1,15 @@
 package main
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
-	"Elastos.ELA.SideChain/core/store/ChainStore"
-	"Elastos.ELA.SideChain/core/store/LevelDBStore"
 	"bytes"
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
+	"github.com/elastos/Elastos.ELA.SideChain/core/store/ChainStore"
+	"github.com/elastos/Elastos.ELA.SideChain/core/store/LevelDBStore"
 )
 
 func main() {

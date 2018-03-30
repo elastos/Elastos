@@ -1,11 +1,12 @@
 package auxpow
 
 import (
-	. "Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/common/serialization"
 	"bytes"
 	"crypto/sha256"
 	"io"
+
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/common/serialization"
 )
 
 type BtcBlockHeader struct {

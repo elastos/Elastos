@@ -1,10 +1,11 @@
 package payload
 
 import (
-	"Elastos.ELA.SideChain/common"
-	"Elastos.ELA.SideChain/core/asset"
-	"io"
 	"errors"
+	"io"
+
+	"github.com/elastos/Elastos.ELA.SideChain/common"
+	"github.com/elastos/Elastos.ELA.SideChain/core/asset"
 )
 
 const RegisterPayloadVersion byte = 0x00
