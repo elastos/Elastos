@@ -165,7 +165,7 @@ func CheckProofOfWork(bd *Blockdata, powLimit *big.Int) error {
 	// The block hash must be less than the claimed target.
 	var hash Uint256
 
-	hash = bd.SideAuxPow.AuxPow.ParBlockHeader.Hash()
+	hash = bd.SideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Hash()
 
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {

@@ -27,20 +27,40 @@ const (
 const SideMiningPayloadVersion byte = 0x00
 
 type SideMiningPayload struct {
-	SideBlockHash common.Uint256
+	SideBlockHash   common.Uint256
+	SideGenesisHash common.Uint256
 }
 
 func (a *SideMiningPayload) Data(version byte) []byte {
-	return a.SideBlockHash[:]
+	data := make([]uint8, 0)
+	data = append(data, a.SideBlockHash[:]...)
+	data = append(data, a.SideGenesisHash[:]...)
+
+	return data[:]
 }
 
 func (a *SideMiningPayload) Serialize(w io.Writer, version byte) error {
-	return serialization.WriteVarBytes(w, a.SideBlockHash[:])
+	_, err := a.SideBlockHash.Serialize(w)
+	if err != nil {
+		return err
+	}
+	_, err = a.SideGenesisHash.Serialize(w)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a *SideMiningPayload) Deserialize(r io.Reader, version byte) error {
 	err := a.SideBlockHash.Deserialize(r)
-	return err
+	if err != nil {
+		return err
+	}
+	err = a.SideGenesisHash.Deserialize(r)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type TransactionAttributeUsage byte
@@ -229,11 +249,10 @@ type ElaTx struct {
 	Programs       []*program.Program
 }
 
-func NewSideMiningTx(sideMiningPayload SideMiningPayload, currentHeight uint32) *ElaTx {
+func NewSideMiningTx(txPayload SideMiningPayload, currentHeight uint32) *ElaTx {
 	return &ElaTx{
-		TxType:         SideMining,
-		PayloadVersion: SideMiningPayloadVersion,
-		Payload:        sideMiningPayload,
+		TxType:  SideMining,
+		Payload: txPayload,
 		UTXOInputs: []*UTXOTxInput{
 			{
 				ReferTxID:          common.Uint256{},

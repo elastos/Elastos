@@ -12,7 +12,6 @@ type SideAuxPow struct {
 	SideAuxMerkleIndex  int
 	SideAuxBlockTx      ElaTx
 	MainBlockHeader     ElaBlockHeader
-	AuxPow              AuxPow
 }
 
 func NewSideAuxPow(sideAuxMerkleBranch []Uint256,
@@ -107,7 +106,8 @@ func (sap *SideAuxPow) SideAuxPowCheck(hashAuxBlock Uint256) bool {
 	}
 
 	payloadData := sap.SideAuxBlockTx.Payload.Data(SideMiningPayloadVersion)
-	payloadHash, err := Uint256ParseFromBytes(payloadData)
+	payloadHashData := payloadData[0:32]
+	payloadHash, err := Uint256ParseFromBytes(payloadHashData)
 	if err != nil {
 		return false
 	}
