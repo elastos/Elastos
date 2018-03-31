@@ -77,6 +77,21 @@ public class Carrier: NSObject {
         return (Base58.decode(id)?.count == 32)
     }
 
+    /// Extract ID from the carrier node address.
+    ///
+    /// - Parameter address: The carrier node address.
+    ///
+    /// - Returns: Valid Id if carrier node address is valid, otherwise nil
+    public static func getIdFromAddress(_ address: String) -> String? {
+        let addr = Base58.decode(address);
+
+        if addr?.count == 38 {
+            return Base58.encode(Array(addr!.prefix(32)))
+        } else {
+            return nil
+        }
+    }
+
     /// Set log level for carrier node.
     /// Default level to control log output is `CarrierLogLevel.Info`
     ///
