@@ -39,6 +39,7 @@ public class Carrier: NSObject {
     public static let MAX_APP_MESSAGE_LEN: Int = 2048
 
     private static let TAG: String = "Carrier"
+    private static let MAX_ADDRESS_LEN: Int = 52;
     private static let MAX_ID_LEN: Int = 45
 
     private static var carrierInst: Carrier?
@@ -193,6 +194,22 @@ public class Carrier: NSObject {
         }
 
         objc_sync_exit(self)
+    }
+
+    /// Get node address associated with carrier node instance.
+    ///
+    /// Returns: The node address
+    public func getAddress() -> String {
+        let len = Carrier.MAX_ADDRESS_LEN + 1
+        var data = Data(count: len);
+
+        let address = data.withUnsafeMutableBytes() {
+            (ptr: UnsafeMutablePointer<Int8>) -> String in
+            return String(cString: ela_get_address(ccarrier, ptr, len))
+        }
+
+        Log.d(Carrier.TAG, "Current carrier address: \(address)")
+        return address;
     }
 
     /// Get node identifier associated with the carrier node instance.
