@@ -32,4 +32,11 @@ public class CheckIDTest {
 		String address = "aaaaaaakjd5MkPcuwCjGEUCp5jV6HArxSVmBnpXnk7d9h7cQtboMN";
 		assertEquals(Carrier.isValidAddress(address), false);
 	}
+	@Test
+	public void testGetIdFromAddress() {
+		String userId = "hYQJcuHHuEXUcUdwio8bN6LktifD7niwaKggvXFga1a";
+		String address = "2Y7Evx1pxdBaebzecH1nSiwv4M6UgaNJ8T1BJTLmiYX5S8GRjptF";
+		assertEquals(Carrier.getIdFromAddress(address), userId);
+	}
+
 }

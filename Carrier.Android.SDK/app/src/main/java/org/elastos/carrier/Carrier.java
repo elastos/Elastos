@@ -27,6 +27,7 @@ import java.nio.ByteOrder;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.elastos.carrier.exceptions.ElastosException;
 
@@ -310,6 +311,28 @@ public class Carrier {
 			return Base58.decode(address).length == 38;
 		} catch (Exception e) {
 			return false;
+		}
+	}
+
+	/**
+	 * Get carrier ID from carrier node address.
+	 *
+	 * @param
+	 * 		address			The carrier node address.
+	 *
+	 * @return
+	 * 		User id if address is valid, otherwise null
+	 */
+	public static String getIdFromAddress(String address) {
+		try {
+			byte[] addr = Base58.decode(address);
+
+			if (addr.length != 38)
+				return null;
+
+			return Base58.encode(Arrays.copyOf(addr, 32));
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
