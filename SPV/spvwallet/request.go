@@ -21,7 +21,7 @@ func (r *request) start() {
 }
 
 func (r *request) send() {
-	spvWallet.pm.GetSyncPeer().Send(NewDataReq(r.reqType, r.hash))
+	spvWallet.PeerManager().GetSyncPeer().Send(NewDataReq(r.reqType, r.hash))
 	timer := time.NewTimer(time.Second * RequestTimeout)
 	select {
 	case <-timer.C:

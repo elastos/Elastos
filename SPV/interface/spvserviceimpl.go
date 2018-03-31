@@ -99,7 +99,7 @@ func (service *SPVServiceImpl) Start() error {
 	}
 
 	var err error
-	service.SPVWallet, err = spvwallet.InitSPV(service.clientId)
+	service.SPVWallet, err = spvwallet.Init(service.clientId)
 	if err != nil {
 		return err
 	}

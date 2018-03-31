@@ -14,7 +14,9 @@ func (client *P2PClientImpl) InitLocalPeer(initLocal func(peer *p2p.Peer)) {
 	// Set Magic number of the P2P network
 	p2p.Magic = client.magic
 	// Create peer manager of the P2P network
-	client.pm = p2p.InitPeerManager(initLocal, client.seeds)
+	local := new(p2p.Peer)
+	initLocal(local)
+	client.pm = p2p.InitPeerManager(local, client.seeds)
 }
 
 func (client *P2PClientImpl) Start() {

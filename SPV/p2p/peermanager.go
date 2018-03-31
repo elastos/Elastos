@@ -23,10 +23,10 @@ type PeerManager struct {
 	connManager *ConnManager
 }
 
-func InitPeerManager(initLocal func(peer *Peer), seeds []string) *PeerManager {
+func InitPeerManager(localPeer *Peer, seeds []string) *PeerManager {
 	// Initiate PeerManager
 	pm = new(PeerManager)
-	pm.Peers = newPeers(initLocal)
+	pm.Peers = newPeers(localPeer)
 	pm.addrManager = newAddrManager(seeds)
 	pm.connManager = newConnManager(pm.OnDiscardAddr)
 	return pm

@@ -86,12 +86,12 @@ func (sm *SyncManager) startSync() {
 		sm.requestBlocks()
 	} else {
 		spvWallet.chain.SetChainState(WAITING)
-		spvWallet.pm.SetSyncPeer(nil)
+		spvWallet.PeerManager().SetSyncPeer(nil)
 	}
 }
 
 func (sm *SyncManager) needSync() bool {
-	bestPeer := spvWallet.pm.GetBestPeer()
+	bestPeer := spvWallet.PeerManager().GetBestPeer()
 	if bestPeer == nil { // no peers connected, return true
 		return true
 	}
@@ -110,7 +110,7 @@ func (sm *SyncManager) requestBlocks() {
 		return
 	}
 	// Get sync peer
-	syncPeer := spvWallet.pm.GetSyncPeer()
+	syncPeer := spvWallet.PeerManager().GetSyncPeer()
 	if syncPeer == nil {
 		// If sync peer is nil at this point, that meas no peer connected
 		log.Error("SyncManager no sync peer connected")
@@ -130,7 +130,7 @@ func (sm *SyncManager) requestBlocks() {
 func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 	log.Trace(">>>> Handle inv msg data count:", inv.Count, ", length:", len(inv.Data))
 
-	if sm.blockLocator == nil || spvWallet.pm.GetSyncPeer() == nil || spvWallet.pm.GetSyncPeer().ID() != peer.ID() {
+	if sm.blockLocator == nil || spvWallet.PeerManager().GetSyncPeer() == nil || spvWallet.PeerManager().GetSyncPeer().ID() != peer.ID() {
 
 		sm.ChangeSyncPeerAndRestart()
 		return errors.New("Receive message from non sync peer, disconnect")
@@ -246,8 +246,8 @@ func (sm *SyncManager) onRequestTimeout() {
 
 func (sm *SyncManager) ChangeSyncPeerAndRestart() {
 	// Disconnect sync peer
-	syncPeer := spvWallet.pm.GetSyncPeer()
-	spvWallet.pm.DisconnectPeer(syncPeer)
+	syncPeer := spvWallet.PeerManager().GetSyncPeer()
+	spvWallet.PeerManager().DisconnectPeer(syncPeer)
 
 	// Restart
 	sm.startSync()
@@ -372,7 +372,7 @@ func (sm *SyncManager) handleFPositive(fPositives int) {
 	sm.fPositives += fPositives
 	if sm.fPositives > MaxFalsePositives {
 		// Broadcast filterload message to connected peers
-		spvWallet.pm.Broadcast(spvWallet.chain.GetBloomFilter().GetFilterLoadMsg())
+		spvWallet.PeerManager().Broadcast(spvWallet.chain.GetBloomFilter().GetFilterLoadMsg())
 		sm.fPositives = 0
 	}
 }

@@ -4,73 +4,47 @@ import (
 	"errors"
 	"fmt"
 	"time"
-	"strings"
-
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/msg"
+	"github.com/elastos/Elastos.ELA.SPV/p2p"
 )
 
 var spvWallet *SPVWallet
 
-func InitSPV(clientId uint64) (*SPVWallet, error) {
+func Init(clientId uint64) (*SPVWallet, error) {
 	var err error
 	spvWallet = new(SPVWallet)
-	spvWallet.clientId = clientId
+	// Initialize blockchain
 	spvWallet.chain, err = NewBlockchain()
 	if err != nil {
 		return nil, err
 	}
+
+	// Initialize P2P network client
+	client := sdk.GetP2PClient(sdk.MainNetMagic, clientId)
+	client.OnMakeMessage(spvWallet.makeMessage)
+	client.OnHandleVersion(spvWallet.handleVersion)
+	client.OnPeerConnected(spvWallet.peerConnected)
+	client.OnHandleMessage(spvWallet.handleMessage)
+	spvWallet.P2PClient = client
+
+	// Initialize sync manager
+	spvWallet.SyncManager = NewSyncManager()
 	spvWallet.chain.OnTxCommit = OnTxCommit
 	spvWallet.chain.OnBlockCommit = OnBlockCommit
 	spvWallet.chain.OnRollback = OnRollback
-	spvWallet.SyncManager = NewSyncManager()
 
-	// Set Magic number of the P2P network
-	p2p.Magic = sdk.MainNetMagic
-	// Convert seed addresses to SPVServerPort according to the SPV protocol
-	seeds := toSPVAddr(config.Values().SeedList)
-	// Create peer manager of the P2P network
-	spvWallet.pm = p2p.InitPeerManager(spvWallet.initLocalPeer, seeds)
-
-	// Register callbacks
-	p2p.OnMakeMessage(spvWallet.makeMessage)
-	p2p.OnHandleVersion(spvWallet.handleVersion)
-	p2p.OnPeerConnected(spvWallet.peerConnected)
-	p2p.OnHandleMessage(spvWallet.handleMessage)
 	return spvWallet, nil
 }
 
-func toSPVAddr(seeds []string) []string {
-	var addrs = make([]string, len(seeds))
-	for i, seed := range seeds {
-		portIndex := strings.LastIndex(seed, ":")
-		if portIndex > 0 {
-			addrs[i] = fmt.Sprint(string([]byte(seed)[:portIndex]), ":", sdk.SPVServerPort)
-		} else {
-			addrs[i] = fmt.Sprint(seed, ":", sdk.SPVServerPort)
-		}
-	}
-	return addrs
-}
-
 type SPVWallet struct {
+	sdk.P2PClient
 	*SyncManager
-	clientId uint64
-	chain    *Blockchain
-	pm       *p2p.PeerManager
-}
-
-func (wallet *SPVWallet) initLocalPeer(peer *p2p.Peer) {
-	peer.SetID(wallet.clientId)
-	peer.SetVersion(p2p.ProtocolVersion)
-	peer.SetPort(sdk.SPVClientPort)
-	peer.SetServices(0x00)
-	peer.SetRelay(0x00)
+	chain *Blockchain
 }
 
 func (wallet *SPVWallet) makeMessage(cmd string) (message p2p.Message, err error) {
@@ -95,9 +69,9 @@ func (wallet *SPVWallet) makeMessage(cmd string) (message p2p.Message, err error
 
 func (wallet *SPVWallet) handleVersion(v *p2p.Version) error {
 
-	if v.Version < p2p.ProtocolVersion {
-		log.Error("SPV disconnect peer, To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion)
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", p2p.ProtocolVersion))
+	if v.Version < sdk.ProtocolVersion {
+		log.Error("SPV disconnect peer, To support SPV protocol, peer version must greater than ", sdk.ProtocolVersion)
+		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", sdk.ProtocolVersion))
 	}
 
 	if v.Services/sdk.ServiveSPV&1 == 0 {
@@ -133,7 +107,7 @@ func (wallet *SPVWallet) handleMessage(peer *p2p.Peer, message p2p.Message) erro
 }
 
 func (wallet *SPVWallet) Start() {
-	wallet.pm.Start()
+	wallet.P2PClient.Start(config.Values().SeedList)
 	go wallet.keepUpdate()
 	log.Info("SPV service started...")
 }
@@ -153,14 +127,14 @@ func (wallet *SPVWallet) keepUpdate() {
 	for range ticker.C {
 
 		// Update peers info
-		for _, peer := range wallet.pm.ConnectedPeers() {
+		for _, peer := range wallet.PeerManager().ConnectedPeers() {
 			if peer.State() == p2p.ESTABLISH {
 
 				// Disconnect inactive peer
 				if peer.LastActive().Before(
 					time.Now().Add(-time.Second * p2p.InfoUpdateDuration * p2p.KeepAliveTimeout)) {
 					log.Trace("SPV disconnect inactive peer,", peer)
-					wallet.pm.DisconnectPeer(peer)
+					wallet.PeerManager().DisconnectPeer(peer)
 					continue
 				}
 
@@ -170,7 +144,7 @@ func (wallet *SPVWallet) keepUpdate() {
 		}
 
 		// Keep connections
-		wallet.pm.ConnectPeers()
+		wallet.PeerManager().ConnectPeers()
 
 		// Keep synchronizing blocks
 		wallet.SyncBlocks()
@@ -203,13 +177,13 @@ func (wallet *SPVWallet) NotifyNewAddress(hash []byte) error {
 	// Reload address filter to include new address
 	wallet.chain.Addrs().ReloadAddrFilter()
 	// Broadcast filterload message to connected peers
-	wallet.pm.Broadcast(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
+	wallet.PeerManager().Broadcast(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
 	return nil
 }
 
 func (wallet *SPVWallet) SendTransaction(tx tx.Transaction) error {
 	// Broadcast transaction to connected peers
-	wallet.pm.Broadcast(msg.NewTxn(tx))
+	wallet.PeerManager().Broadcast(msg.NewTxn(tx))
 	return nil
 }
 
@@ -252,7 +226,7 @@ func (wallet *SPVWallet) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock)
 		wallet.startHash = blockHash
 		wallet.stopHash = blockHash
 
-	} else if wallet.blockLocator == nil || wallet.pm.GetSyncPeer() == nil || wallet.pm.GetSyncPeer().ID() != peer.ID() {
+	} else if wallet.blockLocator == nil || wallet.PeerManager().GetSyncPeer() == nil || wallet.PeerManager().GetSyncPeer().ID() != peer.ID() {
 
 		log.Error("Receive message from non sync peer, disconnect")
 		wallet.ChangeSyncPeerAndRestart()
@@ -291,7 +265,7 @@ func (wallet *SPVWallet) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 			wallet.handleFPositive(1)
 		}
 
-	} else if wallet.blockLocator == nil || wallet.pm.GetSyncPeer() == nil || wallet.pm.GetSyncPeer().ID() != peer.ID() {
+	} else if wallet.blockLocator == nil || wallet.PeerManager().GetSyncPeer() == nil || wallet.PeerManager().GetSyncPeer().ID() != peer.ID() {
 
 		log.Error("Receive message from non sync peer, disconnect")
 		wallet.ChangeSyncPeerAndRestart()
@@ -324,5 +298,5 @@ func (wallet *SPVWallet) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
 }
 
 func (wallet *SPVWallet) updateLocalHeight() {
-	wallet.pm.Local().SetHeight(uint64(wallet.chain.Height()))
+	wallet.PeerManager().Local().SetHeight(uint64(wallet.chain.Height()))
 }

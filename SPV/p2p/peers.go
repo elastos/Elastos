@@ -13,10 +13,9 @@ type Peers struct {
 	peers     map[uint64]*Peer
 }
 
-func newPeers(initLocal func(peer *Peer)) *Peers {
+func newPeers(localPeer *Peer) *Peers {
 	peers := new(Peers)
-	peers.local = new(Peer)
-	initLocal(peers.local)
+	peers.local = localPeer
 	peers.syncPeerLock = new(sync.Mutex)
 	peers.peersLock = new(sync.RWMutex)
 	peers.peers = make(map[uint64]*Peer)

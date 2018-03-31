@@ -22,7 +22,7 @@ func main() {
 
 	// Initiate SPV service
 	iv, _ := file.GetIV()
-	service, err := spvwallet.InitSPV(binary.LittleEndian.Uint64(iv))
+	service, err := spvwallet.Init(binary.LittleEndian.Uint64(iv))
 	if err != nil {
 		log.Error("Initiate SPV service failed,", err)
 		os.Exit(0)
