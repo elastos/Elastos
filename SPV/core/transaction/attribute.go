@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SPV/core"
-	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
 type AttributeUsage byte
@@ -47,7 +47,7 @@ type Attribute struct {
 func (attr Attribute) String() string {
 	return "Attribute: {\n\t\t" +
 		"Usage: " + attr.Usage.Name() + "\n\t\t" +
-		"Data: " + core.BytesToHexString(attr.Data) + "\n\t\t" +
+		"Data: " + BytesToHexString(attr.Data) + "\n\t\t" +
 		"Size: " + fmt.Sprint(attr.Size) + "\n\t" +
 		"}"
 }

@@ -4,12 +4,12 @@ import (
 	"io"
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.SPV/core"
-	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
 type OutPoint struct {
-	TxID  core.Uint256
+	TxID  Uint256
 	Index uint16
 }
 
@@ -37,7 +37,7 @@ func (op *OutPoint) Bytes() []byte {
 	return buf.Bytes()
 }
 
-func NewOutPoint(txId core.Uint256, index uint16) *OutPoint {
+func NewOutPoint(txId Uint256, index uint16) *OutPoint {
 	return &OutPoint{
 		TxID:  txId,
 		Index: index,

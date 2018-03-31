@@ -4,13 +4,13 @@ import (
 	"io"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SPV/core"
-	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
 type Input struct {
 	//Indicate the previous Tx which include the UTXO output for usage
-	ReferTxID core.Uint256
+	ReferTxID Uint256
 
 	//The index of output in the referTx output list
 	ReferTxOutputIndex uint16

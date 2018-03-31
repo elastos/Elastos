@@ -8,7 +8,7 @@ import (
 	"crypto/sha256"
 
 	"github.com/elastos/Elastos.ELA.SPV/crypto"
-	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
 
 	"github.com/golang/crypto/ripemd160"
 )

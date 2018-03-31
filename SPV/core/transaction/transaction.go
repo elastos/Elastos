@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/core/contract/program"
-	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
 	"github.com/elastos/Elastos.ELA.SPV/crypto"
 )

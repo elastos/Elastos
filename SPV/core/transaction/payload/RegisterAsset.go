@@ -4,14 +4,14 @@ import (
 	"io"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/core/asset"
 )
 
 type RegisterAsset struct {
 	Asset      *asset.Asset
-	Amount     core.Fixed64
-	Controller core.Uint168
+	Amount     Fixed64
+	Controller Uint168
 }
 
 func (a *RegisterAsset) Data(version byte) []byte {
@@ -36,14 +36,14 @@ func (a *RegisterAsset) Deserialize(r io.Reader, version byte) error {
 	}
 
 	//Value
-	a.Amount = *new(core.Fixed64)
+	a.Amount = *new(Fixed64)
 	err = a.Amount.Deserialize(r)
 	if err != nil {
 		return errors.New("[RegisterAsset], Ammount Deserialize failed.")
 	}
 
 	//Controller *common.Uint168
-	a.Controller = *new(core.Uint168)
+	a.Controller = *new(Uint168)
 	err = a.Controller.Deserialize(r)
 	if err != nil {
 		return errors.New("[RegisterAsset], Ammount Deserialize failed.")

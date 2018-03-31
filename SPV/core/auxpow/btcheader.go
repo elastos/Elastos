@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.SPV/core"
-	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
 type BtcHeader struct {

@@ -3,7 +3,7 @@ package payload
 import (
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	. "github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
 const CoinBasePayloadVersion byte = 0x04

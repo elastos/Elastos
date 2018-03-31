@@ -1,28 +1,29 @@
 package _interface
 
 import (
+	"os"
 	"bytes"
 	"errors"
-	"os"
 	"os/signal"
 
+	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/core"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/db"
-	"github.com/elastos/Elastos.ELA.SPV/msg"
-	"github.com/elastos/Elastos.ELA.SPV/spv"
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 )
 
 type SPVServiceImpl struct {
-	*spv.SPV
+	*spvwallet.SPVWallet
 	clientId uint64
-	accounts []*core.Uint168
+	accounts []*Uint168
 	callback func(db.Proof, tx.Transaction)
 }
 
 func (service *SPVServiceImpl) RegisterAccount(address string) error {
-	account, err := core.Uint168FromAddress(address)
+	account, err := Uint168FromAddress(address)
 	if err != nil {
 		return errors.New("Invalid address format")
 	}
@@ -34,12 +35,12 @@ func (service *SPVServiceImpl) OnTransactionConfirmed(callback func(db.Proof, tx
 	service.callback = callback
 }
 
-func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash core.Uint256) error {
+func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
 	return service.BlockChain().Queue().Delete(&txHash)
 }
 
 func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transaction) error {
-	if service.SPV == nil {
+	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
 
@@ -55,13 +56,13 @@ func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transacti
 	}
 
 	// Check if merkleroot is match
-	merkleBlock := msg.MerkleBlock{
+	merkleBlock := bloom.MerkleBlock{
 		BlockHeader:  *header,
 		Transactions: proof.Transactions,
 		Hashes:       proof.Hashes,
 		Flags:        proof.Flags,
 	}
-	txIds, err := spv.CheckMerkleBlock(merkleBlock)
+	txIds, err := bloom.CheckMerkleBlock(merkleBlock)
 	if err != nil {
 		return errors.New("check merkle branch failed, " + err.Error())
 	}
@@ -85,20 +86,20 @@ func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transacti
 }
 
 func (service *SPVServiceImpl) SendTransaction(tx tx.Transaction) error {
-	if service.SPV == nil {
+	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
 
-	return service.SPV.SendTransaction(tx)
+	return service.SPVWallet.SendTransaction(tx)
 }
 
 func (service *SPVServiceImpl) Start() error {
-	if service.SPV != nil {
+	if service.SPVWallet != nil {
 		return errors.New("SPV service already started")
 	}
 
 	var err error
-	service.SPV, err = spv.InitSPV(service.clientId)
+	service.SPVWallet, err = spvwallet.InitSPV(service.clientId)
 	if err != nil {
 		return err
 	}
@@ -112,7 +113,7 @@ func (service *SPVServiceImpl) Start() error {
 	}
 
 	// Set callback
-	service.SPV.SetOnBlockCommitListener(service.onBlockCommit)
+	service.SPVWallet.SetOnBlockCommitListener(service.onBlockCommit)
 
 	// Handle interrupt signal
 	stop := make(chan int, 1)
@@ -127,14 +128,14 @@ func (service *SPVServiceImpl) Start() error {
 	}()
 
 	// Start SPV service
-	service.SPV.Start()
+	service.SPVWallet.Start()
 
 	<-stop
 
 	return nil
 }
 
-func (service *SPVServiceImpl) onBlockCommit(header db.Header, proof db.Proof, txs []tx.Transaction) {
+func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof, txs []tx.Transaction) {
 	// If no transactions return
 	if len(txs) == 0 {
 		return
@@ -198,13 +199,13 @@ func (service *SPVServiceImpl) onBlockCommit(header db.Header, proof db.Proof, t
 	}
 }
 
-func getConfirmHeight(header db.Header, tx tx.Transaction) uint32 {
+func getConfirmHeight(header core.Header, tx tx.Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
 	return header.Height + DefaultConfirmations
 }
 
-func getTransactionProof(proof *db.Proof, txHash core.Uint256) *db.Proof {
+func getTransactionProof(proof *db.Proof, txHash Uint256) *db.Proof {
 	// TODO Pick out the merkle proof of the transaction
 	return proof
 }

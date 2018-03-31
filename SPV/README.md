@@ -1,8 +1,11 @@
 # Elastos SPV
 
 ## Summary
-Elastos SPV is a SPV (Simplified Payment Verification) implementation of the Elastos digital currency, using command line as the user interface.
-This project also include a light wallet implementation and several interfaces for developers, the SDK interface is in progress.
+Elastos SPV is a development SDK of SPV (Simplified Payment Verification) implementation of the Elastos digital currency.
+The Elastos SPV SDK is a set of encryption algorithm, peer to peer network and SPV related implementation like bloom filter, merkleblock and util methods.
+As an example, this project include a spv wallet implementation and some interfaces implementation, located in `spvwallet` and `interface` package.
+These examples will help you understand how to use this SDK and build your own apps.
+The flowing instructions will help you build up the `spvwallet` project and play with it.
 
 ## Build on Mac
 
@@ -94,15 +97,12 @@ A file named `config.json` should be placed in the same folder with `service` wi
 ```
 {
   "PrintLevel": 4,
-  "Magic": 7630401,
   "SeedList": [
     "127.0.0.1:20338"
   ]
 }
 ```
 > `PrintLevel` is to control which level of messages can be print out on the console, levels are 0~5, the higher level print out more messages, if set `PrintLevel` to 5 or greater, logs will be save to file.
-
-> `Magic` is the identify number of the peer to peer network, peers in the same network should be using the same Magic number.
 
 > `SeedList` is the seed peer addresses in the peer to peer network, SPV service will connect to the peer to peer network through these seed peers.
 

@@ -5,28 +5,16 @@ import (
 	"os/signal"
 	"encoding/binary"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/spv"
-	"github.com/elastos/Elastos.ELA.SPV/wallet"
-	"github.com/elastos/Elastos.ELA.SPV/rpc"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 )
-
-/*
-The SPV wallet program, running background
-communication with node through web socket interface
-
-First of all, check if main account was created. If not, show hint message and exit.
-Then sync block headers to best height, web socket will not start until blocks were synchronized.
-Then connect to node web socket interface and register wallet accounts,
-receive blocks and transactions of the registered wallet accounts from web socket message push,
-verify transactions with block headers and update accounts balance.
-*/
 
 func main() {
 	// Initiate log
 	log.Init()
 
-	file, err := wallet.OpenKeystoreFile()
+	file, err := spvwallet.OpenKeystoreFile()
 	if err != nil {
 		log.Error("Keystore.dat file not found, please create your wallet using ela-wallet first")
 		os.Exit(0)
@@ -34,7 +22,7 @@ func main() {
 
 	// Initiate SPV service
 	iv, _ := file.GetIV()
-	service, err := spv.InitSPV(binary.LittleEndian.Uint64(iv))
+	service, err := spvwallet.InitSPV(binary.LittleEndian.Uint64(iv))
 	if err != nil {
 		log.Error("Initiate SPV service failed,", err)
 		os.Exit(0)

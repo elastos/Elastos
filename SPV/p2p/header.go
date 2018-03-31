@@ -7,8 +7,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SPV/core"
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
 const (
@@ -43,7 +43,7 @@ func NewHeader(cmd string, checksum []byte, length int) *Header {
 
 func BuildHeader(cmd string, body []byte) *Header {
 	// Calculate checksum
-	checksum := core.Sha256D(body)
+	checksum := Sha256D(body)
 	return NewHeader(cmd, checksum[:], len(body))
 }
 
@@ -67,7 +67,7 @@ func (header *Header) Verify(buf []byte) error {
 		return errors.New(fmt.Sprint("Unmatched magic number ", header.Magic))
 	}
 
-	sum := core.Sha256D(buf)
+	sum := Sha256D(buf)
 	checksum := sum[:CHECKSUMLEN]
 	if !bytes.Equal(header.Checksum[:], checksum) {
 		return errors.New(

@@ -3,7 +3,7 @@ package p2p
 import (
 	"time"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
 var onMakeMessage func(cmd string) (Message, error)

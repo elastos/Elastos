@@ -1,9 +1,9 @@
 package _interface
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/core"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 )
 
 /*
@@ -23,7 +23,7 @@ type SPVService interface {
 	// After receive the transaction callback, call this method
 	// to confirm that the transaction with the given ID was handled
 	// so the transaction will be removed from the notify queue
-	SubmitTransactionReceipt(txId core.Uint256) error
+	SubmitTransactionReceipt(txId Uint256) error
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
