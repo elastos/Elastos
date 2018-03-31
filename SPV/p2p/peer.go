@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	MaxBufLen       = 1024 * 16
+	MaxBufLen = 1024 * 16
 )
 
 // Peer states
@@ -78,7 +78,8 @@ type Peer struct {
 	conn         net.Conn
 	OnDisconnect func(*Peer)
 
-	msgBuf MsgBuf
+	msgBuf    MsgBuf
+	decodeMsg func(*Peer, []byte)
 }
 
 func (peer *Peer) String() string {
@@ -116,9 +117,10 @@ func (buf *MsgBuf) Reset() {
 func NewPeer(conn net.Conn) *Peer {
 	ip16, port := addrFromConn(conn)
 	return &Peer{
-		conn: conn,
-		ip16: ip16,
-		port: port,
+		conn:      conn,
+		ip16:      ip16,
+		port:      port,
+		decodeMsg: pm.DecodeMessageBuf,
 	}
 }
 
@@ -269,7 +271,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 	if len(buf) == msgLen { // Just read the full message
 
 		peer.msgBuf.Append(buf[:])
-		go HandleMessage(peer, peer.msgBuf.Buf())
+		go peer.decodeMsg(peer, peer.msgBuf.Buf())
 		peer.msgBuf.Reset()
 
 	} else if len(buf) < msgLen { // Read part of the message
@@ -280,7 +282,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 	} else { // Read more than the message
 
 		peer.msgBuf.Append(buf[0:msgLen])
-		go HandleMessage(peer, peer.msgBuf.Buf())
+		go peer.decodeMsg(peer, peer.msgBuf.Buf())
 		peer.msgBuf.Reset()
 		peer.unpackMessage(buf[msgLen:])
 	}

@@ -21,6 +21,11 @@ type PeerManager struct {
 	*Peers
 	addrManager *AddrManager
 	connManager *ConnManager
+
+	OnMakeMessage   func(cmd string) (Message, error)
+	OnHandleVersion func(v *Version) error
+	OnPeerConnected func(peer *Peer)
+	OnHandleMessage func(peer *Peer, msg Message) error
 }
 
 func InitPeerManager(localPeer *Peer, seeds []string) *PeerManager {
@@ -129,13 +134,13 @@ func (pm *PeerManager) listenConnection() {
 	}
 }
 
-func (spv *PeerManager) OnVersion(peer *Peer, v *Version) error {
+func (pm *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	log.Info("SPV OnVersion")
 	// Check if handshake with itself
-	if v.Nonce == spv.Local().ID() {
+	if v.Nonce == pm.Local().ID() {
 		log.Error("SPV disconnect peer, peer handshake with itself")
-		spv.DisconnectPeer(peer)
-		spv.OnDiscardAddr(peer.Addr().String())
+		pm.DisconnectPeer(peer)
+		pm.OnDiscardAddr(peer.Addr().String())
 		return errors.New("Peer handshake with itself")
 	}
 
@@ -145,7 +150,7 @@ func (spv *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	}
 
 	// Remove duplicate peer connection
-	knownPeer, ok := spv.RemovePeer(v.Nonce)
+	knownPeer, ok := pm.RemovePeer(v.Nonce)
 	if ok {
 		log.Trace("Reconnect peer ", v.Nonce)
 		knownPeer.Disconnect()
@@ -157,8 +162,8 @@ func (spv *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	peer.SetInfo(v)
 
 	// Handle version message
-	if err := onHandleVersion(v); err != nil {
-		spv.DisconnectPeer(peer)
+	if err := pm.OnHandleVersion(v); err != nil {
+		pm.DisconnectPeer(peer)
 		return err
 	}
 
@@ -176,7 +181,7 @@ func (spv *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	return nil
 }
 
-func (spv *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
+func (pm *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
 	if peer.State() != HANDSHAKE && peer.State() != HANDSHAKED {
 		return errors.New("Unknow status to received verack")
 	}
@@ -188,26 +193,26 @@ func (spv *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
 	peer.SetState(ESTABLISH)
 
 	// Add to connected peer
-	spv.AddConnectedPeer(peer)
+	pm.AddConnectedPeer(peer)
 
 	// Notify peer connected
-	onPeerConnected(peer)
+	pm.OnPeerConnected(peer)
 
-	if spv.NeedMorePeers() {
+	if pm.NeedMorePeers() {
 		go peer.Send(new(AddrsReq))
 	}
 
 	return nil
 }
 
-func (spv *PeerManager) OnAddrs(peer *Peer, addrs *Addrs) error {
+func (pm *PeerManager) OnAddrs(peer *Peer, addrs *Addrs) error {
 	for _, addr := range addrs.Addrs {
 		// Skip local peer
-		if addr.ID == spv.Local().ID() {
+		if addr.ID == pm.Local().ID() {
 			continue
 		}
 		// Skip peer already connected
-		if spv.EstablishedPeer(addr.ID) {
+		if pm.EstablishedPeer(addr.ID) {
 			continue
 		}
 		// Skip invalid port
@@ -215,16 +220,16 @@ func (spv *PeerManager) OnAddrs(peer *Peer, addrs *Addrs) error {
 			continue
 		}
 		// Handle new address
-		if spv.NeedMorePeers() {
-			spv.ConnectPeer(addr.String())
+		if pm.NeedMorePeers() {
+			pm.ConnectPeer(addr.String())
 		}
 	}
 
 	return nil
 }
 
-func (spv *PeerManager) OnAddrsReq(peer *Peer, req *AddrsReq) error {
-	addrs := spv.RandAddrs()
+func (pm *PeerManager) OnAddrsReq(peer *Peer, req *AddrsReq) error {
+	addrs := pm.RandAddrs()
 	go peer.Send(NewAddrs(addrs))
 	return nil
 }

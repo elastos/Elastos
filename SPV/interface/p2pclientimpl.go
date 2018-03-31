@@ -24,19 +24,19 @@ func (client *P2PClientImpl) Start() {
 }
 
 func (client *P2PClientImpl) HandleVersion(callback func(v *p2p.Version) error) {
-	p2p.OnHandleVersion(callback)
+	client.pm.OnHandleVersion = callback
 }
 
 func (client *P2PClientImpl) PeerConnected(callback func(peer *p2p.Peer)) {
-	p2p.OnPeerConnected(callback)
+	client.pm.OnPeerConnected = callback
 }
 
 func (client *P2PClientImpl) MakeMessage(callback func(cmd string) (p2p.Message, error)) {
-	p2p.OnMakeMessage(callback)
+	client.pm.OnMakeMessage = callback
 }
 
 func (client *P2PClientImpl) HandleMessage(callback func(peer *p2p.Peer, msg p2p.Message) error) {
-	p2p.OnHandleMessage(callback)
+	client.pm.OnHandleMessage = callback
 }
 
 func (client *P2PClientImpl) PeerManager() *p2p.PeerManager {

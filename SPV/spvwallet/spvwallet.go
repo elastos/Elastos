@@ -25,9 +25,11 @@ func Init(clientId uint64) (*SPVWallet, error) {
 	}
 
 	// Initialize P2P network client
-	client := sdk.GetP2PClient(sdk.MainNetMagic, clientId)
+	client, err := sdk.GetP2PClient(sdk.MainNetMagic, clientId, config.Values().SeedList)
+	if err != nil {
+		return nil, err
+	}
 	client.OnMakeMessage(spvWallet.makeMessage)
-	client.OnHandleVersion(spvWallet.handleVersion)
 	client.OnPeerConnected(spvWallet.peerConnected)
 	client.OnHandleMessage(spvWallet.handleMessage)
 	spvWallet.P2PClient = client
@@ -67,21 +69,6 @@ func (wallet *SPVWallet) makeMessage(cmd string) (message p2p.Message, err error
 	return message, nil
 }
 
-func (wallet *SPVWallet) handleVersion(v *p2p.Version) error {
-
-	if v.Version < sdk.ProtocolVersion {
-		log.Error("SPV disconnect peer, To support SPV protocol, peer version must greater than ", sdk.ProtocolVersion)
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", sdk.ProtocolVersion))
-	}
-
-	if v.Services/sdk.ServiveSPV&1 == 0 {
-		log.Error("SPV disconnect peer, spv service not enabled on connected peer")
-		return errors.New("SPV service not enabled on connected peer")
-	}
-
-	return nil
-}
-
 func (wallet *SPVWallet) peerConnected(peer *p2p.Peer) {
 	// Send filterload message
 	peer.Send(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
@@ -107,7 +94,7 @@ func (wallet *SPVWallet) handleMessage(peer *p2p.Peer, message p2p.Message) erro
 }
 
 func (wallet *SPVWallet) Start() {
-	wallet.P2PClient.Start(config.Values().SeedList)
+	wallet.P2PClient.Start()
 	go wallet.keepUpdate()
 	log.Info("SPV service started...")
 }

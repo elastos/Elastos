@@ -6,31 +6,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
-var onMakeMessage func(cmd string) (Message, error)
-var onHandleVersion func(v *Version) error
-var onPeerConnected func(peer *Peer)
-var onHandleMessage func(peer *Peer, msg Message) error
-
 type Message interface {
 	CMD() string
 	Serialize() ([]byte, error)
 	Deserialize(msg []byte) error
-}
-
-func OnMakeMessage(callback func(cmd string) (Message, error)) {
-	onMakeMessage = callback
-}
-
-func OnHandleVersion(callback func(v *Version) error) {
-	onHandleVersion = callback
-}
-
-func OnPeerConnected(callback func(peer *Peer)) {
-	onPeerConnected = callback
-}
-
-func OnHandleMessage(callback func(peer *Peer, msg Message) error) {
-	onHandleMessage = callback
 }
 
 // Only local peer will use this method, so the parameters are fixed
@@ -47,13 +26,13 @@ func NewVersion() *Version {
 	return version
 }
 
-func HandleMessage(peer *Peer, buf []byte) {
+func (pm *PeerManager) DecodeMessageBuf(peer *Peer, buf []byte) {
 	if len(buf) < HEADERLEN {
 		log.Error("Message length is not enough")
 		return
 	}
 
-	msg, err := makeMessage(buf)
+	msg, err := pm.makeMessage(buf)
 	if err != nil {
 		log.Error("Make message error, ", err)
 		return
@@ -65,10 +44,10 @@ func HandleMessage(peer *Peer, buf []byte) {
 		return
 	}
 
-	handleMessage(peer, msg)
+	pm.handleMessage(peer, msg)
 }
 
-func parseHeader(buf []byte) (*Header, error) {
+func (pm *PeerManager) parseHeader(buf []byte) (*Header, error) {
 	hdr := new(Header)
 	err := hdr.Deserialize(buf)
 	if err = hdr.Verify(buf[HEADERLEN:]); err != nil {
@@ -77,8 +56,8 @@ func parseHeader(buf []byte) (*Header, error) {
 	return hdr, nil
 }
 
-func makeMessage(buf []byte) (Message, error) {
-	hdr, err := parseHeader(buf)
+func (pm *PeerManager) makeMessage(buf []byte) (Message, error) {
+	hdr, err := pm.parseHeader(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +76,13 @@ func makeMessage(buf []byte) (Message, error) {
 	case "addr":
 		msg = new(Addrs)
 	default:
-		return onMakeMessage(cmd)
+		return pm.OnMakeMessage(cmd)
 	}
 
 	return msg, nil
 }
 
-func handleMessage(peer *Peer, msg Message) {
+func (pm *PeerManager) handleMessage(peer *Peer, msg Message) {
 	var err error
 	switch msg := msg.(type) {
 	case *Version:
@@ -115,7 +94,7 @@ func handleMessage(peer *Peer, msg Message) {
 	case *Addrs:
 		err = pm.OnAddrs(peer, msg)
 	default:
-		err = onHandleMessage(peer, msg)
+		err = pm.OnHandleMessage(peer, msg)
 	}
 
 	if err != nil {
