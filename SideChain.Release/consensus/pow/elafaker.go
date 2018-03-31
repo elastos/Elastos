@@ -7,19 +7,22 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/core/auxpow"
 )
 
-func getSideMiningTx(msgBlockHash Uint256) *auxpow.ElaTx {
-	s := auxpow.SideMiningPayload{
-		SideBlockHash: msgBlockHash,
+func getSideMiningTx(msgBlockHash Uint256, genesisHash Uint256) *auxpow.ElaTx {
+
+	txPayload := auxpow.SideMiningPayload{
+		SideBlockHash:   msgBlockHash,
+		SideGenesisHash: genesisHash,
 	}
-	sideMiningTx := auxpow.NewSideMiningTx(s, 0)
+
+	sideMiningTx := auxpow.NewSideMiningTx(txPayload, 0)
 
 	return sideMiningTx
 }
 
-func generateSideAuxPow(msgBlockHash Uint256) *auxpow.SideAuxPow {
+func generateSideAuxPow(msgBlockHash Uint256, genesisHash Uint256) *auxpow.SideAuxPow {
 	sideAuxMerkleBranch := make([]Uint256, 0)
 	sideAuxMerkleIndex := 0
-	sideAuxBlockTx := getSideMiningTx(msgBlockHash)
+	sideAuxBlockTx := getSideMiningTx(msgBlockHash, genesisHash)
 	elaBlockHeader := auxpow.ElaBlockHeader{
 		Version:          0x7fffffff,
 		PrevBlockHash:    Uint256{},

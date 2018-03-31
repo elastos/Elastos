@@ -282,8 +282,12 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 }
 
 func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) bool {
+	genesisHash, err := ledger.DefaultLedger.Store.GetBlockHash(0)
+	if err != nil {
+		return false
+	}
 	// fake a mainchain blockheader
-	sideAuxPow := generateSideAuxPow(MsgBlock.Hash())
+	sideAuxPow := generateSideAuxPow(MsgBlock.Hash(), genesisHash)
 	header := MsgBlock.Blockdata
 	targetDifficulty := ledger.CompactToBig(header.Bits)
 
@@ -299,8 +303,8 @@ func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) b
 			// Non-blocking select to fall through
 		}
 
-		sideAuxPow.AuxPow.ParBlockHeader.Nonce = i
-		hash := sideAuxPow.AuxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
+		sideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce = i
+		hash := sideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if ledger.HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
 			MsgBlock.Blockdata.SideAuxPow = *sideAuxPow
 			return true
