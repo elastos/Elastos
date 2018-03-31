@@ -9,7 +9,6 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/common"
 	"github.com/elastos/Elastos.ELA.SideChain/common/config"
 	"github.com/elastos/Elastos.ELA.SideChain/common/log"
-	"github.com/elastos/Elastos.ELA.SideChain/core/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
 	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
 	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
