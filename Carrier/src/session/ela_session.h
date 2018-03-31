@@ -557,10 +557,38 @@ typedef struct ElaStreamCallbacks {
                            void *context);
 } ElaStreamCallbacks;
 
+/**
+ * Compress option, indicates data would be compressed before transmission.
+ * For now, just reserved this bit option for future implement.
+ */
 #define ELA_STREAM_COMPRESS             0x01
+
+/**
+ * Encrypt option, indicates data would be transmitted with plain mode.
+ * which means that transmitting data would be encrypted in default.
+ */
 #define ELA_STREAM_PLAIN                0x02
+
+/**
+ * Relaible option, indicates data transmission would be reliable, and be
+ * guranteed to received by remote peer, which acts as TCP transmission
+ * protocol. Without this option bitwised, the transmission would be
+ * unreliable as UDP transmission protocol.
+ */
 #define ELA_STREAM_RELIABLE             0x04
+
+/**
+ * Multiplexing option, indicates multiplexing would be activated on
+ * enstablished stream, and need to use multipexing APIs related with channel
+ * instread of APIs related strema to send/receive data.
+ */
 #define ELA_STREAM_MULTIPLEXING         0x08
+
+/**
+ * PortForwarding option, indicates port forwarding would be activated
+ * on established stream. This options should bitwise with 'Multiplexing'
+ * option.
+ */
 #define ELA_STREAM_PORT_FORWARDING      0x10
 
 /**
