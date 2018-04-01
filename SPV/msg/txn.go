@@ -9,10 +9,6 @@ type Txn struct {
 	tx.Transaction
 }
 
-func NewTxn(tx tx.Transaction) *Txn {
-	return &Txn{Transaction: tx}
-}
-
 func (msg *Txn) CMD() string {
 	return "tx"
 }

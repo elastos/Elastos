@@ -12,14 +12,6 @@ type BlocksReq struct {
 	HashStop     Uint256
 }
 
-func NewBlocksReq(locator []*Uint256, hashStop Uint256) *BlocksReq {
-	blocksReq := new(BlocksReq)
-	blocksReq.Count = uint32(len(locator))
-	blocksReq.BlockLocator = locator
-	blocksReq.HashStop = hashStop
-	return blocksReq
-}
-
 func (msg *BlocksReq) CMD() string {
 	return "getblocks"
 }

@@ -11,13 +11,6 @@ type DataReq struct {
 	Hash Uint256
 }
 
-func NewDataReq(invType uint8, hash Uint256) *DataReq {
-	dataReq := new(DataReq)
-	dataReq.Type = invType
-	dataReq.Hash = hash
-	return dataReq
-}
-
 func (msg *DataReq) CMD() string {
 	return "getdata"
 }

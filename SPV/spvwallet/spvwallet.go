@@ -99,7 +99,7 @@ func (wallet *SPVWallet) NotifyNewAddress(hash []byte) error {
 
 func (wallet *SPVWallet) SendTransaction(tx tx.Transaction) error {
 	// Broadcast transaction to connected peers
-	wallet.PeerManager().Broadcast(msg.NewTxn(tx))
+	wallet.PeerManager().Broadcast(wallet.NewTxn(tx))
 	return nil
 }
 

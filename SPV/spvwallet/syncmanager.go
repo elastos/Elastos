@@ -124,7 +124,7 @@ func (sm *SyncManager) requestBlocks() {
 	// Request blocks returns a inventory message witch contains block hashes
 	sm.blockLocator = spvWallet.chain.GetBlockLocatorHashes()
 
-	go syncPeer.Send(NewBlocksReq(sm.blockLocator, Uint256{}))
+	go syncPeer.Send(spvWallet.NewBlocksReq(sm.blockLocator, Uint256{}))
 }
 
 func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {

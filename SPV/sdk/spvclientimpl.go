@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
 )
@@ -79,6 +81,37 @@ func (client *SPVClientImpl) HandleMessage(peer *p2p.Peer, message p2p.Message) 
 	}
 }
 
+func (client *SPVClientImpl) NewPing(height uint32) *msg.Ping {
+	ping := new(msg.Ping)
+	ping.Height = uint64(height)
+	return ping
+}
+
+func (client *SPVClientImpl) NewPong(height uint32) *msg.Pong {
+	pong := new(msg.Pong)
+	pong.Height = uint64(height)
+	return pong
+}
+
+func (client *SPVClientImpl) NewBlocksReq(locator []*Uint256, hashStop Uint256) *msg.BlocksReq {
+	blocksReq := new(msg.BlocksReq)
+	blocksReq.Count = uint32(len(locator))
+	blocksReq.BlockLocator = locator
+	blocksReq.HashStop = hashStop
+	return blocksReq
+}
+
+func (client *SPVClientImpl) NewDataReq(invType uint8, hash Uint256) *msg.DataReq {
+	dataReq := new(msg.DataReq)
+	dataReq.Type = invType
+	dataReq.Hash = hash
+	return dataReq
+}
+
+func (client *SPVClientImpl) NewTxn(tx tx.Transaction) *msg.Txn {
+	return &msg.Txn{Transaction: tx}
+}
+
 func (client *SPVClientImpl) OnPeerEstablish(peer *p2p.Peer) {
 	client.msgHandler.OnPeerEstablish(peer)
 }
@@ -86,7 +119,7 @@ func (client *SPVClientImpl) OnPeerEstablish(peer *p2p.Peer) {
 func (client *SPVClientImpl) OnPing(peer *p2p.Peer, p *msg.Ping) error {
 	peer.SetHeight(p.Height)
 	// Return pong message to peer
-	go peer.Send(msg.NewPong(uint32(client.PeerManager().Local().Height())))
+	go peer.Send(client.NewPong(uint32(client.PeerManager().Local().Height())))
 	return nil
 }
 
@@ -112,7 +145,7 @@ func (client *SPVClientImpl) keepUpdate() {
 				}
 
 				// Send ping message to peer
-				go peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
+				go peer.Send(client.NewPing(uint32(client.PeerManager().Local().Height())))
 			}
 		}
 	}

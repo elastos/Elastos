@@ -4,7 +4,6 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	. "github.com/elastos/Elastos.ELA.SPV/msg"
 )
 
 type request struct {
@@ -21,7 +20,7 @@ func (r *request) start() {
 }
 
 func (r *request) send() {
-	spvWallet.PeerManager().GetSyncPeer().Send(NewDataReq(r.reqType, r.hash))
+	spvWallet.PeerManager().GetSyncPeer().Send(spvWallet.NewDataReq(r.reqType, r.hash))
 	timer := time.NewTimer(time.Second * RequestTimeout)
 	select {
 	case <-timer.C:

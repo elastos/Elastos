@@ -9,12 +9,6 @@ type Ping struct {
 	Height uint64
 }
 
-func NewPing(height uint32) *Ping {
-	ping := new(Ping)
-	ping.Height = uint64(height)
-	return ping
-}
-
 func (msg *Ping) CMD() string {
 	return "ping"
 }

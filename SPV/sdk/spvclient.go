@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
 )
@@ -12,6 +14,9 @@ type SPVClient interface {
 	SetMessageHandler(SPVMessageHandler)
 	Start()
 	PeerManager() *p2p.PeerManager
+	NewBlocksReq(locator []*Uint256, hashStop Uint256) *msg.BlocksReq
+	NewDataReq(invType uint8, hash Uint256) *msg.DataReq
+	NewTxn(tx tx.Transaction) *msg.Txn
 }
 
 type SPVMessageHandler interface {
