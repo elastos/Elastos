@@ -25,14 +25,14 @@ func Init(clientId uint64) (*SPVWallet, error) {
 	}
 
 	// Initialize P2P network client
-	client, err := sdk.GetP2PClient(sdk.MainNetMagic, clientId, config.Values().SeedList)
+	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, config.Values().SeedList)
 	if err != nil {
 		return nil, err
 	}
 	// Set p2p message handler
 	client.SetMessageHandler(spvWallet)
 
-	spvWallet.P2PClient = client
+	spvWallet.SPVClient = client
 
 	// Initialize sync manager
 	spvWallet.SyncManager = NewSyncManager()
@@ -44,29 +44,9 @@ func Init(clientId uint64) (*SPVWallet, error) {
 }
 
 type SPVWallet struct {
-	sdk.P2PClient
+	sdk.SPVClient
 	*SyncManager
 	chain *Blockchain
-}
-
-func (wallet *SPVWallet) MakeMessage(cmd string) (message p2p.Message, err error) {
-	switch cmd {
-	case "ping":
-		message = new(msg.Ping)
-	case "pong":
-		message = new(msg.Pong)
-	case "inv":
-		message = new(msg.Inventory)
-	case "tx":
-		message = new(msg.Txn)
-	case "merkleblock":
-		message = new(bloom.MerkleBlock)
-	case "notfound":
-		message = new(msg.NotFound)
-	default:
-		return nil, errors.New("Received unsupported message, CMD " + cmd)
-	}
-	return message, nil
 }
 
 func (wallet *SPVWallet) OnPeerEstablish(peer *p2p.Peer) {
@@ -74,27 +54,8 @@ func (wallet *SPVWallet) OnPeerEstablish(peer *p2p.Peer) {
 	peer.Send(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
 }
 
-func (wallet *SPVWallet) HandleMessage(peer *p2p.Peer, message p2p.Message) error {
-	switch msg := message.(type) {
-	case *msg.Ping:
-		return wallet.OnPing(peer, msg)
-	case *msg.Pong:
-		return wallet.OnPong(peer, msg)
-	case *msg.Inventory:
-		return wallet.OnInventory(peer, msg)
-	case *bloom.MerkleBlock:
-		return wallet.OnMerkleBlock(peer, msg)
-	case *msg.Txn:
-		return wallet.OnTxn(peer, msg)
-	case *msg.NotFound:
-		return wallet.OnNotFound(peer, msg)
-	default:
-		return errors.New("unknown handle message type")
-	}
-}
-
 func (wallet *SPVWallet) Start() {
-	wallet.P2PClient.Start()
+	wallet.SPVClient.Start()
 	go wallet.keepUpdate()
 	log.Info("SPV service started...")
 }
@@ -112,38 +73,9 @@ func (wallet *SPVWallet) keepUpdate() {
 	ticker := time.NewTicker(time.Second * p2p.InfoUpdateDuration)
 	defer ticker.Stop()
 	for range ticker.C {
-
-		// Update peers info
-		for _, peer := range wallet.PeerManager().ConnectedPeers() {
-			if peer.State() == p2p.ESTABLISH {
-
-				// Disconnect inactive peer
-				if peer.LastActive().Before(
-					time.Now().Add(-time.Second * p2p.InfoUpdateDuration * p2p.KeepAliveTimeout)) {
-					log.Trace("SPV disconnect inactive peer,", peer)
-					wallet.PeerManager().DisconnectPeer(peer)
-					continue
-				}
-
-				// Send ping message to peer
-				go peer.Send(msg.NewPing(wallet.chain.Height()))
-			}
-		}
-
 		// Keep synchronizing blocks
 		wallet.SyncBlocks()
 	}
-}
-
-func (wallet *SPVWallet) OnPing(peer *p2p.Peer, p *msg.Ping) error {
-	peer.SetHeight(p.Height)
-	go peer.Send(msg.NewPong(wallet.chain.Height()))
-	return nil
-}
-
-func (wallet *SPVWallet) OnPong(peer *p2p.Peer, p *msg.Pong) error {
-	peer.SetHeight(p.Height)
-	return nil
 }
 
 func (wallet *SPVWallet) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
