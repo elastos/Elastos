@@ -204,7 +204,7 @@ func NewCommand() cli.Command {
 				Name: "addmultisig, multi",
 				Usage: "add a multi-sign account with signers public keys\n" +
 					"\tuse -m to specify how many signatures are needed to create a valid transaction\n" +
-					"\tby default M is public keys / 2 + 1, witch means greater than half",
+					"\tby default M is public keys / 2 + 1, which means greater than half",
 			},
 			cli.IntFlag{
 				Name:  "m",

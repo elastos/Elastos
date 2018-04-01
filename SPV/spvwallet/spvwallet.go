@@ -80,9 +80,9 @@ func (wallet *SPVWallet) keepUpdate() {
 
 func (wallet *SPVWallet) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 	switch inv.Type {
-	case msg.TRANSACTION:
+	case sdk.TRANSACTION:
 		// Do nothing, transaction inventory is not supported
-	case msg.BLOCK:
+	case sdk.BLOCK:
 		log.Info("SPV receive block inventory")
 		return wallet.HandleBlockInvMsg(peer, inv)
 	}

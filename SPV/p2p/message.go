@@ -2,7 +2,7 @@ package p2p
 
 // The message flying in the peer to peer network
 type Message interface {
-	// Get the message CMD parameter witch is the type of this message
+	// Get the message CMD parameter which is the type of this message
 	CMD() string
 	// Serialize the message content
 	Serialize() ([]byte, error)
@@ -19,7 +19,7 @@ type MessageHandler interface {
 	OnHandshake(v *Version) error
 
 	// VerAck message received from a connected peer
-	// witch means the connected peer is established
+	// which means the connected peer is established
 	OnPeerEstablish(*Peer)
 
 	// Handle messages received from the connected peer

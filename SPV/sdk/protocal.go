@@ -11,4 +11,7 @@ const (
 	ServiveSPV      = 1 << 2
 	SPVServerPort   = 20866
 	SPVClientPort   = 20867
+
+	TRANSACTION = 0x01
+	BLOCK       = 0x02
 )

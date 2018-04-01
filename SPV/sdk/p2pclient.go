@@ -25,7 +25,7 @@ type P2PMessageHandler interface {
 	MakeMessage(cmd string) (p2p.Message, error)
 
 	// VerAck message received from a connected peer
-	// witch means the connected peer is established
+	// which means the connected peer is established
 	OnPeerEstablish(*p2p.Peer)
 
 	// Handle messages received from the connected peer
@@ -35,7 +35,7 @@ type P2PMessageHandler interface {
 // To get a P2P client, you need to set a magic number and a client ID to identify this peer in the peer to peer network.
 // Magic number is the peer to peer network id for the peers in the same network to identify each other,
 // and client id is the unique id to identify the current peer in this peer to peer network.
-// seeds is a list witch is the other peers IP:[Port] addresses,
+// seeds is a list which is the other peers IP:[Port] addresses,
 // port is not necessary for it will be overwrite to SPVServerPort according to the SPV protocol
 func GetP2PClient(magic uint32, clientId uint64, seeds []string) (P2PClient, error) {
 	return NewP2PClientImpl(magic, clientId, seeds)

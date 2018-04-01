@@ -7,11 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
-const (
-	TRANSACTION = 0x01
-	BLOCK       = 0x02
-)
-
 type Inventory struct {
 	Type  uint8
 	Count uint32

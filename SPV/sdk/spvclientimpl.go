@@ -34,7 +34,6 @@ func (client *SPVClientImpl) SetMessageHandler(handler SPVMessageHandler) {
 }
 
 func (client *SPVClientImpl) Start() {
-	// Start
 	client.p2p.Start()
 }
 

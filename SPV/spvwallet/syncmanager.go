@@ -7,13 +7,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	. "github.com/elastos/Elastos.ELA.SPV/p2p"
 	. "github.com/elastos/Elastos.ELA.SPV/msg"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 const (
@@ -121,7 +122,7 @@ func (sm *SyncManager) requestBlocks() {
 		}()
 		return
 	}
-	// Request blocks returns a inventory message witch contains block hashes
+	// Request blocks returns a inventory message which contains block hashes
 	sm.blockLocator = spvWallet.chain.GetBlockLocatorHashes()
 
 	go syncPeer.Send(spvWallet.NewBlocksReq(sm.blockLocator, Uint256{}))
@@ -155,7 +156,7 @@ func (sm *SyncManager) HandleBlockInvMsg(peer *Peer, inv *Inventory) error {
 		// Create request
 		request := &request{
 			hash:      blockHash,
-			reqType:   BLOCK,
+			reqType:   sdk.BLOCK,
 			onTimeout: sm.ChangeSyncPeerAndRestart,
 		}
 		// Add block hashes to request queue
@@ -213,7 +214,7 @@ func (sm *SyncManager) RequestBlockTxns(peer *Peer, block *bloom.MerkleBlock) er
 	for i, txId := range txIds {
 		request := &request{
 			hash:      *txId,
-			reqType:   TRANSACTION,
+			reqType:   sdk.TRANSACTION,
 			onTimeout: sm.ChangeSyncPeerAndRestart,
 		}
 		blockTxns[i] = request

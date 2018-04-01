@@ -88,7 +88,7 @@ Run `make` to build the executable files `service` and `ela-wallet`
 
 > `service` is the SPV (Simplified Payment Verification) service running background, communicating with the Elastos peer to peer network and keep updating with the blockchain of Elastos digital currency.
 
-> `ela-wallet` is the command line user interface to communicate with the SPV service, witch can create accounts, build sign or send a transaction, or check your account balance.
+> `ela-wallet` is the command line user interface to communicate with the SPV service, which can create accounts, build sign or send a transaction, or check your account balance.
 
 ## Run on Mac
 
@@ -179,7 +179,7 @@ OPTIONS:
    --new, -n                           create a new sub account
    --addmultisig value, --multi value  add a multi-sign account with signers public keys
                                        use -m to specify how many signatures are needed to create a valid transaction
-                                       by default M is public keys / 2 + 1, witch means greater than half
+                                       by default M is public keys / 2 + 1, which means greater than half
    -m value                            the M value to specify how many signatures are needed to create a valid transaction (default: 0)
    --balance, -b                       show accounts balances
 ```
@@ -234,7 +234,7 @@ type P2PClient interface {
 	// Start the P2P client
 	Start()
 
-	// Handle the version message witch includes information of a handshake peer
+	// Handle the version message which includes information of a handshake peer
 	HandleVersion(callback func(v *p2p.Version) error)
 
 	// Handle a new peer connect
