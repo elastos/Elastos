@@ -10,12 +10,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/core/asset"
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
 	pg "github.com/elastos/Elastos.ELA.SPV/core/contract/program"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
-	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 var SystemAssetId = *getSystemAssetId()
@@ -287,7 +288,7 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 	if err != nil {
 		return nil, err
 	}
-	var account *Account
+	var account *sdk.Account
 	for i, programHash := range programHashes {
 		account = wallet.Keystore.GetAccountByProgramHash(programHash)
 		if account != nil {

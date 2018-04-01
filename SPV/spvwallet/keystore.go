@@ -5,10 +5,11 @@ import (
 	"errors"
 	"crypto/rand"
 	"crypto/sha256"
+	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SPV/crypto"
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"fmt"
+	. "github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 const (
@@ -224,7 +225,7 @@ func (store *KeystoreImpl) MainAccount() *Account {
 func (store *KeystoreImpl) NewAccount() *Account {
 	// create sub account
 	privateKey, publicKey, err := crypto.GenerateSubKeyPair(
-		store.SubAccountsCount+1, store.masterKey, store.accounts[0].privateKey)
+		store.SubAccountsCount+1, store.masterKey, store.accounts[0].PrivateKey())
 	if err != nil {
 		panic(fmt.Sprint("New sub account failed,", err))
 	}

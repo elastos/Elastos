@@ -8,9 +8,10 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	. "github.com/elastos/Elastos.ELA.SPV/core"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
@@ -124,7 +125,7 @@ func (bc *Blockchain) GetBloomFilter() *bloom.Filter {
 	stxos, _ := bc.STXOs().GetAll()
 
 	elements := uint32(len(addrs) + len(utxos) + len(stxos))
-	filter := bloom.NewFilter(elements, 0, 0.00003)
+	filter := sdk.NewBloomFilter(elements)
 
 	for _, addr := range addrs {
 		filter.Add(addr.ToArray())
