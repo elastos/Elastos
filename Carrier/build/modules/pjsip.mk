@@ -39,7 +39,8 @@ CONFIG_OPTIONS = --prefix=$(DIST_DIR) \
         --disable-opencore-amr \
         --disable-silk \
         --disable-opus \
-        --disable-libyuv
+        --disable-libyuv \
+        ac_cv_lib_uuid_uuid_generate=no
 
 define configure
     ./patch/pjsip.sh $(SRC_DIR) $(HOST) $(ARCH)

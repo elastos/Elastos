@@ -1839,7 +1839,6 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
 {
     uint32_t friend_number;
     FriendInfo *fi;
-    ElaConnectionStatus status;
     int rc;
 
     if (!w || !friendid) {
@@ -1872,8 +1871,6 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
 
     fi = friends_remove(w->friends, friend_number);
     assert(fi);
-
-    status = fi->info.status;
 
     deref(fi);
 
