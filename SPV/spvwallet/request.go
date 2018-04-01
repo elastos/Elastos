@@ -4,7 +4,7 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/msg"
+	. "github.com/elastos/Elastos.ELA.SPV/msg"
 )
 
 type request struct {

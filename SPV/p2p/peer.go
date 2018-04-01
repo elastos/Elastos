@@ -75,11 +75,9 @@ type Peer struct {
 	relay      uint8 // 1 for true 0 for false
 
 	PeerState
-	conn         net.Conn
-	OnDisconnect func(*Peer)
+	conn net.Conn
 
-	msgBuf    MsgBuf
-	decodeMsg func(*Peer, []byte)
+	msgBuf MsgBuf
 }
 
 func (peer *Peer) String() string {
@@ -117,10 +115,9 @@ func (buf *MsgBuf) Reset() {
 func NewPeer(conn net.Conn) *Peer {
 	ip16, port := addrFromConn(conn)
 	return &Peer{
-		conn:      conn,
-		ip16:      ip16,
-		port:      port,
-		decodeMsg: pm.DecodeMessageBuf,
+		conn: conn,
+		ip16: ip16,
+		port: port,
 	}
 }
 
@@ -230,7 +227,7 @@ func (peer *Peer) Read() {
 
 DISCONNECT:
 	log.Trace("Peer IO error, disconnect peer,", peer)
-	peer.OnDisconnect(peer)
+	pm.DisconnectPeer(peer)
 }
 
 func (peer *Peer) unpackMessage(buf []byte) {
@@ -258,7 +255,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 
 		if header.Magic != Magic {
 			log.Error("Magic not match, disconnect peer")
-			peer.OnDisconnect(peer)
+			pm.DisconnectPeer(peer)
 			return
 		}
 
@@ -271,7 +268,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 	if len(buf) == msgLen { // Just read the full message
 
 		peer.msgBuf.Append(buf[:])
-		go peer.decodeMsg(peer, peer.msgBuf.Buf())
+		go peer.decodeMessage(peer.msgBuf.Buf())
 		peer.msgBuf.Reset()
 
 	} else if len(buf) < msgLen { // Read part of the message
@@ -282,10 +279,47 @@ func (peer *Peer) unpackMessage(buf []byte) {
 	} else { // Read more than the message
 
 		peer.msgBuf.Append(buf[0:msgLen])
-		go peer.decodeMsg(peer, peer.msgBuf.Buf())
+		go peer.decodeMessage(peer.msgBuf.Buf())
 		peer.msgBuf.Reset()
 		peer.unpackMessage(buf[msgLen:])
 	}
+}
+
+func (peer *Peer) decodeMessage(buf []byte) {
+	if len(buf) < HEADERLEN {
+		log.Error("Message length is not enough")
+		return
+	}
+
+	hdr, err := verifyHeader(buf)
+	if err != nil {
+		log.Error("Verify message header error: ", err)
+		return
+	}
+
+	log.Debug("Receive message: ", hdr.GetCMD())
+	msg, err := pm.makeMessage(hdr.GetCMD())
+	if err != nil {
+		log.Error("Make message error, ", err)
+		return
+	}
+
+	err = msg.Deserialize(buf[HEADERLEN:])
+	if err != nil {
+		log.Error("Deserialize message ", msg.CMD(), " error: ", err)
+		return
+	}
+
+	pm.handleMessage(peer, msg)
+}
+
+func verifyHeader(buf []byte) (*Header, error) {
+	hdr := new(Header)
+	err := hdr.Deserialize(buf)
+	if err = hdr.Verify(buf[HEADERLEN:]); err != nil {
+		return nil, err
+	}
+	return hdr, nil
 }
 
 func (peer *Peer) Send(msg Message) {
@@ -302,6 +336,18 @@ func (peer *Peer) Send(msg Message) {
 	_, err = peer.conn.Write(buf)
 	if err != nil {
 		log.Error("Error sending message to peer ", err)
-		peer.OnDisconnect(peer)
+		pm.DisconnectPeer(peer)
 	}
+}
+
+func (peer *Peer) NewVersionMsg() *Version {
+	version := new(Version)
+	version.Version = peer.Version()
+	version.Services = peer.Services()
+	version.TimeStamp = uint32(time.Now().UnixNano())
+	version.Port = peer.Port()
+	version.Nonce = peer.ID()
+	version.Height = peer.Height()
+	version.Relay = peer.Relay()
+	return version
 }

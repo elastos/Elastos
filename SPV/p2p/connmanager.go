@@ -76,7 +76,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 	go remote.Read()
 
 	// Send version message to remote peer
-	go remote.Send(NewVersion())
+	go remote.Send(pm.local.NewVersionMsg())
 }
 
 func (cm *ConnManager) retry(addr string) {

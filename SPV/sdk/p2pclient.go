@@ -9,20 +9,27 @@ P2P client is the interface to interactive with the peer to peer network impleme
 use this to join the peer to peer network and make communication with other peers.
 */
 type P2PClient interface {
+	// Set the peer to peer message handler
+	SetMessageHandler(handler P2PMessageHandler)
+
 	// Start the P2P client
 	Start()
 
-	// Handle a new peer connect
-	OnPeerConnected(callback func(peer *p2p.Peer))
-
-	// Make a message instance with the given cmd
-	OnMakeMessage(callback func(cmd string) (p2p.Message, error))
-
-	// Handle a message from a connected peer
-	OnHandleMessage(callback func(peer *p2p.Peer, msg p2p.Message) error)
-
 	// Get the peer manager of this P2P client
 	PeerManager() *p2p.PeerManager
+}
+
+// Handle the message creation, allocation etc.
+type P2PMessageHandler interface {
+	// Create a message instance by the given cmd parameter
+	MakeMessage(cmd string) (p2p.Message, error)
+
+	// VerAck message received from a connected peer
+	// witch means the connected peer is established
+	OnPeerEstablish(*p2p.Peer)
+
+	// Handle messages received from the connected peer
+	HandleMessage(*p2p.Peer, p2p.Message) error
 }
 
 // To get a P2P client, you need to set a magic number and a client ID to identify this peer in the peer to peer network.

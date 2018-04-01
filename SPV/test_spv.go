@@ -21,11 +21,7 @@ func main() {
 	var err error
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-	spv, err = i.NewSPVService(clientId)
-	if err != nil {
-		log.Error("New SPV service error: ", err)
-		os.Exit(0)
-	}
+	spv = i.NewSPVService(clientId)
 
 	// Register account
 	err = spv.RegisterAccount("ETBBrgotZy3993o9bH75KxjLDgQxBCib6u")

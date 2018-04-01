@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/msg"
+	"github.com/elastos/Elastos.ELA.SPV/msg"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 )
 
@@ -29,9 +29,9 @@ func Init(clientId uint64) (*SPVWallet, error) {
 	if err != nil {
 		return nil, err
 	}
-	client.OnMakeMessage(spvWallet.makeMessage)
-	client.OnPeerConnected(spvWallet.peerConnected)
-	client.OnHandleMessage(spvWallet.handleMessage)
+	// Set p2p message handler
+	client.SetMessageHandler(spvWallet)
+
 	spvWallet.P2PClient = client
 
 	// Initialize sync manager
@@ -49,7 +49,7 @@ type SPVWallet struct {
 	chain *Blockchain
 }
 
-func (wallet *SPVWallet) makeMessage(cmd string) (message p2p.Message, err error) {
+func (wallet *SPVWallet) MakeMessage(cmd string) (message p2p.Message, err error) {
 	switch cmd {
 	case "ping":
 		message = new(msg.Ping)
@@ -69,12 +69,12 @@ func (wallet *SPVWallet) makeMessage(cmd string) (message p2p.Message, err error
 	return message, nil
 }
 
-func (wallet *SPVWallet) peerConnected(peer *p2p.Peer) {
+func (wallet *SPVWallet) OnPeerEstablish(peer *p2p.Peer) {
 	// Send filterload message
 	peer.Send(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
 }
 
-func (wallet *SPVWallet) handleMessage(peer *p2p.Peer, message p2p.Message) error {
+func (wallet *SPVWallet) HandleMessage(peer *p2p.Peer, message p2p.Message) error {
 	switch msg := message.(type) {
 	case *msg.Ping:
 		return wallet.OnPing(peer, msg)
@@ -129,9 +129,6 @@ func (wallet *SPVWallet) keepUpdate() {
 				go peer.Send(msg.NewPing(wallet.chain.Height()))
 			}
 		}
-
-		// Keep connections
-		wallet.PeerManager().ConnectPeers()
 
 		// Keep synchronizing blocks
 		wallet.SyncBlocks()

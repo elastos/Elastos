@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/msg"
+	"github.com/elastos/Elastos.ELA.SPV/msg"
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 )
 

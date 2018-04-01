@@ -36,8 +36,6 @@ type SPVService interface {
 	Start() error
 }
 
-func NewSPVService(clientId uint64) (SPVService, error) {
-	return &SPVServiceImpl{
-		clientId: clientId,
-	}, nil
+func NewSPVService(clientId uint64) (SPVService) {
+	return &SPVServiceImpl{clientId: clientId}
 }

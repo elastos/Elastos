@@ -10,7 +10,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	. "github.com/elastos/Elastos.ELA.SPV/p2p"
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/msg"
+	. "github.com/elastos/Elastos.ELA.SPV/msg"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"

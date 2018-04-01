@@ -9,6 +9,7 @@ import (
 )
 
 type P2PClientImpl struct {
+	msgHandler  P2PMessageHandler
 	peerManager *p2p.PeerManager
 }
 
@@ -28,18 +29,21 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string) (*P2PClient
 	if len(seeds) == 0 {
 		return nil, errors.New("Seeds list is empty ")
 	}
+
+	// Create client instance
+	client := new(P2PClientImpl)
+
 	// Initialize peer manager
-	peerManager := p2p.InitPeerManager(local, toSPVAddr(seeds))
+	client.peerManager = p2p.InitPeerManager(local, toSPVAddr(seeds))
 
-	// Set default methods to prevent nil exception
-	peerManager.OnHandleVersion = handleVersion
-	peerManager.OnMakeMessage = OnMakeMessage
-	peerManager.OnPeerConnected = OnPeerConnected
-	peerManager.OnHandleMessage = OnHandleMessage
+	// Set message handler
+	client.peerManager.SetMessageHandler(client)
 
-	return &P2PClientImpl{
-		peerManager: peerManager,
-	}, nil
+	return client, nil
+}
+
+func (client *P2PClientImpl) SetMessageHandler(handler P2PMessageHandler) {
+	client.msgHandler = handler
 }
 
 func (client *P2PClientImpl) Start() {
@@ -62,7 +66,7 @@ func toSPVAddr(seeds []string) []string {
 }
 
 // Filter peer handshake according to the SPV protocol
-func handleVersion(v *p2p.Version) error {
+func (client *P2PClientImpl) OnHandshake(v *p2p.Version) error {
 	if v.Version < ProtocolVersion {
 		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", ProtocolVersion))
 	}
@@ -74,26 +78,16 @@ func handleVersion(v *p2p.Version) error {
 	return nil
 }
 
-func OnMakeMessage(cmd string) (p2p.Message, error) {
-	return nil, errors.New("OnMakeMessage method not initialized")
+func (client *P2PClientImpl) MakeMessage(cmd string) (p2p.Message, error) {
+	return client.msgHandler.MakeMessage(cmd)
 }
 
-func OnPeerConnected(peer *p2p.Peer) {}
-
-func OnHandleMessage(peer *p2p.Peer, msg p2p.Message) error {
-	return errors.New("OnHandleMessage method not initialized")
+func (client *P2PClientImpl) OnPeerEstablish(peer *p2p.Peer) {
+	client.msgHandler.OnPeerEstablish(peer)
 }
 
-func (client *P2PClientImpl) OnPeerConnected(callback func(peer *p2p.Peer)) {
-	client.peerManager.OnPeerConnected = callback
-}
-
-func (client *P2PClientImpl) OnMakeMessage(callback func(cmd string) (p2p.Message, error)) {
-	client.peerManager.OnMakeMessage = callback
-}
-
-func (client *P2PClientImpl) OnHandleMessage(callback func(peer *p2p.Peer, msg p2p.Message) error) {
-	client.peerManager.OnHandleMessage = callback
+func (client *P2PClientImpl) HandleMessage(peer *p2p.Peer, msg p2p.Message) error {
+	return client.msgHandler.HandleMessage(peer, msg)
 }
 
 func (client *P2PClientImpl) PeerManager() *p2p.PeerManager {

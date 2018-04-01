@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"time"
 )
 
 const (
@@ -21,11 +22,7 @@ type PeerManager struct {
 	*Peers
 	addrManager *AddrManager
 	connManager *ConnManager
-
-	OnMakeMessage   func(cmd string) (Message, error)
-	OnHandleVersion func(v *Version) error
-	OnPeerConnected func(peer *Peer)
-	OnHandleMessage func(peer *Peer, msg Message) error
+	msgHandler  MessageHandler
 }
 
 func InitPeerManager(localPeer *Peer, seeds []string) *PeerManager {
@@ -37,9 +34,13 @@ func InitPeerManager(localPeer *Peer, seeds []string) *PeerManager {
 	return pm
 }
 
+func (pm *PeerManager) SetMessageHandler(msgHandler MessageHandler) {
+	pm.msgHandler = msgHandler
+}
+
 func (pm *PeerManager) Start() {
 	log.Info("PeerManager start")
-	pm.ConnectPeers()
+	go pm.keepConnections()
 	go pm.listenConnection()
 }
 
@@ -63,9 +64,6 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 
 	// Mark addr as connected
 	pm.addrManager.AddAddr(addr)
-
-	// Listen peer disconnect
-	peer.OnDisconnect = pm.DisconnectPeer
 }
 
 func (pm *PeerManager) DisconnectPeer(peer *Peer) {
@@ -104,12 +102,22 @@ func (pm *PeerManager) RandAddrs() []Addr {
 	return addrs
 }
 
-func (pm *PeerManager) ConnectPeers() {
+func (pm *PeerManager) connectPeers() {
 	if pm.NeedMorePeers() {
 		addrs := pm.addrManager.GetIdleAddrs(MaxOutboundCount)
 		for _, addr := range addrs {
 			go pm.ConnectPeer(addr)
 		}
+	}
+}
+
+func (pm *PeerManager) keepConnections() {
+	pm.connectPeers()
+
+	ticker := time.NewTicker(time.Second * InfoUpdateDuration)
+	defer ticker.Stop()
+	for range ticker.C {
+		pm.connectPeers()
 	}
 }
 
@@ -131,6 +139,44 @@ func (pm *PeerManager) listenConnection() {
 
 		peer := NewPeer(conn)
 		go peer.Read()
+	}
+}
+
+func (pm *PeerManager) makeMessage(cmd string) (Message, error) {
+	var msg Message
+	switch cmd {
+	case "version":
+		msg = new(Version)
+	case "verack":
+		msg = new(VerAck)
+	case "getaddr":
+		msg = new(AddrsReq)
+	case "addr":
+		msg = new(Addrs)
+	default:
+		return pm.msgHandler.MakeMessage(cmd)
+	}
+
+	return msg, nil
+}
+
+func (pm *PeerManager) handleMessage(peer *Peer, msg Message) {
+	var err error
+	switch msg := msg.(type) {
+	case *Version:
+		err = pm.OnVersion(peer, msg)
+	case *VerAck:
+		err = pm.OnVerAck(peer, msg)
+	case *AddrsReq:
+		err = pm.OnAddrsReq(peer, msg)
+	case *Addrs:
+		err = pm.OnAddrs(peer, msg)
+	default:
+		err = pm.msgHandler.HandleMessage(peer, msg)
+	}
+
+	if err != nil {
+		log.Error("Handle message error,", err)
 	}
 }
 
@@ -161,8 +207,8 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	// Set peer info with version message
 	peer.SetInfo(v)
 
-	// Handle version message
-	if err := pm.OnHandleVersion(v); err != nil {
+	// Handle peer handshake
+	if err := pm.msgHandler.OnHandshake(v); err != nil {
 		pm.DisconnectPeer(peer)
 		return err
 	}
@@ -170,7 +216,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	var message Message
 	if peer.State() == INIT {
 		peer.SetState(HANDSHAKE)
-		message = NewVersion()
+		message = peer.NewVersionMsg()
 	} else if peer.State() == HAND {
 		peer.SetState(HANDSHAKED)
 		message = new(VerAck)
@@ -196,7 +242,7 @@ func (pm *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
 	pm.AddConnectedPeer(peer)
 
 	// Notify peer connected
-	pm.OnPeerConnected(peer)
+	pm.msgHandler.OnPeerEstablish(peer)
 
 	if pm.NeedMorePeers() {
 		go peer.Send(new(AddrsReq))
