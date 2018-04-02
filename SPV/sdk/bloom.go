@@ -12,6 +12,22 @@ func NewBloomFilter(elements uint32) *bloom.Filter {
 	return bloom.NewFilter(elements, 0, 0.00003)
 }
 
+// Build a bloom filter by giving the interested addresses and outpoints
+func BuildBloomFilter(addresses []*common.Uint168, outpoints []*transaction.OutPoint) *bloom.Filter {
+	elements := uint32(len(addresses) + len(outpoints))
+
+	filter := NewBloomFilter(elements)
+	for _, address := range addresses {
+		filter.Add(address.ToArray())
+	}
+
+	for _, outpoint := range outpoints {
+		filter.AddOutPoint(outpoint)
+	}
+
+	return filter
+}
+
 // Add a address into the given bloom filter
 func FilterAddress(filter *bloom.Filter, address *common.Uint168) {
 	filter.Add(address.ToArray())
