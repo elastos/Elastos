@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	i "github.com/elastos/Elastos.ELA.SPV/interface"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 )
 
 var spv i.SPVService
@@ -21,7 +22,7 @@ func main() {
 	var err error
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-	spv = i.NewSPVService(clientId)
+	spv = i.NewSPVService(clientId, config.Values().SeedList)
 
 	// Register account
 	err = spv.RegisterAccount("ETBBrgotZy3993o9bH75KxjLDgQxBCib6u")

@@ -5,8 +5,9 @@ import (
 	"os/signal"
 	"encoding/binary"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 )
 
@@ -22,7 +23,7 @@ func main() {
 
 	// Initiate SPV service
 	iv, _ := file.GetIV()
-	service, err := spvwallet.Init(binary.LittleEndian.Uint64(iv))
+	service, err := spvwallet.Init(binary.LittleEndian.Uint64(iv), config.Values().SeedList)
 	if err != nil {
 		log.Error("Initiate SPV service failed,", err)
 		os.Exit(0)

@@ -7,7 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
@@ -15,7 +14,7 @@ import (
 
 var spvWallet *SPVWallet
 
-func Init(clientId uint64) (*SPVWallet, error) {
+func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	var err error
 	spvWallet = new(SPVWallet)
 	// Initialize blockchain
@@ -25,7 +24,7 @@ func Init(clientId uint64) (*SPVWallet, error) {
 	}
 
 	// Initialize P2P network client
-	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, config.Values().SeedList)
+	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, seeds)
 	if err != nil {
 		return nil, err
 	}

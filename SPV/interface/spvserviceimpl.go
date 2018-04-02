@@ -18,6 +18,7 @@ import (
 type SPVServiceImpl struct {
 	*spvwallet.SPVWallet
 	clientId uint64
+	seeds    []string
 	accounts []*Uint168
 	callback func(db.Proof, tx.Transaction)
 }
@@ -99,7 +100,7 @@ func (service *SPVServiceImpl) Start() error {
 	}
 
 	var err error
-	service.SPVWallet, err = spvwallet.Init(service.clientId)
+	service.SPVWallet, err = spvwallet.Init(service.clientId, service.seeds)
 	if err != nil {
 		return err
 	}
@@ -145,7 +146,7 @@ func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof,
 	var matchedTxs []tx.Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
-			if service.BlockChain().Addrs().GetAddrFilter().ContainAddress(output.ProgramHash) {
+			if service.BlockChain().Addrs().GetAddrFilter().ContainAddr(output.ProgramHash) {
 				matchedTxs = append(matchedTxs, tx)
 			}
 		}
