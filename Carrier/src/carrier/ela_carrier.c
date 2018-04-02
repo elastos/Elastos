@@ -1872,9 +1872,9 @@ int ela_remove_friend(ElaCarrier *w, const char *friendid)
     fi = friends_remove(w->friends, friend_number);
     assert(fi);
 
-    deref(fi);
-
     notify_friend_removed(w, &fi->info);
+
+    deref(fi);
 
     return 0;
 }
