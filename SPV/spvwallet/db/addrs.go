@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(
@@ -16,7 +17,7 @@ const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(
 type AddrsDB struct {
 	*sync.RWMutex
 	*sql.DB
-	filter *AddrFilter
+	filter *sdk.AddrFilter
 }
 
 func NewAddrsDB(db *sql.DB, lock *sync.RWMutex) (Addrs, error) {
@@ -41,7 +42,7 @@ func (db *AddrsDB) Put(hash *Uint168, script []byte, addrType int) error {
 		return err
 	}
 
-	db.getFilter().AddAddr(NewAddr(hash, script, addrType))
+	db.getFilter().AddAddr(NewAddr(hash, script, addrType).hash)
 
 	return nil
 }
@@ -117,7 +118,7 @@ func (db *AddrsDB) Delete(hash *Uint168) error {
 }
 
 // get Addrs filter
-func (db *AddrsDB) GetAddrFilter() *AddrFilter {
+func (db *AddrsDB) GetAddrFilter() *sdk.AddrFilter {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -125,22 +126,25 @@ func (db *AddrsDB) GetAddrFilter() *AddrFilter {
 }
 
 // reload filter from db
-func (db *AddrsDB) ReloadAddrFilter() *AddrFilter {
+func (db *AddrsDB) ReloadAddrFilter() *sdk.AddrFilter {
 	db.RLock()
 	defer db.RUnlock()
 
 	return db.loadFilter()
 }
 
-func (db *AddrsDB) getFilter() *AddrFilter {
+func (db *AddrsDB) getFilter() *sdk.AddrFilter {
 	if db.filter == nil {
 		db.loadFilter()
 	}
 	return db.filter
 }
 
-func (db *AddrsDB) loadFilter() *AddrFilter {
-	Addrs, _ := db.getAll()
-	db.filter = NewAddrFilter(Addrs)
+func (db *AddrsDB) loadFilter() *sdk.AddrFilter {
+	addrs, _ := db.getAll()
+	db.filter = sdk.NewAddrFilter(nil)
+	for _, addr := range addrs {
+		db.filter.AddAddr(addr.hash)
+	}
 	return db.filter
 }

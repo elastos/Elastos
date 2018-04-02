@@ -3,6 +3,7 @@ package db
 import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 type DataStore interface {
@@ -50,10 +51,10 @@ type Addrs interface {
 	Delete(hash *Uint168) error
 
 	// get addresss filter
-	GetAddrFilter() *AddrFilter
+	GetAddrFilter() *sdk.AddrFilter
 
 	// reload filter from db
-	ReloadAddrFilter() *AddrFilter
+	ReloadAddrFilter() *sdk.AddrFilter
 }
 
 type UTXOs interface {

@@ -66,7 +66,7 @@ func (p *Peers) ConnectedPeers() []*Peer {
 	p.peersLock.RLock()
 	defer p.peersLock.RUnlock()
 
-	peers := make([]*Peer, 0)
+	peers := make([]*Peer, 0, len(p.peers))
 	for _, v := range p.peers {
 		peers = append(peers, v)
 	}

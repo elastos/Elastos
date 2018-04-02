@@ -5,6 +5,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 type Database interface {
@@ -41,7 +42,7 @@ type DatabaseImpl struct {
 	lock *sync.RWMutex
 	DataStore
 
-	filter *AddrFilter
+	filter *sdk.AddrFilter
 }
 
 func (db *DatabaseImpl) AddAddress(address *Uint168, script []byte, addrType int) error {

@@ -120,7 +120,7 @@ func (bc *Blockchain) GetBloomFilter() *bloom.Filter {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
 
-	addrs := bc.Addrs().GetAddrFilter().GetScriptHashes()
+	addrs := bc.Addrs().GetAddrFilter().GetAddrs()
 	utxos, _ := bc.UTXOs().GetAll()
 	stxos, _ := bc.STXOs().GetAll()
 
@@ -250,7 +250,7 @@ func (bc *Blockchain) commitTxn(height uint32, txn tx.Transaction) (bool, error)
 	// Save UTXOs
 	for index, output := range txn.Outputs {
 		// Filter address
-		if bc.Addrs().GetAddrFilter().ContainAddress(output.ProgramHash) {
+		if bc.Addrs().GetAddrFilter().ContainAddr(output.ProgramHash) {
 			var lockTime uint32
 			if txn.TxType == tx.CoinBase {
 				lockTime = height + 100

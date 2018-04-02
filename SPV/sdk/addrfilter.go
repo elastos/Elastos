@@ -1,4 +1,4 @@
-package db
+package sdk
 
 import (
 	"sync"
@@ -8,22 +8,22 @@ import (
 
 type AddrFilter struct {
 	sync.Mutex
-	addrs map[Uint168]*Addr
+	addrs map[Uint168]*Uint168
 }
 
-func NewAddrFilter(addrs []*Addr) *AddrFilter {
+func NewAddrFilter(addrs []*Uint168) *AddrFilter {
 	filter := new(AddrFilter)
 	filter.LoadAddrs(addrs)
 	return filter
 }
 
-func (filter *AddrFilter) LoadAddrs(addrs []*Addr) {
+func (filter *AddrFilter) LoadAddrs(addrs []*Uint168) {
 	filter.Lock()
 	defer filter.Unlock()
 
-	filter.addrs = make(map[Uint168]*Addr)
+	filter.addrs = make(map[Uint168]*Uint168)
 	for _, addr := range addrs {
-		filter.addrs[*addr.Hash()] = addr
+		filter.addrs[*addr] = addr
 	}
 }
 
@@ -31,11 +31,11 @@ func (filter *AddrFilter) IsLoaded() bool {
 	return len(filter.addrs) > 0
 }
 
-func (filter *AddrFilter) AddAddr(addr *Addr) {
+func (filter *AddrFilter) AddAddr(addr *Uint168) {
 	filter.Lock()
 	defer filter.Unlock()
 
-	filter.addrs[*addr.Hash()] = addr
+	filter.addrs[*addr] = addr
 }
 
 func (filter *AddrFilter) DeleteAddr(hash Uint168) {
@@ -45,16 +45,16 @@ func (filter *AddrFilter) DeleteAddr(hash Uint168) {
 	delete(filter.addrs, hash)
 }
 
-func (filter *AddrFilter) GetScriptHashes() []Uint168 {
-	var scriptHashes = make([]Uint168, 0)
+func (filter *AddrFilter) GetAddrs() []*Uint168 {
+	var scriptHashes = make([]*Uint168, 0, len(filter.addrs))
 	for scriptHash := range filter.addrs {
-		scriptHashes = append(scriptHashes, scriptHash)
+		scriptHashes = append(scriptHashes, &scriptHash)
 	}
 
 	return scriptHashes
 }
 
-func (filter *AddrFilter) ContainAddress(hash Uint168) bool {
+func (filter *AddrFilter) ContainAddr(hash Uint168) bool {
 	filter.Lock()
 	defer filter.Unlock()
 
