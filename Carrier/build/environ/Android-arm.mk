@@ -29,12 +29,13 @@ LDFLAGS  += -L${STDCPP_DIR}/libs/$(ARM_ARCH)
 
 ARFLAGS   =
 
-CC        = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-gcc
-CXX       = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-g++
-AR        = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-ar
+CC        = $(TOOLCHAIN_DIR)/bin/clang
+CXX       = $(TOOLCHAIN_DIR)/bin/clang++
+AR        = $(TOOLCHAIN_DIR)/bin/llvm-ar
 RANLIB    = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-ranlib
-LDSHARED  = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-gcc
-CPP       = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-cpp
+LDSHARED  = $(TOOLCHAIN_DIR)/bin/clang
+CPP       = $(TOOLCHAIN_DIR)/bin/clang -E
+STRIP     = $(TOOLCHAIN_DIR)/bin/arm-linux-android-strip
 
 export ANDROID_SYSROOT=$(SYSROOT_DIR)
 export ANDROID_DEV
@@ -44,6 +45,7 @@ export AR
 export RANLIB
 export LDSHARED
 export CPP
+export STRIP
 
 export CFLAGS
 export CPPFLAGS

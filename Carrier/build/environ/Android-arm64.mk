@@ -11,7 +11,7 @@ SYSROOT_DIR   = $(TOOLCHAIN_DIR)/sysroot
 ANDROID_DEV   = $(SYSROOT_DIR)/usr
 STDCPP_DIR    = $(shell ./scripts/android.sh "stdcpp_dir")
 
-CFLAGS    = -Ofast -mabi=lp64
+CFLAGS    = -Ofast
 CFLAGS   += --sysroot=$(SYSROOT_DIR) -I$(SYSROOT_DIR)/usr/include
 CFLAGS   += -Wall -fPIC -D__arm64__ -D__ANDROID__
 CFLAGS   += -DPJ_AUTOCONF
@@ -28,12 +28,13 @@ LDFLAGS  += -L${STDCPP_DIR}/libs/$(ARM_ARCH)
 
 ARFLAGS   =
 
-CC        = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-gcc
-CXX       = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-g++
-AR        = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-ar
+CC        = $(TOOLCHAIN_DIR)/bin/clang
+CXX       = $(TOOLCHAIN_DIR)/bin/clang++
+AR        = $(TOOLCHAIN_DIR)/bin/llvm-ar
 RANLIB    = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-ranlib
-LDSHARED  = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-gcc
-CPP       = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-cpp
+LDSHARED  = $(TOOLCHAIN_DIR)/bin/clang
+CPP       = $(TOOLCHAIN_DIR)/bin/clang -E
+STRIP     = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-strip
 
 export ANDROID_SYSROOT=$(SYSROOT_DIR)
 export ANDROID_DEV
@@ -43,6 +44,7 @@ export AR
 export RANLIB
 export LDSHARED
 export CPP
+export STRIP
 
 export CFLAGS
 export CPPFLAGS

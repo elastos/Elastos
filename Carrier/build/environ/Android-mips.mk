@@ -28,12 +28,13 @@ LDFLAGS  += -L${STDCPP_DIR}/libs/${ARCH}
 
 ARFLAGS   = 
 
-CC        = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-gcc
-CXX       = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-g++
-AR        = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-ar
+CC        = $(TOOLCHAIN_DIR)/bin/clang
+CXX       = $(TOOLCHAIN_DIR)/bin/clang++
+AR        = $(TOOLCHAIN_DIR)/bin/llvm-ar
 RANLIB    = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-ranlib
-LDSHARED  = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-gcc
-CPP       = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-cpp
+LDSHARED  = $(TOOLCHAIN_DIR)/bin/clang
+CPP       = $(TOOLCHAIN_DIR)/bin/clang -E
+STRIP     = $(TOOLCHAIN_DIR)/bin/mipsel-linux-android-strip
 
 export ANDROID_SYSROOT=$(SYSROOT_DIR)
 export ANDROID_DEV
@@ -43,6 +44,7 @@ export AR
 export RANLIB
 export LDSHARED
 export CPP
+export STRIP
 
 export CFLAGS
 export CPPFLAGS
