@@ -221,7 +221,7 @@ func SetLogLevel(param map[string]interface{}) map[string]interface{} {
 }
 
 func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "blockhash", "auxpow") {
+	if !checkParam(param, "blockhash", "sideauxpow") {
 		return ResponsePack(InvalidParams, "")
 	}
 
@@ -231,10 +231,11 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	auxPow := param["auxpow"].(string)
+	auxPow := param["sideauxpow"].(string)
 	temp, _ := HexStringToBytes(auxPow)
 	r := bytes.NewBuffer(temp)
-	Pow.MsgBlock.BlockData[blockHash].Blockdata.SideAuxPow.MainBlockHeader.AuxPow.Deserialize(r)
+  
+	Pow.MsgBlock.BlockData[blockHash].Blockdata.SideAuxPow.Deserialize(r)
 	_, _, err := ledger.DefaultLedger.Blockchain.AddBlock(Pow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
