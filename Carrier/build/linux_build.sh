@@ -5,6 +5,7 @@ TARGET_ARCH="$(uname -m)"
 TARGET_MAKE="install"
 TARGET_BUILD="debug"
 TARGET_MODULE="carrier"
+TOOLCHAIN="gcc"
 
 if [ x"$(uname -s)" != x"Linux" ]; then
     echo "Error: $0 should run on Linux"
@@ -22,6 +23,10 @@ case "$1" in
 
     "x86_64" | "armv7l")
         TARGET_ARCH="$1"
+        shift;;
+
+    "gcc" | "clang")
+        TOOLCHAIN="$1"
         shift;;
 
     "libsodium" | "toxcore" | "flatcc" | "pjsip" | "confuse" | "CUnit" | "carrier")
@@ -72,5 +77,6 @@ MODULE=${TARGET_MODULE} \
     TARGET=${TARGET_MAKE} \
     HOST=${TARGET_OS} \
     ARCH=${TARGET_ARCH} \
-    BUILD=${TARGET_BUILD} make ${TARGET_MODULE}
+    BUILD=${TARGET_BUILD} \
+    TOOLCHAIN=${TOOLCHAIN} make ${TARGET_MODULE}
 
