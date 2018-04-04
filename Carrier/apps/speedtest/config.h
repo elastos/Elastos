@@ -38,8 +38,8 @@ typedef struct {
 
     int bootstraps_size;
     BootstrapNode **bootstraps;
-} SppConfig;
+} SpeedtestConfig;
 
-ShellConfig *load_config(const char *config_file);
+SpeedtestConfig *load_config(const char *config_file);
 
 #endif /* __SPEEDTEST_CONFIG_H__ */

@@ -1107,7 +1107,7 @@ void signal_handler(int signum)
 
 int main(int argc, char *argv[])
 {
-    ShellConfig *cfg;
+    SpeedtestConfig *cfg;
     char buffer[2048];
     ElaCarrier *w;
     ElaOptions opts;

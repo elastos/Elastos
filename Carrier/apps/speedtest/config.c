@@ -87,7 +87,7 @@ static int not_null_validator(cfg_t *cfg, cfg_opt_t *opt)
 
 static void config_destroy(void *p)
 {
-    ShellConfig *config = (ShellConfig *)p;
+    SpeedtestConfig *config = (SpeedtestConfig *)p;
 
     if (!config)
         return;
@@ -128,9 +128,9 @@ static void bootstrap_destroy(void *p)
         free((void *)node->public_key);
 }
 
-ShellConfig *load_config(const char *config_file)
+SpeedtestConfig *load_config(const char *config_file)
 {
-    ShellConfig *config;
+    SpeedtestConfig *config;
     cfg_t *cfg, *bootstraps, *sec;
     const char *stropt;
     int nsecs;
@@ -171,7 +171,7 @@ ShellConfig *load_config(const char *config_file)
         return NULL;
     }
 
-    config = (ShellConfig *)rc_zalloc(sizeof(ShellConfig), config_destroy);
+    config = (SpeedtestConfig *)rc_zalloc(sizeof(SpeedtestConfig), config_destroy);
     if (!config) {
         cfg_error(cfg, "out of memory.");
         cfg_free(cfg);

@@ -7,7 +7,7 @@ ARCH   ?= $(uname -m)
 MODULES =
 
 ifneq (, $(findstring $(HOST)-$(ARCH), Darwin-x86_64 Linux-x86_64 Raspbian-armv7l))
-MODULES += shell pfd
+MODULES += shell pfd speedtest
 endif
 
 ifneq (, $(findstring $(HOST)-$(ARCH), Linux-armv7l))
