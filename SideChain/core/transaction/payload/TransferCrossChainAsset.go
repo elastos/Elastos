@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/elastos/Elastos.ELA.SPV/core/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
 )
 
 type TransferCrossChainAsset struct {

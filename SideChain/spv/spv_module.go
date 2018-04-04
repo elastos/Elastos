@@ -6,8 +6,9 @@ import (
 	"math/rand"
 
 	spvtx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	spvdb "github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/interface"
+	spvdb "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SideChain/common/config"
 	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
 	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
 )
@@ -15,10 +16,7 @@ import (
 var spvService *_interface.SPVServiceImpl
 
 func SpvInit() error {
-	spvService, err := _interface.NewSPVService(uint64(rand.Int63()))
-	if err != nil {
-		return errors.New("[Error] " + err.Error())
-	}
+	spvService := _interface.NewSPVService(uint64(rand.Int63()), config.Parameters.SpvSeedList)
 	spvService.Start()
 	return nil
 }

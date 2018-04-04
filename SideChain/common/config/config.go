@@ -18,7 +18,7 @@ const (
 
 var (
 	Parameters configParams
-	mainNet = &ChainParams{
+	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
 		PowLimitBits:       0x1f0008ff,
@@ -69,6 +69,7 @@ type Configuration struct {
 	Magic               uint32           `json:"Magic"`
 	Version             int              `json:"Version"`
 	SeedList            []string         `json:"SeedList"`
+	SpvSeedList         []string         `json:"SpvSeedList"`
 	HttpRestPort        int              `json:"HttpRestPort"`
 	RestCertPath        string           `json:"RestCertPath"`
 	RestKeyPath         string           `json:"RestKeyPath"`
@@ -91,7 +92,7 @@ type Configuration struct {
 	MaxTxInBlock        int              `json:"MaxTransactionInBlock"`
 	MaxBlockSize        int              `json:"MaxBlockSize"`
 	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
-	DestroyAddr    		string 			 `json:"DestroyAddr"`
+	DestroyAddr         string           `json:"DestroyAddr"`
 }
 
 type ConfigFile struct {
