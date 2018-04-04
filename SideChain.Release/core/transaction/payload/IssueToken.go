@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	spvdb "github.com/elastos/Elastos.ELA.SPV/db"
+	spvdb "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 )
 
 const IssueTokenPayloadVersion byte = 0x00
