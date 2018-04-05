@@ -1,4 +1,4 @@
-# breadwallet-core
-SPV bitcoin C library
+# Elastos.ELA.SPV.Cpp
 
-[getting started](https://github.com/breadwallet/breadwallet-core/wiki)
+## Summary
+SPV SDK and wallet.

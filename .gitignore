@@ -36,5 +36,10 @@
 *.xcodeproj
 
 .idea/
-
 test
+[dD]ebug
+*[dD]ebug
+*[rR]elease
+.*.swp
+cli-spv
+tags

@@ -1,0 +1,12 @@
+
+set(SPVCORE_NAME spvcore)
+
+include_directories(
+	"${CMAKE_CURRENT_SOURCE_DIR}"
+	"${CMAKE_CURRENT_SOURCE_DIR}/secp256k1"
+	"${PROJECT_BINARY_DIR}"
+)
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} CORE_SOURCE_FILES)
+add_library(${SPVCORE_NAME} ${SPV_LIBRARY_TYPE} ${CORE_SOURCE_FILES})
+
