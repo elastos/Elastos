@@ -19,13 +19,12 @@ type SQLiteDB struct {
 	*sync.RWMutex
 	*sql.DB
 
-	info   Info
-	addrs  Addrs
-	utxos  UTXOs
-	stxos  STXOs
-	proofs Proofs
-	txns   TXNs
-	queue  Queue
+	info  Info
+	addrs Addrs
+	utxos UTXOs
+	stxos STXOs
+	txns  TXNs
+	queue Queue
 }
 
 func NewSQLiteDB() (DataStore, error) {
@@ -57,11 +56,6 @@ func NewSQLiteDB() (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Create Proofs db
-	proofsDB, err := NewProofsDB(db, lock)
-	if err != nil {
-		return nil, err
-	}
 	// Create TXNs db
 	txnsDB, err := NewTXNsDB(db, lock)
 	if err != nil {
@@ -77,13 +71,12 @@ func NewSQLiteDB() (DataStore, error) {
 		RWMutex: lock,
 		DB:      db,
 
-		info:   infoDB,
-		addrs:  addrsDB,
-		utxos:  utxosDB,
-		stxos:  stxosDB,
-		proofs: proofsDB,
-		txns:   txnsDB,
-		queue:  queueDB,
+		info:  infoDB,
+		addrs: addrsDB,
+		utxos: utxosDB,
+		stxos: stxosDB,
+		txns:  txnsDB,
+		queue: queueDB,
 	}, nil
 }
 
@@ -103,10 +96,6 @@ func (db *SQLiteDB) STXOs() STXOs {
 	return db.stxos
 }
 
-func (db *SQLiteDB) Proofs() Proofs {
-	return db.proofs
-}
-
 func (db *SQLiteDB) TXNs() TXNs {
 	return db.txns
 }
@@ -120,12 +109,6 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 	defer db.Unlock()
 
 	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-
-	// Rollback Proofs
-	_, err = tx.Exec("DELETE FROM Proofs WHERE Height=?", height)
 	if err != nil {
 		return err
 	}
@@ -150,6 +133,24 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 
 	// Rollback Queue
 	_, err = tx.Exec("DELETE FROM Queue WHERE Height=?", height)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (db *SQLiteDB) Reset() error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Drop all tables
+	_, err = tx.Exec(`DROP TABLE IF EXISTS UTXOs;
+							DROP TABLE IF EXISTS STXOs;
+							DROP TABLE IF EXISTS TXNs;
+							DROP TABLE IF EXISTS Queue;`)
 	if err != nil {
 		return err
 	}

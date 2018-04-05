@@ -1,30 +1,61 @@
 package db
 
 import (
-	"database/sql"
+	"bytes"
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"bytes"
+	"github.com/boltdb/bolt"
+	"fmt"
+	"encoding/hex"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"errors"
 )
 
-const CreateProofsDB = `CREATE TABLE IF NOT EXISTS Proofs(
-				BlockHash BLOB NOT NULL PRIMARY KEY,
-				Height INTEGER NOT NULL,
-				RawData BLOB NOT NULL
-			);`
+type Proofs interface {
+	// Put a merkle proof of the block
+	Put(proof *Proof) error
+
+	// Get a merkle proof of a block
+	Get(blockHash *Uint256) (*Proof, error)
+
+	// Get all merkle proofs in database
+	GetAll() ([]*Proof, error)
+
+	// Delete a merkle proof of a block
+	Delete(blockHash *Uint256) error
+
+	// Reset database, clear all data
+	Reset() error
+
+	// Close the proofs db
+	Close()
+}
 
 type ProofsDB struct {
 	*sync.RWMutex
-	*sql.DB
+	*bolt.DB
 }
 
-func NewProofsDB(db *sql.DB, lock *sync.RWMutex) (Proofs, error) {
-	_, err := db.Exec(CreateProofsDB)
+var (
+	BKTProofs = []byte("Proofs")
+)
+
+func NewProofsDB() (Proofs, error) {
+	db, err := bolt.Open("proofs.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
 	if err != nil {
 		return nil, err
 	}
-	return &ProofsDB{RWMutex: lock, DB: db}, nil
+
+	db.Update(func(btx *bolt.Tx) error {
+		_, err := btx.CreateBucketIfNotExists(BKTProofs)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return &ProofsDB{RWMutex: new(sync.RWMutex), DB: db}, nil
 }
 
 // Put a merkle proof of the block
@@ -32,72 +63,69 @@ func (db *ProofsDB) Put(proof *Proof) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("INSERT OR REPLACE INTO Proofs(BlockHash, Height, RawData) VALUES(?,?,?)")
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
+	return db.Update(func(tx *bolt.Tx) error {
 
-	buf := new(bytes.Buffer)
-	err = proof.Serialize(buf)
-	if err != nil {
-		return err
-	}
+		bytes, err := serializeProof(proof)
+		if err != nil {
+			return err
+		}
 
-	_, err = stmt.Exec(proof.BlockHash.Bytes(), proof.Height, buf.Bytes())
-	if err != nil {
-		return err
-	}
+		err = tx.Bucket(BKTProofs).Put(proof.BlockHash.Bytes(), bytes)
+		if err != nil {
+			return err
+		}
 
-	return nil
+		return nil
+	})
 }
 
 // Get a merkle proof of a block
-func (db *ProofsDB) Get(blockHash *Uint256) (*Proof, error) {
+func (db *ProofsDB) Get(blockHash *Uint256) (proof *Proof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	row := db.QueryRow("SELECT RawData FROM Proofs WHERE BlockHash=?", blockHash.Bytes())
-	var rawData []byte
-	err := row.Scan(&rawData)
+	err = db.View(func(tx *bolt.Tx) error {
+
+		proof, err = getProof(tx, blockHash.Bytes())
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
 
-	var proof Proof
-	err = proof.Deserialize(bytes.NewReader(rawData))
-	if err != nil {
-		return nil, err
-	}
-
-	return &proof, nil
+	return proof, err
 }
 
 // Get all merkle proofs in database
-func (db *ProofsDB) GetAll() ([]*Proof, error) {
+func (db *ProofsDB) GetAll() (proofs []*Proof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	rows, err := db.Query("SELECT BlockHash, RawData FROM Proofs")
-	if err != nil {
-		return nil, err
-	}
+	err = db.View(func(tx *bolt.Tx) error {
 
-	var proofs []*Proof
-	for rows.Next() {
-		var rawData []byte
-		err := rows.Scan(&rawData)
+		err := tx.Bucket(BKTProofs).ForEach(func(k, v []byte) error {
+
+			proof, err := deserializeProof(v)
+			if err != nil {
+				return err
+			}
+
+			proofs = append(proofs, proof)
+
+			return nil
+		})
+
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		var proof Proof
-		err = proof.Deserialize(bytes.NewReader(rawData))
-		if err != nil {
-			return nil, err
-		}
-		proofs = append(proofs, &proof)
-	}
+		return nil
+	})
 
 	return proofs, nil
 }
@@ -107,10 +135,50 @@ func (db *ProofsDB) Delete(blockHash *Uint256) error {
 	db.Lock()
 	defer db.Unlock()
 
-	_, err := db.Exec("DELETE FROM Proofs WHERE BlockHash=?", blockHash.Bytes())
-	if err != nil {
-		return err
+	return db.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(BKTProofs).Delete(blockHash.Bytes())
+	})
+}
+
+func (db *ProofsDB) Reset() error {
+	db.Lock()
+	defer db.Unlock()
+
+	return db.Update(func(tx *bolt.Tx) error {
+		return tx.DeleteBucket(BKTProofs)
+	})
+}
+
+// Close db
+func (db *ProofsDB) Close() {
+	db.Lock()
+	db.DB.Close()
+	log.Debug("Proofs DB closed")
+}
+
+func getProof(tx *bolt.Tx, key []byte) (*Proof, error) {
+	proofBytes := tx.Bucket(BKTProofs).Get(key)
+	if proofBytes == nil {
+		return nil, errors.New(fmt.Sprintf("Proof %s does not exist in database", hex.EncodeToString(key)))
 	}
 
-	return nil
+	return deserializeProof(proofBytes)
+}
+
+func serializeProof(proof *Proof) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := proof.Serialize(buf)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func deserializeProof(body []byte) (*Proof, error) {
+	var proof Proof
+	err := proof.Deserialize(bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	return &proof, nil
 }

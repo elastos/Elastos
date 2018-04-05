@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
 const (
@@ -57,7 +56,6 @@ func BuildMessage(msg Message) ([]byte, error) {
 		return nil, err
 	}
 
-	log.Debug("Send message: ", msg.CMD())
 	return append(hdr, body...), nil
 }
 

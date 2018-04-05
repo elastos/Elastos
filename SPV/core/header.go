@@ -92,12 +92,3 @@ func (header *Header) Bytes() ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
-
-func HeaderFromBytes(headerBytes []byte) (*Header, error) {
-	var header = new(Header)
-	err := header.Deserialize(bytes.NewReader(headerBytes))
-	if err != nil {
-		return nil, err
-	}
-	return header, nil
-}

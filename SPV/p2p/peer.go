@@ -255,7 +255,7 @@ func (peer *Peer) unpackMessage(buf []byte) {
 
 		if header.Magic != Magic {
 			log.Error("Magic not match, disconnect peer")
-			pm.DisconnectPeer(peer)
+			peer.Disconnect()
 			return
 		}
 
@@ -297,7 +297,6 @@ func (peer *Peer) decodeMessage(buf []byte) {
 		return
 	}
 
-	log.Debug("Receive message: ", hdr.GetCMD())
 	msg, err := pm.makeMessage(hdr.GetCMD())
 	if err != nil {
 		log.Error("Make message error, ", err)

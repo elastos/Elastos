@@ -110,18 +110,24 @@ func (db *DatabaseImpl) Reset() error {
 		return err
 	}
 
-	for {
-		header, err := headers.Rollback()
-		if err != nil {
-			return err
-		}
-		err = db.DataStore.Rollback(header.Height)
-		if err != nil {
-			return err
-		}
-		if header.Height == 0 {
-			break
-		}
+	proofs, err := NewProofsDB()
+	if err != nil {
+		return err
+	}
+
+	err = headers.Reset()
+	if err != nil {
+		return err
+	}
+
+	err = proofs.Reset()
+	if err != nil {
+		return err
+	}
+
+	err = db.DataStore.Reset()
+	if err != nil {
+		return err
 	}
 
 	return nil

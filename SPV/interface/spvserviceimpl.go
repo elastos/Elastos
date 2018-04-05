@@ -51,14 +51,14 @@ func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transacti
 	}
 
 	// Get Header from main chain
-	header, err := service.BlockChain().GetHeader(&proof.BlockHash)
+	header, err := service.BlockChain().GetHeader(proof.BlockHash)
 	if err != nil {
 		return errors.New("can not get block from main chain")
 	}
 
 	// Check if merkleroot is match
 	merkleBlock := bloom.MerkleBlock{
-		BlockHeader:  *header,
+		BlockHeader:  header.Header,
 		Transactions: proof.Transactions,
 		Hashes:       proof.Hashes,
 		Flags:        proof.Flags,
@@ -175,7 +175,7 @@ func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof,
 	}
 	for _, item := range confirmedItems {
 		//	Get proof from db
-		proof, err := service.BlockChain().Proofs().Get(&item.BlockHash)
+		proof, err := service.BlockChain().Proofs.Get(&item.BlockHash)
 		if err != nil {
 			log.Error("Query merkle proof failed, block hash:", item.BlockHash.String())
 			return

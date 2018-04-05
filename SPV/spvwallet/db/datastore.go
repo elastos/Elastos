@@ -11,11 +11,12 @@ type DataStore interface {
 	Addrs() Addrs
 	UTXOs() UTXOs
 	STXOs() STXOs
-	Proofs() Proofs
 	TXNs() TXNs
 	Queue() Queue
 
 	Rollback(height uint32) error
+	// Reset database, clear all data
+	Reset() error
 
 	Close()
 }
@@ -89,20 +90,6 @@ type STXOs interface {
 
 	// delete a stxo from database
 	Delete(outPoint *tx.OutPoint) error
-}
-
-type Proofs interface {
-	// Put a merkle proof of the block
-	Put(proof *Proof) error
-
-	// Get a merkle proof of a block
-	Get(blockHash *Uint256) (*Proof, error)
-
-	// Get all merkle proofs in database
-	GetAll() ([]*Proof, error)
-
-	// Delete a merkle proof of a block
-	Delete(blockHash *Uint256) error
 }
 
 type TXNs interface {
