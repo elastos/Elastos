@@ -181,7 +181,6 @@ func (pm *PeerManager) handleMessage(peer *Peer, msg Message) {
 }
 
 func (pm *PeerManager) OnVersion(peer *Peer, v *Version) error {
-	log.Info("SPV OnVersion")
 	// Check if handshake with itself
 	if v.Nonce == pm.Local().ID() {
 		log.Error("SPV disconnect peer, peer handshake with itself")

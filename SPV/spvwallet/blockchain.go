@@ -13,6 +13,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
 type ChainState int
@@ -292,6 +293,7 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 	// Save current chain height
 	bc.DataStore.Info().SaveChainHeight(header.Height)
 
+	log.Debug("Blockchain block committed height: ", header.Height)
 	return reorg, fPositives, nil
 }
 

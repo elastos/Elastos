@@ -109,8 +109,6 @@ func (wallet *SPVWallet) syncBlocks() {
 		// Request blocks
 		wallet.requestBlocks()
 	} else {
-		// Clear current request queue
-		wallet.queue.Clear()
 		// Set blockchain state to waiting
 		wallet.chain.SetChainState(WAITING)
 		// Remove sync peer
@@ -148,6 +146,11 @@ func (wallet *SPVWallet) changeSyncPeerAndRestart() {
 }
 
 func (wallet *SPVWallet) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256) {
+	name := "BLOCK"
+	if reqType == sdk.TRANSACTION {
+		name = "TRANSACTION"
+	}
+	log.Debug("Send ", name, " request hash: ", hash.String())
 	peer.Send(wallet.NewDataReq(reqType, hash))
 }
 
@@ -156,6 +159,8 @@ func (wallet *SPVWallet) OnRequestError(err error) {
 }
 
 func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
+	log.Debug("Wallet on request finished pool size: ", pool.Length())
+
 	var tipHash Uint256
 	tip, err := wallet.chain.GetTip()
 	if err == nil {
@@ -202,6 +207,8 @@ func (wallet *SPVWallet) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
 }
 
 func (wallet *SPVWallet) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Inventory) error {
+	log.Debug("Receive inventory hash count: ", inv.Count)
+
 	if !wallet.chain.IsSyncing() {
 		peer.Disconnect()
 		return errors.New("receive inventory message in non syncing mode")
@@ -246,6 +253,8 @@ func (wallet *SPVWallet) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Inventory) e
 
 func (wallet *SPVWallet) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock) error {
 	blockHash := block.BlockHeader.Hash()
+	log.Debug("Receive merkle block hash: ", blockHash.String())
+
 	if wallet.chain.IsKnownBlock(*blockHash) {
 		return errors.New(fmt.Sprint("Received block that already known,", blockHash.String()))
 	}
@@ -283,6 +292,8 @@ func (wallet *SPVWallet) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock)
 }
 
 func (wallet *SPVWallet) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
+	log.Debug("Receive transaction hash: ", txn.Hash().String())
+
 	if wallet.chain.IsSyncing() && wallet.PeerManager().GetSyncPeer() != nil &&
 		wallet.PeerManager().GetSyncPeer().ID() != peer.ID() {
 

@@ -11,6 +11,7 @@ import (
 
 type BlockTxsRequest struct {
 	sync.Mutex
+	blockHash      Uint256
 	block          bloom.MerkleBlock
 	txRequestQueue map[Uint256]*Request
 	receivedTxs    []tx.Transaction

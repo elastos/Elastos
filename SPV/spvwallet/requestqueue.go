@@ -45,6 +45,7 @@ func NewRequestQueue(size int, handler RequestQueueHandler) *RequestQueue {
 	queue.blockTxsRequests = make(map[Uint256]*BlockTxsRequest)
 	queue.blockTxs = make(map[Uint256]Uint256)
 	queue.finished = &FinishedReqPool{
+		blocks:   make(map[Uint256]*bloom.MerkleBlock),
 		requests: make(map[Uint256]*BlockTxsRequest),
 	}
 	queue.handler = handler
@@ -68,13 +69,10 @@ func (queue *RequestQueue) PushHashes(peer *p2p.Peer, hashes []Uint256) {
 }
 
 func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
-	queue.blockReqsLock.Lock()
-	if _, ok := queue.blockRequests[hash]; ok {
-		queue.blockReqsLock.Unlock()
+	// Check if already in request queue or finished
+	if queue.InBlockRequestQueue(hash) || queue.InFinishedPool(hash) {
 		return
 	}
-	queue.blockReqsLock.Unlock()
-
 	// Block the method when queue is filled
 	queue.blocksQueue <- hash
 
@@ -86,25 +84,27 @@ func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
 		reqType: sdk.BLOCK,
 		handler: queue,
 	}
-
 	// Add to request queue
 	queue.blockRequests[hash] = blockRequest
-
 	// Start block request
 	blockRequest.Start()
+
 	queue.blockReqsLock.Unlock()
 }
 
-func (queue *RequestQueue) StartBlockTxsRequest(
-	peer *p2p.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
-
-	queue.blockTxsReqsLock.Lock()
-	blockHash := *block.BlockHeader.Hash()
-	if _, ok := queue.blockTxsRequests[blockHash]; ok {
+func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
+	// No block transactions to request, notify request finished.
+	if len(txIds) == 0 {
+		// Notify request finished
+		queue.OnRequestFinished(&BlockTxsRequest{block: *block})
 		return
 	}
-	queue.blockTxsReqsLock.Unlock()
-
+	blockHash := *block.BlockHeader.Hash()
+	// Check if request already in queue
+	if queue.InBlockTxsRequestQueue(blockHash) {
+		return
+	}
+	// Block the method when queue is filled
 	queue.blockTxsQueue <- blockHash
 
 	queue.blockTxsReqsLock.Lock()
@@ -124,6 +124,7 @@ func (queue *RequestQueue) StartBlockTxsRequest(
 	}
 
 	blockTxsRequest := &BlockTxsRequest{
+		blockHash:      blockHash,
 		block:          *block,
 		txRequestQueue: txRequestQueue,
 	}
@@ -132,8 +133,30 @@ func (queue *RequestQueue) StartBlockTxsRequest(
 	queue.blockTxsReqsLock.Unlock()
 }
 
+func (queue *RequestQueue) InBlockRequestQueue(blockHash Uint256) bool {
+	queue.blockReqsLock.Lock()
+	defer queue.blockReqsLock.Unlock()
+
+	_, ok := queue.blockRequests[blockHash]
+	return ok
+}
+
+func (queue *RequestQueue) InBlockTxsRequestQueue(blockHash Uint256) bool {
+	queue.blockTxsReqsLock.Lock()
+	defer queue.blockTxsReqsLock.Unlock()
+
+	_, ok := queue.blockTxsRequests[blockHash]
+	return ok
+}
+
+func (queue *RequestQueue) InFinishedPool(blockHash Uint256) bool {
+	_, ok := queue.finished.ContainBlock(blockHash)
+	return ok
+}
+
 func (queue *RequestQueue) IsRunning() bool {
-	return len(queue.hashesQueue) > 0 || len(queue.blocksQueue) > 0 || len(queue.blockTxsQueue) > 0
+	return len(queue.hashesQueue) > 0 || len(queue.blocksQueue) > 0 ||
+		len(queue.blockTxsQueue) > 0 || queue.finished.Length() > 0
 }
 
 func (queue *RequestQueue) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256) {
@@ -161,13 +184,6 @@ func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Ui
 	request.Finish()
 	delete(queue.blockRequests, blockHash)
 	<-queue.blocksQueue
-
-	// No block transactions to request, notify request finished.
-	if len(txIds) == 0 {
-		// Notify request finished
-		queue.OnRequestFinished(&BlockTxsRequest{block: *block})
-		return nil
-	}
 
 	// Request block transactions
 	queue.StartBlockTxsRequest(request.peer, block, txIds)
@@ -229,7 +245,6 @@ func (queue *RequestQueue) Clear() {
 	for len(queue.blockTxsQueue) > 0 {
 		<-queue.blockTxsQueue
 	}
-
 	// Clear block requests
 	queue.blockReqsLock.Lock()
 	for hash, request := range queue.blockRequests {
