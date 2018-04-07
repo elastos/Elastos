@@ -3,10 +3,10 @@ package ledger
 import (
 	"errors"
 
-	"Elastos.ELA/crypto"
 	. "Elastos.ELA/core/signature"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"
+	"Elastos.ELA/crypto"
 )
 
 func VerifySignature(txn *tx.Transaction) (bool, error) {
@@ -43,7 +43,7 @@ func VerifySignature(txn *tx.Transaction) (bool, error) {
 		}
 		if signType == STANDARD {
 			// Remove length byte and sign type byte
-			publicKeyBytes := code[1:len(code)-1]
+			publicKeyBytes := code[1 : len(code)-1]
 			content := txn.GetDataContent()
 			// Remove length byte
 			signature := param[1:]
@@ -102,7 +102,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	signatureCount := 0
 	for i := 0; i < len(param); i += SignatureScriptLength {
 		// Remove length byte
-		sign := param[i:i+SignatureScriptLength][1:]
+		sign := param[i : i+SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		index := -1
 		for i, publicKey := range publicKeys {
@@ -128,7 +128,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 }
 
 func checkCrossChainArbitrators(txn *tx.Transaction, publicKeys [][]byte) error {
-	withdrawPayload, ok := txn.Payload.(*payload.WithdrawToken)
+	withdrawPayload, ok := txn.Payload.(*payload.WithdrawAsset)
 	if !ok {
 		return errors.New("Invalid payload type.")
 	}
