@@ -69,6 +69,7 @@ func (wallet *SPVWallet) Start() {
 }
 
 func (wallet *SPVWallet) Stop() {
+	wallet.stopSyncing()
 	wallet.chain.Close()
 	log.Info("SPV service stopped...")
 }
@@ -110,6 +111,14 @@ func (wallet *SPVWallet) syncBlocks() {
 		// Request blocks
 		wallet.requestBlocks()
 	} else {
+		wallet.stopSyncing()
+	}
+}
+
+func (wallet *SPVWallet) stopSyncing() {
+	if wallet.chain.IsSyncing() {
+		// Clear request queue
+		wallet.queue.Clear()
 		// Set blockchain state to waiting
 		wallet.chain.SetChainState(WAITING)
 		// Remove sync peer
@@ -136,12 +145,7 @@ func (wallet *SPVWallet) changeSyncPeerAndRestart() {
 	syncPeer := wallet.PeerManager().GetSyncPeer()
 	wallet.PeerManager().DisconnectPeer(syncPeer)
 
-	// Clear current request queue
-	wallet.queue.Clear()
-	// Set blockchain state to waiting
-	wallet.chain.SetChainState(WAITING)
-	// Remove sync peer
-	wallet.PeerManager().SetSyncPeer(nil)
+	wallet.stopSyncing()
 	// Restart
 	wallet.syncBlocks()
 }
@@ -162,14 +166,14 @@ func (wallet *SPVWallet) OnRequestError(err error) {
 func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
 	log.Debug("Wallet on request finished pool size: ", pool.Length())
 
-	var tipHash Uint256
-	tip, err := wallet.chain.GetTip()
-	if err == nil {
-		tipHash = *tip.Hash()
+	// By default, last pop from FinishedReqPool is the current, otherwise get chain tip as current
+	var current = pool.lastPop
+	if current == nil {
+		current = wallet.chain.ChainTip().Hash()
 	}
 
 	var fPositives int
-	for request, ok := pool.Next(tipHash); ok; request, ok = pool.Next(*request.block.BlockHeader.Hash()) {
+	for request, ok := pool.Next(*current); ok; request, ok = pool.Next(*request.block.BlockHeader.Hash()) {
 		// Try to commit next block
 		reorg, fp, err := wallet.chain.CommitBlock(
 			request.block.BlockHeader, GetProof(request.block), request.receivedTxs)
@@ -181,8 +185,10 @@ func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
 		// Update local height after block committed
 		wallet.updateLocalHeight()
 
-		// If we meet a reorganize, start sync process
-		if reorg && !wallet.chain.IsSyncing() && !wallet.queue.IsRunning() {
+		// If we meet a reorganize, restart sync process
+		if reorg {
+			log.Warn("Wallet handle reorganize, restart sync")
+			wallet.stopSyncing()
 			wallet.syncBlocks()
 			return
 		}
@@ -239,9 +245,7 @@ func (wallet *SPVWallet) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Inventory) e
 			wallet.changeSyncPeerAndRestart()
 			return fmt.Errorf("deserialize block hash error %s\n", err.Error())
 		}
-		if !wallet.chain.IsKnownBlock(blockHash) {
-			hashes = append(hashes, blockHash)
-		}
+		hashes = append(hashes, blockHash)
 	}
 
 	// Put hashes to request queue
@@ -259,10 +263,6 @@ func (wallet *SPVWallet) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Inventory) e
 func (wallet *SPVWallet) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock) error {
 	blockHash := block.BlockHeader.Hash()
 	log.Debug("Receive merkle block hash: ", blockHash.String())
-
-	if wallet.chain.IsKnownBlock(*blockHash) {
-		return errors.New(fmt.Sprint("Received block that already known,", blockHash.String()))
-	}
 
 	err := wallet.chain.CheckProofOfWork(&block.BlockHeader)
 	if err != nil {

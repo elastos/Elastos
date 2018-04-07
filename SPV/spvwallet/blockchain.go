@@ -87,7 +87,7 @@ func (bc *Blockchain) Height() uint32 {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
 
-	return bc.chainTip().Height
+	return bc.DataStore.Info().ChainHeight()
 }
 
 func (bc *Blockchain) ChainTip() *db.Header {
@@ -100,7 +100,7 @@ func (bc *Blockchain) ChainTip() *db.Header {
 func (bc *Blockchain) chainTip() *db.Header {
 	tip, err := bc.Headers.GetTip()
 	if err != nil { // Empty blockchain, return empty header
-		return new(db.Header)
+		return &db.Header{TotalWork: new(big.Int)}
 	}
 	return tip
 }
@@ -195,32 +195,24 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
-	storeHeader := &db.Header{Header: header}
+	commitHeader := &db.Header{Header: header}
 
 	// Get current chain tip
-	tip, err := bc.Headers.GetTip()
-	if err != nil {
-		// Empty chain make empty tip
-		if bc.chainTip().Height == 0 {
-			tip = &db.Header{TotalWork: new(big.Int)}
-		} else {
-			return false, 0, err
-		}
-
-	}
+	tip := bc.chainTip()
 	tipHash := tip.Hash()
 
-	var parentHeader *db.Header
-
+	// Lookup of the parent header. Otherwise (ophan?) we need to fetch the parent.
 	// If the tip is also the parent of this header, then we can save a database read by skipping
-	// the lookup of the parent header. Otherwise (ophan?) we need to fetch the parent.
+	var err error
+	var newTip = false
+	var parentHeader *db.Header
 	if header.Previous.IsEqual(tipHash) {
 		parentHeader = tip
 	} else {
-		parentHeader, err = bc.GetPrevious(storeHeader)
+		parentHeader, err = bc.GetPrevious(commitHeader)
 		if err != nil {
-			// Empty chain make an empty parent header
-			if bc.chainTip().Height == 0 {
+			// If committing header is genesis header, make an empty parent header
+			if commitHeader.Height == 1 {
 				parentHeader = &db.Header{TotalWork: new(big.Int)}
 			} else {
 				return false, 0, fmt.Errorf("Header %s does not extend any known headers", header.Hash().String())
@@ -228,28 +220,31 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 		}
 	}
 
+	log.Debug("Find parent header height: ", parentHeader.Height)
+
 	// If this block is already the tip, return
 	if tipHash.IsEqual(header.Hash()) {
 		return false, 0, nil
 	}
 	// Add the work of this header to the total work stored at the previous header
 	cumulativeWork := new(big.Int).Add(parentHeader.TotalWork, CalcWork(header.Bits))
-	storeHeader.TotalWork = cumulativeWork
+	commitHeader.TotalWork = cumulativeWork
 
 	// If the cumulative work is greater than the total work of our best header
 	// then we have a new best header. Update the chain tip and check for a reorg.
 	var reorg = false
 	var reorgPoint *db.Header
 	if cumulativeWork.Cmp(tip.TotalWork) == 1 {
+		newTip = true
 		// If this header is not extending the previous best header then we have a reorg.
 		if !tipHash.IsEqual(parentHeader.Hash()) {
-			storeHeader.Height = parentHeader.Height + 1
-			reorgPoint, err = bc.GetCommonAncestor(storeHeader, tip)
+			commitHeader.Height = parentHeader.Height + 1
+			reorgPoint, err = bc.getCommonAncestor(commitHeader, tip)
 			if err != nil {
-				fmt.Errorf("error calculating common ancestor: %s", err.Error())
+				log.Errorf("error calculating common ancestor: %s", err.Error())
 				return false, 0, err
 			}
-			fmt.Printf("Reorganize At block %d, Wiped out %d blocks",
+			fmt.Printf("Reorganize At block %d, Wiped out %d blocks\n",
 				int(tip.Height), int(tip.Height-reorgPoint.Height))
 		}
 	}
@@ -257,43 +252,48 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 	// If common ancestor exists, means we have an fork chan
 	// so we need to rollback to the last good point.
 	if reorgPoint != nil {
+		log.Warn("Meet reorganize rollback to: ", reorgPoint.Height)
 		err := bc.rollbackTo(reorgPoint.Height)
 		if err != nil {
 			fmt.Println(err)
 		}
-		if bc.state != SYNCING {
-			return true, 0, nil
-		}
-	}
-
-	fPositives := 0
-	// Save transactions first
-	for _, txn := range txns {
-		fPositive, err := bc.commitTxn(header.Height, txn)
+		// Save reorganize point as the new tip
+		err = bc.Headers.Put(reorgPoint, newTip)
 		if err != nil {
 			return reorg, 0, err
 		}
-		if fPositive {
-			fPositives++
-		}
+		return true, 0, nil
 	}
 
-	// Save merkle proof
-	err = bc.Proofs.Put(&proof)
-	if err != nil {
-		return reorg, 0, err
+	fPositives := 0
+	if newTip {
+		// Save transactions
+		for _, txn := range txns {
+			fPositive, err := bc.commitTxn(header.Height, txn)
+			if err != nil {
+				return reorg, 0, err
+			}
+			if fPositive {
+				fPositives++
+			}
+		}
+		// Save merkle proof
+		err = bc.Proofs.Put(&proof)
+		if err != nil {
+			return reorg, 0, err
+		}
+		// Save current chain height
+		bc.DataStore.Info().SaveChainHeight(header.Height)
 	}
 
 	// Save header to db
-	err = bc.Headers.Put(storeHeader, true)
+	err = bc.Headers.Put(commitHeader, newTip)
 	if err != nil {
 		return reorg, 0, err
 	}
 
-	// Save current chain height
-	bc.DataStore.Info().SaveChainHeight(header.Height)
+	log.Debug("Blockchain block committed height: ", bc.chainTip().Height)
 
-	log.Debug("Blockchain block committed height: ", header.Height)
 	return reorg, fPositives, nil
 }
 
@@ -360,7 +360,7 @@ func (bc *Blockchain) commitTxn(height uint32, txn tx.Transaction) (bool, error)
 }
 
 // Returns last header before reorg point
-func (bc *Blockchain) GetCommonAncestor(bestHeader, prevTip *db.Header) (*db.Header, error) {
+func (bc *Blockchain) getCommonAncestor(bestHeader, prevTip *db.Header) (*db.Header, error) {
 	var err error
 	rollback := func(parent *db.Header, n int) (*db.Header, error) {
 		for i := 0; i < n; i++ {

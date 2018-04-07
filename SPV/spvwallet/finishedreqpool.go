@@ -10,8 +10,10 @@ import (
 
 type FinishedReqPool struct {
 	sync.Mutex
+	genesis  *Uint256
 	blocks   map[Uint256]*bloom.MerkleBlock
 	requests map[Uint256]*BlockTxsRequest
+	lastPop  *Uint256
 }
 
 func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
@@ -22,7 +24,7 @@ func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
 	previous := request.block.BlockHeader.Previous
 	// Save genesis block previous to empty
 	if request.block.BlockHeader.Height == 1 {
-		previous = Uint256{}
+		pool.genesis = &previous
 	}
 	pool.requests[previous] = request
 	// Save finished block
@@ -31,7 +33,7 @@ func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
 	log.Debug("Finished pool add block: ", previous.String(), ", height: ", request.block.BlockHeader.Height)
 }
 
-func (pool *FinishedReqPool) ContainBlock(hash Uint256) (*bloom.MerkleBlock, bool) {
+func (pool *FinishedReqPool) Contain(hash Uint256) (*bloom.MerkleBlock, bool) {
 	pool.Lock()
 	defer pool.Unlock()
 
@@ -43,13 +45,24 @@ func (pool *FinishedReqPool) Next(current Uint256) (*BlockTxsRequest, bool) {
 	pool.Lock()
 	defer pool.Unlock()
 
+	// Any time return genesis block first
+	if pool.genesis != nil {
+		current = *pool.genesis
+		pool.genesis = nil
+	}
+
 	log.Debug("Finished pool get next key: ", current.String())
 	if request, ok := pool.requests[current]; ok {
 		delete(pool.requests, current)
 		delete(pool.blocks, request.blockHash)
+		pool.lastPop = &request.blockHash
 		return request, ok
 	}
 	return nil, false
+}
+
+func (pool *FinishedReqPool) LastPop() *Uint256 {
+	return pool.lastPop
 }
 
 func (pool *FinishedReqPool) Clear() {
@@ -62,6 +75,7 @@ func (pool *FinishedReqPool) Clear() {
 	for hash := range pool.requests {
 		delete(pool.requests, hash)
 	}
+	pool.lastPop = nil
 }
 
 func (pool *FinishedReqPool) Length() int {

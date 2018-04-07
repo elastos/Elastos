@@ -150,13 +150,12 @@ func (queue *RequestQueue) InBlockTxsRequestQueue(blockHash Uint256) bool {
 }
 
 func (queue *RequestQueue) InFinishedPool(blockHash Uint256) bool {
-	_, ok := queue.finished.ContainBlock(blockHash)
+	_, ok := queue.finished.Contain(blockHash)
 	return ok
 }
 
 func (queue *RequestQueue) IsRunning() bool {
-	return len(queue.hashesQueue) > 0 || len(queue.blocksQueue) > 0 ||
-		len(queue.blockTxsQueue) > 0 || queue.finished.Length() > 0
+	return len(queue.hashesQueue) > 0 || len(queue.blocksQueue) > 0 || len(queue.blockTxsQueue) > 0
 }
 
 func (queue *RequestQueue) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256) {
@@ -193,13 +192,12 @@ func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Ui
 
 func (queue *RequestQueue) OnTxReceived(tx *tx.Transaction) error {
 	queue.blockTxsReqsLock.Lock()
-	defer queue.blockTxsReqsLock.Unlock()
-
 	txId := *tx.Hash()
 	var ok bool
 	var blockHash Uint256
 	if blockHash, ok = queue.blockTxs[txId]; !ok {
 		fmt.Println("Unknown transaction received: ", txId.String())
+		queue.blockTxsReqsLock.Unlock()
 		return nil
 	}
 
@@ -208,19 +206,24 @@ func (queue *RequestQueue) OnTxReceived(tx *tx.Transaction) error {
 
 	var blockTxsRequest *BlockTxsRequest
 	if blockTxsRequest, ok = queue.blockTxsRequests[blockHash]; !ok {
+		queue.blockTxsReqsLock.Unlock()
 		return errors.New("Request not exist with id: " + blockHash.String())
 	}
 
 	finished, err := blockTxsRequest.OnTxReceived(tx)
 	if err != nil {
+		queue.blockTxsReqsLock.Unlock()
 		return err
 	}
 
 	if finished {
 		delete(queue.blockTxsRequests, blockHash)
 		<-queue.blockTxsQueue
+		queue.blockTxsReqsLock.Unlock()
 		queue.OnRequestFinished(blockTxsRequest)
+		return nil
 	}
+	queue.blockTxsReqsLock.Unlock()
 	return nil
 }
 
@@ -245,6 +248,7 @@ func (queue *RequestQueue) Clear() {
 	for len(queue.blockTxsQueue) > 0 {
 		<-queue.blockTxsQueue
 	}
+
 	// Clear block requests
 	queue.blockReqsLock.Lock()
 	for hash, request := range queue.blockRequests {
@@ -260,4 +264,7 @@ func (queue *RequestQueue) Clear() {
 		delete(queue.blockTxsRequests, hash)
 	}
 	queue.blockTxsReqsLock.Unlock()
+
+	// Clear finished requests pool
+	queue.finished.Clear()
 }

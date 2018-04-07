@@ -11,6 +11,7 @@ import (
 	"github.com/cevaris/ordered_map"
 
 	"github.com/boltdb/bolt"
+	"math/big"
 )
 
 type Headers interface {
@@ -128,6 +129,9 @@ func (db *HeadersDB) Put(header *Header, newTip bool) error {
 
 // Get previous block of the given header
 func (db *HeadersDB) GetPrevious(header *Header) (*Header, error) {
+	if header.Height == 1 {
+		return &Header{TotalWork: new(big.Int)}, nil
+	}
 	return db.GetHeader(header.Previous)
 }
 
