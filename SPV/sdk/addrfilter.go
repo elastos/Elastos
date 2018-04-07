@@ -57,12 +57,12 @@ func (filter *AddrFilter) DeleteAddr(hash Uint168) {
 
 // Get addresses that were added into this Filter
 func (filter *AddrFilter) GetAddrs() []*Uint168 {
-	var scriptHashes = make([]*Uint168, 0, len(filter.addrs))
-	for scriptHash := range filter.addrs {
-		scriptHashes = append(scriptHashes, &scriptHash)
+	var addrs = make([]*Uint168, 0, len(filter.addrs))
+	for _, addr := range filter.addrs {
+		addrs = append(addrs, addr)
 	}
 
-	return scriptHashes
+	return addrs
 }
 
 // Check if an address was added into this filter as a interested address

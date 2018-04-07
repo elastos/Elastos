@@ -297,9 +297,10 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 	return reorg, fPositives, nil
 }
 
+// Rollback data store to the fork point
 func (bc *Blockchain) rollbackTo(forkPoint uint32) error {
 	for height := bc.DataStore.Info().ChainHeight(); height > forkPoint; height-- {
-		// Rollbakc TXNs and UTXOs STXOs with it
+		// Rollback TXNs and UTXOs STXOs with it
 		err := bc.DataStore.Rollback(height)
 		if err != nil {
 			fmt.Println("Rollback database failed, height: ", height, ", error: ", err)

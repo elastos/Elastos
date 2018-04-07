@@ -119,7 +119,12 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 		return err
 	}
 
-	// Rollback STXOs
+	// Rollback STXOs, move UTXOs back first, then delete the STXOs
+	_, err = tx.Exec(`INSERT OR REPLACE INTO UTXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash)
+						SELECT OutPoint, Value, LockTime, AtHeight, ScriptHash FROM STXOs WHERE SpendHeight=?`, height)
+	if err != nil {
+		return err
+	}
 	_, err = tx.Exec("DELETE FROM STXOs WHERE SpendHeight=?", height)
 	if err != nil {
 		return err
@@ -146,8 +151,9 @@ func (db *SQLiteDB) Reset() error {
 		return err
 	}
 
-	// Drop all tables
-	_, err = tx.Exec(`DROP TABLE IF EXISTS UTXOs;
+	// Drop all tables except Addrs
+	_, err = tx.Exec(`DROP TABLE IF EXISTS Info;
+							DROP TABLE IF EXISTS UTXOs;
 							DROP TABLE IF EXISTS STXOs;
 							DROP TABLE IF EXISTS TXNs;
 							DROP TABLE IF EXISTS Queue;`)

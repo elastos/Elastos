@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/core"
@@ -169,6 +170,7 @@ func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
 
 	var fPositives int
 	for request, ok := pool.Next(tipHash); ok; request, ok = pool.Next(*request.block.BlockHeader.Hash()) {
+		// Try to commit next block
 		reorg, fp, err := wallet.chain.CommitBlock(
 			request.block.BlockHeader, GetProof(request.block), request.receivedTxs)
 		if err != nil {
@@ -176,8 +178,11 @@ func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
 			wallet.changeSyncPeerAndRestart()
 			return
 		}
+		// Update local height after block committed
+		wallet.updateLocalHeight()
 
-		if reorg && !wallet.chain.IsSyncing() {
+		// If we meet a reorganize, start sync process
+		if reorg && !wallet.chain.IsSyncing() && !wallet.queue.IsRunning() {
 			wallet.syncBlocks()
 			return
 		}
