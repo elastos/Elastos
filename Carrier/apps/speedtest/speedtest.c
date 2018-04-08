@@ -68,10 +68,8 @@ static char g_friend_address[ELA_MAX_ADDRESS_LEN + 1] = {0};
 static int g_fd[2] = {-1, -1};
 static int g_stream_id = 0;
 static int g_data_len = 0;
-static bool g_is_ready = false;
 
 pthread_mutex_t g_screen_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
-pthread_mutex_t g_ready_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 
 static struct {
     ElaSession *ws;
@@ -548,6 +546,7 @@ static void stream_on_data(ElaSession *ws, int stream, const void *data,
             arg[0] = g_peer_id;
             arg[1] = buf;
             send_message((ElaCarrier*)context, 2, arg);
+            exit(0);
         }
     } else {
         output("Stream [%d] received data [%.*s]\n", stream, (int)len, (char*)data);
@@ -568,8 +567,10 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
         "failed"
     };
 
-    while (!g_is_ready)
+    while (!ela_is_ready((ElaCarrier*)context)) {
+        output("not ready in %s\n", __FUNCTION__);
         sleep(1);
+    }
 
     output("Stream [%d] state changed to: %s\n", stream, state_name[state]);
 
@@ -908,16 +909,9 @@ static void stream_get_info(ElaCarrier *w, int argc, char *argv[])
 
 static void idle_callback(ElaCarrier *w, void *context)
 {
-    static bool is_ready = false;
     static int first_time = 1;
 
-    if (!is_ready) {
-        pthread_mutex_lock(&g_ready_lock);
-        is_ready = g_is_ready;
-        pthread_mutex_unlock(&g_ready_lock);
-    }
-
-    if ((is_ready) && (first_time == 1)) {
+    if ((ela_is_ready(w)) && (first_time == 1)) {
         if (strlen(g_friend_address) > 0) {
             char *addr_arg[1] = {(char*)g_friend_address};
             char *p = NULL;
@@ -969,8 +963,10 @@ static void friend_connection_callback(ElaCarrier *w, const char *friendid,
         if ((strcmp(g_peer_id, friendid) == 0) && (g_mode == ACTIVE_MODE)) {
             char *arg[2] = {NULL, NULL};
 
-            while (!g_is_ready)
+            while (!ela_is_ready(w)) {
+                output("not ready in %s\n", __FUNCTION__);
                 sleep(1);
+            }
 
             arg[0] = g_peer_id;
             arg[1] = (char*)"hello";
@@ -1008,8 +1004,10 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
     output("Friend request from user[%s] with HELLO: %s.\n",
            *info->name ? info->name : userid, hello);
     
-    while (!g_is_ready)
+    while (!ela_is_ready(w)) {
+        output("not ready in %s\n", __FUNCTION__);
         sleep(1);
+    }
 
     arg[0] = (char*)userid;
     friend_accept(w, 1, arg);
@@ -1041,6 +1039,7 @@ static void message_callback(ElaCarrier *w, const char *from,
         } else {
             output("Sent data unsuccessfully!\n");
         }
+        exit(0);
     }
 }
 
@@ -1052,8 +1051,10 @@ static void invite_request_callback(ElaCarrier *w, const char *from,
 
     output("Invite request from[%s] with data: %.*s\n", from, (int)len, data);
 
-    while (!g_is_ready)
+    while (!ela_is_ready(w)) {
+        output("not ready in %s\n", __FUNCTION__);
         sleep(1);
+    }
 
     strcpy(g_peer_id, from);
     session_init(w);
@@ -1068,9 +1069,7 @@ static void invite_request_callback(ElaCarrier *w, const char *from,
 
 static void ready_callback(ElaCarrier *w, void *context)
 {
-    pthread_mutex_lock(&g_ready_lock);
-    g_is_ready = true;
-    pthread_mutex_unlock(&g_ready_lock);
+    output("ready_callback invoked\n");
 }
 
 static void usage(void)
