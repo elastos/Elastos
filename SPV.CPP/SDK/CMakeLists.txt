@@ -56,9 +56,10 @@ if(NOT Boost_FOUND)
 	message(FATAL_ERROR "boost not found")
 endif()
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SPVSDK_SOURCE_FILES)
+file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
 add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE} ${SPVSDK_SOURCE_FILES})
 
 target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include>)
 target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include>)
 target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include>)
+target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Core>)

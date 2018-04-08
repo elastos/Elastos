@@ -32,32 +32,43 @@ extern "C" {
 #endif
 
 // large integers
+typedef union _u16 {
+    uint8_t u8[16/8];
+} UInt16;
 
-typedef union {
+typedef union _u32 {
+    uint8_t u8[32/8];
+} UInt32;
+
+typedef union _u64 {
+    uint8_t u8[64/8];
+} UInt64;
+
+typedef union _u128 {
     uint8_t u8[128/8];
     uint16_t u16[128/16];
     uint32_t u32[128/32];
     uint64_t u64[128/64];
 } UInt128;
 
-typedef union {
+typedef union _u160 {
     uint8_t u8[160/8];
     uint16_t u16[160/16];
     uint32_t u32[160/32];
 } UInt160;
 
-typedef union{
+typedef union _u168 {
     uint8_t u8[168/8];
 }UInt168;
 
-typedef union {
+typedef union _u256 {
     uint8_t u8[256/8];
     uint16_t u16[256/16];
     uint32_t u32[256/32];
     uint64_t u64[256/64];
 } UInt256;
 
-typedef union {
+typedef union _u512 {
     uint8_t u8[512/8];
     uint16_t u16[512/16];
     uint32_t u32[512/32];
@@ -166,7 +177,7 @@ inline static UInt256 UInt256Reverse(UInt256 u)
     _hexc((u).u8[28] >> 4), _hexc((u).u8[28]), _hexc((u).u8[29] >> 4), _hexc((u).u8[29]),\
     _hexc((u).u8[30] >> 4), _hexc((u).u8[30]), _hexc((u).u8[31] >> 4), _hexc((u).u8[31]), '\0' })
 
-#define uint256(s) ((UInt256) { .u8 = {\
+#define uint256(s) { .u8 = {\
     (_hexu((s)[ 0]) << 4) | _hexu((s)[ 1]), (_hexu((s)[ 2]) << 4) | _hexu((s)[ 3]),\
     (_hexu((s)[ 4]) << 4) | _hexu((s)[ 5]), (_hexu((s)[ 6]) << 4) | _hexu((s)[ 7]),\
     (_hexu((s)[ 8]) << 4) | _hexu((s)[ 9]), (_hexu((s)[10]) << 4) | _hexu((s)[11]),\
@@ -182,7 +193,7 @@ inline static UInt256 UInt256Reverse(UInt256 u)
     (_hexu((s)[48]) << 4) | _hexu((s)[49]), (_hexu((s)[50]) << 4) | _hexu((s)[51]),\
     (_hexu((s)[52]) << 4) | _hexu((s)[53]), (_hexu((s)[54]) << 4) | _hexu((s)[55]),\
     (_hexu((s)[56]) << 4) | _hexu((s)[57]), (_hexu((s)[58]) << 4) | _hexu((s)[59]),\
-    (_hexu((s)[60]) << 4) | _hexu((s)[61]), (_hexu((s)[62]) << 4) | _hexu((s)[63]) } })
+    (_hexu((s)[60]) << 4) | _hexu((s)[61]), (_hexu((s)[62]) << 4) | _hexu((s)[63]) } }
 
 #define _hexc(u) (((u) & 0x0f) + ((((u) & 0x0f) <= 9) ? '0' : 'a' - 0x0a))
 #define _hexu(c) (((c) >= '0' && (c) <= '9') ? (c) - '0' : ((c) >= 'a' && (c) <= 'f') ? (c) - ('a' - 0x0a) :\
@@ -192,50 +203,50 @@ inline static UInt256 UInt256Reverse(UInt256 u)
 
 inline static void UInt16SetBE(void *b2, uint16_t u)
 {
-    *(union _u16 { uint8_t u8[16/8]; } *)b2 = (union _u16) { (u >> 8) & 0xff, u & 0xff };
+    *(union _u16 *)b2 = (union _u16) { (u >> 8) & 0xff, u & 0xff };
 }
 
 inline static void UInt16SetLE(void *b2, uint16_t u)
 {
-    *(union _u16 { uint8_t u8[16/8]; } *)b2 = (union _u16) { u & 0xff, (u >> 8) & 0xff };
+    *(union _u16 *)b2 = (union _u16) { u & 0xff, (u >> 8) & 0xff };
 }
 
 inline static void UInt32SetBE(void *b4, uint32_t u)
 {
-    *(union _u32 { uint8_t u8[32/8]; } *)b4 =
+    *(union _u32 *)b4 =
         (union _u32) { (u >> 24) & 0xff, (u >> 16) & 0xff, (u >> 8) & 0xff, u & 0xff };
 }
 
 inline static void UInt32SetLE(void *b4, uint32_t u)
 {
-    *(union _u32 { uint8_t u8[32/8]; } *)b4 =
+    *(union _u32 *)b4 =
         (union _u32) { u & 0xff, (u >> 8) & 0xff, (u >> 16) & 0xff, (u >> 24) & 0xff };
 }
 
 inline static void UInt64SetBE(void *b8, uint64_t u)
 {
-    *(union _u64 { uint8_t u8[64/8]; } *)b8 =
+    *(union _u64 *)b8 =
         (union _u64) { (u >> 56) & 0xff, (u >> 48) & 0xff, (u >> 40) & 0xff, (u >> 32) & 0xff,
                        (u >> 24) & 0xff, (u >> 16) & 0xff, (u >> 8) & 0xff, u & 0xff };
 }
 
 inline static void UInt64SetLE(void *b8, uint64_t u)
 {
-    *(union _u64 { uint8_t u8[64/8]; } *)b8 =
+    *(union _u64 *)b8 =
         (union _u64) { u & 0xff, (u >> 8) & 0xff, (u >> 16) & 0xff, (u >> 24) & 0xff,
                        (u >> 32) & 0xff, (u >> 40) & 0xff, (u >> 48) & 0xff, (u >> 56) & 0xff };
 }
 
 inline static void UInt128Set(void *b16, UInt128 u)
 {
-    *(union _u128 { uint8_t u8[128/8]; } *)b16 =
+    *(union _u128 *)b16 =
         (union _u128) { u.u8[0], u.u8[1], u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
                         u.u8[8], u.u8[9], u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15] };
 }
 
 inline static void UInt160Set(void *b20, UInt160 u)
 {
-    *(union _u160 { uint8_t u8[160/8]; } *)b20 =
+    *(union _u160 *)b20 =
         (union _u160) { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
                         u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
                         u.u8[16], u.u8[17], u.u8[18], u.u8[19] };
@@ -243,7 +254,7 @@ inline static void UInt160Set(void *b20, UInt160 u)
 
 inline static void UInt168Set(void *b21, UInt168 u)
 {
-    *(union _u168 { uint8_t u8[168/8]; } *)b21 =
+    *(union _u168 *)b21 =
         (union _u168) { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
                         u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
                         u.u8[16], u.u8[17], u.u8[18], u.u8[19], u.u8[20] };
@@ -251,7 +262,7 @@ inline static void UInt168Set(void *b21, UInt168 u)
 
 inline static void UInt256Set(void *b32, UInt256 u)
 {
-    *(union _u256 { uint8_t u8[256/8]; } *)b32 =
+    *(union _u256 *)b32 =
         (union _u256) { u.u8[0],  u.u8[1],  u.u8[2],  u.u8[3],  u.u8[4],  u.u8[5],  u.u8[6],  u.u8[7],
                         u.u8[8],  u.u8[9],  u.u8[10], u.u8[11], u.u8[12], u.u8[13], u.u8[14], u.u8[15],
                         u.u8[16], u.u8[17], u.u8[18], u.u8[19], u.u8[20], u.u8[21], u.u8[22], u.u8[23],
