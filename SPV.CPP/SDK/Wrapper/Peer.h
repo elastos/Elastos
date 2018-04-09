@@ -7,10 +7,16 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "Wrapper.h"
+
+#include "BRPeer.h"
+
 namespace Elastos {
     namespace SDK {
 
-        class Peer {
+        class Peer :
+            public Wrapper<BRPeer>{
+
         public:
         enum ConnectStatus {
             Disconnected = 0,
@@ -46,6 +52,9 @@ namespace Elastos {
 
         public:
         //todo complete me
+            virtual std::string toString() const;
+
+            virtual BRPeer getRaw();
         };
 
         typedef boost::shared_ptr<Peer> PeerPtr;

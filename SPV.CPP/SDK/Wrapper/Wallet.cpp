@@ -15,5 +15,15 @@ namespace Elastos {
             //todo complete me
             return nullptr;
         }
+
+        std::string Wallet::toString() const {
+            //todo complete me
+            return "";
+        }
+
+        BRWallet *Wallet::getRaw() {
+            //todo complete me
+            return nullptr;
+        }
     }
 }

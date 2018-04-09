@@ -49,10 +49,10 @@ namespace Elastos {
             virtual void txStatusUpdate();
 
             // func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-            virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
+            virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
             // func savePeers(_ replace: Bool, _ peers: [BRPeer])
-            virtual void savePeers(bool replace, const std::vector<PeerPtr> &peers);
+            virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
 
             // func networkIsReachable() -> Bool}
             virtual bool networkIsReachable();

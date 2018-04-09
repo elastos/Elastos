@@ -7,5 +7,15 @@
 namespace Elastos {
     namespace SDK {
 
+        std::string Peer::toString() const {
+            //todo complete me
+            return "";
+        }
+
+        BRPeer Peer::getRaw() {
+            //todo complete me
+            return BRPeer();
+        }
+
     }
 }

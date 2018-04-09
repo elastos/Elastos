@@ -7,10 +7,23 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "BRMerkleBlock.h"
+
+#include "Wrapper.h"
+
 namespace Elastos {
     namespace SDK {
 
-        class MerkleBlock {
+        class MerkleBlock :
+            public Wrapper<BRMerkleBlock *> {
+
+        public:
+            MerkleBlock();
+
+            virtual std::string toString() const;
+
+            virtual BRMerkleBlock *getRaw();
+
             //todo complete me
         };
 

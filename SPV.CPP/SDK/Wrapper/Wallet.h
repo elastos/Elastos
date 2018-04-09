@@ -6,14 +6,18 @@
 #define __ELASTOS_SDK_SPVCLIENT_WALLET_H__
 
 #include <string>
+#include <BRWallet.h>
 
+#include "Wrapper.h"
 #include "Transaction.h"
 #include "Address.h"
 
 namespace Elastos {
     namespace SDK {
 
-        class Wallet {
+        class Wallet :
+            public Wrapper<BRWallet *> {
+
         public:
             class Listener {
             public:
@@ -34,6 +38,10 @@ namespace Elastos {
             Wallet();
 
             const AddressPtr& getReceiveAddress() const;
+
+            virtual std::string toString() const;
+
+            virtual BRWallet *getRaw();
         };
 
     }

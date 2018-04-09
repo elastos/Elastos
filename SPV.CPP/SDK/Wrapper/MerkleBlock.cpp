@@ -7,5 +7,17 @@
 namespace Elastos {
     namespace SDK {
 
+        MerkleBlock::MerkleBlock() {
+        }
+
+        std::string MerkleBlock::toString() const {
+            //todo complete me
+            return "";
+        }
+
+        BRMerkleBlock *MerkleBlock::getRaw() {
+            //todo complete me
+            return nullptr;
+        }
     }
 }

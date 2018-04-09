@@ -7,14 +7,20 @@
 
 #include <string>
 
+#include "Wrapper.h"
+#include "BRChainParams.h"
+
 namespace Elastos {
     namespace SDK {
 
-        class ChainParams {
+        class ChainParams :
+            public Wrapper<BRChainParams *>{
         public:
             ChainParams();
 
-            std::string toString() const;
+            virtual std::string toString() const;
+
+            virtual BRChainParams *getRaw();
         };
 
     }

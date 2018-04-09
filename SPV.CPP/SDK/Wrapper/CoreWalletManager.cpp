@@ -47,11 +47,11 @@ namespace Elastos {
 
         }
 
-        void CoreWalletManager::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
+        void CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
 
         }
 
-        void CoreWalletManager::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
+        void CoreWalletManager::savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers) {
 
         }
 

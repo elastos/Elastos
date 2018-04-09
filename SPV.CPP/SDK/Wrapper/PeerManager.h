@@ -15,6 +15,8 @@
 #include "MerkleBlock.h"
 #include "ChainParams.h"
 #include "Wallet.h"
+#include "SharedWrapperList.h"
+#include "WrapperList.h"
 
 namespace Elastos {
     namespace SDK {
@@ -32,10 +34,10 @@ namespace Elastos {
                 virtual void txStatusUpdate() = 0;
 
                 // func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-                virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr>& blocks) = 0;
+                virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *>& blocks) = 0;
 
                 // func savePeers(_ replace: Bool, _ peers: [BRPeer])
-                virtual void savePeers(bool replace, const std::vector<PeerPtr>& peers) = 0;
+                virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer>& peers) = 0;
 
                 // func networkIsReachable() -> Bool}
                 virtual bool networkIsReachable() = 0;
@@ -45,18 +47,19 @@ namespace Elastos {
             };
 
         public:
-            PeerManager(const ChainParams& params,
-                        const boost::shared_ptr<Wallet>& wallet,
-                        double earliestKeyTime,
-                        const std::vector<MerkleBlockPtr>& blocks,
-                        const std::vector<PeerPtr>& peers,
-                        const boost::shared_ptr<Listener>& listener);
+            PeerManager(ChainParams& params,
+                        const boost::shared_ptr<Wallet> &wallet,
+                        uint32_t earliestKeyTime,
+                        const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+                        WrapperList<Peer, BRPeer> &peers,
+                        const boost::shared_ptr<Listener> &listener);
+            ~PeerManager();
 
             Peer::ConnectStatus getConnectStatus() const;
         // todo complete me
 
         private:
-            boost::shared_ptr<BRPeerManager> _manager;
+            BRPeerManager* _manager;
 
             boost::weak_ptr<Listener> _listener;
         };
