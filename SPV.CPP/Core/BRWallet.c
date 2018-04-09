@@ -69,18 +69,18 @@ inline static size_t _txChainIndex(const BRTransaction *tx, const BRAddress *add
     return SIZE_MAX;
 }
 
-inline static int _BRWalletTxIsAscending(BRWallet *wallet, const BRTransaction *tx1, const BRTransaction *tx2)
+inline static int _BRWalletTxIsAscending(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2)
 {
     if (! tx1 || ! tx2) return 0;
     if (tx1->blockHeight > tx2->blockHeight) return 1;
     if (tx1->blockHeight < tx2->blockHeight) return 0;
     
     for (size_t i = 0; i < tx1->inCount; i++) {
-        if (UInt256Eq(tx1->inputs[i].txHash, tx2->txHash)) return 1;
+        if (UInt256Eq(&(tx1->inputs[i].txHash), &(tx2->txHash))) return 1;
     }
     
     for (size_t i = 0; i < tx2->inCount; i++) {
-        if (UInt256Eq(tx2->inputs[i].txHash, tx1->txHash)) return 0;
+        if (UInt256Eq(&(tx2->inputs[i].txHash), &(tx1->txHash))) return 0;
     }
 
     for (size_t i = 0; i < tx1->inCount; i++) {
@@ -90,7 +90,7 @@ inline static int _BRWalletTxIsAscending(BRWallet *wallet, const BRTransaction *
     return 0;
 }
 
-inline static int _BRWalletTxCompare(BRWallet *wallet, const BRTransaction *tx1, const BRTransaction *tx2)
+inline static int _BRWalletTxCompare(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2)
 {
     size_t i, j;
 
@@ -761,7 +761,7 @@ void BRWalletRemoveTransaction(BRWallet *wallet, UInt256 txHash)
     int notifyUser = 0, recommendRescan = 0;
 
     assert(wallet != NULL);
-    assert(! UInt256IsZero(txHash));
+    assert(! UInt256IsZero(&txHash));
     pthread_mutex_lock(&wallet->lock);
     tx = BRSetGet(wallet->allTx, &txHash);
 
@@ -774,7 +774,7 @@ void BRWalletRemoveTransaction(BRWallet *wallet, UInt256 txHash)
             if (BRTransactionEq(tx, t)) continue;
             
             for (size_t j = 0; j < t->inCount; j++) {
-                if (! UInt256Eq(t->inputs[j].txHash, txHash)) continue;
+                if (! UInt256Eq(&(t->inputs[j].txHash), &txHash)) continue;
                 array_add(hashes, t->txHash);
                 break;
             }
@@ -826,7 +826,7 @@ BRTransaction *BRWalletTransactionForHash(BRWallet *wallet, UInt256 txHash)
     BRTransaction *tx;
     
     assert(wallet != NULL);
-    assert(! UInt256IsZero(txHash));
+    assert(! UInt256IsZero(&txHash));
     pthread_mutex_lock(&wallet->lock);
     tx = BRSetGet(wallet->allTx, &txHash);
     pthread_mutex_unlock(&wallet->lock);

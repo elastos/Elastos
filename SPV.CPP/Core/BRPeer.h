@@ -205,7 +205,7 @@ inline static size_t BRPeerHash(const void *peer)
 inline static int BRPeerEq(const void *peer, const void *otherPeer)
 {
     return (peer == otherPeer ||
-            (UInt128Eq(((const BRPeer *)peer)->address, ((const BRPeer *)otherPeer)->address) &&
+            (UInt128Eq(&(((BRPeer *)peer)->address), &(((BRPeer *)otherPeer)->address)) &&
              ((const BRPeer *)peer)->port == ((const BRPeer *)otherPeer)->port));
 }
 

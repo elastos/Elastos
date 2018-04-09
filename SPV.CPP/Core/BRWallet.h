@@ -52,7 +52,7 @@ inline static size_t BRUTXOHash(const void *utxo)
 
 inline static int BRUTXOEq(const void *utxo, const void *otherUtxo)
 {
-    return (utxo == otherUtxo || (UInt256Eq(((const BRUTXO *)utxo)->hash, ((const BRUTXO *)otherUtxo)->hash) &&
+    return (utxo == otherUtxo || (UInt256Eq(&(((BRUTXO *)utxo)->hash), &(((BRUTXO *)otherUtxo)->hash)) &&
                                   ((const BRUTXO *)utxo)->n == ((const BRUTXO *)otherUtxo)->n));
 }
 

@@ -108,9 +108,9 @@ BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
     if (block) {
         block->version = UInt32GetLE(&buf[off]);
         off += sizeof(uint32_t);
-        block->prevBlock = UInt256Get(&buf[off]);
+        UInt256Get(&block->prevBlock, &buf[off]);
         off += sizeof(UInt256);
-        block->merkleRoot = UInt256Get(&buf[off]);
+        UInt256Get(&block->merkleRoot, &buf[off]);
         off += sizeof(UInt256);
         block->timestamp = UInt32GetLE(&buf[off]);
         off += sizeof(uint32_t);
@@ -251,8 +251,8 @@ static UInt256 _BRMerkleBlockRootR(const BRMerkleBlock *block, size_t *hashIdx, 
             hashes[0] = _BRMerkleBlockRootR(block, hashIdx, flagIdx, depth + 1); // left branch
             hashes[1] = _BRMerkleBlockRootR(block, hashIdx, flagIdx, depth + 1); // right branch
 
-            if (! UInt256IsZero(hashes[0]) && ! UInt256Eq(hashes[0], hashes[1])) {
-                if (UInt256IsZero(hashes[1])) hashes[1] = hashes[0]; // if right branch is missing, dup left branch
+            if (! UInt256IsZero(&hashes[0]) && ! UInt256Eq(&(hashes[0]), &(hashes[1]))) {
+                if (UInt256IsZero(&hashes[1])) hashes[1] = hashes[0]; // if right branch is missing, dup left branch
                 BRSHA256_2(&md, hashes, sizeof(hashes));
             }
             else *hashIdx = SIZE_MAX; // defend against (CVE-2012-2459)
@@ -279,7 +279,7 @@ int BRMerkleBlockIsValid(const BRMerkleBlock *block, uint32_t currentTime)
     int r = 1;
     
     // check if merkle root is correct
-    if (block->totalTx > 0 && ! UInt256Eq(merkleRoot, block->merkleRoot)) r = 0;
+    if (block->totalTx > 0 && ! UInt256Eq(&(merkleRoot), &(block->merkleRoot))) r = 0;
     
     // check if timestamp is too far in future
     if (block->timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
@@ -304,10 +304,10 @@ int BRMerkleBlockContainsTxHash(const BRMerkleBlock *block, UInt256 txHash)
     int r = 0;
     
     assert(block != NULL);
-    assert(! UInt256IsZero(txHash));
+    assert(! UInt256IsZero(&txHash));
     
     for (size_t i = 0; ! r && i < block->hashesCount; i++) {
-        if (UInt256Eq(block->hashes[i], txHash)) r = 1;
+        if (UInt256Eq(&(block->hashes[i]), &(txHash))) r = 1;
     }
     
     return r;
@@ -331,7 +331,7 @@ int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBloc
     assert(block != NULL);
     assert(previous != NULL);
     
-    if (! previous || !UInt256Eq(block->prevBlock, previous->blockHash) || block->height != previous->height + 1) r = 0;
+    if (! previous || !UInt256Eq(&(block->prevBlock), &(previous->blockHash)) || block->height != previous->height + 1) r = 0;
     if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0 && transitionTime == 0) r = 0;
         
     if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {

@@ -1278,7 +1278,9 @@ BRPaymentProtocolEncryptedMessage *BRPaymentProtocolEncryptedMessageNew(BRPaymen
         msg->signature = NULL;
         BRSHA256(md, buf, bufLen);
         free(buf);
-        sigLen = BRKeySign(privKey, sig, sizeof(sig), UInt256Get(md));
+        UInt256 tempHash;
+        UInt256Get(&tempHash, md);
+        sigLen = BRKeySign(privKey, sig, sizeof(sig), tempHash);
         msg->sigLen = _ProtoBufBytes(&msg->signature, sig, sigLen);
     }
     
@@ -1376,7 +1378,9 @@ int BRPaymentProtocolEncryptedMessageVerify(BRPaymentProtocolEncryptedMessage *m
     msg->sigLen = sigLen;
     BRSHA256(md, buf, bufLen);
     free(buf);
-    return BRKeyVerify(pubKey, UInt256Get(md), msg->signature, msg->sigLen);
+    UInt256 tempHash;
+    UInt256Get(&tempHash, md);
+    return BRKeyVerify(pubKey, tempHash, msg->signature, msg->sigLen);
 }
 
 size_t BRPaymentProtocolEncryptedMessageDecrypt(BRPaymentProtocolEncryptedMessage *msg, uint8_t *out, size_t outLen,
