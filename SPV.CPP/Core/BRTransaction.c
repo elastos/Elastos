@@ -382,7 +382,12 @@ BRTransaction *BRTransactionParse(const uint8_t *buf, size_t bufLen)
     
     for (i = 0; off <= bufLen && i < tx->inCount; i++) {
         input = &tx->inputs[i];
-        input->txHash = (off + sizeof(UInt256) <= bufLen) ? UInt256Get(&buf[off]) : UINT256_ZERO;
+        if(off + sizeof(UInt256) <= bufLen){
+            UInt256Get(&input->txHash, &buf[off]);
+        }
+        else{
+            input->txHash = UINT256_ZERO;
+        }
         off += sizeof(UInt256);
         input->index = (off + sizeof(uint32_t) <= bufLen) ? UInt32GetLE(&buf[off]) : 0;
         off += sizeof(uint32_t);
@@ -444,7 +449,7 @@ void BRTransactionAddInput(BRTransaction *tx, UInt256 txHash, uint32_t index, ui
     BRTxInput input = { txHash, index, "", amount, NULL, 0, NULL, 0, sequence };
 
     assert(tx != NULL);
-    assert(! UInt256IsZero(txHash));
+    assert(! UInt256IsZero(&txHash));
     assert(script != NULL || scriptLen == 0);
     assert(signature != NULL || sigLen == 0);
     

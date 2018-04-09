@@ -44,7 +44,7 @@
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
 
-#define genesis_block_hash(params) UInt256Reverse((params)->checkpoints[0].hash)
+#define genesis_block_hash(params) UInt256Reverse(&((params)->checkpoints[0].hash))
 
 typedef struct {
     BRPeerManager *manager;
@@ -70,10 +70,10 @@ typedef struct {
 } BRTxPeerList;
 
 // true if peer is contained in the list of peers associated with txHash
-static int _BRTxPeerListHasPeer(const BRTxPeerList *list, UInt256 txHash, const BRPeer *peer)
+static int _BRTxPeerListHasPeer(BRTxPeerList *list, UInt256 txHash, const BRPeer *peer)
 {
     for (size_t i = array_count(list); i > 0; i--) {
-        if (! UInt256Eq(list[i - 1].txHash, txHash)) continue;
+        if (! UInt256Eq(&(list[i - 1].txHash), &(txHash))) continue;
 
         for (size_t j = array_count(list[i - 1].peers); j > 0; j--) {
             if (BRPeerEq(&list[i - 1].peers[j - 1], peer)) return 1;
@@ -86,10 +86,10 @@ static int _BRTxPeerListHasPeer(const BRTxPeerList *list, UInt256 txHash, const 
 }
 
 // number of peers associated with txHash
-static size_t _BRTxPeerListCount(const BRTxPeerList *list, UInt256 txHash)
+static size_t _BRTxPeerListCount(BRTxPeerList *list, UInt256 txHash)
 {
     for (size_t i = array_count(list); i > 0; i--) {
-        if (UInt256Eq(list[i - 1].txHash, txHash)) return array_count(list[i - 1].peers);
+        if (UInt256Eq(&(list[i - 1].txHash), &txHash)) return array_count(list[i - 1].peers);
     }
     
     return 0;
@@ -99,7 +99,7 @@ static size_t _BRTxPeerListCount(const BRTxPeerList *list, UInt256 txHash)
 static size_t _BRTxPeerListAddPeer(BRTxPeerList **list, UInt256 txHash, const BRPeer *peer)
 {
     for (size_t i = array_count(*list); i > 0; i--) {
-        if (! UInt256Eq((*list)[i - 1].txHash, txHash)) continue;
+        if (! UInt256Eq(&((*list)[i - 1].txHash), &txHash)) continue;
         
         for (size_t j = array_count((*list)[i - 1].peers); j > 0; j--) {
             if (BRPeerEq(&(*list)[i - 1].peers[j - 1], peer)) return array_count((*list)[i - 1].peers);
@@ -119,7 +119,7 @@ static size_t _BRTxPeerListAddPeer(BRTxPeerList **list, UInt256 txHash, const BR
 static int _BRTxPeerListRemovePeer(BRTxPeerList *list, UInt256 txHash, const BRPeer *peer)
 {
     for (size_t i = array_count(list); i > 0; i--) {
-        if (! UInt256Eq(list[i - 1].txHash, txHash)) continue;
+        if (! UInt256Eq(&(list[i - 1].txHash), &txHash)) continue;
         
         for (size_t j = array_count(list[i - 1].peers); j > 0; j--) {
             if (! BRPeerEq(&list[i - 1].peers[j - 1], peer)) continue;
@@ -150,7 +150,7 @@ inline static size_t _BRPrevBlockHash(const void *block)
 // true if block and otherBlock have equal prevBlock values
 inline static int _BRPrevBlockEq(const void *block, const void *otherBlock)
 {
-    return UInt256Eq(((const BRMerkleBlock *)block)->prevBlock, ((const BRMerkleBlock *)otherBlock)->prevBlock);
+    return UInt256Eq(&(((BRMerkleBlock *)block)->prevBlock), &(((BRMerkleBlock *)otherBlock)->prevBlock));
 }
 
 // returns a hash value for a block's height value suitable for use in a hashtable
@@ -300,7 +300,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
         
         BRAddressHash160(&hash, addrs[i].s);
         
-        if (! UInt160IsZero(hash) && ! BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
+        if (! UInt160IsZero(&hash) && ! BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
             BRBloomFilterInsertData(filter, hash.u8, sizeof(hash));
         }
     }
@@ -657,7 +657,7 @@ static void *_findPeersThreadRoutine(void *arg)
     free(arg);
     pthread_mutex_lock(&manager->lock);
     
-    for (addr = addrList; addr && ! UInt128IsZero(*addr); addr++) {
+    for (addr = addrList; addr && ! UInt128IsZero(addr); addr++) {
         age = 24*60*60 + BRRand(2*24*60*60); // add between 1 and 3 days
         array_add(manager->peers, ((BRPeer) { *addr, manager->params->standardPort, services, now - age, 0 }));
     }
@@ -680,7 +680,7 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
     UInt128 *addr, *addrList;
     BRFindPeersInfo *info;
     
-    if (! UInt128IsZero(manager->fixedPeer.address)) {
+    if (! UInt128IsZero(&manager->fixedPeer.address)) {
         array_set_count(manager->peers, 1);
         manager->peers[0] = manager->fixedPeer;
         manager->peers[0].services = services;
@@ -697,7 +697,7 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
                 pthread_create(&thread, &attr, _findPeersThreadRoutine, info) == 0) manager->dnsThreadCount++;
         }
 
-        for (addr = addrList = _addressLookup(manager->params->dnsSeeds[0]); addr && ! UInt128IsZero(*addr); addr++) {
+        for (addr = addrList = _addressLookup(manager->params->dnsSeeds[0]); addr && ! UInt128IsZero(addr); addr++) {
             array_add(manager->peers, ((BRPeer) { *addr, manager->params->standardPort, services, now, 0 }));
         }
 
@@ -927,7 +927,7 @@ static void _peerRelayedTx(void *info, BRTransaction *tx)
     peer_log(peer, "relayed tx: %s", u256hex(tx->txHash));
     
     for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
-        if (UInt256Eq(manager->publishedTxHashes[i - 1], tx->txHash)) {
+        if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &(tx->txHash))) {
             txInfo = manager->publishedTx[i - 1].info;
             txCallback = manager->publishedTx[i - 1].callback;
             manager->publishedTx[i - 1].info = NULL;
@@ -1010,7 +1010,7 @@ static void _peerHasTx(void *info, UInt256 txHash)
     peer_log(peer, "has tx: %s", u256hex(txHash));
 
     for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
-        if (UInt256Eq(manager->publishedTxHashes[i - 1], txHash)) {
+        if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &txHash)) {
             pubTx = manager->publishedTx[i - 1];
             if (! tx) tx = pubTx.tx;
             manager->publishedTx[i - 1].callback = NULL;
@@ -1088,7 +1088,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
 {
     int r = 1;
 
-    if (! prev || ! UInt256Eq(block->prevBlock, prev->blockHash) || block->height != prev->height + 1) r = 0;
+    if (! prev || ! UInt256Eq((const UInt256*)&(block->prevBlock), (const UInt256*)&prev->blockHash) || block->height != prev->height + 1) r = 0;
 
     // check if we hit a difficulty transition, and find previous transition time
     if (r && (block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
@@ -1210,7 +1210,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
         else {
             // call getblocks, unless we already did with the previous block, or we're still syncing
             if (manager->lastBlock->height >= BRPeerLastBlock(peer) &&
-                (! manager->lastOrphan || ! UInt256Eq(manager->lastOrphan->blockHash, block->prevBlock))) {
+                (! manager->lastOrphan || ! UInt256Eq(&manager->lastOrphan->blockHash, &block->prevBlock))) {
                 UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
                 size_t locatorsCount = _BRPeerManagerBlockLocators(manager, locators,
                                                                    sizeof(locators)/sizeof(*locators));
@@ -1229,7 +1229,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
         block = NULL;
         _BRPeerManagerPeerMisbehavin(manager, peer);
     }
-    else if (UInt256Eq(block->prevBlock, manager->lastBlock->blockHash)) { // new block extends main chain
+    else if (UInt256Eq(&block->prevBlock, &manager->lastBlock->blockHash)) { // new block extends main chain
         if ((block->height % 500) == 0 || txCount > 0 || block->height >= BRPeerLastBlock(peer)) {
             peer_log(peer, "adding block #%"PRIu32", false positive rate: %f", block->height, manager->fpRate);
         }
@@ -1411,7 +1411,7 @@ static BRTransaction *_peerRequestedTx(void *info, UInt256 txHash)
     pthread_mutex_lock(&manager->lock);
 
     for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
-        if (UInt256Eq(manager->publishedTxHashes[i - 1], txHash)) {
+        if (UInt256Eq(&manager->publishedTxHashes[i - 1], &txHash)) {
             pubTx = manager->publishedTx[i - 1];
             manager->publishedTx[i - 1].callback = NULL;
             manager->publishedTx[i - 1].info = NULL;
@@ -1480,7 +1480,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
     for (size_t i = 0; i < manager->params->checkpointsCount; i++) {
         block = BRMerkleBlockNew();
         block->height = manager->params->checkpoints[i].height;
-        block->blockHash = UInt256Reverse(manager->params->checkpoints[i].hash);
+        block->blockHash = UInt256Reverse(&manager->params->checkpoints[i].hash);
         block->timestamp = manager->params->checkpoints[i].timestamp;
         block->target = manager->params->checkpoints[i].target;
         BRSetAdd(manager->checkpoints, block);
@@ -1554,7 +1554,7 @@ void BRPeerManagerSetFixedPeer(BRPeerManager *manager, UInt128 address, uint16_t
     assert(manager != NULL);
     BRPeerManagerDisconnect(manager);
     pthread_mutex_lock(&manager->lock);
-    manager->maxConnectCount = UInt128IsZero(address) ? PEER_MAX_CONNECTIONS : 1;
+    manager->maxConnectCount = UInt128IsZero(&address) ? PEER_MAX_CONNECTIONS : 1;
     manager->fixedPeer = ((BRPeer) { address, port, 0, 0, 0 });
     array_clear(manager->peers);
     pthread_mutex_unlock(&manager->lock);
@@ -1691,7 +1691,7 @@ void BRPeerManagerRescan(BRPeerManager *manager)
         // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
         for (size_t i = manager->params->checkpointsCount; i > 0; i--) {
             if (i - 1 == 0 || manager->params->checkpoints[i - 1].timestamp + 7*24*60*60 < manager->earliestKeyTime) {
-                UInt256 hash = UInt256Reverse(manager->params->checkpoints[i - 1].hash);
+                UInt256 hash = UInt256Reverse(&manager->params->checkpoints[i - 1].hash);
 
                 manager->lastBlock = BRSetGet(manager->blocks, &hash);
                 break;
@@ -1881,11 +1881,11 @@ size_t BRPeerManagerRelayCount(BRPeerManager *manager, UInt256 txHash)
     size_t count = 0;
 
     assert(manager != NULL);
-    assert(! UInt256IsZero(txHash));
+    assert(! UInt256IsZero(&txHash));
     pthread_mutex_lock(&manager->lock);
     
     for (size_t i = array_count(manager->txRelays); i > 0; i--) {
-        if (! UInt256Eq(manager->txRelays[i - 1].txHash, txHash)) continue;
+        if (! UInt256Eq(&manager->txRelays[i - 1].txHash, &txHash)) continue;
         count = array_count(manager->txRelays[i - 1].peers);
         break;
     }

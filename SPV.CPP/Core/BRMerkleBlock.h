@@ -100,7 +100,7 @@ inline static size_t BRMerkleBlockHash(const void *block)
 inline static int BRMerkleBlockEq(const void *block, const void *otherBlock)
 {
     return (block == otherBlock ||
-            UInt256Eq(((const BRMerkleBlock *)block)->blockHash, ((const BRMerkleBlock *)otherBlock)->blockHash));
+            UInt256Eq(&(((BRMerkleBlock *)block)->blockHash), &(((BRMerkleBlock *)otherBlock)->blockHash)));
 }
 
 // frees memory allocated for block

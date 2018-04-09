@@ -193,13 +193,13 @@ static int _BRPeerAcceptVersionMessage(BRPeer *peer, const uint8_t *msg, size_t 
         off += sizeof(uint64_t);
         recvServices = UInt64GetLE(&msg[off]);
         off += sizeof(uint64_t);
-        recvAddr = UInt128Get(&msg[off]);
+        UInt128Get(&recvAddr, &msg[off]);
         off += sizeof(UInt128);
         recvPort = UInt16GetBE(&msg[off]);
         off += sizeof(uint16_t);
         fromServices = UInt64GetLE(&msg[off]);
         off += sizeof(uint64_t);
-        fromAddr = UInt128Get(&msg[off]);
+        UInt128Get(&fromAddr, &msg[off]);
         off += sizeof(UInt128);
         fromPort = UInt16GetBE(&msg[off]);
         off += sizeof(uint16_t);
@@ -281,7 +281,7 @@ static int _BRPeerAcceptAddrMessage(BRPeer *peer, const uint8_t *msg, size_t msg
             off += sizeof(uint32_t);
             p.services = UInt64GetLE(&msg[off]);
             off += sizeof(uint64_t);
-            p.address = UInt128Get(&msg[off]);
+            UInt128Get(&p.address, &msg[off]);
             off += sizeof(UInt128);
             p.port = UInt16GetBE(&msg[off]);
             off += sizeof(uint16_t);
@@ -349,13 +349,15 @@ static int _BRPeerAcceptInvMessage(BRPeer *peer, const uint8_t *msg, size_t msgL
         }
         else {
             if (! ctx->sentFilter && ! ctx->sentGetblocks) blockCount = 0;
-            if (blockCount == 1 && UInt256Eq(ctx->lastBlockHash, UInt256Get(blocks[0]))) blockCount = 0;
-            if (blockCount == 1) ctx->lastBlockHash = UInt256Get(blocks[0]);
+            UInt256 blockHash;
+            UInt256Get(&blockHash, blocks[0]);
+            if (blockCount == 1 && UInt256Eq(&(ctx->lastBlockHash), &blockHash)) blockCount = 0;
+            if (blockCount == 1)UInt256Get(&ctx->lastBlockHash, blocks[0]);
 
             UInt256 hash, blockHashes[blockCount], txHashes[txCount];
 
             for (i = 0; i < blockCount; i++) {
-                blockHashes[i] = UInt256Get(blocks[i]);
+                UInt256Get(&blockHashes[i],blocks[i]);
                 // remember blockHashes in case we need to re-request them with an updated bloom filter
                 array_add(ctx->knownBlockHashes, blockHashes[i]);
             }
@@ -367,7 +369,7 @@ static int _BRPeerAcceptInvMessage(BRPeer *peer, const uint8_t *msg, size_t msgL
             if (ctx->needsFilterUpdate) blockCount = 0;
         
             for (i = 0, j = 0; i < txCount; i++) {
-                hash = UInt256Get(transactions[i]);
+                UInt256Get(&hash, transactions[i]);
                 
                 if (BRSetContains(ctx->knownTxHashSet, &hash)) {
                     if (ctx->hasTx) ctx->hasTx(ctx->info, hash);
@@ -424,7 +426,7 @@ static int _BRPeerAcceptTxMessage(BRPeer *peer, const uint8_t *msg, size_t msgLe
 
         if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock
             for (size_t i = array_count(ctx->currentBlockTxHashes); i > 0; i--) {
-                if (! UInt256Eq(txHash, ctx->currentBlockTxHashes[i - 1])) continue;
+                if (! UInt256Eq(&txHash, &(ctx->currentBlockTxHashes[i - 1]))) continue;
                 array_rm(ctx->currentBlockTxHashes, i - 1);
                 break;
             }
@@ -532,7 +534,8 @@ static int _BRPeerAcceptGetdataMessage(BRPeer *peer, const uint8_t *msg, size_t 
         
         for (size_t i = 0; i < count; i++) {
             inv_type type = UInt32GetLE(&msg[off]);
-            UInt256 hash = UInt256Get(&msg[off + sizeof(uint32_t)]);
+            UInt256 hash;
+            UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
             
             switch (type) {
                 case inv_tx:
@@ -603,7 +606,7 @@ static int _BRPeerAcceptNotfoundMessage(BRPeer *peer, const uint8_t *msg, size_t
         
         for (size_t i = 0; i < count; i++) {
             type = UInt32GetLE(&msg[off]);
-            hash = UInt256Get(&msg[off + sizeof(uint32_t)]);
+            UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
             
             switch (type) {
                 case inv_tx: array_add(txHashes, hash); break;
@@ -776,10 +779,10 @@ static int _BRPeerAcceptRejectMessage(BRPeer *peer, const uint8_t *msg, size_t m
             strncpy(reason, (const char *)&msg[off], sizeof(reason) - 1);
             reason[sizeof(reason) - 1] = '\0';
             off += strLen;
-            if (hashLen == sizeof(UInt256)) txHash = UInt256Get(&msg[off]);
+            if (hashLen == sizeof(UInt256)) UInt256Get(&txHash, &msg[off]);
             off += hashLen;
 
-            if (! UInt256IsZero(txHash)) {
+            if (! UInt256IsZero(&txHash)) {
                 peer_log(peer, "rejected %s code: 0x%x reason: \"%s\" txid: %s", type, code, reason, u256hex(txHash));
                 if (ctx->rejectedTx) ctx->rejectedTx(ctx->info, txHash, code);
             }
@@ -1511,7 +1514,7 @@ void BRPeerRerequestBlocks(BRPeer *peer, UInt256 fromBlock)
     BRPeerContext *ctx = (BRPeerContext *)peer;
     size_t i = array_count(ctx->knownBlockHashes);
     
-    while (i > 0 && ! UInt256Eq(ctx->knownBlockHashes[i - 1], fromBlock)) i--;
+    while (i > 0 && ! UInt256Eq(&(ctx->knownBlockHashes[i - 1]), &fromBlock)) i--;
    
     if (i > 0) {
         array_rm_range(ctx->knownBlockHashes, 0, i - 1);

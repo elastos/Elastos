@@ -75,27 +75,27 @@ typedef union _u512 {
     uint64_t u64[512/64];
 } UInt512;
 
-int UInt128Eq(UInt128 a, UInt128 b);
+int UInt128Eq(const UInt128* a, const UInt128* b);
 
-int UInt160Eq(UInt160 a, UInt160 b);
+int UInt160Eq(const UInt160* a, const UInt160* b);
 
-int UInt168Eq(UInt168 a, UInt168 b);
+int UInt168Eq(const UInt168* a, const UInt168* b);
 
-int UInt256Eq(UInt256 a, UInt256 b);
+int UInt256Eq(const UInt256* a, const UInt256* b);
 
-int UInt512Eq(UInt512 a, UInt512 b);
+int UInt512Eq(const UInt512* a, const UInt512* b);
 
-int UInt128IsZero(UInt128 u);
+int UInt128IsZero(const UInt128* u);
 
-int UInt160IsZero(UInt160 u);
+int UInt160IsZero(const UInt160* u);
 
-int UInt168IsZero(UInt168 u);
+int UInt168IsZero(const UInt168* u);
 
-int UInt256IsZero(UInt256 u);
+int UInt256IsZero(const UInt256* u);
 
-int UInt512IsZero(UInt512 u);
+int UInt512IsZero(const UInt512* u);
 
-UInt256 UInt256Reverse(UInt256 u);
+UInt256 UInt256Reverse(const UInt256* u);
 
 #define UINT128_ZERO ((UInt128) { .u64 = { 0, 0 } })
 #define UINT160_ZERO ((UInt160) { .u32 = { 0, 0, 0, 0, 0 } })
@@ -179,13 +179,13 @@ uint64_t UInt64GetBE(const void *b8);
 
 uint64_t UInt64GetLE(const void *b8);
 
-UInt128 UInt128Get(const void *b16);
+void UInt128Get(UInt128* value, const void *b16);
 
-UInt160 UInt160Get(const void *b20);
+void UInt160Get(UInt160* value, const void *b20);
 
-UInt168 UInt168Get(const void *b21);
+void UInt168Get(UInt168* value, const void *b21);
 
-UInt256 UInt256Get(const void *b32);
+void UInt256Get(UInt256* value, const void *b32);
 
 #ifdef __cplusplus
 }

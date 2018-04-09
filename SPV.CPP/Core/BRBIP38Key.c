@@ -252,8 +252,9 @@ int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase)
 
     if (prefix == BIP38_NOEC_PREFIX) { // non EC multiplied key
         // data = prefix + flag + addresshash + encrypted1 + encrypted2
-        UInt128 encrypted1 = UInt128Get(&data[7]), encrypted2 = UInt128Get(&data[23]);
-
+        UInt128 encrypted1 , encrypted2;
+        UInt128Get(&encrypted1, &data[7]);
+        UInt128Get(&encrypted2, &data[23]);
         BRScrypt(&derived, sizeof(derived), passphrase, pwLen, addresshash, sizeof(uint32_t),
                  BIP38_SCRYPT_N, BIP38_SCRYPT_R, BIP38_SCRYPT_P);
         derived1 = *(UInt256 *)&derived, derived2 = *(UInt256 *)&derived.u8[sizeof(UInt256)];
@@ -272,7 +273,8 @@ int BRKeySetBIP38Key(BRKey *key, const char *bip38Key, const char *passphrase)
     else if (prefix == BIP38_EC_PREFIX) { // EC multipled key
         // data = prefix + flag + addresshash + entropy + encrypted1[0...7] + encrypted2
         const uint8_t *entropy = &data[7];
-        UInt128 encrypted1 = UINT128_ZERO, encrypted2 = UInt128Get(&data[23]);
+        UInt128 encrypted1 = UINT128_ZERO, encrypted2;
+        UInt128Get(&encrypted2, &data[23]);
         UInt256 passfactor = _BRBIP38DerivePassfactor(flag, entropy, passphrase), factorb;
         BRECPoint passpoint;
         uint64_t seedb[3];

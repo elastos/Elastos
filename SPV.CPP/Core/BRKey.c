@@ -159,7 +159,7 @@ int BRKeySetSecret(BRKey *key, const UInt256 *secret, int compressed)
     
     pthread_once(&_ctx_once, _ctx_init);
     BRKeyClean(key);
-    key->secret = UInt256Get(secret);
+    UInt256Get(&key->secret, secret);
     key->compressed = compressed;
     return secp256k1_ec_seckey_verify(_ctx, key->secret.u8);
 }
@@ -297,7 +297,7 @@ size_t BRKeyAddress(BRKey *key, char *addr, size_t addrLen)
 #endif
     UInt160Set(&data[1], hash);
 
-    if (! UInt160IsZero(hash)) {
+    if (! UInt160IsZero(&hash)) {
         addrLen = BRBase58CheckEncode(addr, addrLen, data, sizeof(data));
     }
     else addrLen = 0;
@@ -362,7 +362,7 @@ size_t BRKeyCompactSign(const BRKey *key, void *compactSig, size_t sigLen, UInt2
     assert(key != NULL);
     assert(sigLen >= 65 || compactSig == NULL);
 
-    if (! UInt256IsZero(key->secret)) { // can't sign with a public key
+    if (! UInt256IsZero(&key->secret)) { // can't sign with a public key
         if (compactSig && sigLen >= 65 &&
             secp256k1_ecdsa_sign_recoverable(_ctx, &s, md.u8, key->secret.u8, secp256k1_nonce_function_rfc6979, NULL) &&
             secp256k1_ecdsa_recoverable_signature_serialize_compact(_ctx, (uint8_t *)compactSig + 1, &recid, &s)) {
