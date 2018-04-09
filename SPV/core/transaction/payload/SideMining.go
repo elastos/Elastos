@@ -3,7 +3,7 @@ package payload
 import (
 	"io"
 
-	"Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA.SPV/common"
 )
 
 const SideMiningPayloadVersion byte = 0x00
@@ -22,11 +22,11 @@ func (a *SideMining) Data(version byte) []byte {
 }
 
 func (a *SideMining) Serialize(w io.Writer, version byte) error {
-	_, err := a.SideBlockHash.Serialize(w)
+	err := a.SideBlockHash.Serialize(w)
 	if err != nil {
 		return err
 	}
-	_, err = a.SideGenesisHash.Serialize(w)
+	err = a.SideGenesisHash.Serialize(w)
 	if err != nil {
 		return err
 	}
