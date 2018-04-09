@@ -18,7 +18,7 @@ const (
 
 var (
 	Parameters configParams
-	mainNet = &ChainParams{
+	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
 		PowLimitBits:       0x1f0008ff,
@@ -91,6 +91,7 @@ type Configuration struct {
 	MaxTxInBlock        int              `json:"MaxTransactionInBlock"`
 	MaxBlockSize        int              `json:"MaxBlockSize"`
 	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
+	Arbiters            []string         `json:"Arbiters"`
 }
 
 type ConfigFile struct {
