@@ -19,7 +19,7 @@ fi
 set -e
 
 TARGET_TOOLCHAIN="arm-linux-androideabi-4.9"
-TARGET_API="24"
+TARGET_API="21"
 
 while [ x"$1" != x ]; do
 case "$1" in

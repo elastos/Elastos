@@ -3,6 +3,7 @@
 include environ/common.mk
 
 ARM_ARCH=armeabi-v7a
+APP_ABI=armeabi-v7a
 LIB_SUFFIX= .so
 
 HOST_COMPILER = arm-linux-androideabi
@@ -36,6 +37,8 @@ RANLIB    = $(TOOLCHAIN_DIR)/bin/arm-linux-androideabi-ranlib
 LDSHARED  = $(TOOLCHAIN_DIR)/bin/clang
 CPP       = $(TOOLCHAIN_DIR)/bin/clang -E
 STRIP     = $(TOOLCHAIN_DIR)/bin/arm-linux-android-strip
+
+export APP_ABI
 
 export ANDROID_SYSROOT=$(SYSROOT_DIR)
 export ANDROID_DEV

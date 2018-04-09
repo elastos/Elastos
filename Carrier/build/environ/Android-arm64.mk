@@ -3,6 +3,7 @@
 include environ/common.mk
 
 ARM_ARCH=arm64-v8a
+APP_ABI=arm64-v8a
 LIB_SUFFIX= .so
 
 HOST_COMPILER = aarch64-linux-android
@@ -35,6 +36,8 @@ RANLIB    = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-ranlib
 LDSHARED  = $(TOOLCHAIN_DIR)/bin/clang
 CPP       = $(TOOLCHAIN_DIR)/bin/clang -E
 STRIP     = $(TOOLCHAIN_DIR)/bin/aarch64-linux-android-strip
+
+export APP_ABI
 
 export ANDROID_SYSROOT=$(SYSROOT_DIR)
 export ANDROID_DEV
