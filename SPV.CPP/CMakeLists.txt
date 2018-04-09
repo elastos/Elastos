@@ -17,7 +17,7 @@
 # 7. Click 'Generate'
 # 8. From your IDE, open the generated makefile and run the compilation.
 
-cmake_minimum_required( VERSION 3.0 )
+cmake_minimum_required(VERSION 3.0)
 
 project(SPVSDK VERSION 0.1.0.0)
 
@@ -25,12 +25,12 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Define helper macro option_with_default
-macro( option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT )
-	if( NOT DEFINED ${OPTION_NAME} )
-		set( ${OPTION_NAME} ${OPTION_DEFAULT} )
-	endif( NOT DEFINED ${OPTION_NAME} )
-	option( ${OPTION_NAME} "${OPTION_STRING}" ${${OPTION_NAME}} )
-endmacro( option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT )
+macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
+	if(NOT DEFINED ${OPTION_NAME})
+		set(${OPTION_NAME} ${OPTION_DEFAULT})
+	endif(NOT DEFINED ${OPTION_NAME})
+	option(${OPTION_NAME} "${OPTION_STRING}" ${${OPTION_NAME}})
+endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 
 ############################
 # Check 32/64 bit platform #
@@ -55,41 +55,41 @@ if(CMAKE_BUILD_TOOL STREQUAL "nmake")
 endif(CMAKE_BUILD_TOOL STREQUAL "nmake")
 
 if(MSVC)
-	option_with_default( SPV_INSTALL_PDB_FILES "Install PDB files (debug informations)" ON )
+	option_with_default(SPV_INSTALL_PDB_FILES "Install PDB files (debug informations)" ON)
 endif(MSVC)
 
 if(WIN32)
-	option_with_default( SPV_AUTOINSTALL_DEPENDENT_LIBS "Autoinstall dependent DLLs" ON )
+	option_with_default(SPV_AUTOINSTALL_DEPENDENT_LIBS "Autoinstall dependent DLLs" ON)
 	mark_as_advanced(SPV_AUTOINSTALL_DEPENDENT_LIBS)
 endif()
 
-if( NOT DEFINED SPV_INSTALL_PREFIX )
-	if( WIN32 )
+if(NOT DEFINED SPV_INSTALL_PREFIX)
+	if(WIN32)
 		set(SPV_INSTALL_PREFIX "c:/${TARGET_NAME}-${SPV_VERSION}")
-	else( WIN32 )
+	else(WIN32)
 		set(SPV_INSTALL_PREFIX "/usr/local/")
-	endif( WIN32 )
-endif( NOT DEFINED SPV_INSTALL_PREFIX )
+	endif(WIN32)
+endif(NOT DEFINED SPV_INSTALL_PREFIX)
 
-set( SPV_INSTALL_PREFIX ${SPV_INSTALL_PREFIX} CACHE
-	PATH "Install prefix prepended to target to create install location" )
-set( CMAKE_INSTALL_PREFIX "${SPV_INSTALL_PREFIX}" CACHE INTERNAL "Prefix jprepended to install directories if target destination is not absolute, immutable" FORCE )
+set(SPV_INSTALL_PREFIX ${SPV_INSTALL_PREFIX} CACHE
+	PATH "Install prefix prepended to target to create install location")
+set(CMAKE_INSTALL_PREFIX "${SPV_INSTALL_PREFIX}" CACHE INTERNAL "Prefix jprepended to install directories if target destination is not absolute, immutable" FORCE)
 
-option_with_default( SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON )
-option_with_default( SPV_BUILD_TEST_CASES "Build test cases" OFF )
-option_with_default( SPV_BUILD_SAMPLE "Build sample" OFF )
-option_with_default( CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF )
+option_with_default(SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON)
+option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
+option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
+option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
 
-if( SPV_BUILD_SHARED_LIB )
-	set( SPV_LIBRARY_TYPE SHARED )
-	set( SPV_BUILD_STATIC_LIB FALSE )
-else( SPV_BUILD_SHARED_LIB )
-	set( SPV_LIBRARY_TYPE STATIC )
-	set( SPV_BUILD_STATIC_LIB TRUE )
-	if ( WIN32 )
+if(SPV_BUILD_SHARED_LIB)
+	set(SPV_LIBRARY_TYPE SHARED)
+	set(SPV_BUILD_STATIC_LIB FALSE)
+else(SPV_BUILD_SHARED_LIB)
+	set(SPV_LIBRARY_TYPE STATIC)
+	set(SPV_BUILD_STATIC_LIB TRUE)
+	if (WIN32)
 		add_definitions("-DHAVE_NO_DLL")
-	endif( WIN32 )
-endif( SPV_BUILD_SHARED_LIB )
+	endif(WIN32)
+endif(SPV_BUILD_SHARED_LIB)
 
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
@@ -107,14 +107,19 @@ include_directories(
 )
 
 add_subdirectory(SDK)
-if( SPV_BUILD_TEST_CASES )
+if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)
 endif()
 
-if( SPV_BUILD_SAMPLE )
+if(SPV_BUILD_SAMPLE)
 	set(SAMPLE_NAME sample)
 	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Sample SAMPLE_SOURCE_FILES)
 	add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
 	target_link_libraries(${SAMPLE_NAME} spvsdk)
 	target_link_libraries(${SAMPLE_NAME} pthread)
+	target_link_libraries(${SAMPLE_NAME} sqlite3)
+	#sudo apt-get install libboost-dev
+	target_link_libraries(${TARGET_NAME} boost_system)
+	#sudo apt-get install libboost-program-options-dev
+	target_link_libraries(${TARGET_NAME} boost_program_options)
 endif()
