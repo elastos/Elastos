@@ -88,6 +88,10 @@ type merkleNode struct {
 	h *Uint256 // hash
 }
 
+func (node merkleNode) String() string {
+	return fmt.Sprint("Node{pos:", node.p, ", hash:", node.h, "}")
+}
+
 // given n merkle leaves, how deep is the tree?
 // iterate shifting left until greater than n
 func treeDepth(n uint32) (e uint8) {

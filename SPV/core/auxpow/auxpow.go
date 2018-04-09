@@ -158,16 +158,22 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (ap *AuxPow) Check(hashAuxBlock Uint256, chainId int) bool {
-	merkleRoot := GetMerkleRoot(ap.ParCoinbaseTx.Hash(), ap.ParCoinBaseMerkle, ap.ParMerkleIndex)
-	if merkleRoot != ap.ParBlockHeader.MerkleRoot {
+func (ap *AuxPow) Check(hashAuxBlock *Uint256, chainId int) bool {
+	if GetMerkleRoot(ap.ParCoinbaseTx.Hash(), ap.ParCoinBaseMerkle, ap.ParMerkleIndex) != ap.ParBlockHeader.MerkleRoot {
 		return false
 	}
 
+	if len(ap.AuxMerkleBranch) > 0 {
+		hashAuxBlockBytes := hashAuxBlock.BytesReverse()
+		hashAuxBlock, _ = Uint256FromBytes(hashAuxBlockBytes)
+	}
+
+	auxRootHashReverse := GetMerkleRoot(*hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
+
 	script := ap.ParCoinbaseTx.TxIn[0].SignatureScript
 	scriptStr := hex.EncodeToString(script)
-
-	auxRootHashStr := hex.EncodeToString(merkleRoot.Bytes())
+	//fixme reverse
+	auxRootHashStr := hex.EncodeToString(auxRootHashReverse.Bytes())
 	pchMergedMiningHeaderStr := hex.EncodeToString(pchMergedMiningHeader)
 
 	headerIndex := strings.Index(scriptStr, pchMergedMiningHeaderStr)
@@ -210,15 +216,9 @@ func GetMerkleRoot(hash Uint256, merkleBranch []Uint256, index int) Uint256 {
 	}
 	for _, it := range merkleBranch {
 		if (index & 1) == 1 {
-			temp := make([]uint8, 0)
-			temp = append(temp, it[:]...)
-			temp = append(temp, hash[:]...)
-			hash = Uint256(sha256.Sum256(temp))
+			hash = Uint256(sha256.Sum256(append(it[:], hash[:]...)))
 		} else {
-			temp := make([]uint8, 0)
-			temp = append(temp, hash[:]...)
-			temp = append(temp, it[:]...)
-			hash = Uint256(sha256.Sum256(temp))
+			hash = Uint256(sha256.Sum256(append(hash[:], it[:]...)))
 		}
 		index >>= 1
 	}
