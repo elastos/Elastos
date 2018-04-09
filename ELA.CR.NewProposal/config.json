@@ -31,6 +31,10 @@
             "MinerInfo": "ELA",
             "MinTxFee": 100,
             "ActiveNet": "MainNet"
-        }
+        },
+        "Arbiters": [
+            "03aa9e983f53c0206eb392a38b2323256d8159601b8b9002f47c80d9f2cd927d01",
+            "02d28c4a82295bb81b8d7a8d2f0726237c5cd464781fd9ebdf41ca0afb9ad796d3"
+        ]
     }
 }

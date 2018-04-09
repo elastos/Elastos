@@ -1,23 +1,23 @@
 package ledger
 
 import (
-	"io"
-	"time"
 	"bytes"
-	"errors"
-	"math/rand"
 	"encoding/binary"
+	"errors"
+	"io"
+	"math/rand"
+	"time"
 
-	"Elastos.ELA/crypto"
 	. "Elastos.ELA/common"
-	"Elastos.ELA/core/asset"
-	"Elastos.ELA/common/log"
 	"Elastos.ELA/common/config"
+	"Elastos.ELA/common/log"
+	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/core/asset"
+	"Elastos.ELA/core/contract/program"
 	"Elastos.ELA/core/signature"
 	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/common/serialization"
-	"Elastos.ELA/core/contract/program"
 	"Elastos.ELA/core/transaction/payload"
+	"Elastos.ELA/crypto"
 )
 
 const (
@@ -254,10 +254,20 @@ func (bd *Block) SerializeUnsigned(w io.Writer) error {
 
 func (b *Block) GetArbitrators() ([][]byte, error) {
 	//todo finish this when arbitrator election scenario is done
-	return nil, nil
+	arbitersStr := config.Parameters.Arbiters
+	var arbitersByte [][]byte
+	for _, arbiter := range arbitersStr {
+		arbiterByte, err := HexStringToBytes(arbiter)
+		if err != nil {
+			return nil, err
+		}
+		arbitersByte = append(arbitersByte, arbiterByte)
+	}
+
+	return arbitersByte, nil
 }
 
 func (b *Block) GetCurrentArbitratorIndex() (int, error) {
 	//todo finish this when arbitrator election scenario is done
-	return 0, nil
+	return int(b.Blockdata.Height) % 2, nil
 }
