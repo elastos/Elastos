@@ -15,5 +15,13 @@ namespace Elastos {
             //todo complete me
             return "";
         }
+
+        std::string Address::toString() const {
+            return stringify();
+        }
+
+        BRAddress Address::getRaw() const {
+            return BRAddress();
+        }
     }
 }

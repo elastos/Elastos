@@ -19,6 +19,13 @@ namespace Elastos {
         public:
             typedef boost::shared_ptr<T> TPtr;
 
+            SharedWrapperList() {
+            }
+
+            SharedWrapperList(size_t count) :
+                    std::vector< boost::shared_ptr< T > >(count) {
+            }
+
             std::vector<Raw> getRawPointerArray() const {
 
                 std::vector<Raw> results;

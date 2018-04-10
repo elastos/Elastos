@@ -53,7 +53,7 @@ namespace Elastos {
         public:
             PeerManager(ChainParams& params,
                         const WalletPtr &wallet,
-                        double earliestKeyTime,
+                        uint32_t earliestKeyTime,
                         const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
                         const WrapperList<Peer, BRPeer> &peers,
                         const boost::shared_ptr<Listener> &listener);
@@ -77,31 +77,27 @@ namespace Elastos {
 
             void rescan();
 
-            uint64_t getEstimatedBlockHeight() const;
+            uint32_t getEstimatedBlockHeight() const;
 
-            uint64_t getLastBlockHeight() const;
+            uint32_t getLastBlockHeight() const;
 
-            uint64_t getLastBlockTimestamp() const;
+            uint32_t getLastBlockTimestamp() const;
 
-            double getSyncProgress(long startHeight);
+            double getSyncProgress(uint32_t startHeight);
 
             Peer::ConnectStatus getConnectStatus() const;
 
-            bool useFixedPeer();
+            bool useFixedPeer(const std::string &node, int port);
 
             std::string getCurrentPeerName() const;
 
             std::string getDownloadPeerName() const;
 
-            int getPeerCount() const;
+            size_t getPeerCount() const;
 
-            void publishTransaction(const Transaction& transaction);
+            void publishTransaction(const TransactionPtr& transaction);
 
-            uint64_t getRelayCount (const ByteData &txHash) const;
-
-            void testSaveBlocksCallback (bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *>& blocks);
-
-            void testSavePeersCallback (bool replace, const WrapperList<Peer, BRPeer>& peers);
+            uint64_t getRelayCount (const UInt256 &txHash) const;
 
         private:
             BRPeerManager* _manager;

@@ -18,7 +18,7 @@ namespace Elastos {
         CoreWalletManager::CoreWalletManager(
                 const MasterPubKeyPtr &masterPubKey,
                 const ChainParams &chainParams,
-                double earliestPeerTime) :
+                uint32_t earliestPeerTime) :
             _wallet(nullptr),
             _peerManager(nullptr),
             _masterPubKey(masterPubKey),
@@ -47,8 +47,10 @@ namespace Elastos {
             return _peerManager;
         }
 
-        ByteData CoreWalletManager::signAndPublishTransaction(const Transaction &transaction, const ByteData &phase) {
-            return ByteData();
+        ByteData CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase) {
+            _wallet->signTransaction(transaction, getForkId(), phase);
+            _peerManager->publishTransaction(transaction);
+            return transaction->getHash();
         }
 
         std::string CoreWalletManager::toString() const {
@@ -120,6 +122,11 @@ namespace Elastos {
         WrapperList<Peer, BRPeer> CoreWalletManager::loadPeers() {
             //todo complete me
             return WrapperList<Peer, BRPeer>();
+        }
+
+        int CoreWalletManager::getForkId() const {
+            //todo complete me
+            return -1;
         }
 
     }

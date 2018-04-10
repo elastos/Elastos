@@ -23,13 +23,13 @@ namespace Elastos {
         public:
             CoreWalletManager(const MasterPubKeyPtr &masterPubKey,
                               const ChainParams &chainParams,
-                              double earliestPeerTime);
+                              uint32_t earliestPeerTime);
 
             const WalletPtr &getWallet();
 
             const PeerManagerPtr &getPeerManager();
 
-            ByteData signAndPublishTransaction(const Transaction &transaction, const ByteData &phase);
+            ByteData signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase);
 
             std::string toString() const;
 
@@ -75,6 +75,8 @@ namespace Elastos {
 
             WrapperList<Peer, BRPeer> loadPeers();
 
+            int getForkId () const;
+
         protected:
             static bool SHOW_CALLBACK;
             static bool SHOW_CALLBACK_DETAIL;
@@ -86,7 +88,7 @@ namespace Elastos {
 
             ChainParams _chainParams;
 
-            double _earliestPeerTime;
+            uint32_t _earliestPeerTime;
 
             WalletPtr _wallet; // Optional<BRCoreWallet>
 

@@ -35,5 +35,9 @@ namespace Elastos {
             return _isRegistered;
         }
 
+        ByteData Transaction::getHash() const {
+            return ByteData();
+        }
+
     }
 }

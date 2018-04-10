@@ -5,9 +5,12 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
+#include <boost/shared_ptr.hpp>
+
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
+#include "ByteData.h"
 
 namespace Elastos {
     namespace SDK {
@@ -28,11 +31,15 @@ namespace Elastos {
 
             bool &isRegistered();
 
+            ByteData getHash() const;
+
         private:
             bool _isRegistered;
 
             BRTransaction *_transaction;
         };
+
+        typedef boost::shared_ptr<Transaction> TransactionPtr;
 
     }
 }

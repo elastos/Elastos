@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "PeerManager.h"
 
 namespace Elastos {
@@ -92,7 +94,7 @@ namespace Elastos {
 
         PeerManager::PeerManager(ChainParams &params,
                                  const WalletPtr &wallet,
-                                 double earliestKeyTime,
+                                 uint32_t earliestKeyTime,
                                  const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
                                  const WrapperList<Peer, BRPeer> &peers,
                                  const boost::shared_ptr<PeerManager::Listener> &listener) :
@@ -104,7 +106,7 @@ namespace Elastos {
             _manager = BRPeerManagerNew(
                     params.getRaw(),
                     wallet->getRaw(),
-                    uint32_t(earliestKeyTime),
+                    earliestKeyTime,
                     blocks.getRawPointerArray().data(),
                     blocks.size(),
                     peers.getRawArray().data(),
@@ -137,6 +139,75 @@ namespace Elastos {
         Peer::ConnectStatus PeerManager::getConnectStatus() const {
             //todo complete me
             return Peer::Unknown;
+        }
+
+        void PeerManager::connetct() {
+            BRPeerManagerConnect(_manager);
+        }
+
+        void PeerManager::disconnect() {
+            BRPeerManagerDisconnect(_manager);
+        }
+
+        void PeerManager::rescan() {
+            BRPeerManagerRescan(_manager);
+        }
+
+        uint32_t PeerManager::getEstimatedBlockHeight() const {
+            return BRPeerManagerEstimatedBlockHeight(_manager);
+        }
+
+        uint32_t PeerManager::getLastBlockHeight() const {
+            return BRPeerManagerLastBlockHeight(_manager);
+        }
+
+        uint32_t PeerManager::getLastBlockTimestamp() const {
+            return BRPeerManagerLastBlockTimestamp(_manager);
+        }
+
+        double PeerManager::getSyncProgress(uint32_t startHeight) {
+            return BRPeerManagerSyncProgress(_manager, startHeight);;
+        }
+
+        bool PeerManager::useFixedPeer(const std::string &node, int port) {
+            const BRChainParams *chainParams = BRPeerManagerChainParams(_manager);
+
+            UInt128 address = UINT128_ZERO;
+            uint16_t _port = (uint16_t) port;
+
+            if (!node.empty()) {
+                struct in_addr addr;
+                if (inet_pton(AF_INET, node.c_str(), &addr) != 1) return false;
+                address.u16[5] = 0xffff;
+                address.u32[3] = addr.s_addr;
+                if (port == 0) _port = chainParams->standardPort;
+            } else {
+                _port = 0;
+            }
+
+            BRPeerManagerSetFixedPeer(_manager, address, _port);
+            return true;
+        }
+
+        std::string PeerManager::getCurrentPeerName() const {
+            return BRPeerManagerDownloadPeerName(_manager);
+        }
+
+        std::string PeerManager::getDownloadPeerName() const {
+            return BRPeerManagerDownloadPeerName(_manager);
+        }
+
+        size_t PeerManager::getPeerCount() const {
+            return BRPeerManagerPeerCount(_manager);
+        }
+
+        void PeerManager::publishTransaction(const TransactionPtr &transaction) {
+            BRPeerManagerPublishTx(_manager,
+                transaction->getRaw(), &_listener, txPublished);
+        }
+
+        uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {
+            return BRPeerManagerRelayCount(_manager, txHash);
         }
     }
 }

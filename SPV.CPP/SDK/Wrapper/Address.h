@@ -8,21 +8,30 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
+#include "BRAddress.h"
+
+#include "Wrapper.h"
+
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        class Address {
-        public:
-            Address();
+		class Address :
+				public Wrapper<BRAddress> {
+		public:
+			Address();
 
-            std::string stringify() const;
+			virtual std::string toString() const;
 
-            //todo complete me
-        };
+			virtual BRAddress getRaw() const;
 
-        typedef boost::shared_ptr<Address> AddressPtr;
+			std::string stringify() const;
 
-    }
+			//todo complete me
+		};
+
+		typedef boost::shared_ptr<Address> AddressPtr;
+
+	}
 }
 
 #endif //__ELASTOS_SDK_ADDRESS_H__

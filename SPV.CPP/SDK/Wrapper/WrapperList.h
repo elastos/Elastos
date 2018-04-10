@@ -18,6 +18,13 @@ namespace Elastos {
 
         public:
 
+            WrapperList() {
+            }
+
+            WrapperList(size_t count) :
+                std::vector<T>(count) {
+            }
+
             std::vector<Raw> getRawArray() const {
 
                 std::vector<Raw> results;
