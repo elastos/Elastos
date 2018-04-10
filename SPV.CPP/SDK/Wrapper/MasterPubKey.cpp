@@ -15,5 +15,9 @@ namespace Elastos {
             //todo complete me
             return "";
         }
+
+        BRMasterPubKey MasterPubKey::getRaw() {
+            return BRMasterPubKey();
+        }
     }
 }

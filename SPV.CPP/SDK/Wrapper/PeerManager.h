@@ -17,11 +17,13 @@
 #include "Wallet.h"
 #include "SharedWrapperList.h"
 #include "WrapperList.h"
+#include "ByteData.h"
 
 namespace Elastos {
     namespace SDK {
 
-        class PeerManager {
+        class PeerManager :
+            public Wrapper<BRPeerManager *> {
         public:
             class Listener {
                 // func syncStarted()
@@ -48,21 +50,66 @@ namespace Elastos {
 
         public:
             PeerManager(ChainParams& params,
-                        const boost::shared_ptr<Wallet> &wallet,
+                        const WalletPtr &wallet,
                         uint32_t earliestKeyTime,
                         const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
                         WrapperList<Peer, BRPeer> &peers,
                         const boost::shared_ptr<Listener> &listener);
             ~PeerManager();
 
+            virtual std::string toString() const;
+
+            virtual BRPeerManager *getRaw();
+
+            /**
+            * Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
+            * status changes)
+            */
+            void connetct();
+
+            /**
+            * Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or
+            * savePeers() callbacks to fire)
+            */
+            void disconnect();
+
+            void rescan();
+
+            uint64_t getEstimatedBlockHeight() const;
+
+            uint64_t getLastBlockHeight() const;
+
+            uint64_t getLastBlockTimestamp() const;
+
+            double getSyncProgress(long startHeight);
+
             Peer::ConnectStatus getConnectStatus() const;
-        // todo complete me
+
+            bool useFixedPeer();
+
+            std::string getCurrentPeerName() const;
+
+            std::string getDownloadPeerName() const;
+
+            int getPeerCount() const;
+
+            void publishTransaction(const Transaction& transaction);
+
+            uint64_t getRelayCount (const ByteData &txHash) const;
+
+            void testSaveBlocksCallback (bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *>& blocks);
+
+            void testSavePeersCallback (bool replace, const WrapperList<Peer, BRPeer>& peers);
 
         private:
             BRPeerManager* _manager;
 
+            WalletPtr _wallet;
+
             boost::weak_ptr<Listener> _listener;
         };
+
+        typedef boost::shared_ptr<PeerManager> PeerManagerPtr;
 
     }
 }

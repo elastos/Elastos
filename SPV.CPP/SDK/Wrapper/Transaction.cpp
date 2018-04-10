@@ -7,5 +7,38 @@
 namespace Elastos {
     namespace SDK {
 
+        Transaction::Transaction() :
+            _transaction(nullptr),
+            _isRegistered(false) {
+        }
+
+        Transaction::Transaction(BRTransaction *transaction) :
+            _transaction(transaction),
+            _isRegistered(false) {
+        }
+
+        Transaction::~Transaction() {
+            if (_transaction != nullptr)
+                BRTransactionFree(_transaction);
+        }
+
+        std::string Transaction::toString() const {
+            //todo complete me
+            return "";
+        }
+
+        BRTransaction *Transaction::getRaw() {
+            //todo complete me
+            return nullptr;
+        }
+
+        bool Transaction::isRegistered() const {
+            return _isRegistered;
+        }
+
+        bool &Transaction::isRegistered() {
+            return _isRegistered;
+        }
+
     }
 }

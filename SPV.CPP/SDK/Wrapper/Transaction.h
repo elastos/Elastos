@@ -5,11 +5,35 @@
 #ifndef __ELASTOS_SDK_TRANSACTION_H__
 #define __ELASTOS_SDK_TRANSACTION_H__
 
+#include "BRTransaction.h"
+
+#include "Wrapper.h"
+
 namespace Elastos {
     namespace SDK {
 
-        class Transaction {
-        //todo complete me
+        class Transaction :
+            public Wrapper<BRTransaction *> {
+        public:
+
+            Transaction();
+
+            Transaction(BRTransaction *transaction);
+
+            ~Transaction();
+
+            virtual std::string toString() const;
+
+            virtual BRTransaction *getRaw();
+
+            bool isRegistered() const;
+
+            bool &isRegistered();
+
+        private:
+            bool _isRegistered;
+
+            BRTransaction *_transaction;
         };
 
     }

@@ -6,16 +6,26 @@
 #define __ELASTOS_SDK_MASTERPUBKEY_H__
 
 #include <string>
+#include <boost/shared_ptr.hpp>
+
+#include "BRBIP32Sequence.h"
+
+#include "Wrapper.h"
 
 namespace Elastos {
     namespace SDK {
 
-        class MasterPubKey {
+        class MasterPubKey :
+            public Wrapper<BRMasterPubKey> {
         public:
             MasterPubKey();
 
-            std::string toString() const;
+            virtual std::string toString() const;
+
+            virtual BRMasterPubKey getRaw();
         };
+
+        typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
 
     }
 }

@@ -21,7 +21,15 @@ namespace Elastos {
                 public PeerManager::Listener {
 
         public:
-            CoreWalletManager();
+            CoreWalletManager(const MasterPubKeyPtr &masterPubKey,
+                              const ChainParams &chainParams,
+                              double earliestPeerTime);
+
+            const WalletPtr &getWallet();
+
+            const PeerManagerPtr &getPeerManager() const;
+
+            ByteData signAndPublishTransaction(const Transaction &transaction, const ByteData &phase);
 
             std::string toString() const;
 
@@ -61,21 +69,24 @@ namespace Elastos {
             virtual void txPublished(const std::string &error);
 
         protected:
+            SharedWrapperList<Transaction, BRTransaction*> loadTransactions();
+
+        protected:
             static bool SHOW_CALLBACK;
             static bool SHOW_CALLBACK_DETAIL;
 
             static bool SHOW_CALLBACK_DETAIL_TX_STATUS;
             static bool SHOW_CALLBACK_DETAIL_TX_IO;
 
-            MasterPubKey _masterPubKey;
+            MasterPubKeyPtr _masterPubKey;
 
             ChainParams _chainParams;
 
             double _earliestPeerTime;
 
-            boost::shared_ptr<Wallet> _wallet; // Optional<BRCoreWallet>
+            WalletPtr _wallet; // Optional<BRCoreWallet>
 
-            boost::shared_ptr<PeerManager> _peerManager; // Optional<BRCorePeerManager>
+            PeerManagerPtr _peerManager; // Optional<BRCorePeerManager>
         };
 
     }

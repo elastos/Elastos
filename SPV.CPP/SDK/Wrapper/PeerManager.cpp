@@ -8,14 +8,16 @@ namespace Elastos {
     namespace SDK {
 
         PeerManager::PeerManager(ChainParams &params,
-                                 const boost::shared_ptr<Wallet> &wallet,
+                                 const WalletPtr &wallet,
                                  uint32_t earliestKeyTime,
                                  const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
                                  WrapperList<Peer, BRPeer> &peers,
-                                 const boost::shared_ptr<PeerManager::Listener> &listener) {
+                                 const boost::shared_ptr<PeerManager::Listener> &listener) :
+            _wallet(wallet) {
+
+            assert(listener != nullptr);
             _listener = boost::weak_ptr<Listener>(listener);
 
-            BRMerkleBlock **temp;
             _manager = BRPeerManagerNew(
                     params.getRaw(),
                     wallet->getRaw(),
@@ -24,11 +26,20 @@ namespace Elastos {
                     blocks.size(),
                     peers.getRawArray().data(),
                     peers.size()
-                    );
+            );
         }
 
         PeerManager::~PeerManager() {
             BRPeerManagerFree(_manager);
+        }
+
+        std::string PeerManager::toString() const {
+            //todo complete me
+            return "";
+        }
+
+        BRPeerManager *PeerManager::getRaw() {
+            return _manager;
         }
 
         Peer::ConnectStatus PeerManager::getConnectStatus() const {

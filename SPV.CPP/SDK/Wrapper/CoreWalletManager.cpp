@@ -15,8 +15,42 @@ namespace Elastos {
         bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_STATUS = false;
         bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_IO = false;
 
-        CoreWalletManager::CoreWalletManager() {
+        CoreWalletManager::CoreWalletManager(
+                const MasterPubKeyPtr &masterPubKey,
+                const ChainParams &chainParams,
+                double earliestPeerTime) :
+            _wallet(nullptr),
+            _peerManager(nullptr),
+            _masterPubKey(masterPubKey),
+            _chainParams(chainParams),
+            _earliestPeerTime(earliestPeerTime) {
+        }
 
+        const WalletPtr &CoreWalletManager::getWallet() {
+            if (_wallet == nullptr) {
+                _wallet = WalletPtr(new Wallet(loadTransactions(), _masterPubKey, shared_from_this()));
+            }
+            return _wallet;
+        }
+
+        const PeerManagerPtr &CoreWalletManager::getPeerManager() const {
+            return _peerManager;
+        }
+
+        ByteData CoreWalletManager::signAndPublishTransaction(const Transaction &transaction, const ByteData &phase) {
+            return ByteData();
+        }
+
+        std::string CoreWalletManager::toString() const {
+            std::stringstream ss;
+            ss << "BRCoreWalletManager {" <<
+               "\n  masterPubKey      : " << _masterPubKey->toString() <<
+               "\n  chainParams       : " << _chainParams.toString() <<
+               "\n  earliest peer time: " << _earliestPeerTime <<
+               "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress()->stringify() : "") <<
+               "\n  peerManager status: " << (_peerManager != nullptr ? Peer::Status::toString(_peerManager->getConnectStatus()) : "") <<
+               '}';
+            return ss.str();
         }
 
         void CoreWalletManager::balanceChanged(uint64_t balance) {
@@ -63,16 +97,9 @@ namespace Elastos {
 
         }
 
-        std::string CoreWalletManager::toString() const {
-            std::stringstream ss;
-            ss << "BRCoreWalletManager {" <<
-                   "\n  masterPubKey      : " << _masterPubKey.toString() <<
-                   "\n  chainParams       : " << _chainParams.toString() <<
-                   "\n  earliest peer time: " << _earliestPeerTime <<
-                   "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress()->stringify() : "") <<
-                   "\n  peerManager status: " << (_peerManager != nullptr ? Peer::Status::toString(_peerManager->getConnectStatus()) : "") <<
-                   '}';
-            return ss.str();
+        SharedWrapperList<Transaction, BRTransaction *> CoreWalletManager::loadTransactions() {
+            return SharedWrapperList<Transaction, BRTransaction *>();
         }
+
     }
 }

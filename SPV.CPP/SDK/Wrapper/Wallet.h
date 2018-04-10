@@ -7,10 +7,13 @@
 
 #include <string>
 #include <BRWallet.h>
+#include <boost/weak_ptr.hpp>
 
 #include "Wrapper.h"
 #include "Transaction.h"
 #include "Address.h"
+#include "SharedWrapperList.h"
+#include "MasterPubKey.h"
 
 namespace Elastos {
     namespace SDK {
@@ -35,14 +38,24 @@ namespace Elastos {
             };
 
         public:
-            Wallet();
+            Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
+                   const MasterPubKeyPtr &masterPubKey,
+                   const boost::shared_ptr<Listener> &listener);
+            ~Wallet();
 
             const AddressPtr& getReceiveAddress() const;
 
             virtual std::string toString() const;
 
             virtual BRWallet *getRaw();
+
+        private:
+            BRWallet *_wallet;
+
+            boost::weak_ptr<Listener> _listener;
         };
+
+        typedef boost::shared_ptr<Wallet> WalletPtr;
 
     }
 }

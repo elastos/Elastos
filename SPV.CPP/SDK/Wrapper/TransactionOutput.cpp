@@ -7,7 +7,7 @@
 namespace Elastos {
     namespace SDK {
 
-        TransactionOutput::TransactionOutput(uint64_t amount, const Script& script) {
+        TransactionOutput::TransactionOutput(uint64_t amount, const ByteData& script) {
             _output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
             BRTxOutputSetScript(_output.get(), script.data, script.length);
             _output->amount = amount;
@@ -26,8 +26,8 @@ namespace Elastos {
             _output->amount = amount;
         }
 
-        Script TransactionOutput::getScript() const {
-            return Script(_output->script, _output->scriptLen);
+        ByteData TransactionOutput::getScript() const {
+            return ByteData(_output->script, _output->scriptLen);
         }
     }
 }
