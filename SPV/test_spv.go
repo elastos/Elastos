@@ -33,14 +33,51 @@ func main() {
 	}
 
 	// Set on transaction confirmed callback
-	spv.OnTransactionConfirmed(onTransactionConfirmed)
+	spv.RegisterTransactionListener(&ConfirmedListener{txType: tx.TransferAsset})
+	spv.RegisterTransactionListener(&UnconfirmedListener{txType: tx.TransferAsset})
 
 	// Start spv service
 	spv.Start()
 }
 
-func onTransactionConfirmed(proof db.Proof, tx tx.Transaction) {
-	log.Debug("Receive transaction confirm, hash:", tx.Hash().String())
+type ConfirmedListener struct {
+	txType tx.TransactionType
+}
+
+func (l *ConfirmedListener) Type() tx.TransactionType {
+	return l.txType
+}
+
+func (l *ConfirmedListener) Confirmed() bool {
+	return true
+}
+
+func (l *ConfirmedListener) Notify(proof db.Proof, tx tx.Transaction) {
+	log.Debug("Receive confirmed transaction hash:", tx.Hash().String())
+	err := spv.VerifyTransaction(proof, tx)
+	if err != nil {
+		log.Error("Verify transaction error: ", err)
+		return
+	}
+
+	// Submit transaction receipt
+	spv.SubmitTransactionReceipt(*tx.Hash())
+}
+
+type UnconfirmedListener struct {
+	txType tx.TransactionType
+}
+
+func (l *UnconfirmedListener) Type() tx.TransactionType {
+	return l.txType
+}
+
+func (l *UnconfirmedListener) Confirmed() bool {
+	return false
+}
+
+func (l *UnconfirmedListener) Notify(proof db.Proof, tx tx.Transaction) {
+	log.Debug("Receive unconfirmed transaction hash:", tx.Hash().String())
 	err := spv.VerifyTransaction(proof, tx)
 	if err != nil {
 		log.Error("Verify transaction error: ", err)

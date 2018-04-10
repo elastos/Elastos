@@ -45,7 +45,7 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	// Initialize request queue
 	wallet.queue = NewRequestQueue(MaxRequests, wallet)
 
-	wallet.onBlockCommit = OnBlockCommit
+	wallet.chain.OnBlockCommitted = OnBlockCommit
 
 	return wallet, nil
 }
@@ -53,10 +53,9 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 type SPVWallet struct {
 	sync.Mutex
 	sdk.SPVClient
-	chain         *Blockchain
-	queue         *RequestQueue
-	onBlockCommit func(core.Header, db.Proof, []tx.Transaction)
-	fPositives    int
+	chain      *Blockchain
+	queue      *RequestQueue
+	fPositives int
 }
 
 func (wallet *SPVWallet) OnPeerEstablish(peer *p2p.Peer) {
@@ -360,7 +359,7 @@ func (wallet *SPVWallet) SetOnBlockCommitListener(listener func(core.Header, db.
 	if listener == nil {
 		return
 	}
-	wallet.onBlockCommit = listener
+	wallet.chain.OnBlockCommitted = listener
 }
 
 func OnBlockCommit(core.Header, db.Proof, []tx.Transaction) {}

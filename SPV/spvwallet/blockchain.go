@@ -30,11 +30,12 @@ const (
 var PowLimit = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
 type Blockchain struct {
-	lock  *sync.RWMutex
-	state ChainState
+	lock             *sync.RWMutex
+	state            ChainState
 	db.Headers
 	db.Proofs
 	db.DataStore
+	OnBlockCommitted func(core.Header, db.Proof, []tx.Transaction)
 }
 
 func NewBlockchain() (*Blockchain, error) {
@@ -292,6 +293,9 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 	if err != nil {
 		return reorg, 0, err
 	}
+
+	// Notify block committed
+	go bc.OnBlockCommitted(header, proof, txns)
 
 	log.Debug("Blockchain block committed height: ", bc.chainTip().Height)
 

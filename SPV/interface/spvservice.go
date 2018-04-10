@@ -15,10 +15,9 @@ type SPVService interface {
 	// Register the account address that you are interested in
 	RegisterAccount(address string) error
 
-	// Register the callback method to receive transaction notifications
-	// when a transaction related with the registered accounts is confirmed
-	// The merkle tree proof and the transaction will be callback
-	OnTransactionConfirmed(func(db.Proof, tx.Transaction))
+	// Register the TransactionListener to receive transaction notifications
+	// when a transaction related with the registered accounts is received
+	RegisterTransactionListener(TransactionListener)
 
 	// After receive the transaction callback, call this method
 	// to confirm that the transaction with the given ID was handled
@@ -36,6 +35,23 @@ type SPVService interface {
 	Start() error
 }
 
+/*
+Register this listener into the SPVService RegisterTransactionListener() method
+to receive transaction notifications.
+*/
+type TransactionListener interface {
+	// Type() indicates which transaction type this listener are interested
+	Type() tx.TransactionType
+
+	// Confirmed() indicates if this transaction should be callback after reach the confirmed height,
+	// by default 6 confirmations are needed according to the protocol
+	Confirmed() bool
+
+	// Notify() is the method to callback the received transaction
+	// with the merkle tree proof to verify it
+	Notify(db.Proof, tx.Transaction)
+}
+
 func NewSPVService(clientId uint64, seeds []string) (SPVService) {
-	return &SPVServiceImpl{clientId: clientId, seeds: seeds}
+	return newSPVServiceImpl(clientId, seeds)
 }

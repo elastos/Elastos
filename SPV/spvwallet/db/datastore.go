@@ -116,8 +116,8 @@ type Queue interface {
 	// Put a queue item to database
 	Put(item *QueueItem) error
 
-	// Get confirmed items on the given height
-	GetConfirmed(height uint32) ([]*QueueItem, error)
+	// Get all items in queue
+	GetAll() ([]*QueueItem, error)
 
 	// Delete confirmed item in queue
 	Delete(txHash *Uint256) error

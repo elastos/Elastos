@@ -10,8 +10,7 @@ import (
 const CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(
 				TxHash BLOB NOT NULL PRIMARY KEY,
 				BlockHash BLOB NOT NULL,
-				Height INTEGER NOT NULL,
-				ConfirmHeight INTEGER NOT NULL
+				Height INTEGER NOT NULL
 			);`
 
 type QueueDB struct {
@@ -32,12 +31,12 @@ func (db *QueueDB) Put(item *QueueItem) error {
 	db.Lock()
 	defer db.Unlock()
 
-	sql := "INSERT OR REPLACE INTO Queue(TxHash, BlockHash, Height, ConfirmHeight) VALUES(?,?,?,?)"
+	sql := "INSERT OR REPLACE INTO Queue(TxHash, BlockHash, Height) VALUES(?,?,?)"
 	stmt, err := db.Prepare(sql)
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(item.TxHash.Bytes(), item.BlockHash.Bytes(), item.Height, item.ConfirmHeight)
+	_, err = stmt.Exec(item.TxHash.Bytes(), item.BlockHash.Bytes(), item.Height)
 	if err != nil {
 		return err
 	}
@@ -45,13 +44,12 @@ func (db *QueueDB) Put(item *QueueItem) error {
 	return nil
 }
 
-// Get confirmed items on the given height
-func (db *QueueDB) GetConfirmed(height uint32) ([]*QueueItem, error) {
+// Get all items in queue
+func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	sql := "SELECT TxHash, BlockHash, Height, ConfirmHeight FROM Queue WHERE ConfirmHeight<=?"
-	rows, err := db.Query(sql, height)
+	rows, err := db.Query("SELECT TxHash, BlockHash, Height FROM Queue")
 	if err != nil {
 		return nil, err
 	}
@@ -61,8 +59,7 @@ func (db *QueueDB) GetConfirmed(height uint32) ([]*QueueItem, error) {
 		var txHashBytes []byte
 		var blockHashBytes []byte
 		var height uint32
-		var confirmHeight uint32
-		err = rows.Scan(&txHashBytes, &blockHashBytes, &height, &confirmHeight)
+		err = rows.Scan(&txHashBytes, &blockHashBytes, &height)
 		if err != nil {
 			return nil, err
 		}
@@ -75,7 +72,7 @@ func (db *QueueDB) GetConfirmed(height uint32) ([]*QueueItem, error) {
 		if err != nil {
 			return nil, err
 		}
-		item := &QueueItem{TxHash: *txHash, BlockHash: *blockHash, Height: height, ConfirmHeight: confirmHeight}
+		item := &QueueItem{TxHash: *txHash, BlockHash: *blockHash, Height: height}
 		items = append(items, item)
 	}
 

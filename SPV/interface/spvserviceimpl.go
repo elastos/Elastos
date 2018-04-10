@@ -13,14 +13,24 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 type SPVServiceImpl struct {
 	*spvwallet.SPVWallet
-	clientId uint64
-	seeds    []string
-	accounts []*Uint168
-	callback func(db.Proof, tx.Transaction)
+	clientId   uint64
+	seeds      []string
+	accounts   []*Uint168
+	addrFilter *sdk.AddrFilter
+	listeners  map[tx.TransactionType][]TransactionListener
+}
+
+func newSPVServiceImpl(clientId uint64, seeds []string) *SPVServiceImpl {
+	return &SPVServiceImpl{
+		clientId:  clientId,
+		seeds:     seeds,
+		listeners: make(map[tx.TransactionType][]TransactionListener),
+	}
 }
 
 func (service *SPVServiceImpl) RegisterAccount(address string) error {
@@ -32,8 +42,11 @@ func (service *SPVServiceImpl) RegisterAccount(address string) error {
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTransactionConfirmed(callback func(db.Proof, tx.Transaction)) {
-	service.callback = callback
+func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionListener) {
+	listeners := service.listeners[listener.Type()]
+	listeners = append(listeners, listener)
+	service.listeners[listener.Type()] = listeners
+	log.Debug("Listener registered:", listeners)
 }
 
 func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
@@ -113,6 +126,9 @@ func (service *SPVServiceImpl) Start() error {
 		service.BlockChain().Addrs().Put(account, RegisteredAccountScript, db.TypeNotify)
 	}
 
+	// Create address filter by accounts
+	service.addrFilter = sdk.NewAddrFilter(service.accounts)
+
 	// Set callback
 	service.SPVWallet.SetOnBlockCommitListener(service.onBlockCommit)
 
@@ -142,38 +158,34 @@ func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof,
 		return
 	}
 
-	// If no transaction match registered account return
+	// Find transactions matches registered accounts
 	var matchedTxs []tx.Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
-			if service.BlockChain().Addrs().GetAddrFilter().ContainAddr(output.ProgramHash) {
+			if service.addrFilter.ContainAddr(output.ProgramHash) {
 				matchedTxs = append(matchedTxs, tx)
 			}
 		}
 	}
-	if len(matchedTxs) == 0 {
-		return
-	}
 
-	// Queue transactions
-	for _, tx := range txs {
+	// Queue matched transactions
+	for _, tx := range matchedTxs {
 		item := &db.QueueItem{
-			TxHash:        *tx.Hash(),
-			BlockHash:     *header.Hash(),
-			Height:        header.Height,
-			ConfirmHeight: getConfirmHeight(header, tx),
+			TxHash:    *tx.Hash(),
+			BlockHash: *header.Hash(),
+			Height:    header.Height,
 		}
 
 		// Save to queue db
 		service.BlockChain().Queue().Put(item)
 	}
 
-	// Look up for confirmed transactions
-	confirmedItems, err := service.BlockChain().Queue().GetConfirmed(header.Height)
+	// Look up for queued transactions
+	items, err := service.BlockChain().Queue().GetAll()
 	if err != nil {
 		return
 	}
-	for _, item := range confirmedItems {
+	for _, item := range items {
 		//	Get proof from db
 		proof, err := service.BlockChain().Proofs.Get(&item.BlockHash)
 		if err != nil {
@@ -186,6 +198,7 @@ func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof,
 			log.Error("Query transaction failed, tx hash:", item.TxHash.String())
 			return
 		}
+		// Prune the proof by the given transaction id
 		proof = getTransactionProof(proof, txn.TxId)
 
 		var tx tx.Transaction
@@ -195,15 +208,28 @@ func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof,
 			return
 		}
 
-		// Trigger callback
-		service.callback(*proof, tx)
+		// Notify listeners
+		service.notifyListeners(proof, tx, header.Height-item.Height)
 	}
 }
 
-func getConfirmHeight(header core.Header, tx tx.Transaction) uint32 {
+func (service *SPVServiceImpl) notifyListeners(proof *db.Proof, tx tx.Transaction, confirmations uint32) {
+	listeners := service.listeners[tx.TxType]
+	for _, listener := range listeners {
+		if listener.Confirmed() {
+			if confirmations >= getConfirmations(tx) {
+				listener.Notify(*proof, tx)
+			}
+		} else {
+			listener.Notify(*proof, tx)
+		}
+	}
+}
+
+func getConfirmations(tx tx.Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
-	return header.Height + DefaultConfirmations
+	return DefaultConfirmations
 }
 
 func getTransactionProof(proof *db.Proof, txHash Uint256) *db.Proof {
