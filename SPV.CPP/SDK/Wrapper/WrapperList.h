@@ -29,7 +29,7 @@ namespace Elastos {
 
                 std::vector<Raw> results;
                 for(typename WrapperList<T, Raw>::const_iterator it = this->cbegin(); it != this->cend(); ++it) {
-                    results.push_back(it->getRaw());
+                    results.push_back(*it->getRaw());
                 }
                 return results;
             }
