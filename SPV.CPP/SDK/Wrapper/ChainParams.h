@@ -20,7 +20,7 @@ namespace Elastos {
 
             virtual std::string toString() const;
 
-            virtual BRChainParams *getRaw();
+            virtual BRChainParams *getRaw() const;
         };
 
     }

@@ -33,7 +33,17 @@ namespace Elastos {
             return _wallet;
         }
 
-        const PeerManagerPtr &CoreWalletManager::getPeerManager() const {
+        const PeerManagerPtr &CoreWalletManager::getPeerManager() {
+            if(_peerManager == nullptr) {
+                _peerManager = PeerManagerPtr(new PeerManager(
+                        _chainParams,
+                        _wallet,
+                        _earliestPeerTime,
+                        loadBlocks(),
+                        loadPeers(),
+                        shared_from_this()));
+            }
+
             return _peerManager;
         }
 
@@ -98,7 +108,18 @@ namespace Elastos {
         }
 
         SharedWrapperList<Transaction, BRTransaction *> CoreWalletManager::loadTransactions() {
+            //todo complete me
             return SharedWrapperList<Transaction, BRTransaction *>();
+        }
+
+        SharedWrapperList<MerkleBlock, BRMerkleBlock *> CoreWalletManager::loadBlocks() {
+            //todo complete me
+            return SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
+        }
+
+        WrapperList<Peer, BRPeer> CoreWalletManager::loadPeers() {
+            //todo complete me
+            return WrapperList<Peer, BRPeer>();
         }
 
     }

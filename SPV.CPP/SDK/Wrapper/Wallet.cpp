@@ -22,7 +22,7 @@ namespace Elastos {
 
                 WeakListener *listener = (WeakListener *)info;
                 if (!listener->expired()) {
-                    listener->lock()->onTxAdded(new Transaction(tx));
+                    listener->lock()->onTxAdded(new Transaction(new BRTransaction(*tx)));
                 }
             }
 
@@ -86,7 +86,7 @@ namespace Elastos {
             return "";
         }
 
-        BRWallet *Wallet::getRaw() {
+        BRWallet *Wallet::getRaw() const {
             //todo complete me
             return nullptr;
         }

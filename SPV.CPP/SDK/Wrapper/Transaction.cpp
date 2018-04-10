@@ -7,11 +7,6 @@
 namespace Elastos {
     namespace SDK {
 
-        Transaction::Transaction() :
-            _transaction(nullptr),
-            _isRegistered(false) {
-        }
-
         Transaction::Transaction(BRTransaction *transaction) :
             _transaction(transaction),
             _isRegistered(false) {
@@ -27,7 +22,7 @@ namespace Elastos {
             return "";
         }
 
-        BRTransaction *Transaction::getRaw() {
+        BRTransaction *Transaction::getRaw() const {
             //todo complete me
             return nullptr;
         }

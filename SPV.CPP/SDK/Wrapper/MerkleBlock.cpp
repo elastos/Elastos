@@ -7,7 +7,13 @@
 namespace Elastos {
     namespace SDK {
 
-        MerkleBlock::MerkleBlock() {
+        MerkleBlock::MerkleBlock(BRMerkleBlock *merkleBlock) :
+                _merkleBlock(merkleBlock) {
+        }
+
+        MerkleBlock::~MerkleBlock() {
+            if (_merkleBlock != nullptr)
+                BRMerkleBlockFree(_merkleBlock);
         }
 
         std::string MerkleBlock::toString() const {
@@ -15,9 +21,9 @@ namespace Elastos {
             return "";
         }
 
-        BRMerkleBlock *MerkleBlock::getRaw() {
-            //todo complete me
-            return nullptr;
+        BRMerkleBlock *MerkleBlock::getRaw() const {
+            return _merkleBlock;
         }
+
     }
 }

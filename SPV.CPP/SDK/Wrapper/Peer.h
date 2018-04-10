@@ -15,7 +15,7 @@ namespace Elastos {
     namespace SDK {
 
         class Peer :
-            public Wrapper<BRPeer>{
+            public Wrapper<const BRPeer &>{
 
         public:
         enum ConnectStatus {
@@ -51,10 +51,16 @@ namespace Elastos {
 
 
         public:
-        //todo complete me
+
+            Peer(const BRPeer& peer);
+
             virtual std::string toString() const;
 
-            virtual BRPeer getRaw();
+            virtual const BRPeer &getRaw() const;
+
+        private:
+
+            BRPeer _peer;
         };
 
         typedef boost::shared_ptr<Peer> PeerPtr;

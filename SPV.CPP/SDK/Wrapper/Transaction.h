@@ -16,15 +16,13 @@ namespace Elastos {
             public Wrapper<BRTransaction *> {
         public:
 
-            Transaction();
-
             Transaction(BRTransaction *transaction);
 
             ~Transaction();
 
             virtual std::string toString() const;
 
-            virtual BRTransaction *getRaw();
+            virtual BRTransaction *getRaw() const;
 
             bool isRegistered() const;
 

@@ -16,7 +16,7 @@ namespace Elastos {
 
             virtual std::string toString() const = 0;
 
-            virtual T getRaw() = 0;
+            virtual T getRaw() const = 0;
         };
 
     }

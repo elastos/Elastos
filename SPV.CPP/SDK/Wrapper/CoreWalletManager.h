@@ -27,7 +27,7 @@ namespace Elastos {
 
             const WalletPtr &getWallet();
 
-            const PeerManagerPtr &getPeerManager() const;
+            const PeerManagerPtr &getPeerManager();
 
             ByteData signAndPublishTransaction(const Transaction &transaction, const ByteData &phase);
 
@@ -70,6 +70,10 @@ namespace Elastos {
 
         protected:
             SharedWrapperList<Transaction, BRTransaction*> loadTransactions();
+
+            SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+
+            WrapperList<Peer, BRPeer> loadPeers();
 
         protected:
             static bool SHOW_CALLBACK;

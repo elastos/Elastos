@@ -18,13 +18,19 @@ namespace Elastos {
             public Wrapper<BRMerkleBlock *> {
 
         public:
-            MerkleBlock();
+            MerkleBlock(BRMerkleBlock *merkleBlock);
+
+            ~MerkleBlock();
 
             virtual std::string toString() const;
 
-            virtual BRMerkleBlock *getRaw();
+            virtual BRMerkleBlock *getRaw() const;
 
             //todo complete me
+
+        private:
+
+            BRMerkleBlock *_merkleBlock;
         };
 
         typedef boost::shared_ptr<MerkleBlock> MerkleBlockPtr;

@@ -16,7 +16,7 @@ namespace Elastos {
             return "";
         }
 
-        BRChainParams *ChainParams::getRaw() {
+        BRChainParams *ChainParams::getRaw() const {
             //todo complete me
             return nullptr;
         }

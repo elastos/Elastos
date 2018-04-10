@@ -25,7 +25,9 @@ namespace Elastos {
         class PeerManager :
             public Wrapper<BRPeerManager *> {
         public:
+
             class Listener {
+            public:
                 // func syncStarted()
                 virtual void syncStarted() = 0;
 
@@ -51,15 +53,15 @@ namespace Elastos {
         public:
             PeerManager(ChainParams& params,
                         const WalletPtr &wallet,
-                        uint32_t earliestKeyTime,
+                        double earliestKeyTime,
                         const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
-                        WrapperList<Peer, BRPeer> &peers,
+                        const WrapperList<Peer, BRPeer> &peers,
                         const boost::shared_ptr<Listener> &listener);
             ~PeerManager();
 
             virtual std::string toString() const;
 
-            virtual BRPeerManager *getRaw();
+            virtual BRPeerManager *getRaw() const;
 
             /**
             * Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()

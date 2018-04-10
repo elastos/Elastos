@@ -18,10 +18,10 @@ namespace Elastos {
 
         public:
 
-            std::vector<Raw> getRawArray() {
+            std::vector<Raw> getRawArray() const {
 
                 std::vector<Raw> results;
-                for(typename WrapperList<T, Raw>::iterator it = this->begin(); it != this->end(); ++it) {
+                for(typename WrapperList<T, Raw>::const_iterator it = this->cbegin(); it != this->cend(); ++it) {
                     results.push_back(it->getRaw());
                 }
                 return results;

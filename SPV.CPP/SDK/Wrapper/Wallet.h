@@ -47,7 +47,7 @@ namespace Elastos {
 
             virtual std::string toString() const;
 
-            virtual BRWallet *getRaw();
+            virtual BRWallet *getRaw() const;
 
         private:
             BRWallet *_wallet;
