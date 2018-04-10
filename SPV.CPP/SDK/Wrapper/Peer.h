@@ -8,64 +8,92 @@
 #include <boost/shared_ptr.hpp>
 
 #include "Wrapper.h"
-
 #include "BRPeer.h"
+#include "ByteData.h"
 
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        class Peer :
-            public Wrapper<const BRPeer &>{
+		class Peer :
+			public Wrapper<BRPeer *> {
 
-        public:
-        enum ConnectStatus {
-            Disconnected = 0,
-            Connecting = 1,
-            Connected = 2,
-            Unknown = -2
-        };
+		public:
+			enum ConnectStatus {
+				Disconnected = 0,
+				Connecting = 1,
+				Connected = 2,
+				Unknown = -2
+			};
 
-        struct Status {
-            Status(int v) {
-                value = v;
-            }
+			struct Status {
+				Status(int v) {
+					value = v;
+				}
 
-            int value;
+				int value;
 
-            int getValue() {
-                return value;
-            }
+				int getValue() {
+					return value;
+				}
 
-            static ConnectStatus fromValue(int value) {
-                for (int i = 0; i <= 2; i++) {
-                    if (i == value)
-                        return ConnectStatus(value);
-                }
-                return Unknown;
-            }
+				static ConnectStatus fromValue(int value) {
+					for (int i = 0; i <= 2; i++) {
+						if (i == value)
+							return ConnectStatus(value);
+					}
+					return Unknown;
+				}
 
-            static std::string toString(ConnectStatus status) {
-            //todo complete me
-            }
-        };
+				static std::string toString(ConnectStatus status) {
+					//todo complete me
+				}
+			};
 
 
-        public:
+		public:
+			//todo complete me
+			virtual std::string toString() const;
 
-            Peer(const BRPeer& peer);
+			virtual BRPeer *getRaw() const;
 
-            virtual std::string toString() const;
+			Peer(const BRPeer &peer);
 
-            virtual const BRPeer &getRaw() const;
+			Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp);
 
-        private:
+			Peer(uint32_t magicNumber);
 
-            BRPeer _peer;
-        };
+			~Peer();
 
-        typedef boost::shared_ptr<Peer> PeerPtr;
+			ByteData getAddress() const;
 
-    }
+			uint16_t getPort() const;
+
+			uint64_t getTimestamp() const;
+
+			void setEarliestKeyTime(uint32_t earliestKeyTime);
+
+			void setCurrentBlockHeight(uint32_t currentBlockHeight);
+
+			ConnectStatus getConnectStatusValue() const;
+
+			void connect() const;
+
+			void disconnect() const;
+
+			void scheduleDisconnect(double time);
+
+			void setNeedsFilterUpdate(bool needsFilterUpdate);
+
+			std::string getHost() const;
+
+		private:
+			BRPeer *_peerHandler;
+			BRPeer *_peerPointer;
+		};
+
+		typedef boost::shared_ptr<Peer> PeerPtr;
+
+	}
 }
 
 #endif //__ELASTOS_SDK_PEER_H__
