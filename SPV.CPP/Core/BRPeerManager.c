@@ -296,11 +296,11 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
                               BLOOM_UPDATE_ALL); // BUG: XXX txCount not the same as number of spent wallet outputs
     
     for (size_t i = 0; i < addrsCount; i++) { // add addresses to watch for tx receiveing money to the wallet
-        UInt160 hash = UINT160_ZERO;
+        UInt168 hash = UINT168_ZERO;
         
-        BRAddressHash160(&hash, addrs[i].s);
+        BRAddressHash168(&hash, addrs[i].s);
         
-        if (! UInt160IsZero(&hash) && ! BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
+        if (! UInt168IsZero(&hash) && ! BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
             BRBloomFilterInsertData(filter, hash.u8, sizeof(hash));
         }
     }
@@ -969,7 +969,7 @@ static void _peerRelayedTx(void *info, BRTransaction *tx)
         
         if (manager->bloomFilter != NULL) { // check if bloom filter is already being updated
             BRAddress addrs[SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL];
-            UInt160 hash;
+            UInt168 hash;
 
             // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
             // unused addresses are still matched by the bloom filter
@@ -977,7 +977,7 @@ static void _peerRelayedTx(void *info, BRTransaction *tx)
             BRWalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
             for (size_t i = 0; i < SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL; i++) {
-                if (! BRAddressHash160(&hash, addrs[i].s) ||
+                if (! BRAddressHash168(&hash, addrs[i].s) ||
                     BRBloomFilterContainsData(manager->bloomFilter, hash.u8, sizeof(hash))) continue;
                 if (manager->bloomFilter) BRBloomFilterFree(manager->bloomFilter);
                 manager->bloomFilter = NULL; // reset bloom filter so it's recreated with new wallet addresses

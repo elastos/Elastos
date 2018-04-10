@@ -281,23 +281,50 @@ UInt160 BRKeyHash160(BRKey *key)
     return hash;
 }
 
+// returns the ripemd160 hash of the sha256 hash of the public key
+UInt168 BRKeyHash168(BRKey *key)
+{
+    UInt160 hash = UINT160_ZERO;
+    size_t len;
+    secp256k1_pubkey pk;
+
+    assert(key != NULL);
+    len = BRKeyPubKey(key, NULL, 0);
+    if (len > 0 && secp256k1_ec_pubkey_parse(_ctx, &pk, key->pubKey, len)) BRHash160(&hash, key->pubKey, len);
+    UInt168 uInt168 = UINT168_ZERO;
+
+    int size = sizeof(key->pubKey);
+    int signType = key->pubKey[size-1];
+    if(signType == ELA_STANDARD) {
+        hash.u8[0] = ELA_HASHFLAG_STAND;
+    } else if (signType == ELA_MULTISIG) {
+        hash.u8[0] = ELA_HASHFLAG_MULTISIG;
+    } else if (signType == ELA_CROSSCHAIN) {
+        hash.u8[0] = ELA_HASHFLAG_CROSSCHAIN;
+    }
+
+    memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8));
+    return uInt168;
+}
+
 // writes the pay-to-pubkey-hash bitcoin address for key to addr
 // returns the number of bytes written, or addrLen needed if addr is NULL
 size_t BRKeyAddress(BRKey *key, char *addr, size_t addrLen)
 {
-    UInt160 hash;
+    UInt168 hash;
     uint8_t data[21];
 
     assert(key != NULL);
     
-    hash = BRKeyHash160(key);
-    data[0] = BITCOIN_PUBKEY_ADDRESS;
-#if BITCOIN_TESTNET
-    data[0] = BITCOIN_PUBKEY_ADDRESS_TEST;
-#endif
-    UInt160Set(&data[1], hash);
+    hash = BRKeyHash168(key);
+//  zxb modify
+//    data[0] = BITCOIN_PUBKEY_ADDRESS;
+//#if BITCOIN_TESTNET
+//    data[0] = BITCOIN_PUBKEY_ADDRESS_TEST;
+//#endif
 
-    if (! UInt160IsZero(&hash)) {
+    UInt168Set(&data[0], hash);
+    if (! UInt168IsZero(&hash)) {
         addrLen = BRBase58CheckEncode(addr, addrLen, data, sizeof(data));
     }
     else addrLen = 0;

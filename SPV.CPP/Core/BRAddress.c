@@ -423,3 +423,16 @@ int BRAddressHash160(void *md20, const char *addr)
     if (r) memcpy(md20, &data[1], 20);
     return r;
 }
+
+// writes the 21 byte hash168 of addr to md21 and returns true on success
+int BRAddressHash168(void *md21, const char *addr)
+{
+    uint8_t data[21];
+    int r = 0;
+
+    assert(md21 != NULL);
+    assert(addr != NULL);
+    r = (BRBase58CheckDecode(data, sizeof(data), addr) == 21);
+    if (r) memcpy(md21, &data[0], 21);
+    return r;
+}

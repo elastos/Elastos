@@ -44,7 +44,7 @@ size_t BRBase58Encode(char *str, size_t strLen, const uint8_t *data, size_t data
     uint8_t buf[(dataLen - zcount)*138/100 + 1]; // log(256)/log(58), rounded up
     
     memset(buf, 0, sizeof(buf));
-    
+
     for (i = zcount; data && i < dataLen; i++) {
         uint32_t carry = data[i];
         
@@ -53,16 +53,16 @@ size_t BRBase58Encode(char *str, size_t strLen, const uint8_t *data, size_t data
             buf[j - 1] = carry % 58;
             carry /= 58;
         }
-        
+
         var_clean(&carry);
     }
-    
+
     i = 0;
     while (i < sizeof(buf) && buf[i] == 0) i++; // skip leading zeroes
     len = (zcount + sizeof(buf) - i) + 1;
 
     if (str && len <= strLen) {
-        while (zcount-- > 0) *(str++) = chars[0];
+//        while (zcount-- > 0) *(str++) = chars[0]; bitcoin address string is 1 begin ,ela is not
         while (i < sizeof(buf)) *(str++) = chars[buf[i++]];
         *str = '\0';
     }

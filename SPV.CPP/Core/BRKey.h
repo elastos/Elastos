@@ -33,6 +33,10 @@
 extern "C" {
 #endif
 
+#define ELA_HASHFLAG_STAND      33
+#define ELA_HASHFLAG_MULTISIG   18
+#define ELA_HASHFLAG_CROSSCHAIN 75
+
 typedef struct {
     uint8_t p[33];
 } BRECPoint;
@@ -86,6 +90,9 @@ size_t BRKeyPubKey(BRKey *key, void *pubKey, size_t pkLen);
 
 // returns the ripemd160 hash of the sha256 hash of the public key, or UINT160_ZERO on error
 UInt160 BRKeyHash160(BRKey *key);
+
+// returns the ripemd160 hash of the sha256 hash of the public key, or UINT168_ZERO on error
+UInt168 BRKeyHash168(BRKey *key);
 
 // writes the pay-to-pubkey-hash bitcoin address for key to addr
 // returns the number of bytes written, or addrLen needed if addr is NULL

@@ -44,6 +44,10 @@ extern "C" {
 #define BITCOIN_PUBKEY_ADDRESS_TEST 111
 #define BITCOIN_SCRIPT_ADDRESS_TEST 196
 
+#define ELA_STANDARD                0xAC
+#define ELA_MULTISIG                0xAE
+#define ELA_CROSSCHAIN              0xAF
+
 // bitcoin script opcodes: https://en.bitcoin.it/wiki/Script#Constants
 #define OP_0           0x00
 #define OP_PUSHDATA1   0x4c
@@ -107,6 +111,9 @@ int BRAddressIsValid(const char *addr);
 
 // writes the 20 byte hash160 of addr to md20 and returns true on success
 int BRAddressHash160(void *md20, const char *addr);
+
+// writes the 21 byte hash168 of addr to md21 and returns true on success
+int BRAddressHash168(void *md21, const char *addr);
 
 // returns a hash value for addr suitable for use in a hashtable
 inline static size_t BRAddressHash(const void *addr)
