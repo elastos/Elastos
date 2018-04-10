@@ -5,31 +5,40 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
-#include <string>
-#include <boost/shared_ptr.hpp>
-
-#include "ByteData.h"
 #include "BRTransaction.h"
 
+#include "Wrapper.h"
+#include "ByteData.h"
+
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        class TransactionOutput {
-        public:
-            TransactionOutput(uint64_t amount, const ByteData& script);
+		class TransactionOutput :
+			public Wrapper<BRTxOutput *> {
 
-            std::string getAddress() const;
+		public:
+			TransactionOutput(uint64_t amount, const ByteData &script);
 
-            uint64_t getAmount() const;
+			~TransactionOutput();
 
-            void setAmount(uint64_t amount);
+			virtual std::string toString() const;
 
-            ByteData getScript() const;
+			virtual BRTxOutput *getRaw() const;
 
-        private:
-            boost::shared_ptr<BRTxOutput> _output;
-        };
-    }
+			std::string getAddress() const;
+
+			void setAddress(std::string address);
+
+			uint64_t getAmount() const;
+
+			void setAmount(uint64_t amount);
+
+			ByteData getScript() const;
+
+		private:
+			BRTxOutput *_output;
+		};
+	}
 }
 
 #endif //__ELASTOS_SDK_TRANSACTIONOUTPUT_H__
