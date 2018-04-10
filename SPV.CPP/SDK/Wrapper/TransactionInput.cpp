@@ -21,7 +21,7 @@ namespace Elastos {
 
 		TransactionInput::~TransactionInput() {
 			if (nullptr != _input) {
-				free(_input);
+				delete _input;
 			}
 		}
 

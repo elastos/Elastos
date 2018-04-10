@@ -15,7 +15,7 @@ namespace Elastos {
 
 		TransactionOutput::~TransactionOutput() {
 			if (nullptr != _output) {
-				free(_output);
+				delete _output;
 			}
 		}
 
