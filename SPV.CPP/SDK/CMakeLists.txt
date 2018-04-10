@@ -63,3 +63,4 @@ target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRE
 target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include>)
 target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include>)
 target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Core>)
+target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>)

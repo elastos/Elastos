@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "Wallet.h"
+#include "Utils.h"
 
 namespace Elastos {
     namespace SDK {
@@ -34,7 +35,7 @@ namespace Elastos {
 
                     // Invoke the callback for each of txHashes.
                     for (size_t i = 0; i < count; i++) {
-                        listener->lock()->onTxUpdated(u256hex(txHashes[i]), blockHeight, timestamp);
+                        listener->lock()->onTxUpdated(Utils::UInt256ToString(txHashes[i]), blockHeight, timestamp);
                     }
                 }
             }
@@ -43,7 +44,7 @@ namespace Elastos {
 
                 WeakListener *listener = (WeakListener *)info;
                 if (!listener->expired()) {
-                    listener->lock()->onTxDeleted(u256hex(txHash), static_cast<bool>(notifyUser),
+                    listener->lock()->onTxDeleted(Utils::UInt256ToString(txHash), static_cast<bool>(notifyUser),
                                                   static_cast<bool>(recommendRescan));
                 }
             }
