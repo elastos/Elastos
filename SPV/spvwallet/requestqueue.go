@@ -10,6 +10,7 @@ import (
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 )
 
 type RequestQueueHandler interface {
@@ -230,6 +231,8 @@ func (queue *RequestQueue) OnTxReceived(tx *tx.Transaction) error {
 func (queue *RequestQueue) OnRequestFinished(request *BlockTxsRequest) {
 	// Add to finished pool
 	queue.finished.Add(request)
+
+	log.Debug("Queue on request finished pool size: ", queue.finished.Length())
 
 	// Callback finish event and pass the finished requests pool
 	queue.handler.OnRequestFinished(queue.finished)

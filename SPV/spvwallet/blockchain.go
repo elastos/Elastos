@@ -286,6 +286,7 @@ func (bc *Blockchain) CommitBlock(header core.Header, proof db.Proof, txns []tx.
 		bc.DataStore.Info().SaveChainHeight(header.Height)
 	}
 
+	log.Debug("Commit header: ", commitHeader.Hash().String(), ", newTip: ", newTip)
 	// Save header to db
 	err = bc.Headers.Put(commitHeader, newTip)
 	if err != nil {

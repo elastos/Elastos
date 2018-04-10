@@ -15,6 +15,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
+	"sync"
 )
 
 const (
@@ -50,6 +51,7 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 }
 
 type SPVWallet struct {
+	sync.Mutex
 	sdk.SPVClient
 	chain         *Blockchain
 	queue         *RequestQueue
@@ -160,11 +162,15 @@ func (wallet *SPVWallet) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint2
 }
 
 func (wallet *SPVWallet) OnRequestError(err error) {
+	wallet.Lock()
+	defer wallet.Unlock()
+
 	wallet.changeSyncPeerAndRestart()
 }
 
 func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
-	log.Debug("Wallet on request finished pool size: ", pool.Length())
+	wallet.Lock()
+	defer wallet.Unlock()
 
 	// By default, last pop from FinishedReqPool is the current, otherwise get chain tip as current
 	var current = pool.lastPop
@@ -178,7 +184,7 @@ func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
 		reorg, fp, err := wallet.chain.CommitBlock(
 			request.block.BlockHeader, GetProof(request.block), request.receivedTxs)
 		if err != nil {
-			log.Warn(err)
+			log.Error(err)
 			wallet.changeSyncPeerAndRestart()
 			return
 		}
