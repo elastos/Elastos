@@ -8,5 +8,5 @@ include_directories(
 )
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} CORE_SOURCE_FILES)
-add_library(${SPVCORE_NAME} ${SPV_LIBRARY_TYPE} ${CORE_SOURCE_FILES})
+add_library(${SPVCORE_NAME} STATIC ${CORE_SOURCE_FILES})
 

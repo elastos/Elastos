@@ -3,8 +3,6 @@
 #include "SPVSDK.h"
 #include "spdlog/spdlog.h"
 #include "nlohmann/json.hpp"
-#define CATCH_CONFIG_RUNNER
-#include "catch.hpp"
 
 std::string SPVSDK::version()
 {

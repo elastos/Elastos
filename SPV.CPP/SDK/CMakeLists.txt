@@ -39,28 +39,32 @@ endif()
 # Check components dependencies
 #
 # Check sqlite3 library
-include(CheckIncludeFile)
-check_include_file(sqlite3.h HAVE_SQLITE3_H)
-if(NOT HAVE_SQLITE3_H)
-	message(FATAL_ERROR "sqlite3.h not found")
-endif()
-
-find_library(SQLITE3_LIBRARY sqlite3)
-if(NOT SQLITE3_LIBRARY)
-	message(FATAL_ERROR "sqlite3 library not found")
-endif()
-mark_as_advanced(SQLITE3_LIBRARY)
+#include(CheckIncludeFile)
+#check_include_file(sqlite3.h HAVE_SQLITE3_H)
+#if(NOT HAVE_SQLITE3_H)
+#	message(FATAL_ERROR "sqlite3.h not found")
+#endif()
+#
+#find_library(SQLITE3_LIBRARY sqlite3)
+#if(NOT SQLITE3_LIBRARY)
+#	message(FATAL_ERROR "sqlite3 library not found")
+#endif()
+#mark_as_advanced(SQLITE3_LIBRARY)
 
 find_package(Boost REQUIRED)
 if(NOT Boost_FOUND)
 	message(FATAL_ERROR "boost not found")
 endif()
 
-file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
-add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE} ${SPVSDK_SOURCE_FILES})
+include_directories(
+	"${CMAKE_CURRENT_SOURCE_DIR}/Common"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
+)
 
-target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include>)
-target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include>)
-target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include>)
-target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../Core>)
-target_include_directories(${SPVSDK_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
+file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
+add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE} ${SPVSDK_SOURCE_FILES} ${SPVCORE_SOURCE_FILES})

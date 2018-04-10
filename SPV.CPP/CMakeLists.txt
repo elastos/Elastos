@@ -23,7 +23,7 @@ project(SPVCLIENT VERSION 0.1.0.0)
 
 set(TARGET_NAME cli-spv)
 
-message(STATUS "${TARGET_NAME} v${PROJECT_VERSION}")
+#message(STATUS "${TARGET_NAME} v${PROJECT_VERSION}")
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -92,25 +92,25 @@ else( SPV_BUILD_SHARED_LIB )
 	endif( WIN32 )
 endif( SPV_BUILD_SHARED_LIB )
 
-
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
 
+include_directories(
+	"${CMAKE_CURRENT_SOURCE_DIR}/SDK"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Include/spdlog/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Include/nlohmann/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Include/Catch2/single_include"
+)
+
 add_subdirectory(SDK)
-add_subdirectory(Core)
+add_subdirectory(Test)
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/App APPLICATION_SOURCE_FILES)
-add_executable(${TARGET_NAME} ${APPLICATION_SOURCE_FILES})
+#aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/App APPLICATION_SOURCE_FILES)
+#add_executable(${TARGET_NAME} ${APPLICATION_SOURCE_FILES})
 
-target_link_libraries(${TARGET_NAME} sqlite3)
-target_link_libraries(${TARGET_NAME} spvsdk)
-target_link_libraries(${TARGET_NAME} spvcore)
-target_link_libraries(${TARGET_NAME} pthread)
-
-target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SDK>)
-target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Core>)
-target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include/Catch2/single_include>)
-target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include/nlohmann/single_include>)
-target_include_directories(${TARGET_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include/spdlog/include>)
-
+#target_link_libraries(${TARGET_NAME} sqlite3)
+#target_link_libraries(${TARGET_NAME} spvsdk)
+#target_link_libraries(${TARGET_NAME} pthread)
