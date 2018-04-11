@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef SPVCLIENT_TRANSACTIONINPUT_H
-#define SPVCLIENT_TRANSACTIONINPUT_H
+#ifndef __ELASTOS_SDK_TRANSACTIONINPUT_H__
+#define __ELASTOS_SDK_TRANSACTIONINPUT_H__
 
 #include <boost/shared_ptr.hpp>
+
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
@@ -52,4 +53,4 @@ namespace Elastos {
 	}
 }
 
-#endif //SPVCLIENT_TRANSACTIONINPUT_H
+#endif //__ELASTOS_SDK_TRANSACTIONINPUT_H__

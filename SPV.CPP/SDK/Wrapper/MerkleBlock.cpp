@@ -2,8 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "BRMerkleBlock.h"
-
 #include "MerkleBlock.h"
 
 namespace Elastos {
@@ -68,18 +66,18 @@ namespace Elastos {
 		}
 
 		ByteData MerkleBlock::serialize() const {
-			size_t len = BRMerkleBlockSerialize(_merkleBlock, NULL, 0);
+			size_t len = BRMerkleBlockSerialize(_merkleBlock, nullptr, 0);
 			uint8_t* data = new uint8_t[len];
 			BRMerkleBlockSerialize(_merkleBlock, data, len);
 			return ByteData(data, len);
 		}
 
 		bool MerkleBlock::isValid(uint32_t currentTime) const {
-			return BRMerkleBlockIsValid(_merkleBlock, (uint32_t) currentTime);
+			return BRMerkleBlockIsValid(_merkleBlock, currentTime) != 0;
 		}
 
 		bool MerkleBlock::containsTransactionHash(UInt256 hash) const {
-			return BRMerkleBlockContainsTxHash(_merkleBlock, hash);
+			return BRMerkleBlockContainsTxHash(_merkleBlock, hash) != 0;
 		}
 
 		void to_json(nlohmann::json& j, const MerkleBlock& p) {

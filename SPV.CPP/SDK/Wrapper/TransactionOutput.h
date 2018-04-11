@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONOUTPUT_H__
 
 #include <boost/shared_ptr.hpp>
+
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
