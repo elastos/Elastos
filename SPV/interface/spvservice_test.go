@@ -1,20 +1,21 @@
-package main
+package _interface
 
 import (
 	"bytes"
 	"crypto/rand"
 	"encoding/binary"
 	"os"
+	"testing"
+
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
-	i "github.com/elastos/Elastos.ELA.SPV/interface"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 )
 
-var spv i.SPVService
+var spv SPVService
 
-func main() {
+func TestNewSPVService(t *testing.T) {
 	log.Init()
 
 	var id = make([]byte, 8)
@@ -22,7 +23,7 @@ func main() {
 	var err error
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-	spv = i.NewSPVService(clientId, config.Values().SeedList)
+	spv = NewSPVService(clientId, config.Values().SeedList)
 
 	// Register account
 	err = spv.RegisterAccount("ETBBrgotZy3993o9bH75KxjLDgQxBCib6u")
