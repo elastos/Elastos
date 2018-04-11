@@ -1,7 +1,6 @@
 package auxpow
 
 import (
-	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"io"
@@ -214,11 +213,16 @@ func GetMerkleRoot(hash Uint256, merkleBranch []Uint256, index int) Uint256 {
 	if index == -1 {
 		return Uint256{}
 	}
+	var sha [64]byte
 	for _, it := range merkleBranch {
 		if (index & 1) == 1 {
-			hash = Uint256(sha256.Sum256(append(it[:], hash[:]...)))
+			copy(sha[:32], it[:])
+			copy(sha[32:], hash[:])
+			hash = Uint256(Sha256D(sha[:]))
 		} else {
-			hash = Uint256(sha256.Sum256(append(hash[:], it[:]...)))
+			copy(sha[:32], hash[:])
+			copy(sha[32:], it[:])
+			hash = Uint256(Sha256D(sha[:]))
 		}
 		index >>= 1
 	}

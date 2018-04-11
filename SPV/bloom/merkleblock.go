@@ -94,7 +94,7 @@ func (node merkleNode) String() string {
 
 // given n merkle leaves, how deep is the tree?
 // iterate shifting left until greater than n
-func treeDepth(n uint32) (e uint8) {
+func treeDepth(n uint32) (e uint32) {
 	for ; (1 << e) < n; e++ {
 	}
 	return
