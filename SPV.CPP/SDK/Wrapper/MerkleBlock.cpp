@@ -82,5 +82,13 @@ namespace Elastos {
 			return BRMerkleBlockContainsTxHash(_merkleBlock, hash);
 		}
 
+		void to_json(nlohmann::json& j, const MerkleBlock& p) {
+			//todo complete me
+		}
+
+		void from_json(const nlohmann::json& j, MerkleBlock& p) {
+			//todo complete me
+		}
+
 	}
 }

@@ -42,7 +42,7 @@ namespace Elastos {
 
 			bool &isRegistered();
 
-			ByteData getHash() const;
+			UInt256 getHash() const;
 
 			uint32_t getVersion() const;
 
@@ -129,7 +129,7 @@ namespace Elastos {
 
 			UInt256 getReverseHash();
 
-			static long getMinOutputAmount();
+			static uint64_t getMinOutputAmount();
 
 		private:
 			void transactionInputCopy(BRTxInput *target, const BRTxInput *source);

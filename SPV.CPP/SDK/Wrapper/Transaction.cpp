@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRTransaction.h>
 #include "Transaction.h"
 
 #include "BRTransaction.h"
@@ -59,8 +60,8 @@ namespace Elastos {
 			return _isRegistered;
 		}
 
-		ByteData Transaction::getHash() const {
-			return ByteData();
+		UInt256 Transaction::getHash() const {
+			return _transaction->txHash;
 		}
 
 		uint32_t Transaction::getVersion() const {
@@ -230,7 +231,7 @@ namespace Elastos {
 			return UInt256Reverse(&_transaction->txHash);
 		}
 
-		long Transaction::getMinOutputAmount() {
+		uint64_t Transaction::getMinOutputAmount() {
 			
 			return TX_MIN_OUTPUT_AMOUNT;
 		}
