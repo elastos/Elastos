@@ -35,22 +35,6 @@ if(NOT WIN32)
 	mark_as_advanced(SPV_BUILD_TKERNEL_WITH_INSTALL_RPATH)
 endif()
 
-#
-# Check components dependencies
-#
-# Check sqlite3 library
-#include(CheckIncludeFile)
-#check_include_file(sqlite3.h HAVE_SQLITE3_H)
-#if(NOT HAVE_SQLITE3_H)
-#	message(FATAL_ERROR "sqlite3.h not found")
-#endif()
-#
-#find_library(SQLITE3_LIBRARY sqlite3)
-#if(NOT SQLITE3_LIBRARY)
-#	message(FATAL_ERROR "sqlite3 library not found")
-#endif()
-#mark_as_advanced(SQLITE3_LIBRARY)
-
 find_package(Boost REQUIRED)
 if(NOT Boost_FOUND)
 	message(FATAL_ERROR "boost not found")

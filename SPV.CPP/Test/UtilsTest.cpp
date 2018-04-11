@@ -1,10 +1,14 @@
+// Copyright (c) 2012-2018 The Elastos Open Source Project
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 #include "Utils.h"
 
 using namespace Elastos::SDK;
 
-TEST_CASE( "UInt256 convert test", "[UInt256]" )
+TEST_CASE( "Utils test", "[Utils]" )
 {
 	std::string rawStr = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
 	UInt256 u1 = {

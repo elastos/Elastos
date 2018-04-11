@@ -1,4 +1,4 @@
-# REQUIREMENTS: this script needs CMake 2.8 or higher. Downloads are available at http://www.cmake.org
+# REQUIREMENTS: this script needs CMake 3.0 or higher. Downloads are available at http://www.cmake.org
 
 # How to build Elastos.ELA.SPV.Cpp using CMake under Unix (Linux, Darwin etc.)?
 # 1. Copy this file, as-is, to the top-level Elastos.ELA.SPV.Cpp folder
@@ -7,7 +7,7 @@
 # 4. make
 # 5. make install (or sudo make install)
 
-# How to build Elastos.ELA.SPV.Cpp using CMake under Windows (Linux, Darwin etc.)?
+# How to build Elastos.ELA.SPV.Cpp using CMake under Windows
 # 1. Copy this file, as-is, to the top-level folder
 # 2. Launch the cmake-gui, and select the top-level folder
 # 3. You can choose whatever you want as an install directory
@@ -19,11 +19,7 @@
 
 cmake_minimum_required( VERSION 3.0 )
 
-project(SPVCLIENT VERSION 0.1.0.0)
-
-set(TARGET_NAME cli-spv)
-
-#message(STATUS "${TARGET_NAME} v${PROJECT_VERSION}")
+project(SPVSDK VERSION 0.1.0.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -80,6 +76,8 @@ set( SPV_INSTALL_PREFIX ${SPV_INSTALL_PREFIX} CACHE
 set( CMAKE_INSTALL_PREFIX "${SPV_INSTALL_PREFIX}" CACHE INTERNAL "Prefix jprepended to install directories if target destination is not absolute, immutable" FORCE )
 
 option_with_default( SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON )
+option_with_default( SPV_BUILD_TEST_CASES "Build test cases" OFF )
+option_with_default( SPV_BUILD_SAMPLE "Build sample" OFF )
 
 if( SPV_BUILD_SHARED_LIB )
 	set( SPV_LIBRARY_TYPE SHARED )
@@ -106,11 +104,14 @@ include_directories(
 )
 
 add_subdirectory(SDK)
-add_subdirectory(Test)
+if( SPV_BUILD_TEST_CASES )
+	add_subdirectory(Test)
+endif()
 
-#aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/App APPLICATION_SOURCE_FILES)
-#add_executable(${TARGET_NAME} ${APPLICATION_SOURCE_FILES})
-
-#target_link_libraries(${TARGET_NAME} sqlite3)
-#target_link_libraries(${TARGET_NAME} spvsdk)
-#target_link_libraries(${TARGET_NAME} pthread)
+if( SPV_BUILD_SAMPLE )
+	set(SAMPLE_NAME sample)
+	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Sample SAMPLE_SOURCE_FILES)
+	add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
+	target_link_libraries(${SAMPLE_NAME} spvsdk)
+	target_link_libraries(${SAMPLE_NAME} pthread)
+endif()

@@ -1,11 +1,12 @@
 
-set(TARGET_NAME UtilsTest)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} TEST_SOURCE_FILES)
+foreach(src ${TEST_SOURCE_FILES})
+	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
+	add_executable(${TEST_TARGET_NAME} ${src})
+	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
+	target_link_libraries(${TEST_TARGET_NAME} pthread)
+endforeach(src)
 
-file(GLOB_RECURSE UTILSTEST_SOURCE_FILES "*.cpp")
-add_executable(${TARGET_NAME} ${UTILSTEST_SOURCE_FILES})
-
-target_link_libraries(${TARGET_NAME} spvsdk)
-target_link_libraries(${TARGET_NAME} pthread)
 
 include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
