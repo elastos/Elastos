@@ -59,7 +59,7 @@ namespace Elastos {
                "\n  masterPubKey      : " << _masterPubKey->toString() <<
                "\n  chainParams       : " << _chainParams.toString() <<
                "\n  earliest peer time: " << _earliestPeerTime <<
-               "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress()->stringify() : "") <<
+               "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress() : "") <<
                "\n  peerManager status: " << (_peerManager != nullptr ? Peer::Status::toString(_peerManager->getConnectStatus()) : "") <<
                '}';
             return ss.str();

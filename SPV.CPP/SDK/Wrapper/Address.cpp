@@ -20,8 +20,8 @@ namespace Elastos {
             return stringify();
         }
 
-        BRAddress Address::getRaw() const {
-            return BRAddress();
+        BRAddress *Address::getRaw() const {
+            return nullptr;
         }
     }
 }

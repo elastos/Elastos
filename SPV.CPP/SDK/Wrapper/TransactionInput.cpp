@@ -8,21 +8,19 @@
 namespace Elastos {
 	namespace SDK {
 
-		TransactionInput::TransactionInput(UInt256 hash, uint64_t index, uint64_t amount, ByteData script,
-										   ByteData signature, uint64_t sequence) {
-			_input = new BRTxInput;
+		TransactionInput::TransactionInput(BRTxInput *input) {
+			_input = boost::shared_ptr<BRTxInput>(input);
+		}
+
+		TransactionInput::TransactionInput(UInt256 hash, uint32_t index, uint64_t amount, ByteData script,
+										   ByteData signature, uint32_t sequence) {
+			_input = boost::shared_ptr<BRTxInput>(new BRTxInput);
 			_input->txHash = hash;
 			_input->index = index;
 			_input->amount = amount;
-			BRTxInputSetScript(_input, script.data, script.length);
-			BRTxInputSetSignature(_input, signature.data, signature.length);
+			BRTxInputSetScript(_input.get(), script.data, script.length);
+			BRTxInputSetSignature(_input.get(), signature.data, signature.length);
 			_input->sequence = sequence;
-		}
-
-		TransactionInput::~TransactionInput() {
-			if (nullptr != _input) {
-				delete _input;
-			}
 		}
 
 		std::string TransactionInput::toString() const {
@@ -31,7 +29,7 @@ namespace Elastos {
 		}
 
 		BRTxInput *TransactionInput::getRaw() const {
-			return _input;
+			return _input.get();
 		}
 
 		std::string TransactionInput::getAddress() const {
@@ -39,7 +37,7 @@ namespace Elastos {
 		}
 
 		void TransactionInput::setAddress(std::string address) {
-			BRTxInputSetAddress(_input, address.c_str());
+			BRTxInputSetAddress(_input.get(), address.c_str());
 		}
 
 		UInt256 TransactionInput::getHash() const {

@@ -7,16 +7,15 @@
 namespace Elastos {
 	namespace SDK {
 
-		TransactionOutput::TransactionOutput(uint64_t amount, const ByteData &script) {
-			_output = new BRTxOutput;
-			BRTxOutputSetScript(_output, script.data, script.length);
-			_output->amount = amount;
+		TransactionOutput::TransactionOutput(BRTxOutput *output) {
+
+			_output = boost::shared_ptr<BRTxOutput>(output);
 		}
 
-		TransactionOutput::~TransactionOutput() {
-			if (nullptr != _output) {
-				delete _output;
-			}
+		TransactionOutput::TransactionOutput(uint64_t amount, const ByteData &script) {
+			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
+			BRTxOutputSetScript(_output.get(), script.data, script.length);
+			_output->amount = amount;
 		}
 
 		std::string TransactionOutput::toString() const {
@@ -25,7 +24,7 @@ namespace Elastos {
 		}
 
 		BRTxOutput *TransactionOutput::getRaw() const {
-			return _output;
+			return _output.get();
 		}
 
 		std::string TransactionOutput::getAddress() const {
@@ -33,7 +32,7 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::setAddress(std::string address) {
-			BRTxOutputSetAddress(_output, address.c_str());
+			BRTxOutputSetAddress(_output.get(), address.c_str());
 		}
 
 		uint64_t TransactionOutput::getAmount() const {

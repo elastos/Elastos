@@ -2,7 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRBIP39Mnemonic.h>
+#include <boost/scoped_ptr.hpp>
+
+#include "BRAddress.h"
+#include "BRBIP39Mnemonic.h"
+#include "BRAddress.h"
+
 #include "Wallet.h"
 #include "Utils.h"
 
@@ -76,11 +81,6 @@ namespace Elastos {
 
 		Wallet::~Wallet() {
 			BRWalletFree(_wallet);
-		}
-
-		const AddressPtr &Wallet::getReceiveAddress() const {
-			//todo complete me
-			return nullptr;
 		}
 
 		std::string Wallet::toString() const {
@@ -227,49 +227,103 @@ namespace Elastos {
 		}
 
 		uint64_t Wallet::getTransactionFee(const TransactionPtr &tx) {
+
 			return BRWalletFeeForTx(_wallet, tx->getRaw());
 		}
 
 		uint64_t Wallet::getTransactionAmountSent(const TransactionPtr &tx) {
+
 			return BRWalletAmountSentByTx(_wallet, tx->getRaw());
 		}
 
 		uint64_t Wallet::getTransactionAmountReceived(const TransactionPtr &tx) {
+
 			return BRWalletAmountReceivedFromTx(_wallet, tx->getRaw());
 		}
 
 		uint64_t Wallet::getBalanceAfterTransaction(const TransactionPtr &transaction) {
+
 			return BRWalletBalanceAfterTx(_wallet, transaction->getRaw());
 		}
 
-		const AddressPtr &Wallet::getTransactionAddress(const TransactionPtr &transaction) {
+		std::string Wallet::getTransactionAddress(const TransactionPtr &transaction) {
+
 			return getTransactionAmount(transaction) > 0
 				   ? getTransactionAddressInputs(transaction)   // we received -> from inputs
 				   : getTransactionAddressOutputs(transaction); // we sent     -> to outputs
 		}
 
-		const AddressPtr &Wallet::getTransactionAddressInputs(const TransactionPtr &transaction) {
-			return nullptr;
+		std::string Wallet::getTransactionAddressInputs(const TransactionPtr &transaction) {
+
+			SharedWrapperList<TransactionInput, BRTxInput *> inputs = transaction->getInputs();
+			for (size_t i = 0; i < inputs.size(); i++) {
+
+				std::string address = inputs[i]->getAddress();
+				if (!containsAddress(address))
+					return address;
+			}
+			return "";
 		}
 
-		const AddressPtr &Wallet::getTransactionAddressOutputs(const TransactionPtr &transaction) {
-			return nullptr;
+		std::string Wallet::getTransactionAddressOutputs(const TransactionPtr &transaction) {
+
+			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			for (size_t i = 0; i < outputs.size(); i++) {
+
+				std::string address = outputs[i]->getAddress();
+				if (!containsAddress(address))
+					return address;
+			}
+			return "";
 		}
 
 		uint64_t Wallet::getFeeForTransactionSize(size_t size) {
+
 			return BRWalletFeeForTxSize(_wallet, size);
 		}
 
 		uint64_t Wallet::getFeeForTransactionAmount(uint64_t amount) {
+
 			return BRWalletFeeForTxAmount(_wallet, amount);
 		}
 
 		uint64_t Wallet::getMinOutputAmount() {
+
 			return BRWalletMinOutputAmount(_wallet);
 		}
 
 		uint64_t Wallet::getMaxOutputAmount() {
+
 			return BRWalletMaxOutputAmount(_wallet);
+		}
+
+		std::string Wallet::getReceiveAddress() const {
+
+			return BRWalletReceiveAddress(_wallet).s;
+		}
+
+		std::vector<std::string> Wallet::getAllAddresses() {
+
+			size_t addrCount = BRWalletAllAddrs (_wallet, NULL, 0);
+
+			WrapperList<Address, BRAddress> addresses(addrCount);
+			BRWalletAllAddrs (_wallet, addresses.getRawArray().data(), addrCount);
+
+			std::vector<std::string> results;
+			for (int i = 0; i < addrCount; i++) {
+				results.push_back(addresses[i].toString());
+			}
+			return results;
+		}
+
+		bool Wallet::containsAddress(const std::string &address) {
+
+			return BRWalletContainsAddress(_wallet, address.c_str()) != 0;
+		}
+
+		bool Wallet::addressIsUsed(const std::string &address) {
+
+			return BRWalletAddressIsUsed(_wallet, address.c_str()) != 0;
 		}
 
 	}

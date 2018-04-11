@@ -5,6 +5,7 @@
 #ifndef SPVCLIENT_TRANSACTIONINPUT_H
 #define SPVCLIENT_TRANSACTIONINPUT_H
 
+#include <boost/shared_ptr.hpp>
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
@@ -17,10 +18,10 @@ namespace Elastos {
 			public Wrapper<BRTxInput *> {
 
 		public:
-			TransactionInput(UInt256 hash, uint64_t index, uint64_t amount,
-							 ByteData script, ByteData signature, uint64_t sequence);
+			TransactionInput(BRTxInput *input);
 
-			~TransactionInput();
+			TransactionInput(UInt256 hash, uint32_t index, uint64_t amount,
+							 ByteData script, ByteData signature, uint32_t sequence);
 
 			virtual std::string toString() const;
 
@@ -43,9 +44,10 @@ namespace Elastos {
 			uint32_t getSequence() const;
 
 		private:
-			BRTxInput *_input;
-
+			boost::shared_ptr<BRTxInput> _input;
 		};
+
+		typedef boost::shared_ptr<TransactionInput> TransactionInputPtr;
 
 	}
 }
