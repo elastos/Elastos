@@ -19,20 +19,20 @@ namespace Elastos {
 			if (_peerHandler != nullptr)
 				return _peerHandler;
 
-			return _peerPointer;
+			return _peerPointer.get();
 		}
 
 		Peer::Peer(const BRPeer &peer) {
 			_peerHandler = nullptr;
 
-			_peerPointer = (BRPeer *) malloc(sizeof(BRPeer));
+			_peerPointer = boost::shared_ptr<BRPeer>(new BRPeer);
 			*_peerPointer = peer;
 		}
 
 		Peer::Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp) {
 			_peerHandler = nullptr;
 
-			_peerPointer = (BRPeer *) calloc(1, sizeof(BRPeer));
+			_peerPointer = boost::shared_ptr<BRPeer>(new BRPeer);
 			_peerPointer->address = addr;
 			_peerPointer->port = port;
 			_peerPointer->timestamp = timestamp;
@@ -50,11 +50,6 @@ namespace Elastos {
 			if (_peerHandler != nullptr) {
 				BRPeerFree(_peerHandler);
 			}
-
-			if (_peerPointer != nullptr) {
-				free(_peerPointer);
-			}
-
 		}
 
 		ByteData Peer::getAddress() const {
@@ -109,9 +104,34 @@ namespace Elastos {
 
 		std::string Peer::getHost() const {
 			BRPeer *peer = getRaw();
-
 			return std::string(BRPeerHost(peer));
 		}
+
+		uint32_t Peer::getVersion() const {
+			BRPeer *peer = getRaw();
+			return BRPeerVersion(peer);
+		}
+
+		std::string Peer::getUserAgent() const {
+			BRPeer *peer = getRaw();
+			return std::string(BRPeerUserAgent(peer));
+		}
+
+		uint32_t Peer::getLastBlock() const {
+			BRPeer *peer = getRaw();
+			return BRPeerLastBlock(peer);
+		}
+
+		uint64_t Peer::getFeePerKb() const {
+			BRPeer *peer = getRaw();
+			return BRPeerFeePerKb(peer);
+		}
+
+		double Peer::getPingTime() const {
+			BRPeer *peer = getRaw();
+			return BRPeerPingTime(peer);
+		}
+
 
 	}
 }

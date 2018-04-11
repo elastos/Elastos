@@ -86,9 +86,19 @@ namespace Elastos {
 
 			std::string getHost() const;
 
+			uint32_t getVersion() const;
+
+			std::string getUserAgent() const;
+
+			uint32_t getLastBlock() const;
+
+			uint64_t getFeePerKb() const;
+
+			double getPingTime() const;
+
 		private:
 			BRPeer *_peerHandler;
-			BRPeer *_peerPointer;
+			boost::shared_ptr<BRPeer> _peerPointer;
 		};
 
 		typedef boost::shared_ptr<Peer> PeerPtr;
