@@ -32,17 +32,17 @@ extern "C" {
 #endif
 
 // large integers
-typedef union _u16 {
+union _u16 {
     uint8_t u8[16/8];
-} UInt16;
+};
 
-typedef union _u32 {
+union _u32 {
     uint8_t u8[32/8];
-} UInt32;
+};
 
-typedef union _u64 {
+union _u64 {
     uint8_t u8[64/8];
-} UInt64;
+};
 
 typedef union _u128 {
     uint8_t u8[128/8];
