@@ -296,11 +296,11 @@ UInt168 BRKeyHash168(BRKey *key)
     int size = sizeof(key->pubKey);
     int signType = key->pubKey[size-1];
     if(signType == ELA_STANDARD) {
-        hash.u8[0] = ELA_HASHFLAG_STAND;
+        hash.u8[0] = ELA_STAND_ADDRESS;
     } else if (signType == ELA_MULTISIG) {
-        hash.u8[0] = ELA_HASHFLAG_MULTISIG;
+        hash.u8[0] = ELA_MULTISIG_ADDRESS;
     } else if (signType == ELA_CROSSCHAIN) {
-        hash.u8[0] = ELA_HASHFLAG_CROSSCHAIN;
+        hash.u8[0] = ELA_CROSSCHAIN_ADDRESS;
     }
 
     memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8));
@@ -317,7 +317,6 @@ size_t BRKeyAddress(BRKey *key, char *addr, size_t addrLen)
     assert(key != NULL);
     
     hash = BRKeyHash168(key);
-//  zxb modify
 //    data[0] = BITCOIN_PUBKEY_ADDRESS;
 //#if BITCOIN_TESTNET
 //    data[0] = BITCOIN_PUBKEY_ADDRESS_TEST;

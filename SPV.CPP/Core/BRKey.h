@@ -33,9 +33,6 @@
 extern "C" {
 #endif
 
-#define ELA_HASHFLAG_STAND      33
-#define ELA_HASHFLAG_MULTISIG   18
-#define ELA_HASHFLAG_CROSSCHAIN 75
 
 typedef struct {
     uint8_t p[33];
