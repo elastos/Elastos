@@ -1,4 +1,4 @@
-package spvwallet
+package sdk
 
 import (
 	"errors"

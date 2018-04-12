@@ -13,24 +13,11 @@ import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	walt "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 
 	"github.com/urfave/cli"
 )
-
-func listTransactions(c *cli.Context, wallet walt.Wallet) error {
-	txns, err := wallet.GetTxns()
-	if err != nil {
-		return errors.New("get transactions failed: " + err.Error())
-	}
-
-	for i, txn := range txns {
-		fmt.Printf("%3d | HASH: %s\n", i+1, txn.TxId.String())
-	}
-
-	return nil
-}
 
 func CreateTransaction(c *cli.Context, wallet walt.Wallet) error {
 	txn, err := createTransaction(c, wallet)
@@ -314,14 +301,6 @@ func transactionAction(context *cli.Context) {
 		os.Exit(2)
 	}
 
-	// list add transactions
-	if context.Bool("list") {
-		if err := listTransactions(context, wallet); err != nil {
-			fmt.Println("error:", err)
-			cli.ShowCommandHelpAndExit(context, "list", 700)
-		}
-	}
-
 	// create transaction
 	if context.Bool("create") {
 		if err := CreateTransaction(context, wallet); err != nil {
@@ -356,10 +335,6 @@ func NewCommand() cli.Command {
 		Description: "create, sign or send transaction",
 		ArgsUsage:   "[args]",
 		Flags: append(CommonFlags,
-			cli.BoolFlag{
-				Name:  "list",
-				Usage: "list out all transactions",
-			},
 			cli.BoolFlag{
 				Name: "create",
 				Usage: "use [--from] --to --amount --fee [--lock], or [--from] --file --fee [--lock]\n" +

@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"os"
 )
 

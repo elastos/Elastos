@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (

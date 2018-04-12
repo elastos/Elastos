@@ -5,13 +5,11 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
 )
 
 /*
-This is the main implementation in the SDK,
 SPV client will help you create and receive SPV messages,
 and you will implement your own message handler to extend the SDK.
 A SPV wallet implementation is in the spvwallet package,
@@ -33,9 +31,6 @@ type SPVClient interface {
 	// Create a data request message, invType is TRANSACTION or BLOCK according to the SPV protocol
 	// the inv type constant is in the protocol file
 	NewDataReq(invType uint8, hash Uint256) *msg.DataReq
-
-	// Create a transaction message
-	NewTxn(tx tx.Transaction) *msg.Txn
 }
 
 // The message handler to extend the SDK
@@ -71,7 +66,7 @@ type SPVMessageHandler interface {
 
 /*
 Get the SPV client by specify the netType, passing the clientId and seeds arguments.
-netType are TypeMainNet and TypeTestNet to options, clientId is the unique id to identify
+netType are TypeMainNet and TypeTestNet two options, clientId is the unique id to identify
 this client in the peer to peer network. seeds is a list of other peers IP:[Port] addresses,
 port is not necessary for it will be overwrite to SPVServerPort according to the SPV protocol
 */

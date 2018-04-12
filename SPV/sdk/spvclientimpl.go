@@ -6,7 +6,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
 )
@@ -105,10 +104,6 @@ func (client *SPVClientImpl) NewDataReq(invType uint8, hash Uint256) *msg.DataRe
 	dataReq.Type = invType
 	dataReq.Hash = hash
 	return dataReq
-}
-
-func (client *SPVClientImpl) NewTxn(tx tx.Transaction) *msg.Txn {
-	return &msg.Txn{Transaction: tx}
 }
 
 func (client *SPVClientImpl) OnPeerEstablish(peer *p2p.Peer) {

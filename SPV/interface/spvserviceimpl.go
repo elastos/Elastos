@@ -2,14 +2,12 @@ package _interface
 
 import (
 	"os"
-	"bytes"
 	"errors"
 	"os/signal"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/core"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
@@ -50,7 +48,7 @@ func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionL
 }
 
 func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
-	return service.BlockChain().Queue().Delete(&txHash)
+	return service.DataStore().Queue().Delete(&txHash)
 }
 
 func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transaction) error {
@@ -58,13 +56,8 @@ func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transacti
 		return errors.New("SPV service not started")
 	}
 
-	// Check if block is on the main chain
-	if !service.BlockChain().IsKnownBlock(proof.BlockHash) {
-		return errors.New("can not find block on main chain")
-	}
-
 	// Get Header from main chain
-	header, err := service.BlockChain().GetHeader(proof.BlockHash)
+	header, err := service.Headers().GetHeader(proof.BlockHash)
 	if err != nil {
 		return errors.New("can not get block from main chain")
 	}
@@ -123,14 +116,14 @@ func (service *SPVServiceImpl) Start() error {
 		return errors.New("No account registered")
 	}
 	for _, account := range service.accounts {
-		service.BlockChain().Addrs().Put(account, RegisteredAccountScript, db.TypeNotify)
+		service.DataStore().Addrs().Put(account, RegisteredAccountScript, db.TypeNotify)
 	}
 
 	// Create address filter by accounts
 	service.addrFilter = sdk.NewAddrFilter(service.accounts)
 
 	// Set callback
-	service.SPVWallet.SetOnBlockCommitListener(service.onBlockCommit)
+	service.SPVWallet.Blockchain().AddStateListener(service)
 
 	// Handle interrupt signal
 	stop := make(chan int, 1)
@@ -152,7 +145,8 @@ func (service *SPVServiceImpl) Start() error {
 	return nil
 }
 
-func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof, txs []tx.Transaction) {
+func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
+	header := block.BlockHeader
 	// If no transactions return
 	if len(txs) == 0 {
 		return
@@ -177,39 +171,32 @@ func (service *SPVServiceImpl) onBlockCommit(header core.Header, proof db.Proof,
 		}
 
 		// Save to queue db
-		service.BlockChain().Queue().Put(item)
+		service.DataStore().Queue().Put(item)
 	}
 
 	// Look up for queued transactions
-	items, err := service.BlockChain().Queue().GetAll()
+	items, err := service.DataStore().Queue().GetAll()
 	if err != nil {
 		return
 	}
 	for _, item := range items {
 		//	Get proof from db
-		proof, err := service.BlockChain().Proofs.Get(&item.BlockHash)
+		proof, err := service.Proofs().Get(&item.BlockHash)
 		if err != nil {
 			log.Error("Query merkle proof failed, block hash:", item.BlockHash.String())
 			return
 		}
 		//	Get transaction from db
-		txn, err := service.BlockChain().TXNs().Get(&item.TxHash)
+		storeTx, err := service.DataStore().Txs().Get(&item.TxHash)
 		if err != nil {
 			log.Error("Query transaction failed, tx hash:", item.TxHash.String())
 			return
 		}
 		// Prune the proof by the given transaction id
-		proof = getTransactionProof(proof, txn.TxId)
-
-		var tx tx.Transaction
-		err = tx.DeserializeUnsigned(bytes.NewReader(txn.RawData))
-		if err != nil {
-			log.Error("Deserialize stord transaction failed, hash: ", txn.TxId.String())
-			return
-		}
+		proof = getTransactionProof(proof, storeTx.TxId)
 
 		// Notify listeners
-		service.notifyListeners(proof, tx, header.Height-item.Height)
+		service.notifyListeners(proof, storeTx.Data, header.Height-item.Height)
 	}
 }
 

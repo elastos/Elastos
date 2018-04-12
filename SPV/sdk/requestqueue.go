@@ -1,4 +1,4 @@
-package spvwallet
+package sdk
 
 import (
 	"errors"
@@ -9,8 +9,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 type RequestQueueHandler interface {
@@ -37,7 +36,7 @@ type RequestQueue struct {
 func NewRequestQueue(size int, handler RequestQueueHandler) *RequestQueue {
 	queue := new(RequestQueue)
 	queue.size = size
-	queue.hashesQueue = make(chan Uint256, size*2)
+	queue.hashesQueue = make(chan Uint256, size)
 	queue.blocksQueue = make(chan Uint256, size)
 	queue.blockTxsQueue = make(chan Uint256, size)
 	queue.blockReqsLock = new(sync.Mutex)
@@ -82,7 +81,7 @@ func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
 	blockRequest := &Request{
 		peer:    peer,
 		hash:    hash,
-		reqType: sdk.BLOCK,
+		reqType: BLOCK,
 		handler: queue,
 	}
 	// Add to request queue
@@ -97,7 +96,7 @@ func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.Mer
 	// No block transactions to request, notify request finished.
 	if len(txIds) == 0 {
 		// Notify request finished
-		queue.OnRequestFinished(&BlockTxsRequest{block: *block})
+		queue.OnRequestFinished(&BlockTxsRequest{Block: *block})
 		return
 	}
 	blockHash := *block.BlockHeader.Hash()
@@ -117,7 +116,7 @@ func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.Mer
 		txRequest := &Request{
 			peer:    peer,
 			hash:    *txId,
-			reqType: sdk.TRANSACTION,
+			reqType: TRANSACTION,
 			handler: queue,
 		}
 		txRequestQueue[*txId] = txRequest
@@ -125,8 +124,8 @@ func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.Mer
 	}
 
 	blockTxsRequest := &BlockTxsRequest{
-		blockHash:      blockHash,
-		block:          *block,
+		BlockHash:      blockHash,
+		Block:          *block,
 		txRequestQueue: txRequestQueue,
 	}
 

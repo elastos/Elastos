@@ -9,7 +9,7 @@ import (
 
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 )
 
@@ -29,7 +29,7 @@ func TestNewSPVService(t *testing.T) {
 	err = spv.RegisterAccount("ETBBrgotZy3993o9bH75KxjLDgQxBCib6u")
 	err = spv.RegisterAccount("EUyNwnAh5SzzTtAPV1HkXzjUEbw2YqKsUM")
 	if err != nil {
-		log.Error("Register account error: ", err)
+		t.Error("Register account error: ", err)
 		os.Exit(0)
 	}
 

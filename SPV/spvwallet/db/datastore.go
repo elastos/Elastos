@@ -3,15 +3,15 @@ package db
 import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/db"
 )
 
 type DataStore interface {
 	Info() Info
 	Addrs() Addrs
+	Txs() Txs
 	UTXOs() UTXOs
 	STXOs() STXOs
-	TXNs() TXNs
 	Queue() Queue
 
 	Rollback(height uint32) error
@@ -50,12 +50,26 @@ type Addrs interface {
 
 	// delete a address from database
 	Delete(hash *Uint168) error
+}
 
-	// get addresss filter
-	GetAddrFilter() *sdk.AddrFilter
+type Txs interface {
+	// Put a new transaction to database
+	Put(txn *db.StoreTx) error
 
-	// reload filter from db
-	ReloadAddrFilter() *sdk.AddrFilter
+	// Fetch a raw tx and it's metadata given a hash
+	Get(txId *Uint256) (*db.StoreTx, error)
+
+	// Fetch all transactions from database
+	GetAll() ([]*db.StoreTx, error)
+
+	// Fetch all transactions from the given height
+	GetAllFrom(height uint32) ([]*db.StoreTx, error)
+
+	// Update the height of a transaction
+	UpdateHeight(txId *Uint256, height uint32) error
+
+	// Delete a transaction from the db
+	Delete(txId *Uint256) error
 }
 
 type UTXOs interface {
@@ -90,26 +104,6 @@ type STXOs interface {
 
 	// delete a stxo from database
 	Delete(outPoint *tx.OutPoint) error
-}
-
-type TXNs interface {
-	// Put a new transaction to database
-	Put(txn *Txn) error
-
-	// Fetch a raw tx and it's metadata given a hash
-	Get(txId *Uint256) (*Txn, error)
-
-	// Fetch all transactions from database
-	GetAll() ([]*Txn, error)
-
-	// Fetch all transactions from the given height
-	GetAllFrom(height uint32) ([]*Txn, error)
-
-	// Update the height of a transaction
-	UpdateHeight(txId *Uint256, height uint32) error
-
-	// Delete a transaction from the db
-	Delete(txId *Uint256) error
 }
 
 type Queue interface {

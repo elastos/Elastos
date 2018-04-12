@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/account"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/wallet"

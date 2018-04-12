@@ -1,10 +1,10 @@
-package spvwallet
+package sdk
 
 import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 )
 
@@ -21,16 +21,16 @@ func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
 	defer pool.Unlock()
 
 	// Save previous hash as the key
-	previous := request.block.BlockHeader.Previous
+	previous := request.Block.BlockHeader.Previous
 	// Save genesis block previous to empty
-	if request.block.BlockHeader.Height == 1 {
+	if request.Block.BlockHeader.Height == 1 {
 		pool.genesis = &previous
 	}
 	pool.requests[previous] = request
 	// Save finished block
-	pool.blocks[request.blockHash] = &request.block
+	pool.blocks[request.BlockHash] = &request.Block
 
-	log.Debug("Finished pool add block: ", previous.String(), ", height: ", request.block.BlockHeader.Height)
+	log.Debug("Finished pool add block: ", previous.String(), ", height: ", request.Block.BlockHeader.Height)
 }
 
 func (pool *FinishedReqPool) Contain(hash Uint256) (*bloom.MerkleBlock, bool) {
@@ -54,8 +54,8 @@ func (pool *FinishedReqPool) Next(current Uint256) (*BlockTxsRequest, bool) {
 	log.Debug("Finished pool get next key: ", current.String())
 	if request, ok := pool.requests[current]; ok {
 		delete(pool.requests, current)
-		delete(pool.blocks, request.blockHash)
-		pool.lastPop = &request.blockHash
+		delete(pool.blocks, request.BlockHash)
+		pool.lastPop = &request.BlockHash
 		return request, ok
 	}
 	return nil, false

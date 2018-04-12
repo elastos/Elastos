@@ -1,33 +1,34 @@
 package spvwallet
 
 import (
-	"bytes"
-	"errors"
-	"fmt"
-	"time"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/core"
+	"github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	. "github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"sync"
-)
-
-const (
-	MaxRequests       = 100
-	MaxFalsePositives = 7
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	var err error
 	wallet := new(SPVWallet)
-	// Initialize blockchain
-	wallet.chain, err = NewBlockchain()
+
+	wallet.headers, err = db.NewHeadersDB()
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize proofs db
+	wallet.proofs, err = db.NewProofsDB()
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize wallet database
+	wallet.dataStore, err = db.NewSQLiteDB()
 	if err != nil {
 		return nil, err
 	}
@@ -37,339 +38,223 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Set p2p message handler
-	client.SetMessageHandler(wallet)
 
-	wallet.SPVClient = client
+	// Initialize spv service
+	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet.getBloomFilter)
+	if err != nil {
+		return nil, err
+	}
 
-	// Initialize request queue
-	wallet.queue = NewRequestQueue(MaxRequests, wallet)
-
-	wallet.chain.OnBlockCommitted = OnBlockCommit
+	// Set chain state listener
+	wallet.SPVService.Blockchain().AddStateListener(wallet)
 
 	return wallet, nil
 }
 
 type SPVWallet struct {
 	sync.Mutex
-	sdk.SPVClient
-	chain      *Blockchain
-	queue      *RequestQueue
-	fPositives int
+	sdk.SPVService
+	headers   db.Headers
+	proofs    db.Proofs
+	dataStore db.DataStore
+	filter    *sdk.AddrFilter
 }
 
-func (wallet *SPVWallet) OnPeerEstablish(peer *p2p.Peer) {
-	// Send filterload message
-	peer.Send(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
+func (wallet *SPVWallet) Headers() db.Headers {
+	return wallet.headers
 }
 
-func (wallet *SPVWallet) Start() {
-	wallet.SPVClient.Start()
-	go wallet.keepUpdate()
-	log.Info("SPV service started...")
+func (wallet *SPVWallet) Proofs() db.Proofs {
+	return wallet.proofs
 }
 
-func (wallet *SPVWallet) Stop() {
-	wallet.stopSyncing()
-	wallet.chain.Close()
-	log.Info("SPV service stopped...")
+func (wallet *SPVWallet) DataStore() db.DataStore {
+	return wallet.dataStore
 }
 
-func (wallet *SPVWallet) BlockChain() *Blockchain {
-	return wallet.chain
+// Save a header to database
+func (wallet *SPVWallet) PutHeader(header *StoreHeader, newTip bool) error {
+	return wallet.headers.Put(header, newTip)
 }
 
-func (wallet *SPVWallet) keepUpdate() {
-	ticker := time.NewTicker(time.Second * p2p.InfoUpdateDuration)
-	defer ticker.Stop()
-	for range ticker.C {
-		// Keep synchronizing blocks
-		wallet.syncBlocks()
-	}
+// Get previous block of the given header
+func (wallet *SPVWallet) GetPrevious(header *StoreHeader) (*StoreHeader, error) {
+	return wallet.headers.GetPrevious(header)
 }
 
-func (wallet *SPVWallet) needSync() bool {
-	bestPeer := wallet.PeerManager().GetBestPeer()
-	if bestPeer == nil { // no peers connected, return false
-		return false
-	}
-	chainHeight := uint64(wallet.chain.Height())
-	log.Info("Chain height:", chainHeight)
-	log.Info("Best peer height:", bestPeer.Height())
-
-	return bestPeer.Height() > chainHeight
+// Get full header with it's hash
+func (wallet *SPVWallet) GetHeader(hash common.Uint256) (*StoreHeader, error) {
+	return wallet.headers.GetHeader(hash)
 }
 
-func (wallet *SPVWallet) syncBlocks() {
-	// Check if blockchain need sync
-	if wallet.needSync() {
-		// Check if blockchain is in syncing state
-		if wallet.chain.IsSyncing() || wallet.queue.IsRunning() {
-			return
+// Get the header on chain tip
+func (wallet *SPVWallet) GetChainTip() (*StoreHeader, error) {
+	return wallet.headers.GetTip()
+}
+
+// Save chain height to database
+func (wallet *SPVWallet) PutChainHeight(height uint32) {
+	wallet.dataStore.Info().SaveChainHeight(height)
+}
+
+// Get chain height from database
+func (wallet *SPVWallet) GetChainHeight() uint32 {
+	return wallet.dataStore.Info().ChainHeight()
+}
+
+// Commit a transaction return if this is a false positive and error
+func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
+	hits := 0
+	// Save UTXOs
+	for index, output := range storeTx.Data.Outputs {
+		// Filter address
+		if wallet.getAddrFilter().ContainAddr(output.ProgramHash) {
+			var lockTime uint32
+			if storeTx.Data.TxType == tx.CoinBase {
+				lockTime = storeTx.Height + 100
+			}
+			utxo := ToUTXO(storeTx.TxId, storeTx.Height, index, output.Value, lockTime)
+			err := wallet.dataStore.UTXOs().Put(&output.ProgramHash, utxo)
+			if err != nil {
+				return false, err
+			}
+			hits++
 		}
-		// Set blockchain state to syncing
-		wallet.chain.SetChainState(SYNCING)
-		// Request blocks
-		wallet.requestBlocks()
-	} else {
-		wallet.stopSyncing()
-	}
-}
-
-func (wallet *SPVWallet) stopSyncing() {
-	if wallet.chain.IsSyncing() {
-		// Clear request queue
-		wallet.queue.Clear()
-		// Set blockchain state to waiting
-		wallet.chain.SetChainState(WAITING)
-		// Remove sync peer
-		wallet.PeerManager().SetSyncPeer(nil)
-	}
-}
-
-func (wallet *SPVWallet) requestBlocks() {
-	// Get sync peer
-	syncPeer := wallet.PeerManager().GetSyncPeer()
-	if syncPeer == nil {
-		// If sync peer is nil at this point, that meas no peer connected
-		log.Warn("SyncManager no sync peer connected")
-		return
-	}
-	// Request blocks returns a inventory message which contains block hashes
-	request := wallet.NewBlocksReq(wallet.chain.GetBlockLocatorHashes(), Uint256{})
-
-	go syncPeer.Send(request)
-}
-
-func (wallet *SPVWallet) changeSyncPeerAndRestart() {
-	// Disconnect current sync peer
-	syncPeer := wallet.PeerManager().GetSyncPeer()
-	wallet.PeerManager().DisconnectPeer(syncPeer)
-
-	wallet.stopSyncing()
-	// Restart
-	wallet.syncBlocks()
-}
-
-func (wallet *SPVWallet) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256) {
-	name := "BLOCK"
-	if reqType == sdk.TRANSACTION {
-		name = "TRANSACTION"
-	}
-	log.Debug("Send ", name, " request hash: ", hash.String())
-	peer.Send(wallet.NewDataReq(reqType, hash))
-}
-
-func (wallet *SPVWallet) OnRequestError(err error) {
-	wallet.Lock()
-	defer wallet.Unlock()
-
-	wallet.changeSyncPeerAndRestart()
-}
-
-func (wallet *SPVWallet) OnRequestFinished(pool *FinishedReqPool) {
-	wallet.Lock()
-	defer wallet.Unlock()
-
-	// By default, last pop from FinishedReqPool is the current, otherwise get chain tip as current
-	var current = pool.lastPop
-	if current == nil {
-		current = wallet.chain.ChainTip().Hash()
 	}
 
-	var fPositives int
-	for request, ok := pool.Next(*current); ok; request, ok = pool.Next(*request.block.BlockHeader.Hash()) {
-		// Try to commit next block
-		reorg, fp, err := wallet.chain.CommitBlock(
-			request.block.BlockHeader, GetProof(request.block), request.receivedTxs)
-		if err != nil {
-			log.Error(err)
-			wallet.changeSyncPeerAndRestart()
-			return
+	// Put spent UTXOs to STXOs
+	for _, input := range storeTx.Data.Inputs {
+		// Create output
+		outpoint := tx.NewOutPoint(input.ReferTxID, input.ReferTxOutputIndex)
+		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
+		err := wallet.dataStore.STXOs().FromUTXO(outpoint, &storeTx.TxId, storeTx.Height)
+		if err == nil {
+			hits++
 		}
-		// Update local height after block committed
-		wallet.updateLocalHeight()
-
-		// If we meet a reorganize, restart sync process
-		if reorg {
-			log.Warn("Wallet handle reorganize, restart sync")
-			wallet.stopSyncing()
-			wallet.syncBlocks()
-			return
-		}
-		fPositives += fp
 	}
 
-	go wallet.handleFPositive(fPositives)
+	// If no hits, no need to save transaction
+	if hits == 0 {
+		return true, nil
+	}
+
+	// Save transaction
+	err := wallet.dataStore.Txs().Put(storeTx)
+	if err != nil {
+		return false, err
+	}
+
+	return false, nil
 }
 
-func (wallet *SPVWallet) handleFPositive(fPositives int) {
-	wallet.fPositives += fPositives
-	if wallet.fPositives > MaxFalsePositives {
-		// Broadcast filterload message to connected peers
-		wallet.PeerManager().Broadcast(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
-		wallet.fPositives = 0
-	}
+// Rollback chain data on the given height
+func (wallet *SPVWallet) Rollback(height uint32) error {
+	return wallet.dataStore.Rollback(height)
 }
 
-func (wallet *SPVWallet) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
-	switch inv.Type {
-	case sdk.TRANSACTION:
-		// Do nothing, transaction inventory is not supported
-	case sdk.BLOCK:
-		return wallet.HandleBlockInvMsg(peer, inv)
-	}
-	return nil
-}
-
-func (wallet *SPVWallet) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Inventory) error {
-	log.Debug("Receive inventory hash count: ", inv.Count)
-
-	if !wallet.chain.IsSyncing() {
-		peer.Disconnect()
-		return errors.New("receive inventory message in non syncing mode")
-	}
-
-	// If no more blocks, return
-	if inv.Count == 0 {
-		return nil
-	}
-
-	dataLen := len(inv.Data)
-	if dataLen != int(inv.Count)*UINT256SIZE {
-
-		wallet.changeSyncPeerAndRestart()
-		return fmt.Errorf("invalid block inventory data size: %d\n", dataLen)
-	}
-
-	var hashes = make([]Uint256, 0, inv.Count)
-	for i := 0; i < dataLen; i += UINT256SIZE {
-		var blockHash Uint256
-		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
-		if err != nil {
-			wallet.changeSyncPeerAndRestart()
-			return fmt.Errorf("deserialize block hash error %s\n", err.Error())
-		}
-		hashes = append(hashes, blockHash)
-	}
-
-	// Put hashes to request queue
-	wallet.queue.PushHashes(peer, hashes)
-
-	// Request more blocks
-	locator := []*Uint256{&hashes[len(hashes)-1]}
-	request := wallet.NewBlocksReq(locator, Uint256{})
-
-	go peer.Send(request)
-
-	return nil
-}
-
-func (wallet *SPVWallet) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock) error {
-	blockHash := block.BlockHeader.Hash()
-	log.Debug("Receive merkle block hash: ", blockHash.String())
-
-	err := wallet.chain.CheckProofOfWork(&block.BlockHeader)
+// Reset database, clear all data
+func (wallet *SPVWallet) Reset() error {
+	err := wallet.headers.Reset()
 	if err != nil {
 		return err
 	}
-
-	txIds, err := bloom.CheckMerkleBlock(*block)
+	err = wallet.dataStore.Reset()
 	if err != nil {
-		return errors.New("Invalid merkle block received: " + err.Error())
+		return err
 	}
-
-	if wallet.chain.IsSyncing() { // When blockchain in syncing mode
-		if wallet.PeerManager().GetSyncPeer() != nil && wallet.PeerManager().GetSyncPeer().ID() != peer.ID() {
-			peer.Disconnect()
-			return fmt.Errorf("receive message from non sync peer: %d\n", peer.ID())
-		}
-
-		// Add block to sync queue
-		err = wallet.queue.OnBlockReceived(block, txIds)
-		if err != nil {
-			wallet.changeSyncPeerAndRestart()
-			return err
-		}
-	} else {
-
-		// Just request block transactions.
-		// After transactions are received, the block will be put into finished blocks pool
-		wallet.queue.StartBlockTxsRequest(peer, block, txIds)
-	}
-
 	return nil
 }
 
-func (wallet *SPVWallet) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
-	log.Debug("Receive transaction hash: ", txn.Hash().String())
-
-	if wallet.chain.IsSyncing() && wallet.PeerManager().GetSyncPeer() != nil &&
-		wallet.PeerManager().GetSyncPeer().ID() != peer.ID() {
-
-		peer.Disconnect()
-		return fmt.Errorf("receive message from non sync peer: %d\n", peer.ID())
-	}
-
-	if wallet.chain.IsSyncing() || wallet.queue.IsRunning() {
-		// Add transaction to queue
-		err := wallet.queue.OnTxReceived(&txn.Transaction)
-		if err != nil {
-			wallet.changeSyncPeerAndRestart()
-			return err
-		}
-	} else {
-		isFPositive, err := wallet.chain.CommitUnconfirmedTxn(txn.Transaction)
-		if err != nil {
-			return err
-		}
-
-		if isFPositive {
-			wallet.handleFPositive(1)
-		}
-	}
-
-	return nil
+// Close the database
+func (wallet *SPVWallet) Close() {
+	wallet.headers.Close()
+	wallet.dataStore.Close()
 }
 
-func (wallet *SPVWallet) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
-	wallet.changeSyncPeerAndRestart()
-	return nil
-}
-
-func (wallet *SPVWallet) updateLocalHeight() {
-	wallet.PeerManager().Local().SetHeight(uint64(wallet.chain.Height()))
+func ToUTXO(txId common.Uint256, height uint32, index int, value common.Fixed64, lockTime uint32) *db.UTXO {
+	utxo := new(db.UTXO)
+	utxo.Op = *tx.NewOutPoint(txId, uint16(index))
+	utxo.Value = value
+	utxo.LockTime = lockTime
+	utxo.AtHeight = height
+	return utxo
 }
 
 func (wallet *SPVWallet) NotifyNewAddress(hash []byte) error {
 	// Reload address filter to include new address
-	wallet.chain.Addrs().ReloadAddrFilter()
+	wallet.loadAddrFilter()
 	// Broadcast filterload message to connected peers
-	wallet.PeerManager().Broadcast(wallet.chain.GetBloomFilter().GetFilterLoadMsg())
+	wallet.BroadCastMessage(wallet.getBloomFilter().GetFilterLoadMsg())
 	return nil
 }
 
 func (wallet *SPVWallet) SendTransaction(tx tx.Transaction) error {
 	// Broadcast transaction to connected peers
-	wallet.PeerManager().Broadcast(wallet.NewTxn(tx))
+	wallet.BroadCastMessage(wallet.newTxnMsg(tx))
 	return nil
 }
 
-func (wallet *SPVWallet) SetOnBlockCommitListener(listener func(core.Header, db.Proof, []tx.Transaction)) {
-	if listener == nil {
-		return
-	}
-	wallet.chain.OnBlockCommitted = listener
+func (wallet *SPVWallet) OnTxCommitted(tx tx.Transaction, height uint32) {}
+
+func (wallet *SPVWallet) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
+	// Store merkle proof
+	wallet.proofs.Put(GetProof(block))
 }
 
-func OnBlockCommit(core.Header, db.Proof, []tx.Transaction) {}
+func (wallet *SPVWallet) OnChainRollback(height uint32) {}
 
-func GetProof(msg bloom.MerkleBlock) db.Proof {
-	return db.Proof{
+func GetProof(msg bloom.MerkleBlock) *db.Proof {
+	return &db.Proof{
 		BlockHash:    *msg.BlockHeader.Hash(),
 		Height:       msg.BlockHeader.Height,
 		Transactions: msg.Transactions,
 		Hashes:       msg.Hashes,
 		Flags:        msg.Flags,
 	}
+}
+
+func (wallet *SPVWallet) getAddrFilter() *sdk.AddrFilter {
+	if wallet.filter == nil {
+		wallet.loadAddrFilter()
+	}
+	return wallet.filter
+}
+
+func (wallet *SPVWallet) loadAddrFilter() *sdk.AddrFilter {
+	addrs, _ := wallet.dataStore.Addrs().GetAll()
+	wallet.filter = sdk.NewAddrFilter(nil)
+	for _, addr := range addrs {
+		wallet.filter.AddAddr(addr.Hash())
+	}
+	return wallet.filter
+}
+
+func (wallet *SPVWallet) getBloomFilter() *bloom.Filter {
+	wallet.Lock()
+	defer wallet.Unlock()
+
+	addrs := wallet.getAddrFilter().GetAddrs()
+	utxos, _ := wallet.dataStore.UTXOs().GetAll()
+	stxos, _ := wallet.dataStore.STXOs().GetAll()
+
+	elements := uint32(len(addrs) + len(utxos) + len(stxos))
+	filter := sdk.NewBloomFilter(elements)
+
+	for _, addr := range addrs {
+		filter.Add(addr.ToArray())
+	}
+
+	for _, utxo := range utxos {
+		filter.AddOutPoint(&utxo.Op)
+	}
+
+	for _, stxo := range stxos {
+		filter.AddOutPoint(&stxo.Op)
+	}
+
+	return filter
+}
+
+func (wallet *SPVWallet) newTxnMsg(tx tx.Transaction) *msg.Txn {
+	return &msg.Txn{Transaction: tx}
 }

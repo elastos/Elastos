@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -21,9 +21,9 @@ type SQLiteDB struct {
 
 	info  Info
 	addrs Addrs
+	txs   Txs
 	utxos UTXOs
 	stxos STXOs
-	txns  TXNs
 	queue Queue
 }
 
@@ -57,7 +57,7 @@ func NewSQLiteDB() (DataStore, error) {
 		return nil, err
 	}
 	// Create TXNs db
-	txnsDB, err := NewTXNsDB(db, lock)
+	txnsDB, err := NewTxsDB(db, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func NewSQLiteDB() (DataStore, error) {
 		addrs: addrsDB,
 		utxos: utxosDB,
 		stxos: stxosDB,
-		txns:  txnsDB,
+		txs:   txnsDB,
 		queue: queueDB,
 	}, nil
 }
@@ -88,16 +88,16 @@ func (db *SQLiteDB) Addrs() Addrs {
 	return db.addrs
 }
 
+func (db *SQLiteDB) Txs() Txs {
+	return db.txs
+}
+
 func (db *SQLiteDB) UTXOs() UTXOs {
 	return db.utxos
 }
 
 func (db *SQLiteDB) STXOs() STXOs {
 	return db.stxos
-}
-
-func (db *SQLiteDB) TXNs() TXNs {
-	return db.txns
 }
 
 func (db *SQLiteDB) Queue() Queue {

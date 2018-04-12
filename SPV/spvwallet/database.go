@@ -5,7 +5,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
 type Database interface {
@@ -15,7 +14,6 @@ type Database interface {
 	DeleteAddress(address *Uint168) error
 	GetAddressUTXOs(address *Uint168) ([]*UTXO, error)
 	GetAddressSTXOs(address *Uint168) ([]*STXO, error)
-	GetTxns() ([]*Txn, error)
 	ChainHeight() uint32
 	Reset() error
 }
@@ -41,8 +39,6 @@ func GetDatabase() (Database, error) {
 type DatabaseImpl struct {
 	lock *sync.RWMutex
 	DataStore
-
-	filter *sdk.AddrFilter
 }
 
 func (db *DatabaseImpl) AddAddress(address *Uint168, script []byte, addrType int) error {
@@ -85,13 +81,6 @@ func (db *DatabaseImpl) GetAddressSTXOs(address *Uint168) ([]*STXO, error) {
 	defer db.lock.RUnlock()
 
 	return db.DataStore.STXOs().GetAddrAll(address)
-}
-
-func (db *DatabaseImpl) GetTxns() ([]*Txn, error) {
-	db.lock.RLock()
-	defer db.lock.RUnlock()
-
-	return db.DataStore.TXNs().GetAll()
 }
 
 func (db *DatabaseImpl) ChainHeight() uint32 {

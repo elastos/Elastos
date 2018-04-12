@@ -14,7 +14,7 @@ import (
 	pg "github.com/elastos/Elastos.ELA.SPV/core/contract/program"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
@@ -355,6 +355,14 @@ func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
 		availableUTXOs = append(availableUTXOs, utxo)
 	}
 	return availableUTXOs
+}
+
+func InputFromUTXO(utxo *UTXO) *tx.Input {
+	input := new(tx.Input)
+	input.ReferTxID = utxo.Op.TxID
+	input.ReferTxOutputIndex = utxo.Op.Index
+	input.Sequence = utxo.LockTime
+	return input
 }
 
 func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*tx.Input, outputs []*tx.Output) *tx.Transaction {

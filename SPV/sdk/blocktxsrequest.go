@@ -1,4 +1,4 @@
-package spvwallet
+package sdk
 
 import (
 	"errors"
@@ -11,10 +11,10 @@ import (
 
 type BlockTxsRequest struct {
 	sync.Mutex
-	blockHash      Uint256
-	block          bloom.MerkleBlock
+	BlockHash      Uint256
+	Block          bloom.MerkleBlock
 	txRequestQueue map[Uint256]*Request
-	receivedTxs    []tx.Transaction
+	Txs            []tx.Transaction
 }
 
 func (req *BlockTxsRequest) Finish() {
@@ -34,14 +34,14 @@ func (req *BlockTxsRequest) OnTxReceived(tx *tx.Transaction) (bool, error) {
 	var txRequest *Request
 	if txRequest, ok = req.txRequestQueue[txId]; !ok {
 		return false, errors.New("Received transaction not belong to block: " +
-			req.block.BlockHeader.Hash().String() + ", tx: " + tx.Hash().String())
+			req.Block.BlockHeader.Hash().String() + ", tx: " + tx.Hash().String())
 	}
 
 	// Remove from map
 	txRequest.Finish()
 	delete(req.txRequestQueue, txId)
 
-	req.receivedTxs = append(req.receivedTxs, *tx)
+	req.Txs = append(req.Txs, *tx)
 
 	return len(req.txRequestQueue) == 0, nil
 }

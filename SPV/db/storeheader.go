@@ -7,12 +7,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/core"
 )
 
-type Header struct {
+type StoreHeader struct {
 	core.Header
 	TotalWork *big.Int
 }
 
-func (sh *Header) Serialize() ([]byte, error) {
+func (sh *StoreHeader) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := sh.Header.Serialize(buf)
 	if err != nil {
@@ -26,7 +26,7 @@ func (sh *Header) Serialize() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (sh *Header) Deserialize(b []byte) error {
+func (sh *StoreHeader) Deserialize(b []byte) error {
 	r := bytes.NewReader(b)
 	err := sh.Header.Deserialize(r)
 	if err != nil {

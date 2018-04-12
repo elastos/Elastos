@@ -9,7 +9,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/crypto"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/log"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
 
