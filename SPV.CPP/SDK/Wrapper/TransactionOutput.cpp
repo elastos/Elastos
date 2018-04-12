@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRTransaction.h>
 #include "TransactionOutput.h"
 
 namespace Elastos {
@@ -14,6 +15,7 @@ namespace Elastos {
 
 		TransactionOutput::TransactionOutput(uint64_t amount, const ByteData &script) {
 			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
+			_output.get()->script = nullptr;
 			BRTxOutputSetScript(_output.get(), script.data, script.length);
 			_output->amount = amount;
 		}

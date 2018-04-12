@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRTransaction.h>
 #include "TransactionInput.h"
 
 namespace Elastos {
@@ -17,6 +18,7 @@ namespace Elastos {
 			_input->txHash = hash;
 			_input->index = index;
 			_input->amount = amount;
+			_input->signature = nullptr;
 			BRTxInputSetScript(_input.get(), script.data, script.length);
 			BRTxInputSetSignature(_input.get(), signature.data, signature.length);
 			_input->sequence = sequence;
