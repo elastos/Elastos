@@ -10,12 +10,25 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	. "github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
-	var err error
 	wallet := new(SPVWallet)
 
+	// Initialize P2P network client
+	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, seeds)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize spv service
+	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet.getBloomFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize headers db
 	wallet.headers, err = db.NewHeadersDB()
 	if err != nil {
 		return nil, err
@@ -33,20 +46,11 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 		return nil, err
 	}
 
-	// Initialize P2P network client
-	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, seeds)
-	if err != nil {
-		return nil, err
-	}
-
-	// Initialize spv service
-	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet.getBloomFilter)
-	if err != nil {
-		return nil, err
-	}
-
 	// Set chain state listener
 	wallet.SPVService.Blockchain().AddStateListener(wallet)
+
+	// Initialize RPC server
+	wallet.rpcServer = rpc.InitServer(wallet)
 
 	return wallet, nil
 }
@@ -54,10 +58,21 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 type SPVWallet struct {
 	sync.Mutex
 	sdk.SPVService
+	rpcServer *rpc.Server
 	headers   db.Headers
 	proofs    db.Proofs
 	dataStore db.DataStore
 	filter    *sdk.AddrFilter
+}
+
+func (wallet *SPVWallet) Start() {
+	wallet.SPVService.Start()
+	wallet.rpcServer.Start()
+}
+
+func (wallet *SPVWallet) Stop() {
+	wallet.SPVService.Stop()
+	wallet.rpcServer.Close()
 }
 
 func (wallet *SPVWallet) Headers() db.Headers {

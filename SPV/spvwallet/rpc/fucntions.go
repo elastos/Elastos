@@ -7,7 +7,7 @@ import (
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
-func NotifyNewAddress(req Req) Resp {
+func (server *Server) NotifyNewAddress(req Req) Resp {
 	data, ok := req.Params["address"]
 	if !ok {
 		return FunctionError("Address parameter not exist")
@@ -18,7 +18,7 @@ func NotifyNewAddress(req Req) Resp {
 		if err != nil {
 			return FunctionError(err.Error())
 		}
-		err = listeners.NotifyNewAddress(addr)
+		err = server.handler.NotifyNewAddress(addr)
 		if err != nil {
 			return FunctionError(err.Error())
 		}
@@ -28,7 +28,7 @@ func NotifyNewAddress(req Req) Resp {
 	}
 }
 
-func SendTransaction(req Req) Resp {
+func (server *Server) SendTransaction(req Req) Resp {
 	data, ok := req.Params["data"]
 	if !ok {
 		return FunctionError("Data parameter not exist")
@@ -44,7 +44,7 @@ func SendTransaction(req Req) Resp {
 		if err != nil {
 			return FunctionError("Deserialize transaction failed")
 		}
-		err = listeners.SendTransaction(tx)
+		err = server.handler.SendTransaction(tx)
 		if err != nil {
 			return FunctionError(err.Error())
 		}

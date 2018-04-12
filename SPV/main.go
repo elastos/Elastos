@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 )
 
 func main() {
@@ -23,17 +22,11 @@ func main() {
 
 	// Initiate SPV service
 	iv, _ := file.GetIV()
-	service, err := spvwallet.Init(binary.LittleEndian.Uint64(iv), config.Values().SeedList)
+	wallet, err := spvwallet.Init(binary.LittleEndian.Uint64(iv), config.Values().SeedList)
 	if err != nil {
 		log.Error("Initiate SPV service failed,", err)
 		os.Exit(0)
 	}
-
-	// Start RPC service
-	server := rpc.InitServer(&rpc.Listeners{
-		NotifyNewAddress: service.NotifyNewAddress,
-		SendTransaction:  service.SendTransaction,
-	})
 
 	// Handle interrupt signal
 	stop := make(chan int, 1)
@@ -42,14 +35,12 @@ func main() {
 	go func() {
 		for range c {
 			log.Trace("SPVWallet shutting down...")
-			service.Stop()
-			server.Close()
+			wallet.Stop()
 			stop <- 1
 		}
 	}()
 
-	service.Start()
-	server.Start()
+	wallet.Start()
 
 	<-stop
 }

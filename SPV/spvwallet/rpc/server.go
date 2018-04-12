@@ -10,22 +10,19 @@ import (
 	"os"
 )
 
-type Listeners struct {
-	NotifyNewAddress func(hash []byte) error
-	SendTransaction  func(tx.Transaction) error
+type RequestHandler interface {
+	NotifyNewAddress(hash []byte) error
+	SendTransaction(tx.Transaction) error
 }
 
-var listeners *Listeners
-
-func InitServer(ls *Listeners) *Server {
-	listeners = ls
-	server := &Server{
-		Server: http.Server{Addr: ":" + RPCPort},
-		methods: map[string]func(Req) Resp{
-			"notifynewaddress": NotifyNewAddress,
-			"sendtransaction":  SendTransaction,
-		},
+func InitServer(handler RequestHandler) *Server {
+	server := new(Server)
+	server.Server = http.Server{Addr: ":" + RPCPort}
+	server.methods = map[string]func(Req) Resp{
+		"notifynewaddress": server.NotifyNewAddress,
+		"sendtransaction":  server.SendTransaction,
 	}
+	server.handler = handler
 	http.HandleFunc("/", server.handle)
 	return server
 }
@@ -33,6 +30,7 @@ func InitServer(ls *Listeners) *Server {
 type Server struct {
 	http.Server
 	methods map[string]func(Req) Resp
+	handler RequestHandler
 }
 
 func (server *Server) Start() {
