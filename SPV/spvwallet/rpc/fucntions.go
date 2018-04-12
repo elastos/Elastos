@@ -8,48 +8,38 @@ import (
 )
 
 func (server *Server) NotifyNewAddress(req Req) Resp {
-	data, ok := req.Params["address"]
+	data, ok := req.Params[0].(string)
 	if !ok {
-		return FunctionError("Address parameter not exist")
+		return InvalidParameter
 	}
-	switch data := data.(type) {
-	case string:
-		addr, err := hex.DecodeString(data)
-		if err != nil {
-			return FunctionError(err.Error())
-		}
-		err = server.handler.NotifyNewAddress(addr)
-		if err != nil {
-			return FunctionError(err.Error())
-		}
-		return Success("New address received")
-	default:
-		return FunctionError("Invalid data type")
+	addr, err := hex.DecodeString(data)
+	if err != nil {
+		return FunctionError(err.Error())
 	}
+	err = server.handler.NotifyNewAddress(addr)
+	if err != nil {
+		return FunctionError(err.Error())
+	}
+	return Success("New address received")
 }
 
 func (server *Server) SendTransaction(req Req) Resp {
-	data, ok := req.Params["data"]
+	data, ok := req.Params[0].(string)
 	if !ok {
-		return FunctionError("Data parameter not exist")
+		return InvalidParameter
 	}
-	switch data := data.(type) {
-	case string:
-		txBytes, err := hex.DecodeString(data)
-		if err != nil {
-			return FunctionError(err.Error())
-		}
-		var tx tx.Transaction
-		err = tx.Deserialize(bytes.NewReader(txBytes))
-		if err != nil {
-			return FunctionError("Deserialize transaction failed")
-		}
-		err = server.handler.SendTransaction(tx)
-		if err != nil {
-			return FunctionError(err.Error())
-		}
-		return Success(tx.Hash().String())
-	default:
-		return FunctionError("Invalid data type")
+	txBytes, err := hex.DecodeString(data)
+	if err != nil {
+		return FunctionError(err.Error())
 	}
+	var tx tx.Transaction
+	err = tx.Deserialize(bytes.NewReader(txBytes))
+	if err != nil {
+		return FunctionError("Deserialize transaction failed")
+	}
+	err = server.handler.SendTransaction(tx)
+	if err != nil {
+		return FunctionError(err.Error())
+	}
+	return Success(tx.Hash().String())
 }

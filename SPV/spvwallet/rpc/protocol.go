@@ -6,8 +6,8 @@ const (
 )
 
 type Req struct {
-	Method string                 `json:"method"`
-	Params map[string]interface{} `json:"params"`
+	Method string        `json:"method"`
+	Params []interface{} `json:"params"`
 }
 
 type Resp struct {
@@ -28,6 +28,7 @@ var (
 	ReadRequestError      = Resp{403, "ReadRequestError"}
 	UnmarshalRequestError = Resp{404, "UnmarshalRequestError"}
 	InvalidMethod         = Resp{405, "InvalidMethod"}
+	InvalidParameter      = Resp{406, "InvalidParameter"}
 )
 
 func Success(result interface{}) Resp {
@@ -35,5 +36,5 @@ func Success(result interface{}) Resp {
 }
 
 func FunctionError(error string) Resp {
-	return Resp{406, error}
+	return Resp{407, error}
 }

@@ -23,7 +23,7 @@ func (client *Client) NotifyNewAddress(hash []byte) error {
 	resp := client.send(
 		&Req{
 			Method: "notifynewaddress",
-			Params: map[string]interface{}{"address": hex.EncodeToString(hash)},
+			Params: []interface{}{hex.EncodeToString(hash)},
 		},
 	)
 	if resp.Code != 0 {
@@ -38,7 +38,7 @@ func (client *Client) SendTransaction(tx *tx.Transaction) error {
 	resp := client.send(
 		&Req{
 			Method: "sendtransaction",
-			Params: map[string]interface{}{"data": hex.EncodeToString(buf.Bytes())},
+			Params: []interface{}{hex.EncodeToString(buf.Bytes())},
 		},
 	)
 	if resp.Code != 0 {
