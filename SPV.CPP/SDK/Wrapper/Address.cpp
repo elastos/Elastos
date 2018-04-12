@@ -37,7 +37,7 @@ namespace Elastos {
 		}
 
 		boost::shared_ptr<Address> Address::fromScriptPubKey(ByteData script) {
-			BRAddress address = {0};
+			BRAddress address = {'\0'};
 
 			BRAddressFromScriptPubKey(address.s, sizeof(address.s), script.data, script.length);
 
@@ -67,11 +67,10 @@ namespace Elastos {
 			BRAddress* address = getRaw();
 
 			size_t pubKeyLen = BRAddressScriptPubKey(NULL, 0, address->s);
-			uint8_t pubKey[pubKeyLen];
-			BRAddressScriptPubKey(pubKey, pubKeyLen, address->s);
+			uint8_t *data = new uint8_t[pubKeyLen];
+			BRAddressScriptPubKey(data, pubKeyLen, address->s);
+			return ByteData(data, pubKeyLen);
 
-			ByteData result(pubKey,pubKeyLen);
-			return result;
 		}
 
 		std::string Address::stringify() const {

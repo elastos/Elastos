@@ -9,9 +9,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "BRAddress.h"
-
 #include "Wrapper.h"
-
 #include "ByteData.h"
 
 namespace Elastos {
