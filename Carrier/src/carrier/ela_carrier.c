@@ -550,7 +550,7 @@ static int store_savedata(ElaCarrier *w)
     rc = mkdirs(w->pref.data_location, S_IRWXU);
     if (rc < 0) {
         free(buf);
-        return ELA_GENERAL_ERROR(errno);
+        return ELA_SYS_ERROR(errno);
     }
 
     filename = (char *)alloca(strlen(w->pref.data_location) + strlen(data_filename) + 4);
@@ -559,7 +559,7 @@ static int store_savedata(ElaCarrier *w)
     fp = fopen(filename, "w");
     if (!fp) {
         free(buf);
-        return ELA_GENERAL_ERROR(errno);
+        return ELA_SYS_ERROR(errno);
     }
 
     fwrite(buf, sizeof(uint8_t), pos - buf, fp);
