@@ -93,13 +93,16 @@ func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
 }
 
 func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
+	blockHash := *block.BlockHeader.Hash()
 	// No block transactions to request, notify request finished.
 	if len(txIds) == 0 {
 		// Notify request finished
-		queue.OnRequestFinished(&BlockTxsRequest{Block: *block})
+		queue.OnRequestFinished(&BlockTxsRequest{
+			BlockHash: blockHash,
+			Block:     *block,
+		})
 		return
 	}
-	blockHash := *block.BlockHeader.Hash()
 	// Check if request already in queue
 	if queue.InBlockTxsRequestQueue(blockHash) {
 		return

@@ -242,7 +242,7 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []tx.Transaction)
 	}
 
 	// Notify block committed
-	go bc.notifyBlockCommitted(block, txs)
+	bc.notifyBlockCommitted(block, txs)
 
 	log.Debug("Blockchain block committed height: ", bc.chainTip().Height)
 
@@ -255,7 +255,7 @@ func (bc *Blockchain) commitTx(tx tx.Transaction, height uint32) (bool, error) {
 		return false, err
 	}
 
-	go bc.notifyTxCommitted(tx, height)
+	bc.notifyTxCommitted(tx, height)
 
 	return fPositive, nil
 }
@@ -269,7 +269,7 @@ func (bc *Blockchain) rollbackTo(forkPoint uint32) error {
 			fmt.Println("Rollback database failed, height: ", height, ", error: ", err)
 			return err
 		}
-		go bc.notifyChainRollback(height)
+		bc.notifyChainRollback(height)
 	}
 	// Save current chain height
 	bc.DataStore.PutChainHeight(forkPoint)
@@ -323,19 +323,19 @@ func (bc *Blockchain) getCommonAncestor(bestHeader, prevTip *db.StoreHeader) (*d
 
 func (bc *Blockchain) notifyBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
 	for _, listener := range bc.stateListeners {
-		listener.OnBlockCommitted(block, txs)
+		go listener.OnBlockCommitted(block, txs)
 	}
 }
 
 func (bc *Blockchain) notifyTxCommitted(tx tx.Transaction, height uint32) {
 	for _, listener := range bc.stateListeners {
-		listener.OnTxCommitted(tx, height)
+		go listener.OnTxCommitted(tx, height)
 	}
 }
 
 func (bc *Blockchain) notifyChainRollback(height uint32) {
 	for _, listener := range bc.stateListeners {
-		listener.OnChainRollback(height)
+		go listener.OnChainRollback(height)
 	}
 }
 
