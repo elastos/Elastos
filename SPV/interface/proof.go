@@ -1,4 +1,4 @@
-package db
+package _interface
 
 import (
 	"io"

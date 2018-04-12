@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 )
@@ -56,7 +55,7 @@ func (l *ConfirmedListener) Confirmed() bool {
 	return true
 }
 
-func (l *ConfirmedListener) Notify(proof db.Proof, tx tx.Transaction) {
+func (l *ConfirmedListener) Notify(proof Proof, tx tx.Transaction) {
 	log.Debug("Receive confirmed transaction hash:", tx.Hash().String())
 	err := spv.VerifyTransaction(proof, tx)
 	if err != nil {
@@ -80,7 +79,7 @@ func (l *UnconfirmedListener) Confirmed() bool {
 	return false
 }
 
-func (l *UnconfirmedListener) Notify(proof db.Proof, tx tx.Transaction) {
+func (l *UnconfirmedListener) Notify(proof Proof, tx tx.Transaction) {
 	log.Debug("Receive unconfirmed transaction hash:", tx.Hash().String())
 	err := spv.VerifyTransaction(proof, tx)
 	if err != nil {

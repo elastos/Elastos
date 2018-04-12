@@ -19,6 +19,7 @@ type SPVServiceImpl struct {
 	clientId   uint64
 	seeds      []string
 	accounts   []*Uint168
+	proofs     Proofs
 	queue      Queue
 	addrFilter *sdk.AddrFilter
 	listeners  map[tx.TransactionType][]TransactionListener
@@ -52,7 +53,7 @@ func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
 	return service.queue.Delete(&txHash)
 }
 
-func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transaction) error {
+func (service *SPVServiceImpl) VerifyTransaction(proof Proof, tx tx.Transaction) error {
 	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
@@ -112,6 +113,12 @@ func (service *SPVServiceImpl) Start() error {
 		return err
 	}
 
+	// Initialize proofs db
+	service.proofs, err = NewProofsDB()
+	if err != nil {
+		return err
+	}
+
 	service.queue, err = NewQueueDB()
 	if err != nil {
 		return err
@@ -151,8 +158,20 @@ func (service *SPVServiceImpl) Start() error {
 	return nil
 }
 
+func (service *SPVServiceImpl) OnTxCommitted(tx tx.Transaction, height uint32) {}
+func (service *SPVServiceImpl) OnChainRollback(height uint32)                  {}
 func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
 	header := block.BlockHeader
+
+	// Store merkle proof
+	service.proofs.Put(&Proof{
+		BlockHash:    *header.Hash(),
+		Height:       header.Height,
+		Transactions: block.Transactions,
+		Hashes:       block.Hashes,
+		Flags:        block.Flags,
+	})
+
 	// If no transactions return
 	if len(txs) == 0 {
 		return
@@ -187,7 +206,7 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 	}
 	for _, item := range items {
 		//	Get proof from db
-		proof, err := service.Proofs().Get(&item.BlockHash)
+		proof, err := service.proofs.Get(&item.BlockHash)
 		if err != nil {
 			log.Error("Query merkle proof failed, block hash:", item.BlockHash.String())
 			return
@@ -206,7 +225,7 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 	}
 }
 
-func (service *SPVServiceImpl) notifyListeners(proof db.Proof, tx tx.Transaction, confirmations uint32) {
+func (service *SPVServiceImpl) notifyListeners(proof Proof, tx tx.Transaction, confirmations uint32) {
 	listeners := service.listeners[tx.TxType]
 	for _, listener := range listeners {
 		if listener.Confirmed() {
@@ -225,7 +244,7 @@ func getConfirmations(tx tx.Transaction) uint32 {
 	return DefaultConfirmations
 }
 
-func getTransactionProof(proof *db.Proof, txHash Uint256) *db.Proof {
+func getTransactionProof(proof *Proof, txHash Uint256) *Proof {
 	// TODO Pick out the merkle proof of the transaction
 	return proof
 }

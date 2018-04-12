@@ -99,17 +99,7 @@ func (db *DatabaseImpl) Reset() error {
 		return err
 	}
 
-	proofs, err := NewProofsDB()
-	if err != nil {
-		return err
-	}
-
 	err = headers.Reset()
-	if err != nil {
-		return err
-	}
-
-	err = proofs.Reset()
 	if err != nil {
 		return err
 	}

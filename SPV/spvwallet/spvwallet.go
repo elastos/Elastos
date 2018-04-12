@@ -34,20 +34,11 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 		return nil, err
 	}
 
-	// Initialize proofs db
-	wallet.proofs, err = db.NewProofsDB()
-	if err != nil {
-		return nil, err
-	}
-
 	// Initialize wallet database
 	wallet.dataStore, err = db.NewSQLiteDB()
 	if err != nil {
 		return nil, err
 	}
-
-	// Set chain state listener
-	wallet.SPVService.Blockchain().AddStateListener(wallet)
 
 	// Initialize RPC server
 	wallet.rpcServer = rpc.InitServer(wallet)
@@ -60,7 +51,6 @@ type SPVWallet struct {
 	sdk.SPVService
 	rpcServer *rpc.Server
 	headers   db.Headers
-	proofs    db.Proofs
 	dataStore db.DataStore
 	filter    *sdk.AddrFilter
 }
@@ -77,10 +67,6 @@ func (wallet *SPVWallet) Stop() {
 
 func (wallet *SPVWallet) Headers() db.Headers {
 	return wallet.headers
-}
-
-func (wallet *SPVWallet) Proofs() db.Proofs {
-	return wallet.proofs
 }
 
 func (wallet *SPVWallet) DataStore() db.DataStore {
@@ -207,23 +193,6 @@ func (wallet *SPVWallet) SendTransaction(tx tx.Transaction) error {
 	// Broadcast transaction to connected peers
 	wallet.BroadCastMessage(wallet.newTxnMsg(tx))
 	return nil
-}
-
-func (wallet *SPVWallet) OnTxCommitted(tx tx.Transaction, height uint32) {}
-func (wallet *SPVWallet) OnChainRollback(height uint32)                  {}
-func (wallet *SPVWallet) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
-	// Store merkle proof
-	wallet.proofs.Put(GetProof(block))
-}
-
-func GetProof(msg bloom.MerkleBlock) *db.Proof {
-	return &db.Proof{
-		BlockHash:    *msg.BlockHeader.Hash(),
-		Height:       msg.BlockHeader.Height,
-		Transactions: msg.Transactions,
-		Hashes:       msg.Hashes,
-		Flags:        msg.Flags,
-	}
 }
 
 func (wallet *SPVWallet) getAddrFilter() *sdk.AddrFilter {

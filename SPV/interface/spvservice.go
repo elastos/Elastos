@@ -3,7 +3,6 @@ package _interface
 import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 )
 
 /*
@@ -26,7 +25,7 @@ type SPVService interface {
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(db.Proof, tx.Transaction) error
+	VerifyTransaction(Proof, tx.Transaction) error
 
 	// Send a transaction to the P2P network
 	SendTransaction(tx.Transaction) error
@@ -49,7 +48,7 @@ type TransactionListener interface {
 
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it
-	Notify(db.Proof, tx.Transaction)
+	Notify(Proof, tx.Transaction)
 }
 
 func NewSPVService(clientId uint64, seeds []string) SPVService {
