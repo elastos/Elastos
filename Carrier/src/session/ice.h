@@ -44,9 +44,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+typedef struct IceTransport IceTransport;
 
 typedef struct IceWorker {
-    TransportWorker  base;
+    TransportWorker     base;
+    IceTransport        *transport;
 
     pj_bool_t           regular;
 

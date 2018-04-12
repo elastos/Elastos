@@ -393,6 +393,8 @@ static void ice_worker_stop(TransportWorker *base)
 {
     IceWorker *worker = (IceWorker *)base;
 
+    prepare_thread_context(worker->transport);
+
     if (worker->read_key) {
         pj_ioqueue_unregister(worker->read_key);
         worker->read_key = NULL;
@@ -607,6 +609,7 @@ int ice_worker_create(ElaTransport *transport, IceTransportOptions *opts,
 
     w->base.id = transport_workerid();
     w->regular = PJ_TRUE;
+    w->transport = (IceTransport *)transport;
 
     rc = ice_worker_init(w, opts);
     if (rc < 0) {
@@ -1726,8 +1729,6 @@ static int ice_transport_create_session(ElaTransport *base, ElaSession **session
     *session = (ElaSession *)s;
     return 0;
 }
-
-
 
 int ice_transport_create(ElaTransport **transport)
 {
