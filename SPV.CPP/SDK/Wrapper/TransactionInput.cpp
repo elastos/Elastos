@@ -19,6 +19,7 @@ namespace Elastos {
 			_input->index = index;
 			_input->amount = amount;
 			_input->signature = nullptr;
+			_input->script = nullptr;
 			BRTxInputSetScript(_input.get(), script.data, script.length);
 			BRTxInputSetSignature(_input.get(), signature.data, signature.length);
 			_input->sequence = sequence;

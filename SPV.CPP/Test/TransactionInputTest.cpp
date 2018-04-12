@@ -15,7 +15,7 @@ TEST_CASE( "TransactionInput test", "[TransactionInput]" )
 		TransactionInput transactionInput(nullptr);
 		REQUIRE(transactionInput.getRaw() == nullptr);
 
-		BRTxInput* txInput = new BRTxInput();
+		BRTxInput *txInput = new BRTxInput();
 		TransactionInput transactionInput1(txInput);
 		REQUIRE(transactionInput1.getRaw() == txInput);
 	}
@@ -27,15 +27,35 @@ TEST_CASE( "TransactionInput test", "[TransactionInput]" )
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
 		ByteData script = myaddress.getPubKeyScript();
-		ByteData signature;
-		uint32_t sequence = 1;
-
+		ByteData signature(nullptr,0);
+		uint32_t sequence = 8888;
 		TransactionInput transactionInput(hash, index, amount, script, signature, sequence);
+
 		REQUIRE(transactionInput.getRaw() != nullptr);
 		UInt256 tempHash = transactionInput.getHash();
 		int result = UInt256Eq(&tempHash, &hash);
-		REQUIRE(result > 0);
+		REQUIRE(result == 1);
 		REQUIRE(transactionInput.getIndex() == index);
 		REQUIRE(transactionInput.getAmount() == amount);
+
+		ByteData tempScript = transactionInput.getScript();
+		REQUIRE(tempScript.length == script.length);
+		for (int i = 0; i < script.length; i++) {
+			REQUIRE(tempScript.data[i] == script.data[i]);
+		}
+
+		ByteData tempSignature =  transactionInput.getSignature();
+		REQUIRE(tempSignature.data == nullptr);
+		REQUIRE(tempSignature.length == 0);
+		REQUIRE(transactionInput.getSequence() == sequence);
+	}
+
+	SECTION("TransactionInput address test", "") {
+		BRTxInput *txInput = new BRTxInput();
+		TransactionInput transactionInput1(txInput);
+
+		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
+		transactionInput1.setAddress(content);
+		REQUIRE(transactionInput1.getAddress() == content);
 	}
 }
