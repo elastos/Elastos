@@ -132,6 +132,5 @@ namespace Elastos {
 			return BRPeerPingTime(peer);
 		}
 
-
 	}
 }

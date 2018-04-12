@@ -45,7 +45,15 @@ namespace Elastos {
 				}
 
 				static std::string toString(ConnectStatus status) {
-					//todo complete me
+					if (Disconnected == status) {
+						return "Disconnected";
+					} else if (Connecting == status) {
+						return "Connecting";
+					} else if (Connected == status) {
+						return "Connected";
+					}
+
+					return "Unknown";
 				}
 			};
 
