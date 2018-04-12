@@ -62,7 +62,7 @@ namespace Elastos {
 					   const boost::shared_ptr<Listener> &listener) {
 
 			_wallet = BRWalletNew(transactions.getRawPointerArray().data(),
-								  transactions.size(), masterPubKey->getRaw());
+								  transactions.size(), *masterPubKey->getRaw());
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);

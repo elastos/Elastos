@@ -14,28 +14,43 @@ namespace Elastos {
 		public:
 
 			template<typename T>
-			void log(spdlog::level::level_enum lvl, const T &);
+			static void log(spdlog::level::level_enum lvl, const T &msg){
+			_consoleLog->log(lvl, msg);
+		}
+			template<typename T>
+			static void trace(const T &msg){
+				_consoleLog->trace(msg);
+			}
 
 			template<typename T>
-			void trace(const T &msg);
+			static void debug(const T &msg){
+				_consoleLog->debug(msg);
+			}
 
 			template<typename T>
-			void debug(const T &msg);
+			static void info(const T &msg) {
+				_consoleLog->info(msg);
+			}
 
 			template<typename T>
-			void info(const T &msg);
+			static void warn(const T &msg){
+				_consoleLog->warn(msg);
+			}
 
 			template<typename T>
-			void warn(const T &msg);
+			static void error(const T &msg){
+				_consoleLog->error(msg);
+			}
 
 			template<typename T>
-			void error(const T &msg);
-
-			template<typename T>
-			void critical(const T &msg);
+			static void critical(const T &msg) {
+				_consoleLog->critical(msg);
+			}
 
 			template<typename... Args>
-			void log(spdlog::level::level_enum lvl, const char *msg);
+			static void log(spdlog::level::level_enum lvl, const char *msg){
+				_consoleLog->log(lvl, msg);
+			}
 
 			const std::shared_ptr<spdlog::logger>& getLogger() const;
 

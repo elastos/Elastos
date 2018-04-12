@@ -6,7 +6,8 @@
 #define __ELASTOS_SDK_UTILS_H__
 
 #include <string>
-#include <BRInt.h>
+
+#include "BRInt.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -15,6 +16,13 @@ namespace Elastos {
 		public:
 			static std::string UInt256ToString(const UInt256 &u256);
 			static UInt256 UInt256FromString(const std::string &u256);
+
+			static void	decodeHex (uint8_t *target, size_t targetLen, char *source, size_t sourceLen);
+			static size_t decodeHexLength (size_t stringLen);
+			static uint8_t *decodeHexCreate (size_t *targetLen, char *source, size_t sourceLen);
+			static void	encodeHex (char *target, size_t targetLen, uint8_t *source, size_t sourceLen);
+			static size_t encodeHexLength(size_t byteArrayLen);
+			static char *encodeHexCreate (size_t *targetLen, uint8_t *source, size_t sourceLen);
 		};
 	}
 }

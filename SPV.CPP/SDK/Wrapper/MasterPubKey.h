@@ -11,18 +11,39 @@
 #include "BRBIP32Sequence.h"
 
 #include "Wrapper.h"
+#include "ByteData.h"
 
 namespace Elastos {
     namespace SDK {
 
         class MasterPubKey :
-            public Wrapper<BRMasterPubKey> {
+            public Wrapper<BRMasterPubKey *> {
         public:
+
             MasterPubKey();
+
+            MasterPubKey(const std::string& phrase);
 
             virtual std::string toString() const;
 
-            virtual BRMasterPubKey getRaw();
+            virtual BRMasterPubKey* getRaw();
+
+            ByteData serialize() const;
+
+            void deserialize(const ByteData& data);
+
+            ByteData getPubKey() const;
+
+            boost::shared_ptr<BRKey> getPubKeyAsKey() const;
+
+            static ByteData bip32BitIDKey(ByteData seed, int index, std::string uri);
+
+            static bool validateRecoveryPhrase(std::vector<std::string> words, std::string phrase);
+
+            static ByteData generatePaperKey (ByteData seed, std::vector<std::string> words);
+
+        private:
+            boost::shared_ptr<BRMasterPubKey> _masterPubKey;
         };
 
         typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
