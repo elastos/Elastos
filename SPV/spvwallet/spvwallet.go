@@ -210,13 +210,11 @@ func (wallet *SPVWallet) SendTransaction(tx tx.Transaction) error {
 }
 
 func (wallet *SPVWallet) OnTxCommitted(tx tx.Transaction, height uint32) {}
-
+func (wallet *SPVWallet) OnChainRollback(height uint32)                  {}
 func (wallet *SPVWallet) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
 	// Store merkle proof
 	wallet.proofs.Put(GetProof(block))
 }
-
-func (wallet *SPVWallet) OnChainRollback(height uint32) {}
 
 func GetProof(msg bloom.MerkleBlock) *db.Proof {
 	return &db.Proof{

@@ -1,4 +1,4 @@
-package db
+package _interface
 
 import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"

@@ -38,7 +38,10 @@ func TestNewSPVService(t *testing.T) {
 	spv.RegisterTransactionListener(&UnconfirmedListener{txType: tx.TransferAsset})
 
 	// Start spv service
-	spv.Start()
+	err = spv.Start()
+	if err != nil {
+		t.Error("Start SPV service error: ", err)
+	}
 }
 
 type ConfirmedListener struct {

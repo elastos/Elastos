@@ -12,7 +12,6 @@ type DataStore interface {
 	Txs() Txs
 	UTXOs() UTXOs
 	STXOs() STXOs
-	Queue() Queue
 
 	Rollback(height uint32) error
 	// Reset database, clear all data
@@ -104,15 +103,4 @@ type STXOs interface {
 
 	// delete a stxo from database
 	Delete(outPoint *tx.OutPoint) error
-}
-
-type Queue interface {
-	// Put a queue item to database
-	Put(item *QueueItem) error
-
-	// Get all items in queue
-	GetAll() ([]*QueueItem, error)
-
-	// Delete confirmed item in queue
-	Delete(txHash *Uint256) error
 }

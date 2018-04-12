@@ -24,16 +24,15 @@ type SQLiteDB struct {
 	txs   Txs
 	utxos UTXOs
 	stxos STXOs
-	queue Queue
 }
 
-func NewSQLiteDB() (DataStore, error) {
+func NewSQLiteDB() (*SQLiteDB, error) {
 	db, err := sql.Open(DriverName, DBName)
 	if err != nil {
-		fmt.Println("Open data db error:", err)
+		fmt.Println("Open sqlite db error:", err)
 		return nil, err
 	}
-	// Use the save lock
+	// Use the same lock
 	lock := new(sync.RWMutex)
 
 	// Create info db
@@ -56,13 +55,8 @@ func NewSQLiteDB() (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Create TXNs db
+	// Create Txs db
 	txnsDB, err := NewTxsDB(db, lock)
-	if err != nil {
-		return nil, err
-	}
-	// Create Queue db
-	queueDB, err := NewQueueDB(db, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +70,6 @@ func NewSQLiteDB() (DataStore, error) {
 		utxos: utxosDB,
 		stxos: stxosDB,
 		txs:   txnsDB,
-		queue: queueDB,
 	}, nil
 }
 
@@ -98,10 +91,6 @@ func (db *SQLiteDB) UTXOs() UTXOs {
 
 func (db *SQLiteDB) STXOs() STXOs {
 	return db.stxos
-}
-
-func (db *SQLiteDB) Queue() Queue {
-	return db.queue
 }
 
 func (db *SQLiteDB) Rollback(height uint32) error {

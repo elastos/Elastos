@@ -1,33 +1,58 @@
-package db
+package _interface
 
 import (
 	"sync"
 	"database/sql"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"fmt"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
-const CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(
+type Queue interface {
+	// Put a queue item to database
+	Put(item *QueueItem) error
+
+	// Get all items in queue
+	GetAll() ([]*QueueItem, error)
+
+	// Delete confirmed item in queue
+	Delete(txHash *Uint256) error
+}
+
+const (
+	DriverName = "sqlite3"
+	DBName     = "./queue.db"
+
+	CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(
 				TxHash BLOB NOT NULL PRIMARY KEY,
 				BlockHash BLOB NOT NULL,
 				Height INTEGER NOT NULL
 			);`
+)
 
 type QueueDB struct {
 	*sync.RWMutex
 	*sql.DB
 }
 
-func NewQueueDB(db *sql.DB, lock *sync.RWMutex) (Queue, error) {
-	_, err := db.Exec(CreateQueueDB)
+func NewQueueDB() (Queue, error) {
+	db, err := sql.Open(DriverName, DBName)
+	if err != nil {
+		fmt.Println("Open sqlite db error:", err)
+		return nil, err
+	}
+
+	_, err = db.Exec(CreateQueueDB)
 	if err != nil {
 		return nil, err
 	}
-	return &QueueDB{RWMutex: lock, DB: db}, nil
+	return &QueueDB{RWMutex: new(sync.RWMutex), DB: db}, nil
 }
 
 // Put a queue item to database
 func (db *QueueDB) Put(item *QueueItem) error {
+	log.Debug("Queue db Put: ", item)
 	db.Lock()
 	defer db.Unlock()
 
@@ -46,6 +71,7 @@ func (db *QueueDB) Put(item *QueueItem) error {
 
 // Get all items in queue
 func (db *QueueDB) GetAll() ([]*QueueItem, error) {
+	log.Debug("Queue db GetAll()")
 	db.RLock()
 	defer db.RUnlock()
 
@@ -81,6 +107,7 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 
 // Delete confirmed item in queue
 func (db *QueueDB) Delete(txHash *Uint256) error {
+	log.Debug("Queue db Delete: ", txHash.String())
 	db.Lock()
 	defer db.Unlock()
 

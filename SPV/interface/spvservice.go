@@ -52,6 +52,6 @@ type TransactionListener interface {
 	Notify(db.Proof, tx.Transaction)
 }
 
-func NewSPVService(clientId uint64, seeds []string) (SPVService) {
+func NewSPVService(clientId uint64, seeds []string) SPVService {
 	return newSPVServiceImpl(clientId, seeds)
 }

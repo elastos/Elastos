@@ -19,6 +19,7 @@ type SPVServiceImpl struct {
 	clientId   uint64
 	seeds      []string
 	accounts   []*Uint168
+	queue      Queue
 	addrFilter *sdk.AddrFilter
 	listeners  map[tx.TransactionType][]TransactionListener
 }
@@ -48,7 +49,7 @@ func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionL
 }
 
 func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
-	return service.DataStore().Queue().Delete(&txHash)
+	return service.queue.Delete(&txHash)
 }
 
 func (service *SPVServiceImpl) VerifyTransaction(proof db.Proof, tx tx.Transaction) error {
@@ -111,6 +112,11 @@ func (service *SPVServiceImpl) Start() error {
 		return err
 	}
 
+	service.queue, err = NewQueueDB()
+	if err != nil {
+		return err
+	}
+
 	// Register accounts
 	if len(service.accounts) == 0 {
 		return errors.New("No account registered")
@@ -164,18 +170,18 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 
 	// Queue matched transactions
 	for _, tx := range matchedTxs {
-		item := &db.QueueItem{
+		item := &QueueItem{
 			TxHash:    *tx.Hash(),
 			BlockHash: *header.Hash(),
 			Height:    header.Height,
 		}
 
 		// Save to queue db
-		service.DataStore().Queue().Put(item)
+		service.queue.Put(item)
 	}
 
 	// Look up for queued transactions
-	items, err := service.DataStore().Queue().GetAll()
+	items, err := service.queue.GetAll()
 	if err != nil {
 		return
 	}
@@ -196,19 +202,19 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 		proof = getTransactionProof(proof, storeTx.TxId)
 
 		// Notify listeners
-		service.notifyListeners(proof, storeTx.Data, header.Height-item.Height)
+		service.notifyListeners(*proof, storeTx.Data, header.Height-item.Height)
 	}
 }
 
-func (service *SPVServiceImpl) notifyListeners(proof *db.Proof, tx tx.Transaction, confirmations uint32) {
+func (service *SPVServiceImpl) notifyListeners(proof db.Proof, tx tx.Transaction, confirmations uint32) {
 	listeners := service.listeners[tx.TxType]
 	for _, listener := range listeners {
 		if listener.Confirmed() {
 			if confirmations >= getConfirmations(tx) {
-				listener.Notify(*proof, tx)
+				go listener.Notify(proof, tx)
 			}
 		} else {
-			listener.Notify(*proof, tx)
+			go listener.Notify(proof, tx)
 		}
 	}
 }
