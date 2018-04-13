@@ -16,7 +16,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class PaymentProtocolInvoiceRequest :
-			public Wrapper<BRPaymentProtocolInvoiceRequest *> {
+			public Wrapper<BRPaymentProtocolInvoiceRequest> {
 
 		public:
 			PaymentProtocolInvoiceRequest(BRKey senderPublickKey, uint64_t amount, std::string pkiType,

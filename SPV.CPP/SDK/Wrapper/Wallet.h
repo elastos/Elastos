@@ -23,7 +23,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class Wallet :
-				public Wrapper<BRWallet *> {
+				public Wrapper<BRWallet> {
 
 		public:
 			class Listener {

@@ -16,7 +16,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class Key :
-			public Wrapper<BRKey *> {
+			public Wrapper<BRKey> {
 		public:
 			Key();
 

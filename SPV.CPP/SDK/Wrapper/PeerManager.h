@@ -23,7 +23,7 @@ namespace Elastos {
     namespace SDK {
 
         class PeerManager :
-            public Wrapper<BRPeerManager *> {
+            public Wrapper<BRPeerManager> {
         public:
 
             class Listener {

@@ -16,7 +16,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class Address :
-				public Wrapper<BRAddress *> {
+				public Wrapper<BRAddress> {
 		public:
 			Address();
 

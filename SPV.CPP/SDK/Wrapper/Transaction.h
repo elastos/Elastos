@@ -21,7 +21,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class Transaction :
-				public Wrapper<BRTransaction *> {
+				public Wrapper<BRTransaction> {
 		public:
 
 			Transaction();

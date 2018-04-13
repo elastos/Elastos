@@ -43,3 +43,4 @@ test
 .*.swp
 cli-spv
 tags
+*.json

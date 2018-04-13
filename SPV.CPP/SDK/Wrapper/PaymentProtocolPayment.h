@@ -15,8 +15,8 @@ namespace Elastos {
 	namespace SDK {
 
 		class PaymentProtocolPayment :
-		public Wrapper<BRPaymentProtocolPayment *> {
-			
+		public Wrapper<BRPaymentProtocolPayment> {
+
 		public:
 			PaymentProtocolPayment(ByteData data);
 

@@ -16,7 +16,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class TransactionOutput :
-			public Wrapper<BRTxOutput *> {
+			public Wrapper<BRTxOutput> {
 
 		public:
 

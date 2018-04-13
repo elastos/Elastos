@@ -78,6 +78,7 @@ set( CMAKE_INSTALL_PREFIX "${SPV_INSTALL_PREFIX}" CACHE INTERNAL "Prefix jprepen
 option_with_default( SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON )
 option_with_default( SPV_BUILD_TEST_CASES "Build test cases" OFF )
 option_with_default( SPV_BUILD_SAMPLE "Build sample" OFF )
+option_with_default( CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF )
 
 if( SPV_BUILD_SHARED_LIB )
 	set( SPV_LIBRARY_TYPE SHARED )

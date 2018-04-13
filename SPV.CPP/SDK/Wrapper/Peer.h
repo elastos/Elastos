@@ -15,7 +15,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class Peer :
-			public Wrapper<BRPeer *> {
+			public Wrapper<BRPeer> {
 
 		public:
 			enum ConnectStatus {

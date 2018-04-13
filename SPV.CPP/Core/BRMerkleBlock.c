@@ -75,12 +75,13 @@ inline static int _ceil_log2(int x)
 // returns a newly allocated merkle block struct that must be freed by calling BRMerkleBlockFree()
 BRMerkleBlock *BRMerkleBlockNew(void)
 {
-    BRMerkleBlock *block = calloc(1, sizeof(*block));
+	BRMerkleBlock *block = calloc(1, sizeof(*block));
 
-    assert(block != NULL);
-    
-    block->height = BLOCK_UNKNOWN_HEIGHT;
-    return block;
+	assert(block != NULL);
+
+	memset(block, 0, sizeof(*block));
+	block->height = BLOCK_UNKNOWN_HEIGHT;
+	return block;
 }
 
 // returns a deep copy of block and that must be freed by calling BRMerkleBlockFree()

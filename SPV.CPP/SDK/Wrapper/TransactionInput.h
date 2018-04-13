@@ -16,7 +16,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class TransactionInput :
-			public Wrapper<BRTxInput *> {
+			public Wrapper<BRTxInput> {
 
 		public:
 			TransactionInput(BRTxInput *input);

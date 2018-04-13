@@ -114,6 +114,10 @@ namespace Elastos {
 
 		void from_json(const nlohmann::json& j, MerkleBlock& p) {
 			BRMerkleBlock *pblock = p.getRaw();
+			if (pblock == nullptr) {
+				pblock = BRMerkleBlockNew();
+				p = MerkleBlock(pblock);
+			}
 
 			pblock->blockHash  = Utils::UInt256FromString(j["blockHash"].get<std::string>());
 			pblock->version    = j["version"].get<uint32_t>();
@@ -124,17 +128,27 @@ namespace Elastos {
 			pblock->nonce      = j["nonce"].get<uint32_t>();
 			pblock->totalTx    = j["totalTx"].get<uint32_t>();
 
+			if (pblock->hashes != nullptr) {
+				free(pblock->hashes);
+				pblock->hashes = nullptr;
+			}
+
 			std::vector<std::string> hashes = j["hashes"].get<std::vector<std::string>>();
 			pblock->hashesCount = hashes.size();
-			pblock->hashes = (pblock->hashesCount > 0) ? (UInt256 *)malloc(sizeof(UInt256) * pblock->hashesCount) : NULL;
+			pblock->hashes = (pblock->hashesCount > 0) ? (UInt256 *)malloc(sizeof(UInt256) * pblock->hashesCount) : nullptr;
 			for (int i = 0; i < pblock->hashesCount; ++i) {
 				UInt256 hash = Utils::UInt256FromString(hashes[i]);
 				memcpy(&pblock->hashes[i], &hash, sizeof(hash));
 			}
 
+			if (pblock->flags != nullptr) {
+				free(pblock->flags);
+				pblock->flags = nullptr;
+			}
+
 			std::vector<uint8_t> flags = j["flags"].get<std::vector<uint8_t>>();
 			pblock->flagsLen = flags.size();
-			pblock->flags = (pblock->flagsLen > 0) ? (uint8_t *)malloc(pblock->flagsLen) : NULL;
+			pblock->flags = (pblock->flagsLen > 0) ? (uint8_t *)malloc(pblock->flagsLen) : nullptr;
 			for (int i = 0; i < pblock->flagsLen; ++i) {
 				pblock->flags[i] = flags[i];
 			}

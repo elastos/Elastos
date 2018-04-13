@@ -17,7 +17,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class MerkleBlock :
-			public Wrapper<BRMerkleBlock *> {
+			public Wrapper<BRMerkleBlock> {
 
 		public:
 			MerkleBlock(BRMerkleBlock *merkleBlock);

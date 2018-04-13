@@ -14,7 +14,7 @@ namespace Elastos {
     namespace SDK {
 
         class ChainParams :
-            public Wrapper<BRChainParams *>{
+            public Wrapper<BRChainParams>{
         public:
             ChainParams();
 

@@ -14,7 +14,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class PaymentProtocolEncryptedMessage :
-			public Wrapper<BRPaymentProtocolEncryptedMessage *> {
+			public Wrapper<BRPaymentProtocolEncryptedMessage> {
 
 		public:
 			PaymentProtocolEncryptedMessage(ByteData data);
