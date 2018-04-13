@@ -57,11 +57,11 @@ namespace Elastos {
 		ByteData MasterPubKey::bip32BitIDKey(const ByteData &seed, int index, const std::string &uri) {
 			BRKey key;
 			BRBIP32BitIDKey(&key, seed.data, (size_t) seed.length, (uint32_t) index, uri.c_str());
-			size_t dataLen = BRKeyPrivKey(&key, NULL, 0);
+			size_t dataLen = BRKeyPrivKey(&key, nullptr, 0);
 			char rawKey[dataLen];
 			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-			uint8_t *resultKey = new uint8_t(dataLen);
-			memcpy((void *) resultKey, (void *) &rawKey, dataLen);
+			uint8_t *resultKey = new uint8_t[dataLen];
+			memcpy(resultKey, rawKey, dataLen);
 			return ByteData(resultKey, sizeof(rawKey));
 		}
 
