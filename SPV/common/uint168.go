@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"math/big"
-	"crypto/sha256"
 	"encoding/binary"
 
 	"github.com/itchyny/base58-go"
@@ -81,9 +80,8 @@ func (self *Uint168) Deserialize(r io.Reader) error {
 
 func (self *Uint168) ToAddress() (string, error) {
 	data := self.ToArray()
-	temp := sha256.Sum256(data)
-	temps := sha256.Sum256(temp[:])
-	data = append(data, temps[0:4]...)
+	checksum := Sha256D(data)
+	data = append(data, checksum[0:4]...)
 
 	bi := new(big.Int).SetBytes(data).String()
 	encoding := base58.BitcoinEncoding

@@ -5,7 +5,7 @@ import (
 )
 
 /*
-P2P client is the interface to interactive with the peer to peer network implementation,
+P2P client is the interface to interactive with the peer to peer network,
 use this to join the peer to peer network and make communication with other peers.
 */
 type P2PClient interface {

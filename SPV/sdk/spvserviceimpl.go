@@ -20,6 +20,7 @@ const (
 	MaxFalsePositives = 7
 )
 
+// The SPV service implementation
 type SPVServiceImpl struct {
 	sync.Mutex
 	SPVClient

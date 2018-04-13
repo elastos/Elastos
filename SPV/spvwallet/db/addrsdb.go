@@ -64,12 +64,7 @@ func (db *AddrsDB) GetAll() ([]*Addr, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	return db.getAll()
-}
-
-func (db *AddrsDB) getAll() ([]*Addr, error) {
 	var addrs []*Addr
-
 	rows, err := db.Query("SELECT Hash, Script, Type FROM Addrs")
 	if err != nil {
 		return addrs, err

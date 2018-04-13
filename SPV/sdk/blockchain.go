@@ -22,17 +22,33 @@ const (
 )
 
 const (
-	MaxBlockLocatorHashes = 200
+	MaxBlockLocatorHashes = 100
 )
 
 var PowLimit = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1))
 
+/*
+StateListener is an interface to listen blockchain data change.
+Call AddStateListener() method to register your callbacks to the notify list.
+*/
 type StateListener interface {
+	// This method will be callback after a transaction committed
+	// Notice: this method will be called when commit block
 	OnTxCommitted(tx tx.Transaction, height uint32)
+
+	// This method will be callback after a block committed
 	OnBlockCommitted(bloom.MerkleBlock, []tx.Transaction)
+
+	// This method will be callback when blockchain rollback
+	// height is the deleted data height, for example OnChainRollback(100) means
+	// data on height 100 has been deleted, current chain height will be 99.
 	OnChainRollback(height uint32)
 }
 
+/*
+Blockchain is the database of blocks, also when a new transaction or block commit,
+Blockchain will verify them with stored blocks.
+*/
 type Blockchain struct {
 	lock           *sync.RWMutex
 	state          ChainState
@@ -40,6 +56,7 @@ type Blockchain struct {
 	stateListeners []StateListener
 }
 
+// Create a instance of *Blockchain
 func NewBlockchain(dataStore db.DataStore) (*Blockchain, error) {
 	return &Blockchain{
 		lock:      new(sync.RWMutex),
@@ -48,15 +65,18 @@ func NewBlockchain(dataStore db.DataStore) (*Blockchain, error) {
 	}, nil
 }
 
+// Register a blockchain state listener, multiple registration is supported.
 func (bc *Blockchain) AddStateListener(listener StateListener) {
 	bc.stateListeners = append(bc.stateListeners, listener)
 }
 
+// Close the blockchain
 func (bc *Blockchain) Close() {
 	bc.lock.Lock()
 	bc.DataStore.Close()
 }
 
+// Set the current state of blockchain
 func (bc *Blockchain) SetChainState(state ChainState) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
@@ -64,6 +84,7 @@ func (bc *Blockchain) SetChainState(state ChainState) {
 	bc.state = state
 }
 
+// Return a bool value if blockchain is in syncing state
 func (bc *Blockchain) IsSyncing() bool {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
@@ -71,6 +92,7 @@ func (bc *Blockchain) IsSyncing() bool {
 	return bc.state == SYNCING
 }
 
+// Get current blockchain height
 func (bc *Blockchain) Height() uint32 {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
@@ -78,6 +100,7 @@ func (bc *Blockchain) Height() uint32 {
 	return bc.DataStore.GetChainHeight()
 }
 
+// Get current blockchain tip
 func (bc *Blockchain) ChainTip() *db.StoreHeader {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
@@ -93,6 +116,7 @@ func (bc *Blockchain) chainTip() *db.StoreHeader {
 	return tip
 }
 
+// Create a block locator which is a array of block hashes stored in blockchain
 func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()

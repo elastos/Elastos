@@ -12,7 +12,7 @@ import (
 /*
 SPV client will help you create and receive SPV messages,
 and you will implement your own message handler to extend the SDK.
-A SPV wallet implementation is in the spvwallet package,
+As an example, a SPV wallet implementation is in the spvwallet folder,
 you can see how to extend the SDK and create your own apps.
 */
 type SPVClient interface {

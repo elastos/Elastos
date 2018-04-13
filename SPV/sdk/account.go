@@ -8,6 +8,13 @@ import (
 	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
 )
 
+/*
+A ELA standard account is a set of private key, public key, redeem script, program hash and address data.
+redeem script is (script content length)+(script content)+(script type),
+program hash is the sha256 value of redeem script and converted to ripemd160 format with a (Type) prefix.
+address is the base58 format of program hash, which is the string value show up on user interface as account address.
+With account, you can get the transfer address or sign transaction etc.
+*/
 type Account struct {
 	privateKey   []byte
 	publicKey    *crypto.PublicKey
@@ -16,6 +23,7 @@ type Account struct {
 	address      string
 }
 
+// Create an account instance with private key and public key
 func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error) {
 	signatureRedeemScript, err := tx.CreateStandardRedeemScript(publicKey)
 	if err != nil {
@@ -41,32 +49,39 @@ func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error
 	}, nil
 }
 
+// Get account private key
 func (a *Account) PrivateKey() []byte {
 	return a.privateKey
 }
 
+// Get account public key
 func (a *Account) PublicKey() *crypto.PublicKey {
 	return a.publicKey
 }
 
+// Get account redeem script
 func (a *Account) RedeemScript() []byte {
 	return a.redeemScript
 }
 
+// Get account program hash
 func (a *Account) ProgramHash() *Uint168 {
 	return a.programHash
 }
 
+// Get account address
 func (a *Account) Address() string {
 	return a.address
 }
 
+// Sign a transaction with account
 func (a *Account) SignTx(txn *tx.Transaction) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
 	return a.Sign(buf.Bytes())
 }
 
+// Sign data with account
 func (a *Account) Sign(data []byte) ([]byte, error) {
 	signature, err := crypto.Sign(a.privateKey, data)
 	if err != nil {

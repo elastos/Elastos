@@ -1,11 +1,46 @@
 # Elastos SPV
 
 ## Summary
-Elastos SPV is a development SDK of SPV (Simplified Payment Verification) implementation of the Elastos digital currency.
+Elastos SPV is a SDK of SPV (Simplified Payment Verification) implementation of the Elastos digital currency.
 The Elastos SPV SDK is a set of encryption algorithm, peer to peer network and SPV related implementation like bloom filter, merkleblock and util methods.
-As an example, this project include a spv wallet implementation and some interfaces implementation, located in `spvwallet` and `interface` package.
-These examples will help you understand how to use this SDK and build your own apps.
-The flowing instructions will help you build up the `spvwallet` project and play with it.
+As an example, this project include a spv wallet implementation located in `spvwallet` folder, it will help you understand how to use this SDK and build your own apps.
+The flowing instructions will help you get into the SDK and build up the `spvwallet` sample APP and play with it.
+
+## SDK (Software Development Kit)
+
+1. Account (sdk/account.go)
+A ELA standard account is a set of private key, public key, redeem script, program hash and address data.
+redeem script is (script content length)+(script content)+(script type),
+program hash is the sha256 value of redeem script and converted to ripemd160 format with a (Type) prefix.
+address is the base58 format of program hash, which is the string value show up on user interface as account address.
+With account, you can get the transfer address or sign transaction etc.
+
+2. AddrFilter (sdk/addrfilter.go)
+This is a helper class to filter interested addresses when synchronize transactions
+or get cached addresses list to build a bloom filter instead of load addresses from database every time.
+
+3. Blockchain (sdk/blockchain.go)
+Blockchain is the database of blocks, also when a new transaction or block commit, Blockchain will verify them with stored blocks.
+
+4. BloomFilter (sdk/bloom.go)
+[Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter) is a probabilistic data structure which allows for testing set membership - they can have false positives but not false negatives.
+Before synchronize blocks, a `FilterLoad` message need to be sent to the sync peer to filter which transactions should be included in the `merkleblock` message.
+
+5. Crypto (sdk/crypto.go)
+This file is the sample code of creating private key, public key and account with ECDSA algorithm.
+
+6. P2P client (sdk/p2pclient.go)
+P2P client is a low level interface to interactive with the peer to peer network, you need to creating and responding messages all by yourself except handshake.
+
+7. SPV client (sdk/spvclient.go)
+SPV client is a full interface of all SPV messages in the peer to peer network, it will help you create and receive SPV messages and keep heartbeat with the connected peers.
+
+8. SPV service (sdk/spvservice.go)
+SPV service is a high level implementation with all SPV logic implemented.
+SPV service is extend from SPV client and implement Blockchain and block synchronize on it.
+With SPV service, you just need to implement your own DataStore and GetBloomFilter() method, and let other stuff go.
+
+## Build and Run `spvwallet` sample APP
 
 ## Build on Mac
 
@@ -63,13 +98,13 @@ glide version 0.13.1
 ```
 If you cannot see the version number, there must be something wrong when install.
 
-### Clone source code to $GOPATH/src folder
+### Clone source code to `$GOPATH/src/github.com/elastos/` folder
 Make sure you are in the folder of `$GOPATH/src/github.com/elastos/`
 ```shell
 $ git clone https://github.com/elastos/Elastos.ELA.SPV.git
 ```
 
-If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.github.com/elastos/Elastos.ELA.SPV/makefile
+If clone works successfully, you should see folder structure like $GOPATH/src/github.com/elastos/Elastos.ELA.SPV/makefile
 
 ### Glide install
 
@@ -78,8 +113,8 @@ Run `glide update && glide install` to download project dependencies.
 ### Install bolt and sqlite database
 This will make the `make` progress far more fester.
 ```shell
-go install github.com/elastos/Elastos.ELA.SPV/vendor/github.com/boltdb/bolt
-go install github.com/elastos/Elastos.ELA.SPV/vendor/github.com/mattn/go-sqlite3
+$ go install github.com/elastos/Elastos.ELA.SPV/vendor/github.com/boltdb/bolt
+$ go install github.com/elastos/Elastos.ELA.SPV/vendor/github.com/mattn/go-sqlite3
 ```
 
 ### Make
@@ -109,6 +144,7 @@ A file named `config.json` should be placed in the same folder with `service` wi
 ### Create your wallet
 Run `./ela-wallet create` and enter password on the command line tool to create your wallet and master account.
 ```shell
+$ ./ela-wallet create
 INPUT PASSWORD:
 CONFIRM PASSWORD:
 INDEX                            ADDRESS                                                         PUBLIC KEY   TYPE
@@ -120,6 +156,7 @@ INDEX                            ADDRESS                                        
 ### Start SPV service
 Run `./service` to start the SPV service
 ```shell
+$ ./service
 2018/03/26 23:20:50.995624 [INFO]  PeerManager start
 2018/03/26 23:20:50.995804 [INFO]  SPV service started...
 2018/03/26 23:20:50.995813 [DEBUG] RPC server started...
@@ -129,6 +166,7 @@ Run `./service` to start the SPV service
 ### See account balance
 Run `./ela-wallet account -b` to show your account balance.
 ```shell
+$ ./ela-wallet account -b
 INDEX                            ADDRESS BALANCE                           (LOCKED)   TYPE
 ----- ---------------------------------- ------------------------------------------ ------
     1 ERpTjzeVnyuCyddRLPK2ednuSK3rdNKjHP 0                             (0.29299850) MASTER
@@ -139,7 +177,8 @@ INDEX                            ADDRESS BALANCE                           (LOCK
 
 ### Help menu
 To see `help` menu, just run `./ela-wallet` or `./ela-wallet -h`
-```
+```shell
+$ ./ela-wallet
 NAME:
    ELASTOS SPV WALLET - command line user interface
 
@@ -163,7 +202,8 @@ GLOBAL OPTIONS:
 ```
 
 See sub commands help by input sub command name like `./ela-wallet account`
-```
+```shell
+$ ./ela-wallet account
 NAME:
    ELASTOS SPV WALLET HELP account - account [command] [args]
 
@@ -184,8 +224,9 @@ OPTIONS:
    --balance, -b                       show accounts balances
 ```
 
-## Develop
-##### This project can be used as a reference to build your own apps, it provides several interfaces for developers.
+## Extra
+
+Sample interface implementations are in `/interface` folder.
 
 ### keystore
 - Keystore is a file based storage to save the account information, including `Password` `MasterKey` `PrivateKey` etc. in AES encrypted format. Keystore interface is a help to create a keystore file storage and master the accounts within it. The interface methods are listed below.
@@ -227,7 +268,7 @@ type Account interface {
 
 ```
 /*
-P2P client is the interface to interactive with the peer to peer network implementation,
+P2P client is the interface to interactive with the peer to peer network,
 use this to join the peer to peer network and make communication with other peers.
 */
 type P2PClient interface {
@@ -252,7 +293,7 @@ type P2PClient interface {
 ```
 
 ### SPV service
-- SPV service is the interface to interactive with the SPV (Simplified Payment Verification) service implementation running background, you can register specific accounts that you are interested in and receive transaction notifications of these accounts.
+- SPV service is the interface to interactive with the SPV (Simplified Payment Verification) service implementation running background, you can register specific accounts that you are interested and receive transaction notifications of these accounts.
 
 ```
 /*
@@ -264,25 +305,41 @@ type SPVService interface {
 	// Register the account address that you are interested in
 	RegisterAccount(address string) error
 
-	// Register the callback method to receive transaction notifications
-	// when a transaction related with the registered accounts is confirmed
-	// The merkle tree proof and the transaction will be callback
-	OnTransactionConfirmed(func(db.Proof, tx.Transaction))
+	// Register the TransactionListener to receive transaction notifications
+	// when a transaction related with the registered accounts is received
+	RegisterTransactionListener(TransactionListener)
 
 	// After receive the transaction callback, call this method
 	// to confirm that the transaction with the given ID was handled
 	// so the transaction will be removed from the notify queue
-	SubmitTransactionReceipt(txId core.Uint256) error
+	SubmitTransactionReceipt(txId Uint256) error
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(db.Proof, tx.Transaction) error
+	VerifyTransaction(Proof, tx.Transaction) error
 
 	// Send a transaction to the P2P network
 	SendTransaction(tx.Transaction) error
 
 	// Start the SPV service
 	Start() error
+}
+
+/*
+Register this listener into the SPVService RegisterTransactionListener() method
+to receive transaction notifications.
+*/
+type TransactionListener interface {
+	// Type() indicates which transaction type this listener are interested
+	Type() tx.TransactionType
+
+	// Confirmed() indicates if this transaction should be callback after reach the confirmed height,
+	// by default 6 confirmations are needed according to the protocol
+	Confirmed() bool
+
+	// Notify() is the method to callback the received transaction
+	// with the merkle tree proof to verify it
+	Notify(Proof, tx.Transaction)
 }
 ```
 

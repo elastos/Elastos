@@ -6,14 +6,17 @@ import (
 	. "github.com/elastos/Elastos.ELA.SPV/common"
 )
 
-// This is a utils class to help filter interest addresses
+/*
+This is a helper class to filter interested addresses when synchronize transactions
+or get cached addresses list to build a bloom filter instead of load addresses from database every time.
+*/
 type AddrFilter struct {
 	sync.Mutex
 	addrs map[Uint168]*Uint168
 }
 
-// Create a AddrFilter instance, you can pass all the addresses this method
-// or pass nil and user AddAddr() method to add interested addresses later.
+// Create a AddrFilter instance, you can pass all the addresses through this method
+// or pass nil and use AddAddr() method to add interested addresses later.
 func NewAddrFilter(addrs []*Uint168) *AddrFilter {
 	filter := new(AddrFilter)
 	filter.LoadAddrs(addrs)

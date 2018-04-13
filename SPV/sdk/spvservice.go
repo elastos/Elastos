@@ -18,7 +18,8 @@ type SPVService interface {
 	// Stop SPV service
 	Stop()
 
-	// Get the Blockchain instance. Blockchain will handle block and transaction commits,
+	// Get the Blockchain instance.
+	// Blockchain will handle block and transaction commits,
 	// verify and store the block and transactions.
 	// If you want to add extra logic when new block or transaction comes,
 	// use Blockchain.AddStateListener() to register chain state callbacks
