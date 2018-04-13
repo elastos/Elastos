@@ -1,17 +1,16 @@
 package servers
 
 import (
-	"ELA/core/auxpow"
 	"bytes"
 	"fmt"
 	"time"
-
 	"strconv"
 
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/ledger"
+	"Elastos.ELA/core/auxpow"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"
 	. "Elastos.ELA/errors"
