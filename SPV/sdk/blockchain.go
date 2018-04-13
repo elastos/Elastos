@@ -40,11 +40,11 @@ type Blockchain struct {
 	stateListeners []StateListener
 }
 
-func NewBlockchain(db db.DataStore) (*Blockchain, error) {
+func NewBlockchain(dataStore db.DataStore) (*Blockchain, error) {
 	return &Blockchain{
 		lock:      new(sync.RWMutex),
 		state:     WAITING,
-		DataStore: db,
+		DataStore: dataStore,
 	}, nil
 }
 

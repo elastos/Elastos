@@ -14,19 +14,8 @@ import (
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
+	var err error
 	wallet := new(SPVWallet)
-
-	// Initialize P2P network client
-	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, seeds)
-	if err != nil {
-		return nil, err
-	}
-
-	// Initialize spv service
-	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet.getBloomFilter)
-	if err != nil {
-		return nil, err
-	}
 
 	// Initialize headers db
 	wallet.headers, err = db.NewHeadersDB()
@@ -36,6 +25,18 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 
 	// Initialize wallet database
 	wallet.dataStore, err = db.NewSQLiteDB()
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize P2P network client
+	client, err := sdk.GetSPVClient(sdk.TypeMainNet, clientId, seeds)
+	if err != nil {
+		return nil, err
+	}
+
+	// Initialize spv service
+	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet.getBloomFilter)
 	if err != nil {
 		return nil, err
 	}

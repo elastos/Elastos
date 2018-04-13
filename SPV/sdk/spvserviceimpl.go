@@ -29,6 +29,7 @@ type SPVServiceImpl struct {
 	fPositives int
 }
 
+// Create a instance of SPV service implementation.
 func NewSPVServiceImpl(client SPVClient, database db.DataStore, getBloomFilter func() *bloom.Filter) (*SPVServiceImpl, error) {
 	var err error
 	service := new(SPVServiceImpl)
@@ -39,6 +40,9 @@ func NewSPVServiceImpl(client SPVClient, database db.DataStore, getBloomFilter f
 	if err != nil {
 		return nil, err
 	}
+	// Initialize local peer height
+	service.updateLocalHeight()
+
 	// Set p2p message handler
 	service.SPVClient.SetMessageHandler(service)
 
@@ -326,6 +330,7 @@ func (service *SPVServiceImpl) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) err
 	return nil
 }
 
+// Update local peer height with current chain height
 func (service *SPVServiceImpl) updateLocalHeight() {
 	service.PeerManager().Local().SetHeight(uint64(service.chain.Height()))
 }
