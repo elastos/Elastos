@@ -23,7 +23,7 @@ namespace Elastos {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 		}
 
-		Key::Key(std::string privKey) {
+		Key::Key(const std::string &privKey) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			assert(!privKey.empty());
 			if (setPrivKey(privKey)) {
@@ -31,7 +31,7 @@ namespace Elastos {
 			}
 		}
 
-		Key::Key(ByteData privKey) {
+		Key::Key(const ByteData &privKey) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			char data[privKey.length + 1];
 			memcpy((void *) data, (void *) privKey.data, sizeof(uint8_t) * privKey.length);
@@ -40,14 +40,14 @@ namespace Elastos {
 			}
 		}
 
-		Key::Key(UInt256 secret, bool compressed) {
+		Key::Key(const UInt256 &secret, bool compressed) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			if (!setSecret(secret, compressed)) {
 				Log::error("Failed to set Sercret");
 			}
 		}
 
-		Key::Key(ByteData seed, uint32_t chain, uint32_t index) {
+		Key::Key(const ByteData &seed, uint32_t chain, uint32_t index) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			BRBIP32PrivKey(_key.get(), seed.data, seed.length, chain, index);
 		}
@@ -81,14 +81,14 @@ namespace Elastos {
 			return privKey;
 		}
 
-		ByteData Key::getSeedFromPhrase(ByteData phrase) {
+		ByteData Key::getSeedFromPhrase(const ByteData &phrase) {
 			UInt512 *key = new UInt512;
 			char *charPhrase = (char *) phrase.data;
 			BRBIP39DeriveKey(key->u8, charPhrase, nullptr);
 			return ByteData(key->u8, sizeof(UInt512));
 		}
 
-		ByteData Key::getAuthPrivKeyForAPI(ByteData seed) {
+		ByteData Key::getAuthPrivKeyForAPI(const ByteData &seed) {
 			BRKey *key = new BRKey;
 			BRBIP32APIAuthKey(key, (void *) &seed, seed.length);
 			char rawKey[BRKeyPrivKey(key, nullptr, 0)];
@@ -96,7 +96,7 @@ namespace Elastos {
 			return ByteData((uint8_t *) &rawKey, sizeof(rawKey));
 		}
 
-		std::string Key::getAuthPublicKeyForAPI(ByteData privKey) {
+		std::string Key::getAuthPublicKeyForAPI(const ByteData &privKey) {
 			BRKey key;
 			BRKeySetPrivKey(&key, (const char *) privKey.data);
 			size_t len = BRKeyPubKey(&key, nullptr, 0);
@@ -109,7 +109,7 @@ namespace Elastos {
 			return base58string;
 		}
 
-		std::string Key::decryptBip38Key(std::string privKey, std::string pass) {
+		std::string Key::decryptBip38Key(const std::string &privKey, const std::string &pass) {
 			BRKey key;
 			int result = BRKeySetBIP38Key(&key, privKey.c_str(), pass.c_str());
 
@@ -123,15 +123,15 @@ namespace Elastos {
 			}
 		}
 
-		bool Key::setPrivKey(std::string privKey) {
+		bool Key::setPrivKey(const std::string &privKey) {
 			return BRKeySetPrivKey(_key.get(), privKey.c_str()) != 0;
 		}
 
-		bool Key::setSecret(UInt256 secret, bool compressed) {
+		bool Key::setSecret(const UInt256 &secret, bool compressed) {
 			return BRKeySetSecret(_key.get(), (const UInt256 *) &secret, compressed) != 0;
 		}
 
-		ByteData Key::compactSign(ByteData data) const {
+		ByteData Key::compactSign(const ByteData &data) const {
 			UInt256 md32;
 			UInt256Get(&md32, data.data);
 			size_t sigLen = BRKeyCompactSign(_key.get(), nullptr, 0, md32);
@@ -140,14 +140,14 @@ namespace Elastos {
 			return ByteData(compactSig, sigLen);
 		}
 
-		ByteData Key::encryptNative(ByteData data, ByteData nonce) const {
+		ByteData Key::encryptNative(const ByteData &data, const ByteData &nonce) const {
 			uint8_t *out = new uint8_t[16 + data.length];
 			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.length, _key.get(), nonce.data,
 														   data.data, data.length, nullptr, 0);
 			return ByteData(out, outSize);
 		}
 
-		ByteData Key::decryptNative(ByteData data, ByteData nonce) const {
+		ByteData Key::decryptNative(const ByteData &data, const ByteData &nonce) const {
 			uint8_t *out = new uint8_t[data.length];
 			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.length, _key.get(), nonce.data,
 														   data.data, data.length, nullptr, 0);
@@ -163,38 +163,38 @@ namespace Elastos {
 			return address.s;
 		}
 
-		ByteData Key::sign(UInt256 messageDigest) const {
+		ByteData Key::sign(const UInt256 &messageDigest) const {
 			uint8_t *signature = new uint8_t[256];
 			size_t signatureLen = BRKeySign(_key.get(), signature, 256, messageDigest);
 			assert (signatureLen <= 256);
 			return ByteData(signature, signatureLen);
 		}
 
-		bool Key::verify(UInt256 messageDigest, ByteData signature) const {
+		bool Key::verify(const UInt256 &messageDigest, const ByteData &signature) const {
 			return BRKeyVerify(_key.get(), messageDigest, signature.data, signature.length) == 1;
 		}
 
-		bool Key::isValidBitcoinPrivateKey(std::string key) {
+		bool Key::isValidBitcoinPrivateKey(const std::string &key) {
 			return BRPrivKeyIsValid(key.c_str()) == 1;
 		}
 
-		bool Key::isValidBitcoinBIP38Key(std::string key) {
+		bool Key::isValidBitcoinBIP38Key(const std::string &key) {
 			return BRBIP38KeyIsValid(key.c_str()) == 1;
 		}
 
-		std::string Key::encodeHex(ByteData in) {
+		std::string Key::encodeHex(const ByteData &in) {
 			char *dataHex = Utils::encodeHexCreate(nullptr, in.data, in.length);
 			return dataHex;
 		}
 
-		ByteData Key::decodeHex(std::string s) {
+		ByteData Key::decodeHex(const std::string &s) {
 			size_t dataLen = 0;
 			char *str = const_cast<char *>(s.c_str());
 			uint8_t *data = Utils::decodeHexCreate(&dataLen, str, strlen(str));
 			return ByteData(data, dataLen);
 		}
 
-		UInt256 Key::encodeSHA256(std::string message) {
+		UInt256 Key::encodeSHA256(const std::string &message) {
 			UInt256 md;
 			BRSHA256((void *) &md, (void *) &message, strlen(message.c_str()));
 			return md;

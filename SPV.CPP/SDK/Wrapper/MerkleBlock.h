@@ -22,7 +22,7 @@ namespace Elastos {
 		public:
 			MerkleBlock(BRMerkleBlock *merkleBlock);
 
-			MerkleBlock(ByteData block, int blockHeight);
+			MerkleBlock(const ByteData &block, int blockHeight);
 
 			~MerkleBlock();
 
@@ -64,9 +64,9 @@ namespace Elastos {
 		//support for json converting
 		//read "Arbitrary types conversions" section in readme of
 		//	https://github.com/nlohmann/json for more details
-		void to_json(nlohmann::json& j, const MerkleBlock& p);
+		void to_json(nlohmann::json &j, const MerkleBlock &p);
 
-		void from_json(const nlohmann::json& j, MerkleBlock& p);
+		void from_json(const nlohmann::json &j, MerkleBlock &p);
 
 	}
 }

@@ -15,41 +15,41 @@
 #include "ByteData.h"
 
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        class MasterPubKey :
-            public Wrapper<BRMasterPubKey> {
-        public:
+		class MasterPubKey :
+			public Wrapper<BRMasterPubKey> {
+		public:
 
-            MasterPubKey();
+			MasterPubKey();
 
-            MasterPubKey(const std::string& phrase);
+			MasterPubKey(const std::string &phrase);
 
-            virtual std::string toString() const;
+			virtual std::string toString() const;
 
-            virtual BRMasterPubKey *getRaw() const;
+			virtual BRMasterPubKey *getRaw() const;
 
-            ByteData serialize() const;
+			ByteData serialize() const;
 
-            void deserialize(const ByteData &data);
+			void deserialize(const ByteData &data);
 
-            ByteData getPubKey() const;
+			ByteData getPubKey() const;
 
-            boost::shared_ptr<BRKey> getPubKeyAsKey() const;
+			boost::shared_ptr<BRKey> getPubKeyAsKey() const;
 
-            static ByteData bip32BitIDKey(ByteData seed, int index, std::string uri);
+			static ByteData bip32BitIDKey(const ByteData &seed, int index, const std::string &uri);
 
-            static bool validateRecoveryPhrase(std::vector<std::string> words, std::string phrase);
+			static bool validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase);
 
-            static ByteData generatePaperKey (ByteData seed, std::vector<std::string> words);
+			static ByteData generatePaperKey(const ByteData &seed, const std::vector<std::string> &words);
 
-        private:
-            boost::shared_ptr<BRMasterPubKey> _masterPubKey;
-        };
+		private:
+			boost::shared_ptr<BRMasterPubKey> _masterPubKey;
+		};
 
-        typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
+		typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
 
-    }
+	}
 }
 
 #endif //__ELASTOS_SDK_MASTERPUBKEY_H__

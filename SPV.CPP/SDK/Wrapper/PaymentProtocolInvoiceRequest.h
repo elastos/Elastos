@@ -19,9 +19,10 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolInvoiceRequest> {
 
 		public:
-			PaymentProtocolInvoiceRequest(BRKey senderPublickKey, uint64_t amount, std::string pkiType,
-										  ByteData pkiData, std::string memo, std::string notifyURL,
-										  ByteData signature);
+			PaymentProtocolInvoiceRequest(BRKey senderPublickKey, uint64_t amount, const std::string &pkiType,
+										  const ByteData &pkiData, const std::string &memo,
+										  const std::string &notifyURL,
+										  const ByteData &signature);
 
 			~PaymentProtocolInvoiceRequest();
 

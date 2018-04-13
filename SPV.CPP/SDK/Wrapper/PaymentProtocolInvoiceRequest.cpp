@@ -8,14 +8,16 @@ namespace Elastos {
 	namespace SDK {
 
 		PaymentProtocolInvoiceRequest::PaymentProtocolInvoiceRequest(BRKey senderPublickKey, uint64_t amount,
-																	 std::string pkiType, ByteData pkiData,
-																	 std::string memo, std::string notifyURL,
-																	 ByteData signature) {
+																	 const std::string &pkiType,
+																	 const ByteData &pkiData,
+																	 const std::string &memo,
+																	 const std::string &notifyURL,
+																	 const ByteData &signature) {
 			_protocolInvoiceRequest = BRPaymentProtocolInvoiceRequestNew(&senderPublickKey, amount,
-																				pkiType.c_str(), pkiData.data,
-																				pkiData.length, memo.c_str(),
-																				notifyURL.c_str(), signature.data,
-																				signature.length);
+																		 pkiType.c_str(), pkiData.data,
+																		 pkiData.length, memo.c_str(),
+																		 notifyURL.c_str(), signature.data,
+																		 signature.length);
 		}
 
 		PaymentProtocolInvoiceRequest::~PaymentProtocolInvoiceRequest() {

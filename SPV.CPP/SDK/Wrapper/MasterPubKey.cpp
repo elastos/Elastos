@@ -18,7 +18,7 @@ namespace Elastos {
 
 		MasterPubKey::MasterPubKey(const std::string &phrase) {
 			UInt512 seed = UINT512_ZERO;
-			BRBIP39DeriveKey(seed.u8, phrase.c_str(), NULL);
+			BRBIP39DeriveKey(seed.u8, phrase.c_str(), nullptr);
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 			*_masterPubKey = BRBIP32MasterPubKey(&seed, sizeof(seed));
 		}
@@ -38,9 +38,8 @@ namespace Elastos {
 
 		void MasterPubKey::deserialize(const ByteData &data) {
 			assert (data.length == sizeof(BRMasterPubKey));
-
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
-			memcpy(_masterPubKey.get(), data.data, sizeof(BRMasterPubKey));
+			memcpy(_masterPubKey.get(), data.data, data.length);
 		}
 
 		ByteData MasterPubKey::getPubKey() const {
@@ -55,7 +54,7 @@ namespace Elastos {
 			return boost::shared_ptr<BRKey>(key);
 		}
 
-		ByteData MasterPubKey::bip32BitIDKey(ByteData seed, int index, std::string uri) {
+		ByteData MasterPubKey::bip32BitIDKey(const ByteData &seed, int index, const std::string &uri) {
 			BRKey key;
 			BRBIP32BitIDKey(&key, seed.data, (size_t) seed.length, (uint32_t) index, uri.c_str());
 			size_t dataLen = BRKeyPrivKey(&key, NULL, 0);
@@ -66,7 +65,7 @@ namespace Elastos {
 			return ByteData(resultKey, sizeof(rawKey));
 		}
 
-		bool MasterPubKey::validateRecoveryPhrase(std::vector<std::string> words, std::string phrase) {
+		bool MasterPubKey::validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase) {
 			char *wordList[words.size()];
 			for (int i = 0; i < words.size(); i++) {
 				wordList[i] = const_cast<char *>(words[i].c_str());
@@ -74,7 +73,7 @@ namespace Elastos {
 			return BRBIP39PhraseIsValid((const char **) wordList, phrase.c_str()) != 0;
 		}
 
-		ByteData MasterPubKey::generatePaperKey(ByteData seed, std::vector<std::string> words) {
+		ByteData MasterPubKey::generatePaperKey(const ByteData &seed, const std::vector<std::string> &words) {
 			assert(seed.length == 16);
 			assert(words.size() == 2048);
 			char *wordList[words.size()];
@@ -87,8 +86,8 @@ namespace Elastos {
 			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList,
 								 (const uint8_t *) seed.data, (size_t) seed.length);
 
-			uint8_t * data = new uint8_t[size - 1];
-			memcpy(data, &result, size -1);
+			uint8_t *data = new uint8_t[size - 1];
+			memcpy(data, &result, size - 1);
 
 			return ByteData(data, size - 1);
 		}

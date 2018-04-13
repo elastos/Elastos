@@ -7,12 +7,12 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolMessage::PaymentProtocolMessage(BRPaymentProtocolMessageType type, ByteData message,
-													   uint64_t statusCode, std::string statusMsg,
-													   ByteData identifier) {
+		PaymentProtocolMessage::PaymentProtocolMessage(BRPaymentProtocolMessageType type, const ByteData &message,
+													   uint64_t statusCode, const std::string &statusMsg,
+													   const ByteData &identifier) {
 			_protocolMessage = BRPaymentProtocolMessageNew(type, message.data, message.length, statusCode,
-																  statusMsg.c_str(), identifier.data,
-																  identifier.length);
+														   statusMsg.c_str(), identifier.data,
+														   identifier.length);
 		}
 
 		std::string PaymentProtocolMessage::toString() const {

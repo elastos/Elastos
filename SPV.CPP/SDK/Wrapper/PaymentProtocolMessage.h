@@ -17,8 +17,8 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolMessage> {
 
 		public:
-			PaymentProtocolMessage(BRPaymentProtocolMessageType type, ByteData message, uint64_t statusCode,
-								   std::string statusMsg, ByteData identifier);
+			PaymentProtocolMessage(BRPaymentProtocolMessageType type, const ByteData &message, uint64_t statusCode,
+								   const std::string &statusMsg, const ByteData &identifier);
 
 			~PaymentProtocolMessage();
 

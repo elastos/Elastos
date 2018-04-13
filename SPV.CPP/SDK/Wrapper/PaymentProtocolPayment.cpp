@@ -9,7 +9,7 @@ namespace Elastos {
 	namespace SDK {
 
 
-		PaymentProtocolPayment::PaymentProtocolPayment(ByteData data) {
+		PaymentProtocolPayment::PaymentProtocolPayment(const ByteData &data) {
 			_protocolPayment = BRPaymentProtocolPaymentParse(data.data, data.length);
 		}
 

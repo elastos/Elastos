@@ -20,13 +20,13 @@ namespace Elastos {
 		public:
 			Key();
 
-			Key(std::string privKey);
+			Key(const std::string &privKey);
 
-			Key(ByteData privKey);
+			Key(const ByteData &privKey);
 
-			Key(UInt256 secret, bool compressed);
+			Key(const UInt256 &secret, bool compressed);
 
-			Key(ByteData seed, uint32_t chain, uint32_t index);
+			Key(const ByteData &seed, uint32_t chain, uint32_t index);
 
 			virtual std::string toString() const;
 
@@ -40,41 +40,41 @@ namespace Elastos {
 
 			std::string getPrivKey() const;
 
-			bool setPrivKey(std::string privKey);
+			bool setPrivKey(const std::string &privKey);
 
-			ByteData compactSign(ByteData data) const;
+			ByteData compactSign(const ByteData &data) const;
 
-			ByteData encryptNative(ByteData data, ByteData nonce) const;
+			ByteData encryptNative(const ByteData &data, const ByteData &nonce) const;
 
-			ByteData decryptNative(ByteData data, ByteData nonce) const;
+			ByteData decryptNative(const ByteData &data, const ByteData &nonce) const;
 
 			std::string address() const;
 
-			ByteData sign(UInt256 messageDigest) const;
+			ByteData sign(const UInt256 &messageDigest) const;
 
-			bool verify(UInt256 messageDigest, ByteData signature) const;
+			bool verify(const UInt256 &messageDigest, const ByteData &signature) const;
 
 		public:
-			static ByteData getSeedFromPhrase(ByteData phrase);
+			static ByteData getSeedFromPhrase(const ByteData &phrase);
 
-			static ByteData getAuthPrivKeyForAPI(ByteData seed);
+			static ByteData getAuthPrivKeyForAPI(const ByteData &seed);
 
-			static std::string getAuthPublicKeyForAPI(ByteData privKey);
+			static std::string getAuthPublicKeyForAPI(const ByteData &privKey);
 
-			static std::string decryptBip38Key(std::string privKey, std::string pass);
+			static std::string decryptBip38Key(const std::string &privKey, const std::string &pass);
 
-			static bool isValidBitcoinPrivateKey(std::string key);
+			static bool isValidBitcoinPrivateKey(const std::string &key);
 
-			static bool isValidBitcoinBIP38Key(std::string key);
+			static bool isValidBitcoinBIP38Key(const std::string &key);
 
-			static std::string encodeHex(ByteData in);
+			static std::string encodeHex(const ByteData &in);
 
-			static ByteData decodeHex(std::string s);
+			static ByteData decodeHex(const std::string &s);
 
-			static UInt256 encodeSHA256(std::string message);
+			static UInt256 encodeSHA256(const std::string &message);
 
 		private:
-			bool setSecret(UInt256 data, bool compressed);
+			bool setSecret(const UInt256 &data, bool compressed);
 
 		private:
 			boost::shared_ptr<BRKey> _key;

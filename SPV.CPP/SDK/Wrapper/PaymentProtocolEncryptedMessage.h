@@ -17,7 +17,7 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolEncryptedMessage> {
 
 		public:
-			PaymentProtocolEncryptedMessage(ByteData data);
+			PaymentProtocolEncryptedMessage(const ByteData &data);
 
 			~PaymentProtocolEncryptedMessage();
 

@@ -19,7 +19,7 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolRequest> {
 
 		public:
-			PaymentProtocolRequest(ByteData data);
+			PaymentProtocolRequest(const ByteData &data);
 
 			~PaymentProtocolRequest();
 

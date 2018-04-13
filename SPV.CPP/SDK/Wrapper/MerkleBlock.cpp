@@ -14,7 +14,7 @@ namespace Elastos {
 			_merkleBlock(merkleBlock) {
 		}
 
-		MerkleBlock::MerkleBlock(ByteData block, int blockHeight) {
+		MerkleBlock::MerkleBlock(const ByteData &block, int blockHeight) {
 			_merkleBlock = BRMerkleBlockParse((const uint8_t *) block.data, block.length);
 			if (_merkleBlock != nullptr && blockHeight != -1) {
 				_merkleBlock->height = (uint32_t) blockHeight;
@@ -73,7 +73,7 @@ namespace Elastos {
 
 		ByteData MerkleBlock::serialize() const {
 			size_t len = BRMerkleBlockSerialize(_merkleBlock, nullptr, 0);
-			uint8_t* data = new uint8_t[len];
+			uint8_t *data = new uint8_t[len];
 			BRMerkleBlockSerialize(_merkleBlock, data, len);
 			return ByteData(data, len);
 		}
@@ -86,7 +86,7 @@ namespace Elastos {
 			return BRMerkleBlockContainsTxHash(_merkleBlock, hash) != 0;
 		}
 
-		void to_json(nlohmann::json& j, const MerkleBlock& p) {
+		void to_json(nlohmann::json &j, const MerkleBlock &p) {
 			BRMerkleBlock *pblock = p.getRaw();
 
 			std::vector<std::string> hashes;
@@ -99,34 +99,34 @@ namespace Elastos {
 				flags.push_back(pblock->flags[i]);
 			}
 
-			j["blockHash"]  = Utils::UInt256ToString(pblock->blockHash);
-			j["version"]    = pblock->version;
-			j["prevBlock"]  = Utils::UInt256ToString(pblock->prevBlock);
+			j["blockHash"] = Utils::UInt256ToString(pblock->blockHash);
+			j["version"] = pblock->version;
+			j["prevBlock"] = Utils::UInt256ToString(pblock->prevBlock);
 			j["merkleRoot"] = Utils::UInt256ToString(pblock->merkleRoot);
-			j["timestamp"]  = pblock->timestamp;
-			j["target"]     = pblock->target;
-			j["nonce"]      = pblock->nonce;
-			j["totalTx"]    = pblock->totalTx;
-			j["hashes"]     = hashes;
-			j["flags"]      = flags;
-			j["height"]     = pblock->height;
+			j["timestamp"] = pblock->timestamp;
+			j["target"] = pblock->target;
+			j["nonce"] = pblock->nonce;
+			j["totalTx"] = pblock->totalTx;
+			j["hashes"] = hashes;
+			j["flags"] = flags;
+			j["height"] = pblock->height;
 		}
 
-		void from_json(const nlohmann::json& j, MerkleBlock& p) {
+		void from_json(const nlohmann::json &j, MerkleBlock &p) {
 			BRMerkleBlock *pblock = p.getRaw();
 			if (pblock == nullptr) {
 				pblock = BRMerkleBlockNew();
 				p = MerkleBlock(pblock);
 			}
 
-			pblock->blockHash  = Utils::UInt256FromString(j["blockHash"].get<std::string>());
-			pblock->version    = j["version"].get<uint32_t>();
-			pblock->prevBlock  = Utils::UInt256FromString(j["prevBlock"].get<std::string>());
+			pblock->blockHash = Utils::UInt256FromString(j["blockHash"].get<std::string>());
+			pblock->version = j["version"].get<uint32_t>();
+			pblock->prevBlock = Utils::UInt256FromString(j["prevBlock"].get<std::string>());
 			pblock->merkleRoot = Utils::UInt256FromString(j["merkleRoot"].get<std::string>());
-			pblock->timestamp  = j["timestamp"].get<uint32_t>();
-			pblock->target     = j["target"].get<uint32_t>();
-			pblock->nonce      = j["nonce"].get<uint32_t>();
-			pblock->totalTx    = j["totalTx"].get<uint32_t>();
+			pblock->timestamp = j["timestamp"].get<uint32_t>();
+			pblock->target = j["target"].get<uint32_t>();
+			pblock->nonce = j["nonce"].get<uint32_t>();
+			pblock->totalTx = j["totalTx"].get<uint32_t>();
 
 			if (pblock->hashes != nullptr) {
 				free(pblock->hashes);
@@ -135,7 +135,8 @@ namespace Elastos {
 
 			std::vector<std::string> hashes = j["hashes"].get<std::vector<std::string>>();
 			pblock->hashesCount = hashes.size();
-			pblock->hashes = (pblock->hashesCount > 0) ? (UInt256 *)malloc(sizeof(UInt256) * pblock->hashesCount) : nullptr;
+			pblock->hashes = (pblock->hashesCount > 0) ? (UInt256 *) malloc(sizeof(UInt256) * pblock->hashesCount)
+													   : nullptr;
 			for (int i = 0; i < pblock->hashesCount; ++i) {
 				UInt256 hash = Utils::UInt256FromString(hashes[i]);
 				memcpy(&pblock->hashes[i], &hash, sizeof(hash));
@@ -148,7 +149,7 @@ namespace Elastos {
 
 			std::vector<uint8_t> flags = j["flags"].get<std::vector<uint8_t>>();
 			pblock->flagsLen = flags.size();
-			pblock->flags = (pblock->flagsLen > 0) ? (uint8_t *)malloc(pblock->flagsLen) : nullptr;
+			pblock->flags = (pblock->flagsLen > 0) ? (uint8_t *) malloc(pblock->flagsLen) : nullptr;
 			for (int i = 0; i < pblock->flagsLen; ++i) {
 				pblock->flags[i] = flags[i];
 			}

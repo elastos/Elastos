@@ -18,7 +18,7 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolACK> {
 
 		public:
-			PaymentProtocolAck(ByteData data);
+			PaymentProtocolAck(const ByteData &data);
 
 			~PaymentProtocolAck();
 

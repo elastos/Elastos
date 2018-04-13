@@ -11,7 +11,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolRequest::PaymentProtocolRequest(ByteData data) {
+		PaymentProtocolRequest::PaymentProtocolRequest(const ByteData &data) {
 			_protocolRequest = BRPaymentProtocolRequestParse(data.data, data.length);
 		}
 

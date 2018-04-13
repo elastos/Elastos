@@ -15,10 +15,10 @@ namespace Elastos {
 	namespace SDK {
 
 		class PaymentProtocolPayment :
-		public Wrapper<BRPaymentProtocolPayment> {
+			public Wrapper<BRPaymentProtocolPayment> {
 
 		public:
-			PaymentProtocolPayment(ByteData data);
+			PaymentProtocolPayment(const ByteData &data);
 
 			~PaymentProtocolPayment();
 
@@ -37,7 +37,7 @@ namespace Elastos {
 			ByteData serialize() const;
 
 		private:
-			BRPaymentProtocolPayment * _protocolPayment = nullptr;
+			BRPaymentProtocolPayment *_protocolPayment = nullptr;
 		};
 
 	}

@@ -7,7 +7,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolEncryptedMessage::PaymentProtocolEncryptedMessage(ByteData data) {
+		PaymentProtocolEncryptedMessage::PaymentProtocolEncryptedMessage(const ByteData &data) {
 			_protocolEncryptedMessage = BRPaymentProtocolEncryptedMessageParse(data.data, data.length);
 		}
 

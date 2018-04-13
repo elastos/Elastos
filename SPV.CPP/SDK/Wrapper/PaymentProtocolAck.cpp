@@ -7,7 +7,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolAck::PaymentProtocolAck(ByteData data) {
+		PaymentProtocolAck::PaymentProtocolAck(const ByteData &data) {
 			_protocolACK = BRPaymentProtocolACKParse(data.data, data.length);
 		}
 
