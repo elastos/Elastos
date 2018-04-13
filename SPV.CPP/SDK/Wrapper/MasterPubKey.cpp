@@ -13,6 +13,7 @@ namespace Elastos {
 
 
 		MasterPubKey::MasterPubKey() {
+			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 		}
 
 		MasterPubKey::MasterPubKey(const std::string &phrase) {
@@ -27,12 +28,12 @@ namespace Elastos {
 			return "";
 		}
 
-		BRMasterPubKey *MasterPubKey::getRaw() {
+		BRMasterPubKey *MasterPubKey::getRaw() const {
 			return _masterPubKey.get();
 		}
 
 		ByteData MasterPubKey::serialize() const {
-			return ByteData((uint8_t *) &_masterPubKey, sizeof(BRMasterPubKey));
+			return ByteData((uint8_t *) _masterPubKey.get(), sizeof(BRMasterPubKey));
 		}
 
 		void MasterPubKey::deserialize(const ByteData &data) {

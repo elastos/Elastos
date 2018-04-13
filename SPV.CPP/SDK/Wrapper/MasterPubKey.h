@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_MASTERPUBKEY_H__
 
 #include <string>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 #include "BRBIP32Sequence.h"
@@ -26,11 +27,11 @@ namespace Elastos {
 
             virtual std::string toString() const;
 
-            virtual BRMasterPubKey* getRaw();
+            virtual BRMasterPubKey *getRaw() const;
 
             ByteData serialize() const;
 
-            void deserialize(const ByteData& data);
+            void deserialize(const ByteData &data);
 
             ByteData getPubKey() const;
 

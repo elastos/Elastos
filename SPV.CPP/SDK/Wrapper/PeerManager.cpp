@@ -66,10 +66,12 @@ namespace Elastos {
             static int networkIsReachable(void *info) {
 
                 WeakListener *listener = (WeakListener *) info;
+                int result = 0;
                 if (!listener->expired()) {
 
-                    listener->lock()->networkIsReachable();
+                    result = listener->lock()->networkIsReachable();
                 }
+                return result;
             }
 
             static void txPublished(void *info, int error) {
