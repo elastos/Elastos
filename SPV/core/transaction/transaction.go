@@ -7,8 +7,8 @@ import (
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/core/contract/program"
 	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
+	"github.com/elastos/Elastos.ELA.SPV/core/contract/program"
 	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
 	"github.com/elastos/Elastos.ELA.SPV/crypto"
 )
@@ -23,8 +23,9 @@ const (
 	TransferAsset           TransactionType = 0x02
 	Record                  TransactionType = 0x03
 	Deploy                  TransactionType = 0x04
-	IssueToken              TransactionType = 0x05
-	TransferCrossChainAsset TransactionType = 0x06
+	SideMining              TransactionType = 0x05
+	IssueToken              TransactionType = 0x06
+	TransferCrossChainAsset TransactionType = 0x07
 
 	PUSH1 = 0x51
 
@@ -45,6 +46,8 @@ func (self TransactionType) Name() string {
 		return "Record"
 	case Deploy:
 		return "Deploy"
+	case SideMining:
+		return "SideMining"
 	case IssueToken:
 		return "IssueToken"
 	case TransferCrossChainAsset:
@@ -233,6 +236,8 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		tx.Payload = new(payload.Record)
 	case Deploy:
 		tx.Payload = new(payload.DeployCode)
+	case SideMining:
+		tx.Payload = new(payload.SideMining)
 	case IssueToken:
 		tx.Payload = new(payload.IssueToken)
 	case TransferCrossChainAsset:
@@ -458,7 +463,7 @@ func (tx *Transaction) AppendSignature(signerIndex int, signature []byte) error 
 		tx.SerializeUnsigned(buf)
 		for i := 0; i < len(param); i += SignatureScriptLength {
 			// Remove length byte
-			sign := param[i: i+SignatureScriptLength][1:]
+			sign := param[i : i+SignatureScriptLength][1:]
 			publicKey := publicKeys[signerIndex][1:]
 			pubKey, err := crypto.DecodePoint(publicKey)
 			if err != nil {
