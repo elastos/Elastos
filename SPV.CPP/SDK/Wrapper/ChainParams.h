@@ -6,24 +6,30 @@
 #define __ELASTOS_SDK_CHAINPARAMS_H__
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include "Wrapper.h"
 #include "BRChainParams.h"
 
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        class ChainParams :
-            public Wrapper<BRChainParams>{
-        public:
-            ChainParams();
+		class ChainParams :
+			public Wrapper<BRChainParams>{
+		public:
+			ChainParams(const BRChainParams &chainParams);
 
-            virtual std::string toString() const;
+			virtual std::string toString() const;
 
-            virtual BRChainParams *getRaw() const;
-        };
+			virtual BRChainParams *getRaw() const;
 
-    }
+			uint32_t getMagicNumber() const;
+
+		private:
+			boost::shared_ptr<BRChainParams> _chainParams;
+		};
+
+	}
 }
 
 #endif //__ELASTOS_SDK_CHAINPARAMS_H__

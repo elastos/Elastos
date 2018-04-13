@@ -41,6 +41,8 @@ test
 *[dD]ebug
 *[rR]elease
 .*.swp
+.*.swo
 cli-spv
 tags
 *.json
+.*.py

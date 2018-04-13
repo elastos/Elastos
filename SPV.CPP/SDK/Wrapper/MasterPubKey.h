@@ -17,7 +17,7 @@ namespace Elastos {
     namespace SDK {
 
         class MasterPubKey :
-            public Wrapper<BRMasterPubKey *> {
+            public Wrapper<BRMasterPubKey> {
         public:
 
             MasterPubKey();

@@ -29,6 +29,10 @@
 #include "BRSet.h"
 #include <assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     uint32_t height;
     UInt256 hash;
@@ -148,6 +152,10 @@ static const BRChainParams BRTestNetParams = {
     BRTestNetCheckpoints,
     sizeof(BRTestNetCheckpoints)/sizeof(*BRTestNetCheckpoints)
 };
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif // BRChainParams_h

@@ -5,21 +5,25 @@
 #include "ChainParams.h"
 
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        ChainParams::ChainParams() {
-            //todo complete me
-        }
+		ChainParams::ChainParams(const BRChainParams &chainParams) {
+			_chainParams = boost::shared_ptr<BRChainParams>(new BRChainParams);
+			*_chainParams = chainParams;
+		}
 
-        std::string ChainParams::toString() const {
-            //todo complete me
-            return "";
-        }
+		std::string ChainParams::toString() const {
+			//todo complete me
+			return "";
+		}
 
-        BRChainParams *ChainParams::getRaw() const {
-            //todo complete me
-            return nullptr;
-        }
+		BRChainParams *ChainParams::getRaw() const {
+			return _chainParams.get();
+		}
 
-    }
+		uint32_t ChainParams::getMagicNumber() const {
+			return _chainParams->magicNumber;
+		}
+
+	}
 }

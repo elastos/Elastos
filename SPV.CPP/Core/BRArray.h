@@ -64,6 +64,7 @@ extern "C" {
     assert(_array_cap >= 0);\
     (array) = (void *)((size_t *)calloc(1, _array_cap*sizeof(*(array)) + sizeof(size_t)*2) + 2);\
     assert((array) != NULL);\
+	memset(array, 0, _array_cap*sizeof(*(array)));\
     array_capacity(array) = _array_cap;\
     array_count(array) = 0;\
 } while (0)
@@ -76,6 +77,7 @@ extern "C" {
     assert(_array_cap >= array_count(array));\
     (array) = (void *)((size_t *)realloc((size_t *)(array) - 2, _array_cap*sizeof(*(array)) + sizeof(size_t)*2) + 2);\
     assert((array) != NULL);\
+	memset(array, 0, _array_cap*sizeof(*(array)) + sizeof(size_t)*2);\
     if (_array_cap > array_capacity(array))\
         memset((array) + array_capacity(array), 0, (_array_cap - array_capacity(array))*sizeof(*(array)));\
     array_capacity(array) = _array_cap;\

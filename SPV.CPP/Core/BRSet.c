@@ -78,6 +78,7 @@ BRSet *BRSetNew(size_t (*hash)(const void *), int (*eq)(const void *, const void
     BRSet *set = calloc(1, sizeof(*set));
     
     assert(set != NULL);
+	memset(set, 0, sizeof(*set));
     _BRSetInit(set, hash, eq, capacity);
     return set;
 }

@@ -43,12 +43,18 @@ endif()
 include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/Common"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
 )
 
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash/ SPVCORE_BCASH_SOURCE_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
-add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE} ${SPVSDK_SOURCE_FILES} ${SPVCORE_SOURCE_FILES})
+add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
+	${SPVSDK_SOURCE_FILES}
+	${SPVCORE_SOURCE_FILES}
+	${SPVCORE_BCASH_SOURCE_FILES}
+)
