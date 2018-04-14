@@ -5,6 +5,9 @@ foreach(src ${TEST_SOURCE_FILES})
 	add_executable(${TEST_TARGET_NAME} ${src})
 	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
 	target_link_libraries(${TEST_TARGET_NAME} pthread)
+	target_link_libraries(${TEST_TARGET_NAME} sqlite3)
+	target_link_libraries(${TEST_TARGET_NAME} boost_system)
+	target_link_libraries(${TEST_TARGET_NAME} boost_program_options)
 endforeach(src)
 
 

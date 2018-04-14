@@ -119,7 +119,7 @@ if(SPV_BUILD_SAMPLE)
 	target_link_libraries(${SAMPLE_NAME} pthread)
 	target_link_libraries(${SAMPLE_NAME} sqlite3)
 	#sudo apt-get install libboost-dev
-	target_link_libraries(${TARGET_NAME} boost_system)
+	target_link_libraries(${SAMPLE_NAME} boost_system)
 	#sudo apt-get install libboost-program-options-dev
-	target_link_libraries(${TARGET_NAME} boost_program_options)
+	target_link_libraries(${SAMPLE_NAME} boost_program_options)
 endif()
