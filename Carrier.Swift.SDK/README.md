@@ -58,7 +58,19 @@ To complete.
 
 ## Build Docs
 
-To complete.
+Run following script command to generate swift APIs docuement with appledoc tool:
+
+```
+$ ./docs.sh
+
+```
+
+About How to install appledoc, please refer to following github repository:
+
+```
+https://github.com/tomaz/appledoc
+
+```
 
 ## Thanks
 
@@ -70,4 +82,4 @@ We welcome contributions to the Elastos Carrier iOS Project (or Native Project) 
 
 ## License
 
-Elastos Carrier iOS Project source code files are made available under the MIT License, located in the LICENSE file. 
+Elastos Carrier iOS Project source code files are made available under the MIT License, located in the LICENSE file.
