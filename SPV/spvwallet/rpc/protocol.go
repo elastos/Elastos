@@ -2,7 +2,7 @@ package rpc
 
 const (
 	RPCPort = "20877"
-	RPCAddr = "http://127.0.0.1:" + RPCPort
+	RPCAddr = "http://127.0.0.1:" + RPCPort + "/spvwallet/"
 )
 
 type Req struct {

@@ -23,7 +23,7 @@ func InitServer(handler RequestHandler) *Server {
 		"sendtransaction":  server.SendTransaction,
 	}
 	server.handler = handler
-	http.HandleFunc("/", server.handle)
+	http.HandleFunc("/spvwallet/", server.handle)
 	return server
 }
 
