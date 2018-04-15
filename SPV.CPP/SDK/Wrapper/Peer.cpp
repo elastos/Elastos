@@ -52,9 +52,9 @@ namespace Elastos {
 			}
 		}
 
-		ByteData Peer::getAddress() const {
+		UInt128 Peer::getAddress() const {
 			BRPeer *peer = getRaw();
-			return ByteData(peer->address.u8, sizeof(peer->address.u8));
+			return peer->address;
 		}
 
 		uint16_t Peer::getPort() const {

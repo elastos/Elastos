@@ -5,8 +5,9 @@
 #ifndef __ELASTOS_SDK_DATABASEMANAGER_H__
 #define __ELASTOS_SDK_DATABASEMANAGER_H__
 
+#include "MerkleBlockDataSource.h"
 #include "TransactionDataStore.h"
-#include "PeerDataStore.h"
+#include "PeerDataSource.h"
 #include "Sqlite.h"
 
 namespace Elastos {
@@ -14,15 +15,23 @@ namespace Elastos {
 
 		class DatabaseManager {
 		public:
-			DatabaseManager(boost::filesystem::path path);
+			DatabaseManager(const boost::filesystem::path &path);
 			DatabaseManager();
 			~DatabaseManager();
 
-			bool putTransaction(std::string iso, BRTransactionEntity& transactionEntity);
+			bool putTransaction(const std::string &iso, const TransactionEntity &tx);
+
+			// Peer's data base interface
+			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
+			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
+			bool deleteAllPeers(const std::string &iso);
+			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
+
 		private:
-			TransactionDataStore _dataStoreTransaction;
-			PeerDataStore        _dataStorePeer;
-			Sqlite               _sqlite;
+			Sqlite                _sqlite;
+			PeerDataSource        _peerDataSource;
+			TransactionDataStore  _transactionDataStore;
+			MerkleBlockDataSource _merkleBlockDataSource;
 		};
 
 	}

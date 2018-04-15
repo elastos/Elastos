@@ -5,6 +5,9 @@
 #ifndef __ELASTOS_SDK_BYTEDATA_H__
 #define __ELASTOS_SDK_BYTEDATA_H__
 
+#include <cinttypes>
+#include <cstddef>
+
 namespace Elastos {
     namespace SDK {
 

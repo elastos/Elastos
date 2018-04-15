@@ -22,7 +22,7 @@ namespace Elastos {
 			return _dataBasePtr != NULL;
 		}
 
-		bool Sqlite::open(const boost::filesystem::path path) {
+		bool Sqlite::open(const boost::filesystem::path &path) {
 			// If the SQLITE_OPEN_NOMUTEX flag is set, then the database connection opens in the multi-thread
 			// threading mode as long as the single-thread mode has not been set at compile-time or start-time.
 			// If the SQLITE_OPEN_FULLMUTEX flag is set then the database connection opens in the serialized
@@ -36,7 +36,7 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Sqlite::execSql(std::string sql, execCallBack callBack, void* arg) {
+		bool Sqlite::execSql(const std::string &sql, execCallBack callBack, void* arg) {
 			char* errmsg;
 
 			int r = sqlite3_exec(_dataBasePtr, "BEGIN IMMEDIATE;", NULL, NULL, NULL);
@@ -46,6 +46,10 @@ namespace Elastos {
 
 			r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
+				if (errmsg) {
+					// TODO how to complain the error
+					sqlite3_free(errmsg);
+				}
 				return false;
 			}
 
@@ -56,6 +60,22 @@ namespace Elastos {
 
 			return true;
 		}
+
+		bool Sqlite::sqlitePrepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
+			int r = 0;
+
+			r = sqlite3_prepare_v2(_dataBasePtr, sql.c_str(), sql.length(), ppStmt, pzTail);
+			if (r != SQLITE_OK) {
+				return false;
+			}
+
+			return true;
+		}
+
+		bool Sqlite::sqliteStep(sqlite3_stmt *pStmt) {
+			return SQLITE_OK == sqlite3_step(pStmt);
+		}
+
 
 		void Sqlite::close() {
 			if (_dataBasePtr != NULL) {

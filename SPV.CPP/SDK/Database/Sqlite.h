@@ -19,12 +19,18 @@ namespace Elastos {
 			~Sqlite();
 
 			bool isValid();
-			bool open(const boost::filesystem::path path);
-			bool execSql(std::string sql, execCallBack callBack, void* arg);
+			// Wrapper of sqlitePrepare(), sqliteStep(), sqlite...
+			bool execSql(const std::string &sql, execCallBack callBack, void *arg);
+
+			bool sqlitePrepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
+			bool sqliteStep(sqlite3_stmt *pStmt);
+
+		private:
+			bool open(const boost::filesystem::path &path);
 			void close();
 
 		private:
-			sqlite3* _dataBasePtr;
+			sqlite3 *_dataBasePtr;
 		};
 
 	}

@@ -72,7 +72,7 @@ namespace Elastos {
 
 			~Peer();
 
-			ByteData getAddress() const;
+			UInt128 getAddress() const;
 
 			uint16_t getPort() const;
 

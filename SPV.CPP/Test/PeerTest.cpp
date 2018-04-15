@@ -22,7 +22,7 @@ TEST_CASE( "Peer construct test", "[PeerConstruct]" ) {
 
 		SECTION("Construct with (add, port, timestamp)") {
 			REQUIRE(peer.getRaw() != nullptr);
-			REQUIRE(0 == memcmp(peer.getAddress().data, addr.u8, sizeof(addr)));
+			REQUIRE(0 == memcmp(peer.getAddress().u8, addr.u8, sizeof(addr)));
 			REQUIRE(port == peer.getPort());
 			REQUIRE(timestamp == peer.getTimestamp());
 		}
@@ -31,7 +31,7 @@ TEST_CASE( "Peer construct test", "[PeerConstruct]" ) {
 			Peer p = Peer(peer);
 
 			REQUIRE(p.getRaw() != nullptr);
-			REQUIRE(0 == memcmp(p.getAddress().data, addr.u8, sizeof(addr)));
+			REQUIRE(0 == memcmp(p.getAddress().u8, addr.u8, sizeof(addr)));
 			REQUIRE(port == p.getPort());
 			REQUIRE(timestamp == p.getTimestamp());
 		}
@@ -46,7 +46,7 @@ TEST_CASE( "Peer construct test", "[PeerConstruct]" ) {
 
 		UInt128 addr = *(UInt128 *)"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xbd\xd3\x0c\xef";
 		peer.getRaw()->address = addr;
-		REQUIRE(0 == memcmp(peer.getAddress().data, addr.u8, sizeof(addr)));
+		REQUIRE(0 == memcmp(peer.getAddress().u8, addr.u8, sizeof(addr)));
 		REQUIRE(0 == peer.getPort());
 		REQUIRE(0 == peer.getTimestamp());
 		REQUIRE("189.211.12.239" == peer.getHost());

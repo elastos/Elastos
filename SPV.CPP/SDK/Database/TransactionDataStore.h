@@ -5,33 +5,38 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONDATASTORE_H__
 #define __ELASTOS_SDK_TRANSACTIONDATASTORE_H__
 
+#include "ByteData.h"
+#include "BRInt.h"
 #include "Sqlite.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		typedef struct {
-			std::string buff;
-			long blockheight;
-			long timestamp;
-			std::string txHash;
+			ByteData buff;
+			uint32_t blockheight;
+			uint32_t timestamp;
+			UInt256 txHash;
 			std::string txISO;
-		} BRTransactionEntity;
+		} TransactionEntity;
 
 		class TransactionDataStore {
 		public:
-			TransactionDataStore();
+			TransactionDataStore(Sqlite *sqlite);
 			~TransactionDataStore();
 
-			bool putTransaction(Sqlite& sqlite, std::string& iso, BRTransactionEntity& transactionEntity);
-
-//		private:
-//			int putTransactionCallBack(void* arg, int column, char** value, char** header);
+			bool putTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool deleteAllTransactions(const std::string &iso);
+			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
+			bool updateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
+			bool deleteTxByHash(const std::string &iso, const std::string &hash);
 
 		private:
-			/**
-			* Transaction table
-			*/
+			Sqlite *_sqlite;
+			/*
+			 * Transaction table
+			 */
+			const std::string TX_TABLE_NAME_OLD = "transactionTable";
 			const std::string TX_TABLE_NAME = "transactionTable_v2";
 			const std::string TX_COLUMN_ID = "_id";
 			const std::string TX_BUFF = "transactionBuff";
