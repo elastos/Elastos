@@ -86,10 +86,10 @@ namespace Elastos {
 			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList,
 								 (const uint8_t *) seed.data, (size_t) seed.length);
 
-			uint8_t *data = new uint8_t[size - 1];
-			memcpy(data, &result, size - 1);
+			uint8_t *data = new uint8_t[size];
+			memcpy(data, &result, size);
 
-			return ByteData(data, size - 1);
+			return ByteData(data, size);
 		}
 
 	}
