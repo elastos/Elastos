@@ -14,10 +14,9 @@ namespace Elastos {
 
 		typedef struct {
 			ByteData buff;
-			uint32_t blockheight;
-			uint32_t timestamp;
-			UInt256 txHash;
-			std::string txISO;
+			uint32_t blockHeight;
+			uint32_t timeStamp;
+			std::string txHash;
 		} TransactionEntity;
 
 		class TransactionDataStore {
@@ -34,10 +33,9 @@ namespace Elastos {
 		private:
 			Sqlite *_sqlite;
 			/*
-			 * Transaction table
+			 * transaction table
 			 */
-			const std::string TX_TABLE_NAME_OLD = "transactionTable";
-			const std::string TX_TABLE_NAME = "transactionTable_v2";
+			const std::string TX_TABLE_NAME = "transactionTable";
 			const std::string TX_COLUMN_ID = "_id";
 			const std::string TX_BUFF = "transactionBuff";
 			const std::string TX_BLOCK_HEIGHT = "transactionBlockHeight";
@@ -57,3 +55,4 @@ namespace Elastos {
 
 
 #endif //SPVCLIENT_TRANSACTIONDATASTORE_H
+

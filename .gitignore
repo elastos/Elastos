@@ -46,3 +46,4 @@ cli-spv
 tags
 *.json
 .*.py
+*.bak

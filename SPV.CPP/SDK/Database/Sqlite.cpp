@@ -22,29 +22,54 @@ namespace Elastos {
 			return _dataBasePtr != NULL;
 		}
 
-		bool Sqlite::open(const boost::filesystem::path &path) {
-			// If the SQLITE_OPEN_NOMUTEX flag is set, then the database connection opens in the multi-thread
-			// threading mode as long as the single-thread mode has not been set at compile-time or start-time.
-			// If the SQLITE_OPEN_FULLMUTEX flag is set then the database connection opens in the serialized
-			// threading mode unless single-thread was previously selected at compile-time or start-time.
-			int r = sqlite3_open_v2(path.c_str(), &_dataBasePtr, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL);
+		bool Sqlite::exec(const std::string &sql, ExecCallBack callBack, void *arg) {
+			char *errmsg;
+
+			if (!isValid()) {
+				return false;
+			}
+
+			std::string sqlUpper = sql;
+			std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
+
+			int r = sqlite3_exec(_dataBasePtr, sqlUpper.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
-				close();
+				if (errmsg) {
+					sqlite3_free(errmsg);
+				}
 				return false;
 			}
 
 			return true;
 		}
 
-		bool Sqlite::execSql(const std::string &sql, execCallBack callBack, void* arg) {
+		bool Sqlite::transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg) {
 			char* errmsg;
+			std::string typeStr;
 
-			int r = sqlite3_exec(_dataBasePtr, "BEGIN IMMEDIATE;", NULL, NULL, NULL);
+			if (!isValid()) {
+				return false;
+			}
+
+			std::string sqlUpper = sql;
+			std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
+
+			if (type == DEFERRED) {
+				typeStr = "BEGIN DEFERRED;";
+			} else if (type == IMMEDIATE) {
+				typeStr = "BEGIN IMMEDIATE;";
+			} else if (type == EXCLUSIVE) {
+				typeStr = "BEGIN EXCLUSIVE";
+			} else {
+				return false;
+			}
+
+			int r = sqlite3_exec(_dataBasePtr, typeStr.c_str(), NULL, NULL, NULL);
 			if (r != SQLITE_OK) {
 				return false;
 			}
 
-			r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
+			r = sqlite3_exec(_dataBasePtr, sqlUpper.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
 					// TODO how to complain the error
@@ -61,10 +86,16 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Sqlite::sqlitePrepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
+		bool Sqlite::prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
 			int r = 0;
+			std::string sqlUpper = sql;
+			std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
 
-			r = sqlite3_prepare_v2(_dataBasePtr, sql.c_str(), sql.length(), ppStmt, pzTail);
+			if (!isValid()) {
+				return false;
+			}
+
+			r = sqlite3_prepare_v2(_dataBasePtr, sqlUpper.c_str(), sql.length(), ppStmt, pzTail);
 			if (r != SQLITE_OK) {
 				return false;
 			}
@@ -72,10 +103,75 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Sqlite::sqliteStep(sqlite3_stmt *pStmt) {
-			return SQLITE_OK == sqlite3_step(pStmt);
+		int Sqlite::step(sqlite3_stmt *pStmt) {
+			return sqlite3_step(pStmt);
 		}
 
+		bool Sqlite::finalize(sqlite3_stmt *pStmt) {
+			return isValid() && SQLITE_OK == sqlite3_finalize(pStmt);
+		}
+
+		bool Sqlite::bindBlob(sqlite3_stmt *pStmt, int idx, ByteData blob, BindCallBack callBack) {
+			return isValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob.data, blob.length, callBack);
+		}
+
+		bool Sqlite::bindDouble(sqlite3_stmt *pStmt, int idx, double d) {
+			return isValid() && SQLITE_OK == sqlite3_bind_double(pStmt, idx, d);
+		}
+
+		bool Sqlite::bindInt(sqlite3_stmt *pStmt, int idx, int i) {
+			return isValid() && SQLITE_OK == sqlite3_bind_int(pStmt, idx, i);
+		}
+
+		bool Sqlite::bindInt64(sqlite3_stmt *pStmt, int idx, int64_t i) {
+			return isValid() && SQLITE_OK == sqlite3_bind_int64(pStmt, idx, i);
+		}
+
+		bool Sqlite::bindNull(sqlite3_stmt *pStmt, int idx) {
+			return isValid() && SQLITE_OK == sqlite3_bind_null(pStmt, idx);
+		}
+
+		bool Sqlite::bindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack) {
+			return isValid() && SQLITE_OK == sqlite3_bind_text(pStmt, idx, text.c_str(), text.length(), callBack);
+		}
+
+		const void *Sqlite::columnBlob(sqlite3_stmt *pStmt, int iCol) {
+			return sqlite3_column_blob(pStmt, iCol);
+		}
+
+		double Sqlite::columnDouble(sqlite3_stmt *pStmt, int iCol) {
+			return sqlite3_column_double(pStmt, iCol);
+		}
+
+		int Sqlite::columnInt(sqlite3_stmt *pStmt, int iCol) {
+			return sqlite3_column_int(pStmt, iCol);
+		}
+
+		int64_t Sqlite::columnInt64(sqlite3_stmt *pStmt, int iCol) {
+			return sqlite3_column_int64(pStmt, iCol);
+		}
+
+		std::string Sqlite::columnText(sqlite3_stmt *pStmt, int iCol) {
+			return std::string((char *)sqlite3_column_text(pStmt, iCol));
+		}
+
+		int Sqlite::columnBytes(sqlite3_stmt *pStmt, int iCol) {
+			return sqlite3_column_bytes(pStmt, iCol);
+		}
+
+		bool Sqlite::open(const boost::filesystem::path &path) {
+			// If the SQLITE_OPEN_NOMUTEX flag is set, then the database connection opens in the multi-thread
+			// threading mode as long as the single-thread mode has not been set at compile-time or start-time.
+			// If the SQLITE_OPEN_FULLMUTEX flag is set then the database connection opens in the serialized
+			// threading mode unless single-thread was previously selected at compile-time or start-time.
+			int r = sqlite3_open_v2(path.c_str(), &_dataBasePtr, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL);
+			if (r != SQLITE_OK) {
+				close();
+				return false;
+			}
+
+			return true;
+		}
 
 		void Sqlite::close() {
 			if (_dataBasePtr != NULL) {
@@ -86,3 +182,4 @@ namespace Elastos {
 
 	}
 }
+

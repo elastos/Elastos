@@ -13,6 +13,7 @@ namespace Elastos {
 	namespace SDK {
 
 		typedef struct {
+			long id;
 			ByteData blockBytes;
 			uint32_t blockHeight;
 		} MerkleBlockEntity;
@@ -23,6 +24,7 @@ namespace Elastos {
 			MerkleBlockDataSource(Sqlite *sqlite);
 			~MerkleBlockDataSource();
 
+			bool putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
 			bool putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
 			bool deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
 			bool deleteAllBlocks(const std::string &iso);
@@ -31,8 +33,10 @@ namespace Elastos {
 		private:
 			Sqlite *_sqlite;
 
-			const std::string MB_TABLE_NAME_OLD = "merkleBlockTable";
-			const std::string MB_TABLE_NAME = "merkleBlockTable_v2";
+			/*
+			 * merkle block
+			 */
+			const std::string MB_TABLE_NAME = "merkleBlockTable";
 			const std::string MB_COLUMN_ID = "_id";
 			const std::string MB_BUFF = "merkleBlockBuff";
 			const std::string MB_HEIGHT = "merkleBlockHeight";
@@ -41,8 +45,8 @@ namespace Elastos {
 			const std::string MB_DATABASE_CREATE = "create table if not exists " + MB_TABLE_NAME + " (" +
 				MB_COLUMN_ID + " integer primary key autoincrement, " +
 				MB_BUFF + " blob, " +
-				MB_ISO + " text DEFAULT 'BTC' , " +
-				MB_HEIGHT + " integer);";
+				MB_HEIGHT + " integer, " +
+				MB_ISO + " text DEFAULT 'BTC');";
 		};
 
 	}
@@ -50,3 +54,4 @@ namespace Elastos {
 
 
 #endif //__ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
+

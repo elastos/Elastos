@@ -19,13 +19,26 @@ namespace Elastos {
 			DatabaseManager();
 			~DatabaseManager();
 
+			// Transaction's database interface
 			bool putTransaction(const std::string &iso, const TransactionEntity &tx);
+			bool deleteAllTransactions(const std::string &iso);
+			std::vector<TransactionEntity> getAllTransactions(const std::string &iso);
+			bool updateTransaction(const std::string &iso, const TransactionEntity &txEntity);
+			bool deleteTxByHash(const std::string &iso, const std::string &hash);
 
-			// Peer's data base interface
+			// Peer's database interface
+			bool putPeer(const std::string &iso, const PeerEntity &peerEntity);
 			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
 			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
 			bool deleteAllPeers(const std::string &iso);
 			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
+
+			// MerkleBlock's database interface
+			bool putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities);
+			bool deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity);
+			bool deleteAllBlocks(const std::string &iso);
+			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
 
 		private:
 			Sqlite                _sqlite;

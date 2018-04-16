@@ -8,10 +8,19 @@
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
 
+#include "ByteData.h"
+
 namespace Elastos {
 	namespace SDK {
 
-		typedef int (*execCallBack)(void*,int,char**,char**);
+		typedef int (*ExecCallBack)(void*,int,char**,char**);
+		typedef void (*BindCallBack)(void*);
+
+		typedef enum {
+			DEFERRED,
+			IMMEDIATE,
+			EXCLUSIVE
+		} SqliteTransactionType;
 
 		class Sqlite {
 		public:
@@ -19,11 +28,40 @@ namespace Elastos {
 			~Sqlite();
 
 			bool isValid();
-			// Wrapper of sqlitePrepare(), sqliteStep(), sqlite...
-			bool execSql(const std::string &sql, execCallBack callBack, void *arg);
+			/*
+			 * The sqlite3_exec() interface is a convenience wrapper around sqlite3_prepare_v2(),
+			 * sqlite3_step(), and sqlite3_finalize(), that allows an application to run multiple
+			 * statements of SQL without having to use a lot of C code.
+			 */
+			bool exec(const std::string &sql, ExecCallBack callBack, void *arg);
 
-			bool sqlitePrepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
-			bool sqliteStep(sqlite3_stmt *pStmt);
+			/*
+			 * Transactions created using BEGIN...COMMIT do not nest. For nested transactions,
+			 * use the SAVEPOINT and RELEASE commands.
+			 * Transactions can be deferred, immediate, or exclusive.The default transaction
+			 * behavior is deferred. Deferred means that no locks are acquired on the database
+			 * until the database is first accessed.
+			 * After a BEGIN IMMEDIATE, no other database connection will be able to write to
+			 * the database or do a BEGIN IMMEDIATE or BEGIN EXCLUSIVE.
+			 */
+			bool transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg);
+
+			bool prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
+			int step(sqlite3_stmt *pStmt);
+			bool finalize(sqlite3_stmt *pStmt);
+			bool bindBlob(sqlite3_stmt *pStmt, int idx, ByteData blob, BindCallBack callBack);
+			bool bindDouble(sqlite3_stmt *pStmt, int idx, double d);
+			bool bindInt(sqlite3_stmt *pStmt, int idx, int i);
+			bool bindInt64(sqlite3_stmt *pStmt, int idx, int64_t i);
+			bool bindNull(sqlite3_stmt *pStmt, int idx);
+			bool bindText(sqlite3_stmt *pStmt, int idx, const std::string &text, BindCallBack callBack);
+
+			const void *columnBlob(sqlite3_stmt *pStmt, int iCol);
+			double columnDouble(sqlite3_stmt *pStmt, int iCol);
+			int columnInt(sqlite3_stmt *pStmt, int iCol);
+			int64_t columnInt64(sqlite3_stmt *pStmt, int iCol);
+			std::string columnText(sqlite3_stmt *pStmt, int iCol);
+			int columnBytes(sqlite3_stmt *pStmt, int iCol);
 
 		private:
 			bool open(const boost::filesystem::path &path);
@@ -38,3 +76,4 @@ namespace Elastos {
 
 
 #endif //__ELASTOS_SDK_SQLITE_H__
+

@@ -42,6 +42,8 @@ endif()
 
 include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/Common"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Database"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Wrapper"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
