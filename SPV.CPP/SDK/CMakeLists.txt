@@ -60,3 +60,11 @@ add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
 	${SPVCORE_SOURCE_FILES}
 	${SPVCORE_BCASH_SOURCE_FILES}
 )
+
+if(APPLE)
+	target_link_libraries(${SPVSDK_NAME} sqlite3)
+	#sudo apt-get install libboost-dev
+	target_link_libraries(${SPVSDK_NAME} boost_system)
+	#sudo apt-get install libboost-program-options-dev
+	target_link_libraries(${SPVSDK_NAME} boost_program_options)
+endif()

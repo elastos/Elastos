@@ -108,10 +108,10 @@ namespace Elastos {
 		std::vector<std::string> Transaction::getInputAddresses() {
 
 			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
-
-			std::vector<std::string> addresses;
-			for (int i = 0; i < inputs.size(); i++)
-				addresses.push_back(inputs[i]->getAddress());
+			ssize_t len = inputs.size();
+			std::vector<std::string> addresses(len);
+			for (int i = 0; i < len; i++)
+				addresses[i] = inputs[i]->getAddress();
 
 			return addresses;
 		}
@@ -134,10 +134,10 @@ namespace Elastos {
 		std::vector<std::string> Transaction::getOutputAddresses() {
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
-
-			std::vector<std::string> addresses;
-			for (int i = 0; i < outputs.size(); i++)
-				addresses.push_back(outputs[i]->getAddress());
+			ssize_t len = outputs.size();
+			std::vector<std::string> addresses(len);
+			for (int i = 0; i < len; i++)
+				addresses[i] = outputs[i]->getAddress();
 
 			return addresses;
 		}
