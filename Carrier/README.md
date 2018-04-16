@@ -97,7 +97,7 @@ $ ./linux_build.sh
 
 ### Android
 
-You need to get android NDK packages to build carrier NDKs for several targets, and of which will be built into Android Java carrier SDK.
+You need to get android NDK packages to build carrier NDKs for several targets, and of which will be built into Android Java carrier SDK. **The minimum Android NDK API level required by Elastos Carrier is 21**. 
 
 #### Build on Linux
 
@@ -119,10 +119,16 @@ source ${HOME}/.bashrc
 
 ##### 2. Cross-compilation build
 
-Run the build script with wanted target name under ${SRC_ROOT}/build. For example, the following command is to build Carrier NDK for armv7 target.
+Run the build script with wanted target name under ${SRC_ROOT}/build. For example, the following command is to build Carrier NDK for Android ARMv7 target.
 
 ```shell
 ./android_build.sh arm
+```
+
+And the following command is to build Carrier NDK for Android ARMv8a target.
+
+```code
+./android_build.sh arm64
 ```
 
 Currently, you can 'cross-'build Carrier NDKs for arm, arm64, x86 and x86_64 targets.
