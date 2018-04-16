@@ -50,7 +50,7 @@ public class FriendInfo extends UserInfo {
 	 * @param
 	 * 		label			The new label to set.
 	 */
-	void setLabel(String label) {
+	public void setLabel(String label) {
 		this.label = label;
 	}
 
@@ -72,7 +72,7 @@ public class FriendInfo extends UserInfo {
 	 * @param
 	 * 		status		The ConnectionStatus object.
      */
-	void setConnectionStatus(ConnectionStatus status) {
+	public void setConnectionStatus(ConnectionStatus status) {
 		this.connection = status;
 	}
 
@@ -95,7 +95,7 @@ public class FriendInfo extends UserInfo {
 	 * @param
 	 * 		status		The presence status.
      */
-	void setPresence(PresenceStatus status) {
+	public void setPresence(PresenceStatus status) {
 		this.presence = status;
 	}
 
