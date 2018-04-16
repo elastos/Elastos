@@ -26,7 +26,7 @@ namespace Elastos {
 		Key::Key(const std::string &privKey) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			assert(!privKey.empty());
-			if (setPrivKey(privKey)) {
+			if (!setPrivKey(privKey)) {
 				Log::error("Failed to set PrivKey");
 			}
 		}
@@ -35,7 +35,7 @@ namespace Elastos {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
 			char data[privKey.length + 1];
 			memcpy((void *) data, (void *) privKey.data, sizeof(uint8_t) * privKey.length);
-			if (setPrivKey(data)) {
+			if (!setPrivKey(data)) {
 				Log::error("Failed to set PrivKey");
 			}
 		}

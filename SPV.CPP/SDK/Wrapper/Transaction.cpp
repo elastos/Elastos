@@ -31,11 +31,11 @@ namespace Elastos {
 		Transaction::Transaction(const ByteData &buffer, uint32_t blockHeight, uint32_t timeStamp) :
 				_isRegistered(false) {
 
-			BRTransaction *transaction = BRTransactionParse(buffer.data, buffer.length);
-			assert (nullptr != transaction);
+			_transaction = BRTransactionParse(buffer.data, buffer.length);
+			assert (nullptr != _transaction);
 
-			transaction->blockHeight = blockHeight;
-			transaction->timestamp = timeStamp;
+			_transaction->blockHeight = blockHeight;
+			_transaction->timestamp = timeStamp;
 		}
 
 		Transaction::~Transaction() {
@@ -96,7 +96,7 @@ namespace Elastos {
 			BRTxInputSetSignature(target, source->signature, source->sigLen);
 		}
 
-		void Transaction::transactionOutputCopy (BRTxOutput *target, const BRTxOutput *source) {
+		void Transaction::transactionOutputCopy(BRTxOutput *target, const BRTxOutput *source) {
 			assert (target != nullptr);
 			assert (source != nullptr);
 			*target = *source;
@@ -109,7 +109,7 @@ namespace Elastos {
 
 			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
 
-			std::vector<std::string> addresses(inputs.size());
+			std::vector<std::string> addresses;
 			for (int i = 0; i < inputs.size(); i++)
 				addresses.push_back(inputs[i]->getAddress());
 
@@ -135,7 +135,7 @@ namespace Elastos {
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
 
-			std::vector<std::string> addresses(outputs.size());
+			std::vector<std::string> addresses;
 			for (int i = 0; i < outputs.size(); i++)
 				addresses.push_back(outputs[i]->getAddress());
 
@@ -171,22 +171,24 @@ namespace Elastos {
 
 			ByteData result;
 			result.length = BRTransactionSerialize(_transaction, nullptr, 0);
+			result.data = new uint8_t[result.length];
+			memset(result.data, 0, result.length);
 			BRTransactionSerialize(_transaction, result.data, result.length);
 			return result;
 		}
 
 		void Transaction::addInput(const TransactionInput &input) {
 
-			BRTransactionAddInput (_transaction, input.getHash(), input.getIndex(), input.getAmount(),
-								   input.getScript().data, input.getScript().length,
-								   input.getSignature().data, input.getSignature().length,
-								   input.getSequence());
+			BRTransactionAddInput(_transaction, input.getHash(), input.getIndex(), input.getAmount(),
+			                      input.getScript().data, input.getScript().length,
+			                      input.getSignature().data, input.getSignature().length,
+			                      input.getSequence());
 		}
 
 		void Transaction::addOutput(const TransactionOutput &output) {
 
 			BRTransactionAddOutput(_transaction, output.getAmount(),
-								   output.getScript().data, output.getScript().length);
+			                       output.getScript().data, output.getScript().length);
 		}
 
 		void Transaction::shuffleOutputs() {
@@ -232,7 +234,7 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::getMinOutputAmount() {
-			
+
 			return TX_MIN_OUTPUT_AMOUNT;
 		}
 

@@ -88,8 +88,8 @@ namespace Elastos {
 
 			uint8_t *data = new uint8_t[size];
 			memcpy(data, &result, size);
-
-			return ByteData(data, size);
+			//note todo size contains "\0"
+			return ByteData(data, size - 1);
 		}
 
 	}
