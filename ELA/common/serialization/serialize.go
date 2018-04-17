@@ -199,9 +199,6 @@ func ReadUint64(reader io.Reader) (uint64, error) {
 	return binary.LittleEndian.Uint64(p[:]), nil
 }
 
-func ReadDataList(reader io.Reader) ([]SerializableData, error) {
-
-	return nil, nil
 }
 
 func WriteUint8(writer io.Writer, val uint8) error {

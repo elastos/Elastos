@@ -1,15 +1,16 @@
 package protocol
 
 import (
-	"Elastos.ELA/common"
-	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/core/transaction"
-	. "Elastos.ELA/errors"
-	"Elastos.ELA/events"
 	"bytes"
 	"encoding/binary"
 	"net"
 	"time"
+
+	"Elastos.ELA/common"
+	"Elastos.ELA/core/ledger"
+	"Elastos.ELA/core/transaction"
+	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/events"
 )
 
 type NodeAddr struct {
