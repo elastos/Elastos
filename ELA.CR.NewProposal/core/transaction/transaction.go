@@ -8,9 +8,8 @@ import (
 	"sort"
 
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/core/contract/program"
-	. "Elastos.ELA/core/signature"
 	"Elastos.ELA/core/transaction/payload"
 )
 
@@ -19,12 +18,14 @@ import (
 type TransactionType byte
 
 const (
-	CoinBase      TransactionType = 0x00
-	RegisterAsset TransactionType = 0x01
-	TransferAsset TransactionType = 0x02
-	Record        TransactionType = 0x03
-	Deploy        TransactionType = 0x04
-	SideMining    TransactionType = 0x05
+	CoinBase                TransactionType = 0x00
+	RegisterAsset           TransactionType = 0x01
+	TransferAsset           TransactionType = 0x02
+	Record                  TransactionType = 0x03
+	Deploy                  TransactionType = 0x04
+	SideMining              TransactionType = 0x05
+	IssueToken              TransactionType = 0x06
+	TransferCrossChainAsset TransactionType = 0x07
 )
 
 func (self TransactionType) Name() string {
@@ -41,6 +42,10 @@ func (self TransactionType) Name() string {
 		return "Deploy"
 	case SideMining:
 		return "SideMining"
+	case IssueToken:
+		return "IssueToken"
+	case TransferCrossChainAsset:
+		return "TransferCrossChainAsset"
 	default:
 		return "Unknown"
 	}
@@ -48,14 +53,6 @@ func (self TransactionType) Name() string {
 
 const (
 	InvalidTransactionSize = -1
-
-	// encoded public key length 0x21 || encoded public key (33 bytes) || OP_CHECKSIG(0xac)
-	PublicKeyScriptLength = 35
-
-	// 1byte m || 3 encoded public keys with leading 0x40 (34 bytes * 3) ||
-	// 1byte n + 1byte OP_CHECKMULTISIG
-	// FIXME: if want to support 1/2 multisig
-	MinMultiSignCodeLength = 105
 )
 
 //Payload define the func for loading the payload data
@@ -94,19 +91,19 @@ type Transaction struct {
 }
 
 func (tx *Transaction) String() string {
-	tx.Hash()
-	return "Transaction: {\n\t" +
-		"Hash: " + tx.hash.String() + "\n\t" +
-		"TxType: " + tx.TxType.Name() + "\n\t" +
-		"PayloadVersion: " + fmt.Sprint(tx.PayloadVersion) + "\n\t" +
-		"Payload: " + BytesToHexString(tx.Payload.Data(tx.PayloadVersion)) + "\n\t" +
-		"Attributes: " + fmt.Sprint(tx.Attributes) + "\n\t" +
-		"UTXOInputs: " + fmt.Sprint(tx.UTXOInputs) + "\n\t" +
-		"BalanceInputs: " + fmt.Sprint(tx.BalanceInputs) + "\n\t" +
-		"Outputs: " + fmt.Sprint(tx.Outputs) + "\n\t" +
-		"LockTime: " + fmt.Sprint(tx.LockTime) + "\n\t" +
-		"Programs: " + fmt.Sprint(tx.Programs) + "\n\t" +
-		"}\n"
+	hash := tx.Hash()
+	return fmt.Sprint("Transaction: {\n\t",
+		"Hash: ", hash.String(), "\n\t",
+		"TxType: ", tx.TxType.Name(), "\n\t",
+		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
+		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
+		"Attributes: ", tx.Attributes, "\n\t",
+		"UTXOInputs: ", tx.UTXOInputs, "\n\t",
+		"BalanceInputs: ", tx.BalanceInputs, "\n\t",
+		"Outputs: ", tx.Outputs, "\n\t",
+		"LockTime: ", tx.LockTime, "\n\t",
+		"Programs: ", tx.Programs, "\n\t",
+		"}\n")
 }
 
 //Serialize the Transaction
@@ -118,7 +115,7 @@ func (tx *Transaction) Serialize(w io.Writer) error {
 	}
 	//Serialize  Transaction's programs
 	lens := uint64(len(tx.Programs))
-	err = serialization.WriteVarUint(w, lens)
+	err = serialize.WriteVarUint(w, lens)
 	if err != nil {
 		return errors.New("Transaction WriteVarUint failed.")
 	}
@@ -145,7 +142,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	}
 	tx.Payload.Serialize(w, tx.PayloadVersion)
 	//[]*txAttribute
-	err := serialization.WriteVarUint(w, uint64(len(tx.Attributes)))
+	err := serialize.WriteVarUint(w, uint64(len(tx.Attributes)))
 	if err != nil {
 		return errors.New("Transaction item txAttribute length serialization failed.")
 	}
@@ -155,7 +152,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 		}
 	}
 	//[]*UTXOInputs
-	err = serialization.WriteVarUint(w, uint64(len(tx.UTXOInputs)))
+	err = serialize.WriteVarUint(w, uint64(len(tx.UTXOInputs)))
 	if err != nil {
 		return errors.New("Transaction item UTXOInputs length serialization failed.")
 	}
@@ -166,7 +163,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	}
 	// TODO BalanceInputs
 	//[]*Outputs
-	err = serialization.WriteVarUint(w, uint64(len(tx.Outputs)))
+	err = serialize.WriteVarUint(w, uint64(len(tx.Outputs)))
 	if err != nil {
 		return errors.New("Transaction item Outputs length serialization failed.")
 	}
@@ -179,7 +176,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 		}
 	}
 
-	serialization.WriteUint32(w, tx.LockTime)
+	serialize.WriteUint32(w, tx.LockTime)
 
 	return nil
 }
@@ -193,7 +190,7 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 	}
 
 	// tx program
-	lens, err := serialization.ReadVarUint(r, 0)
+	lens, err := serialize.ReadVarUint(r, 0)
 	if err != nil {
 		return errors.New("transaction tx program Deserialize error")
 	}
@@ -244,6 +241,10 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		tx.Payload = new(payload.DeployCode)
 	case SideMining:
 		tx.Payload = new(payload.SideMining)
+	case IssueToken:
+		tx.Payload = new(payload.IssueToken)
+	case TransferCrossChainAsset:
+		tx.Payload = new(payload.TransferCrossChainAsset)
 	default:
 		return errors.New("[Transaction], invalid transaction type.")
 	}
@@ -252,7 +253,7 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		return errors.New("Payload Parse error")
 	}
 	//attributes
-	Len, err := serialization.ReadVarUint(r, 0)
+	Len, err := serialize.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -267,7 +268,7 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		}
 	}
 	//UTXOInputs
-	Len, err = serialization.ReadVarUint(r, 0)
+	Len, err = serialize.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -283,7 +284,7 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 	}
 	//TODO balanceInputs
 	//Outputs
-	Len, err = serialization.ReadVarUint(r, 0)
+	Len, err = serialize.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -298,7 +299,7 @@ func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
 		}
 	}
 
-	temp, err := serialization.ReadUint32(r)
+	temp, err := serialize.ReadUint32(r)
 	tx.LockTime = uint32(temp)
 	if err != nil {
 		return err
@@ -346,7 +347,7 @@ func (tx *Transaction) GetProgramHashes() ([]Uint168, error) {
 			if err != nil {
 				return nil, errors.New("[Transaction], GetProgramHashes err.")
 			}
-			hashs = append(hashs, dataHash)
+			hashs = append(hashs, *dataHash)
 		}
 	}
 	switch tx.TxType {
@@ -388,24 +389,17 @@ func (tx *Transaction) GenerateAssetMaps() {
 	//TODO: implement Transaction.GenerateAssetMaps()
 }
 
-func (tx *Transaction) GetDataContent() []byte {
-	return GetDataContent(tx)
-}
-
 func (tx *Transaction) Hash() Uint256 {
 	if tx.hash == nil {
-		tx.hash = new(Uint256)
-		*tx.hash = Sha256D(tx.GetDataContent())
+		buf := new(bytes.Buffer)
+		tx.SerializeUnsigned(buf)
+		hash := Uint256(Sha256D(buf.Bytes()))
+		tx.hash = &hash
 	}
 	return *tx.hash
-
 }
 func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
-}
-
-func (tx *Transaction) SetHash(hash Uint256) {
-	tx.hash = &hash
 }
 
 func (tx *Transaction) GetReference() (map[*UTXOTxInput]*TxOutput, error) {
@@ -428,6 +422,7 @@ func (tx *Transaction) GetReference() (map[*UTXOTxInput]*TxOutput, error) {
 	}
 	return reference, nil
 }
+
 func (tx *Transaction) GetTransactionResults() (TransactionResult, error) {
 	result := make(map[Uint256]Fixed64)
 	outputResult := tx.GetMergedAssetIDValueFromOutputs()
@@ -481,62 +476,20 @@ func (tx *Transaction) GetMergedAssetIDValueFromReference() (TransactionResult, 
 	return result, nil
 }
 
-func (tx *Transaction) GetTransactionCode() ([]byte, error) {
-	code := tx.GetPrograms()[0].Code
-	if code == nil {
-		return nil, errors.New("invalid transaction type, redeem script not found")
-	}
-	return code, nil
-}
-
-func (tx *Transaction) GetMultiSignPublicKeys() ([][]byte, error) {
-	code, err := tx.GetTransactionCode()
-	if err != nil {
-		return nil, err
-	}
-	if len(code) < MinMultiSignCodeLength || code[len(code)-1] != MULTISIG {
-		return nil, errors.New("not a valid multi sign transaction code, length not enough")
-	}
-	// remove last byte MULTISIG
-	code = code[:len(code)-1]
-	// remove m
-	code = code[1:]
-	// remove n
-	code = code[:len(code)-1]
-	if len(code)%(PublicKeyScriptLength-1) != 0 {
-		return nil, errors.New("not a valid multi sign transaction code, length not match")
-	}
-
-	var publicKeys [][]byte
-	i := 0
-	for i < len(code) {
-		script := make([]byte, PublicKeyScriptLength-1)
-		copy(script, code[i:i+PublicKeyScriptLength-1])
-		i += PublicKeyScriptLength - 1
-		publicKeys = append(publicKeys, script)
-	}
-	return publicKeys, nil
-}
-
-func (tx *Transaction) GetTransactionType() (byte, error) {
-	code, err := tx.GetTransactionCode()
-	if err != nil {
-		return 0, err
-	}
-	if len(code) != PublicKeyScriptLength && len(code) < MinMultiSignCodeLength {
-		return 0, errors.New("invalid transaction type, redeem script not a standard or multi sign type")
-	}
-	return code[len(code)-1], nil
-}
-
 type byProgramHashes []Uint168
 
 func (a byProgramHashes) Len() int      { return len(a) }
 func (a byProgramHashes) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a byProgramHashes) Less(i, j int) bool {
-	if a[i].CompareTo(a[j]) > 0 {
+	if a[i].Compare(a[j]) > 0 {
 		return false
 	} else {
 		return true
 	}
+}
+
+func NewTrimmed(hash *Uint256) *Transaction {
+	tx := new(Transaction)
+	tx.hash = hash
+	return tx
 }

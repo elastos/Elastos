@@ -6,7 +6,7 @@ import (
 
 	"Elastos.ELA/common"
 	"Elastos.ELA/common/log"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	. "Elastos.ELA/net/protocol"
 )
 
@@ -55,7 +55,7 @@ func (msg dataReq) Handle(node Noder) error {
 			go node.Tx(b)
 			return err
 		}
-		log.Debug("block height is ", block.Blockdata.Height, " ,hash is ", hash)
+		log.Debug("block height is ", block.Header.Height, " ,hash is ", hash)
 
 		var buf []byte
 		if node.GetFilter().IsLoaded() {
@@ -89,7 +89,7 @@ func (msg *dataReq) Deserialize(p []byte) error {
 		return err
 	}
 
-	msg.reqType, err = serialization.ReadUint8(buf)
+	msg.reqType, err = serialize.ReadUint8(buf)
 	if err != nil {
 		return err
 	}
@@ -103,12 +103,12 @@ func (msg *dataReq) Deserialize(p []byte) error {
 
 func (msg dataReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteUint8(buf, msg.reqType)
+	err := serialize.WriteUint8(buf, msg.reqType)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = msg.hash.Serialize(buf)
+	 err = msg.hash.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}

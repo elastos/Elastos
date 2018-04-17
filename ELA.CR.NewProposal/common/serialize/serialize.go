@@ -1,25 +1,26 @@
-package serialization
+package serialize
 
 import (
-	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
 	"math"
+
+	. "Elastos.ELA/common"
 )
 
 var ErrRange = errors.New("value out of range")
 var ErrEof = errors.New("got EOF, can not get the next byte")
 
-//SerializableData describe the data need be serialized.
-type SerializableData interface {
-
+//Serializable describe the data need be serialized.
+type Serializable interface {
 	//Write data to writer
 	Serialize(w io.Writer) error
 
 	//read data to reader
 	Deserialize(r io.Reader) error
 }
+
 /*
  ******************************************************************************
  * public func for outside calling
@@ -36,9 +37,9 @@ type SerializableData interface {
  *      first byte = 0xfe, read the next 4 bytes as uint32
  *      first byte = 0xff, read the next 8 bytes as uint64
  *      other else,        read this byte as uint8
- * 3. WriteVarBytes func, this func will output two item as serialization.
+ * 3. WriteVarBytes func, this func will output two item as serialize.
  *      length of bytes (uint8/uint16/uint32/uint64)  +  bytes
- * 4. WriteVarString func, this func will output two item as serialization.
+ * 4. WriteVarString func, this func will output two item as serialize.
  *      length of string(uint8/uint16/uint32/uint64)  +  bytes(string)
  * 5. ReadVarBytes func, this func will first read a uint to identify the
  *    length of bytes, and use it to get the next length's bytes to return.
@@ -49,7 +50,6 @@ type SerializableData interface {
  * 8. ReadBytes func, this func will read the specify lenth's bytes and retun.
  * 9. ReadUint8,16,32,64 read uint with fixed length
  * 10.WriteUint8,16,32,64 Write uint with fixed length
- * 11.ToArray SerializableData to ToArray() func.
  ******************************************************************************
  */
 
@@ -199,11 +199,6 @@ func ReadUint64(reader io.Reader) (uint64, error) {
 	return binary.LittleEndian.Uint64(p[:]), nil
 }
 
-func ReadDataList(reader io.Reader) ([]SerializableData, error) {
-
-	return nil, nil
-}
-
 func WriteUint8(writer io.Writer, val uint8) error {
 	var p [1]byte
 	p[0] = byte(val)
@@ -232,12 +227,6 @@ func WriteUint64(writer io.Writer, val uint64) error {
 	return err
 }
 
-func ToArray(data SerializableData) []byte {
-	b_buf := new(bytes.Buffer)
-	data.Serialize(b_buf)
-	return b_buf.Bytes()
-}
-
 //**************************************************************************
 //**    internal func                                                    ***
 //**************************************************************************
@@ -254,13 +243,77 @@ func byteXReader(reader io.Reader, x uint64) ([]byte, error) {
 	return p, err
 }
 
-func WriteBool(writer io.Writer, val bool) error {
-	err := binary.Write(writer, binary.LittleEndian, val)
+func WriteElements(writer io.Writer, elements ...interface{}) error {
+	for _, e := range elements {
+		err := WriteElement(writer, e)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func WriteElement(writer io.Writer, element interface{}) (err error) {
+	switch e := element.(type) {
+	case Uint256:
+		err = e.Serialize(writer)
+	case []Uint256:
+		for _, v := range e {
+			err = WriteElement(writer, v)
+			if err != nil {
+				return err
+			}
+		}
+	case []*Uint256:
+		for _, v := range e {
+			err = WriteElement(writer, *v)
+			if err != nil {
+				return err
+			}
+		}
+	case []byte:
+		err = WriteVarBytes(writer, e)
+	default:
+		err = binary.Write(writer, binary.LittleEndian, e)
+	}
 	return err
 }
 
-func ReadBool(reader io.Reader) (bool, error) {
-	var x bool
-	err := binary.Read(reader, binary.LittleEndian, &x)
-	return x, err
+func ReadElements(reader io.Reader, elements ...interface{}) error {
+	for _, e := range elements {
+		err := ReadElement(reader, e)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ReadElement(reader io.Reader, element interface{}) (err error) {
+	switch e := element.(type) {
+	case *Uint256:
+		err = (*e).Deserialize(reader)
+	case *[]Uint256:
+		for i, v := range *e {
+			err = v.Deserialize(reader)
+			if err != nil {
+				return err
+			}
+			(*e)[i] = v
+		}
+	case *[]*Uint256:
+		for i, v := range *e {
+			v = new(Uint256)
+			err = (*v).Deserialize(reader)
+			if err != nil {
+				return err
+			}
+			(*e)[i] = v
+		}
+	case *[]byte:
+		*e, err = ReadVarBytes(reader)
+	default:
+		err = binary.Read(reader, binary.LittleEndian, e)
+	}
+	return err
 }

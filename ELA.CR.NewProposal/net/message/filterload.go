@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 
 	"Elastos.ELA/bloom"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/net/protocol"
 )
 
@@ -32,17 +32,17 @@ func NewFilterLoadMsg(filter *bloom.Filter) ([]byte, error) {
 
 func (fl *FilterLoad) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteVarBytes(buf, fl.Filter)
+	err := serialize.WriteVarBytes(buf, fl.Filter)
 	if err != nil {
 		return nil, err
 	}
 
-	err = serialization.WriteUint32(buf, fl.HashFuncs)
+	err = serialize.WriteUint32(buf, fl.HashFuncs)
 	if err != nil {
 		return nil, err
 	}
 
-	err = serialization.WriteUint32(buf, fl.Tweak)
+	err = serialize.WriteUint32(buf, fl.Tweak)
 	if err != nil {
 		return nil, err
 	}
@@ -57,17 +57,17 @@ func (fl *FilterLoad) Deserialize(msg []byte) error {
 		return err
 	}
 
-	fl.Filter, err = serialization.ReadVarBytes(buf)
+	fl.Filter, err = serialize.ReadVarBytes(buf)
 	if err != nil {
 		return err
 	}
 
-	fl.HashFuncs, err = serialization.ReadUint32(buf)
+	fl.HashFuncs, err = serialize.ReadUint32(buf)
 	if err != nil {
 		return err
 	}
 
-	fl.Tweak, err = serialization.ReadUint32(buf)
+	fl.Tweak, err = serialize.ReadUint32(buf)
 	if err != nil {
 		return err
 	}

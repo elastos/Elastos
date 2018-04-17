@@ -1,11 +1,12 @@
 package pow
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/core/auxpow"
 	"bytes"
 	"encoding/binary"
 	"time"
+
+	. "Elastos.ELA/common"
+	"Elastos.ELA/core/auxpow"
 )
 
 func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {
@@ -50,9 +51,9 @@ func generateAuxPow(msgBlockHash Uint256) *auxpow.AuxPow {
 	parCoinbaseTx := getBtcCoinbase(msgBlockHash)
 	parCoinBaseMerkle := make([]Uint256, 0)
 	parMerkleIndex := 0
-	parBlockHeader := auxpow.BtcBlockHeader{
+	parBlockHeader := auxpow.BtcHeader{
 		Version:    0x7fffffff,
-		PrevBlock:  Uint256{},
+		Previous:  Uint256{},
 		MerkleRoot: parCoinbaseTx.Hash(),
 		Timestamp:  uint32(time.Now().Unix()),
 		Bits:       0, // do not care about parent block diff

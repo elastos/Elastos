@@ -1,9 +1,10 @@
 package payload
 
 import (
-	"Elastos.ELA/common/serialization"
-	. "Elastos.ELA/core/code"
 	"io"
+
+	. "Elastos.ELA/core/code"
+	"Elastos.ELA/common/serialize"
 )
 
 const DeployCodePayloadVersion byte = 0x00
@@ -30,27 +31,27 @@ func (dc *DeployCode) Serialize(w io.Writer, version byte) error {
 		return err
 	}
 
-	err = serialization.WriteVarString(w, dc.Name)
+	err = serialize.WriteVarString(w, dc.Name)
 	if err != nil {
 		return err
 	}
 
-	err = serialization.WriteVarString(w, dc.CodeVersion)
+	err = serialize.WriteVarString(w, dc.CodeVersion)
 	if err != nil {
 		return err
 	}
 
-	err = serialization.WriteVarString(w, dc.Author)
+	err = serialize.WriteVarString(w, dc.Author)
 	if err != nil {
 		return err
 	}
 
-	err = serialization.WriteVarString(w, dc.Email)
+	err = serialize.WriteVarString(w, dc.Email)
 	if err != nil {
 		return err
 	}
 
-	err = serialization.WriteVarString(w, dc.Description)
+	err = serialize.WriteVarString(w, dc.Description)
 	if err != nil {
 		return err
 	}
@@ -64,27 +65,27 @@ func (dc *DeployCode) Deserialize(r io.Reader, version byte) error {
 		return err
 	}
 
-	dc.Name, err = serialization.ReadVarString(r)
+	dc.Name, err = serialize.ReadVarString(r)
 	if err != nil {
 		return err
 	}
 
-	dc.CodeVersion, err = serialization.ReadVarString(r)
+	dc.CodeVersion, err = serialize.ReadVarString(r)
 	if err != nil {
 		return err
 	}
 
-	dc.Author, err = serialization.ReadVarString(r)
+	dc.Author, err = serialize.ReadVarString(r)
 	if err != nil {
 		return err
 	}
 
-	dc.Email, err = serialization.ReadVarString(r)
+	dc.Email, err = serialize.ReadVarString(r)
 	if err != nil {
 		return err
 	}
 
-	dc.Description, err = serialization.ReadVarString(r)
+	dc.Description, err = serialize.ReadVarString(r)
 	if err != nil {
 		return err
 	}

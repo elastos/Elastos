@@ -1,13 +1,14 @@
 package message
 
 import (
+	"bytes"
+	"encoding/binary"
+	"errors"
+
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/protocol"
-	"bytes"
-	"encoding/binary"
-	"errors"
 )
 
 type blocksReq struct {
@@ -106,7 +107,7 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 			if err != nil {
 				return nil, err
 			}
-			startHeight = bkstart.Blockdata.Height
+			startHeight = bkstart.Height
 			count = curHeight - startHeight
 			if count > MAXINVHDRCNT {
 				count = MAXINVHDRCNT
@@ -117,13 +118,13 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 		if err != nil {
 			return nil, err
 		}
-		stopHeight = bkstop.Blockdata.Height
+		stopHeight = bkstop.Height
 		if startHash != empty {
 			bkstart, err := ledger.DefaultLedger.Store.GetHeader(startHash)
 			if err != nil {
 				return nil, err
 			}
-			startHeight = bkstart.Blockdata.Height
+			startHeight = bkstart.Height
 
 			// avoid unsigned integer underflow
 			if stopHeight < startHeight {

@@ -52,7 +52,6 @@ type Blockchain struct {
 }
 
 func NewBlockchain(height uint32, ledger *Ledger) *Blockchain {
-
 	return &Blockchain{
 		BlockHeight:  height,
 		Root:         nil,
@@ -77,8 +76,6 @@ func NewBlockchainWithGenesisBlock() (*Blockchain, error) {
 		return nil, errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed.")
 	}
 	genesisBlock.RebuildMerkleRoot()
-	hashx := genesisBlock.Hash()
-	genesisBlock.hash = &hashx
 
 	blockchain := NewBlockchain(0, DefaultLedger)
 	DefaultLedger.Blockchain = blockchain
@@ -181,11 +178,11 @@ func (bc *Blockchain) RemoveOrphanBlock(orphan *OrphanBlock) {
 	orphanHash := orphan.Block.Hash()
 	delete(bc.Orphans, orphanHash)
 
-	prevHash := &orphan.Block.Blockdata.PrevBlockHash
+	prevHash := &orphan.Block.Header.Previous
 	orphans := bc.PrevOrphans[*prevHash]
 	for i := 0; i < len(orphans); i++ {
 		hash := orphans[i].Block.Hash()
-		if hash.CompareTo(orphanHash) == 0 {
+		if hash.IsEqual(orphanHash) {
 			copy(orphans[i:], orphans[i+1:])
 			orphans[len(orphans)-1] = nil
 			orphans = orphans[:len(orphans)-1]
@@ -234,7 +231,7 @@ func (bc *Blockchain) AddOrphanBlock(block *Block) {
 	bc.Orphans[block.Hash()] = oBlock
 
 	// Add to previous hash lookup index for faster dependency lookups.
-	prevHash := &block.Blockdata.PrevBlockHash
+	prevHash := &block.Header.Previous
 	bc.PrevOrphans[*prevHash] = append(bc.PrevOrphans[*prevHash], oBlock)
 
 	return
@@ -263,7 +260,7 @@ func (bc *Blockchain) GetOrphanRoot(hash *Uint256) *Uint256 {
 			break
 		}
 		orphanRoot = prevHash
-		prevHash = &orphan.Block.Blockdata.PrevBlockHash
+		prevHash = &orphan.Block.Header.Previous
 	}
 
 	return orphanRoot
@@ -282,12 +279,12 @@ type BlockNode struct {
 	Children    []*BlockNode
 }
 
-func NewBlockNode(blockHeader *Blockdata, blockSha *Uint256) *BlockNode {
-	//prevHash := blockHeader.PrevBlockHash
+func NewBlockNode(blockHeader *Header, blockSha *Uint256) *BlockNode {
+	//prevHash := blockHeader.Previous
 
 	var prevhash, hash Uint256
 	copy(hash[:], blockSha[:])
-	copy(prevhash[:], blockHeader.PrevBlockHash[:])
+	copy(prevhash[:], blockHeader.Previous[:])
 	node := BlockNode{
 		Hash:       &hash,
 		ParentHash: &prevhash,
@@ -354,7 +351,7 @@ func RemoveChildNode(children []*BlockNode, node *BlockNode) []*BlockNode {
 	}
 
 	for i := 0; i < len(children); i++ {
-		if (*children[i].Hash).CompareTo(*node.Hash) == 0 {
+		if (*children[i].Hash).IsEqual(*node.Hash) {
 			copy(children[i:], children[i+1:])
 			children[len(children)-1] = nil
 			return children[:len(children)-1]
@@ -364,7 +361,7 @@ func RemoveChildNode(children []*BlockNode, node *BlockNode) []*BlockNode {
 
 }
 
-func (bc *Blockchain) LoadBlockNode(blockHeader *Blockdata, hash *Uint256) (*BlockNode, error) {
+func (bc *Blockchain) LoadBlockNode(blockHeader *Header, hash *Uint256) (*BlockNode, error) {
 
 	// Create the new block node for the block and set the work.
 	node := NewBlockNode(blockHeader, hash)
@@ -379,7 +376,7 @@ func (bc *Blockchain) LoadBlockNode(blockHeader *Blockdata, hash *Uint256) (*Blo
 	//     therefore is an error to insert into the chain
 	//  4) Neither 1 or 2 is true, but this is the first node being added
 	//     to the tree, so it's the root.
-	prevHash := &blockHeader.PrevBlockHash
+	prevHash := &blockHeader.Previous
 	//if parentNode, ok := bc.Index[*prevHash]; ok {
 	if parentNode, ok := bc.LookupNodeInIndex(prevHash); ok {
 		// Case 1 -- This node is a child of an existing block node.
@@ -502,8 +499,8 @@ func (bc *Blockchain) RemoveBlockNode(node *BlockNode) error {
 // The returned node will be nil if the genesis block is passed.
 func (bc *Blockchain) GetPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 	// Genesis block.
-	prevHash := block.Blockdata.PrevBlockHash
-	if prevHash.CompareTo(zeroHash) == 0 {
+	prevHash := block.Header.Previous
+	if prevHash.IsEqual(zeroHash) {
 		return nil, nil
 	}
 
@@ -517,7 +514,7 @@ func (bc *Blockchain) GetPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	prevBlockNode, err := bc.LoadBlockNode(header.Blockdata, &prevHash)
+	prevBlockNode, err := bc.LoadBlockNode(header, &prevHash)
 	if err != nil {
 		return nil, err
 	}
@@ -538,7 +535,7 @@ func (bc *Blockchain) GetPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 	}
 
 	// Genesis block.
-	if node.Hash.CompareTo(bc.GenesisHash) == 0 {
+	if node.Hash.IsEqual(bc.GenesisHash) {
 		return nil, nil
 	}
 
@@ -546,7 +543,7 @@ func (bc *Blockchain) GetPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	prevBlockNode, err := bc.LoadBlockNode(header.Blockdata, node.ParentHash)
+	prevBlockNode, err := bc.LoadBlockNode(header, node.ParentHash)
 	if err != nil {
 		return nil, err
 	}
@@ -591,7 +588,7 @@ func (bc *Blockchain) GetReorganizeNodes(node *BlockNode) (*list.List, *list.Lis
 	// common ancestor adding each block to the list of nodes to detach from
 	// the main chain.
 	for n := bc.BestChain; n != nil && n.Parent != nil; n = n.Parent {
-		if n.Hash.CompareTo(*ancestor.Hash) == 0 {
+		if n.Hash.IsEqual(*ancestor.Hash) {
 			break
 		}
 		detachNodes.PushBack(n)
@@ -613,7 +610,7 @@ func (bc *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error
 		n := e.Value.(*BlockNode)
 		if _, exists := bc.BlockCache[*n.Hash]; !exists {
 			return fmt.Errorf("block %x is missing from the side "+
-				"chain block cache", n.Hash.ToArrayReverse())
+				"chain block cache", n.Hash.Bytes())
 		}
 	}
 
@@ -683,7 +680,7 @@ func (bc *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error
 //// the main (best) chain.
 func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 	// Make sure the node being disconnected is the end of the best chain.
-	if bc.BestChain == nil || (node.Hash.CompareTo(*bc.BestChain.Hash) != 0) {
+	if bc.BestChain == nil || !node.Hash.IsEqual(*bc.BestChain.Hash) {
 		return fmt.Errorf("disconnectBlock must be called with the " +
 			"block at the end of the main chain")
 	}
@@ -728,8 +725,8 @@ func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 	}
 
 	// Make sure it's extending the end of the best chain.
-	prevHash := &block.Blockdata.PrevBlockHash
-	if bc.BestChain != nil && (prevHash.CompareTo(*bc.BestChain.Hash) != 0) {
+	prevHash := &block.Header.Previous
+	if bc.BestChain != nil && !prevHash.IsEqual(*bc.BestChain.Hash) {
 		return fmt.Errorf("connectBlock must be called with a block " +
 			"that extends the main chain")
 	}
@@ -789,7 +786,7 @@ func (bc *Blockchain) maybeAcceptBlock(block *Block) (bool, error) {
 		blockHeight = prevNode.Height + 1
 	}
 
-	if block.Blockdata.Height != blockHeight {
+	if block.Header.Height != blockHeight {
 		return false, fmt.Errorf("wrong block height!")
 	}
 
@@ -810,7 +807,7 @@ func (bc *Blockchain) maybeAcceptBlock(block *Block) (bool, error) {
 
 	// Create a new block node for the block and add it to the in-memory
 	// block chain (could be either a side chain or the main chain).
-	blockHeader := block.Blockdata
+	blockHeader := block.Header
 	blockhash := block.Hash()
 	newNode := NewBlockNode(blockHeader, &blockhash)
 	if prevNode != nil {
@@ -839,7 +836,7 @@ func (bc *Blockchain) ConnectBestChain(node *BlockNode, block *Block) (bool, err
 	// We haven't selected a best chain yet or we are extending the main
 	// (best) chain with a new block.  This is the most common case.
 
-	if bc.BestChain == nil || (node.Parent.Hash.CompareTo(*bc.BestChain.Hash) == 0) {
+	if bc.BestChain == nil || (node.Parent.Hash.IsEqual(*bc.BestChain.Hash)) {
 		// Perform several checks to verify the block can be connected
 		// to the main chain (including whatever reorganization might
 		// be necessary to get this node to the main chain) without
@@ -868,7 +865,7 @@ func (bc *Blockchain) ConnectBestChain(node *BlockNode, block *Block) (bool, err
 	// become the main chain, but in either case we need the block stored
 	// for future processing, so add the block to the side chain holding
 	// cache.
-	log.Debugf("Adding block %x to side chain cache", node.Hash.ToArrayReverse())
+	log.Debugf("Adding block %x to side chain cache", node.Hash.Bytes())
 	bc.BlockCache[*node.Hash] = block
 	//bc.Index[*node.Hash] = node
 	bc.AddNodeToIndex(node)
@@ -890,14 +887,14 @@ func (bc *Blockchain) ConnectBestChain(node *BlockNode, block *Block) (bool, err
 		}
 
 		// Log information about how the block is forking the chain.
-		if fork.Hash.CompareTo(*node.Parent.Hash) == 0 {
+		if fork.Hash.IsEqual(*node.Parent.Hash) {
 			log.Infof("FORK: Block %x forks the chain at height %d"+
 				"/block %x, but does not cause a reorganize",
-				node.Hash.ToArrayReverse(), fork.Height, fork.Hash.ToArrayReverse())
+				node.Hash.Bytes(), fork.Height, fork.Hash.Bytes())
 		} else {
 			log.Infof("EXTEND FORK: Block %x extends a side chain "+
 				"which forks the chain at height %d/block %x",
-				node.Hash.ToArrayReverse(), fork.Height, fork.Hash.ToArrayReverse())
+				node.Hash.Bytes(), fork.Height, fork.Hash.Bytes())
 		}
 
 		return false, nil
@@ -937,7 +934,7 @@ func (bc *Blockchain) ConnectBestChain(node *BlockNode, block *Block) (bool, err
 //3. error
 func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, flags uint32) (bool, bool, error) {
 	blockHash := block.Hash()
-	log.Tracef("[ProcessBLock] height = %d, hash = %x", block.Blockdata.Height, blockHash.ToArrayReverse())
+	log.Tracef("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
 	// The block must not already exist in the main chain or side chains.
 	exists, err := bc.BlockExists(&blockHash)
@@ -946,7 +943,7 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 		return false, false, err
 	}
 	if exists {
-		str := fmt.Sprintf("already have block %x\n", blockHash.ToArrayReverse())
+		str := fmt.Sprintf("already have block %x\n", blockHash.Bytes())
 		return false, false, fmt.Errorf(str)
 	}
 
@@ -967,18 +964,18 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 		return false, false, err
 	}
 
-	blockHeader := block.Blockdata
+	blockHeader := block.Header
 
 	// Handle orphan blocks.
-	prevHash := blockHeader.PrevBlockHash
-	if prevHash.CompareTo(zeroHash) != 0 {
+	prevHash := blockHeader.Previous
+	if !prevHash.IsEqual(zeroHash) {
 		prevHashExists, err := bc.BlockExists(&prevHash)
 		if err != nil {
 			return false, false, err
 		}
 		//log.Tracef("[ProcessBLock] prev block already exist= %v\n", prevHashExists)
 		if !prevHashExists {
-			log.Tracef("Adding orphan block %x with parent %x", blockHash.ToArrayReverse(), prevHash.ToArrayReverse())
+			log.Tracef("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
 			bc.AddOrphanBlock(block)
 
 			return false, true, nil
@@ -1088,7 +1085,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 	locator = append(locator, hash)
 
 	// Nothing more to do if a locator for the genesis hash was requested.
-	if hash.CompareTo(b.GenesisHash) == 0 {
+	if hash.IsEqual(b.GenesisHash) {
 		return locator
 	}
 
@@ -1107,7 +1104,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 		if err != nil {
 			return locator
 		}
-		blockHeight = int32(block.Blockdata.Height)
+		blockHeight = int32(block.Header.Height)
 	} else {
 		blockHeight = int32(node.Height)
 	}
