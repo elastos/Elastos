@@ -88,9 +88,9 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 		return ErrTransactionSignature
 	}
 	// check referenced Output value
-	for _, input := range txn.UTXOInputs {
-		referHash := input.ReferTxID
-		referTxnOutIndex := input.ReferTxOutputIndex
+	for _, input := range txn.Inputs {
+		referHash := input.Previous.TxID
+		referTxnOutIndex := input.Previous.Index
 		referTxn, _, err := ledger.Store.GetTransaction(referHash)
 		if err != nil {
 			log.Warn("Referenced transaction can not be found", common.BytesToHexString(referHash.Bytes()))
@@ -118,11 +118,11 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 func CheckTransactionInput(txn *tx.Transaction) error {
 	var zeroHash common.Uint256
 	if txn.IsCoinBaseTx() {
-		if len(txn.UTXOInputs) != 1 {
+		if len(txn.Inputs) != 1 {
 			return errors.New("coinbase must has only one input")
 		}
-		coinbaseInputHash := txn.UTXOInputs[0].ReferTxID
-		coinbaseInputIndex := txn.UTXOInputs[0].ReferTxOutputIndex
+		coinbaseInputHash := txn.Inputs[0].Previous.TxID
+		coinbaseInputIndex := txn.Inputs[0].Previous.Index
 		//TODO :check sequence
 		if !coinbaseInputHash.IsEqual(zeroHash) || coinbaseInputIndex != math.MaxUint16 {
 			return errors.New("invalid coinbase input")
@@ -131,17 +131,15 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 		return nil
 	}
 
-	if len(txn.UTXOInputs) <= 0 {
+	if len(txn.Inputs) <= 0 {
 		return errors.New("transaction has no inputs")
 	}
-	for i, utxoin := range txn.UTXOInputs {
-		referTxnHash := utxoin.ReferTxID
-		referTxnOutIndex := utxoin.ReferTxOutputIndex
-		if referTxnHash.IsEqual(zeroHash) && (referTxnOutIndex == math.MaxUint16) {
+	for i, utxoin := range txn.Inputs {
+		if utxoin.Previous.TxID.IsEqual(zeroHash) && (utxoin.Previous.Index == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
 		for j := 0; j < i; j++ {
-			if referTxnHash == txn.UTXOInputs[j].ReferTxID && referTxnOutIndex == txn.UTXOInputs[j].ReferTxOutputIndex {
+			if utxoin.Previous.IsEqual(txn.Inputs[j].Previous) {
 				return errors.New("duplicated transaction inputs")
 			}
 		}
@@ -197,7 +195,7 @@ func CheckTransactionUTXOLock(txn *tx.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
-	if len(txn.UTXOInputs) <= 0 {
+	if len(txn.Inputs) <= 0 {
 		return errors.New("Transaction has no inputs")
 	}
 	referenceWithUTXO_Output, err := txn.GetReference()
@@ -237,7 +235,7 @@ func CheckAssetPrecision(Tx *tx.Transaction) error {
 	if len(Tx.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[common.Uint256][]*tx.TxOutput, len(Tx.Outputs))
+	assetOutputs := make(map[common.Uint256][]*tx.Output, len(Tx.Outputs))
 
 	for _, v := range Tx.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)

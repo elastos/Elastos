@@ -1,8 +1,9 @@
 package node
 
 import (
-	"Elastos.ELA/events"
 	"fmt"
+
+	"Elastos.ELA/events"
 )
 
 type eventQueue struct {

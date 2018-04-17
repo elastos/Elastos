@@ -22,8 +22,8 @@ func (u Uint256) Compare(o Uint256) int {
 	return 0
 }
 
-func (u Uint256) IsEqual(o Uint256) bool {
-	return u == o
+func (u *Uint256) IsEqual(o Uint256) bool {
+	return *u == o
 }
 
 func (u Uint256) Bytes() []byte {

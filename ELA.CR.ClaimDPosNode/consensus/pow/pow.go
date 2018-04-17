@@ -95,14 +95,16 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 	if err != nil {
 		return nil, err
 	}
-	txn.UTXOInputs = []*tx.UTXOTxInput{
+	txn.Inputs = []*tx.Input{
 		{
-			ReferTxID:          Uint256{},
-			ReferTxOutputIndex: math.MaxUint16,
-			Sequence:           math.MaxUint32,
+			Previous: tx.OutPoint{
+				TxID:  Uint256{},
+				Index: math.MaxUint16,
+			},
+			Sequence: math.MaxUint32,
 		},
 	}
-	txn.Outputs = []*tx.TxOutput{
+	txn.Outputs = []*tx.Output{
 		{
 			AssetID:     ledger.DefaultLedger.Blockchain.AssetID,
 			Value:       0,

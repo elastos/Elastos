@@ -192,7 +192,7 @@ func IsFinalizedTransaction(msgTx *tx.Transaction, blockHeight uint32) bool {
 	// At this point, the transaction's lock time hasn't occurred yet, but
 	// the transaction might still be finalized if the sequence number
 	// for all transaction inputs is maxed out.
-	for _, txIn := range msgTx.UTXOInputs {
+	for _, txIn := range msgTx.Inputs {
 		if txIn.Sequence != math.MaxUint16 {
 			return false
 		}

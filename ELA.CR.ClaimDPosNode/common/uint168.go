@@ -37,8 +37,8 @@ func (u Uint168) Compare(o Uint168) int {
 	return 0
 }
 
-func (u Uint168) IsEqual(o Uint168) bool {
-	return u == o
+func (u *Uint168) IsEqual(o Uint168) bool {
+	return *u == o
 }
 
 func (u *Uint168) Bytes() []byte {
