@@ -1,18 +1,19 @@
 package node
 
 import (
+	"bytes"
+	"errors"
+	"fmt"
+	"sync"
+
 	"Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/ledger"
 	"Elastos.ELA/core/transaction"
 	tx "Elastos.ELA/core/transaction"
-	. "Elastos.ELA/errors"
-	"Elastos.ELA/events"
-	"bytes"
-	"errors"
-	"fmt"
-	"sync"
+	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/events"
 )
 
 var (

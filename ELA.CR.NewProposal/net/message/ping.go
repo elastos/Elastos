@@ -1,14 +1,15 @@
 package message
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/binary"
+
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/common/serialization"
 	"Elastos.ELA/core/ledger"
-	. "Elastos.ELA/net/protocol"
-	"bytes"
-	"crypto/sha256"
-	"encoding/binary"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type ping struct {
