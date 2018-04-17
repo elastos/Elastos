@@ -9,7 +9,7 @@ import (
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/consensus/pow"
 	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/core/store/ChainStore"
+	"Elastos.ELA/core/store/chainstore"
 	"Elastos.ELA/core/transaction"
 	"Elastos.ELA/net/node"
 	"Elastos.ELA/net/protocol"
@@ -69,7 +69,7 @@ func main() {
 	var noder protocol.Noder
 	log.Info("1. BlockChain init")
 	ledger.DefaultLedger = new(ledger.Ledger)
-	ledger.DefaultLedger.Store, err = ChainStore.NewLedgerStore()
+	ledger.DefaultLedger.Store, err = chainstore.NewLedgerStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
 		os.Exit(1)

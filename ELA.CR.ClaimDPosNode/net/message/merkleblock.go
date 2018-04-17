@@ -6,13 +6,13 @@ import (
 
 	. "Elastos.ELA/bloom"
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/core/ledger"
 )
 
 type MerkleBlock struct {
 	Header
-	BlockHeader  ledger.Blockdata
+	BlockHeader  ledger.Header
 	Transactions uint32
 	Hashes       []*Uint256
 	Flags        []byte
@@ -49,7 +49,7 @@ func NewMerkleBlockMsg(block *ledger.Block, filter *Filter) ([]byte, error) {
 
 	// Create and return the merkle block.
 	merkleBlock := MerkleBlock{
-		BlockHeader:  *block.Blockdata,
+		BlockHeader:  *block.Header,
 		Transactions: mBlock.NumTx,
 		Hashes:       make([]*Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
@@ -79,25 +79,25 @@ func (mb *MerkleBlock) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	mb.BlockHeader.Serialize(buf)
 
-	err := serialization.WriteUint32(buf, mb.Transactions)
+	err := serialize.WriteUint32(buf, mb.Transactions)
 	if err != nil {
 		return nil, err
 	}
 
 	// Write hashes length
-	err = serialization.WriteUint32(buf, uint32(len(mb.Hashes)))
+	err = serialize.WriteUint32(buf, uint32(len(mb.Hashes)))
 	if err != nil {
 		return nil, err
 	}
 
 	for _, hash := range mb.Hashes {
-		_, err := hash.Serialize(buf)
+		err := hash.Serialize(buf)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	err = serialization.WriteVarBytes(buf, mb.Flags)
+	err = serialize.WriteVarBytes(buf, mb.Flags)
 	if err != nil {
 		return nil, err
 	}
@@ -117,12 +117,12 @@ func (mb *MerkleBlock) Deserialize(msg []byte) error {
 		return err
 	}
 
-	mb.Transactions, err = serialization.ReadUint32(buf)
+	mb.Transactions, err = serialize.ReadUint32(buf)
 	if err != nil {
 		return err
 	}
 
-	hashes, err := serialization.ReadUint32(buf)
+	hashes, err := serialize.ReadUint32(buf)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func (mb *MerkleBlock) Deserialize(msg []byte) error {
 		mb.Hashes = append(mb.Hashes, &txId)
 	}
 
-	mb.Flags, err = serialization.ReadVarBytes(buf)
+	mb.Flags, err = serialize.ReadVarBytes(buf)
 	if err != nil {
 		return err
 	}

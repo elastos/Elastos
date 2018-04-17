@@ -40,7 +40,7 @@ func (msg block) Handle(node Noder) error {
 	_, isOrphan, err = ledger.DefaultLedger.Blockchain.AddBlock(&msg.blk)
 
 	if err != nil {
-		log.Warn("Block add failed: ", err, " ,block hash is ", hash.ToArrayReverse())
+		log.Warn("Block add failed: ", err, " ,block hash is ", hash.Bytes())
 		return err
 	}
 	//relay

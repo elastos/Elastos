@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"encoding/hex"
+	"os"
 )
 
 func BytesToHexString(data []byte) string {
@@ -63,6 +64,17 @@ func ToByteArray(source []uint16) []byte {
 	}
 
 	return dst
+}
+
+func ClearBytes(arr []byte) {
+	for i := 0; i < len(arr); i++ {
+		arr[i] = 0
+	}
+}
+
+func FileExisted(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
 }
 
 func Sha256D(data []byte) [32]byte {

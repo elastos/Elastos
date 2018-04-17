@@ -75,7 +75,7 @@ func (node *node) SyncBlks() {
 			} else {
 				for k := range rb {
 					if rb[k].Before(time.Now().Add(-3 * time.Second)) {
-						log.Infof("request block hash %x ", k.ToArrayReverse())
+						log.Infof("request block hash %x ", k.Bytes())
 						<-time.After(time.Millisecond * 50)
 						ReqBlkData(syncNode, k)
 					}

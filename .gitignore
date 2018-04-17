@@ -20,3 +20,4 @@ cscope*
 deps/
 /node
 /glide.lock
+ela-cli
