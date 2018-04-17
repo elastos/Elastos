@@ -93,7 +93,7 @@ type Noder interface {
 		port uint16, nonce uint64, relay uint8, height uint64)
 	ConnectSeeds()
 	Connect(nodeAddr string) error
-	LoadFilter(filter *bloom.Filter)
+	LoadFilter(filter *bloom.FilterLoad)
 	GetFilter() *bloom.Filter
 	Tx(buf []byte)
 	GetTime() int64

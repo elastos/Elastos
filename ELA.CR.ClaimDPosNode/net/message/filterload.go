@@ -1,27 +1,18 @@
 package message
 
 import (
-	"bytes"
-	"encoding/binary"
-
 	"Elastos.ELA/bloom"
-	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/net/protocol"
 )
 
-type FilterLoad struct {
+type FilterLoadMsg struct {
 	Header
-	Filter    []byte
-	HashFuncs uint32
-	Tweak     uint32
+	Filter bloom.FilterLoad
 }
 
 func NewFilterLoadMsg(filter *bloom.Filter) ([]byte, error) {
-	msg := new(FilterLoad)
-	msg.Filter = filter.Filter
-	msg.HashFuncs = filter.HashFuncs
-	msg.Tweak = filter.Tweak
-
+	msg := new(FilterLoadMsg)
+	msg.Filter = *filter.GetFilterLoadMsg()
 	body, err := msg.Serialize()
 	if err != nil {
 		return nil, err
@@ -30,52 +21,15 @@ func NewFilterLoadMsg(filter *bloom.Filter) ([]byte, error) {
 	return BuildMessage("filterload", body)
 }
 
-func (fl *FilterLoad) Serialize() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	err := serialize.WriteVarBytes(buf, fl.Filter)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialize.WriteUint32(buf, fl.HashFuncs)
-	if err != nil {
-		return nil, err
-	}
-
-	err = serialize.WriteUint32(buf, fl.Tweak)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+func (f *FilterLoadMsg) Serialize() ([]byte, error) {
+	return f.Filter.Serialize()
 }
 
-func (fl *FilterLoad) Deserialize(msg []byte) error {
-	buf := bytes.NewReader(msg)
-	err := binary.Read(buf, binary.LittleEndian, &fl.Header)
-	if err != nil {
-		return err
-	}
-
-	fl.Filter, err = serialize.ReadVarBytes(buf)
-	if err != nil {
-		return err
-	}
-
-	fl.HashFuncs, err = serialize.ReadUint32(buf)
-	if err != nil {
-		return err
-	}
-
-	fl.Tweak, err = serialize.ReadUint32(buf)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (f *FilterLoadMsg) Deserialize(body []byte) error {
+	return f.Filter.Deserialize(body)
 }
 
-func (fl *FilterLoad) Handle(node protocol.Noder) error {
-	node.LoadFilter(bloom.LoadFilter(fl.Filter, fl.HashFuncs, fl.Tweak))
+func (f *FilterLoadMsg) Handle(node protocol.Noder) error {
+	node.LoadFilter(&f.Filter)
 	return nil
 }

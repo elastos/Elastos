@@ -87,7 +87,7 @@ func AllocMsg(t string, length int) Messager {
 		copy(msg.CMD[0:len(t)], t)
 		return &msg
 	case "filterload":
-		var msg FilterLoad
+		var msg FilterLoadMsg
 		copy(msg.CMD[0:len(t)], t)
 		return &msg
 	case "inv":
