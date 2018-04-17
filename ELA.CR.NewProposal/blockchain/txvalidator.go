@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/core/asset"
 	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
-	. "github.com/elastos/Elastos.ELA/errors"
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -309,6 +310,8 @@ func CheckTransactionPayload(Tx *tx.Transaction) error {
 	case *payload.DeployCode:
 	case *payload.CoinBase:
 	case *payload.SideMining:
+	case *payload.WithdrawAsset:
+	case *payload.TransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
