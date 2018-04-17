@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"strconv"
-
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
@@ -23,7 +21,6 @@ const (
 
 var PreChainHeight uint64
 var PreTime int64
-var PreTransactionCount int
 
 func TransArrayByteToHexString(ptx *tx.Transaction) *Transactions {
 
@@ -211,12 +208,16 @@ func SetLogLevel(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	level, err := strconv.ParseInt(param["level"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
+	level, ok := param["level"].(float64)
+	if !ok {
+		return ResponsePack(InvalidParams, "need a level, with positive integer in 0-6")
+	}
+	levelInt := int(level)
+	if !ok {
+		return ResponsePack(InvalidParams, "level should be an integer")
 	}
 
-	if err := log.Log.SetDebugLevel(int(level)); err != nil {
+	if err := log.Log.SetDebugLevel(levelInt); err != nil {
 		return ResponsePack(InvalidParams, err.Error())
 	}
 	return ResponsePack(Success, "")
@@ -261,7 +262,6 @@ func GenerateAuxBlock(addr string) (*ledger.Block, string, bool) {
 		if PreChainHeight != NodeForServers.GetHeight() {
 			PreChainHeight = NodeForServers.GetHeight()
 			PreTime = time.Now().Unix()
-			PreTransactionCount = Pow.GetTransactionCount()
 		}
 
 		currentTxsCount := Pow.CollectTransactions(msgBlock)
@@ -283,7 +283,6 @@ func GenerateAuxBlock(addr string) (*ledger.Block, string, bool) {
 
 		PreChainHeight = NodeForServers.GetHeight()
 		PreTime = time.Now().Unix()
-		PreTransactionCount = currentTxsCount // Don't Call GetTransactionCount()
 
 		return msgBlock, curHashStr, true
 	}
@@ -362,11 +361,11 @@ func AuxHelp(param map[string]interface{}) map[string]interface{} {
 }
 
 func ToggleMining(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "mining") {
+	if !checkParam(param, "mine") {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	if param["mining"] == "start" {
+	if param["mining"] == true {
 		go Pow.Start()
 	} else {
 		go Pow.Halt()
@@ -376,22 +375,15 @@ func ToggleMining(param map[string]interface{}) map[string]interface{} {
 }
 
 func ManualMining(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "count") {
-		return ResponsePack(InvalidParams, "")
-	}
+	count := uint32(param["count"].(float64))
 
-	count, err := strconv.ParseInt(param["count"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	if count == 0 {
-		return ResponsePack(InvalidParams, "")
+	if count <= 0 {
+		return ResponsePack(InvalidParams, "need an positive integer")
 	}
 
 	ret := make([]string, count)
 
-	blockHashes, err := Pow.ManualMining(uint32(count))
+	blockHashes, err := Pow.ManualMining(count)
 	if err != nil {
 		return ResponsePack(Error, err)
 	}
@@ -447,7 +439,7 @@ func GetTransactionPool(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, txs)
 }
 
-func GetBlockInfo(block *ledger.Block) BlockInfo {
+func GetBlockDetailInfo(block *ledger.Block) BlockInfo {
 	hash := block.Hash()
 	auxInfo := &AuxInfo{
 		Version:    block.Blockdata.AuxPow.ParBlockHeader.Version,
@@ -492,6 +484,31 @@ func GetBlockInfo(block *ledger.Block) BlockInfo {
 		MinerInfo:     string(coinbasePd.CoinbaseData),
 	}
 	return b
+}
+
+func GetBlockInfo(block *ledger.Block) map[string]interface{} {
+	hash := block.Hash()
+
+	var txHashes []string
+	for i := 0; i < len(block.Transactions); i++ {
+		hash := block.Transactions[i].Hash()
+		txHashes = append(txHashes, BytesToHexString(hash.ToArrayReverse()))
+	}
+
+	return map[string]interface{}{
+		"hash":              BytesToHexString(hash.ToArrayReverse()),
+		"confirmations":     ledger.DefaultLedger.Blockchain.GetBestHeight() - block.Blockdata.Height + 1,
+		"size":              block.GetSize(),
+		"height":            block.Blockdata.Height,
+		"version":           block.Blockdata.Version,
+		"merkleroot":        BytesToHexString(block.Blockdata.AuxPow.ParBlockHeader.MerkleRoot.ToArrayReverse()),
+		"time":              block.Blockdata.Timestamp,
+		"nonce":             block.Blockdata.Nonce,
+		"difficulty":        ledger.CalcCurrentDifficulty(block.Blockdata.Bits),
+		"bits":              block.Blockdata.Bits,
+		"previousblockhash": BytesToHexString(block.Blockdata.PrevBlockHash.ToArrayReverse()),
+		"tx":                txHashes,
+	}
 }
 
 func getBlock(hash Uint256) (interface{}, ErrCode) {
@@ -552,17 +569,21 @@ func GetBlockHeight(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, ledger.DefaultLedger.Blockchain.BlockHeight)
 }
 
+func GetBestBlockHash(param map[string]interface{}) map[string]interface{} {
+	bestHeight := ledger.DefaultLedger.Blockchain.BlockHeight
+	return GetBlockHash(map[string]interface{}{"index": float64(bestHeight)})
+}
+
+func GetBlockCount(param map[string]interface{}) map[string]interface{} {
+	return ResponsePack(Success, ledger.DefaultLedger.Blockchain.BlockHeight+1)
+}
+
 func GetBlockHash(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
-		return ResponsePack(InvalidParams, "")
-	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
+	height := uint32(param["index"].(float64))
+	log.Info("my height:", height)
 
-	hash, err := ledger.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := ledger.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -590,16 +611,13 @@ func GetBlockTransactions(block *ledger.Block) interface{} {
 }
 
 func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
+
+	height := uint32(param["height"].(float64))
+	if height <= 0 {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	hash, err := ledger.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := ledger.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 
@@ -612,16 +630,13 @@ func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{
 }
 
 func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
+
+	height := uint32(param["height"].(float64))
+	if height <= 0 {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	hash, err := ledger.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := ledger.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -632,16 +647,14 @@ func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
+
+	height := uint32(param["height"].(float64))
+
+	if height <= 0 {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	hash, err := ledger.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := ledger.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -666,9 +679,9 @@ func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interfa
 		arbitrators = append(arbitrators, BytesToHexString(data))
 	}
 
-	result := ArbitratorGroupInfo {
-		OnDutyArbitratorIndex:index,
-		Arbitrators: arbitrators,
+	result := ArbitratorGroupInfo{
+		OnDutyArbitratorIndex: index,
+		Arbitrators:           arbitrators,
 	}
 
 	return ResponsePack(Success, result)
