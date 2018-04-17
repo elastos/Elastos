@@ -93,7 +93,7 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 		referTxnOutIndex := input.ReferTxOutputIndex
 		referTxn, _, err := ledger.Store.GetTransaction(referHash)
 		if err != nil {
-			log.Warn("Referenced transaction can not be found", common.BytesToHexString(referHash.ToArray()))
+			log.Warn("Referenced transaction can not be found", common.BytesToHexString(referHash.Bytes()))
 			return ErrUnknownReferedTxn
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
@@ -124,7 +124,7 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 		coinbaseInputHash := txn.UTXOInputs[0].ReferTxID
 		coinbaseInputIndex := txn.UTXOInputs[0].ReferTxOutputIndex
 		//TODO :check sequence
-		if coinbaseInputHash.CompareTo(zeroHash) != 0 || coinbaseInputIndex != math.MaxUint16 {
+		if !coinbaseInputHash.IsEqual(zeroHash) || coinbaseInputIndex != math.MaxUint16 {
 			return errors.New("invalid coinbase input")
 		}
 
@@ -137,7 +137,7 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 	for i, utxoin := range txn.UTXOInputs {
 		referTxnHash := utxoin.ReferTxID
 		referTxnOutIndex := utxoin.ReferTxOutputIndex
-		if (referTxnHash.CompareTo(zeroHash) == 0) && (referTxnOutIndex == math.MaxUint16) {
+		if referTxnHash.IsEqual(zeroHash) && (referTxnOutIndex == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
 		for j := 0; j < i; j++ {
@@ -293,7 +293,7 @@ func CheckTransactionSignature(txn *tx.Transaction) error {
 }
 
 func checkAmountPrecise(amount common.Fixed64, precision byte) bool {
-	return amount.GetData()%int64(math.Pow(10, 8-float64(precision))) != 0
+	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
 }
 
 func CheckTransactionPayload(Tx *tx.Transaction) error {

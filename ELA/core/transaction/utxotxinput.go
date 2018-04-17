@@ -2,7 +2,7 @@ package transaction
 
 import (
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"fmt"
 	"io"
 )
@@ -29,8 +29,8 @@ func (self UTXOTxInput) String() string {
 
 func (ui *UTXOTxInput) Serialize(w io.Writer) {
 	ui.ReferTxID.Serialize(w)
-	serialization.WriteUint16(w, ui.ReferTxOutputIndex)
-	serialization.WriteUint32(w, ui.Sequence)
+	serialize.WriteUint16(w, ui.ReferTxOutputIndex)
+	serialize.WriteUint32(w, ui.Sequence)
 }
 
 func (ui *UTXOTxInput) Deserialize(r io.Reader) error {
@@ -41,13 +41,13 @@ func (ui *UTXOTxInput) Deserialize(r io.Reader) error {
 	}
 
 	//Output Index
-	temp, err := serialization.ReadUint16(r)
+	temp, err := serialize.ReadUint16(r)
 	ui.ReferTxOutputIndex = uint16(temp)
 	if err != nil {
 		return err
 	}
 
-	temp2, err := serialization.ReadUint32(r)
+	temp2, err := serialize.ReadUint32(r)
 	ui.Sequence = uint32(temp2)
 	if err != nil {
 		return err
