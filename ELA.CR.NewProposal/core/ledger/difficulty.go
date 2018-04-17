@@ -1,13 +1,13 @@
 package ledger
 
 import (
-	"Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/config"
 	"errors"
 	"math/big"
 	"time"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/log"
 )
 
 var (

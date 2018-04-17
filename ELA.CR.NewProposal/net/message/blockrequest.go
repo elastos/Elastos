@@ -5,10 +5,10 @@ import (
 	"encoding/binary"
 	"errors"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/log"
-	"Elastos.ELA/core/ledger"
-	. "Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/core/ledger"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type blocksReq struct {

@@ -4,8 +4,8 @@ import (
 	"math"
 	"sync"
 
-	. "Elastos.ELA/common"
-	tx "Elastos.ELA/core/transaction"
+	. "github.com/elastos/Elastos.ELA/common"
+	tx "github.com/elastos/Elastos.ELA/core/transaction"
 )
 
 const (

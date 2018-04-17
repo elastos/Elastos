@@ -4,9 +4,9 @@ import (
 	"net"
 	"fmt"
 
-	"Elastos.ELA/log"
-	"Elastos.ELA/net/protocol"
-	"Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/config"
 )
 
 func (node *node) listenSPVPort() {

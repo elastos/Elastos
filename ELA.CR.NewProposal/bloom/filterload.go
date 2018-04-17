@@ -3,7 +3,7 @@ package bloom
 import (
 	"bytes"
 
-	"Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 )
 
 type FilterLoad struct {

@@ -6,9 +6,9 @@ import (
 	"os"
 	"testing"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/core/auxpow"
-	"Elastos.ELA/core/ledger"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/auxpow"
+	"github.com/elastos/Elastos.ELA/core/ledger"
 )
 
 func TestMerkleBlock_GetTxMerkleBranch(t *testing.T) {

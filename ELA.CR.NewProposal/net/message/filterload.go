@@ -1,8 +1,8 @@
 package message
 
 import (
-	"Elastos.ELA/bloom"
-	"Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type FilterLoadMsg struct {

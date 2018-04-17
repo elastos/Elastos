@@ -6,12 +6,12 @@ import (
 	"net"
 	"time"
 
-	"Elastos.ELA/common"
-	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/core/transaction"
-	. "Elastos.ELA/errors"
-	"Elastos.ELA/events"
-	"Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/ledger"
+	"github.com/elastos/Elastos.ELA/core/transaction"
+	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/bloom"
 )
 
 type NodeAddr struct {

@@ -1,6 +1,6 @@
 package transaction
 
-import "Elastos.ELA/common"
+import "github.com/elastos/Elastos.ELA/common"
 
 //	Key  : AssetId common.Uint256
 //	Value: Amount common.Fixed64

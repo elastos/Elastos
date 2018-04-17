@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialize"
-	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/crypto"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/core/ledger"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type MerkleBlock struct {

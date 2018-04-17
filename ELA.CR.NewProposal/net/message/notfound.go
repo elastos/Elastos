@@ -1,10 +1,10 @@
 package message
 
 import (
-	"Elastos.ELA/common"
-	"Elastos.ELA/config"
-	"Elastos.ELA/log"
-	. "Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"

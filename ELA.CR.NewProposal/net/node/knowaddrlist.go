@@ -1,8 +1,8 @@
 package node
 
 import (
-	"Elastos.ELA/log"
-	. "Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"math/rand"
 	"sync"
 	"time"
