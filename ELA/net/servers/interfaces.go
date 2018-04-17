@@ -59,15 +59,6 @@ func TransArrayByteToHexString(ptx *tx.Transaction) *Transactions {
 	}
 
 	n = 0
-	trans.BalanceInputs = make([]BalanceTxInputInfo, len(ptx.BalanceInputs))
-	for _, v := range ptx.BalanceInputs {
-		trans.BalanceInputs[n].AssetID = BytesToHexString(BytesReverse(v.AssetID.Bytes()))
-		trans.BalanceInputs[n].Value = v.Value
-		trans.BalanceInputs[n].ProgramHash = BytesToHexString(BytesReverse(v.ProgramHash.Bytes()))
-		n++
-	}
-
-	n = 0
 	trans.Outputs = make([]TxoutputInfo, len(ptx.Outputs))
 	for _, v := range ptx.Outputs {
 		trans.Outputs[n].AssetID = BytesToHexString(BytesReverse(v.AssetID.Bytes()))
@@ -84,39 +75,6 @@ func TransArrayByteToHexString(ptx *tx.Transaction) *Transactions {
 		trans.Programs[n].Code = BytesToHexString(v.Code)
 		trans.Programs[n].Parameter = BytesToHexString(v.Parameter)
 		n++
-	}
-
-	n = 0
-	trans.AssetOutputs = make([]TxoutputMap, len(ptx.AssetOutputs))
-	for k, v := range ptx.AssetOutputs {
-		trans.AssetOutputs[n].Key = k
-		trans.AssetOutputs[n].Txout = make([]TxoutputInfo, len(v))
-		for m := 0; m < len(v); m++ {
-			trans.AssetOutputs[n].Txout[m].AssetID = BytesToHexString(BytesReverse(v[m].AssetID.Bytes()))
-			trans.AssetOutputs[n].Txout[m].Value = v[m].Value.String()
-			address, _ := v[m].ProgramHash.ToAddress()
-			trans.AssetOutputs[n].Txout[m].Address = address
-			trans.AssetOutputs[n].Txout[m].OutputLock = v[m].OutputLock
-		}
-		n += 1
-	}
-
-	trans.LockTime = ptx.LockTime
-
-	n = 0
-	trans.AssetInputAmount = make([]AmountMap, len(ptx.AssetInputAmount))
-	for k, v := range ptx.AssetInputAmount {
-		trans.AssetInputAmount[n].Key = k
-		trans.AssetInputAmount[n].Value = v
-		n += 1
-	}
-
-	n = 0
-	trans.AssetOutputAmount = make([]AmountMap, len(ptx.AssetOutputAmount))
-	for k, v := range ptx.AssetOutputAmount {
-		trans.AssetInputAmount[n].Key = k
-		trans.AssetInputAmount[n].Value = v
-		n += 1
 	}
 
 	mHash := ptx.Hash()

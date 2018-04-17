@@ -18,7 +18,6 @@ func NewCoinBaseTransaction(coinBasePayload *payload.CoinBase, currentHeight uin
 				Sequence:           0x00000000,
 			},
 		},
-		BalanceInputs: []*BalanceTxInput{},
 		Attributes:    []*TxAttribute{},
 		LockTime:      currentHeight,
 		Programs:      []*program.Program{},
