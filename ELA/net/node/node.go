@@ -1,14 +1,14 @@
 package node
 
 import (
-	. "Elastos.ELA/common"
-	. "Elastos.ELA/config"
-	"Elastos.ELA/log"
-	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/core/transaction"
-	"Elastos.ELA/events"
-	. "Elastos.ELA/net/message"
-	. "Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/core/ledger"
+	"github.com/elastos/Elastos.ELA/core/transaction"
+	"github.com/elastos/Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/net/message"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"errors"
 	"fmt"
 	"net"
@@ -21,7 +21,7 @@ import (
 	"encoding/binary"
 	"bytes"
 	"crypto/sha256"
-	"Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/bloom"
 )
 
 type Semaphore chan struct{}

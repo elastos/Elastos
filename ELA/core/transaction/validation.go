@@ -3,8 +3,8 @@ package transaction
 import (
 	"errors"
 
-	"Elastos.ELA/crypto"
-	. "Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/crypto"
+	. "github.com/elastos/Elastos.ELA/crypto"
 	"bytes"
 )
 

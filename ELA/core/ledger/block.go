@@ -8,15 +8,15 @@ import (
 	"math/rand"
 	"encoding/binary"
 
-	"Elastos.ELA/crypto"
-	. "Elastos.ELA/common"
-	"Elastos.ELA/core/asset"
-	"Elastos.ELA/log"
-	"Elastos.ELA/config"
-	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/common/serialize"
-	"Elastos.ELA/core/contract/program"
-	"Elastos.ELA/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/core/asset"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/config"
+	tx "github.com/elastos/Elastos.ELA/core/transaction"
+	"github.com/elastos/Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/transaction/payload"
 )
 
 const (

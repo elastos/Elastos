@@ -1,10 +1,10 @@
 package transaction
 
 import (
-	"Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 	"io"
 	"bytes"
-	"Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common"
 	"encoding/hex"
 )
 

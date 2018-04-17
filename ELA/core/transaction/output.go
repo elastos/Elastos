@@ -4,8 +4,8 @@ import (
 	"io"
 	"fmt"
 
-	"Elastos.ELA/common"
-	"Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 )
 
 type Output struct {

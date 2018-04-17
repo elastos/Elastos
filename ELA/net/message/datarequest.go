@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"Elastos.ELA/common"
-	"Elastos.ELA/log"
-	"Elastos.ELA/common/serialize"
-	. "Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/common/serialize"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 const (

@@ -8,15 +8,15 @@ import (
 	"errors"
 	"container/list"
 
-	"Elastos.ELA/events"
-	. "Elastos.ELA/common"
-	"Elastos.ELA/log"
-	. "Elastos.ELA/core/asset"
-	. "Elastos.ELA/store"
-	. "Elastos.ELA/core/ledger"
-	tx "Elastos.ELA/core/transaction"
-	. "Elastos.ELA/store/leveldb"
-	"Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/core/asset"
+	. "github.com/elastos/Elastos.ELA/store"
+	. "github.com/elastos/Elastos.ELA/core/ledger"
+	tx "github.com/elastos/Elastos.ELA/core/transaction"
+	. "github.com/elastos/Elastos.ELA/store/leveldb"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 )
 
 const TaskChanCap = 4

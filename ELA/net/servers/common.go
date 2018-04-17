@@ -1,15 +1,15 @@
 package servers
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/log"
-	"Elastos.ELA/consensus/pow"
-	"Elastos.ELA/core/asset"
-	. "Elastos.ELA/core/transaction"
-	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/core/transaction/payload"
-	. "Elastos.ELA/errors"
-	. "Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/consensus/pow"
+	"github.com/elastos/Elastos.ELA/core/asset"
+	. "github.com/elastos/Elastos.ELA/core/transaction"
+	tx "github.com/elastos/Elastos.ELA/core/transaction"
+	"github.com/elastos/Elastos.ELA/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 const TlsPort = 443

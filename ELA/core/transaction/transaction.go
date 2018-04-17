@@ -7,10 +7,10 @@ import (
 	"io"
 	"sort"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialize"
-	"Elastos.ELA/core/contract/program"
-	"Elastos.ELA/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/core/contract/program"
+	"github.com/elastos/Elastos.ELA/core/transaction/payload"
 )
 
 //for different transaction types with different payload format

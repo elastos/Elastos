@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/crypto"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/crypto"
 )
 
 type MerkleBranch struct {

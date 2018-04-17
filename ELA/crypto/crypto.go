@@ -10,7 +10,7 @@ import (
 	"io"
 	"math/big"
 
-	"Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 )
 
 const (
