@@ -132,12 +132,12 @@ func (this *TXNPool) verifyDoubleSpend(txn *transaction.Transaction) error {
 	if err != nil {
 		return err
 	}
-	inputs := []*transaction.UTXOTxInput{}
+	inputs := []*transaction.Input{}
 	for k := range reference {
 		if txn := this.getInputUTXOList(k); txn != nil {
 			return errors.New(fmt.Sprintf("double spent UTXO inputs detected, "+
-				"transaction hash: %x, input: %s, index: %s",
-				txn.Hash(), k.ToString()[:64], k.ToString()[64:]))
+				"transaction hash: %x, input: %s, index: %d",
+				txn.Hash(), k.Previous.TxID, k.Previous.Index))
 		}
 		inputs = append(inputs, k)
 	}
@@ -217,16 +217,16 @@ func (this *TXNPool) GetTransactionCount() int {
 	return len(this.txnList)
 }
 
-func (this *TXNPool) getInputUTXOList(input *transaction.UTXOTxInput) *transaction.Transaction {
+func (this *TXNPool) getInputUTXOList(input *transaction.Input) *transaction.Transaction {
 	this.RLock()
 	defer this.RUnlock()
-	return this.inputUTXOList[input.ToString()]
+	return this.inputUTXOList[input.ReferKey()]
 }
 
-func (this *TXNPool) addInputUTXOList(tx *transaction.Transaction, input *transaction.UTXOTxInput) bool {
+func (this *TXNPool) addInputUTXOList(tx *transaction.Transaction, input *transaction.Input) bool {
 	this.Lock()
 	defer this.Unlock()
-	id := input.ToString()
+	id := input.ReferKey()
 	_, ok := this.inputUTXOList[id]
 	if ok {
 		return false
@@ -236,10 +236,10 @@ func (this *TXNPool) addInputUTXOList(tx *transaction.Transaction, input *transa
 	return true
 }
 
-func (this *TXNPool) delInputUTXOList(input *transaction.UTXOTxInput) bool {
+func (this *TXNPool) delInputUTXOList(input *transaction.Input) bool {
 	this.Lock()
 	defer this.Unlock()
-	id := input.ToString()
+	id := input.ReferKey()
 	_, ok := this.inputUTXOList[id]
 	if !ok {
 		return false
@@ -273,9 +273,11 @@ func (this *TXNPool) MaybeAcceptTransaction(txn *tx.Transaction) error {
 func (this *TXNPool) RemoveTransaction(txn *tx.Transaction) {
 	txHash := txn.Hash()
 	for i := range txn.Outputs {
-		input := tx.UTXOTxInput{
-			ReferTxID:          txHash,
-			ReferTxOutputIndex: uint16(i),
+		input := tx.Input{
+			Previous: tx.OutPoint{
+				TxID:  txHash,
+				Index: uint16(i),
+			},
 		}
 
 		txn := this.getInputUTXOList(&input)

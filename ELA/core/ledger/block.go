@@ -164,9 +164,9 @@ func GenesisBlockInit() (*Block, error) {
 			Amount:     0 * 100000000,
 			Controller: Uint168{},
 		},
-		Attributes: []*tx.TxAttribute{},
-		UTXOInputs: []*tx.UTXOTxInput{},
-		Outputs:    []*tx.TxOutput{},
+		Attributes: []*tx.Attribute{},
+		Inputs:     []*tx.Input{},
+		Outputs:    []*tx.Output{},
 		Programs:   []*program.Program{},
 	}
 
@@ -180,7 +180,7 @@ func GenesisBlockInit() (*Block, error) {
 		return nil, err
 	}
 
-	trans.Outputs = []*tx.TxOutput{
+	trans.Outputs = []*tx.Output{
 		{
 			AssetID:     systemToken.Hash(),
 			Value:       3300 * 10000 * 100000000,

@@ -226,13 +226,13 @@ func (bd *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 }
 
 func (bd *ChainStore) IsDoubleSpend(txn *tx.Transaction) bool {
-	if len(txn.UTXOInputs) == 0 {
+	if len(txn.Inputs) == 0 {
 		return false
 	}
 
 	unspentPrefix := []byte{byte(IX_Unspent)}
-	for i := 0; i < len(txn.UTXOInputs); i++ {
-		txhash := txn.UTXOInputs[i].ReferTxID
+	for i := 0; i < len(txn.Inputs); i++ {
+		txhash := txn.Inputs[i].Previous.TxID
 		unspentValue, err_get := bd.Get(append(unspentPrefix, txhash.Bytes()...))
 		if err_get != nil {
 			return true
@@ -241,7 +241,7 @@ func (bd *ChainStore) IsDoubleSpend(txn *tx.Transaction) bool {
 		unspents, _ := GetUint16Array(unspentValue)
 		findFlag := false
 		for k := 0; k < len(unspents); k++ {
-			if unspents[k] == txn.UTXOInputs[i].ReferTxOutputIndex {
+			if unspents[k] == txn.Inputs[i].Previous.Index {
 				findFlag = true
 				break
 			}
@@ -625,7 +625,7 @@ func (bd *ChainStore) BlockInCache(hash Uint256) bool {
 	return false
 }
 
-func (bd *ChainStore) GetUnspent(txid Uint256, index uint16) (*tx.TxOutput, error) {
+func (bd *ChainStore) GetUnspent(txid Uint256, index uint16) (*tx.Output, error) {
 	if ok, _ := bd.ContainsUnspent(txid, index); ok {
 		Tx, _, err := bd.GetTransaction(txid)
 		if err != nil {

@@ -42,10 +42,10 @@ func TransArrayByteToHexString(ptx *tx.Transaction) *Transactions {
 	n = 0
 	isCoinbase := ptx.IsCoinBaseTx()
 	reference, _ := ptx.GetReference()
-	trans.UTXOInputs = make([]UTXOTxInputInfo, len(ptx.UTXOInputs))
-	for _, v := range ptx.UTXOInputs {
-		trans.UTXOInputs[n].ReferTxID = BytesToHexString(BytesReverse(v.ReferTxID.Bytes()))
-		trans.UTXOInputs[n].ReferTxOutputIndex = v.ReferTxOutputIndex
+	trans.UTXOInputs = make([]UTXOTxInputInfo, len(ptx.Inputs))
+	for _, v := range ptx.Inputs {
+		trans.UTXOInputs[n].ReferTxID = BytesToHexString(BytesReverse(v.Previous.TxID.Bytes()))
+		trans.UTXOInputs[n].ReferTxOutputIndex = v.Previous.Index
 		trans.UTXOInputs[n].Sequence = v.Sequence
 		if isCoinbase {
 			trans.UTXOInputs[n].Address = ""

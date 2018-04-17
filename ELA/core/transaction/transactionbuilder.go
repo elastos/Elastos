@@ -11,15 +11,17 @@ func NewCoinBaseTransaction(coinBasePayload *payload.CoinBase, currentHeight uin
 		TxType:         CoinBase,
 		PayloadVersion: payload.CoinBasePayloadVersion,
 		Payload:        coinBasePayload,
-		UTXOInputs: []*UTXOTxInput{
+		Inputs: []*Input{
 			{
-				ReferTxID:          common.Uint256{},
-				ReferTxOutputIndex: 0x0000,
-				Sequence:           0x00000000,
+				Previous: OutPoint{
+					TxID:  common.Uint256{},
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
 			},
 		},
-		Attributes:    []*TxAttribute{},
-		LockTime:      currentHeight,
-		Programs:      []*program.Program{},
+		Attributes: []*Attribute{},
+		LockTime:   currentHeight,
+		Programs:   []*program.Program{},
 	}, nil
 }
