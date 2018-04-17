@@ -5,97 +5,198 @@
 #ifndef __ELASTOS_SDK_COREWALLETMANAGER_H__
 #define __ELASTOS_SDK_COREWALLETMANAGER_H__
 
-#include <boost/enable_shared_from_this.hpp>
+#include <boost/thread.hpp>
 
 #include "Wallet.h"
+#include "Executor.h"
 #include "PeerManager.h"
 #include "ChainParams.h"
 #include "MasterPubKey.h"
 
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        class CoreWalletManager :
-                public boost::enable_shared_from_this<CoreWalletManager>,
-                public Wallet::Listener,
-                public PeerManager::Listener {
+		class CoreWalletManager :
+				public Wallet::Listener,
+				public PeerManager::Listener {
 
-        public:
-            CoreWalletManager(const MasterPubKeyPtr &masterPubKey,
-                              const ChainParams &chainParams,
-                              uint32_t earliestPeerTime);
+		public:
+			CoreWalletManager(const MasterPubKeyPtr &masterPubKey,
+							  const ChainParams &chainParams,
+							  uint32_t earliestPeerTime);
 
-            const WalletPtr &getWallet();
+			virtual ~CoreWalletManager();
 
-            const PeerManagerPtr &getPeerManager();
+			const WalletPtr &getWallet();
 
-            UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase);
+			const PeerManagerPtr &getPeerManager();
 
-            std::string toString() const;
+			UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase);
 
-        public: //override from Wallet
-            // func balanceChanged(_ balance: UInt64)
-            virtual void balanceChanged(uint64_t balance);
+			std::string toString() const;
 
-            // func txAdded(_ tx: BRTxRef)
-            virtual void onTxAdded(Transaction *transaction);
+		public: //override from Wallet
+			// func balanceChanged(_ balance: UInt64)
+			virtual void balanceChanged(uint64_t balance);
 
-            // func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
-            virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+			// func txAdded(_ tx: BRTxRef)
+			virtual void onTxAdded(Transaction *transaction);
 
-            // func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
-            virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+			// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
+			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-        public: //override from PeerManager
-            // func syncStarted()
-            virtual void syncStarted();
+			// func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
-            // func syncStopped(_ error: BRPeerManagerError?)
-            virtual void syncStopped(const std::string &error);
+		public: //override from PeerManager
+			// func syncStarted()
+			virtual void syncStarted();
 
-            // func txStatusUpdate()
-            virtual void txStatusUpdate();
+			// func syncStopped(_ error: BRPeerManagerError?)
+			virtual void syncStopped(const std::string &error);
 
-            // func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-            virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+			// func txStatusUpdate()
+			virtual void txStatusUpdate();
 
-            // func savePeers(_ replace: Bool, _ peers: [BRPeer])
-            virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
+			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
-            // func networkIsReachable() -> Bool}
-            virtual bool networkIsReachable();
+			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
+			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
 
-            // Called on publishTransaction
-            virtual void txPublished(const std::string &error);
+			// func networkIsReachable() -> Bool}
+			virtual bool networkIsReachable();
 
-        protected:
-            SharedWrapperList<Transaction, BRTransaction*> loadTransactions();
+			// Called on publishTransaction
+			virtual void txPublished(const std::string &error);
 
-            SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+		protected:
+			SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 
-            WrapperList<Peer, BRPeer> loadPeers();
+			SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
 
-            int getForkId () const;
+			WrapperList<Peer, BRPeer> loadPeers();
 
-        protected:
-            static bool SHOW_CALLBACK;
-            static bool SHOW_CALLBACK_DETAIL;
+			int getForkId() const;
 
-            static bool SHOW_CALLBACK_DETAIL_TX_STATUS;
-            static bool SHOW_CALLBACK_DETAIL_TX_IO;
+			typedef boost::shared_ptr<PeerManager::Listener> PeerManagerListenerPtr;
+			const PeerManagerListenerPtr &createPeerManagerListener();
 
-            MasterPubKeyPtr _masterPubKey;
+			typedef boost::shared_ptr<Wallet::Listener> WalletListenerPtr;
+			const WalletListenerPtr &createWalletListener();
 
-            ChainParams _chainParams;
+		protected:
+			static bool SHOW_CALLBACK;
+			static bool SHOW_CALLBACK_DETAIL;
 
-            uint32_t _earliestPeerTime;
+			static bool SHOW_CALLBACK_DETAIL_TX_STATUS;
+			static bool SHOW_CALLBACK_DETAIL_TX_IO;
 
-            WalletPtr _wallet; // Optional<BRCoreWallet>
+			MasterPubKeyPtr _masterPubKey;
 
-            PeerManagerPtr _peerManager; // Optional<BRCorePeerManager>
-        };
+			ChainParams _chainParams;
 
-    }
+			uint32_t _earliestPeerTime;
+
+			WalletPtr _wallet; // Optional<BRCoreWallet>
+			WalletListenerPtr _walletListener;
+
+			PeerManagerPtr _peerManager; // Optional<BRCorePeerManager>
+			PeerManagerListenerPtr _peerManagerListener;
+		};
+
+		// Callbacks from JNI code that throw an exception are QUIETLY SWALLOWED.  We'll provide
+		// a wrapper class, implementing each Listener used for callbacks.  The wrapper class
+		// will catch any exception and issue some warning, or something.
+		class WrappedExceptionPeerManagerListener :
+				public PeerManager::Listener {
+		public:
+			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener);
+
+			virtual void syncStarted();
+
+			virtual void syncStopped(const std::string &error);
+
+			virtual void txStatusUpdate();
+
+			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+
+			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+
+			virtual bool networkIsReachable();
+
+			virtual void txPublished(const std::string &error);
+
+		private:
+			PeerManager::Listener *_listener;
+		};
+
+		// Callbacks from Core, via JNI, run on a Core thread - they absolutely should not run on a
+		// Core thread.
+		class WrappedExecutorPeerManagerListener :
+				public PeerManager::Listener {
+		public:
+			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
+				const boost::shared_ptr<Executor> &executor);
+
+			virtual void syncStarted();
+
+			virtual void syncStopped(const std::string &error);
+
+			virtual void txStatusUpdate();
+
+			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+
+			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+
+			virtual bool networkIsReachable();
+
+			virtual void txPublished(const std::string &error);
+
+		private:
+			PeerManager::Listener *_listener;
+			boost::shared_ptr<Executor> _executor;
+		};
+
+		// Exception Wrapped WalletListener
+		class WrappedExceptionWalletListener :
+				public Wallet::Listener {
+		public:
+			WrappedExceptionWalletListener(Wallet::Listener *listener);
+
+			virtual void balanceChanged(uint64_t balance);
+
+			virtual void onTxAdded(Transaction *transaction);
+
+			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+
+		private:
+			Wallet::Listener *_listener;
+		};
+
+		// Executor Wrapped WalletListener
+		class WrappedExecutorWalletListener :
+				public Wallet::Listener {
+		public:
+			WrappedExecutorWalletListener(Wallet::Listener *listener,
+										  const boost::shared_ptr<Executor> &executor);
+
+			virtual void balanceChanged(uint64_t balance);
+
+			virtual void onTxAdded(Transaction *transaction);
+
+			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+
+		private:
+			Wallet::Listener *_listener;
+			boost::shared_ptr<Executor> _executor;
+		};
+
+	}
 }
 
 #endif //__ELASTOS_SDK_COREWALLETMANAGER_H__

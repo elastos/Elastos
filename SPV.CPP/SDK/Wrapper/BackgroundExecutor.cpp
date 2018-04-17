@@ -1,0 +1,39 @@
+// Copyright (c) 2012-2018 The Elastos Open Source Project
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+#include "BackgroundExecutor.h"
+
+using namespace boost;
+using namespace asio;
+
+namespace Elastos {
+	namespace SDK {
+
+		BackgroundExecutor::BackgroundExecutor(uint8_t threadCount) {
+			initThread(threadCount);
+		}
+
+		BackgroundExecutor::~BackgroundExecutor() {
+			stopThread();
+		}
+
+		void BackgroundExecutor::execute(const Runnable &runnable) {
+			_workerService.post(runnable.Closure);
+		}
+
+		void BackgroundExecutor::initThread(uint8_t threadCount) {
+			_workerLoop = boost::shared_ptr<io_service::work>(new io_service::work(_workerService));
+
+			for (uint8_t i = 0; i < threadCount; ++i) {
+				_workerThreadPool.create_thread(boost::bind(&io_service::run, &_workerService));
+			}
+		}
+
+		void BackgroundExecutor::stopThread() {
+			_workerService.stop();
+			_workerThreadPool.join_all();
+		}
+
+	}
+}

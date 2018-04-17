@@ -6,8 +6,12 @@ foreach(src ${TEST_SOURCE_FILES})
 	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
 	target_link_libraries(${TEST_TARGET_NAME} pthread)
 	target_link_libraries(${TEST_TARGET_NAME} sqlite3)
+	#sudo apt-get install libboost-dev
 	target_link_libraries(${TEST_TARGET_NAME} boost_system)
+	#sudo apt-get install libboost-program-options-dev
 	target_link_libraries(${TEST_TARGET_NAME} boost_program_options)
+	#sudo apt-get install libboost-thread-dev
+	target_link_libraries(${TEST_TARGET_NAME} boost_thread)
 endforeach(src)
 
 
