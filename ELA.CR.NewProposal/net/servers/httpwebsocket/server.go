@@ -266,7 +266,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	switch action {
 	case "sendblock":
 		if block, ok := v.(*ledger.Block); ok {
-			result = GetBlockInfo(block)
+			result = GetBlockDetailInfo(block)
 		}
 	case "sendrawblock":
 		if block, ok := v.(*ledger.Block); ok {
