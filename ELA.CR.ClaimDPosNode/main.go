@@ -69,7 +69,7 @@ func main() {
 	var noder protocol.Noder
 	log.Info("1. BlockChain init")
 	ledger.DefaultLedger = new(ledger.Ledger)
-	ledger.DefaultLedger.Store, err = chainstore.NewLedgerStore()
+	ledger.DefaultLedger.Store, err = ChainStore.NewLedgerStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
