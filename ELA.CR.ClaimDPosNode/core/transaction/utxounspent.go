@@ -2,7 +2,7 @@ package transaction
 
 import (
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/serialize"
+	"Elastos.ELA/common/serialization"
 	"io"
 )
 
@@ -14,14 +14,14 @@ type UTXOUnspent struct {
 
 func (uu *UTXOUnspent) Serialize(w io.Writer) {
 	uu.Txid.Serialize(w)
-	serialize.WriteUint32(w, uu.Index)
+	serialization.WriteUint32(w, uu.Index)
 	uu.Value.Serialize(w)
 }
 
 func (uu *UTXOUnspent) Deserialize(r io.Reader) error {
 	uu.Txid.Deserialize(r)
 
-	index, err := serialize.ReadUint32(r)
+	index, err := serialization.ReadUint32(r)
 	uu.Index = uint32(index)
 	if err != nil {
 		return err

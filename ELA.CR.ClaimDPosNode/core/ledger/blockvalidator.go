@@ -20,9 +20,8 @@ const (
 )
 
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
-	header := block.Header
-	hash := header.Hash()
-	if !header.AuxPow.Check(&hash, auxpow.AuxPowChainID) {
+	header := block.Blockdata
+	if !header.AuxPow.Check(header.Hash(), auxpow.AuxPowChainID) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
 	if CheckProofOfWork(header, powLimit) != nil {
@@ -80,7 +79,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	if err != nil {
 		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
 	}
-	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+	if header.TransactionsRoot.CompareTo(calcTransactionsRoot) != 0 {
 		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
 	}
 
@@ -111,7 +110,7 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 		return nil
 	}
 
-	header := block.Header
+	header := block.Blockdata
 	expectedDifficulty, err := CalcNextRequiredDifficulty(prevNode,
 		time.Unix(int64(header.Timestamp), 0))
 	if err != nil {
@@ -142,6 +141,7 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 		}
 	}
 
+
 	// for _, txVerify := range block.Transactions {
 	// 	if errCode := CheckTransactionContext(txVerify, ledger); errCode != ErrNoError {
 	// 		fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
@@ -152,7 +152,7 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 	return nil
 }
 
-func CheckProofOfWork(bd *Header, powLimit *big.Int) error {
+func CheckProofOfWork(bd *Blockdata, powLimit *big.Int) error {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(bd.Bits)
 	if target.Sign() <= 0 {
