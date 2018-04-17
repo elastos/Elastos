@@ -1,4 +1,4 @@
-package chainstore
+package ChainStore
 
 import (
 	"fmt"
@@ -15,8 +15,9 @@ import (
 	. "Elastos.ELA/core/store"
 	. "Elastos.ELA/core/ledger"
 	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/common/serialize"
-	. "Elastos.ELA/core/store/leveldbstore"
+	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/core/contract/program"
+	. "Elastos.ELA/core/store/LevelDBStore"
 )
 
 const TaskChanCap = 4
@@ -119,8 +120,8 @@ func (self *ChainStore) clearCache(b *Block) {
 
 	for e := self.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
-		h := n.Hash()
-		if h.IsEqual(b.Hash()) {
+		h := n.Blockdata.Hash()
+		if h.CompareTo(b.Hash()) == 0 {
 			self.headerIdx.Remove(e)
 		}
 	}
@@ -177,7 +178,7 @@ func (bd *ChainStore) InitLedgerStoreWithGenesisBlock(genesisBlock *Block) (uint
 	r := bytes.NewReader(data)
 	var blockHash Uint256
 	blockHash.Deserialize(r)
-	bd.currentBlockHeight, err = serialize.ReadUint32(r)
+	bd.currentBlockHeight, err = serialization.ReadUint32(r)
 	endHeight := bd.currentBlockHeight
 
 	startHeight := uint32(0)
@@ -194,7 +195,7 @@ func (bd *ChainStore) InitLedgerStoreWithGenesisBlock(genesisBlock *Block) (uint
 		if err != nil {
 			return 0, err
 		}
-		node, err := bd.ledger.Blockchain.LoadBlockNode(header, &hash)
+		node, err := bd.ledger.Blockchain.LoadBlockNode(header.Blockdata, &hash)
 		if err != nil {
 			return 0, err
 		}
@@ -217,7 +218,7 @@ func (bd *ChainStore) InitLedgerStore(l *Ledger) error {
 
 func (bd *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 	prefix := []byte{byte(DATA_Transaction)}
-	_, err_get := bd.Get(append(prefix, txhash.Bytes()...))
+	_, err_get := bd.Get(append(prefix, txhash.ToArray()...))
 	if err_get != nil {
 		return false
 	} else {
@@ -233,7 +234,7 @@ func (bd *ChainStore) IsDoubleSpend(txn *tx.Transaction) bool {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	for i := 0; i < len(txn.UTXOInputs); i++ {
 		txhash := txn.UTXOInputs[i].ReferTxID
-		unspentValue, err_get := bd.Get(append(unspentPrefix, txhash.Bytes()...))
+		unspentValue, err_get := bd.Get(append(unspentPrefix, txhash.ToArray()...))
 		if err_get != nil {
 			return true
 		}
@@ -258,7 +259,7 @@ func (bd *ChainStore) IsDoubleSpend(txn *tx.Transaction) bool {
 func (bd *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	queryKey := bytes.NewBuffer(nil)
 	queryKey.WriteByte(byte(DATA_BlockHash))
-	err := serialize.WriteUint32(queryKey, height)
+	err := serialization.WriteUint32(queryKey, height)
 
 	if err != nil {
 		return Uint256{}, err
@@ -268,19 +269,19 @@ func (bd *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 		//TODO: implement error process
 		return Uint256{}, err
 	}
-	blockHash256, err := Uint256FromBytes(blockHash)
+	blockHash256, err := Uint256ParseFromBytes(blockHash)
 	if err != nil {
 		return Uint256{}, err
 	}
 
-	return *blockHash256, nil
+	return blockHash256, nil
 }
 
 func (bd *ChainStore) getHeaderWithCache(hash Uint256) *Header {
 	for e := bd.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
-		eh := n.Hash()
-		if eh.IsEqual(hash) {
+		eh := n.Blockdata.Hash()
+		if eh.CompareTo(hash) == 0 {
 			return &n
 		}
 	}
@@ -309,11 +310,13 @@ func (db *ChainStore) RollbackBlock(blockHash Uint256) error {
 }
 
 func (bd *ChainStore) GetHeader(hash Uint256) (*Header, error) {
-	var h = new(Header)
-	h = new(Header)
+	var h *Header = new(Header)
+
+	h.Blockdata = new(Blockdata)
+	h.Blockdata.Program = new(program.Program)
 
 	prefix := []byte{byte(DATA_Header)}
-	data, err_get := bd.Get(append(prefix, hash.Bytes()...))
+	data, err_get := bd.Get(append(prefix, hash.ToArray()...))
 	//log.Debug( "Get Header Data: %x\n",  data )
 	if err_get != nil {
 		//TODO: implement error process
@@ -322,7 +325,7 @@ func (bd *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 
 	r := bytes.NewReader(data)
 	// first 8 bytes is sys_fee
-	sysfee, err := serialize.ReadUint64(r)
+	sysfee, err := serialization.ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
@@ -366,7 +369,7 @@ func (bd *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	asset := new(Asset)
 
 	prefix := []byte{byte(ST_Info)}
-	data, err_get := bd.Get(append(prefix, hash.Bytes()...))
+	data, err_get := bd.Get(append(prefix, hash.ToArray()...))
 
 	log.Debug(fmt.Sprintf("GetAsset Data: %x\n", data))
 	if err_get != nil {
@@ -381,14 +384,14 @@ func (bd *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 }
 
 func (bd *ChainStore) GetTransaction(hash Uint256) (*tx.Transaction, uint32, error) {
-	key := append([]byte{byte(DATA_Transaction)}, hash.Bytes()...)
+	key := append([]byte{byte(DATA_Transaction)}, hash.ToArray()...)
 	value, err := bd.Get(key)
 	if err != nil {
 		return nil, 0, err
 	}
 
 	r := bytes.NewReader(value)
-	height, err := serialize.ReadUint32(r)
+	height, err := serialization.ReadUint32(r)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -414,7 +417,7 @@ func (bd *ChainStore) PersistTransaction(tx *tx.Transaction, height uint32) erro
 
 	// generate value
 	w := bytes.NewBuffer(nil)
-	serialize.WriteUint32(w, height)
+	serialization.WriteUint32(w, height)
 	tx.Serialize(w)
 	log.Debug(fmt.Sprintf("transaction tx data: %x\n", w))
 
@@ -428,11 +431,13 @@ func (bd *ChainStore) PersistTransaction(tx *tx.Transaction, height uint32) erro
 }
 
 func (bd *ChainStore) GetBlock(hash Uint256) (*Block, error) {
-	var b = new(Block)
-	b.Header = new(Header)
+	var b *Block = new(Block)
+
+	b.Blockdata = new(Blockdata)
+	b.Blockdata.Program = new(program.Program)
 
 	prefix := []byte{byte(DATA_Header)}
-	bHash, err := bd.Get(append(prefix, hash.Bytes()...))
+	bHash, err := bd.Get(append(prefix, hash.ToArray()...))
 	if err != nil {
 		return nil, err
 	}
@@ -440,7 +445,7 @@ func (bd *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	r := bytes.NewReader(bHash)
 
 	// first 8 bytes is sys_fee
-	_, err = serialize.ReadUint64(r)
+	_, err = serialization.ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
@@ -472,9 +477,9 @@ func (db *ChainStore) rollback(b *Block) error {
 	db.RollbackCurrentBlock(b)
 	db.BatchFinish()
 
-	db.ledger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
+	db.ledger.Blockchain.UpdateBestHeight(b.Blockdata.Height - 1)
 	db.mu.Lock()
-	db.currentBlockHeight = b.Header.Height - 1
+	db.currentBlockHeight = b.Blockdata.Height - 1
 	db.mu.Unlock()
 
 	db.ledger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
@@ -500,17 +505,17 @@ func (db *ChainStore) persist(b *Block) error {
 // can only be invoked by backend write goroutine
 func (bd *ChainStore) addHeader(header *Header) {
 
-	log.Debugf("addHeader(), Height=%d\n", header.Height)
+	log.Debugf("addHeader(), Height=%d\n", header.Blockdata.Height)
 
-	hash := header.Hash()
+	hash := header.Blockdata.Hash()
 
 	bd.mu.Lock()
-	bd.headerCache[header.Hash()] = header
-	bd.headerIndex[header.Height] = hash
+	bd.headerCache[header.Blockdata.Hash()] = header
+	bd.headerIndex[header.Blockdata.Height] = hash
 	bd.headerIdx.PushBack(*header)
 	bd.mu.Unlock()
 
-	log.Debug("[addHeader]: finish, header height:", header.Height)
+	log.Debug("[addHeader]: finish, header height:", header.Blockdata.Height)
 }
 
 func (self *ChainStore) SaveBlock(b *Block, ledger *Ledger) error {
@@ -533,7 +538,7 @@ func (self *ChainStore) SaveBlock(b *Block, ledger *Ledger) error {
 func (db *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 	block, err := db.GetBlock(blockHash)
 	if err != nil {
-		log.Errorf("block %x can't be found", BytesToHexString(blockHash.Bytes()))
+		log.Errorf("block %x can't be found", BytesToHexString(blockHash.ToArray()))
 		return
 	}
 	db.rollback(block)
@@ -541,7 +546,7 @@ func (db *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 
 func (self *ChainStore) handlePersistBlockTask(b *Block, ledger *Ledger) {
 
-	if b.Header.Height <= self.currentBlockHeight {
+	if b.Blockdata.Height <= self.currentBlockHeight {
 		return
 	}
 
@@ -549,17 +554,17 @@ func (self *ChainStore) handlePersistBlockTask(b *Block, ledger *Ledger) {
 	//self.blockCache[b.Hash()] = b
 	//self.mu.Unlock()
 
-	//log.Trace(b.Header.Height)
-	//log.Trace(b.Header)
+	//log.Trace(b.Blockdata.Height)
+	//log.Trace(b.Blockdata)
 	//log.Trace(b.Transactions[0])
-	//if b.Header.Height < uint32(len(self.headerIndex)) {
+	//if b.Blockdata.Height < uint32(len(self.headerIndex)) {
 	self.persistBlocks(b, ledger)
 
 	//self.NewBatch()
 	//storedHeaderCount := self.storedHeaderCount
 	//for self.currentBlockHeight-storedHeaderCount >= HeaderHashListCount {
 	//	hashBuffer := new(bytes.Buffer)
-	//	serialize.WriteVarUint(hashBuffer, uint64(HeaderHashListCount))
+	//	serialization.WriteVarUint(hashBuffer, uint64(HeaderHashListCount))
 	//	var hashArray []byte
 	//	for i := 0; i < HeaderHashListCount; i++ {
 	//		index := storedHeaderCount + uint32(i)
@@ -571,7 +576,7 @@ func (self *ChainStore) handlePersistBlockTask(b *Block, ledger *Ledger) {
 
 	//	hhlPrefix := bytes.NewBuffer(nil)
 	//	hhlPrefix.WriteByte(byte(IX_HeaderHashList))
-	//	serialize.WriteUint32(hhlPrefix, storedHeaderCount)
+	//	serialization.WriteUint32(hhlPrefix, storedHeaderCount)
 
 	//	self.BatchPut(hhlPrefix.Bytes(), hashBuffer.Bytes())
 	//	storedHeaderCount += HeaderHashListCount
@@ -597,7 +602,7 @@ func (bd *ChainStore) persistBlocks(block *Block, ledger *Ledger) {
 	//if !ok {
 	//	break
 	//}
-	//log.Trace(block.Header)
+	//log.Trace(block.Blockdata)
 	//log.Trace(block.Transactions[0])
 	err := bd.persist(block)
 	if err != nil {
@@ -606,14 +611,14 @@ func (bd *ChainStore) persistBlocks(block *Block, ledger *Ledger) {
 	}
 
 	// PersistCompleted event
-	//ledger.Blockchain.BlockHeight = block.Header.Height
-	ledger.Blockchain.UpdateBestHeight(block.Header.Height)
+	//ledger.Blockchain.BlockHeight = block.Blockdata.Height
+	ledger.Blockchain.UpdateBestHeight(block.Blockdata.Height)
 	bd.mu.Lock()
-	bd.currentBlockHeight = block.Header.Height
+	bd.currentBlockHeight = block.Blockdata.Height
 	bd.mu.Unlock()
 
 	ledger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
-	//log.Tracef("The latest block height:%d, block hash: %x", block.Header.Height, hash)
+	//log.Tracef("The latest block height:%d, block hash: %x", block.Blockdata.Height, hash)
 	//}
 
 }
@@ -640,7 +645,7 @@ func (bd *ChainStore) GetUnspent(txid Uint256, index uint16) (*tx.TxOutput, erro
 
 func (bd *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
 	unspentPrefix := []byte{byte(IX_Unspent)}
-	unspentValue, err_get := bd.Get(append(unspentPrefix, txid.Bytes()...))
+	unspentValue, err_get := bd.Get(append(unspentPrefix, txid.ToArray()...))
 
 	if err_get != nil {
 		return false, err_get
@@ -663,8 +668,8 @@ func (bd *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) 
 func (bd *ChainStore) RemoveHeaderListElement(hash Uint256) {
 	for e := bd.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
-		h := n.Hash()
-		if h.IsEqual(hash) {
+		h := n.Blockdata.Hash()
+		if h.CompareTo(hash) == 0 {
 			bd.headerIdx.Remove(e)
 		}
 	}
@@ -679,9 +684,9 @@ func (bd *ChainStore) GetHeight() uint32 {
 
 func (bd *ChainStore) IsBlockInStore(hash Uint256) bool {
 	var b *Block = new(Block)
-	b.Header = new(Header)
+	b.Blockdata = new(Blockdata)
 	prefix := []byte{byte(DATA_Header)}
-	blockData, err_get := bd.Get(append(prefix, hash.Bytes()...))
+	blockData, err_get := bd.Get(append(prefix, hash.ToArray()...))
 	if err_get != nil {
 		return false
 	}
@@ -689,7 +694,7 @@ func (bd *ChainStore) IsBlockInStore(hash Uint256) bool {
 	r := bytes.NewReader(blockData)
 
 	// first 8 bytes is sys_fee
-	_, err := serialize.ReadUint64(r)
+	_, err := serialization.ReadUint64(r)
 	if err != nil {
 		return false
 	}
@@ -700,7 +705,7 @@ func (bd *ChainStore) IsBlockInStore(hash Uint256) bool {
 		return false
 	}
 
-	if b.Header.Height > bd.currentBlockHeight {
+	if b.Blockdata.Height > bd.currentBlockHeight {
 		return false
 	}
 
@@ -709,11 +714,11 @@ func (bd *ChainStore) IsBlockInStore(hash Uint256) bool {
 
 func (bd *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, assetid Uint256, height uint32) ([]*tx.UTXOUnspent, error) {
 	prefix := []byte{byte(IX_Unspent_UTXO)}
-	prefix = append(prefix, programHash.Bytes()...)
-	prefix = append(prefix, assetid.Bytes()...)
+	prefix = append(prefix, programHash.ToArray()...)
+	prefix = append(prefix, assetid.ToArray()...)
 
 	key := bytes.NewBuffer(prefix)
-	if err := serialize.WriteUint32(key, height); err != nil {
+	if err := serialization.WriteUint32(key, height); err != nil {
 		return nil, err
 	}
 	unspentsData, err := bd.Get(key.Bytes())
@@ -721,7 +726,7 @@ func (bd *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, asse
 		return nil, err
 	}
 	r := bytes.NewReader(unspentsData)
-	listNum, err := serialize.ReadVarUint(r, 0)
+	listNum, err := serialization.ReadVarUint(r, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -745,12 +750,12 @@ func (bd *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uin
 	unspents := make([]*tx.UTXOUnspent, 0)
 
 	key := []byte{byte(IX_Unspent_UTXO)}
-	key = append(key, programHash.Bytes()...)
-	key = append(key, assetid.Bytes()...)
+	key = append(key, programHash.ToArray()...)
+	key = append(key, assetid.ToArray()...)
 	iter := bd.NewIterator(key)
 	for iter.Next() {
 		r := bytes.NewReader(iter.Value())
-		listNum, err := serialize.ReadVarUint(r, 0)
+		listNum, err := serialization.ReadVarUint(r, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -774,20 +779,20 @@ func (bd *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint2
 	uxtoUnspents := make(map[Uint256][]*tx.UTXOUnspent)
 
 	prefix := []byte{byte(IX_Unspent_UTXO)}
-	key := append(prefix, programHash.Bytes()...)
+	key := append(prefix, programHash.ToArray()...)
 	iter := bd.NewIterator(key)
 	for iter.Next() {
 		rk := bytes.NewReader(iter.Key())
 
 		// read prefix
-		_, _ = serialize.ReadBytes(rk, 1)
+		_, _ = serialization.ReadBytes(rk, 1)
 		var ph Uint168
 		ph.Deserialize(rk)
 		var assetid Uint256
 		assetid.Deserialize(rk)
 
 		r := bytes.NewReader(iter.Value())
-		listNum, err := serialize.ReadVarUint(r, 0)
+		listNum, err := serialization.ReadVarUint(r, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -811,10 +816,10 @@ func (bd *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint2
 
 func (bd *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid Uint256, height uint32, unspents []*tx.UTXOUnspent) error {
 	prefix := []byte{byte(IX_Unspent_UTXO)}
-	prefix = append(prefix, programHash.Bytes()...)
-	prefix = append(prefix, assetid.Bytes()...)
+	prefix = append(prefix, programHash.ToArray()...)
+	prefix = append(prefix, assetid.ToArray()...)
 	key := bytes.NewBuffer(prefix)
-	if err := serialize.WriteUint32(key, height); err != nil {
+	if err := serialization.WriteUint32(key, height); err != nil {
 		return err
 	}
 
@@ -825,7 +830,7 @@ func (bd *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid
 
 	listnum := len(unspents)
 	w := bytes.NewBuffer(nil)
-	serialize.WriteVarUint(w, uint64(listnum))
+	serialization.WriteVarUint(w, uint64(listnum))
 	for i := 0; i < listnum; i++ {
 		unspents[i].Serialize(w)
 	}
@@ -846,10 +851,10 @@ func (bd *ChainStore) GetAssets() map[Uint256]*Asset {
 		rk := bytes.NewReader(iter.Key())
 
 		// read prefix
-		_, _ = serialize.ReadBytes(rk, 1)
+		_, _ = serialization.ReadBytes(rk, 1)
 		var assetid Uint256
 		assetid.Deserialize(rk)
-		log.Tracef("[GetAssets] assetid: %x\n", assetid.Bytes())
+		log.Tracef("[GetAssets] assetid: %x\n", assetid.ToArray())
 
 		asset := new(Asset)
 		r := bytes.NewReader(iter.Value())

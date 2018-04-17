@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/serialize"
+	"Elastos.ELA/common/serialization"
 )
 
 type TxOutput struct {
@@ -25,7 +25,7 @@ func (self TxOutput) String() string {
 }
 
 func (o *TxOutput) Serialize(w io.Writer) error {
-	err := o.AssetID.Serialize(w)
+	_, err := o.AssetID.Serialize(w)
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func (o *TxOutput) Serialize(w io.Writer) error {
 		return err
 	}
 
-	serialize.WriteUint32(w, o.OutputLock)
+	serialization.WriteUint32(w, o.OutputLock)
 
-	err = o.ProgramHash.Serialize(w)
+	_, err = o.ProgramHash.Serialize(w)
 	if err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func (o *TxOutput) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	temp, err := serialize.ReadUint32(r)
+	temp, err := serialization.ReadUint32(r)
 	if err != nil {
 		return err
 	}

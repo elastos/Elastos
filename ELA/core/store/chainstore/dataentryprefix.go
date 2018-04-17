@@ -1,4 +1,4 @@
-package chainstore
+package ChainStore
 
 // DataEntryPrefix
 type DataEntryPrefix byte

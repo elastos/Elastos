@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	"Elastos.ELA/common/serialize"
+	"Elastos.ELA/common/serialization"
 	"errors"
 	"io"
 	"fmt"
@@ -65,20 +65,20 @@ func (u *TxAttribute) GetSize() uint32 {
 }
 
 func (tx *TxAttribute) Serialize(w io.Writer) error {
-	if err := serialize.WriteUint8(w, byte(tx.Usage)); err != nil {
+	if err := serialization.WriteUint8(w, byte(tx.Usage)); err != nil {
 		return errors.New("Transaction attribute Usage serialization error.")
 	}
 	if !IsValidAttributeType(tx.Usage) {
 		return errors.New("[TxAttribute error] Unsupported attribute Description.")
 	}
-	if err := serialize.WriteVarBytes(w, tx.Data); err != nil {
+	if err := serialization.WriteVarBytes(w, tx.Data); err != nil {
 		return errors.New("Transaction attribute Data serialization error.")
 	}
 	return nil
 }
 
 func (tx *TxAttribute) Deserialize(r io.Reader) error {
-	val, err := serialize.ReadBytes(r, 1)
+	val, err := serialization.ReadBytes(r, 1)
 	if err != nil {
 		return errors.New("Transaction attribute Usage deserialization error.")
 	}
@@ -86,7 +86,7 @@ func (tx *TxAttribute) Deserialize(r io.Reader) error {
 	if !IsValidAttributeType(tx.Usage) {
 		return errors.New("[TxAttribute error] Unsupported attribute Description.")
 	}
-	tx.Data, err = serialize.ReadVarBytes(r)
+	tx.Data, err = serialization.ReadVarBytes(r)
 	if err != nil {
 		return errors.New("Transaction attribute Data deserialization error.")
 	}
