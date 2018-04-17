@@ -5,11 +5,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
 )
 
-type MerkleBlockMsg struct {
-	Header
-	MerkleBlock bloom.MerkleBlock
-}
-
 // NewMerkleBlock returns a new *MerkleBlock
 func NewMerkleBlockMsg(block *ledger.Block, filter *bloom.Filter) ([]byte, error) {
 	// Create and return the merkle block.
