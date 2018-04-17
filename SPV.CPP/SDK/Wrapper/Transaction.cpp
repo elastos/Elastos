@@ -2,10 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRTransaction.h>
-#include "Transaction.h"
+#include "PreCompiled.h"
+
+#include <cstring>
 
 #include "BRTransaction.h"
+#include "Transaction.h"
 
 namespace Elastos {
 	namespace SDK {
