@@ -1,84 +1,254 @@
 package bloom
 
 import (
+	"bytes"
+	"fmt"
+
 	. "Elastos.ELA/common"
+	"Elastos.ELA/common/serialize"
+	"Elastos.ELA/core/ledger"
+	"Elastos.ELA/crypto"
 )
 
-// MBlock is used to house intermediate information needed to generate a
-// MerkleBlock according to a filter.
-type MBlock struct {
-	NumTx       uint32
-	AllHashes   []*Uint256
-	FinalHashes []*Uint256
-	MatchedBits []byte
-	Bits        []byte
+type MerkleBlock struct {
+	Header       ledger.Header
+	Transactions uint32
+	Hashes       []*Uint256
+	Flags        []byte
 }
 
-// calcTreeWidth calculates and returns the the number of nodes (width) or a
-// merkle tree at the given depth-first height.
-func (m *MBlock) CalcTreeWidth(height uint32) uint32 {
-	return (m.NumTx + (1 << height) - 1) >> height
+func (msg *MerkleBlock) CMD() string {
+	return "merkleblock"
 }
 
-// calcHash returns the hash for a sub-tree given a depth-first height and
-// node position.
-func (m *MBlock) CalcHash(height, pos uint32) *Uint256 {
-	if height == 0 {
-		return m.AllHashes[pos]
+func (msg *MerkleBlock) Serialize() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	err := msg.Header.Serialize(buf)
+	if err != nil {
+		return nil, err
 	}
 
-	var right *Uint256
-	left := m.CalcHash(height-1, pos*2)
-	if pos*2+1 < m.CalcTreeWidth(height-1) {
-		right = m.CalcHash(height-1, pos*2+1)
-	} else {
-		right = left
+	err = serialize.WriteElements(buf,
+		msg.Transactions,
+		uint32(len(msg.Hashes)),
+		msg.Hashes, msg.Flags)
+	if err != nil {
+		return nil, err
 	}
-	return HashMerkleBranches(left, right)
+
+	return buf.Bytes(), nil
 }
 
-// HashMerkleBranches takes two hashes, treated as the left and right tree
-// nodes, and returns the hash of their concatenation.  This is a helper
-// function used to aid in the generation of a merkle tree.
-func HashMerkleBranches(left *Uint256, right *Uint256) *Uint256 {
-	// Concatenate the left and right nodes.
-	var hash [UINT256SIZE * 2]byte
-	copy(hash[:UINT256SIZE], left[:])
-	copy(hash[UINT256SIZE:], right[:])
+func (msg *MerkleBlock) Deserialize(body []byte) error {
+	buf := bytes.NewReader(body)
+	err := msg.Header.Deserialize(buf)
+	if err != nil {
+		return err
+	}
 
-	newHash := Uint256(Sha256D(hash[:]))
-	return &newHash
+	msg.Transactions, err = serialize.ReadUint32(buf)
+	if err != nil {
+		return err
+	}
+
+	hashes, err := serialize.ReadUint32(buf)
+	if err != nil {
+		return err
+	}
+
+	msg.Hashes = make([]*Uint256, hashes)
+	return serialize.ReadElements(buf, &msg.Hashes, &msg.Flags)
 }
 
-// traverseAndBuild builds a partial merkle tree using a recursive depth-first
-// approach.  As it calculates the hashes, it also saves whether or not each
-// node is a parent node and a list of final hashes to be included in the
-// merkle block.
-func (m *MBlock) TraverseAndBuild(height, pos uint32) {
-	// Determine whether this node is a parent of a matched node.
-	var isParent byte
-	for i := pos << height; i < (pos+1)<<height && i < m.NumTx; i++ {
-		isParent |= m.MatchedBits[i]
-	}
-	m.Bits = append(m.Bits, isParent)
-
-	// When the node is a leaf node or not a parent of a matched node,
-	// append the hash to the list that will be part of the final merkle
-	// block.
-	if height == 0 || isParent == 0x00 {
-		m.FinalHashes = append(m.FinalHashes, m.CalcHash(height, pos))
-		return
+// NewMerkleBlock returns a new *MerkleBlock
+func NewMerkleBlock(block *ledger.Block, filter *Filter) *MerkleBlock {
+	NumTx := uint32(len(block.Transactions))
+	mBlock := MBlock{
+		NumTx:       NumTx,
+		AllHashes:   make([]*Uint256, 0, NumTx),
+		MatchedBits: make([]byte, 0, NumTx),
 	}
 
-	// At this point, the node is an internal node and it is the parent of
-	// of an included leaf node.
-
-	// Descend into the left child and process its sub-tree.
-	m.TraverseAndBuild(height-1, pos*2)
-
-	// Descend into the right child and process its sub-tree if
-	// there is one.
-	if pos*2+1 < m.CalcTreeWidth(height-1) {
-		m.TraverseAndBuild(height-1, pos*2+1)
+	// Find and keep track of any transactions that match the filter.
+	for _, tx := range block.Transactions {
+		if filter.MatchTxAndUpdate(tx) {
+			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
+		} else {
+			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x00)
+		}
+		txHash := tx.Hash()
+		mBlock.AllHashes = append(mBlock.AllHashes, &txHash)
 	}
+
+	// Calculate the number of merkle branches (height) in the tree.
+	height := uint32(0)
+	for mBlock.CalcTreeWidth(height) > 1 {
+		height++
+	}
+
+	// Build the depth-first partial merkle tree.
+	mBlock.TraverseAndBuild(height, 0)
+
+	// Create and return the merkle block.
+	merkleBlock := &MerkleBlock{
+		Header:       *block.Header,
+		Transactions: mBlock.NumTx,
+		Hashes:       make([]*Uint256, 0, len(mBlock.FinalHashes)),
+		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
+	}
+	for _, hash := range mBlock.FinalHashes {
+		merkleBlock.Hashes = append(merkleBlock.Hashes, hash)
+	}
+	for i := uint32(0); i < uint32(len(mBlock.Bits)); i++ {
+		merkleBlock.Flags[i/8] |= mBlock.Bits[i] << (i % 8)
+	}
+
+	return merkleBlock
+}
+
+type merkleNode struct {
+	p uint32   // position in the binary tree
+	h *Uint256 // hash
+}
+
+func (node merkleNode) String() string {
+	return fmt.Sprint("Node{pos:", node.p, ", hash:", node.h, "}")
+}
+
+// given n merkle leaves, how deep is the tree?
+// iterate shifting left until greater than n
+func treeDepth(n uint32) (e uint32) {
+	for ; (1 << e) < n; e++ {
+	}
+	return
+}
+
+// smallest power of 2 that can contain n
+func nextPowerOfTwo(n uint32) uint32 {
+	return 1 << treeDepth(n) // 2^exponent
+}
+
+// check if a node is populated based on node position and size of tree
+func inDeadZone(pos, size uint32) bool {
+	msb := nextPowerOfTwo(size)
+	last := size - 1 // last valid position is 1 less than size
+	if pos > (msb<<1)-2 { // greater than root; not even in the tree
+		return true
+	}
+	h := msb
+	for pos >= h {
+		h = h>>1 | msb
+		last = last>>1 | msb
+	}
+	return pos > last
+}
+
+// take in a merkle block, parse through it, and return txids indicated
+// If there's any problem return an error.  Checks self-consistency only.
+// doing it with a stack instead of recursion.  Because...
+// OK I don't know why I'm just not in to recursion OK?
+func CheckMerkleBlock(m MerkleBlock) ([]*Uint256, error) {
+	if m.Transactions == 0 {
+		return nil, fmt.Errorf("No transactions in merkleblock")
+	}
+	if len(m.Flags) == 0 {
+		return nil, fmt.Errorf("No flag bits")
+	}
+	var s []merkleNode // the stack
+	var r []*Uint256   // slice to return; txids we care about
+
+	// set initial position to root of merkle tree
+	msb := nextPowerOfTwo(m.Transactions) // most significant bit possible
+	pos := (msb << 1) - 2                 // current position in tree
+
+	var i uint8 // position in the current flag byte
+	var tip int
+	// main loop
+	for {
+		tip = len(s) - 1 // slice position of stack tip
+		// First check if stack operations can be performed
+		// is stack one filled item?  that's complete.
+		if tip == 0 && s[0].h != nil {
+			if s[0].h.IsEqual(m.Header.MerkleRoot) {
+				return r, nil
+			}
+			return nil, fmt.Errorf("computed root %s but expect %s\n",
+				s[0].h.String(), m.Header.MerkleRoot.String())
+		}
+		// is current position in the tree's dead zone? partial parent
+		if inDeadZone(pos, m.Transactions) {
+			// create merkle parent from single side (left)
+			h, err := crypto.MakeMerkleParent(s[tip].h, nil)
+			if err != nil {
+				return r, err
+			}
+			s[tip-1].h = h
+			s = s[:tip]          // remove 1 from stack
+			pos = s[tip-1].p | 1 // move position to parent's sibling
+			continue
+		}
+		// does stack have 3+ items? and are last 2 items filled?
+		if tip > 1 && s[tip-1].h != nil && s[tip].h != nil {
+			//fmt.Printf("nodes %d and %d combine into %d\n",
+			//	s[tip-1].p, s[tip].p, s[tip-2].p)
+			// combine two filled nodes into parent node
+			h, err := crypto.MakeMerkleParent(s[tip-1].h, s[tip].h)
+			if err != nil {
+				return r, err
+			}
+			s[tip-2].h = h
+			// remove children
+			s = s[:tip-1]
+			// move position to parent's sibling
+			pos = s[tip-2].p | 1
+			continue
+		}
+
+		// no stack ops to perform, so make new node from message hashes
+		if len(m.Hashes) == 0 {
+			return nil, fmt.Errorf("Ran out of hashes at position %d.", pos)
+		}
+		if len(m.Flags) == 0 {
+			return nil, fmt.Errorf("Ran out of flag bits.")
+		}
+		var n merkleNode // make new node
+		n.p = pos        // set current position for new node
+
+		if pos&msb != 0 { // upper non-txid hash
+			if m.Flags[0]&(1<<i) == 0 { // flag bit says fill node
+				n.h = m.Hashes[0]       // copy hash from message
+				m.Hashes = m.Hashes[1:] // pop off message
+				if pos&1 != 0 { // right side; ascend
+					pos = pos>>1 | msb
+				} else { // left side, go to sibling
+					pos |= 1
+				}
+			} else { // flag bit says skip; put empty on stack and descend
+				pos = (pos ^ msb) << 1 // descend to left
+			}
+			s = append(s, n) // push new node on stack
+		} else { // bottom row txid; flag bit indicates tx of interest
+			if pos >= m.Transactions {
+				// this can't happen because we check deadzone above...
+				return nil, fmt.Errorf("got into an invalid txid node")
+			}
+			n.h = m.Hashes[0]       // copy hash from message
+			m.Hashes = m.Hashes[1:] // pop off message
+			if m.Flags[0]&(1<<i) != 0 { //txid of interest
+				r = append(r, n.h)
+			}
+			if pos&1 == 0 { // left side, go to sibling
+				pos |= 1
+			}                // if on right side we don't move; stack ops will move next
+			s = append(s, n) // push new node onto the stack
+		}
+
+		// done with pushing onto stack; advance flag bit
+		i++
+		if i == 8 { // move to next byte
+			i = 0
+			m.Flags = m.Flags[1:]
+		}
+	}
+	return nil, fmt.Errorf("ran out of things to do?")
 }

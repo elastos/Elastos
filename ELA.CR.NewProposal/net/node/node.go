@@ -326,8 +326,8 @@ func (node *node) GetLastRXTime() time.Time {
 	return node.Time
 }
 
-func (node *node) LoadFilter(filter *bloom.Filter) {
-	node.filter.Reload(filter.Filter, filter.HashFuncs, filter.Tweak)
+func (node *node) LoadFilter(filter *bloom.FilterLoad) {
+	node.filter.Reload(filter)
 }
 
 func (node *node) GetFilter() *bloom.Filter {
