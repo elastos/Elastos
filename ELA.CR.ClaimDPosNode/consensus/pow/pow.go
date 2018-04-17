@@ -12,8 +12,8 @@ import (
 	"Elastos.ELA/net/protocol"
 
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/config"
+	"Elastos.ELA/log"
 	"Elastos.ELA/core/auxpow"
 	"Elastos.ELA/core/ledger"
 	tx "Elastos.ELA/core/transaction"

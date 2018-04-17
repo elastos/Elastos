@@ -5,8 +5,8 @@ import (
 	"runtime"
 	"time"
 
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/config"
+	"Elastos.ELA/log"
 	"Elastos.ELA/consensus/pow"
 	"Elastos.ELA/core/ledger"
 	"Elastos.ELA/core/store/chainstore"

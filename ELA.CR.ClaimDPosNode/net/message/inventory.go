@@ -2,8 +2,8 @@ package message
 
 import (
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/config"
+	"Elastos.ELA/log"
 	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/protocol"

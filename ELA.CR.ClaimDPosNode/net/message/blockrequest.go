@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/log"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/protocol"
 )
