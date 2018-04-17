@@ -5,7 +5,7 @@ import (
 	"bytes"
 
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 )
 
 type OutPoint struct {
@@ -14,12 +14,12 @@ type OutPoint struct {
 }
 
 func (op *OutPoint) Serialize(w io.Writer) error {
-	_, err := op.TxID.Serialize(w)
+	err := op.TxID.Serialize(w)
 	if err != nil {
 		return err
 	}
 
-	err = serialization.WriteUint16(w, op.Index)
+	err = serialize.WriteUint16(w, op.Index)
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func (op *OutPoint) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	op.Index, err = serialization.ReadUint16(r)
+	op.Index, err = serialize.ReadUint16(r)
 	if err != nil {
 		return err
 	}

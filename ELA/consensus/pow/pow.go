@@ -20,7 +20,6 @@ import (
 	"Elastos.ELA/core/transaction/payload"
 	"Elastos.ELA/crypto"
 	"Elastos.ELA/events"
-	//	"ELA/net"
 )
 
 var TaskCh chan bool
@@ -79,11 +78,11 @@ func (pow *PowService) CollectTransactions(MsgBlock *ledger.Block) int {
 }
 
 func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*tx.Transaction, error) {
-	minerProgramHash, err := Uint68FromAddress(addr)
+	minerProgramHash, err := Uint168FromAddress(addr)
 	if err != nil {
 		return nil, err
 	}
-	foundationProgramHash, err := Uint68FromAddress(ledger.FoundationAddress)
+	foundationProgramHash, err := Uint168FromAddress(ledger.FoundationAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -107,12 +106,12 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 		{
 			AssetID:     ledger.DefaultLedger.Blockchain.AssetID,
 			Value:       0,
-			ProgramHash: foundationProgramHash,
+			ProgramHash: *foundationProgramHash,
 		},
 		{
 			AssetID:     ledger.DefaultLedger.Blockchain.AssetID,
 			Value:       0,
-			ProgramHash: minerProgramHash,
+			ProgramHash: *minerProgramHash,
 		},
 	}
 
@@ -160,19 +159,19 @@ func (pow *PowService) GenerateBlock(addr string) (*ledger.Block, error) {
 		return nil, err
 	}
 
-	blockData := &ledger.Blockdata{
-		Version:          0,
-		PrevBlockHash:    *ledger.DefaultLedger.Blockchain.BestChain.Hash,
-		TransactionsRoot: Uint256{},
-		Timestamp:        uint32(ledger.DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
-		Bits:             config.Parameters.ChainParam.PowLimitBits,
-		Height:           nextBlockHeight,
-		Nonce:            0,
-		AuxPow:           auxpow.AuxPow{},
+	blockData := &ledger.Header{
+		Version:    0,
+		Previous:   *ledger.DefaultLedger.Blockchain.BestChain.Hash,
+		MerkleRoot: Uint256{},
+		Timestamp:  uint32(ledger.DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
+		Bits:       config.Parameters.ChainParam.PowLimitBits,
+		Height:     nextBlockHeight,
+		Nonce:      0,
+		AuxPow:     auxpow.AuxPow{},
 	}
 
 	msgBlock := &ledger.Block{
-		Blockdata:    blockData,
+		Header:       blockData,
 		Transactions: []*tx.Transaction{},
 	}
 
@@ -220,10 +219,10 @@ func (pow *PowService) GenerateBlock(addr string) (*ledger.Block, error) {
 		txHash = append(txHash, tx.Hash())
 	}
 	txRoot, _ := crypto.ComputeRoot(txHash)
-	msgBlock.Blockdata.TransactionsRoot = txRoot
+	msgBlock.Header.MerkleRoot = txRoot
 
-	msgBlock.Blockdata.Bits, err = ledger.CalcNextRequiredDifficulty(ledger.DefaultLedger.Blockchain.BestChain, time.Now())
-	log.Info("difficulty: ", msgBlock.Blockdata.Bits)
+	msgBlock.Header.Bits, err = ledger.CalcNextRequiredDifficulty(ledger.DefaultLedger.Blockchain.BestChain, time.Now())
+	log.Info("difficulty: ", msgBlock.Header.Bits)
 
 	return msgBlock, err
 }
@@ -256,7 +255,7 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 		}
 
 		if pow.SolveBlock(msgBlock, ticker) {
-			if msgBlock.Blockdata.Height == ledger.DefaultLedger.Blockchain.GetBestHeight()+1 {
+			if msgBlock.Header.Height == ledger.DefaultLedger.Blockchain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := ledger.DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
@@ -285,13 +284,13 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) bool {
 	// fake a btc blockheader and coinbase
 	auxPow := generateAuxPow(MsgBlock.Hash())
-	header := MsgBlock.Blockdata
+	header := MsgBlock.Header
 	targetDifficulty := ledger.CompactToBig(header.Bits)
 
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if MsgBlock.Blockdata.PrevBlockHash.CompareTo(*ledger.DefaultLedger.Blockchain.BestChain.Hash) != 0 {
+			if !MsgBlock.Header.Previous.IsEqual(*ledger.DefaultLedger.Blockchain.BestChain.Hash) {
 				return false
 			}
 			//UpdateBlockTime(msgBlock, m.server.blockManager)
@@ -303,7 +302,7 @@ func (pow *PowService) SolveBlock(MsgBlock *ledger.Block, ticker *time.Ticker) b
 		auxPow.ParBlockHeader.Nonce = i
 		hash := auxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if ledger.HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			MsgBlock.Blockdata.AuxPow = *auxPow
+			MsgBlock.Header.AuxPow = *auxPow
 			return true
 		}
 	}
@@ -409,7 +408,7 @@ out:
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {
 			//send the valid block to p2p networkd
-			if msgBlock.Blockdata.Height == ledger.DefaultLedger.Blockchain.GetBestHeight()+1 {
+			if msgBlock.Header.Height == ledger.DefaultLedger.Blockchain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := ledger.DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)

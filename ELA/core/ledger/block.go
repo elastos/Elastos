@@ -13,9 +13,8 @@ import (
 	"Elastos.ELA/core/asset"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/common/config"
-	"Elastos.ELA/core/signature"
 	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/core/contract/program"
 	"Elastos.ELA/core/transaction/payload"
 )
@@ -31,15 +30,13 @@ var (
 )
 
 type Block struct {
-	Blockdata    *Blockdata
+	Header       *Header
 	Transactions []*tx.Transaction
-
-	hash *Uint256
 }
 
 func (b *Block) Serialize(w io.Writer) error {
-	b.Blockdata.Serialize(w)
-	err := serialization.WriteUint32(w, uint32(len(b.Transactions)))
+	b.Header.Serialize(w)
+	err := serialize.WriteUint32(w, uint32(len(b.Transactions)))
 	if err != nil {
 		return errors.New("Block item Transactions length serialization failed.")
 	}
@@ -51,14 +48,14 @@ func (b *Block) Serialize(w io.Writer) error {
 }
 
 func (b *Block) Deserialize(r io.Reader) error {
-	if b.Blockdata == nil {
-		b.Blockdata = new(Blockdata)
+	if b.Header == nil {
+		b.Header = new(Header)
 	}
-	b.Blockdata.Deserialize(r)
+	b.Header.Deserialize(r)
 
 	//Transactions
 	var i uint32
-	Len, err := serialization.ReadUint32(r)
+	Len, err := serialize.ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -76,14 +73,14 @@ func (b *Block) Deserialize(r io.Reader) error {
 	if err != nil {
 		return errors.New("Block Deserialize merkleTree compute failed")
 	}
-	b.Blockdata.TransactionsRoot = merkleRoot
+	b.Header.MerkleRoot = merkleRoot
 
 	return nil
 }
 
 func (b *Block) Trim(w io.Writer) error {
-	b.Blockdata.Serialize(w)
-	err := serialization.WriteUint32(w, uint32(len(b.Transactions)))
+	b.Header.Serialize(w)
+	err := serialize.WriteUint32(w, uint32(len(b.Transactions)))
 	if err != nil {
 		return errors.New("Block item Transactions length serialization failed.")
 	}
@@ -96,14 +93,14 @@ func (b *Block) Trim(w io.Writer) error {
 }
 
 func (b *Block) FromTrimmedData(r io.Reader) error {
-	if b.Blockdata == nil {
-		b.Blockdata = new(Blockdata)
+	if b.Header == nil {
+		b.Header = new(Header)
 	}
-	b.Blockdata.Deserialize(r)
+	b.Header.Deserialize(r)
 
 	//Transactions
 	var i uint32
-	Len, err := serialization.ReadUint32(r)
+	Len, err := serialize.ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -111,9 +108,7 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 	var tharray []Uint256
 	for i = 0; i < Len; i++ {
 		txhash.Deserialize(r)
-		transaction := new(tx.Transaction)
-		transaction.SetHash(txhash)
-		b.Transactions = append(b.Transactions, transaction)
+		b.Transactions = append(b.Transactions, tx.NewTrimmed(&txhash))
 		tharray = append(tharray, txhash)
 	}
 
@@ -121,7 +116,7 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 	if err != nil {
 		return errors.New("Block Deserialize merkleTree compute failed")
 	}
-	b.Blockdata.TransactionsRoot = merkleRoot
+	b.Header.MerkleRoot = merkleRoot
 
 	return nil
 }
@@ -135,28 +130,8 @@ func (tx *Block) GetSize() int {
 	return buffer.Len()
 }
 
-func (b *Block) GetDataContent() []byte {
-	return signature.GetDataContent(b)
-}
-
-func (b *Block) GetProgramHashes() ([]Uint168, error) {
-	return b.Blockdata.GetProgramHashes()
-}
-
-func (b *Block) SetPrograms(prog []*program.Program) {
-	b.Blockdata.SetPrograms(prog)
-}
-
-func (b *Block) GetPrograms() []*program.Program {
-	return b.Blockdata.GetPrograms()
-}
-
 func (b *Block) Hash() Uint256 {
-	if b.hash == nil {
-		b.hash = new(Uint256)
-		*b.hash = b.Blockdata.Hash()
-	}
-	return *b.hash
+	return b.Header.Hash()
 }
 
 func (b *Block) Verify() error {
@@ -165,12 +140,12 @@ func (b *Block) Verify() error {
 }
 
 func GenesisBlockInit() (*Block, error) {
-	genesisBlockdata := &Blockdata{
-		Version:          BlockVersion,
-		PrevBlockHash:    Uint256{},
-		TransactionsRoot: Uint256{},
-		Timestamp:        uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
-		Bits:             0x1d03ffff,
+	genesisBlockdata := &Header{
+		Version:    BlockVersion,
+		Previous:   Uint256{},
+		MerkleRoot: Uint256{},
+		Timestamp:  uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
+		Bits:       0x1d03ffff,
 		//Bits:   config.Parameters.ChainParam.PowLimitBits,
 		Nonce:  GenesisNonce,
 		Height: uint32(0),
@@ -187,7 +162,7 @@ func GenesisBlockInit() (*Block, error) {
 				AssetType: 0x00,
 			},
 			Amount:     0 * 100000000,
-			Controller: EmptyValue,
+			Controller: Uint168{},
 		},
 		Attributes: []*tx.TxAttribute{},
 		UTXOInputs: []*tx.UTXOTxInput{},
@@ -195,7 +170,7 @@ func GenesisBlockInit() (*Block, error) {
 		Programs:   []*program.Program{},
 	}
 
-	foundationProgramHash, err := Uint68FromAddress(FoundationAddress)
+	foundationProgramHash, err := Uint168FromAddress(FoundationAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +184,7 @@ func GenesisBlockInit() (*Block, error) {
 		{
 			AssetID:     systemToken.Hash(),
 			Value:       3300 * 10000 * 100000000,
-			ProgramHash: foundationProgramHash,
+			ProgramHash: *foundationProgramHash,
 		},
 	}
 
@@ -219,7 +194,7 @@ func GenesisBlockInit() (*Block, error) {
 	trans.Attributes = append(trans.Attributes, &txAttr)
 	//block
 	genesisBlock := &Block{
-		Blockdata:    genesisBlockdata,
+		Header:       genesisBlockdata,
 		Transactions: []*tx.Transaction{trans, systemToken},
 	}
 	txHashes := []Uint256{}
@@ -230,7 +205,7 @@ func GenesisBlockInit() (*Block, error) {
 	if err != nil {
 		return nil, errors.New("[GenesisBlock], merkle root error")
 	}
-	genesisBlock.Blockdata.TransactionsRoot = merkleRoot
+	genesisBlock.Header.MerkleRoot = merkleRoot
 
 	return genesisBlock, nil
 }
@@ -245,11 +220,7 @@ func (b *Block) RebuildMerkleRoot() error {
 	if err != nil {
 		return errors.New("[Block] , RebuildMerkleRoot ComputeRoot failed.")
 	}
-	b.Blockdata.TransactionsRoot = hash
+	b.Header.MerkleRoot = hash
 	return nil
 
-}
-
-func (bd *Block) SerializeUnsigned(w io.Writer) error {
-	return bd.Blockdata.SerializeUnsigned(w)
 }

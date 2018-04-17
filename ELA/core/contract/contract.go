@@ -2,11 +2,10 @@ package contract
 
 import (
 	"bytes"
-	"errors"
 	"io"
 
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 )
 
 //Contract address is the hash of contract program .
@@ -29,15 +28,18 @@ type Contract struct {
 }
 
 func (c *Contract) Deserialize(r io.Reader) error {
-	c.OwnerPubkeyHash.Deserialize(r)
+	err := c.OwnerPubkeyHash.Deserialize(r)
+	if err != nil {
+		return err
+	}
 
-	p, err := serialization.ReadVarBytes(r)
+	p, err := serialize.ReadVarBytes(r)
 	if err != nil {
 		return err
 	}
 	c.Parameters = ByteToContractParameterType(p)
 
-	c.Code, err = serialization.ReadVarBytes(r)
+	c.Code, err = serialize.ReadVarBytes(r)
 	if err != nil {
 		return err
 	}
@@ -46,20 +48,17 @@ func (c *Contract) Deserialize(r io.Reader) error {
 }
 
 func (c *Contract) Serialize(w io.Writer) error {
-	len, err := c.OwnerPubkeyHash.Serialize(w)
-	if err != nil {
-		return err
-	}
-	if len != UINT168SIZE {
-		return errors.New("PubkeyHash.Serialize(): len != len(Uint168)")
-	}
-
-	err = serialization.WriteVarBytes(w, ContractParameterTypeToByte(c.Parameters))
+	err := c.OwnerPubkeyHash.Serialize(w)
 	if err != nil {
 		return err
 	}
 
-	err = serialization.WriteVarBytes(w, c.Code)
+	err = serialize.WriteVarBytes(w, ContractParameterTypeToByte(c.Parameters))
+	if err != nil {
+		return err
+	}
+
+	err = serialize.WriteVarBytes(w, c.Code)
 	if err != nil {
 		return err
 	}

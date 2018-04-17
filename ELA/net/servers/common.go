@@ -79,7 +79,7 @@ type Transactions struct {
 }
 
 type AuxInfo struct {
-	Version    int32
+	Version    uint32
 	PrevBlock  string
 	MerkleRoot string
 	Timestamp  uint32
@@ -148,7 +148,7 @@ func TransPayloadToHex(p Payload) PayloadInfo {
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
-		obj.Controller = BytesToHexString(object.Controller.ToArrayReverse())
+		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
 	case *payload.SideMining:
 		obj := new(SideMiningInfo)

@@ -1,8 +1,9 @@
 package payload
 
 import (
-	. "Elastos.ELA/common/serialization"
 	"io"
+
+	. "Elastos.ELA/common/serialize"
 )
 
 const CoinBasePayloadVersion byte = 0x04

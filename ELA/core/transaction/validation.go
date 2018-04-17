@@ -4,7 +4,8 @@ import (
 	"errors"
 
 	"Elastos.ELA/crypto"
-	. "Elastos.ELA/core/signature"
+	. "Elastos.ELA/crypto"
+	"bytes"
 )
 
 func VerifySignature(txn *Transaction) (bool, error) {
@@ -19,7 +20,9 @@ func VerifySignature(txn *Transaction) (bool, error) {
 		return false, errors.New("The number of data hashes is different with number of programs.")
 	}
 
-	programs = txn.GetPrograms()
+	buf := new(bytes.Buffer)
+	txn.SerializeUnsigned(buf)
+	data := buf.Bytes()
 
 	for i := 0; i < len(programs); i++ {
 
@@ -31,27 +34,26 @@ func VerifySignature(txn *Transaction) (bool, error) {
 			return false, err
 		}
 
-		if hashes[i] != programHash {
+		if !hashes[i].IsEqual(*programHash) {
 			return false, errors.New("The data hashes is different with corresponding program code.")
 		}
 		// Get transaction type
-		signType, err := txn.GetTransactionType()
+		signType, err := GetScriptType(code)
 		if err != nil {
 			return false, err
 		}
 		if signType == STANDARD {
 			// Remove length byte and sign type byte
 			publicKeyBytes := code[1:len(code)-1]
-			content := txn.GetDataContent()
 
-			return checkStandardSignature(publicKeyBytes, content, param)
+			return checkStandardSignature(publicKeyBytes, data, param)
 
 		} else if signType == MULTISIG {
-			publicKeys, err := txn.GetMultiSignPublicKeys()
+			publicKeys, err := ParseMultisigScript(code)
 			if err != nil {
 				return false, err
 			}
-			return checkMultiSignSignatures(code, param, txn.GetDataContent(), publicKeys)
+			return checkMultiSignSignatures(code, param, data, publicKeys)
 
 		} else {
 			return false, errors.New("unknown signature type")

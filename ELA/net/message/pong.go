@@ -3,7 +3,7 @@ package message
 import (
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/protocol"
 	"bytes"
@@ -22,7 +22,7 @@ func NewPongMsg() ([]byte, error) {
 	copy(msg.Header.CMD[0:7], "pong")
 	msg.height = uint64(ledger.DefaultLedger.Store.GetHeight())
 	tmpBuffer := bytes.NewBuffer([]byte{})
-	serialization.WriteUint64(tmpBuffer, msg.height)
+	serialize.WriteUint64(tmpBuffer, msg.height)
 	b := new(bytes.Buffer)
 	err := binary.Write(b, binary.LittleEndian, tmpBuffer.Bytes())
 	if err != nil {
@@ -55,7 +55,7 @@ func (msg pong) Serialize() ([]byte, error) {
 		return nil, err
 	}
 	buf := bytes.NewBuffer(hdrBuf)
-	err = serialization.WriteUint64(buf, msg.height)
+	err = serialize.WriteUint64(buf, msg.height)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +70,6 @@ func (msg *pong) Deserialize(p []byte) error {
 		return err
 	}
 
-	msg.height, err = serialization.ReadUint64(buf)
+	msg.height, err = serialize.ReadUint64(buf)
 	return err
 }

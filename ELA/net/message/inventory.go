@@ -4,7 +4,7 @@ import (
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
-	"Elastos.ELA/common/serialization"
+	"Elastos.ELA/common/serialize"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/protocol"
 	"bytes"
@@ -53,10 +53,10 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	msg.p.len = uint32(len(blocator))
 	msg.p.hashStart = blocator
-	serialization.WriteUint32(tmpBuffer, uint32(msg.p.len))
+	serialize.WriteUint32(tmpBuffer, uint32(msg.p.len))
 
 	for _, hash := range blocator {
-		_, err := hash.Serialize(tmpBuffer)
+		err := hash.Serialize(tmpBuffer)
 		if err != nil {
 			return nil, err
 		}
@@ -64,7 +64,7 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 
 	msg.p.hashEnd = hash
 
-	_, err := msg.p.hashEnd.Serialize(tmpBuffer)
+	err := msg.p.hashEnd.Serialize(tmpBuffer)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +163,7 @@ func (msg *Inv) Deserialize(p []byte) error {
 	if err != nil {
 		return err
 	}
-	msg.P.Cnt, err = serialization.ReadUint32(buf)
+	msg.P.Cnt, err = serialize.ReadUint32(buf)
 	if err != nil {
 		return err
 	}
@@ -208,8 +208,8 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 }
 
 func (msg *InvPayload) Serialization(w io.Writer) {
-	serialization.WriteUint8(w, msg.Type)
-	serialization.WriteUint32(w, msg.Cnt)
+	serialize.WriteUint8(w, msg.Type)
+	serialize.WriteUint32(w, msg.Cnt)
 
 	binary.Write(w, binary.LittleEndian, msg.Blk)
 }
