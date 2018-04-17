@@ -9,7 +9,7 @@ namespace Elastos {
 
 		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::stdout_color_mt("console");
 
-		const std::shared_ptr<spdlog::logger> &Log::getLogger() const {
+		const std::shared_ptr<spdlog::logger> &Log::getLogger() {
 			return _consoleLog;
 		}
 

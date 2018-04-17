@@ -52,7 +52,7 @@ namespace Elastos {
 				_consoleLog->log(lvl, msg);
 			}
 
-			const std::shared_ptr<spdlog::logger>& getLogger() const;
+			static const std::shared_ptr<spdlog::logger>& getLogger();
 
 
 		private:
