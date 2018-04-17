@@ -9,7 +9,7 @@ import (
 	"Elastos.ELA/log"
 	"Elastos.ELA/consensus/pow"
 	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/core/store/chainstore"
+	"Elastos.ELA/store/chainstore"
 	"Elastos.ELA/core/transaction"
 	"Elastos.ELA/net/node"
 	"Elastos.ELA/net/protocol"
