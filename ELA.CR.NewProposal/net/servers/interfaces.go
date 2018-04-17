@@ -588,6 +588,49 @@ func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(errCode, result)
 }
 
+func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interface{} {
+	if !checkParam(param, "height") {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+
+	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return ResponsePack(InternalError, "")
+	}
+
+	arbitratorsBytes, err := block.GetArbitrators(config.Parameters.Arbiters)
+	if err != nil {
+		return ResponsePack(InternalError, "")
+	}
+
+	index, err := block.GetCurrentArbitratorIndex()
+	if err != nil {
+		return ResponsePack(InternalError, "")
+	}
+
+	var arbitrators []string
+	for _, data := range arbitratorsBytes {
+		arbitrators = append(arbitrators, BytesToHexString(data))
+	}
+
+	result := ArbitratorGroupInfo {
+		OnDutyArbitratorIndex:index,
+		Arbitrators: arbitrators,
+	}
+
+	return ResponsePack(Success, result)
+}
+
 //Asset
 func GetAssetByHash(param map[string]interface{}) map[string]interface{} {
 	if !checkParam(param, "hash") {

@@ -381,7 +381,6 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 }
 
 func (c *ChainStore) GetTransaction(hash Uint256) (*tx.Transaction, uint32, error) {
-	log.Debug(">>>>> Get transaction hash:", hash.String())
 	key := append([]byte{byte(DATA_Transaction)}, hash.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
@@ -403,7 +402,6 @@ func (c *ChainStore) GetTransaction(hash Uint256) (*tx.Transaction, uint32, erro
 }
 
 func (c *ChainStore) PersistTransaction(tx *tx.Transaction, height uint32) error {
-	//////////////////////////////////////////////////////////////
 	// generate key with DATA_Transaction prefix
 	txhash := bytes.NewBuffer(nil)
 	// add transaction header prefix.

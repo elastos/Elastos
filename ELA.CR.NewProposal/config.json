@@ -1,4 +1,4 @@
-{
+﻿{
   "Configuration": {
     "Magic": 7630401,
     "Version": 23,
@@ -25,15 +25,15 @@
     "MaxBlockSize": 8000000,
     "ConsensusType": "pow",
     "PowConfiguration": {
-      "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+      "PayToAddr": "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
       "MiningServerIP": "127.0.0.1",
       "MiningServerPort": 5555,
       "MiningSelfPort": 20339,
       "TestNet": true,
-      "AutoMining": true,
+      "AutoMining": false,
       "MinerInfo": "ELA",
       "MinTxFee": 100,
-      "ActiveNet": "TestNet"
+      "ActiveNet": "RegNet"
     }
   }
 }

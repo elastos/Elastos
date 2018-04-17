@@ -102,6 +102,11 @@ type NodeInfo struct {
 	RxTxnCnt uint64 // The transaction received by this NodeForServers
 }
 
+type ArbitratorGroupInfo struct {
+	OnDutyArbitratorIndex int
+	Arbitrators           []string
+}
+
 type PayloadInfo interface{}
 
 type CoinbaseInfo struct {
@@ -122,7 +127,7 @@ type TransferCrossChainAssetInfo struct {
 	AddressesMap map[string]uint64
 }
 
-type WithdrawTokenInfo struct {
+type WithdrawAssetInfo struct {
 	BlockHeight uint32
 }
 
@@ -143,7 +148,7 @@ func TransPayloadToHex(p Payload) PayloadInfo {
 		obj.SideBlockHash = object.SideBlockHash.String()
 		return obj
 	case *payload.WithdrawAsset:
-		obj := new(WithdrawTokenInfo)
+		obj := new(WithdrawAssetInfo)
 		obj.BlockHeight = object.BlockHeight
 		return obj
 	case *payload.TransferCrossChainAsset:
