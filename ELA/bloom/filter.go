@@ -32,10 +32,8 @@ func minUint32(a, b uint32) uint32 {
 // Filter defines a bitcoin bloom filter that provides easy manipulation of raw
 // filter data.
 type Filter struct {
-	mtx       sync.Mutex
-	Filter    []byte
-	HashFuncs uint32
-	Tweak     uint32
+	mtx sync.Mutex
+	msg *FilterLoad
 }
 
 // NewFilter creates a new bloom filter instance, mainly to be used by SPV
@@ -59,7 +57,7 @@ func NewFilter(elements, tweak uint32, fprate float64) *Filter {
 	// Calculate the size of the filter in bytes for the given number of
 	// elements and false positive rate.
 	//
-	// Equivalent to m = -(n*ln(p) / ln(2)^2), where m is in Bits.
+	// Equivalent to m = -(n*ln(p) / ln(2)^2), where m is in bits.
 	// Then clamp it to the maximum filter size and convert to bytes.
 	dataLen := uint32(-1 * float64(elements) * math.Log(fprate) / ln2Squared)
 	dataLen = minUint32(dataLen, MaxFilterLoadFilterSize*8) / 8
@@ -72,21 +70,20 @@ func NewFilter(elements, tweak uint32, fprate float64) *Filter {
 	hashFuncs := uint32(float64(dataLen*8) / float64(elements) * math.Ln2)
 	hashFuncs = minUint32(hashFuncs, MaxFilterLoadHashFuncs)
 
-	return &Filter{
+	msg := &FilterLoad{
 		Filter:    make([]byte, dataLen),
 		HashFuncs: hashFuncs,
 		Tweak:     tweak,
 	}
+	return &Filter{msg: msg}
 }
 
 // LoadFilter creates a new Filter instance with the given underlying
 // msg.FilterLoad.
-func LoadFilter(filter []byte, hashFuncs uint32, tweak uint32) *Filter {
-	return &Filter{
-		Filter:    filter,
-		HashFuncs: hashFuncs,
-		Tweak:     tweak,
-	}
+func LoadFilter(msg *FilterLoad) *Filter {
+	filter := new(Filter)
+	filter.msg = msg
+	return filter
 }
 
 // IsLoaded returns true if a filter is loaded, otherwise false.
@@ -94,7 +91,7 @@ func LoadFilter(filter []byte, hashFuncs uint32, tweak uint32) *Filter {
 // This function is safe for concurrent access.
 func (bf *Filter) IsLoaded() bool {
 	bf.mtx.Lock()
-	loaded := bf.Filter != nil
+	loaded := bf.msg != nil
 	bf.mtx.Unlock()
 	return loaded
 }
@@ -102,11 +99,9 @@ func (bf *Filter) IsLoaded() bool {
 // Reload loads a new filter replacing any existing filter.
 //
 // This function is safe for concurrent access.
-func (bf *Filter) Reload(filter []byte, hashFuncs uint32, tweak uint32) {
+func (bf *Filter) Reload(msg *FilterLoad) {
 	bf.mtx.Lock()
-	bf.Filter = filter
-	bf.HashFuncs = hashFuncs
-	bf.Tweak = tweak
+	bf.msg = msg
 	bf.mtx.Unlock()
 }
 
@@ -115,7 +110,7 @@ func (bf *Filter) Reload(filter []byte, hashFuncs uint32, tweak uint32) {
 // This function is safe for concurrent access.
 func (bf *Filter) Unload() {
 	bf.mtx.Lock()
-	bf.Filter = nil
+	bf.msg = nil
 	bf.mtx.Unlock()
 }
 
@@ -126,10 +121,10 @@ func (bf *Filter) hash(hashNum uint32, data []byte) uint32 {
 	// difference between hashNum values.
 	//
 	// Note that << 3 is equivalent to multiplying by 8, but is faster.
-	// Thus the returned hash is brought into range of the number of Bits
+	// Thus the returned hash is brought into range of the number of bits
 	// the filter has and returned.
-	mm := MurmurHash3(hashNum*0xfba4c795+bf.Tweak, data)
-	return mm % (uint32(len(bf.Filter)) << 3)
+	mm := MurmurHash3(hashNum*0xfba4c795+bf.msg.Tweak, data)
+	return mm % (uint32(len(bf.msg.Filter)) << 3)
 }
 
 // matches returns true if the bloom filter might contain the passed data and
@@ -137,7 +132,7 @@ func (bf *Filter) hash(hashNum uint32, data []byte) uint32 {
 //
 // This function MUST be called with the filter lock held.
 func (bf *Filter) matches(data []byte) bool {
-	if bf.Filter == nil {
+	if bf.msg == nil {
 		return false
 	}
 
@@ -148,9 +143,9 @@ func (bf *Filter) matches(data []byte) bool {
 	//   arrayIndex := idx / 8     (idx >> 3)
 	//   bitOffset := idx % 8      (idx & 7)
 	///  if filter[arrayIndex] & 1<<bitOffset == 0 { ... }
-	for i := uint32(0); i < bf.HashFuncs; i++ {
+	for i := uint32(0); i < bf.msg.HashFuncs; i++ {
 		idx := bf.hash(i, data)
-		if bf.Filter[idx>>3]&(1<<(idx&7)) == 0 {
+		if bf.msg.Filter[idx>>3]&(1<<(idx&7)) == 0 {
 			return false
 		}
 	}
@@ -191,7 +186,7 @@ func (bf *Filter) MatchesOutPoint(outpoint *tx.OutPoint) bool {
 //
 // This function MUST be called with the filter lock held.
 func (bf *Filter) add(data []byte) {
-	if bf.Filter == nil {
+	if bf.msg == nil {
 		return
 	}
 
@@ -202,9 +197,9 @@ func (bf *Filter) add(data []byte) {
 	//   arrayIndex := idx / 8    (idx >> 3)
 	//   bitOffset := idx % 8     (idx & 7)
 	///  filter[arrayIndex] |= 1<<bitOffset
-	for i := uint32(0); i < bf.HashFuncs; i++ {
+	for i := uint32(0); i < bf.msg.HashFuncs; i++ {
 		idx := bf.hash(i, data)
-		bf.Filter[idx>>3] |= (1 << (7 & idx))
+		bf.msg.Filter[idx>>3] |= (1 << (7 & idx))
 	}
 }
 
@@ -260,7 +255,7 @@ func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 		}
 
 		matched = true
-		bf.addOutPoint(tx.NewOutPoint(hash, uint16(i)))
+		bf.addOutPoint(tx.NewOutPoint(txn.Hash(), uint16(i)))
 	}
 
 	// Nothing more to do if a match has already been made.
@@ -272,8 +267,8 @@ func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 	// public key scripts of its outputs matched.
 
 	// Check if the filter matches any outpoints this tx spends
-	for _, txin := range txn.Inputs {
-		if bf.matchesOutPoint(&txin.Previous) {
+	for _, txIn := range txn.Inputs {
+		if bf.matchesOutPoint(&txIn.Previous) {
 			return true
 		}
 	}
@@ -292,4 +287,8 @@ func (bf *Filter) MatchTxAndUpdate(tx *tx.Transaction) bool {
 	match := bf.matchTxAndUpdate(tx)
 	bf.mtx.Unlock()
 	return match
+}
+
+func (bf *Filter) GetFilterLoadMsg() *FilterLoad {
+	return bf.msg
 }
