@@ -12,8 +12,15 @@ namespace Elastos {
 	namespace SDK {
 
 		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) :
-			_sqlite(sqlite) {
-			_sqlite->transaction(IMMEDIATE, TX_DATABASE_CREATE, nullptr, nullptr);
+			_sqlite(sqlite),
+			_txType(IMMEDIATE) {
+			_sqlite->transaction(_txType, TX_DATABASE_CREATE, nullptr, nullptr);
+		}
+
+		TransactionDataStore::TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite) :
+			_sqlite(sqlite),
+			_txType(type) {
+			_sqlite->transaction(_txType, TX_DATABASE_CREATE, nullptr, nullptr);
 		}
 
 		TransactionDataStore::~TransactionDataStore() {
@@ -22,7 +29,7 @@ namespace Elastos {
 		bool TransactionDataStore::putTransaction(const std::string &iso, const TransactionEntity &transactionEntity) {
 			std::stringstream ss;
 
-			ss << "insert into " << TX_TABLE_NAME   << "(" <<
+			ss << "INSERT INTO " << TX_TABLE_NAME   << "(" <<
 				TX_COLUMN_ID    << "," <<
 				TX_BUFF         << "," <<
 				TX_BLOCK_HEIGHT << "," <<
@@ -30,7 +37,7 @@ namespace Elastos {
 				TX_ISO          <<
 				") VALUES (?, ?, ?, ?, ?);";
 
-			_sqlite->exec("BEGIN IMMEDIATE;", nullptr, nullptr);
+			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -43,6 +50,8 @@ namespace Elastos {
 			_sqlite->bindInt(stmt, 4, transactionEntity.timeStamp);
 			_sqlite->bindText(stmt, 5, iso, nullptr);
 
+			_sqlite->step(stmt);
+
 			_sqlite->finalize(stmt);
 
 			return _sqlite->exec("COMMIT;", nullptr, nullptr);
@@ -51,10 +60,10 @@ namespace Elastos {
 		bool TransactionDataStore::deleteAllTransactions(const std::string &iso) {
 			std::stringstream ss;
 
-			ss << "delete from " << TX_TABLE_NAME <<
-				" where " << TX_ISO << " = '" << iso << "';";
+			ss << "DELETE FROM " << TX_TABLE_NAME <<
+				" WHERE " << TX_ISO << " = '" << iso << "';";
 
-			return _sqlite->transaction(IMMEDIATE, ss.str(), nullptr, nullptr);
+			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
 		}
 
 		std::vector<TransactionEntity> TransactionDataStore::getAllTransactions(const std::string &iso) const {
@@ -70,7 +79,7 @@ namespace Elastos {
 				" FROM " << TX_TABLE_NAME <<
 				" WHERE " << TX_ISO << " = '" << iso << "';";
 
-			_sqlite->exec("BEGIN IMMEDIATE;", nullptr, nullptr);
+			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -112,10 +121,10 @@ namespace Elastos {
 				TX_BUFF         << " = ?, " <<
 				TX_BLOCK_HEIGHT << " = ?, " <<
 				TX_TIME_STAMP   << " = ? "
-				" where " << TX_ISO << " = '" << iso << "'" <<
-				" and " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
+				" WHERE " << TX_ISO << " = '" << iso << "'" <<
+				" AND " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
 
-			_sqlite->exec("BEGIN IMMEDIATE;", nullptr, nullptr);
+			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -126,6 +135,8 @@ namespace Elastos {
 			_sqlite->bindInt(stmt, 2, txEntity.blockHeight);
 			_sqlite->bindInt(stmt, 3, txEntity.timeStamp);
 
+			_sqlite->step(stmt);
+
 			_sqlite->finalize(stmt);
 
 			return _sqlite->exec("COMMIT;", nullptr, nullptr);
@@ -134,11 +145,11 @@ namespace Elastos {
 		bool TransactionDataStore::deleteTxByHash(const std::string &iso, const std::string &hash) {
 			std::stringstream ss;
 
-			ss << "delete from " << TX_TABLE_NAME <<
-				" where " << TX_ISO << " = '" << iso << "'" <<
-				" and " << TX_COLUMN_ID << " = '" << hash << "';";
+			ss << "DELETE FROM " << TX_TABLE_NAME <<
+				" WHERE " << TX_ISO << " = '" << iso << "'" <<
+				" AND " << TX_COLUMN_ID << " = '" << hash << "';";
 
-			return _sqlite->transaction(IMMEDIATE, ss.str(), nullptr, nullptr);
+			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
 		}
 
 	}

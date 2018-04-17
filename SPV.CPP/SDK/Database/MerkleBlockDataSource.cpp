@@ -11,8 +11,15 @@ namespace Elastos {
 	namespace SDK {
 
 		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite) :
-			_sqlite(sqlite) {
-			_sqlite->transaction(IMMEDIATE, MB_DATABASE_CREATE, nullptr, nullptr);
+			_sqlite(sqlite),
+			_txType(IMMEDIATE) {
+			_sqlite->transaction(_txType, MB_DATABASE_CREATE, nullptr, nullptr);
+		}
+
+		MerkleBlockDataSource::MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite) :
+			_sqlite(sqlite),
+			_txType(type) {
+			_sqlite->transaction(_txType, MB_DATABASE_CREATE, nullptr, nullptr);
 		}
 
 		MerkleBlockDataSource::~MerkleBlockDataSource() {
@@ -21,13 +28,13 @@ namespace Elastos {
 		bool MerkleBlockDataSource::putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
 			std::stringstream ss;
 
-			ss << "insert into " << MB_TABLE_NAME << " (" <<
+			ss << "INSERT INTO " << MB_TABLE_NAME << " (" <<
 				MB_BUFF   << "," <<
 				MB_HEIGHT << "," <<
 				MB_ISO    <<
-				") values(?, ?, ?);";
+				") VALUES (?, ?, ?);";
 
-			_sqlite->exec("BEGIN IMMEDIATE;", nullptr, nullptr);
+			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -38,6 +45,7 @@ namespace Elastos {
 			_sqlite->bindInt(stmt, 2, blockEntity.blockHeight);
 			_sqlite->bindText(stmt, 3, iso, nullptr);
 
+			_sqlite->step(stmt);
 			_sqlite->finalize(stmt);
 
 			return _sqlite->exec("COMMIT;", nullptr, nullptr);
@@ -56,20 +64,20 @@ namespace Elastos {
 		bool MerkleBlockDataSource::deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
 			std::stringstream ss;
 
-			ss << "delete from " << MB_TABLE_NAME <<
-				" where " << MB_COLUMN_ID << " = " << blockEntity.id <<
-				" and " << MB_ISO << " = " << "'" << iso << "';";
+			ss << "DELETE FROM " << MB_TABLE_NAME <<
+				" WHERE " << MB_COLUMN_ID << " = " << blockEntity.id <<
+				" AND " << MB_ISO << " = " << "'" << iso << "';";
 
-			return _sqlite->transaction(IMMEDIATE, ss.str(), nullptr, nullptr);
+			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
 		}
 
 		bool MerkleBlockDataSource::deleteAllBlocks(const std::string &iso) {
 			std::stringstream ss;
 
-			ss << "delete from " << MB_TABLE_NAME <<
-				" where " << MB_ISO << " = '" << iso << "';";
+			ss << "DELETE FROM " << MB_TABLE_NAME <<
+				" WHERE " << MB_ISO << " = '" << iso << "';";
 
-			return _sqlite->transaction(IMMEDIATE, ss.str(), nullptr, nullptr);
+			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
 		}
 
 		std::vector<MerkleBlockEntity> MerkleBlockDataSource::getAllMerkleBlocks(const std::string &iso) const {
@@ -77,14 +85,14 @@ namespace Elastos {
 			std::vector<MerkleBlockEntity> merkleBlocks;
 			std::stringstream ss;
 
-			ss << "select "  <<
+			ss << "SELECT "  <<
 				MB_COLUMN_ID << ", " <<
 				MB_BUFF      << ", " <<
 				MB_HEIGHT    <<
-				" from "     << MB_TABLE_NAME <<
-				" where "    << MB_ISO << " = '" << iso << "';";
+				" FROM "     << MB_TABLE_NAME <<
+				" WHERE "    << MB_ISO << " = '" << iso << "';";
 
-			_sqlite->exec("BEGIN IMMEDIATE;", nullptr, nullptr);
+			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {

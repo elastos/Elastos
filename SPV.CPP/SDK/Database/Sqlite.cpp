@@ -29,10 +29,10 @@ namespace Elastos {
 				return false;
 			}
 
-			std::string sqlUpper = sql;
-			std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
+			//std::string sqlUpper = sql;
+			//std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
 
-			int r = sqlite3_exec(_dataBasePtr, sqlUpper.c_str(), callBack, arg, &errmsg);
+			int r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
 					sqlite3_free(errmsg);
@@ -51,25 +51,17 @@ namespace Elastos {
 				return false;
 			}
 
-			std::string sqlUpper = sql;
-			std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
+			//std::string sqlUpper = sql;
+			//std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
 
-			if (type == DEFERRED) {
-				typeStr = "BEGIN DEFERRED;";
-			} else if (type == IMMEDIATE) {
-				typeStr = "BEGIN IMMEDIATE;";
-			} else if (type == EXCLUSIVE) {
-				typeStr = "BEGIN EXCLUSIVE";
-			} else {
-				return false;
-			}
+			typeStr = "BEGIN " + getTxTypeString(type) + ";";
 
 			int r = sqlite3_exec(_dataBasePtr, typeStr.c_str(), NULL, NULL, NULL);
 			if (r != SQLITE_OK) {
 				return false;
 			}
 
-			r = sqlite3_exec(_dataBasePtr, sqlUpper.c_str(), callBack, arg, &errmsg);
+			r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
 					// TODO how to complain the error
@@ -88,14 +80,14 @@ namespace Elastos {
 
 		bool Sqlite::prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
 			int r = 0;
-			std::string sqlUpper = sql;
-			std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
+			//std::string sqlUpper = sql;
+			//std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
 
 			if (!isValid()) {
 				return false;
 			}
 
-			r = sqlite3_prepare_v2(_dataBasePtr, sqlUpper.c_str(), sql.length(), ppStmt, pzTail);
+			r = sqlite3_prepare_v2(_dataBasePtr, sql.c_str(), sql.length(), ppStmt, pzTail);
 			if (r != SQLITE_OK) {
 				return false;
 			}
@@ -157,6 +149,18 @@ namespace Elastos {
 
 		int Sqlite::columnBytes(sqlite3_stmt *pStmt, int iCol) {
 			return sqlite3_column_bytes(pStmt, iCol);
+		}
+
+		std::string Sqlite::getTxTypeString(SqliteTransactionType type) {
+			if (type == DEFERRED) {
+				return "DEFERRED";
+			} else if (type == IMMEDIATE) {
+				return "IMMEDIATE";
+			} else if (type == EXCLUSIVE) {
+				return "EXCLUSIVE";
+			}
+
+			return "IMMEDIATE";
 		}
 
 		bool Sqlite::open(const boost::filesystem::path &path) {

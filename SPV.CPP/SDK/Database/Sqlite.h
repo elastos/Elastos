@@ -63,6 +63,8 @@ namespace Elastos {
 			std::string columnText(sqlite3_stmt *pStmt, int iCol);
 			int columnBytes(sqlite3_stmt *pStmt, int iCol);
 
+			std::string getTxTypeString(SqliteTransactionType type);
+
 		private:
 			bool open(const boost::filesystem::path &path);
 			void close();

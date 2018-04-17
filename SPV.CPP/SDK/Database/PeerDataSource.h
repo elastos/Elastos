@@ -11,17 +11,34 @@
 namespace Elastos {
 	namespace SDK {
 
-		typedef struct {
+		struct PeerEntity {
+			PeerEntity() :
+				id(0),
+				address({0}),
+				port(0),
+				timeStamp(0)
+			{
+			}
+
+			PeerEntity(long i, const UInt128 &addr, uint16_t p, uint64_t ts) :
+				id(i),
+				address(addr),
+				port(p),
+				timeStamp(ts)
+			{
+			}
+
 			long id;
 			UInt128 address;
 			uint16_t port;
 			uint64_t timeStamp;
-		} PeerEntity;
+		};
 
 		class PeerDataSource {
 
 		public:
 			PeerDataSource(Sqlite *sqlite);
+			PeerDataSource(SqliteTransactionType type, Sqlite *sqlite);
 			~PeerDataSource();
 
 			bool putPeer(const std::string &iso, const PeerEntity &peerEntity);
@@ -32,6 +49,7 @@ namespace Elastos {
 
 		private:
 			Sqlite *_sqlite;
+			SqliteTransactionType _txType;
 
 			/*
 			 * peer table
@@ -48,7 +66,7 @@ namespace Elastos {
 				PEER_ADDRESS + " blob," +
 				PEER_PORT + " integer," +
 				PEER_TIMESTAMP + " integer," +
-				PEER_ISO + " text default 'BTC');";
+				PEER_ISO + " text default 'ELA');";
 		};
 
 	}

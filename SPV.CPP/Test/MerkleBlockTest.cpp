@@ -4,9 +4,8 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <BRMerkleBlock.h>
-#include <Common/Utils.h>
-
+#include "BRMerkleBlock.h"
+#include "Utils.h"
 #include "catch.hpp"
 #include "MerkleBlock.h"
 #include "Log.h"

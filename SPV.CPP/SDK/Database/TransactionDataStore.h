@@ -12,16 +12,33 @@
 namespace Elastos {
 	namespace SDK {
 
-		typedef struct {
+		struct TransactionEntity {
+			TransactionEntity() :
+				buff(nullptr, 0),
+				blockHeight(0),
+				timeStamp(0),
+				txHash("")
+			{
+			}
+
+			TransactionEntity(ByteData b, uint32_t bh, uint32_t ts, const std::string &th) :
+				buff(b),
+				blockHeight(bh),
+				timeStamp(ts),
+				txHash(th)
+			{
+			}
+
 			ByteData buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
 			std::string txHash;
-		} TransactionEntity;
+		};
 
 		class TransactionDataStore {
 		public:
 			TransactionDataStore(Sqlite *sqlite);
+			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
 			~TransactionDataStore();
 
 			bool putTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
@@ -32,6 +49,7 @@ namespace Elastos {
 
 		private:
 			Sqlite *_sqlite;
+			SqliteTransactionType _txType;
 			/*
 			 * transaction table
 			 */
@@ -47,7 +65,7 @@ namespace Elastos {
 				TX_BUFF + " blob, " +
 				TX_BLOCK_HEIGHT + " integer, " +
 				TX_TIME_STAMP + " integer, " +
-				TX_ISO + " text DEFAULT 'BTC' );";
+				TX_ISO + " text DEFAULT 'ELA' );";
 		};
 
 	}
