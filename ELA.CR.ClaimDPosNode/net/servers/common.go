@@ -118,6 +118,14 @@ type SideMiningInfo struct {
 	SideBlockHash string
 }
 
+type TransferCrossChainAssetInfo struct {
+	AddressesMap map[string]uint64
+}
+
+type WithdrawTokenInfo struct {
+	BlockHeight uint32
+}
+
 func TransPayloadToHex(p Payload) PayloadInfo {
 	switch object := p.(type) {
 	case *payload.CoinBase:
@@ -133,6 +141,14 @@ func TransPayloadToHex(p Payload) PayloadInfo {
 	case *payload.SideMining:
 		obj := new(SideMiningInfo)
 		obj.SideBlockHash = object.SideBlockHash.String()
+		return obj
+	case *payload.WithdrawAsset:
+		obj := new(WithdrawTokenInfo)
+		obj.BlockHeight = object.BlockHeight
+		return obj
+	case *payload.TransferCrossChainAsset:
+		obj := new(TransferCrossChainAssetInfo)
+		obj.AddressesMap = object.AddressesMap
 		return obj
 	case *payload.TransferAsset:
 	case *payload.Record:
