@@ -1,7 +1,7 @@
 package LevelDBStore
 
 import (
-	. "Elastos.ELA/core/store"
+	. "Elastos.ELA/store"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/filter"
@@ -9,7 +9,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-type LevelDBStore struct {
+type LevelDB struct {
 	db    *leveldb.DB // LevelDB instance
 	batch *leveldb.Batch
 }
@@ -18,7 +18,7 @@ type LevelDBStore struct {
 // too small will lead to high false positive rate.
 const BITSPERKEY = 10
 
-func NewLevelDBStore(file string) (*LevelDBStore, error) {
+func NewLevelDB(file string) (*LevelDB, error) {
 
 	// default Options
 	o := opt.Options{
@@ -36,41 +36,41 @@ func NewLevelDBStore(file string) (*LevelDBStore, error) {
 		return nil, err
 	}
 
-	return &LevelDBStore{
+	return &LevelDB{
 		db:    db,
 		batch: nil,
 	}, nil
 }
 
-func (self *LevelDBStore) Put(key []byte, value []byte) error {
+func (self *LevelDB) Put(key []byte, value []byte) error {
 	return self.db.Put(key, value, nil)
 }
 
-func (self *LevelDBStore) Get(key []byte) ([]byte, error) {
+func (self *LevelDB) Get(key []byte) ([]byte, error) {
 	dat, err := self.db.Get(key, nil)
 	return dat, err
 }
 
-func (self *LevelDBStore) Delete(key []byte) error {
+func (self *LevelDB) Delete(key []byte) error {
 	return self.db.Delete(key, nil)
 }
 
-func (self *LevelDBStore) NewBatch() error {
+func (self *LevelDB) NewBatch() error {
 	self.batch = new(leveldb.Batch)
 	return nil
 }
 
-func (self *LevelDBStore) BatchPut(key []byte, value []byte) error {
+func (self *LevelDB) BatchPut(key []byte, value []byte) error {
 	self.batch.Put(key, value)
 	return nil
 }
 
-func (self *LevelDBStore) BatchDelete(key []byte) error {
+func (self *LevelDB) BatchDelete(key []byte) error {
 	self.batch.Delete(key)
 	return nil
 }
 
-func (self *LevelDBStore) BatchCommit() error {
+func (self *LevelDB) BatchCommit() error {
 	err := self.db.Write(self.batch, nil)
 	if err != nil {
 		return err
@@ -78,12 +78,12 @@ func (self *LevelDBStore) BatchCommit() error {
 	return nil
 }
 
-func (self *LevelDBStore) Close() error {
+func (self *LevelDB) Close() error {
 	err := self.db.Close()
 	return err
 }
 
-func (self *LevelDBStore) NewIterator(prefix []byte) IIterator {
+func (self *LevelDB) NewIterator(prefix []byte) IIterator {
 
 	iter := self.db.NewIterator(util.BytesPrefix(prefix), nil)
 

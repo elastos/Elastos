@@ -12,10 +12,10 @@ import (
 	. "Elastos.ELA/common"
 	"Elastos.ELA/log"
 	. "Elastos.ELA/core/asset"
-	. "Elastos.ELA/core/store"
+	. "Elastos.ELA/store"
 	. "Elastos.ELA/core/ledger"
 	tx "Elastos.ELA/core/transaction"
-	. "Elastos.ELA/core/store/leveldbstore"
+	. "Elastos.ELA/store/leveldb"
 	"Elastos.ELA/common/serialize"
 )
 
@@ -57,7 +57,7 @@ type ChainStore struct {
 
 func NewLedgerStore() (ILedgerStore, error) {
 	// TODO: read config file decide which db to use.
-	st, err := NewLevelDBStore("Chain")
+	st, err := NewLevelDB("Chain")
 	if err != nil {
 		return nil, err
 	}
