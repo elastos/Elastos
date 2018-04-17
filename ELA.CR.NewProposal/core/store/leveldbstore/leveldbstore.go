@@ -1,4 +1,4 @@
-package leveldbstore
+package LevelDBStore
 
 import (
 	. "Elastos.ELA/core/store"
