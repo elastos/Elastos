@@ -2,7 +2,7 @@ package message
 
 import (
 	"errors"
-	"Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 // SPV client will connect node through the specific spv port

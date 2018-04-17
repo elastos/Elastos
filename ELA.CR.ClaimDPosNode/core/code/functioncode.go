@@ -3,8 +3,8 @@ package code
 import (
 	"io"
 
-	. "Elastos.ELA/core/contract"
-	"Elastos.ELA/common/serialize"
+	. "github.com/elastos/Elastos.ELA/core/contract"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 )
 
 type FunctionCode struct {

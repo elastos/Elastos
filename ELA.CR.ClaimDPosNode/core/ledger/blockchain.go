@@ -1,10 +1,10 @@
 package ledger
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/config"
-	"Elastos.ELA/log"
-	"Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/events"
 	"container/list"
 	"errors"
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"sort"
 	"sync"
 	"time"
-	. "Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/errors"
 )
 
 const (

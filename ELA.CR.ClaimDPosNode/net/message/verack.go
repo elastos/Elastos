@@ -1,8 +1,8 @@
 package message
 
 import (
-	"Elastos.ELA/log"
-	. "Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"encoding/hex"
 	"errors"
 	"strconv"

@@ -1,11 +1,11 @@
 package node
 
 import (
-	. "Elastos.ELA/config"
-	"Elastos.ELA/log"
-	"Elastos.ELA/events"
-	msg "Elastos.ELA/net/message"
-	. "Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/events"
+	msg "github.com/elastos/Elastos.ELA/net/message"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"

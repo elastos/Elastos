@@ -1,7 +1,7 @@
 package transaction
 
 import (
-	. "Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/common"
 )
 
 // ILedgerStore provides func with store package.

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"io"
 
-	. "Elastos.ELA/common"
-	. "Elastos.ELA/common/serialize"
-	. "Elastos.ELA/core/auxpow"
+	. "github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/common/serialize"
+	. "github.com/elastos/Elastos.ELA/core/auxpow"
 )
 
 type Header struct {

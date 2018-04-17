@@ -1,13 +1,13 @@
 package httpnodeinfo
 
 import (
-	"Elastos.ELA/config"
-	"Elastos.ELA/core/ledger"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/core/ledger"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
-	"Elastos.ELA/net/servers"
+	"github.com/elastos/Elastos.ELA/net/servers"
 )
 
 type Info struct {

@@ -6,7 +6,7 @@ import (
 	"io"
 	"math"
 
-	. "Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/common"
 )
 
 var ErrRange = errors.New("value out of range")

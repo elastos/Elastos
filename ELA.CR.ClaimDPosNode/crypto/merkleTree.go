@@ -3,7 +3,7 @@ package crypto
 import (
 	"errors"
 
-	. "Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/common"
 )
 
 type MerkleTree struct {

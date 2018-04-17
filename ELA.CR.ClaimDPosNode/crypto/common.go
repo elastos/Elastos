@@ -7,7 +7,7 @@ import (
 	"io"
 	"sort"
 
-	. "Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA/common"
 
 	"github.com/golang/crypto/ripemd160"
 )

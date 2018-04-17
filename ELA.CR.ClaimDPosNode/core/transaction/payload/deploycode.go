@@ -3,8 +3,8 @@ package payload
 import (
 	"io"
 
-	. "Elastos.ELA/core/code"
-	"Elastos.ELA/common/serialize"
+	. "github.com/elastos/Elastos.ELA/core/code"
+	"github.com/elastos/Elastos.ELA/common/serialize"
 )
 
 const DeployCodePayloadVersion byte = 0x00
