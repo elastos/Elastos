@@ -1,13 +1,16 @@
 package message
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"bytes"
 	"encoding/binary"
 	"errors"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type block struct {
@@ -27,17 +30,17 @@ func (msg block) Handle(node Noder) error {
 		return errors.New("received headers message from unknown peer")
 	}
 
-	if ledger.DefaultLedger.BlockInLedger(hash) {
+	if chain.DefaultLedger.BlockInLedger(hash) {
 		ReceiveDuplicateBlockCnt++
 		log.Trace("Receive ", ReceiveDuplicateBlockCnt, " duplicated block.")
 		return nil
 	}
 
-	ledger.DefaultLedger.Store.RemoveHeaderListElement(hash)
+	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	node.LocalNode().DeleteRequestedBlock(hash)
 	isOrphan := false
 	var err error
-	_, isOrphan, err = ledger.DefaultLedger.Blockchain.AddBlock(&msg.blk)
+	_, isOrphan, err = chain.DefaultLedger.Blockchain.AddBlock(&msg.blk)
 
 	if err != nil {
 		log.Warn("Block add failed: ", err, " ,block hash is ", hash.Bytes())
@@ -53,8 +56,8 @@ func (msg block) Handle(node Noder) error {
 
 	if isOrphan == true && node.LocalNode().IsSyncHeaders() == false {
 		if !node.LocalNode().RequestedBlockExisted(hash) {
-			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
-			locator, _ := ledger.DefaultLedger.Blockchain.LatestBlockLocator()
+			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
 			SendMsgSyncBlockHeaders(node, locator, *orphanRoot)
 		}
 	}
@@ -63,7 +66,7 @@ func (msg block) Handle(node Noder) error {
 }
 
 func NewBlockFromHash(hash common.Uint256) (*ledger.Block, error) {
-	bk, err := ledger.DefaultLedger.Store.GetBlock(hash)
+	bk, err := chain.DefaultLedger.Store.GetBlock(hash)
 	if err != nil {
 		log.Errorf("Get Block error: %s, block hash: %x", err.Error(), hash)
 		return nil, err

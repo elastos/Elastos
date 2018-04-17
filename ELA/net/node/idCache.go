@@ -1,7 +1,7 @@
 package node
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/net/protocol"
 	"sync"
 )

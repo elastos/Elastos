@@ -5,11 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/common/serialize"
-	. "github.com/elastos/Elastos.ELA/core/ledger"
-	tx "github.com/elastos/Elastos.ELA/core/transaction"
-	"github.com/elastos/Elastos.ELA/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
+	. "github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
 )
 
 func (db *ChainStore) BatchInit() error {
@@ -462,4 +462,31 @@ func (db *ChainStore) RollbackUnspend(b *Block) error {
 	}
 
 	return nil
+}
+
+func GetUint16Array(source []byte) ([]uint16, error) {
+	if source == nil {
+		return nil, errors.New("[Common] , GetUint16Array err, source = nil")
+	}
+
+	if len(source)%2 != 0 {
+		return nil, errors.New("[Common] , GetUint16Array err, length of source is odd.")
+	}
+
+	dst := make([]uint16, len(source)/2)
+	for i := 0; i < len(source)/2; i++ {
+		dst[i] = uint16(source[i*2]) + uint16(source[i*2+1])*256
+	}
+
+	return dst, nil
+}
+
+func ToByteArray(source []uint16) []byte {
+	dst := make([]byte, len(source)*2)
+	for i := 0; i < len(source); i++ {
+		dst[i*2] = byte(source[i] % 256)
+		dst[i*2+1] = byte(source[i] / 256)
+	}
+
+	return dst
 }

@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/core/auxpow"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/core/auxpow"
 )
 
 func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {

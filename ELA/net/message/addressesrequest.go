@@ -1,9 +1,10 @@
 package message
 
 import (
+	"encoding/hex"
+
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
-	"encoding/hex"
 )
 
 type addrReq struct {

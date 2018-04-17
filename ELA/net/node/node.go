@@ -1,15 +1,10 @@
 package node
 
 import (
-	. "github.com/elastos/Elastos.ELA/common"
-	. "github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	"github.com/elastos/Elastos.ELA/core/transaction"
-	"github.com/elastos/Elastos.ELA/events"
-	. "github.com/elastos/Elastos.ELA/net/message"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
+	"bytes"
+	"crypto/sha256"
 	"errors"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"runtime"
@@ -18,10 +13,18 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-	"encoding/binary"
-	"bytes"
-	"crypto/sha256"
-	"github.com/elastos/Elastos.ELA/bloom"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	. "github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/net/message"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
 )
 
 type Semaphore chan struct{}
@@ -306,14 +309,14 @@ func (node *node) GetTime() int64 {
 
 func (node *node) WaitForSyncFinish() {
 	for {
-		log.Trace("BlockHeight is ", ledger.DefaultLedger.Blockchain.BlockHeight)
-		bc := ledger.DefaultLedger.Blockchain
+		log.Trace("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
+		bc := chain.DefaultLedger.Blockchain
 		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 
 		heights, _ := node.GetNeighborHeights()
 		log.Trace("others height is ", heights)
 
-		if CompareHeight(uint64(ledger.DefaultLedger.Blockchain.BlockHeight), heights) {
+		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 			node.local.SetSyncHeaders(false)
 			break
 		}
@@ -444,8 +447,8 @@ func (node node) IsSyncFailed() bool {
 
 func (node *node) needSync() bool {
 	heights, _ := node.GetNeighborHeights()
-	log.Info("nbr heigh-->", heights, ledger.DefaultLedger.Blockchain.BlockHeight)
-	if CompareHeight(uint64(ledger.DefaultLedger.Blockchain.BlockHeight), heights) {
+	log.Info("nbr heigh-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 		return false
 	}
 	return true
@@ -544,4 +547,13 @@ func (node *node) SetStopHash(hash Uint256) {
 
 func (node *node) GetStopHash() Uint256 {
 	return node.StopHash
+}
+
+func CompareHeight(blockHeight uint64, heights []uint64) bool {
+	for _, height := range heights {
+		if blockHeight < height {
+			return false
+		}
+	}
+	return true
 }

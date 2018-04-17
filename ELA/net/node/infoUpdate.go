@@ -1,16 +1,18 @@
 package node
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	"github.com/elastos/Elastos.ELA/events"
-	. "github.com/elastos/Elastos.ELA/net/message"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"net"
 	"strconv"
 	"time"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/net/message"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
@@ -44,9 +46,9 @@ func (node *node) SyncBlks() {
 		if hasSyncPeer == false {
 			node.LocalNode().ResetRequestedBlock()
 			syncNode = node.GetBestHeightNoder()
-			hash := ledger.DefaultLedger.Store.GetCurrentBlockHash()
+			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 
-			blocator := ledger.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
+			blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 			var emptyHash common.Uint256
 			SendMsgSyncBlockHeaders(syncNode, blocator, emptyHash)
 		} else {
@@ -69,8 +71,8 @@ func (node *node) SyncBlks() {
 				node.local.SetStartHash(emptyHash)
 				node.local.SetStopHash(emptyHash)
 				newSyncNode := node.GetBestHeightNoder()
-				hash := ledger.DefaultLedger.Store.GetCurrentBlockHash()
-				blocator := ledger.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
+				hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
+				blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 				SendMsgSyncBlockHeaders(newSyncNode, blocator, emptyHash)
 			} else {
 				for k := range rb {

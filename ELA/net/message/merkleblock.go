@@ -1,8 +1,8 @@
 package message
 
 import (
-	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core/ledger"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
 )
 
 type MerkleBlockMsg struct {
