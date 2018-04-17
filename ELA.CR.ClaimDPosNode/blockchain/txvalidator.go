@@ -1,16 +1,16 @@
-package ledger
+package blockchain
 
 import (
 	"errors"
 	"fmt"
 	"math"
 
-	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/asset"
-	tx "github.com/elastos/Elastos.ELA/core/transaction"
-	"github.com/elastos/Elastos.ELA/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA.Utility/core/asset"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
 	. "github.com/elastos/Elastos.ELA/errors"
 )
 
@@ -220,7 +220,7 @@ func CheckTransactionUTXOLock(txn *tx.Transaction) error {
 
 func CheckTransactionSize(txn *tx.Transaction) error {
 	size := txn.GetSize()
-	if size <= 0 || size > MaxBlockSize {
+	if size <= 0 || size > config.Parameters.MaxBlockSize {
 		return errors.New(fmt.Sprintf("Invalid transaction size: %d bytes", size))
 	}
 

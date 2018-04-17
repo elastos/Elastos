@@ -5,10 +5,11 @@ import (
 	"encoding/binary"
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA/common"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
+	chain "github.com/elastos/Elastos.ELA/blockchain"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type blocksReq struct {
@@ -30,7 +31,7 @@ func (msg blocksReq) Handle(node Noder) error {
 	var stopHash [HASHLEN]byte
 	locatorHash = msg.p.hashStart
 	stopHash = msg.p.hashEnd
-	startHash = ledger.DefaultLedger.Blockchain.LatestLocatorHash(locatorHash)
+	startHash = chain.DefaultLedger.Blockchain.LatestLocatorHash(locatorHash)
 	inv, err := GetInvFromBlockHash(startHash, stopHash)
 	if err != nil {
 		return err
@@ -94,7 +95,7 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 	var empty Uint256
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := ledger.DefaultLedger.Store.GetHeight()
+	curHeight := chain.DefaultLedger.Store.GetHeight()
 	if stopHash == empty {
 		if startHash == empty {
 			if curHeight > MAXINVHDRCNT {
@@ -103,7 +104,7 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 				count = curHeight
 			}
 		} else {
-			bkstart, err := ledger.DefaultLedger.Store.GetHeader(startHash)
+			bkstart, err := chain.DefaultLedger.Store.GetHeader(startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -114,13 +115,13 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 			}
 		}
 	} else {
-		bkstop, err := ledger.DefaultLedger.Store.GetHeader(stopHash)
+		bkstop, err := chain.DefaultLedger.Store.GetHeader(stopHash)
 		if err != nil {
 			return nil, err
 		}
 		stopHeight = bkstop.Height
 		if startHash != empty {
-			bkstart, err := ledger.DefaultLedger.Store.GetHeader(startHash)
+			bkstart, err := chain.DefaultLedger.Store.GetHeader(startHash)
 			if err != nil {
 				return nil, err
 			}
@@ -148,7 +149,7 @@ func GetInvFromBlockHash(startHash Uint256, stopHash Uint256) (*InvPayload, erro
 	var i uint32
 	for i = 1; i <= count; i++ {
 		//FIXME need add error handle for GetBlockWithHash
-		hash, _ := ledger.DefaultLedger.Store.GetBlockHash(startHeight + i)
+		hash, _ := chain.DefaultLedger.Store.GetBlockHash(startHeight + i)
 		hash.Serialize(tmpBuffer)
 	}
 

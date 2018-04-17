@@ -1,12 +1,13 @@
 package httpnodeinfo
 
 import (
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/core/ledger"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/net/servers"
 )
 
@@ -44,7 +45,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageInfo := &Info{
-		BlockHeight:  ledger.DefaultLedger.Blockchain.BlockHeight,
+		BlockHeight:  chain.DefaultLedger.Blockchain.BlockHeight,
 		NeighborCnt:  len(ngbrNoders),
 		Neighbors:    ngbrNodersInfo,
 		HttpRestPort: config.Parameters.HttpRestPort,

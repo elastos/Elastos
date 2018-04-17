@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/common/serialize"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 

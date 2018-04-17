@@ -1,18 +1,21 @@
 package node
 
 import (
-	"github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	"github.com/elastos/Elastos.ELA/core/transaction"
-	tx "github.com/elastos/Elastos.ELA/core/transaction"
-	. "github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/events"
 	"bytes"
 	"errors"
 	"fmt"
 	"sync"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/events"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 var (
@@ -40,11 +43,11 @@ func (this *TXNPool) init() {
 //1.check transaction. 2.check with ledger(db) 3.check with pool
 func (this *TXNPool) AppendToTxnPool(txn *transaction.Transaction) ErrCode {
 	//verify transaction with Concurrency
-	if errCode := ledger.CheckTransactionSanity(txn); errCode != Success {
+	if errCode := chain.CheckTransactionSanity(txn); errCode != Success {
 		log.Info("Transaction verification failed", txn.Hash())
 		return errCode
 	}
-	if errCode := ledger.CheckTransactionContext(txn, ledger.DefaultLedger); errCode != Success {
+	if errCode := chain.CheckTransactionContext(txn, chain.DefaultLedger); errCode != Success {
 		log.Info("Transaction verification with ledger failed", txn.Hash())
 		return errCode
 	}
@@ -53,7 +56,7 @@ func (this *TXNPool) AppendToTxnPool(txn *transaction.Transaction) ErrCode {
 		return ErrDoubleSpend
 	}
 
-	txn.Fee = common.Fixed64(txn.GetFee(ledger.DefaultLedger.Blockchain.AssetID))
+	txn.Fee = common.Fixed64(txn.GetFee(chain.DefaultLedger.Blockchain.AssetID))
 	b_buf := new(bytes.Buffer)
 	txn.Serialize(b_buf)
 	txn.FeePerKB = txn.Fee * 1000 / common.Fixed64(len(b_buf.Bytes()))
@@ -186,7 +189,7 @@ func (this *TXNPool) addtxnList(txn *transaction.Transaction) bool {
 		return false
 	}
 	this.txnList[txnHash] = txn
-	ledger.DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
+	chain.DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
 	return true
 }
 

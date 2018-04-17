@@ -1,4 +1,4 @@
-package ledger
+package blockchain
 
 import (
 	"github.com/elastos/Elastos.ELA/config"
@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/log"
 )
 

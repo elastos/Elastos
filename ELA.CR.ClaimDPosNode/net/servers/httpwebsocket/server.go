@@ -11,15 +11,16 @@ import (
 	"crypto/tls"
 	"encoding/json"
 
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	. "github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/events"
-	. "github.com/elastos/Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
 	. "github.com/elastos/Elastos.ELA/net/servers"
-	. "github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/core/transaction"
 
+	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -52,8 +53,8 @@ func StartServer() {
 	}
 	instance.Start()
 
-	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
-	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
+	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
+	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
 }
 
 func (server *WebSocketServer) Start() {

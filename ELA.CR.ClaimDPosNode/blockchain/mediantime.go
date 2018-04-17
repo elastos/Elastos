@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package ledger
+package blockchain
 
 import (
 	"github.com/elastos/Elastos.ELA/log"
