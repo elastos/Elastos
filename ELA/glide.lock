@@ -1,5 +1,5 @@
-hash: 1b372bf09c4b0d30d965dfee61c35495f7b8d0b2bf9a0fef6e2ec405c46300a5
-updated: 2018-01-30T17:00:27.73859+08:00
+hash: 972d8f7bdc892c7d5d0bc0c99ad7dd4956a71dd2341c66598f62e13f07d6e98e
+updated: 2018-04-13T10:05:36.342608+08:00
 imports:
 - name: github.com/golang/crypto
   version: 08a7dbd3d99261d9ae86ef1b3b8bdb0382fb82cd
@@ -14,8 +14,6 @@ imports:
   version: 4b24a7dfa1bfba3724ffb3598b1c6ded1cff087f
 - name: github.com/pborman/uuid
   version: 1b00554d822231195d1babd97ff4a781231955c9
-- name: github.com/pebbe/zmq4
-  version: 90d69e412a09549f2e90bac70fbb449081f1e5c1
 - name: github.com/syndtr/goleveldb
   version: 8c81ea47d4c41a385645e133e15510fc6a2a74b4
   subpackages:
