@@ -1,8 +1,8 @@
 package httprestful
 
 import (
-	. "Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	. "Elastos.ELA/config"
+	"Elastos.ELA/log"
 	. "Elastos.ELA/net/servers"
 	"context"
 	"crypto/tls"

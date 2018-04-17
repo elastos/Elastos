@@ -1,7 +1,7 @@
 package message
 
 import (
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/log"
 	. "Elastos.ELA/net/protocol"
 	"encoding/hex"
 )

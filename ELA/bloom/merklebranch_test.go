@@ -77,8 +77,7 @@ func run(txs uint32) {
 		calcRoot := auxpow.GetMerkleRoot(*txIds[i], mb.Branches, mb.Index)
 		if merkleRoot == calcRoot {
 		} else {
-			fmt.Println("Merkle root not match, expect %s result %s",
-				merkleRoot.String(), calcRoot.String())
+			fmt.Println("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())
 			os.Exit(0)
 		}
 	}

@@ -1,7 +1,7 @@
 package httpnodeinfo
 
 import (
-	"Elastos.ELA/common/config"
+	"Elastos.ELA/config"
 	"Elastos.ELA/core/ledger"
 	"fmt"
 	"html/template"

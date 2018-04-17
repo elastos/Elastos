@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/log"
 	"Elastos.ELA/common/serialize"
 	. "Elastos.ELA/net/protocol"
 )

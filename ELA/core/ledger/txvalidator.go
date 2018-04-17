@@ -6,8 +6,8 @@ import (
 	"math"
 
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/config"
+	"Elastos.ELA/log"
 	"Elastos.ELA/core/asset"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"

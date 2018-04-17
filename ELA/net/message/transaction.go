@@ -7,8 +7,8 @@ import (
 	"errors"
 
 	"Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/config"
+	"Elastos.ELA/log"
 	"Elastos.ELA/core/transaction"
 	. "Elastos.ELA/errors"
 	. "Elastos.ELA/net/protocol"

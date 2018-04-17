@@ -10,7 +10,7 @@ import (
 
 	"Elastos.ELA/events"
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/log"
 	. "Elastos.ELA/core/asset"
 	. "Elastos.ELA/core/store"
 	. "Elastos.ELA/core/ledger"
