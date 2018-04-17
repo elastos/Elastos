@@ -1,14 +1,16 @@
 package message
 
 import (
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/common/serialize"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type pong struct {
@@ -20,7 +22,7 @@ func NewPongMsg() ([]byte, error) {
 	var msg pong
 	msg.Header.Magic = config.Parameters.Magic
 	copy(msg.Header.CMD[0:7], "pong")
-	msg.height = uint64(ledger.DefaultLedger.Store.GetHeight())
+	msg.height = uint64(chain.DefaultLedger.Store.GetHeight())
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	serialize.WriteUint64(tmpBuffer, msg.height)
 	b := new(bytes.Buffer)

@@ -1,12 +1,6 @@
 package message
 
 import (
-	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/common/serialize"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
@@ -14,6 +8,14 @@ import (
 	"fmt"
 	"io"
 	"time"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type InvPayload struct {
@@ -110,9 +112,9 @@ func (msg Inv) Handle(node Noder) error {
 	for i = 0; i < count; i++ {
 		id.Deserialize(bytes.NewReader(msg.P.Blk[HASHLEN*i:]))
 		hashes = append(hashes, id)
-		if ledger.DefaultLedger.Blockchain.IsKnownOrphan(&id) {
-			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(&id)
-			locator, err := ledger.DefaultLedger.Blockchain.LatestBlockLocator()
+		if chain.DefaultLedger.Blockchain.IsKnownOrphan(&id) {
+			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&id)
+			locator, err := chain.DefaultLedger.Blockchain.LatestBlockLocator()
 			if err != nil {
 				log.Errorf(" Failed to get block "+
 					"locator for the latest block: "+
@@ -125,15 +127,15 @@ func (msg Inv) Handle(node Noder) error {
 
 		if i == (count - 1) {
 			var emptyHash Uint256
-			blocator := ledger.DefaultLedger.Blockchain.BlockLocatorFromHash(&id)
+			blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&id)
 			SendMsgSyncBlockHeaders(node, blocator, emptyHash)
 		}
 	}
 
 	for _, h := range hashes {
 		// TODO check the ID queue
-		if !ledger.DefaultLedger.BlockInLedger(h) {
-			if !(node.LocalNode().RequestedBlockExisted(h) || ledger.DefaultLedger.Blockchain.IsKnownOrphan(&h)) {
+		if !chain.DefaultLedger.BlockInLedger(h) {
+			if !(node.LocalNode().RequestedBlockExisted(h) || chain.DefaultLedger.Blockchain.IsKnownOrphan(&h)) {
 				<-time.After(time.Millisecond * 50)
 				ReqBlkData(node, h)
 			}

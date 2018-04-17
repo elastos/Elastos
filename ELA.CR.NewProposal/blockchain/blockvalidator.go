@@ -1,18 +1,20 @@
-package ledger
+package blockchain
 
 import (
-	. "github.com/elastos/Elastos.ELA/common"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/core/auxpow"
-	tx "github.com/elastos/Elastos.ELA/core/transaction"
-	"github.com/elastos/Elastos.ELA/crypto"
-	. "github.com/elastos/Elastos.ELA/errors"
-
 	"errors"
 	"fmt"
 	"math"
 	"math/big"
 	"time"
+
+	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/errors"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/core/auxpow"
+	. "github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 const (
@@ -54,7 +56,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > MaxBlockSize {
+	if blockSize > config.Parameters.MaxBlockSize {
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 

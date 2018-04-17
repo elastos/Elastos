@@ -6,13 +6,14 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA/common"
+	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/transaction"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
-	"github.com/elastos/Elastos.ELA/core/ledger"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 // Transaction message
@@ -43,7 +44,7 @@ func (msg trn) Handle(node Noder) error {
 }
 
 func NewTxnFromHash(hash common.Uint256) (*transaction.Transaction, error) {
-	txn, err := ledger.DefaultLedger.GetTransactionWithHash(hash)
+	txn, err := chain.DefaultLedger.GetTransactionWithHash(hash)
 	if err != nil {
 		log.Error("Get transaction with hash error: ", err.Error())
 		return nil, err

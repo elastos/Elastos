@@ -1,16 +1,17 @@
 package message
 
 import (
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"time"
+
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type version struct {
@@ -39,7 +40,7 @@ func NewVersion(n Noder) ([]byte, error) {
 	msg.Body.TimeStamp = uint32(time.Now().UTC().UnixNano())
 	msg.Body.Port = n.Port()
 	msg.Body.Nonce = n.ID()
-	msg.Body.StartHeight = uint64(ledger.DefaultLedger.GetLocalBlockChainHeight())
+	msg.Body.StartHeight = uint64(chain.DefaultLedger.GetLocalBlockChainHeight())
 	if n.IsRelay() {
 		msg.Body.Relay = 1
 	} else {
