@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	. "github.com/elastos/Elastos.ELA.SPV/db"
-	"github.com/elastos/Elastos.ELA.SPV/msg"
+	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 )
 

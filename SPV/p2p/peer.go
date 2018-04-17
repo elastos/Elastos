@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	. "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
 )
 
 const (

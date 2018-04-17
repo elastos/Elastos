@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
+	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
 )
 
 type P2PClientImpl struct {
@@ -66,7 +67,7 @@ func toSPVAddr(seeds []string) []string {
 }
 
 // Filter peer handshake according to the SPV protocol
-func (client *P2PClientImpl) OnHandshake(v *p2p.Version) error {
+func (client *P2PClientImpl) OnHandshake(v *msg.Version) error {
 	if v.Version < ProtocolVersion {
 		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", ProtocolVersion))
 	}

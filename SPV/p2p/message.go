@@ -1,5 +1,7 @@
 package p2p
 
+import "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+
 // The message flying in the peer to peer network
 type Message interface {
 	// Get the message CMD parameter which is the type of this message
@@ -16,7 +18,7 @@ type MessageHandler interface {
 	MakeMessage(cmd string) (Message, error)
 
 	// A handshake message received
-	OnHandshake(v *Version) error
+	OnHandshake(v *msg.Version) error
 
 	// VerAck message received from a connected peer
 	// which means the connected peer is established

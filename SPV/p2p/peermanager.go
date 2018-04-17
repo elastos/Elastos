@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	"time"
+	. "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
 )
 
 const (
