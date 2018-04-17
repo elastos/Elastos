@@ -1,7 +1,6 @@
 package crypto
 
 import (
-	"Elastos.ELA/common/serialization"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +8,8 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/sha256"
+
+	"github.com/elastos/Elastos.ELA/common/serialization"
 )
 
 const (

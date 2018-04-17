@@ -1,14 +1,15 @@
 package message
 
 import (
-	"Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	. "Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+
+	"Elastos.ELA/common"
+	"Elastos.ELA/common/config"
+	"Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type notFound struct {
