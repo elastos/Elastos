@@ -2,7 +2,7 @@ package ledger
 
 import (
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/config"
+	"Elastos.ELA/config"
 	"Elastos.ELA/core/auxpow"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/crypto"

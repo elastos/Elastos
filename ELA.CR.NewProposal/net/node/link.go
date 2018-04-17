@@ -1,8 +1,8 @@
 package node
 
 import (
-	. "Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	. "Elastos.ELA/config"
+	"Elastos.ELA/log"
 	"Elastos.ELA/events"
 	msg "Elastos.ELA/net/message"
 	. "Elastos.ELA/net/protocol"

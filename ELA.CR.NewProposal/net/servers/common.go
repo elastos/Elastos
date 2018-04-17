@@ -2,7 +2,7 @@ package servers
 
 import (
 	. "Elastos.ELA/common"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/log"
 	"Elastos.ELA/consensus/pow"
 	"Elastos.ELA/core/asset"
 	. "Elastos.ELA/core/transaction"

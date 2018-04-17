@@ -14,10 +14,10 @@ import (
 	"Elastos.ELA/events"
 	. "Elastos.ELA/common"
 	. "Elastos.ELA/errors"
-	"Elastos.ELA/common/log"
+	"Elastos.ELA/log"
 	"Elastos.ELA/core/ledger"
 	. "Elastos.ELA/net/servers"
-	. "Elastos.ELA/common/config"
+	. "Elastos.ELA/config"
 	"Elastos.ELA/core/transaction"
 
 	"github.com/pborman/uuid"

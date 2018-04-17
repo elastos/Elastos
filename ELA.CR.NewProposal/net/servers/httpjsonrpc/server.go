@@ -4,8 +4,8 @@ import (
 	"strconv"
 	"net/http"
 
-	"Elastos.ELA/common/log"
-	. "Elastos.ELA/common/config"
+	"Elastos.ELA/log"
+	. "Elastos.ELA/config"
 	. "Elastos.ELA/net/servers"
 	"io/ioutil"
 	"encoding/json"
