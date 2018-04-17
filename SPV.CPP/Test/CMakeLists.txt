@@ -10,8 +10,12 @@ foreach(src ${TEST_SOURCE_FILES})
 	target_link_libraries(${TEST_TARGET_NAME} boost_system)
 	#sudo apt-get install libboost-program-options-dev
 	target_link_libraries(${TEST_TARGET_NAME} boost_program_options)
-	#sudo apt-get install libboost-thread-dev
-	target_link_libraries(${TEST_TARGET_NAME} boost_thread)
+	if(APPLE)
+		target_link_libraries(${TEST_TARGET_NAME} boost_thread-mt)
+	else(APPLE)
+		#sudo apt-get install libboost-thread-dev
+		target_link_libraries(${TEST_TARGET_NAME} boost_thread)
+	endif(APPLE)
 endforeach(src)
 
 

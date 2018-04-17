@@ -67,4 +67,6 @@ if(APPLE)
 	target_link_libraries(${SPVSDK_NAME} boost_system)
 	#sudo apt-get install libboost-program-options-dev
 	target_link_libraries(${SPVSDK_NAME} boost_program_options)
+	#sudo apt-get install libboost-thread-dev
+	target_link_libraries(${SPVSDK_NAME} boost_thread-mt)
 endif()
