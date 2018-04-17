@@ -89,8 +89,7 @@ namespace Elastos {
 		}
 
 		BRWallet *Wallet::getRaw() const {
-			//todo complete me
-			return nullptr;
+			return _wallet;
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> Wallet::getTransactions() const {

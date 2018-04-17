@@ -46,12 +46,13 @@ namespace Elastos {
 			return ByteData(_masterPubKey->pubKey, 33);
 		}
 
-		boost::shared_ptr<BRKey> MasterPubKey::getPubKeyAsKey() const {
+		boost::shared_ptr<Key> MasterPubKey::getPubKeyAsKey() const {
 			uint8_t pubKey[33];
 			BRBIP32PubKey(pubKey, sizeof(pubKey), *_masterPubKey, 0, 0);
-			BRKey *key = new BRKey;
-			BRKeySetPubKey(key, pubKey, sizeof(pubKey));
-			return boost::shared_ptr<BRKey>(key);
+			BRKey *brkey = new BRKey;
+			BRKeySetPubKey(brkey, pubKey, sizeof(pubKey));
+			Key *key = new Key(boost::shared_ptr<BRKey>(brkey));
+			return boost::shared_ptr<Key>(key);
 		}
 
 		ByteData MasterPubKey::bip32BitIDKey(const ByteData &seed, int index, const std::string &uri) {
@@ -89,6 +90,7 @@ namespace Elastos {
 			uint8_t *data = new uint8_t[size];
 			memcpy(data, &result, size);
 			//note todo size contains "\0"
+			//retain '\0' at end of data, but set ByteData.length without it
 			return ByteData(data, size - 1);
 		}
 

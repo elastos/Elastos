@@ -12,8 +12,7 @@
 
 using namespace Elastos::SDK;
 
-TEST_CASE( "MasterPubKey test", "[MasterPubKey]" )
-{
+TEST_CASE("MasterPubKey test", "[MasterPubKey]") {
 	SECTION("Default constructor") {
 		MasterPubKey masterPubKey;
 		REQUIRE(masterPubKey.getRaw() != nullptr);
@@ -26,8 +25,7 @@ TEST_CASE( "MasterPubKey test", "[MasterPubKey]" )
 	}
 }
 
-TEST_CASE( "MasterPubKey method test", "[MasterPubKey]" )
-{
+TEST_CASE("MasterPubKey method test", "[MasterPubKey]") {
 	SECTION("getPubKey method test") {
 		std::string phrase = "a test seed ha";
 		MasterPubKey masterPubKey(phrase);
@@ -56,29 +54,29 @@ TEST_CASE( "MasterPubKey method test", "[MasterPubKey]" )
 			REQUIRE(key1->pubKey[i] == key2->pubKey[i]);
 		}
 	}
-
 	SECTION("getPubKeyAsKey method test") {
 		std::string phrase = "a test seed ha";
 		MasterPubKey masterPubKey(phrase);
 
-		boost::shared_ptr<BRKey> key = boost::shared_ptr<BRKey>(new BRKey());
-		key->compressed = 0;
-		key->secret = UINT256_ZERO;
-		memset(key->pubKey, 0, sizeof(key->pubKey));
-		char *pubkey1 = (char *) key->pubKey;
+		boost::shared_ptr<BRKey> brkey = boost::shared_ptr<BRKey>(new BRKey());
+		brkey->compressed = 0;
+		brkey->secret = UINT256_ZERO;
+		boost::shared_ptr<Key> key = boost::shared_ptr<Key>(new Key(brkey));
+
+		memset(key->getRaw()->pubKey, 0, sizeof(key->getRaw()->pubKey));
+		char *pubkey1 = (char *) key->getRaw()->pubKey;
 		key = masterPubKey.getPubKeyAsKey();
 		REQUIRE(key.get() != nullptr);
-		REQUIRE(key->compressed != 0);
-		for (int i = 0; i < sizeof(key->secret); i++) {
-			REQUIRE(key->secret.u8[i] == 0);
+		REQUIRE(key->getRaw()->compressed != 0);
+		for (int i = 0; i < sizeof(key->getRaw()->secret); i++) {
+			REQUIRE(key->getRaw()->secret.u8[i] == 0);
 		}
-		char *pubkey2 = (char *) key->pubKey;
+		char *pubkey2 = (char *) key->getRaw()->pubKey;
 		REQUIRE(std::string(pubkey1) != std::string(pubkey2));
 	}
 }
 
-TEST_CASE( "MasterPubKey static method test", "[MasterPubKey]" )
-{
+TEST_CASE("MasterPubKey static method test", "[MasterPubKey]") {
 	SECTION("bip32BitIDKey method test") {
 		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
 		ByteData seedByte(seed.u8, sizeof(seed));

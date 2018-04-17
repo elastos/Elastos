@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRPeer.h>
+#include "BRPeer.h"
 
 #include "Peer.h"
 #include "ByteData.h"
@@ -10,46 +10,43 @@
 namespace Elastos {
 	namespace SDK {
 
+		const uint32_t DEFAULT_MAGICNUMBER = uint32_t(0);
+
 		std::string Peer::toString() const {
 			//todo complete me
 			return "";
 		}
 
 		BRPeer *Peer::getRaw() const {
-			if (_peerHandler != nullptr)
-				return _peerHandler;
-
-			return _peerPointer.get();
+			return _peer;
 		}
 
 		Peer::Peer(const BRPeer &peer) {
-			_peerHandler = nullptr;
-
-			_peerPointer = boost::shared_ptr<BRPeer>(new BRPeer);
-			*_peerPointer = peer;
+			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
+			*_peer = peer;
 		}
 
 		Peer::Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp) {
-			_peerHandler = nullptr;
-
-			_peerPointer = boost::shared_ptr<BRPeer>(new BRPeer);
-			_peerPointer->address = addr;
-			_peerPointer->port = port;
-			_peerPointer->timestamp = timestamp;
-			_peerPointer->services = SERVICES_NODE_NETWORK;
-			_peerPointer->flags = 0;
+			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
+			_peer->address = addr;
+			_peer->port = port;
+			_peer->timestamp = timestamp;
+			_peer->services = SERVICES_NODE_NETWORK;
+			_peer->flags = 0;
 		}
 
 		Peer::Peer(uint32_t magicNumber) {
-			_peerPointer = nullptr;
-
-			_peerHandler = BRPeerNew(magicNumber);
+			_peer = BRPeerNew(magicNumber);
 		}
 
 		Peer::~Peer() {
-			if (_peerHandler != nullptr) {
-				BRPeerFree(_peerHandler);
+			if (_peer != nullptr) {
+				BRPeerFree(_peer);
 			}
+		}
+
+		Peer::Peer(const Peer &peer) {
+			_peer = BRPeerClone(peer.getRaw());
 		}
 
 		UInt128 Peer::getAddress() const {

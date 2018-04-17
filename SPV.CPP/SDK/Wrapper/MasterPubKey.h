@@ -13,6 +13,7 @@
 
 #include "Wrapper.h"
 #include "ByteData.h"
+#include "Key.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -35,7 +36,7 @@ namespace Elastos {
 
 			ByteData getPubKey() const;
 
-			boost::shared_ptr<BRKey> getPubKeyAsKey() const;
+			boost::shared_ptr<Key> getPubKeyAsKey() const;
 
 			static ByteData bip32BitIDKey(const ByteData &seed, int index, const std::string &uri);
 

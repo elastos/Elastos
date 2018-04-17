@@ -103,6 +103,10 @@ typedef struct {
     uint8_t flags; // scratch variable
 } BRPeer;
 
+BRPeer *BRPeerClone(const BRPeer *peer);
+
+BRPeer *BRPeerSimpleCopy(const BRPeer *peer);
+
 #define BR_PEER_NONE ((BRPeer) { UINT128_ZERO, 0, 0, 0, 0 })
 
 // NOTE: BRPeer functions are not thread-safe

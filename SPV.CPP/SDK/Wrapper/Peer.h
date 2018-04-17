@@ -64,6 +64,8 @@ namespace Elastos {
 
 			virtual BRPeer *getRaw() const;
 
+			Peer(const Peer &peer);
+
 			Peer(const BRPeer &peer);
 
 			Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp);
@@ -105,8 +107,7 @@ namespace Elastos {
 			double getPingTime() const;
 
 		private:
-			BRPeer *_peerHandler;
-			boost::shared_ptr<BRPeer> _peerPointer;
+			BRPeer *_peer;
 		};
 
 		typedef boost::shared_ptr<Peer> PeerPtr;
