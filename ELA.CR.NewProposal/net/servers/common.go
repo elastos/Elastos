@@ -18,7 +18,7 @@ var NodeForServers Noder
 var Pow *pow.PowService
 
 type TxAttributeInfo struct {
-	Usage TransactionAttributeUsage
+	Usage AttributeUsage
 	Data  string
 }
 
@@ -30,27 +30,11 @@ type UTXOTxInputInfo struct {
 	Value              string
 }
 
-type BalanceTxInputInfo struct {
-	AssetID     string
-	Value       Fixed64
-	ProgramHash string
-}
-
 type TxoutputInfo struct {
 	AssetID    string
 	Value      string
 	Address    string
 	OutputLock uint32
-}
-
-type TxoutputMap struct {
-	Key   Uint256
-	Txout []TxoutputInfo
-}
-
-type AmountMap struct {
-	Key   Uint256
-	Value Fixed64
 }
 
 type ProgramInfo struct {

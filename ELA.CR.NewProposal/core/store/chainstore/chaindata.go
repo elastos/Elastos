@@ -162,12 +162,12 @@ func (db *ChainStore) PersistUnspendUTXOs(b *Block) error {
 		}
 
 		if !txn.IsCoinBaseTx() {
-			for _, input := range txn.UTXOInputs {
-				referTxn, height, err := db.GetTransaction(input.ReferTxID)
+			for _, input := range txn.Inputs {
+				referTxn, height, err := db.GetTransaction(input.Previous.TxID)
 				if err != nil {
 					return err
 				}
-				index := input.ReferTxOutputIndex
+				index := input.Previous.Index
 				referTxnOutput := referTxn.Outputs[index]
 				programHash := referTxnOutput.ProgramHash
 				assetID := referTxnOutput.AssetID
@@ -260,12 +260,12 @@ func (db *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 		}
 
 		if !txn.IsCoinBaseTx() {
-			for _, input := range txn.UTXOInputs {
-				referTxn, hh, err := db.GetTransaction(input.ReferTxID)
+			for _, input := range txn.Inputs {
+				referTxn, hh, err := db.GetTransaction(input.Previous.TxID)
 				if err != nil {
 					return err
 				}
-				index := input.ReferTxOutputIndex
+				index := input.Previous.Index
 				referTxnOutput := referTxn.Outputs[index]
 				programHash := referTxnOutput.ProgramHash
 				assetID := referTxnOutput.AssetID
@@ -375,8 +375,8 @@ func (db *ChainStore) PersistUnspend(b *Block) error {
 			unspents[txnHash] = append(unspents[txnHash], uint16(index))
 		}
 		if !txn.IsCoinBaseTx() {
-			for index, input := range txn.UTXOInputs {
-				referTxnHash := input.ReferTxID
+			for index, input := range txn.Inputs {
+				referTxnHash := input.Previous.TxID
 				if _, ok := unspents[referTxnHash]; !ok {
 					unspentValue, err := db.Get(append(unspentPrefix, referTxnHash.Bytes()...))
 					if err != nil {
@@ -390,7 +390,7 @@ func (db *ChainStore) PersistUnspend(b *Block) error {
 
 				unspentLen := len(unspents[referTxnHash])
 				for k, outputIndex := range unspents[referTxnHash] {
-					if outputIndex == uint16(txn.UTXOInputs[index].ReferTxOutputIndex) {
+					if outputIndex == uint16(txn.Inputs[index].Previous.Index) {
 						unspents[referTxnHash][k] = unspents[referTxnHash][unspentLen-1]
 						unspents[referTxnHash] = unspents[referTxnHash][:unspentLen-1]
 						break
@@ -430,9 +430,9 @@ func (db *ChainStore) RollbackUnspend(b *Block) error {
 		}
 		if !txn.IsCoinBaseTx() {
 
-			for _, input := range txn.UTXOInputs {
-				referTxnHash := input.ReferTxID
-				referTxnOutIndex := input.ReferTxOutputIndex
+			for _, input := range txn.Inputs {
+				referTxnHash := input.Previous.TxID
+				referTxnOutIndex := input.Previous.Index
 				if _, ok := unspents[referTxnHash]; !ok {
 					var err error
 					unspentValue, _ := db.Get(append(unspentPrefix, referTxnHash.Bytes()...))

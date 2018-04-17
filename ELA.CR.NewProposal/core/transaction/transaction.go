@@ -98,9 +98,9 @@ type Transaction struct {
 	TxType         TransactionType
 	PayloadVersion byte
 	Payload        Payload
-	Attributes     []*TxAttribute
-	UTXOInputs     []*UTXOTxInput
-	Outputs        []*TxOutput
+	Attributes     []*Attribute
+	Inputs         []*Input
+	Outputs        []*Output
 	LockTime       uint32
 	Programs       []*program.Program
 	Fee            Fixed64
@@ -117,7 +117,7 @@ func (tx *Transaction) String() string {
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
 		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
 		"Attributes: ", tx.Attributes, "\n\t",
-		"UTXOInputs: ", tx.UTXOInputs, "\n\t",
+		"Inputs: ", tx.Inputs, "\n\t",
 		"Outputs: ", tx.Outputs, "\n\t",
 		"LockTime: ", tx.LockTime, "\n\t",
 		"Programs: ", tx.Programs, "\n\t",
@@ -169,13 +169,13 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 			attr.Serialize(w)
 		}
 	}
-	//[]*UTXOInputs
-	err = serialize.WriteVarUint(w, uint64(len(tx.UTXOInputs)))
+	//[]*Inputs
+	err = serialize.WriteVarUint(w, uint64(len(tx.Inputs)))
 	if err != nil {
-		return errors.New("Transaction item UTXOInputs length serialization failed.")
+		return errors.New("Transaction item Inputs length serialization failed.")
 	}
-	if len(tx.UTXOInputs) > 0 {
-		for _, utxo := range tx.UTXOInputs {
+	if len(tx.Inputs) > 0 {
+		for _, utxo := range tx.Inputs {
 			utxo.Serialize(w)
 		}
 	}
@@ -259,7 +259,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	}
 	if Len > uint64(0) {
 		for i := uint64(0); i < Len; i++ {
-			attr := new(TxAttribute)
+			attr := new(Attribute)
 			err = attr.Deserialize(r)
 			if err != nil {
 				return err
@@ -267,19 +267,19 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 			tx.Attributes = append(tx.Attributes, attr)
 		}
 	}
-	//UTXOInputs
+	//Inputs
 	Len, err = serialize.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 	if Len > uint64(0) {
 		for i := uint64(0); i < Len; i++ {
-			utxo := new(UTXOTxInput)
+			utxo := new(Input)
 			err = utxo.Deserialize(r)
 			if err != nil {
 				return err
 			}
-			tx.UTXOInputs = append(tx.UTXOInputs, utxo)
+			tx.Inputs = append(tx.Inputs, utxo)
 		}
 	}
 	//TODO balanceInputs
@@ -290,7 +290,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	}
 	if Len > uint64(0) {
 		for i := uint64(0); i < Len; i++ {
-			output := new(TxOutput)
+			output := new(Output)
 			err = output.Deserialize(r)
 			if err != nil {
 				return err
@@ -402,19 +402,19 @@ func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }
 
-func (tx *Transaction) GetReference() (map[*UTXOTxInput]*TxOutput, error) {
+func (tx *Transaction) GetReference() (map[*Input]*Output, error) {
 	if tx.TxType == RegisterAsset {
 		return nil, nil
 	}
 	//UTXO input /  Outputs
-	reference := make(map[*UTXOTxInput]*TxOutput)
+	reference := make(map[*Input]*Output)
 	// Key index，v UTXOInput
-	for _, utxo := range tx.UTXOInputs {
-		transaction, _, err := TxStore.GetTransaction(utxo.ReferTxID)
+	for _, utxo := range tx.Inputs {
+		transaction, _, err := TxStore.GetTransaction(utxo.Previous.TxID)
 		if err != nil {
 			return nil, errors.New("[Transaction], GetReference failed.")
 		}
-		index := utxo.ReferTxOutputIndex
+		index := utxo.Previous.Index
 		if int(index) >= len(transaction.Outputs) {
 			return nil, errors.New("[Transaction], GetReference failed, refIdx out of range.")
 		}

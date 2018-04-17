@@ -261,7 +261,6 @@ func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 
 		matched = true
 		bf.addOutPoint(tx.NewOutPoint(hash, uint16(i)))
-		break
 	}
 
 	// Nothing more to do if a match has already been made.
@@ -273,8 +272,8 @@ func (bf *Filter) matchTxAndUpdate(txn *tx.Transaction) bool {
 	// public key scripts of its outputs matched.
 
 	// Check if the filter matches any outpoints this tx spends
-	for _, txin := range txn.UTXOInputs {
-		if bf.matchesOutPoint(tx.NewOutPoint(txin.ReferTxID, txin.ReferTxOutputIndex)) {
+	for _, txin := range txn.Inputs {
+		if bf.matchesOutPoint(&txin.Previous) {
 			return true
 		}
 	}

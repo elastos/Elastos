@@ -8,23 +8,23 @@ import (
 	"Elastos.ELA/common/serialize"
 )
 
-type TxOutput struct {
+type Output struct {
 	AssetID     common.Uint256
 	Value       common.Fixed64
 	OutputLock  uint32
 	ProgramHash common.Uint168
 }
 
-func (self TxOutput) String() string {
-	return "TxOutput: {\n\t\t" +
-		"AssetID: " + self.AssetID.String() + "\n\t\t" +
-		"Value: " + self.Value.String() + "\n\t\t" +
-		"OutputLock: " + fmt.Sprint(self.OutputLock) + "\n\t\t" +
-		"ProgramHash: " + self.ProgramHash.String() + "\n\t\t" +
+func (o Output) String() string {
+	return "Output: {\n\t\t" +
+		"AssetID: " + o.AssetID.String() + "\n\t\t" +
+		"Value: " + o.Value.String() + "\n\t\t" +
+		"OutputLock: " + fmt.Sprint(o.OutputLock) + "\n\t\t" +
+		"ProgramHash: " + o.ProgramHash.String() + "\n\t\t" +
 		"}"
 }
 
-func (o *TxOutput) Serialize(w io.Writer) error {
+func (o *Output) Serialize(w io.Writer) error {
 	err := o.AssetID.Serialize(w)
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (o *TxOutput) Serialize(w io.Writer) error {
 	return nil
 }
 
-func (o *TxOutput) Deserialize(r io.Reader) error {
+func (o *Output) Deserialize(r io.Reader) error {
 	err := o.AssetID.Deserialize(r)
 	if err != nil {
 		return err

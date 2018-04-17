@@ -34,7 +34,7 @@ type ILedgerStore interface {
 
 	InitLedgerStoreWithGenesisBlock(genesisblock *Block) (uint32, error)
 
-	GetUnspent(txid Uint256, index uint16) (*tx.TxOutput, error)
+	GetUnspent(txid Uint256, index uint16) (*tx.Output, error)
 	ContainsUnspent(txid Uint256, index uint16) (bool, error)
 	GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*tx.UTXOUnspent, error)
 	GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*tx.UTXOUnspent, error)

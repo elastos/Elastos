@@ -13,32 +13,22 @@ type OutPoint struct {
 	Index uint16
 }
 
+func (op *OutPoint) IsEqual(o OutPoint) bool {
+	if !op.TxID.IsEqual(o.TxID) {
+		return false
+	}
+	if op.Index != o.Index {
+		return false
+	}
+	return true
+}
+
 func (op *OutPoint) Serialize(w io.Writer) error {
-	err := op.TxID.Serialize(w)
-	if err != nil {
-		return err
-	}
-
-	err = serialize.WriteUint16(w, op.Index)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return serialize.WriteElements(w, op.TxID, op.Index)
 }
 
 func (op *OutPoint) Deserialize(r io.Reader) error {
-	err := op.TxID.Deserialize(r)
-	if err != nil {
-		return err
-	}
-
-	op.Index, err = serialize.ReadUint16(r)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return serialize.ReadElements(r, &op.TxID, &op.Index)
 }
 
 func (op *OutPoint) Bytes() []byte {
