@@ -67,6 +67,31 @@ type Payload interface {
 	Deserialize(r io.Reader, version byte) error
 }
 
+func GetPayload(txType TransactionType) (Payload, error) {
+	var p Payload
+	switch txType {
+	case CoinBase:
+		p = new(payload.CoinBase)
+	case RegisterAsset:
+		p = new(payload.RegisterAsset)
+	case TransferAsset:
+		p = new(payload.TransferAsset)
+	case Record:
+		p = new(payload.Record)
+	case Deploy:
+		p = new(payload.DeployCode)
+	case SideMining:
+		p = new(payload.SideMining)
+	case IssueToken:
+		p = new(payload.IssueToken)
+	case TransferCrossChainAsset:
+		p = new(payload.TransferCrossChainAsset)
+	default:
+		return nil, errors.New("[Transaction], invalid transaction type.")
+	}
+	return p, nil
+}
+
 var TxStore ILedgerStore
 
 type Transaction struct {
@@ -75,17 +100,11 @@ type Transaction struct {
 	Payload        Payload
 	Attributes     []*TxAttribute
 	UTXOInputs     []*UTXOTxInput
-	BalanceInputs  []*BalanceTxInput
 	Outputs        []*TxOutput
 	LockTime       uint32
 	Programs       []*program.Program
-
-	//Inputs/Outputs map base on Asset (needn't serialize)
-	AssetOutputs      map[Uint256][]*TxOutput
-	AssetInputAmount  map[Uint256]Fixed64
-	AssetOutputAmount map[Uint256]Fixed64
-	Fee               Fixed64
-	FeePerKB          Fixed64
+	Fee            Fixed64
+	FeePerKB       Fixed64
 
 	hash *Uint256
 }
@@ -99,7 +118,6 @@ func (tx *Transaction) String() string {
 		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
 		"Attributes: ", tx.Attributes, "\n\t",
 		"UTXOInputs: ", tx.UTXOInputs, "\n\t",
-		"BalanceInputs: ", tx.BalanceInputs, "\n\t",
 		"Outputs: ", tx.Outputs, "\n\t",
 		"LockTime: ", tx.LockTime, "\n\t",
 		"Programs: ", tx.Programs, "\n\t",
@@ -211,43 +229,25 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 }
 
 func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
-	var txType [1]byte
-	_, err := io.ReadFull(r, txType[:])
+	var txType = make([]byte, 1)
+	_, err := r.Read(txType)
 	if err != nil {
 		return err
 	}
 	tx.TxType = TransactionType(txType[0])
-	return tx.DeserializeUnsignedWithoutType(r)
-}
 
-func (tx *Transaction) DeserializeUnsignedWithoutType(r io.Reader) error {
-	var payloadVersion [1]byte
-	_, err := io.ReadFull(r, payloadVersion[:])
+	var payloadVersion = make([]byte, 1)
+	_, err = r.Read(payloadVersion)
 	tx.PayloadVersion = payloadVersion[0]
 	if err != nil {
 		return err
 	}
 
-	switch tx.TxType {
-	case CoinBase:
-		tx.Payload = new(payload.CoinBase)
-	case RegisterAsset:
-		tx.Payload = new(payload.RegisterAsset)
-	case TransferAsset:
-		tx.Payload = new(payload.TransferAsset)
-	case Record:
-		tx.Payload = new(payload.Record)
-	case Deploy:
-		tx.Payload = new(payload.DeployCode)
-	case SideMining:
-		tx.Payload = new(payload.SideMining)
-	case IssueToken:
-		tx.Payload = new(payload.IssueToken)
-	case TransferCrossChainAsset:
-		tx.Payload = new(payload.TransferCrossChainAsset)
-	default:
-		return errors.New("[Transaction], invalid transaction type.")
+	tx.Payload, err = GetPayload(tx.TxType)
+	if err != nil {
+		return err
 	}
+
 	err = tx.Payload.Deserialize(r, tx.PayloadVersion)
 	if err != nil {
 		return errors.New("Payload Parse error")

@@ -64,14 +64,10 @@ type Transactions struct {
 	Payload        PayloadInfo
 	Attributes     []TxAttributeInfo
 	UTXOInputs     []UTXOTxInputInfo
-	BalanceInputs  []BalanceTxInputInfo
 	Outputs        []TxoutputInfo
 	LockTime       uint32
 	Programs       []ProgramInfo
 
-	AssetOutputs      []TxoutputMap
-	AssetInputAmount  []AmountMap
-	AssetOutputAmount []AmountMap
 	Timestamp         uint32 `json:",omitempty"`
 	Confirmations     uint32 `json:",omitempty"`
 	TxSize            uint32 `json:",omitempty"`
