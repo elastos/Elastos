@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"errors"
 
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"encoding/hex"
 )
 

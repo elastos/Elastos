@@ -2,7 +2,7 @@ package msg
 
 import (
 	"bytes"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 type Txn struct {

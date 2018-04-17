@@ -2,8 +2,8 @@ package msg
 
 import (
 	"bytes"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type DataReq struct {
@@ -17,7 +17,7 @@ func (msg *DataReq) CMD() string {
 
 func (msg *DataReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteElements(buf, msg.Type, msg.Hash)
+	err := serialize.WriteElements(buf, msg.Type, msg.Hash)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +27,7 @@ func (msg *DataReq) Serialize() ([]byte, error) {
 
 func (msg *DataReq) Deserialize(body []byte) error {
 	buf := bytes.NewReader(body)
-	err := serialization.ReadElements(buf, &msg.Type, &msg.Hash)
+	err := serialize.ReadElements(buf, &msg.Type, &msg.Hash)
 	if err != nil {
 		return err
 	}

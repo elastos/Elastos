@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(
@@ -35,7 +35,7 @@ func (db *AddrsDB) Put(hash *Uint168, script []byte, addrType int) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(hash.ToArray(), script, addrType)
+	_, err = stmt.Exec(hash.Bytes(), script, addrType)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func (db *AddrsDB) Get(hash *Uint168) (*Addr, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	row := db.QueryRow(`SELECT Script, Type FROM Addrs WHERE Hash=?`, hash.ToArray())
+	row := db.QueryRow(`SELECT Script, Type FROM Addrs WHERE Hash=?`, hash.Bytes())
 	var script []byte
 	var addrType int
 	err := row.Scan(&script, &addrType)
@@ -98,7 +98,7 @@ func (db *AddrsDB) Delete(hash *Uint168) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(hash.ToArray())
+	_, err = stmt.Exec(hash.Bytes())
 	if err != nil {
 		return err
 	}

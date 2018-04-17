@@ -3,9 +3,9 @@ package spvwallet
 import (
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	"github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	. "github.com/elastos/Elastos.ELA.SPV/db"
@@ -126,10 +126,8 @@ func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
 
 	// Put spent UTXOs to STXOs
 	for _, input := range storeTx.Data.Inputs {
-		// Create output
-		outpoint := tx.NewOutPoint(input.ReferTxID, input.ReferTxOutputIndex)
 		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
-		err := wallet.dataStore.STXOs().FromUTXO(outpoint, &storeTx.TxId, storeTx.Height)
+		err := wallet.dataStore.STXOs().FromUTXO(&input.Previous, &storeTx.TxId, storeTx.Height)
 		if err == nil {
 			hits++
 		}
@@ -224,7 +222,7 @@ func (wallet *SPVWallet) getBloomFilter() *bloom.Filter {
 	filter := sdk.NewBloomFilter(elements)
 
 	for _, addr := range addrs {
-		filter.Add(addr.ToArray())
+		filter.Add(addr.Bytes())
 	}
 
 	for _, utxo := range utxos {

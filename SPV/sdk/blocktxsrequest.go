@@ -4,9 +4,9 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 type BlockTxsRequest struct {
@@ -29,12 +29,12 @@ func (req *BlockTxsRequest) OnTxReceived(tx *tx.Transaction) (bool, error) {
 	req.Lock()
 	defer req.Unlock()
 
-	txId := *tx.Hash()
+	txId := tx.Hash()
 	var ok bool
 	var txRequest *Request
 	if txRequest, ok = req.txRequestQueue[txId]; !ok {
 		return false, errors.New("Received transaction not belong to block: " +
-			req.Block.BlockHeader.Hash().String() + ", tx: " + tx.Hash().String())
+			req.Block.Header.Hash().String() + ", tx: " + tx.Hash().String())
 	}
 
 	// Remove from map

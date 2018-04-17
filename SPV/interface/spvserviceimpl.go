@@ -5,12 +5,12 @@ import (
 	"errors"
 	"os/signal"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
@@ -66,7 +66,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof Proof, tx tx.Transaction)
 
 	// Check if merkleroot is match
 	merkleBlock := bloom.MerkleBlock{
-		BlockHeader:  header.Header,
+		Header:       header.Header,
 		Transactions: proof.Transactions,
 		Hashes:       proof.Hashes,
 		Flags:        proof.Flags,
@@ -82,7 +82,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof Proof, tx tx.Transaction)
 	// Check if transaction hash is match
 	match := false
 	for _, txId := range txIds {
-		if *txId == *tx.Hash() {
+		if *txId == tx.Hash() {
 			match = true
 			break
 		}
@@ -161,11 +161,11 @@ func (service *SPVServiceImpl) Start() error {
 func (service *SPVServiceImpl) OnTxCommitted(tx tx.Transaction, height uint32) {}
 func (service *SPVServiceImpl) OnChainRollback(height uint32)                  {}
 func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
-	header := block.BlockHeader
+	header := block.Header
 
 	// Store merkle proof
 	service.proofs.Put(&Proof{
-		BlockHash:    *header.Hash(),
+		BlockHash:    header.Hash(),
 		Height:       header.Height,
 		Transactions: block.Transactions,
 		Hashes:       block.Hashes,
@@ -190,8 +190,8 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 	// Queue matched transactions
 	for _, tx := range matchedTxs {
 		item := &QueueItem{
-			TxHash:    *tx.Hash(),
-			BlockHash: *header.Hash(),
+			TxHash:    tx.Hash(),
+			BlockHash: header.Hash(),
 			Height:    header.Height,
 		}
 

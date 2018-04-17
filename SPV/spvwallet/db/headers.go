@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 

@@ -3,9 +3,9 @@ package sdk
 import (
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
 )
 
 type FinishedReqPool struct {
@@ -21,16 +21,16 @@ func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
 	defer pool.Unlock()
 
 	// Save previous hash as the key
-	previous := request.Block.BlockHeader.Previous
+	previous := request.Block.Header.Previous
 	// Save genesis block previous to empty
-	if request.Block.BlockHeader.Height == 1 {
+	if request.Block.Header.Height == 1 {
 		pool.genesis = &previous
 	}
 	pool.requests[previous] = request
 	// Save finished block
 	pool.blocks[request.BlockHash] = &request.Block
 
-	log.Debug("Finished pool add block: ", previous.String(), ", height: ", request.Block.BlockHeader.Height)
+	log.Debug("Finished pool add block: ", previous.String(), ", height: ", request.Block.Header.Height)
 }
 
 func (pool *FinishedReqPool) Contain(hash Uint256) (*bloom.MerkleBlock, bool) {

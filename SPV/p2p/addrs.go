@@ -3,7 +3,7 @@ package p2p
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type Addrs struct {
@@ -24,7 +24,7 @@ func (msg *Addrs) CMD() string {
 
 func (msg *Addrs) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteElements(buf, msg.Count, msg.Addrs)
+	err := serialize.WriteElements(buf, msg.Count, msg.Addrs)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"os"
 )

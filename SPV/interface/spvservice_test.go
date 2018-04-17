@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 )

@@ -1,7 +1,7 @@
 package _interface
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 /*

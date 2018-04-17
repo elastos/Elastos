@@ -7,8 +7,8 @@ import (
 	"time"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/msg"
@@ -144,6 +144,7 @@ func (service *SPVServiceImpl) requestBlocks() {
 }
 
 func (service *SPVServiceImpl) changeSyncPeerAndRestart() {
+	log.Debug("Change sync peer and restart")
 	// Disconnect current sync peer
 	syncPeer := service.PeerManager().GetSyncPeer()
 	service.PeerManager().DisconnectPeer(syncPeer)
@@ -171,11 +172,12 @@ func (service *SPVServiceImpl) OnRequestFinished(pool *FinishedReqPool) {
 	// By default, last pop from FinishedReqPool is the current, otherwise get chain tip as current
 	var current = pool.LastPop()
 	if current == nil {
-		current = service.chain.ChainTip().Hash()
+		current = new(Uint256)
+		*current = service.chain.ChainTip().Hash()
 	}
 
 	var fPositives int
-	for request, ok := pool.Next(*current); ok; request, ok = pool.Next(*request.Block.BlockHeader.Hash()) {
+	for request, ok := pool.Next(*current); ok; request, ok = pool.Next(request.Block.Header.Hash()) {
 		// Try to commit next block
 		reorg, fp, err := service.chain.CommitBlock(request.Block, request.Txs)
 		if err != nil {
@@ -260,10 +262,10 @@ func (service *SPVServiceImpl) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Invent
 }
 
 func (service *SPVServiceImpl) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock) error {
-	blockHash := block.BlockHeader.Hash()
+	blockHash := block.Header.Hash()
 	log.Debug("Receive merkle block hash: ", blockHash.String())
 
-	err := service.chain.CheckProofOfWork(&block.BlockHeader)
+	err := service.chain.CheckProofOfWork(&block.Header)
 	if err != nil {
 		return err
 	}
@@ -327,6 +329,8 @@ func (service *SPVServiceImpl) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 }
 
 func (service *SPVServiceImpl) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
+	log.Debug("Receive not found: ", msg.Hash.String())
+
 	service.changeSyncPeerAndRestart()
 	return nil
 }

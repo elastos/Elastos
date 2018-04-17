@@ -2,8 +2,8 @@ package msg
 
 import (
 	"bytes"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type BlocksReq struct {
@@ -18,7 +18,7 @@ func (msg *BlocksReq) CMD() string {
 
 func (msg *BlocksReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteElements(buf, msg.Count, msg.BlockLocator, msg.HashStop)
+	err := serialize.WriteElements(buf, msg.Count, msg.BlockLocator, msg.HashStop)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (msg *BlocksReq) Serialize() ([]byte, error) {
 func (msg *BlocksReq) Deserialize(body []byte) error {
 	var err error
 	buf := bytes.NewReader(body)
-	msg.Count, err = serialization.ReadUint32(buf)
+	msg.Count, err = serialize.ReadUint32(buf)
 	if err != nil {
 		return err
 	}

@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	"github.com/elastos/Elastos.ELA.SPV/core"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
 	"github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ChainState int
@@ -145,7 +146,7 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 			start = 0
 		}
 		hash := parent.Hash()
-		ret = append(ret, hash)
+		ret = append(ret, &hash)
 		if len(ret) >= MaxBlockLocatorHashes {
 			break
 		}
@@ -171,7 +172,7 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []tx.Transaction)
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
-	header := block.BlockHeader
+	header := block.Header
 	commitHeader := &db.StoreHeader{Header: header}
 
 	// Get current chain tip
@@ -377,7 +378,7 @@ func CalcWork(bits uint32) *big.Int {
 	return new(big.Int).Div(new(big.Int).Lsh(big.NewInt(1), 256), denominator)
 }
 
-func (bc *Blockchain) CheckProofOfWork(header *core.Header) error {
+func (bc *Blockchain) CheckProofOfWork(header *ledger.Header) error {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {

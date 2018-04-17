@@ -1,8 +1,8 @@
 package db
 
 import (
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/db"
 )
 

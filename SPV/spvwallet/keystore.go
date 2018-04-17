@@ -7,8 +7,8 @@ import (
 	"crypto/sha256"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SPV/crypto"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 )
@@ -93,7 +93,7 @@ func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
 }
 
 func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
-	blockHash := *block.BlockHeader.Hash()
+	blockHash := block.Header.Hash()
 	// No block transactions to request, notify request finished.
 	if len(txIds) == 0 {
 		// Notify request finished
@@ -173,7 +173,7 @@ func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Ui
 	queue.blockReqsLock.Lock()
 	defer queue.blockReqsLock.Unlock()
 
-	blockHash := *block.BlockHeader.Hash()
+	blockHash := block.Header.Hash()
 	// Check if received block is in the request queue
 	var ok bool
 	var request *Request
@@ -195,7 +195,7 @@ func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Ui
 
 func (queue *RequestQueue) OnTxReceived(tx *tx.Transaction) error {
 	queue.blockTxsReqsLock.Lock()
-	txId := *tx.Hash()
+	txId := tx.Hash()
 	var ok bool
 	var blockHash Uint256
 	if blockHash, ok = queue.blockTxs[txId]; !ok {

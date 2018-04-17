@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS STXOs(
@@ -101,7 +101,7 @@ func (db *STXOsDB) GetAddrAll(hash *Uint168) ([]*STXO, error) {
 	defer db.RUnlock()
 
 	sql := "SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight FROM STXOs WHERE ScriptHash=?"
-	rows, err := db.Query(sql, hash.ToArray())
+	rows, err := db.Query(sql, hash.Bytes())
 	if err != nil {
 		return []*STXO{}, err
 	}

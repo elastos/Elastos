@@ -1,11 +1,8 @@
 package sdk
 
 import (
-	"bytes"
-
-	"github.com/elastos/Elastos.ELA.SPV/crypto"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 /*
@@ -25,12 +22,12 @@ type Account struct {
 
 // Create an account instance with private key and public key
 func NewAccount(privateKey []byte, publicKey *crypto.PublicKey) (*Account, error) {
-	signatureRedeemScript, err := tx.CreateStandardRedeemScript(publicKey)
+	signatureRedeemScript, err := crypto.CreateStandardRedeemScript(publicKey)
 	if err != nil {
 		return nil, err
 	}
 
-	programHash, err := tx.ToProgramHash(signatureRedeemScript)
+	programHash, err := crypto.ToProgramHash(signatureRedeemScript)
 	if err != nil {
 		return nil, err
 	}
@@ -72,13 +69,6 @@ func (a *Account) ProgramHash() *Uint168 {
 // Get account address
 func (a *Account) Address() string {
 	return a.address
-}
-
-// Sign a transaction with account
-func (a *Account) SignTx(txn *tx.Transaction) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
-	return a.Sign(buf.Bytes())
 }
 
 // Sign data with account

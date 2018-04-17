@@ -10,13 +10,14 @@ import (
 	"strconv"
 	"io/ioutil"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	walt "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 
 	"github.com/urfave/cli"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 func CreateTransaction(c *cli.Context, wallet walt.Wallet) error {
@@ -154,7 +155,7 @@ func SignTransaction(password []byte, context *cli.Context, wallet walt.Wallet) 
 }
 
 func signTransaction(password []byte, wallet walt.Wallet, txn *tx.Transaction) (*tx.Transaction, error) {
-	haveSign, needSign, err := txn.GetSignStatus()
+	haveSign, needSign, err := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
 	if haveSign == needSign {
 		return nil, errors.New("transaction was fully signed, no need more sign")
 	}
@@ -263,7 +264,7 @@ func output(txn *tx.Transaction) error {
 	// Output to file
 	fileName := "to_be_signed" // Create transaction file name
 
-	haveSign, needSign, _ := txn.GetSignStatus()
+	haveSign, needSign, _ := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
 
 	if needSign > haveSign {
 		fileName = fmt.Sprint(fileName, "_", haveSign, "_of_", needSign)

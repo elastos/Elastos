@@ -3,8 +3,8 @@ package msg
 import (
 	"bytes"
 	"encoding/binary"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type Inventory struct {
@@ -19,7 +19,7 @@ func (msg *Inventory) CMD() string {
 
 func (msg *Inventory) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialization.WriteElements(buf, msg.Type, msg.Count, msg.Data)
+	err := serialize.WriteElements(buf, msg.Type, msg.Count, msg.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func (msg *Inventory) Serialize() ([]byte, error) {
 
 func (msg *Inventory) Deserialize(body []byte) error {
 	buf := bytes.NewReader(body)
-	err := serialization.ReadElements(buf, &msg.Type, &msg.Count)
+	err := serialize.ReadElements(buf, &msg.Type, &msg.Count)
 	if err != nil {
 		return err
 	}

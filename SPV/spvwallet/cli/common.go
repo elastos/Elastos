@@ -8,7 +8,7 @@ import (
 	"strings"
 	"strconv"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	walt "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 

@@ -7,19 +7,19 @@ import (
 	"strconv"
 	"math/rand"
 
-	"github.com/elastos/Elastos.ELA.SPV/core/asset"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/crypto"
-	"github.com/elastos/Elastos.ELA.SPV/core/transaction/payload"
-	pg "github.com/elastos/Elastos.ELA.SPV/core/contract/program"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/core/asset"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
+	pg "github.com/elastos/Elastos.ELA.Utility/core/contract/program"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 )
 
-var SystemAssetId = *getSystemAssetId()
+var SystemAssetId = getSystemAssetId()
 
 type Output struct {
 	Address string
@@ -35,7 +35,7 @@ type Wallet interface {
 	ChangePassword(oldPassword, newPassword []byte) error
 
 	NewSubAccount(password []byte) (*Uint168, error)
-	AddMultiSignAccount(M int, publicKey ...*crypto.PublicKey) (*Uint168, error)
+	AddMultiSignAccount(M uint, publicKey ...*crypto.PublicKey) (*Uint168, error)
 
 	CreateTransaction(fromAddress, toAddress string, amount, fee *Fixed64) (*tx.Transaction, error)
 	CreateLockedTransaction(fromAddress, toAddress string, amount, fee *Fixed64, lockedUntil uint32) (*tx.Transaction, error)
@@ -110,18 +110,18 @@ func (wallet *WalletImpl) NewSubAccount(password []byte) (*Uint168, error) {
 	}
 
 	// Notify SPV service to reload bloom filter with the new address
-	rpc.GetClient().NotifyNewAddress(account.ProgramHash().ToArray())
+	rpc.GetClient().NotifyNewAddress(account.ProgramHash().Bytes())
 
 	return account.ProgramHash(), nil
 }
 
-func (wallet *WalletImpl) AddMultiSignAccount(M int, publicKeys ...*crypto.PublicKey) (*Uint168, error) {
-	redeemScript, err := tx.CreateMultiSignRedeemScript(M, publicKeys)
+func (wallet *WalletImpl) AddMultiSignAccount(M uint, publicKeys ...*crypto.PublicKey) (*Uint168, error) {
+	redeemScript, err := crypto.CreateMultiSignRedeemScript(M, publicKeys)
 	if err != nil {
 		return nil, errors.New("[Wallet], CreateStandardRedeemScript failed")
 	}
 
-	programHash, err := tx.ToProgramHash(redeemScript)
+	programHash, err := crypto.ToProgramHash(redeemScript)
 	if err != nil {
 		return nil, errors.New("[Wallet], CreateMultiSignAddress failed")
 	}
@@ -132,7 +132,7 @@ func (wallet *WalletImpl) AddMultiSignAccount(M int, publicKeys ...*crypto.Publi
 	}
 
 	// Notify SPV service to reload bloom filter with the new address
-	rpc.GetClient().NotifyNewAddress(programHash.ToArray())
+	rpc.GetClient().NotifyNewAddress(programHash.Bytes())
 
 	return programHash, nil
 }
@@ -231,12 +231,12 @@ func (wallet *WalletImpl) Sign(password []byte, txn *tx.Transaction) (*tx.Transa
 		return nil, err
 	}
 	// Get sign type
-	signType, err := txn.GetTransactionType()
+	signType, err := crypto.GetScriptType(txn.Programs[0].Code)
 	if err != nil {
 		return nil, err
 	}
 	// Look up transaction type
-	if signType == tx.STANDARD {
+	if signType == crypto.STANDARD {
 
 		// Sign single transaction
 		txn, err = wallet.signStandardTransaction(txn)
@@ -244,7 +244,7 @@ func (wallet *WalletImpl) Sign(password []byte, txn *tx.Transaction) (*tx.Transa
 			return nil, err
 		}
 
-	} else if signType == tx.MULTISIG {
+	} else if signType == crypto.MULTISIG {
 
 		// Sign multi sign transaction
 		txn, err = wallet.signMultiSigTransaction(txn)
@@ -257,24 +257,26 @@ func (wallet *WalletImpl) Sign(password []byte, txn *tx.Transaction) (*tx.Transa
 }
 
 func (wallet *WalletImpl) signStandardTransaction(txn *tx.Transaction) (*tx.Transaction, error) {
+	code := txn.Programs[0].Code
 	// Get signer
-	programHash, err := txn.GetStandardSigner()
+	programHash, err := crypto.GetSigner(code)
 	// Check if current user is a valid signer
 	account := wallet.Keystore.GetAccountByProgramHash(programHash)
 	if account == nil {
 		return nil, errors.New("[Wallet], Invalid signer")
 	}
 	// Sign transaction
-	signedTx, err := account.SignTx(txn)
+	buf := new(bytes.Buffer)
+	txn.SerializeUnsigned(buf)
+	signedTx, err := account.Sign(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
-	// Add verify program for transaction
-	buf := new(bytes.Buffer)
+	// Add signature
+	buf = new(bytes.Buffer)
 	buf.WriteByte(byte(len(signedTx)))
 	buf.Write(signedTx)
-	// Add signature
-	code, _ := txn.GetTransactionCode()
+	// Set program
 	var program = &pg.Program{code, buf.Bytes()}
 	txn.SetPrograms([]*pg.Program{program})
 
@@ -282,9 +284,11 @@ func (wallet *WalletImpl) signStandardTransaction(txn *tx.Transaction) (*tx.Tran
 }
 
 func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Transaction, error) {
+	code := txn.Programs[0].Code
+	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
 	var signerIndex = -1
-	programHashes, err := txn.GetMultiSignSigners()
+	programHashes, err := crypto.GetSigners(code)
 	if err != nil {
 		return nil, err
 	}
@@ -300,12 +304,14 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 		return nil, errors.New("[Wallet], Invalid multi sign signer")
 	}
 	// Sign transaction
-	signedTx, err := account.SignTx(txn)
+	buf := new(bytes.Buffer)
+	txn.SerializeUnsigned(buf)
+	signedTx, err := account.Sign(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
 	// Append signature
-	err = txn.AppendSignature(signerIndex, signedTx)
+	txn.Programs[0].Parameter, err = crypto.AppendSignature(signerIndex, signedTx, buf.Bytes(), code, param)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +327,7 @@ func (wallet *WalletImpl) SendTransaction(txn *tx.Transaction) error {
 	return nil
 }
 
-func getSystemAssetId() *Uint256 {
+func getSystemAssetId() Uint256 {
 	systemToken := &tx.Transaction{
 		TxType:         tx.RegisterAsset,
 		PayloadVersion: 0,
@@ -359,8 +365,8 @@ func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
 
 func InputFromUTXO(utxo *UTXO) *tx.Input {
 	input := new(tx.Input)
-	input.ReferTxID = utxo.Op.TxID
-	input.ReferTxOutputIndex = utxo.Op.Index
+	input.Previous.TxID = utxo.Op.TxID
+	input.Previous.Index = utxo.Op.Index
 	input.Sequence = utxo.LockTime
 	return input
 }

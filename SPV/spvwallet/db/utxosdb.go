@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 const CreateUTXOsDB = `CREATE TABLE IF NOT EXISTS UTXOs(
@@ -45,7 +45,7 @@ func (db *UTXOsDB) Put(hash *Uint168, utxo *UTXO) error {
 	if err != nil {
 		return err
 	}
-	_, err = stmt.Exec(utxo.Op.Bytes(), valueBytes, utxo.LockTime, utxo.AtHeight, hash.ToArray())
+	_, err = stmt.Exec(utxo.Op.Bytes(), valueBytes, utxo.LockTime, utxo.AtHeight, hash.Bytes())
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,7 @@ func (db *UTXOsDB) GetAddrAll(hash *Uint168) ([]*UTXO, error) {
 	defer db.RUnlock()
 
 	rows, err := db.Query(
-		"SELECT OutPoint, Value, LockTime, AtHeight FROM UTXOs WHERE ScriptHash=?", hash.ToArray())
+		"SELECT OutPoint, Value, LockTime, AtHeight FROM UTXOs WHERE ScriptHash=?", hash.Bytes())
 	if err != nil {
 		return nil, err
 	}

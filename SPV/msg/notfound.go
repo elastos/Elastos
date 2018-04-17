@@ -3,7 +3,7 @@ package msg
 import (
 	"bytes"
 	
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type NotFound struct {

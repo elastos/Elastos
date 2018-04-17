@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/boltdb/bolt"
 	"fmt"
 	"encoding/hex"

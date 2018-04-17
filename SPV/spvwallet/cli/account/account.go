@@ -7,8 +7,8 @@ import (
 	"strings"
 	"io/ioutil"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/crypto"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
@@ -71,7 +71,7 @@ func addMultiSignAccount(context *cli.Context, wallet Wallet, content string) er
 		return errors.New("M must be greater than half number of public keys, less than number of public keys")
 	}
 
-	programHash, err := wallet.AddMultiSignAccount(M, publicKeys...)
+	programHash, err := wallet.AddMultiSignAccount(uint(M), publicKeys...)
 	if err != nil {
 		return err
 	}

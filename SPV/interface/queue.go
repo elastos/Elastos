@@ -4,7 +4,7 @@ import (
 	"sync"
 	"database/sql"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"fmt"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 )

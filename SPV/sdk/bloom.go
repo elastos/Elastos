@@ -1,9 +1,9 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/bloom"
-	"github.com/elastos/Elastos.ELA.SPV/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/common"
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 // Create a new bloom filter instance
@@ -18,7 +18,7 @@ func BuildBloomFilter(addresses []*common.Uint168, outpoints []*transaction.OutP
 
 	filter := NewBloomFilter(elements)
 	for _, address := range addresses {
-		filter.Add(address.ToArray())
+		filter.Add(address.Bytes())
 	}
 
 	for _, outpoint := range outpoints {
@@ -30,12 +30,12 @@ func BuildBloomFilter(addresses []*common.Uint168, outpoints []*transaction.OutP
 
 // Add a address into the given bloom filter
 func FilterAddress(filter *bloom.Filter, address *common.Uint168) {
-	filter.Add(address.ToArray())
+	filter.Add(address.Bytes())
 }
 
 // Add a account into the given bloom filter
 func FilterAccount(filter *bloom.Filter, account *Account) {
-	filter.Add(account.programHash.ToArray())
+	filter.Add(account.programHash.Bytes())
 }
 
 // Add a outpoint into the given bloom filter

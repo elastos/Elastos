@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 )
 

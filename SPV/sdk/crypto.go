@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"crypto/elliptic"
 
-	. "github.com/elastos/Elastos.ELA.SPV/crypto"
+	. "github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 // Generate a ECC private key by the given curve

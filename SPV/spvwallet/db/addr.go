@@ -1,6 +1,6 @@
 package db
 
-import . "github.com/elastos/Elastos.ELA.SPV/common"
+import . "github.com/elastos/Elastos.ELA.Utility/common"
 
 const (
 	TypeMaster = 0

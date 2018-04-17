@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 func (server *Server) NotifyNewAddress(req Req) Resp {

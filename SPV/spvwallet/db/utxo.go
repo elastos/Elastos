@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	tx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 type UTXO struct {
@@ -37,7 +37,7 @@ func (utxo *UTXO) IsEqual(alt *UTXO) bool {
 		return utxo == nil
 	}
 
-	if !utxo.Op.TxID.IsEqual(&alt.Op.TxID) {
+	if !utxo.Op.TxID.IsEqual(alt.Op.TxID) {
 		return false
 	}
 

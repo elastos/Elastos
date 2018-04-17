@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	. "github.com/elastos/Elastos.ELA.SPV/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type STXO struct {
@@ -40,7 +40,7 @@ func (stxo *STXO) IsEqual(alt *STXO) bool {
 		return false
 	}
 
-	if !stxo.SpendTxId.IsEqual(&alt.SpendTxId) {
+	if !stxo.SpendTxId.IsEqual(alt.SpendTxId) {
 		return false
 	}
 

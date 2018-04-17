@@ -3,8 +3,8 @@ package _interface
 import (
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.SPV/common"
-	"github.com/elastos/Elastos.ELA.SPV/common/serialization"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type Proof struct {
@@ -16,7 +16,7 @@ type Proof struct {
 }
 
 func (p *Proof) Serialize(w io.Writer) error {
-	return serialization.WriteElements(w,
+	return serialize.WriteElements(w,
 		p.BlockHash,
 		p.Height,
 		p.Transactions,
@@ -27,17 +27,17 @@ func (p *Proof) Serialize(w io.Writer) error {
 }
 
 func (p *Proof) Deserialize(r io.Reader) error {
-	err := serialization.ReadElements(r,
+	err := serialize.ReadElements(r,
 		&p.BlockHash,
 		&p.Height,
 		&p.Transactions,
 	)
 
-	hashes, err := serialization.ReadUint32(r)
+	hashes, err := serialize.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
 	p.Hashes = make([]*Uint256, hashes)
-	return serialization.ReadElements(r, &p.Hashes, &p.Flags)
+	return serialize.ReadElements(r, &p.Hashes, &p.Flags)
 }
