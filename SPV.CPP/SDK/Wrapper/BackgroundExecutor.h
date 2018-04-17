@@ -14,7 +14,8 @@
 namespace Elastos {
 	namespace SDK {
 
-		class BackgroundExecutor {
+		class BackgroundExecutor :
+			public Executor {
 		public:
 			BackgroundExecutor(uint8_t threadCount = 1);
 

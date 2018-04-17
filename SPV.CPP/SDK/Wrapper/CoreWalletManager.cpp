@@ -248,7 +248,7 @@ namespace Elastos {
 
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
-				const boost::shared_ptr<Executor> &executor) :
+				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {
 		}
@@ -359,7 +359,7 @@ namespace Elastos {
 
 		WrappedExecutorWalletListener::WrappedExecutorWalletListener(
 				Wallet::Listener *listener,
-				const boost::shared_ptr<Executor> &executor) :
+				Executor *executor) :
 			_listener(listener),
 			_executor(executor) {
 		}

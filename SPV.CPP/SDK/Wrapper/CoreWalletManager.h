@@ -71,19 +71,21 @@ namespace Elastos {
 			virtual void txPublished(const std::string &error);
 
 		protected:
-			SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
+			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 
-			SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
 
-			WrapperList<Peer, BRPeer> loadPeers();
+			virtual WrapperList<Peer, BRPeer> loadPeers();
 
-			int getForkId() const;
+			virtual int getForkId() const;
 
 			typedef boost::shared_ptr<PeerManager::Listener> PeerManagerListenerPtr;
-			const PeerManagerListenerPtr &createPeerManagerListener();
+
+			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 			typedef boost::shared_ptr<Wallet::Listener> WalletListenerPtr;
-			const WalletListenerPtr &createWalletListener();
+
+			virtual const WalletListenerPtr &createWalletListener();
 
 		protected:
 			static bool SHOW_CALLBACK;
@@ -136,8 +138,7 @@ namespace Elastos {
 		class WrappedExecutorPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
-				const boost::shared_ptr<Executor> &executor);
+			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener, Executor *executor);
 
 			virtual void syncStarted();
 
@@ -155,7 +156,7 @@ namespace Elastos {
 
 		private:
 			PeerManager::Listener *_listener;
-			boost::shared_ptr<Executor> _executor;
+			Executor *_executor;
 		};
 
 		// Exception Wrapped WalletListener
@@ -180,8 +181,7 @@ namespace Elastos {
 		class WrappedExecutorWalletListener :
 				public Wallet::Listener {
 		public:
-			WrappedExecutorWalletListener(Wallet::Listener *listener,
-										  const boost::shared_ptr<Executor> &executor);
+			WrappedExecutorWalletListener(Wallet::Listener *listener, Executor *executor);
 
 			virtual void balanceChanged(uint64_t balance);
 
@@ -193,7 +193,7 @@ namespace Elastos {
 
 		private:
 			Wallet::Listener *_listener;
-			boost::shared_ptr<Executor> _executor;
+			Executor *_executor;
 		};
 
 	}
