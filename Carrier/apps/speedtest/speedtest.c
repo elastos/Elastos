@@ -61,6 +61,7 @@ typedef enum PROCESS_MODE {
     CHILD_MODE
 } PROCESS_MODE;
 
+static bool g_connected = false;
 static char g_peer_id[ELA_MAX_ID_LEN+1] = {0};
 static RUNNING_MODE g_mode = PASSIVE_MODE;
 static char g_transferred_file[1024] = {0};
@@ -567,11 +568,6 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
         "failed"
     };
 
-    while (!ela_is_ready((ElaCarrier*)context)) {
-        output("not ready in %s\n", __FUNCTION__);
-        sleep(1);
-    }
-
     output("Stream [%d] state changed to: %s\n", stream, state_name[state]);
 
     if (state == ElaStreamState_transport_ready)
@@ -911,7 +907,7 @@ static void idle_callback(ElaCarrier *w, void *context)
 {
     static int first_time = 1;
 
-    if ((ela_is_ready(w)) && (first_time == 1)) {
+    if (g_connected && (ela_is_ready(w)) && (first_time == 1)) {
         if (strlen(g_friend_address) > 0) {
             char *addr_arg[1] = {(char*)g_friend_address};
             char *p = NULL;
@@ -934,10 +930,12 @@ static void connection_callback(ElaCarrier *w, ElaConnectionStatus status,
 {
     switch (status) {
     case ElaConnectionStatus_Connected:
+        g_connected = true;
         output("Connected to carrier network.\n");
         break;
 
     case ElaConnectionStatus_Disconnected:
+        g_connected = false;
         output("Disconnected from carrier network.\n");
         break;
 
@@ -962,11 +960,6 @@ static void friend_connection_callback(ElaCarrier *w, const char *friendid,
 
         if ((strcmp(g_peer_id, friendid) == 0) && (g_mode == ACTIVE_MODE)) {
             char *arg[2] = {NULL, NULL};
-
-            while (!ela_is_ready(w)) {
-                output("not ready in %s\n", __FUNCTION__);
-                sleep(1);
-            }
 
             arg[0] = g_peer_id;
             arg[1] = (char*)"hello";
@@ -1004,11 +997,6 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
     output("Friend request from user[%s] with HELLO: %s.\n",
            *info->name ? info->name : userid, hello);
     
-    while (!ela_is_ready(w)) {
-        output("not ready in %s\n", __FUNCTION__);
-        sleep(1);
-    }
-
     arg[0] = (char*)userid;
     friend_accept(w, 1, arg);
 }
@@ -1050,11 +1038,6 @@ static void invite_request_callback(ElaCarrier *w, const char *from,
     char *add_stream_arg[2] = {NULL, NULL};
 
     output("Invite request from[%s] with data: %.*s\n", from, (int)len, data);
-
-    while (!ela_is_ready(w)) {
-        output("not ready in %s\n", __FUNCTION__);
-        sleep(1);
-    }
 
     strcpy(g_peer_id, from);
     session_init(w);
