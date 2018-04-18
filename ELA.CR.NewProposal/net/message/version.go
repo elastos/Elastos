@@ -1,16 +1,17 @@
 package message
 
 import (
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/core/ledger"
-	. "Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"time"
+
+	"Elastos.ELA/common/config"
+	"Elastos.ELA/common/log"
+	"Elastos.ELA/core/ledger"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type version struct {

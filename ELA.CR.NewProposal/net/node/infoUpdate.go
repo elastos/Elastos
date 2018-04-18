@@ -1,16 +1,17 @@
 package node
 
 import (
+	"net"
+	"strconv"
+	"time"
+
 	"Elastos.ELA/common"
 	"Elastos.ELA/common/config"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/ledger"
-	"Elastos.ELA/events"
-	. "Elastos.ELA/net/message"
-	. "Elastos.ELA/net/protocol"
-	"net"
-	"strconv"
-	"time"
+	"github.com/elastos/Elastos.ELA/events"
+	. "github.com/elastos/Elastos.ELA/net/message"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {

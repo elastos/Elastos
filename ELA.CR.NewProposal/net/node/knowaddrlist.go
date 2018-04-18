@@ -1,11 +1,12 @@
 package node
 
 import (
-	"Elastos.ELA/common/log"
-	. "Elastos.ELA/net/protocol"
 	"math/rand"
 	"sync"
 	"time"
+
+	"Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 const (

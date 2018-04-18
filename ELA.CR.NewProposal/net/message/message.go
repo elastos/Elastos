@@ -1,15 +1,16 @@
 package message
 
 import (
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	. "Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"fmt"
+
+	"Elastos.ELA/common/config"
+	"Elastos.ELA/common/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type Messager interface {
