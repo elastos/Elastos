@@ -34,7 +34,7 @@ namespace Elastos {
 				MB_ISO    <<
 				") VALUES (?, ?, ?);";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -48,7 +48,7 @@ namespace Elastos {
 			_sqlite->step(stmt);
 			_sqlite->finalize(stmt);
 
-			return _sqlite->exec("COMMIT;", nullptr, nullptr);
+			return _sqlite->endTransaction();
 		}
 
 		bool MerkleBlockDataSource::putMerkleBlocks(const std::string &iso, const std::vector<MerkleBlockEntity> &blockEntities) {
@@ -92,7 +92,7 @@ namespace Elastos {
 				" FROM "     << MB_TABLE_NAME <<
 				" WHERE "    << MB_ISO << " = '" << iso << "';";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -117,7 +117,7 @@ namespace Elastos {
 			}
 
 			_sqlite->finalize(stmt);
-			_sqlite->exec("COMMIT;", nullptr, nullptr);
+			_sqlite->endTransaction();
 
 			return merkleBlocks;
 		}

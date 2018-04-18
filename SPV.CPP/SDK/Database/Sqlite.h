@@ -35,6 +35,8 @@ namespace Elastos {
 			 */
 			bool exec(const std::string &sql, ExecCallBack callBack, void *arg);
 
+			bool beginTransaction(SqliteTransactionType type);
+			bool endTransaction();
 			/*
 			 * Transactions created using BEGIN...COMMIT do not nest. For nested transactions,
 			 * use the SAVEPOINT and RELEASE commands.
@@ -63,9 +65,8 @@ namespace Elastos {
 			std::string columnText(sqlite3_stmt *pStmt, int iCol);
 			int columnBytes(sqlite3_stmt *pStmt, int iCol);
 
-			std::string getTxTypeString(SqliteTransactionType type);
-
 		private:
+			std::string getTxTypeString(SqliteTransactionType type);
 			bool open(const boost::filesystem::path &path);
 			void close();
 

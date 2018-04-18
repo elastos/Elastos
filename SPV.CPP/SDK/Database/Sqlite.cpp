@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 
 #include "Sqlite.h"
+#include "Log.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -26,15 +27,16 @@ namespace Elastos {
 			char *errmsg;
 
 			if (!isValid()) {
+				Log::error("sqlite is invalid");
 				return false;
 			}
 
-			//std::string sqlUpper = sql;
-			//std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
+			SPDLOG_DEBUG(Log::getLogger(), "sqlite exec \"{}\"", sql);
 
 			int r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
+					Log::getLogger()->error("sqlite exec \"{}\" error: {}", sql, errmsg);
 					sqlite3_free(errmsg);
 				}
 				return false;
@@ -43,35 +45,29 @@ namespace Elastos {
 			return true;
 		}
 
+		bool Sqlite::beginTransaction(SqliteTransactionType type) {
+			return exec("BEGIN " + getTxTypeString(type) + ";", nullptr, nullptr);
+		}
+
+		bool Sqlite::endTransaction() {
+			return exec("COMMIT;", nullptr, nullptr);
+		}
+
 		bool Sqlite::transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg) {
 			char* errmsg;
 			std::string typeStr;
 
-			if (!isValid()) {
-				return false;
-			}
-
-			//std::string sqlUpper = sql;
-			//std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
-
 			typeStr = "BEGIN " + getTxTypeString(type) + ";";
 
-			int r = sqlite3_exec(_dataBasePtr, typeStr.c_str(), NULL, NULL, NULL);
-			if (r != SQLITE_OK) {
+			if (true != exec(typeStr.c_str(), NULL, NULL)) {
 				return false;
 			}
 
-			r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
-			if (r != SQLITE_OK) {
-				if (errmsg) {
-					// TODO how to complain the error
-					sqlite3_free(errmsg);
-				}
+			if (true != exec(sql.c_str(), callBack, arg)) {
 				return false;
 			}
 
-			r = sqlite3_exec(_dataBasePtr, "COMMIT;", NULL, NULL, NULL);
-			if (r != SQLITE_OK) {
+			if (true != exec("COMMIT;", NULL, NULL)) {
 				return false;
 			}
 
@@ -80,15 +76,15 @@ namespace Elastos {
 
 		bool Sqlite::prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
 			int r = 0;
-			//std::string sqlUpper = sql;
-			//std::transform(sqlUpper.begin(), sqlUpper.end(), sqlUpper.begin(), ::toupper);
 
 			if (!isValid()) {
+				Log::error("sqlite is invalid");
 				return false;
 			}
 
 			r = sqlite3_prepare_v2(_dataBasePtr, sql.c_str(), sql.length(), ppStmt, pzTail);
 			if (r != SQLITE_OK) {
+				Log::error("sqlite prepare error");
 				return false;
 			}
 

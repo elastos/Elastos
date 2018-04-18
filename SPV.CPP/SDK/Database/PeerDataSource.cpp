@@ -36,7 +36,7 @@ namespace Elastos {
 				PEER_ISO       <<
 				") VALUES (?, ?, ?, ?);";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -53,7 +53,7 @@ namespace Elastos {
 
 			_sqlite->finalize(stmt);
 
-			return _sqlite->exec("COMMIT;", nullptr, nullptr);
+			return _sqlite->endTransaction();
 		}
 
 		bool PeerDataSource::putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
@@ -72,9 +72,7 @@ namespace Elastos {
 				" WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id <<
 				" AND " << PEER_ISO << " = '" << iso << "';";
 
-			_sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
-
-			return true;
+			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
 		}
 
 		bool PeerDataSource::deleteAllPeers(const std::string &iso) {
@@ -83,9 +81,7 @@ namespace Elastos {
 			ss << "DELETE FROM " << PEER_TABLE_NAME <<
 				" WHERE " << PEER_ISO << " = '" << iso << "';";
 
-			_sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
-
-			return true;
+			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
 		}
 
 		std::vector<PeerEntity> PeerDataSource::getAllPeers(const std::string &iso) const {
@@ -101,7 +97,7 @@ namespace Elastos {
 				" FROM " << PEER_TABLE_NAME <<
 				" WHERE " << PEER_ISO << " = '" << iso << "';";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -128,8 +124,7 @@ namespace Elastos {
 			}
 
 			_sqlite->finalize(stmt);
-
-			_sqlite->exec("COMMIT;", nullptr, nullptr);
+			_sqlite->endTransaction();
 
 			return peers;
 		}

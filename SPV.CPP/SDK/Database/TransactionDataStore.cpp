@@ -37,7 +37,7 @@ namespace Elastos {
 				TX_ISO          <<
 				") VALUES (?, ?, ?, ?, ?);";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -54,7 +54,7 @@ namespace Elastos {
 
 			_sqlite->finalize(stmt);
 
-			return _sqlite->exec("COMMIT;", nullptr, nullptr);
+			return _sqlite->endTransaction();
 		}
 
 		bool TransactionDataStore::deleteAllTransactions(const std::string &iso) {
@@ -79,7 +79,7 @@ namespace Elastos {
 				" FROM " << TX_TABLE_NAME <<
 				" WHERE " << TX_ISO << " = '" << iso << "';";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -108,8 +108,7 @@ namespace Elastos {
 			}
 
 			_sqlite->finalize(stmt);
-
-			_sqlite->exec("COMMIT;", nullptr, nullptr);
+			_sqlite->endTransaction();
 
 			return transactions;
 		}
@@ -124,7 +123,7 @@ namespace Elastos {
 				" WHERE " << TX_ISO << " = '" << iso << "'" <<
 				" AND " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
 
-			_sqlite->exec("BEGIN " + _sqlite->getTxTypeString(_txType) + ";", nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -139,7 +138,7 @@ namespace Elastos {
 
 			_sqlite->finalize(stmt);
 
-			return _sqlite->exec("COMMIT;", nullptr, nullptr);
+			return _sqlite->endTransaction();
 		}
 
 		bool TransactionDataStore::deleteTxByHash(const std::string &iso, const std::string &hash) {
