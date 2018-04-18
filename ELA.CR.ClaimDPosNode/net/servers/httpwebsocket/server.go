@@ -11,12 +11,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 
-	"Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/events"
 	. "Elastos.ELA/common"
-	. "Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/errors"
 	"Elastos.ELA/common/log"
 	"Elastos.ELA/core/ledger"
-	. "Elastos.ELA/net/servers"
+	. "github.com/elastos/Elastos.ELA/net/servers"
 	. "Elastos.ELA/common/config"
 	"Elastos.ELA/core/transaction"
 

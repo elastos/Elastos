@@ -3,13 +3,13 @@ package servers
 import (
 	. "Elastos.ELA/common"
 	"Elastos.ELA/common/log"
-	"Elastos.ELA/consensus/pow"
+	"github.com/elastos/Elastos.ELA/consensus/pow"
 	"Elastos.ELA/core/asset"
 	. "Elastos.ELA/core/transaction"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"
-	. "Elastos.ELA/errors"
-	. "Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 const TlsPort = 443
