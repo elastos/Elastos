@@ -5,11 +5,11 @@ import (
 	"encoding/binary"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/auxpow"
 )
 
-func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {
+func getBtcCoinbase(msgBlockHash Uint256) *BtcTx {
 	var magic [4]byte        // 4 byte
 	var auxBlockHash Uint256 // 32 byte
 	var merkleSize int32     // 4 byte
@@ -27,8 +27,8 @@ func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {
 	binary.Write(scriptSigBuf, binary.LittleEndian, merkleSize)
 	binary.Write(scriptSigBuf, binary.LittleEndian, merkleNonce)
 
-	coinBaseTxin := auxpow.BtcTxIn{
-		PreviousOutPoint: auxpow.BtcOutPoint{
+	coinBaseTxin := BtcTxIn{
+		PreviousOutPoint: BtcOutPoint{
 			Hash:  Uint256{},
 			Index: uint32(0),
 		},
@@ -36,22 +36,22 @@ func getBtcCoinbase(msgBlockHash Uint256) *auxpow.BtcTx {
 		Sequence:        uint32(0),
 	}
 
-	btcTxin := make([]*auxpow.BtcTxIn, 0)
+	btcTxin := make([]*BtcTxIn, 0)
 	btcTxin = append(btcTxin, &coinBaseTxin)
-	btcTxout := make([]*auxpow.BtcTxOut, 0)
+	btcTxout := make([]*BtcTxOut, 0)
 
-	coinbase := auxpow.NewBtcTx(btcTxin, btcTxout)
+	coinbase := NewBtcTx(btcTxin, btcTxout)
 
 	return coinbase
 }
 
-func generateAuxPow(msgBlockHash Uint256) *auxpow.AuxPow {
+func generateAuxPow(msgBlockHash Uint256) *AuxPow {
 	auxMerkleBranch := make([]Uint256, 0)
 	auxMerkleIndex := 0
 	parCoinbaseTx := getBtcCoinbase(msgBlockHash)
 	parCoinBaseMerkle := make([]Uint256, 0)
 	parMerkleIndex := 0
-	parBlockHeader := auxpow.BtcHeader{
+	parBlockHeader := BtcHeader{
 		Version:    0x7fffffff,
 		Previous:  Uint256{},
 		MerkleRoot: parCoinbaseTx.Hash(),
@@ -59,7 +59,7 @@ func generateAuxPow(msgBlockHash Uint256) *auxpow.AuxPow {
 		Bits:       0, // do not care about parent block diff
 		Nonce:      0, // to be solved
 	}
-	auxPow := auxpow.NewAuxPow(
+	auxPow := NewAuxPow(
 		auxMerkleBranch,
 		auxMerkleIndex,
 		*parCoinbaseTx,

@@ -12,7 +12,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/net/message"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
@@ -35,7 +35,7 @@ func (node *node) SyncBlks() {
 		syncNode, err := node.FindSyncNode()
 		if err == nil {
 			syncNode.SetSyncHeaders(false)
-			var emptyHash common.Uint256
+			var emptyHash Uint256
 			node.local.SetStartHash(emptyHash)
 			node.local.SetStopHash(emptyHash)
 		}
@@ -49,12 +49,12 @@ func (node *node) SyncBlks() {
 			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 
 			blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
-			var emptyHash common.Uint256
+			var emptyHash Uint256
 			SendMsgSyncBlockHeaders(syncNode, blocator, emptyHash)
 		} else {
 			//rb := syncNode.LocalNode().GetRequestBlockList()
 			rb1 := syncNode.LocalNode().GetRequestBlockList()
-			var rb = make(map[common.Uint256]time.Time, 50)
+			var rb = make(map[Uint256]time.Time, 50)
 			x := 1
 			node.requestedBlockLock.Lock()
 			for i, v := range rb1 {
@@ -67,7 +67,7 @@ func (node *node) SyncBlks() {
 			node.requestedBlockLock.Unlock()
 			if len(rb) == 0 {
 				syncNode.SetSyncHeaders(false)
-				var emptyHash common.Uint256
+				var emptyHash Uint256
 				node.local.SetStartHash(emptyHash)
 				node.local.SetStopHash(emptyHash)
 				newSyncNode := node.GetBestHeightNoder()

@@ -10,10 +10,8 @@ import (
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/errors"
 
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/auxpow"
-	. "github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -24,7 +22,7 @@ const (
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Header
 	hash := header.Hash()
-	if !header.AuxPow.Check(&hash, auxpow.AuxPowChainID) {
+	if !header.AuxPow.Check(&hash, AuxPowChainID) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
 	if CheckProofOfWork(header, powLimit) != nil {
@@ -179,7 +177,7 @@ func CheckProofOfWork(bd *Header, powLimit *big.Int) error {
 	return nil
 }
 
-func IsFinalizedTransaction(msgTx *tx.Transaction, blockHeight uint32) bool {
+func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 	// Lock time of zero means the transaction is finalized.
 	lockTime := msgTx.LockTime
 	if lockTime == 0 {

@@ -1,28 +1,30 @@
 package message
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type notFound struct {
-	Header
-	hash common.Uint256
+	Hdr
+	hash Uint256
 }
 
-func NewNotFound(hash common.Uint256) ([]byte, error) {
+func NewNotFound(hash Uint256) ([]byte, error) {
 	log.Debug()
 	var msg notFound
 	msg.hash = hash
 	msg.Magic = config.Parameters.Magic
 	cmd := "notfound"
-	copy(msg.Header.CMD[0:len(cmd)], cmd)
+	copy(msg.Hdr.CMD[0:len(cmd)], cmd)
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	msg.hash.Serialize(tmpBuffer)
 	p := new(bytes.Buffer)
@@ -36,7 +38,7 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 	s = sha256.Sum256(s2)
 	buf := bytes.NewBuffer(s[:4])
 	binary.Read(buf, binary.LittleEndian, &(msg.Checksum))
-	msg.Header.Length = uint32(len(p.Bytes()))
+	msg.Hdr.Length = uint32(len(p.Bytes()))
 	log.Debug("The message payload length is ", msg.Length)
 
 	m, err := msg.Serialize()
@@ -49,7 +51,7 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 }
 
 func (msg notFound) Serialize() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialize()
+	hdrBuf, err := msg.Hdr.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +64,7 @@ func (msg notFound) Serialize() ([]byte, error) {
 func (msg *notFound) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
-	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Hdr))
 	if err != nil {
 		log.Warn("Parse notfound message hdr error")
 		return errors.New("Parse notfound message hdr error")

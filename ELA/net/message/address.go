@@ -14,7 +14,7 @@ import (
 )
 
 type addr struct {
-	Header
+	Hdr
 	nodeCnt   uint64
 	nodeAddrs []NodeAddr
 }
@@ -57,7 +57,7 @@ func NewAddrs(nodeaddrs []NodeAddr, count uint64) ([]byte, error) {
 
 func (msg addr) Serialize() ([]byte, error) {
 	var buf bytes.Buffer
-	err := binary.Write(&buf, binary.LittleEndian, msg.Header)
+	err := binary.Write(&buf, binary.LittleEndian, msg.Hdr)
 
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (msg addr) Serialize() ([]byte, error) {
 
 func (msg *addr) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
-	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Hdr))
 	err = binary.Read(buf, binary.LittleEndian, &(msg.nodeCnt))
 	log.Debug("The address count is ", msg.nodeCnt)
 	msg.nodeAddrs = make([]NodeAddr, msg.nodeCnt)

@@ -1,15 +1,13 @@
 package servers
 
 import (
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/consensus/pow"
-	"github.com/elastos/Elastos.ELA.Utility/core/asset"
-	. "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/errors"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const TlsPort = 443
@@ -52,10 +50,10 @@ type Transactions struct {
 	LockTime       uint32
 	Programs       []ProgramInfo
 
-	Timestamp         uint32 `json:",omitempty"`
-	Confirmations     uint32 `json:",omitempty"`
-	TxSize            uint32 `json:",omitempty"`
-	Hash              string
+	Timestamp     uint32 `json:",omitempty"`
+	Confirmations uint32 `json:",omitempty"`
+	TxSize        uint32 `json:",omitempty"`
+	Hash          string
 }
 
 type AuxInfo struct {
@@ -114,7 +112,7 @@ type CoinbaseInfo struct {
 }
 
 type RegisterAssetInfo struct {
-	Asset      *asset.Asset
+	Asset      Asset
 	Amount     string
 	Controller string
 }
@@ -133,36 +131,35 @@ type WithdrawAssetInfo struct {
 
 func TransPayloadToHex(p Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *payload.CoinBase:
+	case *PayloadCoinBase:
 		obj := new(CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *payload.RegisterAsset:
+	case *PayloadRegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *payload.SideMining:
+	case *PayloadSideMining:
 		obj := new(SideMiningInfo)
 		obj.SideBlockHash = object.SideBlockHash.String()
 		return obj
-	case *payload.WithdrawAsset:
+	case *PayloadWithdrawAsset:
 		obj := new(WithdrawAssetInfo)
 		obj.BlockHeight = object.BlockHeight
 		return obj
-	case *payload.TransferCrossChainAsset:
+	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.AddressesMap = object.AddressesMap
 		return obj
-	case *payload.TransferAsset:
-	case *payload.Record:
-	case *payload.DeployCode:
+	case *PayloadTransferAsset:
+	case *PayloadRecord:
 	}
 	return nil
 }
 
-func VerifyAndSendTx(txn *tx.Transaction) ErrCode {
+func VerifyAndSendTx(txn *Transaction) ErrCode {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")

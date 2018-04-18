@@ -16,12 +16,8 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/asset"
-	. "github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
-	"github.com/elastos/Elastos.ELA.Utility/core/contract/program"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -37,7 +33,6 @@ var (
 
 var (
 	oneLsh256 = new(big.Int).Lsh(big.NewInt(1), 256)
-	zeroHash  = Uint256{}
 )
 
 type Blockchain struct {
@@ -57,11 +52,10 @@ type Blockchain struct {
 	OrphanLock     sync.RWMutex
 	BCEvents       *events.Event
 	mutex          sync.RWMutex
-	Ledger         *Ledger
 	AssetID        Uint256
 }
 
-func NewBlockchain(height uint32, ledger *Ledger) *Blockchain {
+func NewBlockchain(height uint32) *Blockchain {
 	return &Blockchain{
 		BlockHeight:  height,
 		Root:         nil,
@@ -75,28 +69,36 @@ func NewBlockchain(height uint32, ledger *Ledger) *Blockchain {
 		TimeSource:   NewMedianTime(),
 
 		BCEvents: events.NewEvent(),
-		Ledger:   ledger,
 		AssetID:  Uint256{},
 	}
 }
 
-func NewBlockchainWithGenesisBlock() (*Blockchain, error) {
+func Init(store IChainStore) error {
 	genesisBlock, err := GenesisBlockInit()
 	if err != nil {
-		return nil, errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed.")
+		return errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed.")
 	}
-	genesisBlock.RebuildMerkleRoot()
-
-	blockchain := NewBlockchain(0, DefaultLedger)
-	DefaultLedger.Blockchain = blockchain
-	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
-	height, err := DefaultLedger.Store.InitLedgerStoreWithGenesisBlock(genesisBlock)
+	transactionHashes := make([]Uint256, 0, len(genesisBlock.Transactions))
+	for _, tx := range genesisBlock.Transactions {
+		transactionHashes = append(transactionHashes, tx.Hash())
+	}
+	hash, err := crypto.ComputeRoot(transactionHashes)
 	if err != nil {
-		return nil, errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")
+		return errors.New("[Blockchain] , BuildMerkleRoot ComputeRoot failed.")
 	}
-	DefaultLedger.Blockchain.UpdateBestHeight(height)
+	genesisBlock.Header.MerkleRoot = hash
 
-	return blockchain, nil
+	DefaultLedger = new(Ledger)
+	DefaultLedger.Blockchain = NewBlockchain(0)
+	DefaultLedger.Store = store
+	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
+	height, err := DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
+	if err != nil {
+		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")
+	}
+
+	DefaultLedger.Blockchain.UpdateBestHeight(height)
+	return nil
 }
 
 func GenesisBlockInit() (*Block, error) {
@@ -112,11 +114,11 @@ func GenesisBlockInit() (*Block, error) {
 	}
 
 	//transaction
-	systemToken := &tx.Transaction{
-		TxType:         tx.RegisterAsset,
+	systemToken := &Transaction{
+		TxType:         RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &payload.RegisterAsset{
-			Asset: &asset.Asset{
+		Payload: &PayloadRegisterAsset{
+			Asset: Asset{
 				Name:      "ELA",
 				Precision: 0x08,
 				AssetType: 0x00,
@@ -124,10 +126,10 @@ func GenesisBlockInit() (*Block, error) {
 			Amount:     0 * 100000000,
 			Controller: Uint168{},
 		},
-		Attributes: []*tx.Attribute{},
-		Inputs:     []*tx.Input{},
-		Outputs:    []*tx.Output{},
-		Programs:   []*program.Program{},
+		Attributes: []*Attribute{},
+		Inputs:     []*Input{},
+		Outputs:    []*Output{},
+		Programs:   []*Program{},
 	}
 
 	foundationProgramHash, err := Uint168FromAddress(FoundationAddress)
@@ -135,12 +137,12 @@ func GenesisBlockInit() (*Block, error) {
 		return nil, err
 	}
 
-	trans, err := tx.NewCoinBaseTransaction(&payload.CoinBase{}, 0)
+	trans, err := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	trans.Outputs = []*tx.Output{
+	trans.Outputs = []*Output{
 		{
 			AssetID:     systemToken.Hash(),
 			Value:       3300 * 10000 * 100000000,
@@ -150,12 +152,12 @@ func GenesisBlockInit() (*Block, error) {
 
 	nonce := make([]byte, 8)
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := tx.NewAttribute(tx.Nonce, nonce)
+	txAttr := NewAttribute(Nonce, nonce)
 	trans.Attributes = append(trans.Attributes, &txAttr)
 	//block
 	genesisBlock := &Block{
 		Header:       genesisBlockdata,
-		Transactions: []*tx.Transaction{trans, systemToken},
+		Transactions: []*Transaction{trans, systemToken},
 	}
 	txHashes := []Uint256{}
 	for _, tx := range genesisBlock.Transactions {
@@ -168,6 +170,26 @@ func GenesisBlockInit() (*Block, error) {
 	genesisBlock.Header.MerkleRoot = merkleRoot
 
 	return genesisBlock, nil
+}
+
+func NewCoinBaseTransaction(coinBasePayload *PayloadCoinBase, currentHeight uint32) (*Transaction, error) {
+	return &Transaction{
+		TxType:         CoinBase,
+		PayloadVersion: PayloadCoinBaseVersion,
+		Payload:        coinBasePayload,
+		Inputs: []*Input{
+			{
+				Previous: OutPoint{
+					TxID:  Uint256{},
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
+			},
+		},
+		Attributes: []*Attribute{},
+		LockTime:   currentHeight,
+		Programs:   []*Program{},
+	}, nil
 }
 
 func (bc *Blockchain) GetBestHeight() uint32 {
@@ -720,7 +742,7 @@ func (bc *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
-		block, err := bc.Ledger.Store.GetBlock(*n.Hash)
+		block, err := DefaultLedger.Store.GetBlock(*n.Hash)
 		if err != nil {
 			return err
 		}
@@ -772,7 +794,7 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 		return err
 	}
 
-	err = bc.Ledger.Store.RollbackBlock(*node.Hash)
+	err = DefaultLedger.Store.RollbackBlock(*node.Hash)
 	if err != nil {
 		return err
 	}
@@ -799,7 +821,7 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 
 	for _, txVerify := range block.Transactions {
-		if errCode := CheckTransactionContext(txVerify, bc.Ledger); errCode != Success {
+		if errCode := CheckTransactionContext(txVerify); errCode != Success {
 			fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
 			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verifiy block"))
 		}
@@ -813,7 +835,7 @@ func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 	}
 
 	// Insert the block into the database which houses the main chain.
-	err := bc.Ledger.Store.SaveBlock(block, bc.Ledger)
+	err := DefaultLedger.Store.SaveBlock(block)
 	if err != nil {
 		return err
 	}
@@ -846,7 +868,7 @@ func (bc *Blockchain) BlockExists(hash *Uint256) (bool, error) {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return bc.Ledger.BlockInLedger(*hash), nil
+	return DefaultLedger.BlockInLedger(*hash), nil
 	return false, nil
 }
 
@@ -873,7 +895,7 @@ func (bc *Blockchain) maybeAcceptBlock(block *Block) (bool, error) {
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	err = PowCheckBlockContext(block, prevNode, bc.Ledger)
+	err = PowCheckBlockContext(block, prevNode, DefaultLedger)
 	if err != nil {
 		log.Error("PowCheckBlockContext error!", err)
 		return false, err
@@ -1126,7 +1148,7 @@ func (b *Blockchain) LatestBlockLocator() (BlockLocator, error) {
 		// database.
 
 		// Get Current Block
-		blockHash := b.Ledger.Store.GetCurrentBlockHash()
+		blockHash := DefaultLedger.Store.GetCurrentBlockHash()
 		return b.blockLocatorFromHash(&blockHash), nil
 	}
 
@@ -1181,7 +1203,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 		// error means it doesn't exist and just return the locator for
 		// the block itself.
 
-		block, err := b.Ledger.Store.GetBlock(hash)
+		block, err := DefaultLedger.Store.GetBlock(hash)
 		if err != nil {
 			return locator
 		}
@@ -1208,7 +1230,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 		// The desired block height is in the main chain, so look it up
 		// from the main chain database.
 
-		h, err := b.Ledger.Store.GetBlockHash(uint32(blockHeight))
+		h, err := DefaultLedger.Store.GetBlockHash(uint32(blockHeight))
 		if err != nil {
 			log.Tracef("Lookup of known valid height failed %v", blockHeight)
 			continue
@@ -1226,7 +1248,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 func (b *Blockchain) LatestLocatorHash(locator BlockLocator) Uint256 {
 	var startHash Uint256
 	for _, hash := range locator {
-		_, err := b.Ledger.Store.GetBlock(hash)
+		_, err := DefaultLedger.Store.GetBlock(hash)
 		if err == nil {
 			startHash = hash
 			break

@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -16,12 +16,12 @@ const (
 )
 
 type dataReq struct {
-	Header
+	Hdr
 	reqType uint8
-	hash    common.Uint256
+	hash    Uint256
 }
 
-func ReqBlkData(node Noder, hash common.Uint256) error {
+func ReqBlkData(node Noder, hash Uint256) error {
 	node.LocalNode().AddRequestedBlock(hash)
 	var msg dataReq
 	msg.reqType = BLOCK
@@ -84,12 +84,12 @@ func (msg dataReq) Handle(node Noder) error {
 
 func (msg *dataReq) Deserialize(p []byte) error {
 	buf := bytes.NewReader(p)
-	err := binary.Read(buf, binary.LittleEndian, &msg.Header)
+	err := binary.Read(buf, binary.LittleEndian, &msg.Hdr)
 	if err != nil {
 		return err
 	}
 
-	msg.reqType, err = serialize.ReadUint8(buf)
+	msg.reqType, err = ReadUint8(buf)
 	if err != nil {
 		return err
 	}
@@ -103,12 +103,12 @@ func (msg *dataReq) Deserialize(p []byte) error {
 
 func (msg dataReq) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialize.WriteUint8(buf, msg.reqType)
+	err := WriteUint8(buf, msg.reqType)
 	if err != nil {
 		return nil, err
 	}
 
-	 err = msg.hash.Serialize(buf)
+	err = msg.hash.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}

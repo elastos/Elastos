@@ -1,4 +1,4 @@
-package store
+package blockchain
 
 type IIterator interface {
 	Next() bool

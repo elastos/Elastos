@@ -2,11 +2,11 @@ package message
 
 import (
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	"github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 // NewMerkleBlock returns a new *MerkleBlock
-func NewMerkleBlockMsg(block *ledger.Block, filter *bloom.Filter) ([]byte, error) {
+func NewMerkleBlockMsg(block *core.Block, filter *bloom.Filter) ([]byte, error) {
 	// Create and return the merkle block.
 	merkleBlock := bloom.NewMerkleBlock(block, filter)
 

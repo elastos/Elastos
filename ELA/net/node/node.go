@@ -21,10 +21,9 @@ import (
 	. "github.com/elastos/Elastos.ELA/net/message"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type Semaphore chan struct{}
@@ -52,7 +51,7 @@ type node struct {
 	local  *node             // The pointer to local node
 	nbrNodes                 // The neighbor node connect with currently node except itself
 	eventQueue               // The event queue to notice notice other modules
-	TXNPool                  // Unconfirmed transaction pool
+	chain.TxPool             // Unconfirmed transaction pool
 	idCache                  // The buffer to store the id of the items which already be processed
 	filter *bloom.Filter     // The bloom filter of a spv node
 	/*
@@ -180,7 +179,7 @@ func InitNode() Noder {
 	n.nbrNodes.init()
 	n.KnownAddressList.init()
 	n.local = n
-	n.TXNPool.init()
+	n.TxPool.Init()
 	n.eventQueue.init()
 	n.idCache.init()
 	n.filter = new(bloom.Filter)
@@ -349,9 +348,9 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 		if frmnode == nil || nbr.ID() != frmnode.ID() {
 
 			switch message.(type) {
-			case *transaction.Transaction:
+			case *Transaction:
 				log.Debug("TX transaction message")
-				txn := message.(*transaction.Transaction)
+				txn := message.(*Transaction)
 
 				if nbr.ExistHash(txn.Hash()) {
 					continue
@@ -369,9 +368,9 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 				node.txnCnt++
 				nbr.Tx(buf)
 
-			case *ledger.Block:
+			case *Block:
 				log.Debug("TX block message")
-				block := message.(*ledger.Block)
+				block := message.(*Block)
 
 				if nbr.ExistHash(block.Hash()) {
 					continue
