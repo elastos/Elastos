@@ -80,6 +80,8 @@ option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
 option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
 
+option_with_default(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
+
 if(SPV_BUILD_SHARED_LIB)
 	set(SPV_LIBRARY_TYPE SHARED)
 	set(SPV_BUILD_STATIC_LIB FALSE)
@@ -95,16 +97,64 @@ set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
 
+find_package(Boost REQUIRED COMPONENTS filesystem system program_options thread)
+if(NOT Boost_FOUND)
+	message(FATAL_ERROR "boost not found")
+endif()
+
+if(UNIX)
+	if(APPLE)
+		######### MacOSX ###########
+		message(STATUS "MacOSX platform detected")
+		set(PLATFORM Darwin)
+	else(APPLE)
+		######### Unix/Linux ###########
+		message(STATUS "Unix/Linux platform detected")
+		set(PLATFORM Unix)
+	endif(APPLE)
+else(UNIX)
+	if(WIN32)
+		######### Windows ###########
+		message(STATUS "Windows system detected")
+		add_definitions(-DWNT -DWIN32 -D_WINDOWS)
+		set(PLATFORM win)
+	else(WIN32)
+		message(STATUS "Unknown platform")
+	endif(WIN32)
+endif(UNIX)
+
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_definitions(-DSPDLOG_DEBUG_ON)
+endif()
+
+# Enable Extra warnings for each compiler
+if(SPV_EXTRA_WARNINGS)
+	if(MSVC)
+		add_definitions("/W4 /wd4100 /wd4206 /wd4127")
+	endif(MSVC)
+	if(CMAKE_COMPILER_IS_GNUCXX)
+		add_definitions("-Wall -Wextra")
+	endif(CMAKE_COMPILER_IS_GNUCXX)
+	if(CLANG)
+		add_definitions("-Weverything")
+	endif(CLANG)
+	if(INTEL)
+		add_definitions("-Wall -Wremarks")
+	endif(INTEL)
+endif(SPV_EXTRA_WARNINGS)
+
 include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}/SDK"
 	"${CMAKE_CURRENT_SOURCE_DIR}/SDK/Common"
 	"${CMAKE_CURRENT_SOURCE_DIR}/SDK/Database"
 	"${CMAKE_CURRENT_SOURCE_DIR}/SDK/Wrapper"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/SDK"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Core"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Include/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Include/nlohmann/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Include/Catch2/single_include"
+	"${Boost_INCLUDE_DIRS}"
 )
 
 add_subdirectory(SDK)
@@ -119,14 +169,6 @@ if(SPV_BUILD_SAMPLE)
 	target_link_libraries(${SAMPLE_NAME} spvsdk)
 	target_link_libraries(${SAMPLE_NAME} pthread)
 	target_link_libraries(${SAMPLE_NAME} sqlite3)
-	#sudo apt-get install libboost-dev
-	target_link_libraries(${SAMPLE_NAME} boost_system)
-	#sudo apt-get install libboost-program-options-dev
-	target_link_libraries(${SAMPLE_NAME} boost_program_options)
-	if(APPLE)
-		target_link_libraries(${SAMPLE_NAME} boost_thread-mt)
-	else(APPLE)
-		#sudo apt-get install libboost-thread-dev
-		target_link_libraries(${SAMPLE_NAME} boost_thread)
-	endif(APPLE)
+	target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
 endif()
+

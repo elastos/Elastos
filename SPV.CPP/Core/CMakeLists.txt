@@ -2,8 +2,8 @@
 set(SPVCORE_NAME spvcore)
 
 include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}/secp256k1"
+	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${PROJECT_BINARY_DIR}"
 )
 

@@ -31,25 +31,21 @@ endif()
 
 
 if(NOT WIN32)
-	option_with_default( SPV_BUILD_TKERNEL_WITH_INSTALL_RPATH "Build TKernel with install RPATH" ON )
+	option_with_default(SPV_BUILD_TKERNEL_WITH_INSTALL_RPATH "Build TKernel with install RPATH" ON)
 	mark_as_advanced(SPV_BUILD_TKERNEL_WITH_INSTALL_RPATH)
-endif()
-
-find_package(Boost REQUIRED)
-if(NOT Boost_FOUND)
-	message(FATAL_ERROR "boost not found")
 endif()
 
 include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/Common"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Database"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Wrapper"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
+	"${Boost_INCLUDE_DIRS}"
 )
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash/ SPVCORE_BCASH_SOURCE_FILES)
@@ -58,15 +54,10 @@ file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
 add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
-	${SPVCORE_BCASH_SOURCE_FILES}
-)
+	${SPVCORE_BCASH_SOURCE_FILES})
 
 if(APPLE)
 	target_link_libraries(${SPVSDK_NAME} sqlite3)
-	#sudo apt-get install libboost-dev
-	target_link_libraries(${SPVSDK_NAME} boost_system)
-	#sudo apt-get install libboost-program-options-dev
-	target_link_libraries(${SPVSDK_NAME} boost_program_options)
-	#sudo apt-get install libboost-thread-dev
-	target_link_libraries(${SPVSDK_NAME} boost_thread-mt)
+	target_link_libraries(${SPVSDK_NAME} pthread)
+	target_link_libraries(${SPVSDK_NAME} ${Boost_LIBRARIES})
 endif()
