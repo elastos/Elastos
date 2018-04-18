@@ -8,7 +8,7 @@ import (
 )
 
 type addrReq struct {
-	Header
+	Hdr
 }
 
 func newGetAddr() ([]byte, error) {

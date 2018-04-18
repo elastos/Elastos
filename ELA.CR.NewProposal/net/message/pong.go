@@ -10,21 +10,21 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type pong struct {
-	Header
+	Hdr
 	height uint64
 }
 
 func NewPongMsg() ([]byte, error) {
 	var msg pong
-	msg.Header.Magic = config.Parameters.Magic
-	copy(msg.Header.CMD[0:7], "pong")
+	msg.Hdr.Magic = config.Parameters.Magic
+	copy(msg.Hdr.CMD[0:7], "pong")
 	msg.height = uint64(chain.DefaultLedger.Store.GetHeight())
 	tmpBuffer := bytes.NewBuffer([]byte{})
-	serialize.WriteUint64(tmpBuffer, msg.height)
+	common.WriteUint64(tmpBuffer, msg.height)
 	b := new(bytes.Buffer)
 	err := binary.Write(b, binary.LittleEndian, tmpBuffer.Bytes())
 	if err != nil {
@@ -35,8 +35,8 @@ func NewPongMsg() ([]byte, error) {
 	s2 := s[:]
 	s = sha256.Sum256(s2)
 	buf := bytes.NewBuffer(s[:4])
-	binary.Read(buf, binary.LittleEndian, &(msg.Header.Checksum))
-	msg.Header.Length = uint32(len(b.Bytes()))
+	binary.Read(buf, binary.LittleEndian, &(msg.Hdr.Checksum))
+	msg.Hdr.Length = uint32(len(b.Bytes()))
 
 	m, err := msg.Serialize()
 	if err != nil {
@@ -52,12 +52,12 @@ func (msg pong) Handle(node Noder) error {
 }
 
 func (msg pong) Serialize() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialize()
+	hdrBuf, err := msg.Hdr.Serialize()
 	if err != nil {
 		return nil, err
 	}
 	buf := bytes.NewBuffer(hdrBuf)
-	err = serialize.WriteUint64(buf, msg.height)
+	err = common.WriteUint64(buf, msg.height)
 	if err != nil {
 		return nil, err
 	}
@@ -67,11 +67,11 @@ func (msg pong) Serialize() ([]byte, error) {
 
 func (msg *pong) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
-	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Hdr))
 	if err != nil {
 		return err
 	}
 
-	msg.height, err = serialize.ReadUint64(buf)
+	msg.height, err = common.ReadUint64(buf)
 	return err
 }

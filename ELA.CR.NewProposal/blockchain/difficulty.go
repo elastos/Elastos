@@ -1,13 +1,14 @@
 package blockchain
 
 import (
-	"github.com/elastos/Elastos.ELA/config"
 	"errors"
 	"math/big"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var (
@@ -159,7 +160,6 @@ func CompactToBig(compact uint32) *big.Int {
 
 	return bn
 }
-
 
 func CalcCurrentDifficulty(currentBits uint32) string {
 	var genesisBlockBits uint32 = config.Parameters.ChainParam.PowLimitBits

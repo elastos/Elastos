@@ -15,7 +15,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type InvPayload struct {
@@ -25,7 +24,7 @@ type InvPayload struct {
 }
 
 type Inv struct {
-	Header
+	Hdr
 	P InvPayload
 }
 
@@ -55,7 +54,7 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	msg.p.len = uint32(len(blocator))
 	msg.p.hashStart = blocator
-	serialize.WriteUint32(tmpBuffer, uint32(msg.p.len))
+	WriteUint32(tmpBuffer, uint32(msg.p.len))
 
 	for _, hash := range blocator {
 		err := hash.Serialize(tmpBuffer)
@@ -145,7 +144,7 @@ func (msg Inv) Handle(node Noder) error {
 }
 
 func (msg Inv) Serialize() ([]byte, error) {
-	hdrBuf, err := msg.Header.Serialize()
+	hdrBuf, err := msg.Hdr.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +155,7 @@ func (msg Inv) Serialize() ([]byte, error) {
 }
 
 func (msg *Inv) Deserialize(p []byte) error {
-	err := msg.Header.Deserialize(p)
+	err := msg.Hdr.Deserialize(p)
 	if err != nil {
 		return err
 	}
@@ -165,7 +164,7 @@ func (msg *Inv) Deserialize(p []byte) error {
 	if err != nil {
 		return err
 	}
-	msg.P.Cnt, err = serialize.ReadUint32(buf)
+	msg.P.Cnt, err = ReadUint32(buf)
 	if err != nil {
 		return err
 	}
@@ -210,8 +209,8 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 }
 
 func (msg *InvPayload) Serialization(w io.Writer) {
-	serialize.WriteUint8(w, msg.Type)
-	serialize.WriteUint32(w, msg.Cnt)
+	WriteUint8(w, msg.Type)
+	WriteUint32(w, msg.Cnt)
 
 	binary.Write(w, binary.LittleEndian, msg.Blk)
 }

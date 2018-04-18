@@ -6,7 +6,7 @@ import (
 )
 
 type FilterLoadMsg struct {
-	Header
+	Hdr
 	Filter bloom.FilterLoad
 }
 

@@ -9,14 +9,12 @@ import (
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/asset"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 // CheckTransactionSanity verifys received single transaction
-func CheckTransactionSanity(txn *tx.Transaction) ErrCode {
+func CheckTransactionSanity(txn *Transaction) ErrCode {
 
 	if err := CheckTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
@@ -57,9 +55,9 @@ func CheckTransactionSanity(txn *tx.Transaction) ErrCode {
 }
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
-func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
+func CheckTransactionContext(txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
-	if exist := ledger.Store.IsTxHashDuplicate(txn.Hash()); exist {
+	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
 		return ErrTxHashDuplicate
 	}
@@ -69,7 +67,7 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 	}
 
 	// check double spent transaction
-	if IsDoubleSpend(txn, ledger) {
+	if DefaultLedger.IsDoubleSpend(txn) {
 		log.Info("[CheckTransactionContext] IsDoubleSpend check faild.")
 		return ErrDoubleSpend
 	}
@@ -92,9 +90,9 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID
 		referTxnOutIndex := input.Previous.Index
-		referTxn, _, err := ledger.Store.GetTransaction(referHash)
+		referTxn, _, err := DefaultLedger.Store.GetTransaction(referHash)
 		if err != nil {
-			log.Warn("Referenced transaction can not be found", common.BytesToHexString(referHash.Bytes()))
+			log.Warn("Referenced transaction can not be found", BytesToHexString(referHash.Bytes()))
 			return ErrUnknownReferedTxn
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
@@ -105,7 +103,7 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 		// coinbase transaction only can be spent after got SpendCoinbaseSpan times confirmations
 		if referTxn.IsCoinBaseTx() {
 			lockHeight := referTxn.LockTime
-			currentHeight := ledger.Store.GetHeight()
+			currentHeight := DefaultLedger.Store.GetHeight()
 			if currentHeight-lockHeight < config.Parameters.ChainParam.SpendCoinbaseSpan {
 				return ErrIneffectiveCoinbase
 			}
@@ -116,8 +114,8 @@ func CheckTransactionContext(txn *tx.Transaction, ledger *Ledger) ErrCode {
 }
 
 //validate the transaction of duplicate UTXO input
-func CheckTransactionInput(txn *tx.Transaction) error {
-	var zeroHash common.Uint256
+func CheckTransactionInput(txn *Transaction) error {
+	var zeroHash Uint256
 	if txn.IsCoinBaseTx() {
 		if len(txn.Inputs) != 1 {
 			return errors.New("coinbase must has only one input")
@@ -149,7 +147,7 @@ func CheckTransactionInput(txn *tx.Transaction) error {
 	return nil
 }
 
-func CheckTransactionOutput(txn *tx.Transaction) error {
+func CheckTransactionOutput(txn *Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
@@ -192,18 +190,18 @@ func CheckTransactionOutput(txn *tx.Transaction) error {
 	return nil
 }
 
-func CheckTransactionUTXOLock(txn *tx.Transaction) error {
+func CheckTransactionUTXOLock(txn *Transaction) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
 	if len(txn.Inputs) <= 0 {
 		return errors.New("Transaction has no inputs")
 	}
-	referenceWithUTXO_Output, err := txn.GetReference()
+	references, err := DefaultLedger.Store.GetTxReference(txn)
 	if err != nil {
-		return errors.New(fmt.Sprintf("GetReference failed: %x", txn.Hash()))
+		return errors.New(fmt.Sprintf("GetReference failed: %s", err))
 	}
-	for input, output := range referenceWithUTXO_Output {
+	for input, output := range references {
 
 		if output.OutputLock == 0 {
 			//check next utxo
@@ -219,7 +217,7 @@ func CheckTransactionUTXOLock(txn *tx.Transaction) error {
 	return nil
 }
 
-func CheckTransactionSize(txn *tx.Transaction) error {
+func CheckTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
 		return errors.New(fmt.Sprintf("Invalid transaction size: %d bytes", size))
@@ -228,15 +226,11 @@ func CheckTransactionSize(txn *tx.Transaction) error {
 	return nil
 }
 
-func IsDoubleSpend(tx *tx.Transaction, ledger *Ledger) bool {
-	return ledger.IsDoubleSpend(tx)
-}
-
-func CheckAssetPrecision(Tx *tx.Transaction) error {
+func CheckAssetPrecision(Tx *Transaction) error {
 	if len(Tx.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[common.Uint256][]*tx.Output, len(Tx.Outputs))
+	assetOutputs := make(map[Uint256][]*Output, len(Tx.Outputs))
 
 	for _, v := range Tx.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
@@ -256,33 +250,32 @@ func CheckAssetPrecision(Tx *tx.Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(Tx *tx.Transaction) error {
+func CheckTransactionBalance(tx *Transaction) error {
 	// TODO: check coinbase balance 30%-70%
-	for _, v := range Tx.Outputs {
-		if v.Value <= common.Fixed64(0) {
+	for _, v := range tx.Outputs {
+		if v.Value <= Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
-	results, err := Tx.GetTransactionResults()
+	results, err := GetTxFeeMap(tx)
 	if err != nil {
 		return err
 	}
 	for k, v := range results {
-
-		if v < common.Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, Tx.Hash()))
-			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, Tx.Hash()))
+		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
+			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, tx.Hash()))
+			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, tx.Hash()))
 		}
 	}
 	return nil
 }
 
-func CheckAttributeProgram(txn *tx.Transaction) error {
+func CheckAttributeProgram(txn *Transaction) error {
 	//TODO: implement CheckAttributeProgram
 	return nil
 }
 
-func CheckTransactionSignature(txn *tx.Transaction) error {
+func CheckTransactionSignature(txn *Transaction) error {
 	flag, err := VerifySignature(txn)
 	if flag && err == nil {
 		return nil
@@ -291,27 +284,26 @@ func CheckTransactionSignature(txn *tx.Transaction) error {
 	}
 }
 
-func checkAmountPrecise(amount common.Fixed64, precision byte) bool {
+func checkAmountPrecise(amount Fixed64, precision byte) bool {
 	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
 }
 
-func CheckTransactionPayload(Tx *tx.Transaction) error {
+func CheckTransactionPayload(tx *Transaction) error {
 
-	switch pld := Tx.Payload.(type) {
-	case *payload.RegisterAsset:
-		if pld.Asset.Precision < asset.MinPrecision || pld.Asset.Precision > asset.MaxPrecision {
+	switch pld := tx.Payload.(type) {
+	case *PayloadRegisterAsset:
+		if pld.Asset.Precision < MinPrecision || pld.Asset.Precision > MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
 		if checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
-	case *payload.TransferAsset:
-	case *payload.Record:
-	case *payload.DeployCode:
-	case *payload.CoinBase:
-	case *payload.SideMining:
-	case *payload.WithdrawAsset:
-	case *payload.TransferCrossChainAsset:
+	case *PayloadTransferAsset:
+	case *PayloadRecord:
+	case *PayloadCoinBase:
+	case *PayloadSideMining:
+	case *PayloadWithdrawAsset:
+	case *PayloadTransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}

@@ -6,12 +6,12 @@ import (
 	"net"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
+
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type NodeAddr struct {
@@ -84,9 +84,9 @@ type Noder interface {
 	Height() uint64
 	GetConnectionCnt() uint
 	GetConn() net.Conn
-	GetTxnPool(bool) map[common.Uint256]*transaction.Transaction
-	AppendToTxnPool(*transaction.Transaction) ErrCode
-	ExistedID(id common.Uint256) bool
+	GetTxnPool(bool) map[Uint256]*Transaction
+	AppendToTxnPool(*Transaction) ErrCode
+	ExistedID(id Uint256) bool
 	ReqNeighborList()
 	DumpInfo()
 	UpdateInfo(t time.Time, version uint32, services uint64,
@@ -100,16 +100,16 @@ type Noder interface {
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
 	GetNeighborAddrs() ([]NodeAddr, uint64)
-	GetTransaction(hash common.Uint256) *transaction.Transaction
+	GetTransaction(hash Uint256) *Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
 
 	GetNeighborHeights() ([]uint64, uint64)
 	WaitForSyncFinish()
-	CleanSubmittedTransactions(block *ledger.Block) error
-	MaybeAcceptTransaction(txn *transaction.Transaction) error
-	RemoveTransaction(txn *transaction.Transaction)
+	CleanSubmittedTransactions(block *Block) error
+	MaybeAcceptTransaction(txn *Transaction) error
+	RemoveTransaction(txn *Transaction)
 
 	GetNeighborNoder() []Noder
 	GetNbrNodeCnt() uint32
@@ -125,14 +125,14 @@ type Noder interface {
 	RandSelectAddresses() []NodeAddr
 	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
-	ExistHash(hash common.Uint256) bool
+	ExistHash(hash Uint256) bool
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
 	IsSyncFailed() bool
-	RequestedBlockExisted(hash common.Uint256) bool
-	AddRequestedBlock(hash common.Uint256)
-	DeleteRequestedBlock(hash common.Uint256)
-	GetRequestBlockList() map[common.Uint256]time.Time
+	RequestedBlockExisted(hash Uint256) bool
+	AddRequestedBlock(hash Uint256)
+	DeleteRequestedBlock(hash Uint256)
+	GetRequestBlockList() map[Uint256]time.Time
 	IsNeighborNoder(n Noder) bool
 	FindSyncNode() (Noder, error)
 	GetBestHeightNoder() Noder
@@ -140,10 +140,10 @@ type Noder interface {
 	RelSyncBlkReqSem()
 	AcqSyncHdrReqSem()
 	RelSyncHdrReqSem()
-	SetStartHash(hash common.Uint256)
-	GetStartHash() common.Uint256
-	SetStopHash(hash common.Uint256)
-	GetStopHash() common.Uint256
+	SetStartHash(hash Uint256)
+	GetStartHash() Uint256
+	SetStopHash(hash Uint256)
+	GetStopHash() Uint256
 	ResetRequestedBlock()
 }
 
