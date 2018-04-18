@@ -12,7 +12,7 @@ import (
 	"Elastos.ELA/core/ledger"
 	tx "Elastos.ELA/core/transaction"
 	"Elastos.ELA/core/transaction/payload"
-	. "Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/errors"
 )
 
 const (

@@ -9,17 +9,16 @@ import (
 	"sync"
 	"time"
 
-	"Elastos.ELA/net/protocol"
-
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/core/auxpow"
-	"Elastos.ELA/core/ledger"
-	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/core/transaction/payload"
-	"Elastos.ELA/crypto"
-	"Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/common"
+	"github.com/elastos/Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/core/auxpow"
+	"github.com/elastos/Elastos.ELA/core/ledger"
+	tx "github.com/elastos/Elastos.ELA/core/transaction"
+	"github.com/elastos/Elastos.ELA/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA/crypto"
+	"github.com/elastos/Elastos.ELA/events"
 	//	"ELA/net"
 )
 

@@ -1,15 +1,16 @@
 package message
 
 import (
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/core/transaction"
-	. "Elastos.ELA/errors"
-	. "Elastos.ELA/net/protocol"
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
 	"errors"
+
+	"Elastos.ELA/common/config"
+	"Elastos.ELA/common/log"
+	"Elastos.ELA/core/transaction"
+	. "github.com/elastos/Elastos.ELA/errors"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 // Transaction message

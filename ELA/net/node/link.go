@@ -1,11 +1,6 @@
 package node
 
 import (
-	. "Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/events"
-	msg "Elastos.ELA/net/message"
-	. "Elastos.ELA/net/protocol"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -17,6 +12,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	. "Elastos.ELA/common/config"
+	"Elastos.ELA/common/log"
+	"Elastos.ELA/events"
+	msg "github.com/elastos/Elastos.ELA/net/message"
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type link struct {
