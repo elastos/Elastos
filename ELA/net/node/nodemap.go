@@ -1,9 +1,10 @@
 package node
 
 import (
-	. "github.com/elastos/Elastos.ELA/net/protocol"
 	"fmt"
 	"sync"
+
+	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 // The neigbor node list

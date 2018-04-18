@@ -19,5 +19,5 @@ Chain/*
 cscope*
 deps/
 /node
-/glide.lock
+glide.lock
 ela-cli
