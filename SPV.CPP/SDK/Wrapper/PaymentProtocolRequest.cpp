@@ -36,7 +36,7 @@ namespace Elastos {
 		}
 
 		SharedWrapperList<TransactionOutput, BRTxOutput *> PaymentProtocolRequest::getOutputs() const {
-			SharedWrapperList<TransactionOutput, BRTxOutput *> results(_protocolRequest->details->outCount);
+			SharedWrapperList<TransactionOutput, BRTxOutput *> results;
 			for (size_t index = 0; index < _protocolRequest->details->outCount; index++) {
 				BRTxOutput brOutput = _protocolRequest->details->outputs[index];
 				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount,

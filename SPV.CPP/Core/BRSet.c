@@ -83,21 +83,6 @@ BRSet *BRSetNew(size_t (*hash)(const void *), int (*eq)(const void *, const void
     return set;
 }
 
-BRSet *BRSetClone(const BRSet *set) {
-    int index = 0;
-    while (index < TABLE_SIZES_LEN && tableSizes[index] < set->size) ++index;
-
-    BRSet *result = BRSetNew(set->hash, set->eq, tableSizes[index - 2] + 1);
-
-    for (int i=0; i<result->size; i++) {
-        result->table[i] = set->table;
-    }
-    *result->table = *set->table;
-    result->size = set->size;
-    result->itemCount = set->itemCount;
-    return result;
-}
-
 // rebuilds hashtable to hold up to capacity items
 static void _BRSetGrow(BRSet *set, size_t capacity)
 {

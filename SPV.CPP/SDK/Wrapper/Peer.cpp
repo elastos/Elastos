@@ -21,6 +21,10 @@ namespace Elastos {
 			return _peer;
 		}
 
+		Peer::Peer() {
+			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
+		}
+
 		Peer::Peer(const BRPeer &peer) {
 			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
 			*_peer = peer;
@@ -46,7 +50,12 @@ namespace Elastos {
 		}
 
 		Peer::Peer(const Peer &peer) {
-			_peer = BRPeerClone(peer.getRaw());
+			_peer = BRPeerCopy(peer.getRaw());
+		}
+
+		Peer &Peer::operator=(const Peer &peer) {
+			_peer = BRPeerCopy(peer.getRaw());
+			return *this;
 		}
 
 		UInt128 Peer::getAddress() const {

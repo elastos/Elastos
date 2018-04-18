@@ -64,7 +64,7 @@ namespace Elastos {
 
 			virtual BRPeer *getRaw() const;
 
-			Peer(const Peer &peer);
+			Peer();
 
 			Peer(const BRPeer &peer);
 
@@ -73,6 +73,10 @@ namespace Elastos {
 			Peer(uint32_t magicNumber);
 
 			~Peer();
+
+			Peer(const Peer &peer);
+
+			Peer& operator=(const Peer& peer);
 
 			UInt128 getAddress() const;
 

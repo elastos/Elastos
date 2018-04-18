@@ -37,7 +37,7 @@ namespace Elastos {
 		SharedWrapperList<Transaction, BRTransaction *> PaymentProtocolAck::getTransactions() const {
 			size_t transactionCount = _protocolACK->payment->txCount;
 
-			SharedWrapperList<Transaction, BRTransaction *> results(transactionCount);
+			SharedWrapperList<Transaction, BRTransaction *> results;
 			for (int index = 0; index < transactionCount; index++) {
 				results.push_back(TransactionPtr(new Transaction(_protocolACK->payment->transactions[index])));
 			}
@@ -46,7 +46,7 @@ namespace Elastos {
 		}
 
 		SharedWrapperList<TransactionOutput, BRTxOutput *> PaymentProtocolAck::getRefundTo() const {
-			SharedWrapperList<TransactionOutput, BRTxOutput *> results(_protocolACK->payment->refundToCount);
+			SharedWrapperList<TransactionOutput, BRTxOutput *> results;
 			for (size_t index = 0; index < _protocolACK->payment->refundToCount; index++) {
 				BRTxOutput brOutput = _protocolACK->payment->refundTo[index];
 				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount,

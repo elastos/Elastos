@@ -24,7 +24,8 @@ namespace Elastos {
 		}
 
 		Key::Key(const boost::shared_ptr<BRKey> &brkey) {
-			_key = brkey;
+			_key = boost::shared_ptr<BRKey>(new BRKey);
+			*_key = *brkey;
 		}
 
 		Key::Key(const std::string &privKey) {

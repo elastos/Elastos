@@ -20,7 +20,7 @@ namespace Elastos {
 		public:
 			Key();
 
-			Key(const boost::shared_ptr<BRKey>& brkey);
+			Key(const boost::shared_ptr<BRKey> &brkey);
 
 			Key(const std::string &privKey);
 

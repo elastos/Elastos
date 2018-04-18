@@ -103,12 +103,10 @@ extern "C" {
 } while (0)
 
 #define array_add_array(array, other_array, count) do {\
+    assert((array) != NULL);\
     size_t _array_cnt = (count), _array_i = array_count(array), _array_j = 0;\
     assert((other_array) != NULL || _array_cnt == 0);\
     assert(_array_cnt >= 0);\
-    if ((array) == NULL) {\
-        array_set_capacity(array, (_array_i + _array_cnt)*3/2);\
-    }\
     if (_array_i + _array_cnt > array_capacity(array))\
         array_set_capacity(array, (_array_i + _array_cnt)*3/2);\
     while (_array_j < _array_cnt)\
