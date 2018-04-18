@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	"github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -13,7 +13,7 @@ func NewBloomFilter(elements uint32) *bloom.Filter {
 }
 
 // Build a bloom filter by giving the interested addresses and outpoints
-func BuildBloomFilter(addresses []*common.Uint168, outpoints []*transaction.OutPoint) *bloom.Filter {
+func BuildBloomFilter(addresses []*common.Uint168, outpoints []*core.OutPoint) *bloom.Filter {
 	elements := uint32(len(addresses) + len(outpoints))
 
 	filter := NewBloomFilter(elements)
@@ -39,6 +39,6 @@ func FilterAccount(filter *bloom.Filter, account *Account) {
 }
 
 // Add a outpoint into the given bloom filter
-func FilterOutpoint(filter *bloom.Filter, op *transaction.OutPoint) {
+func FilterOutpoint(filter *bloom.Filter, op *core.OutPoint) {
 	filter.AddOutPoint(op)
 }

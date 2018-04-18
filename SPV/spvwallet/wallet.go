@@ -7,21 +7,19 @@ import (
 	"strconv"
 	"math/rand"
 
-	"github.com/elastos/Elastos.ELA.Utility/core/asset"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
-	pg "github.com/elastos/Elastos.ELA.Utility/core/contract/program"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.Client/core/transaction/payload"
 )
 
 var SystemAssetId = getSystemAssetId()
 
-type Output struct {
+type Transfer struct {
 	Address string
 	Value   *Fixed64
 }
@@ -37,12 +35,12 @@ type Wallet interface {
 	NewSubAccount(password []byte) (*Uint168, error)
 	AddMultiSignAccount(M uint, publicKey ...*crypto.PublicKey) (*Uint168, error)
 
-	CreateTransaction(fromAddress, toAddress string, amount, fee *Fixed64) (*tx.Transaction, error)
-	CreateLockedTransaction(fromAddress, toAddress string, amount, fee *Fixed64, lockedUntil uint32) (*tx.Transaction, error)
-	CreateMultiOutputTransaction(fromAddress string, fee *Fixed64, output ...*Output) (*tx.Transaction, error)
-	CreateLockedMultiOutputTransaction(fromAddress string, fee *Fixed64, lockedUntil uint32, output ...*Output) (*tx.Transaction, error)
-	Sign(password []byte, transaction *tx.Transaction) (*tx.Transaction, error)
-	SendTransaction(txn *tx.Transaction) error
+	CreateTransaction(fromAddress, toAddress string, amount, fee *Fixed64) (*Transaction, error)
+	CreateLockedTransaction(fromAddress, toAddress string, amount, fee *Fixed64, lockedUntil uint32) (*Transaction, error)
+	CreateMultiOutputTransaction(fromAddress string, fee *Fixed64, output ...*Transfer) (*Transaction, error)
+	CreateLockedMultiOutputTransaction(fromAddress string, fee *Fixed64, lockedUntil uint32, output ...*Transfer) (*Transaction, error)
+	Sign(password []byte, transaction *Transaction) (*Transaction, error)
+	SendTransaction(txn *Transaction) error
 }
 
 type WalletImpl struct {
@@ -137,23 +135,23 @@ func (wallet *WalletImpl) AddMultiSignAccount(M uint, publicKeys ...*crypto.Publ
 	return programHash, nil
 }
 
-func (wallet *WalletImpl) CreateTransaction(fromAddress, toAddress string, amount, fee *Fixed64) (*tx.Transaction, error) {
+func (wallet *WalletImpl) CreateTransaction(fromAddress, toAddress string, amount, fee *Fixed64) (*Transaction, error) {
 	return wallet.CreateLockedTransaction(fromAddress, toAddress, amount, fee, uint32(0))
 }
 
-func (wallet *WalletImpl) CreateLockedTransaction(fromAddress, toAddress string, amount, fee *Fixed64, lockedUntil uint32) (*tx.Transaction, error) {
-	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Output{toAddress, amount})
+func (wallet *WalletImpl) CreateLockedTransaction(fromAddress, toAddress string, amount, fee *Fixed64, lockedUntil uint32) (*Transaction, error) {
+	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Transfer{toAddress, amount})
 }
 
-func (wallet *WalletImpl) CreateMultiOutputTransaction(fromAddress string, fee *Fixed64, outputs ...*Output) (*tx.Transaction, error) {
+func (wallet *WalletImpl) CreateMultiOutputTransaction(fromAddress string, fee *Fixed64, outputs ...*Transfer) (*Transaction, error) {
 	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, uint32(0), outputs...)
 }
 
-func (wallet *WalletImpl) CreateLockedMultiOutputTransaction(fromAddress string, fee *Fixed64, lockedUntil uint32, outputs ...*Output) (*tx.Transaction, error) {
+func (wallet *WalletImpl) CreateLockedMultiOutputTransaction(fromAddress string, fee *Fixed64, lockedUntil uint32, outputs ...*Transfer) (*Transaction, error) {
 	return wallet.createTransaction(fromAddress, fee, lockedUntil, outputs...)
 }
 
-func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lockedUntil uint32, outputs ...*Output) (*tx.Transaction, error) {
+func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lockedUntil uint32, outputs ...*Transfer) (*Transaction, error) {
 	// Check if output is valid
 	if outputs == nil || len(outputs) == 0 {
 		return nil, errors.New("[Wallet], Invalid transaction target")
@@ -166,7 +164,7 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 	}
 	// Create transaction outputs
 	var totalOutputValue = Fixed64(0) // The total value will be spend
-	var txOutputs []*tx.Output        // The outputs in transaction
+	var txOutputs []*Output           // The outputs in transaction
 	totalOutputValue += *fee          // Add transaction fee
 
 	for _, output := range outputs {
@@ -174,7 +172,7 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 		if err != nil {
 			return nil, errors.New("[Wallet], Invalid receiver address")
 		}
-		txOutput := &tx.Output{
+		txOutput := &Output{
 			AssetID:     SystemAssetId,
 			ProgramHash: *receiver,
 			Value:       *output.Value,
@@ -192,7 +190,7 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 	availableUTXOs = SortUTXOs(availableUTXOs)        // Sort available UTXOs by value ASC
 
 	// Create transaction inputs
-	var txInputs []*tx.Input // The inputs in transaction
+	var txInputs []*Input // The inputs in transaction
 	for _, utxo := range availableUTXOs {
 		txInputs = append(txInputs, InputFromUTXO(utxo))
 		if utxo.Value < totalOutputValue {
@@ -201,7 +199,7 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 			totalOutputValue = 0
 			break
 		} else if utxo.Value > totalOutputValue {
-			change := &tx.Output{
+			change := &Output{
 				AssetID:     SystemAssetId,
 				Value:       utxo.Value - totalOutputValue,
 				OutputLock:  uint32(0),
@@ -224,7 +222,7 @@ func (wallet *WalletImpl) createTransaction(fromAddress string, fee *Fixed64, lo
 	return wallet.newTransaction(addr.Script(), txInputs, txOutputs), nil
 }
 
-func (wallet *WalletImpl) Sign(password []byte, txn *tx.Transaction) (*tx.Transaction, error) {
+func (wallet *WalletImpl) Sign(password []byte, txn *Transaction) (*Transaction, error) {
 	// Verify password
 	err := wallet.VerifyPassword(password)
 	if err != nil {
@@ -256,7 +254,7 @@ func (wallet *WalletImpl) Sign(password []byte, txn *tx.Transaction) (*tx.Transa
 	return txn, nil
 }
 
-func (wallet *WalletImpl) signStandardTransaction(txn *tx.Transaction) (*tx.Transaction, error) {
+func (wallet *WalletImpl) signStandardTransaction(txn *Transaction) (*Transaction, error) {
 	code := txn.Programs[0].Code
 	// Get signer
 	programHash, err := crypto.GetSigner(code)
@@ -277,13 +275,13 @@ func (wallet *WalletImpl) signStandardTransaction(txn *tx.Transaction) (*tx.Tran
 	buf.WriteByte(byte(len(signedTx)))
 	buf.Write(signedTx)
 	// Set program
-	var program = &pg.Program{code, buf.Bytes()}
-	txn.SetPrograms([]*pg.Program{program})
+	var program = &Program{code, buf.Bytes()}
+	txn.Programs = []*Program{program}
 
 	return txn, nil
 }
 
-func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Transaction, error) {
+func (wallet *WalletImpl) signMultiSigTransaction(txn *Transaction) (*Transaction, error) {
 	code := txn.Programs[0].Code
 	param := txn.Programs[0].Parameter
 	// Check if current user is a valid signer
@@ -319,7 +317,7 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *tx.Transaction) (*tx.Tran
 	return txn, nil
 }
 
-func (wallet *WalletImpl) SendTransaction(txn *tx.Transaction) error {
+func (wallet *WalletImpl) SendTransaction(txn *Transaction) error {
 
 	// Send transaction through P2P network
 	rpc.GetClient().SendTransaction(txn)
@@ -328,11 +326,11 @@ func (wallet *WalletImpl) SendTransaction(txn *tx.Transaction) error {
 }
 
 func getSystemAssetId() Uint256 {
-	systemToken := &tx.Transaction{
-		TxType:         tx.RegisterAsset,
+	systemToken := &Transaction{
+		TxType:         RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &payload.RegisterAsset{
-			Asset: &asset.Asset{
+		Payload: &PayloadRegisterAsset{
+			Asset: Asset{
 				Name:      "ELA",
 				Precision: 0x08,
 				AssetType: 0x00,
@@ -340,10 +338,10 @@ func getSystemAssetId() Uint256 {
 			Amount:     0 * 100000000,
 			Controller: Uint168{},
 		},
-		Attributes: []*tx.Attribute{},
-		Inputs:     []*tx.Input{},
-		Outputs:    []*tx.Output{},
-		Programs:   []*pg.Program{},
+		Attributes: []*Attribute{},
+		Inputs:     []*Input{},
+		Outputs:    []*Output{},
+		Programs:   []*Program{},
 	}
 	return systemToken.Hash()
 }
@@ -363,31 +361,31 @@ func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
 	return availableUTXOs
 }
 
-func InputFromUTXO(utxo *UTXO) *tx.Input {
-	input := new(tx.Input)
+func InputFromUTXO(utxo *UTXO) *Input {
+	input := new(Input)
 	input.Previous.TxID = utxo.Op.TxID
 	input.Previous.Index = utxo.Op.Index
 	input.Sequence = utxo.LockTime
 	return input
 }
 
-func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*tx.Input, outputs []*tx.Output) *tx.Transaction {
+func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*Input, outputs []*Output) *Transaction {
 	// Create payload
 	txPayload := &payload.TransferAsset{}
 	// Create attributes
-	txAttr := tx.NewAttribute(tx.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
-	attributes := make([]*tx.Attribute, 0)
+	txAttr := NewAttribute(Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
+	attributes := make([]*Attribute, 0)
 	attributes = append(attributes, &txAttr)
 	// Create program
-	var program = &pg.Program{redeemScript, nil}
+	var program = &Program{redeemScript, nil}
 	// Create transaction
-	return &tx.Transaction{
-		TxType:     tx.TransferAsset,
+	return &Transaction{
+		TxType:     TransferAsset,
 		Payload:    txPayload,
 		Attributes: attributes,
 		Inputs:     inputs,
 		Outputs:    outputs,
-		Programs:   []*pg.Program{program},
+		Programs:   []*Program{program},
 		LockTime:   wallet.ChainHeight(),
 	}
 }

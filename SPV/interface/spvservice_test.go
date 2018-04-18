@@ -7,9 +7,10 @@ import (
 	"os"
 	"testing"
 
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 var spv SPVService
@@ -33,8 +34,8 @@ func TestNewSPVService(t *testing.T) {
 	}
 
 	// Set on transaction confirmed callback
-	spv.RegisterTransactionListener(&ConfirmedListener{txType: tx.TransferAsset})
-	spv.RegisterTransactionListener(&UnconfirmedListener{txType: tx.TransferAsset})
+	spv.RegisterTransactionListener(&ConfirmedListener{txType: TransferAsset})
+	spv.RegisterTransactionListener(&UnconfirmedListener{txType: TransferAsset})
 
 	// Start spv service
 	err = spv.Start()
@@ -44,10 +45,10 @@ func TestNewSPVService(t *testing.T) {
 }
 
 type ConfirmedListener struct {
-	txType tx.TransactionType
+	txType TransactionType
 }
 
-func (l *ConfirmedListener) Type() tx.TransactionType {
+func (l *ConfirmedListener) Type() TransactionType {
 	return l.txType
 }
 
@@ -55,7 +56,7 @@ func (l *ConfirmedListener) Confirmed() bool {
 	return true
 }
 
-func (l *ConfirmedListener) Notify(proof Proof, tx tx.Transaction) {
+func (l *ConfirmedListener) Notify(proof Proof, tx Transaction) {
 	log.Debug("Receive confirmed transaction hash:", tx.Hash().String())
 	err := spv.VerifyTransaction(proof, tx)
 	if err != nil {
@@ -64,14 +65,14 @@ func (l *ConfirmedListener) Notify(proof Proof, tx tx.Transaction) {
 	}
 
 	// Submit transaction receipt
-	spv.SubmitTransactionReceipt(*tx.Hash())
+	spv.SubmitTransactionReceipt(tx.Hash())
 }
 
 type UnconfirmedListener struct {
-	txType tx.TransactionType
+	txType TransactionType
 }
 
-func (l *UnconfirmedListener) Type() tx.TransactionType {
+func (l *UnconfirmedListener) Type() TransactionType {
 	return l.txType
 }
 
@@ -79,7 +80,7 @@ func (l *UnconfirmedListener) Confirmed() bool {
 	return false
 }
 
-func (l *UnconfirmedListener) Notify(proof Proof, tx tx.Transaction) {
+func (l *UnconfirmedListener) Notify(proof Proof, tx Transaction) {
 	log.Debug("Receive unconfirmed transaction hash:", tx.Hash().String())
 	err := spv.VerifyTransaction(proof, tx)
 	if err != nil {
@@ -88,5 +89,5 @@ func (l *UnconfirmedListener) Notify(proof Proof, tx tx.Transaction) {
 	}
 
 	// Submit transaction receipt
-	spv.SubmitTransactionReceipt(*tx.Hash())
+	spv.SubmitTransactionReceipt(tx.Hash())
 }

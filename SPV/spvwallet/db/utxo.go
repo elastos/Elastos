@@ -5,12 +5,12 @@ import (
 	"sort"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 type UTXO struct {
 	// Previous txid and output index
-	Op tx.OutPoint
+	Op OutPoint
 
 	// The higher the better
 	Value Fixed64

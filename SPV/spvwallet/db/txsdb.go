@@ -6,9 +6,10 @@ import (
 	"math"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/db"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 const CreateTXNDB = `CREATE TABLE IF NOT EXISTS TXNs(
@@ -66,7 +67,7 @@ func (t *TxsDB) Get(txId *Uint256) (*db.StoreTx, error) {
 	if err != nil {
 		return nil, err
 	}
-	var tx tx.Transaction
+	var tx Transaction
 	err = tx.DeserializeUnsigned(bytes.NewReader(rawData))
 	if err != nil {
 		return nil, err
@@ -110,7 +111,7 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*db.StoreTx, error) {
 			return txns, err
 		}
 
-		var tx tx.Transaction
+		var tx Transaction
 		err = tx.DeserializeUnsigned(bytes.NewReader(rawData))
 		if err != nil {
 			return nil, err

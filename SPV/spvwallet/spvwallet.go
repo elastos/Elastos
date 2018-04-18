@@ -3,14 +3,15 @@ package spvwallet
 import (
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	. "github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
+
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
@@ -85,7 +86,7 @@ func (wallet *SPVWallet) GetPrevious(header *StoreHeader) (*StoreHeader, error) 
 }
 
 // Get full header with it's hash
-func (wallet *SPVWallet) GetHeader(hash common.Uint256) (*StoreHeader, error) {
+func (wallet *SPVWallet) GetHeader(hash Uint256) (*StoreHeader, error) {
 	return wallet.headers.GetHeader(hash)
 }
 
@@ -112,7 +113,7 @@ func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
 		// Filter address
 		if wallet.getAddrFilter().ContainAddr(output.ProgramHash) {
 			var lockTime uint32
-			if storeTx.Data.TxType == tx.CoinBase {
+			if storeTx.Data.TxType == CoinBase {
 				lockTime = storeTx.Height + 100
 			}
 			utxo := ToUTXO(storeTx.TxId, storeTx.Height, index, output.Value, lockTime)
@@ -171,9 +172,9 @@ func (wallet *SPVWallet) Close() {
 	wallet.dataStore.Close()
 }
 
-func ToUTXO(txId common.Uint256, height uint32, index int, value common.Fixed64, lockTime uint32) *db.UTXO {
+func ToUTXO(txId Uint256, height uint32, index int, value Fixed64, lockTime uint32) *db.UTXO {
 	utxo := new(db.UTXO)
-	utxo.Op = *tx.NewOutPoint(txId, uint16(index))
+	utxo.Op = *NewOutPoint(txId, uint16(index))
 	utxo.Value = value
 	utxo.LockTime = lockTime
 	utxo.AtHeight = height
@@ -188,7 +189,7 @@ func (wallet *SPVWallet) NotifyNewAddress(hash []byte) error {
 	return nil
 }
 
-func (wallet *SPVWallet) SendTransaction(tx tx.Transaction) error {
+func (wallet *SPVWallet) SendTransaction(tx Transaction) error {
 	// Broadcast transaction to connected peers
 	wallet.BroadCastMessage(wallet.newTxnMsg(tx))
 	return nil
@@ -236,6 +237,6 @@ func (wallet *SPVWallet) getBloomFilter() *bloom.Filter {
 	return filter
 }
 
-func (wallet *SPVWallet) newTxnMsg(tx tx.Transaction) *msg.Txn {
+func (wallet *SPVWallet) newTxnMsg(tx Transaction) *msg.Txn {
 	return &msg.Txn{Transaction: tx}
 }

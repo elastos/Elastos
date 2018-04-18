@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS STXOs(
@@ -32,7 +32,7 @@ func NewSTXOsDB(db *sql.DB, lock *sync.RWMutex) (STXOs, error) {
 }
 
 // Move a UTXO to STXO
-func (db *STXOsDB) FromUTXO(outPoint *tx.OutPoint, spendTxId *Uint256, spendHeight uint32) error {
+func (db *STXOsDB) FromUTXO(outPoint *OutPoint, spendTxId *Uint256, spendHeight uint32) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -64,7 +64,7 @@ func (db *STXOsDB) FromUTXO(outPoint *tx.OutPoint, spendTxId *Uint256, spendHeig
 }
 
 // get a stxo from database
-func (db *STXOsDB) Get(outPoint *tx.OutPoint) (*STXO, error) {
+func (db *STXOsDB) Get(outPoint *OutPoint) (*STXO, error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -137,7 +137,7 @@ func (db *STXOsDB) getSTXOs(rows *sql.Rows) ([]*STXO, error) {
 			return stxos, err
 		}
 
-		outPoint, err := tx.OutPointFromBytes(opBytes)
+		outPoint, err := OutPointFromBytes(opBytes)
 		if err != nil {
 			return stxos, err
 		}
@@ -159,7 +159,7 @@ func (db *STXOsDB) getSTXOs(rows *sql.Rows) ([]*STXO, error) {
 }
 
 // delete a stxo from database
-func (db *STXOsDB) Delete(outPoint *tx.OutPoint) error {
+func (db *STXOsDB) Delete(outPoint *OutPoint) error {
 	db.Lock()
 	defer db.Unlock()
 

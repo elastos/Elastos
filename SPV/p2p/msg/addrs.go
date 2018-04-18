@@ -3,7 +3,7 @@ package msg
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type Addrs struct {
@@ -24,7 +24,7 @@ func (msg *Addrs) CMD() string {
 
 func (msg *Addrs) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := serialize.WriteElements(buf, msg.Count, msg.Addrs)
+	err := WriteElements(buf, msg.Count, msg.Addrs)
 	if err != nil {
 		return nil, err
 	}

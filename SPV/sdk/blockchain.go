@@ -10,8 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -35,10 +34,10 @@ Call AddStateListener() method to register your callbacks to the notify list.
 type StateListener interface {
 	// This method will be callback after a transaction committed
 	// Notice: this method will be called when commit block
-	OnTxCommitted(tx tx.Transaction, height uint32)
+	OnTxCommitted(tx Transaction, height uint32)
 
 	// This method will be callback after a block committed
-	OnBlockCommitted(bloom.MerkleBlock, []tx.Transaction)
+	OnBlockCommitted(bloom.MerkleBlock, []Transaction)
 
 	// This method will be callback when blockchain rollback
 	// height is the deleted data height, for example OnChainRollback(100) means
@@ -160,7 +159,7 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 }
 
 // Commit tx commits a transaction and return is false positive and error
-func (bc *Blockchain) CommitTx(tx tx.Transaction) (bool, error) {
+func (bc *Blockchain) CommitTx(tx Transaction) (bool, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
@@ -168,7 +167,7 @@ func (bc *Blockchain) CommitTx(tx tx.Transaction) (bool, error) {
 }
 
 // Commit block commits a block and transactions with it, return is reorganize, false positives and error
-func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []tx.Transaction) (bool, int, error) {
+func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (bool, int, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
@@ -274,7 +273,7 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []tx.Transaction)
 	return reorg, fPositives, nil
 }
 
-func (bc *Blockchain) commitTx(tx tx.Transaction, height uint32) (bool, error) {
+func (bc *Blockchain) commitTx(tx Transaction, height uint32) (bool, error) {
 	fPositive, err := bc.DataStore.CommitTx(db.NewStoreTx(tx, height))
 	if err != nil {
 		return false, err
@@ -346,13 +345,13 @@ func (bc *Blockchain) getCommonAncestor(bestHeader, prevTip *db.StoreHeader) (*d
 	}
 }
 
-func (bc *Blockchain) notifyBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
+func (bc *Blockchain) notifyBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
 	for _, listener := range bc.stateListeners {
 		go listener.OnBlockCommitted(block, txs)
 	}
 }
 
-func (bc *Blockchain) notifyTxCommitted(tx tx.Transaction, height uint32) {
+func (bc *Blockchain) notifyTxCommitted(tx Transaction, height uint32) {
 	for _, listener := range bc.stateListeners {
 		go listener.OnTxCommitted(tx, height)
 	}
@@ -378,7 +377,7 @@ func CalcWork(bits uint32) *big.Int {
 	return new(big.Int).Div(new(big.Int).Lsh(big.NewInt(1), 256), denominator)
 }
 
-func (bc *Blockchain) CheckProofOfWork(header *ledger.Header) error {
+func (bc *Blockchain) CheckProofOfWork(header *Header) error {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {

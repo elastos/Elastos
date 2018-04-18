@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 const CreateUTXOsDB = `CREATE TABLE IF NOT EXISTS UTXOs(
@@ -54,7 +54,7 @@ func (db *UTXOsDB) Put(hash *Uint168, utxo *UTXO) error {
 }
 
 // get a utxo from database
-func (db *UTXOsDB) Get(outPoint *tx.OutPoint) (*UTXO, error) {
+func (db *UTXOsDB) Get(outPoint *OutPoint) (*UTXO, error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -116,7 +116,7 @@ func (db *UTXOsDB) getUTXOs(rows *sql.Rows) ([]*UTXO, error) {
 			return utxos, err
 		}
 
-		outPoint, err := tx.OutPointFromBytes(opBytes)
+		outPoint, err := OutPointFromBytes(opBytes)
 		if err != nil {
 			return utxos, err
 		}
@@ -132,7 +132,7 @@ func (db *UTXOsDB) getUTXOs(rows *sql.Rows) ([]*UTXO, error) {
 }
 
 // delete a utxo from database
-func (db *UTXOsDB) Delete(outPoint *tx.OutPoint) error {
+func (db *UTXOsDB) Delete(outPoint *OutPoint) error {
 	db.Lock()
 	defer db.Unlock()
 

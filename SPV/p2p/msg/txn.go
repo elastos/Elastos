@@ -2,11 +2,11 @@ package msg
 
 import (
 	"bytes"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 type Txn struct {
-	tx.Transaction
+	Transaction
 }
 
 func (msg *Txn) CMD() string {

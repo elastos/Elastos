@@ -1,8 +1,8 @@
 package db
 
 import (
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 type StoreTx struct {
@@ -13,10 +13,10 @@ type StoreTx struct {
 	Height uint32
 
 	// Transaction
-	Data tx.Transaction
+	Data Transaction
 }
 
-func NewStoreTx(tx tx.Transaction, height uint32) *StoreTx {
+func NewStoreTx(tx Transaction, height uint32) *StoreTx {
 	storeTx := new(StoreTx)
 	storeTx.TxId = tx.Hash()
 	storeTx.Height = height

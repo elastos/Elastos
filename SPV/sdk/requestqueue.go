@@ -7,7 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.SPV/p2p"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 )
@@ -193,7 +193,7 @@ func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Ui
 	return nil
 }
 
-func (queue *RequestQueue) OnTxReceived(tx *tx.Transaction) error {
+func (queue *RequestQueue) OnTxReceived(tx *Transaction) error {
 	queue.blockTxsReqsLock.Lock()
 	txId := tx.Hash()
 	var ok bool

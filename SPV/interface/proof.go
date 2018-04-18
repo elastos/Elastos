@@ -4,7 +4,6 @@ import (
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/common/serialize"
 )
 
 type Proof struct {
@@ -16,7 +15,7 @@ type Proof struct {
 }
 
 func (p *Proof) Serialize(w io.Writer) error {
-	return serialize.WriteElements(w,
+	return WriteElements(w,
 		p.BlockHash,
 		p.Height,
 		p.Transactions,
@@ -27,17 +26,17 @@ func (p *Proof) Serialize(w io.Writer) error {
 }
 
 func (p *Proof) Deserialize(r io.Reader) error {
-	err := serialize.ReadElements(r,
+	err := ReadElements(r,
 		&p.BlockHash,
 		&p.Height,
 		&p.Transactions,
 	)
 
-	hashes, err := serialize.ReadUint32(r)
+	hashes, err := ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
 	p.Hashes = make([]*Uint256, hashes)
-	return serialize.ReadElements(r, &p.Hashes, &p.Flags)
+	return ReadElements(r, &p.Hashes, &p.Flags)
 }

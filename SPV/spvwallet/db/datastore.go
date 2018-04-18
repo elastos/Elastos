@@ -2,7 +2,7 @@ package db
 
 import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.SPV/db"
 )
 
@@ -76,7 +76,7 @@ type UTXOs interface {
 	Put(hash *Uint168, utxo *UTXO) error
 
 	// get a utxo from database
-	Get(outPoint *tx.OutPoint) (*UTXO, error)
+	Get(outPoint *OutPoint) (*UTXO, error)
 
 	// get utxos of the given address hash from database
 	GetAddrAll(hash *Uint168) ([]*UTXO, error)
@@ -85,15 +85,15 @@ type UTXOs interface {
 	GetAll() ([]*UTXO, error)
 
 	// delete a utxo from database
-	Delete(outPoint *tx.OutPoint) error
+	Delete(outPoint *OutPoint) error
 }
 
 type STXOs interface {
 	// Move a UTXO to STXO
-	FromUTXO(outPoint *tx.OutPoint, spendTxId *Uint256, spendHeight uint32) error
+	FromUTXO(outPoint *OutPoint, spendTxId *Uint256, spendHeight uint32) error
 
 	// get a stxo from database
-	Get(outPoint *tx.OutPoint) (*STXO, error)
+	Get(outPoint *OutPoint) (*STXO, error)
 
 	// get stxos of the given address hash from database
 	GetAddrAll(hash *Uint168) ([]*STXO, error)
@@ -102,5 +102,5 @@ type STXOs interface {
 	GetAll() ([]*STXO, error)
 
 	// delete a stxo from database
-	Delete(outPoint *tx.OutPoint) error
+	Delete(outPoint *OutPoint) error
 }

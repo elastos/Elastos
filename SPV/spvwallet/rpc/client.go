@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"errors"
 
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"encoding/hex"
 )
 
@@ -32,7 +32,7 @@ func (client *Client) NotifyNewAddress(hash []byte) error {
 	return nil
 }
 
-func (client *Client) SendTransaction(tx *tx.Transaction) error {
+func (client *Client) SendTransaction(tx *Transaction) error {
 	buf := new(bytes.Buffer)
 	tx.Serialize(buf)
 	resp := client.send(

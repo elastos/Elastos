@@ -316,10 +316,10 @@ type SPVService interface {
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(Proof, tx.Transaction) error
+	VerifyTransaction(Proof, Transaction) error
 
 	// Send a transaction to the P2P network
-	SendTransaction(tx.Transaction) error
+	SendTransaction(Transaction) error
 
 	// Start the SPV service
 	Start() error
@@ -331,7 +331,7 @@ to receive transaction notifications.
 */
 type TransactionListener interface {
 	// Type() indicates which transaction type this listener are interested
-	Type() tx.TransactionType
+	Type() TransactionType
 
 	// Confirmed() indicates if this transaction should be callback after reach the confirmed height,
 	// by default 6 confirmations are needed according to the protocol
@@ -339,7 +339,7 @@ type TransactionListener interface {
 
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it
-	Notify(Proof, tx.Transaction)
+	Notify(Proof, Transaction)
 }
 ```
 

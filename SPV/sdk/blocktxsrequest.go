@@ -6,7 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 type BlockTxsRequest struct {
@@ -14,7 +14,7 @@ type BlockTxsRequest struct {
 	BlockHash      Uint256
 	Block          bloom.MerkleBlock
 	txRequestQueue map[Uint256]*Request
-	Txs            []tx.Transaction
+	Txs            []Transaction
 }
 
 func (req *BlockTxsRequest) Finish() {
@@ -25,7 +25,7 @@ func (req *BlockTxsRequest) Finish() {
 	}
 }
 
-func (req *BlockTxsRequest) OnTxReceived(tx *tx.Transaction) (bool, error) {
+func (req *BlockTxsRequest) OnTxReceived(tx *Transaction) (bool, error) {
 	req.Lock()
 	defer req.Unlock()
 

@@ -5,14 +5,14 @@ import (
 	"io/ioutil"
 	"encoding/json"
 
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"os"
 )
 
 type RequestHandler interface {
 	NotifyNewAddress(hash []byte) error
-	SendTransaction(tx.Transaction) error
+	SendTransaction(Transaction) error
 }
 
 func InitServer(handler RequestHandler) *Server {

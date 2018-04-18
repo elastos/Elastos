@@ -5,13 +5,14 @@ import (
 	"errors"
 	"os/signal"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
+
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type SPVServiceImpl struct {
@@ -22,14 +23,14 @@ type SPVServiceImpl struct {
 	proofs     Proofs
 	queue      Queue
 	addrFilter *sdk.AddrFilter
-	listeners  map[tx.TransactionType][]TransactionListener
+	listeners  map[TransactionType][]TransactionListener
 }
 
 func newSPVServiceImpl(clientId uint64, seeds []string) *SPVServiceImpl {
 	return &SPVServiceImpl{
 		clientId:  clientId,
 		seeds:     seeds,
-		listeners: make(map[tx.TransactionType][]TransactionListener),
+		listeners: make(map[TransactionType][]TransactionListener),
 	}
 }
 
@@ -53,7 +54,7 @@ func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
 	return service.queue.Delete(&txHash)
 }
 
-func (service *SPVServiceImpl) VerifyTransaction(proof Proof, tx tx.Transaction) error {
+func (service *SPVServiceImpl) VerifyTransaction(proof Proof, tx Transaction) error {
 	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
@@ -94,7 +95,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof Proof, tx tx.Transaction)
 	return nil
 }
 
-func (service *SPVServiceImpl) SendTransaction(tx tx.Transaction) error {
+func (service *SPVServiceImpl) SendTransaction(tx Transaction) error {
 	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
@@ -158,9 +159,9 @@ func (service *SPVServiceImpl) Start() error {
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTxCommitted(tx tx.Transaction, height uint32) {}
+func (service *SPVServiceImpl) OnTxCommitted(tx Transaction, height uint32) {}
 func (service *SPVServiceImpl) OnChainRollback(height uint32)                  {}
-func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []tx.Transaction) {
+func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
 	header := block.Header
 
 	// Store merkle proof
@@ -178,7 +179,7 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 	}
 
 	// Find transactions matches registered accounts
-	var matchedTxs []tx.Transaction
+	var matchedTxs []Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
 			if service.addrFilter.ContainAddr(output.ProgramHash) {
@@ -225,7 +226,7 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []t
 	}
 }
 
-func (service *SPVServiceImpl) notifyListeners(proof Proof, tx tx.Transaction, confirmations uint32) {
+func (service *SPVServiceImpl) notifyListeners(proof Proof, tx Transaction, confirmations uint32) {
 	listeners := service.listeners[tx.TxType]
 	for _, listener := range listeners {
 		if listener.Confirmed() {
@@ -238,7 +239,7 @@ func (service *SPVServiceImpl) notifyListeners(proof Proof, tx tx.Transaction, c
 	}
 }
 
-func getConfirmations(tx tx.Transaction) uint32 {
+func getConfirmations(tx Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
 	return DefaultConfirmations
