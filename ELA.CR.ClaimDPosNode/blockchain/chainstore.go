@@ -347,14 +347,13 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 }
 
 func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	log.Debug(fmt.Sprintf("GetAsset Hash: %s\n", hash.String()))
+	log.Debugf("GetAsset Hash: %s\n", hash.String())
 
 	asset := new(Asset)
-
 	prefix := []byte{byte(ST_Info)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 
-	log.Debug(fmt.Sprintf("GetAsset Data: %s\n", data))
+	log.Debugf("GetAsset Data: %s\n", data)
 	if err != nil {
 		return nil, err
 	}

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"time"
-	"strconv"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
@@ -13,6 +12,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"strconv"
 )
 
 const (
@@ -21,7 +21,6 @@ const (
 
 var PreChainHeight uint64
 var PreTime int64
-var PreTransactionCount int
 
 func TransArrayByteToHexString(ptx *Transaction) *Transactions {
 	trans := new(Transactions)
@@ -166,12 +165,16 @@ func SetLogLevel(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	level, err := strconv.ParseInt(param["level"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
+	level, ok := param["level"].(float64)
+	if !ok {
+		return ResponsePack(InvalidParams, "need a level, with positive integer in 0-6")
+	}
+	levelInt := int(level)
+	if !ok {
+		return ResponsePack(InvalidParams, "level should be an integer")
 	}
 
-	if err := log.Log.SetDebugLevel(int(level)); err != nil {
+	if err := log.Log.SetDebugLevel(levelInt); err != nil {
 		return ResponsePack(InvalidParams, err.Error())
 	}
 	return ResponsePack(Success, "")
@@ -211,11 +214,12 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 
 func GenerateAuxBlock(addr string) (*Block, string, bool) {
 	msgBlock := &Block{}
-	if NodeForServers.Height() == 0 || PreChainHeight != NodeForServers.Height() || (time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS && Pow.GetTransactionCount() != PreTransactionCount) {
+	if NodeForServers.Height() == 0 || PreChainHeight != NodeForServers.Height() ||
+		time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS {
+
 		if PreChainHeight != NodeForServers.Height() {
 			PreChainHeight = NodeForServers.Height()
 			PreTime = time.Now().Unix()
-			PreTransactionCount = Pow.GetTransactionCount()
 		}
 
 		currentTxsCount := Pow.CollectTransactions(msgBlock)
@@ -237,7 +241,6 @@ func GenerateAuxBlock(addr string) (*Block, string, bool) {
 
 		PreChainHeight = NodeForServers.Height()
 		PreTime = time.Now().Unix()
-		PreTransactionCount = currentTxsCount // Don't Call GetTransactionCount()
 
 		return msgBlock, curHashStr, true
 	}
@@ -316,11 +319,11 @@ func AuxHelp(param map[string]interface{}) map[string]interface{} {
 }
 
 func ToggleMining(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "mining") {
+	if !checkParam(param, "mine") {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	if param["mining"] == "start" {
+	if param["mining"] == true {
 		go Pow.Start()
 	} else {
 		go Pow.Halt()
@@ -334,13 +337,9 @@ func ManualMining(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	count, err := strconv.ParseInt(param["count"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	if count == 0 {
-		return ResponsePack(InvalidParams, "")
+	count, _ := strconv.ParseInt(param["count"].(string), 10, 32)
+	if count <= 0 {
+		return ResponsePack(InvalidParams, "need an positive integer")
 	}
 
 	ret := make([]string, count)
@@ -401,51 +400,29 @@ func GetTransactionPool(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, txs)
 }
 
-func GetBlockInfo(block *Block) BlockInfo {
+func GetBlockInfo(block *Block) map[string]interface{} {
 	hash := block.Hash()
-	auxInfo := &AuxInfo{
-		Version:    block.Header.AuxPow.ParBlockHeader.Version,
-		PrevBlock:  BytesToHexString(new(Uint256).Bytes()),
-		MerkleRoot: BytesToHexString(BytesReverse(block.Header.AuxPow.ParBlockHeader.MerkleRoot.Bytes())),
-		Timestamp:  block.Header.AuxPow.ParBlockHeader.Timestamp,
-		Bits:       0,
-		Nonce:      block.Header.AuxPow.ParBlockHeader.Nonce,
-	}
-	blockHead := &BlockHead{
-		Version:          block.Header.Version,
-		PrevBlockHash:    BytesToHexString(BytesReverse(block.Header.Previous.Bytes())),
-		TransactionsRoot: BytesToHexString(BytesReverse(block.Header.MerkleRoot.Bytes())),
-		Bits:             block.Header.Bits,
-		Timestamp:        block.Header.Timestamp,
-		Height:           block.Header.Height,
-		Nonce:            block.Header.Nonce,
-		AuxPow:           auxInfo,
-		Difficulty:       chain.CalcCurrentDifficulty(block.Header.Bits),
-		BlockSize:        block.GetSize(),
 
-		Hash: BytesToHexString(BytesReverse(hash.Bytes())),
-	}
-
-	trans := make([]*Transactions, len(block.Transactions))
+	var txHashes []string
 	for i := 0; i < len(block.Transactions); i++ {
-		trans[i] = TransArrayByteToHexString(block.Transactions[i])
-		trans[i].Timestamp = block.Header.Timestamp
-		trans[i].Confirmations = chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1
-		w := bytes.NewBuffer(nil)
-		block.Transactions[i].Serialize(w)
-		trans[i].TxSize = uint32(len(w.Bytes()))
-
+		hash := block.Transactions[i].Hash()
+		txHashes = append(txHashes, BytesToHexString(BytesReverse(hash.Bytes())))
 	}
 
-	coinbasePd := block.Transactions[0].Payload.(*PayloadCoinBase)
-	b := BlockInfo{
-		Hash:          BytesToHexString(BytesReverse(hash.Bytes())),
-		BlockData:     blockHead,
-		Transactions:  trans,
-		Confirmations: chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
-		MinerInfo:     string(coinbasePd.CoinbaseData),
+	return map[string]interface{}{
+		"hash":              BytesToHexString(BytesReverse(hash.Bytes())),
+		"confirmations":     chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
+		"size":              block.GetSize(),
+		"height":            block.Header.Height,
+		"version":           block.Header.Version,
+		"merkleroot":        BytesToHexString(BytesReverse(block.Header.AuxPow.ParBlockHeader.MerkleRoot.Bytes())),
+		"time":              block.Header.Timestamp,
+		"nonce":             block.Header.Nonce,
+		"difficulty":        chain.CalcCurrentDifficulty(block.Header.Bits),
+		"bits":              block.Header.Bits,
+		"previousblockhash": BytesToHexString(BytesReverse(block.Header.Previous.Bytes())),
+		"tx":                txHashes,
 	}
-	return b
 }
 
 func getBlock(hash Uint256) (interface{}, ErrCode) {
@@ -505,15 +482,19 @@ func GetBlockHeight(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight)
 }
 
-func GetBlockHash(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
-		return ResponsePack(InvalidParams, "")
-	}
+func GetBestBlockHash(param map[string]interface{}) map[string]interface{} {
+	bestHeight := chain.DefaultLedger.Blockchain.BlockHeight
+	return GetBlockHash(map[string]interface{}{"index": float64(bestHeight)})
+}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
+func GetBlockCount(param map[string]interface{}) map[string]interface{} {
+	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight+1)
+}
+
+func GetBlockHash(param map[string]interface{}) map[string]interface{} {
+
+	height := uint32(param["index"].(float64))
+	log.Info("my height:", height)
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
 	if err != nil {
@@ -543,12 +524,9 @@ func GetBlockTransactions(block *Block) interface{} {
 }
 
 func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
-		return ResponsePack(InvalidParams, "")
-	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
+	height := uint32(param["height"].(float64))
+	if height <= 0 {
 		return ResponsePack(InvalidParams, "")
 	}
 
@@ -565,12 +543,9 @@ func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{
 }
 
 func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
-		return ResponsePack(InvalidParams, "")
-	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
+	height := uint32(param["height"].(float64))
+	if height <= 0 {
 		return ResponsePack(InvalidParams, "")
 	}
 
@@ -585,12 +560,10 @@ func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "height") {
-		return ResponsePack(InvalidParams, "")
-	}
 
-	height, err := strconv.ParseInt(param["height"].(string), 10, 64)
-	if err != nil {
+	height := uint32(param["height"].(float64))
+
+	if height <= 0 {
 		return ResponsePack(InvalidParams, "")
 	}
 
