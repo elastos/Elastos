@@ -9,13 +9,13 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type block struct {
-	Header
-	blk ledger.Block
+	Hdr
+	blk Block
 	// TBD
 	//event *events.Event
 }
@@ -65,7 +65,7 @@ func (msg block) Handle(node Noder) error {
 	return nil
 }
 
-func NewBlockFromHash(hash common.Uint256) (*ledger.Block, error) {
+func NewBlockFromHash(hash Uint256) (*Block, error) {
 	bk, err := chain.DefaultLedger.Store.GetBlock(hash)
 	if err != nil {
 		log.Errorf("Get Block error: %s, block hash: %x", err.Error(), hash)
@@ -74,7 +74,7 @@ func NewBlockFromHash(hash common.Uint256) (*ledger.Block, error) {
 	return bk, nil
 }
 
-func NewBlock(bk *ledger.Block) ([]byte, error) {
+func NewBlock(bk *Block) ([]byte, error) {
 	log.Debug()
 	var msg block
 	msg.blk = *bk
@@ -101,7 +101,7 @@ func (msg block) Serialize() ([]byte, error) {
 func (msg *block) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
-	err := binary.Read(buf, binary.LittleEndian, &(msg.Header))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Hdr))
 	if err != nil {
 		log.Warn("Parse block message hdr error")
 		return errors.New("Parse block message hdr error")

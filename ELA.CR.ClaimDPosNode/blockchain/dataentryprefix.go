@@ -1,4 +1,4 @@
-package ChainStore
+package blockchain
 
 // DataEntryPrefix
 type DataEntryPrefix byte

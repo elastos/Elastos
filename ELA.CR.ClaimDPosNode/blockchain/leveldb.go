@@ -1,7 +1,6 @@
-package LevelDBStore
+package blockchain
 
 import (
-	. "github.com/elastos/Elastos.ELA/store"
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/errors"
 	"github.com/syndtr/goleveldb/leveldb/filter"
@@ -84,10 +83,6 @@ func (self *LevelDB) Close() error {
 }
 
 func (self *LevelDB) NewIterator(prefix []byte) IIterator {
-
 	iter := self.db.NewIterator(util.BytesPrefix(prefix), nil)
-
-	return &Iterator{
-		iter: iter,
-	}
+	return &Iterator{iter: iter}
 }

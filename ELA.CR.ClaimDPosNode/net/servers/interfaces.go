@@ -11,11 +11,8 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/errors"
 
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	"github.com/elastos/Elastos.ELA.Utility/core/auxpow"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction/payload"
 )
 
 const (
@@ -26,8 +23,7 @@ var PreChainHeight uint64
 var PreTime int64
 var PreTransactionCount int
 
-func TransArrayByteToHexString(ptx *tx.Transaction) *Transactions {
-
+func TransArrayByteToHexString(ptx *Transaction) *Transactions {
 	trans := new(Transactions)
 	trans.TxType = ptx.TxType
 	trans.PayloadVersion = ptx.PayloadVersion
@@ -43,7 +39,7 @@ func TransArrayByteToHexString(ptx *tx.Transaction) *Transactions {
 
 	n = 0
 	isCoinbase := ptx.IsCoinBaseTx()
-	reference, _ := ptx.GetReference()
+	reference, _ := chain.DefaultLedger.Store.GetTxReference(ptx)
 	trans.UTXOInputs = make([]UTXOTxInputInfo, len(ptx.Inputs))
 	for _, v := range ptx.Inputs {
 		trans.UTXOInputs[n].ReferTxID = BytesToHexString(BytesReverse(v.Previous.TxID.Bytes()))
@@ -213,8 +209,8 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, "")
 }
 
-func GenerateAuxBlock(addr string) (*ledger.Block, string, bool) {
-	msgBlock := &ledger.Block{}
+func GenerateAuxBlock(addr string) (*Block, string, bool) {
+	msgBlock := &Block{}
 	if NodeForServers.Height() == 0 || PreChainHeight != NodeForServers.Height() || (time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS && Pow.GetTransactionCount() != PreTransactionCount) {
 		if PreChainHeight != NodeForServers.Height() {
 			PreChainHeight = NodeForServers.Height()
@@ -273,7 +269,7 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 	preHashStr := BytesToHexString(preHash.Bytes())
 
 	SendToAux := AuxBlock{
-		ChainId:           auxpow.AuxPowChainID,
+		ChainId:           AuxPowChainID,
 		Height:            NodeForServers.Height(),
 		CoinBaseValue:     1,                                       //transaction content
 		Bits:              fmt.Sprintf("%x", msgBlock.Header.Bits), //difficulty
@@ -373,7 +369,7 @@ func SubmitBlock(param map[string]interface{}) map[string]interface{} {
 
 	str := param["block"].(string)
 	hex, _ := HexStringToBytes(str)
-	var block ledger.Block
+	var block Block
 	if err := block.Deserialize(bytes.NewReader(hex)); err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -405,7 +401,7 @@ func GetTransactionPool(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, txs)
 }
 
-func GetBlockInfo(block *ledger.Block) BlockInfo {
+func GetBlockInfo(block *Block) BlockInfo {
 	hash := block.Hash()
 	auxInfo := &AuxInfo{
 		Version:    block.Header.AuxPow.ParBlockHeader.Version,
@@ -441,7 +437,7 @@ func GetBlockInfo(block *ledger.Block) BlockInfo {
 
 	}
 
-	coinbasePd := block.Transactions[0].Payload.(*payload.CoinBase)
+	coinbasePd := block.Transactions[0].Payload.(*PayloadCoinBase)
 	b := BlockInfo{
 		Hash:          BytesToHexString(BytesReverse(hash.Bytes())),
 		BlockData:     blockHead,
@@ -493,7 +489,7 @@ func SendRawTransaction(param map[string]interface{}) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	var txn tx.Transaction
+	var txn Transaction
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
@@ -526,7 +522,7 @@ func GetBlockHash(param map[string]interface{}) map[string]interface{} {
 	return ResponsePack(Success, BytesToHexString(BytesReverse(hash.Bytes())))
 }
 
-func GetBlockTransactions(block *ledger.Block) interface{} {
+func GetBlockTransactions(block *Block) interface{} {
 	trans := make([]string, len(block.Transactions))
 	for i := 0; i < len(block.Transactions); i++ {
 		h := block.Transactions[i].Hash()
@@ -623,9 +619,9 @@ func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interfa
 		arbitrators = append(arbitrators, BytesToHexString(data))
 	}
 
-	result := ArbitratorGroupInfo {
-		OnDutyArbitratorIndex:index,
-		Arbitrators: arbitrators,
+	result := ArbitratorGroupInfo{
+		OnDutyArbitratorIndex: index,
+		Arbitrators:           arbitrators,
 	}
 
 	return ResponsePack(Success, result)
@@ -729,7 +725,7 @@ func GetUnspends(param map[string]interface{}) map[string]interface{} {
 		}
 		var unspendsInfo []UTXOUnspentInfo
 		for _, v := range u {
-			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{BytesToHexString(BytesReverse(v.Txid.Bytes())), v.Index, v.Value.String()})
+			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{BytesToHexString(BytesReverse(v.TxId.Bytes())), v.Index, v.Value.String()})
 		}
 		results = append(results, Result{assetid, asset.Name, unspendsInfo})
 	}
@@ -767,7 +763,7 @@ func GetUnspendOutput(param map[string]interface{}) map[string]interface{} {
 	}
 	var UTXOoutputs []UTXOUnspentInfo
 	for _, v := range infos {
-		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: BytesToHexString(BytesReverse(v.Txid.Bytes())), Index: v.Index, Value: v.Value.String()})
+		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: BytesToHexString(BytesReverse(v.TxId.Bytes())), Index: v.Index, Value: v.Value.String()})
 	}
 	return ResponsePack(Success, UTXOoutputs)
 }

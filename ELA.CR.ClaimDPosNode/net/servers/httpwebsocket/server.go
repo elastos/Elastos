@@ -18,8 +18,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/servers"
 
-	"github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
@@ -266,21 +265,21 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	var result interface{}
 	switch action {
 	case "sendblock":
-		if block, ok := v.(*ledger.Block); ok {
+		if block, ok := v.(*Block); ok {
 			result = GetBlockInfo(block)
 		}
 	case "sendrawblock":
-		if block, ok := v.(*ledger.Block); ok {
+		if block, ok := v.(*Block); ok {
 			w := bytes.NewBuffer(nil)
 			block.Serialize(w)
 			result = BytesToHexString(w.Bytes())
 		}
 	case "sendblocktransactions":
-		if block, ok := v.(*ledger.Block); ok {
+		if block, ok := v.(*Block); ok {
 			result = GetBlockTransactions(block)
 		}
 	case "sendnewtransaction":
-		if trx, ok := v.(*transaction.Transaction); ok {
+		if trx, ok := v.(*Transaction); ok {
 			result = TransArrayByteToHexString(trx)
 		}
 	default:

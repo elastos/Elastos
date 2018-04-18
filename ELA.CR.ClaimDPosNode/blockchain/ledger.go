@@ -1,11 +1,10 @@
 package blockchain
 
 import (
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/core/asset"
-	. "github.com/elastos/Elastos.ELA.Utility/core/ledger"
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
 	"errors"
+
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -17,11 +16,11 @@ var DefaultLedger *Ledger
 // Ledger - the struct for ledger
 type Ledger struct {
 	Blockchain *Blockchain
-	Store      ILedgerStore
+	Store      IChainStore
 }
 
 //check weather the transaction contains the doubleSpend.
-func (l *Ledger) IsDoubleSpend(Tx *tx.Transaction) bool {
+func (l *Ledger) IsDoubleSpend(Tx *Transaction) bool {
 	return DefaultLedger.Store.IsDoubleSpend(Tx)
 }
 
@@ -29,7 +28,7 @@ func (l *Ledger) IsDoubleSpend(Tx *tx.Transaction) bool {
 //Note: the later version will support the mutiLedger.So this func mybe expired later.
 
 //Get the Asset from store.
-func (l *Ledger) GetAsset(assetId Uint256) (*asset.Asset, error) {
+func (l *Ledger) GetAsset(assetId Uint256) (*Asset, error) {
 	asset, err := l.Store.GetAsset(assetId)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetAsset failed with assetId =" + assetId.String())
@@ -65,7 +64,7 @@ func (l *Ledger) BlockInLedger(hash Uint256) bool {
 }
 
 //Get transaction with hash.
-func (l *Ledger) GetTransactionWithHash(hash Uint256) (*tx.Transaction, error) {
+func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
 	tx, _, err := l.Store.GetTransaction(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetTransactionWithHash failed with hash=" + hash.String())

@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/consensus/pow"
+	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/store/chainstore"
 	"github.com/elastos/Elastos.ELA/net/node"
 	"github.com/elastos/Elastos.ELA/net/protocol"
 	"github.com/elastos/Elastos.ELA/net/servers"
@@ -17,8 +16,6 @@ import (
 	"github.com/elastos/Elastos.ELA/net/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/net/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/net/servers/httpwebsocket"
-
-	"github.com/elastos/Elastos.ELA.Utility/core/transaction"
 )
 
 const (
@@ -69,17 +66,14 @@ func main() {
 	var err error
 	var noder protocol.Noder
 	log.Info("1. BlockChain init")
-	blockchain.DefaultLedger = new(blockchain.Ledger)
-	blockchain.DefaultLedger.Store, err = ChainStore.NewLedgerStore()
+	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
-	defer blockchain.DefaultLedger.Store.Close()
+	defer chainStore.Close()
 
-	blockchain.DefaultLedger.Store.InitLedgerStore(blockchain.DefaultLedger)
-	transaction.TxStore = blockchain.DefaultLedger.Store
-	_, err = blockchain.NewBlockchainWithGenesisBlock()
+	err = blockchain.Init(chainStore)
 	if err != nil {
 		log.Fatal(err, "BlockChain generate failed")
 		goto ERROR

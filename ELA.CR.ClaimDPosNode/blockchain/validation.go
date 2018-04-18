@@ -1,27 +1,29 @@
 package blockchain
 
 import (
-	"errors"
 	"bytes"
+	"errors"
+	"sort"
 
-	tx "github.com/elastos/Elastos.ELA.Utility/core/transaction"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
-func VerifySignature(txn *tx.Transaction) (bool, error) {
-	hashes, err := txn.GetProgramHashes()
+func VerifySignature(tx *Transaction) (bool, error) {
+	hashes, err := GetTxProgramHashes(tx)
 	if err != nil {
 		return false, err
 	}
 
-	programs := txn.GetPrograms()
+	programs := tx.Programs
 	Length := len(hashes)
 	if Length != len(programs) {
 		return false, errors.New("The number of data hashes is different with number of programs.")
 	}
 
 	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
+	tx.SerializeUnsigned(buf)
 	data := buf.Bytes()
 
 	for i := 0; i < len(programs); i++ {
@@ -61,6 +63,51 @@ func VerifySignature(txn *tx.Transaction) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func GetTxProgramHashes(tx *Transaction) ([]Uint168, error) {
+	if tx == nil {
+		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
+	}
+	hashes := make([]Uint168, 0)
+	uniqueHashes := make([]Uint168, 0)
+	// add inputUTXO's transaction
+	references, err := DefaultLedger.Store.GetTxReference(tx)
+	if err != nil {
+		return nil, errors.New("[Transaction], GetProgramHashes failed.")
+	}
+	for _, output := range references {
+		programHash := output.ProgramHash
+		hashes = append(hashes, programHash)
+	}
+	for _, attribute := range tx.Attributes {
+		if attribute.Usage == Script {
+			dataHash, err := Uint168FromBytes(attribute.Data)
+			if err != nil {
+				return nil, errors.New("[Transaction], GetProgramHashes err.")
+			}
+			hashes = append(hashes, *dataHash)
+		}
+	}
+	switch tx.TxType {
+	case RegisterAsset:
+	case TransferAsset:
+	case Record:
+	case Deploy:
+	case SideMining:
+	default:
+	}
+
+	//remove dupilicated hashes
+	uniq := make(map[Uint168]bool)
+	for _, v := range hashes {
+		uniq[v] = true
+	}
+	for k := range uniq {
+		uniqueHashes = append(uniqueHashes, k)
+	}
+	sort.Sort(byProgramHashes(uniqueHashes))
+	return uniqueHashes, nil
 }
 
 func checkStandardSignature(publicKeyBytes, content, signature []byte) (bool, error) {
@@ -117,4 +164,16 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	}
 
 	return true, nil
+}
+
+type byProgramHashes []Uint168
+
+func (a byProgramHashes) Len() int      { return len(a) }
+func (a byProgramHashes) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byProgramHashes) Less(i, j int) bool {
+	if a[i].Compare(a[j]) > 0 {
+		return false
+	} else {
+		return true
+	}
 }
