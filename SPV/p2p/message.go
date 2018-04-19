@@ -1,7 +1,5 @@
 package p2p
 
-import "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
-
 // The message flying in the peer to peer network
 type Message interface {
 	// Get the message CMD parameter which is the type of this message
@@ -12,18 +10,16 @@ type Message interface {
 	Deserialize(msg []byte) error
 }
 
-// Handle the message creation, allocation etc.
-type MessageHandler interface {
-	// Create a message instance by the given cmd parameter
-	MakeMessage(cmd string) (Message, error)
+// BuildMessage create the message header and return serialized message bytes
+func BuildMessage(msg Message) ([]byte, error) {
+	body, err := msg.Serialize()
+	if err != nil {
+		return nil, err
+	}
+	hdr, err := BuildHeader(msg.CMD(), body).Serialize()
+	if err != nil {
+		return nil, err
+	}
 
-	// A handshake message received
-	OnHandshake(v *msg.Version) error
-
-	// VerAck message received from a connected peer
-	// which means the connected peer is established
-	OnPeerEstablish(*Peer)
-
-	// Handle messages received from the connected peer
-	HandleMessage(*Peer, Message) error
+	return append(hdr, body...), nil
 }

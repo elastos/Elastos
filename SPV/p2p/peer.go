@@ -2,7 +2,6 @@ package p2p
 
 import (
 	"fmt"
-	"io"
 	"net"
 	"strings"
 	"strconv"
@@ -11,10 +10,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	. "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
-)
-
-const (
-	MaxBufLen = 1024 * 16
 )
 
 // Peer states
@@ -28,7 +23,7 @@ const (
 )
 
 type PeerState struct {
-	sync.RWMutex
+	sync.Mutex
 	state int
 }
 
@@ -40,8 +35,8 @@ func (ps *PeerState) SetState(state int) {
 }
 
 func (ps *PeerState) State() int {
-	ps.RLock()
-	defer ps.RUnlock()
+	ps.Lock()
+	defer ps.Unlock()
 
 	return ps.state
 }
@@ -78,48 +73,29 @@ type Peer struct {
 	PeerState
 	conn net.Conn
 
-	msgBuf MsgBuf
+	reader *MsgReader
 }
 
 func (peer *Peer) String() string {
-	return "\nPeer: {" +
-		"\n\tID:" + fmt.Sprint(peer.id) +
-		"\n\tVersion:" + fmt.Sprint(peer.version) +
-		"\n\tServices:" + fmt.Sprint(peer.services) +
-		"\n\tPort:" + fmt.Sprint(peer.port) +
-		"\n\tLastActive:" + fmt.Sprint(peer.lastActive) +
-		"\n\tHeight:" + fmt.Sprint(peer.height) +
-		"\n\tRelay:" + fmt.Sprint(peer.relay) +
-		"\n\tState:" + peer.PeerState.String() +
-		"\n\tAddr:" + peer.Addr().String() +
-		"\n}"
-}
-
-type MsgBuf struct {
-	buf []byte
-	len int
-}
-
-func (buf *MsgBuf) Append(msg []byte) {
-	buf.buf = append(buf.buf, msg...)
-}
-
-func (buf *MsgBuf) Buf() []byte {
-	return buf.buf
-}
-
-func (buf *MsgBuf) Reset() {
-	buf.buf = nil
-	buf.len = 0
+	return fmt.Sprint("\nPeer: {",
+		"\n\tID:", peer.id,
+		"\n\tVersion:", peer.version,
+		"\n\tServices:", peer.services,
+		"\n\tPort:", peer.port,
+		"\n\tLastActive:", peer.lastActive,
+		"\n\tHeight:", peer.height,
+		"\n\tRelay:", peer.relay,
+		"\n\tState:", peer.PeerState.String(),
+		"\n\tAddr:", peer.Addr().String(),
+		"\n}")
 }
 
 func NewPeer(conn net.Conn) *Peer {
-	ip16, port := addrFromConn(conn)
-	return &Peer{
-		conn: conn,
-		ip16: ip16,
-		port: port,
-	}
+	peer := new(Peer)
+	peer.conn = conn
+	peer.ip16, peer.port = addrFromConn(conn)
+	peer.reader = NewMsgReader(conn, peer)
+	return peer
 }
 
 func addrFromConn(conn net.Conn) ([16]byte, uint16) {
@@ -187,8 +163,12 @@ func (peer *Peer) SetRelay(relay uint8) {
 }
 
 func (peer *Peer) Disconnect() {
-	peer.SetState(INACTIVITY)
-	peer.conn.Close()
+	peer.PeerState.Lock()
+	if peer.state != INACTIVITY {
+		peer.state = INACTIVITY
+		peer.conn.Close()
+	}
+	peer.PeerState.Unlock()
 }
 
 func (peer *Peer) SetInfo(msg *Version) {
@@ -208,118 +188,27 @@ func (peer *Peer) Height() uint64 {
 	return peer.height
 }
 
-func (peer *Peer) Read() {
-	buf := make([]byte, MaxBufLen)
-	for {
-		len, err := peer.conn.Read(buf[0:MaxBufLen-1])
-		buf[MaxBufLen-1] = 0 //Prevent overflow
-		switch err {
-		case nil:
-			peer.lastActive = time.Now()
-			peer.unpackMessage(buf[:len])
-		case io.EOF:
-			log.Error("Read peer io.EOF:", err, ", peer id is: ", peer.ID())
-			goto DISCONNECT
-		default:
-			log.Error("Read peer connection error: ", err.Error())
-			goto DISCONNECT
-		}
-	}
-
-DISCONNECT:
-	log.Trace("Peer IO error, disconnect peer,", peer)
-	pm.DisconnectPeer(peer)
-}
-
-func (peer *Peer) unpackMessage(buf []byte) {
-	if len(buf) == 0 {
-		return
-	}
-
-	if peer.msgBuf.len == 0 { // Buffering message header
-		index := HEADERLEN - len(peer.msgBuf.Buf())
-		if index > len(buf) { // header not finished, continue read
-			index = len(buf)
-			peer.msgBuf.Append(buf[0:index])
-			return
-		}
-
-		peer.msgBuf.Append(buf[0:index])
-
-		var header Header
-		err := header.Deserialize(peer.msgBuf.Buf())
-		if err != nil {
-			fmt.Println("Get error message header, relocate the msg header")
-			peer.msgBuf.Reset()
-			return
-		}
-
-		if header.Magic != Magic {
-			log.Error("Magic not match, disconnect peer")
-			peer.Disconnect()
-			return
-		}
-
-		peer.msgBuf.len = int(header.Length)
-		buf = buf[index:]
-	}
-
-	msgLen := peer.msgBuf.len
-
-	if len(buf) == msgLen { // Just read the full message
-
-		peer.msgBuf.Append(buf[:])
-		go peer.decodeMessage(peer.msgBuf.Buf())
-		peer.msgBuf.Reset()
-
-	} else if len(buf) < msgLen { // Read part of the message
-
-		peer.msgBuf.Append(buf[:])
-		peer.msgBuf.len = msgLen - len(buf)
-
-	} else { // Read more than the message
-
-		peer.msgBuf.Append(buf[0:msgLen])
-		go peer.decodeMessage(peer.msgBuf.Buf())
-		peer.msgBuf.Reset()
-		peer.unpackMessage(buf[msgLen:])
+func (peer *Peer) OnDecodeError(err error) {
+	switch err {
+	case ErrDisconnected:
+		pm.DisconnectPeer(peer)
+	case ErrUnmatchedMagic:
+		peer.Disconnect()
+	default:
+		log.Error("Decode message error:", err, ", peer id is: ", peer.ID())
 	}
 }
 
-func (peer *Peer) decodeMessage(buf []byte) {
-	if len(buf) < HEADERLEN {
-		log.Error("Message length is not enough")
-		return
-	}
+func (peer *Peer) OnMakeMessage(cmd string) (Message, error) {
+	return pm.makeMessage(cmd)
+}
 
-	hdr, err := verifyHeader(buf)
-	if err != nil {
-		log.Error("Verify message header error: ", err)
-		return
-	}
-
-	msg, err := pm.makeMessage(hdr.GetCMD())
-	if err != nil {
-		log.Error("Make message error, ", err)
-		return
-	}
-
-	err = msg.Deserialize(buf[HEADERLEN:])
-	if err != nil {
-		log.Error("Deserialize message ", msg.CMD(), " error: ", err)
-		return
-	}
-
+func (peer *Peer) OnMessageDecoded(msg Message) {
 	pm.handleMessage(peer, msg)
 }
 
-func verifyHeader(buf []byte) (*Header, error) {
-	hdr := new(Header)
-	err := hdr.Deserialize(buf)
-	if err = hdr.Verify(buf[HEADERLEN:]); err != nil {
-		return nil, err
-	}
-	return hdr, nil
+func (peer *Peer) Read() {
+	peer.reader.Read()
 }
 
 func (peer *Peer) Send(msg Message) {

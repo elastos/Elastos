@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (
@@ -47,27 +46,13 @@ func BuildHeader(cmd string, body []byte) *Header {
 	return NewHeader(cmd, checksum[:], len(body))
 }
 
-func BuildMessage(msg Message) ([]byte, error) {
-	body, err := msg.Serialize()
-	if err != nil {
-		return nil, err
-	}
-	hdr, err := BuildHeader(msg.CMD(), body).Serialize()
-	if err != nil {
-		return nil, err
-	}
-
-	log.Debug("Send message ", msg.CMD(), ", body: ", body)
-
-	return append(hdr, body...), nil
-}
-
 func (header *Header) Verify(buf []byte) error {
 	// Verify magic
 	if header.Magic != Magic {
 		return errors.New(fmt.Sprint("Unmatched magic number ", header.Magic))
 	}
 
+	// Verify checksum
 	sum := Sha256D(buf)
 	checksum := sum[:CHECKSUMLEN]
 	if !bytes.Equal(header.Checksum[:], checksum) {
@@ -91,7 +76,6 @@ func (header *Header) Serialize() ([]byte, error) {
 }
 
 func (header *Header) Deserialize(buf []byte) error {
-	// Check CMD
 	cmd := buf[CMDOFFSET:CMDOFFSET+CMDLEN]
 	end := bytes.IndexByte(cmd, 0)
 	if end < 0 || end >= CMDLEN {

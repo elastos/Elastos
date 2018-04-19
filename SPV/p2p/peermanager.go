@@ -17,6 +17,22 @@ const (
 	MaxOutboundCount   = 6
 )
 
+// Handle the message creation, allocation etc.
+type MessageHandler interface {
+	// Create a message instance by the given cmd parameter
+	MakeMessage(cmd string) (Message, error)
+
+	// A handshake message received
+	OnHandshake(v *Version) error
+
+	// VerAck message received from a connected peer
+	// which means the connected peer is established
+	OnPeerEstablish(*Peer)
+
+	// Handle messages received from the connected peer
+	HandleMessage(*Peer, Message) error
+}
+
 var pm *PeerManager
 
 type PeerManager struct {
