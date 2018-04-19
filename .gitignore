@@ -12,12 +12,9 @@ build/
 *.orig
 *.rej
 *.json
-Log/*
+glide.lock
 vendor/*
 Chain/*
-/config/*
-cscope*
-deps/
-/node
-glide.lock
+Logs/*
+node
 ela-cli
