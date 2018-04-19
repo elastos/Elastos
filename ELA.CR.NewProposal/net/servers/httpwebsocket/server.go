@@ -11,15 +11,15 @@ import (
 	"crypto/tls"
 	"encoding/json"
 
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	. "github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/events"
-	. "Elastos.ELA/common"
 	. "github.com/elastos/Elastos.ELA/errors"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/core/ledger"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/servers"
-	. "Elastos.ELA/common/config"
-	"Elastos.ELA/core/transaction"
 
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -52,8 +52,8 @@ func StartServer() {
 	}
 	instance.Start()
 
-	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
-	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
+	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
+	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
 }
 
 func (server *WebSocketServer) Start() {
@@ -265,21 +265,21 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	var result interface{}
 	switch action {
 	case "sendblock":
-		if block, ok := v.(*ledger.Block); ok {
-			result = GetBlockDetailInfo(block)
+		if block, ok := v.(*Block); ok {
+			result = GetBlockInfo(block)
 		}
 	case "sendrawblock":
-		if block, ok := v.(*ledger.Block); ok {
+		if block, ok := v.(*Block); ok {
 			w := bytes.NewBuffer(nil)
 			block.Serialize(w)
 			result = BytesToHexString(w.Bytes())
 		}
 	case "sendblocktransactions":
-		if block, ok := v.(*ledger.Block); ok {
+		if block, ok := v.(*Block); ok {
 			result = GetBlockTransactions(block)
 		}
 	case "sendnewtransaction":
-		if trx, ok := v.(*transaction.Transaction); ok {
+		if trx, ok := v.(*Transaction); ok {
 			result = TransArrayByteToHexString(trx)
 		}
 	default:

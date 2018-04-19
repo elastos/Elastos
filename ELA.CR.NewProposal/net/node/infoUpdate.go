@@ -5,13 +5,14 @@ import (
 	"strconv"
 	"time"
 
-	"Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/core/ledger"
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/net/message"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
@@ -34,7 +35,7 @@ func (node *node) SyncBlks() {
 		syncNode, err := node.FindSyncNode()
 		if err == nil {
 			syncNode.SetSyncHeaders(false)
-			var emptyHash common.Uint256
+			var emptyHash Uint256
 			node.local.SetStartHash(emptyHash)
 			node.local.SetStopHash(emptyHash)
 		}
@@ -45,15 +46,15 @@ func (node *node) SyncBlks() {
 		if hasSyncPeer == false {
 			node.LocalNode().ResetRequestedBlock()
 			syncNode = node.GetBestHeightNoder()
-			hash := ledger.DefaultLedger.Store.GetCurrentBlockHash()
+			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 
-			blocator := ledger.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
-			var emptyHash common.Uint256
+			blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
+			var emptyHash Uint256
 			SendMsgSyncBlockHeaders(syncNode, blocator, emptyHash)
 		} else {
 			//rb := syncNode.LocalNode().GetRequestBlockList()
 			rb1 := syncNode.LocalNode().GetRequestBlockList()
-			var rb = make(map[common.Uint256]time.Time, 50)
+			var rb = make(map[Uint256]time.Time, 50)
 			x := 1
 			node.requestedBlockLock.Lock()
 			for i, v := range rb1 {
@@ -66,17 +67,17 @@ func (node *node) SyncBlks() {
 			node.requestedBlockLock.Unlock()
 			if len(rb) == 0 {
 				syncNode.SetSyncHeaders(false)
-				var emptyHash common.Uint256
+				var emptyHash Uint256
 				node.local.SetStartHash(emptyHash)
 				node.local.SetStopHash(emptyHash)
 				newSyncNode := node.GetBestHeightNoder()
-				hash := ledger.DefaultLedger.Store.GetCurrentBlockHash()
-				blocator := ledger.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
+				hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
+				blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 				SendMsgSyncBlockHeaders(newSyncNode, blocator, emptyHash)
 			} else {
 				for k := range rb {
 					if rb[k].Before(time.Now().Add(-3 * time.Second)) {
-						log.Infof("request block hash %x ", k.ToArrayReverse())
+						log.Infof("request block hash %x ", k.Bytes())
 						<-time.After(time.Millisecond * 50)
 						ReqBlkData(syncNode, k)
 					}
@@ -89,7 +90,7 @@ func (node *node) SyncBlks() {
 func (node *node) SendPingToNbr() {
 	noders := node.local.GetNeighborNoder()
 	for _, n := range noders {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			buf, err := NewPingMsg()
 			if err != nil {
 				log.Error("failed build a new ping message")
@@ -104,7 +105,7 @@ func (node *node) HeartBeatMonitor() {
 	noders := node.local.GetNeighborNoder()
 	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
 	for _, n := range noders {
-		if n.GetState() == Establish {
+		if n.State() == Establish {
 			t := n.GetLastRXTime()
 			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KEEPALIVETIMEOUT)) {
 				log.Warn("keepalive timeout!!!")
@@ -140,7 +141,7 @@ func (node *node) ConnectSeeds() {
 			}
 			node.nbrNodes.Unlock()
 			if found {
-				if n.GetState() == Establish {
+				if n.State() == Establish {
 					if node.LocalNode().NeedMoreAddresses() {
 						n.ReqNeighborList()
 					}
@@ -170,11 +171,11 @@ func (node *node) ConnectNode() {
 
 func getNodeAddr(n *node) NodeAddr {
 	var addr NodeAddr
-	addr.IpAddr, _ = n.GetAddr16()
+	addr.IpAddr, _ = n.Addr16()
 	addr.Time = n.GetTime()
 	addr.Services = n.Services()
-	addr.Port = n.GetPort()
-	addr.ID = n.GetID()
+	addr.Port = n.Port()
+	addr.ID = n.ID()
 	return addr
 }
 
