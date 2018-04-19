@@ -5,6 +5,9 @@
 #ifndef __ELASTOS_SDK_PEERDATASOURCE_H__
 #define __ELASTOS_SDK_PEERDATASOURCE_H__
 
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
 #include "BRInt.h"
 #include "Sqlite.h"
 
@@ -50,7 +53,7 @@ namespace Elastos {
 		private:
 			Sqlite *_sqlite;
 			SqliteTransactionType _txType;
-
+			mutable boost::mutex _lockMutex;
 			/*
 			 * peer table
 			 */

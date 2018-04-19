@@ -3,6 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PreCompiled.h"
+
+#include <string>
 #include <string>
 #include <sstream>
 
@@ -13,13 +15,19 @@ namespace Elastos {
 
 		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) :
 			_sqlite(sqlite),
-			_txType(IMMEDIATE) {
+			_txType(EXCLUSIVE) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			_sqlite->transaction(_txType, TX_DATABASE_CREATE, nullptr, nullptr);
 		}
 
 		TransactionDataStore::TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite) :
 			_sqlite(sqlite),
 			_txType(type) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			_sqlite->transaction(_txType, TX_DATABASE_CREATE, nullptr, nullptr);
 		}
 
@@ -27,6 +35,9 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::putTransaction(const std::string &iso, const TransactionEntity &transactionEntity) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << TX_TABLE_NAME   << "(" <<
@@ -58,6 +69,9 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::deleteAllTransactions(const std::string &iso) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "DELETE FROM " << TX_TABLE_NAME <<
@@ -67,6 +81,9 @@ namespace Elastos {
 		}
 
 		std::vector<TransactionEntity> TransactionDataStore::getAllTransactions(const std::string &iso) const {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::vector<TransactionEntity> transactions;
 
 			std::stringstream ss;
@@ -114,6 +131,9 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::updateTransaction(const std::string &iso, const TransactionEntity &txEntity) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "UPDATE " << TX_TABLE_NAME << " SET " <<
@@ -142,6 +162,9 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::deleteTxByHash(const std::string &iso, const std::string &hash) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "DELETE FROM " << TX_TABLE_NAME <<

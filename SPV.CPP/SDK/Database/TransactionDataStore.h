@@ -5,6 +5,9 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONDATASTORE_H__
 #define __ELASTOS_SDK_TRANSACTIONDATASTORE_H__
 
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
 #include "ByteData.h"
 #include "BRInt.h"
 #include "Sqlite.h"
@@ -50,6 +53,7 @@ namespace Elastos {
 		private:
 			Sqlite *_sqlite;
 			SqliteTransactionType _txType;
+			mutable boost::mutex _lockMutex;
 			/*
 			 * transaction table
 			 */

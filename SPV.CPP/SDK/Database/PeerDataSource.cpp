@@ -13,13 +13,19 @@ namespace Elastos {
 
 		PeerDataSource::PeerDataSource(Sqlite *sqlite) :
 			_sqlite(sqlite),
-			_txType(IMMEDIATE) {
+			_txType(EXCLUSIVE) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			_sqlite->transaction(_txType, PEER_DATABASE_CREATE, nullptr, nullptr);
 		}
 
 		PeerDataSource::PeerDataSource(SqliteTransactionType type, Sqlite *sqlite) :
 			_sqlite(sqlite),
 			_txType(type) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			_sqlite->transaction(_txType, PEER_DATABASE_CREATE, nullptr, nullptr);
 		}
 
@@ -27,6 +33,9 @@ namespace Elastos {
 		}
 
 		bool PeerDataSource::putPeer(const std::string &iso, const PeerEntity &peerEntity) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << PEER_TABLE_NAME << " (" <<
@@ -66,6 +75,9 @@ namespace Elastos {
 		}
 
 		bool PeerDataSource::deletePeer(const std::string &iso, const PeerEntity &peerEntity) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "DELETE FROM " << PEER_TABLE_NAME <<
@@ -76,6 +88,9 @@ namespace Elastos {
 		}
 
 		bool PeerDataSource::deleteAllPeers(const std::string &iso) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "DELETE FROM " << PEER_TABLE_NAME <<
@@ -85,6 +100,9 @@ namespace Elastos {
 		}
 
 		std::vector<PeerEntity> PeerDataSource::getAllPeers(const std::string &iso) const {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			PeerEntity peer;
 			std::vector<PeerEntity> peers;
 			std::stringstream ss;

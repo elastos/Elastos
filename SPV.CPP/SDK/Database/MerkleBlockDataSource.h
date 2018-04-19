@@ -5,6 +5,9 @@
 #ifndef __ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
 #define __ELASTOS_SDK_MERKLEBLOCKDATASOURCE_H__
 
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
 #include "BRInt.h"
 #include "Sqlite.h"
 #include "ByteData.h"
@@ -48,7 +51,7 @@ namespace Elastos {
 		private:
 			Sqlite *_sqlite;
 			SqliteTransactionType _txType;
-
+			mutable  boost::mutex _lockMutex;
 			/*
 			 * merkle block table
 			 */

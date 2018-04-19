@@ -12,13 +12,19 @@ namespace Elastos {
 
 		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite) :
 			_sqlite(sqlite),
-			_txType(IMMEDIATE) {
+			_txType(EXCLUSIVE) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			_sqlite->transaction(_txType, MB_DATABASE_CREATE, nullptr, nullptr);
 		}
 
 		MerkleBlockDataSource::MerkleBlockDataSource(SqliteTransactionType type, Sqlite *sqlite) :
 			_sqlite(sqlite),
 			_txType(type) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			_sqlite->transaction(_txType, MB_DATABASE_CREATE, nullptr, nullptr);
 		}
 
@@ -26,6 +32,9 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockDataSource::putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << MB_TABLE_NAME << " (" <<
@@ -62,6 +71,9 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockDataSource::deleteMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "DELETE FROM " << MB_TABLE_NAME <<
@@ -72,6 +84,9 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockDataSource::deleteAllBlocks(const std::string &iso) {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			std::stringstream ss;
 
 			ss << "DELETE FROM " << MB_TABLE_NAME <<
@@ -81,6 +96,9 @@ namespace Elastos {
 		}
 
 		std::vector<MerkleBlockEntity> MerkleBlockDataSource::getAllMerkleBlocks(const std::string &iso) const {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			MerkleBlockEntity merkleBlock;
 			std::vector<MerkleBlockEntity> merkleBlocks;
 			std::stringstream ss;
