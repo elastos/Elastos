@@ -7,14 +7,14 @@ import (
 	"strconv"
 	"math/rand"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.Client/core/transaction/payload"
+
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 var SystemAssetId = getSystemAssetId()
@@ -371,7 +371,7 @@ func InputFromUTXO(utxo *UTXO) *Input {
 
 func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*Input, outputs []*Output) *Transaction {
 	// Create payload
-	txPayload := &payload.TransferAsset{}
+	txPayload := &PayloadTransferAsset{}
 	// Create attributes
 	txAttr := NewAttribute(Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
 	attributes := make([]*Attribute, 0)

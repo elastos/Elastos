@@ -8,10 +8,10 @@ import (
 	"strings"
 	"strconv"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	walt "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/AlexpanXX/gopass"
 	"github.com/urfave/cli"
 )

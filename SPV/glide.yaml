@@ -1,5 +1,7 @@
 package: github.com/elastos/Elastos.ELA.SPV
 import:
+- package: github.com/elastos/Elastos.ELA.Utility
+  version: dev
 - package: github.com/AlexpanXX/gopass
 - package: github.com/boltdb/bolt
 - package: github.com/cevaris/ordered_map
