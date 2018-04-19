@@ -1,5 +1,8 @@
 package: Elastos.ELA
 import:
+- package: github.com/elastos/Elastos.ELA.Utility
+  version:
+  - dev
 - package: github.com/golang/crypto
   subpackages:
   - ripemd160

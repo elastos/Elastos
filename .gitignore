@@ -11,6 +11,7 @@ build/
 .DS_Store
 *.orig
 *.rej
+*.json
 Log/*
 vendor/*
 Chain/*
@@ -18,3 +19,5 @@ Chain/*
 cscope*
 deps/
 /node
+glide.lock
+ela-cli

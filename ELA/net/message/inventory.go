@@ -9,21 +9,22 @@ import (
 	"io"
 	"time"
 
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/common/serialization"
-	"Elastos.ELA/core/ledger"
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type InvPayload struct {
-	Cnt     uint32
-	Blk     []byte
+	Type uint8
+	Cnt  uint32
+	Blk  []byte
 }
 
 type Inv struct {
-	messageHeader
+	Hdr
 	P InvPayload
 }
 
@@ -53,10 +54,10 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	msg.p.len = uint32(len(blocator))
 	msg.p.hashStart = blocator
-	serialization.WriteUint32(tmpBuffer, uint32(msg.p.len))
+	WriteUint32(tmpBuffer, uint32(msg.p.len))
 
 	for _, hash := range blocator {
-		_, err := hash.Serialize(tmpBuffer)
+		err := hash.Serialize(tmpBuffer)
 		if err != nil {
 			return nil, err
 		}
@@ -64,7 +65,7 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 
 	msg.p.hashEnd = hash
 
-	_, err := msg.p.hashEnd.Serialize(tmpBuffer)
+	err := msg.p.hashEnd.Serialize(tmpBuffer)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,7 @@ func NewBlocksReq(blocator []Uint256, hash Uint256) ([]byte, error) {
 	msg.Length = uint32(len(p.Bytes()))
 	log.Debug("The message payload length is ", msg.Length)
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -110,9 +111,9 @@ func (msg Inv) Handle(node Noder) error {
 	for i = 0; i < count; i++ {
 		id.Deserialize(bytes.NewReader(msg.P.Blk[HASHLEN*i:]))
 		hashes = append(hashes, id)
-		if ledger.DefaultLedger.Blockchain.IsKnownOrphan(&id) {
-			orphanRoot := ledger.DefaultLedger.Blockchain.GetOrphanRoot(&id)
-			locator, err := ledger.DefaultLedger.Blockchain.LatestBlockLocator()
+		if chain.DefaultLedger.Blockchain.IsKnownOrphan(&id) {
+			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&id)
+			locator, err := chain.DefaultLedger.Blockchain.LatestBlockLocator()
 			if err != nil {
 				log.Errorf(" Failed to get block "+
 					"locator for the latest block: "+
@@ -125,15 +126,15 @@ func (msg Inv) Handle(node Noder) error {
 
 		if i == (count - 1) {
 			var emptyHash Uint256
-			blocator := ledger.DefaultLedger.Blockchain.BlockLocatorFromHash(&id)
+			blocator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&id)
 			SendMsgSyncBlockHeaders(node, blocator, emptyHash)
 		}
 	}
 
 	for _, h := range hashes {
 		// TODO check the ID queue
-		if !ledger.DefaultLedger.BlockInLedger(h) {
-			if !(node.LocalNode().RequestedBlockExisted(h) || ledger.DefaultLedger.Blockchain.IsKnownOrphan(&h)) {
+		if !chain.DefaultLedger.BlockInLedger(h) {
+			if !(node.LocalNode().RequestedBlockExisted(h) || chain.DefaultLedger.Blockchain.IsKnownOrphan(&h)) {
 				<-time.After(time.Millisecond * 50)
 				ReqBlkData(node, h)
 			}
@@ -142,8 +143,8 @@ func (msg Inv) Handle(node Noder) error {
 	return nil
 }
 
-func (msg Inv) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+func (msg Inv) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Hdr.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -153,8 +154,8 @@ func (msg Inv) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *Inv) Deserialization(p []byte) error {
-	err := msg.messageHeader.Deserialization(p)
+func (msg *Inv) Deserialize(p []byte) error {
+	err := msg.Hdr.Deserialize(p)
 	if err != nil {
 		return err
 	}
@@ -163,7 +164,7 @@ func (msg *Inv) Deserialization(p []byte) error {
 	if err != nil {
 		return err
 	}
-	msg.P.Cnt, err = serialization.ReadUint32(buf)
+	msg.P.Cnt, err = ReadUint32(buf)
 	if err != nil {
 		return err
 	}
@@ -176,6 +177,7 @@ func (msg *Inv) Deserialization(p []byte) error {
 
 func NewInv(inv *InvPayload) ([]byte, error) {
 	var msg Inv
+	msg.P.Type = inv.Type
 	msg.P.Blk = inv.Blk
 	msg.P.Cnt = inv.Cnt
 	msg.Magic = config.Parameters.Magic
@@ -197,7 +199,7 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 	binary.Read(buf, binary.LittleEndian, &(msg.Checksum))
 	msg.Length = uint32(len(b.Bytes()))
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -207,7 +209,8 @@ func NewInv(inv *InvPayload) ([]byte, error) {
 }
 
 func (msg *InvPayload) Serialization(w io.Writer) {
-	serialization.WriteUint32(w, msg.Cnt)
+	WriteUint8(w, msg.Type)
+	WriteUint32(w, msg.Cnt)
 
 	binary.Write(w, binary.LittleEndian, msg.Blk)
 }

@@ -1,15 +1,13 @@
 package servers
 
 import (
-	. "Elastos.ELA/common"
-	"Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/consensus/pow"
-	"Elastos.ELA/core/asset"
-	. "Elastos.ELA/core/transaction"
-	tx "Elastos.ELA/core/transaction"
-	"Elastos.ELA/core/transaction/payload"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/errors"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const TlsPort = 443
@@ -18,7 +16,7 @@ var NodeForServers Noder
 var Pow *pow.PowService
 
 type TxAttributeInfo struct {
-	Usage TransactionAttributeUsage
+	Usage AttributeUsage
 	Data  string
 }
 
@@ -30,27 +28,11 @@ type UTXOTxInputInfo struct {
 	Value              string
 }
 
-type BalanceTxInputInfo struct {
-	AssetID     string
-	Value       Fixed64
-	ProgramHash string
-}
-
 type TxoutputInfo struct {
 	AssetID    string
 	Value      string
 	Address    string
 	OutputLock uint32
-}
-
-type TxoutputMap struct {
-	Key   Uint256
-	Txout []TxoutputInfo
-}
-
-type AmountMap struct {
-	Key   Uint256
-	Value Fixed64
 }
 
 type ProgramInfo struct {
@@ -64,22 +46,18 @@ type Transactions struct {
 	Payload        PayloadInfo
 	Attributes     []TxAttributeInfo
 	UTXOInputs     []UTXOTxInputInfo
-	BalanceInputs  []BalanceTxInputInfo
 	Outputs        []TxoutputInfo
 	LockTime       uint32
 	Programs       []ProgramInfo
 
-	AssetOutputs      []TxoutputMap
-	AssetInputAmount  []AmountMap
-	AssetOutputAmount []AmountMap
-	Timestamp         uint32 `json:",omitempty"`
-	Confirmations     uint32 `json:",omitempty"`
-	TxSize            uint32 `json:",omitempty"`
-	Hash              string
+	Timestamp     uint32 `json:",omitempty"`
+	Confirmations uint32 `json:",omitempty"`
+	TxSize        uint32 `json:",omitempty"`
+	Hash          string
 }
 
 type AuxInfo struct {
-	Version    int32
+	Version    uint32
 	PrevBlock  string
 	MerkleRoot string
 	Timestamp  uint32
@@ -134,7 +112,7 @@ type CoinbaseInfo struct {
 }
 
 type RegisterAssetInfo struct {
-	Asset      *asset.Asset
+	Asset      Asset
 	Amount     string
 	Controller string
 }
@@ -153,44 +131,43 @@ type WithdrawAssetInfo struct {
 
 func TransPayloadToHex(p Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *payload.CoinBase:
+	case *PayloadCoinBase:
 		obj := new(CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *payload.RegisterAsset:
+	case *PayloadRegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
-		obj.Controller = BytesToHexString(object.Controller.ToArrayReverse())
+		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *payload.SideMining:
+	case *PayloadSideMining:
 		obj := new(SideMiningInfo)
 		obj.SideBlockHash = object.SideBlockHash.String()
 		return obj
-	case *payload.WithdrawAsset:
+	case *PayloadWithdrawAsset:
 		obj := new(WithdrawAssetInfo)
 		obj.BlockHeight = object.BlockHeight
 		return obj
-	case *payload.TransferCrossChainAsset:
+	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.AddressesMap = object.AddressesMap
 		return obj
-	case *payload.TransferAsset:
-	case *payload.Record:
-	case *payload.DeployCode:
+	case *PayloadTransferAsset:
+	case *PayloadRecord:
 	}
 	return nil
 }
 
-func VerifyAndSendTx(txn *tx.Transaction) ErrCode {
+func VerifyAndSendTx(txn *Transaction) ErrCode {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")
 		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool.")
 		return errCode
 	}
-	if err := NodeForServers.Xmit(txn); err != nil {
-		log.Error("Xmit Tx Error:Xmit transaction failed.", err)
+	if err := NodeForServers.Relay(nil, txn); err != nil {
+		log.Error("Xmit Tx Error:Relay transaction failed.", err)
 		return ErrXmitFail
 	}
 	return Success

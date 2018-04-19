@@ -6,24 +6,25 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"Elastos.ELA/common"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type notFound struct {
-	messageHeader
-	hash common.Uint256
+	Hdr
+	hash Uint256
 }
 
-func NewNotFound(hash common.Uint256) ([]byte, error) {
+func NewNotFound(hash Uint256) ([]byte, error) {
 	log.Debug()
 	var msg notFound
 	msg.hash = hash
 	msg.Magic = config.Parameters.Magic
 	cmd := "notfound"
-	copy(msg.messageHeader.CMD[0:len(cmd)], cmd)
+	copy(msg.Hdr.CMD[0:len(cmd)], cmd)
 	tmpBuffer := bytes.NewBuffer([]byte{})
 	msg.hash.Serialize(tmpBuffer)
 	p := new(bytes.Buffer)
@@ -37,10 +38,10 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 	s = sha256.Sum256(s2)
 	buf := bytes.NewBuffer(s[:4])
 	binary.Read(buf, binary.LittleEndian, &(msg.Checksum))
-	msg.messageHeader.Length = uint32(len(p.Bytes()))
+	msg.Hdr.Length = uint32(len(p.Bytes()))
 	log.Debug("The message payload length is ", msg.Length)
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -49,8 +50,8 @@ func NewNotFound(hash common.Uint256) ([]byte, error) {
 	return m, nil
 }
 
-func (msg notFound) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+func (msg notFound) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Hdr.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +61,10 @@ func (msg notFound) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *notFound) Deserialization(p []byte) error {
+func (msg *notFound) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Hdr))
 	if err != nil {
 		log.Warn("Parse notfound message hdr error")
 		return errors.New("Parse notfound message hdr error")
