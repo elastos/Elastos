@@ -1,4 +1,4 @@
-package p2p
+package net
 
 import (
 	"errors"
@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	. "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+
+	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	. "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 const (
@@ -249,7 +251,7 @@ func (pm *PeerManager) OnVerAck(peer *Peer, va *VerAck) error {
 	}
 
 	if peer.State() == HANDSHAKE {
-		go peer.Send(new(VerAck))
+		go peer.Send(va)
 	}
 
 	peer.SetState(ESTABLISH)

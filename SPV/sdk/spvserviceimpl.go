@@ -7,12 +7,14 @@ import (
 	"time"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/net"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SPV/db"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 const (
@@ -56,7 +58,7 @@ func NewSPVServiceImpl(client SPVClient, database db.DataStore, getBloomFilter f
 	return service, nil
 }
 
-func (service *SPVServiceImpl) OnPeerEstablish(peer *p2p.Peer) {
+func (service *SPVServiceImpl) OnPeerEstablish(peer *net.Peer) {
 	// Send filterload message
 	peer.Send(service.getFilter().GetFilterLoadMsg())
 }
@@ -82,7 +84,7 @@ func (service *SPVServiceImpl) BroadCastMessage(message p2p.Message) {
 }
 
 func (service *SPVServiceImpl) keepUpdate() {
-	ticker := time.NewTicker(time.Second * p2p.InfoUpdateDuration)
+	ticker := time.NewTicker(time.Second * net.InfoUpdateDuration)
 	defer ticker.Stop()
 	for range ticker.C {
 		// Keep synchronizing blocks
@@ -138,7 +140,7 @@ func (service *SPVServiceImpl) requestBlocks() {
 		return
 	}
 	// Request blocks returns a inventory message which contains block hashes
-	request := service.NewBlocksReq(service.chain.GetBlockLocatorHashes(), Uint256{})
+	request := msg.NewBlocksReq(service.chain.GetBlockLocatorHashes(), Uint256{})
 
 	go syncPeer.Send(request)
 }
@@ -154,8 +156,8 @@ func (service *SPVServiceImpl) changeSyncPeerAndRestart() {
 	service.syncBlocks()
 }
 
-func (service *SPVServiceImpl) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256) {
-	peer.Send(service.NewDataReq(reqType, hash))
+func (service *SPVServiceImpl) OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256) {
+	peer.Send(msg.NewDataReq(reqType, hash))
 }
 
 func (service *SPVServiceImpl) OnRequestError(err error) {
@@ -210,17 +212,17 @@ func (service *SPVServiceImpl) handleFPositive(fPositives int) {
 	}
 }
 
-func (service *SPVServiceImpl) OnInventory(peer *p2p.Peer, inv *msg.Inventory) error {
+func (service *SPVServiceImpl) OnInventory(peer *net.Peer, inv *msg.Inventory) error {
 	switch inv.Type {
-	case TRANSACTION:
+	case p2p.TxData:
 		// Do nothing, transaction inventory is not supported
-	case BLOCK:
+	case p2p.BlockData:
 		return service.HandleBlockInvMsg(peer, inv)
 	}
 	return nil
 }
 
-func (service *SPVServiceImpl) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Inventory) error {
+func (service *SPVServiceImpl) HandleBlockInvMsg(peer *net.Peer, inv *msg.Inventory) error {
 	if !service.chain.IsSyncing() {
 		peer.Disconnect()
 		return errors.New("receive inventory message in non syncing mode")
@@ -254,14 +256,14 @@ func (service *SPVServiceImpl) HandleBlockInvMsg(peer *p2p.Peer, inv *msg.Invent
 
 	// Request more blocks
 	locator := []*Uint256{&hashes[len(hashes)-1]}
-	request := service.NewBlocksReq(locator, Uint256{})
+	request := msg.NewBlocksReq(locator, Uint256{})
 
 	go peer.Send(request)
 
 	return nil
 }
 
-func (service *SPVServiceImpl) OnMerkleBlock(peer *p2p.Peer, block *bloom.MerkleBlock) error {
+func (service *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *bloom.MerkleBlock) error {
 	blockHash := block.Header.Hash()
 	log.Debug("Receive merkle block hash: ", blockHash.String())
 
@@ -297,7 +299,7 @@ func (service *SPVServiceImpl) OnMerkleBlock(peer *p2p.Peer, block *bloom.Merkle
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
+func (service *SPVServiceImpl) OnTxn(peer *net.Peer, txn *msg.Tx) error {
 	log.Debug("Receive transaction hash: ", txn.Hash().String())
 
 	if service.chain.IsSyncing() && service.PeerManager().GetSyncPeer() != nil &&
@@ -328,7 +330,7 @@ func (service *SPVServiceImpl) OnTxn(peer *p2p.Peer, txn *msg.Txn) error {
 	return nil
 }
 
-func (service *SPVServiceImpl) OnNotFound(peer *p2p.Peer, msg *msg.NotFound) error {
+func (service *SPVServiceImpl) OnNotFound(peer *net.Peer, msg *msg.NotFound) error {
 	log.Debug("Receive not found: ", msg.Hash.String())
 
 	service.changeSyncPeerAndRestart()

@@ -5,22 +5,24 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/net"
+
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.Utility/core"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type RequestQueueHandler interface {
-	OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256)
+	OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256)
 	OnRequestError(error)
 	OnRequestFinished(*FinishedReqPool)
 }
 
 type RequestQueue struct {
 	size             int
-	peer             *p2p.Peer
+	peer             *net.Peer
 	hashesQueue      chan Uint256
 	blocksQueue      chan Uint256
 	blockTxsQueue    chan Uint256
@@ -61,14 +63,14 @@ func (queue *RequestQueue) start() {
 }
 
 // This method will block when request queue is filled
-func (queue *RequestQueue) PushHashes(peer *p2p.Peer, hashes []Uint256) {
+func (queue *RequestQueue) PushHashes(peer *net.Peer, hashes []Uint256) {
 	queue.peer = peer
 	for _, hash := range hashes {
 		queue.hashesQueue <- hash
 	}
 }
 
-func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
+func (queue *RequestQueue) StartBlockRequest(peer *net.Peer, hash Uint256) {
 	// Check if already in request queue or finished
 	if queue.InBlockRequestQueue(hash) || queue.InFinishedPool(hash) {
 		return
@@ -81,7 +83,7 @@ func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
 	blockRequest := &Request{
 		peer:    peer,
 		hash:    hash,
-		reqType: BLOCK,
+		reqType: p2p.BlockData,
 		handler: queue,
 	}
 	// Add to request queue
@@ -92,7 +94,7 @@ func (queue *RequestQueue) StartBlockRequest(peer *p2p.Peer, hash Uint256) {
 	queue.blockReqsLock.Unlock()
 }
 
-func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
+func (queue *RequestQueue) StartBlockTxsRequest(peer *net.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
 	blockHash := block.Header.Hash()
 	// No block transactions to request, notify request finished.
 	if len(txIds) == 0 {
@@ -119,7 +121,7 @@ func (queue *RequestQueue) StartBlockTxsRequest(peer *p2p.Peer, block *bloom.Mer
 		txRequest := &Request{
 			peer:    peer,
 			hash:    *txId,
-			reqType: TRANSACTION,
+			reqType: p2p.TxData,
 			handler: queue,
 		}
 		txRequestQueue[*txId] = txRequest
@@ -161,7 +163,7 @@ func (queue *RequestQueue) IsRunning() bool {
 	return len(queue.hashesQueue) > 0 || len(queue.blocksQueue) > 0 || len(queue.blockTxsQueue) > 0
 }
 
-func (queue *RequestQueue) OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256) {
+func (queue *RequestQueue) OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256) {
 	queue.handler.OnSendRequest(peer, reqType, hash)
 }
 

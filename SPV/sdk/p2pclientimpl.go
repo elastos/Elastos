@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+	"github.com/elastos/Elastos.ELA.SPV/net"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type P2PClientImpl struct {
 	msgHandler  P2PMessageHandler
-	peerManager *p2p.PeerManager
+	peerManager *net.PeerManager
 }
 
 func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string) (*P2PClientImpl, error) {
 	// Initialize local peer
-	local := new(p2p.Peer)
+	local := new(net.Peer)
 	local.SetID(clientId)
 	local.SetVersion(ProtocolVersion)
 	local.SetPort(SPVClientPort)
@@ -35,7 +37,7 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string) (*P2PClient
 	client := new(P2PClientImpl)
 
 	// Initialize peer manager
-	client.peerManager = p2p.InitPeerManager(local, toSPVAddr(seeds))
+	client.peerManager = net.InitPeerManager(local, toSPVAddr(seeds))
 
 	// Set message handler
 	client.peerManager.SetMessageHandler(client)
@@ -83,14 +85,14 @@ func (client *P2PClientImpl) MakeMessage(cmd string) (p2p.Message, error) {
 	return client.msgHandler.MakeMessage(cmd)
 }
 
-func (client *P2PClientImpl) OnPeerEstablish(peer *p2p.Peer) {
+func (client *P2PClientImpl) OnPeerEstablish(peer *net.Peer) {
 	client.msgHandler.OnPeerEstablish(peer)
 }
 
-func (client *P2PClientImpl) HandleMessage(peer *p2p.Peer, msg p2p.Message) error {
+func (client *P2PClientImpl) HandleMessage(peer *net.Peer, msg p2p.Message) error {
 	return client.msgHandler.HandleMessage(peer, msg)
 }
 
-func (client *P2PClientImpl) PeerManager() *p2p.PeerManager {
+func (client *P2PClientImpl) PeerManager() *net.PeerManager {
 	return client.peerManager
 }

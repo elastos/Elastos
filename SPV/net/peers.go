@@ -1,7 +1,9 @@
-package p2p
+package net
 
 import (
 	"sync"
+
+	. "github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type Peers struct {
@@ -97,7 +99,7 @@ func (p *Peers) getBestPeer() *Peer {
 	for _, peer := range p.peers {
 
 		// Skip unestablished peer
-		if peer.state != ESTABLISH {
+		if peer.State() != ESTABLISH {
 			continue
 		}
 
@@ -121,7 +123,7 @@ func (p *Peers) Broadcast(msg Message) {
 	for _, peer := range p.peers {
 
 		// Skip unestablished peer
-		if peer.state != ESTABLISH {
+		if peer.State() != ESTABLISH {
 			continue
 		}
 

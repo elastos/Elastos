@@ -3,10 +3,10 @@ package sdk
 import (
 	"errors"
 
+	"github.com/elastos/Elastos.ELA.SPV/net"
+
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 /*
@@ -23,26 +23,19 @@ type SPVClient interface {
 	Start()
 
 	// Get peer manager, which is the main program of the peer to peer network
-	PeerManager() *p2p.PeerManager
-
-	// Create a blocks request message using block locator and stop hash
-	NewBlocksReq(locator []*Uint256, hashStop Uint256) *msg.BlocksReq
-
-	// Create a data request message, invType is TRANSACTION or BLOCK according to the SPV protocol
-	// the inv type constant is in the protocol file
-	NewDataReq(invType uint8, hash Uint256) *msg.DataReq
+	PeerManager() *net.PeerManager
 }
 
 // The message handler to extend the SDK
 type SPVMessageHandler interface {
 	// When a peer is connected and established
 	// this method will callback to pass the connected peer
-	OnPeerEstablish(*p2p.Peer)
+	OnPeerEstablish(*net.Peer)
 
 	// After send a blocks request message, this inventory message
 	// will return with a bunch of block hashes, then you can use them
 	// to request all the blocks by send data requests.
-	OnInventory(*p2p.Peer, *msg.Inventory) error
+	OnInventory(*net.Peer, *msg.Inventory) error
 
 	// After sent a data request with invType BLOCK, a merkleblock message will return through this method.
 	// To make this work, you must register a filterload message to the connected peer first,
@@ -53,15 +46,15 @@ type SPVMessageHandler interface {
 	// you've added into the bloom filter before you send a filterload message with this bloom filter.
 	// You will use these transaction hashes to request transactions by sending data request message
 	// with invType TRANSACTION
-	OnMerkleBlock(*p2p.Peer, *bloom.MerkleBlock) error
+	OnMerkleBlock(*net.Peer, *bloom.MerkleBlock) error
 
 	// After sent a data request with invType TRANSACTION, a txn message will return through this method.
 	// these transactions are matched to the bloom filter you have sent with the filterload message.
-	OnTxn(*p2p.Peer, *msg.Txn) error
+	OnTxn(*net.Peer, *msg.Tx) error
 
 	// If the BLOCK or TRANSACTION requested by the data request message can not be found,
 	// notfound message with requested data hash will return through this method.
-	OnNotFound(*p2p.Peer, *msg.NotFound) error
+	OnNotFound(*net.Peer, *msg.NotFound) error
 }
 
 /*

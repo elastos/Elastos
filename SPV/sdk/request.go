@@ -5,7 +5,7 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
+	"github.com/elastos/Elastos.ELA.SPV/net"
 )
 
 const (
@@ -14,12 +14,12 @@ const (
 )
 
 type RequestHandler interface {
-	OnSendRequest(peer *p2p.Peer, reqType uint8, hash Uint256)
+	OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256)
 	OnRequestTimeout(Uint256)
 }
 
 type Request struct {
-	peer       *p2p.Peer
+	peer       *net.Peer
 	hash       Uint256
 	reqType    uint8
 	retryTimes int

@@ -4,10 +4,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/net"
+
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
-	"github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type SPVClientImpl struct {
@@ -36,7 +37,7 @@ func (client *SPVClientImpl) Start() {
 	client.p2p.Start()
 }
 
-func (client *SPVClientImpl) PeerManager() *p2p.PeerManager {
+func (client *SPVClientImpl) PeerManager() *net.PeerManager {
 	return client.p2p.PeerManager()
 }
 
@@ -49,7 +50,7 @@ func (client *SPVClientImpl) MakeMessage(cmd string) (message p2p.Message, err e
 	case "inv":
 		message = new(msg.Inventory)
 	case "tx":
-		message = new(msg.Txn)
+		message = new(msg.Tx)
 	case "merkleblock":
 		message = new(bloom.MerkleBlock)
 	case "notfound":
@@ -60,7 +61,7 @@ func (client *SPVClientImpl) MakeMessage(cmd string) (message p2p.Message, err e
 	return message, nil
 }
 
-func (client *SPVClientImpl) HandleMessage(peer *p2p.Peer, message p2p.Message) error {
+func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) error {
 	switch msg := message.(type) {
 	case *msg.Ping:
 		return client.OnPing(peer, msg)
@@ -70,7 +71,7 @@ func (client *SPVClientImpl) HandleMessage(peer *p2p.Peer, message p2p.Message) 
 		return client.msgHandler.OnInventory(peer, msg)
 	case *bloom.MerkleBlock:
 		return client.msgHandler.OnMerkleBlock(peer, msg)
-	case *msg.Txn:
+	case *msg.Tx:
 		return client.msgHandler.OnTxn(peer, msg)
 	case *msg.NotFound:
 		return client.msgHandler.OnNotFound(peer, msg)
@@ -79,51 +80,24 @@ func (client *SPVClientImpl) HandleMessage(peer *p2p.Peer, message p2p.Message) 
 	}
 }
 
-func (client *SPVClientImpl) NewPing(height uint32) *msg.Ping {
-	ping := new(msg.Ping)
-	ping.Height = uint64(height)
-	return ping
-}
-
-func (client *SPVClientImpl) NewPong(height uint32) *msg.Pong {
-	pong := new(msg.Pong)
-	pong.Height = uint64(height)
-	return pong
-}
-
-func (client *SPVClientImpl) NewBlocksReq(locator []*Uint256, hashStop Uint256) *msg.BlocksReq {
-	blocksReq := new(msg.BlocksReq)
-	blocksReq.Count = uint32(len(locator))
-	blocksReq.BlockLocator = locator
-	blocksReq.HashStop = hashStop
-	return blocksReq
-}
-
-func (client *SPVClientImpl) NewDataReq(invType uint8, hash Uint256) *msg.DataReq {
-	dataReq := new(msg.DataReq)
-	dataReq.Type = invType
-	dataReq.Hash = hash
-	return dataReq
-}
-
-func (client *SPVClientImpl) OnPeerEstablish(peer *p2p.Peer) {
+func (client *SPVClientImpl) OnPeerEstablish(peer *net.Peer) {
 	client.msgHandler.OnPeerEstablish(peer)
 }
 
-func (client *SPVClientImpl) OnPing(peer *p2p.Peer, p *msg.Ping) error {
+func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
 	peer.SetHeight(p.Height)
 	// Return pong message to peer
-	go peer.Send(client.NewPong(uint32(client.PeerManager().Local().Height())))
+	go peer.Send(msg.NewPong(uint32(client.PeerManager().Local().Height())))
 	return nil
 }
 
-func (client *SPVClientImpl) OnPong(peer *p2p.Peer, p *msg.Pong) error {
+func (client *SPVClientImpl) OnPong(peer *net.Peer, p *msg.Pong) error {
 	peer.SetHeight(p.Height)
 	return nil
 }
 
 func (client *SPVClientImpl) keepUpdate() {
-	ticker := time.NewTicker(time.Second * p2p.InfoUpdateDuration)
+	ticker := time.NewTicker(time.Second * net.InfoUpdateDuration)
 	defer ticker.Stop()
 	for range ticker.C {
 
@@ -133,13 +107,13 @@ func (client *SPVClientImpl) keepUpdate() {
 
 				// Disconnect inactive peer
 				if peer.LastActive().Before(
-					time.Now().Add(-time.Second * p2p.InfoUpdateDuration * p2p.KeepAliveTimeout)) {
+					time.Now().Add(-time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
 					client.PeerManager().DisconnectPeer(peer)
 					continue
 				}
 
 				// Send ping message to peer
-				go peer.Send(client.NewPing(uint32(client.PeerManager().Local().Height())))
+				go peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
 			}
 		}
 	}

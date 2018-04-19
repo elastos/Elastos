@@ -1,7 +1,9 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/p2p"
+	"github.com/elastos/Elastos.ELA.SPV/net"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 /*
@@ -16,7 +18,7 @@ type P2PClient interface {
 	Start()
 
 	// Get the peer manager of this P2P client
-	PeerManager() *p2p.PeerManager
+	PeerManager() *net.PeerManager
 }
 
 // Handle the message creation, allocation etc.
@@ -26,10 +28,10 @@ type P2PMessageHandler interface {
 
 	// VerAck message received from a connected peer
 	// which means the connected peer is established
-	OnPeerEstablish(*p2p.Peer)
+	OnPeerEstablish(*net.Peer)
 
 	// Handle messages received from the connected peer
-	HandleMessage(*p2p.Peer, p2p.Message) error
+	HandleMessage(*net.Peer, p2p.Message) error
 }
 
 // To get a P2P client, you need to set a magic number and a client ID to identify this peer in the peer to peer network.

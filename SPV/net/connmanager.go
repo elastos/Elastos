@@ -1,4 +1,4 @@
-package p2p
+package net
 
 import (
 	"net"
@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
@@ -72,7 +74,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 
 	// Start read msg from remote peer
 	remote := NewPeer(conn)
-	remote.SetState(HAND)
+	remote.SetState(p2p.HAND)
 	go remote.Read()
 
 	// Send version message to remote peer

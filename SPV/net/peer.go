@@ -1,63 +1,17 @@
-package p2p
+package net
 
 import (
 	"fmt"
 	"net"
 	"strings"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	. "github.com/elastos/Elastos.ELA.SPV/p2p/msg"
+
+	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	. "github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
-
-// Peer states
-const (
-	INIT       = iota
-	HAND
-	HANDSHAKE
-	HANDSHAKED
-	ESTABLISH
-	INACTIVITY
-)
-
-type PeerState struct {
-	sync.Mutex
-	state int
-}
-
-func (ps *PeerState) SetState(state int) {
-	ps.Lock()
-	defer ps.Unlock()
-
-	ps.state = state
-}
-
-func (ps *PeerState) State() int {
-	ps.Lock()
-	defer ps.Unlock()
-
-	return ps.state
-}
-
-func (ps *PeerState) String() string {
-	switch ps.state {
-	case INIT:
-		return "INIT"
-	case HAND:
-		return "HAND"
-	case HANDSHAKE:
-		return "HANDSHAKE"
-	case HANDSHAKED:
-		return "HANDSHAKED"
-	case ESTABLISH:
-		return "ESTABLISH"
-	case INACTIVITY:
-		return "INACTIVITY"
-	}
-	return "Unknown peer state"
-}
 
 type Peer struct {
 	// info
@@ -163,12 +117,10 @@ func (peer *Peer) SetRelay(relay uint8) {
 }
 
 func (peer *Peer) Disconnect() {
-	peer.PeerState.Lock()
-	if peer.state != INACTIVITY {
-		peer.state = INACTIVITY
+	if peer.State() != INACTIVITY {
+		peer.SetState(INACTIVITY)
 		peer.conn.Close()
 	}
-	peer.PeerState.Unlock()
 }
 
 func (peer *Peer) SetInfo(msg *Version) {
@@ -193,6 +145,7 @@ func (peer *Peer) OnDecodeError(err error) {
 	case ErrDisconnected:
 		pm.DisconnectPeer(peer)
 	case ErrUnmatchedMagic:
+		log.Error("Decode message error:", ErrUnmatchedMagic)
 		peer.Disconnect()
 	default:
 		log.Error("Decode message error:", err, ", peer id is: ", peer.ID())
