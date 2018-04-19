@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/net/servers"
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/core/ledger"
 )
 
 type Info struct {
@@ -39,20 +39,20 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 
 	for i := 0; i < len(ngbrNoders); i++ {
 		ngbrNodersInfo = append(ngbrNodersInfo, NgbNodeInfo{
-			NgbId:   fmt.Sprintf("0x%x", ngbrNoders[i].GetID()),
-			NbrAddr: ngbrNoders[i].GetAddr() + ":" + strconv.Itoa(ngbrNoders[i].GetHttpInfoPort()),
+			NgbId:   fmt.Sprintf("0x%x", ngbrNoders[i].ID()),
+			NbrAddr: ngbrNoders[i].Addr() + ":" + strconv.Itoa(ngbrNoders[i].HttpInfoPort()),
 		})
 	}
 
 	pageInfo := &Info{
-		BlockHeight:  ledger.DefaultLedger.Blockchain.BlockHeight,
+		BlockHeight:  chain.DefaultLedger.Blockchain.BlockHeight,
 		NeighborCnt:  len(ngbrNoders),
 		Neighbors:    ngbrNodersInfo,
 		HttpRestPort: config.Parameters.HttpRestPort,
 		HttpWsPort:   config.Parameters.HttpWsPort,
 		HttpJsonPort: config.Parameters.HttpJsonPort,
 		NodePort:     config.Parameters.NodePort,
-		NodeId:       fmt.Sprintf("0x%x", node.GetID()),
+		NodeId:       fmt.Sprintf("0x%x", node.ID()),
 	}
 
 	err := templates.ExecuteTemplate(w, "info", pageInfo)

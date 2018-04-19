@@ -5,12 +5,10 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/common/config"
-	"github.com/elastos/Elastos.ELA/common/log"
-	"github.com/elastos/Elastos.ELA/consensus/pow"
-	"github.com/elastos/Elastos.ELA/core/ledger"
-	"github.com/elastos/Elastos.ELA/core/store/ChainStore"
-	"github.com/elastos/Elastos.ELA/core/transaction"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/pow"
+	"github.com/elastos/Elastos.ELA/log"
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/net/node"
 	"github.com/elastos/Elastos.ELA/net/protocol"
 	"github.com/elastos/Elastos.ELA/net/servers"
@@ -40,11 +38,11 @@ func handleLogFile() {
 	go func() {
 		for {
 			time.Sleep(6 * time.Second)
-			log.Trace("BlockHeight = ", ledger.DefaultLedger.Blockchain.BlockHeight)
-			ledger.DefaultLedger.Blockchain.DumpState()
-			bc := ledger.DefaultLedger.Blockchain
+			log.Trace("BlockHeight = ", blockchain.DefaultLedger.Blockchain.BlockHeight)
+			blockchain.DefaultLedger.Blockchain.DumpState()
+			bc := blockchain.DefaultLedger.Blockchain
 			log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
-			//ledger.DefaultLedger.Blockchain.DumpState()
+			//blockchain.DefaultLedger.Blockchain.DumpState()
 			isNeedNewFile := log.CheckIfNeedNewFile()
 			if isNeedNewFile {
 				log.ClosePrintLog()
@@ -68,17 +66,14 @@ func main() {
 	var err error
 	var noder protocol.Noder
 	log.Info("1. BlockChain init")
-	ledger.DefaultLedger = new(ledger.Ledger)
-	ledger.DefaultLedger.Store, err = ChainStore.NewLedgerStore()
+	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
-	defer ledger.DefaultLedger.Store.Close()
+	defer chainStore.Close()
 
-	ledger.DefaultLedger.Store.InitLedgerStore(ledger.DefaultLedger)
-	transaction.TxStore = ledger.DefaultLedger.Store
-	_, err = ledger.NewBlockchainWithGenesisBlock()
+	err = blockchain.Init(chainStore)
 	if err != nil {
 		log.Fatal(err, "BlockChain generate failed")
 		goto ERROR

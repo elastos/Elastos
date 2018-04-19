@@ -8,14 +8,14 @@ import (
 	"fmt"
 	"time"
 
-	"Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
-	"Elastos.ELA/core/ledger"
+	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 )
 
 type version struct {
-	messageHeader
+	Hdr
 	Body struct {
 		Version      uint32
 		Services     uint64
@@ -38,10 +38,10 @@ func NewVersion(n Noder) ([]byte, error) {
 
 	// FIXME Time overflow
 	msg.Body.TimeStamp = uint32(time.Now().UTC().UnixNano())
-	msg.Body.Port = n.GetPort()
-	msg.Body.Nonce = n.GetID()
-	msg.Body.StartHeight = uint64(ledger.DefaultLedger.GetLocalBlockChainHeight())
-	if n.GetRelay() {
+	msg.Body.Port = n.Port()
+	msg.Body.Nonce = n.ID()
+	msg.Body.StartHeight = uint64(chain.DefaultLedger.GetLocalBlockChainHeight())
+	if n.IsRelay() {
 		msg.Body.Relay = 1
 	} else {
 		msg.Body.Relay = 0
@@ -63,7 +63,7 @@ func NewVersion(n Noder) ([]byte, error) {
 	msg.Length = uint32(len(p.Bytes()))
 	log.Debug("The message payload length is ", msg.Length)
 
-	m, err := msg.Serialization()
+	m, err := msg.Serialize()
 	if err != nil {
 		log.Error("Error Convert net message ", err.Error())
 		return nil, err
@@ -72,8 +72,8 @@ func NewVersion(n Noder) ([]byte, error) {
 	return m, nil
 }
 
-func (msg version) Serialization() ([]byte, error) {
-	hdrBuf, err := msg.messageHeader.Serialization()
+func (msg version) Serialize() ([]byte, error) {
+	hdrBuf, err := msg.Hdr.Serialize()
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +86,10 @@ func (msg version) Serialization() ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-func (msg *version) Deserialization(p []byte) error {
+func (msg *version) Deserialize(p []byte) error {
 	buf := bytes.NewBuffer(p)
 
-	err := binary.Read(buf, binary.LittleEndian, &(msg.messageHeader))
+	err := binary.Read(buf, binary.LittleEndian, &(msg.Hdr))
 	if err != nil {
 		log.Warn("Parse version message hdr error")
 		return errors.New("Parse version message hdr error")
@@ -125,13 +125,13 @@ func (msg version) Handle(node Noder) error {
 	localNode := node.LocalNode()
 
 	// Exclude the node itself
-	if msg.Body.Nonce == localNode.GetID() {
+	if msg.Body.Nonce == localNode.ID() {
 		log.Warn("The node handshake with itself")
 		node.CloseConn()
 		return errors.New("The node handshake with itself")
 	}
 
-	s := node.GetState()
+	s := node.State()
 	if s != Init && s != Hand {
 		log.Warn("Unknow status to receive version")
 		return errors.New("Unknow status to receive version")
@@ -150,7 +150,7 @@ func (msg version) Handle(node Noder) error {
 		msg.Body.Port, msg.Body.Nonce, msg.Body.Relay, msg.Body.StartHeight)
 	localNode.AddNbrNode(node)
 
-	ip, _ := node.GetAddr16()
+	ip, _ := node.Addr16()
 	addr := NodeAddr{
 		Time:     node.GetTime(),
 		Services: msg.Body.Services,

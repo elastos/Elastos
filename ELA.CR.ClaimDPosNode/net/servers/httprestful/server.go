@@ -11,9 +11,9 @@ import (
 	"strings"
 	"sync"
 
+	. "github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/errors"
-	. "Elastos.ELA/common/config"
-	"Elastos.ELA/common/log"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/servers"
 )
 

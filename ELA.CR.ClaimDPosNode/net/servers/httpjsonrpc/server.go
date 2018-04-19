@@ -1,13 +1,13 @@
 package httpjsonrpc
 
 import (
-	"strconv"
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 
-	"Elastos.ELA/common/log"
-	. "Elastos.ELA/common/config"
+	"github.com/elastos/Elastos.ELA/log"
+	. "github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/net/servers"
 	"github.com/elastos/Elastos.ELA/errors"
 )
