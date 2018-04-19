@@ -29,6 +29,7 @@
 #include "BRArray.h"
 #include "BRCrypto.h"
 #include "BRInt.h"
+#include "BRPeerMessages.h"
 #include <stdlib.h>
 #include <float.h>
 #include <inttypes.h>
@@ -90,47 +91,9 @@ typedef enum {
     inv_filtered_block = 3
 } inv_type;
 
-typedef struct {
-    BRPeer peer; // superstruct on top of BRPeer
-    uint32_t magicNumber;
-    char host[INET6_ADDRSTRLEN];
-    BRPeerStatus status;
-    int waitingForNetwork;
-    volatile int needsFilterUpdate;
-    uint64_t nonce, feePerKb;
-    char *useragent;
-    uint32_t version, lastblock, earliestKeyTime, currentBlockHeight;
-    double startTime, pingTime;
-    volatile double disconnectTime, mempoolTime;
-    int sentVerack, gotVerack, sentGetaddr, sentFilter, sentGetdata, sentMempool, sentGetblocks;
-    UInt256 lastBlockHash;
-    BRMerkleBlock *currentBlock;
-    UInt256 *currentBlockTxHashes, *knownBlockHashes, *knownTxHashes;
-    BRSet *knownTxHashSet;
-    volatile int socket;
-    void *info;
-    void (*connected)(void *info);
-    void (*disconnected)(void *info, int error);
-    void (*relayedPeers)(void *info, const BRPeer peers[], size_t peersCount);
-    void (*relayedTx)(void *info, BRTransaction *tx);
-    void (*hasTx)(void *info, UInt256 txHash);
-    void (*rejectedTx)(void *info, UInt256 txHash, uint8_t code);
-    void (*relayedBlock)(void *info, BRMerkleBlock *block);
-    void (*notfound)(void *info, const UInt256 txHashes[], size_t txCount, const UInt256 blockHashes[],
-                     size_t blockCount);
-    void (*setFeePerKb)(void *info, uint64_t feePerKb);
-    BRTransaction *(*requestedTx)(void *info, UInt256 txHash);
-    int (*networkIsReachable)(void *info);
-    void (*threadCleanup)(void *info);
-    void **volatile pongInfo;
-    void (**volatile pongCallback)(void *info, int success);
-    void *volatile mempoolInfo;
-    void (*volatile mempoolCallback)(void *info, int success);
-    pthread_t thread;
-} BRPeerContext;
+BRPeerMessages *GlobalMessages;
 
 void BRPeerSendVersionMessage(BRPeer *peer);
-void BRPeerSendVerackMessage(BRPeer *peer);
 void BRPeerSendAddr(BRPeer *peer);
 
 inline static int _BRPeerIsIPv4(const BRPeer *peer)
@@ -155,19 +118,6 @@ static void _BRPeerAddKnownTxHashes(const BRPeer *peer, const UInt256 txHashes[]
             }
             else BRSetAdd(ctx->knownTxHashSet, &knownTxHashes[array_count(knownTxHashes) - 1]);
         }
-    }
-}
-
-static void _BRPeerDidConnect(BRPeer *peer)
-{
-    BRPeerContext *ctx = (BRPeerContext *)peer;
-
-    if (ctx->status == BRPeerStatusConnecting && ctx->sentVerack && ctx->gotVerack) {
-        peer_log(peer, "handshake completed");
-        ctx->disconnectTime = DBL_MAX;
-        ctx->status = BRPeerStatusConnected;
-        peer_log(peer, "connected with lastblock: %"PRIu32, ctx->lastblock);
-        if (ctx->connected) ctx->connected(ctx->info);
     }
 }
 
@@ -226,29 +176,8 @@ static int _BRPeerAcceptVersionMessage(BRPeer *peer, const uint8_t *msg, size_t 
             off += sizeof(uint32_t);
             peer_log(peer, "got version %"PRIu32", services %"PRIx64", useragent:\"%s\"", ctx->version, peer->services,
                      ctx->useragent);
-            BRPeerSendVerackMessage(peer);
+            GlobalMessages->BRPeerSendVerackMessage(peer);
         }
-    }
-
-    return r;
-}
-
-static int _BRPeerAcceptVerackMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
-{
-    BRPeerContext *ctx = (BRPeerContext *)peer;
-    struct timeval tv;
-    int r = 1;
-
-    if (ctx->gotVerack) {
-        peer_log(peer, "got unexpected verack");
-    }
-    else {
-        gettimeofday(&tv, NULL);
-        ctx->pingTime = tv.tv_sec + (double)tv.tv_usec/1000000 - ctx->startTime; // use verack time as initial ping time
-        ctx->startTime = 0;
-        peer_log(peer, "got verack in %fs", ctx->pingTime);
-        ctx->gotVerack = 1;
-        _BRPeerDidConnect(peer);
     }
 
     return r;
@@ -825,7 +754,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
         r = 0;
     }
     else if (strncmp(MSG_VERSION, type, 12) == 0) r = _BRPeerAcceptVersionMessage(peer, msg, msgLen);
-    else if (strncmp(MSG_VERACK, type, 12) == 0) r = _BRPeerAcceptVerackMessage(peer, msg, msgLen);
+    else if (strncmp(MSG_VERACK, type, 12) == 0) r = GlobalMessages->BRPeerAcceptVerackMessage(peer, msg, msgLen);
     else if (strncmp(MSG_ADDR, type, 12) == 0) r = _BRPeerAcceptAddrMessage(peer, msg, msgLen);
     else if (strncmp(MSG_INV, type, 12) == 0) r = _BRPeerAcceptInvMessage(peer, msg, msgLen);
     else if (strncmp(MSG_TX, type, 12) == 0) r = _BRPeerAcceptTxMessage(peer, msg, msgLen);
@@ -1344,12 +1273,6 @@ void BRPeerSendVersionMessage(BRPeer *peer)
     off += sizeof(uint32_t);
     msg[off++] = 0; // relay transactions (0 for SPV bloom filter mode)
     BRPeerSendMessage(peer, msg, sizeof(msg), MSG_VERSION);
-}
-
-void BRPeerSendVerackMessage(BRPeer *peer)
-{
-    BRPeerSendMessage(peer, NULL, 0, MSG_VERACK);
-    ((BRPeerContext *)peer)->sentVerack = 1;
 }
 
 void BRPeerSendAddr(BRPeer *peer)
