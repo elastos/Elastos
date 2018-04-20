@@ -42,12 +42,72 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::setAmount(
-			uint64_t amount) {
+				uint64_t amount) {
 			_output->amount = amount;
 		}
 
 		ByteData TransactionOutput::getScript() const {
 			return ByteData(_output->script, _output->scriptLen);
+		}
+
+		void TransactionOutput::Serialize(std::istream &istream) const {
+			uint8_t assetIdData[256 / 8];
+			UInt256Set(assetIdData, _assetId);
+			istream >> assetIdData;
+
+			uint8_t amountData[64 / 8];
+			UInt64SetLE(amountData, _output->amount);
+			istream >> amountData;
+
+			uint8_t outputLockData[32 / 8];
+			UInt32SetLE(outputLockData, _outputLock);
+			istream >> outputLockData;
+
+			uint8_t programHashData[168 / 8];
+			UInt168Set(programHashData, _programHash);
+			istream >> programHashData;
+		}
+
+		void TransactionOutput::Deserialize(std::ostream &ostream) {
+			uint8_t assetIdData[256 / 8];
+			ostream << assetIdData;
+			UInt256Get(&_assetId, assetIdData);
+
+			uint8_t amountData[64 / 8];
+			ostream << amountData;
+			_output->amount = UInt64GetLE(amountData);
+
+			uint8_t outputLockData[32 / 8];
+			ostream << outputLockData;
+			_outputLock = UInt32GetLE(outputLockData);
+
+			uint8_t programHashData[168 / 8];
+			ostream << programHashData;
+			UInt168Get(&_programHash, programHashData);
+		}
+
+		const UInt256 &TransactionOutput::getAssetId() const {
+			return _assetId;
+		}
+
+		void TransactionOutput::setAssetId(const UInt256 &assetId) {
+			_assetId = assetId;
+		}
+
+		uint32_t TransactionOutput::getOutputLock() const {
+			return _outputLock;
+		}
+
+		void TransactionOutput::setOutputLock(uint32_t outputLock) {
+			_outputLock = outputLock;
+		}
+
+		const UInt168 &TransactionOutput::getProgramHash() const {
+			return _programHash;
+		}
+
+		void TransactionOutput::setProgramHash(const UInt168 &hash) {
+			_programHash = hash;
 		}
 
 	}

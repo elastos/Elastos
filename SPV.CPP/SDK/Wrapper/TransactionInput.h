@@ -11,12 +11,14 @@
 
 #include "Wrapper.h"
 #include "ByteData.h"
+#include "ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		class TransactionInput :
-			public Wrapper<BRTxInput> {
+			public Wrapper<BRTxInput>,
+			public ELAMessageSerializable {
 
 		public:
 			TransactionInput(BRTxInput *input);
@@ -27,6 +29,10 @@ namespace Elastos {
 			virtual std::string toString() const;
 
 			virtual BRTxInput *getRaw() const;
+
+			virtual void Serialize(std::istream &istream) const;
+
+			virtual void Deserialize(std::ostream &ostream);
 
 			std::string getAddress() const;
 

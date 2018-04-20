@@ -9,6 +9,7 @@
 
 #include "BRTransaction.h"
 
+#include "Payload/IPayload.h"
 #include "Wrapper.h"
 #include "ByteData.h"
 #include "SharedWrapperList.h"
@@ -16,14 +17,29 @@
 #include "TransactionOutput.h"
 #include "Key.h"
 #include "WrapperList.h"
+#include "ELAMessageSerializable.h"
+#include "Attribute/IAttribute.h"
+#include "Program.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		class Transaction :
-				public Wrapper<BRTransaction> {
+				public Wrapper<BRTransaction>,
+				public ELAMessageSerializable {
 		public:
+			enum Type {
+				CoinBase                = 0x00,
+				RegisterAsset           = 0x01,
+				TransferAsset           = 0x02,
+				Record                  = 0x03,
+				Deploy                  = 0x04,
+				SideMining              = 0x05,
+				IssueToken              = 0x06,
+				TransferCrossChainAsset = 0x07,
+			};
 
+		public:
 			Transaction();
 
 			Transaction(BRTransaction *transaction);
@@ -38,6 +54,10 @@ namespace Elastos {
 
 			virtual BRTransaction *getRaw() const;
 
+			virtual void Serialize(std::istream &istream) const;
+
+			virtual void Deserialize(std::ostream &ostream);
+
 			bool isRegistered() const;
 
 			bool &isRegistered();
@@ -46,11 +66,11 @@ namespace Elastos {
 
 			uint32_t getVersion() const;
 
-			SharedWrapperList<TransactionInput, BRTxInput *> getInputs();
+			SharedWrapperList<TransactionInput, BRTxInput *> getInputs() const;
 
 			std::vector<std::string> getInputAddresses();
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> getOutputs();
+			SharedWrapperList<TransactionOutput, BRTxOutput *> getOutputs() const;
 
 			std::vector<std::string> getOutputAddresses();
 
@@ -132,14 +152,19 @@ namespace Elastos {
 			static uint64_t getMinOutputAmount();
 
 		private:
-			void transactionInputCopy(BRTxInput *target, const BRTxInput *source);
+			void transactionInputCopy(BRTxInput *target, const BRTxInput *source) const;
 
-			void transactionOutputCopy (BRTxOutput *target, const BRTxOutput *source);
+			void transactionOutputCopy (BRTxOutput *target, const BRTxOutput *source) const;
 
 		private:
 			bool _isRegistered;
 
 			BRTransaction *_transaction;
+			Type _type;
+			uint8_t _payloadVersion;
+			PayloadPtr _payload;
+			std::vector<AttributePtr> _attributes;
+			std::vector<Program> _programs;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

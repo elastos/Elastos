@@ -147,6 +147,10 @@ UInt256 UInt256Reverse(const UInt256* u);
 
 // unaligned memory access helpers
 
+void UInt8SetBE(void *b2, uint16_t u);
+
+void UInt8SetLE(void *b2, uint16_t u);
+
 void UInt16SetBE(void *b2, uint16_t u);
 
 void UInt16SetLE(void *b2, uint16_t u);
@@ -166,6 +170,10 @@ void UInt160Set(void *b20, UInt160 u);
 void UInt168Set(void *b21, UInt168 u);
 
 void UInt256Set(void *b32, UInt256 u);
+
+uint8_t UInt8GetBE(const void *b2);
+
+uint8_t UInt8GetLE(const void *b2);
 
 uint16_t UInt16GetBE(const void *b2);
 

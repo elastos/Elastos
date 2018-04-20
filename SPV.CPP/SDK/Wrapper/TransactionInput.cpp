@@ -66,5 +66,33 @@ namespace Elastos {
 			return _input->sequence;
 		}
 
+		void TransactionInput::Serialize(std::istream &istream) const {
+			uint8_t transactionHashData[256 / 8];
+			UInt256Set(transactionHashData, _input->txHash);
+			istream >> transactionHashData;
+
+			uint8_t indexData[16 / 8];
+			UInt16SetLE(indexData, uint16_t(_input->index));
+			istream >> indexData;
+
+			uint8_t sequenceData[32 / 8];
+			UInt32SetLE(sequenceData, _input->sequence);
+			istream >> sequenceData;
+		}
+
+		void TransactionInput::Deserialize(std::ostream &ostream) {
+			uint8_t transactionHashData[256 / 8];
+			ostream << transactionHashData;
+			UInt256Get(&_input->txHash, transactionHashData);
+
+			uint8_t indexData[16 / 8];
+			ostream << indexData;
+			_input->index = UInt16GetLE(indexData);
+
+			uint8_t sequenceData[32 / 8];
+			ostream << sequenceData;
+			_input->sequence = UInt32GetLE(sequenceData);
+		}
+
 	}
 }

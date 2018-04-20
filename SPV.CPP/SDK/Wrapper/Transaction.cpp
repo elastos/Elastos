@@ -5,6 +5,7 @@
 #include "PreCompiled.h"
 
 #include <cstring>
+#include <BRTransaction.h>
 
 #include "BRTransaction.h"
 #include "Transaction.h"
@@ -13,25 +14,29 @@ namespace Elastos {
 	namespace SDK {
 
 		Transaction::Transaction() :
-				_isRegistered(false) {
+				_isRegistered(false),
+				_payload(nullptr) {
 
 			_transaction = BRTransactionNew();
 		}
 
 		Transaction::Transaction(BRTransaction *transaction) :
 				_transaction(transaction),
-				_isRegistered(false) {
+				_isRegistered(false),
+				_payload(nullptr) {
 		}
 
 		Transaction::Transaction(const ByteData &buffer) :
-				_isRegistered(false) {
+				_isRegistered(false),
+				_payload(nullptr) {
 
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
 		}
 
 		Transaction::Transaction(const ByteData &buffer, uint32_t blockHeight, uint32_t timeStamp) :
-				_isRegistered(false) {
+				_isRegistered(false),
+				_payload(nullptr) {
 
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
@@ -70,7 +75,7 @@ namespace Elastos {
 			return _transaction->version;
 		}
 
-		SharedWrapperList<TransactionInput, BRTxInput *> Transaction::getInputs() {
+		SharedWrapperList<TransactionInput, BRTxInput *> Transaction::getInputs() const {
 
 			size_t inputCount = _transaction->inCount;
 
@@ -86,7 +91,7 @@ namespace Elastos {
 			return inputs;
 		}
 
-		void Transaction::transactionInputCopy(BRTxInput *target, const BRTxInput *source) {
+		void Transaction::transactionInputCopy(BRTxInput *target, const BRTxInput *source) const {
 			assert (target != nullptr);
 			assert (source != nullptr);
 			*target = *source;
@@ -98,7 +103,7 @@ namespace Elastos {
 			BRTxInputSetSignature(target, source->signature, source->sigLen);
 		}
 
-		void Transaction::transactionOutputCopy(BRTxOutput *target, const BRTxOutput *source) {
+		void Transaction::transactionOutputCopy(BRTxOutput *target, const BRTxOutput *source) const {
 			assert (target != nullptr);
 			assert (source != nullptr);
 			*target = *source;
@@ -118,7 +123,7 @@ namespace Elastos {
 			return addresses;
 		}
 
-		SharedWrapperList<TransactionOutput, BRTxOutput *> Transaction::getOutputs() {
+		SharedWrapperList<TransactionOutput, BRTxOutput *> Transaction::getOutputs() const {
 
 			size_t outputCount = _transaction->outCount;
 
@@ -182,15 +187,15 @@ namespace Elastos {
 		void Transaction::addInput(const TransactionInput &input) {
 
 			BRTransactionAddInput(_transaction, input.getHash(), input.getIndex(), input.getAmount(),
-			                      input.getScript().data, input.getScript().length,
-			                      input.getSignature().data, input.getSignature().length,
-			                      input.getSequence());
+								  input.getScript().data, input.getScript().length,
+								  input.getSignature().data, input.getSignature().length,
+								  input.getSequence());
 		}
 
 		void Transaction::addOutput(const TransactionOutput &output) {
 
 			BRTransactionAddOutput(_transaction, output.getAmount(),
-			                       output.getScript().data, output.getScript().length);
+								   output.getScript().data, output.getScript().length);
 		}
 
 		void Transaction::shuffleOutputs() {
@@ -238,6 +243,50 @@ namespace Elastos {
 		uint64_t Transaction::getMinOutputAmount() {
 
 			return TX_MIN_OUTPUT_AMOUNT;
+		}
+
+		void Transaction::Serialize(std::istream &istream) const {
+			uint8_t typeData[8 / 8];
+			UInt8SetLE(typeData, uint8_t(_type));
+			istream >> typeData;
+
+			uint8_t payloadVersionData[8 / 8];
+			UInt8SetLE(payloadVersionData, _payloadVersion);
+			istream >> payloadVersionData;
+
+			assert(_payload != nullptr);
+			_payload->Serialize(istream);
+
+			uint8_t attributeLengthData[64 / 8];
+			UInt64SetLE(attributeLengthData, _attributes.size());
+			istream >> attributeLengthData;
+			for (size_t i = 0; i < _attributes.size(); i++) {
+				_attributes[i]->Serialize(istream);
+			}
+
+			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
+			uint8_t inputLengthData[64 / 8];
+			UInt64SetLE(inputLengthData, inputs.size());
+			istream >> inputLengthData;
+			for (size_t i = 0; i < inputs.size(); i++) {
+				inputs[i]->Serialize(istream);
+			}
+
+			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
+			uint8_t outputLengthData[64 / 8];
+			UInt64SetLE(outputLengthData, outputs.size());
+			istream >> outputLengthData;
+			for (size_t i = 0; i < outputs.size(); i++) {
+				outputs[i]->Serialize(istream);
+			}
+
+			uint8_t lockTimeData[32/8];
+			UInt32SetLE(lockTimeData, _transaction->lockTime);
+			istream >> lockTimeData;
+		}
+
+		void Transaction::Deserialize(std::ostream &ostream) {
+
 		}
 
 	}
