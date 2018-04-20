@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/protocol"
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 
 	. "github.com/elastos/Elastos.ELA.Utility/core"

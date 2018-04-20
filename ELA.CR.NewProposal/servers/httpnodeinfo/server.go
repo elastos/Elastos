@@ -8,7 +8,7 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/net/servers"
+	"github.com/elastos/Elastos.ELA/servers"
 )
 
 type Info struct {

@@ -9,13 +9,13 @@ import (
 	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/net/node"
-	"github.com/elastos/Elastos.ELA/net/protocol"
-	"github.com/elastos/Elastos.ELA/net/servers"
-	"github.com/elastos/Elastos.ELA/net/servers/httpjsonrpc"
-	"github.com/elastos/Elastos.ELA/net/servers/httpnodeinfo"
-	"github.com/elastos/Elastos.ELA/net/servers/httprestful"
-	"github.com/elastos/Elastos.ELA/net/servers/httpwebsocket"
+	"github.com/elastos/Elastos.ELA/node"
+	"github.com/elastos/Elastos.ELA/protocol"
+	"github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/servers/httpjsonrpc"
+	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
+	"github.com/elastos/Elastos.ELA/servers/httprestful"
+	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
 )
 
 const (
