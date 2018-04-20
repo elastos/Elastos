@@ -69,7 +69,7 @@ func NewBlockchain(height uint32) *Blockchain {
 		TimeSource:   NewMedianTime(),
 
 		BCEvents: events.NewEvent(),
-		AssetID:  Uint256{},
+		AssetID:  EmptyHash,
 	}
 }
 
@@ -104,8 +104,8 @@ func Init(store IChainStore) error {
 func GenesisBlockInit() (*Block, error) {
 	genesisBlockdata := &Header{
 		Version:    BlockVersion,
-		Previous:   Uint256{},
-		MerkleRoot: Uint256{},
+		Previous:   EmptyHash,
+		MerkleRoot: EmptyHash,
 		Timestamp:  uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
 		Bits:       0x1d03ffff,
 		//Bits:   config.Parameters.ChainParam.PowLimitBits,
@@ -180,7 +180,7 @@ func NewCoinBaseTransaction(coinBasePayload *PayloadCoinBase, currentHeight uint
 		Inputs: []*Input{
 			{
 				Previous: OutPoint{
-					TxID:  Uint256{},
+					TxID:  EmptyHash,
 					Index: 0x0000,
 				},
 				Sequence: 0x00000000,
@@ -603,7 +603,7 @@ func (bc *Blockchain) RemoveBlockNode(node *BlockNode) error {
 func (bc *Blockchain) GetPrevNodeFromBlock(block *Block) (*BlockNode, error) {
 	// Genesis block.
 	prevHash := block.Header.Previous
-	if prevHash.IsEqual(zeroHash) {
+	if prevHash.IsEqual(EmptyHash) {
 		return nil, nil
 	}
 
@@ -1071,7 +1071,7 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 
 	// Handle orphan blocks.
 	prevHash := blockHeader.Previous
-	if !prevHash.IsEqual(zeroHash) {
+	if !prevHash.IsEqual(EmptyHash) {
 		prevHashExists, err := bc.BlockExists(&prevHash)
 		if err != nil {
 			return false, false, err
