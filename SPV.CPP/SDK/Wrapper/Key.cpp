@@ -201,7 +201,7 @@ namespace Elastos {
 
 		UInt256 Key::encodeSHA256(const std::string &message) {
 			UInt256 md;
-			BRSHA256((void *) &md, (void *) &message, strlen(message.c_str()));
+			BRSHA256((void *) &md, (void *) message.c_str(), strlen(message.c_str()));
 			return md;
 		}
 
