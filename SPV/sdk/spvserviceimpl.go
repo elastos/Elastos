@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"time"
@@ -229,36 +228,16 @@ func (service *SPVServiceImpl) HandleBlockInvMsg(peer *net.Peer, inv *msg.Invent
 	}
 
 	// If no more blocks, return
-	if inv.Count == 0 {
+	if len(inv.Hashes) == 0 {
 		return nil
 	}
 
-	dataLen := len(inv.Data)
-	if dataLen != int(inv.Count)*UINT256SIZE {
-
-		service.changeSyncPeerAndRestart()
-		return fmt.Errorf("invalid block inventory data size: %d\n", dataLen)
-	}
-
-	var hashes = make([]Uint256, 0, inv.Count)
-	for i := 0; i < dataLen; i += UINT256SIZE {
-		var blockHash Uint256
-		err := blockHash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
-		if err != nil {
-			service.changeSyncPeerAndRestart()
-			return fmt.Errorf("deserialize block hash error %s\n", err.Error())
-		}
-		hashes = append(hashes, blockHash)
-	}
-
 	// Put hashes to request queue
-	service.queue.PushHashes(peer, hashes)
+	service.queue.PushHashes(peer, inv.Hashes)
 
 	// Request more blocks
-	locator := []*Uint256{&hashes[len(hashes)-1]}
-	request := msg.NewBlocksReq(locator, Uint256{})
-
-	go peer.Send(request)
+	locator := []*Uint256{inv.Hashes[len(inv.Hashes)-1]}
+	go peer.Send(msg.NewBlocksReq(locator, Uint256{}))
 
 	return nil
 }

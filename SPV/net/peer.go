@@ -148,7 +148,7 @@ func (peer *Peer) OnDecodeError(err error) {
 		log.Error("Decode message error:", ErrUnmatchedMagic)
 		peer.Disconnect()
 	default:
-		log.Error("Decode message error:", err, ", peer id is: ", peer.ID())
+		log.Error(err, ", peer id is: ", peer.ID())
 	}
 }
 

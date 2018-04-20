@@ -63,10 +63,10 @@ func (queue *RequestQueue) start() {
 }
 
 // This method will block when request queue is filled
-func (queue *RequestQueue) PushHashes(peer *net.Peer, hashes []Uint256) {
+func (queue *RequestQueue) PushHashes(peer *net.Peer, hashes []*Uint256) {
 	queue.peer = peer
 	for _, hash := range hashes {
-		queue.hashesQueue <- hash
+		queue.hashesQueue <- *hash
 	}
 }
 
