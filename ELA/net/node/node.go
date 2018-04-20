@@ -11,19 +11,19 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	. "github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/events"
-	. "github.com/elastos/Elastos.ELA/net/message"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type Semaphore chan struct{}
@@ -37,23 +37,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	state    uint32 // node state
-	id       uint64 // The nodes's id
-	version  uint32 // The network protocol the node used
-	services uint64 // The services the node supplied
-	relay    bool   // The relay capability of the node (merge into capbility flag)
-	height   uint64 // The node latest block height
-	txnCnt   uint64 // The transactions be transmit by this node
-	rxTxnCnt uint64 // The transaction received by this node
-	// TODO does this channel should be a buffer channel
-	chF    chan func() error // Channel used to operate the node without lock
-	link                     // The link status and infomation
-	local  *node             // The pointer to local node
-	nbrNodes                 // The neighbor node connect with currently node except itself
-	eventQueue               // The event queue to notice notice other modules
-	chain.TxPool             // Unconfirmed transaction pool
-	idCache                  // The buffer to store the id of the items which already be processed
-	filter *bloom.Filter     // The bloom filter of a spv node
+	PeerState              // node state
+	id       uint64        // The nodes's id
+	version  uint32        // The network protocol the node used
+	services uint64        // The services the node supplied
+	relay    bool          // The relay capability of the node (merge into capbility flag)
+	height   uint64        // The node latest block height
+	txnCnt   uint64        // The transactions be transmit by this node
+	rxTxnCnt uint64        // The transaction received by this node
+	link                   // The link status and infomation
+	local    *node         // The pointer to local node
+	nbrNodes               // The neighbor node connect with currently node except itself
+	eventQueue             // The event queue to notice notice other modules
+	chain.TxPool           // Unconfirmed transaction pool
+	idCache                // The buffer to store the id of the items which already be processed
+	filter   *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -81,7 +79,7 @@ type ConnectingNodes struct {
 
 func (node *node) DumpInfo() {
 	log.Info("Node info:")
-	log.Info("\t state = ", node.state)
+	log.Info("\t state = ", node.State())
 	log.Info(fmt.Sprintf("\t id = 0x%x", node.id))
 	log.Info("\t addr = ", node.addr)
 	log.Info("\t conn = ", node.conn)
@@ -97,7 +95,7 @@ func (node *node) IsAddrInNbrList(addr string) bool {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	for _, n := range node.nbrNodes.List {
-		if n.State() == Hand || n.State() == HandShake || n.State() == Establish {
+		if n.State() == HAND || n.State() == HANDSHAKE || n.State() == ESTABLISH {
 			addr := n.Addr()
 			port := n.Port()
 			na := addr + ":" + strconv.Itoa(int(port))
@@ -136,7 +134,7 @@ func (node *node) RemoveAddrInConnectingList(addr string) {
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	port uint16, nonce uint64, relay uint8, height uint64) {
 
-	node.Time = t
+	node.lastActive = t
 	node.id = nonce
 	node.version = version
 	node.services = services
@@ -149,19 +147,19 @@ func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	node.height = uint64(height)
 }
 
-func NewNode() *node {
-	n := node{
-		state:  Init,
-		filter: new(bloom.Filter),
-		chF:    make(chan func() error),
-	}
-	runtime.SetFinalizer(&n, rmNode)
-	go n.backend()
-	return &n
+func NewNode(conn net.Conn) *node {
+	node := new(node)
+	node.conn = conn
+	node.filter = new(bloom.Filter)
+	node.MsgReader = NewMsgReader(conn, &MsgHandler{node: node})
+	runtime.SetFinalizer(node, rmNode)
+	return node
 }
 
 func InitNode() Noder {
-	n := NewNode()
+	Magic = Parameters.Magic
+
+	n := NewNode(nil)
 	n.version = PROTOCOLVERSION
 
 	n.SyncBlkReqSem = MakeSemaphore(MAXSYNCHDRREQ)
@@ -182,9 +180,8 @@ func InitNode() Noder {
 	n.TxPool.Init()
 	n.eventQueue.init()
 	n.idCache.init()
-	n.filter = new(bloom.Filter)
 	n.cachedHashes = make([]Uint256, 0)
-	n.nodeDisconnectSubscriber = n.eventQueue.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, n.NodeDisconnect)
+	n.nodeDisconnectSubscriber = n.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, n.NodeDisconnect)
 	n.RequestedBlockList = make(map[Uint256]time.Time)
 	n.initConnection()
 	go n.updateConnection()
@@ -195,7 +192,7 @@ func InitNode() Noder {
 
 func (n *node) NodeDisconnect(v interface{}) {
 	if node, ok := v.(*node); ok {
-		node.SetState(Inactive)
+		node.SetState(INACTIVITY)
 		conn := node.GetConn()
 		conn.Close()
 	}
@@ -205,19 +202,8 @@ func rmNode(node *node) {
 	log.Debug(fmt.Sprintf("Remove unused/deuplicate node: 0x%0x", node.id))
 }
 
-// TODO pass pointer to method only need modify it
-func (node *node) backend() {
-	for f := range node.chF {
-		f()
-	}
-}
-
 func (node *node) ID() uint64 {
 	return node.id
-}
-
-func (node *node) State() uint32 {
-	return atomic.LoadUint32(&(node.state))
 }
 
 func (node *node) GetConn() net.Conn {
@@ -262,14 +248,6 @@ func (node *node) GetTxnCnt() uint64 {
 
 func (node *node) GetRxTxnCnt() uint64 {
 	return node.rxTxnCnt
-}
-
-func (node *node) SetState(state uint32) {
-	atomic.StoreUint32(&(node.state), state)
-}
-
-func (node *node) CompareAndSetState(old, new uint32) bool {
-	return atomic.CompareAndSwapUint32(&(node.state), old, new)
 }
 
 func (node *node) LocalNode() Noder {
@@ -324,28 +302,22 @@ func (node *node) WaitForSyncFinish() {
 	}
 }
 
-func (node *node) GetLastRXTime() time.Time {
-	return node.Time
-}
-
 func (node *node) LoadFilter(filter *bloom.FilterLoad) {
 	node.filter.Reload(filter)
 }
 
-func (node *node) GetFilter() *bloom.Filter {
+func (node *node) BloomFilter() *bloom.Filter {
 	return node.filter
 }
 
-func (node *node) Relay(frmnode Noder, message interface{}) error {
+func (node *node) Relay(from Noder, message interface{}) error {
 	log.Debug()
-	if frmnode != nil && node.LocalNode().IsSyncHeaders() == true {
+	if from != nil && node.LocalNode().IsSyncHeaders() == true {
 		return nil
 	}
 
-	var buf []byte
-	var err error
 	for _, nbr := range node.GetNeighborNoder() {
-		if frmnode == nil || nbr.ID() != frmnode.ID() {
+		if from == nil || nbr.ID() != from.ID() {
 
 			switch message.(type) {
 			case *Transaction:
@@ -356,18 +328,10 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 					continue
 				}
 
-				if nbr.IsRelay() || (nbr.GetFilter().IsLoaded() && nbr.GetFilter().MatchTxAndUpdate(txn)) {
-					if len(buf) == 0 {
-						buf, err = NewTxn(txn)
-					}
+				if nbr.IsRelay() || (nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(txn)) {
+					go nbr.Send(msg.NewTx(*txn))
+					node.txnCnt++
 				}
-				if err != nil {
-					log.Error("Error New Tx message: ", err)
-					return err
-				}
-				node.txnCnt++
-				nbr.Tx(buf)
-
 			case *Block:
 				log.Debug("TX block message")
 				block := message.(*Block)
@@ -376,26 +340,15 @@ func (node *node) Relay(frmnode Noder, message interface{}) error {
 					continue
 				}
 
-				if nbr.GetFilter().IsLoaded() {
-					msg, err := NewMerkleBlockMsg(block, nbr.GetFilter())
-					if err != nil {
-						log.Error("Error New Block message: ", err)
-						return err
-					}
-					nbr.Tx(msg)
+				if nbr.BloomFilter().IsLoaded() {
+					go nbr.Send(bloom.NewMerkleBlock(block, nbr.BloomFilter()))
+
 				} else if nbr.IsRelay() {
-					if len(buf) == 0 {
-						buf, err = NewBlock(block)
-						if err != nil {
-							log.Error("Error New Block message: ", err)
-							return err
-						}
-					}
-					nbr.Tx(buf)
+					go nbr.Send(msg.NewBlock(*block))
 				}
 			default:
-				log.Warn("Unknown Xmit message type")
-				return errors.New("Unknown Xmit message type")
+				log.Warn("unknown relay message type")
+				return errors.New("unknown relay message type")
 			}
 		}
 	}
@@ -458,7 +411,7 @@ func (node *node) GetBestHeightNoder() Noder {
 	defer node.nbrNodes.RUnlock()
 	var bestnode Noder
 	for _, n := range node.nbrNodes.List {
-		if n.State() == Establish {
+		if n.State() == ESTABLISH {
 			if bestnode == nil {
 				if !n.IsSyncFailed() {
 					bestnode = n
