@@ -48,6 +48,14 @@ autoconf automake libtool shtool pkg-config gettext flatcc
 
 You can use brew or build the packages from the source code.
 
+Beware, homebrew has an issue with linking `gettext`. So if you having an issue with executing `autopoint`, run:
+
+```shell
+brew link --force gettext
+```
+
+And run resulting command.
+
 #### 2. Build
 
 Change to `$(SRC_ROOT)/build` directory, and run:
