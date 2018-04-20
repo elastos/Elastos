@@ -1,8 +1,6 @@
 package node
 
 import (
-	"bytes"
-	"encoding/hex"
 	"errors"
 	"strconv"
 	"time"
@@ -12,7 +10,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -243,20 +241,25 @@ func (h *MsgHandler) onFilterLoad(msg *bloom.FilterLoad) error {
 func (h *MsgHandler) onInventory(inv *msg.Inventory) error {
 	log.Debug()
 	node := h.node
-	log.Debug(fmt.Sprintf("The inv type: no one. block len: %d, %s\n", len(inv.Data), hex.EncodeToString(inv.Data)))
+	log.Debug(fmt.Sprintf("The inv type: no one. block len: %d, %s\n", len(inv.Hashes), inv.Hashes))
 
 	log.Debug("RX block message")
 	if node.LocalNode().IsSyncHeaders() == true && node.IsSyncHeaders() == false {
 		return nil
 	}
 
-	hashes := make([]Uint256, 0, inv.Count)
-	for i := 0; i < len(inv.Data); i += UINT256SIZE {
-		var hash Uint256
-		hash.Deserialize(bytes.NewReader(inv.Data[i:i+UINT256SIZE]))
-		hashes = append(hashes, hash)
-		if chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash) {
-			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+	for i, hash := range inv.Hashes {
+		// Request block
+		if !chain.DefaultLedger.BlockInLedger(*hash) {
+			if !node.LocalNode().RequestedBlockExisted(*hash) && !chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) {
+				node.LocalNode().AddRequestedBlock(*hash)
+				go node.Send(msg.NewDataReq(BlockData, *hash))
+			}
+		}
+
+		// Request fork chain
+		if chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) {
+			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(hash)
 			locator, err := chain.DefaultLedger.Blockchain.LatestBlockLocator()
 			if err != nil {
 				log.Errorf(" Failed to get block locator for the latest block: %v", err)
@@ -266,18 +269,10 @@ func (h *MsgHandler) onInventory(inv *msg.Inventory) error {
 			continue
 		}
 
-		if i+UINT256SIZE == len(inv.Data) {
-			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
+		// Request next hashes
+		if i == len(inv.Hashes)-1 {
+			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(hash)
 			SendBlocksReq(node, locator, EmptyHash)
-		}
-	}
-
-	for _, hash := range hashes {
-		if !chain.DefaultLedger.BlockInLedger(hash) {
-			if !(node.LocalNode().RequestedBlockExisted(hash) || chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash)) {
-				node.LocalNode().AddRequestedBlock(hash)
-				go node.Send(msg.NewDataReq(BlockData, hash))
-			}
 		}
 	}
 	return nil
@@ -499,7 +494,7 @@ func GetBlockHashes(startHash Uint256, stopHash Uint256) ([]*Uint256, error) {
 		}
 	}
 
-	hashes := make([]*Uint256, 0, count)
+	hashes := make([]*Uint256, 0)
 	for i := uint32(1); i <= count; i++ {
 		hash, err := chain.DefaultLedger.Store.GetBlockHash(startHeight + i)
 		if err != nil {
