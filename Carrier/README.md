@@ -69,13 +69,7 @@ $ ./darwin_build.sh help
 Change to `$(SRC_ROOT)`/docker directory, and run:
 
 ```shell
-$ docker build .
-```
-
-After the Docker image build finish, then tag the new image:
-
-```shell
-$ docker tag THE-NEW-GENERATED-IMAGE-ID elastos-dev
+$ docker build -t elastos-dev .
 ```
 
 #### 2. Start Docker image
