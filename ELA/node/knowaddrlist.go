@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/log"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/protocol"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
