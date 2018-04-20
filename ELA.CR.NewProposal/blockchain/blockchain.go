@@ -1244,17 +1244,15 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 }
 
 func (b *Blockchain) LatestLocatorHash(locator []*Uint256) *Uint256 {
-	var startHash *Uint256
+	var startHash Uint256
 	for _, hash := range locator {
 		_, err := DefaultLedger.Store.GetBlock(*hash)
 		if err == nil {
-			startHash = hash
+			startHash = *hash
 			break
 		}
 	}
-
-	//	log.Error("locator:", BytesToHexString(startHash.ToArrayReverse()))
-	return startHash
+	return &startHash
 }
 
 func (b *Blockchain) MedianAdjustedTime() time.Time {
