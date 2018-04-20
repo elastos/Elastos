@@ -43,7 +43,7 @@ $ ./linux_build.sh help
 You need to install the following packages on your Mac to build from the source:
 
 ```shell
-autoconf automake libtool shtool pkg-config gettext
+autoconf automake libtool shtool pkg-config gettext flatcc
 ```
 
 You can use brew or build the packages from the source code.
