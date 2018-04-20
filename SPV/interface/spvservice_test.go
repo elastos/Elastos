@@ -68,6 +68,8 @@ func (l *ConfirmedListener) Notify(proof Proof, tx Transaction) {
 	spv.SubmitTransactionReceipt(tx.Hash())
 }
 
+func (l *ConfirmedListener) Rollback(height uint32) {}
+
 type UnconfirmedListener struct {
 	txType TransactionType
 }
@@ -91,3 +93,5 @@ func (l *UnconfirmedListener) Notify(proof Proof, tx Transaction) {
 	// Submit transaction receipt
 	spv.SubmitTransactionReceipt(tx.Hash())
 }
+
+func (l *UnconfirmedListener) Rollback(height uint32) {}

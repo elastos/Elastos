@@ -160,7 +160,12 @@ func (service *SPVServiceImpl) Start() error {
 }
 
 func (service *SPVServiceImpl) OnTxCommitted(tx Transaction, height uint32) {}
-func (service *SPVServiceImpl) OnChainRollback(height uint32)                  {}
+
+func (service *SPVServiceImpl) OnChainRollback(height uint32) {
+	service.queue.Rollback(height)
+	service.notifyRollback(height)
+}
+
 func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
 	header := block.Header
 
@@ -222,11 +227,11 @@ func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []T
 		proof = getTransactionProof(proof, storeTx.TxId)
 
 		// Notify listeners
-		service.notifyListeners(*proof, storeTx.Data, header.Height-item.Height)
+		service.notifyTransaction(*proof, storeTx.Data, header.Height-item.Height)
 	}
 }
 
-func (service *SPVServiceImpl) notifyListeners(proof Proof, tx Transaction, confirmations uint32) {
+func (service *SPVServiceImpl) notifyTransaction(proof Proof, tx Transaction, confirmations uint32) {
 	listeners := service.listeners[tx.TxType]
 	for _, listener := range listeners {
 		if listener.Confirmed() {
@@ -235,6 +240,14 @@ func (service *SPVServiceImpl) notifyListeners(proof Proof, tx Transaction, conf
 			}
 		} else {
 			go listener.Notify(proof, tx)
+		}
+	}
+}
+
+func (service *SPVServiceImpl) notifyRollback(height uint32) {
+	for _, group := range service.listeners {
+		for _, listener := range group {
+			go listener.Rollback(height)
 		}
 	}
 }

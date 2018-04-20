@@ -6,7 +6,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 type Queue interface {
@@ -18,6 +17,9 @@ type Queue interface {
 
 	// Delete confirmed item in queue
 	Delete(txHash *Uint256) error
+
+	// Rollback queue items
+	Rollback(height uint32) error
 }
 
 const (
@@ -52,16 +54,11 @@ func NewQueueDB() (Queue, error) {
 
 // Put a queue item to database
 func (db *QueueDB) Put(item *QueueItem) error {
-	log.Debug("Queue db Put: ", item)
 	db.Lock()
 	defer db.Unlock()
 
 	sql := "INSERT OR REPLACE INTO Queue(TxHash, BlockHash, Height) VALUES(?,?,?)"
-	stmt, err := db.Prepare(sql)
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(item.TxHash.Bytes(), item.BlockHash.Bytes(), item.Height)
+	_, err := db.Exec(sql, item.TxHash.Bytes(), item.BlockHash.Bytes(), item.Height)
 	if err != nil {
 		return err
 	}
@@ -71,7 +68,6 @@ func (db *QueueDB) Put(item *QueueItem) error {
 
 // Get all items in queue
 func (db *QueueDB) GetAll() ([]*QueueItem, error) {
-	log.Debug("Queue db GetAll()")
 	db.RLock()
 	defer db.RUnlock()
 
@@ -107,7 +103,6 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 
 // Delete confirmed item in queue
 func (db *QueueDB) Delete(txHash *Uint256) error {
-	log.Debug("Queue db Delete: ", txHash.String())
 	db.Lock()
 	defer db.Unlock()
 
@@ -117,4 +112,13 @@ func (db *QueueDB) Delete(txHash *Uint256) error {
 	}
 
 	return nil
+}
+
+// Rollback queue items
+func (db *QueueDB) Rollback(height uint32) error {
+	db.Lock()
+	defer db.Unlock()
+
+	_, err := db.Exec("DELETE FROM Queue WHERE Height=?", height)
+	return err
 }

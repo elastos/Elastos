@@ -58,6 +58,10 @@ type TransactionListener interface {
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it
 	Notify(Proof, Transaction)
+
+	// Rollback callbacks that, the transactions
+	// on the given height has been rollback
+	Rollback(height uint32)
 }
 
 func NewSPVService(clientId uint64, seeds []string) SPVService {
