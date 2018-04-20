@@ -65,6 +65,10 @@ The programming idea with CAR is the essence technology in Elastos, it runs thro
 **Elastos is a work in progress!**
 
 ## Community
+### How to contribute to the community? [Contribution Guide](./CONTRIBUTING.md)
+### How to raise an issue? [Issue Template](./ISSUE_TEMPKLATE.md)
+### Where are Elastos Developer Community Home?[Elastos Developer Community Repo](https://github.com/elastos/Elastos.Community)
+### Where can I find Elastos Developer Community in my own city? [Elastos Developer Community Global](https://github.com/elastos/Elastos.Community.Global)
 
 ## Projects
 
