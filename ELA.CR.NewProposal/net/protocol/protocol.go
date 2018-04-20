@@ -1,8 +1,6 @@
 package protocol
 
 import (
-	"bytes"
-	"encoding/binary"
 	"net"
 	"time"
 
@@ -12,24 +10,13 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
-type NodeAddr struct {
-	Time     int64
-	Services uint64
-	IpAddr   [16]byte
-	Port     uint16
-	ID       uint64 // Unique ID
-}
-
 const (
-	MSGCMDLEN          = 12
-	CMDOFFSET          = 4
-	CHECKSUMLEN        = 4
-	HASHLEN            = 32 // hash length in byte
 	MSGHDRLEN          = 24
 	MAXBLKHDRCNT       = 400
-	MAXINVHDRCNT       = 50
 	MinConnectionCount = 3
 	TIMESOFUPDATETIME  = 2
 )
@@ -46,22 +33,10 @@ const (
 	MAXIDCACHED      = 5000
 )
 
-// The node state
-const (
-	Init       = 0
-	Hand       = 1
-	HandShake  = 2
-	HandShaked = 3
-	Establish  = 4
-	Inactive   = 5
-)
-
 const (
 	SPVPort    = 20866
 	SPVService = 1 << 2
 )
-
-var ReceiveDuplicateBlockCnt uint64 //an index to detecting networking status
 
 type Noder interface {
 	Version() uint32
@@ -73,17 +48,16 @@ type Noder interface {
 	LocalPort() uint16
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
-	State() uint32
+	SetState(state uint)
+	State() uint
 	IsRelay() bool
-	SetState(state uint32)
-	CompareAndSetState(old, new uint32) bool
 	LocalNode() Noder
 	DelNbrNode(id uint64) (Noder, bool)
 	AddNbrNode(Noder)
-	CloseConn()
 	Height() uint64
-	GetConnectionCnt() uint
 	GetConn() net.Conn
+	CloseConn()
+	GetConnectionCnt() uint
 	GetTxnPool(bool) map[Uint256]*Transaction
 	AppendToTxnPool(*Transaction) ErrCode
 	ExistedID(id Uint256) bool
@@ -94,12 +68,12 @@ type Noder interface {
 	ConnectSeeds()
 	Connect(nodeAddr string) error
 	LoadFilter(filter *bloom.FilterLoad)
-	GetFilter() *bloom.Filter
-	Tx(buf []byte)
+	BloomFilter() *bloom.Filter
+	Send(msg p2p.Message)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighborAddrs() ([]NodeAddr, uint64)
+	GetNeighborAddrs() ([]msg.Addr, uint64)
 	GetTransaction(hash Uint256) *Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
@@ -113,16 +87,17 @@ type Noder interface {
 
 	GetNeighborNoder() []Noder
 	GetNbrNodeCnt() uint32
-	GetLastRXTime() time.Time
+	UpdateLastActive()
+	GetLastActiveTime() time.Time
 	SetHeight(height uint64)
 	IsAddrInNbrList(addr string) bool
 	SetAddrInConnectingList(addr string) bool
 	RemoveAddrInConnectingList(addr string)
 	GetAddressCnt() uint64
-	AddAddressToKnownAddress(na NodeAddr)
-	RandGetAddresses(nbrAddrs []NodeAddr) []NodeAddr
+	AddAddressToKnownAddress(na msg.Addr)
+	RandGetAddresses(nbrAddrs []msg.Addr) []msg.Addr
 	NeedMoreAddresses() bool
-	RandSelectAddresses() []NodeAddr
+	RandSelectAddresses() []msg.Addr
 	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
 	ExistHash(hash Uint256) bool
@@ -145,20 +120,4 @@ type Noder interface {
 	SetStopHash(hash Uint256)
 	GetStopHash() Uint256
 	ResetRequestedBlock()
-}
-
-func (msg *NodeAddr) Deserialization(p []byte) error {
-	buf := bytes.NewBuffer(p)
-	err := binary.Read(buf, binary.LittleEndian, msg)
-	return err
-}
-
-func (msg NodeAddr) Serialization() ([]byte, error) {
-	var buf bytes.Buffer
-	err := binary.Write(&buf, binary.LittleEndian, msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), err
 }
