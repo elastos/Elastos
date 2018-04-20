@@ -1,11 +1,11 @@
 package spvwallet
 
 import (
-	"os"
-	"sync"
+	"encoding/json"
 	"errors"
 	"io/ioutil"
-	"encoding/json"
+	"os"
+	"sync"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -154,4 +154,23 @@ func (store *KeystoreFile) SaveToFile() error {
 	}
 
 	return nil
+}
+
+func (store *KeystoreFile) Json() (string, error) {
+	store.Lock()
+	defer store.Unlock()
+
+	data, err := json.Marshal(*store)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
+func (store *KeystoreFile) FromJson(str string) error {
+	store.Lock()
+	defer store.Unlock()
+
+	return json.Unmarshal([]byte(str), store)
 }

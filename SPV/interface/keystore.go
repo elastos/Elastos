@@ -24,6 +24,10 @@ type Keystore interface {
 
 	// Get main account and all sub accounts
 	GetAccounts() []Account
+
+	Json() (string, error)
+
+	FromJson(json string, password string) error
 }
 
 type Account interface {

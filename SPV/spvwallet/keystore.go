@@ -1,15 +1,15 @@
 package spvwallet
 
 import (
-	"sync"
-	"errors"
 	"crypto/rand"
 	"crypto/sha256"
+	"errors"
 	"fmt"
+	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.SPV/sdk"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 const (
@@ -24,6 +24,9 @@ type Keystore interface {
 	GetAccounts() []*Account
 	GetAccountByIndex(index int) *Account
 	GetAccountByProgramHash(programHash *Uint168) *Account
+
+	Json() (string, error)
+	FromJson(json string, password string) error
 }
 
 type KeystoreImpl struct {
@@ -101,31 +104,28 @@ func OpenKeystore(password []byte) (Keystore, error) {
 	if err != nil {
 		return nil, err
 	}
+	keystore := new(KeystoreImpl)
+	err = keystore.initKeystore(keystoreFile, password)
+	return keystore, err
+}
 
-	keystore := &KeystoreImpl{
-		KeystoreFile: keystoreFile,
-	}
-
-	err = keystore.verifyPassword(password)
+func (store *KeystoreImpl) initKeystore(keystoreFile *KeystoreFile, password []byte) error {
+	store.KeystoreFile = keystoreFile
+	err := store.verifyPassword(password)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	passwordKey := crypto.ToAesKey(password)
 
-	masterKey, err := keystore.decryptMasterKey(passwordKey)
+	masterKey, err := store.decryptMasterKey(passwordKey)
 
-	privateKey, publicKey, err := keystore.decryptPrivateKey(masterKey, passwordKey)
+	privateKey, publicKey, err := store.decryptPrivateKey(masterKey, passwordKey)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = keystore.initAccounts(masterKey, privateKey, publicKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return keystore, nil
+	return store.initAccounts(masterKey, privateKey, publicKey)
 }
 
 func (store *KeystoreImpl) initAccounts(masterKey, privateKey []byte, publicKey *crypto.PublicKey) error {
@@ -349,4 +349,14 @@ func (store *KeystoreImpl) decryptPrivateKey(masterKey, passwordKey []byte) ([]b
 	privateKey := keyPair[64:96]
 
 	return privateKey, crypto.NewPubKey(privateKey), nil
+}
+
+func (store *KeystoreImpl) FromJson(str string, password string) error {
+	file := new(KeystoreFile)
+	file.FromJson(str)
+	return store.initKeystore(file, []byte(password))
+}
+
+func (store *KeystoreImpl) Json() (string, error) {
+	return store.KeystoreFile.Json()
 }

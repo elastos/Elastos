@@ -45,3 +45,12 @@ func (impl *KeystoreImpl) GetAccounts() []Account {
 	}
 	return accounts
 }
+
+func (impl *KeystoreImpl) Json() (string, error) {
+	return impl.keystore.Json()
+}
+
+func (impl *KeystoreImpl) FromJson(str string, password string) error {
+	impl.keystore = new(spvwallet.KeystoreImpl)
+	return impl.keystore.FromJson(str, password)
+}
