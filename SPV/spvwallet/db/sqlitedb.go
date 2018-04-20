@@ -125,12 +125,6 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 		return err
 	}
 
-	// Rollback Queue
-	_, err = tx.Exec("DELETE FROM Queue WHERE Height=?", height)
-	if err != nil {
-		return err
-	}
-
 	return tx.Commit()
 }
 
@@ -144,8 +138,7 @@ func (db *SQLiteDB) Reset() error {
 	_, err = tx.Exec(`DROP TABLE IF EXISTS Info;
 							DROP TABLE IF EXISTS UTXOs;
 							DROP TABLE IF EXISTS STXOs;
-							DROP TABLE IF EXISTS TXNs;
-							DROP TABLE IF EXISTS Queue;`)
+							DROP TABLE IF EXISTS TXNs;`)
 	if err != nil {
 		return err
 	}
