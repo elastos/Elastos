@@ -115,7 +115,6 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 
 //validate the transaction of duplicate UTXO input
 func CheckTransactionInput(txn *Transaction) error {
-	var zeroHash Uint256
 	if txn.IsCoinBaseTx() {
 		if len(txn.Inputs) != 1 {
 			return errors.New("coinbase must has only one input")
@@ -123,7 +122,7 @@ func CheckTransactionInput(txn *Transaction) error {
 		coinbaseInputHash := txn.Inputs[0].Previous.TxID
 		coinbaseInputIndex := txn.Inputs[0].Previous.Index
 		//TODO :check sequence
-		if !coinbaseInputHash.IsEqual(zeroHash) || coinbaseInputIndex != math.MaxUint16 {
+		if !coinbaseInputHash.IsEqual(EmptyHash) || coinbaseInputIndex != math.MaxUint16 {
 			return errors.New("invalid coinbase input")
 		}
 
@@ -134,7 +133,7 @@ func CheckTransactionInput(txn *Transaction) error {
 		return errors.New("transaction has no inputs")
 	}
 	for i, utxoin := range txn.Inputs {
-		if utxoin.Previous.TxID.IsEqual(zeroHash) && (utxoin.Previous.Index == math.MaxUint16) {
+		if utxoin.Previous.TxID.IsEqual(EmptyHash) && (utxoin.Previous.Index == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
 		for j := 0; j < i; j++ {
