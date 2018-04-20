@@ -30,6 +30,8 @@
 #include "BRTransaction.h"
 #include "BRWallet.h"
 #include "BRChainParams.h"
+#include "BRPeerMessages.h"
+#include "BRBloomFilter.h"
 #include <stddef.h>
 #include <inttypes.h>
 
@@ -39,11 +41,47 @@ extern "C" {
 
 #define PEER_MAX_CONNECTIONS 3
 
-typedef struct BRPeerManagerStruct BRPeerManager;
+typedef struct {
+	BRTransaction *tx;
+	void *info;
+	void (*callback)(void *info, int error);
+} BRPublishedTx;
+
+typedef struct {
+	UInt256 txHash;
+	BRPeer *peers;
+} BRTxPeerList;
+
+typedef struct BRPeerManagerStruct {
+	const BRChainParams *params;
+	BRWallet *wallet;
+	int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount;
+	BRPeer *peers, *downloadPeer, fixedPeer, **connectedPeers;
+	char downloadPeerName[INET6_ADDRSTRLEN + 6];
+	uint32_t earliestKeyTime, syncStartHeight, filterUpdateHeight, estimatedHeight;
+	BRBloomFilter *bloomFilter;
+	double fpRate, averageTxPerBlock;
+	BRSet *blocks, *orphans, *checkpoints;
+	BRMerkleBlock *lastBlock, *lastOrphan;
+	BRTxPeerList *txRelays, *txRequests;
+	BRPublishedTx *publishedTx;
+	UInt256 *publishedTxHashes;
+	void *info;
+	void (*syncStarted)(void *info);
+	void (*syncStopped)(void *info, int error);
+	void (*txStatusUpdate)(void *info);
+	void (*saveBlocks)(void *info, int replace, BRMerkleBlock *blocks[], size_t blocksCount);
+	void (*savePeers)(void *info, int replace, const BRPeer peers[], size_t peersCount);
+	int (*networkIsReachable)(void *info);
+	void (*threadCleanup)(void *info);
+	pthread_mutex_t lock;
+	BRPeerMessages *peerMessages;
+} BRPeerManager;
 
 // returns a newly allocated BRPeerManager struct that must be freed by calling BRPeerManagerFree()
 BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, uint32_t earliestKeyTime,
-                                BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[], size_t peersCount);
+                                BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[], size_t peersCount,
+								BRPeerMessages *peerMessages);
 
 // not thread-safe, set callbacks once before calling BRPeerManagerConnect()
 // info is a void pointer that will be passed along with each callback call

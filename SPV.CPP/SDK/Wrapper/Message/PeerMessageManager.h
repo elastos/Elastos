@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <boost/shared_ptr.hpp>
 
+#include "BRPeerManager.h"
+
 #include "IMessage.h"
 
 namespace Elastos {
@@ -22,10 +24,10 @@ namespace Elastos {
 			typedef boost::shared_ptr<IMessage> MessagePtr;
 			const MessagePtr &getMessage(const std::string &message);
 
+			void initMessages(BRPeerManager *peerManager);
+
 		private:
 			PeerMessageManager();
-
-			void initMessages();
 
 		private:
 			static PeerMessageManager _instance;

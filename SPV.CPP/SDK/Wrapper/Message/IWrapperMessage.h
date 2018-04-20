@@ -16,6 +16,8 @@ namespace Elastos {
 			IWrapperMessage();
 
 			virtual ~IWrapperMessage();
+
+
 		};
 
 	}

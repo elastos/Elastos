@@ -4,6 +4,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <BRPeerMessages.h>
 
 #include "BRPeerMessages.h"
 
@@ -22,6 +23,15 @@ namespace Elastos {
 
 				return fun(peer, msg, msgLen);
 			}
+
+			void BRPeerSendVerackMessage(BRPeer *peer) {
+				VerackMessage *message = static_cast<VerackMessage *>(
+						PeerMessageManager::instance().getMessage(MSG_VERACK).get());
+				boost::function<void (BRPeer *peer)> fun =
+						boost::bind(&VerackMessage::Send, message, _1);
+
+				fun(peer);
+			}
 		}
 
 		PeerMessageManager PeerMessageManager::_instance = PeerMessageManager();
@@ -32,10 +42,11 @@ namespace Elastos {
 		PeerMessageManager::~PeerMessageManager() {
 		}
 
-		void PeerMessageManager::initMessages() {
+		void PeerMessageManager::initMessages(BRPeerManager *peerManager) {
 
-			GlobalMessages->BRPeerAcceptVerackMessage = BRPeerAcceptVerackMessage;
-			_messages[MSG_VERACK] = MessagePtr(new VerackMessage);;
+			peerManager->peerMessages->BRPeerAcceptVerackMessage = BRPeerAcceptVerackMessage;
+			peerManager->peerMessages->BRPeerSendVerackMessage = BRPeerSendVerackMessage;
+			_messages[MSG_VERACK] = MessagePtr(new VerackMessage);
 		}
 
 		PeerMessageManager &PeerMessageManager::instance() {

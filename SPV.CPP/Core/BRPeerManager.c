@@ -27,6 +27,7 @@
 #include "BRSet.h"
 #include "BRArray.h"
 #include "BRInt.h"
+#include "BRPeerMessages.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -57,17 +58,6 @@ typedef struct {
     BRPeerManager *manager;
     UInt256 hash;
 } BRPeerCallbackInfo;
-
-typedef struct {
-    BRTransaction *tx;
-    void *info;
-    void (*callback)(void *info, int error);
-} BRPublishedTx;
-
-typedef struct {
-    UInt256 txHash;
-    BRPeer *peers;
-} BRTxPeerList;
 
 // true if peer is contained in the list of peers associated with txHash
 static int _BRTxPeerListHasPeer(BRTxPeerList *list, UInt256 txHash, const BRPeer *peer)
@@ -165,31 +155,6 @@ inline static int _BRBlockHeightEq(const void *block, const void *otherBlock)
 {
     return (((const BRMerkleBlock *)block)->height == ((const BRMerkleBlock *)otherBlock)->height);
 }
-
-struct BRPeerManagerStruct {
-    const BRChainParams *params;
-    BRWallet *wallet;
-    int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount;
-    BRPeer *peers, *downloadPeer, fixedPeer, **connectedPeers;
-    char downloadPeerName[INET6_ADDRSTRLEN + 6];
-    uint32_t earliestKeyTime, syncStartHeight, filterUpdateHeight, estimatedHeight;
-    BRBloomFilter *bloomFilter;
-    double fpRate, averageTxPerBlock;
-    BRSet *blocks, *orphans, *checkpoints;
-    BRMerkleBlock *lastBlock, *lastOrphan;
-    BRTxPeerList *txRelays, *txRequests;
-    BRPublishedTx *publishedTx;
-    UInt256 *publishedTxHashes;
-    void *info;
-    void (*syncStarted)(void *info);
-    void (*syncStopped)(void *info, int error);
-    void (*txStatusUpdate)(void *info);
-    void (*saveBlocks)(void *info, int replace, BRMerkleBlock *blocks[], size_t blocksCount);
-    void (*savePeers)(void *info, int replace, const BRPeer peers[], size_t peersCount);
-    int (*networkIsReachable)(void *info);
-    void (*threadCleanup)(void *info);
-    pthread_mutex_t lock;
-};
 
 static void _BRPeerManagerPeerMisbehavin(BRPeerManager *manager, BRPeer *peer)
 {
@@ -1455,7 +1420,8 @@ static void _dummyThreadCleanup(void *info)
 
 // returns a newly allocated BRPeerManager struct that must be freed by calling BRPeerManagerFree()
 BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, uint32_t earliestKeyTime,
-                                BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[], size_t peersCount)
+                                BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[], size_t peersCount,
+                                BRPeerMessages *peerMessages)
 {
     BRPeerManager *manager = calloc(1, sizeof(*manager));
     BRMerkleBlock orphan, *block = NULL;
@@ -1468,6 +1434,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
     assert(peers != NULL || peersCount == 0);
 	memset(manager, 0, sizeof(*manager));
 
+	manager->peerMessages = peerMessages;
     manager->params = params;
     manager->wallet = wallet;
     manager->earliestKeyTime = earliestKeyTime;

@@ -11,6 +11,12 @@
 #include "BRPeer.h"
 #include "BRSet.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct BRPeerManagerStruct BRPeerManager;
+
 typedef struct {
 	BRPeer peer; // superstruct on top of BRPeer
 	uint32_t magicNumber;
@@ -48,6 +54,8 @@ typedef struct {
 	void *volatile mempoolInfo;
 	void (*volatile mempoolCallback)(void *info, int success);
 	pthread_t thread;
+
+	BRPeerManager *manager;
 } BRPeerContext;
 
 typedef struct {
@@ -56,6 +64,12 @@ typedef struct {
 
 } BRPeerMessages;
 
-extern BRPeerMessages *GlobalMessages;
+BRPeerMessages *BRPeerMessageNew(void);
+
+void BRPeerMessageFree(BRPeerMessages *peerMessages);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //BRPeerMessages_h

@@ -29,6 +29,7 @@
 #include "BRArray.h"
 #include "BRCrypto.h"
 #include "BRInt.h"
+#include "BRPeerManager.h"
 #include "BRPeerMessages.h"
 #include <stdlib.h>
 #include <float.h>
@@ -90,8 +91,6 @@ typedef enum {
     inv_block = 2,
     inv_filtered_block = 3
 } inv_type;
-
-BRPeerMessages *GlobalMessages;
 
 void BRPeerSendVersionMessage(BRPeer *peer);
 void BRPeerSendAddr(BRPeer *peer);
@@ -176,7 +175,7 @@ static int _BRPeerAcceptVersionMessage(BRPeer *peer, const uint8_t *msg, size_t 
             off += sizeof(uint32_t);
             peer_log(peer, "got version %"PRIu32", services %"PRIx64", useragent:\"%s\"", ctx->version, peer->services,
                      ctx->useragent);
-            GlobalMessages->BRPeerSendVerackMessage(peer);
+            ctx->manager->peerMessages->BRPeerSendVerackMessage(peer);
         }
     }
 
@@ -754,7 +753,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
         r = 0;
     }
     else if (strncmp(MSG_VERSION, type, 12) == 0) r = _BRPeerAcceptVersionMessage(peer, msg, msgLen);
-    else if (strncmp(MSG_VERACK, type, 12) == 0) r = GlobalMessages->BRPeerAcceptVerackMessage(peer, msg, msgLen);
+    else if (strncmp(MSG_VERACK, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptVerackMessage(peer, msg, msgLen);
     else if (strncmp(MSG_ADDR, type, 12) == 0) r = _BRPeerAcceptAddrMessage(peer, msg, msgLen);
     else if (strncmp(MSG_INV, type, 12) == 0) r = _BRPeerAcceptInvMessage(peer, msg, msgLen);
     else if (strncmp(MSG_TX, type, 12) == 0) r = _BRPeerAcceptTxMessage(peer, msg, msgLen);
