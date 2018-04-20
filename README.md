@@ -1,11 +1,11 @@
 # Elastos is Blockchain Powered Internet
 
 
-Welcome to Elastos! Why not [watch a video: Elastos Talk: Smart-Web Powered by Blockchain -Rong Chen 10.9.2017](https://youtu.be/2aOWfV-CZhs) to get started? 
+Welcome to Elastos! 
+
+What is Elastos? [Short Video 1:38](https://vimeo.com/264996792/d5265a3446)
+
 [Elastos Introduction slides](https://www.slideshare.net/RongChen34/elastos-intro)
-
-A [video demo for Elasltos RT](https://youtu.be/skewtq-kUQY) running on iOS (Mar 19, 2018). [Source code]( https://github.com/elastos/Elastos.RT/tree/master/Sources/Elastos/LibCore/tests/HelloCarDemo)
-
 
 ## Table of Contents
 
@@ -29,6 +29,8 @@ It contains index of documents, tutotials, project links etc.
 Elastos Runtime as an App Engine or VM. It runs on top of existing OS, such as Linux, Android, iOS. It provides SDK for DApps to be running on top of RT.
 
 As for the DApp developers, they do not need to care too much about the under-layer (blockchain) technical detail. They just need to call the RT.SDK. Building DApp will be much eaiser than before.
+A [video demo for Elasltos RT](https://youtu.be/skewtq-kUQY) running on iOS (Mar 19, 2018). [Source code]( https://github.com/elastos/Elastos.RT/tree/master/Sources/Elastos/LibCore/tests/HelloCarDemo)
+
 
 ### Elastos.NET
 Elastos.NET contains all of communication components of Elastos.RT. Including 
