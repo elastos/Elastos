@@ -1138,9 +1138,7 @@ func DumpBlockNode(node *BlockNode) {
 	log.Trace("---------------------")
 }
 
-type BlockLocator []Uint256
-
-func (b *Blockchain) LatestBlockLocator() (BlockLocator, error) {
+func (b *Blockchain) LatestBlockLocator() ([]*Uint256, error) {
 	b.mutex.RLock()
 	defer b.mutex.RUnlock()
 	if b.BestChain == nil {
@@ -1174,18 +1172,18 @@ func (b *Blockchain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
 	return node, exist
 }
 
-func (b *Blockchain) BlockLocatorFromHash(inhash *Uint256) BlockLocator {
+func (b *Blockchain) BlockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	b.mutex.RLock()
 	defer b.mutex.RUnlock()
 	return b.blockLocatorFromHash(inhash)
 }
-func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
+func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 	// The locator contains the requested hash at the very least.
 	var hash Uint256
 	copy(hash[:], inhash[:])
-	//locator := make(BlockLocator, 0, MaxBlockLocatorsPerMsg)
-	locator := make(BlockLocator, 0)
-	locator = append(locator, hash)
+	//locator := make(Locator, 0, MaxBlockLocatorsPerMsg)
+	locator := make([]*Uint256, 0)
+	locator = append(locator, &hash)
 
 	// Nothing more to do if a locator for the genesis hash was requested.
 	if hash.IsEqual(b.GenesisHash) {
@@ -1213,7 +1211,7 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 	}
 
 	// Generate the block locators according to the algorithm described in
-	// in the BlockLocator comment and make sure to leave room for the
+	// in the Locator comment and make sure to leave room for the
 	// final genesis hash.
 	increment := int32(1)
 	for len(locator) < MaxBlockLocatorsPerMsg-1 {
@@ -1236,19 +1234,19 @@ func (b *Blockchain) blockLocatorFromHash(inhash *Uint256) BlockLocator {
 			continue
 		}
 
-		locator = append(locator, h)
+		locator = append(locator, &h)
 	}
 
 	// Append the appropriate genesis block.
-	locator = append(locator, b.GenesisHash)
+	locator = append(locator, &b.GenesisHash)
 
 	return locator
 }
 
-func (b *Blockchain) LatestLocatorHash(locator BlockLocator) Uint256 {
-	var startHash Uint256
+func (b *Blockchain) LatestLocatorHash(locator []*Uint256) *Uint256 {
+	var startHash *Uint256
 	for _, hash := range locator {
-		_, err := DefaultLedger.Store.GetBlock(hash)
+		_, err := DefaultLedger.Store.GetBlock(*hash)
 		if err == nil {
 			startHash = hash
 			break
