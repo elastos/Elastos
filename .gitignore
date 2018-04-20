@@ -16,5 +16,5 @@ build/
 /vendor/*
 /Chain/*
 /Logs/*
-/node
+/ela
 /ela-cli

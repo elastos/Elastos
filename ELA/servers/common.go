@@ -4,7 +4,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/errors"
-	. "github.com/elastos/Elastos.ELA/net/protocol"
+	. "github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
