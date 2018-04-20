@@ -7,6 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 const (
@@ -22,7 +23,7 @@ const (
 )
 
 type KnownAddress struct {
-	srcAddr        NodeAddr
+	srcAddr        msg.Addr
 	lastattempt    time.Time
 	lastDisconnect time.Time
 	attempts       int
@@ -88,7 +89,7 @@ func (ka *KnownAddress) chance() float64 {
 // worth keeping hold of.
 func (ka *KnownAddress) isBad() bool {
 	// just tried in one minute? This isn't suitable for very few peers.
-	//if ka.lastattempt.After(Time.Now().Add(-1 * Time.Minute)) {
+	//if ka.lastattempt.After(lastActive.Now().Add(-1 * lastActive.Minute)) {
 	//	return true
 	//}
 
@@ -98,7 +99,7 @@ func (ka *KnownAddress) isBad() bool {
 	}
 
 	// Just disconnected in one minute? This isn't suitable for very few peers.
-	//if ka.lastDisconnect.After(Time.Now().Add(-1 * Time.Minute)) {
+	//if ka.lastDisconnect.After(lastActive.Now().Add(-1 * lastActive.Minute)) {
 	//	return true
 	//}
 
@@ -110,15 +111,15 @@ func (ka *KnownAddress) isBad() bool {
 	return false
 }
 
-func (ka *KnownAddress) SaveAddr(na NodeAddr) {
+func (ka *KnownAddress) SaveAddr(na msg.Addr) {
 	ka.srcAddr.Time = na.Time
 	ka.srcAddr.Services = na.Services
-	ka.srcAddr.IpAddr = na.IpAddr
+	ka.srcAddr.IP = na.IP
 	ka.srcAddr.Port = na.Port
 	ka.srcAddr.ID = na.ID
 }
 
-func (ka *KnownAddress) NetAddress() NodeAddr {
+func (ka *KnownAddress) NetAddress() msg.Addr {
 	return ka.srcAddr
 }
 
@@ -138,7 +139,7 @@ func (al *KnownAddressList) AddressExisted(uid uint64) bool {
 	return ok
 }
 
-func (al *KnownAddressList) UpdateAddress(id uint64, na NodeAddr) {
+func (al *KnownAddressList) UpdateAddress(id uint64, na msg.Addr) {
 	kaold := al.List[id]
 	if (na.Time > kaold.srcAddr.Time) ||
 		(kaold.srcAddr.Services&na.Services) !=
@@ -152,7 +153,7 @@ func (al *KnownAddressList) UpdateLastDisconn(id uint64) {
 	ka.updateLastDisconnect()
 }
 
-func (al *KnownAddressList) AddAddressToKnownAddress(na NodeAddr) {
+func (al *KnownAddressList) AddAddressToKnownAddress(na msg.Addr) {
 	al.Lock()
 	defer al.Unlock()
 
@@ -192,7 +193,7 @@ func (al *KnownAddressList) init() {
 	al.List = make(map[uint64]*KnownAddress)
 }
 
-func isInNbrList(id uint64, nbrAddrs []NodeAddr) bool {
+func isInNbrList(id uint64, nbrAddrs []msg.Addr) bool {
 	for _, na := range nbrAddrs {
 		if id == na.ID {
 			return true
@@ -201,7 +202,7 @@ func isInNbrList(id uint64, nbrAddrs []NodeAddr) bool {
 	return false
 }
 
-func (al *KnownAddressList) RandGetAddresses(nbrAddrs []NodeAddr) []NodeAddr {
+func (al *KnownAddressList) RandGetAddresses(nbrAddrs []msg.Addr) []msg.Addr {
 	al.RLock()
 	defer al.RUnlock()
 	var keys []uint64
@@ -215,7 +216,7 @@ func (al *KnownAddressList) RandGetAddresses(nbrAddrs []NodeAddr) []NodeAddr {
 
 	addrLen := len(keys)
 	var i int
-	addrs := []NodeAddr{}
+	addrs := []msg.Addr{}
 	if MaxOutBoundCount-len(nbrAddrs) > addrLen {
 		for _, v := range keys {
 			ka, ok := al.List[v]
@@ -250,11 +251,11 @@ func (al *KnownAddressList) RandGetAddresses(nbrAddrs []NodeAddr) []NodeAddr {
 	return addrs
 }
 
-func (al *KnownAddressList) RandSelectAddresses() []NodeAddr {
+func (al *KnownAddressList) RandSelectAddresses() []msg.Addr {
 	al.RLock()
 	defer al.RUnlock()
 	var keys []uint64
-	addrs := []NodeAddr{}
+	addrs := []msg.Addr{}
 	for k := range al.List {
 		keys = append(keys, k)
 	}
