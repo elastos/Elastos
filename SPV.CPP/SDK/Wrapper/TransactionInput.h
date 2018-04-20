@@ -21,6 +21,8 @@ namespace Elastos {
 			public ELAMessageSerializable {
 
 		public:
+			TransactionInput();
+
 			TransactionInput(BRTxInput *input);
 
 			TransactionInput(UInt256 hash, uint32_t index, uint64_t amount,

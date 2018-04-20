@@ -327,50 +327,6 @@ static int _BRPeerAcceptInvMessage(BRPeer *peer, const uint8_t *msg, size_t msgL
     return r;
 }
 
-static int _BRPeerAcceptTxMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
-{
-    BRPeerContext *ctx = (BRPeerContext *)peer;
-    BRTransaction *tx = BRTransactionParse(msg, msgLen);
-    UInt256 txHash;
-    int r = 1;
-
-    if (! tx) {
-        peer_log(peer, "malformed tx message with length: %zu", msgLen);
-        r = 0;
-    }
-    else if (! ctx->sentFilter && ! ctx->sentGetdata) {
-        peer_log(peer, "got tx message before loading filter");
-        BRTransactionFree(tx);
-        r = 0;
-    }
-    else {
-        txHash = tx->txHash;
-        peer_log(peer, "got tx: %s", u256hex(txHash));
-
-        if (ctx->relayedTx) {
-            ctx->relayedTx(ctx->info, tx);
-        }
-        else BRTransactionFree(tx);
-
-        if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock
-            for (size_t i = array_count(ctx->currentBlockTxHashes); i > 0; i--) {
-                if (! UInt256Eq(&txHash, &(ctx->currentBlockTxHashes[i - 1]))) continue;
-                array_rm(ctx->currentBlockTxHashes, i - 1);
-                break;
-            }
-
-            if (array_count(ctx->currentBlockTxHashes) == 0) { // we received the entire block including all matched tx
-                BRMerkleBlock *block = ctx->currentBlock;
-
-                ctx->currentBlock = NULL;
-                if (ctx->relayedBlock) ctx->relayedBlock(ctx->info, block);
-            }
-        }
-    }
-
-    return r;
-}
-
 static int _BRPeerAcceptHeadersMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
     BRPeerContext *ctx = (BRPeerContext *)peer;
@@ -470,16 +426,7 @@ static int _BRPeerAcceptGetdataMessage(BRPeer *peer, const uint8_t *msg, size_t 
                     if (ctx->requestedTx) tx = ctx->requestedTx(ctx->info, hash);
 
                     if (tx && BRTransactionSize(tx) < TX_MAX_SIZE) {
-                        uint8_t buf[BRTransactionSerialize(tx, NULL, 0)];
-                        size_t bufLen = BRTransactionSerialize(tx, buf, sizeof(buf));
-                        char txHex[bufLen*2 + 1];
-
-                        for (size_t j = 0; j < bufLen; j++) {
-                            sprintf(&txHex[j*2], "%02x", buf[j]);
-                        }
-
-                        peer_log(peer, "publishing tx: %s", txHex);
-                        BRPeerSendMessage(peer, buf, bufLen, MSG_TX);
+                        ctx->manager->peerMessages->BRPeerSendTxMessage(peer, tx);
                         break;
                     }
 
@@ -756,7 +703,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
     else if (strncmp(MSG_VERACK, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptVerackMessage(peer, msg, msgLen);
     else if (strncmp(MSG_ADDR, type, 12) == 0) r = _BRPeerAcceptAddrMessage(peer, msg, msgLen);
     else if (strncmp(MSG_INV, type, 12) == 0) r = _BRPeerAcceptInvMessage(peer, msg, msgLen);
-    else if (strncmp(MSG_TX, type, 12) == 0) r = _BRPeerAcceptTxMessage(peer, msg, msgLen);
+    else if (strncmp(MSG_TX, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptTxMessage(peer, msg, msgLen);
     else if (strncmp(MSG_HEADERS, type, 12) == 0) r = _BRPeerAcceptHeadersMessage(peer, msg, msgLen);
     else if (strncmp(MSG_GETADDR, type, 12) == 0) r = _BRPeerAcceptGetaddrMessage(peer, msg, msgLen);
     else if (strncmp(MSG_GETDATA, type, 12) == 0) r = _BRPeerAcceptGetdataMessage(peer, msg, msgLen);

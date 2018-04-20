@@ -8,6 +8,11 @@
 namespace Elastos {
 	namespace SDK {
 
+		TransactionOutput::TransactionOutput() {
+
+			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
+		}
+
 		TransactionOutput::TransactionOutput(BRTxOutput *output) {
 
 			_output = boost::shared_ptr<BRTxOutput>(output);

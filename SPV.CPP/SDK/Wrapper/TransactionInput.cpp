@@ -8,6 +8,10 @@
 namespace Elastos {
 	namespace SDK {
 
+		TransactionInput::TransactionInput() {
+			_input = boost::shared_ptr<BRTxInput>(new BRTxInput);
+		}
+
 		TransactionInput::TransactionInput(BRTxInput *input) {
 			_input = boost::shared_ptr<BRTxInput>(input);
 		}

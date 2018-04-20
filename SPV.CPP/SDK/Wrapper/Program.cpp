@@ -44,7 +44,17 @@ namespace Elastos {
 		}
 
 		void Program::Deserialize(std::ostream &ostream) {
+			uint8_t parameterLengthData[64 / 8];
+			ostream << parameterLengthData;
+			_parameter.length = UInt64GetLE(parameterLengthData);
 
+			ostream << _parameter.data;
+
+			uint8_t attributeLengthData[64 / 8];
+			ostream << attributeLengthData;
+			_code.length = UInt64GetLE(attributeLengthData);
+
+			ostream << _code.data;
 		}
 
 

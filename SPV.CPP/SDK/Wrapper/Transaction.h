@@ -18,7 +18,7 @@
 #include "Key.h"
 #include "WrapperList.h"
 #include "ELAMessageSerializable.h"
-#include "Attribute/IAttribute.h"
+#include "Attribute.h"
 #include "Program.h"
 
 namespace Elastos {
@@ -66,11 +66,11 @@ namespace Elastos {
 
 			uint32_t getVersion() const;
 
-			SharedWrapperList<TransactionInput, BRTxInput *> getInputs() const;
+			const SharedWrapperList<TransactionInput, BRTxInput *> &getInputs() const;
 
 			std::vector<std::string> getInputAddresses();
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> getOutputs() const;
+			const SharedWrapperList<TransactionOutput, BRTxOutput *> &getOutputs() const;
 
 			std::vector<std::string> getOutputAddresses();
 
@@ -164,7 +164,9 @@ namespace Elastos {
 			uint8_t _payloadVersion;
 			PayloadPtr _payload;
 			std::vector<AttributePtr> _attributes;
-			std::vector<Program> _programs;
+			std::vector<ProgramPtr> _programs;
+			mutable SharedWrapperList<TransactionInput, BRTxInput *> _inputs;
+			mutable SharedWrapperList<TransactionOutput, BRTxOutput *> _outputs;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

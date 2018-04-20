@@ -5,19 +5,22 @@
 #ifndef __ELASTOS_SDK_IWRAPPERMESSAGE_H__
 #define __ELASTOS_SDK_IWRAPPERMESSAGE_H__
 
-#include "IMessage.h"
+#include "BRPeer.h"
+
+#include "ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace SDK {
 
-		class IWrapperMessage :
-			public IMessage {
+		class IWrapperMessage {
 		public:
 			IWrapperMessage();
 
 			virtual ~IWrapperMessage();
 
+			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen, ELAMessageSerializable *serializable) = 0;
 
+			virtual void Send(BRPeer *peer, ELAMessageSerializable *serializable) = 0;
 		};
 
 	}

@@ -22,6 +22,8 @@ namespace Elastos {
 
 		public:
 
+			TransactionOutput();
+
 			TransactionOutput(BRTxOutput *output);
 
 			TransactionOutput(uint64_t amount, const ByteData &script);

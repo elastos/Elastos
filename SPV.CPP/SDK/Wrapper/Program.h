@@ -5,6 +5,8 @@
 #ifndef __ELASTOS_SDK_PROGRAM_H__
 #define __ELASTOS_SDK_PROGRAM_H__
 
+#include <boost/shared_ptr.hpp>
+
 #include "ByteData.h"
 #include "ELAMessageSerializable.h"
 
@@ -28,6 +30,8 @@ namespace Elastos {
 			ByteData _code;
 			ByteData _parameter;
 		};
+
+		typedef boost::shared_ptr<Program> ProgramPtr;
 
 	}
 }

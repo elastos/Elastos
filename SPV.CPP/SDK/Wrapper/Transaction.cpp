@@ -75,20 +75,18 @@ namespace Elastos {
 			return _transaction->version;
 		}
 
-		SharedWrapperList<TransactionInput, BRTxInput *> Transaction::getInputs() const {
+		const SharedWrapperList<TransactionInput, BRTxInput *> &Transaction::getInputs() const {
 
-			size_t inputCount = _transaction->inCount;
-
-			SharedWrapperList<TransactionInput, BRTxInput *> inputs;
-			for (int i = 0; i < inputCount; i++) {
-
-				BRTxInput *input = new BRTxInput;
-				transactionInputCopy(input, &_transaction->inputs[i]);
-				TransactionInputPtr inputPtr = TransactionInputPtr(new TransactionInput(input));
-				inputs.push_back(inputPtr);
+			if (_inputs.empty()) {
+				for (int i = 0; i < _transaction->inCount; i++) {
+					BRTxInput *input = new BRTxInput;
+					transactionInputCopy(input, &_transaction->inputs[i]);
+					TransactionInputPtr inputPtr = TransactionInputPtr(new TransactionInput(input));
+					_inputs.push_back(inputPtr);
+				}
 			}
 
-			return inputs;
+			return _inputs;
 		}
 
 		void Transaction::transactionInputCopy(BRTxInput *target, const BRTxInput *source) const {
@@ -123,19 +121,17 @@ namespace Elastos {
 			return addresses;
 		}
 
-		SharedWrapperList<TransactionOutput, BRTxOutput *> Transaction::getOutputs() const {
+		const SharedWrapperList<TransactionOutput, BRTxOutput *> &Transaction::getOutputs() const {
 
-			size_t outputCount = _transaction->outCount;
-
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs;
-			for (int i = 0; i < outputCount; i++) {
-
-				BRTxOutput *output = new BRTxOutput;
-				transactionOutputCopy(output, &_transaction->outputs[i]);
-				outputs.push_back(TransactionOutputPtr(new TransactionOutput(output)));
+			if(_outputs.empty()) {
+				for (int i = 0; i < _transaction->outCount; i++) {
+					BRTxOutput *output = new BRTxOutput;
+					transactionOutputCopy(output, &_transaction->outputs[i]);
+					_outputs.push_back(TransactionOutputPtr(new TransactionOutput(output)));
+				}
 			}
 
-			return outputs;
+			return _outputs;
 		}
 
 		std::vector<std::string> Transaction::getOutputAddresses() {
@@ -283,10 +279,65 @@ namespace Elastos {
 			uint8_t lockTimeData[32/8];
 			UInt32SetLE(lockTimeData, _transaction->lockTime);
 			istream >> lockTimeData;
+
+			uint8_t programLengthData[64 / 8];
+			UInt64SetLE(programLengthData, _programs.size());
+			istream >> programLengthData;
+			for (size_t i = 0; i < _programs.size(); i++) {
+				_programs[i]->Serialize(istream);
+			}
 		}
 
 		void Transaction::Deserialize(std::ostream &ostream) {
+			uint8_t typeData[8 / 8];
+			ostream << typeData;
+			_type = Type(UInt8GetLE(typeData));
 
+			uint8_t payloadVersionData[8 / 8];
+			ostream << payloadVersionData;
+			_payloadVersion = UInt8GetLE(payloadVersionData);
+
+			assert(_payload != nullptr);
+			_payload->Deserialize(ostream);
+
+			uint8_t attributeLengthData[64 / 8];
+			ostream << attributeLengthData;
+			uint64_t attributeLength = UInt64GetLE(attributeLengthData);
+			_attributes.resize(attributeLength);
+			for (size_t i = 0; i < attributeLength; i++) {
+				_attributes[i] = AttributePtr(new Attribute);
+				_attributes[i]->Deserialize(ostream);
+			}
+
+			uint8_t inputLengthData[64 / 8];
+			ostream << inputLengthData;
+			uint64_t inputLength = UInt64GetLE(inputLengthData);
+			_inputs.resize(inputLength);
+			for (size_t i = 0; i < inputLength; i++) {
+				_inputs[i] = TransactionInputPtr(new TransactionInput);
+				_inputs[i]->Deserialize(ostream);
+			}
+
+			uint8_t outputLengthData[64 / 8];
+			ostream << outputLengthData;
+			uint64_t outputLength = UInt64GetLE(outputLengthData);
+			_outputs.resize(outputLength);
+			for (size_t i = 0; i < outputLength; i++) {
+				_outputs[i] = TransactionOutputPtr(new TransactionOutput);
+				_outputs[i]->Deserialize(ostream);
+			}
+
+			uint8_t lockTimeData[32/8];
+			ostream << lockTimeData;
+			_transaction->lockTime = UInt32GetLE(lockTimeData);
+
+			uint8_t programLengthData[64 / 8];
+			ostream << programLengthData;
+			uint64_t programLength = UInt64GetLE(programLengthData);
+			_programs.resize(programLength);
+			for (size_t i = 0; i < programLength; i++) {
+				_programs[i]->Deserialize(ostream);
+			}
 		}
 
 	}
