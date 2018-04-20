@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -16,90 +15,20 @@ import (
 	. "github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/events"
-	msg "github.com/elastos/Elastos.ELA/net/message"
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type link struct {
-	//Todo Add lock here
 	addr         string    // The address of the node
 	conn         net.Conn  // Connect socket with the peer node
 	port         uint16    // The server port of the node
 	localPort    uint16    // The local port witch the node connected with
 	httpInfoPort uint16    // The node information server port of the node
-	Time         time.Time // The latest Time the node activity
-	rxBuf struct {
-		// The RX buffer of this node to solve mutliple packets problem
-		p   []byte
-		len int
-	}
-	connCnt uint64 // The connection count
-}
-
-// Shrinking the buf to the exactly reading in byte length
-//@Return @1 the start header of next message, the left length of the next message
-func unpackNodeBuf(node *node, buf []byte) {
-	var msgLen int
-	var msgBuf []byte
-
-	if len(buf) == 0 {
-		return
-	}
-
-	if node.rxBuf.len == 0 {
-		length := MSGHDRLEN - len(node.rxBuf.p)
-		if length > len(buf) {
-			node.rxBuf.p = append(node.rxBuf.p, buf...)
-			return
-		}
-
-		node.rxBuf.p = append(node.rxBuf.p, buf[0:length]...)
-
-		node.rxBuf.len = msg.PayloadLen(node.rxBuf.p)
-		buf = buf[length:]
-	}
-
-	msgLen = node.rxBuf.len
-	if len(buf) == msgLen {
-		msgBuf = append(node.rxBuf.p, buf[:]...)
-		go msg.HandleNodeMsg(node, msgBuf, len(msgBuf))
-		node.rxBuf.p = nil
-		node.rxBuf.len = 0
-	} else if len(buf) < msgLen {
-		node.rxBuf.p = append(node.rxBuf.p, buf[:]...)
-		node.rxBuf.len = msgLen - len(buf)
-	} else {
-		msgBuf = append(node.rxBuf.p, buf[0:msgLen]...)
-		go msg.HandleNodeMsg(node, msgBuf, len(msgBuf))
-		node.rxBuf.p = nil
-		node.rxBuf.len = 0
-
-		unpackNodeBuf(node, buf[msgLen:])
-	}
-}
-
-func (node *node) rx() {
-	conn := node.GetConn()
-	buf := make([]byte, MAXBUFLEN)
-	for {
-		len, err := conn.Read(buf[0:(MAXBUFLEN - 1)])
-		buf[MAXBUFLEN-1] = 0 //Prevent overflow
-		switch err {
-		case nil:
-			t := time.Now()
-			node.Time = t
-			unpackNodeBuf(node, buf[0:len])
-		case io.EOF:
-			log.Error("Rx io.EOF: ", err, ", node id is ", node.ID())
-			goto DISCONNECT
-		default:
-			log.Error("Read connection error ", err)
-			goto DISCONNECT
-		}
-	}
-
-DISCONNECT:
-	node.local.eventQueue.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node)
+	lastActive   time.Time // The latest time the node activity
+	connCnt      uint64    // The connection count
+	*MsgReader
 }
 
 func IPv4Addr() string {
@@ -116,6 +45,14 @@ func IPv4Addr() string {
 
 func (link *link) CloseConn() {
 	link.conn.Close()
+}
+
+func (node *node) UpdateLastActive() {
+	node.lastActive = time.Now()
+}
+
+func (node *node) GetLastActiveTime() time.Time {
+	return node.lastActive
 }
 
 func (node *node) initConnection() {
@@ -157,12 +94,11 @@ func (n *node) listenConnections(listener net.Listener) {
 
 		n.link.connCnt++
 
-		node := NewNode()
+		node := NewNode(conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.local = n
-		node.conn = conn
 		node.localPort = localPortFromConn(conn)
-		go node.rx()
+		go node.Read()
 	}
 }
 
@@ -261,19 +197,17 @@ func (node *node) Connect(nodeAddr string) error {
 		}
 	}
 	node.link.connCnt++
-	n := NewNode()
-	n.conn = conn
+	n := NewNode(conn)
 	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
 	n.local = node
 
 	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
-	go n.rx()
+	go n.Read()
 
-	n.SetState(Hand)
-	buf, _ := msg.NewVersion(node)
-	n.Tx(buf)
+	n.SetState(HAND)
+	go n.Send(NewVersion(node))
 
 	return nil
 }
@@ -319,15 +253,20 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	return conn, nil
 }
 
-func (node *node) Tx(buf []byte) {
-	log.Debugf("TX buf length: %d\n%x", len(buf), buf)
-
-	if node.State() == Inactive {
+func (node *node) Send(msg Message) {
+	if node.State() == INACTIVITY {
 		return
 	}
-	_, err := node.conn.Write(buf)
+
+	buf, err := BuildMessage(msg)
 	if err != nil {
-		log.Error("Error sending messge to peer node ", err.Error())
+		log.Error("Serialize message failed, ", err)
+		return
+	}
+
+	_, err = node.conn.Write(buf)
+	if err != nil {
+		log.Error("Error sending message to node ", err)
 		node.local.eventQueue.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node)
 	}
 }

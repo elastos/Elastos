@@ -5,6 +5,9 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA/net/protocol"
+
+	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 // The neigbor node list
@@ -53,7 +56,7 @@ func (nm *nbrNodes) GetConnectionCnt() uint {
 
 	var cnt uint
 	for _, node := range nm.List {
-		if node.state == Establish {
+		if node.State() == ESTABLISH {
 			cnt++
 		}
 	}
@@ -73,25 +76,25 @@ func (nm *nbrNodes) NodeEstablished(id uint64) bool {
 		return false
 	}
 
-	if n.state != Establish {
+	if n.State() != ESTABLISH {
 		return false
 	}
 
 	return true
 }
 
-func (node *node) GetNeighborAddrs() ([]NodeAddr, uint64) {
+func (node *node) GetNeighborAddrs() ([]msg.Addr, uint64) {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
 	var i uint64
-	var addrs []NodeAddr
+	var addrs []msg.Addr
 	for _, n := range node.nbrNodes.List {
-		if n.State() != Establish {
+		if n.State() != ESTABLISH {
 			continue
 		}
-		var addr NodeAddr
-		addr.IpAddr, _ = n.Addr16()
+		var addr msg.Addr
+		addr.IP, _ = n.Addr16()
 		addr.Time = n.GetTime()
 		addr.Services = n.Services()
 		addr.Port = n.Port()
@@ -111,7 +114,7 @@ func (node *node) GetNeighborHeights() ([]uint64, uint64) {
 	var i uint64
 	heights := []uint64{}
 	for _, n := range node.nbrNodes.List {
-		if n.State() == Establish {
+		if n.State() == ESTABLISH {
 			height := n.Height()
 			heights = append(heights, height)
 			i++
@@ -126,7 +129,7 @@ func (node *node) GetNeighborNoder() []Noder {
 
 	nodes := []Noder{}
 	for _, n := range node.nbrNodes.List {
-		if n.State() == Establish {
+		if n.State() == ESTABLISH {
 			node := n
 			nodes = append(nodes, node)
 		}
@@ -139,7 +142,7 @@ func (node *node) GetNbrNodeCnt() uint32 {
 	defer node.nbrNodes.RUnlock()
 	var count uint32
 	for _, n := range node.nbrNodes.List {
-		if n.State() == Establish {
+		if n.State() == ESTABLISH {
 			count++
 		}
 	}
@@ -150,7 +153,7 @@ func (node *node) RandGetANbr() Noder {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	for _, n := range node.nbrNodes.List {
-		if n.State() == Establish {
+		if n.State() == ESTABLISH {
 			return n
 		}
 	}
