@@ -5,6 +5,19 @@ Welcome to Elastos!
 
 What is Elastos? [Short Video 1:38](https://vimeo.com/264996792/d5265a3446)
 
+Scripts:
+>Current blockchains are designed to record transactions, not to store data. There is simply not enough space on the current blockchain to store a large quantity of digital movies and books. So they get congested.
+
+>Elastos’ solution is a flexible mainchain and sidechain. The main chain is only responsible for basic transactions and transfer payments, while the sidechain executes smart contracts to support various applications and services. And
+prevent overload.
+
+>Elastos operating system runs as a flexible layer around the already congested blockchains. This method is also more secure. Identification and authentication come from the blockchain ID and is transferred to Elastos Runtime.
+
+>Elastos will be a platform for decentralized applications (Dapps) that runs on a peer-to-peer network with no centralized control. An environment where digital assets (like copyrights managed games, music, movies and books,) can be traded peer to peer, safely. The creators and the users are protected on Elastos. And we don’t take (countdown percentage… 50-0%) ANY cut form these
+
+>Welcome to the Elastos smartweb! Own your own data… and monetise it if you want.
+
+
 [Elastos Introduction slides](https://www.slideshare.net/RongChen34/elastos-intro)
 
 ## Table of Contents
@@ -20,6 +33,8 @@ What is Elastos? [Short Video 1:38](https://vimeo.com/264996792/d5265a3446)
 - [License](#license)
 
 ## Overview
+
+
 
 ### Elastos
 The entry point of whole Elastos github repos. 
