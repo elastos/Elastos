@@ -3,6 +3,7 @@ package _interface
 import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 
+	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -27,7 +28,7 @@ type SPVService interface {
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(Proof, Transaction) error
+	VerifyTransaction(bloom.MerkleProof, Transaction) error
 
 	// Send a transaction to the P2P network
 	SendTransaction(Transaction) error
@@ -57,7 +58,7 @@ type TransactionListener interface {
 
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it
-	Notify(Proof, Transaction)
+	Notify(bloom.MerkleProof, Transaction)
 
 	// Rollback callbacks that, the transactions
 	// on the given height has been rollback

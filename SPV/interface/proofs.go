@@ -2,25 +2,27 @@ package _interface
 
 import (
 	"bytes"
+	"errors"
+	"encoding/hex"
+	"fmt"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.SPV/log"
+
+	. "github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/boltdb/bolt"
-	"fmt"
-	"encoding/hex"
-	"github.com/elastos/Elastos.ELA.SPV/log"
-	"errors"
 )
 
 type Proofs interface {
 	// Put a merkle proof of the block
-	Put(proof *Proof) error
+	Put(proof *MerkleProof) error
 
 	// Get a merkle proof of a block
-	Get(blockHash *Uint256) (*Proof, error)
+	Get(blockHash *Uint256) (*MerkleProof, error)
 
 	// Get all merkle proofs in database
-	GetAll() ([]*Proof, error)
+	GetAll() ([]*MerkleProof, error)
 
 	// Delete a merkle proof of a block
 	Delete(blockHash *Uint256) error
@@ -59,7 +61,7 @@ func NewProofsDB() (Proofs, error) {
 }
 
 // Put a merkle proof of the block
-func (db *ProofsDB) Put(proof *Proof) error {
+func (db *ProofsDB) Put(proof *MerkleProof) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -80,7 +82,7 @@ func (db *ProofsDB) Put(proof *Proof) error {
 }
 
 // Get a merkle proof of a block
-func (db *ProofsDB) Get(blockHash *Uint256) (proof *Proof, err error) {
+func (db *ProofsDB) Get(blockHash *Uint256) (proof *MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -102,7 +104,7 @@ func (db *ProofsDB) Get(blockHash *Uint256) (proof *Proof, err error) {
 }
 
 // Get all merkle proofs in database
-func (db *ProofsDB) GetAll() (proofs []*Proof, err error) {
+func (db *ProofsDB) GetAll() (proofs []*MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -156,16 +158,16 @@ func (db *ProofsDB) Close() {
 	log.Debug("Proofs DB closed")
 }
 
-func getProof(tx *bolt.Tx, key []byte) (*Proof, error) {
+func getProof(tx *bolt.Tx, key []byte) (*MerkleProof, error) {
 	proofBytes := tx.Bucket(BKTProofs).Get(key)
 	if proofBytes == nil {
-		return nil, errors.New(fmt.Sprintf("Proof %s does not exist in database", hex.EncodeToString(key)))
+		return nil, errors.New(fmt.Sprintf("MerkleProof %s does not exist in database", hex.EncodeToString(key)))
 	}
 
 	return deserializeProof(proofBytes)
 }
 
-func serializeProof(proof *Proof) ([]byte, error) {
+func serializeProof(proof *MerkleProof) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := proof.Serialize(buf)
 	if err != nil {
@@ -174,8 +176,8 @@ func serializeProof(proof *Proof) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func deserializeProof(body []byte) (*Proof, error) {
-	var proof Proof
+func deserializeProof(body []byte) (*MerkleProof, error) {
+	var proof MerkleProof
 	err := proof.Deserialize(bytes.NewReader(body))
 	if err != nil {
 		return nil, err
