@@ -18,3 +18,5 @@ build/
 /Logs/*
 /ela
 /ela-cli
+*.db
+Log/

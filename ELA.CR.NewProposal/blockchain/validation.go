@@ -5,8 +5,11 @@ import (
 	"errors"
 	"sort"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/sidechain"
+
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -46,7 +49,7 @@ func VerifySignature(tx *Transaction) (bool, error) {
 		}
 		if signType == crypto.STANDARD {
 			// Remove length byte and sign type byte
-			publicKeyBytes := code[1:len(code)-1]
+			publicKeyBytes := code[1 : len(code)-1]
 
 			return checkStandardSignature(publicKeyBytes, data, param)
 
@@ -57,6 +60,16 @@ func VerifySignature(tx *Transaction) (bool, error) {
 			}
 			return checkMultiSignSignatures(code, param, data, publicKeys)
 
+		} else if signType == crypto.CROSSCHAIN {
+			publicKeys, err := crypto.ParseMultisigScript(code)
+			if err != nil {
+				return false, err
+			}
+			if err = checkCrossChainArbitrators(tx, publicKeys); err != nil {
+				return false, err
+			}
+
+			return checkMultiSignSignatures(code, param, data, publicKeys)
 		} else {
 			return false, errors.New("unknown signature type")
 		}
@@ -141,7 +154,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	signatureCount := 0
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := param[i:i+crypto.SignatureScriptLength][1:]
+		sign := param[i : i+crypto.SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		index := -1
 		for i, publicKey := range publicKeys {
@@ -164,6 +177,58 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	}
 
 	return true, nil
+}
+
+func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
+	withdrawPayload, ok := txn.Payload.(*PayloadWithdrawAsset)
+	if !ok {
+		return errors.New("Invalid payload type.")
+	}
+
+	ok, err := sidechain.DbCache.HasSideChainTx(withdrawPayload.SideChainTransactionHash)
+	if err != nil {
+		return err
+	}
+	if ok {
+		return errors.New("Reduplicate withdraw transaction.")
+	}
+	err = sidechain.DbCache.AddSideChainTx(withdrawPayload.SideChainTransactionHash, withdrawPayload.GenesisBlockAddress)
+	if err != nil {
+		return err
+	}
+
+	hash, err := DefaultLedger.Store.GetBlockHash(uint32(withdrawPayload.BlockHeight))
+	if err != nil {
+		return err
+	}
+
+	block, err := DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return err
+	}
+
+	arbitrators, err := block.GetArbitrators(config.Parameters.Arbiters)
+	if err != nil {
+		return err
+	}
+	if len(arbitrators) != len(publicKeys) {
+		return errors.New("Invalid arbitrator count.")
+	}
+
+	for arbitrator := range arbitrators {
+		found := false
+		for pk := range publicKeys {
+			if arbitrator == pk {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return errors.New("Invalid cross chain arbitrators")
+		}
+	}
+	return nil
 }
 
 type byProgramHashes []Uint168
