@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <sstream>
-
+#include <stdlib.h>
 #include "assert.h"
 #include "Utils.h"
 

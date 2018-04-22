@@ -1,10 +1,6 @@
 
 set(SPVSDK_NAME spvsdk)
 
-############################
-# Library name definitions #
-############################
-
 if(MSVC)
 	set( SPV_LIBRARY_PREFIX "" )
 	set( CMAKE_DEBUG_POSTFIX "d" )
@@ -44,9 +40,7 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
-	"${Boost_INCLUDE_DIRS}"
-)
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include")
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash/ SPVCORE_BCASH_SOURCE_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)

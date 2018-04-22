@@ -39,6 +39,7 @@ static const char *BRBCashTestNetDNSSeeds[] = {
     "testnet-seed.deadalnix.me", "testnet-seeder.criptolayer.net", NULL
 };
 
+#if 0
 static const BRCheckPoint BRBCashTestNetCheckpoints[] = {
     {       0, uint256("000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"), 1296688602, 0x1d00ffff },
     {  100800, uint256("0000000000a33112f86f3f7b0aa590cb4949b84c2d9c673e9e303257b3be9000"), 1376543922, 0x1c00d907 },
@@ -84,6 +85,7 @@ static const BRCheckPoint BRBCashCheckpoints[] = {
     { 483840, uint256("00000000000000000098963251fcfc19d0fa2ef05cf22936a182609f8d650346"), 1503802540, 0x1803c5d5 },
     { 504000, uint256("0000000000000000006cdeece5716c9c700f34ad98cb0ed0ad2c5767bbe0bc8c"), 1510516839, 0x18021abd }
 };
+#endif
 
 static const BRMerkleBlock *_medianBlock(const BRMerkleBlock *b0, const BRSet *blockSet)
 {
@@ -150,6 +152,7 @@ static int BRBCashTestNetVerifyDifficulty(const BRMerkleBlock *block, const BRSe
     return 1; // XXX skip testnet difficulty check for now
 }
 
+#if 0
 static const BRChainParams BRBCashParams = {
     BRBCashDNSSeeds,
     8333,                // standardPort
@@ -169,5 +172,6 @@ static const BRChainParams BRBCashTestNetParams = {
     BRBCashTestNetCheckpoints,
     sizeof(BRBCashTestNetCheckpoints)/sizeof(*BRBCashTestNetCheckpoints)
 };
+#endif
 
 #endif // BRChainParams_h

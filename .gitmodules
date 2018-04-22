@@ -10,3 +10,6 @@
 [submodule "Include/Catch2"]
 	path = SPV.CPP/Include/Catch2
 	url = https://github.com/catchorg/Catch2.git
+[submodule "Boost-for-Android"]
+	path = SPV.CPP/Boost-for-Android
+	url = https://github.com/moritz-wundke/Boost-for-Android.git

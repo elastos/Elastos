@@ -16,5 +16,4 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Database"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
-	"${Boost_INCLUDE_DIRS}"
 )

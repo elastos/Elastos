@@ -19,10 +19,10 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-project(SPVSDK VERSION 0.1.0.0)
-
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # Define helper macro option_with_default
 macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
@@ -32,6 +32,36 @@ macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 	option(${OPTION_NAME} "${OPTION_STRING}" ${${OPTION_NAME}})
 endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 
+option_with_default(SPV_FOR_ANDROID "Build spv for android" OFF)
+
+if(SPV_FOR_ANDROID)
+	message(STATUS "Build spv for android")
+
+	set(CMAKE_SYSTEM_NAME Android)
+	#set(CMAKE_ANDROID_STL_TYPE c++_static)
+	set(CMAKE_ANDROID_STL_TYPE c++_shared)
+
+	#if(NOT ANDROID_NATIVE_API_LEVEL STREQUAL "")
+	#set(CMAKE_SYSTEM_VERSION ${ANDROID_NATIVE_API_LEVEL})
+	#endif()
+
+	if("$ENV{ANDROID_NDK}" STREQUAL "")
+		message(FATAL_ERROR "Environment variable ANDROID_NDK not define")
+	endif()
+	set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK})
+
+	#set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)")
+endif()
+
+
+project(SPVSDK VERSION 0.1.0.0)
+
+if(SPV_FOR_ANDROID)
+	message(STATUS "Android stl type -- ${CMAKE_ANDROID_STL_TYPE}")
+	message(STATUS "Android api level -- ${CMAKE_SYSTEM_VERSION}")
+	message(STATUS "Android ABI (architecture) -- ${CMAKE_ANDROID_ARCH_ABI}")
+endif()
+
 ############################
 # Check 32/64 bit platform #
 ############################
@@ -40,7 +70,6 @@ if(${CMAKE_SIZEOF_VOID_P} MATCHES "8") # It is 64bit, otherwise 32 bit systems m
 else (${CMAKE_SIZEOF_VOID_P} MATCHES "8")
 	set(BIT 32)
 endif(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
-
 message(STATUS "Build ${BIT}bit")
 
 if(NOT CMAKE_CONFIGURATION_TYPES)
@@ -50,18 +79,6 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
 	endif(CMAKE_BUILD_TYPE STREQUAL "")
 endif(NOT CMAKE_CONFIGURATION_TYPES)
 
-if(CMAKE_BUILD_TOOL STREQUAL "nmake")
-	set(NMAKE TRUE)
-endif(CMAKE_BUILD_TOOL STREQUAL "nmake")
-
-if(MSVC)
-	option_with_default(SPV_INSTALL_PDB_FILES "Install PDB files (debug informations)" ON)
-endif(MSVC)
-
-if(WIN32)
-	option_with_default(SPV_AUTOINSTALL_DEPENDENT_LIBS "Autoinstall dependent DLLs" ON)
-	mark_as_advanced(SPV_AUTOINSTALL_DEPENDENT_LIBS)
-endif()
 
 if(NOT DEFINED SPV_INSTALL_PREFIX)
 	if(WIN32)
@@ -82,6 +99,30 @@ option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.js
 
 option_with_default(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
 
+if(NOT SPV_FOR_ANDROID)
+	find_package(Boost REQUIRED COMPONENTS filesystem system program_options thread)
+	if(NOT Boost_FOUND)
+		message(FATAL_ERROR "boost not found")
+	endif()
+else()
+	set(BOOST_COMPONENTS filesystem system program_options thread)
+	set(Boost_LIBRARIES "")
+
+	foreach(lib_name ${BOOST_COMPONENTS})
+		file(GLOB lib_name_FOUND ${CMAKE_CURRENT_SOURCE_DIR}/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/lib/libboost_${lib_name}*.a)
+		if("${lib_name_FOUND}" STREQUAL "")
+			message(FATAL_ERROR "libboost_${lib_name} not found, maybe you should run build-android.sh/build-android.bat in Boost-for-Android first.")
+		endif()
+		message(STATUS "${lib_name_FOUND} -- found")
+		set(Boost_LIBRARIES "${lib_name_FOUND};${Boost_LIBRARIES}")
+	endforeach(lib_name)
+
+	string(REPLACE ";" " " Boost_LIBRARIES_NO_Semicolon "${Boost_LIBRARIES}")
+	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING " falg" FORCE)
+	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
+endif()
+
+
 if(SPV_BUILD_SHARED_LIB)
 	set(SPV_LIBRARY_TYPE SHARED)
 	set(SPV_BUILD_STATIC_LIB FALSE)
@@ -97,21 +138,19 @@ set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
 
-find_package(Boost REQUIRED COMPONENTS filesystem system program_options thread)
-if(NOT Boost_FOUND)
-	message(FATAL_ERROR "boost not found")
-endif()
-
 if(UNIX)
 	if(APPLE)
 		######### MacOSX ###########
 		message(STATUS "MacOSX platform detected")
 		set(PLATFORM Darwin)
-	else(APPLE)
+	elseif(ANDROID)
+		message(STATUS "Android platform detected")
+		set(PLATFORM Android)
+	else()
 		######### Unix/Linux ###########
 		message(STATUS "Unix/Linux platform detected")
 		set(PLATFORM Unix)
-	endif(APPLE)
+	endif()
 else(UNIX)
 	if(WIN32)
 		######### Windows ###########
@@ -154,20 +193,26 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/Include/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Include/nlohmann/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Include/Catch2/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${Boost_INCLUDE_DIRS}"
 )
 
-add_subdirectory(SDK)
+
+if(SPV_FOR_ANDROID)
+	add_subdirectory(Java)
+else()
+	add_subdirectory(SDK)
+endif()
+
 if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)
 endif()
 
-if(SPV_BUILD_SAMPLE)
+if(NOT SPV_FOR_ANDROID AND SPV_BUILD_SAMPLE)
 	set(SAMPLE_NAME sample)
 	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Sample SAMPLE_SOURCE_FILES)
 	add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
 	target_link_libraries(${SAMPLE_NAME} spvsdk)
-	target_link_libraries(${SAMPLE_NAME} pthread)
 	target_link_libraries(${SAMPLE_NAME} sqlite3)
 	target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
 endif()

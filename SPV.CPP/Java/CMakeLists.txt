@@ -1,0 +1,25 @@
+
+set(SPVSDK_JNI_NAME spvsdk)
+
+include_directories(
+	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Database"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Wrapper"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
+	"${CMAKE_ANDROID_NDK}/sysroot/usr/include")
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash SPVCORE_BCASH_SOURCE_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
+file(GLOB_RECURSE SPVSDK_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../SDK/*.cpp")
+file(GLOB_RECURSE SPVSDK_JNI_SOURCE_FILES "*.c")
+
+add_library(${SPVSDK_JNI_NAME} ${SPV_LIBRARY_TYPE}
+	${SPVSDK_JNI_SOURCE_FILES}
+	${SPVCORE_SOURCE_FILES}
+	${SPVCORE_BCASH_SOURCE_FILES}
+	${SPVSDK_SOURCE_FILES})
