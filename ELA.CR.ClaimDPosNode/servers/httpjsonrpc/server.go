@@ -31,6 +31,7 @@ func StartRPCServer() {
 	http.HandleFunc("/", Handle)
 
 	mainMux["setloglevel"] = SetLogLevel
+	mainMux["getinfo"] = GetInfo
 	mainMux["getblock"] = GetBlockByHash
 	mainMux["getcurrentheight"] = GetCurrentHeight
 	mainMux["getblockhash"] = GetBlockHash
@@ -44,15 +45,15 @@ func StartRPCServer() {
 	mainMux["getarbitratorgroupbyheight"] = GetArbitratorGroupByHeight
 	mainMux["getbestblockhash"] = GetBestBlockHash
 	mainMux["getblockcount"] = GetBlockCount
+	mainMux["gettransaction"] = GetTransactionByHash
 
-	// mining interfaces
-	mainMux["getinfo"] = GetInfo
+	// aux interfaces
 	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
 	mainMux["createauxblock"] = CreateAuxBlock
+	// mining interfaces
 	mainMux["togglemining"] = ToggleMining
 	mainMux["manualmining"] = ManualMining
-	mainMux["gettransaction"] = GetTransactionByHash
 
 	err := http.ListenAndServe("127.0.0.1:"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {

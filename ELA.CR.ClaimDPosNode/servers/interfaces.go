@@ -147,7 +147,7 @@ func SetLogLevel(param map[string]interface{}) map[string]interface{} {
 	if err := log.Log.SetDebugLevel(int(level)); err != nil {
 		return ResponsePack(InvalidParams, err.Error())
 	}
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, fmt.Sprint("log level has been set to ", level))
 }
 
 func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
@@ -291,18 +291,21 @@ func AuxHelp(param map[string]interface{}) map[string]interface{} {
 }
 
 func ToggleMining(param map[string]interface{}) map[string]interface{} {
-	mining, ok := boolParam(param, "mine")
+	mining, ok := boolParam(param, "mining")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
+	var message string
 	if mining {
 		go Pow.Start()
+		message = "mining started"
 	} else {
 		go Pow.Halt()
+		message = "mining stopped"
 	}
 
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, message)
 }
 
 func ManualMining(param map[string]interface{}) map[string]interface{} {
