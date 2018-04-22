@@ -10,3 +10,4 @@ import:
   - leveldb/opt
 - package: github.com/gorilla/websocket
 - package: github.com/pborman/uuid
+- package: github.com/mattn/go-sqlite3
