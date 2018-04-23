@@ -77,8 +77,8 @@
 
 #define G_GUINT64_FORMAT "lu"
 
-#define G_GSIZE_FORMAT "lu"
-#define G_GSSIZE_FORMAT "li"
+#define G_GSIZE_FORMAT "zu"
+#define G_GSSIZE_FORMAT "zi"
 
 #if defined(__GNUC__)
 #define _BOOLEAN_EXPR(expr)                     \
