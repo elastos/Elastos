@@ -42,7 +42,7 @@ $ ./linux_build.sh help
 
 You need to install the following packages on your Mac to build from the source:
 
-```shell
+```
 autoconf automake libtool shtool pkg-config gettext flatcc
 ```
 
@@ -51,7 +51,19 @@ You can use brew or build the packages from the source code.
 Beware, homebrew has an issue with linking `gettext`. So if you having an issue with executing `autopoint`, run:
 
 ```shell
-brew link --force gettext
+$ brew link --force gettext
+```
+
+The required flatcc version is **0.5.0**, you can install it from source code:
+
+```shell
+$ cd $FLATCC_SRC_ROOT
+$ mkdir -p build/install
+$ cd build/install
+$ cmake ../.. -DBUILD_SHARED_LIBS=off -DFLATCC_RTONLY=off -DFLATCC_TEST=off \
+        -DCMAKE_BUILD_TYPE=Release -DFLATCC_INSTALL=on
+$ make
+$ sudo make install
 ```
 
 And run resulting command.
@@ -110,13 +122,13 @@ Download android NDK package for Linux (r13b or higher, suggested for r16b), and
 Add the following command to ${HOME}/.bashrc to setup $ANDROID_NDK_HOME environment.
 
 ```shell
-export ANDROID_NDK_HOME=YOUR-PATH/TO/android-ndk-r16b
+$ export ANDROID_NDK_HOME=YOUR-PATH/TO/android-ndk-r16b
 ```
 
 Then run the command to make effect.
 
 ```shell
-source ${HOME}/.bashrc
+$ source ${HOME}/.bashrc
 ```
 
 ##### 2. Cross-compilation build
@@ -124,13 +136,13 @@ source ${HOME}/.bashrc
 Run the build script with wanted target name under ${SRC_ROOT}/build. For example, the following command is to build Carrier NDK for Android ARMv7 target.
 
 ```shell
-./android_build.sh arm
+$ ./android_build.sh arm
 ```
 
 And the following command is to build Carrier NDK for Android ARMv8a target.
 
-```code
-./android_build.sh arm64
+```shell
+$ ./android_build.sh arm64
 ```
 
 Currently, you can 'cross-'build Carrier NDKs for arm, arm64, x86 and x86_64 targets.
@@ -138,7 +150,7 @@ Currently, you can 'cross-'build Carrier NDKs for arm, arm64, x86 and x86_64 tar
 For more build options, run build script with "help" option.
 
 ```shell
-./android_build.sh help
+$ ./android_build.sh help
 ```
 
 #### Build on MacOS
@@ -151,22 +163,22 @@ You shold build iOS Carrier NDKs on MacOS with xCode supported.
 
 Run the following command to build Carrier NDK for arm64:
 
-```
-./ios_build.sh arm64
+```shell
+$ ./ios_build.sh arm64
 ```
 
 or, use following command:
 
-```
-./ios_build.sh x86_64
+```shell
+$ ./ios_build.sh x86_64
 ```
 
 to build Carrier NDK for x86_64 target.
 
 For more build options, run build script with "help" option.
 
-```
-./ios_build.sh help
+```shell
+$ ./ios_build.sh help
 ```
 
 ### RaspberryPi
@@ -176,13 +188,13 @@ For more build options, run build script with "help" option.
 The cross-compilation for RaspberryPi should be done on Linux platform. You need to download raspberry toolchains from https://github.com/raspberrypi/tools to $YOUR-PATH/TO. then, add the following command to ${HOME}/.bashrc to setup RASPBERRY_TOOLCHAIN_HOME environment.
 
 ```shell
-export RASPBERRY_TOOLCHAIN_HOME=YOUR-PATH/TO/arm-bcm2708
+$ export RASPBERRY_TOOLCHAIN_HOME=YOUR-PATH/TO/arm-bcm2708
 ```
 
 Then run the command to make effect.
 
 ```shell
-source ${HOME}/.bashrc
+$ source ${HOME}/.bashrc
 ```
 
 ##### 2. Cross-compilation build
@@ -190,13 +202,13 @@ source ${HOME}/.bashrc
 Run the build script with 'armv7l' option to build Carrier NDK for raspberry target.
 
 ```shell
-./linux_build.sh armv7l
+$ ./linux_build.sh armv7l
 ```
 
 For more build options, run build script with "help" option.
 
 ```shell
-./linux_build.sh armv7l help
+$ ./linux_build.sh armv7l help
 ```
 
 ## Test
@@ -233,3 +245,4 @@ Change to `$(SRC_ROOT)/docs` directory, run:
 ```shell
 $ make html
 ```
+
