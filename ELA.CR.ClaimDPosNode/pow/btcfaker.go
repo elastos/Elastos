@@ -29,7 +29,7 @@ func getBtcCoinbase(msgBlockHash Uint256) *BtcTx {
 
 	coinBaseTxin := BtcTxIn{
 		PreviousOutPoint: BtcOutPoint{
-			Hash:  Uint256{},
+			Hash:  EmptyHash,
 			Index: uint32(0),
 		},
 		SignatureScript: scriptSigBuf.Bytes(),
@@ -53,7 +53,7 @@ func generateAuxPow(msgBlockHash Uint256) *AuxPow {
 	parMerkleIndex := 0
 	parBlockHeader := BtcHeader{
 		Version:    0x7fffffff,
-		Previous:  Uint256{},
+		Previous:   EmptyHash,
 		MerkleRoot: parCoinbaseTx.Hash(),
 		Timestamp:  uint32(time.Now().Unix()),
 		Bits:       0, // do not care about parent block diff
