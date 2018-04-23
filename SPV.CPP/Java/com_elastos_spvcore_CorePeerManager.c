@@ -382,7 +382,7 @@ Java_com_elastos_spvcore_CorePeerManager_createCorePeerManager
 
 	BRPeerManager *result = BRPeerManagerNew(params, wallet, earliestKeyTime,
 			blocks, blocksCount,
-			peers, peersCount);
+			peers, peersCount, BRPeerMessageNew());
 
 	if (NULL != blocks) free(blocks);
 	if (NULL != peers ) free(peers);

@@ -38,20 +38,22 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/spdlog/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/nlohmann/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include")
+	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spdlog/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/json/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/Catch2/single_include")
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash/ SPVCORE_BCASH_SOURCE_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite SQLITE_SOURCE_FILES)
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
 add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
-	${SPVCORE_BCASH_SOURCE_FILES})
+	${SPVCORE_BCASH_SOURCE_FILES}
+	${SQLITE_SOURCE_FILES})
 
 if(APPLE)
-	target_link_libraries(${SPVSDK_NAME} sqlite3)
 	target_link_libraries(${SPVSDK_NAME} pthread)
 	target_link_libraries(${SPVSDK_NAME} ${Boost_LIBRARIES})
 endif()

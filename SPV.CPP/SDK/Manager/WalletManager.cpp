@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "WalletManager.h"
+#include "Log.h"
 
 #define BACKGROUND_THREAD_COUNT 1
 
@@ -20,6 +21,19 @@ namespace Elastos {
 
 		}
 
+		void WalletManager::balanceChanged(uint64_t balance) {
+
+		}
+
+		void WalletManager::onTxAdded(Transaction *transaction) {
+			if (!SHOW_CALLBACK) {
+				return;
+			}
+
+			Log::info("");
+
+		}
+
 		const CoreWalletManager::PeerManagerListenerPtr &WalletManager::createPeerManagerListener() {
 			if (_peerManagerListener != nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(new WrappedExecutorPeerManagerListener(this, &_executor));
@@ -32,6 +46,10 @@ namespace Elastos {
 				_walletListener = WalletListenerPtr(new WrappedExecutorWalletListener(this, &_executor));
 			}
 			return _walletListener;
+		}
+
+		std::string WalletManager::getChainDescriptiveName() const {
+			return "";
 		}
 	}
 }

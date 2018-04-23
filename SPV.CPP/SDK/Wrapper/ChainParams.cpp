@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "ChainParams.h"
+#include "BRBCashParams.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -10,6 +11,11 @@ namespace Elastos {
 		ChainParams::ChainParams(const BRChainParams &chainParams) {
 			_chainParams = boost::shared_ptr<BRChainParams>(new BRChainParams);
 			*_chainParams = chainParams;
+
+			_mainNetChainParams = &BRMainNetParams;
+			_testNetChainParams = &BRTestNetParams;
+			_mainNetBcashChainParams = &BRBCashMainNetParams;
+			_testNetBcashChainParams = &BRBCashTestNetParams;
 		}
 
 		std::string ChainParams::toString() const {

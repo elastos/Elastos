@@ -24,7 +24,11 @@ namespace Elastos {
 
 		public:
 			//todo override Wallet listener
+			// func balanceChanged(_ balance: UInt64)
+			virtual void balanceChanged(uint64_t balance);
 
+			// func txAdded(_ tx: BRTxRef)
+			virtual void onTxAdded(Transaction *transaction);
 		public:
 			//todo override PeerManager listener
 
@@ -34,6 +38,9 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 			//todo override other protected methods
+
+		private:
+			std::string getChainDescriptiveName() const;
 
 		private:
 			DatabaseManager _databaseManager;

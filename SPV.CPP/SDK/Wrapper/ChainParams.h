@@ -27,6 +27,11 @@ namespace Elastos {
 
 		private:
 			boost::shared_ptr<BRChainParams> _chainParams;
+
+			const BRChainParams *_mainNetChainParams;
+			const BRChainParams *_testNetChainParams;
+			const BRChainParams *_mainNetBcashChainParams;
+			const BRChainParams *_testNetBcashChainParams;
 		};
 
 	}

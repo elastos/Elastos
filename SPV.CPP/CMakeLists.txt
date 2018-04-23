@@ -50,7 +50,7 @@ if(SPV_FOR_ANDROID)
 	endif()
 	set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK})
 
-	#set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)")
+	set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)")
 endif()
 
 
@@ -109,9 +109,9 @@ else()
 	set(Boost_LIBRARIES "")
 
 	foreach(lib_name ${BOOST_COMPONENTS})
-		file(GLOB lib_name_FOUND ${CMAKE_CURRENT_SOURCE_DIR}/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/lib/libboost_${lib_name}*.a)
+		file(GLOB lib_name_FOUND ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/lib/libboost_${lib_name}*.a)
 		if("${lib_name_FOUND}" STREQUAL "")
-			message(FATAL_ERROR "libboost_${lib_name} not found, maybe you should run build-android.sh/build-android.bat in Boost-for-Android first.")
+			message(FATAL_ERROR "libboost_${lib_name} not found, maybe you should run ./build-android.sh $ANDROID_NDK or ./build-android.bat $ANDROID_NDK in ThirdParty/Boost-for-Android first.")
 		endif()
 		message(STATUS "${lib_name_FOUND} -- found")
 		set(Boost_LIBRARIES "${lib_name_FOUND};${Boost_LIBRARIES}")
@@ -119,7 +119,7 @@ else()
 
 	string(REPLACE ";" " " Boost_LIBRARIES_NO_Semicolon "${Boost_LIBRARIES}")
 	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING " falg" FORCE)
-	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
+	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
 endif()
 
 
@@ -190,9 +190,10 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/SDK"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1"
 	"${CMAKE_CURRENT_SOURCE_DIR}/Core"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Include/spdlog/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Include/nlohmann/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Include/Catch2/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/sqlite"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/json/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Catch2/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}"
 	"${Boost_INCLUDE_DIRS}"
 )
@@ -208,12 +209,17 @@ if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)
 endif()
 
-if(NOT SPV_FOR_ANDROID AND SPV_BUILD_SAMPLE)
+if(SPV_BUILD_SAMPLE)
 	set(SAMPLE_NAME sample)
 	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Sample SAMPLE_SOURCE_FILES)
 	add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
 	target_link_libraries(${SAMPLE_NAME} spvsdk)
-	target_link_libraries(${SAMPLE_NAME} sqlite3)
-	target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+	target_link_libraries(${SAMPLE_NAME} dl)
+	if(NOT ANDROID)
+		target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+	endif()
+	if(ANDROID)
+		target_link_libraries(${SAMPLE_NAME} log)
+	endif(ANDROID)
 endif()
 

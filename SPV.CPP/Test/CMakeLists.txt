@@ -4,13 +4,16 @@ foreach(src ${TEST_SOURCE_FILES})
 	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
 	add_executable(${TEST_TARGET_NAME} ${src})
 	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
-	target_link_libraries(${TEST_TARGET_NAME} sqlite3)
-	target_link_libraries(${TEST_TARGET_NAME} pthread)
-	target_link_libraries(${TEST_TARGET_NAME} ${Boost_LIBRARIES})
+	target_link_libraries(${TEST_TARGET_NAME} dl)
+	#target_link_libraries(${TEST_TARGET_NAME} pthread)
+	if(NOT ANDROID)
+		target_link_libraries(${TEST_TARGET_NAME} ${Boost_LIBRARIES})
+	endif()
 endforeach(src)
 
 include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Include/Catch2/single_include"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/Catch2/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Wrapper"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Database"

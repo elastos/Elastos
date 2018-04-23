@@ -1,15 +1,15 @@
 [submodule "Core/secp256k1"]
 	path = SPV.CPP/Core/secp256k1
 	url = https://github.com/bitcoin-core/secp256k1.git
-[submodule "Include/spdlog"]
-	path = SPV.CPP/Include/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "Include/nlohmann"]
-	path = SPV.CPP/Include/nlohmann
-	url = https://github.com/nlohmann/json.git
-[submodule "Include/Catch2"]
-	path = SPV.CPP/Include/Catch2
-	url = https://github.com/catchorg/Catch2.git
-[submodule "Boost-for-Android"]
-	path = SPV.CPP/Boost-for-Android
+[submodule "ThirdParty/Boost-for-Android"]
+	path = SPV.CPP/ThirdParty/Boost-for-Android
 	url = https://github.com/moritz-wundke/Boost-for-Android.git
+[submodule "ThirdParty/spdlog"]
+	path = SPV.CPP/ThirdParty/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "ThirdParty/Catch2"]
+	path = SPV.CPP/ThirdParty/Catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "ThirdParty/json"]
+	path = SPV.CPP/ThirdParty/json
+	url = https://github.com/nlohmann/json.git

@@ -64,7 +64,7 @@ namespace Elastos {
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
 
-			// func networkIsReachable() -> Bool}
+			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
 
 			// Called on publishTransaction
