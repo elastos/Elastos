@@ -89,10 +89,7 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
 	}
 
-	txn, err := chain.NewCoinBaseTransaction(pd, chain.DefaultLedger.Blockchain.GetBestHeight()+1)
-	if err != nil {
-		return nil, err
-	}
+	txn:= chain.NewCoinBaseTransaction(pd, chain.DefaultLedger.Blockchain.GetBestHeight()+1)
 	txn.Inputs = []*Input{
 		{
 			Previous: OutPoint{
