@@ -60,7 +60,7 @@ namespace Elastos {
 			return _count;
 		}
 
-		int ByteStream::length() {
+		int32_t ByteStream::length() {
 			return _size;
 		}
 

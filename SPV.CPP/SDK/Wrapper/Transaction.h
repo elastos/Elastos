@@ -58,6 +58,8 @@ namespace Elastos {
 
 			virtual void Deserialize(ByteStream &istream);
 
+			BRTransaction *convertToRaw() const;
+
 			bool isRegistered() const;
 
 			bool &isRegistered();
@@ -152,6 +154,8 @@ namespace Elastos {
 			static uint64_t getMinOutputAmount();
 
 		private:
+			void convertFrom(BRTransaction *raw);
+
 			void transactionInputCopy(BRTxInput *target, const BRTxInput *source) const;
 
 			void transactionOutputCopy (BRTxOutput *target, const BRTxOutput *source) const;

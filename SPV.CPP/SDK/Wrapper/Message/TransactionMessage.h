@@ -15,9 +15,9 @@ namespace Elastos {
 		public:
 			TransactionMessage();
 
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen, ELAMessageSerializable *serializable);
+			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
-			virtual void Send(BRPeer *peer, ELAMessageSerializable *serializable);
+			virtual void Send(BRPeer *peer, void *serializable);
 		};
 
 	}

@@ -26,7 +26,7 @@ namespace Elastos {
 
 			int position();
 
-			int length();
+			int32_t length();
 
 			size_t availableSize();
 
@@ -51,11 +51,7 @@ namespace Elastos {
 
 			void putBytes(const uint8_t *byte, int len);
 
-			void putFloat(float floatValue);
-
 			void putUTF8(const char *str);
-
-			void putUTF16BE(const char *str);
 
 		public:
 			uint8_t get();
@@ -76,10 +72,6 @@ namespace Elastos {
 
 			int64_t getLong();
 
-			float getFloat();
-
-			double getDouble();
-
 			char *getUTF8();
 
 			char *getUTF8(int32_t &len);
@@ -88,23 +80,16 @@ namespace Elastos {
 
 			void getInts(int32_t *buf, int32_t len);
 
-		public:
-
-			int32_t _count;
-			int32_t _size;
-			uint8_t *_buf;
-			bool _autorelease;
-
 		private:
-
 			void ensureCapacity(int newsize);
 
 			bool checkSize(int readSize);
 
-			static int32_t floatToIntBits(float value);
-
-			static int64_t doubleToLongBits(double value);
-
+		private:
+			int32_t _count;
+			int32_t _size;
+			uint8_t *_buf;
+			bool _autorelease;
 		};
 
 	}

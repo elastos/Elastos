@@ -18,9 +18,9 @@ namespace Elastos {
 
 			virtual ~IWrapperMessage();
 
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen, ELAMessageSerializable *serializable) = 0;
+			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) = 0;
 
-			virtual void Send(BRPeer *peer, ELAMessageSerializable *serializable) = 0;
+			virtual void Send(BRPeer *peer, void *serializable) = 0;
 		};
 
 	}

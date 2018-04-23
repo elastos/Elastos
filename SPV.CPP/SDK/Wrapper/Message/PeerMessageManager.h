@@ -11,6 +11,7 @@
 #include "BRPeerManager.h"
 
 #include "IMessage.h"
+#include "IWrapperMessage.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -24,6 +25,9 @@ namespace Elastos {
 			typedef boost::shared_ptr<IMessage> MessagePtr;
 			const MessagePtr &getMessage(const std::string &message);
 
+			typedef boost::shared_ptr<IWrapperMessage> WrapperMessagePtr;
+			const WrapperMessagePtr &getWrapperMessage(const std::string &message);
+
 			void initMessages(BRPeerManager *peerManager);
 
 		private:
@@ -33,6 +37,7 @@ namespace Elastos {
 			static PeerMessageManager _instance;
 
 			std::unordered_map<std::string, MessagePtr> _messages;
+			std::unordered_map<std::string, WrapperMessagePtr> _wrapperMessages;
 		};
 
 	}

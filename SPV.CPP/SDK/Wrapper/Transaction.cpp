@@ -24,6 +24,7 @@ namespace Elastos {
 				_transaction(transaction),
 				_isRegistered(false),
 				_payload(nullptr) {
+			convertFrom(_transaction);
 		}
 
 		Transaction::Transaction(const ByteData &buffer) :
@@ -32,6 +33,7 @@ namespace Elastos {
 
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
+			convertFrom(_transaction);
 		}
 
 		Transaction::Transaction(const ByteData &buffer, uint32_t blockHeight, uint32_t timeStamp) :
@@ -40,6 +42,7 @@ namespace Elastos {
 
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
+			convertFrom(_transaction);
 
 			_transaction->blockHeight = blockHeight;
 			_transaction->timestamp = timeStamp;
@@ -330,6 +333,15 @@ namespace Elastos {
 			for (size_t i = 0; i < programLength; i++) {
 				_programs[i]->Deserialize(istream);
 			}
+		}
+
+		BRTransaction *Transaction::convertToRaw() const {
+			//todo complete me
+			return nullptr;
+		}
+
+		void Transaction::convertFrom(BRTransaction *raw) {
+			//todo complete me
 		}
 
 	}
