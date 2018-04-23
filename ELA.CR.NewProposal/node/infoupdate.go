@@ -34,13 +34,11 @@ func (node *node) SyncBlocks() {
 		syncNode, err := node.FindSyncNode()
 		if err == nil {
 			syncNode.SetSyncHeaders(false)
-			var emptyHash Uint256
-			node.local.SetStartHash(emptyHash)
-			node.local.SetStopHash(emptyHash)
+			node.local.SetStartHash(EmptyHash)
+			node.local.SetStopHash(EmptyHash)
 		}
-		node.LocalNode().ResetRequestedBlock()
+		node.local.ResetRequestedBlock()
 	} else {
-		var syncNode Noder
 		hasSyncPeer, syncNode := node.local.hasSyncPeer()
 		if hasSyncPeer == false {
 			node.LocalNode().ResetRequestedBlock()
@@ -48,7 +46,7 @@ func (node *node) SyncBlocks() {
 			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
-			SendBlocksReq(node, locator, Uint256{})
+			SendBlocksReq(syncNode, locator, EmptyHash)
 		} else {
 			list := syncNode.LocalNode().GetRequestBlockList()
 			var requests = make(map[Uint256]time.Time, MaxHeaderHashes)
@@ -64,13 +62,13 @@ func (node *node) SyncBlocks() {
 			node.requestedBlockLock.Unlock()
 			if len(requests) == 0 {
 				syncNode.SetSyncHeaders(false)
-				var emptyHash Uint256
-				node.local.SetStartHash(emptyHash)
-				node.local.SetStopHash(emptyHash)
-				newSyncNode := node.GetBestHeightNoder()
+				node.local.SetStartHash(EmptyHash)
+				node.local.SetStopHash(EmptyHash)
+				syncNode := node.GetBestHeightNoder()
 				hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 				locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
-				SendBlocksReq(newSyncNode, locator, emptyHash)
+
+				SendBlocksReq(syncNode, locator, EmptyHash)
 			} else {
 				for hash := range requests {
 					if requests[hash].Before(time.Now().Add(-3 * time.Second)) {
