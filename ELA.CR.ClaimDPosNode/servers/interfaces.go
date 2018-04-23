@@ -3,15 +3,16 @@ package servers
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/log"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 const (
@@ -553,10 +554,7 @@ func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interfa
 		return ResponsePack(InternalError, "")
 	}
 
-	index, err := block.GetCurrentArbitratorIndex()
-	if err != nil {
-		return ResponsePack(InternalError, "")
-	}
+	index := int(block.Header.Height) % len(arbitratorsBytes)
 
 	var arbitrators []string
 	for _, data := range arbitratorsBytes {
