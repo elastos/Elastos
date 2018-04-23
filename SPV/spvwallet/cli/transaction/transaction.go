@@ -196,7 +196,7 @@ func SendTransaction(password []byte, context *cli.Context, wallet walt.Wallet) 
 	}
 
 	// Return reversed hex string
-	fmt.Println(BytesToHexString(BytesReverse(txn.Hash().Bytes())))
+	fmt.Println(BytesToHexString(txn.Hash().Bytes()))
 	return nil
 }
 
