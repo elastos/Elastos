@@ -19,7 +19,6 @@ const TaskChanCap = 4
 
 var (
 	ErrDBNotFound = errors.New("leveldb: not found")
-	zeroHash      = Uint256{}
 )
 
 type persistTask interface{}

@@ -80,34 +80,13 @@ func TransArrayByteToHexString(ptx *Transaction) *Transactions {
 	return trans
 }
 
-func checkParam(param map[string]interface{}, keys ...string) bool {
-	if param == nil {
-		return false
-	}
-	if len(param) < len(keys) {
-		return false
-	}
-	for _, key := range keys {
-		value, ok := param[key]
-		if !ok {
-			return false
-		}
-		switch value.(type) {
-		case string:
-		default:
-			return false
-		}
-	}
-	return true
-}
-
 // Input JSON string examples for getblock method as following:
 func GetRawTransaction(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "hash") {
+	str, ok := stringParam(param, "hash")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	str := param["hash"].(string)
 	hex, err := HexStringToBytesReverse(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
@@ -161,37 +140,31 @@ func GetNodeState(param map[string]interface{}) map[string]interface{} {
 }
 
 func SetLogLevel(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "level") {
-		return ResponsePack(InvalidParams, "")
-	}
-
 	level, ok := param["level"].(float64)
-	if !ok {
-		return ResponsePack(InvalidParams, "need a level, with positive integer in 0-6")
-	}
-	levelInt := int(level)
-	if !ok {
-		return ResponsePack(InvalidParams, "level should be an integer")
+	if !ok || level < 0 {
+		return ResponsePack(InvalidParams, "level must be an integer in 0-6")
 	}
 
-	if err := log.Log.SetDebugLevel(levelInt); err != nil {
+	if err := log.Log.SetDebugLevel(int(level)); err != nil {
 		return ResponsePack(InvalidParams, err.Error())
 	}
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, fmt.Sprint("log level has been set to ", level))
 }
 
 func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "blockhash", "auxpow") {
+	blockHash, ok := stringParam(param, "blockhash")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-
-	blockHash := param["blockhash"].(string)
 	if _, ok := Pow.MsgBlock.BlockData[blockHash]; !ok {
 		log.Trace("[json-rpc:SubmitAuxBlock] receive invalid block hash value:", blockHash)
 		return ResponsePack(InvalidParams, "")
 	}
 
-	auxPow := param["auxpow"].(string)
+	auxPow, ok := stringParam(param, "auxpow")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
 	temp, _ := HexStringToBytes(auxPow)
 	r := bytes.NewBuffer(temp)
 	Pow.MsgBlock.BlockData[blockHash].Header.AuxPow.Deserialize(r)
@@ -253,7 +226,9 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 		return ResponsePack(UnknownBlock, "")
 	}
 
-	if !checkParam(param, "paytoaddress") {
+	var ok bool
+	Pow.PayToAddr, ok = stringParam(param, "paytoaddress")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
@@ -265,8 +240,6 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 		Hash              string `json:"hash"`
 		PreviousBlockHash string `json:"previousblockhash"`
 	}
-
-	Pow.PayToAddr = param["paytoaddress"].(string)
 
 	preHash := chain.DefaultLedger.Blockchain.CurrentBlockHash()
 	preHashStr := BytesToHexString(preHash.Bytes())
@@ -319,27 +292,27 @@ func AuxHelp(param map[string]interface{}) map[string]interface{} {
 }
 
 func ToggleMining(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "mine") {
+	mining, ok := boolParam(param, "mining")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	if param["mining"] == true {
+	var message string
+	if mining {
 		go Pow.Start()
+		message = "mining started"
 	} else {
 		go Pow.Halt()
+		message = "mining stopped"
 	}
 
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, message)
 }
 
 func ManualMining(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "count") {
+	count, ok := uintParam(param, "count")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
-	}
-
-	count, _ := strconv.ParseInt(param["count"].(string), 10, 32)
-	if count <= 0 {
-		return ResponsePack(InvalidParams, "need an positive integer")
 	}
 
 	ret := make([]string, count)
@@ -362,11 +335,11 @@ func ManualMining(param map[string]interface{}) map[string]interface{} {
 // A JSON example for submitblock method as following:
 //   {"jsonrpc": "2.0", "method": "submitblock", "params": ["raw block in hex"], "id": 0}
 func SubmitBlock(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "block") {
+	str, ok := stringParam(param, "block")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	str := param["block"].(string)
 	hex, _ := HexStringToBytes(str)
 	var block Block
 	if err := block.Deserialize(bytes.NewReader(hex)); err != nil {
@@ -439,12 +412,13 @@ func getBlock(hash Uint256) (interface{}, ErrCode) {
 }
 
 func GetBlockByHash(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "hash") {
+	str, ok := stringParam(param, "hash")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
 	var hash Uint256
-	hex, err := HexStringToBytesReverse(param["hash"].(string))
+	hex, err := HexStringToBytesReverse(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -458,11 +432,12 @@ func GetBlockByHash(param map[string]interface{}) map[string]interface{} {
 }
 
 func SendRawTransaction(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "Data") {
+	str, ok := stringParam(param, "Data")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	bys, err := HexStringToBytes(param["Data"].(string))
+	bys, err := HexStringToBytes(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -492,9 +467,10 @@ func GetBlockCount(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetBlockHash(param map[string]interface{}) map[string]interface{} {
-
-	height := uint32(param["index"].(float64))
-	log.Info("my height:", height)
+	height, ok := uintParam(param, "index")
+	if !ok {
+		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
 	if err != nil {
@@ -524,10 +500,9 @@ func GetBlockTransactions(block *Block) interface{} {
 }
 
 func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{} {
-
-	height := uint32(param["height"].(float64))
-	if height <= 0 {
-		return ResponsePack(InvalidParams, "")
+	height, ok := uintParam(param, "index")
+	if !ok {
+		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
@@ -543,10 +518,9 @@ func GetTransactionsByHeight(param map[string]interface{}) map[string]interface{
 }
 
 func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
-
-	height := uint32(param["height"].(float64))
-	if height <= 0 {
-		return ResponsePack(InvalidParams, "")
+	height, ok := uintParam(param, "height")
+	if !ok {
+		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
@@ -560,11 +534,9 @@ func GetBlockByHeight(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interface{} {
-
-	height := uint32(param["height"].(float64))
-
-	if height <= 0 {
-		return ResponsePack(InvalidParams, "")
+	height, ok := uintParam(param, "height")
+	if !ok {
+		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
@@ -599,10 +571,11 @@ func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interfa
 
 //Asset
 func GetAssetByHash(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "hash") {
+	str, ok := stringParam(param, "hash")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	hex, err := HexStringToBytesReverse(param["hash"].(string))
+	hex, err := HexStringToBytesReverse(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -624,11 +597,12 @@ func GetAssetByHash(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetBalanceByAddr(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "addr") {
+	str, ok := stringParam(param, "addr")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint168FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -643,21 +617,27 @@ func GetBalanceByAddr(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetBalanceByAsset(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "addr", "assetid") {
+	addr, ok := stringParam(param, "addr")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint168FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(addr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	assetId, ok := stringParam(param, "assetid")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	unspents, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
 	var balance Fixed64 = 0
-	for k, u := range unspends {
+	for k, u := range unspents {
 		assid := BytesToHexString(BytesReverse(k.Bytes()))
 		for _, v := range u {
-			if param["assetid"].(string) == assid {
+			if assetId == assid {
 				balance = balance + v.Value
 			}
 		}
@@ -666,11 +646,12 @@ func GetBalanceByAsset(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetUnspends(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "addr") {
+	addr, ok := stringParam(param, "addr")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	programHash, err := Uint168FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(addr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -703,16 +684,19 @@ func GetUnspends(param map[string]interface{}) map[string]interface{} {
 }
 
 func GetUnspendOutput(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "addr", "assetid") {
+	addr, ok := stringParam(param, "addr")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
-
 	}
-
-	programHash, err := Uint168FromAddress(param["addr"].(string))
+	programHash, err := Uint168FromAddress(addr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	bys, err := HexStringToBytesReverse(param["assetid"].(string))
+	assetId, ok := stringParam(param, "assetid")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+	bys, err := HexStringToBytesReverse(assetId)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -740,11 +724,12 @@ func GetUnspendOutput(param map[string]interface{}) map[string]interface{} {
 
 //Transaction
 func GetTransactionByHash(param map[string]interface{}) map[string]interface{} {
-	if !checkParam(param, "hash") {
+	str, ok := stringParam(param, "hash")
+	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	bys, err := HexStringToBytesReverse(param["hash"].(string))
+	bys, err := HexStringToBytesReverse(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -779,4 +764,55 @@ func GetTransactionByHash(param map[string]interface{}) map[string]interface{} {
 	t.TxSize = uint32(len(w.Bytes()))
 
 	return ResponsePack(Success, t)
+}
+
+func boolParam(param map[string]interface{}, key string) (bool, bool) {
+	if param == nil {
+		return false, false
+	}
+	value, ok := param[key]
+	if !ok {
+		return false, false
+	}
+	switch v := value.(type) {
+	case bool:
+		return v, true
+	default:
+		return false, false
+	}
+}
+
+func stringParam(param map[string]interface{}, key string) (string, bool) {
+	if param == nil {
+		return "", false
+	}
+	value, ok := param[key]
+	if !ok {
+		return "", false
+	}
+	switch v := value.(type) {
+	case string:
+		return v, true
+	default:
+		return "", false
+	}
+}
+
+func uintParam(param map[string]interface{}, key string) (uint32, bool) {
+	if param == nil {
+		return 0, false
+	}
+	value, ok := param[key]
+	if !ok {
+		return 0, false
+	}
+	switch v := value.(type) {
+	case float64:
+		if v <= 0 {
+			return 0, false
+		}
+		return uint32(v), true
+	default:
+		return 0, false
+	}
 }

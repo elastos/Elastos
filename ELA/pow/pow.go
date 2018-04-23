@@ -96,7 +96,7 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 	txn.Inputs = []*Input{
 		{
 			Previous: OutPoint{
-				TxID:  Uint256{},
+				TxID:  EmptyHash,
 				Index: math.MaxUint16,
 			},
 			Sequence: math.MaxUint32,
@@ -162,7 +162,7 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 	blockData := &Header{
 		Version:    0,
 		Previous:   *chain.DefaultLedger.Blockchain.BestChain.Hash,
-		MerkleRoot: Uint256{},
+		MerkleRoot: EmptyHash,
 		Timestamp:  uint32(chain.DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
 		Bits:       config.Parameters.ChainParam.PowLimitBits,
 		Height:     nextBlockHeight,

@@ -259,7 +259,6 @@ func (node *node) Height() uint64 {
 }
 
 func (node *node) SetHeight(height uint64) {
-	//TODO read/write lock
 	node.height = height
 }
 
