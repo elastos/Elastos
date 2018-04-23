@@ -54,9 +54,9 @@ namespace Elastos {
 
 			virtual BRTransaction *getRaw() const;
 
-			virtual void Serialize(std::istream &istream) const;
+			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual void Deserialize(std::ostream &ostream);
+			virtual void Deserialize(ByteStream &istream);
 
 			bool isRegistered() const;
 

@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRTransaction.h>
+#include <iostream>
 #include "TransactionOutput.h"
 
 namespace Elastos {
@@ -55,39 +56,39 @@ namespace Elastos {
 			return ByteData(_output->script, _output->scriptLen);
 		}
 
-		void TransactionOutput::Serialize(std::istream &istream) const {
+		void TransactionOutput::Serialize(ByteStream &ostream) const {
 			uint8_t assetIdData[256 / 8];
 			UInt256Set(assetIdData, _assetId);
-			istream >> assetIdData;
+			ostream.putBytes(assetIdData, 256 / 8);
 
 			uint8_t amountData[64 / 8];
 			UInt64SetLE(amountData, _output->amount);
-			istream >> amountData;
+			ostream.putBytes(amountData, 64 / 8);
 
 			uint8_t outputLockData[32 / 8];
 			UInt32SetLE(outputLockData, _outputLock);
-			istream >> outputLockData;
+			ostream.putBytes(outputLockData, 32 / 8);
 
 			uint8_t programHashData[168 / 8];
 			UInt168Set(programHashData, _programHash);
-			istream >> programHashData;
+			ostream.putBytes(programHashData, 168 / 8);
 		}
 
-		void TransactionOutput::Deserialize(std::ostream &ostream) {
+		void TransactionOutput::Deserialize(ByteStream &istream) {
 			uint8_t assetIdData[256 / 8];
-			ostream << assetIdData;
+			istream.getBytes(assetIdData, 256 / 8);
 			UInt256Get(&_assetId, assetIdData);
 
 			uint8_t amountData[64 / 8];
-			ostream << amountData;
+			istream.getBytes(amountData, 64 / 8);
 			_output->amount = UInt64GetLE(amountData);
 
 			uint8_t outputLockData[32 / 8];
-			ostream << outputLockData;
+			istream.getBytes(outputLockData, 32 / 8);
 			_outputLock = UInt32GetLE(outputLockData);
 
 			uint8_t programHashData[168 / 8];
-			ostream << programHashData;
+			istream.getBytes(programHashData, 168 / 8);
 			UInt168Get(&_programHash, programHashData);
 		}
 

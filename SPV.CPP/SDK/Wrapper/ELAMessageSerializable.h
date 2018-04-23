@@ -8,6 +8,8 @@
 #include <istream>
 #include <ostream>
 
+#include "ByteStream.h"
+
 namespace Elastos {
 	namespace SDK {
 
@@ -15,8 +17,8 @@ namespace Elastos {
 		public:
 			virtual ~ELAMessageSerializable();
 
-			virtual void Serialize(std::istream &istream) const = 0;
-			virtual void Deserialize(std::ostream &ostream) = 0;
+			virtual void Serialize(ByteStream &ostream) const = 0;
+			virtual void Deserialize(ByteStream &istream) = 0;
 		};
 
 	}

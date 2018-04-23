@@ -30,8 +30,8 @@ namespace Elastos {
 
 			~Attribute();
 
-			virtual void Serialize(std::istream &istream) const;
-			virtual void Deserialize(std::ostream &ostream);
+			virtual void Serialize(ByteStream &ostream) const;
+			virtual void Deserialize(ByteStream &istream);
 
 		private:
 			Usage _usage;

@@ -24,19 +24,17 @@ namespace Elastos {
 			}
 		}
 
-		void Attribute::Serialize(std::istream &istream) const {
-			uint8_t usageData[8 / 8];
-			UInt8SetLE(usageData, uint8_t(_usage));
-			istream >> usageData;
+		void Attribute::Serialize(ByteStream &ostream) const {
+			ostream.put(_usage);
 
 			uint8_t dataLengthData[64 / 8];
 			UInt64SetLE(dataLengthData, _data.length);
-			istream >> dataLengthData;
+			ostream.putBytes(dataLengthData, 64 / 8);
 
-			istream >> _data.data;
+			ostream.putBytes(_data.data, _data.length);
 		}
 
-		void Attribute::Deserialize(std::ostream &ostream) {
+		void Attribute::Deserialize(ByteStream &istream) {
 
 		}
 	}

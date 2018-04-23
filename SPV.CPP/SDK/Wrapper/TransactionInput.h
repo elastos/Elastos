@@ -32,9 +32,9 @@ namespace Elastos {
 
 			virtual BRTxInput *getRaw() const;
 
-			virtual void Serialize(std::istream &istream) const;
+			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual void Deserialize(std::ostream &ostream);
+			virtual void Deserialize(ByteStream &istream);
 
 			std::string getAddress() const;
 

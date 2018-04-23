@@ -15,8 +15,8 @@ namespace Elastos {
 		}
 
 		Program::Program(const ByteData &code, const ByteData &parameter) :
-			_parameter(parameter),
-			_code(code) {
+				_parameter(parameter),
+				_code(code) {
 
 		}
 
@@ -29,32 +29,32 @@ namespace Elastos {
 			}
 		}
 
-		void Program::Serialize(std::istream &istream) const {
+		void Program::Serialize(ByteStream &ostream) const {
 			uint8_t parameterLengthData[64 / 8];
 			UInt64SetLE(parameterLengthData, _parameter.length);
-			istream >> parameterLengthData;
+			ostream.putBytes(parameterLengthData, 64 / 8);
 
-			istream >> _parameter.data;
+			ostream.putBytes(_parameter.data, _parameter.length);
 
 			uint8_t attributeLengthData[64 / 8];
 			UInt64SetLE(attributeLengthData, _code.length);
-			istream >> attributeLengthData;
+			ostream.putBytes(attributeLengthData, 64 / 8);
 
-			istream >> _code.data;
+			ostream.putBytes(_code.data, _code.length);
 		}
 
-		void Program::Deserialize(std::ostream &ostream) {
+		void Program::Deserialize(ByteStream &istream) {
 			uint8_t parameterLengthData[64 / 8];
-			ostream << parameterLengthData;
+			istream.getBytes(parameterLengthData, 64 / 8);
 			_parameter.length = UInt64GetLE(parameterLengthData);
 
-			ostream << _parameter.data;
+			istream.getBytes(_parameter.data, _parameter.length);
 
 			uint8_t attributeLengthData[64 / 8];
-			ostream << attributeLengthData;
+			istream.getBytes(attributeLengthData, 64 / 8);
 			_code.length = UInt64GetLE(attributeLengthData);
 
-			ostream << _code.data;
+			istream.getBytes(_code.data, _code.length);
 		}
 
 
