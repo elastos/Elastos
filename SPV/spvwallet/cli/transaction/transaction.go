@@ -14,7 +14,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
 	walt "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/urfave/cli"

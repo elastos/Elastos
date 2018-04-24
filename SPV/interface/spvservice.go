@@ -3,8 +3,8 @@ package _interface
 import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	"github.com/elastos/Elastos.ELA/bloom"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 

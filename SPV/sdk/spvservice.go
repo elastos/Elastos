@@ -3,7 +3,7 @@ package sdk
 import (
 	"github.com/elastos/Elastos.ELA.SPV/db"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 

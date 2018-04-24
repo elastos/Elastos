@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 )
 
 const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS STXOs(

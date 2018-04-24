@@ -8,8 +8,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/db"
 
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 const CreateTXNDB = `CREATE TABLE IF NOT EXISTS TXNs(

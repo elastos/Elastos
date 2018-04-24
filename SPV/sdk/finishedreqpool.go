@@ -3,9 +3,10 @@ package sdk
 import (
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
+
+	"github.com/elastos/Elastos.ELA/bloom"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type FinishedReqPool struct {

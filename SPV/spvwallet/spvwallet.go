@@ -8,10 +8,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	"github.com/elastos/Elastos.ELA/bloom"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
@@ -191,7 +190,7 @@ func (wallet *SPVWallet) NotifyNewAddress(hash []byte) error {
 
 func (wallet *SPVWallet) SendTransaction(tx Transaction) error {
 	// Broadcast transaction to connected peers
-	wallet.BroadCastMessage(msg.NewTx(tx))
+	wallet.BroadCastMessage(&tx)
 	return nil
 }
 

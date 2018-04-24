@@ -6,7 +6,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
@@ -50,7 +51,7 @@ func (client *SPVClientImpl) MakeMessage(cmd string) (message p2p.Message, err e
 	case "inv":
 		message = new(msg.Inventory)
 	case "tx":
-		message = new(msg.Tx)
+		message = new(core.Transaction)
 	case "merkleblock":
 		message = new(bloom.MerkleBlock)
 	case "notfound":
@@ -71,7 +72,7 @@ func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) 
 		return client.msgHandler.OnInventory(peer, msg)
 	case *bloom.MerkleBlock:
 		return client.msgHandler.OnMerkleBlock(peer, msg)
-	case *msg.Tx:
+	case *core.Transaction:
 		return client.msgHandler.OnTxn(peer, msg)
 	case *msg.NotFound:
 		return client.msgHandler.OnNotFound(peer, msg)
