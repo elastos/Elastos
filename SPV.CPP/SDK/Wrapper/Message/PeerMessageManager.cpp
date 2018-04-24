@@ -11,6 +11,7 @@
 #include "PeerMessageManager.h"
 #include "VerackMessage.h"
 #include "TransactionMessage.h"
+#include "MerkleBlockMessage.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -52,6 +53,15 @@ namespace Elastos {
 				fun(peer, tx);
 			}
 
+			int BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
+				MerkleBlockMessage *message = static_cast<MerkleBlockMessage *>(
+						PeerMessageManager::instance().getWrapperMessage(MSG_MERKLEBLOCK).get());
+				boost::function<void(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
+						boost::bind(&MerkleBlockMessage::Accept, message, _1, _2, _3);
+
+				fun(peer, msg, msgLen);
+			}
+
 		}
 
 		PeerMessageManager PeerMessageManager::_instance = PeerMessageManager();
@@ -71,6 +81,9 @@ namespace Elastos {
 			peerManager->peerMessages->BRPeerAcceptTxMessage = BRPeerAcceptTxMessage;
 			peerManager->peerMessages->BRPeerSendTxMessage = BRPeerSendTxMessage;
 			_wrapperMessages[MSG_TX] = WrapperMessagePtr(new TransactionMessage);
+
+			peerManager->peerMessages->BRPeerAcceptMerkleblockMessage = BRPeerAcceptMerkleblockMessage;
+			_wrapperMessages[MSG_MERKLEBLOCK] = WrapperMessagePtr(new MerkleBlockMessage);
 		}
 
 		PeerMessageManager &PeerMessageManager::instance() {

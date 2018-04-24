@@ -564,60 +564,6 @@ static int _BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msg
     return r;
 }
 
-static int _BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
-{
-    // Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
-    // a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
-    // non-tx message is received we should have all the tx in the merkleblock.
-    BRPeerContext *ctx = (BRPeerContext *)peer;
-    BRMerkleBlock *block = BRMerkleBlockParse(msg, msgLen);
-    int r = 1;
-
-    if (! block) {
-        peer_log(peer, "malformed merkleblock message with length: %zu", msgLen);
-        r = 0;
-    }
-    else if (! BRMerkleBlockIsValid(block, (uint32_t)time(NULL))) {
-        peer_log(peer, "invalid merkleblock: %s", u256hex(block->blockHash));
-        BRMerkleBlockFree(block);
-        block = NULL;
-        r = 0;
-    }
-    else if (! ctx->sentFilter && ! ctx->sentGetdata) {
-        peer_log(peer, "got merkleblock message before loading a filter");
-        BRMerkleBlockFree(block);
-        block = NULL;
-        r = 0;
-    }
-    else {
-        size_t count = BRMerkleBlockTxHashes(block, NULL, 0);
-        UInt256 _hashes[(sizeof(UInt256)*count <= 0x1000) ? count : 0],
-                *hashes = (sizeof(UInt256)*count <= 0x1000) ? _hashes : malloc(count*sizeof(*hashes));
-
-        assert(hashes != NULL);
-        count = BRMerkleBlockTxHashes(block, hashes, count);
-
-        for (size_t i = count; i > 0; i--) { // reverse order for more efficient removal as tx arrive
-            if (BRSetContains(ctx->knownTxHashSet, &hashes[i - 1])) continue;
-            array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
-        }
-
-        if (hashes != _hashes) free(hashes);
-    }
-
-    if (block) {
-        if (array_count(ctx->currentBlockTxHashes) > 0) { // wait til we get all tx messages before processing the block
-            ctx->currentBlock = block;
-        }
-        else if (ctx->relayedBlock) {
-            ctx->relayedBlock(ctx->info, block);
-        }
-        else BRMerkleBlockFree(block);
-    }
-
-    return r;
-}
-
 // described in BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 static int _BRPeerAcceptRejectMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
@@ -710,7 +656,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
     else if (strncmp(MSG_NOTFOUND, type, 12) == 0) r = _BRPeerAcceptNotfoundMessage(peer, msg, msgLen);
     else if (strncmp(MSG_PING, type, 12) == 0) r = _BRPeerAcceptPingMessage(peer, msg, msgLen);
     else if (strncmp(MSG_PONG, type, 12) == 0) r = _BRPeerAcceptPongMessage(peer, msg, msgLen);
-    else if (strncmp(MSG_MERKLEBLOCK, type, 12) == 0) r = _BRPeerAcceptMerkleblockMessage(peer, msg, msgLen);
+    else if (strncmp(MSG_MERKLEBLOCK, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptMerkleblockMessage(peer, msg, msgLen);
     else if (strncmp(MSG_REJECT, type, 12) == 0) r = _BRPeerAcceptRejectMessage(peer, msg, msgLen);
     else if (strncmp(MSG_FEEFILTER, type, 12) == 0) r = _BRPeerAcceptFeeFilterMessage(peer, msg, msgLen);
     else peer_log(peer, "dropping %s, length %zu, not implemented", type, msgLen);

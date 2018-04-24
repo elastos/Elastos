@@ -4,7 +4,7 @@
 
 #include <float.h>
 #include <sys/time.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "BRPeer.h"
 #include "BRPeerMessages.h"
@@ -108,6 +108,60 @@ static void BRPeerSendTxMessage(BRPeer *peer, BRTransaction *tx)
 	BRPeerSendMessage(peer, buf, bufLen, MSG_TX);
 }
 
+static int _BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
+{
+	// Bitcoin nodes don't support querying arbitrary transactions, only transactions not yet accepted in a block. After
+	// a merkleblock message, the remote node is expected to send tx messages for the tx referenced in the block. When a
+	// non-tx message is received we should have all the tx in the merkleblock.
+	BRPeerContext *ctx = (BRPeerContext *)peer;
+	BRMerkleBlock *block = BRMerkleBlockParse(msg, msgLen);
+	int r = 1;
+
+	if (! block) {
+		peer_log(peer, "malformed merkleblock message with length: %zu", msgLen);
+		r = 0;
+	}
+	else if (! BRMerkleBlockIsValid(block, (uint32_t)time(NULL))) {
+		peer_log(peer, "invalid merkleblock: %s", u256hex(block->blockHash));
+		BRMerkleBlockFree(block);
+		block = NULL;
+		r = 0;
+	}
+	else if (! ctx->sentFilter && ! ctx->sentGetdata) {
+		peer_log(peer, "got merkleblock message before loading a filter");
+		BRMerkleBlockFree(block);
+		block = NULL;
+		r = 0;
+	}
+	else {
+		size_t count = BRMerkleBlockTxHashes(block, NULL, 0);
+		UInt256 _hashes[(sizeof(UInt256)*count <= 0x1000) ? count : 0],
+				*hashes = (sizeof(UInt256)*count <= 0x1000) ? _hashes : malloc(count*sizeof(*hashes));
+
+		assert(hashes != NULL);
+		count = BRMerkleBlockTxHashes(block, hashes, count);
+
+		for (size_t i = count; i > 0; i--) { // reverse order for more efficient removal as tx arrive
+			if (BRSetContains(ctx->knownTxHashSet, &hashes[i - 1])) continue;
+			array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
+		}
+
+		if (hashes != _hashes) free(hashes);
+	}
+
+	if (block) {
+		if (array_count(ctx->currentBlockTxHashes) > 0) { // wait til we get all tx messages before processing the block
+			ctx->currentBlock = block;
+		}
+		else if (ctx->relayedBlock) {
+			ctx->relayedBlock(ctx->info, block);
+		}
+		else BRMerkleBlockFree(block);
+	}
+
+	return r;
+}
+
 BRPeerMessages *BRPeerMessageNew(void) {
 	BRPeerMessages *peerMessages = calloc(1, sizeof(*peerMessages));
 
@@ -116,6 +170,8 @@ BRPeerMessages *BRPeerMessageNew(void) {
 
 	peerMessages->BRPeerAcceptTxMessage = _BRPeerAcceptTxMessage;
 	peerMessages->BRPeerSendTxMessage = BRPeerSendTxMessage;
+
+	peerMessages->BRPeerAcceptMerkleblockMessage = _BRPeerAcceptMerkleblockMessage;
 }
 
 void BRPeerMessageFree(BRPeerMessages *peerMessages) {

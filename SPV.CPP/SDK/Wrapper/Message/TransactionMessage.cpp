@@ -8,6 +8,7 @@
 #include "TransactionMessage.h"
 #include "Transaction.h"
 #include "Log.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -40,7 +41,7 @@ namespace Elastos {
 			}
 			else {
 				txHash = tx->txHash;
-				Log::getLogger()->warn("got tx: %s", u256hex(txHash));
+				Log::getLogger()->warn("got tx: %s", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
 					ctx->relayedTx(ctx->info, tx);
@@ -57,7 +58,7 @@ namespace Elastos {
 					if (array_count(ctx->currentBlockTxHashes) == 0) { // we received the entire block including all matched tx
 						BRMerkleBlock *block = ctx->currentBlock;
 
-						ctx->currentBlock = NULL;
+						ctx->currentBlock = nullptr;
 						if (ctx->relayedBlock) ctx->relayedBlock(ctx->info, block);
 					}
 				}

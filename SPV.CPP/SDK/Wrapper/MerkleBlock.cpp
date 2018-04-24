@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRMerkleBlock.h>
 #include "BRMerkleBlock.h"
 #include "Utils.h"
 
@@ -10,8 +11,12 @@
 namespace Elastos {
 	namespace SDK {
 
+		MerkleBlock::MerkleBlock() {
+			_merkleBlock = BRMerkleBlockNew();
+		}
+
 		MerkleBlock::MerkleBlock(BRMerkleBlock *merkleBlock) :
-			_merkleBlock(merkleBlock) {
+				_merkleBlock(merkleBlock) {
 		}
 
 		MerkleBlock::MerkleBlock(const ByteData &block, int blockHeight) {
@@ -84,6 +89,114 @@ namespace Elastos {
 
 		bool MerkleBlock::containsTransactionHash(UInt256 hash) const {
 			return BRMerkleBlockContainsTxHash(_merkleBlock, hash) != 0;
+		}
+
+		void MerkleBlock::Serialize(ByteStream &ostream) const {
+			uint8_t versionData[32 / 8];
+			UInt32SetLE(versionData, _merkleBlock->version);
+			ostream.putBytes(versionData, 32 / 8);
+
+			uint8_t prevBlockData[256 / 8];
+			UInt256Set(prevBlockData, _merkleBlock->prevBlock);
+			ostream.putBytes(prevBlockData, 256 / 8);
+
+			uint8_t merkleRootData[256 / 8];
+			UInt256Set(merkleRootData, _merkleBlock->merkleRoot);
+			ostream.putBytes(merkleRootData, 256 / 8);
+
+			uint8_t timeStampData[32 / 8];
+			UInt32SetLE(timeStampData, _merkleBlock->timestamp);
+			ostream.putBytes(timeStampData, 32 / 8);
+
+			uint8_t bitsData[32 / 8];
+			UInt32SetLE(bitsData, _merkleBlock->target);
+			ostream.putBytes(bitsData, 32 / 8);
+
+			uint8_t nonceData[32 / 8];
+			UInt32SetLE(nonceData, _merkleBlock->nonce);
+			ostream.putBytes(nonceData, 32 / 8);
+
+			uint8_t heightData[32 / 8];
+			UInt32SetLE(heightData, _merkleBlock->height);
+			ostream.putBytes(heightData, 32 / 8);
+
+			_auxPow.Serialize(ostream);
+
+			ostream.put(1);    //correspond to serialization of node, should add one byte here
+
+			uint8_t totalTxData[32 / 8];
+			UInt32SetLE(totalTxData, _merkleBlock->totalTx);
+			ostream.putBytes(totalTxData, 32 / 8);
+
+			uint8_t hashesCountData[32 / 8];
+			UInt32SetLE(hashesCountData, uint32_t(_merkleBlock->hashesCount));
+			ostream.putBytes(hashesCountData, 32 / 8);
+
+			uint8_t hashData[256 / 8];
+			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
+				UInt256Set(hashData, _merkleBlock->hashes[i]);
+				ostream.putBytes(hashData, 256 / 8);
+			}
+
+			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
+
+			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
+				ostream.put(_merkleBlock->flags[i]);
+			}
+		}
+
+		void MerkleBlock::Deserialize(ByteStream &istream) {
+			uint8_t versionData[32 / 8];
+			istream.getBytes(versionData, 32 / 8);
+			_merkleBlock->version = UInt32GetLE(versionData);
+
+			uint8_t prevBlockData[256 / 8];
+			istream.getBytes(prevBlockData, 256 / 8);
+			UInt256Get(&_merkleBlock->prevBlock, prevBlockData);
+
+			uint8_t merkleRootData[256 / 8];
+			istream.getBytes(merkleRootData, 256 / 8);
+			UInt256Get(&_merkleBlock->merkleRoot, merkleRootData);
+
+			uint8_t timeStampData[32 / 8];
+			istream.getBytes(timeStampData, 32 / 8);
+			UInt32SetLE(timeStampData, _merkleBlock->timestamp);
+
+			uint8_t bitsData[32 / 8];
+			istream.getBytes(bitsData, 32 / 8);
+			_merkleBlock->target = UInt32GetLE(bitsData);
+
+			uint8_t nonceData[32 / 8];
+			istream.getBytes(nonceData, 32 / 8);
+			_merkleBlock->nonce = UInt32GetLE(nonceData);
+
+			uint8_t heightData[32 / 8];
+			istream.getBytes(heightData, 32 / 8);
+			_merkleBlock->height = UInt32GetLE(heightData);
+
+			_auxPow.Deserialize(istream);
+
+			istream.get();    //correspond to serialization of node, should get one byte here
+
+			uint8_t totalTxData[32 / 8];
+			istream.getBytes(totalTxData, 32 / 8);
+			_merkleBlock->totalTx = UInt32GetLE(totalTxData);
+
+			uint8_t hashesCountData[32 / 8];
+			istream.getBytes(hashesCountData, 32 / 8);
+			_merkleBlock->hashesCount = _merkleBlock->flagsLen = UInt32GetLE(hashesCountData);
+
+			uint8_t hashData[256 / 8];
+			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
+				istream.getBytes(hashData, 256 / 8);
+				UInt256Get(&_merkleBlock->hashes[i], hashData);
+			}
+
+			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
+
+			for (uint32_t i = 0; i < _merkleBlock->flagsLen; ++i) {
+				_merkleBlock->flags[i] = istream.get();
+			}
 		}
 
 		void to_json(nlohmann::json &j, const MerkleBlock &p) {

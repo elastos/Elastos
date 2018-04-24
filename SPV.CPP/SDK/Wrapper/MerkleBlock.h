@@ -12,14 +12,19 @@
 
 #include "Wrapper.h"
 #include "ByteData.h"
+#include "ELAMessageSerializable.h"
+#include "AuxPow.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		class MerkleBlock :
-			public Wrapper<BRMerkleBlock> {
+			public Wrapper<BRMerkleBlock>,
+			public ELAMessageSerializable {
 
 		public:
+			MerkleBlock();
+
 			MerkleBlock(BRMerkleBlock *merkleBlock);
 
 			MerkleBlock(const ByteData &block, int blockHeight);
@@ -29,6 +34,10 @@ namespace Elastos {
 			virtual std::string toString() const;
 
 			virtual BRMerkleBlock *getRaw() const;
+
+			virtual void Serialize(ByteStream &ostream) const;
+
+			virtual void Deserialize(ByteStream &istream);
 
 			UInt256 getBlockHash() const;
 
@@ -55,7 +64,7 @@ namespace Elastos {
 			bool containsTransactionHash(UInt256 hash) const;
 
 		private:
-
+			AuxPow _auxPow;
 			BRMerkleBlock *_merkleBlock;
 		};
 

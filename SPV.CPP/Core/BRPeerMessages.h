@@ -65,6 +65,8 @@ typedef struct {
 	void (*BRPeerSendTxMessage)(BRPeer *peer, BRTransaction *tx);
 	int (*BRPeerAcceptTxMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
+	int (*BRPeerAcceptMerkleblockMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
 } BRPeerMessages;
 
 BRPeerMessages *BRPeerMessageNew(void);

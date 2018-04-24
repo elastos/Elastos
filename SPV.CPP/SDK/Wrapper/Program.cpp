@@ -48,12 +48,14 @@ namespace Elastos {
 			istream.getBytes(parameterLengthData, 64 / 8);
 			_parameter.length = UInt64GetLE(parameterLengthData);
 
+			_parameter.data = new uint8_t[_parameter.length];
 			istream.getBytes(_parameter.data, _parameter.length);
 
 			uint8_t attributeLengthData[64 / 8];
 			istream.getBytes(attributeLengthData, 64 / 8);
 			_code.length = UInt64GetLE(attributeLengthData);
 
+			_code.data = new uint8_t[_code.length];
 			istream.getBytes(_code.data, _code.length);
 		}
 
