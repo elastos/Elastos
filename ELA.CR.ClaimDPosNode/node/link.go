@@ -96,7 +96,6 @@ func (n *node) listenConnections(listener net.Listener) {
 
 		node := NewNode(conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
-		node.local = n
 		node.localPort = localPortFromConn(conn)
 		go node.Read()
 	}
@@ -199,7 +198,6 @@ func (node *node) Connect(nodeAddr string) error {
 	node.link.connCnt++
 	n := NewNode(conn)
 	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
-	n.local = node
 
 	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
@@ -267,6 +265,6 @@ func (node *node) Send(msg Message) {
 	_, err = node.conn.Write(buf)
 	if err != nil {
 		log.Error("Error sending message to node ", err)
-		node.local.eventQueue.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node)
+		LocalNode.eventQueue.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node)
 	}
 }

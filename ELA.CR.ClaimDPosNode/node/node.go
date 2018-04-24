@@ -14,17 +14,18 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/bloom"
 	. "github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
+
+var LocalNode *node
 
 type Semaphore chan struct{}
 
@@ -46,7 +47,6 @@ type node struct {
 	txnCnt   uint64        // The transactions be transmit by this node
 	rxTxnCnt uint64        // The transaction received by this node
 	link                   // The link status and infomation
-	local    *node         // The pointer to local node
 	nbrNodes               // The neighbor node connect with currently node except itself
 	eventQueue             // The event queue to notice notice other modules
 	chain.TxPool           // Unconfirmed transaction pool
@@ -156,38 +156,37 @@ func NewNode(conn net.Conn) *node {
 	return node
 }
 
-func InitNode() Noder {
+func InitLocalNode() Noder {
 	Magic = Parameters.Magic
 
-	n := NewNode(nil)
-	n.version = PROTOCOLVERSION
+	LocalNode = NewNode(nil)
+	LocalNode.version = PROTOCOLVERSION
 
-	n.SyncBlkReqSem = MakeSemaphore(MAXSYNCHDRREQ)
-	n.SyncHdrReqSem = MakeSemaphore(MAXSYNCHDRREQ)
+	LocalNode.SyncBlkReqSem = MakeSemaphore(MAXSYNCHDRREQ)
+	LocalNode.SyncHdrReqSem = MakeSemaphore(MAXSYNCHDRREQ)
 
-	n.link.port = uint16(Parameters.NodePort)
+	LocalNode.link.port = uint16(Parameters.NodePort)
 	if Parameters.SPVService {
-		n.services += SPVService
+		LocalNode.services += SPVService
 	}
-	n.relay = true
+	LocalNode.relay = true
 	idHash := sha256.Sum256([]byte(IPv4Addr() + strconv.Itoa(Parameters.NodePort)))
-	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(n.id))
+	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(LocalNode.id))
 
-	log.Info(fmt.Sprintf("Init node ID to 0x%x", n.id))
-	n.nbrNodes.init()
-	n.KnownAddressList.init()
-	n.local = n
-	n.TxPool.Init()
-	n.eventQueue.init()
-	n.idCache.init()
-	n.cachedHashes = make([]Uint256, 0)
-	n.nodeDisconnectSubscriber = n.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, n.NodeDisconnect)
-	n.RequestedBlockList = make(map[Uint256]time.Time)
-	n.initConnection()
-	go n.updateConnection()
-	go n.updateNodeInfo()
+	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
+	LocalNode.nbrNodes.init()
+	LocalNode.KnownAddressList.init()
+	LocalNode.TxPool.Init()
+	LocalNode.eventQueue.init()
+	LocalNode.idCache.init()
+	LocalNode.cachedHashes = make([]Uint256, 0)
+	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
+	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
+	LocalNode.initConnection()
+	go LocalNode.updateConnection()
+	go LocalNode.updateNodeInfo()
 
-	return n
+	return LocalNode
 }
 
 func (n *node) NodeDisconnect(v interface{}) {
@@ -250,10 +249,6 @@ func (node *node) GetRxTxnCnt() uint64 {
 	return node.rxTxnCnt
 }
 
-func (node *node) LocalNode() Noder {
-	return node.local
-}
-
 func (node *node) Height() uint64 {
 	return node.height
 }
@@ -293,7 +288,7 @@ func (node *node) WaitForSyncFinish() {
 		log.Trace("others height is ", heights)
 
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
-			node.local.SetSyncHeaders(false)
+			LocalNode.SetSyncHeaders(false)
 			break
 		}
 
@@ -311,7 +306,7 @@ func (node *node) BloomFilter() *bloom.Filter {
 
 func (node *node) Relay(from Noder, message interface{}) error {
 	log.Debug()
-	if from != nil && node.LocalNode().IsSyncHeaders() == true {
+	if from != nil && LocalNode.IsSyncHeaders() == true {
 		return nil
 	}
 
@@ -328,7 +323,7 @@ func (node *node) Relay(from Noder, message interface{}) error {
 				}
 
 				if nbr.IsRelay() || (nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(txn)) {
-					go nbr.Send(msg.NewTx(*txn))
+					go nbr.Send(txn)
 					node.txnCnt++
 				}
 			case *Block:
@@ -343,7 +338,7 @@ func (node *node) Relay(from Noder, message interface{}) error {
 					go nbr.Send(bloom.NewMerkleBlock(block, nbr.BloomFilter()))
 
 				} else if nbr.IsRelay() {
-					go nbr.Send(msg.NewBlock(*block))
+					go nbr.Send(block)
 				}
 			default:
 				log.Warn("unknown relay message type")
@@ -460,7 +455,7 @@ func (node *node) DeleteRequestedBlock(hash Uint256) {
 }
 
 func (node *node) FindSyncNode() (Noder, error) {
-	noders := node.local.GetNeighborNoder()
+	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
 		if n.IsSyncHeaders() == true {
 			return n, nil

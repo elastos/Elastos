@@ -6,10 +6,10 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/sidechain"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 

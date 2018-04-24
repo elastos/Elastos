@@ -8,11 +8,11 @@ import (
 	"errors"
 	"container/list"
 
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 const TaskChanCap = 4
