@@ -1,19 +1,13 @@
 package: github.com/elastos/Elastos.ELA.SideChain
 import:
+- package: github.com/elastos/Elastos.ELA
 - package: github.com/elastos/Elastos.ELA.SPV
   repo:    git@github.com:elastos/Elastos.ELA.SPV.git
-- package: github.com/golang/crypto
-  subpackages:
-  - ripemd160
-  - ssh/terminal
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb
   - leveldb/errors
   - leveldb/iterator
   - leveldb/opt
-- package: github.com/itchyny/base58-go
 - package: github.com/gorilla/websocket
 - package: github.com/pborman/uuid
-ignore:
-  - golang.org/x/sys/unix
