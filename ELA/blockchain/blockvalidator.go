@@ -9,12 +9,11 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"bytes"
 )
 
 const (
@@ -24,12 +23,7 @@ const (
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Header
 	hash := header.Hash()
-	var auxPow AuxPow
-	err := auxPow.Deserialize(bytes.NewReader(header.AuxPow))
-	if err != nil {
-		return err
-	}
-	if !auxPow.Check(&hash, AuxPowChainID) {
+	if !header.AuxPow.Check(&hash, AuxPowChainID) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
 	if CheckProofOfWork(&header, powLimit) != nil {
@@ -172,10 +166,7 @@ func CheckProofOfWork(header *Header, powLimit *big.Int) error {
 	}
 
 	// The block hash must be less than the claimed target.
-	var hash Uint256
-	var auxPow AuxPow
-	auxPow.Deserialize(bytes.NewReader(header.AuxPow))
-	hash = auxPow.ParBlockHeader.Hash()
+	hash := header.AuxPow.ParBlockHeader.Hash()
 
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {
