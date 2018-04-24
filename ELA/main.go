@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/node"
@@ -54,7 +53,7 @@ func handleLogFile() {
 }
 
 func startConsensus(noder protocol.Noder) {
-	servers.Pow = pow.NewPowService("logPow", noder)
+	servers.Pow = blockchain.NewPowService("logPow", noder)
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()

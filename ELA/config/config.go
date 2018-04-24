@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	"time"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -132,7 +133,7 @@ func init() {
 		os.Exit(1)
 	}
 	//	Parameters = &(config.ConfigFile)
-	Parameters.Configuration = &(config.ConfigFile)
+	Parameters.Configuration = &config.ConfigFile
 	if Parameters.PowConfiguration.ActiveNet == "MainNet" {
 		Parameters.ChainParam = mainNet
 	} else if Parameters.PowConfiguration.ActiveNet == "TestNet" {
@@ -140,5 +141,18 @@ func init() {
 	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
 		Parameters.ChainParam = regNet
 	}
+}
 
+func (config *Configuration) GetArbitrators() ([][]byte, error) {
+	//todo finish this when arbitrator election scenario is done
+	var arbitersByte [][]byte
+	for _, arbiter := range config.Arbiters {
+		arbiterByte, err := common.HexStringToBytes(arbiter)
+		if err != nil {
+			return nil, err
+		}
+		arbitersByte = append(arbitersByte, arbiterByte)
+	}
+
+	return arbitersByte, nil
 }
