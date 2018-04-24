@@ -1,19 +1,19 @@
 package servers
 
 import (
-	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const TlsPort = 443
 
 var NodeForServers Noder
-var Pow *blockchain.PowService
+var Pow *pow.PowService
 
 type TxAttributeInfo struct {
 	Usage AttributeUsage

@@ -13,12 +13,12 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	. "github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/servers"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"

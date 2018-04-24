@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/node"
+	"github.com/elastos/Elastos.ELA/pow"
 	"github.com/elastos/Elastos.ELA/protocol"
 	"github.com/elastos/Elastos.ELA/servers"
 	"github.com/elastos/Elastos.ELA/servers/httpjsonrpc"
@@ -52,8 +53,8 @@ func handleLogFile() {
 
 }
 
-func startConsensus(noder protocol.Noder) {
-	servers.Pow = blockchain.NewPowService("logPow", noder)
+func startConsensus() {
+	servers.Pow = pow.NewPowService("logPow")
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()
@@ -79,11 +80,11 @@ func main() {
 	}
 
 	log.Info("2. Start the P2P networks")
-	noder = node.InitNode()
+	noder = node.InitLocalNode()
 	noder.WaitForSyncFinish()
 
 	servers.NodeForServers = noder
-	startConsensus(noder)
+	startConsensus()
 
 	handleLogFile()
 
