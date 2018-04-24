@@ -5,19 +5,16 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.SideChain/common/config"
-	"github.com/elastos/Elastos.ELA.SideChain/common/log"
-	"github.com/elastos/Elastos.ELA.SideChain/consensus/pow"
-	"github.com/elastos/Elastos.ELA.SideChain/core/ledger"
-	"github.com/elastos/Elastos.ELA.SideChain/core/store/ChainStore"
-	"github.com/elastos/Elastos.ELA.SideChain/core/transaction"
-	"github.com/elastos/Elastos.ELA.SideChain/net/node"
-	"github.com/elastos/Elastos.ELA.SideChain/net/protocol"
-	"github.com/elastos/Elastos.ELA.SideChain/net/servers"
-	"github.com/elastos/Elastos.ELA.SideChain/net/servers/httpjsonrpc"
-	"github.com/elastos/Elastos.ELA.SideChain/net/servers/httpnodeinfo"
-	"github.com/elastos/Elastos.ELA.SideChain/net/servers/httprestful"
-	"github.com/elastos/Elastos.ELA.SideChain/net/servers/httpwebsocket"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
+	"github.com/elastos/Elastos.ELA.SideChain/node"
+	"github.com/elastos/Elastos.ELA.SideChain/protocol"
+	"github.com/elastos/Elastos.ELA.SideChain/servers"
+	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
+	"github.com/elastos/Elastos.ELA.SideChain/servers/httpnodeinfo"
+	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
+	"github.com/elastos/Elastos.ELA.SideChain/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 )
 
@@ -41,11 +38,11 @@ func handleLogFile() {
 	go func() {
 		for {
 			time.Sleep(6 * time.Second)
-			log.Trace("BlockHeight = ", ledger.DefaultLedger.Blockchain.BlockHeight)
-			ledger.DefaultLedger.Blockchain.DumpState()
-			bc := ledger.DefaultLedger.Blockchain
+			log.Trace("BlockHeight = ", blockchain.DefaultLedger.Blockchain.BlockHeight)
+			blockchain.DefaultLedger.Blockchain.DumpState()
+			bc := blockchain.DefaultLedger.Blockchain
 			log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
-			//ledger.DefaultLedger.Blockchain.DumpState()
+			//blockchain.DefaultLedger.Blockchain.DumpState()
 			isNeedNewFile := log.CheckIfNeedNewFile()
 			if isNeedNewFile {
 				log.ClosePrintLog()
@@ -57,7 +54,7 @@ func handleLogFile() {
 }
 
 func startConsensus(noder protocol.Noder) {
-	servers.Pow = pow.NewPowService("logPow", noder)
+	servers.Pow = blockchain.NewPowService("logPow", noder)
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()
@@ -69,17 +66,14 @@ func main() {
 	var err error
 	var noder protocol.Noder
 	log.Info("1. BlockChain init")
-	ledger.DefaultLedger = new(ledger.Ledger)
-	ledger.DefaultLedger.Store, err = ChainStore.NewLedgerStore()
+	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
-	defer ledger.DefaultLedger.Store.Close()
+	defer chainStore.Close()
 
-	ledger.DefaultLedger.Store.InitLedgerStore(ledger.DefaultLedger)
-	transaction.TxStore = ledger.DefaultLedger.Store
-	_, err = ledger.NewBlockchainWithGenesisBlock()
+	err = blockchain.Init(chainStore)
 	if err != nil {
 		log.Fatal(err, "BlockChain generate failed")
 		goto ERROR

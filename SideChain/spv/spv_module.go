@@ -5,12 +5,11 @@ import (
 	"errors"
 	"math/rand"
 
-	spvtx "github.com/elastos/Elastos.ELA.SPV/core/transaction"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
+
+	"github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/interface"
-	spvdb "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
-	"github.com/elastos/Elastos.ELA.SideChain/common/config"
-	tx "github.com/elastos/Elastos.ELA.SideChain/core/transaction"
-	"github.com/elastos/Elastos.ELA.SideChain/core/transaction/payload"
 )
 
 var spvService *_interface.SPVServiceImpl
@@ -21,29 +20,23 @@ func SpvInit() error {
 	return nil
 }
 
-func VerifyTransaction(txn *tx.Transaction) error {
-	proof := new(spvdb.Proof)
+func VerifyTransaction(tx *core.Transaction) error {
+	proof := new(MerkleProof)
 
-	switch object := txn.Payload.(type) {
-	case *payload.IssueToken:
-		proofBuf := new(bytes.Buffer)
-		if err := object.Proof.Serialize(proofBuf); err != nil {
+	switch object := tx.Payload.(type) {
+	case *core.PayloadIssueToken:
+		buf := new(bytes.Buffer)
+		if err := object.Deserialize(buf, core.IssueTokenPayloadVersion); err != nil {
 			return errors.New("IssueToken payload serialize failed")
 		}
-		if err := proof.Deserialize(proofBuf); err != nil {
+		if err := proof.Deserialize(buf); err != nil {
 			return errors.New("IssueToken payload deserialize failed")
 		}
 	default:
 		return errors.New("Invalid payload")
 	}
 
-	txBuf := new(bytes.Buffer)
-	txn.Serialize(txBuf)
-
-	spvtxn := new(spvtx.Transaction)
-	spvtxn.Deserialize(txBuf)
-
-	if err := spvService.VerifyTransaction(*proof, *spvtxn); err != nil {
+	if err := spvService.VerifyTransaction(*proof, *tx); err != nil {
 		return errors.New("SPV module verify transaction failed.")
 	}
 
