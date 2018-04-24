@@ -1,6 +1,7 @@
-package pow
+package blockchain
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"math"
@@ -9,14 +10,14 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
-	chain "github.com/elastos/Elastos.ELA/blockchain"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -38,7 +39,7 @@ var (
 )
 
 type msgBlock struct {
-	BlockData map[string]*Block
+	BlockData map[string]*core.Block
 	Mutex     sync.Mutex
 }
 
@@ -63,7 +64,7 @@ func (pow *PowService) GetTransactionCount() int {
 	return len(transactionsPool)
 }
 
-func (pow *PowService) CollectTransactions(MsgBlock *Block) int {
+func (pow *PowService) CollectTransactions(MsgBlock *core.Block) int {
 	txs := 0
 	transactionsPool := pow.localNode.GetTxnPool(true)
 
@@ -75,38 +76,38 @@ func (pow *PowService) CollectTransactions(MsgBlock *Block) int {
 	return txs
 }
 
-func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*Transaction, error) {
-	minerProgramHash, err := Uint168FromAddress(addr)
+func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
+	minerProgramHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return nil, err
 	}
-	foundationProgramHash, err := Uint168FromAddress(chain.FoundationAddress)
+	foundationProgramHash, err := common.Uint168FromAddress(FoundationAddress)
 	if err != nil {
 		return nil, err
 	}
 
-	pd := &PayloadCoinBase{
+	pd := &core.PayloadCoinBase{
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
 	}
 
-	txn:= chain.NewCoinBaseTransaction(pd, chain.DefaultLedger.Blockchain.GetBestHeight()+1)
-	txn.Inputs = []*Input{
+	txn := NewCoinBaseTransaction(pd, DefaultLedger.Blockchain.GetBestHeight()+1)
+	txn.Inputs = []*core.Input{
 		{
-			Previous: OutPoint{
-				TxID:  EmptyHash,
+			Previous: core.OutPoint{
+				TxID:  common.EmptyHash,
 				Index: math.MaxUint16,
 			},
 			Sequence: math.MaxUint32,
 		},
 	}
-	txn.Outputs = []*Output{
+	txn.Outputs = []*core.Output{
 		{
-			AssetID:     chain.DefaultLedger.Blockchain.AssetID,
+			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       0,
 			ProgramHash: *foundationProgramHash,
 		},
 		{
-			AssetID:     chain.DefaultLedger.Blockchain.AssetID,
+			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       0,
 			ProgramHash: *minerProgramHash,
 		},
@@ -114,14 +115,14 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 
 	nonce := make([]byte, 8)
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := NewAttribute(Nonce, nonce)
+	txAttr := core.NewAttribute(core.Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
 	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }
 
-func calcBlockSubsidy(currentHeight uint32) Fixed64 {
+func calcBlockSubsidy(currentHeight uint32) common.Fixed64 {
 	ToTalAmountOfEla := int64(OrginAmountOfEla)
 	for i := uint32(0); i < (currentHeight / uint32(SubsidyInterval)); i++ {
 		incr := float64(ToTalAmountOfEla) / float64(RetargetPersent)
@@ -129,13 +130,13 @@ func calcBlockSubsidy(currentHeight uint32) Fixed64 {
 		ToTalAmountOfEla += subsidyPerBlock * int64(SubsidyInterval)
 	}
 	incr := float64(ToTalAmountOfEla) / float64(RetargetPersent)
-	subsidyPerBlock := Fixed64(float64(incr) / float64(SubsidyInterval))
+	subsidyPerBlock := common.Fixed64(float64(incr) / float64(SubsidyInterval))
 	log.Trace("subsidyPerBlock: ", subsidyPerBlock)
 
 	return subsidyPerBlock
 }
 
-type txSorter []*Transaction
+type txSorter []*core.Transaction
 
 func (s txSorter) Len() int {
 	return len(s)
@@ -149,35 +150,34 @@ func (s txSorter) Less(i, j int) bool {
 	return s[i].FeePerKB < s[j].FeePerKB
 }
 
-func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
-	nextBlockHeight := chain.DefaultLedger.Blockchain.GetBestHeight() + 1
+func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
+	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
 	coinBaseTx, err := pow.CreateCoinbaseTrx(nextBlockHeight, addr)
 	if err != nil {
 		return nil, err
 	}
 
-	blockData := &Header{
+	header := core.Header{
 		Version:    0,
-		Previous:   *chain.DefaultLedger.Blockchain.BestChain.Hash,
-		MerkleRoot: EmptyHash,
-		Timestamp:  uint32(chain.DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
+		Previous:   *DefaultLedger.Blockchain.BestChain.Hash,
+		MerkleRoot: common.EmptyHash,
+		Timestamp:  uint32(DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
 		Bits:       config.Parameters.ChainParam.PowLimitBits,
 		Height:     nextBlockHeight,
 		Nonce:      0,
-		AuxPow:     AuxPow{},
 	}
 
-	msgBlock := &Block{
-		Header:       blockData,
-		Transactions: []*Transaction{},
+	msgBlock := &core.Block{
+		Header:       header,
+		Transactions: []*core.Transaction{},
 	}
 
 	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
 	calcTxsSize := coinBaseTx.GetSize()
 	calcTxsAmount := 1
-	totalFee := Fixed64(0)
+	totalFee := common.Fixed64(0)
 	var txPool txSorter
-	txPool = make([]*Transaction, 0)
+	txPool = make([]*core.Transaction, 0)
 	transactionsPool := pow.localNode.GetTxnPool(false)
 	for _, v := range transactionsPool {
 		txPool = append(txPool, v)
@@ -192,11 +192,11 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 			break
 		}
 
-		if !chain.IsFinalizedTransaction(tx, nextBlockHeight) {
+		if !IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
 
-		fee := chain.GetTxFee(tx, chain.DefaultLedger.Blockchain.AssetID)
+		fee := GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
 		if fee != tx.Fee {
 			continue
 		}
@@ -208,24 +208,24 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 
 	subsidy := calcBlockSubsidy(nextBlockHeight)
 	reward := totalFee + subsidy
-	rewardFoundation := Fixed64(float64(reward) * 0.3)
+	rewardFoundation := common.Fixed64(float64(reward) * 0.3)
 	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
-	msgBlock.Transactions[0].Outputs[1].Value = Fixed64(reward) - rewardFoundation
+	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(reward) - rewardFoundation
 
-	txHash := make([]Uint256, 0, len(msgBlock.Transactions))
+	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
 	for _, tx := range msgBlock.Transactions {
 		txHash = append(txHash, tx.Hash())
 	}
 	txRoot, _ := crypto.ComputeRoot(txHash)
 	msgBlock.Header.MerkleRoot = txRoot
 
-	msgBlock.Header.Bits, err = chain.CalcNextRequiredDifficulty(chain.DefaultLedger.Blockchain.BestChain, time.Now())
+	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(DefaultLedger.Blockchain.BestChain, time.Now())
 	log.Info("difficulty: ", msgBlock.Header.Bits)
 
 	return msgBlock, err
 }
 
-func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
+func (pow *PowService) ManualMining(n uint32) ([]*common.Uint256, error) {
 	pow.Mutex.Lock()
 
 	if pow.started || pow.manualMining {
@@ -239,7 +239,7 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 
 	log.Tracef("Pow generating %d blocks", n)
 	i := uint32(0)
-	blockHashes := make([]*Uint256, n)
+	blockHashes := make([]*common.Uint256, n)
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 
@@ -253,8 +253,8 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 		}
 
 		if pow.SolveBlock(msgBlock, ticker) {
-			if msgBlock.Header.Height == chain.DefaultLedger.Blockchain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(msgBlock)
+			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
+				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
 					continue
@@ -279,16 +279,16 @@ func (pow *PowService) ManualMining(n uint32) ([]*Uint256, error) {
 	}
 }
 
-func (pow *PowService) SolveBlock(MsgBlock *Block, ticker *time.Ticker) bool {
+func (pow *PowService) SolveBlock(MsgBlock *core.Block, ticker *time.Ticker) bool {
 	// fake a btc blockheader and coinbase
-	auxPow := generateAuxPow(MsgBlock.Hash())
+	auxPow := auxpow.GenerateAuxPow(MsgBlock.Hash())
 	header := MsgBlock.Header
-	targetDifficulty := chain.CompactToBig(header.Bits)
+	targetDifficulty := CompactToBig(header.Bits)
 
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if !MsgBlock.Header.Previous.IsEqual(*chain.DefaultLedger.Blockchain.BestChain.Hash) {
+			if !MsgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
 				return false
 			}
 			//UpdateBlockTime(msgBlock, m.server.blockManager)
@@ -299,8 +299,10 @@ func (pow *PowService) SolveBlock(MsgBlock *Block, ticker *time.Ticker) bool {
 
 		auxPow.ParBlockHeader.Nonce = i
 		hash := auxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
-		if chain.HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			MsgBlock.Header.AuxPow = *auxPow
+		if HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
+			buf := new(bytes.Buffer)
+			auxPow.Serialize(buf)
+			MsgBlock.Header.AuxPow = buf.Bytes()
 			return true
 		}
 	}
@@ -308,7 +310,7 @@ func (pow *PowService) SolveBlock(MsgBlock *Block, ticker *time.Ticker) bool {
 	return false
 }
 
-func (pow *PowService) BroadcastBlock(MsgBlock *Block) error {
+func (pow *PowService) BroadcastBlock(MsgBlock *core.Block) error {
 	return pow.localNode.Relay(nil, MsgBlock)
 }
 
@@ -341,7 +343,7 @@ func (pow *PowService) Halt() {
 }
 
 func (pow *PowService) RollbackTransaction(v interface{}) {
-	if block, ok := v.(*Block); ok {
+	if block, ok := v.(*core.Block); ok {
 		for _, tx := range block.Transactions[1:] {
 			err := pow.localNode.MaybeAcceptTransaction(tx)
 			if err == nil {
@@ -355,13 +357,13 @@ func (pow *PowService) RollbackTransaction(v interface{}) {
 
 func (pow *PowService) BlockPersistCompleted(v interface{}) {
 	log.Debug()
-	if block, ok := v.(*Block); ok {
+	if block, ok := v.(*core.Block); ok {
 		log.Infof("persist block: %x", block.Hash())
 		err := pow.localNode.CleanSubmittedTransactions(block)
 		if err != nil {
 			log.Warn(err)
 		}
-		pow.localNode.SetHeight(uint64(chain.DefaultLedger.Blockchain.GetBestHeight()))
+		pow.localNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
 	}
 }
 
@@ -370,13 +372,13 @@ func NewPowService(logDictionary string, localNode protocol.Noder) *PowService {
 		PayToAddr:     config.Parameters.PowConfiguration.PayToAddr,
 		started:       false,
 		manualMining:  false,
-		MsgBlock:      msgBlock{BlockData: make(map[string]*Block)},
+		MsgBlock:      msgBlock{BlockData: make(map[string]*core.Block)},
 		localNode:     localNode,
 		logDictionary: logDictionary,
 	}
 
-	pow.blockPersistCompletedSubscriber = chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
-	pow.RollbackTransactionSubscriber = chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
+	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
+	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
 
 	log.Trace("pow Service Init succeed")
 	return pow
@@ -406,8 +408,8 @@ out:
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == chain.DefaultLedger.Blockchain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(msgBlock)
+			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
+				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
 					continue

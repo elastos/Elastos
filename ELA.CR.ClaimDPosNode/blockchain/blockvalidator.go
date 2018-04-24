@@ -7,12 +7,14 @@ import (
 	"math/big"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/errors"
 
 	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"bytes"
 )
 
 const (
@@ -22,10 +24,15 @@ const (
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Header
 	hash := header.Hash()
-	if !header.AuxPow.Check(&hash, AuxPowChainID) {
+	var auxPow AuxPow
+	err := auxPow.Deserialize(bytes.NewReader(header.AuxPow))
+	if err != nil {
+		return err
+	}
+	if !auxPow.Check(&hash, AuxPowChainID) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
-	if CheckProofOfWork(header, powLimit) != nil {
+	if CheckProofOfWork(&header, powLimit) != nil {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed.")
 	}
 
@@ -152,9 +159,9 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 	return nil
 }
 
-func CheckProofOfWork(bd *Header, powLimit *big.Int) error {
+func CheckProofOfWork(header *Header, powLimit *big.Int) error {
 	// The target difficulty must be larger than zero.
-	target := CompactToBig(bd.Bits)
+	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {
 		return errors.New("[BlockValidator], block target difficulty is too low.")
 	}
@@ -166,8 +173,9 @@ func CheckProofOfWork(bd *Header, powLimit *big.Int) error {
 
 	// The block hash must be less than the claimed target.
 	var hash Uint256
-
-	hash = bd.AuxPow.ParBlockHeader.Hash()
+	var auxPow AuxPow
+	auxPow.Deserialize(bytes.NewReader(header.AuxPow))
+	hash = auxPow.ParBlockHeader.Hash()
 
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {
