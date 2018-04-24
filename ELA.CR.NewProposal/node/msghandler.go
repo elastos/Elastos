@@ -314,6 +314,7 @@ func (h *MsgHandler) onDataReq(req *msg.DataReq) error {
 func (h *MsgHandler) onBlock(block *msg.Block) error {
 	log.Debug()
 	node := h.node
+
 	hash := block.Hash()
 	//node.LocalNode().AcqSyncBlkReqSem()
 	//defer node.LocalNode().RelSyncBlkReqSem()
@@ -331,9 +332,7 @@ func (h *MsgHandler) onBlock(block *msg.Block) error {
 
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	node.LocalNode().DeleteRequestedBlock(hash)
-	isOrphan := false
-	var err error
-	_, isOrphan, err = chain.DefaultLedger.Blockchain.AddBlock(&block.Block)
+	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(&block.Block)
 
 	if err != nil {
 		log.Warn("Block add failed: ", err, " ,block hash is ", hash.Bytes())
@@ -342,7 +341,7 @@ func (h *MsgHandler) onBlock(block *msg.Block) error {
 	//relay
 	if node.LocalNode().IsSyncHeaders() == false {
 		if !node.LocalNode().ExistedID(hash) {
-			node.LocalNode().Relay(node, &block.Block)
+			node.LocalNode().Relay(node, block)
 			log.Debug("Relay block")
 		}
 	}

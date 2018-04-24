@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA/auxpow"
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/errors"
@@ -164,9 +165,8 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	temp, _ := HexStringToBytes(auxPow)
-	r := bytes.NewBuffer(temp)
-	Pow.MsgBlock.BlockData[blockHash].Header.AuxPow.Deserialize(r)
+
+	Pow.MsgBlock.BlockData[blockHash].Header.AuxPow, _ = HexStringToBytes(auxPow)
 	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(Pow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
@@ -382,12 +382,12 @@ func GetBlockInfo(block *Block) map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"hash": BytesToHexString(hash.Bytes()),
+		"hash":              BytesToHexString(hash.Bytes()),
 		"confirmations":     chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
 		"size":              block.GetSize(),
 		"height":            block.Header.Height,
 		"version":           block.Header.Version,
-		"merkleroot":        BytesToHexString(block.Header.AuxPow.ParBlockHeader.MerkleRoot.Bytes()),
+		"merkleroot":        BytesToHexString(block.Header.MerkleRoot.Bytes()),
 		"time":              block.Header.Timestamp,
 		"nonce":             block.Header.Nonce,
 		"difficulty":        chain.CalcCurrentDifficulty(block.Header.Bits),
@@ -491,7 +491,7 @@ func GetBlockTransactions(block *Block) interface{} {
 		Transactions []string
 	}
 	b := BlockTransactions{
-		Hash: BytesToHexString(hash.Bytes()),
+		Hash:         BytesToHexString(hash.Bytes()),
 		Height:       block.Header.Height,
 		Transactions: trans,
 	}
@@ -548,7 +548,7 @@ func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interfa
 		return ResponsePack(InternalError, "")
 	}
 
-	arbitratorsBytes, err := block.GetArbitrators(config.Parameters.Arbiters)
+	arbitratorsBytes, err := config.Parameters.GetArbitrators()
 	if err != nil {
 		return ResponsePack(InternalError, "")
 	}
