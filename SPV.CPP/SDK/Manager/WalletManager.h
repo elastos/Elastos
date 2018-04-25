@@ -28,11 +28,45 @@ namespace Elastos {
 			virtual void balanceChanged(uint64_t balance);
 
 			// func txAdded(_ tx: BRTxRef)
-			virtual void onTxAdded(Transaction *transaction);
+			virtual void onTxAdded(Transaction *tx);
+
+			// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
+			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+
+			// func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 		public:
 			//todo override PeerManager listener
+			// func syncStarted()
+			virtual void syncStarted();
+
+			// func syncStopped(_ error: BRPeerManagerError?)
+			virtual void syncStopped(const std::string &error);
+
+			// func txStatusUpdate()
+			virtual void txStatusUpdate();
+
+			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
+			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+
+			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
+			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+
+			// func networkIsReachable() -> Bool
+			virtual bool networkIsReachable();
+
+			// Called on publishTransaction
+			virtual void txPublished(const std::string &error);
 
 		protected:
+			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
+
+			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+
+			virtual WrapperList<Peer, BRPeer> loadPeers();
+
+			virtual int getForkId() const;
+
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 			virtual const WalletListenerPtr &createWalletListener();
@@ -40,11 +74,10 @@ namespace Elastos {
 			//todo override other protected methods
 
 		private:
-			std::string getChainDescriptiveName() const;
-
-		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
+
+			const std::string _iso = "ela";
 		};
 
 	}

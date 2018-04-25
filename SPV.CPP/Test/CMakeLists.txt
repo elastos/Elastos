@@ -9,6 +9,9 @@ foreach(src ${TEST_SOURCE_FILES})
 	if(NOT ANDROID)
 		target_link_libraries(${TEST_TARGET_NAME} ${Boost_LIBRARIES})
 	endif()
+	if(ANDROID)
+		target_link_libraries(${TEST_TARGET_NAME} log)
+	endif(ANDROID)
 endforeach(src)
 
 include_directories(
