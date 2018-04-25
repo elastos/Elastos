@@ -5,7 +5,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
@@ -50,7 +51,7 @@ type SPVMessageHandler interface {
 
 	// After sent a data request with invType TRANSACTION, a txn message will return through this method.
 	// these transactions are matched to the bloom filter you have sent with the filterload message.
-	OnTxn(*net.Peer, *msg.Tx) error
+	OnTxn(*net.Peer, *core.Transaction) error
 
 	// If the BLOCK or TRANSACTION requested by the data request message can not be found,
 	// notfound message with requested data hash will return through this method.

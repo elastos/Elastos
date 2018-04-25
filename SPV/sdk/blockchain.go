@@ -9,8 +9,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	"github.com/elastos/Elastos.ELA/bloom"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -377,7 +377,7 @@ func CalcWork(bits uint32) *big.Int {
 	return new(big.Int).Div(new(big.Int).Lsh(big.NewInt(1), 256), denominator)
 }
 
-func (bc *Blockchain) CheckProofOfWork(header *Header) error {
+func (bc *Blockchain) CheckProofOfWork(header Header) error {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {
@@ -390,10 +390,7 @@ func (bc *Blockchain) CheckProofOfWork(header *Header) error {
 	}
 
 	// The block hash must be less than the claimed target.
-	var hash Uint256
-
-	hash = header.AuxPow.ParBlockHeader.Hash()
-
+	hash := header.AuxPow.ParBlockHeader.Hash()
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {
 		return errors.New("[Blockchain], block target difficulty is higher than expected difficulty.")

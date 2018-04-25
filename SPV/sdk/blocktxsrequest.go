@@ -4,9 +4,9 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA/bloom"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 )
 
 type BlockTxsRequest struct {

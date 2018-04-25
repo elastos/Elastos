@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 	"encoding/hex"
 )
 

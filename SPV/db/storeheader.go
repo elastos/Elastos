@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"math/big"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 )
 
 type StoreHeader struct {

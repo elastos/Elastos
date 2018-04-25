@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )

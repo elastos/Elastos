@@ -10,7 +10,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/net"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
+	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -246,7 +247,8 @@ func (service *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *bloom.Merkle
 	blockHash := block.Header.Hash()
 	log.Debug("Receive merkle block hash: ", blockHash.String())
 
-	err := service.chain.CheckProofOfWork(&block.Header)
+	header := block.Header
+	err := service.chain.CheckProofOfWork(header)
 	if err != nil {
 		return err
 	}
@@ -278,7 +280,7 @@ func (service *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *bloom.Merkle
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTxn(peer *net.Peer, txn *msg.Tx) error {
+func (service *SPVServiceImpl) OnTxn(peer *net.Peer, txn *core.Transaction) error {
 	log.Debug("Receive transaction hash: ", txn.Hash().String())
 
 	if service.chain.IsSyncing() && service.PeerManager().GetSyncPeer() != nil &&
@@ -290,13 +292,13 @@ func (service *SPVServiceImpl) OnTxn(peer *net.Peer, txn *msg.Tx) error {
 
 	if service.chain.IsSyncing() || service.queue.IsRunning() {
 		// Add transaction to queue
-		err := service.queue.OnTxReceived(&txn.Transaction)
+		err := service.queue.OnTxReceived(txn)
 		if err != nil {
 			service.changeSyncPeerAndRestart()
 			return err
 		}
 	} else {
-		isFPositive, err := service.chain.CommitTx(txn.Transaction)
+		isFPositive, err := service.chain.CommitTx(*txn)
 		if err != nil {
 			return err
 		}
