@@ -3,6 +3,7 @@ package servers
 import (
 	"bytes"
 	"fmt"
+	"strconv"
 	"time"
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
@@ -818,6 +819,13 @@ func uintParam(param map[string]interface{}, key string) (uint32, bool) {
 			return 0, false
 		}
 		return uint32(v), true
+	case string:
+		height, err := strconv.ParseInt(param["height"].(string), 10, 64)
+		if err != nil {
+			return 0, false
+		}
+
+		return uint32(height), true
 	default:
 		return 0, false
 	}
