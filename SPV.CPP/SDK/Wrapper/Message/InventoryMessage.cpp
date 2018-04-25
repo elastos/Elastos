@@ -94,18 +94,18 @@ namespace Elastos {
 					}
 
 					BRPeerAddKnownTxHashes(peer, txHashes, j);
-					if (j > 0 || blockCount > 0) BRPeerSendGetdata(peer, txHashes, j, blockHashes, blockCount);
+					if (j > 0 || blockCount > 0) ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, j, blockHashes, blockCount);
 
 					// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
 					if (blockCount >= 500) {
 						UInt256 locators[] = {blockHashes[blockCount - 1], blockHashes[0]};
 
-						BRPeerSendGetblocks(peer, locators, 2, UINT256_ZERO);
+						ctx->manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, 2, UINT256_ZERO);
 					}
 
 					if (txCount > 0 && ctx->mempoolCallback) {
 						peer_log(peer, "got initial mempool response");
-						BRPeerSendPing(peer, ctx->mempoolInfo, ctx->mempoolCallback);
+						ctx->manager->peerMessages->BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
 						ctx->mempoolCallback = NULL;
 						ctx->mempoolTime = DBL_MAX;
 					}

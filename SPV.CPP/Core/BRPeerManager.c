@@ -305,7 +305,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     uint8_t data[BRBloomFilterSerialize(filter, NULL, 0)];
     size_t len = BRBloomFilterSerialize(filter, data, sizeof(data));
 
-    BRPeerSendFilterload(peer, data, len);
+    manager->peerMessages->BRPeerSendFilterloadMessage(peer, data, len);
 }
 
 static void _updateFilterRerequestDone(void *info, int success)
@@ -322,7 +322,7 @@ static void _updateFilterRerequestDone(void *info, int success)
             UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
             size_t count = _BRPeerManagerBlockLocators(manager, locators, sizeof(locators)/sizeof(*locators));
 
-            BRPeerSendGetblocks(peer, locators, count, UINT256_ZERO);
+            manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, count, UINT256_ZERO);
         }
 
         pthread_mutex_unlock(&manager->lock);
@@ -348,9 +348,9 @@ static void _updateFilterLoadDone(void *info, int success)
             peerInfo->peer = peer;
             peerInfo->manager = manager;
             BRPeerRerequestBlocks(manager->downloadPeer, manager->lastBlock->blockHash);
-            BRPeerSendPing(manager->downloadPeer, peerInfo, _updateFilterRerequestDone);
+			manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, peerInfo, _updateFilterRerequestDone);
         }
-        else BRPeerSendMempool(peer, NULL, 0, NULL, NULL); // if not syncing, request mempool
+        else manager->peerMessages->BRPeerSendMempoolMessage(peer, NULL, 0, NULL, NULL); // if not syncing, request mempool
 
         pthread_mutex_unlock(&manager->lock);
     }
@@ -371,7 +371,7 @@ static void _updateFilterPingDone(void *info, int success)
         if (manager->lastBlock->height < manager->estimatedHeight) { // if we're syncing, only update download peer
             if (manager->downloadPeer) {
                 _BRPeerManagerLoadBloomFilter(manager, manager->downloadPeer);
-                BRPeerSendPing(manager->downloadPeer, info, _updateFilterLoadDone); // wait for pong so filter is loaded
+                manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterLoadDone); // wait for pong so filter is loaded
             }
             else free(info);
         }
@@ -385,7 +385,7 @@ static void _updateFilterPingDone(void *info, int success)
                 peerInfo->peer = manager->connectedPeers[i - 1];
                 peerInfo->manager = manager;
                 _BRPeerManagerLoadBloomFilter(manager, peerInfo->peer);
-                BRPeerSendPing(peerInfo->peer, peerInfo, _updateFilterLoadDone); // wait for pong so filter is loaded
+                manager->peerMessages->BRPeerSendPingMessage(peerInfo->peer, peerInfo, _updateFilterLoadDone); // wait for pong so filter is loaded
             }
         }
 
@@ -407,7 +407,7 @@ static void _BRPeerManagerUpdateFilter(BRPeerManager *manager)
         info->peer = manager->downloadPeer;
         info->manager = manager;
         // wait for pong so we're sure to include any tx already sent by the peer in the updated filter
-        BRPeerSendPing(manager->downloadPeer, info, _updateFilterPingDone);
+        manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterPingDone);
     }
 }
 
@@ -483,14 +483,14 @@ static void _BRPeerManagerRequestUnrelayedTx(BRPeerManager *manager, BRPeer *pee
     }
 
     if (hashCount > 0) {
-        BRPeerSendGetdata(peer, txHashes, hashCount, NULL, 0);
+        manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, hashCount, NULL, 0);
 
         if ((peer->flags & PEER_FLAG_SYNCED) == 0) {
             info = calloc(1, sizeof(*info));
             assert(info != NULL);
             info->peer = peer;
             info->manager = manager;
-            BRPeerSendPing(peer, info, _requestUnrelayedTxGetdataDone);
+            manager->peerMessages->BRPeerSendPingMessage(peer, info, _requestUnrelayedTxGetdataDone);
         }
     }
     else peer->flags |= PEER_FLAG_SYNCED;
@@ -542,7 +542,7 @@ static void _loadBloomFilterDone(void *info, int success)
     pthread_mutex_lock(&manager->lock);
 
     if (success) {
-        BRPeerSendMempool(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
+        manager->peerMessages->BRPeerSendMempoolMessage(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
                           _mempoolDone);
         pthread_mutex_unlock(&manager->lock);
     }
@@ -575,9 +575,9 @@ static void _BRPeerManagerLoadMempools(BRPeerManager *manager)
         if (peer != manager->downloadPeer || manager->fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
             _BRPeerManagerLoadBloomFilter(manager, peer);
             _BRPeerManagerPublishPendingTx(manager, peer);
-            BRPeerSendPing(peer, info, _loadBloomFilterDone); // load mempool after updating bloomfilter
+            manager->peerMessages->BRPeerSendPingMessage(peer, info, _loadBloomFilterDone); // load mempool after updating bloomfilter
         }
-        else BRPeerSendMempool(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
+        else manager->peerMessages->BRPeerSendMempoolMessage(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
                                _mempoolDone);
     }
 }
@@ -728,7 +728,7 @@ static void _peerConnected(void *info)
             assert(peerInfo != NULL);
             peerInfo->peer = peer;
             peerInfo->manager = manager;
-            BRPeerSendPing(peer, peerInfo, _loadBloomFilterDone);
+            manager->peerMessages->BRPeerSendPingMessage(peer, peerInfo, _loadBloomFilterDone);
         }
     }
     else { // select the peer with the lowest ping time to download the chain from if we're behind
@@ -765,9 +765,9 @@ static void _peerConnected(void *info)
             // request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
             // we do not reset connect failure count yet incase this request times out
             if (manager->lastBlock->timestamp + 7*24*60*60 >= manager->earliestKeyTime) {
-                BRPeerSendGetblocks(peer, locators, count, UINT256_ZERO);
+                manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, count, UINT256_ZERO);
             }
-            else BRPeerSendGetheaders(peer, locators, count, UINT256_ZERO);
+            else manager->peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
         }
         else { // we're already synced
             peer_log(peer, "*********_BRPeerManagerLoadMempools*************");
@@ -1853,7 +1853,7 @@ void BRPeerManagerPublishTx(BRPeerManager *manager, BRTransaction *tx, void *inf
                 assert(peerInfo != NULL);
                 peerInfo->peer = peer;
                 peerInfo->manager = manager;
-                BRPeerSendPing(peer, peerInfo, _publishTxInvDone);
+                manager->peerMessages->BRPeerSendPingMessage(peer, peerInfo, _publishTxInvDone);
             }
         }
 

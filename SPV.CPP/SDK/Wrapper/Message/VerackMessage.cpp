@@ -55,7 +55,7 @@ namespace Elastos {
 				peer_log(peer, "handshake completed");
 				ctx->disconnectTime = DBL_MAX;
 				ctx->status = BRPeerStatusConnected;
-				peer_log(peer, "connected with lastblock: %"PRIu32, ctx->lastblock);
+				peer_log(peer, "connected with lastblock: %" PRIu32, ctx->lastblock);
 				if (ctx->connected) ctx->connected(ctx->info);
 			}
 		}

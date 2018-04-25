@@ -183,14 +183,6 @@ double BRPeerPingTime(BRPeer *peer);
 
 // sends a bitcoin protocol message to peer
 void BRPeerSendMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type);
-void BRPeerSendFilterload(BRPeer *peer, const uint8_t *filter, size_t filterLen);
-void BRPeerSendMempool(BRPeer *peer, const UInt256 knownTxHashes[], size_t knownTxCount, void *info,
-                       void (*completionCallback)(void *info, int success));
-void BRPeerSendGetheaders(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
-void BRPeerSendGetblocks(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
-void BRPeerSendGetdata(BRPeer *peer, const UInt256 txHashes[], size_t txCount, const UInt256 blockHashes[],
-                       size_t blockCount);
-void BRPeerSendPing(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
 
 // useful to get additional tx after a bloom filter update
 void BRPeerRerequestBlocks(BRPeer *peer, UInt256 fromBlock);

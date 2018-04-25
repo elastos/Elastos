@@ -36,7 +36,7 @@ namespace Elastos {
 			off += sizeof(uint64_t);
 			ctx->lastblock = UInt64GetLE(&msg[off]);
 			off += sizeof(uint64_t);
-			peer_log(peer, "got version %"PRIu32", services %"PRIx64"", ctx->version, peer->services);
+			peer_log(peer, "got version %" PRIu32 ", services %" PRIx64 "", ctx->version, peer->services);
 
 			ctx->manager->peerMessages->BRPeerSendVerackMessage(peer);
 			return 1;

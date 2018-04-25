@@ -101,6 +101,31 @@ typedef struct {
 
 	int (*BRPeerAcceptNotFoundMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
+	void (*BRPeerSendFilterloadMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	int (*BRPeerAcceptHeadersMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	void (*BRPeerSendGetheadersMessage)(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
+
+	void (*BRPeerSendGetdataMessage)(BRPeer *peer, const UInt256 txHashes[], size_t txCount, const UInt256 blockHashes[],
+						   size_t blockCount);
+	int (*BRPeerAcceptGetdataMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	void (*BRPeerSendPingMessage)(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
+	int (*BRPeerAcceptPingMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	int (*BRPeerAcceptPongMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	void (*BRPeerSendMempoolMessage)(BRPeer *peer, const UInt256 knownTxHashes[], size_t knownTxCount, void *info,
+						   void (*completionCallback)(void *info, int success));
+
+	void (*BRPeerSendGetblocksMessage)(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
+
+	int (*BRPeerAcceptRejectMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	int (*BRPeerAcceptFeeFilterMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+
 } BRPeerMessages;
 
 BRPeerMessages *BRPeerMessageNew(void);
