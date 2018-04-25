@@ -1,11 +1,10 @@
-package pow
+package auxpow
 
 import (
 	"bytes"
 	"encoding/binary"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -45,7 +44,7 @@ func getBtcCoinbase(msgBlockHash Uint256) *BtcTx {
 	return coinbase
 }
 
-func generateAuxPow(msgBlockHash Uint256) *AuxPow {
+func GenerateAuxPow(msgBlockHash Uint256) *AuxPow {
 	auxMerkleBranch := make([]Uint256, 0)
 	auxMerkleIndex := 0
 	parCoinbaseTx := getBtcCoinbase(msgBlockHash)

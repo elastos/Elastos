@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
+
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -304,7 +305,6 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *Block) error {
 }
 
 func (c *ChainStore) PersistTransactions(b *Block) error {
-
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
 			return err
