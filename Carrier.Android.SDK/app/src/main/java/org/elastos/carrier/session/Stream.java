@@ -62,11 +62,10 @@ public class Stream {
 
     private Stream(StreamType type) {
         streamId = 0;
-
         this.type = type;
     }
 
-    int getStreamId() {
+    public int getStreamId() {
         return streamId;
     }
 
