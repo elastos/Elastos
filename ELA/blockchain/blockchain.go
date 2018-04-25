@@ -12,11 +12,11 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
@@ -94,7 +94,7 @@ func Init(store IChainStore) error {
 
 func GetGenesisBlock() (*Block, error) {
 	// header
-	header := &Header{
+	header := Header{
 		Version:    BlockVersion,
 		Previous:   EmptyHash,
 		MerkleRoot: EmptyHash,
@@ -369,20 +369,18 @@ type BlockNode struct {
 	Children    []*BlockNode
 }
 
-func NewBlockNode(blockHeader *Header, blockSha *Uint256) *BlockNode {
-	//prevHash := blockHeader.Previous
-
-	var prevhash, hash Uint256
-	copy(hash[:], blockSha[:])
-	copy(prevhash[:], blockHeader.Previous[:])
+func NewBlockNode(header *Header, hash *Uint256) *BlockNode {
+	var previous, current Uint256
+	copy(previous[:], header.Previous[:])
+	copy(current[:], hash[:])
 	node := BlockNode{
-		Hash:       &hash,
-		ParentHash: &prevhash,
-		Height:     blockHeader.Height,
-		Version:    blockHeader.Version,
-		Bits:       blockHeader.Bits,
-		Timestamp:  blockHeader.Timestamp,
-		WorkSum:    CalcWork(blockHeader.Bits),
+		Hash:       &current,
+		ParentHash: &previous,
+		Height:     header.Height,
+		Version:    header.Version,
+		Bits:       header.Bits,
+		Timestamp:  header.Timestamp,
+		WorkSum:    CalcWork(header.Bits),
 	}
 	return &node
 }
@@ -897,9 +895,8 @@ func (bc *Blockchain) maybeAcceptBlock(block *Block) (bool, error) {
 
 	// Create a new block node for the block and add it to the in-memory
 	// block chain (could be either a side chain or the main chain).
-	blockHeader := block.Header
 	blockhash := block.Hash()
-	newNode := NewBlockNode(blockHeader, &blockhash)
+	newNode := NewBlockNode(&block.Header, &blockhash)
 	if prevNode != nil {
 		newNode.Parent = prevNode
 		newNode.Height = blockHeight

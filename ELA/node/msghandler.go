@@ -6,13 +6,14 @@ import (
 	"time"
 	"fmt"
 
+	"github.com/elastos/Elastos.ELA/bloom"
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
 
-	"github.com/elastos/Elastos.ELA.Utility/bloom"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -33,7 +34,7 @@ func (h *MsgHandler) OnDecodeError(err error) {
 		h.node.CloseConn()
 	case ErrDisconnected:
 		log.Error("Decode message peer disconnected")
-		h.node.LocalNode().GetEvent("disconnect").Notify(events.EventNodeDisconnect, h.node)
+		LocalNode.GetEvent("disconnect").Notify(events.EventNodeDisconnect, h.node)
 	default:
 		log.Error("Decode message error: ", err)
 	}
@@ -65,9 +66,9 @@ func (h *MsgHandler) OnMakeMessage(cmd string) (Message, error) {
 	case "getdata":
 		message = new(msg.DataReq)
 	case "block":
-		message = new(msg.Block)
+		message = new(core.Block)
 	case "tx":
-		message = new(msg.Tx)
+		message = new(core.Transaction)
 	case "getblocks":
 		message = new(msg.BlocksReq)
 	case "notfound":
@@ -104,9 +105,9 @@ func (h *MsgHandler) OnMessageDecoded(message Message) {
 		err = h.onInventory(message)
 	case *msg.DataReq:
 		err = h.onDataReq(message)
-	case *msg.Block:
+	case *core.Block:
 		err = h.onBlock(message)
-	case *msg.Tx:
+	case *core.Transaction:
 		err = h.onTx(message)
 	case *msg.BlocksReq:
 		err = h.onBlocksReq(message)
@@ -127,10 +128,9 @@ func (h *MsgHandler) OnMessageDecoded(message Message) {
 func (h *MsgHandler) onVersion(version *msg.Version) error {
 	log.Debug()
 	node := h.node
-	localNode := node.LocalNode()
 
 	// Exclude the node itself
-	if version.Nonce == localNode.ID() {
+	if version.Nonce == LocalNode.ID() {
 		log.Warn("The node handshake with itself")
 		node.CloseConn()
 		return errors.New("The node handshake with itself")
@@ -143,7 +143,7 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 	}
 
 	// Obsolete node
-	n, ret := localNode.DelNbrNode(version.Nonce)
+	n, ret := LocalNode.DelNbrNode(version.Nonce)
 	if ret == true {
 		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
 		// Close the connection and release the node soure
@@ -153,7 +153,7 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 
 	node.UpdateInfo(time.Now(), version.Version, version.Services,
 		version.Port, version.Nonce, version.Relay, version.Height)
-	localNode.AddNbrNode(node)
+	LocalNode.AddNbrNode(node)
 
 	ip, _ := node.Addr16()
 	addr := msg.Addr{
@@ -163,12 +163,12 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 		Port:     version.Port,
 		ID:       version.Nonce,
 	}
-	localNode.AddAddressToKnownAddress(addr)
+	LocalNode.AddAddressToKnownAddress(addr)
 
 	var message Message
 	if s == INIT {
 		node.SetState(HANDSHAKE)
-		message = NewVersion(localNode)
+		message = NewVersion(LocalNode)
 	} else if s == HAND {
 		node.SetState(HANDSHAKED)
 		message = new(msg.VerAck)
@@ -193,19 +193,19 @@ func (h *MsgHandler) onVerAck(verAck *msg.VerAck) error {
 		node.Send(verAck)
 	}
 
-	if node.LocalNode().NeedMoreAddresses() {
+	if LocalNode.NeedMoreAddresses() {
 		node.ReqNeighborList()
 	}
 	addr := node.Addr()
 	port := node.Port()
 	nodeAddr := addr + ":" + strconv.Itoa(int(port))
-	node.LocalNode().RemoveAddrInConnectingList(nodeAddr)
+	LocalNode.RemoveAddrInConnectingList(nodeAddr)
 	return nil
 }
 
 func (h *MsgHandler) onAddrsReq(req *msg.AddrsReq) error {
 	log.Debug()
-	addrs := h.node.LocalNode().RandSelectAddresses()
+	addrs := LocalNode.RandSelectAddresses()
 	go h.node.Send(msg.NewAddrs(addrs))
 	return nil
 }
@@ -215,10 +215,10 @@ func (h *MsgHandler) onAddrs(addrs *msg.Addrs) error {
 	for _, addr := range addrs.Addrs {
 		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", addr.String(), addr.ID))
 
-		if addr.ID == h.node.LocalNode().ID() {
+		if addr.ID == LocalNode.ID() {
 			continue
 		}
-		if h.node.LocalNode().NodeEstablished(addr.ID) {
+		if LocalNode.NodeEstablished(addr.ID) {
 			continue
 		}
 
@@ -227,7 +227,7 @@ func (h *MsgHandler) onAddrs(addrs *msg.Addrs) error {
 		}
 
 		//save the node address in address list
-		h.node.LocalNode().AddAddressToKnownAddress(addr)
+		LocalNode.AddAddressToKnownAddress(addr)
 	}
 	return nil
 }
@@ -244,15 +244,15 @@ func (h *MsgHandler) onInventory(inv *msg.Inventory) error {
 	log.Debug(fmt.Sprintf("The inv type: no one. block len: %d, %s\n", len(inv.Hashes), inv.Hashes))
 
 	log.Debug("RX block message")
-	if node.LocalNode().IsSyncHeaders() == true && node.IsSyncHeaders() == false {
+	if LocalNode.IsSyncHeaders() == true && node.IsSyncHeaders() == false {
 		return nil
 	}
 
 	for i, hash := range inv.Hashes {
 		// Request block
 		if !chain.DefaultLedger.BlockInLedger(*hash) {
-			if !node.LocalNode().RequestedBlockExisted(*hash) && !chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) {
-				node.LocalNode().AddRequestedBlock(*hash)
+			if !LocalNode.RequestedBlockExisted(*hash) && !chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) {
+				LocalNode.AddRequestedBlock(*hash)
 				go node.Send(msg.NewDataReq(BlockData, *hash))
 			}
 		}
@@ -296,7 +296,7 @@ func (h *MsgHandler) onDataReq(req *msg.DataReq) error {
 		if node.BloomFilter().IsLoaded() {
 			message = bloom.NewMerkleBlock(block, node.BloomFilter())
 		} else {
-			message = msg.NewBlock(*block)
+			message = block
 		}
 		go node.Send(message)
 
@@ -306,19 +306,17 @@ func (h *MsgHandler) onDataReq(req *msg.DataReq) error {
 			log.Error("Get transaction with hash error: ", err.Error())
 			return err
 		}
-		go node.Send(msg.NewTx(*txn))
+		go node.Send(txn)
 	}
 	return nil
 }
 
-func (h *MsgHandler) onBlock(block *msg.Block) error {
+func (h *MsgHandler) onBlock(block *core.Block) error {
 	log.Debug()
 	node := h.node
+
 	hash := block.Hash()
-	//node.LocalNode().AcqSyncBlkReqSem()
-	//defer node.LocalNode().RelSyncBlkReqSem()
-	//log.Tracef("hash is %x", hash.ToArrayReverse())
-	if node.LocalNode().IsNeighborNoder(node) == false {
+	if LocalNode.IsNeighborNoder(node) == false {
 		log.Trace("received headers message from unknown peer")
 		return errors.New("received headers message from unknown peer")
 	}
@@ -330,25 +328,23 @@ func (h *MsgHandler) onBlock(block *msg.Block) error {
 	}
 
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
-	node.LocalNode().DeleteRequestedBlock(hash)
-	isOrphan := false
-	var err error
-	_, isOrphan, err = chain.DefaultLedger.Blockchain.AddBlock(&block.Block)
+	LocalNode.DeleteRequestedBlock(hash)
+	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
 
 	if err != nil {
 		log.Warn("Block add failed: ", err, " ,block hash is ", hash.Bytes())
 		return err
 	}
 	//relay
-	if node.LocalNode().IsSyncHeaders() == false {
-		if !node.LocalNode().ExistedID(hash) {
-			node.LocalNode().Relay(node, &block.Block)
+	if LocalNode.IsSyncHeaders() == false {
+		if !LocalNode.ExistedID(hash) {
+			LocalNode.Relay(node, block)
 			log.Debug("Relay block")
 		}
 	}
 
-	if isOrphan == true && node.LocalNode().IsSyncHeaders() == false {
-		if !node.LocalNode().RequestedBlockExisted(hash) {
+	if isOrphan == true && LocalNode.IsSyncHeaders() == false {
+		if !LocalNode.RequestedBlockExisted(hash) {
 			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
 			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
 			SendBlocksReq(node, locator, *orphanRoot)
@@ -358,18 +354,17 @@ func (h *MsgHandler) onBlock(block *msg.Block) error {
 	return nil
 }
 
-func (h *MsgHandler) onTx(msg *msg.Tx) error {
+func (h *MsgHandler) onTx(tx *core.Transaction) error {
 	log.Debug()
 	node := h.node
 	log.Debug("RX Transaction message")
-	tx := &msg.Transaction
-	if !node.LocalNode().ExistedID(tx.Hash()) {
-		if errCode := node.LocalNode().AppendToTxnPool(tx); errCode != Success {
+	if !LocalNode.ExistedID(tx.Hash()) {
+		if errCode := LocalNode.AppendToTxnPool(tx); errCode != Success {
 			return errors.New("[message] VerifyTransaction failed when AppendToTxnPool.")
 		}
-		node.LocalNode().Relay(node, tx)
+		LocalNode.Relay(node, tx)
 		log.Info("Relay Transaction")
-		node.LocalNode().IncRxTxnCnt()
+		LocalNode.IncRxTxnCnt()
 		log.Debug("RX Transaction message hash", tx.Hash().String())
 		log.Debug("RX Transaction message type", tx.TxType.Name())
 	}
@@ -380,8 +375,8 @@ func (h *MsgHandler) onTx(msg *msg.Tx) error {
 func (h *MsgHandler) onBlocksReq(req *msg.BlocksReq) error {
 	log.Debug()
 	node := h.node
-	node.LocalNode().AcqSyncHdrReqSem()
-	defer node.LocalNode().RelSyncHdrReqSem()
+	LocalNode.AcqSyncHdrReqSem()
+	defer LocalNode.RelSyncHdrReqSem()
 	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
 	hashes, err := GetBlockHashes(*start, req.HashStop)
 	if err != nil {
@@ -429,14 +424,14 @@ func NewVersion(node protocol.Noder) *msg.Version {
 }
 
 func SendBlocksReq(node protocol.Noder, locator []*Uint256, hashStop Uint256) {
-	if node.LocalNode().GetStartHash() == *locator[0] &&
-		node.LocalNode().GetStopHash() == hashStop {
+	if LocalNode.GetStartHash() == *locator[0] &&
+		LocalNode.GetStopHash() == hashStop {
 		return
 	}
-	node.LocalNode().SetSyncHeaders(true)
+	LocalNode.SetSyncHeaders(true)
 	node.SetSyncHeaders(true)
-	node.LocalNode().SetStartHash(*locator[0])
-	node.LocalNode().SetStopHash(hashStop)
+	LocalNode.SetStartHash(*locator[0])
+	LocalNode.SetStopHash(hashStop)
 	go node.Send(msg.NewBlocksReq(locator, hashStop))
 }
 

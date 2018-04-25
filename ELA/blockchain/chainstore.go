@@ -8,10 +8,10 @@ import (
 	"errors"
 	"container/list"
 
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -298,20 +298,19 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	var h = new(Header)
 
 	prefix := []byte{byte(DATA_Header)}
-	data, err_get := c.Get(append(prefix, hash.Bytes()...))
+	data, err := c.Get(append(prefix, hash.Bytes()...))
 	//log.Debug( "Get Header Data: %x\n",  data )
-	if err_get != nil {
+	if err != nil {
 		//TODO: implement error process
-		return nil, err_get
+		return nil, err
 	}
 
 	r := bytes.NewReader(data)
 	// first 8 bytes is sys_fee
-	sysfee, err := ReadUint64(r)
+	_, err = ReadUint64(r)
 	if err != nil {
 		return nil, err
 	}
-	_ = sysfee
 
 	// Deserialize block data
 	err = h.Deserialize(r)
@@ -431,9 +430,6 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 
 func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 	var b = new(Block)
-
-	b.Header = new(Header)
-
 	prefix := []byte{byte(DATA_Header)}
 	bHash, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
@@ -682,17 +678,16 @@ func (c *ChainStore) GetHeight() uint32 {
 
 func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 	var b = new(Block)
-	b.Header = new(Header)
 	prefix := []byte{byte(DATA_Header)}
-	blockData, err_get := c.Get(append(prefix, hash.Bytes()...))
-	if err_get != nil {
+	blockData, err := c.Get(append(prefix, hash.Bytes()...))
+	if err != nil {
 		return false
 	}
 
 	r := bytes.NewReader(blockData)
 
 	// first 8 bytes is sys_fee
-	_, err := ReadUint64(r)
+	_, err = ReadUint64(r)
 	if err != nil {
 		return false
 	}
