@@ -25,14 +25,21 @@ TEST_CASE( "BackgroundExecutor simple test", "[Normal]" ) {
 		BackgroundExecutor executor(2);
 
 		const int expectValue = 3;
-		std::vector<int> array(4, 1);
+		bool finished = false;
+
+		std::vector<int> array(100, 1);
 		for (int i = 0; i < array.size(); ++i) {
 			executor.execute(Runnable([&array, i, expectValue]()-> void {
 				array[i] = expectValue;
 			}));
 		}
 
-		sleep(1);
+		executor.execute(Runnable([&finished]()-> void {
+			finished = true;
+		}));
+
+		while (!finished);
+
 		for (int i = 0; i < array.size(); ++i) {
 			REQUIRE(array[i] == expectValue);
 		}
