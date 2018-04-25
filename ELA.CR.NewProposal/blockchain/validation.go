@@ -6,10 +6,10 @@ import (
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/sidechain"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -197,17 +197,17 @@ func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
 		return err
 	}
 
-	hash, err := DefaultLedger.Store.GetBlockHash(uint32(withdrawPayload.BlockHeight))
-	if err != nil {
-		return err
-	}
+	//hash, err := DefaultLedger.Store.GetBlockHash(uint32(withdrawPayload.BlockHeight))
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//block, err := DefaultLedger.Store.GetBlock(hash)
+	//if err != nil {
+	//	return err
+	//}
 
-	block, err := DefaultLedger.Store.GetBlock(hash)
-	if err != nil {
-		return err
-	}
-
-	arbitrators, err := block.GetArbitrators(config.Parameters.Arbiters)
+	arbitrators, err := config.Parameters.GetArbitrators()
 	if err != nil {
 		return err
 	}

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	aux "github.com/elastos/Elastos.ELA/auxpow"
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/core"
+	. "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -164,9 +165,15 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	temp, _ := HexStringToBytes(auxPow)
-	r := bytes.NewBuffer(temp)
-	Pow.MsgBlock.BlockData[blockHash].Header.AuxPow.Deserialize(r)
+
+	var aux aux.AuxPow
+	buf, _ := HexStringToBytes(auxPow)
+	if err := aux.Deserialize(bytes.NewReader(buf)); err != nil {
+		log.Trace("[json-rpc:SubmitAuxBlock] can not resolve auxpow parameter: ", auxPow)
+		return ResponsePack(InvalidParams, "can not resolve auxpow parameter")
+	}
+
+	Pow.MsgBlock.BlockData[blockHash].Header.AuxPow = aux
 	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(Pow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
@@ -185,7 +192,7 @@ func SubmitAuxBlock(param map[string]interface{}) map[string]interface{} {
 }
 
 func GenerateAuxBlock(addr string) (*Block, string, bool) {
-	msgBlock := &Block{}
+	msgBlock := new(Block)
 	if NodeForServers.Height() == 0 || PreChainHeight != NodeForServers.Height() ||
 		time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS {
 
@@ -244,7 +251,7 @@ func CreateAuxBlock(param map[string]interface{}) map[string]interface{} {
 	preHashStr := BytesToHexString(preHash.Bytes())
 
 	SendToAux := AuxBlock{
-		ChainId:           AuxPowChainID,
+		ChainId:           aux.AuxPowChainID,
 		Height:            NodeForServers.Height(),
 		CoinBaseValue:     1,                                       //transaction content
 		Bits:              fmt.Sprintf("%x", msgBlock.Header.Bits), //difficulty
@@ -382,12 +389,12 @@ func GetBlockInfo(block *Block) map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"hash": BytesToHexString(hash.Bytes()),
+		"hash":              BytesToHexString(hash.Bytes()),
 		"confirmations":     chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
 		"size":              block.GetSize(),
 		"height":            block.Header.Height,
 		"version":           block.Header.Version,
-		"merkleroot":        BytesToHexString(block.Header.AuxPow.ParBlockHeader.MerkleRoot.Bytes()),
+		"merkleroot":        BytesToHexString(block.Header.MerkleRoot.Bytes()),
 		"time":              block.Header.Timestamp,
 		"nonce":             block.Header.Nonce,
 		"difficulty":        chain.CalcCurrentDifficulty(block.Header.Bits),
@@ -491,7 +498,7 @@ func GetBlockTransactions(block *Block) interface{} {
 		Transactions []string
 	}
 	b := BlockTransactions{
-		Hash: BytesToHexString(hash.Bytes()),
+		Hash:         BytesToHexString(hash.Bytes()),
 		Height:       block.Header.Height,
 		Transactions: trans,
 	}
@@ -548,7 +555,7 @@ func GetArbitratorGroupByHeight(param map[string]interface{}) map[string]interfa
 		return ResponsePack(InternalError, "")
 	}
 
-	arbitratorsBytes, err := block.GetArbitrators(config.Parameters.Arbiters)
+	arbitratorsBytes, err := config.Parameters.GetArbitrators()
 	if err != nil {
 		return ResponsePack(InternalError, "")
 	}

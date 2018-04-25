@@ -15,9 +15,9 @@ import (
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
-	node.local.nbrNodes.RLock()
-	defer node.local.nbrNodes.RUnlock()
-	noders := node.local.GetNeighborNoder()
+	LocalNode.nbrNodes.RLock()
+	defer LocalNode.nbrNodes.RUnlock()
+	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
 		if n.IsSyncHeaders() == true {
 			return true, n
@@ -30,25 +30,25 @@ func (node *node) SyncBlocks() {
 	needSync := node.needSync()
 	log.Info("needSync: ", needSync)
 	if needSync == false {
-		node.local.SetSyncHeaders(false)
+		LocalNode.SetSyncHeaders(false)
 		syncNode, err := node.FindSyncNode()
 		if err == nil {
 			syncNode.SetSyncHeaders(false)
-			node.local.SetStartHash(EmptyHash)
-			node.local.SetStopHash(EmptyHash)
+			LocalNode.SetStartHash(EmptyHash)
+			LocalNode.SetStopHash(EmptyHash)
 		}
-		node.local.ResetRequestedBlock()
+		LocalNode.ResetRequestedBlock()
 	} else {
-		hasSyncPeer, syncNode := node.local.hasSyncPeer()
+		hasSyncPeer, syncNode := LocalNode.hasSyncPeer()
 		if hasSyncPeer == false {
-			node.LocalNode().ResetRequestedBlock()
+			LocalNode.ResetRequestedBlock()
 			syncNode = node.GetBestHeightNoder()
 			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
 			SendBlocksReq(syncNode, locator, EmptyHash)
 		} else {
-			list := syncNode.LocalNode().GetRequestBlockList()
+			list := LocalNode.GetRequestBlockList()
 			var requests = make(map[Uint256]time.Time, MaxHeaderHashes)
 			x := 1
 			node.requestedBlockLock.Lock()
@@ -62,8 +62,8 @@ func (node *node) SyncBlocks() {
 			node.requestedBlockLock.Unlock()
 			if len(requests) == 0 {
 				syncNode.SetSyncHeaders(false)
-				node.local.SetStartHash(EmptyHash)
-				node.local.SetStopHash(EmptyHash)
+				LocalNode.SetStartHash(EmptyHash)
+				LocalNode.SetStopHash(EmptyHash)
 				syncNode := node.GetBestHeightNoder()
 				hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 				locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
@@ -73,7 +73,7 @@ func (node *node) SyncBlocks() {
 				for hash := range requests {
 					if requests[hash].Before(time.Now().Add(-3 * time.Second)) {
 						log.Infof("request block hash %x ", hash.Bytes())
-						node.LocalNode().AddRequestedBlock(hash)
+						LocalNode.AddRequestedBlock(hash)
 						go node.Send(msg.NewDataReq(BlockData, hash))
 					}
 				}
@@ -83,7 +83,7 @@ func (node *node) SyncBlocks() {
 }
 
 func (node *node) SendPingToNbr() {
-	noders := node.local.GetNeighborNoder()
+	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
 		if n.State() == ESTABLISH {
 			go n.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
@@ -92,7 +92,7 @@ func (node *node) SendPingToNbr() {
 }
 
 func (node *node) HeartBeatMonitor() {
-	noders := node.local.GetNeighborNoder()
+	noders := LocalNode.GetNeighborNoder()
 	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
 	for _, n := range noders {
 		if n.State() == ESTABLISH {
@@ -128,7 +128,7 @@ func (node *node) ConnectSeeds() {
 			node.nbrNodes.Unlock()
 			if found {
 				if n.State() == ESTABLISH {
-					if node.LocalNode().NeedMoreAddresses() {
+					if LocalNode.NeedMoreAddresses() {
 						n.ReqNeighborList()
 					}
 				}
