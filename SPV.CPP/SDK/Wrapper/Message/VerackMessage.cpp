@@ -1,5 +1,5 @@
 // Copyright (c) 2012-2018 The Elastos Open Source Project
-// Distributed under the MIT software license, see the accompanying
+// Distributed under the MIT software license(BRPeerContext *) peer;, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <sys/time.h>
@@ -8,6 +8,7 @@
 #include "BRPeerMessages.h"
 
 #include "VerackMessage.h"
+#include "Log.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -17,22 +18,20 @@ namespace Elastos {
 		}
 
 		int VerackMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			peer_log(peer, "VerackMessage.Accept");
+			Log::getLogger()->warn("VerackMessage.Accept");
 
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 			struct timeval tv;
 			int r = 1;
 
 			if (ctx->gotVerack) {
-				//todo instead with Log
-				peer_log(peer, "got unexpected verack");
+				Log::getLogger()->warn("got unexpected verack");
 			}
 			else {
-				gettimeofday(&tv, NULL);
+				gettimeofday(&tv, nullptr);
 				ctx->pingTime = tv.tv_sec + (double)tv.tv_usec/1000000 - ctx->startTime; // use verack time as initial ping time
 				ctx->startTime = 0;
-				//todo instead with Log
-				peer_log(peer, "got verack in %fs", ctx->pingTime);
+				Log::getLogger()->warn("got verack in %fs", ctx->pingTime);
 				ctx->gotVerack = 1;
 				BRPeerDidConnect(peer);
 			}
@@ -41,21 +40,20 @@ namespace Elastos {
 		}
 
 		void VerackMessage::Send(BRPeer *peer) {
-			peer_log(peer, "VerackMessage.Send");
-			BRPeerSendMessage(peer, NULL, 0, MSG_VERACK);
+			Log::getLogger()->warn("VerackMessage.Send");
+			BRPeerSendMessage(peer, nullptr, 0, MSG_VERACK);
 			((BRPeerContext *)peer)->sentVerack = 1;
 		}
 
 		void VerackMessage::BRPeerDidConnect(BRPeer *peer) {
-			peer_log(peer, "VerackMessage.BRPeerDidConnect");
+			Log::getLogger()->warn("VerackMessage.BRPeerDidConnect");
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 
 			if (ctx->status == BRPeerStatusConnecting && ctx->sentVerack && ctx->gotVerack) {
-				//todo instead with Log
-				peer_log(peer, "handshake completed");
+				Log::getLogger()->warn("handshake completed");
 				ctx->disconnectTime = DBL_MAX;
 				ctx->status = BRPeerStatusConnected;
-				peer_log(peer, "connected with lastblock: %" PRIu32, ctx->lastblock);
+				Log::getLogger()->warn("connected with lastblock: %"PRIu32, ctx->lastblock);
 				if (ctx->connected) ctx->connected(ctx->info);
 			}
 		}
