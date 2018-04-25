@@ -90,23 +90,16 @@ func (tx *Transaction) CMD() string {
 
 //Serialize the Transaction
 func (tx *Transaction) Serialize(w io.Writer) error {
-
-	err := tx.SerializeUnsigned(w)
-	if err != nil {
-		return errors.New("Transaction txSerializeUnsigned Serialize failed.")
+	if err := tx.SerializeUnsigned(w); err != nil {
+		return errors.New("Transaction txSerializeUnsigned Serialize failed, " + err.Error())
 	}
 	//Serialize  Transaction's programs
-	lens := uint64(len(tx.Programs))
-	err = WriteVarUint(w, lens)
-	if err != nil {
-		return errors.New("Transaction WriteVarUint failed.")
+	if err := WriteVarUint(w, uint64(len(tx.Programs))); err != nil {
+		return errors.New("Transaction program count failed.")
 	}
-	if lens > 0 {
-		for _, p := range tx.Programs {
-			err = p.Serialize(w)
-			if err != nil {
-				return errors.New("Transaction Programs Serialize failed.")
-			}
+	for _, p := range tx.Programs {
+		if err := p.Serialize(w); err != nil {
+			return errors.New("Transaction Programs Serialize failed, " + err.Error())
 		}
 	}
 	return nil
@@ -122,45 +115,41 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	if tx.Payload == nil {
 		return errors.New("Transaction Payload is nil.")
 	}
-	tx.Payload.Serialize(w, tx.PayloadVersion)
+	if err := tx.Payload.Serialize(w, tx.PayloadVersion); err != nil {
+		return err
+	}
+
 	//[]*txAttribute
-	err := WriteVarUint(w, uint64(len(tx.Attributes)))
-	if err != nil {
+	if err := WriteVarUint(w, uint64(len(tx.Attributes))); err != nil {
 		return errors.New("Transaction item txAttribute length serialization failed.")
 	}
-	if len(tx.Attributes) > 0 {
-		for _, attr := range tx.Attributes {
-			attr.Serialize(w)
+	for _, attr := range tx.Attributes {
+		if err := attr.Serialize(w); err != nil {
+			return err
 		}
 	}
+
 	//[]*Inputs
-	err = WriteVarUint(w, uint64(len(tx.Inputs)))
-	if err != nil {
+	if err := WriteVarUint(w, uint64(len(tx.Inputs))); err != nil {
 		return errors.New("Transaction item Inputs length serialization failed.")
 	}
-	if len(tx.Inputs) > 0 {
-		for _, utxo := range tx.Inputs {
-			utxo.Serialize(w)
+	for _, utxo := range tx.Inputs {
+		if err := utxo.Serialize(w); err != nil {
+			return err
 		}
 	}
-	// TODO BalanceInputs
+
 	//[]*Outputs
-	err = WriteVarUint(w, uint64(len(tx.Outputs)))
-	if err != nil {
+	if err := WriteVarUint(w, uint64(len(tx.Outputs))); err != nil {
 		return errors.New("Transaction item Outputs length serialization failed.")
 	}
-	if len(tx.Outputs) > 0 {
-		for _, output := range tx.Outputs {
-			err = output.Serialize(w)
-			if err != nil {
-				return err
-			}
+	for _, output := range tx.Outputs {
+		if err := output.Serialize(w); err != nil {
+			return err
 		}
 	}
 
-	WriteUint32(w, tx.LockTime)
-
-	return nil
+	return WriteUint32(w, tx.LockTime)
 }
 
 //deserialize the Transaction
@@ -168,27 +157,25 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 	// tx deserialize
 	err := tx.DeserializeUnsigned(r)
 	if err != nil {
-		return errors.New("transaction Deserialize error")
+		return errors.New("transaction Deserialize error: " + err.Error())
 	}
 
 	// tx program
-	lens, err := ReadVarUint(r, 0)
+	count, err := ReadVarUint(r, 0)
 	if err != nil {
-		return errors.New("transaction tx program Deserialize error")
+		return errors.New("transaction write program count error: " + err.Error())
 	}
 
-	programHashes := []*Program{}
-	if lens > 0 {
-		for i := 0; i < int(lens); i++ {
-			outputHashes := new(Program)
-			err = outputHashes.Deserialize(r)
-			if err != nil {
-				return err
-			}
-			programHashes = append(programHashes, outputHashes)
+	programHashes := make([]*Program, 0, count)
+	for i := uint64(0); i < count; i++ {
+		outputHashes := new(Program)
+		err = outputHashes.Deserialize(r)
+		if err != nil {
+			return errors.New("transaction deserialize program error: " + err.Error())
 		}
-		tx.Programs = programHashes
+		programHashes = append(programHashes, outputHashes)
 	}
+	tx.Programs = programHashes
 	return nil
 }
 
