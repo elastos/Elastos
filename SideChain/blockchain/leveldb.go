@@ -41,48 +41,39 @@ func NewLevelDB(file string) (*LevelDB, error) {
 	}, nil
 }
 
-func (self *LevelDB) Put(key []byte, value []byte) error {
-	return self.db.Put(key, value, nil)
+func (db *LevelDB) Put(key []byte, value []byte) error {
+	return db.db.Put(key, value, nil)
 }
 
-func (self *LevelDB) Get(key []byte) ([]byte, error) {
-	dat, err := self.db.Get(key, nil)
-	return dat, err
+func (db *LevelDB) Get(key []byte) ([]byte, error) {
+	return db.db.Get(key, nil)
 }
 
-func (self *LevelDB) Delete(key []byte) error {
-	return self.db.Delete(key, nil)
+func (db *LevelDB) Delete(key []byte) error {
+	return db.db.Delete(key, nil)
 }
 
-func (self *LevelDB) NewBatch() error {
-	self.batch = new(leveldb.Batch)
-	return nil
+func (db *LevelDB) NewBatch() {
+	db.batch = new(leveldb.Batch)
 }
 
-func (self *LevelDB) BatchPut(key []byte, value []byte) error {
-	self.batch.Put(key, value)
-	return nil
+func (db *LevelDB) BatchPut(key []byte, value []byte) {
+	db.batch.Put(key, value)
 }
 
-func (self *LevelDB) BatchDelete(key []byte) error {
-	self.batch.Delete(key)
-	return nil
+func (db *LevelDB) BatchDelete(key []byte) {
+	db.batch.Delete(key)
 }
 
-func (self *LevelDB) BatchCommit() error {
-	err := self.db.Write(self.batch, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+func (db *LevelDB) BatchCommit() error {
+	return db.db.Write(db.batch, nil)
 }
 
-func (self *LevelDB) Close() error {
-	err := self.db.Close()
-	return err
+func (db *LevelDB) Close() error {
+	return db.db.Close()
 }
 
-func (self *LevelDB) NewIterator(prefix []byte) IIterator {
-	iter := self.db.NewIterator(util.BytesPrefix(prefix), nil)
+func (db *LevelDB) NewIterator(prefix []byte) IIterator {
+	iter := db.db.NewIterator(util.BytesPrefix(prefix), nil)
 	return &Iterator{iter: iter}
 }

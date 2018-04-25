@@ -7,7 +7,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 
-	"github.com/elastos/Elastos.ELA/core"
+	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/interface"
 )
@@ -20,13 +20,13 @@ func SpvInit() error {
 	return nil
 }
 
-func VerifyTransaction(tx *core.Transaction) error {
+func VerifyTransaction(tx *ela.Transaction) error {
 	proof := new(MerkleProof)
 
 	switch object := tx.Payload.(type) {
-	case *core.PayloadIssueToken:
+	case *ela.PayloadIssueToken:
 		buf := new(bytes.Buffer)
-		if err := object.Deserialize(buf, core.IssueTokenPayloadVersion); err != nil {
+		if err := object.Deserialize(buf, ela.IssueTokenPayloadVersion); err != nil {
 			return errors.New("IssueToken payload serialize failed")
 		}
 		if err := proof.Deserialize(buf); err != nil {

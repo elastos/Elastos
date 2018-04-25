@@ -6,7 +6,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	. "github.com/elastos/Elastos.ELA/core"
+	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -16,7 +16,7 @@ var NodeForServers Noder
 var Pow *blockchain.PowService
 
 type TxAttributeInfo struct {
-	Usage AttributeUsage
+	Usage ela.AttributeUsage
 	Data  string
 }
 
@@ -41,7 +41,7 @@ type ProgramInfo struct {
 }
 
 type Transactions struct {
-	TxType         TransactionType
+	TxType         ela.TransactionType
 	PayloadVersion byte
 	Payload        PayloadInfo
 	Attributes     []TxAttributeInfo
@@ -112,7 +112,7 @@ type CoinbaseInfo struct {
 }
 
 type RegisterAssetInfo struct {
-	Asset      Asset
+	Asset      ela.Asset
 	Amount     string
 	Controller string
 }
@@ -129,37 +129,37 @@ type WithdrawAssetInfo struct {
 	BlockHeight uint32
 }
 
-func TransPayloadToHex(p Payload) PayloadInfo {
+func TransPayloadToHex(p ela.Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *PayloadCoinBase:
+	case *ela.PayloadCoinBase:
 		obj := new(CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *PayloadRegisterAsset:
+	case *ela.PayloadRegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *PayloadSideMining:
+	case *ela.PayloadSideMining:
 		obj := new(SideMiningInfo)
 		obj.SideBlockHash = object.SideBlockHash.String()
 		return obj
-	case *PayloadWithdrawAsset:
+	case *ela.PayloadWithdrawAsset:
 		obj := new(WithdrawAssetInfo)
 		obj.BlockHeight = object.BlockHeight
 		return obj
-	case *PayloadTransferCrossChainAsset:
+	case *ela.PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.AddressesMap = object.AddressesMap
 		return obj
-	case *PayloadTransferAsset:
-	case *PayloadRecord:
+	case *ela.PayloadTransferAsset:
+	case *ela.PayloadRecord:
 	}
 	return nil
 }
 
-func VerifyAndSendTx(txn *Transaction) ErrCode {
+func VerifyAndSendTx(txn *ela.Transaction) ErrCode {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")

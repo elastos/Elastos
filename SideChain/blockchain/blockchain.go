@@ -3,10 +3,8 @@ package blockchain
 import (
 	"container/list"
 	"errors"
-	"encoding/binary"
 	"fmt"
 	"math/big"
-	"math/rand"
 	"sort"
 	"sync"
 	"time"
@@ -77,17 +75,16 @@ func NewBlockchain(height uint32) *Blockchain {
 func Init(store IChainStore) error {
 	genesisBlock, err := GetGenesisBlock()
 	if err != nil {
-		return errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed.")
+		return errors.New("[Blockchain], NewBlockchainWithGenesisBlock failed, " + err.Error())
 	}
 
 	DefaultLedger = new(Ledger)
 	DefaultLedger.Blockchain = NewBlockchain(0)
 	DefaultLedger.Store = store
-	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Outputs[0].AssetID
+	DefaultLedger.Blockchain.AssetID = genesisBlock.Transactions[0].Hash()
 	height, err := DefaultLedger.Store.InitWithGenesisBlock(genesisBlock)
 	if err != nil {
-		log.Error("Init genesis block failed: ",err)
-		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed.")
+		return errors.New("[Blockchain], InitLevelDBStoreWithGenesisBlock failed, " + err.Error())
 	}
 
 	DefaultLedger.Blockchain.UpdateBestHeight(height)
@@ -95,64 +92,50 @@ func Init(store IChainStore) error {
 }
 
 func GetGenesisBlock() (*core.Block, error) {
+	// payload
+	registerAsset := &ela.PayloadRegisterAsset{
+		Asset: ela.Asset{
+			Name:      "ELA",
+			Precision: 0x08,
+			AssetType: 0x00,
+		},
+		Amount:     0 * 100000000,
+		Controller: Uint168{},
+	}
+
+	// ELA coin
+	elaCoin := ela.Transaction{
+		TxType:         ela.RegisterAsset,
+		PayloadVersion: 0,
+		Payload:        registerAsset,
+		Attributes:     []*ela.Attribute{},
+		Inputs:         []*ela.Input{},
+		Outputs:        []*ela.Output{},
+		Programs:       []*ela.Program{},
+	}
+
 	// header
 	header := core.Header{
 		Version:    core.BlockVersion,
 		Previous:   EmptyHash,
 		MerkleRoot: EmptyHash,
-		Timestamp:  uint32(time.Unix(time.Date(2017, time.December, 22, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
+		Timestamp:  uint32(time.Unix(time.Date(2018, time.March, 25, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
 		Bits:       0x1d03ffff,
 		Nonce:      core.GenesisNonce,
 		Height:     uint32(0),
 	}
-
-	// transaction
-	systemToken := &ela.Transaction{
-		TxType:         ela.RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &ela.PayloadRegisterAsset{
-			Asset: ela.Asset{
-				Name:      "ELA",
-				Precision: 0x08,
-				AssetType: 0x00,
-			},
-			Amount:     0 * 100000000,
-			Controller: Uint168{},
-		},
-		Attributes: []*ela.Attribute{},
-		Inputs:     []*ela.Input{},
-		Outputs:    []*ela.Output{},
-		Programs:   []*ela.Program{},
-	}
-
-	foundation, err := Uint168FromAddress(FoundationAddress)
-	if err != nil {
-		return nil, err
-	}
-
-	coinBase := NewCoinBaseTransaction(&ela.PayloadCoinBase{}, 0)
-	coinBase.Outputs = []*ela.Output{
-		{
-			AssetID:     systemToken.Hash(),
-			Value:       3300 * 10000 * 100000000,
-			ProgramHash: *foundation,
-		},
-	}
-
-	nonce := make([]byte, 8)
-	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := ela.NewAttribute(ela.Nonce, nonce)
-	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
+	header.SideAuxPow.SideAuxBlockTx = elaCoin
 
 	//block
 	block := &core.Block{
 		Header:       header,
-		Transactions: []*ela.Transaction{coinBase, systemToken},
+		Transactions: []*ela.Transaction{&elaCoin},
 	}
 	hashes := make([]Uint256, 0, len(block.Transactions))
 	for _, tx := range block.Transactions {
 		hashes = append(hashes, tx.Hash())
 	}
+	var err error
 	block.Header.MerkleRoot, err = crypto.ComputeRoot(hashes)
 	if err != nil {
 		return nil, errors.New("[GenesisBlock] ,BuildMerkleRoot failed.")

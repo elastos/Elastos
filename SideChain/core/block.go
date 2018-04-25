@@ -5,8 +5,9 @@ import (
 	"errors"
 	"io"
 
-	"github.com/elastos/Elastos.ELA/core"
+	ela "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 type Block struct {
 	Header
-	Transactions []*core.Transaction
+	Transactions []*ela.Transaction
 }
 
 func (b *Block) CMD() string {
@@ -25,9 +26,11 @@ func (b *Block) CMD() string {
 }
 
 func (b *Block) Serialize(w io.Writer) error {
-	b.Header.Serialize(w)
-	err := common.WriteUint32(w, uint32(len(b.Transactions)))
-	if err != nil {
+	if err := b.Header.Serialize(w); err != nil {
+		return err
+	}
+
+	if err := common.WriteUint32(w, uint32(len(b.Transactions))); err != nil {
 		return errors.New("Block item Transactions length serialization failed.")
 	}
 
@@ -38,39 +41,44 @@ func (b *Block) Serialize(w io.Writer) error {
 }
 
 func (b *Block) Deserialize(r io.Reader) error {
-	err := b.Header.Deserialize(r)
-	if err != nil {
+	if err := b.Header.Deserialize(r); err != nil {
 		return err
 	}
 
 	//Transactions
-	var i uint32
 	len, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
-	var tharray []common.Uint256
-	for i = 0; i < len; i++ {
-		transaction := new(core.Transaction)
+
+	for i := uint32(0); i < len; i++ {
+		transaction := new(ela.Transaction)
 		transaction.Deserialize(r)
 		b.Transactions = append(b.Transactions, transaction)
-		tharray = append(tharray, transaction.Hash())
 	}
 
 	return nil
 }
 
 func (b *Block) Trim(w io.Writer) error {
-	b.Header.Serialize(w)
-	err := common.WriteUint32(w, uint32(len(b.Transactions)))
-	if err != nil {
+	if err := b.Header.Serialize(w); err != nil {
+		log.Error("Trim block serialize header failed:", err)
+		return err
+	}
+
+	if err := common.WriteUint32(w, uint32(len(b.Transactions))); err != nil {
+		log.Error("Trim block write txs len failed:", err)
 		return errors.New("Block item Transactions length serialization failed.")
 	}
+
 	for _, transaction := range b.Transactions {
-		temp := *transaction
-		hash := temp.Hash()
-		hash.Serialize(w)
+		hash := transaction.Hash()
+		if err := hash.Serialize(w); err != nil {
+			log.Error("Trim block serialize tx hash failed:", err)
+			return err
+		}
 	}
+
 	return nil
 }
 
@@ -81,17 +89,15 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 	}
 
 	//Transactions
-	var i uint32
-	Len, err := common.ReadUint32(r)
+	len, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
-	var txhash common.Uint256
-	var tharray []common.Uint256
-	for i = 0; i < Len; i++ {
-		txhash.Deserialize(r)
-		b.Transactions = append(b.Transactions, core.NewTrimmedTx(txhash))
-		tharray = append(tharray, txhash)
+
+	var hash common.Uint256
+	for i := uint32(0); i < len; i++ {
+		hash.Deserialize(r)
+		b.Transactions = append(b.Transactions, ela.NewTrimmedTx(hash))
 	}
 
 	return nil

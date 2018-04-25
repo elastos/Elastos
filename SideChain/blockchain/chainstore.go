@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"fmt"
 	"sync"
 	"time"
 	"bytes"
@@ -127,8 +126,6 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 		version = []byte{0x00}
 	}
 
-	log.Debug("Init with genesis block version: ", version)
-
 	if version[0] == 0x00 {
 		// batch delete old data
 		c.NewBatch()
@@ -144,8 +141,10 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 		}
 
 		// persist genesis block
-		c.persist(genesisBlock)
-
+		err = c.persist(genesisBlock)
+		if err != nil {
+			return 0, err
+		}
 		// put version to db
 		err = c.Put(prefix, []byte{0x01})
 		if err != nil {
@@ -156,7 +155,6 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 	// GenesisBlock should exist in chain
 	// Or the bookkeepers are not consistent with the chain
 	hash := genesisBlock.Hash()
-	log.Debug("Genesis block hash: ", hash.String())
 	if !c.IsBlockInStore(hash) {
 		return 0, errors.New("genesis block is not consistent with the chain")
 	}
@@ -337,13 +335,10 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset ela.Asset) error {
 	// contact asset id
 	assetId.Serialize(assetKey)
 
-	log.Debug(fmt.Sprintf("asset key: %x\n", assetKey))
+	log.Debugf("asset key: %x", assetKey)
 
 	// PUT VALUE
-	err := c.BatchPut(assetKey.Bytes(), w.Bytes())
-	if err != nil {
-		return err
-	}
+	c.BatchPut(assetKey.Bytes(), w.Bytes())
 
 	return nil
 }
@@ -409,25 +404,26 @@ func (c *ChainStore) GetTxReference(tx *ela.Transaction) (map[*ela.Input]*ela.Ou
 
 func (c *ChainStore) PersistTransaction(tx *ela.Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
-	txhash := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	// add transaction header prefix.
-	txhash.WriteByte(byte(DATA_Transaction))
+	key.WriteByte(byte(DATA_Transaction))
 	// get transaction hash
-	txHashValue := tx.Hash()
-	txHashValue.Serialize(txhash)
-	log.Debug(fmt.Sprintf("transaction header + hash: %x\n", txhash))
-
-	// generate value
-	w := bytes.NewBuffer(nil)
-	WriteUint32(w, height)
-	tx.Serialize(w)
-	log.Debug(fmt.Sprintf("transaction tx data: %x\n", w))
-
-	// put value
-	err := c.BatchPut(txhash.Bytes(), w.Bytes())
-	if err != nil {
+	hash := tx.Hash()
+	if err := hash.Serialize(key); err != nil {
 		return err
 	}
+	log.Debugf("transaction header + hash: %x", key)
+
+	// generate value
+	value := new(bytes.Buffer)
+	WriteUint32(value, height)
+	if err := tx.Serialize(value); err != nil {
+		return err
+	}
+	log.Debugf("transaction tx data: %x", value)
+
+	// put value
+	c.BatchPut(key.Bytes(), value.Bytes())
 
 	return nil
 }
@@ -466,14 +462,14 @@ func (c *ChainStore) GetBlock(hash Uint256) (*core.Block, error) {
 }
 
 func (c *ChainStore) rollback(b *core.Block) error {
-	c.BatchInit()
-	c.RollbackTrimemedBlock(b)
+	c.NewBatch()
+	c.RollbackTrimmedBlock(b)
 	c.RollbackBlockHash(b)
 	c.RollbackTransactions(b)
 	c.RollbackUnspendUTXOs(b)
 	c.RollbackUnspend(b)
 	c.RollbackCurrentBlock(b)
-	c.BatchFinish()
+	c.BatchCommit()
 
 	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
 	c.mu.Lock()
@@ -486,18 +482,26 @@ func (c *ChainStore) rollback(b *core.Block) error {
 }
 
 func (c *ChainStore) persist(b *core.Block) error {
-	//unspents := make(map[Uint256][]uint16)
-
-	c.BatchInit()
-	c.PersistTrimmedBlock(b)
-	c.PersistBlockHash(b)
-	c.PersistTransactions(b)
-	c.PersistUnspendUTXOs(b)
-	c.PersistUnspend(b)
-	c.PersistCurrentBlock(b)
-	c.BatchFinish()
-
-	return nil
+	c.NewBatch()
+	if err := c.PersistTrimmedBlock(b); err != nil {
+		return err
+	}
+	if err := c.PersistBlockHash(b); err != nil {
+		return err
+	}
+	if err := c.PersistTransactions(b); err != nil {
+		return err
+	}
+	if err := c.PersistUnspendUTXOs(b); err != nil {
+		return err
+	}
+	if err := c.PersistUnspend(b); err != nil {
+		return err
+	}
+	if err := c.PersistCurrentBlock(b); err != nil {
+		return err
+	}
+	return c.BatchCommit()
 }
 
 // can only be invoked by backend write goroutine
@@ -683,8 +687,10 @@ func (c *ChainStore) GetHeight() uint32 {
 func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 	var b = new(core.Block)
 	prefix := []byte{byte(DATA_Header)}
+	log.Debug("Get block key: ", BytesToHexString(append(prefix, hash.Bytes()...)))
 	blockData, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
+		log.Error("Get block in store failed: ", err)
 		return false
 	}
 
@@ -693,16 +699,19 @@ func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 	// first 8 bytes is sys_fee
 	_, err = ReadUint64(r)
 	if err != nil {
+		log.Error("Read sys_fee failed: ", err)
 		return false
 	}
 
 	// Deserialize block data
 	err = b.FromTrimmedData(r)
 	if err != nil {
+		log.Error("Get trimmed data failed: ", err)
 		return false
 	}
 
 	if b.Header.Height > c.currentBlockHeight {
+		log.Error("Header height", b.Header.Height, "greater then current height:", c.currentBlockHeight)
 		return false
 	}
 
@@ -766,7 +775,6 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 
 			unspents = append(unspents, uu)
 		}
-
 	}
 
 	return unspents, nil
@@ -833,9 +841,7 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	}
 
 	// BATCH PUT VALUE
-	if err := c.BatchPut(key.Bytes(), w.Bytes()); err != nil {
-		return err
-	}
+	c.BatchPut(key.Bytes(), w.Bytes())
 
 	return nil
 }
