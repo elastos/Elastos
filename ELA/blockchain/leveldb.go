@@ -46,40 +46,31 @@ func (self *LevelDB) Put(key []byte, value []byte) error {
 }
 
 func (self *LevelDB) Get(key []byte) ([]byte, error) {
-	dat, err := self.db.Get(key, nil)
-	return dat, err
+	return self.db.Get(key, nil)
 }
 
 func (self *LevelDB) Delete(key []byte) error {
 	return self.db.Delete(key, nil)
 }
 
-func (self *LevelDB) NewBatch() error {
+func (self *LevelDB) NewBatch() {
 	self.batch = new(leveldb.Batch)
-	return nil
 }
 
-func (self *LevelDB) BatchPut(key []byte, value []byte) error {
+func (self *LevelDB) BatchPut(key []byte, value []byte) {
 	self.batch.Put(key, value)
-	return nil
 }
 
-func (self *LevelDB) BatchDelete(key []byte) error {
+func (self *LevelDB) BatchDelete(key []byte) {
 	self.batch.Delete(key)
-	return nil
 }
 
 func (self *LevelDB) BatchCommit() error {
-	err := self.db.Write(self.batch, nil)
-	if err != nil {
-		return err
-	}
-	return nil
+	return self.db.Write(self.batch, nil)
 }
 
 func (self *LevelDB) Close() error {
-	err := self.db.Close()
-	return err
+	return self.db.Close()
 }
 
 func (self *LevelDB) NewIterator(prefix []byte) IIterator {
