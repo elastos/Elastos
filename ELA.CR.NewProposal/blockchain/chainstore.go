@@ -141,7 +141,10 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 		}
 
 		// persist genesis block
-		c.persist(genesisBlock)
+		err = c.persist(genesisBlock)
+		if err != nil {
+			return 0, err
+		}
 
 		// put version to db
 		err = c.Put(prefix, []byte{0x01})
@@ -203,8 +206,8 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 	prefix := []byte{byte(DATA_Transaction)}
-	_, err_get := c.Get(append(prefix, txhash.Bytes()...))
-	if err_get != nil {
+	_, err := c.Get(append(prefix, txhash.Bytes()...))
+	if err != nil {
 		return false
 	} else {
 		return true
@@ -218,9 +221,9 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	for i := 0; i < len(txn.Inputs); i++ {
-		txhash := txn.Inputs[i].Previous.TxID
-		unspentValue, err_get := c.Get(append(unspentPrefix, txhash.Bytes()...))
-		if err_get != nil {
+		txId := txn.Inputs[i].Previous.TxID
+		unspentValue, err := c.Get(append(unspentPrefix, txId.Bytes()...))
+		if err != nil {
 			return true
 		}
 
@@ -242,7 +245,7 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 }
 
 func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
-	queryKey := bytes.NewBuffer(nil)
+	queryKey := new(bytes.Buffer)
 	queryKey.WriteByte(byte(DATA_BlockHash))
 	err := WriteUint32(queryKey, height)
 
@@ -322,25 +325,23 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 }
 
 func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
-	w := bytes.NewBuffer(nil)
+	w := new(bytes.Buffer)
 
 	asset.Serialize(w)
 
 	// generate key
-	assetKey := bytes.NewBuffer(nil)
+	assetKey := new(bytes.Buffer)
 	// add asset prefix.
 	assetKey.WriteByte(byte(ST_Info))
 	// contact asset id
-	assetId.Serialize(assetKey)
+	if err := assetId.Serialize(assetKey); err != nil {
+		return err
+	}
 
 	log.Debug(fmt.Sprintf("asset key: %x\n", assetKey))
 
 	// PUT VALUE
-	err := c.BatchPut(assetKey.Bytes(), w.Bytes())
-	if err != nil {
-		return err
-	}
-
+	c.BatchPut(assetKey.Bytes(), w.Bytes())
 	return nil
 }
 
@@ -350,13 +351,15 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	asset := new(Asset)
 	prefix := []byte{byte(ST_Info)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
-
-	log.Debugf("GetAsset Data: %s\n", data)
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("GetAsset Data: %s\n", data)
 
-	asset.Deserialize(bytes.NewReader(data))
+	err = asset.Deserialize(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
 
 	return asset, nil
 }
@@ -405,26 +408,28 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 
 func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
-	txhash := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	// add transaction header prefix.
-	txhash.WriteByte(byte(DATA_Transaction))
+	key.WriteByte(byte(DATA_Transaction))
 	// get transaction hash
-	txHashValue := tx.Hash()
-	txHashValue.Serialize(txhash)
-	log.Debug(fmt.Sprintf("transaction header + hash: %x\n", txhash))
-
-	// generate value
-	w := bytes.NewBuffer(nil)
-	WriteUint32(w, height)
-	tx.Serialize(w)
-	log.Debug(fmt.Sprintf("transaction tx data: %x\n", w))
-
-	// put value
-	err := c.BatchPut(txhash.Bytes(), w.Bytes())
-	if err != nil {
+	hash := tx.Hash()
+	if err := hash.Serialize(key); err != nil {
 		return err
 	}
+	log.Debug(fmt.Sprintf("transaction header + hash: %x\n", key))
 
+	// generate value
+	value := new(bytes.Buffer)
+	if err := WriteUint32(value, height); err != nil {
+		return err
+	}
+	if err := tx.Serialize(value); err != nil {
+		return err
+	}
+	log.Debug(fmt.Sprintf("transaction tx data: %x\n", value))
+
+	// put value
+	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
 
@@ -436,16 +441,16 @@ func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 		return nil, err
 	}
 
-	r := bytes.NewReader(bHash)
+	reader := bytes.NewReader(bHash)
 
 	// first 8 bytes is sys_fee
-	_, err = ReadUint64(r)
+	_, err = ReadUint64(reader)
 	if err != nil {
 		return nil, err
 	}
 
 	// Deserialize block data
-	if err := b.FromTrimmedData(r); err != nil {
+	if err := b.FromTrimmedData(reader); err != nil {
 		return nil, err
 	}
 
@@ -462,14 +467,14 @@ func (c *ChainStore) GetBlock(hash Uint256) (*Block, error) {
 }
 
 func (c *ChainStore) rollback(b *Block) error {
-	c.BatchInit()
-	c.RollbackTrimemedBlock(b)
+	c.NewBatch()
+	c.RollbackTrimmedBlock(b)
 	c.RollbackBlockHash(b)
 	c.RollbackTransactions(b)
 	c.RollbackUnspendUTXOs(b)
 	c.RollbackUnspend(b)
 	c.RollbackCurrentBlock(b)
-	c.BatchFinish()
+	c.BatchCommit()
 
 	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
 	c.mu.Lock()
@@ -482,18 +487,26 @@ func (c *ChainStore) rollback(b *Block) error {
 }
 
 func (c *ChainStore) persist(b *Block) error {
-	//unspents := make(map[Uint256][]uint16)
-
-	c.BatchInit()
-	c.PersistTrimmedBlock(b)
-	c.PersistBlockHash(b)
-	c.PersistTransactions(b)
-	c.PersistUnspendUTXOs(b)
-	c.PersistUnspend(b)
-	c.PersistCurrentBlock(b)
-	c.BatchFinish()
-
-	return nil
+	c.NewBatch()
+	if err := c.PersistTrimmedBlock(b); err != nil {
+		return err
+	}
+	if err := c.PersistBlockHash(b); err != nil {
+		return err
+	}
+	if err := c.PersistTransactions(b); err != nil {
+		return err
+	}
+	if err := c.PersistUnspendUTXOs(b); err != nil {
+		return err
+	}
+	if err := c.PersistUnspend(b); err != nil {
+		return err
+	}
+	if err := c.PersistCurrentBlock(b); err != nil {
+		return err
+	}
+	return c.BatchCommit()
 }
 
 // can only be invoked by backend write goroutine
@@ -568,7 +581,7 @@ func (c *ChainStore) handlePersistBlockTask(b *Block) {
 	//	}
 	//	hashBuffer.Write(hashArray)
 
-	//	hhlPrefix := bytes.NewBuffer(nil)
+	//	hhlPrefix := new(bytes.Buffer)
 	//	hhlPrefix.WriteByte(byte(IX_HeaderHashList))
 	//	serialize.WriteUint32(hhlPrefix, storedHeaderCount)
 
@@ -822,17 +835,14 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	}
 
 	listnum := len(unspents)
-	w := bytes.NewBuffer(nil)
+	w := new(bytes.Buffer)
 	WriteVarUint(w, uint64(listnum))
 	for i := 0; i < listnum; i++ {
 		unspents[i].Serialize(w)
 	}
 
 	// BATCH PUT VALUE
-	if err := c.BatchPut(key.Bytes(), w.Bytes()); err != nil {
-		return err
-	}
-
+	c.BatchPut(key.Bytes(), w.Bytes())
 	return nil
 }
 
