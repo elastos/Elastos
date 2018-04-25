@@ -526,7 +526,7 @@ static void *_peerThreadRoutine(void *arg)
 
                     while (socket >= 0 && ! error && len < msgLen) {
                         n = read(socket, &payload[len], msgLen - len);
-                        peer_log(peer, "read socket n %d", n);
+                        peer_log(peer, "read socket n %ld", n);
                         if (n > 0) len += n;
                         if (n == 0) error = ECONNRESET;
                         if (n < 0 && errno != EWOULDBLOCK) error = errno;
