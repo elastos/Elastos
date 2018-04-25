@@ -104,8 +104,8 @@ func GetGenesisBlock() (*Block, error) {
 		Height:     uint32(0),
 	}
 
-	// transaction
-	systemToken := &Transaction{
+	// ELA coin
+	elaCoin := &Transaction{
 		TxType:         RegisterAsset,
 		PayloadVersion: 0,
 		Payload: &PayloadRegisterAsset{
@@ -131,7 +131,7 @@ func GetGenesisBlock() (*Block, error) {
 	coinBase := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
 	coinBase.Outputs = []*Output{
 		{
-			AssetID:     systemToken.Hash(),
+			AssetID:     elaCoin.Hash(),
 			Value:       3300 * 10000 * 100000000,
 			ProgramHash: *foundation,
 		},
@@ -145,7 +145,7 @@ func GetGenesisBlock() (*Block, error) {
 	//block
 	block := &Block{
 		Header:       header,
-		Transactions: []*Transaction{coinBase, systemToken},
+		Transactions: []*Transaction{coinBase, elaCoin},
 	}
 	hashes := make([]Uint256, 0, len(block.Transactions))
 	for _, tx := range block.Transactions {
