@@ -67,7 +67,7 @@ namespace Elastos {
             * Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
             * status changes)
             */
-            void connetct();
+            void connect();
 
             /**
             * Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or

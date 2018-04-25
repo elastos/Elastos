@@ -15,6 +15,7 @@
 #include "SPVSDK.h"
 #include "Wallet.h"
 #include "Account.h"
+#include "TestConnectPeer.h"
 #include "Transaction.h"
 
 //using namespace std;
@@ -26,6 +27,9 @@ int main(int argc, char *argv[]) {
     SPVSDK SDK;
     std::string version = SDK.version();
     std::cout << version << std::endl;
+
+    TestConnectPeer::runPeerConnectTest();
+    return 0;
 
     std::string strName = "NAME:\n         cli-spv - command line tool for ELA blockchain \n";
     std::string strUsage = "USAGE:\n         cli-spv [global options] command [command options] [args] \n";

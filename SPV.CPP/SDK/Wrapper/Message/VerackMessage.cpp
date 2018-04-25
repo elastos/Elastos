@@ -17,20 +17,22 @@ namespace Elastos {
 		}
 
 		int VerackMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
+			peer_log(peer, "VerackMessage.Accept");
+
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 			struct timeval tv;
 			int r = 1;
 
 			if (ctx->gotVerack) {
 				//todo instead with Log
-//				peer_log(peer, "got unexpected verack");
+				peer_log(peer, "got unexpected verack");
 			}
 			else {
 				gettimeofday(&tv, NULL);
 				ctx->pingTime = tv.tv_sec + (double)tv.tv_usec/1000000 - ctx->startTime; // use verack time as initial ping time
 				ctx->startTime = 0;
 				//todo instead with Log
-//				peer_log(peer, "got verack in %fs", ctx->pingTime);
+				peer_log(peer, "got verack in %fs", ctx->pingTime);
 				ctx->gotVerack = 1;
 				BRPeerDidConnect(peer);
 			}
@@ -39,19 +41,21 @@ namespace Elastos {
 		}
 
 		void VerackMessage::Send(BRPeer *peer) {
+			peer_log(peer, "VerackMessage.Send");
 			BRPeerSendMessage(peer, NULL, 0, MSG_VERACK);
 			((BRPeerContext *)peer)->sentVerack = 1;
 		}
 
 		void VerackMessage::BRPeerDidConnect(BRPeer *peer) {
+			peer_log(peer, "VerackMessage.BRPeerDidConnect");
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 
 			if (ctx->status == BRPeerStatusConnecting && ctx->sentVerack && ctx->gotVerack) {
 				//todo instead with Log
-//				peer_log(peer, "handshake completed");
+				peer_log(peer, "handshake completed");
 				ctx->disconnectTime = DBL_MAX;
 				ctx->status = BRPeerStatusConnected;
-//				peer_log(peer, "connected with lastblock: %"PRIu32, ctx->lastblock);
+				peer_log(peer, "connected with lastblock: %"PRIu32, ctx->lastblock);
 				if (ctx->connected) ctx->connected(ctx->info);
 			}
 		}

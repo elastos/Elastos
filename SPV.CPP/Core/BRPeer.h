@@ -52,8 +52,11 @@
 extern "C" {
 #endif
 
-#define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
-#define SERVICES_NODE_BLOOM   0x04 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
+//#define SERVICES_NODE_NETWORK 0x01 // services value indicating a node carries full blocks, not just headers
+//#define SERVICES_NODE_BLOOM   0x04 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
+//#define SERVICES_NODE_BCASH   0x20 // https://github.com/Bitcoin-UAHF/spec/blob/master/uahf-technical-spec.md
+#define SERVICES_NODE_NETWORK 0x04 // services value indicating a node carries full blocks, not just headers
+#define SERVICES_NODE_BLOOM   0x05 // BIP111: https://github.com/bitcoin/bips/blob/master/bip-0111.mediawiki
 #define SERVICES_NODE_BCASH   0x20 // https://github.com/Bitcoin-UAHF/spec/blob/master/uahf-technical-spec.md
     
 #define BR_VERSION "2.1"
@@ -185,10 +188,8 @@ void BRPeerSendMempool(BRPeer *peer, const UInt256 knownTxHashes[], size_t known
                        void (*completionCallback)(void *info, int success));
 void BRPeerSendGetheaders(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
 void BRPeerSendGetblocks(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
-void BRPeerSendInv(BRPeer *peer, const UInt256 txHashes[], size_t txCount);
 void BRPeerSendGetdata(BRPeer *peer, const UInt256 txHashes[], size_t txCount, const UInt256 blockHashes[],
                        size_t blockCount);
-void BRPeerSendGetaddr(BRPeer *peer);
 void BRPeerSendPing(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
 
 // useful to get additional tx after a bloom filter update

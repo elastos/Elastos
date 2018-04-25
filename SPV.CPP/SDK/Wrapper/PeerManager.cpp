@@ -147,7 +147,7 @@ namespace Elastos {
 			return Peer::Unknown;
 		}
 
-		void PeerManager::connetct() {
+		void PeerManager::connect() {
 			BRPeerManagerConnect(_manager);
 		}
 

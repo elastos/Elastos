@@ -15,6 +15,26 @@
 extern "C" {
 #endif
 
+
+//todo change this to somewhere correctly
+#define HEADER_LENGTH      24
+#define MAX_MSG_LENGTH     0x02000000
+#define MAX_GETDATA_HASHES 50000
+#define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
+#define PROTOCOL_VERSION   70013
+#define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
+#define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
+#define CONNECT_TIMEOUT    3.0
+#define MESSAGE_TIMEOUT    10.0
+#define PTHREAD_STACK_SIZE  (512 * 1024)
+
+typedef enum {
+	inv_undefined = 0,
+	inv_tx = 1,
+	inv_block = 2,
+	inv_filtered_block = 3
+} inv_type;
+
 typedef struct BRPeerManagerStruct BRPeerManager;
 
 typedef struct {
@@ -62,16 +82,32 @@ typedef struct {
 	void (*BRPeerSendVerackMessage)(BRPeer *peer);
 	int (*BRPeerAcceptVerackMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
+	void (*BRPeerSendVersionMessage)(BRPeer *peer);
+	int (*BRPeerAcceptVersionMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	void (*BRPeerSendAddressMessage)(BRPeer *peer);
+	int (*BRPeerAcceptAddressMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	void (*BRPeerSendInventoryMessage)(BRPeer *peer, const UInt256 txHashes[], size_t txCount);
+	int (*BRPeerAcceptInventoryMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	void (*BRPeerSendGetAddressMessage)(BRPeer *peer);
+	int (*BRPeerAcceptGetAddressMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
 	void (*BRPeerSendTxMessage)(BRPeer *peer, BRTransaction *tx);
 	int (*BRPeerAcceptTxMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
 	int (*BRPeerAcceptMerkleblockMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	int (*BRPeerAcceptNotFoundMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
 } BRPeerMessages;
 
 BRPeerMessages *BRPeerMessageNew(void);
 
 void BRPeerMessageFree(BRPeerMessages *peerMessages);
+void BRPeerAddKnownTxHashes(const BRPeer *peer, const UInt256 txHashes[], size_t txCount);
+
 
 #ifdef __cplusplus
 }
