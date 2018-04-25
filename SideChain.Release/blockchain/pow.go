@@ -76,7 +76,7 @@ func (pow *PowService) CollectTransactions(MsgBlock *core.Block) int {
 	return txs
 }
 
-func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*ela.Transaction, error) {
+func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*ela.Transaction, error) {
 	minerProgramHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return nil, err
@@ -152,7 +152,7 @@ func (s txSorter) Less(i, j int) bool {
 
 func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
-	coinBaseTx, err := pow.CreateCoinbaseTrx(nextBlockHeight, addr)
+	coinBaseTx, err := pow.CreateCoinBaseTx(nextBlockHeight, addr)
 	if err != nil {
 		return nil, err
 	}

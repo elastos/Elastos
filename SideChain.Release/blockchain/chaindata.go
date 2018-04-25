@@ -11,113 +11,99 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-func (c *ChainStore) BatchInit() error {
-	return c.NewBatch()
-}
-
-func (c *ChainStore) BatchFinish() error {
-	return c.BatchCommit()
-}
-
 // key: DATA_Header || block hash
 // value: sysfee(8bytes) || trimmed block
 func (c *ChainStore) PersistTrimmedBlock(b *core.Block) error {
-	key := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
-	blockHash := b.Hash()
-	blockHash.Serialize(key)
 
-	value := bytes.NewBuffer(nil)
-	var sysfee uint64 = 0x0000000000000000
-	WriteUint64(value, sysfee)
-	b.Trim(value)
-
-	if err := c.BatchPut(key.Bytes(), value.Bytes()); err != nil {
+	hash := b.Hash()
+	if err := hash.Serialize(key); err != nil {
 		return err
 	}
 
+	value := new(bytes.Buffer)
+	var sysfee uint64 = 0x0000000000000000
+	if err := WriteUint64(value, sysfee); err != nil {
+		return err
+	}
+	if err := b.Trim(value); err != nil {
+		return err
+	}
+	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
 
-func (c *ChainStore) RollbackTrimemedBlock(b *core.Block) error {
-	key := bytes.NewBuffer(nil)
+func (c *ChainStore) RollbackTrimmedBlock(b *core.Block) error {
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
-	blockHash := b.Hash()
-	blockHash.Serialize(key)
-
-	if err := c.BatchDelete(key.Bytes()); err != nil {
+	hash := b.Hash()
+	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-
+	c.BatchDelete(key.Bytes())
 	return nil
 }
 
 // key: DATA_BlockHash || height
 // value: block hash
 func (c *ChainStore) PersistBlockHash(b *core.Block) error {
-	key := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
 
-	value := bytes.NewBuffer(nil)
-	hashValue := b.Hash()
-	hashValue.Serialize(value)
-
-	if err := c.BatchPut(key.Bytes(), value.Bytes()); err != nil {
+	value := new(bytes.Buffer)
+	hash := b.Hash()
+	if err := hash.Serialize(value); err != nil {
 		return err
 	}
-
+	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
 
 func (c *ChainStore) RollbackBlockHash(b *core.Block) error {
-	key := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
-
-	if err := c.BatchDelete(key.Bytes()); err != nil {
-		return err
-	}
-
+	c.BatchDelete(key.Bytes())
 	return nil
 }
 
 // key: SYS_CurrentBlock
 // value: current block hash || height
 func (c *ChainStore) PersistCurrentBlock(b *core.Block) error {
+	key := new(bytes.Buffer)
+	key.WriteByte(byte(SYS_CurrentBlock))
 
-	currentBlockKey := bytes.NewBuffer(nil)
-	currentBlockKey.WriteByte(byte(SYS_CurrentBlock))
-
-	currentBlock := bytes.NewBuffer(nil)
+	value := new(bytes.Buffer)
 	blockHash := b.Hash()
-	blockHash.Serialize(currentBlock)
-	WriteUint32(currentBlock, b.Header.Height)
-
-	if err := c.BatchPut(currentBlockKey.Bytes(), currentBlock.Bytes()); err != nil {
+	if err := blockHash.Serialize(value); err != nil {
 		return err
 	}
-
+	if err := WriteUint32(value, b.Header.Height); err != nil {
+		return err
+	}
+	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
 
 func (c *ChainStore) RollbackCurrentBlock(b *core.Block) error {
-	key := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
 	value := bytes.NewBuffer(nil)
-	blockHash := b.Header.Previous
-	blockHash.Serialize(value)
-	WriteUint32(value, b.Header.Height-1)
-
-	if err := c.BatchPut(key.Bytes(), value.Bytes()); err != nil {
+	previous := b.Header.Previous
+	if err := previous.Serialize(value); err != nil {
 		return err
 	}
-
+	if err := WriteUint32(value, b.Header.Height-1); err != nil {
+		return err
+	}
+	c.BatchPut(key.Bytes(), value.Bytes())
 	return nil
 }
 
@@ -336,28 +322,21 @@ func (c *ChainStore) RollbackTransactions(b *core.Block) error {
 }
 
 func (c *ChainStore) RollbackTransaction(txn *ela.Transaction) error {
-
-	key := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Transaction))
-	txnHash := txn.Hash()
-	txnHash.Serialize(key)
-
-	if err := c.BatchDelete(key.Bytes()); err != nil {
+	hash := txn.Hash()
+	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-
+	c.BatchDelete(key.Bytes())
 	return nil
 }
 
 func (c *ChainStore) RollbackAsset(assetId Uint256) error {
-	key := bytes.NewBuffer(nil)
+	key := new(bytes.Buffer)
 	key.WriteByte(byte(ST_Info))
 	assetId.Serialize(key)
-
-	if err := c.BatchDelete(key.Bytes()); err != nil {
-		return err
-	}
-
+	c.BatchDelete(key.Bytes())
 	return nil
 }
 
@@ -423,9 +402,7 @@ func (c *ChainStore) RollbackUnspend(b *core.Block) error {
 		}
 		// remove all utxos created by this transaction
 		txnHash := txn.Hash()
-		if err := c.BatchDelete(append(unspentPrefix, txnHash.Bytes()...)); err != nil {
-			return err
-		}
+		c.BatchDelete(append(unspentPrefix, txnHash.Bytes()...))
 		if !txn.IsCoinBaseTx() {
 
 			for _, input := range txn.Inputs {
