@@ -68,7 +68,7 @@ JNIEnv* attachJvm(int* newlyAttached)
             if (result != JNI_OK) {
                 logE("Attach current thread to JVM error (%d)", result);
             } else {
-                logD("Attached current thread to JVM in success");
+                logV("Attached current thread to JVM in success");
                 *newlyAttached = 1;
             }
             break;
