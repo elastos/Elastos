@@ -1,10 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 24
+    buildToolsVersion '26.0.1'
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -22,6 +23,9 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            jniDebuggable true
+        }
     }
     sourceSets {
         main {
@@ -33,26 +37,23 @@ android {
             path "src/main/cpp/CMakeLists.txt"
         }
     }
+
+    libraryVariants.all { variant ->
+        def manifestParser = new com.android.builder.core.DefaultManifestParser(
+                android.sourceSets.main.manifest.srcFile)
+        def packageName = manifestParser.getPackage()
+        def newName = packageName + '-' + variant.buildType.name + '.aar'
+
+        def originalFile = variant.outputs[0].outputFile
+        variant.outputs[0].outputFile = new File(originalFile.parent, newName)
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.0.0'
+    testCompile 'junit:junit:4.12'
 }
-
-task createJar(type: Copy) {
-    from('build/intermediates/bundles/debug/')
-    into('build/outputs/debug/')
-    include('classes.jar')
-    include('jni/*/*.so')
-    rename ('classes.jar', 'elacarrier.jar')
-}
-
-task clearJar(type: Delete) {
-    delete('build/outputs/debug')
-}
-
-createJar.dependsOn(clearJar, build)
