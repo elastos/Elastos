@@ -10,6 +10,7 @@
 
 #include "BRPeer.h"
 #include "BRSet.h"
+#include "BRBloomFilter.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -97,7 +98,7 @@ typedef struct {
 
 	int (*BRPeerAcceptNotFoundMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
-	void (*BRPeerSendFilterloadMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+	void (*BRPeerSendFilterloadMessage)(BRPeer *peer, BRBloomFilter *filter);
 
 	void (*BRPeerSendGetheadersMessage)(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
 

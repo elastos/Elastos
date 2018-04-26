@@ -302,10 +302,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     manager->bloomFilter = filter;
     // TODO: XXX if already synced, recursively add inputs of unconfirmed receives
 
-    uint8_t data[BRBloomFilterSerialize(filter, NULL, 0)];
-    size_t len = BRBloomFilterSerialize(filter, data, sizeof(data));
-
-    manager->peerMessages->BRPeerSendFilterloadMessage(peer, data, len);
+    manager->peerMessages->BRPeerSendFilterloadMessage(peer, filter);
 }
 
 static void _updateFilterRerequestDone(void *info, int success)

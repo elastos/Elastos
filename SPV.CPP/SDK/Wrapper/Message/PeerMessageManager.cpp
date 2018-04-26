@@ -15,6 +15,7 @@
 #include "AddressMessage.h"
 #include "InventoryMessage.h"
 #include "AddressMessage.h"
+#include "BloomFilterMessage.h"
 #include "NotFoundMessage.h"
 
 namespace Elastos {
@@ -109,6 +110,15 @@ namespace Elastos {
 
 				return fun(peer, msg, msgLen);
 			}
+
+			void BRPeerSendFilterload(BRPeer *peer, BRBloomFilter *filter) {
+				BloomFilterMessage *message = static_cast<BloomFilterMessage *>(
+						PeerMessageManager::instance().getWrapperMessage(MSG_FILTERLOAD).get());
+				boost::function<void(BRPeer *, void *)> fun =
+						boost::bind(&BloomFilterMessage::Send, message, _1, _2);
+
+				fun(peer, filter);
+			}
 		}
 
 		PeerMessageManager PeerMessageManager::_instance = PeerMessageManager();
@@ -144,6 +154,9 @@ namespace Elastos {
 
 			peerManager->peerMessages->BRPeerAcceptNotFoundMessage = BRPeerAcceptNotFoundMessage;
 			_messages[MSG_NOTFOUND] = MessagePtr(new NotFoundMessage);
+
+			peerManager->peerMessages->BRPeerSendFilterloadMessage = BRPeerSendFilterload;
+			_wrapperMessages[MSG_FILTERLOAD] = WrapperMessagePtr(new BloomFilterMessage);
 		}
 
 		PeerMessageManager &PeerMessageManager::instance() {

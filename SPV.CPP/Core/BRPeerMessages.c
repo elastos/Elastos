@@ -594,11 +594,14 @@ static int _BRPeerAcceptNotfoundMessage(BRPeer *peer, const uint8_t *msg, size_t
 	return r;
 }
 
-void BRPeerSendFilterload(BRPeer *peer, const uint8_t *filter, size_t filterLen)
+void BRPeerSendFilterload(BRPeer *peer, BRBloomFilter *filter)
 {
+	uint8_t data[BRBloomFilterSerialize(filter, NULL, 0)];
+	size_t len = BRBloomFilterSerialize(filter, data, sizeof(data));
+
 	((BRPeerContext *)peer)->sentFilter = 1;
 	((BRPeerContext *)peer)->sentMempool = 0;
-	BRPeerSendMessage(peer, filter, filterLen, MSG_FILTERLOAD);
+	BRPeerSendMessage(peer, filter, len, MSG_FILTERLOAD);
 }
 
 void BRPeerSendGetheaders(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop)
