@@ -14,5 +14,6 @@ build/
 /glide.lock
 vendor/*
 /side
+*.json
 *.bin
 *.db

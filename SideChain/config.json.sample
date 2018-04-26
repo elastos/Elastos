@@ -36,7 +36,7 @@
       "AutoMining": true,
       "MinerInfo": "ELA",
       "MinTxFee": 100,
-      "ActiveNet": "MainNet"
+      "ActiveNet": "TestNet"
     }
   }
 }
