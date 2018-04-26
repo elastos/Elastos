@@ -796,7 +796,7 @@ static void stream_on_rx_data(pj_ice_strans *ice_st, unsigned comp, void *data,
         FlexBuffer *buf = flex_buffer_from(FLEX_PADDING_LEN,
                             (const void *)packet->data, (size_t)packet->len);
 
-        vlogD("Stream: %d ICE component %d received %d bytes data from %s.",
+        vlogT("Stream: %d ICE component %d received %d bytes data from %s.",
               stream->base.id, comp, (int)size,
               pj_sockaddr_print(src_addr, addr, sizeof(addr), 3));
 
