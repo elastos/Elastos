@@ -14,7 +14,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
-	. "github.com/elastos/Elastos.ELA/servers"
+	"github.com/elastos/Elastos.ELA/servers"
 )
 
 const (
@@ -22,25 +22,24 @@ const (
 	Api_GetblockTxsByHeight = "/api/v1/block/transactions/height/:height"
 	Api_Getblockbyheight    = "/api/v1/block/details/height/:height"
 	Api_Getblockbyhash      = "/api/v1/block/details/hash/:hash"
-	Api_Getblockheight     = "/api/v1/block/height"
-	Api_Getblockhash       = "/api/v1/block/hash/:height"
-	Api_GetTotalIssued     = "/api/v1/totalissued/:assetid"
-	Api_Gettransaction     = "/api/v1/transaction/:hash"
-	Api_Getasset           = "/api/v1/asset/:hash"
-	Api_GetBalanceByAddr   = "/api/v1/asset/balances/:addr"
-	Api_GetBalancebyAsset  = "/api/v1/asset/balance/:addr/:assetid"
-	Api_GetUTXObyAsset     = "/api/v1/asset/utxo/:addr/:assetid"
-	Api_GetUTXObyAddr      = "/api/v1/asset/utxos/:addr"
-	Api_SendRawTransaction = "/api/v1/transaction"
-	Api_GetTransactionPool = "/api/v1/transactionpool"
-	Api_Restart            = "/api/v1/restart"
+	Api_Getblockheight      = "/api/v1/block/height"
+	Api_Getblockhash        = "/api/v1/block/hash/:height"
+	Api_GetTotalIssued      = "/api/v1/totalissued/:assetid"
+	Api_Gettransaction      = "/api/v1/transaction/:hash"
+	Api_Getasset            = "/api/v1/asset/:hash"
+	Api_GetBalanceByAddr    = "/api/v1/asset/balances/:addr"
+	Api_GetBalancebyAsset   = "/api/v1/asset/balance/:addr/:assetid"
+	Api_GetUTXObyAsset      = "/api/v1/asset/utxo/:addr/:assetid"
+	Api_GetUTXObyAddr       = "/api/v1/asset/utxos/:addr"
+	Api_SendRawTransaction  = "/api/v1/transaction"
+	Api_GetTransactionPool  = "/api/v1/transactionpool"
+	Api_Restart             = "/api/v1/restart"
 )
-
 
 type Action struct {
 	sync.RWMutex
 	name    string
-	handler func(map[string]interface{}) map[string]interface{}
+	handler func(servers.Params) map[string]interface{}
 }
 
 type restServer struct {
@@ -75,7 +74,7 @@ func (rt *restServer) Start() {
 		log.Fatal("Not configure HttpRestPort port ")
 	}
 
-	if Parameters.HttpRestPort%1000 == TlsPort {
+	if Parameters.HttpRestPort%1000 == servers.TlsPort {
 		var err error
 		rt.listener, err = rt.initTlsListen()
 		if err != nil {
@@ -99,24 +98,24 @@ func (rt *restServer) Start() {
 func (rt *restServer) initializeMethod() {
 
 	getMethodMap := map[string]Action{
-		Api_Getconnectioncount:  {name: "getconnectioncount", handler: GetConnectionCount},
-		Api_GetblockTxsByHeight: {name: "getblocktransactionsbyheight", handler: GetTransactionsByHeight},
-		Api_Getblockbyheight:    {name: "getblockbyheight", handler: GetBlockByHeight},
-		Api_Getblockbyhash:      {name: "getblockbyhash", handler: GetBlockByHash},
-		Api_Getblockheight:      {name: "getblockheight", handler: GetBlockHeight},
-		Api_Getblockhash:        {name: "getblockhash", handler: GetBlockHash},
-		Api_GetTransactionPool:  {name: "gettransactionpool", handler: GetTransactionPool},
-		Api_Gettransaction:      {name: "gettransaction", handler: GetTransactionByHash},
-		Api_Getasset:            {name: "getasset", handler: GetAssetByHash},
-		Api_GetUTXObyAddr:       {name: "getutxobyaddr", handler: GetUnspends},
-		Api_GetUTXObyAsset:      {name: "getutxobyasset", handler: GetUnspendOutput},
-		Api_GetBalanceByAddr:    {name: "getbalancebyaddr", handler: GetBalanceByAddr},
-		Api_GetBalancebyAsset:   {name: "getbalancebyasset", handler: GetBalanceByAsset},
+		Api_Getconnectioncount:  {name: "getconnectioncount", handler: servers.GetConnectionCount},
+		Api_GetblockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.GetTransactionsByHeight},
+		Api_Getblockbyheight:    {name: "getblockbyheight", handler: servers.GetBlockByHeight},
+		Api_Getblockbyhash:      {name: "getblockbyhash", handler: servers.GetBlockByHash},
+		Api_Getblockheight:      {name: "getblockheight", handler: servers.GetBlockHeight},
+		Api_Getblockhash:        {name: "getblockhash", handler: servers.GetBlockHash},
+		Api_GetTransactionPool:  {name: "gettransactionpool", handler: servers.GetTransactionPool},
+		Api_Gettransaction:      {name: "gettransaction", handler: servers.GetTransactionByHash},
+		Api_Getasset:            {name: "getasset", handler: servers.GetAssetByHash},
+		Api_GetUTXObyAddr:       {name: "getutxobyaddr", handler: servers.GetUnspends},
+		Api_GetUTXObyAsset:      {name: "getutxobyasset", handler: servers.GetUnspendOutput},
+		Api_GetBalanceByAddr:    {name: "getbalancebyaddr", handler: servers.GetBalanceByAddr},
+		Api_GetBalancebyAsset:   {name: "getbalancebyasset", handler: servers.GetBalanceByAsset},
 		Api_Restart:             {name: "restart", handler: rt.Restart},
 	}
 
 	postMethodMap := map[string]Action{
-		Api_SendRawTransaction: {name: "sendrawtransaction", handler: SendRawTransaction},
+		Api_SendRawTransaction: {name: "sendrawtransaction", handler: servers.SendRawTransaction},
 	}
 	rt.postMap = postMethodMap
 	rt.getMap = getMethodMap
@@ -215,7 +214,7 @@ func (rt *restServer) initGetHandler() {
 				req = rt.getParams(r, url, req)
 				resp = h.handler(req)
 			} else {
-				resp = ResponsePack(InvalidMethod, "")
+				resp = servers.ResponsePack(InvalidMethod, "")
 			}
 			rt.response(w, resp)
 		})
@@ -238,10 +237,10 @@ func (rt *restServer) initPostHandler() {
 					req = rt.getParams(r, url, req)
 					resp = h.handler(req)
 				} else {
-					resp = ResponsePack(IllegalDataFormat, "")
+					resp = servers.ResponsePack(IllegalDataFormat, "")
 				}
 			} else {
-				resp = ResponsePack(InvalidMethod, "")
+				resp = servers.ResponsePack(InvalidMethod, "")
 			}
 			rt.response(w, resp)
 		})
@@ -279,13 +278,13 @@ func (rt *restServer) Stop() {
 	}
 }
 
-func (rt *restServer) Restart(cmd map[string]interface{}) map[string]interface{} {
+func (rt *restServer) Restart(cmd servers.Params) map[string]interface{} {
 	go func() {
 		rt.Stop()
 		rt.Start()
 	}()
 
-	return ResponsePack(Success, "")
+	return servers.ResponsePack(Success, "")
 }
 
 func (rt *restServer) initTlsListen() (net.Listener, error) {

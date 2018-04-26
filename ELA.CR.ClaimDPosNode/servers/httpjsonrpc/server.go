@@ -13,7 +13,7 @@ import (
 )
 
 //an instance of the multiplexer
-var mainMux map[string]func(map[string]interface{}) map[string]interface{}
+var mainMux map[string]func(Params) map[string]interface{}
 
 const (
 	// JSON-RPC protocol error codes.
@@ -26,7 +26,7 @@ const (
 )
 
 func StartRPCServer() {
-	mainMux = make(map[string]func(map[string]interface{}) map[string]interface{})
+	mainMux = make(map[string]func(Params) map[string]interface{})
 
 	http.HandleFunc("/", Handle)
 
@@ -97,25 +97,25 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := request["params"]
+	requestParams := request["params"]
 	//Json rpc 1.0 support positional parameters while json rpc 2.0 support named parameters.
-	// positional parameters: { "params":[1, 2, 3....] }
-	// named parameters: { "params":{ "a":1, "b":2, "c":3 } }
+	// positional parameters: { "requestParams":[1, 2, 3....] }
+	// named parameters: { "requestParams":{ "a":1, "b":2, "c":3 } }
 	//Here we support both of them, because bitcion does so.
-	formattedParams, ok := params.(map[string]interface{})
-
-	if !ok {
-		if _, ok := params.([]interface{}); ok {
-			formattedParams = convertParams(w, request)
-		} else if params == nil {
-			formattedParams = map[string]interface{}{}
-		} else {
-			RPCError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
-			return
-		}
+	var params Params
+	switch requestParams := requestParams.(type) {
+	case nil:
+	case []interface{}:
+		params = convertParams(requestMethod, requestParams)
+	case map[string]interface{}:
+		params = Params(requestParams)
+	default:
+		RPCError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
+		return
 	}
+	log.Debug("RPC params:", params)
 
-	response := method(formattedParams)
+	response := method(params)
 	var data []byte
 	if response["Error"] != errors.ErrCode(0) {
 		data, _ = json.Marshal(map[string]interface{}{
@@ -150,32 +150,27 @@ func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, messag
 	w.Write(data)
 }
 
-func convertParams(w http.ResponseWriter,request map[string]interface{}) map[string]interface{} {
-	method := request["method"].(string)
-	params := request["params"].([]interface{})
-
+func convertParams(method string, params []interface{}) Params {
 	switch method {
 	case "createauxblock":
-		return map[string]interface{}{"paytoaddress": params[0]}
+		return FromArray(params, "paytoaddress")
 	case "submitauxblock":
-		return map[string]interface{}{"blockhash": params[0], "auxpow": params[1]}
+		return FromArray(params, "blockhash", "auxpow")
 	case "getblockhash":
-		return map[string]interface{}{"index": params[0]}
+		return FromArray(params, "index")
 	case "getblock":
-		return map[string]interface{}{"hash": params[0]}
+		return FromArray(params, "hash", "format")
 	case "setloglevel":
-		return map[string]interface{}{"level": params[0]}
+		return FromArray(params, "level")
 	case "getrawtransaction":
-		return map[string]interface{}{"hash": params[0]}
+		return FromArray(params, "hash", "format")
 	case "getarbitratorgroupbyheight":
-		return map[string]interface{}{"height": params[0]}
+		return FromArray(params, "height")
 	case "togglemining":
-		return map[string]interface{}{"mine": params[0]}
+		return FromArray(params, "mine")
 	case "manualmining":
-		return map[string]interface{}{"count": params[0]}
-	case "gettransaction":
-		return map[string]interface{}{"hash": params[0]}
+		return FromArray(params, "count")
 	default:
-		return map[string]interface{}{}
+		return Params{}
 	}
 }
