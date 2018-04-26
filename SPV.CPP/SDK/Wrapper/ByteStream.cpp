@@ -268,6 +268,9 @@ namespace Elastos {
 		}
 
 		uint8_t *ByteStream::getBuf() {
+			if (_size <= 0) {
+				return nullptr;
+			}
 			uint8_t *ret = new uint8_t[_size];
 			memcpy(ret, _buf, _size);
 			return ret;

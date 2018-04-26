@@ -76,6 +76,10 @@ namespace Elastos {
 
 			std::vector<std::string> getOutputAddresses();
 
+			void setTransactionType(Transaction::Type type);
+
+			Transaction::Type getTransactionType() const;
+
 			/**
 			 * The transaction's lockTime
 			 *
@@ -154,11 +158,13 @@ namespace Elastos {
 			static uint64_t getMinOutputAmount();
 
 		private:
-			void convertFrom(BRTransaction *raw);
+			void convertFrom(const BRTransaction *raw);
 
 			void transactionInputCopy(BRTxInput *target, const BRTxInput *source) const;
 
 			void transactionOutputCopy (BRTxOutput *target, const BRTxOutput *source) const;
+
+			void setPayloadByTransactionType();
 
 		private:
 			bool _isRegistered;

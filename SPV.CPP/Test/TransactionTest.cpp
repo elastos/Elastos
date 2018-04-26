@@ -4,15 +4,16 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <BRTransaction.h>
+#include <ELACoreExt/ELABRTransaction.h>
+#include "ELABRTransaction.h"
 #include "catch.hpp"
 #include "Transaction.h"
 #include "Address.h"
-#include "Key.h"
+#include "Payload/PayloadCoinBase.h"
 
 using namespace Elastos::SDK;
 
-TEST_CASE( "Transaction constructor test", "[Transaction]" ) {
+TEST_CASE("Transaction constructor test", "[Transaction]") {
 
 	SECTION("Default constructor") {
 
@@ -20,73 +21,18 @@ TEST_CASE( "Transaction constructor test", "[Transaction]" ) {
 		REQUIRE(transaction.getRaw() != nullptr);
 	}
 
-	SECTION("Constructor init with null pointer") {
-		BRTransaction *raw = nullptr;
-		Transaction transaction(raw);
-		REQUIRE(transaction.getRaw() == nullptr);
-		//todo should throw
-	}
-
 	SECTION("Constructor init with raw pointer") {
-		BRTransaction *raw = BRTransactionNew();
+		ELABRTransaction *raw = ELABRTransactionNew();
 		{
-			Transaction transaction(raw);
+			Transaction transaction((BRTransaction *) raw);
 			REQUIRE(transaction.getRaw() != nullptr);
-			REQUIRE(transaction.getRaw() == raw);
+			REQUIRE(transaction.getRaw() == (BRTransaction *)raw);
 		}
 		//raw shall be invalid pointer here
 	}
-
-	SECTION("Constructor init with buffer") {
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		ByteData script = myaddress.getPubKeyScript();
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-
-		TransactionInput transactionInput(hash, 0, 1000, script, ByteData(nullptr, 0), 1);
-		Transaction transaction;
-		transaction.addInput(transactionInput);
-
-		ByteData byteData = transaction.serialize();
-		REQUIRE(byteData.length > 0);
-		REQUIRE(byteData.data != nullptr);
-
-		Transaction transaction1(byteData);
-		REQUIRE(transaction1.getRaw() != nullptr);
-		ByteData byteData1 = transaction1.serialize();
-		REQUIRE(byteData1.length == byteData.length);
-		for (int i = 0; i < byteData.length; i++) {
-			REQUIRE(byteData.data[i] == byteData1.data[i]);
-		}
-	}
-
-	SECTION("Constructor init with buffer and 'blockHeight + timeStamp'") {
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		ByteData script = myaddress.getPubKeyScript();
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		TransactionInput transactionInput(hash, 0, 1000, script, ByteData(nullptr, 0), 1);
-		Transaction transaction;
-		transaction.addInput(transactionInput);
-
-		ByteData byteData = transaction.serialize();
-		uint32_t blockHeight = 888;
-		uint32_t timeStamp = 1523608889;
-
-		Transaction transaction1(byteData, blockHeight, timeStamp);
-		REQUIRE(transaction1.getRaw() != nullptr);
-		REQUIRE(transaction1.getBlockHeight() == blockHeight);
-		REQUIRE(transaction1.getTimestamp() == timeStamp);
-
-		ByteData byteData1 = transaction1.serialize();
-		REQUIRE(byteData1.length == byteData.length);
-		for (int i = 0; i < byteData.length; i++) {
-			REQUIRE(byteData.data[i] == byteData1.data[i]);
-		}
-	}
 }
 
-TEST_CASE( "New empty transaction behavior", "[Transaction]" ) {
+TEST_CASE("New empty transaction behavior", "[Transaction]") {
 
 	Transaction transaction;
 
@@ -311,4 +257,240 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		bool result = transaction.isStandard();
 		REQUIRE(result == true);
 	}
+}
+
+TEST_CASE("Transaction Serialize test", "[Transaction]") {
+
+	SECTION("transaction Serialize test") {
+		Transaction transaction;
+		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
+		Address myaddress(content);
+		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
+		for (int i = 0; i < 10; i++) {
+			TransactionInput input(hash, i + 1, 10000 + i, myaddress.getPubKeyScript(), ByteData(), i);
+			transaction.addInput(input);
+		}
+
+		UInt256 outHash = uint256("0000000000000000008e5d72027ef42ca050a0776b7184c96d0d4b300fa5da9e");
+
+		UInt168 programHash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6\xd4\x8f\x60\x7d\x42\xc1\xd2\xa2\x15\x16";
+
+		for (int i = 0; i < 10; i++) {
+			TransactionOutput output;
+			output.setAssetId(outHash);
+			output.setAmount(888);
+			output.setOutputLock(i + 1);
+			output.setProgramHash(programHash);
+			transaction.addOutput(output);
+		}
+		transaction.setLockTime(1524231034);
+		transaction.setTransactionType(Transaction::Type::CoinBase);
+
+		ByteStream byteStream;
+		transaction.Serialize(byteStream);
+		byteStream.setPosition(0);
+
+		Transaction transaction1;
+		transaction1.Deserialize(byteStream);
+
+		REQUIRE(transaction.getLockTime() == transaction1.getLockTime());
+
+		SharedWrapperList<TransactionInput, BRTxInput *> inputs1 = transaction.getInputs();
+		SharedWrapperList<TransactionInput, BRTxInput *> inputs2 = transaction1.getInputs();
+		REQUIRE(inputs1.size() == inputs2.size());
+		for (int i = 0; i < inputs1.size(); i++) {
+			boost::shared_ptr<TransactionInput> input = inputs1[i];
+			REQUIRE(input->getIndex() == inputs2[i]->getIndex());
+			REQUIRE(input->getSequence() == inputs2[i]->getSequence());
+			UInt256 temp = input->getHash();
+			int result = UInt256Eq(&hash, &temp);
+			REQUIRE(result == 1);
+		}
+
+		SharedWrapperList<TransactionOutput, BRTxOutput *> outputs1 = transaction.getOutputs();
+		SharedWrapperList<TransactionOutput, BRTxOutput *> outputs2 = transaction1.getOutputs();
+		REQUIRE(outputs1.size() == outputs2.size());
+		for (int i = 0; i < outputs1.size(); i++) {
+			boost::shared_ptr<TransactionOutput> outPut = outputs1[i];
+			REQUIRE(outPut->getAmount() == outputs2[i]->getAmount());
+			REQUIRE(outPut->getOutputLock() == outputs2[i]->getOutputLock());
+
+			int result = UInt256Eq(&outPut->getAssetId(), &outputs2[i]->getAssetId());
+			REQUIRE(result == 1);
+
+			result = UInt168Eq(&outPut->getProgramHash(), &outputs2[i]->getProgramHash());
+			REQUIRE(result == 1);
+		}
+	}
+
+}
+
+TEST_CASE("Transaction conver method test", "[Transaction]") {
+	SECTION("transaction  BRTransaction convertToRaw test") {
+		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
+		ELABRTransaction *raw = ELABRTransactionNew();
+		raw->raw.txHash = hash;
+		raw->raw.version = 1;
+		raw->raw.blockHeight = 2;
+		raw->raw.inCount = 5;
+		raw->raw.outCount = 5;
+		raw->raw.lockTime = 1524231034;
+		raw->raw.timestamp = 1924231000;
+		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 8, 182, 57, 98};
+		for (int i = 0; i < 5; ++i) {
+			BRTransactionAddInput(&raw->raw, hash, i, i, s, 21, nullptr, 0, i);
+		}
+		for (int i = 0; i < 5; ++i) {
+			BRTransactionAddOutput(&raw->raw, i, s, 21);
+		}
+
+		Transaction transaction((BRTransaction *)raw);
+		transaction.setTransactionType(Transaction::Type::CoinBase);
+
+		UInt256 hash1 = transaction.getHash();
+		int result = UInt256Eq(&hash1, &hash);
+		REQUIRE(result == 1);
+		REQUIRE(transaction.getVersion() == raw->raw.version);
+		REQUIRE(transaction.getBlockHeight() == raw->raw.blockHeight);
+		REQUIRE(transaction.getLockTime() == raw->raw.lockTime);
+		REQUIRE(transaction.getTimestamp() == raw->raw.timestamp);
+
+		SharedWrapperList<TransactionInput, BRTxInput *> inputs = transaction.getInputs();
+		REQUIRE(inputs.size() == raw->raw.inCount);
+		for (int i = 0; i < raw->raw.inCount; i++) {
+			UInt256 hash2 = inputs[i]->getHash();
+			result = UInt256Eq(&hash2, &hash);
+			REQUIRE(result == 1);
+			REQUIRE(inputs[i]->getAmount() == i);
+			REQUIRE(inputs[i]->getIndex() == i);
+			REQUIRE(inputs[i]->getSequence() == i);
+			ByteData tempScript1 = inputs[i]->getScript();
+			REQUIRE(tempScript1.length == 21);
+			result = memcmp(tempScript1.data, s, 21);
+			REQUIRE(result == 0);
+		}
+
+		SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction.getOutputs();
+		REQUIRE(outputs.size() == raw->raw.outCount);
+		for (int i = 0; i < raw->raw.outCount; i++) {
+			REQUIRE(outputs[i]->getAmount() == i);
+			ByteData byteData = outputs[i]->getScript();
+			REQUIRE(byteData.length == 21);
+			result = memcmp(byteData.data, s, 21);
+			REQUIRE(result == 0);
+		}
+
+		BRTransaction *raw1 = transaction.convertToRaw();
+		REQUIRE(raw1->inCount == raw->raw.inCount);
+		REQUIRE(raw1->outCount == raw->raw.outCount);
+		REQUIRE(raw1->blockHeight == raw->raw.blockHeight);
+		REQUIRE(raw1->lockTime == raw->raw.lockTime);
+		REQUIRE(raw1->timestamp == raw->raw.timestamp);
+		REQUIRE(raw1->version == raw->raw.version);
+		result = UInt256Eq(&raw1->txHash, &raw->raw.txHash);
+		REQUIRE(result == 1);
+		for (size_t i = 0; i < raw->raw.inCount; i++) {
+			result = UInt256Eq(&raw1->inputs[i].txHash, &raw->raw.inputs[i].txHash);
+			REQUIRE(result == 1);
+			REQUIRE(raw1->inputs[i].amount == raw->raw.inputs[i].amount);
+			REQUIRE(raw1->inputs[i].index == raw->raw.inputs[i].index);
+			REQUIRE(raw1->inputs[i].sequence == raw->raw.inputs[i].sequence);
+			REQUIRE(raw1->inputs[i].scriptLen == raw->raw.inputs[i].scriptLen);
+			result = memcmp(raw1->inputs[i].script, raw->raw.inputs[i].script, raw->raw.inputs[i].scriptLen);
+			REQUIRE(result == 0);
+		}
+		for (size_t i = 0; i < raw->raw.outCount; i++) {
+			REQUIRE(raw1->outputs[i].amount == raw->raw.outputs[i].amount);
+			REQUIRE(raw1->outputs[i].scriptLen == raw->raw.outputs[i].scriptLen);
+			result = memcmp(raw1->outputs[i].script, raw->raw.outputs[i].script, raw->raw.outputs[i].scriptLen);
+			REQUIRE(result == 0);
+		}
+
+	}
+
+	SECTION("transaction ELABRTransaction convertToRaw test") {
+		ELABRTransaction *raw = ELABRTransactionNew();
+		uint8_t t[21] = {18, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 6, 182, 28, 34};
+		uint8_t *s = new uint8_t[21];
+		memcpy(s, t, 21);
+		ByteData coinBytes = ByteData(s, 21);
+		PayloadCoinBase payload(coinBytes);
+		ByteStream stream;
+		payload.Serialize(stream);
+
+		raw->payloadData = ByteData(stream.getBuf(), stream.length());
+
+		raw->attributeData.clear();
+		for (int i = 0; i < 10; i++) {
+			uint8_t *script = new uint8_t[21];
+			memcpy(script, s, 21);
+			Attribute attrib(Attribute::Usage::Script, ByteData(script, 21));
+			ByteStream byteStream;
+			attrib.Serialize(byteStream);
+			byteStream.setPosition(0);
+			raw->attributeData.push_back(ByteData(byteStream.getBuf(), size_t(byteStream.length())));
+		}
+		uint8_t s1[20] = {18, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 6, 182,
+		                  28};
+		for (int i = 0; i < 10; i++) {
+			uint8_t *script = new uint8_t[21];
+			memcpy(script, s, 21);
+			uint8_t *script1 = new uint8_t[20];
+			memcpy(script1, s1, 20);
+			Program program(ByteData(script, 21), ByteData(script1, 20));
+			ByteStream byteStream;
+			program.Serialize(byteStream);
+			byteStream.setPosition(0);
+			raw->programData.push_back(ByteData(byteStream.getBuf(), size_t(byteStream.length())));
+		}
+
+		Transaction transaction((BRTransaction *) raw);
+		ELABRTransaction *raw1 = (ELABRTransaction *)transaction.convertToRaw();
+
+		REQUIRE(raw1->raw.inCount == raw->raw.inCount);
+		REQUIRE(raw1->raw.outCount == raw->raw.outCount);
+		REQUIRE(raw1->raw.blockHeight == raw->raw.blockHeight);
+		REQUIRE(raw1->raw.lockTime == raw->raw.lockTime);
+		REQUIRE(raw1->raw.timestamp == raw->raw.timestamp);
+		REQUIRE(raw1->raw.version == raw->raw.version);
+		int result = UInt256Eq(&raw1->raw.txHash, &raw->raw.txHash);
+		REQUIRE(result == 1);
+		for (size_t i = 0; i < raw->raw.inCount; i++) {
+			result = UInt256Eq(&raw1->raw.inputs[i].txHash, &raw->raw.inputs[i].txHash);
+			REQUIRE(result == 1);
+			REQUIRE(raw1->raw.inputs[i].amount == raw->raw.inputs[i].amount);
+			REQUIRE(raw1->raw.inputs[i].index == raw->raw.inputs[i].index);
+			REQUIRE(raw1->raw.inputs[i].sequence == raw->raw.inputs[i].sequence);
+			REQUIRE(raw1->raw.inputs[i].scriptLen == raw->raw.inputs[i].scriptLen);
+			result = memcmp(raw1->raw.inputs[i].script, raw->raw.inputs[i].script, raw->raw.inputs[i].scriptLen);
+			REQUIRE(result == 0);
+		}
+		for (size_t i = 0; i < raw->raw.outCount; i++) {
+			REQUIRE(raw1->raw.outputs[i].amount == raw->raw.outputs[i].amount);
+			REQUIRE(raw1->raw.outputs[i].scriptLen == raw->raw.outputs[i].scriptLen);
+			result = memcmp(raw1->raw.outputs[i].script, raw->raw.outputs[i].script, raw->raw.outputs[i].scriptLen);
+			REQUIRE(result == 0);
+		}
+
+		REQUIRE(raw1->payloadData.length == raw->payloadData.length);
+		result = memcmp(raw1->payloadData.data, raw->payloadData.data, raw->payloadData.length);
+		REQUIRE(result == 0);
+
+		REQUIRE(raw1->attributeData.size() == raw->attributeData.size());
+		for(size_t i = 0; i < raw->attributeData.size(); i++) {
+			REQUIRE(raw1->attributeData[i].length == raw->attributeData[i].length);
+			result = memcmp(raw1->attributeData[i].data, raw->attributeData[i].data, raw->attributeData[i].length);
+			REQUIRE(result == 0);
+		}
+
+		REQUIRE(raw1->programData.size() == raw->programData.size());
+		for(size_t i = 0; i < raw->programData.size(); i++) {
+			REQUIRE(raw1->programData[i].length == raw->programData[i].length);
+			result = memcmp(raw1->programData[i].data, raw->programData[i].data, raw->programData[i].length);
+			REQUIRE(result == 0);
+		}
+
+		ELABRTransactionFree((ELABRTransaction *)raw1);
+	}
+
 }

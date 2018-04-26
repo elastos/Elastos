@@ -12,11 +12,17 @@ namespace Elastos {
 		TransactionOutput::TransactionOutput() {
 
 			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
+			_output.get()->script = nullptr;
+			_output.get()->scriptLen = 0;
+			_assetId = UINT256_ZERO;
+			_programHash = UINT168_ZERO;
 		}
 
 		TransactionOutput::TransactionOutput(BRTxOutput *output) {
 
 			_output = boost::shared_ptr<BRTxOutput>(output);
+			_assetId = UINT256_ZERO;
+			_programHash = UINT168_ZERO;
 		}
 
 		TransactionOutput::TransactionOutput(uint64_t amount, const ByteData &script) {
@@ -24,6 +30,8 @@ namespace Elastos {
 			_output.get()->script = nullptr;
 			BRTxOutputSetScript(_output.get(), script.data, script.length);
 			_output->amount = amount;
+			_assetId = UINT256_ZERO;
+			_programHash = UINT168_ZERO;
 		}
 
 		std::string TransactionOutput::toString() const {

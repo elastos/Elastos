@@ -5,10 +5,10 @@
 #include "PreCompiled.h"
 
 #include <cstring>
-#include <BRTransaction.h>
 
-#include "BRTransaction.h"
 #include "Transaction.h"
+#include "Payload/PayloadCoinBase.h"
+#include "ELABRTransaction.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -17,22 +17,24 @@ namespace Elastos {
 				_isRegistered(false),
 				_payload(nullptr) {
 
-			_transaction = BRTransactionNew();
+			_transaction = (BRTransaction *)ELABRTransactionNew();
+			setPayloadByTransactionType();
 		}
 
 		Transaction::Transaction(BRTransaction *transaction) :
 				_transaction(transaction),
 				_isRegistered(false),
 				_payload(nullptr) {
-			convertFrom(_transaction);
+			setPayloadByTransactionType();
+			convertFrom(transaction);
 		}
 
 		Transaction::Transaction(const ByteData &buffer) :
 				_isRegistered(false),
 				_payload(nullptr) {
-
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
+			setPayloadByTransactionType();
 			convertFrom(_transaction);
 		}
 
@@ -42,6 +44,7 @@ namespace Elastos {
 
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
+			setPayloadByTransactionType();
 			convertFrom(_transaction);
 
 			_transaction->blockHeight = blockHeight;
@@ -50,7 +53,7 @@ namespace Elastos {
 
 		Transaction::~Transaction() {
 			if (_transaction != nullptr)
-				BRTransactionFree(_transaction);
+				ELABRTransactionFree((ELABRTransaction*)_transaction);
 		}
 
 		std::string Transaction::toString() const {
@@ -76,6 +79,38 @@ namespace Elastos {
 
 		uint32_t Transaction::getVersion() const {
 			return _transaction->version;
+		}
+
+		void Transaction::setTransactionType(Transaction::Type type) {
+			if (_type != type) {
+				_type = type;
+				setPayloadByTransactionType();
+			}
+		}
+
+		Transaction::Type Transaction::getTransactionType() const {
+			return _type;
+		}
+
+		void Transaction::setPayloadByTransactionType() {
+			if (_type == CoinBase) {
+				_payload = boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
+
+			} else if (_type == RegisterAsset) {
+
+			} else if (_type == TransferAsset) {
+
+			} else if (_type == Record) {
+
+			} else if (_type == Deploy) {
+
+			} else if (_type == SideMining) {
+
+			} else if (_type == IssueToken) {
+
+			} else if (_type == TransferCrossChainAsset) {
+
+			}
 		}
 
 		const SharedWrapperList<TransactionInput, BRTxInput *> &Transaction::getInputs() const {
@@ -126,7 +161,7 @@ namespace Elastos {
 
 		const SharedWrapperList<TransactionOutput, BRTxOutput *> &Transaction::getOutputs() const {
 
-			if(_outputs.empty()) {
+			if (_outputs.empty()) {
 				for (int i = 0; i < _transaction->outCount; i++) {
 					BRTxOutput *output = new BRTxOutput;
 					transactionOutputCopy(output, &_transaction->outputs[i]);
@@ -186,15 +221,15 @@ namespace Elastos {
 		void Transaction::addInput(const TransactionInput &input) {
 
 			BRTransactionAddInput(_transaction, input.getHash(), input.getIndex(), input.getAmount(),
-								  input.getScript().data, input.getScript().length,
-								  input.getSignature().data, input.getSignature().length,
-								  input.getSequence());
+			                      input.getScript().data, input.getScript().length,
+			                      input.getSignature().data, input.getSignature().length,
+			                      input.getSequence());
 		}
 
 		void Transaction::addOutput(const TransactionOutput &output) {
 
 			BRTransactionAddOutput(_transaction, output.getAmount(),
-								   output.getScript().data, output.getScript().length);
+			                       output.getScript().data, output.getScript().length);
 		}
 
 		void Transaction::shuffleOutputs() {
@@ -253,35 +288,41 @@ namespace Elastos {
 			_payload->Serialize(ostream);
 
 			uint8_t attributeLengthData[64 / 8];
+			memset(attributeLengthData, 0, sizeof(attributeLengthData));
+
 			UInt64SetLE(attributeLengthData, _attributes.size());
-			ostream.putBytes(attributeLengthData, 64 / 8);
+			ostream.putBytes(attributeLengthData, sizeof(attributeLengthData));
 			for (size_t i = 0; i < _attributes.size(); i++) {
 				_attributes[i]->Serialize(ostream);
 			}
 
 			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
 			uint8_t inputLengthData[64 / 8];
+			memset(inputLengthData, 0, sizeof(inputLengthData));
 			UInt64SetLE(inputLengthData, inputs.size());
-			ostream.putBytes(inputLengthData, 64 / 8);
+			ostream.putBytes(inputLengthData, sizeof(inputLengthData));
 			for (size_t i = 0; i < inputs.size(); i++) {
 				inputs[i]->Serialize(ostream);
 			}
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
 			uint8_t outputLengthData[64 / 8];
+			memset(outputLengthData, 0, sizeof(outputLengthData));
 			UInt64SetLE(outputLengthData, outputs.size());
-			ostream.putBytes(outputLengthData, 64 / 8);
+			ostream.putBytes(outputLengthData, sizeof(outputLengthData));
 			for (size_t i = 0; i < outputs.size(); i++) {
 				outputs[i]->Serialize(ostream);
 			}
 
-			uint8_t lockTimeData[32/8];
+			uint8_t lockTimeData[32 / 8];
+			memset(lockTimeData, 0, sizeof(lockTimeData));
 			UInt32SetLE(lockTimeData, _transaction->lockTime);
-			ostream.putBytes(lockTimeData, 32/8);
+			ostream.putBytes(lockTimeData, sizeof(lockTimeData));
 
 			uint8_t programLengthData[64 / 8];
+			memset(programLengthData, 0, sizeof(programLengthData));
 			UInt64SetLE(programLengthData, _programs.size());
-			ostream.putBytes(programLengthData, 64 / 8);
+			ostream.putBytes(programLengthData, sizeof(programLengthData));
 			for (size_t i = 0; i < _programs.size(); i++) {
 				_programs[i]->Serialize(ostream);
 			}
@@ -289,14 +330,15 @@ namespace Elastos {
 
 		void Transaction::Deserialize(ByteStream &istream) {
 			_type = Type(istream.get());
+			setPayloadByTransactionType();
 
 			_payloadVersion = istream.get();
 
-			assert(_payload != nullptr);
 			_payload->Deserialize(istream);
 
 			uint8_t attributeLengthData[64 / 8];
-			istream.getBytes(attributeLengthData, 64 / 8);
+			memset(attributeLengthData, 0, sizeof(attributeLengthData));
+			istream.getBytes(attributeLengthData, sizeof(attributeLengthData));
 			uint64_t attributeLength = UInt64GetLE(attributeLengthData);
 			_attributes.resize(attributeLength);
 			for (size_t i = 0; i < attributeLength; i++) {
@@ -305,7 +347,8 @@ namespace Elastos {
 			}
 
 			uint8_t inputLengthData[64 / 8];
-			istream.getBytes(inputLengthData, 64 / 8);
+			memset(inputLengthData, 0, sizeof(inputLengthData));
+			istream.getBytes(inputLengthData, sizeof(inputLengthData));
 			uint64_t inputLength = UInt64GetLE(inputLengthData);
 			_inputs.resize(inputLength);
 			for (size_t i = 0; i < inputLength; i++) {
@@ -314,7 +357,7 @@ namespace Elastos {
 			}
 
 			uint8_t outputLengthData[64 / 8];
-			istream.getBytes(outputLengthData, 64 / 8);
+			istream.getBytes(outputLengthData, sizeof(outputLengthData));
 			uint64_t outputLength = UInt64GetLE(outputLengthData);
 			_outputs.resize(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
@@ -322,12 +365,12 @@ namespace Elastos {
 				_outputs[i]->Deserialize(istream);
 			}
 
-			uint8_t lockTimeData[32/8];
-			istream.getBytes(lockTimeData, 32/8);
+			uint8_t lockTimeData[32 / 8];
+			istream.getBytes(lockTimeData, sizeof(lockTimeData));
 			_transaction->lockTime = UInt32GetLE(lockTimeData);
 
 			uint8_t programLengthData[64 / 8];
-			istream.getBytes(programLengthData, 64 / 8);
+			istream.getBytes(programLengthData, sizeof(programLengthData));
 			uint64_t programLength = UInt64GetLE(programLengthData);
 			_programs.resize(programLength);
 			for (size_t i = 0; i < programLength; i++) {
@@ -336,13 +379,121 @@ namespace Elastos {
 		}
 
 		BRTransaction *Transaction::convertToRaw() const {
-			//todo complete me
-			return nullptr;
+			ELABRTransaction *transaction = ELABRTransactionNew();
+			transaction->raw.txHash = _transaction->txHash;
+			transaction->raw.version = _transaction->version;
+			transaction->raw.blockHeight = _transaction->blockHeight;
+			transaction->raw.inCount = _transaction->inCount;
+			transaction->raw.lockTime = _transaction->lockTime;
+			transaction->raw.timestamp = _transaction->timestamp;
+			transaction->raw.outCount = _transaction->outCount;
+
+			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
+			ssize_t len = inputs.size();
+			TransactionInput *input = nullptr;
+			for (ssize_t i = 0; i < len; ++i) {
+				input = inputs[i].get();
+				BRTransactionAddInput(&transaction->raw, input->getHash(), input->getIndex(), input->getAmount(),
+				                      input->getScript().data, input->getScript().length, input->getSignature().data,
+				                      input->getSignature().length, input->getSequence());
+			}
+
+			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
+			len = outputs.size();
+			TransactionOutput *output = nullptr;
+			uint8_t *scriptPubkey = nullptr;
+
+			for (ssize_t i = 0; i < len; i++) {
+				output = outputs[i].get();
+				BRTransactionAddOutput(&transaction->raw, output->getAmount(), output->getScript().data,
+				                       output->getScript().length);
+			}
+
+			transaction->type = _type;
+			transaction->payloadVersion = _payloadVersion;
+			ByteStream byteStream;
+			_payload->Serialize(byteStream);
+			transaction->payloadData.length = byteStream.length();
+			if (transaction->payloadData.length > 0) {
+				transaction->payloadData.data = byteStream.getBuf();
+			}
+
+			transaction->attributeData.clear();
+			len = _attributes.size();
+			for (ssize_t i = 0; i < len; i++) {
+				AttributePtr attr = _attributes[i];
+				byteStream.reSet();
+				attr->Serialize(byteStream);
+				transaction->attributeData.push_back(ByteData(byteStream.getBuf(), (size_t)byteStream.length()));
+			}
+
+			transaction->programData.clear();
+			len = _programs.size();
+			for (ssize_t i = 0; i < len; i++) {
+
+				ProgramPtr programPtr = _programs[i];
+				byteStream.reSet();
+				programPtr->Serialize(byteStream);
+				ByteData programBytes(byteStream.getBuf(), (size_t)byteStream.length());
+				transaction->programData.push_back(programBytes);
+			}
+
+			return (BRTransaction *) transaction;
 		}
 
-		void Transaction::convertFrom(BRTransaction *raw) {
-			//todo complete me
-		}
+		void Transaction::convertFrom(const BRTransaction *raw) {
+			assert(raw != nullptr);
 
+			ELABRTransaction *elabrTransaction = ELABRTransactionNew();
+
+			memcpy(elabrTransaction, raw, sizeof(*elabrTransaction));
+
+			_inputs.clear();
+			getInputs();
+
+			_outputs.clear();
+			getOutputs();
+
+			_type = (Type) elabrTransaction->type;
+			_payloadVersion = elabrTransaction->payloadVersion;
+
+			setPayloadByTransactionType();
+			if (elabrTransaction->payloadData.data && elabrTransaction->payloadData.length > 0) {
+				uint8_t *data = new uint8_t[elabrTransaction->payloadData.length];
+				memcpy(data, elabrTransaction->payloadData.data, elabrTransaction->payloadData.length);
+				ByteStream byteStream1(data, elabrTransaction->payloadData.length);
+				_payload->Deserialize(byteStream1);
+			}
+
+			_attributes.clear();
+			ssize_t len = elabrTransaction->attributeData.size();
+			if (len > 0) {
+				for (ssize_t i = 0; i < len; ++i) {
+					ByteData byteData = elabrTransaction->attributeData[i];
+					uint8_t *data = new uint8_t[byteData.length];
+					memcpy(data, byteData.data, byteData.length);
+					ByteStream byteStream1(data, byteData.length);
+					AttributePtr attr(new Attribute());
+					attr->Deserialize(byteStream1);
+					_attributes.push_back(attr);
+				}
+			}
+
+			_programs.clear();
+			len = elabrTransaction->programData.size();
+			if(len > 0) {
+				for (ssize_t i = 0; i < len; i++) {
+					ByteData byteData = elabrTransaction->programData[i];
+					uint8_t *data = new uint8_t[byteData.length];
+					memcpy(data, byteData.data, byteData.length);
+					ByteStream byteStream(data, byteData.length);
+					ProgramPtr programPtr(new Program);
+					programPtr->Deserialize(byteStream);
+					_programs.push_back(programPtr);
+				}
+			}
+
+			ELABRTransactionFree(elabrTransaction);
+		}
 	}
 }

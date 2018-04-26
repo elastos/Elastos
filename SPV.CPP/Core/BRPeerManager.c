@@ -701,7 +701,7 @@ static void _peerConnected(void *info)
         BRPeerDisconnect(peer);
     }
     else if ((peer->services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
-        peer_log(peer, "peer->services: %lu != SERVICES_NODE_NETWORK", peer->services);
+        peer_log(peer, "peer->services: %llu != SERVICES_NODE_NETWORK", peer->services);
         peer_log(peer, "node doesn't carry full blocks");
         BRPeerDisconnect(peer);
     }

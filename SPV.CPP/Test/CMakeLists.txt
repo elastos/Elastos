@@ -20,6 +20,7 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Wrapper"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Database"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/ELACoreExt"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
 )
