@@ -46,22 +46,10 @@ After importing dependencies from Carrier native, you need Android Studio to ope
 
 ### 4. Output (To complete)
 
-The output distributions after build include Carrier jar package and JNI shared libraries to each CPU arch, where the structure listed below:
+After building with success, the output dist named 'org.elastos.carrier-debug.aar' carrying jar package and JNI shared libraries to different CPU arch would be put under the directory:
 
 ```
-build/outputs
-	|--elacarrier.jar
-	|--libs
-		|--armeabi
-          |--libcarrierjni.so
-       |--armeabi-v7a
-          |--libcarrierjni.so
-       |--arm64-v8a
-          |--libcarrierjni.so
-       |--x86
-          |--libcarrierjni.so
-       |--x86-64
-          |--libcarrierjni.so
+build/outputs/aar
 ```
 
 ## Basic Tests
