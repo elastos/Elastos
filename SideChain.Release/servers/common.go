@@ -1,90 +1,75 @@
 package servers
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
-	. "github.com/elastos/Elastos.ELA.SideChain/errors"
-	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
-
-	ela "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA/core"
 )
 
 const TlsPort = 443
 
-var NodeForServers Noder
-var Pow *blockchain.PowService
-
-type TxAttributeInfo struct {
-	Usage ela.AttributeUsage
-	Data  string
+type AttributeInfo struct {
+	Usage AttributeUsage `json:"usage"`
+	Data  string         `json:"data"`
 }
 
-type UTXOTxInputInfo struct {
-	ReferTxID          string
-	ReferTxOutputIndex uint16
-	Sequence           uint32
-	Address            string
-	Value              string
+type InputInfo struct {
+	TxID     string `json:"txid"`
+	VOut     uint16 `json:"vout"`
+	Sequence uint32 `json:"sequence"`
 }
 
-type TxoutputInfo struct {
-	AssetID    string
-	Value      string
-	Address    string
-	OutputLock uint32
+type OutputInfo struct {
+	Value      string `json:"value"`
+	Index      uint32 `json:"n"`
+	Address    string `json:"address"`
+	AssetID    string `json:"assetid"`
+	OutputLock uint32 `json:"outputlock"`
 }
 
 type ProgramInfo struct {
-	Code      string
-	Parameter string
+	Code      string `json:"code"`
+	Parameter string `json:"parameter"`
 }
 
-type Transactions struct {
-	TxType         ela.TransactionType
-	PayloadVersion byte
-	Payload        PayloadInfo
-	Attributes     []TxAttributeInfo
-	UTXOInputs     []UTXOTxInputInfo
-	Outputs        []TxoutputInfo
-	LockTime       uint32
-	Programs       []ProgramInfo
-
-	Timestamp     uint32 `json:",omitempty"`
-	Confirmations uint32 `json:",omitempty"`
-	TxSize        uint32 `json:",omitempty"`
-	Hash          string
-}
-
-type AuxInfo struct {
-	Version    uint32
-	PrevBlock  string
-	MerkleRoot string
-	Timestamp  uint32
-	Bits       uint32
-	Nonce      uint32
-}
-
-type BlockHead struct {
-	Version          uint32
-	PrevBlockHash    string
-	TransactionsRoot string
-	Timestamp        uint32
-	Bits             uint32
-	Height           uint32
-	Nonce            uint32
-	AuxPow           *AuxInfo
-	Difficulty       string
-	BlockSize        int
-	Hash             string
+type TransactionInfo struct {
+	TxId           string          `json:"txid"`
+	Hash           string          `json:"hash"`
+	Size           uint32          `json:"size"`
+	VSize          uint32          `json:"vsize"`
+	Version        uint32          `json:"version"`
+	LockTime       uint32          `json:"locktime"`
+	Inputs         []InputInfo     `json:"vin"`
+	Outputs        []OutputInfo    `json:"vout"`
+	BlockHash      string          `json:"blockhash"`
+	Confirmations  uint32          `json:"confirmations"`
+	Time           uint32          `json:"time"`
+	BlockTime      uint32          `json:"blocktime"`
+	TxType         TransactionType `json:"type"`
+	PayloadVersion byte            `json:"payloadversion"`
+	Payload        PayloadInfo     `json:"payload"`
+	Attributes     []AttributeInfo `json:"attributes"`
+	Programs       []ProgramInfo   `json:"programs"`
 }
 
 type BlockInfo struct {
-	Hash          string
-	BlockData     *BlockHead
-	Transactions  []*Transactions
-	Confirmations uint32
-	MinerInfo     string
+	Hash              string        `json:"hash"`
+	Confirmations     uint32        `json:"confirmations"`
+	StrippedSize      uint32        `json:"strippedsize"`
+	Size              uint32        `json:"size"`
+	Weight            uint32        `json:"weight"`
+	Height            uint32        `json:"height"`
+	Version           uint32        `json:"version"`
+	VersionHex        string        `json:"versionhex"`
+	MerkleRoot        string        `json:"merkleroot"`
+	Tx                []interface{} `json:"tx"`
+	Time              uint32        `json:"time"`
+	MedianTime        uint32        `json:"mediantime"`
+	Nonce             uint32        `json:"nonce"`
+	Bits              uint32        `json:"bits"`
+	Difficulty        string        `json:"difficulty"`
+	ChainWork         string        `json:"chainwork"`
+	PreviousBlockHash string        `json:"previousblockhash"`
+	NextBlockHash     string        `json:"nextblockhash"`
+	AuxPow            string        `json:"auxpow"`
 }
 
 type NodeInfo struct {
@@ -112,7 +97,7 @@ type CoinbaseInfo struct {
 }
 
 type RegisterAssetInfo struct {
-	Asset      ela.Asset
+	Asset      Asset
 	Amount     string
 	Controller string
 }
@@ -127,55 +112,4 @@ type TransferCrossChainAssetInfo struct {
 
 type WithdrawAssetInfo struct {
 	BlockHeight uint32
-}
-
-func TransPayloadToHex(p ela.Payload) PayloadInfo {
-	switch object := p.(type) {
-	case *ela.PayloadCoinBase:
-		obj := new(CoinbaseInfo)
-		obj.CoinbaseData = string(object.CoinbaseData)
-		return obj
-	case *ela.PayloadRegisterAsset:
-		obj := new(RegisterAssetInfo)
-		obj.Asset = object.Asset
-		obj.Amount = object.Amount.String()
-		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
-		return obj
-	case *ela.PayloadSideMining:
-		obj := new(SideMiningInfo)
-		obj.SideBlockHash = object.SideBlockHash.String()
-		return obj
-	case *ela.PayloadWithdrawAsset:
-		obj := new(WithdrawAssetInfo)
-		obj.BlockHeight = object.BlockHeight
-		return obj
-	case *ela.PayloadTransferCrossChainAsset:
-		obj := new(TransferCrossChainAssetInfo)
-		obj.AddressesMap = object.AddressesMap
-		return obj
-	case *ela.PayloadTransferAsset:
-	case *ela.PayloadRecord:
-	}
-	return nil
-}
-
-func VerifyAndSendTx(txn *ela.Transaction) ErrCode {
-	// if transaction is verified unsucessfully then will not put it into transaction pool
-	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
-		log.Warn("Can NOT add the transaction to TxnPool")
-		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool.")
-		return errCode
-	}
-	if err := NodeForServers.Relay(nil, txn); err != nil {
-		log.Error("Xmit Tx Error:Relay transaction failed.", err)
-		return ErrXmitFail
-	}
-	return Success
-}
-
-func ResponsePack(errCode ErrCode, result interface{}) map[string]interface{} {
-	if errCode != 0 && (result == "" || result == nil) {
-		result = ErrMap[errCode]
-	}
-	return map[string]interface{}{"Result": result, "Error": errCode}
 }
