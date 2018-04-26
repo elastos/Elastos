@@ -75,8 +75,7 @@ namespace Elastos {
 					for (i = 0; i < blockCount; i++) {
 						UInt256Get(&blockHashes[i], blocks[i]);
 						// remember blockHashes in case we need to re-request them with an updated bloom filter
-						//todo complete me with no error
-						//array_add((UInt256 *)ctx->knownBlockHashes, (void *)blockHashes[i]);
+						array_add(ctx->knownBlockHashes, blockHashes[i]);
 					}
 
 					while (array_count(ctx->knownBlockHashes) > MAX_GETDATA_HASHES) {

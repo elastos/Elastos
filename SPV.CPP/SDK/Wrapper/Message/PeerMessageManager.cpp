@@ -17,6 +17,7 @@
 #include "AddressMessage.h"
 #include "BloomFilterMessage.h"
 #include "NotFoundMessage.h"
+#include "GetBlocksMessage.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -119,6 +120,15 @@ namespace Elastos {
 
 				fun(peer, filter);
 			}
+
+			void BRPeerSendGetblocks(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop) {
+				GetBlocksMessage *message = static_cast<GetBlocksMessage *>(
+						PeerMessageManager::instance().getMessage(MSG_GETBLOCKS).get());
+				boost::function<void(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop)> fun =
+						boost::bind(&GetBlocksMessage::SendGetBlocks, message, _1, _2, _3, _4);
+
+				fun(peer, locators, locatorsCount, hashStop);
+			}
 		}
 
 		PeerMessageManager PeerMessageManager::_instance = PeerMessageManager();
@@ -157,6 +167,11 @@ namespace Elastos {
 
 			peerManager->peerMessages->BRPeerSendFilterloadMessage = BRPeerSendFilterload;
 			_wrapperMessages[MSG_FILTERLOAD] = WrapperMessagePtr(new BloomFilterMessage);
+
+			peerManager->peerMessages->BRPeerSendGetblocksMessage = BRPeerSendGetblocks;
+			_messages[MSG_GETBLOCKS] = MessagePtr(new GetBlocksMessage);
+
+			peerManager->peerMessages->BRPeerSendGetheadersMessage = BRPeerSendGetblocks;
 		}
 
 		PeerMessageManager &PeerMessageManager::instance() {
