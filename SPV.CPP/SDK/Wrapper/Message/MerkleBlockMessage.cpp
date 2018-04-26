@@ -48,8 +48,7 @@ namespace Elastos {
 
 				for (size_t i = count; i > 0; i--) { // reverse order for more efficient removal as tx arrive
 					if (BRSetContains(ctx->knownTxHashSet, &hashes[i - 1])) continue;
-					//fixme let the compile pass
-					//array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
+					array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
 				}
 
 				if (hashes != _hashes) free(hashes);
