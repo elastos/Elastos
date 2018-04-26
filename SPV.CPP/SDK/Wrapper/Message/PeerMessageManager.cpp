@@ -18,6 +18,7 @@
 #include "BloomFilterMessage.h"
 #include "NotFoundMessage.h"
 #include "GetBlocksMessage.h"
+#include "GetDataMessage.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -51,63 +52,63 @@ namespace Elastos {
 
 			int BRPeerAcceptVersionMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				VersionMessage *message = static_cast<VersionMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_VERSION).get());
+						PeerMessageManager::instance().getMessage(MSG_VERSION).get());
 				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-					boost::bind(&VersionMessage::Accept, message, _1, _2, _3);
+						boost::bind(&VersionMessage::Accept, message, _1, _2, _3);
 
 				return fun(peer, msg, msgLen);
 			}
 
 			void BRPeerSendVersionMessage(BRPeer *peer) {
 				VersionMessage *message = static_cast<VersionMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_VERSION).get());
-				boost::function<void (BRPeer *peer)> fun =
-					boost::bind(&VersionMessage::Send, message, _1);
+						PeerMessageManager::instance().getMessage(MSG_VERSION).get());
+				boost::function<void(BRPeer *peer)> fun =
+						boost::bind(&VersionMessage::Send, message, _1);
 
 				fun(peer);
 			}
 
 			int BRPeerAcceptAddressMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				AddressMessage *message = static_cast<AddressMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_ADDR).get());
+						PeerMessageManager::instance().getMessage(MSG_ADDR).get());
 				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-					boost::bind(&AddressMessage::Accept, message, _1, _2, _3);
+						boost::bind(&AddressMessage::Accept, message, _1, _2, _3);
 
 				return fun(peer, msg, msgLen);
 			}
 
 			void BRPeerSendAddressMessage(BRPeer *peer) {
 				AddressMessage *message = static_cast<AddressMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_ADDR).get());
-				boost::function<void (BRPeer *peer)> fun =
-					boost::bind(&AddressMessage::Send, message, _1);
+						PeerMessageManager::instance().getMessage(MSG_ADDR).get());
+				boost::function<void(BRPeer *peer)> fun =
+						boost::bind(&AddressMessage::Send, message, _1);
 
 				fun(peer);
 			}
 
 			int BRPeerAcceptInventoryMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				InventoryMessage *message = static_cast<InventoryMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_INV).get());
+						PeerMessageManager::instance().getMessage(MSG_INV).get());
 				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-					boost::bind(&InventoryMessage::Accept, message, _1, _2, _3);
+						boost::bind(&InventoryMessage::Accept, message, _1, _2, _3);
 
 				return fun(peer, msg, msgLen);
 			}
 
 			void BRPeerSendInventoryMessage(BRPeer *peer, const UInt256 txHashes[], size_t txCount) {
 				InventoryMessage *message = static_cast<InventoryMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_INV).get());
-				boost::function<void (BRPeer *peer, const UInt256 txHashes[], size_t txCount)> fun =
-					boost::bind(&InventoryMessage::Send, message, _1, _2, _3);
+						PeerMessageManager::instance().getMessage(MSG_INV).get());
+				boost::function<void(BRPeer *peer, const UInt256 txHashes[], size_t txCount)> fun =
+						boost::bind(&InventoryMessage::Send, message, _1, _2, _3);
 
 				fun(peer, txHashes, txCount);
 			}
 
 			int BRPeerAcceptNotFoundMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				NotFoundMessage *message = static_cast<NotFoundMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_GETADDR).get());
+						PeerMessageManager::instance().getMessage(MSG_GETADDR).get());
 				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-					boost::bind(&NotFoundMessage::Accept, message, _1, _2, _3);
+						boost::bind(&NotFoundMessage::Accept, message, _1, _2, _3);
 
 				return fun(peer, msg, msgLen);
 			}
@@ -124,10 +125,21 @@ namespace Elastos {
 			void BRPeerSendGetblocks(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop) {
 				GetBlocksMessage *message = static_cast<GetBlocksMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_GETBLOCKS).get());
-				boost::function<void(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop)> fun =
+				boost::function<void(BRPeer *, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop)> fun =
 						boost::bind(&GetBlocksMessage::SendGetBlocks, message, _1, _2, _3, _4);
 
 				fun(peer, locators, locatorsCount, hashStop);
+			}
+
+			void BRPeerSendGetdata(BRPeer *peer, const UInt256 txHashes[], size_t txCount,
+								   const UInt256 blockHashes[], size_t blockCount) {
+				GetDataMessage *message = static_cast<GetDataMessage *>(
+						PeerMessageManager::instance().getMessage(MSG_GETDATA).get());
+				boost::function<void(BRPeer *peer, const UInt256 txHashes[], size_t txCount,
+									 const UInt256 blockHashes[], size_t blockCount)> fun =
+						boost::bind(&GetDataMessage::SendGetData, message, _1, _2, _3, _4, _5);
+
+				fun(peer, txHashes, txCount, blockHashes, blockCount);
 			}
 		}
 
@@ -171,7 +183,11 @@ namespace Elastos {
 			peerManager->peerMessages->BRPeerSendGetblocksMessage = BRPeerSendGetblocks;
 			_messages[MSG_GETBLOCKS] = MessagePtr(new GetBlocksMessage);
 
+			//use same message with getblocks
 			peerManager->peerMessages->BRPeerSendGetheadersMessage = BRPeerSendGetblocks;
+
+			peerManager->peerMessages->BRPeerSendGetdataMessage = BRPeerSendGetdata;
+			_messages[MSG_GETDATA] = MessagePtr(new GetDataMessage);
 		}
 
 		PeerMessageManager &PeerMessageManager::instance() {
