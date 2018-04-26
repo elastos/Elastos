@@ -42,32 +42,291 @@
 #include "dht.h"
 #include "dht_callbacks.h"
 
-#define ELAF_DHT  6
-
-#define ELA_MK_ERROR(facility, code)  (0x80000000 | ((facility) << 24) | \
-                    ((((code) & 0x80000000) >> 8) | ((code) & 0x7FFFFFFF)))
-
-#define DHT_ERROR(api_error, error) ELA_MK_ERROR(ELAF_DHT, ((api_error) << 16 | error))
+#include "ela_carrier.h"
 
 const char *data_filename = "dhtdata";
-
-enum {
-    ERR_NEW_DHT = 1,
-    ERR_SELF_SET_NAME = 2,
-    ERR_SELF_SET_STATUS_MESSAGE = 3,
-    ERR_FRIEND_QUERY = 4,
-    ERR_FRIEND_BY_PUBLIC_KEY = 5,
-    ERR_FRIEND_GET_PUBLIC_KEY = 6,
-    ERR_FRIEND_ADD = 7,
-    ERR_FRIEND_SEND_MESSAGE = 8,
-    ERR_FRIEND_DELETE = 9,
-    ERR_BOOTSTRAP = 10
-};
 
 struct DHT {
     Tox *tox;
     const char *data_dir;
 };
+
+static inline int __dht_new_error(TOX_ERR_NEW code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_NEW_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_NEW_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_NEW_MALLOC:
+        rc = ELA_DHT_ERROR(ELAERR_OUT_OF_MEMORY);
+        break;
+
+    case TOX_ERR_NEW_PORT_ALLOC:
+        rc = ELA_DHT_ERROR(ELAERR_PORT_ALLOC);
+        break;
+
+    case TOX_ERR_NEW_PROXY_BAD_TYPE:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_PROXY_TYPE);
+        break;
+
+    case TOX_ERR_NEW_PROXY_BAD_HOST:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_PROXY_HOST);
+        break;
+
+    case TOX_ERR_NEW_PROXY_BAD_PORT:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_PROXY_PORT);
+        break;
+
+    case TOX_ERR_NEW_PROXY_NOT_FOUND:
+        rc = ELA_DHT_ERROR(ELAERR_PROXY_NOT_AVAILABLE);
+        break;
+
+    case TOX_ERR_NEW_LOAD_ENCRYPTED:
+        rc = ELA_DHT_ERROR(ELAERR_ENCRYPTED_PERSISTENT_DATA);
+        break;
+
+    case TOX_ERR_NEW_LOAD_BAD_FORMAT:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_PERSISTENT_DATA);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_bootstrap_error(TOX_ERR_BOOTSTRAP code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_BOOTSTRAP_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_BOOTSTRAP_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_BOOTSTRAP_BAD_HOST:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_BOOTSTRAP_HOST);
+        break;
+
+    case TOX_ERR_BOOTSTRAP_BAD_PORT:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_BOOTSTRAP_PORT);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_friend_query_error(TOX_ERR_FRIEND_QUERY code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_FRIEND_QUERY_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_FRIEND_QUERY_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND:
+        rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_friend_get_pk_error(TOX_ERR_FRIEND_GET_PUBLIC_KEY code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_FRIEND_GET_PUBLIC_KEY_FRIEND_NOT_FOUND:
+        rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_set_info_error(TOX_ERR_SET_INFO code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_SET_INFO_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_SET_INFO_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_SET_INFO_TOO_LONG:
+        rc = ELA_DHT_ERROR(ELAERR_TOO_LONG);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_friend_by_pk_error(TOX_ERR_FRIEND_BY_PUBLIC_KEY code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_FRIEND_BY_PUBLIC_KEY_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_FRIEND_BY_PUBLIC_KEY_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND:
+        rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_friend_add_error(TOX_ERR_FRIEND_ADD code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_FRIEND_ADD_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_FRIEND_ADD_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_FRIEND_ADD_TOO_LONG:
+        rc = ELA_DHT_ERROR(ELAERR_TOO_LONG);
+        break;
+
+    case TOX_ERR_FRIEND_ADD_NO_MESSAGE:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_FRIEND_ADD_OWN_KEY:
+        rc = ELA_DHT_ERROR(ELAERR_ADD_SELF);
+        break;
+
+    case TOX_ERR_FRIEND_ADD_ALREADY_SENT:
+        rc = ELA_DHT_ERROR(ELAERR_ALREADY_EXIST);
+        break;
+
+    case TOX_ERR_FRIEND_ADD_BAD_CHECKSUM:
+    case TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM:
+        rc = ELA_DHT_ERROR(ELAERR_BAD_ADDRESS);
+        break;
+
+    case TOX_ERR_FRIEND_ADD_MALLOC:
+        rc = ELA_DHT_ERROR(ELAERR_OUT_OF_MEMORY);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_friend_send_msg_error(TOX_ERR_FRIEND_SEND_MESSAGE code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_FRIEND_SEND_MESSAGE_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_FRIEND_SEND_MESSAGE_NULL:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    case TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_FOUND:
+        rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+        break;
+
+    case TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_CONNECTED:
+        rc = ELA_DHT_ERROR(ELAERR_FRIEND_OFFLINE);
+        break;
+
+    case TOX_ERR_FRIEND_SEND_MESSAGE_SENDQ:
+        rc = ELA_DHT_ERROR(ELAERR_OUT_OF_MEMORY);
+        break;
+
+    case TOX_ERR_FRIEND_SEND_MESSAGE_TOO_LONG:
+        rc = ELA_DHT_ERROR(ELAERR_TOO_LONG);
+        break;
+
+    case TOX_ERR_FRIEND_SEND_MESSAGE_EMPTY:
+        rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_friend_delete_error(TOX_ERR_FRIEND_DELETE code)
+{
+    int rc;
+
+    switch (code) {
+    case TOX_ERR_FRIEND_DELETE_OK:
+        rc = ELASUCCESS;
+        break;
+
+    case TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND:
+        rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+        break;
+
+    default:
+        rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
 
 static bool is_connected(TOX_CONNECTION connection)
 {
@@ -232,7 +491,7 @@ int dht_new(const char *data_location, bool udp_enabled, DHT *dht)
     tox = tox_new(&options, &error);
     if (!tox) {
         vlogE("DHT: new dht error (%d).", error);
-        return DHT_ERROR(ERR_NEW_DHT, error);
+        return __dht_new_error(error);
     }
 
     tox_callback_self_connection_status(tox, notify_connection_cb);
@@ -277,13 +536,13 @@ int dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
         success = tox_bootstrap(tox, ipv4, (uint16_t)port, address, &error);
         if (!success) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv4, port, error);
-            return DHT_ERROR(ERR_BOOTSTRAP, error);
+            return __dht_bootstrap_error(error);
         }
 
         success = tox_add_tcp_relay(tox, ipv4, (uint16_t)port, address, &error);
         if (!success)  {
             vlogE("DHT: add tcp relay %s:%d error (%d).", ipv4, port, error);
-            return DHT_ERROR(ERR_BOOTSTRAP, error);
+            return __dht_bootstrap_error(error);
         }
     }
 
@@ -291,13 +550,13 @@ int dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
         success = tox_bootstrap(tox, ipv6, (uint16_t)port, address, &error);
         if (!success) {
             vlogE("DHT: add bootstrap %s:%d error (%d).", ipv6, port, error);
-            return DHT_ERROR(ERR_BOOTSTRAP, error);
+            return __dht_bootstrap_error(error);
         }
 
         success = tox_add_tcp_relay(tox, ipv6, (uint16_t)port, address, &error);
         if (!success)  {
             vlogE("DHT: add tcp relay %s:%d error (%d).", ipv6, port, error);
-            return DHT_ERROR(ERR_BOOTSTRAP, error);
+            return __dht_bootstrap_error(error);
         }
     }
 
@@ -409,26 +668,26 @@ int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context)
                                                       &error);
         if (error != TOX_ERR_FRIEND_QUERY_OK) {
             vlogE("DHT: get friend status message size error (%d).", error);
-            return DHT_ERROR(ERR_FRIEND_QUERY, error);
+            return __dht_friend_query_error(error);
         }
 
         success = tox_friend_get_status_message(tox, friend_list[i], desc,
                                                 &error);
         if (!success) {
             vlogE("DHT: get friend status message error (%d).", error);
-            return DHT_ERROR(ERR_FRIEND_QUERY, error);
+            return __dht_friend_query_error(error);
         }
 
         user_status = tox_friend_get_status(tox, friend_list[i], &error);
         if (error != TOX_ERR_FRIEND_QUERY_OK) {
             vlogE("DHT: get friend user status error (%d).", error);
-            return DHT_ERROR(ERR_FRIEND_QUERY, error);
+            return __dht_friend_query_error(error);
         }
 
         success = tox_friend_get_public_key(tox, friend_list[i], public_key, &_error);
         if (!success) {
-            vlogE("DHT: get friend public key error (%d).", error);
-            return DHT_ERROR(ERR_FRIEND_GET_PUBLIC_KEY, error);
+            vlogE("DHT: get friend public key error (%d).", _error);
+            return __dht_friend_get_pk_error(_error);
         }
 
         success = cb(friend_list[i], public_key, (int)user_status, desc, desc_len,
@@ -496,7 +755,7 @@ int dht_self_set_name(DHT *dht, uint8_t *name, size_t length)
     success = tox_self_set_name(tox, name, length, &error);
     if (!success) {
         vlogE("DHT: set self name error (%d).", error);
-        return DHT_ERROR(ERR_SELF_SET_NAME, error);
+        return __dht_set_info_error(error);
     }
 
     return 0;
@@ -514,7 +773,7 @@ int dht_self_set_desc(DHT *dht, uint8_t *desc, size_t length)
     success = tox_self_set_status_message(tox, desc, length, &error);
     if (!success) {
         vlogE("DHT: set self description error (%d).", error);
-        return DHT_ERROR(ERR_SELF_SET_STATUS_MESSAGE, error);
+        return __dht_set_info_error(error);
     }
 
     return 0;
@@ -532,7 +791,7 @@ int dht_get_friend_number(DHT *dht, const uint8_t *public_key,
 
     *friend_number = tox_friend_by_public_key(tox, public_key, &error);
     if (*friend_number == UINT32_MAX)
-        return DHT_ERROR(ERR_FRIEND_BY_PUBLIC_KEY, error);
+        return __dht_friend_by_pk_error(error);
     else
         return 0;
 }
@@ -551,7 +810,7 @@ int dht_friend_add(DHT *dht, const uint8_t *address, const uint8_t *msg,
     fid = tox_friend_add(tox, address, msg, length, &error);
     if (fid == UINT32_MAX) {
         vlogW("DHT: add friend error (%d).", error);
-        return DHT_ERROR(ERR_FRIEND_ADD, error);
+        return __dht_friend_add_error(error);
     }
 
     if (friend_number)
@@ -573,7 +832,7 @@ int dht_friend_add_norequest(DHT *dht, const uint8_t *public_key,
     fid = tox_friend_add_norequest(tox, public_key, &error);
     if (fid == UINT32_MAX) {
         vlogE("DHT: add friend with no request error (%d).", error);
-        return DHT_ERROR(ERR_FRIEND_ADD, error);
+        return __dht_friend_add_error(error);
     }
 
     if (friend_number)
@@ -597,7 +856,7 @@ int dht_friend_message(DHT *dht, uint32_t friend_number, const uint8_t *data,
     if (error != TOX_ERR_FRIEND_SEND_MESSAGE_OK) {
         vlogW("DHT: send friend message to %lu error (%d).", friend_number,
               error);
-        return DHT_ERROR(ERR_FRIEND_SEND_MESSAGE, error);
+        return __dht_friend_send_msg_error(error);
     }
 
     return 0;
@@ -614,7 +873,7 @@ int dht_friend_delete(DHT *dht, uint32_t friend_number)
     tox_friend_delete(tox, friend_number, &error);
     if (error != TOX_ERR_FRIEND_DELETE_OK) {
         // vlogE("DHT: delete friend %d error (%d).", friend_number, error);
-        return DHT_ERROR(ERR_FRIEND_DELETE, error);
+        return __dht_friend_delete_error(error);
     }
 
     return 0;

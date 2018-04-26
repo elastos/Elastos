@@ -189,7 +189,7 @@ typedef struct ElaOptions {
      * to false will force Carrier node to use TCP only, which will potentially
      * slow down the message to run through.
      */
-    bool udp_enabled; 
+    bool udp_enabled;
 
     /**
      * \~English
@@ -1214,43 +1214,54 @@ int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
  * Error handling
  *****************************************************************************/
 
-#define ELASUCCESS                                0
+#define ELASUCCESS                                  0
 
 // Facility code
-#define ELAF_GENERAL                              1
-#define ELAF_SYS                                  2
-#define ELAF_HTTP                                 3
-#define ELAF_RESERVED2                            4
-#define ELAF_ICE                                  5
-#define ELAF_DHT                                  6
+#define ELAF_GENERAL                                0x01
+#define ELAF_SYS                                    0x02
+#define ELAF_HTTP                                   0x03
+#define ELAF_RESERVED2                              0x04
+#define ELAF_ICE                                    0x05
+#define ELAF_DHT                                    0x06
 
-
-#define ELAERR_INVALID_ARGS                       1
-#define ELAERR_OUT_OF_MEMORY                      2
-#define ELAERR_BUFFER_TOO_SMALL                   3
-#define ELAERR_BAD_PERSISTENT_DATA                4
-#define ELAERR_INVALID_PERSISTENCE_FILE           5
-#define ELAERR_INVALID_CONTROL_PACKET             6
-#define ELAERR_INVALID_CREDENTIAL                 7
-#define ELAERR_SERVER_FAILED                      8
-#define ELAERR_ALREADY_RUN                        9
-#define ELAERR_NOT_READY                          10
-#define ELAERR_NOT_EXIST                          11
-#define ELAERR_ALREADY_EXIST                      12
-#define ELAERR_NO_MATCHED_REQUEST                 13
-#define ELAERR_INVALID_USERID                     14
-#define ELAERR_INVALID_NODEID                     15
-#define ELAERR_INVALID_APPID                      16
-#define ELAERR_INVALID_DESCRIPTOR                 17
-#define ELAERR_WRONG_STATE                        18
-#define ELAERR_BUSY                               19
-#define ELAERR_LANGUAGE_BINDING                   20
-#define ELAERR_ENCRYPT                            21
-#define ELAERR_SDP_TOO_LONG                       22
-#define ELAERR_INVALID_SDP                        23
-#define ELAERR_NOT_IMPLEMENTED                    24
-#define ELAERR_LIMIT_EXCEEDED                     25
-#define ELAERR_UNKNOWN                            26
+#define ELAERR_INVALID_ARGS                         0x01
+#define ELAERR_OUT_OF_MEMORY                        0x02
+#define ELAERR_BUFFER_TOO_SMALL                     0x03
+#define ELAERR_BAD_PERSISTENT_DATA                  0x04
+#define ELAERR_INVALID_PERSISTENCE_FILE             0x05
+#define ELAERR_INVALID_CONTROL_PACKET               0x06
+#define ELAERR_INVALID_CREDENTIAL                   0x07
+#define ELAERR_SERVER_FAILED                        0x08
+#define ELAERR_ALREADY_RUN                          0x09
+#define ELAERR_NOT_READY                            0x0A
+#define ELAERR_NOT_EXIST                            0x0B
+#define ELAERR_ALREADY_EXIST                        0x0C
+#define ELAERR_NO_MATCHED_REQUEST                   0x0D
+#define ELAERR_INVALID_USERID                       0x0E
+#define ELAERR_INVALID_NODEID                       0x0F
+#define ELAERR_INVALID_APPID                        0x10
+#define ELAERR_INVALID_DESCRIPTOR                   0x11
+#define ELAERR_WRONG_STATE                          0x12
+#define ELAERR_BUSY                                 0x13
+#define ELAERR_LANGUAGE_BINDING                     0x14
+#define ELAERR_ENCRYPT                              0x15
+#define ELAERR_SDP_TOO_LONG                         0x16
+#define ELAERR_INVALID_SDP                          0x17
+#define ELAERR_NOT_IMPLEMENTED                      0x18
+#define ELAERR_LIMIT_EXCEEDED                       0x19
+#define ELAERR_PORT_ALLOC                           0x1A
+#define ELAERR_BAD_PROXY_TYPE                       0x1B
+#define ELAERR_BAD_PROXY_HOST                       0x1C
+#define ELAERR_BAD_PROXY_PORT                       0x1D
+#define ELAERR_PROXY_NOT_AVAILABLE                  0x1E
+#define ELAERR_ENCRYPTED_PERSISTENT_DATA            0x1F
+#define ELAERR_BAD_BOOTSTRAP_HOST                   0x20
+#define ELAERR_BAD_BOOTSTRAP_PORT                   0x21
+#define ELAERR_TOO_LONG                             0x22
+#define ELAERR_ADD_SELF                             0x23
+#define ELAERR_BAD_ADDRESS                          0x24
+#define ELAERR_FRIEND_OFFLINE                       0x25
+#define ELAERR_UNKNOWN                              0xFF
 
 #define ELA_MK_ERROR(facility, code)  (0x80000000 | ((facility) << 24) | \
                     ((((code) & 0x80000000) >> 8) | ((code) & 0x7FFFFFFF)))
