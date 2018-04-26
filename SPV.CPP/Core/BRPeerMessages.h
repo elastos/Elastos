@@ -79,8 +79,6 @@ typedef struct {
 } BRPeerContext;
 
 typedef struct {
-	void (*BRPeerSendVerackMessage)(BRPeer *peer);
-	int (*BRPeerAcceptVerackMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
 	void (*BRPeerSendVersionMessage)(BRPeer *peer);
 	int (*BRPeerAcceptVersionMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
@@ -91,8 +89,6 @@ typedef struct {
 	void (*BRPeerSendInventoryMessage)(BRPeer *peer, const UInt256 txHashes[], size_t txCount);
 	int (*BRPeerAcceptInventoryMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
-	void (*BRPeerSendGetAddressMessage)(BRPeer *peer);
-	int (*BRPeerAcceptGetAddressMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
 	void (*BRPeerSendTxMessage)(BRPeer *peer, BRTransaction *tx);
 	int (*BRPeerAcceptTxMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
@@ -103,18 +99,12 @@ typedef struct {
 
 	void (*BRPeerSendFilterloadMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
-	int (*BRPeerAcceptHeadersMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
-
 	void (*BRPeerSendGetheadersMessage)(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
 
 	void (*BRPeerSendGetdataMessage)(BRPeer *peer, const UInt256 txHashes[], size_t txCount, const UInt256 blockHashes[],
 						   size_t blockCount);
 	int (*BRPeerAcceptGetdataMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
-	void (*BRPeerSendPingMessage)(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
-	int (*BRPeerAcceptPingMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
-
-	int (*BRPeerAcceptPongMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
 	void (*BRPeerSendMempoolMessage)(BRPeer *peer, const UInt256 knownTxHashes[], size_t knownTxCount, void *info,
 						   void (*completionCallback)(void *info, int success));
@@ -130,8 +120,17 @@ typedef struct {
 
 BRPeerMessages *BRPeerMessageNew(void);
 
-void BRPeerMessageFree(BRPeerMessages *peerMessages);
-void BRPeerAddKnownTxHashes(const BRPeer *peer, const UInt256 txHashes[], size_t txCount);
+extern void BRPeerSendVerackMessage(BRPeer *peer);
+extern int BRPeerAcceptVerackMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+extern void BRPeerSendGetAddrMessage(BRPeer *peer);
+extern int BRPeerAcceptGetAddrMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+extern void BRPeerSendPingMessage(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
+extern int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+extern int BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+extern int BRPeerAcceptHeadersMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+extern void BRPeerMessageFree(BRPeerMessages *peerMessages);
+extern void BRPeerAddKnownTxHashes(const BRPeer *peer, const UInt256 txHashes[], size_t txCount);
 
 
 #ifdef __cplusplus

@@ -348,7 +348,7 @@ static void _updateFilterLoadDone(void *info, int success)
             peerInfo->peer = peer;
             peerInfo->manager = manager;
             BRPeerRerequestBlocks(manager->downloadPeer, manager->lastBlock->blockHash);
-			manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, peerInfo, _updateFilterRerequestDone);
+			BRPeerSendPingMessage(manager->downloadPeer, peerInfo, _updateFilterRerequestDone);
         }
         else manager->peerMessages->BRPeerSendMempoolMessage(peer, NULL, 0, NULL, NULL); // if not syncing, request mempool
 
@@ -371,7 +371,7 @@ static void _updateFilterPingDone(void *info, int success)
         if (manager->lastBlock->height < manager->estimatedHeight) { // if we're syncing, only update download peer
             if (manager->downloadPeer) {
                 _BRPeerManagerLoadBloomFilter(manager, manager->downloadPeer);
-                manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterLoadDone); // wait for pong so filter is loaded
+                BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterLoadDone); // wait for pong so filter is loaded
             }
             else free(info);
         }
@@ -385,7 +385,7 @@ static void _updateFilterPingDone(void *info, int success)
                 peerInfo->peer = manager->connectedPeers[i - 1];
                 peerInfo->manager = manager;
                 _BRPeerManagerLoadBloomFilter(manager, peerInfo->peer);
-                manager->peerMessages->BRPeerSendPingMessage(peerInfo->peer, peerInfo, _updateFilterLoadDone); // wait for pong so filter is loaded
+                BRPeerSendPingMessage(peerInfo->peer, peerInfo, _updateFilterLoadDone); // wait for pong so filter is loaded
             }
         }
 
@@ -407,7 +407,7 @@ static void _BRPeerManagerUpdateFilter(BRPeerManager *manager)
         info->peer = manager->downloadPeer;
         info->manager = manager;
         // wait for pong so we're sure to include any tx already sent by the peer in the updated filter
-        manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterPingDone);
+        BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterPingDone);
     }
 }
 
@@ -490,7 +490,7 @@ static void _BRPeerManagerRequestUnrelayedTx(BRPeerManager *manager, BRPeer *pee
             assert(info != NULL);
             info->peer = peer;
             info->manager = manager;
-            manager->peerMessages->BRPeerSendPingMessage(peer, info, _requestUnrelayedTxGetdataDone);
+            BRPeerSendPingMessage(peer, info, _requestUnrelayedTxGetdataDone);
         }
     }
     else peer->flags |= PEER_FLAG_SYNCED;
@@ -526,7 +526,7 @@ static void _mempoolDone(void *info, int success)
         }
 
         _BRPeerManagerRequestUnrelayedTx(manager, peer);
-        manager->peerMessages->BRPeerSendGetAddressMessage(peer); // request a list of other bitcoin peers
+        BRPeerSendGetAddrMessage(peer); // request a list of other bitcoin peers
         pthread_mutex_unlock(&manager->lock);
         if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
         if (syncFinished && manager->syncStopped) manager->syncStopped(manager->info, 0);
@@ -575,7 +575,7 @@ static void _BRPeerManagerLoadMempools(BRPeerManager *manager)
         if (peer != manager->downloadPeer || manager->fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
             _BRPeerManagerLoadBloomFilter(manager, peer);
             _BRPeerManagerPublishPendingTx(manager, peer);
-            manager->peerMessages->BRPeerSendPingMessage(peer, info, _loadBloomFilterDone); // load mempool after updating bloomfilter
+            BRPeerSendPingMessage(peer, info, _loadBloomFilterDone); // load mempool after updating bloomfilter
         }
         else manager->peerMessages->BRPeerSendMempoolMessage(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
                                _mempoolDone);
@@ -708,11 +708,11 @@ static void _peerConnected(void *info)
         peer_log(peer, "node doesn't carry full blocks");
         BRPeerDisconnect(peer);
     }
-    else if (BRPeerLastBlock(peer) + 10 < manager->lastBlock->height) {
+    /*else if (BRPeerLastBlock(peer) + 10 < manager->lastBlock->height) {
         peer_log(peer, "peer->lastBlock: %d != manager->lastBlock->height: %d", BRPeerLastBlock(peer), manager->lastBlock->height);
         peer_log(peer, "node isn't synced");
         BRPeerDisconnect(peer);
-    }
+    }*/
     else if (BRPeerVersion(peer) >= 70011 && (peer->services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
         peer_log(peer, "node doesn't support SPV mode");
         BRPeerDisconnect(peer);
@@ -728,7 +728,7 @@ static void _peerConnected(void *info)
             assert(peerInfo != NULL);
             peerInfo->peer = peer;
             peerInfo->manager = manager;
-            manager->peerMessages->BRPeerSendPingMessage(peer, peerInfo, _loadBloomFilterDone);
+            BRPeerSendPingMessage(peer, peerInfo, _loadBloomFilterDone);
         }
     }
     else { // select the peer with the lowest ping time to download the chain from if we're behind
@@ -1195,7 +1195,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
                                                                    sizeof(locators)/sizeof(*locators));
 
                 peer_log(peer, "calling getblocks");
-                BRPeerSendGetblocks(peer, locators, locatorsCount, UINT256_ZERO);
+                manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, locatorsCount, UINT256_ZERO);
             }
 
             BRSetAdd(manager->orphans, block); // BUG: limit total orphans to avoid memory exhaustion attack
@@ -1853,7 +1853,7 @@ void BRPeerManagerPublishTx(BRPeerManager *manager, BRTransaction *tx, void *inf
                 assert(peerInfo != NULL);
                 peerInfo->peer = peer;
                 peerInfo->manager = manager;
-                manager->peerMessages->BRPeerSendPingMessage(peer, peerInfo, _publishTxInvDone);
+                BRPeerSendPingMessage(peer, peerInfo, _publishTxInvDone);
             }
         }
 

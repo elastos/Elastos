@@ -105,7 +105,7 @@ namespace Elastos {
 
 					if (txCount > 0 && ctx->mempoolCallback) {
 						peer_log(peer, "got initial mempool response");
-						ctx->manager->peerMessages->BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
+						BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
 						ctx->mempoolCallback = NULL;
 						ctx->mempoolTime = DBL_MAX;
 					}

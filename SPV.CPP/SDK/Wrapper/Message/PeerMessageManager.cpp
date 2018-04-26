@@ -9,13 +9,11 @@
 #include "BRPeerMessages.h"
 
 #include "PeerMessageManager.h"
-#include "VerackMessage.h"
 #include "TransactionMessage.h"
 #include "MerkleBlockMessage.h"
 #include "VersionMessage.h"
 #include "AddressMessage.h"
 #include "InventoryMessage.h"
-#include "GetAddressMessage.h"
 #include "AddressMessage.h"
 #include "NotFoundMessage.h"
 
@@ -23,24 +21,6 @@ namespace Elastos {
 	namespace SDK {
 
 		namespace {
-			int BRPeerAcceptVerackMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-				VerackMessage *message = static_cast<VerackMessage *>(
-						PeerMessageManager::instance().getMessage(MSG_VERACK).get());
-				boost::function<int(BRPeer *, const uint8_t *, size_t)> fun =
-						boost::bind(&VerackMessage::Accept, message, _1, _2, _3);
-
-				return fun(peer, msg, msgLen);
-			}
-
-			void BRPeerSendVerackMessage(BRPeer *peer) {
-				VerackMessage *message = static_cast<VerackMessage *>(
-						PeerMessageManager::instance().getMessage(MSG_VERACK).get());
-				boost::function<void(BRPeer *)> fun =
-						boost::bind(&VerackMessage::Send, message, _1);
-
-				fun(peer);
-			}
-
 			int BRPeerAcceptTxMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				TransactionMessage *message = static_cast<TransactionMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_TX).get());
@@ -81,24 +61,6 @@ namespace Elastos {
 					PeerMessageManager::instance().getMessage(MSG_VERSION).get());
 				boost::function<void (BRPeer *peer)> fun =
 					boost::bind(&VersionMessage::Send, message, _1);
-
-				fun(peer);
-			}
-
-			int BRPeerAcceptGetAddressMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-				GetAddressMessage *message = static_cast<GetAddressMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_GETADDR).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-					boost::bind(&GetAddressMessage::Accept, message, _1, _2, _3);
-
-				return fun(peer, msg, msgLen);
-			}
-
-			void BRPeerSendGetAddressMessage(BRPeer *peer) {
-				GetAddressMessage *message = static_cast<GetAddressMessage *>(
-					PeerMessageManager::instance().getMessage(MSG_GETADDR).get());
-				boost::function<void (BRPeer *peer)> fun =
-					boost::bind(&GetAddressMessage::Send, message, _1);
 
 				fun(peer);
 			}
@@ -160,9 +122,6 @@ namespace Elastos {
 		void PeerMessageManager::initMessages(BRPeerManager *peerManager) {
 
 			peerManager->peerMessages = BRPeerMessageNew();
-			peerManager->peerMessages->BRPeerAcceptVerackMessage = BRPeerAcceptVerackMessage;
-			peerManager->peerMessages->BRPeerSendVerackMessage = BRPeerSendVerackMessage;
-			_messages[MSG_VERACK] = MessagePtr(new VerackMessage);
 
 			peerManager->peerMessages->BRPeerAcceptTxMessage = BRPeerAcceptTxMessage;
 			peerManager->peerMessages->BRPeerSendTxMessage = BRPeerSendTxMessage;
@@ -178,10 +137,6 @@ namespace Elastos {
 			peerManager->peerMessages->BRPeerAcceptInventoryMessage = BRPeerAcceptInventoryMessage;
 			peerManager->peerMessages->BRPeerSendInventoryMessage = BRPeerSendInventoryMessage;
 			_messages[MSG_INV] = MessagePtr(new InventoryMessage);
-
-			peerManager->peerMessages->BRPeerAcceptGetAddressMessage = BRPeerAcceptGetAddressMessage;
-			peerManager->peerMessages->BRPeerSendGetAddressMessage = BRPeerSendGetAddressMessage;
-			_messages[MSG_GETADDR] = MessagePtr(new GetAddressMessage);
 
 			peerManager->peerMessages->BRPeerAcceptAddressMessage = BRPeerAcceptAddressMessage;
 			peerManager->peerMessages->BRPeerSendAddressMessage = BRPeerSendAddressMessage;

@@ -23,7 +23,7 @@ static void _BRPeerDidConnect(BRPeer *peer)
 	}
 }
 
-static int _BRPeerAcceptVerackMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
+int BRPeerAcceptVerackMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 	struct timeval tv;
@@ -44,7 +44,7 @@ static int _BRPeerAcceptVerackMessage(BRPeer *peer, const uint8_t *msg, size_t m
 	return r;
 }
 
-static void BRPeerSendVerackMessage(BRPeer *peer)
+void BRPeerSendVerackMessage(BRPeer *peer)
 {
 	BRPeerSendMessage(peer, NULL, 0, MSG_VERACK);
 	((BRPeerContext *)peer)->sentVerack = 1;
@@ -232,7 +232,7 @@ void BRPeerSendGetblocks(BRPeer *peer, const UInt256 locators[], size_t locators
 	}
 }
 
-void BRPeerSendPing(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success))
+void BRPeerSendPingMessage(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success))
 {
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 	uint8_t msg[sizeof(uint64_t)];
@@ -367,7 +367,7 @@ static int _BRPeerAcceptInvMessage(BRPeer *peer, const uint8_t *msg, size_t msgL
 
 			if (txCount > 0 && ctx->mempoolCallback) {
 				peer_log(peer, "got initial mempool response");
-				BRPeerSendPing(peer, ctx->mempoolInfo, ctx->mempoolCallback);
+				BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
 				ctx->mempoolCallback = NULL;
 				ctx->mempoolTime = DBL_MAX;
 			}
@@ -402,14 +402,14 @@ void BRPeerSendInv(BRPeer *peer, const UInt256 txHashes[], size_t txCount)
 	}
 }
 
-static int _BRPeerAcceptGetaddrMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
+int BRPeerAcceptGetAddrMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	peer_log(peer, "got getaddr");
 	BRPeerSendAddr(peer);
 	return 1;
 }
 
-void BRPeerSendGetaddr(BRPeer *peer)
+void BRPeerSendGetAddrMessage(BRPeer *peer)
 {
 	((BRPeerContext *)peer)->sentGetaddr = 1;
 	BRPeerSendMessage(peer, NULL, 0, MSG_GETADDR);
@@ -628,7 +628,7 @@ void BRPeerSendGetheaders(BRPeer *peer, const UInt256 locators[], size_t locator
 	}
 }
 
-static int _BRPeerAcceptHeadersMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
+int BRPeerAcceptHeadersMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 	size_t off = 0, count = (size_t)BRVarInt(msg, msgLen, &off);
@@ -751,7 +751,7 @@ static int _BRPeerAcceptGetdataMessage(BRPeer *peer, const uint8_t *msg, size_t 
 	return r;
 }
 
-static int _BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
+int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	int r = 1;
 
@@ -767,7 +767,7 @@ static int _BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msg
 	return r;
 }
 
-static int _BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
+int BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 	struct timeval tv;
@@ -908,9 +908,6 @@ static int _BRPeerAcceptFeeFilterMessage(BRPeer *peer, const uint8_t *msg, size_
 BRPeerMessages *BRPeerMessageNew(void) {
 	BRPeerMessages *peerMessages = calloc(1, sizeof(*peerMessages));
 
-	peerMessages->BRPeerAcceptVerackMessage = _BRPeerAcceptVerackMessage;
-	peerMessages->BRPeerSendVerackMessage = BRPeerSendVerackMessage;
-
 	peerMessages->BRPeerAcceptVersionMessage = _BRPeerAcceptVersionMessage;
 	peerMessages->BRPeerSendVersionMessage = BRPeerSendVersionMessage;
 
@@ -919,9 +916,6 @@ BRPeerMessages *BRPeerMessageNew(void) {
 
 	peerMessages->BRPeerAcceptInventoryMessage = _BRPeerAcceptInvMessage;
 	peerMessages->BRPeerSendInventoryMessage = BRPeerSendInv;
-
-	peerMessages->BRPeerAcceptGetAddressMessage = _BRPeerAcceptGetaddrMessage;
-	peerMessages->BRPeerSendGetAddressMessage = BRPeerSendGetaddr;
 
 	peerMessages->BRPeerAcceptTxMessage = _BRPeerAcceptTxMessage;
 	peerMessages->BRPeerSendTxMessage = BRPeerSendTxMessage;
@@ -932,17 +926,10 @@ BRPeerMessages *BRPeerMessageNew(void) {
 
 	peerMessages->BRPeerSendFilterloadMessage = BRPeerSendFilterload;
 
-	peerMessages->BRPeerAcceptHeadersMessage = _BRPeerAcceptHeadersMessage;
-
 	peerMessages->BRPeerSendGetheadersMessage = BRPeerSendGetheaders;
 
 	peerMessages->BRPeerSendGetdataMessage = BRPeerSendGetdata;
 	peerMessages->BRPeerAcceptGetdataMessage = _BRPeerAcceptGetdataMessage;
-
-	peerMessages->BRPeerSendPingMessage = BRPeerSendPing;
-	peerMessages->BRPeerAcceptPingMessage = _BRPeerAcceptPingMessage;
-
-	peerMessages->BRPeerAcceptPongMessage = _BRPeerAcceptPongMessage;
 
 	peerMessages->BRPeerSendMempoolMessage = BRPeerSendMempool;
 
@@ -952,6 +939,7 @@ BRPeerMessages *BRPeerMessageNew(void) {
 
 	peerMessages->BRPeerAcceptFeeFilterMessage = _BRPeerAcceptFeeFilterMessage;
 
+	return peerMessages;
 }
 
 void BRPeerMessageFree(BRPeerMessages *peerMessages) {
