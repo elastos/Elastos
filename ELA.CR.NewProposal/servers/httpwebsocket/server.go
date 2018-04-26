@@ -33,7 +33,7 @@ var (
 	PushNewTxsFlag   = true
 )
 
-type Handler func(map[string]interface{}) map[string]interface{}
+type Handler func(Params) map[string]interface{}
 
 type WebSocketServer struct {
 	sync.RWMutex
@@ -100,11 +100,11 @@ func (server *WebSocketServer) initializeMethods() {
 	}
 }
 
-func (server *WebSocketServer) hearBeat(cmd map[string]interface{}) map[string]interface{} {
+func (server *WebSocketServer) hearBeat(cmd Params) map[string]interface{} {
 	return ResponsePack(Success, cmd["Userid"])
 }
 
-func (server *WebSocketServer) getSessionCount(cmd map[string]interface{}) map[string]interface{} {
+func (server *WebSocketServer) getSessionCount(cmd Params) map[string]interface{} {
 	return ResponsePack(Success, len(server.SessionList.OnlineList))
 }
 
@@ -266,7 +266,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	switch action {
 	case "sendblock":
 		if block, ok := v.(*Block); ok {
-			result = GetBlockInfo(block)
+			result = GetBlockInfo(block, true)
 		}
 	case "sendrawblock":
 		if block, ok := v.(*Block); ok {
@@ -279,8 +279,8 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 			result = GetBlockTransactions(block)
 		}
 	case "sendnewtransaction":
-		if trx, ok := v.(*Transaction); ok {
-			result = TransArrayByteToHexString(trx)
+		if tx, ok := v.(*Transaction); ok {
+			result = GetTransactionInfo(nil, tx)
 		}
 	default:
 		log.Error("httpwebsocket/server.go in pushresult function: unknown action")
