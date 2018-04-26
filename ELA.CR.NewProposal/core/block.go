@@ -24,85 +24,85 @@ func (b *Block) CMD() string {
 }
 
 func (b *Block) Serialize(w io.Writer) error {
-	b.Header.Serialize(w)
-	err := common.WriteUint32(w, uint32(len(b.Transactions)))
-	if err != nil {
-		return errors.New("Block item Transactions length serialization failed.")
+	if err := b.Header.Serialize(w); err != nil {
+		return errors.New("Block header serialize failed, " + err.Error())
 	}
-
+	if err := common.WriteUint32(w, uint32(len(b.Transactions))); err != nil {
+		return errors.New("Block item transactions count serialize failed.")
+	}
 	for _, transaction := range b.Transactions {
-		transaction.Serialize(w)
+		if err := transaction.Serialize(w); err != nil {
+			return errors.New("Block item transaction serialize failed, " + err.Error())
+		}
 	}
 	return nil
 }
 
 func (b *Block) Deserialize(r io.Reader) error {
-	err := b.Header.Deserialize(r)
-	if err != nil {
-		return err
+	if err := b.Header.Deserialize(r); err != nil {
+		return errors.New("Block header deserialize failed, " + err.Error())
 	}
 
 	//Transactions
-	var i uint32
-	len, err := common.ReadUint32(r)
+	count, err := common.ReadUint32(r)
 	if err != nil {
-		return err
+		return errors.New("Block item transactions count deserialize failed.")
 	}
-	var tharray []common.Uint256
-	for i = 0; i < len; i++ {
+	for i := uint32(0); i < count; i++ {
 		transaction := new(Transaction)
-		transaction.Deserialize(r)
+		if err := transaction.Deserialize(r); err != nil {
+			return errors.New("Block item transaction deserialize failed, " + err.Error())
+		}
 		b.Transactions = append(b.Transactions, transaction)
-		tharray = append(tharray, transaction.Hash())
 	}
 
 	return nil
 }
 
 func (b *Block) Trim(w io.Writer) error {
-	b.Header.Serialize(w)
-	err := common.WriteUint32(w, uint32(len(b.Transactions)))
-	if err != nil {
-		return errors.New("Block item Transactions length serialization failed.")
+	if err := b.Header.Serialize(w); err != nil {
+		return errors.New("Block header serialize failed, " + err.Error())
+	}
+	if err := common.WriteUint32(w, uint32(len(b.Transactions))); err != nil {
+		return errors.New("Block item transactions length serialize failed.")
 	}
 	for _, transaction := range b.Transactions {
-		temp := *transaction
-		hash := temp.Hash()
-		hash.Serialize(w)
+		hash := transaction.Hash()
+		if err := hash.Serialize(w); err != nil {
+			return errors.New("Block item transaction hash serialize failed, " + err.Error())
+		}
 	}
 	return nil
 }
 
 func (b *Block) FromTrimmedData(r io.Reader) error {
-	err := b.Header.Deserialize(r)
-	if err != nil {
-		return err
+	if err := b.Header.Deserialize(r); err != nil {
+		return errors.New("Block header deserialize failed, " + err.Error())
 	}
 
 	//Transactions
-	var i uint32
-	Len, err := common.ReadUint32(r)
+	count, err := common.ReadUint32(r)
 	if err != nil {
-		return err
+		return errors.New("Block item transactions count deserialize failed.")
 	}
-	var txhash common.Uint256
-	var tharray []common.Uint256
-	for i = 0; i < Len; i++ {
-		txhash.Deserialize(r)
-		b.Transactions = append(b.Transactions, NewTrimmedTx(txhash))
-		tharray = append(tharray, txhash)
+	for i := uint32(0); i < count; i++ {
+		var hash common.Uint256
+		if err := hash.Deserialize(r); err != nil {
+			return errors.New("Block item transaction hash deserialize failed, " + err.Error())
+		}
+		b.Transactions = append(b.Transactions, NewTrimmedTx(hash))
 	}
 
 	return nil
 }
 
 func (b *Block) GetSize() int {
-	var buffer bytes.Buffer
-	if err := b.Serialize(&buffer); err != nil {
+	buf := new(bytes.Buffer)
+	if err := b.Serialize(buf); err != nil {
 		return InvalidBlockSize
 	}
 
-	return buffer.Len()
+	return buf.Len()
 }
 
 func (b *Block) Hash() common.Uint256 {
