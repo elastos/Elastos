@@ -43,15 +43,16 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
 
-task makejar(type: Copy) {
+task createJar(type: Copy) {
     from('build/intermediates/bundles/debug/')
     into('build/outputs/debug/')
     include('classes.jar')
-    include('jni')
+    include('jni/*/*.so')
     rename ('classes.jar', 'elacarrier.jar')
-    rename ('jni', 'libs')
 }
 
-task clearjar(type: Delete) {
-    delete 'build/libs/elacarrier.jar'
+task clearJar(type: Delete) {
+    delete('build/outputs/debug')
 }
+
+createJar.dependsOn(clearJar, build)
