@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"time"
+	"encoding/binary"
 
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
@@ -12,8 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	"encoding/binary"
-	"encoding/hex"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
@@ -429,7 +428,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Weight:            uint32(block.GetSize() * 4),
 		Height:            block.Header.Height,
 		Version:           block.Header.Version,
-		VersionHex:        hex.EncodeToString(versionBytes[:]),
+		VersionHex:        BytesToHexString(versionBytes[:]),
 		MerkleRoot:        block.Header.MerkleRoot.String(),
 		Tx:                txs,
 		Time:              block.Header.Timestamp,
@@ -437,7 +436,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Nonce:             block.Header.Nonce,
 		Bits:              block.Header.Bits,
 		Difficulty:        chain.CalcCurrentDifficulty(block.Header.Bits),
-		ChainWork:         hex.EncodeToString(chainWork[:]),
+		ChainWork:         BytesToHexString(chainWork[:]),
 		PreviousBlockHash: block.Header.Previous.String(),
 		NextBlockHash:     nextBlockHash.String(),
 		AuxPow:            BytesToHexString(auxPow.Bytes()),
