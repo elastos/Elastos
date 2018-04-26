@@ -9,6 +9,7 @@
 #include "BRArray.h"
 
 #include "InventoryMessage.h"
+#include "Log.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -18,50 +19,51 @@ namespace Elastos {
 		}
 
 		int InventoryMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			peer_log(peer, "InventoryMessage.Accept");
+			Log::getLogger()->warn("InventoryMessage.Accept");
+
 			BRPeerContext *ctx = (BRPeerContext *) peer;
-			size_t off = 0, count = (size_t) BRVarInt(msg, msgLen, &off);
+			size_t off = 0;
+
+			inv_type type = inv_type(msg[off]);
+			off += sizeof(uint8_t);
+
+			size_t count = UInt32GetLE(&msg[off]);
+			off += sizeof(uint32_t);
+			
 			int r = 1;
 
-			if (off == 0 || off + count * 36 > msgLen) {
-				peer_log(peer, "malformed inv message, length is %zu, should be %zu for %zu item(s)", msgLen,
-						 BRVarIntSize(count) + 36 * count, count);
-				r = 0;
-			} else if (count > MAX_GETDATA_HASHES) {
-				peer_log(peer, "dropping inv message, %zu is too many items, max is %d", count, MAX_GETDATA_HASHES);
+			if (count > MAX_GETDATA_HASHES) {
+				Log::getLogger()->warn("dropping inv message, %zu is too many items, max is %d", count, MAX_GETDATA_HASHES);
 			} else {
-				inv_type type;
 				const uint8_t *transactions[count], *blocks[count];
 				size_t i, j, txCount = 0, blockCount = 0;
 
-				peer_log(peer, "got inv with %zu item(s)", count);
+				Log::getLogger()->warn("got inv with %zu item(s)", count);
 
-				for (i = 0; i < count; i++) {
-					type = (inv_type) UInt32GetLE(&msg[off]);
+				if (type == inv_block)
+					blockCount = count;
+				else if(type == inv_tx)
+					txCount = count;
 
-					switch (type) { // inv messages only use inv_tx or inv_block
-						case inv_tx:
-							transactions[txCount++] = &msg[off + sizeof(uint32_t)];
-							break;
-						case inv_block:
-							blocks[blockCount++] = &msg[off + sizeof(uint32_t)];
-							break;
-						default:
-							break;
-					}
+				for (i = 0; i < blockCount; i++) {
+					blocks[i] = &msg[off];
+					off += sizeof(UInt256);
+				}
 
-					off += 36;
+				for (i = 0; i < txCount; i++) {
+					transactions[i] = &msg[off];
+					off += sizeof(UInt256);
 				}
 
 				if (txCount > 0 && !ctx->sentFilter && !ctx->sentMempool && !ctx->sentGetblocks) {
-					peer_log(peer, "got inv message before loading a filter");
+					Log::getLogger()->warn("got inv message before loading a filter");
 					r = 0;
 				} else if (txCount > 10000) { // sanity check
-					peer_log(peer, "too many transactions, disconnecting");
+					Log::getLogger()->warn("too many transactions, disconnecting");
 					r = 0;
 				} else if (ctx->currentBlockHeight > 0 && blockCount > 2 && blockCount < 500 &&
 						   ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
-					peer_log(peer, "non-standard inv, %zu is fewer block hash(es) than expected", blockCount);
+					Log::getLogger()->warn("non-standard inv, %zu is fewer block hash(es) than expected", blockCount);
 					r = 0;
 				} else {
 					if (!ctx->sentFilter && !ctx->sentGetblocks) blockCount = 0;
@@ -103,9 +105,9 @@ namespace Elastos {
 					}
 
 					if (txCount > 0 && ctx->mempoolCallback) {
-						peer_log(peer, "got initial mempool response");
+						Log::getLogger()->warn("got initial mempool response");
 						BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
-						ctx->mempoolCallback = NULL;
+						ctx->mempoolCallback = nullptr;
 						ctx->mempoolTime = DBL_MAX;
 					}
 				}
@@ -118,7 +120,8 @@ namespace Elastos {
 		}
 
 		void InventoryMessage::Send(BRPeer *peer, const UInt256 txHashes[], size_t txCount) {
-			peer_log(peer, "InventoryMessage.Send");
+			Log::getLogger()->warn("InventoryMessage.Send");
+
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 			size_t knownCount = array_count(ctx->knownTxHashes);
 
@@ -126,14 +129,16 @@ namespace Elastos {
 			txCount = array_count(ctx->knownTxHashes) - knownCount;
 
 			if (txCount > 0) {
-				size_t i, off = 0, msgLen = BRVarIntSize(txCount) + (sizeof(uint32_t) + sizeof(*txHashes)) * txCount;
+				size_t i, off = 0, msgLen = sizeof(uint32_t) + sizeof(uint32_t) + sizeof(*txHashes) * txCount;
 				uint8_t msg[msgLen];
 
-				off += BRVarIntSet(&msg[off], (off <= msgLen ? msgLen - off : 0), txCount);
+				msg[off] = inv_tx;
+				off += sizeof(uint8_t);
+
+				UInt32SetLE(&msg[off], uint32_t(txCount));
+				off += sizeof(uint32_t);
 
 				for (i = 0; i < txCount; i++) {
-					UInt32SetLE(&msg[off], inv_tx);
-					off += sizeof(uint32_t);
 					UInt256Set(&msg[off], ctx->knownTxHashes[knownCount + i]);
 					off += sizeof(UInt256);
 				}
