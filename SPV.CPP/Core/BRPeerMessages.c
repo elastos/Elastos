@@ -601,7 +601,7 @@ void BRPeerSendFilterload(BRPeer *peer, BRBloomFilter *filter)
 
 	((BRPeerContext *)peer)->sentFilter = 1;
 	((BRPeerContext *)peer)->sentMempool = 0;
-	BRPeerSendMessage(peer, filter, len, MSG_FILTERLOAD);
+	BRPeerSendMessage(peer, data, len, MSG_FILTERLOAD);
 }
 
 void BRPeerSendGetheaders(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop)
