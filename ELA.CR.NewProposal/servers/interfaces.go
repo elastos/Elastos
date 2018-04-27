@@ -9,8 +9,8 @@ import (
 
 	aux "github.com/elastos/Elastos.ELA/auxpow"
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/pow"
@@ -494,6 +494,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(InvalidTransaction, "")
 	}
 	var hash Uint256
+	hash = txn.Hash()
 	if errCode := VerifyAndSendTx(&txn); errCode != Success {
 		return ResponsePack(errCode, "")
 	}
