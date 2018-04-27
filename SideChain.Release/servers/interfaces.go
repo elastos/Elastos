@@ -12,10 +12,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	ela "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"encoding/binary"
 	"encoding/hex"
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -500,6 +500,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(InvalidTransaction, "")
 	}
 	var hash Uint256
+	hash = txn.Hash()
 	if errCode := VerifyAndSendTx(&txn); errCode != Success {
 		return ResponsePack(errCode, "")
 	}
