@@ -121,7 +121,14 @@ func GetRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(UnknownTransaction, "")
 	}
 
-	return ResponsePack(Success, GetTransactionInfo(header, tx))
+	decoded, ok := param.Bool("decoded")
+	if decoded {
+		return ResponsePack(Success, GetTransactionInfo(header, tx))
+	} else {
+		buf := new(bytes.Buffer)
+		tx.Serialize(buf)
+		return ResponsePack(Success, BytesToHexString(buf.Bytes()))
+	}
 }
 
 func GetNeighbors(param Params) map[string]interface{} {
