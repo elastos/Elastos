@@ -12,7 +12,8 @@ xcuserdata
 tags
 /build/_dist
 /build/_build
-build/.android-toolchain
+/build/.android-toolchain
+/build/.tarballs
 .compile_status
 .config_status
 .install_status
