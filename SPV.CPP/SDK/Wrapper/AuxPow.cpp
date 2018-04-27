@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRTransaction.h>
 #include "BRTransaction.h"
 #include "BRMerkleBlock.h"
 #include "BRAddress.h"
@@ -207,8 +208,9 @@ namespace Elastos {
 			input.sigLen = (size_t)ReadVarInt(istream, signatureScriptLengthDataHead);
 
 			if (input.sigLen != 0) {
-				input.signature = (uint8_t *)malloc(input.sigLen * sizeof(uint8_t));
-				istream.getBytes(input.signature, input.sigLen);
+				uint8_t signature[input.sigLen];
+				istream.getBytes(signature, input.sigLen);
+				BRTxInputSetSignature(&input, signature, input.sigLen);
 			}
 
 			uint8_t sequenceData[32 / 8];
