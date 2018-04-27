@@ -31,11 +31,8 @@ func (db *AddrsDB) Put(hash *Uint168, script []byte, addrType int) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("INSERT OR REPLACE INTO Addrs(Hash, Script, Type) VALUES(?,?,?)")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(hash.Bytes(), script, addrType)
+	sql := "INSERT OR REPLACE INTO Addrs(Hash, Script, Type) VALUES(?,?,?)"
+	_, err := db.Exec(sql, hash.Bytes(), script, addrType)
 	if err != nil {
 		return err
 	}
@@ -94,11 +91,7 @@ func (db *AddrsDB) Delete(hash *Uint168) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("DELETE FROM Addrs WHERE Hash=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(hash.Bytes())
+	_, err := db.Exec("DELETE FROM Addrs WHERE Hash=?", hash.Bytes())
 	if err != nil {
 		return err
 	}

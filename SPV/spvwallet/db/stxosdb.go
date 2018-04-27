@@ -41,16 +41,10 @@ func (db *STXOsDB) FromUTXO(outPoint *OutPoint, spendTxId *Uint256, spendHeight 
 		return err
 	}
 
-	stmt, err := tx.Prepare(
-		`INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash, SpendHash, SpendHeight)
-				SELECT UTXOs.OutPoint, UTXOs.Value, UTXOs.LockTime, UTXOs.AtHeight, UTXOs.ScriptHash, ?, ? FROM UTXOs
-				WHERE OutPoint=?`)
-	if err != nil {
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(spendTxId.Bytes(), spendHeight, outPoint.Bytes())
+	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash, SpendHash, SpendHeight)
+			SELECT UTXOs.OutPoint, UTXOs.Value, UTXOs.LockTime, UTXOs.AtHeight, UTXOs.ScriptHash, ?, ? FROM UTXOs
+			WHERE OutPoint=?`
+	_, err = tx.Exec(sql, spendTxId.Bytes(), spendHeight, outPoint.Bytes())
 	if err != nil {
 		return err
 	}
@@ -163,11 +157,7 @@ func (db *STXOsDB) Delete(outPoint *OutPoint) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("DELETE FROM STXOs WHERE OutPoint=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(outPoint.Bytes())
+	_, err := db.Exec("DELETE FROM STXOs WHERE OutPoint=?", outPoint.Bytes())
 	if err != nil {
 		return err
 	}

@@ -36,18 +36,14 @@ func (t *TxsDB) Put(storeTx *db.StoreTx) error {
 	t.Lock()
 	defer t.Unlock()
 
-	stmt, err := t.Prepare(`INSERT OR REPLACE INTO TXNs(Hash, Height, RawData) VALUES(?,?,?)`)
-	if err != nil {
-		return err
-	}
-
 	buf := new(bytes.Buffer)
-	err = storeTx.Data.SerializeUnsigned(buf)
+	err := storeTx.Data.SerializeUnsigned(buf)
 	if err != nil {
 		return err
 	}
 
-	_, err = stmt.Exec(storeTx.TxId.Bytes(), storeTx.Height, buf.Bytes())
+	sql := `INSERT OR REPLACE INTO TXNs(Hash, Height, RawData) VALUES(?,?,?)`
+	_, err = t.Exec(sql, storeTx.TxId.Bytes(), storeTx.Height, buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -128,12 +124,7 @@ func (t *TxsDB) UpdateHeight(txId *Uint256, height uint32) error {
 	t.Lock()
 	defer t.Unlock()
 
-	stmt, err := t.Prepare("UPDATE TXNs SET Height=? WHERE Hash=?")
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.Exec(height, txId.Bytes())
+	_, err := t.Exec("UPDATE TXNs SET Height=? WHERE Hash=?", height, txId.Bytes())
 	if err != nil {
 		return err
 	}
@@ -146,12 +137,7 @@ func (t *TxsDB) Delete(txId *Uint256) error {
 	t.Lock()
 	defer t.Unlock()
 
-	stmt, err := t.Prepare("DELETE FROM TXNs WHERE Hash=?")
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.Exec(txId.Bytes())
+	_, err := t.Exec("DELETE FROM TXNs WHERE Hash=?", txId.Bytes())
 	if err != nil {
 		return err
 	}

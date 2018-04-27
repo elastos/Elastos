@@ -34,18 +34,12 @@ func (db *UTXOsDB) Put(hash *Uint168, utxo *UTXO) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare(`INSERT OR REPLACE INTO UTXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash)
-								  	VALUES(?,?,?,?,?)`)
+	valueBytes, err := utxo.Value.Bytes()
 	if err != nil {
 		return err
 	}
-
-	var valueBytes []byte
-	valueBytes, err = utxo.Value.Bytes()
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(utxo.Op.Bytes(), valueBytes, utxo.LockTime, utxo.AtHeight, hash.Bytes())
+	sql := "INSERT OR REPLACE INTO UTXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash) VALUES(?,?,?,?,?)"
+	_, err = db.Exec(sql, utxo.Op.Bytes(), valueBytes, utxo.LockTime, utxo.AtHeight, hash.Bytes())
 	if err != nil {
 		return err
 	}
@@ -136,11 +130,7 @@ func (db *UTXOsDB) Delete(outPoint *OutPoint) error {
 	db.Lock()
 	defer db.Unlock()
 
-	stmt, err := db.Prepare("DELETE FROM UTXOs WHERE OutPoint=?")
-	if err != nil {
-		return err
-	}
-	_, err = stmt.Exec(outPoint.Bytes())
+	_, err := db.Exec("DELETE FROM UTXOs WHERE OutPoint=?", outPoint.Bytes())
 	if err != nil {
 		return err
 	}
