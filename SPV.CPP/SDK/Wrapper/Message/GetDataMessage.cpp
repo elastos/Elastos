@@ -20,7 +20,8 @@ namespace Elastos {
 			uint8_t msg[msgLen];
 
 			size_t i, off;
-			for (i = 0, off = 0; i < txCount; i++) {
+			for (i = 0; i < txCount; i++) {
+				off = 0;
 				msg[off] = inv_tx;
 				off += sizeof(uint8_t);
 				UInt256Set(&msg[off], txHashes[i]);
@@ -29,8 +30,9 @@ namespace Elastos {
 				BRPeerSendMessage(peer, msg, off, MSG_GETDATA);
 			}
 
-			for (i = 0, off = 0; i < blockCount; i++) {
-				msg[off] = inv_block;    //todo core get message use inv_filtered_block here, figure out differences later
+			for (i = 0; i < blockCount; i++) {
+				off = 0;
+				msg[off] = inv_block;	//todo core get message use inv_filtered_block here, figure out differences later
 				off += sizeof(uint8_t);
 				UInt256Set(&msg[off], blockHashes[i]);
 				off += sizeof(UInt256);

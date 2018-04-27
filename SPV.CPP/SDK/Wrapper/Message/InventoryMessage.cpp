@@ -95,7 +95,8 @@ namespace Elastos {
 					}
 
 					BRPeerAddKnownTxHashes(peer, txHashes, j);
-					if (j > 0 || blockCount > 0) ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, j, blockHashes, blockCount);
+					if (j > 0 || blockCount > 0)
+						ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, j, blockHashes, blockCount);
 
 					// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
 					if (blockCount >= 500) {

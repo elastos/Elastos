@@ -2,8 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRBloomFilter.h>
-#include <BRInt.h>
+#include "BRBloomFilter.h"
+#include "BRInt.h"
+#include "BRAddress.h"
+
 #include "BloomFilter.h"
 
 namespace Elastos {
@@ -14,7 +16,7 @@ namespace Elastos {
 		}
 
 		BloomFilter::BloomFilter(BRBloomFilter *filter) :
-				_bloomFilter(filter) {
+			_bloomFilter(filter) {
 		}
 
 		BloomFilter::~BloomFilter() {
@@ -33,9 +35,10 @@ namespace Elastos {
 		}
 
 		void BloomFilter::Serialize(ByteStream &ostream) const {
-			uint8_t lengthData[64 / 8];
-			UInt64SetLE(lengthData, uint64_t(_bloomFilter->length));
-			ostream.putBytes(lengthData, 64 / 8);
+			size_t len = BRVarIntSize(_bloomFilter->length);
+			uint8_t lengthData[len];
+			BRVarIntSet(lengthData, len, _bloomFilter->length);
+			ostream.putBytes(lengthData, len);
 
 			ostream.putBytes(_bloomFilter->filter, _bloomFilter->length);
 

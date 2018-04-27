@@ -1275,7 +1275,7 @@ BRPaymentProtocolEncryptedMessage *BRPaymentProtocolEncryptedMessageNew(BRPaymen
     if (statusMsg) _ProtoBufString(&msg->statusMsg, statusMsg, strlen(statusMsg));
     privKey = (BRKeyPrivKey(receiverKey, NULL, 0) != 0) ? receiverKey : senderKey;
     _BRPaymentProtocolEncryptedMessageCEK(msg, cek, iv, privKey);
-    snprintf(ad, adLen, "%"PRIu64"%s", statusCode, (statusMsg) ? statusMsg : "");
+    snprintf(ad, adLen, "%" PRIu64 "%s", statusCode, (statusMsg) ? statusMsg : "");
     bufLen = BRChacha20Poly1305AEADEncrypt(buf, bufLen, cek, iv, message, msgLen, ad, strlen(ad));
     mem_clean(cek, sizeof(cek));
     mem_clean(iv, sizeof(iv));
@@ -1422,7 +1422,7 @@ size_t BRPaymentProtocolEncryptedMessageDecrypt(BRPaymentProtocolEncryptedMessag
     ad = calloc(adLen, sizeof(*ad));
 
     if (! ctx->defaults[encrypted_msg_status_code]) {
-        snprintf(ad, adLen, "%"PRIu64"%s", msg->statusCode, (msg->statusMsg) ? msg->statusMsg : "");
+        snprintf(ad, adLen, "%" PRIu64 "%s", msg->statusCode, (msg->statusMsg) ? msg->statusMsg : "");
     }
     else if (msg->statusMsg) strncpy(ad, msg->statusMsg, adLen);
 

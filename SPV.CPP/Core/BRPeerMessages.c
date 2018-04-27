@@ -781,10 +781,11 @@ int BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		peer_log(peer, "malformed pong message, length is %zu, should be %zu", msgLen, sizeof(uint64_t));
 		r = 0;
 	}
-	else if (UInt64GetLE(msg) != ctx->nonce) {
-		peer_log(peer, "pong message has wrong nonce: %"PRIu64", expected: %"PRIu64, UInt64GetLE(msg), ctx->nonce);
+	//todo for test
+	/*else if (UInt64GetLE(msg) != ctx->nonce) {
+		peer_log(peer, "pong message has wrong nonce: %" PRIu64 ", expected: %" PRIu64, UInt64GetLE(msg), ctx->nonce);
 		r = 0;
-	}
+	}*/
 	else if (array_count(ctx->pongCallback) == 0) {
 		peer_log(peer, "got unexpected pong");
 		r = 0;
@@ -816,6 +817,8 @@ int BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 
 void BRPeerSendMempool(BRPeer *peer, const UInt256 knownTxHashes[], size_t knownTxCount, void *info,
 					   void (*completionCallback)(void *info, int success)) {
+
+	peer_log(peer, "send mempool");
 	BRPeerContext *ctx = (BRPeerContext *) peer;
 	struct timeval tv;
 	int sentMempool = ctx->sentMempool;
@@ -901,7 +904,7 @@ static int _BRPeerAcceptFeeFilterMessage(BRPeer *peer, const uint8_t *msg, size_
 	}
 	else {
 		ctx->feePerKb = UInt64GetLE(msg);
-		peer_log(peer, "got feefilter with rate %"PRIu64, ctx->feePerKb);
+		peer_log(peer, "got feefilter with rate %" PRIu64, ctx->feePerKb);
 		if (ctx->setFeePerKb) ctx->setFeePerKb(ctx->info, ctx->feePerKb);
 	}
 

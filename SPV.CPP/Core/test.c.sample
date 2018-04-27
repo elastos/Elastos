@@ -1811,7 +1811,7 @@ int BRTransactionTests()
 
 static void walletBalanceChanged(void *info, uint64_t balance)
 {
-    printf("balance changed %"PRIu64"\n", balance);
+    printf("balance changed %" PRIu64 "\n", balance);
 }
 
 static void walletTxAdded(void *info, BRTransaction *tx)

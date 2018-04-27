@@ -705,11 +705,11 @@ static void _peerConnected(void *info)
         peer_log(peer, "node doesn't carry full blocks");
         BRPeerDisconnect(peer);
     }
-    /*else if (BRPeerLastBlock(peer) + 10 < manager->lastBlock->height) {
+    else if (BRPeerLastBlock(peer) + 10 < manager->lastBlock->height) {
         peer_log(peer, "peer->lastBlock: %d != manager->lastBlock->height: %d", BRPeerLastBlock(peer), manager->lastBlock->height);
         peer_log(peer, "node isn't synced");
         BRPeerDisconnect(peer);
-    }*/
+    }
     else if (BRPeerVersion(peer) >= 70011 && (peer->services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
         peer_log(peer, "node doesn't support SPV mode");
         BRPeerDisconnect(peer);
@@ -1370,7 +1370,7 @@ static void _peerSetFeePerKb(void *info, uint64_t feePerKb)
 
     if (secondFeePerKb*3/2 > DEFAULT_FEE_PER_KB && secondFeePerKb*3/2 <= MAX_FEE_PER_KB &&
         secondFeePerKb*3/2 > BRWalletFeePerKb(manager->wallet)) {
-        peer_log(peer, "increasing feePerKb to %"PRIu64" based on feefilter messages from peers", secondFeePerKb*3/2);
+        peer_log(peer, "increasing feePerKb to %" PRIu64 " based on feefilter messages from peers", secondFeePerKb*3/2);
         BRWalletSetFeePerKb(manager->wallet, secondFeePerKb*3/2);
     }
 
@@ -1459,7 +1459,8 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
 
     for (size_t i = 0; i < manager->params->checkpointsCount; i++) {
         block = BRMerkleBlockNew();
-        block->height = manager->params->checkpoints[i].height;
+        //todo for test
+        block->height = 0;//manager->params->checkpoints[i].height;
         block->blockHash = UInt256Reverse(&manager->params->checkpoints[i].hash);
         block->timestamp = manager->params->checkpoints[i].timestamp;
         block->target = manager->params->checkpoints[i].target;

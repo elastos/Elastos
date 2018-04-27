@@ -2,14 +2,35 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRTransaction.h>
 #include "BRTransaction.h"
 #include "BRMerkleBlock.h"
+#include "BRAddress.h"
 
 #include "AuxPow.h"
 
 namespace Elastos {
 	namespace SDK {
+
+		uint64_t ReadVarInt(ByteStream &istream, uint8_t h)
+		{
+			if (h < 0xFD) {
+				return (uint64_t)h;
+			} else if (h == 0xfd) {
+				uint8_t txInCountData[16 / 8];
+				istream.getBytes(txInCountData, 16 / 8);
+				return (uint64_t)UInt16GetLE(txInCountData);
+			} else if (h == 0xfe) {
+				uint8_t txInCountData[32 / 8];
+				istream.getBytes(txInCountData, 32 / 8);
+				return (uint64_t)UInt32GetLE(txInCountData);
+			} else if (h == 0xff) {
+				uint8_t txInCountData[64 / 8];
+				istream.getBytes(txInCountData, 64 / 8);
+				return (uint64_t)UInt64GetLE(txInCountData);
+			}
+
+			return 0;
+		}
 
 		AuxPow::AuxPow() {
 			_btcTransaction = BRTransactionNew();
@@ -70,9 +91,9 @@ namespace Elastos {
 			istream.getBytes(auxMerkleIndexData, 32 / 8);
 			_auxMerkleIndex = UInt32GetLE(auxMerkleIndexData);
 
-			uint8_t auxMerkleBranchCountData[64 / 8];
-			istream.getBytes(auxMerkleBranchCountData, 64 / 8);
-			uint64_t auxMerkleBranchCount = UInt64GetLE(auxMerkleBranchCountData);
+			uint8_t auxMerkleBranchCountHead;
+			istream.getBytes(&auxMerkleBranchCountHead, 8 / 8);
+			uint64_t auxMerkleBranchCount = ReadVarInt(istream, auxMerkleBranchCountHead);
 
 			_auxMerkleBranch.resize(auxMerkleBranchCount);
 			uint8_t auxMerkleBranchData[256 / 8];
@@ -85,9 +106,10 @@ namespace Elastos {
 			istream.getBytes(parMerkleIndexData, 32 / 8);
 			_parMerkleIndex = UInt32GetLE(parMerkleIndexData);
 
-			uint8_t parCoinBaseMerkleCountData[64 / 8];
-			istream.getBytes(parCoinBaseMerkleCountData, 64 / 8);
-			uint64_t parCoinBaseMerkleCount = UInt64GetLE(parCoinBaseMerkleCountData);
+			uint8_t parCoinBaseMerkleCountHead;
+			istream.getBytes(&parCoinBaseMerkleCountHead, 8 / 8);
+			uint64_t parCoinBaseMerkleCount = ReadVarInt(istream, parCoinBaseMerkleCountHead);
+
 
 			_parCoinBaseMerkle.resize(parCoinBaseMerkleCount);
 			uint8_t parCoinBaseMerkleData[256 / 8];
@@ -130,17 +152,17 @@ namespace Elastos {
 			istream.getBytes(versionData, 32 / 8);
 			_btcTransaction->version = UInt32GetLE(versionData);
 
-			uint8_t txInCountData[64 / 8];
-			istream.getBytes(txInCountData, 64 / 8);
-			_btcTransaction->inCount = UInt64GetLE(txInCountData);
+			uint8_t txInCountHead;
+			istream.getBytes(&txInCountHead, 8 / 8);
+			_btcTransaction->inCount = (size_t)ReadVarInt(istream, txInCountHead);
 
 			for (uint64_t i = 0; i < _btcTransaction->inCount; ++i) {
 				deserializeBtcTxIn(istream, _btcTransaction->inputs[i]);
 			}
 
-			uint8_t txOutCountData[64 / 8];
-			istream.getBytes(txOutCountData, 64 / 8);
-			_btcTransaction->outCount = UInt64GetLE(txOutCountData);
+			uint8_t txOutCountHead;
+			istream.getBytes(&txOutCountHead, 8 / 8);
+			_btcTransaction->outCount = (size_t)ReadVarInt(istream, txOutCountHead);
 
 			for (uint64_t i = 0; i < _btcTransaction->outCount; ++i) {
 				deserializeBtcTxOut(istream, _btcTransaction->outputs[i]);
@@ -180,12 +202,14 @@ namespace Elastos {
 			istream.getBytes(indexData, 32 / 8);
 			input.index = UInt32GetLE(indexData);
 
-			uint8_t signatureScriptLengthData[64 / 8];
-			istream.getBytes(indexData, 64 / 8);
-			input.sigLen = UInt64GetLE(signatureScriptLengthData);
+			uint8_t signatureScriptLengthDataHead;
+			istream.getBytes(&signatureScriptLengthDataHead, 8 / 8);
+			input.sigLen = (size_t)ReadVarInt(istream, signatureScriptLengthDataHead);
 
-			input.signature = (uint8_t *)malloc(input.sigLen * sizeof(uint8_t));
-			istream.getBytes(input.signature, input.sigLen);
+			if (input.sigLen != 0) {
+				input.signature = (uint8_t *)malloc(input.sigLen * sizeof(uint8_t));
+				istream.getBytes(input.signature, input.sigLen);
+			}
 
 			uint8_t sequenceData[32 / 8];
 			istream.getBytes(sequenceData, 32 / 8);
@@ -209,12 +233,14 @@ namespace Elastos {
 			istream.getBytes(amountData, 64 / 8);
 			output.amount = UInt64GetLE(amountData);
 
-			uint8_t pkScriptLengthData[64 / 8];
-			istream.putBytes(pkScriptLengthData, 64 / 8);
-			output.scriptLen = UInt64GetLE(pkScriptLengthData);
+			uint8_t pkScriptLengthDataHead;
+			istream.getBytes(&pkScriptLengthDataHead, 8 / 8);
+			output.scriptLen = (size_t)ReadVarInt(istream, pkScriptLengthDataHead);
 
-			output.script = (uint8_t *)malloc(output.scriptLen * sizeof(uint8_t));
-			istream.getBytes(output.script, output.scriptLen);
+			if (output.scriptLen != 0) {
+				output.script = (uint8_t *)malloc(output.scriptLen * sizeof(uint8_t));
+				istream.getBytes(output.script, output.scriptLen);
+			}
 		}
 
 		void AuxPow::serializeBtcBlockHeader(ByteStream &ostream) const {
@@ -258,7 +284,7 @@ namespace Elastos {
 
 			uint8_t timeStampData[32 / 8];
 			istream.getBytes(timeStampData, 32 / 8);
-			UInt32SetLE(timeStampData, _parBlockHeader->timestamp);
+			_parBlockHeader->timestamp = UInt32GetLE(timeStampData);
 
 			uint8_t bitsData[32 / 8];
 			istream.getBytes(bitsData, 32 / 8);

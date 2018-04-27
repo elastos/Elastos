@@ -71,11 +71,12 @@ WrapperList<Peer, BRPeer> TestWallet::loadPeers() {
 	Peer p1(7630401);
 	BRPeer *brp1 = p1.getRaw();
 	brp1->address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-	brp1->port = 10866;
+	brp1->port = 20866;
 	brp1->timestamp = time(nullptr);
 	brp1->services = uint64_t(1);
 
-	Peer p2(7630401);
+	//todo for test
+/*	Peer p2(7630401);
 	BRPeer *brp2 = p2.getRaw();
 	brp2->address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
 	brp2->port = 21338;
@@ -87,12 +88,12 @@ WrapperList<Peer, BRPeer> TestWallet::loadPeers() {
 	brp3->address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
 	brp3->port = 31338;
 	brp3->timestamp = time(nullptr);
-	brp3->services = uint64_t(1);
+	brp3->services = uint64_t(1);*/
 
 	WrapperList<Peer, BRPeer> peers(3);
 	int test = peers.size();
 	peers[0] = p1;
-	peers[1] = p2;
-	peers[2] = p3;
+/*	peers[1] = p2;
+	peers[2] = p3;*/
 	return peers;
 }

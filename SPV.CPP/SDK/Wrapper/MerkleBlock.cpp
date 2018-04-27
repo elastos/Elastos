@@ -160,7 +160,7 @@ namespace Elastos {
 
 			uint8_t timeStampData[32 / 8];
 			istream.getBytes(timeStampData, 32 / 8);
-			UInt32SetLE(timeStampData, _merkleBlock->timestamp);
+			_merkleBlock->timestamp = UInt32GetLE(timeStampData);
 
 			uint8_t bitsData[32 / 8];
 			istream.getBytes(bitsData, 32 / 8);
@@ -184,15 +184,16 @@ namespace Elastos {
 
 			uint8_t hashesCountData[32 / 8];
 			istream.getBytes(hashesCountData, 32 / 8);
-			_merkleBlock->hashesCount = _merkleBlock->flagsLen = UInt32GetLE(hashesCountData);
+			_merkleBlock->hashesCount = UInt32GetLE(hashesCountData);
 
+			_merkleBlock->hashes = (UInt256 *)calloc(_merkleBlock->hashesCount, sizeof(UInt256));
 			uint8_t hashData[256 / 8];
 			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
 				istream.getBytes(hashData, 256 / 8);
 				UInt256Get(&_merkleBlock->hashes[i], hashData);
 			}
 
-			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
+			//assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
 
 			for (uint32_t i = 0; i < _merkleBlock->flagsLen; ++i) {
 				_merkleBlock->flags[i] = istream.get();
