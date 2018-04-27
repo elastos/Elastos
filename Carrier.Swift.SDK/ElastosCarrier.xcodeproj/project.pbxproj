@@ -7,6 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A353E79720932FE400398BDC /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498432005BE7600420421 /* libelacarrier.a */; };
+		A353E79820932FE400398BDC /* libelacommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983A2005BE7600420421 /* libelacommon.a */; };
+		A353E79920932FE400398BDC /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498392005BE7600420421 /* libelasession.a */; };
+		A353E79A20932FE400398BDC /* libflatcc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498402005BE7600420421 /* libflatcc.a */; };
+		A353E79B20932FE400398BDC /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983E2005BE7600420421 /* libflatccrt.a */; };
+		A353E79C20932FE400398BDC /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983D2005BE7600420421 /* libpj.a */; };
+		A353E79D20932FE400398BDC /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983B2005BE7600420421 /* libpjlib-util.a */; };
+		A353E79E20932FE400398BDC /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983F2005BE7600420421 /* libpjmedia.a */; };
+		A353E79F20932FE400398BDC /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498412005BE7600420421 /* libpjnath.a */; };
+		A353E7A020932FE400398BDC /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983C2005BE7600420421 /* libsodium.a */; };
+		A353E7A120932FE400398BDC /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498422005BE7600420421 /* libtoxcore.a */; };
 		A360378020161AAF001A666E /* BootstrapNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360377F20161AAF001A666E /* BootstrapNode.swift */; };
 		A3B497C12003736300420421 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B497B72003736200420421 /* ElastosCarrier.framework */; };
 		A3B497C62003736300420421 /* ElastosCarrierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497C52003736300420421 /* ElastosCarrierTests.swift */; };
@@ -39,17 +50,6 @@
 		A3B498142003B3A500420421 /* NetworkTopology.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498072003B3A400420421 /* NetworkTopology.swift */; };
 		A3B498172003B3AF00420421 /* CarrierError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B498162003B3AE00420421 /* CarrierError.swift */; };
 		A3B4981920045F0A00420421 /* PresenceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B4981820045F0A00420421 /* PresenceStatus.swift */; };
-		A3B498442005BE7600420421 /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498392005BE7600420421 /* libelasession.a */; };
-		A3B498452005BE7600420421 /* libelacommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983A2005BE7600420421 /* libelacommon.a */; };
-		A3B498462005BE7600420421 /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983B2005BE7600420421 /* libpjlib-util.a */; };
-		A3B498472005BE7600420421 /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983C2005BE7600420421 /* libsodium.a */; };
-		A3B498482005BE7600420421 /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983D2005BE7600420421 /* libpj.a */; };
-		A3B498492005BE7600420421 /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983E2005BE7600420421 /* libflatccrt.a */; };
-		A3B4984A2005BE7600420421 /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983F2005BE7600420421 /* libpjmedia.a */; };
-		A3B4984B2005BE7600420421 /* libflatcc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498402005BE7600420421 /* libflatcc.a */; };
-		A3B4984C2005BE7600420421 /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498412005BE7600420421 /* libpjnath.a */; };
-		A3B4984D2005BE7600420421 /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498422005BE7600420421 /* libtoxcore.a */; };
-		A3B4984E2005BE7600420421 /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498432005BE7600420421 /* libelacarrier.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,17 +116,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A3B498442005BE7600420421 /* libelasession.a in Frameworks */,
-				A3B498452005BE7600420421 /* libelacommon.a in Frameworks */,
-				A3B4984E2005BE7600420421 /* libelacarrier.a in Frameworks */,
-				A3B498462005BE7600420421 /* libpjlib-util.a in Frameworks */,
-				A3B498472005BE7600420421 /* libsodium.a in Frameworks */,
-				A3B498482005BE7600420421 /* libpj.a in Frameworks */,
-				A3B498492005BE7600420421 /* libflatccrt.a in Frameworks */,
-				A3B4984A2005BE7600420421 /* libpjmedia.a in Frameworks */,
-				A3B4984B2005BE7600420421 /* libflatcc.a in Frameworks */,
-				A3B4984C2005BE7600420421 /* libpjnath.a in Frameworks */,
-				A3B4984D2005BE7600420421 /* libtoxcore.a in Frameworks */,
+				A353E79720932FE400398BDC /* libelacarrier.a in Frameworks */,
+				A353E79820932FE400398BDC /* libelacommon.a in Frameworks */,
+				A353E79920932FE400398BDC /* libelasession.a in Frameworks */,
+				A353E79A20932FE400398BDC /* libflatcc.a in Frameworks */,
+				A353E79B20932FE400398BDC /* libflatccrt.a in Frameworks */,
+				A353E79C20932FE400398BDC /* libpj.a in Frameworks */,
+				A353E79D20932FE400398BDC /* libpjlib-util.a in Frameworks */,
+				A353E79E20932FE400398BDC /* libpjmedia.a in Frameworks */,
+				A353E79F20932FE400398BDC /* libpjnath.a in Frameworks */,
+				A353E7A020932FE400398BDC /* libsodium.a in Frameworks */,
+				A353E7A120932FE400398BDC /* libtoxcore.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +340,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0920;
-				LastUpgradeCheck = 0920;
+				LastUpgradeCheck = 0930;
 				ORGANIZATIONNAME = org.elastos;
 				TargetAttributes = {
 					A3B497B62003736200420421 = {
@@ -457,6 +457,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -464,6 +465,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -517,6 +519,7 @@
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -524,6 +527,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
@@ -580,6 +584,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 x86_64";
 			};
 			name = Debug;
 		};
@@ -606,6 +611,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = "arm64 x86_64";
 			};
 			name = Release;
 		};
