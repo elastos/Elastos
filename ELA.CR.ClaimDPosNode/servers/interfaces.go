@@ -120,14 +120,15 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
-	txInfo := GetTransactionInfo(header, tx)
-	txInfo.Time = header.Timestamp
-	txInfo.Confirmations = chain.DefaultLedger.Blockchain.GetBestHeight() - height + 1
-	w := new(bytes.Buffer)
-	tx.Serialize(w)
-	txInfo.Size = uint32(len(w.Bytes()))
 
-	return ResponsePack(Success, txInfo)
+	decoded, ok := param.Bool("decoded")
+	if decoded {
+		return ResponsePack(Success, GetTransactionInfo(header, tx))
+	} else {
+		buf := new(bytes.Buffer)
+		tx.Serialize(buf)
+		return ResponsePack(Success, BytesToHexString(buf.Bytes()))
+	}
 }
 
 func GetNeighbors(param Params) map[string]interface{} {
