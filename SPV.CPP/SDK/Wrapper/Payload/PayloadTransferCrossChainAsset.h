@@ -2,25 +2,24 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADRECORD_H
-#define __ELASTOS_SDK_PAYLOADRECORD_H
+#ifndef __ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H
+#define __ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H
+
+#include <map>
 
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace SDK {
-		class PayloadRecord :
+
+		class PayloadTransferCrossChainAsset :
 				public IPayload {
 		public:
-			PayloadRecord();
+			PayloadTransferCrossChainAsset();
 
-			PayloadRecord(const std::string &recordType, const ByteData recordData);
+			PayloadTransferCrossChainAsset(const std::map<std::string, uint64_t> addressMap);
 
-			~PayloadRecord();
-
-			std::string getRecordType() const;
-
-			ByteData getRecordData() const;
+			~PayloadTransferCrossChainAsset();
 
 			virtual ByteData getData() const;
 
@@ -29,10 +28,11 @@ namespace Elastos {
 			virtual void Deserialize(ByteStream &istream);
 
 		private:
-			std::string _recordType;
-			ByteData _recordData;
+
+			std::map<std::string, uint64_t> _addressMap;
+
 		};
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADRECORD_H
+#endif //__ELASTOS_SDK_PAYLOADTRANSFERCROSSCHAINASSET_H

@@ -14,22 +14,22 @@ namespace Elastos {
 
 			ByteStream();
 
-			ByteStream(int size);
+			ByteStream(uint64_t size);
 
-			ByteStream(uint8_t *buf, int size, bool autorelease = true);
+			ByteStream(uint8_t *buf, uint64_t size, bool autorelease = true);
 
 			~ByteStream();
 
 		public:
 			void reSet();
 
-			void setPosition(int position);
+			void setPosition(uint64_t position);
 
-			int position();
+			uint64_t position();
 
-			int32_t length();
+			uint64_t length();
 
-			size_t availableSize();
+			uint64_t availableSize();
 
 			void skip(int bytes);
 
@@ -50,9 +50,11 @@ namespace Elastos {
 
 			void putUint64(uint64_t v);
 
-			void putBytes(const uint8_t *byte, int len);
+			void putBytes(const uint8_t *byte, uint64_t len);
 
 			void putUTF8(const char *str);
+
+			void putVarUint(uint64_t value);
 
 		public:
 			uint8_t get();
@@ -77,18 +79,20 @@ namespace Elastos {
 
 			char *getUTF8(int32_t &len);
 
-			void getBytes(uint8_t *buf, int32_t len);
+			void getBytes(uint8_t *buf, uint64_t len);
 
 			void getInts(int32_t *buf, int32_t len);
 
-		private:
-			void ensureCapacity(int newsize);
-
-			bool checkSize(int readSize);
+			uint64_t getVarUint();
 
 		private:
-			int32_t _count;
-			int32_t _size;
+			void ensureCapacity(uint64_t newsize);
+
+			bool checkSize(uint64_t readSize);
+
+		private:
+			uint64_t _count;
+			uint64_t _size;
 			uint8_t *_buf;
 			bool _autorelease;
 		};

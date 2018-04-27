@@ -108,6 +108,8 @@ namespace Elastos {
 
 			} else if (_type == IssueToken) {
 
+			} else if (_type == WithdrawAsset) {
+
 			} else if (_type == TransferCrossChainAsset) {
 
 			}

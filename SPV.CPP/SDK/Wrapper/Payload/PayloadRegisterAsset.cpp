@@ -6,6 +6,7 @@
 
 namespace Elastos {
 	namespace SDK {
+
 		PayloadRegisterAsset::PayloadRegisterAsset() :
 				_amount(0),
 				_controller(UINT168_ZERO) {

@@ -1,6 +1,5 @@
 #include "ByteStream.h"
-#include <stdio.h>
-#include <cstring>
+#include "BRAddress.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -10,12 +9,12 @@ namespace Elastos {
 				: _count(0), _size(0), _buf(NULL), _autorelease(true) {
 		}
 
-		ByteStream::ByteStream(int size)
+		ByteStream::ByteStream(uint64_t size)
 				: _count(0), _size(size), _buf(new uint8_t[size]), _autorelease(true) {
 			memset(_buf, 0, sizeof(uint8_t) * size);
 		}
 
-		ByteStream::ByteStream(uint8_t *buf, int size, bool autorelease)
+		ByteStream::ByteStream(uint8_t *buf, uint64_t size, bool autorelease)
 				: _count(0), _size(size), _buf(buf), _autorelease(autorelease) {}
 
 		ByteStream::~ByteStream() {
@@ -26,17 +25,18 @@ namespace Elastos {
 
 		}
 
-		void ByteStream::ensureCapacity(int newsize) {
+		void ByteStream::ensureCapacity(uint64_t newsize) {
 			if (newsize - _size > 0) {
-				int oldCapacity = _size;
-				int newCapacity = oldCapacity << 1;
-				if (newCapacity - newsize < 0)
+				uint64_t oldCapacity = _size;
+				uint64_t newCapacity = oldCapacity << 1;
+				int64_t diff = newCapacity - newsize;
+				if (diff <= 0)
 					newCapacity = newsize;
-				if (newCapacity < 0) {
-					if (newsize < 0) // overflow
-						return;
-					newCapacity = INT32_MAX;
-				}
+//				if (newCapacity < 0) {
+//					if (newsize < 0) // overflow
+//						return;
+//					newCapacity = UINT64_MAX;
+//				}
 				uint8_t *newBuf = new uint8_t[newCapacity];
 				memset(newBuf, 0, newCapacity);
 				memcpy(newBuf, _buf, oldCapacity);
@@ -46,21 +46,21 @@ namespace Elastos {
 			}
 		}
 
-		bool ByteStream::checkSize(int readSize) {
+		bool ByteStream::checkSize(uint64_t readSize) {
 			if (_count + readSize > _size)
 				return false;
 			return true;
 		}
 
-		void ByteStream::setPosition(int position) {
+		void ByteStream::setPosition(uint64_t position) {
 			_count = position;
 		}
 
-		int ByteStream::position() {
+		uint64_t ByteStream::position() {
 			return _count;
 		}
 
-		int32_t ByteStream::length() {
+		uint64_t ByteStream::length() {
 			return _size;
 		}
 
@@ -217,17 +217,28 @@ namespace Elastos {
 			return ret;
 		}
 
-		void ByteStream::putBytes(const uint8_t *byte, int len) {
+		void ByteStream::putBytes(const uint8_t *byte, uint64_t len) {
 			ensureCapacity(position() + sizeof(uint8_t) * len);
 			memcpy(&_buf[position()], byte, len);
 			_count += len;
 		}
 
-		void ByteStream::getBytes(uint8_t *buf, int len) {
+		void ByteStream::getBytes(uint8_t *buf, uint64_t len) {
 			if (!checkSize(sizeof(uint8_t) * len))
 				return;
 			memcpy(buf, &_buf[_count], len);
 			_count += len;
+		}
+
+		uint64_t ByteStream::getVarUint() {
+			size_t len = 0;
+			uint8_t tbuff[64 / 8];
+			memcpy(tbuff, &_buf[_count], sizeof(tbuff));
+			uint64_t value = BRVarInt(tbuff, sizeof(tbuff), &len);
+
+			getBytes(tbuff, len);
+			value = *tbuff;
+			return value;
 		}
 
 		void ByteStream::putUTF8(const char *str) {
@@ -239,6 +250,12 @@ namespace Elastos {
 			}
 			putShort(len);
 			putBytes((uint8_t *) str, len);
+		}
+
+		void ByteStream::putVarUint(uint64_t value) {
+			uint8_t tbuff[64 / 8];
+			uint64_t len = BRVarIntSet(tbuff, sizeof(tbuff), value);
+			putBytes(tbuff, len);
 		}
 
 		char *ByteStream::getUTF8(int32_t &len) {
@@ -256,7 +273,7 @@ namespace Elastos {
 			return utfBuffer;
 		}
 
-		size_t ByteStream::availableSize() {
+		uint64_t ByteStream::availableSize() {
 			size_t ret = _size - _count;
 
 			return ret;

@@ -36,7 +36,8 @@ namespace Elastos {
 				Deploy                  = 0x04,
 				SideMining              = 0x05,
 				IssueToken              = 0x06,
-				TransferCrossChainAsset = 0x07,
+				WithdrawAsset           = 0x07,
+				TransferCrossChainAsset = 0x08,
 			};
 
 		public:

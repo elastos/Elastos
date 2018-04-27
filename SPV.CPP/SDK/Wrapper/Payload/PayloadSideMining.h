@@ -2,25 +2,23 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADRECORD_H
-#define __ELASTOS_SDK_PAYLOADRECORD_H
+#ifndef __ELASTOS_SDK_PAYLOADSIDEMINING_H
+#define __ELASTOS_SDK_PAYLOADSIDEMINING_H
 
 #include "IPayload.h"
+#include "BRInt.h"
 
 namespace Elastos {
 	namespace SDK {
-		class PayloadRecord :
+
+		class PayloadSideMining :
 				public IPayload {
 		public:
-			PayloadRecord();
+			PayloadSideMining();
 
-			PayloadRecord(const std::string &recordType, const ByteData recordData);
+			PayloadSideMining(const UInt256 &sideBlockHash, const UInt256 &sideGensisHash);
 
-			~PayloadRecord();
-
-			std::string getRecordType() const;
-
-			ByteData getRecordData() const;
+			~PayloadSideMining();
 
 			virtual ByteData getData() const;
 
@@ -29,10 +27,10 @@ namespace Elastos {
 			virtual void Deserialize(ByteStream &istream);
 
 		private:
-			std::string _recordType;
-			ByteData _recordData;
+			UInt256 _sideBlockHash;
+			UInt256 _sideGenesisHash;
 		};
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADRECORD_H
+#endif //__ELASTOS_SDK_PAYLOADSIDEMINING_H
