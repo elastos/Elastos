@@ -2,6 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRPeerMessages.h>
+#include <BRPeerManager.h>
+#include "BRArray.h"
 #include "BRPeerMessages.h"
 
 #include "GetDataMessage.h"
@@ -27,7 +30,7 @@ namespace Elastos {
 			}
 
 			for (i = 0, off = 0; i < blockCount; i++) {
-				msg[off] = inv_block;	//todo core get message use inv_filtered_block here, figure out differences later
+				msg[off] = inv_block;    //todo core get message use inv_filtered_block here, figure out differences later
 				off += sizeof(uint8_t);
 				UInt256Set(&msg[off], blockHashes[i]);
 				off += sizeof(UInt256);
@@ -39,7 +42,44 @@ namespace Elastos {
 		}
 
 		int GetDataMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			return 0;
+
+			BRPeerContext *ctx = (BRPeerContext *) peer;
+			size_t off = 0;
+
+			int r = 1;
+
+			BRTransaction *tx = nullptr;
+
+			inv_type type = (inv_type) msg[off];
+			off += sizeof(uint8_t);
+
+			UInt256 hash;
+			UInt256Get(&hash, &msg[off]);
+
+			bool notfound = true;
+			if (type == inv_tx) {
+				if (ctx->requestedTx) tx = ctx->requestedTx(ctx->info, hash);
+
+				if (tx && BRTransactionSize(tx) < TX_MAX_SIZE) {
+					notfound = false;
+					ctx->manager->peerMessages->BRPeerSendTxMessage(peer, tx);
+				}
+			}
+
+			if (notfound) {
+				size_t bufLength = sizeof(hash); // + sizeof(uint8_t);
+				off = 0;
+
+				uint8_t buf[bufLength];
+
+				//todo uncomment this when notfound message of ELA.Utility updated
+//				buf[off] = uint8_t(type);
+//				off += sizeof(uint8_t);
+				UInt256Set(&buf[off], hash);
+				BRPeerSendMessage(peer, buf, bufLength, MSG_NOTFOUND);
+			}
+
+			return r;
 		}
 
 		void GetDataMessage::Send(BRPeer *peer) {
