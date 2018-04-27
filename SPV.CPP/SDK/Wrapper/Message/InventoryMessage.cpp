@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include <float.h>
+#include <BRPeerMessages.h>
 
 #include "BRPeer.h"
 #include "BRPeerMessages.h"
@@ -107,7 +108,7 @@ namespace Elastos {
 
 					if (txCount > 0 && ctx->mempoolCallback) {
 						Log::getLogger()->warn("got initial mempool response");
-						BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
+						ctx->manager->peerMessages->BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
 						ctx->mempoolCallback = nullptr;
 						ctx->mempoolTime = DBL_MAX;
 					}

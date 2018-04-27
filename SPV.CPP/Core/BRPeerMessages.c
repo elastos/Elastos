@@ -781,11 +781,10 @@ int BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		peer_log(peer, "malformed pong message, length is %zu, should be %zu", msgLen, sizeof(uint64_t));
 		r = 0;
 	}
-	//todo for test
-	/*else if (UInt64GetLE(msg) != ctx->nonce) {
+	else if (UInt64GetLE(msg) != ctx->nonce) {
 		peer_log(peer, "pong message has wrong nonce: %" PRIu64 ", expected: %" PRIu64, UInt64GetLE(msg), ctx->nonce);
 		r = 0;
-	}*/
+	}
 	else if (array_count(ctx->pongCallback) == 0) {
 		peer_log(peer, "got unexpected pong");
 		r = 0;
@@ -922,6 +921,11 @@ BRPeerMessages *BRPeerMessageNew(void) {
 
 	peerMessages->BRPeerAcceptInventoryMessage = _BRPeerAcceptInvMessage;
 	peerMessages->BRPeerSendInventoryMessage = BRPeerSendInv;
+
+	peerMessages->BRPeerSendPingMessage = BRPeerSendPingMessage;
+	peerMessages->BRPeerAcceptPingMessage = BRPeerAcceptPingMessage;
+
+	peerMessages->BRPeerAcceptPongMessage = BRPeerAcceptPongMessage;
 
 	peerMessages->BRPeerAcceptTxMessage = _BRPeerAcceptTxMessage;
 	peerMessages->BRPeerSendTxMessage = BRPeerSendTxMessage;

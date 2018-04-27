@@ -90,6 +90,11 @@ typedef struct {
 	void (*BRPeerSendInventoryMessage)(BRPeer *peer, const UInt256 txHashes[], size_t txCount);
 	int (*BRPeerAcceptInventoryMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
+	void (*BRPeerSendPingMessage)(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
+	int (*BRPeerAcceptPingMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
+	int (*BRPeerAcceptPongMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+
 	void (*BRPeerSendTxMessage)(BRPeer *peer, BRTransaction *tx);
 	int (*BRPeerAcceptTxMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 

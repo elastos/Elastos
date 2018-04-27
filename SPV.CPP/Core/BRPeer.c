@@ -114,8 +114,8 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
     else if (strncmp(MSG_GETADDR, type, 12) == 0) BRPeerAcceptGetAddrMessage(peer, msg, msgLen);
     else if (strncmp(MSG_GETDATA, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptGetdataMessage(peer, msg, msgLen);
     else if (strncmp(MSG_NOTFOUND, type, 12) == 0)r = ctx->manager->peerMessages->BRPeerAcceptNotFoundMessage(peer, msg, msgLen);
-    else if (strncmp(MSG_PING, type, 12) == 0) BRPeerAcceptPingMessage(peer, msg, msgLen);
-    else if (strncmp(MSG_PONG, type, 12) == 0) BRPeerAcceptPongMessage(peer, msg, msgLen);
+    else if (strncmp(MSG_PING, type, 12) == 0) ctx->manager->peerMessages->BRPeerAcceptPingMessage(peer, msg, msgLen);
+    else if (strncmp(MSG_PONG, type, 12) == 0) ctx->manager->peerMessages->BRPeerAcceptPongMessage(peer, msg, msgLen);
     else if (strncmp(MSG_MERKLEBLOCK, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptMerkleblockMessage(peer, msg, msgLen);
     else if (strncmp(MSG_REJECT, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptRejectMessage(peer, msg, msgLen);
     else if (strncmp(MSG_FEEFILTER, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptFeeFilterMessage(peer, msg, msgLen);
@@ -235,7 +235,7 @@ static void *_peerThreadRoutine(void *arg)
 
                 if (! error && time >= ctx->mempoolTime) {
                     peer_log(peer, "done waiting for mempool response");
-                    BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
+                    ctx->manager->peerMessages->BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
                     ctx->mempoolCallback = NULL;
                     ctx->mempoolTime = DBL_MAX;
                 }
