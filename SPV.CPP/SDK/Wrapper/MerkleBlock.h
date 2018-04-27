@@ -13,7 +13,7 @@
 #include "Wrapper.h"
 #include "ByteData.h"
 #include "ELAMessageSerializable.h"
-#include "AuxPow.h"
+#include "../ELACoreExt/AuxPow.h"
 
 namespace Elastos {
 	namespace SDK {

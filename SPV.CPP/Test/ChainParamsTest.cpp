@@ -10,11 +10,4 @@ using namespace Elastos::SDK;
 
 TEST_CASE( "ChainParams construct test", "[ChainParams]" ) {
 
-	SECTION("Construct with BRChainParams") {
-
-		ChainParams cp = ChainParams(BRMainNetParams);
-
-		REQUIRE(cp.getRaw() != nullptr);
-	}
-
 }

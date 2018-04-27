@@ -9,7 +9,7 @@
 
 #include "BRTransaction.h"
 
-#include "Payload/IPayload.h"
+#include "../ELACoreExt/Payload/IPayload.h"
 #include "Wrapper.h"
 #include "ByteData.h"
 #include "SharedWrapperList.h"
@@ -18,7 +18,7 @@
 #include "Key.h"
 #include "WrapperList.h"
 #include "ELAMessageSerializable.h"
-#include "Attribute.h"
+#include "../ELACoreExt/Attribute.h"
 #include "Program.h"
 
 namespace Elastos {
