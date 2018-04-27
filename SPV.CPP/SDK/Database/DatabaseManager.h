@@ -22,7 +22,7 @@ namespace Elastos {
 			// Transaction's database interface
 			bool putTransaction(const std::string &iso, const TransactionEntity &tx);
 			bool deleteAllTransactions(const std::string &iso);
-			std::vector<TransactionEntity> getAllTransactions(const std::string &iso);
+			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
 			bool updateTransaction(const std::string &iso, const TransactionEntity &txEntity);
 			bool deleteTxByHash(const std::string &iso, const std::string &hash);
 

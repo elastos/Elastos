@@ -77,7 +77,7 @@ void TestConnectPeer::runPeerConnectTest() {
 		BRMainNetCheckpoints,
 		sizeof(BRMainNetCheckpoints) / sizeof(*BRMainNetCheckpoints)
 	};
-	ChainParams cp = ChainParams(BRMainNetParams);
+	ChainParams cp = ChainParams::mainNet();
 
 	std::string phrase = "a test seed ha";
 	MasterPubKeyPtr pk = MasterPubKeyPtr(new MasterPubKey(phrase));

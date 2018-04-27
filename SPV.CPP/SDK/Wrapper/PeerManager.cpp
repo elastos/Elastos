@@ -96,7 +96,7 @@ namespace Elastos {
 			}
 		}
 
-		PeerManager::PeerManager(ChainParams &params,
+		PeerManager::PeerManager(const ChainParams &params,
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
 								 const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,

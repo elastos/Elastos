@@ -5,6 +5,8 @@
 #ifndef __ELASTOS_SDK_WALLETMANAGER_H__
 #define __ELASTOS_SDK_WALLETMANAGER_H__
 
+#include <boost/function.hpp>
+
 #include "CoreWalletManager.h"
 #include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
@@ -15,15 +17,26 @@ namespace Elastos {
 		class WalletManager :
 				public CoreWalletManager {
 		public:
-			WalletManager(const MasterPubKeyPtr &masterPubKey,
-						  const ChainParams &chainParams,
-						  uint32_t earliestPeerTime,
-						  const boost::filesystem::path &path);
+			WalletManager(const ChainParams &chainParams = ChainParams::mainNet());
 
-			~WalletManager();
+			WalletManager(const std::string &phrase, const ChainParams &chainParams = ChainParams::mainNet());
+
+			virtual ~WalletManager();
+
+			void start();
+
+			void stop();
+
+			UInt256 signAndPublishTransaction(const TransactionPtr &transaction);
+
+			SharedWrapperList<Transaction, BRTransaction *> getTransactions(
+					const boost::function<bool(const TransactionPtr &)> filter) const;
+
+			void registerWalletListener(Wallet::Listener *listener);
+
+			void registerPeerManagerListener(PeerManager::Listener *listener);
 
 		public:
-			//todo override Wallet listener
 			// func balanceChanged(_ balance: UInt64)
 			virtual void balanceChanged(uint64_t balance);
 
@@ -36,7 +49,6 @@ namespace Elastos {
 			// func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
 			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 		public:
-			//todo override PeerManager listener
 			// func syncStarted()
 			virtual void syncStarted();
 
@@ -71,13 +83,14 @@ namespace Elastos {
 
 			virtual const WalletListenerPtr &createWalletListener();
 
-			//todo override other protected methods
-
 		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
+			MasterPubKeyPtr _masterPubKey;
+			ByteData _phraseData;
 
-			const std::string _iso = "ela";
+			std::vector<Wallet::Listener *> _walletListeners;
+			std::vector<PeerManager::Listener *> _peerManagerListeners;
 		};
 
 	}

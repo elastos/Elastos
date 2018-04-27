@@ -8,14 +8,11 @@
 namespace Elastos {
 	namespace SDK {
 
-		ChainParams::ChainParams(const BRChainParams &chainParams) {
-			_chainParams = boost::shared_ptr<BRChainParams>(new BRChainParams);
-			*_chainParams = chainParams;
+		ChainParams ChainParams::_mainNet = ChainParams(BRMainNetParams);
+		ChainParams ChainParams::_testNet = ChainParams(BRTestNetParams);
 
-			_mainNetChainParams = &BRMainNetParams;
-			_testNetChainParams = &BRTestNetParams;
-			_mainNetBcashChainParams = &BRBCashMainNetParams;
-			_testNetBcashChainParams = &BRBCashTestNetParams;
+		ChainParams::ChainParams(const BRChainParams &chainParams) {
+			_chainParams = boost::shared_ptr<BRChainParams>(new BRChainParams(chainParams));
 		}
 
 		std::string ChainParams::toString() const {
@@ -29,6 +26,14 @@ namespace Elastos {
 
 		uint32_t ChainParams::getMagicNumber() const {
 			return _chainParams->magicNumber;
+		}
+
+		const ChainParams &ChainParams::mainNet() {
+			return _mainNet;
+		}
+
+		const ChainParams &ChainParams::testNet() {
+			return _testNet;
 		}
 
 	}

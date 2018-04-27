@@ -17,21 +17,23 @@ namespace Elastos {
 		class ChainParams :
 			public Wrapper<BRChainParams>{
 		public:
-			ChainParams(const BRChainParams &chainParams);
-
 			virtual std::string toString() const;
 
 			virtual BRChainParams *getRaw() const;
 
 			uint32_t getMagicNumber() const;
 
+			static const ChainParams &mainNet();
+
+			static const ChainParams &testNet();
+
 		private:
+			ChainParams(const BRChainParams &chainParams);
+
 			boost::shared_ptr<BRChainParams> _chainParams;
 
-			const BRChainParams *_mainNetChainParams;
-			const BRChainParams *_testNetChainParams;
-			const BRChainParams *_mainNetBcashChainParams;
-			const BRChainParams *_testNetBcashChainParams;
+			static ChainParams _mainNet;
+			static ChainParams _testNet;
 		};
 
 	}

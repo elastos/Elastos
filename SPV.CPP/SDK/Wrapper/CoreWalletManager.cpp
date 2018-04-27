@@ -16,21 +16,25 @@ namespace Elastos {
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_STATUS = false;
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_IO = false;
 
-		CoreWalletManager::CoreWalletManager(
-				const MasterPubKeyPtr &masterPubKey,
-				const ChainParams &chainParams,
-				uint32_t earliestPeerTime) :
+		CoreWalletManager::CoreWalletManager() :
 				_wallet(nullptr),
 				_walletListener(nullptr),
 				_peerManager(nullptr),
 				_peerManagerListener(nullptr),
-				_masterPubKey(masterPubKey),
-				_chainParams(chainParams),
-				_earliestPeerTime(earliestPeerTime) {
+				_chainParams(nullptr),
+				_masterPubKey(nullptr) {
 		}
 
 		CoreWalletManager::~CoreWalletManager() {
 
+		}
+
+		void CoreWalletManager::init(const MasterPubKeyPtr &masterPubKey,
+								const ChainParams *chainParams,
+								uint32_t earliestPeerTime) {
+			_masterPubKey = masterPubKey;
+			_earliestPeerTime = earliestPeerTime;
+			_chainParams = chainParams;
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {
@@ -43,8 +47,8 @@ namespace Elastos {
 		const PeerManagerPtr &CoreWalletManager::getPeerManager() {
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
-						_chainParams,
-						_wallet,
+						*_chainParams,
+						getWallet(),
 						_earliestPeerTime,
 						loadBlocks(),
 						loadPeers(),
@@ -64,7 +68,7 @@ namespace Elastos {
 			std::stringstream ss;
 			ss << "BRCoreWalletManager {" <<
 			   "\n  masterPubKey      : " << _masterPubKey->toString() <<
-			   "\n  chainParams       : " << _chainParams.toString() <<
+			   "\n  chainParams       : " << _chainParams->toString() <<
 			   "\n  earliest peer time: " << _earliestPeerTime <<
 			   "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress() : "") <<
 			   "\n  peerManager status: "

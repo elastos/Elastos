@@ -7,9 +7,8 @@
 
 #include "Key.h"
 
-TestWallet::TestWallet(const MasterPubKeyPtr &masterPubKey, const ChainParams &chainParams, uint32_t earliestPeerTime)
-	: CoreWalletManager(masterPubKey, chainParams, earliestPeerTime) {
-
+TestWallet::TestWallet(const MasterPubKeyPtr &masterPubKey, const ChainParams &chainParams, uint32_t earliestPeerTime) {
+	init(masterPubKey, &chainParams, earliestPeerTime);
 }
 
 void TestWallet::balanceChanged(uint64_t balance) {
