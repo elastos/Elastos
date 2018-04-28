@@ -28,10 +28,10 @@ namespace Elastos {
 		void ByteStream::ensureCapacity(uint64_t newsize) {
 			if (newsize - _size > 0) {
 				uint64_t oldCapacity = _size;
-				uint64_t newCapacity = oldCapacity << 1;
-				int64_t diff = newCapacity - newsize;
-				if (diff <= 0)
-					newCapacity = newsize;
+				uint64_t newCapacity = newsize;
+//				int64_t diff = newCapacity - newsize;
+//				if (diff <= 0)
+//					newCapacity = newsize;
 //				if (newCapacity < 0) {
 //					if (newsize < 0) // overflow
 //						return;
