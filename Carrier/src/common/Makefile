@@ -25,7 +25,7 @@ endif
 endif
 
 ifeq (, $(findstring $(HOST), Android Darwin iOS))
-    LIBS := $(LIBS) -lpthread
+    LIBS := $(LIBS) -lpthread -lrt
 endif
 
 STLIBNAME = $(LIBNAME).a

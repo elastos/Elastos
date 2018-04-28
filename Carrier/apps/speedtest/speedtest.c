@@ -597,7 +597,7 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
             char msg_len[32] = {0};
             char *msg_arg[2] = {NULL, NULL};
             char *write_arg[3] = {NULL, NULL, NULL};
-            char buf[3][32] = {0};
+            char buf[3][32] = {{0}};
             int pkt_size = 1000;
             int pkt_count = 1000;
             struct stat st = {0};

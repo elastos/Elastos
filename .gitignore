@@ -21,4 +21,6 @@ tags
 
 /src/carrier/elacp_generated.h
 /apps/shell/elashell
+/apps/pfd/elapfd
+/apps/speedtest/speedtest
 
