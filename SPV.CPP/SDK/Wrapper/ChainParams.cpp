@@ -2,12 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRChainParams.h>
 #include "ChainParams.h"
 #include "BRBCashParams.h"
 
 namespace Elastos {
 	namespace SDK {
 
+		bool ChainParams::_paramsInit = false;
 		ChainParams ChainParams::_mainNet = ChainParams(BRMainNetParams);
 		ChainParams ChainParams::_testNet = ChainParams(BRTestNetParams);
 
@@ -34,6 +36,17 @@ namespace Elastos {
 
 		const ChainParams &ChainParams::testNet() {
 			return _testNet;
+		}
+
+		void ChainParams::tryInit() {
+			if(_paramsInit == true) return;
+
+			_mainNet.getRaw()->standardPort = 20866;
+			_mainNet.getRaw()->magicNumber = 7630401;
+
+			//todo init test net here
+
+			_paramsInit = false;
 		}
 
 	}

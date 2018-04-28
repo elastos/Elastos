@@ -30,8 +30,11 @@ namespace Elastos {
 		private:
 			ChainParams(const BRChainParams &chainParams);
 
+			static void tryInit();
+
 			boost::shared_ptr<BRChainParams> _chainParams;
 
+			static bool _paramsInit;
 			static ChainParams _mainNet;
 			static ChainParams _testNet;
 		};
