@@ -17,8 +17,8 @@ namespace Elastos {
 	namespace SDK {
 
 		class TransactionOutput :
-			public Wrapper<BRTxOutput>,
-			public ELAMessageSerializable{
+				public Wrapper<BRTxOutput>,
+				public ELAMessageSerializable {
 
 		public:
 
@@ -35,6 +35,8 @@ namespace Elastos {
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual void Deserialize(ByteStream &istream);
+
+			BRTxOutput *convertToRaw() const;
 
 			std::string getAddress() const;
 
@@ -57,6 +59,9 @@ namespace Elastos {
 			const UInt168 &getProgramHash() const;
 
 			void setProgramHash(const UInt168 &hash);
+
+		private:
+			void convertFrom(const BRTxOutput *raw);
 
 		private:
 			boost::shared_ptr<BRTxOutput> _output;

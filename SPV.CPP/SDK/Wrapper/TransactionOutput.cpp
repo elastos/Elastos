@@ -2,8 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRTransaction.h>
 #include <iostream>
+
+#include "ELABRTxOutput.h"
 #include "TransactionOutput.h"
 
 namespace Elastos {
@@ -19,10 +20,9 @@ namespace Elastos {
 		}
 
 		TransactionOutput::TransactionOutput(BRTxOutput *output) {
-
+			assert(output != nullptr);
 			_output = boost::shared_ptr<BRTxOutput>(output);
-			_assetId = UINT256_ZERO;
-			_programHash = UINT168_ZERO;
+			convertFrom(output);
 		}
 
 		TransactionOutput::TransactionOutput(uint64_t amount, const ByteData &script) {
@@ -122,6 +122,24 @@ namespace Elastos {
 
 		void TransactionOutput::setProgramHash(const UInt168 &hash) {
 			_programHash = hash;
+		}
+
+		BRTxOutput *TransactionOutput::convertToRaw() const {
+			boost::shared_ptr<ELABRTxOutput> output = boost::shared_ptr<ELABRTxOutput>(new ELABRTxOutput);
+			output->raw.script = nullptr;
+			BRTxOutputSetScript(&output->raw, _output->script, _output->scriptLen);
+			output->raw.amount = _output->amount;
+			output->outputLock = _outputLock;
+			UInt256Set(&output->assetId, _assetId);
+			UInt168Set(&output->programHash, _programHash);
+			return (BRTxOutput *) output.get();
+		}
+
+		void TransactionOutput::convertFrom(const BRTxOutput *raw) {
+			ELABRTxOutput *elabrTxOutput = (ELABRTxOutput *) raw;
+			UInt256Set(&_assetId, elabrTxOutput->assetId);
+			UInt168Set(&_programHash, elabrTxOutput->programHash);
+			_outputLock = elabrTxOutput->outputLock;
 		}
 
 	}

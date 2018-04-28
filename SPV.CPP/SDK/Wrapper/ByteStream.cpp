@@ -26,17 +26,17 @@ namespace Elastos {
 		}
 
 		void ByteStream::ensureCapacity(uint64_t newsize) {
-			if (newsize - _size > 0) {
+			if ((int64_t)(newsize - _size) > 0) {
 				uint64_t oldCapacity = _size;
-				uint64_t newCapacity = newsize;
-//				int64_t diff = newCapacity - newsize;
-//				if (diff <= 0)
-//					newCapacity = newsize;
-//				if (newCapacity < 0) {
-//					if (newsize < 0) // overflow
-//						return;
-//					newCapacity = UINT64_MAX;
-//				}
+				uint64_t newCapacity = oldCapacity << 1;
+				int64_t diff = newCapacity - newsize;
+				if (diff <= 0)
+					newCapacity = newsize;
+				if (newCapacity <= 0) {
+					if (newsize <= 0) // overflow
+						return;
+					newCapacity = UINT64_MAX;
+				}
 				uint8_t *newBuf = new uint8_t[newCapacity];
 				memset(newBuf, 0, newCapacity);
 				memcpy(newBuf, _buf, oldCapacity);
