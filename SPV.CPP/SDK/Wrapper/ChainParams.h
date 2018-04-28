@@ -17,6 +17,12 @@ namespace Elastos {
 		class ChainParams :
 			public Wrapper<BRChainParams>{
 		public:
+			ChainParams();
+
+			ChainParams(const ChainParams& chainParams);
+
+			ChainParams &operator=(const ChainParams &params);
+
 			virtual std::string toString() const;
 
 			virtual BRChainParams *getRaw() const;

@@ -26,7 +26,7 @@ namespace Elastos {
 			virtual ~CoreWalletManager();
 
 			void init(const MasterPubKeyPtr &masterPubKey,
-					  const ChainParams *chainParams,
+					  const ChainParams &chainParams,
 					  uint32_t earliestPeerTime);
 
 			const WalletPtr &getWallet();
@@ -98,7 +98,7 @@ namespace Elastos {
 
 			MasterPubKeyPtr _masterPubKey;
 
-			const ChainParams *_chainParams;
+			ChainParams _chainParams;
 
 			uint32_t _earliestPeerTime;
 

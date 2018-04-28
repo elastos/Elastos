@@ -23,7 +23,7 @@ namespace Elastos {
 			_masterPubKey = MasterPubKeyPtr(new MasterPubKey); //todo check if this can be initialized by WALLET_STORE_FILE
 			//todo init _phraseData
 
-			CoreWalletManager::init(_masterPubKey, &chainParams, earliestPeerTime);
+			CoreWalletManager::init(_masterPubKey, chainParams, earliestPeerTime);
 		}
 
 		WalletManager::WalletManager(const std::string &phrase, const ChainParams &chainParams) :
@@ -34,7 +34,7 @@ namespace Elastos {
 			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(phrase)); //todo check if this can be initialized by WALLET_STORE_FILE
 			//todo init _phraseData from phrase
 
-			init(_masterPubKey, &chainParams, earliestPeerTime);
+			init(_masterPubKey, chainParams, earliestPeerTime);
 		}
 
 		WalletManager::~WalletManager() {
@@ -167,13 +167,13 @@ namespace Elastos {
 		}
 
 		bool WalletManager::networkIsReachable() {
-			_peerManager->connect();
 
+			bool reachable = true;
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [](PeerManager::Listener * listener) {
-							  listener->networkIsReachable();
+						  [&reachable](PeerManager::Listener * listener) {
+							  reachable |= listener->networkIsReachable();
 						  });
-			return true;
+			return reachable;
 		}
 
 		void WalletManager::txPublished(const std::string &error) {
@@ -229,7 +229,7 @@ namespace Elastos {
 		}
 
 		const CoreWalletManager::PeerManagerListenerPtr &WalletManager::createPeerManagerListener() {
-			if (_peerManagerListener != nullptr) {
+			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(new WrappedExecutorPeerManagerListener(this, &_executor));
 			}
 			return _peerManagerListener;
