@@ -17,8 +17,9 @@ namespace Elastos {
 				_isRegistered(false),
 				_payload(nullptr) {
 
-			_transaction = (BRTransaction *)ELABRTransactionNew();
+			_transaction = (BRTransaction *) ELABRTransactionNew();
 			setPayloadByTransactionType();
+			convertFrom(_transaction);
 		}
 
 		Transaction::Transaction(BRTransaction *transaction) :
@@ -53,7 +54,7 @@ namespace Elastos {
 
 		Transaction::~Transaction() {
 			if (_transaction != nullptr)
-				ELABRTransactionFree((ELABRTransaction*)_transaction);
+				ELABRTransactionFree((ELABRTransaction *) _transaction);
 		}
 
 		std::string Transaction::toString() const {
@@ -289,29 +290,19 @@ namespace Elastos {
 			assert(_payload != nullptr);
 			_payload->Serialize(ostream);
 
-			uint8_t attributeLengthData[64 / 8];
-			memset(attributeLengthData, 0, sizeof(attributeLengthData));
-
-			UInt64SetLE(attributeLengthData, _attributes.size());
-			ostream.putBytes(attributeLengthData, sizeof(attributeLengthData));
+			ostream.putVarUint(_attributes.size());
 			for (size_t i = 0; i < _attributes.size(); i++) {
 				_attributes[i]->Serialize(ostream);
 			}
 
 			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
-			uint8_t inputLengthData[64 / 8];
-			memset(inputLengthData, 0, sizeof(inputLengthData));
-			UInt64SetLE(inputLengthData, inputs.size());
-			ostream.putBytes(inputLengthData, sizeof(inputLengthData));
+			ostream.putVarUint(inputs.size());
 			for (size_t i = 0; i < inputs.size(); i++) {
 				inputs[i]->Serialize(ostream);
 			}
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
-			uint8_t outputLengthData[64 / 8];
-			memset(outputLengthData, 0, sizeof(outputLengthData));
-			UInt64SetLE(outputLengthData, outputs.size());
-			ostream.putBytes(outputLengthData, sizeof(outputLengthData));
+			ostream.putVarUint(outputs.size());
 			for (size_t i = 0; i < outputs.size(); i++) {
 				outputs[i]->Serialize(ostream);
 			}
@@ -321,10 +312,7 @@ namespace Elastos {
 			UInt32SetLE(lockTimeData, _transaction->lockTime);
 			ostream.putBytes(lockTimeData, sizeof(lockTimeData));
 
-			uint8_t programLengthData[64 / 8];
-			memset(programLengthData, 0, sizeof(programLengthData));
-			UInt64SetLE(programLengthData, _programs.size());
-			ostream.putBytes(programLengthData, sizeof(programLengthData));
+			ostream.putVarUint(_programs.size());
 			for (size_t i = 0; i < _programs.size(); i++) {
 				_programs[i]->Serialize(ostream);
 			}
@@ -338,29 +326,21 @@ namespace Elastos {
 
 			_payload->Deserialize(istream);
 
-			uint8_t attributeLengthData[64 / 8];
-			memset(attributeLengthData, 0, sizeof(attributeLengthData));
-			istream.getBytes(attributeLengthData, sizeof(attributeLengthData));
-			uint64_t attributeLength = UInt64GetLE(attributeLengthData);
+			uint64_t attributeLength = istream.getVarUint();
 			_attributes.resize(attributeLength);
 			for (size_t i = 0; i < attributeLength; i++) {
 				_attributes[i] = AttributePtr(new Attribute);
 				_attributes[i]->Deserialize(istream);
 			}
 
-			uint8_t inputLengthData[64 / 8];
-			memset(inputLengthData, 0, sizeof(inputLengthData));
-			istream.getBytes(inputLengthData, sizeof(inputLengthData));
-			uint64_t inputLength = UInt64GetLE(inputLengthData);
+			uint64_t inputLength = istream.getVarUint();
 			_inputs.resize(inputLength);
 			for (size_t i = 0; i < inputLength; i++) {
 				_inputs[i] = TransactionInputPtr(new TransactionInput);
 				_inputs[i]->Deserialize(istream);
 			}
 
-			uint8_t outputLengthData[64 / 8];
-			istream.getBytes(outputLengthData, sizeof(outputLengthData));
-			uint64_t outputLength = UInt64GetLE(outputLengthData);
+			uint64_t outputLength = istream.getVarUint();
 			_outputs.resize(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
 				_outputs[i] = TransactionOutputPtr(new TransactionOutput);
@@ -371,11 +351,10 @@ namespace Elastos {
 			istream.getBytes(lockTimeData, sizeof(lockTimeData));
 			_transaction->lockTime = UInt32GetLE(lockTimeData);
 
-			uint8_t programLengthData[64 / 8];
-			istream.getBytes(programLengthData, sizeof(programLengthData));
-			uint64_t programLength = UInt64GetLE(programLengthData);
+			uint64_t programLength = istream.getVarUint();
 			_programs.resize(programLength);
 			for (size_t i = 0; i < programLength; i++) {
+				_programs[i] = ProgramPtr(new Program());
 				_programs[i]->Deserialize(istream);
 			}
 		}

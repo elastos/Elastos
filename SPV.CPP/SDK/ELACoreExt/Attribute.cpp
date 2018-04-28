@@ -27,20 +27,14 @@ namespace Elastos {
 		void Attribute::Serialize(ByteStream &ostream) const {
 			ostream.put(_usage);
 
-			uint8_t dataLengthData[64 / 8];
-			UInt64SetLE(dataLengthData, _data.length);
-			ostream.putBytes(dataLengthData, sizeof(dataLengthData));
-
+			ostream.putVarUint(_data.length);
 			ostream.putBytes(_data.data, _data.length);
 		}
 
 		void Attribute::Deserialize(ByteStream &istream) {
 			_usage = (Usage)istream.get();
 
-			uint8_t dataLength[64 / 8];
-			istream.getBytes(dataLength, sizeof(dataLength));
-			uint64_t len = UInt64GetLE(dataLength);
-
+			uint64_t len = istream.getVarUint();
 			_data.length = len;
 			_data.data = new uint8_t[len];
 			istream.getBytes(_data.data, len);

@@ -23,26 +23,19 @@ namespace Elastos {
 			}
 		}
 
-		ByteData PayloadCoinBase::getData() const{
+		ByteData PayloadCoinBase::getData() const {
 			return _coinBaseData;
 		}
 
 		void PayloadCoinBase::Serialize(ByteStream &ostream) const {
-			uint8_t outputLengthData[64 / 8];
-
-			UInt64SetLE(outputLengthData, _coinBaseData.length);
-			ostream.putBytes(outputLengthData, sizeof(outputLengthData));
-
+			ostream.putVarUint(_coinBaseData.length);
 			if (_coinBaseData.length > 0) {
 				ostream.putBytes(_coinBaseData.data, _coinBaseData.length);
 			}
 		}
 
 		void PayloadCoinBase::Deserialize(ByteStream &istream) {
-			uint8_t dataLength[64 / 8];
-			istream.getBytes(dataLength, sizeof(dataLength));
-			uint64_t len = UInt64GetLE(dataLength);
-
+			uint64_t len = istream.getVarUint();
 			uint8_t *data = new uint8_t[len];
 			memset(data, 0, len);
 			istream.getBytes(data, len);
