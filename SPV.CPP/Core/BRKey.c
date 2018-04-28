@@ -284,26 +284,26 @@ UInt160 BRKeyHash160(BRKey *key)
 // returns the ripemd160 hash of the sha256 hash of the public key
 UInt168 BRKeyHash168(BRKey *key)
 {
-    UInt160 hash = UINT160_ZERO;
+    UInt168 hash = UINT168_ZERO;
     size_t len;
     secp256k1_pubkey pk;
-
+    int size = sizeof(hash);
     assert(key != NULL);
     len = BRKeyPubKey(key, NULL, 0);
-    if (len > 0 && secp256k1_ec_pubkey_parse(_ctx, &pk, key->pubKey, len)) BRHash160(&hash, key->pubKey, len);
+    hash.u8[size - 1] = ELA_STANDARD;
+    if (len > 0 && secp256k1_ec_pubkey_parse(_ctx, &pk, key->pubKey, len)) BRHash168(&hash, key->pubKey, len);
     UInt168 uInt168 = UINT168_ZERO;
 
-    int size = sizeof(key->pubKey);
-    int signType = key->pubKey[size-1];
+    int signType = hash.u8[size - 1];
     if(signType == ELA_STANDARD) {
-        hash.u8[0] = ELA_STAND_ADDRESS;
+        uInt168.u8[0] = ELA_STAND_ADDRESS;
     } else if (signType == ELA_MULTISIG) {
-        hash.u8[0] = ELA_MULTISIG_ADDRESS;
+        uInt168.u8[0] = ELA_MULTISIG_ADDRESS;
     } else if (signType == ELA_CROSSCHAIN) {
-        hash.u8[0] = ELA_CROSSCHAIN_ADDRESS;
+        uInt168.u8[0] = ELA_CROSSCHAIN_ADDRESS;
     }
 
-    memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8));
+    memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8) - 1);
     return uInt168;
 }
 

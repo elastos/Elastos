@@ -54,6 +54,9 @@ void BRRMD160(void *md20, const void *data, size_t len);
 // bitcoin hash-160 = ripemd-160(sha-256(x))
 void BRHash160(void *md20, const void *data, size_t len);
 
+// ela hash-168 = ripemd-168(sha-256(x))
+void BRHash168(void *md21, const void *data, size_t len);
+
 // sha3-256: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
 void BRSHA3_256(void *md32, const void *data, size_t len);
 

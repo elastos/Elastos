@@ -396,6 +396,18 @@ void BRHash160(void *md20, const void *data, size_t len)
     BRRMD160(md20, t, sizeof(t));
 }
 
+// ela hash-168 = ripemd-168(sha-256(x))
+void BRHash168(void *md21, const void *data, size_t len)
+{
+    uint8_t t[32];
+
+    assert(md21 != NULL);
+    assert(data != NULL || len == 0);
+
+	BRSHA256(t, data, len);
+	BRRMD160(md21, t, sizeof(t));
+}
+
 // bitwise left rotation
 #define rol64(a, b) ((a) << (b) ^ ((a) >> (64 - (b))))
 
