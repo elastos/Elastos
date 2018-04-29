@@ -1,8 +1,8 @@
 package events
 
 import (
-	"sync"
 	"errors"
+	"sync"
 )
 
 type EventFunc func(v interface{})

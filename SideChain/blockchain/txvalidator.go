@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"math"
 
-	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 // CheckTransactionSanity verifys received single transaction

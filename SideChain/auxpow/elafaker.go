@@ -5,8 +5,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/auxpow"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 func getSideMiningTx(msgBlockHash Uint256, genesisHash Uint256) *ela.Transaction {

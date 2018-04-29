@@ -4,14 +4,14 @@ import (
 	"net"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
+	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (

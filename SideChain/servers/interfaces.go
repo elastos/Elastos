@@ -2,9 +2,11 @@ package servers
 
 import (
 	"bytes"
+	"encoding/binary"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
-	"encoding/binary"
 
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
@@ -89,6 +91,129 @@ func GetTransactionInfo(header *Header, tx *ela.Transaction) *TransactionInfo {
 		Attributes:     attributes,
 		Programs:       programs,
 	}
+}
+
+func PayloadInfoToTransPayload(p PayloadInfo) (ela.Payload, error) {
+
+	switch object := p.(type) {
+	case RegisterAssetInfo:
+		obj := new(ela.PayloadRegisterAsset)
+		obj.Asset = object.Asset
+		amount, err := StringToFixed64(object.Amount)
+		if err != nil {
+			return nil, err
+		}
+		obj.Amount = *amount
+		bytes, err := HexStringToBytes(object.Controller)
+		if err != nil {
+			return nil, err
+		}
+		controller, err := Uint168FromBytes(bytes)
+		obj.Controller = *controller
+		return obj, nil
+	case TransferCrossChainAssetInfo:
+		obj := new(ela.PayloadTransferCrossChainAsset)
+		obj.AddressesMap = object.AddressesMap
+		return obj, nil
+	}
+
+	return nil, errors.New("Invalid payload type.")
+}
+
+func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
+	txPaload, err := PayloadInfoToTransPayload(txInfo.Payload)
+	if err != nil {
+		return nil, err
+	}
+
+	var txAttribute []*ela.Attribute
+	for _, att := range txInfo.Attributes {
+		attData, err := HexStringToBytes(att.Data)
+		if err != nil {
+			return nil, err
+		}
+		txAttr := &ela.Attribute{
+			Usage: att.Usage,
+			Data:  attData,
+			Size:  0,
+		}
+		txAttribute = append(txAttribute, txAttr)
+	}
+
+	var txUTXOTxInput []*ela.Input
+	for _, input := range txInfo.Inputs {
+		txID, err := HexStringToBytes(input.TxID)
+		if err != nil {
+			return nil, err
+		}
+		referID, err := Uint256FromBytes(txID)
+		if err != nil {
+			return nil, err
+		}
+		utxoInput := &ela.Input{
+			Previous: ela.OutPoint{
+				TxID:  *referID,
+				Index: input.VOut,
+			},
+			Sequence: input.Sequence,
+		}
+		txUTXOTxInput = append(txUTXOTxInput, utxoInput)
+	}
+
+	var txOutputs []*ela.Output
+	for _, output := range txInfo.Outputs {
+		assetIdBytes, err := HexStringToBytes(output.AssetID)
+		if err != nil {
+			return nil, err
+		}
+		assetId, err := Uint256FromBytes(assetIdBytes)
+		if err != nil {
+			return nil, err
+		}
+		value, err := StringToFixed64(output.Value)
+		if err != nil {
+			return nil, err
+		}
+		programHash, err := Uint168FromAddress(output.Address)
+		if err != nil {
+			return nil, err
+		}
+		output := &ela.Output{
+			AssetID:     *assetId,
+			Value:       *value,
+			OutputLock:  output.OutputLock,
+			ProgramHash: *programHash,
+		}
+		txOutputs = append(txOutputs, output)
+	}
+
+	var txPrograms []*ela.Program
+	for _, pgrm := range txInfo.Programs {
+		code, err := HexStringToBytes(pgrm.Code)
+		if err != nil {
+			return nil, err
+		}
+		parameter, err := HexStringToBytes(pgrm.Parameter)
+		if err != nil {
+			return nil, err
+		}
+		txProgram := &ela.Program{
+			Code:      code,
+			Parameter: parameter,
+		}
+		txPrograms = append(txPrograms, txProgram)
+	}
+
+	txTransaction := &ela.Transaction{
+		TxType:         txInfo.TxType,
+		PayloadVersion: txInfo.PayloadVersion,
+		Payload:        txPaload,
+		Attributes:     txAttribute,
+		Inputs:         txUTXOTxInput,
+		Outputs:        txOutputs,
+		Programs:       txPrograms,
+	}
+	return txTransaction, nil
 }
 
 // Input JSON string examples for getblock method as following:
@@ -484,6 +609,36 @@ func GetBlockByHash(param Params) map[string]interface{} {
 	return ResponsePack(error, result)
 }
 
+func SendTransactionInfo(param Params) map[string]interface{} {
+
+	infoStr, ok := param.String("Info")
+	if !ok {
+		return ResponsePack(InvalidParams, "Info not found")
+	}
+
+	inforBytes, err := HexStringToBytes(infoStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var txInfo TransactionInfo
+	err = json.Unmarshal(inforBytes, &txInfo)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	txn, err := GetTransaction(&txInfo)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	var hash Uint256
+	hash = txn.Hash()
+	if errCode := VerifyAndSendTx(txn); errCode != Success {
+		return ResponsePack(errCode, "")
+	}
+	return ResponsePack(Success, hash.String())
+}
+
 func SendRawTransaction(param Params) map[string]interface{} {
 	str, ok := param.String("Data")
 	if !ok {
@@ -574,7 +729,7 @@ func GetTransactionsByHeight(param Params) map[string]interface{} {
 func GetBlockByHeight(param Params) map[string]interface{} {
 	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
@@ -827,4 +982,54 @@ func ResponsePack(errCode ErrCode, result interface{}) map[string]interface{} {
 		result = ErrMap[errCode]
 	}
 	return map[string]interface{}{"Result": result, "Error": errCode}
+}
+
+func GetBlockTransactionsDetail(block *Block, filter func(*ela.Transaction) bool) interface{} {
+	var trans []*TransactionInfo
+	for i := 0; i < len(block.Transactions); i++ {
+		if filter(block.Transactions[i]) {
+			continue
+		}
+
+		trans = append(trans, GetTransactionInfo(&block.Header, block.Transactions[i]))
+	}
+	hash := block.Hash()
+	type BlockTransactions struct {
+		Hash         string
+		Height       uint32
+		Transactions []*TransactionInfo
+	}
+	b := BlockTransactions{
+		Hash:         hash.String(),
+		Height:       block.Height,
+		Transactions: trans,
+	}
+	return b
+}
+
+func GetDestroyedTransactionsByHeight(param Params) map[string]interface{} {
+	height, ok := param.Uint("height")
+	if !ok {
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
+	}
+
+	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+
+	}
+	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+
+	destroyHash, err := Uint168FromAddress(config.Parameters.DestroyAddr)
+	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *ela.Transaction) bool {
+		for _, output := range tran.Outputs {
+			if output.ProgramHash == *destroyHash {
+				return false
+			}
+		}
+		return true
+	}))
 }

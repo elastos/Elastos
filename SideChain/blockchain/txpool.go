@@ -8,12 +8,12 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 type TxPool struct {
@@ -254,7 +254,7 @@ func (pool *TxPool) MaybeAcceptTransaction(txn *ela.Transaction) error {
 		return fmt.Errorf("already have transaction")
 	}
 
-	// A standalone transaction must not be a coinbase 
+	// A standalone transaction must not be a coinbase
 	if txn.IsCoinBaseTx() {
 		return fmt.Errorf("transaction is an individual coinbase")
 	}

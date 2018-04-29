@@ -7,8 +7,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 // key: DATA_Header || block hash

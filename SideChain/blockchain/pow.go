@@ -16,9 +16,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 var TaskCh chan bool
