@@ -2,8 +2,6 @@ package servers
 
 import (
 	"bytes"
-	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -14,6 +12,9 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
+
+	"encoding/binary"
+	"encoding/json"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	ela "github.com/elastos/Elastos.ELA/core"
@@ -595,6 +596,7 @@ func SendTransactionInfo(param Params) map[string]interface{} {
 	}
 
 	txInfo, err := getTransactionInfo(infoBytes)
+
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
