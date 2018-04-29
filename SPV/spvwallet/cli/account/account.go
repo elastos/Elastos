@@ -27,7 +27,7 @@ func listBalanceInfo(wallet Wallet) error {
 		return errors.New("get wallet addresses failed")
 	}
 
-	return ShowAccount(addrs, wallet)
+	return ShowAccounts(addrs, nil, wallet)
 }
 
 func newSubAccount(password []byte, wallet Wallet) error {
@@ -37,18 +37,18 @@ func newSubAccount(password []byte, wallet Wallet) error {
 		return err
 	}
 
-	account, err := wallet.NewSubAccount(password)
+	programHash, err := wallet.NewSubAccount(password)
 	if err != nil {
 		return err
 	}
 
-	address, err := account.ToAddress()
+	addrs, err := wallet.GetAddrs()
 	if err != nil {
-		return err
+		log.Error("Get addresses error:", err)
+		return errors.New("get wallet addresses failed")
 	}
 
-	fmt.Println(address)
-	return nil
+	return ShowAccounts(addrs, programHash, wallet)
 }
 
 func addMultiSignAccount(context *cli.Context, wallet Wallet, content string) error {
@@ -76,12 +76,13 @@ func addMultiSignAccount(context *cli.Context, wallet Wallet, content string) er
 		return err
 	}
 
-	address, err := programHash.ToAddress()
+	addrs, err := wallet.GetAddrs()
 	if err != nil {
-		return err
+		log.Error("Get addresses error:", err)
+		return errors.New("get wallet addresses failed")
 	}
-	fmt.Println(address)
-	return nil
+
+	return ShowAccounts(addrs, programHash, wallet)
 }
 
 func getPublicKeys(content string) ([]*crypto.PublicKey, error) {
@@ -143,14 +144,14 @@ func accountAction(context *cli.Context) {
 
 	wallet, err := Open()
 	if err != nil {
-		fmt.Println("error: open wallet failed, ", err)
+		fmt.Println("error: open wallet failed,", err)
 		os.Exit(2)
 	}
 
 	// list accounts
 	if context.Bool("list") {
 		if err := ShowAccountInfo([]byte(pass)); err != nil {
-			fmt.Println("error: list accounts info failed, ", err)
+			fmt.Println("error: list accounts info failed,", err)
 			cli.ShowCommandHelpAndExit(context, "list", 3)
 		}
 		return
@@ -159,7 +160,7 @@ func accountAction(context *cli.Context) {
 	// new sub account
 	if context.Bool("new") {
 		if err := newSubAccount([]byte(pass), wallet); err != nil {
-			fmt.Println("error: new sub account failed, ", err)
+			fmt.Println("error: new sub account failed,", err)
 			cli.ShowCommandHelpAndExit(context, "new", 5)
 		}
 		return
@@ -168,7 +169,7 @@ func accountAction(context *cli.Context) {
 	// add multi sign account
 	if pubKeysStr := context.String("addmultisig"); pubKeysStr != "" {
 		if err := addMultiSignAccount(context, wallet, pubKeysStr); err != nil {
-			fmt.Println("error: add multi sign account failed, ", err)
+			fmt.Println("error: add multi sign account failed,", err)
 			cli.ShowCommandHelpAndExit(context, "addmultisig", 5)
 		}
 		return

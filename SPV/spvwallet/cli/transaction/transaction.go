@@ -298,7 +298,7 @@ func transactionAction(context *cli.Context) {
 
 	wallet, err := walt.Open()
 	if err != nil {
-		fmt.Println("error: open wallet failed, ", err)
+		fmt.Println("error: open wallet failed,", err)
 		os.Exit(2)
 	}
 

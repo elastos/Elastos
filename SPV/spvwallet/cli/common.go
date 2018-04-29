@@ -99,7 +99,7 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 	}
 
 	// show accounts
-	err = ShowAccount(addrs, wallet)
+	err = ShowAccounts(addrs, nil, wallet)
 	if err != nil {
 		return "", err
 	}
@@ -115,7 +115,7 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 	return addrs[index].String(), nil
 }
 
-func ShowAccount(addrs []*db.Addr, wallet walt.Wallet) error {
+func ShowAccounts(addrs []*db.Addr, newAddr *Uint168, wallet walt.Wallet) error {
 	// print header
 	fmt.Printf("%5s %34s %-20s%22s %6s\n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)", "TYPE")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42), "------")
@@ -129,14 +129,18 @@ func ShowAccount(addrs []*db.Addr, wallet walt.Wallet) error {
 			return errors.New("get " + addr.String() + " UTXOs failed")
 		}
 		for _, utxo := range UTXOs {
-			if utxo.LockTime <= currentHeight {
+			if utxo.LockTime < currentHeight {
 				available += utxo.Value
 			} else {
 				locked += utxo.Value
 			}
 		}
+		var format = "%5d %34s %-20s%22s %6s\n"
+		if newAddr != nil && newAddr.IsEqual(*addr.Hash()) {
+			format = "\033[0;32m" + format + "\033[m"
+		}
 
-		fmt.Printf("%5d %34s %-20s%22s %6s\n", i+1, addr.String(), available.String(), "("+locked.String()+")", addr.TypeName())
+		fmt.Printf(format, i+1, addr.String(), available.String(), "("+locked.String()+")", addr.TypeName())
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42), "------")
 	}
 
