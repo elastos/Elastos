@@ -3,8 +3,8 @@ package node
 import (
 	"bytes"
 	"crypto/sha256"
-	"errors"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"net"
 	"runtime"
@@ -15,14 +15,14 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	. "github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 var LocalNode *node
@@ -38,19 +38,19 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	PeerState       // node state
-	id       uint64 // The nodes's id
-	version  uint32 // The network protocol the node used
-	services uint64 // The services the node supplied
-	relay    bool   // The relay capability of the node (merge into capbility flag)
-	height   uint64 // The node latest block height
-	txnCnt   uint64 // The transactions be transmit by this node
-	rxTxnCnt uint64 // The transaction received by this node
-	link            // The link status and infomation
-	nbrNodes        // The neighbor node connect with currently node except itself
-	eventQueue      // The event queue to notice notice other modules
-	chain.TxPool    // Unconfirmed transaction pool
-	idCache         // The buffer to store the id of the items which already be processed
+	PeerState           // node state
+	id           uint64 // The nodes's id
+	version      uint32 // The network protocol the node used
+	services     uint64 // The services the node supplied
+	relay        bool   // The relay capability of the node (merge into capbility flag)
+	height       uint64 // The node latest block height
+	txnCnt       uint64 // The transactions be transmit by this node
+	rxTxnCnt     uint64 // The transaction received by this node
+	link                // The link status and infomation
+	nbrNodes            // The neighbor node connect with currently node except itself
+	eventQueue          // The event queue to notice notice other modules
+	chain.TxPool        // Unconfirmed transaction pool
+	idCache             // The buffer to store the id of the items which already be processed
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -62,13 +62,13 @@ type node struct {
 	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
-	DefaultMaxPeers          uint
-	headerFirstMode          bool
-	RequestedBlockList       map[Uint256]time.Time
-	SyncBlkReqSem            Semaphore
-	SyncHdrReqSem            Semaphore
-	StartHash                Uint256
-	StopHash                 Uint256
+	DefaultMaxPeers    uint
+	headerFirstMode    bool
+	RequestedBlockList map[Uint256]time.Time
+	SyncBlkReqSem      Semaphore
+	SyncHdrReqSem      Semaphore
+	StartHash          Uint256
+	StopHash           Uint256
 }
 
 type ConnectingNodes struct {

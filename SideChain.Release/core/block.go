@@ -5,9 +5,9 @@ import (
 	"errors"
 	"io"
 
-	ela "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (

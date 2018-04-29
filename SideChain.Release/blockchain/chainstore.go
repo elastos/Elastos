@@ -1,18 +1,18 @@
 package blockchain
 
 import (
+	"bytes"
+	"container/list"
+	"errors"
 	"sync"
 	"time"
-	"bytes"
-	"errors"
-	"container/list"
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const TaskChanCap = 4

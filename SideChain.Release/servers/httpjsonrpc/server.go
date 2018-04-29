@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/config"
-	. "github.com/elastos/Elastos.ELA.SideChain/servers"
 	"github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
+	. "github.com/elastos/Elastos.ELA.SideChain/servers"
 )
 
 //an instance of the multiplexer
@@ -40,11 +40,14 @@ func StartRPCServer() {
 	mainMux["getrawtransaction"] = GetRawTransaction
 	mainMux["getneighbors"] = GetNeighbors
 	mainMux["getnodestate"] = GetNodeState
+	mainMux["sendtransactioninfo"] = SendTransactionInfo
 	mainMux["sendrawtransaction"] = SendRawTransaction
 	mainMux["submitblock"] = SubmitBlock
 	mainMux["getbestblockhash"] = GetBestBlockHash
 	mainMux["getblockcount"] = GetBlockCount
 	mainMux["gettransaction"] = GetTransactionByHash
+	mainMux["getdestroyedtransactions"] = GetDestroyedTransactionsByHeight
+	mainMux["getblockbyheight"] = GetBlockByHeight
 
 	// aux interfaces
 	mainMux["help"] = AuxHelp

@@ -13,8 +13,8 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/p2p"

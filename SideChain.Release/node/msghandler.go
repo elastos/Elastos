@@ -2,9 +2,9 @@ package node
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
-	"fmt"
 
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
@@ -13,10 +13,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 var DuplicateBlocks int

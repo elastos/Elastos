@@ -7,9 +7,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 
-	ela "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/interface"
+	. "github.com/elastos/Elastos.ELA/bloom"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 var spvService *_interface.SPVServiceImpl
