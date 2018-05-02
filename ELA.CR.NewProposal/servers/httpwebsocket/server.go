@@ -4,7 +4,6 @@ import (
 	"net"
 	"sync"
 	"time"
-	"bytes"
 	"strconv"
 	"context"
 	"net/http"
@@ -19,7 +18,6 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/servers"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -46,8 +44,8 @@ type WebSocketServer struct {
 }
 
 func StartServer() {
-	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
-	ledger.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
+	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
+	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
 
 	instance = &WebSocketServer{
 		Upgrader:    websocket.Upgrader{},
@@ -101,7 +99,7 @@ func (server *WebSocketServer) initializeMethods() {
 	}
 }
 
-func (server *WebSocketServer) hearBeat(cmd map[string]interface{}) map[string]interface{} {
+func (server *WebSocketServer) hearBeat(cmd Params) map[string]interface{} {
 	return ResponsePack(Success, "123")
 }
 
@@ -269,12 +267,12 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 		if block, ok := v.(*Block); ok {
 			result = GetBlockInfo(block, true)
 		}
-	//case "sendrawblock":
-	//	if block, ok := v.(*Block); ok {
-	//		w := bytes.NewBuffer(nil)
-	//		block.Serialize(w)
-	//		result = BytesToHexString(w.Bytes())
-	//	}
+		//case "sendrawblock":
+		//	if block, ok := v.(*Block); ok {
+		//		w := bytes.NewBuffer(nil)
+		//		block.Serialize(w)
+		//		result = BytesToHexString(w.Bytes())
+		//	}
 	case "sendblocktransactions":
 		if block, ok := v.(*Block); ok {
 			result = GetBlockTransactions(block)
