@@ -305,12 +305,12 @@ namespace Elastos {
 
 			size_t addrCount = BRWalletAllAddrs (_wallet, NULL, 0);
 
-			WrapperList<Address, BRAddress> addresses(addrCount);
-			BRWalletAllAddrs (_wallet, addresses.getRawArray().data(), addrCount);
+			BRAddress addresses[addrCount];
+			BRWalletAllAddrs (_wallet, addresses, addrCount);
 
 			std::vector<std::string> results;
 			for (int i = 0; i < addrCount; i++) {
-				results.push_back(addresses[i].toString());
+				results.push_back(addresses[i].s);
 			}
 			return results;
 		}

@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRMerkleBlock.h>
+#include "BRCrypto.h"
 #include "BRMerkleBlock.h"
 #include "Utils.h"
 
@@ -10,6 +10,79 @@
 
 namespace Elastos {
 	namespace SDK {
+
+		namespace {
+#define MAX_PROOF_OF_WORK 0x1d00ffff    // highest value for difficulty target (higher values are less difficult)
+#define TARGET_TIMESPAN   (14*24*60*60) // the targeted timespan between difficulty target adjustments
+
+			int _ceil_log2(int x)
+			{
+				int r = (x & (x - 1)) ? 1 : 0;
+
+				while ((x >>= 1) != 0) r++;
+				return r;
+			}
+
+			UInt256 BRMerkleBlockRootR(const BRMerkleBlock *block, size_t *hashIdx, size_t *flagIdx, int depth)
+			{
+				uint8_t flag;
+				UInt256 hashes[2], md = UINT256_ZERO;
+
+				if (block->flagsLen == 0 && block->hashesCount == 1 && UInt256Eq(&(block->hashes[0]), &(block->merkleRoot))) {
+					return block->hashes[0];
+				}
+
+				if (*flagIdx/8 < block->flagsLen && *hashIdx < block->hashesCount) {
+					flag = (block->flags[*flagIdx/8] & (1 << (*flagIdx % 8)));
+					(*flagIdx)++;
+
+					if (flag && depth != _ceil_log2(block->totalTx)) {
+						hashes[0] = BRMerkleBlockRootR(block, hashIdx, flagIdx, depth + 1); // left branch
+						hashes[1] = BRMerkleBlockRootR(block, hashIdx, flagIdx, depth + 1); // right branch
+
+						if (! UInt256IsZero(&hashes[0]) && ! UInt256Eq(&(hashes[0]), &(hashes[1]))) {
+							if (UInt256IsZero(&hashes[1])) hashes[1] = hashes[0]; // if right branch is missing, dup left branch
+							BRSHA256_2(&md, hashes, sizeof(hashes));
+						}
+						else *hashIdx = SIZE_MAX; // defend against (CVE-2012-2459)
+					}
+					else md = block->hashes[(*hashIdx)++]; // leaf
+				}
+
+				return md;
+			}
+
+			size_t BRMerkleBlockTxHashesR(const BRMerkleBlock *block, UInt256 *txHashes, size_t hashesCount, size_t *idx,
+										   size_t *hashIdx, size_t *flagIdx, int depth)
+			{
+				uint8_t flag;
+
+				if (block->flagsLen == 0 && block->hashesCount == 1 && UInt256Eq(&(block->hashes[0]), &(block->merkleRoot))) {
+					txHashes[*idx] = block->hashes[*hashIdx];
+					(*idx)++;
+				}
+
+				if (*flagIdx/8 < block->flagsLen && *hashIdx < block->hashesCount) {
+					flag = (block->flags[*flagIdx/8] & (1 << (*flagIdx % 8)));
+					(*flagIdx)++;
+
+					if (! flag || depth == _ceil_log2(block->totalTx)) {
+						if (flag && *idx < hashesCount) {
+							if (txHashes) txHashes[*idx] = block->hashes[*hashIdx]; // leaf
+							(*idx)++;
+						}
+
+						(*hashIdx)++;
+					}
+					else {
+						BRMerkleBlockTxHashesR(block, txHashes, hashesCount, idx, hashIdx, flagIdx, depth + 1); // left branch
+						BRMerkleBlockTxHashesR(block, txHashes, hashesCount, idx, hashIdx, flagIdx, depth + 1); // right branch
+					}
+				}
+
+				return *idx;
+			}
+		}
 
 		MerkleBlock::MerkleBlock() {
 			_merkleBlock = BRMerkleBlockNew();
@@ -84,7 +157,35 @@ namespace Elastos {
 		}
 
 		bool MerkleBlock::isValid(uint32_t currentTime) const {
-			return BRMerkleBlockIsValid(_merkleBlock, currentTime) != 0;
+			assert(_merkleBlock != NULL);
+
+			// target is in "compact" format, where the most significant byte is the size of resulting value in bytes, the next
+			// bit is the sign, and the remaining 23bits is the value after having been right shifted by (size - 3)*8 bits
+			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
+			const uint32_t size = _merkleBlock->target >> 24, target = _merkleBlock->target & 0x00ffffff;
+			size_t hashIdx = 0, flagIdx = 0;
+			UInt256 merkleRoot = BRMerkleBlockRootR(_merkleBlock, &hashIdx, &flagIdx, 0), t = UINT256_ZERO;
+			int r = 1;
+
+			// check if merkle root is correct
+			if (_merkleBlock->totalTx > 0 && !UInt256Eq(&(merkleRoot), &(_merkleBlock->merkleRoot))) r = 0;
+
+			// check if timestamp is too far in future
+			if (_merkleBlock->timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
+
+			// check if proof-of-work target is out of range
+			//fixme check pow later
+			//if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;
+
+			if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
+			else UInt32SetLE(t.u8, target >> (3 - size) * 8);
+
+			for (int i = sizeof(t) - 1; r && i >= 0; i--) { // check proof-of-work
+				if (_merkleBlock->blockHash.u8[i] < t.u8[i]) break;
+				if (_merkleBlock->blockHash.u8[i] > t.u8[i]) r = 0;
+			}
+
+			return r;
 		}
 
 		bool MerkleBlock::containsTransactionHash(UInt256 hash) const {
@@ -186,7 +287,7 @@ namespace Elastos {
 			istream.getBytes(hashesCountData, 32 / 8);
 			_merkleBlock->hashesCount = UInt32GetLE(hashesCountData);
 
-			_merkleBlock->hashes = (UInt256 *)calloc(_merkleBlock->hashesCount, sizeof(UInt256));
+			_merkleBlock->hashes = (UInt256 *) calloc(_merkleBlock->hashesCount, sizeof(UInt256));
 			uint8_t hashData[256 / 8];
 			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
 				istream.getBytes(hashData, 256 / 8);
@@ -198,6 +299,14 @@ namespace Elastos {
 			for (uint32_t i = 0; i < _merkleBlock->flagsLen; ++i) {
 				_merkleBlock->flags[i] = istream.get();
 			}
+		}
+
+		size_t MerkleBlock::getRawBlockTxHashes(UInt256 *txHashes, size_t hashesCount) {
+			size_t idx = 0, hashIdx = 0, flagIdx = 0;
+
+			assert(_merkleBlock != NULL);
+
+			return BRMerkleBlockTxHashesR(_merkleBlock, txHashes, (txHashes) ? hashesCount : SIZE_MAX, &idx, &hashIdx, &flagIdx, 0);
 		}
 
 		void to_json(nlohmann::json &j, const MerkleBlock &p) {

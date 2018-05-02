@@ -61,6 +61,8 @@ namespace Elastos {
 
 			bool isValid(uint32_t currentTime) const;
 
+			size_t getRawBlockTxHashes(UInt256 *txHashes, size_t hashesCount);
+
 			bool containsTransactionHash(UInt256 hash) const;
 
 		private:
