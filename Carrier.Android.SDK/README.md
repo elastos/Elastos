@@ -1,5 +1,5 @@
-# Elastos Carrier Android SDK
-
+Elastos Carrier Android SDK
+===========================
 ## Summary
 
 Elastos Carrier Android SDK is java api wrapper for Elastos Native Carrier, where Carrier is a decentralized peer to peer communication framework.
@@ -14,11 +14,11 @@ You need to build carrier android ndk distributions from the Carrier native repo
 https://github.com/elastos/Elastos.NET.Carrier.Native.SDK
 ```
 
-Finished building android ndk for Carrier, you would have native output libraries (libcarrier-native.a) to each CPU arch, such as armv7l, arm64, x86, x86-64 and etc.
+Finished building android ndk for Carrier, you would have native output library **libcarrier-native.a** to each CPU arch, currently supported for **armv7l**, **arm64**, **x86**, **x86-64**.
 
 ### 2.Import Carrier NDK
 
-The directory "app/native-dist" where to import native libraries and headers has the following directory structure:
+The directory **"app/native-dist"** to import native libraries and headers should have following directory structure:
 
 ```
 app/native-dist
@@ -38,31 +38,31 @@ app/native-dist
           |--libcarrier-native.a
 ```
 
-The headers under directory "include" are public header files from Carrier native. And "libcarrier-native.a" is just a static library dist to each CPU arch from Carrier native.
+The headers under subdirectory **"include"** are public header files exported from Carrier native. And **"libcarrier-native.a"** is just a static library dist to each CPU arch from Carrier native.
 
 ### 3. Build Carrier SDK
 
 After importing dependencies from Carrier native, you need Android Studio to open this project and build Carrier Android SDK.
 
-### 4. Output (To complete)
+### 4. Output
 
-After building with success, the output dist named 'org.elastos.carrier-debug.aar' carrying jar package and JNI shared libraries to different CPU arch would be put under the directory:
+After building with success, the output dist named **org.elastos.carrier-debug(release).aar** carrying jar package and JNI shared libraries to different CPU arch would be put under the directory:
 
 ```
-build/outputs/aar
+app/build/outputs/aar
 ```
 
 ## Basic Tests
 
-All basic tests are located under directory "app/src/androidTest". You can run the tests on Android Studio. Before running tests, you need to uncomment "service" configuration in AndroidMinifest.xml.
+All basic tests are located under directory **"app/src/androidTest"**. You can run the tests on Android Studio. Before running tests, you need to uncomment **"service"** configuration in AndroidMinifest.xml.
 
 ## Build Docs
 
-Open "Tools" tab on Android Studio and click "Generate JavaDoc..." item to produce the Java API document.
+Open **Tools** tab on Android Studio and click **Generate JavaDoc...** item to generate the Java API document.
 
 ## Thanks
 
-Sinserely thanks to all teams and projects that we relying on directly or indirectly.
+Sincerely thanks to all teams and projects that we relies on directly or indirectly.
 
 ## Contributing
 
