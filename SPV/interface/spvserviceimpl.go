@@ -60,7 +60,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx Tra
 	}
 
 	// Get Header from main chain
-	header, err := service.Headers().GetHeader(proof.BlockHash)
+	header, err := service.GetHeader(proof.BlockHash)
 	if err != nil {
 		return errors.New("can not get block from main chain")
 	}
@@ -100,7 +100,8 @@ func (service *SPVServiceImpl) SendTransaction(tx Transaction) error {
 		return errors.New("SPV service not started")
 	}
 
-	return service.SPVWallet.SendTransaction(tx)
+	service.SPVWallet.SendTransaction(tx)
+	return nil
 }
 
 func (service *SPVServiceImpl) Start() error {
@@ -136,8 +137,8 @@ func (service *SPVServiceImpl) Start() error {
 	// Create address filter by accounts
 	service.addrFilter = sdk.NewAddrFilter(service.accounts)
 
-	// Set callback
-	service.SPVWallet.Blockchain().AddStateListener(service)
+	// Add data listener
+	service.SPVWallet.AddDataListener(service)
 
 	// Handle interrupt signal
 	stop := make(chan int, 1)
@@ -159,14 +160,14 @@ func (service *SPVServiceImpl) Start() error {
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTxCommitted(tx Transaction, height uint32) {}
-
-func (service *SPVServiceImpl) OnChainRollback(height uint32) {
+// Overwrite OnRollback() method in SPVWallet
+func (service *SPVServiceImpl) OnRollback(height uint32) {
 	service.queue.Rollback(height)
 	service.notifyRollback(height)
 }
 
-func (service *SPVServiceImpl) OnBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
+// Overwrite OnBlockCommitted() method in SPVWallet
+func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []Transaction) {
 	header := block.Header
 
 	// Store merkle proof

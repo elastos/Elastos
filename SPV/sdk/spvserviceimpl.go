@@ -6,9 +6,10 @@ import (
 	"time"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/db"
+	. "github.com/elastos/Elastos.ELA.SPV/core"
 	"github.com/elastos/Elastos.ELA.SPV/net"
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/store"
 
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
@@ -28,21 +29,24 @@ type SPVServiceImpl struct {
 	SPVClient
 	chain      *Blockchain
 	queue      *RequestQueue
-	getFilter  func() *bloom.Filter
+	handler    SPVHandler
 	fPositives int
 }
 
 // Create a instance of SPV service implementation.
-func NewSPVServiceImpl(client SPVClient, database db.DataStore, getBloomFilter func() *bloom.Filter) (*SPVServiceImpl, error) {
+func NewSPVServiceImpl(client SPVClient, headerStore store.HeaderStore, handler SPVHandler) (*SPVServiceImpl, error) {
 	var err error
 	service := new(SPVServiceImpl)
 	// Set spv client
 	service.SPVClient = client
 	// Initialize blockchain
-	service.chain, err = NewBlockchain(database)
+	service.chain, err = NewBlockchain(headerStore)
 	if err != nil {
 		return nil, err
 	}
+	// Register chain state listener
+	service.chain.SetStateListener(handler)
+
 	// Initialize local peer height
 	service.updateLocalHeight()
 
@@ -52,15 +56,15 @@ func NewSPVServiceImpl(client SPVClient, database db.DataStore, getBloomFilter f
 	// Initialize request queue
 	service.queue = NewRequestQueue(MaxRequests, service)
 
-	// Set get bloom filter method
-	service.getFilter = getBloomFilter
+	// Set SPV handler implement
+	service.handler = handler
 
 	return service, nil
 }
 
 func (service *SPVServiceImpl) OnPeerEstablish(peer *net.Peer) {
 	// Send filterload message
-	peer.Send(service.getFilter().GetFilterLoadMsg())
+	peer.Send(service.getBloomFilter().GetFilterLoadMsg())
 }
 
 func (service *SPVServiceImpl) Start() {
@@ -75,12 +79,12 @@ func (service *SPVServiceImpl) Stop() {
 	log.Info("SPV service stopped...")
 }
 
-func (service *SPVServiceImpl) Blockchain() *Blockchain {
-	return service.chain
+func (service *SPVServiceImpl) ReloadFilter() {
+	service.PeerManager().Broadcast(service.getBloomFilter().GetFilterLoadMsg())
 }
 
-func (service *SPVServiceImpl) BroadCastMessage(message p2p.Message) {
-	service.PeerManager().Broadcast(message)
+func (service *SPVServiceImpl) SendTransaction(tx core.Transaction) {
+	service.PeerManager().Broadcast(&tx)
 }
 
 func (service *SPVServiceImpl) keepUpdate() {
@@ -90,6 +94,10 @@ func (service *SPVServiceImpl) keepUpdate() {
 		// Keep synchronizing blocks
 		service.syncBlocks()
 	}
+}
+
+func (service *SPVServiceImpl) getBloomFilter() *bloom.Filter {
+	return BuildBloomFilter(service.handler.GetData())
 }
 
 func (service *SPVServiceImpl) needSync() bool {
@@ -200,14 +208,14 @@ func (service *SPVServiceImpl) OnRequestFinished(pool *FinishedReqPool) {
 		fPositives += fp
 	}
 
-	go service.handleFPositive(fPositives)
+	go service.countFPositives(fPositives)
 }
 
-func (service *SPVServiceImpl) handleFPositive(fPositives int) {
+func (service *SPVServiceImpl) countFPositives(fPositives int) {
 	service.fPositives += fPositives
 	if service.fPositives > MaxFalsePositives {
 		// Broadcast filterload message to connected peers
-		service.PeerManager().Broadcast(service.getFilter().GetFilterLoadMsg())
+		service.PeerManager().Broadcast(service.getBloomFilter().GetFilterLoadMsg())
 		service.fPositives = 0
 	}
 }
@@ -280,7 +288,7 @@ func (service *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *bloom.Merkle
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTxn(peer *net.Peer, txn *core.Transaction) error {
+func (service *SPVServiceImpl) OnTx(peer *net.Peer, txn *core.Transaction) error {
 	log.Debug("Receive transaction hash: ", txn.Hash().String())
 
 	if service.chain.IsSyncing() && service.PeerManager().GetSyncPeer() != nil &&
@@ -296,15 +304,6 @@ func (service *SPVServiceImpl) OnTxn(peer *net.Peer, txn *core.Transaction) erro
 		if err != nil {
 			service.changeSyncPeerAndRestart()
 			return err
-		}
-	} else {
-		isFPositive, err := service.chain.CommitTx(*txn)
-		if err != nil {
-			return err
-		}
-
-		if isFPositive {
-			service.handleFPositive(1)
 		}
 	}
 

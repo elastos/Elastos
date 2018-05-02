@@ -6,8 +6,6 @@ import (
 	"math"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/db"
-
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -32,7 +30,7 @@ func NewTxsDB(db *sql.DB, lock *sync.RWMutex) (Txs, error) {
 }
 
 // Put a new transaction to database
-func (t *TxsDB) Put(storeTx *db.StoreTx) error {
+func (t *TxsDB) Put(storeTx *Tx) error {
 	t.Lock()
 	defer t.Unlock()
 
@@ -52,7 +50,7 @@ func (t *TxsDB) Put(storeTx *db.StoreTx) error {
 }
 
 // Fetch a raw tx and it's metadata given a hash
-func (t *TxsDB) Get(txId *Uint256) (*db.StoreTx, error) {
+func (t *TxsDB) Get(txId *Uint256) (*Tx, error) {
 	t.RLock()
 	defer t.RUnlock()
 
@@ -69,16 +67,16 @@ func (t *TxsDB) Get(txId *Uint256) (*db.StoreTx, error) {
 		return nil, err
 	}
 
-	return &db.StoreTx{TxId: *txId, Height: height, Data: tx}, nil
+	return &Tx{TxId: *txId, Height: height, Data: tx}, nil
 }
 
 // Fetch all transactions from database
-func (t *TxsDB) GetAll() ([]*db.StoreTx, error) {
+func (t *TxsDB) GetAll() ([]*Tx, error) {
 	return t.GetAllFrom(math.MaxUint32)
 }
 
 // Fetch all transactions from the given height
-func (t *TxsDB) GetAllFrom(height uint32) ([]*db.StoreTx, error) {
+func (t *TxsDB) GetAllFrom(height uint32) ([]*Tx, error) {
 	t.RLock()
 	defer t.RUnlock()
 
@@ -86,7 +84,7 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*db.StoreTx, error) {
 	if height != math.MaxUint32 {
 		sql += " WHERE Height=?"
 	}
-	var txns []*db.StoreTx
+	var txns []*Tx
 	rows, err := t.Query(sql, height)
 	if err != nil {
 		return txns, err
@@ -113,7 +111,7 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*db.StoreTx, error) {
 			return nil, err
 		}
 
-		txns = append(txns, &db.StoreTx{TxId: *txId, Height: height, Data: tx})
+		txns = append(txns, &Tx{TxId: *txId, Height: height, Data: tx})
 	}
 
 	return txns, nil

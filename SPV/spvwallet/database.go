@@ -87,7 +87,7 @@ func (db *DatabaseImpl) ChainHeight() uint32 {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 
-	return db.DataStore.Info().ChainHeight()
+	return db.DataStore.Chain().GetHeight()
 }
 
 func (db *DatabaseImpl) Reset() error {

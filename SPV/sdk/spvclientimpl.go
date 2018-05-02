@@ -73,7 +73,7 @@ func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) 
 	case *bloom.MerkleBlock:
 		return client.msgHandler.OnMerkleBlock(peer, msg)
 	case *core.Transaction:
-		return client.msgHandler.OnTxn(peer, msg)
+		return client.msgHandler.OnTx(peer, msg)
 	case *msg.NotFound:
 		return client.msgHandler.OnNotFound(peer, msg)
 	default:

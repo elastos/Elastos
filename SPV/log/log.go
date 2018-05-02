@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	PATH = "./Log/"
+	PATH = "./Logs/"
 
 	CallDepth = 4
 

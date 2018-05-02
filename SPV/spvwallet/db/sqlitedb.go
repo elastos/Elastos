@@ -19,7 +19,7 @@ type SQLiteDB struct {
 	*sync.RWMutex
 	*sql.DB
 
-	info  Info
+	chain Chain
 	addrs Addrs
 	txs   Txs
 	utxos UTXOs
@@ -35,8 +35,8 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 	// Use the same lock
 	lock := new(sync.RWMutex)
 
-	// Create info db
-	infoDB, err := NewInfoDB(db, lock)
+	// Create chain db
+	chainDB, err := NewChainDB(db, lock)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 		RWMutex: lock,
 		DB:      db,
 
-		info:  infoDB,
+		chain: chainDB,
 		addrs: addrsDB,
 		utxos: utxosDB,
 		stxos: stxosDB,
@@ -73,8 +73,8 @@ func NewSQLiteDB() (*SQLiteDB, error) {
 	}, nil
 }
 
-func (db *SQLiteDB) Info() Info {
-	return db.info
+func (db *SQLiteDB) Chain() Chain {
+	return db.chain
 }
 
 func (db *SQLiteDB) Addrs() Addrs {
@@ -135,7 +135,7 @@ func (db *SQLiteDB) Reset() error {
 	}
 
 	// Drop all tables except Addrs
-	_, err = tx.Exec(`DROP TABLE IF EXISTS Info;
+	_, err = tx.Exec(`DROP TABLE IF EXISTS Chain;
 							DROP TABLE IF EXISTS UTXOs;
 							DROP TABLE IF EXISTS STXOs;
 							DROP TABLE IF EXISTS TXNs;`)

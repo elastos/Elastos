@@ -1,7 +1,7 @@
 package _interface
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/store"
 
 	"github.com/elastos/Elastos.ELA/bloom"
 	. "github.com/elastos/Elastos.ELA/core"
@@ -33,12 +33,8 @@ type SPVService interface {
 	// Send a transaction to the P2P network
 	SendTransaction(Transaction) error
 
-	// Get the Blockchain instance.
-	// Blockchain will handle block and transaction commits,
-	// verify and store the block and transactions.
-	// If you want to add extra logic when new block or transaction comes,
-	// use Blockchain.AddStateListener() to register chain state callbacks
-	Blockchain() *sdk.Blockchain
+	// Get headers database
+	HeaderStore() store.HeaderStore
 
 	// Start the SPV service
 	Start() error

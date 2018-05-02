@@ -16,10 +16,7 @@ func (server *Server) NotifyNewAddress(req Req) Resp {
 	if err != nil {
 		return FunctionError(err.Error())
 	}
-	err = server.handler.NotifyNewAddress(addr)
-	if err != nil {
-		return FunctionError(err.Error())
-	}
+	server.handler.NotifyNewAddress(addr)
 	return Success("New address received")
 }
 
@@ -37,9 +34,6 @@ func (server *Server) SendTransaction(req Req) Resp {
 	if err != nil {
 		return FunctionError("Deserialize transaction failed")
 	}
-	err = server.handler.SendTransaction(tx)
-	if err != nil {
-		return FunctionError(err.Error())
-	}
+	server.handler.SendTransaction(tx)
 	return Success(tx.Hash().String())
 }

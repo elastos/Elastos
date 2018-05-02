@@ -1,4 +1,4 @@
-package sdk
+package core
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/store"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA/bloom"
@@ -32,17 +32,24 @@ StateListener is an interface to listen blockchain data change.
 Call AddStateListener() method to register your callbacks to the notify list.
 */
 type StateListener interface {
-	// This method will be callback after a transaction committed
-	// Notice: this method will be called when commit block
-	OnTxCommitted(tx Transaction, height uint32)
+	// When interested transactions received, this method will call back them.
+	// The height is the block height where this transaction has been packed.
+	// Returns if the transaction is a match, for there will be transactions that
+	// are not interested go through this method. If a transaction is not a match
+	// return false as a false positive mark. If anything goes wrong, return error.
+	// Notice: this method will be callback when commit block
+	OnCommitTx(tx Transaction, height uint32) (bool, error)
 
-	// This method will be callback after a block committed
+	// This method will be callback after a block and transactions with it are
+	// successfully committed into database.
 	OnBlockCommitted(bloom.MerkleBlock, []Transaction)
 
-	// This method will be callback when blockchain rollback
-	// height is the deleted data height, for example OnChainRollback(100) means
-	// data on height 100 has been deleted, current chain height will be 99.
-	OnChainRollback(height uint32)
+	// When the blockchain meet a reorganization, data should be rollback to the fork point.
+	// The Rollback method will callback the current rollback height, for example OnChainRollback(100)
+	// means data on height 100 has been deleted, current chain height will be 99. You should rollback
+	// stored data including UTXOs STXOs Txs etc. according to the given height.
+	// If anything goes wrong, return an error.
+	OnRollback(height uint32) error
 }
 
 /*
@@ -50,30 +57,31 @@ Blockchain is the database of blocks, also when a new transaction or block commi
 Blockchain will verify them with stored blocks.
 */
 type Blockchain struct {
-	lock           *sync.RWMutex
-	state          ChainState
-	db.DataStore
-	stateListeners []StateListener
+	lock          *sync.RWMutex
+	state         ChainState
+	store.HeaderStore
+	stateListener StateListener
 }
 
 // Create a instance of *Blockchain
-func NewBlockchain(dataStore db.DataStore) (*Blockchain, error) {
+func NewBlockchain(headerStore store.HeaderStore) (*Blockchain, error) {
 	return &Blockchain{
-		lock:      new(sync.RWMutex),
-		state:     WAITING,
-		DataStore: dataStore,
+		lock:        new(sync.RWMutex),
+		state:       WAITING,
+		HeaderStore: headerStore,
 	}, nil
 }
 
-// Register a blockchain state listener, multiple registration is supported.
-func (bc *Blockchain) AddStateListener(listener StateListener) {
-	bc.stateListeners = append(bc.stateListeners, listener)
+// Set the blockchain state listener, this method can be called multiple times
+// but only the last registered listener is effective.
+func (bc *Blockchain) SetStateListener(listener StateListener) {
+	bc.stateListener = listener
 }
 
 // Close the blockchain
 func (bc *Blockchain) Close() {
 	bc.lock.Lock()
-	bc.DataStore.Close()
+	bc.HeaderStore.Close()
 }
 
 // Set the current state of blockchain
@@ -97,21 +105,25 @@ func (bc *Blockchain) Height() uint32 {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
 
-	return bc.DataStore.GetChainHeight()
+	tip, err := bc.GetBestHeader()
+	if err != nil {
+		return 0
+	}
+	return tip.Height
 }
 
 // Get current blockchain tip
-func (bc *Blockchain) ChainTip() *db.StoreHeader {
+func (bc *Blockchain) ChainTip() *store.StoreHeader {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
 
 	return bc.chainTip()
 }
 
-func (bc *Blockchain) chainTip() *db.StoreHeader {
-	tip, err := bc.GetChainTip()
+func (bc *Blockchain) chainTip() *store.StoreHeader {
+	tip, err := bc.GetBestHeader()
 	if err != nil { // Empty blockchain, return empty header
-		return &db.StoreHeader{TotalWork: new(big.Int)}
+		return &store.StoreHeader{TotalWork: new(big.Int)}
 	}
 	return tip
 }
@@ -122,12 +134,12 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 	defer bc.lock.RUnlock()
 
 	var ret []*Uint256
-	parent, err := bc.GetChainTip()
+	parent, err := bc.GetBestHeader()
 	if err != nil { // No headers stored return empty locator
 		return ret
 	}
 
-	rollback := func(parent *db.StoreHeader, n int) (*db.StoreHeader, error) {
+	rollback := func(parent *store.StoreHeader, n int) (*store.StoreHeader, error) {
 		for i := 0; i < n; i++ {
 			parent, err = bc.GetPrevious(parent)
 			if err != nil {
@@ -158,21 +170,13 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 	return ret
 }
 
-// Commit tx commits a transaction and return is false positive and error
-func (bc *Blockchain) CommitTx(tx Transaction) (bool, error) {
-	bc.lock.Lock()
-	defer bc.lock.Unlock()
-
-	return bc.commitTx(tx, 0)
-}
-
 // Commit block commits a block and transactions with it, return is reorganize, false positives and error
 func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (bool, int, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
 	header := block.Header
-	commitHeader := &db.StoreHeader{Header: header}
+	commitHeader := &store.StoreHeader{Header: header}
 
 	// Get current chain tip
 	tip := bc.chainTip()
@@ -182,7 +186,7 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (b
 	// If the tip is also the parent of this header, then we can save a database read by skipping
 	var err error
 	var newTip = false
-	var parentHeader *db.StoreHeader
+	var parentHeader *store.StoreHeader
 	if header.Previous.IsEqual(tipHash) {
 		parentHeader = tip
 	} else {
@@ -190,7 +194,7 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (b
 		if err != nil {
 			// If committing header is genesis header, make an empty parent header
 			if commitHeader.Height == 1 {
-				parentHeader = &db.StoreHeader{TotalWork: new(big.Int)}
+				parentHeader = &store.StoreHeader{TotalWork: new(big.Int)}
 			} else {
 				return false, 0, fmt.Errorf("Header %s does not extend any known headers", header.Hash().String())
 			}
@@ -209,53 +213,38 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (b
 
 	// If the cumulative work is greater than the total work of our best header
 	// then we have a new best header. Update the chain tip and check for a reorg.
-	var reorg = false
-	var reorgPoint *db.StoreHeader
+	var forkPoint *store.StoreHeader
 	if cumulativeWork.Cmp(tip.TotalWork) == 1 {
 		newTip = true
 		// If this header is not extending the previous best header then we have a reorg.
 		if !tipHash.IsEqual(parentHeader.Hash()) {
 			commitHeader.Height = parentHeader.Height + 1
-			reorgPoint, err = bc.getCommonAncestor(commitHeader, tip)
+			forkPoint, err = bc.getCommonAncestor(commitHeader, tip)
 			if err != nil {
 				log.Errorf("error calculating common ancestor: %s", err.Error())
 				return false, 0, err
 			}
 			fmt.Printf("Reorganize At block %d, Wiped out %d blocks\n",
-				int(tip.Height), int(tip.Height-reorgPoint.Height))
+				int(tip.Height), int(tip.Height-forkPoint.Height))
 		}
 	}
 
 	// If common ancestor exists, means we have an fork chan
 	// so we need to rollback to the last good point.
-	if reorgPoint != nil {
-		log.Warn("Meet reorganize rollback to: ", reorgPoint.Height)
-		err := bc.rollbackTo(reorgPoint.Height)
+	var reorg = false
+	if forkPoint != nil {
+		reorg = true
+		log.Warn("Meet reorganize rollback to: ", forkPoint.Height)
+		err := bc.rollbackTo(forkPoint.Height)
 		if err != nil {
 			fmt.Println(err)
 		}
 		// Save reorganize point as the new tip
-		err = bc.PutHeader(reorgPoint, newTip)
+		err = bc.PutHeader(forkPoint, newTip)
 		if err != nil {
 			return reorg, 0, err
 		}
-		return true, 0, nil
-	}
-
-	fPositives := 0
-	if newTip {
-		// Save transactions
-		for _, tx := range txs {
-			fPositive, err := bc.commitTx(tx, header.Height)
-			if err != nil {
-				return reorg, 0, err
-			}
-			if fPositive {
-				fPositives++
-			}
-		}
-		// Save current chain height
-		bc.DataStore.PutChainHeight(header.Height)
+		return reorg, 0, nil
 	}
 
 	log.Debug("Commit header: ", commitHeader.Hash().String(), ", newTip: ", newTip)
@@ -265,46 +254,45 @@ func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (b
 		return reorg, 0, err
 	}
 
-	// Notify block committed
-	bc.notifyBlockCommitted(block, txs)
+	fPositives := 0
+	if newTip {
+		// Save transactions
+		for _, tx := range txs {
+			fPositive, err := bc.stateListener.OnCommitTx(tx, header.Height)
+			if err != nil {
+				return reorg, 0, err
+			}
+			if fPositive {
+				fPositives++
+			}
+		}
+		// Notify block committed
+		bc.stateListener.OnBlockCommitted(block, txs)
+	}
 
 	log.Debug("Blockchain block committed height: ", bc.chainTip().Height)
 
 	return reorg, fPositives, nil
 }
 
-func (bc *Blockchain) commitTx(tx Transaction, height uint32) (bool, error) {
-	fPositive, err := bc.DataStore.CommitTx(db.NewStoreTx(tx, height))
-	if err != nil {
-		return false, err
-	}
-
-	bc.notifyTxCommitted(tx, height)
-
-	return fPositive, nil
-}
-
 // Rollback data store to the fork point
 func (bc *Blockchain) rollbackTo(forkPoint uint32) error {
-	for height := bc.DataStore.GetChainHeight(); height > forkPoint; height-- {
+	for height := bc.chainTip().Height; height > forkPoint; height-- {
 		// Rollback TXNs and UTXOs STXOs with it
-		err := bc.DataStore.Rollback(height)
+		err := bc.stateListener.OnRollback(height)
 		if err != nil {
 			fmt.Println("Rollback database failed, height: ", height, ", error: ", err)
 			return err
 		}
-		bc.notifyChainRollback(height)
 	}
-	// Save current chain height
-	bc.DataStore.PutChainHeight(forkPoint)
 
 	return nil
 }
 
 // Returns last header before reorg point
-func (bc *Blockchain) getCommonAncestor(bestHeader, prevTip *db.StoreHeader) (*db.StoreHeader, error) {
+func (bc *Blockchain) getCommonAncestor(bestHeader, prevTip *store.StoreHeader) (*store.StoreHeader, error) {
 	var err error
-	rollback := func(parent *db.StoreHeader, n int) (*db.StoreHeader, error) {
+	rollback := func(parent *store.StoreHeader, n int) (*store.StoreHeader, error) {
 		for i := 0; i < n; i++ {
 			parent, err = bc.GetPrevious(parent)
 			if err != nil {
@@ -342,24 +330,6 @@ func (bc *Blockchain) getCommonAncestor(bestHeader, prevTip *db.StoreHeader) (*d
 		if err != nil {
 			return nil, err
 		}
-	}
-}
-
-func (bc *Blockchain) notifyBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
-	for _, listener := range bc.stateListeners {
-		go listener.OnBlockCommitted(block, txs)
-	}
-}
-
-func (bc *Blockchain) notifyTxCommitted(tx Transaction, height uint32) {
-	for _, listener := range bc.stateListeners {
-		go listener.OnTxCommitted(tx, height)
-	}
-}
-
-func (bc *Blockchain) notifyChainRollback(height uint32) {
-	for _, listener := range bc.stateListeners {
-		go listener.OnChainRollback(height)
 	}
 }
 

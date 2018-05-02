@@ -5,7 +5,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-type StoreTx struct {
+type Tx struct {
 	// Transaction ID
 	TxId Uint256
 
@@ -16,8 +16,8 @@ type StoreTx struct {
 	Data Transaction
 }
 
-func NewStoreTx(tx Transaction, height uint32) *StoreTx {
-	storeTx := new(StoreTx)
+func NewTx(tx Transaction, height uint32) *Tx {
+	storeTx := new(Tx)
 	storeTx.TxId = tx.Hash()
 	storeTx.Height = height
 	storeTx.Data = tx

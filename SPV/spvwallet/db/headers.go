@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.SPV/db"
+	"github.com/elastos/Elastos.ELA.SPV/store"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/boltdb/bolt"
@@ -17,16 +17,16 @@ import (
 
 type Headers interface {
 	// Add a new header to blockchain
-	Put(header *db.StoreHeader, newTip bool) error
+	Put(header *store.StoreHeader, newTip bool) error
 
 	// Get previous block of the given header
-	GetPrevious(header *db.StoreHeader) (*db.StoreHeader, error)
+	GetPrevious(header *store.StoreHeader) (*store.StoreHeader, error)
 
 	// Get full header with it's hash
-	GetHeader(hash common.Uint256) (*db.StoreHeader, error)
+	GetHeader(hash *common.Uint256) (*store.StoreHeader, error)
 
 	// Get the header on chain tip
-	GetTip() (*db.StoreHeader, error)
+	GetTip() (*store.StoreHeader, error)
 
 	// Reset database, clear all data
 	Reset() error
@@ -83,7 +83,7 @@ func (h *HeadersDB) initCache() {
 		return
 	}
 	h.cache.tip = best
-	headers := []*db.StoreHeader{best}
+	headers := []*store.StoreHeader{best}
 	for i := 0; i < 99; i++ {
 		sh, err := h.GetPrevious(best)
 		if err != nil {
@@ -97,7 +97,7 @@ func (h *HeadersDB) initCache() {
 }
 
 // Add a new header to blockchain
-func (h *HeadersDB) Put(header *db.StoreHeader, newTip bool) error {
+func (h *HeadersDB) Put(header *store.StoreHeader, newTip bool) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -129,15 +129,15 @@ func (h *HeadersDB) Put(header *db.StoreHeader, newTip bool) error {
 }
 
 // Get previous block of the given header
-func (h *HeadersDB) GetPrevious(header *db.StoreHeader) (*db.StoreHeader, error) {
+func (h *HeadersDB) GetPrevious(header *store.StoreHeader) (*store.StoreHeader, error) {
 	if header.Height == 1 {
-		return &db.StoreHeader{TotalWork: new(big.Int)}, nil
+		return &store.StoreHeader{TotalWork: new(big.Int)}, nil
 	}
-	return h.GetHeader(header.Previous)
+	return h.GetHeader(&header.Previous)
 }
 
 // Get full header with it's hash
-func (h *HeadersDB) GetHeader(hash common.Uint256) (header *db.StoreHeader, err error) {
+func (h *HeadersDB) GetHeader(hash *common.Uint256) (header *store.StoreHeader, err error) {
 	h.RLock()
 	defer h.RUnlock()
 
@@ -164,7 +164,7 @@ func (h *HeadersDB) GetHeader(hash common.Uint256) (header *db.StoreHeader, err 
 }
 
 // Get the header on chain tip
-func (h *HeadersDB) GetTip() (header *db.StoreHeader, err error) {
+func (h *HeadersDB) GetTip() (header *store.StoreHeader, err error) {
 	h.RLock()
 	defer h.RUnlock()
 
@@ -211,13 +211,13 @@ func (h *HeadersDB) Close() {
 	log.Debug("Headers DB closed")
 }
 
-func getHeader(tx *bolt.Tx, bucket []byte, key []byte) (*db.StoreHeader, error) {
+func getHeader(tx *bolt.Tx, bucket []byte, key []byte) (*store.StoreHeader, error) {
 	headerBytes := tx.Bucket(bucket).Get(key)
 	if headerBytes == nil {
 		return nil, errors.New(fmt.Sprintf("Header %s does not exist in database", hex.EncodeToString(key)))
 	}
 
-	var header db.StoreHeader
+	var header store.StoreHeader
 	err := header.Deserialize(headerBytes)
 	if err != nil {
 		return nil, err
@@ -229,7 +229,7 @@ func getHeader(tx *bolt.Tx, bucket []byte, key []byte) (*db.StoreHeader, error) 
 type HeaderCache struct {
 	sync.RWMutex
 	size    int
-	tip     *db.StoreHeader
+	tip     *store.StoreHeader
 	headers *ordered_map.OrderedMap
 }
 
@@ -248,7 +248,7 @@ func (cache *HeaderCache) pop() {
 	}
 }
 
-func (cache *HeaderCache) Set(header *db.StoreHeader) {
+func (cache *HeaderCache) Set(header *store.StoreHeader) {
 	cache.Lock()
 	defer cache.Unlock()
 
@@ -258,7 +258,7 @@ func (cache *HeaderCache) Set(header *db.StoreHeader) {
 	cache.headers.Set(header.Hash().String(), header)
 }
 
-func (cache *HeaderCache) Get(hash common.Uint256) (*db.StoreHeader, error) {
+func (cache *HeaderCache) Get(hash *common.Uint256) (*store.StoreHeader, error) {
 	cache.RLock()
 	defer cache.RUnlock()
 
@@ -266,5 +266,5 @@ func (cache *HeaderCache) Get(hash common.Uint256) (*db.StoreHeader, error) {
 	if !ok {
 		return nil, errors.New("Header not found in cache ")
 	}
-	return sh.(*db.StoreHeader), nil
+	return sh.(*store.StoreHeader), nil
 }

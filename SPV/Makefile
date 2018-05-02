@@ -7,7 +7,3 @@ BUILD_SPV_SERVICE =$(BUILD) -ldflags "-X main.Version=$(VERSION)" -o service mai
 all:
 	$(BUILD_SPV_CLI)
 	$(BUILD_SPV_SERVICE)
-
-install:
-	chmod 777 install.sh
-	./install.sh

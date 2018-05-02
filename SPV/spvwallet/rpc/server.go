@@ -11,8 +11,8 @@ import (
 )
 
 type RequestHandler interface {
-	NotifyNewAddress(hash []byte) error
-	SendTransaction(Transaction) error
+	NotifyNewAddress(hash []byte)
+	SendTransaction(Transaction)
 }
 
 func InitServer(handler RequestHandler) *Server {

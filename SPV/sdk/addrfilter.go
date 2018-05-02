@@ -28,7 +28,7 @@ func (filter *AddrFilter) LoadAddrs(addrs []*Uint168) {
 	filter.Lock()
 	defer filter.Unlock()
 
-	filter.addrs = make(map[Uint168]*Uint168)
+	filter.clear()
 	for _, addr := range addrs {
 		filter.addrs[*addr] = addr
 	}
@@ -60,6 +60,9 @@ func (filter *AddrFilter) DeleteAddr(hash Uint168) {
 
 // Get addresses that were added into this Filter
 func (filter *AddrFilter) GetAddrs() []*Uint168 {
+	filter.Lock()
+	defer filter.Unlock()
+
 	var addrs = make([]*Uint168, 0, len(filter.addrs))
 	for _, addr := range filter.addrs {
 		addrs = append(addrs, addr)
@@ -75,4 +78,15 @@ func (filter *AddrFilter) ContainAddr(hash Uint168) bool {
 
 	_, ok := filter.addrs[hash]
 	return ok
+}
+
+func (filter *AddrFilter) Clear() {
+	filter.Lock()
+	defer filter.Unlock()
+
+	filter.clear()
+}
+
+func (filter *AddrFilter) clear() {
+	filter.addrs = make(map[Uint168]*Uint168)
 }

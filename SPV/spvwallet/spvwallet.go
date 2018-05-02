@@ -3,7 +3,7 @@ package spvwallet
 import (
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/db"
+	. "github.com/elastos/Elastos.ELA.SPV/store"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
@@ -36,7 +36,7 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	}
 
 	// Initialize spv service
-	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet.getBloomFilter)
+	wallet.SPVService, err = sdk.GetSPVService(client, wallet, wallet)
 	if err != nil {
 		return nil, err
 	}
@@ -47,13 +47,19 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	return wallet, nil
 }
 
+type DataListener interface {
+	OnNewBlock(block bloom.MerkleBlock, txs []Transaction)
+	OnRollback(height uint32)
+}
+
 type SPVWallet struct {
 	sync.Mutex
 	sdk.SPVService
-	rpcServer *rpc.Server
-	headers   db.Headers
-	dataStore db.DataStore
-	filter    *sdk.AddrFilter
+	rpcServer     *rpc.Server
+	headers       db.Headers
+	dataStore     db.DataStore
+	filter        *sdk.AddrFilter
+	dataListeners []DataListener
 }
 
 func (wallet *SPVWallet) Start() {
@@ -66,8 +72,8 @@ func (wallet *SPVWallet) Stop() {
 	wallet.rpcServer.Close()
 }
 
-func (wallet *SPVWallet) Headers() db.Headers {
-	return wallet.headers
+func (wallet *SPVWallet) HeaderStore() HeaderStore {
+	return wallet
 }
 
 func (wallet *SPVWallet) DataStore() db.DataStore {
@@ -85,37 +91,33 @@ func (wallet *SPVWallet) GetPrevious(header *StoreHeader) (*StoreHeader, error) 
 }
 
 // Get full header with it's hash
-func (wallet *SPVWallet) GetHeader(hash Uint256) (*StoreHeader, error) {
+func (wallet *SPVWallet) GetHeader(hash *Uint256) (*StoreHeader, error) {
 	return wallet.headers.GetHeader(hash)
 }
 
 // Get the header on chain tip
-func (wallet *SPVWallet) GetChainTip() (*StoreHeader, error) {
+func (wallet *SPVWallet) GetBestHeader() (*StoreHeader, error) {
 	return wallet.headers.GetTip()
 }
 
-// Save chain height to database
-func (wallet *SPVWallet) PutChainHeight(height uint32) {
-	wallet.dataStore.Info().SaveChainHeight(height)
-}
-
-// Get chain height from database
-func (wallet *SPVWallet) GetChainHeight() uint32 {
-	return wallet.dataStore.Info().ChainHeight()
+func (wallet *SPVWallet) AddDataListener(listener DataListener) {
+	wallet.dataListeners = append(wallet.dataListeners, listener)
 }
 
 // Commit a transaction return if this is a false positive and error
-func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
+func (wallet *SPVWallet) OnCommitTx(tx Transaction, height uint32) (bool, error) {
+	txId := tx.Hash()
+
 	hits := 0
 	// Save UTXOs
-	for index, output := range storeTx.Data.Outputs {
+	for index, output := range tx.Outputs {
 		// Filter address
 		if wallet.getAddrFilter().ContainAddr(output.ProgramHash) {
 			var lockTime uint32
-			if storeTx.Data.TxType == CoinBase {
-				lockTime = storeTx.Height + 100
+			if tx.TxType == CoinBase {
+				lockTime = height + 100
 			}
-			utxo := ToUTXO(storeTx.TxId, storeTx.Height, index, output.Value, lockTime)
+			utxo := ToUTXO(txId, height, index, output.Value, lockTime)
 			err := wallet.dataStore.UTXOs().Put(&output.ProgramHash, utxo)
 			if err != nil {
 				return false, err
@@ -125,9 +127,9 @@ func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
 	}
 
 	// Put spent UTXOs to STXOs
-	for _, input := range storeTx.Data.Inputs {
+	for _, input := range tx.Inputs {
 		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
-		err := wallet.dataStore.STXOs().FromUTXO(&input.Previous, &storeTx.TxId, storeTx.Height)
+		err := wallet.dataStore.STXOs().FromUTXO(&input.Previous, &txId, height)
 		if err == nil {
 			hits++
 		}
@@ -139,7 +141,7 @@ func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
 	}
 
 	// Save transaction
-	err := wallet.dataStore.Txs().Put(storeTx)
+	err := wallet.dataStore.Txs().Put(db.NewTx(tx, height))
 	if err != nil {
 		return false, err
 	}
@@ -147,8 +149,18 @@ func (wallet *SPVWallet) CommitTx(storeTx *StoreTx) (bool, error) {
 	return false, nil
 }
 
+func (wallet *SPVWallet) OnBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
+	wallet.dataStore.Chain().PutHeight(block.Height)
+	for _, listener := range wallet.dataListeners {
+		go listener.OnNewBlock(block, txs)
+	}
+}
+
 // Rollback chain data on the given height
-func (wallet *SPVWallet) Rollback(height uint32) error {
+func (wallet *SPVWallet) OnRollback(height uint32) error {
+	for _, listener := range wallet.dataListeners {
+		go listener.OnRollback(height)
+	}
 	return wallet.dataStore.Rollback(height)
 }
 
@@ -180,18 +192,26 @@ func ToUTXO(txId Uint256, height uint32, index int, value Fixed64, lockTime uint
 	return utxo
 }
 
-func (wallet *SPVWallet) NotifyNewAddress(hash []byte) error {
+func (wallet *SPVWallet) GetData() ([]*Uint168, []*OutPoint) {
+	utxos, _ := wallet.dataStore.UTXOs().GetAll()
+	stxos, _ := wallet.dataStore.STXOs().GetAll()
+
+	outpoints := make([]*OutPoint, 0, len(utxos)+len(stxos))
+	for _, utxo := range utxos {
+		outpoints = append(outpoints, &utxo.Op)
+	}
+	for _, stxo := range stxos {
+		outpoints = append(outpoints, &stxo.Op)
+	}
+
+	return wallet.getAddrFilter().GetAddrs(), outpoints
+}
+
+func (wallet *SPVWallet) NotifyNewAddress(hash []byte) {
 	// Reload address filter to include new address
 	wallet.loadAddrFilter()
 	// Broadcast filterload message to connected peers
-	wallet.BroadCastMessage(wallet.getBloomFilter().GetFilterLoadMsg())
-	return nil
-}
-
-func (wallet *SPVWallet) SendTransaction(tx Transaction) error {
-	// Broadcast transaction to connected peers
-	wallet.BroadCastMessage(&tx)
-	return nil
+	wallet.ReloadFilter()
 }
 
 func (wallet *SPVWallet) getAddrFilter() *sdk.AddrFilter {
@@ -208,30 +228,4 @@ func (wallet *SPVWallet) loadAddrFilter() *sdk.AddrFilter {
 		wallet.filter.AddAddr(addr.Hash())
 	}
 	return wallet.filter
-}
-
-func (wallet *SPVWallet) getBloomFilter() *bloom.Filter {
-	wallet.Lock()
-	defer wallet.Unlock()
-
-	addrs := wallet.getAddrFilter().GetAddrs()
-	utxos, _ := wallet.dataStore.UTXOs().GetAll()
-	stxos, _ := wallet.dataStore.STXOs().GetAll()
-
-	elements := uint32(len(addrs) + len(utxos) + len(stxos))
-	filter := sdk.NewBloomFilter(elements)
-
-	for _, addr := range addrs {
-		filter.Add(addr.Bytes())
-	}
-
-	for _, utxo := range utxos {
-		filter.AddOutPoint(&utxo.Op)
-	}
-
-	for _, stxo := range stxos {
-		filter.AddOutPoint(&stxo.Op)
-	}
-
-	return filter
 }

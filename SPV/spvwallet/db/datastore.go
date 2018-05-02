@@ -1,14 +1,12 @@
 package db
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/db"
-
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type DataStore interface {
-	Info() Info
+	Chain() Chain
 	Addrs() Addrs
 	Txs() Txs
 	UTXOs() UTXOs
@@ -21,21 +19,12 @@ type DataStore interface {
 	Close()
 }
 
-type Info interface {
-	// get chain height
-	ChainHeight() uint32
-
+type Chain interface {
 	// save chain height
-	SaveChainHeight(height uint32)
+	PutHeight(height uint32)
 
-	// put key and value into db
-	Put(key string, data []byte) error
-
-	// get value by key
-	Get(key string) ([]byte, error)
-
-	// delete value by key
-	Delete(key string) error
+	// get chain height
+	GetHeight() uint32
 }
 
 type Addrs interface {
@@ -54,16 +43,16 @@ type Addrs interface {
 
 type Txs interface {
 	// Put a new transaction to database
-	Put(txn *db.StoreTx) error
+	Put(txn *Tx) error
 
 	// Fetch a raw tx and it's metadata given a hash
-	Get(txId *Uint256) (*db.StoreTx, error)
+	Get(txId *Uint256) (*Tx, error)
 
 	// Fetch all transactions from database
-	GetAll() ([]*db.StoreTx, error)
+	GetAll() ([]*Tx, error)
 
 	// Fetch all transactions from the given height
-	GetAllFrom(height uint32) ([]*db.StoreTx, error)
+	GetAllFrom(height uint32) ([]*Tx, error)
 
 	// Update the height of a transaction
 	UpdateHeight(txId *Uint256, height uint32) error
