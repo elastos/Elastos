@@ -62,25 +62,25 @@ glide version 0.13.1
 ```
 If you cannot see the version number, there must be something wrong when install.
 
-### Clone source code to $GOPATH/src folder
-Make sure you are in the folder of $GOPATH/src
+### Clone source code to $GOPATH/src/github.com/elastos folder
+Make sure you are in the folder of $GOPATH/src/github.com/elastos
 ```shell
 $ git clone https://github.com/elastos/Elastos.ELA.git
 ```
 
-If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.ELA/makefile
+If clone works successfully, you should see folder structure like $GOPATH/src/github.com/elastos/Elastos.ELA/Makefile
 ### Glide install
 
-Run `glide update && glide install` to install depandencies.
+cd $GOPATH/src/github.com/elastos/Elastos.ELA and Run `glide update && glide install` to install depandencies.
 
 ### Make
 
-Run `make` to build files.
+cd $GOPATH/src/github.com/elastos/Elastos.ELA and Run `make` to build files.
 
 If you did not see any error message, congratulations, you have made the ELA full node. 
 ## Run on Mac
 
-- run ./ela to run the node program.
+- run `./ela` to run the node program.
 
 ## Build on Ubuntu
 
