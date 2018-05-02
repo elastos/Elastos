@@ -1,21 +1,173 @@
-# SPV Implement
-## Summary
-### This is a upgrade version of the Elastos digital currency node program, which implemented SPV (Simplified Payment Verification) service.
-## Changes
-1. Add folder `bloom` which is the source code of an implement of bloom filter.
-2. Add `SPVService` parameter to config file, this is a boolean value to set SPV service on/off
-3. Modify Handle() method in `datarequest` to support Transaction data request.
-4. Add new message type `filterload` under `net/message/` folder, this is the message to make service node load bloom filter.
-5. Add `Type` parameter to `InvPayload`, make inventory message can take `BLOCK` and `TRANSACTION` two different types.
-6. Add new message type `merkleblock` under `net/message/` folder, this is a special message type only used in SPV communication.
-7. Add `spvfilter` file under `net/message/` folder, which is a helper to filter SPV messages from SPVPort.
-8. Add `listenSPVPort` method to `net/node/link.go`, SPV service are provided by the specific SPVPort.
-9. Add `spvlink` to `net/node/` folder, which is the implement of SPVPort listen method.
-10. Update `PROTOCOLVERSION` from 0 to 1
-11. Add `SPVPort` and `SPVService` constant to `net/protocol/protocol.go`
-12. Add `LoadFilter(*bloom.Filter)` and `GetFilter() *bloom.Filter` to `Noder` interface, and implement these methods in `node`.
-12. Merge `Xmit()` and `Relay()` into one method `Relay()`.
+# Elastos.ELA
 
-## Usage
-1. Set `SPVService` parameter to `true` in `config.json`.
-2. Run `./node` in the console.
+## Summary
+
+Elacoin is the digital currency solution within Elastos eco system.
+
+This project is the source code that can build a full node of ELA.
+
+## Build on Mac
+
+### Check OS version
+
+Make sure the OSX version is 16.7+
+
+```shell
+$ uname -srm
+Darwin 16.7.0 x86_64
+```
+
+### Install Go distribution 1.9
+
+Use Homebrew to install Golang 1.9.
+```shell
+$ brew install go@1.9
+```
+> If you install older version, such as v1.8, you may get missing math/bits package error when build.
+
+### Setup basic workspace
+In this instruction we use ~/dev/src/github.com/elastos as our working directory. If you clone the source code to a different directory, please make sure you change other environment variables accordingly (not recommended). 
+
+```shell
+$ mkdir ~/dev/bin
+$ mkdir ~/dev/src/github.com/elastos/
+```
+
+### Set correct environment variables.
+
+```shell
+export GOROOT=/usr/local/opt/go@1.9/libexec
+export GOPATH=$HOME/dev
+export GOBIN=$GOPATH/bin
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOBIN:$PATH
+```
+
+### Install Glide
+
+Glide is a package manager for Golang. We use Glide to install dependent packages.
+
+```shell
+$ brew install --ignore-dependencies glide
+```
+
+### Check Go version and glide version
+Check the golang and glider version. Make sure they are the following version number or above.
+```shell
+$ go version
+go version go1.9.2 darwin/amd64
+ 
+$ glide --version
+glide version 0.13.1
+```
+If you cannot see the version number, there must be something wrong when install.
+
+### Clone source code to $GOPATH/src folder
+Make sure you are in the folder of $GOPATH/src
+```shell
+$ git clone https://github.com/elastos/Elastos.ELA.git
+```
+
+If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.ELA/makefile
+### Glide install
+
+Run `glide update && glide install` to install depandencies.
+
+### Make
+
+Run `make` to build files.
+
+If you did not see any error message, congratulations, you have made the ELA full node. 
+## Run on Mac
+
+- run ./ela to run the node program.
+
+## Build on Ubuntu
+
+### Check OS version
+Make sure your ubuntu version is 16.04+
+```shell
+$ cat /etc/issue
+Ubuntu 16.04.3 LTS \n \l
+```
+
+### Install basic tools
+
+```shell
+$ sudo apt-get install -y git
+```
+
+
+### Install Go distribution 1.9
+
+
+```shell
+$ sudo apt-get install -y software-properties-common
+$ sudo add-apt-repository -y ppa:gophers/archive
+$ sudo apt update
+$ sudo apt-get install -y golang-1.9-go
+```
+> If you install older version, such as v1.8, you may get missing math/bits package error when build.
+
+### Setup basic workspace
+In this instruction we use ~/dev/src/github.com/elastos/ as our working directory. If you clone the source code to a different directory, please make sure you change other environment variables accordingly (not recommended). 
+
+```shell
+$ mkdir ~/dev/bin
+$ mkdir ~/dev/src/github.com/elastos
+```
+
+### Set correct environment variables.
+
+```shell
+export GOROOT=/usr/lib/go-1.9
+export GOPATH=$HOME/dev
+export GOBIN=$GOPATH/bin
+export PATH=$GOROOT/bin:$PATH
+export PATH=$GOBIN:$PATH
+```
+
+### Install Glide
+
+Glide is a package manager for Golang. We use Glide to install dependent packages.
+
+```shell
+$ cd ~/dev
+$ curl https://glide.sh/get | sh
+```
+
+
+### Check Go version and glide version
+Check the golang and glider version. Make sure they are the following version number or above.
+```shell
+$ go version
+go version go1.9.2 linux/amd64
+ 
+$ glide --version
+glide version v0.13.1
+```
+
+If you cannot see the version number, there must be something wrong when install.
+
+### Clone source code to $GOPATH/src folder
+Make sure you are in the folder of $GOPATH/src
+```shell
+$ git clone https://github.com/elastos/Elastos.ELA.git
+```
+
+If clone works successfully, you should see folder structure like $GOPATH/src/Elastos.ELA/makefile
+### Glide install
+
+Run `glide update && glide install` to install depandencies.
+
+### Make
+
+Run `make` to build files.
+
+If you did not see any error message, congratulations, you have made the ELA full node.
+## Run on Ubuntu
+
+- run ./ela to run the node program.
+
+# Config the node
+See the [documentation](./docs/config.json.md) about config.json
