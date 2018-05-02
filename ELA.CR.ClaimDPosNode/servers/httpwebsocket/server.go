@@ -245,11 +245,11 @@ func SendTransaction2WSclient(v interface{}) {
 }
 
 func SendBlock2WSclient(v interface{}) {
-	if PushBlockFlag {
-		go func() {
-			instance.PushResult("sendblock", v)
-		}()
-	}
+	//if PushBlockFlag {
+	//	go func() {
+	//		instance.PushResult("sendblock", v)
+	//	}()
+	//}
 	if PushRawBlockFlag {
 		go func() {
 			instance.PushResult("sendrawblock", v)
@@ -265,16 +265,16 @@ func SendBlock2WSclient(v interface{}) {
 func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	var result interface{}
 	switch action {
-	case "sendblock":
+	case "sendblock", "sendrawblock":
 		if block, ok := v.(*Block); ok {
 			result = GetBlockInfo(block, true)
 		}
-	case "sendrawblock":
-		if block, ok := v.(*Block); ok {
-			w := bytes.NewBuffer(nil)
-			block.Serialize(w)
-			result = BytesToHexString(w.Bytes())
-		}
+	//case "sendrawblock":
+	//	if block, ok := v.(*Block); ok {
+	//		w := bytes.NewBuffer(nil)
+	//		block.Serialize(w)
+	//		result = BytesToHexString(w.Bytes())
+	//	}
 	case "sendblocktransactions":
 		if block, ok := v.(*Block); ok {
 			result = GetBlockTransactions(block)
