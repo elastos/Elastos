@@ -106,10 +106,14 @@ type SideMiningInfo struct {
 	SideBlockHash string
 }
 
-type TransferCrossChainAssetInfo struct {
-	AddressesMap map[string]uint64
+type IssueTokenInfo struct {
+	Proof string
 }
 
 type WithdrawAssetInfo struct {
 	BlockHeight uint32
+}
+
+type TransferCrossChainAssetInfo struct {
+	AddressesMap map[string]uint64
 }
