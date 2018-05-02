@@ -1,8 +1,9 @@
-# Elastos Carrier iOS Framework
+Elastos Carrier iOS Framework
+=============================
 
 ## Summary
 
-Elastos Carrier iOS Framework is swift API wrapper (also produced in Object-C APIs for Elastos Native Carrier, where Carrier is a decentralized peer to peer communication framework.
+Elastos Carrier iOS Framework is swift API wrapper (and Objective-C APIs) for Elastos Native Carrier, where Carrier is a decentralized peer to peer communication framework.
 
 ## Build from source
 
@@ -14,13 +15,13 @@ You need to build carrier iOS ndk distributions from the Carrier native reposito
 https://github.com/elastos/Elastos.NET.Carrier.Native.SDK
 ```
 
-Finished building iOS NDKs for Carrier, you would have native output libraries 'lipo'ed with serveral CPU architectures supported. Currently, only x86-64 and arm64 CPU architectures are supported.
+Finished building iOS NDKs for Carrier, you would have native output libraries **'lipo'ed** with serveral CPU architectures supported. Currently, only **x86-64** and **arm64** CPU architectures are supported.
 
-The output static libraries would be listed under "_dist/lipo" directory in Carrier Native source.
+The output static libraries would be listed under **"_dist/lipo"** directory in Carrier Native source.
 
 ### 2.Import Carrier NDK
 
-The directory "NativeDistributions" where to import native libraries and headers has the following directory structure:
+The directory **"NativeDistributions"** to import native libraries and headers should have following directory structure:
 
 ```
 NativeDistributions
@@ -42,15 +43,15 @@ NativeDistributions
        |--libsodium.a	
        |--libtoxcore.a
 ```
-The headers under directory "include" are public header files from Carrier native. 
+The headers under subdirectory **"include"** are public header files from Carrier native.
 
 ### 3. Build Carrier SDK
 
-After importing dependencies from Carrier native, you need Xcode to open this project and build Carrier iOS SDK.
+After importing dependencies from Carrier native, you need Apple Xcode to open this project and build Carrier iOS SDK.
 
 ### 4. Output
 
-You can use Xcode to produce ElastosCarrier.framework.
+Use Apple Xcode to generate **ElastosCarrier.framework**.
 
 ## Tests
 
@@ -58,9 +59,11 @@ To complete.
 
 ## Build Docs
 
+### 1. Swift APIs Docs
+
 Run following script command to generate swift APIs docuement with appledoc tool:
 
-```
+```shell
 $ ./docs.sh
 
 ```
@@ -72,9 +75,13 @@ https://github.com/tomaz/appledoc
 
 ```
 
+### 2. Object-C APIs Docs
+
+To complete
+
 ## Thanks
 
-Sinserely thanks to all teams and projects that we relying on directly or indirectly.
+Sincerely thanks to all teams and projects that we relies on directly or indirectly.
 
 ## Contributing
 
