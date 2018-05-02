@@ -93,35 +93,8 @@ func GetTransactionInfo(header *Header, tx *ela.Transaction) *TransactionInfo {
 	}
 }
 
-func PayloadInfoToTransPayload(p PayloadInfo) (ela.Payload, error) {
-
-	switch object := p.(type) {
-	case RegisterAssetInfo:
-		obj := new(ela.PayloadRegisterAsset)
-		obj.Asset = object.Asset
-		amount, err := StringToFixed64(object.Amount)
-		if err != nil {
-			return nil, err
-		}
-		obj.Amount = *amount
-		bytes, err := HexStringToBytes(object.Controller)
-		if err != nil {
-			return nil, err
-		}
-		controller, err := Uint168FromBytes(bytes)
-		obj.Controller = *controller
-		return obj, nil
-	case TransferCrossChainAssetInfo:
-		obj := new(ela.PayloadTransferCrossChainAsset)
-		obj.AddressesMap = object.AddressesMap
-		return obj, nil
-	}
-
-	return nil, errors.New("Invalid payload type.")
-}
-
 func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
-	txPaload, err := PayloadInfoToTransPayload(txInfo.Payload)
+	txPaload, err := getPayload(txInfo.Payload)
 	if err != nil {
 		return nil, err
 	}
@@ -616,18 +589,17 @@ func SendTransactionInfo(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "Info not found")
 	}
 
-	inforBytes, err := HexStringToBytes(infoStr)
+	infoBytes, err := HexStringToBytes(infoStr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	var txInfo TransactionInfo
-	err = json.Unmarshal(inforBytes, &txInfo)
+	txInfo, err := getTransactionInfo(infoBytes)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	txn, err := GetTransaction(&txInfo)
+	txn, err := GetTransaction(txInfo)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -933,6 +905,40 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, GetTransactionInfo(header, txn))
 }
 
+func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
+
+	switch object := pInfo.(type) {
+	case *RegisterAssetInfo:
+		obj := new(ela.PayloadRegisterAsset)
+		obj.Asset = object.Asset
+		amount, err := StringToFixed64(object.Amount)
+		if err != nil {
+			return nil, err
+		}
+		obj.Amount = *amount
+		bytes, err := HexStringToBytes(object.Controller)
+		if err != nil {
+			return nil, err
+		}
+		controller, err := Uint168FromBytes(bytes)
+		obj.Controller = *controller
+		return obj, nil
+	case *IssueTokenInfo:
+		obj := new(ela.PayloadIssueToken)
+		bytes, err := HexStringToBytes(object.Proof)
+		if err != nil {
+			return nil, err
+		}
+		obj.MerkleProof = bytes
+	case *TransferCrossChainAssetInfo:
+		obj := new(ela.PayloadTransferCrossChainAsset)
+		obj.AddressesMap = object.AddressesMap
+		return obj, nil
+	}
+
+	return nil, errors.New("Invalid payload type.")
+}
+
 func getPayloadInfo(p ela.Payload) PayloadInfo {
 	switch object := p.(type) {
 	case *ela.PayloadCoinBase:
@@ -961,6 +967,50 @@ func getPayloadInfo(p ela.Payload) PayloadInfo {
 	case *ela.PayloadRecord:
 	}
 	return nil
+}
+
+func unmarshal(result interface{}, target interface{}) error {
+	data, err := json.Marshal(result)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, target)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getTransactionInfo(txInfoBytes []byte) (*TransactionInfo, error) {
+	var txInfo TransactionInfo
+	err := json.Unmarshal(txInfoBytes, &txInfo)
+	if err != nil {
+		return nil, errors.New("InvalidParameter")
+	}
+
+	var assetInfo PayloadInfo
+	switch txInfo.TxType {
+	case ela.CoinBase:
+		assetInfo = &CoinbaseInfo{}
+	case ela.RegisterAsset:
+		assetInfo = &RegisterAssetInfo{}
+	case ela.SideMining:
+		assetInfo = &SideMiningInfo{}
+	case ela.IssueToken:
+		assetInfo = &IssueTokenInfo{}
+	case ela.WithdrawAsset:
+		assetInfo = &WithdrawAssetInfo{}
+	case ela.TransferCrossChainAsset:
+		assetInfo = &TransferCrossChainAssetInfo{}
+	default:
+		return nil, errors.New("GetBlockTransactions: Unknown payload type")
+	}
+	err = unmarshal(&txInfo.Payload, assetInfo)
+	if err == nil {
+		txInfo.Payload = assetInfo
+	}
+
+	return &txInfo, nil
 }
 
 func VerifyAndSendTx(txn *ela.Transaction) ErrCode {
