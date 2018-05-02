@@ -24,7 +24,7 @@ const (
 )
 
 var NodeForServers Noder
-var Pow *pow.PowService
+var LocalPow *pow.PowService
 var PreChainHeight uint64
 var PreTime int64
 
@@ -169,7 +169,7 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	if _, ok := Pow.MsgBlock.BlockData[blockHash]; !ok {
+	if _, ok := LocalPow.MsgBlock.BlockData[blockHash]; !ok {
 		log.Trace("[json-rpc:SubmitAuxBlock] receive invalid block hash value:", blockHash)
 		return ResponsePack(InvalidParams, "")
 	}
@@ -186,19 +186,19 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "can not resolve auxpow parameter")
 	}
 
-	Pow.MsgBlock.BlockData[blockHash].Header.AuxPow = aux
-	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(Pow.MsgBlock.BlockData[blockHash])
+	LocalPow.MsgBlock.BlockData[blockHash].Header.AuxPow = aux
+	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "")
 	}
 
-	Pow.MsgBlock.Mutex.Lock()
-	for key := range Pow.MsgBlock.BlockData {
-		delete(Pow.MsgBlock.BlockData, key)
+	LocalPow.MsgBlock.Mutex.Lock()
+	for key := range LocalPow.MsgBlock.BlockData {
+		delete(LocalPow.MsgBlock.BlockData, key)
 	}
-	Pow.MsgBlock.Mutex.Unlock()
-	log.Trace("AddBlock called finished and Pow.MsgBlock.BlockData has been deleted completely")
+	LocalPow.MsgBlock.Mutex.Unlock()
+	log.Trace("AddBlock called finished and LocalPow.MsgBlock.BlockData has been deleted completely")
 
 	log.Info(auxPow, blockHash)
 	return ResponsePack(Success, "")
@@ -214,12 +214,12 @@ func GenerateAuxBlock(addr string) (*Block, string, bool) {
 			PreTime = time.Now().Unix()
 		}
 
-		currentTxsCount := Pow.CollectTransactions(msgBlock)
+		currentTxsCount := LocalPow.CollectTransactions(msgBlock)
 		if 0 == currentTxsCount {
 			// return nil, "currentTxs is nil", false
 		}
 
-		msgBlock, err := Pow.GenerateBlock(addr)
+		msgBlock, err := LocalPow.GenerateBlock(addr)
 		if nil != err {
 			return nil, "msgBlock generate err", false
 		}
@@ -227,9 +227,9 @@ func GenerateAuxBlock(addr string) (*Block, string, bool) {
 		curHash := msgBlock.Hash()
 		curHashStr := BytesToHexString(curHash.Bytes())
 
-		Pow.MsgBlock.Mutex.Lock()
-		Pow.MsgBlock.BlockData[curHashStr] = msgBlock
-		Pow.MsgBlock.Mutex.Unlock()
+		LocalPow.MsgBlock.Mutex.Lock()
+		LocalPow.MsgBlock.BlockData[curHashStr] = msgBlock
+		LocalPow.MsgBlock.Mutex.Unlock()
 
 		PreChainHeight = NodeForServers.Height()
 		PreTime = time.Now().Unix()
@@ -246,7 +246,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 	}
 
 	var ok bool
-	Pow.PayToAddr, ok = param.String("paytoaddress")
+	LocalPow.PayToAddr, ok = param.String("paytoaddress")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -294,7 +294,6 @@ func GetInfo(param Params) map[string]interface{} {
 		Blocks:         NodeForServers.Height(),
 		Timeoffset:     0,
 		Connections:    NodeForServers.GetConnectionCnt(),
-		Testnet:        config.Parameters.PowConfiguration.TestNet,
 		Keypoololdest:  0,
 		Keypoolsize:    0,
 		Unlocked_until: 0,
@@ -318,10 +317,10 @@ func ToggleMining(param Params) map[string]interface{} {
 
 	var message string
 	if mining {
-		go Pow.Start()
+		go LocalPow.Start()
 		message = "mining started"
 	} else {
-		go Pow.Halt()
+		go LocalPow.Halt()
 		message = "mining stopped"
 	}
 
@@ -336,7 +335,7 @@ func ManualMining(param Params) map[string]interface{} {
 
 	ret := make([]string, count)
 
-	blockHashes, err := Pow.ManualMining(uint32(count))
+	blockHashes, err := LocalPow.ManualMining(uint32(count))
 	if err != nil {
 		return ResponsePack(Error, err)
 	}
