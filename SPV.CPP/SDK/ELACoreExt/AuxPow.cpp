@@ -54,10 +54,7 @@ namespace Elastos {
 			UInt32SetLE(auxMerkleIndexData, _auxMerkleIndex);
 			ostream.putBytes(auxMerkleIndexData, 32 / 8);
 
-			uint8_t auxMerkleBranchCountData[64 / 8];
-			UInt64SetLE(auxMerkleBranchCountData, uint64_t(_auxMerkleBranch.size()));
-			ostream.putBytes(auxMerkleBranchCountData, 64 / 8);
-
+			ostream.putVarUint(_auxMerkleBranch.size());
 			uint8_t auxMerkleBranchData[256 / 8];
 			for (uint64_t i = 0; i < _auxMerkleBranch.size(); ++i) {
 				UInt256Set(auxMerkleBranchData, _auxMerkleBranch[i]);
@@ -68,10 +65,7 @@ namespace Elastos {
 			UInt32SetLE(parMerkleIndexData, _parMerkleIndex);
 			ostream.putBytes(parMerkleIndexData, 32 / 8);
 
-			uint8_t parCoinBaseMerkleCountData[64 / 8];
-			UInt64SetLE(parCoinBaseMerkleCountData, uint64_t(_parCoinBaseMerkle.size()));
-			ostream.putBytes(parCoinBaseMerkleCountData, 64 / 8);
-
+			ostream.putVarUint(_parCoinBaseMerkle.size());
 			uint8_t parCoinBaseMerkleData[256 / 8];
 			for (uint64_t i = 0; i < _parCoinBaseMerkle.size(); ++i) {
 				UInt256Set(parCoinBaseMerkleData, _parCoinBaseMerkle[i]);
@@ -107,11 +101,7 @@ namespace Elastos {
 			istream.getBytes(parMerkleIndexData, 32 / 8);
 			_parMerkleIndex = UInt32GetLE(parMerkleIndexData);
 
-			uint8_t parCoinBaseMerkleCountHead;
-			istream.getBytes(&parCoinBaseMerkleCountHead, 8 / 8);
-			uint64_t parCoinBaseMerkleCount = ReadVarInt(istream, parCoinBaseMerkleCountHead);
-
-
+			uint64_t parCoinBaseMerkleCount = istream.getVarUint();
 			_parCoinBaseMerkle.resize(parCoinBaseMerkleCount);
 			uint8_t parCoinBaseMerkleData[256 / 8];
 			for (uint64_t i = 0; i < parCoinBaseMerkleCount; ++i) {
@@ -127,18 +117,12 @@ namespace Elastos {
 			UInt32SetLE(versionData, _btcTransaction->version);
 			ostream.putBytes(versionData, 32 / 8);
 
-			uint8_t txInCountData[64 / 8];
-			UInt64SetLE(txInCountData, uint64_t(_btcTransaction->inCount));
-			ostream.putBytes(txInCountData, 64 / 8);
-
+			ostream.putVarUint(uint64_t(_btcTransaction->inCount));
 			for (uint64_t i = 0; i < _btcTransaction->inCount; ++i) {
 				serializeBtcTxIn(ostream, _btcTransaction->inputs[i]);
 			}
 
-			uint8_t txOutCountData[64 / 8];
-			UInt64SetLE(txOutCountData, uint64_t(_btcTransaction->outCount));
-			ostream.putBytes(txOutCountData, 64 / 8);
-
+			ostream.putVarUint(uint64_t(_btcTransaction->outCount));
 			for (uint64_t i = 0; i < _btcTransaction->outCount; ++i) {
 				serializeBtcTxOut(ostream, _btcTransaction->outputs[i]);
 			}
@@ -153,18 +137,12 @@ namespace Elastos {
 			istream.getBytes(versionData, 32 / 8);
 			_btcTransaction->version = UInt32GetLE(versionData);
 
-			uint8_t txInCountHead;
-			istream.getBytes(&txInCountHead, 8 / 8);
-			_btcTransaction->inCount = (size_t)ReadVarInt(istream, txInCountHead);
-
+			_btcTransaction->inCount = istream.getVarUint();
 			for (uint64_t i = 0; i < _btcTransaction->inCount; ++i) {
 				deserializeBtcTxIn(istream, _btcTransaction->inputs[i]);
 			}
 
-			uint8_t txOutCountHead;
-			istream.getBytes(&txOutCountHead, 8 / 8);
-			_btcTransaction->outCount = (size_t)ReadVarInt(istream, txOutCountHead);
-
+			_btcTransaction->outCount = istream.getVarUint();
 			for (uint64_t i = 0; i < _btcTransaction->outCount; ++i) {
 				deserializeBtcTxOut(istream, _btcTransaction->outputs[i]);
 			}
@@ -223,10 +201,7 @@ namespace Elastos {
 			UInt64SetLE(amountData, output.amount);
 			ostream.putBytes(amountData, 64 / 8);
 
-			uint8_t pkScriptLengthData[64 / 8];
-			UInt64SetLE(pkScriptLengthData, uint64_t(output.scriptLen));
-			ostream.putBytes(pkScriptLengthData, 64 / 8);
-
+			ostream.putVarUint(output.scriptLen);
 			ostream.putBytes(output.script, output.scriptLen);
 		}
 
@@ -235,10 +210,7 @@ namespace Elastos {
 			istream.getBytes(amountData, 64 / 8);
 			output.amount = UInt64GetLE(amountData);
 
-			uint8_t pkScriptLengthDataHead;
-			istream.getBytes(&pkScriptLengthDataHead, 8 / 8);
-			output.scriptLen = (size_t)ReadVarInt(istream, pkScriptLengthDataHead);
-
+			output.scriptLen = istream.getVarUint();
 			if (output.scriptLen != 0) {
 				output.script = (uint8_t *)malloc(output.scriptLen * sizeof(uint8_t));
 				istream.getBytes(output.script, output.scriptLen);

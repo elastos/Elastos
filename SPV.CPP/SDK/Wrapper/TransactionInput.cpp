@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRTransaction.h>
+#include <cstring>
 #include "TransactionInput.h"
 
 namespace Elastos {
@@ -10,10 +11,12 @@ namespace Elastos {
 
 		TransactionInput::TransactionInput() {
 			_input = boost::shared_ptr<BRTxInput>(new BRTxInput);
+			memset(_input.get(), 0, sizeof(BRTxInput));
 		}
 
 		TransactionInput::TransactionInput(BRTxInput *input) {
 			_input = boost::shared_ptr<BRTxInput>(input);
+			memset(_input.get(), 0, sizeof(BRTxInput));
 		}
 
 		TransactionInput::TransactionInput(UInt256 hash, uint32_t index, uint64_t amount, ByteData script,

@@ -21,8 +21,7 @@ namespace Elastos {
 				BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 
 			BRPeerContext *ctx = (BRPeerContext *)peer;
-
-			ByteStream stream(const_cast<uint8_t *>(msg), msgLen);
+			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
 			Transaction wrappedTx;
 			wrappedTx.Deserialize(stream);
 
@@ -31,7 +30,7 @@ namespace Elastos {
 			int r = 1;
 
 			if (! tx) {
-				Log::getLogger()->warn("malformed tx message with length: %zu", msgLen);
+				Log::getLogger()->warn("malformed tx message with length: {}", msgLen);
 				r = 0;
 			}
 			else if (! ctx->sentFilter && ! ctx->sentGetdata) {
@@ -41,7 +40,7 @@ namespace Elastos {
 			}
 			else {
 				txHash = tx->txHash;
-				Log::getLogger()->warn("got tx: %s", Utils::UInt256ToString(txHash));
+				Log::getLogger()->warn("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
 					ctx->relayedTx(ctx->info, tx);

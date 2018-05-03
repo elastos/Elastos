@@ -24,6 +24,7 @@ namespace Elastos {
 		} ELABRTransaction;
 
 		ELABRTransaction *ELABRTransactionNew(void);
+		ELABRTransaction *ELABRTransactioCopy(const ELABRTransaction *tx);
 
 		void ELABRTransactionFree(ELABRTransaction *tx);
 	}

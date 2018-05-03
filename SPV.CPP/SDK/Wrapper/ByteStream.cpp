@@ -301,7 +301,10 @@ namespace Elastos {
 		void ByteStream::reSet() {
 			this->setPosition(0);
 			this->_size = 0;
-			this->_buf = nullptr;
+			if (this->_buf != nullptr) {
+				delete[] this->_buf;
+				this->_buf = nullptr;
+			}
 		}
 
 	}

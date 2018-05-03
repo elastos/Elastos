@@ -35,7 +35,7 @@ namespace Elastos {
 			off += sizeof(UInt256);
 
 			if (locatorsCount > 0) {
-				Log::getLogger()->warn("calling getblocks with %zu locators: [%s,%s %s]",
+				Log::getLogger()->warn("calling getblocks with {} locators: [{},{} {}]",
 									   locatorsCount,
 									   Utils::UInt256ToString(locators[0]),
 									   (locatorsCount > 2 ? " ...," : ""),

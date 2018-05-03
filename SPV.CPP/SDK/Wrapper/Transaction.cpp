@@ -424,10 +424,7 @@ namespace Elastos {
 
 		void Transaction::convertFrom(const BRTransaction *raw) {
 			assert(raw != nullptr);
-
-			ELABRTransaction *elabrTransaction = ELABRTransactionNew();
-
-			memcpy(elabrTransaction, raw, sizeof(*elabrTransaction));
+			ELABRTransaction *elabrTransaction = ELABRTransactioCopy((ELABRTransaction *)raw);
 
 			_inputs.clear();
 			getInputs();
