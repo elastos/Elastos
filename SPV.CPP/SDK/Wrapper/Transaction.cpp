@@ -5,10 +5,12 @@
 #include "PreCompiled.h"
 
 #include <cstring>
+#include <BRTransaction.h>
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
 #include "ELABRTransaction.h"
+#include "BRCrypto.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -75,6 +77,14 @@ namespace Elastos {
 		}
 
 		UInt256 Transaction::getHash() const {
+			UInt256 zero = UINT256_ZERO;
+			if (UInt256Eq(&_transaction->txHash, &zero)) {
+				ByteStream ostream;
+				serializeUnsigned(ostream);
+				UInt256 hash = UINT256_ZERO;
+				BRSHA256_2(&hash, ostream.getBuf(), ostream.position());
+				UInt256Set(&_transaction->txHash, hash);
+			}
 			return _transaction->txHash;
 		}
 
@@ -283,6 +293,15 @@ namespace Elastos {
 		}
 
 		void Transaction::Serialize(ByteStream &ostream) const {
+			serializeUnsigned(ostream);
+
+			ostream.putVarUint(_programs.size());
+			for (size_t i = 0; i < _programs.size(); i++) {
+				_programs[i]->Serialize(ostream);
+			}
+		}
+
+		void Transaction::serializeUnsigned(ByteStream &ostream) const{
 			ostream.put(_type);
 
 			ostream.put(_payloadVersion);
@@ -311,13 +330,7 @@ namespace Elastos {
 			memset(lockTimeData, 0, sizeof(lockTimeData));
 			UInt32SetLE(lockTimeData, _transaction->lockTime);
 			ostream.putBytes(lockTimeData, sizeof(lockTimeData));
-
-			ostream.putVarUint(_programs.size());
-			for (size_t i = 0; i < _programs.size(); i++) {
-				_programs[i]->Serialize(ostream);
-			}
 		}
-
 		void Transaction::Deserialize(ByteStream &istream) {
 			_type = Type(istream.get());
 			setPayloadByTransactionType();

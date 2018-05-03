@@ -167,6 +167,7 @@ namespace Elastos {
 
 			void setPayloadByTransactionType();
 
+			void serializeUnsigned(ByteStream &ostream) const;
 		private:
 			bool _isRegistered;
 

@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRMerkleBlock.h>
 #include "BRCrypto.h"
 #include "BRMerkleBlock.h"
 #include "Utils.h"
@@ -240,7 +241,7 @@ namespace Elastos {
 			}
 
 			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
-
+			ostream.putVarUint(_merkleBlock->flagsLen);
 			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
 				ostream.put(_merkleBlock->flags[i]);
 			}
@@ -294,8 +295,9 @@ namespace Elastos {
 				UInt256Get(&_merkleBlock->hashes[i], hashData);
 			}
 
-			//assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
-
+			_merkleBlock->flagsLen = istream.getVarUint();
+			_merkleBlock->flags = (_merkleBlock->flagsLen > 0) ? (uint8_t *)malloc(_merkleBlock->flagsLen) : NULL;
+			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
 			for (uint32_t i = 0; i < _merkleBlock->flagsLen; ++i) {
 				_merkleBlock->flags[i] = istream.get();
 			}
