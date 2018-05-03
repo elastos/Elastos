@@ -847,7 +847,7 @@ static void _peerDisconnected(void *info, int error)
         break;
     }
 
-    BRPeerFree(peer);
+    manager->peerMessages->BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
 
     for (size_t i = 0; i < txCount; i++) {
@@ -1608,7 +1608,7 @@ void BRPeerManagerConnect(BRPeerManager *manager)
                 info = calloc(1, sizeof(*info));
                 assert(info != NULL);
                 info->manager = manager;
-                info->peer = BRPeerNew(manager->params->magicNumber);
+                info->peer = manager->peerMessages->BRPeerNew(manager->params->magicNumber);
                 *info->peer = peers[i];
                 ((BRPeerContext*) info->peer)->manager = manager;
                 array_rm(peers, i);
@@ -1889,7 +1889,7 @@ void BRPeerManagerFree(BRPeerManager *manager)
     assert(manager != NULL);
     pthread_mutex_lock(&manager->lock);
     array_free(manager->peers);
-    for (size_t i = array_count(manager->connectedPeers); i > 0; i--) BRPeerFree(manager->connectedPeers[i - 1]);
+    for (size_t i = array_count(manager->connectedPeers); i > 0; i--) manager->peerMessages->BRPeerFree(manager->connectedPeers[i - 1]);
     array_free(manager->connectedPeers);
     BRSetApply(manager->blocks, NULL, _setApplyFreeBlock);
     BRSetFree(manager->blocks);

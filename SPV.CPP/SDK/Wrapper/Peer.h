@@ -7,8 +7,10 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "Wrapper.h"
 #include "BRPeer.h"
+#include "BRPeerMessages.h"
+
+#include "Wrapper.h"
 #include "ByteData.h"
 
 namespace Elastos {

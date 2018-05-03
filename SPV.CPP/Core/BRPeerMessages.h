@@ -81,6 +81,12 @@ typedef struct {
 
 typedef struct {
 
+	BRPeer *(*BRPeerNew)(uint32_t magicNumber);
+	void (*BRPeerFree)(BRPeer *peer);
+	BRPeer *(*BRPeerCopy)(const BRPeer *peer);
+
+	int (*BRPeerAcceptMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type);
+
 	void (*BRPeerSendVersionMessage)(BRPeer *peer);
 	int (*BRPeerAcceptVersionMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 

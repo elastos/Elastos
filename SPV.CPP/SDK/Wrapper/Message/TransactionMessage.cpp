@@ -5,10 +5,12 @@
 #include "BRArray.h"
 #include "BRPeerMessages.h"
 
+#include "Peer.h"
 #include "TransactionMessage.h"
 #include "Transaction.h"
 #include "Log.h"
 #include "Utils.h"
+#include "ELACoreExt/ELAPeerContext.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -20,7 +22,9 @@ namespace Elastos {
 		int TransactionMessage::Accept(
 				BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 
-			BRPeerContext *ctx = (BRPeerContext *)peer;
+			BRPeerContext *ctx = (BRPeerContext *) peer;
+			ELAPeerContext *elactx = (ELAPeerContext *) peer;
+
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
 			Transaction wrappedTx;
 			wrappedTx.Deserialize(stream);
@@ -29,36 +33,38 @@ namespace Elastos {
 			UInt256 txHash;
 			int r = 1;
 
-			if (! tx) {
+			if (!tx) {
 				Log::getLogger()->warn("malformed tx message with length: {}", msgLen);
 				r = 0;
-			}
-			else if (! ctx->sentFilter && ! ctx->sentGetdata) {
+			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
 				Log::warn("got tx message before loading filter");
 				BRTransactionFree(tx);
 				r = 0;
-			}
-			else {
+			} else {
 				txHash = tx->txHash;
 				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
 					ctx->relayedTx(ctx->info, tx);
-				}
-				else BRTransactionFree(tx);
+				} else BRTransactionFree(tx);
 
-				if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock
-					for (size_t i = array_count(ctx->currentBlockTxHashes); i > 0; i--) {
-						if (! UInt256Eq(&txHash, &(ctx->currentBlockTxHashes[i - 1]))) continue;
-						array_rm(ctx->currentBlockTxHashes, i - 1);
+				if (elactx->txBlockMap.find(txHash) !=
+					elactx->txBlockMap.end()) { // we're collecting tx messages for a merkleblock
+					BRMerkleBlock *block = elactx->txBlockMap[txHash];
+					std::vector<UInt256> txHashes = elactx->blockTxListMap[block];
+					for (size_t i = txHashes.size(); i > 0; i--) {
+						if (!UInt256Eq(&txHash, &(txHashes[i - 1]))) continue;
+						txHashes.erase(txHashes.begin() + (i - 1));
 						break;
 					}
+					elactx->txBlockMap.erase(txHash);
 
-					if (array_count(ctx->currentBlockTxHashes) == 0) { // we received the entire block including all matched tx
-						BRMerkleBlock *block = ctx->currentBlock;
+					if (txHashes.empty()) { // we received the entire block including all matched tx
 
-						ctx->currentBlock = nullptr;
+						elactx->blockTxListMap.erase(block);
 						if (ctx->relayedBlock) ctx->relayedBlock(ctx->info, block);
+					} else {
+						elactx->blockTxListMap[block] = txHashes;
 					}
 				}
 			}
@@ -68,7 +74,7 @@ namespace Elastos {
 
 		void TransactionMessage::Send(BRPeer *peer, void *serializable) {
 
-			BRTransaction *tx = (BRTransaction *)serializable;
+			BRTransaction *tx = (BRTransaction *) serializable;
 			Transaction transaction(BRTransactionCopy(tx));
 			ByteStream stream;
 			transaction.Serialize(stream);
