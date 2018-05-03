@@ -42,6 +42,14 @@ namespace Elastos {
 		}
 
 		UInt256 MerkleBlock::getBlockHash() const {
+			UInt256 zero = UINT256_ZERO;
+			if (UInt256Eq(&_merkleBlock->blockHash, &zero)) {
+				ByteStream ostream;
+				serializeNoAux(ostream);
+				UInt256 hash = UINT256_ZERO;
+				BRSHA256_2(&hash, ostream.getBuf(), ostream.position());
+				UInt256Set(&_merkleBlock->blockHash, hash);
+			}
 			return _merkleBlock->blockHash;
 		}
 
@@ -93,6 +101,34 @@ namespace Elastos {
 		}
 
 		void MerkleBlock::Serialize(ByteStream &ostream) const {
+			serializeNoAux(ostream);
+
+			_auxPow.Serialize(ostream);
+
+			ostream.put(1);    //correspond to serialization of node, should add one byte here
+
+			uint8_t totalTxData[32 / 8];
+			UInt32SetLE(totalTxData, _merkleBlock->totalTx);
+			ostream.putBytes(totalTxData, 32 / 8);
+
+			uint8_t hashesCountData[32 / 8];
+			UInt32SetLE(hashesCountData, uint32_t(_merkleBlock->hashesCount));
+			ostream.putBytes(hashesCountData, 32 / 8);
+
+			uint8_t hashData[256 / 8];
+			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
+				UInt256Set(hashData, _merkleBlock->hashes[i]);
+				ostream.putBytes(hashData, 256 / 8);
+			}
+
+			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
+			ostream.putVarUint(_merkleBlock->flagsLen);
+			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
+				ostream.put(_merkleBlock->flags[i]);
+			}
+		}
+
+		void MerkleBlock::serializeNoAux(ByteStream &ostream) const {
 			uint8_t versionData[32 / 8];
 			UInt32SetLE(versionData, _merkleBlock->version);
 			ostream.putBytes(versionData, 32 / 8);
@@ -120,30 +156,6 @@ namespace Elastos {
 			uint8_t heightData[32 / 8];
 			UInt32SetLE(heightData, _merkleBlock->height);
 			ostream.putBytes(heightData, 32 / 8);
-
-			_auxPow.Serialize(ostream);
-
-			ostream.put(1);    //correspond to serialization of node, should add one byte here
-
-			uint8_t totalTxData[32 / 8];
-			UInt32SetLE(totalTxData, _merkleBlock->totalTx);
-			ostream.putBytes(totalTxData, 32 / 8);
-
-			uint8_t hashesCountData[32 / 8];
-			UInt32SetLE(hashesCountData, uint32_t(_merkleBlock->hashesCount));
-			ostream.putBytes(hashesCountData, 32 / 8);
-
-			uint8_t hashData[256 / 8];
-			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
-				UInt256Set(hashData, _merkleBlock->hashes[i]);
-				ostream.putBytes(hashData, 256 / 8);
-			}
-
-			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
-			ostream.putVarUint(_merkleBlock->flagsLen);
-			for (uint32_t i = 0; i < _merkleBlock->hashesCount; ++i) {
-				ostream.put(_merkleBlock->flags[i]);
-			}
 		}
 
 		void MerkleBlock::Deserialize(ByteStream &istream) {

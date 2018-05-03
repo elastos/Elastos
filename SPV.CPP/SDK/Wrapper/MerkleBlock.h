@@ -64,6 +64,9 @@ namespace Elastos {
 			bool containsTransactionHash(UInt256 hash) const;
 
 		private:
+
+			void serializeNoAux(ByteStream &ostream) const;
+		private:
 			AuxPow _auxPow;
 			BRMerkleBlock *_merkleBlock;
 		};
