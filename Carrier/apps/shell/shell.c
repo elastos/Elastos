@@ -922,7 +922,7 @@ static void stream_bulk_receive(ElaCarrier *w, int argc, char *argv[])
         duration = (duration == 0)  ? 1 : duration;
         float speed = ((session_ctx.bytes / duration) * 1000) / 1024;
 
-        output("\nFinish! Total %" PRIu64 " bytes in %d.%d seconds. %.2f KB/s\n",
+        output("\nFinish! Total %" PRIu64 " bytes in %d.%03d seconds. %.2f KB/s\n",
                session_ctx.bytes,
                (int)(duration / 1000), (int)(duration % 1000), speed);
 
@@ -1280,7 +1280,7 @@ static void *bulk_write_thread(void *arg)
     duration = (duration == 0) ? 1 : duration;
     speed = (((args->packet_size * args->packet_count) / duration) * 1000) / 1024;
 
-    output("\nFinish! Total %" PRIu64 " bytes in %d.%d seconds. %.2f KB/s\n",
+    output("\nFinish! Total %" PRIu64 " bytes in %d.%03d seconds. %.2f KB/s\n",
            (uint64_t)(args->packet_size * args->packet_count),
            (int)(duration / 1000), (int)(duration % 1000), speed);
 
