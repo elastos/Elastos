@@ -7,6 +7,7 @@
 #include "BRPeerManager.h"
 #include "BRPeerMessages.h"
 #include "BRArray.h"
+#include "BRMerkleBlock.h"
 
 #include "Peer.h"
 #include "MerkleBlock.h"
@@ -34,7 +35,7 @@ namespace Elastos {
 			if (!block) {
 				Log::getLogger()->warn("malformed merkleblock message with length: %zu", msgLen);
 				r = 0;
-			} else if (!wrappedBlock.isValid((uint32_t) time(nullptr))) {
+			} else if (!BRMerkleBlockIsValid(block, (uint32_t) time(nullptr))) {
 				Log::getLogger()->warn("invalid merkleblock: {}",
 									   Utils::UInt256ToString(block->blockHash));
 				BRMerkleBlockFree(block);
@@ -52,7 +53,7 @@ namespace Elastos {
 						count * sizeof(*hashes));
 
 				assert(hashes != nullptr);
-				count = wrappedBlock.getRawBlockTxHashes(hashes, count);
+				count = BRMerkleBlockTxHashes(block, hashes, count);
 
 				for (size_t i = count; i > 0; i--) { // reverse order for more efficient removal as tx arrive
 					if (BRSetContains(ctx->knownTxHashSet, &hashes[i - 1])) continue;
