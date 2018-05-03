@@ -53,6 +53,7 @@ namespace Elastos {
 
 			_mainNet.getRaw()->standardPort = 10866;
 			_mainNet.getRaw()->magicNumber = 7630401;
+			_mainNet.getRaw()->checkpointsCount = 0;
 
 			//todo init test net here
 

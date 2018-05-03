@@ -40,7 +40,7 @@ namespace Elastos {
 			}
 			else {
 				txHash = tx->txHash;
-				Log::getLogger()->warn("got tx: {}", Utils::UInt256ToString(txHash));
+				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
 					ctx->relayedTx(ctx->info, tx);

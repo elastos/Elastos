@@ -1459,8 +1459,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
 
     for (size_t i = 0; i < manager->params->checkpointsCount; i++) {
         block = BRMerkleBlockNew();
-        //todo for test
-        block->height = 0;//manager->params->checkpoints[i].height;
+        block->height = manager->params->checkpoints[i].height;
         block->blockHash = UInt256Reverse(&manager->params->checkpoints[i].hash);
         block->timestamp = manager->params->checkpoints[i].timestamp;
         block->target = manager->params->checkpoints[i].target;

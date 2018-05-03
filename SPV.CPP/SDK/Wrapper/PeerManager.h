@@ -99,6 +99,9 @@ namespace Elastos {
 
             uint64_t getRelayCount (const UInt256 &txHash) const;
 
+		private:
+            void createDummyBlock() const;
+
         private:
             BRPeerManager* _manager;
 

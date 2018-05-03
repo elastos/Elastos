@@ -119,6 +119,10 @@ namespace Elastos {
 			);
 			PeerMessageManager::instance().initMessages(_manager);
 
+			if(_manager->lastBlock == nullptr) {
+				createDummyBlock();
+			}
+
 			BRPeerManagerSetCallbacks(_manager, &_listener,
 									  syncStarted,
 									  syncStopped,
@@ -214,6 +218,16 @@ namespace Elastos {
 
 		uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {
 			return BRPeerManagerRelayCount(_manager, txHash);
+		}
+
+		void PeerManager::createDummyBlock() const {
+			BRMerkleBlock *block = BRMerkleBlockNew();
+			block->height = 0;
+			block->blockHash = UInt256();
+			block->timestamp = 0;
+			block->target = 0;
+			BRSetAdd(_manager->blocks, block);
+			_manager->lastBlock = block;
 		}
 	}
 }
