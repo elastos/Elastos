@@ -544,6 +544,9 @@ jobject addStream(JNIEnv* env, jobject thiz, jobject jtype, jint joptions,
     };
 
     session = getSession(env, thiz);
+    setLongField(env, jstream, "nativeCookie",(uint64_t)session);
+    setLongField(env, jstream, "contextCookie", (uint64_t)cc);
+
     streamId = ela_session_add_stream(session, type, joptions, &cbs, cc);
     if (streamId < 0) {
         logE("Call ela_session_add_stream API error");
@@ -554,9 +557,8 @@ jobject addStream(JNIEnv* env, jobject thiz, jobject jtype, jint joptions,
         return NULL;
     }
 
+    // TODO: CHECKME!
     setIntField(env, jstream, "streamId", streamId);
-    setLongField(env, jstream, "nativeCookie",(uint64_t)session);
-    setLongField(env, jstream, "contextCookie", (uint64_t)cc);
 
     return jstream;
 }
