@@ -20,7 +20,8 @@ namespace Elastos {
 				_databaseManager(DATABASE_PATH) {
 
 			uint32_t earliestPeerTime = 0; //todo get peer time from WALLET_STORE_FILE later
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey); //todo check if this can be initialized by WALLET_STORE_FILE
+			_masterPubKey = MasterPubKeyPtr(
+					new MasterPubKey); //todo check if this can be initialized by WALLET_STORE_FILE
 			//todo init _phraseData
 
 			CoreWalletManager::init(_masterPubKey, chainParams, earliestPeerTime);
@@ -31,7 +32,8 @@ namespace Elastos {
 				_databaseManager(DATABASE_PATH) {
 
 			uint32_t earliestPeerTime = 0; //todo get peer time from WALLET_STORE_FILE later
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(phrase)); //todo check if this can be initialized by WALLET_STORE_FILE
+			_masterPubKey = MasterPubKeyPtr(
+					new MasterPubKey(phrase)); //todo check if this can be initialized by WALLET_STORE_FILE
 			//todo init _phraseData from phrase
 
 			init(_masterPubKey, chainParams, earliestPeerTime);
@@ -73,7 +75,7 @@ namespace Elastos {
 		//override Wallet listener
 		void WalletManager::balanceChanged(uint64_t balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [balance](Wallet::Listener * listener) {
+						  [balance](Wallet::Listener *listener) {
 							  listener->balanceChanged(balance);
 						  });
 		}
@@ -84,7 +86,7 @@ namespace Elastos {
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [tx](Wallet::Listener * listener) {
+						  [tx](Wallet::Listener *listener) {
 							  listener->onTxAdded(tx);
 						  });
 		}
@@ -99,7 +101,7 @@ namespace Elastos {
 			_databaseManager.updateTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, blockHeight, timeStamp](Wallet::Listener * listener) {
+						  [&hash, blockHeight, timeStamp](Wallet::Listener *listener) {
 							  listener->onTxUpdated(hash, blockHeight, timeStamp);
 						  });
 		}
@@ -108,7 +110,7 @@ namespace Elastos {
 			_databaseManager.deleteTxByHash(ISO, hash);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, notifyUser, recommendRescan](Wallet::Listener * listener) {
+						  [&hash, notifyUser, recommendRescan](Wallet::Listener *listener) {
 							  listener->onTxDeleted(hash, notifyUser, recommendRescan);
 						  });
 		}
@@ -116,21 +118,21 @@ namespace Elastos {
 		//override PeerManager listener
 		void WalletManager::syncStarted() {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [](PeerManager::Listener * listener) {
-				listener->syncStarted();
-			});
+						  [](PeerManager::Listener *listener) {
+							  listener->syncStarted();
+						  });
 		}
 
 		void WalletManager::syncStopped(const std::string &error) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [&error](PeerManager::Listener * listener) {
+						  [&error](PeerManager::Listener *listener) {
 							  listener->syncStopped(error);
 						  });
 		}
 
 		void WalletManager::txStatusUpdate() {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [](PeerManager::Listener * listener) {
+						  [](PeerManager::Listener *listener) {
 							  listener->txStatusUpdate();
 						  });
 		}
@@ -138,14 +140,14 @@ namespace Elastos {
 		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
 			MerkleBlockEntity blockEntity;
 
-			for (size_t i = 0; i < blocks.size(); ++i) {
-				blockEntity.blockBytes = blocks[i]->serialize();
-				blockEntity.blockHeight = blocks[i]->getHeight();
-				_databaseManager.putMerkleBlock(ISO, blockEntity);
-			}
+//			for (size_t i = 0; i < blocks.size(); ++i) {
+//				blockEntity.blockBytes = blocks[i]->serialize();
+//				blockEntity.blockHeight = blocks[i]->getHeight();
+//				_databaseManager.putMerkleBlock(ISO, blockEntity);
+//			}
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [replace, &blocks](PeerManager::Listener * listener) {
+						  [replace, &blocks](PeerManager::Listener *listener) {
 							  listener->saveBlocks(replace, blocks);
 						  });
 		}
@@ -162,7 +164,7 @@ namespace Elastos {
 			}
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [replace, &peers](PeerManager::Listener * listener) {
+						  [replace, &peers](PeerManager::Listener *listener) {
 							  listener->savePeers(replace, peers);
 						  });
 		}
@@ -171,7 +173,7 @@ namespace Elastos {
 
 			bool reachable = true;
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [&reachable](PeerManager::Listener * listener) {
+						  [&reachable](PeerManager::Listener *listener) {
 							  reachable |= listener->networkIsReachable();
 						  });
 			return reachable;
@@ -179,7 +181,7 @@ namespace Elastos {
 
 		void WalletManager::txPublished(const std::string &error) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
-						  [&error](PeerManager::Listener * listener) {
+						  [&error](PeerManager::Listener *listener) {
 							  listener->txPublished(error);
 						  });
 		}
@@ -204,8 +206,12 @@ namespace Elastos {
 			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.getAllMerkleBlocks(ISO);
 
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
-				blocks.push_back(
-						MerkleBlockPtr(new MerkleBlock(blocksEntity[i].blockBytes, blocksEntity[i].blockHeight)));
+				MerkleBlock *block = new MerkleBlock;
+				ByteStream stream;
+				stream.putBytes(blocksEntity[i].blockBytes.data, blocksEntity[i].blockBytes.length);
+				block->setHeight(blocksEntity[i].blockHeight);
+				block->Deserialize(stream);
+				blocks.push_back(MerkleBlockPtr(block));
 			}
 
 			return blocks;

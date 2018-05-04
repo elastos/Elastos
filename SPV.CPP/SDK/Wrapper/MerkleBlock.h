@@ -8,12 +8,11 @@
 #include <boost/shared_ptr.hpp>
 #include <nlohmann/json.hpp>
 
-#include "BRMerkleBlock.h"
-
 #include "Wrapper.h"
 #include "ByteData.h"
 #include "ELAMessageSerializable.h"
-#include "../ELACoreExt/AuxPow.h"
+#include "ELACoreExt/AuxPow.h"
+#include "ELACoreExt/ELAMerkleBlock.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -25,9 +24,7 @@ namespace Elastos {
 		public:
 			MerkleBlock();
 
-			MerkleBlock(BRMerkleBlock *merkleBlock);
-
-			MerkleBlock(const ByteData &block, int blockHeight);
+			MerkleBlock(ELAMerkleBlock *merkleBlock);
 
 			~MerkleBlock();
 
@@ -57,9 +54,9 @@ namespace Elastos {
 
 			uint32_t getHeight() const;
 
-			const AuxPow &getAuxPow() const;
+			void setHeight(uint32_t height);
 
-			ByteData serialize() const;
+			const AuxPow &getAuxPow() const;
 
 			bool isValid(uint32_t currentTime) const;
 
@@ -68,9 +65,11 @@ namespace Elastos {
 		private:
 
 			void serializeNoAux(ByteStream &ostream) const;
+
+			UInt256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const;
+
 		private:
-			AuxPow _auxPow;
-			BRMerkleBlock *_merkleBlock;
+			ELAMerkleBlock *_merkleBlock;
 		};
 
 		typedef boost::shared_ptr<MerkleBlock> MerkleBlockPtr;

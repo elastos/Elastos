@@ -12,22 +12,21 @@
 namespace Elastos {
 	namespace SDK {
 
-		uint64_t ReadVarInt(ByteStream &istream, uint8_t h)
-		{
+		uint64_t ReadVarInt(ByteStream &istream, uint8_t h) {
 			if (h < 0xFD) {
-				return (uint64_t)h;
+				return (uint64_t) h;
 			} else if (h == 0xfd) {
 				uint8_t txInCountData[16 / 8];
 				istream.getBytes(txInCountData, 16 / 8);
-				return (uint64_t)UInt16GetLE(txInCountData);
+				return (uint64_t) UInt16GetLE(txInCountData);
 			} else if (h == 0xfe) {
 				uint8_t txInCountData[32 / 8];
 				istream.getBytes(txInCountData, 32 / 8);
-				return (uint64_t)UInt32GetLE(txInCountData);
+				return (uint64_t) UInt32GetLE(txInCountData);
 			} else if (h == 0xff) {
 				uint8_t txInCountData[64 / 8];
 				istream.getBytes(txInCountData, 64 / 8);
-				return (uint64_t)UInt64GetLE(txInCountData);
+				return (uint64_t) UInt64GetLE(txInCountData);
 			}
 
 			return 0;
@@ -39,8 +38,10 @@ namespace Elastos {
 		}
 
 		AuxPow::~AuxPow() {
-			BRTransactionFree(_btcTransaction);
-			BRMerkleBlockFree(_parBlockHeader);
+			if (_btcTransaction != nullptr)
+				BRTransactionFree(_btcTransaction);
+			if (_parBlockHeader)
+				BRMerkleBlockFree(_parBlockHeader);
 		}
 
 		void AuxPow::Serialize(ByteStream &ostream) const {
@@ -183,7 +184,7 @@ namespace Elastos {
 
 			uint8_t signatureScriptLengthDataHead;
 			istream.getBytes(&signatureScriptLengthDataHead, 8 / 8);
-			input.sigLen = (size_t)ReadVarInt(istream, signatureScriptLengthDataHead);
+			input.sigLen = (size_t) ReadVarInt(istream, signatureScriptLengthDataHead);
 
 			if (input.sigLen != 0) {
 				uint8_t signature[input.sigLen];
@@ -212,7 +213,7 @@ namespace Elastos {
 
 			output.scriptLen = istream.getVarUint();
 			if (output.scriptLen != 0) {
-				output.script = (uint8_t *)malloc(output.scriptLen * sizeof(uint8_t));
+				output.script = (uint8_t *) malloc(output.scriptLen * sizeof(uint8_t));
 				istream.getBytes(output.script, output.scriptLen);
 			}
 		}
@@ -276,5 +277,47 @@ namespace Elastos {
 			BRSHA256_2(&hash, stream.getBuf(), stream.position());
 			return hash;
 		}
+
+		AuxPow::AuxPow(const AuxPow &auxPow) {
+			_auxMerkleBranch = auxPow._auxMerkleBranch;
+			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
+			_auxMerkleIndex = auxPow._auxMerkleIndex;
+			_btcTransaction = BRTransactionCopy(auxPow._btcTransaction);
+			_parMerkleIndex = auxPow._parMerkleIndex;
+			_parBlockHeader = BRMerkleBlockCopy(auxPow._parBlockHeader);
+			_parentHash = auxPow._parentHash;
+		}
+
+		void AuxPow::setBTCTransaction(BRTransaction *transaction) {
+			if (_btcTransaction != nullptr)
+				BRTransactionFree(_btcTransaction);
+			_btcTransaction = transaction;
+		}
+
+		void AuxPow::setParBlockHeader(BRMerkleBlock *block) {
+			if (_parBlockHeader != nullptr)
+				BRMerkleBlockFree(_parBlockHeader);
+			_parBlockHeader = block;
+		}
+
+		AuxPow &AuxPow::operator=(const AuxPow &auxPow) {
+			_auxMerkleBranch = auxPow._auxMerkleBranch;
+			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
+			_auxMerkleIndex = auxPow._auxMerkleIndex;
+			_btcTransaction = BRTransactionCopy(auxPow._btcTransaction);
+			_parMerkleIndex = auxPow._parMerkleIndex;
+			_parBlockHeader = BRMerkleBlockCopy(auxPow._parBlockHeader);
+			_parentHash = auxPow._parentHash;
+			return *this;
+		}
+
+		BRTransaction *AuxPow::getBTCTransaction() const {
+			return _btcTransaction;
+		}
+
+		BRMerkleBlock *AuxPow::getParBlockHeader() const {
+			return _parBlockHeader;
+		}
+
 	}
 }

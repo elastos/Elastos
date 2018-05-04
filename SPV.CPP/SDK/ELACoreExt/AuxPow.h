@@ -20,24 +20,42 @@ namespace Elastos {
 				public ELAMessageSerializable {
 		public:
 			AuxPow();
+
+			AuxPow(const AuxPow &auxPow);
+
 			~AuxPow();
 
 			UInt256 getParBlockHeaderHash() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
+
 			virtual void Deserialize(ByteStream &istream);
+
+			BRTransaction *getBTCTransaction() const;
+
+			void setBTCTransaction(BRTransaction *transaction);
+
+			BRMerkleBlock *getParBlockHeader() const;
+
+			void setParBlockHeader(BRMerkleBlock *block);
+
+			AuxPow &operator=(const AuxPow &auxPow);
 
 		private:
 			void serializeBtcTransaction(ByteStream &ostream) const;
+
 			void deserializeBtcTransaction(ByteStream &istream);
 
 			void serializeBtcTxIn(ByteStream &ostream, const BRTxInput &input) const;
+
 			void deserializeBtcTxIn(ByteStream &istream, BRTxInput &input);
 
 			void serializeBtcTxOut(ByteStream &ostream, const BRTxOutput &output) const;
+
 			void deserializeBtcTxOut(ByteStream &istream, BRTxOutput &output);
 
 			void serializeBtcBlockHeader(ByteStream &ostream) const;
+
 			void deserializeBtcBlockHeader(ByteStream &istream);
 
 		private:
