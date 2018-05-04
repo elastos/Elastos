@@ -1333,6 +1333,7 @@ rescan:
 
         if (ops != fmt) {
             stream->base.deactivate = 1;
+            media_index++;
             vlogD("ICE: Stream %d deactivated.", stream->base.id);
             deref(stream);
             continue;
@@ -1568,7 +1569,7 @@ rescan:
             ops |= ELA_STREAM_PORT_FORWARDING;
         sprintf(str_ops, "%d", ops);
 
-        media->desc.fmt[0] = pj_str(str_ops);
+        pj_strdup2_with_null(pool, &media->desc.fmt[0], str_ops);
 
         // Media connection (c=)
         conn = pj_pool_calloc(pool, 1, sizeof(pjmedia_sdp_conn));
