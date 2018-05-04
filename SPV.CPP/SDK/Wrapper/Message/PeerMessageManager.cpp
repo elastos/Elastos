@@ -157,19 +157,19 @@ namespace Elastos {
 			int PeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				PingMessage *message = static_cast<PingMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_PING).get());
-				boost::function<void(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
+				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
 						boost::bind(&PingMessage::Accept, message, _1, _2, _3);
 
-				fun(peer, msg, msgLen);
+				return fun(peer, msg, msgLen);
 			}
 
 			int PeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				PongMessage *message = static_cast<PongMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_PONG).get());
-				boost::function<void(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
+				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
 						boost::bind(&PongMessage::Accept, message, _1, _2, _3);
 
-				fun(peer, msg, msgLen);
+				return fun(peer, msg, msgLen);
 			}
 
 			static int PeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type)

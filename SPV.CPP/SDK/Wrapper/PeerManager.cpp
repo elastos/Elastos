@@ -121,7 +121,7 @@ namespace Elastos {
 			PeerMessageManager::instance().initMessages(_manager);
 
 			if(_manager->lastBlock == nullptr) {
-				createDummyBlock();
+				createGenesisBlock();
 			}
 
 			BRPeerManagerSetCallbacks(_manager, &_listener,
@@ -221,7 +221,7 @@ namespace Elastos {
 			return BRPeerManagerRelayCount(_manager, txHash);
 		}
 
-		void PeerManager::createDummyBlock() const {
+		void PeerManager::createGenesisBlock() const {
 			BRMerkleBlock *block = BRMerkleBlockNew();
 			block->height = 0;
 			block->blockHash = Utils::UInt256FromString("8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");

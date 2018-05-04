@@ -383,7 +383,8 @@ namespace Elastos {
 			transaction->raw.outCount = _transaction->outCount;
 
 			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
-			ssize_t len = inputs.size();
+			size_t len = inputs.size();
+			transaction->raw.inCount = len;
 			TransactionInput *input = nullptr;
 			for (ssize_t i = 0; i < len; ++i) {
 				input = inputs[i].get();
@@ -393,7 +394,7 @@ namespace Elastos {
 			}
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
-			len = outputs.size();
+			transaction->raw.outCount = len = outputs.size();
 			TransactionOutput *output = nullptr;
 			uint8_t *scriptPubkey = nullptr;
 

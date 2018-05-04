@@ -29,6 +29,7 @@ namespace Elastos {
 			wrappedBlock.Deserialize(stream);
 
 			BRMerkleBlock *block = BRMerkleBlockCopy(wrappedBlock.getRaw());
+			block->blockHash = wrappedBlock.getBlockHash();
 			int r = 1;
 
 			std::vector<UInt256> blockTxHashes;
