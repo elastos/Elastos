@@ -94,7 +94,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 
 // Input JSON string examples for getblock method as following:
 func GetRawTransaction(param Params) map[string]interface{} {
-	str, ok := param.String("hash")
+	str, ok := param.String("txid")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -121,8 +121,8 @@ func GetRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(UnknownTransaction, "")
 	}
 
-	decoded, ok := param.Bool("decoded")
-	if decoded {
+	verbose, ok := param.Bool("verbose")
+	if verbose {
 		return ResponsePack(Success, GetTransactionInfo(header, tx))
 	} else {
 		buf := new(bytes.Buffer)
@@ -327,7 +327,7 @@ func ToggleMining(param Params) map[string]interface{} {
 	return ResponsePack(Success, message)
 }
 
-func ManualMining(param Params) map[string]interface{} {
+func DiscreteMining(param Params) map[string]interface{} {
 	count, ok := param.Uint("count")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -335,7 +335,7 @@ func ManualMining(param Params) map[string]interface{} {
 
 	ret := make([]string, count)
 
-	blockHashes, err := LocalPow.ManualMining(uint32(count))
+	blockHashes, err := LocalPow.DiscreteMining(uint32(count))
 	if err != nil {
 		return ResponsePack(Error, err)
 	}
@@ -375,11 +375,6 @@ func SubmitBlock(param Params) map[string]interface{} {
 
 func GetConnectionCount(param Params) map[string]interface{} {
 	return ResponsePack(Success, NodeForServers.GetConnectionCnt())
-}
-
-//Block
-func GetCurrentHeight(param Params) map[string]interface{} {
-	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight)
 }
 
 func GetTransactionPool(param Params) map[string]interface{} {
@@ -438,12 +433,12 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	}
 }
 
-func getBlock(hash Uint256, format uint32) (interface{}, ErrCode) {
+func getBlock(hash Uint256, verbose uint32) (interface{}, ErrCode) {
 	block, err := chain.DefaultLedger.Store.GetBlock(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
-	switch format {
+	switch verbose {
 	case 0:
 		w := new(bytes.Buffer)
 		block.Serialize(w)
@@ -455,7 +450,7 @@ func getBlock(hash Uint256, format uint32) (interface{}, ErrCode) {
 }
 
 func GetBlockByHash(param Params) map[string]interface{} {
-	str, ok := param.String("hash")
+	str, ok := param.String("blockhash")
 	if !ok {
 		return ResponsePack(InvalidParams, "block hash not found")
 	}
@@ -469,12 +464,12 @@ func GetBlockByHash(param Params) map[string]interface{} {
 		ResponsePack(InvalidParams, "invalid block hash")
 	}
 
-	format, ok := param.Uint("format")
+	verbose, ok := param.Uint("verbose")
 	if !ok {
-		format = 1
+		verbose = 1
 	}
 
-	result, error := getBlock(hash, format)
+	result, error := getBlock(hash, verbose)
 
 	return ResponsePack(error, result)
 }
@@ -508,7 +503,7 @@ func GetBlockHeight(param Params) map[string]interface{} {
 
 func GetBestBlockHash(param Params) map[string]interface{} {
 	bestHeight := chain.DefaultLedger.Blockchain.BlockHeight
-	return GetBlockHash(map[string]interface{}{"index": float64(bestHeight)})
+	return GetBlockHash(map[string]interface{}{"height": float64(bestHeight)})
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
@@ -516,7 +511,7 @@ func GetBlockCount(param Params) map[string]interface{} {
 }
 
 func GetBlockHash(param Params) map[string]interface{} {
-	height, ok := param.Uint("index")
+	height, ok := param.Uint("height")
 	if !ok {
 		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
 	}

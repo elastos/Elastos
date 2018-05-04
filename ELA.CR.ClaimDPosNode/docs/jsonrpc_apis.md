@@ -34,7 +34,8 @@ result sample:
 {
     "id": null,
     "jsonrpc": "2.0",
-    "result": "68692d63a8bfc8887553b97f99f09e523d34a2b599bf5b388436b2ddc85ed76e"
+    "result": "68692d63a8bfc8887553b97f99f09e523d34a2b599bf5b388436b2ddc85ed76e",
+    "error": null
 }
 ```
 #### getblockhash  
@@ -44,7 +45,7 @@ paramters:
 
 | name | type | description |
 | ---- | ---- | ----------- |
-| index | integer | the height of blockchain |
+| height | integer | the height of blockchain |
 
 result:
 
@@ -56,7 +57,7 @@ arguments sample:
 ```json
 {
 	"method":"getblockhash",
-	"params":{"index":1}
+	"params":{"height":1}
 }
 ```
 result sample:
@@ -64,7 +65,8 @@ result sample:
 {
     "id": null,
     "jsonrpc": "2.0",
-    "result": "3893390c9fe372eab5b356a02c54d3baa41fc48918bbddfbac78cf48564d9d72"
+    "result": "3893390c9fe372eab5b356a02c54d3baa41fc48918bbddfbac78cf48564d9d72",
+    "error": null
 }
 ```
 
@@ -75,7 +77,7 @@ parameters:
 
 | name | type | description |
 | ---- | ---- | ----------- |
-| hash | string | the blockchain hash | 
+| blockhash | string | the blockchain hash | 
 
 result:
 
@@ -114,6 +116,7 @@ result sample
 ```json
 {
     "id": null,
+    "error": null,
     "jsonrpc": "2.0",
     "result": {
         "hash": "3893390c9fe372eab5b356a02c54d3baa41fc48918bbddfbac78cf48564d9d72",
@@ -157,6 +160,9 @@ result sample:
 ```javascript
 {
     "result": 171454
+    "id": null,
+    "error": null,
+    "jsonrpc": "2.0",
 }
 ```
 
@@ -168,7 +174,7 @@ parameters:
 
 | name | type | description |
 | ---- | ---- | ----------- |
-| hash | string | transaction hash |
+| txid | string | transaction hash |
 
 results:
 
@@ -197,6 +203,7 @@ result sample:
 ```javascript
 {
     "id": null,
+    "error": null,
     "jsonrpc": "2.0",
     "result": {
         "txid": "6864bbf52a3e140d40f1d707bae31d006265efc54dcb58e34037645060ce3e16",
@@ -265,7 +272,10 @@ result sample:
 
 ```javascript
 {
- "result":["aaaaa", "bbbbb"]
+  "result":["aaaaa", "bbbbb"]
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
 }
 ```
 #### setloglevel
@@ -296,29 +306,8 @@ result sample:
 {
     "id": null,
     "jsonrpc": "2.0",
+    "error": null,
     "result": "log level has been set to 0"
-}
-```
-#### getcurrentheight
-
-description: get current height of this blockchain
-
-parameters: none
-
-argument sample:
-```javascript
-{
-    "id": null,
-    "jsonrpc": "2.0",
-    "result": 5156
-}
-```
-
-result sample:
-
-```javascript
-{
- "result": 13251
 }
 ```
 #### getconnectioncount
@@ -336,6 +325,7 @@ result sample:
 ```json
 {
     "id": null,
+    "error": null,
     "jsonrpc": "2.0",
     "result": 0
 }
@@ -366,6 +356,7 @@ result sample:
 ```javascript
 {
     "id": null,
+    "error": null,
     "jsonrpc": "2.0",
     "result": [
         {
@@ -411,6 +402,7 @@ argument sample:
 ```json
 {
     "id": null,
+    "error": null,
     "jsonrpc": "2.0",
     "result": {
         "State": 0,
@@ -454,7 +446,10 @@ argument sample:
 result sample:
 ```json
 {
-  "result":"764691821f937fd566bcf533611a5e5b193008ea1ba1396f67b7b0da22717c02"
+  "result":"764691821f937fd566bcf533611a5e5b193008ea1ba1396f67b7b0da22717c02",
+  "id": null,
+  "jsonrpc": "2.0",
+  "error": null
 }
 ```
 
@@ -481,13 +476,15 @@ result sample:
 {
     "id": null,
     "jsonrpc": "2.0",
-    "result": "mining stopped"
+    "result": "mining stopped",
+    "error": null
+}
 }
 ```
 
-#### manualmining
+#### discretemining
 
-description: generate one or more blocks manually  
+description: generate one or more blocks instantly  
 parameters:
 
 | name | type | description |
@@ -497,7 +494,7 @@ parameters:
 argument sample:
 ```json
 {
-	"method":"manualmining",
+	"method":"discretemining",
 	"params":{"count":1}
 }
 ```
@@ -509,7 +506,9 @@ result sample:
     "jsonrpc": "2.0",
     "result": [
         "741d8131f0eea94c1c72c8bb1f0e9051a0a98441e131585bf5bf01868bf0ef46"
-    ]
+    ],
+    "error": null
+}
 }
 ```
 #### getinfo
