@@ -47,10 +47,10 @@ namespace Elastos {
 			int PeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				MerkleBlockMessage *message = static_cast<MerkleBlockMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_MERKLEBLOCK).get());
-				boost::function<void(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
+				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
 						boost::bind(&MerkleBlockMessage::Accept, message, _1, _2, _3);
 
-				fun(peer, msg, msgLen);
+				return fun(peer, msg, msgLen);
 			}
 
 			int PeerAcceptVersionMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {

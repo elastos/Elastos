@@ -47,3 +47,4 @@ tags
 *.json
 .*.py
 *.bak
+.DS_Store
