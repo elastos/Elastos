@@ -322,7 +322,7 @@ func (node *node) Relay(from Noder, message interface{}) error {
 					continue
 				}
 
-				if nbr.IsRelay() || (nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(txn)) {
+				if nbr.IsRelay() {
 					go nbr.Send(txn)
 					node.txnCnt++
 				}
