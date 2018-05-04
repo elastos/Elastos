@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 
 #include "PeerManager.h"
+#include "Utils.h"
 #include "Message/PeerMessageManager.h"
 
 namespace Elastos {
@@ -223,9 +224,9 @@ namespace Elastos {
 		void PeerManager::createDummyBlock() const {
 			BRMerkleBlock *block = BRMerkleBlockNew();
 			block->height = 0;
-			block->blockHash = UInt256();
-			block->timestamp = 0;
-			block->target = 0;
+			block->blockHash = Utils::UInt256FromString("8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");
+			block->timestamp = 1513936800;
+			block->target = 486801407;
 			BRSetAdd(_manager->blocks, block);
 			_manager->lastBlock = block;
 		}

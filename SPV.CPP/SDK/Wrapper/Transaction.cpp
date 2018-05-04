@@ -374,7 +374,7 @@ namespace Elastos {
 
 		BRTransaction *Transaction::convertToRaw() const {
 			ELABRTransaction *transaction = ELABRTransactionNew();
-			transaction->raw.txHash = _transaction->txHash;
+			transaction->raw.txHash = getHash();
 			transaction->raw.version = _transaction->version;
 			transaction->raw.blockHeight = _transaction->blockHeight;
 			transaction->raw.inCount = _transaction->inCount;

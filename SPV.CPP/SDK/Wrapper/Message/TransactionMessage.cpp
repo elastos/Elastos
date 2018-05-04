@@ -41,7 +41,7 @@ namespace Elastos {
 				BRTransactionFree(tx);
 				r = 0;
 			} else {
-				txHash = tx->txHash;
+				txHash = wrappedTx.getHash();
 				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
