@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <signal.h>
@@ -68,7 +69,7 @@ static char g_transferred_file[1024] = {0};
 static char g_friend_address[ELA_MAX_ADDRESS_LEN + 1] = {0};
 static int g_fd[2] = {-1, -1};
 static int g_stream_id = 0;
-static int g_data_len = 0;
+static size_t g_data_len = 0;
 
 pthread_mutex_t g_screen_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 
@@ -219,6 +220,25 @@ const char *presence_name[] = {
     "away",    // Away;
     "busy",    // Busy;
 };
+
+/*
+void friend(const char *addr)
+{
+    char *addr_arg[1] = {addr};
+    char *p = NULL;
+
+    if (addr == NULL)
+        return;
+
+    p = ela_get_id_by_address(addr, g_peer_id, ELA_MAX_ID_LEN + 1);
+    if (p != NULL) {
+        char *arg[1] = {g_peer_id};
+        friend_add(w, 1, addr_arg);
+    } else {
+        output("Got user ID unsuccessfully.\n");
+    }
+}
+*/
 
 static void friend_add(ElaCarrier *w, int argc, char *argv[])
 {
@@ -593,7 +613,7 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
             char msg_len[32] = {0};
             char *msg_arg[2] = {NULL, NULL};
             char *write_arg[3] = {NULL, NULL, NULL};
-            char buf[3][32] = {{0}};
+            char buf[3][32] = {{0}, {0}, {0}};
             int pkt_size = 1000;
             int pkt_count = 1000;
             struct stat st = {0};
@@ -612,7 +632,7 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
             stream_get_info((ElaCarrier*)context, 1, info_arg);
 
             msg_arg[0] = g_peer_id;
-            sprintf(msg_len, "%d", g_data_len);
+            sprintf(msg_len, "%zu", g_data_len);
             msg_arg[1] = msg_len;
             send_message((ElaCarrier*)context, 2, msg_arg);
 
@@ -758,47 +778,32 @@ static void session_reply_request(ElaCarrier *w, int argc, char *argv[])
 
 struct bulk_write_args {
     int stream;
-    int packet_size;
-    int packet_count;
+    //int packet_size;
+    //int packet_count;
 };
 struct bulk_write_args args;
 
 static void *bulk_write_thread(void *arg)
 {
     ssize_t rc;
-    char *packet;
+    char packet[1024];
     struct bulk_write_args *args = (struct bulk_write_args *)arg;
     struct timeval start, end;
     int duration;
     float speed;
     int trans_fd;
-    size_t total;
-    size_t sent = 0;
 
     trans_fd = open(g_transferred_file, O_RDONLY);
     if (trans_fd < 0)
         return NULL;
 
-    packet = (char*)malloc(g_data_len);
-    if (packet == NULL)
-        return NULL;
-
-    rc = read(trans_fd, packet, g_data_len);
-    close(trans_fd);
-    if (rc < g_data_len) {
-        free(packet);
-        return NULL;
-    }
-
     output("Begin sending data");
 
     gettimeofday(&start, NULL);
-    total = g_data_len;
 
-    do {
-        int trans_size = (total - sent > 2048) ? 2048 : total - sent;
+    while ((rc = read(trans_fd, packet, sizeof(packet))) > 0) {
         rc = ela_stream_write(session_ctx.ws, args->stream,
-                                  packet + sent, trans_size);
+                                  packet, rc);
         if (rc == 0) {
             usleep(100);
             continue;
@@ -809,24 +814,23 @@ static void *bulk_write_thread(void *arg)
             } else {
                 output("\nWrite data unsuccessfully.\n");
                 output("error no:%x", ela_get_error());
-                free(packet);
+                close(trans_fd);
                 return NULL;
             }
         }
+    }
 
-        sent += rc;
-    } while (sent < total);
-
-    free(packet);
     gettimeofday(&end, NULL);
+
+    close(trans_fd);
 
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000;
     duration = (duration == 0) ? 1 : duration;
-    speed = (((args->packet_size * args->packet_count) / duration) * 1000) / 1024;
+    speed = ((g_data_len / duration) * 1000) / 1024;
 
-    output("\nFinish! Total %" PRIu64 " bytes in %d.%d seconds. %.2f KB/s\n",
-           (uint64_t)(args->packet_size * args->packet_count),
+    output("\nFinish! Total %zu bytes in %d.%d seconds. %.2f KB/s\n",
+           g_data_len,
            (int)(duration / 1000), (int)(duration % 1000), speed);
 
     return NULL;
@@ -843,10 +847,8 @@ static void stream_bulk_write(ElaCarrier *w, int argc, char *argv[])
     }
 
     args.stream = atoi(argv[0]);
-    args.packet_size = atoi(argv[1]);
-    args.packet_count = atoi(argv[2]);
 
-    if (args.stream <= 0 || args.packet_size <= 0 || args.packet_count <= 0) {
+    if (args.stream <= 0 /*|| args.packet_size <= 0 || args.packet_count <= 0*/) {
         output("Invalid invocation.\n");
         return;
     }
@@ -1008,7 +1010,7 @@ static void message_callback(ElaCarrier *w, const char *from,
 
     if (g_mode == PASSIVE_MODE) {
         g_data_len = atoi(msg);
-        output("Got data length: %d.\n", g_data_len);
+        output("Got data length: %zu.\n", g_data_len);
     } else {
         char *arg[] = {(char*)"md5sum", (char*)"-b", g_transferred_file, NULL};
         char buf[64] = {0};
@@ -1022,7 +1024,7 @@ static void message_callback(ElaCarrier *w, const char *from,
         else
             output("My md5 checksum:%s\n", buf);
 
-        if (strcmp(buf, msg) == 0) {
+        if (strcasecmp(buf, msg) == 0) {
             output("Sent data successfully!\n");
         } else {
             output("Sent data unsuccessfully!\n");
