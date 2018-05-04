@@ -26,11 +26,13 @@
 #include <stdarg.h>
 #include <limits.h>
 #include <time.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>
 
 #include <rc_mem.h>
 #include <base58.h>
@@ -371,84 +373,396 @@ static bool friends_iterate_cb(uint32_t friend_number,
     return true;
 }
 
-static const char *data_filename = "eladata";
+static const uint32_t PERSISTENCE_MAGIC = 0x0E0C0D0A;
+static const uint32_t PERSISTENCE_REVISION = 2;
 
-static int load_savedata(ElaCarrier *w)
+static const char *data_filename = "carrier.data";
+static const char *old_dhtdata_filename = "dhtdata";
+static const char *old_eladata_filename = "eladata";
+
+#define MAX_PERSISTENCE_SECTION_SIZE        (16 * 1024 *1024)
+
+#define ROUND256(s)     (((((s) + 64) >> 8) + 1) << 8)
+
+typedef struct persistence_data {
+    size_t dht_savedata_len;
+    const uint8_t *dht_savedata;
+    size_t extra_savedata_len;
+    const uint8_t *extra_savedata;
+} persistence_data;
+
+static int convert_old_dhtdata(const char *data_location)
+{
+    uint8_t *buf;
+    uint8_t *pos;
+    char *dhtdata_filename;
+    char *eladata_filename;
+    char *journal_filename;
+    char *filename;
+    struct stat st;
+    uint32_t val;
+    int fd;
+
+    size_t dht_data_len;
+    size_t extra_data_len;
+    size_t total_len;
+
+    assert(data_location);
+
+    dhtdata_filename = (char *)alloca(strlen(data_location) + strlen(old_dhtdata_filename) + 4);
+    sprintf(dhtdata_filename, "%s/%s", data_location, old_dhtdata_filename);
+    eladata_filename = (char *)alloca(strlen(data_location) + strlen(old_eladata_filename) + 4);
+    sprintf(eladata_filename, "%s/%s", data_location, old_eladata_filename);
+
+    if (stat(dhtdata_filename, &st) < 0)
+        return ELA_SYS_ERROR(errno);
+
+    dht_data_len = st.st_size;
+
+    if (stat(eladata_filename, &st) < 0 ||
+            st.st_size < (PUBLIC_KEY_BYTES + sizeof(uint32_t)))
+        extra_data_len = 0;
+    else
+        extra_data_len = (st.st_size - PUBLIC_KEY_BYTES - sizeof(uint32_t));
+
+    total_len = 256 + ROUND256(dht_data_len) + ROUND256(extra_data_len);
+    buf = (uint8_t *)calloc(total_len, 1);
+    if (!buf)
+        return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
+
+    pos = buf + 256;
+
+    fd = open(dhtdata_filename, O_RDONLY);
+    if (fd < 0) {
+        free(buf);
+        return ELA_SYS_ERROR(errno);
+    }
+
+    if (read(fd, pos, dht_data_len) != dht_data_len) {
+        free(buf);
+        close(fd);
+        return ELA_SYS_ERROR(errno);
+    }
+
+    close(fd);
+
+    if (extra_data_len) {
+        pos += ROUND256(dht_data_len);
+
+        fd = open(eladata_filename, O_RDONLY);
+        if (fd < 0) {
+            extra_data_len = 0;
+            goto write_data;
+        }
+
+        // Skip public key
+        lseek(fd, PUBLIC_KEY_BYTES, SEEK_SET);
+        // read friends count
+        if (read(fd, &val, sizeof(val)) != sizeof(val)) {
+            close(fd);
+            extra_data_len = 0;
+            goto write_data;
+        }
+
+        if (val > 0) {
+            if (read(fd, pos, extra_data_len) != extra_data_len) {
+                close(fd);
+                memset(pos, 0, extra_data_len);
+                extra_data_len = 0;
+                goto write_data;
+            }
+
+            uint8_t *rptr = pos;
+            uint8_t *wptr = pos;
+
+            for (int i = 0; i < val; i++) {
+                uint32_t id = *(uint32_t *)rptr;
+                rptr += sizeof(uint32_t);
+                size_t label_len = strlen((const char *)rptr);
+                if (label_len == 0) {
+                    rptr++;
+                    continue;
+                }
+
+                id = htonl(id);
+                memcpy(wptr, &id, sizeof(id));
+                wptr += sizeof(uint32_t);
+                memmove(wptr, rptr, label_len + 1);
+                wptr += (label_len + 1);
+                rptr += (label_len + 1);
+            }
+
+            extra_data_len = wptr - pos;
+            memset(wptr, 0, rptr - wptr);
+        }
+
+        close(fd);
+    }
+
+write_data:
+
+    total_len = 256 + ROUND256(dht_data_len) + ROUND256(extra_data_len);
+
+    pos = buf;
+    val = htonl(PERSISTENCE_MAGIC);
+    memcpy(pos, &val, sizeof(uint32_t));
+
+    pos += sizeof(uint32_t);
+    val = htonl(PERSISTENCE_REVISION);
+    memcpy(pos, &val, sizeof(uint32_t));
+
+    pos += sizeof(uint32_t);
+    val = htonl((uint32_t)dht_data_len);
+    memcpy(pos, &val, sizeof(uint32_t));
+
+    pos += sizeof(uint32_t);
+    val = htonl((uint32_t)extra_data_len);
+    memcpy(pos, &val, sizeof(uint32_t));
+
+    pos = buf + 256;
+    sha256(pos, total_len - 256, buf + (sizeof(uint32_t) * 4), SHA256_BYTES);
+
+    filename = (char *)alloca(strlen(data_location) + strlen(data_filename) + 4);
+    sprintf(filename, "%s/%s", data_location, data_filename);
+    journal_filename = (char *)alloca(strlen(data_location) + strlen(data_filename) + 16);
+    sprintf(journal_filename, "%s/%s.journal", data_location, data_filename);
+
+    fd = open(journal_filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        free(buf);
+        return ELA_SYS_ERROR(errno);
+    }
+
+    if (write(fd, buf, total_len) != total_len) {
+        close(fd);
+        remove(journal_filename);
+        return ELA_SYS_ERROR(errno);
+    }
+
+    if (fsync(fd) < 0) {
+        close(fd);
+        remove(journal_filename);
+        return ELA_SYS_ERROR(errno);
+    }
+
+    close(fd);
+    free(buf);
+
+    remove(dhtdata_filename);
+    remove(eladata_filename);
+    remove(filename);
+    rename(journal_filename, filename);
+
+    return 0;
+}
+
+static int _load_persistence_data_i(int fd, persistence_data *data)
+{
+    struct stat st;
+    uint32_t val;
+    size_t dht_data_len;
+    size_t extra_data_len;
+    unsigned char p_sum[SHA256_BYTES];
+    unsigned char c_sum[SHA256_BYTES];
+
+    uint8_t *buf;
+
+    if (fstat(fd, &st) < 0) {
+        vlogW("Load persistence data failed, stat files error(%d).", errno);
+        return -1;
+    }
+
+    if (st.st_size < 256) {
+        vlogW("Load persistence data failed, corrupt file.");
+        return -1;
+    }
+
+    if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
+        vlogW("Load persistence data failed, read error(%d).", errno);
+        return -1;
+    }
+    val = ntohl(val);
+    if (val != PERSISTENCE_MAGIC) {
+        vlogW("Load persistence data failed, corrupt file.");
+        return -1;
+    }
+
+    if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
+        vlogW("Load persistence data failed, read error(%d).", errno);
+        return -1;
+    }
+    val = ntohl(val);
+    if (val != PERSISTENCE_REVISION) {
+        vlogW("Load persistence data failed, unsupported date file version.");
+        return -1;
+    }
+
+    if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
+        vlogW("Load persistence data failed, read error(%d).", errno);
+        return -1;
+    }
+    dht_data_len = ntohl(val);
+    if (dht_data_len > MAX_PERSISTENCE_SECTION_SIZE) {
+        vlogW("Load persistence data failed, corrupt file.");
+        return -1;
+    }
+
+    if (read(fd, (void *)&val, sizeof(val)) != sizeof(val)) {
+        vlogW("Load persistence data failed, read error(%d).", errno);
+        return -1;
+    }
+    extra_data_len = ntohl(val);
+    if (extra_data_len > MAX_PERSISTENCE_SECTION_SIZE) {
+        vlogW("Load persistence data failed, corrupt file.");
+        return -1;
+    }
+
+    if (st.st_size != 256 + ROUND256(dht_data_len) + ROUND256(extra_data_len)) {
+        vlogW("Load persistence data failed, corrupt file.");
+        return -1;
+    }
+
+    if (read(fd, p_sum, sizeof(p_sum)) != sizeof(p_sum)) {
+        vlogW("Load persistence data failed, read error(%d).", errno);
+        return -1;
+    }
+
+    buf = (uint8_t *)malloc(st.st_size - 256);
+    if (!buf) {
+        vlogW("Load persistence data failed, out of memory.");
+        return -1;
+    }
+
+    lseek(fd, 256, SEEK_SET);
+    if (read(fd, buf, st.st_size - 256) != (st.st_size - 256)) {
+        vlogW("Load persistence data failed, read error(%d).", errno);
+        free(buf);
+        return -1;
+    }
+
+    sha256(buf, st.st_size - 256, c_sum, sizeof(c_sum));
+    if (memcmp(p_sum, c_sum, SHA256_BYTES) != 0) {
+        vlogW("Load persistence data failed, corrupt file.");
+        free(buf);
+        return -1;
+    }
+
+    data->dht_savedata_len = dht_data_len;
+    data->dht_savedata = (const uint8_t *)buf;
+    data->extra_savedata_len = extra_data_len;
+    data->extra_savedata = (const uint8_t *)buf + ROUND256(dht_data_len);
+
+    return 0;
+}
+
+#define FAILBACK_OR_RETURN(rc)          \
+    if (journal) {                      \
+        journal = 0;                    \
+        goto failback;                  \
+    } else {                            \
+        return rc;                      \
+    }
+
+static int load_persistence_data(const char *data_location, persistence_data *data)
 {
     char *filename;
-    FILE *fp;
-    size_t datalen;
-    uint8_t *data;
+    int journal = 1;
+    int fd;
     int rc;
-    int friend_sz;
-    uint8_t *pos;
-    int i;
 
-    assert(w);
-    assert(w->friends);
+    assert(data_location);
+    assert(data);
 
-    rc = dht_get_self_info(&w->dht, get_self_info_cb, w);
-    if (rc < 0)
-        return rc;
+    filename = (char *)alloca(strlen(data_location) + strlen(data_filename) + 16);
 
-    rc = dht_get_friends(&w->dht, friends_iterate_cb, w);
-    if (rc < 0)
-        return rc;
+failback:
+    // Load from journal file first.
+    if (journal)
+        sprintf(filename, "%s/%s.journal", data_location, data_filename);
+    else
+        sprintf(filename, "%s/%s", data_location, data_filename);
 
-    filename = (char *)alloca(strlen(w->pref.data_location) + strlen(data_filename) + 4);
-    sprintf(filename, "%s/%s", w->pref.data_location, data_filename);
+    if (access(filename, F_OK | R_OK) < 0) {
+        if (journal) {
+            journal = 0;
+            goto failback;
+        } else {
+            sprintf(filename, "%s/%s", data_location, old_dhtdata_filename);
 
-    fp = fopen(filename, "r");
-    // File 'eladata' was not created or lost. Along with later situation,
-    // all labels of friends would be lost too, which should not be considered
-    // as error when trying to load data.
-    if (!fp)
-        return 0;
+            if (access(filename, F_OK | R_OK) < 0)
+                return -1;
 
-    fseek(fp, 0, SEEK_END);
-    datalen = ftell(fp);
-    rewind(fp);
+            vlogT("Try convert old persistence data...");
+            if (convert_old_dhtdata(data_location) < 0) {
+                vlogE("Convert old persistence data failed.");
+                return -1;
+            }
 
-    data = (uint8_t *)alloca(datalen);
-
-    if (fread(data, sizeof(uint8_t), datalen, fp) != datalen) {
-        vlogE("Carrier: Read save data file error.");
-        //TODO: to set ela error number.
-        //TOOD: should it be considered as error, or just truncate the file.
-        fclose(fp);
-        return -1;
+            vlogT("Convert old persistence data to current version.");
+            goto failback;
+        }
     }
 
-    fclose(fp);
+    vlogD("Try to loading persistence data from: %s.", filename);
 
-    pos = data;
-    if (memcmp(pos, w->public_key, DHT_PUBLIC_KEY_SIZE) != 0) {
-        vlogE("Carrier: Deprecated carrier data.");
-        return -1;
+    fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        vlogD("Loading persistence data failed, cannot open file.");
+        FAILBACK_OR_RETURN(-1);
     }
-    pos += DHT_PUBLIC_KEY_SIZE;
 
-    friend_sz = *(uint32_t *)pos;
-    pos += sizeof(uint32_t);
+    rc = _load_persistence_data_i(fd, data);
+    close(fd);
 
-    for (i = 0; i < friend_sz; i++) {
+    if (rc < 0) {
+        FAILBACK_OR_RETURN(rc);
+    }
+
+    if (rc == 0 && journal) {
+        char *journal_filename = filename;
+        char *filename = (char *)alloca(strlen(data_location) + strlen(data_filename) + 16);
+        sprintf(filename, "%s/%s", data_location, data_filename);
+
+        remove(filename);
+        rename(journal_filename, filename);
+    }
+
+    return rc;
+}
+
+static void apply_extra_data(ElaCarrier *w, const uint8_t *extra_savedata, size_t extra_savedata_len)
+{
+    const uint8_t *pos = extra_savedata;
+
+    while (extra_savedata_len > 0) {
         uint32_t friend_number;
         char *label;
+        size_t label_len;
         FriendInfo *fi;
 
-        friend_number = *(uint32_t *)pos;
+        friend_number = ntohl(*(uint32_t *)pos);
         pos += sizeof(uint32_t);
         label = (char *)pos;
-        pos += strlen(label) + 1;
+        label_len = strlen(label);
+        pos += label_len + 1;
+
+        if (label_len == 0)
+            break;
 
         fi = friends_get(w->friends, friend_number);
         if (fi) {
             strcpy(fi->info.label, label);
             deref(fi);
         }
-    }
 
-    return 0;
+        extra_savedata_len -= (sizeof(uint32_t) + label_len + 1);
+    }
+}
+
+static void free_persistence_data(persistence_data *data)
+{
+    if (data && data->dht_savedata)
+        free((void *)data->dht_savedata);
 }
 
 static int _mkdir(const char *path, mode_t mode)
@@ -495,57 +809,113 @@ static int mkdirs(const char *path, mode_t mode)
     return rc;
 }
 
-static int store_savedata(ElaCarrier *w)
+static size_t get_extra_savedata_size(ElaCarrier *w)
 {
     HashtableIterator it;
-    int count = 0;
-    uint8_t *buf;
     size_t total_len = 0;
-    uint8_t *pos;
-    char *filename;
-    FILE *fp;
-    int rc;
 
     assert(w);
     assert(w->friends);
 
-    total_len += DHT_ADDRESS_SIZE;
-    total_len += sizeof(uint32_t);
     friends_iterate(w->friends, &it);
     while(friends_iterator_has_next(&it)) {
         FriendInfo *fi;
 
         if (friends_iterator_next(&it, &fi) == 1) {
-            total_len += sizeof(uint32_t) + strlen(fi->info.label) + 1;
-            count++;
+            size_t label_len = strlen(fi->info.label);
+            if (label_len)
+                total_len += sizeof(uint32_t) + label_len + 1;
 
             deref(fi);
         }
     }
 
-    buf = (uint8_t *)calloc(1, total_len);
+    return total_len;
+}
+
+static void get_extra_savedata(ElaCarrier *w, void *data, size_t len)
+{
+    HashtableIterator it;
+    uint8_t *pos = (uint8_t *)data;
+
+    assert(w);
+    assert(w->friends);
+    assert(data);
+
+    friends_iterate(w->friends, &it);
+    while(friends_iterator_has_next(&it) && len > 0) {
+        FriendInfo *fi;
+
+        if (friends_iterator_next(&it, &fi) == 1) {
+            uint32_t nid;
+            size_t label_len = strlen(fi->info.label);
+            if (label_len) {
+                if (len < (sizeof(uint32_t) + label_len + 1))
+                    break;
+
+                nid = htonl(fi->friend_number);
+                memcpy(pos, &nid, sizeof(uint32_t));
+                pos += sizeof(uint32_t);
+                memcpy(pos, fi->info.label, label_len + 1);
+                pos += (label_len + 1);
+
+                len -= (sizeof(uint32_t) + label_len + 1);
+            }
+
+            deref(fi);
+        }
+    }
+
+    return;
+}
+
+static int store_persistence_data(ElaCarrier *w)
+{
+    uint8_t *buf;
+    uint8_t *pos;
+    char *journal_filename;
+    char *filename;
+    uint32_t val;
+    int fd;
+    int rc;
+
+    size_t dht_data_len;
+    size_t extra_data_len;
+    size_t total_len;
+
+    assert(w);
+
+    dht_data_len = dht_get_savedata_size(&w->dht);
+    extra_data_len = get_extra_savedata_size(w);
+    total_len = 256 + ROUND256(dht_data_len) + ROUND256(extra_data_len);
+
+    buf = (uint8_t *)calloc(total_len, 1);
     if (!buf)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
     pos = buf;
-    memcpy(pos, w->public_key, DHT_PUBLIC_KEY_SIZE);
-    pos += DHT_PUBLIC_KEY_SIZE;
-    memcpy(pos, &count, sizeof(uint32_t));
+    val = htonl(PERSISTENCE_MAGIC);
+    memcpy(pos, &val, sizeof(uint32_t));
+
     pos += sizeof(uint32_t);
+    val = htonl(PERSISTENCE_REVISION);
+    memcpy(pos, &val, sizeof(uint32_t));
 
-    friends_iterate(w->friends, &it);
-    while(friends_iterator_has_next(&it) && (pos - buf <= total_len)) {
-        FriendInfo *fi;
+    pos += sizeof(uint32_t);
+    val = htonl((uint32_t)dht_data_len);
+    memcpy(pos, &val, sizeof(uint32_t));
 
-        if (friends_iterator_next(&it, &fi) == 1) {
-            memcpy(pos, &fi->friend_number, sizeof(uint32_t));
-            pos += sizeof(uint32_t);
-            memcpy(pos, fi->info.label, strlen(fi->info.label) + 1);
-            pos += strlen(fi->info.label) + 1;
+    pos += sizeof(uint32_t);
+    val = htonl((uint32_t)extra_data_len);
+    memcpy(pos, &val, sizeof(uint32_t));
 
-            deref(fi);
-        }
-    }
+    pos = buf + 256;
+    dht_get_savedata(&w->dht, pos);
+    pos += ROUND256(dht_data_len);
+    get_extra_savedata(w, pos, ROUND256(extra_data_len));
+
+    pos = buf + 256;
+    sha256(pos, total_len - 256, buf + (sizeof(uint32_t) * 4), SHA256_BYTES);
 
     rc = mkdirs(w->pref.data_location, S_IRWXU);
     if (rc < 0) {
@@ -555,17 +925,32 @@ static int store_savedata(ElaCarrier *w)
 
     filename = (char *)alloca(strlen(w->pref.data_location) + strlen(data_filename) + 4);
     sprintf(filename, "%s/%s", w->pref.data_location, data_filename);
+    journal_filename = (char *)alloca(strlen(w->pref.data_location) + strlen(data_filename) + 16);
+    sprintf(journal_filename, "%s/%s.journal", w->pref.data_location, data_filename);
 
-    fp = fopen(filename, "w");
-    if (!fp) {
+    fd = open(journal_filename, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (fd < 0) {
         free(buf);
         return ELA_SYS_ERROR(errno);
     }
 
-    fwrite(buf, sizeof(uint8_t), pos - buf, fp);
+    if (write(fd, buf, total_len) != total_len) {
+        close(fd);
+        remove(journal_filename);
+        return ELA_SYS_ERROR(errno);
+    }
 
-    fclose(fp);
+    if (fsync(fd) < 0) {
+        close(fd);
+        remove(journal_filename);
+        return ELA_SYS_ERROR(errno);
+    }
+
+    close(fd);
     free(buf);
+
+    remove(filename);
+    rename(journal_filename, filename);
 
     return 0;
 }
@@ -599,6 +984,7 @@ ElaCarrier *ela_new(const ElaOptions *opts,
                  ElaCallbacks *callbacks, void *context)
 {
     ElaCarrier *w;
+    persistence_data data;
     int rc;
     int i;
 
@@ -680,8 +1066,12 @@ ElaCarrier *ela_new(const ElaOptions *opts,
         }
     }
 
-    rc = dht_new(w->pref.data_location, w->pref.udp_enabled, &w->dht);
+    memset(&data, 0, sizeof(data));
+    load_persistence_data(opts->persistent_location, &data);
+
+    rc = dht_new(data.dht_savedata, data.dht_savedata_len, w->pref.udp_enabled, &w->dht);
     if (rc < 0) {
+        free_persistence_data(&data);
         deref(w);
         ela_set_error(rc);
         return NULL;
@@ -689,6 +1079,7 @@ ElaCarrier *ela_new(const ElaOptions *opts,
 
     w->friends = friends_create();
     if (!w->friends) {
+        free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
@@ -696,6 +1087,7 @@ ElaCarrier *ela_new(const ElaOptions *opts,
 
     w->friend_events = list_create(1, NULL);
     if (!w->friend_events) {
+        free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
@@ -703,6 +1095,7 @@ ElaCarrier *ela_new(const ElaOptions *opts,
 
     w->tcallbacks = transacted_callbacks_create(32);
     if (!w->tcallbacks) {
+        free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
@@ -710,26 +1103,32 @@ ElaCarrier *ela_new(const ElaOptions *opts,
 
     w->thistory = transaction_history_create(32);
     if (!w->thistory) {
+        free_persistence_data(&data);
         deref(w);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return NULL;
     }
 
-    rc = load_savedata(w);
+    rc = dht_get_self_info(&w->dht, get_self_info_cb, w);
     if (rc < 0) {
-        deref(w);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return NULL;
-    }
-
-    rc = store_savedata(w);
-    if (rc < 0) {
+        free_persistence_data(&data);
         deref(w);
         ela_set_error(rc);
         return NULL;
     }
 
-    dht_store_savedata(&w->dht);
+    rc = dht_get_friends(&w->dht, friends_iterate_cb, w);
+    if (rc < 0) {
+        free_persistence_data(&data);
+        deref(w);
+        ela_set_error(rc);
+        return NULL;
+    }
+
+    apply_extra_data(w, data.extra_savedata, data.extra_savedata_len);
+    free_persistence_data(&data);
+
+    store_persistence_data(w);
 
     srand((unsigned int)time(NULL));
 
@@ -756,9 +1155,6 @@ void ela_kill(ElaCarrier *w)
         if (!pthread_equal(pthread_self(), w->main_thread))
             while(!w->quit) usleep(5000);
     }
-
-    dht_store_savedata(&w->dht);
-    store_savedata(w);
 
     deref(w);
 
@@ -1012,8 +1408,7 @@ static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
     assert(w);
     assert(fi);
 
-    dht_store_savedata(&w->dht);
-    store_savedata(w);
+    store_persistence_data(w);
 
     event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
     if (event) {
@@ -1032,8 +1427,7 @@ static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
     assert(w);
     assert(fi);
 
-    dht_store_savedata(&w->dht);
-    store_savedata(w);
+    store_persistence_data(w);
 
     event = (FriendEvent *)rc_alloc(sizeof(FriendEvent), NULL);
     if (event) {
@@ -1354,6 +1748,8 @@ int ela_run(ElaCarrier *w, int interval)
 
     w->running = 0;
 
+    store_persistence_data(w);
+
     deref(w);
 
     return 0;
@@ -1413,8 +1809,8 @@ int ela_set_self_nospam(ElaCarrier *w, uint32_t nospam)
         return -1;
     }
 
-    dht_store_savedata(&w->dht);
-    
+    store_persistence_data(w);
+
     return 0;
 }
 
@@ -1494,7 +1890,8 @@ int ela_set_self_info(ElaCarrier *w, const ElaUserInfo *info)
         strcpy(w->me.email, info->email);
         strcpy(w->me.region, info->region);
         dht_self_set_desc(&w->dht, data, data_len);
-        dht_store_savedata(&w->dht);
+
+        store_persistence_data(w);
 
         free(data);
     }
@@ -1660,7 +2057,7 @@ int ela_set_friend_label(ElaCarrier *w,
 
     deref(fi);
 
-    store_savedata(w); // saved label just updated.
+    store_persistence_data(w);
 
     return 0;
 }

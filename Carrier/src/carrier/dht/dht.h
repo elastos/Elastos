@@ -40,7 +40,7 @@ typedef void (*SelfInfoCallback)(const uint8_t *address,
                                  const uint8_t *desc, size_t desc_length,
                                  void *context);
 
-int dht_new(const char *data_location, bool udp_enabled, DHT *dht);
+int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht);
 
 void dht_kill(DHT *dht);
 
@@ -61,7 +61,9 @@ int dht_get_self_info(DHT *dht, SelfInfoCallback cb, void *context);
 
 int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context);
 
-void dht_store_savedata(DHT *dht);
+size_t dht_get_savedata_size(DHT *dht);
+
+void dht_get_savedata(DHT *dht, uint8_t *data);
 
 int dht_iteration_idle(DHT *dht);
 

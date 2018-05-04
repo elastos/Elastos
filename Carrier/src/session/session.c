@@ -80,7 +80,7 @@ static void extension_destroy(void *p)
 {
     SessionExtension *ext = (SessionExtension *)p;
 
-    if (ext->transport) 
+    if (ext->transport)
         remove_transport(ext->transport);
 
     ids_heap_destroy((IdsHeap *)&ext->stream_ids);
@@ -99,7 +99,7 @@ static int add_transport(SessionExtension *ext)
         return ELA_GENERAL_ERROR(ELAERR_ALREADY_EXIST);
 
     rc = ext->create_transport(&transport);
-    if (rc < 0) 
+    if (rc < 0)
         return rc;
 
     transport->workers = list_create(1, NULL);
@@ -578,7 +578,7 @@ reprepare:
 
     vlogD("Session: Session reply to %s %s.", ws->to,
           rc == 0 ? "success" : "failed");
-          
+
     return rc;
 }
 
@@ -628,7 +628,8 @@ recheck:
 
     rc = ws->apply_remote_sdp(ws, (char *)sdp, len-1);
     if (rc < 0) {
-        vlogE("Session: Session to %s can not apply remote SDP.", ws->to);
+        vlogE("Session: Session to %s can not apply remote SDP.)", ws->to);
+        vlogT("Session: Wrong SDP is: [%.*s].", (int)(len - 1), sdp);
         deref(ws);
         ela_set_error(rc);
         return -1;

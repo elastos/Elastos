@@ -48,7 +48,6 @@ const char *data_filename = "dhtdata";
 
 struct DHT {
     Tox *tox;
-    const char *data_dir;
 };
 
 static inline int __dht_new_error(TOX_ERR_NEW code)
@@ -436,41 +435,13 @@ void log_cb(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
     vlog(_level, buf);
 }
 
-int dht_new(const char *data_location, bool udp_enabled, DHT *dht)
+int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht)
 {
-    char *filename;
-    FILE *fp;
-    uint8_t *data;
-    size_t datalen;
     struct Tox_Options options;
     TOX_ERR_NEW error;
     Tox *tox;
 
-    assert(data_location);
     assert(dht);
-
-    filename = (char *)alloca(strlen(data_location) + strlen(data_filename) + 4);
-    sprintf(filename, "%s/%s", data_location, data_filename);
-
-    fp = fopen(filename, "r");
-    if (!fp) {
-        data = NULL;
-        datalen = 0;
-    } else {
-        fseek(fp, 0, SEEK_END);
-        datalen = ftell(fp);
-        rewind(fp);
-
-        data = (uint8_t *)alloca(datalen);
-
-        if (fread(data, sizeof(uint8_t), datalen, fp) != datalen) {
-            vlogE("DHT: Read save data file error.");
-            fclose(fp);
-            //TODO: error number.
-            return -1;
-        }
-        fclose(fp);
-    }
 
     tox_options_default(&options);
     options.local_discovery_enabled = true;
@@ -478,9 +449,9 @@ int dht_new(const char *data_location, bool udp_enabled, DHT *dht)
     options.udp_enabled = udp_enabled;
     options.log_callback = log_cb;
 
-    if (data) {
+    if (savedata && datalen) {
         options.savedata_type = TOX_SAVEDATA_TYPE_TOX_SAVE;
-        options.savedata_data = data;
+        options.savedata_data = savedata;
         options.savedata_length = datalen;
     } else {
         options.savedata_type = TOX_SAVEDATA_TYPE_NONE;
@@ -501,7 +472,6 @@ int dht_new(const char *data_location, bool udp_enabled, DHT *dht)
     tox_callback_friend_request(tox, notify_friend_request_cb);
     tox_callback_friend_message(tox, notify_friend_message_cb);
 
-    dht->data_dir = data_location;
     dht->tox = tox;
 
     return 0;
@@ -699,30 +669,22 @@ int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context)
     return 0;
 }
 
-void dht_store_savedata(DHT *dht)
+size_t dht_get_savedata_size(DHT *dht)
 {
     Tox *tox = dht->tox;
-    char *filename;
-    FILE *fp;
-    uint8_t *data;
-    size_t datalen;
 
     assert(tox);
 
-    filename = (char *)alloca(strlen(dht->data_dir) + strlen(data_filename) + 4);
-    sprintf(filename, "%s/%s", dht->data_dir, data_filename);
+    return tox_get_savedata_size(tox);
+}
 
-    fp = fopen(filename, "w");
-    if (!fp)
-        return;
+void dht_get_savedata(DHT *dht, uint8_t *data)
+{
+    Tox *tox = dht->tox;
 
-    datalen = tox_get_savedata_size(tox);
-    data = (uint8_t *)alloca(datalen);
+    assert(tox);
 
     tox_get_savedata(tox, data);
-
-    fwrite(data, sizeof(uint8_t), datalen, fp);
-    fclose(fp);
 }
 
 int dht_iteration_idle(DHT *dht)
