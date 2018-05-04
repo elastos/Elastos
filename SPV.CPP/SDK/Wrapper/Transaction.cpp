@@ -9,6 +9,13 @@
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
+#include "Payload/PayloadIssueToken.h"
+#include "Payload/PayloadWithDrawAsset.h"
+#include "Payload/PayloadRecord.h"
+#include "Payload/PayloadRegisterAsset.h"
+#include "Payload/PayloadSideMining.h"
+#include "Payload/PayloadTransferCrossChainAsset.h"
+#include "Payload/PayloadTransferAsset.h"
 #include "ELABRTransaction.h"
 #include "BRCrypto.h"
 
@@ -108,20 +115,27 @@ namespace Elastos {
 				_payload = boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
 
 			} else if (_type == RegisterAsset) {
+				_payload = boost::shared_ptr<PayloadRegisterAsset>(new PayloadRegisterAsset());
 
 			} else if (_type == TransferAsset) {
+				_payload = boost::shared_ptr<PayloadTransferAsset>(new PayloadTransferAsset());
 
 			} else if (_type == Record) {
+				_payload = boost::shared_ptr<PayloadRecord>(new PayloadRecord());
 
 			} else if (_type == Deploy) {
 
 			} else if (_type == SideMining) {
+				_payload = boost::shared_ptr<PayloadSideMining>(new PayloadSideMining());
 
 			} else if (_type == IssueToken) {
+				_payload = boost::shared_ptr<PayloadIssueToken>(new PayloadIssueToken());
 
 			} else if (_type == WithdrawAsset) {
+				_payload = boost::shared_ptr<PayloadWithDrawAsset>(new PayloadWithDrawAsset());
 
 			} else if (_type == TransferCrossChainAsset) {
+				_payload = boost::shared_ptr<PayloadTransferCrossChainAsset>(new PayloadTransferCrossChainAsset());
 
 			}
 		}
