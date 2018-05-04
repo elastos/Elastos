@@ -56,7 +56,7 @@ func StartRPCServer() {
 	mainMux["togglemining"] = ToggleMining
 	mainMux["manualmining"] = ManualMining
 
-	err := http.ListenAndServe("127.0.0.1:"+strconv.Itoa(Parameters.HttpJsonPort), nil)
+	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err.Error())
 	}
