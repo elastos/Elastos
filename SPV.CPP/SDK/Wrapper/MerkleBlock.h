@@ -57,6 +57,8 @@ namespace Elastos {
 
 			uint32_t getHeight() const;
 
+			const AuxPow &getAuxPow() const;
+
 			ByteData serialize() const;
 
 			bool isValid(uint32_t currentTime) const;

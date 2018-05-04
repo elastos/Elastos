@@ -22,6 +22,8 @@ namespace Elastos {
 			AuxPow();
 			~AuxPow();
 
+			UInt256 getParBlockHeaderHash() const;
+
 			virtual void Serialize(ByteStream &ostream) const;
 			virtual void Deserialize(ByteStream &istream);
 

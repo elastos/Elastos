@@ -268,5 +268,13 @@ namespace Elastos {
 			istream.getBytes(nonceData, 32 / 8);
 			_parBlockHeader->nonce = UInt32GetLE(nonceData);
 		}
+
+		UInt256 AuxPow::getParBlockHeaderHash() const {
+			ByteStream stream;
+			serializeBtcBlockHeader(stream);
+			UInt256 hash = UINT256_ZERO;
+			BRSHA256_2(&hash, stream.getBuf(), stream.position());
+			return hash;
+		}
 	}
 }

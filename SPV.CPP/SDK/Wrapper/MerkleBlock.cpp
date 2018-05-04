@@ -207,11 +207,15 @@ namespace Elastos {
 			}
 
 			_merkleBlock->flagsLen = istream.getVarUint();
-			_merkleBlock->flags = (_merkleBlock->flagsLen > 0) ? (uint8_t *)malloc(_merkleBlock->flagsLen) : NULL;
+			_merkleBlock->flags = (_merkleBlock->flagsLen > 0) ? (uint8_t *) malloc(_merkleBlock->flagsLen) : NULL;
 			assert(_merkleBlock->hashesCount == _merkleBlock->flagsLen);
 			for (uint32_t i = 0; i < _merkleBlock->flagsLen; ++i) {
 				_merkleBlock->flags[i] = istream.get();
 			}
+		}
+
+		const AuxPow &MerkleBlock::getAuxPow() const {
+			return _auxPow;
 		}
 
 		void to_json(nlohmann::json &j, const MerkleBlock &p) {

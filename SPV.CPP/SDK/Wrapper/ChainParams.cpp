@@ -9,6 +9,30 @@
 namespace Elastos {
 	namespace SDK {
 
+		namespace {
+			static int MainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet)
+			{
+				return 1;
+				//todo edit difficulty for ela node
+				const BRMerkleBlock *previous, *b = NULL;
+				uint32_t i;
+
+				assert(block != NULL);
+				assert(blockSet != NULL);
+
+				// check if we hit a difficulty transition, and find previous transition block
+				if ((block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
+					for (i = 0, b = block; b && i < BLOCK_DIFFICULTY_INTERVAL; i++) {
+						b = (const BRMerkleBlock *)BRSetGet(blockSet, &b->prevBlock);
+					}
+				}
+
+				previous = (const BRMerkleBlock *)BRSetGet(blockSet, &block->prevBlock);
+				return BRMerkleBlockVerifyDifficulty(block, previous, (b) ? b->timestamp : 0);
+			}
+
+		}
+
 		bool ChainParams::_paramsInit = false;
 		ChainParams ChainParams::_mainNet = ChainParams(BRMainNetParams);
 		ChainParams ChainParams::_testNet = ChainParams(BRTestNetParams);
@@ -54,6 +78,7 @@ namespace Elastos {
 			_mainNet.getRaw()->standardPort = 10866;
 			_mainNet.getRaw()->magicNumber = 7630401;
 			_mainNet.getRaw()->checkpointsCount = 0;
+			_mainNet.getRaw()->verifyDifficulty = MainNetVerifyDifficulty;
 
 			//todo init test net here
 

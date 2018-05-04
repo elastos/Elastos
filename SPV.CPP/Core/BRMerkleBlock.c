@@ -286,8 +286,7 @@ int BRMerkleBlockIsValid(const BRMerkleBlock *block, uint32_t currentTime)
     if (block->timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
 
     // check if proof-of-work target is out of range
-    //todo check pow later
-    //if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;
+    if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;
 
     if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
     else UInt32SetLE(t.u8, target >> (3 - size)*8);

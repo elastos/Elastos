@@ -197,7 +197,8 @@ static void *_peerThreadRoutine(void *arg)
                 if (n < 0 && errno != EWOULDBLOCK) error = errno;
                 gettimeofday(&tv, NULL);
                 time = tv.tv_sec + (double)tv.tv_usec/1000000;
-                if (! error && time >= ctx->disconnectTime) error = ETIMEDOUT;
+				//todo consider timeout later
+                //if (! error && time >= ctx->disconnectTime) error = ETIMEDOUT;
 
                 if (! error && time >= ctx->mempoolTime) {
                     peer_log(peer, "done waiting for mempool response");
@@ -548,7 +549,8 @@ void BRPeerSendMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const ch
             if (n >= 0) msgLen += n;
             if (n < 0 && errno != EWOULDBLOCK) error = errno;
             gettimeofday(&tv, NULL);
-            if (! error && tv.tv_sec + (double)tv.tv_usec/1000000 >= ctx->disconnectTime) error = ETIMEDOUT;
+            //todo consider timeout later
+			//if (! error && tv.tv_sec + (double)tv.tv_usec/1000000 >= ctx->disconnectTime) error = ETIMEDOUT;
             socket = ctx->socket;
         }
 
