@@ -12,6 +12,8 @@
 #include "InventoryMessage.h"
 #include "Log.h"
 
+#define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
+
 namespace Elastos {
 	namespace SDK {
 
@@ -100,7 +102,7 @@ namespace Elastos {
 						ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, j, blockHashes, blockCount);
 
 					// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
-					if (blockCount >= 500) {
+					if (blockCount >= MAX_BLOCKS_COUNT) {
 						UInt256 locators[] = {blockHashes[blockCount - 1], blockHashes[0]};
 
 						ctx->manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, 2, UINT256_ZERO);

@@ -27,8 +27,8 @@ namespace Elastos {
 			ELAMerkleBlock *elacpy = ELAMerkleBlockNew();
 			*elacpy = *elaproto;
 
-			elacpy->auxPow.setBTCTransaction(BRTransactionCopy(elaproto->auxPow.getBTCTransaction()));
-			elacpy->auxPow.setParBlockHeader(BRMerkleBlockCopy(elacpy->auxPow.getParBlockHeader()));
+//			elacpy->auxPow.setBTCTransaction(BRTransactionCopy(elaproto->auxPow.getBTCTransaction()));
+//			elacpy->auxPow.setParBlockHeader(BRMerkleBlockCopy(elacpy->auxPow.getParBlockHeader()));
 
 			BRMerkleBlock *proto = (BRMerkleBlock *)elaproto;
 			BRMerkleBlock *cpy = (BRMerkleBlock *)elacpy;
