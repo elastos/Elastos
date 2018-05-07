@@ -76,7 +76,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		Hash:           txHashStr,
 		Size:           size,
 		VSize:          size,
-		Version:        header.Version,
+		Version:        0x00,
 		LockTime:       tx.LockTime,
 		Inputs:         inputs,
 		Outputs:        outputs,
