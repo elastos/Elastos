@@ -126,8 +126,8 @@ namespace Elastos {
 
 			} else if (_type == Record) {
 				_payload = boost::shared_ptr<PayloadRecord>(new PayloadRecord());
-
 			} else if (_type == Deploy) {
+			    //_payload = boost::shared_ptr<
 
 			} else if (_type == SideMining) {
 				_payload = boost::shared_ptr<PayloadSideMining>(new PayloadSideMining());
@@ -140,7 +140,6 @@ namespace Elastos {
 
 			} else if (_type == TransferCrossChainAsset) {
 				_payload = boost::shared_ptr<PayloadTransferCrossChainAsset>(new PayloadTransferCrossChainAsset());
-
 			}
 		}
 
@@ -245,12 +244,48 @@ namespace Elastos {
 		}
 
 		ByteData Transaction::serialize() {
+			BRTransaction *pbrtx = convertToRaw();
 
 			ByteData result;
-			result.length = BRTransactionSerialize(_transaction, nullptr, 0);
+			result.length = BRTransactionSerialize(pbrtx, nullptr, 0);
 			result.data = new uint8_t[result.length];
 			memset(result.data, 0, result.length);
-			BRTransactionSerialize(_transaction, result.data, result.length);
+			BRTransactionSerialize(pbrtx, result.data, result.length);
+
+			ByteStream ostream;
+			ELABRTransaction *pelatx = (ELABRTransaction*)pbrtx;
+			ostream.put(pelatx->type);
+			ostream.put(pelatx->payloadVersion);
+			ostream.putVarUint(pelatx->payloadData.length);
+			ostream.putBytes(pelatx->payloadData.data, pelatx->payloadData.length);
+
+			size_t count = pelatx->attributeData.size();
+			ostream.putVarUint((uint64_t)count);
+			for (size_t i = 0; i < count; i++) {
+				ByteData bd = pelatx->attributeData[i];
+				ostream.putVarUint(bd.length);
+				if (bd.data) ostream.putBytes(bd.data, bd.length);
+			}
+
+			count = pelatx->programData.size();
+			ostream.putVarUint(count);
+			for (size_t i = 0; i < count; i++) {
+				ByteData bd = pelatx->programData[i];
+				ostream.putVarUint(bd.length);
+				if (bd.data) ostream.putBytes(bd.data, bd.length);
+			}
+
+			uint8_t * buf = ostream.getBuf();
+			uint64_t len = ostream.length();
+			uint8_t *buf_tmp = new uint8_t[result.length + len];
+			memcpy(buf_tmp, result.data, result.length);
+			delete[] result.data;
+			memcpy(buf_tmp + result.length, buf, len);
+			delete[] buf;
+
+			result.data = buf_tmp;
+			result.length = result.length + len;
+
 			return result;
 		}
 
@@ -331,8 +366,8 @@ namespace Elastos {
 			}
 		}
 
-		void Transaction::serializeUnsigned(ByteStream &ostream) const {
-			ostream.put(_type);
+		void Transaction::serializeUnsigned(ByteStream &ostream) const{
+			ostream.put((uint8_t)_type);
 
 			ostream.put(_payloadVersion);
 
@@ -475,6 +510,11 @@ namespace Elastos {
 		void Transaction::convertFrom(const BRTransaction *raw) {
 			assert(raw != nullptr);
 			ELABRTransaction *elabrTransaction = ELABRTransactioCopy((ELABRTransaction *) raw);
+
+			//ELABRTransaction *elabrTransaction = ELABRTransactionNew();
+
+			//memcpy(elabrTransaction, raw, sizeof(*elabrTransaction));
+			//*elabrTransaction = *((ELABRTransaction*)raw);
 
 			_inputs.clear();
 			getInputs();

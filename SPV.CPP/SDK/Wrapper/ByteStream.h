@@ -12,11 +12,11 @@ namespace Elastos {
 		class ByteStream {
 		public:
 
-			ByteStream();
+			ByteStream(bool isBe=true);
 
-			ByteStream(uint64_t size);
+			ByteStream(uint64_t size, bool isBe=true);
 
-			ByteStream(uint8_t *buf, uint64_t size, bool autorelease = true);
+			ByteStream(uint8_t *buf, uint64_t size, bool isBe=true, bool autorelease = true);
 
 			~ByteStream();
 
@@ -95,6 +95,7 @@ namespace Elastos {
 			uint64_t _size;
 			uint8_t *_buf;
 			bool _autorelease;
+			bool _isBe;
 		};
 
 	}

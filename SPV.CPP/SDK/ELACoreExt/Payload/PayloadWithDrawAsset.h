@@ -20,6 +20,10 @@ namespace Elastos {
 
 			~PayloadWithDrawAsset();
 
+			void setBlockHeight(const uint32_t blockHeight);
+			void setGenesisBlockAddress(const std::string genesisBlockAddress);
+			void setSideChainTransacitonHash(const std::string sideChainTransactionHash);
+
 			virtual ByteData getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;

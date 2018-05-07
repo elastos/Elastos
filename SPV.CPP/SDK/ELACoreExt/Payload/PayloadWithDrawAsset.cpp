@@ -23,12 +23,30 @@ namespace Elastos {
 		}
 
 		PayloadWithDrawAsset::~PayloadWithDrawAsset() {
+		}
 
+		void PayloadWithDrawAsset::setBlockHeight(const uint32_t blockHeight) {
+			_blockHeight = blockHeight;
+		}
+
+		void PayloadWithDrawAsset::setGenesisBlockAddress(const std::string genesisBlockAddress) {
+			_genesisBlockAddress = genesisBlockAddress;
+		}
+
+		void PayloadWithDrawAsset::setSideChainTransacitonHash(const std::string sideChainTransactionHash) {
+			_sideChainTransactionHash = sideChainTransactionHash;
 		}
 
 		ByteData PayloadWithDrawAsset::getData() const {
 			//todo implement IPayload getData
-			return ByteData(nullptr, 0);
+			ByteStream stream;
+			Serialize(stream);
+			uint8_t *buf = stream.getBuf();
+			uint64_t len = stream.length();
+			ByteData bd(buf, len);
+
+			return bd;
+			//return ByteData(nullptr, 0);
 		}
 
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream) const {
@@ -46,19 +64,32 @@ namespace Elastos {
 		}
 
 		void PayloadWithDrawAsset::Deserialize(ByteStream &istream) {
-			_blockHeight = istream.getVarUint();
+			//blockHeight = istream.getVarUint();
+			uint8_t heightData[32 / 8];
+			istream.getBytes(heightData, (uint64_t)sizeof(heightData));
+			_blockHeight = UInt32GetLE(heightData);
 
 			uint64_t len = istream.getVarUint();
-			char *utfBuffer = new char[len + 1];
-			istream.getBytes((uint8_t *) utfBuffer, len);
-			utfBuffer[len] = '\0';
-			_genesisBlockAddress = utfBuffer;
+			if (0 < len) {
+                char *utfBuffer = new char[len + 1];
+                if (utfBuffer) {
+                    istream.getBytes((uint8_t *) utfBuffer, len);
+                    utfBuffer[len] = '\0';
+                    _genesisBlockAddress = utfBuffer;
+                    delete[] utfBuffer;
+                }
+            }
 
 			len = istream.getVarUint();
-			istream.getBytes((uint8_t *) utfBuffer, len);
-			utfBuffer[len] = '\0';
-			_sideChainTransactionHash = utfBuffer;
-			delete[] utfBuffer;
+			if (0 < len) {
+                char *utfBuffer = new char[len + 1];
+                if (utfBuffer) {
+                    istream.getBytes((uint8_t *) utfBuffer, len);
+                    utfBuffer[len] = '\0';
+                    _sideChainTransactionHash = utfBuffer;
+                    delete[] utfBuffer;
+                }
+            }
 		}
 	}
 }

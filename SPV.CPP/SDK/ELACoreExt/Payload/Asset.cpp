@@ -73,9 +73,9 @@ namespace Elastos {
 
 			ostream.put(_precision);
 
-			ostream.put(_assetType);
+			ostream.put((uint8_t)_assetType);
 
-			ostream.put(_assetRecordType);
+			ostream.put((uint8_t)_assetRecordType);
 		}
 
 		void Asset::Deserialize(ByteStream &istream) {

@@ -12,7 +12,7 @@ namespace Elastos {
 		}
 
 		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(
-				const std::map<std::string, uint64_t> addressMap) {
+				const std::map<std::string, uint64_t> &addressMap) {
 			_addressMap = addressMap;
 		}
 
@@ -20,9 +20,21 @@ namespace Elastos {
 
 		}
 
+		void PayloadTransferCrossChainAsset::setAddressMap(const std::map<std::string, uint64_t> &addressMap) {
+			_addressMap = addressMap;
+
+		}
+
 		ByteData PayloadTransferCrossChainAsset::getData() const {
 			//todo implement IPayload getData
-			return ByteData(nullptr, 0);
+			ByteStream stream;
+			Serialize(stream);
+			uint8_t* buf = stream.getBuf();
+			uint64_t len = stream.length();
+			ByteData bd(buf, len);
+
+			return bd;
+			//return ByteData(nullptr, 0);
 		}
 
 		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream) const {
@@ -33,7 +45,7 @@ namespace Elastos {
 			uint64_t value = 0;
 			std::map<std::string, uint64_t>::const_iterator it;
 			for (it = _addressMap.begin(); it != _addressMap.end(); it++) {
-				key = it->first;
+				key = 	it->first;
 				value = it->second;
 				ostream.putVarUint(key.length());
 				ostream.putBytes((uint8_t *) key.c_str(), key.length());
@@ -44,21 +56,27 @@ namespace Elastos {
 
 		void PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream) {
 			_addressMap.clear();
-			uint64_t len = istream.getVarUint();
+			uint64_t len = istream.getVarUint(), _len;
 
-			std::string key = "";
-			uint64_t value = 0;
-			for (uint64_t i = 0; i < len; i++) {
-				len = istream.getVarUint();
-				char *utfBuffer = new char[len + 1];
-				istream.getBytes((uint8_t *) utfBuffer, len);
-				utfBuffer[len] = '\0';
-				key = utfBuffer;
-				delete[] utfBuffer;
+			if (0 < len) {
+                std::string key = "";
+                uint64_t value = 0;
+                for (uint64_t i = 0; i < len; i++) {
+                    _len = istream.getVarUint();
+                    if (0 < _len) {
+                        char *utfBuffer = new char[_len + 1];
+                        if (utfBuffer) {
+                            istream.getBytes((uint8_t *) utfBuffer, _len);
+                            utfBuffer[_len] = '\0';
+                            key = utfBuffer;
+                            delete[] utfBuffer;
+                        }
+                    }
 
-				value = istream.getVarUint();
-				_addressMap[key] = value;
-			}
+                    value = istream.getVarUint();
+                    _addressMap[key] = value;
+                }
+            }
 		}
 	}
 }

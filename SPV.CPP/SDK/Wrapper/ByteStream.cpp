@@ -5,17 +5,17 @@ namespace Elastos {
 	namespace SDK {
 
 
-		ByteStream::ByteStream()
-				: _count(0), _size(0), _buf(NULL), _autorelease(true) {
+		ByteStream::ByteStream(bool isBe)
+				: _count(0), _size(0), _buf(NULL), _autorelease(true) ,_isBe(isBe) {
 		}
 
-		ByteStream::ByteStream(uint64_t size)
-				: _count(0), _size(size), _buf(new uint8_t[size]), _autorelease(true) {
+		ByteStream::ByteStream(uint64_t size, bool isBe)
+				: _count(0), _size(size), _buf(new uint8_t[size]), _autorelease(true) ,_isBe(isBe) {
 			memset(_buf, 0, sizeof(uint8_t) * size);
 		}
 
-		ByteStream::ByteStream(uint8_t *buf, uint64_t size, bool autorelease)
-				: _count(0), _size(size), _buf(buf), _autorelease(autorelease) {}
+		ByteStream::ByteStream(uint8_t *buf, uint64_t size, bool isBe, bool autorelease)
+				: _count(0), _size(size), _buf(buf), _autorelease(autorelease) ,_isBe(isBe) {}
 
 		ByteStream::~ByteStream() {
 			if (_autorelease) {
@@ -30,7 +30,7 @@ namespace Elastos {
 				uint64_t oldCapacity = _size;
 				uint64_t newCapacity = oldCapacity << 1;
 				int64_t diff = newCapacity - newsize;
-				if (diff <= 0)
+				if (diff < 0)
 					newCapacity = newsize;
 				if (newCapacity <= 0) {
 					if (newsize <= 0) // overflow
@@ -87,103 +87,200 @@ namespace Elastos {
 
 		void ByteStream::putShort(int16_t v) {
 			ensureCapacity(position() + sizeof(int16_t));
-			_buf[_count++] = (v >> 8) & 0xff;
-			_buf[_count++] = v & 0xff;
+			if (_isBe) {
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = v & 0xff;
+			}
+			else {
+				_buf[_count++] = (v) & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+			}
 		}
 
 		void ByteStream::putUint16(uint16_t v) {
 			ensureCapacity(position() + sizeof(uint16_t));
-			_buf[_count++] = (v >> 8) & 0xff;
-			_buf[_count++] = v & 0xff;
+			if (_isBe) {
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = v & 0xff;
+			}
+			else {
+				_buf[_count++] = v & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+			}
+
 		}
 
 		int16_t ByteStream::getShort() {
 			if (!checkSize(sizeof(int16_t)))
 				return 0;
-			int16_t r1 = (int16_t) _buf[_count++] << 8;
-			int16_t r2 = (int16_t) _buf[_count++];
-			int16_t ret = r1 | r2;
-			return ret;
+			if (_isBe) {
+				int16_t r1 = (int16_t) _buf[_count++] << 8;
+				int16_t r2 = (int16_t) _buf[_count++];
+				int16_t ret = r1 | r2;
+				return ret;
+			}
+			else {
+				int16_t r1 = (int16_t) _buf[_count++];
+				int16_t r2 = (int16_t) _buf[_count++] << 8;
+				int16_t ret = r1 | r2;
+				return ret;
+			}
 		}
 
 		uint16_t ByteStream::getUint16() {
 			if (!checkSize(sizeof(uint16_t)))
 				return 0;
-			uint16_t r1 = (uint16_t) _buf[_count++] << 8;
-			uint16_t r2 = (uint16_t) _buf[_count++];
-			uint16_t ret = r1 | r2;
-			return ret;
+			if (_isBe) {
+				uint16_t r1 = (uint16_t) _buf[_count++] << 8;
+				uint16_t r2 = (uint16_t) _buf[_count++];
+				uint16_t ret = r1 | r2;
+				return ret;
+			}
+			else {
+				uint16_t r1 = (uint16_t) _buf[_count++];
+				uint16_t r2 = (uint16_t) _buf[_count++] << 8;
+				uint16_t ret = r1 | r2;
+				return ret;
+			}
 		}
 
 		void ByteStream::putInt(int32_t v) {
 			ensureCapacity(position() + sizeof(int32_t));
-			_buf[_count++] = (v >> 24) & 0xff;
-			_buf[_count++] = (v >> 16) & 0xff;
-			_buf[_count++] = (v >> 8) & 0xff;
-			_buf[_count++] = v & 0xff;
+			if (_isBe) {
+				_buf[_count++] = (v >> 24) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = v & 0xff;
+			}
+			else {
+				_buf[_count++] = v & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 24) & 0xff;
+			}
 		}
 
 		void ByteStream::putUint32(uint32_t v) {
 			ensureCapacity(position() + sizeof(uint32_t));
-			_buf[_count++] = (v >> 24) & 0xff;
-			_buf[_count++] = (v >> 16) & 0xff;
-			_buf[_count++] = (v >> 8) & 0xff;
-			_buf[_count++] = v & 0xff;
+			if (_isBe) {
+				_buf[_count++] = (v >> 24) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = v & 0xff;
+			}
+			else {
+				_buf[_count++] = v & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 24) & 0xff;
+			}
 		}
 
 		int32_t ByteStream::getInt() {
 			if (!checkSize(sizeof(int32_t)))
 				return 0;
-			int32_t ret = (int32_t) _buf[_count++] << 24;
-			ret |= (int32_t) _buf[_count++] << 16;
-			ret |= (int32_t) _buf[_count++] << 8;
-			ret |= (int32_t) _buf[_count++];
-			return ret;
+			if (_isBe) {
+				int32_t ret = (int32_t) _buf[_count++] << 24;
+				ret |= (int32_t) _buf[_count++] << 16;
+				ret |= (int32_t) _buf[_count++] << 8;
+				ret |= (int32_t) _buf[_count++];
+				return ret;
+			}
+			else {
+				int32_t ret = (int32_t) _buf[_count++];
+				ret |= (int32_t) _buf[_count++] << 8;
+				ret |= (int32_t) _buf[_count++] << 16;
+				ret |= (int32_t) _buf[_count++] << 24;
+				return ret;
+			}
 		}
 
 		uint32_t ByteStream::getUint32() {
 			if (!checkSize(sizeof(uint32_t)))
 				return 0;
-			uint32_t ret = (uint32_t) _buf[_count++] << 24;
-			ret |= (int32_t) _buf[_count++] << 16;
-			ret |= (int32_t) _buf[_count++] << 8;
-			ret |= (int32_t) _buf[_count++];
-			return ret;
+			if (_isBe) {
+				uint32_t ret = (uint32_t) _buf[_count++] << 24;
+				ret |= (int32_t) _buf[_count++] << 16;
+				ret |= (int32_t) _buf[_count++] << 8;
+				ret |= (int32_t) _buf[_count++];
+				return ret;
+			}
+			else {
+				uint32_t ret = (uint32_t) _buf[_count++];
+				ret |= (int32_t) _buf[_count++] << 8;
+				ret |= (int32_t) _buf[_count++] << 16;
+				ret |= (int32_t) _buf[_count++] << 24;
+				return ret;
+			}
 		}
 
 		void ByteStream::getInts(int32_t *buf, int32_t len) {
 			if (!checkSize(sizeof(int32_t) * len))
 				return;
-			for (int32_t i = 0; i < len; i++) {
-				buf[i] = (int32_t) _buf[_count++] << 24;
-				buf[i] |= (int32_t) _buf[_count++] << 16;
-				buf[i] |= (int32_t) _buf[_count++] << 8;
-				buf[i] |= (int32_t) _buf[_count++];
+			if (_isBe) {
+				for (int32_t i = 0; i < len; i++) {
+					buf[i] = (int32_t) _buf[_count++] << 24;
+					buf[i] |= (int32_t) _buf[_count++] << 16;
+					buf[i] |= (int32_t) _buf[_count++] << 8;
+					buf[i] |= (int32_t) _buf[_count++];
+				}
+			}
+			else {
+				for (int32_t i = 0; i < len; i++) {
+					buf[i] = (int32_t) _buf[_count++];
+					buf[i] |= (int32_t) _buf[_count++] << 8;
+					buf[i] |= (int32_t) _buf[_count++] << 16;
+					buf[i] |= (int32_t) _buf[_count++] << 24;
+				}
 			}
 		}
 
 		void ByteStream::putLong(int64_t v) {
 			ensureCapacity(position() + sizeof(int64_t));
-			_buf[_count++] = (v >> 56) & 0xff;
-			_buf[_count++] = (v >> 48) & 0xff;
-			_buf[_count++] = (v >> 40) & 0xff;
-			_buf[_count++] = (v >> 32) & 0xff;
-			_buf[_count++] = (v >> 24) & 0xff;
-			_buf[_count++] = (v >> 16) & 0xff;
-			_buf[_count++] = (v >> 8) & 0xff;
-			_buf[_count++] = v & 0xff;
+			if (_isBe) {
+				_buf[_count++] = (v >> 56) & 0xff;
+				_buf[_count++] = (v >> 48) & 0xff;
+				_buf[_count++] = (v >> 40) & 0xff;
+				_buf[_count++] = (v >> 32) & 0xff;
+				_buf[_count++] = (v >> 24) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = v & 0xff;
+			}
+			else {
+				_buf[_count++] = v & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 24) & 0xff;
+				_buf[_count++] = (v >> 32) & 0xff;
+				_buf[_count++] = (v >> 40) & 0xff;
+				_buf[_count++] = (v >> 48) & 0xff;
+				_buf[_count++] = (v >>56)& 0xff;
+			}
 		}
 
 		void ByteStream::putUint64(uint64_t v) {
 			ensureCapacity(position() + sizeof(uint64_t));
-			_buf[_count++] = (v >> 56) & 0xff;
-			_buf[_count++] = (v >> 48) & 0xff;
-			_buf[_count++] = (v >> 40) & 0xff;
-			_buf[_count++] = (v >> 32) & 0xff;
-			_buf[_count++] = (v >> 24) & 0xff;
-			_buf[_count++] = (v >> 16) & 0xff;
-			_buf[_count++] = (v >> 8) & 0xff;
-			_buf[_count++] = v & 0xff;
+			if (_isBe) {
+				_buf[_count++] = (v >> 56) & 0xff;
+				_buf[_count++] = (v >> 48) & 0xff;
+				_buf[_count++] = (v >> 40) & 0xff;
+				_buf[_count++] = (v >> 32) & 0xff;
+				_buf[_count++] = (v >> 24) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = v & 0xff;
+			}
+			else {
+				_buf[_count++] = v & 0xff;
+				_buf[_count++] = (v >> 8) & 0xff;
+				_buf[_count++] = (v >> 16) & 0xff;
+				_buf[_count++] = (v >> 24) & 0xff;
+				_buf[_count++] = (v >> 32) & 0xff;
+				_buf[_count++] = (v >> 40) & 0xff;
+				_buf[_count++] = (v >> 48) & 0xff;
+				_buf[_count++] = (v >>56)& 0xff;
+			}
 		}
 
 		int64_t ByteStream::getLong() {
@@ -191,14 +288,26 @@ namespace Elastos {
 			if (!checkSize(sizeof(int64_t)))
 				return 0;
 			uint64_t ret = 0;
-			ret = (int64_t) _buf[_count++] << 56;
-			ret |= (int64_t) _buf[_count++] << 48;
-			ret |= (int64_t) _buf[_count++] << 40;
-			ret |= (int64_t) _buf[_count++] << 32;
-			ret |= (int64_t) _buf[_count++] << 24;
-			ret |= (int64_t) _buf[_count++] << 16;
-			ret |= (int64_t) _buf[_count++] << 8;
-			ret |= (int64_t) _buf[_count++];
+			if (_isBe) {
+				ret = (int64_t) _buf[_count++] << 56;
+				ret |= (int64_t) _buf[_count++] << 48;
+				ret |= (int64_t) _buf[_count++] << 40;
+				ret |= (int64_t) _buf[_count++] << 32;
+				ret |= (int64_t) _buf[_count++] << 24;
+				ret |= (int64_t) _buf[_count++] << 16;
+				ret |= (int64_t) _buf[_count++] << 8;
+				ret |= (int64_t) _buf[_count++];
+			}
+			else {
+				ret = (int64_t) _buf[_count++];
+				ret |= (int64_t) _buf[_count++] << 8;
+				ret |= (int64_t) _buf[_count++] << 16;
+				ret |= (int64_t) _buf[_count++] << 24;
+				ret |= (int64_t) _buf[_count++] << 32;
+				ret |= (int64_t) _buf[_count++] << 40;
+				ret |= (int64_t) _buf[_count++] << 48;
+				ret |= (int64_t) _buf[_count++] << 56;
+			}
 			return ret;
 		}
 
@@ -206,14 +315,26 @@ namespace Elastos {
 			if (!checkSize(sizeof(uint64_t)))
 				return 0;
 			uint64_t ret = 0;
-			ret = (int64_t) _buf[_count++] << 56;
-			ret |= (int64_t) _buf[_count++] << 48;
-			ret |= (int64_t) _buf[_count++] << 40;
-			ret |= (int64_t) _buf[_count++] << 32;
-			ret |= (int64_t) _buf[_count++] << 24;
-			ret |= (int64_t) _buf[_count++] << 16;
-			ret |= (int64_t) _buf[_count++] << 8;
-			ret |= (int64_t) _buf[_count++];
+			if (_isBe) {
+				ret = (int64_t) _buf[_count++] << 56;
+				ret |= (int64_t) _buf[_count++] << 48;
+				ret |= (int64_t) _buf[_count++] << 40;
+				ret |= (int64_t) _buf[_count++] << 32;
+				ret |= (int64_t) _buf[_count++] << 24;
+				ret |= (int64_t) _buf[_count++] << 16;
+				ret |= (int64_t) _buf[_count++] << 8;
+				ret |= (int64_t) _buf[_count++];
+			}
+			else {
+				ret = (int64_t) _buf[_count++];
+				ret |= (int64_t) _buf[_count++] << 8;
+				ret |= (int64_t) _buf[_count++] << 16;
+				ret |= (int64_t) _buf[_count++] << 24;
+				ret |= (int64_t) _buf[_count++] << 32;
+				ret |= (int64_t) _buf[_count++] << 40;
+				ret |= (int64_t) _buf[_count++] << 48;
+				ret |= (int64_t) _buf[_count++] << 56;
+			}
 			return ret;
 		}
 
@@ -232,12 +353,13 @@ namespace Elastos {
 
 		uint64_t ByteStream::getVarUint() {
 			size_t len = 0;
-			uint8_t tbuff[64 / 8];
+			//uint8_t tbuff[64 / 8];
+			uint8_t tbuff[sizeof(uint8_t)*9];
 			memcpy(tbuff, &_buf[_count], sizeof(tbuff));
 			uint64_t value = BRVarInt(tbuff, sizeof(tbuff), &len);
 
 			getBytes(tbuff, len);
-			value = *tbuff;
+			//value = *tbuff;
 			return value;
 		}
 
@@ -253,7 +375,8 @@ namespace Elastos {
 		}
 
 		void ByteStream::putVarUint(uint64_t value) {
-			uint8_t tbuff[64 / 8];
+			//uint8_t tbuff[64 / 8];
+			uint8_t tbuff[sizeof(uint8_t)*9];
 			uint64_t len = BRVarIntSet(tbuff, sizeof(tbuff), value);
 			putBytes(tbuff, len);
 		}
@@ -274,9 +397,9 @@ namespace Elastos {
 		}
 
 		uint64_t ByteStream::availableSize() {
-			size_t ret = _size - _count;
+			uint64_t ret = _size - _count;
 
-			return ret;
+			return ((int64_t)ret) < 0?0:ret;
 		}
 
 		char *ByteStream::getUTF8() {
