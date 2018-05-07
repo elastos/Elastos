@@ -234,7 +234,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *Version) error {
 	var message Message
 	if peer.State() == INIT {
 		peer.SetState(HANDSHAKE)
-		message = peer.NewVersionMsg()
+		message = pm.local.NewVersionMsg()
 	} else if peer.State() == HAND {
 		peer.SetState(HANDSHAKED)
 		message = new(VerAck)
