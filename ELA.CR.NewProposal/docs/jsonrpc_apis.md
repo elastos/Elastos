@@ -272,7 +272,7 @@ result sample:
 
 ```javascript
 {
-  "result":["aaaaa", "bbbbb"]
+  "result":["5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941", "5da460632a154fe75df0d5ec98560e4bc1115374a37a75e984a534f8da3ca941"]
   "error": null,
   "id": null,
   "jsonrpc": "2.0",
@@ -514,4 +514,4 @@ result sample:
 #### getinfo
 
 description: return node information.  
-warning: this interface is ready to be deprecated. So no api informations will be supplied.
+warning: this interface is ready to be deprecated. So no api information will be supplied.
