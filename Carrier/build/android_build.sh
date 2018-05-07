@@ -41,7 +41,7 @@ case "$1" in
         shift;;
 
     "debug" | "release")
-        TARGET_DIST="$1"
+        TARGET_BUILD="$1"
         shift;;
 
     *)
