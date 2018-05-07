@@ -15,11 +15,11 @@ namespace Elastos {
 	namespace SDK {
 
 		class ChainParams :
-			public Wrapper<BRChainParams>{
+				public Wrapper<BRChainParams> {
 		public:
 			ChainParams();
 
-			ChainParams(const ChainParams& chainParams);
+			ChainParams(const ChainParams &chainParams);
 
 			ChainParams &operator=(const ChainParams &params);
 
@@ -33,10 +33,20 @@ namespace Elastos {
 
 			static const ChainParams &testNet();
 
+			int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet) const;
+
 		private:
 			ChainParams(const BRChainParams &chainParams);
 
 			static void tryInit();
+
+			int verifyDifficaltyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous,
+									  uint32_t transitionTime) const;
+
+		private:
+			//time unit is second
+			uint64_t _targetTimespan;
+			uint64_t _targetTimePerBlock;
 
 			boost::shared_ptr<BRChainParams> _chainParams;
 

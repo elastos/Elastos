@@ -15,7 +15,7 @@ namespace Elastos {
 		namespace {
 			namespace {
 
-#define MAX_PROOF_OF_WORK 0x1d00ffff    // highest value for difficulty target (higher values are less difficult)
+#define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty target
 
 				inline static int _ceil_log2(int x)
 				{
@@ -110,9 +110,6 @@ namespace Elastos {
 
 			// check if timestamp is too far in future
 			if (_merkleBlock->raw.timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
-
-			//todo check pow later
-			return r;
 
 			// check if proof-of-work target is out of range
 			if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;

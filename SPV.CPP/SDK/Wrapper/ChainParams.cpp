@@ -3,6 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRChainParams.h>
+#include <BRMerkleBlock.h>
+
+#include "arith_uint256.h"
 #include "ChainParams.h"
 #include "BRBCashParams.h"
 
@@ -12,23 +15,7 @@ namespace Elastos {
 		namespace {
 			static int MainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet)
 			{
-				return 1;
-				//todo edit difficulty for ela node
-				const BRMerkleBlock *previous, *b = NULL;
-				uint32_t i;
-
-				assert(block != NULL);
-				assert(blockSet != NULL);
-
-				// check if we hit a difficulty transition, and find previous transition block
-				if ((block->height % BLOCK_DIFFICULTY_INTERVAL) == 0) {
-					for (i = 0, b = block; b && i < BLOCK_DIFFICULTY_INTERVAL; i++) {
-						b = (const BRMerkleBlock *)BRSetGet(blockSet, &b->prevBlock);
-					}
-				}
-
-				previous = (const BRMerkleBlock *)BRSetGet(blockSet, &block->prevBlock);
-				return BRMerkleBlockVerifyDifficulty(block, previous, (b) ? b->timestamp : 0);
+				return ChainParams::mainNet().verifyDifficulty(block, blockSet);
 			}
 
 		}
@@ -79,8 +66,12 @@ namespace Elastos {
 			_mainNet.getRaw()->magicNumber = 7630401;
 			_mainNet.getRaw()->checkpointsCount = 0;
 			_mainNet.getRaw()->verifyDifficulty = MainNetVerifyDifficulty;
+			_mainNet._targetTimespan = 60 * 2 * 720;
+			_mainNet._targetTimePerBlock = 60 * 2;
 
 			//todo init test net here
+			_testNet._targetTimespan = 10 * 10;
+			_testNet._targetTimePerBlock = 10 * 10;
 
 			_paramsInit = false;
 		}
@@ -88,6 +79,61 @@ namespace Elastos {
 		ChainParams &ChainParams::operator=(const ChainParams &params) {
 			_chainParams = boost::shared_ptr<BRChainParams>(new BRChainParams(*params.getRaw()));
 			return *this;
+		}
+
+		int ChainParams::verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet) const {
+			const BRMerkleBlock *previous, *b = nullptr;
+			uint32_t i;
+
+			assert(block != nullptr);
+			assert(blockSet != nullptr);
+
+			uint64_t blocksPerRetarget = _targetTimespan / _targetTimePerBlock;
+
+			// check if we hit a difficulty transition, and find previous transition block
+			if ((block->height % blocksPerRetarget) == 0) {
+				for (i = 0, b = block; b && i < blocksPerRetarget; i++) {
+					b = (const BRMerkleBlock *)BRSetGet(blockSet, &b->prevBlock);
+				}
+			}
+
+			previous = (const BRMerkleBlock *)BRSetGet(blockSet, &block->prevBlock);
+			return verifyDifficaltyInner(block, previous, (b) ? b->timestamp : 0);
+		}
+
+		int ChainParams::verifyDifficaltyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous,
+											   uint32_t transitionTime) const {
+			int r = 1;
+
+			assert(block != nullptr);
+			assert(previous != nullptr);
+
+			uint64_t blocksPerRetarget = _targetTimespan / _targetTimePerBlock;
+
+			if (! previous || !UInt256Eq(&(block->prevBlock), &(previous->blockHash)) || block->height != previous->height + 1) r = 0;
+			if (r && (block->height % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
+
+			if (r && (block->height % blocksPerRetarget) == 0) {
+				int timespan = (int)((int64_t)previous->timestamp - (int64_t)transitionTime);
+
+				arith_uint256 target;
+				target.SetCompact(previous->target);
+
+				// limit difficulty transition to -75% or +400%
+				if (timespan < _targetTimespan/4) timespan = _targetTimespan/4;
+				if (timespan > _targetTimespan*4) timespan = _targetTimespan*4;
+
+				// TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
+				// lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
+				target *= timespan;
+				target /= _targetTimespan;
+
+				uint32_t actualTargetCompact = target.GetCompact();
+				if (block->target != actualTargetCompact) r = 0;
+			}
+			else if (r && previous->height != 0 && block->target != previous->target) r = 0;
+
+			return r;
 		}
 	}
 }

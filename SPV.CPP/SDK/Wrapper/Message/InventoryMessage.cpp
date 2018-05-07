@@ -64,7 +64,7 @@ namespace Elastos {
 				} else if (txCount > 10000) { // sanity check
 					Log::getLogger()->warn("too many transactions, disconnecting");
 					r = 0;
-				} else if (ctx->currentBlockHeight > 0 && blockCount > 2 && blockCount < 500 &&
+				} else if (ctx->currentBlockHeight > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
 						   ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
 					Log::getLogger()->warn("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
 					r = 0;
