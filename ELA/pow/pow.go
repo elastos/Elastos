@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/auxpow"
 	. "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	."github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
@@ -287,10 +287,10 @@ func (pow *PowService) SolveBlock(MsgBlock *Block, ticker *time.Ticker) bool {
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if !MsgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
-				return false
-			}
-			//UpdateBlockTime(msgBlock, m.server.blockManager)
+			// if !MsgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
+			// 	return false
+			// }
+			return false
 
 		default:
 			// Non-blocking select to fall through
@@ -392,7 +392,7 @@ out:
 		default:
 			// Non-blocking select to fall through
 		}
-		log.Trace("<================POW Mining==============>\n")
+		log.Trace("<================Packing Block==============>")
 		//time.Sleep(15 * time.Second)
 
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
@@ -403,6 +403,7 @@ out:
 
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {
+			log.Trace("<================Solved Block==============>")
 			//send the valid block to p2p networkd
 			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
