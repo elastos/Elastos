@@ -135,11 +135,11 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 			"id":      request["id"],
 		})
 	}
+	w.Header().Set("Content-type","application/json")
 	w.Write(data)
 }
 
 func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, message string) {
-	w.WriteHeader(httpStatus)
 	data, _ := json.Marshal(map[string]interface{}{
 		"jsonrpc": "2.0",
 		"error": map[string]interface{}{
@@ -148,6 +148,8 @@ func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, messag
 			"id":      nil,
 		},
 	})
+	w.Header().Set("Content-type","application/json")
+	w.WriteHeader(httpStatus)
 	w.Write(data)
 }
 
