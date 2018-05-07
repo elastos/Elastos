@@ -24,13 +24,22 @@ namespace Elastos {
 
 		}
 
+		void PayloadSideMining::setSideBlockHash(const UInt256 &sideBlockHash) {
+			_sideBlockHash = sideBlockHash;
+		}
+
+		void PayloadSideMining::setSideGenesisHash(const UInt256 &sideGensisHash) {
+			_sideGenesisHash = sideGensisHash;
+		}
+
 		ByteData PayloadSideMining::getData() const {
-			uint8_t buff[sizeof(_sideBlockHash) + sizeof(_sideGenesisHash)];
+			uint8_t *buff = new uint8_t[sizeof(_sideBlockHash) + sizeof(_sideGenesisHash)];
 
 			memcpy(buff, _sideBlockHash.u8, sizeof(_sideBlockHash));
-			memcpy(buff, &buff[sizeof(_sideBlockHash)], sizeof(_sideGenesisHash));
+			//memcpy(buff, &buff[sizeof(_sideBlockHash)], sizeof(_sideGenesisHash));
+			memcpy(&buff[sizeof(_sideBlockHash)], _sideGenesisHash.u8, sizeof(_sideGenesisHash));
 
-			return ByteData(buff, sizeof(buff));
+			return ByteData(buff, sizeof(_sideBlockHash) + sizeof(_sideGenesisHash));
 		}
 
 		void PayloadSideMining::Serialize(ByteStream &ostream) const {

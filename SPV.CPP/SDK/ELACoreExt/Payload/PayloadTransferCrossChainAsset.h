@@ -17,9 +17,11 @@ namespace Elastos {
 		public:
 			PayloadTransferCrossChainAsset();
 
-			PayloadTransferCrossChainAsset(const std::map<std::string, uint64_t> addressMap);
+			PayloadTransferCrossChainAsset(const std::map<std::string, uint64_t> &addressMap);
 
 			~PayloadTransferCrossChainAsset();
+
+			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
 
 			virtual ByteData getData() const;
 

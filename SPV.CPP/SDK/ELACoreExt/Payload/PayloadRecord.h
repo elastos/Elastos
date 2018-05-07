@@ -18,8 +18,10 @@ namespace Elastos {
 
 			~PayloadRecord();
 
-			std::string getRecordType() const;
+			void setRecordType(const std::string &recordType);
+			void setRecordData(const ByteData recordData);
 
+			std::string getRecordType() const;
 			ByteData getRecordData() const;
 
 			virtual ByteData getData() const;

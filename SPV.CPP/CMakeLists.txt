@@ -152,6 +152,11 @@ if(UNIX)
 		######### Unix/Linux ###########
 		message(STATUS "Unix/Linux platform detected")
 		set(PLATFORM Unix)
+		#show gcc/g++ compile info
+		#set(CMAKE_VERBOSE_MAKEFILE ON)
+		if(CMAKE_COMPILER_IS_GNUCXX)
+			add_definitions("-fpermissive")
+		endif(CMAKE_COMPILER_IS_GNUCXX)
 	endif()
 else(UNIX)
 	if(WIN32)

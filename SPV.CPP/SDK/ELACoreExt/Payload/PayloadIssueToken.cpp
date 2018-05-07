@@ -37,11 +37,16 @@ namespace Elastos {
 
 		void PayloadIssueToken::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
-			uint8_t *buff = new uint8_t[len];
-			if (len > 0) {
-				istream.getBytes(buff, len);
+			if (0 < len) {
+				uint8_t *buff = new uint8_t[len];
+				if (buff) {
+					istream.getBytes(buff, len);
+					if (_merkeProof.data != nullptr) {
+						delete[] _merkeProof.data;
+					}
+					_merkeProof = ByteData(buff, len);
+				}
 			}
-			_merkeProof = ByteData(buff, len);
 		}
 	}
 }

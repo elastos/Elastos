@@ -19,6 +19,8 @@ namespace Elastos {
 
 			~PayloadCoinBase();
 
+			void setCoinBaseData(const ByteData &coinBaseData);
+
 			virtual ByteData getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
