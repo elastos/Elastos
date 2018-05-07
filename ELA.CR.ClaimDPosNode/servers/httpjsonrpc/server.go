@@ -164,7 +164,7 @@ func convertParams(method string, params []interface{}) Params {
 	case "getblockhash":
 		return FromArray(params, "height")
 	case "getblock":
-		return FromArray(params, "blockhash", "verbose")
+		return FromArray(params, "blockhash", "verbosity")
 	case "setloglevel":
 		return FromArray(params, "level")
 	case "getrawtransaction":
