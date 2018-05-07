@@ -464,12 +464,12 @@ func GetBlockByHash(param Params) map[string]interface{} {
 		ResponsePack(InvalidParams, "invalid block hash")
 	}
 
-	verbose, ok := param.Uint("verbose")
+	verbosity, ok := param.Uint("verbosity")
 	if !ok {
-		verbose = 1
+		verbosity = 1
 	}
 
-	result, error := getBlock(hash, verbose)
+	result, error := getBlock(hash, verbosity)
 
 	return ResponsePack(error, result)
 }
