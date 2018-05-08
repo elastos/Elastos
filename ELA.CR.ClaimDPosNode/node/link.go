@@ -27,7 +27,7 @@ type link struct {
 	httpInfoPort uint16    // The node information server port of the node
 	lastActive   time.Time // The latest time the node activity
 	connCnt      uint64    // The connection count
-	*MsgReader
+	*MsgHelper
 }
 
 func (link *link) CloseConn() {
@@ -81,7 +81,7 @@ func (n *node) listenConnections(listener net.Listener) {
 
 		n.link.connCnt++
 
-		node := NewNode(conn)
+		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.localPort = localPortFromConn(conn)
 		go node.Read()
@@ -183,7 +183,7 @@ func (node *node) Connect(nodeAddr string) error {
 		}
 	}
 	node.link.connCnt++
-	n := NewNode(conn)
+	n := NewNode(Parameters.Magic, conn)
 	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
 
 	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
@@ -243,7 +243,7 @@ func (node *node) Send(msg Message) {
 		return
 	}
 
-	buf, err := BuildMessage(msg)
+	buf, err := node.MsgHelper.Build(msg)
 	if err != nil {
 		log.Error("Serialize message failed, ", err)
 		return
