@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRTransaction.h>
+#include <stdlib.h>
 #include "BRTransaction.h"
 #include "BRMerkleBlock.h"
 #include "BRAddress.h"

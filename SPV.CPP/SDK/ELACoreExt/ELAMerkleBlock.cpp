@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstring>
+#include <stdlib.h>
 #include <assert.h>
 
 #include "ELAMerkleBlock.h"
@@ -15,7 +16,7 @@ namespace Elastos {
 
 			BRMerkleBlock *block = (BRMerkleBlock *)elablock;
 
-			memset(elablock, 0, sizeof(*block));
+			memset((void*)elablock, 0, sizeof(*block));
 			block->height = BLOCK_UNKNOWN_HEIGHT;
 
 			return elablock;

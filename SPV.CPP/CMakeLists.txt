@@ -49,7 +49,9 @@ if(SPV_FOR_ANDROID)
 		message(FATAL_ERROR "Environment variable ANDROID_NDK not define")
 	endif()
 	set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK})
+	set(CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION clang)
 
+	# can be value below: arm64-v8a armeabi-v7a armeabi-v6 armeabi mips mips64 x86 x86_64
 	set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)")
 endif()
 
@@ -118,7 +120,7 @@ else()
 	endforeach(lib_name)
 
 	string(REPLACE ";" " " Boost_LIBRARIES_NO_Semicolon "${Boost_LIBRARIES}")
-	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING " falg" FORCE)
+	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
 	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
 endif()
 
