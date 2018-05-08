@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"io"
 
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type MerkleBlock struct {
-	Header
+	core.Header
 	Transactions uint32
-	Hashes       []*Uint256
+	Hashes       []*common.Uint256
 	Flags        []byte
 }
 
@@ -27,7 +27,7 @@ func (msg *MerkleBlock) Serialize(writer io.Writer) error {
 		return err
 	}
 
-	return WriteElements(writer,
+	return common.WriteElements(writer,
 		msg.Transactions,
 		uint32(len(msg.Hashes)),
 		msg.Hashes, msg.Flags)
@@ -39,26 +39,26 @@ func (msg *MerkleBlock) Deserialize(reader io.Reader) error {
 		return err
 	}
 
-	msg.Transactions, err = ReadUint32(reader)
+	msg.Transactions, err = common.ReadUint32(reader)
 	if err != nil {
 		return err
 	}
 
-	hashes, err := ReadUint32(reader)
+	hashes, err := common.ReadUint32(reader)
 	if err != nil {
 		return err
 	}
 
-	msg.Hashes = make([]*Uint256, hashes)
-	return ReadElements(reader, &msg.Hashes, &msg.Flags)
+	msg.Hashes = make([]*common.Uint256, hashes)
+	return common.ReadElements(reader, &msg.Hashes, &msg.Flags)
 }
 
 // NewMerkleBlock returns a new *MerkleBlock
-func NewMerkleBlock(block *Block, filter *Filter) *MerkleBlock {
+func NewMerkleBlock(block *core.Block, filter *Filter) *MerkleBlock {
 	NumTx := uint32(len(block.Transactions))
 	mBlock := MBlock{
 		NumTx:       NumTx,
-		AllHashes:   make([]*Uint256, 0, NumTx),
+		AllHashes:   make([]*common.Uint256, 0, NumTx),
 		MatchedBits: make([]byte, 0, NumTx),
 	}
 
@@ -86,7 +86,7 @@ func NewMerkleBlock(block *Block, filter *Filter) *MerkleBlock {
 	merkleBlock := &MerkleBlock{
 		Header:       block.Header,
 		Transactions: mBlock.NumTx,
-		Hashes:       make([]*Uint256, 0, len(mBlock.FinalHashes)),
+		Hashes:       make([]*common.Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
 	}
 	for _, hash := range mBlock.FinalHashes {
@@ -100,8 +100,8 @@ func NewMerkleBlock(block *Block, filter *Filter) *MerkleBlock {
 }
 
 type merkleNode struct {
-	p uint32   // position in the binary tree
-	h *Uint256 // hash
+	p uint32          // position in the binary tree
+	h *common.Uint256 // hash
 }
 
 func (node merkleNode) String() string {
@@ -140,15 +140,15 @@ func inDeadZone(pos, size uint32) bool {
 // If there's any problem return an error.  Checks self-consistency only.
 // doing it with a stack instead of recursion.  Because...
 // OK I don't know why I'm just not in to recursion OK?
-func CheckMerkleBlock(m MerkleBlock) ([]*Uint256, error) {
+func CheckMerkleBlock(m MerkleBlock) ([]*common.Uint256, error) {
 	if m.Transactions == 0 {
 		return nil, fmt.Errorf("No transactions in merkleblock")
 	}
 	if len(m.Flags) == 0 {
 		return nil, fmt.Errorf("No flag bits")
 	}
-	var s []merkleNode // the stack
-	var r []*Uint256   // slice to return; txids we care about
+	var s []merkleNode      // the stack
+	var r []*common.Uint256 // slice to return; txids we care about
 
 	// set initial position to root of merkle tree
 	msb := nextPowerOfTwo(m.Transactions) // most significant bit possible
@@ -246,7 +246,7 @@ func CheckMerkleBlock(m MerkleBlock) ([]*Uint256, error) {
 	return nil, fmt.Errorf("ran out of things to do?")
 }
 
-func MakeMerkleParent(left *Uint256, right *Uint256) (*Uint256, error) {
+func MakeMerkleParent(left *common.Uint256, right *common.Uint256) (*common.Uint256, error) {
 	// dupes can screw things up; CVE-2012-2459. check for them
 	if left != nil && right != nil && left.IsEqual(*right) {
 		return nil, errors.New("DUP HASH CRASH")
@@ -265,6 +265,6 @@ func MakeMerkleParent(left *Uint256, right *Uint256) (*Uint256, error) {
 	copy(sha[:32], left[:])
 	copy(sha[32:], right[:])
 
-	parent := Uint256(Sha256D(sha[:]))
+	parent := common.Uint256(common.Sha256D(sha[:]))
 	return &parent, nil
 }
