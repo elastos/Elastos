@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include <float.h>
 #include <BRPeerMessages.h>
+#include <BRPeerManager.h>
 
 #include "BRPeer.h"
 #include "BRPeerMessages.h"
@@ -133,21 +134,22 @@ namespace Elastos {
 			txCount = array_count(ctx->knownTxHashes) - knownCount;
 
 			if (txCount > 0) {
-				size_t i, off = 0, msgLen = sizeof(uint32_t) + sizeof(uint32_t) + sizeof(*txHashes) * txCount;
-				uint8_t msg[msgLen];
-
-				msg[off] = inv_tx;
-				off += sizeof(uint8_t);
-
-				UInt32SetLE(&msg[off], uint32_t(txCount));
-				off += sizeof(uint32_t);
-
-				for (i = 0; i < txCount; i++) {
-					UInt256Set(&msg[off], ctx->knownTxHashes[knownCount + i]);
-					off += sizeof(UInt256);
+				for (size_t i = 0; i < txCount; i++) {
+					sendTransaction(peer, ctx->knownTxHashes[knownCount + i]);
 				}
+			}
+		}
 
-				BRPeerSendMessage(peer, msg, off, MSG_INV);
+		void InventoryMessage::sendTransaction(BRPeer *peer, const UInt256 &txHash) {
+			BRPeerContext *ctx = (BRPeerContext *) peer;
+			BRPeerManager *manager = ctx->manager;
+
+			BRPublishedTx pubTx = {nullptr, nullptr, nullptr};
+			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+				if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &txHash)) {
+					manager->peerMessages->BRPeerSendTxMessage(peer, manager->publishedTx[i - 1].tx);
+					break;
+				}
 			}
 		}
 

@@ -21,6 +21,8 @@ namespace Elastos {
 
 			void Send(BRPeer *peer, const UInt256 txHashes[], size_t txCount);
 
+		private:
+			void sendTransaction(BRPeer *peer, const UInt256 &txHash);
 		};
 
 	}

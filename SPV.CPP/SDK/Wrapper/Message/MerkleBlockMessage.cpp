@@ -29,7 +29,8 @@ namespace Elastos {
 			MerkleBlock wrappedBlock;
 			wrappedBlock.Deserialize(stream);
 
-			BRMerkleBlock *block = BRMerkleBlockCopy(wrappedBlock.getRaw());
+			ELAMerkleBlock *elablock = ELAMerkleBlockCopy((ELAMerkleBlock *)wrappedBlock.getRaw());
+			BRMerkleBlock *block = (BRMerkleBlock *)elablock;
 			block->blockHash = wrappedBlock.getBlockHash();
 			int r = 1;
 
