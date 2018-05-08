@@ -26,7 +26,7 @@ namespace Elastos {
 			ByteData(const ByteData &src) {
 				length = src.length;
 				data = new uint8_t[length];
-				mempcpy(data, src.data, src.length);
+				memcpy(data, src.data, src.length);
 			}
 
 			~ByteData() {
@@ -42,7 +42,7 @@ namespace Elastos {
 				}
 				length = src.length;
 				data = new uint8_t[length];
-				mempcpy(data, src.data, src.length);
+				memcpy(data, src.data, src.length);
 			}
 
 			uint8_t *data;

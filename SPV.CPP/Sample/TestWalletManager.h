@@ -13,6 +13,8 @@ class TestWalletManager : public WalletManager {
 public:
 	TestWalletManager();
 
+	void testSendTransaction();
+
 protected:
 
 	WrapperList<Peer, BRPeer> loadPeers() override;

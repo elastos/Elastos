@@ -58,8 +58,11 @@ namespace Elastos {
 		}
 
 		UInt256 CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase) {
-			_wallet->signTransaction(transaction, getForkId(), phase);
-			_peerManager->publishTransaction(transaction);
+			bool res = _wallet->signTransaction(transaction, getForkId(), phase);
+			if(res == true) {
+				_peerManager->publishTransaction(transaction);
+			}
+
 			return transaction->getHash();
 		}
 

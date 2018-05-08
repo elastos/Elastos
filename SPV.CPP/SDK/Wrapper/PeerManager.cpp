@@ -8,6 +8,8 @@
 #include "PeerManager.h"
 #include "Utils.h"
 #include "Message/PeerMessageManager.h"
+#include "Log.h"
+#include "BRArray.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -215,6 +217,12 @@ namespace Elastos {
 		void PeerManager::publishTransaction(const TransactionPtr &transaction) {
 			BRPeerManagerPublishTx(_manager,
 								   transaction->getRaw(), &_listener, txPublished);
+
+			int count =array_count(_manager->publishedTxHashes);
+			Log::getLogger()->info("publish transacton:{}", count);
+			for(int i = 0; i < count; i++) {
+				Log::getLogger()->info("hash:{}", Utils::UInt256ToString(_manager->publishedTxHashes[i]));
+			}
 		}
 
 		uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {

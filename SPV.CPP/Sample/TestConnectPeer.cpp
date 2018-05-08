@@ -36,6 +36,9 @@ void TestConnectPeer::runPeerConnectTest() {
 		std::cout << "wallet addr: " << addresses[i] << std::endl;
 	}
 
+
+	wallet->testSendTransaction();
+
 	while (BRPeerManagerPeerCount(wallet->getPeerManager()->getRaw()) > 0) sleep(1);
 	//process end
 }
