@@ -1,15 +1,15 @@
 package bloom
 
 import (
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 // MBlock is used to house intermediate information needed to generate a
 // MerkleBlock according to a filter.
 type MBlock struct {
 	NumTx       uint32
-	AllHashes   []*Uint256
-	FinalHashes []*Uint256
+	AllHashes   []*common.Uint256
+	FinalHashes []*common.Uint256
 	MatchedBits []byte
 	Bits        []byte
 }
@@ -22,12 +22,12 @@ func (m *MBlock) CalcTreeWidth(height uint32) uint32 {
 
 // calcHash returns the hash for a sub-tree given a depth-first height and
 // node position.
-func (m *MBlock) CalcHash(height, pos uint32) *Uint256 {
+func (m *MBlock) CalcHash(height, pos uint32) *common.Uint256 {
 	if height == 0 {
 		return m.AllHashes[pos]
 	}
 
-	var right *Uint256
+	var right *common.Uint256
 	left := m.CalcHash(height-1, pos*2)
 	if pos*2+1 < m.CalcTreeWidth(height-1) {
 		right = m.CalcHash(height-1, pos*2+1)
@@ -40,13 +40,13 @@ func (m *MBlock) CalcHash(height, pos uint32) *Uint256 {
 // HashMerkleBranches takes two hashes, treated as the left and right tree
 // nodes, and returns the hash of their concatenation.  This is a helper
 // function used to aid in the generation of a merkle tree.
-func HashMerkleBranches(left *Uint256, right *Uint256) *Uint256 {
+func HashMerkleBranches(left *common.Uint256, right *common.Uint256) *common.Uint256 {
 	// Concatenate the left and right nodes.
-	var hash [UINT256SIZE * 2]byte
-	copy(hash[:UINT256SIZE], left[:])
-	copy(hash[UINT256SIZE:], right[:])
+	var hash [common.UINT256SIZE * 2]byte
+	copy(hash[:common.UINT256SIZE], left[:])
+	copy(hash[common.UINT256SIZE:], right[:])
 
-	newHash := Uint256(Sha256D(hash[:]))
+	newHash := common.Uint256(common.Sha256D(hash[:]))
 	return &newHash
 }
 

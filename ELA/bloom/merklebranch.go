@@ -4,15 +4,15 @@ import (
 	"errors"
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type MerkleBranch struct {
-	Branches []Uint256
+	Branches []common.Uint256
 	Index    int
 }
 
-func (msg MerkleBlock) GetTxMerkleBranch(txId *Uint256) (*MerkleBranch, error) {
+func (msg MerkleBlock) GetTxMerkleBranch(txId *common.Uint256) (*MerkleBranch, error) {
 	mNodes := &merkleNodes{
 		root:     msg.Header.MerkleRoot,
 		numTxs:   msg.Transactions,
@@ -26,16 +26,16 @@ func (msg MerkleBlock) GetTxMerkleBranch(txId *Uint256) (*MerkleBranch, error) {
 }
 
 type merkleNodes struct {
-	root     Uint256
+	root     common.Uint256
 	numTxs   uint32
-	hashes   []*Uint256
+	hashes   []*common.Uint256
 	bits     []byte
 	txIndex  uint32
 	route    []uint32
 	allNodes map[uint32]merkleNode
 }
 
-func (m *merkleNodes) GetMerkleBranch(txId *Uint256) (mb *MerkleBranch, err error) {
+func (m *merkleNodes) GetMerkleBranch(txId *common.Uint256) (mb *MerkleBranch, err error) {
 	m.allNodes, err = m.getNodes()
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (m *merkleNodes) GetMerkleBranch(txId *Uint256) (mb *MerkleBranch, err erro
 	m.calcBranchRoute()
 
 	mb = new(MerkleBranch)
-	mb.Branches = make([]Uint256, 0, len(m.route))
+	mb.Branches = make([]common.Uint256, 0, len(m.route))
 	for i, index := range m.route {
 		mb.Branches = append(mb.Branches, *m.allNodes[index].h)
 		if index%2 == 0 {
@@ -56,8 +56,8 @@ func (m *merkleNodes) GetMerkleBranch(txId *Uint256) (mb *MerkleBranch, err erro
 	return mb, nil
 }
 
-func (m *merkleNodes) SetHashes(hashes []*Uint256) {
-	m.hashes = make([]*Uint256, 0, len(hashes))
+func (m *merkleNodes) SetHashes(hashes []*common.Uint256) {
+	m.hashes = make([]*common.Uint256, 0, len(hashes))
 	for _, hash := range hashes {
 		m.hashes = append(m.hashes, hash)
 	}
@@ -169,7 +169,7 @@ func (m merkleNodes) getNodes() (map[uint32]merkleNode, error) {
 	return nil, fmt.Errorf("ran out of things to do?")
 }
 
-func (m *merkleNodes) calcTxIndex(txId *Uint256) error {
+func (m *merkleNodes) calcTxIndex(txId *common.Uint256) error {
 	width := m.calcTreeWidth(0)
 	for _, node := range m.allNodes {
 		if node.p > width {
