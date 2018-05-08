@@ -7,26 +7,49 @@
 
 #include <cinttypes>
 #include <cstddef>
+#include <string.h>
 
 namespace Elastos {
-    namespace SDK {
+	namespace SDK {
 
-        struct ByteData {
-            ByteData() :
-                    data(nullptr),
-                    length(0) {
-            }
+		struct ByteData {
+			ByteData() :
+					data(nullptr),
+					length(0) {
+			}
 
-            ByteData(uint8_t *script, size_t scriptLength) :
-                    data(script),
-                    length(scriptLength) {
-            }
+			ByteData(uint8_t *script, size_t scriptLength) :
+					data(script),
+					length(scriptLength) {
+			}
 
-            uint8_t *data;
-            size_t length;
-        };
+			ByteData(const ByteData &src) {
+				length = src.length;
+				data = new uint8_t[length];
+				mempcpy(data, src.data, src.length);
+			}
 
-    }
+			~ByteData() {
+				if (data != nullptr) {
+					delete[](data);
+					data = nullptr;
+				}
+			}
+
+			ByteData &operator=(const ByteData &src) {
+				if (data != nullptr) {
+					delete[](data);
+				}
+				length = src.length;
+				data = new uint8_t[length];
+				mempcpy(data, src.data, src.length);
+			}
+
+			uint8_t *data;
+			size_t length;
+		};
+
+	}
 }
 
 #endif //__SPVCLIENT_BYTEDATA_H__

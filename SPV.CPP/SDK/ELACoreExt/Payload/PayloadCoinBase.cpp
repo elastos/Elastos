@@ -18,9 +18,6 @@ namespace Elastos {
 		}
 
 		PayloadCoinBase::~PayloadCoinBase() {
-			if (_coinBaseData.data != nullptr) {
-				delete[](_coinBaseData.data);
-			}
 		}
 
 		ByteData PayloadCoinBase::getData() const {

@@ -65,12 +65,6 @@ namespace Elastos {
 			array_free(tx->raw.outputs);
 			array_free(tx->raw.inputs);
 
-			for (size_t i = 0; i < tx->programData.size(); ++i) {
-				delete[] tx->programData[i].data;
-			}
-			for (size_t i = 0; i < tx->attributeData.size(); ++i) {
-				delete[] tx->attributeData[i].data;
-			}
 			free(tx);
 		}
 	}

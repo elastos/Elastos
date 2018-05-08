@@ -21,12 +21,6 @@ namespace Elastos {
 		}
 
 		Program::~Program() {
-			if (_code.data != nullptr) {
-				delete[](_code.data);
-			}
-			if (_parameter.data != nullptr) {
-				delete[](_parameter.data);
-			}
 		}
 
 		void Program::Serialize(ByteStream &ostream) const {

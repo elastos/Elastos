@@ -20,9 +20,6 @@ namespace Elastos {
 		}
 
 		PayloadIssueToken::~PayloadIssueToken() {
-			if (_merkeProof.data != nullptr) {
-				delete[] _merkeProof.data;
-			}
 		}
 
 		ByteData PayloadIssueToken::getData() const {
@@ -43,9 +40,6 @@ namespace Elastos {
 			uint8_t *buff = new uint8_t[len];
 			if (len > 0) {
 				istream.getBytes(buff, len);
-			}
-			if (_merkeProof.data != nullptr) {
-				delete[] _merkeProof.data;
 			}
 			_merkeProof = ByteData(buff, len);
 		}

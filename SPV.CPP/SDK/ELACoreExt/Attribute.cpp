@@ -19,9 +19,6 @@ namespace Elastos {
 		}
 
 		Attribute::~Attribute() {
-			if (_data.data != nullptr) {
-				delete[](_data.data);
-			}
 		}
 
 		void Attribute::Serialize(ByteStream &ostream) const {

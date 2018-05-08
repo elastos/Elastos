@@ -13,8 +13,7 @@ namespace Elastos {
 	namespace SDK {
 
 		namespace {
-			static int MainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet)
-			{
+			static int MainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet) {
 				return ChainParams::mainNet().verifyDifficulty(block, blockSet);
 			}
 
@@ -93,11 +92,11 @@ namespace Elastos {
 			// check if we hit a difficulty transition, and find previous transition block
 			if ((block->height % blocksPerRetarget) == 0) {
 				for (i = 0, b = block; b && i < blocksPerRetarget; i++) {
-					b = (const BRMerkleBlock *)BRSetGet(blockSet, &b->prevBlock);
+					b = (const BRMerkleBlock *) BRSetGet(blockSet, &b->prevBlock);
 				}
 			}
 
-			previous = (const BRMerkleBlock *)BRSetGet(blockSet, &block->prevBlock);
+			previous = (const BRMerkleBlock *) BRSetGet(blockSet, &block->prevBlock);
 			return verifyDifficaltyInner(block, previous, (b) ? b->timestamp : 0);
 		}
 
@@ -110,18 +109,20 @@ namespace Elastos {
 
 			uint64_t blocksPerRetarget = _targetTimespan / _targetTimePerBlock;
 
-			if (! previous || !UInt256Eq(&(block->prevBlock), &(previous->blockHash)) || block->height != previous->height + 1) r = 0;
+			if (!previous || !UInt256Eq(&(block->prevBlock), &(previous->blockHash)) ||
+				block->height != previous->height + 1)
+				r = 0;
 			if (r && (block->height % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
 
 			if (r && (block->height % blocksPerRetarget) == 0) {
-				int timespan = (int)((int64_t)previous->timestamp - (int64_t)transitionTime);
+				uint32_t timespan = previous->timestamp - transitionTime;
 
 				arith_uint256 target;
 				target.SetCompact(previous->target);
 
 				// limit difficulty transition to -75% or +400%
-				if (timespan < _targetTimespan/4) timespan = _targetTimespan/4;
-				if (timespan > _targetTimespan*4) timespan = _targetTimespan*4;
+				if (timespan < _targetTimespan / 4) timespan = uint32_t(_targetTimespan) / 4;
+				if (timespan > _targetTimespan * 4) timespan = uint32_t(_targetTimespan) * 4;
 
 				// TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
 				// lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
@@ -130,8 +131,7 @@ namespace Elastos {
 
 				uint32_t actualTargetCompact = target.GetCompact();
 				if (block->target != actualTargetCompact) r = 0;
-			}
-			else if (r && previous->height != 0 && block->target != previous->target) r = 0;
+			} else if (r && previous->height != 0 && block->target != previous->target) r = 0;
 
 			return r;
 		}
