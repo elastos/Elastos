@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 func (server *Server) NotifyNewAddress(req Req) Resp {
@@ -29,7 +29,7 @@ func (server *Server) SendTransaction(req Req) Resp {
 	if err != nil {
 		return FunctionError(err.Error())
 	}
-	var tx Transaction
+	var tx core.Transaction
 	err = tx.Deserialize(bytes.NewReader(txBytes))
 	if err != nil {
 		return FunctionError("Deserialize transaction failed")

@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"math/big"
 
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type StoreHeader struct {
-	Header
+	core.Header
 	TotalWork *big.Int
 }
 

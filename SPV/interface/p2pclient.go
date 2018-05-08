@@ -1,6 +1,8 @@
 package _interface
 
-import "github.com/elastos/Elastos.ELA.SPV/net"
+import (
+	"github.com/elastos/Elastos.ELA.SPV/net"
+)
 
 /*
 P2P client is the interface to interactive with the peer to peer network implementation,
@@ -11,7 +13,7 @@ type P2PClient interface {
 	InitLocalPeer(func(*net.Peer))
 
 	// Set the message handler
-	SetMessageHandler(net.MessageHandler)
+	SetMessageHandler(handler net.MessageHandler)
 
 	// Start the P2P client
 	Start()

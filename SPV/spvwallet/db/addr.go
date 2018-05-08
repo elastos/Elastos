@@ -1,6 +1,6 @@
 package db
 
-import . "github.com/elastos/Elastos.ELA.Utility/common"
+import "github.com/elastos/Elastos.ELA.Utility/common"
 
 const (
 	TypeMaster = 0
@@ -10,16 +10,16 @@ const (
 )
 
 type Addr struct {
-	hash     *Uint168
+	hash     *common.Uint168
 	script   []byte
 	addrType int
 }
 
-func NewAddr(hash *Uint168, script []byte, addrType int) *Addr {
+func NewAddr(hash *common.Uint168, script []byte, addrType int) *Addr {
 	return &Addr{hash: hash, script: script, addrType: addrType}
 }
 
-func (addr *Addr) Hash() *Uint168 {
+func (addr *Addr) Hash() *common.Uint168 {
 	return addr.hash
 }
 

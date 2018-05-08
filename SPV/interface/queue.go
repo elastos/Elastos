@@ -3,9 +3,9 @@ package _interface
 import (
 	"sync"
 	"database/sql"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"fmt"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type Queue interface {
@@ -16,7 +16,7 @@ type Queue interface {
 	GetAll() ([]*QueueItem, error)
 
 	// Delete confirmed item in queue
-	Delete(txHash *Uint256) error
+	Delete(txHash *common.Uint256) error
 
 	// Rollback queue items
 	Rollback(height uint32) error
@@ -86,11 +86,11 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 			return nil, err
 		}
 
-		txHash, err := Uint256FromBytes(txHashBytes)
+		txHash, err := common.Uint256FromBytes(txHashBytes)
 		if err != nil {
 			return nil, err
 		}
-		blockHash, err := Uint256FromBytes(blockHashBytes)
+		blockHash, err := common.Uint256FromBytes(blockHashBytes)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +102,7 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 }
 
 // Delete confirmed item in queue
-func (db *QueueDB) Delete(txHash *Uint256) error {
+func (db *QueueDB) Delete(txHash *common.Uint256) error {
 	db.Lock()
 	defer db.Unlock()
 

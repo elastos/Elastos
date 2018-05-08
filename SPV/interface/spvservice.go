@@ -4,8 +4,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/store"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 /*
@@ -24,14 +24,14 @@ type SPVService interface {
 	// After receive the transaction callback, call this method
 	// to confirm that the transaction with the given ID was handled
 	// so the transaction will be removed from the notify queue
-	SubmitTransactionReceipt(txId Uint256) error
+	SubmitTransactionReceipt(txId common.Uint256) error
 
 	// To verify if a transaction is valid
 	// This method is useful when receive a transaction from other peer
-	VerifyTransaction(bloom.MerkleProof, Transaction) error
+	VerifyTransaction(bloom.MerkleProof, core.Transaction) error
 
 	// Send a transaction to the P2P network
-	SendTransaction(Transaction) error
+	SendTransaction(core.Transaction) error
 
 	// Get headers database
 	HeaderStore() store.HeaderStore
@@ -46,7 +46,7 @@ to receive transaction notifications.
 */
 type TransactionListener interface {
 	// Type() indicates which transaction type this listener are interested
-	Type() TransactionType
+	Type() core.TransactionType
 
 	// Confirmed() indicates if this transaction should be callback after reach the confirmed height,
 	// by default 6 confirmations are needed according to the protocol
@@ -54,7 +54,7 @@ type TransactionListener interface {
 
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it
-	Notify(bloom.MerkleProof, Transaction)
+	Notify(bloom.MerkleProof, core.Transaction)
 
 	// Rollback callbacks that, the transactions
 	// on the given height has been rollback

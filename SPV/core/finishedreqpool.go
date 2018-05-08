@@ -6,15 +6,15 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type FinishedReqPool struct {
 	sync.Mutex
-	genesis  *Uint256
-	blocks   map[Uint256]*bloom.MerkleBlock
-	requests map[Uint256]*BlockTxsRequest
-	lastPop  *Uint256
+	genesis  *common.Uint256
+	blocks   map[common.Uint256]*bloom.MerkleBlock
+	requests map[common.Uint256]*BlockTxsRequest
+	lastPop  *common.Uint256
 }
 
 func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
@@ -34,7 +34,7 @@ func (pool *FinishedReqPool) Add(request *BlockTxsRequest) {
 	log.Debug("Finished pool add block: ", previous.String(), ", height: ", request.Block.Header.Height)
 }
 
-func (pool *FinishedReqPool) Contain(hash Uint256) (*bloom.MerkleBlock, bool) {
+func (pool *FinishedReqPool) Contain(hash common.Uint256) (*bloom.MerkleBlock, bool) {
 	pool.Lock()
 	defer pool.Unlock()
 
@@ -42,7 +42,7 @@ func (pool *FinishedReqPool) Contain(hash Uint256) (*bloom.MerkleBlock, bool) {
 	return block, ok
 }
 
-func (pool *FinishedReqPool) Next(current Uint256) (*BlockTxsRequest, bool) {
+func (pool *FinishedReqPool) Next(current common.Uint256) (*BlockTxsRequest, bool) {
 	pool.Lock()
 	defer pool.Unlock()
 
@@ -62,7 +62,7 @@ func (pool *FinishedReqPool) Next(current Uint256) (*BlockTxsRequest, bool) {
 	return nil, false
 }
 
-func (pool *FinishedReqPool) LastPop() *Uint256 {
+func (pool *FinishedReqPool) LastPop() *common.Uint256 {
 	return pool.lastPop
 }
 

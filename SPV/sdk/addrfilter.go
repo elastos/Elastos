@@ -3,7 +3,7 @@ package sdk
 import (
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 /*
@@ -12,19 +12,19 @@ or get cached addresses list to build a bloom filter instead of load addresses f
 */
 type AddrFilter struct {
 	sync.Mutex
-	addrs map[Uint168]*Uint168
+	addrs map[common.Uint168]*common.Uint168
 }
 
 // Create a AddrFilter instance, you can pass all the addresses through this method
 // or pass nil and use AddAddr() method to add interested addresses later.
-func NewAddrFilter(addrs []*Uint168) *AddrFilter {
+func NewAddrFilter(addrs []*common.Uint168) *AddrFilter {
 	filter := new(AddrFilter)
 	filter.LoadAddrs(addrs)
 	return filter
 }
 
 // Load or reload all the interested addresses into the AddrFilter
-func (filter *AddrFilter) LoadAddrs(addrs []*Uint168) {
+func (filter *AddrFilter) LoadAddrs(addrs []*common.Uint168) {
 	filter.Lock()
 	defer filter.Unlock()
 
@@ -43,7 +43,7 @@ func (filter *AddrFilter) IsLoaded() bool {
 }
 
 // Add a interested address into this Filter
-func (filter *AddrFilter) AddAddr(addr *Uint168) {
+func (filter *AddrFilter) AddAddr(addr *common.Uint168) {
 	filter.Lock()
 	defer filter.Unlock()
 
@@ -51,7 +51,7 @@ func (filter *AddrFilter) AddAddr(addr *Uint168) {
 }
 
 // Remove an address from this Filter
-func (filter *AddrFilter) DeleteAddr(hash Uint168) {
+func (filter *AddrFilter) DeleteAddr(hash common.Uint168) {
 	filter.Lock()
 	defer filter.Unlock()
 
@@ -59,11 +59,11 @@ func (filter *AddrFilter) DeleteAddr(hash Uint168) {
 }
 
 // Get addresses that were added into this Filter
-func (filter *AddrFilter) GetAddrs() []*Uint168 {
+func (filter *AddrFilter) GetAddrs() []*common.Uint168 {
 	filter.Lock()
 	defer filter.Unlock()
 
-	var addrs = make([]*Uint168, 0, len(filter.addrs))
+	var addrs = make([]*common.Uint168, 0, len(filter.addrs))
 	for _, addr := range filter.addrs {
 		addrs = append(addrs, addr)
 	}
@@ -72,7 +72,7 @@ func (filter *AddrFilter) GetAddrs() []*Uint168 {
 }
 
 // Check if an address was added into this filter as a interested address
-func (filter *AddrFilter) ContainAddr(hash Uint168) bool {
+func (filter *AddrFilter) ContainAddr(hash common.Uint168) bool {
 	filter.Lock()
 	defer filter.Unlock()
 
@@ -88,5 +88,5 @@ func (filter *AddrFilter) Clear() {
 }
 
 func (filter *AddrFilter) clear() {
-	filter.addrs = make(map[Uint168]*Uint168)
+	filter.addrs = make(map[common.Uint168]*common.Uint168)
 }

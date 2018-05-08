@@ -6,8 +6,8 @@ import (
 	"math"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const CreateTXNDB = `CREATE TABLE IF NOT EXISTS TXNs(
@@ -50,7 +50,7 @@ func (t *TxsDB) Put(storeTx *Tx) error {
 }
 
 // Fetch a raw tx and it's metadata given a hash
-func (t *TxsDB) Get(txId *Uint256) (*Tx, error) {
+func (t *TxsDB) Get(txId *common.Uint256) (*Tx, error) {
 	t.RLock()
 	defer t.RUnlock()
 
@@ -61,7 +61,7 @@ func (t *TxsDB) Get(txId *Uint256) (*Tx, error) {
 	if err != nil {
 		return nil, err
 	}
-	var tx Transaction
+	var tx core.Transaction
 	err = tx.DeserializeUnsigned(bytes.NewReader(rawData))
 	if err != nil {
 		return nil, err
@@ -100,12 +100,12 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*Tx, error) {
 			return txns, err
 		}
 
-		txId, err := Uint256FromBytes(txIdBytes)
+		txId, err := common.Uint256FromBytes(txIdBytes)
 		if err != nil {
 			return txns, err
 		}
 
-		var tx Transaction
+		var tx core.Transaction
 		err = tx.DeserializeUnsigned(bytes.NewReader(rawData))
 		if err != nil {
 			return nil, err
@@ -118,7 +118,7 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*Tx, error) {
 }
 
 // Update the height of a transaction
-func (t *TxsDB) UpdateHeight(txId *Uint256, height uint32) error {
+func (t *TxsDB) UpdateHeight(txId *common.Uint256, height uint32) error {
 	t.Lock()
 	defer t.Unlock()
 
@@ -131,7 +131,7 @@ func (t *TxsDB) UpdateHeight(txId *Uint256, height uint32) error {
 }
 
 // Delete a transaction from the db
-func (t *TxsDB) Delete(txId *Uint256) error {
+func (t *TxsDB) Delete(txId *common.Uint256) error {
 	t.Lock()
 	defer t.Unlock()
 

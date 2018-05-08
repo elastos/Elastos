@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"net/http"
 	"io/ioutil"
+	"encoding/hex"
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA/core"
-	"encoding/hex"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type Client struct {
@@ -32,7 +32,7 @@ func (client *Client) NotifyNewAddress(hash []byte) error {
 	return nil
 }
 
-func (client *Client) SendTransaction(tx *Transaction) error {
+func (client *Client) SendTransaction(tx *core.Transaction) error {
 	buf := new(bytes.Buffer)
 	tx.Serialize(buf)
 	resp := client.send(

@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS STXOs(
@@ -32,7 +32,7 @@ func NewSTXOsDB(db *sql.DB, lock *sync.RWMutex) (STXOs, error) {
 }
 
 // Move a UTXO to STXO
-func (db *STXOsDB) FromUTXO(outPoint *OutPoint, spendTxId *Uint256, spendHeight uint32) error {
+func (db *STXOsDB) FromUTXO(outPoint *core.OutPoint, spendTxId *common.Uint256, spendHeight uint32) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -58,7 +58,7 @@ func (db *STXOsDB) FromUTXO(outPoint *OutPoint, spendTxId *Uint256, spendHeight 
 }
 
 // get a stxo from database
-func (db *STXOsDB) Get(outPoint *OutPoint) (*STXO, error) {
+func (db *STXOsDB) Get(outPoint *core.OutPoint) (*STXO, error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -74,14 +74,14 @@ func (db *STXOsDB) Get(outPoint *OutPoint) (*STXO, error) {
 		return nil, err
 	}
 
-	var value *Fixed64
-	value, err = Fixed64FromBytes(valueBytes)
+	var value *common.Fixed64
+	value, err = common.Fixed64FromBytes(valueBytes)
 	if err != nil {
 		return nil, err
 	}
 
 	var utxo = UTXO{Op: *outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight}
-	spendHash, err := Uint256FromBytes(spendHashBytes)
+	spendHash, err := common.Uint256FromBytes(spendHashBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (db *STXOsDB) Get(outPoint *OutPoint) (*STXO, error) {
 }
 
 // get stxos of the given script hash from database
-func (db *STXOsDB) GetAddrAll(hash *Uint168) ([]*STXO, error) {
+func (db *STXOsDB) GetAddrAll(hash *common.Uint168) ([]*STXO, error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -131,17 +131,17 @@ func (db *STXOsDB) getSTXOs(rows *sql.Rows) ([]*STXO, error) {
 			return stxos, err
 		}
 
-		outPoint, err := OutPointFromBytes(opBytes)
+		outPoint, err := core.OutPointFromBytes(opBytes)
 		if err != nil {
 			return stxos, err
 		}
-		var value *Fixed64
-		value, err = Fixed64FromBytes(valueBytes)
+		var value *common.Fixed64
+		value, err = common.Fixed64FromBytes(valueBytes)
 		if err != nil {
 			return stxos, err
 		}
 		var utxo = UTXO{Op: *outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight}
-		spendHash, err := Uint256FromBytes(spendHashBytes)
+		spendHash, err := common.Uint256FromBytes(spendHashBytes)
 		if err != nil {
 			return stxos, err
 		}
@@ -153,7 +153,7 @@ func (db *STXOsDB) getSTXOs(rows *sql.Rows) ([]*STXO, error) {
 }
 
 // delete a stxo from database
-func (db *STXOsDB) Delete(outPoint *OutPoint) error {
+func (db *STXOsDB) Delete(outPoint *core.OutPoint) error {
 	db.Lock()
 	defer db.Unlock()
 

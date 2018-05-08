@@ -2,8 +2,6 @@ package _interface
 
 import (
 	"github.com/elastos/Elastos.ELA.SPV/net"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type P2PClientImpl struct {
@@ -13,12 +11,10 @@ type P2PClientImpl struct {
 }
 
 func (client *P2PClientImpl) InitLocalPeer(initLocal func(peer *net.Peer)) {
-	// Set Magic number of the P2P network
-	p2p.Magic = client.magic
 	// Create peer manager of the P2P network
 	local := new(net.Peer)
 	initLocal(local)
-	client.pm = net.InitPeerManager(local, client.seeds)
+	client.pm = net.InitPeerManager(client.magic, local, client.seeds)
 }
 
 func (client *P2PClientImpl) SetMessageHandler(msgHandler net.MessageHandler) {

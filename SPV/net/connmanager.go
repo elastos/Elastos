@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
@@ -16,19 +14,24 @@ const (
 	MaxRetryCount = 5
 )
 
+type ConnectHandler interface {
+	OnPeerConnected(conn net.Conn)
+	OnDiscardAddr(addr string)
+}
+
 type ConnManager struct {
 	sync.Mutex
 
 	connList  []string
 	retryList map[string]int
 
-	OnDiscardAddr func(add string)
+	handler ConnectHandler
 }
 
-func newConnManager(onDiscardAddr func(add string)) *ConnManager {
+func newConnManager(handler ConnectHandler) *ConnManager {
 	cm := new(ConnManager)
 	cm.retryList = make(map[string]int)
-	cm.OnDiscardAddr = onDiscardAddr
+	cm.handler = handler
 	return cm
 }
 
@@ -72,13 +75,7 @@ func (cm *ConnManager) connectPeer(addr string) {
 		return
 	}
 
-	// Start read msg from remote peer
-	remote := NewPeer(conn)
-	remote.SetState(p2p.HAND)
-	go remote.Read()
-
-	// Send version message to remote peer
-	go remote.Send(pm.local.NewVersionMsg())
+	cm.handler.OnPeerConnected(conn)
 }
 
 func (cm *ConnManager) retry(addr string) {
@@ -94,7 +91,7 @@ func (cm *ConnManager) retry(addr string) {
 		cm.removeAddrFromConnectingList(addr)
 		cm.Unlock()
 		// Discard useless address
-		cm.OnDiscardAddr(addr)
+		cm.handler.OnDiscardAddr(addr)
 		return
 	}
 	cm.retryList[addr] = retryTimes

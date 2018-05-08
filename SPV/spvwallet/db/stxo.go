@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type STXO struct {
@@ -13,7 +13,7 @@ type STXO struct {
 	SpendHeight uint32
 
 	// The tx that consumed it
-	SpendTxId Uint256
+	SpendTxId common.Uint256
 }
 
 func (stxo *STXO) String() string {

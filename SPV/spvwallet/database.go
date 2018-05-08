@@ -3,17 +3,17 @@ package spvwallet
 import (
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 )
 
 type Database interface {
-	AddAddress(address *Uint168, script []byte, addrType int) error
-	GetAddress(address *Uint168) (*Addr, error)
+	AddAddress(address *common.Uint168, script []byte, addrType int) error
+	GetAddress(address *common.Uint168) (*Addr, error)
 	GetAddrs() ([]*Addr, error)
-	DeleteAddress(address *Uint168) error
-	GetAddressUTXOs(address *Uint168) ([]*UTXO, error)
-	GetAddressSTXOs(address *Uint168) ([]*STXO, error)
+	DeleteAddress(address *common.Uint168) error
+	GetAddressUTXOs(address *common.Uint168) ([]*UTXO, error)
+	GetAddressSTXOs(address *common.Uint168) ([]*STXO, error)
 	ChainHeight() uint32
 	Reset() error
 }
@@ -41,14 +41,14 @@ type DatabaseImpl struct {
 	DataStore
 }
 
-func (db *DatabaseImpl) AddAddress(address *Uint168, script []byte, addrType int) error {
+func (db *DatabaseImpl) AddAddress(address *common.Uint168, script []byte, addrType int) error {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
 	return db.DataStore.Addrs().Put(address, script, addrType)
 }
 
-func (db *DatabaseImpl) GetAddress(address *Uint168) (*Addr, error) {
+func (db *DatabaseImpl) GetAddress(address *common.Uint168) (*Addr, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 
@@ -62,21 +62,21 @@ func (db *DatabaseImpl) GetAddrs() ([]*Addr, error) {
 	return db.DataStore.Addrs().GetAll()
 }
 
-func (db *DatabaseImpl) DeleteAddress(address *Uint168) error {
+func (db *DatabaseImpl) DeleteAddress(address *common.Uint168) error {
 	db.lock.Lock()
 	defer db.lock.Unlock()
 
 	return db.DataStore.Addrs().Delete(address)
 }
 
-func (db *DatabaseImpl) GetAddressUTXOs(address *Uint168) ([]*UTXO, error) {
+func (db *DatabaseImpl) GetAddressUTXOs(address *common.Uint168) ([]*UTXO, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 
 	return db.DataStore.UTXOs().GetAddrAll(address)
 }
 
-func (db *DatabaseImpl) GetAddressSTXOs(address *Uint168) ([]*STXO, error) {
+func (db *DatabaseImpl) GetAddressSTXOs(address *common.Uint168) ([]*STXO, error) {
 	db.lock.RLock()
 	defer db.lock.RUnlock()
 

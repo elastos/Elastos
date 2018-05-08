@@ -6,13 +6,9 @@ import (
 	"strings"
 
 	"github.com/elastos/Elastos.ELA.SPV/net"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type P2PClientImpl struct {
-	msgHandler  P2PMessageHandler
 	peerManager *net.PeerManager
 }
 
@@ -26,8 +22,6 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string) (*P2PClient
 	if magic == 0 {
 		return nil, errors.New("Magic number has not been set ")
 	}
-	// Set Magic number of the P2P network
-	p2p.Magic = magic
 
 	if len(seeds) == 0 {
 		return nil, errors.New("Seeds list is empty ")
@@ -37,16 +31,9 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string) (*P2PClient
 	client := new(P2PClientImpl)
 
 	// Initialize peer manager
-	client.peerManager = net.InitPeerManager(local, toSPVAddr(seeds))
-
-	// Set message handler
-	client.peerManager.SetMessageHandler(client)
+	client.peerManager = net.InitPeerManager(magic, local, toSPVAddr(seeds))
 
 	return client, nil
-}
-
-func (client *P2PClientImpl) SetMessageHandler(handler P2PMessageHandler) {
-	client.msgHandler = handler
 }
 
 func (client *P2PClientImpl) Start() {
@@ -66,31 +53,6 @@ func toSPVAddr(seeds []string) []string {
 		}
 	}
 	return addrs
-}
-
-// Filter peer handshake according to the SPV protocol
-func (client *P2PClientImpl) OnHandshake(v *msg.Version) error {
-	if v.Version < ProtocolVersion {
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", ProtocolVersion))
-	}
-
-	if v.Services/ServiveSPV&1 == 0 {
-		return errors.New("SPV service not enabled on connected peer")
-	}
-
-	return nil
-}
-
-func (client *P2PClientImpl) MakeMessage(cmd string) (p2p.Message, error) {
-	return client.msgHandler.MakeMessage(cmd)
-}
-
-func (client *P2PClientImpl) OnPeerEstablish(peer *net.Peer) {
-	client.msgHandler.OnPeerEstablish(peer)
-}
-
-func (client *P2PClientImpl) HandleMessage(peer *net.Peer, msg p2p.Message) error {
-	return client.msgHandler.HandleMessage(peer, msg)
 }
 
 func (client *P2PClientImpl) PeerManager() *net.PeerManager {

@@ -3,6 +3,7 @@ package sdk
 import (
 	"errors"
 	"time"
+	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
@@ -13,19 +14,19 @@ import (
 )
 
 type SPVClientImpl struct {
-	p2p        P2PClient
+	p2pClient  P2PClient
 	msgHandler SPVMessageHandler
 }
 
 func NewSPVClientImpl(magic uint32, clientId uint64, seeds []string) (*SPVClientImpl, error) {
 	// Initialize P2P client
-	p2p, err := GetP2PClient(magic, clientId, seeds)
+	p2pClient, err := GetP2PClient(magic, clientId, seeds)
 	if err != nil {
 		return nil, err
 	}
 
-	client := &SPVClientImpl{p2p: p2p}
-	p2p.SetMessageHandler(client)
+	client := &SPVClientImpl{p2pClient: p2pClient}
+	p2pClient.PeerManager().SetMessageHandler(client)
 
 	return client, nil
 }
@@ -35,11 +36,24 @@ func (client *SPVClientImpl) SetMessageHandler(handler SPVMessageHandler) {
 }
 
 func (client *SPVClientImpl) Start() {
-	client.p2p.Start()
+	client.p2pClient.Start()
 }
 
 func (client *SPVClientImpl) PeerManager() *net.PeerManager {
-	return client.p2p.PeerManager()
+	return client.p2pClient.PeerManager()
+}
+
+// Filter peer handshake according to the SPV protocol
+func (client *SPVClientImpl) OnHandshake(v *msg.Version) error {
+	if v.Version < ProtocolVersion {
+		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", ProtocolVersion))
+	}
+
+	if v.Services/ServiveSPV&1 == 0 {
+		return errors.New("SPV service not enabled on connected peer")
+	}
+
+	return nil
 }
 
 func (client *SPVClientImpl) MakeMessage(cmd string) (message p2p.Message, err error) {
@@ -109,7 +123,7 @@ func (client *SPVClientImpl) keepUpdate() {
 				// Disconnect inactive peer
 				if peer.LastActive().Before(
 					time.Now().Add(-time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
-					client.PeerManager().DisconnectPeer(peer)
+					client.PeerManager().OnDisconnected(peer)
 					continue
 				}
 

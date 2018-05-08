@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 /*
@@ -16,7 +16,7 @@ type Account struct {
 	privateKey   []byte
 	publicKey    *crypto.PublicKey
 	redeemScript []byte
-	programHash  *Uint168
+	programHash  *common.Uint168
 	address      string
 }
 
@@ -62,7 +62,7 @@ func (a *Account) RedeemScript() []byte {
 }
 
 // Get account program hash
-func (a *Account) ProgramHash() *Uint168 {
+func (a *Account) ProgramHash() *common.Uint168 {
 	return a.programHash
 }
 

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"io/ioutil"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	. "github.com/elastos/Elastos.ELA.SPV/spvwallet"
@@ -121,7 +121,7 @@ func getPublicKeys(content string) ([]*crypto.PublicKey, error) {
 	// Decode public keys from public key strings
 	var publicKeys []*crypto.PublicKey
 	for _, v := range publicKeyStrings {
-		keyBytes, err := HexStringToBytes(strings.TrimSpace(v))
+		keyBytes, err := common.HexStringToBytes(strings.TrimSpace(v))
 		if err != nil {
 			return nil, err
 		}

@@ -11,31 +11,31 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type SPVServiceImpl struct {
 	*spvwallet.SPVWallet
 	clientId   uint64
 	seeds      []string
-	accounts   []*Uint168
+	accounts   []*common.Uint168
 	proofs     Proofs
 	queue      Queue
 	addrFilter *sdk.AddrFilter
-	listeners  map[TransactionType][]TransactionListener
+	listeners  map[core.TransactionType][]TransactionListener
 }
 
 func newSPVServiceImpl(clientId uint64, seeds []string) *SPVServiceImpl {
 	return &SPVServiceImpl{
 		clientId:  clientId,
 		seeds:     seeds,
-		listeners: make(map[TransactionType][]TransactionListener),
+		listeners: make(map[core.TransactionType][]TransactionListener),
 	}
 }
 
 func (service *SPVServiceImpl) RegisterAccount(address string) error {
-	account, err := Uint168FromAddress(address)
+	account, err := common.Uint168FromAddress(address)
 	if err != nil {
 		return errors.New("Invalid address format")
 	}
@@ -50,17 +50,17 @@ func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionL
 	log.Debug("Listener registered:", listeners)
 }
 
-func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash Uint256) error {
+func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash common.Uint256) error {
 	return service.queue.Delete(&txHash)
 }
 
-func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx Transaction) error {
+func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx core.Transaction) error {
 	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
 
 	// Get Header from main chain
-	header, err := service.GetHeader(proof.BlockHash)
+	header, err := service.GetHeader(&proof.BlockHash)
 	if err != nil {
 		return errors.New("can not get block from main chain")
 	}
@@ -95,7 +95,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx Tra
 	return nil
 }
 
-func (service *SPVServiceImpl) SendTransaction(tx Transaction) error {
+func (service *SPVServiceImpl) SendTransaction(tx core.Transaction) error {
 	if service.SPVWallet == nil {
 		return errors.New("SPV service not started")
 	}
@@ -167,7 +167,7 @@ func (service *SPVServiceImpl) OnRollback(height uint32) {
 }
 
 // Overwrite OnBlockCommitted() method in SPVWallet
-func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []Transaction) {
+func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []core.Transaction) {
 	header := block.Header
 
 	// Store merkle proof
@@ -185,7 +185,7 @@ func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []Transac
 	}
 
 	// Find transactions matches registered accounts
-	var matchedTxs []Transaction
+	var matchedTxs []core.Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
 			if service.addrFilter.ContainAddr(output.ProgramHash) {
@@ -232,7 +232,7 @@ func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []Transac
 	}
 }
 
-func (service *SPVServiceImpl) notifyTransaction(proof bloom.MerkleProof, tx Transaction, confirmations uint32) {
+func (service *SPVServiceImpl) notifyTransaction(proof bloom.MerkleProof, tx core.Transaction, confirmations uint32) {
 	listeners := service.listeners[tx.TxType]
 	for _, listener := range listeners {
 		if listener.Confirmed() {
@@ -253,13 +253,13 @@ func (service *SPVServiceImpl) notifyRollback(height uint32) {
 	}
 }
 
-func getConfirmations(tx Transaction) uint32 {
+func getConfirmations(tx core.Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
 	return DefaultConfirmations
 }
 
-func getTransactionProof(proof *bloom.MerkleProof, txHash Uint256) *bloom.MerkleProof {
+func getTransactionProof(proof *bloom.MerkleProof, txHash common.Uint256) *bloom.MerkleProof {
 	// TODO Pick out the merkle proof of the transaction
 	return proof
 }

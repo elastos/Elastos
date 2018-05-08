@@ -9,8 +9,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
@@ -48,7 +48,7 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 }
 
 type DataListener interface {
-	OnNewBlock(block bloom.MerkleBlock, txs []Transaction)
+	OnNewBlock(block bloom.MerkleBlock, txs []core.Transaction)
 	OnRollback(height uint32)
 }
 
@@ -91,7 +91,7 @@ func (wallet *SPVWallet) GetPrevious(header *StoreHeader) (*StoreHeader, error) 
 }
 
 // Get full header with it's hash
-func (wallet *SPVWallet) GetHeader(hash *Uint256) (*StoreHeader, error) {
+func (wallet *SPVWallet) GetHeader(hash *common.Uint256) (*StoreHeader, error) {
 	return wallet.headers.GetHeader(hash)
 }
 
@@ -105,7 +105,7 @@ func (wallet *SPVWallet) AddDataListener(listener DataListener) {
 }
 
 // Commit a transaction return if this is a false positive and error
-func (wallet *SPVWallet) OnCommitTx(tx Transaction, height uint32) (bool, error) {
+func (wallet *SPVWallet) OnCommitTx(tx core.Transaction, height uint32) (bool, error) {
 	txId := tx.Hash()
 
 	hits := 0
@@ -114,7 +114,7 @@ func (wallet *SPVWallet) OnCommitTx(tx Transaction, height uint32) (bool, error)
 		// Filter address
 		if wallet.getAddrFilter().ContainAddr(output.ProgramHash) {
 			var lockTime uint32
-			if tx.TxType == CoinBase {
+			if tx.TxType == core.CoinBase {
 				lockTime = height + 100
 			}
 			utxo := ToUTXO(txId, height, index, output.Value, lockTime)
@@ -149,7 +149,7 @@ func (wallet *SPVWallet) OnCommitTx(tx Transaction, height uint32) (bool, error)
 	return false, nil
 }
 
-func (wallet *SPVWallet) OnBlockCommitted(block bloom.MerkleBlock, txs []Transaction) {
+func (wallet *SPVWallet) OnBlockCommitted(block bloom.MerkleBlock, txs []core.Transaction) {
 	wallet.dataStore.Chain().PutHeight(block.Height)
 	for _, listener := range wallet.dataListeners {
 		go listener.OnNewBlock(block, txs)
@@ -183,20 +183,20 @@ func (wallet *SPVWallet) Close() {
 	wallet.dataStore.Close()
 }
 
-func ToUTXO(txId Uint256, height uint32, index int, value Fixed64, lockTime uint32) *db.UTXO {
+func ToUTXO(txId common.Uint256, height uint32, index int, value common.Fixed64, lockTime uint32) *db.UTXO {
 	utxo := new(db.UTXO)
-	utxo.Op = *NewOutPoint(txId, uint16(index))
+	utxo.Op = *core.NewOutPoint(txId, uint16(index))
 	utxo.Value = value
 	utxo.LockTime = lockTime
 	utxo.AtHeight = height
 	return utxo
 }
 
-func (wallet *SPVWallet) GetData() ([]*Uint168, []*OutPoint) {
+func (wallet *SPVWallet) GetData() ([]*common.Uint168, []*core.OutPoint) {
 	utxos, _ := wallet.dataStore.UTXOs().GetAll()
 	stxos, _ := wallet.dataStore.STXOs().GetAll()
 
-	outpoints := make([]*OutPoint, 0, len(utxos)+len(stxos))
+	outpoints := make([]*core.OutPoint, 0, len(utxos)+len(stxos))
 	for _, utxo := range utxos {
 		outpoints = append(outpoints, &utxo.Op)
 	}

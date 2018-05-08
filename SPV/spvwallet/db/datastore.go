@@ -1,8 +1,8 @@
 package db
 
 import (
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type DataStore interface {
@@ -29,16 +29,16 @@ type Chain interface {
 
 type Addrs interface {
 	// put a address to database
-	Put(hash *Uint168, script []byte, addrType int) error
+	Put(hash *common.Uint168, script []byte, addrType int) error
 
 	// get a address from database
-	Get(hash *Uint168) (*Addr, error)
+	Get(hash *common.Uint168) (*Addr, error)
 
 	// get all addresss from database
 	GetAll() ([]*Addr, error)
 
 	// delete a address from database
-	Delete(hash *Uint168) error
+	Delete(hash *common.Uint168) error
 }
 
 type Txs interface {
@@ -46,7 +46,7 @@ type Txs interface {
 	Put(txn *Tx) error
 
 	// Fetch a raw tx and it's metadata given a hash
-	Get(txId *Uint256) (*Tx, error)
+	Get(txId *common.Uint256) (*Tx, error)
 
 	// Fetch all transactions from database
 	GetAll() ([]*Tx, error)
@@ -55,42 +55,42 @@ type Txs interface {
 	GetAllFrom(height uint32) ([]*Tx, error)
 
 	// Update the height of a transaction
-	UpdateHeight(txId *Uint256, height uint32) error
+	UpdateHeight(txId *common.Uint256, height uint32) error
 
 	// Delete a transaction from the db
-	Delete(txId *Uint256) error
+	Delete(txId *common.Uint256) error
 }
 
 type UTXOs interface {
 	// put a utxo to database
-	Put(hash *Uint168, utxo *UTXO) error
+	Put(hash *common.Uint168, utxo *UTXO) error
 
 	// get a utxo from database
-	Get(outPoint *OutPoint) (*UTXO, error)
+	Get(outPoint *core.OutPoint) (*UTXO, error)
 
 	// get utxos of the given address hash from database
-	GetAddrAll(hash *Uint168) ([]*UTXO, error)
+	GetAddrAll(hash *common.Uint168) ([]*UTXO, error)
 
 	// Get all UTXOs in database
 	GetAll() ([]*UTXO, error)
 
 	// delete a utxo from database
-	Delete(outPoint *OutPoint) error
+	Delete(outPoint *core.OutPoint) error
 }
 
 type STXOs interface {
 	// Move a UTXO to STXO
-	FromUTXO(outPoint *OutPoint, spendTxId *Uint256, spendHeight uint32) error
+	FromUTXO(outPoint *core.OutPoint, spendTxId *common.Uint256, spendHeight uint32) error
 
 	// get a stxo from database
-	Get(outPoint *OutPoint) (*STXO, error)
+	Get(outPoint *core.OutPoint) (*STXO, error)
 
 	// get stxos of the given address hash from database
-	GetAddrAll(hash *Uint168) ([]*STXO, error)
+	GetAddrAll(hash *common.Uint168) ([]*STXO, error)
 
 	// Get all STXOs in database
 	GetAll() ([]*STXO, error)
 
 	// delete a stxo from database
-	Delete(outPoint *OutPoint) error
+	Delete(outPoint *core.OutPoint) error
 }

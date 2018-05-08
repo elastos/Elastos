@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"os"
 
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 type RequestHandler interface {
 	NotifyNewAddress(hash []byte)
-	SendTransaction(Transaction)
+	SendTransaction(core.Transaction)
 }
 
 func InitServer(handler RequestHandler) *Server {

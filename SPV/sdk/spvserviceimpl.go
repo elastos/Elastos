@@ -6,14 +6,14 @@ import (
 	"time"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/core"
-	"github.com/elastos/Elastos.ELA.SPV/net"
+	"github.com/elastos/Elastos.ELA.SPV/core"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/store"
+	"github.com/elastos/Elastos.ELA.SPV/net"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
@@ -27,8 +27,8 @@ const (
 type SPVServiceImpl struct {
 	sync.Mutex
 	SPVClient
-	chain      *Blockchain
-	queue      *RequestQueue
+	chain      *core.Blockchain
+	queue      *core.RequestQueue
 	handler    SPVHandler
 	fPositives int
 }
@@ -40,7 +40,7 @@ func NewSPVServiceImpl(client SPVClient, headerStore store.HeaderStore, handler 
 	// Set spv client
 	service.SPVClient = client
 	// Initialize blockchain
-	service.chain, err = NewBlockchain(headerStore)
+	service.chain, err = core.NewBlockchain(headerStore)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func NewSPVServiceImpl(client SPVClient, headerStore store.HeaderStore, handler 
 	service.SPVClient.SetMessageHandler(service)
 
 	// Initialize request queue
-	service.queue = NewRequestQueue(MaxRequests, service)
+	service.queue = core.NewRequestQueue(MaxRequests, service)
 
 	// Set SPV handler implement
 	service.handler = handler
@@ -83,7 +83,7 @@ func (service *SPVServiceImpl) ReloadFilter() {
 	service.PeerManager().Broadcast(service.getBloomFilter().GetFilterLoadMsg())
 }
 
-func (service *SPVServiceImpl) SendTransaction(tx core.Transaction) {
+func (service *SPVServiceImpl) SendTransaction(tx ela.Transaction) {
 	service.PeerManager().Broadcast(&tx)
 }
 
@@ -120,7 +120,7 @@ func (service *SPVServiceImpl) syncBlocks() {
 			return
 		}
 		// Set blockchain state to syncing
-		service.chain.SetChainState(SYNCING)
+		service.chain.SetChainState(core.SYNCING)
 		// Request blocks
 		service.requestBlocks()
 	} else {
@@ -133,7 +133,7 @@ func (service *SPVServiceImpl) stopSyncing() {
 		// Clear request queue
 		service.queue.Clear()
 		// Set blockchain state to waiting
-		service.chain.SetChainState(WAITING)
+		service.chain.SetChainState(core.WAITING)
 		// Remove sync peer
 		service.PeerManager().SetSyncPeer(nil)
 	}
@@ -148,7 +148,7 @@ func (service *SPVServiceImpl) requestBlocks() {
 		return
 	}
 	// Request blocks returns a inventory message which contains block hashes
-	request := msg.NewBlocksReq(service.chain.GetBlockLocatorHashes(), Uint256{})
+	request := msg.NewBlocksReq(service.chain.GetBlockLocatorHashes(), common.EmptyHash)
 
 	go syncPeer.Send(request)
 }
@@ -157,14 +157,14 @@ func (service *SPVServiceImpl) changeSyncPeerAndRestart() {
 	log.Debug("Change sync peer and restart")
 	// Disconnect current sync peer
 	syncPeer := service.PeerManager().GetSyncPeer()
-	service.PeerManager().DisconnectPeer(syncPeer)
+	service.PeerManager().OnDisconnected(syncPeer)
 
 	service.stopSyncing()
 	// Restart
 	service.syncBlocks()
 }
 
-func (service *SPVServiceImpl) OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256) {
+func (service *SPVServiceImpl) OnSendRequest(peer *net.Peer, reqType uint8, hash common.Uint256) {
 	peer.Send(msg.NewDataReq(reqType, hash))
 }
 
@@ -175,14 +175,14 @@ func (service *SPVServiceImpl) OnRequestError(err error) {
 	service.changeSyncPeerAndRestart()
 }
 
-func (service *SPVServiceImpl) OnRequestFinished(pool *FinishedReqPool) {
+func (service *SPVServiceImpl) OnRequestFinished(pool *core.FinishedReqPool) {
 	service.Lock()
 	defer service.Unlock()
 
 	// By default, last pop from FinishedReqPool is the current, otherwise get chain tip as current
 	var current = pool.LastPop()
 	if current == nil {
-		current = new(Uint256)
+		current = new(common.Uint256)
 		*current = service.chain.ChainTip().Hash()
 	}
 
@@ -245,8 +245,8 @@ func (service *SPVServiceImpl) HandleBlockInvMsg(peer *net.Peer, inv *msg.Invent
 	service.queue.PushHashes(peer, inv.Hashes)
 
 	// Request more blocks
-	locator := []*Uint256{inv.Hashes[len(inv.Hashes)-1]}
-	go peer.Send(msg.NewBlocksReq(locator, Uint256{}))
+	locator := []*common.Uint256{inv.Hashes[len(inv.Hashes)-1]}
+	go peer.Send(msg.NewBlocksReq(locator, common.EmptyHash))
 
 	return nil
 }
@@ -288,7 +288,7 @@ func (service *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *bloom.Merkle
 	return nil
 }
 
-func (service *SPVServiceImpl) OnTx(peer *net.Peer, txn *core.Transaction) error {
+func (service *SPVServiceImpl) OnTx(peer *net.Peer, txn *ela.Transaction) error {
 	log.Debug("Receive transaction hash: ", txn.Hash().String())
 
 	if service.chain.IsSyncing() && service.PeerManager().GetSyncPeer() != nil &&

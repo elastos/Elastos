@@ -1,11 +1,11 @@
 package _interface
 
 import (
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type QueueItem struct {
-	TxHash        Uint256
-	BlockHash     Uint256
+	TxHash        common.Uint256
+	BlockHash     common.Uint256
 	Height        uint32
 }

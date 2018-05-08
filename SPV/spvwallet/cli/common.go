@@ -11,7 +11,7 @@ import (
 	walt "github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/AlexpanXX/gopass"
 	"github.com/urfave/cli"
 )
@@ -46,7 +46,7 @@ func GetPassword(password []byte, confirmed bool) ([]byte, error) {
 			return nil, err
 		}
 
-		if !IsEqualBytes(password, confirm) {
+		if !common.IsEqualBytes(password, confirm) {
 			return nil, errors.New("input password unmatched")
 		}
 	}
@@ -79,7 +79,7 @@ func ShowAccountInfo(password []byte) error {
 		// print content
 		publicKey := account.PublicKey()
 		publicKeyBytes, _ := publicKey.EncodePoint(true)
-		fmt.Printf("%5d %-34s %-66s %6s\n", i+1, account.Address(), BytesToHexString(publicKeyBytes), accountType)
+		fmt.Printf("%5d %-34s %-66s %6s\n", i+1, account.Address(), common.BytesToHexString(publicKeyBytes), accountType)
 		// print divider line
 		fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 66), "------")
 	}
@@ -115,15 +115,15 @@ func SelectAccount(wallet walt.Wallet) (string, error) {
 	return addrs[index].String(), nil
 }
 
-func ShowAccounts(addrs []*db.Addr, newAddr *Uint168, wallet walt.Wallet) error {
+func ShowAccounts(addrs []*db.Addr, newAddr *common.Uint168, wallet walt.Wallet) error {
 	// print header
 	fmt.Printf("%5s %34s %-20s%22s %6s\n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)", "TYPE")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42), "------")
 
 	currentHeight := wallet.ChainHeight()
 	for i, addr := range addrs {
-		available := Fixed64(0)
-		locked := Fixed64(0)
+		available := common.Fixed64(0)
+		locked := common.Fixed64(0)
 		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
 		if err != nil {
 			return errors.New("get " + addr.String() + " UTXOs failed")

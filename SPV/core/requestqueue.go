@@ -9,13 +9,13 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type RequestQueueHandler interface {
-	OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256)
+	OnSendRequest(peer *net.Peer, reqType uint8, hash common.Uint256)
 	OnRequestError(error)
 	OnRequestFinished(*FinishedReqPool)
 }
@@ -23,14 +23,14 @@ type RequestQueueHandler interface {
 type RequestQueue struct {
 	size             int
 	peer             *net.Peer
-	hashesQueue      chan Uint256
-	blocksQueue      chan Uint256
-	blockTxsQueue    chan Uint256
+	hashesQueue      chan common.Uint256
+	blocksQueue      chan common.Uint256
+	blockTxsQueue    chan common.Uint256
 	blockReqsLock    *sync.Mutex
-	blockRequests    map[Uint256]*Request
+	blockRequests    map[common.Uint256]*Request
 	blockTxsReqsLock *sync.Mutex
-	blockTxsRequests map[Uint256]*BlockTxsRequest
-	blockTxs         map[Uint256]Uint256
+	blockTxsRequests map[common.Uint256]*BlockTxsRequest
+	blockTxs         map[common.Uint256]common.Uint256
 	finished         *FinishedReqPool
 	handler          RequestQueueHandler
 }
@@ -38,17 +38,17 @@ type RequestQueue struct {
 func NewRequestQueue(size int, handler RequestQueueHandler) *RequestQueue {
 	queue := new(RequestQueue)
 	queue.size = size
-	queue.hashesQueue = make(chan Uint256, size)
-	queue.blocksQueue = make(chan Uint256, size)
-	queue.blockTxsQueue = make(chan Uint256, size)
+	queue.hashesQueue = make(chan common.Uint256, size)
+	queue.blocksQueue = make(chan common.Uint256, size)
+	queue.blockTxsQueue = make(chan common.Uint256, size)
 	queue.blockReqsLock = new(sync.Mutex)
-	queue.blockRequests = make(map[Uint256]*Request)
+	queue.blockRequests = make(map[common.Uint256]*Request)
 	queue.blockTxsReqsLock = new(sync.Mutex)
-	queue.blockTxsRequests = make(map[Uint256]*BlockTxsRequest)
-	queue.blockTxs = make(map[Uint256]Uint256)
+	queue.blockTxsRequests = make(map[common.Uint256]*BlockTxsRequest)
+	queue.blockTxs = make(map[common.Uint256]common.Uint256)
 	queue.finished = &FinishedReqPool{
-		blocks:   make(map[Uint256]*bloom.MerkleBlock),
-		requests: make(map[Uint256]*BlockTxsRequest),
+		blocks:   make(map[common.Uint256]*bloom.MerkleBlock),
+		requests: make(map[common.Uint256]*BlockTxsRequest),
 	}
 	queue.handler = handler
 
@@ -63,14 +63,14 @@ func (queue *RequestQueue) start() {
 }
 
 // This method will block when request queue is filled
-func (queue *RequestQueue) PushHashes(peer *net.Peer, hashes []*Uint256) {
+func (queue *RequestQueue) PushHashes(peer *net.Peer, hashes []*common.Uint256) {
 	queue.peer = peer
 	for _, hash := range hashes {
 		queue.hashesQueue <- *hash
 	}
 }
 
-func (queue *RequestQueue) StartBlockRequest(peer *net.Peer, hash Uint256) {
+func (queue *RequestQueue) StartBlockRequest(peer *net.Peer, hash common.Uint256) {
 	// Check if already in request queue or finished
 	if queue.InBlockRequestQueue(hash) || queue.InFinishedPool(hash) {
 		return
@@ -94,7 +94,7 @@ func (queue *RequestQueue) StartBlockRequest(peer *net.Peer, hash Uint256) {
 	queue.blockReqsLock.Unlock()
 }
 
-func (queue *RequestQueue) StartBlockTxsRequest(peer *net.Peer, block *bloom.MerkleBlock, txIds []*Uint256) {
+func (queue *RequestQueue) StartBlockTxsRequest(peer *net.Peer, block *bloom.MerkleBlock, txIds []*common.Uint256) {
 	blockHash := block.Header.Hash()
 	// No block transactions to request, notify request finished.
 	if len(txIds) == 0 {
@@ -113,7 +113,7 @@ func (queue *RequestQueue) StartBlockTxsRequest(peer *net.Peer, block *bloom.Mer
 	queue.blockTxsQueue <- blockHash
 
 	queue.blockTxsReqsLock.Lock()
-	txRequestQueue := make(map[Uint256]*Request)
+	txRequestQueue := make(map[common.Uint256]*Request)
 	for _, txId := range txIds {
 		// Mark txId related block
 		queue.blockTxs[*txId] = blockHash
@@ -138,7 +138,7 @@ func (queue *RequestQueue) StartBlockTxsRequest(peer *net.Peer, block *bloom.Mer
 	queue.blockTxsReqsLock.Unlock()
 }
 
-func (queue *RequestQueue) InBlockRequestQueue(blockHash Uint256) bool {
+func (queue *RequestQueue) InBlockRequestQueue(blockHash common.Uint256) bool {
 	queue.blockReqsLock.Lock()
 	defer queue.blockReqsLock.Unlock()
 
@@ -146,7 +146,7 @@ func (queue *RequestQueue) InBlockRequestQueue(blockHash Uint256) bool {
 	return ok
 }
 
-func (queue *RequestQueue) InBlockTxsRequestQueue(blockHash Uint256) bool {
+func (queue *RequestQueue) InBlockTxsRequestQueue(blockHash common.Uint256) bool {
 	queue.blockTxsReqsLock.Lock()
 	defer queue.blockTxsReqsLock.Unlock()
 
@@ -154,7 +154,7 @@ func (queue *RequestQueue) InBlockTxsRequestQueue(blockHash Uint256) bool {
 	return ok
 }
 
-func (queue *RequestQueue) InFinishedPool(blockHash Uint256) bool {
+func (queue *RequestQueue) InFinishedPool(blockHash common.Uint256) bool {
 	_, ok := queue.finished.Contain(blockHash)
 	return ok
 }
@@ -163,15 +163,15 @@ func (queue *RequestQueue) IsRunning() bool {
 	return len(queue.hashesQueue) > 0 || len(queue.blocksQueue) > 0 || len(queue.blockTxsQueue) > 0
 }
 
-func (queue *RequestQueue) OnSendRequest(peer *net.Peer, reqType uint8, hash Uint256) {
+func (queue *RequestQueue) OnSendRequest(peer *net.Peer, reqType uint8, hash common.Uint256) {
 	queue.handler.OnSendRequest(peer, reqType, hash)
 }
 
-func (queue *RequestQueue) OnRequestTimeout(hash Uint256) {
+func (queue *RequestQueue) OnRequestTimeout(hash common.Uint256) {
 	queue.handler.OnRequestError(errors.New("Request timeout with hash: " + hash.String()))
 }
 
-func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Uint256) error {
+func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*common.Uint256) error {
 	queue.blockReqsLock.Lock()
 	defer queue.blockReqsLock.Unlock()
 
@@ -195,11 +195,11 @@ func (queue *RequestQueue) OnBlockReceived(block *bloom.MerkleBlock, txIds []*Ui
 	return nil
 }
 
-func (queue *RequestQueue) OnTxReceived(tx *Transaction) error {
+func (queue *RequestQueue) OnTxReceived(tx *core.Transaction) error {
 	queue.blockTxsReqsLock.Lock()
 	txId := tx.Hash()
 	var ok bool
-	var blockHash Uint256
+	var blockHash common.Uint256
 	if blockHash, ok = queue.blockTxs[txId]; !ok {
 		fmt.Println("Unknown transaction received: ", txId.String())
 		queue.blockTxsReqsLock.Unlock()

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const CreateAddrsDB = `CREATE TABLE IF NOT EXISTS Addrs(
@@ -27,7 +27,7 @@ func NewAddrsDB(db *sql.DB, lock *sync.RWMutex) (Addrs, error) {
 }
 
 // put a script to database
-func (db *AddrsDB) Put(hash *Uint168, script []byte, addrType int) error {
+func (db *AddrsDB) Put(hash *common.Uint168, script []byte, addrType int) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -41,7 +41,7 @@ func (db *AddrsDB) Put(hash *Uint168, script []byte, addrType int) error {
 }
 
 // get a script from database
-func (db *AddrsDB) Get(hash *Uint168) (*Addr, error) {
+func (db *AddrsDB) Get(hash *common.Uint168) (*Addr, error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -76,7 +76,7 @@ func (db *AddrsDB) GetAll() ([]*Addr, error) {
 		if err != nil {
 			return addrs, err
 		}
-		hash, err := Uint168FromBytes(hashBytes)
+		hash, err := common.Uint168FromBytes(hashBytes)
 		if err != nil {
 			return addrs, err
 		}
@@ -87,7 +87,7 @@ func (db *AddrsDB) GetAll() ([]*Addr, error) {
 }
 
 // delete a script from database
-func (db *AddrsDB) Delete(hash *Uint168) error {
+func (db *AddrsDB) Delete(hash *common.Uint168) error {
 	db.Lock()
 	defer db.Unlock()
 

@@ -10,8 +10,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ChainState int
@@ -38,11 +38,11 @@ type StateListener interface {
 	// are not interested go through this method. If a transaction is not a match
 	// return false as a false positive mark. If anything goes wrong, return error.
 	// Notice: this method will be callback when commit block
-	OnCommitTx(tx Transaction, height uint32) (bool, error)
+	OnCommitTx(tx core.Transaction, height uint32) (bool, error)
 
 	// This method will be callback after a block and transactions with it are
 	// successfully committed into database.
-	OnBlockCommitted(bloom.MerkleBlock, []Transaction)
+	OnBlockCommitted(bloom.MerkleBlock, []core.Transaction)
 
 	// When the blockchain meet a reorganization, data should be rollback to the fork point.
 	// The Rollback method will callback the current rollback height, for example OnChainRollback(100)
@@ -129,11 +129,11 @@ func (bc *Blockchain) chainTip() *store.StoreHeader {
 }
 
 // Create a block locator which is a array of block hashes stored in blockchain
-func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
+func (bc *Blockchain) GetBlockLocatorHashes() []*common.Uint256 {
 	bc.lock.RLock()
 	defer bc.lock.RUnlock()
 
-	var ret []*Uint256
+	var ret []*common.Uint256
 	parent, err := bc.GetBestHeader()
 	if err != nil { // No headers stored return empty locator
 		return ret
@@ -171,7 +171,7 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*Uint256 {
 }
 
 // Commit block commits a block and transactions with it, return is reorganize, false positives and error
-func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []Transaction) (bool, int, error) {
+func (bc *Blockchain) CommitBlock(block bloom.MerkleBlock, txs []core.Transaction) (bool, int, error) {
 	bc.lock.Lock()
 	defer bc.lock.Unlock()
 
@@ -347,7 +347,7 @@ func CalcWork(bits uint32) *big.Int {
 	return new(big.Int).Div(new(big.Int).Lsh(big.NewInt(1), 256), denominator)
 }
 
-func (bc *Blockchain) CheckProofOfWork(header Header) error {
+func (bc *Blockchain) CheckProofOfWork(header core.Header) error {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {
@@ -369,7 +369,7 @@ func (bc *Blockchain) CheckProofOfWork(header Header) error {
 	return nil
 }
 
-func HashToBig(hash *Uint256) *big.Int {
+func HashToBig(hash *common.Uint256) *big.Int {
 	// A Hash is in little-endian, but the big package wants the bytes in
 	// big-endian, so reverse them.
 	buf := *hash

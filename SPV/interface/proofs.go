@@ -9,23 +9,23 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
-	. "github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/boltdb/bolt"
 )
 
 type Proofs interface {
 	// Put a merkle proof of the block
-	Put(proof *MerkleProof) error
+	Put(proof *bloom.MerkleProof) error
 
 	// Get a merkle proof of a block
-	Get(blockHash *Uint256) (*MerkleProof, error)
+	Get(blockHash *common.Uint256) (*bloom.MerkleProof, error)
 
 	// Get all merkle proofs in database
-	GetAll() ([]*MerkleProof, error)
+	GetAll() ([]*bloom.MerkleProof, error)
 
 	// Delete a merkle proof of a block
-	Delete(blockHash *Uint256) error
+	Delete(blockHash *common.Uint256) error
 
 	// Reset database, clear all data
 	Reset() error
@@ -61,7 +61,7 @@ func NewProofsDB() (Proofs, error) {
 }
 
 // Put a merkle proof of the block
-func (db *ProofsDB) Put(proof *MerkleProof) error {
+func (db *ProofsDB) Put(proof *bloom.MerkleProof) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -82,7 +82,7 @@ func (db *ProofsDB) Put(proof *MerkleProof) error {
 }
 
 // Get a merkle proof of a block
-func (db *ProofsDB) Get(blockHash *Uint256) (proof *MerkleProof, err error) {
+func (db *ProofsDB) Get(blockHash *common.Uint256) (proof *bloom.MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -104,7 +104,7 @@ func (db *ProofsDB) Get(blockHash *Uint256) (proof *MerkleProof, err error) {
 }
 
 // Get all merkle proofs in database
-func (db *ProofsDB) GetAll() (proofs []*MerkleProof, err error) {
+func (db *ProofsDB) GetAll() (proofs []*bloom.MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -133,7 +133,7 @@ func (db *ProofsDB) GetAll() (proofs []*MerkleProof, err error) {
 }
 
 // Delete a merkle proof of a block
-func (db *ProofsDB) Delete(blockHash *Uint256) error {
+func (db *ProofsDB) Delete(blockHash *common.Uint256) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -158,7 +158,7 @@ func (db *ProofsDB) Close() {
 	log.Debug("Proofs DB closed")
 }
 
-func getProof(tx *bolt.Tx, key []byte) (*MerkleProof, error) {
+func getProof(tx *bolt.Tx, key []byte) (*bloom.MerkleProof, error) {
 	proofBytes := tx.Bucket(BKTProofs).Get(key)
 	if proofBytes == nil {
 		return nil, errors.New(fmt.Sprintf("MerkleProof %s does not exist in database", hex.EncodeToString(key)))
@@ -167,7 +167,7 @@ func getProof(tx *bolt.Tx, key []byte) (*MerkleProof, error) {
 	return deserializeProof(proofBytes)
 }
 
-func serializeProof(proof *MerkleProof) ([]byte, error) {
+func serializeProof(proof *bloom.MerkleProof) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := proof.Serialize(buf)
 	if err != nil {
@@ -176,8 +176,8 @@ func serializeProof(proof *MerkleProof) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func deserializeProof(body []byte) (*MerkleProof, error) {
-	var proof MerkleProof
+func deserializeProof(body []byte) (*bloom.MerkleProof, error) {
+	var proof bloom.MerkleProof
 	err := proof.Deserialize(bytes.NewReader(body))
 	if err != nil {
 		return nil, err

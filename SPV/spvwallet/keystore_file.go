@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -29,7 +29,7 @@ type KeystoreFile struct {
 
 func CreateKeystoreFile() (*KeystoreFile, error) {
 
-	if FileExisted(KeystoreFilename) {
+	if common.FileExisted(KeystoreFilename) {
 		return nil, errors.New("key store file already exist")
 	}
 
@@ -53,24 +53,24 @@ func OpenKeystoreFile() (*KeystoreFile, error) {
 }
 
 func (store *KeystoreFile) SetIV(iv []byte) {
-	store.IV = BytesToHexString(iv)
+	store.IV = common.BytesToHexString(iv)
 }
 
 func (store *KeystoreFile) SetPasswordHash(passwordHash []byte) {
-	store.PasswordHash = BytesToHexString(passwordHash)
+	store.PasswordHash = common.BytesToHexString(passwordHash)
 }
 
 func (store *KeystoreFile) SetMasterKeyEncrypted(masterKeyEncrypted []byte) {
-	store.MasterKeyEncrypted = BytesToHexString(masterKeyEncrypted)
+	store.MasterKeyEncrypted = common.BytesToHexString(masterKeyEncrypted)
 }
 
 func (store *KeystoreFile) SetPrivateKeyEncrypted(privateKeyEncrypted []byte) {
-	store.PrivateKeyEncrypted = BytesToHexString(privateKeyEncrypted)
+	store.PrivateKeyEncrypted = common.BytesToHexString(privateKeyEncrypted)
 }
 
 func (store *KeystoreFile) GetIV() ([]byte, error) {
 
-	iv, err := HexStringToBytes(store.IV)
+	iv, err := common.HexStringToBytes(store.IV)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (store *KeystoreFile) GetIV() ([]byte, error) {
 
 func (store *KeystoreFile) GetPasswordHash() ([]byte, error) {
 
-	passwordHash, err := HexStringToBytes(store.PasswordHash)
+	passwordHash, err := common.HexStringToBytes(store.PasswordHash)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (store *KeystoreFile) GetPasswordHash() ([]byte, error) {
 
 func (store *KeystoreFile) GetMasterKeyEncrypted() ([]byte, error) {
 
-	masterKeyEncrypted, err := HexStringToBytes(store.MasterKeyEncrypted)
+	masterKeyEncrypted, err := common.HexStringToBytes(store.MasterKeyEncrypted)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (store *KeystoreFile) GetMasterKeyEncrypted() ([]byte, error) {
 
 func (store *KeystoreFile) GetPrivetKeyEncrypted() ([]byte, error) {
 
-	privateKeyEncrypted, err := HexStringToBytes(store.PrivateKeyEncrypted)
+	privateKeyEncrypted, err := common.HexStringToBytes(store.PrivateKeyEncrypted)
 	if err != nil {
 		return nil, err
 	}

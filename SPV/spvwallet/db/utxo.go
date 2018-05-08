@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"sort"
 
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type UTXO struct {
 	// Previous txid and output index
-	Op OutPoint
+	Op core.OutPoint
 
 	// The higher the better
-	Value Fixed64
+	Value common.Fixed64
 
 	// The utxo locked height
 	LockTime uint32

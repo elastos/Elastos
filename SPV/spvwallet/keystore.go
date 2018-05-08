@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	. "github.com/elastos/Elastos.ELA.SPV/sdk"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -23,7 +23,7 @@ type Keystore interface {
 	NewAccount() *Account
 	GetAccounts() []*Account
 	GetAccountByIndex(index int) *Account
-	GetAccountByProgramHash(programHash *Uint168) *Account
+	GetAccountByProgramHash(programHash *common.Uint168) *Account
 
 	Json() (string, error)
 	FromJson(json string, password string) error
@@ -165,7 +165,7 @@ func (store *KeystoreImpl) verifyPassword(password []byte) error {
 	if err != nil {
 		return err
 	}
-	if IsEqualBytes(origin, passwordHash[:]) {
+	if common.IsEqualBytes(origin, passwordHash[:]) {
 		return nil
 	}
 	return errors.New("password wrong")
@@ -179,7 +179,7 @@ func (store *KeystoreImpl) ChangePassword(oldPassword, newPassword []byte) error
 	if err != nil {
 		return err
 	}
-	defer ClearBytes(masterKeyEncrypted)
+	defer common.ClearBytes(masterKeyEncrypted)
 
 	masterKey, err := store.decryptMasterKey(oldPasswordKey)
 	if err != nil {
@@ -257,7 +257,7 @@ func (store *KeystoreImpl) GetAccountByIndex(index int) *Account {
 	return store.accounts[index]
 }
 
-func (store *KeystoreImpl) GetAccountByProgramHash(programHash *Uint168) *Account {
+func (store *KeystoreImpl) GetAccountByProgramHash(programHash *common.Uint168) *Account {
 	if programHash == nil {
 		return nil
 	}
