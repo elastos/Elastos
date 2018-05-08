@@ -146,18 +146,17 @@ func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	node.height = uint64(height)
 }
 
-func NewNode(conn net.Conn) *node {
+func NewNode(magic uint32, conn net.Conn) *node {
 	node := new(node)
 	node.conn = conn
-	node.MsgReader = NewMsgReader(conn, &MsgHandler{node: node})
+	node.MsgHelper = NewMsgHelper(magic, conn, &MsgHandler{node: node})
 	runtime.SetFinalizer(node, rmNode)
 	return node
 }
 
 func InitNode() Noder {
-	Magic = Parameters.Magic
 
-	LocalNode = NewNode(nil)
+	LocalNode = NewNode(Parameters.Magic, nil)
 	LocalNode.version = PROTOCOLVERSION
 
 	LocalNode.SyncBlkReqSem = MakeSemaphore(MAXSYNCHDRREQ)
