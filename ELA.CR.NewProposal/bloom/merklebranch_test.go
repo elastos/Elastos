@@ -6,8 +6,9 @@ import (
 	"os"
 	"testing"
 
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/auxpow"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 func TestMerkleBlock_GetTxMerkleBranch(t *testing.T) {
@@ -20,7 +21,7 @@ func TestMerkleBlock_GetTxMerkleBranch(t *testing.T) {
 func run(txs uint32) {
 	mBlock := MBlock{
 		NumTx:       txs,
-		AllHashes:   make([]*Uint256, 0, txs),
+		AllHashes:   make([]*common.Uint256, 0, txs),
 		MatchedBits: make([]byte, 0, txs),
 	}
 
@@ -46,11 +47,11 @@ func run(txs uint32) {
 	merkleRoot := *mBlock.CalcHash(treeDepth(txs), 0)
 	// Create and return the merkle block.
 	merkleBlock := MerkleBlock{
-		Header: Header{
+		Header: core.Header{
 			MerkleRoot: merkleRoot,
 		},
 		Transactions: mBlock.NumTx,
-		Hashes:       make([]*Uint256, 0, len(mBlock.FinalHashes)),
+		Hashes:       make([]*common.Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
 	}
 	for _, hash := range mBlock.FinalHashes {
@@ -73,7 +74,7 @@ func run(txs uint32) {
 			os.Exit(0)
 		}
 
-		calcRoot := GetMerkleRoot(*txIds[i], mb.Branches, mb.Index)
+		calcRoot := auxpow.GetMerkleRoot(*txIds[i], mb.Branches, mb.Index)
 		if merkleRoot == calcRoot {
 		} else {
 			fmt.Println("Merkle root not match, expect %s result %s", merkleRoot.String(), calcRoot.String())
@@ -82,8 +83,8 @@ func run(txs uint32) {
 	}
 }
 
-func randHash() *Uint256 {
-	var hash Uint256
+func randHash() *common.Uint256 {
+	var hash common.Uint256
 	rand.Read(hash[:])
 	return &hash
 }

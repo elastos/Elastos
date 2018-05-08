@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var (
@@ -15,17 +15,17 @@ var (
 )
 
 type AuxPow struct {
-	AuxMerkleBranch   []Uint256
+	AuxMerkleBranch   []common.Uint256
 	AuxMerkleIndex    int
 	ParCoinbaseTx     BtcTx
-	ParCoinBaseMerkle []Uint256
+	ParCoinBaseMerkle []common.Uint256
 	ParMerkleIndex    int
 	ParBlockHeader    BtcHeader
-	ParentHash        Uint256
+	ParentHash        common.Uint256
 }
 
-func NewAuxPow(AuxMerkleBranch []Uint256, AuxMerkleIndex int,
-	ParCoinbaseTx BtcTx, ParCoinBaseMerkle []Uint256,
+func NewAuxPow(AuxMerkleBranch []common.Uint256, AuxMerkleIndex int,
+	ParCoinbaseTx BtcTx, ParCoinBaseMerkle []common.Uint256,
 	ParMerkleIndex int, ParBlockHeader BtcHeader) *AuxPow {
 
 	return &AuxPow{
@@ -50,13 +50,13 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 	}
 
 	idx := uint32(ap.AuxMerkleIndex)
-	err = WriteUint32(w, idx)
+	err = common.WriteUint32(w, idx)
 	if err != nil {
 		return err
 	}
 
 	count := uint64(len(ap.AuxMerkleBranch))
-	err = WriteVarUint(w, count)
+	err = common.WriteVarUint(w, count)
 	if err != nil {
 		return err
 	}
@@ -69,13 +69,13 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 	}
 
 	idx = uint32(ap.ParMerkleIndex)
-	err = WriteUint32(w, idx)
+	err = common.WriteUint32(w, idx)
 	if err != nil {
 		return err
 	}
 
 	count = uint64(len(ap.ParCoinBaseMerkle))
-	err = WriteVarUint(w, count)
+	err = common.WriteVarUint(w, count)
 	if err != nil {
 		return err
 	}
@@ -105,20 +105,20 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	temp, err := ReadUint32(r)
+	temp, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 	ap.AuxMerkleIndex = int(temp)
 
-	count, err := ReadVarUint(r, 0)
+	count, err := common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	ap.AuxMerkleBranch = make([]Uint256, count)
+	ap.AuxMerkleBranch = make([]common.Uint256, count)
 	for i := uint64(0); i < count; i++ {
-		temp := Uint256{}
+		temp := common.Uint256{}
 		err = temp.Deserialize(r)
 		if err != nil {
 			return err
@@ -126,20 +126,20 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 		ap.AuxMerkleBranch[i] = temp
 	}
 
-	temp, err = ReadUint32(r)
+	temp, err = common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 	ap.ParMerkleIndex = int(temp)
 
-	count, err = ReadVarUint(r, 0)
+	count, err = common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
 
-	ap.ParCoinBaseMerkle = make([]Uint256, count)
+	ap.ParCoinBaseMerkle = make([]common.Uint256, count)
 	for i := uint64(0); i < count; i++ {
-		temp := Uint256{}
+		temp := common.Uint256{}
 		err = temp.Deserialize(r)
 		if err != nil {
 			return err
@@ -156,14 +156,14 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 	return nil
 }
 
-func (ap *AuxPow) Check(hashAuxBlock *Uint256, chainId int) bool {
+func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
 	if GetMerkleRoot(ap.ParCoinbaseTx.Hash(), ap.ParCoinBaseMerkle, ap.ParMerkleIndex) != ap.ParBlockHeader.MerkleRoot {
 		return false
 	}
 
 	if len(ap.AuxMerkleBranch) > 0 {
-		hashAuxBlockBytes := BytesReverse(hashAuxBlock.Bytes())
-		hashAuxBlock, _ = Uint256FromBytes(hashAuxBlockBytes)
+		hashAuxBlockBytes := common.BytesReverse(hashAuxBlock.Bytes())
+		hashAuxBlock, _ = common.Uint256FromBytes(hashAuxBlockBytes)
 	}
 
 	auxRootHashReverse := GetMerkleRoot(*hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
@@ -208,20 +208,20 @@ func (ap *AuxPow) Check(hashAuxBlock *Uint256, chainId int) bool {
 	return true
 }
 
-func GetMerkleRoot(hash Uint256, merkleBranch []Uint256, index int) Uint256 {
+func GetMerkleRoot(hash common.Uint256, merkleBranch []common.Uint256, index int) common.Uint256 {
 	if index == -1 {
-		return Uint256{}
+		return common.Uint256{}
 	}
 	var sha [64]byte
 	for _, it := range merkleBranch {
 		if (index & 1) == 1 {
 			copy(sha[:32], it[:])
 			copy(sha[32:], hash[:])
-			hash = Uint256(Sha256D(sha[:]))
+			hash = common.Uint256(common.Sha256D(sha[:]))
 		} else {
 			copy(sha[:32], hash[:])
 			copy(sha[32:], it[:])
-			hash = Uint256(Sha256D(sha[:]))
+			hash = common.Uint256(common.Sha256D(sha[:]))
 		}
 		index >>= 1
 	}

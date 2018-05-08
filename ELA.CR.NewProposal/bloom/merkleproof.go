@@ -3,19 +3,19 @@ package bloom
 import (
 	"io"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type MerkleProof struct {
-	BlockHash    Uint256
+	BlockHash    common.Uint256
 	Height       uint32
 	Transactions uint32
-	Hashes       []*Uint256
+	Hashes       []*common.Uint256
 	Flags        []byte
 }
 
 func (p *MerkleProof) Serialize(w io.Writer) error {
-	return WriteElements(w,
+	return common.WriteElements(w,
 		p.BlockHash,
 		p.Height,
 		p.Transactions,
@@ -26,17 +26,17 @@ func (p *MerkleProof) Serialize(w io.Writer) error {
 }
 
 func (p *MerkleProof) Deserialize(r io.Reader) error {
-	err := ReadElements(r,
+	err := common.ReadElements(r,
 		&p.BlockHash,
 		&p.Height,
 		&p.Transactions,
 	)
 
-	hashes, err := ReadUint32(r)
+	hashes, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
-	p.Hashes = make([]*Uint256, hashes)
-	return ReadElements(r, &p.Hashes, &p.Flags)
+	p.Hashes = make([]*common.Uint256, hashes)
+	return common.ReadElements(r, &p.Hashes, &p.Flags)
 }
