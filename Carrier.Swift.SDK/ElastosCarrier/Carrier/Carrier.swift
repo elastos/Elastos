@@ -101,19 +101,16 @@ public class Carrier: NSObject {
         ela_log_init(convertCarrierLogLevelToCLogLevel(level), nil, nil)
     }
 
-    /// Get a carrier node singleton instance. After getting the instance
-    /// with first time, it's ready to start and therefore connect to the
-    /// carrier network.
+    /// Create node singleton instance. After initialize the instance,
+    /// it's ready to start and therefore connect to the carrier network.
     ///
     /// - Parameters:
     ///   - options: The options to set for carrier node
     ///   - delegate: The delegate for carrier node to comply with
     ///
-    /// - Returns: The carrier node instance
-    ///
     /// - Throws: CarrierError
-    public static func getInstance(options: CarrierOptions,
-                                   delegate: CarrierDelegate) throws -> Carrier {
+    public static func initializeInstance(options: CarrierOptions,
+                                   delegate: CarrierDelegate) throws {
         if (carrierInst == nil) {
             Log.d(TAG, "Attempt to create native carrier instance ...")
 
@@ -139,7 +136,6 @@ public class Carrier: NSObject {
             Log.i(TAG, "Native carrier node instance created.")
             carrierInst = carrier
         }
-        return carrierInst!
     }
 
     /// Get a carrier node singleton instance.
