@@ -568,7 +568,7 @@ public class Carrier {
 	 * 		IllegalArgumentException
 	 * 		ElastosException
 	 */
-	void setPresence(PresenceStatus presence) throws ElastosException {
+	public void setPresence(PresenceStatus presence) throws ElastosException {
 		if (presence == null)
 			throw new IllegalArgumentException();
 
@@ -584,7 +584,7 @@ public class Carrier {
 	 * @throws
 	 * 		ElastosException
 	 */
-	PresenceStatus getPresence() throws ElastosException {
+	public PresenceStatus getPresence() throws ElastosException {
 		PresenceStatus presence = get_presence();
 		if (presence == null)
 			throw new ElastosException(get_error_code());
