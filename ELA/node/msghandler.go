@@ -155,15 +155,19 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 		version.Port, version.Nonce, version.Relay, version.Height)
 	LocalNode.AddNbrNode(node)
 
-	ip, _ := node.Addr16()
-	addr := msg.Addr{
-		Time:     node.GetTime(),
-		Services: version.Services,
-		IP:       ip,
-		Port:     version.Port,
-		ID:       version.Nonce,
+	// Do not add SPV client as a known address,
+	// so node will not start a connection to SPV client
+	if node.LocalPort() != protocol.SPVPort {
+		ip, _ := node.Addr16()
+		addr := msg.Addr{
+			Time:     node.GetTime(),
+			Services: version.Services,
+			IP:       ip,
+			Port:     version.Port,
+			ID:       version.Nonce,
+		}
+		LocalNode.AddAddressToKnownAddress(addr)
 	}
-	LocalNode.AddAddressToKnownAddress(addr)
 
 	var message Message
 	if s == INIT {

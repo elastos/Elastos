@@ -1,7 +1,8 @@
 package node
 
 import (
-	"errors"
+	"fmt"
+
 	"github.com/elastos/Elastos.ELA/protocol"
 )
 
@@ -23,13 +24,13 @@ func FilterMessage(node protocol.Noder, msgType string) error {
 		case "pong":
 		case "tx":
 		default:
-			return errors.New("Unsupport messsage from SPV port, type:" + msgType)
+			return fmt.Errorf("unsupport messsage from SPV port %d, type: %s", node.Port(), msgType)
 		}
 	} else {
 		// Node not using SPV port can not send filterload message
 		switch msgType {
 		case "filterload":
-			return errors.New("SPV messsage from non SPV port, type:" + msgType)
+			return fmt.Errorf("SPV messsage from non SPV port %d, type: %s", node.Port(), msgType)
 		}
 	}
 	return nil
