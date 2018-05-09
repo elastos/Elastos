@@ -43,7 +43,8 @@ public class ManagerTest {
         TestHandler handler = new TestHandler();
 
         try {
-            carrierInst = Carrier.getInstance(new TestOptions(getAppPath()), handler);
+            Carrier.initializeInstance(new TestOptions(getAppPath()), handler);
+            carrierInst = Carrier.getInstance();
             carrierInst.start(1000);
             handler.synch.await();
 

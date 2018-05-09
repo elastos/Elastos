@@ -337,7 +337,7 @@ public class Carrier {
 	}
 
 	/**
-	 * Get a carrier node singleton instance. After getting the instance with first time,
+	 * Initialize node singleton instance. After initializing the instance,
 	 * it's ready to start and therefore connect to carrier network.
 	 *
 	 * @param
@@ -345,13 +345,10 @@ public class Carrier {
 	 * @param
 	 * 		handler		The interface handler for carrier node.
 	 *
-	 * @return
-	 * 		A carrier node instance
-	 *
 	 * @throws
 	 * 		ElastosException
 	 */
-	public static Carrier getInstance(Options options, CarrierHandler handler) throws ElastosException {
+	public static void initializeInstance(Options options, CarrierHandler handler) throws ElastosException {
 		if (options == null || handler == null)
 				throw new IllegalArgumentException();
 
@@ -365,7 +362,6 @@ public class Carrier {
 			Log.i(TAG, "Carrier node instance created");
 			carrier = tmp;
   		}
-		return carrier;
 	}
 
 	@Override

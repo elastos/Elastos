@@ -84,7 +84,8 @@ public class FriendMessageTest {
 			robotProxy.bindRobot(receiver);
 			receiver.synch.await();
 
-			carrierInst = Carrier.getInstance(options, handler);
+			Carrier.initializeInstance(options, handler);
+			carrierInst = Carrier.getInstance();
 			carrierInst.start(1000);
 			handler.synch.await();
 		} catch (ElastosException e) {

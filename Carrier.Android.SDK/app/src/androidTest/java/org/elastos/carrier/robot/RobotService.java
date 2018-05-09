@@ -147,7 +147,8 @@ public class RobotService extends Service {
 
 		TestHandler handler = new TestHandler();
 		try {
-			carrierInst = Carrier.getInstance(options, handler);
+			Carrier.initializeInstance(options, handler);
+			carrierInst = Carrier.getInstance();
 			carrierInst.start(10000);
 			handler.synch.await();
 

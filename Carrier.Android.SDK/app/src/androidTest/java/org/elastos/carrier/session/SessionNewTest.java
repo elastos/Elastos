@@ -113,7 +113,8 @@ public class SessionNewTest {
             receiver.synch.await(); // for acquiring robot id.
 
             handler = new TestHandler();
-            carrierInst = Carrier.getInstance(new TestOptions(getAppPath()), handler);
+            Carrier.initializeInstance(new TestOptions(getAppPath()), handler);
+            carrierInst = Carrier.getInstance();
             carrierInst.start(1000);
             handler.synch.await();
 
