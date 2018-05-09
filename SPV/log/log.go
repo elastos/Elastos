@@ -1,12 +1,16 @@
 package log
 
 import (
-	"io"
-	"os"
-	"log"
 	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
 	"time"
+
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+	"strconv"
 )
 
 const (
@@ -77,41 +81,113 @@ func Infof(format string, msg ...interface{}) {
 }
 
 func Trace(msg ...interface{}) {
-	Tracef("%s", fmt.Sprint(msg...))
+	if level >= LevelTrace {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
+		logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintln(msg...)))
+	}
 }
 
 func Tracef(format string, msg ...interface{}) {
 	if level >= LevelTrace {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
 		logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintf(format, msg...)))
 	}
 }
 
 func Warn(msg ...interface{}) {
-	Warnf("%s", fmt.Sprint(msg...))
+	if level >= LevelTrace {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
+		logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintln(msg...)))
+	}
 }
 
 func Warnf(format string, msg ...interface{}) {
 	if level >= LevelWarn {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
 		logger.Output(CallDepth, color(YELLOW, "[WARN]", fmt.Sprintf(format, msg...)))
 	}
 }
 
 func Error(msg ...interface{}) {
-	Errorf("%s", fmt.Sprint(msg...))
+	if level >= LevelError {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
+		logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintln(msg...)))
+	}
 }
 
 func Errorf(format string, msg ...interface{}) {
 	if level >= LevelError {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
 		logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintf(format, msg...)))
 	}
 }
 
 func Debug(msg ...interface{}) {
-	Debugf("%s", fmt.Sprint(msg...))
+	if level >= LevelDebug {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
+		logger.Output(CallDepth, color(GREEN, "[DEBUG]", fmt.Sprintln(msg...)))
+	}
 }
 
 func Debugf(format string, msg ...interface{}) {
 	if level >= LevelDebug {
+		pc := make([]uintptr, 10)
+		runtime.Callers(2, pc)
+		f := runtime.FuncForPC(pc[0])
+		file, line := f.FileLine(pc[0])
+		fileName := filepath.Base(file)
+
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+
 		logger.Output(CallDepth, color(GREEN, "[DEBUG]", fmt.Sprintf(format, msg...)))
 	}
 }
