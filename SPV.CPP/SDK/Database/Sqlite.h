@@ -24,7 +24,7 @@ namespace Elastos {
 
 		class Sqlite {
 		public:
-			Sqlite(const boost::filesystem::path path);
+			Sqlite(const boost::filesystem::path &path);
 			~Sqlite();
 
 			bool isValid();

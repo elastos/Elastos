@@ -11,7 +11,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		Sqlite::Sqlite(const boost::filesystem::path path) {
+		Sqlite::Sqlite(const boost::filesystem::path &path) {
 			open(path);
 		}
 
