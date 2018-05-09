@@ -1390,9 +1390,9 @@ void notify_friend_request_cb(const uint8_t *public_key, const uint8_t* gretting
     descr = elacp_get_descr(cp) ? elacp_get_descr(cp) : "";
     hello = elacp_get_hello(cp) ? elacp_get_hello(cp) : "";
 
-    if (!*name)
+    if (*name)
         strcpy(ui.name, name);
-    if (!*descr)
+    if (*descr)
         strcpy(ui.description, descr);
 
     if (w->callbacks.friend_request)
