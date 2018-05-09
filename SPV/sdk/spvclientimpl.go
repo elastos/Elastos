@@ -53,6 +53,10 @@ func (client *SPVClientImpl) OnHandshake(v *msg.Version) error {
 		return errors.New("SPV service not enabled on connected peer")
 	}
 
+	// As a node support SPV service can only use SPV server port to provide SPV service
+	// so set the port value to SPVServerPort according to the SPV protocol
+	v.Port = SPVServerPort
+
 	return nil
 }
 

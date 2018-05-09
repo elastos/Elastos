@@ -6,8 +6,6 @@ import (
 	"time"
 	"strings"
 	"net"
-	"strconv"
-
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
@@ -68,22 +66,16 @@ func (pm *PeerManager) Start() {
 func (pm *PeerManager) NewPeer(conn net.Conn) *Peer {
 	peer := new(Peer)
 	peer.conn = conn
-	peer.ip16, peer.port = addrFromConn(conn)
+	copy(peer.ip16[:], getIp(conn))
 	peer.msgHelper = p2p.NewMsgHelper(pm.magic, conn, peer)
 	peer.handler = pm
 	return peer
 }
 
-func addrFromConn(conn net.Conn) ([16]byte, uint16) {
+func getIp(conn net.Conn) []byte {
 	addr := conn.RemoteAddr().String()
 	portIndex := strings.LastIndex(addr, ":")
-	port, _ := strconv.ParseUint(string([]byte(addr)[portIndex+1:]), 10, 16)
-	ip := net.ParseIP(string([]byte(addr)[:portIndex])).To16()
-
-	ip16 := [16]byte{}
-	copy(ip16[:], ip[:])
-
-	return ip16, uint16(port)
+	return net.ParseIP(string([]byte(addr)[:portIndex])).To16()
 }
 
 func (pm *PeerManager) NeedMorePeers() bool {
@@ -125,14 +117,14 @@ func (pm *PeerManager) OnDisconnected(peer *Peer) {
 	log.Trace("PeerManager peer disconnected:", peer.String())
 	peer, ok := pm.RemovePeer(peer.ID())
 	if ok {
-		peer.Disconnect()
 		addr := peer.Addr().String()
+		peer.Disconnect()
 		pm.connManager.removeAddrFromConnectingList(addr)
 		pm.addrManager.DisconnectedAddr(addr)
 	}
 }
 
-func (pm *PeerManager) OnDiscardAddr(addr string) {
+func (pm *PeerManager) DiscardAddr(addr string) {
 	pm.addrManager.DiscardAddr(addr)
 }
 
@@ -231,8 +223,8 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 	// Check if handshake with itself
 	if v.Nonce == pm.Local().ID() {
 		log.Error("SPV disconnect peer, peer handshake with itself")
-		pm.OnDisconnected(peer)
-		pm.OnDiscardAddr(peer.Addr().String())
+		peer.Disconnect()
+		pm.DiscardAddr(peer.Addr().String())
 		return errors.New("Peer handshake with itself")
 	}
 
@@ -250,14 +242,14 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 
 	log.Info("Is known peer:", ok)
 
-	// Set peer info with version message
-	peer.SetInfo(v)
-
 	// Handle peer handshake
 	if err := pm.MessageHandler.OnHandshake(v); err != nil {
 		pm.OnDisconnected(peer)
 		return err
 	}
+
+	// Set peer info with version message
+	peer.SetInfo(v)
 
 	var message p2p.Message
 	if peer.State() == p2p.INIT {

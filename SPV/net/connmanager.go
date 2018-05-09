@@ -16,7 +16,7 @@ const (
 
 type ConnectHandler interface {
 	OnPeerConnected(conn net.Conn)
-	OnDiscardAddr(addr string)
+	DiscardAddr(addr string)
 }
 
 type ConnManager struct {
@@ -91,7 +91,7 @@ func (cm *ConnManager) retry(addr string) {
 		cm.removeAddrFromConnectingList(addr)
 		cm.Unlock()
 		// Discard useless address
-		cm.handler.OnDiscardAddr(addr)
+		cm.handler.DiscardAddr(addr)
 		return
 	}
 	cm.retryList[addr] = retryTimes

@@ -108,6 +108,7 @@ func (peer *Peer) Disconnect() {
 
 func (peer *Peer) SetInfo(msg *msg.Version) {
 	peer.id = msg.Nonce
+	peer.port = msg.Port
 	peer.version = msg.Version
 	peer.services = msg.Services
 	peer.lastActive = time.Now()
