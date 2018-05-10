@@ -102,9 +102,14 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 
 	var txAttribute []*ela.Attribute
 	for _, att := range txInfo.Attributes {
-		attData, err := HexStringToBytes(att.Data)
-		if err != nil {
-			return nil, err
+		var attData []byte
+		if att.Usage == ela.Nonce {
+			attData = []byte(att.Data)
+		} else {
+			attData, err = HexStringToBytes(att.Data)
+			if err != nil {
+				return nil, err
+			}
 		}
 		txAttr := &ela.Attribute{
 			Usage: att.Usage,
@@ -932,6 +937,7 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 			return nil, err
 		}
 		obj.MerkleProof = bytes
+		return obj, nil
 	case *TransferCrossChainAssetInfo:
 		obj := new(ela.PayloadTransferCrossChainAsset)
 		obj.AddressesMap = object.AddressesMap

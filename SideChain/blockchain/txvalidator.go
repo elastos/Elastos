@@ -62,7 +62,7 @@ func CheckTransactionContext(txn *ela.Transaction) ErrCode {
 		return ErrTxHashDuplicate
 	}
 
-	if txn.IsCoinBaseTx() {
+	if txn.IsCoinBaseTx() || txn.IsIssueTokenTx() {
 		return Success
 	}
 
@@ -129,6 +129,10 @@ func CheckTransactionInput(txn *ela.Transaction) error {
 		return nil
 	}
 
+	if txn.IsIssueTokenTx() {
+		return nil
+	}
+
 	if len(txn.Inputs) <= 0 {
 		return errors.New("transaction has no inputs")
 	}
@@ -168,6 +172,10 @@ func CheckTransactionOutput(txn *ela.Transaction) error {
 			return errors.New("no foundation address in coinbase output")
 		}
 
+		return nil
+	}
+
+	if txn.IsIssueTokenTx() {
 		return nil
 	}
 
@@ -225,13 +233,13 @@ func CheckTransactionSize(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckAssetPrecision(Tx *ela.Transaction) error {
-	if len(Tx.Outputs) == 0 {
+func CheckAssetPrecision(txn *ela.Transaction) error {
+	if len(txn.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[Uint256][]*ela.Output, len(Tx.Outputs))
+	assetOutputs := make(map[Uint256][]*ela.Output, len(txn.Outputs))
 
-	for _, v := range Tx.Outputs {
+	for _, v := range txn.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
 	}
 	for k, outputs := range assetOutputs {
@@ -249,21 +257,21 @@ func CheckAssetPrecision(Tx *ela.Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(tx *ela.Transaction) error {
+func CheckTransactionBalance(txn *ela.Transaction) error {
 	// TODO: check coinbase balance 30%-70%
-	for _, v := range tx.Outputs {
+	for _, v := range txn.Outputs {
 		if v.Value <= Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
-	results, err := GetTxFeeMap(tx)
+	results, err := GetTxFeeMap(txn)
 	if err != nil {
 		return err
 	}
 	for k, v := range results {
 		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, tx.Hash()))
-			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, tx.Hash()))
+			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
+			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
 		}
 	}
 	return nil
@@ -287,9 +295,9 @@ func checkAmountPrecise(amount Fixed64, precision byte) bool {
 	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
 }
 
-func CheckTransactionPayload(tx *ela.Transaction) error {
+func CheckTransactionPayload(txn *ela.Transaction) error {
 
-	switch pld := tx.Payload.(type) {
+	switch pld := txn.Payload.(type) {
 	case *ela.PayloadRegisterAsset:
 		if pld.Asset.Precision < ela.MinPrecision || pld.Asset.Precision > ela.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
@@ -302,6 +310,7 @@ func CheckTransactionPayload(tx *ela.Transaction) error {
 	case *ela.PayloadCoinBase:
 	case *ela.PayloadSideMining:
 	case *ela.PayloadWithdrawAsset:
+	case *ela.PayloadIssueToken:
 	case *ela.PayloadTransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
