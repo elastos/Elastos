@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math"
 
-	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -225,13 +225,13 @@ func CheckTransactionSize(txn *Transaction) error {
 	return nil
 }
 
-func CheckAssetPrecision(Tx *Transaction) error {
-	if len(Tx.Outputs) == 0 {
+func CheckAssetPrecision(txn *Transaction) error {
+	if len(txn.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[Uint256][]*Output, len(Tx.Outputs))
+	assetOutputs := make(map[Uint256][]*Output, len(txn.Outputs))
 
-	for _, v := range Tx.Outputs {
+	for _, v := range txn.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
 	}
 	for k, outputs := range assetOutputs {
@@ -249,21 +249,25 @@ func CheckAssetPrecision(Tx *Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(tx *Transaction) error {
+func CheckTransactionBalance(txn *Transaction) error {
+	if txn.IsWithdrawTx() {
+		return nil
+	}
+
 	// TODO: check coinbase balance 30%-70%
-	for _, v := range tx.Outputs {
+	for _, v := range txn.Outputs {
 		if v.Value <= Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
-	results, err := GetTxFeeMap(tx)
+	results, err := GetTxFeeMap(txn)
 	if err != nil {
 		return err
 	}
 	for k, v := range results {
 		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, tx.Hash()))
-			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, tx.Hash()))
+			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
+			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
 		}
 	}
 	return nil
@@ -287,9 +291,9 @@ func checkAmountPrecise(amount Fixed64, precision byte) bool {
 	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
 }
 
-func CheckTransactionPayload(tx *Transaction) error {
+func CheckTransactionPayload(txn *Transaction) error {
 
-	switch pld := tx.Payload.(type) {
+	switch pld := txn.Payload.(type) {
 	case *PayloadRegisterAsset:
 		if pld.Asset.Precision < MinPrecision || pld.Asset.Precision > MaxPrecision {
 			return errors.New("Invalide asset Precision.")
