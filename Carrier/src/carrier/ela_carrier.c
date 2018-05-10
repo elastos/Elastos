@@ -474,8 +474,9 @@ static int convert_old_dhtdata(const char *data_location)
 
             uint8_t *rptr = pos;
             uint8_t *wptr = pos;
+            int i;
 
-            for (int i = 0; i < val; i++) {
+            for (i = 0; i < val; i++) {
                 uint32_t id = *(uint32_t *)rptr;
                 rptr += sizeof(uint32_t);
                 size_t label_len = strlen((const char *)rptr);
