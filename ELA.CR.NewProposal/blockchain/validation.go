@@ -39,14 +39,16 @@ func VerifySignature(tx *Transaction) (bool, error) {
 			return false, err
 		}
 
-		if !hashes[i].IsEqual(*programHash) {
-			return false, errors.New("The data hashes is different with corresponding program code.")
-		}
 		// Get transaction type
 		signType, err := crypto.GetScriptType(code)
 		if err != nil {
 			return false, err
 		}
+
+		if !hashes[i].IsEqual(*programHash) && signType != crypto.CROSSCHAIN {
+			return false, errors.New("The data hashes is different with corresponding program code.")
+		}
+
 		if signType == crypto.STANDARD {
 			// Remove length byte and sign type byte
 			publicKeyBytes := code[1 : len(code)-1]
@@ -183,6 +185,14 @@ func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
 	withdrawPayload, ok := txn.Payload.(*PayloadWithdrawAsset)
 	if !ok {
 		return errors.New("Invalid payload type.")
+	}
+
+	if sidechain.DbCache == nil {
+		dbCache, err := sidechain.OpenDataStore()
+		if err != nil {
+			errors.New("Open data store failed")
+		}
+		sidechain.DbCache = dbCache
 	}
 
 	ok, err := sidechain.DbCache.HasSideChainTx(withdrawPayload.SideChainTransactionHash)
