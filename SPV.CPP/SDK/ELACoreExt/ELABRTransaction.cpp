@@ -8,6 +8,7 @@
 
 #include "BRArray.h"
 #include "ELABRTransaction.h"
+#include "ELABRTxOutput.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -17,10 +18,18 @@ namespace Elastos {
 			memset(tx, 0, sizeof(ELABRTransaction));
 			array_new(tx->raw.inputs, 1);
 			array_new(tx->raw.outputs, 2);
+			BRTransaction *temp = BRTransactionNew();
+			tx->raw.version = temp->version;
+			tx->raw.lockTime = temp->lockTime;
+			tx->raw.blockHeight = TX_UNCONFIRMED;
 			tx->type = 0;
 			tx->payloadVersion = 0;
 			tx->programData.clear();
 			tx->attributeData.clear();
+			tx->outputAssetIDList.clear();
+			tx->outputLockList.clear();
+			tx->outputProgramHashList.clear();
+			BRTransactionFree(temp);
 			return tx;
 		}
 
@@ -56,6 +65,21 @@ namespace Elastos {
 				ByteData byteData(new uint8_t[tx->attributeData[i].length], tx->attributeData[i].length);
 				memcpy(byteData.data, tx->attributeData[i].data, tx->attributeData[i].length);
 				elabrTransaction->attributeData.push_back(byteData);
+			}
+
+			elabrTransaction->outputAssetIDList.reserve(tx->outputAssetIDList.size());
+			for (size_t i = 0; i < tx->outputAssetIDList.size(); ++i) {
+				UInt256Set(&elabrTransaction->outputAssetIDList[i], tx->outputAssetIDList[i]);
+			}
+
+			elabrTransaction->outputLockList.reserve(tx->outputLockList.size());
+			for (size_t i = 0; i < tx->outputLockList.size(); ++i) {
+				elabrTransaction->outputLockList[i] = tx->outputLockList[i];
+			}
+
+			elabrTransaction->outputProgramHashList.reserve(tx->outputProgramHashList.size());
+			for (size_t i = 0; i < tx->outputProgramHashList.size(); ++i) {
+				UInt168Set(&elabrTransaction->outputProgramHashList[i], tx->outputProgramHashList[i]);
 			}
 			return elabrTransaction;
 		}

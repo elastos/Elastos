@@ -67,6 +67,8 @@ namespace Elastos {
 
 			UInt256 getHash() const;
 
+			void resetHash();
+
 			uint32_t getVersion() const;
 
 			const SharedWrapperList<TransactionInput, BRTxInput *> &getInputs() const;

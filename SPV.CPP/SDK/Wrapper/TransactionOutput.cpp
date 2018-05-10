@@ -61,7 +61,9 @@ namespace Elastos {
 		}
 
 		ByteData TransactionOutput::getScript() const {
-			return ByteData(_output->script, _output->scriptLen);
+			uint8_t *data = new uint8_t[_output->scriptLen];
+			memcpy(data, _output->script, _output->scriptLen);
+			return ByteData(data, _output->scriptLen);
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {

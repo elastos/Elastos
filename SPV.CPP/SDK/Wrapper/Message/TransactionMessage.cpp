@@ -11,6 +11,7 @@
 #include "Log.h"
 #include "Utils.h"
 #include "ELACoreExt/ELAPeerContext.h"
+#include "ELABRTransaction.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -74,8 +75,8 @@ namespace Elastos {
 
 		void TransactionMessage::Send(BRPeer *peer, void *serializable) {
 
-			BRTransaction *tx = (BRTransaction *) serializable;
-			Transaction transaction(BRTransactionCopy(tx));
+			ELABRTransaction *tx = (ELABRTransaction *)serializable;
+			Transaction transaction((BRTransaction *)ELABRTransactioCopy(tx));
 			ByteStream stream;
 			transaction.Serialize(stream);
 			BRPeerSendMessage(peer, stream.getBuf(), stream.length(), MSG_TX);

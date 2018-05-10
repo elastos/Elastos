@@ -20,6 +20,9 @@ namespace Elastos {
 			ByteData payloadData;
 			std::vector<ByteData> attributeData;
 			std::vector<ByteData> programData;
+			std::vector<UInt256>  outputAssetIDList;
+			std::vector<uint32_t> outputLockList;
+			std::vector<UInt168>  outputProgramHashList;
 
 		} ELABRTransaction;
 

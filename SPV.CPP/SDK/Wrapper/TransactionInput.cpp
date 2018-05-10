@@ -16,7 +16,6 @@ namespace Elastos {
 
 		TransactionInput::TransactionInput(BRTxInput *input) {
 			_input = boost::shared_ptr<BRTxInput>(input);
-			memset(_input.get(), 0, sizeof(BRTxInput));
 		}
 
 		TransactionInput::TransactionInput(UInt256 hash, uint32_t index, uint64_t amount, ByteData script,
@@ -62,11 +61,18 @@ namespace Elastos {
 		}
 
 		ByteData TransactionInput::getScript() const {
-			return ByteData(_input->script, _input->scriptLen);
+			uint8_t *data = new uint8_t(_input->scriptLen);
+			memcpy(data, _input->script, _input->scriptLen);
+			return ByteData(data, _input->scriptLen);
 		}
 
 		ByteData TransactionInput::getSignature() const {
-			return ByteData(_input->signature, _input->sigLen);
+			uint8_t *data = nullptr;
+			if (_input->sigLen > 0) {
+				data = new uint8_t(_input->sigLen);
+				memcpy(data, _input->signature, _input->sigLen);
+			}
+			return ByteData(data, _input->sigLen);
 		}
 
 		uint32_t TransactionInput::getSequence() const {

@@ -17,6 +17,9 @@ namespace Elastos {
 			static std::string UInt256ToString(const UInt256 &u256);
 			static UInt256 UInt256FromString(const std::string &u256);
 
+			static std::string UInt168ToString(const UInt168 &u168);
+			static UInt168 UInt168FromString(const std::string &str);
+
 			static void	decodeHex (uint8_t *target, size_t targetLen, char *source, size_t sourceLen);
 			static size_t decodeHexLength (size_t stringLen);
 			static uint8_t *decodeHexCreate (size_t *targetLen, char *source, size_t sourceLen);

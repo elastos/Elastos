@@ -18,6 +18,7 @@
 #include "Payload/PayloadTransferAsset.h"
 #include "ELABRTransaction.h"
 #include "BRCrypto.h"
+#include "ELABRTxOutput.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -27,7 +28,6 @@ namespace Elastos {
 				_payload(nullptr) {
 
 			_transaction = (BRTransaction *) ELABRTransactionNew();
-			setPayloadByTransactionType();
 			convertFrom(_transaction);
 		}
 
@@ -35,7 +35,6 @@ namespace Elastos {
 				_transaction(transaction),
 				_isRegistered(false),
 				_payload(nullptr) {
-			setPayloadByTransactionType();
 			convertFrom(transaction);
 		}
 
@@ -44,7 +43,6 @@ namespace Elastos {
 				_payload(nullptr) {
 			_transaction = BRTransactionParse(buffer.data, buffer.length);
 			assert (nullptr != _transaction);
-			setPayloadByTransactionType();
 			convertFrom(_transaction);
 		}
 
@@ -83,14 +81,20 @@ namespace Elastos {
 			return _isRegistered;
 		}
 
+		void Transaction::resetHash() {
+			UInt256Set(&_transaction->txHash, UINT256_ZERO);
+		}
+
 		UInt256 Transaction::getHash() const {
 			UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_transaction->txHash, &zero)) {
 				ByteStream ostream;
 				serializeUnsigned(ostream);
+				uint8_t *buff = ostream.getBuf();
 				UInt256 hash = UINT256_ZERO;
-				BRSHA256_2(&hash, ostream.getBuf(), ostream.position());
+				BRSHA256_2(&hash, buff, ostream.position());
 				UInt256Set(&_transaction->txHash, hash);
+				delete buff;
 			}
 			return _transaction->txHash;
 		}
@@ -170,7 +174,6 @@ namespace Elastos {
 			assert (target != nullptr);
 			assert (source != nullptr);
 			*target = *source;
-
 			target->script = nullptr;
 			BRTxOutputSetScript(target, source->script, source->scriptLen);
 		}
@@ -188,11 +191,17 @@ namespace Elastos {
 
 		const SharedWrapperList<TransactionOutput, BRTxOutput *> &Transaction::getOutputs() const {
 
+			ELABRTransaction *elabrTransaction = (ELABRTransaction *)_transaction;
 			if (_outputs.empty()) {
 				for (int i = 0; i < _transaction->outCount; i++) {
-					BRTxOutput *output = new BRTxOutput;
-					transactionOutputCopy(output, &_transaction->outputs[i]);
-					_outputs.push_back(TransactionOutputPtr(new TransactionOutput(output)));
+					ELABRTxOutput *output = new ELABRTxOutput;
+					transactionOutputCopy((BRTxOutput *)output, &_transaction->outputs[i]);
+
+					UInt256Set(&output->assetId, elabrTransaction->outputAssetIDList[i]);
+					output->outputLock = elabrTransaction->outputLockList[i];
+					UInt168Set(&output->programHash, elabrTransaction->outputProgramHashList[i]);
+
+					_outputs.push_back(TransactionOutputPtr(new TransactionOutput((BRTxOutput *)output)));
 				}
 			}
 
@@ -257,6 +266,13 @@ namespace Elastos {
 
 			BRTransactionAddOutput(_transaction, output.getAmount(),
 			                       output.getScript().data, output.getScript().length);
+
+			ELABRTransaction *elabrTransaction = (ELABRTransaction *)_transaction;
+			const UInt256 assetID = output.getAssetId();
+			elabrTransaction->outputAssetIDList.push_back(assetID);
+			elabrTransaction->outputLockList.push_back(output.getOutputLock());
+			const UInt168 programHash = output.getProgramHash();
+			elabrTransaction->outputProgramHashList.push_back(programHash);
 		}
 
 		void Transaction::shuffleOutputs() {
@@ -315,7 +331,7 @@ namespace Elastos {
 			}
 		}
 
-		void Transaction::serializeUnsigned(ByteStream &ostream) const{
+		void Transaction::serializeUnsigned(ByteStream &ostream) const {
 			ostream.put(_type);
 
 			ostream.put(_payloadVersion);
@@ -345,6 +361,7 @@ namespace Elastos {
 			UInt32SetLE(lockTimeData, _transaction->lockTime);
 			ostream.putBytes(lockTimeData, sizeof(lockTimeData));
 		}
+
 		void Transaction::Deserialize(ByteStream &istream) {
 			_type = Type(istream.get());
 			setPayloadByTransactionType();
@@ -416,6 +433,11 @@ namespace Elastos {
 				output = outputs[i].get();
 				BRTransactionAddOutput(&transaction->raw, output->getAmount(), output->getScript().data,
 				                       output->getScript().length);
+				const UInt256 assetID = output->getAssetId();
+				transaction->outputAssetIDList.push_back(assetID);
+				transaction->outputLockList.push_back(output->getOutputLock());
+				const UInt168 programHash = output->getProgramHash();
+				transaction->outputProgramHashList.push_back(programHash);
 			}
 
 			transaction->type = _type;
@@ -433,7 +455,7 @@ namespace Elastos {
 				AttributePtr attr = _attributes[i];
 				byteStream.reSet();
 				attr->Serialize(byteStream);
-				transaction->attributeData.push_back(ByteData(byteStream.getBuf(), (size_t)byteStream.length()));
+				transaction->attributeData.push_back(ByteData(byteStream.getBuf(), (size_t) byteStream.length()));
 			}
 
 			transaction->programData.clear();
@@ -443,7 +465,7 @@ namespace Elastos {
 				ProgramPtr programPtr = _programs[i];
 				byteStream.reSet();
 				programPtr->Serialize(byteStream);
-				ByteData programBytes(byteStream.getBuf(), (size_t)byteStream.length());
+				ByteData programBytes(byteStream.getBuf(), (size_t) byteStream.length());
 				transaction->programData.push_back(programBytes);
 			}
 
@@ -452,7 +474,7 @@ namespace Elastos {
 
 		void Transaction::convertFrom(const BRTransaction *raw) {
 			assert(raw != nullptr);
-			ELABRTransaction *elabrTransaction = ELABRTransactioCopy((ELABRTransaction *)raw);
+			ELABRTransaction *elabrTransaction = ELABRTransactioCopy((ELABRTransaction *) raw);
 
 			_inputs.clear();
 			getInputs();
@@ -487,7 +509,7 @@ namespace Elastos {
 
 			_programs.clear();
 			len = elabrTransaction->programData.size();
-			if(len > 0) {
+			if (len > 0) {
 				for (ssize_t i = 0; i < len; i++) {
 					ByteData byteData = elabrTransaction->programData[i];
 					uint8_t *data = new uint8_t[byteData.length];

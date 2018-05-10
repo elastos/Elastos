@@ -36,6 +36,9 @@ namespace Elastos {
 		AuxPow::AuxPow() {
 			_btcTransaction = BRTransactionNew();
 			_parBlockHeader = BRMerkleBlockNew();
+			_auxMerkleIndex = 0;
+			_parMerkleIndex = 0;
+			_parentHash = UINT256_ZERO;
 		}
 
 		AuxPow::~AuxPow() {
@@ -286,7 +289,7 @@ namespace Elastos {
 			_btcTransaction = BRTransactionCopy(auxPow._btcTransaction);
 			_parMerkleIndex = auxPow._parMerkleIndex;
 			_parBlockHeader = BRMerkleBlockCopy(auxPow._parBlockHeader);
-			_parentHash = auxPow._parentHash;
+			UInt256Set(&_parentHash, auxPow._parentHash);
 		}
 
 		void AuxPow::setBTCTransaction(BRTransaction *transaction) {
@@ -305,10 +308,10 @@ namespace Elastos {
 			_auxMerkleBranch = auxPow._auxMerkleBranch;
 			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
 			_auxMerkleIndex = auxPow._auxMerkleIndex;
-			_btcTransaction = BRTransactionCopy(auxPow._btcTransaction);
+			setBTCTransaction(BRTransactionCopy(auxPow._btcTransaction));
 			_parMerkleIndex = auxPow._parMerkleIndex;
-			_parBlockHeader = BRMerkleBlockCopy(auxPow._parBlockHeader);
-			_parentHash = auxPow._parentHash;
+			setParBlockHeader(BRMerkleBlockCopy(auxPow._parBlockHeader));
+			UInt256Set(&_parentHash, auxPow._parentHash);
 			return *this;
 		}
 

@@ -45,23 +45,47 @@ WrapperList<Peer, BRPeer> TestWalletManager::loadPeers() {
 }
 
 void TestWalletManager::testSendTransaction() {
-	std::string str = "02000100133535373730303637393139343737373934313001ff8972534dcdd3700a2279442ca5cd6b9b6639f4710467a18244ba637c672f030100feffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a300c2eb0b0000000000000000215505da55ee9de910658619b4d5e4e6c59acaeb00b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a31ef2f90800000000000000002119acda6f6e57aceb7572260ff1e9e6fc50b997330000000001414040dac1c038dfc66c208743bf5be6e9857e2132ede1365a92e60f59b51035e3c818b9a833aecca9eeb658e0e73ecf13109beb7611bc893de37c949a5849b05a1f232103bb6a8c5a716a5002f0d802aecba3766eb58f11dd04d01033f932ce96fd121db7ac";
-
-	uint8_t *script = new uint8_t[str.length() / 2];
-	Utils::decodeHex(script, str.length() / 2, (char *)str.c_str(), str.length());
 
 	Transaction transaction;
-	ByteStream byteStream(script, str.length() / 2);
-	transaction.Deserialize(byteStream);
+	TransactionInput input;
+	input.setAddress("EWEfdKMyjPkAkHtvxiDvsRPssQi2Ymeupr");
+	BRTxInput *brTxInput = input.getRaw();
+	UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
+	brTxInput->txHash = hash;
+	brTxInput->amount = 400000000;
+	brTxInput->index = 567;
+	brTxInput->sequence = 98888;
+	brTxInput->scriptLen = 0;
+	brTxInput->script = nullptr;
+	transaction.addInput(input);
 
-	BRTransaction *brTransaction = transaction.convertToRaw();
-	BRTransaction *temp = BRTransactionNew();
-	brTransaction->version = temp->version;
-	brTransaction->lockTime = temp->lockTime;
-	brTransaction->blockHeight = temp->blockHeight;
+	TransactionOutput transactionOutput1;
+	transactionOutput1.setAddress("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP");
+	transactionOutput1.setAmount(100000000);
+	hash = uint256("b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3");
+	transactionOutput1.setAssetId(hash);
+	transactionOutput1.setOutputLock(1);
+	transactionOutput1.setProgramHash(Utils::UInt168FromString("215505da55ee9de910658619b4d5e4e6c59acaeb00"));
 
-	TransactionPtr ptr(new Transaction(brTransaction));
-	UInt256 hash = signAndPublishTransaction(ptr);
+	TransactionOutput transactionOutput2;
+	transactionOutput2.setAddress("EQuTwZ7sQzXyoteFxuwyqhVHqBsh4kFVhV");
+	transactionOutput2.setAmount(150598174);
+	hash = uint256("b137db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3");
+	transactionOutput2.setAssetId(hash);
+	transactionOutput2.setOutputLock(2);
+	transactionOutput2.setProgramHash(Utils::UInt168FromString("2119acda6f6e57aceb7572260ff1e9e6fc50b99733"));
+
+	transaction.addOutput(transactionOutput1);
+	transaction.addOutput(transactionOutput2);
+	transaction.setTransactionType(Transaction::Type::TransferAsset);
+
+	ByteStream byteStream;
+	transaction.Serialize(byteStream);
+	byteStream.setPosition(0);
+	TransactionPtr ptr(new Transaction());
+	ptr->Deserialize(byteStream);
+	hash = signAndPublishTransaction(ptr);
 
 	Log::getLogger()->info("signAndPublishTransaction hash:{}",Utils::UInt256ToString(hash));
+
 }

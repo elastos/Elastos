@@ -33,11 +33,10 @@ namespace Elastos {
 
 		void PayloadCoinBase::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
-			uint8_t *data = new uint8_t[len];
-			memset(data, 0, len);
-			istream.getBytes(data, len);
-
-			_coinBaseData = ByteData(data, len);
+			_coinBaseData.data = new uint8_t[len];
+			memset(_coinBaseData.data, 0, len);
+			istream.getBytes(_coinBaseData.data, len);
+			_coinBaseData.length = len;
 		}
 	}
 }
