@@ -277,6 +277,15 @@ func (tx *Transaction) Hash() Uint256 {
 	}
 	return *tx.hash
 }
+
+func (tx *Transaction) IsWithdrawTx() bool {
+	return tx.TxType == WithdrawAsset
+}
+
+func (tx *Transaction) IsIssueTokenTx() bool {
+	return tx.TxType == IssueToken
+}
+
 func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }
