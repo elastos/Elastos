@@ -43,6 +43,7 @@ namespace Elastos {
 				length = src.length;
 				data = new uint8_t[length];
 				memcpy(data, src.data, src.length);
+				return *this;
 			}
 
 			uint8_t *data;
