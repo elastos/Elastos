@@ -1,12 +1,12 @@
 package node
 
 import (
-	"net"
 	"fmt"
+	"net"
 
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
-	"github.com/elastos/Elastos.ELA/config"
 )
 
 func (node *node) listenSPVPort() {

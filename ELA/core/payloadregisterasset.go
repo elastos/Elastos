@@ -1,8 +1,8 @@
 package core
 
 import (
-	"io"
 	"errors"
+	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )

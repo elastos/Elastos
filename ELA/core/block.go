@@ -9,18 +9,16 @@ import (
 )
 
 const (
-	BlockVersion     uint32 = 0
-	GenesisNonce     uint32 = 2083236893
-	InvalidBlockSize int    = -1
+	BlockVersion          uint32 = 0
+	GenesisNonce          uint32 = 2083236893
+	InvalidBlockSize      int    = -1
+	CheckTxOut                   = 1 << 1
+	BlockHeightCheckTxOut        = 88812
 )
 
 type Block struct {
 	Header
 	Transactions []*Transaction
-}
-
-func (b *Block) CMD() string {
-	return "block"
 }
 
 func (b *Block) Serialize(w io.Writer) error {

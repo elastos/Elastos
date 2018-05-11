@@ -6,7 +6,7 @@ import (
 
 type Params map[string]interface{}
 
-func FromArray(array []interface{}, fileds ... string) Params {
+func FromArray(array []interface{}, fileds ...string) Params {
 	params := make(Params)
 	for i := 0; i < len(array); i++ {
 		params[fileds[i]] = array[i]

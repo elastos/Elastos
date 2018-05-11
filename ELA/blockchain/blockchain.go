@@ -2,8 +2,8 @@ package blockchain
 
 import (
 	"container/list"
-	"errors"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math/big"
 	"math/rand"
@@ -13,8 +13,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -845,16 +845,15 @@ func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 	return nil
 }
 
-func (bc *Blockchain) BlockExists(hash *Uint256) (bool, error) {
+func (bc *Blockchain) BlockExists(hash *Uint256) bool {
 	// Check memory chain first (could be main chain or side chain blocks).
 	//if _, ok := bc.Index[*hash]; ok {
 	if _, ok := bc.LookupNodeInIndex(hash); ok {
-		return true, nil
+		return true
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return DefaultLedger.BlockInLedger(*hash), nil
-	return false, nil
+	return DefaultLedger.BlockInLedger(*hash)
 }
 
 func (bc *Blockchain) maybeAcceptBlock(block *Block) (bool, error) {
@@ -1024,11 +1023,7 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 	log.Tracef("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
 	// The block must not already exist in the main chain or side chains.
-	exists, err := bc.BlockExists(&blockHash)
-	if err != nil {
-		log.Trace("[ProcessBLock] block exists err")
-		return false, false, err
-	}
+	exists := bc.BlockExists(&blockHash)
 	if exists {
 		str := fmt.Sprintf("already have block %x\n", blockHash.Bytes())
 		return false, false, fmt.Errorf(str)
@@ -1044,7 +1039,7 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = PowCheckBlockSanity(block, PowLimit, bc.TimeSource)
-	err = PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
+	err := PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
 
 	if err != nil {
 		log.Error("PowCheckBlockSanity error!")
@@ -1056,12 +1051,8 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 	// Handle orphan blocks.
 	prevHash := blockHeader.Previous
 	if !prevHash.IsEqual(EmptyHash) {
-		prevHashExists, err := bc.BlockExists(&prevHash)
-		if err != nil {
-			return false, false, err
-		}
-		//log.Tracef("[ProcessBLock] prev block already exist= %v\n", prevHashExists)
-		if !prevHashExists {
+		prevExists := bc.BlockExists(&prevHash)
+		if !prevExists {
 			log.Tracef("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
 			bc.AddOrphanBlock(block)
 

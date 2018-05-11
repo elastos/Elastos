@@ -2,8 +2,8 @@ package core
 
 import (
 	"errors"
-	"io"
 	"fmt"
+	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )

@@ -15,22 +15,19 @@ import (
 )
 
 const (
-	MSGHDRLEN          = 24
-	MAXBLKHDRCNT       = 400
 	MinConnectionCount = 3
-	TIMESOFUPDATETIME  = 2
+	TimesOfUpdateTime  = 2
 )
 
 const (
-	MAXBUFLEN        = 1024 * 16 // Fixme The maximum buffer to receive message
-	PROTOCOLVERSION  = 1
-	KEEPALIVETIMEOUT = 3
-	DIALTIMEOUT      = 6
-	CONNMONITOR      = 6
-	MAXSYNCHDRREQ    = 2 //Max Concurrent Sync Header Request
+	ProtocolVersion  = p2p.EIP001Version
+	KeepAliveTimeout = 3
+	DialTimeout      = 6
+	ConnMonitor      = 6
+	MaxSyncHdrReq    = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount = 8
 	DefaultMaxPeers  = 125
-	MAXIDCACHED      = 5000
+	MaxIdCached      = 5000
 )
 
 const (
@@ -64,15 +61,16 @@ type Noder interface {
 	DumpInfo()
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay uint8, height uint64)
+	UpdateMsgHandler(handler p2p.MsgHandler)
 	ConnectSeeds()
 	Connect(nodeAddr string) error
-	LoadFilter(filter *bloom.FilterLoad)
+	LoadFilter(filter *msg.FilterLoad)
 	BloomFilter() *bloom.Filter
 	Send(msg p2p.Message)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighborAddrs() ([]msg.Addr, uint64)
+	GetNeighborAddrs() ([]p2p.NetAddress, uint64)
 	GetTransaction(hash Uint256) *Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
@@ -93,10 +91,10 @@ type Noder interface {
 	SetAddrInConnectingList(addr string) bool
 	RemoveAddrInConnectingList(addr string)
 	GetAddressCnt() uint64
-	AddAddressToKnownAddress(na msg.Addr)
-	RandGetAddresses(nbrAddrs []msg.Addr) []msg.Addr
+	AddAddressToKnownAddress(na p2p.NetAddress)
+	RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.NetAddress
 	NeedMoreAddresses() bool
-	RandSelectAddresses() []msg.Addr
+	RandSelectAddresses() []p2p.NetAddress
 	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
 	ExistHash(hash Uint256) bool

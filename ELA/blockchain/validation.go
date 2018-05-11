@@ -9,7 +9,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/sidechain"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -45,25 +45,25 @@ func VerifySignature(tx *Transaction) (bool, error) {
 			return false, err
 		}
 
-		if !hashes[i].IsEqual(*programHash) && signType != crypto.CROSSCHAIN {
+		if !hashes[i].IsEqual(*programHash) && signType != common.CROSSCHAIN {
 			return false, errors.New("The data hashes is different with corresponding program code.")
 		}
 
-		if signType == crypto.STANDARD {
+		if signType == common.STANDARD {
 			// Remove length byte and sign type byte
 			publicKeyBytes := code[1 : len(code)-1]
 
 			return checkStandardSignature(publicKeyBytes, data, param)
 
-		} else if signType == crypto.MULTISIG {
+		} else if signType == common.MULTISIG {
 			publicKeys, err := crypto.ParseMultisigScript(code)
 			if err != nil {
 				return false, err
 			}
 			return checkMultiSignSignatures(code, param, data, publicKeys)
 
-		} else if signType == crypto.CROSSCHAIN {
-			publicKeys, err := crypto.ParseMultisigScript(code)
+		} else if signType == common.CROSSCHAIN {
+			publicKeys, err := crypto.ParseCrossChainScript(code)
 			if err != nil {
 				return false, err
 			}
@@ -77,12 +77,12 @@ func VerifySignature(tx *Transaction) (bool, error) {
 	return true, nil
 }
 
-func GetTxProgramHashes(tx *Transaction) ([]Uint168, error) {
+func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
-	hashes := make([]Uint168, 0)
-	uniqueHashes := make([]Uint168, 0)
+	hashes := make([]common.Uint168, 0)
+	uniqueHashes := make([]common.Uint168, 0)
 	// add inputUTXO's transaction
 	references, err := DefaultLedger.Store.GetTxReference(tx)
 	if err != nil {
@@ -94,7 +94,7 @@ func GetTxProgramHashes(tx *Transaction) ([]Uint168, error) {
 	}
 	for _, attribute := range tx.Attributes {
 		if attribute.Usage == Script {
-			dataHash, err := Uint168FromBytes(attribute.Data)
+			dataHash, err := common.Uint168FromBytes(attribute.Data)
 			if err != nil {
 				return nil, errors.New("[Transaction], GetProgramHashes err.")
 			}
@@ -111,7 +111,7 @@ func GetTxProgramHashes(tx *Transaction) ([]Uint168, error) {
 	}
 
 	//remove dupilicated hashes
-	uniq := make(map[Uint168]bool)
+	uniq := make(map[common.Uint168]bool)
 	for _, v := range hashes {
 		uniq[v] = true
 	}
@@ -280,7 +280,7 @@ func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
 	return nil
 }
 
-type byProgramHashes []Uint168
+type byProgramHashes []common.Uint168
 
 func (a byProgramHashes) Len() int      { return len(a) }
 func (a byProgramHashes) Swap(i, j int) { a[i], a[j] = a[j], a[i] }

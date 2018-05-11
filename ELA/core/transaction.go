@@ -84,10 +84,6 @@ func (tx *Transaction) String() string {
 		"}\n")
 }
 
-func (tx *Transaction) CMD() string {
-	return "tx"
-}
-
 //Serialize the Transaction
 func (tx *Transaction) Serialize(w io.Writer) error {
 	if err := tx.SerializeUnsigned(w); err != nil {
