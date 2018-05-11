@@ -194,13 +194,13 @@ func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
 		return false
 	}
 
-	size := binary.LittleEndian.Uint32(script[rootHashIndex/2: rootHashIndex/2+4])
+	size := binary.LittleEndian.Uint32(script[rootHashIndex/2 : rootHashIndex/2+4])
 	merkleHeight := len(ap.AuxMerkleBranch)
 	if size != uint32(1<<uint32(merkleHeight)) {
 		return false
 	}
 
-	nonce := binary.LittleEndian.Uint32(script[rootHashIndex/2+4: rootHashIndex/2+8])
+	nonce := binary.LittleEndian.Uint32(script[rootHashIndex/2+4 : rootHashIndex/2+8])
 	if ap.AuxMerkleIndex != GetExpectedIndex(nonce, chainId, merkleHeight) {
 		return false
 	}

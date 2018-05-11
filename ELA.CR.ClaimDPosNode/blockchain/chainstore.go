@@ -1,12 +1,12 @@
 package blockchain
 
 import (
+	"bytes"
+	"container/list"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
-	"bytes"
-	"errors"
-	"container/list"
 
 	. "github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/events"

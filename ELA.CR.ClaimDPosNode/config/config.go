@@ -3,24 +3,24 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
 	"time"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
 	DefaultConfigFilename = "./config.json"
 	MINGENBLOCKTIME       = 2
-	DEFAULTGENBLOCKTIME   = 6
+	DefaultGenBlockTime   = 6
 )
 
 var (
 	Parameters configParams
 	Version    string
-	mainNet = &ChainParams{
+	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
 		PowLimitBits:       0x1f0008ff,
@@ -56,11 +56,11 @@ var (
 )
 
 type PowConfiguration struct {
-	PayToAddr        string `json:"PayToAddr"`
-	AutoMining       bool   `json:"AutoMining"`
-	MinerInfo        string `json:"MinerInfo"`
-	MinTxFee         int    `json:"MinTxFee"`
-	ActiveNet        string `json:"ActiveNet"`
+	PayToAddr  string `json:"PayToAddr"`
+	AutoMining bool   `json:"AutoMining"`
+	MinerInfo  string `json:"MinerInfo"`
+	MinTxFee   int    `json:"MinTxFee"`
+	ActiveNet  string `json:"ActiveNet"`
 }
 
 type Configuration struct {
