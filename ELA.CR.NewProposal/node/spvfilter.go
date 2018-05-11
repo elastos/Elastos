@@ -15,11 +15,12 @@ func FilterMessage(node protocol.Noder, msgType string) error {
 		switch msgType {
 		case "version":
 		case "verack":
+		case "getaddr":
+		case "addr":
+			return fmt.Errorf("message addr can not go through SPV port")
 		case "filterload":
 		case "getblocks":
 		case "getdata":
-		case "getaddr":
-		case "addr":
 		case "ping":
 		case "pong":
 		case "tx":

@@ -1,8 +1,8 @@
 package core
 
 import (
-	"io"
 	"errors"
+	"io"
 )
 
 //Payload define the func for loading the payload data

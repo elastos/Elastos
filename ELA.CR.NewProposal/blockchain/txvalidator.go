@@ -14,7 +14,7 @@ import (
 )
 
 // CheckTransactionSanity verifys received single transaction
-func CheckTransactionSanity(txn *Transaction) ErrCode {
+func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 
 	if err := CheckTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
@@ -26,7 +26,7 @@ func CheckTransactionSanity(txn *Transaction) ErrCode {
 		return ErrInvalidInput
 	}
 
-	if err := CheckTransactionOutput(txn); err != nil {
+	if err := CheckTransactionOutput(version, txn); err != nil {
 		log.Warn("[CheckTransactionOutput],", err)
 		return ErrInvalidOutput
 	}
@@ -146,7 +146,7 @@ func CheckTransactionInput(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionOutput(txn *Transaction) error {
+func CheckTransactionOutput(version uint32, txn *Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
@@ -176,13 +176,15 @@ func CheckTransactionOutput(txn *Transaction) error {
 	}
 
 	// check if output address is valid
-	for _, output := range txn.Outputs {
-		if output.AssetID != DefaultLedger.Blockchain.AssetID {
-			return errors.New("asset ID in coinbase is invalid")
-		}
+	if version&CheckTxOut == CheckTxOut {
+		for _, output := range txn.Outputs {
+			if output.AssetID != DefaultLedger.Blockchain.AssetID {
+				return errors.New("asset ID in coinbase is invalid")
+			}
 
-		if !output.ProgramHash.Valid() {
-			return errors.New("output address is invalid")
+			if !output.ProgramHash.IsValid() {
+				return errors.New("output address is invalid")
+			}
 		}
 	}
 

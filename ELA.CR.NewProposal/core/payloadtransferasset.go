@@ -2,7 +2,7 @@ package core
 
 import "io"
 
-type PayloadTransferAsset struct {}
+type PayloadTransferAsset struct{}
 
 func (a *PayloadTransferAsset) Data(version byte) []byte {
 	//TODO: implement TransferAsset.Data()

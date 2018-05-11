@@ -97,8 +97,14 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxHashes[txHash] = struct{}{}
 	}
 
+	// Check transaction outputs after a update checkpoint.
+	version := uint32(0)
+	if block.Height > BlockHeightCheckTxOut {
+		version += CheckTxOut
+	}
+
 	for _, txVerify := range transactions {
-		if errCode := CheckTransactionSanity(txVerify); errCode != Success {
+		if errCode := CheckTransactionSanity(version, txVerify); errCode != Success {
 			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verifiy block"))
 		}
 	}

@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/elastos/Elastos.ELA/core"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type MerkleBranch struct {
@@ -12,9 +15,9 @@ type MerkleBranch struct {
 	Index    int
 }
 
-func (msg MerkleBlock) GetTxMerkleBranch(txId *common.Uint256) (*MerkleBranch, error) {
+func GetTxMerkleBranch(msg msg.MerkleBlock, txId *common.Uint256) (*MerkleBranch, error) {
 	mNodes := &merkleNodes{
-		root:     msg.Header.MerkleRoot,
+		root:     msg.Header.(*core.Header).MerkleRoot,
 		numTxs:   msg.Transactions,
 		allNodes: make(map[uint32]merkleNode),
 	}
@@ -139,7 +142,7 @@ func (m merkleNodes) getNodes() (map[uint32]merkleNode, error) {
 			if m.bits[0] == 0 { // flag bit says fill node
 				n.h = m.hashes[0]       // copy hash from message
 				m.hashes = m.hashes[1:] // pop off message
-				if pos&1 != 0 { // right side; ascend
+				if pos&1 != 0 {         // right side; ascend
 					pos = pos>>1 | msb
 				} else { // left side, go to sibling
 					pos |= 1
@@ -156,9 +159,9 @@ func (m merkleNodes) getNodes() (map[uint32]merkleNode, error) {
 			}
 			n.h = m.hashes[0]       // copy hash from message
 			m.hashes = m.hashes[1:] // pop off message
-			if pos&1 == 0 { // left side, go to sibling
+			if pos&1 == 0 {         // left side, go to sibling
 				pos |= 1
-			}                       // if on right side we don't move; stack ops will move next
+			} // if on right side we don't move; stack ops will move next
 			r[n.p] = n
 			s = append(s, n) // push new node onto the stack
 		}
