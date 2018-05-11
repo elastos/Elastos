@@ -3,58 +3,15 @@ package bloom
 import (
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/elastos/Elastos.ELA/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
-type MerkleBlock struct {
-	core.Header
-	Transactions uint32
-	Hashes       []*common.Uint256
-	Flags        []byte
-}
-
-func (msg *MerkleBlock) CMD() string {
-	return "merkleblock"
-}
-
-func (msg *MerkleBlock) Serialize(writer io.Writer) error {
-	err := msg.Header.Serialize(writer)
-	if err != nil {
-		return err
-	}
-
-	return common.WriteElements(writer,
-		msg.Transactions,
-		uint32(len(msg.Hashes)),
-		msg.Hashes, msg.Flags)
-}
-
-func (msg *MerkleBlock) Deserialize(reader io.Reader) error {
-	err := msg.Header.Deserialize(reader)
-	if err != nil {
-		return err
-	}
-
-	msg.Transactions, err = common.ReadUint32(reader)
-	if err != nil {
-		return err
-	}
-
-	hashes, err := common.ReadUint32(reader)
-	if err != nil {
-		return err
-	}
-
-	msg.Hashes = make([]*common.Uint256, hashes)
-	return common.ReadElements(reader, &msg.Hashes, &msg.Flags)
-}
-
 // NewMerkleBlock returns a new *MerkleBlock
-func NewMerkleBlock(block *core.Block, filter *Filter) *MerkleBlock {
+func NewMerkleBlock(block *core.Block, filter *Filter) (*msg.MerkleBlock, []uint32) {
 	NumTx := uint32(len(block.Transactions))
 	mBlock := MBlock{
 		NumTx:       NumTx,
@@ -63,9 +20,11 @@ func NewMerkleBlock(block *core.Block, filter *Filter) *MerkleBlock {
 	}
 
 	// Find and keep track of any transactions that match the filter.
-	for _, tx := range block.Transactions {
+	var matchedIndexes []uint32
+	for index, tx := range block.Transactions {
 		if filter.MatchTxAndUpdate(tx) {
 			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x01)
+			matchedIndexes = append(matchedIndexes, uint32(index))
 		} else {
 			mBlock.MatchedBits = append(mBlock.MatchedBits, 0x00)
 		}
@@ -83,8 +42,8 @@ func NewMerkleBlock(block *core.Block, filter *Filter) *MerkleBlock {
 	mBlock.TraverseAndBuild(height, 0)
 
 	// Create and return the merkle block.
-	merkleBlock := &MerkleBlock{
-		Header:       block.Header,
+	merkleBlock := &msg.MerkleBlock{
+		Header:       &block.Header,
 		Transactions: mBlock.NumTx,
 		Hashes:       make([]*common.Uint256, 0, len(mBlock.FinalHashes)),
 		Flags:        make([]byte, (len(mBlock.Bits)+7)/8),
@@ -96,7 +55,7 @@ func NewMerkleBlock(block *core.Block, filter *Filter) *MerkleBlock {
 		merkleBlock.Flags[i/8] |= mBlock.Bits[i] << (i % 8)
 	}
 
-	return merkleBlock
+	return merkleBlock, matchedIndexes
 }
 
 type merkleNode struct {
@@ -124,7 +83,7 @@ func nextPowerOfTwo(n uint32) uint32 {
 // check if a node is populated based on node position and size of tree
 func inDeadZone(pos, size uint32) bool {
 	msb := nextPowerOfTwo(size)
-	last := size - 1 // last valid position is 1 less than size
+	last := size - 1      // last valid position is 1 less than size
 	if pos > (msb<<1)-2 { // greater than root; not even in the tree
 		return true
 	}
@@ -140,13 +99,14 @@ func inDeadZone(pos, size uint32) bool {
 // If there's any problem return an error.  Checks self-consistency only.
 // doing it with a stack instead of recursion.  Because...
 // OK I don't know why I'm just not in to recursion OK?
-func CheckMerkleBlock(m MerkleBlock) ([]*common.Uint256, error) {
+func CheckMerkleBlock(m msg.MerkleBlock) ([]*common.Uint256, error) {
 	if m.Transactions == 0 {
 		return nil, fmt.Errorf("No transactions in merkleblock")
 	}
 	if len(m.Flags) == 0 {
 		return nil, fmt.Errorf("No flag bits")
 	}
+	var header = m.Header.(*core.Header)
 	var s []merkleNode      // the stack
 	var r []*common.Uint256 // slice to return; txids we care about
 
@@ -162,11 +122,11 @@ func CheckMerkleBlock(m MerkleBlock) ([]*common.Uint256, error) {
 		// First check if stack operations can be performed
 		// is stack one filled item?  that's complete.
 		if tip == 0 && s[0].h != nil {
-			if s[0].h.IsEqual(m.Header.MerkleRoot) {
+			if s[0].h.IsEqual(header.MerkleRoot) {
 				return r, nil
 			}
 			return nil, fmt.Errorf("computed root %s but expect %s\n",
-				s[0].h.String(), m.Header.MerkleRoot.String())
+				s[0].h.String(), header.MerkleRoot.String())
 		}
 		// is current position in the tree's dead zone? partial parent
 		if inDeadZone(pos, m.Transactions) {
@@ -211,7 +171,7 @@ func CheckMerkleBlock(m MerkleBlock) ([]*common.Uint256, error) {
 			if m.Flags[0]&(1<<i) == 0 { // flag bit says fill node
 				n.h = m.Hashes[0]       // copy hash from message
 				m.Hashes = m.Hashes[1:] // pop off message
-				if pos&1 != 0 { // right side; ascend
+				if pos&1 != 0 {         // right side; ascend
 					pos = pos>>1 | msb
 				} else { // left side, go to sibling
 					pos |= 1
@@ -225,14 +185,14 @@ func CheckMerkleBlock(m MerkleBlock) ([]*common.Uint256, error) {
 				// this can't happen because we check deadzone above...
 				return nil, fmt.Errorf("got into an invalid txid node")
 			}
-			n.h = m.Hashes[0]       // copy hash from message
-			m.Hashes = m.Hashes[1:] // pop off message
+			n.h = m.Hashes[0]           // copy hash from message
+			m.Hashes = m.Hashes[1:]     // pop off message
 			if m.Flags[0]&(1<<i) != 0 { //txid of interest
 				r = append(r, n.h)
 			}
 			if pos&1 == 0 { // left side, go to sibling
 				pos |= 1
-			}                // if on right side we don't move; stack ops will move next
+			} // if on right side we don't move; stack ops will move next
 			s = append(s, n) // push new node onto the stack
 		}
 

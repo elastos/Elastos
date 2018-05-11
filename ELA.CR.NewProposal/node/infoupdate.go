@@ -5,13 +5,14 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg/v0"
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
@@ -19,7 +20,7 @@ func (node *node) hasSyncPeer() (bool, Noder) {
 	defer LocalNode.nbrNodes.RUnlock()
 	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
-		if n.IsSyncHeaders() == true {
+		if n.IsSyncHeaders() {
 			return true, n
 		}
 	}
@@ -46,14 +47,14 @@ func (node *node) SyncBlocks() {
 			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
-			SendBlocksReq(syncNode, locator, EmptyHash)
+			SendGetBlocks(syncNode, locator, EmptyHash)
 		} else {
 			list := LocalNode.GetRequestBlockList()
-			var requests = make(map[Uint256]time.Time, MaxHeaderHashes)
+			var requests = make(map[Uint256]time.Time, p2p.MaxHeaderHashes)
 			x := 1
 			node.requestedBlockLock.Lock()
 			for i, v := range list {
-				if x == MaxHeaderHashes {
+				if x == p2p.MaxHeaderHashes {
 					break
 				}
 				requests[i] = v
@@ -68,13 +69,13 @@ func (node *node) SyncBlocks() {
 				hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 				locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
-				SendBlocksReq(syncNode, locator, EmptyHash)
+				SendGetBlocks(syncNode, locator, EmptyHash)
 			} else {
 				for hash := range requests {
 					if requests[hash].Before(time.Now().Add(-3 * time.Second)) {
 						log.Infof("request block hash %x ", hash.Bytes())
 						LocalNode.AddRequestedBlock(hash)
-						go node.Send(msg.NewDataReq(BlockData, hash))
+						syncNode.Send(v0.NewGetData(hash))
 					}
 				}
 			}
@@ -85,21 +86,21 @@ func (node *node) SyncBlocks() {
 func (node *node) SendPingToNbr() {
 	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
-		if n.State() == ESTABLISH {
-			go n.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
+		if n.State() == p2p.ESTABLISH {
+			n.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
 		}
 	}
 }
 
 func (node *node) HeartBeatMonitor() {
 	noders := LocalNode.GetNeighborNoder()
-	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
+	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
 	for _, n := range noders {
-		if n.State() == ESTABLISH {
+		if n.State() == p2p.ESTABLISH {
 			t := n.GetLastActiveTime()
-			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KEEPALIVETIMEOUT)) {
+			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KeepAliveTimeout)) {
 				log.Warn("keepalive timeout!!!")
-				n.SetState(INACTIVITY)
+				n.SetState(p2p.INACTIVITY)
 				n.CloseConn()
 			}
 		}
@@ -107,7 +108,7 @@ func (node *node) HeartBeatMonitor() {
 }
 
 func (node *node) ReqNeighborList() {
-	go node.Send(new(msg.AddrsReq))
+	go node.Send(new(msg.GetAddr))
 }
 
 func (node *node) ConnectSeeds() {
@@ -127,7 +128,7 @@ func (node *node) ConnectSeeds() {
 			}
 			node.nbrNodes.Unlock()
 			if found {
-				if n.State() == ESTABLISH {
+				if n.State() == p2p.ESTABLISH {
 					if LocalNode.NeedMoreAddresses() {
 						n.ReqNeighborList()
 					}
@@ -150,8 +151,8 @@ func (node *node) ConnectNode() {
 	}
 }
 
-func getNodeAddr(n *node) msg.Addr {
-	var addr msg.Addr
+func getNodeAddr(n *node) p2p.NetAddress {
+	var addr p2p.NetAddress
 	addr.IP, _ = n.Addr16()
 	addr.Time = n.GetTime()
 	addr.Services = n.Services()
@@ -164,7 +165,7 @@ func getNodeAddr(n *node) msg.Addr {
 // a node map method
 // Fixme the Nodes should be a parameter
 func (node *node) updateNodeInfo() {
-	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
+	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
 	ticker := time.NewTicker(time.Second * (time.Duration(periodUpdateTime)) * 2)
 	for {
 		select {
@@ -187,7 +188,7 @@ func (node *node) CheckConnCnt() {
 }
 
 func (node *node) updateConnection() {
-	t := time.NewTicker(time.Second * CONNMONITOR)
+	t := time.NewTicker(time.Second * ConnMonitor)
 	for {
 		select {
 		case <-t.C:
