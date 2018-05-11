@@ -28,7 +28,7 @@ func (t *PayloadIssueToken) Serialize(w io.Writer, version byte) error {
 	if err != nil {
 		return errors.New("[PayloadIssueToken], MerkleProof serialize failed.")
 	}
-  
+
 	return nil
 }
 

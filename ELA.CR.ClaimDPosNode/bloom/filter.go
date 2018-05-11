@@ -5,7 +5,9 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/core"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 const (
@@ -33,7 +35,7 @@ func minUint32(a, b uint32) uint32 {
 // filter data.
 type Filter struct {
 	mtx sync.Mutex
-	msg *FilterLoad
+	msg *msg.FilterLoad
 }
 
 // NewFilter creates a new bloom filter instance, mainly to be used by SPV
@@ -70,7 +72,7 @@ func NewFilter(elements, tweak uint32, fprate float64) *Filter {
 	hashFuncs := uint32(float64(dataLen*8) / float64(elements) * math.Ln2)
 	hashFuncs = minUint32(hashFuncs, MaxFilterLoadHashFuncs)
 
-	msg := &FilterLoad{
+	msg := &msg.FilterLoad{
 		Filter:    make([]byte, dataLen),
 		HashFuncs: hashFuncs,
 		Tweak:     tweak,
@@ -80,7 +82,7 @@ func NewFilter(elements, tweak uint32, fprate float64) *Filter {
 
 // LoadFilter creates a new Filter instance with the given underlying
 // msg.FilterLoad.
-func LoadFilter(msg *FilterLoad) *Filter {
+func LoadFilter(msg *msg.FilterLoad) *Filter {
 	filter := new(Filter)
 	filter.msg = msg
 	return filter
@@ -99,7 +101,7 @@ func (bf *Filter) IsLoaded() bool {
 // Reload loads a new filter replacing any existing filter.
 //
 // This function is safe for concurrent access.
-func (bf *Filter) Reload(msg *FilterLoad) {
+func (bf *Filter) Reload(msg *msg.FilterLoad) {
 	bf.mtx.Lock()
 	bf.msg = msg
 	bf.mtx.Unlock()
@@ -289,6 +291,6 @@ func (bf *Filter) MatchTxAndUpdate(tx *core.Transaction) bool {
 	return match
 }
 
-func (bf *Filter) GetFilterLoadMsg() *FilterLoad {
+func (bf *Filter) GetFilterLoadMsg() *msg.FilterLoad {
 	return bf.msg
 }

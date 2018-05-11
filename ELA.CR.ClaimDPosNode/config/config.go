@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	"time"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
 )
@@ -15,7 +16,7 @@ import (
 const (
 	DefaultConfigFilename = "./config.json"
 	MINGENBLOCKTIME       = 2
-	DEFAULTGENBLOCKTIME   = 6
+	DefaultGenBlockTime   = 6
 )
 
 var (

@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"sync"
 
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/log"
 )
 
 type TxPool struct {
@@ -36,7 +35,7 @@ func (pool *TxPool) Init() {
 //1.check  2.check with ledger(db) 3.check with pool
 func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	//verify transaction with Concurrency
-	if errCode := CheckTransactionSanity(txn); errCode != Success {
+	if errCode := CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
 		log.Info("Transaction verification failed", txn.Hash())
 		return errCode
 	}
@@ -253,7 +252,7 @@ func (pool *TxPool) MaybeAcceptTransaction(txn *Transaction) error {
 		return fmt.Errorf("already have transaction")
 	}
 
-	// A standalone transaction must not be a coinbase 
+	// A standalone transaction must not be a coinbase
 	if txn.IsCoinBaseTx() {
 		return fmt.Errorf("transaction is an individual coinbase")
 	}
