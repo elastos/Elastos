@@ -13,10 +13,9 @@ import (
 
 	. "github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
-	"github.com/elastos/Elastos.ELA/events"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 type link struct {
@@ -27,7 +26,7 @@ type link struct {
 	httpInfoPort uint16    // The node information server port of the node
 	lastActive   time.Time // The latest time the node activity
 	connCnt      uint64    // The connection count
-	*MsgHelper
+	*p2p.MsgHelper
 }
 
 func (link *link) CloseConn() {
@@ -84,7 +83,7 @@ func (n *node) listenConnections(listener net.Listener) {
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.localPort = localPortFromConn(conn)
-		go node.Read()
+		node.Read()
 	}
 }
 
@@ -189,17 +188,17 @@ func (node *node) Connect(nodeAddr string) error {
 	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
-	go n.Read()
+	n.Read()
 
-	n.SetState(HAND)
-	go n.Send(NewVersion(node))
+	n.SetState(p2p.HAND)
+	n.Send(NewVersion(node))
 
 	return nil
 }
 
 func NonTLSDial(nodeAddr string) (net.Conn, error) {
 	log.Debug()
-	conn, err := net.DialTimeout("tcp", nodeAddr, time.Second*DIALTIMEOUT)
+	conn, err := net.DialTimeout("tcp", nodeAddr, time.Second*DialTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +229,7 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	}
 
 	var dialer net.Dialer
-	dialer.Timeout = time.Second * DIALTIMEOUT
+	dialer.Timeout = time.Second * DialTimeout
 	conn, err := tls.DialWithDialer(&dialer, "tcp", nodeAddr, conf)
 	if err != nil {
 		return nil, err
@@ -238,20 +237,10 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	return conn, nil
 }
 
-func (node *node) Send(msg Message) {
-	if node.State() == INACTIVITY {
+func (node *node) Send(msg p2p.Message) {
+	if node.State() == p2p.INACTIVITY {
 		return
 	}
 
-	buf, err := node.MsgHelper.Build(msg)
-	if err != nil {
-		log.Error("Serialize message failed, ", err)
-		return
-	}
-
-	_, err = node.conn.Write(buf)
-	if err != nil {
-		log.Error("Error sending message to node ", err)
-		LocalNode.eventQueue.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node)
-	}
+	node.MsgHelper.Write(msg)
 }

@@ -1,9 +1,9 @@
 package core
 
 import (
-	"io"
 	"bytes"
 	"encoding/hex"
+	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
