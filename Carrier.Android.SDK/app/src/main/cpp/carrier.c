@@ -552,7 +552,7 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jstring jmsg)
         return JNI_FALSE;
     }
 
-    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, strlen(msg));
+    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, strlen(msg) + 1);
     (*env)->ReleaseStringUTFChars(env, jto, to);
     (*env)->ReleaseStringUTFChars(env, jmsg, msg);
 
