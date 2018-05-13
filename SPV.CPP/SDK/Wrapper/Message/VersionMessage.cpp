@@ -30,7 +30,7 @@ namespace Elastos {
 			off += sizeof(uint64_t);
 			peer->timestamp = UInt32GetLE(&msg[off]);
 			off += sizeof(uint32_t);
-			fromPort = UInt16GetBE(&msg[off]);
+			fromPort = UInt16GetLE(&msg[off]);
 			off += sizeof(uint16_t);
 			ctx->nonce = UInt64GetLE(&msg[off]);
 			off += sizeof(uint64_t);
@@ -54,7 +54,7 @@ namespace Elastos {
 			off += sizeof(uint64_t);
 			UInt32SetLE(&msg[off], time(NULL)); // timestamp
 			off += sizeof(uint32_t);
-			UInt16SetBE(&msg[off], peer->port); // port of remote peer
+			UInt16SetLE(&msg[off], peer->port); // port of remote peer
 			off += sizeof(uint16_t);
 			ctx->nonce = ((uint64_t)BRRand(0) << 32) | (uint64_t)BRRand(0); // random nonce
 			UInt64SetLE(&msg[off], ctx->nonce);

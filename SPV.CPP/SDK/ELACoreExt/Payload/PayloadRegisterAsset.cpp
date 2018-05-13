@@ -10,7 +10,9 @@ namespace Elastos {
 		PayloadRegisterAsset::PayloadRegisterAsset() :
 				_amount(0),
 				_controller(UINT168_ZERO) {
-
+			_asset.setName("ELA");
+			_asset.setPrecision(0x08);
+			_asset.setAssetType(Asset::AssetType::Token);
 		}
 
 		PayloadRegisterAsset::~PayloadRegisterAsset() {

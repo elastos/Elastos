@@ -6,6 +6,7 @@
 #include <BRTransaction.h>
 #include "TestWalletManager.h"
 #include "Utils.h"
+#include "ELACoreExt/Payload/Asset.h"
 
 #include "Key.h"
 
@@ -46,6 +47,9 @@ WrapperList<Peer, BRPeer> TestWalletManager::loadPeers() {
 
 void TestWalletManager::testSendTransaction() {
 
+	Transaction elaCoin;
+	elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+
 	Transaction transaction;
 	TransactionInput input;
 	input.setAddress("EWEfdKMyjPkAkHtvxiDvsRPssQi2Ymeupr");
@@ -62,7 +66,7 @@ void TestWalletManager::testSendTransaction() {
 	TransactionOutput transactionOutput1;
 	transactionOutput1.setAddress("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP");
 	transactionOutput1.setAmount(100000000);
-	hash = uint256("b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3");
+	hash = elaCoin.getHash();
 	transactionOutput1.setAssetId(hash);
 	transactionOutput1.setOutputLock(1);
 	transactionOutput1.setProgramHash(Utils::UInt168FromString("215505da55ee9de910658619b4d5e4e6c59acaeb00"));
@@ -70,7 +74,7 @@ void TestWalletManager::testSendTransaction() {
 	TransactionOutput transactionOutput2;
 	transactionOutput2.setAddress("EQuTwZ7sQzXyoteFxuwyqhVHqBsh4kFVhV");
 	transactionOutput2.setAmount(150598174);
-	hash = uint256("b137db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3");
+	hash = elaCoin.getHash();
 	transactionOutput2.setAssetId(hash);
 	transactionOutput2.setOutputLock(2);
 	transactionOutput2.setProgramHash(Utils::UInt168FromString("2119acda6f6e57aceb7572260ff1e9e6fc50b99733"));

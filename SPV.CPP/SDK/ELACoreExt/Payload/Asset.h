@@ -43,6 +43,10 @@ namespace Elastos {
 
 			Asset::AssetRecordType getAssetRecordType() const;
 
+			void setPrecision(const uint8_t precision);
+
+			uint8_t getPrecision() const;
+
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual void Deserialize(ByteStream &istream);

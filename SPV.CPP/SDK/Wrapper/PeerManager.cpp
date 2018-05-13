@@ -11,6 +11,7 @@
 #include "Log.h"
 #include "BRArray.h"
 #include "ELABRTransaction.h"
+#include "ELAMerkleBlock.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -226,13 +227,13 @@ namespace Elastos {
 		}
 
 		void PeerManager::createGenesisBlock() const {
-			BRMerkleBlock *block = BRMerkleBlockNew();
-			block->height = 0;
-			block->blockHash = Utils::UInt256FromString("8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");
-			block->timestamp = 1513936800;
-			block->target = 486801407;
+			ELAMerkleBlock *block = ELAMerkleBlockNew();
+			block->raw.height = 0;
+			block->raw.blockHash = Utils::UInt256FromString("8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");
+			block->raw.timestamp = 1513936800;
+			block->raw.target = 486801407;
 			BRSetAdd(_manager->blocks, block);
-			_manager->lastBlock = block;
+			_manager->lastBlock = (BRMerkleBlock *)block;
 		}
 	}
 }

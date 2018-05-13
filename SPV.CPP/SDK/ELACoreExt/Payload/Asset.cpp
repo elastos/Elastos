@@ -54,17 +54,21 @@ namespace Elastos {
 			return _assetRecordType;
 		}
 
+		void Asset::setPrecision(const uint8_t precision) {
+			_precision = precision;
+		}
+
+		uint8_t Asset::getPrecision() const {
+			return _precision;
+		}
+
 		void Asset::Serialize(ByteStream &ostream) const {
 			uint64_t len = _name.length();
-			uint8_t nameLength[64 / 8];
-			UInt64SetLE(nameLength, len);
-			ostream.putBytes(nameLength, sizeof(nameLength));
+			ostream.putVarUint(len);
 			ostream.putBytes((uint8_t *) _name.c_str(), len);
 
 			len = _description.length();
-			uint8_t descLength[64 / 8];
-			UInt64SetLE(descLength, len);
-			ostream.putBytes(descLength, sizeof(descLength));
+			ostream.putVarUint(len);
 			ostream.putBytes((uint8_t *) _description.c_str(), len);
 
 			ostream.put(_precision);
@@ -75,17 +79,13 @@ namespace Elastos {
 		}
 
 		void Asset::Deserialize(ByteStream &istream) {
-			uint8_t nameLength[64 / 8];
-			istream.getBytes(nameLength, sizeof(nameLength));
-			uint64_t len = UInt64GetLE(nameLength);
+			uint64_t len = istream.getVarUint();
 			char *utfBuffer = new char[len + 1];
 			istream.getBytes((uint8_t *) utfBuffer, len);
 			utfBuffer[len] = '\0';
 			_name = utfBuffer;
 
-			uint8_t descLength[64 / 8];
-			istream.getBytes(descLength, sizeof(descLength));
-			len = UInt64GetLE(descLength);
+			len = istream.getVarUint();
 			utfBuffer = new char[len + 1];
 			memset(utfBuffer, 0, len + 1);
 			istream.getBytes((uint8_t *) utfBuffer, len);
