@@ -43,13 +43,13 @@ public class TestOptions extends Options {
             arrayList.add(node);
 
             node = new BootstrapNode();
-            node.setIpv4("54.223.36.193");
+            node.setIpv4("52.83.171.135");
             node.setPort("33445");
             node.setPublicKey("5tuHgK1Q4CYf4K5PutsEPK5E3Z7cbtEBdx7LwmdzqXHL");
             arrayList.add(node);
 
             node = new BootstrapNode();
-            node.setIpv4("52.80.187.125");
+            node.setIpv4("52.83.191.228");
             node.setPort("33445");
             node.setPublicKey("3khtxZo89SBScAMaHhTvD68pPHiKxgZT6hTCSZZVgNEm");
             arrayList.add(node);
