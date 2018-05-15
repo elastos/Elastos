@@ -87,6 +87,10 @@ typedef struct {
 
 	int (*BRPeerAcceptMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type);
 
+	BRMerkleBlock *(*MerkleBlockNew)(void);
+	void (*MerkleBlockFree)(BRMerkleBlock *block);
+	void (*ApplyFreeBlock)(void *info, void *block);
+
 	void (*BRPeerSendVersionMessage)(BRPeer *peer);
 	int (*BRPeerAcceptVersionMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
@@ -115,7 +119,6 @@ typedef struct {
 	void (*BRPeerSendGetdataMessage)(BRPeer *peer, const UInt256 txHashes[], size_t txCount, const UInt256 blockHashes[],
 						   size_t blockCount);
 	int (*BRPeerAcceptGetdataMessage)(BRPeer *peer, const uint8_t *msg, size_t msgLen);
-
 
 	void (*BRPeerSendMempoolMessage)(BRPeer *peer, const UInt256 knownTxHashes[], size_t knownTxCount, void *info,
 						   void (*completionCallback)(void *info, int success));

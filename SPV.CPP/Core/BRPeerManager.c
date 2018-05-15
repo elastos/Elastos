@@ -223,11 +223,6 @@ static size_t _BRPeerManagerBlockLocators(BRPeerManager *manager, UInt256 locato
     return ++i;
 }
 
-static void _setApplyFreeBlock(void *info, void *block)
-{
-    BRMerkleBlockFree(block);
-}
-
 static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
 {
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used
@@ -236,7 +231,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
 	BRWalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
 	BRWalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 
-    BRSetApply(manager->orphans, NULL, _setApplyFreeBlock);
+    BRSetApply(manager->orphans, NULL, manager->peerMessages->ApplyFreeBlock);
     BRSetClear(manager->orphans); // clear out orphans that may have been received on an old filter
     manager->lastOrphan = NULL;
     manager->filterUpdateHeight = manager->lastBlock->height;
@@ -1087,7 +1082,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
 
             if (b && (b->height % BLOCK_DIFFICULTY_INTERVAL) != 0) {
                 BRSetRemove(manager->blocks, b);
-                BRMerkleBlockFree(b);
+                manager->peerMessages->MerkleBlockFree(b);
             }
         }
     }
@@ -1162,11 +1157,11 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
 
     // ignore block headers that are newer than one week before earliestKeyTime (it's a header if it has 0 totalTx)
     if (block->totalTx == 0 && block->timestamp + 7*24*60*60 > manager->earliestKeyTime + 2*60*60) {
-        BRMerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(block);
         block = NULL;
     }
     else if (manager->bloomFilter == NULL) { // ingore potentially incomplete blocks when a filter update is pending
-        BRMerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(block);
         block = NULL;
 
         if (peer == manager->downloadPeer && manager->lastBlock->height < manager->estimatedHeight) {
@@ -1180,7 +1175,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
                  manager->lastBlock->height);
 
         if (block->timestamp + 7*24*60*60 < time(NULL)) { // ignore orphans older than one week ago
-            BRMerkleBlockFree(block);
+            manager->peerMessages->MerkleBlockFree(block);
             block = NULL;
         }
         else {
@@ -1201,7 +1196,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
     }
     else if (! _BRPeerManagerVerifyBlock(manager, block, prev, peer)) { // block is invalid
         peer_log(peer, "relayed invalid block");
-        BRMerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(block);
         block = NULL;
         _BRPeerManagerPeerMisbehavin(manager, peer);
     }
@@ -1245,7 +1240,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
         if (b != block) {
             if (BRSetGet(manager->orphans, b) == b) BRSetRemove(manager->orphans, b);
             if (manager->lastOrphan == b) manager->lastOrphan = NULL;
-            BRMerkleBlockFree(b);
+            manager->peerMessages->MerkleBlockFree(b);
         }
     }
     else if (manager->lastBlock->height < BRPeerLastBlock(peer) &&
@@ -1257,7 +1252,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
     else if (block->height <= manager->params->checkpoints[manager->params->checkpointsCount - 1].height) { // old fork
         peer_log(peer, "ignoring block on fork older than most recent checkpoint, block #%"PRIu32", hash: %s",
                  block->height, u256hex(block->blockHash));
-        BRMerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(block);
         block = NULL;
     }
     else { // new block is on a fork
@@ -1458,7 +1453,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
     manager->checkpoints = BRSetNew(_BRBlockHeightHash, _BRBlockHeightEq, 100); // checkpoints are indexed by height
 
     for (size_t i = 0; i < manager->params->checkpointsCount; i++) {
-        block = BRMerkleBlockNew();
+        block = manager->peerMessages->MerkleBlockNew();
         block->height = manager->params->checkpoints[i].height;
         block->blockHash = UInt256Reverse(&manager->params->checkpoints[i].hash);
         block->timestamp = manager->params->checkpoints[i].timestamp;
@@ -1891,9 +1886,9 @@ void BRPeerManagerFree(BRPeerManager *manager)
     array_free(manager->peers);
     for (size_t i = array_count(manager->connectedPeers); i > 0; i--) manager->peerMessages->BRPeerFree(manager->connectedPeers[i - 1]);
     array_free(manager->connectedPeers);
-    BRSetApply(manager->blocks, NULL, _setApplyFreeBlock);
+    BRSetApply(manager->blocks, NULL, manager->peerMessages->ApplyFreeBlock);
     BRSetFree(manager->blocks);
-    BRSetApply(manager->orphans, NULL, _setApplyFreeBlock);
+    BRSetApply(manager->orphans, NULL, manager->peerMessages->ApplyFreeBlock);
     BRSetFree(manager->orphans);
     BRSetFree(manager->checkpoints);
     for (size_t i = array_count(manager->txRelays); i > 0; i--) free(manager->txRelays[i - 1].peers);

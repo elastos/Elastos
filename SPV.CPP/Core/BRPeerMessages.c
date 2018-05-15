@@ -509,13 +509,13 @@ static int _BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, siz
 	}
 	else if (! BRMerkleBlockIsValid(block, (uint32_t)time(NULL))) {
 		peer_log(peer, "invalid merkleblock: %s", u256hex(block->blockHash));
-		BRMerkleBlockFree(block);
+		ctx->manager->peerMessages->MerkleBlockFree(block);
 		block = NULL;
 		r = 0;
 	}
 	else if (! ctx->sentFilter && ! ctx->sentGetdata) {
 		peer_log(peer, "got merkleblock message before loading a filter");
-		BRMerkleBlockFree(block);
+		ctx->manager->peerMessages->MerkleBlockFree(block);
 		block = NULL;
 		r = 0;
 	}
@@ -542,7 +542,7 @@ static int _BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, siz
 		else if (ctx->relayedBlock) {
 			ctx->relayedBlock(ctx->info, block);
 		}
-		else BRMerkleBlockFree(block);
+		else ctx->manager->peerMessages->MerkleBlockFree(block);
 	}
 
 	return r;
@@ -676,13 +676,13 @@ int BRPeerAcceptHeadersMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 
 				if (! BRMerkleBlockIsValid(block, (uint32_t)now)) {
 					peer_log(peer, "invalid block header: %s", u256hex(block->blockHash));
-					BRMerkleBlockFree(block);
+					ctx->manager->peerMessages->MerkleBlockFree(block);
 					r = 0;
 				}
 				else if (ctx->relayedBlock) {
 					ctx->relayedBlock(ctx->info, block);
 				}
-				else BRMerkleBlockFree(block);
+				else ctx->manager->peerMessages->MerkleBlockFree(block);
 			}
 		}
 		else {
@@ -945,6 +945,11 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
 	return r;
 }
 
+static void _setApplyFreeBlock(void *info, void *block)
+{
+	BRMerkleBlockFree(block);
+}
+
 BRPeerMessages *BRPeerMessageNew(void) {
 	BRPeerMessages *peerMessages = calloc(1, sizeof(*peerMessages));
 
@@ -953,6 +958,10 @@ BRPeerMessages *BRPeerMessageNew(void) {
 	peerMessages->BRPeerCopy = BRPeerCopy;
 
 	peerMessages->BRPeerAcceptMessage = _BRPeerAcceptMessage;
+
+	peerMessages->MerkleBlockNew = BRMerkleBlockNew;
+	peerMessages->MerkleBlockFree = BRMerkleBlockFree;
+	peerMessages->ApplyFreeBlock = _setApplyFreeBlock;
 
 	peerMessages->BRPeerAcceptVersionMessage = _BRPeerAcceptVersionMessage;
 	peerMessages->BRPeerSendVersionMessage = BRPeerSendVersionMessage;

@@ -22,11 +22,28 @@
 #include "PingMessage.h"
 #include "PongMessage.h"
 #include "ELAPeerContext.h"
+#include "ELAMerkleBlock.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		namespace {
+			BRMerkleBlock *BRMerkleBlockNewWrapper() {
+				ELAMerkleBlock *elablock = ELAMerkleBlockNew();
+				return (BRMerkleBlock *)elablock;
+			}
+
+			void BRMerkleBlockFreeWrapper(BRMerkleBlock *block) {
+				ELAMerkleBlock *elablock = (ELAMerkleBlock *)block;
+				ELAMerkleBlockFree(elablock);
+			}
+
+			void setApplyFreeBlock(void *info, void *block)
+			{
+				ELAMerkleBlock *elablock = (ELAMerkleBlock *)block;
+				ELAMerkleBlockFree(elablock);
+			}
+
 			int PeerAcceptTxMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				TransactionMessage *message = static_cast<TransactionMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_TX).get());
@@ -216,6 +233,10 @@ namespace Elastos {
 			peerManager->peerMessages->BRPeerCopy = ELAPeerCopy;
 
 			peerManager->peerMessages->BRPeerAcceptMessage = PeerAcceptMessage;
+
+			peerManager->peerMessages->MerkleBlockNew = BRMerkleBlockNewWrapper;
+			peerManager->peerMessages->MerkleBlockFree = BRMerkleBlockFreeWrapper;
+			peerManager->peerMessages->ApplyFreeBlock = setApplyFreeBlock;
 
 			peerManager->peerMessages->BRPeerAcceptTxMessage = PeerAcceptTxMessage;
 			peerManager->peerMessages->BRPeerSendTxMessage = PeerSendTxMessage;
