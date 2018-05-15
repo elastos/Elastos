@@ -228,6 +228,7 @@ if(SPV_BUILD_SAMPLE)
 	endif()
 	if(ANDROID)
 		target_link_libraries(${SAMPLE_NAME} log)
+		target_link_libraries(${SAMPLE_NAME} atomic)
 	endif(ANDROID)
 endif()
 
