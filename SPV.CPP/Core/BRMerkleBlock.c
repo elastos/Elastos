@@ -106,7 +106,7 @@ BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
 
     assert(buf != NULL || bufLen == 0);
 
-    if (block) {
+    if (buf && block) {
         block->version = UInt32GetLE(&buf[off]);
         off += sizeof(uint32_t);
         UInt256Get(&block->prevBlock, &buf[off]);

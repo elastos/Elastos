@@ -34,7 +34,7 @@ extern "C" {
 
 typedef struct BRSetStruct BRSet;
 
-// retruns a newly allocated empty set that must be freed by calling BRSetFree()
+// returns a newly allocated empty set that must be freed by calling BRSetFree()
 // size_t hash(const void *) is a function that returns a hash value for a given set item
 // int eq(const void *, const void *) is a function that returns true if two set items are equal
 // any two items that are equal must also have identical hash values

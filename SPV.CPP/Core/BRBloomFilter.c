@@ -54,7 +54,7 @@ BRBloomFilter *BRBloomFilterNew(double falsePositiveRate, size_t elemCount, uint
 
     filter->filter = calloc(filter->length, sizeof(*(filter->filter)));
     assert(filter->filter != NULL);
-	memset(filter->filter, 0, sizeof(*filter->filter));
+	memset(filter->filter, 0, filter->length * sizeof(*filter->filter));
 
     filter->hashFuncs = ((filter->length*8.0)/elemCount)*M_LN2;
     if (filter->hashFuncs > BLOOM_MAX_HASH_FUNCS) filter->hashFuncs = BLOOM_MAX_HASH_FUNCS;

@@ -266,7 +266,7 @@ static void *_peerThreadRoutine(void *arg)
                     error = EPROTO;
                 }
                 else {
-                    peer_log(peer, "start read head: prot %d", (int)peer->port);
+                    peer_log(peer, "start read head: port %d", (int)peer->port);
                     if (msgLen > payloadLen) payload = realloc(payload, (payloadLen = msgLen));
                     assert(payload != NULL);
                     len = 0;
