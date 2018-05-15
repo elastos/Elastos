@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 60
+	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 5
 )
 
 var NodeForServers Noder
