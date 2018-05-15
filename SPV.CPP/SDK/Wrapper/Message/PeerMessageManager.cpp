@@ -188,32 +188,6 @@ namespace Elastos {
 
 				return fun(peer, msg, msgLen);
 			}
-
-			static int PeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type)
-			{
-				peer_log(peer, "------start _BRPeerAcceptMessage: type %s --------", type);
-
-				BRPeerContext *ctx = (BRPeerContext *)peer;
-				int r = 1;
-
-				if (strncmp(MSG_VERSION, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptVersionMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_VERACK, type, 12) == 0) BRPeerAcceptVerackMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_ADDR, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptAddressMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_INV, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptInventoryMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_TX, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptTxMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_HEADERS, type, 12) == 0) BRPeerAcceptHeadersMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_GETADDR, type, 12) == 0) BRPeerAcceptGetAddrMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_GETDATA, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptGetdataMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_NOTFOUND, type, 12) == 0)r = ctx->manager->peerMessages->BRPeerAcceptNotFoundMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_PING, type, 12) == 0) ctx->manager->peerMessages->BRPeerAcceptPingMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_PONG, type, 12) == 0) ctx->manager->peerMessages->BRPeerAcceptPongMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_MERKLEBLOCK, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptMerkleblockMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_REJECT, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptRejectMessage(peer, msg, msgLen);
-				else if (strncmp(MSG_FEEFILTER, type, 12) == 0) r = ctx->manager->peerMessages->BRPeerAcceptFeeFilterMessage(peer, msg, msgLen);
-				else peer_log(peer, "dropping %s, length %zu, not implemented", type, msgLen);
-
-				return r;
-			}
 		}
 
 		PeerMessageManager PeerMessageManager::_instance = PeerMessageManager();

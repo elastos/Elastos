@@ -10,7 +10,6 @@
 #include "Transaction.h"
 #include "Log.h"
 #include "Utils.h"
-#include "ELACoreExt/ELAPeerContext.h"
 #include "ELABRTransaction.h"
 
 namespace Elastos {
@@ -24,7 +23,6 @@ namespace Elastos {
 				BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 
 			BRPeerContext *ctx = (BRPeerContext *) peer;
-			ELAPeerContext *elactx = (ELAPeerContext *) peer;
 
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
 			Transaction wrappedTx;
@@ -49,23 +47,18 @@ namespace Elastos {
 					ctx->relayedTx(ctx->info, tx);
 				} else BRTransactionFree(tx);
 
-				if (elactx->txBlockMap.find(txHash) !=
-					elactx->txBlockMap.end()) { // we're collecting tx messages for a merkleblock
-					BRMerkleBlock *block = elactx->txBlockMap[txHash];
-					std::vector<UInt256> txHashes = elactx->blockTxListMap[block];
-					for (size_t i = txHashes.size(); i > 0; i--) {
-						if (!UInt256Eq(&txHash, &(txHashes[i - 1]))) continue;
-						txHashes.erase(txHashes.begin() + (i - 1));
+				if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock
+					for (size_t i = array_count(ctx->currentBlockTxHashes); i > 0; i--) {
+						if (! UInt256Eq(&txHash, &(ctx->currentBlockTxHashes[i - 1]))) continue;
+						array_rm(ctx->currentBlockTxHashes, i - 1);
 						break;
 					}
-					elactx->txBlockMap.erase(txHash);
 
-					if (txHashes.empty()) { // we received the entire block including all matched tx
+					if (array_count(ctx->currentBlockTxHashes) == 0) { // we received the entire block including all matched tx
+						BRMerkleBlock *block = ctx->currentBlock;
 
-						elactx->blockTxListMap.erase(block);
+						ctx->currentBlock = NULL;
 						if (ctx->relayedBlock) ctx->relayedBlock(ctx->info, block);
-					} else {
-						elactx->blockTxListMap[block] = txHashes;
 					}
 				}
 			}

@@ -7,7 +7,6 @@
 
 #include "Peer.h"
 #include "ByteData.h"
-#include "ELACoreExt/ELAPeerContext.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -24,16 +23,16 @@ namespace Elastos {
 		}
 
 		Peer::Peer() {
-			_peer = ELAPeerNew(DEFAULT_MAGICNUMBER);
+			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
 		}
 
 		Peer::Peer(const BRPeer &peer) {
-			_peer = ELAPeerNew(DEFAULT_MAGICNUMBER);
+			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
 			*_peer = peer;
 		}
 
 		Peer::Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp) {
-			_peer = ELAPeerNew(DEFAULT_MAGICNUMBER);
+			_peer = BRPeerNew(DEFAULT_MAGICNUMBER);
 			_peer->address = addr;
 			_peer->port = port;
 			_peer->timestamp = timestamp;
@@ -42,21 +41,21 @@ namespace Elastos {
 		}
 
 		Peer::Peer(uint32_t magicNumber) {
-			_peer = ELAPeerNew(magicNumber);
+			_peer = BRPeerNew(magicNumber);
 		}
 
 		Peer::~Peer() {
 			if (_peer != nullptr) {
-				ELAPeerFree(_peer);
+				BRPeerFree(_peer);
 			}
 		}
 
 		Peer::Peer(const Peer &peer) {
-			_peer = ELAPeerCopy(peer.getRaw());
+			_peer = BRPeerCopy(peer.getRaw());
 		}
 
 		Peer &Peer::operator=(const Peer &peer) {
-			_peer = ELAPeerCopy(peer.getRaw());
+			_peer = BRPeerCopy(peer.getRaw());
 			return *this;
 		}
 
