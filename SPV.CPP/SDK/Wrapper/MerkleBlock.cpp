@@ -239,7 +239,6 @@ namespace Elastos {
 			_merkleBlock->raw.flagsLen = istream.getVarUint();
 			_merkleBlock->raw.flags = (_merkleBlock->raw.flagsLen > 0) ? (uint8_t *) malloc(_merkleBlock->raw.flagsLen)
 																	   : NULL;
-			assert(_merkleBlock->raw.hashesCount == _merkleBlock->raw.flagsLen);
 			for (uint32_t i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
 				_merkleBlock->raw.flags[i] = istream.get();
 			}
