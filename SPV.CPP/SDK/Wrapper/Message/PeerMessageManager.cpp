@@ -47,146 +47,114 @@ namespace Elastos {
 			int PeerAcceptTxMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				TransactionMessage *message = static_cast<TransactionMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_TX).get());
-				boost::function<int(BRPeer *, const uint8_t *, size_t)> fun =
-						boost::bind(&TransactionMessage::Accept, message, _1, _2, _3);
-				return fun(peer, msg, msgLen);
+
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			void PeerSendTxMessage(BRPeer *peer, BRTransaction *tx) {
 				TransactionMessage *message = static_cast<TransactionMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_TX).get());
-				boost::function<void(BRPeer *, void *)> fun =
-						boost::bind(&TransactionMessage::Send, message, _1, _2);
 
-				fun(peer, tx);
+				return message->Send(peer, tx);
 			}
 
 			int PeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				MerkleBlockMessage *message = static_cast<MerkleBlockMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_MERKLEBLOCK).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&MerkleBlockMessage::Accept, message, _1, _2, _3);
 
-				return fun(peer, msg, msgLen);
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			int PeerAcceptVersionMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				VersionMessage *message = static_cast<VersionMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_VERSION).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&VersionMessage::Accept, message, _1, _2, _3);
 
-				return fun(peer, msg, msgLen);
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			void PeerSendVersionMessage(BRPeer *peer) {
 				VersionMessage *message = static_cast<VersionMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_VERSION).get());
-				boost::function<void(BRPeer *peer)> fun =
-						boost::bind(&VersionMessage::Send, message, _1);
 
-				fun(peer);
+				message->Send(peer);
 			}
 
 			int PeerAcceptAddressMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				AddressMessage *message = static_cast<AddressMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_ADDR).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&AddressMessage::Accept, message, _1, _2, _3);
 
-				return fun(peer, msg, msgLen);
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			void PeerSendAddressMessage(BRPeer *peer) {
 				AddressMessage *message = static_cast<AddressMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_ADDR).get());
-				boost::function<void(BRPeer *peer)> fun =
-						boost::bind(&AddressMessage::Send, message, _1);
 
-				fun(peer);
+				message->Send(peer);
 			}
 
 			int PeerAcceptInventoryMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				InventoryMessage *message = static_cast<InventoryMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_INV).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&InventoryMessage::Accept, message, _1, _2, _3);
 
-				return fun(peer, msg, msgLen);
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			void PeerSendInventoryMessage(BRPeer *peer, const UInt256 *txHashes, size_t txCount) {
 				InventoryMessage *message = static_cast<InventoryMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_INV).get());
-				boost::function<void(BRPeer *peer, const UInt256 txHashes[], size_t txCount)> fun =
-						boost::bind(&InventoryMessage::Send, message, _1, _2, _3);
 
-				fun(peer, txHashes, txCount);
+				message->Send(peer, txHashes, txCount);
 			}
 
 			int PeerAcceptNotFoundMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				NotFoundMessage *message = static_cast<NotFoundMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_GETADDR).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&NotFoundMessage::Accept, message, _1, _2, _3);
 
-				return fun(peer, msg, msgLen);
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			void PeerSendFilterload(BRPeer *peer, BRBloomFilter *filter) {
 				BloomFilterMessage *message = static_cast<BloomFilterMessage *>(
 						PeerMessageManager::instance().getWrapperMessage(MSG_FILTERLOAD).get());
-				boost::function<void(BRPeer *, void *)> fun =
-						boost::bind(&BloomFilterMessage::Send, message, _1, _2);
 
-				fun(peer, filter);
+				message->Send(peer, filter);
 			}
 
 			void PeerSendGetblocks(BRPeer *peer, const UInt256 *locators, size_t locatorsCount, UInt256 hashStop) {
 				GetBlocksMessage *message = static_cast<GetBlocksMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_GETBLOCKS).get());
-				boost::function<void(BRPeer *, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop)> fun =
-						boost::bind(&GetBlocksMessage::SendGetBlocks, message, _1, _2, _3, _4);
 
-				fun(peer, locators, locatorsCount, hashStop);
+				message->SendGetBlocks(peer, locators, locatorsCount, hashStop);
 			}
 
 			void PeerSendGetdata(BRPeer *peer, const UInt256 *txHashes, size_t txCount,
 								 const UInt256 *blockHashes, size_t blockCount) {
 				GetDataMessage *message = static_cast<GetDataMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_GETDATA).get());
-				boost::function<void(BRPeer *peer, const UInt256 txHashes[], size_t txCount,
-									 const UInt256 blockHashes[], size_t blockCount)> fun =
-						boost::bind(&GetDataMessage::SendGetData, message, _1, _2, _3, _4, _5);
 
-				fun(peer, txHashes, txCount, blockHashes, blockCount);
+				message->SendGetData(peer, txHashes, txCount, blockHashes, blockCount);
 			}
 
 			void PeerSendPingMessage(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success)) {
 				PingMessage *message = static_cast<PingMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_PING).get());
-				boost::function<void(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success))> fun =
-						boost::bind(&PingMessage::sendPing, message, _1, _2, _3);
 
-				fun(peer, info, pongCallback);
+				message->sendPing(peer, info, pongCallback);
 			}
 
 			int PeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				PingMessage *message = static_cast<PingMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_PING).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&PingMessage::Accept, message, _1, _2, _3);
 
-				return fun(peer, msg, msgLen);
+				return message->Accept(peer, msg, msgLen);
 			}
 
 			int PeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				PongMessage *message = static_cast<PongMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_PONG).get());
-				boost::function<int(BRPeer *peer, const uint8_t *msg, size_t msgLen)> fun =
-						boost::bind(&PongMessage::Accept, message, _1, _2, _3);
-
-				return fun(peer, msg, msgLen);
+				
+				return message->Accept(peer, msg, msgLen);
 			}
 		}
 
