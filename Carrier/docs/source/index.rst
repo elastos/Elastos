@@ -13,6 +13,7 @@ Elastos Carrier API References
    carrier-intro
    carrier-api
    carrier-session-api
+   error-number
 
 Indices and tables
 ==================
