@@ -14,7 +14,7 @@ namespace Elastos {
 			memset(_buf, 0, sizeof(uint8_t) * size);
 		}
 
-		ByteStream::ByteStream(uint8_t *buf, uint64_t size, bool isBe, bool autorelease)
+		ByteStream::ByteStream(uint8_t *buf, uint64_t size, bool autorelease, bool isBe)
 				: _count(0), _size(size), _buf(buf), _autorelease(autorelease) ,_isBe(isBe) {}
 
 		ByteStream::~ByteStream() {

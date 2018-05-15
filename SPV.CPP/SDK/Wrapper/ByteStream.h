@@ -16,7 +16,7 @@ namespace Elastos {
 
 			ByteStream(uint64_t size, bool isBe=true);
 
-			ByteStream(uint8_t *buf, uint64_t size, bool isBe=true, bool autorelease = true);
+			ByteStream(uint8_t *buf, uint64_t size, bool autorelease = true, bool isBe=true);
 
 			~ByteStream();
 
