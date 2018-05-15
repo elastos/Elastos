@@ -3,6 +3,83 @@
 ## Summary
 SPV SDK and wallet.
 
+## Build on Ubuntu
+### Check OS version
+Make sure your ubuntu version is 16.04+
+```shell
+$ cat /etc/issue
+Ubuntu 16.04.3 LTS \n \l
+```
+
+### Install git
+```shell
+$ sudo apt-get install -y git
+```
+
+### Install cmake
+```shell
+$ sudo apt-get install -y cmake
+```
+
+### Install ndk
+`Ndk` version: r17+
+
+Download [ndk](https://developer.android.com/ndk/downloads/)
+
+Unzip to somewhere, for example `/home/xxx/dev/android-ndk-r17`
+
+Set system environment variable `ANDROID_NDK` to `/home/xxx/dev/android-ndk-r17`
+
+### Clone source code
+Open terminal, go to `/home/xxx/dev`
+```shell
+$ cd /home/xxx/dev/
+$ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
+$ cd Elastos.ELA.SPV.Cpp
+$ git submodule init
+$ git submodule update
+$ cd ThirdParty/Boost-for-Android
+$ git remote add tmp git@github.com:heropan/Boost-for-Android.git
+$ git fetch tmp
+$ git reset --hard tmp/master
+```
+
+### Build Boost-for-Android
+Set system environtment variable to ~/.bashrc
+```shell
+$ echo "export ANDROID_NDK=/home/xxx/dev/android-ndk-r17" >> ~/.bashrc
+```
+
+Make sure system environtment variable takes effect
+```shell
+$ source ~/.bashrc
+$ echo $ANDROID_NDK
+/home/xxx/dev/android-ndk-r17
+```
+
+Go to directory `/home/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android` and start to build
+```shell
+$ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android
+$ ./build-android.sh $ANDROID_NDK
+```
+Wait and have a cup of tea. ;-)
+
+### Build Elastos.ELA.SPV.Cpp
+
+Create a build directory `cmake-build-ndk-debug`
+```shell
+$ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
+$ mkdir cmake-build-ndk-debug
+```
+
+Execute cmake command to generate Makefile, and make
+```shell
+$ cd cmake-build-ndk-debug
+$ cmake -DSPV_FOR_ANDROID=ON -DCMAKE_BUILD_TYPE=Debug ..
+$ make
+```
+
+
 ## Build on Mac
 ### Check OS version
 Make sure the OSX version is 16.7+
