@@ -3,6 +3,75 @@
 ## Summary
 SPV SDK and wallet.
 
+## Build on Mac
+### Check OS version
+Make sure the OSX version is 16.7+
+
+```shell
+$ uname -srm
+Darwin 16.7.0 x86_64
+```
+
+### Install git
+Download and install [git](https://www.git-scm.com/downloads).
+
+### Install cmake
+`cmake` version: 3.11+
+
+Download and install [cmake](https://cmake.org/download/)
+
+### Install ndk
+`Ndk` version: r17+
+
+Download [ndk](https://developer.android.com/ndk/downloads/)
+
+Unzip to somewhere, for example `/Users/xxx/dev/android-ndk-r17`
+
+Set system environment variable `ANDROID_NDK` to `/Users/xxx/dev/android-ndk-r17`
+
+### Clone source code
+Open terminal, go to `/Users/xxx/dev`
+```shell
+$ cd /Users/xxx/dev/
+$ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
+$ cd Elastos.ELA.SPV.Cpp
+$ git submodule init
+$ git submodule update
+$ cd ThirdParty/Boost-for-Android
+$ git remote add tmp git@github.com:heropan/Boost-for-Android.git
+$ git fetch tmp
+$ git reset --hard tmp/master
+```
+
+### Build Boost-for-Android
+Make sure the system environtment variable takes effect, if not, open a new git bash after `ANDROID_NDK` was set.
+```shell
+$ echo $ANDROID_NDK
+/Users/xxx/dev/android-ndk-r17
+```
+Go to directory `/Users/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android` and start to build
+```shell
+$ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android
+$ ./build-android.sh $ANDROID_NDK
+```
+Wait and have a cup of tea. ;-)
+
+### Build Elastos.ELA.SPV.Cpp
+
+Create a build directory `cmake-build-ndk-debug`
+```shell
+$ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
+$ mkdir cmake-build-ndk-debug
+```
+
+Execute cmake command to generate Makefile, and make
+```shell
+$ cd cmake-build-ndk-debug
+$ cmake -DSPV_FOR_ANDROID=ON -DCMAKE_BUILD_TYPE=Debug ..
+$ make
+```
+
+
 ## Build on windows
 
 ### Check OS version
@@ -45,13 +114,13 @@ $ git submodule update
 $ cd ThirdParty/Boost-for-Android
 $ git remote add tmp git@github.com:heropan/Boost-for-Android.git
 $ git fetch tmp
-$ git reset --hard tmp/master 
+$ git reset --hard tmp/master
 ```
 ### Build Boost-for-Android
 Make sure the system environtment variable takes effect, if not, open a new git bash after `ANDROID_NDK` was set.
 ```shell
 $ echo $ANDROID_NDK
-D:\android\android-ndk-r17
+D:\dev\android-ndk-r17
 ```
 Go to directory `D:\dev\Elastos.ELA.SPV.Cpp\ThirdParty\Boost-for-Android` and start to build
 ```shell
@@ -63,7 +132,7 @@ Wait and have a cup of tea. ;-)
 _note: if error `'cl' is not recognized as an internal or external command` occur, make sure you have visual studio installed correctly._ 
 ### Build Elastos.ELA.SPV.Cpp
 
-Create a build directory `cmake-build-ndk`
+Create a build directory `cmake-build-ndk-debug`
 ```shell
 $ cd /d/dev/Elastos.ELA.SPV.Cpp
 $ mkdir cmake-build-ndk-debug
