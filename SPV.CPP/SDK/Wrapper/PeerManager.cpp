@@ -219,7 +219,8 @@ namespace Elastos {
 		void PeerManager::publishTransaction(const TransactionPtr &transaction) {
 			BRTransaction *raw = transaction->convertToRaw();
 			BRPeerManagerPublishTx(_manager, raw, &_listener, txPublished);
-			ELABRTransactionFree((ELABRTransaction *)raw);
+			// Should not free raw here
+//			ELABRTransactionFree((ELABRTransaction *)raw);
 		}
 
 		uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {
