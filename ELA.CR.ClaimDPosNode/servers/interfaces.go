@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/protocol"
+	"github.com/elastos/Elastos.ELA/sidechain"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -807,6 +809,37 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	}
 
 	return ResponsePack(Success, GetTransactionInfo(header, txn))
+}
+
+func GetExistWithdrawTransactions(param Params) map[string]interface{} {
+	txsStr, ok := param.String("txs")
+	if !ok {
+		return ResponsePack(InvalidParams, "txs not found")
+	}
+
+	txsBytes, err := HexStringToBytes(txsStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var txHashes []string
+	err = json.Unmarshal(txsBytes, &txHashes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	if sidechain.DbCache == nil {
+		return ResponsePack(Success, "")
+	}
+
+	var resultTxHashes []string
+	for _, txHash := range txHashes {
+		if ok, _ := sidechain.DbCache.HasSideChainTx(txHash); ok {
+			resultTxHashes = append(resultTxHashes, txHash)
+		}
+	}
+
+	return ResponsePack(Success, resultTxHashes)
 }
 
 func getPayloadInfo(p Payload) PayloadInfo {
