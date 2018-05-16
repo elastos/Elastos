@@ -80,30 +80,106 @@ typedef enum ElaStreamType {
     ElaStreamType_message
 } ElaStreamType;
 
+/**
+ * \~English
+ * Stream address type.
+ */
 typedef enum ElaCandidateType {
+    /**
+     * \~English
+     * The address is host local address.
+     */
     ElaCandidateType_Host,
+    /**
+     * \~English
+     * The address is server reflexive address.
+     */
     ElaCandidateType_ServerReflexive,
+    /**
+     * \~English
+     * The address is peer reflexive address.
+     */
     ElaCandidateType_PeerReflexive,
+    /**
+     * \~English
+     * The address is relayed address.
+     */
     ElaCandidateType_Relayed,
 } ElaCandidateType;
 
+/**
+ * \~English
+ * Peers network topology type.
+ */
 typedef enum ElaNetworkTopology {
+    /**
+     * \~English
+     * The stream peers is in LAN, using direct connection.
+     */
     ElaNetworkTopology_LAN,
+    /**
+     * \~English
+     * The stream peers behind NAT, using P2P direct connection.
+     */
     ElaNetworkTopology_P2P,
+    /**
+     * \~English
+     * The stream peers behind NAT, using relayed connection.
+     */
     ElaNetworkTopology_RELAYED,
 } ElaNetworkTopology;
 
+/**
+ * \~English
+ * Carrier stream address information.
+ */
 typedef struct ElaAddressInfo {
+    /**
+     * \~English
+     * The candidate address type.
+     */
     ElaCandidateType type;
+    /**
+     * \~English
+     * The IP/host of the address.
+     */
     char addr[ELA_MAX_IP_STRING_LEN + 1];
+    /**
+     * \~English
+     * The port of the address.
+     */
     int port;
+    /**
+     * \~English
+     * The IP/host of the related address.
+     */
     char related_addr[ELA_MAX_IP_STRING_LEN + 1];
+    /**
+     * \~English
+     * The port of the related address.
+     */
     int related_port;
 } ElaAddressInfo;
 
+/**
+ * \~English
+ * Carrier stream transport information.
+ */
 typedef struct ElaTransportInfo {
+    /**
+     * \~English
+     * The network topology type: LAN, P2P or relayed.
+     */
     ElaNetworkTopology topology;
+    /**
+     * \~English
+     * The local address information.
+     */
     ElaAddressInfo local;
+    /**
+     * \~English
+     * The remote address information.
+     */
     ElaAddressInfo remote;
 } ElaTransportInfo;
 
@@ -162,7 +238,7 @@ typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_init(ElaCarrier *carrier, 
+int ela_session_init(ElaCarrier *carrier,
                 ElaSessionRequestCallback *callback, void *context);
 
 /**

@@ -1226,229 +1226,229 @@ int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
 
 /**
  * \~English
- * 0x80000001. Argument(s) is(are) invalid.
+ * Argument(s) is(are) invalid.
  */
 #define ELAERR_INVALID_ARGS                         0x01
 
 /**
  * \~English
- * 0x80000002. The heap runs out of memory.
+ * Runs out of memory.
  */
 #define ELAERR_OUT_OF_MEMORY                        0x02
 
 /**
  * \~English
- * 0x80000003. Buffer size is too small.
+ * Buffer size is too small.
  */
 #define ELAERR_BUFFER_TOO_SMALL                     0x03
 
 /**
  * \~English
- * 0x80000004. Persistent data is bad.
+ * Persistent data is corrupted.
  */
 #define ELAERR_BAD_PERSISTENT_DATA                  0x04
 
 /**
  * \~English
- * 0x80000005. Persistent file is invalid.
+ * Persistent file is invalid.
  */
 #define ELAERR_INVALID_PERSISTENCE_FILE             0x05
 
 /**
  * \~English
- * 0x80000006. Control packet is invalid.
+ * Control packet is invalid.
  */
 #define ELAERR_INVALID_CONTROL_PACKET               0x06
 
 /**
  * \~English
- * 0x80000007. Credential is invalid.
+ * Credential is invalid.
  */
 #define ELAERR_INVALID_CREDENTIAL                   0x07
 
 /**
  * \~English
- * 0x80000008. Server failed.
+ * Server failed.
  */
 #define ELAERR_SERVER_FAILED                        0x08
 
 /**
  * \~English
- * 0x80000009. It ran already.
+ * Carrier ran already.
  */
 #define ELAERR_ALREADY_RUN                          0x09
 
 /**
  * \~English
- * 0x8000000A. It is not ready.
+ * Carrier not ready.
  */
 #define ELAERR_NOT_READY                            0x0A
 
 /**
  * \~English
- * 0x8000000B. They(It) do(es) not exist.
+ * The requested entity does not exist.
  */
 #define ELAERR_NOT_EXIST                            0x0B
 
 /**
  * \~English
- * 0x8000000C. They(It) exist(s) already.
+ * The entity exists already.
  */
 #define ELAERR_ALREADY_EXIST                        0x0C
 
 /**
  * \~English
- * 0x8000000D. There are no matched requests.
+ * There are no matched requests.
  */
 #define ELAERR_NO_MATCHED_REQUEST                   0x0D
 
 /**
  * \~English
- * 0x8000000E. User ID is invalid.
+ * User ID is invalid.
  */
 #define ELAERR_INVALID_USERID                       0x0E
 
 /**
  * \~English
- * 0x8000000F. Node ID is invalid.
+ * Node ID is invalid.
  */
 #define ELAERR_INVALID_NODEID                       0x0F
 
 /**
  * \~English
- * 0x80000010. APP ID is invalid.
+ * APP ID is invalid.
  */
 #define ELAERR_INVALID_APPID                        0x10
 
 /**
  * \~English
- * 0x80000011. Descriptor is invalid.
+ * Descriptor is invalid.
  */
 #define ELAERR_INVALID_DESCRIPTOR                   0x11
 
 /**
  * \~English
- * 0x80000012. It is in a wrong state.
+ * Failed because wrong state.
  */
 #define ELAERR_WRONG_STATE                          0x12
 
 /**
  * \~English
- * 0x80000013. It is busy.
+ * Stream busy.
  */
 #define ELAERR_BUSY                                 0x13
 
 /**
  * \~English
- * 0x80000014. Adapted unsuccessfully.
+ * Language binding error.
  */
 #define ELAERR_LANGUAGE_BINDING                     0x14
 
 /**
  * \~English
- * 0x80000015. Perform encryption unsuccessfully.
+ * Encryption failed.
  */
 #define ELAERR_ENCRYPT                              0x15
 
 /**
  * \~English
- * 0x80000016. The content size of SDP is too long.
+ * The content size of SDP is too long.
  */
 #define ELAERR_SDP_TOO_LONG                         0x16
 
 /**
  * \~English
- * 0x80000017. SDP information is in a bad format.
+ * Bad SDP information format.
  */
 #define ELAERR_INVALID_SDP                          0x17
 
 /**
  * \~English
- * 0x80000018. This function has not been implemented yet.
+ * Not implemented yet.
  */
 #define ELAERR_NOT_IMPLEMENTED                      0x18
 
 /**
  * \~English
- * 0x80000019. Some limits are exceeded.
+ * Limits are exceeded.
  */
 #define ELAERR_LIMIT_EXCEEDED                       0x19
 
 /**
  * \~English
- * 0x8000001A. Allocate port unsuccessfully.
+ * Allocate port unsuccessfully.
  */
 #define ELAERR_PORT_ALLOC                           0x1A
 
 /**
  * \~English
- * 0x8000001B. Proxy type is bad.
+ * Invalid proxy type.
  */
 #define ELAERR_BAD_PROXY_TYPE                       0x1B
 
 /**
  * \~English
- * 0x8000001C. Proxy host is bad.
+ * Invalid proxy host.
  */
 #define ELAERR_BAD_PROXY_HOST                       0x1C
 
 /**
  * \~English
- * 0x8000001D. Proxy port is bad.
+ * Invalid proxy port.
  */
 #define ELAERR_BAD_PROXY_PORT                       0x1D
 
 /**
  * \~English
- * 0x8000001E. Proxy is not available.
+ * Proxy is not available.
  */
 #define ELAERR_PROXY_NOT_AVAILABLE                  0x1E
 
 /**
  * \~English
- * 0x8000001F. Get encrypted data unsuccessfully.
+ * Persistent data is encrypted, load failed.
  */
 #define ELAERR_ENCRYPTED_PERSISTENT_DATA            0x1F
 
 /**
  * \~English
- * 0x80000020. Bootstrap host is bad.
+ * Invalid bootstrap host.
  */
 #define ELAERR_BAD_BOOTSTRAP_HOST                   0x20
 
 /**
  * \~English
- * 0x80000021. Bootstrap port is bad.
+ * Invalid bootstrap port.
  */
 #define ELAERR_BAD_BOOTSTRAP_PORT                   0x21
 
 /**
  * \~English
- * 0x80000022. Something is too long.
+ * Data is too long.
  */
 #define ELAERR_TOO_LONG                             0x22
 
 /**
  * \~English
- * 0x80000023. Could not friend yourself.
+ * Could not friend yourself.
  */
 #define ELAERR_ADD_SELF                             0x23
 
 /**
  * \~English
- * 0x80000024. Address is bad.
+ * Invalid address.
  */
 #define ELAERR_BAD_ADDRESS                          0x24
 
 /**
  * \~English
- * 0x80000025. Your friend is offline.
+ * Friend is offline.
  */
 #define ELAERR_FRIEND_OFFLINE                       0x25
 
 /**
  * \~English
- * 0x800000FF. Unknown error.
+ * Unknown error.
  */
 #define ELAERR_UNKNOWN                              0xFF
 
