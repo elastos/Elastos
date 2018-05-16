@@ -39,20 +39,20 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState               // node state
-	id            uint64        // The nodes's id
-	version       uint32        // The network protocol the node used
-	services      uint64        // The services the node supplied
-	relay         bool          // The relay capability of the node (merge into capbility flag)
-	height        uint64        // The node latest block height
-	txnCnt        uint64        // The transactions be transmit by this node
-	rxTxnCnt      uint64        // The transaction received by this node
-	link                        // The link status and infomation
-	nbrNodes                    // The neighbor node connect with currently node except itself
-	eventQueue                  // The event queue to notice notice other modules
-	chain.TxPool                // Unconfirmed transaction pool
-	idCache                     // The buffer to store the id of the items which already be processed
-	filter        *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState          // node state
+	id       uint64        // The nodes's id
+	version  uint32        // The network protocol the node used
+	services uint64        // The services the node supplied
+	relay    bool          // The relay capability of the node (merge into capbility flag)
+	height   uint64        // The node latest block height
+	txnCnt   uint64        // The transactions be transmit by this node
+	rxTxnCnt uint64        // The transaction received by this node
+	link                   // The link status and infomation
+	nbrNodes               // The neighbor node connect with currently node except itself
+	eventQueue             // The event queue to notice notice other modules
+	chain.TxPool           // Unconfirmed transaction pool
+	idCache                // The buffer to store the id of the items which already be processed
+	filter   *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -64,13 +64,13 @@ type node struct {
 	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
-	DefaultMaxPeers    uint
-	headerFirstMode    bool
-	RequestedBlockList map[Uint256]time.Time
-	SyncBlkReqSem      Semaphore
-	SyncHdrReqSem      Semaphore
-	StartHash          Uint256
-	StopHash           Uint256
+	DefaultMaxPeers          uint
+	headerFirstMode          bool
+	RequestedBlockList       map[Uint256]time.Time
+	SyncBlkReqSem            Semaphore
+	SyncHdrReqSem            Semaphore
+	StartHash                Uint256
+	StopHash                 Uint256
 }
 
 type ConnectingNodes struct {
@@ -118,8 +118,8 @@ func InitLocalNode() protocol.Noder {
 	return LocalNode
 }
 
-func (node *node) UpdateMsgHandler(handler p2p.MsgHandler) {
-	node.MsgHelper.UpdateHandler(handler)
+func (node *node) UpdateMsgHelper(handler p2p.MsgHandler) {
+	node.MsgHelper.Update(handler)
 }
 
 func (node *node) DumpInfo() {
@@ -325,7 +325,10 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				}
 
 				if nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(message) {
-					nbr.Send(msg.NewTx(message))
+					inv := msg.NewInventory()
+					txId := message.Hash()
+					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
+					nbr.Send(inv)
 					continue
 				}
 
@@ -341,8 +344,10 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				}
 
 				if nbr.BloomFilter().IsLoaded() {
-					merkle, _ := bloom.NewMerkleBlock(message, nbr.BloomFilter())
-					nbr.Send(merkle)
+					inv := msg.NewInventory()
+					blockHash := message.Hash()
+					inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &blockHash))
+					nbr.Send(inv)
 					continue
 				}
 
@@ -433,7 +438,7 @@ func (node *node) GetRequestBlockList() map[Uint256]time.Time {
 	return node.RequestedBlockList
 }
 
-func (node *node) RequestedBlockExisted(hash Uint256) bool {
+func (node *node) IsRequestedBlock(hash Uint256) bool {
 	node.requestedBlockLock.Lock()
 	defer node.requestedBlockLock.Unlock()
 	_, ok := node.RequestedBlockList[hash]

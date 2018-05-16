@@ -58,7 +58,11 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	txn.Serialize(buf)
 	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	//add the transaction to process scope
-	pool.addToTxList(txn)
+	if ok := pool.addToTxList(txn); !ok {
+		// reject duplicated transaction
+		log.Debugf("Transaction duplicate %s", txn.Hash().String())
+		return ErrTxHashDuplicate
+	}
 	return Success
 }
 
