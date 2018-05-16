@@ -1,7 +1,11 @@
 package node
 
 import (
+	"fmt"
+
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -13,10 +17,11 @@ import (
 
 type HandlerV0 struct {
 	HandlerBase
+	duplicateBlocks int
 }
 
 func NewHandlerV0(node protocol.Noder) *HandlerV0 {
-	return &HandlerV0{HandlerBase{node}}
+	return &HandlerV0{HandlerBase: HandlerBase{node: node}}
 }
 
 // After message header decoded, this method will be
@@ -38,6 +43,10 @@ func (h *HandlerV0) OnMakeMessage(cmd string) (message p2p.Message, err error) {
 		message = new(v0.Inv)
 	case p2p.CmdGetData:
 		message = new(v0.GetData)
+	case p2p.CmdBlock:
+		message = msg.NewBlock(new(core.Block))
+	case p2p.CmdTx:
+		message = msg.NewTx(new(core.Transaction))
 	case p2p.CmdNotFound:
 		message = new(v0.NotFound)
 	default:
@@ -62,6 +71,10 @@ func (h *HandlerV0) OnMessageDecoded(message p2p.Message) {
 		err = h.onInv(message)
 	case *v0.GetData:
 		err = h.onGetData(message)
+	case *msg.Block:
+		err = h.onBlock(message)
+	case *msg.Tx:
+		err = h.onTx(message)
 	case *v0.NotFound:
 		err = h.onNotFound(message)
 	default:
@@ -92,11 +105,11 @@ func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 	defer LocalNode.RelSyncHdrReqSem()
 
 	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
-	hashes, err := GetBlockHashes(*start, req.HashStop)
+	hashes, err := GetBlockHashes(*start, req.HashStop, p2p.MaxHeaderHashes)
 	if err != nil {
 		return err
 	}
-	node.Send(v0.NewInv(hashes))
+	go node.Send(v0.NewInv(hashes))
 	return nil
 }
 
@@ -112,7 +125,7 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 	for i, hash := range inv.Hashes {
 		// Request block
 		if !chain.DefaultLedger.BlockInLedger(*hash) &&
-			(!chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) || !LocalNode.RequestedBlockExisted(*hash)) {
+			(!chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) || !LocalNode.IsRequestedBlock(*hash)) {
 
 			LocalNode.AddRequestedBlock(*hash)
 			node.Send(v0.NewGetData(*hash))
@@ -140,7 +153,6 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 }
 
 func (h *HandlerV0) onGetData(req *v0.GetData) error {
-	log.Debug()
 	node := h.node
 	hash := req.Hash
 
@@ -150,9 +162,76 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 		node.Send(v0.NewNotFound(hash))
 		return err
 	}
-	log.Debug("block height is ", block.Header.Height, " ,hash is ", hash)
 
 	node.Send(msg.NewBlock(block))
+
+	return nil
+}
+
+func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
+	log.Debug()
+	node := h.node
+	block := msgBlock.Block.(*core.Block)
+
+	hash := block.Hash()
+	if !LocalNode.IsNeighborNoder(node) {
+		log.Trace("received headers message from unknown peer")
+		return fmt.Errorf("received headers message from unknown peer")
+	}
+
+	if chain.DefaultLedger.BlockInLedger(hash) {
+		h.duplicateBlocks++
+		log.Trace("Receive ", h.duplicateBlocks, " duplicated block.")
+		return nil
+	}
+
+	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
+	LocalNode.DeleteRequestedBlock(hash)
+	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
+	if err != nil {
+		reject := msg.NewReject(msgBlock.CMD(), msg.RejectInvalid, err.Error())
+		reject.Hash = block.Hash()
+
+		node.Send(reject)
+		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
+	}
+
+	if !LocalNode.IsSyncHeaders() {
+		// relay
+		if !LocalNode.ExistedID(hash) {
+			LocalNode.Relay(node, block)
+			log.Debug("Relay block")
+		}
+
+		if isOrphan && !LocalNode.IsRequestedBlock(hash) {
+			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
+			SendGetBlocks(node, locator, *orphanRoot)
+		}
+	}
+
+	return nil
+}
+
+func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
+	log.Debug()
+	node := h.node
+	tx := msgTx.Transaction.(*core.Transaction)
+
+	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
+		if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
+			reject := msg.NewReject(msgTx.CMD(), msg.RejectInvalid, errCode.Message())
+			reject.Hash = tx.Hash()
+
+			node.Send(reject)
+			return fmt.Errorf("[HandlerBase] VerifyTransaction failed when AppendToTxnPool")
+		}
+		LocalNode.Relay(node, tx)
+		log.Info("Relay Transaction")
+		LocalNode.IncRxTxnCnt()
+		log.Debug("RX Transaction message hash", tx.Hash().String())
+		log.Debug("RX Transaction message type", tx.TxType.Name())
+	}
 
 	return nil
 }

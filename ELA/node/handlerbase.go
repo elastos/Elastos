@@ -7,8 +7,6 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
-	"github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
@@ -41,10 +39,6 @@ func (h *HandlerBase) OnError(err error) {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-
-	// Update node last active time
-	h.node.UpdateLastActive()
-
 	switch cmd {
 	case p2p.CmdVersion:
 		message = new(msg.Version)
@@ -54,10 +48,6 @@ func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error)
 		message = new(msg.GetAddr)
 	case p2p.CmdAddr:
 		message = new(msg.Addr)
-	case p2p.CmdBlock:
-		message = msg.NewBlock(new(core.Block))
-	case p2p.CmdTx:
-		message = msg.NewTx(new(core.Transaction))
 	default:
 		err = errors.New("unknown message type")
 	}
@@ -78,10 +68,6 @@ func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
 		err = h.onAddrsReq(message)
 	case *msg.Addr:
 		err = h.onAddrs(message)
-	case *msg.Block:
-		err = h.onBlock(message)
-	case *msg.Tx:
-		err = h.onTx(message)
 	default:
 		err = errors.New("unknown message type")
 	}
@@ -91,7 +77,6 @@ func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
 }
 
 func (h *HandlerBase) onVersion(version *msg.Version) error {
-	log.Debug()
 	node := h.node
 
 	// Exclude the node itself
@@ -103,8 +88,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	s := node.State()
 	if s != p2p.INIT && s != p2p.HAND {
-		log.Warn("Unknow status to receive version")
-		return errors.New("Unknow status to receive version")
+		log.Warn("Unknown status to receive version")
+		return errors.New("Unknown status to receive version")
 	}
 
 	// Obsolete node
@@ -122,9 +107,9 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
-		node.UpdateMsgHandler(NewHandlerV0(node))
+		node.UpdateMsgHelper(NewHandlerV0(node))
 	} else {
-		node.UpdateMsgHandler(NewHandlerEIP001(node))
+		node.UpdateMsgHelper(NewHandlerEIP001(node))
 	}
 
 	// Do not add SPV client as a known address,
@@ -155,7 +140,6 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 }
 
 func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
-	log.Debug()
 	node := h.node
 	s := node.State()
 	if s != p2p.HANDSHAKE && s != p2p.HANDSHAKED {
@@ -180,14 +164,12 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 }
 
 func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
-	log.Debug()
 	addrs := LocalNode.RandSelectAddresses()
 	h.node.Send(msg.NewAddr(addrs))
 	return nil
 }
 
 func (h *HandlerBase) onAddrs(addrs *msg.Addr) error {
-	log.Debug()
 	for _, addr := range addrs.AddrList {
 		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", addr.String(), addr.ID))
 
@@ -208,76 +190,7 @@ func (h *HandlerBase) onAddrs(addrs *msg.Addr) error {
 	return nil
 }
 
-func (h *HandlerBase) onBlock(msgBlock *msg.Block) error {
-	log.Debug()
-	node := h.node
-	block := msgBlock.Block.(*core.Block)
-
-	hash := block.Hash()
-	if !LocalNode.IsNeighborNoder(node) {
-		log.Trace("received headers message from unknown peer")
-		return errors.New("received headers message from unknown peer")
-	}
-
-	if chain.DefaultLedger.BlockInLedger(hash) {
-		DuplicateBlocks++
-		log.Trace("Receive ", DuplicateBlocks, " duplicated block.")
-		return nil
-	}
-
-	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
-	LocalNode.DeleteRequestedBlock(hash)
-	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
-	if err != nil {
-		reject := msg.NewReject(msgBlock.CMD(), msg.RejectInvalid, err.Error())
-		reject.Hash = block.Hash()
-
-		node.Send(reject)
-		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
-	}
-
-	if !LocalNode.IsSyncHeaders() {
-		// relay
-		if !LocalNode.ExistedID(hash) {
-			LocalNode.Relay(node, block)
-			log.Debug("Relay block")
-		}
-
-		if isOrphan && !LocalNode.RequestedBlockExisted(hash) {
-			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
-			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
-			SendGetBlocks(node, locator, *orphanRoot)
-		}
-	}
-
-	return nil
-}
-
-func (h *HandlerBase) onTx(msgTx *msg.Tx) error {
-	log.Debug()
-	node := h.node
-	tx := msgTx.Transaction.(*core.Transaction)
-
-	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
-		if errCode := LocalNode.AppendToTxnPool(tx); errCode != Success {
-			reject := msg.NewReject(msgTx.CMD(), msg.RejectInvalid, errCode.Message())
-			reject.Hash = tx.Hash()
-
-			node.Send(reject)
-			return fmt.Errorf("[HandlerBase] VerifyTransaction failed when AppendToTxnPool")
-		}
-		LocalNode.Relay(node, tx)
-		log.Info("Relay Transaction")
-		LocalNode.IncRxTxnCnt()
-		log.Debug("RX Transaction message hash", tx.Hash().String())
-		log.Debug("RX Transaction message type", tx.TxType.Name())
-	}
-
-	return nil
-}
-
 func NewVersion(node protocol.Noder) *msg.Version {
-	log.Debug()
 	msg := new(msg.Version)
 	msg.Version = node.Version()
 	msg.Services = node.Services()
@@ -307,15 +220,15 @@ func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop comm
 	node.Send(msg.NewGetBlocks(locator, hashStop))
 }
 
-func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256) ([]*common.Uint256, error) {
+func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256, maxBlockHashes uint32) ([]*common.Uint256, error) {
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
 	curHeight := chain.DefaultLedger.Store.GetHeight()
 	if stopHash == common.EmptyHash {
 		if startHash == common.EmptyHash {
-			if curHeight > p2p.MaxHeaderHashes {
-				count = p2p.MaxHeaderHashes
+			if curHeight > maxBlockHashes {
+				count = maxBlockHashes
 			} else {
 				count = curHeight
 			}
@@ -326,8 +239,8 @@ func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256) ([]*commo
 			}
 			startHeight = startHeader.Height
 			count = curHeight - startHeight
-			if count > p2p.MaxHeaderHashes {
-				count = p2p.MaxHeaderHashes
+			if count > maxBlockHashes {
+				count = maxBlockHashes
 			}
 		}
 	} else {
@@ -349,12 +262,12 @@ func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256) ([]*commo
 			}
 			count = stopHeight - startHeight
 
-			if count >= p2p.MaxHeaderHashes {
-				count = p2p.MaxHeaderHashes
+			if count >= maxBlockHashes {
+				count = maxBlockHashes
 			}
 		} else {
-			if stopHeight > p2p.MaxHeaderHashes {
-				count = p2p.MaxHeaderHashes
+			if stopHeight > maxBlockHashes {
+				count = maxBlockHashes
 			} else {
 				count = stopHeight
 			}
