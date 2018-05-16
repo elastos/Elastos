@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sort"
 
+	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -17,7 +18,9 @@ func VerifySignature(tx *ela.Transaction) (bool, error) {
 		if err := spv.VerifyTransaction(tx); err != nil {
 			return false, errors.New("Issue token transaction validate failed.")
 		}
-
+		if err := checkCrossChainArbitrators(tx); err != nil {
+			return false, err
+		}
 		return true, nil
 	}
 
@@ -166,6 +169,34 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	}
 
 	return true, nil
+}
+
+func checkCrossChainArbitrators(txn *ela.Transaction) error {
+	depositPayload, ok := txn.Payload.(*ela.PayloadIssueToken)
+	if !ok {
+		return errors.New("Invalid payload type.")
+	}
+
+	if mainchain.DbCache == nil {
+		dbCache, err := mainchain.OpenDataStore()
+		if err != nil {
+			errors.New("Open data store failed")
+		}
+		mainchain.DbCache = dbCache
+	}
+
+	ok, err := mainchain.DbCache.HasMainChainTx(depositPayload.MainChainTransactionHash)
+	if err != nil {
+		return err
+	}
+	if ok {
+		return errors.New("Reduplicate withdraw transaction.")
+	}
+	err = mainchain.DbCache.AddMainChainTx(depositPayload.MainChainTransactionHash)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type byProgramHashes []Uint168

@@ -11,6 +11,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
+	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
 	"encoding/binary"
@@ -912,6 +913,37 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, GetTransactionInfo(header, txn))
 }
 
+func GetExistDepositTransactions(param Params) map[string]interface{} {
+	txsStr, ok := param.String("txs")
+	if !ok {
+		return ResponsePack(InvalidParams, "txs not found")
+	}
+
+	txsBytes, err := HexStringToBytes(txsStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var txHashes []string
+	err = json.Unmarshal(txsBytes, &txHashes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	if mainchain.DbCache == nil {
+		return ResponsePack(Success, "")
+	}
+
+	var resultTxHashes []string
+	for _, txHash := range txHashes {
+		if ok, _ := mainchain.DbCache.HasMainChainTx(txHash); ok {
+			resultTxHashes = append(resultTxHashes, txHash)
+		}
+	}
+
+	return ResponsePack(Success, resultTxHashes)
+}
+
 func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 
 	switch object := pInfo.(type) {
@@ -937,6 +969,7 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 			return nil, err
 		}
 		obj.MerkleProof = bytes
+		obj.MainChainTransactionHash = object.MainChainTransactionHash
 		return obj, nil
 	case *TransferCrossChainAssetInfo:
 		obj := new(ela.PayloadTransferCrossChainAsset)

@@ -107,7 +107,8 @@ type SideMiningInfo struct {
 }
 
 type IssueTokenInfo struct {
-	Proof string
+	Proof                    string
+	MainChainTransactionHash string
 }
 
 type WithdrawAssetInfo struct {
