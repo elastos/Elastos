@@ -284,20 +284,19 @@ func (bc *Blockchain) RemoveOrphanBlock(orphan *OrphanBlock) {
 	if len(bc.PrevOrphans[*prevHash]) == 0 {
 		delete(bc.PrevOrphans, *prevHash)
 	}
+
+	if bc.OldestOrphan == orphan {
+		bc.OldestOrphan = nil
+	}
 }
 
 func (bc *Blockchain) AddOrphanBlock(block *Block) {
 	for _, oBlock := range bc.Orphans {
 		if time.Now().After(oBlock.Expiration) {
 			bc.RemoveOrphanBlock(oBlock)
-			if bc.OldestOrphan == oBlock {
-				bc.OldestOrphan = nil
-			}
 			continue
 		}
-	}
 
-	for _, oBlock := range bc.Orphans {
 		if bc.OldestOrphan == nil || oBlock.Expiration.Before(bc.OldestOrphan.Expiration) {
 			bc.OldestOrphan = oBlock
 		}
@@ -1051,8 +1050,7 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 	// Handle orphan blocks.
 	prevHash := blockHeader.Previous
 	if !prevHash.IsEqual(EmptyHash) {
-		prevExists := bc.BlockExists(&prevHash)
-		if !prevExists {
+		if !bc.BlockExists(&prevHash) {
 			log.Tracef("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
 			bc.AddOrphanBlock(block)
 

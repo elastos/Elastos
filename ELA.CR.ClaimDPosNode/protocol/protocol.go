@@ -61,7 +61,7 @@ type Noder interface {
 	DumpInfo()
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay uint8, height uint64)
-	UpdateMsgHandler(handler p2p.MsgHandler)
+	UpdateMsgHelper(handler p2p.MsgHandler)
 	ConnectSeeds()
 	Connect(nodeAddr string) error
 	LoadFilter(filter *msg.FilterLoad)
@@ -101,7 +101,7 @@ type Noder interface {
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
 	IsSyncFailed() bool
-	RequestedBlockExisted(hash Uint256) bool
+	IsRequestedBlock(hash Uint256) bool
 	AddRequestedBlock(hash Uint256)
 	DeleteRequestedBlock(hash Uint256)
 	GetRequestBlockList() map[Uint256]time.Time
