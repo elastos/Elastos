@@ -48,7 +48,7 @@ func (node *node) SyncBlocks() {
 			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
 			SendGetBlocks(syncNode, locator, EmptyHash)
-		} else {
+		} else if syncNode.Version() < p2p.EIP001Version {
 			list := LocalNode.GetRequestBlockList()
 			var requests = make(map[Uint256]time.Time, p2p.MaxHeaderHashes)
 			x := 1
