@@ -5,7 +5,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/log"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -56,7 +55,6 @@ func OpenDataStore() (DataStore, error) {
 func initDB() (*sql.DB, error) {
 	db, err := sql.Open(DriverName, DBName)
 	if err != nil {
-		log.Error("Open data db error:", err)
 		return nil, err
 	}
 	// Create SideChainTxs table
