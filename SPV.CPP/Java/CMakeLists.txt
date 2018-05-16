@@ -28,3 +28,5 @@ add_library(${SPVSDK_JNI_NAME} ${SPV_LIBRARY_TYPE}
 	${SPVSDK_SOURCE_FILES}
 	${SQLITE_SOURCE_FILES})
 
+target_link_libraries(${SPVSDK_JNI_NAME} log)
+target_link_libraries(${SPVSDK_JNI_NAME} atomic)

@@ -1,22 +1,3 @@
-# REQUIREMENTS: this script needs CMake 3.0 or higher. Downloads are available at http://www.cmake.org
-
-# How to build Elastos.ELA.SPV.Cpp using CMake under Unix (Linux, Darwin etc.)?
-# 1. Copy this file, as-is, to the top-level Elastos.ELA.SPV.Cpp folder
-# 2. Make a build directory(Elastos.ELA.SPV.Cpp.build) somewhere outside the Elastos.ELA.SPV.Cpp source tree
-# 3. cd Elastos.ELA.SPV.Cpp.build; cmake "relative/path/to/Elastos.ELA.SPV.Cpp"
-# 4. make
-# 5. make install (or sudo make install)
-
-# How to build Elastos.ELA.SPV.Cpp using CMake under Windows
-# 1. Copy this file, as-is, to the top-level folder
-# 2. Launch the cmake-gui, and select the top-level folder
-# 3. You can choose whatever you want as an install directory
-# 4. Click 'Configure'
-# 5. Choose your generator
-# 6. When configure is achived, you can change the variable with a red background
-# 7. Click 'Generate'
-# 8. From your IDE, open the generated makefile and run the compilation.
-
 cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -38,12 +19,12 @@ if(SPV_FOR_ANDROID)
 	message(STATUS "Build spv for android")
 
 	set(CMAKE_SYSTEM_NAME Android)
-	#set(CMAKE_ANDROID_STL_TYPE c++_static)
-	set(CMAKE_ANDROID_STL_TYPE c++_shared)
+	set(CMAKE_ANDROID_STL_TYPE c++_static)
+	#set(CMAKE_ANDROID_STL_TYPE c++_shared)
 
-	#if(NOT ANDROID_NATIVE_API_LEVEL STREQUAL "")
-	#set(CMAKE_SYSTEM_VERSION ${ANDROID_NATIVE_API_LEVEL})
-	#endif()
+	if(DEFINED ANDROID_NATIVE_API_LEVEL)
+		set(CMAKE_SYSTEM_VERSION ${ANDROID_NATIVE_API_LEVEL})
+	endif()
 
 	if("$ENV{ANDROID_NDK}" STREQUAL "")
 		message(FATAL_ERROR "Environment variable ANDROID_NDK not define")
@@ -51,10 +32,18 @@ if(SPV_FOR_ANDROID)
 	set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK})
 	set(CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION clang)
 
-	# can be value below: arm64-v8a armeabi-v7a armeabi-v6 armeabi mips mips64 x86 x86_64
-	set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)")
+	# can be value below: arm64-v8a armeabi-v7a armeabi-v6 armeabi x86 x86_64
+	if(NOT DEFINED CMAKE_ANDROID_ARCH_ABI)
+		set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)" FORCE)
+	endif()
+	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS "arm64-v8a" "armeabi-v7a" "armeabi-v6" "armeabi" "x86" "x86_64")
+
 endif()
 
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type." FORCE)
+endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
 
 project(SPVSDK VERSION 0.1.0.0)
 
@@ -73,13 +62,6 @@ else (${CMAKE_SIZEOF_VOID_P} MATCHES "8")
 	set(BIT 32)
 endif(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
 message(STATUS "Build ${BIT}bit")
-
-if(NOT CMAKE_CONFIGURATION_TYPES)
-	if(CMAKE_BUILD_TYPE STREQUAL "")
-		set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type." FORCE)
-		set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
-	endif(CMAKE_BUILD_TYPE STREQUAL "")
-endif(NOT CMAKE_CONFIGURATION_TYPES)
 
 
 if(NOT DEFINED SPV_INSTALL_PREFIX)
@@ -120,6 +102,7 @@ else()
 	endforeach(lib_name)
 
 	string(REPLACE ";" " " Boost_LIBRARIES_NO_Semicolon "${Boost_LIBRARIES}")
+	#set(CMAKE_SHARED_LINKER_FLAGS "-march=${ANDROID_ARCH} -Wl,--fix-cortex-a8 -Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
 	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
 	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
 endif()
