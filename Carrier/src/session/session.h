@@ -119,7 +119,6 @@ typedef struct ElaSession {
     char                    *to;
 
     TransportWorker         *worker;
-    int                     standalone;
 
     int                     offerer;
 

@@ -235,7 +235,7 @@ void session_base_destroy(void *p)
     if (ws->portforwarding.services)
         deref(ws->portforwarding.services);
 
-    if (ws->worker && ws->standalone)
+    if (ws->worker)
         deref(ws->worker);
 
     vlogD("Session: Session to %s destroyed.", ws->to);
