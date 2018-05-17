@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/blockchain"
 )
 
 const (
@@ -20,7 +21,7 @@ const (
 var (
 	Parameters configParams
 	Version    string
-	mainNet = &ChainParams{
+	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
 		PowLimitBits:       0x1f0008ff,
@@ -56,15 +57,16 @@ var (
 )
 
 type PowConfiguration struct {
-	PayToAddr        string `json:"PayToAddr"`
-	AutoMining       bool   `json:"AutoMining"`
-	MinerInfo        string `json:"MinerInfo"`
-	MinTxFee         int    `json:"MinTxFee"`
-	ActiveNet        string `json:"ActiveNet"`
+	PayToAddr  string `json:"PayToAddr"`
+	AutoMining bool   `json:"AutoMining"`
+	MinerInfo  string `json:"MinerInfo"`
+	MinTxFee   int    `json:"MinTxFee"`
+	ActiveNet  string `json:"ActiveNet"`
 }
 
 type Configuration struct {
 	Magic               uint32           `json:"Magic"`
+	FoundationAddress   string           `json:"FoundationAddress"`
 	Version             int              `json:"Version"`
 	SeedList            []string         `json:"SeedList"`
 	HttpRestPort        int              `json:"HttpRestPort"`
@@ -138,6 +140,13 @@ func init() {
 	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
 		Parameters.ChainParam = regNet
 	}
+
+	blockchain.FoundationAddress = Parameters.Configuration.FoundationAddress
+
+	if blockchain.FoundationAddress == "" {
+		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	}
+
 }
 
 func (config *Configuration) GetArbitrators() ([][]byte, error) {
