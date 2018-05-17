@@ -8,9 +8,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-const (
-	FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
-)
+var	FoundationAddress string
 
 var DefaultLedger *Ledger
 
