@@ -7,6 +7,7 @@
 
 #include <boost/function.hpp>
 
+#include "TransactionCreationParams.h"
 #include "CoreWalletManager.h"
 #include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
@@ -19,13 +20,23 @@ namespace Elastos {
 		public:
 			WalletManager(const ChainParams &chainParams = ChainParams::mainNet());
 
-			WalletManager(const std::string &phrase, const ChainParams &chainParams = ChainParams::mainNet());
+			/*
+			 * construct wallet manager from mnemonic
+			 */
+			WalletManager(const std::string &phrase, const std::string language = "english",
+						  const ChainParams &chainParams = ChainParams::mainNet());
 
 			virtual ~WalletManager();
 
 			void start();
 
 			void stop();
+
+			void exportKey(const std::string &path);
+
+			void importKey(const std::string &path, bool oldVersion = false);
+
+			TransactionPtr createTransaction(const TxParam &param);
 
 			UInt256 signAndPublishTransaction(const TransactionPtr &transaction);
 

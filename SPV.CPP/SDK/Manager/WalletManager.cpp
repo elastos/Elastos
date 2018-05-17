@@ -27,7 +27,8 @@ namespace Elastos {
 			CoreWalletManager::init(_masterPubKey, chainParams, earliestPeerTime);
 		}
 
-		WalletManager::WalletManager(const std::string &phrase, const ChainParams &chainParams) :
+		WalletManager::WalletManager(const std::string &phrase, const std::string language,
+									 const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(DATABASE_PATH) {
 
@@ -49,6 +50,18 @@ namespace Elastos {
 
 		void WalletManager::stop() {
 			getPeerManager()->disconnect();
+		}
+
+		void WalletManager::exportKey(const std::string &path) {
+
+		}
+
+		void WalletManager::importKey(const std::string &path, bool oldVersion) {
+
+		}
+
+		TransactionPtr WalletManager::createTransaction(const TxParam &param) {
+			return Elastos::SDK::TransactionPtr();
 		}
 
 		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
