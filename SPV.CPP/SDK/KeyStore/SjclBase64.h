@@ -12,9 +12,19 @@ namespace Elastos {
 
 		class SjclBase64 {
 		public:
-			static const unsigned char *toBits(const std::string &base64Str, size_t &length);
+			static std::vector<unsigned char> toBits(const std::string &base64Str);
 
 			static std::string fromBits(const unsigned char *bits, size_t length);
+
+		private:
+			static uint32_t partial(uint32_t len, uint32_t x, int end);
+
+			static std::vector<unsigned char> convertToCharArray(uint32_t value);
+
+			static std::vector<uint32_t> convertToUint32(const unsigned char *bitArray, size_t length);
+
+		private:
+			static std::string _chars;
 		};
 
 	}
