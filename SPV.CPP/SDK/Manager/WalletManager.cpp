@@ -19,29 +19,32 @@ namespace Elastos {
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(DATABASE_PATH) {
 
-			uint32_t earliestPeerTime = 0; //todo get peer time from WALLET_STORE_FILE later
-			_masterPubKey = MasterPubKeyPtr(
-					new MasterPubKey); //todo check if this can be initialized by WALLET_STORE_FILE
-			//todo init _phraseData
+			uint32_t earliestPeerTime = 0;
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey);
+			//todo get mnemonic
 
-			CoreWalletManager::init(_masterPubKey, chainParams, earliestPeerTime);
+			init(_masterPubKey, chainParams, earliestPeerTime);
 		}
 
 		WalletManager::WalletManager(const std::string &phrase, const std::string language,
 									 const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(DATABASE_PATH) {
+				_databaseManager(DATABASE_PATH),
+				_mnemonic(phrase) {
 
-			uint32_t earliestPeerTime = 0; //todo get peer time from WALLET_STORE_FILE later
-			_masterPubKey = MasterPubKeyPtr(
-					new MasterPubKey(phrase)); //todo check if this can be initialized by WALLET_STORE_FILE
-			//todo init _phraseData from phrase
+			uint32_t earliestPeerTime = 0;
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_mnemonic));
 
 			init(_masterPubKey, chainParams, earliestPeerTime);
 		}
 
-		WalletManager::~WalletManager() {
+		WalletManager::WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
+									 const Elastos::SDK::ChainParams &chainParams) :
+				_executor(BACKGROUND_THREAD_COUNT),
+				_databaseManager(DATABASE_PATH) {
 
+			_chainParams = chainParams;
+			importKey(keyPath, password);
 		}
 
 		void WalletManager::start() {
@@ -53,12 +56,19 @@ namespace Elastos {
 		}
 
 		void WalletManager::exportKey(const boost::filesystem::path &path, const std::string &password) {
-
+			//todo get current time and write earliestPeerTime of KeyStore
 		}
 
 		void WalletManager::importKey(const boost::filesystem::path &path,
-									  const std::string &password, bool oldVersion) {
-			//todo parse id related info
+									  const std::string &password) {
+			//todo import by private key later
+			if (_keyStore.open(path, password)) {
+				Log::error("Import key error.");
+			}
+			_mnemonic = _keyStore.getMnemonic();
+
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_mnemonic));
+			init(_masterPubKey, _chainParams, _keyStore.json().getEarliestPeerTime(), true);
 		}
 
 		TransactionPtr WalletManager::createTransaction(const TxParam &param) {
@@ -66,7 +76,7 @@ namespace Elastos {
 		}
 
 		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
-			CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
+			CoreWalletManager::signAndPublishTransaction(transaction, _mnemonic);
 			return transaction->getHash();
 		}
 
@@ -269,10 +279,6 @@ namespace Elastos {
 
 		void WalletManager::registerPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
-		}
-
-		ByteData WalletManager::getIdData() const {
-			return _idData;
 		}
 
 		ByteData WalletManager::signData(const ByteData &data) {

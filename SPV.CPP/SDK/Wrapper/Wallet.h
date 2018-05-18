@@ -118,7 +118,7 @@ namespace Elastos {
 			 * @param phrase
 			 * @return
 			 */
-			bool signTransaction(const TransactionPtr &transaction, int forkId, const ByteData &phrase);
+			bool signTransaction(const TransactionPtr &transaction, int forkId, const std::string &phrase);
 
 			bool containsTransaction(const TransactionPtr &transaction);
 

@@ -27,13 +27,14 @@ namespace Elastos {
 
 			void init(const MasterPubKeyPtr &masterPubKey,
 					  const ChainParams &chainParams,
-					  uint32_t earliestPeerTime);
+					  uint32_t earliestPeerTime,
+					  bool reset = false);
 
 			const WalletPtr &getWallet();
 
 			const PeerManagerPtr &getPeerManager();
 
-			UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase);
+			UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const std::string &phase);
 
 			std::string toString() const;
 

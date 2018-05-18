@@ -10,13 +10,29 @@
 namespace Elastos {
 	namespace SDK {
 
-		class ElaNewWalletJson : ElaWebWalletJson{
+		class ElaNewWalletJson :
+				public ElaWebWalletJson {
 		public:
 			ElaNewWalletJson();
 
 			~ElaNewWalletJson();
 
-			//todo add id related data
+			const std::string &getID() const;
+
+			void setID(const std::string &id);
+
+			const std::string &getIDInfo() const;
+
+			void setIDInfo(const std::string &value);
+
+			uint32_t getEarliestPeerTime() const;
+
+			void setEaliestPeerTime(uint32_t time);
+
+		private:
+			std::string _id;
+			std::string _idInfo;
+			uint32_t _earliestPeerTime;
 		};
 
 		//support for json converting

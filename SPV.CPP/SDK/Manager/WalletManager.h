@@ -12,6 +12,7 @@
 #include "CoreWalletManager.h"
 #include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
+#include "KeyStore/KeyStore.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -27,6 +28,9 @@ namespace Elastos {
 			WalletManager(const std::string &phrase, const std::string language = "english",
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
+			WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
+						  const ChainParams &chainParams = ChainParams::mainNet());
+
 			virtual ~WalletManager();
 
 			void start();
@@ -35,11 +39,9 @@ namespace Elastos {
 
 			void exportKey(const boost::filesystem::path &path, const std::string &password);
 
-			void importKey(const boost::filesystem::path &path, const std::string &password, bool oldVersion = false);
+			void importKey(const boost::filesystem::path &path, const std::string &password);
 
 			const std::string &getMnemonic() const;
-
-			ByteData getIdData() const;
 
 			TransactionPtr createTransaction(const TxParam &param);
 
@@ -105,9 +107,8 @@ namespace Elastos {
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
 			MasterPubKeyPtr _masterPubKey;
-			ByteData _phraseData;
-			ByteData _idData;
 			std::string _mnemonic;
+			KeyStore _keyStore;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

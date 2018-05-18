@@ -30,10 +30,19 @@ namespace Elastos {
 
 		void CoreWalletManager::init(const MasterPubKeyPtr &masterPubKey,
 									 const ChainParams &chainParams,
-									 uint32_t earliestPeerTime) {
+									 uint32_t earliestPeerTime,
+									 bool reset) {
 			_masterPubKey = masterPubKey;
 			_earliestPeerTime = earliestPeerTime;
 			_chainParams = chainParams;
+
+			if (reset) {
+				_wallet.reset();
+				_wallet = nullptr;
+
+				_peerManager.reset();
+				_peerManager = nullptr;
+			}
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {
@@ -57,10 +66,11 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		UInt256 CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const ByteData &phase) {
+		UInt256
+		CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const std::string &phase) {
 			bool res = _wallet->signTransaction(transaction, getForkId(), phase);
 			transaction->resetHash();//because signTransaction is seted txHash, that is not our wished;
-			if(res == true) {
+			if (res == true) {
 				_peerManager->publishTransaction(transaction);
 			}
 

@@ -7,5 +7,20 @@
 namespace Elastos {
 	namespace SDK {
 
+		ElaWebWalletJson::ElaWebWalletJson() {
+
+		}
+
+		ElaWebWalletJson::~ElaWebWalletJson() {
+
+		}
+
+		const std::string &ElaWebWalletJson::getMnemonic() const {
+			return _mnemonic;
+		}
+
+		void ElaWebWalletJson::setMnemonic(const std::string &value) {
+			_mnemonic = value;
+		}
 	}
 }
