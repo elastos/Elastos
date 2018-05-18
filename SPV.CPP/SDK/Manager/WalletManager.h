@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_WALLETMANAGER_H__
 
 #include <boost/function.hpp>
+#include <boost/filesystem.hpp>
 
 #include "TransactionCreationParams.h"
 #include "CoreWalletManager.h"
@@ -32,9 +33,13 @@ namespace Elastos {
 
 			void stop();
 
-			void exportKey(const std::string &path);
+			void exportKey(const boost::filesystem::path &path, const std::string &password);
 
-			void importKey(const std::string &path, bool oldVersion = false);
+			void importKey(const boost::filesystem::path &path, const std::string &password, bool oldVersion = false);
+
+			const std::string &getMnemonic() const;
+
+			ByteData getIdData() const;
 
 			TransactionPtr createTransaction(const TxParam &param);
 
@@ -46,6 +51,8 @@ namespace Elastos {
 			void registerWalletListener(Wallet::Listener *listener);
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);
+
+			ByteData signData(const ByteData &data);
 
 		public:
 			// func balanceChanged(_ balance: UInt64)
@@ -99,6 +106,8 @@ namespace Elastos {
 			BackgroundExecutor _executor;
 			MasterPubKeyPtr _masterPubKey;
 			ByteData _phraseData;
+			ByteData _idData;
+			std::string _mnemonic;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

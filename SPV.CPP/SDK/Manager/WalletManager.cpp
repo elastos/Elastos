@@ -52,12 +52,13 @@ namespace Elastos {
 			getPeerManager()->disconnect();
 		}
 
-		void WalletManager::exportKey(const std::string &path) {
+		void WalletManager::exportKey(const boost::filesystem::path &path, const std::string &password) {
 
 		}
 
-		void WalletManager::importKey(const std::string &path, bool oldVersion) {
-
+		void WalletManager::importKey(const boost::filesystem::path &path,
+									  const std::string &password, bool oldVersion = false) {
+			//todo parse id related info
 		}
 
 		TransactionPtr WalletManager::createTransaction(const TxParam &param) {
@@ -268,6 +269,18 @@ namespace Elastos {
 
 		void WalletManager::registerPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
+		}
+
+		ByteData WalletManager::getIdData() const {
+			return _idData;
+		}
+
+		ByteData WalletManager::signData(const ByteData &data) {
+			return ByteData();
+		}
+
+		const std::string &WalletManager::getMnemonic() const {
+			return _mnemonic;
 		}
 
 	}
