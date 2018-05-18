@@ -964,16 +964,22 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 		return obj, nil
 	case *IssueTokenInfo:
 		obj := new(ela.PayloadIssueToken)
-		bytes, err := HexStringToBytes(object.Proof)
+		proofBytes, err := HexStringToBytes(object.Proof)
 		if err != nil {
 			return nil, err
 		}
-		obj.MerkleProof = bytes
-		obj.MainChainTransactionHash = object.MainChainTransactionHash
+		obj.MerkleProof = proofBytes
+		transactionBytes, err := HexStringToBytes(object.MainChainTransaction)
+		if err != nil {
+			return nil, err
+		}
+		obj.MainChainTransaction = transactionBytes
 		return obj, nil
 	case *TransferCrossChainAssetInfo:
 		obj := new(ela.PayloadTransferCrossChainAsset)
-		obj.AddressesMap = object.AddressesMap
+		obj.CrossChainAddress = object.CrossChainAddress
+		obj.OutputIndex = object.OutputIndex
+		obj.CrossChainAmount = object.CrossChainAmount
 		return obj, nil
 	}
 
@@ -1002,7 +1008,9 @@ func getPayloadInfo(p ela.Payload) PayloadInfo {
 		return obj
 	case *ela.PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.AddressesMap = object.AddressesMap
+		obj.CrossChainAddress = object.CrossChainAddress
+		obj.OutputIndex = object.OutputIndex
+		obj.CrossChainAmount = object.CrossChainAmount
 		return obj
 	case *ela.PayloadTransferAsset:
 	case *ela.PayloadRecord:
