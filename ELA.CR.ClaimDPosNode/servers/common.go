@@ -1,6 +1,7 @@
 package servers
 
 import (
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA/core"
 )
 
@@ -107,7 +108,9 @@ type SideMiningInfo struct {
 }
 
 type TransferCrossChainAssetInfo struct {
-	AddressesMap map[string]uint64
+	CrossChainAddress []string
+	OutputIndex       []uint64
+	CrossChainAmount  []common.Fixed64
 }
 
 type WithdrawAssetInfo struct {

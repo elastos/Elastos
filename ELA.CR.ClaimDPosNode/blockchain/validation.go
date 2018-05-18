@@ -67,9 +67,6 @@ func VerifySignature(tx *Transaction) (bool, error) {
 			if err != nil {
 				return false, err
 			}
-			if err = checkCrossChainArbitrators(tx, publicKeys); err != nil {
-				return false, err
-			}
 
 			return checkMultiSignSignatures(code, param, data, publicKeys)
 		} else {
@@ -174,11 +171,53 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 		}
 	}
 	// Check signature count
-	if signatureCount != m {
+	if signatureCount < m {
 		return false, errors.New("invalid signature count")
 	}
 
 	return true, nil
+}
+
+func checkCrossChainTransaction(txn *Transaction) error {
+	if !txn.IsWithdrawTx() {
+		return nil
+	}
+
+	hashes, err := GetTxProgramHashes(txn)
+	if err != nil {
+		return err
+	}
+
+	programs := txn.Programs
+	Length := len(hashes)
+	if Length != len(programs) {
+		return errors.New("The number of data hashes is different with number of programs.")
+	}
+
+	buf := new(bytes.Buffer)
+	txn.SerializeUnsigned(buf)
+	for i := 0; i < len(programs); i++ {
+
+		code := programs[i].Code
+
+		// Get transaction type
+		signType, err := crypto.GetScriptType(code)
+		if err != nil {
+			return err
+		}
+
+		if signType == crypto.CROSSCHAIN {
+			publicKeys, err := crypto.ParseMultisigScript(code)
+			if err != nil {
+				return err
+			}
+
+			if err := checkCrossChainArbitrators(txn, publicKeys); err != nil {
+				return errors.New("checkCrossChainArbitrators failed")
+			}
+		}
+	}
+	return nil
 }
 
 func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
