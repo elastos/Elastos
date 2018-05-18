@@ -136,6 +136,13 @@ namespace Elastos {
 				message->SendGetData(peer, txHashes, txCount, blockHashes, blockCount);
 			}
 
+			int PeerAcceptGetData(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
+				GetDataMessage *message = static_cast<GetDataMessage *>(
+						PeerMessageManager::instance().getMessage(MSG_GETDATA).get());
+
+				return message->Accept(peer, msg, msgLen);
+			}
+
 			void PeerSendPingMessage(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success)) {
 				PingMessage *message = static_cast<PingMessage *>(
 						PeerMessageManager::instance().getMessage(MSG_PING).get());
@@ -212,6 +219,7 @@ namespace Elastos {
 			peerManager->peerMessages->BRPeerSendGetheadersMessage = PeerSendGetblocks;
 
 			peerManager->peerMessages->BRPeerSendGetdataMessage = PeerSendGetdata;
+			peerManager->peerMessages->BRPeerAcceptGetdataMessage = PeerAcceptGetData;
 			_messages[MSG_GETDATA] = MessagePtr(new GetDataMessage);
 
 			peerManager->peerMessages->BRPeerSendPingMessage = PeerSendPingMessage;

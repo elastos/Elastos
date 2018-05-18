@@ -12,6 +12,7 @@
 
 #include "InventoryMessage.h"
 #include "Log.h"
+#include "Utils.h"
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
 
@@ -27,13 +28,11 @@ namespace Elastos {
 
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 			size_t off = 0;
-
-			inv_type type = inv_type(msg[off]);
-			off += sizeof(uint8_t);
+			inv_type type;
 
 			size_t count = UInt32GetLE(&msg[off]);
 			off += sizeof(uint32_t);
-			
+
 			int r = 1;
 
 			if (count > MAX_GETDATA_HASHES) {
@@ -44,19 +43,19 @@ namespace Elastos {
 
 				Log::getLogger()->warn("got inv with {} item(s)", count);
 
-				if (type == inv_block)
-					blockCount = count;
-				else if(type == inv_tx)
-					txCount = count;
+				for (size_t i = 0; i < count; ++i) {
+					type = inv_type(UInt32GetLE(&msg[off]));
+					off += sizeof(uint32_t);
 
-				for (i = 0; i < blockCount; i++) {
-					blocks[i] = &msg[off];
-					off += sizeof(UInt256);
-				}
-
-				for (i = 0; i < txCount; i++) {
-					transactions[i] = &msg[off];
-					off += sizeof(UInt256);
+					if (type == inv_block) {
+						blockCount = count;
+						blocks[i] = &msg[off];
+						off += sizeof(UInt256);
+					} else if (type == inv_tx) {
+						txCount = count;
+						transactions[i] = &msg[off];
+						off += sizeof(UInt256);
+					}
 				}
 
 				if (txCount > 0 && !ctx->sentFilter && !ctx->sentMempool && !ctx->sentGetblocks) {
@@ -66,7 +65,7 @@ namespace Elastos {
 					Log::getLogger()->warn("too many transactions, disconnecting");
 					r = 0;
 				} else if (ctx->currentBlockHeight > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
-						   ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
+				           ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
 					Log::getLogger()->warn("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
 					r = 0;
 				} else {
@@ -134,9 +133,17 @@ namespace Elastos {
 			txCount = array_count(ctx->knownTxHashes) - knownCount;
 
 			if (txCount > 0) {
+				size_t i, off = 0, msgLen = sizeof(uint32_t) + (sizeof(uint32_t) + sizeof(*txHashes)) * txCount;
+				uint8_t msg[msgLen];
+				UInt32SetLE(&msg[off], txCount);
+				off += sizeof(uint32_t);
 				for (size_t i = 0; i < txCount; i++) {
-					sendTransaction(peer, ctx->knownTxHashes[knownCount + i]);
+					UInt32SetLE(&msg[off], inv_tx); // version
+					off += sizeof(uint32_t);
+					UInt256Set(&msg[off], ctx->knownTxHashes[knownCount + i]);
+					off += sizeof(UInt256);
 				}
+				BRPeerSendMessage(peer, msg, off, MSG_INV);
 			}
 		}
 
