@@ -62,7 +62,16 @@ func CheckTransactionContext(txn *ela.Transaction) ErrCode {
 		return ErrTxHashDuplicate
 	}
 
-	if txn.IsCoinBaseTx() || txn.IsIssueTokenTx() {
+	if txn.IsCoinBaseTx() {
+		return Success
+	}
+
+	if err := CheckTransactionSignature(txn); err != nil {
+		log.Warn("[CheckTransactionSignature],", err)
+		return ErrTransactionSignature
+	}
+
+	if txn.IsIssueTokenTx() {
 		return Success
 	}
 
@@ -82,10 +91,6 @@ func CheckTransactionContext(txn *ela.Transaction) ErrCode {
 		return ErrTransactionBalance
 	}
 
-	if err := CheckTransactionSignature(txn); err != nil {
-		log.Warn("[CheckTransactionSignature],", err)
-		return ErrTransactionSignature
-	}
 	// check referenced Output value
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID

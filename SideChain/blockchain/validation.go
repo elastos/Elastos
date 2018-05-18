@@ -18,9 +18,6 @@ func VerifySignature(tx *ela.Transaction) (bool, error) {
 		if err := spv.VerifyTransaction(tx); err != nil {
 			return false, errors.New("Issue token transaction validate failed.")
 		}
-		if err := checkCrossChainArbitrators(tx); err != nil {
-			return false, err
-		}
 		return true, nil
 	}
 
@@ -171,7 +168,11 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	return true, nil
 }
 
-func checkCrossChainArbitrators(txn *ela.Transaction) error {
+func checkCrossChainTransaction(txn *ela.Transaction) error {
+	if !txn.IsIssueTokenTx() {
+		return nil
+	}
+
 	depositPayload, ok := txn.Payload.(*ela.PayloadIssueToken)
 	if !ok {
 		return errors.New("Invalid payload type.")
@@ -185,14 +186,20 @@ func checkCrossChainArbitrators(txn *ela.Transaction) error {
 		mainchain.DbCache = dbCache
 	}
 
-	ok, err := mainchain.DbCache.HasMainChainTx(depositPayload.MainChainTransactionHash)
+	mainChainTransaction := new(ela.Transaction)
+	reader := bytes.NewReader(depositPayload.MainChainTransaction)
+	if err := mainChainTransaction.Deserialize(reader); err != nil {
+		return errors.New("PayloadIssueToken mainChainTransaction deserialize failed")
+	}
+
+	ok, err := mainchain.DbCache.HasMainChainTx(mainChainTransaction.Hash().String())
 	if err != nil {
 		return err
 	}
 	if ok {
 		return errors.New("Reduplicate withdraw transaction.")
 	}
-	err = mainchain.DbCache.AddMainChainTx(depositPayload.MainChainTransactionHash)
+	err = mainchain.DbCache.AddMainChainTx(mainChainTransaction.Hash().String())
 	if err != nil {
 		return err
 	}

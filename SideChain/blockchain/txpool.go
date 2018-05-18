@@ -50,6 +50,11 @@ func (pool *TxPool) AppendToTxnPool(txn *ela.Transaction) ErrCode {
 		return ErrDoubleSpend
 	}
 
+	if err := checkCrossChainTransaction(txn); err != nil {
+		log.Info("Transaction verification failed:", err)
+		return ErrDoubleSpend
+	}
+
 	txn.Fee = GetTxFee(txn, DefaultLedger.Blockchain.AssetID)
 	buf := new(bytes.Buffer)
 	txn.Serialize(buf)
@@ -294,6 +299,36 @@ func GetTxFee(tx *ela.Transaction, assetId Uint256) Fixed64 {
 
 func GetTxFeeMap(tx *ela.Transaction) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
+
+	if tx.IsIssueTokenTx() {
+		depositPayload := tx.Payload.(*ela.PayloadIssueToken)
+		mainChainTransaction := new(ela.Transaction)
+		reader := bytes.NewReader(depositPayload.MainChainTransaction)
+		if err := mainChainTransaction.Deserialize(reader); err != nil {
+			return nil, errors.New("GetTxFeeMap mainChainTransaction deserialize failed")
+		}
+
+		crossChainPayload := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
+
+		for index, v := range tx.Outputs {
+			var mcAmount Fixed64
+			for i := 0; i < len(crossChainPayload.CrossChainAddress); i++ {
+				if crossChainPayload.OutputIndex[i] == uint64(index) {
+					mcAmount = mainChainTransaction.Outputs[i].Value
+				}
+			}
+
+			amount, ok := feeMap[v.AssetID]
+			if ok {
+				feeMap[v.AssetID] = amount + mcAmount - v.Value
+			} else {
+				feeMap[v.AssetID] = mcAmount - v.Value
+			}
+		}
+
+		return feeMap, nil
+	}
+
 	reference, err := DefaultLedger.Store.GetTxReference(tx)
 	if err != nil {
 		return nil, err
