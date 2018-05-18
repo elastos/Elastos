@@ -864,7 +864,9 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.AddressesMap = object.AddressesMap
+		obj.CrossChainAddress = object.CrossChainAddress
+		obj.OutputIndex = object.OutputIndex
+		obj.CrossChainAmount = object.CrossChainAmount
 		return obj
 	case *PayloadTransferAsset:
 	case *PayloadRecord:

@@ -8,9 +8,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
+	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -46,6 +46,11 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	}
 	//verify transaction by pool with lock
 	if ok := pool.verifyTransactionWithTxnPool(txn); !ok {
+		return ErrDoubleSpend
+	}
+
+	if err := checkCrossChainTransaction(txn); err != nil {
+		log.Info("Transaction verification failed: ", err)
 		return ErrDoubleSpend
 	}
 
@@ -253,7 +258,7 @@ func (pool *TxPool) MaybeAcceptTransaction(txn *Transaction) error {
 		return fmt.Errorf("already have transaction")
 	}
 
-	// A standalone transaction must not be a coinbase 
+	// A standalone transaction must not be a coinbase
 	if txn.IsCoinBaseTx() {
 		return fmt.Errorf("transaction is an individual coinbase")
 	}

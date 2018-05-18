@@ -11,8 +11,8 @@ import (
 const IssueTokenPayloadVersion byte = 0x00
 
 type PayloadIssueToken struct {
-	MerkleProof              []byte
-	MainChainTransactionHash string
+	MerkleProof          []byte
+	MainChainTransaction []byte
 }
 
 func (t *PayloadIssueToken) Data(version byte) []byte {
@@ -29,8 +29,9 @@ func (t *PayloadIssueToken) Serialize(w io.Writer, version byte) error {
 	if err != nil {
 		return errors.New("[PayloadIssueToken], MerkleProof serialize failed.")
 	}
-	if err := common.WriteVarString(w, t.MainChainTransactionHash); err != nil {
-		return errors.New("[PayloadIssueToken], MainChainTransactionHash serialize failed.")
+	err = common.WriteVarBytes(w, t.MainChainTransaction)
+	if err != nil {
+		return errors.New("[PayloadIssueToken], DepositTransaction serialize failed.")
 	}
 	return nil
 }
@@ -40,11 +41,9 @@ func (t *PayloadIssueToken) Deserialize(r io.Reader, version byte) error {
 	if t.MerkleProof, err = common.ReadVarBytes(r); err != nil {
 		return errors.New("[PayloadIssueToken], MerkleProof deserialize failed.")
 	}
-	hash, err := common.ReadVarString(r)
-	if err != nil {
-		return errors.New("[PayloadIssueToken], GenesisBlockAddress deserialize failed.")
-	}
 
-	t.MainChainTransactionHash = hash
+	if t.MainChainTransaction, err = common.ReadVarBytes(r); err != nil {
+		return errors.New("[PayloadIssueToken], DepositTransaction deserialize failed.")
+	}
 	return nil
 }
