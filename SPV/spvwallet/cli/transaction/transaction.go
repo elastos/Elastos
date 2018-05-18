@@ -165,12 +165,7 @@ func signTransaction(password []byte, wallet walt.Wallet, txn *core.Transaction)
 		return nil, err
 	}
 
-	_, err = wallet.Sign(password, txn)
-	if err != nil {
-		return nil, err
-	}
-
-	return txn, nil
+	return wallet.Sign(password, txn)
 }
 
 func SendTransaction(password []byte, context *cli.Context, wallet walt.Wallet) error {
@@ -185,6 +180,16 @@ func SendTransaction(password []byte, context *cli.Context, wallet walt.Wallet) 
 		}
 		// Sign transaction
 		txn, err = signTransaction(password, wallet, txn)
+		if err != nil {
+			return err
+		}
+	} else {
+		txn = new(core.Transaction)
+		data, err := common.HexStringToBytes(*content)
+		if err != nil {
+			return fmt.Errorf("Deseralize transaction file failed, error %s", err.Error())
+		}
+		err = txn.Deserialize(bytes.NewReader(data))
 		if err != nil {
 			return err
 		}

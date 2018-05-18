@@ -1,11 +1,14 @@
 package db
 
 import (
+	"bytes"
+	"time"
 	"database/sql"
 	"fmt"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA/core"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -123,6 +126,57 @@ func (db *SQLiteDB) Rollback(height uint32) error {
 	_, err = tx.Exec("DELETE FROM TXNs WHERE Height=?", height)
 	if err != nil {
 		return err
+	}
+
+	return tx.Commit()
+}
+
+func (db *SQLiteDB) RollbackTimeoutTxs(timeoutDuration time.Duration) error {
+	log.Debug()
+	db.Lock()
+	defer db.Unlock()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Get timeout transactions
+	timeoutTime := time.Now().Add(-timeoutDuration).Unix()
+	rows, err := tx.Query("SELECT RawData FROM TXNs WHERE Height=? AND Timestamp<?", 0, timeoutTime)
+	if err != nil {
+		return err
+	}
+	for rows.Next() {
+		var txRawData []byte
+		rows.Scan(&txRawData)
+		var transaction core.Transaction
+		err = transaction.DeserializeUnsigned(bytes.NewReader(txRawData))
+		if err != nil {
+			return err
+		}
+
+		log.Debugf("Timeout transaction %v", transaction.String())
+
+		// Rollback STXOs
+		for _, input := range transaction.Inputs {
+			_, err = tx.Exec(`INSERT OR REPLACE INTO UTXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash)
+			SELECT OutPoint, Value, LockTime, AtHeight, ScriptHash FROM STXOs WHERE OutPoint=?`, input.Previous.Bytes())
+			if err != nil {
+				return err
+			}
+			log.Debugf("Input %v rollback", input)
+		}
+
+		// Remove UTXOs
+		for index := range transaction.Outputs {
+			outpoint := core.NewOutPoint(transaction.Hash(), uint16(index))
+			_, err = tx.Exec("DELETE FROM UTXOs WHERE OutPoint=?", outpoint.Bytes())
+			if err != nil {
+				return err
+			}
+			log.Debugf("Output index %d rollback", index)
+		}
 	}
 
 	return tx.Commit()

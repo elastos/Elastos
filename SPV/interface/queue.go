@@ -1,9 +1,9 @@
 package _interface
 
 import (
-	"sync"
 	"database/sql"
 	"fmt"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )

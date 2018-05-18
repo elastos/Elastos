@@ -15,26 +15,6 @@ import (
 	"github.com/cevaris/ordered_map"
 )
 
-type Headers interface {
-	// Add a new header to blockchain
-	Put(header *store.StoreHeader, newTip bool) error
-
-	// Get previous block of the given header
-	GetPrevious(header *store.StoreHeader) (*store.StoreHeader, error)
-
-	// Get full header with it's hash
-	GetHeader(hash *common.Uint256) (*store.StoreHeader, error)
-
-	// Get the header on chain tip
-	GetTip() (*store.StoreHeader, error)
-
-	// Reset database, clear all data
-	Reset() error
-
-	// Close db
-	Close()
-}
-
 // HeadersDB implements Headers using bolt DB
 type HeadersDB struct {
 	*sync.RWMutex
@@ -48,7 +28,7 @@ var (
 	KEYChainTip = []byte("ChainTip")
 )
 
-func NewHeadersDB() (Headers, error) {
+func NewHeadersDB() (*HeadersDB, error) {
 	db, err := bolt.Open("headers.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
 	if err != nil {
 		return nil, err
@@ -78,7 +58,7 @@ func NewHeadersDB() (Headers, error) {
 }
 
 func (h *HeadersDB) initCache() {
-	best, err := h.GetTip()
+	best, err := h.GetBestHeader()
 	if err != nil {
 		return
 	}
@@ -97,7 +77,7 @@ func (h *HeadersDB) initCache() {
 }
 
 // Add a new header to blockchain
-func (h *HeadersDB) Put(header *store.StoreHeader, newTip bool) error {
+func (h *HeadersDB) PutHeader(header *store.StoreHeader, newTip bool) error {
 	h.Lock()
 	defer h.Unlock()
 
@@ -164,7 +144,7 @@ func (h *HeadersDB) GetHeader(hash *common.Uint256) (header *store.StoreHeader, 
 }
 
 // Get the header on chain tip
-func (h *HeadersDB) GetTip() (header *store.StoreHeader, err error) {
+func (h *HeadersDB) GetBestHeader() (header *store.StoreHeader, err error) {
 	h.RLock()
 	defer h.RUnlock()
 
@@ -183,8 +163,7 @@ func (h *HeadersDB) GetTip() (header *store.StoreHeader, err error) {
 	})
 
 	if err != nil {
-		log.Error("Headers db get tip err,", err)
-		return nil, err
+		return nil, fmt.Errorf("Headers db get tip error %s", err.Error())
 	}
 
 	return header, err

@@ -87,8 +87,8 @@ func (peer *Peer) LastActive() time.Time {
 	return peer.lastActive
 }
 
-func (peer *Peer) Addr() *msg.Addr {
-	return msg.NewPeerAddr(peer.services, peer.ip16, peer.port, peer.id)
+func (peer *Peer) Addr() *p2p.NetAddress {
+	return p2p.NewNetAddress(peer.services, peer.ip16, peer.port, peer.id)
 }
 
 func (peer *Peer) Relay() uint8 {
@@ -124,12 +124,12 @@ func (peer *Peer) Height() uint64 {
 	return peer.height
 }
 
-func (peer *Peer) OnDecodeError(err error) {
+func (peer *Peer) OnError(err error) {
 	switch err {
 	case p2p.ErrDisconnected:
 		peer.handler.OnDisconnected(peer)
 	case p2p.ErrUnmatchedMagic:
-		log.Error("Decode message error:", p2p.ErrUnmatchedMagic)
+		log.Error(err)
 		peer.Disconnect()
 	default:
 		log.Error(err, ", peer id is: ", peer.ID())
@@ -153,17 +153,7 @@ func (peer *Peer) Send(msg p2p.Message) {
 		return
 	}
 
-	buf, err := peer.msgHelper.Build(msg)
-	if err != nil {
-		log.Error("Serialize message failed, ", err)
-		return
-	}
-
-	_, err = peer.conn.Write(buf)
-	if err != nil {
-		log.Error("Error sending message to peer ", err)
-		peer.handler.OnDisconnected(peer)
-	}
+	peer.msgHelper.Write(msg)
 }
 
 func (peer *Peer) NewVersionMsg() *msg.Version {

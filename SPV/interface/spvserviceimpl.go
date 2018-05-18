@@ -1,18 +1,19 @@
 package _interface
 
 import (
-	"os"
 	"errors"
+	"os"
 	"os/signal"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type SPVServiceImpl struct {
@@ -60,14 +61,14 @@ func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx cor
 	}
 
 	// Get Header from main chain
-	header, err := service.GetHeader(&proof.BlockHash)
+	header, err := service.HeaderStore().GetHeader(&proof.BlockHash)
 	if err != nil {
 		return errors.New("can not get block from main chain")
 	}
 
 	// Check if merkleroot is match
-	merkleBlock := bloom.MerkleBlock{
-		Header:       header.Header,
+	merkleBlock := msg.MerkleBlock{
+		Header:       &header.Header,
 		Transactions: proof.Transactions,
 		Hashes:       proof.Hashes,
 		Flags:        proof.Flags,
@@ -167,8 +168,8 @@ func (service *SPVServiceImpl) OnRollback(height uint32) {
 }
 
 // Overwrite OnBlockCommitted() method in SPVWallet
-func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []core.Transaction) {
-	header := block.Header
+func (service *SPVServiceImpl) OnNewBlock(block *msg.MerkleBlock, txs []*core.Transaction) {
+	header := block.Header.(*core.Header)
 
 	// Store merkle proof
 	service.proofs.Put(&bloom.MerkleProof{
@@ -185,7 +186,7 @@ func (service *SPVServiceImpl) OnNewBlock(block bloom.MerkleBlock, txs []core.Tr
 	}
 
 	// Find transactions matches registered accounts
-	var matchedTxs []core.Transaction
+	var matchedTxs []*core.Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
 			if service.addrFilter.ContainAddr(output.ProgramHash) {
@@ -256,6 +257,9 @@ func (service *SPVServiceImpl) notifyRollback(height uint32) {
 func getConfirmations(tx core.Transaction) uint32 {
 	// TODO user can set confirmations attribute in transaction,
 	// if the confirmation attribute is set, use it instead of default value
+	if tx.TxType == core.CoinBase {
+		return 100
+	}
 	return DefaultConfirmations
 }
 

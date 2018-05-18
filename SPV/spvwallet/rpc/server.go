@@ -8,29 +8,25 @@ import (
 
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-type RequestHandler interface {
-	NotifyNewAddress(hash []byte)
-	SendTransaction(core.Transaction)
-}
-
-func InitServer(handler RequestHandler) *Server {
+func InitServer() *Server {
 	server := new(Server)
 	server.Server = http.Server{Addr: ":" + RPCPort}
 	server.methods = map[string]func(Req) Resp{
-		"notifynewaddress": server.NotifyNewAddress,
-		"sendtransaction":  server.SendTransaction,
+		"notifynewaddress": server.notifyNewAddress,
+		"sendtransaction":  server.sendTransaction,
 	}
-	server.handler = handler
 	http.HandleFunc("/spvwallet/", server.handle)
 	return server
 }
 
 type Server struct {
 	http.Server
-	methods map[string]func(Req) Resp
-	handler RequestHandler
+	methods          map[string]func(Req) Resp
+	NotifyNewAddress func([]byte)
+	SendTransaction  func(core.Transaction) (*common.Uint256, error)
 }
 
 func (server *Server) Start() {
@@ -67,8 +63,6 @@ func (server *Server) getResp(r *http.Request) Resp {
 	if err != nil {
 		return ReadRequestError
 	}
-
-	log.Debug("Receive request:", string(body))
 
 	var req Req
 	err = json.Unmarshal(body, &req)

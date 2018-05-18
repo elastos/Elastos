@@ -102,9 +102,9 @@ func Tracef(format string, msg ...interface{}) {
 		file, line := f.FileLine(pc[0])
 		fileName := filepath.Base(file)
 
-		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, fmt.Sprintf(format, msg...))
 
-		logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintf(format, msg...)))
+		logger.Output(CallDepth, color(BLUE, "[TRACE]", fmt.Sprintln(msg...)))
 	}
 }
 
@@ -130,9 +130,9 @@ func Warnf(format string, msg ...interface{}) {
 		file, line := f.FileLine(pc[0])
 		fileName := filepath.Base(file)
 
-		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, fmt.Sprintf(format, msg...))
 
-		logger.Output(CallDepth, color(YELLOW, "[WARN]", fmt.Sprintf(format, msg...)))
+		logger.Output(CallDepth, color(YELLOW, "[WARN]", fmt.Sprintln(msg...)))
 	}
 }
 
@@ -158,9 +158,9 @@ func Errorf(format string, msg ...interface{}) {
 		file, line := f.FileLine(pc[0])
 		fileName := filepath.Base(file)
 
-		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, fmt.Sprintf(format, msg...))
 
-		logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintf(format, msg...)))
+		logger.Output(CallDepth, color(RED, "[ERROR]", fmt.Sprintln(msg...)))
 	}
 }
 
@@ -186,9 +186,9 @@ func Debugf(format string, msg ...interface{}) {
 		file, line := f.FileLine(pc[0])
 		fileName := filepath.Base(file)
 
-		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, msg...)
+		msg = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, fmt.Sprintf(format, msg...))
 
-		logger.Output(CallDepth, color(GREEN, "[DEBUG]", fmt.Sprintf(format, msg...)))
+		logger.Output(CallDepth, color(GREEN, "[DEBUG]", fmt.Sprintln(msg...)))
 	}
 }
 

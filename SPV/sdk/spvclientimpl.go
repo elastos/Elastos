@@ -3,14 +3,12 @@ package sdk
 import (
 	"errors"
 	"time"
-	"fmt"
 
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
-	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type SPVClientImpl struct {
@@ -45,11 +43,11 @@ func (client *SPVClientImpl) PeerManager() *net.PeerManager {
 
 // Filter peer handshake according to the SPV protocol
 func (client *SPVClientImpl) OnHandshake(v *msg.Version) error {
-	if v.Version < ProtocolVersion {
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", ProtocolVersion))
-	}
+	//if v.Version < ProtocolVersion {
+	//	return fmt.Errorf("To support SPV protocol, peer version must greater than ", ProtocolVersion)
+	//}
 
-	if v.Services/ServiveSPV&1 == 0 {
+	if v.Services/ServiceSPV&1 == 0 {
 		return errors.New("SPV service not enabled on connected peer")
 	}
 
@@ -62,18 +60,20 @@ func (client *SPVClientImpl) OnHandshake(v *msg.Version) error {
 
 func (client *SPVClientImpl) MakeMessage(cmd string) (message p2p.Message, err error) {
 	switch cmd {
-	case "ping":
+	case p2p.CmdPing:
 		message = new(msg.Ping)
-	case "pong":
+	case p2p.CmdPong:
 		message = new(msg.Pong)
-	case "inv":
+	case p2p.CmdInv:
 		message = new(msg.Inventory)
-	case "tx":
-		message = new(core.Transaction)
-	case "merkleblock":
-		message = new(bloom.MerkleBlock)
-	case "notfound":
+	case p2p.CmdTx:
+		message = msg.NewTx(new(core.Transaction))
+	case p2p.CmdMerkleBlock:
+		message = msg.NewMerkleBlock(new(core.Header))
+	case p2p.CmdNotFound:
 		message = new(msg.NotFound)
+	case p2p.CmdReject:
+		message = new(msg.Reject)
 	default:
 		return nil, errors.New("Received unsupported message, CMD " + cmd)
 	}
@@ -88,12 +88,14 @@ func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) 
 		return client.OnPong(peer, msg)
 	case *msg.Inventory:
 		return client.msgHandler.OnInventory(peer, msg)
-	case *bloom.MerkleBlock:
+	case *msg.MerkleBlock:
 		return client.msgHandler.OnMerkleBlock(peer, msg)
-	case *core.Transaction:
+	case *msg.Tx:
 		return client.msgHandler.OnTx(peer, msg)
 	case *msg.NotFound:
 		return client.msgHandler.OnNotFound(peer, msg)
+	case *msg.Reject:
+		return client.msgHandler.OnReject(peer, msg)
 	default:
 		return errors.New("handle message unknown type")
 	}
@@ -104,14 +106,14 @@ func (client *SPVClientImpl) OnPeerEstablish(peer *net.Peer) {
 }
 
 func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
-	peer.SetHeight(p.Height)
+	peer.SetHeight(p.Nonce)
 	// Return pong message to peer
-	go peer.Send(msg.NewPong(uint32(client.PeerManager().Local().Height())))
+	peer.Send(msg.NewPong(uint32(client.PeerManager().Local().Height())))
 	return nil
 }
 
 func (client *SPVClientImpl) OnPong(peer *net.Peer, p *msg.Pong) error {
-	peer.SetHeight(p.Height)
+	peer.SetHeight(p.Nonce)
 	return nil
 }
 
@@ -132,7 +134,7 @@ func (client *SPVClientImpl) keepUpdate() {
 				}
 
 				// Send ping message to peer
-				go peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
+				peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
 			}
 		}
 	}

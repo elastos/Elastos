@@ -2,8 +2,8 @@ package sdk
 
 import (
 	"crypto/ecdsa"
-	"crypto/rand"
 	"crypto/elliptic"
+	"crypto/rand"
 
 	. "github.com/elastos/Elastos.ELA.Utility/crypto"
 )

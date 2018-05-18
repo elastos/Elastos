@@ -14,6 +14,7 @@ const (
 var config *Config // The single instance of config
 
 type Config struct {
+	Magic      uint32
 	PrintLevel uint8
 	SeedList   []string
 }

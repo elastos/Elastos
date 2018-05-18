@@ -132,7 +132,7 @@ func (p *Peers) Broadcast(msg Message) {
 			continue
 		}
 
-		go peer.Send(msg)
+		peer.Send(msg)
 	}
 }
 

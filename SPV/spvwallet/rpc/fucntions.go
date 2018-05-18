@@ -7,7 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-func (server *Server) NotifyNewAddress(req Req) Resp {
+func (server *Server) notifyNewAddress(req Req) Resp {
 	data, ok := req.Params[0].(string)
 	if !ok {
 		return InvalidParameter
@@ -16,11 +16,11 @@ func (server *Server) NotifyNewAddress(req Req) Resp {
 	if err != nil {
 		return FunctionError(err.Error())
 	}
-	server.handler.NotifyNewAddress(addr)
+	server.NotifyNewAddress(addr)
 	return Success("New address received")
 }
 
-func (server *Server) SendTransaction(req Req) Resp {
+func (server *Server) sendTransaction(req Req) Resp {
 	data, ok := req.Params[0].(string)
 	if !ok {
 		return InvalidParameter
@@ -34,6 +34,9 @@ func (server *Server) SendTransaction(req Req) Resp {
 	if err != nil {
 		return FunctionError("Deserialize transaction failed")
 	}
-	server.handler.SendTransaction(tx)
-	return Success(tx.Hash().String())
+	txId, err := server.SendTransaction(tx)
+	if err != nil {
+		return FunctionError(err.Error())
+	}
+	return Success(txId.String())
 }

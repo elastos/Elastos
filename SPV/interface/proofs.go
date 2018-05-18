@@ -2,16 +2,16 @@ package _interface
 
 import (
 	"bytes"
-	"errors"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
-	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/boltdb/bolt"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/bloom"
 )
 
 type Proofs interface {

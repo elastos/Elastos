@@ -5,7 +5,7 @@ import (
 )
 
 type QueueItem struct {
-	TxHash        common.Uint256
-	BlockHash     common.Uint256
-	Height        uint32
+	TxHash    common.Uint256
+	BlockHash common.Uint256
+	Height    uint32
 }

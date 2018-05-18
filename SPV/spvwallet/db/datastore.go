@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"time"
 )
 
 type DataStore interface {
@@ -13,6 +14,7 @@ type DataStore interface {
 	STXOs() STXOs
 
 	Rollback(height uint32) error
+	RollbackTimeoutTxs(timeoutDuration time.Duration) error
 	// Reset database, clear all data
 	Reset() error
 
@@ -53,9 +55,6 @@ type Txs interface {
 
 	// Fetch all transactions from the given height
 	GetAllFrom(height uint32) ([]*Tx, error)
-
-	// Update the height of a transaction
-	UpdateHeight(txId *common.Uint256, height uint32) error
 
 	// Delete a transaction from the db
 	Delete(txId *common.Uint256) error

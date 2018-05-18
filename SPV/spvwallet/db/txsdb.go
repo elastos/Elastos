@@ -8,11 +8,13 @@ import (
 
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"time"
 )
 
 const CreateTXNDB = `CREATE TABLE IF NOT EXISTS TXNs(
 				Hash BLOB NOT NULL PRIMARY KEY,
 				Height INTEGER NOT NULL,
+				Timestamp INTEGER NOT NULL,
 				RawData BLOB NOT NULL
 			);`
 
@@ -40,8 +42,8 @@ func (t *TxsDB) Put(storeTx *Tx) error {
 		return err
 	}
 
-	sql := `INSERT OR REPLACE INTO TXNs(Hash, Height, RawData) VALUES(?,?,?)`
-	_, err = t.Exec(sql, storeTx.TxId.Bytes(), storeTx.Height, buf.Bytes())
+	sql := `INSERT OR REPLACE INTO TXNs(Hash, Height, Timestamp, RawData) VALUES(?,?,?,?)`
+	_, err = t.Exec(sql, storeTx.TxId.Bytes(), storeTx.Height, storeTx.Timestamp.Unix(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -54,10 +56,11 @@ func (t *TxsDB) Get(txId *common.Uint256) (*Tx, error) {
 	t.RLock()
 	defer t.RUnlock()
 
-	row := t.QueryRow(`SELECT Height, RawData FROM TXNs WHERE Hash=?`, txId.Bytes())
+	row := t.QueryRow(`SELECT Height, Timestamp, RawData FROM TXNs WHERE Hash=?`, txId.Bytes())
 	var height uint32
+	var timestamp int64
 	var rawData []byte
-	err := row.Scan(&height, &rawData)
+	err := row.Scan(&height, &timestamp, &rawData)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +70,7 @@ func (t *TxsDB) Get(txId *common.Uint256) (*Tx, error) {
 		return nil, err
 	}
 
-	return &Tx{TxId: *txId, Height: height, Data: tx}, nil
+	return &Tx{TxId: *txId, Height: height, Timestamp: time.Unix(timestamp, 0), Data: tx}, nil
 }
 
 // Fetch all transactions from database
@@ -80,7 +83,7 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*Tx, error) {
 	t.RLock()
 	defer t.RUnlock()
 
-	sql := "SELECT Hash, Height, RawData FROM TXNs"
+	sql := "SELECT Hash, Height, Timestamp, RawData FROM TXNs"
 	if height != math.MaxUint32 {
 		sql += " WHERE Height=?"
 	}
@@ -94,8 +97,9 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*Tx, error) {
 	for rows.Next() {
 		var txIdBytes []byte
 		var height uint32
+		var timestamp int64
 		var rawData []byte
-		err := rows.Scan(&txIdBytes, &height, &rawData)
+		err := rows.Scan(&txIdBytes, &height, &timestamp, &rawData)
 		if err != nil {
 			return txns, err
 		}
@@ -111,23 +115,10 @@ func (t *TxsDB) GetAllFrom(height uint32) ([]*Tx, error) {
 			return nil, err
 		}
 
-		txns = append(txns, &Tx{TxId: *txId, Height: height, Data: tx})
+		txns = append(txns, &Tx{TxId: *txId, Height: height, Timestamp: time.Unix(timestamp, 0), Data: tx})
 	}
 
 	return txns, nil
-}
-
-// Update the height of a transaction
-func (t *TxsDB) UpdateHeight(txId *common.Uint256, height uint32) error {
-	t.Lock()
-	defer t.Unlock()
-
-	_, err := t.Exec("UPDATE TXNs SET Height=? WHERE Hash=?", height, txId.Bytes())
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // Delete a transaction from the db

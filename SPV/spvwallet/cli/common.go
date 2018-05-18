@@ -129,10 +129,10 @@ func ShowAccounts(addrs []*db.Addr, newAddr *common.Uint168, wallet walt.Wallet)
 			return errors.New("get " + addr.String() + " UTXOs failed")
 		}
 		for _, utxo := range UTXOs {
-			if utxo.LockTime < currentHeight {
-				available += utxo.Value
-			} else {
+			if utxo.LockTime >= currentHeight || utxo.AtHeight == 0 {
 				locked += utxo.Value
+			} else {
+				available += utxo.Value
 			}
 		}
 		var format = "%5d %34s %-20s%22s %6s\n"

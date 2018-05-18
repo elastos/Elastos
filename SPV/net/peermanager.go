@@ -3,10 +3,10 @@ package net
 import (
 	"errors"
 	"fmt"
-	"time"
-	"strings"
-	"net"
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	"net"
+	"strings"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -36,7 +36,7 @@ type MessageHandler interface {
 }
 
 type PeerManager struct {
-	magic       uint32
+	magic uint32
 	*Peers
 	MessageHandler
 	addrManager *AddrManager
@@ -90,10 +90,10 @@ func (pm *PeerManager) OnPeerConnected(conn net.Conn) {
 	// Start read msg from remote peer
 	remote := pm.NewPeer(conn)
 	remote.SetState(p2p.HAND)
-	go remote.Read()
+	remote.Read()
 
 	// Send version message to remote peer
-	go remote.Send(pm.local.NewVersionMsg())
+	remote.Send(pm.local.NewVersionMsg())
 }
 
 func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
@@ -128,7 +128,7 @@ func (pm *PeerManager) DiscardAddr(addr string) {
 	pm.addrManager.DiscardAddr(addr)
 }
 
-func (pm *PeerManager) RandAddrs() []msg.Addr {
+func (pm *PeerManager) RandAddrs() []p2p.NetAddress {
 	peers := pm.ConnectedPeers()
 
 	log.Info("Rand peer addrs, connected peers:", peers)
@@ -137,7 +137,7 @@ func (pm *PeerManager) RandAddrs() []msg.Addr {
 		count = MaxOutboundCount
 	}
 
-	addrs := make([]msg.Addr, count)
+	addrs := make([]p2p.NetAddress, count)
 	for count > 0 {
 		count--
 		addrs = append(addrs, *peers[count].Addr())
@@ -182,21 +182,21 @@ func (pm *PeerManager) listenConnection() {
 		fmt.Printf("New peer connection accepted, remote: %s local: %s\n", conn.RemoteAddr(), conn.LocalAddr())
 
 		peer := pm.NewPeer(conn)
-		go peer.Read()
+		peer.Read()
 	}
 }
 
 func (pm *PeerManager) MakeMessage(cmd string) (p2p.Message, error) {
 	var message p2p.Message
 	switch cmd {
-	case "version":
+	case p2p.CmdVersion:
 		message = new(msg.Version)
-	case "verack":
+	case p2p.CmdVerAck:
 		message = new(msg.VerAck)
-	case "getaddr":
-		message = new(msg.AddrsReq)
-	case "addr":
-		message = new(msg.Addrs)
+	case p2p.CmdGetAddr:
+		message = new(msg.GetAddr)
+	case p2p.CmdAddr:
+		message = new(msg.Addr)
 	default:
 		return pm.MessageHandler.MakeMessage(cmd)
 	}
@@ -210,9 +210,9 @@ func (pm *PeerManager) HandleMessage(peer *Peer, message p2p.Message) error {
 		return pm.OnVersion(peer, message)
 	case *msg.VerAck:
 		return pm.OnVerAck(peer, message)
-	case *msg.AddrsReq:
+	case *msg.GetAddr:
 		return pm.OnAddrsReq(peer, message)
-	case *msg.Addrs:
+	case *msg.Addr:
 		return pm.OnAddrs(peer, message)
 	default:
 		return pm.MessageHandler.HandleMessage(peer, message)
@@ -260,7 +260,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 		message = new(msg.VerAck)
 	}
 
-	go peer.Send(message)
+	peer.Send(message)
 
 	return nil
 }
@@ -271,7 +271,7 @@ func (pm *PeerManager) OnVerAck(peer *Peer, va *msg.VerAck) error {
 	}
 
 	if peer.State() == p2p.HANDSHAKE {
-		go peer.Send(va)
+		peer.Send(va)
 	}
 
 	peer.SetState(p2p.ESTABLISH)
@@ -283,14 +283,14 @@ func (pm *PeerManager) OnVerAck(peer *Peer, va *msg.VerAck) error {
 	pm.MessageHandler.OnPeerEstablish(peer)
 
 	if pm.NeedMorePeers() {
-		go peer.Send(new(msg.AddrsReq))
+		peer.Send(new(msg.GetAddr))
 	}
 
 	return nil
 }
 
-func (pm *PeerManager) OnAddrs(peer *Peer, addrs *msg.Addrs) error {
-	for _, addr := range addrs.Addrs {
+func (pm *PeerManager) OnAddrs(peer *Peer, addr *msg.Addr) error {
+	for _, addr := range addr.AddrList {
 		// Skip local peer
 		if addr.ID == pm.Local().ID() {
 			continue
@@ -312,8 +312,8 @@ func (pm *PeerManager) OnAddrs(peer *Peer, addrs *msg.Addrs) error {
 	return nil
 }
 
-func (pm *PeerManager) OnAddrsReq(peer *Peer, req *msg.AddrsReq) error {
+func (pm *PeerManager) OnAddrsReq(peer *Peer, req *msg.GetAddr) error {
 	addrs := pm.RandAddrs()
-	go peer.Send(msg.NewAddrs(addrs))
+	peer.Send(msg.NewAddr(addrs))
 	return nil
 }

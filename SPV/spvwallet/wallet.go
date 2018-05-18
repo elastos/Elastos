@@ -1,20 +1,20 @@
 package spvwallet
 
 import (
-	"math"
 	"bytes"
 	"errors"
-	"strconv"
+	"math"
 	"math/rand"
+	"strconv"
 
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 var SystemAssetId = getSystemAssetId()
@@ -234,7 +234,7 @@ func (wallet *WalletImpl) Sign(password []byte, txn *core.Transaction) (*core.Tr
 		return nil, err
 	}
 	// Look up transaction type
-	if signType == crypto.STANDARD {
+	if signType == common.STANDARD {
 
 		// Sign single transaction
 		txn, err = wallet.signStandardTransaction(txn)
@@ -242,7 +242,7 @@ func (wallet *WalletImpl) Sign(password []byte, txn *core.Transaction) (*core.Tr
 			return nil, err
 		}
 
-	} else if signType == crypto.MULTISIG {
+	} else if signType == common.MULTISIG {
 
 		// Sign multi sign transaction
 		txn, err = wallet.signMultiSigTransaction(txn)
@@ -318,11 +318,8 @@ func (wallet *WalletImpl) signMultiSigTransaction(txn *core.Transaction) (*core.
 }
 
 func (wallet *WalletImpl) SendTransaction(txn *core.Transaction) error {
-
 	// Send transaction through P2P network
-	rpc.GetClient().SendTransaction(txn)
-
-	return nil
+	return rpc.GetClient().SendTransaction(txn)
 }
 
 func getSystemAssetId() common.Uint256 {
@@ -350,6 +347,9 @@ func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
 	var availableUTXOs []*UTXO
 	var currentHeight = wallet.ChainHeight()
 	for _, utxo := range utxos {
+		if utxo.AtHeight == 0 { // remove unconfirmed UTOXs
+			continue
+		}
 		if utxo.LockTime > 0 {
 			if utxo.LockTime > currentHeight {
 				continue

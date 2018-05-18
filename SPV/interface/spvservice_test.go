@@ -27,15 +27,16 @@ func TestNewSPVService(t *testing.T) {
 	spv = NewSPVService(clientId, config.Values().SeedList)
 
 	// Register account
-	err = spv.RegisterAccount("ETBBrgotZy3993o9bH75KxjLDgQxBCib6u")
-	err = spv.RegisterAccount("EUyNwnAh5SzzTtAPV1HkXzjUEbw2YqKsUM")
+	err = spv.RegisterAccount("ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z")
+	err = spv.RegisterAccount("Ef2bDPwcUKguteJutJQCmjX2wgHVfkJ2Wq")
+	err = spv.RegisterAccount("EYUsEASwbPq9NcSswa8TsP7eVRwiiGwmdq")
 	if err != nil {
 		t.Error("Register account error: ", err)
 		os.Exit(0)
 	}
 
 	// Set on transaction confirmed callback
-	spv.RegisterTransactionListener(&ConfirmedListener{txType: TransferAsset})
+	spv.RegisterTransactionListener(&ConfirmedListener{txType: CoinBase})
 	spv.RegisterTransactionListener(&UnconfirmedListener{txType: TransferAsset})
 
 	// Start spv service
@@ -66,7 +67,7 @@ func (l *ConfirmedListener) Notify(proof MerkleProof, tx Transaction) {
 	}
 
 	// Submit transaction receipt
-	//spv.SubmitTransactionReceipt(tx.Hash())
+	spv.SubmitTransactionReceipt(tx.Hash())
 }
 
 func (l *ConfirmedListener) Rollback(height uint32) {}
@@ -92,7 +93,7 @@ func (l *UnconfirmedListener) Notify(proof MerkleProof, tx Transaction) {
 	}
 
 	// Submit transaction receipt
-	//spv.SubmitTransactionReceipt(tx.Hash())
+	spv.SubmitTransactionReceipt(tx.Hash())
 }
 
 func (l *UnconfirmedListener) Rollback(height uint32) {}
