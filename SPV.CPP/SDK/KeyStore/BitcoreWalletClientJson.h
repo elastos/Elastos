@@ -6,11 +6,19 @@
 #define __ELASTOS_SDK_BITCOREWALLETCLIENTJSON_H__
 
 #include <string>
+#include <vector>
+#include <nlohmann/json.hpp>
 
 namespace Elastos {
 	namespace SDK {
 
 		class BitcoreWalletClientJson {
+		public:
+			struct PubKeyItem {
+				std::string xPubKey;
+				std::string requestPubKey;
+			};
+
 		public:
 			BitcoreWalletClientJson();
 
@@ -20,9 +28,31 @@ namespace Elastos {
 			std::string _coin;
 			std::string _network;
 			std::string _xPrivKey;
-			std::string _xPubKey;
-			//todo complete me
+			PubKeyItem _pubKeyItem;
+			std::vector<PubKeyItem> _publicKeyRing;
+			std::string _requestPrivKey;
+			std::string _copayerId;
+			std::string _walletId;
+			std::string _walletName;
+			int _m;
+			int _n;
+			std::string _walletPrivKey;
+			std::string _personalEncryptingKey;
+			std::string _sharedEncryptingKey;
+			std::string _copayerName;
+			std::string _entropySource;
+			std::string _derivationStrategy;
+			int _account;
+			bool _compliantDerivation;
+			std::string _addressType;
 		};
+
+		//support for json converting
+		//read "Arbitrary types conversions" section in readme of
+		//	https://github.com/nlohmann/json for more details
+		void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p);
+
+		void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p);
 
 	}
 }

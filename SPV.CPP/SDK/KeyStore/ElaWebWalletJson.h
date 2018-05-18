@@ -20,6 +20,13 @@ namespace Elastos {
 			std::string _mnemonic;
 		};
 
+		//support for json converting
+		//read "Arbitrary types conversions" section in readme of
+		//	https://github.com/nlohmann/json for more details
+		void to_json(nlohmann::json &j, const ElaWebWalletJson &p);
+
+		void from_json(const nlohmann::json &j, ElaWebWalletJson &p);
+
 	}
 }
 

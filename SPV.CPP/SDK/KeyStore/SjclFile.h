@@ -14,13 +14,52 @@ namespace Elastos {
 		class SjclFile {
 		public:
 			SjclFile();
+
 			virtual ~SjclFile();
+
+			const std::string &getIv() const;
+
+			void setIv(const std::string &iv);
+
+			uint32_t getV() const;
+
+			void setV(uint32_t value);
+
+			uint32_t getIter() const;
+
+			void setIter(uint32_t value);
+
+			uint32_t getKs() const;
+
+			void setKs(uint32_t value);
+
+			uint32_t getTs() const;
+
+			void setTs(uint32_t value);
+
+			const std::string &getMode() const;
+
+			void setMode(const std::string &mode);
+
+			const std::string &getAdata() const;
+
+			void setAdata(const std::string &adata);
+
+			const std::string &getCipher() const;
+
+			void setCipher(const std::string &cipher);
 
 			const std::string &getSalt() const;
 
+			void setSalt(const std::string &salt);
+
+			const std::string &getCt() const;
+
+			void setCt(const std::string &ct);
+
 		private:
 			std::string _iv;
-			int _v;
+			uint32_t _v;
 			uint32_t _iter;
 			uint32_t _ks;
 			uint32_t _ts;

@@ -19,6 +19,13 @@ namespace Elastos {
 			//todo add id related data
 		};
 
+		//support for json converting
+		//read "Arbitrary types conversions" section in readme of
+		//	https://github.com/nlohmann/json for more details
+		void to_json(nlohmann::json &j, const ElaNewWalletJson &p);
+
+		void from_json(const nlohmann::json &j, ElaNewWalletJson &p);
+
 	}
 }
 

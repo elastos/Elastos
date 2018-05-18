@@ -4,4 +4,20 @@
 
 #define CATCH_CONFIG_MAIN
 
+#include <fstream>
 #include <catch.hpp>
+
+#include "KeyStore/SjclFile.h"
+
+using namespace Elastos::SDK;
+
+TEST_CASE("Json convert", "[SjclFile]") {
+
+	SECTION("Convert to json") {
+	}
+
+	SECTION("Convert from json") {
+
+	}
+
+}
