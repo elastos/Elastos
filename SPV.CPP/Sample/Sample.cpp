@@ -12,7 +12,6 @@
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 
-#include "SPVSDK.h"
 #include "Wallet.h"
 #include "Account.h"
 #include "TestConnectPeer.h"
@@ -23,10 +22,6 @@
 namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
-
-    SPVSDK SDK;
-    std::string version = SDK.version();
-    std::cout << version << std::endl;
 
     TestConnectPeer::runPeerConnectTest();
     return 0;

@@ -57,7 +57,7 @@ namespace Elastos {
 		}
 
 		void WalletManager::importKey(const boost::filesystem::path &path,
-									  const std::string &password, bool oldVersion = false) {
+									  const std::string &password, bool oldVersion) {
 			//todo parse id related info
 		}
 
