@@ -635,7 +635,7 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
 
     gjcarrier = (*env)->NewGlobalRef(env, thiz);
     gjhandler = (*env)->NewGlobalRef(env, jresponseHandler);
-    if (!gjcarrier || gjhandler) {
+    if (!gjcarrier || !gjhandler) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         goto errorExit;
     }
