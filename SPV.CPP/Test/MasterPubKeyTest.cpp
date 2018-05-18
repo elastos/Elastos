@@ -30,18 +30,16 @@ TEST_CASE("MasterPubKey method test", "[MasterPubKey]") {
 		std::string phrase = "a test seed ha";
 		MasterPubKey masterPubKey(phrase);
 
-		ByteData pubkeyBytes = masterPubKey.getPubKey();
-		REQUIRE(pubkeyBytes.length > 0);
-		REQUIRE(sizeof(pubkeyBytes.data) > 0);
+		CMBlock pubkeyBytes = masterPubKey.getPubKey();
+		REQUIRE(pubkeyBytes.GetSize() > 0);
 	}
 
 	SECTION("serialize method test") {
 		std::string phrase = "a test seed ha";
 		MasterPubKey masterPubKey(phrase);
 
-		const ByteData bytes = masterPubKey.serialize();
-		REQUIRE(bytes.length > 0);
-		REQUIRE(sizeof(bytes.data) > 0);
+		const CMBlock bytes = masterPubKey.serialize();
+		REQUIRE(bytes.GetSize() > 0);
 
 		MasterPubKey masterPubKey1;
 		masterPubKey1.deserialize(bytes);
@@ -79,12 +77,13 @@ TEST_CASE("MasterPubKey method test", "[MasterPubKey]") {
 TEST_CASE("MasterPubKey static method test", "[MasterPubKey]") {
 	SECTION("bip32BitIDKey method test") {
 		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		ByteData seedByte(seed.u8, sizeof(seed));
+		CMBlock seedByte;
+		seedByte.SetMemFixed(seed.u8, sizeof(seed));
 
-		ByteData byteData(nullptr, 0);
+		CMBlock byteData;
 		byteData = MasterPubKey::bip32BitIDKey(seedByte, 0, "https://www.elastos.org");
-		REQUIRE(byteData.data != nullptr);
-		REQUIRE(byteData.length > 0);
+		REQUIRE(byteData != false);
+		REQUIRE(byteData.GetSize() > 0);
 	}
 
 	SECTION("phrase validate method test") {
@@ -97,12 +96,13 @@ TEST_CASE("MasterPubKey static method test", "[MasterPubKey]") {
 		REQUIRE(result == false);
 
 		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		ByteData seedByte(seed.u8, sizeof(seed));
+		CMBlock seedByte;
+		seedByte.SetMemFixed(seed.u8, sizeof(seed));
 
-		ByteData paperKey(nullptr, 0);
+		CMBlock paperKey;
 		paperKey = MasterPubKey::generatePaperKey(seedByte, words);
-		REQUIRE(paperKey.length > 0);
-		const char *paperStr = (const char *) paperKey.data;
+		REQUIRE(paperKey.GetSize() > 0);
+		const char *paperStr = (const char *)(void *) paperKey;
 		REQUIRE(paperStr != nullptr);
 
 		result = MasterPubKey::validateRecoveryPhrase(words, std::string(paperStr));

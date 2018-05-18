@@ -11,7 +11,7 @@
 #include "BRPeerMessages.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {

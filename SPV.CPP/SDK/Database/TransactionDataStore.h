@@ -8,23 +8,22 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#include "ByteData.h"
 #include "BRInt.h"
 #include "Sqlite.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		struct TransactionEntity {
 			TransactionEntity() :
-				buff(nullptr, 0),
 				blockHeight(0),
 				timeStamp(0),
 				txHash("")
 			{
 			}
 
-			TransactionEntity(ByteData b, uint32_t bh, uint32_t ts, const std::string &th) :
+			TransactionEntity(CMBlock b, uint32_t bh, uint32_t ts, const std::string &th) :
 				buff(b),
 				blockHeight(bh),
 				timeStamp(ts),
@@ -32,7 +31,7 @@ namespace Elastos {
 			{
 			}
 
-			ByteData buff;
+			CMBlock buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
 			std::string txHash;

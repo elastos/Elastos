@@ -8,7 +8,7 @@
 #include "BRPaymentProtocol.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 #include "Transaction.h"
 
 namespace Elastos {
@@ -18,7 +18,7 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolACK> {
 
 		public:
-			PaymentProtocolAck(const ByteData &data);
+			PaymentProtocolAck(const CMBlock &data);
 
 			~PaymentProtocolAck();
 
@@ -28,7 +28,7 @@ namespace Elastos {
 
 			std::string geCustomerMemo() const;
 
-			ByteData getMerchantData() const;
+			CMBlock getMerchantData() const;
 
 			SharedWrapperList<Transaction, BRTransaction *> getTransactions() const;
 
@@ -36,7 +36,7 @@ namespace Elastos {
 
 			std::string getMerchantMemo() const;
 
-			ByteData serialize() const;
+			CMBlock serialize() const;
 
 		private:
 			BRPaymentProtocolACK *_protocolACK;

@@ -37,7 +37,7 @@ TEST_CASE( "Address test", "[Address]" )
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
 
-		ByteData script = myaddress.getPubKeyScript();
+		CMemBlock script = myaddress.getPubKeyScript();
 		boost::shared_ptr<Address> address1 = Address::fromScriptPubKey(script);
 		Address* address2 = address1.get();
 		REQUIRE(address2->toString() == content);
@@ -49,7 +49,7 @@ TEST_CASE( "Address test", "[Address]" )
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
 
-		ByteData script = myaddress.getPubKeyScript();
+		CMemBlock script = myaddress.getPubKeyScript();
 
 		boost::shared_ptr<Address> address1 = Address::fromScriptSignature(script);
 		Address* address2 = address1.get();

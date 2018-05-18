@@ -48,26 +48,11 @@ namespace Elastos {
 			}
 			type = ebt.type;
 			payloadVersion = ebt.payloadVersion;
-			if (payloadData.data && 0 < payloadData.length) {
-				delete[] payloadData.data;
-				payloadData.data = nullptr;
-				payloadData.length = 0;
-			}
-			uint8_t *buf = new uint8_t[ebt.payloadData.length];
-			memcpy(buf, ebt.payloadData.data, ebt.payloadData.length);
-			payloadData = ByteData(buf, ebt.payloadData.length);
 
-			size_t count = attributeData.size();
-			for (size_t i = 0; i < count; i++) {
-				ByteData bd = attributeData[i];
-				if (bd.data) delete[] bd.data;
-			}
+			payloadData.Resize(ebt.payloadData.GetSize());
+			memcpy(payloadData, ebt.payloadData, ebt.payloadData.GetSize());
+
 			attributeData.clear();
-			count = programData.size();
-			for (size_t i = 0; i < count; i++) {
-				ByteData bd = programData[i];
-				if (bd.data) delete[] bd.data;
-			}
 			programData.clear();
 		}
 
@@ -116,13 +101,13 @@ namespace Elastos {
 			elabrTransaction->type = tx->type;
 			elabrTransaction->payloadVersion = tx->payloadVersion;
 			for (size_t i = 0; i < tx->programData.size(); ++i) {
-				ByteData byteData(new uint8_t[tx->programData[i].length], tx->programData[i].length);
-				memcpy(byteData.data, tx->programData[i].data, tx->programData[i].length);
+				CMBlock byteData(tx->programData[i].GetSize());
+				memcpy(byteData, tx->programData[i], tx->programData[i].GetSize());
 				elabrTransaction->programData.push_back(byteData);
 			}
 			for (size_t i = 0; i < tx->attributeData.size(); ++i) {
-				ByteData byteData(new uint8_t[tx->attributeData[i].length], tx->attributeData[i].length);
-				memcpy(byteData.data, tx->attributeData[i].data, tx->attributeData[i].length);
+				CMBlock byteData(tx->attributeData[i].GetSize());
+				memcpy(byteData, tx->attributeData[i], tx->attributeData[i].GetSize());
 				elabrTransaction->attributeData.push_back(byteData);
 			}
 
@@ -160,21 +145,11 @@ namespace Elastos {
 				array_free(tx->raw.outputs);
 			}
 
-			if (tx->payloadData.data && 0 < tx->payloadData.length) {
-				delete[] tx->payloadData.data;
-			}
+			tx->payloadData.Clear();
 
-			size_t count = tx->attributeData.size();
-			for (size_t i = 0; i < count; i++) {
-				ByteData bd = tx->attributeData[i];
-				if (bd.data) delete[] bd.data;
-			}
+			tx->attributeData.clear();
 
-			count = tx->programData.size();
-			for (size_t i = 0; i < count; i++) {
-				ByteData bd = tx->programData[i];
-				if (bd.data) delete[] bd.data;
-			}
+			tx->programData.clear();
 
 			free(tx);
 		}

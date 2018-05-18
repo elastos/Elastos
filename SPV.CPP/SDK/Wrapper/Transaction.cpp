@@ -38,19 +38,19 @@ namespace Elastos {
 			convertFrom(transaction);
 		}
 
-		Transaction::Transaction(const ByteData &buffer) :
+		Transaction::Transaction(const CMBlock &buffer) :
 				_isRegistered(false),
 				_payload(nullptr) {
-			_transaction = BRTransactionParse(buffer.data, buffer.length);
+			_transaction = BRTransactionParse(buffer, buffer.GetSize());
 			assert (nullptr != _transaction);
 			convertFrom(_transaction);
 		}
 
-		Transaction::Transaction(const ByteData &buffer, uint32_t blockHeight, uint32_t timeStamp) :
+		Transaction::Transaction(const CMBlock &buffer, uint32_t blockHeight, uint32_t timeStamp) :
 				_isRegistered(false),
 				_payload(nullptr) {
 
-			_transaction = BRTransactionParse(buffer.data, buffer.length);
+			_transaction = BRTransactionParse(buffer, buffer.GetSize());
 			assert (nullptr != _transaction);
 			setPayloadByTransactionType();
 			convertFrom(_transaction);
@@ -243,48 +243,46 @@ namespace Elastos {
 			_transaction->timestamp = timestamp;
 		}
 
-		ByteData Transaction::serialize() {
+		CMBlock Transaction::serialize() {
 			BRTransaction *pbrtx = convertToRaw();
 
-			ByteData result;
-			result.length = BRTransactionSerialize(pbrtx, nullptr, 0);
-			result.data = new uint8_t[result.length];
-			memset(result.data, 0, result.length);
-			BRTransactionSerialize(pbrtx, result.data, result.length);
+			CMBlock result;
+			result.Resize(BRTransactionSerialize(pbrtx, nullptr, 0));
+			BRTransactionSerialize(pbrtx, result, result.GetSize());
 
 			ByteStream ostream;
 			ELABRTransaction *pelatx = (ELABRTransaction*)pbrtx;
 			ostream.put(pelatx->type);
 			ostream.put(pelatx->payloadVersion);
-			ostream.putVarUint(pelatx->payloadData.length);
-			ostream.putBytes(pelatx->payloadData.data, pelatx->payloadData.length);
+			ostream.putVarUint(pelatx->payloadData.GetSize());
+			ostream.putBytes(pelatx->payloadData, pelatx->payloadData.GetSize());
 
 			size_t count = pelatx->attributeData.size();
 			ostream.putVarUint((uint64_t)count);
 			for (size_t i = 0; i < count; i++) {
-				ByteData bd = pelatx->attributeData[i];
-				ostream.putVarUint(bd.length);
-				if (bd.data) ostream.putBytes(bd.data, bd.length);
+				CMBlock bd = pelatx->attributeData[i];
+				ostream.putVarUint(bd.GetSize());
+				if (bd) ostream.putBytes(bd, bd.GetSize());
 			}
 
 			count = pelatx->programData.size();
 			ostream.putVarUint(count);
 			for (size_t i = 0; i < count; i++) {
-				ByteData bd = pelatx->programData[i];
-				ostream.putVarUint(bd.length);
-				if (bd.data) ostream.putBytes(bd.data, bd.length);
+				CMBlock bd = pelatx->programData[i];
+				ostream.putVarUint(bd.GetSize());
+				if (bd) ostream.putBytes(bd, bd.GetSize());
 			}
 
 			uint8_t * buf = ostream.getBuf();
 			uint64_t len = ostream.length();
-			uint8_t *buf_tmp = new uint8_t[result.length + len];
-			memcpy(buf_tmp, result.data, result.length);
-			delete[] result.data;
-			memcpy(buf_tmp + result.length, buf, len);
+			uint8_t *buf_tmp = new uint8_t[result.GetSize() + len];
+			memcpy(buf_tmp, result, result.GetSize());
+			memcpy(buf_tmp + result.GetSize(), buf, len);
 			delete[] buf;
 
-			result.data = buf_tmp;
-			result.length = result.length + len;
+			len += result.GetSize();
+			result.Resize(len);
+			memcpy(result, buf_tmp, len);
 
 			return result;
 		}
@@ -292,15 +290,15 @@ namespace Elastos {
 		void Transaction::addInput(const TransactionInput &input) {
 
 			BRTransactionAddInput(_transaction, input.getHash(), input.getIndex(), input.getAmount(),
-			                      input.getScript().data, input.getScript().length,
-			                      input.getSignature().data, input.getSignature().length,
+			                      input.getScript(), input.getScript().GetSize(),
+			                      input.getSignature(), input.getSignature().GetSize(),
 			                      input.getSequence());
 		}
 
 		void Transaction::addOutput(const TransactionOutput &output) {
 
 			BRTransactionAddOutput(_transaction, output.getAmount(),
-			                       output.getScript().data, output.getScript().length);
+			                       output.getScript(), output.getScript().GetSize());
 
 			ELABRTransaction *elabrTransaction = (ELABRTransaction *)_transaction;
 			const UInt256 assetID = output.getAssetId();
@@ -455,8 +453,8 @@ namespace Elastos {
 			for (ssize_t i = 0; i < len; ++i) {
 				input = inputs[i].get();
 				BRTransactionAddInput(&transaction->raw, input->getHash(), input->getIndex(), input->getAmount(),
-				                      input->getScript().data, input->getScript().length, input->getSignature().data,
-				                      input->getSignature().length, input->getSequence());
+				                      input->getScript(), input->getScript().GetSize(), input->getSignature(),
+				                      input->getSignature().GetSize(), input->getSequence());
 			}
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
@@ -466,8 +464,8 @@ namespace Elastos {
 
 			for (ssize_t i = 0; i < len; i++) {
 				output = outputs[i].get();
-				BRTransactionAddOutput(&transaction->raw, output->getAmount(), output->getScript().data,
-				                       output->getScript().length);
+				BRTransactionAddOutput(&transaction->raw, output->getAmount(), output->getScript(),
+				                       output->getScript().GetSize());
 				const UInt256 assetID = output->getAssetId();
 				transaction->outputAssetIDList.push_back(assetID);
 				transaction->outputLockList.push_back(output->getOutputLock());
@@ -479,9 +477,11 @@ namespace Elastos {
 			transaction->payloadVersion = _payloadVersion;
 			ByteStream byteStream;
 			_payload->Serialize(byteStream);
-			transaction->payloadData.length = byteStream.length();
-			if (transaction->payloadData.length > 0) {
-				transaction->payloadData.data = byteStream.getBuf();
+			transaction->payloadData.Resize(byteStream.length());
+			if (transaction->payloadData.GetSize() > 0) {
+				uint8_t *tmp = byteStream.getBuf();
+				memcpy(transaction->payloadData, tmp, byteStream.length());
+				delete []tmp;
 			}
 
 			transaction->attributeData.clear();
@@ -490,7 +490,11 @@ namespace Elastos {
 				AttributePtr attr = _attributes[i];
 				byteStream.reSet();
 				attr->Serialize(byteStream);
-				transaction->attributeData.push_back(ByteData(byteStream.getBuf(), (size_t) byteStream.length()));
+				CMBlock pd(byteStream.length());
+				uint8_t *tmp = byteStream.getBuf();
+				memcpy(pd, tmp, pd.GetSize());
+				delete []tmp;
+				transaction->attributeData.push_back(pd);
 			}
 
 			transaction->programData.clear();
@@ -500,8 +504,11 @@ namespace Elastos {
 				ProgramPtr programPtr = _programs[i];
 				byteStream.reSet();
 				programPtr->Serialize(byteStream);
-				ByteData programBytes(byteStream.getBuf(), (size_t) byteStream.length());
-				transaction->programData.push_back(programBytes);
+				CMBlock pd(byteStream.length());
+				uint8_t *tmp = byteStream.getBuf();
+				memcpy(pd, tmp, pd.GetSize());
+				delete []tmp;
+				transaction->programData.push_back(pd);
 			}
 
 			return (BRTransaction *) transaction;
@@ -526,10 +533,10 @@ namespace Elastos {
 			_payloadVersion = elabrTransaction->payloadVersion;
 
 			setPayloadByTransactionType();
-			if (elabrTransaction->payloadData.data && elabrTransaction->payloadData.length > 0) {
-				uint8_t *data = new uint8_t[elabrTransaction->payloadData.length];
-				memcpy(data, elabrTransaction->payloadData.data, elabrTransaction->payloadData.length);
-				ByteStream byteStream1(data, elabrTransaction->payloadData.length);
+			if (elabrTransaction->payloadData && elabrTransaction->payloadData.GetSize() > 0) {
+				uint8_t *data = new uint8_t[elabrTransaction->payloadData.GetSize()];
+				memcpy(data, elabrTransaction->payloadData, elabrTransaction->payloadData.GetSize());
+				ByteStream byteStream1(data, elabrTransaction->payloadData.GetSize());
 				_payload->Deserialize(byteStream1);
 			}
 
@@ -537,10 +544,10 @@ namespace Elastos {
 			ssize_t len = elabrTransaction->attributeData.size();
 			if (len > 0) {
 				for (ssize_t i = 0; i < len; ++i) {
-					ByteData byteData = elabrTransaction->attributeData[i];
-					uint8_t *data = new uint8_t[byteData.length];
-					memcpy(data, byteData.data, byteData.length);
-					ByteStream byteStream1(data, byteData.length);
+					CMBlock byteData = elabrTransaction->attributeData[i];
+					uint8_t *data = new uint8_t[byteData.GetSize()];
+					memcpy(data, byteData, byteData.GetSize());
+					ByteStream byteStream1(data, byteData.GetSize());
 					AttributePtr attr(new Attribute());
 					attr->Deserialize(byteStream1);
 					_attributes.push_back(attr);
@@ -551,10 +558,10 @@ namespace Elastos {
 			len = elabrTransaction->programData.size();
 			if (len > 0) {
 				for (ssize_t i = 0; i < len; i++) {
-					ByteData byteData = elabrTransaction->programData[i];
-					uint8_t *data = new uint8_t[byteData.length];
-					memcpy(data, byteData.data, byteData.length);
-					ByteStream byteStream(data, byteData.length);
+					CMBlock byteData = elabrTransaction->programData[i];
+					uint8_t *data = new uint8_t[byteData.GetSize()];
+					memcpy(data, byteData, byteData.GetSize());
+					ByteStream byteStream(data, byteData.GetSize());
 					ProgramPtr programPtr(new Program);
 					programPtr->Deserialize(byteStream);
 					_programs.push_back(programPtr);

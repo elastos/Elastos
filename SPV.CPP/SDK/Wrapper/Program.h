@@ -7,7 +7,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "ByteData.h"
+#include "c_util.h"
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
@@ -18,7 +18,7 @@ namespace Elastos {
 		public:
 			Program();
 
-			Program(const ByteData &code, const ByteData &parameter);
+			Program(const CMBlock &code, const CMBlock &parameter);
 
 			~Program();
 
@@ -27,8 +27,8 @@ namespace Elastos {
 			virtual void Deserialize(ByteStream &istream);
 
 		private:
-			ByteData _code;
-			ByteData _parameter;
+			CMBlock _code;
+			CMBlock _parameter;
 		};
 
 		typedef boost::shared_ptr<Program> ProgramPtr;

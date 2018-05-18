@@ -11,7 +11,7 @@
 
 #include "../ELACoreExt/Payload/IPayload.h"
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 #include "SharedWrapperList.h"
 #include "TransactionInput.h"
 #include "TransactionOutput.h"
@@ -20,6 +20,7 @@
 #include "ELAMessageSerializable.h"
 #include "../ELACoreExt/Attribute.h"
 #include "Program.h"
+
 
 namespace Elastos {
 	namespace SDK {
@@ -45,9 +46,9 @@ namespace Elastos {
 
 			Transaction(BRTransaction *transaction);
 
-			Transaction(const ByteData &buffer);
+			Transaction(const CMBlock &buffer);
 
-			Transaction(const ByteData &buffer, uint32_t blockHeight, uint32_t timeStamp);
+			Transaction(const CMBlock &buffer, uint32_t blockHeight, uint32_t timeStamp);
 
 			~Transaction();
 
@@ -108,7 +109,7 @@ namespace Elastos {
 
 			void setTimestamp(uint32_t timestamp);
 
-			ByteData serialize();
+			CMBlock serialize();
 
 			void addInput(const TransactionInput &input);
 

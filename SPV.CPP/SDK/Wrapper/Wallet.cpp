@@ -167,11 +167,15 @@ namespace Elastos {
 			return TransactionPtr(new Transaction(transaction));
 		}
 
-		bool Wallet::signTransaction(const TransactionPtr &transaction, int forkId, const std::string &phrase) {
+		bool Wallet::signTransaction(const TransactionPtr &transaction, int forkId, const CMBlock &phraseData) {
+
+			char phrase [1 + phraseData.GetSize()];
+			memcpy (phrase, phraseData, phraseData.GetSize());
+			phrase[phraseData.GetSize()] = '\0';
 
 			// Convert phrase to its BIP38 512 bit seed.
 			UInt512 seed;
-			BRBIP39DeriveKey (&seed, phrase.c_str(), NULL);
+			BRBIP39DeriveKey (&seed, phrase, NULL);
 
 			return BRWalletSignTransaction(_wallet, transaction->getRaw(), forkId, &seed, sizeof(seed)) == 1;
 		}

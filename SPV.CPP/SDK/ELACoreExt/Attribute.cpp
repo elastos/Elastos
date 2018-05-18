@@ -12,7 +12,7 @@ namespace Elastos {
 			_usage(Nonce) {
 		}
 
-		Attribute::Attribute(Attribute::Usage usage, const ByteData &data) :
+		Attribute::Attribute(Attribute::Usage usage, const CMBlock &data) :
 			_usage(usage),
 			_data(data) {
 
@@ -24,17 +24,16 @@ namespace Elastos {
 		void Attribute::Serialize(ByteStream &ostream) const {
 			ostream.put(_usage);
 
-			ostream.putVarUint(_data.length);
-			ostream.putBytes(_data.data, _data.length);
+			ostream.putVarUint(_data.GetSize());
+			ostream.putBytes(_data, _data.GetSize());
 		}
 
 		void Attribute::Deserialize(ByteStream &istream) {
 			_usage = (Usage)istream.get();
 
 			uint64_t len = istream.getVarUint();
-			_data.length = len;
-			_data.data = new uint8_t[len];
-			istream.getBytes(_data.data, len);
+			_data.Resize(len);
+			istream.getBytes(_data, len);
 		}
 	}
 }

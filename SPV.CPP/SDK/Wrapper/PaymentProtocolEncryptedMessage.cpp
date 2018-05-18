@@ -7,8 +7,8 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolEncryptedMessage::PaymentProtocolEncryptedMessage(const ByteData &data) {
-			_protocolEncryptedMessage = BRPaymentProtocolEncryptedMessageParse(data.data, data.length);
+		PaymentProtocolEncryptedMessage::PaymentProtocolEncryptedMessage(const CMBlock &data) {
+			_protocolEncryptedMessage = BRPaymentProtocolEncryptedMessageParse(data, data.GetSize());
 		}
 
 		PaymentProtocolEncryptedMessage::~PaymentProtocolEncryptedMessage() {
@@ -26,8 +26,11 @@ namespace Elastos {
 			return _protocolEncryptedMessage;
 		}
 
-		ByteData PaymentProtocolEncryptedMessage::getMessage() const {
-			return ByteData(_protocolEncryptedMessage->message, _protocolEncryptedMessage->msgLen);
+		CMBlock PaymentProtocolEncryptedMessage::getMessage() const {
+			CMBlock ret(_protocolEncryptedMessage->msgLen);
+			memcpy(ret, _protocolEncryptedMessage->message, _protocolEncryptedMessage->msgLen);
+
+			return ret;
 		}
 
 		BRKey PaymentProtocolEncryptedMessage::getReceiverPublicKey() const {
@@ -42,12 +45,18 @@ namespace Elastos {
 			return _protocolEncryptedMessage->nonce;
 		}
 
-		ByteData PaymentProtocolEncryptedMessage::getSignature() const {
-			return ByteData(_protocolEncryptedMessage->message, _protocolEncryptedMessage->msgLen);
+		CMBlock PaymentProtocolEncryptedMessage::getSignature() const {
+			CMBlock ret(_protocolEncryptedMessage->msgLen);
+			memcpy(ret, _protocolEncryptedMessage->message, _protocolEncryptedMessage->msgLen);
+
+			return ret;
 		}
 
-		ByteData PaymentProtocolEncryptedMessage::getIdentifier() const {
-			return ByteData(_protocolEncryptedMessage->identifier, _protocolEncryptedMessage->identLen);
+		CMBlock PaymentProtocolEncryptedMessage::getIdentifier() const {
+			CMBlock ret(_protocolEncryptedMessage->identLen);
+			memcpy(ret, _protocolEncryptedMessage->identifier, _protocolEncryptedMessage->identLen);
+
+			return ret;
 		}
 
 		uint64_t PaymentProtocolEncryptedMessage::getStatusCode() const {
@@ -58,11 +67,12 @@ namespace Elastos {
 			return _protocolEncryptedMessage->statusMsg;
 		}
 
-		ByteData PaymentProtocolEncryptedMessage::serialize() const {
+		CMBlock PaymentProtocolEncryptedMessage::serialize() const {
 			size_t dataLen = BRPaymentProtocolEncryptedMessageSerialize(_protocolEncryptedMessage, nullptr, 0);
-			uint8_t *data = new uint8_t[dataLen];
+			CMBlock data(dataLen);
 			BRPaymentProtocolEncryptedMessageSerialize(_protocolEncryptedMessage, data, dataLen);
-			return ByteData(data, dataLen);
+
+			return data;
 		}
 
 	}

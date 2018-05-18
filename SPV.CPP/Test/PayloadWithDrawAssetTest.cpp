@@ -14,7 +14,7 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 
     SECTION("none init test") {
         PayloadWithDrawAsset pwda, pwda_re;
-        ByteData bd_src, bd_re;
+        CMBlock bd_src, bd_re;
         ByteStream stream;
 
         pwda.Serialize(stream);
@@ -24,18 +24,15 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
         bd_src = pwda.getData();
         bd_re = pwda_re.getData();
 
-        REQUIRE(bd_src.length==bd_re.length);
+        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
 
-        if (bd_src.data && bd_re.data)
-            REQUIRE(0==memcmp(bd_src.data, bd_re.data, bd_src.length));
-
-        if (bd_src.data) delete[] bd_src.data;
-        if (bd_re.data)  delete[] bd_re.data;
+        if (bd_src && bd_re)
+            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
     }
 
     SECTION("init test") {
         PayloadWithDrawAsset pwda, pwda_re;
-        ByteData bd_src, bd_re;
+        CMBlock bd_src, bd_re;
         ByteStream stream;
 
         pwda.setBlockHeight(100);
@@ -48,13 +45,10 @@ TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
         bd_src = pwda.getData();
         bd_re = pwda_re.getData();
 
-        REQUIRE(bd_src.length==bd_re.length);
+        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
 
-        if (bd_src.data && bd_re.data)
-            REQUIRE(0==memcmp(bd_src.data, bd_re.data, bd_src.length));
-
-        if (bd_src.data) delete[] bd_src.data;
-        if (bd_re.data)  delete[] bd_re.data;
+        if (bd_src && bd_re)
+            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
     }
 
 }

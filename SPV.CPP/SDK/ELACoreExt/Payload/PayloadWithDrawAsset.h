@@ -24,7 +24,7 @@ namespace Elastos {
 			void setGenesisBlockAddress(const std::string genesisBlockAddress);
 			void setSideChainTransacitonHash(const std::string sideChainTransactionHash);
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

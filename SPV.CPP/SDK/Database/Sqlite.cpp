@@ -99,8 +99,8 @@ namespace Elastos {
 			return isValid() && SQLITE_OK == sqlite3_finalize(pStmt);
 		}
 
-		bool Sqlite::bindBlob(sqlite3_stmt *pStmt, int idx, ByteData blob, BindCallBack callBack) {
-			return isValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob.data, blob.length, callBack);
+		bool Sqlite::bindBlob(sqlite3_stmt *pStmt, int idx, CMBlock blob, BindCallBack callBack) {
+			return isValid() && SQLITE_OK == sqlite3_bind_blob(pStmt, idx, blob, blob.GetSize(), callBack);
 		}
 
 		bool Sqlite::bindDouble(sqlite3_stmt *pStmt, int idx, double d) {

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "BRTransaction.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -17,9 +17,9 @@ namespace Elastos {
 			BRTransaction raw;
 			uint8_t  type;
 			uint8_t payloadVersion;
-			ByteData payloadData;
-			std::vector<ByteData> attributeData;
-			std::vector<ByteData> programData;
+			CMBlock payloadData;
+			std::vector<CMBlock> attributeData;
+			std::vector<CMBlock> programData;
 			std::vector<UInt256>  outputAssetIDList;
 			std::vector<uint32_t> outputLockList;
 			std::vector<UInt168>  outputProgramHashList;

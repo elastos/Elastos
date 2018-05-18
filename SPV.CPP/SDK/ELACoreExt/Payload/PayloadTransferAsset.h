@@ -17,7 +17,7 @@ namespace Elastos {
 
 			~PayloadTransferAsset();
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

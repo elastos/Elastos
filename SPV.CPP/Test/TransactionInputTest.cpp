@@ -24,8 +24,8 @@ TEST_CASE( "TransactionInput test", "[TransactionInput]" )
 		uint64_t amount = 10000;
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
-		ByteData script = myaddress.getPubKeyScript();
-		ByteData signature(nullptr,0);
+		CMBlock script = myaddress.getPubKeyScript();
+		CMBlock signature;
 		uint32_t sequence = 8888;
 		TransactionInput transactionInput(hash, index, amount, script, signature, sequence);
 
@@ -36,15 +36,15 @@ TEST_CASE( "TransactionInput test", "[TransactionInput]" )
 		REQUIRE(transactionInput.getIndex() == index);
 		REQUIRE(transactionInput.getAmount() == amount);
 
-		ByteData tempScript = transactionInput.getScript();
-		REQUIRE(tempScript.length == script.length);
-		for (int i = 0; i < script.length; i++) {
-			REQUIRE(tempScript.data[i] == script.data[i]);
+		CMBlock tempScript = transactionInput.getScript();
+		REQUIRE(tempScript.GetSize() == script.GetSize());
+		for (int i = 0; i < script.GetSize(); i++) {
+			REQUIRE(tempScript[i] == script[i]);
 		}
 
-		ByteData tempSignature =  transactionInput.getSignature();
-		REQUIRE(tempSignature.data == nullptr);
-		REQUIRE(tempSignature.length == 0);
+		CMBlock tempSignature =  transactionInput.getSignature();
+		REQUIRE(tempSignature == false);
+		REQUIRE(tempSignature.GetSize() == 0);
 		REQUIRE(transactionInput.getSequence() == sequence);
 	}
 

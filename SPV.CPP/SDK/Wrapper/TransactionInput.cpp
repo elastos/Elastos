@@ -18,16 +18,16 @@ namespace Elastos {
 			_input = boost::shared_ptr<BRTxInput>(input);
 		}
 
-		TransactionInput::TransactionInput(UInt256 hash, uint32_t index, uint64_t amount, ByteData script,
-										   ByteData signature, uint32_t sequence) {
+		TransactionInput::TransactionInput(UInt256 hash, uint32_t index, uint64_t amount, CMBlock script,
+										   CMBlock signature, uint32_t sequence) {
 			_input = boost::shared_ptr<BRTxInput>(new BRTxInput);
 			_input->txHash = hash;
 			_input->index = index;
 			_input->amount = amount;
 			_input->signature = nullptr;
 			_input->script = nullptr;
-			BRTxInputSetScript(_input.get(), script.data, script.length);
-			BRTxInputSetSignature(_input.get(), signature.data, signature.length);
+			BRTxInputSetScript(_input.get(), script, script.GetSize());
+			BRTxInputSetSignature(_input.get(), signature, signature.GetSize());
 			_input->sequence = sequence;
 		}
 
@@ -60,19 +60,19 @@ namespace Elastos {
 			return _input->amount;
 		}
 
-		ByteData TransactionInput::getScript() const {
-			uint8_t *data = new uint8_t(_input->scriptLen);
-			memcpy(data, _input->script, _input->scriptLen);
-			return ByteData(data, _input->scriptLen);
+		CMBlock TransactionInput::getScript() const {
+			CMBlock mb(_input->scriptLen);
+			memcpy(mb, _input->script, _input->scriptLen);
+			return mb;
 		}
 
-		ByteData TransactionInput::getSignature() const {
-			uint8_t *data = nullptr;
+		CMBlock TransactionInput::getSignature() const {
+			CMBlock data;
 			if (_input->sigLen > 0) {
-				data = new uint8_t(_input->sigLen);
+				data.Resize(_input->sigLen);
 				memcpy(data, _input->signature, _input->sigLen);
 			}
-			return ByteData(data, _input->sigLen);
+			return data;
 		}
 
 		uint32_t TransactionInput::getSequence() const {

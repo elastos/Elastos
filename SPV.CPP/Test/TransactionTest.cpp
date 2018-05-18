@@ -61,10 +61,10 @@ TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
 		Address myaddress(content);
 		uint32_t sequence = 8888;
 		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		ByteData script = myaddress.getPubKeyScript();
+		CMBlock script = myaddress.getPubKeyScript();
 		std::vector<TransactionInput> inputList;
 		for (int i = 0; i < 10; i++) {
-			TransactionInput input(hash, i + 1, amount + i, myaddress.getPubKeyScript(), ByteData(), sequence + i);
+			TransactionInput input(hash, i + 1, amount + i, myaddress.getPubKeyScript(), CMBlock(), sequence + i);
 			transaction.addInput(input);
 			inputList.push_back(input);
 		}
@@ -79,11 +79,11 @@ TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
 			int result = UInt256Eq(&hash, &temp);
 			REQUIRE(result == 1);
 			REQUIRE(input->getSequence() == inputList[i].getSequence());
-			ByteData tempScript1 = input->getScript();
-			ByteData tempScript2 = inputList[i].getScript();
-			REQUIRE(tempScript1.length == tempScript2.length);
-			for (int j = 0; j < tempScript1.length; j++) {
-				REQUIRE(tempScript1.data[j] == tempScript2.data[j]);
+			CMBlock tempScript1 = input->getScript();
+			CMBlock tempScript2 = inputList[i].getScript();
+			REQUIRE(tempScript1.GetSize() == tempScript2.GetSize());
+			for (uint64_t j = 0; j < tempScript1.GetSize(); j++) {
+				REQUIRE(tempScript1[j] == tempScript2[j]);
 			}
 		}
 
@@ -108,11 +108,11 @@ TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
 		REQUIRE(outputs.size() == outputsList.size());
 		for (int i = 0; i < outputsList.size(); i++) {
 			boost::shared_ptr<TransactionOutput> output = outputs[i];
-			ByteData tempScript1 = output->getScript();
-			ByteData tempScript2 = outputsList[i].getScript();
-			REQUIRE(tempScript1.length == tempScript2.length);
-			for (int j = 0; j < tempScript1.length; j++) {
-				REQUIRE(tempScript1.data[j] == tempScript2.data[j]);
+			CMBlock tempScript1 = output->getScript();
+			CMBlock tempScript2 = outputsList[i].getScript();
+			REQUIRE(tempScript1.GetSize() == tempScript2.GetSize());
+			for (uint64_t j = 0; j < tempScript1.GetSize(); j++) {
+				REQUIRE(tempScript1[j] == tempScript2[j]);
 			}
 			REQUIRE(output->getAmount() == outputsList[i].getAmount());
 		}
@@ -191,7 +191,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 		std::vector<TransactionInput> inputList;
 		for (int i = 0; i < 10; i++) {
-			TransactionInput input(hash, i + 1, 1000 + i, myaddress.getPubKeyScript(), ByteData(), i + 1);
+			TransactionInput input(hash, i + 1, 1000 + i, myaddress.getPubKeyScript(), CMemBlock(), i + 1);
 			transaction.addInput(input);
 		}
 		size_t inputSize = transaction.getSize();
@@ -222,7 +222,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		res = transaction.isSigned();
 		REQUIRE(res == true);
 
-		transaction.addInput(TransactionInput(hash, 1, 1000, myaddress.getPubKeyScript(), ByteData(), 1));
+		transaction.addInput(TransactionInput(hash, 1, 1000, myaddress.getPubKeyScript(), CMBlock(), 1));
 		res = transaction.isSigned();
 		REQUIRE(res == false);
 	}
@@ -267,7 +267,7 @@ TEST_CASE("Transaction Serialize test", "[Transaction]") {
 		Address myaddress(content);
 		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 		for (int i = 0; i < 10; i++) {
-			TransactionInput input(hash, i + 1, 10000 + i, myaddress.getPubKeyScript(), ByteData(), i);
+			TransactionInput input(hash, i + 1, 10000 + i, myaddress.getPubKeyScript(), CMemBlock(), i);
 			transaction.addInput(input);
 		}
 
@@ -364,9 +364,9 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 			REQUIRE(inputs[i]->getAmount() == i);
 			REQUIRE(inputs[i]->getIndex() == i);
 			REQUIRE(inputs[i]->getSequence() == i);
-			ByteData tempScript1 = inputs[i]->getScript();
-			REQUIRE(tempScript1.length == 21);
-			result = memcmp(tempScript1.data, s, 21);
+			CMBlock tempScript1 = inputs[i]->getScript();
+			REQUIRE(tempScript1.GetSize() == 21);
+			result = memcmp(tempScript1, s, 21);
 			REQUIRE(result == 0);
 		}
 
@@ -374,9 +374,9 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 		REQUIRE(outputs.size() == raw->raw.outCount);
 		for (int i = 0; i < raw->raw.outCount; i++) {
 			REQUIRE(outputs[i]->getAmount() == i);
-			ByteData byteData = outputs[i]->getScript();
-			REQUIRE(byteData.length == 21);
-			result = memcmp(byteData.data, s, 21);
+			CMBlock byteData = outputs[i]->getScript();
+			REQUIRE(byteData.GetSize() == 21);
+			result = memcmp(byteData, s, 21);
 			REQUIRE(result == 0);
 		}
 
@@ -411,37 +411,50 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 	SECTION("transaction ELABRTransaction convertToRaw test") {
 		ELABRTransaction *raw = ELABRTransactionNew();
 		uint8_t t[21] = {18, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 6, 182, 28, 34};
-		uint8_t *s = new uint8_t[21];
-		memcpy(s, t, 21);
-		ByteData coinBytes = ByteData(s, 21);
+		//uint8_t *s = new uint8_t[21];
+		CMBlock coinBytes(21);
+		memcpy(coinBytes, t, 21);
 		PayloadCoinBase payload(coinBytes);
 		ByteStream stream;
 		payload.Serialize(stream);
 
-		raw->payloadData = ByteData(stream.getBuf(), stream.length());
+		CMBlock mb(stream.length());
+		uint8_t* tmp = stream.getBuf();
+		memcpy(mb, tmp, mb.GetSize());
+		delete []tmp;
+
+		raw->payloadData = mb;
 
 		raw->attributeData.clear();
 		for (int i = 0; i < 10; i++) {
-			uint8_t *script = new uint8_t[21];
-			memcpy(script, s, 21);
-			Attribute attrib(Attribute::Usage::Script, ByteData(script, 21));
+			CMBlock mb(21);
+			memcpy(mb, coinBytes, 21);
+			Attribute attrib(Attribute::Usage::Script, mb);
 			ByteStream byteStream;
 			attrib.Serialize(byteStream);
 			byteStream.setPosition(0);
-			raw->attributeData.push_back(ByteData(byteStream.getBuf(), size_t(byteStream.length())));
+			CMBlock mb1(byteStream.length());
+			uint8_t *tmp = byteStream.getBuf();
+			memcpy(mb1, tmp, byteStream.length());
+			delete []tmp;
+			raw->attributeData.push_back(mb1);
 		}
 		uint8_t s1[20] = {18, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 6, 182,
 		                  28};
 		for (int i = 0; i < 10; i++) {
-			uint8_t *script = new uint8_t[21];
-			memcpy(script, s, 21);
-			uint8_t *script1 = new uint8_t[20];
+			CMBlock script(21);
+			memcpy(script, coinBytes, 21);
+			CMBlock script1(20);
 			memcpy(script1, s1, 20);
-			Program program(ByteData(script, 21), ByteData(script1, 20));
+			Program program(script, script1);
 			ByteStream byteStream;
 			program.Serialize(byteStream);
 			byteStream.setPosition(0);
-			raw->programData.push_back(ByteData(byteStream.getBuf(), size_t(byteStream.length())));
+			CMBlock mb(byteStream.length());
+			uint8_t *tmp = byteStream.getBuf();
+			memcpy(mb, tmp, byteStream.length());
+			delete []tmp;
+			raw->programData.push_back(mb);
 		}
 
 		Transaction transaction((BRTransaction *) raw);
@@ -472,21 +485,21 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 			REQUIRE(result == 0);
 		}
 
-		REQUIRE(raw1->payloadData.length == raw->payloadData.length);
-		result = memcmp(raw1->payloadData.data, raw->payloadData.data, raw->payloadData.length);
+		REQUIRE(raw1->payloadData.GetSize() == raw->payloadData.GetSize());
+		result = memcmp(raw1->payloadData, raw->payloadData, raw->payloadData);
 		REQUIRE(result == 0);
 
 		REQUIRE(raw1->attributeData.size() == raw->attributeData.size());
 		for(size_t i = 0; i < raw->attributeData.size(); i++) {
-			REQUIRE(raw1->attributeData[i].length == raw->attributeData[i].length);
-			result = memcmp(raw1->attributeData[i].data, raw->attributeData[i].data, raw->attributeData[i].length);
+			REQUIRE(raw1->attributeData[i].GetSize() == raw->attributeData[i].GetSize());
+			result = memcmp(raw1->attributeData[i], raw->attributeData[i], raw->attributeData[i].GetSize());
 			REQUIRE(result == 0);
 		}
 
 		REQUIRE(raw1->programData.size() == raw->programData.size());
 		for(size_t i = 0; i < raw->programData.size(); i++) {
-			REQUIRE(raw1->programData[i].length == raw->programData[i].length);
-			result = memcmp(raw1->programData[i].data, raw->programData[i].data, raw->programData[i].length);
+			REQUIRE(raw1->programData[i].GetSize() == raw->programData[i].GetSize());
+			result = memcmp(raw1->programData[i], raw->programData[i], raw->programData[i].GetSize());
 			REQUIRE(result == 0);
 		}
 

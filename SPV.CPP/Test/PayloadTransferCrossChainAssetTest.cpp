@@ -23,16 +23,13 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 
         ptcca_re.Deserialize(stream);
 
-        ByteData bd_src = ptcca.getData();
-        ByteData bd_rc = ptcca_re.getData();
+        CMBlock bd_src = ptcca.getData();
+        CMBlock bd_rc = ptcca_re.getData();
 
-        REQUIRE(bd_src.length == bd_rc.length);
+        REQUIRE(bd_src.GetSize() == bd_rc.GetSize());
 
-        if (bd_src.data && bd_rc.data)
-            REQUIRE(0 == memcmp(bd_src.data, bd_rc.data, bd_src.length));
-
-        if (bd_src.data) delete[] bd_src.data;
-        if (bd_rc.data) delete[] bd_rc.data;
+        if (bd_src && bd_rc)
+            REQUIRE(0 == memcmp(bd_src, bd_rc, bd_src.GetSize()));
     }
 
     SECTION("init test") {
@@ -51,15 +48,12 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
 
         ptcca_re.Deserialize(stream);
 
-        ByteData bd_src = ptcca.getData();
-        ByteData bd_rc = ptcca_re.getData();
+        CMBlock bd_src = ptcca.getData();
+        CMBlock bd_rc = ptcca_re.getData();
 
-        REQUIRE(bd_src.length == bd_rc.length);
+        REQUIRE(bd_src.GetSize() == bd_rc.GetSize());
 
-        if (bd_src.data && bd_rc.data)
-            REQUIRE(0 == memcmp(bd_src.data, bd_rc.data, bd_src.length));
-
-        if (bd_src.data) delete[] bd_src.data;
-        if (bd_rc.data) delete[] bd_rc.data;
+        if (bd_src && bd_rc)
+            REQUIRE(0 == memcmp(bd_src, bd_rc, bd_src.GetSize()));
     }
 }

@@ -8,7 +8,7 @@
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
 
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -51,7 +51,7 @@ namespace Elastos {
 			bool prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
 			int step(sqlite3_stmt *pStmt);
 			bool finalize(sqlite3_stmt *pStmt);
-			bool bindBlob(sqlite3_stmt *pStmt, int idx, ByteData blob, BindCallBack callBack);
+			bool bindBlob(sqlite3_stmt *pStmt, int idx, CMBlock blob, BindCallBack callBack);
 			bool bindDouble(sqlite3_stmt *pStmt, int idx, double d);
 			bool bindInt(sqlite3_stmt *pStmt, int idx, int i);
 			bool bindInt64(sqlite3_stmt *pStmt, int idx, int64_t i);

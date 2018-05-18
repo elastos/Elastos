@@ -7,8 +7,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "ByteData.h"
 #include "ELAMessageSerializable.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -26,7 +26,7 @@ namespace Elastos {
 		public:
 			Attribute();
 
-			Attribute(Usage usage, const ByteData &data);
+			Attribute(Usage usage, const CMBlock &data);
 
 			~Attribute();
 
@@ -35,7 +35,7 @@ namespace Elastos {
 
 		private:
 			Usage _usage;
-			ByteData _data;
+			CMBlock _data;
 		};
 
 		typedef boost::shared_ptr<Attribute> AttributePtr;

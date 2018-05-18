@@ -6,18 +6,16 @@
 
 namespace Elastos {
 	namespace SDK {
-
 		PaymentProtocolInvoiceRequest::PaymentProtocolInvoiceRequest(BRKey senderPublickKey, uint64_t amount,
 																	 const std::string &pkiType,
-																	 const ByteData &pkiData,
+																	 const CMBlock &pkiData,
 																	 const std::string &memo,
 																	 const std::string &notifyURL,
-																	 const ByteData &signature) {
-			_protocolInvoiceRequest = BRPaymentProtocolInvoiceRequestNew(&senderPublickKey, amount,
-																		 pkiType.c_str(), pkiData.data,
-																		 pkiData.length, memo.c_str(),
-																		 notifyURL.c_str(), signature.data,
-																		 signature.length);
+																	 const CMBlock &signature) {
+			_protocolInvoiceRequest = BRPaymentProtocolInvoiceRequestNew(&senderPublickKey, amount, pkiType.c_str(),
+																		 pkiData, pkiData.GetSize(), memo.c_str(),
+																		 notifyURL.c_str(), signature,
+																		 signature.GetSize());
 		}
 
 		PaymentProtocolInvoiceRequest::~PaymentProtocolInvoiceRequest() {
@@ -47,8 +45,11 @@ namespace Elastos {
 			return _protocolInvoiceRequest->pkiType;
 		}
 
-		ByteData PaymentProtocolInvoiceRequest::getPKIData() const {
-			return ByteData(_protocolInvoiceRequest->pkiData, _protocolInvoiceRequest->pkiDataLen);
+		CMBlock PaymentProtocolInvoiceRequest::getPKIData() const {
+			CMBlock ret(_protocolInvoiceRequest->pkiDataLen);
+			memcpy(ret, _protocolInvoiceRequest->pkiData, _protocolInvoiceRequest->pkiDataLen);
+
+			return ret;
 		}
 
 		std::string PaymentProtocolInvoiceRequest::getMemo() const {
@@ -59,15 +60,19 @@ namespace Elastos {
 			return _protocolInvoiceRequest->notifyUrl;
 		}
 
-		ByteData PaymentProtocolInvoiceRequest::getSignature() const {
-			return ByteData(_protocolInvoiceRequest->signature, _protocolInvoiceRequest->sigLen);
+		CMBlock PaymentProtocolInvoiceRequest::getSignature() const {
+			CMBlock ret(_protocolInvoiceRequest->sigLen);
+			memcpy(ret, _protocolInvoiceRequest->signature, _protocolInvoiceRequest->sigLen);
+
+			return ret;
 		}
 
-		ByteData PaymentProtocolInvoiceRequest::serialize() const {
+		CMBlock PaymentProtocolInvoiceRequest::serialize() const {
 			size_t dataLen = BRPaymentProtocolInvoiceRequestSerialize(_protocolInvoiceRequest, nullptr, 0);
-			uint8_t *data = new uint8_t[dataLen];
+			CMBlock data(dataLen);
 			BRPaymentProtocolInvoiceRequestSerialize(_protocolInvoiceRequest, data, dataLen);
-			return ByteData(data, dataLen);
+
+			return data;
 		}
 
 	}

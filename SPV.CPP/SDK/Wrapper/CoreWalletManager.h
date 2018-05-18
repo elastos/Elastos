@@ -34,7 +34,7 @@ namespace Elastos {
 
 			const PeerManagerPtr &getPeerManager();
 
-			UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const std::string &phase);
+			UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const CMBlock &phase);
 
 			std::string toString() const;
 

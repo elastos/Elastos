@@ -15,9 +15,9 @@ namespace Elastos {
 
 		}
 
-		ByteData PayloadTransferAsset::getData() const {
+		CMBlock PayloadTransferAsset::getData() const {
 			//todo implement IPayload getData
-			return ByteData(nullptr, 0);
+			return CMBlock();
 		}
 
 		void PayloadTransferAsset::Serialize(ByteStream &ostream) const {

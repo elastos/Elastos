@@ -5,7 +5,7 @@
 #include "PreCompiled.h"
 #include <sstream>
 
-#include "ByteData.h"
+#include "c_util.h"
 #include "PeerDataSource.h"
 
 namespace Elastos {
@@ -52,7 +52,8 @@ namespace Elastos {
 				return false;
 			}
 
-			ByteData addr((uint8_t*)&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
+			CMBlock addr((uint64_t)sizeof(peerEntity.address.u8));
+			memcpy(addr, (uint8_t*)&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
 			_sqlite->bindBlob(stmt, 1, addr, nullptr);
 			_sqlite->bindInt(stmt, 2, peerEntity.port);
 			_sqlite->bindInt64(stmt, 3, peerEntity.timeStamp);

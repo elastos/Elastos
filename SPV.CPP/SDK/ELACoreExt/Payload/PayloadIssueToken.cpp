@@ -13,25 +13,27 @@ namespace Elastos {
 
 		}
 
-		PayloadIssueToken::PayloadIssueToken(const ByteData &merkeProff) {
-			uint8_t *buff = new uint8_t[merkeProff.length];
-			memcpy(buff, merkeProff.data, merkeProff.length);
-			_merkeProof = ByteData(buff, merkeProff.length);
+		PayloadIssueToken::PayloadIssueToken(const CMBlock &merkeProff) {
+			_merkeProof = merkeProff;
 		}
 
 		PayloadIssueToken::~PayloadIssueToken() {
 		}
 
-		ByteData PayloadIssueToken::getData() const {
+		CMBlock PayloadIssueToken::getData() const {
 			ByteStream byteStream;
 			Serialize(byteStream);
-			return ByteData(byteStream.getBuf(), byteStream.length());
+			CMBlock ret(byteStream.length());
+			uint8_t *tmp = byteStream.getBuf();
+			memcpy(ret, tmp, byteStream.length());
+			delete []tmp;
+			return ret;
 		}
 
 		void PayloadIssueToken::Serialize(ByteStream &ostream) const {
-			ostream.putVarUint(_merkeProof.length);
-			if (_merkeProof.length > 0) {
-				ostream.putBytes(_merkeProof.data, _merkeProof.length);
+			ostream.putVarUint(_merkeProof.GetSize());
+			if (_merkeProof.GetSize() > 0) {
+				ostream.putBytes(_merkeProof, _merkeProof.GetSize());
 			}
 		}
 
@@ -41,10 +43,8 @@ namespace Elastos {
 				uint8_t *buff = new uint8_t[len];
 				if (buff) {
 					istream.getBytes(buff, len);
-					if (_merkeProof.data != nullptr) {
-						delete[] _merkeProof.data;
-					}
-					_merkeProof = ByteData(buff, len);
+					_merkeProof.Resize(len);
+					memcpy(_merkeProof, buff, len);
 				}
 			}
 		}

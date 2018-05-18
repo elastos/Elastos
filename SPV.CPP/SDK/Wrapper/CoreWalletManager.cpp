@@ -66,8 +66,7 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		UInt256
-		CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const std::string &phase) {
+		UInt256 CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const CMBlock &phase) {
 			bool res = _wallet->signTransaction(transaction, getForkId(), phase);
 			transaction->resetHash();//because signTransaction is seted txHash, that is not our wished;
 			if (res == true) {

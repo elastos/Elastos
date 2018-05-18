@@ -10,7 +10,7 @@
 
 #include "Wrapper.h"
 #include "Key.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -20,9 +20,9 @@ namespace Elastos {
 
 		public:
 			PaymentProtocolInvoiceRequest(BRKey senderPublickKey, uint64_t amount, const std::string &pkiType,
-										  const ByteData &pkiData, const std::string &memo,
+										  const CMBlock &pkiData, const std::string &memo,
 										  const std::string &notifyURL,
-										  const ByteData &signature);
+										  const CMBlock &signature);
 
 			~PaymentProtocolInvoiceRequest();
 
@@ -36,15 +36,15 @@ namespace Elastos {
 
 			std::string getPKIType() const;
 
-			ByteData getPKIData() const;
+			CMBlock getPKIData() const;
 
 			std::string getMemo() const;
 
 			std::string getNotifyURL() const;
 
-			ByteData getSignature() const;
+			CMBlock getSignature() const;
 
-			ByteData serialize() const;
+			CMBlock serialize() const;
 
 		private:
 			BRPaymentProtocolInvoiceRequest *_protocolInvoiceRequest;

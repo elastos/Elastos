@@ -30,7 +30,7 @@ namespace Elastos {
 
 			const UInt168 &getController() const;
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

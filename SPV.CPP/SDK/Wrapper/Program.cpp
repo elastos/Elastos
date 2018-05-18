@@ -14,7 +14,7 @@ namespace Elastos {
 
 		}
 
-		Program::Program(const ByteData &code, const ByteData &parameter) :
+		Program::Program(const CMBlock &code, const CMBlock &parameter) :
 				_parameter(parameter),
 				_code(code) {
 
@@ -24,21 +24,19 @@ namespace Elastos {
 		}
 
 		void Program::Serialize(ByteStream &ostream) const {
-			ostream.putVarUint(_parameter.length);
-			ostream.putBytes(_parameter.data, _parameter.length);
+			ostream.putVarUint(_parameter.GetSize());
+			ostream.putBytes(_parameter, _parameter.GetSize());
 
-			ostream.putVarUint(_code.length);
-			ostream.putBytes(_code.data, _code.length);
+			ostream.putVarUint(_code.GetSize());
+			ostream.putBytes(_code, _code.GetSize());
 		}
 
 		void Program::Deserialize(ByteStream &istream) {
-			_parameter.length = istream.getVarUint();
-			_parameter.data = new uint8_t[_parameter.length];
-			istream.getBytes(_parameter.data, _parameter.length);
+			_parameter.Resize(istream.getVarUint());
+			istream.getBytes(_parameter, _parameter.GetSize());
 
-			_code.length = istream.getVarUint();
-			_code.data = new uint8_t[_code.length];
-			istream.getBytes(_code.data, _code.length);
+			_code.Resize(istream.getVarUint());
+			istream.getBytes(_code, _code.GetSize());
 		}
 
 

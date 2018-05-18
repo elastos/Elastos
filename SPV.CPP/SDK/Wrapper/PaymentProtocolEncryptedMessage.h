@@ -8,7 +8,7 @@
 #include "BRPaymentProtocol.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -17,7 +17,7 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolEncryptedMessage> {
 
 		public:
-			PaymentProtocolEncryptedMessage(const ByteData &data);
+			PaymentProtocolEncryptedMessage(const CMBlock &data);
 
 			~PaymentProtocolEncryptedMessage();
 
@@ -25,7 +25,7 @@ namespace Elastos {
 
 			virtual BRPaymentProtocolEncryptedMessage *getRaw() const;
 
-			ByteData getMessage() const;
+			CMBlock getMessage() const;
 
 			BRKey getReceiverPublicKey() const;
 
@@ -33,15 +33,15 @@ namespace Elastos {
 
 			uint64_t getNonce() const;
 
-			ByteData getSignature() const;
+			CMBlock getSignature() const;
 
-			ByteData getIdentifier() const;
+			CMBlock getIdentifier() const;
 
 			uint64_t getStatusCode() const;
 
 			std::string getStatusMessage() const;
 
-			ByteData serialize() const;
+			CMBlock serialize() const;
 
 		private:
 			BRPaymentProtocolEncryptedMessage *_protocolEncryptedMessage = nullptr;

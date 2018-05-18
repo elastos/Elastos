@@ -36,23 +36,28 @@ namespace Elastos {
 			int r = 1;
 
 			if (count > MAX_GETDATA_HASHES) {
-				Log::getLogger()->warn("dropping inv message, {} is too many items, max is {}", count, MAX_GETDATA_HASHES);
+				Log::getLogger()->warn("dropping inv message, {} is too many items, max is {}", count,
+									   MAX_GETDATA_HASHES);
 			} else {
 				const uint8_t *transactions[count], *blocks[count];
 				size_t i, j, txCount = 0, blockCount = 0;
 
 				Log::getLogger()->warn("got inv with {} item(s)", count);
 
-				for (size_t i = 0; i < count; ++i) {
+				for (i = 0; i < count; i++) {
 					type = inv_type(UInt32GetLE(&msg[off]));
 					off += sizeof(uint32_t);
 
 					if (type == inv_block) {
-						blockCount = count;
+						if (0 == blockCount) {
+							blockCount = count;
+						}
 						blocks[i] = &msg[off];
 						off += sizeof(UInt256);
 					} else if (type == inv_tx) {
-						txCount = count;
+						if (0 == txCount) {
+							txCount = count;
+						}
 						transactions[i] = &msg[off];
 						off += sizeof(UInt256);
 					}
@@ -65,7 +70,7 @@ namespace Elastos {
 					Log::getLogger()->warn("too many transactions, disconnecting");
 					r = 0;
 				} else if (ctx->currentBlockHeight > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
-				           ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
+						   ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
 					Log::getLogger()->warn("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
 					r = 0;
 				} else {

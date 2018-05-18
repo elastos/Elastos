@@ -111,9 +111,8 @@ namespace Elastos {
 				// block data
 				const uint8_t *pdata = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
 				size_t len = _sqlite->columnBytes(stmt, 1);
-				tx.buff.length = len;
-				tx.buff.data = new uint8_t[len];
-				memcpy(tx.buff.data, pdata, len);
+				tx.buff.Resize(len);
+				memcpy(tx.buff, pdata, len);
 
 				// block height
 				tx.blockHeight = _sqlite->columnInt(stmt, 2);

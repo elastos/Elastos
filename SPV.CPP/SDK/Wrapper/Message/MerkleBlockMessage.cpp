@@ -59,8 +59,8 @@ namespace Elastos {
 
 				if (hashes != _hashes) free(hashes);
 
-				// should not directly send get data here
-//				ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, hashes, count, nullptr, 0);
+				//should not directly send get data here
+				//ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, hashes, count, nullptr, 0);
 			}
 
 			if (block) {

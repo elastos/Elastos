@@ -12,8 +12,8 @@
 #include "BRBIP32Sequence.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
 #include "Key.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -30,19 +30,19 @@ namespace Elastos {
 
 			virtual BRMasterPubKey *getRaw() const;
 
-			ByteData serialize() const;
+			CMBlock serialize() const;
 
-			void deserialize(const ByteData &data);
+			void deserialize(const CMBlock &data);
 
-			ByteData getPubKey() const;
+			CMBlock getPubKey() const;
 
 			boost::shared_ptr<Key> getPubKeyAsKey() const;
 
-			static ByteData bip32BitIDKey(const ByteData &seed, int index, const std::string &uri);
+			static CMBlock bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri);
 
 			static bool validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase);
 
-			static ByteData generatePaperKey(const ByteData &seed, const std::vector<std::string> &words);
+			static CMBlock generatePaperKey(const CMBlock &seed, const std::vector<std::string> &words);
 
 		private:
 			boost::shared_ptr<BRMasterPubKey> _masterPubKey;

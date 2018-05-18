@@ -23,7 +23,7 @@ namespace Elastos {
 
 			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

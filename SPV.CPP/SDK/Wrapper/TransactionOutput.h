@@ -10,7 +10,7 @@
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
@@ -26,7 +26,7 @@ namespace Elastos {
 
 			TransactionOutput(BRTxOutput *output);
 
-			TransactionOutput(uint64_t amount, const ByteData &script);
+			TransactionOutput(uint64_t amount, const CMBlock &script);
 
 			virtual std::string toString() const;
 
@@ -46,7 +46,7 @@ namespace Elastos {
 
 			void setAmount(uint64_t amount);
 
-			ByteData getScript() const;
+			CMBlock getScript() const;
 
 			const UInt256 &getAssetId() const;
 

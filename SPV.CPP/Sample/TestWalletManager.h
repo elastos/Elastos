@@ -15,6 +15,8 @@ public:
 
 	void testSendTransaction();
 
+	void testCreateTransaction();
+
 protected:
 
 	WrapperList<Peer, BRPeer> loadPeers() override;

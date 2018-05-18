@@ -11,15 +11,16 @@ using namespace Elastos::SDK;
 
 TEST_CASE("PayloadIssueToken test", "[PayloadIssueToken]") {
 	uint8_t script[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 8, 182, 57, 98};
-	ByteData data(script, sizeof(script));
+	CMBlock data;
+	data.SetMemFixed(script, sizeof(script));
 
 	PayloadIssueToken issueToken(data);
 
-	ByteData data1 = issueToken.getData();
-	size_t diff = data1.length - data.length;
+	CMBlock data1 = issueToken.getData();
+	size_t diff = data1.GetSize() - data.GetSize();
 	REQUIRE(diff > 0);
 
-	int result = memcmp(data.data, &data1.data[diff], data.length);
+	int result = memcmp(data, &data1[diff], data.GetSize());
 	REQUIRE(result == 0);
 
 	ByteStream byteStream;
@@ -30,8 +31,8 @@ TEST_CASE("PayloadIssueToken test", "[PayloadIssueToken]") {
 	PayloadIssueToken issueToken1;
 	issueToken1.Deserialize(byteStream);
 
-	ByteData data2 = issueToken1.getData();
-	REQUIRE(data2.length == data1.length);
-	result = memcmp(data2.data, data1.data, data1.length);
+	CMBlock data2 = issueToken1.getData();
+	REQUIRE(data2.GetSize() == data1.GetSize());
+	result = memcmp(data2, data1, data1.GetSize());
 	REQUIRE(result == 0);
 }

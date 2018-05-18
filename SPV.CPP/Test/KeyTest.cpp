@@ -25,7 +25,7 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(key.getRaw() != nullptr);
 	}
 
-	SECTION("Contructor with string and ByteData") {
+	SECTION("Contructor with string and CMBlock") {
 		std::string priKey = "S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy";
 		const char *str = priKey.c_str();
 		Key key(priKey);
@@ -37,20 +37,21 @@ TEST_CASE("Key test", "[Key]") {
 		}
 		uint8_t data[len];
 		memcpy(data, str, len);
-		ByteData byteData(data, len);
+		CMBlock byteData;
+		byteData.SetMemFixed(data, len);
 		Key key1(byteData);
 
 		std::string privateKey = key.getPrivKey();
 		REQUIRE(privateKey.empty() == false);
 		REQUIRE(privateKey == key1.getPrivKey());
 
-		ByteData byteData1 = key.getPubkey();
-		REQUIRE(byteData1.length > 0);
-		REQUIRE(byteData1.data != nullptr);
-		ByteData byteData2 = key1.getPubkey();
-		REQUIRE(byteData1.length == byteData2.length);
-		for (int i = 0; i < byteData1.length; i++) {
-			REQUIRE(byteData1.data[i] == byteData2.data[i]);
+		CMBlock byteData1 = key.getPubkey();
+		REQUIRE(byteData1.GetSize() > 0);
+		REQUIRE(byteData1 != false);
+		CMBlock byteData2 = key1.getPubkey();
+		REQUIRE(byteData1.GetSize() == byteData2.GetSize());
+		for (int i = 0; i < byteData1.GetSize(); i++) {
+			REQUIRE(byteData1[i] == byteData2[i]);
 		}
 
 		std::string addr = key.address();
@@ -74,7 +75,8 @@ TEST_CASE("Key test", "[Key]") {
 
 	SECTION("Contructor width seed") {
 		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		ByteData seedByte(seed.u8, sizeof(seed.u8));
+		CMBlock seedByte;
+		seedByte.SetMemFixed(seed.u8, sizeof(seed.u8));
 		Key key(seedByte, 0, 97);
 		REQUIRE(key.getRaw() != nullptr);
 		REQUIRE(key.getPrivKey().empty() == false);
@@ -107,51 +109,52 @@ TEST_CASE("Key test", "[Key]") {
 				"\xe0\x69\xfa\x54\x34\x22\x62";
 		UInt256 secret = uint256("0000000000000000000000000000000000000000000000000000000000000001");
 		Key key(secret, true);
-		ByteData byteData = key.sign(hash);
-		REQUIRE(byteData.length > 0);
-		REQUIRE(byteData.data != nullptr);
+		CMBlock byteData = key.sign(hash);
+		REQUIRE(byteData.GetSize() > 0);
+		REQUIRE(byteData != false);
 		for (int i = 0; i < sizeof(signedData) - 1; i++) {
-			REQUIRE(signedData[i] == byteData.data[i]);
+			REQUIRE(signedData[i] == byteData[i]);
 		}
 
 		bool result = key.verify(hash, byteData);
 		REQUIRE(result == true);
 
-		ByteData compactData = key.compactSign(byteData);
-		REQUIRE(compactData.length > 0);
-		REQUIRE(compactData.data != nullptr);
+		CMBlock compactData = key.compactSign(byteData);
+		REQUIRE(compactData.GetSize() > 0);
+		REQUIRE(compactData != false);
 	}
 
 	SECTION("Key encryptNative test") {
 		uint8_t bytes1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		ByteData data(bytes1, sizeof(bytes1));
-		ByteData nonce;
+		CMBlock data;
+		data.SetMemFixed(bytes1, sizeof(bytes1));
 		uint8_t bytes2[] = "\x50\x51\x52\x53\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7";
-		nonce.data = bytes2;
-		nonce.length = sizeof(bytes2);
+		CMBlock nonce;
+		nonce.SetMemFixed(bytes2, sizeof(bytes2));
 
 		Key key("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
-		ByteData byteData = key.encryptNative(data, nonce);
-		REQUIRE(byteData.length >= 16);
-		REQUIRE(byteData.data != nullptr);
+		CMBlock byteData = key.encryptNative(data, nonce);
+		REQUIRE(byteData.GetSize() >= 16);
+		REQUIRE(byteData != false);
 
-		ByteData decode = key.decryptNative(byteData, nonce);
-		REQUIRE(decode.length == data.length);
-		int r = memcmp(bytes1, decode.data, decode.length);
+		CMBlock decode = key.decryptNative(byteData, nonce);
+		REQUIRE(decode.GetSize() == data.GetSize());
+		int r = memcmp(bytes1, decode, decode.GetSize());
 		REQUIRE(r == 0);
 	}
 
 	SECTION("Key getSeedFromPhrase, getAuthPrivKeyForAPI, getAuthPublicKeyForAPI test") {
 		uint8_t s[] = "bless bird birth blind blossom boil bonus entry equal error fence fetch";
-		ByteData phrase(s, sizeof(s));
+		CMBlock phrase;
+		phrase.SetMemFixed(s, sizeof(s));
 
-		ByteData seedByte = Key::getSeedFromPhrase(phrase);
-		REQUIRE(seedByte.length > 0);
-		REQUIRE(seedByte.data != nullptr);
+		CMBlock seedByte = Key::getSeedFromPhrase(phrase);
+		REQUIRE(seedByte.GetSize() > 0);
+		REQUIRE(seedByte != false);
 
-		ByteData privateByte = Key::getAuthPrivKeyForAPI(seedByte);
-		REQUIRE(privateByte.length > 0);
-		REQUIRE(privateByte.data != nullptr);
+		CMBlock privateByte = Key::getAuthPrivKeyForAPI(seedByte);
+		REQUIRE(privateByte.GetSize() > 0);
+		REQUIRE(privateByte != false);
 
 		std::string pubKeyStr = Key::getAuthPublicKeyForAPI(privateByte);
 		REQUIRE(pubKeyStr.empty() == false);
@@ -168,13 +171,14 @@ TEST_CASE("Key test", "[Key]") {
 
 	SECTION("Key encodeHex and decodeHex test") {
 		uint8_t bytes1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		ByteData data(bytes1, sizeof(bytes1) - 1);
+		CMBlock data;
+		data.SetMemFixed(bytes1, sizeof(bytes1) - 1);
 
 		std::string str = Key::encodeHex(data);
 		REQUIRE(str == "000102030405060708090a0b0c0d0e0f");
 
-		ByteData decodeByte = Key::decodeHex(str);
-		int res = memcmp(bytes1, decodeByte.data, decodeByte.length);
+		CMBlock decodeByte = Key::decodeHex(str);
+		int res = memcmp(bytes1, decodeByte, decodeByte.GetSize());
 		REQUIRE(res == 0);
 	}
 }

@@ -10,7 +10,7 @@
 #include "BRKey.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -24,11 +24,11 @@ namespace Elastos {
 
 			Key(const std::string &privKey);
 
-			Key(const ByteData &privKey);
+			Key(const CMBlock &privKey);
 
 			Key(const UInt256 &secret, bool compressed);
 
-			Key(const ByteData &seed, uint32_t chain, uint32_t index);
+			Key(const CMBlock &seed, uint32_t chain, uint32_t index);
 
 			virtual std::string toString() const;
 
@@ -36,7 +36,7 @@ namespace Elastos {
 
 			UInt256 getSecret() const;
 
-			ByteData getPubkey() const;
+			CMBlock getPubkey() const;
 
 			bool getCompressed() const;
 
@@ -44,24 +44,24 @@ namespace Elastos {
 
 			bool setPrivKey(const std::string &privKey);
 
-			ByteData compactSign(const ByteData &data) const;
+			CMBlock compactSign(const CMBlock &data) const;
 
-			ByteData encryptNative(const ByteData &data, const ByteData &nonce) const;
+			CMBlock encryptNative(const CMBlock &data, const CMBlock &nonce) const;
 
-			ByteData decryptNative(const ByteData &data, const ByteData &nonce) const;
+			CMBlock decryptNative(const CMBlock &data, const CMBlock &nonce) const;
 
 			std::string address() const;
 
-			ByteData sign(const UInt256 &messageDigest) const;
+			CMBlock sign(const UInt256 &messageDigest) const;
 
-			bool verify(const UInt256 &messageDigest, const ByteData &signature) const;
+			bool verify(const UInt256 &messageDigest, const CMBlock &signature) const;
 
 		public:
-			static ByteData getSeedFromPhrase(const ByteData &phrase);
+			static CMBlock getSeedFromPhrase(const CMBlock &phrase);
 
-			static ByteData getAuthPrivKeyForAPI(const ByteData &seed);
+			static CMBlock getAuthPrivKeyForAPI(const CMBlock &seed);
 
-			static std::string getAuthPublicKeyForAPI(const ByteData &privKey);
+			static std::string getAuthPublicKeyForAPI(const CMBlock &privKey);
 
 			static std::string decryptBip38Key(const std::string &privKey, const std::string &pass);
 
@@ -69,9 +69,9 @@ namespace Elastos {
 
 			static bool isValidBitcoinBIP38Key(const std::string &key);
 
-			static std::string encodeHex(const ByteData &in);
+			static std::string encodeHex(const CMBlock &in);
 
-			static ByteData decodeHex(const std::string &s);
+			static CMBlock decodeHex(const std::string &s);
 
 			static UInt256 encodeSHA256(const std::string &message);
 

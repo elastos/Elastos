@@ -9,8 +9,8 @@ namespace Elastos {
 	namespace SDK {
 
 
-		PaymentProtocolPayment::PaymentProtocolPayment(const ByteData &data) {
-			_protocolPayment = BRPaymentProtocolPaymentParse(data.data, data.length);
+		PaymentProtocolPayment::PaymentProtocolPayment(const CMBlock &data) {
+			_protocolPayment = BRPaymentProtocolPaymentParse(data, data.GetSize());
 		}
 
 		PaymentProtocolPayment::~PaymentProtocolPayment() {
@@ -28,8 +28,11 @@ namespace Elastos {
 			return _protocolPayment;
 		}
 
-		ByteData PaymentProtocolPayment::getMerchantData() const {
-			return ByteData(_protocolPayment->merchantData, _protocolPayment->merchDataLen);
+		CMBlock PaymentProtocolPayment::getMerchantData() const {
+			CMBlock ret(_protocolPayment->merchDataLen);
+			memcpy(ret, _protocolPayment->merchantData, _protocolPayment->merchDataLen);
+
+			return ret;
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> PaymentProtocolPayment::getTransactions() const {
@@ -47,8 +50,9 @@ namespace Elastos {
 			SharedWrapperList<TransactionOutput, BRTxOutput *> results;
 			for (size_t index = 0; index < _protocolPayment->refundToCount; index++) {
 				BRTxOutput brOutput = _protocolPayment->refundTo[index];
-				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount,
-																	ByteData(brOutput.script, brOutput.scriptLen));
+				CMBlock mb;
+				mb.SetMemFixed(brOutput.script, brOutput.scriptLen);
+				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount, mb);
 				results.push_back(TransactionOutputPtr(txOutput));
 			}
 			return results;
@@ -58,11 +62,12 @@ namespace Elastos {
 			return _protocolPayment->memo;
 		}
 
-		ByteData PaymentProtocolPayment::serialize() const {
+		CMBlock PaymentProtocolPayment::serialize() const {
 			size_t dataLen = BRPaymentProtocolPaymentSerialize(_protocolPayment, nullptr, 0);
-			uint8_t *data = new uint8_t[dataLen];
+			CMBlock data(dataLen);
 			BRPaymentProtocolPaymentSerialize(_protocolPayment, data, dataLen);
-			return ByteData(data, dataLen);
+
+			return data;
 		}
 
 	}

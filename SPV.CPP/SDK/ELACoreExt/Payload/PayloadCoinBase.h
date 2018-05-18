@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_PAYLOADCOINBASE_H
 
 #include "IPayload.h"
-#include "ByteData.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -15,20 +14,20 @@ namespace Elastos {
 		public:
 			PayloadCoinBase();
 
-			PayloadCoinBase(ByteData &coinBaseData);
+			PayloadCoinBase(CMBlock &coinBaseData);
 
 			~PayloadCoinBase();
 
-			void setCoinBaseData(const ByteData &coinBaseData);
+			void setCoinBaseData(const CMBlock &coinBaseData);
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual void Deserialize(ByteStream &istream);
 
 		private:
-			ByteData _coinBaseData;
+			CMBlock _coinBaseData;
 		};
 	}
 }

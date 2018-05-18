@@ -10,7 +10,7 @@
 
 #include "BRInt.h"
 #include "Sqlite.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -18,12 +18,11 @@ namespace Elastos {
 		struct MerkleBlockEntity {
 			MerkleBlockEntity() :
 				id(0),
-				blockBytes(nullptr, 0),
 				blockHeight(0)
 			{
 			}
 
-			MerkleBlockEntity(long i, ByteData bytes, uint32_t h) :
+			MerkleBlockEntity(long i, CMBlock bytes, uint32_t h) :
 				id(i),
 				blockBytes(bytes),
 				blockHeight(h)
@@ -31,7 +30,7 @@ namespace Elastos {
 			}
 
 			long id;
-			ByteData blockBytes;
+			CMBlock blockBytes;
 			uint32_t blockHeight;
 		};
 

@@ -23,7 +23,7 @@ namespace Elastos {
             void setSideBlockHash(const UInt256 &sideBlockHash);
             void setSideGenesisHash(const UInt256 &sideGensisHash);
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

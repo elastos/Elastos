@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 #include "TransactionOutput.h"
 #include "SharedWrapperList.h"
 
@@ -19,7 +19,7 @@ namespace Elastos {
 			public Wrapper<BRPaymentProtocolRequest> {
 
 		public:
-			PaymentProtocolRequest(const ByteData &data);
+			PaymentProtocolRequest(const CMBlock &data);
 
 			~PaymentProtocolRequest();
 
@@ -39,21 +39,21 @@ namespace Elastos {
 
 			std::string getPaymentURL() const;
 
-			ByteData getMerchantData() const;
+			CMBlock getMerchantData() const;
 
 			uint32_t getVersion() const;
 
 			std::string getPKIType() const;
 
-			ByteData getPKIData() const;
+			CMBlock getPKIData() const;
 
-			ByteData getSignature() const;
+			CMBlock getSignature() const;
 
-			ByteData getDigest() const;
+			CMBlock getDigest() const;
 
-			std::vector<ByteData> getCerts() const;
+			std::vector<CMBlock> getCerts() const;
 
-			ByteData serialize() const;
+			CMBlock serialize() const;
 
 		private:
 			BRPaymentProtocolRequest *_protocolRequest = nullptr;

@@ -32,18 +32,25 @@ namespace Elastos {
 			return _masterPubKey.get();
 		}
 
-		ByteData MasterPubKey::serialize() const {
-			return ByteData((uint8_t *) _masterPubKey.get(), sizeof(BRMasterPubKey));
+		CMBlock MasterPubKey::serialize() const {
+			CMBlock ret(sizeof(BRMasterPubKey));
+			uint8_t *tmp = (uint8_t*)_masterPubKey.get();
+			memcpy(ret, tmp, ret.GetSize());
+
+			return ret;
 		}
 
-		void MasterPubKey::deserialize(const ByteData &data) {
-			assert (data.length == sizeof(BRMasterPubKey));
+		void MasterPubKey::deserialize(const CMBlock &data) {
+			assert (data.GetSize() == sizeof(BRMasterPubKey));
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
-			memcpy(_masterPubKey.get(), data.data, data.length);
+			memcpy(_masterPubKey.get(), data, data.GetSize());
 		}
 
-		ByteData MasterPubKey::getPubKey() const {
-			return ByteData(_masterPubKey->pubKey, 33);
+		CMBlock MasterPubKey::getPubKey() const {
+			CMBlock ret(33);
+			memcpy(ret, _masterPubKey->pubKey, 33);
+
+			return ret;
 		}
 
 		boost::shared_ptr<Key> MasterPubKey::getPubKeyAsKey() const {
@@ -55,15 +62,16 @@ namespace Elastos {
 			return boost::shared_ptr<Key>(key);
 		}
 
-		ByteData MasterPubKey::bip32BitIDKey(const ByteData &seed, int index, const std::string &uri) {
+		CMBlock MasterPubKey::bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri) {
 			BRKey key;
-			BRBIP32BitIDKey(&key, seed.data, (size_t) seed.length, (uint32_t) index, uri.c_str());
+			BRBIP32BitIDKey(&key, seed, (size_t) seed.GetSize(), (uint32_t) index, uri.c_str());
 			size_t dataLen = BRKeyPrivKey(&key, nullptr, 0);
 			char rawKey[dataLen];
 			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-			uint8_t *resultKey = new uint8_t[dataLen];
+			CMBlock resultKey(dataLen);
 			memcpy(resultKey, rawKey, dataLen);
-			return ByteData(resultKey, sizeof(rawKey));
+
+			return resultKey;
 		}
 
 		bool MasterPubKey::validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase) {
@@ -74,24 +82,24 @@ namespace Elastos {
 			return BRBIP39PhraseIsValid((const char **) wordList, phrase.c_str()) != 0;
 		}
 
-		ByteData MasterPubKey::generatePaperKey(const ByteData &seed, const std::vector<std::string> &words) {
-			assert(seed.length == 16);
+		CMBlock MasterPubKey::generatePaperKey(const CMBlock &seed, const std::vector<std::string> &words) {
+			assert(seed.GetSize() == 16);
 			assert(words.size() == 2048);
 			char *wordList[words.size()];
 			for (int i = 0; i < words.size(); i++) {
 				wordList[i] = const_cast<char *>(words[i].c_str());
 			}
 
-			size_t size = BRBIP39Encode(nullptr, 0, (const char **) wordList, seed.data, (size_t) seed.length);
+			size_t size = BRBIP39Encode(nullptr, 0, (const char **) wordList, seed, (size_t) seed.GetSize());
 			char result[size];
 			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList,
-								 (const uint8_t *) seed.data, (size_t) seed.length);
+								 (const uint8_t *) seed, (size_t) seed.GetSize());
 
-			uint8_t *data = new uint8_t[size];
+			CMBlock data(size);
 			memcpy(data, &result, size);
 			//note todo size contains "\0"
 			//retain '\0' at end of data, but set ByteData.length without it
-			return ByteData(data, size - 1);
+			return data.Resize(data.GetSize()-1);
 		}
 
 	}

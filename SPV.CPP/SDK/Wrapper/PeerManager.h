@@ -17,7 +17,7 @@
 #include "Wallet.h"
 #include "SharedWrapperList.h"
 #include "WrapperList.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
     namespace SDK {

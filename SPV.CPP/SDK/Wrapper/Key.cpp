@@ -36,10 +36,10 @@ namespace Elastos {
 			}
 		}
 
-		Key::Key(const ByteData &privKey) {
+		Key::Key(const CMBlock &privKey) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
-			char data[privKey.length + 1];
-			memcpy((void *) data, (void *) privKey.data, sizeof(uint8_t) * privKey.length);
+			char data[privKey.GetSize() + 1];
+			memcpy((void *) data, (void *) privKey, sizeof(uint8_t) * privKey.GetSize());
 			if (!setPrivKey(data)) {
 				Log::error("Failed to set PrivKey");
 			}
@@ -52,9 +52,9 @@ namespace Elastos {
 			}
 		}
 
-		Key::Key(const ByteData &seed, uint32_t chain, uint32_t index) {
+		Key::Key(const CMBlock &seed, uint32_t chain, uint32_t index) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
-			BRBIP32PrivKey(_key.get(), seed.data, seed.length, chain, index);
+			BRBIP32PrivKey(_key.get(), seed, seed.GetSize(), chain, index);
 		}
 
 		std::string Key::toString() const {
@@ -70,8 +70,11 @@ namespace Elastos {
 			return _key->secret;
 		}
 
-		ByteData Key::getPubkey() const {
-			return ByteData(_key->pubKey, 65);
+		CMBlock Key::getPubkey() const {
+			CMBlock ret(65);
+			memcpy(ret, _key->pubKey, 65);
+
+			return ret;
 		}
 
 		bool Key::getCompressed() const {
@@ -86,24 +89,30 @@ namespace Elastos {
 			return privKey;
 		}
 
-		ByteData Key::getSeedFromPhrase(const ByteData &phrase) {
-			UInt512 *key = new UInt512;
-			char *charPhrase = (char *) phrase.data;
-			BRBIP39DeriveKey(key->u8, charPhrase, nullptr);
-			return ByteData(key->u8, sizeof(UInt512));
+		CMBlock Key::getSeedFromPhrase(const CMBlock &phrase) {
+			UInt512 key;
+			const char *charPhrase = (char *)(void *)phrase;
+			BRBIP39DeriveKey(key.u8, charPhrase, nullptr);
+
+			CMBlock ret(sizeof(UInt512));
+			memcpy(ret, key.u8, sizeof(UInt512));
 		}
 
-		ByteData Key::getAuthPrivKeyForAPI(const ByteData &seed) {
-			BRKey *key = new BRKey;
-			BRBIP32APIAuthKey(key, (void *) &seed, seed.length);
-			char rawKey[BRKeyPrivKey(key, nullptr, 0)];
-			BRKeyPrivKey(key, rawKey, sizeof(rawKey));
-			return ByteData((uint8_t *) &rawKey, sizeof(rawKey));
-		}
-
-		std::string Key::getAuthPublicKeyForAPI(const ByteData &privKey) {
+		CMBlock Key::getAuthPrivKeyForAPI(const CMBlock &seed) {
 			BRKey key;
-			BRKeySetPrivKey(&key, (const char *) privKey.data);
+			BRBIP32APIAuthKey(&key, (void *)seed, seed.GetSize());
+			char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
+			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
+
+			CMBlock ret(sizeof(rawKey));
+			memcpy(ret, &rawKey, sizeof(rawKey));
+
+			return ret;
+		}
+
+		std::string Key::getAuthPublicKeyForAPI(const CMBlock &privKey) {
+			BRKey key;
+			BRKeySetPrivKey(&key, (const char *)(void *)privKey);
 			size_t len = BRKeyPubKey(&key, nullptr, 0);
 			uint8_t pubKey[len];
 			BRKeyPubKey(&key, &pubKey, len);
@@ -136,27 +145,28 @@ namespace Elastos {
 			return BRKeySetSecret(_key.get(), (const UInt256 *) &secret, compressed) != 0;
 		}
 
-		ByteData Key::compactSign(const ByteData &data) const {
+		CMBlock Key::compactSign(const CMBlock &data) const {
 			UInt256 md32;
-			UInt256Get(&md32, data.data);
+			UInt256Get(&md32, data);
 			size_t sigLen = BRKeyCompactSign(_key.get(), nullptr, 0, md32);
-			uint8_t *compactSig = new uint8_t[sigLen];
+			CMBlock compactSig(sigLen);
 			sigLen = BRKeyCompactSign(_key.get(), compactSig, sigLen, md32);
-			return ByteData(compactSig, sigLen);
+
+			return compactSig;
 		}
 
-		ByteData Key::encryptNative(const ByteData &data, const ByteData &nonce) const {
-			uint8_t *out = new uint8_t[16 + data.length];
-			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.length, _key.get(), nonce.data,
-														   data.data, data.length, nullptr, 0);
-			return ByteData(out, outSize);
+		CMBlock Key::encryptNative(const CMBlock &data, const CMBlock &nonce) const {
+			CMBlock out(16 + data.GetSize());
+			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.GetSize(), _key.get(), nonce,
+														   data, data.GetSize(), nullptr, 0);
+			return out;
 		}
 
-		ByteData Key::decryptNative(const ByteData &data, const ByteData &nonce) const {
-			uint8_t *out = new uint8_t[data.length];
-			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.length, _key.get(), nonce.data,
-														   data.data, data.length, nullptr, 0);
-			return ByteData(out, outSize);
+		CMBlock Key::decryptNative(const CMBlock &data, const CMBlock &nonce) const {
+			CMBlock out(data.GetSize());
+			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.GetSize(), _key.get(), nonce,
+														   data, data.GetSize(), nullptr, 0);
+			return out;
 		}
 
 
@@ -168,15 +178,16 @@ namespace Elastos {
 			return address.s;
 		}
 
-		ByteData Key::sign(const UInt256 &messageDigest) const {
-			uint8_t *signature = new uint8_t[256];
+		CMBlock Key::sign(const UInt256 &messageDigest) const {
+			CMBlock signature(256);
 			size_t signatureLen = BRKeySign(_key.get(), signature, 256, messageDigest);
 			assert (signatureLen <= 256);
-			return ByteData(signature, signatureLen);
+
+			return signature;
 		}
 
-		bool Key::verify(const UInt256 &messageDigest, const ByteData &signature) const {
-			return BRKeyVerify(_key.get(), messageDigest, signature.data, signature.length) == 1;
+		bool Key::verify(const UInt256 &messageDigest, const CMBlock &signature) const {
+			return BRKeyVerify(_key.get(), messageDigest, signature, signature.GetSize()) == 1;
 		}
 
 		bool Key::isValidBitcoinPrivateKey(const std::string &key) {
@@ -187,16 +198,20 @@ namespace Elastos {
 			return BRBIP38KeyIsValid(key.c_str()) == 1;
 		}
 
-		std::string Key::encodeHex(const ByteData &in) {
-			char *dataHex = Utils::encodeHexCreate(nullptr, in.data, in.length);
+		std::string Key::encodeHex(const CMBlock &in) {
+			char *dataHex = Utils::encodeHexCreate(nullptr, in, in.GetSize());
 			return dataHex;
 		}
 
-		ByteData Key::decodeHex(const std::string &s) {
+		CMBlock Key::decodeHex(const std::string &s) {
 			size_t dataLen = 0;
 			char *str = const_cast<char *>(s.c_str());
 			uint8_t *data = Utils::decodeHexCreate(&dataLen, str, strlen(str));
-			return ByteData(data, dataLen);
+
+			CMBlock ret;
+			ret.SetMem(data, dataLen);
+
+			return ret;
 		}
 
 		UInt256 Key::encodeSHA256(const std::string &message) {

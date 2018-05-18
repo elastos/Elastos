@@ -14,26 +14,19 @@ namespace Elastos {
 
 		}
 
-		PayloadRecord::PayloadRecord(const std::string &recordType, const ByteData recordData) {
+		PayloadRecord::PayloadRecord(const std::string &recordType, const CMBlock recordData) {
 			_recordType = recordType;
-			if (recordData.data && 0 < recordData.length) {
-				uint8_t *buf = new uint8_t[recordData.length];
-				memcpy(buf, recordData.data, recordData.length);
-				_recordData = ByteData(buf, recordData.length);
-			}
+			_recordData = recordData;
 		}
 
 		PayloadRecord::~PayloadRecord() {
-			if (_recordData.data) {
-				delete[] _recordData.data;
-			}
 		}
 
 		void PayloadRecord::setRecordType(const std::string &recordType) {
 			_recordType = recordType;
 		}
 
-		void PayloadRecord::setRecordData(const ByteData recordData) {
+		void PayloadRecord::setRecordData(const CMBlock recordData) {
 			_recordData = recordData;
 		}
 
@@ -41,17 +34,21 @@ namespace Elastos {
 			return _recordType;
 		}
 
-		ByteData PayloadRecord::getRecordData() const {
+		CMBlock PayloadRecord::getRecordData() const {
 			return _recordData;
 		}
 
-		ByteData PayloadRecord::getData() const {
+		CMBlock PayloadRecord::getData() const {
 			//todo: implement IPayload interface
 			ByteStream stream;
 			Serialize(stream);
 
-			return ByteData(stream.getBuf(), stream.length());
-			//return data;
+			CMBlock ret(stream.length());
+			uint8_t *tmp = stream.getBuf();
+			memcpy(ret, tmp, stream.length());
+			delete []tmp;
+
+			return ret;
 		}
 
 		void PayloadRecord::Serialize(ByteStream &ostream) const {
@@ -59,9 +56,9 @@ namespace Elastos {
 			ostream.putVarUint(len);
 			ostream.putBytes((uint8_t *)_recordType.c_str(), (uint64_t)len);
 
-			ostream.putVarUint(_recordData.length);
-			if (_recordData.length > 0) {
-				ostream.putBytes(_recordData.data, _recordData.length);
+			ostream.putVarUint(_recordData.GetSize());
+			if (_recordData.GetSize() > 0) {
+				ostream.putBytes(_recordData, _recordData.GetSize());
 			}
 		}
 
@@ -82,7 +79,8 @@ namespace Elastos {
 				uint8_t *buff = new uint8_t[len];
 				if (buff) {
 					istream.getBytes(buff, len);
-					_recordData = ByteData(buff, len);
+					_recordData.Resize(len);
+					memcpy(_recordData, buff, len);
 				}
 			}
 			//delete[] buff;

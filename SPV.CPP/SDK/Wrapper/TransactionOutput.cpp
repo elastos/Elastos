@@ -25,10 +25,10 @@ namespace Elastos {
 			convertFrom(output);
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t amount, const ByteData &script) {
+		TransactionOutput::TransactionOutput(uint64_t amount, const CMBlock &script) {
 			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
 			_output.get()->script = nullptr;
-			BRTxOutputSetScript(_output.get(), script.data, script.length);
+			BRTxOutputSetScript(_output.get(), script, script.GetSize());
 			_output->amount = amount;
 			_assetId = UINT256_ZERO;
 			_programHash = UINT168_ZERO;
@@ -60,10 +60,11 @@ namespace Elastos {
 			_output->amount = amount;
 		}
 
-		ByteData TransactionOutput::getScript() const {
-			uint8_t *data = new uint8_t[_output->scriptLen];
+		CMBlock TransactionOutput::getScript() const {
+			CMBlock data(_output->scriptLen);
 			memcpy(data, _output->script, _output->scriptLen);
-			return ByteData(data, _output->scriptLen);
+
+			return data;
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {

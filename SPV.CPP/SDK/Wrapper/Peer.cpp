@@ -6,7 +6,6 @@
 #include "BRPeer.h"
 
 #include "Peer.h"
-#include "ByteData.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -59,19 +58,20 @@ namespace Elastos {
 			return *this;
 		}
 
+
 		UInt128 Peer::getAddress() const {
 			BRPeer *peer = getRaw();
-			return peer->address;
+			return peer ? peer->address : UINT128_ZERO;
 		}
 
 		uint16_t Peer::getPort() const {
 			BRPeer *peer = getRaw();
-			return peer->port;
+			return peer ? peer->port : 0;
 		}
 
 		uint64_t Peer::getTimestamp() const {
 			BRPeer *peer = getRaw();
-			return peer->timestamp;
+			return peer ? peer->timestamp : 0;
 		}
 
 		void Peer::setEarliestKeyTime(uint32_t earliestKeyTime) {

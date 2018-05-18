@@ -43,13 +43,17 @@ namespace Elastos {
 			return _controller;
 		}
 
-		ByteData PayloadRegisterAsset::getData() const {
+		CMBlock PayloadRegisterAsset::getData() const {
 			ByteStream byteStream;
 			Serialize(byteStream);
 			byteStream.setPosition(0);
 			uint8_t *data = byteStream.getBuf();
 			ssize_t len = byteStream.length();
-			return ByteData(data, len);
+			CMBlock ret((uint64_t)len);
+			memcpy(ret, data, len);
+			delete []data;
+
+			return ret;
 		}
 
 		void PayloadRegisterAsset::Serialize(ByteStream &ostream) const {

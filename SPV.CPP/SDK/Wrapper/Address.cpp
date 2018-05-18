@@ -36,21 +36,21 @@ namespace Elastos {
 			return addr;
 		}
 
-		boost::shared_ptr<Address> Address::fromScriptPubKey(ByteData script) {
+		boost::shared_ptr<Address> Address::fromScriptPubKey(CMBlock script) {
 			BRAddress address = {'\0'};
 
-			BRAddressFromScriptPubKey(address.s, sizeof(address.s), script.data, script.length);
+			BRAddressFromScriptPubKey(address.s, sizeof(address.s), script, script.GetSize());
 
 			boost::shared_ptr<Address> addr = boost::shared_ptr<Address>(new Address(address));
 
 			return addr;
 		}
 
-		boost::shared_ptr<Address> Address::fromScriptSignature(ByteData script) {
+		boost::shared_ptr<Address> Address::fromScriptSignature(CMBlock script) {
 			BRAddress address = {0};
 
-			size_t scriptLen = script.length;
-			BRAddressFromScriptSig(address.s, sizeof(address.s), script.data, scriptLen);
+			size_t scriptLen = script.GetSize();
+			BRAddressFromScriptSig(address.s, sizeof(address.s), script, scriptLen);
 
 			boost::shared_ptr<Address> addr = boost::shared_ptr<Address>(new Address(address));
 
@@ -63,14 +63,14 @@ namespace Elastos {
 			return res;
 		}
 
-		ByteData Address::getPubKeyScript() {
+		CMBlock Address::getPubKeyScript() {
 			BRAddress* address = getRaw();
 
 			size_t pubKeyLen = BRAddressScriptPubKey(NULL, 0, address->s);
-			uint8_t *data = new uint8_t[pubKeyLen];
+			CMBlock data(pubKeyLen);
 			BRAddressScriptPubKey(data, pubKeyLen, address->s);
-			return ByteData(data, pubKeyLen);
 
+			return data;
 		}
 
 		std::string Address::stringify() const {

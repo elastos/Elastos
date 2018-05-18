@@ -57,7 +57,9 @@ TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
 		TransactionEntity transactionEntity;
 		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 		                 60, 75, 8, 182, 57, 98};
-		transactionEntity.buff = ByteData(s, 21);
+		CMBlock mb(21);
+		memcpy(mb, s, 21);
+		transactionEntity.buff = mb;
 		transactionEntity.blockHeight = 9000;
 		transactionEntity.timeStamp = 1523935043;
 		transactionEntity.txHash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
@@ -70,9 +72,9 @@ TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
 		REQUIRE(list[len - 1].blockHeight == transactionEntity.blockHeight);
 		REQUIRE(list[len - 1].timeStamp == transactionEntity.timeStamp);
 		REQUIRE(list[len - 1].txHash == transactionEntity.txHash);
-		REQUIRE(list[len - 1].buff.length == transactionEntity.buff.length);
-		for (int i = 0; i < transactionEntity.buff.length; i++) {
-			REQUIRE(list[len - 1].buff.data[i] == transactionEntity.buff.data[i]);
+		REQUIRE(list[len - 1].buff.GetSize() == transactionEntity.buff.GetSize());
+		for (int i = 0; i < transactionEntity.buff.GetSize(); i++) {
+			REQUIRE(list[len - 1].buff[i] == transactionEntity.buff[i]);
 		}
 	}
 
@@ -80,7 +82,9 @@ TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
 		TransactionEntity transactionEntity;
 		uint8_t s[20] = {43, 34, 80, 17, 41, 30, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 		                 60, 75, 8, 182, 76};
-		transactionEntity.buff = ByteData(s, 20);
+		CMBlock mb(20);
+		mb.SetMemFixed(s, 20);
+		transactionEntity.buff = mb;
 		transactionEntity.blockHeight = 8000;
 		transactionEntity.timeStamp = 1523935888;
 		transactionEntity.txHash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
@@ -94,9 +98,9 @@ TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
 		REQUIRE(list[len - 1].blockHeight == transactionEntity.blockHeight);
 		REQUIRE(list[len - 1].timeStamp == transactionEntity.timeStamp);
 		REQUIRE(list[len - 1].txHash == transactionEntity.txHash);
-		REQUIRE(list[len - 1].buff.length == 20);
-		for (int i = 0; i < transactionEntity.buff.length; i++) {
-			REQUIRE(list[len - 1].buff.data[i] == transactionEntity.buff.data[i]);
+		REQUIRE(list[len - 1].buff.GetSize() == 20);
+		for (int i = 0; i < transactionEntity.buff.GetSize(); i++) {
+			REQUIRE(list[len - 1].buff[i] == transactionEntity.buff[i]);
 		}
 	}
 
@@ -211,10 +215,9 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 	SECTION("DatabaseManager putMerkleBlock test") {
 		MerkleBlockEntity blockEntity;
 		blockEntity.blockHeight = 8888;
-		blockEntity.blockBytes.length = 21;
 		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 		                 60, 75, 8, 182, 57, 98};
-		blockEntity.blockBytes.data = s;
+		blockEntity.blockBytes.SetMemFixed(s, 21);
 
 		bool result = databaseManager.putMerkleBlock(iso, blockEntity);
 		REQUIRE(result == true);
@@ -224,9 +227,9 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 		REQUIRE(len > 0);
 		REQUIRE(list[len - 1].id > 0);
 		REQUIRE(list[len - 1].blockHeight == blockEntity.blockHeight);
-		REQUIRE(list[len - 1].blockBytes.length == blockEntity.blockBytes.length);
-		for (int i = 0; i < list[len - 1].blockBytes.length; i++) {
-			REQUIRE(list[len - 1].blockBytes.data[i] == blockEntity.blockBytes.data[i]);
+		REQUIRE(list[len - 1].blockBytes.GetSize() == blockEntity.blockBytes.GetSize());
+		for (int i = 0; i < list[len - 1].blockBytes.GetSize(); i++) {
+			REQUIRE(list[len - 1].blockBytes[i] == blockEntity.blockBytes[i]);
 		}
 	}
 
@@ -243,8 +246,7 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 		                 60, 75, 8, 182, 57, 98};
 		for (int i = 0; i < 10; i++) {
 			MerkleBlockEntity blockEntity;
-			blockEntity.blockBytes.length = 21;
-			blockEntity.blockBytes.data = s;
+			blockEntity.blockBytes.SetMemFixed(s, 21):
 			blockEntity.blockHeight = uint32_t(i + 1);
 			list.push_back(blockEntity);
 		}
@@ -257,9 +259,9 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 		for (int i = 0; i < list.size(); i++) {
 			REQUIRE(blockList[i].id > 0);
 			REQUIRE(blockList[i].blockHeight == list[i].blockHeight);
-			REQUIRE(blockList[i].blockBytes.length == list[i].blockBytes.length);
-			for (int j = 0; j < blockList[i].blockBytes.length; j++) {
-				REQUIRE(blockList[i].blockBytes.data[j] == list[i].blockBytes.data[j]);
+			REQUIRE(blockList[i].blockBytes.GetSize() == list[i].blockBytes.GetSize());
+			for (int j = 0; j < blockList[i].blockBytes.GetSize(); j++) {
+				REQUIRE(blockList[i].blockBytes[j] == list[i].blockBytes[j]);
 			}
 		}
 	}
@@ -292,7 +294,7 @@ void onPutTransaction(void *arg, int index) {
 	uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 	                 60, 75, 8, 182, 57, 98};
 	for (int i = 0; i < loopCount; i++) {
-		transactionEntity.buff = ByteData(s, 21);
+		transactionEntity.buff.SetMemFixed(s, 21);
 		transactionEntity.blockHeight = uint32_t(9000 + index * loopCount + i);
 		transactionEntity.timeStamp = uint32_t(15000000 + index * loopCount + i);
 		transactionEntity.txHash = std::to_string(index * loopCount + i + 1);
@@ -319,7 +321,7 @@ void onUpdateTransaction(void *arg, int index) {
 	uint8_t s[20] = {43, 34, 80, 17, 41, 30, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 	                 60, 75, 8, 182, 76};
 	for (int i = 0; i < loopCount; i++) {
-		transactionEntity.buff = ByteData(s, 20);
+		transactionEntity.buff.SetMemFixed(s, 20);
 		transactionEntity.blockHeight = 8000 + index * loopCount + i;
 		transactionEntity.timeStamp = 1523935000 + index * loopCount + i;
 		transactionEntity.txHash = std::to_string(index * loopCount + i + 1);
@@ -374,9 +376,9 @@ TEST_CASE("DatabaseManager mulity thread transaction", "[DatabaseManager]") {
 		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 		                 60, 75, 8, 182, 57, 98};
 		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			REQUIRE(list[i].buff.length == 21);
+			REQUIRE(list[i].buff.GetSize() == 21);
 			for (int j = 0; j < 21; j++) {
-				REQUIRE(list[i].buff.data[j] == s[j]);
+				REQUIRE(list[i].buff[j] == s[j]);
 			}
 			REQUIRE(list[i].blockHeight == 9000 + i);
 			REQUIRE(list[i].timeStamp == 15000000 + i);
@@ -402,9 +404,9 @@ TEST_CASE("DatabaseManager mulity thread transaction", "[DatabaseManager]") {
 		uint8_t s[20] = {43, 34, 80, 17, 41, 30, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 		                 60, 75, 8, 182, 76};
 		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			REQUIRE(list[i].buff.length == 20);
+			REQUIRE(list[i].buff.GetSize() == 20);
 			for (int j = 0; j < 20; j++) {
-				REQUIRE(list[i].buff.data[j] == s[j]);
+				REQUIRE(list[i].buff[j] == s[j]);
 			}
 			REQUIRE(list[i].blockHeight == 8000 + i);
 			REQUIRE(list[i].timeStamp == 1523935000 + i);
@@ -608,10 +610,9 @@ void onPutMerkleBlock(void *arg, int index) {
 	MerkleBlockEntity blockEntity;
 	for (int i = 0; i < loopCount; i++) {
 		blockEntity.blockHeight = uint32_t(index * loopCount + i);
-		blockEntity.blockBytes.length = 21;
 		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
 		                 60, 75, 8, 182, 57, 98};
-		blockEntity.blockBytes.data = s;
+		blockEntity.blockBytes.SetMemFixed(s, 21);
 
 		bool result = databaseManager->putMerkleBlock("ela", blockEntity);
 		REQUIRE(result == true);
@@ -627,8 +628,7 @@ void onPutMerkleBlocks(void *arg, int index) {
 	                 60, 75, 8, 182, 57, 98};
 	for (int i = 0; i < loopCount; i++) {
 		MerkleBlockEntity blockEntity;
-		blockEntity.blockBytes.length = 21;
-		blockEntity.blockBytes.data = s;
+		blockEntity.blockBytes.SetMemFixed(s, 21);
 		blockEntity.blockHeight = uint32_t(index * loopCount + i);
 		list.push_back(blockEntity);
 	}
@@ -721,9 +721,9 @@ TEST_CASE("DatabaseManager mulity thread merkleBlocks", "[DatabaseManager]") {
 		sort(list.begin(), list.end(), sortMerkleBlocks);
 		for (int i = 0; i < totalThreadCount * loopCount; i++) {
 			REQUIRE(list[i].blockHeight == i);
-			REQUIRE(list[i].blockBytes.length == 21);
+			REQUIRE(list[i].blockBytes.GetSize() == 21);
 			for (int j = 0; j < 21; j++) {
-				REQUIRE(list[i].blockBytes.data[j] == s[j]);
+				REQUIRE(list[i].blockBytes[j] == s[j]);
 			}
 		}
 	}
@@ -750,9 +750,9 @@ TEST_CASE("DatabaseManager mulity thread merkleBlocks", "[DatabaseManager]") {
 		for (int i = 0; i < totalThreadCount * loopCount; i++) {
 			for (int j = 0; j < loopCount; j++) {
 				REQUIRE(list[i * loopCount + j].blockHeight == i);
-				REQUIRE(list[i * loopCount + j].blockBytes.length == 21);
+				REQUIRE(list[i * loopCount + j].blockBytes.GetSize() == 21);
 				for (int k = 0; k < 21; k++) {
-					REQUIRE(list[i * loopCount + j].blockBytes.data[k] == s[k]);
+					REQUIRE(list[i * loopCount + j].blockBytes[k] == s[k]);
 				}
 			}
 		}

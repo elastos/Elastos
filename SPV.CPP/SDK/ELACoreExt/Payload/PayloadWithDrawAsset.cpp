@@ -37,16 +37,16 @@ namespace Elastos {
 			_sideChainTransactionHash = sideChainTransactionHash;
 		}
 
-		ByteData PayloadWithDrawAsset::getData() const {
+		CMBlock PayloadWithDrawAsset::getData() const {
 			//todo implement IPayload getData
 			ByteStream stream;
 			Serialize(stream);
 			uint8_t *buf = stream.getBuf();
 			uint64_t len = stream.length();
-			ByteData bd(buf, len);
+			CMBlock bd(len);
+			memcpy(bd, buf, len);
 
 			return bd;
-			//return ByteData(nullptr, 0);
 		}
 
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream) const {

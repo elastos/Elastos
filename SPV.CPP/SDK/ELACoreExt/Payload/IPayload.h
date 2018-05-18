@@ -8,7 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "ELAMessageSerializable.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -18,7 +18,7 @@ namespace Elastos {
 		public:
 			virtual ~IPayload();
 
-			virtual ByteData getData() const = 0;
+			virtual CMBlock getData() const = 0;
 		};
 
 		typedef boost::shared_ptr<IPayload> PayloadPtr;

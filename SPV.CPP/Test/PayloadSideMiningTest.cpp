@@ -23,16 +23,14 @@ TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 
         psm_re.Deserialize(stream);
 
-        ByteData bd_src = psm.getData();
-        ByteData bd_rc = psm_re.getData();
+        CMBlock bd_src = psm.getData();
+        CMBlock bd_rc = psm_re.getData();
 
         size_t mem_len = sizeof(UInt256) * 2;
-        REQUIRE(mem_len == bd_src.length);
-        if (bd_src.data && bd_rc.data)
-            REQUIRE(0 == memcmp(bd_src.data, bd_rc.data, mem_len));
+        REQUIRE(mem_len == bd_src.GetSize());
+        if (bd_src && bd_rc)
+            REQUIRE(0 == memcmp(bd_src, bd_rc, mem_len));
 
-        if (bd_rc.data) delete[] bd_rc.data;
-        if (bd_src.data) delete[] bd_src.data;
     }
 
 }

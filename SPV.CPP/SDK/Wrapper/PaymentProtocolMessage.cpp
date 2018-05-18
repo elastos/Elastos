@@ -7,12 +7,11 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolMessage::PaymentProtocolMessage(BRPaymentProtocolMessageType type, const ByteData &message,
+		PaymentProtocolMessage::PaymentProtocolMessage(BRPaymentProtocolMessageType type, const CMBlock &message,
 													   uint64_t statusCode, const std::string &statusMsg,
-													   const ByteData &identifier) {
-			_protocolMessage = BRPaymentProtocolMessageNew(type, message.data, message.length, statusCode,
-														   statusMsg.c_str(), identifier.data,
-														   identifier.length);
+													   const CMBlock &identifier) {
+			_protocolMessage = BRPaymentProtocolMessageNew(type, message, message.GetSize(), statusCode,
+														   statusMsg.c_str(), identifier, identifier.GetSize());
 		}
 
 		std::string PaymentProtocolMessage::toString() const {
@@ -34,8 +33,11 @@ namespace Elastos {
 			return _protocolMessage->msgType;
 		}
 
-		ByteData PaymentProtocolMessage::getMessage() const {
-			return ByteData(_protocolMessage->message, _protocolMessage->msgLen);
+		CMBlock PaymentProtocolMessage::getMessage() const {
+			CMBlock ret(_protocolMessage->msgLen);
+			memcpy(ret, _protocolMessage->message, _protocolMessage->msgLen);
+
+			return ret;
 		}
 
 		uint64_t PaymentProtocolMessage::getStatusCode() const {
@@ -46,15 +48,19 @@ namespace Elastos {
 			return _protocolMessage->statusMsg;
 		}
 
-		ByteData PaymentProtocolMessage::getIdentifier() const {
-			return ByteData(_protocolMessage->identifier, _protocolMessage->identLen);
+		CMBlock PaymentProtocolMessage::getIdentifier() const {
+			CMBlock ret(_protocolMessage->identLen);
+			memcpy(ret, _protocolMessage->identifier, _protocolMessage->identLen);
+
+			return ret;
 		}
 
-		ByteData PaymentProtocolMessage::serialize() {
+		CMBlock PaymentProtocolMessage::serialize() {
 			size_t dataLen = BRPaymentProtocolMessageSerialize(_protocolMessage, nullptr, 0);
-			uint8_t *data = new uint8_t[dataLen];
+			CMBlock data(dataLen);
 			BRPaymentProtocolMessageSerialize(_protocolMessage, data, dataLen);
-			return ByteData(data, dataLen);
+
+			return data;
 		}
 
 	}

@@ -37,7 +37,8 @@ void TestConnectPeer::runPeerConnectTest() {
 	}
 
 
-	wallet->testSendTransaction();
+	//wallet->testCreateTransaction();
+	//wallet->testSendTransaction();
 
 	while (BRPeerManagerPeerCount(wallet->getPeerManager()->getRaw()) > 0) sleep(1);
 	//process end

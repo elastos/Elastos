@@ -11,7 +11,7 @@
 #include "Key.h"
 
 TestWalletManager::TestWalletManager() :
-		WalletManager("a test seed ha") {
+	WalletManager("a test seed ha") {
 }
 
 WrapperList<Peer, BRPeer> TestWalletManager::loadPeers() {
@@ -90,6 +90,21 @@ void TestWalletManager::testSendTransaction() {
 	ptr->Deserialize(byteStream);
 	hash = signAndPublishTransaction(ptr);
 
-	Log::getLogger()->info("signAndPublishTransaction hash:{}",Utils::UInt256ToString(hash));
+	Log::getLogger()->info("signAndPublishTransaction hash:{}", Utils::UInt256ToString(hash));
 
+}
+
+void TestWalletManager::testCreateTransaction() {
+	Transaction elaCoin;
+	elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+
+	UInt256 hash = elaCoin.getHash();
+
+	TransactionPtr transaction = createTransaction("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP", 12, 0, hash,
+												   Transaction::Type::TransferAsset);
+	if (transaction) {
+		UInt256 hash = signAndPublishTransaction(transaction);
+
+		Log::getLogger()->info("testCreateTransaction hash:{}", Utils::UInt256ToString(hash));
+	}
 }

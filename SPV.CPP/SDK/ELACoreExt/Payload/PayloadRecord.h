@@ -14,17 +14,17 @@ namespace Elastos {
 		public:
 			PayloadRecord();
 
-			PayloadRecord(const std::string &recordType, const ByteData recordData);
+			PayloadRecord(const std::string &recordType, const CMBlock recordData);
 
 			~PayloadRecord();
 
 			void setRecordType(const std::string &recordType);
-			void setRecordData(const ByteData recordData);
+			void setRecordData(const CMBlock recordData);
 
 			std::string getRecordType() const;
-			ByteData getRecordData() const;
+			CMBlock getRecordData() const;
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -32,7 +32,7 @@ namespace Elastos {
 
 		private:
 			std::string _recordType;
-			ByteData _recordData;
+			CMBlock _recordData;
 		};
 	}
 }

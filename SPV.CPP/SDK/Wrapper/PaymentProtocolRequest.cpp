@@ -11,8 +11,8 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolRequest::PaymentProtocolRequest(const ByteData &data) {
-			_protocolRequest = BRPaymentProtocolRequestParse(data.data, data.length);
+		PaymentProtocolRequest::PaymentProtocolRequest(const CMBlock &data) {
+			_protocolRequest = BRPaymentProtocolRequestParse(data, data.GetSize());
 		}
 
 		PaymentProtocolRequest::~PaymentProtocolRequest() {
@@ -39,8 +39,9 @@ namespace Elastos {
 			SharedWrapperList<TransactionOutput, BRTxOutput *> results;
 			for (size_t index = 0; index < _protocolRequest->details->outCount; index++) {
 				BRTxOutput brOutput = _protocolRequest->details->outputs[index];
-				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount,
-																	ByteData(brOutput.script, brOutput.scriptLen));
+				CMBlock mb;
+				mb.SetMemFixed(brOutput.script, brOutput.scriptLen);
+				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount, mb);
 				results.push_back(TransactionOutputPtr(txOutput));
 			}
 			return results;
@@ -62,9 +63,11 @@ namespace Elastos {
 			return _protocolRequest->details->paymentURL;
 		}
 
-		ByteData PaymentProtocolRequest::getMerchantData() const {
-			return ByteData(_protocolRequest->details->merchantData,
-							_protocolRequest->details->merchDataLen);
+		CMBlock PaymentProtocolRequest::getMerchantData() const {
+			CMBlock ret(_protocolRequest->details->merchDataLen);
+			memcpy(ret, _protocolRequest->details->merchantData, _protocolRequest->details->merchDataLen);
+
+			return ret;
 		}
 
 		uint32_t PaymentProtocolRequest::getVersion() const {
@@ -75,41 +78,49 @@ namespace Elastos {
 			return _protocolRequest->pkiType;
 		}
 
-		ByteData PaymentProtocolRequest::getPKIData() const {
-			return ByteData(_protocolRequest->pkiData, _protocolRequest->pkiDataLen);
+		CMBlock PaymentProtocolRequest::getPKIData() const {
+			CMBlock ret(_protocolRequest->pkiDataLen);
+			memcpy(ret, _protocolRequest->pkiData, _protocolRequest->pkiDataLen);
+
+			return ret;
 		}
 
-		ByteData PaymentProtocolRequest::getSignature() const {
-			return ByteData(_protocolRequest->signature, _protocolRequest->sigLen);
+		CMBlock PaymentProtocolRequest::getSignature() const {
+			CMBlock ret(_protocolRequest->sigLen);
+			memcpy(ret, _protocolRequest->signature, _protocolRequest->sigLen);
+
+			return ret;
 		}
 
-		ByteData PaymentProtocolRequest::getDigest() const {
+		CMBlock PaymentProtocolRequest::getDigest() const {
 			size_t digestLen = BRPaymentProtocolRequestDigest(_protocolRequest, nullptr, 0);
-			uint8_t *digestData = new uint8_t(digestLen);
+			CMBlock digestData(digestLen);
 			BRPaymentProtocolRequestDigest(_protocolRequest, digestData, digestLen);
-			return ByteData(digestData, digestLen);
+
+			return digestData;
 		}
 
-		std::vector<ByteData> PaymentProtocolRequest::getCerts() const {
-			std::vector<ByteData> certs;
+		std::vector<CMBlock> PaymentProtocolRequest::getCerts() const {
+			std::vector<CMBlock> certs;
 			size_t numberOfCerts = 0;
 			while (0 != BRPaymentProtocolRequestCert(_protocolRequest, nullptr, 0, numberOfCerts))
 				numberOfCerts++;
 
 			for (size_t index = 0; index < numberOfCerts; index++) {
 				size_t certLen = BRPaymentProtocolRequestCert(_protocolRequest, nullptr, 0, index);
-				uint8_t *certData = new uint8_t(certLen);
+				CMBlock certData(certLen);
 				BRPaymentProtocolRequestCert(_protocolRequest, certData, certLen, index);
-				certs.push_back(ByteData(certData, certLen));
+				certs.push_back(certData);
 			}
 			return certs;
 		}
 
-		ByteData PaymentProtocolRequest::serialize() const {
+		CMBlock PaymentProtocolRequest::serialize() const {
 			size_t dataLen = BRPaymentProtocolRequestSerialize(_protocolRequest, nullptr, 0);
-			uint8_t *data = new uint8_t[dataLen];
+			CMBlock data(dataLen);
 			BRPaymentProtocolRequestSerialize(_protocolRequest, data, dataLen);
-			return ByteData(data, dataLen);
+
+			return data;
 		}
 
 	}

@@ -15,18 +15,18 @@ namespace Elastos {
 		public:
 			PayloadIssueToken();
 
-			PayloadIssueToken(const ByteData &merkeProff);
+			PayloadIssueToken(const CMBlock &merkeProff);
 
 			~PayloadIssueToken();
 
-			virtual ByteData getData() const;
+			virtual CMBlock getData() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual void Deserialize(ByteStream &istream);
 
 		private:
-			ByteData _merkeProof;
+			CMBlock _merkeProof;
 		};
 	}
 }

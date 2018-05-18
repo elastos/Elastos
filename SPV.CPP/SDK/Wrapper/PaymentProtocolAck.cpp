@@ -7,8 +7,8 @@
 namespace Elastos {
 	namespace SDK {
 
-		PaymentProtocolAck::PaymentProtocolAck(const ByteData &data) {
-			_protocolACK = BRPaymentProtocolACKParse(data.data, data.length);
+		PaymentProtocolAck::PaymentProtocolAck(const CMBlock &data) {
+			_protocolACK = BRPaymentProtocolACKParse(data, data.GetSize());
 		}
 
 		PaymentProtocolAck::~PaymentProtocolAck() {
@@ -30,8 +30,11 @@ namespace Elastos {
 			return _protocolACK->memo;
 		}
 
-		ByteData PaymentProtocolAck::getMerchantData() const {
-			return ByteData(_protocolACK->payment->merchantData, _protocolACK->payment->merchDataLen);
+		CMBlock PaymentProtocolAck::getMerchantData() const {
+			CMBlock ret(_protocolACK->payment->merchDataLen);
+			memcpy(ret, _protocolACK->payment->merchantData, _protocolACK->payment->merchDataLen);
+
+			return ret;
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> PaymentProtocolAck::getTransactions() const {
@@ -49,10 +52,12 @@ namespace Elastos {
 			SharedWrapperList<TransactionOutput, BRTxOutput *> results;
 			for (size_t index = 0; index < _protocolACK->payment->refundToCount; index++) {
 				BRTxOutput brOutput = _protocolACK->payment->refundTo[index];
-				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount,
-																	ByteData(brOutput.script, brOutput.scriptLen));
+				CMBlock mb;
+				mb.SetMemFixed(brOutput.script, brOutput.scriptLen);
+				TransactionOutput *txOutput = new TransactionOutput(brOutput.amount, mb);
 				results.push_back(TransactionOutputPtr(txOutput));
 			}
+
 			return results;
 		}
 
@@ -60,11 +65,12 @@ namespace Elastos {
 			return _protocolACK->payment->memo;
 		}
 
-		ByteData PaymentProtocolAck::serialize() const {
+		CMBlock PaymentProtocolAck::serialize() const {
 			size_t dataLen = BRPaymentProtocolACKSerialize(_protocolACK, nullptr, 0);
-			uint8_t *data = new uint8_t[dataLen];
+			CMBlock data(dataLen);
 			BRPaymentProtocolACKSerialize(_protocolACK, data, dataLen);
-			return ByteData(data, dataLen);
+
+			return data;
 		}
 
 	}

@@ -13,38 +13,25 @@ namespace Elastos {
 
 		}
 
-		PayloadCoinBase::PayloadCoinBase(ByteData &coinBaseData) {
+		PayloadCoinBase::PayloadCoinBase(CMBlock &coinBaseData) {
 			_coinBaseData = coinBaseData;
 		}
 
 		PayloadCoinBase::~PayloadCoinBase() {
 		}
 
-		ByteData PayloadCoinBase::getData() const {
+		CMBlock PayloadCoinBase::getData() const {
             return _coinBaseData;
         }
 
-		void PayloadCoinBase::setCoinBaseData(const ByteData &coinBaseData) {
-		    uint8_t* buf = new uint8_t[coinBaseData.length];
-		    memcpy(buf, coinBaseData.data, coinBaseData.length);
-			_coinBaseData.data = buf;
-			_coinBaseData.length = coinBaseData.length;
+		void PayloadCoinBase::setCoinBaseData(const CMBlock &coinBaseData) {
+			_coinBaseData = coinBaseData;
 		}
 
-//		ByteData PayloadCoinBase::getData() const{
-//			ByteStream stream;
-//			Serialize(stream);
-//			uint8_t *buf = stream.getBuf();
-//			uint64_t len = stream.length();
-//
-//			return ByteData(buf, len);
-		    //return _coinBaseData;
-//		}
-
 		void PayloadCoinBase::Serialize(ByteStream &ostream) const {
-			ostream.putVarUint(_coinBaseData.length);
-			if (_coinBaseData.length > 0) {
-				ostream.putBytes(_coinBaseData.data, _coinBaseData.length);
+			ostream.putVarUint(_coinBaseData.GetSize());
+			if (_coinBaseData.GetSize() > 0) {
+				ostream.putBytes(_coinBaseData, _coinBaseData.GetSize());
 			}
 		}
 
@@ -57,12 +44,8 @@ namespace Elastos {
 					memset(data, 0, len);
 					istream.getBytes(data, len);
 
-					if (_coinBaseData.data && data) {
-						delete[] _coinBaseData.data;
-						_coinBaseData.data = nullptr;
-					}
-
-					_coinBaseData = ByteData(data, len);
+					_coinBaseData.Resize(len);
+					memcpy(_coinBaseData, data, len);
 				}
 			}
 		}

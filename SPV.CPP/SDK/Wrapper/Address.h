@@ -10,7 +10,7 @@
 
 #include "BRAddress.h"
 #include "Wrapper.h"
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -26,13 +26,13 @@ namespace Elastos {
 
 			static boost::shared_ptr<Address> createAddress(const std::string &address);
 
-			static boost::shared_ptr<Address> fromScriptPubKey(ByteData script);
+			static boost::shared_ptr<Address> fromScriptPubKey(CMBlock script);
 
-			static boost::shared_ptr<Address> fromScriptSignature(ByteData script);
+			static boost::shared_ptr<Address> fromScriptSignature(CMBlock script);
 
 			bool isValid();
 
-			ByteData getPubKeyScript();
+			CMBlock getPubKeyScript();
 
 			virtual std::string toString() const;
 

@@ -10,8 +10,8 @@
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
-#include "ByteData.h"
 #include "ELAMessageSerializable.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -26,7 +26,7 @@ namespace Elastos {
 			TransactionInput(BRTxInput *input);
 
 			TransactionInput(UInt256 hash, uint32_t index, uint64_t amount,
-							 ByteData script, ByteData signature, uint32_t sequence);
+							 CMBlock script, CMBlock signature, uint32_t sequence);
 
 			virtual std::string toString() const;
 
@@ -46,9 +46,9 @@ namespace Elastos {
 
 			uint64_t getAmount() const;
 
-			ByteData getScript() const;
+			CMBlock getScript() const;
 
-			ByteData getSignature() const;
+			CMBlock getSignature() const;
 
 			uint32_t getSequence() const;
 

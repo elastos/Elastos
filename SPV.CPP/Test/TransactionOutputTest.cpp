@@ -22,14 +22,16 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 		uint8_t dummyScript[] = {OP_DUP, OP_HASH160, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		                         0, 0, 0, 0, 0, 0, 0, 0, 0, OP_EQUALVERIFY, OP_CHECKSIG};
 
-		TransactionOutput transactionOutput(10000, ByteData(dummyScript, sizeof(dummyScript)));
+		CMBlock mb;
+		mb.SetMemFixed(dummyScript, sizeof(dummyScript));
+		TransactionOutput transactionOutput(10000, mb);
 
 		REQUIRE(transactionOutput.getRaw() != nullptr);
 		REQUIRE(transactionOutput.getAmount() == 10000);
-		REQUIRE(transactionOutput.getScript().length == sizeof(dummyScript));
+		REQUIRE(transactionOutput.getScript().GetSize() == sizeof(dummyScript));
 
-		uint8_t *temp = transactionOutput.getScript().data;
-		for (int i = 0; i < sizeof(dummyScript); i++) {
+		CMBlock temp = transactionOutput.getScript();
+		for (uint64_t i = 0; i < sizeof(dummyScript); i++) {
 			REQUIRE(temp[i] == dummyScript[i]);
 		}
 	}

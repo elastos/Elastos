@@ -124,9 +124,8 @@ namespace Elastos {
 				// blockBytes
 				const uint8_t *pblob = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
 				size_t len = _sqlite->columnBytes(stmt, 1);
-				merkleBlock.blockBytes.data = new uint8_t[len];
-				merkleBlock.blockBytes.length = len;
-				memcpy(merkleBlock.blockBytes.data, pblob, len);
+				merkleBlock.blockBytes.Resize(len);
+				memcpy(merkleBlock.blockBytes, pblob, len);
 
 				// blockHeight
 				merkleBlock.blockHeight = _sqlite->columnInt(stmt, 2);
