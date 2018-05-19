@@ -11,7 +11,7 @@
 #include "Key.h"
 
 TestWalletManager::TestWalletManager() :
-	WalletManager("a test seed ha") {
+	WalletManager(CMBlock()) {
 }
 
 WrapperList<Peer, BRPeer> TestWalletManager::loadPeers() {

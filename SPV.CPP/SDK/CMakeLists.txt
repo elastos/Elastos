@@ -59,4 +59,5 @@ add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
 if(APPLE)
 	target_link_libraries(${SPVSDK_NAME} pthread)
 	target_link_libraries(${SPVSDK_NAME} ${Boost_LIBRARIES})
+	target_link_libraries(${SPVSDK_NAME} ssl crypto)
 endif()
