@@ -9,7 +9,6 @@
 #include "Log.h"
 #include "Payload/PayloadCoinBase.h"
 
-
 using namespace Elastos::SDK;
 
 TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {

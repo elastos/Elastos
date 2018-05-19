@@ -17,7 +17,7 @@ template<class T, class SIZETYPE=size_t>
 class CMemBlock {
 public:
 	CMemBlock() {
-		pValue = new Value((size_t) 0);
+		pValue = new Value((SIZETYPE) 0);
 		pValue->AddRef();
 	}
 
@@ -28,120 +28,122 @@ public:
 
 	CMemBlock(const CMemBlock &mem) {
 		pValue = mem.pValue;
-		pValue->AddRef();
+		if (nullptr != pValue)
+			pValue->AddRef();
 	}
 
 	~CMemBlock() {
-		if (pValue)
+		if (nullptr != pValue)
 			pValue->Release();
 	}
 
 	CMemBlock &operator=(const CMemBlock &mem) {
-		if (pValue && pValue == mem.pValue)
+		if (nullptr != pValue && pValue == mem.pValue)
 			return *this;
-		if (pValue)
+		if (nullptr != pValue)
 			pValue->Release();
 		pValue = mem.pValue;
-		pValue ? pValue->AddRef() : 0;
+		if (nullptr != pValue)
+			pValue->AddRef();
 
 		return *this;
 	}
 
 	CMemBlock operator+(const CMemBlock &mem) const {
 		CMemBlock ret;
-		SIZETYPE l = pValue ? pValue->_len : 0 + mem.pValue ? mem.pValue->_len : 0;
+		SIZETYPE l = (nullptr != pValue ? pValue->_len : 0) + (nullptr != mem.Pvalue ? mem.pValue->_len : 0);
 		ret.Resize(l);
-		memcpy(ret, pValue ? pValue->data : 0, sizeof(T) * pValue ? pValue->_len : 0);
-		memcpy(ret + pValue ? pValue->_len : 0, mem.pValue ? mem.pValue->data : 0,
-			   sizeof(T) * pValue ? mem.pValue->_len : 0);
+		memcpy(ret, nullptr != pValue ? pValue->data : 0, sizeof(T) * (nullptr != pValue ? pValue->_len : 0));
+		memcpy(ret + (nullptr != pValue ? pValue->_len : 0), nullptr != mem.pValue ? mem.pValue->data : 0,
+			   sizeof(T) * (nullptr != mem.pValue ? mem.pValue->_len : 0));
 
 		return ret;
 	}
 
 	CMemBlock &operator+=(const CMemBlock &mem) {
-		if (!pValue) {
-			pValue = new Value((size_t) 0);
+		if (nullptr == pValue) {
+			pValue = new Value((SIZETYPE) 0);
 			pValue->AddRef();
 		}
-		SIZETYPE l = pValue->_len + mem.pValue ? mem.pValue->_len : 0;
+		SIZETYPE l = pValue->_len + (nullptr != mem.pValue ? mem.pValue->_len : 0);
 		pValue->Resize(l);
-		memcpy(pValue->data + pValue->_len, mem.pValue ? mem.pValue->data : 0,
-			   sizeof(T) * mem.pValue ? mem.pValue->_len : 0);
+		memcpy(pValue->data + pValue->_len, nullptr != mem.pValue ? mem.pValue->data : 0,
+			   sizeof(T) * (nullptr != mem.pValue ? mem.pValue->_len : 0));
 
 		return *this;
 	}
 
 	void Zero() {
-		if (pValue)
+		if (nullptr != pValue)
 			pValue->Zero();
 	}
 
 	void Clear() {
-		if (pValue)
+		if (nullptr != pValue)
 			pValue->Clear();
 	}
 
 	void DelAt(SIZETYPE st) {
-		if (pValue)
+		if (nullptr != pValue)
 			pValue->DelAt(st);
 	}
 
 	SIZETYPE SetMem(T *pV, SIZETYPE len) {
-		return pValue ? pValue->SetMem(pV, len) : 0;
+		return nullptr != pValue ? pValue->SetMem(pV, len) : 0;
 	}
 
 	SIZETYPE SetMemFixed(const T *pV, SIZETYPE len) {
-		return pValue ? pValue->SetMemFixed(pV, len) : 0;
+		return nullptr != pValue ? pValue->SetMemFixed(pV, len) : 0;
 	}
 
 	SIZETYPE Resize(SIZETYPE size) {
-		return pValue ? pValue->Resize(size) : 0;
+		return nullptr != pValue ? pValue->Resize(size) : 0;
 	}
 
 	SIZETYPE push_back(T &t) {
-		return pValue ? pValue->push_back(t) : 0;
+		return nullptr != pValue ? pValue->push_back(t) : 0;
 	}
 
 	SIZETYPE GetSize() const {
-		return pValue ? pValue->GetSize() : 0;
+		return nullptr != pValue ? pValue->GetSize() : 0;
 	}
 
 	void Reverse() {
-		pValue ? pValue->Reverse() : 0;
+		nullptr != pValue ? pValue->Reverse() : 0;
 	}
 
 	operator bool() const {
-		return pValue->data ? true : false;
+		return nullptr != pValue ? pValue->data ? true : false : false;
 	};
 
 	operator void *() const {
-		return (void *) pValue ? pValue->data : 0;
+		return (void *) nullptr != pValue ? pValue->data : 0;
 	}
 
 	T &operator*() const {
 		T t;
-		return pValue ? *pValue->data : t;
+		return nullptr != pValue ? *pValue->data : t;
 	}
 
 	operator T *() const {
-		return pValue ? pValue->data : 0;
+		return nullptr != pValue ? pValue->data : 0;
 	}
 
 	operator const T *() const {
-		return pValue ? pValue->data : 0;
+		return nullptr != pValue ? pValue->data : 0;
 	}
 
 	T **operator&() const {
-		return pValue ? &pValue->data : 0;
+		return nullptr != pValue ? &pValue->data : 0;
 	}
 
 	T *operator+(SIZETYPE off) const {
-		return pValue ? pValue->data + off : 0;
+		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
 	T &operator[](SIZETYPE off) const {
 		T t;
-		return pValue ? pValue->data[off] : t;
+		return nullptr != pValue ? pValue->data[off] : t;
 	}
 
 private:
@@ -177,12 +179,12 @@ private:
 		}
 
 		~Value() {
-			if (data && !fixed)
+			if (nullptr != data && !fixed)
 				free(data);
 		}
 
 		void Zero() {
-			if (data && _len > 0) {
+			if (nullptr != data && _len > 0) {
 				for (SIZETYPE l = 0; l < _len; l++) {
 					data[l] = 0;
 				}
@@ -190,7 +192,7 @@ private:
 		}
 
 		void Clear() {
-			if (data) {
+			if (nullptr != data) {
 				if (!fixed) free(data);
 				data = 0;
 				fixed = false;
@@ -199,7 +201,7 @@ private:
 		}
 
 		void DelAt(SIZETYPE st) {
-			if (data && _len > 0) {
+			if (nullptr != data && _len > 0) {
 				if (0 <= st && st < _len) {
 					T *p = (T *) malloc((_len - 1) * sizeof(T));
 					for (SIZETYPE i = 0; i < _len; i++) {
@@ -218,7 +220,7 @@ private:
 		}
 
 		SIZETYPE SetMem(T *pV, SIZETYPE len) {
-			if (data && !fixed)
+			if (nullptr != data && !fixed)
 				free(data);
 			data = pV;
 			fixed = false;
@@ -227,7 +229,7 @@ private:
 		}
 
 		SIZETYPE SetMemFixed(const T *pV, SIZETYPE len) {
-			if (data && !fixed)
+			if (nullptr != data && !fixed)
 				free(data);
 			data = const_cast<T *>(pV);
 			fixed = true;
@@ -240,7 +242,7 @@ private:
 				return size;
 			if (0 < size) {
 				T *t = (T *) malloc(size * sizeof(T));
-				if (data) {
+				if (nullptr != data) {
 					SIZETYPE lt = _len > size ? size : _len;
 					memcpy(t, data, lt * sizeof(T));
 					if (!fixed) free(data);
@@ -249,7 +251,7 @@ private:
 				fixed = false;
 				_len = size;
 			} else {
-				if (data) {
+				if (nullptr != data) {
 					if (!fixed) free(data);
 					data = 0;
 					fixed = false;
@@ -262,7 +264,7 @@ private:
 		SIZETYPE push_back(T &t) {
 			T *pt = (T *) malloc((_len + 1) * sizeof(T));
 			memcpy(pt, data, _len * sizeof(T));
-			if (!fixed) free(data);
+			if (nullptr != data && !fixed) free(data);
 			data = pt;
 			fixed = false;
 			data[_len++] = t;
@@ -274,10 +276,10 @@ private:
 		}
 
 		void Reverse() {
-			if (0 < _len) {
-				SIZETYPE Mid = _len / 2;
+			if (nullptr != data && 0 < _len) {
+				SIZETYPE id = _len / 2;
 				T tmp;
-				for (SIZETYPE i = 0; i < Mid; i++) {
+				for (SIZETYPE i = 0; i < id; i++) {
 					tmp = data[i];
 					data[i] = data[_len - (i + 1)];
 					data[_len - (i + 1)] = tmp;

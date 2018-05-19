@@ -19,6 +19,7 @@ namespace Elastos {
 			~PayloadRecord();
 
 			void setRecordType(const std::string &recordType);
+
 			void setRecordData(const CMBlock recordData);
 
 			std::string getRecordType() const;
