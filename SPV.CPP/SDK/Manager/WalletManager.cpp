@@ -47,6 +47,10 @@ namespace Elastos {
 			importKey(keyPath, password);
 		}
 
+		WalletManager::~WalletManager() {
+
+		}
+
 		void WalletManager::start() {
 			getPeerManager()->connect();
 		}

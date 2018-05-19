@@ -41,5 +41,13 @@ namespace Elastos {
 		void ElaNewWalletJson::setEaliestPeerTime(uint32_t time) {
 			_earliestPeerTime = time;
 		}
+
+		void to_json(nlohmann::json &j, const ElaNewWalletJson &p) {
+
+		}
+
+		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
+
+		}
 	}
 }

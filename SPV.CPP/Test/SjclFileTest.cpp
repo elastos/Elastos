@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <catch.hpp>
+#include <boost/filesystem.hpp>
 
 #include "KeyStore/SjclFile.h"
 
@@ -16,8 +17,7 @@ TEST_CASE("Json convert", "[SjclFile]") {
 	SECTION("Convert to json") {
 	}
 
-	SECTION("Convert from json") {
-
+	SECTION("Convert from json file") {
 	}
 
 }

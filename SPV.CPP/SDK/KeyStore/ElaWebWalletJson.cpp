@@ -22,5 +22,13 @@ namespace Elastos {
 		void ElaWebWalletJson::setMnemonic(const std::string &value) {
 			_mnemonic = value;
 		}
+
+		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
+
+		}
+
+		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
+
+		}
 	}
 }
