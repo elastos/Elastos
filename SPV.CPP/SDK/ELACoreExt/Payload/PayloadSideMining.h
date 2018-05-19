@@ -25,6 +25,7 @@ namespace Elastos {
 
 			virtual CMBlock getData() const;
 
+
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual void Deserialize(ByteStream &istream);

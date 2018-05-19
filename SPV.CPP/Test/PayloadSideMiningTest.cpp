@@ -30,7 +30,6 @@ TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
         REQUIRE(mem_len == bd_src.GetSize());
         if (bd_src && bd_rc)
             REQUIRE(0 == memcmp(bd_src, bd_rc, mem_len));
-
     }
 
 }
