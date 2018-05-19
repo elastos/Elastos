@@ -38,7 +38,7 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
 
         uint8_t buf[] = {'I', ' ', 'a', 'm', ' ', 'O', 'K', '\0'};
         CMBlock bd;
-        bd.SetMemFixed(buf, sizeof(buf))
+        bd.SetMemFixed(buf, sizeof(buf));
         pcb.setCoinBaseData(bd);
         pcb.Serialize(stream);
         stream.setPosition(0);

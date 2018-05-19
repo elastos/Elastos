@@ -191,7 +191,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 		std::vector<TransactionInput> inputList;
 		for (int i = 0; i < 10; i++) {
-			TransactionInput input(hash, i + 1, 1000 + i, myaddress.getPubKeyScript(), CMemBlock(), i + 1);
+			TransactionInput input(hash, i + 1, 1000 + i, myaddress.getPubKeyScript(), CMBlock(), i + 1);
 			transaction.addInput(input);
 		}
 		size_t inputSize = transaction.getSize();
@@ -267,7 +267,7 @@ TEST_CASE("Transaction Serialize test", "[Transaction]") {
 		Address myaddress(content);
 		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 		for (int i = 0; i < 10; i++) {
-			TransactionInput input(hash, i + 1, 10000 + i, myaddress.getPubKeyScript(), CMemBlock(), i);
+			TransactionInput input(hash, i + 1, 10000 + i, myaddress.getPubKeyScript(), CMBlock(), i);
 			transaction.addInput(input);
 		}
 

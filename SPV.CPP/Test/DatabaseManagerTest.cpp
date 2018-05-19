@@ -246,7 +246,7 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 		                 60, 75, 8, 182, 57, 98};
 		for (int i = 0; i < 10; i++) {
 			MerkleBlockEntity blockEntity;
-			blockEntity.blockBytes.SetMemFixed(s, 21):
+			blockEntity.blockBytes.SetMemFixed(s, 21);
 			blockEntity.blockHeight = uint32_t(i + 1);
 			list.push_back(blockEntity);
 		}

@@ -27,7 +27,7 @@ namespace Elastos {
 			/*
 			 * construct wallet manager from mnemonic
 			 */
-			WalletManager(const std::string &phrase, const std::string language = "english",
+			WalletManager(const CMBlock &phrase, const std::string language = "english",
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
 			WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
@@ -59,7 +59,7 @@ namespace Elastos {
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);
 
-			ByteData signData(const ByteData &data);
+			CMBlock signData(const CMBlock &data);
 
 		public:
 			// func balanceChanged(_ balance: UInt64)
@@ -113,7 +113,6 @@ namespace Elastos {
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
 			MasterPubKeyPtr _masterPubKey;
-			std::string _mnemonic;
 			KeyStore _keyStore;
 			CMBlock _phraseData;
 

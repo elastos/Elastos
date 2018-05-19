@@ -21,7 +21,6 @@
 #include "GetDataMessage.h"
 #include "PingMessage.h"
 #include "PongMessage.h"
-#include "ELAPeerContext.h"
 #include "ELAMerkleBlock.h"
 
 namespace Elastos {
@@ -176,12 +175,6 @@ namespace Elastos {
 		void PeerMessageManager::initMessages(BRPeerManager *peerManager) {
 
 			peerManager->peerMessages = BRPeerMessageNew();
-
-			peerManager->peerMessages->BRPeerNew = ELAPeerNew;
-			peerManager->peerMessages->BRPeerFree = ELAPeerFree;
-			peerManager->peerMessages->BRPeerCopy = ELAPeerCopy;
-
-			peerManager->peerMessages->BRPeerAcceptMessage = PeerAcceptMessage;
 
 			peerManager->peerMessages->MerkleBlockNew = BRMerkleBlockNewWrapper;
 			peerManager->peerMessages->MerkleBlockFree = BRMerkleBlockFreeWrapper;

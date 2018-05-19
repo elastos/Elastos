@@ -953,12 +953,6 @@ static void _setApplyFreeBlock(void *info, void *block)
 BRPeerMessages *BRPeerMessageNew(void) {
 	BRPeerMessages *peerMessages = calloc(1, sizeof(*peerMessages));
 
-	peerMessages->BRPeerNew = BRPeerNew;
-	peerMessages->BRPeerFree = BRPeerFree;
-	peerMessages->BRPeerCopy = BRPeerCopy;
-
-	peerMessages->BRPeerAcceptMessage = _BRPeerAcceptMessage;
-
 	peerMessages->MerkleBlockNew = BRMerkleBlockNew;
 	peerMessages->MerkleBlockFree = BRMerkleBlockFree;
 	peerMessages->ApplyFreeBlock = _setApplyFreeBlock;

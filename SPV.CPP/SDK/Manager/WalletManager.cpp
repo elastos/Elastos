@@ -28,14 +28,15 @@ namespace Elastos {
 			init(_masterPubKey, chainParams, earliestPeerTime);
 		}
 
-		WalletManager::WalletManager(const std::string &phrase, const std::string language,
+		WalletManager::WalletManager(const CMBlock &phrase, const std::string language,
 									 const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(DATABASE_PATH),
-				_mnemonic(phrase) {
+				_phraseData(phrase) {
 
 			uint32_t earliestPeerTime = 0;
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_mnemonic));
+			//fixme construct pub key from phrase
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey("a test seed ha"));
 
 			init(_masterPubKey, chainParams, earliestPeerTime);
 		}
@@ -71,9 +72,8 @@ namespace Elastos {
 			if (_keyStore.open(path, password)) {
 				Log::error("Import key error.");
 			}
-			_mnemonic = _keyStore.getMnemonic();
 
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_mnemonic));
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_keyStore.getMnemonic()));
 			init(_masterPubKey, _chainParams, _keyStore.json().getEarliestPeerTime(), true);
 		}
 
@@ -82,7 +82,7 @@ namespace Elastos {
 		}
 
 		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
-			CoreWalletManager::signAndPublishTransaction(transaction, _mnemonic);
+			CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
 			return transaction->getHash();
 		}
 
@@ -305,12 +305,13 @@ namespace Elastos {
 			_peerManagerListeners.push_back(listener);
 		}
 
-		ByteData WalletManager::signData(const ByteData &data) {
-			return ByteData();
+		CMBlock WalletManager::signData(const CMBlock &data) {
+			return CMBlock();
 		}
 
 		const std::string &WalletManager::getMnemonic() const {
-			return _mnemonic;
+			//todo decode mnemonic from entropy
+			return "";
 		}
 
 	}

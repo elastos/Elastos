@@ -57,11 +57,11 @@ namespace Elastos {
 			_id = id;
 		}
 
-		const ByteData &IdTxParam::getData() const {
+		const CMBlock &IdTxParam::getData() const {
 			return _data;
 		}
 
-		void IdTxParam::setData(const ByteData &data) {
+		void IdTxParam::setData(const CMBlock &data) {
 			_data = data;
 		}
 	}

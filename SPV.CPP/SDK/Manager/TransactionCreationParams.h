@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ByteData.h"
+#include "c_util.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -57,13 +57,13 @@ namespace Elastos {
 
 			void setId(const std::string &id);
 
-			const ByteData &getData() const;
+			const CMBlock &getData() const;
 
-			void setData(const ByteData &data);
+			void setData(const CMBlock &data);
 
 		private:
 			std::string _id;
-			ByteData _data;
+			CMBlock _data;
 		};
 	}
 }
