@@ -20,7 +20,6 @@ namespace Elastos {
 	namespace SDK {
 
 		int MerkleBlockMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 			// msg is holding by payload pointer create by malloc, do not match delete[] in ByteStream
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
@@ -44,14 +43,13 @@ namespace Elastos {
 				block = nullptr;
 				r = 0;
 			} else {
-				size_t count = wrappedBlock.getTransactionCount();
+//				size_t count = wrappedBlock.getTransactionCount();
+				size_t count = BRMerkleBlockTxHashes(block, NULL, 0);
 				UInt256 _hashes[(sizeof(UInt256) * count <= 0x1000) ? count : 0],
 						*hashes = (sizeof(UInt256) * count <= 0x1000) ? _hashes : (UInt256 *) malloc(
 						count * sizeof(*hashes));
-
 				assert(hashes != nullptr);
 				count = BRMerkleBlockTxHashes(block, hashes, count);
-
 				for (size_t i = count; i > 0; i--) { // reverse order for more efficient removal as tx arrive
 					if (BRSetContains(ctx->knownTxHashSet, &hashes[i - 1])) continue;
 					array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
@@ -73,7 +71,7 @@ namespace Elastos {
 					ELAMerkleBlockFree(elablock);
 				}
 			}
-
+			Log::getLogger()->info("MerkleBlockMessage::Accept return {}:", r);
 			return r;
 		}
 

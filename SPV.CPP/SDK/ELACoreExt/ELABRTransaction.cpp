@@ -68,6 +68,7 @@ namespace Elastos {
 			tx->raw.blockHeight = TX_UNCONFIRMED;
 			tx->type = 0;
 			tx->payloadVersion = 0;
+			tx->payloadData = CMBlock();
 			tx->programData.clear();
 			tx->attributeData.clear();
 			tx->outputAssetIDList.clear();
@@ -100,6 +101,10 @@ namespace Elastos {
 
 			elabrTransaction->type = tx->type;
 			elabrTransaction->payloadVersion = tx->payloadVersion;
+
+			elabrTransaction->payloadData.Resize(tx->payloadData.GetSize());
+			memcpy(elabrTransaction->payloadData, tx->payloadData, tx->payloadData.GetSize());
+
 			for (size_t i = 0; i < tx->programData.size(); ++i) {
 				CMBlock byteData(tx->programData[i].GetSize());
 				memcpy(byteData, tx->programData[i], tx->programData[i].GetSize());

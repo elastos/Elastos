@@ -144,71 +144,82 @@ public:
 	}
 
 	~CMemBlock() {
-		pValue->Release();
+		if (pValue)
+			pValue->Release();
 	}
 
 	CMemBlock &operator=(const CMemBlock &mem) {
-		if (pValue == mem.pValue)
+		if (pValue && pValue == mem.pValue)
 			return *this;
-		pValue->Release();
+		if (pValue)
+			pValue->Release();
 		pValue = mem.pValue;
-		pValue->AddRef();
+		pValue ? pValue->AddRef() : 0;
 
 		return *this;
 	}
 
 	CMemBlock operator+(const CMemBlock &mem) const {
 		CMemBlock ret;
-		SIZETYPE l = pValue->_len + mem.pValue->_len;
+		SIZETYPE l = pValue ? pValue->_len : 0 + mem.pValue ? mem.pValue->_len : 0;
 		ret.Resize(l);
-		memcpy(ret, pValue->data, sizeof(T) * pValue->_len);
-		memcpy(ret + pValue->_len, mem.pValue->data, sizeof(T) * mem.pValue->_len);
+		memcpy(ret, pValue ? pValue->data : 0, sizeof(T) * pValue ? pValue->_len : 0);
+		memcpy(ret + pValue ? pValue->_len : 0, mem.pValue ? mem.pValue->data : 0,
+			   sizeof(T) * pValue ? mem.pValue->_len : 0);
 
 		return ret;
 	}
 
 	CMemBlock &operator+=(const CMemBlock &mem) {
-		SIZETYPE l = pValue->_len + mem.pValue->_len;
+		if (!pValue) {
+			pValue = new Value((size_t) 0);
+			pValue->AddRef();
+		}
+		SIZETYPE l = pValue->_len + mem.pValue ? mem.pValue->_len : 0;
 		pValue->Resize(l);
-		memcpy(pValue->data + pValue->_len - mem.pValue->_len, mem.pValue->data, sizeof(T) * mem.pValue->_len);
+		memcpy(pValue->data + pValue->_len, mem.pValue ? mem.pValue->data : 0,
+			   sizeof(T) * mem.pValue ? mem.pValue->_len : 0);
 
 		return *this;
 	}
 
 	void Zero() {
-		pValue->Zero();
+		if (pValue)
+			pValue->Zero();
 	}
 
 	void Clear() {
-		pValue->Clear();
+		if (pValue)
+			pValue->Clear();
 	}
 
 	void DelAt(SIZETYPE st) {
-		pValue->DelAt(st);
+		if (pValue)
+			pValue->DelAt(st);
 	}
 
 	SIZETYPE SetMem(T *pV, SIZETYPE len) {
-		return pValue->SetMem(pV, len);
+		return pValue ? pValue->SetMem(pV, len) : 0;
 	}
 
 	SIZETYPE SetMemFixed(const T *pV, SIZETYPE len) {
-		return pValue->SetMemFixed(pV, len);
+		return pValue ? pValue->SetMemFixed(pV, len) : 0;
 	}
 
 	SIZETYPE Resize(SIZETYPE size) {
-		return pValue->Resize(size);
+		return pValue ? pValue->Resize(size) : 0;
 	}
 
 	SIZETYPE push_back(T &t) {
-		return pValue->push_back(t);
+		return pValue ? pValue->push_back(t) : 0;
 	}
 
 	SIZETYPE GetSize() const {
-		return pValue->GetSize();
+		return pValue ? pValue->GetSize() : 0;
 	}
 
 	void Reverse() {
-		pValue->Reverse();
+		pValue ? pValue->Reverse() : 0;
 	}
 
 	operator bool() const {
@@ -216,31 +227,33 @@ public:
 	};
 
 	operator void *() const {
-		return (void *) pValue->data;
+		return (void *) pValue ? pValue->data : 0;
 	}
 
 	T &operator*() const {
-		return *pValue->data;
+		T t;
+		return pValue ? *pValue->data : t;
 	}
 
 	operator T *() const {
-		return pValue->data;
+		return pValue ? pValue->data : 0;
 	}
 
 	operator const T *() const {
-		return pValue->data;
+		return pValue ? pValue->data : 0;
 	}
 
 	T **operator&() const {
-		return &pValue->data;
+		return pValue ? &pValue->data : 0;
 	}
 
 	T *operator+(SIZETYPE off) const {
-		return pValue->data + off;
+		return pValue ? pValue->data + off : 0;
 	}
 
 	T &operator[](SIZETYPE off) const {
-		return pValue->data[off];
+		T t;
+		return pValue ? pValue->data[off] : t;
 	}
 
 private:
