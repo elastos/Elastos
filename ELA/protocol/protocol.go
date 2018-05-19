@@ -20,7 +20,7 @@ const (
 )
 
 const (
-	ProtocolVersion  = p2p.EIP001Version
+	ProtocolVersion  = 0
 	KeepAliveTimeout = 3
 	DialTimeout      = 6
 	ConnMonitor      = 6
