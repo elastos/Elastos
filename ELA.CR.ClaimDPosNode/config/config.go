@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/blockchain"
 )
 
 const (
@@ -141,13 +140,6 @@ func init() {
 	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
 		Parameters.ChainParam = regNet
 	}
-
-	blockchain.FoundationAddress = Parameters.Configuration.FoundationAddress
-
-	if blockchain.FoundationAddress == "" {
-		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
-	}
-
 }
 
 func (config *Configuration) GetArbitrators() ([][]byte, error) {
