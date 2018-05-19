@@ -11,7 +11,7 @@
 
 #include "../ELACoreExt/Payload/IPayload.h"
 #include "Wrapper.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 #include "SharedWrapperList.h"
 #include "TransactionInput.h"
 #include "TransactionOutput.h"

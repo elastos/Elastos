@@ -11,7 +11,7 @@
 
 #include "Wrapper.h"
 #include "ELAMessageSerializable.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace SDK {

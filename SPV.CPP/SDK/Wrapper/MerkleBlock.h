@@ -9,7 +9,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Wrapper.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 #include "ELAMessageSerializable.h"
 #include "ELACoreExt/AuxPow.h"
 #include "ELACoreExt/ELAMerkleBlock.h"

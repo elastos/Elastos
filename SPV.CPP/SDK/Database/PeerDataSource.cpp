@@ -5,7 +5,7 @@
 #include "PreCompiled.h"
 #include <sstream>
 
-#include "c_util.h"
+#include "CMemBlock.h"
 #include "PeerDataSource.h"
 
 namespace Elastos {

@@ -10,6 +10,7 @@ namespace Elastos {
 		ElaNewWalletJson::ElaNewWalletJson() :
 				_id(""),
 				_idInfo(""),
+				_mnemonicLanguage("english"),
 				_earliestPeerTime(0) {
 
 		}
@@ -40,6 +41,14 @@ namespace Elastos {
 
 		void ElaNewWalletJson::setEaliestPeerTime(uint32_t time) {
 			_earliestPeerTime = time;
+		}
+
+		const std::string &ElaNewWalletJson::getMnemonicLanguage() const {
+			return _mnemonicLanguage;
+		}
+
+		void ElaNewWalletJson::setMnemonicLanguage(const std::string &language) const {
+			_mnemonicLanguage = language;
 		}
 
 		void to_json(nlohmann::json &j, const ElaNewWalletJson &p) {

@@ -10,7 +10,7 @@
 #include "BRTransaction.h"
 
 #include "Wrapper.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {

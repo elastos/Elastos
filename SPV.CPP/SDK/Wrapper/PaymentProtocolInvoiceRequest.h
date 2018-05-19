@@ -10,7 +10,7 @@
 
 #include "Wrapper.h"
 #include "Key.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace SDK {

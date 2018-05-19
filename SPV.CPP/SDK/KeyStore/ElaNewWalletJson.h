@@ -29,9 +29,14 @@ namespace Elastos {
 
 			void setEaliestPeerTime(uint32_t time);
 
+			const std::string &getMnemonicLanguage() const;
+
+			void setMnemonicLanguage(const std::string &language) const;
+
 		private:
 			std::string _id;
 			std::string _idInfo;
+			std::string _mnemonicLanguage;
 			uint32_t _earliestPeerTime;
 		};
 

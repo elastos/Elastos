@@ -8,7 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "ELAMessageSerializable.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace SDK {

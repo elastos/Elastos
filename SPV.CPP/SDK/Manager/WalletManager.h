@@ -14,7 +14,7 @@
 #include "BackgroundExecutor.h"
 #include "KeyStore/KeyStore.h"
 #include "Transaction.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace SDK {

@@ -8,7 +8,7 @@
 #include <sqlite3.h>
 #include <boost/filesystem.hpp>
 
-#include "c_util.h"
+#include "CMemBlock.h"
 
 namespace Elastos {
 	namespace SDK {

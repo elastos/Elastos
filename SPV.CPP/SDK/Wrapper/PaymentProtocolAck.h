@@ -8,7 +8,7 @@
 #include "BRPaymentProtocol.h"
 
 #include "Wrapper.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 #include "Transaction.h"
 
 namespace Elastos {

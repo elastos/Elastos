@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Wrapper.h"
-#include "c_util.h"
+#include "CMemBlock.h"
 #include "TransactionOutput.h"
 #include "SharedWrapperList.h"
 
