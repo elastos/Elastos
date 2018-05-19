@@ -41,6 +41,7 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../Interface"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/json/single_include"
@@ -50,9 +51,11 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash/ SPVCORE_BCASH_SO
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite SQLITE_SOURCE_FILES)
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
+file(GLOB_RECURSE SPVSDK_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../Interface/*.h")
 add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
 	${SPVSDK_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
+	${SPVSDK_HEADER_FILES}
 	${SPVCORE_BCASH_SOURCE_FILES}
 	${SQLITE_SOURCE_FILES})
 
