@@ -127,8 +127,8 @@ func (client *SPVClientImpl) keepUpdate() {
 			if peer.State() == p2p.ESTABLISH {
 
 				// Disconnect inactive peer
-				if peer.LastActive().Before(
-					time.Now().Add(-time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
+				if time.Now().After(
+					peer.LastActive().Add(time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
 					client.PeerManager().OnDisconnected(peer)
 					continue
 				}

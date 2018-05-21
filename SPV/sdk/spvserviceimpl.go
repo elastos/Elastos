@@ -47,8 +47,6 @@ func (b *downloadBlock) dequeueTx(tx *ela.Transaction) (uint32, bool) {
 		return 0, false
 	}
 	delete(b.txsQueue, txId)
-
-	b.txs = append(b.txs, tx)
 	return height, true
 }
 
@@ -110,6 +108,10 @@ func (s *SPVServiceImpl) Stop() {
 	s.stopSyncing()
 	s.chain.Close()
 	log.Info("SPV service stopped...")
+}
+
+func (s *SPVServiceImpl) ChainState() ChainState {
+	return s.chain.state
 }
 
 func (s *SPVServiceImpl) ReloadFilter() {
@@ -180,8 +182,6 @@ func (s *SPVServiceImpl) needSync() bool {
 		return false
 	}
 	chainHeight := uint64(s.chain.Height())
-	log.Info("Chain height:", chainHeight)
-	log.Info("Best peer height:", bestPeer.Height())
 
 	return bestPeer.Height() > chainHeight
 }
@@ -195,8 +195,6 @@ func (s *SPVServiceImpl) syncBlocks() {
 		}
 		// Set blockchain state to syncing
 		s.chain.SetChainState(SYNCING)
-		// Callback chain state change
-		s.handler.OnStateChange(SYNCING)
 		// Request blocks
 		s.requestBlocks()
 	} else {
@@ -208,8 +206,6 @@ func (s *SPVServiceImpl) stopSyncing() {
 	if s.chain.IsSyncing() {
 		// Set blockchain state to waiting
 		s.chain.SetChainState(WAITING)
-		// Callback chain state change
-		s.handler.OnStateChange(WAITING)
 		// Remove sync peer
 		s.PeerManager().SetSyncPeer(nil)
 
@@ -353,10 +349,15 @@ func (s *SPVServiceImpl) OnTx(peer *net.Peer, msg *msg.Tx) error {
 
 	if height == 0 {
 		// commit unconfirmed transaction
-		s.handler.CommitTx(tx, 0)
-		s.updateFilterAndSend(peer)
-		return nil
+		_, err := s.handler.CommitTx(tx, 0)
+		if err == nil {
+			s.updateFilterAndSend(peer)
+		}
+		return err
 	}
+
+	// Add tx to download
+	s.download.txs = append(s.download.txs, tx)
 
 	// All transactions of the download block have been received, commit the download block
 	if len(s.download.txsQueue) == 0 {
@@ -435,5 +436,6 @@ func (s *SPVServiceImpl) OnReject(peer *net.Peer, msg *msg.Reject) error {
 
 // Update local peer height with current chain height
 func (s *SPVServiceImpl) updateLocalHeight(height uint32) {
+	log.Info("LocalChain height:", height)
 	s.PeerManager().Local().SetHeight(uint64(height))
 }

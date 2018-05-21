@@ -3,7 +3,6 @@ package spvwallet
 import (
 	"sync"
 	"time"
-
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
@@ -16,7 +15,10 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-const MaxUnconfirmedTime = time.Minute * 1
+const (
+	MaxUnconfirmedTime = time.Minute * 30
+	MaxTxIdCached      = 1000
+)
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	var err error
@@ -33,6 +35,9 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Initialize txs cache
+	wallet.txIds = NewTxIdCache(MaxTxIdCached)
 
 	// Initialize P2P network client
 	client, err := sdk.GetSPVClient(config.Values().Magic, clientId, seeds)
@@ -64,9 +69,9 @@ type SPVWallet struct {
 	sync.Mutex
 	sdk.SPVService
 	rpcServer     *rpc.Server
-	chainState    sdk.ChainState
 	headerStore   *db.HeadersDB
 	dataStore     db.DataStore
+	txIds         *TxIdCache
 	filter        *sdk.AddrFilter
 	dataListeners []DataListener
 }
@@ -108,14 +113,31 @@ func (wallet *SPVWallet) GetData() ([]*common.Uint168, []*core.OutPoint) {
 	return wallet.getAddrFilter().GetAddrs(), outpoints
 }
 
-func (wallet *SPVWallet) OnStateChange(state sdk.ChainState) {
-	log.Debugf("On chain state change %s", state.String())
-	wallet.chainState = state
-}
-
 // Commit a transaction return if this is a false positive and error
 func (wallet *SPVWallet) CommitTx(tx *core.Transaction, height uint32) (bool, error) {
 	txId := tx.Hash()
+
+	sh, ok := wallet.txIds.Get(txId)
+	if ok && (sh > 0 || (sh == 0 && height == 0)) {
+		return false, nil
+	}
+
+	dubs, err := wallet.checkDoubleSpends(tx)
+	if err != nil {
+		return false, nil
+	}
+	if len(dubs) > 0 {
+		if height == 0 {
+			return false, nil
+		} else {
+			// Rollback any double spend transactions
+			for _, dub := range dubs {
+				if err := wallet.dataStore.RollbackTx(dub); err != nil {
+					return false, nil
+				}
+			}
+		}
+	}
 
 	hits := 0
 	// Save UTXOs
@@ -150,10 +172,12 @@ func (wallet *SPVWallet) CommitTx(tx *core.Transaction, height uint32) (bool, er
 	}
 
 	// Save transaction
-	err := wallet.dataStore.Txs().Put(db.NewTx(*tx, height))
+	err = wallet.dataStore.Txs().Put(db.NewTx(*tx, height))
 	if err != nil {
 		return false, err
 	}
+
+	wallet.txIds.Add(txId, height)
 
 	return false, nil
 }
@@ -164,12 +188,22 @@ func (wallet *SPVWallet) OnBlockCommitted(block *msg.MerkleBlock, txs []*core.Tr
 		go listener.OnNewBlock(block, txs)
 	}
 
-	log.Debugf("On block committed chain state %s", wallet.chainState.String())
 	// Check unconfirmed transaction timeout
-	if wallet.chainState == sdk.WAITING {
-		err := wallet.dataStore.RollbackTimeoutTxs(MaxUnconfirmedTime)
+	if wallet.ChainState() == sdk.WAITING {
+		// Get all unconfirmed transactions
+		txs, err := wallet.dataStore.Txs().GetAllFrom(0)
 		if err != nil {
-			log.Errorf("Rollback timeout transactions failed, error %s", err.Error())
+			log.Debugf("Get unconfirmed transactions failed, error %s", err.Error())
+			return
+		}
+		now := time.Now()
+		for _, tx := range txs {
+			if now.After(tx.Timestamp.Add(MaxUnconfirmedTime)) {
+				err = wallet.dataStore.RollbackTx(&tx.TxId)
+				if err != nil {
+					log.Errorf("Rollback timeout transaction %s failed, error %s", tx.TxId.String(), err.Error())
+				}
+			}
 		}
 	}
 }
@@ -212,4 +246,37 @@ func (wallet *SPVWallet) loadAddrFilter() *sdk.AddrFilter {
 		wallet.filter.AddAddr(addr.Hash())
 	}
 	return wallet.filter
+}
+
+// checkDoubleSpends takes a transaction and compares it with
+// all transactions in the db.  It returns a slice of all txIds in the db
+// which are double spent by the received tx.
+func (wallet *SPVWallet) checkDoubleSpends(tx *core.Transaction) ([]*common.Uint256, error) {
+	var dubs []*common.Uint256
+	txId := tx.Hash()
+	txs, err := wallet.dataStore.Txs().GetAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, compTx := range txs {
+		// Skip coinbase transaction
+		if compTx.Data.IsCoinBaseTx() {
+			continue
+		}
+		// Skip duplicate transaction
+		compTxId := compTx.Data.Hash()
+		if compTxId.IsEqual(txId) {
+			continue
+		}
+		for _, txIn := range tx.Inputs {
+			for _, compIn := range compTx.Data.Inputs {
+				if txIn.Previous.IsEqual(compIn.Previous) {
+					// Found double spend
+					dubs = append(dubs, &compTxId)
+					break // back to txIn loop
+				}
+			}
+		}
+	}
+	return dubs, nil
 }

@@ -19,7 +19,7 @@ type ChainDB struct {
 	*sql.DB
 }
 
-func NewChainDB(db *sql.DB, lock *sync.RWMutex) (Chain, error) {
+func NewChainDB(db *sql.DB, lock *sync.RWMutex) (*ChainDB, error) {
 	_, err := db.Exec(CreateInfoDB)
 	if err != nil {
 		return nil, err

@@ -3,7 +3,6 @@ package db
 import (
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"time"
 )
 
 type DataStore interface {
@@ -14,7 +13,7 @@ type DataStore interface {
 	STXOs() STXOs
 
 	Rollback(height uint32) error
-	RollbackTimeoutTxs(timeoutDuration time.Duration) error
+	RollbackTx(txId *common.Uint256) error
 	// Reset database, clear all data
 	Reset() error
 

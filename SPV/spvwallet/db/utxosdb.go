@@ -21,7 +21,7 @@ type UTXOsDB struct {
 	*sql.DB
 }
 
-func NewUTXOsDB(db *sql.DB, lock *sync.RWMutex) (UTXOs, error) {
+func NewUTXOsDB(db *sql.DB, lock *sync.RWMutex) (*UTXOsDB, error) {
 	_, err := db.Exec(CreateUTXOsDB)
 	if err != nil {
 		return nil, err

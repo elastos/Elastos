@@ -18,7 +18,7 @@ type AddrsDB struct {
 	*sql.DB
 }
 
-func NewAddrsDB(db *sql.DB, lock *sync.RWMutex) (Addrs, error) {
+func NewAddrsDB(db *sql.DB, lock *sync.RWMutex) (*AddrsDB, error) {
 	_, err := db.Exec(CreateAddrsDB)
 	if err != nil {
 		return nil, err

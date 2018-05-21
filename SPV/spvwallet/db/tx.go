@@ -4,6 +4,7 @@ import (
 	"time"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"fmt"
 )
 
 type Tx struct {
@@ -27,4 +28,12 @@ func NewTx(tx core.Transaction, height uint32) *Tx {
 	storeTx.Timestamp = time.Now()
 	storeTx.Data = tx
 	return storeTx
+}
+
+func (tx *Tx) String() string {
+	return fmt.Sprintln(
+		"{TxId:", tx.TxId.String(),
+		", Height:", tx.Height,
+		", Timestamp:", tx.Timestamp,
+		"}")
 }

@@ -23,7 +23,7 @@ type STXOsDB struct {
 	*sql.DB
 }
 
-func NewSTXOsDB(db *sql.DB, lock *sync.RWMutex) (STXOs, error) {
+func NewSTXOsDB(db *sql.DB, lock *sync.RWMutex) (*STXOsDB, error) {
 	_, err := db.Exec(CreateSTXOsDB)
 	if err != nil {
 		return nil, err
@@ -40,6 +40,7 @@ func (db *STXOsDB) FromUTXO(outPoint *core.OutPoint, spendTxId *common.Uint256, 
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback()
 
 	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash, SpendHash, SpendHeight)
 			SELECT UTXOs.OutPoint, UTXOs.Value, UTXOs.LockTime, UTXOs.AtHeight, UTXOs.ScriptHash, ?, ? FROM UTXOs
@@ -97,7 +98,7 @@ func (db *STXOsDB) GetAddrAll(hash *common.Uint168) ([]*STXO, error) {
 	sql := "SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight FROM STXOs WHERE ScriptHash=?"
 	rows, err := db.Query(sql, hash.Bytes())
 	if err != nil {
-		return []*STXO{}, err
+		return nil, err
 	}
 	defer rows.Close()
 

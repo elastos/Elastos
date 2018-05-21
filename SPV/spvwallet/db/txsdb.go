@@ -23,7 +23,7 @@ type TxsDB struct {
 	*sql.DB
 }
 
-func NewTxsDB(db *sql.DB, lock *sync.RWMutex) (Txs, error) {
+func NewTxsDB(db *sql.DB, lock *sync.RWMutex) (*TxsDB, error) {
 	_, err := db.Exec(CreateTXNDB)
 	if err != nil {
 		return nil, err

@@ -20,6 +20,10 @@ type SPVService interface {
 	// Stop SPV service
 	Stop()
 
+	// ChainState returns the current state of the blockchain, to indicate that the blockchain
+	// is in syncing mode or waiting mode.
+	ChainState() ChainState
+
 	// ReloadFilters is a trigger to make SPV service refresh the current
 	// transaction filer(in our implementation the bloom filter) in SPV service.
 	// This will call onto the GetAddresses() and GetOutpoints() method in SPVHandler.
@@ -39,10 +43,6 @@ type SPVHandler interface {
 	// there will be the outpoint reference to it. Any time you want to spend the balance of an
 	// address, you must provide the reference of the balance which is an outpoint in the transaction input.
 	GetData() ([]*common.Uint168, []*ela.OutPoint)
-
-	// OnStateChange callback the current state of the blockchain, to indicate that the blockchain
-	// is in syncing mode or waiting mode.
-	OnStateChange(state ChainState)
 
 	// When interested transactions received, this method will call back them.
 	// The height is the block height where this transaction has been packed.
