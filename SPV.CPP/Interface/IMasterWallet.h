@@ -14,12 +14,20 @@ namespace Elastos {
 		public:
 			virtual ISubWallet *CreateSubWallet(
 					const std::string &chainID,
+					int coinTypeIndex,
 					const std::string &payPassword,
 					bool singleAddress) = 0;
 
+			virtual ISubWallet *RecoverSubWallet(
+					const std::string &chainID,
+					int coinTypeIndex,
+					const std::string &payPassword,
+					bool singleAddress,
+					int limitGap) = 0;
+
 			virtual void DestroyWallet(ISubWallet *wallet) = 0;
 
-			virtual std::string GetPublicKey(const std::string &keystorePath) = 0;
+			virtual std::string GetPublicKey() = 0;
 		};
 
 	}
