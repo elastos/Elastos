@@ -22,7 +22,7 @@ namespace Elastos {
 
 			virtual std::string GetTheLastAddress() = 0;
 
-			virtual std::string GetAllAddress() = 0;
+			virtual nlohmann::json GetAllAddress() = 0;
 
 			virtual double GetBalanceWithAddress(const std::string &address) = 0;
 

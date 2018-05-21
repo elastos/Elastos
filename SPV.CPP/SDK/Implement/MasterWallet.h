@@ -7,14 +7,14 @@
 
 #include <map>
 #include <boost/shared_ptr.hpp>
+#include <boost/filesystem.hpp>
 
 #include "Interface/IMasterWallet.h"
+#include "KeyStore/KeyStore.h"
+#include "MasterPubKey.h"
 
 namespace Elastos {
 	namespace SDK {
-
-		class Key;
-		class MasterPubKey;
 
 		class MasterWallet : public IMasterWallet {
 		public:
@@ -43,10 +43,6 @@ namespace Elastos {
 
 		protected:
 			friend class WalletFactory;
-
-			typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
-
-			typedef boost::shared_ptr<Key> KeyPtr;
 
 			typedef std::map<std::string, ISubWallet *> WalletMap;
 
@@ -77,6 +73,9 @@ namespace Elastos {
 
 			MasterPubKeyPtr _masterPubKey;
 			KeyPtr _key;
+
+			KeyStore _keyStore;
+			boost::filesystem::path _dbRoot;
 		};
 
 	}

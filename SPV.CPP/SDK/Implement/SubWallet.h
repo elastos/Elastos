@@ -6,16 +6,15 @@
 #define __ELASTOS_SDK_SUBWALLET_H__
 
 #include <boost/shared_ptr.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include "Interface/ISubWallet.h"
 #include "Interface/ISubWalletCallback.h"
+#include "ChainParams.h"
+#include "WalletManager.h"
 
 namespace Elastos {
 	namespace SDK {
-
-		class Key;
-		class MasterPubKey;
-		class WalletManager;
 
 		class SubWalletCallback : public ISubWalletCallback {
 		public:
@@ -34,10 +33,11 @@ namespace Elastos {
 					uint32_t confirms);
 		};
 
-		class SubWallet : public ISubWallet {
+		class SubWallet : public ISubWallet, public Wallet::Listener {
 		public:
 			~SubWallet();
 
+		public: //implement ISubWallet
 			virtual nlohmann::json GetBalanceInfo();
 
 			virtual double GetBalance();
@@ -46,7 +46,7 @@ namespace Elastos {
 
 			virtual std::string GetTheLastAddress();
 
-			virtual std::string GetAllAddress();
+			virtual nlohmann::json GetAllAddress();
 
 			virtual double GetBalanceWithAddress(const std::string &address);
 
@@ -81,20 +81,34 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
+		protected: //implement Wallet::Listener
+			virtual void balanceChanged(uint64_t balance);
+
+			virtual void onTxAdded(Transaction *transaction);
+
+			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
+
+			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+
 		protected:
 			friend class MasterWallet;
 
-			typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
-
 			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
 
-			typedef boost::shared_ptr<Key> KeyPtr;
+			SubWallet(const MasterPubKeyPtr &masterPubKey,
+					  const boost::filesystem::path &dbPath,
+					  uint32_t earliestPeerTime,
+					  bool singleAddress,
+					  const ChainParams &chainParams);
 
-			SubWallet(const KeyPtr &key, const MasterPubKeyPtr &masterPubKey);
+			void recover(int limitGap);
 
 		protected:
 
 			WalletManagerPtr _walletManager;
+			std::vector<ISubWalletCallback *> _callbacks;
+			//todo initialize balance unit from constructor
+			double _balanceUnit;
 		};
 
 	}

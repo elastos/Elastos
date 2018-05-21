@@ -13,6 +13,8 @@
 namespace Elastos {
 	namespace SDK {
 
+		class MasterWallet;
+
 		class WalletFactory : public IWalletFactory {
 		public:
 			WalletFactory();
@@ -46,7 +48,7 @@ namespace Elastos {
 					const std::string &phrasePassword);
 
 		protected:
-			IMasterWallet *importWalletInternal(const boost::function<IMasterWallet *(void)> &newWallet);
+			IMasterWallet *importWalletInternal(const boost::function<bool(MasterWallet *)> &walletImportFun);
 
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;

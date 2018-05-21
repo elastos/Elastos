@@ -21,7 +21,8 @@ namespace Elastos {
 				_walletListener(nullptr),
 				_peerManager(nullptr),
 				_peerManagerListener(nullptr),
-				_masterPubKey(nullptr) {
+				_masterPubKey(nullptr),
+				_singleAddress(false) {
 		}
 
 		CoreWalletManager::~CoreWalletManager() {
@@ -31,10 +32,12 @@ namespace Elastos {
 		void CoreWalletManager::init(const MasterPubKeyPtr &masterPubKey,
 									 const ChainParams &chainParams,
 									 uint32_t earliestPeerTime,
+									 bool singleAddress,
 									 bool reset) {
 			_masterPubKey = masterPubKey;
 			_earliestPeerTime = earliestPeerTime;
 			_chainParams = chainParams;
+			_singleAddress = singleAddress;
 
 			if (reset) {
 				_wallet.reset();
@@ -46,6 +49,7 @@ namespace Elastos {
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {
+			//todo create single address wallet if _singleAddress is true
 			if (_wallet == nullptr) {
 				_wallet = WalletPtr(new Wallet(loadTransactions(), _masterPubKey, createWalletListener()));
 			}

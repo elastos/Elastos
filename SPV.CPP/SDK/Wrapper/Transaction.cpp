@@ -115,6 +115,7 @@ namespace Elastos {
 		}
 
 		void Transaction::setPayloadByTransactionType() {
+			//todo initializing payload other than just creating
 			if (_type == CoinBase) {
 				_payload = boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
 
@@ -127,6 +128,7 @@ namespace Elastos {
 			} else if (_type == Record) {
 				_payload = boost::shared_ptr<PayloadRecord>(new PayloadRecord());
 			} else if (_type == Deploy) {
+				//todo add deploy payload
 			    //_payload = boost::shared_ptr<
 
 			} else if (_type == SideMining) {

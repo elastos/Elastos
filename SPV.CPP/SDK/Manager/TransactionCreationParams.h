@@ -12,6 +12,13 @@
 namespace Elastos {
 	namespace SDK {
 
+		enum TxType {
+			Normal = 0,
+			Deposit,
+			Withdraw,
+			ID
+		};
+
 		class TxParam {
 		public:
 			TxParam();
@@ -26,9 +33,16 @@ namespace Elastos {
 
 			void setAmount(uint64_t amount);
 
+			const UInt256 &getAssetId() const;
+
+			void setAssetId(const UInt256 &id);
+
+			virtual TxType getType() const { return Normal;}
+
 		private:
 			std::string _toAddress;
 			uint64_t _amount;
+			UInt256 _assetId;
 		};
 
 		class DepositTxParam : public TxParam {
@@ -36,6 +50,8 @@ namespace Elastos {
 			std::string getSidechainAddress() const;
 
 			void setSidechainAddress(const std::string &address);
+
+			virtual TxType getType() const { return Deposit;}
 
 		private:
 			std::string _sidechainAddress;
@@ -46,6 +62,8 @@ namespace Elastos {
 			std::string getMainchainAddress() const;
 
 			void setMainchainAddress(const std::string &address);
+
+			virtual TxType getType() const { return Withdraw;}
 
 		private:
 			std::string _mainchainAddress;
@@ -60,6 +78,8 @@ namespace Elastos {
 			const CMBlock &getData() const;
 
 			void setData(const CMBlock &data);
+
+			virtual TxType getType() const { return ID;}
 
 		private:
 			std::string _id;

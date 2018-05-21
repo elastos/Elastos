@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRInt.h>
 #include "TransactionCreationParams.h"
 
 namespace Elastos {
@@ -9,7 +10,8 @@ namespace Elastos {
 
 		TxParam::TxParam() :
 				_toAddress(""),
-				_amount(0) {
+				_amount(0),
+				_assetId() {
 
 		}
 
@@ -31,6 +33,14 @@ namespace Elastos {
 
 		void TxParam::setAmount(uint64_t amount) {
 			_amount = amount;
+		}
+
+		const UInt256 &TxParam::getAssetId() const {
+			return _assetId;
+		}
+
+		void TxParam::setAssetId(const UInt256 &id) {
+			_assetId = id;
 		}
 
 		std::string DepositTxParam::getSidechainAddress() const {

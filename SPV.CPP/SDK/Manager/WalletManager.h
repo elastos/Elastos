@@ -20,7 +20,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class WalletManager :
-			public CoreWalletManager {
+				public CoreWalletManager {
 		public:
 			WalletManager(const ChainParams &chainParams = ChainParams::mainNet());
 
@@ -33,6 +33,12 @@ namespace Elastos {
 			WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
+			WalletManager(const MasterPubKeyPtr &masterPubKey,
+						  const boost::filesystem::path &dbPath,
+						  uint32_t earliestPeerTime,
+						  bool singleAddress,
+						  const ChainParams &chainParams = ChainParams::mainNet());
+
 			virtual ~WalletManager();
 
 			void start();
@@ -43,23 +49,18 @@ namespace Elastos {
 
 			void importKey(const boost::filesystem::path &path, const std::string &password);
 
-			const std::string &getMnemonic() const;
-
 			TransactionPtr createTransaction(const TxParam &param);
 
 			UInt256 signAndPublishTransaction(const TransactionPtr &transaction);
 
-			TransactionPtr createTransaction(std::string toAddress, uint64_t amount, uint64_t feeTx, UInt256 assetId,
-											 Transaction::Type type);
-
 			SharedWrapperList<Transaction, BRTransaction *> getTransactions(
-				const boost::function<bool(const TransactionPtr &)> filter) const;
+					const boost::function<bool(const TransactionPtr &)> filter) const;
 
 			void registerWalletListener(Wallet::Listener *listener);
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);
 
-			CMBlock signData(const CMBlock &data);
+			void recover(int limitGap);
 
 		public:
 			// func balanceChanged(_ balance: UInt64)
@@ -108,6 +109,9 @@ namespace Elastos {
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 			virtual const WalletListenerPtr &createWalletListener();
+
+		protected:
+			TransactionPtr createNormalTransaction(std::string toAddress, uint64_t amount, UInt256 assetId);
 
 		private:
 			DatabaseManager _databaseManager;

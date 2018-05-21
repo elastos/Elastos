@@ -5,13 +5,19 @@
 #include "MasterPubKey.h"
 #include "MasterWallet.h"
 #include "SubWallet.h"
+#include "Log.h"
+
+namespace fs = boost::filesystem;
+
+#define DB_FILE_EXTENSION ".db"
 
 namespace Elastos {
 	namespace SDK {
 
 		MasterWallet::MasterWallet() :
 				_initialized(false),
-				_name("") {
+				_name(""),
+				_dbRoot("db") {
 
 		}
 
@@ -29,12 +35,22 @@ namespace Elastos {
 		ISubWallet *
 		MasterWallet::CreateSubWallet(const std::string &chainID, int coinTypeIndex, const std::string &payPassword,
 									  bool singleAddress) {
+
+			if(!Initialized()) {
+				Log::warn("Current master wallet is not initialized.");
+				return nullptr;
+			}
+
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
 
-			//todo generate master public key of sub wallet
+			//todo generate master public key of sub wallet[by coinTypeIndex]
 			MasterPubKeyPtr masterPubKey;
-			SubWallet *subWallet = new SubWallet(_key, masterPubKey);
+
+			fs::path subWalletDbPath = _dbRoot;
+			subWalletDbPath /= _name + chainID + DB_FILE_EXTENSION;
+
+			SubWallet *subWallet = new SubWallet(masterPubKey, subWalletDbPath, 0, singleAddress, ChainParams::mainNet());
 			_createdWallets[chainID] = subWallet;
 			return subWallet;
 		}
@@ -45,7 +61,9 @@ namespace Elastos {
 			ISubWallet *subWallet = _createdWallets.find(chainID) == _createdWallets.end()
 									? CreateSubWallet(chainID, coinTypeIndex, payPassword, singleAddress)
 									: _createdWallets[chainID];
-			//todo recover logic
+			SubWallet *walletInner = static_cast<SubWallet *>(subWallet);
+			walletInner->recover(limitGap);
+
 			_createdWallets[chainID] = subWallet;
 			return subWallet;
 		}
@@ -58,8 +76,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() {
-			//todo return master public key
-			return "";
+			return (const char *)(void *)_masterPubKey->getPubKey();
 		}
 
 		const std::string &MasterWallet::GetName() const {
@@ -68,11 +85,19 @@ namespace Elastos {
 
 		bool MasterWallet::importFromKeyStore(const std::string &keystorePath, const std::string &backupPassword,
 											  const std::string &payPassword) {
-			return false;
+			if (!_keyStore.open(keystorePath, backupPassword)) {
+				Log::error("Import key error.");
+				return false;
+			}
+
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_keyStore.getMnemonic()));
+			//todo create private key by payPassword and entropy
 		}
 
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
 											  const std::string &payPassword) {
+			//todo recover entropy by mnemonic and phrasePassword
+			//todo create private key by payPassword and entropy
 			return false;
 		}
 
@@ -81,6 +106,8 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::exportMnemonic(const std::string &phrasePassword, std::string &mnemonic) {
+			//todo compare phrase password with phrase hash first
+			//todo generate mnemonic from entropy
 			return false;
 		}
 

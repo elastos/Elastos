@@ -28,6 +28,7 @@ namespace Elastos {
 			void init(const MasterPubKeyPtr &masterPubKey,
 					  const ChainParams &chainParams,
 					  uint32_t earliestPeerTime,
+					  bool singleAddress,
 					  bool reset = false);
 
 			const WalletPtr &getWallet();
@@ -100,6 +101,7 @@ namespace Elastos {
 			MasterPubKeyPtr _masterPubKey;
 
 			ChainParams _chainParams;
+			bool _singleAddress;
 
 			uint32_t _earliestPeerTime;
 

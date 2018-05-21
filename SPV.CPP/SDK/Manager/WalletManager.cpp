@@ -18,14 +18,14 @@ namespace Elastos {
 	namespace SDK {
 
 		WalletManager::WalletManager(const ChainParams &chainParams) :
-			_executor(BACKGROUND_THREAD_COUNT),
-			_databaseManager(DATABASE_PATH) {
+				_executor(BACKGROUND_THREAD_COUNT),
+				_databaseManager(DATABASE_PATH) {
 
 			uint32_t earliestPeerTime = 0;
 			_masterPubKey = MasterPubKeyPtr(new MasterPubKey);
 			//todo get mnemonic
 
-			init(_masterPubKey, chainParams, earliestPeerTime);
+			init(_masterPubKey, chainParams, earliestPeerTime, false);
 		}
 
 		WalletManager::WalletManager(const CMBlock &phrase, const std::string language,
@@ -38,7 +38,7 @@ namespace Elastos {
 			//fixme construct pub key from phrase
 			_masterPubKey = MasterPubKeyPtr(new MasterPubKey("a test seed ha"));
 
-			init(_masterPubKey, chainParams, earliestPeerTime);
+			init(_masterPubKey, chainParams, earliestPeerTime, false);
 		}
 
 		WalletManager::WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
@@ -48,6 +48,14 @@ namespace Elastos {
 
 			_chainParams = chainParams;
 			importKey(keyPath, password);
+		}
+
+		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
+									 uint32_t earliestPeerTime, bool singleAddress, const ChainParams &chainParams) :
+				_executor(BACKGROUND_THREAD_COUNT),
+				_databaseManager(dbPath),
+				_masterPubKey(masterPubKey) {
+			init(_masterPubKey, chainParams, earliestPeerTime, singleAddress);
 		}
 
 		WalletManager::~WalletManager() {
@@ -78,6 +86,18 @@ namespace Elastos {
 		}
 
 		TransactionPtr WalletManager::createTransaction(const TxParam &param) {
+			//todo add other transaction creation logic
+			switch (param.getType()) {
+				case Normal:
+					return createNormalTransaction(param.getToAddress(), param.getAmount(), param.getAssetId());
+				case Deposit:
+					break;
+				case Withdraw:
+					break;
+				case ID:
+					break;
+			}
+
 			return Elastos::SDK::TransactionPtr();
 		}
 
@@ -87,14 +107,14 @@ namespace Elastos {
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::getTransactions(
-			const boost::function<bool(const TransactionPtr &)> filter) const {
+				const boost::function<bool(const TransactionPtr &)> filter) const {
 			SharedWrapperList<Transaction, BRTransaction *> txs;
 
 			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
 				TransactionPtr transaction(new Transaction(
-					txsEntity[i].buff, txsEntity[i].blockHeight, txsEntity[i].timeStamp));
+						txsEntity[i].buff, txsEntity[i].blockHeight, txsEntity[i].timeStamp));
 				if (filter(transaction)) {
 					txs.push_back(transaction);
 				}
@@ -102,15 +122,14 @@ namespace Elastos {
 			return txs;
 		}
 
-		TransactionPtr WalletManager::createTransaction(std::string toAddress,
-														uint64_t amount, uint64_t feeTx, UInt256 assetId,
-														Transaction::Type type) {
+		TransactionPtr WalletManager::createNormalTransaction(std::string toAddress,
+														uint64_t amount, UInt256 assetId) {
 
 			BRTransaction *tmp = BRWalletCreateTransaction(this->getWallet()->getRaw(), amount, toAddress.c_str());
 			if (!tmp) return nullptr;
 
 			TransactionPtr ptr(new Transaction(tmp));
-			ptr->setTransactionType(type);
+			ptr->setTransactionType(Transaction::TransferAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			for (SharedWrapperList<TransactionOutput, BRTxOutput *>::iterator it = outList.begin();
 				 it != outList.end(); ++it) {
@@ -118,6 +137,10 @@ namespace Elastos {
 			}
 
 			return ptr;
+		}
+
+		void WalletManager::recover(int limitGap) {
+			//todo implement recover logic
 		}
 
 		//override Wallet listener
@@ -242,7 +265,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
 				txs.push_back(TransactionPtr(
-					new Transaction(txsEntity[i].buff, txsEntity[i].blockHeight, txsEntity[i].timeStamp)));
+						new Transaction(txsEntity[i].buff, txsEntity[i].blockHeight, txsEntity[i].timeStamp)));
 			}
 
 			return txs;
@@ -303,15 +326,6 @@ namespace Elastos {
 
 		void WalletManager::registerPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
-		}
-
-		CMBlock WalletManager::signData(const CMBlock &data) {
-			return CMBlock();
-		}
-
-		const std::string &WalletManager::getMnemonic() const {
-			//todo decode mnemonic from entropy
-			return "";
 		}
 
 	}

@@ -100,8 +100,11 @@ void TestWalletManager::testCreateTransaction() {
 
 	UInt256 hash = elaCoin.getHash();
 
-	TransactionPtr transaction = createTransaction("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP", 12, 0, hash,
-												   Transaction::Type::TransferAsset);
+	TxParam normalParam;
+	normalParam.setToAddress("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP");
+	normalParam.setAmount(12);
+	normalParam.setAssetId(hash);
+	TransactionPtr transaction = createTransaction(normalParam);
 	if (transaction) {
 		UInt256 hash = signAndPublishTransaction(transaction);
 

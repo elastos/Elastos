@@ -20,9 +20,15 @@ namespace Elastos {
 
 		}
 
-		SubWallet::SubWallet(const KeyPtr &key, const MasterPubKeyPtr &masterPubKey) {
+		SubWallet::SubWallet(const MasterPubKeyPtr &masterPubKey,
+							 const boost::filesystem::path &dbPath,
+							 uint32_t earliestPeerTime,
+							 bool singleAddress,
+							 const ChainParams &chainParams) {
 
-			//todo create wallet manager
+			_walletManager = WalletManagerPtr(new WalletManager(
+					masterPubKey, dbPath, earliestPeerTime, singleAddress, chainParams));
+			_walletManager->registerWalletListener(this);
 		}
 
 		SubWallet::~SubWallet() {
@@ -30,35 +36,41 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetBalanceInfo() {
+			//todo complete me
 			return nlohmann::json();
 		}
 
 		double SubWallet::GetBalance() {
-			return 0;
+			return _walletManager->getWallet()->getBalance() / _balanceUnit;
 		}
 
 		std::string SubWallet::CreateAddress() {
-			return std::__cxx11::string();
+			return _walletManager->getWallet()->getReceiveAddress();
 		}
 
 		std::string SubWallet::GetTheLastAddress() {
-			return std::__cxx11::string();
+			//todo complete me
+			return "";
 		}
 
-		std::string SubWallet::GetAllAddress() {
-			return std::__cxx11::string();
+		nlohmann::json SubWallet::GetAllAddress() {
+			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
+			nlohmann::json j;
+			j["addresses"] = addresses;
+			return j;
 		}
 
 		double SubWallet::GetBalanceWithAddress(const std::string &address) {
+			//todo complete me
 			return 0;
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
-
+			_callbacks.push_back(subCallback);
 		}
 
 		void SubWallet::RemoveCallback(ISubWalletCallback *subCallback) {
-
+			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback));
 		}
 
 		std::string
@@ -84,6 +96,40 @@ namespace Elastos {
 		nlohmann::json
 		SubWallet::CheckSign(const std::string &address, const std::string &message, const std::string &signature) {
 			return nlohmann::json();
+		}
+
+		void SubWallet::balanceChanged(uint64_t balance) {
+			std::for_each(_callbacks.begin(), _callbacks.end(), [balance](ISubWalletCallback *callback) {
+				//todo implement event
+//				callback->OnBalanceChanged();
+			});
+		}
+
+		void SubWallet::onTxAdded(Transaction *transaction) {
+			std::for_each(_callbacks.begin(), _callbacks.end(), [transaction](ISubWalletCallback *callback) {
+				//todo implement event
+//				callback->OnTransactionStatusChanged()
+			});
+		}
+
+		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [&hash, blockHeight, timeStamp](ISubWalletCallback *callback) {
+							  //todo implement event
+//				callback->OnTransactionStatusChanged()
+						  });
+		}
+
+		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [&hash, notifyUser, recommendRescan](ISubWalletCallback *callback) {
+							  //todo implement event
+//				callback->OnTransactionStatusChanged()
+						  });
+		}
+
+		void SubWallet::recover(int limitGap) {
+			_walletManager->recover(limitGap);
 		}
 	}
 }
