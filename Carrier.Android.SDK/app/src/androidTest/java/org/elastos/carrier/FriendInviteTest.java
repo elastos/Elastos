@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(AndroidJUnit4.class)
-public class FriendMessageTest {
-	private static final String TAG = "FriendMessageTest";
+public class FriendInviteTest {
+	private static final String TAG = "FriendInviteTest";
 	private static Carrier carrierInst;
 	private static TestOptions options;
 	private static TestHandler handler;
@@ -58,6 +58,21 @@ public class FriendMessageTest {
 			msgBody = message;
 			from = friendId;
 			Log.i(TAG, "Get a message (" + message + ") from (" + friendId + ")");
+			synch.wakeup();
+		}
+	}
+
+	static class InviteResponseHandler implements FriendInviteResponseHandler {
+		Synchronizer synch = new Synchronizer();
+
+		String from;
+		int status = -1;
+		String data;
+
+		public void onReceived(String from, int status, String reason, String data) {
+			this.from = from;
+			this.status = status;
+			this.data = data;
 			synch.wakeup();
 		}
 	}
@@ -105,48 +120,6 @@ public class FriendMessageTest {
 		}
 	}
 
-	@Test
-	public void testSendMeMessage() {
-		try {
-			String hello = "test send me message";
-			carrierInst.sendFriendMessage(carrierInst.getUserId(), hello);
-			handler.synch.await();
-
-			assertEquals(handler.from, carrierInst.getUserId());
-			assertEquals(handler.msgBody, hello);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			assertTrue(true);
-		}
-	}
-
-	private void removeFriendAnyWay() {
-		try {
-			if (carrierInst.isFriend(robotId))
-				carrierInst.removeFriend(robotId);
-
-			robotProxy.tellRobotRemoveFriend(carrierInst.getUserId());
-		} catch (ElastosException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
-	}
-
-	@Test
-	public void testSendStrangeAMessage() {
-		removeFriendAnyWay();
-
-		try {
-			String hello = "test send friend message";
-			carrierInst.sendFriendMessage(robotId, hello);
-		} catch (ElastosException e) {
-			assertEquals(e.getErrorCode(), 0x8100000b);
-			Log.i(TAG, "errcode: " +  e.getErrorCode());
-			assertTrue(true);
-		}
-	}
-
 	private void makeFriendAnyWay() {
 		try {
 			if (!carrierInst.isFriend(robotId))
@@ -160,24 +133,23 @@ public class FriendMessageTest {
 	}
 
 	@Test
-	public void testSendFriendMessage() {
+	public void testInviteFriend() {
 		makeFriendAnyWay();
 
 		try {
-			String hello = "test send friend message";
-			carrierInst.sendFriendMessage(robotId, hello);
-			robotProxy.waitForMessageArrival();
+			InviteResponseHandler handler = new InviteResponseHandler();
+			String reqData = "Invite Friend";
 
-			robotProxy.tellRobotSendMessage(carrierInst.getUserId(), hello);
+			carrierInst.inviteFriend(robotId, reqData, handler);
 			handler.synch.await();
 
-			Log.i(TAG, " hello : " + hello);
-			Log.i(TAG, " msgBody: " + handler.msgBody);
-
 			assertEquals(handler.from, robotId);
-			assertEquals(handler.msgBody, hello);
+			assertEquals(handler.status, 0);
+			assertEquals(handler.data, reqData);
 		} catch (ElastosException e) {
 			e.printStackTrace();
+			String error = String.format("error: 0x%x", e.getErrorCode());
+			Log.e(TAG, "error: " + error);
 			assertTrue(false);
 		}
 	}

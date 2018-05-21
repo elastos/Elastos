@@ -98,6 +98,14 @@ public class RobotService extends Service {
 				e.printStackTrace();
 			}
 		}
+
+		public void onFriendInviteRequest(Carrier carrier, String from, String data) {
+			try {
+				carrierInst.replyFriendInvite(from, 0, null, data);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	class IncomingHandler extends Handler {

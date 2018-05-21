@@ -576,9 +576,7 @@ void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
     (void)length;
 
     ARG(context, 0, JNIEnv*, env);
-    ARG(context, 1, jobject, jcarrier);
-    ARG(context, 2, jobject, jhandler);
-    ARG(context, 3, jobject, jcontext);
+    ARG(context, 1, jobject, jhandler);
     free(context);
 
     jfrom = (*env)->NewStringUTF(env, from);
@@ -594,11 +592,10 @@ void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
         (*env)->DeleteLocalRef(env, jfrom);
         goto cleanup;
     }
-
     if (!callVoidMethod(env, NULL, jhandler, "onReceived",
-                        "("_J("String;I")_J("String;")_J("String;")_J("Object;)V"),
-                        from, status, jreason, jdata, jcontext)) {
-        logE("Call method 'void onReceived(String, int, String, String, Object)' error");
+                        "("_J("String;I")_J("String;")_J("String;)V"),
+                        jfrom, status, jreason, jdata)) {
+        logE("Call method 'void onReceived(String, int, String, String)' error");
     }
 
     (*env)->DeleteLocalRef(env, jfrom);
@@ -606,9 +603,7 @@ void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
     if (jreason) (*env)->DeleteLocalRef(env, jreason);
 
 cleanup:
-    (*env)->DeleteGlobalRef(env, jcarrier);
     (*env)->DeleteGlobalRef(env, jhandler);
-    if (jcontext) (*env)->DeleteGlobalRef(env, jcontext);
 }
 
 static
@@ -617,7 +612,6 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
 {
     const char* to = NULL;
     const char* data = NULL;
-    jobject gjcarrier = NULL;
     jobject gjhandler = NULL;
     void** argv;
     int rc;
@@ -633,9 +627,8 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
         goto errorExit;
     }
 
-    gjcarrier = (*env)->NewGlobalRef(env, thiz);
     gjhandler = (*env)->NewGlobalRef(env, jresponseHandler);
-    if (!gjcarrier || !gjhandler) {
+    if (!gjhandler) {
         setErrorCode(ELA_GENERAL_ERROR(ELAERR_LANGUAGE_BINDING));
         goto errorExit;
     }
@@ -646,10 +639,9 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
         goto errorExit;
     }
     argv[0] = getCarrierEnv(env, thiz);
-    argv[1] = gjcarrier;
-    argv[2] = gjhandler;
+    argv[1] = gjhandler;
 
-    rc  = ela_invite_friend(getCarrier(env, thiz), to, data, strlen(data),
+    rc  = ela_invite_friend(getCarrier(env, thiz), to, data, strlen(data) + 1,
                             friendInviteRspCallback, (void*)argv);
 
     (*env)->ReleaseStringUTFChars(env, jto, to);
@@ -668,8 +660,7 @@ jboolean inviteFriend(JNIEnv* env, jobject thiz, jstring jto, jstring jdata,
 errorExit:
     if (to) (*env)->ReleaseStringUTFChars(env, jto, to);
     if (data) (*env)->ReleaseStringUTFChars(env, jdata, data);
-    if (gjcarrier) (*env)->DeleteGlobalRef(env, gjcarrier);
-    if (gjhandler) (*env)->DeleteGlobalRef(env, gjhandler);
+    if (gjhandler) (*env)->DeleteWeakGlobalRef(env, gjhandler);
     return JNI_FALSE;
 }
 
