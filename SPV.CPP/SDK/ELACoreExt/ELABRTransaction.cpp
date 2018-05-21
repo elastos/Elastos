@@ -54,6 +54,7 @@ namespace Elastos {
 
 			attributeData.clear();
 			programData.clear();
+			return *this;
 		}
 
 		// returns a newly allocated empty transaction that must be freed by calling ELABRTransactionFree()
