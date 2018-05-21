@@ -173,7 +173,7 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "height")
 	case "togglemining":
 		return FromArray(params, "mine")
-	case "manualmining":
+	case "discretemining":
 		return FromArray(params, "count")
 	default:
 		return Params{}

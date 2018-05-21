@@ -475,23 +475,23 @@ func GetBlockByHash(param Params) map[string]interface{} {
 }
 
 func SendRawTransaction(param Params) map[string]interface{} {
-	str, ok := param.String("Data")
+	str, ok := param.String("data")
 	if !ok {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "need a string parameter named data")
 	}
 
 	bys, err := HexStringToBytes(str)
 	if err != nil {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "hex string to bytes error")
 	}
 	var txn Transaction
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
-		return ResponsePack(InvalidTransaction, "")
+		return ResponsePack(InvalidTransaction, "transaction deserialize error")
 	}
 	var hash Uint256
 	hash = txn.Hash()
 	if errCode := VerifyAndSendTx(&txn); errCode != Success {
-		return ResponsePack(errCode, "")
+		return ResponsePack(errCode, errCode.Message())
 	}
 
 	return ResponsePack(Success, BytesToHexString(hash.Bytes()))
@@ -513,7 +513,7 @@ func GetBlockCount(param Params) map[string]interface{} {
 func GetBlockHash(param Params) map[string]interface{} {
 	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(height)
@@ -544,9 +544,9 @@ func GetBlockTransactions(block *Block) interface{} {
 }
 
 func GetTransactionsByHeight(param Params) map[string]interface{} {
-	height, ok := param.Uint("index")
+	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
@@ -564,12 +564,12 @@ func GetTransactionsByHeight(param Params) map[string]interface{} {
 func GetBlockByHeight(param Params) map[string]interface{} {
 	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
 	if err != nil {
-		return ResponsePack(UnknownBlock, "")
+		return ResponsePack(UnknownBlock, err.Error())
 	}
 
 	result, errCode := getBlock(hash, 2)
@@ -580,7 +580,7 @@ func GetBlockByHeight(param Params) map[string]interface{} {
 func GetArbitratorGroupByHeight(param Params) map[string]interface{} {
 	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
