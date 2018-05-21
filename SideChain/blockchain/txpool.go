@@ -310,10 +310,14 @@ func GetTxFeeMap(tx *ela.Transaction) (map[Uint256]Fixed64, error) {
 
 		crossChainPayload := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
 
-		for index, v := range tx.Outputs {
+		for _, v := range tx.Outputs {
 			var mcAmount Fixed64
 			for i := 0; i < len(crossChainPayload.CrossChainAddress); i++ {
-				if crossChainPayload.OutputIndex[i] == uint64(index) {
+				targetAddress, err := v.ProgramHash.ToAddress()
+				if err != nil {
+					return nil, err
+				}
+				if targetAddress == crossChainPayload.CrossChainAddress[i] {
 					mcAmount = mainChainTransaction.Outputs[i].Value
 				}
 			}
