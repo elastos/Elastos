@@ -23,6 +23,7 @@ import (
 
 const (
 	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 5
+	DESTROY_ADDRESS                     = "0000000000000000000000000000000000"
 )
 
 var NodeForServers Noder
@@ -43,7 +44,13 @@ func GetTransactionInfo(header *Header, tx *ela.Transaction) *TransactionInfo {
 	for i, v := range tx.Outputs {
 		outputs[i].Value = v.Value.String()
 		outputs[i].Index = uint32(i)
-		address, _ := v.ProgramHash.ToAddress()
+		var address string
+		destroyHash := Uint168{}
+		if v.ProgramHash == destroyHash {
+			address = DESTROY_ADDRESS
+		} else {
+			address, _ = v.ProgramHash.ToAddress()
+		}
 		outputs[i].Address = address
 		outputs[i].AssetID = BytesToHexString(v.AssetID.Bytes())
 		outputs[i].OutputLock = v.OutputLock
@@ -1122,10 +1129,10 @@ func GetDestroyedTransactionsByHeight(param Params) map[string]interface{} {
 		return ResponsePack(UnknownBlock, "")
 	}
 
-	destroyHash, err := Uint168FromAddress(config.Parameters.DestroyAddr)
+	destroyHash := Uint168{}
 	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *ela.Transaction) bool {
 		for _, output := range tran.Outputs {
-			if output.ProgramHash == *destroyHash {
+			if output.ProgramHash == destroyHash {
 				return false
 			}
 		}

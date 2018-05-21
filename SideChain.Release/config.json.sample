@@ -26,7 +26,6 @@
     "MaxTransactionInBlock": 10000,
     "MaxBlockSize": 8000000,
     "ConsensusType": "pow",
-    "DestroyAddr": "EV3qTRxKoffDFWsVZXWo421MRyEmEGCuNu",
     "PowConfiguration": {
       "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
       "MiningServerIP": "127.0.0.1",
