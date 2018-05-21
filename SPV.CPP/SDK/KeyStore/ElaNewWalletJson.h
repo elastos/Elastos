@@ -31,7 +31,7 @@ namespace Elastos {
 
 			const std::string &getMnemonicLanguage() const;
 
-			void setMnemonicLanguage(const std::string &language) const;
+			void setMnemonicLanguage(const std::string &language);
 
 		private:
 			std::string _id;

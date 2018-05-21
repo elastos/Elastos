@@ -47,7 +47,7 @@ namespace Elastos {
 			return _mnemonicLanguage;
 		}
 
-		void ElaNewWalletJson::setMnemonicLanguage(const std::string &language) const {
+		void ElaNewWalletJson::setMnemonicLanguage(const std::string &language) {
 			_mnemonicLanguage = language;
 		}
 
