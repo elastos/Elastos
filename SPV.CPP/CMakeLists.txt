@@ -36,7 +36,7 @@ if(SPV_FOR_ANDROID)
 
 	# can be value below: arm64-v8a armeabi-v7a armeabi-v6 armeabi x86 x86_64
 	if(NOT DEFINED CMAKE_ANDROID_ARCH_ABI)
-		set(CMAKE_ANDROID_ARCH_ABI arm64-v8a CACHE STRING "Android ABI (architecture)" FORCE)
+		set(CMAKE_ANDROID_ARCH_ABI armeabi-v7a CACHE STRING "Android ABI (architecture)" FORCE)
 	endif()
 	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS "arm64-v8a" "armeabi-v7a" "armeabi-v6" "armeabi" "x86" "x86_64")
 
@@ -91,6 +91,7 @@ if(NOT SPV_FOR_ANDROID)
 		message(FATAL_ERROR "boost not found")
 	endif()
 else()
+	# find boost
 	set(BOOST_COMPONENTS filesystem system program_options thread)
 	set(Boost_LIBRARIES "")
 
@@ -104,9 +105,32 @@ else()
 	endforeach(lib_name)
 
 	string(REPLACE ";" " " Boost_LIBRARIES_NO_Semicolon "${Boost_LIBRARIES}")
-	#set(CMAKE_SHARED_LINKER_FLAGS "-march=${ANDROID_ARCH} -Wl,--fix-cortex-a8 -Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
-	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
 	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
+	if("${Boost_INCLUDE_DIRS}" STREQUAL "")
+		message(FATAL_ERROR "boost include directory not found")
+	endif()
+
+	# find libcrypto and libssl
+	set(OPENSSL_LIBRARIES ssl crypto)
+	set(Openssl_LIBRARIES "")
+
+	foreach(lib_name ${OPENSSL_LIBRARIES})
+		file(GLOB lib_name_FOUND ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/openssl/install/android-${CMAKE_SYSTEM_VERSION}/lib/lib${lib_name}.a)
+		if("${lib_name_FOUND}" STREQUAL "")
+			message(FATAL_ERROR "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/openssl/install/android-${CMAKE_SYSTEM_VERSION}/lib/lib${lib_name}.a not found, you need to build and install openssl in directory ThirdParty/openssl first.")
+		endif()
+		message(STATUS "${lib_name_FOUND} -- found")
+		set(Openssl_LIBRARIES "${lib_name_FOUND};${Openssl_LIBRARIES}")
+	endforeach(lib_name)
+	string(REPLACE ";" " " Openssl_LIBRARIES_NO_Semicolon "${Openssl_LIBRARIES}")
+
+	file(GLOB Openssl_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/openssl/install/android-${CMAKE_SYSTEM_VERSION}/include)
+	if("${Openssl_INCLUDE_DIRS}" STREQUAL "")
+		message(FATAL_ERROR "openssl include directory not found")
+	endif()
+
+	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} ${Openssl_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
+	#set(CMAKE_SHARED_LINKER_FLAGS "-march=${ANDROID_ARCH} -Wl,--fix-cortex-a8 -Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
 endif()
 
 
@@ -208,13 +232,18 @@ if(SPV_BUILD_SAMPLE)
 	add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
 	target_link_libraries(${SAMPLE_NAME} spvsdk)
 	target_link_libraries(${SAMPLE_NAME} dl)
-	target_link_libraries(${SAMPLE_NAME} crypto)
-	if(NOT ANDROID)
-		target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+
+	if(UNIX)
+		if(APPLE)
+			target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+			target_link_libraries(${SAMPLE_NAME} ssl crypto)
+		elseif(ANDROID)
+			target_link_libraries(${SAMPLE_NAME} log atomic)
+		else()
+			target_link_libraries(${SAMPLE_NAME} crypto)
+			target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+		endif()
 	endif()
-	if(ANDROID)
-		target_link_libraries(${SAMPLE_NAME} log)
-		target_link_libraries(${SAMPLE_NAME} atomic)
-	endif(ANDROID)
+
 endif()
 

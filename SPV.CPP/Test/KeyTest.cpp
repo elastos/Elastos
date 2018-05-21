@@ -50,7 +50,7 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(byteData1 != false);
 		CMBlock byteData2 = key1.getPubkey();
 		REQUIRE(byteData1.GetSize() == byteData2.GetSize());
-		for (int i = 0; i < byteData1.GetSize(); i++) {
+		for (uint64_t i = 0; i < byteData1.GetSize(); i++) {
 			REQUIRE(byteData1[i] == byteData2[i]);
 		}
 
@@ -112,7 +112,7 @@ TEST_CASE("Key test", "[Key]") {
 		CMBlock byteData = key.sign(hash);
 		REQUIRE(byteData.GetSize() > 0);
 		REQUIRE(byteData != false);
-		for (int i = 0; i < sizeof(signedData) - 1; i++) {
+		for (uint64_t i = 0; i < sizeof(signedData) - 1; i++) {
 			REQUIRE(signedData[i] == byteData[i]);
 		}
 

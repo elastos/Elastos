@@ -14,7 +14,9 @@ include_directories(
 	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spdlog/include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/json/single_include"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/Catch2/single_include"
-	"${CMAKE_ANDROID_NDK}/sysroot/usr/include")
+	"${CMAKE_ANDROID_NDK}/sysroot/usr/include"
+	"${Boost_INCLUDE_DIRS}"
+	"${Openssl_INCLUDE_DIRS}")
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash SPVCORE_BCASH_SOURCE_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
@@ -30,5 +32,4 @@ add_library(${SPVSDK_JNI_NAME} ${SPV_LIBRARY_TYPE}
 	${SPVSDK_SOURCE_FILES}
 	${SQLITE_SOURCE_FILES})
 
-target_link_libraries(${SPVSDK_JNI_NAME} log)
-target_link_libraries(${SPVSDK_JNI_NAME} atomic)
+target_link_libraries(${SPVSDK_JNI_NAME} log atomic)

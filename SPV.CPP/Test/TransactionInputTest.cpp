@@ -38,7 +38,7 @@ TEST_CASE( "TransactionInput test", "[TransactionInput]" )
 
 		CMBlock tempScript = transactionInput.getScript();
 		REQUIRE(tempScript.GetSize() == script.GetSize());
-		for (int i = 0; i < script.GetSize(); i++) {
+		for (uint64_t i = 0; i < script.GetSize(); i++) {
 			REQUIRE(tempScript[i] == script[i]);
 		}
 

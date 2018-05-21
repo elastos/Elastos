@@ -14,9 +14,11 @@
 #include "Log.h"
 
 using namespace Elastos::SDK;
+#if 0
 const int totalThreadCount = 200;
 const int loopCount = 5;
 int thread_call_count = 0;
+#endif
 
 TEST_CASE("DatabaseManager Contructor test", "[DatabaseManager]") {
 
@@ -67,13 +69,13 @@ TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
 		REQUIRE(result == true);
 
 		std::vector<TransactionEntity> list = databaseManager.getAllTransactions(iso);
-		ssize_t len = list.size();
+		uint64_t len = list.size();
 		REQUIRE(len > 0);
 		REQUIRE(list[len - 1].blockHeight == transactionEntity.blockHeight);
 		REQUIRE(list[len - 1].timeStamp == transactionEntity.timeStamp);
 		REQUIRE(list[len - 1].txHash == transactionEntity.txHash);
 		REQUIRE(list[len - 1].buff.GetSize() == transactionEntity.buff.GetSize());
-		for (int i = 0; i < transactionEntity.buff.GetSize(); i++) {
+		for (uint64_t i = 0; i < transactionEntity.buff.GetSize(); i++) {
 			REQUIRE(list[len - 1].buff[i] == transactionEntity.buff[i]);
 		}
 	}
@@ -93,13 +95,13 @@ TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
 		REQUIRE(result == true);
 
 		std::vector<TransactionEntity> list = databaseManager.getAllTransactions(iso);
-		ssize_t len = list.size();
+		uint64_t len = list.size();
 		REQUIRE(len > 0);
 		REQUIRE(list[len - 1].blockHeight == transactionEntity.blockHeight);
 		REQUIRE(list[len - 1].timeStamp == transactionEntity.timeStamp);
 		REQUIRE(list[len - 1].txHash == transactionEntity.txHash);
 		REQUIRE(list[len - 1].buff.GetSize() == 20);
-		for (int i = 0; i < transactionEntity.buff.GetSize(); i++) {
+		for (uint64_t i = 0; i < transactionEntity.buff.GetSize(); i++) {
 			REQUIRE(list[len - 1].buff[i] == transactionEntity.buff[i]);
 		}
 	}
@@ -228,7 +230,7 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 		REQUIRE(list[len - 1].id > 0);
 		REQUIRE(list[len - 1].blockHeight == blockEntity.blockHeight);
 		REQUIRE(list[len - 1].blockBytes.GetSize() == blockEntity.blockBytes.GetSize());
-		for (int i = 0; i < list[len - 1].blockBytes.GetSize(); i++) {
+		for (uint64_t i = 0; i < list[len - 1].blockBytes.GetSize(); i++) {
 			REQUIRE(list[len - 1].blockBytes[i] == blockEntity.blockBytes[i]);
 		}
 	}
@@ -256,11 +258,11 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 
 		std::vector<MerkleBlockEntity> blockList = databaseManager.getAllMerkleBlocks(iso);
 		REQUIRE(blockList.size() == list.size());
-		for (int i = 0; i < list.size(); i++) {
+		for (uint64_t i = 0; i < list.size(); i++) {
 			REQUIRE(blockList[i].id > 0);
 			REQUIRE(blockList[i].blockHeight == list[i].blockHeight);
 			REQUIRE(blockList[i].blockBytes.GetSize() == list[i].blockBytes.GetSize());
-			for (int j = 0; j < blockList[i].blockBytes.GetSize(); j++) {
+			for (uint64_t j = 0; j < blockList[i].blockBytes.GetSize(); j++) {
 				REQUIRE(blockList[i].blockBytes[j] == list[i].blockBytes[j]);
 			}
 		}
@@ -287,6 +289,7 @@ TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
 	}
 }
 
+#if 0
 void onPutTransaction(void *arg, int index) {
 	DatabaseManager *databaseManager = (DatabaseManager *) arg;
 
@@ -793,3 +796,5 @@ TEST_CASE("DatabaseManager mulity thread merkleBlocks", "[DatabaseManager]") {
 		REQUIRE(list.size() == 0);
 	}
 }
+
+#endif

@@ -22,13 +22,13 @@ $ sudo apt-get install -y cmake
 ```
 
 ### Install ndk
-`Ndk` version: r17+
+`Ndk` version: r16+
 
 Download [ndk](https://developer.android.com/ndk/downloads/)
 
-Unzip to somewhere, for example `/home/xxx/dev/android-ndk-r17`
+Unzip to somewhere, for example `/home/xxx/dev/android-ndk-r16`
 
-Set system environment variable `ANDROID_NDK` to `/home/xxx/dev/android-ndk-r17`
+Set system environment variable `ANDROID_NDK` to `/home/xxx/dev/android-ndk-r16`
 
 ### Clone source code
 Open terminal, go to `/home/xxx/dev`
@@ -47,14 +47,14 @@ $ git reset --hard tmp/master
 ### Build Boost-for-Android
 Set system environtment variable to ~/.bashrc
 ```shell
-$ echo "export ANDROID_NDK=/home/xxx/dev/android-ndk-r17" >> ~/.bashrc
+$ echo "export ANDROID_NDK=/home/xxx/dev/android-ndk-r16" >> ~/.bashrc
 ```
 
 Make sure system environtment variable takes effect
 ```shell
 $ source ~/.bashrc
 $ echo $ANDROID_NDK
-/home/xxx/dev/android-ndk-r17
+/home/xxx/dev/android-ndk-r16
 ```
 
 Go to directory `/home/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android` and start to build
@@ -63,6 +63,52 @@ $ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android
 $ ./build-android.sh $ANDROID_NDK
 ```
 Wait and have a cup of tea. ;-)
+
+### Build OpenSSL Library
+Use the following commands to build and install the OpenSSL library for Android.
+Before running the commands download [openssl-1.0.2o.tar.gz](https://www.openssl.org/source/).
+ensure ANDROID_NDK_ROOT is set; and verify setenv-android.sh suites your taste.
+ANDROID_API and ANDROID_TOOLCHAIN will be set by the setenv-android.sh script.
+
+Download openssl-1.0.2o.tar.gz and place it to directory `'ThirdParty/openssl'`, and then extract it
+```
+$ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/openssl && tar xzf openssl-1.0.2o.tar.gz && ls
+Setenv-android.sh	openssl-1.0.2o		openssl-1.0.2o.tar.gz	openssl-android.patch
+```
+Build the OpenSSL Library
+```
+$ chmod a+x Setenv-android.sh
+$ . ./Setenv-android.sh
+ANDROID_NDK: /home/xxx/dev/android-ndk-r16b
+ANDROID_ARCH: arch-arm
+ANDROID_EABI: arm-linux-androideabi-4.9
+ANDROID_API: android-23
+ANDROID_SYSROOT: /home/xxx/dev/android-ndk-r16b/sysroot
+ANDROID_TOOLCHAIN: /home/xxx/dev/android-ndk-r16b/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin
+FIPS_SIG:
+CROSS_COMPILE: arm-linux-androideabi-
+ANDROID_DEV: /home/xxx/dev/android-ndk-r16b/platforms/android-23/arch-arm
+
+$ cd openssl-1.0.2o/
+$ patch -p 1 < ../openssl-android.patch
+patching file Configure
+
+# Perl is optional, and may fail in OpenSSL 1.1.0
+$ perl -pi -e 's/install: all install_docs install_sw/install: install_sw/g' Makefile.org
+
+# Tune to suit your taste, visit http://wiki.openssl.org/index.php/Compilation_and_Installation
+$ ./config shared no-ssl2 no-ssl3 no-comp no-hw no-engine \
+     --openssldir=$PWD/../install/$ANDROID_API --prefix=$PWD/../install/$ANDROID_API
+
+$ make depend
+$ make all
+```
+Install the OpenSSL Library
+```
+$ make install CC=$ANDROID_TOOLCHAIN/arm-linux-androideabi-gcc RANLIB=$ANDROID_TOOLCHAIN/arm-linux-androideabi-ranlib
+```
+
+For more details of building OpenSSL library, take a look at [here](https://wiki.openssl.org/index.php/Android)
 
 ### Build Elastos.ELA.SPV.Cpp
 
@@ -98,13 +144,13 @@ Download and install [git](https://www.git-scm.com/downloads).
 Download and install [cmake](https://cmake.org/download/)
 
 ### Install ndk
-`Ndk` version: r17+
+`Ndk` version: r16+
 
 Download [ndk](https://developer.android.com/ndk/downloads/)
 
-Unzip to somewhere, for example `/Users/xxx/dev/android-ndk-r17`
+Unzip to somewhere, for example `/Users/xxx/dev/android-ndk-r16`
 
-Set system environment variable `ANDROID_NDK` to `/Users/xxx/dev/android-ndk-r17`
+Set system environment variable `ANDROID_NDK` to `/Users/xxx/dev/android-ndk-r16`
 
 ### Clone source code
 Open terminal, go to `/Users/xxx/dev`
@@ -124,7 +170,7 @@ $ git reset --hard tmp/master
 Make sure the system environtment variable takes effect, if not, open a new git bash after `ANDROID_NDK` was set.
 ```shell
 $ echo $ANDROID_NDK
-/Users/xxx/dev/android-ndk-r17
+/Users/xxx/dev/android-ndk-r16
 ```
 Go to directory `/Users/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android` and start to build
 ```shell
@@ -132,6 +178,52 @@ $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/Boost-for-Android
 $ ./build-android.sh $ANDROID_NDK
 ```
 Wait and have a cup of tea. ;-)
+
+### Build OpenSSL Library
+Use the following commands to build and install the OpenSSL library for Android.
+Before running the commands download [openssl-1.0.2o.tar.gz](https://www.openssl.org/source/).
+ensure ANDROID_NDK_ROOT is set; and verify setenv-android.sh suites your taste.
+ANDROID_API and ANDROID_TOOLCHAIN will be set by the setenv-android.sh script.
+
+Download openssl-1.0.2o.tar.gz and place it to directory `'ThirdParty/openssl'`, and then extract it
+```
+$ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp/ThirdParty/openssl && tar xzf openssl-1.0.2o.tar.gz && ls
+Setenv-android.sh	openssl-1.0.2o		openssl-1.0.2o.tar.gz	openssl-android.patch
+```
+Build the OpenSSL Library
+```
+$ chmod a+x Setenv-android.sh
+$ . ./Setenv-android.sh
+ANDROID_NDK: /Users/xxx/dev/android-ndk-r16b
+ANDROID_ARCH: arch-arm
+ANDROID_EABI: arm-linux-androideabi-4.9
+ANDROID_API: android-23
+ANDROID_SYSROOT: /Users/xxx/dev/android-ndk-r16b/sysroot
+ANDROID_TOOLCHAIN: /Users/xxx/dev/android-ndk-r16b/toolchains/arm-linux-androideabi-4.9/prebuilt/darwin-x86_64/bin
+FIPS_SIG:
+CROSS_COMPILE: arm-linux-androideabi-
+ANDROID_DEV: /Users/xxx/dev/android-ndk-r16b/platforms/android-23/arch-arm
+
+$ cd openssl-1.0.2o/
+$ patch -p 1 < ../openssl-android.patch
+patching file Configure
+
+# Perl is optional, and may fail in OpenSSL 1.1.0
+$ perl -pi -e 's/install: all install_docs install_sw/install: install_sw/g' Makefile.org
+
+# Tune to suit your taste, visit http://wiki.openssl.org/index.php/Compilation_and_Installation
+$ ./config shared no-ssl2 no-ssl3 no-comp no-hw no-engine \
+     --openssldir=$PWD/../install/$ANDROID_API --prefix=$PWD/../install/$ANDROID_API
+
+$ make depend
+$ make all
+```
+Install the OpenSSL Library
+```
+$ make install CC=$ANDROID_TOOLCHAIN/arm-linux-androideabi-gcc RANLIB=$ANDROID_TOOLCHAIN/arm-linux-androideabi-ranlib
+```
+
+For more details of building OpenSSL library, take a look at [here](https://wiki.openssl.org/index.php/Android)
 
 ### Build Elastos.ELA.SPV.Cpp
 
