@@ -107,7 +107,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
-		node.UpdateMsgHelper(NewHandlerV0(node))
+		node.UpdateMsgHelper(NewHandlerV0(LocalNode))
 	} else {
 		node.UpdateMsgHelper(NewHandlerEIP001(node))
 	}

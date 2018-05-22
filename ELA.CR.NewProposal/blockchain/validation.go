@@ -206,8 +206,8 @@ func checkCrossChainTransaction(txn *Transaction) error {
 			return err
 		}
 
-		if signType == crypto.CROSSCHAIN {
-			publicKeys, err := crypto.ParseMultisigScript(code)
+		if signType == common.CROSSCHAIN {
+			publicKeys, err := crypto.ParseCrossChainScript(code)
 			if err != nil {
 				return err
 			}
