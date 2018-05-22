@@ -1,4 +1,4 @@
-# Elastos is Blockchain Powered Internet
+# Elastos is a Blockchain Powered Internet
 
 
 Welcome to Elastos! 
