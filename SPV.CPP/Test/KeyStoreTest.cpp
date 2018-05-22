@@ -14,7 +14,6 @@ using namespace Elastos::SDK;
 
 TEST_CASE("save/open", "[KeyStore]") {
 	SECTION("save") {
-		// comment real information, instead of test info into str_ss on KeyStore::save
 		KeyStore ks;
 		const boost::filesystem::path path = "conf.json";
 		std::string password = "password";

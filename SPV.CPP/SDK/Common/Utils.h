@@ -17,22 +17,32 @@ namespace Elastos {
 		class Utils {
 		public:
 			static std::string UInt256ToString(const UInt256 &u256);
+
 			static UInt256 UInt256FromString(const std::string &u256);
 
 			static std::string UInt168ToString(const UInt168 &u168);
+
 			static UInt168 UInt168FromString(const std::string &str);
 
 			static UInt128 generateRandomSeed();
 
-			static CMBlock encrypt(const CMBlock &data, const std::string &password);
-			static CMBlock decrypt(const CMBlock &encryptedData, const std::string &password);
+			static CMemBlock<unsigned char>
+			encrypt(const CMemBlock<unsigned char> &data, const std::string &password);
 
-			static void	decodeHex (uint8_t *target, size_t targetLen, char *source, size_t sourceLen);
-			static size_t decodeHexLength (size_t stringLen);
-			static uint8_t *decodeHexCreate (size_t *targetLen, char *source, size_t sourceLen);
-			static void	encodeHex (char *target, size_t targetLen, uint8_t *source, size_t sourceLen);
+			static CMemBlock<unsigned char>
+			decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password);
+
+			static void decodeHex(uint8_t *target, size_t targetLen, char *source, size_t sourceLen);
+
+			static size_t decodeHexLength(size_t stringLen);
+
+			static uint8_t *decodeHexCreate(size_t *targetLen, char *source, size_t sourceLen);
+
+			static void encodeHex(char *target, size_t targetLen, uint8_t *source, size_t sourceLen);
+
 			static size_t encodeHexLength(size_t byteArrayLen);
-			static char *encodeHexCreate (size_t *targetLen, uint8_t *source, size_t sourceLen);
+
+			static char *encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen);
 		};
 	}
 }

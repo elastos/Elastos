@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "assert.h"
 #include "Utils.h"
+#include "AES_256_CCM.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -100,14 +101,20 @@ namespace Elastos {
 			return result;
 		}
 
-		CMBlock Utils::encrypt(const CMBlock &data, const std::string &password) {
+		CMemBlock<unsigned char> Utils::encrypt(const CMemBlock<unsigned char> &data, const std::string &password) {
 			//todo complete me
-			return CMBlock();
+			CMemBlock<unsigned char> ret;
+			ret = AES_256_CCM::encrypt(data, data.GetSize(), (unsigned char *) password.c_str(), password.size());
+			return ret;
 		}
 
-		CMBlock Utils::decrypt(const CMBlock &encryptedData, const std::string &password) {
+		CMemBlock<unsigned char>
+		Utils::decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password) {
 			//todo complete me
-			return CMBlock();
+			CMemBlock<unsigned char> ret;
+			ret = AES_256_CCM::decrypt(encryptedData, encryptedData.GetSize(), (unsigned char *) password.c_str(),
+									   password.size());
+			return ret;
 		}
 	}
 }

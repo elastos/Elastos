@@ -16,9 +16,9 @@ namespace Elastos {
 	namespace SDK {
 
 		std::string _Encode(const unsigned char *Data, size_t DataByte) {
-			//编码表
+			//Encodeing table
 			static const char EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-			//返回值
+			//return value
 			std::string strEncode;
 			unsigned char Tmp[4] = {0};
 			size_t LineLength = 0;
@@ -35,7 +35,7 @@ namespace Elastos {
 					LineLength = 0;
 				}
 			}
-			//对剩余数据进行编码
+			//Encode surplus
 			size_t Mod = DataByte % 3;
 			if (Mod == 1) {
 				Tmp[1] = *Data++;
@@ -55,7 +55,7 @@ namespace Elastos {
 		}
 
 		std::string _Decode(const char *Data, size_t DataByte, size_t &OutByte) {
-			//解码表
+			//Decoding table
 			static const char DecodeTable[] =
 				{
 					0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -71,7 +71,7 @@ namespace Elastos {
 					26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
 					39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, // 'a'-'z'
 				};
-			//返回值
+			//return value
 			std::string strDecode;
 			size_t nValue;
 			size_t i = 0;
@@ -92,7 +92,7 @@ namespace Elastos {
 						}
 					}
 					i += 4;
-				} else// 回车换行,跳过
+				} else// \r\n
 				{
 					Data++;
 					i++;
