@@ -8,6 +8,8 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
+#include "Mstream.h"
+
 namespace Elastos {
 	namespace SDK {
 
@@ -58,6 +60,12 @@ namespace Elastos {
 			void setCt(const std::string &ct);
 
 		private:
+			JSON_SM_LS(SjclFile);
+			JSON_SM_RS(SjclFile);
+			TO_JSON(SjclFile);
+			FROM_JSON(SjclFile);
+
+		private:
 			std::string _iv;
 			uint32_t _v;
 			uint32_t _iter;
@@ -69,14 +77,6 @@ namespace Elastos {
 			std::string _salt;
 			std::string _ct;
 		};
-
-		//support for json converting
-		//read "Arbitrary types conversions" section in readme of
-		//	https://github.com/nlohmann/json for more details
-		void to_json(nlohmann::json &j, const SjclFile &p);
-
-		void from_json(const nlohmann::json &j, SjclFile &p);
-
 	}
 }
 

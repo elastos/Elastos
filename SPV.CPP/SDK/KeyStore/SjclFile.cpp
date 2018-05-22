@@ -95,6 +95,18 @@ namespace Elastos {
 			_ct = ct;
 		}
 
+		nlohmann::json &operator<<(nlohmann::json &j, const SjclFile &p) {
+			to_json(j, p);
+
+			return j;
+		}
+
+		const nlohmann::json &operator>>(const nlohmann::json &j, SjclFile &p) {
+			from_json(j, p);
+
+			return j;
+		}
+
 		void to_json(nlohmann::json &j, const SjclFile &p) {
 			j["iv"] = p.getIv();
 			j["v"] = p.getV();
@@ -120,6 +132,5 @@ namespace Elastos {
 			p.setSalt(j["salt"].get<std::string>());
 			p.setCt(j["ct"].get<std::string>());
 		}
-
 	}
 }

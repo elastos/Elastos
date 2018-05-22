@@ -7,6 +7,9 @@
 
 #include <string>
 #include <cstdint>
+#include <nlohmann/json.hpp>
+
+#include "Mstream.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -38,6 +41,12 @@ namespace Elastos {
 			double getBalanceUnit() const;
 
 			void setBalanceUnit(double balanceUnit);
+
+		private:
+			JSON_SM_LS(CoinInfo);
+			JSON_SM_RS(CoinInfo);
+			TO_JSON(CoinInfo);
+			FROM_JSON(CoinInfo);
 
 		private:
 			std::string _chainId;

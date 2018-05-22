@@ -9,6 +9,8 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
+#include "Mstream.h"
+
 namespace Elastos {
 	namespace SDK {
 
@@ -17,12 +19,24 @@ namespace Elastos {
 			struct PubKeyItem {
 				std::string xPubKey;
 				std::string requestPubKey;
+
+			private:
+				JSON_SM_LS(PubKeyItem);
+				JSON_SM_RS(PubKeyItem);
+				TO_JSON(PubKeyItem);
+				FROM_JSON(PubKeyItem);
 			};
 
 		public:
 			BitcoreWalletClientJson();
 
 			virtual ~BitcoreWalletClientJson();
+
+		private:
+			JSON_SM_LS(BitcoreWalletClientJson);
+			JSON_SM_RS(BitcoreWalletClientJson);
+			TO_JSON(BitcoreWalletClientJson);
+			FROM_JSON(BitcoreWalletClientJson);
 
 		private:
 			std::string _coin;
@@ -46,14 +60,6 @@ namespace Elastos {
 			bool _compliantDerivation;
 			std::string _addressType;
 		};
-
-		//support for json converting
-		//read "Arbitrary types conversions" section in readme of
-		//	https://github.com/nlohmann/json for more details
-		void to_json(nlohmann::json &j, const BitcoreWalletClientJson &p);
-
-		void from_json(const nlohmann::json &j, BitcoreWalletClientJson &p);
-
 	}
 }
 

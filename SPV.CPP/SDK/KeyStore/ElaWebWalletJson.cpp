@@ -23,12 +23,28 @@ namespace Elastos {
 			_mnemonic = value;
 		}
 
-		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
+		nlohmann::json &operator<<(nlohmann::json &j, const ElaWebWalletJson &p) {
+			j << *(BitcoreWalletClientJson *) &p;
 
+			to_json(j, p);
+
+			return j;
+		}
+
+		const nlohmann::json &operator>>(const nlohmann::json &j, ElaWebWalletJson &p) {
+			j >> *(BitcoreWalletClientJson *) &p;
+
+			from_json(j, p);
+
+			return j;
+		}
+
+		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
+			j["_mnemonic"] = p._mnemonic;
 		}
 
 		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
-
+			p._mnemonic = j["_mnemonic"].get<std::string>();
 		}
 	}
 }

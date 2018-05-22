@@ -8,12 +8,12 @@ namespace Elastos {
 	namespace SDK {
 
 		CoinInfo::CoinInfo() :
-				_chainId(""),
-				_earliestPeerTime(0),
-				_index(0),
-				_usedMaxAddressIndex(0),
-				_singleAddress(false),
-				_balanceUnit(1.0) {
+			_chainId(""),
+			_earliestPeerTime(0),
+			_index(0),
+			_usedMaxAddressIndex(0),
+			_singleAddress(false),
+			_balanceUnit(1.0) {
 
 		}
 
@@ -63,6 +63,36 @@ namespace Elastos {
 
 		void CoinInfo::setBalanceUnit(double balanceUnit) {
 			_balanceUnit = balanceUnit;
+		}
+
+		nlohmann::json &operator<<(nlohmann::json &j, const CoinInfo &p) {
+			to_json(j, p);
+
+			return j;
+		}
+
+		const nlohmann::json &operator>>(const nlohmann::json &j, CoinInfo &p) {
+			from_json(j, p);
+
+			return j;
+		}
+
+		void to_json(nlohmann::json &j, const CoinInfo &p) {
+			j["_chainID"] = p._chainId;
+			j["_earliestPeerTime"] = p._earliestPeerTime;
+			j["_index"] = p._index;
+			j["_usedMaxAddressIndex"] = p._usedMaxAddressIndex;
+			j["_singleAddress"] = p._singleAddress;
+			j["_balanceUnit"] = p._balanceUnit;
+		}
+
+		void from_json(const nlohmann::json &j, CoinInfo &p) {
+			p._chainId = j["_chainID"].get<std::string>();
+			p._earliestPeerTime = j["_earliestPeerTime"].get<uint32_t>();
+			p._index = j["_index"].get<int>();
+			p._usedMaxAddressIndex = j["usedMaxAddressIndex"].get<int>();
+			p._singleAddress = j["_singleAddress"].get<bool>();
+			p._balanceUnit = j["_balanceUnit"].get<double>();
 		}
 	}
 }

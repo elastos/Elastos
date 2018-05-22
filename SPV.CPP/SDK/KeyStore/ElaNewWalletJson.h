@@ -7,6 +7,8 @@
 
 #include "ElaWebWalletJson.h"
 #include "CoinInfo.h"
+#include "Mstream.h"
+
 
 namespace Elastos {
 	namespace SDK {
@@ -37,19 +39,17 @@ namespace Elastos {
 			const std::vector<CoinInfo> &getCoinInfoList() const;
 
 		private:
+			JSON_SM_LS(ElaNewWalletJson);
+			JSON_SM_RS(ElaNewWalletJson);
+			TO_JSON(ElaNewWalletJson);
+			FROM_JSON(ElaNewWalletJson);
+
+		private:
 			std::string _id;
 			std::string _idInfo;
 			std::string _mnemonicLanguage;
 			std::vector<CoinInfo> _coinInfoList;
 		};
-
-		//support for json converting
-		//read "Arbitrary types conversions" section in readme of
-		//	https://github.com/nlohmann/json for more details
-		void to_json(nlohmann::json &j, const ElaNewWalletJson &p);
-
-		void from_json(const nlohmann::json &j, ElaNewWalletJson &p);
-
 	}
 }
 
