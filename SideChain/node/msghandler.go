@@ -1,136 +1,137 @@
 package node
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-var DuplicateBlocks int
-
-type MsgHandler struct {
-	node protocol.Noder
+type MsgHandlerV1 struct {
+	node         protocol.Noder
+	continueHash *common.Uint256
 }
 
 // When something wrong on read or decode message
 // this method will callback the error
-func (h *MsgHandler) OnDecodeError(err error) {
+func (h *MsgHandlerV1) OnError(err error) {
 	switch err {
-	case ErrUnmatchedMagic:
-		log.Error("Decode message magic not match")
+	case p2p.ErrUnmatchedMagic:
+		log.Error("[MsgHandler] unmatched magic")
 		h.node.CloseConn()
-	case ErrDisconnected:
-		log.Error("Decode message peer disconnected")
+	case p2p.ErrDisconnected:
+		log.Error("[MsgHandler] connection disconnected")
 		LocalNode.GetEvent("disconnect").Notify(events.EventNodeDisconnect, h.node)
 	default:
-		log.Error("Decode message error: ", err)
+		log.Error(err)
 	}
 }
 
 // After message header decoded, this method will be
 // called to create the message instance with the CMD
 // which is the message type of the received message
-func (h *MsgHandler) OnMakeMessage(cmd string) (Message, error) {
-	var message Message
-	switch cmd {
-	case "version":
-		message = new(msg.Version)
-	case "verack":
-		message = new(msg.VerAck)
-	case "getaddr":
-		message = new(msg.AddrsReq)
-	case "addr":
-		message = new(msg.Addrs)
-	case "inv":
-		message = new(msg.Inventory)
-	case "getdata":
-		message = new(msg.DataReq)
-	case "block":
-		message = new(core.Block)
-	case "tx":
-		message = new(ela.Transaction)
-	case "getblocks":
-		message = new(msg.BlocksReq)
-	case "notfound":
-		message = new(msg.NotFound)
-	case "ping":
-		message = new(msg.Ping)
-	case "pong":
-		message = new(msg.Pong)
-	default:
-		return nil, errors.New("unknown message type")
-	}
-
+func (h *MsgHandlerV1) OnMakeMessage(cmd string) (message p2p.Message, err error) {
 	// Update node last active time
 	h.node.UpdateLastActive()
-	return message, nil
+
+	switch cmd {
+	case p2p.CmdVersion:
+		message = new(msg.Version)
+	case p2p.CmdVerAck:
+		message = new(msg.VerAck)
+	case p2p.CmdGetAddr:
+		message = new(msg.GetAddr)
+	case p2p.CmdAddr:
+		message = new(msg.Addr)
+	case p2p.CmdPing:
+		message = new(msg.Ping)
+	case p2p.CmdPong:
+		message = new(msg.Pong)
+	case p2p.CmdGetBlocks:
+		message = new(msg.GetBlocks)
+	case p2p.CmdInv:
+		message = new(msg.Inventory)
+	case p2p.CmdGetData:
+		message = new(msg.GetData)
+	case p2p.CmdBlock:
+		message = msg.NewBlock(new(core.Block))
+	case p2p.CmdTx:
+		message = msg.NewTx(new(ela.Transaction))
+	case p2p.CmdNotFound:
+		message = new(msg.NotFound)
+	case p2p.CmdReject:
+		message = new(msg.Reject)
+	default:
+		err = fmt.Errorf("unknown message type")
+	}
+
+	return message, err
 }
 
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
-func (h *MsgHandler) OnMessageDecoded(message Message) {
+func (h *MsgHandlerV1) OnMessageDecoded(message p2p.Message) {
 	var err error
 	switch message := message.(type) {
 	case *msg.Version:
 		err = h.onVersion(message)
 	case *msg.VerAck:
 		err = h.onVerAck(message)
-	case *msg.AddrsReq:
+	case *msg.GetAddr:
 		err = h.onAddrsReq(message)
-	case *msg.Addrs:
+	case *msg.Addr:
 		err = h.onAddrs(message)
-	case *msg.Inventory:
-		err = h.onInventory(message)
-	case *msg.DataReq:
-		err = h.onDataReq(message)
-	case *core.Block:
-		err = h.onBlock(message)
-	case *ela.Transaction:
-		err = h.onTx(message)
-	case *msg.BlocksReq:
-		err = h.onBlocksReq(message)
-	case *msg.NotFound:
-		err = h.onNotFound(message)
 	case *msg.Ping:
 		err = h.onPing(message)
 	case *msg.Pong:
 		err = h.onPong(message)
+	case *msg.GetBlocks:
+		err = h.onGetBlocks(message)
+	case *msg.Inventory:
+		err = h.onInventory(message)
+	case *msg.GetData:
+		err = h.onGetData(message)
+	case *msg.Block:
+		err = h.onBlock(message)
+	case *msg.Tx:
+		err = h.onTx(message)
+	case *msg.NotFound:
+		err = h.onNotFound(message)
+	case *msg.Reject:
+		err = h.onReject(message)
 	default:
-		err = errors.New("unknown message type")
+		err = fmt.Errorf("unknown message type")
 	}
 	if err != nil {
-		log.Error("Decode message error: " + err.Error())
+		log.Error("Handler message error: " + err.Error())
 	}
 }
 
-func (h *MsgHandler) onVersion(version *msg.Version) error {
-	log.Debug()
+func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 	node := h.node
 
 	// Exclude the node itself
-	if version.Nonce == node.ID() {
+	if version.Nonce == LocalNode.ID() {
 		log.Warn("The node handshake with itself")
 		node.CloseConn()
-		return errors.New("The node handshake with itself")
+		return fmt.Errorf("The node handshake with itself")
 	}
 
 	s := node.State()
-	if s != INIT && s != HAND {
-		log.Warn("Unknow status to receive version")
-		return errors.New("Unknow status to receive version")
+	if s != p2p.INIT && s != p2p.HAND {
+		log.Warn("Unknown status to receive version")
+		return fmt.Errorf("Unknown status to receive version")
 	}
 
 	// Obsolete node
@@ -138,7 +139,7 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 	if ret == true {
 		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
 		// Close the connection and release the node soure
-		n.SetState(INACTIVITY)
+		n.SetState(p2p.INACTIVITY)
 		n.CloseConn()
 	}
 
@@ -147,7 +148,7 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 	LocalNode.AddNbrNode(node)
 
 	ip, _ := node.Addr16()
-	addr := msg.Addr{
+	addr := p2p.NetAddress{
 		Time:     node.GetTime(),
 		Services: version.Services,
 		IP:       ip,
@@ -156,31 +157,30 @@ func (h *MsgHandler) onVersion(version *msg.Version) error {
 	}
 	LocalNode.AddAddressToKnownAddress(addr)
 
-	var message Message
-	if s == INIT {
-		node.SetState(HANDSHAKE)
+	var message p2p.Message
+	if s == p2p.INIT {
+		node.SetState(p2p.HANDSHAKE)
 		message = NewVersion(LocalNode)
-	} else if s == HAND {
-		node.SetState(HANDSHAKED)
+	} else if s == p2p.HAND {
+		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
 	}
-	go node.Send(message)
+	node.Send(message)
 
 	return nil
 }
 
-func (h *MsgHandler) onVerAck(verAck *msg.VerAck) error {
-	log.Debug()
+func (h *MsgHandlerV1) onVerAck(verAck *msg.VerAck) error {
 	node := h.node
 	s := node.State()
-	if s != HANDSHAKE && s != HANDSHAKED {
+	if s != p2p.HANDSHAKE && s != p2p.HANDSHAKED {
 		log.Warn("unknown status to received verack")
-		return errors.New("unknown status to received verack")
+		return fmt.Errorf("unknown status to received verack")
 	}
 
-	node.SetState(ESTABLISH)
+	node.SetState(p2p.ESTABLISH)
 
-	if s == HANDSHAKE {
+	if s == p2p.HANDSHAKE {
 		node.Send(verAck)
 	}
 
@@ -194,16 +194,14 @@ func (h *MsgHandler) onVerAck(verAck *msg.VerAck) error {
 	return nil
 }
 
-func (h *MsgHandler) onAddrsReq(req *msg.AddrsReq) error {
-	log.Debug()
+func (h *MsgHandlerV1) onAddrsReq(req *msg.GetAddr) error {
 	addrs := LocalNode.RandSelectAddresses()
-	go h.node.Send(msg.NewAddrs(addrs))
+	h.node.Send(msg.NewAddr(addrs))
 	return nil
 }
 
-func (h *MsgHandler) onAddrs(addrs *msg.Addrs) error {
-	log.Debug()
-	for _, addr := range addrs.Addrs {
+func (h *MsgHandlerV1) onAddrs(addrs *msg.Addr) error {
+	for _, addr := range addrs.AddrList {
 		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", addr.String(), addr.ID))
 
 		if addr.ID == LocalNode.ID() {
@@ -223,168 +221,236 @@ func (h *MsgHandler) onAddrs(addrs *msg.Addrs) error {
 	return nil
 }
 
-func (h *MsgHandler) onInventory(inv *msg.Inventory) error {
-	log.Debug()
-	node := h.node
-	log.Debug(fmt.Sprintf("The inv type: no one. block len: %d, %s\n", len(inv.Hashes), inv.Hashes))
+func (h *MsgHandlerV1) onPing(ping *msg.Ping) error {
+	h.node.SetHeight(ping.Nonce)
+	h.node.Send(msg.NewPong(chain.DefaultLedger.Blockchain.BestChain.Height))
+	return nil
+}
 
-	log.Debug("RX block message")
-	if LocalNode.IsSyncHeaders() == true && node.IsSyncHeaders() == false {
+func (h *MsgHandlerV1) onPong(pong *msg.Pong) error {
+	h.node.SetHeight(pong.Nonce)
+	return nil
+}
+
+func (h *MsgHandlerV1) onGetBlocks(req *msg.GetBlocks) error {
+	node := h.node
+	LocalNode.AcqSyncHdrReqSem()
+	defer LocalNode.RelSyncHdrReqSem()
+
+	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
+	hashes, err := GetBlockHashes(*start, req.HashStop, p2p.MaxBlocksPerMsg)
+	if err != nil {
+		return err
+	}
+
+	inv := msg.NewInventory()
+	for i := range hashes {
+		inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, hashes[i]))
+	}
+
+	invListLen := len(inv.InvList)
+	if invListLen > 0 {
+		if invListLen == p2p.MaxBlocksPerMsg {
+			continueHash := inv.InvList[invListLen-1].Hash
+			h.continueHash = &continueHash
+		}
+		node.Send(inv)
+	}
+
+	return nil
+}
+
+func (h *MsgHandlerV1) onInventory(inv *msg.Inventory) error {
+	node := h.node
+	if LocalNode.IsSyncHeaders() && !node.IsSyncHeaders() {
 		return nil
 	}
 
-	for i, hash := range inv.Hashes {
-		// Request block
-		if !chain.DefaultLedger.BlockInLedger(*hash) {
-			if !LocalNode.RequestedBlockExisted(*hash) && !chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) {
-				LocalNode.AddRequestedBlock(*hash)
-				go node.Send(msg.NewDataReq(BlockData, *hash))
-			}
+	// Attempt to find the final block in the inventory list.  There may
+	// not be one.
+	lastBlock := -1
+	for i := len(inv.InvList) - 1; i >= 0; i-- {
+		if inv.InvList[i].Type == msg.InvTypeBlock {
+			lastBlock = i
+			break
 		}
+	}
 
-		// Request fork chain
-		if chain.DefaultLedger.Blockchain.IsKnownOrphan(hash) {
-			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(hash)
-			locator, err := chain.DefaultLedger.Blockchain.LatestBlockLocator()
-			if err != nil {
-				log.Errorf(" Failed to get block locator for the latest block: %v", err)
+	getData := msg.NewGetData()
+
+	for i, iv := range inv.InvList {
+		hash := iv.Hash
+		switch iv.Type {
+		case msg.InvTypeBlock:
+			haveInv := chain.DefaultLedger.BlockInLedger(hash) ||
+				chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash) || LocalNode.IsRequestedBlock(hash)
+
+			// Block need to be request
+			if !haveInv {
+				LocalNode.AddRequestedBlock(hash)
+				getData.AddInvVect(iv)
 				continue
 			}
-			SendBlocksReq(node, locator, *orphanRoot)
+
+			// Request fork chain
+			if chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash) {
+				orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+				locator, err := chain.DefaultLedger.Blockchain.LatestBlockLocator()
+				if err != nil {
+					log.Errorf(" Failed to get block locator for the latest block: %v", err)
+					continue
+				}
+				SendGetBlocks(node, locator, *orphanRoot)
+				continue
+			}
+
+			// Request next hashes
+			if i == lastBlock {
+				locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
+				SendGetBlocks(node, locator, common.EmptyHash)
+			}
+		case msg.InvTypeTx:
+			if _, ok := node.GetTxnPool(false)[hash]; !ok {
+				getData.AddInvVect(iv)
+			}
+		default:
 			continue
 		}
-
-		// Request next hashes
-		if i == len(inv.Hashes)-1 {
-			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(hash)
-			SendBlocksReq(node, locator, EmptyHash)
-		}
 	}
+
+	node.Send(getData)
 	return nil
 }
 
-func (h *MsgHandler) onDataReq(req *msg.DataReq) error {
-	log.Debug()
+func (h *MsgHandlerV1) onGetData(getData *msg.GetData) error {
 	node := h.node
-	hash := req.Hash
-	switch req.Type {
-	case BlockData:
-		block, err := chain.DefaultLedger.Store.GetBlock(hash)
-		if err != nil {
-			log.Debug("Can't get block from hash: ", hash, " ,send not found message")
-			go node.Send(msg.NewNotFound(hash))
-			return err
-		}
-		log.Debug("block height is ", block.Header.Height, " ,hash is ", hash)
+	notFound := msg.NewNotFound()
 
-		go node.Send(block)
+	for _, iv := range getData.InvList {
+		switch iv.Type {
+		case msg.InvTypeBlock:
+			block, err := chain.DefaultLedger.Store.GetBlock(iv.Hash)
+			if err != nil {
+				log.Debug("Can't get block from hash: ", iv.Hash, " ,send not found message")
+				notFound.AddInvVect(iv)
+				return err
+			}
+			log.Debug("block height is ", block.Header.Height, " ,hash is ", iv.Hash.String())
 
-	case TxData:
-		txn, err := chain.DefaultLedger.GetTransactionWithHash(hash)
-		if err != nil {
-			log.Error("Get transaction with hash error: ", err.Error())
-			return err
+			node.Send(msg.NewBlock(block))
+
+			if h.continueHash != nil && h.continueHash.IsEqual(iv.Hash) {
+				best := chain.DefaultLedger.Blockchain.BestChain
+				inv := msg.NewInventory()
+				inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, best.Hash))
+				node.Send(inv)
+				h.continueHash = nil
+			}
+
+		case msg.InvTypeTx:
+			tx, ok := node.GetTxnPool(false)[iv.Hash]
+			if !ok {
+				notFound.AddInvVect(iv)
+				continue
+			}
+
+			node.Send(msg.NewTx(tx))
+
+		default:
+			log.Warnf("Unknown type in inventory request %d", iv.Type)
+			continue
 		}
-		go node.Send(txn)
 	}
+
 	return nil
 }
 
-func (h *MsgHandler) onBlock(block *core.Block) error {
-	log.Debug()
+func (h *MsgHandlerV1) onBlock(msgBlock *msg.Block) error {
 	node := h.node
+	block := msgBlock.Block.(*core.Block)
 
 	hash := block.Hash()
-	if LocalNode.IsNeighborNoder(node) == false {
-		log.Trace("received headers message from unknown peer")
-		return errors.New("received headers message from unknown peer")
+	if !LocalNode.IsNeighborNoder(node) {
+		return fmt.Errorf("received block message from unknown peer")
 	}
 
 	if chain.DefaultLedger.BlockInLedger(hash) {
-		DuplicateBlocks++
-		log.Trace("Receive ", DuplicateBlocks, " duplicated block.")
+		log.Trace("Receive duplicated block, ", hash.String())
 		return nil
 	}
 
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
+
 	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
-
 	if err != nil {
-		log.Warn("Block add failed: ", err, " ,block hash is ", hash.Bytes())
-		return err
-	}
-	//relay
-	if LocalNode.IsSyncHeaders() == false {
-		if !LocalNode.ExistedID(hash) {
-			LocalNode.Relay(node, block)
-			log.Debug("Relay block")
-		}
+		reject := msg.NewReject(msgBlock.CMD(), msg.RejectInvalid, err.Error())
+		reject.Hash = block.Hash()
+
+		node.Send(reject)
+		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
 	}
 
-	if isOrphan == true && LocalNode.IsSyncHeaders() == false {
-		if !LocalNode.RequestedBlockExisted(hash) {
-			orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
-			locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
-			SendBlocksReq(node, locator, *orphanRoot)
-		}
+	if isOrphan {
+		orphanRoot := chain.DefaultLedger.Blockchain.GetOrphanRoot(&hash)
+		locator, _ := chain.DefaultLedger.Blockchain.LatestBlockLocator()
+		SendGetBlocks(node, locator, *orphanRoot)
+	}
+
+	if !LocalNode.IsSyncHeaders() && !LocalNode.ExistedID(hash) {
+		LocalNode.Relay(node, block)
+		log.Debug("Relay block")
 	}
 
 	return nil
 }
 
-func (h *MsgHandler) onTx(tx *ela.Transaction) error {
-	log.Debug()
+func (h *MsgHandlerV1) onTx(msgTx *msg.Tx) error {
 	node := h.node
-	log.Debug("RX Transaction message")
-	if !LocalNode.ExistedID(tx.Hash()) {
-		if errCode := LocalNode.AppendToTxnPool(tx); errCode != Success {
-			return errors.New("[message] VerifyTransaction failed when AppendToTxnPool.")
-		}
-		LocalNode.Relay(node, tx)
-		log.Info("Relay Transaction")
-		LocalNode.IncRxTxnCnt()
-		log.Debug("RX Transaction message hash", tx.Hash().String())
-		log.Debug("RX Transaction message type", tx.TxType.Name())
+	tx := msgTx.Transaction.(*ela.Transaction)
+
+	if !LocalNode.IsNeighborNoder(node) {
+		return fmt.Errorf("received transaction message from unknown peer")
 	}
 
-	return nil
-}
-
-func (h *MsgHandler) onBlocksReq(req *msg.BlocksReq) error {
-	log.Debug()
-	node := h.node
-	LocalNode.AcqSyncHdrReqSem()
-	defer LocalNode.RelSyncHdrReqSem()
-	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
-	hashes, err := GetBlockHashes(*start, req.HashStop)
-	if err != nil {
-		return err
+	if LocalNode.IsSyncHeaders() {
+		return nil
 	}
-	go node.Send(msg.NewInventory(BlockData, hashes))
+
+	if LocalNode.ExistedID(tx.Hash()) {
+		reject := msg.NewReject(msgTx.CMD(), msg.RejectDuplicate, "duplicate transaction")
+		reject.Hash = tx.Hash()
+		node.Send(reject)
+		return fmt.Errorf("[HandlerEIP001] Transaction already exsisted")
+	}
+
+	if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
+		reject := msg.NewReject(msgTx.CMD(), msg.RejectInvalid, errCode.Message())
+		reject.Hash = tx.Hash()
+		node.Send(reject)
+		return fmt.Errorf("[HandlerEIP001] VerifyTransaction failed when AppendToTxnPool")
+	}
+
+	LocalNode.Relay(node, tx)
+	log.Infof("Relay Transaction type %s hash %s", tx.TxType.Name(), tx.Hash().String())
+	LocalNode.IncRxTxnCnt()
+
 	return nil
 }
 
-func (h *MsgHandler) onNotFound(msg *msg.NotFound) error {
-	log.Debug("Received not found message, hash: ", msg.Hash.String())
+func (h *MsgHandlerV1) onNotFound(inv *msg.NotFound) error {
+	for _, iv := range inv.InvList {
+		log.Warnf("data not found type: %s hash: %s", iv.Type.String(), iv.Hash.String())
+	}
 	return nil
 }
 
-func (h *MsgHandler) onPing(ping *msg.Ping) error {
-	log.Debug()
-	h.node.SetHeight(ping.Height)
-	go h.node.Send(msg.NewPong(chain.DefaultLedger.Store.GetHeight()))
-	return nil
-}
-
-func (h *MsgHandler) onPong(pong *msg.Pong) error {
-	log.Debug()
-	h.node.SetHeight(pong.Height)
-	return nil
+func (h *MsgHandlerV1) onReject(msg *msg.Reject) error {
+	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
+		h.node.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
 }
 
 func NewVersion(node protocol.Noder) *msg.Version {
-	log.Debug()
 	msg := new(msg.Version)
 	msg.Version = node.Version()
 	msg.Services = node.Services()
@@ -402,27 +468,27 @@ func NewVersion(node protocol.Noder) *msg.Version {
 	return msg
 }
 
-func SendBlocksReq(node protocol.Noder, locator []*Uint256, hashStop Uint256) {
-	if LocalNode.GetStartHash() == *locator[0] &&
-		LocalNode.GetStopHash() == hashStop {
+func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop common.Uint256) {
+	if LocalNode.GetStartHash() == *locator[0] && LocalNode.GetStopHash() == hashStop {
 		return
 	}
+
 	LocalNode.SetSyncHeaders(true)
 	node.SetSyncHeaders(true)
 	LocalNode.SetStartHash(*locator[0])
 	LocalNode.SetStopHash(hashStop)
-	go node.Send(msg.NewBlocksReq(locator, hashStop))
+	node.Send(msg.NewGetBlocks(locator, hashStop))
 }
 
-func GetBlockHashes(startHash Uint256, stopHash Uint256) ([]*Uint256, error) {
+func GetBlockHashes(startHash common.Uint256, stopHash common.Uint256, maxBlockHashes uint32) ([]*common.Uint256, error) {
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
 	curHeight := chain.DefaultLedger.Store.GetHeight()
-	if stopHash == EmptyHash {
-		if startHash == EmptyHash {
-			if curHeight > MaxHeaderHashes {
-				count = MaxHeaderHashes
+	if stopHash == common.EmptyHash {
+		if startHash == common.EmptyHash {
+			if curHeight > maxBlockHashes {
+				count = maxBlockHashes
 			} else {
 				count = curHeight
 			}
@@ -433,8 +499,8 @@ func GetBlockHashes(startHash Uint256, stopHash Uint256) ([]*Uint256, error) {
 			}
 			startHeight = startHeader.Height
 			count = curHeight - startHeight
-			if count > MaxHeaderHashes {
-				count = MaxHeaderHashes
+			if count > maxBlockHashes {
+				count = maxBlockHashes
 			}
 		}
 	} else {
@@ -443,7 +509,7 @@ func GetBlockHashes(startHash Uint256, stopHash Uint256) ([]*Uint256, error) {
 			return nil, err
 		}
 		stopHeight = stopHeader.Height
-		if startHash != EmptyHash {
+		if startHash != common.EmptyHash {
 			startHeader, err := chain.DefaultLedger.Store.GetHeader(startHash)
 			if err != nil {
 				return nil, err
@@ -452,23 +518,23 @@ func GetBlockHashes(startHash Uint256, stopHash Uint256) ([]*Uint256, error) {
 
 			// avoid unsigned integer underflow
 			if stopHeight < startHeight {
-				return nil, errors.New("do not have header to send")
+				return nil, fmt.Errorf("do not have header to send")
 			}
 			count = stopHeight - startHeight
 
-			if count >= MaxHeaderHashes {
-				count = MaxHeaderHashes
+			if count >= maxBlockHashes {
+				count = maxBlockHashes
 			}
 		} else {
-			if stopHeight > MaxHeaderHashes {
-				count = MaxHeaderHashes
+			if stopHeight > maxBlockHashes {
+				count = maxBlockHashes
 			} else {
 				count = stopHeight
 			}
 		}
 	}
 
-	hashes := make([]*Uint256, 0)
+	hashes := make([]*common.Uint256, 0)
 	for i := uint32(1); i <= count; i++ {
 		hash, err := chain.DefaultLedger.Store.GetBlockHash(startHeight + i)
 		if err != nil {

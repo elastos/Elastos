@@ -10,19 +10,15 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
-	MSGHDRLEN          = 24
-	MAXBLKHDRCNT       = 400
 	MinConnectionCount = 3
 	TIMESOFUPDATETIME  = 2
 )
 
 const (
-	MAXBUFLEN        = 1024 * 16 // Fixme The maximum buffer to receive message
 	PROTOCOLVERSION  = 1
 	KEEPALIVETIMEOUT = 3
 	DIALTIMEOUT      = 6
@@ -65,7 +61,7 @@ type Noder interface {
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighborAddrs() ([]msg.Addr, uint64)
+	GetNeighborAddrs() ([]p2p.NetAddress, uint64)
 	GetTransaction(hash Uint256) *ela.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
@@ -86,17 +82,17 @@ type Noder interface {
 	SetAddrInConnectingList(addr string) bool
 	RemoveAddrInConnectingList(addr string)
 	GetAddressCnt() uint64
-	AddAddressToKnownAddress(na msg.Addr)
-	RandGetAddresses(nbrAddrs []msg.Addr) []msg.Addr
+	AddAddressToKnownAddress(na p2p.NetAddress)
+	RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.NetAddress
 	NeedMoreAddresses() bool
-	RandSelectAddresses() []msg.Addr
+	RandSelectAddresses() []p2p.NetAddress
 	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
 	ExistHash(hash Uint256) bool
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
 	IsSyncFailed() bool
-	RequestedBlockExisted(hash Uint256) bool
+	IsRequestedBlock(hash Uint256) bool
 	AddRequestedBlock(hash Uint256)
 	DeleteRequestedBlock(hash Uint256)
 	GetRequestBlockList() map[Uint256]time.Time

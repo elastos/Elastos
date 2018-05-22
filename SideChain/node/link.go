@@ -13,7 +13,6 @@ import (
 	"time"
 
 	. "github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
@@ -255,15 +254,5 @@ func (node *node) Send(msg Message) {
 		return
 	}
 
-	buf, err := node.MsgHelper.Build(msg)
-	if err != nil {
-		log.Error("Serialize message failed, ", err)
-		return
-	}
-
-	_, err = node.conn.Write(buf)
-	if err != nil {
-		log.Error("Error sending message to node ", err)
-		LocalNode.eventQueue.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node)
-	}
+	node.MsgHelper.Write(msg)
 }

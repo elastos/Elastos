@@ -6,8 +6,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 // The neigbor node list
@@ -56,7 +55,7 @@ func (nm *nbrNodes) GetConnectionCnt() uint {
 
 	var cnt uint
 	for _, node := range nm.List {
-		if node.State() == ESTABLISH {
+		if node.State() == p2p.ESTABLISH {
 			cnt++
 		}
 	}
@@ -76,24 +75,24 @@ func (nm *nbrNodes) NodeEstablished(id uint64) bool {
 		return false
 	}
 
-	if n.State() != ESTABLISH {
+	if n.State() != p2p.ESTABLISH {
 		return false
 	}
 
 	return true
 }
 
-func (node *node) GetNeighborAddrs() ([]msg.Addr, uint64) {
+func (node *node) GetNeighborAddrs() ([]p2p.NetAddress, uint64) {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
 	var i uint64
-	var addrs []msg.Addr
+	var addrs []p2p.NetAddress
 	for _, n := range node.nbrNodes.List {
-		if n.State() != ESTABLISH {
+		if n.State() != p2p.ESTABLISH {
 			continue
 		}
-		var addr msg.Addr
+		var addr p2p.NetAddress
 		addr.IP, _ = n.Addr16()
 		addr.Time = n.GetTime()
 		addr.Services = n.Services()
@@ -114,7 +113,7 @@ func (node *node) GetNeighborHeights() ([]uint64, uint64) {
 	var i uint64
 	heights := []uint64{}
 	for _, n := range node.nbrNodes.List {
-		if n.State() == ESTABLISH {
+		if n.State() == p2p.ESTABLISH {
 			height := n.Height()
 			heights = append(heights, height)
 			i++
@@ -129,7 +128,7 @@ func (node *node) GetNeighborNoder() []Noder {
 
 	nodes := []Noder{}
 	for _, n := range node.nbrNodes.List {
-		if n.State() == ESTABLISH {
+		if n.State() == p2p.ESTABLISH {
 			node := n
 			nodes = append(nodes, node)
 		}
@@ -142,7 +141,7 @@ func (node *node) GetNbrNodeCnt() uint32 {
 	defer node.nbrNodes.RUnlock()
 	var count uint32
 	for _, n := range node.nbrNodes.List {
-		if n.State() == ESTABLISH {
+		if n.State() == p2p.ESTABLISH {
 			count++
 		}
 	}
@@ -153,7 +152,7 @@ func (node *node) RandGetANbr() Noder {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	for _, n := range node.nbrNodes.List {
-		if n.State() == ESTABLISH {
+		if n.State() == p2p.ESTABLISH {
 			return n
 		}
 	}

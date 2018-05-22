@@ -3,9 +3,8 @@ package auxpow
 import (
 	"io"
 
-	"github.com/elastos/Elastos.ELA/auxpow"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/auxpow"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
