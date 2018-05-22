@@ -3,20 +3,10 @@
 
 Welcome to Elastos! 
 
-What is Elastos? [Short Video 1:38](https://vimeo.com/264996792/d5265a3446)
+What is Elastos? [Short Video 1:49](https://www.youtube.com/watch?v=20mTY3G5y0c)
 
 Script:
->Current blockchains are designed to record transactions, not to store data. There is simply not enough space on the current blockchain to store a large quantity of digital movies and books. So they get congested.
-
->Elastos’ solution is a flexible mainchain and sidechain. The main chain is only responsible for basic transactions and transfer payments, while the sidechain executes smart contracts to support various applications and services. And
-prevent overload.
-
->Elastos operating system runs as a flexible layer around the already congested blockchains. This method is also more secure. Identification and authentication come from the blockchain ID and is transferred to Elastos Runtime.
-
->Elastos will be a platform for decentralized applications (Dapps) that runs on a peer-to-peer network with no centralized control. An environment where digital assets (like copyrights managed games, music, movies and books,) can be traded peer to peer, safely. The creators and the users are protected on Elastos. And we don’t take (countdown percentage… 50-0%) ANY cut form these
-
->Welcome to the Elastos smartweb! Own your own data… and monetise it if you want.
-
+>Blockchains are ideal for recording transactions but not for storing data. There is simply not enough space to store large numbers of files which means the blockchain easily gets congested. To prevent overload, Elastos provides the flexible main chain-sidechains design structure. The main chain is responsible for necessary transactions and transfer payments while the sidechains execute smart contracts to support various applications and services. The Elastos Operating System runs as a highly secure flexible layer around the blockchain to free up more space. Identification and authentication come from the blockchain ID which are then transferred to the elastos runtime OS. The Elastos OS has been in development for 18 years and has over 10 million lines of code. To put this into perspective, the space shuttle needed 400,000, android took 11.8 million and the F35 required 24.7 million lines of code. The Elastos Platform targets decentralized applications that run on a peer to peer network with no centralized control. It provides an environment where digital assets can be traded safely. Both creators and users are protected by Elastos. Welcome to the Elastos Smart Web - own your data. 
 
 [Elastos Introduction slides](https://www.slideshare.net/RongChen34/elastos-intro)
 
