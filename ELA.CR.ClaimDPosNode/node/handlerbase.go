@@ -164,7 +164,19 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 }
 
 func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
-	addrs := LocalNode.RandSelectAddresses()
+	var addrs []p2p.NetAddress
+	// Only send addresses that enabled SPV service
+	if h.node.LocalPort() == protocol.SPVPort {
+		for _, addr := range LocalNode.RandSelectAddresses() {
+			if addr.Services&protocol.SPVService == protocol.SPVService {
+				addr.Port = protocol.SPVPort
+				addrs = append(addrs, addr)
+			}
+		}
+	} else {
+		addrs = LocalNode.RandSelectAddresses()
+	}
+
 	h.node.Send(msg.NewAddr(addrs))
 	return nil
 }
