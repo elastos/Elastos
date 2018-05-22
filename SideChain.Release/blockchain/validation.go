@@ -54,13 +54,13 @@ func VerifySignature(tx *ela.Transaction) (bool, error) {
 		if err != nil {
 			return false, err
 		}
-		if signType == crypto.STANDARD {
+		if signType == STANDARD {
 			// Remove length byte and sign type byte
 			publicKeyBytes := code[1 : len(code)-1]
 
 			return checkStandardSignature(publicKeyBytes, data, param)
 
-		} else if signType == crypto.MULTISIG {
+		} else if signType == MULTISIG {
 			publicKeys, err := crypto.ParseMultisigScript(code)
 			if err != nil {
 				return false, err

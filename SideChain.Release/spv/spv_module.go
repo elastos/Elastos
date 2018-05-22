@@ -15,7 +15,11 @@ import (
 var spvService *_interface.SPVServiceImpl
 
 func SpvInit() error {
-	spvService := _interface.NewSPVService(uint64(rand.Int63()), config.Parameters.SpvSeedList)
+	spvService, err := _interface.NewSPVService(
+		config.Parameters.Magic, uint64(rand.Int63()), config.Parameters.SpvSeedList)
+	if err != nil {
+		return err
+	}
 	spvService.Start()
 	return nil
 }

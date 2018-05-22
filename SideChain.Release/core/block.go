@@ -21,10 +21,6 @@ type Block struct {
 	Transactions []*ela.Transaction
 }
 
-func (b *Block) CMD() string {
-	return "block"
-}
-
 func (b *Block) Serialize(w io.Writer) error {
 	if err := b.Header.Serialize(w); err != nil {
 		return err
