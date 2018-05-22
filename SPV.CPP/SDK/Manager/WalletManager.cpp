@@ -82,7 +82,7 @@ namespace Elastos {
 			}
 
 			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_keyStore.getMnemonic()));
-			init(_masterPubKey, _chainParams, _keyStore.json().getEarliestPeerTime(), true);
+			init(_masterPubKey, _chainParams, _keyStore.json().getCoinInfoList()[0].getEarliestPeerTime(), true);
 		}
 
 		TransactionPtr WalletManager::createTransaction(const TxParam &param) {

@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_ELANEWWALLETJSON_H__
 
 #include "ElaWebWalletJson.h"
+#include "CoinInfo.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -25,19 +26,21 @@ namespace Elastos {
 
 			void setIDInfo(const std::string &value);
 
-			uint32_t getEarliestPeerTime() const;
-
-			void setEaliestPeerTime(uint32_t time);
-
 			const std::string &getMnemonicLanguage() const;
 
 			void setMnemonicLanguage(const std::string &language);
+
+			void addCoinInfo(const CoinInfo &info);
+
+			void clearCoinInfo();
+
+			const std::vector<CoinInfo> &getCoinInfoList() const;
 
 		private:
 			std::string _id;
 			std::string _idInfo;
 			std::string _mnemonicLanguage;
-			uint32_t _earliestPeerTime;
+			std::vector<CoinInfo> _coinInfoList;
 		};
 
 		//support for json converting
