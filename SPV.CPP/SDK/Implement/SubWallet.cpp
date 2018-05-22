@@ -77,12 +77,12 @@ namespace Elastos {
 		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, double amount,
 								   double fee, const std::string &payPassword, const std::string &memo,
 								   const std::string &txid) {
-			return std::__cxx11::string();
+			return "";
 		}
 
 		std::string
 		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const std::string &payPassword) {
-			return std::__cxx11::string();
+			return std::string();
 		}
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
@@ -90,7 +90,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
-			return std::__cxx11::string();
+			return "";
 		}
 
 		nlohmann::json

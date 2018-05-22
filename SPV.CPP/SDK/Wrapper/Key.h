@@ -57,7 +57,7 @@ namespace Elastos {
 			bool verify(const UInt256 &messageDigest, const CMBlock &signature) const;
 
 		public:
-			static CMBlock getSeedFromPhrase(const CMBlock &phrase);
+			static CMBlock getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass = "");
 
 			static CMBlock getAuthPrivKeyForAPI(const CMBlock &seed);
 

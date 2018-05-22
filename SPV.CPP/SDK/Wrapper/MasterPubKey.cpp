@@ -16,9 +16,10 @@ namespace Elastos {
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 		}
 
-		MasterPubKey::MasterPubKey(const std::string &phrase) {
+		MasterPubKey::MasterPubKey(const std::string &phrase, const std::string &phrasePassword) {
 			UInt512 seed = UINT512_ZERO;
-			BRBIP39DeriveKey(seed.u8, phrase.c_str(), nullptr);
+			const char *phrasePass = phrasePassword == "" ? nullptr : phrasePassword.c_str();
+			BRBIP39DeriveKey(seed.u8, phrase.c_str(), phrasePass);
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 			*_masterPubKey = BRBIP32MasterPubKey(&seed, sizeof(seed));
 		}

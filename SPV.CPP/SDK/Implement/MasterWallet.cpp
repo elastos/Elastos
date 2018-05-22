@@ -6,6 +6,7 @@
 #include "MasterWallet.h"
 #include "SubWallet.h"
 #include "Log.h"
+#include "Mnemonic.h"
 
 namespace fs = boost::filesystem;
 
@@ -92,12 +93,25 @@ namespace Elastos {
 
 			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_keyStore.getMnemonic()));
 			//todo create private key by payPassword and entropy
+
+			std::string privateKey = _keyStore.getMasterPrivateKey();
+			_key->setPrivKey(privateKey);
 		}
 
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
 											  const std::string &payPassword) {
 			//todo recover entropy by mnemonic and phrasePassword
 			//todo create private key by payPassword and entropy
+
+			CMBlock phrase(mnemonic.size());
+			memcpy(phrase, mnemonic.c_str(), mnemonic.size());
+
+			CMBlock seed = Key::getSeedFromPhrase(phrase, phrasePassword);
+
+			CMBlock privateKey = Key::getAuthPrivKeyForAPI(seed);
+
+			_key->setPrivKey((char *)(void  *)privateKey);
+
 			return false;
 		}
 
@@ -108,6 +122,16 @@ namespace Elastos {
 		bool MasterWallet::exportMnemonic(const std::string &phrasePassword, std::string &mnemonic) {
 			//todo compare phrase password with phrase hash first
 			//todo generate mnemonic from entropy
+
+			UInt128 entropy = UINT128_ZERO;
+
+			CMBlock entropySeed(sizeof(entropy));
+			memcpy(entropySeed, entropy.u8, sizeof(entropy));
+
+			Mnemonic mne;
+			CMBlock paperKey = MasterPubKey::generatePaperKey(entropySeed, mne.words());
+			mnemonic = paperKey;
+
 			return false;
 		}
 

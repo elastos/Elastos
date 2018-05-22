@@ -89,13 +89,16 @@ namespace Elastos {
 			return privKey;
 		}
 
-		CMBlock Key::getSeedFromPhrase(const CMBlock &phrase) {
+		CMBlock Key::getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass) {
 			UInt512 key;
 			const char *charPhrase = (char *)(void *)phrase;
-			BRBIP39DeriveKey(key.u8, charPhrase, nullptr);
+			const char *charPhrasePass = phrasePass == "" ? nullptr : phrasePass.c_str();
+			BRBIP39DeriveKey(key.u8, charPhrase, charPhrasePass);
 
 			CMBlock ret(sizeof(UInt512));
 			memcpy(ret, key.u8, sizeof(UInt512));
+
+			return ret;
 		}
 
 		CMBlock Key::getAuthPrivKeyForAPI(const CMBlock &seed) {
@@ -163,9 +166,10 @@ namespace Elastos {
 		}
 
 		CMBlock Key::decryptNative(const CMBlock &data, const CMBlock &nonce) const {
-			CMBlock out(data.GetSize());
+			CMBlock out(1024);
 			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.GetSize(), _key.get(), nonce,
 														   data, data.GetSize(), nullptr, 0);
+			out.Resize(outSize);
 			return out;
 		}
 
@@ -182,7 +186,7 @@ namespace Elastos {
 			CMBlock signature(256);
 			size_t signatureLen = BRKeySign(_key.get(), signature, 256, messageDigest);
 			assert (signatureLen <= 256);
-
+			signature.Resize(signatureLen);
 			return signature;
 		}
 

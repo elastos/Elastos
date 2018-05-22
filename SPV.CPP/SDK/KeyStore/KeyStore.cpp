@@ -57,7 +57,7 @@ namespace Elastos {
 			std::vector<unsigned char> ct = SjclBase64::toBits(sjclFile.getCt());
 			std::vector<unsigned char> iv = SjclBase64::toBits(sjclFile.getIv());
 			std::vector<unsigned char> adata = SjclBase64::toBits(sjclFile.getAdata());
-			int ret = decryptccm(ct.data(), ct.size() - 8, nullptr == adata.data() ? "" : adata.data(), adata.size(),
+			int ret = decryptccm(ct.data(), ct.size() - 8, nullptr == adata.data() ? (unsigned char *)"" : adata.data(), adata.size(),
 								 &ct.data()[ct.size() - 8], key, iv.data(), plaintext);
 
 			nlohmann::json walletJson;
@@ -92,8 +92,8 @@ namespace Elastos {
 					unsigned char ciphertext[1000] = {0};
 					unsigned char tag[8] = {0};
 
-					int ret = encryptccm(str_ss.c_str(), str_ss.size(), "", 0, key, iv, ciphertext, tag);
-					unsigned char ct[ret + 8] = {0};
+					int ret = encryptccm((unsigned char *)str_ss.c_str(), str_ss.size(), (unsigned char *)"", 0, key, (unsigned char *)&iv[0], ciphertext, tag);
+					unsigned char ct[ret + 8];
 					memcpy(ct, ciphertext, ret);
 					memcpy(ct + ret, tag, 8);
 					std::string ct_base64 = SjclBase64::fromBits(ct, sizeof(ct));

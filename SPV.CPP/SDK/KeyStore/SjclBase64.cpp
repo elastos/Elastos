@@ -115,7 +115,7 @@ namespace Elastos {
 		}
 
 		std::string SjclBase64::fromBits(const unsigned char *bitArray, size_t length) {
-			return _Encode((const char *)bitArray, length);
+			return _Encode(bitArray, length);
 		}
 	}
 }

@@ -110,7 +110,7 @@ TEST_CASE("Key test", "[Key]") {
 		UInt256 secret = uint256("0000000000000000000000000000000000000000000000000000000000000001");
 		Key key(secret, true);
 		CMBlock byteData = key.sign(hash);
-		REQUIRE(byteData.GetSize() > 0);
+		REQUIRE(byteData.GetSize() == sizeof(signedData) - 1);
 		REQUIRE(byteData != false);
 		for (uint64_t i = 0; i < sizeof(signedData) - 1; i++) {
 			REQUIRE(signedData[i] == byteData[i]);

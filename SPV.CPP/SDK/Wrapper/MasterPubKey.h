@@ -24,7 +24,7 @@ namespace Elastos {
 
 			MasterPubKey();
 
-			MasterPubKey(const std::string &phrase);
+			MasterPubKey(const std::string &phrase, const std::string &phrasePassword = "");
 
 			virtual std::string toString() const;
 

@@ -143,7 +143,7 @@ public:
 
 	T &operator[](SIZETYPE off) const {
 		T t;
-		return nullptr != pValue ? pValue->data[off] : t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
 
 private:
