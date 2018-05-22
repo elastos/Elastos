@@ -23,7 +23,7 @@ const (
 )
 
 type downloadBlock struct {
-	mutex    sync.Mutex
+	mutex sync.Mutex
 	*msg.MerkleBlock
 	txsQueue map[common.Uint256]uint32
 	txs      []*ela.Transaction

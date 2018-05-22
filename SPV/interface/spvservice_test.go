@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/binary"
-	"os"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
@@ -24,7 +23,10 @@ func TestNewSPVService(t *testing.T) {
 	var err error
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-	spv = NewSPVService(clientId, config.Values().SeedList)
+	spv, err = NewSPVService(config.Values().Magic, clientId, config.Values().SeedList)
+	if err != nil {
+		t.Error("NewSPVService error %s", err.Error())
+	}
 
 	// Register account
 	err = spv.RegisterAccount("ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z")
@@ -32,7 +34,6 @@ func TestNewSPVService(t *testing.T) {
 	err = spv.RegisterAccount("EYUsEASwbPq9NcSswa8TsP7eVRwiiGwmdq")
 	if err != nil {
 		t.Error("Register account error: ", err)
-		os.Exit(0)
 	}
 
 	// Set on transaction confirmed callback

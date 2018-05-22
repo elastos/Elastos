@@ -1,4 +1,4 @@
-package _interface
+package db
 
 import (
 	"bytes"
@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-
-	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/boltdb/bolt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -26,15 +24,9 @@ type Proofs interface {
 
 	// Delete a merkle proof of a block
 	Delete(blockHash *common.Uint256) error
-
-	// Reset database, clear all data
-	Reset() error
-
-	// Close the proofs db
-	Close()
 }
 
-type ProofsDB struct {
+type ProofStore struct {
 	*sync.RWMutex
 	*bolt.DB
 }
@@ -43,12 +35,7 @@ var (
 	BKTProofs = []byte("Proofs")
 )
 
-func NewProofsDB() (Proofs, error) {
-	db, err := bolt.Open("proofs.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
-	if err != nil {
-		return nil, err
-	}
-
+func NewProofsDB(db *bolt.DB) (*ProofStore, error) {
 	db.Update(func(btx *bolt.Tx) error {
 		_, err := btx.CreateBucketIfNotExists(BKTProofs)
 		if err != nil {
@@ -57,11 +44,11 @@ func NewProofsDB() (Proofs, error) {
 		return nil
 	})
 
-	return &ProofsDB{RWMutex: new(sync.RWMutex), DB: db}, nil
+	return &ProofStore{RWMutex: new(sync.RWMutex), DB: db}, nil
 }
 
 // Put a merkle proof of the block
-func (db *ProofsDB) Put(proof *bloom.MerkleProof) error {
+func (db *ProofStore) Put(proof *bloom.MerkleProof) error {
 	db.Lock()
 	defer db.Unlock()
 
@@ -82,7 +69,7 @@ func (db *ProofsDB) Put(proof *bloom.MerkleProof) error {
 }
 
 // Get a merkle proof of a block
-func (db *ProofsDB) Get(blockHash *common.Uint256) (proof *bloom.MerkleProof, err error) {
+func (db *ProofStore) Get(blockHash *common.Uint256) (proof *bloom.MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -104,7 +91,7 @@ func (db *ProofsDB) Get(blockHash *common.Uint256) (proof *bloom.MerkleProof, er
 }
 
 // Get all merkle proofs in database
-func (db *ProofsDB) GetAll() (proofs []*bloom.MerkleProof, err error) {
+func (db *ProofStore) GetAll() (proofs []*bloom.MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
@@ -133,29 +120,13 @@ func (db *ProofsDB) GetAll() (proofs []*bloom.MerkleProof, err error) {
 }
 
 // Delete a merkle proof of a block
-func (db *ProofsDB) Delete(blockHash *common.Uint256) error {
+func (db *ProofStore) Delete(blockHash *common.Uint256) error {
 	db.Lock()
 	defer db.Unlock()
 
 	return db.Update(func(tx *bolt.Tx) error {
 		return tx.Bucket(BKTProofs).Delete(blockHash.Bytes())
 	})
-}
-
-func (db *ProofsDB) Reset() error {
-	db.Lock()
-	defer db.Unlock()
-
-	return db.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket(BKTProofs)
-	})
-}
-
-// Close db
-func (db *ProofsDB) Close() {
-	db.Lock()
-	db.DB.Close()
-	log.Debug("Proofs DB closed")
 }
 
 func getProof(tx *bolt.Tx, key []byte) (*bloom.MerkleProof, error) {

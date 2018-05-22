@@ -1,4 +1,4 @@
-package _interface
+package db
 
 import (
 	"github.com/elastos/Elastos.ELA.Utility/common"

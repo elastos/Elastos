@@ -1,8 +1,8 @@
 package spvwallet
 
 import (
-	"sync"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"sync"
 )
 
 type TxIdCache struct {

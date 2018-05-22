@@ -5,10 +5,10 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/elastos/Elastos.ELA.SPV/interface/db"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -17,30 +17,55 @@ import (
 )
 
 type SPVServiceImpl struct {
-	*spvwallet.SPVWallet
-	clientId   uint64
-	seeds      []string
-	accounts   []*common.Uint168
-	proofs     Proofs
-	queue      Queue
-	addrFilter *sdk.AddrFilter
-	listeners  map[core.TransactionType][]TransactionListener
+	sdk.SPVService
+	headers   *db.HeaderStore
+	dataStore db.DataStore
+	queue     db.Queue
+	listeners map[core.TransactionType][]TransactionListener
 }
 
-func newSPVServiceImpl(clientId uint64, seeds []string) *SPVServiceImpl {
-	return &SPVServiceImpl{
-		clientId:  clientId,
-		seeds:     seeds,
-		listeners: make(map[core.TransactionType][]TransactionListener),
+func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string) (*SPVServiceImpl, error) {
+	var err error
+	service := new(SPVServiceImpl)
+	service.headers, err = db.NewHeaderStore()
+	if err != nil {
+		return nil, err
 	}
+
+	service.dataStore, err = db.NewDataStore()
+	if err != nil {
+		return nil, err
+	}
+
+	service.queue, err = db.NewQueueDB()
+	if err != nil {
+		return nil, err
+	}
+
+	spvClient, err := sdk.GetSPVClient(magic, clientId, seeds)
+	if err != nil {
+		return nil, err
+	}
+
+	service.SPVService, err = sdk.GetSPVService(spvClient, service.headers, service)
+	if err != nil {
+		return nil, err
+	}
+
+	service.listeners = make(map[core.TransactionType][]TransactionListener)
+
+	return service, nil
 }
 
 func (service *SPVServiceImpl) RegisterAccount(address string) error {
-	account, err := common.Uint168FromAddress(address)
+	ok, err := service.dataStore.Addrs().Put(address)
 	if err != nil {
-		return errors.New("Invalid address format")
+		return err
 	}
-	service.accounts = append(service.accounts, account)
+	if !ok {
+		return errors.New("address has already registered")
+	}
+	service.SPVService.ReloadFilter()
 	return nil
 }
 
@@ -48,7 +73,6 @@ func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionL
 	listeners := service.listeners[listener.Type()]
 	listeners = append(listeners, listener)
 	service.listeners[listener.Type()] = listeners
-	log.Debug("Listener registered:", listeners)
 }
 
 func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash common.Uint256) error {
@@ -56,12 +80,8 @@ func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash common.Uint256) e
 }
 
 func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx core.Transaction) error {
-	if service.SPVWallet == nil {
-		return errors.New("SPV service not started")
-	}
-
 	// Get Header from main chain
-	header, err := service.HeaderStore().GetHeader(&proof.BlockHash)
+	header, err := service.headers.GetHeader(&proof.BlockHash)
 	if err != nil {
 		return errors.New("can not get block from main chain")
 	}
@@ -97,82 +117,55 @@ func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx cor
 }
 
 func (service *SPVServiceImpl) SendTransaction(tx core.Transaction) error {
-	if service.SPVWallet == nil {
-		return errors.New("SPV service not started")
-	}
-
-	service.SPVWallet.SendTransaction(tx)
-	return nil
+	_, err := service.SPVService.SendTransaction(tx)
+	return err
 }
 
-func (service *SPVServiceImpl) Start() error {
-	if service.SPVWallet != nil {
-		return errors.New("SPV service already started")
-	}
+func (service *SPVServiceImpl) HeaderStore() store.HeaderStore {
+	return service.headers
+}
 
-	var err error
-	service.SPVWallet, err = spvwallet.Init(service.clientId, service.seeds)
+func (service *SPVServiceImpl) GetData() ([]*common.Uint168, []*core.OutPoint) {
+	ops, err := service.dataStore.Outpoints().GetAll()
 	if err != nil {
-		return err
+		log.Error("[SPV_SERVICE] GetData error ", err)
 	}
 
-	// Initialize proofs db
-	service.proofs, err = NewProofsDB()
-	if err != nil {
-		return err
-	}
+	return service.dataStore.Addrs().GetAll(), ops
+}
 
-	service.queue, err = NewQueueDB()
-	if err != nil {
-		return err
-	}
+func (service *SPVServiceImpl) OnStateChange(sdk.ChainState) {}
 
-	// Register accounts
-	if len(service.accounts) == 0 {
-		return errors.New("No account registered")
-	}
-	for _, account := range service.accounts {
-		service.DataStore().Addrs().Put(account, RegisteredAccountScript, db.TypeNotify)
-	}
-
-	// Create address filter by accounts
-	service.addrFilter = sdk.NewAddrFilter(service.accounts)
-
-	// Add data listener
-	service.SPVWallet.AddDataListener(service)
-
-	// Handle interrupt signal
-	stop := make(chan int, 1)
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-	go func() {
-		for range signals {
-			log.Trace("SPV service shutting down...")
-			service.Stop()
-			stop <- 1
+func (service *SPVServiceImpl) CommitTx(tx *core.Transaction, height uint32) (bool, error) {
+	hits := 0
+	for index, output := range tx.Outputs {
+		if service.dataStore.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
+			outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
+			if err := service.dataStore.Outpoints().Put(outpoint); err != nil {
+				return false, err
+			}
+			hits++
 		}
-	}()
+	}
 
-	// Start SPV service
-	service.SPVWallet.Start()
+	for _, input := range tx.Inputs {
+		if service.dataStore.Outpoints().IsExist(&input.Previous) {
+			hits++
+		}
+	}
 
-	<-stop
+	if hits == 0 {
+		return true, nil
+	}
 
-	return nil
+	return false, service.dataStore.Txs().Put(db.NewStoreTx(tx, height))
 }
 
-// Overwrite OnRollback() method in SPVWallet
-func (service *SPVServiceImpl) OnRollback(height uint32) {
-	service.queue.Rollback(height)
-	service.notifyRollback(height)
-}
-
-// Overwrite OnBlockCommitted() method in SPVWallet
-func (service *SPVServiceImpl) OnNewBlock(block *msg.MerkleBlock, txs []*core.Transaction) {
+func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*core.Transaction) {
 	header := block.Header.(*core.Header)
 
 	// Store merkle proof
-	service.proofs.Put(&bloom.MerkleProof{
+	err := service.dataStore.Proofs().Put(&bloom.MerkleProof{
 		BlockHash:    header.Hash(),
 		Height:       header.Height,
 		Transactions: block.Transactions,
@@ -180,8 +173,8 @@ func (service *SPVServiceImpl) OnNewBlock(block *msg.MerkleBlock, txs []*core.Tr
 		Flags:        block.Flags,
 	})
 
-	// If no transactions return
-	if len(txs) == 0 {
+	if err != nil {
+		log.Errorf("[SPV_SERVICE] store merkle proof failed, error %s", err.Error())
 		return
 	}
 
@@ -189,7 +182,7 @@ func (service *SPVServiceImpl) OnNewBlock(block *msg.MerkleBlock, txs []*core.Tr
 	var matchedTxs []*core.Transaction
 	for _, tx := range txs {
 		for _, output := range tx.Outputs {
-			if service.addrFilter.ContainAddr(output.ProgramHash) {
+			if service.dataStore.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
 				matchedTxs = append(matchedTxs, tx)
 			}
 		}
@@ -197,7 +190,7 @@ func (service *SPVServiceImpl) OnNewBlock(block *msg.MerkleBlock, txs []*core.Tr
 
 	// Queue matched transactions
 	for _, tx := range matchedTxs {
-		item := &QueueItem{
+		item := &db.QueueItem{
 			TxHash:    tx.Hash(),
 			BlockHash: header.Hash(),
 			Height:    header.Height,
@@ -214,23 +207,74 @@ func (service *SPVServiceImpl) OnNewBlock(block *msg.MerkleBlock, txs []*core.Tr
 	}
 	for _, item := range items {
 		//	Get proof from db
-		proof, err := service.proofs.Get(&item.BlockHash)
+		proof, err := service.dataStore.Proofs().Get(&item.BlockHash)
 		if err != nil {
 			log.Error("Query merkle proof failed, block hash:", item.BlockHash.String())
 			return
 		}
 		//	Get transaction from db
-		storeTx, err := service.DataStore().Txs().Get(&item.TxHash)
+		storeTx, err := service.dataStore.Txs().Get(&item.TxHash)
 		if err != nil {
 			log.Error("Query transaction failed, tx hash:", item.TxHash.String())
 			return
 		}
 		// Prune the proof by the given transaction id
-		proof = getTransactionProof(proof, storeTx.TxId)
+		proof = getTransactionProof(proof, storeTx.Hash())
 
 		// Notify listeners
-		service.notifyTransaction(*proof, storeTx.Data, header.Height-item.Height)
+		service.notifyTransaction(*proof, storeTx.Transaction, header.Height-item.Height)
 	}
+}
+
+// Overwrite OnRollback() method in SPVWallet
+func (service *SPVServiceImpl) OnRollback(height uint32) error {
+	err := service.dataStore.Rollback(height)
+	if err != nil {
+		log.Warnf("Rollback data store error %s", err.Error())
+	}
+	err = service.queue.Rollback(height)
+	if err != nil {
+		log.Warnf("Rollback transaction notify queue error %s", err.Error())
+	}
+	service.notifyRollback(height)
+	return nil
+}
+
+func (service *SPVServiceImpl) Start() error {
+	// Handle interrupt signal
+	stop := make(chan int, 1)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+	go func() {
+		for range signals {
+			log.Trace("SPV service shutting down...")
+			service.Stop()
+			stop <- 1
+		}
+	}()
+
+	// Start SPV service
+	service.SPVService.Start()
+
+	<-stop
+
+	return nil
+}
+
+func (service *SPVServiceImpl) ResetStores() error {
+	err := service.headers.Reset()
+	if err != nil {
+		log.Warnf("Reset header store error %s", err.Error())
+	}
+	err = service.dataStore.Reset()
+	if err != nil {
+		log.Warnf("Reset data store error %s", err.Error())
+	}
+	err = service.queue.Reset()
+	if err != nil {
+		log.Warnf("Reset transaction notify queue store error %s", err.Error())
+	}
+	return nil
 }
 
 func (service *SPVServiceImpl) notifyTransaction(proof bloom.MerkleProof, tx core.Transaction, confirmations uint32) {

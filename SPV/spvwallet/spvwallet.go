@@ -1,14 +1,13 @@
 package spvwallet
 
 import (
-	"sync"
-	"time"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
-	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/store"
+	"sync"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -68,12 +67,11 @@ type DataListener interface {
 type SPVWallet struct {
 	sync.Mutex
 	sdk.SPVService
-	rpcServer     *rpc.Server
-	headerStore   *db.HeadersDB
-	dataStore     db.DataStore
-	txIds         *TxIdCache
-	filter        *sdk.AddrFilter
-	dataListeners []DataListener
+	rpcServer   *rpc.Server
+	headerStore *db.HeadersDB
+	dataStore   db.DataStore
+	txIds       *TxIdCache
+	filter      *sdk.AddrFilter
 }
 
 func (wallet *SPVWallet) Start() {
@@ -84,18 +82,6 @@ func (wallet *SPVWallet) Start() {
 func (wallet *SPVWallet) Stop() {
 	wallet.SPVService.Stop()
 	wallet.rpcServer.Close()
-}
-
-func (wallet *SPVWallet) HeaderStore() store.HeaderStore {
-	return wallet.headerStore
-}
-
-func (wallet *SPVWallet) DataStore() db.DataStore {
-	return wallet.dataStore
-}
-
-func (wallet *SPVWallet) AddDataListener(listener DataListener) {
-	wallet.dataListeners = append(wallet.dataListeners, listener)
 }
 
 func (wallet *SPVWallet) GetData() ([]*common.Uint168, []*core.OutPoint) {
@@ -184,9 +170,6 @@ func (wallet *SPVWallet) CommitTx(tx *core.Transaction, height uint32) (bool, er
 
 func (wallet *SPVWallet) OnBlockCommitted(block *msg.MerkleBlock, txs []*core.Transaction) {
 	wallet.dataStore.Chain().PutHeight(block.Header.(*core.Header).Height)
-	for _, listener := range wallet.dataListeners {
-		go listener.OnNewBlock(block, txs)
-	}
 
 	// Check unconfirmed transaction timeout
 	if wallet.ChainState() == sdk.WAITING {
@@ -210,9 +193,6 @@ func (wallet *SPVWallet) OnBlockCommitted(block *msg.MerkleBlock, txs []*core.Tr
 
 // Rollback chain data on the given height
 func (wallet *SPVWallet) OnRollback(height uint32) error {
-	for _, listener := range wallet.dataListeners {
-		go listener.OnRollback(height)
-	}
 	return wallet.dataStore.Rollback(height)
 }
 

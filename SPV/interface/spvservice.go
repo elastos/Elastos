@@ -38,6 +38,9 @@ type SPVService interface {
 
 	// Start the SPV service
 	Start() error
+
+	// ResetStores clear all data stores data including HeaderStore, ProofStore, AddrsStore, TxsStore etc.
+	ResetStores() error
 }
 
 /*
@@ -61,6 +64,6 @@ type TransactionListener interface {
 	Rollback(height uint32)
 }
 
-func NewSPVService(clientId uint64, seeds []string) SPVService {
-	return newSPVServiceImpl(clientId, seeds)
+func NewSPVService(magic uint32, clientId uint64, seeds []string) (SPVService, error) {
+	return NewSPVServiceImpl(magic, clientId, seeds)
 }

@@ -1,4 +1,4 @@
-package _interface
+package db
 
 import (
 	"database/sql"
@@ -20,6 +20,9 @@ type Queue interface {
 
 	// Rollback queue items
 	Rollback(height uint32) error
+
+	// Reset clear all data in database
+	Reset() error
 }
 
 const (
@@ -120,5 +123,13 @@ func (db *QueueDB) Rollback(height uint32) error {
 	defer db.Unlock()
 
 	_, err := db.Exec("DELETE FROM Queue WHERE Height=?", height)
+	return err
+}
+
+func (db *QueueDB) Reset() error {
+	db.Lock()
+	defer db.Unlock()
+
+	_, err := db.Exec("DROP TABLE if EXISTS Queue")
 	return err
 }

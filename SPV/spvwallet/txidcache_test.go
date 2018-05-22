@@ -1,9 +1,9 @@
 package spvwallet
 
 import (
-	"testing"
 	"crypto/rand"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"testing"
 )
 
 func TestTxIdCache(t *testing.T) {
