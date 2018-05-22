@@ -93,5 +93,21 @@ namespace Elastos {
 			encodeHex(target, length, source, sourceLen);
 			return target;
 		}
+
+		UInt128 Utils::generateRandomSeed() {
+			UInt128 result;
+			//todo [zxb] complete me
+			return result;
+		}
+
+		CMBlock Utils::encrypt(const CMBlock &data, const std::string &password) {
+			//todo complete me
+			return CMBlock();
+		}
+
+		CMBlock Utils::decrypt(const CMBlock &encryptedData, const std::string &password) {
+			//todo complete me
+			return CMBlock();
+		}
 	}
 }

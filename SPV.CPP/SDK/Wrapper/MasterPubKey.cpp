@@ -83,24 +83,20 @@ namespace Elastos {
 			return BRBIP39PhraseIsValid((const char **) wordList, phrase.c_str()) != 0;
 		}
 
-		CMBlock MasterPubKey::generatePaperKey(const CMBlock &seed, const std::vector<std::string> &words) {
-			assert(seed.GetSize() == 16);
+		std::string MasterPubKey::generatePaperKey(const UInt128 &seed, const std::vector<std::string> &words) {
 			assert(words.size() == 2048);
 			char *wordList[words.size()];
 			for (int i = 0; i < words.size(); i++) {
 				wordList[i] = const_cast<char *>(words[i].c_str());
 			}
 
-			size_t size = BRBIP39Encode(nullptr, 0, (const char **) wordList, seed, (size_t) seed.GetSize());
+			size_t size = BRBIP39Encode(nullptr, 0, (const char **) wordList, seed.u8, sizeof(seed));
 			char result[size];
-			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList,
-								 (const uint8_t *) seed, (size_t) seed.GetSize());
+			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList, seed.u8, sizeof(seed));
 
-			CMBlock data(size);
-			memcpy(data, &result, size);
-			//note todo size contains "\0"
-			//retain '\0' at end of data, but set ByteData.length without it
-			return data.Resize(data.GetSize()-1);
+			char *resultChar = new char[size];
+			memcpy(resultChar, result, size);
+			return std::string(resultChar, size);
 		}
 
 	}

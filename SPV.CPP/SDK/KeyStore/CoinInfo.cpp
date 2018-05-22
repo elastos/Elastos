@@ -8,12 +8,12 @@ namespace Elastos {
 	namespace SDK {
 
 		CoinInfo::CoinInfo() :
-			_chainId(""),
-			_earliestPeerTime(0),
-			_index(0),
-			_usedMaxAddressIndex(0),
-			_singleAddress(false),
-			_balanceUnit(1.0) {
+				_chainId(""),
+				_earliestPeerTime(0),
+				_index(0),
+				_usedMaxAddressIndex(0),
+				_singleAddress(false),
+				_balanceUnit(1.0) {
 
 		}
 
@@ -63,6 +63,14 @@ namespace Elastos {
 
 		void CoinInfo::setBalanceUnit(double balanceUnit) {
 			_balanceUnit = balanceUnit;
+		}
+
+		uint64_t CoinInfo::getFeePerKb() const {
+			return _feePerKb;
+		}
+
+		void CoinInfo::setFeePerKb(uint64_t fee) {
+			_feePerKb = fee;
 		}
 
 		nlohmann::json &operator<<(nlohmann::json &j, const CoinInfo &p) {

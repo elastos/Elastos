@@ -42,6 +42,10 @@ namespace Elastos {
 
 			void setBalanceUnit(double balanceUnit);
 
+			uint64_t getFeePerKb() const;
+
+			void setFeePerKb(uint64_t fee);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -55,6 +59,7 @@ namespace Elastos {
 			int _usedMaxAddressIndex;
 			bool _singleAddress;
 			double _balanceUnit;
+			uint64_t _feePerKb;
 		};
 
 	}

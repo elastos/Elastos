@@ -61,9 +61,5 @@ namespace Elastos {
 			return _words;
 		}
 
-		std::vector<std::string> &Mnemonic::words() {
-			return _words;
-		}
-
 	}
 }

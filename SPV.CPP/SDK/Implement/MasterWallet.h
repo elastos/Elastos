@@ -11,6 +11,7 @@
 
 #include "Interface/IMasterWallet.h"
 #include "KeyStore/KeyStore.h"
+#include "Manager/Mnemonic.h"
 #include "MasterPubKey.h"
 
 namespace Elastos {
@@ -49,7 +50,7 @@ namespace Elastos {
 			MasterWallet();
 
 			MasterWallet(const std::string &name,
-						 const std::string &backupPassword,
+						 const std::string &phrasePassword,
 						 const std::string &payPassword);
 
 			bool importFromKeyStore(const std::string &keystorePath,
@@ -63,7 +64,18 @@ namespace Elastos {
 			bool exportKeyStore(const std::string &backupPassword,
 								const std::string &keystorePath);
 
-			bool exportMnemonic(const std::string &phrasePassword, std::string &mnemonic);
+			bool exportMnemonic(const std::string &phrasePassword,
+								std::string &mnemonic);
+
+			bool initFromEntropy(const UInt128 &entropy,
+								 const std::string &phrasePassword,
+								 const std::string &payPassword);
+
+			bool initFromPhrase(const std::string &phrase,
+								const std::string &phrasePassword,
+								const std::string &payPassword);
+
+			Key deriveKey(const std::string &payPassword);
 
 		protected:
 			std::string _name;
@@ -72,10 +84,12 @@ namespace Elastos {
 			WalletMap _createdWallets;
 
 			MasterPubKeyPtr _masterPubKey;
-			KeyPtr _key;
+			CMBlock _encryptedKey;
+			CMBlock _encryptedEntropy;
 
 			KeyStore _keyStore;
 			boost::filesystem::path _dbRoot;
+			Mnemonic _mnemonic;
 		};
 
 	}

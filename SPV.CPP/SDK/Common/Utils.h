@@ -9,6 +9,8 @@
 
 #include "BRInt.h"
 
+#include "CMemBlock.h"
+
 namespace Elastos {
 	namespace SDK {
 
@@ -19,6 +21,11 @@ namespace Elastos {
 
 			static std::string UInt168ToString(const UInt168 &u168);
 			static UInt168 UInt168FromString(const std::string &str);
+
+			static UInt128 generateRandomSeed();
+
+			static CMBlock encrypt(const CMBlock &data, const std::string &password);
+			static CMBlock decrypt(const CMBlock &encryptedData, const std::string &password);
 
 			static void	decodeHex (uint8_t *target, size_t targetLen, char *source, size_t sourceLen);
 			static size_t decodeHexLength (size_t stringLen);

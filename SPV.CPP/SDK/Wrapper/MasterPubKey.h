@@ -42,7 +42,7 @@ namespace Elastos {
 
 			static bool validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase);
 
-			static CMBlock generatePaperKey(const CMBlock &seed, const std::vector<std::string> &words);
+			static std::string generatePaperKey(const UInt128 &seed, const std::vector<std::string> &words);
 
 		private:
 			boost::shared_ptr<BRMasterPubKey> _masterPubKey;

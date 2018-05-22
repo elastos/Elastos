@@ -17,12 +17,12 @@ namespace Elastos {
 
 		}
 
-		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &name, const std::string &backupPassword,
+		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &name, const std::string &phrasePassword,
 														 const std::string &payPassword) {
 			if (_masterWallets.find(name) != _masterWallets.end())
 				return _masterWallets[name];
 
-			MasterWallet *masterWallet = new MasterWallet(name, backupPassword, payPassword);
+			MasterWallet *masterWallet = new MasterWallet(name, phrasePassword, payPassword);
 			_masterWallets[name] = masterWallet;
 			return masterWallet;
 		}

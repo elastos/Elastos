@@ -13,13 +13,11 @@ namespace Elastos {
 
 		class Mnemonic {
 		public:
-			Mnemonic(const std::string &language = "english");
+			explicit Mnemonic(const std::string &language = "english");
 
 			Mnemonic(const std::string &language, const boost::filesystem::path &path);
 
 			const std::vector<std::string> &words() const;
-
-			std::vector<std::string> &words();
 
 			void setLanguage(const std::string &language);
 

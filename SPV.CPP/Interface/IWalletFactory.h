@@ -14,7 +14,7 @@ namespace Elastos {
 		public:
 			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &name,
-					const std::string &backupPassword,
+					const std::string &phrasePassword,
 					const std::string &payPassword) = 0;
 
 			virtual void DestroyWallet(IMasterWallet *masterWallet) = 0;
