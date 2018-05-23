@@ -67,6 +67,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	var blockTime uint32
 	if header != nil {
 		confirmations = chain.DefaultLedger.Blockchain.GetBestHeight() - header.Height + 1
+		blockHash, _ = chain.DefaultLedger.Store.GetBlockHash(header.Height)
 		time = header.Timestamp
 		blockTime = header.Timestamp
 	}
