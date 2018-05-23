@@ -16,9 +16,11 @@
 namespace Elastos {
 	namespace SDK {
 
+		class MasterWallet;
+
 		class SubWalletCallback : public ISubWalletCallback {
 		public:
-			SubWalletCallback();
+			virtual ~SubWalletCallback();
 
 			virtual void OnBalanceChanged(
 					const std::string &address,
@@ -95,11 +97,12 @@ namespace Elastos {
 
 			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
 
-			SubWallet(const MasterPubKeyPtr &masterPubKey,
-					  const boost::filesystem::path &dbPath,
+			SubWallet(const boost::filesystem::path &dbPath,
 					  uint32_t earliestPeerTime,
+					  int coinTypeIndex,
 					  bool singleAddress,
-					  const ChainParams &chainParams);
+					  const ChainParams &chainParams,
+					  MasterWallet *parent);
 
 			void recover(int limitGap);
 
@@ -109,6 +112,8 @@ namespace Elastos {
 			std::vector<ISubWalletCallback *> _callbacks;
 			//todo initialize balance unit from constructor
 			double _balanceUnit;
+			int _index;
+			MasterWallet *_parent;
 		};
 
 	}

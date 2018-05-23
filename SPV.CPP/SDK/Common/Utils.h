@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_UTILS_H__
 
 #include <string>
+#include <assert.h>
 
 #include "BRInt.h"
 
@@ -43,6 +44,25 @@ namespace Elastos {
 			static size_t encodeHexLength(size_t byteArrayLen);
 
 			static char *encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen);
+
+			template <class T>
+			static std::string convertToString(const CMemBlock<T> &data) {
+				assert(sizeof(T) == sizeof(char));
+				char *result = new char[data.GetSize()];
+				memcpy(result, (void *)data, data.GetSize());
+				return std::string(result, data.GetSize());
+			}
+
+			template <class T>
+			static CMemBlock<T> convertToMemBlock(const std::string &str) {
+				assert(sizeof(T) == sizeof(char));
+				CMemBlock<T> result;
+				T *resultPtr = new T[str.size()];
+				memcpy(resultPtr, str.data(), str.size());
+				result.SetMemFixed(resultPtr, str.size());
+				return result;
+			}
+
 		};
 	}
 }

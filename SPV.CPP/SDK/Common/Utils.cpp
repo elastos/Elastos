@@ -116,5 +116,6 @@ namespace Elastos {
 									   password.size());
 			return ret;
 		}
+
 	}
 }

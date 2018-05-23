@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRBase58.h>
 #include "BRBIP39Mnemonic.h"
 
 #include "Utils.h"
@@ -51,15 +52,11 @@ namespace Elastos {
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
 
-			//todo [zxb] generate master public key of sub wallet[by coinTypeIndex]
-			Key masterPrivKey = deriveKey(payPassword);
-			MasterPubKeyPtr masterPubKey;
-
 			fs::path subWalletDbPath = _dbRoot;
 			subWalletDbPath /= _name + chainID + DB_FILE_EXTENSION;
 
-			SubWallet *subWallet = new SubWallet(masterPubKey, subWalletDbPath, 0, singleAddress,
-												 ChainParams::mainNet());
+			SubWallet *subWallet = new SubWallet(subWalletDbPath, 0, coinTypeIndex, singleAddress,
+												 ChainParams::mainNet(), this);
 			_createdWallets[chainID] = subWallet;
 			return subWallet;
 		}
@@ -85,7 +82,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() {
-			return (const char *) (void *) _masterPubKey->getPubKey();
+			return _publicKey;
 		}
 
 		const std::string &MasterWallet::GetName() const {
@@ -121,6 +118,9 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &keystorePath) {
+			if (_keyStore.json().getEncryptedPhrasePassword().empty())
+				_keyStore.json().setEncryptedPhrasePassword((const char *)(unsigned char *)_encryptedPhrasePass);
+
 			if(!_keyStore.save(keystorePath, backupPassword)) {
 				Log::error("Export key error.");
 				return false;
@@ -155,20 +155,38 @@ namespace Elastos {
 			UInt512 key = UINT512_ZERO;
 			BRBIP39DeriveKey(key.u8, phrase.c_str(), phrasePassword.c_str());
 
+			CMemBlock<unsigned char> encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
+			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
+
 			//todo [zxb] init _encryptedEntropy by phrase
 
 			//todo [zxb] init master public key and private key
-			CMBlock privKey;
+			CMemBlock<unsigned char> privKey;
 			_encryptedKey = Utils::encrypt(privKey, payPassword);
+
+			initPublicKey(payPassword);
 
 			return false;
 		}
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
-			CMBlock keyData = Utils::decrypt(_encryptedKey, payPassword);
+			CMemBlock<unsigned char> keyData = Utils::decrypt(_encryptedKey, payPassword);
 
 			//todo [zxb] key data to key
 			return Key();
+		}
+
+		void MasterWallet::initPublicKey(const std::string &payPassword) {
+			Key key = deriveKey(payPassword);
+
+			size_t len = BRKeyPubKey(key.getRaw(), nullptr, 0);
+			uint8_t pubKey[len];
+			BRKeyPubKey(key.getRaw(), &pubKey, len);
+			size_t strLen = BRBase58Encode(nullptr, 0, pubKey, len);
+			char *result = new char[strLen];
+			BRBase58Encode(result, strLen, pubKey, len);
+
+			_publicKey = std::string(result);
 		}
 
 	}

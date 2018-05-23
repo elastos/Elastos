@@ -101,15 +101,10 @@ TEST_CASE("Mnemonic test", "[MasterPubKey]") {
 	SECTION("phrase validate method test") {
 
 		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		CMBlock seedByte;
-		seedByte.SetMemFixed(seed.u8, sizeof(seed));
 
-		CMBlock paperKey;
-		paperKey = MasterPubKey::generatePaperKey(seedByte, words);
-		REQUIRE(paperKey.GetSize() > 0);
-		const char *paperStr = (const char *)(void *) paperKey;
-		REQUIRE(paperStr != nullptr);
+		std::string paperKey = MasterPubKey::generatePaperKey(seed, words);
+		REQUIRE(paperKey.size() > 0);
 
-		REQUIRE(MasterPubKey::validateRecoveryPhrase(words, std::string(paperStr)));
+		REQUIRE(MasterPubKey::validateRecoveryPhrase(words, paperKey));
 	}
 }

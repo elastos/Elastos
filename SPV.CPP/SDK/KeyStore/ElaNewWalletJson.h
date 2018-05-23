@@ -32,6 +32,10 @@ namespace Elastos {
 
 			void setMnemonicLanguage(const std::string &language);
 
+			const std::string &getEncryptedPhrasePassword() const;
+
+			void setEncryptedPhrasePassword(const std::string &password);
+
 			void addCoinInfo(const CoinInfo &info);
 
 			void clearCoinInfo();
@@ -48,6 +52,7 @@ namespace Elastos {
 			std::string _id;
 			std::string _idInfo;
 			std::string _mnemonicLanguage;
+			std::string _encryptedPhrasePassword;
 			std::vector<CoinInfo> _coinInfoList;
 		};
 	}

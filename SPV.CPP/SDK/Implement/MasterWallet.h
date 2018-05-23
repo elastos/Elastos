@@ -45,6 +45,8 @@ namespace Elastos {
 		protected:
 			friend class WalletFactory;
 
+			friend class SubWallet;
+
 			typedef std::map<std::string, ISubWallet *> WalletMap;
 
 			MasterWallet();
@@ -77,19 +79,23 @@ namespace Elastos {
 
 			Key deriveKey(const std::string &payPassword);
 
+			void initPublicKey(const std::string &payPassword);
+
 		protected:
 			std::string _name;
 
 			bool _initialized;
 			WalletMap _createdWallets;
 
-			MasterPubKeyPtr _masterPubKey;
-			CMBlock _encryptedKey;
-			CMBlock _encryptedEntropy;
+			CMemBlock<unsigned char> _encryptedKey;
+			CMemBlock<unsigned char> _encryptedEntropy;
+			CMemBlock<unsigned char> _encryptedPhrasePass;
 
 			KeyStore _keyStore;
 			boost::filesystem::path _dbRoot;
 			Mnemonic _mnemonic;
+
+			std::string _publicKey;
 		};
 
 	}

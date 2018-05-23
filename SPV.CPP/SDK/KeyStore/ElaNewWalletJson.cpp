@@ -8,9 +8,9 @@ namespace Elastos {
 	namespace SDK {
 
 		ElaNewWalletJson::ElaNewWalletJson() :
-			_id(""),
-			_idInfo(""),
-			_mnemonicLanguage("english") {
+				_id(""),
+				_idInfo(""),
+				_mnemonicLanguage("english") {
 		}
 
 		ElaNewWalletJson::~ElaNewWalletJson() {
@@ -70,17 +70,27 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const ElaNewWalletJson &p) {
-			j["_id"] = p._id;
-			j["_idInfo"] = p._idInfo;
-			j["_mnemonicLanguage"] = p._mnemonicLanguage;
-			j["_coinInfoList"] = p._coinInfoList;
+			j["id"] = p._id;
+			j["idInfo"] = p._idInfo;
+			j["mnemonicLanguage"] = p._mnemonicLanguage;
+			j["encryptedPhrasePassword"] = p._encryptedPhrasePassword;
+			j["coinInfoList"] = p._coinInfoList;
 		}
 
 		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
-			p._id = j["_id"].get<std::string>();
-			p._idInfo = j["_idInfo"].get<std::string>();
-			p._mnemonicLanguage = j["_mnemonicLanguage"].get<std::string>();
-			p._coinInfoList = j["_coinInfoList"].get<std::vector<CoinInfo>>();
+			p._id = j["id"].get<std::string>();
+			p._idInfo = j["idInfo"].get<std::string>();
+			p._mnemonicLanguage = j["mnemonicLanguage"].get<std::string>();
+			p._encryptedPhrasePassword = j["encryptedPhrasePassword"].get<std::string>();
+			p._coinInfoList = j["coinInfoList"].get<std::vector<CoinInfo>>();
+		}
+
+		const std::string &ElaNewWalletJson::getEncryptedPhrasePassword() const {
+			return _encryptedPhrasePassword;
+		}
+
+		void ElaNewWalletJson::setEncryptedPhrasePassword(const std::string &password) {
+			_encryptedPhrasePassword = password;
 		}
 	}
 }

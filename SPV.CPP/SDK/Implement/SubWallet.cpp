@@ -7,7 +7,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		SubWalletCallback::SubWalletCallback() {
+		SubWalletCallback::~SubWalletCallback() {
 
 		}
 
@@ -20,11 +20,17 @@ namespace Elastos {
 
 		}
 
-		SubWallet::SubWallet(const MasterPubKeyPtr &masterPubKey,
-							 const boost::filesystem::path &dbPath,
+		SubWallet::SubWallet(const boost::filesystem::path &dbPath,
 							 uint32_t earliestPeerTime,
+							 int coinTypeIndex,
 							 bool singleAddress,
-							 const ChainParams &chainParams) {
+							 const ChainParams &chainParams,
+							 MasterWallet *parent) :
+				_index(coinTypeIndex),
+				_parent(parent) {
+
+			//todo generate master public key of sub wallet
+			MasterPubKeyPtr masterPubKey;
 
 			_walletManager = WalletManagerPtr(new WalletManager(
 					masterPubKey, dbPath, earliestPeerTime, singleAddress, chainParams));
@@ -131,5 +137,6 @@ namespace Elastos {
 		void SubWallet::recover(int limitGap) {
 			_walletManager->recover(limitGap);
 		}
+
 	}
 }
