@@ -56,15 +56,20 @@ func (am *AddrManager) NeedMoreAddresses() bool {
 	return len(am.addrList) < needAddressThreshold
 }
 
-func (am *AddrManager) GetOutboundAddresses() []p2p.NetAddress {
+func (am *AddrManager) GetOutboundAddresses(cm *ConnManager) []p2p.NetAddress {
 	am.Lock()
 	defer am.Unlock()
 
 	var addrs []p2p.NetAddress
 	addrListByChance := SortAddressMap(am.addrList)
 	for _, addr := range addrListByChance {
+		address := addr.String()
+		// Skip connecting address
+		if cm.isConnecting(address) {
+			continue
+		}
 		// Skip connected address
-		if _, ok := am.connected[addr.String()]; ok {
+		if _, ok := am.connected[address]; ok {
 			continue
 		}
 		addr.increaseAttempts()

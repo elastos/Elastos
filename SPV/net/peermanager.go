@@ -114,7 +114,7 @@ func (pm *PeerManager) OnDisconnected(peer *Peer) {
 
 func (pm *PeerManager) connectPeers() {
 	if pm.PeersCount() < MinConnCount {
-		for _, addr := range pm.am.GetOutboundAddresses() {
+		for _, addr := range pm.am.GetOutboundAddresses(pm.cm) {
 			go pm.cm.Connect(addr.String())
 		}
 	}
