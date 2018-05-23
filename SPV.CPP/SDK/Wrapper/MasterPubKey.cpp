@@ -5,7 +5,7 @@
 #include <cstring>
 
 #include "BRBIP39Mnemonic.h"
-
+#include "BRBIP32Sequence.h"
 #include "MasterPubKey.h"
 
 namespace Elastos {
@@ -100,7 +100,10 @@ namespace Elastos {
 		}
 
 		MasterPubKey::MasterPubKey(const BRKey &key, const UInt256 &chainCode) {
-			//todo complete me
+			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
+			BRKeyPubKey((BRKey *)&key, _masterPubKey->pubKey, sizeof(_masterPubKey->pubKey));
+			_masterPubKey->chainCode = chainCode;
+			_masterPubKey->fingerPrint = BRKeyHash160((BRKey *)&key).u32[0];
 		}
 
 	}
