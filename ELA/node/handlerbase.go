@@ -115,7 +115,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	// Do not add SPV client as a known address,
 	// so node will not start a connection to SPV client
-	if node.LocalPort() != config.Parameters.SPVNodePort {
+	if !node.IsFromExtraNet() {
 		ip, _ := node.Addr16()
 		addr := p2p.NetAddress{
 			Time:     node.GetTime(),
@@ -124,13 +124,19 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 			Port:     version.Port,
 			ID:       version.Nonce,
 		}
-		LocalNode.AddAddressToKnownAddress(addr)
+		LocalNode.AddKnownAddress(addr)
 	}
 
 	var message p2p.Message
 	if s == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
-		message = NewVersion(LocalNode)
+		version := NewVersion(LocalNode)
+		if node.IsFromExtraNet() {
+			version.Port = config.Parameters.NodeOpenPort
+		} else {
+			version.Port = config.Parameters.NodePort
+		}
+		message = version
 	} else if s == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
@@ -167,10 +173,10 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
 	var addrs []p2p.NetAddress
 	// Only send addresses that enabled SPV service
-	if h.node.LocalPort() == config.Parameters.SPVNodePort {
+	if h.node.IsFromExtraNet() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
-			if addr.Services&protocol.SPVService == protocol.SPVService {
-				addr.Port = config.Parameters.SPVNodePort
+			if addr.Services&protocol.OpenService == protocol.OpenService {
+				addr.Port = config.Parameters.NodeOpenPort
 				addrs = append(addrs, addr)
 			}
 		}
@@ -198,7 +204,7 @@ func (h *HandlerBase) onAddrs(addrs *msg.Addr) error {
 		}
 
 		//save the node address in address list
-		LocalNode.AddAddressToKnownAddress(addr)
+		LocalNode.AddKnownAddress(addr)
 	}
 	return nil
 }
