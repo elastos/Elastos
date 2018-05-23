@@ -99,5 +99,9 @@ namespace Elastos {
 			return std::string(resultChar, size);
 		}
 
+		MasterPubKey::MasterPubKey(const BRKey &key, const UInt256 &chainCode) {
+			//todo complete me
+		}
+
 	}
 }

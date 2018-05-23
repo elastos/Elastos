@@ -29,6 +29,8 @@
 #include "BRAddress.h"
 #include "BRBIP32Sequence.h"
 #include "BRInt.h"
+#include "BRSet.h"
+#include <pthread.h>
 #include <string.h>
 
 #ifdef __cplusplus
@@ -56,7 +58,21 @@ inline static int BRUTXOEq(const void *utxo, const void *otherUtxo)
                                   ((const BRUTXO *)utxo)->n == ((const BRUTXO *)otherUtxo)->n));
 }
 
-typedef struct BRWalletStruct BRWallet;
+typedef struct BRWalletStruct {
+    uint64_t balance, totalSent, totalReceived, feePerKb, *balanceHist;
+    uint32_t blockHeight;
+    BRUTXO *utxos;
+    BRTransaction **transactions;
+    BRMasterPubKey masterPubKey;
+    BRAddress *internalChain, *externalChain;
+    BRSet *allTx, *invalidTx, *pendingTx, *spentOutputs, *usedAddrs, *allAddrs;
+    void *callbackInfo;
+    void (*balanceChanged)(void *info, uint64_t balance);
+    void (*txAdded)(void *info, BRTransaction *tx);
+    void (*txUpdated)(void *info, const UInt256 txHashes[], size_t txCount, uint32_t blockHeight, uint32_t timestamp);
+    void (*txDeleted)(void *info, UInt256 txHash, int notifyUser, int recommendRescan);
+    pthread_mutex_t lock;
+} BRWallet;
 
 // allocates and populates a BRWallet struct that must be freed by calling BRWalletFree()
 BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk);

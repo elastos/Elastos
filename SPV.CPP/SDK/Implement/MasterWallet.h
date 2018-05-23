@@ -90,6 +90,8 @@ namespace Elastos {
 
 			Key deriveKey(const std::string &payPassword);
 
+			UInt512 deriveSeed(const std::string &payPassword);
+
 			void initPublicKey(const std::string &payPassword);
 
 		protected:

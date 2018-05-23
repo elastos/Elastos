@@ -2,6 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <BRKey.h>
+#include "BRKey.h"
+#include "BRArray.h"
+
 #include "SubWallet.h"
 #include "MasterWallet.h"
 
@@ -27,6 +31,7 @@ namespace Elastos {
 
 		SubWallet::SubWallet(const CoinInfo &info,
 							 const ChainParams &chainParams,
+							 const std::string &payPassword,
 							 MasterWallet *parent) :
 				_parent(parent),
 				_info(info) {
@@ -34,8 +39,10 @@ namespace Elastos {
 			fs::path subWalletDbPath = _parent->_dbRoot;
 			subWalletDbPath /= _parent->_name + info.getChainId() + DB_FILE_EXTENSION;
 
-			//todo generate master public key of sub wallet
-			MasterPubKeyPtr masterPubKey;
+			BRKey key;
+			UInt256 chainCode;
+			deriveKeyAndChain(&key, chainCode, payPassword);
+			MasterPubKeyPtr masterPubKey(new MasterPubKey(key, chainCode));
 
 			_walletManager = WalletManagerPtr(new WalletManager(
 					masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(), _info.getSingleAddress(), chainParams));
@@ -141,6 +148,50 @@ namespace Elastos {
 
 		void SubWallet::recover(int limitGap) {
 			_walletManager->recover(limitGap);
+		}
+
+		void SubWallet::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword) {
+			UInt512 seed = _parent->deriveSeed(payPassword);
+			Key::deriveKeyAndChain(key, chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
+		}
+
+		void SubWallet::signTransaction(BRTransaction *transaction, int forkId, const std::string &payPassword) {
+			BRKey masterKey;
+			UInt256 chainCode;
+			deriveKeyAndChain(&masterKey, chainCode, payPassword);
+			BRWallet *wallet = _walletManager->getWallet()->getRaw();
+
+			uint32_t j, internalIdx[transaction->inCount], externalIdx[transaction->inCount];
+			size_t i, internalCount = 0, externalCount = 0;
+			int r = 0;
+
+			assert(wallet != NULL);
+			assert(transaction != NULL);
+
+			pthread_mutex_lock(&wallet->lock);
+
+			for (i = 0; i < transaction->inCount; i++) {
+				for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
+					if (BRAddressEq(transaction->inputs[i].address, &wallet->internalChain[j - 1]))
+						internalIdx[internalCount++] = j - 1;
+				}
+
+				for (j = (uint32_t) array_count(wallet->externalChain); j > 0; j--) {
+					if (BRAddressEq(transaction->inputs[i].address, &wallet->externalChain[j - 1]))
+						externalIdx[externalCount++] = j - 1;
+				}
+			}
+
+			pthread_mutex_unlock(&wallet->lock);
+
+			BRKey keys[internalCount + externalCount];
+			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
+										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
+			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
+										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
+
+			BRTransactionSign(transaction, forkId, keys, internalCount + externalCount);
+			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
 		}
 
 	}

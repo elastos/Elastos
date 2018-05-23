@@ -23,31 +23,13 @@
 //  THE SOFTWARE.
 
 #include "BRWallet.h"
-#include "BRSet.h"
 #include "BRAddress.h"
 #include "BRArray.h"
 #include <stdlib.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <float.h>
-#include <pthread.h>
 #include <assert.h>
-
-struct BRWalletStruct {
-    uint64_t balance, totalSent, totalReceived, feePerKb, *balanceHist;
-    uint32_t blockHeight;
-    BRUTXO *utxos;
-    BRTransaction **transactions;
-    BRMasterPubKey masterPubKey;
-    BRAddress *internalChain, *externalChain;
-    BRSet *allTx, *invalidTx, *pendingTx, *spentOutputs, *usedAddrs, *allAddrs;
-    void *callbackInfo;
-    void (*balanceChanged)(void *info, uint64_t balance);
-    void (*txAdded)(void *info, BRTransaction *tx);
-    void (*txUpdated)(void *info, const UInt256 txHashes[], size_t txCount, uint32_t blockHeight, uint32_t timestamp);
-    void (*txDeleted)(void *info, UInt256 txHash, int notifyUser, int recommendRescan);
-    pthread_mutex_t lock;
-};
 
 inline static uint64_t _txFee(uint64_t feePerKb, size_t size)
 {

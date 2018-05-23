@@ -16,8 +16,47 @@
 #include "Log.h"
 #include "Key.h"
 
+#define BIP32_SEED_KEY "ELA seed"
+
 namespace Elastos {
 	namespace SDK {
+		namespace {
+			// Private parent key -> private child key
+			//
+			// CKDpriv((kpar, cpar), i) -> (ki, ci) computes a child extended private key from the parent extended private key:
+			//
+			// - Check whether i >= 2^31 (whether the child is a hardened key).
+			//     - If so (hardened child): let I = HMAC-SHA512(Key = cpar, Data = 0x00 || ser256(kpar) || ser32(i)).
+			//       (Note: The 0x00 pads the private key to make it 33 bytes long.)
+			//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(point(kpar)) || ser32(i)).
+			// - Split I into two 32-byte sequences, IL and IR.
+			// - The returned child key ki is parse256(IL) + kpar (mod n).
+			// - The returned chain code ci is IR.
+			// - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
+			//   (Note: this has probability lower than 1 in 2^127.)
+			//
+			static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
+			{
+				uint8_t buf[sizeof(BRECPoint) + sizeof(i)];
+				UInt512 I;
+
+				if (i & BIP32_HARD) {
+					buf[0] = 0;
+					UInt256Set(&buf[1], *k);
+				}
+				else BRSecp256k1PointGen((BRECPoint *)buf, k);
+
+				UInt32SetBE(&buf[sizeof(BRECPoint)], i);
+
+				BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
+
+				BRSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
+				*c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+
+				var_clean(&I);
+				mem_clean(buf, sizeof(buf));
+			}
+		}
 
 		Key::Key() {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
@@ -222,6 +261,61 @@ namespace Elastos {
 			UInt256 md;
 			BRSHA256((void *) &md, (void *) message.c_str(), strlen(message.c_str()));
 			return md;
+		}
+
+		void Key::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...) {
+			va_list ap;
+
+			va_start(ap, depth);
+			deriveKeyAndChain(key, chainCode, seed, seedLen, depth, ap);
+			va_end(ap);
+		}
+
+		void Key::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth,
+									va_list vlist) {
+			UInt512 I;
+			UInt256 secret;
+
+			assert(key != NULL);
+			assert(seed != NULL || seedLen == 0);
+			assert(depth >= 0);
+
+			if (key && (seed || seedLen == 0)) {
+				BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
+				secret = *(UInt256 *)&I;
+				chainCode = *(UInt256 *)&I.u8[sizeof(UInt256)];
+				var_clean(&I);
+
+				for (int i = 0; i < depth; i++) {
+					_CKDpriv(&secret, &chainCode, va_arg(vlist, uint32_t));
+				}
+
+				BRKeySetSecret(key, &secret, 1);
+				var_clean(&secret, &chainCode);
+			}
+		}
+
+		void
+		Key::calculatePrivateKeyList(BRKey *keys, size_t keysCount, UInt256 *secret, UInt256 *chainCode,
+									 uint32_t chain, const uint32_t *indexes) {
+			UInt512 I;
+			UInt256 *s, *c;
+
+			assert(keys != nullptr || keysCount == 0);
+			assert(indexes != nullptr || keysCount == 0);
+
+			if (keys && keysCount > 0 && indexes) {
+
+				_CKDpriv(secret, chainCode, 0 | BIP32_HARD); // path m/0H
+				_CKDpriv(secret, chainCode, chain); // path m/0H/chain
+
+				for (size_t i = 0; i < keysCount; i++) {
+					s = secret;
+					c = chainCode;
+					_CKDpriv(s, c, indexes[i]); // index'th key in chain
+					BRKeySetSecret(&keys[i], s, 1);
+				}
+			}
 		}
 
 

@@ -100,7 +100,12 @@ namespace Elastos {
 
 			SubWallet(const CoinInfo &info,
 					  const ChainParams &chainParams,
+					  const std::string &payPassword,
 					  MasterWallet *parent);
+
+			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
+
+			void signTransaction(BRTransaction *transaction, int forkId, const std::string &payPassword);
 
 			void recover(int limitGap);
 

@@ -53,7 +53,7 @@ namespace Elastos {
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
-			SubWallet *subWallet = new SubWallet(info, ChainParams::mainNet(), this);
+			SubWallet *subWallet = new SubWallet(info, ChainParams::mainNet(), payPassword, this);
 			_createdWallets[chainID] = subWallet;
 			return subWallet;
 		}
@@ -240,6 +240,14 @@ namespace Elastos {
 		MasterWallet::CheckSign(const std::string &address, const std::string &message, const std::string &signature) {
 			//todo complete me
 			return nlohmann::json();
+		}
+
+		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
+			UInt512 result;
+			std::string phrase = Utils::convertToString(Utils::decrypt(_encryptedEntropy, payPassword));
+			std::string phrasePassword = Utils::convertToString(Utils::decrypt(_encryptedPhrasePass, payPassword));
+			BRBIP39DeriveKey(result.u8, phrase.c_str(), phrasePassword.c_str());
+			return result;
 		}
 
 	}

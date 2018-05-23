@@ -26,6 +26,8 @@ namespace Elastos {
 
 			MasterPubKey(const std::string &phrase, const std::string &phrasePassword = "");
 
+			MasterPubKey(const BRKey &key, const UInt256 &chainCode);
+
 			virtual std::string toString() const;
 
 			virtual BRMasterPubKey *getRaw() const;
