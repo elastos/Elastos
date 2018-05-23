@@ -74,14 +74,14 @@ type Configuration struct {
 	RestKeyPath         string           `json:"RestKeyPath"`
 	HttpInfoPort        uint16           `json:"HttpInfoPort"`
 	HttpInfoStart       bool             `json:"HttpInfoStart"`
-	SPVService          bool             `json:"SPVService"`
-	SPVNodePort         uint16           `json:"SPVNodePort"`
+	OpenService         bool             `json:"OpenService"`
 	HttpWsPort          int              `json:"HttpWsPort"`
 	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
 	HttpJsonPort        int              `json:"HttpJsonPort"`
 	OauthServerUrl      string           `json:"OauthServerUrl"`
 	NoticeServerUrl     string           `json:"NoticeServerUrl"`
-	NodePort            int              `json:"NodePort"`
+	NodePort            uint16           `json:"NodePort"`
+	NodeOpenPort        uint16           `json:"NodeOpenPort"`
 	WebSocketPort       int              `json:"WebSocketPort"`
 	PrintLevel          int              `json:"PrintLevel"`
 	IsTLS               bool             `json:"IsTLS"`
