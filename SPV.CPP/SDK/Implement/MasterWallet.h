@@ -42,6 +42,15 @@ namespace Elastos {
 
 			virtual std::string GetPublicKey();
 
+			virtual std::string Sign(
+					const std::string &message,
+					const std::string &payPassword);
+
+			virtual nlohmann::json CheckSign(
+					const std::string &address,
+					const std::string &message,
+					const std::string &signature);
+
 			const std::string &GetName() const;
 
 			bool Initialized() const;

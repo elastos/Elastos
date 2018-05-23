@@ -32,6 +32,15 @@ namespace Elastos {
 			virtual void DestroyWallet(ISubWallet *wallet) = 0;
 
 			virtual std::string GetPublicKey() = 0;
+
+			virtual std::string Sign(
+					const std::string &message,
+					const std::string &payPassword) = 0;
+
+			virtual nlohmann::json CheckSign(
+					const std::string &address,
+					const std::string &message,
+					const std::string &signature) = 0;
 		};
 
 	}

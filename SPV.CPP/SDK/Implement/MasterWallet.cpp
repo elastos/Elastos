@@ -196,5 +196,19 @@ namespace Elastos {
 			_publicKey = std::string(result);
 		}
 
+		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
+			Key key = deriveKey(payPassword);
+			CMBlock messageData;
+			messageData.SetMemFixed((const uint8_t *)message.data(), message.size());
+		 	CMBlock signedData = key.compactSign(messageData);
+			return Utils::convertToString(signedData);
+		}
+
+		nlohmann::json
+		MasterWallet::CheckSign(const std::string &address, const std::string &message, const std::string &signature) {
+			//todo complete me
+			return nlohmann::json();
+		}
+
 	}
 }
