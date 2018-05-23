@@ -12,12 +12,12 @@ type P2PClientImpl struct {
 	peerManager *net.PeerManager
 }
 
-func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string, maxOutbound, maxConnections int) (*P2PClientImpl, error) {
+func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string, port uint16, maxOutbound, maxConnections int) (*P2PClientImpl, error) {
 	// Initialize local peer
 	local := new(net.Peer)
 	local.SetID(clientId)
 	local.SetVersion(ProtocolVersion)
-	local.SetPort(SPVClientPort)
+	local.SetPort(port)
 
 	if magic == 0 {
 		return nil, errors.New("Magic number has not been set ")

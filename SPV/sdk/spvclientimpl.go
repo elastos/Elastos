@@ -18,7 +18,7 @@ type SPVClientImpl struct {
 
 func NewSPVClientImpl(magic uint32, clientId uint64, seeds []string, maxOutbound, maxConnections int) (*SPVClientImpl, error) {
 	// Initialize P2P client
-	p2pClient, err := GetP2PClient(magic, clientId, seeds, maxOutbound, maxConnections)
+	p2pClient, err := GetP2PClient(magic, clientId, seeds, 0, maxOutbound, maxConnections)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (client *SPVClientImpl) OnHandshake(v *msg.Version) error {
 	//	return fmt.Errorf("To support SPV protocol, peer version must greater than ", ProtocolVersion)
 	//}
 
-	if v.Services/ServiceSPV&1 == 0 {
+	if v.Services/OpenService&1 == 0 {
 		return errors.New("SPV service not enabled on connected peer")
 	}
 

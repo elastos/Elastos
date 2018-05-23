@@ -4,9 +4,8 @@ import "github.com/elastos/Elastos.ELA.Utility/p2p"
 
 const (
 	ProtocolVersion = p2p.EIP001Version // The protocol version implemented SPV protocol
-	ServiceSPV      = 1 << 2
+	OpenService     = 1 << 2
 	SPVServerPort   = 20866
-	SPVClientPort   = 20867
 
 	GenesisHeader = "000000000000000000000000000000000000000000000000000000000000000000000000" +
 		"206cf70af49fa40e594189634da713872fe5ba6d0457ae235890e0438c853692a0d73c5a" +
