@@ -15,6 +15,7 @@ build/
 /glide.lock
 /vendor/*
 /Chain/*
+/Chain_UnitTest/*
 /Logs/*
 /ela
 /ela-cli
