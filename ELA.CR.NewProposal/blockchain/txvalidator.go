@@ -66,6 +66,13 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return Success
 	}
 
+	if txn.IsWithdrawTx() {
+		witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(witPayload.SideChainTransactionHash); exist {
+			return ErrSidechainTxHashDuplicate
+		}
+	}
+
 	// check double spent transaction
 	if DefaultLedger.IsDoubleSpend(txn) {
 		log.Info("[CheckTransactionContext] IsDoubleSpend check faild.")
