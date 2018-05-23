@@ -126,7 +126,7 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers) {
+		void CoreWalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
 
 		}
 
@@ -148,9 +148,9 @@ namespace Elastos {
 			return SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
 		}
 
-		WrapperList<Peer, BRPeer> CoreWalletManager::loadPeers() {
+		SharedWrapperList<Peer, BRPeer*> CoreWalletManager::loadPeers() {
 			//todo complete me
-			return WrapperList<Peer, BRPeer>();
+			return SharedWrapperList<Peer, BRPeer*>();
 		}
 
 		int CoreWalletManager::getForkId() const {
@@ -227,7 +227,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers) {
+		void WrappedExceptionPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
 
 			try {
 				_listener->savePeers(replace, peers);
@@ -299,7 +299,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers) {
+		void WrappedExecutorPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
 			_executor->execute(Runnable([this, replace, &peers]() -> void {
 				_listener->savePeers(replace, peers);
 			}));

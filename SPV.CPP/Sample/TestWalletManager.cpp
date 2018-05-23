@@ -14,9 +14,9 @@ TestWalletManager::TestWalletManager() :
 	WalletManager(CMBlock()) {
 }
 
-WrapperList<Peer, BRPeer> TestWalletManager::loadPeers() {
-	Peer p1(7630401);
-	BRPeer *brp1 = p1.getRaw();
+SharedWrapperList<Peer, BRPeer*> TestWalletManager::loadPeers() {
+	PeerPtr p1 = PeerPtr(new Peer(7630401));
+	BRPeer *brp1 = p1->getRaw();
 	brp1->address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 127, 0, 0, 1});
 	brp1->port = 20866;
 	brp1->timestamp = time(nullptr);
@@ -37,7 +37,7 @@ WrapperList<Peer, BRPeer> TestWalletManager::loadPeers() {
 	brp3->timestamp = time(nullptr);
 	brp3->services = uint64_t(1);*/
 
-	WrapperList<Peer, BRPeer> peers(1);
+	SharedWrapperList<Peer, BRPeer*> peers(1);
 	int test = peers.size();
 	peers[0] = p1;
 /*	peers[1] = p2;

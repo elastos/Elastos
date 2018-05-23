@@ -11,7 +11,7 @@
 #define BACKGROUND_THREAD_COUNT 1
 
 #define DATABASE_PATH "spv_wallet.db"
-#define WALLET_STORE_FILE "wallet.dat"
+//#define WALLET_STORE_FILE "wallet.dat"
 #define ISO "els"
 
 namespace Elastos {
@@ -131,10 +131,10 @@ namespace Elastos {
 			TransactionPtr ptr(new Transaction(tmp));
 			ptr->setTransactionType(Transaction::TransferAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
-			for (SharedWrapperList<TransactionOutput, BRTxOutput *>::iterator it = outList.begin();
-				 it != outList.end(); ++it) {
-				((ELABRTxOutput *) (*it)->getRaw())->assetId = assetId;
-			}
+			std::for_each(outList.begin(), outList.end(),
+						  [assetId](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+							  ((ELABRTxOutput *)output->getRaw())->assetId = assetId;
+			});
 
 			return ptr;
 		}
@@ -211,26 +211,34 @@ namespace Elastos {
 		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
 			MerkleBlockEntity blockEntity;
 
-//			for (size_t i = 0; i < blocks.size(); ++i) {
-//				blockEntity.blockBytes = blocks[i]->serialize();
-//				blockEntity.blockHeight = blocks[i]->getHeight();
-//				_databaseManager.putMerkleBlock(ISO, blockEntity);
-//			}
+			for (size_t i = 0; i < blocks.size(); ++i) {
+				ByteStream ostream;
+				blocks[i]->Serialize(ostream);
+				CMBlock bytes(ostream.length());
+				blockEntity.blockBytes.Resize(ostream.length());
+				if (blockEntity.blockBytes.GetSize() > 0) {
+					uint8_t *tmp = ostream.getBuf();
+					memcpy(blockEntity.blockBytes, tmp, ostream.length());
+					delete []tmp;
+				}
+				blockEntity.blockHeight = blocks[i]->getHeight();
+				_databaseManager.putMerkleBlock(ISO, blockEntity);
+			}
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
 							  listener->saveBlocks(replace, blocks);
 						  });
+			delete &blocks;
 		}
 
-		// TODO heropan why BRPeer is not BRPeer*
-		void WalletManager::savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers) {
+		void WalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
 			PeerEntity peerEntity;
 
 			for (size_t i = 0; i < peers.size(); ++i) {
-				peerEntity.address = peers[i].getAddress();
-				peerEntity.port = peers[i].getPort();
-				peerEntity.timeStamp = peers[i].getTimestamp();
+				peerEntity.address = peers[i]->getAddress();
+				peerEntity.port = peers[i]->getPort();
+				peerEntity.timeStamp = peers[i]->getTimestamp();
 				_databaseManager.putPeer(ISO, peerEntity);
 			}
 
@@ -238,6 +246,7 @@ namespace Elastos {
 						  [replace, &peers](PeerManager::Listener *listener) {
 							  listener->savePeers(replace, peers);
 						  });
+			delete &peers;
 		}
 
 		bool WalletManager::networkIsReachable() {
@@ -288,14 +297,13 @@ namespace Elastos {
 			return blocks;
 		}
 
-		// TODO heropan why BRPeer is not BRPeer*
-		WrapperList<Peer, BRPeer> WalletManager::loadPeers() {
-			WrapperList<Peer, BRPeer> peers;
+		SharedWrapperList<Peer, BRPeer*> WalletManager::loadPeers() {
+			SharedWrapperList<Peer, BRPeer*> peers;
 
 			std::vector<PeerEntity> peersEntity = _databaseManager.getAllPeers(ISO);
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
-				peers.push_back(Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp));
+				peers.push_back(PeerPtr(new Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
 			}
 
 			return peers;

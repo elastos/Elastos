@@ -66,7 +66,7 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
 
 			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
@@ -79,7 +79,7 @@ namespace Elastos {
 
 			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
 
-			virtual WrapperList<Peer, BRPeer> loadPeers();
+			virtual SharedWrapperList<Peer, BRPeer*> loadPeers();
 
 			virtual int getForkId() const;
 
@@ -128,7 +128,7 @@ namespace Elastos {
 
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
-			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
 
 			virtual bool networkIsReachable();
 
@@ -153,7 +153,7 @@ namespace Elastos {
 
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
-			virtual void savePeers(bool replace, const WrapperList<Peer, BRPeer> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
 
 			virtual bool networkIsReachable();
 

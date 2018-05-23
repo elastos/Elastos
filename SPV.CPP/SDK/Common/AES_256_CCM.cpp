@@ -19,7 +19,7 @@ namespace Elastos {
 		}
 
 		static int _encryptccm(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
-							   int aad_len, unsigned char *key, unsigned char *iv,
+							   int aad_len, unsigned char *key, const unsigned char *iv,
 							   unsigned char *ciphertext, unsigned char *tag) {
 			EVP_CIPHER_CTX *ctx;
 
@@ -83,7 +83,7 @@ namespace Elastos {
 		}
 
 		static int _decryptccm(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
-							   int aad_len, unsigned char *tag, unsigned char *key, unsigned char *iv,
+							   int aad_len, unsigned char *tag, unsigned char *key, const unsigned char *iv,
 							   unsigned char *plaintext) {
 			EVP_CIPHER_CTX *ctx;
 			int len;
@@ -176,7 +176,7 @@ namespace Elastos {
 					if (0 < ret) {
 						_ret.Resize(ret + 8);
 						memcpy(_ret, ciphertext, ret);
-						memcpy(_ret + ret, tag, 8);
+						memcpy((unsigned char *)_ret + ret, tag, 8);
 					}
 				}
 			}
@@ -196,7 +196,7 @@ namespace Elastos {
 				unsigned char key[EVP_MAX_KEY_LENGTH];
 				int iklen = EVP_CIPHER_key_length(cipher);
 				if (PKCS5_PBKDF2_HMAC((char *) password, szPassword, salt, sizeof(salt), 10000, dgst, iklen, key)) {
-					unsigned char plaintext[PLAINTEXTMAXLENGTH] = {0};
+					unsigned char plaintext[CIPHERTEXTMAXLENGTH] = {0};
 
 					int ret = _decryptccm(cipherText, szCipherText - 8, nullptr == aad ? (unsigned char *) "" : aad,
 										  szAad, &cipherText[szCipherText - 8], key, &iv[0], plaintext);

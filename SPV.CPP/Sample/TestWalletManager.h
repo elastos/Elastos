@@ -19,7 +19,7 @@ public:
 
 protected:
 
-	WrapperList<Peer, BRPeer> loadPeers() override;
+	SharedWrapperList<Peer, BRPeer*> loadPeers() override;
 
 };
 

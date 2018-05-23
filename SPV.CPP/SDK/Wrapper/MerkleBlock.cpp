@@ -151,7 +151,6 @@ namespace Elastos {
 				ostream.putBytes(hashData, 256 / 8);
 			}
 
-			assert(_merkleBlock->raw.hashesCount == _merkleBlock->raw.flagsLen);
 			ostream.putVarUint(_merkleBlock->raw.flagsLen);
 			for (uint32_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
 				ostream.put(_merkleBlock->raw.flags[i]);

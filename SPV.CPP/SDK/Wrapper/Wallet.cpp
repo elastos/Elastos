@@ -222,7 +222,7 @@ namespace Elastos {
 
 			return amountSent == 0
 				   ? amountReceived
-				   : -1 * (amountSent - amountReceived - getTransactionFee(tx));
+				   : -1 * (amountSent - amountReceived + getTransactionFee(tx));
 		}
 
 		uint64_t Wallet::getTransactionFee(const TransactionPtr &tx) {

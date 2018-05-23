@@ -105,14 +105,17 @@ namespace Elastos {
 
 			TransactionEntity tx;
 			while (SQLITE_ROW == _sqlite->step(stmt)) {
+				CMBlock buff;
 				// id
 				tx.txHash = _sqlite->columnText(stmt, 0);
 
 				// block data
 				const uint8_t *pdata = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
 				size_t len = _sqlite->columnBytes(stmt, 1);
-				tx.buff.Resize(len);
-				memcpy(tx.buff, pdata, len);
+
+				buff.Resize(len);
+				memcpy(buff, pdata, len);
+				tx.buff = buff;
 
 				// block height
 				tx.blockHeight = _sqlite->columnInt(stmt, 2);

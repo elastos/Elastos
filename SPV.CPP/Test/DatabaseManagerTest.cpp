@@ -20,781 +20,281 @@ const int loopCount = 5;
 int thread_call_count = 0;
 #endif
 
-TEST_CASE("DatabaseManager Contructor test", "[DatabaseManager]") {
+#define ISO "els"
+#define DBFILE "wallet.db"
+#define TEST_ASCII_BEGIN 48
 
-	SECTION("Contruct default test ") {
-		DatabaseManager *databaseManager = new DatabaseManager();
-		REQUIRE(databaseManager != nullptr);
+TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
-		std::fstream file;
-		file.open("wallet.db", std::ios::in);
-		REQUIRE(file.is_open() == true);
-		file.close();
+	SECTION("Prepare to test") {
+		srand(time(nullptr));
+
+		if (boost::filesystem::exists(DBFILE)) {
+			boost::filesystem::remove(DBFILE);
+		}
+
+		REQUIRE(!boost::filesystem::exists(DBFILE));
 	}
 
-	SECTION("Construct with database path test") {
-		std::fstream file;
-		const char *testDb = "testData.db";
-		file.open(testDb, std::ios::in);
-		if (file) {
-			remove(testDb);
-		}
-		file.close();
-
-		DatabaseManager *databaseManager = new DatabaseManager(testDb);
-		REQUIRE(databaseManager != nullptr);
-
-		file.open(testDb, std::ios::in);
-		REQUIRE(file.is_open() == true);
-		file.close();
-	}
-}
-
-TEST_CASE("DatabaseManager database transaction test", "[DatabaseManager]") {
-
-	DatabaseManager databaseManager;
-	std::string iso = "ELA";
-
-	SECTION("DatabaseManager putTransaction test") {
-		TransactionEntity transactionEntity;
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		CMBlock mb(21);
-		memcpy(mb, s, 21);
-		transactionEntity.buff = mb;
-		transactionEntity.blockHeight = 9000;
-		transactionEntity.timeStamp = 1523935043;
-		transactionEntity.txHash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
-		bool result = databaseManager.putTransaction(iso, transactionEntity);
-		REQUIRE(result == true);
-
-		std::vector<TransactionEntity> list = databaseManager.getAllTransactions(iso);
-		uint64_t len = list.size();
-		REQUIRE(len > 0);
-		REQUIRE(list[len - 1].blockHeight == transactionEntity.blockHeight);
-		REQUIRE(list[len - 1].timeStamp == transactionEntity.timeStamp);
-		REQUIRE(list[len - 1].txHash == transactionEntity.txHash);
-		REQUIRE(list[len - 1].buff.GetSize() == transactionEntity.buff.GetSize());
-		for (uint64_t i = 0; i < transactionEntity.buff.GetSize(); i++) {
-			REQUIRE(list[len - 1].buff[i] == transactionEntity.buff[i]);
-		}
-	}
-
-	SECTION("DatabaseManager updateTransaction test") {
-		TransactionEntity transactionEntity;
-		uint8_t s[20] = {43, 34, 80, 17, 41, 30, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 76};
-		CMBlock mb(20);
-		mb.SetMemFixed(s, 20);
-		transactionEntity.buff = mb;
-		transactionEntity.blockHeight = 8000;
-		transactionEntity.timeStamp = 1523935888;
-		transactionEntity.txHash = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f";
-
-		bool result = databaseManager.updateTransaction(iso, transactionEntity);
-		REQUIRE(result == true);
-
-		std::vector<TransactionEntity> list = databaseManager.getAllTransactions(iso);
-		uint64_t len = list.size();
-		REQUIRE(len > 0);
-		REQUIRE(list[len - 1].blockHeight == transactionEntity.blockHeight);
-		REQUIRE(list[len - 1].timeStamp == transactionEntity.timeStamp);
-		REQUIRE(list[len - 1].txHash == transactionEntity.txHash);
-		REQUIRE(list[len - 1].buff.GetSize() == 20);
-		for (uint64_t i = 0; i < transactionEntity.buff.GetSize(); i++) {
-			REQUIRE(list[len - 1].buff[i] == transactionEntity.buff[i]);
-		}
-	}
-
-	SECTION("DatabaseManager deleteTxByHash test") {
-		std::vector<TransactionEntity> list = databaseManager.getAllTransactions(iso);
-		ssize_t len = list.size();
-
-		bool result = databaseManager.deleteTxByHash(iso, "aa34r");
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllTransactions(iso);
-		REQUIRE(list.size() == len);
-
-		result = databaseManager.deleteTxByHash(iso,
-		                                        "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllTransactions(iso);
-		REQUIRE(list.size() < len);
-
-		result = databaseManager.deleteAllTransactions(iso);
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllTransactions(iso);
-		REQUIRE(list.size() == 0);
-	}
-}
-
-TEST_CASE("DatabaseManager peer interface test", "[DatabaseManager]") {
-
-	DatabaseManager databaseManager;
-	std::string iso = "ELA";
-
-	SECTION("DatabaseManager putPeer test") {
-		PeerEntity peerEntity;
-		peerEntity.id = 1;
-		peerEntity.timeStamp = 1523935888;
-		peerEntity.address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-		peerEntity.port = 9090;
-
-		bool result = databaseManager.putPeer(iso, peerEntity);
-		REQUIRE(result == true);
-
-		std::vector<PeerEntity> list = databaseManager.getAllPeers(iso);
-		ssize_t len = list.size();
-		REQUIRE(len > 0);
-		REQUIRE(list[len - 1].id >= 1);
-		REQUIRE(list[len - 1].timeStamp == peerEntity.timeStamp);
-		REQUIRE(list[len - 1].port == peerEntity.port);
-		int res = UInt128Eq(&list[len - 1].address, &peerEntity.address);
-		REQUIRE(res == 1);
-	}
-
-	SECTION("DatabaseManager deleteAllPeers and putPeers test") {
-		bool result = databaseManager.deleteAllPeers(iso);
-		REQUIRE(result == true);
-
-		std::vector<PeerEntity> list = databaseManager.getAllPeers(iso);
-		ssize_t len = list.size();
-		REQUIRE(len == 0);
-
-		list.clear();
-		PeerEntity peerEntity;
-		for (int i = 0; i < 10; i++) {
-			peerEntity.timeStamp = uint64_t(1523935888 + i);
-			peerEntity.address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-			peerEntity.port = uint16_t(8080 + i);
-			list.push_back(peerEntity);
-		}
-
-		result = databaseManager.putPeers(iso, list);
-		REQUIRE(result == true);
-
-		std::vector<PeerEntity> peerList = databaseManager.getAllPeers(iso);
-		REQUIRE(peerList.size() == list.size());
-
-		for (int i = 0; i < peerList.size(); i++) {
-			REQUIRE(peerList[i].id > 0);
-			REQUIRE(peerList[i].timeStamp == list[i].timeStamp);
-			REQUIRE(peerList[i].port == list[i].port);
-			int res = UInt128Eq(&peerList[i].address, &list[i].address);
-			REQUIRE(res == 1);
-		}
-	}
-
-	SECTION("DatabaseManager deletePeer test") {
-		std::vector<PeerEntity> list = databaseManager.getAllPeers(iso);
-		ssize_t len = list.size();
-		REQUIRE(len > 0);
-
-		PeerEntity peerEntity;
-		bool result = databaseManager.deletePeer(iso, peerEntity);
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllPeers(iso);
-		REQUIRE(list.size() == len);
-
-		peerEntity.id = list[len - 1].id;
-		result = databaseManager.deletePeer(iso, peerEntity);
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllPeers(iso);
-		REQUIRE(list.size() == len - 1);
-	}
-}
-
-TEST_CASE("DatabaseManager merkleBlock test", "[DatabaseManager]") {
-
-	DatabaseManager databaseManager;
-	std::string iso = "ELA";
-
-	SECTION("DatabaseManager putMerkleBlock test") {
-		MerkleBlockEntity blockEntity;
-		blockEntity.blockHeight = 8888;
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		blockEntity.blockBytes.SetMemFixed(s, 21);
-
-		bool result = databaseManager.putMerkleBlock(iso, blockEntity);
-		REQUIRE(result == true);
-
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks(iso);
-		ssize_t len = list.size();
-		REQUIRE(len > 0);
-		REQUIRE(list[len - 1].id > 0);
-		REQUIRE(list[len - 1].blockHeight == blockEntity.blockHeight);
-		REQUIRE(list[len - 1].blockBytes.GetSize() == blockEntity.blockBytes.GetSize());
-		for (uint64_t i = 0; i < list[len - 1].blockBytes.GetSize(); i++) {
-			REQUIRE(list[len - 1].blockBytes[i] == blockEntity.blockBytes[i]);
-		}
-	}
-
-	SECTION("DatabaseManager deleteAllBlocks and putMerkleBlocks test") {
-		bool result = databaseManager.deleteAllBlocks(iso);
-		REQUIRE(result == true);
-
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks(iso);
-		ssize_t len = list.size();
-		REQUIRE(len == 0);
-
-		list.clear();
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		for (int i = 0; i < 10; i++) {
-			MerkleBlockEntity blockEntity;
-			blockEntity.blockBytes.SetMemFixed(s, 21);
-			blockEntity.blockHeight = uint32_t(i + 1);
-			list.push_back(blockEntity);
-		}
-
-		result = databaseManager.putMerkleBlocks(iso, list);
-		REQUIRE(result == true);
-
-		std::vector<MerkleBlockEntity> blockList = databaseManager.getAllMerkleBlocks(iso);
-		REQUIRE(blockList.size() == list.size());
-		for (uint64_t i = 0; i < list.size(); i++) {
-			REQUIRE(blockList[i].id > 0);
-			REQUIRE(blockList[i].blockHeight == list[i].blockHeight);
-			REQUIRE(blockList[i].blockBytes.GetSize() == list[i].blockBytes.GetSize());
-			for (uint64_t j = 0; j < blockList[i].blockBytes.GetSize(); j++) {
-				REQUIRE(blockList[i].blockBytes[j] == list[i].blockBytes[j]);
-			}
-		}
-	}
-
-	SECTION("DatabaseManager deleteMerkleBlock test") {
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks(iso);
-		ssize_t len = list.size();
-		REQUIRE(len > 0);
-
-		MerkleBlockEntity blockEntity;
-		bool result = databaseManager.deleteMerkleBlock(iso, blockEntity);
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllMerkleBlocks(iso);
-		REQUIRE(list.size() == len);
-
-		blockEntity.id = list[len - 1].id;
-		result = databaseManager.deleteMerkleBlock(iso, blockEntity);
-		REQUIRE(result == true);
-
-		list = databaseManager.getAllMerkleBlocks(iso);
-		REQUIRE(list.size() == len - 1);
-	}
-}
-
-#if 0
-void onPutTransaction(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	TransactionEntity transactionEntity;
-	uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-	                 60, 75, 8, 182, 57, 98};
-	for (int i = 0; i < loopCount; i++) {
-		transactionEntity.buff.SetMemFixed(s, 21);
-		transactionEntity.blockHeight = uint32_t(9000 + index * loopCount + i);
-		transactionEntity.timeStamp = uint32_t(15000000 + index * loopCount + i);
-		transactionEntity.txHash = std::to_string(index * loopCount + i + 1);
-		bool result = databaseManager->putTransaction("ELA", transactionEntity);
-		REQUIRE(result == true);
-	}
-	thread_call_count++;
-}
-
-void onDeleteTransaction(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	for (int i = 0; i < loopCount; i++) {
-		bool result = databaseManager->deleteTxByHash("ELA", std::to_string(index * loopCount + i + 1));
-		REQUIRE(result == true);
-	}
-
-	thread_call_count++;
-}
-
-void onUpdateTransaction(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	TransactionEntity transactionEntity;
-	uint8_t s[20] = {43, 34, 80, 17, 41, 30, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-	                 60, 75, 8, 182, 76};
-	for (int i = 0; i < loopCount; i++) {
-		transactionEntity.buff.SetMemFixed(s, 20);
-		transactionEntity.blockHeight = 8000 + index * loopCount + i;
-		transactionEntity.timeStamp = 1523935000 + index * loopCount + i;
-		transactionEntity.txHash = std::to_string(index * loopCount + i + 1);
-		bool result = databaseManager->updateTransaction("ELA", transactionEntity);
-		REQUIRE(result == true);
-	}
-
-	thread_call_count++;
-}
-
-void onDeleteAllTransactions(void *arg) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	bool result = databaseManager->deleteAllTransactions("ELA");
-	REQUIRE(result == true);
-
-	std::vector<TransactionEntity> list = databaseManager->getAllTransactions("ELA");
-	REQUIRE(list.size() == 0);
-}
-
-bool sortTransactionList(TransactionEntity &a, TransactionEntity &b) {
-	return a.blockHeight < b.blockHeight;
-}
-
-TEST_CASE("DatabaseManager mulity thread transaction", "[DatabaseManager]") {
-	DatabaseManager databaseManager;
-
-	SECTION("DatabaseManager deleteAllTransactions test") {
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onDeleteAllTransactions, &databaseManager)));
-		}
-	}
-
-	SECTION("DatabaseManager putTransaction thread test") {
-		bool result = databaseManager.deleteAllTransactions("ELA");
-		REQUIRE(result == true);
-
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onPutTransaction, &databaseManager, i)));
-		}
-
-		while (true) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<TransactionEntity> list = databaseManager.getAllTransactions("ELA");
-		std::sort(list.begin(), list.end(), sortTransactionList);
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			REQUIRE(list[i].buff.GetSize() == 21);
-			for (int j = 0; j < 21; j++) {
-				REQUIRE(list[i].buff[j] == s[j]);
-			}
-			REQUIRE(list[i].blockHeight == 9000 + i);
-			REQUIRE(list[i].timeStamp == 15000000 + i);
-			REQUIRE(list[i].txHash == std::to_string(i + 1));
-		}
-	}
-
-	SECTION("DatabaseManager updateTransaction thread test") {
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		thread_call_count = 0;
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onUpdateTransaction, &databaseManager, i)));
-		}
-
-		while (true) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<TransactionEntity> list = databaseManager.getAllTransactions("ELA");
-		std::sort(list.begin(), list.end(), sortTransactionList);
-		uint8_t s[20] = {43, 34, 80, 17, 41, 30, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 76};
-		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			REQUIRE(list[i].buff.GetSize() == 20);
-			for (int j = 0; j < 20; j++) {
-				REQUIRE(list[i].buff[j] == s[j]);
-			}
-			REQUIRE(list[i].blockHeight == 8000 + i);
-			REQUIRE(list[i].timeStamp == 1523935000 + i);
-			REQUIRE(list[i].txHash == std::to_string(i + 1));
-		}
-	}
-
-	SECTION("DatabaseManager deleteTxByHash thread test") {
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		thread_call_count = 0;
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onDeleteTransaction, &databaseManager, i)));
-		}
-
-		while (true) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<TransactionEntity> list = databaseManager.getAllTransactions("ELA");
-		REQUIRE(list.size() == 0);
-	}
-
-}
-
-void onPutPeers(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	std::vector<PeerEntity> list;
-	PeerEntity peerEntity;
-	for (int i = 0; i < loopCount; i++) {
-		peerEntity.timeStamp = uint64_t(index * loopCount + i);
-		peerEntity.address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-		peerEntity.port = uint16_t(index * loopCount + i);
-		list.push_back(peerEntity);
-	}
-	for (int i = 0; i < loopCount; i++) {
-		bool result = databaseManager->putPeers("elas", list);
-		REQUIRE(result == true);
-	}
-	thread_call_count++;
-}
-
-void onPutPeer(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	PeerEntity peerEntity;
-	for (int i = 0; i < loopCount; i++) {
-		peerEntity.timeStamp = uint64_t(index * loopCount + i);
-		peerEntity.address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-		peerEntity.port = uint16_t(index * loopCount + i);;
-		bool result = databaseManager->putPeer("ela", peerEntity);
-		REQUIRE(result == true);
-	}
-	thread_call_count++;
-}
-
-void onDeletePeer(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	PeerEntity peerEntity;
-	peerEntity.id = index;
-	bool result = databaseManager->deletePeer("ela", peerEntity);
-	REQUIRE(result == true);
-	thread_call_count++;
-}
-
-void onDeletePeers(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	PeerEntity peerEntity;
-	peerEntity.id = index;
-	bool result = databaseManager->deletePeer("elas", peerEntity);
-	REQUIRE(result == true);
-	thread_call_count++;
-}
-
-void onDeleteAllPeers(void *arg) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	databaseManager->deleteAllPeers("ela");
-	databaseManager->deleteAllPeers("elas");
-	thread_call_count++;
-}
-
-bool sortPeers(PeerEntity &a, PeerEntity &b) {
-	return a.timeStamp < b.timeStamp;
-}
-
-TEST_CASE("DatabaseManager mulity thread peer", "[DatabaseManager]") {
-	DatabaseManager databaseManager;
-
-	SECTION("DatabaseManager deleteAllTransactions test") {
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		thread_call_count = 0;
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onDeleteAllPeers, &databaseManager)));
-		}
-
-		while (1) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<PeerEntity> list = databaseManager.getAllPeers("ela");
-		REQUIRE(list.size() == 0);
-		list = databaseManager.getAllPeers("elas");
-		REQUIRE(list.size() == 0);
-	}
-
-	SECTION("DatabaseManager putPeer thread test") {
-		bool result = databaseManager.deleteAllPeers("ela");
-		REQUIRE(result == true);
-		thread_call_count = 0;
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onPutPeer, &databaseManager, i)));
-		}
-
-		while (1) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<PeerEntity> list = databaseManager.getAllPeers("ela");
-		std::sort(list.begin(), list.end(), sortPeers);
-		UInt128 addr = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			REQUIRE(list[i].timeStamp == i);
-			REQUIRE(list[i].port == i);
-			int res = UInt128Eq(&list[i].address, &addr);
-			REQUIRE(res == 1);
-		}
-	}
-
-	SECTION("DatabaseManager putPeers thread test") {
-		bool result = databaseManager.deleteAllPeers("elas");
-		REQUIRE(result == true);
-		thread_call_count = 0;
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onPutPeers, &databaseManager, i)));
-		}
-
-
-		while (1) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<PeerEntity> list = databaseManager.getAllPeers("elas");
-		std::sort(list.begin(), list.end(), sortPeers);
-		UInt128 addr = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01});
-		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			for (int j = 0; j < loopCount; j++) {
-				REQUIRE(list[i * loopCount + j].timeStamp == i);
-				REQUIRE(list[i * loopCount + j].port == i);
-				int res = UInt128Eq(&list[i * loopCount + j].address, &addr);
-				REQUIRE(res == 1);
-			}
-		}
-	}
-
-	SECTION("DatabaseManager deletePeer thread test") {
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		std::vector<PeerEntity> list = databaseManager.getAllPeers("ela");
-		thread_call_count = 0;
-		for (int i = 0; i < list.size(); i++) {
-			executor.execute(Runnable(std::bind(&onDeletePeer, &databaseManager, list[i].id)));
-		}
-
-		while (1) {
-			if (thread_call_count >= list.size()) {
-				break;
-			}
-		}
-
-		list = databaseManager.getAllPeers("ela");
-		REQUIRE(list.size() == 0);
-
-		list = databaseManager.getAllPeers("elas");
-		BackgroundExecutor executor1(uint8_t(list.size()));
-		thread_call_count = 0;
-		for (int i = 0; i < list.size(); i++) {
-			executor1.execute(Runnable(std::bind(&onDeletePeers, &databaseManager, list[i].id)));
-		}
-
-		while (1) {
-			if (thread_call_count >= list.size()) {
-				break;
-			}
-		}
-		list = databaseManager.getAllPeers("elas");
-		REQUIRE(list.size() == 0);
-	}
-}
-
-void onPutMerkleBlock(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	MerkleBlockEntity blockEntity;
-	for (int i = 0; i < loopCount; i++) {
-		blockEntity.blockHeight = uint32_t(index * loopCount + i);
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		blockEntity.blockBytes.SetMemFixed(s, 21);
-
-		bool result = databaseManager->putMerkleBlock("ela", blockEntity);
-		REQUIRE(result == true);
-	}
-	thread_call_count++;
-}
-
-void onPutMerkleBlocks(void *arg, int index) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	std::vector<MerkleBlockEntity> list;
-	uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-	                 60, 75, 8, 182, 57, 98};
-	for (int i = 0; i < loopCount; i++) {
-		MerkleBlockEntity blockEntity;
-		blockEntity.blockBytes.SetMemFixed(s, 21);
-		blockEntity.blockHeight = uint32_t(index * loopCount + i);
-		list.push_back(blockEntity);
-	}
-	for (int i = 0; i < loopCount; i++) {
-		bool result = databaseManager->putMerkleBlocks("elas", list);
-		REQUIRE(result == true);
-	}
-
-	thread_call_count++;
-}
-
-void onDeleteMerkleBlocksByElas(void *arg, uint32_t blockID) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	MerkleBlockEntity blockEntity;
-	blockEntity.id = blockID;
-	bool result = databaseManager->deleteMerkleBlock("elas", blockEntity);
-	REQUIRE(result == true);
-	thread_call_count++;
-}
-
-void onDeleteMerkleBlocksByEla(void *arg, uint32_t blockID) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-
-	MerkleBlockEntity blockEntity;
-	blockEntity.id = blockID;
-	bool result = databaseManager->deleteMerkleBlock("ela", blockEntity);
-	REQUIRE(result == true);
-	thread_call_count++;
-}
-
-void onDeleteAllMerkleBlocks(void *arg) {
-	DatabaseManager *databaseManager = (DatabaseManager *) arg;
-	bool result = databaseManager->deleteAllBlocks("ela");
-	REQUIRE(result == true);
-	result = databaseManager->deleteAllBlocks("elas");
-	REQUIRE(result == true);
-	result = databaseManager->deleteAllBlocks("ELA");
-	REQUIRE(result == true);
-	thread_call_count++;
-}
-
-bool sortMerkleBlocks(MerkleBlockEntity &a, MerkleBlockEntity &b) {
-	return a.blockHeight < b.blockHeight;
-}
-
-TEST_CASE("DatabaseManager mulity thread merkleBlocks", "[DatabaseManager]") {
-	DatabaseManager databaseManager;
-	onDeleteAllMerkleBlocks(&databaseManager);
-
-	SECTION("DatabaseManager deleteAllBlocks thread test") {
-		BackgroundExecutor executor(totalThreadCount);
-		thread_call_count = 0;
-		for (int i = 0; i < totalThreadCount; ++i) {
-			executor.execute(Runnable(std::bind(&onDeleteAllMerkleBlocks, &databaseManager)));
-		}
-
-		while (1) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks("ela");
-		REQUIRE(list.size() == 0);
-		list = databaseManager.getAllMerkleBlocks("elas");
-		REQUIRE(list.size() == 0);
-		list = databaseManager.getAllMerkleBlocks("ELA");
-		REQUIRE(list.size() == 0);
-	}
-
-	SECTION("DatabaseManager putMerkleBlock thread test") {
-		bool result = databaseManager.deleteAllBlocks("ela");
-		REQUIRE(result == true);
-		thread_call_count = 0;
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onPutMerkleBlock, &databaseManager, i)));
-		}
-
-		while (1) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks("ela");
-		sort(list.begin(), list.end(), sortMerkleBlocks);
-		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			REQUIRE(list[i].blockHeight == i);
-			REQUIRE(list[i].blockBytes.GetSize() == 21);
-			for (int j = 0; j < 21; j++) {
-				REQUIRE(list[i].blockBytes[j] == s[j]);
-			}
-		}
-	}
-
-	SECTION("DatabaseManager putMerkleBlocks thread test") {
-		bool result = databaseManager.deleteAllBlocks("elas");
-		REQUIRE(result == true);
-		thread_call_count = 0;
-		BackgroundExecutor executor((uint8_t) totalThreadCount);
-		for (int i = 0; i < totalThreadCount; i++) {
-			executor.execute(Runnable(std::bind(&onPutMerkleBlocks, &databaseManager, i)));
-		}
-
-		while (1) {
-			if (thread_call_count >= totalThreadCount) {
-				break;
-			}
-		}
-
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks("elas");
-		std::sort(list.begin(), list.end(), sortMerkleBlocks);
-		uint8_t s[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24,
-		                 60, 75, 8, 182, 57, 98};
-		for (int i = 0; i < totalThreadCount * loopCount; i++) {
-			for (int j = 0; j < loopCount; j++) {
-				REQUIRE(list[i * loopCount + j].blockHeight == i);
-				REQUIRE(list[i * loopCount + j].blockBytes.GetSize() == 21);
-				for (int k = 0; k < 21; k++) {
-					REQUIRE(list[i * loopCount + j].blockBytes[k] == s[k]);
+	SECTION("Merkle Block test ") {
+#define TEST_MERKLEBLOCK_RECORD_CNT 20
+#define TEST_MERKLEBLOCK_DATALEN 75
+
+		static std::vector<MerkleBlockEntity> blocksToSave;
+
+		SECTION("Merkle Block prepare for testing") {
+			for (uint64_t i = 0; i < TEST_MERKLEBLOCK_RECORD_CNT; ++i) {
+				MerkleBlockEntity block;
+
+				CMBlock buff;
+				buff.Resize(TEST_MERKLEBLOCK_DATALEN);
+				for (uint64_t j = 0; j < TEST_MERKLEBLOCK_DATALEN; ++j) {
+					buff[j] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % TEST_MERKLEBLOCK_DATALEN);
 				}
+				buff[TEST_MERKLEBLOCK_DATALEN - 1] = 0;
+
+				block.blockBytes = buff;
+				block.blockHeight = static_cast<uint32_t>(i);
+
+				blocksToSave.push_back(block);
 			}
+		}
+
+		SECTION("Merkle Block save test") {
+			DatabaseManager *dbm = new DatabaseManager(DBFILE);
+			REQUIRE(dbm->putMerkleBlocks(ISO, blocksToSave));
+			delete dbm;
+		}
+
+		SECTION("Merkle Block read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<MerkleBlockEntity> blocksRead = dbm.getAllMerkleBlocks(ISO);
+			REQUIRE(blocksRead.size() == blocksToSave.size());
+			for (int i = 0; i < blocksRead.size(); ++i) {
+				REQUIRE(TEST_MERKLEBLOCK_DATALEN == blocksRead[i].blockBytes.GetSize());
+				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
+				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, TEST_MERKLEBLOCK_DATALEN));
+			}
+		}
+
+		SECTION("Merkle Block delete test") {
+			DatabaseManager dbm(DBFILE);
+
+			REQUIRE(dbm.deleteAllBlocks(ISO));
+
+			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.getAllMerkleBlocks(ISO);
+			REQUIRE(0 == blocksAfterDelete.size());
+		}
+
+		SECTION("Merkle Block save one by one test") {
+			DatabaseManager dbm(DBFILE);
+			for (int i = 0; i < blocksToSave.size(); ++i) {
+				REQUIRE(dbm.putMerkleBlock(ISO, blocksToSave[i]));
+			}
+		}
+
+		SECTION("Merkle Block read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<MerkleBlockEntity> blocksRead = dbm.getAllMerkleBlocks(ISO);
+			REQUIRE(blocksRead.size() == blocksToSave.size());
+			for (int i = 0; i < blocksRead.size(); ++i) {
+				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
+				REQUIRE(TEST_MERKLEBLOCK_DATALEN == blocksRead[i].blockBytes.GetSize());
+				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, TEST_MERKLEBLOCK_DATALEN));
+			}
+		}
+
+		SECTION("Merkle Block delete one by one test") {
+			DatabaseManager dbm(DBFILE);
+
+			std::vector<MerkleBlockEntity> blocksBeforeDelete = dbm.getAllMerkleBlocks(ISO);
+
+			for (int i = 0; i < blocksBeforeDelete.size(); ++i) {
+				REQUIRE(dbm.deleteMerkleBlock(ISO, blocksBeforeDelete[i]));
+			}
+
+			std::vector<MerkleBlockEntity> blocksAfterDelete = dbm.getAllMerkleBlocks(ISO);
+			REQUIRE(0 == blocksAfterDelete.size());
 		}
 	}
 
-	SECTION("DatabaseManager deleteMerkleBlock thread test") {
+#define TEST_PEER_RECORD_CNT 20
+	SECTION("Peer test") {
 
-		std::vector<MerkleBlockEntity> list = databaseManager.getAllMerkleBlocks("ela");
-		BackgroundExecutor executor((uint8_t) list.size());
-		thread_call_count = 0;
-		for (int i = 0; i < list.size(); i++) {
-			executor.execute(Runnable(std::bind(&onDeleteMerkleBlocksByEla, &databaseManager, list[i].id)));
+		static std::vector<PeerEntity> peerToSave;
+
+		SECTION("Peer Prepare for test") {
+			for (int i = 0; i < TEST_PEER_RECORD_CNT; i++) {
+				PeerEntity peer;
+				peer.address = ((UInt128) {'1', '2', '7', '.', '0', '.', '0', '.', (uint8_t)('0' + i), ':', '8', '0', '8', '0', '.', 0});
+				peer.port = static_cast<uint16_t>(8000 + i);
+				peer.timeStamp = static_cast<uint64_t>(1000 + i);
+				peerToSave.push_back(peer);
+			}
+
+			REQUIRE(TEST_PEER_RECORD_CNT == peerToSave.size());
 		}
 
-		while (1) {
-			if (thread_call_count >= list.size()) {
-				break;
+		SECTION("Peer save test") {
+			DatabaseManager dbm(DBFILE);
+			REQUIRE(dbm.putPeers(ISO, peerToSave));
+		}
+
+		SECTION("Peer read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<PeerEntity> peers = dbm.getAllPeers(ISO);
+			REQUIRE(peers.size() == TEST_PEER_RECORD_CNT);
+			for (int i = 0; i < peers.size(); i++) {
+				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
+				REQUIRE(peers[i].port == peerToSave[i].port);
+				REQUIRE(peers[i].timeStamp == peerToSave[i].timeStamp);
 			}
 		}
 
-		list = databaseManager.getAllMerkleBlocks("ela");
-		REQUIRE(list.size() == 0);
-
-		list = databaseManager.getAllMerkleBlocks("elas");
-		BackgroundExecutor executor1((uint8_t) list.size());
-		thread_call_count = 0;
-		for (int i = 0; i < list.size(); i++) {
-			executor.execute(Runnable(std::bind(&onDeleteMerkleBlocksByElas, &databaseManager, list[i].id)));
+		SECTION("Peer delete test") {
+			DatabaseManager *dbm = new DatabaseManager(DBFILE);
+			REQUIRE(dbm->deleteAllPeers(ISO));
+			std::vector<PeerEntity> peers = dbm->getAllPeers(ISO);
+			REQUIRE(peers.size() == 0);
+			delete dbm;
 		}
 
-		while (1) {
-			if (thread_call_count >= list.size()) {
-				break;
+		SECTION("Peer save one by one test") {
+			DatabaseManager dbm(DBFILE);
+			for (int i = 0; i < peerToSave.size(); ++i) {
+				REQUIRE(dbm.putPeer(ISO, peerToSave[i]));
 			}
 		}
 
-		list = databaseManager.getAllMerkleBlocks("elas");
-		REQUIRE(list.size() == 0);
+		SECTION("Peer read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<PeerEntity> peers = dbm.getAllPeers(ISO);
+			REQUIRE(peers.size() == TEST_PEER_RECORD_CNT);
+			for (int i = 0; i < peers.size(); i++) {
+				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
+				REQUIRE(peers[i].port == peerToSave[i].port);
+				REQUIRE(peers[i].timeStamp == peerToSave[i].timeStamp);
+			}
+		}
+
+		SECTION("Peer delete one by one test") {
+			DatabaseManager dbm(DBFILE);
+
+			std::vector<PeerEntity> PeersBeforeDelete = dbm.getAllPeers(ISO);
+			REQUIRE(PeersBeforeDelete.size() == TEST_PEER_RECORD_CNT);
+
+			for (int i = 0; i < PeersBeforeDelete.size(); ++i) {
+				REQUIRE(dbm.deletePeer(ISO, PeersBeforeDelete[i]));
+			}
+
+			std::vector<PeerEntity> PeersAfterDelete = dbm.getAllPeers(ISO);
+			REQUIRE(0 == PeersAfterDelete.size());
+		}
+
 	}
+
+#define TEST_TX_RECORD_CNT 20
+#define TEST_TX_DATALEN    75
+#define TEST_TX_HASH_LEN   256
+	SECTION("Transaction test") {
+		static std::vector<TransactionEntity> txToSave;
+		static std::vector<TransactionEntity> txToUpdate;
+
+		SECTION("Transaction prepare for testing") {
+			char buf[TEST_TX_HASH_LEN + 1];
+
+			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
+				TransactionEntity tx;
+
+				CMBlock buff;
+				buff.Resize(TEST_TX_DATALEN);
+				for (uint64_t j = 0; j < TEST_TX_DATALEN; ++j) {
+					buff[j] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % TEST_TX_DATALEN);
+				}
+				buff[TEST_TX_DATALEN - 1] = 0;
+
+				tx.buff = buff;
+				tx.blockHeight = static_cast<uint32_t>(i + 100);
+				tx.timeStamp = static_cast<uint32_t>(i + 200);
+				for (int j = 0; j < TEST_TX_HASH_LEN; j++) {
+					buf[j] = static_cast<char>(rand() % TEST_TX_DATALEN + TEST_ASCII_BEGIN);
+				}
+				tx.txHash = buf;
+				txToSave.push_back(tx);
+			}
+
+			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
+				TransactionEntity tx;
+
+				CMBlock buff;
+				buff.Resize(TEST_TX_DATALEN);
+				for (uint64_t j = 0; j < TEST_TX_DATALEN; ++j) {
+					buff[j] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % TEST_TX_DATALEN);
+				}
+				buff[TEST_TX_DATALEN - 1] = 0;
+
+				tx.buff = buff;
+				tx.blockHeight = static_cast<uint32_t>(i + 300);
+				tx.timeStamp = static_cast<uint32_t>(i + 400);
+				tx.txHash = txToSave[i].txHash;
+				txToUpdate.push_back(tx);
+			}
+		}
+
+		SECTION("Transaction save test") {
+			DatabaseManager dbm(DBFILE);
+			for (int i = 0; i < txToSave.size(); ++i) {
+				REQUIRE(dbm.putTransaction(ISO, txToSave[i]));
+			}
+		}
+
+		SECTION("Transaction read test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
+			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
+
+			for (int i = 0; i < readTx.size(); ++i) {
+				REQUIRE(TEST_TX_DATALEN == readTx[i].buff.GetSize());
+				REQUIRE(0 == memcmp(readTx[i].buff, txToSave[i].buff, TEST_TX_DATALEN));
+				REQUIRE(readTx[i].txHash == txToSave[i].txHash);
+				REQUIRE(readTx[i].timeStamp == txToSave[i].timeStamp);
+				REQUIRE(readTx[i].blockHeight == txToSave[i].blockHeight);
+			}
+		}
+
+		SECTION("Transaction udpate test") {
+			DatabaseManager dbm(DBFILE);
+
+			for (int i = 0; i < txToUpdate.size(); ++i) {
+				REQUIRE(dbm.updateTransaction(ISO, txToUpdate[i]));
+			}
+		}
+
+		SECTION("Transaction read after update test") {
+			DatabaseManager dbm(DBFILE);
+			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
+			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
+
+			for (int i = 0; i < readTx.size(); ++i) {
+				REQUIRE(TEST_TX_DATALEN == readTx[i].buff.GetSize());
+				REQUIRE(0 == memcmp(readTx[i].buff, txToUpdate[i].buff, TEST_TX_DATALEN));
+				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
+				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
+				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);
+			}
+		}
+
+		SECTION("Transaction delete by txHash test") {
+			DatabaseManager dbm(DBFILE);
+
+			for (int i = 0; i < txToUpdate.size(); ++i) {
+				REQUIRE(dbm.deleteTxByHash(ISO, txToUpdate[i].txHash));
+			}
+
+			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
+			REQUIRE(0 == readTx.size());
+		}
+
+	}
+
 }
-
-#endif

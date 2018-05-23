@@ -17,7 +17,7 @@ namespace Elastos {
 		}
 
 		DatabaseManager::DatabaseManager() :
-			DatabaseManager("wallet.db") {
+			DatabaseManager("spv_wallet.db") {
 
 		}
 

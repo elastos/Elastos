@@ -49,11 +49,11 @@ namespace Elastos {
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
 
-					SharedWrapperList<MerkleBlock, BRMerkleBlock *> coreBlocks;
+					SharedWrapperList<MerkleBlock, BRMerkleBlock *> *coreBlocks = new SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
-						coreBlocks.push_back(MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *)blocks[i]))));
+						coreBlocks->push_back(MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *)blocks[i]))));
 					}
-					listener->lock()->saveBlocks(replace, coreBlocks);
+					listener->lock()->saveBlocks(replace, *coreBlocks);
 				}
 			}
 
@@ -62,11 +62,11 @@ namespace Elastos {
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
 
-					WrapperList<Peer, BRPeer> corePeers;
+					SharedWrapperList<Peer, BRPeer*> *corePeers = new SharedWrapperList<Peer, BRPeer*>();
 					for (size_t i = 0; i < count; ++i) {
-						corePeers.push_back(Peer(peers[i]));
+						corePeers->push_back(PeerPtr(new Peer(peers[i])));
 					}
-					listener->lock()->savePeers(replace, corePeers);
+					listener->lock()->savePeers(replace, *corePeers);
 				}
 			}
 
@@ -105,12 +105,17 @@ namespace Elastos {
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
 								 const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
-								 const WrapperList<Peer, BRPeer> &peers,
+								 const SharedWrapperList<Peer, BRPeer*> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener) :
 				_wallet(wallet) {
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
+
+			BRPeer peerArray[peers.size()];
+			for (int i = 0; i < peers.size(); ++i) {
+				peerArray[i] = *peers[i]->getRaw();
+			}
 
 			_manager = BRPeerManagerNew(
 					params.getRaw(),
@@ -118,7 +123,7 @@ namespace Elastos {
 					earliestKeyTime,
 					blocks.getRawPointerArray().data(),
 					blocks.size(),
-					peers.getRawArray().data(),
+					peerArray,
 					peers.size(),
 					nullptr
 			);
