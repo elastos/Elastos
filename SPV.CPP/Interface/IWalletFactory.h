@@ -36,7 +36,7 @@ namespace Elastos {
 
 			virtual std::string ExportWalletWithMnemonic(
 					IMasterWallet *masterWallet,
-					const std::string &phrasePassword) = 0;
+					const std::string &exportMnemonic) = 0;
 		};
 
 	}

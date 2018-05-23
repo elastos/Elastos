@@ -10,6 +10,7 @@
 
 #include "Interface/ISubWallet.h"
 #include "Interface/ISubWalletCallback.h"
+#include "KeyStore/CoinInfo.h"
 #include "ChainParams.h"
 #include "WalletManager.h"
 
@@ -97,10 +98,7 @@ namespace Elastos {
 
 			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
 
-			SubWallet(const boost::filesystem::path &dbPath,
-					  uint32_t earliestPeerTime,
-					  int coinTypeIndex,
-					  bool singleAddress,
+			SubWallet(const CoinInfo &info,
 					  const ChainParams &chainParams,
 					  MasterWallet *parent);
 
@@ -110,10 +108,8 @@ namespace Elastos {
 
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;
-			//todo initialize balance unit from constructor
-			double _balanceUnit;
-			int _index;
 			MasterWallet *_parent;
+			CoinInfo _info;
 		};
 
 	}

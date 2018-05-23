@@ -12,10 +12,6 @@
 #include "Log.h"
 #include "Mnemonic.h"
 
-namespace fs = boost::filesystem;
-
-#define DB_FILE_EXTENSION ".db"
-
 namespace Elastos {
 	namespace SDK {
 
@@ -42,7 +38,7 @@ namespace Elastos {
 
 		ISubWallet *
 		MasterWallet::CreateSubWallet(const std::string &chainID, int coinTypeIndex, const std::string &payPassword,
-									  bool singleAddress) {
+									  bool singleAddress, double balanceUnit, uint64_t feePerKb) {
 
 			if (!Initialized()) {
 				Log::warn("Current master wallet is not initialized.");
@@ -52,20 +48,25 @@ namespace Elastos {
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
 
-			fs::path subWalletDbPath = _dbRoot;
-			subWalletDbPath /= _name + chainID + DB_FILE_EXTENSION;
-
-			SubWallet *subWallet = new SubWallet(subWalletDbPath, 0, coinTypeIndex, singleAddress,
-												 ChainParams::mainNet(), this);
+			CoinInfo info;
+			info.setEaliestPeerTime(0);
+			info.setIndex(coinTypeIndex);
+			info.setSingleAddress(singleAddress);
+			info.setUsedMaxAddressIndex(0);
+			info.setChainId(chainID);
+			info.setBalanceUnit(balanceUnit);
+			info.setFeePerKb(feePerKb);
+			SubWallet *subWallet = new SubWallet(info, ChainParams::mainNet(), this);
 			_createdWallets[chainID] = subWallet;
 			return subWallet;
 		}
 
 		ISubWallet *
 		MasterWallet::RecoverSubWallet(const std::string &chainID, int coinTypeIndex, const std::string &payPassword,
-									   bool singleAddress, int limitGap) {
+									   bool singleAddress, int limitGap, double balanceUnit, uint64_t feePerKb) {
 			ISubWallet *subWallet = _createdWallets.find(chainID) == _createdWallets.end()
-									? CreateSubWallet(chainID, coinTypeIndex, payPassword, singleAddress)
+									? CreateSubWallet(chainID, coinTypeIndex, payPassword, singleAddress, balanceUnit,
+													  feePerKb)
 									: _createdWallets[chainID];
 			SubWallet *walletInner = static_cast<SubWallet *>(subWallet);
 			walletInner->recover(limitGap);
@@ -98,8 +99,9 @@ namespace Elastos {
 
 			//todo get entropy from keystore
 			UInt128 entropy;
-			//todo get phrase password from key store
-			std::string phrasePass;
+			CMemBlock<unsigned char> phrasePassRaw = Utils::decrypt(Utils::convertToMemBlock<unsigned char>(
+					_keyStore.json().getEncryptedPhrasePassword()), payPassword);
+			std::string phrasePass = Utils::convertToString(phrasePassRaw);
 
 			initFromEntropy(entropy, phrasePass, payPassword);
 			return true;
@@ -108,7 +110,7 @@ namespace Elastos {
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
 											  const std::string &payPassword) {
 
-			if(!MasterPubKey::validateRecoveryPhrase(_mnemonic.words(), mnemonic)) {
+			if (!MasterPubKey::validateRecoveryPhrase(_mnemonic.words(), mnemonic)) {
 				Log::error("Invalid mnemonic.");
 				return false;
 			}
@@ -119,9 +121,14 @@ namespace Elastos {
 
 		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &keystorePath) {
 			if (_keyStore.json().getEncryptedPhrasePassword().empty())
-				_keyStore.json().setEncryptedPhrasePassword((const char *)(unsigned char *)_encryptedPhrasePass);
+				_keyStore.json().setEncryptedPhrasePassword((const char *) (unsigned char *) _encryptedPhrasePass);
 
-			if(!_keyStore.save(keystorePath, backupPassword)) {
+			_keyStore.json().clearCoinInfo();
+			std::for_each(_createdWallets.begin(), _createdWallets.end(), [this](const WalletMap::value_type &item) {
+				_keyStore.json().addCoinInfo(((SubWallet *) item.second)->_info);
+			});
+
+			if (!_keyStore.save(keystorePath, backupPassword)) {
 				Log::error("Export key error.");
 				return false;
 			}

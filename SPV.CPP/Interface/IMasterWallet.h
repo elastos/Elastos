@@ -16,14 +16,18 @@ namespace Elastos {
 					const std::string &chainID,
 					int coinTypeIndex,
 					const std::string &payPassword,
-					bool singleAddress) = 0;
+					bool singleAddress,
+					double balanceUnit = 1,
+					uint64_t feePerKb = 0) = 0;
 
 			virtual ISubWallet *RecoverSubWallet(
 					const std::string &chainID,
 					int coinTypeIndex,
 					const std::string &payPassword,
 					bool singleAddress,
-					int limitGap) = 0;
+					int limitGap,
+					double balanceUnit = 1,
+					uint64_t feePerKb = 0) = 0;
 
 			virtual void DestroyWallet(ISubWallet *wallet) = 0;
 

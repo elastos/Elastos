@@ -3,6 +3,11 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "SubWallet.h"
+#include "MasterWallet.h"
+
+namespace fs = boost::filesystem;
+
+#define DB_FILE_EXTENSION ".db"
 
 namespace Elastos {
 	namespace SDK {
@@ -20,20 +25,20 @@ namespace Elastos {
 
 		}
 
-		SubWallet::SubWallet(const boost::filesystem::path &dbPath,
-							 uint32_t earliestPeerTime,
-							 int coinTypeIndex,
-							 bool singleAddress,
+		SubWallet::SubWallet(const CoinInfo &info,
 							 const ChainParams &chainParams,
 							 MasterWallet *parent) :
-				_index(coinTypeIndex),
-				_parent(parent) {
+				_parent(parent),
+				_info(info) {
+
+			fs::path subWalletDbPath = _parent->_dbRoot;
+			subWalletDbPath /= _parent->_name + info.getChainId() + DB_FILE_EXTENSION;
 
 			//todo generate master public key of sub wallet
 			MasterPubKeyPtr masterPubKey;
 
 			_walletManager = WalletManagerPtr(new WalletManager(
-					masterPubKey, dbPath, earliestPeerTime, singleAddress, chainParams));
+					masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(), _info.getSingleAddress(), chainParams));
 			_walletManager->registerWalletListener(this);
 		}
 
@@ -47,7 +52,7 @@ namespace Elastos {
 		}
 
 		double SubWallet::GetBalance() {
-			return _walletManager->getWallet()->getBalance() / _balanceUnit;
+			return _walletManager->getWallet()->getBalance() / _info.getBalanceUnit();
 		}
 
 		std::string SubWallet::CreateAddress() {
