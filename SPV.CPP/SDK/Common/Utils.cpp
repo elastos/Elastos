@@ -4,6 +4,8 @@
 
 #include <sstream>
 #include <stdlib.h>
+#include <random>
+
 #include "assert.h"
 #include "Utils.h"
 #include "AES_256_CCM.h"
@@ -97,7 +99,12 @@ namespace Elastos {
 
 		UInt128 Utils::generateRandomSeed() {
 			UInt128 result;
-			//todo [zxb] complete me
+			std::random_device rd;   // non-deterministic generator
+			std::mt19937 gen(rd());  // to seed mersenne twister.
+			std::uniform_int_distribution<> dist(0, 255); // distribute results between 0 and 255 inclusive.
+			for (size_t i = 0; i < sizeof(result); ++i) {
+				result.u8[i] = dist(gen);
+			}
 			return result;
 		}
 

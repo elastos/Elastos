@@ -4,13 +4,11 @@
 
 #include <BRBase58.h>
 #include "BRBIP39Mnemonic.h"
-
 #include "Utils.h"
 #include "MasterPubKey.h"
 #include "MasterWallet.h"
 #include "SubWallet.h"
 #include "Log.h"
-#include "Mnemonic.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -136,12 +134,14 @@ namespace Elastos {
 			return true;
 		}
 
-		bool MasterWallet::exportMnemonic(const std::string &phrasePassword, std::string &mnemonic) {
+		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
 			//todo compare phrase password with phrase hash first
 
 			//todo [zxb] entropy from _encryptedEntropy
-			UInt128 entropy;
+			CMemBlock<unsigned char> entropyBytes = Utils::decrypt(_encryptedEntropy, payPassword);
+			UInt128 entropy = UINT128_ZERO;
+			memcpy(entropy.u8, entropyBytes, sizeof(entropyBytes));
 			mnemonic = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
 			return true;
 		}
@@ -159,6 +159,7 @@ namespace Elastos {
 
 		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
 										  const std::string &payPassword) {
+			assert(phrase.size() > 0);
 			UInt512 key = UINT512_ZERO;
 			BRBIP39DeriveKey(key.u8, phrase.c_str(), phrasePassword.c_str());
 
@@ -166,13 +167,40 @@ namespace Elastos {
 			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
 
 			//todo [zxb] init _encryptedEntropy by phrase
+			UInt128 entropy = UINT128_ZERO;
+
+			std::vector<std::string> words = _mnemonic.words();
+			size_t len = words.size();
+			const char *wordList[len];
+			for (size_t i = 0; i < len; ++i) {
+				wordList[i] = words[i].c_str();
+			}
+
+			BRBIP39Decode(entropy.u8, sizeof(entropy), wordList, phrase.c_str());
+
+			CMemBlock<unsigned char> entropyBytes(sizeof(entropy));
+			memcpy(entropyBytes, entropy.u8, sizeof(entropy));
+			_encryptedEntropy = Utils::encrypt(entropyBytes, payPassword);
 
 			//todo [zxb] init master public key and private key
-			CMemBlock<unsigned char> privKey;
-			_encryptedKey = Utils::encrypt(privKey, payPassword);
-
 			initPublicKey(payPassword);
 
+			CMBlock phraseBlock(phrase.size() + 1);
+			phraseBlock[phrase.size()] = '\0';
+			memcpy(phraseBlock, phrase.c_str(), phrase.size());
+			CMBlock seed = Key::getSeedFromPhrase(phraseBlock, phrasePassword);
+
+			CMBlock privKey = Key::getAuthPrivKeyForAPI(seed);
+
+			CMemBlock<unsigned char> secretKey(privKey.GetSize());
+			memcpy(secretKey, privKey, privKey.GetSize());
+
+			_encryptedKey = Utils::encrypt(secretKey, payPassword);
+
+			MasterPubKeyPtr masterPubKey = MasterPubKeyPtr(new MasterPubKey(phrase, phrasePassword));
+			CMBlock pubKey = masterPubKey->getPubKey();
+			pubKey[pubKey.GetSize() + 1] = '\0';
+			_publicKey = (char *)(void *)pubKey;
 			return false;
 		}
 
@@ -180,7 +208,10 @@ namespace Elastos {
 			CMemBlock<unsigned char> keyData = Utils::decrypt(_encryptedKey, payPassword);
 
 			//todo [zxb] key data to key
-			return Key();
+			Key key;
+			std::string secret = (char *)(void *)keyData;
+			key.setPrivKey(secret);
+			return key;
 		}
 
 		void MasterWallet::initPublicKey(const std::string &payPassword) {
@@ -201,7 +232,10 @@ namespace Elastos {
 			CMBlock messageData;
 			messageData.SetMemFixed((const uint8_t *)message.data(), message.size());
 		 	CMBlock signedData = key.compactSign(messageData);
-			return Utils::convertToString(signedData);
+			signedData[signedData.GetSize() + 1] = '\0';
+			std::string singedMsg = (char *)(void *)signedData;
+
+			return singedMsg;
 		}
 
 		nlohmann::json

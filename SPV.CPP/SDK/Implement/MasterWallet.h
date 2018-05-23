@@ -79,7 +79,7 @@ namespace Elastos {
 			bool exportKeyStore(const std::string &backupPassword,
 								const std::string &keystorePath);
 
-			bool exportMnemonic(const std::string &phrasePassword,
+			bool exportMnemonic(const std::string &payPassword,
 								std::string &mnemonic);
 
 			bool initFromEntropy(const UInt128 &entropy,

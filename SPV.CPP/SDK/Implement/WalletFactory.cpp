@@ -62,7 +62,7 @@ namespace Elastos {
 		}
 
 		std::string
-		WalletFactory::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &phrasePassword) {
+		WalletFactory::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 			if (wallet->Initialized() || _masterWallets.find(wallet->GetName()) == _masterWallets.end()) {
 				Log::warn("Exporting failed, check if the wallet has been initialized.");
@@ -70,7 +70,7 @@ namespace Elastos {
 			}
 
 			std::string mnemonic;
-			if (wallet->exportMnemonic(phrasePassword, mnemonic)) {
+			if (wallet->exportMnemonic(payPassword, mnemonic)) {
 				return mnemonic;
 			}
 			return "";
