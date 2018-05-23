@@ -15,6 +15,9 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const ValueNone = 0
+const ValueExist = 1
+
 const TaskChanCap = 4
 
 var (
@@ -214,6 +217,16 @@ func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 	}
 }
 
+func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash string) bool {
+	prefix := []byte{byte(IX_SideChain_Tx)}
+	_, err := c.Get(append(prefix, []byte(sidechainTxHash)...))
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
 func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 	if len(txn.Inputs) == 0 {
 		return false
@@ -362,6 +375,25 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	}
 
 	return asset, nil
+}
+
+func (c *ChainStore) PersistSidechainTx(sidechainTxHash string) error {
+	key := []byte{byte(IX_SideChain_Tx)}
+	key = append(key, []byte(sidechainTxHash)...)
+
+	// PUT VALUE
+	c.BatchPut(key, []byte{byte(ValueExist)})
+	return nil
+}
+
+func (c *ChainStore) GetSidechainTx(sidechainTxHash string) (byte, error) {
+	key := []byte{byte(IX_SideChain_Tx)}
+	data, err := c.Get(append(key, []byte(sidechainTxHash)...))
+	if err != nil {
+		return ValueNone, err
+	}
+
+	return data[0], nil
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
