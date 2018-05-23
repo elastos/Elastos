@@ -7,10 +7,10 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
-	"strconv"
 )
 
 const (

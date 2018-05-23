@@ -2,9 +2,6 @@ package sdk
 
 import (
 	"errors"
-	"fmt"
-	"strings"
-
 	"github.com/elastos/Elastos.ELA.SPV/net"
 )
 
@@ -31,7 +28,7 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string, port uint16
 	client := new(P2PClientImpl)
 
 	// Initialize peer manager
-	client.peerManager = net.InitPeerManager(magic, toSPVAddr(seeds), maxOutbound, maxConnections, local)
+	client.peerManager = net.InitPeerManager(magic, seeds, maxOutbound, maxConnections, local)
 
 	return client, nil
 }
@@ -39,20 +36,6 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string, port uint16
 func (client *P2PClientImpl) Start() {
 	// Start
 	client.peerManager.Start()
-}
-
-// Convert seed addresses to SPVServerPort according to the SPV protocol
-func toSPVAddr(seeds []string) []string {
-	var addrs = make([]string, len(seeds))
-	for i, seed := range seeds {
-		portIndex := strings.LastIndex(seed, ":")
-		if portIndex > 0 {
-			addrs[i] = fmt.Sprint(string([]byte(seed)[:portIndex]), ":", SPVServerPort)
-		} else {
-			addrs[i] = fmt.Sprint(seed, ":", SPVServerPort)
-		}
-	}
-	return addrs
 }
 
 func (client *P2PClientImpl) PeerManager() *net.PeerManager {

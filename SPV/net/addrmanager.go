@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"encoding/json"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"time"
 )
 

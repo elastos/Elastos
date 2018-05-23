@@ -5,9 +5,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"net"
-	"strings"
-	"strconv"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 const (

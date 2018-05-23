@@ -39,8 +39,8 @@ type PeerManager struct {
 	magic uint32
 	*Peers
 	MessageHandler
-	am    *AddrManager
-	cm    *ConnManager
+	am *AddrManager
+	cm *ConnManager
 }
 
 func InitPeerManager(magic uint32, seeds []string, maxOutbound, maxConnections int, localPeer *Peer) *PeerManager {

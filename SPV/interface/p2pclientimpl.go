@@ -14,10 +14,10 @@ type P2PClientImpl struct {
 
 func NewP2PClientImpl(magic uint32, seeds []string, maxOutbound, maxConnections int) *P2PClientImpl {
 	return &P2PClientImpl{
-		magic:magic,
-		seeds:seeds,
-		maxOutbound:maxOutbound,
-		maxConnections:maxConnections,
+		magic:          magic,
+		seeds:          seeds,
+		maxOutbound:    maxOutbound,
+		maxConnections: maxConnections,
 	}
 }
 
