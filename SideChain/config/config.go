@@ -67,6 +67,7 @@ type PowConfiguration struct {
 
 type Configuration struct {
 	Magic               uint32           `json:"Magic"`
+	SpvMagic            uint32           `json:"SpvMagic"`
 	Version             int              `json:"Version"`
 	SeedList            []string         `json:"SeedList"`
 	SpvSeedList         []string         `json:"SpvSeedList"`

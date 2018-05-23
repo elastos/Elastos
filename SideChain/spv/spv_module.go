@@ -18,10 +18,12 @@ var spvService _interface.SPVService
 
 func SpvInit() error {
 	spvlog.Init()
-	spvService, err := _interface.NewSPVService(config.Parameters.Magic, uint64(rand.Int63()), config.Parameters.SpvSeedList)
+	service, err := _interface.NewSPVService(config.Parameters.SpvMagic,
+		uint64(rand.Int63()), config.Parameters.SpvSeedList)
 	if err != nil {
 		return err
 	}
+	spvService = service
 	go func() {
 		if err := spvService.Start(); err != nil {
 			log.Info("spvService start failed ：", err)

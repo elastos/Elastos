@@ -1,6 +1,7 @@
 ﻿{
   "Configuration": {
-    "Magic": 7630401,
+    "Magic": 7630402,
+    "SpvMagic": 7630401,
     "Version": 23,
     "SeedList": [
       "127.0.0.1:30338"
