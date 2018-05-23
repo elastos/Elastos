@@ -5,26 +5,37 @@ import (
 )
 
 type P2PClientImpl struct {
-	magic uint32
-	seeds []string
-	pm    *net.PeerManager
+	magic          uint32
+	seeds          []string
+	maxOutbound    int
+	maxConnections int
+	pm             *net.PeerManager
 }
 
-func (client *P2PClientImpl) InitLocalPeer(initLocal func(peer *net.Peer)) {
+func NewP2PClientImpl(magic uint32, seeds []string, maxOutbound, maxConnections int) *P2PClientImpl {
+	return &P2PClientImpl{
+		magic:magic,
+		seeds:seeds,
+		maxOutbound:maxOutbound,
+		maxConnections:maxConnections,
+	}
+}
+
+func (c *P2PClientImpl) InitLocalPeer(initLocal func(peer *net.Peer)) {
 	// Create peer manager of the P2P network
 	local := new(net.Peer)
 	initLocal(local)
-	client.pm = net.InitPeerManager(client.magic, local, client.seeds)
+	c.pm = net.InitPeerManager(c.magic, c.seeds, c.maxOutbound, c.maxConnections, local)
 }
 
-func (client *P2PClientImpl) SetMessageHandler(msgHandler net.MessageHandler) {
-	client.pm.SetMessageHandler(msgHandler)
+func (c *P2PClientImpl) SetMessageHandler(msgHandler net.MessageHandler) {
+	c.pm.SetMessageHandler(msgHandler)
 }
 
-func (client *P2PClientImpl) Start() {
-	client.pm.Start()
+func (c *P2PClientImpl) Start() {
+	c.pm.Start()
 }
 
-func (client *P2PClientImpl) PeerManager() *net.PeerManager {
-	return client.pm
+func (c *P2PClientImpl) PeerManager() *net.PeerManager {
+	return c.pm
 }

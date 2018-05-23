@@ -34,17 +34,16 @@ type Peer struct {
 }
 
 func (peer *Peer) String() string {
-	return fmt.Sprint("\nPeer: {",
-		"\n\tID:", peer.id,
-		"\n\tVersion:", peer.version,
-		"\n\tServices:", peer.services,
-		"\n\tPort:", peer.port,
-		"\n\tLastActive:", peer.lastActive,
-		"\n\tHeight:", peer.height,
-		"\n\tRelay:", peer.relay,
-		"\n\tState:", peer.PeerState.String(),
-		"\n\tAddr:", peer.Addr().String(),
-		"\n}")
+	return fmt.Sprint(
+		"ID:", peer.id,
+		", Version:", peer.version,
+		", Services:", peer.services,
+		", Port:", peer.port,
+		", LastActive:", peer.lastActive,
+		", Height:", peer.height,
+		", Relay:", peer.relay,
+		", State:", peer.PeerState.String(),
+		", Addr:", peer.Addr().String())
 }
 
 func (peer *Peer) ID() uint64 {

@@ -21,6 +21,6 @@ type P2PClient interface {
 // and client id is the unique id to identify the current peer in this peer to peer network.
 // seeds is a list which is the other peers IP:[Port] addresses,
 // port is not necessary for it will be overwrite to SPVServerPort according to the SPV protocol
-func GetP2PClient(magic uint32, clientId uint64, seeds []string) (P2PClient, error) {
-	return NewP2PClientImpl(magic, clientId, seeds)
+func GetP2PClient(magic uint32, clientId uint64, seeds []string, maxOutbound, maxConnections int) (P2PClient, error) {
+	return NewP2PClientImpl(magic, clientId, seeds, maxOutbound, maxConnections)
 }

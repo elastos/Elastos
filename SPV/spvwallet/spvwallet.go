@@ -1,13 +1,14 @@
 package spvwallet
 
 import (
+	"sync"
+	"time"
+
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
-	"sync"
-	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -17,6 +18,7 @@ import (
 const (
 	MaxUnconfirmedTime = time.Minute * 30
 	MaxTxIdCached      = 1000
+	MaxConnections     = 12
 )
 
 func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
@@ -39,7 +41,7 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	wallet.txIds = NewTxIdCache(MaxTxIdCached)
 
 	// Initialize P2P network client
-	client, err := sdk.GetSPVClient(config.Values().Magic, clientId, seeds)
+	client, err := sdk.GetSPVClient(config.Values().Magic, clientId, seeds, MaxConnections, MaxConnections)
 	if err != nil {
 		return nil, err
 	}

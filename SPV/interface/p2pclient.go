@@ -22,9 +22,6 @@ type P2PClient interface {
 	PeerManager() *net.PeerManager
 }
 
-func NewP2PClient(magic uint32, seeds []string) P2PClient {
-	client := new(P2PClientImpl)
-	client.magic = magic
-	client.seeds = seeds
-	return client
+func NewP2PClient(magic uint32, seeds []string, maxOutbound, maxConnections int) P2PClient {
+	return NewP2PClientImpl(magic, seeds, maxOutbound, maxConnections)
 }

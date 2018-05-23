@@ -64,6 +64,6 @@ type TransactionListener interface {
 	Rollback(height uint32)
 }
 
-func NewSPVService(magic uint32, clientId uint64, seeds []string) (SPVService, error) {
-	return NewSPVServiceImpl(magic, clientId, seeds)
+func NewSPVService(magic uint32, clientId uint64, seeds []string, maxOutbound, maxConnections int) (SPVService, error) {
+	return NewSPVServiceImpl(magic, clientId, seeds, maxOutbound, maxConnections)
 }

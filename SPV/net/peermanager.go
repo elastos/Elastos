@@ -3,10 +3,11 @@ package net
 import (
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SPV/log"
 	"net"
 	"strings"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -16,7 +17,6 @@ const (
 	MinConnCount       = 4
 	InfoUpdateDuration = 5
 	KeepAliveTimeout   = 3
-	MaxOutboundCount   = 6
 )
 
 // Handle the message creation, allocation etc.
@@ -39,17 +39,17 @@ type PeerManager struct {
 	magic uint32
 	*Peers
 	MessageHandler
-	addrManager *AddrManager
-	connManager *ConnManager
+	am    *AddrManager
+	cm    *ConnManager
 }
 
-func InitPeerManager(magic uint32, localPeer *Peer, seeds []string) *PeerManager {
+func InitPeerManager(magic uint32, seeds []string, maxOutbound, maxConnections int, localPeer *Peer) *PeerManager {
 	// Initiate PeerManager
 	pm := new(PeerManager)
 	pm.magic = magic
 	pm.Peers = newPeers(localPeer)
-	pm.addrManager = newAddrManager(seeds)
-	pm.connManager = newConnManager(pm)
+	pm.am = newAddrManager(seeds, maxOutbound)
+	pm.cm = newConnManager(maxConnections, pm.OnPeerConnected)
 	return pm
 }
 
@@ -61,6 +61,8 @@ func (pm *PeerManager) Start() {
 	log.Info("PeerManager start")
 	go pm.keepConnections()
 	go pm.listenConnection()
+	go pm.am.monitorAddresses()
+	go pm.cm.monitorConnections()
 }
 
 func (pm *PeerManager) NewPeer(conn net.Conn) *Peer {
@@ -78,14 +80,6 @@ func getIp(conn net.Conn) []byte {
 	return net.ParseIP(string([]byte(addr)[:portIndex])).To16()
 }
 
-func (pm *PeerManager) NeedMorePeers() bool {
-	return pm.PeersCount() < MinConnCount
-}
-
-func (pm *PeerManager) ConnectPeer(addr string) {
-	pm.connManager.Connect(addr)
-}
-
 func (pm *PeerManager) OnPeerConnected(conn net.Conn) {
 	// Start read msg from remote peer
 	remote := pm.NewPeer(conn)
@@ -100,14 +94,8 @@ func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
 	log.Trace("PeerManager add connected peer:", peer)
 	// Add peer to list
 	pm.Peers.AddPeer(peer)
-
-	addr := peer.Addr().String()
-
-	// Remove addr from connecting list
-	pm.connManager.removeAddrFromConnectingList(addr)
-
 	// Mark addr as connected
-	pm.addrManager.AddAddr(addr)
+	pm.am.AddressConnected(peer.Addr())
 }
 
 func (pm *PeerManager) OnDisconnected(peer *Peer) {
@@ -117,41 +105,22 @@ func (pm *PeerManager) OnDisconnected(peer *Peer) {
 	log.Trace("PeerManager peer disconnected:", peer.String())
 	peer, ok := pm.RemovePeer(peer.ID())
 	if ok {
-		addr := peer.Addr().String()
-		peer.Disconnect()
-		pm.connManager.removeAddrFromConnectingList(addr)
-		pm.addrManager.DisconnectedAddr(addr)
+		na := peer.Addr()
+		addr := na.String()
+		pm.cm.Disconnected(addr)
+		pm.am.AddressDisconnect(na)
 	}
-}
-
-func (pm *PeerManager) DiscardAddr(addr string) {
-	pm.addrManager.DiscardAddr(addr)
-}
-
-func (pm *PeerManager) RandAddrs() []p2p.NetAddress {
-	peers := pm.ConnectedPeers()
-
-	log.Info("Rand peer addrs, connected peers:", peers)
-	count := len(peers)
-	if count > MaxOutboundCount {
-		count = MaxOutboundCount
-	}
-
-	addrs := make([]p2p.NetAddress, count)
-	for count > 0 {
-		count--
-		addrs = append(addrs, *peers[count].Addr())
-	}
-
-	return addrs
 }
 
 func (pm *PeerManager) connectPeers() {
-	if pm.NeedMorePeers() {
-		addrs := pm.addrManager.GetIdleAddrs(MaxOutboundCount)
-		for _, addr := range addrs {
-			go pm.ConnectPeer(addr)
+	if pm.PeersCount() < MinConnCount {
+		for _, addr := range pm.am.GetOutboundAddresses() {
+			go pm.cm.Connect(addr.String())
 		}
+	}
+
+	if pm.am.NeedMoreAddresses() {
+		go pm.Broadcast(new(msg.GetAddr))
 	}
 }
 
@@ -224,7 +193,6 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 	if v.Nonce == pm.Local().ID() {
 		log.Error("SPV disconnect peer, peer handshake with itself")
 		peer.Disconnect()
-		pm.DiscardAddr(peer.Addr().String())
 		return errors.New("Peer handshake with itself")
 	}
 
@@ -240,8 +208,6 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 		knownPeer.Disconnect()
 	}
 
-	log.Info("Is known peer:", ok)
-
 	// Handle peer handshake
 	if err := pm.MessageHandler.OnHandshake(v); err != nil {
 		pm.OnDisconnected(peer)
@@ -250,6 +216,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 
 	// Set peer info with version message
 	peer.SetInfo(v)
+	pm.am.AddOrUpdateAddress(peer.Addr())
 
 	var message p2p.Message
 	if peer.State() == p2p.INIT {
@@ -282,7 +249,7 @@ func (pm *PeerManager) OnVerAck(peer *Peer, va *msg.VerAck) error {
 	// Notify peer connected
 	pm.MessageHandler.OnPeerEstablish(peer)
 
-	if pm.NeedMorePeers() {
+	if pm.am.NeedMoreAddresses() {
 		peer.Send(new(msg.GetAddr))
 	}
 
@@ -303,17 +270,14 @@ func (pm *PeerManager) OnAddrs(peer *Peer, addr *msg.Addr) error {
 		if addr.Port == 0 {
 			continue
 		}
-		// Handle new address
-		if pm.NeedMorePeers() {
-			pm.ConnectPeer(addr.String())
-		}
+		// Save to address list
+		pm.am.AddOrUpdateAddress(&addr)
 	}
 
 	return nil
 }
 
 func (pm *PeerManager) OnAddrsReq(peer *Peer, req *msg.GetAddr) error {
-	addrs := pm.RandAddrs()
-	peer.Send(msg.NewAddr(addrs))
+	peer.Send(msg.NewAddr(pm.am.RandGetAddresses()))
 	return nil
 }

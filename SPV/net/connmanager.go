@@ -14,24 +14,21 @@ const (
 	MaxRetryCount = 5
 )
 
-type ConnectHandler interface {
-	OnPeerConnected(conn net.Conn)
-	DiscardAddr(addr string)
-}
-
 type ConnManager struct {
 	sync.Mutex
-
-	connList  []string
-	retryList map[string]int
-
-	handler ConnectHandler
+	maxConnections  int
+	connList        []string
+	retryList       map[string]int
+	connections     map[string]net.Conn
+	onPeerConnected func(conn net.Conn)
 }
 
-func newConnManager(handler ConnectHandler) *ConnManager {
+func newConnManager(maxConnections int, onPeerConnected func(conn net.Conn)) *ConnManager {
 	cm := new(ConnManager)
 	cm.retryList = make(map[string]int)
-	cm.handler = handler
+	cm.connections = make(map[string]net.Conn)
+	cm.maxConnections = maxConnections
+	cm.onPeerConnected = onPeerConnected
 	return cm
 }
 
@@ -39,8 +36,8 @@ func (cm *ConnManager) Connect(addr string) {
 	cm.Lock()
 	defer cm.Unlock()
 
-	if cm.inConnList(addr) {
-		log.Info("ConnManager addr in connection list,", addr)
+	if cm.isConnecting(addr) {
+		log.Infof("ConnManager %s is connecting,", addr)
 		return
 	}
 
@@ -48,7 +45,7 @@ func (cm *ConnManager) Connect(addr string) {
 	go cm.connectPeer(addr)
 }
 
-func (cm *ConnManager) inConnList(addr string) bool {
+func (cm *ConnManager) isConnecting(addr string) bool {
 	for _, connAddr := range cm.connList {
 		if connAddr == addr {
 			return true
@@ -57,7 +54,7 @@ func (cm *ConnManager) inConnList(addr string) bool {
 	return false
 }
 
-func (cm *ConnManager) removeAddrFromConnectingList(addr string) {
+func (cm *ConnManager) disConnecting(addr string) {
 	delete(cm.retryList, addr)
 	for i, connAddr := range cm.connList {
 		if connAddr == addr {
@@ -65,6 +62,16 @@ func (cm *ConnManager) removeAddrFromConnectingList(addr string) {
 			return
 		}
 	}
+}
+
+func (cm *ConnManager) Disconnected(addr string) {
+	cm.Lock()
+	defer cm.Unlock()
+
+	cm.disConnecting(addr)
+	conn := cm.connections[addr]
+	conn.Close()
+	delete(cm.connections, addr)
 }
 
 func (cm *ConnManager) connectPeer(addr string) {
@@ -75,7 +82,12 @@ func (cm *ConnManager) connectPeer(addr string) {
 		return
 	}
 
-	cm.handler.OnPeerConnected(conn)
+	// Dis connecting address
+	cm.disConnecting(addr)
+	// Add to connection list
+	cm.connections[addr] = conn
+	// Callback connection
+	cm.onPeerConnected(conn)
 }
 
 func (cm *ConnManager) retry(addr string) {
@@ -88,10 +100,8 @@ func (cm *ConnManager) retry(addr string) {
 	}
 	log.Info("Put into retry queue, retry times:", retryTimes)
 	if retryTimes > MaxRetryCount {
-		cm.removeAddrFromConnectingList(addr)
+		cm.disConnecting(addr)
 		cm.Unlock()
-		// Discard useless address
-		cm.handler.DiscardAddr(addr)
 		return
 	}
 	cm.retryList[addr] = retryTimes
@@ -100,4 +110,20 @@ func (cm *ConnManager) retry(addr string) {
 	log.Info("Wait for retry ", addr)
 	time.Sleep(time.Second * RetryDuration)
 	cm.connectPeer(addr)
+}
+
+func (cm *ConnManager) monitorConnections() {
+	ticker := time.NewTicker(InfoUpdateDuration)
+	for range ticker.C {
+		cm.Lock()
+		for len(cm.connections) > cm.maxConnections {
+			// Random close a connection
+			for addr, conn := range cm.connections {
+				conn.Close()
+				delete(cm.connections, addr)
+				break // back to connections count check
+			}
+		}
+		cm.Unlock()
+	}
 }

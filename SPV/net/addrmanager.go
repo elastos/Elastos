@@ -4,157 +4,184 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"encoding/json"
+	"time"
 )
 
 const (
-	CachedAddrsFile = "addrs.cache"
+	AddrLocalCache = "addrs.cache"
+	// needAddressThreshold is the number of addresses under which the
+	// address manager will claim to need more addresses.
+	needAddressThreshold = 1000
+	// addressListMonitorDuration is the time gap to check and remove
+	// any bad addresses from address list
+	addressListMonitorDuration = time.Hour * 12
 )
 
 type AddrManager struct {
 	sync.RWMutex
-	seeds     []string
-	cached    []string
-	connected map[string]byte
+	maxOutbound int
+	addrList    map[string]*knownAddress
+	connected   map[string]*knownAddress
 }
 
-func newAddrManager(seeds []string) *AddrManager {
-	am := &AddrManager{
-		seeds:     make([]string, 0),
-		cached:    make([]string, 0),
-		connected: make(map[string]byte),
-	}
+func newAddrManager(seeds []string, maxOutbound int) *AddrManager {
+	am := new(AddrManager)
+	am.maxOutbound = maxOutbound
+	am.addrList = make(map[string]*knownAddress)
+	am.connected = make(map[string]*knownAddress)
 
-	// Read seed list from config file
-	for _, addr := range seeds {
-		am.seeds = append(am.seeds, addr)
-	}
-
+	var addrList []string
 	// Read cached addresses from file
-	data, err := ioutil.ReadFile(CachedAddrsFile)
-	if err != nil {
-		return am
+	data, err := ioutil.ReadFile(AddrLocalCache)
+	if err == nil {
+		json.Unmarshal(data, &addrList)
 	}
-	addrs := strings.Split(strings.TrimSpace(string(data)), "\n")
-
-	for _, addr := range addrs {
-		if len(strings.TrimSpace(addr)) != 0 {
-			am.cached = append(am.cached, addr)
+	// Add seeds to address list
+	addrList = append(addrList, seeds...)
+	for _, addr := range addrList {
+		// Only add valid address
+		if ka := NewKnownAddress(addr); ka != nil {
+			am.addrList[addr] = ka
 		}
 	}
 
 	return am
 }
 
-func (am *AddrManager) GetIdleAddrs(count int) []string {
-	addrMap := make(map[string]string)
+func (am *AddrManager) NeedMoreAddresses() bool {
+	return len(am.addrList) < needAddressThreshold
+}
 
-	for _, seed := range am.seeds {
-		if am.isConnected(seed) {
+func (am *AddrManager) GetOutboundAddresses() []p2p.NetAddress {
+	am.Lock()
+	defer am.Unlock()
+
+	var addrs []p2p.NetAddress
+	addrListByChance := SortAddressMap(am.addrList)
+	for _, addr := range addrListByChance {
+		// Skip connected address
+		if _, ok := am.connected[addr.String()]; ok {
 			continue
 		}
-		addrMap[seed] = seed
-	}
-
-	for _, cache := range am.cached {
-		if am.isConnected(cache) {
+		addr.increaseAttempts()
+		addr.updateLastAttempt()
+		// Skip bad address
+		if addr.isBad() {
 			continue
 		}
-		addrMap[cache] = cache
-	}
-
-	totalAddrs := len(addrMap)
-	if count > totalAddrs {
-		count = totalAddrs
-	}
-
-	randAddrs := make([]string, count)
-	for addr := range addrMap {
-		count--
-		randAddrs[count] = addr
-		if count == 0 {
+		addrs = append(addrs, addr.NetAddress)
+		if len(addrs) >= am.maxOutbound {
 			break
 		}
 	}
-
-	return randAddrs
+	return addrs
 }
 
-func (am *AddrManager) AddAddr(addr string) {
+func (am *AddrManager) RandGetAddresses() []p2p.NetAddress {
 	am.Lock()
 	defer am.Unlock()
 
-	am.connected[addr] = 'c'
+	var addrs []p2p.NetAddress
+	for _, addr := range am.addrList {
+		if addr.isBad() {
+			continue
+		}
+		addrs = append(addrs, addr.NetAddress)
+		if len(addrs) >= am.maxOutbound {
+			break
+		}
+	}
+	return addrs
+}
 
-	if !am.isSeed(addr) && !am.isCached(addr) {
-		am.cached = append(am.cached, addr)
-		am.saveCached()
+func (am *AddrManager) AddressConnected(na *p2p.NetAddress) {
+	am.Lock()
+	defer am.Unlock()
+
+	addr := na.String()
+	// Try add to address list
+	am.addOrUpdateAddress(na)
+	if _, ok := am.connected[addr]; !ok {
+		ka := am.addrList[addr]
+		ka.SaveAddr(na)
+		am.connected[addr] = ka
 	}
 }
 
-func (am *AddrManager) DisconnectedAddr(addr string) {
+func (am *AddrManager) AddressDisconnect(na *p2p.NetAddress) {
 	am.Lock()
 	defer am.Unlock()
 
+	addr := na.String()
+	// Update disconnect time
+	ka := am.addrList[addr]
+	ka.updateLastDisconnect()
+	// Delete from connected list
 	delete(am.connected, addr)
 }
 
-func (am *AddrManager) DiscardAddr(addr string) {
+func (am *AddrManager) AddOrUpdateAddress(na *p2p.NetAddress) {
 	am.Lock()
 	defer am.Unlock()
 
-	log.Info("AddrManager discard addr:", addr)
-	for i, cache := range am.cached {
-		if cache == addr {
-			am.cached = append(am.cached[:i], am.cached[i+1:]...)
-			am.saveCached()
-			return
-		}
-	}
+	am.addOrUpdateAddress(na)
 }
 
-func (am *AddrManager) isSeed(addr string) bool {
-	for _, seed := range am.seeds {
-		if seed == addr {
-			return true
-		}
+func (am *AddrManager) addOrUpdateAddress(na *p2p.NetAddress) {
+	addr := na.String()
+	// Update already known address
+	if ka, ok := am.addrList[addr]; ok {
+		ka.SaveAddr(na)
+		return
 	}
-	return false
+	ka := new(knownAddress)
+	ka.SaveAddr(na)
+	// Add to address list
+	am.addrList[addr] = ka
+	// Save to local
+	am.saveToLocal()
 }
 
-func (am *AddrManager) isCached(addr string) bool {
-	for _, cached := range am.cached {
-		if cached == addr {
-			return true
-		}
-	}
-	return false
-}
-
-func (am *AddrManager) isConnected(addr string) bool {
-	_, ok := am.connected[addr]
-	return ok
-}
-
-func (am *AddrManager) saveCached() {
-	var cached string
-	for _, addr := range am.cached {
-		cached += string(addr)
-		cached += "\n"
+func (am *AddrManager) saveToLocal() {
+	var addrList []string
+	for _, addr := range am.addrList {
+		addrList = append(addrList, addr.String())
 	}
 
-	file, err := os.OpenFile(CachedAddrsFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	data, err := json.Marshal(addrList)
+	if err != nil {
+		return
+	}
+
+	file, err := os.OpenFile(AddrLocalCache, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		fmt.Println("Open cached addresses failed")
 		return
 	}
 
-	_, err = file.Write([]byte(cached))
+	_, err = file.Write(data)
 	if err != nil {
 		fmt.Println("Write cached addresses failed")
 		return
+	}
+}
+
+func (am *AddrManager) monitorAddresses() {
+	ticker := time.NewTicker(addressListMonitorDuration)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		am.Lock()
+		for _, ka := range am.addrList {
+			if ka.isBad() {
+				delete(am.addrList, ka.String())
+			}
+		}
+		am.Unlock()
+		am.saveToLocal()
 	}
 }

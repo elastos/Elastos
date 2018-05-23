@@ -10,8 +10,8 @@ type Peers struct {
 	syncPeerLock *sync.Mutex
 	syncPeer     *Peer
 
-	peersLock *sync.RWMutex
 	local     *Peer
+	peersLock *sync.RWMutex
 	peers     map[uint64]*Peer
 }
 
