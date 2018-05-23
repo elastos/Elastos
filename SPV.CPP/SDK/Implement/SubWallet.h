@@ -43,7 +43,7 @@ namespace Elastos {
 		public: //implement ISubWallet
 			virtual nlohmann::json GetBalanceInfo();
 
-			virtual double GetBalance();
+			virtual uint64_t GetBalance();
 
 			virtual std::string CreateAddress();
 

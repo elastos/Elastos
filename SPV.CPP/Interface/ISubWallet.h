@@ -16,7 +16,7 @@ namespace Elastos {
 		public:
 			virtual nlohmann::json GetBalanceInfo() = 0;
 
-			virtual double GetBalance() = 0;
+			virtual uint64_t GetBalance() = 0;
 
 			virtual std::string CreateAddress() = 0;
 

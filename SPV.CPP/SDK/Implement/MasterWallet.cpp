@@ -36,7 +36,7 @@ namespace Elastos {
 
 		ISubWallet *
 		MasterWallet::CreateSubWallet(const std::string &chainID, int coinTypeIndex, const std::string &payPassword,
-									  bool singleAddress, double balanceUnit, uint64_t feePerKb) {
+									  bool singleAddress, uint64_t feePerKb) {
 
 			if (!Initialized()) {
 				Log::warn("Current master wallet is not initialized.");
@@ -52,7 +52,6 @@ namespace Elastos {
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
-			info.setBalanceUnit(balanceUnit);
 			info.setFeePerKb(feePerKb);
 			SubWallet *subWallet = new SubWallet(info, ChainParams::mainNet(), this);
 			_createdWallets[chainID] = subWallet;
@@ -61,10 +60,9 @@ namespace Elastos {
 
 		ISubWallet *
 		MasterWallet::RecoverSubWallet(const std::string &chainID, int coinTypeIndex, const std::string &payPassword,
-									   bool singleAddress, int limitGap, double balanceUnit, uint64_t feePerKb) {
+									   bool singleAddress, int limitGap, uint64_t feePerKb) {
 			ISubWallet *subWallet = _createdWallets.find(chainID) == _createdWallets.end()
-									? CreateSubWallet(chainID, coinTypeIndex, payPassword, singleAddress, balanceUnit,
-													  feePerKb)
+									? CreateSubWallet(chainID, coinTypeIndex, payPassword, singleAddress, feePerKb)
 									: _createdWallets[chainID];
 			SubWallet *walletInner = static_cast<SubWallet *>(subWallet);
 			walletInner->recover(limitGap);

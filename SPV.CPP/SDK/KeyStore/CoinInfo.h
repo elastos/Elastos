@@ -38,10 +38,6 @@ namespace Elastos {
 
 			void setSingleAddress(bool singleAddress);
 
-			double getBalanceUnit() const;
-
-			void setBalanceUnit(double balanceUnit);
-
 			uint64_t getFeePerKb() const;
 
 			void setFeePerKb(uint64_t fee);
@@ -58,7 +54,6 @@ namespace Elastos {
 			int _index;
 			int _usedMaxAddressIndex;
 			bool _singleAddress;
-			double _balanceUnit;
 			uint64_t _feePerKb;
 		};
 

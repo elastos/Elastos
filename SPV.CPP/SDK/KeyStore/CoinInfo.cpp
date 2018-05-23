@@ -12,8 +12,7 @@ namespace Elastos {
 				_earliestPeerTime(0),
 				_index(0),
 				_usedMaxAddressIndex(0),
-				_singleAddress(false),
-				_balanceUnit(1.0) {
+				_singleAddress(false) {
 
 		}
 
@@ -57,14 +56,6 @@ namespace Elastos {
 			_singleAddress = singleAddress;
 		}
 
-		double CoinInfo::getBalanceUnit() const {
-			return _balanceUnit;
-		}
-
-		void CoinInfo::setBalanceUnit(double balanceUnit) {
-			_balanceUnit = balanceUnit;
-		}
-
 		uint64_t CoinInfo::getFeePerKb() const {
 			return _feePerKb;
 		}
@@ -91,7 +82,6 @@ namespace Elastos {
 			j["_index"] = p._index;
 			j["_usedMaxAddressIndex"] = p._usedMaxAddressIndex;
 			j["_singleAddress"] = p._singleAddress;
-			j["_balanceUnit"] = p._balanceUnit;
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
@@ -100,7 +90,6 @@ namespace Elastos {
 			p._index = j["_index"].get<int>();
 			p._usedMaxAddressIndex = j["usedMaxAddressIndex"].get<int>();
 			p._singleAddress = j["_singleAddress"].get<bool>();
-			p._balanceUnit = j["_balanceUnit"].get<double>();
 		}
 	}
 }

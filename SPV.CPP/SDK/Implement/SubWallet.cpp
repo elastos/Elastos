@@ -51,8 +51,8 @@ namespace Elastos {
 			return nlohmann::json();
 		}
 
-		double SubWallet::GetBalance() {
-			return _walletManager->getWallet()->getBalance() / _info.getBalanceUnit();
+		uint64_t SubWallet::GetBalance() {
+			return _walletManager->getWallet()->getBalance();
 		}
 
 		std::string SubWallet::CreateAddress() {
