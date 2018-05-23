@@ -31,7 +31,6 @@ const (
 )
 
 const (
-	SPVPort    = 20866
 	SPVService = 1 << 2
 )
 

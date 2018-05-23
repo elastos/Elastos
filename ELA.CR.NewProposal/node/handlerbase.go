@@ -7,6 +7,7 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
@@ -114,7 +115,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	// Do not add SPV client as a known address,
 	// so node will not start a connection to SPV client
-	if node.LocalPort() != protocol.SPVPort {
+	if node.LocalPort() != config.Parameters.SPVNodePort {
 		ip, _ := node.Addr16()
 		addr := p2p.NetAddress{
 			Time:     node.GetTime(),
@@ -166,10 +167,10 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
 	var addrs []p2p.NetAddress
 	// Only send addresses that enabled SPV service
-	if h.node.LocalPort() == protocol.SPVPort {
+	if h.node.LocalPort() == config.Parameters.SPVNodePort {
 		for _, addr := range LocalNode.RandSelectAddresses() {
 			if addr.Services&protocol.SPVService == protocol.SPVService {
-				addr.Port = protocol.SPVPort
+				addr.Port = config.Parameters.SPVNodePort
 				addrs = append(addrs, addr)
 			}
 		}
