@@ -3,7 +3,9 @@ package node
 import (
 	"fmt"
 
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/protocol"
+
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
@@ -11,7 +13,7 @@ import (
 // only SPV messages can go through, such as filterload/getblocks/getdata etc.
 // Otherwise error will be returned
 func FilterMessage(node protocol.Noder, msgType string) error {
-	if node.LocalPort() == protocol.SPVPort {
+	if node.LocalPort() == config.Parameters.SPVNodePort {
 		// Only cased message types can go through
 		switch msgType {
 		case p2p.CmdVersion:

@@ -75,6 +75,7 @@ type Configuration struct {
 	HttpInfoPort        uint16           `json:"HttpInfoPort"`
 	HttpInfoStart       bool             `json:"HttpInfoStart"`
 	SPVService          bool             `json:"SPVService"`
+	SPVNodePort         uint16           `json:"SPVNodePort"`
 	HttpWsPort          int              `json:"HttpWsPort"`
 	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
 	HttpJsonPort        int              `json:"HttpJsonPort"`

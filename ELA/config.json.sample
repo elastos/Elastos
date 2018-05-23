@@ -12,6 +12,7 @@
     "WsHeartbeatInterval": 60,
     "HttpJsonPort": 20336,
     "SPVService": true,
+    "SPVNodePort": 20866,
     "NoticeServerUrl": "",
     "OauthServerUrl": "",
     "NodePort": 20338,
