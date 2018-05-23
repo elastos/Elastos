@@ -44,8 +44,9 @@ namespace Elastos {
 			deriveKeyAndChain(&key, chainCode, payPassword);
 			MasterPubKeyPtr masterPubKey(new MasterPubKey(key, chainCode));
 
-			_walletManager = WalletManagerPtr(new WalletManager(
-					masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(), _info.getSingleAddress(), chainParams));
+			_walletManager = WalletManagerPtr(
+					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
+									  _info.getSingleAddress(), _info.getForkId(), chainParams));
 			_walletManager->registerWalletListener(this);
 		}
 
@@ -88,13 +89,24 @@ namespace Elastos {
 		}
 
 		void SubWallet::RemoveCallback(ISubWalletCallback *subCallback) {
-			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback));
+			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
 		std::string
 		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, double amount,
 								   double fee, const std::string &payPassword, const std::string &memo,
 								   const std::string &txid) {
+			//todo create deposit, withdraw and id transactions
+			TxParam normalParam;
+			normalParam.setAmount(amount);
+			normalParam.setToAddress(toAddress);
+			TransactionPtr transaction = _walletManager->createTransaction(normalParam);
+
+			BRTransaction *rawTransaction = transaction->convertToRaw();
+			signTransaction(rawTransaction, _info.getForkId(), payPassword);
+			_walletManager->getPeerManager()->publishTransaction(transaction);
+
+			//todo return transaction string
 			return "";
 		}
 
@@ -165,8 +177,8 @@ namespace Elastos {
 			size_t i, internalCount = 0, externalCount = 0;
 			int r = 0;
 
-			assert(wallet != NULL);
-			assert(transaction != NULL);
+			assert(wallet != nullptr);
+			assert(transaction != nullptr);
 
 			pthread_mutex_lock(&wallet->lock);
 

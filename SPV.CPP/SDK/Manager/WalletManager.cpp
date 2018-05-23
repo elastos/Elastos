@@ -17,17 +17,6 @@
 namespace Elastos {
 	namespace SDK {
 
-		WalletManager::WalletManager(const ChainParams &chainParams) :
-				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(DATABASE_PATH) {
-
-			uint32_t earliestPeerTime = 0;
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey);
-			//todo get mnemonic
-
-			init(_masterPubKey, chainParams, earliestPeerTime, false);
-		}
-
 		WalletManager::WalletManager(const CMBlock &phrase, const std::string language,
 									 const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
@@ -35,26 +24,18 @@ namespace Elastos {
 				_phraseData(phrase) {
 
 			uint32_t earliestPeerTime = 0;
-			//fixme construct pub key from phrase
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey("a test seed ha"));
+			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(Utils::convertToString(phrase), ""));
 
 			init(_masterPubKey, chainParams, earliestPeerTime, false);
 		}
 
-		WalletManager::WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
-									 const Elastos::SDK::ChainParams &chainParams) :
-				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(DATABASE_PATH) {
-
-			_chainParams = chainParams;
-			importKey(keyPath, password);
-		}
-
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, bool singleAddress, const ChainParams &chainParams) :
+									 uint32_t earliestPeerTime, bool singleAddress, int forkId,
+									 const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_masterPubKey(masterPubKey) {
+				_masterPubKey(masterPubKey),
+				_forkId(forkId) {
 			init(_masterPubKey, chainParams, earliestPeerTime, singleAddress);
 		}
 
@@ -68,21 +49,6 @@ namespace Elastos {
 
 		void WalletManager::stop() {
 			getPeerManager()->disconnect();
-		}
-
-		void WalletManager::exportKey(const boost::filesystem::path &path, const std::string &password) {
-			//todo get current time and write earliestPeerTime of KeyStore
-		}
-
-		void WalletManager::importKey(const boost::filesystem::path &path,
-									  const std::string &password) {
-			//todo import by private key later
-			if (_keyStore.open(path, password)) {
-				Log::error("Import key error.");
-			}
-
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(_keyStore.getMnemonic()));
-			init(_masterPubKey, _chainParams, _keyStore.json().getCoinInfoList()[0].getEarliestPeerTime(), true);
 		}
 
 		TransactionPtr WalletManager::createTransaction(const TxParam &param) {
@@ -123,7 +89,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr WalletManager::createNormalTransaction(std::string toAddress,
-														uint64_t amount, UInt256 assetId) {
+															  uint64_t amount, UInt256 assetId) {
 
 			BRTransaction *tmp = BRWalletCreateTransaction(this->getWallet()->getRaw(), amount, toAddress.c_str());
 			if (!tmp) return nullptr;
@@ -133,8 +99,8 @@ namespace Elastos {
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [assetId](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELABRTxOutput *)output->getRaw())->assetId = assetId;
-			});
+							  ((ELABRTxOutput *) output->getRaw())->assetId = assetId;
+						  });
 
 			return ptr;
 		}
@@ -219,7 +185,7 @@ namespace Elastos {
 				if (blockEntity.blockBytes.GetSize() > 0) {
 					uint8_t *tmp = ostream.getBuf();
 					memcpy(blockEntity.blockBytes, tmp, ostream.length());
-					delete []tmp;
+					delete[]tmp;
 				}
 				blockEntity.blockHeight = blocks[i]->getHeight();
 				_databaseManager.putMerkleBlock(ISO, blockEntity);
@@ -232,7 +198,7 @@ namespace Elastos {
 			delete &blocks;
 		}
 
-		void WalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
+		void WalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
 			PeerEntity peerEntity;
 
 			for (size_t i = 0; i < peers.size(); ++i) {
@@ -297,21 +263,21 @@ namespace Elastos {
 			return blocks;
 		}
 
-		SharedWrapperList<Peer, BRPeer*> WalletManager::loadPeers() {
-			SharedWrapperList<Peer, BRPeer*> peers;
+		SharedWrapperList<Peer, BRPeer *> WalletManager::loadPeers() {
+			SharedWrapperList<Peer, BRPeer *> peers;
 
 			std::vector<PeerEntity> peersEntity = _databaseManager.getAllPeers(ISO);
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
-				peers.push_back(PeerPtr(new Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
+				peers.push_back(
+						PeerPtr(new Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
 			}
 
 			return peers;
 		}
 
 		int WalletManager::getForkId() const {
-			// TODO complete me
-			return 0;
+			return _forkId;
 		}
 
 		const CoreWalletManager::PeerManagerListenerPtr &WalletManager::createPeerManagerListener() {

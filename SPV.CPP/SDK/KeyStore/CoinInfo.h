@@ -42,6 +42,10 @@ namespace Elastos {
 
 			void setFeePerKb(uint64_t fee);
 
+			int getForkId() const;
+
+			void setForkId(int forkId);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -51,6 +55,7 @@ namespace Elastos {
 		private:
 			std::string _chainId;
 			uint32_t _earliestPeerTime;
+			int _forkId;
 			int _index;
 			int _usedMaxAddressIndex;
 			bool _singleAddress;

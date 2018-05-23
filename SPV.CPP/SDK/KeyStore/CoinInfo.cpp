@@ -12,7 +12,8 @@ namespace Elastos {
 				_earliestPeerTime(0),
 				_index(0),
 				_usedMaxAddressIndex(0),
-				_singleAddress(false) {
+				_singleAddress(false),
+				_forkId(0) {
 
 		}
 
@@ -90,6 +91,14 @@ namespace Elastos {
 			p._index = j["_index"].get<int>();
 			p._usedMaxAddressIndex = j["usedMaxAddressIndex"].get<int>();
 			p._singleAddress = j["_singleAddress"].get<bool>();
+		}
+
+		int CoinInfo::getForkId() const {
+			return _forkId;
+		}
+
+		void CoinInfo::setForkId(int forkId) {
+			_forkId = forkId;
 		}
 	}
 }

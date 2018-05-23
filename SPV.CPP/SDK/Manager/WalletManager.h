@@ -22,21 +22,17 @@ namespace Elastos {
 		class WalletManager :
 				public CoreWalletManager {
 		public:
-			WalletManager(const ChainParams &chainParams = ChainParams::mainNet());
-
 			/*
 			 * construct wallet manager from mnemonic
 			 */
 			WalletManager(const CMBlock &phrase, const std::string language = "english",
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
-			WalletManager(const boost::filesystem::path &keyPath, const std::string &password,
-						  const ChainParams &chainParams = ChainParams::mainNet());
-
 			WalletManager(const MasterPubKeyPtr &masterPubKey,
 						  const boost::filesystem::path &dbPath,
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
+						  int forkId,
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
 			virtual ~WalletManager();
@@ -44,10 +40,6 @@ namespace Elastos {
 			void start();
 
 			void stop();
-
-			void exportKey(const boost::filesystem::path &path, const std::string &password);
-
-			void importKey(const boost::filesystem::path &path, const std::string &password);
 
 			TransactionPtr createTransaction(const TxParam &param);
 
@@ -119,6 +111,7 @@ namespace Elastos {
 			MasterPubKeyPtr _masterPubKey;
 			KeyStore _keyStore;
 			CMBlock _phraseData;
+			int _forkId;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

@@ -134,9 +134,6 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
-			//todo compare phrase password with phrase hash first
-
-			//todo [zxb] entropy from _encryptedEntropy
 			CMemBlock<unsigned char> entropyBytes = Utils::decrypt(_encryptedEntropy, payPassword);
 			UInt128 entropy = UINT128_ZERO;
 			memcpy(entropy.u8, entropyBytes, sizeof(entropyBytes));
@@ -164,7 +161,7 @@ namespace Elastos {
 			CMemBlock<unsigned char> encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
 			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
 
-			//todo [zxb] init _encryptedEntropy by phrase
+			//init _encryptedEntropy by phrase
 			UInt128 entropy = UINT128_ZERO;
 
 			std::vector<std::string> words = _mnemonic.words();
@@ -180,9 +177,7 @@ namespace Elastos {
 			memcpy(entropyBytes, entropy.u8, sizeof(entropy));
 			_encryptedEntropy = Utils::encrypt(entropyBytes, payPassword);
 
-			//todo [zxb] init master public key and private key
-			initPublicKey(payPassword);
-
+			//init master public key and private key
 			CMBlock phraseBlock(phrase.size() + 1);
 			phraseBlock[phrase.size()] = '\0';
 			memcpy(phraseBlock, phrase.c_str(), phrase.size());
@@ -194,18 +189,14 @@ namespace Elastos {
 			memcpy(secretKey, privKey, privKey.GetSize());
 
 			_encryptedKey = Utils::encrypt(secretKey, payPassword);
+			initPublicKey(payPassword);
 
-			MasterPubKeyPtr masterPubKey = MasterPubKeyPtr(new MasterPubKey(phrase, phrasePassword));
-			CMBlock pubKey = masterPubKey->getPubKey();
-			pubKey[pubKey.GetSize() + 1] = '\0';
-			_publicKey = (char *)(void *)pubKey;
 			return false;
 		}
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
 			CMemBlock<unsigned char> keyData = Utils::decrypt(_encryptedKey, payPassword);
 
-			//todo [zxb] key data to key
 			Key key;
 			std::string secret = (char *)(void *)keyData;
 			key.setPrivKey(secret);
