@@ -109,7 +109,6 @@ namespace Elastos {
 		}
 
 		CMemBlock<unsigned char> Utils::encrypt(const CMemBlock<unsigned char> &data, const std::string &password) {
-			//todo complete me
 			CMemBlock<unsigned char> ret;
 			ret = AES_256_CCM::encrypt(data, data.GetSize(), (unsigned char *) password.c_str(), password.size());
 			return ret;
@@ -117,7 +116,6 @@ namespace Elastos {
 
 		CMemBlock<unsigned char>
 		Utils::decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password) {
-			//todo complete me
 			CMemBlock<unsigned char> ret;
 			ret = AES_256_CCM::decrypt(encryptedData, encryptedData.GetSize(), (unsigned char *) password.c_str(),
 									   password.size());

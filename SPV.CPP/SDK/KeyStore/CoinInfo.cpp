@@ -78,19 +78,19 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const CoinInfo &p) {
-			j["_chainID"] = p._chainId;
-			j["_earliestPeerTime"] = p._earliestPeerTime;
-			j["_index"] = p._index;
-			j["_usedMaxAddressIndex"] = p._usedMaxAddressIndex;
-			j["_singleAddress"] = p._singleAddress;
+			j["chainID"] = p._chainId;
+			j["earliestPeerTime"] = p._earliestPeerTime;
+			j["index"] = p._index;
+			j["usedMaxAddressIndex"] = p._usedMaxAddressIndex;
+			j["singleAddress"] = p._singleAddress;
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
-			p._chainId = j["_chainID"].get<std::string>();
-			p._earliestPeerTime = j["_earliestPeerTime"].get<uint32_t>();
-			p._index = j["_index"].get<int>();
+			p._chainId = j["chainID"].get<std::string>();
+			p._earliestPeerTime = j["earliestPeerTime"].get<uint32_t>();
+			p._index = j["index"].get<int>();
 			p._usedMaxAddressIndex = j["usedMaxAddressIndex"].get<int>();
-			p._singleAddress = j["_singleAddress"].get<bool>();
+			p._singleAddress = j["singleAddress"].get<bool>();
 		}
 
 		int CoinInfo::getForkId() const {

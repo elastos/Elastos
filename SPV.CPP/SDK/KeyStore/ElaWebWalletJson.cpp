@@ -40,11 +40,11 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const ElaWebWalletJson &p) {
-			j["_mnemonic"] = p._mnemonic;
+			j["mnemonic"] = p._mnemonic;
 		}
 
 		void from_json(const nlohmann::json &j, ElaWebWalletJson &p) {
-			p._mnemonic = j["_mnemonic"].get<std::string>();
+			p._mnemonic = j["mnemonic"].get<std::string>();
 		}
 	}
 }
