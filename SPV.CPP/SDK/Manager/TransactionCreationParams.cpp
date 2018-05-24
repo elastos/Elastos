@@ -19,7 +19,7 @@ namespace Elastos {
 
 		}
 
-		std::string TxParam::getToAddress() const {
+		const std::string &TxParam::getToAddress() const {
 			return _toAddress;
 		}
 
@@ -41,6 +41,22 @@ namespace Elastos {
 
 		void TxParam::setAssetId(const UInt256 &id) {
 			_assetId = id;
+		}
+
+		const std::string &TxParam::getFromAddress() const {
+			return _fromAddress;
+		}
+
+		void TxParam::setFromAddress(const std::string &address) {
+			_fromAddress = address;
+		}
+
+		uint64_t TxParam::getFee() const {
+			return _fee;
+		}
+
+		void TxParam::setFee(uint64_t fee) {
+			_fee = fee;
 		}
 
 		std::string DepositTxParam::getSidechainAddress() const {
@@ -73,6 +89,34 @@ namespace Elastos {
 
 		void IdTxParam::setData(const CMBlock &data) {
 			_data = data;
+		}
+
+		TxParam *TxParamFactory::createTxParam(const std::string &fromAddress, const std::string &toAddress,
+													 double amount, double fee, const std::string &memo) {
+			TxParam *result = nullptr;
+			TxType type = Normal; //todo init type by parameters
+			switch (type) {
+				case Normal:
+					result = new TxParam;
+					break;
+				case Deposit:
+					DepositTxParam *depositTxParam = new DepositTxParam;
+					result = depositTxParam;
+					break;
+				case Withdraw:
+					WithdrawTxParam *withdrawTxParam = new WithdrawTxParam;
+					result = withdrawTxParam;
+					break;
+				case ID:
+					IdTxParam *idTxParam = new IdTxParam;
+					result = idTxParam;
+					break;
+			}
+			result->setFromAddress(fromAddress);
+			result->setToAddress(toAddress);
+			result->setAmount(amount);
+			result->setFee(fee);
+			return result;
 		}
 	}
 }

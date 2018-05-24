@@ -25,7 +25,11 @@ namespace Elastos {
 
 			virtual ~TxParam();
 
-			std::string getToAddress() const;
+			const std::string &getFromAddress() const;
+
+			void setFromAddress(const std::string &address);
+
+			const std::string &getToAddress() const;
 
 			void setToAddress(const std::string &address);
 
@@ -37,11 +41,17 @@ namespace Elastos {
 
 			void setAssetId(const UInt256 &id);
 
+			uint64_t getFee() const;
+
+			void setFee(uint64_t fee);
+
 			virtual TxType getType() const { return Normal;}
 
 		private:
+			std::string _fromAddress;
 			std::string _toAddress;
 			uint64_t _amount;
+			uint64_t _fee;
 			UInt256 _assetId;
 		};
 
@@ -84,6 +94,12 @@ namespace Elastos {
 		private:
 			std::string _id;
 			CMBlock _data;
+		};
+
+		class TxParamFactory {
+		public:
+			static TxParam *createTxParam(const std::string &fromAddress, const std::string &toAddress,
+												double amount, double fee, const std::string &memo);
 		};
 	}
 }

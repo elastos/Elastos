@@ -19,23 +19,6 @@ namespace Elastos {
 
 		class MasterWallet;
 
-		class SubWalletCallback : public ISubWalletCallback {
-		public:
-			virtual ~SubWalletCallback();
-
-			virtual void OnBalanceChanged(
-					const std::string &address,
-					double oldAmount,
-					double newAmount);
-
-			virtual void OnTransactionStatusChanged(
-					const std::string &txid,
-					const std::string &status,
-					uint32_t error,
-					const std::string &desc,
-					uint32_t confirms);
-		};
-
 		class SubWallet : public ISubWallet, public Wallet::Listener {
 		public:
 			~SubWallet();
@@ -47,9 +30,8 @@ namespace Elastos {
 
 			virtual std::string CreateAddress();
 
-			virtual std::string GetTheLastAddress();
-
-			virtual nlohmann::json GetAllAddress();
+			virtual nlohmann::json GetAllAddress(uint32_t start,
+												 uint32_t count);
 
 			virtual double GetBalanceWithAddress(const std::string &address);
 
@@ -63,12 +45,24 @@ namespace Elastos {
 					double amount,
 					double fee,
 					const std::string &payPassword,
-					const std::string &memo,
-					const std::string &txid);
+					const std::string &memo);
+
+			virtual std::string CreateMultiSignAddress(
+					const nlohmann::json &multiPublicKeyJson,
+					uint32_t totalSignNum,
+					uint32_t requiredSignNum);
+
+			virtual nlohmann::json GenerateMultiSignTransaction(
+					const std::string &fromAddress,
+					const std::string &toAddress,
+					uint64_t amount,
+					uint64_t fee,
+					const std::string &payPassword,
+					const std::string &memo);
 
 			virtual std::string SendRawTransaction(
 					const nlohmann::json &transactionJson,
-					const std::string &payPassword);
+					const nlohmann::json &signJson);
 
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,

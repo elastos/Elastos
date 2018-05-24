@@ -103,7 +103,7 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		protected:
-			TransactionPtr createNormalTransaction(std::string toAddress, uint64_t amount, UInt256 assetId);
+			TransactionPtr createNormalTransaction(const TxParam &param);
 
 		private:
 			DatabaseManager _databaseManager;

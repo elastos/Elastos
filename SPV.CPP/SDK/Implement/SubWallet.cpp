@@ -2,12 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRKey.h>
+#include <boost/scoped_ptr.hpp>
+
 #include "BRKey.h"
 #include "BRArray.h"
 
 #include "SubWallet.h"
 #include "MasterWallet.h"
+#include "SubWalletCallback.h"
 
 namespace fs = boost::filesystem;
 
@@ -15,19 +17,6 @@ namespace fs = boost::filesystem;
 
 namespace Elastos {
 	namespace SDK {
-
-		SubWalletCallback::~SubWalletCallback() {
-
-		}
-
-		void SubWalletCallback::OnBalanceChanged(const std::string &address, double oldAmount, double newAmount) {
-
-		}
-
-		void SubWalletCallback::OnTransactionStatusChanged(const std::string &txid, const std::string &status,
-														   uint32_t error, const std::string &desc, uint32_t confirms) {
-
-		}
 
 		SubWallet::SubWallet(const CoinInfo &info,
 							 const ChainParams &chainParams,
@@ -67,13 +56,10 @@ namespace Elastos {
 			return _walletManager->getWallet()->getReceiveAddress();
 		}
 
-		std::string SubWallet::GetTheLastAddress() {
-			//todo complete me
-			return "";
-		}
-
-		nlohmann::json SubWallet::GetAllAddress() {
+		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
+												uint32_t count) {
 			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
+			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + start + count);
 			nlohmann::json j;
 			j["addresses"] = addresses;
 			return j;
@@ -94,25 +80,17 @@ namespace Elastos {
 
 		std::string
 		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, double amount,
-								   double fee, const std::string &payPassword, const std::string &memo,
-								   const std::string &txid) {
-			//todo create deposit, withdraw and id transactions
-			TxParam normalParam;
-			normalParam.setAmount(amount);
-			normalParam.setToAddress(toAddress);
-			TransactionPtr transaction = _walletManager->createTransaction(normalParam);
+								   double fee, const std::string &payPassword, const std::string &memo) {
+			boost::scoped_ptr<TxParam> txParam(
+					TxParamFactory::createTxParam(fromAddress, toAddress, amount, fee, memo));
+			TransactionPtr transaction = _walletManager->createTransaction(*txParam);
 
 			BRTransaction *rawTransaction = transaction->convertToRaw();
 			signTransaction(rawTransaction, _info.getForkId(), payPassword);
 			_walletManager->getPeerManager()->publishTransaction(transaction);
 
-			//todo return transaction string
-			return "";
-		}
-
-		std::string
-		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const std::string &payPassword) {
-			return std::string();
+			Transaction txForHash(rawTransaction);
+			return std::string((char *) txForHash.getHash().u8, 32);
 		}
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
@@ -129,32 +107,33 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
-			std::for_each(_callbacks.begin(), _callbacks.end(), [balance](ISubWalletCallback *callback) {
-				//todo implement event
-//				callback->OnBalanceChanged();
-			});
+
 		}
 
 		void SubWallet::onTxAdded(Transaction *transaction) {
+			//todo add confirm count
 			std::for_each(_callbacks.begin(), _callbacks.end(), [transaction](ISubWalletCallback *callback) {
-				//todo implement event
-//				callback->OnTransactionStatusChanged()
+				callback->OnTransactionStatusChanged(std::string((char *) transaction->getHash().u8, 32),
+													 SubWalletCallback::convertToString(SubWalletCallback::Added),
+													 nlohmann::json(), 0);
 			});
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+			//todo add confirm count
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, blockHeight, timeStamp](ISubWalletCallback *callback) {
-							  //todo implement event
-//				callback->OnTransactionStatusChanged()
+							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
+									  SubWalletCallback::Updated), nlohmann::json(), 0);
 						  });
 		}
 
 		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+			//todo add confirm count
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, notifyUser, recommendRescan](ISubWalletCallback *callback) {
-							  //todo implement event
-//				callback->OnTransactionStatusChanged()
+							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
+									  SubWalletCallback::Added), nlohmann::json(), 0);
 						  });
 		}
 
@@ -204,6 +183,26 @@ namespace Elastos {
 
 			BRTransactionSign(transaction, forkId, keys, internalCount + externalCount);
 			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
+		}
+
+		std::string SubWallet::CreateMultiSignAddress(const nlohmann::json &multiPublicKeyJson, uint32_t totalSignNum,
+													  uint32_t requiredSignNum) {
+			//todo complete me
+			return "";
+		}
+
+		nlohmann::json
+		SubWallet::GenerateMultiSignTransaction(const std::string &fromAddress, const std::string &toAddress,
+												uint64_t amount, uint64_t fee, const std::string &payPassword,
+												const std::string &memo) {
+			//todo complete me
+			return nlohmann::json();
+		}
+
+		std::string
+		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const nlohmann::json &signJson) {
+			//todo complete me
+			return "";
 		}
 
 	}

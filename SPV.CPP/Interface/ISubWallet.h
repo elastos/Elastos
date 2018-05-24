@@ -20,9 +20,9 @@ namespace Elastos {
 
 			virtual std::string CreateAddress() = 0;
 
-			virtual std::string GetTheLastAddress() = 0;
-
-			virtual nlohmann::json GetAllAddress() = 0;
+			virtual nlohmann::json GetAllAddress(
+					uint32_t start,
+					uint32_t count) = 0;
 
 			virtual double GetBalanceWithAddress(const std::string &address) = 0;
 
@@ -36,12 +36,24 @@ namespace Elastos {
 					double amount,
 					double fee,
 					const std::string &payPassword,
-					const std::string &memo,
-					const std::string &txid) = 0;
+					const std::string &memo) = 0;
+
+			virtual std::string CreateMultiSignAddress(
+					const nlohmann::json &multiPublicKeyJson,
+					uint32_t totalSignNum,
+					uint32_t requiredSignNum) = 0;
+
+			virtual nlohmann::json GenerateMultiSignTransaction(
+					const std::string &fromAddress,
+					const std::string &toAddress,
+					uint64_t amount,
+					uint64_t fee,
+					const std::string &payPassword,
+					const std::string &memo) = 0;
 
 			virtual std::string SendRawTransaction(
 					const nlohmann::json &transactionJson,
-					const std::string &payPassword) = 0;
+					const nlohmann::json &signJson) = 0;
 
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,

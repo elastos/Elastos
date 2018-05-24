@@ -12,16 +12,11 @@ namespace Elastos {
 
 		class ISubWalletCallback {
 		public:
-			virtual void OnBalanceChanged(
-					const std::string &address,
-					double oldAmount,
-					double newAmount) = 0;
 
 			virtual void OnTransactionStatusChanged(
 					const std::string &txid,
 					const std::string &status,
-					uint32_t error,
-					const std::string &desc,
+					const nlohmann::json &desc,
 					uint32_t confirms) = 0;
 		};
 

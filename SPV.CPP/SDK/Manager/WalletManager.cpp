@@ -55,7 +55,7 @@ namespace Elastos {
 			//todo add other transaction creation logic
 			switch (param.getType()) {
 				case Normal:
-					return createNormalTransaction(param.getToAddress(), param.getAmount(), param.getAssetId());
+					return createNormalTransaction(param);
 				case Deposit:
 					break;
 				case Withdraw:
@@ -88,18 +88,20 @@ namespace Elastos {
 			return txs;
 		}
 
-		TransactionPtr WalletManager::createNormalTransaction(std::string toAddress,
-															  uint64_t amount, UInt256 assetId) {
+		TransactionPtr WalletManager::createNormalTransaction(const TxParam &param) {
 
-			BRTransaction *tmp = BRWalletCreateTransaction(this->getWallet()->getRaw(), amount, toAddress.c_str());
+			//todo consider the situation of from address and fee not null
+			//todo initialize asset id if null
+			BRTransaction *tmp = BRWalletCreateTransaction(this->getWallet()->getRaw(), param.getAmount(),
+														   param.getToAddress().c_str());
 			if (!tmp) return nullptr;
 
 			TransactionPtr ptr(new Transaction(tmp));
 			ptr->setTransactionType(Transaction::TransferAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
-						  [assetId](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELABRTxOutput *) output->getRaw())->assetId = assetId;
+						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+							  ((ELABRTxOutput *) output->getRaw())->assetId = param.getAssetId();
 						  });
 
 			return ptr;
