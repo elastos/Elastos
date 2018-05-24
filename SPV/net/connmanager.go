@@ -86,17 +86,6 @@ func (cm *ConnManager) isConnected(addr string) bool {
 	return ok
 }
 
-func (cm *ConnManager) PeerDisconnected(addr string) {
-	cm.deConnecting(addr)
-
-	cm.connsLock.Lock()
-	if conn, ok := cm.connections[addr]; ok {
-		conn.Close()
-		delete(cm.connections, addr)
-	}
-	cm.connsLock.Unlock()
-}
-
 func (cm *ConnManager) connectPeer(addr string) {
 	conn, err := net.DialTimeout("tcp", addr, time.Second*ConnTimeOut)
 	if err != nil {
@@ -118,6 +107,17 @@ func (cm *ConnManager) PeerConnected(addr string, conn net.Conn) {
 	cm.connsLock.Unlock()
 }
 
+func (cm *ConnManager) PeerDisconnected(addr string) {
+	cm.deConnecting(addr)
+
+	cm.connsLock.Lock()
+	if conn, ok := cm.connections[addr]; ok {
+		conn.Close()
+		delete(cm.connections, addr)
+	}
+	cm.connsLock.Unlock()
+}
+
 func (cm *ConnManager) retry(addr string) {
 	cm.retryLock.RLock()
 	retryTimes, ok := cm.retryList[addr]
@@ -127,7 +127,7 @@ func (cm *ConnManager) retry(addr string) {
 		retryTimes += 1
 	}
 	cm.retryLock.RUnlock()
-	log.Info("Put into retry queue, retry times:", retryTimes)
+	log.Debugf("Put %s into retry queue, %d times", addr, retryTimes)
 	if retryTimes > MaxRetryCount {
 		cm.deConnecting(addr)
 		return
@@ -136,7 +136,6 @@ func (cm *ConnManager) retry(addr string) {
 	cm.retryList[addr] = retryTimes
 	cm.retryLock.Unlock()
 
-	log.Info("Wait for retry ", addr)
 	time.Sleep(time.Second * RetryDuration)
 	cm.connectPeer(addr)
 }
@@ -155,7 +154,7 @@ func (cm *ConnManager) listenConnection() {
 			fmt.Println("Error accepting ", err.Error())
 			continue
 		}
-		fmt.Printf("New connection accepted, remote: %s local: %s\n", conn.RemoteAddr(), conn.LocalAddr())
+		log.Debugf("New connection accepted, remote: %s local: %s\n", conn.RemoteAddr(), conn.LocalAddr())
 
 		cm.listener.OnInbound(conn)
 	}

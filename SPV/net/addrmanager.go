@@ -1,18 +1,13 @@
 package net
 
 import (
-	"fmt"
-	"io/ioutil"
-	"os"
 	"sync"
-
-	"encoding/json"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
-	AddrLocalCache = "addrs.cache"
 	// needAddressThreshold is the number of addresses under which the
 	// address manager will claim to need more addresses.
 	needAddressThreshold = 1000
@@ -34,15 +29,7 @@ func newAddrManager(seeds []string, minOutbound int) *AddrManager {
 	am.addrList = make(map[string]*knownAddress)
 	am.connected = make(map[string]*knownAddress)
 
-	var addrList []string
-	// Read cached addresses from file
-	data, err := ioutil.ReadFile(AddrLocalCache)
-	if err == nil {
-		json.Unmarshal(data, &addrList)
-	}
-	// Add seeds to address list
-	addrList = append(addrList, seeds...)
-	for _, addr := range addrList {
+	for _, addr := range seeds {
 		// Only add valid address
 		if ka := NewKnownAddress(addr); ka != nil {
 			am.addrList[addr] = ka
@@ -147,32 +134,6 @@ func (am *AddrManager) addOrUpdateAddress(na *p2p.NetAddress) {
 	ka.SaveAddr(na)
 	// Add to address list
 	am.addrList[addr] = ka
-	// Save to local
-	am.saveToLocal()
-}
-
-func (am *AddrManager) saveToLocal() {
-	var addrList []string
-	for _, addr := range am.addrList {
-		addrList = append(addrList, addr.String())
-	}
-
-	data, err := json.Marshal(addrList)
-	if err != nil {
-		return
-	}
-
-	file, err := os.OpenFile(AddrLocalCache, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
-	if err != nil {
-		fmt.Println("Open cached addresses failed")
-		return
-	}
-
-	_, err = file.Write(data)
-	if err != nil {
-		fmt.Println("Write cached addresses failed")
-		return
-	}
 }
 
 func (am *AddrManager) monitorAddresses() {
@@ -187,6 +148,5 @@ func (am *AddrManager) monitorAddresses() {
 			}
 		}
 		am.Unlock()
-		am.saveToLocal()
 	}
 }
