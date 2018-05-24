@@ -16,14 +16,14 @@ import (
 var spv SPVService
 
 func TestNewSPVService(t *testing.T) {
-	log.Init()
+	log.Init(log.LevelDebug)
 
 	var id = make([]byte, 8)
 	var clientId uint64
 	var err error
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-	spv, err = NewSPVService(config.Values().Magic, clientId, config.Values().SeedList)
+	spv, err = NewSPVService(config.Values().Magic, clientId, config.Values().SeedList, 8, 100)
 	if err != nil {
 		t.Error("NewSPVService error %s", err.Error())
 	}

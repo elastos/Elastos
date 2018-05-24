@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/account"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/transaction"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/wallet"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 
 	"github.com/urfave/cli"
 )
@@ -14,7 +15,7 @@ import (
 var Version string
 
 func init() {
-	log.Init()
+	log.Init(config.Values().PrintLevel)
 }
 
 func main() {

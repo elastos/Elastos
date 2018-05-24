@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Initiate log
-	log.Init()
+	log.Init(config.Values().PrintLevel)
 
 	file, err := spvwallet.OpenKeystoreFile()
 	if err != nil {

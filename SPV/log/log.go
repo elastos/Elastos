@@ -9,8 +9,6 @@ import (
 	"runtime"
 	"strconv"
 	"time"
-
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 )
 
 const (
@@ -33,13 +31,13 @@ const (
 	LevelFile  = 5
 )
 
-var level uint8
+var printLevel uint8
 var logger *log.Logger
 
-func Init() {
-	writers := []io.Writer{}
-	level = config.Values().PrintLevel
-	if level >= LevelFile {
+func Init(level uint8) {
+	writers := make([]io.Writer, 0, 2)
+	printLevel = level
+	if printLevel >= LevelFile {
 		logFile, err := OpenLogFile()
 		if err != nil {
 			fmt.Println("error: open log file failed")
@@ -49,6 +47,10 @@ func Init() {
 	}
 	writers = append(writers, os.Stdout)
 	logger = log.New(io.MultiWriter(writers...), "", log.Ldate|log.Lmicroseconds)
+}
+
+func SetPrintLevel(level uint8) {
+	printLevel = level
 }
 
 func OpenLogFile() (*os.File, error) {
@@ -81,7 +83,7 @@ func Infof(format string, msg ...interface{}) {
 }
 
 func Trace(msg ...interface{}) {
-	if level >= LevelTrace {
+	if printLevel >= LevelTrace {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -95,7 +97,7 @@ func Trace(msg ...interface{}) {
 }
 
 func Tracef(format string, msg ...interface{}) {
-	if level >= LevelTrace {
+	if printLevel >= LevelTrace {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -109,7 +111,7 @@ func Tracef(format string, msg ...interface{}) {
 }
 
 func Warn(msg ...interface{}) {
-	if level >= LevelTrace {
+	if printLevel >= LevelTrace {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -123,7 +125,7 @@ func Warn(msg ...interface{}) {
 }
 
 func Warnf(format string, msg ...interface{}) {
-	if level >= LevelWarn {
+	if printLevel >= LevelWarn {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -137,7 +139,7 @@ func Warnf(format string, msg ...interface{}) {
 }
 
 func Error(msg ...interface{}) {
-	if level >= LevelError {
+	if printLevel >= LevelError {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -151,7 +153,7 @@ func Error(msg ...interface{}) {
 }
 
 func Errorf(format string, msg ...interface{}) {
-	if level >= LevelError {
+	if printLevel >= LevelError {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -165,7 +167,7 @@ func Errorf(format string, msg ...interface{}) {
 }
 
 func Debug(msg ...interface{}) {
-	if level >= LevelDebug {
+	if printLevel >= LevelDebug {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
@@ -179,7 +181,7 @@ func Debug(msg ...interface{}) {
 }
 
 func Debugf(format string, msg ...interface{}) {
-	if level >= LevelDebug {
+	if printLevel >= LevelDebug {
 		pc := make([]uintptr, 10)
 		runtime.Callers(2, pc)
 		f := runtime.FuncForPC(pc[0])
