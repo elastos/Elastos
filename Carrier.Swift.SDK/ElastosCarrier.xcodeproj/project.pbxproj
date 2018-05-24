@@ -148,7 +148,6 @@
 				A3B497B92003736300420421 /* ElastosCarrier */,
 				A3B497C42003736300420421 /* ElastosCarrierTests */,
 				A3B497B82003736200420421 /* Products */,
-				A3B498382005BE7500420421 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -186,8 +185,8 @@
 		A3B497D22003755700420421 /* NativeDistributions */ = {
 			isa = PBXGroup;
 			children = (
-				A3B497D32003756F00420421 /* libs */,
 				A3B497D42003757A00420421 /* include */,
+				A3B497D32003756F00420421 /* libs */,
 			);
 			name = NativeDistributions;
 			sourceTree = "<group>";
@@ -195,6 +194,17 @@
 		A3B497D32003756F00420421 /* libs */ = {
 			isa = PBXGroup;
 			children = (
+				A3B498432005BE7600420421 /* libelacarrier.a */,
+				A3B4983A2005BE7600420421 /* libelacommon.a */,
+				A3B498392005BE7600420421 /* libelasession.a */,
+				A3B498402005BE7600420421 /* libflatcc.a */,
+				A3B4983E2005BE7600420421 /* libflatccrt.a */,
+				A3B4983D2005BE7600420421 /* libpj.a */,
+				A3B4983B2005BE7600420421 /* libpjlib-util.a */,
+				A3B4983F2005BE7600420421 /* libpjmedia.a */,
+				A3B498412005BE7600420421 /* libpjnath.a */,
+				A3B4983C2005BE7600420421 /* libsodium.a */,
+				A3B498422005BE7600420421 /* libtoxcore.a */,
 			);
 			name = libs;
 			sourceTree = "<group>";
@@ -261,24 +271,6 @@
 				A3B498162003B3AE00420421 /* CarrierError.swift */,
 			);
 			name = Exceptions;
-			sourceTree = "<group>";
-		};
-		A3B498382005BE7500420421 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				A3B498432005BE7600420421 /* libelacarrier.a */,
-				A3B4983A2005BE7600420421 /* libelacommon.a */,
-				A3B498392005BE7600420421 /* libelasession.a */,
-				A3B498402005BE7600420421 /* libflatcc.a */,
-				A3B4983E2005BE7600420421 /* libflatccrt.a */,
-				A3B4983D2005BE7600420421 /* libpj.a */,
-				A3B4983B2005BE7600420421 /* libpjlib-util.a */,
-				A3B4983F2005BE7600420421 /* libpjmedia.a */,
-				A3B498412005BE7600420421 /* libpjnath.a */,
-				A3B4983C2005BE7600420421 /* libsodium.a */,
-				A3B498422005BE7600420421 /* libtoxcore.a */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -563,6 +555,7 @@
 		A3B497CC2003736300420421 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BITCODE_GENERATION_MODE = bitcode;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
@@ -591,6 +584,7 @@
 		A3B497CD2003736300420421 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BITCODE_GENERATION_MODE = bitcode;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
