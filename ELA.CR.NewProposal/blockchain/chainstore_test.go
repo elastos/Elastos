@@ -57,10 +57,7 @@ func TestChainStore_PersisSidechainTx(t *testing.T) {
 	}
 
 	// 2. Run PersistSidechainTx
-	err = store.PersistSidechainTx(sidechainTxHash)
-	if err != nil {
-		t.Error("Persist the sidechain Tx failed")
-	}
+	store.PersistSidechainTx(sidechainTxHash)
 
 	// Need batch commit here because PersistSidechainTx use BatchPut
 	store.BatchCommit()
@@ -117,10 +114,7 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 2. Persist the sidechain Tx hash
-	err = store.PersistSidechainTx(sidechainTxHash)
-	if err != nil {
-		t.Error("Persist the sidechain Tx failed")
-	}
+	store.PersistSidechainTx(sidechainTxHash)
 
 	// Need batch commit here because PersistSidechainTx use BatchPut
 	store.BatchCommit()

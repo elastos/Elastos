@@ -330,8 +330,15 @@ func CheckTransactionPayload(txn *Transaction) error {
 
 //validate the transaction of duplicate sidechain transaction
 func CheckDuplicateSidechainTx(txn *Transaction) error {
-	if txn.IsIssueTokenTx() {
-
+	if txn.IsWithdrawTx() {
+		witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		existingHashs := make(map[string]struct{})
+		for _, hash := range witPayload.SideChainTransactionHash {
+			if _, exist := existingHashs[hash]; exist {
+				return errors.New("there are duplicate sidechain tx in a transaction")
+			}
+			existingHashs[hash] = struct{}{}
+		}
 	}
 	return nil
 }
