@@ -7,13 +7,12 @@ import (
 	"math/big"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	. "github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 const (
@@ -85,16 +84,27 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
 	}
 
-	// Check for duplicate transactions.  This check will be fairly quick
-	// since the transaction hashes are already cached due to building the
-	// merkle tree above.
+	blockInputs := make([]*Input, 0)
+	// Check for duplicate transactions.
+	// Fixme: merge this loop with the above
 	existingTxHashes := make(map[Uint256]struct{})
 	for _, txn := range transactions {
+		blockInputs = append(blockInputs, txn.Inputs...)
 		txHash := txn.Hash()
 		if _, exists := existingTxHashes[txHash]; exists {
 			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
 		}
 		existingTxHashes[txHash] = struct{}{}
+	}
+
+	// Check for duplicate UTXO inputs in a block
+	existingTxInputs := make(map[string]struct{})
+	for _, input := range blockInputs {
+		referKey := input.ReferKey()
+		if _, exists := existingTxInputs[referKey]; exists {
+			return errors.New("[PowCheckBlockSanity] block contains duplicate UTXO")
+		}
+		existingTxInputs[referKey] = struct{}{}
 	}
 
 	// Check transaction outputs after a update checkpoint.
