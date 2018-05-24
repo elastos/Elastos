@@ -59,7 +59,7 @@ namespace Elastos {
 			virtual void balanceChanged(uint64_t balance);
 
 			// func txAdded(_ tx: BRTxRef)
-			virtual void onTxAdded(Transaction *tx);
+			virtual void onTxAdded(const TransactionPtr &tx);
 
 			// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
@@ -109,7 +109,6 @@ namespace Elastos {
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
 			MasterPubKeyPtr _masterPubKey;
-			KeyStore _keyStore;
 			CMBlock _phraseData;
 			int _forkId;
 

@@ -24,7 +24,7 @@ namespace Elastos {
 					uint32_t start,
 					uint32_t count) = 0;
 
-			virtual double GetBalanceWithAddress(const std::string &address) = 0;
+			virtual uint64_t GetBalanceWithAddress(const std::string &address) = 0;
 
 			virtual void AddCallback(ISubWalletCallback *subCallback) = 0;
 

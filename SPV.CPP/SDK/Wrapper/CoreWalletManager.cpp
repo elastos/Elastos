@@ -97,7 +97,7 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::onTxAdded(Transaction *transaction) {
+		void CoreWalletManager::onTxAdded(const TransactionPtr &transaction) {
 
 		}
 
@@ -337,7 +337,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onTxAdded(Transaction *transaction) {
+		void WrappedExceptionWalletListener::onTxAdded(const TransactionPtr &transaction) {
 			try {
 				return _listener->onTxAdded(transaction);
 			}
@@ -390,7 +390,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onTxAdded(Transaction *transaction) {
+		void WrappedExecutorWalletListener::onTxAdded(const TransactionPtr &transaction) {
 			_executor->execute(Runnable([this, transaction]() -> void {
 				_listener->onTxAdded(transaction);
 			}));

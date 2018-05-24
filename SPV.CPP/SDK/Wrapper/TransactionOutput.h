@@ -38,9 +38,9 @@ namespace Elastos {
 
 			BRTxOutput *convertToRaw() const;
 
-			std::string getAddress() const;
+			const std::string &getAddress() const;
 
-			void setAddress(std::string address);
+			void setAddress(const std::string &address);
 
 			uint64_t getAmount() const;
 

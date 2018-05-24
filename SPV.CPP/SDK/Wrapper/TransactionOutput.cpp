@@ -43,11 +43,11 @@ namespace Elastos {
 			return _output.get();
 		}
 
-		std::string TransactionOutput::getAddress() const {
+		const std::string &TransactionOutput::getAddress() const {
 			return _output->address;
 		}
 
-		void TransactionOutput::setAddress(std::string address) {
+		void TransactionOutput::setAddress(const std::string &address) {
 			BRTxOutputSetAddress(_output.get(), address.c_str());
 		}
 

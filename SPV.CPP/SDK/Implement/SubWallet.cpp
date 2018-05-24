@@ -3,6 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/scoped_ptr.hpp>
+#include <BRWallet.h>
+#include <BRTransaction.h>
 
 #include "BRKey.h"
 #include "BRArray.h"
@@ -44,8 +46,37 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetBalanceInfo() {
-			//todo complete me
-			return nlohmann::json();
+			BRWallet *wallet = _walletManager->getWallet()->getRaw();
+			assert(wallet != nullptr);
+
+			size_t utxosCount = BRWalletUTXOs(wallet, nullptr, 0);
+			BRUTXO utxos[utxosCount];
+			BRWalletUTXOs(wallet, utxos, utxosCount);
+
+			nlohmann::json j;
+
+			BRTransaction *t;
+			std::map<std::string, uint64_t> addressesBalanceMap;
+			pthread_mutex_lock(&wallet->lock);
+			for (size_t i = 0; i < utxosCount; ++i) {
+				void *tempPtr = BRSetGet(wallet->allTx, &utxos[utxosCount].hash);
+				if (tempPtr == nullptr) continue;
+				t = static_cast<BRTransaction *>(tempPtr);
+
+				if (addressesBalanceMap.find(t->outputs[utxos->n].address) != addressesBalanceMap.end()) {
+					addressesBalanceMap[t->outputs[utxos->n].address] += t->outputs[utxos->n].amount;
+				} else {
+					addressesBalanceMap[t->outputs[utxos->n].address] = t->outputs[utxos->n].amount;
+				}
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			std::for_each(addressesBalanceMap.begin(), addressesBalanceMap.end(),
+						  [&addressesBalanceMap, &j](const std::map<std::string, uint64_t>::value_type &item){
+				j[item.first] = item.second;
+			});
+
+			return j;
 		}
 
 		uint64_t SubWallet::GetBalance() {
@@ -65,9 +96,28 @@ namespace Elastos {
 			return j;
 		}
 
-		double SubWallet::GetBalanceWithAddress(const std::string &address) {
-			//todo complete me
-			return 0;
+		uint64_t SubWallet::GetBalanceWithAddress(const std::string &address) {
+			BRWallet *wallet = _walletManager->getWallet()->getRaw();
+			assert(wallet != nullptr);
+
+			size_t utxosCount = BRWalletUTXOs(wallet, nullptr, 0);
+			BRUTXO utxos[utxosCount];
+			BRWalletUTXOs(wallet, utxos, utxosCount);
+
+			BRTransaction *t;
+			uint64_t balance = 0;
+			pthread_mutex_lock(&wallet->lock);
+			for (size_t i = 0; i < utxosCount; ++i) {
+				void *tempPtr = BRSetGet(wallet->allTx, &utxos[utxosCount].hash);
+				if (tempPtr == nullptr) continue;
+				t = static_cast<BRTransaction *>(tempPtr);
+				if (BRAddressEq(t->outputs[utxos->n].address, address.c_str())) {
+					balance += t->outputs[utxos->n].amount;
+				}
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			return balance;
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
@@ -94,6 +144,21 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
+			BRWallet *wallet = _walletManager->getWallet()->getRaw();
+			assert(wallet != NULL);
+
+			size_t realCount = count;
+			pthread_mutex_lock(&wallet->lock);
+			if (array_count(wallet->transactions) < start + realCount)
+				realCount = array_count(wallet->transactions) - start;
+
+			BRTransaction *transactions[realCount];
+			for (size_t i = 0; i < realCount; i++) {
+				transactions[i] = wallet->transactions[i + start];
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			//todo convert transaction array to json
 			return nlohmann::json();
 		}
 
@@ -110,26 +175,24 @@ namespace Elastos {
 
 		}
 
-		void SubWallet::onTxAdded(Transaction *transaction) {
-			//todo add confirm count
+		void SubWallet::onTxAdded(const TransactionPtr &transaction) {
 			std::for_each(_callbacks.begin(), _callbacks.end(), [transaction](ISubWalletCallback *callback) {
 				callback->OnTransactionStatusChanged(std::string((char *) transaction->getHash().u8, 32),
 													 SubWalletCallback::convertToString(SubWalletCallback::Added),
-													 nlohmann::json(), 0);
+													 nlohmann::json(), transaction->getBlockHeight());
 			});
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			//todo add confirm count
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, blockHeight, timeStamp](ISubWalletCallback *callback) {
+
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
-									  SubWalletCallback::Updated), nlohmann::json(), 0);
+									  SubWalletCallback::Updated), nlohmann::json(), blockHeight);
 						  });
 		}
 
 		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
-			//todo add confirm count
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, notifyUser, recommendRescan](ISubWalletCallback *callback) {
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(

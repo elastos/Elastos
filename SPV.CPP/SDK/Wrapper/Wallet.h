@@ -32,7 +32,7 @@ namespace Elastos {
 				virtual void balanceChanged(uint64_t balance) = 0;
 
 				// func txAdded(_ tx: BRTxRef)
-				virtual void onTxAdded(Transaction *transaction) = 0;
+				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
 
 				// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
 				virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) = 0;

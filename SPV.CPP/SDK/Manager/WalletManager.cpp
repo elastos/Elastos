@@ -119,13 +119,13 @@ namespace Elastos {
 						  });
 		}
 
-		void WalletManager::onTxAdded(Transaction *tx) {
+		void WalletManager::onTxAdded(const TransactionPtr &tx) {
 			TransactionEntity txEntity(tx->serialize(), tx->getBlockHeight(),
 									   tx->getTimestamp(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [tx](Wallet::Listener *listener) {
+						  [&tx](Wallet::Listener *listener) {
 							  listener->onTxAdded(tx);
 						  });
 		}

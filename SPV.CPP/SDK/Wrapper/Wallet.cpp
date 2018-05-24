@@ -29,7 +29,7 @@ namespace Elastos {
 
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
-					listener->lock()->onTxAdded(new Transaction(new BRTransaction(*tx)));
+					listener->lock()->onTxAdded(TransactionPtr(new Transaction(tx)));
 				}
 			}
 
