@@ -19,7 +19,8 @@ type TxPool struct {
 	txnCnt  uint64                   // count
 	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
-	inputUTXOList map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
+	inputUTXOList   map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
+	sidechainTxList map[string]struct{}     //
 }
 
 func (pool *TxPool) Init() {
@@ -29,6 +30,7 @@ func (pool *TxPool) Init() {
 	pool.inputUTXOList = make(map[string]*Transaction)
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*Transaction)
+	pool.sidechainTxList = make(map[string]struct{})
 }
 
 //append transaction to txnpool when check ok.
@@ -112,6 +114,12 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) bool {
 		return false
 	}
 
+	// check if the transaction includes duplicate sidechain tx in pool
+	if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
+		log.Info(err)
+		return false
+	}
+
 	return true
 }
 
@@ -147,6 +155,21 @@ func (pool *TxPool) verifyDoubleSpend(txn *Transaction) error {
 	}
 	for _, v := range inputs {
 		pool.addInputUTXOList(txn, v)
+	}
+
+	return nil
+}
+
+//check and add to sidechain tx pool
+func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
+	if txn.IsWithdrawTx() {
+		witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		for _, hash := range witPayload.SideChainTransactionHash {
+			_, ok := pool.sidechainTxList[hash]
+			if ok {
+				return errors.New("duplicate sidechain tx detected")
+			}
+		}
 	}
 
 	return nil
@@ -248,6 +271,29 @@ func (pool *TxPool) delInputUTXOList(input *Input) bool {
 		return false
 	}
 	delete(pool.inputUTXOList, id)
+	return true
+}
+
+func (pool *TxPool) addSidechainTx(hash string) bool {
+	pool.Lock()
+	defer pool.Unlock()
+	_, ok := pool.sidechainTxList[hash]
+	if ok {
+		return false
+	}
+	pool.sidechainTxList[hash] = struct{}{}
+
+	return true
+}
+
+func (pool *TxPool) delSidechainTx(hash string) bool {
+	pool.Lock()
+	defer pool.Unlock()
+	_, ok := pool.sidechainTxList[hash]
+	if !ok {
+		return false
+	}
+	delete(pool.sidechainTxList, hash)
 	return true
 }
 
