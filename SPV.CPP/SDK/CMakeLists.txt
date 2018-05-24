@@ -1,66 +1,21 @@
 
-set(SPVSDK_NAME spvsdk)
+set(
+	SPVSDK_INC_DIRS
+	${CMAKE_CURRENT_SOURCE_DIR}/Common
+	${CMAKE_CURRENT_SOURCE_DIR}/Database
+	${CMAKE_CURRENT_SOURCE_DIR}/ELACoreExt
+	${CMAKE_CURRENT_SOURCE_DIR}/Implement
+	${CMAKE_CURRENT_SOURCE_DIR}/Manager
+	${CMAKE_CURRENT_SOURCE_DIR}/Wrapper
+	${CMAKE_CURRENT_SOURCE_DIR}
+	CACHE INTERNAL "spv core include directories"
+)
 
-if(MSVC)
-	set( SPV_LIBRARY_PREFIX "" )
-	set( CMAKE_DEBUG_POSTFIX "d" )
-else(MSVC)
-	set( SPV_LIBRARY_PREFIX "lib" )
-endif(MSVC)
-
-if(APPLE)
-	if(SPV_NO_LIBRARY_VERSION)
-		set( SPV_LIBRARY_EXTENSION ${CMAKE_SHARED_LIBRARY_SUFFIX} )
-	else(SPV_NO_LIBRARY_VERSION)
-		set( SPV_LIBRARY_EXTENSION ".${SPV_ABI_SOVERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}" )
-	endif(SPV_NO_LIBRARY_VERSION)
-elseif(WIN32)
-	# Don't encode library versions on Windows systems
-	set( SPV_LIBRARY_EXTENSIO ${CMAKE_SHARED_LIBRARY_SUFFIX} )
-else()
-	if(SPV_NO_LIBRARY_VERSION)
-		set( SPV_LIBRARY_EXTENSION ${CMAKE_SHARED_LIBRARY_SUFFIX} )
-	else(SPV_NO_LIBRARY_VERSION)
-		set( SPV_LIBRARY_EXTENSION "${CMAKE_SHARED_LIBRARY_SUFFIX}.${SPV_ABI_SOVERSION}" )
-	endif(SPV_NO_LIBRARY_VERSION)
-endif()
-
-
-if(NOT WIN32)
-	option_with_default(SPV_BUILD_TKERNEL_WITH_INSTALL_RPATH "Build TKernel with install RPATH" ON)
-	mark_as_advanced(SPV_BUILD_TKERNEL_WITH_INSTALL_RPATH)
-endif()
-
-include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}/Common"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Database"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Wrapper"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Manager"
-	"${CMAKE_CURRENT_SOURCE_DIR}/ELACoreExt"
-	"${CMAKE_CURRENT_SOURCE_DIR}/"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Interface"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spdlog/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/json/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/Catch2/single_include")
-
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash/ SPVCORE_BCASH_SOURCE_FILES)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite SQLITE_SOURCE_FILES)
 file(GLOB_RECURSE SPVSDK_SOURCE_FILES "*.cpp")
-file(GLOB_RECURSE SPVSDK_HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../Interface/*.h")
-add_library(${SPVSDK_NAME} ${SPV_LIBRARY_TYPE}
-	${SPVSDK_SOURCE_FILES}
-	${SPVCORE_SOURCE_FILES}
-	${SPVSDK_HEADER_FILES}
-	${SPVCORE_BCASH_SOURCE_FILES}
-	${SQLITE_SOURCE_FILES})
 
-if(APPLE)
-	target_link_libraries(${SPVSDK_NAME} pthread)
-	target_link_libraries(${SPVSDK_NAME} ${Boost_LIBRARIES})
-	target_link_libraries(${SPVSDK_NAME} ssl crypto)
-endif()
+set(
+	SPVSDK_SOURCE_FILES
+	${SPVSDK_SOURCE_FILES}
+	CACHE INTERNAL "spv sdk source files" FORCE
+)
+

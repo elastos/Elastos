@@ -16,20 +16,18 @@
 # ANDROID_NDK is set, then the value is ignored.
 # _ANDROID_NDK="android-ndk-r8e"
 _ANDROID_NDK="android-ndk-r16"
-# _ANDROID_NDK="android-ndk-r17"
+# _ANDROID_NDK="android-ndk-r10"
 
 # Set _ANDROID_EABI to the EABI you want to use. You can find the
 # list in $ANDROID_NDK/toolchains. This value is always used.
 # _ANDROID_EABI="x86-4.6"
 # _ANDROID_EABI="arm-linux-androideabi-4.6"
 _ANDROID_EABI="arm-linux-androideabi-4.9"
-#_ANDROID_EABI="aarch64-linux-android-4.9"
 
 # Set _ANDROID_ARCH to the architecture you are building for.
 # This value is always used.
 # _ANDROID_ARCH=arch-x86
 _ANDROID_ARCH=arch-arm
-# _ANDROID_ARCH=arch-arm64
 
 # Set _ANDROID_API to the API you want to use. You should set it
 # to one of: android-14, android-9, android-8, android-14, android-5
@@ -151,7 +149,7 @@ fi
 
 # For the Android SYSROOT. Can be used on the command line with --sysroot
 # https://android.googlesource.com/platform/ndk/+/ics-mr0/docs/STANDALONE-TOOLCHAIN.html
-export ANDROID_SYSROOT="$ANDROID_NDK/sysroot" #"$ANDROID_NDK/platforms/$_ANDROID_API/$_ANDROID_ARCH"
+export ANDROID_SYSROOT="$ANDROID_NDK/platforms/$_ANDROID_API/$_ANDROID_ARCH"
 export CROSS_SYSROOT="$ANDROID_SYSROOT"
 export NDK_SYSROOT="$ANDROID_SYSROOT"
 
@@ -210,7 +208,7 @@ fi
 
 # For the Android toolchain
 # https://android.googlesource.com/platform/ndk/+/ics-mr0/docs/STANDALONE-TOOLCHAIN.html
-export ANDROID_SYSROOT="$ANDROID_NDK/sysroot" #"$ANDROID_NDK/platforms/$_ANDROID_API/$_ANDROID_ARCH"
+export ANDROID_SYSROOT="$ANDROID_NDK/platforms/$_ANDROID_API/$_ANDROID_ARCH"
 export SYSROOT="$ANDROID_SYSROOT"
 export NDK_SYSROOT="$ANDROID_SYSROOT"
 export ANDROID_NDK_SYSROOT="$ANDROID_SYSROOT"
@@ -218,7 +216,7 @@ export ANDROID_API="$_ANDROID_API"
 
 # CROSS_COMPILE and ANDROID_DEV are DFW (Don't Fiddle With). Its used by OpenSSL build system.
 # export CROSS_COMPILE="arm-linux-androideabi-"
-export ANDROID_DEV="$ANDROID_NDK/platforms/$_ANDROID_API/$_ANDROID_ARCH"
+export ANDROID_DEV="$ANDROID_NDK/platforms/$_ANDROID_API/$_ANDROID_ARCH/usr"
 export HOSTCC=gcc
 
 VERBOSE=1

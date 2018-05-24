@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONCREATIONPARAM_H__
 
 #include <string>
-
+#include "BRInt.h"
 #include "CMemBlock.h"
 
 namespace Elastos {

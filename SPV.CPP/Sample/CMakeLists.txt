@@ -1,0 +1,16 @@
+
+set(SAMPLE_NAME sample)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SAMPLE_SOURCE_FILES)
+add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
+target_link_libraries(${SAMPLE_NAME} spvsdk)
+target_link_libraries(${SAMPLE_NAME} dl)
+
+if(UNIX)
+	if(APPLE)
+		target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+	elseif(ANDROID)
+		target_link_libraries(${SAMPLE_NAME} log atomic)
+	else()
+		target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
+	endif()
+endif()

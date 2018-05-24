@@ -1,35 +1,15 @@
 
-set(SPVSDK_JNI_NAME spvsdk)
+file(GLOB_RECURSE SPVJNI_SOURCE_FILES "*.cpp")
 
-include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Common"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Database"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Wrapper"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/ELACoreExt"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../SDK/Manager"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core/secp256k1"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../Core"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/spdlog/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/json/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/Catch2/single_include"
-	"${CMAKE_ANDROID_NDK}/sysroot/usr/include"
-	"${Boost_INCLUDE_DIRS}"
-	"${Openssl_INCLUDE_DIRS}")
+set(
+	SPVJNI_SOURCE_FILES
+	${SPVJNI_SOURCE_FILES}
+	CACHE INTERNAL "spv jni source files" FORCE
+)
 
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core/bcash SPVCORE_BCASH_SOURCE_FILES)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../Core SPVCORE_SOURCE_FILES)
-aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/sqlite SQLITE_SOURCE_FILES)
-file(GLOB_RECURSE SPVSDK_SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../SDK/*.cpp")
-#file(GLOB_RECURSE SPVSDK_JNI_C_SOURCE_FILES "*.c")
-file(GLOB_RECURSE SPVSDK_JNI_SOURCE_FILES "*.cpp")
-
-add_library(${SPVSDK_JNI_NAME} ${SPV_LIBRARY_TYPE}
-	${SPVSDK_JNI_SOURCE_FILES}
-	${SPVCORE_SOURCE_FILES}
-	${SPVCORE_BCASH_SOURCE_FILES}
-	${SPVSDK_SOURCE_FILES}
-	${SQLITE_SOURCE_FILES})
-
-target_link_libraries(${SPVSDK_JNI_NAME} log atomic)
+set(
+	SPVJNI_INC_DIRS
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_ANDROID_NDK}/sysroot/usr/include
+	CACHE INTERNAL "spv jni include directories" FORCE
+)

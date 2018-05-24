@@ -3,7 +3,7 @@
 	url = https://github.com/bitcoin-core/secp256k1.git
 [submodule "ThirdParty/Boost-for-Android"]
 	path = SPV.CPP/ThirdParty/Boost-for-Android
-	url = https://github.com/moritz-wundke/Boost-for-Android.git
+	url = https://github.com/heropan/Boost-for-Android.git
 [submodule "ThirdParty/spdlog"]
 	path = SPV.CPP/ThirdParty/spdlog
 	url = https://github.com/gabime/spdlog.git
@@ -13,3 +13,6 @@
 [submodule "ThirdParty/json"]
 	path = SPV.CPP/ThirdParty/json
 	url = https://github.com/nlohmann/json.git
+[submodule "ThirdParty/openssl/openssl"]
+	path = SPV.CPP/ThirdParty/openssl/openssl
+	url = https://github.com/heropan/openssl.git

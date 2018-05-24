@@ -37,8 +37,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 	SECTION("Merkle Block test ") {
-#define TEST_MERKLEBLOCK_RECORD_CNT 20
-#define TEST_MERKLEBLOCK_DATALEN 75
+#define TEST_MERKLEBLOCK_RECORD_CNT uint64_t(20)
+#define TEST_MERKLEBLOCK_DATALEN uint64_t(75)
 
 		static std::vector<MerkleBlockEntity> blocksToSave;
 
@@ -194,7 +194,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 #define TEST_TX_RECORD_CNT 20
-#define TEST_TX_DATALEN    75
+#define TEST_TX_DATALEN    uint64_t(75)
 #define TEST_TX_HASH_LEN   256
 	SECTION("Transaction test") {
 		static std::vector<TransactionEntity> txToSave;

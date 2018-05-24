@@ -14,6 +14,7 @@ macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 
 option_with_default(SPV_FOR_ANDROID "Build spv for android" OFF)
+option_with_default(SPV_EXPORT_JNI "SPV export java native interface for android" ON)
 
 if(SPV_FOR_ANDROID)
 	message(STATUS "Build spv for android")
@@ -38,116 +39,25 @@ if(SPV_FOR_ANDROID)
 	if(NOT DEFINED CMAKE_ANDROID_ARCH_ABI)
 		set(CMAKE_ANDROID_ARCH_ABI armeabi-v7a CACHE STRING "Android ABI (architecture)" FORCE)
 	endif()
-	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS "arm64-v8a" "armeabi-v7a" "armeabi-v6" "armeabi" "x86" "x86_64")
-
+	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS arm64-v8a armeabi-v7a armeabi-v6 armeabi x86 x86_64)
 endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type." FORCE)
 endif()
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Release" "Debug" "RelWithDebInfo" "MinSizeRel")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Release Debug RelWithDebInfo MinSizeRel)
+
 
 project(SPVSDK VERSION 0.1.0.0)
+
+
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(SPV_FOR_ANDROID)
 	message(STATUS "Android stl type -- ${CMAKE_ANDROID_STL_TYPE}")
 	message(STATUS "Android api level -- ${CMAKE_SYSTEM_VERSION}")
 	message(STATUS "Android ABI (architecture) -- ${CMAKE_ANDROID_ARCH_ABI}")
 endif()
-
-############################
-# Check 32/64 bit platform #
-############################
-if(${CMAKE_SIZEOF_VOID_P} MATCHES "8") # It is 64bit, otherwise 32 bit systems match 4
-	set(BIT 64)
-else (${CMAKE_SIZEOF_VOID_P} MATCHES "8")
-	set(BIT 32)
-endif(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
-message(STATUS "Build ${BIT}bit")
-
-
-if(NOT DEFINED SPV_INSTALL_PREFIX)
-	if(WIN32)
-		set(SPV_INSTALL_PREFIX "c:/${TARGET_NAME}-${SPV_VERSION}")
-	else(WIN32)
-		set(SPV_INSTALL_PREFIX "/usr/local/")
-	endif(WIN32)
-endif(NOT DEFINED SPV_INSTALL_PREFIX)
-
-set(SPV_INSTALL_PREFIX ${SPV_INSTALL_PREFIX} CACHE
-	PATH "Install prefix prepended to target to create install location")
-set(CMAKE_INSTALL_PREFIX "${SPV_INSTALL_PREFIX}" CACHE INTERNAL "Prefix jprepended to install directories if target destination is not absolute, immutable" FORCE)
-
-option_with_default(SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON)
-option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
-option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
-option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
-
-option_with_default(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
-
-if(NOT SPV_FOR_ANDROID)
-	find_package(Boost REQUIRED COMPONENTS filesystem system program_options thread)
-	if(NOT Boost_FOUND)
-		message(FATAL_ERROR "boost not found")
-	endif()
-else()
-	# find boost
-	set(BOOST_COMPONENTS filesystem system program_options thread)
-	set(Boost_LIBRARIES "")
-
-	foreach(lib_name ${BOOST_COMPONENTS})
-		file(GLOB lib_name_FOUND ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/lib/libboost_${lib_name}*.a)
-		if("${lib_name_FOUND}" STREQUAL "")
-			message(FATAL_ERROR "libboost_${lib_name} not found, maybe you should run ./build-android.sh $ANDROID_NDK or ./build-android.bat $ANDROID_NDK in ThirdParty/Boost-for-Android first.")
-		endif()
-		message(STATUS "${lib_name_FOUND} -- found")
-		set(Boost_LIBRARIES "${lib_name_FOUND};${Boost_LIBRARIES}")
-	endforeach(lib_name)
-
-	string(REPLACE ";" " " Boost_LIBRARIES_NO_Semicolon "${Boost_LIBRARIES}")
-	file(GLOB Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include/*)
-	if("${Boost_INCLUDE_DIRS}" STREQUAL "")
-		message(FATAL_ERROR "boost include directory not found")
-	endif()
-
-	# find libcrypto and libssl
-	set(OPENSSL_LIBRARIES ssl crypto)
-	set(Openssl_LIBRARIES "")
-
-	foreach(lib_name ${OPENSSL_LIBRARIES})
-		file(GLOB lib_name_FOUND ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/openssl/install/android-${CMAKE_SYSTEM_VERSION}/lib/lib${lib_name}.a)
-		if("${lib_name_FOUND}" STREQUAL "")
-			message(FATAL_ERROR "${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/openssl/install/android-${CMAKE_SYSTEM_VERSION}/lib/lib${lib_name}.a not found, you need to build and install openssl in directory ThirdParty/openssl first.")
-		endif()
-		message(STATUS "${lib_name_FOUND} -- found")
-		set(Openssl_LIBRARIES "${lib_name_FOUND};${Openssl_LIBRARIES}")
-	endforeach(lib_name)
-	string(REPLACE ";" " " Openssl_LIBRARIES_NO_Semicolon "${Openssl_LIBRARIES}")
-
-	file(GLOB Openssl_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/openssl/install/android-${CMAKE_SYSTEM_VERSION}/include)
-	if("${Openssl_INCLUDE_DIRS}" STREQUAL "")
-		message(FATAL_ERROR "openssl include directory not found")
-	endif()
-
-	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} ${Openssl_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
-	#set(CMAKE_SHARED_LINKER_FLAGS "-march=${ANDROID_ARCH} -Wl,--fix-cortex-a8 -Wl,-whole-archive ${Boost_LIBRARIES_NO_Semicolon} -Wl,-no-whole-archive" CACHE STRING "link flag" FORCE)
-endif()
-
-
-if(SPV_BUILD_SHARED_LIB)
-	set(SPV_LIBRARY_TYPE SHARED)
-	set(SPV_BUILD_STATIC_LIB FALSE)
-else(SPV_BUILD_SHARED_LIB)
-	set(SPV_LIBRARY_TYPE STATIC)
-	set(SPV_BUILD_STATIC_LIB TRUE)
-	if (WIN32)
-		add_definitions("-DHAVE_NO_DLL")
-	endif(WIN32)
-endif(SPV_BUILD_SHARED_LIB)
-
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
-set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
 
 if(UNIX)
 	if(APPLE)
@@ -174,14 +84,9 @@ else(UNIX)
 		add_definitions(-DWNT -DWIN32 -D_WINDOWS)
 		set(PLATFORM win)
 	else(WIN32)
-		message(STATUS "Unknown platform")
+		message(FATAL_ERROR "Unknown platform")
 	endif(WIN32)
 endif(UNIX)
-
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-DSPDLOG_DEBUG_ON)
-endif()
 
 # Enable Extra warnings for each compiler
 if(SPV_EXTRA_WARNINGS)
@@ -199,51 +104,86 @@ if(SPV_EXTRA_WARNINGS)
 	endif(INTEL)
 endif(SPV_EXTRA_WARNINGS)
 
-include_directories(
-	"${CMAKE_CURRENT_SOURCE_DIR}/SDK/Common"
-	"${CMAKE_CURRENT_SOURCE_DIR}/SDK/Database"
-	"${CMAKE_CURRENT_SOURCE_DIR}/SDK/Wrapper"
-	"${CMAKE_CURRENT_SOURCE_DIR}/ELACoreExt"
-	"${CMAKE_CURRENT_SOURCE_DIR}/SDK"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Core/secp256k1"
-	"${CMAKE_CURRENT_SOURCE_DIR}/Core"
-	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/sqlite"
-	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spdlog/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/json/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/Catch2/single_include"
-	"${CMAKE_CURRENT_SOURCE_DIR}"
-	"${Boost_INCLUDE_DIRS}"
+if(${CMAKE_SIZEOF_VOID_P} MATCHES "8") # It is 64bit, otherwise 32 bit systems match 4
+	set(BIT 64)
+else (${CMAKE_SIZEOF_VOID_P} MATCHES "8")
+	set(BIT 32)
+endif(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
+message(STATUS "Build ${BIT}bit")
+
+if(NOT DEFINED SPV_INSTALL_PREFIX)
+	if(WIN32)
+		set(SPV_INSTALL_PREFIX "c:/${TARGET_NAME}")
+	else(WIN32)
+		set(SPV_INSTALL_PREFIX "/usr/local/")
+	endif(WIN32)
+endif(NOT DEFINED SPV_INSTALL_PREFIX)
+
+set(
+	SPV_INSTALL_PREFIX
+	${SPV_INSTALL_PREFIX}
+	CACHE PATH "Install prefix prepended to target to create install location"
 )
 
+set(
+	CMAKE_INSTALL_PREFIX
+	${SPV_INSTALL_PREFIX}
+	CACHE INTERNAL "Prefix to install" FORCE
+)
 
-if(SPV_FOR_ANDROID)
-	add_subdirectory(Java)
-else()
-	add_subdirectory(SDK)
+option_with_default(SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON)
+option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
+option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
+option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
+
+option_with_default(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
+
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
+
+if(SPV_BUILD_SHARED_LIB)
+	set(SPV_LIBRARY_TYPE SHARED)
+else(SPV_BUILD_SHARED_LIB)
+	set(SPV_LIBRARY_TYPE STATIC)
+endif(SPV_BUILD_SHARED_LIB)
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_definitions(-DSPDLOG_DEBUG_ON)
 endif()
+
+add_subdirectory(ThirdParty)
+add_subdirectory(Core)
+add_subdirectory(SDK)
+add_subdirectory(Interface)
+if(SPV_FOR_ANDROID AND SPV_EXPORT_JNI)
+	add_subdirectory(Java)
+endif()
+
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${ThirdParty_INC_DIRS}
+	${SPVCORE_INC_DIRS}
+	${SPVSDK_INC_DIRS}
+	${SPVJNI_INC_DIRS}
+	${INTERFACE_INC_DIRS}
+)
+
+add_library(spvsdk ${SPV_LIBRARY_TYPE}
+	${SPVSDK_SOURCE_FILES}
+	${SPVJNI_SOURCE_FILES}
+	${SPVCORE_SOURCE_FILES}
+)
+
+target_link_libraries(spvsdk crypto ssl sqlite ${Boost_LIBRARIES})
+if(ANDROID)
+	target_link_libraries(spvsdk log atomic)
+else()
 
 if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)
 endif()
 
 if(SPV_BUILD_SAMPLE)
-	set(SAMPLE_NAME sample)
-	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Sample SAMPLE_SOURCE_FILES)
-	add_executable(${SAMPLE_NAME} ${SAMPLE_SOURCE_FILES})
-	target_link_libraries(${SAMPLE_NAME} spvsdk)
-	target_link_libraries(${SAMPLE_NAME} dl)
-
-	if(UNIX)
-		if(APPLE)
-			target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
-			target_link_libraries(${SAMPLE_NAME} ssl crypto)
-		elseif(ANDROID)
-			target_link_libraries(${SAMPLE_NAME} log atomic)
-		else()
-			target_link_libraries(${SAMPLE_NAME} crypto)
-			target_link_libraries(${SAMPLE_NAME} ${Boost_LIBRARIES})
-		endif()
-	endif()
-
+	add_subdirectory(Sample)
 endif()
-
