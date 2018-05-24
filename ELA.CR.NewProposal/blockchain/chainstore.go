@@ -377,13 +377,12 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	return asset, nil
 }
 
-func (c *ChainStore) PersistSidechainTx(sidechainTxHash string) error {
+func (c *ChainStore) PersistSidechainTx(sidechainTxHash string) {
 	key := []byte{byte(IX_SideChain_Tx)}
 	key = append(key, []byte(sidechainTxHash)...)
 
 	// PUT VALUE
 	c.BatchPut(key, []byte{byte(ValueExist)})
-	return nil
 }
 
 func (c *ChainStore) GetSidechainTx(sidechainTxHash string) (byte, error) {
