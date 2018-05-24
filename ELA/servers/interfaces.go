@@ -861,6 +861,8 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadWithdrawAsset:
 		obj := new(WithdrawAssetInfo)
 		obj.BlockHeight = object.BlockHeight
+		obj.GenesisBlockAddress = object.GenesisBlockAddress
+		obj.SideChainTransactionHash = obj.SideChainTransactionHash
 		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)

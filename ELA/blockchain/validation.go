@@ -234,16 +234,18 @@ func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
 		sidechain.DbCache = dbCache
 	}
 
-	ok, err := sidechain.DbCache.HasSideChainTx(withdrawPayload.SideChainTransactionHash)
-	if err != nil {
-		return err
-	}
-	if ok {
-		return errors.New("Reduplicate withdraw transaction.")
-	}
-	err = sidechain.DbCache.AddSideChainTx(withdrawPayload.SideChainTransactionHash, withdrawPayload.GenesisBlockAddress)
-	if err != nil {
-		return err
+	for _, txHash := range withdrawPayload.SideChainTransactionHash {
+		ok, err := sidechain.DbCache.HasSideChainTx(txHash)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return errors.New("Reduplicate withdraw transaction.")
+		}
+		err = sidechain.DbCache.AddSideChainTx(txHash, withdrawPayload.GenesisBlockAddress)
+		if err != nil {
+			return err
+		}
 	}
 
 	//hash, err := DefaultLedger.Store.GetBlockHash(uint32(withdrawPayload.BlockHeight))
