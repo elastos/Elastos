@@ -85,11 +85,17 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	blockInputs := make([]*Input, 0)
-	// Check for duplicate transactions.
+	blockSidechainTxs := make([]string, 0)
 	// Fixme: merge this loop with the above
 	existingTxHashes := make(map[Uint256]struct{})
 	for _, txn := range transactions {
 		blockInputs = append(blockInputs, txn.Inputs...)
+		if txn.IsWithdrawTx() {
+			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+			blockSidechainTxs = append(blockSidechainTxs, witPayload.SideChainTransactionHash...)
+		}
+
+		// Check for duplicate transactions.
 		txHash := txn.Hash()
 		if _, exists := existingTxHashes[txHash]; exists {
 			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
@@ -105,6 +111,15 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 			return errors.New("[PowCheckBlockSanity] block contains duplicate UTXO")
 		}
 		existingTxInputs[referKey] = struct{}{}
+	}
+
+	// Check for duplicate sidechain tx in a block
+	existingSideTxs := make(map[string]struct{})
+	for _, hash := range blockSidechainTxs {
+		if _, exists := existingSideTxs[hash]; exists {
+			return errors.New("[PowCheckBlockSanity] block contains duplicate sidechain Tx")
+		}
+		existingSideTxs[hash] = struct{}{}
 	}
 
 	// Check transaction outputs after a update checkpoint.
