@@ -20,7 +20,7 @@ type TxPool struct {
 	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
 	inputUTXOList   map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
-	sidechainTxList map[string]struct{}     //
+	sidechainTxList map[string]struct{}     // sidechain tx pool
 }
 
 func (pool *TxPool) Init() {
@@ -96,6 +96,8 @@ func (pool *TxPool) CleanSubmittedTransactions(block *Block) error {
 	pool.cleanTransactionList(block.Transactions)
 	pool.cleanUTXOList(block.Transactions)
 	//pool.cleanIssueSummary(block.Transactions)
+	pool.cleanSidechainTx(block.Transactions)
+
 	return nil
 }
 
@@ -181,6 +183,18 @@ func (pool *TxPool) cleanUTXOList(txs []*Transaction) {
 		inputUtxos, _ := DefaultLedger.Store.GetTxReference(txn)
 		for Utxoinput, _ := range inputUtxos {
 			pool.delInputUTXOList(Utxoinput)
+		}
+	}
+}
+
+// clean the sidechain tx pool
+func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
+	for _, txn := range txs {
+		if txn.IsWithdrawTx() {
+			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+			for _, hash := range witPayload.SideChainTransactionHash {
+				pool.delSidechainTx(hash)
+			}
 		}
 	}
 }
