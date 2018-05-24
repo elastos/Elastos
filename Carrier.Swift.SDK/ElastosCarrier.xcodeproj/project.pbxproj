@@ -10,7 +10,6 @@
 		A353E79720932FE400398BDC /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498432005BE7600420421 /* libelacarrier.a */; };
 		A353E79820932FE400398BDC /* libelacommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983A2005BE7600420421 /* libelacommon.a */; };
 		A353E79920932FE400398BDC /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498392005BE7600420421 /* libelasession.a */; };
-		A353E79A20932FE400398BDC /* libflatcc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498402005BE7600420421 /* libflatcc.a */; };
 		A353E79B20932FE400398BDC /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983E2005BE7600420421 /* libflatccrt.a */; };
 		A353E79C20932FE400398BDC /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983D2005BE7600420421 /* libpj.a */; };
 		A353E79D20932FE400398BDC /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983B2005BE7600420421 /* libpjlib-util.a */; };
@@ -119,7 +118,6 @@
 				A353E79720932FE400398BDC /* libelacarrier.a in Frameworks */,
 				A353E79820932FE400398BDC /* libelacommon.a in Frameworks */,
 				A353E79920932FE400398BDC /* libelasession.a in Frameworks */,
-				A353E79A20932FE400398BDC /* libflatcc.a in Frameworks */,
 				A353E79B20932FE400398BDC /* libflatccrt.a in Frameworks */,
 				A353E79C20932FE400398BDC /* libpj.a in Frameworks */,
 				A353E79D20932FE400398BDC /* libpjlib-util.a in Frameworks */,
