@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"math"
 
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
-
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -44,6 +43,11 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 	if err := CheckTransactionPayload(txn); err != nil {
 		log.Warn("[CheckTransactionPayload],", err)
 		return ErrTransactionPayload
+	}
+
+	if err := CheckDuplicateSidechainTx(txn); err != nil {
+		log.Warn("[CheckDuplicateSidechainTx],", err)
+		return ErrSidechainTxHashDuplicate
 	}
 
 	// check iterms above for Coinbase transaction
@@ -318,6 +322,14 @@ func CheckTransactionPayload(txn *Transaction) error {
 	case *PayloadTransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
+	}
+	return nil
+}
+
+//validate the transaction of duplicate sidechain transaction
+func CheckDuplicateSidechainTx(txn *Transaction) error {
+	if txn.IsIssueTokenTx() {
+
 	}
 	return nil
 }
