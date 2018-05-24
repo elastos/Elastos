@@ -26,7 +26,7 @@ type IChainStore interface {
 	PersistAsset(assetid Uint256, asset Asset) error
 	GetAsset(hash Uint256) (*Asset, error)
 
-	PersistSidechainTx(sidechainTxHash string) error
+	PersistSidechainTx(sidechainTxHash string)
 	GetSidechainTx(sidechainTxHash string) (byte, error)
 
 	GetCurrentBlockHash() Uint256

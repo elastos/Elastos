@@ -72,8 +72,10 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 
 	if txn.IsWithdrawTx() {
 		witPayload := txn.Payload.(*PayloadWithdrawAsset)
-		if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(witPayload.SideChainTransactionHash); exist {
-			return ErrSidechainTxHashDuplicate
+		for _, hash := range witPayload.SideChainTransactionHash {
+			if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
+				return ErrSidechainTxHashDuplicate
+			}
 		}
 	}
 
