@@ -11,7 +11,7 @@
 #include "Key.h"
 
 TestWalletManager::TestWalletManager() :
-	WalletManager(Utils::convertToMemBlock<uint8_t>("a test seed ha")) {
+	WalletManager((const CMBlock)Utils::convertToMemBlock<uint8_t>("a test seed ha")) {
 }
 
 SharedWrapperList<Peer, BRPeer*> TestWalletManager::loadPeers() {

@@ -99,6 +99,7 @@ namespace Elastos {
 				case Normal:
 					result = new TxParam;
 					break;
+#if 0
 				case Deposit:
 					DepositTxParam *depositTxParam = new DepositTxParam;
 					result = depositTxParam;
@@ -111,6 +112,7 @@ namespace Elastos {
 					IdTxParam *idTxParam = new IdTxParam;
 					result = idTxParam;
 					break;
+#endif
 			}
 			result->setFromAddress(fromAddress);
 			result->setToAddress(toAddress);

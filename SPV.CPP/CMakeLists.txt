@@ -51,7 +51,7 @@ set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Release Debug RelWithDebInf
 project(SPVSDK VERSION 0.1.0.0)
 
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if(SPV_FOR_ANDROID)
 	message(STATUS "Android stl type -- ${CMAKE_ANDROID_STL_TYPE}")
@@ -178,7 +178,7 @@ add_library(spvsdk ${SPV_LIBRARY_TYPE}
 target_link_libraries(spvsdk crypto ssl sqlite ${Boost_LIBRARIES})
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
-else()
+endif()
 
 if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)

@@ -24,12 +24,12 @@ JNIEXPORT jlong JNICALL
 Java_com_elastos_spvcore_WalletManager_createJniWalletManager
 	(JNIEnv *env, jclass thisClass,
 	 jobject objChainParams) {
-
-	ChainParams *chainParams = getHandle<ChainParams>(env, objChainParams);
-
-	WalletManager *walletManager = new WalletManager(*chainParams);
-
-	return reinterpret_cast<jlong>(walletManager);
+	return 0;
+//	ChainParams *chainParams = getHandle<ChainParams>(env, objChainParams);
+//
+//	WalletManager *walletManager = new WalletManager(*chainParams);
+//
+//	return reinterpret_cast<jlong>(walletManager);
 }
 
 JNIEXPORT jlong JNICALL
@@ -38,14 +38,14 @@ Java_com_elastos_spvcore_WalletManager_recoverJniWalletManager
 	 jstring stringPhrase,
 	 jstring stringLanguage,
 	 jobject objChainParams) {
-
-	ChainParams *chainParams = getHandle<ChainParams>(env, objChainParams);
-	const char *phrase = (const char *) env->GetStringUTFChars(stringPhrase, 0);
-	const char *language = (const char *) env->GetStringUTFChars(stringLanguage, 0);
-
-	WalletManager *walletManager = new WalletManager(phrase, language, *chainParams);
-
-	return reinterpret_cast<jlong>(walletManager);
+	return 0;
+//	ChainParams *chainParams = getHandle<ChainParams>(env, objChainParams);
+//	const char *phrase = (const char *) env->GetStringUTFChars(stringPhrase, 0);
+//	const char *language = (const char *) env->GetStringUTFChars(stringLanguage, 0);
+//
+//	WalletManager *walletManager = new WalletManager(phrase, language, *chainParams);
+//
+//	return reinterpret_cast<jlong>(walletManager);
 }
 
 JNIEXPORT void JNICALL

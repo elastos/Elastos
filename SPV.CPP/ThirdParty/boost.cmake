@@ -33,7 +33,6 @@ else()
 	if(NOT Boost_FOUND)
 		message(FATAL_ERROR "boost not found")
 	endif()
-	message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
 endif()
 
 set(
