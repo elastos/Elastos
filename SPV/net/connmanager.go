@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
+	"fmt"
 )
 
 const (
@@ -14,7 +15,13 @@ const (
 	MaxRetryCount = 5
 )
 
+type ConnectionListener interface {
+	OnOutbound(conn net.Conn)
+	OnInbound(conn net.Conn)
+}
+
 type ConnManager struct {
+	localPeer      *Peer
 	maxConnections int
 
 	connectingLock *sync.RWMutex
@@ -26,19 +33,20 @@ type ConnManager struct {
 	connsLock   *sync.RWMutex
 	connections map[string]net.Conn
 
-	onPeerConnected func(conn net.Conn)
+	listener ConnectionListener
 }
 
-func newConnManager(maxConnections int, onPeerConnected func(conn net.Conn)) *ConnManager {
+func newConnManager(localPeer *Peer, maxConnections int, listener ConnectionListener) *ConnManager {
 	cm := new(ConnManager)
+	cm.localPeer = localPeer
+	cm.maxConnections = maxConnections
 	cm.connectingLock = new(sync.RWMutex)
 	cm.connectingList = make(map[string]string)
 	cm.retryLock = new(sync.RWMutex)
 	cm.retryList = make(map[string]int)
 	cm.connsLock = new(sync.RWMutex)
 	cm.connections = make(map[string]net.Conn)
-	cm.maxConnections = maxConnections
-	cm.onPeerConnected = onPeerConnected
+	cm.listener = listener
 	return cm
 }
 
@@ -78,13 +86,14 @@ func (cm *ConnManager) isConnected(addr string) bool {
 	return ok
 }
 
-func (cm *ConnManager) Disconnected(addr string) {
+func (cm *ConnManager) PeerDisconnected(addr string) {
 	cm.deConnecting(addr)
 
 	cm.connsLock.Lock()
-	conn := cm.connections[addr]
-	conn.Close()
-	delete(cm.connections, addr)
+	if conn, ok := cm.connections[addr]; ok {
+		conn.Close()
+		delete(cm.connections, addr)
+	}
 	cm.connsLock.Unlock()
 }
 
@@ -98,12 +107,15 @@ func (cm *ConnManager) connectPeer(addr string) {
 
 	// de connecting address
 	cm.deConnecting(addr)
+	// Callback connection
+	cm.listener.OnOutbound(conn)
+}
+
+func (cm *ConnManager) PeerConnected(addr string, conn net.Conn) {
 	// Add to connection list
 	cm.connsLock.Lock()
 	cm.connections[addr] = conn
 	cm.connsLock.Unlock()
-	// Callback connection
-	cm.onPeerConnected(conn)
 }
 
 func (cm *ConnManager) retry(addr string) {
@@ -129,16 +141,39 @@ func (cm *ConnManager) retry(addr string) {
 	cm.connectPeer(addr)
 }
 
+func (cm *ConnManager) listenConnection() {
+	listener, err := net.Listen("tcp", fmt.Sprint(":", cm.localPeer.port))
+	if err != nil {
+		fmt.Println("Start peer listening err, ", err.Error())
+		return
+	}
+	defer listener.Close()
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting ", err.Error())
+			continue
+		}
+		fmt.Printf("New connection accepted, remote: %s local: %s\n", conn.RemoteAddr(), conn.LocalAddr())
+
+		cm.listener.OnInbound(conn)
+	}
+}
+
 func (cm *ConnManager) monitorConnections() {
-	ticker := time.NewTicker(InfoUpdateDuration)
+	ticker := time.NewTicker(time.Second * InfoUpdateDuration)
 	for range ticker.C {
 		cm.connsLock.Lock()
-		for len(cm.connections) > cm.maxConnections {
-			// Random close a connection
-			for addr, conn := range cm.connections {
+		conns := len(cm.connections)
+		if conns > cm.maxConnections {
+			// Random close connections
+			for _, conn := range cm.connections {
 				conn.Close()
-				delete(cm.connections, addr)
-				break // back to connections count check
+				conns--
+				if conns <= cm.maxConnections {
+					break
+				}
 			}
 		}
 		cm.connsLock.Unlock()

@@ -23,14 +23,14 @@ const (
 
 type AddrManager struct {
 	sync.RWMutex
-	maxOutbound int
+	minOutbound int
 	addrList    map[string]*knownAddress
 	connected   map[string]*knownAddress
 }
 
-func newAddrManager(seeds []string, maxOutbound int) *AddrManager {
+func newAddrManager(seeds []string, minOutbound int) *AddrManager {
 	am := new(AddrManager)
-	am.maxOutbound = maxOutbound
+	am.minOutbound = minOutbound
 	am.addrList = make(map[string]*knownAddress)
 	am.connected = make(map[string]*knownAddress)
 
@@ -79,7 +79,7 @@ func (am *AddrManager) GetOutboundAddresses(cm *ConnManager) []p2p.NetAddress {
 			continue
 		}
 		addrs = append(addrs, addr.NetAddress)
-		if len(addrs) >= am.maxOutbound {
+		if len(addrs) >= am.minOutbound {
 			break
 		}
 	}
@@ -96,7 +96,7 @@ func (am *AddrManager) RandGetAddresses() []p2p.NetAddress {
 			continue
 		}
 		addrs = append(addrs, addr.NetAddress)
-		if len(addrs) >= am.maxOutbound {
+		if len(addrs) >= am.minOutbound*2 {
 			break
 		}
 	}

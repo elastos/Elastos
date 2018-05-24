@@ -24,11 +24,12 @@ const (
 )
 
 const (
-	LevelTrace = 1
-	LevelWarn  = 2
-	LevelError = 3
-	LevelDebug = 4
-	LevelFile  = 5
+	LevelInfo  = iota
+	LevelTrace
+	LevelWarn
+	LevelError
+	LevelDebug
+	LevelFile
 )
 
 var printLevel uint8

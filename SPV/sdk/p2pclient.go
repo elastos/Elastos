@@ -21,6 +21,6 @@ type P2PClient interface {
 // and client id is the unique id to identify the current peer in this peer to peer network.
 // seeds is a list which is the other peers IP:Port addresses.
 // port is the port number for this client listening inbound connections.
-func GetP2PClient(magic uint32, clientId uint64, seeds []string, port uint16, maxOutbound, maxConnections int) (P2PClient, error) {
-	return NewP2PClientImpl(magic, clientId, seeds, port, maxOutbound, maxConnections)
+func GetP2PClient(magic uint32, clientId uint64, seeds []string, port uint16, minOutbound, maxConnections int) (P2PClient, error) {
+	return NewP2PClientImpl(magic, clientId, seeds, port, minOutbound, maxConnections)
 }

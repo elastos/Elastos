@@ -63,6 +63,6 @@ netType are TypeMainNet and TypeTestNet two options, clientId is the unique id t
 this client in the peer to peer network. seeds is a list of other peers IP:[Port] addresses,
 port is not necessary for it will be overwrite to SPVServerPort according to the SPV protocol
 */
-func GetSPVClient(magic uint32, clientId uint64, seeds []string, maxOutbound, maxConnections int) (SPVClient, error) {
-	return NewSPVClientImpl(magic, clientId, seeds, maxOutbound, maxConnections)
+func GetSPVClient(magic uint32, clientId uint64, seeds []string, minOutbound, maxConnections int) (SPVClient, error) {
+	return NewSPVClientImpl(magic, clientId, seeds, minOutbound, maxConnections)
 }
