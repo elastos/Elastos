@@ -258,7 +258,7 @@ func CheckTransactionBalance(txn *Transaction) error {
 
 	// TODO: check coinbase balance 30%-70%
 	for _, v := range txn.Outputs {
-		if v.Value <= Fixed64(0) {
+		if v.Value < Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
