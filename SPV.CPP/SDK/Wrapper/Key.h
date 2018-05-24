@@ -80,13 +80,16 @@ namespace Elastos {
 
 			static void
 			calculatePrivateKeyList(BRKey keys[], size_t keysCount, UInt256 *secret, UInt256 *chainCode,
-									uint32_t chain, const uint32_t indexes[]);
+			                        uint32_t chain, const uint32_t indexes[]);
+
+			static bool verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
+			                              const CMBlock &signature);
 
 		private:
 			bool setSecret(const UInt256 &data, bool compressed);
 
 			static void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth,
-										  va_list vlist);
+			                              va_list vlist);
 
 		private:
 			boost::shared_ptr<BRKey> _key;

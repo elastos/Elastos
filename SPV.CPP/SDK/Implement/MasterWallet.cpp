@@ -196,40 +196,42 @@ namespace Elastos {
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
 			CMemBlock<unsigned char> keyData = Utils::decrypt(_encryptedKey, payPassword);
-
 			Key key;
-			std::string secret = (char *)(void *)keyData;
-			key.setPrivKey(secret);
+			if (keyData) {
+				std::string secret = (char *)(void *)keyData;
+				key.setPrivKey(secret);
+			}
 			return key;
 		}
 
 		void MasterWallet::initPublicKey(const std::string &payPassword) {
 			Key key = deriveKey(payPassword);
-
+			if (key.getPrivKey() == "") {
+				return;
+			}
 			size_t len = BRKeyPubKey(key.getRaw(), nullptr, 0);
-			uint8_t pubKey[len];
-			BRKeyPubKey(key.getRaw(), &pubKey, len);
-			size_t strLen = BRBase58Encode(nullptr, 0, pubKey, len);
-			char *result = new char[strLen];
-			BRBase58Encode(result, strLen, pubKey, len);
-
-			_publicKey = std::string(result);
+			uint8_t *pubKey = new uint8_t[len];
+			BRKeyPubKey(key.getRaw(), pubKey, len);
+			_publicKey = std::string((char *)pubKey, len);
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
 			Key key = deriveKey(payPassword);
-			CMBlock messageData;
-			messageData.SetMemFixed((const uint8_t *)message.data(), message.size());
-		 	CMBlock signedData = key.compactSign(messageData);
-			signedData[signedData.GetSize() + 1] = '\0';
-			std::string singedMsg = (char *)(void *)signedData;
+			CMBlock signedData = key.sign(Utils::UInt256FromString(message));
 
+			char *data = new char[signedData.GetSize()];
+			memcpy(data, signedData, signedData.GetSize());
+			std::string singedMsg(data, signedData.GetSize());
 			return singedMsg;
 		}
 
 		nlohmann::json
-		MasterWallet::CheckSign(const std::string &address, const std::string &message, const std::string &signature) {
-			//todo complete me
+		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
+			CMBlock signatureData(signature.size());
+			memcpy(signatureData, signature.c_str(), signature.size());
+
+			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
+			Log::getLogger()->info("verify result={}", r);
 			return nlohmann::json();
 		}
 

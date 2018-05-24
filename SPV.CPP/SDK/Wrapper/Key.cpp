@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <string.h>
+#include <secp256k1.h>
 
 #include "BRBIP39Mnemonic.h"
 #include "BRBIP32Sequence.h"
@@ -35,23 +36,22 @@ namespace Elastos {
 			// - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
 			//   (Note: this has probability lower than 1 in 2^127.)
 			//
-			static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i)
-			{
+			static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i) {
 				uint8_t buf[sizeof(BRECPoint) + sizeof(i)];
 				UInt512 I;
 
 				if (i & BIP32_HARD) {
 					buf[0] = 0;
 					UInt256Set(&buf[1], *k);
-				}
-				else BRSecp256k1PointGen((BRECPoint *)buf, k);
+				} else BRSecp256k1PointGen((BRECPoint *) buf, k);
 
 				UInt32SetBE(&buf[sizeof(BRECPoint)], i);
 
-				BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
+				BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf,
+				       sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
 
-				BRSecp256k1ModAdd(k, (UInt256 *)&I); // k = IL + k (mod n)
-				*c = *(UInt256 *)&I.u8[sizeof(UInt256)]; // c = IR
+				BRSecp256k1ModAdd(k, (UInt256 *) &I); // k = IL + k (mod n)
+				*c = *(UInt256 *) &I.u8[sizeof(UInt256)]; // c = IR
 
 				var_clean(&I);
 				mem_clean(buf, sizeof(buf));
@@ -60,6 +60,7 @@ namespace Elastos {
 
 		Key::Key() {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
+			memset(_key.get(), 0, sizeof(BRKey));
 		}
 
 		Key::Key(const boost::shared_ptr<BRKey> &brkey) {
@@ -130,7 +131,7 @@ namespace Elastos {
 
 		CMBlock Key::getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass) {
 			UInt512 key;
-			const char *charPhrase = (char *)(void *)phrase;
+			const char *charPhrase = (char *) (void *) phrase;
 			const char *charPhrasePass = phrasePass == "" ? nullptr : phrasePass.c_str();
 			BRBIP39DeriveKey(key.u8, charPhrase, charPhrasePass);
 
@@ -142,7 +143,7 @@ namespace Elastos {
 
 		CMBlock Key::getAuthPrivKeyForAPI(const CMBlock &seed) {
 			BRKey key;
-			BRBIP32APIAuthKey(&key, (void *)seed, seed.GetSize());
+			BRBIP32APIAuthKey(&key, (void *) seed, seed.GetSize());
 			char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
 			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
 
@@ -154,7 +155,7 @@ namespace Elastos {
 
 		std::string Key::getAuthPublicKeyForAPI(const CMBlock &privKey) {
 			BRKey key;
-			BRKeySetPrivKey(&key, (const char *)(void *)privKey);
+			BRKeySetPrivKey(&key, (const char *) (void *) privKey);
 			size_t len = BRKeyPubKey(&key, nullptr, 0);
 			uint8_t pubKey[len];
 			BRKeyPubKey(&key, &pubKey, len);
@@ -200,14 +201,14 @@ namespace Elastos {
 		CMBlock Key::encryptNative(const CMBlock &data, const CMBlock &nonce) const {
 			CMBlock out(16 + data.GetSize());
 			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.GetSize(), _key.get(), nonce,
-														   data, data.GetSize(), nullptr, 0);
+			                                               data, data.GetSize(), nullptr, 0);
 			return out;
 		}
 
 		CMBlock Key::decryptNative(const CMBlock &data, const CMBlock &nonce) const {
 			CMBlock out(1024);
 			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.GetSize(), _key.get(), nonce,
-														   data, data.GetSize(), nullptr, 0);
+			                                               data, data.GetSize(), nullptr, 0);
 			out.Resize(outSize);
 			return out;
 		}
@@ -272,7 +273,7 @@ namespace Elastos {
 		}
 
 		void Key::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth,
-									va_list vlist) {
+		                            va_list vlist) {
 			UInt512 I;
 			UInt256 secret;
 
@@ -282,8 +283,8 @@ namespace Elastos {
 
 			if (key && (seed || seedLen == 0)) {
 				BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
-				secret = *(UInt256 *)&I;
-				chainCode = *(UInt256 *)&I.u8[sizeof(UInt256)];
+				secret = *(UInt256 *) &I;
+				chainCode = *(UInt256 *) &I.u8[sizeof(UInt256)];
 				var_clean(&I);
 
 				for (int i = 0; i < depth; i++) {
@@ -297,7 +298,7 @@ namespace Elastos {
 
 		void
 		Key::calculatePrivateKeyList(BRKey *keys, size_t keysCount, UInt256 *secret, UInt256 *chainCode,
-									 uint32_t chain, const uint32_t *indexes) {
+		                             uint32_t chain, const uint32_t *indexes) {
 			UInt512 I;
 			UInt256 *s, *c;
 
@@ -316,6 +317,24 @@ namespace Elastos {
 					BRKeySetSecret(&keys[i], s, 1);
 				}
 			}
+		}
+
+		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
+		                            const CMBlock &signature) {
+			size_t len = publicKey.size();
+			int r = 0;
+			secp256k1_context *_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);;
+			secp256k1_pubkey pk;
+			secp256k1_ecdsa_signature s;
+			uint8_t pubKey[65];
+			memset(pubKey, 0, sizeof(pubKey));
+			memcpy(pubKey, publicKey.c_str(), len);
+
+			if (len > 0 && secp256k1_ec_pubkey_parse(_ctx, &pk, pubKey, len) &&
+			    secp256k1_ecdsa_signature_parse_der(_ctx, &s, signature, signature.GetSize())) {
+				if (secp256k1_ecdsa_verify(_ctx, &s, messageDigest.u8, &pk) == 1) r = 1; // success is 1, all other values are fail
+			}
+			return r;
 		}
 
 
