@@ -15,7 +15,7 @@ FLATCC  ?= flatcc
 
 CFLAGS := $(CFLAGS) -DCARRIER_BUILD -DELASTOS_BUILD -I. -I../common -Idht -I$(INSTALL_INCLUDE_PATH) -fvisibility=hidden -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
 LDFLAGS := $(LDFLAGS) -fvisibility=hidden
-LIBS   := -lelacommon -ltoxcore -lsodium -lm -lflatcc -lflatccrt
+LIBS   := -lelacommon -ltoxcore -lsodium -lm -lflatccrt
 
 ifneq (, $(findstring $(HOST), Darwin iOS))
 	CFLAGS := $(CFLAGS) -Wno-pointer-sign

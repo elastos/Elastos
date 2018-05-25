@@ -25,7 +25,7 @@ lipo_process() {
         rm -rf ${LIPO_PATH} &&
             mkdir -p ${LIPO_PATH}
 
-        LIBS="sodium toxcore flatcc flatccrt pj pjlib-util pjnath pjmedia \
+        LIBS="sodium toxcore flatccrt pj pjlib-util pjnath pjmedia \
               elacommon elacarrier elasession"
 
         for lib in ${LIBS}; do 
