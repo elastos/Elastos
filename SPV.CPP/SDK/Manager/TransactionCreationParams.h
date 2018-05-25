@@ -99,7 +99,7 @@ namespace Elastos {
 		class TxParamFactory {
 		public:
 			static TxParam *createTxParam(const std::string &fromAddress, const std::string &toAddress,
-												double amount, double fee, const std::string &memo);
+												uint64_t amount, uint64_t fee, const std::string &memo);
 		};
 	}
 }

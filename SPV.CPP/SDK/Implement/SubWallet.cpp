@@ -135,8 +135,8 @@ namespace Elastos {
 		}
 
 		std::string
-		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, double amount,
-								   double fee, const std::string &payPassword, const std::string &memo) {
+		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, uint64_t amount,
+								   uint64_t fee, const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(fromAddress, toAddress, amount, fee, memo));
 			TransactionPtr transaction = _walletManager->createTransaction(*txParam);

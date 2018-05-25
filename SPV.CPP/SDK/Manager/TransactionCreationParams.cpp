@@ -92,7 +92,7 @@ namespace Elastos {
 		}
 
 		TxParam *TxParamFactory::createTxParam(const std::string &fromAddress, const std::string &toAddress,
-													 double amount, double fee, const std::string &memo) {
+													 uint64_t amount, uint64_t fee, const std::string &memo) {
 			TxParam *result = nullptr;
 			TxType type = Normal; //todo init type by parameters
 			switch (type) {
