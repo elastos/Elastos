@@ -94,12 +94,12 @@ func (server *WebSocketServer) initializeMethods() {
 		"getasset":           GetAssetByHash,
 		"getunspendoutput":   GetUnspendOutput,
 		"sendrawtransaction": SendRawTransaction,
-		"heartbeat":          server.hearBeat,
+		"heartbeat":          server.heartBeat,
 		"getsessioncount":    server.getSessionCount,
 	}
 }
 
-func (server *WebSocketServer) hearBeat(cmd Params) map[string]interface{} {
+func (server *WebSocketServer) heartBeat(cmd Params) map[string]interface{} {
 	return ResponsePack(Success, "123")
 }
 
