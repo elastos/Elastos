@@ -281,12 +281,7 @@ func CheckAttributeProgram(txn *Transaction) error {
 }
 
 func CheckTransactionSignature(txn *Transaction) error {
-	flag, err := VerifySignature(txn)
-	if flag && err == nil {
-		return nil
-	} else {
-		return err
-	}
+	return VerifySignature(txn)
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {

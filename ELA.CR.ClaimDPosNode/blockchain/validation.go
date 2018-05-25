@@ -13,16 +13,16 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
-func VerifySignature(tx *Transaction) (bool, error) {
+func VerifySignature(tx *Transaction) error {
 	hashes, err := GetTxProgramHashes(tx)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	programs := tx.Programs
 	Length := len(hashes)
 	if Length != len(programs) {
-		return false, errors.New("The number of data hashes is different with number of programs.")
+		return errors.New("The number of data hashes is different with number of programs.")
 	}
 
 	buf := new(bytes.Buffer)
@@ -36,48 +36,53 @@ func VerifySignature(tx *Transaction) (bool, error) {
 
 		programHash, err := crypto.ToProgramHash(code)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		// Get transaction type
 		signType, err := crypto.GetScriptType(code)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		if !hashes[i].IsEqual(*programHash) && signType != common.CROSSCHAIN {
-			return false, errors.New("The data hashes is different with corresponding program code.")
+			return errors.New("The data hashes is different with corresponding program code.")
 		}
 
 		if signType == common.STANDARD {
 			// Remove length byte and sign type byte
-			publicKeyBytes := code[1 : len(code)-1]
-
-			return checkStandardSignature(publicKeyBytes, data, param)
+			publicKeyBytes := code[1: len(code)-1]
+			if err = checkStandardSignature(publicKeyBytes, data, param); err != nil {
+				return err
+			}
 
 		} else if signType == common.MULTISIG {
 			publicKeys, err := crypto.ParseMultisigScript(code)
 			if err != nil {
-				return false, err
+				return err
 			}
-			return checkMultiSignSignatures(code, param, data, publicKeys)
+			if err = checkMultiSignSignatures(code, param, data, publicKeys); err != nil {
+				return err
+			}
 
 		} else if signType == common.CROSSCHAIN {
 			publicKeys, err := crypto.ParseCrossChainScript(code)
 			if err != nil {
-				return false, err
+				return err
 			}
 			if err = checkCrossChainArbitrators(tx, publicKeys); err != nil {
-				return false, err
+				return err
+			}
+			if err = checkMultiSignSignatures(code, param, data, publicKeys); err != nil {
+				return err
 			}
 
-			return checkMultiSignSignatures(code, param, data, publicKeys)
 		} else {
-			return false, errors.New("unknown signature type")
+			return errors.New("unknown signature type")
 		}
 	}
 
-	return true, nil
+	return nil
 }
 
 func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
@@ -125,44 +130,41 @@ func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
 	return uniqueHashes, nil
 }
 
-func checkStandardSignature(publicKeyBytes, content, signature []byte) (bool, error) {
+func checkStandardSignature(publicKeyBytes, content, signature []byte) error {
 	if len(signature) != crypto.SignatureScriptLength {
-		return false, errors.New("Invalid signature length")
+		return errors.New("Invalid signature length")
 	}
 
 	publicKey, err := crypto.DecodePoint(publicKeyBytes)
 	if err != nil {
-		return false, err
+		return err
 	}
-	err = crypto.Verify(*publicKey, content, signature[1:])
-	if err == nil {
-		return false, err
-	}
-	return true, nil
+
+	return crypto.Verify(*publicKey, content, signature[1:])
 }
 
-func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) (bool, error) {
+func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) error {
 	// Get N parameter
 	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
 	// Get M parameter
 	m := int(code[0]) - crypto.PUSH1 + 1
 	if m < 1 || m > n {
-		return false, errors.New("invalid multi sign script code")
+		return errors.New("invalid multi sign script code")
 	}
 	if len(publicKeys) != n {
-		return false, errors.New("invalid multi sign public key script count")
+		return errors.New("invalid multi sign public key script count")
 	}
 
 	signatureCount := 0
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := param[i : i+crypto.SignatureScriptLength][1:]
+		sign := param[i: i+crypto.SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		index := -1
 		for i, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
 			if err != nil {
-				return false, err
+				return err
 			}
 			err = crypto.Verify(*pubKey, content, sign)
 			if err == nil {
@@ -175,10 +177,10 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	}
 	// Check signature count
 	if signatureCount != m {
-		return false, errors.New("invalid signature count")
+		return errors.New("invalid signature count")
 	}
 
-	return true, nil
+	return nil
 }
 
 func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
