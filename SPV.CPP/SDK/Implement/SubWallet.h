@@ -74,7 +74,7 @@ namespace Elastos {
 					const std::string &payPassword);
 
 			virtual nlohmann::json CheckSign(
-					const std::string &address,
+					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);
 

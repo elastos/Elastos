@@ -231,7 +231,7 @@ namespace Elastos {
 			memcpy(signatureData, signature.c_str(), signature.size());
 
 			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
-			Log::getLogger()->info("verify result={}", r);
+			//todo completed json content
 			return nlohmann::json();
 		}
 

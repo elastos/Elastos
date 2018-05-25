@@ -12,6 +12,8 @@
 #include "SubWallet.h"
 #include "MasterWallet.h"
 #include "SubWalletCallback.h"
+#include "Utils.h"
+#include "Log.h"
 
 namespace fs = boost::filesystem;
 
@@ -163,11 +165,26 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
-			return "";
+			boost::shared_ptr<BRKey> rawKey = boost::shared_ptr<BRKey>(new BRKey);
+			UInt256 chainCode;
+			deriveKeyAndChain(rawKey.get(), chainCode, payPassword);
+			Key key(rawKey);
+
+			CMBlock signedData = key.sign(Utils::UInt256FromString(message));
+
+			char *data = new char[signedData.GetSize()];
+			memcpy(data, signedData, signedData.GetSize());
+			std::string singedMsg(data, signedData.GetSize());
+			return singedMsg;
 		}
 
 		nlohmann::json
-		SubWallet::CheckSign(const std::string &address, const std::string &message, const std::string &signature) {
+		SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
+			CMBlock signatureData(signature.size());
+			memcpy(signatureData, signature.c_str(), signature.size());
+
+			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
+			//todo completed json content
 			return nlohmann::json();
 		}
 
