@@ -16,23 +16,22 @@ using namespace Elastos::SDK;
 TEST_CASE("Wallet factory basic", "[WalletFactory]") {
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 
-	std::string testName = "testName";
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 
 	boost::scoped_ptr<IMasterWallet> masterWallet;
 	SECTION("Create master wallet") {
-		masterWallet.reset(walletFactory->CreateMasterWallet(testName, phrasePassword, payPassword));
+		masterWallet.reset(walletFactory->CreateMasterWallet(phrasePassword, payPassword));
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 	}
 	SECTION("Return exist master wallet of same name") {
-		IMasterWallet *masterWallet2 = walletFactory->CreateMasterWallet(testName, phrasePassword, payPassword);
-		REQUIRE(masterWallet == masterWallet2);
+		IMasterWallet *masterWallet2 = walletFactory->CreateMasterWallet(phrasePassword, payPassword);
+		REQUIRE(masterWallet.get() == masterWallet2);
 	}
 	SECTION("Return exist master wallet even if give the wrong phrase password and pay password") {
-		IMasterWallet *masterWallet2 = walletFactory->CreateMasterWallet(testName, "", "");
-		REQUIRE(masterWallet == masterWallet2);
+		IMasterWallet *masterWallet2 = walletFactory->CreateMasterWallet("", "");
+		REQUIRE(masterWallet.get() == masterWallet2);
 	}
 }
 
@@ -40,15 +39,14 @@ TEST_CASE("Wallet factory mnemonic export & import", "[WalletFactory]") {
 
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 
-	std::string testName = "testName";
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	boost::scoped_ptr<IMasterWallet> masterWallet(
-			walletFactory->CreateMasterWallet(testName, phrasePassword, payPassword));
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword));
 
 	std::string mnemonic;
 	SECTION("Mnemonic export") {
-		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
+		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
 		REQUIRE(!mnemonic.empty());
 	}
 	SECTION("Mnemonic import") {
@@ -85,11 +83,10 @@ TEST_CASE("Wallet factory mnemonic export & import", "[WalletFactory]") {
 TEST_CASE("Wallet factory key store export & import", "[WalletFactory]") {
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 
-	std::string testName = "testName";
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	boost::scoped_ptr<IMasterWallet> masterWallet(
-			walletFactory->CreateMasterWallet(testName, phrasePassword, payPassword));
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword));
 
 	std::string backupPassword = "backupPassword";
 	std::string keystorePath = "test.json";

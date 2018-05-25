@@ -49,8 +49,6 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
-			const std::string &GetName() const;
-
 			bool Initialized() const;
 
 		protected:
@@ -62,8 +60,7 @@ namespace Elastos {
 
 			MasterWallet();
 
-			MasterWallet(const std::string &name,
-						 const std::string &phrasePassword,
+			MasterWallet(const std::string &phrasePassword,
 						 const std::string &payPassword);
 
 			bool importFromKeyStore(const std::string &keystorePath,
@@ -95,8 +92,6 @@ namespace Elastos {
 			void initPublicKey(const std::string &payPassword);
 
 		protected:
-			std::string _name;
-
 			bool _initialized;
 			WalletMap _createdWallets;
 

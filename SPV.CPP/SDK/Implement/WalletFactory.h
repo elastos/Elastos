@@ -22,7 +22,6 @@ namespace Elastos {
 			virtual ~WalletFactory();
 
 			virtual IMasterWallet *CreateMasterWallet(
-					const std::string &name,
 					const std::string &phrasePassword,
 					const std::string &payPassword);
 
@@ -49,10 +48,6 @@ namespace Elastos {
 
 		protected:
 			IMasterWallet *importWalletInternal(const boost::function<bool(MasterWallet *)> &walletImportFun);
-
-		protected:
-			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
-			MasterWalletMap _masterWallets;
 		};
 
 	}

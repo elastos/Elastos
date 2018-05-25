@@ -30,7 +30,7 @@ namespace Elastos {
 				_info(info) {
 
 			fs::path subWalletDbPath = _parent->_dbRoot;
-			subWalletDbPath /= _parent->_name + info.getChainId() + DB_FILE_EXTENSION;
+			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
 			BRKey key;
 			UInt256 chainCode;

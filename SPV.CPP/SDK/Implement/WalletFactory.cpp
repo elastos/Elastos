@@ -17,21 +17,15 @@ namespace Elastos {
 
 		}
 
-		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &name, const std::string &phrasePassword,
+		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &phrasePassword,
 														 const std::string &payPassword) {
-			if (_masterWallets.find(name) != _masterWallets.end())
-				return _masterWallets[name];
-
-			MasterWallet *masterWallet = new MasterWallet(name, phrasePassword, payPassword);
-			_masterWallets[name] = masterWallet;
+			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword);
 			return masterWallet;
 		}
 
 		void WalletFactory::DestroyWallet(IMasterWallet *masterWallet) {
-			_masterWallets.erase(std::find_if(_masterWallets.begin(), _masterWallets.end(),
-											  [masterWallet](const MasterWalletMap::value_type &item) {
-												  return item.second == masterWallet;
-											  }));
+			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
+			delete masterWalletInner;
 		}
 
 		IMasterWallet *
@@ -53,7 +47,7 @@ namespace Elastos {
 		void WalletFactory::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
 													 const std::string &keystorePath) {
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			if (wallet->Initialized() || _masterWallets.find(wallet->GetName()) == _masterWallets.end()) {
+			if (wallet->Initialized()) {
 				Log::warn("Exporting failed, check if the wallet has been initialized.");
 				return;
 			}
@@ -64,7 +58,7 @@ namespace Elastos {
 		std::string
 		WalletFactory::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			if (wallet->Initialized() || _masterWallets.find(wallet->GetName()) == _masterWallets.end()) {
+			if (wallet->Initialized()) {
 				Log::warn("Exporting failed, check if the wallet has been initialized.");
 				return "";
 			}
@@ -84,14 +78,7 @@ namespace Elastos {
 				delete masterWallet;
 				return nullptr;
 			}
-
-			if (_masterWallets.find(masterWallet->GetName()) != _masterWallets.end()) {
-				Log::info("Importing wallet already exist.");
-				std::string walletName = masterWallet->GetName();
-				delete masterWallet; //if we found master wallet, we just delete the new one.
-				return _masterWallets[walletName];
-			}
-			_masterWallets[masterWallet->GetName()] = masterWallet;
+			return masterWallet;
 		}
 	}
 }

@@ -15,15 +15,14 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet() :
 				_initialized(false),
-				_name(""),
 				_dbRoot("db"),
 				_mnemonic("english") {
 		}
 
-		MasterWallet::MasterWallet(const std::string &name, const std::string &phrasePassword,
+		MasterWallet::MasterWallet(const std::string &phrasePassword,
 								   const std::string &payPassword) :
 				_initialized(true),
-				_name(name),
+				_dbRoot("db"),
 				_mnemonic("english") {
 
 			UInt128 entropy = Utils::generateRandomSeed();
@@ -76,14 +75,12 @@ namespace Elastos {
 											   [wallet](const WalletMap::value_type &item) {
 												   return item.second == wallet;
 											   }));
+			SubWallet *walletInner = static_cast<SubWallet *>(wallet);
+			delete walletInner;
 		}
 
 		std::string MasterWallet::GetPublicKey() {
 			return _publicKey;
-		}
-
-		const std::string &MasterWallet::GetName() const {
-			return _name;
 		}
 
 		bool MasterWallet::importFromKeyStore(const std::string &keystorePath, const std::string &backupPassword,

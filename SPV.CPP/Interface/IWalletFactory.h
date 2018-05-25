@@ -13,7 +13,6 @@ namespace Elastos {
 		class IWalletFactory {
 		public:
 			virtual IMasterWallet *CreateMasterWallet(
-					const std::string &name,
 					const std::string &phrasePassword,
 					const std::string &payPassword) = 0;
 
