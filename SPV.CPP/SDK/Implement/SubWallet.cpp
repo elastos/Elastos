@@ -41,6 +41,10 @@ namespace Elastos {
 					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
 									  _info.getSingleAddress(), _info.getForkId(), chainParams));
 			_walletManager->registerWalletListener(this);
+
+			if (info.getFeePerKb() > 0) {
+				_walletManager->getWallet()->setFeePerKb(info.getFeePerKb());
+			}
 		}
 
 		SubWallet::~SubWallet() {

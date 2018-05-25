@@ -8,7 +8,6 @@
 namespace Elastos {
 	namespace SDK {
 
-		//todo replace int with uint*, replace size type of uint32_t with uint64_t (not size_t)
 		class ByteStream {
 		public:
 
