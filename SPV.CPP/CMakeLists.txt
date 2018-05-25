@@ -179,6 +179,7 @@ target_link_libraries(spvsdk crypto ssl sqlite ${Boost_LIBRARIES})
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
+add_dependencies(spvsdk ssl crypto sqlite)
 
 if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)
