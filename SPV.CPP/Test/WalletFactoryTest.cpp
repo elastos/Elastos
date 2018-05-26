@@ -25,14 +25,6 @@ TEST_CASE("Wallet factory basic", "[WalletFactory]") {
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 	}
-	SECTION("Return exist master wallet of same name") {
-		IMasterWallet *masterWallet2 = walletFactory->CreateMasterWallet(phrasePassword, payPassword);
-		REQUIRE(masterWallet.get() == masterWallet2);
-	}
-	SECTION("Return exist master wallet even if give the wrong phrase password and pay password") {
-		IMasterWallet *masterWallet2 = walletFactory->CreateMasterWallet("", "");
-		REQUIRE(masterWallet.get() == masterWallet2);
-	}
 }
 
 TEST_CASE("Wallet factory mnemonic export & import", "[WalletFactory]") {
@@ -48,11 +40,22 @@ TEST_CASE("Wallet factory mnemonic export & import", "[WalletFactory]") {
 	SECTION("Mnemonic export") {
 		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
 		REQUIRE(!mnemonic.empty());
-	}
-	SECTION("Mnemonic import") {
+
 		boost::scoped_ptr<IMasterWallet> masterWallet2(walletFactory->ImportWalletWithMnemonic(
 				mnemonic, phrasePassword, payPassword));
 		REQUIRE(masterWallet->GetPublicKey() == masterWallet2->GetPublicKey());
+
+		//Mnemonic import with wrong phrase password
+		boost::scoped_ptr<IMasterWallet> masterWallet3(walletFactory->ImportWalletWithMnemonic(
+				mnemonic, "wrong pass", payPassword));
+		REQUIRE(masterWallet3 != nullptr);
+		REQUIRE(masterWallet->GetPublicKey() != masterWallet3->GetPublicKey());
+
+		//Mnemonic import of different pay password
+		boost::scoped_ptr<IMasterWallet> masterWallet4(walletFactory->ImportWalletWithMnemonic(
+				mnemonic, phrasePassword, "diff pass"));
+		REQUIRE(masterWallet4 != nullptr);
+		REQUIRE(masterWallet->GetPublicKey() == masterWallet4->GetPublicKey());
 	}
 	SECTION("Mnemonic import with invalid mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet3(walletFactory->ImportWalletWithMnemonic(
@@ -65,18 +68,6 @@ TEST_CASE("Wallet factory mnemonic export & import", "[WalletFactory]") {
 				wrongMnemonic, phrasePassword, payPassword));
 		REQUIRE(masterWallet3 != nullptr);
 		REQUIRE(masterWallet->GetPublicKey() != masterWallet3->GetPublicKey());
-	}
-	SECTION("Mnemonic import with wrong phrase password") {
-		boost::scoped_ptr<IMasterWallet> masterWallet3(walletFactory->ImportWalletWithMnemonic(
-				mnemonic, "wrong pass", payPassword));
-		REQUIRE(masterWallet3 != nullptr);
-		REQUIRE(masterWallet->GetPublicKey() != masterWallet3->GetPublicKey());
-	}
-	SECTION("Mnemonic import of different pay password") {
-		boost::scoped_ptr<IMasterWallet> masterWallet3(walletFactory->ImportWalletWithMnemonic(
-				mnemonic, phrasePassword, "diff pass"));
-		REQUIRE(masterWallet3 != nullptr);
-		REQUIRE(masterWallet->GetPublicKey() == masterWallet3->GetPublicKey());
 	}
 }
 
