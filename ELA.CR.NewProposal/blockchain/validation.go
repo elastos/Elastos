@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"sort"
 
@@ -19,15 +20,16 @@ func VerifySignature(tx *Transaction) error {
 		return err
 	}
 
-	programs := tx.Programs
-	Length := len(hashes)
-	if Length != len(programs) {
-		return errors.New("The number of data hashes is different with number of programs.")
-	}
-
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
-	data := buf.Bytes()
+
+	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
+}
+
+func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) error {
+	if len(hashes) != len(programs) {
+		return errors.New("The number of data hashes is different with number of programs.")
+	}
 
 	for i := 0; i < len(programs); i++ {
 
@@ -51,7 +53,7 @@ func VerifySignature(tx *Transaction) error {
 
 		if signType == common.STANDARD {
 			// Remove length byte and sign type byte
-			publicKeyBytes := code[1: len(code)-1]
+			publicKeyBytes := code[1 : len(code)-1]
 			if err = checkStandardSignature(publicKeyBytes, data, param); err != nil {
 				return err
 			}
@@ -70,7 +72,7 @@ func VerifySignature(tx *Transaction) error {
 			if err != nil {
 				return err
 			}
-			if err = checkCrossChainArbitrators(tx, publicKeys); err != nil {
+			if err = checkCrossChainArbitrators(data, publicKeys); err != nil {
 				return err
 			}
 			if err = checkMultiSignSignatures(code, param, data, publicKeys); err != nil {
@@ -155,36 +157,43 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 		return errors.New("invalid multi sign public key script count")
 	}
 
-	signatureCount := 0
+	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := param[i: i+crypto.SignatureScriptLength][1:]
+		sign := param[i : i+crypto.SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
-		index := -1
-		for i, publicKey := range publicKeys {
+		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
 			if err != nil {
 				return err
 			}
 			err = crypto.Verify(*pubKey, content, sign)
 			if err == nil {
-				index = i
+				pkBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
+				hash := sha256.Sum256(pkBytes)
+				if _, ok := verified[hash]; ok {
+					return errors.New("duplicated signatures")
+				}
+				verified[hash] = struct{}{}
+				break // back to public keys loop
 			}
-		}
-		if index != -1 {
-			signatureCount++
 		}
 	}
 	// Check signature count
-	if signatureCount != m {
+	if len(verified) != m {
 		return errors.New("invalid signature count")
 	}
 
 	return nil
 }
 
-func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
-	withdrawPayload, ok := txn.Payload.(*PayloadWithdrawAsset)
+func checkCrossChainArbitrators(data []byte, publicKeys [][]byte) error {
+	var tx Transaction
+	err := tx.DeserializeUnsigned(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+	withdrawPayload, ok := tx.Payload.(*PayloadWithdrawAsset)
 	if !ok {
 		return errors.New("Invalid payload type.")
 	}
@@ -197,7 +206,7 @@ func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
 		sidechain.DbCache = dbCache
 	}
 
-	ok, err := sidechain.DbCache.HasSideChainTx(withdrawPayload.SideChainTransactionHash)
+	ok, err = sidechain.DbCache.HasSideChainTx(withdrawPayload.SideChainTransactionHash)
 	if err != nil {
 		return err
 	}
@@ -245,12 +254,6 @@ func checkCrossChainArbitrators(txn *Transaction, publicKeys [][]byte) error {
 
 type byProgramHashes []common.Uint168
 
-func (a byProgramHashes) Len() int      { return len(a) }
-func (a byProgramHashes) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a byProgramHashes) Less(i, j int) bool {
-	if a[i].Compare(a[j]) > 0 {
-		return false
-	} else {
-		return true
-	}
-}
+func (a byProgramHashes) Len() int           { return len(a) }
+func (a byProgramHashes) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byProgramHashes) Less(i, j int) bool { return a[i].Compare(a[j]) < 0 }
