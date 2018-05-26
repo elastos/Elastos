@@ -2,8 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRTransaction.h>
-#include <ELACoreExt/ELABRTxOutput.h>
+#include "BRTransaction.h"
+
+#include "PeerConfigReader.h"
+#include "ELACoreExt/ELABRTxOutput.h"
 #include "WalletManager.h"
 #include "Utils.h"
 #include "Log.h"
@@ -24,18 +26,20 @@ namespace Elastos {
 				_phraseData(phrase) {
 
 			uint32_t earliestPeerTime = 0;
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey(Utils::convertToString((const CMemBlock<uint8_t>)phrase), ""));
+			_masterPubKey = MasterPubKeyPtr(
+					new MasterPubKey(Utils::convertToString((const CMemBlock<uint8_t>) phrase), ""));
 
 			init(_masterPubKey, chainParams, earliestPeerTime, false);
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, bool singleAddress, int forkId,
-									 const ChainParams &chainParams) :
+									 const boost::filesystem::path &peerConfigPath, uint32_t earliestPeerTime,
+									 bool singleAddress, int forkId, const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_masterPubKey(masterPubKey),
-				_forkId(forkId) {
+				_forkId(forkId),
+				_peerConfigPath(peerConfigPath) {
 			init(_masterPubKey, chainParams, earliestPeerTime, singleAddress);
 		}
 
@@ -275,7 +279,10 @@ namespace Elastos {
 						PeerPtr(new Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
 			}
 
-			return peers;
+			if (!peers.empty())
+				return peers;
+
+			return PeerConfigReader().readPeersFromFile(_peerConfigPath);
 		}
 
 		int WalletManager::getForkId() const {

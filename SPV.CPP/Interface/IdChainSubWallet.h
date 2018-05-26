@@ -12,7 +12,9 @@ namespace Elastos {
 
 		class IdChainSubWallet : public ISubWallet {
 		public:
-			bool GenerateId(std::string &id, std::string &privateKey);
+			virtual nlohmann::json GenerateId(std::string &id, std::string &privateKey) = 0;
+
+			virtual std::string getIdValue(const std::string &key) = 0;
 		};
 
 	}

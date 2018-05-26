@@ -1,6 +1,10 @@
 
-#include "Wrapper/ChainParams.h"
+#include <boost/scoped_ptr.hpp>
+
 #include "BRChainParams.h"
+
+#include "Wrapper/ChainParams.h"
+#include "WalletFactory.h"
 
 #include "TestConnectPeer.h"
 #include "TestWalletManager.h"
@@ -25,9 +29,9 @@ static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *bl
 	return BRMerkleBlockVerifyDifficulty(block, previous, (b) ? b->timestamp : 0);
 }
 
-void TestConnectPeer::runPeerConnectTest() {
+void TestConnectPeer::runPeerConnectTest_WalletManager() {
 
-	TestWalletManager *wallet = new TestWalletManager();
+	boost::scoped_ptr<TestWalletManager> wallet(new TestWalletManager());
 	wallet->start();
 
 	WalletPtr pwallet = wallet->getWallet();
@@ -42,4 +46,24 @@ void TestConnectPeer::runPeerConnectTest() {
 
 	while (BRPeerManagerPeerCount(wallet->getPeerManager()->getRaw()) > 0) sleep(1);
 	//process end
+}
+
+void TestConnectPeer::runPeerConnectTest_WalletFactory() {
+	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory);
+
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+	std::string phrasePassword = "";
+	std::string payPassword = "payPassword";
+	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword);
+
+	ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", 0, payPassword, false);
+	std::vector<std::string> addresses = subWallet->GetAllAddress(0, INT_MAX);
+	for (size_t i = 0; i < addresses.size(); ++i) {
+		std::cout << "wallet addr: " << addresses[i] << std::endl;
+	}
+
+	while (subWallet->IsConnecting()) sleep(1);
+
+	masterWallet->DestroyWallet(subWallet);
+	walletFactory->DestroyWallet(masterWallet);
 }

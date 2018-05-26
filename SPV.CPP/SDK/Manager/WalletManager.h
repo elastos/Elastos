@@ -30,6 +30,7 @@ namespace Elastos {
 
 			WalletManager(const MasterPubKeyPtr &masterPubKey,
 						  const boost::filesystem::path &dbPath,
+						  const boost::filesystem::path &peerConfigPath,
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
 						  int forkId,
@@ -111,6 +112,7 @@ namespace Elastos {
 			MasterPubKeyPtr _masterPubKey;
 			CMBlock _phraseData;
 			int _forkId;
+			boost::filesystem::path _peerConfigPath;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

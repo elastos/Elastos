@@ -5,7 +5,9 @@
 
 class TestConnectPeer {
 public:
-	static void runPeerConnectTest();
+	static void runPeerConnectTest_WalletManager();
+
+	static void runPeerConnectTest_WalletFactory();
 };
 
 

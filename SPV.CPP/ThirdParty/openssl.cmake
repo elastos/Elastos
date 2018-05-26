@@ -32,7 +32,7 @@ add_custom_command(
 add_custom_target(
 	clean_openssl ALL
 	COMMENT "Cleaning openssl..."
-	#COMMAND make distclean || echo Never mind
+	COMMAND make distclean || echo Never mind
 	#COMMAND rm -fr install
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl
 )

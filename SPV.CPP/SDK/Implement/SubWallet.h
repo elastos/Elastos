@@ -78,6 +78,8 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
+			virtual bool IsConnecting();
+
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(uint64_t balance);
 

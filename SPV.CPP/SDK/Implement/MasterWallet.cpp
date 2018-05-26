@@ -15,14 +15,14 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet() :
 				_initialized(false),
-				_dbRoot("db"),
+				_dbRoot("Data"),
 				_mnemonic("english") {
 		}
 
 		MasterWallet::MasterWallet(const std::string &phrasePassword,
 								   const std::string &payPassword) :
 				_initialized(true),
-				_dbRoot("db"),
+				_dbRoot("Data"),
 				_mnemonic("english") {
 
 			UInt128 entropy = Utils::generateRandomSeed();
@@ -54,6 +54,7 @@ namespace Elastos {
 			info.setFeePerKb(feePerKb);
 			SubWallet *subWallet = new SubWallet(info, ChainParams::mainNet(), payPassword, this);
 			_createdWallets[chainID] = subWallet;
+			subWallet->_walletManager->start();
 			return subWallet;
 		}
 
@@ -76,6 +77,7 @@ namespace Elastos {
 												   return item.second == wallet;
 											   }));
 			SubWallet *walletInner = static_cast<SubWallet *>(wallet);
+			walletInner->_walletManager->stop();
 			delete walletInner;
 		}
 
@@ -108,8 +110,7 @@ namespace Elastos {
 				return false;
 			}
 
-			initFromPhrase(mnemonic, phrasePassword, payPassword);
-			return false;
+			return initFromPhrase(mnemonic, phrasePassword, payPassword);
 		}
 
 		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &keystorePath) {
@@ -188,7 +189,8 @@ namespace Elastos {
 			_encryptedKey = Utils::encrypt(secretKey, payPassword);
 			initPublicKey(payPassword);
 
-			return false;
+			_initialized = true;
+			return true;
 		}
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
@@ -203,6 +205,7 @@ namespace Elastos {
 
 		void MasterWallet::initPublicKey(const std::string &payPassword) {
 			Key key = deriveKey(payPassword);
+			//todo throw exception here
 			if (key.getPrivKey() == "") {
 				return;
 			}

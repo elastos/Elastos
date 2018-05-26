@@ -23,7 +23,9 @@ namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
 
-    TestConnectPeer::runPeerConnectTest();
+    TestConnectPeer::runPeerConnectTest_WalletFactory();
+    return 0;
+    TestConnectPeer::runPeerConnectTest_WalletManager();
     return 0;
 
     std::string strName = "NAME:\n         cli-spv - command line tool for ELA blockchain \n";

@@ -68,6 +68,8 @@ namespace Elastos {
 					const std::string &address,
 					const std::string &message,
 					const std::string &signature) = 0;
+
+			virtual bool IsConnecting() = 0;
 		};
 
 	}

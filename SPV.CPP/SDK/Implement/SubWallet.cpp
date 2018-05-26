@@ -18,6 +18,7 @@
 namespace fs = boost::filesystem;
 
 #define DB_FILE_EXTENSION ".db"
+#define PEER_CONFIG_EXTENSION "_PeerConnection.json"
 
 namespace Elastos {
 	namespace SDK {
@@ -32,13 +33,16 @@ namespace Elastos {
 			fs::path subWalletDbPath = _parent->_dbRoot;
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
+			fs::path peerConnectionPath = _parent->_dbRoot;
+			peerConnectionPath /= info.getChainId() + PEER_CONFIG_EXTENSION;
+
 			BRKey key;
 			UInt256 chainCode;
 			deriveKeyAndChain(&key, chainCode, payPassword);
 			MasterPubKeyPtr masterPubKey(new MasterPubKey(key, chainCode));
 
 			_walletManager = WalletManagerPtr(
-					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
+					new WalletManager(masterPubKey, subWalletDbPath, peerConnectionPath, _info.getEarliestPeerTime(),
 									  _info.getSingleAddress(), _info.getForkId(), chainParams));
 			_walletManager->registerWalletListener(this);
 
@@ -192,6 +196,10 @@ namespace Elastos {
 			nlohmann::json jsonData;
 			jsonData["result"] = r;
 			return jsonData;
+		}
+
+		bool SDK::SubWallet::IsConnecting() {
+			return BRPeerManagerPeerCount(_walletManager->getPeerManager()->getRaw()) > 0;
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
