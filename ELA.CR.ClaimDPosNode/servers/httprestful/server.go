@@ -160,7 +160,7 @@ func (rt *restServer) getParams(r *http.Request, url string, req map[string]inte
 		req["height"] = getParam(r, "height")
 
 	case Api_Getblockbyhash:
-		req["hash"] = getParam(r, "hash")
+		req["blockhash"] = getParam(r, "hash")
 
 	case Api_Getblockheight:
 
