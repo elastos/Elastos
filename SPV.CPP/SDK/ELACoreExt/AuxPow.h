@@ -64,11 +64,19 @@ namespace Elastos {
 
 			nlohmann::json transactionToJson();
 
+			void transactionFromJson(nlohmann::json jsonData) const;
+
 			nlohmann::json txInputsToJson(size_t index);
+
+			void txInputsFromJson(std::vector<nlohmann::json> inputs) const;
 
 			nlohmann::json txOutputsToJson(size_t index);
 
+			void txOutputsFromJson(std::vector<nlohmann::json> outputs) const;
+
 			nlohmann::json  merkleBlockToJson();
+
+			void merkleBlockFromJson(nlohmann::json jsonData) const;
 		private:
 			std::vector<UInt256> _auxMerkleBranch;
 			std::vector<UInt256> _parCoinBaseMerkle;

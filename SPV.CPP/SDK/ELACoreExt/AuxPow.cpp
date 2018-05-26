@@ -5,11 +5,9 @@
 #include <BRTransaction.h>
 #include <stdlib.h>
 
-#include "BRTransaction.h"
 #include "BRMerkleBlock.h"
 #include "BRAddress.h"
 #include "Utils.h"
-
 #include "AuxPow.h"
 
 namespace Elastos {
@@ -355,6 +353,7 @@ namespace Elastos {
 
 			return jsonData;
 		}
+
 		nlohmann::json AuxPow::transactionToJson() {
 			nlohmann::json jsonData;
 
@@ -372,7 +371,7 @@ namespace Elastos {
 			jsonData["inputs"] = inputs;
 
 			jsonData["outCount"] = _btcTransaction->outCount;
-			std::vector<nlohmann::json > outputs(_btcTransaction->outCount);
+			std::vector<nlohmann::json> outputs(_btcTransaction->outCount);
 			for (size_t i = 0; i < _btcTransaction->outCount; ++i) {
 				nlohmann::json outputsJson = txOutputsToJson(i);
 				outputs[i] = outputsJson;
@@ -394,27 +393,22 @@ namespace Elastos {
 			jsonData["txHash"] = Utils::UInt256ToString(input.txHash);
 			jsonData["index"] = input.index;
 
-			std::vector<char> address(sizeof(input.address));
-			for (size_t i = 0; i < address.size(); ++i) {
-				address[i] = input.address[i];
-			}
-			jsonData["address"] = address;
+			std::string addr = input.address;
+			jsonData["address"] = addr;
 
 			jsonData["amount"] = input.amount;
 
 			jsonData["scriptLen"] = input.scriptLen;
-			std::vector<uint8_t> script(input.scriptLen);
-			for (size_t i = 0; i < input.scriptLen; ++i) {
-				script[i] = input.script[i];
-			}
-			jsonData["script"] = script;
+			char *script = new char[input.scriptLen];
+			memcpy(script, input.script, input.scriptLen);
+			std::string scriptStr(script, input.scriptLen);
+			jsonData["script"] = scriptStr;
 
 			jsonData["sigLen"] = input.sigLen;
-			std::vector<uint8_t> signature(input.sigLen);
-			for (size_t i = 0; i < input.sigLen; ++i) {
-				signature[i] = input.signature[i];
-			}
-			jsonData["signature"] = signature;
+			char *signature = new char[input.sigLen];
+			memcpy(signature, input.signature, input.sigLen);
+			std::string signatureStr(signature, input.sigLen);
+			jsonData["signature"] = signatureStr;
 
 			jsonData["sequence"] = input.sequence;
 
@@ -425,25 +419,21 @@ namespace Elastos {
 			nlohmann::json jsonData;
 			BRTxOutput output = _btcTransaction->outputs[index];
 
-			std::vector<char> address(sizeof(output.address));
-			for (size_t i = 0; i < address.size(); ++i) {
-				address[i] = output.address[i];
-			}
-			jsonData["address"] = address;
+			jsonData["address"] = output.address;
 
 			jsonData["amount"] = output.amount;
 
 			jsonData["scriptLen"] = output.scriptLen;
-			std::vector<uint8_t> script(output.scriptLen);
-			for(size_t i = 0; i < script.size(); ++i) {
-				script[i] = output.script[i];
-			}
-			jsonData["script"] = script;
+
+			char *script = new char[output.scriptLen];
+			memcpy(script, output.script, output.scriptLen);
+			std::string scriptStr(script, output.scriptLen);
+			jsonData["script"] = scriptStr;
 
 			return jsonData;
 		}
 
-		nlohmann::json  AuxPow::merkleBlockToJson() {
+		nlohmann::json AuxPow::merkleBlockToJson() {
 			nlohmann::json jsonData;
 
 			jsonData["blockHash"] = Utils::UInt256ToString(_parBlockHeader->blockHash);
@@ -467,13 +457,14 @@ namespace Elastos {
 			for (size_t i = 0; i < _parBlockHeader->hashesCount; ++i) {
 				hashes[i] = Utils::UInt256ToString(_parBlockHeader->hashes[i]);
 			}
+			jsonData["hashes"] = hashes;
 
 			jsonData["flagsLen"] = _parBlockHeader->flagsLen;
-			std::vector<uint8_t> flags(_parBlockHeader->flagsLen);
-			for (size_t i = 0; i < _parBlockHeader->flagsLen; ++i) {
-				flags[i] = _parBlockHeader->flags[i];
-			}
-			jsonData["flags"] = flags;
+
+			char *flags = new char[_parBlockHeader->flagsLen];
+			memcpy(flags, _parBlockHeader->flags, _parBlockHeader->flagsLen);
+			std::string flagsStr(flags, _parBlockHeader->flagsLen);
+			jsonData["flags"] = flagsStr;
 
 			jsonData["height"] = _parBlockHeader->height;
 
@@ -486,9 +477,132 @@ namespace Elastos {
 			for (size_t i = 0; i < _auxMerkleBranch.size(); ++i) {
 				_auxMerkleBranch[i] = Utils::UInt256FromString(auxMerkleBranch[i]);
 			}
-			//todo isnot completed to completed me
 
+			std::vector<std::string> parCoinBaseMerkle = jsonData["parCoinBaseMerkle"];
+			_parCoinBaseMerkle.resize(parCoinBaseMerkle.size());
+			for (size_t i = 0; i < parCoinBaseMerkle.size(); ++i) {
+				_parCoinBaseMerkle[i] = Utils::UInt256FromString(parCoinBaseMerkle[i]);
+			}
 
+			_auxMerkleIndex = jsonData["auxMerkleIndex"].get<uint32_t>();
+
+			transactionFromJson(jsonData["transaction"]);
+
+			_parMerkleIndex = jsonData["parMerkleIndex"].get<uint32_t>();
+
+			merkleBlockFromJson(jsonData["parBlockHeader"]);
+
+			std::string parentHash = jsonData["parentHash"].get<std::string>();
+			_parentHash = Utils::UInt256FromString(parentHash);
+		}
+
+		void AuxPow::transactionFromJson(nlohmann::json jsonData) const {
+
+			std::string txHash = jsonData["txHash"].get<std::string>();
+			_btcTransaction->txHash = Utils::UInt256FromString(txHash);
+
+			_btcTransaction->version = jsonData["version"].get<uint32_t>();
+
+			_btcTransaction->inCount = jsonData["inCount"].get<size_t>();
+
+			txInputsFromJson(jsonData["inputs"]);
+
+			_btcTransaction->outCount = jsonData["outCount"].get<size_t>();
+
+			txOutputsFromJson(jsonData["outputs"]);
+
+			_btcTransaction->lockTime = jsonData["lockTime"].get<uint32_t>();
+
+			_btcTransaction->blockHeight = jsonData["blockHeight"].get<uint32_t>();
+
+			_btcTransaction->timestamp = jsonData["timestamp"].get<uint32_t>();
+		}
+
+		void AuxPow::merkleBlockFromJson(nlohmann::json jsonData) const {
+
+			std::string blockHash = jsonData["blockHash"].get<std::string>();
+			_parBlockHeader->blockHash = Utils::UInt256FromString(blockHash);
+
+			_parBlockHeader->version = jsonData["version"].get<uint32_t>();
+
+			std::string prevBlock = jsonData["prevBlock"].get<std::string>();
+			_parBlockHeader->prevBlock = Utils::UInt256FromString(prevBlock);
+
+			std::string merkleRoot = jsonData["merkleRoot"].get<std::string>();
+			_parBlockHeader->merkleRoot = Utils::UInt256FromString(merkleRoot);
+
+			_parBlockHeader->timestamp = jsonData["timestamp"].get<uint32_t>();
+
+			_parBlockHeader->target = jsonData["target"].get<uint32_t>();
+
+			_parBlockHeader->nonce = jsonData["nonce"].get<uint32_t>();
+
+			_parBlockHeader->totalTx = jsonData["totalTx"].get<uint32_t>();
+
+			_parBlockHeader->hashesCount = jsonData["hashesCount"].get<size_t>();
+
+			std::vector<std::string> hashs = jsonData["hashes"];
+			UInt256 hashes[_parBlockHeader->hashesCount];
+			for (size_t i = 0; i < _parBlockHeader->hashesCount; ++i) {
+				hashes[i] = Utils::UInt256FromString(hashs[i]);
+			}
+
+			_parBlockHeader->flagsLen = jsonData["flagsLen"].get<size_t>();
+
+			std::string flags = jsonData["flags"].get<std::string>();
+
+			BRMerkleBlockSetTxHashes(_parBlockHeader, hashes, _parBlockHeader->hashesCount,
+			                         (const uint8_t *) flags.data(), _parBlockHeader->flagsLen);
+
+			_parBlockHeader->height = jsonData["height"].get<uint32_t>();
+
+		}
+
+		void AuxPow::txInputsFromJson(std::vector<nlohmann::json> inputs) const {
+
+			size_t len = inputs.size();
+			for (size_t i = 0; i < len; ++i) {
+				nlohmann::json jsonData = inputs[i];
+
+				UInt256 hash = Utils::UInt256FromString(jsonData["txHash"]);
+				uint32_t index = jsonData["index"].get<uint32_t>();
+				uint64_t amount = jsonData["amount"].get<uint64_t>();
+				size_t scriptLen = jsonData["scriptLen"].get<size_t>();
+				std::string scriptStr = jsonData["script"].get<std::string>();
+				size_t sigLen = jsonData["sigLen"].get<size_t>();
+				std::string signature = jsonData["signature"].get<std::string>();
+				uint32_t sequence = jsonData["sequence"].get<uint32_t>();
+
+				BRTransactionAddInput(_btcTransaction, hash, index, amount,
+				                      (uint8_t *) scriptStr.data(), scriptLen,
+				                      (uint8_t *) signature.data(), sigLen,
+				                      sequence);
+				std::string address = jsonData["address"].get<std::string>();
+				memset(_btcTransaction->inputs[i].address, 0, sizeof(_btcTransaction->inputs[i]));
+				memcpy(_btcTransaction->inputs[i].address, address.c_str(), address.size());
+
+			}
+		}
+
+		void AuxPow::txOutputsFromJson(std::vector<nlohmann::json> outputs) const {
+			size_t len = outputs.size();
+			for (size_t i = 0; i < len; ++i) {
+				nlohmann::json jsonData = outputs[i];
+
+				uint64_t amount = jsonData["amount"].get<uint64_t>();
+				uint8_t *script = nullptr;
+				size_t scriptLen = jsonData["scriptLen"].get<size_t>();
+				if (scriptLen > 0) {
+					std::string scriptStr = jsonData["script"].get<std::string>();
+					script = (uint8_t *) scriptStr.data();
+				}
+
+				BRTransactionAddOutput(_btcTransaction, amount, script, scriptLen);
+
+				std::string address = jsonData["address"];
+				memset(_btcTransaction->outputs[i].address, 0, sizeof(_btcTransaction->outputs[i].address));
+				memcpy(_btcTransaction->outputs[i].address, address.data(), address.size());
+			}
 		}
 
 	}
