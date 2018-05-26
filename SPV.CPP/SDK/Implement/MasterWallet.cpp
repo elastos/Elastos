@@ -197,7 +197,7 @@ namespace Elastos {
 			CMemBlock<unsigned char> keyData = Utils::decrypt(_encryptedKey, payPassword);
 			Key key;
 			if (keyData) {
-				std::string secret = (char *)(void *)keyData;
+				std::string secret = (char *) (void *) keyData;
 				key.setPrivKey(secret);
 			}
 			return key;
@@ -212,7 +212,7 @@ namespace Elastos {
 			size_t len = BRKeyPubKey(key.getRaw(), nullptr, 0);
 			uint8_t *pubKey = new uint8_t[len];
 			BRKeyPubKey(key.getRaw(), pubKey, len);
-			_publicKey = std::string((char *)pubKey, len);
+			_publicKey = std::string((char *) pubKey, len);
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
@@ -226,7 +226,8 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
+		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
+								const std::string &signature) {
 			CMBlock signatureData(signature.size());
 			memcpy(signatureData, signature.c_str(), signature.size());
 
@@ -239,8 +240,15 @@ namespace Elastos {
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
-			std::string phrase = Utils::convertToString(Utils::decrypt(_encryptedEntropy, payPassword));
-			std::string phrasePassword = Utils::convertToString(Utils::decrypt(_encryptedPhrasePass, payPassword));
+			CMemBlock<unsigned char> entropyData = Utils::decrypt(_encryptedEntropy, payPassword);
+			UInt128 entropy;
+			UInt128Get(&entropy, (void *)entropyData);
+
+			std::string phrasePassword = _encryptedPhrasePass.GetSize() == 0
+										 ? ""
+										 : Utils::convertToString(Utils::decrypt(_encryptedPhrasePass, payPassword));
+
+			std::string phrase = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
 			BRBIP39DeriveKey(result.u8, phrase.c_str(), phrasePassword.c_str());
 			return result;
 		}

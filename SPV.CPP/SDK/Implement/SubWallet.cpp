@@ -3,9 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/scoped_ptr.hpp>
-#include <BRWallet.h>
-#include <BRTransaction.h>
+#include <algorithm>
 
+#include "BRTransaction.h"
+#include "BRWallet.h"
 #include "BRKey.h"
 #include "BRArray.h"
 
@@ -100,7 +101,8 @@ namespace Elastos {
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
 												uint32_t count) {
 			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
-			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + start + count);
+			uint32_t end = std::min(start + count, (uint32_t)addresses.size());
+			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
 			nlohmann::json j;
 			j["addresses"] = addresses;
 			return j;

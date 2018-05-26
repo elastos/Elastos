@@ -31,7 +31,7 @@ namespace Elastos {
 			nlohmann::json j;
 			i >> j;
 
-			readPeersFromJson(j);
+			return readPeersFromJson(j);
 		}
 
 		PeerPtr PeerConfigReader::convertToPeer(const nlohmann::json &peerJson, uint32_t magicNumber) const {

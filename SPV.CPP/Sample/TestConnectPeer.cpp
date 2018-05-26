@@ -57,10 +57,8 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword);
 
 	ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", 0, payPassword, false);
-	std::vector<std::string> addresses = subWallet->GetAllAddress(0, INT_MAX);
-	for (size_t i = 0; i < addresses.size(); ++i) {
-		std::cout << "wallet addr: " << addresses[i] << std::endl;
-	}
+	nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
+	std::cout << "wallet addrs: " << addresses << std::endl;
 
 	while (subWallet->IsConnecting()) sleep(1);
 
