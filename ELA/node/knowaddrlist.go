@@ -153,9 +153,11 @@ func (al *KnownAddressList) UpdateLastDisconn(id uint64) {
 	ka.updateLastDisconnect()
 }
 
-func (al *KnownAddressList) AddAddressToKnownAddress(na p2p.NetAddress) {
+func (al *KnownAddressList) AddKnownAddress(na p2p.NetAddress) {
 	al.Lock()
 	defer al.Unlock()
+
+	log.Debugf("AddKnownAddress %s", na.String())
 
 	ka := new(KnownAddress)
 	ka.SaveAddr(na)
