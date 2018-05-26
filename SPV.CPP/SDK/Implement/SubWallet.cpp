@@ -82,11 +82,15 @@ namespace Elastos {
 			}
 			pthread_mutex_unlock(&wallet->lock);
 
+			std::vector<nlohmann::json> balances;
 			std::for_each(addressesBalanceMap.begin(), addressesBalanceMap.end(),
-						  [&addressesBalanceMap, &j](const std::map<std::string, uint64_t>::value_type &item){
-				j[item.first] = item.second;
-			});
+						  [&addressesBalanceMap, &balances](const std::map<std::string, uint64_t>::value_type &item) {
+							  nlohmann::json balanceKeyValue;
+							  balanceKeyValue[item.first] = item.second;
+							  balances.push_back(balanceKeyValue);
+						  });
 
+			j["Balances"] = balances;
 			return j;
 		}
 
@@ -101,7 +105,7 @@ namespace Elastos {
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
 												uint32_t count) {
 			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
-			uint32_t end = std::min(start + count, (uint32_t)addresses.size());
+			uint32_t end = std::min(start + count, (uint32_t) addresses.size());
 			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
 			nlohmann::json j;
 			j["addresses"] = addresses;
