@@ -39,4 +39,25 @@ TEST_CASE("Asset test", "[Asset]") {
 		REQUIRE(asset1.getAssetType() == asset.getAssetType());
 		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
 	}
+
+	SECTION("toJson fromJson test") {
+		Asset asset;
+		std::string name = "testName";
+		std::string desc = "a test description";
+
+		asset.setName(name);
+		asset.setDescription(desc);
+		asset.setAssetType(Asset::AssetType::Share);
+		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
+
+		nlohmann::json jsonData = asset.toJson();
+
+		Asset asset1;
+		asset1.fromJson(jsonData);
+
+		REQUIRE(asset1.getName() == asset.getName());
+		REQUIRE(asset1.getDescription() == asset.getDescription());
+		REQUIRE(asset1.getAssetType() == asset.getAssetType());
+		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
+	}
 }

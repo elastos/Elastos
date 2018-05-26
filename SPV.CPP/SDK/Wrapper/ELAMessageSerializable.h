@@ -9,6 +9,7 @@
 #include <ostream>
 
 #include "ByteStream.h"
+#include "nlohmann/json.hpp"
 
 namespace Elastos {
 	namespace SDK {
@@ -19,6 +20,9 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const = 0;
 			virtual void Deserialize(ByteStream &istream) = 0;
+
+			virtual nlohmann::json toJson();
+			virtual void fromJson(nlohmann::json);
 		};
 
 	}

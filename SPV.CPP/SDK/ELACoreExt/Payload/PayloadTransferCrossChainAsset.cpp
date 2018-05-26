@@ -78,5 +78,16 @@ namespace Elastos {
                 }
             }
 		}
+
+		nlohmann::json PayloadTransferCrossChainAsset::toJson() {
+			nlohmann::json jsonData(_addressMap);
+			return jsonData;
+		}
+
+		void PayloadTransferCrossChainAsset::fromJson(nlohmann::json jsonData) {
+			for (nlohmann::json::iterator it = jsonData.begin(); it != jsonData.end(); ++it) {
+				_addressMap[it.key()] = it.value();
+			}
+		}
 	}
 }

@@ -98,5 +98,33 @@ namespace Elastos {
 
 			_assetRecordType = AssetRecordType(istream.get());
 		}
+
+		nlohmann::json Asset::toJson() {
+			nlohmann::json jsonData;
+
+			jsonData["name"] = _name;
+
+			jsonData["description"] = _description;
+
+			jsonData["precision"] = _precision;
+
+			jsonData["assetType"] = _assetType;
+
+			jsonData["assetRecordType"] = _assetRecordType;
+
+			return jsonData;
+		}
+
+		void Asset::fromJson(nlohmann::json jsonData) {
+			_name = jsonData["name"].get<std::string>();
+
+			_description = jsonData["description"].get<std::string>();
+
+			_precision = jsonData["precision"].get<uint8_t>();
+
+			_assetType = jsonData["assetType"].get<AssetType>();
+
+			_assetRecordType = jsonData["assetRecordType"].get<AssetRecordType>();
+		}
 	}
 }

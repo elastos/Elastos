@@ -29,6 +29,10 @@ namespace Elastos {
 
 			virtual void Deserialize(ByteStream &istream);
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 		private:
 
 			std::map<std::string, uint64_t> _addressMap;

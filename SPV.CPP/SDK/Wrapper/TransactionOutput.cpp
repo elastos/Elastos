@@ -6,6 +6,7 @@
 
 #include "ELABRTxOutput.h"
 #include "TransactionOutput.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -143,6 +144,51 @@ namespace Elastos {
 			UInt256Set(&_assetId, elabrTxOutput->assetId);
 			UInt168Set(&_programHash, elabrTxOutput->programHash);
 			_outputLock = elabrTxOutput->outputLock;
+		}
+
+		nlohmann::json TransactionOutput::toJson() {
+			nlohmann::json jsonData;
+
+			std::string addr = _output->address;
+			jsonData["address"] = addr;
+
+			jsonData["amount"] = _output->amount;
+
+			jsonData["scriptLen"] = _output->scriptLen;
+			char *script = new char[_output->scriptLen];
+			memcpy(script, _output->script, _output->scriptLen);
+			std::string scriptStr(script, _output->scriptLen);
+			jsonData["script"] = scriptStr;
+
+			jsonData["assetId"] = Utils::UInt256ToString(_assetId);
+
+			jsonData["outputLock"] = _outputLock;
+
+			jsonData["programHash"] = Utils::UInt168ToString(_programHash);
+
+			return jsonData;
+		}
+
+		void TransactionOutput::fromJson(nlohmann::json jsonData) {
+			std::string address = jsonData["address"];
+			memset(_output->address, 0, sizeof(_output->address));
+			memcpy(_output->address, address.data(), address.size());
+
+			_output->amount = jsonData["amount"].get<uint64_t>();
+
+			_output->scriptLen = jsonData["scriptLen"].get<size_t>();
+			if(_output->scriptLen > 0) {
+				std::string script = jsonData["script"].get<std::string>();
+				memcpy(_output->script, script.c_str(), _output->scriptLen);
+			}
+
+			std::string assetID = jsonData["assetId"].get<std::string>();
+			_assetId = Utils::UInt256FromString(assetID);
+
+			_outputLock = jsonData["outputLock"].get<uint32_t>();
+
+			std::string programHash = jsonData["programHash"].get<std::string>();
+			_programHash = Utils::UInt168FromString(programHash);
 		}
 
 	}

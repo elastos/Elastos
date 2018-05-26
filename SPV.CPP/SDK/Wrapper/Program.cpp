@@ -39,6 +39,31 @@ namespace Elastos {
 			istream.getBytes(_code, _code.GetSize());
 		}
 
+		nlohmann::json Program::toJson() {
+			nlohmann::json jsonData;
+
+			char *parameter = new char[_parameter.GetSize()];
+			memcpy(parameter, _parameter, _parameter.GetSize());
+			std::string parameterStr(parameter, _parameter.GetSize());
+			jsonData["parameter"] = parameterStr;
+
+			char *code = new char[_code.GetSize()];
+			memcpy(code, _code, _code.GetSize());
+			std::string codeStr(code, _code.GetSize());
+			jsonData["code"] = codeStr;
+
+			return jsonData;
+		}
+
+		void Program::fromJson(nlohmann::json jsonData) {
+			std::string parameter = jsonData["parameter"].get<std::string>();
+			_parameter.Resize(parameter.size());
+			memcpy(_parameter, parameter.data(), parameter.size());
+
+			std::string codeStr = jsonData["code"].get<std::string>();
+			_code.Resize(codeStr.size());
+			memcpy(_code, codeStr.data(), codeStr.size());
+		}
 
 	}
 }

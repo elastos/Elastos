@@ -2,9 +2,10 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRTransaction.h>
 #include <cstring>
+
 #include "TransactionInput.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -105,6 +106,65 @@ namespace Elastos {
 			uint8_t sequenceData[32 / 8];
 			istream.getBytes(sequenceData, 32 / 8);
 			_input->sequence = UInt32GetLE(sequenceData);
+		}
+
+		nlohmann::json TransactionInput::toJson() {
+			nlohmann::json jsonData;
+
+			jsonData["txHash"] = Utils::UInt256ToString(_input->txHash);
+
+			jsonData["index"] = _input->index;
+
+			std::string addr = _input->address;
+			jsonData["address"] = addr;
+
+
+			jsonData["amount"] = _input->amount;
+
+			jsonData["scriptLen"] = _input->scriptLen;
+			char *script = new char[_input->scriptLen];
+			memcpy(script, _input->script, _input->scriptLen);
+			std::string scriptStr(script, _input->scriptLen);
+			jsonData["script"] = scriptStr;
+
+			jsonData["sigLen"] = _input->sigLen;
+			char *signature = new char[_input->sigLen];
+			memcpy(signature, _input->signature, _input->sigLen);
+			std::string signatureStr(signature, _input->sigLen);
+			jsonData["signature"] = signatureStr;
+
+			jsonData["sequence"] = _input->sequence;
+
+			return jsonData;
+		}
+
+		void TransactionInput::fromJson(nlohmann::json jsonData) {
+			std::string txHash = jsonData["txHash"].get<std::string>();
+			_input->txHash = Utils::UInt256FromString(txHash);
+
+			_input->index = jsonData["index"].get<uint32_t>();
+
+			std::string address = jsonData["address"].get<std::string>();
+			memset(_input->address, 0, sizeof(_input->address));
+			memcpy(_input->address, address.c_str(), address.size());
+
+			_input->amount = jsonData["amount"].get<uint64_t>();
+
+			_input->scriptLen = jsonData["scriptLen"].get<size_t>();
+
+			std::string script = jsonData["script"].get<std::string>();
+			if (_input->scriptLen > 0) {
+				BRTxInputSetScript(_input.get(), (const uint8_t *)script.data(), script.size());
+			}
+
+			_input->sigLen = jsonData["sigLen"];
+
+			std::string signature = jsonData["signature"].get<std::string>();
+			if (_input->sigLen > 0) {
+				BRTxInputSetSignature(_input.get(), (const uint8_t *)signature.c_str(), _input->sigLen);
+			}
+
+			_input->sequence = jsonData["sequence"];
 		}
 
 	}

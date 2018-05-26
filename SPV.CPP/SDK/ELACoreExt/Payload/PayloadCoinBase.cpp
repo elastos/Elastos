@@ -47,5 +47,22 @@ namespace Elastos {
 				}
 			}
 		}
+
+		nlohmann::json PayloadCoinBase::toJson() {
+			char *data = new char[_coinBaseData.GetSize()];
+			memcpy(data, _coinBaseData, _coinBaseData.GetSize());
+			std::string content(data, _coinBaseData.GetSize());
+
+			nlohmann::json jsonData;
+			jsonData["data"] = content;
+			return jsonData;
+		}
+
+		void PayloadCoinBase::fromJson(nlohmann::json jsonData) {
+			std::string content = jsonData["data"].get<std::string>();
+			const char* data = content.c_str();
+			_coinBaseData.Resize(content.size());
+			memcpy(_coinBaseData, data, content.size());
+		}
 	}
 }

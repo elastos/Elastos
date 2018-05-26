@@ -31,6 +31,10 @@ namespace Elastos {
 
 			virtual void Deserialize(ByteStream &istream);
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 			BRTransaction *getBTCTransaction() const;
 
 			void setBTCTransaction(BRTransaction *transaction);
@@ -58,6 +62,13 @@ namespace Elastos {
 
 			void deserializeBtcBlockHeader(ByteStream &istream);
 
+			nlohmann::json transactionToJson();
+
+			nlohmann::json txInputsToJson(size_t index);
+
+			nlohmann::json txOutputsToJson(size_t index);
+
+			nlohmann::json  merkleBlockToJson();
 		private:
 			std::vector<UInt256> _auxMerkleBranch;
 			std::vector<UInt256> _parCoinBaseMerkle;

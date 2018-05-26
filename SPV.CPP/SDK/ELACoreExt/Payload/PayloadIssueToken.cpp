@@ -48,5 +48,22 @@ namespace Elastos {
 				}
 			}
 		}
+
+		nlohmann::json PayloadIssueToken::toJson() {
+			char *data = new char[_merkeProof.GetSize()];
+			memcpy(data, _merkeProof, _merkeProof.GetSize());
+			std::string content(data, _merkeProof.GetSize());
+
+			nlohmann::json jsonData;
+			jsonData["data"] = content;
+			return jsonData;
+		}
+
+		void PayloadIssueToken::fromJson(nlohmann::json jsonData) {
+			std::string content = jsonData["data"].get<std::string>();
+			const char* data = content.c_str();
+			_merkeProof.Resize(content.size());
+			memcpy(_merkeProof, data, content.size());
+		}
 	}
 }

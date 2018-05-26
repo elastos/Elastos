@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PayloadRegisterAsset.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -78,6 +79,27 @@ namespace Elastos {
 			uint8_t controllerData[168 / 8];
 			istream.getBytes(controllerData, sizeof(controllerData));
 			UInt168Get(&_controller, controllerData);
+		}
+
+		nlohmann::json PayloadRegisterAsset::toJson() {
+			nlohmann::json jsonData;
+			nlohmann::json assetJson = _asset.toJson();
+			jsonData["asset"] = assetJson;
+
+			jsonData["amount"] = _amount;
+
+			jsonData["controller"] = Utils::UInt168ToString(_controller);
+
+			return jsonData;
+		}
+
+		void PayloadRegisterAsset::fromJson(nlohmann::json jsonData) {
+			_asset.fromJson(jsonData["asset"]);
+
+			_amount = jsonData["amount"].get<uint64_t>();
+
+			std::string controller = jsonData["controller"].get<std::string>();
+			_controller = Utils::UInt168FromString(controller);
 		}
 	}
 }

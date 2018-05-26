@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <Core/BRBloomFilter.h>
 #include "BRBloomFilter.h"
 #include "BRInt.h"
 #include "BRAddress.h"
@@ -67,6 +68,36 @@ namespace Elastos {
 			uint8_t tweakData[32 / 8];
 			istream.getBytes(tweakData, 32 / 8);
 			_bloomFilter->tweak = UInt32GetLE(tweakData);
+		}
+
+		nlohmann::json BloomFilter::toJson() {
+			nlohmann::json jsonData;
+			jsonData["length"] = _bloomFilter->length;
+
+			std::vector<uint8_t> filters(_bloomFilter->length);
+			for (int i = 0; i < _bloomFilter->length; ++i) {
+				filters[i] = _bloomFilter->filter[i];
+			}
+			jsonData["filter"] = filters;
+
+			jsonData["hashFuncs"] = _bloomFilter->hashFuncs;
+			jsonData["tweak"] = _bloomFilter->tweak;
+
+			return jsonData;
+		}
+
+		void BloomFilter::fromJson(nlohmann::json jsonData) {
+			_bloomFilter->length = jsonData["length"].get<uint32_t>();
+
+			_bloomFilter->filter = (uint8_t *)malloc(_bloomFilter->length);
+			std::vector<uint8_t> filters = jsonData["filter"];
+			assert(_bloomFilter->length == filters.size());
+			for (int i = 0; i < _bloomFilter->length; ++i) {
+				_bloomFilter->filter[i] = filters[i];
+			}
+
+			_bloomFilter->hashFuncs = jsonData["hashFuncs"].get<uint32_t>();
+			_bloomFilter->tweak = jsonData["tweak"].get<uint32_t>();
 		}
 	}
 }

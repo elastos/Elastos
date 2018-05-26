@@ -36,6 +36,10 @@ namespace Elastos {
 
 			virtual void Deserialize(ByteStream &istream);
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 		private:
 			Asset _asset;
 			uint64_t _amount;

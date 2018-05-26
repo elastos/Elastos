@@ -159,6 +159,10 @@ namespace Elastos {
 
 			UInt256 getReverseHash();
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 			static uint64_t getMinOutputAmount();
 
 		private:
@@ -171,6 +175,11 @@ namespace Elastos {
 			void setPayloadByTransactionType();
 
 			void serializeUnsigned(ByteStream &ostream) const;
+
+			nlohmann::json rawTransactionToJson();
+
+			void rawTransactionFromJson(nlohmann::json jsonData);
+
 		private:
 			bool _isRegistered;
 

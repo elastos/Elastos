@@ -60,6 +60,10 @@ namespace Elastos {
 
 			void setProgramHash(const UInt168 &hash);
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 		private:
 			void convertFrom(const BRTxOutput *raw);
 

@@ -10,5 +10,13 @@ namespace Elastos {
 		ELAMessageSerializable::~ELAMessageSerializable() {
 
 		}
+
+		nlohmann::json ELAMessageSerializable::toJson(){
+
+		}
+
+		void ELAMessageSerializable::fromJson(nlohmann::json) {
+
+		}
 	}
 }

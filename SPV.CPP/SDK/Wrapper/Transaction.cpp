@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <BRTransaction.h>
+#include <Core/BRTransaction.h>
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
@@ -19,6 +20,7 @@
 #include "ELABRTransaction.h"
 #include "BRCrypto.h"
 #include "ELABRTxOutput.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -571,6 +573,132 @@ namespace Elastos {
 			}
 
 			ELABRTransactionFree(elabrTransaction);
+		}
+
+		nlohmann::json Transaction::toJson() {
+			nlohmann::json jsonData;
+
+			jsonData["isRegistered"] = _isRegistered;
+
+			jsonData["transaction"] = rawTransactionToJson();
+
+			jsonData["type"] = _type;
+
+			jsonData["payloadVersion"] = _payloadVersion;
+
+			jsonData["payLoad"] = _payload->toJson();
+
+			std::vector<nlohmann::json> attributes(_attributes.size());
+			for (size_t i = 0; i < attributes.size(); ++i) {
+				attributes[i] = _attributes[i]->toJson();
+			}
+			jsonData["attributes"] = attributes;
+
+			std::vector<nlohmann::json > programs(_programs.size());
+			for (size_t i = 0; i < _programs.size(); ++i) {
+				programs[i] = _programs[i]->toJson();
+			}
+			jsonData["programs"] = programs;
+
+			SharedWrapperList<TransactionInput, BRTxInput *> txInputs = getInputs();
+			std::vector<nlohmann::json> inputs(txInputs.size());
+			for (size_t i = 0; i < txInputs.size(); ++i) {
+				nlohmann::json inputJson = txInputs[i]->toJson();
+				inputs[i] = inputJson;
+			}
+			jsonData["txInputs"] = inputs;
+
+			SharedWrapperList<TransactionOutput, BRTxOutput *> txOutputs = getOutputs();
+			std::vector<nlohmann::json> outputs(txOutputs.size());
+			for (size_t i = 0; i < txOutputs.size(); ++i) {
+				outputs[i] = txOutputs[i]->toJson();
+			}
+			jsonData["txOutputs"] = outputs;
+
+			return jsonData;
+		}
+
+		nlohmann::json Transaction::rawTransactionToJson() {
+			nlohmann::json jsonData;
+
+			jsonData["txHash"] = Utils::UInt256ToString(_transaction->txHash);
+
+			jsonData["version"] = _transaction->version;
+
+			jsonData["inCount"] = _transaction->inCount;
+
+			jsonData["outCount"] = _transaction->outCount;
+
+			jsonData["lockTime"] = _transaction->lockTime;
+
+			jsonData["blockHeight"] = _transaction->blockHeight;
+
+			jsonData["timestamp"] = _transaction->timestamp;
+
+			return jsonData;
+		}
+
+		void Transaction::rawTransactionFromJson(nlohmann::json jsonData) {
+			std::string txHash = jsonData["txHash"];
+
+			_transaction->txHash = Utils::UInt256FromString(txHash);
+
+			_transaction->version = jsonData["version"].get<uint32_t>();
+
+			_transaction->inCount = jsonData["inCount"].get<size_t>();
+
+			_transaction->inputs = nullptr;
+
+			_transaction->outCount = jsonData["outCount"].get<size_t>();
+
+			_transaction->outputs = nullptr;
+
+			_transaction->lockTime = jsonData["lockTime"].get<uint32_t>();
+
+			_transaction->blockHeight = jsonData["blockHeight"].get<uint32_t>();
+
+			_transaction->timestamp = jsonData["timestamp"].get<uint32_t>();
+		}
+
+		void Transaction::fromJson(nlohmann::json jsonData) {
+			_isRegistered = jsonData["isRegistered"];
+
+			rawTransactionFromJson(jsonData["transaction"]);
+
+			_type = jsonData["type"].get<Type>();
+
+			_payloadVersion = jsonData["payloadVersion"];
+
+			nlohmann::json payLoad = jsonData["payLoad"];
+			_payload->fromJson(payLoad);
+
+			std::vector<nlohmann::json> attributes = jsonData["attributes"];
+			_attributes.resize(attributes.size());
+			for(size_t i = 0; i < attributes.size(); ++i) {
+				_attributes[i] = AttributePtr(new Attribute);
+				_attributes[i]->fromJson(attributes[i]);
+			}
+
+			std::vector<nlohmann::json > programs = jsonData["programs"];
+			_programs.resize(programs.size());
+			for (size_t i = 0; i < _programs.size(); ++i) {
+				_programs[i] = ProgramPtr(new Program());
+				_programs[i]->fromJson(programs[i]);
+			}
+
+			std::vector<nlohmann::json> inputs = jsonData["txInputs"];
+			_inputs.resize(inputs.size());
+			for (size_t i = 0; i < inputs.size(); ++i) {
+				_inputs[i] = TransactionInputPtr(new TransactionInput);
+				_inputs[i]->fromJson(inputs[i]);
+			}
+
+			std::vector<nlohmann::json> outputs = jsonData["txOutputs"];
+			_outputs.resize(outputs.size());
+			for (size_t i = 0; i < outputs.size(); ++i) {
+				_outputs[i] = TransactionOutputPtr(new TransactionOutput);
+				_outputs[i]->fromJson(outputs[i]);
+			}
 		}
 	}
 }

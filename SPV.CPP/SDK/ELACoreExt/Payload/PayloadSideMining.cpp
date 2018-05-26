@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "PayloadSideMining.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -59,6 +60,24 @@ namespace Elastos {
 			uint8_t genesisData[sizeof(_sideGenesisHash)];
 			istream.getBytes(genesisData, sizeof(_sideGenesisHash));
 			UInt256Get(&_sideGenesisHash, genesisData);
+		}
+
+		nlohmann::json PayloadSideMining::toJson() {
+			nlohmann::json jsonData;
+
+			jsonData["sideBlockHash"] = Utils::UInt256ToString(_sideBlockHash);
+
+			jsonData["sideGenesisHash"] = Utils::UInt256ToString(_sideGenesisHash);
+
+			return jsonData;
+		}
+
+		void PayloadSideMining::fromJson(nlohmann::json jsonData) {
+			std::string sideBlockHash = jsonData["sideBlockHash"].get<std::string>();
+			_sideBlockHash = Utils::UInt256FromString(sideBlockHash);
+
+			std::string sideGenesisHash = jsonData["sideGenesisHash"].get<std::string>();
+			_sideGenesisHash = Utils::UInt256FromString(sideGenesisHash);
 		}
 	}
 }

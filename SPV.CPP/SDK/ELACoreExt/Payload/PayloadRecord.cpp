@@ -81,9 +81,31 @@ namespace Elastos {
 					istream.getBytes(buff, len);
 					_recordData.Resize(len);
 					memcpy(_recordData, buff, len);
+					delete[] buff;
 				}
 			}
-			//delete[] buff;
+		}
+
+		nlohmann::json PayloadRecord::toJson() {
+			nlohmann::json jsonData;
+			jsonData["recordType"] = _recordType;
+
+			char *data = new char[_recordData.GetSize()];
+			memcpy(data, _recordData, _recordData.GetSize());
+			std::string content(data, _recordData.GetSize());
+
+			jsonData["recordData"] = content;
+
+			return jsonData;
+		}
+
+		void PayloadRecord::fromJson(nlohmann::json jsonData) {
+			_recordType = jsonData["recordType"].get<std::string>();
+
+			std::string content = jsonData["recordData"].get<std::string>();
+			const char* data = content.c_str();
+			_recordData.Resize(content.size());
+			memcpy(_recordData, data, content.size());
 		}
 	}
 }

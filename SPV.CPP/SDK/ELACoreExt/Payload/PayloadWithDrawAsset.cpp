@@ -91,5 +91,25 @@ namespace Elastos {
                 }
             }
 		}
+
+		nlohmann::json PayloadWithDrawAsset::toJson() {
+			nlohmann::json jsonData;
+
+			jsonData["blockHeight"] = _blockHeight;
+
+			jsonData["genesisBlockAddress"] = _genesisBlockAddress;
+
+			jsonData["sideChainTransactionHash"] = _sideChainTransactionHash;
+
+			return jsonData;
+		}
+
+		void PayloadWithDrawAsset::fromJson(nlohmann::json jsonData) {
+			_blockHeight = jsonData["blockHeight"];
+
+			_genesisBlockAddress = jsonData["genesisBlockAddress"];
+
+			_sideChainTransactionHash = jsonData["sideChainTransactionHash"];
+		}
 	}
 }

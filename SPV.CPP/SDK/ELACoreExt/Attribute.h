@@ -33,6 +33,10 @@ namespace Elastos {
 			virtual void Serialize(ByteStream &ostream) const;
 			virtual void Deserialize(ByteStream &istream);
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 		private:
 			Usage _usage;
 			CMBlock _data;

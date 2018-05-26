@@ -228,8 +228,10 @@ namespace Elastos {
 			memcpy(signatureData, signature.c_str(), signature.size());
 
 			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
-			//todo completed json content
-			return nlohmann::json();
+			//todo json return is correct ?
+			nlohmann::json jsonData;
+			jsonData["result"] = r;
+			return jsonData;
 		}
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {

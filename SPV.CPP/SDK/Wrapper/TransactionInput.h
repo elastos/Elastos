@@ -52,6 +52,10 @@ namespace Elastos {
 
 			uint32_t getSequence() const;
 
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(nlohmann::json jsonData);
+
 		private:
 			boost::shared_ptr<BRTxInput> _input;
 		};

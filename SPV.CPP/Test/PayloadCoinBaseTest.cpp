@@ -51,4 +51,25 @@ TEST_CASE("PayloadCoinBase Test", "[PayloadCoinBase]") {
         if (bd_src && bd_re)
             REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
     }
+
+    SECTION("toJson fromJson test") {
+        uint8_t buf[] = {'I', ' ', 'a', 'm', ' ', 'O', 'K', '\0'};
+        CMBlock bd;
+        bd.SetMemFixed(buf, sizeof(buf));
+
+        PayloadCoinBase payloadCoinBase(bd);
+
+        nlohmann::json jsonData = payloadCoinBase.toJson();
+
+        PayloadCoinBase payloadCoinBase1;
+        payloadCoinBase1.fromJson(jsonData);
+
+        CMBlock bd_src, bd_re;
+        bd_src = payloadCoinBase.getData();
+        bd_re  = payloadCoinBase1.getData();
+
+        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
+        if (bd_src && bd_re)
+            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
+    }
 }
