@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"encoding/hex"
+	"fmt"
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -39,4 +40,12 @@ func (i *Input) IsEqual(o Input) bool {
 		return false
 	}
 	return true
+}
+
+func (o Input) String() string {
+	return "{\n\t\t" +
+		"tx id: " + o.Previous.TxID.String() + "\n\t\t" +
+		"index: " + fmt.Sprint(o.Previous.Index) + "\n\t\t" +
+		"sequence: " + fmt.Sprint(o.Sequence) + "\n\t\t" +
+		"}"
 }
