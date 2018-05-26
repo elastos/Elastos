@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
-	"sort"
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
@@ -121,14 +120,14 @@ func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
 	}
 
 	//remove dupilicated hashes
-	uniq := make(map[common.Uint168]bool)
+	unique := make(map[common.Uint168]bool)
 	for _, v := range hashes {
-		uniq[v] = true
+		unique[v] = true
 	}
-	for k := range uniq {
+	for k := range unique {
 		uniqueHashes = append(uniqueHashes, k)
 	}
-	sort.Sort(byProgramHashes(uniqueHashes))
+	common.SortProgramHashes(uniqueHashes)
 	return uniqueHashes, nil
 }
 
@@ -290,9 +289,3 @@ func checkCrossChainArbitrators(tx *Transaction, publicKeys [][]byte) error {
 	}
 	return nil
 }
-
-type byProgramHashes []common.Uint168
-
-func (a byProgramHashes) Len() int           { return len(a) }
-func (a byProgramHashes) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byProgramHashes) Less(i, j int) bool { return a[i].Compare(a[j]) < 0 }
