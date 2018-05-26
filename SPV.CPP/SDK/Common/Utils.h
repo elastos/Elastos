@@ -25,6 +25,10 @@ namespace Elastos {
 
 			static UInt168 UInt168FromString(const std::string &str);
 
+			static std::string UInt128ToString(const UInt128 &u128);
+
+			static UInt128 UInt128FromString(const std::string &str);
+
 			static UInt128 generateRandomSeed();
 
 			static CMemBlock<unsigned char>

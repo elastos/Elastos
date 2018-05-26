@@ -134,7 +134,7 @@ namespace Elastos {
 
 			CMemBlock<unsigned char> entropyBytes = Utils::decrypt(_encryptedEntropy, payPassword);
 			UInt128 entropy = UINT128_ZERO;
-			memcpy(entropy.u8, entropyBytes, sizeof(entropyBytes));
+			memcpy(entropy.u8, entropyBytes, entropyBytes.GetSize());
 			mnemonic = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
 			return true;
 		}

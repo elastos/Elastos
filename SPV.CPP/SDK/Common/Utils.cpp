@@ -53,6 +53,26 @@ namespace Elastos {
 			return result;
 		}
 
+		std::string Utils::UInt128ToString(const UInt128 &u128) {
+			std::stringstream ss;
+
+			for (int i = 0; i < sizeof(u128.u8); ++i) {
+				ss << (char) _hexc(u128.u8[i] >> 4) << (char) _hexc(u128.u8[i]);
+			}
+
+			return ss.str();
+		}
+
+		UInt128 Utils::UInt128FromString(const std::string &str) {
+			UInt128 result = {0};
+
+			for (int i = 0; i < sizeof(result.u8); ++i) {
+				result.u8[i] = (_hexu((str)[2 * i]) << 4) | _hexu((str)[2 * i + 1]);
+			}
+
+			return result;
+		}
+
 		void Utils::decodeHex(uint8_t *target, size_t targetLen, char *source, size_t sourceLen) {
 			assert (0 == sourceLen % 2);
 			assert (2 * targetLen == sourceLen);
