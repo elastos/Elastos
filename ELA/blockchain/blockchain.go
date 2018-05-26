@@ -122,7 +122,6 @@ func GetGenesisBlock() (*Block, error) {
 		Outputs:    []*Output{},
 		Programs:   []*Program{},
 	}
-
 	foundation, err := Uint168FromAddress(FoundationAddress)
 	if err != nil {
 		return nil, err

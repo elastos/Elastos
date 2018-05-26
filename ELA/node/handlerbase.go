@@ -7,6 +7,7 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/protocol"
@@ -107,14 +108,14 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
-		node.UpdateMsgHelper(NewHandlerV0(LocalNode))
+		node.UpdateMsgHelper(NewHandlerV0(node))
 	} else {
 		node.UpdateMsgHelper(NewHandlerEIP001(node))
 	}
 
 	// Do not add SPV client as a known address,
 	// so node will not start a connection to SPV client
-	if node.LocalPort() != protocol.SPVPort {
+	if !node.IsFromExtraNet() {
 		ip, _ := node.Addr16()
 		addr := p2p.NetAddress{
 			Time:     node.GetTime(),
@@ -123,13 +124,19 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 			Port:     version.Port,
 			ID:       version.Nonce,
 		}
-		LocalNode.AddAddressToKnownAddress(addr)
+		LocalNode.AddKnownAddress(addr)
 	}
 
 	var message p2p.Message
 	if s == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
-		message = NewVersion(LocalNode)
+		version := NewVersion(LocalNode)
+		if node.IsFromExtraNet() {
+			version.Port = config.Parameters.NodeOpenPort
+		} else {
+			version.Port = config.Parameters.NodePort
+		}
+		message = version
 	} else if s == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
@@ -164,7 +171,19 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 }
 
 func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
-	addrs := LocalNode.RandSelectAddresses()
+	var addrs []p2p.NetAddress
+	// Only send addresses that enabled SPV service
+	if h.node.IsFromExtraNet() {
+		for _, addr := range LocalNode.RandSelectAddresses() {
+			if addr.Services&protocol.OpenService == protocol.OpenService {
+				addr.Port = config.Parameters.NodeOpenPort
+				addrs = append(addrs, addr)
+			}
+		}
+	} else {
+		addrs = LocalNode.RandSelectAddresses()
+	}
+
 	h.node.Send(msg.NewAddr(addrs))
 	return nil
 }
@@ -185,7 +204,7 @@ func (h *HandlerBase) onAddrs(addrs *msg.Addr) error {
 		}
 
 		//save the node address in address list
-		LocalNode.AddAddressToKnownAddress(addr)
+		LocalNode.AddKnownAddress(addr)
 	}
 	return nil
 }
