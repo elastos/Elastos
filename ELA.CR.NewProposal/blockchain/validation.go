@@ -55,7 +55,6 @@ func RunPrograms(tx *Transaction, hashes []common.Uint168, programs []*Program) 
 			if err = checkStandardSignature(publicKeyBytes, data, param); err != nil {
 				return err
 			}
-			return checkStandardSignature(publicKeyBytes, data, param)
 
 		} else if signType == common.MULTISIG {
 			publicKeys, err := crypto.ParseMultisigScript(code)
