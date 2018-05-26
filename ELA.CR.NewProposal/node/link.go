@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -22,7 +21,6 @@ type link struct {
 	addr         string    // The address of the node
 	conn         net.Conn  // Connect socket with the peer node
 	port         uint16    // The server port of the node
-	localPort    uint16    // The local port witch the node connected with
 	httpInfoPort uint16    // The node information server port of the node
 	lastActive   time.Time // The latest time the node activity
 	connCnt      uint64    // The connection count
@@ -43,7 +41,10 @@ func (node *node) GetLastActiveTime() time.Time {
 
 func (node *node) initConnection() {
 	go node.listenNodePort()
-	go node.listenSPVPort()
+	// Listen open port if OpenService enabled
+	if Parameters.OpenService {
+		go node.listenNodeOpenPort()
+	}
 }
 
 func (node *node) listenNodePort() {
@@ -63,11 +64,6 @@ func (node *node) listenNodePort() {
 			return
 		}
 	}
-
-	node.listenConnections(listener)
-}
-
-func (n *node) listenConnections(listener net.Listener) {
 	defer listener.Close()
 
 	for {
@@ -78,25 +74,16 @@ func (n *node) listenConnections(listener net.Listener) {
 		}
 		log.Info("Remote node connect with ", conn.RemoteAddr(), conn.LocalAddr())
 
-		n.link.connCnt++
+		node.link.connCnt++
 
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
-		node.localPort = localPortFromConn(conn)
 		node.Read()
 	}
 }
 
-func localPortFromConn(conn net.Conn) uint16 {
-	// Get node connection port
-	addr := conn.LocalAddr().String()
-	portIndex := strings.LastIndex(addr, ":")
-	port, _ := strconv.ParseUint(string([]byte(addr)[portIndex+1:]), 10, 16)
-	return uint16(port)
-}
-
 func initNonTlsListen() (net.Listener, error) {
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(Parameters.NodePort))
+	listener, err := net.Listen("tcp", fmt.Sprint(":", Parameters.NodePort))
 	if err != nil {
 		log.Error("Error listening\n", err.Error())
 		return nil, err
@@ -134,8 +121,8 @@ func initTlsListen() (net.Listener, error) {
 		ClientCAs:    pool,
 	}
 
-	log.Info("TLS listen port is ", strconv.Itoa(Parameters.NodePort))
-	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(Parameters.NodePort), tlsConfig)
+	log.Info("TLS listen port is ", Parameters.NodePort)
+	listener, err := tls.Listen("tcp", fmt.Sprint(":", Parameters.NodePort), tlsConfig)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -155,10 +142,10 @@ func parseIPaddr(s string) (string, error) {
 func (node *node) Connect(nodeAddr string) error {
 	log.Debug()
 
-	if node.IsAddrInNbrList(nodeAddr) == true {
+	if node.IsAddrInNbrList(nodeAddr) {
 		return nil
 	}
-	if added := node.SetAddrInConnectingList(nodeAddr); added == false {
+	if !node.SetAddrInConnectingList(nodeAddr) {
 		return errors.New("node exist in connecting list, cancel")
 	}
 

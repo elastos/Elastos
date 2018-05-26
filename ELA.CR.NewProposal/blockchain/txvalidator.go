@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"math"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
+
+	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -271,7 +272,7 @@ func CheckTransactionBalance(txn *Transaction) error {
 
 	// TODO: check coinbase balance 30%-70%
 	for _, v := range txn.Outputs {
-		if v.Value <= Fixed64(0) {
+		if v.Value < Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
@@ -294,12 +295,7 @@ func CheckAttributeProgram(txn *Transaction) error {
 }
 
 func CheckTransactionSignature(txn *Transaction) error {
-	flag, err := VerifySignature(txn)
-	if flag && err == nil {
-		return nil
-	} else {
-		return err
-	}
+	return VerifySignature(txn)
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {

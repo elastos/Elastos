@@ -5,7 +5,6 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
@@ -103,12 +102,7 @@ func (h *HandlerEIP001) OnMessageDecoded(message p2p.Message) {
 }
 
 func (h *HandlerEIP001) onFilterLoad(msg *msg.FilterLoad) error {
-	if !config.Parameters.SPVService {
-		return nil
-	}
-
 	h.node.LoadFilter(msg)
-
 	return nil
 }
 
@@ -360,7 +354,7 @@ func (h *HandlerEIP001) onNotFound(inv *msg.NotFound) error {
 
 func (h *HandlerEIP001) onMemPool(*msg.MemPool) error {
 	// Only allow mempool requests if server enabled SPV service
-	if LocalNode.Services()&protocol.SPVService != protocol.SPVService {
+	if LocalNode.Services()&protocol.OpenService != protocol.OpenService {
 		h.node.CloseConn()
 		return fmt.Errorf("peer %d sent mempool request with SPV service disabled", h.node.ID())
 	}
