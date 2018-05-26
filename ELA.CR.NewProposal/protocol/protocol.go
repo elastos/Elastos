@@ -31,8 +31,7 @@ const (
 )
 
 const (
-	SPVPort    = 20866
-	SPVService = 1 << 2
+	OpenService = 1 << 2
 )
 
 type Noder interface {
@@ -42,7 +41,7 @@ type Noder interface {
 	Addr() string
 	Addr16() ([16]byte, error)
 	Port() uint16
-	LocalPort() uint16
+	IsFromExtraNet() bool
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
 	SetState(state uint)
@@ -91,7 +90,7 @@ type Noder interface {
 	SetAddrInConnectingList(addr string) bool
 	RemoveAddrInConnectingList(addr string)
 	GetAddressCnt() uint64
-	AddAddressToKnownAddress(na p2p.NetAddress)
+	AddKnownAddress(na p2p.NetAddress)
 	RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.NetAddress
 	NeedMoreAddresses() bool
 	RandSelectAddresses() []p2p.NetAddress

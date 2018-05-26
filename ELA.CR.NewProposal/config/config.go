@@ -3,12 +3,13 @@ package config
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"os"
 	"time"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -65,6 +66,7 @@ type PowConfiguration struct {
 
 type Configuration struct {
 	Magic               uint32           `json:"Magic"`
+	FoundationAddress   string           `json:"FoundationAddress"`
 	Version             int              `json:"Version"`
 	SeedList            []string         `json:"SeedList"`
 	HttpRestPort        int              `json:"HttpRestPort"`
@@ -72,13 +74,14 @@ type Configuration struct {
 	RestKeyPath         string           `json:"RestKeyPath"`
 	HttpInfoPort        uint16           `json:"HttpInfoPort"`
 	HttpInfoStart       bool             `json:"HttpInfoStart"`
-	SPVService          bool             `json:"SPVService"`
+	OpenService         bool             `json:"OpenService"`
 	HttpWsPort          int              `json:"HttpWsPort"`
 	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
 	HttpJsonPort        int              `json:"HttpJsonPort"`
 	OauthServerUrl      string           `json:"OauthServerUrl"`
 	NoticeServerUrl     string           `json:"NoticeServerUrl"`
-	NodePort            int              `json:"NodePort"`
+	NodePort            uint16           `json:"NodePort"`
+	NodeOpenPort        uint16           `json:"NodeOpenPort"`
 	WebSocketPort       int              `json:"WebSocketPort"`
 	PrintLevel          int              `json:"PrintLevel"`
 	IsTLS               bool             `json:"IsTLS"`

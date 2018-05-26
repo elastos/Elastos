@@ -31,6 +31,12 @@ func init() {
 		coreNum = DefaultMultiCoreNum
 	}
 	log.Debug("The Core number is ", coreNum)
+
+	blockchain.FoundationAddress = config.Parameters.Configuration.FoundationAddress
+
+	if blockchain.FoundationAddress == "" {
+		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	}
 	runtime.GOMAXPROCS(coreNum)
 }
 
