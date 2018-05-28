@@ -667,6 +667,8 @@ namespace Elastos {
 
 			_type = jsonData["type"].get<Type>();
 
+			setPayloadByTransactionType();
+
 			_payloadVersion = jsonData["payloadVersion"];
 
 			nlohmann::json payLoad = jsonData["payLoad"];

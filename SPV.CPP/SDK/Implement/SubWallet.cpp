@@ -174,8 +174,12 @@ namespace Elastos {
 			}
 			pthread_mutex_unlock(&wallet->lock);
 
-			//todo convert transaction array to json
-			return nlohmann::json();
+			std::vector<nlohmann::json> jsonList(realCount);
+			for (size_t i = 0; i < realCount; ++i) {
+				TransactionPtr transactionPtr(new Transaction(transactions[i]));
+				jsonList[i] = transactionPtr->toJson();
+			}
+			return nlohmann::json(jsonList);
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
@@ -301,8 +305,15 @@ namespace Elastos {
 
 		std::string
 		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const nlohmann::json &signJson) {
-			//todo complete me
-			return "";
+			TransactionPtr transaction(new Transaction());
+
+			transaction->fromJson(transactionJson);
+
+			_walletManager->signAndPublishTransaction(transaction);
+
+			std::string hash = Utils::UInt256ToString(transaction->getHash());
+
+			return hash;
 		}
 
 	}

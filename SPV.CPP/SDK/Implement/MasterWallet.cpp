@@ -153,8 +153,8 @@ namespace Elastos {
 		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
 										  const std::string &payPassword) {
 			assert(phrase.size() > 0);
-			UInt512 key = UINT512_ZERO;
-			BRBIP39DeriveKey(key.u8, phrase.c_str(), phrasePassword.c_str());
+//			UInt512 key = UINT512_ZERO;
+//			BRBIP39DeriveKey(key.u8, phrase.c_str(), phrasePassword.c_str());
 
 			CMemBlock<unsigned char> encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
 			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
