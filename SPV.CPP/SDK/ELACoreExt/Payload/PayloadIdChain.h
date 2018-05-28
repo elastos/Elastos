@@ -42,7 +42,7 @@ namespace Elastos {
 
 			virtual nlohmann::json toJson();
 
-			virtual void fromJson(nlohmann::json);
+			virtual void fromJson(const nlohmann::json &);
 
 		private:
 			std::string _id;

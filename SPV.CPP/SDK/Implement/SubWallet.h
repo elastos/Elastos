@@ -18,6 +18,7 @@ namespace Elastos {
 	namespace SDK {
 
 		class MasterWallet;
+		class Transaction;
 
 		class SubWallet : public virtual ISubWallet, public Wallet::Listener {
 		public:
@@ -98,6 +99,11 @@ namespace Elastos {
 					  MasterWallet *parent);
 
 			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
+
+			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
+
+			virtual std::string sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
+														const std::string &payPassword);
 
 			void signTransaction(BRTransaction *transaction, int forkId, const std::string &payPassword);
 

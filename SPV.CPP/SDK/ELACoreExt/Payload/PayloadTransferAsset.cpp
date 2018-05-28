@@ -33,7 +33,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadTransferAsset::fromJson(const nlohmann::json jsonData) {
+		void PayloadTransferAsset::fromJson(const nlohmann::json &jsonData) {
 
 		}
 	}

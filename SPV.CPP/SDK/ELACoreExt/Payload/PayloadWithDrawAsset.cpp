@@ -104,7 +104,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadWithDrawAsset::fromJson(const nlohmann::json jsonData) {
+		void PayloadWithDrawAsset::fromJson(const nlohmann::json &jsonData) {
 			_blockHeight = jsonData["blockHeight"];
 
 			_genesisBlockAddress = jsonData["genesisBlockAddress"];

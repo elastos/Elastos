@@ -67,12 +67,28 @@ namespace Elastos {
 			_sidechainAddress = address;
 		}
 
+		const std::map<std::string, uint64_t> &DepositTxParam::getAddressMap() const {
+			return _addressMap;
+		}
+
+		void DepositTxParam::setAddressMap(const std::map<std::string, uint64_t> &addressMap) {
+			_addressMap = addressMap;
+		}
+
 		std::string WithdrawTxParam::getMainchainAddress() const {
 			return _mainchainAddress;
 		}
 
 		void WithdrawTxParam::setMainchainAddress(const std::string &address) {
 			_mainchainAddress = address;
+		}
+
+		const std::map<std::string, uint64_t> &WithdrawTxParam::getAddressMap() const {
+			return _addressMap;
+		}
+
+		void WithdrawTxParam::setAddressMap(const std::map<std::string, uint64_t> &addressMap) {
+			_addressMap = addressMap;
 		}
 
 		std::string IdTxParam::getId() const {
@@ -91,28 +107,23 @@ namespace Elastos {
 			_data = data;
 		}
 
-		TxParam *TxParamFactory::createTxParam(const std::string &fromAddress, const std::string &toAddress,
-													 uint64_t amount, uint64_t fee, const std::string &memo) {
+		TxParam *
+		TxParamFactory::createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
+									  uint64_t amount, uint64_t fee, const std::string &memo) {
 			TxParam *result = nullptr;
-			TxType type = Normal; //todo init type by parameters
 			switch (type) {
 				case Normal:
 					result = new TxParam;
 					break;
-#if 0
-				case Deposit:
-					DepositTxParam *depositTxParam = new DepositTxParam;
-					result = depositTxParam;
+				case Mainchain:
+					result = new DepositTxParam;
 					break;
-				case Withdraw:
-					WithdrawTxParam *withdrawTxParam = new WithdrawTxParam;
-					result = withdrawTxParam;
+				case Sidechain:
+					result = new WithdrawTxParam;
 					break;
-				case ID:
-					IdTxParam *idTxParam = new IdTxParam;
-					result = idTxParam;
+				case Idchain:
+					result = new IdTxParam;
 					break;
-#endif
 			}
 			result->setFromAddress(fromAddress);
 			result->setToAddress(toAddress);

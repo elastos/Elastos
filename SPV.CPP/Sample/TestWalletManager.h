@@ -1,4 +1,3 @@
-
 #ifndef _ELATSOS_SAMPLE_TESTWALLET_H
 #define _ELATSOS_SAMPLE_TESTWALLET_H
 
@@ -18,6 +17,7 @@ public:
 	void testCreateTransaction();
 
 protected:
+	TransactionPtr createTransaction(const TxParam &param);
 
 	SharedWrapperList<Peer, BRPeer*> loadPeers() override;
 

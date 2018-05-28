@@ -4,6 +4,7 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <algorithm>
+#include <SDK/ELACoreExt/ELABRTxOutput.h>
 
 #include "BRTransaction.h"
 #include "BRWallet.h"
@@ -15,6 +16,8 @@
 #include "SubWalletCallback.h"
 #include "Utils.h"
 #include "Log.h"
+#include "SubWalletType.h"
+#include "TransactionOutput.h"
 
 namespace fs = boost::filesystem;
 
@@ -148,15 +151,9 @@ namespace Elastos {
 		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, uint64_t amount,
 								   uint64_t fee, const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(fromAddress, toAddress, amount, fee, memo));
-			TransactionPtr transaction = _walletManager->createTransaction(*txParam);
-
-			BRTransaction *rawTransaction = transaction->convertToRaw();
-			signTransaction(rawTransaction, _info.getForkId(), payPassword);
-			_walletManager->getPeerManager()->publishTransaction(transaction);
-
-			Transaction txForHash(rawTransaction);
-			return std::string((char *) txForHash.getHash().u8, 32);
+					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo));
+			TransactionPtr transaction = createTransaction(txParam.get());
+			return sendTransactionInternal(transaction, payPassword);
 		}
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
@@ -180,6 +177,34 @@ namespace Elastos {
 				jsonList[i] = transactionPtr->toJson();
 			}
 			return nlohmann::json(jsonList);
+		}
+
+		boost::shared_ptr<Transaction> SubWallet::createTransaction(TxParam *param) const {
+			//todo consider the situation of from address and fee not null
+			//todo initialize asset id if null
+			BRTransaction *tmp = BRWalletCreateTransaction(_walletManager->getWallet()->getRaw(), param->getAmount(),
+														   param->getToAddress().c_str());
+			if (!tmp) return nullptr;
+
+			TransactionPtr ptr(new Transaction(tmp));
+			ptr->setTransactionType(Transaction::TransferAsset);
+			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+			std::for_each(outList.begin(), outList.end(),
+						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+							  ((ELABRTxOutput *) output->getRaw())->assetId = param->getAssetId();
+						  });
+
+			return ptr;
+		}
+
+		std::string SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
+													   const std::string &payPassword) {
+			BRTransaction *rawTransaction = transaction->convertToRaw();
+			signTransaction(rawTransaction, _info.getForkId(), payPassword);
+			_walletManager->getPeerManager()->publishTransaction(transaction);
+
+			Transaction txForHash(rawTransaction);
+			return std::string((char *) txForHash.getHash().u8, 32);
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {

@@ -58,7 +58,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadCoinBase::fromJson(const nlohmann::json jsonData) {
+		void PayloadCoinBase::fromJson(const nlohmann::json &jsonData) {
 			std::string content = jsonData["data"].get<std::string>();
 			const char* data = content.c_str();
 			_coinBaseData.Resize(content.size());

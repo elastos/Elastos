@@ -6,18 +6,15 @@
 #define __ELASTOS_SDK_TRANSACTIONCREATIONPARAM_H__
 
 #include <string>
+#include <map>
+
 #include "BRInt.h"
+
+#include "SubWalletType.h"
 #include "CMemBlock.h"
 
 namespace Elastos {
 	namespace SDK {
-
-		enum TxType {
-			Normal = 0,
-			Deposit,
-			Withdraw,
-			ID
-		};
 
 		class TxParam {
 		public:
@@ -45,7 +42,7 @@ namespace Elastos {
 
 			void setFee(uint64_t fee);
 
-			virtual TxType getType() const { return Normal;}
+			virtual SubWalletType getType() const { return Normal;}
 
 		private:
 			std::string _fromAddress;
@@ -61,10 +58,15 @@ namespace Elastos {
 
 			void setSidechainAddress(const std::string &address);
 
-			virtual TxType getType() const { return Deposit;}
+			const std::map<std::string, uint64_t> &getAddressMap() const;
+
+			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
+
+			virtual SubWalletType getType() const { return Mainchain;}
 
 		private:
 			std::string _sidechainAddress;
+			std::map<std::string, uint64_t> _addressMap;
 		};
 
 		class WithdrawTxParam : public TxParam {
@@ -73,10 +75,15 @@ namespace Elastos {
 
 			void setMainchainAddress(const std::string &address);
 
-			virtual TxType getType() const { return Withdraw;}
+			const std::map<std::string, uint64_t> &getAddressMap() const;
+
+			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
+
+			virtual SubWalletType getType() const { return Sidechain;}
 
 		private:
 			std::string _mainchainAddress;
+			std::map<std::string, uint64_t> _addressMap;
 		};
 
 		class IdTxParam : public TxParam {
@@ -89,7 +96,7 @@ namespace Elastos {
 
 			void setData(const CMBlock &data);
 
-			virtual TxType getType() const { return ID;}
+			virtual SubWalletType getType() const { return Idchain;}
 
 		private:
 			std::string _id;
@@ -98,7 +105,7 @@ namespace Elastos {
 
 		class TxParamFactory {
 		public:
-			static TxParam *createTxParam(const std::string &fromAddress, const std::string &toAddress,
+			static TxParam *createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
 												uint64_t amount, uint64_t fee, const std::string &memo);
 		};
 	}

@@ -2,6 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <boost/scoped_ptr.hpp>
+
+#include "ELACoreExt/ELABRTxOutput.h"
+#include "ELACoreExt/Payload/PayloadIdChain.h"
+
 #include "IdChainSubWallet.h"
 
 namespace Elastos {
@@ -29,11 +34,40 @@ namespace Elastos {
 		}
 
 		std::string
-		IdChainSubWallet::SendDepositTransaction(const std::string &fromAddress, const std::string &toAddress,
-												 const nlohmann::json &payloadJson, const nlohmann::json &programJson,
-												 double fee, const std::string &payPassword, const std::string &memo) {
-			//todo complete me
-			return "";
+		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress,
+											const nlohmann::json &payloadJson, const nlohmann::json &programJson,
+											double fee, const std::string &payPassword, const std::string &memo) {
+			boost::scoped_ptr<TxParam> txParam(
+					TxParamFactory::createTxParam(Idchain, fromAddress, "", 0, fee, memo));
+
+			TransactionPtr transaction = createTransaction(txParam.get());
+			PayloadIdChain *payloadIdChain = static_cast<PayloadIdChain *>(transaction->getPayload().get());
+			payloadIdChain->fromJson(payloadJson);
+
+			ProgramPtr newProgram(new Program());
+			newProgram->fromJson(programJson);
+			transaction->addProgram(newProgram);
+
+			return sendTransactionInternal(transaction, payPassword);
+		}
+
+		boost::shared_ptr<Transaction> IdChainSubWallet::createTransaction(TxParam *param) const {
+			IdTxParam *idTxParam = dynamic_cast<IdTxParam *>(param);
+			assert(idTxParam != nullptr);
+
+			//todo create transaction without to address
+			BRTransaction *tmp;
+			if (!tmp) return nullptr;
+
+			TransactionPtr ptr(new Transaction(tmp));
+			ptr->setTransactionType(Transaction::IdChain);
+			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+			std::for_each(outList.begin(), outList.end(),
+						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+							  ((ELABRTxOutput *) output->getRaw())->assetId = param->getAssetId();
+						  });
+
+			return ptr;
 		}
 	}
 }

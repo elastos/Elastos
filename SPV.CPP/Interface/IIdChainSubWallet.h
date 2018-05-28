@@ -16,9 +16,8 @@ namespace Elastos {
 
 			virtual std::string getIdValue(const std::string &path) = 0;
 
-			virtual std::string SendDepositTransaction(
+			virtual std::string SendIdTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
 					const nlohmann::json &payloadJson,
 					const nlohmann::json &programJson,
 					double fee,

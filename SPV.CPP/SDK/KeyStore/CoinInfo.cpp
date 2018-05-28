@@ -92,7 +92,7 @@ namespace Elastos {
 			p._index = j["Index"].get<int>();
 			p._usedMaxAddressIndex = j["UsedMaxAddressIndex"].get<int>();
 			p._singleAddress = j["SingleAddress"].get<bool>();
-			p._walletType = (CoinInfo::SubWalletType) j["WalletType"].get<int>();
+			p._walletType = (SubWalletType) j["WalletType"].get<int>();
 		}
 
 		int CoinInfo::getForkId() const {
@@ -103,12 +103,12 @@ namespace Elastos {
 			_forkId = forkId;
 		}
 
-		CoinInfo::SubWalletType CoinInfo::getWalletType() const {
-			return IdChain;
+		SubWalletType CoinInfo::getWalletType() const {
+			return _walletType;
 		}
 
-		void CoinInfo::setWalletType(CoinInfo::SubWalletType type) {
-
+		void CoinInfo::setWalletType(SubWalletType type) {
+			_walletType = type;
 		}
 	}
 }

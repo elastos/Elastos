@@ -166,6 +166,10 @@ namespace Elastos {
 
 			static uint64_t getMinOutputAmount();
 
+			const PayloadPtr &getPayload() const;
+
+			void addProgram(const ProgramPtr &program);
+
 		private:
 			void convertFrom(const BRTransaction *raw);
 

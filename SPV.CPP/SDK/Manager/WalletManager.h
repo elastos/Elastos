@@ -42,8 +42,6 @@ namespace Elastos {
 
 			void stop();
 
-			TransactionPtr createTransaction(const TxParam &param);
-
 			UInt256 signAndPublishTransaction(const TransactionPtr &transaction);
 
 			SharedWrapperList<Transaction, BRTransaction *> getTransactions(
@@ -102,9 +100,6 @@ namespace Elastos {
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
 			virtual const WalletListenerPtr &createWalletListener();
-
-		protected:
-			TransactionPtr createNormalTransaction(const TxParam &param);
 
 		private:
 			DatabaseManager _databaseManager;

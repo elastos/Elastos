@@ -30,6 +30,8 @@ namespace Elastos {
 							   const ChainParams &chainParams,
 							   const std::string &payPassword,
 							   MasterWallet *parent);
+
+			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 		};
 
 	}

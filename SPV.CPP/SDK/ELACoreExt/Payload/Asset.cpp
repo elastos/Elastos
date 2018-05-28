@@ -115,7 +115,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Asset::fromJson(const nlohmann::json jsonData) {
+		void Asset::fromJson(const nlohmann::json &jsonData) {
 			_name = jsonData["name"].get<std::string>();
 
 			_description = jsonData["description"].get<std::string>();

@@ -55,22 +55,6 @@ namespace Elastos {
 			getPeerManager()->disconnect();
 		}
 
-		TransactionPtr WalletManager::createTransaction(const TxParam &param) {
-			//todo add other transaction creation logic
-			switch (param.getType()) {
-				case Normal:
-					return createNormalTransaction(param);
-				case Deposit:
-					break;
-				case Withdraw:
-					break;
-				case ID:
-					break;
-			}
-
-			return Elastos::SDK::TransactionPtr();
-		}
-
 		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
 			CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
 			return transaction->getHash();
@@ -90,25 +74,6 @@ namespace Elastos {
 				}
 			}
 			return txs;
-		}
-
-		TransactionPtr WalletManager::createNormalTransaction(const TxParam &param) {
-
-			//todo consider the situation of from address and fee not null
-			//todo initialize asset id if null
-			BRTransaction *tmp = BRWalletCreateTransaction(this->getWallet()->getRaw(), param.getAmount(),
-														   param.getToAddress().c_str());
-			if (!tmp) return nullptr;
-
-			TransactionPtr ptr(new Transaction(tmp));
-			ptr->setTransactionType(Transaction::TransferAsset);
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
-			std::for_each(outList.begin(), outList.end(),
-						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELABRTxOutput *) output->getRaw())->assetId = param.getAssetId();
-						  });
-
-			return ptr;
 		}
 
 		void WalletManager::recover(int limitGap) {

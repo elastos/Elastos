@@ -2,21 +2,20 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "ELAMessageSerializable.h"
+#ifndef __ELASTOS_SDK_SUBWALLETTYPE_H__
+#define __ELASTOS_SDK_SUBWALLETTYPE_H__
 
 namespace Elastos {
 	namespace SDK {
 
-		ELAMessageSerializable::~ELAMessageSerializable() {
+		enum SubWalletType {
+			Normal = 0,
+			Mainchain,
+			Sidechain,
+			Idchain
+		};
 
-		}
-
-		nlohmann::json ELAMessageSerializable::toJson(){
-
-		}
-
-		void ELAMessageSerializable::fromJson(const nlohmann::json &) {
-
-		}
 	}
 }
+
+#endif //__ELASTOS_SDK_SUBWALLETTYPE_H__

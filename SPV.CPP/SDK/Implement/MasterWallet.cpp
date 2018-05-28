@@ -173,9 +173,6 @@ namespace Elastos {
 		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
 										  const std::string &payPassword) {
 			assert(phrase.size() > 0);
-//			UInt512 key = UINT512_ZERO;
-//			BRBIP39DeriveKey(key.u8, phrase.c_str(), phrasePassword.c_str());
-
 			CMemBlock<unsigned char> encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
 			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
 
@@ -277,13 +274,13 @@ namespace Elastos {
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const ChainParams &chainParams,
 														const std::string &payPassword, MasterWallet *parent) {
 			switch (info.getWalletType()) {
-				case CoinInfo::Deposit:
+				case Mainchain:
 					return new MainchainSubWallet(info, chainParams, payPassword, parent);
-				case CoinInfo::Withdraw:
+				case Sidechain:
 					return new SidechainSubWallet(info, chainParams, payPassword, parent);
-				case CoinInfo::IdChain:
+				case Idchain:
 					return new IdChainSubWallet(info, chainParams, payPassword, parent);
-				case CoinInfo::Normal:
+				case Normal:
 				default:
 					return new SubWallet(info, chainParams, payPassword, parent);
 			}

@@ -55,7 +55,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Program::fromJson(nlohmann::json jsonData) {
+		void Program::fromJson(const nlohmann::json &jsonData) {
 			std::string parameter = jsonData["parameter"].get<std::string>();
 			_parameter.Resize(parameter.size());
 			memcpy(_parameter, parameter.data(), parameter.size());

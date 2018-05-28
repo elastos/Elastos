@@ -127,7 +127,7 @@ namespace Elastos {
 			return j;
 		}
 
-		void PayloadIdChain::fromJson(nlohmann::json j) {
+		void PayloadIdChain::fromJson(const nlohmann::json &j) {
 			_id = j["Id"].get<std::string>();
 			_path = j["Path"].get<std::string>();
 			_dataHash = j["DataHash"].get<std::string>();

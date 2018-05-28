@@ -10,19 +10,12 @@
 #include <nlohmann/json.hpp>
 
 #include "Mstream.h"
+#include "SubWalletType.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		class CoinInfo {
-		public:
-			enum SubWalletType {
-				Normal = 0,
-				Deposit,
-				Withdraw,
-				IdChain
-			};
-
 		public:
 			CoinInfo();
 

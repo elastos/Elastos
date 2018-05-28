@@ -4,8 +4,10 @@
 #include <BRPeer.h>
 #include <Common/Log.h>
 #include <BRTransaction.h>
+
 #include "TestWalletManager.h"
 #include "Utils.h"
+#include "ELACoreExt/ELABRTxOutput.h"
 #include "ELACoreExt/Payload/Asset.h"
 
 #include "Key.h"
@@ -110,4 +112,20 @@ void TestWalletManager::testCreateTransaction() {
 
 		Log::getLogger()->info("testCreateTransaction hash:{}", Utils::UInt256ToString(hash));
 	}
+}
+
+TransactionPtr TestWalletManager::createTransaction(const TxParam &param) {
+	BRTransaction *tmp = BRWalletCreateTransaction(this->getWallet()->getRaw(), param.getAmount(),
+												   param.getToAddress().c_str());
+	if (!tmp) return nullptr;
+
+	TransactionPtr ptr(new Transaction(tmp));
+	ptr->setTransactionType(Transaction::TransferAsset);
+	SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+	std::for_each(outList.begin(), outList.end(),
+				  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+					  ((ELABRTxOutput *) output->getRaw())->assetId = param.getAssetId();
+				  });
+
+	return ptr;
 }

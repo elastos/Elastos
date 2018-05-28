@@ -19,9 +19,8 @@ namespace Elastos {
 
 			virtual std::string getIdValue(const std::string &path);
 
-			virtual std::string SendDepositTransaction(
+			virtual std::string SendIdTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
 					const nlohmann::json &payloadJson,
 					const nlohmann::json &programJson,
 					double fee,
@@ -32,9 +31,11 @@ namespace Elastos {
 			friend class MasterWallet;
 
 			IdChainSubWallet(const CoinInfo &info,
-									   const ChainParams &chainParams,
-									   const std::string &payPassword,
-									   MasterWallet *parent);
+							 const ChainParams &chainParams,
+							 const std::string &payPassword,
+							 MasterWallet *parent);
+
+			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 		};
 
 	}
