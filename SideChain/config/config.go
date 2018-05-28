@@ -71,6 +71,9 @@ type Configuration struct {
 	Version             int              `json:"Version"`
 	SeedList            []string         `json:"SeedList"`
 	SpvSeedList         []string         `json:"SpvSeedList"`
+	SpvMinOutbound      int              `json:"SpvMinOutbound"`
+	SpvMaxConnections   int              `json:"SpvMaxConnections"`
+	SpvPrintLevel       uint8            `json:"SpvPrintLevel"`
 	HttpRestPort        int              `json:"HttpRestPort"`
 	RestCertPath        string           `json:"RestCertPath"`
 	RestKeyPath         string           `json:"RestKeyPath"`

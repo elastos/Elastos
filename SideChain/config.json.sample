@@ -9,6 +9,9 @@
     "SpvSeedList": [
       "127.0.0.1:10038"
     ],
+    "SpvMinOutbound": 1,
+    "SpvMaxConnections": 3,
+    "SpvPrintLevel": 1,
     "HttpInfoPort": 20333,
     "HttpInfoStart": true,
     "HttpRestPort": 20334,
