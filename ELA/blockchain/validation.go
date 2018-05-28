@@ -5,12 +5,10 @@ import (
 	"crypto/sha256"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA/config"
-	. "github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/sidechain"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA/config"
+	. "github.com/elastos/Elastos.ELA/core"
 )
 
 func VerifySignature(tx *Transaction) error {
@@ -18,13 +16,15 @@ func VerifySignature(tx *Transaction) error {
 	if err != nil {
 		return err
 	}
-	return RunPrograms(tx, hashes, tx.Programs)
-}
 
-func RunPrograms(tx *Transaction, hashes []common.Uint168, programs []*Program) error {
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
 	data := buf.Bytes()
+
+	return RunPrograms(data, hashes, tx.Programs)
+}
+
+func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) error {
 	if len(hashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
@@ -45,6 +45,7 @@ func RunPrograms(tx *Transaction, hashes []common.Uint168, programs []*Program) 
 			return err
 		}
 
+		// TODO: confirm they are using the same sort mode
 		if !hashes[i].IsEqual(*programHash) && signType != common.CROSSCHAIN {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
@@ -52,7 +53,7 @@ func RunPrograms(tx *Transaction, hashes []common.Uint168, programs []*Program) 
 		if signType == common.STANDARD {
 			// Remove length byte and sign type byte
 			publicKeyBytes := code[1 : len(code)-1]
-			if err = checkStandardSignature(publicKeyBytes, data, param); err != nil {
+			if err := checkStandardSignature(publicKeyBytes, data, param); err != nil {
 				return err
 			}
 
@@ -70,7 +71,7 @@ func RunPrograms(tx *Transaction, hashes []common.Uint168, programs []*Program) 
 			if err != nil {
 				return err
 			}
-			if err = checkCrossChainArbitrators(tx, publicKeys); err != nil {
+			if err = checkCrossChainArbitrators(publicKeys); err != nil {
 				return err
 			}
 			if err = checkMultiSignSignatures(code, param, data, publicKeys); err != nil {
@@ -185,86 +186,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	return nil
 }
 
-func checkCrossChainTransaction(txn *Transaction) error {
-	if !txn.IsWithdrawTx() {
-		return nil
-	}
-
-	hashes, err := GetTxProgramHashes(txn)
-	if err != nil {
-		return err
-	}
-
-	programs := txn.Programs
-	Length := len(hashes)
-	if Length != len(programs) {
-		return errors.New("The number of data hashes is different with number of programs.")
-	}
-
-	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
-	for i := 0; i < len(programs); i++ {
-
-		code := programs[i].Code
-
-		// Get transaction type
-		signType, err := crypto.GetScriptType(code)
-		if err != nil {
-			return err
-		}
-
-		if signType == common.CROSSCHAIN {
-			publicKeys, err := crypto.ParseCrossChainScript(code)
-			if err != nil {
-				return err
-			}
-
-			if err := checkCrossChainArbitrators(txn, publicKeys); err != nil {
-				return errors.New("checkCrossChainArbitrators failed")
-			}
-		}
-	}
-	return nil
-}
-
-func checkCrossChainArbitrators(tx *Transaction, publicKeys [][]byte) error {
-	withdrawPayload, ok := tx.Payload.(*PayloadWithdrawAsset)
-	if !ok {
-		return errors.New("Invalid payload type.")
-	}
-
-	if sidechain.DbCache == nil {
-		dbCache, err := sidechain.OpenDataStore()
-		if err != nil {
-			errors.New("Open data store failed")
-		}
-		sidechain.DbCache = dbCache
-	}
-
-	for _, txHash := range withdrawPayload.SideChainTransactionHash {
-		ok, err := sidechain.DbCache.HasSideChainTx(txHash)
-		if err != nil {
-			return err
-		}
-		if ok {
-			return errors.New("Reduplicate withdraw transaction.")
-		}
-		err = sidechain.DbCache.AddSideChainTx(txHash, withdrawPayload.GenesisBlockAddress)
-		if err != nil {
-			return err
-		}
-	}
-
-	//hash, err := DefaultLedger.Store.GetBlockHash(uint32(withdrawPayload.BlockHeight))
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//block, err := DefaultLedger.Store.GetBlock(hash)
-	//if err != nil {
-	//	return err
-	//}
-
+func checkCrossChainArbitrators(publicKeys [][]byte) error {
 	arbitrators, err := config.Parameters.GetArbitrators()
 	if err != nil {
 		return err
