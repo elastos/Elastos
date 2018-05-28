@@ -50,11 +50,6 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 		return ErrDoubleSpend
 	}
 
-	if err := checkCrossChainTransaction(txn); err != nil {
-		log.Info("Transaction verification failed: ", err)
-		return ErrDoubleSpend
-	}
-
 	txn.Fee = GetTxFee(txn, DefaultLedger.Blockchain.AssetID)
 	buf := new(bytes.Buffer)
 	txn.Serialize(buf)
