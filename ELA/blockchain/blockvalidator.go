@@ -104,6 +104,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxHashes[txHash] = struct{}{}
 	}
 
+<<<<<<< HEAD
 	// Check for duplicate UTXO inputs in a block
 	existingTxInputs := make(map[string]struct{})
 	for _, input := range blockInputs {
@@ -123,6 +124,8 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingSideTxs[hash] = struct{}{}
 	}
 
+=======
+>>>>>>> aa67976... implement of EIP001 SPV protocol
 	// Check transaction outputs after a update checkpoint.
 	version := uint32(0)
 	if block.Height > BlockHeightCheckTxOut {
