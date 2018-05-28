@@ -206,7 +206,7 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	return msgBlock, err
 }
 
-func (pow *PowService) ManualMining(n uint32) ([]*common.Uint256, error) {
+func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	pow.Mutex.Lock()
 
 	if pow.started || pow.manualMining {

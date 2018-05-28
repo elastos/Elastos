@@ -444,7 +444,7 @@ func ToggleMining(param Params) map[string]interface{} {
 	return ResponsePack(Success, message)
 }
 
-func ManualMining(param Params) map[string]interface{} {
+func DiscreteMining(param Params) map[string]interface{} {
 	count, ok := param.Uint("count")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -452,7 +452,7 @@ func ManualMining(param Params) map[string]interface{} {
 
 	ret := make([]string, count)
 
-	blockHashes, err := Pow.ManualMining(uint32(count))
+	blockHashes, err := Pow.DiscreteMining(uint32(count))
 	if err != nil {
 		return ResponsePack(Error, err)
 	}
@@ -572,7 +572,7 @@ func getBlock(hash Uint256, format uint32) (interface{}, ErrCode) {
 }
 
 func GetBlockByHash(param Params) map[string]interface{} {
-	str, ok := param.String("hash")
+	str, ok := param.String("blockhash")
 	if !ok {
 		return ResponsePack(InvalidParams, "block hash not found")
 	}
@@ -586,12 +586,12 @@ func GetBlockByHash(param Params) map[string]interface{} {
 		ResponsePack(InvalidParams, "invalid block hash")
 	}
 
-	format, ok := param.Uint("format")
+	verbosity, ok := param.Uint("verbosity")
 	if !ok {
-		format = 1
+		verbosity = 1
 	}
 
-	result, error := getBlock(hash, format)
+	result, error := getBlock(hash, verbosity)
 
 	return ResponsePack(error, result)
 }
@@ -627,7 +627,7 @@ func SendTransactionInfo(param Params) map[string]interface{} {
 }
 
 func SendRawTransaction(param Params) map[string]interface{} {
-	str, ok := param.String("Data")
+	str, ok := param.String("data")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -654,8 +654,16 @@ func GetBlockHeight(param Params) map[string]interface{} {
 }
 
 func GetBestBlockHash(param Params) map[string]interface{} {
-	bestHeight := chain.DefaultLedger.Blockchain.BlockHeight
-	return GetBlockHash(map[string]interface{}{"index": float64(bestHeight)})
+	height, ok := param.Uint("height")
+	if !ok {
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
+	}
+
+	hash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	return ResponsePack(Success, BytesToHexString(hash.Bytes()))
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
@@ -663,9 +671,9 @@ func GetBlockCount(param Params) map[string]interface{} {
 }
 
 func GetBlockHash(param Params) map[string]interface{} {
-	height, ok := param.Uint("index")
+	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := chain.DefaultLedger.Store.GetBlockHash(height)

@@ -56,7 +56,7 @@ func StartRPCServer() {
 	mainMux["createauxblock"] = CreateAuxBlock
 	// mining interfaces
 	mainMux["togglemining"] = ToggleMining
-	mainMux["manualmining"] = ManualMining
+	mainMux["discretemining"] = DiscreteMining
 
 	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {
@@ -170,7 +170,7 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "height")
 	case "togglemining":
 		return FromArray(params, "mine")
-	case "manualmining":
+	case "discretemining":
 		return FromArray(params, "count")
 	default:
 		return Params{}
