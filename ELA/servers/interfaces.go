@@ -16,7 +16,6 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/pow"
 	. "github.com/elastos/Elastos.ELA/protocol"
-	"github.com/elastos/Elastos.ELA/sidechain"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -824,13 +823,10 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	if sidechain.DbCache == nil {
-		return ResponsePack(Success, "")
-	}
-
 	var resultTxHashes []string
 	for _, txHash := range txHashes {
-		if ok, _ := sidechain.DbCache.HasSideChainTx(txHash); ok {
+		exist := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(txHash)
+		if exist {
 			resultTxHashes = append(resultTxHashes, txHash)
 		}
 	}
