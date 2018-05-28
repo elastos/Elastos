@@ -16,6 +16,14 @@ namespace Elastos {
 
 		class CoinInfo {
 		public:
+			enum SubWalletType {
+				Normal = 0,
+				Deposit,
+				Withdraw,
+				IdChain
+			};
+
+		public:
 			CoinInfo();
 
 			const std::string &getChainId() const;
@@ -46,6 +54,10 @@ namespace Elastos {
 
 			void setForkId(int forkId);
 
+			SubWalletType getWalletType() const;
+
+			void setWalletType(SubWalletType type);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -60,6 +72,7 @@ namespace Elastos {
 			int _usedMaxAddressIndex;
 			bool _singleAddress;
 			uint64_t _feePerKb;
+			SubWalletType _walletType;
 		};
 
 	}

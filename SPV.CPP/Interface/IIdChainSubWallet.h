@@ -2,22 +2,25 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "nlohmann/json.hpp"
+#ifndef __ELASTOS_SDK_IIDCHAINSUBWALLET_H__
+#define __ELASTOS_SDK_IIDCHAINSUBWALLET_H__
 
 #include "ISubWallet.h"
-
-#ifndef __ELASTOS_SDK_IMAINCHAINSUBWALLET_H__
-#define __ELASTOS_SDK_IMAINCHAINSUBWALLET_H__
 
 namespace Elastos {
 	namespace SDK {
 
-		class IMainchainSubWallet : public virtual ISubWallet {
+		class IIdChainSubWallet : public virtual ISubWallet {
 		public:
+			virtual nlohmann::json GenerateId(std::string &id, std::string &privateKey) = 0;
+
+			virtual std::string getIdValue(const std::string &path) = 0;
+
 			virtual std::string SendDepositTransaction(
 					const std::string &fromAddress,
-					const nlohmann::json &sidechainAccounts,
-					const nlohmann::json &sidechainAmounts,
+					const std::string &toAddress,
+					const nlohmann::json &payloadJson,
+					const nlohmann::json &programJson,
 					double fee,
 					const std::string &payPassword,
 					const std::string &memo) = 0;
@@ -26,4 +29,4 @@ namespace Elastos {
 	}
 }
 
-#endif //__ELASTOS_SDK_IMAINCHAINSUBWALLET_H__
+#endif //__ELASTOS_SDK_IIDCHAINSUBWALLET_H__

@@ -17,6 +17,9 @@
 namespace Elastos {
 	namespace SDK {
 
+		class ChainParams;
+		class SubWallet;
+
 		class MasterWallet : public IMasterWallet {
 		public:
 			virtual ~MasterWallet();
@@ -90,6 +93,11 @@ namespace Elastos {
 			UInt512 deriveSeed(const std::string &payPassword);
 
 			void initPublicKey(const std::string &payPassword);
+
+			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
+											  const ChainParams &chainParams,
+											  const std::string &payPassword,
+											  MasterWallet *parent);
 
 		protected:
 			bool _initialized;

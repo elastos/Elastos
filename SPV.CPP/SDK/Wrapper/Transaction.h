@@ -39,6 +39,7 @@ namespace Elastos {
 				IssueToken              = 0x06,
 				WithdrawAsset           = 0x07,
 				TransferCrossChainAsset = 0x08,
+				IdChain 				= 0x09,
 			};
 
 		public:

@@ -8,6 +8,9 @@
 #include "MasterPubKey.h"
 #include "MasterWallet.h"
 #include "SubWallet.h"
+#include "IdChainSubWallet.h"
+#include "MainchainSubWallet.h"
+#include "SidechainSubWallet.h"
 #include "Log.h"
 
 namespace Elastos {
@@ -52,7 +55,7 @@ namespace Elastos {
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
-			SubWallet *subWallet = new SubWallet(info, ChainParams::mainNet(), payPassword, this);
+			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams::mainNet(), payPassword, this);
 			_createdWallets[chainID] = subWallet;
 			subWallet->_walletManager->start();
 			return subWallet;
@@ -64,7 +67,8 @@ namespace Elastos {
 			ISubWallet *subWallet = _createdWallets.find(chainID) == _createdWallets.end()
 									? CreateSubWallet(chainID, coinTypeIndex, payPassword, singleAddress, feePerKb)
 									: _createdWallets[chainID];
-			SubWallet *walletInner = static_cast<SubWallet *>(subWallet);
+			SubWallet *walletInner = dynamic_cast<SubWallet *>(subWallet);
+			assert(walletInner != nullptr);
 			walletInner->recover(limitGap);
 
 			_createdWallets[chainID] = subWallet;
@@ -76,7 +80,8 @@ namespace Elastos {
 											   [wallet](const WalletMap::value_type &item) {
 												   return item.second == wallet;
 											   }));
-			SubWallet *walletInner = static_cast<SubWallet *>(wallet);
+			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
+			assert(walletInner != nullptr);
 			walletInner->_walletManager->stop();
 			delete walletInner;
 		}
@@ -119,7 +124,8 @@ namespace Elastos {
 
 			_keyStore.json().clearCoinInfo();
 			std::for_each(_createdWallets.begin(), _createdWallets.end(), [this](const WalletMap::value_type &item) {
-				_keyStore.json().addCoinInfo(((SubWallet *) item.second)->_info);
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
+				_keyStore.json().addCoinInfo(subWallet->_info);
 			});
 
 			if (!_keyStore.save(keystorePath, backupPassword)) {
@@ -251,6 +257,21 @@ namespace Elastos {
 			std::string phrase = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
 			BRBIP39DeriveKey(result.u8, phrase.c_str(), phrasePassword.c_str());
 			return result;
+		}
+
+		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const ChainParams &chainParams,
+														const std::string &payPassword, MasterWallet *parent) {
+			switch (info.getWalletType()) {
+				case CoinInfo::Deposit:
+					return new MainchainSubWallet(info, chainParams, payPassword, parent);
+				case CoinInfo::Withdraw:
+					return new SidechainSubWallet(info, chainParams, payPassword, parent);
+				case CoinInfo::IdChain:
+					return new IdChainSubWallet(info, chainParams, payPassword, parent);
+				case CoinInfo::Normal:
+				default:
+					return new SubWallet(info, chainParams, payPassword, parent);
+			}
 		}
 
 	}

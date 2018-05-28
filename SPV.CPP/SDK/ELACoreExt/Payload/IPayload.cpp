@@ -10,5 +10,16 @@ namespace Elastos {
 		IPayload::~IPayload() {
 
 		}
+
+		CMBlock IPayload::getData() const {
+			ByteStream stream;
+			Serialize(stream);
+			uint8_t* buf = stream.getBuf();
+			uint64_t len = stream.length();
+			CMBlock db(len);
+			memcpy(db, buf, len);
+
+			return db;
+		}
 	}
 }

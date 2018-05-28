@@ -60,7 +60,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 	std::cout << "wallet addrs: " << addresses << std::endl;
 
-	while (subWallet->IsConnecting()) sleep(1);
+	while (true) sleep(1);
 
 	masterWallet->DestroyWallet(subWallet);
 	walletFactory->DestroyWallet(masterWallet);

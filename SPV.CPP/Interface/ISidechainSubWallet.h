@@ -12,7 +12,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		class ISidechainSubWallet : public ISubWallet {
+		class ISidechainSubWallet : public virtual ISubWallet {
 		public:
 			virtual std::string SendWithdrawTransaction(
 					const std::string &fromAddress,

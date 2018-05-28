@@ -78,19 +78,21 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const CoinInfo &p) {
-			j["chainID"] = p._chainId;
-			j["earliestPeerTime"] = p._earliestPeerTime;
-			j["index"] = p._index;
-			j["usedMaxAddressIndex"] = p._usedMaxAddressIndex;
-			j["singleAddress"] = p._singleAddress;
+			j["ChainID"] = p._chainId;
+			j["EarliestPeerTime"] = p._earliestPeerTime;
+			j["Index"] = p._index;
+			j["UsedMaxAddressIndex"] = p._usedMaxAddressIndex;
+			j["SingleAddress"] = p._singleAddress;
+			j["WalletTypeType"] = int(p.getWalletType());
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
-			p._chainId = j["chainID"].get<std::string>();
-			p._earliestPeerTime = j["earliestPeerTime"].get<uint32_t>();
-			p._index = j["index"].get<int>();
-			p._usedMaxAddressIndex = j["usedMaxAddressIndex"].get<int>();
-			p._singleAddress = j["singleAddress"].get<bool>();
+			p._chainId = j["ChainID"].get<std::string>();
+			p._earliestPeerTime = j["EarliestPeerTime"].get<uint32_t>();
+			p._index = j["Index"].get<int>();
+			p._usedMaxAddressIndex = j["UsedMaxAddressIndex"].get<int>();
+			p._singleAddress = j["SingleAddress"].get<bool>();
+			p._walletType = (CoinInfo::SubWalletType) j["WalletType"].get<int>();
 		}
 
 		int CoinInfo::getForkId() const {
@@ -99,6 +101,14 @@ namespace Elastos {
 
 		void CoinInfo::setForkId(int forkId) {
 			_forkId = forkId;
+		}
+
+		CoinInfo::SubWalletType CoinInfo::getWalletType() const {
+			return IdChain;
+		}
+
+		void CoinInfo::setWalletType(CoinInfo::SubWalletType type) {
+
 		}
 	}
 }

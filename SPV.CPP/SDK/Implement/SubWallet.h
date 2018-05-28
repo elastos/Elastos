@@ -19,9 +19,9 @@ namespace Elastos {
 
 		class MasterWallet;
 
-		class SubWallet : public ISubWallet, public Wallet::Listener {
+		class SubWallet : public virtual ISubWallet, public Wallet::Listener {
 		public:
-			~SubWallet();
+			virtual ~SubWallet();
 
 		public: //implement ISubWallet
 			virtual nlohmann::json GetBalanceInfo();
@@ -77,8 +77,6 @@ namespace Elastos {
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);
-
-			virtual bool IsConnecting();
 
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(uint64_t balance);

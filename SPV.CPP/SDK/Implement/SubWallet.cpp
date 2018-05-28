@@ -208,10 +208,6 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		bool SDK::SubWallet::IsConnecting() {
-			return BRPeerManagerPeerCount(_walletManager->getPeerManager()->getRaw()) > 0;
-		}
-
 		void SubWallet::balanceChanged(uint64_t balance) {
 
 		}
