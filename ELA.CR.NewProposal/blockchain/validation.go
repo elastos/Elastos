@@ -154,6 +154,9 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	if len(publicKeys) != n {
 		return errors.New("invalid multi sign public key script count")
 	}
+	if len(param)%crypto.SignatureScriptLength != 0 {
+		return errors.New("invalid multi sign signatures")
+	}
 
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
@@ -178,8 +181,8 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 		}
 	}
 	// Check signature count
-	if len(verified) != m {
-		return errors.New("invalid signature count")
+	if len(verified) < m {
+		return errors.New("valid signatures not enough")
 	}
 
 	return nil
