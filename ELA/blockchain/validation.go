@@ -19,9 +19,8 @@ func VerifySignature(tx *Transaction) error {
 
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
-	data := buf.Bytes()
 
-	return RunPrograms(data, hashes, tx.Programs)
+	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
 }
 
 func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) error {
@@ -159,7 +158,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := param[i: i+crypto.SignatureScriptLength][1:]
+		sign := param[i : i+crypto.SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
