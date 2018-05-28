@@ -32,12 +32,30 @@ public:
 			pValue->AddRef();
 	}
 
+	CMemBlock(CMemBlock &mem) {
+		pValue = mem.pValue;
+		if (nullptr != pValue)
+			pValue->AddRef();
+	}
+
 	~CMemBlock() {
 		if (nullptr != pValue)
 			pValue->Release();
 	}
 
 	CMemBlock &operator=(const CMemBlock &mem) {
+		if (nullptr != pValue && pValue == mem.pValue)
+			return *this;
+		if (nullptr != pValue)
+			pValue->Release();
+		pValue = mem.pValue;
+		if (nullptr != pValue)
+			pValue->AddRef();
+
+		return *this;
+	}
+
+	CMemBlock &operator=(CMemBlock &mem) {
 		if (nullptr != pValue && pValue == mem.pValue)
 			return *this;
 		if (nullptr != pValue)
@@ -60,7 +78,31 @@ public:
 		return ret;
 	}
 
+	CMemBlock operator+(CMemBlock &mem) const {
+		CMemBlock ret;
+		SIZETYPE l = (nullptr != pValue ? pValue->_len : 0) + (nullptr != mem.Pvalue ? mem.pValue->_len : 0);
+		ret.Resize(l);
+		memcpy(ret, nullptr != pValue ? pValue->data : 0, sizeof(T) * (nullptr != pValue ? pValue->_len : 0));
+		memcpy(ret + (nullptr != pValue ? pValue->_len : 0), nullptr != mem.pValue ? mem.pValue->data : 0,
+			   sizeof(T) * (nullptr != mem.pValue ? mem.pValue->_len : 0));
+
+		return ret;
+	}
+
 	CMemBlock &operator+=(const CMemBlock &mem) {
+		if (nullptr == pValue) {
+			pValue = new Value((SIZETYPE) 0);
+			pValue->AddRef();
+		}
+		SIZETYPE l = pValue->_len + (nullptr != mem.pValue ? mem.pValue->_len : 0);
+		pValue->Resize(l);
+		memcpy(pValue->data + pValue->_len, nullptr != mem.pValue ? mem.pValue->data : 0,
+			   sizeof(T) * (nullptr != mem.pValue ? mem.pValue->_len : 0));
+
+		return *this;
+	}
+
+	CMemBlock &operator+=(CMemBlock &mem) {
 		if (nullptr == pValue) {
 			pValue = new Value((SIZETYPE) 0);
 			pValue->AddRef();
@@ -117,6 +159,10 @@ public:
 	};
 
 	operator void *() const {
+		return (void *) nullptr != pValue ? pValue->data : 0;
+	}
+
+	operator const void *() const {
 		return (void *) nullptr != pValue ? pValue->data : 0;
 	}
 

@@ -22,8 +22,6 @@ namespace Elastos {
 
 			bool save(const boost::filesystem::path &path, const std::string &password);
 
-			const std::string &getMnemonic() const;
-
 			const std::string &getMasterPrivateKey() const;
 
 			const std::string &getID() const;

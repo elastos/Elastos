@@ -2,20 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-// reference by https://blog.csdn.net/fengmm521/article/details/78438668
-
-#include <vector>
 #include <assert.h>
 #include <string.h>
+#include <vector>
 
-#include "BRInt.h"
-
-#include "SjclBase64.h"
+#include "Base64.h"
 
 namespace Elastos {
 	namespace SDK {
-
-		std::string _Encode(const unsigned char *Data, size_t DataByte) {
+		static std::string _Encode(const unsigned char *Data, size_t DataByte) {
 			//Encodeing table
 			static const char EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 			//return value
@@ -54,7 +49,7 @@ namespace Elastos {
 			return strEncode;
 		}
 
-		std::string _Decode(const char *Data, size_t DataByte, size_t &OutByte) {
+		static std::string _Decode(const char *Data, size_t DataByte, size_t &OutByte) {
 			//Decoding table
 			static const char DecodeTable[] =
 				{
@@ -102,7 +97,7 @@ namespace Elastos {
 			return strDecode;
 		}
 
-		std::vector<unsigned char> SjclBase64::toBits(const std::string &base64Str) {
+		std::vector<unsigned char> Base64::toBits(const std::string &base64Str) {
 			std::string dec;
 			size_t OutByte;
 
@@ -114,7 +109,7 @@ namespace Elastos {
 			return ret;
 		}
 
-		std::string SjclBase64::fromBits(const unsigned char *bitArray, size_t length) {
+		std::string Base64::fromBits(const unsigned char *bitArray, size_t length) {
 			return _Encode(bitArray, length);
 		}
 	}

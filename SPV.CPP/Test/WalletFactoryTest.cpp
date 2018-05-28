@@ -76,21 +76,16 @@ TEST_CASE("Wallet factory key store export & import", "[WalletFactory]") {
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-			walletFactory->CreateMasterWallet(phrasePassword, payPassword));
+	boost::scoped_ptr<IMasterWallet> masterWallet(walletFactory->CreateMasterWallet(phrasePassword, payPassword));
 
 	std::string backupPassword = "backupPassword";
 	std::string keystorePath = "test.json";
-	SECTION("Key store export") {
-		walletFactory->ExportWalletWithKeystore(masterWallet.get(), backupPassword, keystorePath);
-		REQUIRE(boost::filesystem::exists(keystorePath));
-	}
+	walletFactory->ExportWalletWithKeystore(masterWallet.get(), backupPassword, keystorePath);
+	REQUIRE(boost::filesystem::exists(keystorePath));
 
-	SECTION("Key store import") {
-		boost::scoped_ptr<IMasterWallet> masterWallet2(
+	boost::scoped_ptr<IMasterWallet> masterWallet2(
 				walletFactory->ImportWalletWithKeystore(keystorePath, backupPassword, payPassword));
-		REQUIRE(masterWallet->GetPublicKey() == masterWallet2->GetPublicKey());
-	}
+	REQUIRE(masterWallet->GetPublicKey() == masterWallet2->GetPublicKey());
 
 	//todo delete key store file
 }

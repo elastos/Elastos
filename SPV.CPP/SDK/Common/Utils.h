@@ -53,18 +53,17 @@ namespace Elastos {
 			template <class T>
 			static std::string convertToString(const CMemBlock<T> &data) {
 				assert(sizeof(T) == sizeof(char));
-				char *result = new char[data.GetSize()];
-				memcpy(result, (void *)data, data.GetSize());
-				return std::string(result, data.GetSize());
+				char *p = new char[data.GetSize()];
+				memcpy(p, data, data.GetSize());
+				std::string ret(p, data.GetSize());
+				return ret;
 			}
 
 			template <class T>
 			static CMemBlock<T> convertToMemBlock(const std::string &str) {
 				assert(sizeof(T) == sizeof(char));
-				CMemBlock<T> result;
-				T *resultPtr = new T[str.size()];
-				memcpy(resultPtr, str.data(), str.size());
-				result.SetMemFixed(resultPtr, str.size());
+				CMemBlock<T> result(str.size());
+				memcpy(result, str.c_str(), str.size());
 				return result;
 			}
 

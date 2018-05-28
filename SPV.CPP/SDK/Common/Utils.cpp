@@ -13,6 +13,7 @@
 #include "Utils.h"
 #include "AES_256_CCM.h"
 #include "BTCBase58.h"
+#include "Base64.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -134,14 +135,23 @@ namespace Elastos {
 
 		CMemBlock<unsigned char> Utils::encrypt(const CMemBlock<unsigned char> &data, const std::string &password) {
 			CMemBlock<unsigned char> ret;
-			ret = AES_256_CCM::encrypt(data, data.GetSize(), (unsigned char *) password.c_str(), password.size());
+			CMemBlock<unsigned char> enc = AES_256_CCM::encrypt(data, data.GetSize(),
+																(unsigned char *) password.c_str(), password.size());
+			if (true == enc) {
+				std::string enc_bs64 = Base64::fromBits(enc, enc.GetSize());
+				ret.Resize(enc_bs64.size() + 1);
+				ret.Zero();
+				memcpy(ret, enc_bs64.c_str(), enc_bs64.size());
+			}
 			return ret;
 		}
 
 		CMemBlock<unsigned char>
 		Utils::decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password) {
 			CMemBlock<unsigned char> ret;
-			ret = AES_256_CCM::decrypt(encryptedData, encryptedData.GetSize(), (unsigned char *) password.c_str(),
+			std::string enc_str = (const char *) (void *) encryptedData;
+			std::vector<unsigned char> enc = Base64::toBits(enc_str);
+			ret = AES_256_CCM::decrypt(enc.data(), enc.size(), (unsigned char *) password.c_str(),
 									   password.size());
 			return ret;
 		}

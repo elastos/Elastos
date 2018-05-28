@@ -17,18 +17,11 @@ namespace Elastos {
 
 			virtual ~ElaWebWalletJson();
 
-			const std::string &getMnemonic() const;
-
-			void setMnemonic(const std::string &value);
-
 		private:
 			JSON_SM_LS(ElaWebWalletJson);
 			JSON_SM_RS(ElaWebWalletJson);
 			TO_JSON(ElaWebWalletJson);
 			FROM_JSON(ElaWebWalletJson);
-
-		private:
-			std::string _mnemonic;
 		};
 	}
 }

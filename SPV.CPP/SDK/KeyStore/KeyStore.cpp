@@ -10,7 +10,7 @@
 #include "Log.h"
 #include "KeyStore.h"
 #include "SjclFile.h"
-#include "SjclBase64.h"
+#include "Base64.h"
 #include "CMemBlock.h"
 #include "AES_256_CCM.h"
 
@@ -39,8 +39,8 @@ namespace Elastos {
 				return false;
 			}
 
-			std::vector<unsigned char> ct = SjclBase64::toBits(sjclFile.getCt());
-			std::vector<unsigned char> adata = SjclBase64::toBits(sjclFile.getAdata());
+			std::vector<unsigned char> ct = Base64::toBits(sjclFile.getCt());
+			std::vector<unsigned char> adata = Base64::toBits(sjclFile.getAdata());
 			CMemBlock<unsigned char> plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(),
 																	  (unsigned char *) password.c_str(),
 																	  password.size(), adata.data(), adata.size());
@@ -73,7 +73,7 @@ namespace Elastos {
 			if (false == ciphertext)
 				return false;
 
-			std::string ct_base64 = SjclBase64::fromBits(ciphertext, ciphertext.GetSize());
+			std::string ct_base64 = Base64::fromBits(ciphertext, ciphertext.GetSize());
 			nlohmann::json json;
 			json["iv"] = std::string("n2JUTJ0/yrLdCDPfIcqAzw==");
 			json["v"] = uint32_t(1);
@@ -90,10 +90,6 @@ namespace Elastos {
 			json >> outfile;
 
 			return true;
-		}
-
-		const std::string &KeyStore::getMnemonic() const {
-			return _walletJson.getMnemonic();
 		}
 
 		const std::string &KeyStore::getMasterPrivateKey() const {

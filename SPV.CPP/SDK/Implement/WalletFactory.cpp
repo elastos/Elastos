@@ -47,7 +47,7 @@ namespace Elastos {
 		void WalletFactory::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
 													 const std::string &keystorePath) {
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
-			if (wallet->Initialized()) {
+			if (!wallet->Initialized()) {
 				Log::warn("Exporting failed, check if the wallet has been initialized.");
 				return;
 			}

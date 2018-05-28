@@ -15,6 +15,14 @@ namespace Elastos {
 
 		}
 
+		const std::string &BitcoreWalletClientJson::getEncryptedEntropySource() const {
+			return _entropySource;
+		}
+
+		void BitcoreWalletClientJson::setEncryptedEntropySource(const std::string &entropy) {
+			_entropySource = entropy;
+		}
+
 		nlohmann::json &operator<<(nlohmann::json &j, const BitcoreWalletClientJson::PubKeyItem &p) {
 			to_json(j, p);
 
@@ -81,7 +89,7 @@ namespace Elastos {
 			p._requestPrivKey = j["requestPrivKey"].get<std::string>();
 			p._copayerId = j["copayerId"].get<std::string>();
 			p._walletId = j["walletId"].get<std::string>();
-			p._walletName = j["_walletName"].get<std::string>();
+			p._walletName = j["walletName"].get<std::string>();
 			p._m = j["m"].get<int>();
 			p._n = j["n"].get<int>();
 			p._walletPrivKey = j["walletPrivKey"].get<std::string>();

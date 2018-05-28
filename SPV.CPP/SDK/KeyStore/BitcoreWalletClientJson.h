@@ -32,6 +32,10 @@ namespace Elastos {
 
 			virtual ~BitcoreWalletClientJson();
 
+		public:
+			const std::string &getEncryptedEntropySource() const;
+			void setEncryptedEntropySource(const std::string &entropy);
+
 		private:
 			JSON_SM_LS(BitcoreWalletClientJson);
 			JSON_SM_RS(BitcoreWalletClientJson);
