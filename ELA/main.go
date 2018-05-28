@@ -86,6 +86,11 @@ func main() {
 		goto ERROR
 	}
 
+	blockchain.FoundationAddress = config.Parameters.FoundationAddress
+	if blockchain.FoundationAddress == "" {
+		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	}
+
 	log.Info("2. Start the P2P networks")
 	noder = node.InitLocalNode()
 	noder.WaitForSyncFinish()
