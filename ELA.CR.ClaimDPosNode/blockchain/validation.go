@@ -159,7 +159,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := param[i : i+crypto.SignatureScriptLength][1:]
+		sign := param[i: i+crypto.SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
