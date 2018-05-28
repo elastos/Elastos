@@ -93,7 +93,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadRegisterAsset::fromJson(nlohmann::json jsonData) {
+		void PayloadRegisterAsset::fromJson(const nlohmann::json jsonData) {
 			_asset.fromJson(jsonData["asset"]);
 
 			_amount = jsonData["amount"].get<uint64_t>();

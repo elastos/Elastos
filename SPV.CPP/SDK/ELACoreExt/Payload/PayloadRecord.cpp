@@ -99,7 +99,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadRecord::fromJson(nlohmann::json jsonData) {
+		void PayloadRecord::fromJson(const nlohmann::json jsonData) {
 			_recordType = jsonData["recordType"].get<std::string>();
 
 			std::string content = jsonData["recordData"].get<std::string>();

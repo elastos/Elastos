@@ -84,8 +84,8 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadTransferCrossChainAsset::fromJson(nlohmann::json jsonData) {
-			for (nlohmann::json::iterator it = jsonData.begin(); it != jsonData.end(); ++it) {
+		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json jsonData) {
+			for (nlohmann::json::const_iterator it = jsonData.cbegin(); it != jsonData.cend(); ++it) {
 				_addressMap[it.key()] = it.value();
 			}
 		}

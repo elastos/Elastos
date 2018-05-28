@@ -72,7 +72,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void PayloadSideMining::fromJson(nlohmann::json jsonData) {
+		void PayloadSideMining::fromJson(const nlohmann::json jsonData) {
 			std::string sideBlockHash = jsonData["sideBlockHash"].get<std::string>();
 			_sideBlockHash = Utils::UInt256FromString(sideBlockHash);
 

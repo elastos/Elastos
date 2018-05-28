@@ -31,7 +31,7 @@ namespace Elastos {
 
 			virtual nlohmann::json toJson();
 
-			virtual void fromJson(nlohmann::json jsonData);
+			virtual void fromJson(const nlohmann::json jsonData);
 
 		private:
 

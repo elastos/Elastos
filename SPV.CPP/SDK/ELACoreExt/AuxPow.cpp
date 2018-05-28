@@ -471,7 +471,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void AuxPow::fromJson(nlohmann::json jsonData) {
+		void AuxPow::fromJson(const nlohmann::json jsonData) {
 			std::vector<std::string> auxMerkleBranch = jsonData["auxMerkleBranch"];
 			_auxMerkleBranch.resize(auxMerkleBranch.size());
 			for (size_t i = 0; i < _auxMerkleBranch.size(); ++i) {

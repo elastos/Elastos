@@ -48,7 +48,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Attribute::fromJson(nlohmann::json jsonData) {
+		void Attribute::fromJson(const nlohmann::json jsonData) {
 			_usage = jsonData["usage"].get<Usage>();
 
 			std::string content = jsonData["data"].get<std::string>();
