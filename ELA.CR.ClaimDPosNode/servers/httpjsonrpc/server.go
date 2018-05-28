@@ -41,7 +41,6 @@ func StartRPCServer() {
 	mainMux["getneighbors"] = GetNeighbors
 	mainMux["getnodestate"] = GetNodeState
 	mainMux["sendrawtransaction"] = SendRawTransaction
-	mainMux["submitblock"] = SubmitBlock
 	mainMux["getarbitratorgroupbyheight"] = GetArbitratorGroupByHeight
 	mainMux["getbestblockhash"] = GetBestBlockHash
 	mainMux["getblockcount"] = GetBlockCount
