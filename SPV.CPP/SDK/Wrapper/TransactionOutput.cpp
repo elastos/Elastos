@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <iostream>
+#include <SDK/Common/Utils.h>
 
 #include "ELABRTxOutput.h"
 #include "TransactionOutput.h"
@@ -102,6 +103,8 @@ namespace Elastos {
 			uint8_t programHashData[168 / 8];
 			istream.getBytes(programHashData, 168 / 8);
 			UInt168Get(&_programHash, programHashData);
+
+			setAddress(Utils::UInt168ToAddress(_programHash));
 		}
 
 		const UInt256 &TransactionOutput::getAssetId() const {

@@ -1,0 +1,24 @@
+
+#set(CMAKE_CXX_STANDARD 99)
+
+include_directories(
+	"${CMAKE_CURRENT_SOURCE_DIR}/bigint-2010.04.30"
+)
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/bigint-2010.04.30 BIGINT_SOURCE_FILES)
+unset(BIGINT_LIBRARY_SOURCE_FILES)
+foreach(EACH_SOURCE_FILE ${BIGINT_SOURCE_FILES})
+	if(NOT EACH_SOURCE_FILE MATCHES sample.cc AND NOT EACH_SOURCE_FILE MATCHES testsuite.cc)
+		set(BIGINT_LIBRARY_SOURCE_FILES ${BIGINT_LIBRARY_SOURCE_FILES} ${EACH_SOURCE_FILE})
+	endif()
+endforeach()
+add_library(bigint STATIC ${BIGINT_LIBRARY_SOURCE_FILES})
+
+set_target_properties(bigint PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libbigint.a)
+set_target_properties(bigint PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+set(
+	ThirdParty_BIGINT_INC_DIR
+	${CMAKE_CURRENT_SOURCE_DIR}/bigint-2010.04.30
+	CACHE INTERNAL "ThirdParty bigint include directory" FORCE
+)

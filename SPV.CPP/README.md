@@ -21,6 +21,11 @@ $ sudo apt-get install -y git
 $ sudo apt-get install -y cmake
 ```
 
+### Install wget
+```
+$ sudo apt-get install -y wget
+```
+
 ### Install ndk
 `Ndk` version: r16+
 
@@ -66,12 +71,22 @@ Darwin 16.7.0 x86_64
 ```
 
 ### Install git
+```
+brew install git
+```
 Download and install [git](https://www.git-scm.com/downloads).
 
 ### Install cmake
 `cmake` version: 3.11+
-
+```
+$ brew install cmake
+```
 Download and install [cmake](https://cmake.org/download/)
+
+### Install wget
+```
+$ brew install wget
+```
 
 ### Install ndk
 `NDK` version: r16+

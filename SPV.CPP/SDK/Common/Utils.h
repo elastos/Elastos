@@ -17,6 +17,7 @@ namespace Elastos {
 
 		class Utils {
 		public:
+
 			static std::string UInt256ToString(const UInt256 &u256);
 
 			static UInt256 UInt256FromString(const std::string &u256);
@@ -37,13 +38,13 @@ namespace Elastos {
 			static CMemBlock<unsigned char>
 			decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password);
 
-			static void decodeHex(uint8_t *target, size_t targetLen, char *source, size_t sourceLen);
+			static void decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen);
 
 			static size_t decodeHexLength(size_t stringLen);
 
 			static uint8_t *decodeHexCreate(size_t *targetLen, char *source, size_t sourceLen);
 
-			static void encodeHex(char *target, size_t targetLen, uint8_t *source, size_t sourceLen);
+			static void encodeHex(char *target, size_t targetLen, const uint8_t *source, size_t sourceLen);
 
 			static size_t encodeHexLength(size_t byteArrayLen);
 
@@ -67,6 +68,7 @@ namespace Elastos {
 				return result;
 			}
 
+			static std::string UInt168ToAddress(const UInt168 &u168);
 		};
 	}
 }

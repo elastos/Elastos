@@ -5,10 +5,14 @@
 #include <sstream>
 #include <stdlib.h>
 #include <random>
+#include <Core/BRCrypto.h>
+#include <algorithm>
+#include <iterator>
 
 #include "assert.h"
 #include "Utils.h"
 #include "AES_256_CCM.h"
+#include "BTCBase58.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -73,7 +77,7 @@ namespace Elastos {
 			return result;
 		}
 
-		void Utils::decodeHex(uint8_t *target, size_t targetLen, char *source, size_t sourceLen) {
+		void Utils::decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen) {
 			assert (0 == sourceLen % 2);
 			assert (2 * targetLen == sourceLen);
 
@@ -95,7 +99,7 @@ namespace Elastos {
 			return target;
 		}
 
-		void Utils::encodeHex(char *target, size_t targetLen, uint8_t *source, size_t sourceLen) {
+		void Utils::encodeHex(char *target, size_t targetLen, const uint8_t *source, size_t sourceLen) {
 			assert (targetLen == 2 * sourceLen + 1);
 
 			for (int i = 0; i < sourceLen; i++) {
@@ -140,6 +144,20 @@ namespace Elastos {
 			ret = AES_256_CCM::decrypt(encryptedData, encryptedData.GetSize(), (unsigned char *) password.c_str(),
 									   password.size());
 			return ret;
+		}
+
+		std::string Utils::UInt168ToAddress(const UInt168 &u) {
+			UInt256 hash = UINT256_ZERO;
+			size_t uSize = sizeof(UInt168);
+
+			BRSHA256_2(&hash, u.u8, uSize);
+
+			size_t dataLen = uSize + 4;
+			uint8_t data[sizeof(UInt168) + 4] = {0};
+			memcpy(data, u.u8, uSize);
+			memcpy(data + uSize, hash.u8, 4);
+
+			return BTCBase58::EncodeBase58(data, dataLen);
 		}
 
 	}

@@ -22,7 +22,6 @@ endif()
 add_custom_command(
 	COMMENT "Building openssl..."
 	OUTPUT "${OPENSSL_SSL_LIBRARY}" "${OPENSSL_CRYPTO_LIBRARY}"
-	COMMAND [ -f ${CMAKE_CURRENT_SOURCE_DIR}/openssl/openssl/Makefile ] && make -i distclean || echo Never mind
 	COMMAND ${OPENSSL_SELECT_VERSION}
 	COMMAND ${OPENSSL_BUILD_COMMAND}
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl/openssl
@@ -32,9 +31,10 @@ add_custom_command(
 add_custom_target(
 	clean_openssl ALL
 	COMMENT "Cleaning openssl..."
-	COMMAND make distclean || echo Never mind
-	#COMMAND rm -fr install
-	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl
+	COMMAND [ -f ${CMAKE_CURRENT_SOURCE_DIR}/openssl/openssl/Makefile ] && make distclean || echo Never mind
+	#COMMAND rm -fr ../install
+	COMMAND git checkout master
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl/openssl
 )
 
 add_custom_target(build_openssl ALL DEPENDS clean_openssl ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
