@@ -17,9 +17,9 @@ import (
 var spvService _interface.SPVService
 
 func SpvInit() error {
-	spvlog.Init()
+	spvlog.Init(config.Parameters.SpvPrintLevel)
 	service, err := _interface.NewSPVService(config.Parameters.SpvMagic,
-		uint64(rand.Int63()), config.Parameters.SpvSeedList)
+		uint64(rand.Int63()), config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
 	if err != nil {
 		return err
 	}
