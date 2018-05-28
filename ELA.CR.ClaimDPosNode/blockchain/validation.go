@@ -51,7 +51,7 @@ func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) erro
 
 		if signType == common.STANDARD {
 			// Remove length byte and sign type byte
-			publicKeyBytes := code[1 : len(code)-1]
+			publicKeyBytes := code[1: len(code)-1]
 			if err := checkStandardSignature(publicKeyBytes, data, param); err != nil {
 				return err
 			}
@@ -161,7 +161,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := param[i : i+crypto.SignatureScriptLength][1:]
+		sign := param[i: i+crypto.SignatureScriptLength][1:]
 		// Get signature index, if signature exists index will not be -1
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
