@@ -34,7 +34,6 @@ NativeDistributions
        |--libelacarrier.a
        |--libelacommon.a	
        |--libelasession.a	
-       |--libflatcc.a	
        |--libflatccrt.a	
        |--libpj.a		
        |--libpjlib-util.a	
