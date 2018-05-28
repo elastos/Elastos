@@ -352,29 +352,6 @@ func DiscreteMining(param Params) map[string]interface{} {
 	return ResponsePack(Success, ret)
 }
 
-// A JSON example for submitblock method as following:
-//   {"jsonrpc": "2.0", "method": "submitblock", "params": ["raw block in hex"], "id": 0}
-func SubmitBlock(param Params) map[string]interface{} {
-	str, ok := param.String("block")
-	if !ok {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	hex, _ := HexStringToBytes(str)
-	var block Block
-	if err := block.Deserialize(bytes.NewReader(hex)); err != nil {
-		return ResponsePack(UnknownBlock, "")
-	}
-	if _, _, err := chain.DefaultLedger.Blockchain.AddBlock(&block); err != nil {
-		return ResponsePack(UnknownBlock, "")
-	}
-	if err := NodeForServers.Relay(nil, &block); err != nil {
-		return ResponsePack(InternalError, "")
-	}
-
-	return ResponsePack(Success, "")
-}
-
 func GetConnectionCount(param Params) map[string]interface{} {
 	return ResponsePack(Success, NodeForServers.GetConnectionCnt())
 }
