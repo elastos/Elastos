@@ -73,5 +73,15 @@ namespace Elastos {
 
 			return ptr;
 		}
+
+		bool MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
+			//todo different verify from base class
+			return SubWallet::verifyRawTransaction(transaction);
+		}
+
+		bool MainchainSubWallet::completeTransaction(const TransactionPtr &transaction) {
+			//todo different complete from base class
+			return SubWallet::completeTransaction(transaction);
+		}
 	}
 }

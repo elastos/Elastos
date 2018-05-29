@@ -7,6 +7,7 @@
 #include "ELACoreExt/ELABRTxOutput.h"
 #include "ELACoreExt/Payload/PayloadIdChain.h"
 
+#include "Utils.h"
 #include "IdChainSubWallet.h"
 #include "Utils.h"
 
@@ -23,32 +24,6 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json IdChainSubWallet::GenerateId(std::string &id, std::string &privateKey) {
-			//todo generate random key
-			Key key;
-			UInt128 entropy = Utils::generateRandomSeed();
-
-			CMBlock seedByte;
-			seedByte.SetMemFixed(entropy.u8, sizeof(entropy));
-			CMBlock privKey = Key::getAuthPrivKeyForAPI(seedByte);
-
-			char *data = new char[privKey.GetSize()];
-			memcpy(data, privKey, privKey.GetSize());
-			std::string ret(data, privKey.GetSize());
-			privateKey = ret;
-
-			key.setPrivKey(ret);
-
-			id = key.keyToAddress(ELA_IDCHAIN);
-
-			return nlohmann::json();
-		}
-
-		std::string IdChainSubWallet::getIdValue(const std::string &path) {
-			//todo complete me
-			return "";
-		}
-
 		std::string
 		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress,
 											const nlohmann::json &payloadJson, const nlohmann::json &programJson,
@@ -63,6 +38,13 @@ namespace Elastos {
 			ProgramPtr newProgram(new Program());
 			newProgram->fromJson(programJson);
 			transaction->addProgram(newProgram);
+
+			TransactionOutput transactionOutput;
+			transactionOutput.setAddress(payloadIdChain->getId());
+			transactionOutput.setAmount(0);
+			transactionOutput.setAssetId(txParam->getAssetId());
+			transactionOutput.setProgramHash(Utils::UInt168FromString(payloadIdChain->getId()));
+			transaction->addOutput(transactionOutput);
 
 			return sendTransactionInternal(transaction, payPassword);
 		}
@@ -84,6 +66,16 @@ namespace Elastos {
 						  });
 
 			return ptr;
+		}
+
+		bool IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
+			//todo different verify from base class
+			return SubWallet::verifyRawTransaction(transaction);
+		}
+
+		bool IdChainSubWallet::completeTransaction(const TransactionPtr &transaction) {
+			//todo different complete from base class
+			return SubWallet::completeTransaction(transaction);
 		}
 	}
 }

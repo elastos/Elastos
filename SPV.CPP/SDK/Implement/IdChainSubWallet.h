@@ -15,10 +15,6 @@ namespace Elastos {
 		public:
 			~IdChainSubWallet();
 
-			virtual nlohmann::json GenerateId(std::string &id, std::string &privateKey);
-
-			virtual std::string getIdValue(const std::string &path);
-
 			virtual std::string SendIdTransaction(
 					const std::string &fromAddress,
 					const nlohmann::json &payloadJson,
@@ -36,6 +32,10 @@ namespace Elastos {
 							 MasterWallet *parent);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
+
+			virtual bool verifyRawTransaction(const TransactionPtr &transaction);
+
+			virtual bool completeTransaction(const TransactionPtr &transaction);
 		};
 
 	}

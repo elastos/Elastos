@@ -32,6 +32,10 @@ namespace Elastos {
 							   MasterWallet *parent);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
+
+			virtual bool verifyRawTransaction(const TransactionPtr &transaction);
+
+			virtual bool completeTransaction(const TransactionPtr &transaction);
 		};
 
 	}

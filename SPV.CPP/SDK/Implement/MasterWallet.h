@@ -8,6 +8,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
+#include <SDK/Wrapper/Transaction.h>
 
 #include "Interface/IMasterWallet.h"
 #include "KeyStore/KeyStore.h"

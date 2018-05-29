@@ -12,9 +12,6 @@ namespace Elastos {
 
 		class IIdChainSubWallet : public virtual ISubWallet {
 		public:
-			virtual nlohmann::json GenerateId(std::string &id, std::string &privateKey) = 0;
-
-			virtual std::string getIdValue(const std::string &path) = 0;
 
 			virtual std::string SendIdTransaction(
 					const std::string &fromAddress,

@@ -140,6 +140,8 @@ namespace Elastos {
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {
+			if (std::find(_callbacks.begin(), _callbacks.end(), subCallback) != _callbacks.end())
+				return;
 			_callbacks.push_back(subCallback);
 		}
 
@@ -327,14 +329,31 @@ namespace Elastos {
 		std::string
 		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const nlohmann::json &signJson) {
 			TransactionPtr transaction(new Transaction());
-
 			transaction->fromJson(transactionJson);
+
+			if(!verifyRawTransaction(transaction) || !completeTransaction(transaction))
+				return "";
 
 			_walletManager->signAndPublishTransaction(transaction);
 
 			std::string hash = Utils::UInt256ToString(transaction->getHash());
 
 			return hash;
+		}
+
+		bool SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
+			//todo check output
+			//todo check attribute(nounce)
+			//todo check program
+			return true;
+		}
+
+		bool SubWallet::completeTransaction(const TransactionPtr &transaction) {
+			//todo complete fee
+			//todo complete input
+			//todo complete asset id
+			//todo complete payload
+			return true;
 		}
 
 	}

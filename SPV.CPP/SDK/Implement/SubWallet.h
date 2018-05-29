@@ -109,6 +109,10 @@ namespace Elastos {
 
 			void recover(int limitGap);
 
+			virtual bool verifyRawTransaction(const TransactionPtr &transaction);
+
+			virtual bool completeTransaction(const TransactionPtr &transaction);
+
 		protected:
 
 			WalletManagerPtr _walletManager;
