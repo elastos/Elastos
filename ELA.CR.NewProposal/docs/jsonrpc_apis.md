@@ -78,9 +78,23 @@ parameters:
 | name | type | description |
 | ---- | ---- | ----------- |
 | blockhash | string | the blockchain hash | 
+| verbosity | int | the verbosity of result, can be 0, 1, 2 |
 
-result:
+result:(verbosity=0)
 
+raw hash
+
+result sample:
+```
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "00000000c0433b918f500392869aa14cf7a909430fd94502b5c9f05421c9da7519bd6a65219184ea3c0a2973b90b8402c8405b76d7fbe10a268f6de7e4f48e93f5d03df7c31e095bffff7f2000000000d107000001000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d3ca6bcc86bada4642fea709731f1653bd34b28ab15b790e102e14e0d7bd138d80100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f00000000000000000000000000000000000000000000000000000000000000000ce39baabcdbb4adce38c5f23314c5f63a536bbcc8f0a47c7054c36ca27f5acd771d095b00000000020000000101000000000403454c4101000846444170b0e427d2010000000000000000000000000000000000000000000000000000000000000000ffffffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a31b2913000000000000000000129e9cf1c5f336fcf3a6c954444ed482c5d916e506b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a341b52c000000000000000000219e9cc4320c3018ced30242b25c03e13a1b2f57c7d107000000"
+}
+```
+
+result:(verbosity=1)
 | name | type | description |
 | ---- | ---- | ----------- |
 | hash | string | the blockchain hash |
@@ -144,6 +158,82 @@ result sample
 }
 ```
 
+result:(verbosity=2)
+
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "hash": "3ca6bcc86bada4642fea709731f1653bd34b28ab15b790e102e14e0d7bd138d8",
+        "confirmations": 1,
+        "strippedsize": 498,
+        "size": 498,
+        "weight": 1992,
+        "height": 2001,
+        "version": 0,
+        "versionhex": "00000000",
+        "merkleroot": "219184ea3c0a2973b90b8402c8405b76d7fbe10a268f6de7e4f48e93f5d03df7",
+        "tx": [
+            {
+                "txid": "219184ea3c0a2973b90b8402c8405b76d7fbe10a268f6de7e4f48e93f5d03df7",
+                "hash": "219184ea3c0a2973b90b8402c8405b76d7fbe10a268f6de7e4f48e93f5d03df7",
+                "size": 192,
+                "vsize": 192,
+                "version": 0,
+                "locktime": 2001,
+                "vin": [
+                    {
+                        "txid": "0000000000000000000000000000000000000000000000000000000000000000",
+                        "vout": 65535,
+                        "sequence": 4294967295
+                    }
+                ],
+                "vout": [
+                    {
+                        "value": "0.01255707",
+                        "n": 0,
+                        "address": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+                        "assetid": "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3",
+                        "outputlock": 0
+                    },
+                    {
+                        "value": "0.02929985",
+                        "n": 1,
+                        "address": "EXca4DJwqCXa6vbJmpovwatHiP8HRTVS1Z",
+                        "assetid": "b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a3",
+                        "outputlock": 0
+                    }
+                ],
+                "blockhash": "3ca6bcc86bada4642fea709731f1653bd34b28ab15b790e102e14e0d7bd138d8",
+                "confirmations": 1,
+                "time": 1527324355,
+                "blocktime": 1527324355,
+                "type": 0,
+                "payloadversion": 4,
+                "payload": {
+                    "CoinbaseData": "ELA"
+                },
+                "attributes": [
+                    {
+                        "usage": 0,
+                        "data": "46444170b0e427d2"
+                    }
+                ],
+                "programs": []
+            }
+        ],
+        "time": 1527324355,
+        "mediantime": 1527324355,
+        "nonce": 0,
+        "bits": 545259519,
+        "difficulty": "1",
+        "chainwork": "00000000",
+        "previousblockhash": "c0433b918f500392869aa14cf7a909430fd94502b5c9f05421c9da7519bd6a65",
+        "nextblockhash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "auxpow": "01000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d3ca6bcc86bada4642fea709731f1653bd34b28ab15b790e102e14e0d7bd138d80100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f00000000000000000000000000000000000000000000000000000000000000000ce39baabcdbb4adce38c5f23314c5f63a536bbcc8f0a47c7054c36ca27f5acd771d095b0000000002000000"
+    }
+}
 #### getblockcount
 
 description: get block count
@@ -175,6 +265,7 @@ parameters:
 | name | type | description |
 | ---- | ---- | ----------- |
 | txid | string | transaction hash |
+| verbose | bool | verbose of result |
 
 results:
 
@@ -199,7 +290,7 @@ argument sample:
 	"params":["caa0d52ea2b90a08480834b97c271a8b847aadf90057318a33ccc8674b77c796"]
 }
 ```
-result sample:
+result sample:(verbose=true)
 ```javascript
 {
     "id": null,
@@ -254,7 +345,14 @@ result sample:
     }
 }
 ```
+result sample:(verbose=false)
 
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "000403454c4101000846444170b0e427d2010000000000000000000000000000000000000000000000000000000000000000ffffffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a31b2913000000000000000000129e9cf1c5f336fcf3a6c954444ed482c5d916e506b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a341b52c000000000000000000219e9cc4320c3018ced30242b25c03e13a1b2f57c7d107000000"
+}
 #### getrawmempool
 
 description: return hashes of transactions in memory pool.
