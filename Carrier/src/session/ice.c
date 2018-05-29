@@ -423,11 +423,11 @@ static void ice_worker_destroy(void *p)
 
     ice_worker_stop(&worker->base);
 
-    if (worker->pool)
-        pj_pool_release(worker->pool);
-
     pj_ioqueue_destroy(worker->cfg.stun_cfg.ioqueue);
     pj_timer_heap_destroy(worker->cfg.stun_cfg.timer_heap);
+
+    if (worker->pool)
+        pj_pool_release(worker->pool);
 
     pj_caching_pool_destroy(&worker->cp);
 
