@@ -58,15 +58,15 @@ static
 jint writeData(JNIEnv* env, jobject thiz, jint jstreamId, jbyteArray jdata, jint offset, jint len)
 {
     jbyte *data;
-    jsize l;
+    jsize _len;
     ssize_t bytes;
 
     assert(jdata);
 
-    l  = (*env)->GetArrayLength(env, jdata);
+    _len = (*env)->GetArrayLength(env, jdata);
 
-    assert(offset >= 0 && offset < l);
-    assert((offset + len) <= len);
+    assert(offset >= 0 && offset < _len);
+    assert((offset + len) <= _len);
     
     data = (*env)->GetByteArrayElements(env, jdata, NULL);
 
@@ -125,19 +125,20 @@ jboolean closeChannel(JNIEnv* env, jobject thiz, jint streamId, jint channel)
 }
 
 static
-jint writeDataToChannel(JNIEnv* env, jobject thiz, jint streamId, jint channel, jbyteArray jdata, jint offset, jint len)
+jint writeDataToChannel(JNIEnv* env, jobject thiz, jint streamId, jint channel, jbyteArray jdata,
+                        jint offset, jint len)
 {
     jbyte *data;
-    jsize l;
+    jsize _len;
     ssize_t bytes;
 
     assert(channel > 0);
     assert(jdata);
 
-    l  = (*env)->GetArrayLength(env, jdata);
+    _len  = (*env)->GetArrayLength(env, jdata);
 
-    assert(offset >= 0 && offset < l);
-    assert((offset + len) <= len);
+    assert(offset >= 0 && offset < _len);
+    assert((offset + len) <= _len);
 
     data = (*env)->GetByteArrayElements(env, jdata, NULL);
 
