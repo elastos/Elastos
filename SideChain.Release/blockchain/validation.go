@@ -3,76 +3,74 @@ package blockchain
 import (
 	"bytes"
 	"errors"
-	"sort"
-
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-func VerifySignature(tx *ela.Transaction) (bool, error) {
+type TxContainer struct {
+	tx *ela.Transaction
+}
+
+func (tc *TxContainer) GetData() []byte {
+	buf := new(bytes.Buffer)
+	tc.tx.SerializeUnsigned(buf)
+	return buf.Bytes()
+}
+
+func VerifySignature(tx *ela.Transaction) error {
 	if tx.TxType == ela.RechargeToSideChain {
 		if err := spv.VerifyTransaction(tx); err != nil {
-			return false, err
+			return err
 		}
-		return true, nil
+		return nil
 	}
 
 	hashes, err := GetTxProgramHashes(tx)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	programs := tx.Programs
 	Length := len(hashes)
 	if Length != len(programs) {
-		return false, errors.New("The number of data hashes is different with number of programs.")
+		return errors.New("The number of data hashes is different with number of programs.")
 	}
 
-	buf := new(bytes.Buffer)
-	tx.SerializeUnsigned(buf)
-	data := buf.Bytes()
-
 	for i := 0; i < len(programs); i++ {
-
-		code := programs[i].Code
-		param := programs[i].Parameter
-
-		programHash, err := crypto.ToProgramHash(code)
+		programHash, err := crypto.ToProgramHash(programs[i].Code)
 		if err != nil {
-			return false, err
+			return err
 		}
 
 		if !hashes[i].IsEqual(*programHash) {
-			return false, errors.New("The data hashes is different with corresponding program code.")
+			return errors.New("The data hashes is different with corresponding program code.")
 		}
-		// Get transaction type
-		signType, err := crypto.GetScriptType(code)
-		if err != nil {
-			return false, err
+		//execute program on VM
+		se := vm.NewExecutionEngine(&TxContainer{tx: tx}, new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
+		se.LoadScript(programs[i].Code, false)
+		se.LoadScript(programs[i].Parameter, true)
+		se.Execute()
+
+		if se.GetState() != vm.HALT {
+			return errors.New("[VM] Finish State not equal to HALT.")
 		}
-		if signType == STANDARD {
-			// Remove length byte and sign type byte
-			publicKeyBytes := code[1 : len(code)-1]
 
-			return checkStandardSignature(publicKeyBytes, data, param)
+		if se.GetEvaluationStack().Count() != 1 {
+			return errors.New("[VM] Execute Engine Stack Count Error.")
+		}
 
-		} else if signType == MULTISIG {
-			publicKeys, err := crypto.ParseMultisigScript(code)
-			if err != nil {
-				return false, err
-			}
-			return checkMultiSignSignatures(code, param, data, publicKeys)
-
-		} else {
-			return false, errors.New("unknown signature type")
+		success := se.GetExecuteResult()
+		if !success {
+			return errors.New("[VM] Check Sig FALSE.")
 		}
 	}
 
-	return true, nil
+	return nil
 }
 
 func GetTxProgramHashes(tx *ela.Transaction) ([]Uint168, error) {
@@ -108,64 +106,8 @@ func GetTxProgramHashes(tx *ela.Transaction) ([]Uint168, error) {
 	for k := range uniq {
 		uniqueHashes = append(uniqueHashes, k)
 	}
-	sort.Sort(byProgramHashes(uniqueHashes))
+	SortProgramHashes(uniqueHashes)
 	return uniqueHashes, nil
-}
-
-func checkStandardSignature(publicKeyBytes, content, signature []byte) (bool, error) {
-	if len(signature) != crypto.SignatureScriptLength {
-		return false, errors.New("Invalid signature length")
-	}
-
-	publicKey, err := crypto.DecodePoint(publicKeyBytes)
-	if err != nil {
-		return false, err
-	}
-	err = crypto.Verify(*publicKey, content, signature[1:])
-	if err == nil {
-		return false, err
-	}
-	return true, nil
-}
-
-func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) (bool, error) {
-	// Get N parameter
-	n := int(code[len(code)-2]) - crypto.PUSH1 + 1
-	// Get M parameter
-	m := int(code[0]) - crypto.PUSH1 + 1
-	if m < 1 || m > n {
-		return false, errors.New("invalid multi sign script code")
-	}
-	if len(publicKeys) != n {
-		return false, errors.New("invalid multi sign public key script count")
-	}
-
-	signatureCount := 0
-	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
-		// Remove length byte
-		sign := param[i : i+crypto.SignatureScriptLength][1:]
-		// Get signature index, if signature exists index will not be -1
-		index := -1
-		for i, publicKey := range publicKeys {
-			pubKey, err := crypto.DecodePoint(publicKey[1:])
-			if err != nil {
-				return false, err
-			}
-			err = crypto.Verify(*pubKey, content, sign)
-			if err == nil {
-				index = i
-			}
-		}
-		if index != -1 {
-			signatureCount++
-		}
-	}
-	// Check signature count
-	if signatureCount != m {
-		return false, errors.New("invalid signature count")
-	}
-
-	return true, nil
 }
 
 func checkCrossChainTransaction(txn *ela.Transaction) error {
@@ -204,16 +146,4 @@ func checkCrossChainTransaction(txn *ela.Transaction) error {
 		return err
 	}
 	return nil
-}
-
-type byProgramHashes []Uint168
-
-func (a byProgramHashes) Len() int      { return len(a) }
-func (a byProgramHashes) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a byProgramHashes) Less(i, j int) bool {
-	if a[i].Compare(a[j]) > 0 {
-		return false
-	} else {
-		return true
-	}
 }
