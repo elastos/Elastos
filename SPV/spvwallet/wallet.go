@@ -266,14 +266,14 @@ func (wallet *WalletImpl) signStandardTransaction(txn *core.Transaction) (*core.
 	// Sign transaction
 	buf := new(bytes.Buffer)
 	txn.SerializeUnsigned(buf)
-	signedTx, err := account.Sign(buf.Bytes())
+	signature, err := account.Sign(buf.Bytes())
 	if err != nil {
 		return nil, err
 	}
 	// Add signature
 	buf = new(bytes.Buffer)
-	buf.WriteByte(byte(len(signedTx)))
-	buf.Write(signedTx)
+	buf.WriteByte(byte(len(signature)))
+	buf.Write(signature)
 	// Set program
 	var program = &core.Program{code, buf.Bytes()}
 	txn.Programs = []*core.Program{program}

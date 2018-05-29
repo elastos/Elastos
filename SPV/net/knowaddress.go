@@ -118,22 +118,14 @@ func (ka *knownAddress) SaveAddr(na *p2p.NetAddress) {
 type OrderByChance []*knownAddress
 
 // Len is the number of elements in the collection.
-func (c OrderByChance) Len() int {
-	return len(c)
-}
+func (c OrderByChance) Len() int { return len(c) }
 
 // Less reports whether the element with
 // index i should sort before the element with index j.
-func (c OrderByChance) Less(i, j int) bool {
-	return c[i].chance() > c[j].chance()
-}
+func (c OrderByChance) Less(i, j int) bool { return c[i].chance() > c[j].chance() }
 
 // Swap swaps the elements with indexes i and j.
-func (c OrderByChance) Swap(i, j int) {
-	chance := c[i]
-	c[i] = c[j]
-	c[j] = chance
-}
+func (c OrderByChance) Swap(i, j int) { c[i], c[j] = c[j], c[i] }
 
 func SortAddressMap(addrMap map[string]*knownAddress) []*knownAddress {
 	var addrList []*knownAddress
