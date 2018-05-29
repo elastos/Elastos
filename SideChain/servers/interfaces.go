@@ -2,6 +2,8 @@ package servers
 
 import (
 	"bytes"
+	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -12,13 +14,10 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
+	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	"encoding/binary"
-	"encoding/json"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -27,12 +26,12 @@ const (
 )
 
 var NodeForServers Noder
-var Pow *chain.PowService
+var Pow *pow.PowService
 var PreChainHeight uint64
 var PreTime int64
 var PreTransactionCount int
 
-func GetTransactionInfo(header *Header, tx *ela.Transaction) *TransactionInfo {
+func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = BytesToHexString(v.Previous.TxID.Bytes())
@@ -102,16 +101,16 @@ func GetTransactionInfo(header *Header, tx *ela.Transaction) *TransactionInfo {
 	}
 }
 
-func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
+func GetTransaction(txInfo *TransactionInfo) (*Transaction, error) {
 	txPaload, err := getPayload(txInfo.Payload)
 	if err != nil {
 		return nil, err
 	}
 
-	var txAttribute []*ela.Attribute
+	var txAttribute []*Attribute
 	for _, att := range txInfo.Attributes {
 		var attData []byte
-		if att.Usage == ela.Nonce {
+		if att.Usage == Nonce {
 			attData = []byte(att.Data)
 		} else {
 			attData, err = HexStringToBytes(att.Data)
@@ -119,7 +118,7 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 				return nil, err
 			}
 		}
-		txAttr := &ela.Attribute{
+		txAttr := &Attribute{
 			Usage: att.Usage,
 			Data:  attData,
 			Size:  0,
@@ -127,7 +126,7 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 		txAttribute = append(txAttribute, txAttr)
 	}
 
-	var txUTXOTxInput []*ela.Input
+	var txUTXOTxInput []*Input
 	for _, input := range txInfo.Inputs {
 		txID, err := HexStringToBytes(input.TxID)
 		if err != nil {
@@ -137,8 +136,8 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 		if err != nil {
 			return nil, err
 		}
-		utxoInput := &ela.Input{
-			Previous: ela.OutPoint{
+		utxoInput := &Input{
+			Previous: OutPoint{
 				TxID:  *referID,
 				Index: input.VOut,
 			},
@@ -147,7 +146,7 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 		txUTXOTxInput = append(txUTXOTxInput, utxoInput)
 	}
 
-	var txOutputs []*ela.Output
+	var txOutputs []*Output
 	for _, output := range txInfo.Outputs {
 		assetIdBytes, err := HexStringToBytes(output.AssetID)
 		if err != nil {
@@ -165,7 +164,7 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 		if err != nil {
 			return nil, err
 		}
-		output := &ela.Output{
+		output := &Output{
 			AssetID:     *assetId,
 			Value:       *value,
 			OutputLock:  output.OutputLock,
@@ -174,7 +173,7 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 		txOutputs = append(txOutputs, output)
 	}
 
-	var txPrograms []*ela.Program
+	var txPrograms []*Program
 	for _, pgrm := range txInfo.Programs {
 		code, err := HexStringToBytes(pgrm.Code)
 		if err != nil {
@@ -184,14 +183,14 @@ func GetTransaction(txInfo *TransactionInfo) (*ela.Transaction, error) {
 		if err != nil {
 			return nil, err
 		}
-		txProgram := &ela.Program{
+		txProgram := &Program{
 			Code:      code,
 			Parameter: parameter,
 		}
 		txPrograms = append(txPrograms, txProgram)
 	}
 
-	txTransaction := &ela.Transaction{
+	txTransaction := &Transaction{
 		TxType:         txInfo.TxType,
 		PayloadVersion: txInfo.PayloadVersion,
 		Payload:        txPaload,
@@ -636,7 +635,7 @@ func SendRawTransaction(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	var txn ela.Transaction
+	var txn Transaction
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
@@ -959,11 +958,11 @@ func GetExistDepositTransactions(param Params) map[string]interface{} {
 	return ResponsePack(Success, resultTxHashes)
 }
 
-func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
+func getPayload(pInfo PayloadInfo) (Payload, error) {
 
 	switch object := pInfo.(type) {
 	case *RegisterAssetInfo:
-		obj := new(ela.PayloadRegisterAsset)
+		obj := new(PayloadRegisterAsset)
 		obj.Asset = object.Asset
 		amount, err := StringToFixed64(object.Amount)
 		if err != nil {
@@ -978,7 +977,7 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 		obj.Controller = *controller
 		return obj, nil
 	case *RechargeToSideChainInfo:
-		obj := new(ela.PayloadRechargeToSideChain)
+		obj := new(PayloadRechargeToSideChain)
 		proofBytes, err := HexStringToBytes(object.Proof)
 		if err != nil {
 			return nil, err
@@ -991,7 +990,7 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 		obj.MainChainTransaction = transactionBytes
 		return obj, nil
 	case *TransferCrossChainAssetInfo:
-		obj := new(ela.PayloadTransferCrossChainAsset)
+		obj := new(PayloadTransferCrossChainAsset)
 		obj.CrossChainAddress = object.CrossChainAddress
 		obj.OutputIndex = object.OutputIndex
 		obj.CrossChainAmount = object.CrossChainAmount
@@ -1001,33 +1000,30 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 	return nil, errors.New("Invalid payload type.")
 }
 
-func getPayloadInfo(p ela.Payload) PayloadInfo {
+func getPayloadInfo(p Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *ela.PayloadCoinBase:
+	case *PayloadCoinBase:
 		obj := new(CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *ela.PayloadRegisterAsset:
+	case *PayloadRegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *ela.PayloadSideMining:
+	case *PayloadSideMining:
 		obj := new(SideMiningInfo)
-		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
-		obj.SideGenesisHash = object.SideGenesisHash.String()
-		obj.SignedData = BytesToHexString(object.SignedData)
 		return obj
-	case *ela.PayloadTransferCrossChainAsset:
+	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.CrossChainAddress = object.CrossChainAddress
 		obj.OutputIndex = object.OutputIndex
 		obj.CrossChainAmount = object.CrossChainAmount
 		return obj
-	case *ela.PayloadTransferAsset:
-	case *ela.PayloadRecord:
+	case *PayloadTransferAsset:
+	case *PayloadRecord:
 	}
 	return nil
 }
@@ -1053,16 +1049,18 @@ func getTransactionInfo(txInfoBytes []byte) (*TransactionInfo, error) {
 
 	var assetInfo PayloadInfo
 	switch txInfo.TxType {
-	case ela.CoinBase:
+	case CoinBase:
 		assetInfo = &CoinbaseInfo{}
-	case ela.RegisterAsset:
+	case RegisterAsset:
 		assetInfo = &RegisterAssetInfo{}
-	case ela.SideMining:
+	case SideMining:
 		assetInfo = &SideMiningInfo{}
-	case ela.RechargeToSideChain:
+	case RechargeToSideChain:
 		assetInfo = &RechargeToSideChainInfo{}
-	case ela.TransferCrossChainAsset:
+	case TransferCrossChainAsset:
 		assetInfo = &TransferCrossChainAssetInfo{}
+	case RegisterIdentification:
+		assetInfo = &RegisterIdentificationInfo{}
 	default:
 		return nil, errors.New("GetBlockTransactions: Unknown payload type")
 	}
@@ -1074,7 +1072,7 @@ func getTransactionInfo(txInfoBytes []byte) (*TransactionInfo, error) {
 	return &txInfo, nil
 }
 
-func VerifyAndSendTx(txn *ela.Transaction) ErrCode {
+func VerifyAndSendTx(txn *Transaction) ErrCode {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")
@@ -1095,7 +1093,7 @@ func ResponsePack(errCode ErrCode, result interface{}) map[string]interface{} {
 	return map[string]interface{}{"Result": result, "Error": errCode}
 }
 
-func GetBlockTransactionsDetail(block *Block, filter func(*ela.Transaction) bool) interface{} {
+func GetBlockTransactionsDetail(block *Block, filter func(*Transaction) bool) interface{} {
 	var trans []*TransactionInfo
 	for i := 0; i < len(block.Transactions); i++ {
 		if filter(block.Transactions[i]) {
@@ -1135,7 +1133,7 @@ func GetDestroyedTransactionsByHeight(param Params) map[string]interface{} {
 	}
 
 	destroyHash := Uint168{}
-	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *ela.Transaction) bool {
+	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *Transaction) bool {
 		for _, output := range tran.Outputs {
 			if output.ProgramHash == destroyHash {
 				return false

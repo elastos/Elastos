@@ -6,15 +6,15 @@ import (
 	"math"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 // CheckTransactionSanity verifys received single transaction
-func CheckTransactionSanity(txn *ela.Transaction) ErrCode {
+func CheckTransactionSanity(txn *core.Transaction) ErrCode {
 
 	if err := CheckTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
@@ -55,7 +55,7 @@ func CheckTransactionSanity(txn *ela.Transaction) ErrCode {
 }
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
-func CheckTransactionContext(txn *ela.Transaction) ErrCode {
+func CheckTransactionContext(txn *core.Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
@@ -119,7 +119,7 @@ func CheckTransactionContext(txn *ela.Transaction) ErrCode {
 }
 
 //validate the transaction of duplicate UTXO input
-func CheckTransactionInput(txn *ela.Transaction) error {
+func CheckTransactionInput(txn *core.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Inputs) != 1 {
 			return errors.New("coinbase must has only one input")
@@ -155,7 +155,7 @@ func CheckTransactionInput(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckTransactionOutput(txn *ela.Transaction) error {
+func CheckTransactionOutput(txn *core.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
@@ -202,7 +202,7 @@ func CheckTransactionOutput(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckTransactionUTXOLock(txn *ela.Transaction) error {
+func CheckTransactionUTXOLock(txn *core.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
@@ -229,7 +229,7 @@ func CheckTransactionUTXOLock(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckTransactionSize(txn *ela.Transaction) error {
+func CheckTransactionSize(txn *core.Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
 		return errors.New(fmt.Sprintf("Invalid transaction size: %d bytes", size))
@@ -238,11 +238,11 @@ func CheckTransactionSize(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckAssetPrecision(txn *ela.Transaction) error {
+func CheckAssetPrecision(txn *core.Transaction) error {
 	if len(txn.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[Uint256][]*ela.Output, len(txn.Outputs))
+	assetOutputs := make(map[Uint256][]*core.Output, len(txn.Outputs))
 
 	for _, v := range txn.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
@@ -262,7 +262,7 @@ func CheckAssetPrecision(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(txn *ela.Transaction) error {
+func CheckTransactionBalance(txn *core.Transaction) error {
 	// TODO: check coinbase balance 30%-70%
 	for _, v := range txn.Outputs {
 		if v.Value <= Fixed64(0) {
@@ -282,12 +282,12 @@ func CheckTransactionBalance(txn *ela.Transaction) error {
 	return nil
 }
 
-func CheckAttributeProgram(txn *ela.Transaction) error {
+func CheckAttributeProgram(txn *core.Transaction) error {
 	//TODO: implement CheckAttributeProgram
 	return nil
 }
 
-func CheckTransactionSignature(txn *ela.Transaction) error {
+func CheckTransactionSignature(txn *core.Transaction) error {
 	return VerifySignature(txn)
 }
 
@@ -295,23 +295,23 @@ func checkAmountPrecise(amount Fixed64, precision byte) bool {
 	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
 }
 
-func CheckTransactionPayload(txn *ela.Transaction) error {
+func CheckTransactionPayload(txn *core.Transaction) error {
 
 	switch pld := txn.Payload.(type) {
-	case *ela.PayloadRegisterAsset:
-		if pld.Asset.Precision < ela.MinPrecision || pld.Asset.Precision > ela.MaxPrecision {
+	case *core.PayloadRegisterAsset:
+		if pld.Asset.Precision < core.MinPrecision || pld.Asset.Precision > core.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
 		if checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
-	case *ela.PayloadTransferAsset:
-	case *ela.PayloadRecord:
-	case *ela.PayloadCoinBase:
-	case *ela.PayloadSideMining:
-	case *ela.PayloadWithdrawFromSideChain:
-	case *ela.PayloadRechargeToSideChain:
-	case *ela.PayloadTransferCrossChainAsset:
+	case *core.PayloadTransferAsset:
+	case *core.PayloadRecord:
+	case *core.PayloadCoinBase:
+	case *core.PayloadSideMining:
+	case *core.PayloadWithdrawFromSideChain:
+	case *core.PayloadRechargeToSideChain:
+	case *core.PayloadTransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}

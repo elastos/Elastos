@@ -8,6 +8,8 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	"github.com/elastos/Elastos.ELA.SPV/interface"
@@ -44,12 +46,12 @@ func SpvInit() error {
 	return nil
 }
 
-func VerifyTransaction(tx *ela.Transaction) error {
+func VerifyTransaction(tx *core.Transaction) error {
 	proof := new(MerkleProof)
 	mainChainTransaction := new(ela.Transaction)
 
 	switch object := tx.Payload.(type) {
-	case *ela.PayloadRechargeToSideChain:
+	case *core.PayloadRechargeToSideChain:
 		reader := bytes.NewReader(object.MerkleProof)
 		if err := proof.Deserialize(reader); err != nil {
 			return errors.New("RechargeToSideChain payload deserialize failed")

@@ -3,27 +3,19 @@ package blockchain
 import (
 	"bytes"
 	"errors"
+
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
+	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-type TxContainer struct {
-	tx *ela.Transaction
-}
-
-func (tc *TxContainer) GetData() []byte {
-	buf := new(bytes.Buffer)
-	tc.tx.SerializeUnsigned(buf)
-	return buf.Bytes()
-}
-
-func VerifySignature(tx *ela.Transaction) error {
-	if tx.TxType == ela.RechargeToSideChain {
+func VerifySignature(tx *core.Transaction) error {
+	if tx.TxType == core.RechargeToSideChain {
 		if err := spv.VerifyTransaction(tx); err != nil {
 			return err
 		}
@@ -35,9 +27,11 @@ func VerifySignature(tx *ela.Transaction) error {
 		return err
 	}
 
-	programs := tx.Programs
-	Length := len(hashes)
-	if Length != len(programs) {
+	return RunPrograms(tx, hashes, tx.Programs)
+}
+
+func RunPrograms(data interfaces.IDataContainer, hashes []Uint168, programs []*core.Program) error {
+	if len(hashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
 
@@ -51,7 +45,7 @@ func VerifySignature(tx *ela.Transaction) error {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 		//execute program on VM
-		se := vm.NewExecutionEngine(&TxContainer{tx: tx}, new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
+		se := vm.NewExecutionEngine(data, new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
 		se.LoadScript(programs[i].Code, false)
 		se.LoadScript(programs[i].Parameter, true)
 		se.Execute()
@@ -73,7 +67,7 @@ func VerifySignature(tx *ela.Transaction) error {
 	return nil
 }
 
-func GetTxProgramHashes(tx *ela.Transaction) ([]Uint168, error) {
+func GetTxProgramHashes(tx *core.Transaction) ([]Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
@@ -89,7 +83,7 @@ func GetTxProgramHashes(tx *ela.Transaction) ([]Uint168, error) {
 		hashes = append(hashes, programHash)
 	}
 	for _, attribute := range tx.Attributes {
-		if attribute.Usage == ela.Script {
+		if attribute.Usage == core.Script {
 			dataHash, err := Uint168FromBytes(attribute.Data)
 			if err != nil {
 				return nil, errors.New("[Transaction], GetProgramHashes err.")
@@ -110,12 +104,12 @@ func GetTxProgramHashes(tx *ela.Transaction) ([]Uint168, error) {
 	return uniqueHashes, nil
 }
 
-func checkCrossChainTransaction(txn *ela.Transaction) error {
+func checkCrossChainTransaction(txn *core.Transaction) error {
 	if !txn.IsRechargeToSideChainTx() {
 		return nil
 	}
 
-	depositPayload, ok := txn.Payload.(*ela.PayloadRechargeToSideChain)
+	depositPayload, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
 	if !ok {
 		return errors.New("Invalid payload type.")
 	}
@@ -128,7 +122,7 @@ func checkCrossChainTransaction(txn *ela.Transaction) error {
 		mainchain.DbCache = dbCache
 	}
 
-	mainChainTransaction := new(ela.Transaction)
+	mainChainTransaction := new(core.Transaction)
 	reader := bytes.NewReader(depositPayload.MainChainTransaction)
 	if err := mainChainTransaction.Deserialize(reader); err != nil {
 		return errors.New("PayloadRechargeToSideChain mainChainTransaction deserialize failed")

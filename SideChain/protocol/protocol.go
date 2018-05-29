@@ -10,7 +10,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -36,7 +35,6 @@ type Noder interface {
 	Addr() string
 	Addr16() ([16]byte, error)
 	Port() uint16
-	LocalPort() uint16
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
 	SetState(state uint)
@@ -48,8 +46,8 @@ type Noder interface {
 	GetConn() net.Conn
 	CloseConn()
 	GetConnectionCnt() uint
-	GetTxnPool(bool) map[Uint256]*ela.Transaction
-	AppendToTxnPool(*ela.Transaction) ErrCode
+	GetTxnPool(bool) map[Uint256]*Transaction
+	AppendToTxnPool(*Transaction) ErrCode
 	ExistedID(id Uint256) bool
 	ReqNeighborList()
 	DumpInfo()
@@ -62,7 +60,7 @@ type Noder interface {
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
 	GetNeighborAddrs() ([]p2p.NetAddress, uint64)
-	GetTransaction(hash Uint256) *ela.Transaction
+	GetTransaction(hash Uint256) *Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
@@ -70,8 +68,8 @@ type Noder interface {
 	GetNeighborHeights() ([]uint64, uint64)
 	WaitForSyncFinish()
 	CleanSubmittedTransactions(block *Block) error
-	MaybeAcceptTransaction(txn *ela.Transaction) error
-	RemoveTransaction(txn *ela.Transaction)
+	MaybeAcceptTransaction(txn *Transaction) error
+	RemoveTransaction(txn *Transaction)
 
 	GetNeighborNoder() []Noder
 	GetNbrNodeCnt() uint32

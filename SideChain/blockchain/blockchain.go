@@ -17,7 +17,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -93,8 +92,8 @@ func Init(store IChainStore) error {
 
 func GetGenesisBlock() (*core.Block, error) {
 	// payload
-	registerAsset := &ela.PayloadRegisterAsset{
-		Asset: ela.Asset{
+	registerAsset := &core.PayloadRegisterAsset{
+		Asset: core.Asset{
 			Name:      "ELA",
 			Precision: 0x08,
 			AssetType: 0x00,
@@ -104,14 +103,14 @@ func GetGenesisBlock() (*core.Block, error) {
 	}
 
 	// ELA coin
-	elaCoin := ela.Transaction{
-		TxType:         ela.RegisterAsset,
+	elaCoin := core.Transaction{
+		TxType:         core.RegisterAsset,
 		PayloadVersion: 0,
 		Payload:        registerAsset,
-		Attributes:     []*ela.Attribute{},
-		Inputs:         []*ela.Input{},
-		Outputs:        []*ela.Output{},
-		Programs:       []*ela.Program{},
+		Attributes:     []*core.Attribute{},
+		Inputs:         []*core.Input{},
+		Outputs:        []*core.Output{},
+		Programs:       []*core.Program{},
 	}
 
 	// header
@@ -124,12 +123,11 @@ func GetGenesisBlock() (*core.Block, error) {
 		Nonce:      core.GenesisNonce,
 		Height:     uint32(0),
 	}
-	header.SideAuxPow.SideAuxBlockTx = elaCoin
 
 	//block
 	block := &core.Block{
 		Header:       header,
-		Transactions: []*ela.Transaction{&elaCoin},
+		Transactions: []*core.Transaction{&elaCoin},
 	}
 	hashes := make([]Uint256, 0, len(block.Transactions))
 	for _, tx := range block.Transactions {
@@ -144,23 +142,23 @@ func GetGenesisBlock() (*core.Block, error) {
 	return block, nil
 }
 
-func NewCoinBaseTransaction(coinBasePayload *ela.PayloadCoinBase, currentHeight uint32) *ela.Transaction {
-	return &ela.Transaction{
-		TxType:         ela.CoinBase,
-		PayloadVersion: ela.PayloadCoinBaseVersion,
+func NewCoinBaseTransaction(coinBasePayload *core.PayloadCoinBase, currentHeight uint32) *core.Transaction {
+	return &core.Transaction{
+		TxType:         core.CoinBase,
+		PayloadVersion: core.PayloadCoinBaseVersion,
 		Payload:        coinBasePayload,
-		Inputs: []*ela.Input{
+		Inputs: []*core.Input{
 			{
-				Previous: ela.OutPoint{
+				Previous: core.OutPoint{
 					TxID:  EmptyHash,
 					Index: 0x0000,
 				},
 				Sequence: 0x00000000,
 			},
 		},
-		Attributes: []*ela.Attribute{},
+		Attributes: []*core.Attribute{},
 		LockTime:   currentHeight,
-		Programs:   []*ela.Program{},
+		Programs:   []*core.Program{},
 	}
 }
 

@@ -3,10 +3,9 @@ package blockchain
 import (
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -22,7 +21,7 @@ type Ledger struct {
 }
 
 //check weather the transaction contains the doubleSpend.
-func (l *Ledger) IsDoubleSpend(Tx *ela.Transaction) bool {
+func (l *Ledger) IsDoubleSpend(Tx *core.Transaction) bool {
 	return DefaultLedger.Store.IsDoubleSpend(Tx)
 }
 
@@ -30,7 +29,7 @@ func (l *Ledger) IsDoubleSpend(Tx *ela.Transaction) bool {
 //Note: the later version will support the mutiLedger.So this func mybe expired later.
 
 //Get the Asset from store.
-func (l *Ledger) GetAsset(assetId Uint256) (*ela.Asset, error) {
+func (l *Ledger) GetAsset(assetId Uint256) (*core.Asset, error) {
 	asset, err := l.Store.GetAsset(assetId)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetAsset failed with assetId =" + assetId.String())
@@ -39,7 +38,7 @@ func (l *Ledger) GetAsset(assetId Uint256) (*ela.Asset, error) {
 }
 
 //Get Block With Height.
-func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
+func (l *Ledger) GetBlockWithHeight(height uint32) (*core.Block, error) {
 	temp, err := l.Store.GetBlockHash(height)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with height=" + string(height))
@@ -52,7 +51,7 @@ func (l *Ledger) GetBlockWithHeight(height uint32) (*Block, error) {
 }
 
 //Get block with block hash.
-func (l *Ledger) GetBlockWithHash(hash Uint256) (*Block, error) {
+func (l *Ledger) GetBlockWithHash(hash Uint256) (*core.Block, error) {
 	bk, err := l.Store.GetBlock(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
@@ -66,7 +65,7 @@ func (l *Ledger) BlockInLedger(hash Uint256) bool {
 }
 
 //Get transaction with hash.
-func (l *Ledger) GetTransactionWithHash(hash Uint256) (*ela.Transaction, error) {
+func (l *Ledger) GetTransactionWithHash(hash Uint256) (*core.Transaction, error) {
 	tx, _, err := l.Store.GetTransaction(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetTransactionWithHash failed with hash=" + hash.String())

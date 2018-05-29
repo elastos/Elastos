@@ -23,7 +23,6 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 var LocalNode *node
@@ -207,10 +206,6 @@ func (node *node) Port() uint16 {
 	return node.port
 }
 
-func (node *node) LocalPort() uint16 {
-	return node.localPort
-}
-
 func (node *node) HttpInfoPort() int {
 	return int(node.httpInfoPort)
 }
@@ -300,9 +295,9 @@ func (node *node) Relay(from Noder, message interface{}) error {
 		if from == nil || nbr.ID() != from.ID() {
 
 			switch message.(type) {
-			case *ela.Transaction:
+			case *Transaction:
 				log.Debug("TX transaction message")
-				txn := message.(*ela.Transaction)
+				txn := message.(*Transaction)
 
 				if nbr.ExistHash(txn.Hash()) {
 					continue

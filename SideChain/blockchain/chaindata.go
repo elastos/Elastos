@@ -8,7 +8,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 // key: DATA_Header || block hash
@@ -112,7 +111,7 @@ func (c *ChainStore) PersistUnspendUTXOs(b *core.Block) error {
 	curHeight := b.Header.Height
 
 	for _, txn := range b.Transactions {
-		if txn.TxType == ela.RegisterAsset {
+		if txn.TxType == core.RegisterAsset {
 			continue
 		}
 
@@ -209,7 +208,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *core.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	height := b.Header.Height
 	for _, txn := range b.Transactions {
-		if txn.TxType == ela.RegisterAsset {
+		if txn.TxType == core.RegisterAsset {
 			continue
 		}
 		for index, output := range txn.Outputs {
@@ -296,8 +295,8 @@ func (c *ChainStore) PersistTransactions(b *core.Block) error {
 		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == ela.RegisterAsset {
-			regPayload := txn.Payload.(*ela.PayloadRegisterAsset)
+		if txn.TxType == core.RegisterAsset {
+			regPayload := txn.Payload.(*core.PayloadRegisterAsset)
 			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
@@ -311,7 +310,7 @@ func (c *ChainStore) RollbackTransactions(b *core.Block) error {
 		if err := c.RollbackTransaction(txn); err != nil {
 			return err
 		}
-		if txn.TxType == ela.RegisterAsset {
+		if txn.TxType == core.RegisterAsset {
 			if err := c.RollbackAsset(txn.Hash()); err != nil {
 				return err
 			}
@@ -321,7 +320,7 @@ func (c *ChainStore) RollbackTransactions(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackTransaction(txn *ela.Transaction) error {
+func (c *ChainStore) RollbackTransaction(txn *core.Transaction) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Transaction))
 	hash := txn.Hash()
@@ -344,7 +343,7 @@ func (c *ChainStore) PersistUnspend(b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
-		if txn.TxType == ela.RegisterAsset {
+		if txn.TxType == core.RegisterAsset {
 			continue
 		}
 		txnHash := txn.Hash()
@@ -397,7 +396,7 @@ func (c *ChainStore) RollbackUnspend(b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
-		if txn.TxType == ela.RegisterAsset {
+		if txn.TxType == core.RegisterAsset {
 			continue
 		}
 		// remove all utxos created by this transaction

@@ -13,7 +13,6 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -175,7 +174,7 @@ func CheckProofOfWork(header *Header, powLimit *big.Int) error {
 	return nil
 }
 
-func IsFinalizedTransaction(msgTx *ela.Transaction, blockHeight uint32) bool {
+func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
 	// Lock time of zero means the transaction is finalized.
 	lockTime := msgTx.LockTime
 	if lockTime == 0 {
