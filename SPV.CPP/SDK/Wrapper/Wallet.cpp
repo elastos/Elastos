@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/scoped_ptr.hpp>
+#include <SDK/ELACoreExt/ELABRTransaction.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"
@@ -61,7 +62,7 @@ namespace Elastos {
 					   const MasterPubKeyPtr &masterPubKey,
 					   const boost::shared_ptr<Listener> &listener) {
 
-			_wallet = BRWalletNew(transactions.getRawPointerArray().data(),
+			_wallet = BRWalletNew(getRawTransactions(transactions).data(),
 								  transactions.size(), *masterPubKey->getRaw());
 
 			assert(listener != nullptr);
@@ -323,6 +324,17 @@ namespace Elastos {
 		bool Wallet::addressIsUsed(const std::string &address) {
 
 			return BRWalletAddressIsUsed(_wallet, address.c_str()) != 0;
+		}
+
+		std::vector<BRTransaction *>
+		Wallet::getRawTransactions(const SharedWrapperList<Transaction, BRTransaction *> &transactions) {
+			std::vector<BRTransaction *> list;
+			size_t len = transactions.size();
+			for (size_t i = 0; i < len; ++i) {
+				ELABRTransaction *transaction = ELABRTransactioCopy((ELABRTransaction *)transactions[i]->convertToRaw());
+				list.push_back((BRTransaction *)transaction);
+			}
+			return list;
 		}
 
 	}

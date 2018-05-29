@@ -102,6 +102,8 @@ namespace Elastos {
 		private:
             void createGenesisBlock() const;
 
+            std::vector<BRMerkleBlock *>
+            getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
         private:
             BRPeerManager* _manager;
 

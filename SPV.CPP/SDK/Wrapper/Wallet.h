@@ -208,6 +208,10 @@ namespace Elastos {
 			uint64_t getMaxOutputAmount();
 
 		private:
+			std::vector<BRTransaction *>
+			getRawTransactions(const SharedWrapperList<Transaction, BRTransaction *> &transactions);
+
+		private:
 			BRWallet *_wallet;
 
 			boost::weak_ptr<Listener> _listener;

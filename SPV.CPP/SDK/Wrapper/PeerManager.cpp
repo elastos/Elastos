@@ -121,7 +121,7 @@ namespace Elastos {
 					params.getRaw(),
 					wallet->getRaw(),
 					earliestKeyTime,
-					blocks.getRawPointerArray().data(),
+					getRawMerkleBlocks(blocks).data(),
 					blocks.size(),
 					peerArray,
 					peers.size(),
@@ -240,6 +240,19 @@ namespace Elastos {
 			block->raw.target = 486801407;
 			BRSetAdd(_manager->blocks, block);
 			_manager->lastBlock = (BRMerkleBlock *)block;
+		}
+
+		std::vector<BRMerkleBlock *>
+		PeerManager::getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+			std::vector<BRMerkleBlock *> list;
+
+			size_t len = blocks.size();
+			for (size_t i = 0; i < len; ++i) {
+				ELAMerkleBlock *temp = (ELAMerkleBlock *)blocks[i]->getRaw();
+				list.push_back((BRMerkleBlock *)ELAMerkleBlockCopy(temp));
+			}
+
+			return list;
 		}
 	}
 }

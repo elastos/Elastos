@@ -67,8 +67,12 @@ namespace Elastos {
 			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				TransactionPtr transaction(new Transaction(
-						txsEntity[i].buff, txsEntity[i].blockHeight, txsEntity[i].timeStamp));
+				TransactionPtr transaction(new Transaction());
+				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize());
+				transaction->Deserialize(byteStream);
+				BRTransaction *raw = transaction->getRaw();
+				raw->blockHeight = txsEntity[i].blockHeight;
+				raw->timestamp = txsEntity[i].timeStamp;
 				if (filter(transaction)) {
 					txs.push_back(transaction);
 				}
@@ -89,7 +93,14 @@ namespace Elastos {
 		}
 
 		void WalletManager::onTxAdded(const TransactionPtr &tx) {
-			TransactionEntity txEntity(tx->serialize(), tx->getBlockHeight(),
+			ByteStream byteStream;
+			tx->Serialize(byteStream);
+			uint8_t *buff = byteStream.getBuf();
+			CMBlock datas(byteStream.position());
+			memcpy(datas, buff, byteStream.position());
+			delete[] buff;
+
+			TransactionEntity txEntity(datas, tx->getBlockHeight(),
 									   tx->getTimestamp(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
@@ -210,8 +221,16 @@ namespace Elastos {
 			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				txs.push_back(TransactionPtr(
-						new Transaction(txsEntity[i].buff, txsEntity[i].blockHeight, txsEntity[i].timeStamp)));
+				TransactionPtr transaction(new Transaction());
+				size_t len = txsEntity[i].buff.GetSize();
+				uint8_t *buff = new uint8_t[len];
+				memcpy(buff, txsEntity[i].buff, len);
+				ByteStream byteStream(buff, len);
+				transaction->Deserialize(byteStream);
+				BRTransaction *raw = transaction->getRaw();
+				raw->blockHeight = txsEntity[i].blockHeight;
+				raw->timestamp = txsEntity[i].timeStamp;
+				txs.push_back(transaction);
 			}
 
 			return txs;
