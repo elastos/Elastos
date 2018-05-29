@@ -17,6 +17,7 @@ import (
 )
 
 var spvService _interface.SPVService
+var maxConnections = 12
 
 func SpvInit() error {
 	var err error
