@@ -97,7 +97,7 @@ func txSigleChecksig(t *testing.T) {
 
 	hashes = []common.Uint168{*act.programHash}
 	programs = []*core.Program{{Code: act.redeemScript, Parameter: signature}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err != nil {
 		t.Errorf("[RunProgram] with 1 checksig failed, %s", err.Error())
 	}
@@ -107,7 +107,7 @@ func txSigleChecksig(t *testing.T) {
 	var fakeHash common.Uint168
 	rand.Read(fakeHash[:])
 	hashes = []common.Uint168{fakeHash}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmatched hash")
 	}
@@ -118,7 +118,7 @@ func txSigleChecksig(t *testing.T) {
 	rand.Read(fakeSignature[:])
 	hashes = []common.Uint168{*act.programHash}
 	programs = []*core.Program{{Code: act.redeemScript, Parameter: fakeSignature[:]}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmatched signature")
 	}
@@ -126,7 +126,7 @@ func txSigleChecksig(t *testing.T) {
 
 	// With no program
 	programs = []*core.Program{}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no program")
 	}
@@ -134,7 +134,7 @@ func txSigleChecksig(t *testing.T) {
 
 	// With no code
 	programs = []*core.Program{{Parameter: signature}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no code")
 	}
@@ -142,7 +142,7 @@ func txSigleChecksig(t *testing.T) {
 
 	// With no parameter
 	programs = []*core.Program{{Code: act.redeemScript}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no parameter")
 	}
@@ -172,7 +172,7 @@ func txManyChecksig(t *testing.T) {
 		}
 	}
 	init()
-	err := RunPrograms(tx, hashes, programs)
+	err := RunPrograms(data, hashes, programs)
 	if err != nil {
 		t.Errorf("[RunProgram] with many checksig failed, %s", err.Error())
 	}
@@ -181,7 +181,7 @@ func txManyChecksig(t *testing.T) {
 	// With unmatched hash
 	fakeIndex := math.Intn(num)
 	rand.Read(hashes[fakeIndex][:])
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmathed hash")
 	}
@@ -193,7 +193,7 @@ func txManyChecksig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		rand.Read(hashes[fakeIndex][:])
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmathed hashes")
 	}
@@ -202,7 +202,7 @@ func txManyChecksig(t *testing.T) {
 	// With no programs
 	init()
 	programs = []*core.Program{}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no programs")
 	}
@@ -212,7 +212,7 @@ func txManyChecksig(t *testing.T) {
 	init()
 	fakeIndex = math.Intn(num)
 	programs[fakeIndex].Code = nil
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no code")
 	}
@@ -224,7 +224,7 @@ func txManyChecksig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		programs[fakeIndex].Code = nil
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no codes")
 	}
@@ -234,7 +234,7 @@ func txManyChecksig(t *testing.T) {
 	init()
 	fakeIndex = math.Intn(num)
 	programs[fakeIndex].Parameter = nil
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no parameter")
 	}
@@ -246,7 +246,7 @@ func txManyChecksig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		programs[fakeIndex].Parameter = nil
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no parameters")
 	}
@@ -270,7 +270,7 @@ func txSigleMultisig(t *testing.T) {
 	}
 	hashes = []common.Uint168{*mact.programHash}
 	programs = []*core.Program{{Code: mact.redeemScript, Parameter: signature}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err != nil {
 		t.Errorf("[RunProgram] with 1 multisig failed, %s", err.Error())
 	}
@@ -280,7 +280,7 @@ func txSigleMultisig(t *testing.T) {
 	var fakeHash common.Uint168
 	rand.Read(fakeHash[:])
 	hashes = []common.Uint168{fakeHash}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmatched hash")
 	}
@@ -291,7 +291,7 @@ func txSigleMultisig(t *testing.T) {
 	rand.Read(fakeSignatures[:])
 	hashes = []common.Uint168{*mact.programHash}
 	programs = []*core.Program{{Code: mact.redeemScript, Parameter: fakeSignatures[:]}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmatched signatures")
 	}
@@ -310,17 +310,32 @@ func txSigleMultisig(t *testing.T) {
 		signatures = append(signatures, signature...)
 	}
 	programs = []*core.Program{{Code: mact.redeemScript, Parameter: signatures}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with not enough signatures")
 	}
 	t.Logf("[Passed] 3. Transaction with 1 multisig program [Not enough signatures], %s", err.Error())
 
+	// With too many signatures
+	for _, act := range mact.accounts {
+		signature, err := sign(act.private, data)
+		if err != nil {
+			t.Errorf("Generate signature failed, %s", err.Error())
+		}
+		signatures = append(signatures, signature...)
+	}
+	programs = []*core.Program{{Code: mact.redeemScript, Parameter: signatures}}
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with too many signatures")
+	}
+	t.Logf("[Passed] 3. Transaction with 1 multisig program [Too many signatures], %s", err.Error())
+
 	// With not invalid signatures
 	signatures = make([]byte, math.Intn(len(mact.accounts)*crypto.SignatureScriptLength))
 	rand.Read(signatures)
 	programs = []*core.Program{{Code: mact.redeemScript, Parameter: signatures}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with invalid signatures")
 	}
@@ -328,7 +343,7 @@ func txSigleMultisig(t *testing.T) {
 
 	// With no program
 	programs = []*core.Program{}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no program")
 	}
@@ -336,7 +351,7 @@ func txSigleMultisig(t *testing.T) {
 
 	// With no code
 	programs = []*core.Program{{Parameter: signatures}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no code")
 	}
@@ -344,7 +359,7 @@ func txSigleMultisig(t *testing.T) {
 
 	// With no parameter
 	programs = []*core.Program{{Code: mact.redeemScript}}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no parameter")
 	}
@@ -381,7 +396,7 @@ func txManyMultisig(t *testing.T) {
 		}
 	}
 	init()
-	err := RunPrograms(tx, hashes, programs)
+	err := RunPrograms(data, hashes, programs)
 	if err != nil {
 		t.Errorf("[RunProgram] with many multisig failed, %s", err.Error())
 	}
@@ -390,7 +405,7 @@ func txManyMultisig(t *testing.T) {
 	// With unmatched hash
 	fakeIndex := math.Intn(num)
 	rand.Read(hashes[fakeIndex][:])
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmathed hash")
 	}
@@ -402,7 +417,7 @@ func txManyMultisig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		rand.Read(hashes[fakeIndex][:])
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmathed hashes")
 	}
@@ -425,11 +440,32 @@ func txManyMultisig(t *testing.T) {
 		}
 		programs[fakeIndex].Parameter = signatures
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with not enough signature")
 	}
 	t.Logf("[Passed] 4. Transaction with many multisig program [Random not enough signature], %s", err.Error())
+
+	// With random too many signature
+	init()
+	for i := 0; i < num; i++ {
+		fakeIndex = math.Intn(num)
+		var signatures []byte
+		for _, act := range macts[fakeIndex].accounts {
+			signature, err := sign(act.private, data)
+			if err != nil {
+				t.Errorf("Generate signature failed, %s", err.Error())
+			}
+			signatures = append(signatures, signature...)
+			signatures = append(signatures, signature...)
+		}
+		programs[fakeIndex].Parameter = signatures
+	}
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with too many signature")
+	}
+	t.Logf("[Passed] 4. Transaction with many multisig program [Random too many signature], %s", err.Error())
 
 	// With random invalid signatures
 	init()
@@ -439,7 +475,7 @@ func txManyMultisig(t *testing.T) {
 		rand.Read(signatures)
 		programs[fakeIndex].Parameter = signatures
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with invalid signatures")
 	}
@@ -451,7 +487,7 @@ func txManyMultisig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		rand.Read(hashes[fakeIndex][:])
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no programs")
 	}
@@ -461,7 +497,7 @@ func txManyMultisig(t *testing.T) {
 	init()
 	fakeIndex = math.Intn(num)
 	programs[fakeIndex].Code = nil
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no code")
 	}
@@ -473,7 +509,7 @@ func txManyMultisig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		programs[fakeIndex].Code = nil
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no codes")
 	}
@@ -483,7 +519,7 @@ func txManyMultisig(t *testing.T) {
 	init()
 	fakeIndex = math.Intn(num)
 	programs[fakeIndex].Parameter = nil
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no parameter")
 	}
@@ -495,7 +531,7 @@ func txManyMultisig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		programs[fakeIndex].Parameter = nil
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no parameters")
 	}
@@ -532,7 +568,7 @@ func txManyDiffsig(t *testing.T) {
 		}
 	}
 	init()
-	err := RunPrograms(tx, hashes, programs)
+	err := RunPrograms(data, hashes, programs)
 	if err != nil {
 		t.Errorf("[RunProgram] with many diffsig failed, %s", err.Error())
 	}
@@ -541,7 +577,7 @@ func txManyDiffsig(t *testing.T) {
 	// With unmatched hash
 	fakeIndex := math.Intn(num)
 	rand.Read(hashes[fakeIndex][:])
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmathed hash")
 	}
@@ -553,7 +589,7 @@ func txManyDiffsig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		rand.Read(hashes[fakeIndex][:])
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with unmathed hashes")
 	}
@@ -589,7 +625,7 @@ func txManyDiffsig(t *testing.T) {
 			}
 		}
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with invalid signature")
 	}
@@ -601,7 +637,7 @@ func txManyDiffsig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		rand.Read(hashes[fakeIndex][:])
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with no programs")
 	}
@@ -611,7 +647,7 @@ func txManyDiffsig(t *testing.T) {
 	init()
 	fakeIndex = math.Intn(num)
 	programs[fakeIndex].Code = nil
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no code")
 	}
@@ -623,7 +659,7 @@ func txManyDiffsig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		programs[fakeIndex].Code = nil
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no codes")
 	}
@@ -633,7 +669,7 @@ func txManyDiffsig(t *testing.T) {
 	init()
 	fakeIndex = math.Intn(num)
 	programs[fakeIndex].Parameter = nil
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no parameter")
 	}
@@ -645,7 +681,7 @@ func txManyDiffsig(t *testing.T) {
 		fakeIndex = math.Intn(num)
 		programs[fakeIndex].Parameter = nil
 	}
-	err = RunPrograms(tx, hashes, programs)
+	err = RunPrograms(data, hashes, programs)
 	if err == nil {
 		t.Errorf("[RunProgram] passed with random no parameters")
 	}
