@@ -160,6 +160,11 @@ result sample
 
 result:(verbosity=2)
 
+result format except 'tx' is the same as it is when verbosity=1
+
+result format in 'tx' please see interface 'getrawtransaction'
+
+```
 {
     "error": null,
     "id": null,
@@ -234,6 +239,8 @@ result:(verbosity=2)
         "auxpow": "01000000010000000000000000000000000000000000000000000000000000000000000000000000002cfabe6d6d3ca6bcc86bada4642fea709731f1653bd34b28ab15b790e102e14e0d7bd138d80100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff7f00000000000000000000000000000000000000000000000000000000000000000ce39baabcdbb4adce38c5f23314c5f63a536bbcc8f0a47c7054c36ca27f5acd771d095b0000000002000000"
     }
 }
+```
+
 #### getblockcount
 
 description: get block count
@@ -347,12 +354,16 @@ result sample:(verbose=true)
 ```
 result sample:(verbose=false)
 
+return raw data
+```
 {
     "error": null,
     "id": null,
     "jsonrpc": "2.0",
     "result": "000403454c4101000846444170b0e427d2010000000000000000000000000000000000000000000000000000000000000000ffffffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a31b2913000000000000000000129e9cf1c5f336fcf3a6c954444ed482c5d916e506b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead0a341b52c000000000000000000219e9cc4320c3018ced30242b25c03e13a1b2f57c7d107000000"
 }
+```
+
 #### getrawmempool
 
 description: return hashes of transactions in memory pool.
@@ -606,7 +617,6 @@ result sample:
         "741d8131f0eea94c1c72c8bb1f0e9051a0a98441e131585bf5bf01868bf0ef46"
     ],
     "error": null
-}
 }
 ```
 #### getinfo
