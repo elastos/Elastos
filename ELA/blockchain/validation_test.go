@@ -316,6 +316,21 @@ func txSigleMultisig(t *testing.T) {
 	}
 	t.Logf("[Passed] 3. Transaction with 1 multisig program [Not enough signatures], %s", err.Error())
 
+	// With too many signatures
+	for _, act := range mact.accounts {
+		signature, err := sign(act.private, data)
+		if err != nil {
+			t.Errorf("Generate signature failed, %s", err.Error())
+		}
+		signatures = append(signatures, signature...)
+	}
+	programs = []*core.Program{{Code: mact.redeemScript, Parameter: signatures}}
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with too many signatures")
+	}
+	t.Logf("[Passed] 3. Transaction with 1 multisig program [Too many signatures], %s", err.Error())
+
 	// With not invalid signatures
 	signatures = make([]byte, math.Intn(len(mact.accounts)*crypto.SignatureScriptLength))
 	rand.Read(signatures)
@@ -430,6 +445,27 @@ func txManyMultisig(t *testing.T) {
 		t.Errorf("[RunProgram] passed with not enough signature")
 	}
 	t.Logf("[Passed] 4. Transaction with many multisig program [Random not enough signature], %s", err.Error())
+
+	// With random too many signature
+	init()
+	for i := 0; i < num; i++ {
+		fakeIndex = math.Intn(num)
+		var signatures []byte
+		for _, act := range macts[fakeIndex].accounts {
+			signature, err := sign(act.private, data)
+			if err != nil {
+				t.Errorf("Generate signature failed, %s", err.Error())
+			}
+			signatures = append(signatures, signature...)
+			signatures = append(signatures, signature...)
+		}
+		programs[fakeIndex].Parameter = signatures
+	}
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with too many signature")
+	}
+	t.Logf("[Passed] 4. Transaction with many multisig program [Random too many signature], %s", err.Error())
 
 	// With random invalid signatures
 	init()
