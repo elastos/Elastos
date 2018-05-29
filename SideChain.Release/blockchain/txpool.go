@@ -7,35 +7,34 @@ import (
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	. "github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 type TxPool struct {
 	sync.RWMutex
-	txnCnt  uint64                       // count
-	txnList map[Uint256]*ela.Transaction // transaction which have been verifyed will put into this map
+	txnCnt  uint64                        // count
+	txnList map[Uint256]*core.Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
-	inputUTXOList map[string]*ela.Transaction // transaction which pass the verify will add the UTXO to this map
+	inputUTXOList map[string]*core.Transaction // transaction which pass the verify will add the UTXO to this map
 }
 
 func (pool *TxPool) Init() {
 	pool.Lock()
 	defer pool.Unlock()
 	pool.txnCnt = 0
-	pool.inputUTXOList = make(map[string]*ela.Transaction)
+	pool.inputUTXOList = make(map[string]*core.Transaction)
 	//pool.issueSummary = make(map[Uint256]Fixed64)
-	pool.txnList = make(map[Uint256]*ela.Transaction)
+	pool.txnList = make(map[Uint256]*core.Transaction)
 }
 
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
-func (pool *TxPool) AppendToTxnPool(txn *ela.Transaction) ErrCode {
+func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 	//verify transaction with Concurrency
 	if errCode := CheckTransactionSanity(txn); errCode != Success {
 		log.Info("Transaction verification failed", txn.Hash())
@@ -65,7 +64,7 @@ func (pool *TxPool) AppendToTxnPool(txn *ela.Transaction) ErrCode {
 }
 
 //get the transaction in txnpool
-func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*ela.Transaction {
+func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*core.Transaction {
 	pool.RLock()
 	count := config.Parameters.MaxTxInBlock
 	if count <= 0 {
@@ -75,7 +74,7 @@ func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*ela.Transaction {
 		count = len(pool.txnList)
 	}
 	var num int
-	txnMap := make(map[Uint256]*ela.Transaction, count)
+	txnMap := make(map[Uint256]*core.Transaction, count)
 	for txnId, tx := range pool.txnList {
 		txnMap[txnId] = tx
 		num++
@@ -88,7 +87,7 @@ func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*ela.Transaction {
 }
 
 //clean the trasaction Pool with committed block.
-func (pool *TxPool) CleanSubmittedTransactions(block *Block) error {
+func (pool *TxPool) CleanSubmittedTransactions(block *core.Block) error {
 	pool.cleanTransactionList(block.Transactions)
 	pool.cleanUTXOList(block.Transactions)
 	//pool.cleanIssueSummary(block.Transactions)
@@ -96,14 +95,14 @@ func (pool *TxPool) CleanSubmittedTransactions(block *Block) error {
 }
 
 //get the transaction by hash
-func (pool *TxPool) GetTransaction(hash Uint256) *ela.Transaction {
+func (pool *TxPool) GetTransaction(hash Uint256) *core.Transaction {
 	pool.RLock()
 	defer pool.RUnlock()
 	return pool.txnList[hash]
 }
 
 //verify transaction with txnpool
-func (pool *TxPool) verifyTransactionWithTxnPool(txn *ela.Transaction) bool {
+func (pool *TxPool) verifyTransactionWithTxnPool(txn *core.Transaction) bool {
 	// check if the transaction includes double spent UTXO inputs
 	if err := pool.verifyDoubleSpend(txn); err != nil {
 		log.Info(err)
@@ -114,7 +113,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *ela.Transaction) bool {
 }
 
 //remove from associated map
-func (pool *TxPool) removeTransaction(txn *ela.Transaction) {
+func (pool *TxPool) removeTransaction(txn *core.Transaction) {
 	//1.remove from txnList
 	pool.delFromTxList(txn.Hash())
 	//2.remove from UTXO list map
@@ -129,12 +128,12 @@ func (pool *TxPool) removeTransaction(txn *ela.Transaction) {
 }
 
 //check and add to utxo list pool
-func (pool *TxPool) verifyDoubleSpend(txn *ela.Transaction) error {
+func (pool *TxPool) verifyDoubleSpend(txn *core.Transaction) error {
 	reference, err := DefaultLedger.Store.GetTxReference(txn)
 	if err != nil {
 		return err
 	}
-	inputs := []*ela.Input{}
+	inputs := []*core.Input{}
 	for k := range reference {
 		if txn := pool.getInputUTXOList(k); txn != nil {
 			return errors.New(fmt.Sprintf("double spent UTXO inputs detected, "+
@@ -151,7 +150,7 @@ func (pool *TxPool) verifyDoubleSpend(txn *ela.Transaction) error {
 }
 
 //clean txnpool utxo map
-func (pool *TxPool) cleanUTXOList(txs []*ela.Transaction) {
+func (pool *TxPool) cleanUTXOList(txs []*core.Transaction) {
 	for _, txn := range txs {
 		inputUtxos, _ := DefaultLedger.Store.GetTxReference(txn)
 		for Utxoinput, _ := range inputUtxos {
@@ -161,11 +160,11 @@ func (pool *TxPool) cleanUTXOList(txs []*ela.Transaction) {
 }
 
 // clean the trasaction Pool with committed transactions.
-func (pool *TxPool) cleanTransactionList(txns []*ela.Transaction) error {
+func (pool *TxPool) cleanTransactionList(txns []*core.Transaction) error {
 	cleaned := 0
 	txnsNum := len(txns)
 	for _, txn := range txns {
-		if txn.TxType == ela.CoinBase {
+		if txn.TxType == core.CoinBase {
 			txnsNum = txnsNum - 1
 			continue
 		}
@@ -180,7 +179,7 @@ func (pool *TxPool) cleanTransactionList(txns []*ela.Transaction) error {
 	return nil
 }
 
-func (pool *TxPool) addToTxList(txn *ela.Transaction) bool {
+func (pool *TxPool) addToTxList(txn *core.Transaction) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	txnHash := txn.Hash()
@@ -202,10 +201,10 @@ func (pool *TxPool) delFromTxList(txId Uint256) bool {
 	return true
 }
 
-func (pool *TxPool) copyTxList() map[Uint256]*ela.Transaction {
+func (pool *TxPool) copyTxList() map[Uint256]*core.Transaction {
 	pool.RLock()
 	defer pool.RUnlock()
-	txnMap := make(map[Uint256]*ela.Transaction, len(pool.txnList))
+	txnMap := make(map[Uint256]*core.Transaction, len(pool.txnList))
 	for txnId, txn := range pool.txnList {
 		txnMap[txnId] = txn
 	}
@@ -218,13 +217,13 @@ func (pool *TxPool) GetTransactionCount() int {
 	return len(pool.txnList)
 }
 
-func (pool *TxPool) getInputUTXOList(input *ela.Input) *ela.Transaction {
+func (pool *TxPool) getInputUTXOList(input *core.Input) *core.Transaction {
 	pool.RLock()
 	defer pool.RUnlock()
 	return pool.inputUTXOList[input.ReferKey()]
 }
 
-func (pool *TxPool) addInputUTXOList(tx *ela.Transaction, input *ela.Input) bool {
+func (pool *TxPool) addInputUTXOList(tx *core.Transaction, input *core.Input) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	id := input.ReferKey()
@@ -237,7 +236,7 @@ func (pool *TxPool) addInputUTXOList(tx *ela.Transaction, input *ela.Input) bool
 	return true
 }
 
-func (pool *TxPool) delInputUTXOList(input *ela.Input) bool {
+func (pool *TxPool) delInputUTXOList(input *core.Input) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	id := input.ReferKey()
@@ -249,7 +248,7 @@ func (pool *TxPool) delInputUTXOList(input *ela.Input) bool {
 	return true
 }
 
-func (pool *TxPool) MaybeAcceptTransaction(txn *ela.Transaction) error {
+func (pool *TxPool) MaybeAcceptTransaction(txn *core.Transaction) error {
 	txHash := txn.Hash()
 
 	// Don't accept the transaction if it already exists in the pool.  This
@@ -271,11 +270,11 @@ func (pool *TxPool) MaybeAcceptTransaction(txn *ela.Transaction) error {
 	return nil
 }
 
-func (pool *TxPool) RemoveTransaction(txn *ela.Transaction) {
+func (pool *TxPool) RemoveTransaction(txn *core.Transaction) {
 	txHash := txn.Hash()
 	for i := range txn.Outputs {
-		input := ela.Input{
-			Previous: ela.OutPoint{
+		input := core.Input{
+			Previous: core.OutPoint{
 				TxID:  txHash,
 				Index: uint16(i),
 			},
@@ -288,7 +287,7 @@ func (pool *TxPool) RemoveTransaction(txn *ela.Transaction) {
 	}
 }
 
-func GetTxFee(tx *ela.Transaction, assetId Uint256) Fixed64 {
+func GetTxFee(tx *core.Transaction, assetId Uint256) Fixed64 {
 	feeMap, err := GetTxFeeMap(tx)
 	if err != nil {
 		return 0
@@ -297,18 +296,18 @@ func GetTxFee(tx *ela.Transaction, assetId Uint256) Fixed64 {
 	return feeMap[assetId]
 }
 
-func GetTxFeeMap(tx *ela.Transaction) (map[Uint256]Fixed64, error) {
+func GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {
-		depositPayload := tx.Payload.(*ela.PayloadRechargeToSideChain)
-		mainChainTransaction := new(ela.Transaction)
+		depositPayload := tx.Payload.(*core.PayloadRechargeToSideChain)
+		mainChainTransaction := new(core.Transaction)
 		reader := bytes.NewReader(depositPayload.MainChainTransaction)
 		if err := mainChainTransaction.Deserialize(reader); err != nil {
 			return nil, errors.New("GetTxFeeMap mainChainTransaction deserialize failed")
 		}
 
-		crossChainPayload := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
+		crossChainPayload := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
 
 		for _, v := range tx.Outputs {
 			var mcAmount Fixed64

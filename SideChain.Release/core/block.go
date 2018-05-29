@@ -7,7 +7,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -18,7 +17,7 @@ const (
 
 type Block struct {
 	Header
-	Transactions []*ela.Transaction
+	Transactions []*Transaction
 }
 
 func (b *Block) Serialize(w io.Writer) error {
@@ -48,7 +47,7 @@ func (b *Block) Deserialize(r io.Reader) error {
 	}
 
 	for i := uint32(0); i < len; i++ {
-		transaction := new(ela.Transaction)
+		transaction := new(Transaction)
 		transaction.Deserialize(r)
 		b.Transactions = append(b.Transactions, transaction)
 	}
@@ -93,7 +92,7 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 	var hash common.Uint256
 	for i := uint32(0); i < len; i++ {
 		hash.Deserialize(r)
-		b.Transactions = append(b.Transactions, ela.NewTrimmedTx(hash))
+		b.Transactions = append(b.Transactions, NewTrimmedTx(hash))
 	}
 
 	return nil

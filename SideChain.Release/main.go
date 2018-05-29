@@ -16,6 +16,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA.SideChain/pow"
 )
 
 const (
@@ -54,7 +55,7 @@ func handleLogFile() {
 }
 
 func startConsensus(noder protocol.Noder) {
-	servers.Pow = blockchain.NewPowService("logPow", noder)
+	servers.Pow = pow.NewPowService("logPow", noder)
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.Pow.Start()

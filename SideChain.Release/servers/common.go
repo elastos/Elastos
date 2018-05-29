@@ -1,8 +1,9 @@
 package servers
 
 import (
+	. "github.com/elastos/Elastos.ELA.SideChain/core"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA/core"
 )
 
 const TlsPort = 443
@@ -119,4 +120,7 @@ type TransferCrossChainAssetInfo struct {
 	CrossChainAddress []string
 	OutputIndex       []uint64
 	CrossChainAmount  []common.Fixed64
+}
+
+type RegisterIdentificationInfo struct {
 }

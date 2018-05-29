@@ -23,7 +23,6 @@ type link struct {
 	addr         string    // The address of the node
 	conn         net.Conn  // Connect socket with the peer node
 	port         uint16    // The server port of the node
-	localPort    uint16    // The local port witch the node connected with
 	httpInfoPort uint16    // The node information server port of the node
 	lastActive   time.Time // The latest time the node activity
 	connCnt      uint64    // The connection count
@@ -94,7 +93,6 @@ func (n *node) listenConnections(listener net.Listener) {
 
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
-		node.localPort = localPortFromConn(conn)
 		go node.Read()
 	}
 }
@@ -200,10 +198,10 @@ func (node *node) Connect(nodeAddr string) error {
 	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network()))
-	go n.Read()
+	n.Read()
 
 	n.SetState(HAND)
-	go n.Send(NewVersion(node))
+	n.Send(NewVersion(node))
 
 	return nil
 }

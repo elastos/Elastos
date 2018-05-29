@@ -12,7 +12,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const TaskChanCap = 4
@@ -213,7 +212,7 @@ func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 	}
 }
 
-func (c *ChainStore) IsDoubleSpend(txn *ela.Transaction) bool {
+func (c *ChainStore) IsDoubleSpend(txn *core.Transaction) bool {
 	if len(txn.Inputs) == 0 {
 		return false
 	}
@@ -323,7 +322,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*core.Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetId Uint256, asset ela.Asset) error {
+func (c *ChainStore) PersistAsset(assetId Uint256, asset core.Asset) error {
 	w := bytes.NewBuffer(nil)
 
 	asset.Serialize(w)
@@ -343,10 +342,10 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset ela.Asset) error {
 	return nil
 }
 
-func (c *ChainStore) GetAsset(hash Uint256) (*ela.Asset, error) {
+func (c *ChainStore) GetAsset(hash Uint256) (*core.Asset, error) {
 	log.Debugf("GetAsset Hash: %s\n", hash.String())
 
-	asset := new(ela.Asset)
+	asset := new(core.Asset)
 	prefix := []byte{byte(ST_Info)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 
@@ -360,7 +359,7 @@ func (c *ChainStore) GetAsset(hash Uint256) (*ela.Asset, error) {
 	return asset, nil
 }
 
-func (c *ChainStore) GetTransaction(txId Uint256) (*ela.Transaction, uint32, error) {
+func (c *ChainStore) GetTransaction(txId Uint256) (*core.Transaction, uint32, error) {
 	key := append([]byte{byte(DATA_Transaction)}, txId.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
@@ -373,7 +372,7 @@ func (c *ChainStore) GetTransaction(txId Uint256) (*ela.Transaction, uint32, err
 		return nil, 0, err
 	}
 
-	var txn ela.Transaction
+	var txn core.Transaction
 	if err := txn.Deserialize(r); err != nil {
 		return nil, height, err
 	}
@@ -381,12 +380,12 @@ func (c *ChainStore) GetTransaction(txId Uint256) (*ela.Transaction, uint32, err
 	return &txn, height, nil
 }
 
-func (c *ChainStore) GetTxReference(tx *ela.Transaction) (map[*ela.Input]*ela.Output, error) {
-	if tx.TxType == ela.RegisterAsset {
+func (c *ChainStore) GetTxReference(tx *core.Transaction) (map[*core.Input]*core.Output, error) {
+	if tx.TxType == core.RegisterAsset {
 		return nil, nil
 	}
 	//UTXO input /  Outputs
-	reference := make(map[*ela.Input]*ela.Output)
+	reference := make(map[*core.Input]*core.Output)
 	// Key index，v UTXOInput
 	for _, utxo := range tx.Inputs {
 		transaction, _, err := c.GetTransaction(utxo.Previous.TxID)
@@ -402,7 +401,7 @@ func (c *ChainStore) GetTxReference(tx *ela.Transaction) (map[*ela.Input]*ela.Ou
 	return reference, nil
 }
 
-func (c *ChainStore) PersistTransaction(tx *ela.Transaction, height uint32) error {
+func (c *ChainStore) PersistTransaction(tx *core.Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
 	key := new(bytes.Buffer)
 	// add transaction header prefix.
@@ -632,7 +631,7 @@ func (c *ChainStore) BlockInCache(hash Uint256) bool {
 	return false
 }
 
-func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*ela.Output, error) {
+func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*core.Output, error) {
 	if ok, _ := c.ContainsUnspent(txid, index); ok {
 		tx, _, err := c.GetTransaction(txid)
 		if err != nil {
@@ -846,8 +845,8 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	return nil
 }
 
-func (c *ChainStore) GetAssets() map[Uint256]*ela.Asset {
-	assets := make(map[Uint256]*ela.Asset)
+func (c *ChainStore) GetAssets() map[Uint256]*core.Asset {
+	assets := make(map[Uint256]*core.Asset)
 
 	iter := c.NewIterator([]byte{byte(ST_Info)})
 	for iter.Next() {
@@ -859,7 +858,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*ela.Asset {
 		assetid.Deserialize(rk)
 		log.Tracef("[GetAssets] assetid: %x\n", assetid.Bytes())
 
-		asset := new(ela.Asset)
+		asset := new(core.Asset)
 		r := bytes.NewReader(iter.Value())
 		asset.Deserialize(r)
 

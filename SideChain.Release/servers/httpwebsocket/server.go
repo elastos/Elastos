@@ -18,7 +18,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/servers"
 
-	ela "github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
@@ -279,7 +278,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 			result = GetBlockTransactions(block)
 		}
 	case "sendnewtransaction":
-		if tx, ok := v.(*ela.Transaction); ok {
+		if tx, ok := v.(*Transaction); ok {
 			result = GetTransactionInfo(nil, tx)
 		}
 	default:

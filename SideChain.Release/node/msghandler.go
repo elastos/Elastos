@@ -15,7 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 type MsgHandlerV1 struct {
@@ -67,7 +66,7 @@ func (h *MsgHandlerV1) OnMakeMessage(cmd string) (message p2p.Message, err error
 	case p2p.CmdBlock:
 		message = msg.NewBlock(new(core.Block))
 	case p2p.CmdTx:
-		message = msg.NewTx(new(ela.Transaction))
+		message = msg.NewTx(new(core.Transaction))
 	case p2p.CmdNotFound:
 		message = new(msg.NotFound)
 	case p2p.CmdReject:
@@ -160,7 +159,7 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 	var message p2p.Message
 	if s == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
-		message = NewVersion(LocalNode)
+		message = NewVersion(node)
 	} else if s == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
@@ -407,7 +406,7 @@ func (h *MsgHandlerV1) onBlock(msgBlock *msg.Block) error {
 
 func (h *MsgHandlerV1) onTx(msgTx *msg.Tx) error {
 	node := h.node
-	tx := msgTx.Transaction.(*ela.Transaction)
+	tx := msgTx.Transaction.(*core.Transaction)
 
 	if !LocalNode.IsNeighborNoder(node) {
 		return fmt.Errorf("received transaction message from unknown peer")

@@ -1,4 +1,4 @@
-package blockchain
+package pow
 
 import (
 	"encoding/binary"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	aux "github.com/elastos/Elastos.ELA.SideChain/auxpow"
+	. "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
@@ -18,7 +19,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 var TaskCh chan bool
@@ -72,7 +72,7 @@ func (pow *PowService) CollectTransactions(MsgBlock *core.Block) int {
 	return txs
 }
 
-func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*ela.Transaction, error) {
+func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
 	minerProgramHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return nil, err
@@ -82,21 +82,21 @@ func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*e
 		return nil, err
 	}
 
-	pd := &ela.PayloadCoinBase{
+	pd := &core.PayloadCoinBase{
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
 	}
 
 	txn := NewCoinBaseTransaction(pd, DefaultLedger.Blockchain.GetBestHeight()+1)
-	txn.Inputs = []*ela.Input{
+	txn.Inputs = []*core.Input{
 		{
-			Previous: ela.OutPoint{
+			Previous: core.OutPoint{
 				TxID:  common.EmptyHash,
 				Index: math.MaxUint16,
 			},
 			Sequence: math.MaxUint32,
 		},
 	}
-	txn.Outputs = []*ela.Output{
+	txn.Outputs = []*core.Output{
 		{
 			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       0,
@@ -111,14 +111,14 @@ func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*e
 
 	nonce := make([]byte, 8)
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := ela.NewAttribute(ela.Nonce, nonce)
+	txAttr := core.NewAttribute(core.Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
 	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }
 
-type txSorter []*ela.Transaction
+type txSorter []*core.Transaction
 
 func (s txSorter) Len() int {
 	return len(s)
@@ -151,7 +151,7 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 
 	msgBlock := &core.Block{
 		Header:       header,
-		Transactions: []*ela.Transaction{},
+		Transactions: []*core.Transaction{},
 	}
 
 	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
@@ -159,7 +159,7 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	calcTxsAmount := 1
 	totalFee := common.Fixed64(0)
 	var txPool txSorter
-	txPool = make([]*ela.Transaction, 0)
+	txPool = make([]*core.Transaction, 0)
 	transactionsPool := pow.localNode.GetTxnPool(false)
 	for _, v := range transactionsPool {
 		txPool = append(txPool, v)
