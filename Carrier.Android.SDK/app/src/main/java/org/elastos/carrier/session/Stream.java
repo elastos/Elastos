@@ -45,11 +45,11 @@ public class Stream {
 
     /* Jni native methods */
     private native boolean get_transport_info(int streamId, TransportInfo info);
-    private native int write_stream_data(int streamId, byte[] data);
+    private native int write_stream_data(int streamId, byte[] data, int offset, int len);
 
     private native int open_channel(int streamId, String cookie);
     private native boolean close_channel(int streamId, int channel);
-    private native int write_channel_data(int streamId, int channel, byte[] data);
+    private native int write_channel_data(int streamId, int channel, byte[] data, int offset, int len);
     private native boolean pend_channel(int streamId, int channel);
     private native boolean resume_channel(int streamId, int channel);
 
@@ -104,6 +104,35 @@ public class Stream {
      *
      * @param
      *      data        The outgoing data
+     *      offset      The start offset
+     *      len         The bytes to write
+     *
+     * @return
+     *      Bytes of data sent on success
+     *
+     * @throws
+     *      ElastosException
+     */
+    public int writeData(byte[] data, int offset, int len) throws ElastosException {
+        if (data == null || data.length == 0 || offset < 0 || len <= 0 || (offset + len) > data.length)
+            throw new IllegalArgumentException();
+
+        int bytes = write_stream_data(streamId, data, offset, len);
+        if (bytes < 0)
+            throw new ElastosException(get_error_code());
+
+        return bytes;
+    }
+
+    /**
+     * Send outgoing data to remote peer.
+     *
+     * If the stream is in multiplexing mode, application can not call this function
+     * to send data. If this function is called on multiplexing mode stream, it will
+     * throw exception.
+     *
+     * @param
+     *      data        The outgoing data
      *
      * @return
      *      Bytes of data sent on success
@@ -112,14 +141,30 @@ public class Stream {
      *      ElastosException
      */
     public int writeData(byte[] data) throws ElastosException {
-        if (data == null || data.length == 0)
-            throw new IllegalArgumentException();
+        return writeData(data, 0, data.length);
+    }
 
-        int bytes = write_stream_data(streamId, data);
-        if (bytes < 0)
-            throw new ElastosException(get_error_code());
+    /**
+     * Send outgoing data to remote peer.
+     *
+     * If the stream is in multiplexing mode, application can not call this function
+     * to send data. If this function is called on multiplexing mode stream, it will
+     * throw exception.
+     *
+     * @param
+     *      data        The outgoing data
+     *
+     * @return
+     *      Bytes of data sent on success
+     *
+     * @throws
+     *      ElastosException
+     */
+    public int writeData(byte data) throws ElastosException {
+        byte[] _data = new byte[1];
+        _data[0] = data;
 
-        return bytes;
+        return writeData(_data);
     }
 
     /**
@@ -181,20 +226,59 @@ public class Stream {
      *      channel     [in] The channel ID
      * @param
      *      data        [in] The outgoing data
+     *      offset      [in] The start offset
+     *      len         [in] The bytes to write
      *
      * @return
      *      Bytes of data sent on success.
      */
-    public int writeData(int channel, byte[] data) throws ElastosException {
-        if (channel <= 0 || data == null || data.length == 0)
+    public int writeData(int channel, byte[] data, int offset, int len) throws ElastosException {
+        if (channel <= 0 || data == null || data.length == 0 || offset < 0 || len <= 0 || (offset + len) > data.length)
             throw new IllegalArgumentException();
 
-        int result = write_channel_data(streamId, channel, data);
+        int result = write_channel_data(streamId, channel, data, offset, len);
         if (result < 0)
             throw new ElastosException(get_error_code());
 
         return result;
     }
+
+    /**
+     * Send outgoing data to remote peer.
+     *
+     * If the stream is not multiplexing this function will throw exception.
+     *
+     * @param
+     *      channel     [in] The channel ID
+     * @param
+     *      data        [in] The outgoing data
+     *
+     * @return
+     *      Bytes of data sent on success.
+     */
+    public int writeData(int channel, byte[] data) throws ElastosException {
+        return writeData(channel, data, 0, data.length);
+    }
+
+     /**
+     * Send outgoing data to remote peer.
+     *
+     * If the stream is not multiplexing this function will throw exception.
+     *
+     * @param
+     *      channel     [in] The channel ID
+     * @param
+     *      data        [in] The outgoing data
+     *
+     * @return
+     *      Bytes of data sent on success.
+     */
+    public int writeData(int channel, byte data) throws ElastosException {
+        byte[] _data= new byte[1];
+        _data[0] = data;
+
+        return writeData(channel, _data);
+    }   
 
     /**
      * Request remote peer to pend channel data sending.

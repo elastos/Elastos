@@ -55,18 +55,22 @@ jboolean getTransportInfo(JNIEnv *env, jobject thiz, jint jstreamId, jobject jtr
 }
 
 static
-jint writeData(JNIEnv* env, jobject thiz, jint jstreamId, jbyteArray jdata)
+jint writeData(JNIEnv* env, jobject thiz, jint jstreamId, jbyteArray jdata, jint offset, jint len)
 {
     jbyte *data;
-    jsize len;
+    jsize l;
     ssize_t bytes;
 
     assert(jdata);
 
-    len  = (*env)->GetArrayLength(env, jdata);
+    l  = (*env)->GetArrayLength(env, jdata);
+
+    assert(offset >= 0 && offset < l);
+    assert((offset + len) <= len);
+    
     data = (*env)->GetByteArrayElements(env, jdata, NULL);
 
-    bytes = ela_stream_write(getSession(env, thiz), jstreamId, (const void*)data, (size_t)len);
+    bytes = ela_stream_write(getSession(env, thiz), jstreamId, (const void*)(data + offset), (size_t)len);
     (*env)->ReleaseByteArrayElements(env, jdata, data, 0);
 
     if (bytes < 0) {
@@ -121,20 +125,24 @@ jboolean closeChannel(JNIEnv* env, jobject thiz, jint streamId, jint channel)
 }
 
 static
-jint writeDataToChannel(JNIEnv* env, jobject thiz, jint streamId, jint channel, jbyteArray jdata)
+jint writeDataToChannel(JNIEnv* env, jobject thiz, jint streamId, jint channel, jbyteArray jdata, jint offset, jint len)
 {
     jbyte *data;
-    jsize len;
+    jsize l;
     ssize_t bytes;
 
     assert(channel > 0);
     assert(jdata);
 
-    len  = (*env)->GetArrayLength(env, jdata);
+    l  = (*env)->GetArrayLength(env, jdata);
+
+    assert(offset >= 0 && offset < l);
+    assert((offset + len) <= len);
+
     data = (*env)->GetByteArrayElements(env, jdata, NULL);
 
     bytes = ela_stream_write_channel(getSession(env, thiz), streamId, channel,
-                                     (const void*)data, (size_t)len);
+                                     (const void*)(data + offset), (size_t)len);
     (*env)->ReleaseByteArrayElements(env, jdata, data, 0);
 
     if (bytes < 0) {
@@ -262,10 +270,10 @@ jint getErrorCode(JNIEnv* env, jclass clazz)
 static const char* gClassName = "org/elastos/carrier/session/Stream";
 static JNINativeMethod gMethods[] = {
         {"get_transport_info",    "(I"_S("TransportInfo;)Z"),      (void*)getTransportInfo },
-        {"write_stream_data",     "(I[B)I",                        (void*)writeData        },
+        {"write_stream_data",     "(I[BII)I",                      (void*)writeData        },
         {"open_channel",          "(I"_J("String;)I"),             (void*)openChannel      },
         {"close_channel",         "(II)Z",                         (void*)closeChannel     },
-        {"write_channel_data",    "(II[B)I",                       (void*)writeDataToChannel },
+        {"write_channel_data",    "(II[BII)I",                     (void*)writeDataToChannel },
         {"pend_channel",          "(II)Z",                         (void*)pendChannel      },
         {"resume_channel",        "(II)Z",                         (void*)resumeChannel    },
         {"open_port_forwarding",  "(I"_J("String;")_S("PortForwardingProtocol;")_J("String;")_J("String;)I"),
