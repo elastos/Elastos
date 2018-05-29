@@ -9,6 +9,7 @@
 #include "Key.h"
 #include "catch.hpp"
 #include "Log.h"
+#include "Utils.h"
 
 using namespace Elastos::SDK;
 
@@ -180,5 +181,26 @@ TEST_CASE("Key test", "[Key]") {
 		CMBlock decodeByte = Key::decodeHex(str);
 		int res = memcmp(bytes1, decodeByte, decodeByte.GetSize());
 		REQUIRE(res == 0);
+	}
+
+	SECTION("keyToAddress test") {
+		Key key;
+		UInt128 entropy = Utils::generateRandomSeed();
+
+		CMBlock seedByte;
+		seedByte.SetMemFixed(entropy.u8, sizeof(entropy));
+		CMBlock privKey = Key::getAuthPrivKeyForAPI(seedByte);
+
+		char *data = new char[privKey.GetSize()];
+		memcpy(data, privKey, privKey.GetSize());
+		std::string ret(data, privKey.GetSize());
+
+		key.setPrivKey(ret);
+
+		std::string addr = key.keyToAddress(ELA_IDCHAIN);
+		REQUIRE(addr.substr(0,1) == "i");
+
+		addr = key.keyToAddress(ELA_STANDARD);
+		REQUIRE(addr.substr(0,1) == "E");
 	}
 }

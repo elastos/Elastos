@@ -215,11 +215,7 @@ namespace Elastos {
 
 
 		std::string Key::address() const {
-			BRAddress address = BR_ADDRESS_NONE;
-			BRKeyAddress(_key.get(), address.s, sizeof(address));
-			assert(address.s[0] != '\0');
-
-			return address.s;
+			return keyToAddress(ELA_STANDARD);
 		}
 
 		CMBlock Key::sign(const UInt256 &messageDigest) const {
@@ -228,6 +224,38 @@ namespace Elastos {
 			assert (signatureLen <= 256);
 			signature.Resize(signatureLen);
 			return signature;
+		}
+
+		std::string Key::keyToAddress(const int signType) const {
+			UInt168 hash;
+			uint8_t data[21];
+			BRAddress address = BR_ADDRESS_NONE;
+			size_t addrLen = sizeof(address);
+
+			hash = keyToUInt168BySignType(signType);
+
+			UInt168Set(&data[0], hash);
+			if (! UInt168IsZero(&hash)) {
+				BRBase58CheckEncode(address.s, addrLen, data, sizeof(data));
+			}
+
+			assert(address.s[0] != '\0');
+
+			return address.s;
+		}
+
+		UInt168 Key::keyToUInt168BySignType(const int signType) const {
+			UInt168 uInt168 = BRKeyHash168(_key.get());
+			if(signType == ELA_STANDARD) {
+				uInt168.u8[0] = ELA_STAND_ADDRESS;
+			} else if (signType == ELA_MULTISIG) {
+				uInt168.u8[0] = ELA_MULTISIG_ADDRESS;
+			} else if (signType == ELA_CROSSCHAIN) {
+				uInt168.u8[0] = ELA_CROSSCHAIN_ADDRESS;
+			} else if(signType == ELA_IDCHAIN) {
+				uInt168.u8[0] = ELA_IDCHAIN_ADDRESS;
+			}
+			return uInt168;
 		}
 
 		bool Key::verify(const UInt256 &messageDigest, const CMBlock &signature) const {

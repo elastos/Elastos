@@ -8,7 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "BRKey.h"
-
+#include "BRAddress.h"
 #include "Wrapper.h"
 #include "CMemBlock.h"
 
@@ -55,6 +55,10 @@ namespace Elastos {
 			CMBlock sign(const UInt256 &messageDigest) const;
 
 			bool verify(const UInt256 &messageDigest, const CMBlock &signature) const;
+
+			std::string keyToAddress(const int signType) const;
+
+			UInt168 keyToUInt168BySignType(const int signType) const;
 
 		public:
 			static CMBlock getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass = "");

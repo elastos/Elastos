@@ -204,7 +204,7 @@ namespace Elastos {
 			_walletManager->getPeerManager()->publishTransaction(transaction);
 
 			Transaction txForHash(rawTransaction);
-			return std::string((char *) txForHash.getHash().u8, 32);
+			return std::string(Utils::UInt256ToString(txForHash.getHash()), 32);
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
