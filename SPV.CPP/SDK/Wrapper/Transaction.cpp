@@ -145,7 +145,7 @@ namespace Elastos {
 
 			} else if (_type == TransferCrossChainAsset) {
 				_payload = boost::shared_ptr<PayloadTransferCrossChainAsset>(new PayloadTransferCrossChainAsset());
-			} else if (_type == IdChain) {
+			} else if (_type == RegisterIdentification) {
 				_payload = boost::shared_ptr<PayloadIdChain>(new PayloadIdChain());
 			}
 		}

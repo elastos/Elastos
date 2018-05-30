@@ -58,7 +58,7 @@ namespace Elastos {
 			if (!tmp) return nullptr;
 
 			TransactionPtr ptr(new Transaction(tmp));
-			ptr->setTransactionType(Transaction::IdChain);
+			ptr->setTransactionType(Transaction::RegisterIdentification);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {

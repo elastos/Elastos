@@ -59,6 +59,10 @@ namespace Elastos {
 
 		}
 
+		const SubWallet::WalletManagerPtr &SubWallet::GetWalletManager() const {
+			return _walletManager;
+		}
+
 		nlohmann::json SubWallet::GetBalanceInfo() {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			assert(wallet != nullptr);
@@ -111,7 +115,7 @@ namespace Elastos {
 			uint32_t end = std::min(start + count, (uint32_t) addresses.size());
 			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
 			nlohmann::json j;
-			j["addresses"] = addresses;
+			j["Addresses"] = addresses;
 			return j;
 		}
 
@@ -160,16 +164,19 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-			assert(wallet != NULL);
+			assert(wallet != nullptr);
 
-			size_t realCount = count;
+			size_t maxCount = count;
 			pthread_mutex_lock(&wallet->lock);
-			if (array_count(wallet->transactions) < start + realCount)
-				realCount = array_count(wallet->transactions) - start;
+			if (array_count(wallet->transactions) < start + count)
+				maxCount = array_count(wallet->transactions) - start;
 
-			BRTransaction *transactions[realCount];
-			for (size_t i = 0; i < realCount; i++) {
-				transactions[i] = wallet->transactions[i + start];
+			BRTransaction *transactions[maxCount];
+			uint32_t realCount = 0;
+			for (size_t i = 0; i < maxCount; i++) {
+				if (!filterByAddressOrTxId(wallet->transactions[i + start], addressOrTxid)) continue;
+				transactions[realCount] = wallet->transactions[i + start];
+				realCount++;
 			}
 			pthread_mutex_unlock(&wallet->lock);
 
@@ -178,7 +185,9 @@ namespace Elastos {
 				TransactionPtr transactionPtr(new Transaction(transactions[i]));
 				jsonList[i] = transactionPtr->toJson();
 			}
-			return nlohmann::json(jsonList);
+			nlohmann::json j;
+			j["Transactions"] = jsonList;
+			return j;
 		}
 
 		boost::shared_ptr<Transaction> SubWallet::createTransaction(TxParam *param) const {
@@ -229,9 +238,8 @@ namespace Elastos {
 			memcpy(signatureData, signature.c_str(), signature.size());
 
 			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
-			//todo json return is correct ?
 			nlohmann::json jsonData;
-			jsonData["result"] = r;
+			jsonData["Result"] = r ? "true" : "false";
 			return jsonData;
 		}
 
@@ -353,6 +361,11 @@ namespace Elastos {
 			//todo complete input
 			//todo complete asset id
 			//todo complete payload
+			return true;
+		}
+
+		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
+			//todo complete me
 			return true;
 		}
 

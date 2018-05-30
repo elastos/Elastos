@@ -22,7 +22,11 @@ namespace Elastos {
 
 		class SubWallet : public virtual ISubWallet, public Wallet::Listener {
 		public:
+			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
+
 			virtual ~SubWallet();
+
+			const WalletManagerPtr &GetWalletManager() const;
 
 		public: //implement ISubWallet
 			virtual nlohmann::json GetBalanceInfo();
@@ -91,8 +95,6 @@ namespace Elastos {
 		protected:
 			friend class MasterWallet;
 
-			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
-
 			SubWallet(const CoinInfo &info,
 					  const ChainParams &chainParams,
 					  const std::string &payPassword,
@@ -112,6 +114,8 @@ namespace Elastos {
 			virtual bool verifyRawTransaction(const TransactionPtr &transaction);
 
 			virtual bool completeTransaction(const TransactionPtr &transaction);
+
+			bool filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid);
 
 		protected:
 
