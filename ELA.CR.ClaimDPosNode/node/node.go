@@ -65,13 +65,13 @@ type node struct {
 	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
-	DefaultMaxPeers          uint
-	headerFirstMode          bool
-	RequestedBlockList       map[Uint256]time.Time
-	SyncBlkReqSem            Semaphore
-	SyncHdrReqSem            Semaphore
-	StartHash                Uint256
-	StopHash                 Uint256
+	DefaultMaxPeers    uint
+	headerFirstMode    bool
+	RequestedBlockList map[Uint256]time.Time
+	SyncBlkReqSem      Semaphore
+	SyncHdrReqSem      Semaphore
+	StartHash          Uint256
+	StopHash           Uint256
 }
 
 type ConnectingNodes struct {
