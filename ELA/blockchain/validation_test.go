@@ -3,7 +3,9 @@ package blockchain
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/hex"
 	math "math/rand"
+	"sort"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/core"
@@ -157,7 +159,7 @@ func txManyChecksig(t *testing.T) {
 	tx = buildTx()
 	data := getData(tx)
 	// Normal
-	num := math.Intn(99) + 1
+	num := math.Intn(90) + 10
 	init := func() {
 		hashes = make([]common.Uint168, 0, num)
 		programs = make([]*core.Program, 0, num)
@@ -198,6 +200,16 @@ func txManyChecksig(t *testing.T) {
 		t.Errorf("[RunProgram] passed with unmathed hashes")
 	}
 	t.Logf("[Passed] 2. Transaction with many checksig program [Unmatched hashes], %s", err.Error())
+
+	// With disordered hashes
+	init()
+	common.SortProgramHashes(hashes)
+	sort.Sort(sort.Reverse(byHash(programs)))
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with disordered hashes")
+	}
+	t.Logf("[Passed] 2. Transaction with many checksig program [Disordered hashes], %s", err.Error())
 
 	// With no programs
 	init()
@@ -396,7 +408,7 @@ func txManyMultisig(t *testing.T) {
 	tx = buildTx()
 	data := getData(tx)
 	// Normal
-	num := math.Intn(99) + 1
+	num := math.Intn(90) + 10
 	macts := make([]*multiAccount, 0, num)
 	init := func() {
 		hashes = make([]common.Uint168, 0, num)
@@ -444,6 +456,16 @@ func txManyMultisig(t *testing.T) {
 		t.Errorf("[RunProgram] passed with unmathed hashes")
 	}
 	t.Logf("[Passed] 4. Transaction with many multisig program [Unmatched hashes], %s", err.Error())
+
+	// With disordered hashes
+	init()
+	common.SortProgramHashes(hashes)
+	sort.Sort(sort.Reverse(byHash(programs)))
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with disordered hashes")
+	}
+	t.Logf("[Passed] 4. Transaction with many multisig program [Disordered hashes], %s", err.Error())
 
 	// With random not enough signature
 	init()
@@ -594,7 +616,7 @@ func txManyDiffsig(t *testing.T) {
 	tx = buildTx()
 	data := getData(tx)
 	// Normal
-	num := math.Intn(99) + 1
+	num := math.Intn(90) + 10
 	acts := make([]act, 0, num)
 	init := func() {
 		hashes = make([]common.Uint168, 0, num)
@@ -642,6 +664,16 @@ func txManyDiffsig(t *testing.T) {
 		t.Errorf("[RunProgram] passed with unmathed hashes")
 	}
 	t.Logf("[Passed] 5. Transaction with many diffsig program [Unmatched hashes], %s", err.Error())
+
+	// With disordered hashes
+	init()
+	common.SortProgramHashes(hashes)
+	sort.Sort(sort.Reverse(byHash(programs)))
+	err = RunPrograms(data, hashes, programs)
+	if err == nil {
+		t.Errorf("[RunProgram] passed with disordered hashes")
+	}
+	t.Logf("[Passed] 5. Transaction with many diffsig program [Disordered hashes], %s", err.Error())
 
 	// With random invalid signature
 	init()
@@ -835,4 +867,51 @@ func sign(private []byte, data []byte) (signature []byte, err error) {
 	buf.WriteByte(byte(len(signature)))
 	buf.Write(signature)
 	return buf.Bytes(), err
+}
+
+func TestSortPrograms(t *testing.T) {
+	count := 100
+	hashes := make([]common.Uint168, 0, count)
+	programs := make([]*core.Program, 0, count)
+	for i := 0; i < count; i++ {
+		program := new(core.Program)
+		randType := math.Uint32()
+		switch randType % 3 {
+		case 0: // CHECKSIG
+			program.Code = make([]byte, crypto.PublicKeyScriptLength)
+			rand.Read(program.Code)
+			program.Code[crypto.PublicKeyScriptLength-1] = common.STANDARD
+		case 1: // MULTISIG
+			num := math.Intn(5) + 3
+			program.Code = make([]byte, crypto.PublicKeyScriptLength-1*num+3)
+			rand.Read(program.Code)
+			program.Code[len(program.Code)-1] = common.MULTISIG
+		case 2: // CROSSCHAIN
+			num := math.Intn(5) + 3
+			program.Code = make([]byte, crypto.PublicKeyScriptLength-1*num+3)
+			rand.Read(program.Code)
+			program.Code[len(program.Code)-1] = common.CROSSCHAIN
+		}
+		hash, err := crypto.ToProgramHash(program.Code)
+		if err != nil {
+			t.Errorf("ToProgramHash failed, %s", err.Error())
+		}
+		hashes = append(hashes, *hash)
+		programs = append(programs, program)
+	}
+
+	common.SortProgramHashes(hashes)
+	SortPrograms(programs)
+
+	for i, hash := range hashes {
+		programsHash, err := crypto.ToProgramHash(programs[i].Code)
+		if err != nil {
+			t.Errorf("ToProgramHash failed, %s", err.Error())
+		}
+		if !hash.IsEqual(*programsHash) {
+			t.Errorf("Hash %s not match with ProgramHash %s", hex.EncodeToString(hash[:]), hex.EncodeToString(programsHash[:]))
+		}
+
+		t.Logf("Hash[%02d] %s match with ProgramHash[%02d] %s", i, hex.EncodeToString(hash[:]), i, hex.EncodeToString(programsHash[:]))
+	}
 }
