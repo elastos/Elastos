@@ -10,8 +10,8 @@
 
 #include "BRInt.h"
 
-#include "SubWalletType.h"
 #include "CMemBlock.h"
+#include "IMasterWallet.h"
 
 namespace Elastos {
 	namespace SDK {

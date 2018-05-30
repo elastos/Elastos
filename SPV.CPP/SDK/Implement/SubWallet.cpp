@@ -16,7 +16,6 @@
 #include "SubWalletCallback.h"
 #include "Utils.h"
 #include "Log.h"
-#include "SubWalletType.h"
 #include "TransactionOutput.h"
 
 namespace fs = boost::filesystem;

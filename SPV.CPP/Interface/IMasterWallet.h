@@ -10,9 +10,18 @@
 namespace Elastos {
 	namespace SDK {
 
+		enum SubWalletType{
+			Normal = 0,
+			Mainchain,
+			Sidechain,
+			Idchain
+		};
+
 		class IMasterWallet {
 		public:
+
 			virtual ISubWallet *CreateSubWallet(
+					SubWalletType type,
 					const std::string &chainID,
 					int coinTypeIndex,
 					const std::string &payPassword,
@@ -20,6 +29,7 @@ namespace Elastos {
 					uint64_t feePerKb = 0) = 0;
 
 			virtual ISubWallet *RecoverSubWallet(
+					SubWalletType type,
 					const std::string &chainID,
 					int coinTypeIndex,
 					const std::string &payPassword,

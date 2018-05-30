@@ -6,8 +6,8 @@
 #include <map>
 #include <boost/scoped_ptr.hpp>
 
-#include "SubWalletType.h"
 #include "MainchainSubWallet.h"
+#include "KeyStore/CoinInfo.h"
 #include "Payload/PayloadTransferCrossChainAsset.h"
 #include "ELACoreExt/ELABRTxOutput.h"
 
