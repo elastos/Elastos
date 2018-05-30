@@ -20,11 +20,11 @@ namespace Elastos {
 		public:
 			static bool Init();
 
-			static CMemBlock<unsigned char>
+			static CMBlock
 			encrypt(unsigned char *plaintText, size_t szPlainText, unsigned char *password, size_t szPassword,
 					unsigned char *aad = nullptr, size_t szAad = 0);
 
-			static CMemBlock<unsigned char>
+			static CMBlock
 			decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
 					unsigned char *aad = nullptr, size_t szAad = 0);
 		};

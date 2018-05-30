@@ -27,7 +27,7 @@ namespace Elastos {
 
 			uint32_t earliestPeerTime = 0;
 			_masterPubKey = MasterPubKeyPtr(
-					new MasterPubKey(Utils::convertToString((const CMemBlock<uint8_t>) phrase), ""));
+					new MasterPubKey(Utils::convertToString(phrase), ""));
 
 			init(_masterPubKey, chainParams, earliestPeerTime, false);
 		}

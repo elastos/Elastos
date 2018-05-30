@@ -156,10 +156,10 @@ namespace Elastos {
 			return true;
 		}
 
-		CMemBlock<unsigned char>
+		CMBlock
 		AES_256_CCM::encrypt(unsigned char *plaintText, size_t szPlainText, unsigned char *password, size_t szPassword,
 							 unsigned char *aad, size_t szAad) {
-			CMemBlock<unsigned char> _ret;
+			CMBlock _ret;
 
 			Init();
 			const EVP_CIPHER *cipher = EVP_get_cipherbyname("aes-256-ccm");
@@ -184,10 +184,10 @@ namespace Elastos {
 			return _ret;
 		}
 
-		CMemBlock<unsigned char>
+		CMBlock
 		AES_256_CCM::decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
 							 unsigned char *aad, size_t szAad) {
-			CMemBlock<unsigned char> _ret;
+			CMBlock _ret;
 
 			Init();
 			const EVP_CIPHER *cipher = EVP_get_cipherbyname("aes-256-ccm");

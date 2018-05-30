@@ -99,20 +99,20 @@ namespace Elastos {
 			}
 
 			//todo get entropy from keystore
-			CMemBlock<unsigned char> phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
+			CMBlock phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
 				_keyStore.json().getEncryptedPhrasePassword());
-			CMemBlock<unsigned char> phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
+			CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
 			phrasePass_Raw1.Zero();
 			memcpy(phrasePass_Raw1, phrasePass_Raw0, phrasePass_Raw0.GetSize());
-			CMemBlock<unsigned char> phrasePassRaw = Utils::decrypt(phrasePass_Raw1, payPassword);
+			CMBlock phrasePassRaw = Utils::decrypt(phrasePass_Raw1, payPassword);
 			std::string phrasePass = Utils::convertToString(phrasePassRaw);
 
-			CMemBlock<unsigned char> entropy0 = Utils::convertToMemBlock<unsigned char>(
+			CMBlock entropy0 = Utils::convertToMemBlock<unsigned char>(
 				_keyStore.json().getEncryptedEntropySource());
-			CMemBlock<unsigned char> entropy1(entropy0.GetSize() + 1);
+			CMBlock entropy1(entropy0.GetSize() + 1);
 			entropy1.Zero();
 			memcpy(entropy1, entropy0, entropy0.GetSize());
-			CMemBlock<unsigned char> entropy2 = Utils::decrypt(entropy1, payPassword);
+			CMBlock entropy2 = Utils::decrypt(entropy1, payPassword);
 			UInt128 entropy;
 			memcpy((void *)&entropy.u8[0], entropy2, sizeof(UInt128));
 
@@ -153,7 +153,7 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
-			CMemBlock<unsigned char> entropyBytes = Utils::decrypt(_encryptedEntropy, payPassword);
+			CMBlock entropyBytes = Utils::decrypt(_encryptedEntropy, payPassword);
 			UInt128 entropy = UINT128_ZERO;
 			memcpy(entropy.u8, entropyBytes, entropyBytes.GetSize());
 			mnemonic = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
@@ -174,7 +174,7 @@ namespace Elastos {
 		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
 										  const std::string &payPassword) {
 			assert(phrase.size() > 0);
-			CMemBlock<unsigned char> encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
+			CMBlock encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
 			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
 
 			//init _encryptedEntropy by phrase
@@ -189,7 +189,7 @@ namespace Elastos {
 
 			BRBIP39Decode(entropy.u8, sizeof(entropy), wordList, phrase.c_str());
 
-			CMemBlock<unsigned char> entropyBytes;
+			CMBlock entropyBytes;
 			entropyBytes.SetMemFixed((const unsigned char *) entropy.u8, sizeof(entropy));
 			_encryptedEntropy = Utils::encrypt(entropyBytes, payPassword);
 
@@ -200,7 +200,7 @@ namespace Elastos {
 
 			CMBlock privKey = Key::getAuthPrivKeyForAPI(seed);
 
-			CMemBlock<unsigned char> secretKey;
+			CMBlock secretKey;
 			secretKey.SetMemFixed((const unsigned char *) (const uint8_t *) privKey, privKey.GetSize());
 
 			_encryptedKey = Utils::encrypt(secretKey, payPassword);
@@ -211,7 +211,7 @@ namespace Elastos {
 		}
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
-			CMemBlock<unsigned char> keyData = Utils::decrypt(_encryptedKey, payPassword);
+			CMBlock keyData = Utils::decrypt(_encryptedKey, payPassword);
 			Key key;
 			if (true == keyData) {
 				char *stmp = new char[keyData.GetSize()];
@@ -259,7 +259,7 @@ namespace Elastos {
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
-			CMemBlock<unsigned char> entropyData = Utils::decrypt(_encryptedEntropy, payPassword);
+			CMBlock entropyData = Utils::decrypt(_encryptedEntropy, payPassword);
 			UInt128 entropy;
 			UInt128Get(&entropy, (void *) entropyData);
 

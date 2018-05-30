@@ -41,7 +41,7 @@ namespace Elastos {
 
 			std::vector<unsigned char> ct = Base64::toBits(sjclFile.getCt());
 			std::vector<unsigned char> adata = Base64::toBits(sjclFile.getAdata());
-			CMemBlock<unsigned char> plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(),
+			CMBlock plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(),
 																	  (unsigned char *) password.c_str(),
 																	  password.size(), adata.data(), adata.size());
 			if (false == plaintext)
@@ -67,7 +67,7 @@ namespace Elastos {
 			ss << walletJson;
 			ss >> str_ss;
 
-			CMemBlock<unsigned char> ciphertext;
+			CMBlock ciphertext;
 			ciphertext = AES_256_CCM::encrypt((unsigned char *) str_ss.c_str(), str_ss.size(),
 											  (unsigned char *) password.c_str(), password.size());
 			if (false == ciphertext)

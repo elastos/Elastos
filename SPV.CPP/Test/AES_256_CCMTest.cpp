@@ -15,10 +15,10 @@ TEST_CASE("encrypt/decrypt", "[AES_256_CCM]") {
 	SECTION("encrypt/decrypt") {
 		unsigned char plaintext[5] = {0, 1, 2, 3, 4};
 
-		CMemBlock<unsigned char> cmCipher = AES_256_CCM::encrypt(plaintext, sizeof(plaintext),
+		CMBlock cmCipher = AES_256_CCM::encrypt(plaintext, sizeof(plaintext),
 																 (unsigned char *) "password", strlen("password"));
 
-		CMemBlock<unsigned char> cmPlain = AES_256_CCM::decrypt(cmCipher, cmCipher.GetSize(),
+		CMBlock cmPlain = AES_256_CCM::decrypt(cmCipher, cmCipher.GetSize(),
 																(unsigned char *) "password", strlen("password"));
 
 		REQUIRE(sizeof(plaintext) == cmPlain.GetSize());

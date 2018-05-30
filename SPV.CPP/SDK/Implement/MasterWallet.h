@@ -106,9 +106,9 @@ namespace Elastos {
 			bool _initialized;
 			WalletMap _createdWallets;
 
-			CMemBlock<unsigned char> _encryptedKey;
-			CMemBlock<unsigned char> _encryptedEntropy;
-			CMemBlock<unsigned char> _encryptedPhrasePass;
+			CMBlock _encryptedKey;
+			CMBlock _encryptedEntropy;
+			CMBlock _encryptedPhrasePass;
 
 			KeyStore _keyStore;
 			boost::filesystem::path _dbRoot;

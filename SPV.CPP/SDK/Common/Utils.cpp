@@ -133,9 +133,9 @@ namespace Elastos {
 			return result;
 		}
 
-		CMemBlock<unsigned char> Utils::encrypt(const CMemBlock<unsigned char> &data, const std::string &password) {
-			CMemBlock<unsigned char> ret;
-			CMemBlock<unsigned char> enc = AES_256_CCM::encrypt(data, data.GetSize(),
+		CMBlock Utils::encrypt(const CMBlock &data, const std::string &password) {
+			CMBlock ret;
+			CMBlock enc = AES_256_CCM::encrypt(data, data.GetSize(),
 																(unsigned char *) password.c_str(), password.size());
 			if (true == enc) {
 				std::string enc_bs64 = Base64::fromBits(enc, enc.GetSize());
@@ -146,9 +146,9 @@ namespace Elastos {
 			return ret;
 		}
 
-		CMemBlock<unsigned char>
-		Utils::decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password) {
-			CMemBlock<unsigned char> ret;
+		CMBlock
+		Utils::decrypt(const CMBlock &encryptedData, const std::string &password) {
+			CMBlock ret;
 			std::string enc_str = (const char *) (void *) encryptedData;
 			std::vector<unsigned char> enc = Base64::toBits(enc_str);
 			ret = AES_256_CCM::decrypt(enc.data(), enc.size(), (unsigned char *) password.c_str(),

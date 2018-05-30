@@ -32,11 +32,11 @@ namespace Elastos {
 
 			static UInt128 generateRandomSeed();
 
-			static CMemBlock<unsigned char>
-			encrypt(const CMemBlock<unsigned char> &data, const std::string &password);
+			static CMBlock
+			encrypt(const CMBlock &data, const std::string &password);
 
-			static CMemBlock<unsigned char>
-			decrypt(const CMemBlock<unsigned char> &encryptedData, const std::string &password);
+			static CMBlock
+			decrypt(const CMBlock &encryptedData, const std::string &password);
 
 			static void decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen);
 
@@ -51,7 +51,7 @@ namespace Elastos {
 			static char *encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen);
 
 			template <class T>
-			static std::string convertToString(const CMemBlock<T> &data) {
+			static std::string convertToString(const CMemBlock<T, uint64_t> &data) {
 				assert(sizeof(T) == sizeof(char));
 				char *p = new char[data.GetSize()];
 				memcpy(p, data, data.GetSize());
@@ -60,9 +60,9 @@ namespace Elastos {
 			}
 
 			template <class T>
-			static CMemBlock<T> convertToMemBlock(const std::string &str) {
+			static CMemBlock<T, uint64_t> convertToMemBlock(const std::string &str) {
 				assert(sizeof(T) == sizeof(char));
-				CMemBlock<T> result(str.size());
+				CMemBlock<T, uint64_t> result(str.size());
 				memcpy(result, str.c_str(), str.size());
 				return result;
 			}
