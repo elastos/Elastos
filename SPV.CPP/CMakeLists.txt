@@ -175,7 +175,7 @@ add_library(spvsdk ${SPV_LIBRARY_TYPE}
 	${SPVCORE_SOURCE_FILES}
 )
 
-target_link_libraries(spvsdk crypto ssl sqlite bigint ${Boost_LIBRARIES})
+target_link_libraries(spvsdk dl crypto ssl sqlite bigint ${Boost_LIBRARIES})
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
 endif()
