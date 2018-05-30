@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
@@ -21,6 +22,10 @@ func VerifySignature(tx *Transaction) error {
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
 
+	// Sort first
+	common.SortProgramHashes(hashes)
+	SortPrograms(tx.Programs)
+
 	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
 }
 
@@ -29,39 +34,33 @@ func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) erro
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
 
-	for i := 0; i < len(programs); i++ {
-
-		code := programs[i].Code
-
-		programHash, err := crypto.ToProgramHash(code)
+	for i, program := range programs {
+		programHash, err := crypto.ToProgramHash(program.Code)
 		if err != nil {
 			return err
 		}
 
-		// Get transaction type
-		signType, err := crypto.GetScriptType(code)
+		signType, err := crypto.GetScriptType(program.Code)
 		if err != nil {
 			return err
 		}
 
-		// TODO: confirm they are using the same sort mode
 		if !hashes[i].IsEqual(*programHash) && signType != common.CROSSCHAIN {
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 
 		if signType == common.STANDARD {
-			// Remove length byte and sign type byte
-			if err := checkStandardSignature(*programs[i], data); err != nil {
+			if err := checkStandardSignature(*program, data); err != nil {
 				return err
 			}
 
 		} else if signType == common.MULTISIG {
-			if err = checkMultiSigSignatures(*programs[i], data); err != nil {
+			if err = checkMultiSigSignatures(*program, data); err != nil {
 				return err
 			}
 
 		} else if signType == common.CROSSCHAIN {
-			if err = checkCrossChainSignatures(*programs[i], data); err != nil {
+			if err = checkCrossChainSignatures(*program, data); err != nil {
 				return err
 			}
 
@@ -97,14 +96,6 @@ func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
 			hashes = append(hashes, *dataHash)
 		}
 	}
-	switch tx.TxType {
-	case RegisterAsset:
-	case TransferAsset:
-	case Record:
-	case Deploy:
-	case SideMining:
-	default:
-	}
 
 	//remove dupilicated hashes
 	unique := make(map[common.Uint168]bool)
@@ -114,7 +105,6 @@ func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
 	for k := range unique {
 		uniqueHashes = append(uniqueHashes, k)
 	}
-	common.SortProgramHashes(uniqueHashes)
 	return uniqueHashes, nil
 }
 
@@ -123,7 +113,7 @@ func checkStandardSignature(program Program, data []byte) error {
 		return errors.New("Invalid signature length")
 	}
 
-	publicKey, err := crypto.DecodePoint(program.Code[1: len(program.Code)-1])
+	publicKey, err := crypto.DecodePoint(program.Code[1 : len(program.Code)-1])
 	if err != nil {
 		return err
 	}
@@ -186,7 +176,7 @@ func verifyMultisigSignatures(m, n int, publicKeys [][]byte, signatures, data []
 	var verified = make(map[common.Uint256]struct{})
 	for i := 0; i < len(signatures); i += crypto.SignatureScriptLength {
 		// Remove length byte
-		sign := signatures[i: i+crypto.SignatureScriptLength][1:]
+		sign := signatures[i : i+crypto.SignatureScriptLength][1:]
 		// Match public key with signature
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
@@ -235,4 +225,18 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 		}
 	}
 	return nil
+}
+
+func SortPrograms(programs []*Program) {
+	sort.Sort(byHash(programs))
+}
+
+type byHash []*Program
+
+func (p byHash) Len() int      { return len(p) }
+func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p byHash) Less(i, j int) bool {
+	hashi, _ := crypto.ToProgramHash(p[i].Code)
+	hashj, _ := crypto.ToProgramHash(p[j].Code)
+	return hashi.Compare(*hashj) < 0
 }
