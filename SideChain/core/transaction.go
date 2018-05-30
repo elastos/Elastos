@@ -23,6 +23,7 @@ const (
 	RechargeToSideChain     TransactionType = 0x06
 	WithdrawFromSideChain   TransactionType = 0x07
 	TransferCrossChainAsset TransactionType = 0x08
+	RegisterIdentification  TransactionType = 0x09
 )
 
 func (self TransactionType) Name() string {
@@ -45,6 +46,8 @@ func (self TransactionType) Name() string {
 		return "WithdrawFromSideChain"
 	case TransferCrossChainAsset:
 		return "TransferCrossChainAsset"
+	case RegisterIdentification:
+		return "RegisterIdentification"
 	default:
 		return "Unknown"
 	}
