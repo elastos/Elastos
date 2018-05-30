@@ -17,7 +17,7 @@
 #include "Payload/PayloadSideMining.h"
 #include "Payload/PayloadTransferCrossChainAsset.h"
 #include "Payload/PayloadTransferAsset.h"
-#include "Payload/PayloadIdChain.h"
+#include "Payload/PayloadRegisterIdentification.h"
 #include "ELABRTransaction.h"
 #include "BRCrypto.h"
 #include "ELABRTxOutput.h"
@@ -146,7 +146,7 @@ namespace Elastos {
 			} else if (_type == TransferCrossChainAsset) {
 				_payload = boost::shared_ptr<PayloadTransferCrossChainAsset>(new PayloadTransferCrossChainAsset());
 			} else if (_type == RegisterIdentification) {
-				_payload = boost::shared_ptr<PayloadIdChain>(new PayloadIdChain());
+				_payload = boost::shared_ptr<PayloadRegisterIdentification>(new PayloadRegisterIdentification());
 			}
 		}
 

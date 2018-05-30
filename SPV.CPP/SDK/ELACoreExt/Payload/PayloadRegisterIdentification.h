@@ -5,16 +5,19 @@
 #ifndef __ELASTOS_SDK_PAYLOADIDCHAIN_H__
 #define __ELASTOS_SDK_PAYLOADIDCHAIN_H__
 
+#include "BRInt.h"
+
+#include "CMemBlock.h"
 #include "IPayload.h"
 
 namespace Elastos {
 	namespace SDK {
 
-		class PayloadIdChain : public IPayload {
+		class PayloadRegisterIdentification : public IPayload {
 		public:
-			PayloadIdChain();
+			PayloadRegisterIdentification();
 
-			~PayloadIdChain();
+			~PayloadRegisterIdentification();
 
 			const std::string &getId() const;
 
@@ -24,17 +27,17 @@ namespace Elastos {
 
 			void setPath(const std::string &path);
 
-			const std::string &getDataHash() const;
+			const UInt256 &getDataHash() const;
 
-			void setDataHash(const std::string &dataHash);
+			void setDataHash(const UInt256 &dataHash);
 
-			const std::string &getProof() const;
+			const CMBlock &getProof() const;
 
-			void setProof(const std::string &proof);
+			void setProof(const CMBlock &proof);
 
-			const std::string &getSign() const;
+			const CMBlock &getSign() const;
 
-			void setSign(const std::string &sign);
+			void setSign(const CMBlock &sign);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -47,9 +50,9 @@ namespace Elastos {
 		private:
 			std::string _id;
 			std::string _path;
-			std::string _dataHash;
-			std::string _proof;
-			std::string _sign;
+			UInt256 _dataHash;
+			CMBlock _proof;
+			CMBlock _sign;
 		};
 
 	}
