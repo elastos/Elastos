@@ -34,7 +34,7 @@ namespace Elastos {
 					// 50% low pass filter on current ping time
 					ctx->pingTime = ctx->pingTime*0.5 + pingTime*0.5;
 					ctx->startTime = 0;
-					Log::getLogger()->info("got pong in %fs", pingTime);
+					Log::getLogger()->info("got pong in {}", pingTime);
 				}
 				else Log::getLogger()->info("got pong");
 

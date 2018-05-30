@@ -49,6 +49,7 @@ namespace Elastos {
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				_sqlite->endTransaction();
 				return false;
 			}
 
@@ -120,6 +121,7 @@ namespace Elastos {
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				_sqlite->endTransaction();
 				return peers;
 			}
 

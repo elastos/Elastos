@@ -398,7 +398,7 @@ namespace Elastos {
 
 		void WrappedExecutorWalletListener::onTxUpdated(
 				const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			_executor->execute(Runnable([this, &hash, blockHeight, timeStamp]() -> void {
+			_executor->execute(Runnable([this, hash, blockHeight, timeStamp]() -> void {
 				_listener->onTxUpdated(hash, blockHeight, timeStamp);
 			}));
 		}

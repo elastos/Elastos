@@ -4,6 +4,7 @@
 
 #include "PreCompiled.h"
 #include <boost/filesystem.hpp>
+#include <boost/locale.hpp>
 
 #include "Sqlite.h"
 #include "Log.h"
@@ -54,20 +55,21 @@ namespace Elastos {
 		}
 
 		bool Sqlite::transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg) {
-			char* errmsg;
 			std::string typeStr;
 
-			typeStr = "BEGIN " + getTxTypeString(type) + ";";
-
-			if (true != exec(typeStr.c_str(), NULL, NULL)) {
+			if (true != beginTransaction(type)) {
+				Log::getLogger()->error("sqlite beginTransaction error", typeStr);
 				return false;
 			}
 
 			if (true != exec(sql.c_str(), callBack, arg)) {
+				Log::getLogger()->error("sqlite exec \"{}\"", sql);
+				endTransaction();
 				return false;
 			}
 
-			if (true != exec("COMMIT;", NULL, NULL)) {
+			if (true != endTransaction()) {
+				Log::getLogger()->error("sqlite endTransaction error");
 				return false;
 			}
 
@@ -85,6 +87,9 @@ namespace Elastos {
 			r = sqlite3_prepare_v2(_dataBasePtr, sql.c_str(), sql.length(), ppStmt, pzTail);
 			if (r != SQLITE_OK) {
 				Log::error("sqlite prepare error");
+				if (ppStmt && *ppStmt) {
+					sqlite3_finalize(*ppStmt);
+				}
 				return false;
 			}
 
@@ -164,7 +169,18 @@ namespace Elastos {
 			// threading mode as long as the single-thread mode has not been set at compile-time or start-time.
 			// If the SQLITE_OPEN_FULLMUTEX flag is set then the database connection opens in the serialized
 			// threading mode unless single-thread was previously selected at compile-time or start-time.
-			int r = sqlite3_open_v2(path.c_str(), &_dataBasePtr, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL);
+
+			boost::filesystem::path parentPath = path.parent_path();
+			if (!boost::filesystem::exists(parentPath)) {
+				Log::getLogger()->warn("directory \"{}\" do not exist", parentPath.string());
+				if (!boost::filesystem::create_directories(parentPath)) {
+					Log::getLogger()->error("create directory \"{}\" error", parentPath.string());
+					return false;
+				}
+			}
+
+			path.imbue(boost::locale::generator().generate("UTF-8"));
+			int r = sqlite3_open_v2(path.string().c_str(), &_dataBasePtr, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL);
 			if (r != SQLITE_OK) {
 				close();
 				return false;

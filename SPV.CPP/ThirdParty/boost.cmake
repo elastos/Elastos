@@ -1,5 +1,5 @@
 
-set(BOOST_BUILD_COMPONENTS filesystem system program_options thread)
+set(BOOST_BUILD_COMPONENTS filesystem system program_options thread locale)
 
 if(SPV_FOR_ANDROID)
 	set(Boost_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/Boost-for-Android/build/out/${CMAKE_ANDROID_ARCH_ABI}/include)

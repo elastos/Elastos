@@ -101,7 +101,7 @@ namespace Elastos {
 		}
 
 		void Utils::encodeHex(char *target, size_t targetLen, const uint8_t *source, size_t sourceLen) {
-			assert (targetLen == 2 * sourceLen + 1);
+			assert (targetLen >= 2 * sourceLen + 1);
 
 			for (int i = 0; i < sourceLen; i++) {
 				target[2 * i] = (uint8_t) _hexc (source[i] >> 4);

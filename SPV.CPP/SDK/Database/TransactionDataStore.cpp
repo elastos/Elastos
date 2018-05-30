@@ -52,6 +52,7 @@ namespace Elastos {
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				_sqlite->endTransaction();
 				return false;
 			}
 
@@ -100,6 +101,7 @@ namespace Elastos {
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				_sqlite->endTransaction();
 				return transactions;
 			}
 
@@ -139,7 +141,6 @@ namespace Elastos {
 			std::stringstream ss;
 
 			ss << "UPDATE " << TX_TABLE_NAME << " SET " <<
-				TX_BUFF         << " = ?, " <<
 				TX_BLOCK_HEIGHT << " = ?, " <<
 				TX_TIME_STAMP   << " = ? "
 				" WHERE " << TX_ISO << " = '" << iso << "'" <<
@@ -149,12 +150,12 @@ namespace Elastos {
 
 			sqlite3_stmt *stmt;
 			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				_sqlite->endTransaction();
 				return false;
 			}
 
-			_sqlite->bindBlob(stmt, 1, txEntity.buff, nullptr);
-			_sqlite->bindInt(stmt, 2, txEntity.blockHeight);
-			_sqlite->bindInt(stmt, 3, txEntity.timeStamp);
+			_sqlite->bindInt(stmt, 1, txEntity.blockHeight);
+			_sqlite->bindInt(stmt, 2, txEntity.timeStamp);
 
 			_sqlite->step(stmt);
 
