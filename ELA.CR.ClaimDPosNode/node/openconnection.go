@@ -11,7 +11,7 @@ import (
 func (node *node) listenNodeOpenPort() {
 	listener, err := net.Listen("tcp", fmt.Sprint(":", config.Parameters.NodeOpenPort))
 	if err != nil {
-		log.Error("Error listening SPV port error:%s\n", err.Error())
+		log.Error("Error listening [NodeOpenPort] error:%s\n", err.Error())
 		return
 	}
 
