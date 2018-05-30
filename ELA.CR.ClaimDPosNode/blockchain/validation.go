@@ -168,7 +168,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 	for i := 0; i < len(param); i += crypto.SignatureScriptLength {
 		// Remove length byte
 		sign := param[i: i+crypto.SignatureScriptLength][1:]
-		// Get signature index, if signature exists index will not be -1
+		// Match public key with signature
 		for _, publicKey := range publicKeys {
 			pubKey, err := crypto.DecodePoint(publicKey[1:])
 			if err != nil {
@@ -176,8 +176,7 @@ func checkMultiSignSignatures(code, param, content []byte, publicKeys [][]byte) 
 			}
 			err = crypto.Verify(*pubKey, content, sign)
 			if err == nil {
-				pkBytes := append(pubKey.X.Bytes(), pubKey.Y.Bytes()...)
-				hash := sha256.Sum256(pkBytes)
+				hash := sha256.Sum256(publicKey)
 				if _, ok := verified[hash]; ok {
 					return errors.New("duplicated signatures")
 				}
