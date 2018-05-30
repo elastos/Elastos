@@ -23,6 +23,17 @@ namespace Elastos {
 		Program::~Program() {
 		}
 
+		bool Program::isValid() {
+			if (_parameter.GetSize() > 0 && !_parameter) {
+				return false;
+			}
+
+			if (_code.GetSize() > 0 && !_code) {
+				return false;
+			}
+			return true;
+		}
+
 		void Program::Serialize(ByteStream &ostream) const {
 			ostream.putVarUint(_parameter.GetSize());
 			ostream.putBytes(_parameter, _parameter.GetSize());

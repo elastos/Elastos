@@ -58,6 +58,13 @@ namespace Elastos {
 			_sign = sign;
 		}
 
+		bool PayloadRegisterIdentification::isValid() const {
+			if (_id.empty() || _path.empty() || _sign.GetSize() <= 0) {
+				return false;
+			}
+			return true;
+		}
+
 		void PayloadRegisterIdentification::Serialize(ByteStream &ostream) const {
 
 			assert(!_id.empty());

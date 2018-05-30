@@ -4,16 +4,25 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <SDK/ELACoreExt/ELABRTransaction.h>
+#include <Core/BRTransaction.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"
-#include "BRAddress.h"
+#include "BRArray.h"
 
 #include "Wallet.h"
 #include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
+
+		inline static uint64_t _txFee(uint64_t feePerKb, size_t size)
+		{
+			uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB, // standard fee based on tx size rounded up to nearest kb
+					fee = (((size*feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
+
+			return (fee > standardFee) ? fee : standardFee;
+		}
 
 		namespace {
 			typedef boost::weak_ptr<Wallet::Listener> WeakListener;
@@ -153,6 +162,111 @@ namespace Elastos {
 
 		uint64_t Wallet::getDefaultFeePerKb() {
 			return DEFAULT_FEE_PER_KB;
+		}
+
+		TransactionPtr Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+		                                         const std::string &toAddress) {
+			assert(amount > 0);
+			assert(BRAddressIsValid(fromAddress.c_str()));
+			assert(BRAddressIsValid(toAddress.c_str()));
+			assert(fee > 0);
+
+			BRTxOutput o = BR_TX_OUTPUT_NONE;
+			o.amount = amount;
+			BRTxOutputSetAddress(&o, toAddress.c_str());
+
+			BRTransaction *brTransaction = createBRTransaction(fromAddress.c_str(), fee, &o, 1);
+
+			TransactionPtr transaction = TransactionPtr(new Transaction(brTransaction));
+			return transaction;
+		}
+
+		BRTransaction *Wallet::createBRTransaction(const char* fromAddress, uint64_t fee, const BRTxOutput outputs[],
+		                                           size_t outCount) {
+			BRTransaction *tx;
+			ELABRTransaction *elabrTransaction = ELABRTransactionNew();
+			BRTransaction *transaction = (BRTransaction *)elabrTransaction;
+			uint64_t feeAmount, amount = 0, balance = 0, minAmount;
+			size_t i, j, cpfpSize = 0;
+			BRUTXO *o;
+			BRAddress addr = BR_ADDRESS_NONE;
+
+			assert(outputs != NULL && outCount > 0);
+
+			for (i = 0; outputs && i < outCount; i++) {
+				assert(outputs[i].script != NULL && outputs[i].scriptLen > 0);
+				BRTransactionAddOutput(transaction, outputs[i].amount, outputs[i].script, outputs[i].scriptLen);
+				amount += outputs[i].amount;
+			}
+			minAmount = BRWalletMinOutputAmount(_wallet);
+
+			pthread_mutex_lock(&_wallet->lock);
+
+			feeAmount = fee > 0 ? fee : _txFee(_wallet->feePerKb, BRTransactionSize(transaction) + TX_OUTPUT_SIZE);
+
+			for (i = 0; i < array_count(_wallet->utxos); i++) {
+				o = &_wallet->utxos[i];
+				tx = (BRTransaction *)BRSetGet(_wallet->allTx, o);
+				if (! tx || o->n >= tx->outCount) continue;
+
+				BRTransactionAddInput(transaction, tx->txHash, o->n, tx->outputs[o->n].amount,
+				                      tx->outputs[o->n].script, tx->outputs[o->n].scriptLen, NULL, 0, TXIN_SEQUENCE);
+				if (strlen(fromAddress) > 0) {
+					memcpy(transaction->inputs[i].address, fromAddress, strlen(fromAddress));
+				}
+
+				if (BRTransactionSize(transaction) + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
+					BRTransactionFree(transaction);
+					transaction = NULL;
+
+					// check for sufficient total funds before building a smaller transaction
+					if (_wallet->balance < amount + feeAmount) break;
+					pthread_mutex_unlock(&_wallet->lock);
+
+					if (outputs[outCount - 1].amount > amount + feeAmount + minAmount - balance) {
+						BRTxOutput newOutputs[outCount];
+
+						for (j = 0; j < outCount; j++) {
+							newOutputs[j] = outputs[j];
+						}
+
+						newOutputs[outCount - 1].amount -= amount + feeAmount - balance; // reduce last output amount
+						transaction = BRWalletCreateTxForOutputs(_wallet, newOutputs, outCount);
+					}
+					else transaction = BRWalletCreateTxForOutputs(_wallet, outputs, outCount - 1); // remove last output
+
+					balance = amount = feeAmount = 0;
+					pthread_mutex_lock(&_wallet->lock);
+					break;
+				}
+
+				balance += tx->outputs[o->n].amount;
+
+				// fee amount after adding a change output
+				feeAmount = fee > 0 ? fee : _txFee(_wallet->feePerKb,
+				                                   BRTransactionSize(transaction) + TX_OUTPUT_SIZE + cpfpSize);
+
+				// increase fee to round off remaining wallet balance to nearest 100 satoshi
+				if (_wallet->balance > amount + feeAmount) feeAmount += (_wallet->balance - (amount + feeAmount)) % 100;
+				if (balance == amount + feeAmount || balance >= amount + feeAmount + minAmount) break;
+			}
+
+			pthread_mutex_unlock(&_wallet->lock);
+
+			if (transaction && (outCount < 1 || balance < amount + feeAmount)) { // no outputs/insufficient funds
+				BRTransactionFree(transaction);
+				transaction = NULL;
+			}
+			else if (transaction && balance - (amount + feeAmount) > minAmount) { // add change output
+				BRWalletUnusedAddrs(_wallet, &addr, 1, 1);
+				uint8_t script[BRAddressScriptPubKey(NULL, 0, addr.s)];
+				size_t scriptLen = BRAddressScriptPubKey(script, sizeof(script), addr.s);
+
+				BRTransactionAddOutput(transaction, balance - (amount + feeAmount), script, scriptLen);
+				BRTransactionShuffleOutputs(transaction);
+			}
+
+			return transaction;
 		}
 
 		TransactionPtr Wallet::createTransaction(uint64_t amount, const Address &address) {

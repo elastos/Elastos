@@ -170,6 +170,10 @@ namespace Elastos {
 
 			void addProgram(const ProgramPtr &program);
 
+			const std::vector<AttributePtr> getAttributes() const;
+
+			const std::vector<ProgramPtr> getPrograms() const;
+
 		private:
 			void convertFrom(const BRTransaction *raw);
 

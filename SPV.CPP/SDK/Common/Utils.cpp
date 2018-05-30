@@ -14,6 +14,7 @@
 #include "AES_256_CCM.h"
 #include "BTCBase58.h"
 #include "Base64.h"
+#include "BRAddress.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -168,6 +169,18 @@ namespace Elastos {
 			memcpy(data + uSize, hash.u8, 4);
 
 			return BTCBase58::EncodeBase58(data, dataLen);
+		}
+
+		bool Utils::UInt168IsValid(const UInt168 &u168) {
+			if (UInt168IsZero(&u168) == true) {
+				return false;
+			}
+			int prefix = u168.u8[0];
+			if (prefix != ELA_STAND_ADDRESS && prefix != ELA_MULTISIG_ADDRESS && prefix != ELA_CROSSCHAIN_ADDRESS &&
+				prefix != ELA_IDCHAIN_ADDRESS) {
+				return false;
+			}
+			return true;
 		}
 
 	}

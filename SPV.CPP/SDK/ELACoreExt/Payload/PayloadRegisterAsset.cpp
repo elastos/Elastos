@@ -44,6 +44,13 @@ namespace Elastos {
 			return _controller;
 		}
 
+		bool PayloadRegisterAsset::isValid() const {
+			if(_asset.getPrecision() < Asset::MinPrecidion || _asset.getPrecision() > Asset::MinPrecidion) {
+				return false;
+			}
+			return _amount % (uint64_t)pow(10, 8 - _asset.getPrecision()) != 0;
+		}
+
 		CMBlock PayloadRegisterAsset::getData() const {
 			ByteStream byteStream;
 			Serialize(byteStream);

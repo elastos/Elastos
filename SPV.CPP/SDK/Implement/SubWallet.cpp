@@ -192,11 +192,16 @@ namespace Elastos {
 		boost::shared_ptr<Transaction> SubWallet::createTransaction(TxParam *param) const {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
-			BRTransaction *tmp = BRWalletCreateTransaction(_walletManager->getWallet()->getRaw(), param->getAmount(),
-														   param->getToAddress().c_str());
-			if (!tmp) return nullptr;
+			TransactionPtr ptr = nullptr;
+			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
+				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+				                                                     param->getAmount(), param->getToAddress());
+			} else {
+				Address address(param->getToAddress());
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+			}
+			if (!ptr) return nullptr;
 
-			TransactionPtr ptr(new Transaction(tmp));
 			ptr->setTransactionType(Transaction::TransferAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
@@ -222,8 +227,9 @@ namespace Elastos {
 			UInt256 chainCode;
 			deriveKeyAndChain(rawKey.get(), chainCode, payPassword);
 			Key key(rawKey);
-
-			CMBlock signedData = key.sign(Utils::UInt256FromString(message));
+			UInt256 md;
+			BRSHA256(&md, message.c_str(), message.size());
+			CMBlock signedData = key.sign(md);
 
 			char *data = new char[signedData.GetSize()];
 			memcpy(data, signedData, signedData.GetSize());
@@ -236,7 +242,10 @@ namespace Elastos {
 			CMBlock signatureData(signature.size());
 			memcpy(signatureData, signature.c_str(), signature.size());
 
-			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
+			UInt256 md;
+			BRSHA256(&md, message.c_str(), message.size());
+			bool r = Key::verifyByPublicKey(publicKey, md, signatureData);
+			//todo json return is correct ?
 			nlohmann::json jsonData;
 			jsonData["Result"] = r ? "true" : "false";
 			return jsonData;
@@ -350,8 +359,22 @@ namespace Elastos {
 
 		bool SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo check output
+			if (!checkTransactionOutput(transaction)) {
+				return false;
+			}
 			//todo check attribute(nounce)
+			if (!checkTransactionAttribute(transaction)) {
+				return false;
+			}
 			//todo check program
+			if (!checkTransactionProgram(transaction)) {
+				return false;
+			}
+			//todo check Payload
+			if (!checkTransactionPayload(transaction)) {
+				return false;
+			}
+
 			return true;
 		}
 
@@ -368,5 +391,50 @@ namespace Elastos {
 			return true;
 		}
 
+		bool SubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
+
+			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			size_t size = outputs.size();
+			if (size < 1) {
+				return false;
+			}
+			for (size_t i = 0; i < size; ++i) {
+				TransactionOutputPtr output = outputs[i];
+				if (!Utils::UInt168IsValid(output->getProgramHash())) {
+					return false;
+				}
+			}
+			return true;
+
+		}
+
+		bool SubWallet::checkTransactionAttribute(const TransactionPtr &transaction) {
+			const std::vector<AttributePtr> attributes = transaction->getAttributes();
+			size_t size = attributes.size();
+			for (size_t i = 0; i < size; ++i) {
+				AttributePtr attr = attributes[i];
+				if(!attr->isValid()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		bool SubWallet::checkTransactionProgram(const TransactionPtr &transaction) {
+			const std::vector<ProgramPtr> programs = transaction->getPrograms();
+			size_t size = programs.size();
+			for (size_t i = 0; i < size; ++i) {
+				if (!programs[i]->isValid()) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		bool SubWallet::checkTransactionPayload(const TransactionPtr &transaction) {
+			const PayloadPtr payloadPtr = transaction->getPayload();
+			return payloadPtr->isValid();
+		}
 	}
 }

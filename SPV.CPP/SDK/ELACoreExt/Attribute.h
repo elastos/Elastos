@@ -21,6 +21,7 @@ namespace Elastos {
 				Script = 0x20,
 				DescriptionUrl = 0x81,
 				Description = 0x90,
+				Memo        = 0x91
 			};
 
 		public:
@@ -29,6 +30,8 @@ namespace Elastos {
 			Attribute(Usage usage, const CMBlock &data);
 
 			~Attribute();
+
+			bool isValid();
 
 			virtual void Serialize(ByteStream &ostream) const;
 			virtual void Deserialize(ByteStream &istream);

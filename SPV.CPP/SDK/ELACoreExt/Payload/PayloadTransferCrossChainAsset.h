@@ -33,6 +33,8 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+			virtual bool isValid() const;
+
 		private:
 
 			std::map<std::string, uint64_t> _addressMap;

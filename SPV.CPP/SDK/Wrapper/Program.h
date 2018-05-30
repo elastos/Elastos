@@ -22,6 +22,8 @@ namespace Elastos {
 
 			~Program();
 
+			bool isValid();
+
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual void Deserialize(ByteStream &istream);

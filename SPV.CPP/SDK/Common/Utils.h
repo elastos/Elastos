@@ -68,6 +68,8 @@ namespace Elastos {
 			}
 
 			static std::string UInt168ToAddress(const UInt168 &u168);
+
+			static bool UInt168IsValid(const UInt168 &u168);
 		};
 	}
 }

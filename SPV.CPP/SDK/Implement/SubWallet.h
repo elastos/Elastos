@@ -117,6 +117,14 @@ namespace Elastos {
 
 			bool filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid);
 
+			virtual bool checkTransactionOutput(const TransactionPtr &transaction);
+
+			virtual bool checkTransactionAttribute(const TransactionPtr &transaction);
+
+			virtual bool checkTransactionProgram(const TransactionPtr &transaction);
+
+			virtual bool checkTransactionPayload(const TransactionPtr &transaction);
+
 		protected:
 
 			WalletManagerPtr _walletManager;

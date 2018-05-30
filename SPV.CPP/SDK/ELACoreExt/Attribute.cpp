@@ -21,6 +21,15 @@ namespace Elastos {
 		Attribute::~Attribute() {
 		}
 
+		bool Attribute::isValid() {
+			if (_usage != Attribute::Usage::Description && _usage != Attribute::Usage::DescriptionUrl &&
+				_usage != Attribute::Usage::Memo && _usage != Attribute::Usage::Nonce &&
+				_usage != Attribute::Usage::Script) {
+				return false;
+			}
+			return  true;
+		}
+
 		void Attribute::Serialize(ByteStream &ostream) const {
 			ostream.put(_usage);
 

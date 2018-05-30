@@ -37,6 +37,10 @@ namespace Elastos {
 			return db;
 		}
 
+		bool PayloadTransferCrossChainAsset::isValid() const {
+			return _addressMap.size() > 0;
+		}
+
 		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream) const {
 			uint64_t len = _addressMap.size();
 			ostream.putVarUint(len);

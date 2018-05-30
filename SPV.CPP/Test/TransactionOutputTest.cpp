@@ -32,7 +32,8 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 
 		CMBlock temp = transactionOutput.getScript();
 		for (uint64_t i = 0; i < sizeof(dummyScript); i++) {
-			REQUIRE(temp[i] == dummyScript[i]);
+			uint8_t t = temp[i];
+			REQUIRE(dummyScript[i] == t);
 		}
 	}
 

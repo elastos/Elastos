@@ -236,7 +236,11 @@ namespace Elastos {
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
 			Key key = deriveKey(payPassword);
-			CMBlock signedData = key.sign(Utils::UInt256FromString(message));
+
+			UInt256 md;
+			BRSHA256(&md, message.c_str(), message.size());
+
+			CMBlock signedData = key.sign(md);
 
 			char *data = new char[signedData.GetSize()];
 			memcpy(data, signedData, signedData.GetSize());
@@ -250,7 +254,10 @@ namespace Elastos {
 			CMBlock signatureData(signature.size());
 			memcpy(signatureData, signature.c_str(), signature.size());
 
-			bool r = Key::verifyByPublicKey(publicKey, Utils::UInt256FromString(message), signatureData);
+			UInt256 md;
+			BRSHA256(&md, message.c_str(), message.size());
+
+			bool r = Key::verifyByPublicKey(publicKey, md, signatureData);
 			//todo json return is correct ?
 			nlohmann::json jsonData;
 			jsonData["result"] = r;

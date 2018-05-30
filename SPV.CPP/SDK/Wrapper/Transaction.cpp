@@ -366,8 +366,16 @@ namespace Elastos {
 			return _payload;
 		}
 
+		const std::vector<AttributePtr> Transaction::getAttributes() const {
+			return _attributes;
+		}
+
 		void Transaction::addProgram(const ProgramPtr &program) {
 			_programs.push_back(program);
+		}
+
+		const std::vector<ProgramPtr> Transaction::getPrograms() const {
+			return _programs;
 		}
 
 		void Transaction::Serialize(ByteStream &ostream) const {

@@ -101,6 +101,9 @@ namespace Elastos {
 			 */
 			TransactionPtr createTransaction(uint64_t amount, const Address &address);
 
+			TransactionPtr createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+			                                 const std::string &toAddress);
+
 			/**
 			 * Create a BRCoreTransaction with the provided outputs
 			 *
@@ -210,6 +213,9 @@ namespace Elastos {
 		private:
 			std::vector<BRTransaction *>
 			getRawTransactions(const SharedWrapperList<Transaction, BRTransaction *> &transactions);
+
+			BRTransaction *
+			createBRTransaction(const char* fromAddress, uint64_t fee, const BRTxOutput outputs[], size_t outCount);
 
 		private:
 			BRWallet *_wallet;

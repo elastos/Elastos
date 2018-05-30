@@ -49,10 +49,10 @@ extern "C" {
 #define ELA_CROSSCHAIN              0xAF
 #define ELA_IDCHAIN                 0xAD
 
-#define ELA_STAND_ADDRESS            33
-#define ELA_MULTISIG_ADDRESS         18
-#define ELA_CROSSCHAIN_ADDRESS       75
-#define ELA_IDCHAIN_ADDRESS          103
+#define ELA_STAND_ADDRESS            33  //0x21
+#define ELA_MULTISIG_ADDRESS         18  //0x12
+#define ELA_CROSSCHAIN_ADDRESS       75  //0x4B
+#define ELA_IDCHAIN_ADDRESS          103 //0x67
 
 // bitcoin script opcodes: https://en.bitcoin.it/wiki/Script#Constants
 #define OP_0           0x00

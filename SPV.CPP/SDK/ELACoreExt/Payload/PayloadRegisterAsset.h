@@ -40,6 +40,8 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+			virtual bool isValid() const;
+
 		private:
 			Asset _asset;
 			uint64_t _amount;

@@ -56,11 +56,19 @@ namespace Elastos {
 			assert(idTxParam != nullptr);
 
 			//todo create transaction without to address
-			BRTransaction *tmp;
-			if (!tmp) return nullptr;
 
-			TransactionPtr ptr(new Transaction(tmp));
+			TransactionPtr ptr = nullptr;
+			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
+				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+				                                                     param->getAmount(), param->getToAddress());
+			} else {
+				Address address(param->getToAddress());
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+			}
+
+			if (!ptr) return nullptr;
 			ptr->setTransactionType(Transaction::RegisterIdentification);
+
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
@@ -73,6 +81,33 @@ namespace Elastos {
 		bool IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo different verify from base class
 			return SubWallet::verifyRawTransaction(transaction);
+		}
+
+		bool IdChainSubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
+
+			if (transaction->getTransactionType() != Transaction::RegisterIdentification) {
+				return false;
+			}
+
+			SubWallet::checkTransactionOutput(transaction);
+
+			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			size_t size = outputs.size();
+			if (size < 1) {
+				return false;
+			}
+			for (size_t i = 0; i < size; ++i) {
+				TransactionOutputPtr output = outputs[i];
+				if (output->getAddress().empty()) {
+					return false;
+				}
+
+				if(output->getAmount() != 0) {
+					return false;
+				}
+
+			}
+			return true;
 		}
 
 		bool IdChainSubWallet::completeTransaction(const TransactionPtr &transaction) {
@@ -125,5 +160,6 @@ namespace Elastos {
 									  SubWalletCallback::Deleted), wrapperTx.toJson(), 0);
 						  });
 		}
+
 	}
 }

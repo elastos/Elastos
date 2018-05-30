@@ -47,6 +47,8 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &);
 
+			virtual bool isValid() const;
+
 		private:
 			std::string _id;
 			std::string _path;

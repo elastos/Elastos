@@ -19,6 +19,8 @@ namespace Elastos {
 			virtual ~IPayload();
 
 			virtual CMBlock getData() const;
+
+			virtual bool isValid() const;
 		};
 
 		typedef boost::shared_ptr<IPayload> PayloadPtr;

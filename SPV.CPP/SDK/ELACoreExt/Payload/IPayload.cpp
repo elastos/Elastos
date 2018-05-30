@@ -21,5 +21,9 @@ namespace Elastos {
 
 			return db;
 		}
+
+		bool IPayload::isValid() const {
+			return true;
+		}
 	}
 }

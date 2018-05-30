@@ -54,11 +54,16 @@ namespace Elastos {
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(param);
 			assert(withdrawTxParam != nullptr);
 
-			BRTransaction *tmp = BRWalletCreateTransaction(_walletManager->getWallet()->getRaw(), param->getAmount(),
-														   withdrawTxParam->getMainchainAddress().c_str());
-			if (!tmp) return nullptr;
+			TransactionPtr ptr = nullptr;
+			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
+				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+				                                                     param->getAmount(), param->getToAddress());
+			} else {
+				Address address(param->getToAddress());
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+			}
+			if (!ptr) return nullptr;
 
-			TransactionPtr ptr(new Transaction(tmp));
 			ptr->setTransactionType(Transaction::TransferCrossChainAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
@@ -75,6 +80,10 @@ namespace Elastos {
 
 		bool SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo different verify from base class
+			if (transaction->getTransactionType() != Transaction::TransferCrossChainAsset) {
+				return false;
+			}
+
 			return SubWallet::verifyRawTransaction(transaction);
 		}
 
