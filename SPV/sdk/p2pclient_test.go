@@ -2,14 +2,14 @@ package sdk
 
 import (
 	"fmt"
-	"time"
 	"testing"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 func TestP2PClient(t *testing.T) {

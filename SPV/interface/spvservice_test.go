@@ -28,14 +28,6 @@ func TestNewSPVService(t *testing.T) {
 		t.Error("NewSPVService error %s", err.Error())
 	}
 
-	// Register account
-	err = spv.RegisterAccount("ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z")
-	err = spv.RegisterAccount("Ef2bDPwcUKguteJutJQCmjX2wgHVfkJ2Wq")
-	err = spv.RegisterAccount("EYUsEASwbPq9NcSswa8TsP7eVRwiiGwmdq")
-	if err != nil {
-		t.Error("Register account error: ", err)
-	}
-
 	// Set on transaction confirmed callback
 	spv.RegisterTransactionListener(&ConfirmedListener{txType: CoinBase})
 	spv.RegisterTransactionListener(&UnconfirmedListener{txType: TransferAsset})
@@ -51,12 +43,16 @@ type ConfirmedListener struct {
 	txType TransactionType
 }
 
+func (l *ConfirmedListener) Address() string {
+	return "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z"
+}
+
 func (l *ConfirmedListener) Type() TransactionType {
 	return l.txType
 }
 
-func (l *ConfirmedListener) Confirmed() bool {
-	return true
+func (l *ConfirmedListener) Flags() uint64 {
+	return FlagNotifyConfirmed | FlagNotifyInSyncing
 }
 
 func (l *ConfirmedListener) Notify(proof MerkleProof, tx Transaction) {
@@ -77,12 +73,16 @@ type UnconfirmedListener struct {
 	txType TransactionType
 }
 
+func (l *UnconfirmedListener) Address() string {
+	return "Ef2bDPwcUKguteJutJQCmjX2wgHVfkJ2Wq"
+}
+
 func (l *UnconfirmedListener) Type() TransactionType {
 	return l.txType
 }
 
-func (l *UnconfirmedListener) Confirmed() bool {
-	return false
+func (l *UnconfirmedListener) Flags() uint64 {
+	return FlagNotifyInSyncing
 }
 
 func (l *UnconfirmedListener) Notify(proof MerkleProof, tx Transaction) {

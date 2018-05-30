@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SPV/log"
 )
 
 const (

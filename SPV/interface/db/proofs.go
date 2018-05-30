@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"github.com/boltdb/bolt"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/bloom"
+	"encoding/binary"
 )
 
 type Proofs interface {
@@ -17,13 +17,13 @@ type Proofs interface {
 	Put(proof *bloom.MerkleProof) error
 
 	// Get a merkle proof of a block
-	Get(blockHash *common.Uint256) (*bloom.MerkleProof, error)
+	Get(height uint32) (*bloom.MerkleProof, error)
 
 	// Get all merkle proofs in database
 	GetAll() ([]*bloom.MerkleProof, error)
 
 	// Delete a merkle proof of a block
-	Delete(blockHash *common.Uint256) error
+	Delete(height uint32) error
 }
 
 type ProofStore struct {
@@ -59,7 +59,10 @@ func (db *ProofStore) Put(proof *bloom.MerkleProof) error {
 			return err
 		}
 
-		err = tx.Bucket(BKTProofs).Put(proof.BlockHash.Bytes(), bytes)
+		var key = make([]byte, 4)
+		binary.LittleEndian.PutUint32(key[:], proof.Height)
+
+		err = tx.Bucket(BKTProofs).Put(key, bytes)
 		if err != nil {
 			return err
 		}
@@ -69,13 +72,16 @@ func (db *ProofStore) Put(proof *bloom.MerkleProof) error {
 }
 
 // Get a merkle proof of a block
-func (db *ProofStore) Get(blockHash *common.Uint256) (proof *bloom.MerkleProof, err error) {
+func (db *ProofStore) Get(height uint32) (proof *bloom.MerkleProof, err error) {
 	db.RLock()
 	defer db.RUnlock()
 
 	err = db.View(func(tx *bolt.Tx) error {
 
-		proof, err = getProof(tx, blockHash.Bytes())
+		var key = make([]byte, 4)
+		binary.LittleEndian.PutUint32(key[:], height)
+
+		proof, err = getProof(tx, key)
 		if err != nil {
 			return err
 		}
@@ -120,12 +126,15 @@ func (db *ProofStore) GetAll() (proofs []*bloom.MerkleProof, err error) {
 }
 
 // Delete a merkle proof of a block
-func (db *ProofStore) Delete(blockHash *common.Uint256) error {
+func (db *ProofStore) Delete(height uint32) error {
 	db.Lock()
 	defer db.Unlock()
 
 	return db.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(BKTProofs).Delete(blockHash.Bytes())
+		var key = make([]byte, 4)
+		binary.LittleEndian.PutUint32(key[:], height)
+
+		return tx.Bucket(BKTProofs).Delete(key)
 	})
 }
 

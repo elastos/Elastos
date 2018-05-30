@@ -24,7 +24,7 @@ const (
 )
 
 const (
-	LevelInfo  = iota
+	LevelInfo = iota
 	LevelTrace
 	LevelWarn
 	LevelError

@@ -12,7 +12,7 @@ import (
 
 type Addrs interface {
 	GetFilter() *sdk.AddrFilter
-	Put(address string) (bool, error)
+	Put(addr *common.Uint168) error
 	GetAll() []*common.Uint168
 }
 
@@ -54,22 +54,17 @@ func (a *AddrStore) GetFilter() *sdk.AddrFilter {
 	return a.filter
 }
 
-func (a *AddrStore) Put(address string) (bool, error) {
+func (a *AddrStore) Put(addr *common.Uint168) error {
 	a.Lock()
 	defer a.Unlock()
 
-	hash, err := common.Uint168FromAddress(address)
-	if err != nil {
-		return false, err
+	if a.filter.ContainAddr(*addr) {
+		return nil
 	}
 
-	if a.filter.ContainAddr(*hash) {
-		return false, nil
-	}
-
-	a.filter.AddAddr(hash)
-	return true, a.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket(BKTAddrs).Put([]byte(address), hash.Bytes())
+	a.filter.AddAddr(addr)
+	return a.Update(func(tx *bolt.Tx) error {
+		return tx.Bucket(BKTAddrs).Put(addr.Bytes(), addr.Bytes())
 	})
 }
 

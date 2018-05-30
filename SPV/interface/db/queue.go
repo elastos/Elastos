@@ -31,7 +31,6 @@ const (
 
 	CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(
 				TxHash BLOB NOT NULL PRIMARY KEY,
-				BlockHash BLOB NOT NULL,
 				Height INTEGER NOT NULL
 			);`
 )
@@ -60,8 +59,8 @@ func (db *QueueDB) Put(item *QueueItem) error {
 	db.Lock()
 	defer db.Unlock()
 
-	sql := "INSERT OR REPLACE INTO Queue(TxHash, BlockHash, Height) VALUES(?,?,?)"
-	_, err := db.Exec(sql, item.TxHash.Bytes(), item.BlockHash.Bytes(), item.Height)
+	sql := "INSERT OR REPLACE INTO Queue(TxHash, Height) VALUES(?,?)"
+	_, err := db.Exec(sql, item.TxHash.Bytes(), item.Height)
 	if err != nil {
 		return err
 	}
@@ -74,7 +73,7 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	rows, err := db.Query("SELECT TxHash, BlockHash, Height FROM Queue")
+	rows, err := db.Query("SELECT TxHash, Height FROM Queue")
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +81,8 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 	var items []*QueueItem
 	for rows.Next() {
 		var txHashBytes []byte
-		var blockHashBytes []byte
 		var height uint32
-		err = rows.Scan(&txHashBytes, &blockHashBytes, &height)
+		err = rows.Scan(&txHashBytes, &height)
 		if err != nil {
 			return nil, err
 		}
@@ -93,11 +91,7 @@ func (db *QueueDB) GetAll() ([]*QueueItem, error) {
 		if err != nil {
 			return nil, err
 		}
-		blockHash, err := common.Uint256FromBytes(blockHashBytes)
-		if err != nil {
-			return nil, err
-		}
-		item := &QueueItem{TxHash: *txHash, BlockHash: *blockHash, Height: height}
+		item := &QueueItem{TxHash: *txHash, Height: height}
 		items = append(items, item)
 	}
 

@@ -14,12 +14,9 @@ service implementation running background, you can register specific accounts th
 interested in and receive transaction notifications of these accounts.
 */
 type SPVService interface {
-	// Register the account address that you are interested in
-	RegisterAccount(address string) error
-
-	// Register the TransactionListener to receive transaction notifications
-	// when a transaction related with the registered accounts is received
-	RegisterTransactionListener(TransactionListener)
+	// RegisterTransactionListener register the listener to receive transaction notifications
+	// listeners must be registered before call Start() method, or some notifications will go missing.
+	RegisterTransactionListener(TransactionListener) error
 
 	// After receive the transaction callback, call this method
 	// to confirm that the transaction with the given ID was handled
@@ -43,17 +40,28 @@ type SPVService interface {
 	ResetStores() error
 }
 
+const (
+	// FlagNotifyConfirmed indicates if this transaction should be callback after reach the confirmed height,
+	// by default 6 confirmations are needed according to the protocol
+	FlagNotifyConfirmed = 1 << 0
+
+	// FlagNotifyInSyncing indicates if notify this listener when SPV is in syncing.
+	FlagNotifyInSyncing = 1 << 1
+)
+
 /*
 Register this listener into the SPVService RegisterTransactionListener() method
 to receive transaction notifications.
 */
 type TransactionListener interface {
+	// The address this listener interested
+	Address() string
+
 	// Type() indicates which transaction type this listener are interested
 	Type() core.TransactionType
 
-	// Confirmed() indicates if this transaction should be callback after reach the confirmed height,
-	// by default 6 confirmations are needed according to the protocol
-	Confirmed() bool
+	// Flags control the notification actions by the given flag
+	Flags() uint64
 
 	// Notify() is the method to callback the received transaction
 	// with the merkle tree proof to verify it

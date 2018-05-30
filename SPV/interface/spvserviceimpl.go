@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/store"
 
+	"fmt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/bloom"
@@ -21,7 +22,7 @@ type SPVServiceImpl struct {
 	headers   *db.HeaderStore
 	dataStore db.DataStore
 	queue     db.Queue
-	listeners map[core.TransactionType][]TransactionListener
+	listeners map[common.Uint168]TransactionListener
 }
 
 func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string, minOutbound, maxConnections int) (*SPVServiceImpl, error) {
@@ -52,27 +53,21 @@ func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string, minOutboun
 		return nil, err
 	}
 
-	service.listeners = make(map[core.TransactionType][]TransactionListener)
+	service.listeners = make(map[common.Uint168]TransactionListener)
 
 	return service, nil
 }
 
-func (service *SPVServiceImpl) RegisterAccount(address string) error {
-	ok, err := service.dataStore.Addrs().Put(address)
+func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionListener) error {
+	address, err := common.Uint168FromAddress(listener.Address())
 	if err != nil {
-		return err
+		return fmt.Errorf("address %s is not a valied address", listener.Address())
 	}
-	if !ok {
-		return errors.New("address has already registered")
+	if _, ok := service.listeners[*address]; ok {
+		return fmt.Errorf("address %s already registered", listener.Address())
 	}
-	service.SPVService.ReloadFilter()
-	return nil
-}
-
-func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionListener) {
-	listeners := service.listeners[listener.Type()]
-	listeners = append(listeners, listener)
-	service.listeners[listener.Type()] = listeners
+	service.listeners[*address] = listener
+	return service.dataStore.Addrs().Put(address)
 }
 
 func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash common.Uint256) error {
@@ -95,10 +90,10 @@ func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx cor
 	}
 	txIds, err := bloom.CheckMerkleBlock(merkleBlock)
 	if err != nil {
-		return errors.New("check merkle branch failed, " + err.Error())
+		return fmt.Errorf("check merkle branch failed, %s", err.Error())
 	}
 	if len(txIds) == 0 {
-		return errors.New("invalid transaction proof, no transactions found")
+		return fmt.Errorf("invalid transaction proof, no transactions found")
 	}
 
 	// Check if transaction hash is match
@@ -110,7 +105,7 @@ func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx cor
 		}
 	}
 	if !match {
-		return errors.New("transaction hash not match proof")
+		return fmt.Errorf("transaction hash not match proof")
 	}
 
 	return nil
@@ -134,14 +129,12 @@ func (service *SPVServiceImpl) GetData() ([]*common.Uint168, []*core.OutPoint) {
 	return service.dataStore.Addrs().GetAll(), ops
 }
 
-func (service *SPVServiceImpl) OnStateChange(sdk.ChainState) {}
-
 func (service *SPVServiceImpl) CommitTx(tx *core.Transaction, height uint32) (bool, error) {
 	hits := 0
 	for index, output := range tx.Outputs {
 		if service.dataStore.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
 			outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
-			if err := service.dataStore.Outpoints().Put(outpoint); err != nil {
+			if err := service.dataStore.Outpoints().Put(outpoint, output.ProgramHash); err != nil {
 				return false, err
 			}
 			hits++
@@ -149,7 +142,7 @@ func (service *SPVServiceImpl) CommitTx(tx *core.Transaction, height uint32) (bo
 	}
 
 	for _, input := range tx.Inputs {
-		if service.dataStore.Outpoints().IsExist(&input.Previous) {
+		if addr := service.dataStore.Outpoints().IsExist(&input.Previous); addr != nil {
 			hits++
 		}
 	}
@@ -157,6 +150,12 @@ func (service *SPVServiceImpl) CommitTx(tx *core.Transaction, height uint32) (bo
 	if hits == 0 {
 		return true, nil
 	}
+
+	// Put hit transaction into notify queue
+	service.queue.Put(&db.QueueItem{
+		TxHash: tx.Hash(),
+		Height: height,
+	})
 
 	return false, service.dataStore.Txs().Put(db.NewStoreTx(tx, height))
 }
@@ -178,28 +177,6 @@ func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*c
 		return
 	}
 
-	// Find transactions matches registered accounts
-	var matchedTxs []*core.Transaction
-	for _, tx := range txs {
-		for _, output := range tx.Outputs {
-			if service.dataStore.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
-				matchedTxs = append(matchedTxs, tx)
-			}
-		}
-	}
-
-	// Queue matched transactions
-	for _, tx := range matchedTxs {
-		item := &db.QueueItem{
-			TxHash:    tx.Hash(),
-			BlockHash: header.Hash(),
-			Height:    header.Height,
-		}
-
-		// Save to queue db
-		service.queue.Put(item)
-	}
-
 	// Look up for queued transactions
 	items, err := service.queue.GetAll()
 	if err != nil {
@@ -207,9 +184,9 @@ func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*c
 	}
 	for _, item := range items {
 		//	Get proof from db
-		proof, err := service.dataStore.Proofs().Get(&item.BlockHash)
+		proof, err := service.dataStore.Proofs().Get(item.Height)
 		if err != nil {
-			log.Error("Query merkle proof failed, block hash:", item.BlockHash.String())
+			log.Error("Query merkle proof at height %d failed, %s", item.Height, err.Error())
 			return
 		}
 		//	Get transaction from db
@@ -218,8 +195,6 @@ func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*c
 			log.Error("Query transaction failed, tx hash:", item.TxHash.String())
 			return
 		}
-		// Prune the proof by the given transaction id
-		proof = getTransactionProof(proof, storeTx.Hash())
 
 		// Notify listeners
 		service.notifyTransaction(*proof, storeTx.Transaction, header.Height-item.Height)
@@ -278,23 +253,58 @@ func (service *SPVServiceImpl) ResetStores() error {
 }
 
 func (service *SPVServiceImpl) notifyTransaction(proof bloom.MerkleProof, tx core.Transaction, confirmations uint32) {
-	listeners := service.listeners[tx.TxType]
-	for _, listener := range listeners {
-		if listener.Confirmed() {
+	// common function
+	notifyListener := func(listener TransactionListener) {
+		txId := tx.Hash()
+
+		// Remove notifications that not match the listener's type
+		if listener.Type() != tx.TxType {
+			service.queue.Delete(&txId)
+			return
+		}
+
+		// Remove notifications if FlagNotifyInSyncing not set
+		if service.SPVService.ChainState() == sdk.SYNCING &&
+			listener.Flags()&FlagNotifyInSyncing != FlagNotifyInSyncing {
+
+			if listener.Flags()&FlagNotifyConfirmed == FlagNotifyConfirmed {
+				if confirmations >= getConfirmations(tx) {
+					service.queue.Delete(&txId)
+				}
+			} else {
+				service.queue.Delete(&txId)
+			}
+			return
+		}
+
+		// Notify listener
+		if listener.Flags()&FlagNotifyConfirmed == FlagNotifyConfirmed {
 			if confirmations >= getConfirmations(tx) {
-				go listener.Notify(proof, tx)
+				listener.Notify(proof, tx)
 			}
 		} else {
-			go listener.Notify(proof, tx)
+			listener.Notify(proof, tx)
+		}
+	}
+
+	for _, output := range tx.Outputs {
+		if listener, ok := service.listeners[output.ProgramHash]; ok {
+			go notifyListener(listener)
+		}
+	}
+
+	for _, input := range tx.Inputs {
+		if addr := service.dataStore.Outpoints().IsExist(&input.Previous); addr != nil {
+			if listener, ok := service.listeners[*addr]; ok {
+				go notifyListener(listener)
+			}
 		}
 	}
 }
 
 func (service *SPVServiceImpl) notifyRollback(height uint32) {
-	for _, group := range service.listeners {
-		for _, listener := range group {
-			go listener.Rollback(height)
-		}
+	for _, listener := range service.listeners {
+		go listener.Rollback(height)
 	}
 }
 
@@ -305,9 +315,4 @@ func getConfirmations(tx core.Transaction) uint32 {
 		return 100
 	}
 	return DefaultConfirmations
-}
-
-func getTransactionProof(proof *bloom.MerkleProof, txHash common.Uint256) *bloom.MerkleProof {
-	// TODO Pick out the merkle proof of the transaction
-	return proof
 }

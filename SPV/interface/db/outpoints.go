@@ -1,10 +1,11 @@
 package db
 
 import (
-	"github.com/boltdb/bolt"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/boltdb/bolt"
 )
 
 var (
@@ -12,8 +13,8 @@ var (
 )
 
 type Outpoints interface {
-	Put(*core.OutPoint) error
-	IsExist(*core.OutPoint) bool
+	Put(*core.OutPoint, common.Uint168) error
+	IsExist(*core.OutPoint) *common.Uint168
 	GetAll() ([]*core.OutPoint, error)
 }
 
@@ -38,26 +39,27 @@ func NewOutpointDB(db *bolt.DB) (*OutpointStore, error) {
 	return store, nil
 }
 
-func (t *OutpointStore) Put(op *core.OutPoint) (err error) {
+func (t *OutpointStore) Put(op *core.OutPoint, addr common.Uint168) (err error) {
 	t.Lock()
 	defer t.Unlock()
 	return t.Update(func(tx *bolt.Tx) error {
-		outpoint := op.Bytes()
-		return tx.Bucket(BKTOps).Put(outpoint, outpoint)
+		return tx.Bucket(BKTOps).Put(op.Bytes(), addr.Bytes())
 	})
 }
 
-func (t *OutpointStore) IsExist(op *core.OutPoint) (exist bool) {
+func (t *OutpointStore) IsExist(op *core.OutPoint) (addr *common.Uint168) {
 	t.RLock()
 	defer t.RUnlock()
+
 	t.View(func(tx *bolt.Tx) error {
-		outpoint := tx.Bucket(BKTOps).Get(op.Bytes())
-		if outpoint != nil {
-			exist = true
+		addrBytes := tx.Bucket(BKTOps).Get(op.Bytes())
+		var err error
+		if addr, err = common.Uint168FromBytes(addrBytes); err != nil {
+			return err
 		}
 		return nil
 	})
-	return exist
+	return addr
 }
 
 func (t *OutpointStore) GetAll() (ops []*core.OutPoint, err error) {
