@@ -29,7 +29,7 @@ namespace Elastos {
 		std::string
 		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress,
 											const nlohmann::json &payloadJson, const nlohmann::json &programJson,
-											double fee, const std::string &payPassword, const std::string &memo) {
+											uint64_t fee, const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Idchain, fromAddress, "", 0, fee, memo));
 

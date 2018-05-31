@@ -19,7 +19,7 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const nlohmann::json &sidechainAccounts,
 					const nlohmann::json &sidechainAmounts,
-					double fee,
+					uint64_t fee,
 					const std::string &payPassword,
 					const std::string &memo);
 

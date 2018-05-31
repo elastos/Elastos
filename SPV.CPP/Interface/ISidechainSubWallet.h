@@ -18,7 +18,7 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const nlohmann::json& mainchainAccounts,
 					const nlohmann::json& mainchainAmounts,
-					double fee,
+					uint64_t fee,
 					const std::string &payPassword,
 					const std::string &memo) = 0;
 		};

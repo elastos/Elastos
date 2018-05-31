@@ -25,7 +25,7 @@ namespace Elastos {
 
 		std::string SidechainSubWallet::SendWithdrawTransaction(const std::string &fromAddress,
 																const nlohmann::json &mainchainAccounts,
-																const nlohmann::json &mainchainAmounts, double fee,
+																const nlohmann::json &mainchainAmounts, uint64_t fee,
 																const std::string &payPassword,
 																const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
