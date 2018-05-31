@@ -176,7 +176,7 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 func (pool *TxPool) cleanUTXOList(txs []*Transaction) {
 	for _, txn := range txs {
 		inputUtxos, _ := DefaultLedger.Store.GetTxReference(txn)
-		for Utxoinput, _ := range inputUtxos {
+		for Utxoinput := range inputUtxos {
 			pool.delInputUTXOList(Utxoinput)
 		}
 	}

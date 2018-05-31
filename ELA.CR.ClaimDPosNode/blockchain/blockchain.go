@@ -1124,17 +1124,20 @@ func (b *Blockchain) LatestBlockLocator() ([]*Uint256, error) {
 	// The best chain is set, so use its hash.
 	return b.blockLocatorFromHash(b.BestChain.Hash), nil
 }
+
 func (b *Blockchain) AddNodeToIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 
 	b.Index[*node.Hash] = node
 }
+
 func (b *Blockchain) RemoveNodeFromIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 	delete(b.Index, *node.Hash)
 }
+
 func (b *Blockchain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
