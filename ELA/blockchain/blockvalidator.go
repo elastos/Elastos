@@ -105,7 +105,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 
 	for _, txVerify := range transactions {
 		if errCode := CheckTransactionSanity(version, txVerify); errCode != Success {
-			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verifiy block"))
+			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verify block"))
 		}
 	}
 
@@ -151,8 +151,8 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 
 	// for _, txVerify := range block.Transactions {
 	// 	if errCode := CheckTransactionContext(txVerify, ledger); errCode != ErrNoError {
-	// 		fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
-	// 		return errors.New(fmt.Sprintf("CheckTransactionContext failed when verifiy block"))
+	// 		fmt.Println("CheckTransactionContext failed when verify block", errCode)
+	// 		return errors.New(fmt.Sprintf("CheckTransactionContext failed when verify block"))
 	// 	}
 	// }
 
