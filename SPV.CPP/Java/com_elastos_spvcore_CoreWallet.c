@@ -143,10 +143,10 @@ Java_com_elastos_spvcore_CoreWallet_getAllAddresses
 	BRWallet *wallet = (BRWallet *) getJNIReference (env, thisObject);
 
 	// Get *all* addresses
-	size_t addrCount = BRWalletAllAddrs (wallet, NULL, 0);
+	size_t addrCount = wallet->WalletAllAddrs (wallet, NULL, 0);
 
 	BRAddress *addresses = (BRAddress *) calloc (addrCount, sizeof (BRAddress));
-	BRWalletAllAddrs (wallet, addresses, addrCount);
+	wallet->WalletAllAddrs (wallet, addresses, addrCount);
 
 	jobjectArray addrArray = (*env)->NewObjectArray (env, addrCount, addressClass, 0);
 

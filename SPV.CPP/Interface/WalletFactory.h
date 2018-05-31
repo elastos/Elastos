@@ -5,9 +5,6 @@
 #ifndef __ELASTOS_SDK_WALLETFACTORY_H__
 #define __ELASTOS_SDK_WALLETFACTORY_H__
 
-#include <map>
-#include <boost/function.hpp>
-
 #include "Interface/IWalletFactory.h"
 
 namespace Elastos {
@@ -45,9 +42,6 @@ namespace Elastos {
 			virtual std::string ExportWalletWithMnemonic(
 					IMasterWallet *masterWallet,
 					const std::string &payPassword);
-
-		protected:
-			IMasterWallet *importWalletInternal(const boost::function<bool(MasterWallet *)> &walletImportFun);
 		};
 
 	}

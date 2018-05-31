@@ -31,7 +31,7 @@
 #include <float.h>
 #include <assert.h>
 
-inline static uint64_t _txFee(uint64_t feePerKb, size_t size)
+uint64_t _txFee(uint64_t feePerKb, size_t size)
 {
     uint64_t standardFee = ((size + 999)/1000)*TX_FEE_PER_KB, // standard fee based on tx size rounded up to nearest kb
              fee = (((size*feePerKb/1000) + 99)/100)*100; // fee using feePerKb, rounded up to nearest 100 satoshi
@@ -40,7 +40,7 @@ inline static uint64_t _txFee(uint64_t feePerKb, size_t size)
 }
 
 // chain position of first tx output address that appears in chain
-inline static size_t _txChainIndex(const BRTransaction *tx, const BRAddress *addrChain)
+size_t _txChainIndex(const BRTransaction *tx, const BRAddress *addrChain)
 {
     for (size_t i = array_count(addrChain); i > 0; i--) {
         for (size_t j = 0; j < tx->outCount; j++) {
@@ -51,7 +51,7 @@ inline static size_t _txChainIndex(const BRTransaction *tx, const BRAddress *add
     return SIZE_MAX;
 }
 
-inline static int _BRWalletTxIsAscending(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2)
+int _BRWalletTxIsAscending(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2)
 {
     if (! tx1 || ! tx2) return 0;
     if (tx1->blockHeight > tx2->blockHeight) return 1;
@@ -72,7 +72,7 @@ inline static int _BRWalletTxIsAscending(BRWallet *wallet, BRTransaction *tx1, B
     return 0;
 }
 
-inline static int _BRWalletTxCompare(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2)
+int _BRWalletTxCompare(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2)
 {
     size_t i, j;
 
@@ -86,7 +86,7 @@ inline static int _BRWalletTxCompare(BRWallet *wallet, BRTransaction *tx1, BRTra
 }
 
 // inserts tx into wallet->transactions, keeping wallet->transactions sorted by date, oldest first (insertion sort)
-inline static void _BRWalletInsertTx(BRWallet *wallet, BRTransaction *tx)
+void _BRWalletInsertTx(BRWallet *wallet, BRTransaction *tx)
 {
     size_t i = array_count(wallet->transactions);
 
@@ -101,7 +101,7 @@ inline static void _BRWalletInsertTx(BRWallet *wallet, BRTransaction *tx)
 }
 
 // non-threadsafe version of BRWalletContainsTransaction()
-static int _BRWalletContainsTx(BRWallet *wallet, const BRTransaction *tx)
+int _BRWalletContainsTx(BRWallet *wallet, const BRTransaction *tx)
 {
     int r = 0;
 
@@ -130,7 +130,7 @@ static int _BRWalletContainsTx(BRWallet *wallet, const BRTransaction *tx)
 //    return r;
 //}
 
-static void _BRWalletUpdateBalance(BRWallet *wallet)
+void _BRWalletUpdateBalance(BRWallet *wallet)
 {
     int isInvalid, isPending;
     uint64_t balance = 0, prevBalance = 0;
@@ -227,7 +227,10 @@ static void _BRWalletUpdateBalance(BRWallet *wallet)
 }
 
 // allocates and populates a BRWallet struct which must be freed by calling BRWalletFree()
-BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk)
+BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
+                      size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal),
+                      size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount),
+                      void (*setApplyFreeTx)(void *info, void *tx))
 {
     BRWallet *wallet = NULL;
     BRTransaction *tx;
@@ -240,6 +243,9 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
     array_new(wallet->transactions, txCount + 100);
     wallet->feePerKb = DEFAULT_FEE_PER_KB;
     wallet->masterPubKey = mpk;
+    wallet->WalletUnusedAddrs = WalletUnusedAddrs;
+    wallet->WalletAllAddrs = WalletAllAddrs;
+    wallet->setApplyFreeTx = setApplyFreeTx;
     array_new(wallet->internalChain, 100);
     array_new(wallet->externalChain, 100);
     array_new(wallet->balanceHist, txCount + 100);
@@ -262,8 +268,8 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
         }
     }
 
-    BRWalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-    BRWalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+    wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+    wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
     _BRWalletUpdateBalance(wallet);
 
     if (txCount > 0 && ! _BRWalletContainsTx(wallet, transactions[0])) { // verify transactions match master pubKey
@@ -474,7 +480,7 @@ BRAddress BRWalletReceiveAddress(BRWallet *wallet)
 {
     BRAddress addr = BR_ADDRESS_NONE;
 
-    BRWalletUnusedAddrs(wallet, &addr, 1, 0);
+    wallet->WalletUnusedAddrs(wallet, &addr, 1, 0);
     return addr;
 }
 
@@ -627,7 +633,7 @@ BRTransaction *BRWalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput out
         transaction = NULL;
     }
     else if (transaction && balance - (amount + feeAmount) > minAmount) { // add change output
-        BRWalletUnusedAddrs(wallet, &addr, 1, 1);
+        wallet->WalletUnusedAddrs(wallet, &addr, 1, 1);
         uint8_t script[BRAddressScriptPubKey(NULL, 0, addr.s)];
         size_t scriptLen = BRAddressScriptPubKey(script, sizeof(script), addr.s);
 
@@ -727,8 +733,8 @@ int BRWalletRegisterTransaction(BRWallet *wallet, BRTransaction *tx)
 
     if (wasAdded) {
         // when a wallet address is used in a transaction, generate a new address to replace it
-        BRWalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-        BRWalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+        wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+        wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
         if (wallet->balanceChanged) wallet->balanceChanged(wallet->callbackInfo, wallet->balance);
         if (wallet->txAdded) wallet->txAdded(wallet->callbackInfo, tx);
     }
@@ -1156,7 +1162,7 @@ void BRWalletFree(BRWallet *wallet)
     BRSetFree(wallet->usedAddrs);
     BRSetFree(wallet->invalidTx);
     BRSetFree(wallet->pendingTx);
-    BRSetApply(wallet->allTx, NULL, _setApplyFreeTx);
+    BRSetApply(wallet->allTx, NULL, wallet->setApplyFreeTx);
     BRSetFree(wallet->allTx);
     BRSetFree(wallet->spentOutputs);
     array_free(wallet->internalChain);

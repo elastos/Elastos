@@ -228,8 +228,8 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     // every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used
     // for one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a
     // wallet transaction is encountered during the chain sync
-	BRWalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-	BRWalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+    manager->wallet->WalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+    manager->wallet->WalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 
     BRSetApply(manager->orphans, NULL, manager->peerMessages->ApplyFreeBlock);
     BRSetClear(manager->orphans); // clear out orphans that may have been received on an old filter
@@ -237,7 +237,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     manager->filterUpdateHeight = manager->lastBlock->height;
     manager->fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
-    size_t addrsCount = BRWalletAllAddrs(manager->wallet, NULL, 0);
+    size_t addrsCount = manager->wallet->WalletAllAddrs(manager->wallet, NULL, 0);
     BRAddress *addrs = malloc(addrsCount*sizeof(*addrs));
     size_t utxosCount = BRWalletUTXOs(manager->wallet, NULL, 0);
     BRUTXO *utxos = malloc(utxosCount*sizeof(*utxos));
@@ -249,7 +249,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     assert(addrs != NULL);
     assert(utxos != NULL);
     assert(transactions != NULL);
-    addrsCount = BRWalletAllAddrs(manager->wallet, addrs, addrsCount);
+    addrsCount = manager->wallet->WalletAllAddrs(manager->wallet, addrs, addrsCount);
     utxosCount = BRWalletUTXOs(manager->wallet, utxos, utxosCount);
     txCount = BRWalletTxUnconfirmedBefore(manager->wallet, transactions, txCount, blockHeight);
     filter = BRBloomFilterNew(manager->fpRate, addrsCount + utxosCount + txCount + 100, (uint32_t)BRPeerHash(peer),
@@ -944,8 +944,8 @@ static void _peerRelayedTx(void *info, BRTransaction *tx)
 
             // the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
             // unused addresses are still matched by the bloom filter
-            BRWalletUnusedAddrs(manager->wallet, addrs, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-            BRWalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+            manager->wallet->WalletUnusedAddrs(manager->wallet, addrs, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+            manager->wallet->WalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
             for (size_t i = 0; i < SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL; i++) {
                 if (! BRAddressHash168(&hash, addrs[i].s) ||

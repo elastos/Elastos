@@ -44,7 +44,8 @@ namespace Elastos {
 		public:
 			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 				   const MasterPubKeyPtr &masterPubKey,
-				   const boost::shared_ptr<Listener> &listener);
+				   const boost::shared_ptr<Listener> &listener,
+				   bool singleAddress = false);
 
 			~Wallet();
 
@@ -217,8 +218,11 @@ namespace Elastos {
 			BRTransaction *
 			createBRTransaction(const char* fromAddress, uint64_t fee, const BRTxOutput outputs[], size_t outCount);
 
+			BRWallet *createSingleWallet(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk);
+
 		private:
 			BRWallet *_wallet;
+			bool _singleAddress;
 
 			boost::weak_ptr<Listener> _listener;
 		};

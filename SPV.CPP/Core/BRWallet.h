@@ -58,6 +58,8 @@ inline static int BRUTXOEq(const void *utxo, const void *otherUtxo)
                                   ((const BRUTXO *)utxo)->n == ((const BRUTXO *)otherUtxo)->n));
 }
 
+typedef struct BRWalletStruct BRWallet;
+
 typedef struct BRWalletStruct {
     uint64_t balance, totalSent, totalReceived, feePerKb, *balanceHist;
     uint32_t blockHeight;
@@ -71,11 +73,31 @@ typedef struct BRWalletStruct {
     void (*txAdded)(void *info, BRTransaction *tx);
     void (*txUpdated)(void *info, const UInt256 txHashes[], size_t txCount, uint32_t blockHeight, uint32_t timestamp);
     void (*txDeleted)(void *info, UInt256 txHash, int notifyUser, int recommendRescan);
+    size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal);
+	size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount);
+	void (*setApplyFreeTx)(void *info, void *tx);
     pthread_mutex_t lock;
 } BRWallet;
 
+inline uint64_t _txFee(uint64_t feePerKb, size_t size);
+
+inline size_t _txChainIndex(const BRTransaction *tx, const BRAddress *addrChain);
+
+inline int _BRWalletTxIsAscending(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2);
+
+inline int _BRWalletTxCompare(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2);
+
+inline void _BRWalletInsertTx(BRWallet *wallet, BRTransaction *tx);
+
+int _BRWalletContainsTx(BRWallet *wallet, const BRTransaction *tx);
+
+void _BRWalletUpdateBalance(BRWallet *wallet);
+
 // allocates and populates a BRWallet struct that must be freed by calling BRWalletFree()
-BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk);
+BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
+                      size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal),
+					  size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount),
+					  void (*setApplyFreeTx)(void *info, void *tx));
 
 // not thread-safe, set callbacks once after BRWalletNew(), before calling other BRWallet functions
 // info is a void pointer that will be passed along with each callback call

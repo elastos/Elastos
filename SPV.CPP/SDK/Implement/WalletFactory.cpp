@@ -2,12 +2,27 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <boost/function.hpp>
+
 #include "WalletFactory.h"
 #include "MasterWallet.h"
 #include "Log.h"
 
 namespace Elastos {
 	namespace SDK {
+
+		class WalletFactoryInner {
+		public:
+			static IMasterWallet *importWalletInternal(const boost::function<bool(MasterWallet *)> &walletImportFun) {
+				MasterWallet *masterWallet = new MasterWallet();
+
+				if (!walletImportFun(masterWallet) || !masterWallet->Initialized()) {
+					delete masterWallet;
+					return nullptr;
+				}
+				return masterWallet;
+			}
+		};
 
 		WalletFactory::WalletFactory() {
 
@@ -31,7 +46,7 @@ namespace Elastos {
 		IMasterWallet *
 		WalletFactory::ImportWalletWithKeystore(const std::string &keystorePath, const std::string &backupPassword,
 												const std::string &payPassword) {
-			return importWalletInternal([&keystorePath, &backupPassword, &payPassword](MasterWallet *masterWallet) {
+			return WalletFactoryInner::importWalletInternal([&keystorePath, &backupPassword, &payPassword](MasterWallet *masterWallet) {
 				return masterWallet->importFromKeyStore(keystorePath, backupPassword, payPassword);
 			});
 		}
@@ -39,7 +54,7 @@ namespace Elastos {
 		IMasterWallet *
 		WalletFactory::ImportWalletWithMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
 												const std::string &payPassword) {
-			return importWalletInternal([&mnemonic, &phrasePassword, &payPassword](MasterWallet *masterWallet) {
+			return WalletFactoryInner::importWalletInternal([&mnemonic, &phrasePassword, &payPassword](MasterWallet *masterWallet) {
 				return masterWallet->importFromMnemonic(mnemonic, phrasePassword, payPassword);
 			});
 		}
@@ -68,17 +83,6 @@ namespace Elastos {
 				return mnemonic;
 			}
 			return "";
-		}
-
-		IMasterWallet *
-		WalletFactory::importWalletInternal(const boost::function<bool(MasterWallet *)> &walletImportFun) {
-			MasterWallet *masterWallet = new MasterWallet();
-
-			if (!walletImportFun(masterWallet) || !masterWallet->Initialized()) {
-				delete masterWallet;
-				return nullptr;
-			}
-			return masterWallet;
 		}
 	}
 }

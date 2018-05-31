@@ -60,6 +60,8 @@ namespace Elastos {
 		protected:
 			friend class WalletFactory;
 
+			friend class WalletFactoryInner;
+
 			friend class SubWallet;
 
 			typedef std::map<std::string, ISubWallet *> WalletMap;
