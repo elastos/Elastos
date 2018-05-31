@@ -7,3 +7,5 @@
 ### [Elastos Strikes a New Partnership with Origin to Establish Agribusiness Related Platforms Based on Elastos’ Smart Web technology - Apr 2, 2018](https://medium.com/elastos/elastos-strikes-a-new-partnership-with-origin-to-establish-agribusiness-related-platforms-based-on-96f48dcbf474)
 ### [ELA Accepted As a Payment Method in Commercial Airline Industry - Apr 6, 2018](https://medium.com/elastos/ela-accepted-as-a-payment-method-in-commercial-airline-industry-4f5cade27dd)
 ### [Elastos Announces Cooperation with Two British Firms at U.K. Meetups - Apr 21, 2018](https://medium.com/elastos/elastos-announces-cooperation-with-two-british-firms-at-u-k-meetups-bc093b3e2a25)
+### [Elastos Partners with Weatherblock](https://medium.com/elastos/elastos-partners-with-weatherblock-d99208603b)
+### [Elastos Partners with BIT.GAME and joins META Union Alliance](https://medium.com/elastos/elastos-partners-with-bit-game-and-joins-meta-union-alliance-4023938c5b1)

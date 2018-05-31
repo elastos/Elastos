@@ -16,6 +16,7 @@ Script:
   - [Quick Summary](#quick-summary)
 - [How Elastos Works](#how-elastos-works)
   - [Elastos White Papers](#elastos-white-papers)
+  - [Beginner Guides](#beginner-guides)
   - [Current State of Elastos](#current-state-of-elastos)
 - [Community](#community)
 - [Projects](#projects)
@@ -36,6 +37,20 @@ Elastos allows content creators to create an economy around their work and allow
 - [Main WhitePapers in Multiple Languages](./Whitepapers/MainWhitepaper)
 - [Sidechain WhitePapers in Multiple Languages](./Whitepapers/SidechainWhitepaper)
 
+### Beginner Guides
+
+**A Beginner's Guide to Elastos for Developers**
+
+This is material for any developer who has some experience with programming languages like Javascript/NodeJS, HTML5, Java, Swift, C++, Golang, etc and wants to get started with various github projects that are open sourced by Elastos. This includes the core development of the product such as the Elastos Runtime environment, Elastos Blockchain, creating and integrating ELA into wallets, or if you're a DApp developer. In order to make it very easy for any developer(even to someone who's not very familiar with blockchain), Elastos provides the SDK in various languages that makes it easy to start developer a decentralized application integrated with blockchain technology without having to fully learn about how blockchain works underneath.
+
+[A Developer guide](./DeveloperGuide/README.md)
+
+**A Beginner's Guide to Elastos for Non-Developers**
+
+This is material for any non-developer who wants to learn about Elastos and what it has to offer to an end-user/consumer/investor. This guide explains the Elastos core technology and how it differs from various other projects in the blockchain industry. First and foremost, it's important to note that Elastos is not a blockchain project. It is an operating system project powered by the blockchain technology so in that sense, Elastos is not competing with any other blockchain projects but can work together with them to form this new ecosystem where the DApps run directly on the device instead of running on the blockchain along with decentralized peer to peer network to transfer assets in a completely closed sandboxed environment, thereby solving the three pillar issues that are prevalent in the world of today - security, scalibility and decentralization all in one. 
+
+[A Non-Developer guide](./NonDeveloperGuide/README.md)
+
 ### Current State of Elastos
 
 **Elastos is a work in progress!**
@@ -45,20 +60,19 @@ Elastos allows content creators to create an economy around their work and allow
 ### List of Repos
 
 #### [Elastos.OS](https://github.com/elastos/Elastos.OS)
-Elastos is a development framework that can directly run on the hardware.
-The programming idea with CAR is the essence technology in Elastos OS. It runs through the entire technology system implementation. In Elastos OS, both the operating system kernel and the component library provided by the Elastos platform are implemented using CAR technology. The operating system kernel is closely integrated with CAR technology so the runtime environment can provide strong support to Elastos architecture.
+Elastos is a C++ operating system that can run directly on the hardware - eg. IoT devices, smart phones, routers, AR/VR headsets, etc. The operating system kernel is implemented using CAR technology. The programming idea with CAR is the essence technology in Elastos OS. It runs through the entire technology system implementation. Components from different sources can interoperate(java can call javascript code, javascript can call C++, etc). 
 
 #### [Elastos.RT](https://github.com/elastos/Elastos.RT)
-Elastos Runtime as an App Engine or VM. It runs on top of existing OS, such as Linux, Android, iOS. It provides SDK for DApps to be running on top of RT. As for the DApp developers, they do not need to worry too much about the technical details of the layer underneath(blockchain layer). They just need to call the RT.SDK. Building DApps will be much eaiser than before.
+Elastos Runtime can be thought of as an App Engine or a Virtual Machine(VM). It is a runtime sandboxed closed environment that runs on top of existing OS, such as Android, iOS, Linux, etc. It provides SDK for DApps to be running on top of RT. As for the DApp developers, they do not need to worry too much about the technical details of the layer underneath(blockchain layer). They just need to call the RT.SDK. Building DApps will be much eaiser than before. DApp developers will be using Cordova to develop their HTML5 applications that will be running on trinity browser. Non-Elastos apps can access the Elastos Smart Web via the RT SDK(C++ SDK) because android and iOS apps can call C++ SDK. This is done to make it easier for existing mobile developers to integrate their existing mobile apps with Elastos.
 
 #### [Elastos.ELA](https://github.com/elastos/Elastos.ELA)
 ELA is the digital currency solution within Elastos ecosystem. This project is the source code that can build a full node of ELA.
 
 #### [Elastos.ELA.SPV](https://github.com/elastos/Elastos.ELA.SPV)
-Elastos SPV is a SDK of SPV (Simplified Payment Verification) implementation of the Elastos digital currency. The Elastos SPV SDK is a set of encryption algorithm, peer to peer network and SPV related implementation like bloom filter, merkleblock and util methods. As an example, this project include a spv wallet implementation located in spvwallet folder, it will help you understand how to use this SDK and build your own apps. The flowing instructions will help you get into the SDK and build up the spvwallet sample APP and play with it.
+Elastos SPV is a SDK of SPV (Simplified Payment Verification) implementation of the Elastos digital currency. The Elastos SPV SDK is a set of encryption algorithm, peer to peer network and SPV related implementation like bloom filter, merkleblock and util methods. As an example, this project includes an spv wallet implementation located in spvwallet folder. It will help you understand how to use this SDK and build your own apps. After installing, you can do some things locally like creating your own wallet, seeing account balance and a wide variety of other options.
 
 #### [Elastos.ELA.SPV.Node](https://github.com/elastos/Elastos.ELA.SPV.Node)
-This project is to implement an ELA node like program base on ELA.SPV SDK, it provides the same RPC interfaces as the ELA full node program like getblock gettransaction etc, and several extra interfaces registeraddresses registeraddress. With a SPV node, you can do almost the same thing as an ELA full node through JSON-RPC interaction, with reduced data size and less computing resource.
+This project implements an ELA node like program base on ELA.SPV SDK. It provides the same RPC interfaces as the ELA full node program like getblock gettransaction etc, and several extra interfaces registeraddresses, registeraddress, etc. With a SPV node, you can do almost the same thing as an ELA full node through JSON-RPC interaction, with reduced data size and less computing resource.
 
 #### [Elastos.ELA.Client](https://github.com/elastos/Elastos.ELA.Client)
 This is the client program of the ELA node, which is a command line tool to control node and see node info etc. Also, this project includes a light implementation of ELA wallet that can create your ELA account, receive, create, sign or send transactions. You can run a node locally and set the miner address to your wallet account and then run the node to get your own ELAs and do whatever you want after that.
