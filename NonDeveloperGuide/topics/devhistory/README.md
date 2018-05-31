@@ -4,7 +4,7 @@
 
 * In 2000, Rong Chen, a senior alumnus of Tsinghua University’s Computer Science department, returns to China from Microsoft USA and begins research and development for the first-generation Elastos network Operating System.
 * In 2003, Rong Chen was received by Jin-Tao Hu, the former CPC General Secretary.
-* In 2003, Rong Chen completed the kernel and graphics systems.
+* In 2006, Rong Chen completed the kernel and graphics systems.
 * In 2007, Rong Chen built a complete smartphone and massively produced it.
 * In 2009, China Unicom used Elastos' middleware as a fertile phone operating system framework.
 * In 2013, Foxconn invests in the Elastos open source project to build a distributed, cross-internet industrial Internet of Things and a smart home network operating system
