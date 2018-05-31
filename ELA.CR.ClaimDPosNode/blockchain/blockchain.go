@@ -805,8 +805,8 @@ func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 
 	for _, txVerify := range block.Transactions {
 		if errCode := CheckTransactionContext(txVerify); errCode != Success {
-			fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
-			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verifiy block"))
+			fmt.Println("CheckTransactionContext failed when verify block", errCode)
+			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verify block"))
 		}
 	}
 
