@@ -23,8 +23,7 @@ namespace Elastos {
 
 		bool Attribute::isValid() {
 			if (_usage != Attribute::Usage::Description && _usage != Attribute::Usage::DescriptionUrl &&
-				_usage != Attribute::Usage::Memo && _usage != Attribute::Usage::Nonce &&
-				_usage != Attribute::Usage::Script) {
+				_usage != Attribute::Usage::Memo && _usage != Attribute::Usage::Script) {
 				return false;
 			}
 			return  true;

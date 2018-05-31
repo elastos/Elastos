@@ -36,7 +36,7 @@ namespace Elastos {
 			}
 
 			static void txUpdated(void *info, const UInt256 txHashes[], size_t count, uint32_t blockHeight,
-								  uint32_t timestamp) {
+			                      uint32_t timestamp) {
 
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
@@ -53,7 +53,7 @@ namespace Elastos {
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
 					listener->lock()->onTxDeleted(Utils::UInt256ToString(txHash), static_cast<bool>(notifyUser),
-												  static_cast<bool>(recommendRescan));
+					                              static_cast<bool>(recommendRescan));
 				}
 			}
 
@@ -118,27 +118,27 @@ namespace Elastos {
 		}
 
 		Wallet::Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
-					   const MasterPubKeyPtr &masterPubKey,
-					   const boost::shared_ptr<Listener> &listener,
-					   bool singleAddress) :
+		               const MasterPubKeyPtr &masterPubKey,
+		               const boost::shared_ptr<Listener> &listener,
+		               bool singleAddress) :
 				_singleAddress(singleAddress) {
 
 			if (!_singleAddress)
 				_wallet = BRWalletNew(getRawTransactions(transactions).data(),
-									  transactions.size(), *masterPubKey->getRaw(), BRWalletUnusedAddrs,
-									  BRWalletAllAddrs, setApplyFreeTx);
+				                      transactions.size(), *masterPubKey->getRaw(), BRWalletUnusedAddrs,
+				                      BRWalletAllAddrs, setApplyFreeTx);
 			else
 				_wallet = createSingleWallet(getRawTransactions(transactions).data(),
-											 transactions.size(), *masterPubKey->getRaw());
+				                             transactions.size(), *masterPubKey->getRaw());
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
 			BRWalletSetCallbacks(_wallet, &_listener,
-								 balanceChanged,
-								 txAdded,
-								 txUpdated,
-								 txDeleted);
+			                     balanceChanged,
+			                     txAdded,
+			                     txUpdated,
+			                     txDeleted);
 
 			typedef SharedWrapperList<Transaction, BRTransaction *> Transactions;
 			for (Transactions::const_iterator it = transactions.cbegin(); it != transactions.cend(); ++it) {
@@ -226,7 +226,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-												 const std::string &toAddress) {
+		                                         const std::string &toAddress) {
 			assert(amount > 0);
 			assert(BRAddressIsValid(fromAddress.c_str()));
 			assert(BRAddressIsValid(toAddress.c_str()));
@@ -243,7 +243,7 @@ namespace Elastos {
 		}
 
 		BRTransaction *Wallet::createBRTransaction(const char *fromAddress, uint64_t fee, const BRTxOutput outputs[],
-												   size_t outCount) {
+		                                           size_t outCount) {
 			BRTransaction *tx;
 			ELABRTransaction *elabrTransaction = ELABRTransactionNew();
 			BRTransaction *transaction = (BRTransaction *) elabrTransaction;
@@ -263,7 +263,7 @@ namespace Elastos {
 
 			pthread_mutex_lock(&_wallet->lock);
 
-			feeAmount = fee > 0 ? fee : _txFee(_wallet->feePerKb, BRTransactionSize(transaction) + TX_OUTPUT_SIZE);
+			feeAmount = fee > 0 ? fee : getFeeForTransactionSize(BRTransactionSize(transaction) + TX_OUTPUT_SIZE);
 
 			for (i = 0; i < array_count(_wallet->utxos); i++) {
 				o = &_wallet->utxos[i];
@@ -271,13 +271,13 @@ namespace Elastos {
 				if (!tx || o->n >= tx->outCount) continue;
 
 				BRTransactionAddInput(transaction, tx->txHash, o->n, tx->outputs[o->n].amount,
-									  tx->outputs[o->n].script, tx->outputs[o->n].scriptLen, NULL, 0, TXIN_SEQUENCE);
+				                      tx->outputs[o->n].script, tx->outputs[o->n].scriptLen, NULL, 0, TXIN_SEQUENCE);
 				if (strlen(fromAddress) > 0) {
 					memcpy(transaction->inputs[i].address, fromAddress, strlen(fromAddress));
 				}
 
 				if (BRTransactionSize(transaction) + TX_OUTPUT_SIZE >
-					TX_MAX_SIZE) { // transaction size-in-bytes too large
+				    TX_MAX_SIZE) { // transaction size-in-bytes too large
 					BRTransactionFree(transaction);
 					transaction = NULL;
 
@@ -305,8 +305,8 @@ namespace Elastos {
 				balance += tx->outputs[o->n].amount;
 
 				// fee amount after adding a change output
-				feeAmount = fee > 0 ? fee : _txFee(_wallet->feePerKb,
-												   BRTransactionSize(transaction) + TX_OUTPUT_SIZE + cpfpSize);
+				feeAmount = fee > 0 ? fee : getFeeForTransactionSize(
+						BRTransactionSize(transaction) + TX_OUTPUT_SIZE + cpfpSize);
 
 				// increase fee to round off remaining wallet balance to nearest 100 satoshi
 				if (_wallet->balance > amount + feeAmount) feeAmount += (_wallet->balance - (amount + feeAmount)) % 100;
@@ -339,7 +339,7 @@ namespace Elastos {
 		TransactionPtr Wallet::createTransactionForOutputs(const WrapperList<TransactionOutput, BRTxOutput> &outputs) {
 
 			BRTransaction *transaction = BRWalletCreateTxForOutputs(_wallet, outputs.getRawArray().data(),
-																	outputs.size());
+			                                                        outputs.size());
 			return TransactionPtr(new Transaction(transaction));
 		}
 
@@ -371,7 +371,7 @@ namespace Elastos {
 		void Wallet::updateTransactions(
 				const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight, uint32_t timestamp) {
 			BRWalletUpdateTransactions(_wallet, transactionsHashes.data(),
-									   transactionsHashes.size(), blockHeight, timestamp);
+			                           transactionsHashes.size(), blockHeight, timestamp);
 		}
 
 		TransactionPtr Wallet::transactionForHash(const UInt256 &transactionHash) {
@@ -397,8 +397,8 @@ namespace Elastos {
 			uint64_t amountReceived = getTransactionAmountReceived(tx);
 
 			return amountSent == 0
-				   ? amountReceived
-				   : -1 * (amountSent - amountReceived + getTransactionFee(tx));
+			       ? amountReceived
+			       : -1 * (amountSent - amountReceived + getTransactionFee(tx));
 		}
 
 		uint64_t Wallet::getTransactionFee(const TransactionPtr &tx) {
@@ -424,8 +424,8 @@ namespace Elastos {
 		std::string Wallet::getTransactionAddress(const TransactionPtr &transaction) {
 
 			return getTransactionAmount(transaction) > 0
-				   ? getTransactionAddressInputs(transaction)   // we received -> from inputs
-				   : getTransactionAddressOutputs(transaction); // we sent     -> to outputs
+			       ? getTransactionAddressInputs(transaction)   // we received -> from inputs
+			       : getTransactionAddressOutputs(transaction); // we sent     -> to outputs
 		}
 
 		std::string Wallet::getTransactionAddressInputs(const TransactionPtr &transaction) {
@@ -455,6 +455,42 @@ namespace Elastos {
 		uint64_t Wallet::getFeeForTransactionSize(size_t size) {
 
 			return BRWalletFeeForTxSize(_wallet, size);
+		}
+
+		uint64_t Wallet::getInputsFee(const TransactionPtr &transaction) const {
+			uint64_t amount = 0;
+
+			assert(transaction != NULL);
+			pthread_mutex_lock(&_wallet->lock);
+			const SharedWrapperList<TransactionInput, BRTxInput *> inputs = transaction->getInputs();
+
+			for (size_t i = 0; inputs.size(); i++) {
+				UInt256 hash = inputs[i]->getHash();
+				BRTransaction *t = (BRTransaction *) BRSetGet(_wallet->allTx, &hash);
+				uint32_t n = inputs[i]->getIndex();
+
+				if (t && n < t->outCount) {
+					amount += t->outputs[n].amount;
+				} else amount = UINT64_MAX;
+			}
+
+			pthread_mutex_unlock(&_wallet->lock);
+
+			return amount;
+		}
+
+		uint64_t Wallet::getOutputFee(const TransactionPtr &transaction) const {
+			assert(transaction != nullptr);
+
+			uint64_t amount = 0;
+
+			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+
+			for (size_t i = 0; i < outputs.size(); i++) {
+				amount += outputs[i]->getAmount();
+			}
+
+			return amount;
 		}
 
 		uint64_t Wallet::getFeeForTransactionAmount(uint64_t amount) {
@@ -555,13 +591,19 @@ namespace Elastos {
 			_BRWalletUpdateBalance(wallet);
 
 			if (txCount > 0 &&
-				!_BRWalletContainsTx(wallet, transactions[0])) { // verify transactions match master pubKey
+			    !_BRWalletContainsTx(wallet, transactions[0])) { // verify transactions match master pubKey
 				BRWalletFree(wallet);
 				wallet = nullptr;
 			}
 
 			return wallet;
+
 		}
 
+		const UInt256 &Wallet::getSystemAssetId() const {
+			Transaction elaCoin;
+			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+			return elaCoin.getHash();
+		}
 	}
 }

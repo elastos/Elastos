@@ -125,6 +125,14 @@ namespace Elastos {
 
 			virtual bool checkTransactionPayload(const TransactionPtr &transaction);
 
+			virtual bool completedTransactionInputs(const TransactionPtr &transaction);
+
+			virtual bool completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount);
+
+			virtual bool completedTransactionAssetID(const TransactionPtr &transaction);
+
+			virtual bool completedTransactionPayload(const TransactionPtr &transaction);
+
 		protected:
 
 			WalletManagerPtr _walletManager;

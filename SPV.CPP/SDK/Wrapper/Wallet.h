@@ -211,6 +211,12 @@ namespace Elastos {
 
 			uint64_t getMaxOutputAmount();
 
+			uint64_t getInputsFee(const TransactionPtr &transaction) const;
+
+			uint64_t getOutputFee(const TransactionPtr &transaction) const;
+
+			const UInt256 &getSystemAssetId() const;
+
 		private:
 			std::vector<BRTransaction *>
 			getRawTransactions(const SharedWrapperList<Transaction, BRTransaction *> &transactions);

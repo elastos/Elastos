@@ -5,6 +5,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <algorithm>
 #include <SDK/ELACoreExt/ELABRTxOutput.h>
+#include <Core/BRTransaction.h>
 
 #include "BRTransaction.h"
 #include "BRWallet.h"
@@ -379,10 +380,25 @@ namespace Elastos {
 		}
 
 		bool SubWallet::completeTransaction(const TransactionPtr &transaction) {
-			//todo complete fee
+
 			//todo complete input
+			if (transaction->getInputs().size() <= 0) {
+				completedTransactionInputs(transaction);
+			}
+			//todo complete fee
+			uint64_t inputFee = _walletManager->getWallet()->getInputsFee(transaction);
+
+			uint64_t outputFee = _walletManager->getWallet()->getOutputFee(transaction);
+
+			if (inputFee - outputFee > 0) {
+				completedTransactionOutputs(transaction, inputFee - outputFee);
+			}
 			//todo complete asset id
+			completedTransactionAssetID(transaction);
+
 			//todo complete payload
+			completedTransactionPayload(transaction);
+
 			return true;
 		}
 
@@ -435,6 +451,63 @@ namespace Elastos {
 		bool SubWallet::checkTransactionPayload(const TransactionPtr &transaction) {
 			const PayloadPtr payloadPtr = transaction->getPayload();
 			return payloadPtr->isValid();
+		}
+
+		bool SubWallet::completedTransactionInputs(const TransactionPtr &transaction) {
+			BRWallet *wallet = _walletManager->getWallet()->getRaw();
+			BRUTXO *o = nullptr;
+			BRTransaction *tx = nullptr;
+			for (size_t i = 0; i < array_count(wallet->utxos); i++) {
+				o = &wallet->utxos[i];
+				tx = (BRTransaction *)BRSetGet(wallet->allTx, o);
+				if (! tx || o->n >= tx->outCount) continue;
+
+				CMBlock script(tx->outputs[o->n].scriptLen);
+				memcpy(script, tx->outputs[o->n].script, tx->outputs[o->n].scriptLen);
+
+				TransactionInput input(tx->txHash, o->n, tx->outputs[o->n].amount, script, CMBlock(), TXIN_SEQUENCE);
+				transaction->addInput(input);
+			}
+			return true;
+		}
+
+		bool SubWallet::completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount) {
+			BRTxOutput o = BR_TX_OUTPUT_NONE;
+			uint64_t maxAmount = _walletManager->getWallet()->getMaxOutputAmount();
+			o.amount = (amount < maxAmount) ? amount : maxAmount;
+			std::string addr = _walletManager->getWallet()->getReceiveAddress();
+			memcpy(o.address, addr.data(), addr.size());
+
+			BRTxOutputSetAddress(&o, addr.c_str());
+
+			TransactionOutput output(&o);
+			transaction->addOutput(output);
+
+			return true;
+		}
+
+		bool SubWallet::completedTransactionAssetID(const TransactionPtr &transaction) {
+			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			size_t size = outputs.size();
+			if (size < 1) {
+				return false;
+			}
+
+			UInt256 zero = UINT256_ZERO;
+			UInt256 assetID = _walletManager->getWallet()->getSystemAssetId();
+
+			for (size_t i = 0; i < size; ++i) {
+				TransactionOutputPtr output = outputs[i];
+				if (UInt256Eq(&output->getAssetId(), &zero) == 1) {
+					output->setAssetId(assetID);
+				}
+			}
+
+			return true;
+		}
+
+		bool SubWallet::completedTransactionPayload(const TransactionPtr &transaction) {
+			return true;
 		}
 	}
 }
