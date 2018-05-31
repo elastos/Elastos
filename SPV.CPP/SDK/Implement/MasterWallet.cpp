@@ -2,8 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRBase58.h>
+#include <boost/filesystem.hpp>
+
+#include "BRBase58.h"
 #include "BRBIP39Mnemonic.h"
+
 #include "Utils.h"
 #include "MasterPubKey.h"
 #include "MasterWallet.h"
@@ -13,20 +16,30 @@
 #include "SidechainSubWallet.h"
 #include "Log.h"
 
+#define MNEMONIC_FILE_PREFIX "mnemonic_"
+#define MNEMONIC_FILE_EXTENSION ".txt"
+
+namespace fs = boost::filesystem;
+
 namespace Elastos {
 	namespace SDK {
 
-		MasterWallet::MasterWallet() :
+		MasterWallet::MasterWallet(const std::string &language) :
 			_initialized(false),
-			_dbRoot("Data"),
-			_mnemonic("english") {
+			_dbRoot("Data") {
+
+			resetMnemonic(language);
+			_keyStore.json().setMnemonicLanguage(language);
 		}
 
 		MasterWallet::MasterWallet(const std::string &phrasePassword,
-								   const std::string &payPassword) :
+								   const std::string &payPassword,
+								   const std::string &language) :
 			_initialized(true),
-			_dbRoot("Data"),
-			_mnemonic("english") {
+			_dbRoot("Data") {
+
+			resetMnemonic(language);
+			_keyStore.json().setMnemonicLanguage(language);
 
 			UInt128 entropy = Utils::generateRandomSeed();
 			initFromEntropy(entropy, phrasePassword, payPassword);
@@ -98,7 +111,6 @@ namespace Elastos {
 				return false;
 			}
 
-			//todo get entropy from keystore
 			CMBlock phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
 				_keyStore.json().getEncryptedPhrasePassword());
 			CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
@@ -117,6 +129,9 @@ namespace Elastos {
 			memcpy((void *)&entropy.u8[0], entropy2, sizeof(UInt128));
 
 			initFromEntropy(entropy, phrasePass, payPassword);
+
+			resetMnemonic(_keyStore.json().getMnemonicLanguage());
+
 			return true;
 		}
 
@@ -292,6 +307,12 @@ namespace Elastos {
 				default:
 					return new SubWallet(info, chainParams, payPassword, parent);
 			}
+		}
+
+		void MasterWallet::resetMnemonic(const std::string &language) {
+			fs::path mnemonicPath = _dbRoot;
+			mnemonicPath /= MNEMONIC_FILE_PREFIX + language + MNEMONIC_FILE_EXTENSION;
+			_mnemonic = Mnemonic(language, mnemonicPath);
 		}
 
 	}

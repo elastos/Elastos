@@ -20,7 +20,8 @@ namespace Elastos {
 
 			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &phrasePassword,
-					const std::string &payPassword);
+					const std::string &payPassword,
+					const std::string &language = "english");
 
 			virtual void DestroyWallet(IMasterWallet *masterWallet);
 
@@ -32,7 +33,8 @@ namespace Elastos {
 			virtual IMasterWallet *ImportWalletWithMnemonic(
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
-					const std::string &payPassword);
+					const std::string &payPassword,
+					const std::string &language = "english");
 
 			virtual void ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,

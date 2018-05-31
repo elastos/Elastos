@@ -66,10 +66,11 @@ namespace Elastos {
 
 			typedef std::map<std::string, ISubWallet *> WalletMap;
 
-			MasterWallet();
+			MasterWallet(const std::string &language);
 
 			MasterWallet(const std::string &phrasePassword,
-						 const std::string &payPassword);
+						 const std::string &payPassword,
+						 const std::string &language);
 
 			bool importFromKeyStore(const std::string &keystorePath,
 									const std::string &backupPassword,
@@ -103,6 +104,8 @@ namespace Elastos {
 											  const ChainParams &chainParams,
 											  const std::string &payPassword,
 											  MasterWallet *parent);
+
+			void resetMnemonic(const std::string &language);
 
 		protected:
 			bool _initialized;

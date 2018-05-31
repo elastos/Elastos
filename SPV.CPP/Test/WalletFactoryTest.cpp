@@ -87,5 +87,9 @@ TEST_CASE("Wallet factory key store export & import", "[WalletFactory]") {
 				walletFactory->ImportWalletWithKeystore(keystorePath, backupPassword, payPassword));
 	REQUIRE(masterWallet->GetPublicKey() == masterWallet2->GetPublicKey());
 
-	//todo delete key store file
+	boost::filesystem::remove(keystorePath);
+}
+
+TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
+
 }

@@ -13,8 +13,9 @@ namespace Elastos {
 
 		class WalletFactoryInner {
 		public:
-			static IMasterWallet *importWalletInternal(const boost::function<bool(MasterWallet *)> &walletImportFun) {
-				MasterWallet *masterWallet = new MasterWallet();
+			static IMasterWallet *importWalletInternal(const std::string &language,
+													   const boost::function<bool(MasterWallet *)> &walletImportFun) {
+				MasterWallet *masterWallet = new MasterWallet(language);
 
 				if (!walletImportFun(masterWallet) || !masterWallet->Initialized()) {
 					delete masterWallet;
@@ -33,8 +34,9 @@ namespace Elastos {
 		}
 
 		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &phrasePassword,
-														 const std::string &payPassword) {
-			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword);
+														 const std::string &payPassword,
+														 const std::string &language) {
+			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword, language);
 			return masterWallet;
 		}
 
@@ -46,15 +48,17 @@ namespace Elastos {
 		IMasterWallet *
 		WalletFactory::ImportWalletWithKeystore(const std::string &keystorePath, const std::string &backupPassword,
 												const std::string &payPassword) {
-			return WalletFactoryInner::importWalletInternal([&keystorePath, &backupPassword, &payPassword](MasterWallet *masterWallet) {
+			return WalletFactoryInner::importWalletInternal("english", [&keystorePath, &backupPassword, &payPassword](
+					MasterWallet *masterWallet) {
 				return masterWallet->importFromKeyStore(keystorePath, backupPassword, payPassword);
 			});
 		}
 
 		IMasterWallet *
 		WalletFactory::ImportWalletWithMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
-												const std::string &payPassword) {
-			return WalletFactoryInner::importWalletInternal([&mnemonic, &phrasePassword, &payPassword](MasterWallet *masterWallet) {
+												const std::string &payPassword, const std::string &language) {
+			return WalletFactoryInner::importWalletInternal(language, [&mnemonic, &phrasePassword, &payPassword](
+					MasterWallet *masterWallet) {
 				return masterWallet->importFromMnemonic(mnemonic, phrasePassword, payPassword);
 			});
 		}
