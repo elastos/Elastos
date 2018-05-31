@@ -72,67 +72,59 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 	}
 
-	var tharray []Uint256
-	for _, txn := range transactions {
-		txhash := txn.Hash()
-		tharray = append(tharray, txhash)
-	}
-	calcTransactionsRoot, err := crypto.ComputeRoot(tharray)
-	if err != nil {
-		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
-	}
-	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
-		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
-	}
-
-	blockInputs := make([]*Input, 0)
-	blockSidechainTxs := make([]string, 0)
-	// Fixme: merge this loop with the above
-	existingTxHashes := make(map[Uint256]struct{})
-	for _, txn := range transactions {
-		blockInputs = append(blockInputs, txn.Inputs...)
-		if txn.IsWithdrawTx() {
-			witPayload := txn.Payload.(*PayloadWithdrawAsset)
-			blockSidechainTxs = append(blockSidechainTxs, witPayload.SideChainTransactionHash...)
-		}
-
-		// Check for duplicate transactions.
-		txHash := txn.Hash()
-		if _, exists := existingTxHashes[txHash]; exists {
-			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
-		}
-		existingTxHashes[txHash] = struct{}{}
-	}
-
-	// Check for duplicate UTXO inputs in a block
-	existingTxInputs := make(map[string]struct{})
-	for _, input := range blockInputs {
-		referKey := input.ReferKey()
-		if _, exists := existingTxInputs[referKey]; exists {
-			return errors.New("[PowCheckBlockSanity] block contains duplicate UTXO")
-		}
-		existingTxInputs[referKey] = struct{}{}
-	}
-
-	// Check for duplicate sidechain tx in a block
-	existingSideTxs := make(map[string]struct{})
-	for _, hash := range blockSidechainTxs {
-		if _, exists := existingSideTxs[hash]; exists {
-			return errors.New("[PowCheckBlockSanity] block contains duplicate sidechain Tx")
-		}
-		existingSideTxs[hash] = struct{}{}
-	}
-
 	// Check transaction outputs after a update checkpoint.
 	version := uint32(0)
 	if block.Height > BlockHeightCheckTxOut {
 		version += CheckTxOut
 	}
 
-	for _, txVerify := range transactions {
-		if errCode := CheckTransactionSanity(version, txVerify); errCode != Success {
+	txIds := make([]Uint256, 0, len(transactions))
+	existingTxIds := make(map[Uint256]struct{})
+	existingTxInputs := make(map[string]struct{})
+	existingSideTxs := make(map[string]struct{})
+	for _, txn := range transactions {
+		txId := txn.Hash()
+		// Check for duplicate transactions.
+		if _, exists := existingTxIds[txId]; exists {
+			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
+		}
+		existingTxIds[txId] = struct{}{}
+
+		// Check for transaction sanity
+		if errCode := CheckTransactionSanity(version, txn); errCode != Success {
 			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verifiy block"))
 		}
+
+		// Check for duplicate UTXO inputs in a block
+		for _, input := range txn.Inputs {
+			referKey := input.ReferKey()
+			if _, exists := existingTxInputs[referKey]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate UTXO")
+			}
+			existingTxInputs[referKey] = struct{}{}
+		}
+
+		if txn.IsWithdrawTx() {
+			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+
+			// Check for duplicate sidechain tx in a block
+			for _, hash := range witPayload.SideChainTransactionHash {
+				if _, exists := existingSideTxs[hash]; exists {
+					return errors.New("[PowCheckBlockSanity] block contains duplicate sidechain Tx")
+				}
+				existingSideTxs[hash] = struct{}{}
+			}
+		}
+
+		// Append transaction to list
+		txIds = append(txIds, txId)
+	}
+	calcTransactionsRoot, err := crypto.ComputeRoot(txIds)
+	if err != nil {
+		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
+	}
+	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
 	}
 
 	return nil
