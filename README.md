@@ -39,17 +39,17 @@ Elastos allows content creators to create an economy around their work and allow
 
 ### Beginner Guides
 
-**A Beginner's Guide to Elastos for Developers**
-
-This is material for any developer who has some experience with programming languages like Javascript/NodeJS, HTML5, Java, Swift, C++, Golang, etc and wants to get started with various github projects that are open sourced by Elastos. This includes the core development of the product such as the Elastos Runtime environment, Elastos Blockchain, creating and integrating ELA into wallets, or if you're a DApp developer. In order to make it very easy for any developer(even to someone who's not very familiar with blockchain), Elastos provides the SDK in various languages that makes it easy to start developer a decentralized application integrated with blockchain technology without having to fully learn about how blockchain works underneath.
-
-[A Developer guide](./DeveloperGuide/README.md)
-
 **A Beginner's Guide to Elastos for Non-Developers**
 
 This is material for any non-developer who wants to learn about Elastos and what it has to offer to an end-user/consumer/investor. This guide explains the Elastos core technology and how it differs from various other projects in the blockchain industry. First and foremost, it's important to note that Elastos is not a blockchain project. It is an operating system project powered by the blockchain technology so in that sense, Elastos is not competing with any other blockchain projects but can work together with them to form this new ecosystem where the DApps run directly on the device instead of running on the blockchain along with decentralized peer to peer network to transfer assets in a completely closed sandboxed environment, thereby solving the three pillar issues that are prevalent in the world of today - security, scalibility and decentralization all in one. 
 
 [A Non-Developer guide](./NonDeveloperGuide/README.md)
+
+**A Beginner's Guide to Elastos for Developers**
+
+This is material for any developer who has some experience with programming languages like Javascript/NodeJS, HTML5, Java, Swift, C++, Golang, etc and wants to get started with various github projects that are open sourced by Elastos. This includes the core development of the product such as the Elastos Runtime environment, Elastos Blockchain, creating and integrating ELA into wallets, or creating applications using the SDK if you're a DApp developer. In order to make it very easy for any developer(even to someone who's not very familiar with blockchain), Elastos provides the SDK in various languages that makes it easy to start developing a decentralized application integrated with blockchain technology without having to fully learn about how blockchain works underneath.
+
+[A Developer guide](./DeveloperGuide/README.md)
 
 ### Current State of Elastos
 
@@ -60,6 +60,8 @@ This is material for any non-developer who wants to learn about Elastos and what
 ### List of Repos
 
 #### [Elastos.OS](https://github.com/elastos/Elastos.OS)
+Elastos is a general-purpose operating system for intelligent terminals. It is based on Android's open resources and is developed using CAR component technology. The Elastos operating system has a system architecture similar to WinRT (Windows Runtime) and supports C++, Java, and JavaScript application development with a consistent application model. 
+
 Elastos is a C++ operating system that can run directly on the hardware - eg. IoT devices, smart phones, routers, AR/VR headsets, etc. The operating system kernel is implemented using CAR technology. The programming idea with CAR is the essence technology in Elastos OS. It runs through the entire technology system implementation. Components from different sources can interoperate(java can call javascript code, javascript can call C++, etc). 
 
 #### [Elastos.RT](https://github.com/elastos/Elastos.RT)
@@ -98,6 +100,9 @@ This is a Java API wrapper for Elastos Carrier Native. This project is just a wr
 #### [Elastos.NET.Carrier.Samples.Android](https://github.com/elastos/Elastos.NET.Carrier.Samples.Android)
 This demo introduces how to use the Elastos Android SDK to achieve communication between phones and realizes a simple version of Chat DApp.
 
+#### [Elastos.Carrier.Demo.Remoter.iOS](https://github.com/elastos/Elastos.Carrier.Demo.Remoter.iOS)
+This is a demo application to show what can be done over carrier network. It shows you how you can use this app to control each other via what's known as NAT traversal. Some of the items for remote control includes - turning on/off torch(or light), turning on/off ringtone, increase/decrease ringtone volume, turning on/off camera, etc
+
 #### [Elastos.NET.Carrier.Bootstrap](https://github.com/elastos/Elastos.NET.Carier.Bootstrap)
 This is the basic service to help new nodes join and bootstrap the Elastos Carrier network. You can think of these nodes as the seed nodes.
 
@@ -125,7 +130,6 @@ This is an android demo application integrating ownCloud over Elastos Carrier ne
 
 ## Resources
 - [Articles and Blogs](./ArticlesAndBlogs)
-- [Demos](./Demos)
 - [Media](./Media)
 
 ## License
