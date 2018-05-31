@@ -3,7 +3,7 @@
 ### Brief Summary
 
 * Through the merged mining with Bitcoin, the safety and reliability are ensured by strong Bitcoin computing power through Proof of Work. This mining strategy saves resources and avoids repeated consumption.
-* Because Elastos structure is built by having a main chain and sidechains, it avoids main chain being overloaded, and leads to easy routing and flexible extension, increasing the possibility for the Elastos to become basis for future internet applications.
+* Because Elastos structure is built by having a main chain and sidechains, it avoids main chain being overloaded, and leads to easy routing and flexible extension, increasing the possibility for Elastos to become the basis for future internet applications.
 * The blockchain is a trust zone and a reliable internet database. Smart contracts are merely the saving process of this reliable database. Only the valuable data that needs to be notarized is recorded on the blockchain; only the data processing that needs computation reliability requires smart contracts.
 
 ---
@@ -12,7 +12,7 @@
 
 The Elastos blockchain utilizes merged mining with Bitcoin, the process by which consensus is reached on both chains simultaneously. In this case, the Bitcoin blockchain works as the parent blockchain to Elastos, with the Elastos chain as its auxiliary blockchain. The mining pools will deploy merged mining code and miners will submit proof of work to both blockchains at the same time. Energy consumption does not increase with merged mining, and will be equal to the energy consumed for mining either alone. Through this mechanism, the Elastos blockchain has an extremely strong guarantee of computing power and will then be able to provide blockchain innovations at a global scale. It makes full use of existing Bitcoin computing resources in addition to being environmentally friendly. 
 
-Elastos implements merged mining with Bitcoin. The strategy of merged mining saves resources and avoids repeated consumption. Miner submits Proof of Work(PoW) to both Bitcoin and Elastos and enjoys profits of mining competition without extra consumption of computing power. The consensus mechanism for Elastos is AuxPoW+DPoS where the mining reward distribution is 70% for AuxPoW + DPoS, 30% for Ecosystem Application Reward + Foundation Running and Development. Tokens for apps built on Elastos can be published on sidechains. These tokens may participate in two-way asset transfer across the main chain and side chains. 
+Elastos implements merged mining with Bitcoin. The strategy of merged mining saves resources and avoids repeated consumption. Miner submits Proof of Work(PoW) to both Bitcoin and Elastos and enjoys profits of mining competition without extra consumption of computing power. The consensus mechanism for Elastos is AuxPoW+DPoS where the mining reward distribution is 70% for AuxPoW + DPoS, 30% for Ecosystem Application Reward + Foundation Running and Development. Tokens for apps built on Elastos can be published on sidechains. These tokens may participate in two-way asset transfer across the main chain and sidechains. 
 
 Additional benefits of merged mining include:
 
@@ -23,7 +23,7 @@ Additional benefits of merged mining include:
 
 ### Overview of Main chain and Sidechains in the elastos ecosystem
 
-One of the highlights of the design is that it makes use of a blend of mainchains and sidechains to improve the computational ability of blockchain technology. The mainchain only executes simple transactions and payment transfers while the sidechain handles smart contracts to support services and applications. With this, structure scalability and security can be accomplished.
+One of the highlights of the design is that it makes use of a blend of main chains and sidechains to improve the computational ability of blockchain technology. The main chain only executes simple transactions and payment transfers while the sidechain handles smart contracts to support services and applications. With this, structure scalability and security can be accomplished.
 
 Similar to the Operating System on a mobile device, users need a trustworthy location to store important data. The Elastos blockchain works as this trust zone for the entire network Operating System. The Elastos blockchain applies main and sidechain solutions to facilitate the smart economy and a healthy decentralized application environment. This means that every application can create individual sidechains. The Elastos blockchain provides built-in, complete, easy-to-use sidechain support. They will also be customizable, allowing clients to pick a different consensus method depending on the use case.
 
