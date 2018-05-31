@@ -1038,9 +1038,8 @@ func (bc *Blockchain) ProcessBlock(block *Block, timeSource MedianTimeSource, fl
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = PowCheckBlockSanity(block, PowLimit, bc.TimeSource)
 	err := PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
-
 	if err != nil {
-		log.Error("PowCheckBlockSanity error!")
+		log.Errorf("PowCheckBlockSanity error %s", err.Error())
 		return false, false, err
 	}
 
