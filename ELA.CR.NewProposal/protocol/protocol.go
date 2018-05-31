@@ -69,13 +69,13 @@ type Noder interface {
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighborAddrs() ([]p2p.NetAddress, uint64)
+	GetNeighborAddrs() []p2p.NetAddress
 	GetTransaction(hash Uint256) *Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
 
-	GetNeighborHeights() ([]uint64, uint64)
+	GetNeighborHeights() []uint64
 	WaitForSyncFinish()
 	CleanSubmittedTransactions(block *Block) error
 	MaybeAcceptTransaction(txn *Transaction) error
