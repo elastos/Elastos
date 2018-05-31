@@ -1,6 +1,6 @@
 ## Business Model
 
-### Overview
+### Brief Summary
 
 * Provide large blockchain applications with the secure running environment
 * Digital content remains intact after multiple uses

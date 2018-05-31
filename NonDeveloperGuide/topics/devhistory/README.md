@@ -6,7 +6,7 @@
 * In 2003, Rong Chen was received by Jin-Tao Hu, the former CPC General Secretary.
 * In 2003, Rong Chen completed the kernel and graphics systems.
 * In 2007, Rong Chen built a complete smartphone and massively produced it.
-* In 2009, China Unicom used Elastos' middleware as a fertile Phone operating system framework.
+* In 2009, China Unicom used Elastos' middleware as a fertile phone operating system framework.
 * In 2013, Foxconn invests in the Elastos open source project to build a distributed, cross-internet industrial Internet of Things and a smart home network operating system
 * In May 2017, Rong Chen co-founded the Elastos Foundation with Feng Han to support Elastos - a blockchain-drive Internet project, attempting to create a new digital smart economy model that turns numbers into wealth.
 * In 2017, Sunny Feng Han and Ji-Han Wu started running the Bitcoin Investment Elastos Blockchain Community and founded G3 with Bitmain and NEO.

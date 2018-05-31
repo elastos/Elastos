@@ -33,7 +33,7 @@ Incentive for DApps to use Elastos does not come from an incentive to use the El
 
 The total supply of ELA started with 33 million(as created in the genesis block) however most of the tokens were locked by angel investors(for a minimum of three years) and the private and public investors(for a minimum of 1, 2 or 3 years respectively). The circulating supply for ELA can be roughly known by reading the article at https://medium.com/elastos/ela-metrics-how-is-the-circulating-supply-calculated-92b666c4f6e0. About half of 33 million are exclusively reserved to reward the community for their contribution to the elastos ecosystem.
 
-Elastos also has a 4% inflation year to year. All the mining rewards come from this inflation. Because Elastos employs a PoW + DPoS hybrid consensus mechanism, every time an ELA block is mined, the reward is distributed equally among the miners(35%), stakers(35%) and ecosystem development reward(30%).
+Elastos also has a 4% inflation year to year. All the mining rewards come from this inflation. Because Elastos employs a PoW + DPoS hybrid consensus mechanism, every time an ELA block is mined, the reward is distributed equally among the miners + stakers(70%) and ecosystem development reward(30%).
 
 The inflation is there to also account for all the ELAs that may be lost due to people losing their private keys or misplacing their digital wallets. It is estimated that around 4 million bitcoins have been lost and will never enter the circulating supply. In order to account for this similar loss, 4% inflation is employed by Elastos.
 
