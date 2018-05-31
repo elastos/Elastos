@@ -31,7 +31,7 @@ func Color(code, msg string) string {
 }
 
 const (
-	debugLog = iota
+	debugLog    = iota
 	infoLog
 	warnLog
 	errorLog
@@ -56,8 +56,8 @@ const (
 	namePrefix        = "LEVEL"
 	callDepth         = 2
 	defaultMaxLogSize = 20
-	byteToMb          = 1024 * 1024
 	byteToKb          = 1024
+	byteToMb          = byteToKb * 1024
 	Path              = "./Logs/"
 )
 
@@ -77,19 +77,6 @@ func LevelName(level int) string {
 		return name
 	}
 	return namePrefix + strconv.Itoa(level)
-}
-
-func NameLevel(name string) int {
-	for k, v := range levels {
-		if v == name {
-			return k
-		}
-	}
-	var level int
-	if strings.HasPrefix(name, namePrefix) {
-		level, _ = strconv.Atoi(name[len(namePrefix):])
-	}
-	return level
 }
 
 type Logger struct {
@@ -304,9 +291,9 @@ func FileOpen(path string) (*os.File, error) {
 		return nil, err
 	}
 
-	var currenttime string = time.Now().Format("2006-01-02_15.04.05")
+	var timestamp = time.Now().Format("2006-01-02_15.04.05")
 
-	logfile, err := os.OpenFile(path+currenttime+"_LOG.log", os.O_RDWR|os.O_CREATE, 0666)
+	logfile, err := os.OpenFile(path+timestamp+"_LOG.log", os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -314,7 +301,7 @@ func FileOpen(path string) (*os.File, error) {
 }
 
 func Init(a ...interface{}) {
-	writers := []io.Writer{}
+	writers := make([]io.Writer, 0, len(a))
 	var logFile *os.File
 	var err error
 	if len(a) == 0 {
@@ -337,9 +324,9 @@ func Init(a ...interface{}) {
 			}
 		}
 	}
-	fileAndStdoutWrite := io.MultiWriter(writers...)
-	var printlevel = config.Parameters.PrintLevel
-	Log = New(fileAndStdoutWrite, "", log.Ldate|log.Lmicroseconds, printlevel, logFile)
+	multiWriter := io.MultiWriter(writers...)
+	var printLevel = config.Parameters.PrintLevel
+	Log = New(multiWriter, "", log.Ldate|log.Lmicroseconds, printLevel, logFile)
 }
 
 func GetLogFileSize() (int64, error) {
@@ -352,9 +339,9 @@ func GetLogFileSize() (int64, error) {
 
 func GetMaxLogChangeInterval() int64 {
 	if config.Parameters.MaxLogSize != 0 {
-		return (config.Parameters.MaxLogSize * byteToMb)
+		return config.Parameters.MaxLogSize * byteToMb
 	} else {
-		return (defaultMaxLogSize * byteToMb)
+		return defaultMaxLogSize * byteToMb
 	}
 }
 

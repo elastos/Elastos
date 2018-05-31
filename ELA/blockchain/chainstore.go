@@ -93,12 +93,12 @@ func (c *ChainStore) loop() {
 				c.handlePersistBlockTask(task.block)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle block exetime: %g num transactions:%d \n", tcall, len(task.block.Transactions))
+				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
 			case *rollbackBlockTask:
 				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle block rollback exetime: %g \n", tcall)
+				log.Debugf("handle block rollback exetime: %g", tcall)
 			}
 
 		case closed := <-c.quit:
@@ -351,7 +351,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 		return err
 	}
 
-	log.Debug(fmt.Sprintf("asset key: %x\n", assetKey))
+	log.Debug(fmt.Sprintf("asset key: %x", assetKey))
 
 	// PUT VALUE
 	c.BatchPut(assetKey.Bytes(), w.Bytes())
@@ -359,7 +359,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 }
 
 func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	log.Debugf("GetAsset Hash: %s\n", hash.String())
+	log.Debugf("GetAsset Hash: %s", hash.String())
 
 	asset := new(Asset)
 	prefix := []byte{byte(ST_Info)}
@@ -367,7 +367,7 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("GetAsset Data: %s\n", data)
+	log.Debugf("GetAsset Data: %s", data)
 
 	err = asset.Deserialize(bytes.NewReader(data))
 	if err != nil {
@@ -447,7 +447,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	log.Debug(fmt.Sprintf("transaction header + hash: %x\n", key))
+	log.Debug(fmt.Sprintf("transaction header + hash: %x", key))
 
 	// generate value
 	value := new(bytes.Buffer)
@@ -457,7 +457,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := tx.Serialize(value); err != nil {
 		return err
 	}
-	log.Debug(fmt.Sprintf("transaction tx data: %x\n", value))
+	log.Debug(fmt.Sprintf("transaction tx data: %x", value))
 
 	// put value
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -543,7 +543,7 @@ func (c *ChainStore) persist(b *Block) error {
 // can only be invoked by backend write goroutine
 func (c *ChainStore) addHeader(header *Header) {
 
-	log.Debugf("addHeader(), Height=%d\n", header.Height)
+	log.Debugf("addHeader(), Height=%d", header.Height)
 
 	hash := header.Hash()
 
@@ -888,7 +888,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		_, _ = ReadBytes(rk, 1)
 		var assetid Uint256
 		assetid.Deserialize(rk)
-		log.Tracef("[GetAssets] assetid: %x\n", assetid.Bytes())
+		log.Tracef("[GetAssets] assetid: %x", assetid.Bytes())
 
 		asset := new(Asset)
 		r := bytes.NewReader(iter.Value())
