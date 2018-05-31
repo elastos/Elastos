@@ -3,6 +3,7 @@ package blockchain
 import (
 	"bytes"
 	"errors"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
@@ -26,6 +27,10 @@ func VerifySignature(tx *core.Transaction) error {
 	if err != nil {
 		return err
 	}
+
+	// Sort first
+	SortProgramHashes(hashes)
+	SortPrograms(tx.Programs)
 
 	return RunPrograms(tx, hashes, tx.Programs)
 }
@@ -100,7 +105,6 @@ func GetTxProgramHashes(tx *core.Transaction) ([]Uint168, error) {
 	for k := range uniq {
 		uniqueHashes = append(uniqueHashes, k)
 	}
-	SortProgramHashes(uniqueHashes)
 	return uniqueHashes, nil
 }
 
@@ -140,4 +144,18 @@ func checkCrossChainTransaction(txn *core.Transaction) error {
 		return err
 	}
 	return nil
+}
+
+func SortPrograms(programs []*core.Program) {
+	sort.Sort(byHash(programs))
+}
+
+type byHash []*core.Program
+
+func (p byHash) Len() int      { return len(p) }
+func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p byHash) Less(i, j int) bool {
+	hashi, _ := crypto.ToProgramHash(p[i].Code)
+	hashj, _ := crypto.ToProgramHash(p[j].Code)
+	return hashi.Compare(*hashj) < 0
 }
