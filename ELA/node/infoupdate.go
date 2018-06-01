@@ -113,8 +113,7 @@ func (node *node) ReqNeighborList() {
 
 func (node *node) ConnectSeeds() {
 	if node.nbrNodes.GetConnectionCnt() < MinConnectionCount {
-		seedNodes := config.Parameters.SeedList
-		for _, nodeAddr := range seedNodes {
+		for _, nodeAddr := range config.Parameters.SeedList {
 			found := false
 			var n Noder
 			node.nbrNodes.Lock()
@@ -181,8 +180,7 @@ func (node *node) updateNodeInfo() {
 func (node *node) CheckConnCnt() {
 	//compare if connect count is larger than DefaultMaxPeers, disconnect one of the connection
 	if node.nbrNodes.GetConnectionCnt() > DefaultMaxPeers {
-		disconnNode := node.RandGetANbr()
-		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, disconnNode)
+		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.RandGetANbr())
 	}
 }
 
