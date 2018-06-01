@@ -55,6 +55,13 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
+			virtual bool DeriveIdAndKeyForPurpose(
+					uint32_t purpose,
+					uint32_t index,
+					const std::string &payPassword,
+					std::string &id,
+					std::string &key);
+
 			bool Initialized() const;
 
 		protected:

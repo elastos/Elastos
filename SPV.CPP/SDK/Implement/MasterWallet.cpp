@@ -25,8 +25,8 @@ namespace Elastos {
 	namespace SDK {
 
 		MasterWallet::MasterWallet(const std::string &language) :
-			_initialized(false),
-			_dbRoot("Data") {
+				_initialized(false),
+				_dbRoot("Data") {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -35,8 +35,8 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &phrasePassword,
 								   const std::string &payPassword,
 								   const std::string &language) :
-			_initialized(true),
-			_dbRoot("Data") {
+				_initialized(true),
+				_dbRoot("Data") {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -77,9 +77,11 @@ namespace Elastos {
 
 		ISubWallet *
 		MasterWallet::RecoverSubWallet(SubWalletType type, const std::string &chainID, int coinTypeIndex,
-									   const std::string &payPassword, bool singleAddress, int limitGap, uint64_t feePerKb) {
+									   const std::string &payPassword, bool singleAddress, int limitGap,
+									   uint64_t feePerKb) {
 			ISubWallet *subWallet = _createdWallets.find(chainID) == _createdWallets.end()
-									? CreateSubWallet(type, chainID, coinTypeIndex, payPassword, singleAddress, feePerKb)
+									? CreateSubWallet(type, chainID, coinTypeIndex, payPassword, singleAddress,
+													  feePerKb)
 									: _createdWallets[chainID];
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(subWallet);
 			assert(walletInner != nullptr);
@@ -112,7 +114,7 @@ namespace Elastos {
 			}
 
 			CMBlock phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
-				_keyStore.json().getEncryptedPhrasePassword());
+					_keyStore.json().getEncryptedPhrasePassword());
 			CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
 			phrasePass_Raw1.Zero();
 			memcpy(phrasePass_Raw1, phrasePass_Raw0, phrasePass_Raw0.GetSize());
@@ -120,13 +122,13 @@ namespace Elastos {
 			std::string phrasePass = Utils::convertToString(phrasePassRaw);
 
 			CMBlock entropy0 = Utils::convertToMemBlock<unsigned char>(
-				_keyStore.json().getEncryptedEntropySource());
+					_keyStore.json().getEncryptedEntropySource());
 			CMBlock entropy1(entropy0.GetSize() + 1);
 			entropy1.Zero();
 			memcpy(entropy1, entropy0, entropy0.GetSize());
 			CMBlock entropy2 = Utils::decrypt(entropy1, payPassword);
 			UInt128 entropy;
-			memcpy((void *)&entropy.u8[0], entropy2, sizeof(UInt128));
+			memcpy((void *) &entropy.u8[0], entropy2, sizeof(UInt128));
 
 			initFromEntropy(entropy, phrasePass, payPassword);
 
@@ -215,10 +217,7 @@ namespace Elastos {
 
 			CMBlock privKey = Key::getAuthPrivKeyForAPI(seed);
 
-			CMBlock secretKey;
-			secretKey.SetMemFixed((const unsigned char *) (const uint8_t *) privKey, privKey.GetSize());
-
-			_encryptedKey = Utils::encrypt(secretKey, payPassword);
+			_encryptedKey = Utils::encrypt(privKey, payPassword);
 			initPublicKey(payPassword);
 
 			_initialized = true;
@@ -273,9 +272,8 @@ namespace Elastos {
 			BRSHA256(&md, message.c_str(), message.size());
 
 			bool r = Key::verifyByPublicKey(publicKey, md, signatureData);
-			//todo json return is correct ?
 			nlohmann::json jsonData;
-			jsonData["result"] = r;
+			jsonData["Result"] = r;
 			return jsonData;
 		}
 
@@ -313,6 +311,19 @@ namespace Elastos {
 			fs::path mnemonicPath = _dbRoot;
 			mnemonicPath /= MNEMONIC_FILE_PREFIX + language + MNEMONIC_FILE_EXTENSION;
 			_mnemonic = Mnemonic(language, mnemonicPath);
+		}
+
+		bool MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword,
+													std::string &id, std::string &key) {
+			UInt512 seed = deriveSeed(payPassword);
+			BRKey *privkey = new BRKey;
+			UInt256 chainCode;
+			Key::deriveKeyAndChain(privkey, chainCode, &seed, sizeof(seed), 2, purpose, index);
+
+			Key wrappedKey(privkey);
+			id = wrappedKey.keyToAddress(ELA_IDCHAIN);
+			key = wrappedKey.toString();
+			return true;
 		}
 
 	}

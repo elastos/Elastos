@@ -20,7 +20,7 @@ namespace Elastos {
 		public:
 			Key();
 
-			Key(const boost::shared_ptr<BRKey> &brkey);
+			Key(BRKey *brkey);
 
 			Key(const std::string &privKey);
 
@@ -59,6 +59,8 @@ namespace Elastos {
 			std::string keyToAddress(const int signType) const;
 
 			UInt168 keyToUInt168BySignType(const int signType) const;
+
+			std::string keyToRedeemScript(int signType) const;
 
 		public:
 			static CMBlock getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass = "");

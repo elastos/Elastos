@@ -58,7 +58,7 @@ namespace Elastos {
 			BRBIP32PubKey(pubKey, sizeof(pubKey), *_masterPubKey, 0, 0);
 			BRKey *brkey = new BRKey;
 			BRKeySetPubKey(brkey, pubKey, sizeof(pubKey));
-			Key *key = new Key(boost::shared_ptr<BRKey>(brkey));
+			Key *key = new Key(brkey);
 			return boost::shared_ptr<Key>(key);
 		}
 

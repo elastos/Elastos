@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include <secp256k1.h>
+#include <Core/BRKey.h>
 
 #include "BRBIP39Mnemonic.h"
 #include "BRBIP32Sequence.h"
@@ -63,9 +64,8 @@ namespace Elastos {
 			memset(_key.get(), 0, sizeof(BRKey));
 		}
 
-		Key::Key(const boost::shared_ptr<BRKey> &brkey) {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-			*_key = *brkey;
+		Key::Key(BRKey *brkey) {
+			_key = boost::shared_ptr<BRKey>(brkey);
 		}
 
 		Key::Key(const std::string &privKey) {
@@ -98,8 +98,7 @@ namespace Elastos {
 		}
 
 		std::string Key::toString() const {
-			//todo complete me
-			return "";
+			return Utils::UInt256ToString(_key->secret);
 		}
 
 		BRKey *Key::getRaw() const {
@@ -363,6 +362,11 @@ namespace Elastos {
 				if (secp256k1_ecdsa_verify(_ctx, &s, messageDigest.u8, &pk) == 1) r = 1; // success is 1, all other values are fail
 			}
 			return r;
+		}
+
+		std::string Key::keyToRedeemScript(int signType) const {
+			//todo complete me
+			return "";
 		}
 
 

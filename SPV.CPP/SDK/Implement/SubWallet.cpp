@@ -224,9 +224,9 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
-			boost::shared_ptr<BRKey> rawKey = boost::shared_ptr<BRKey>(new BRKey);
+			BRKey *rawKey = new BRKey;
 			UInt256 chainCode;
-			deriveKeyAndChain(rawKey.get(), chainCode, payPassword);
+			deriveKeyAndChain(rawKey, chainCode, payPassword);
 			Key key(rawKey);
 			UInt256 md;
 			BRSHA256(&md, message.c_str(), message.size());
@@ -240,16 +240,7 @@ namespace Elastos {
 
 		nlohmann::json
 		SubWallet::CheckSign(const std::string &publicKey, const std::string &message, const std::string &signature) {
-			CMBlock signatureData(signature.size());
-			memcpy(signatureData, signature.c_str(), signature.size());
-
-			UInt256 md;
-			BRSHA256(&md, message.c_str(), message.size());
-			bool r = Key::verifyByPublicKey(publicKey, md, signatureData);
-			//todo json return is correct ?
-			nlohmann::json jsonData;
-			jsonData["Result"] = r ? "true" : "false";
-			return jsonData;
+			return _parent->CheckSign(publicKey, message, signature);
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
