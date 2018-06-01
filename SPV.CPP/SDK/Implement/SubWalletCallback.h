@@ -30,10 +30,6 @@ namespace Elastos {
 					const nlohmann::json &desc,
 					uint32_t confirms);
 
-			virtual void OnIdStatusChanged(
-					const std::string &key,
-					const std::string &value);
-
 		public:
 			static TransactionStatus convertToStatus(const std::string &status);
 

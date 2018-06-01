@@ -17,10 +17,6 @@ namespace Elastos {
 														   uint32_t confirms) {
 		}
 
-		void SubWalletCallback::OnIdStatusChanged(const std::string &key, const std::string &value) {
-
-		}
-
 		SubWalletCallback::TransactionStatus SubWalletCallback::convertToStatus(const std::string &status) {
 			if (status == "Added")
 				return Added;
