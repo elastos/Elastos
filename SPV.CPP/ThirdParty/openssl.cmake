@@ -41,7 +41,6 @@ add_custom_target(
 	clean_openssl ALL
 	COMMENT "Cleaning openssl..."
 	COMMAND [ -f ${CMAKE_CURRENT_SOURCE_DIR}/openssl/openssl/Makefile ] && make distclean || echo Never mind
-	COMMAND git checkout master
 	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/openssl/openssl
 )
 

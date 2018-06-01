@@ -14,7 +14,7 @@ macro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 endmacro(option_with_default OPTION_NAME OPTION_STRING OPTION_DEFAULT)
 
 option_with_default(SPV_FOR_ANDROID "Build spv for android" OFF)
-option_with_default(SPV_EXPORT_JNI "SPV export java native interface for android" ON)
+option_with_default(SPV_EXPORT_JNI "SPV export java native interface for android" OFF)
 
 if(SPV_FOR_ANDROID)
 	message(STATUS "Build spv for android")

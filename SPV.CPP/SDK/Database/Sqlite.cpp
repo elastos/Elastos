@@ -179,7 +179,7 @@ namespace Elastos {
 				}
 			}
 
-			path.imbue(boost::locale::generator().generate("UTF-8"));
+//			path.imbue(boost::locale::generator().generate("UTF-8"));
 			int r = sqlite3_open_v2(path.string().c_str(), &_dataBasePtr, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL);
 			if (r != SQLITE_OK) {
 				close();
