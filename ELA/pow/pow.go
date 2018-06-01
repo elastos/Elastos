@@ -49,7 +49,7 @@ type PowService struct {
 	Mutex         sync.Mutex
 	logDictionary string
 	Started       bool
-	manualMining  bool
+	discreteMining  bool
 
 	blockPersistCompletedSubscriber events.Subscriber
 	RollbackTransactionSubscriber   events.Subscriber
@@ -227,13 +227,13 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	pow.Mutex.Lock()
 
-	if pow.Started || pow.manualMining {
+	if pow.Started || pow.discreteMining {
 		pow.Mutex.Unlock()
 		return nil, errors.New("Server is already CPU mining.")
 	}
 
 	pow.Started = true
-	pow.manualMining = true
+	pow.discreteMining = true
 	pow.Mutex.Unlock()
 
 	log.Tracef("Pow generating %d blocks", n)
@@ -243,7 +243,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	defer ticker.Stop()
 
 	for {
-		log.Trace("<================Manual Mining==============>\n")
+		log.Trace("<================Discrete Mining==============>\n")
 
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
 		if err != nil {
@@ -269,7 +269,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 				if i == n {
 					pow.Mutex.Lock()
 					pow.Started = false
-					pow.manualMining = false
+					pow.discreteMining = false
 					pow.Mutex.Unlock()
 					return blockHashes, nil
 				}
@@ -314,7 +314,7 @@ func (pow *PowService) BroadcastBlock(MsgBlock *Block) error {
 func (pow *PowService) Start() {
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
-	if pow.Started || pow.manualMining {
+	if pow.Started || pow.discreteMining {
 		log.Trace("cpuMining is already Started")
 	}
 
@@ -330,7 +330,7 @@ func (pow *PowService) Halt() {
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
 
-	if !pow.Started || pow.manualMining {
+	if !pow.Started || pow.discreteMining {
 		return
 	}
 
@@ -368,7 +368,7 @@ func NewPowService(logDictionary string) *PowService {
 	pow := &PowService{
 		PayToAddr:     config.Parameters.PowConfiguration.PayToAddr,
 		Started:       false,
-		manualMining:  false,
+		discreteMining:  false,
 		MsgBlock:      msgBlock{BlockData: make(map[string]*Block)},
 		logDictionary: logDictionary,
 	}
