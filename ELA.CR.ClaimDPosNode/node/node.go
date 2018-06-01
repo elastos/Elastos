@@ -39,21 +39,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState               // node state
-	id            uint64        // The nodes's id
-	version       uint32        // The network protocol the node used
-	services      uint64        // The services the node supplied
-	relay         bool          // The relay capability of the node (merge into capbility flag)
-	height        uint64        // The node latest block height
-	fromExtraNet  bool          // If this node is connected from extra net
-	txnCnt        uint64        // The transactions be transmit by this node
-	rxTxnCnt      uint64        // The transaction received by this node
-	link                        // The link status and infomation
-	nbrNodes                    // The neighbor node connect with currently node except itself
-	eventQueue                  // The event queue to notice notice other modules
-	chain.TxPool                // Unconfirmed transaction pool
-	idCache                     // The buffer to store the id of the items which already be processed
-	filter        *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState              // node state
+	id           uint64        // The nodes's id
+	version      uint32        // The network protocol the node used
+	services     uint64        // The services the node supplied
+	relay        bool          // The relay capability of the node (merge into capbility flag)
+	height       uint64        // The node latest block height
+	fromExtraNet bool          // If this node is connected from extra net
+	txnCnt       uint64        // The transactions be transmit by this node
+	rxTxnCnt     uint64        // The transaction received by this node
+	link                       // The link status and infomation
+	nbrNodes                   // The neighbor node connect with currently node except itself
+	eventQueue                 // The event queue to notice notice other modules
+	chain.TxPool               // Unconfirmed transaction pool
+	idCache                    // The buffer to store the id of the items which already be processed
+	filter       *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -65,13 +65,13 @@ type node struct {
 	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
-	DefaultMaxPeers    uint
-	headerFirstMode    bool
-	RequestedBlockList map[Uint256]time.Time
-	SyncBlkReqSem      Semaphore
-	SyncHdrReqSem      Semaphore
-	StartHash          Uint256
-	StopHash           Uint256
+	DefaultMaxPeers          uint
+	headerFirstMode          bool
+	RequestedBlockList       map[Uint256]time.Time
+	SyncBlkReqSem            Semaphore
+	SyncHdrReqSem            Semaphore
+	StartHash                Uint256
+	StopHash                 Uint256
 }
 
 type ConnectingNodes struct {
@@ -194,10 +194,10 @@ func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 }
 
 func (n *node) NodeDisconnect(v interface{}) {
-	if node, ok := v.(*node); ok {
+	if node, ok := v.(protocol.Noder); ok {
 		node.SetState(p2p.INACTIVITY)
-		conn := node.GetConn()
-		conn.Close()
+		node.GetConn().Close()
+		n.DelNbrNode(node.ID())
 	}
 }
 
