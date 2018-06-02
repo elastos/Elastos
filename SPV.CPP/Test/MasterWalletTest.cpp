@@ -15,8 +15,8 @@ using namespace Elastos::SDK;
 class TestMasterWallet : public MasterWallet {
 public:
 	TestMasterWallet(const std::string &phrasePassword,
-					 const std::string &payPassword) :
-			MasterWallet(phrasePassword, payPassword, "english") {
+					 const std::string &payPassword, const std::string language) :
+			MasterWallet(phrasePassword, payPassword, language) {
 		_startSubWalletWhenCreating = false;
 	}
 };

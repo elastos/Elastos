@@ -59,7 +59,7 @@ TEST_CASE("MasterPubKey method test", "[MasterPubKey]") {
 		BRKey *brkey = new BRKey();
 		brkey->compressed = 0;
 		brkey->secret = UINT256_ZERO;
-		boost::shared_ptr<Key> key = boost::shared_ptr<Key>(new Key(brkey.get()));
+		boost::shared_ptr<Key> key = boost::shared_ptr<Key>(new Key(brkey));
 
 		memset(key->getRaw()->pubKey, 0, sizeof(key->getRaw()->pubKey));
 		char *pubkey1 = (char *) key->getRaw()->pubKey;
