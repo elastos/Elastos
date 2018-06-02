@@ -26,7 +26,8 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &language) :
 				_initialized(false),
-				_dbRoot("Data") {
+				_dbRoot("Data"),
+				_startSubWalletWhenCreating(true) {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -36,7 +37,8 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::string &language) :
 				_initialized(true),
-				_dbRoot("Data") {
+				_dbRoot("Data"),
+				_startSubWalletWhenCreating(true) {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -71,7 +73,8 @@ namespace Elastos {
 			info.setFeePerKb(feePerKb);
 			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams::mainNet(), payPassword, this);
 			_createdWallets[chainID] = subWallet;
-			subWallet->_walletManager->start();
+			if (_startSubWalletWhenCreating)
+				subWallet->_walletManager->start();
 			return subWallet;
 		}
 
@@ -98,7 +101,8 @@ namespace Elastos {
 											   }));
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
 			assert(walletInner != nullptr);
-			walletInner->_walletManager->stop();
+			if (_startSubWalletWhenCreating)
+				walletInner->_walletManager->stop();
 			delete walletInner;
 		}
 

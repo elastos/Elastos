@@ -2,10 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "CoreWalletManager.h"
-
 #include <sstream>
-#include <Common/Log.h>
+
+#include "Common/Log.h"
+#include "SingleAddressWallet.h"
+#include "CoreWalletManager.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -51,7 +52,10 @@ namespace Elastos {
 		const WalletPtr &CoreWalletManager::getWallet() {
 			//todo create single address wallet if _singleAddress is true
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(loadTransactions(), _masterPubKey, createWalletListener(), _singleAddress));
+				_wallet = WalletPtr(!_singleAddress
+									? new Wallet(loadTransactions(), _masterPubKey, createWalletListener())
+									: new SingleAddressWallet(loadTransactions(), _masterPubKey,
+															  createWalletListener()));
 			}
 			return _wallet;
 		}
@@ -126,7 +130,7 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
+		void CoreWalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
 
 		}
 
@@ -148,9 +152,9 @@ namespace Elastos {
 			return SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
 		}
 
-		SharedWrapperList<Peer, BRPeer*> CoreWalletManager::loadPeers() {
+		SharedWrapperList<Peer, BRPeer *> CoreWalletManager::loadPeers() {
 			//todo complete me
-			return SharedWrapperList<Peer, BRPeer*>();
+			return SharedWrapperList<Peer, BRPeer *>();
 		}
 
 		int CoreWalletManager::getForkId() const {
@@ -227,7 +231,8 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
+		void
+		WrappedExceptionPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
 
 			try {
 				_listener->savePeers(replace, peers);
@@ -299,7 +304,8 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers) {
+		void
+		WrappedExecutorPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
 			_executor->execute(Runnable([this, replace, &peers]() -> void {
 				_listener->savePeers(replace, peers);
 			}));

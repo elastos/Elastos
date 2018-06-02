@@ -44,10 +44,9 @@ namespace Elastos {
 		public:
 			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 				   const MasterPubKeyPtr &masterPubKey,
-				   const boost::shared_ptr<Listener> &listener,
-				   bool singleAddress = false);
+				   const boost::shared_ptr<Listener> &listener);
 
-			~Wallet();
+			virtual ~Wallet();
 
 			virtual std::string toString() const;
 
@@ -217,18 +216,28 @@ namespace Elastos {
 
 			const UInt256 &getSystemAssetId() const;
 
-		private:
+		protected:
+			Wallet();
+
 			std::vector<BRTransaction *>
 			getRawTransactions(const SharedWrapperList<Transaction, BRTransaction *> &transactions);
 
 			BRTransaction *
 			createBRTransaction(const char* fromAddress, uint64_t fee, const BRTxOutput outputs[], size_t outCount);
 
-			BRWallet *createSingleWallet(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk);
+			static void setApplyFreeTx(void *info, void *tx);
 
-		private:
+			static void balanceChanged(void *info, uint64_t balance);
+
+			static void txAdded(void *info, BRTransaction *tx);
+
+			static void txUpdated(void *info, const UInt256 txHashes[], size_t count, uint32_t blockHeight,
+								  uint32_t timestamp);
+
+			static void txDeleted(void *info, UInt256 txHash, int notifyUser, int recommendRescan);
+
+		protected:
 			BRWallet *_wallet;
-			bool _singleAddress;
 
 			boost::weak_ptr<Listener> _listener;
 		};

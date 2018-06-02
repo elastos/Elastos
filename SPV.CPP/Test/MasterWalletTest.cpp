@@ -17,6 +17,7 @@ public:
 	TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword) :
 			MasterWallet(phrasePassword, payPassword, "english") {
+		_startSubWalletWhenCreating = false;
 	}
 };
 
@@ -27,24 +28,26 @@ TEST_CASE("Master wallet basic", "[MasterWallet]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 	REQUIRE(masterWallet->Initialized());
 
-	// FIXME test not pass
 	std::string chainId = "chainid";
-	boost::scoped_ptr<ISubWallet> subWallet;
+	ISubWallet *subWallet;
 	SECTION("Create sub wallet") {
-		subWallet.reset(masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false));
+		subWallet = masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false);
 		REQUIRE(subWallet != nullptr);
 
 		//Return same sub wallet with same chain id
 		ISubWallet *subWallet1 = masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false);
-		REQUIRE(subWallet.get() == subWallet1);
+		REQUIRE(subWallet == subWallet1);
 
 		//Return same sub wallet even if parameter of others are different
 		ISubWallet *subWallet2 = masterWallet->CreateSubWallet(Normal, chainId, 1, "other password", true);
-		REQUIRE(subWallet.get() == subWallet2);
+		REQUIRE(subWallet == subWallet2);
 
 		//Create another sub wallet
-		boost::scoped_ptr<ISubWallet> subWallet3(masterWallet->CreateSubWallet(Normal, "chain2", 1, payPassword, false));
+		ISubWallet *subWallet3 = masterWallet->CreateSubWallet(Normal, "chain2", 1, payPassword, false);
 		REQUIRE(subWallet3 != nullptr);
-		REQUIRE(subWallet.get() != subWallet3.get());
+		REQUIRE(subWallet != subWallet3);
+
+		masterWallet->DestroyWallet(subWallet);
+		masterWallet->DestroyWallet(subWallet3);
 	}
 }

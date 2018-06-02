@@ -116,6 +116,7 @@ namespace Elastos {
 
 		protected:
 			bool _initialized;
+			bool _startSubWalletWhenCreating; //for unit testing
 			WalletMap _createdWallets;
 
 			CMBlock _encryptedKey;
