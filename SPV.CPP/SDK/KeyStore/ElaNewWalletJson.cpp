@@ -82,7 +82,12 @@ namespace Elastos {
 			p._idInfo = j["idInfo"].get<std::string>();
 			p._mnemonicLanguage = j["mnemonicLanguage"].get<std::string>();
 			p._encryptedPhrasePassword = j["encryptedPhrasePassword"].get<std::string>();
-			p._coinInfoList = j["coinInfoList"].get<std::vector<CoinInfo>>();
+			std::vector<nlohmann::json> infoListRaw = j["coinInfoList"].get<std::vector<nlohmann::json>>();
+			for (size_t i = 0; i < infoListRaw.size(); i++) {
+				CoinInfo info;
+				info = infoListRaw[i];
+				p._coinInfoList.push_back(info);
+			}
 		}
 
 		const std::string &ElaNewWalletJson::getEncryptedPhrasePassword() const {

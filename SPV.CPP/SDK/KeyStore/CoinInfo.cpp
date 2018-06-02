@@ -83,7 +83,7 @@ namespace Elastos {
 			j["Index"] = p._index;
 			j["UsedMaxAddressIndex"] = p._usedMaxAddressIndex;
 			j["SingleAddress"] = p._singleAddress;
-			j["WalletTypeType"] = int(p.getWalletType());
+			j["WalletType"] = int(p.getWalletType());
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {

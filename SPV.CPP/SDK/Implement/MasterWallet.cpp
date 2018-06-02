@@ -134,9 +134,9 @@ namespace Elastos {
 			UInt128 entropy;
 			memcpy((void *) &entropy.u8[0], entropy2, sizeof(UInt128));
 
-			initFromEntropy(entropy, phrasePass, payPassword);
-
+			//resetMnemonic must before initFromEntropy because initFromEntropy use _mnemonic !!!!
 			resetMnemonic(_keyStore.json().getMnemonicLanguage());
+			initFromEntropy(entropy, phrasePass, payPassword);
 
 			return true;
 		}
@@ -313,7 +313,7 @@ namespace Elastos {
 
 		void MasterWallet::resetMnemonic(const std::string &language) {
 			fs::path mnemonicPath = _dbRoot;
-			mnemonicPath /= MNEMONIC_FILE_PREFIX + language + MNEMONIC_FILE_EXTENSION;
+			//mnemonicPath /= MNEMONIC_FILE_PREFIX + language + MNEMONIC_FILE_EXTENSION;
 			_mnemonic = Mnemonic(language, mnemonicPath);
 		}
 
