@@ -8,6 +8,7 @@
 #include "catch.hpp"
 #include "TransactionOutput.h"
 #include "BRAddress.h"
+#include "Utils.h"
 
 using namespace Elastos::SDK;
 
@@ -41,48 +42,41 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 		ELABRTxOutput *brTxOutput = new ELABRTxOutput();
 		TransactionOutput transactionOutput((BRTxOutput *)brTxOutput);
 
-		// FIXME [zxb] test not pass
-//		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-//		transactionOutput.setAddress(content);
-//		REQUIRE(transactionOutput.getAddress() == content);
+		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
+		transactionOutput.setAddress(content);
+		std::string address = transactionOutput.getAddress();
+		REQUIRE(address == content);
 	}
 
 	SECTION("Serialize and deserialize test", "") {
-		// FIXME [zxb] test not pass
-//		uint8_t assetIdData[256 / 8];
-//		UInt256Set(assetIdData, _assetId);
-//		ostream << assetIdData;
-//
-//		uint8_t amountData[64 / 8];
-//		UInt64SetLE(amountData, _output->amount);
-//		ostream << amountData;
-//
-//		uint8_t outputLockData[32 / 8];
-//		UInt32SetLE(outputLockData, _outputLock);
-//		ostream << outputLockData;
-//
-//		uint8_t programHashData[168 / 8];
-//		UInt168Set(programHashData, _programHash);
-//		ostream << programHashData;
-//		ELABRTxOutput *brTxOutput = new ELABRTxOutput();
-//		TransactionOutput transactionOutput((BRTxOutput *)brTxOutput);
-//
-//		transactionOutput.setAmount(11);
-//		transactionOutput.setOutputLock(33);
-//
-//
-//		ByteStream s;
-//		transactionOutput.Serialize(s);
-//
-//		s.setPosition(0);
-//
-//		ELABRTxOutput *brTxOutput1 = new ELABRTxOutput();
-//		TransactionOutput transactionOutput1((BRTxOutput *)brTxOutput1);
-//
-//		transactionOutput1.Deserialize(s);
-//
-//		REQUIRE(transactionOutput.getOutputLock() == transactionOutput1.getOutputLock());
+		ELABRTxOutput *brTxOutput = new ELABRTxOutput();
+		memset(brTxOutput, 0, sizeof(ELABRTxOutput));
+		TransactionOutput transactionOutput((BRTxOutput *)brTxOutput);
 
+		UInt168 hash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6"
+						"\xd4\x8f\x60\x7d\x42\xc1\xd2\xa2\x15\x16";
+		transactionOutput.setAmount(11);
+		transactionOutput.setOutputLock(33);
+		transactionOutput.setProgramHash(hash);
+
+
+		ByteStream s;
+		transactionOutput.Serialize(s);
+
+		s.setPosition(0);
+
+		ELABRTxOutput *brTxOutput1 = new ELABRTxOutput();
+		TransactionOutput transactionOutput1((BRTxOutput *)brTxOutput1);
+
+		transactionOutput1.Deserialize(s);
+
+		REQUIRE(transactionOutput.getAmount() == transactionOutput1.getAmount());
+
+		REQUIRE(transactionOutput.getOutputLock() == transactionOutput1.getOutputLock());
+
+		UInt168 hash1 = transactionOutput1.getProgramHash();
+		int r = UInt168Eq(&hash1, &hash);
+		REQUIRE(r == 1);
 
 	}
 

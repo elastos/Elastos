@@ -21,10 +21,7 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 	SECTION("Construct with BRMerkleBlock pointer") {
 		MerkleBlock mb(merkleBlock);
 		REQUIRE(nullptr != mb.getRaw());
-		//fixme getBlockHash() should not be zero
-//		REQUIRE(0 == memcmp(u256Empty.u8, mb.getBlockHash().u8, sizeof(UInt256)));
-		//fixme retest is valid method
-//		REQUIRE(false == mb.isValid(time(NULL)));
+		REQUIRE(false == mb.isValid(time(NULL)));
 	}
 
 	SECTION("Construct with nullptr pointer") {

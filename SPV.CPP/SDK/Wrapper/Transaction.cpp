@@ -332,11 +332,6 @@ namespace Elastos {
 
 		}
 
-		void Transaction::shuffleOutputs() {
-
-			BRTransactionShuffleOutputs(_transaction);
-		}
-
 		size_t Transaction::getSize() {
 
 			return BRTransactionSize(_transaction);

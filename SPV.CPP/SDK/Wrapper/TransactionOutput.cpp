@@ -13,8 +13,9 @@ namespace Elastos {
 	namespace SDK {
 
 		TransactionOutput::TransactionOutput() {
-
-			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
+			ELABRTxOutput *elabrTxOutput = new ELABRTxOutput();
+			memset(elabrTxOutput, 0, sizeof(ELABRTxOutput));
+			_output = boost::shared_ptr<BRTxOutput>((BRTxOutput *)elabrTxOutput);
 			_output.get()->script = nullptr;
 			_output.get()->scriptLen = 0;
 			_assetId = UINT256_ZERO;
