@@ -29,7 +29,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	SECTION("Prepare to test") {
 		srand(time(nullptr));
 
-		if (boost::filesystem::exists(DBFILE)) {
+		if (boost::filesystem::exists(DBFILE) && boost::filesystem::is_regular_file(DBFILE)) {
 			boost::filesystem::remove(DBFILE);
 		}
 
@@ -277,7 +277,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 			for (int i = 0; i < readTx.size(); ++i) {
 				REQUIRE(TEST_TX_DATALEN == readTx[i].buff.GetSize());
-				REQUIRE(0 == memcmp(readTx[i].buff, txToUpdate[i].buff, TEST_TX_DATALEN));
+				//do not need to compare buff, because updateTransaction() do not update this member.
+				//REQUIRE(0 == memcmp(readTx[i].buff, txToUpdate[i].buff, TEST_TX_DATALEN));
 				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);

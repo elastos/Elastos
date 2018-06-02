@@ -13,8 +13,8 @@ using namespace Elastos::SDK;
 
 TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 	SECTION("constructor with null and object") {
-		BRTxOutput *brTxOutput = new BRTxOutput();
-		TransactionOutput transactionOutput1(brTxOutput);
+		ELABRTxOutput *brTxOutput = new ELABRTxOutput();
+		TransactionOutput transactionOutput1((BRTxOutput *)brTxOutput);
 		REQUIRE(transactionOutput1.getRaw() != nullptr);
 	}
 
@@ -38,9 +38,10 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 	}
 
 	SECTION("TransactionOutput address test", "") {
-		BRTxOutput *brTxOutput = new BRTxOutput();
-		TransactionOutput transactionOutput(brTxOutput);
+		ELABRTxOutput *brTxOutput = new ELABRTxOutput();
+		TransactionOutput transactionOutput((BRTxOutput *)brTxOutput);
 
+		// FIXME test not pass
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		transactionOutput.setAddress(content);
 		REQUIRE(transactionOutput.getAddress() == content);
@@ -62,8 +63,8 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 //		uint8_t programHashData[168 / 8];
 //		UInt168Set(programHashData, _programHash);
 //		ostream << programHashData;
-		BRTxOutput *brTxOutput = new BRTxOutput();
-		TransactionOutput transactionOutput(brTxOutput);
+		ELABRTxOutput *brTxOutput = new ELABRTxOutput();
+		TransactionOutput transactionOutput((BRTxOutput *)brTxOutput);
 
 		transactionOutput.setAmount(11);
 		transactionOutput.setOutputLock(33);
@@ -74,8 +75,8 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 
 		s.setPosition(0);
 
-		BRTxOutput *brTxOutput1 = new BRTxOutput();
-		TransactionOutput transactionOutput1(brTxOutput1);
+		ELABRTxOutput *brTxOutput1 = new ELABRTxOutput();
+		TransactionOutput transactionOutput1((BRTxOutput *)brTxOutput1);
 
 		transactionOutput1.Deserialize(s);
 

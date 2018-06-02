@@ -56,7 +56,7 @@ TEST_CASE("MasterPubKey method test", "[MasterPubKey]") {
 		std::string phrase = "a test seed ha";
 		MasterPubKey masterPubKey(phrase);
 
-		boost::shared_ptr<BRKey> brkey = boost::shared_ptr<BRKey>(new BRKey());
+		BRKey *brkey = new BRKey();
 		brkey->compressed = 0;
 		brkey->secret = UINT256_ZERO;
 		boost::shared_ptr<Key> key = boost::shared_ptr<Key>(new Key(brkey));

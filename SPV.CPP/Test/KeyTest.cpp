@@ -21,7 +21,7 @@ TEST_CASE("Key test", "[Key]") {
 	}
 
 	SECTION("Contructor with BRKey") {
-		boost::shared_ptr<BRKey> brkey = boost::shared_ptr<BRKey>(new BRKey);
+		BRKey *brkey = new BRKey;
 		Key key(brkey);
 		REQUIRE(key.getRaw() != nullptr);
 	}
@@ -165,6 +165,7 @@ TEST_CASE("Key test", "[Key]") {
 		bool res = Key::isValidBitcoinPrivateKey("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz");
 		REQUIRE(res == false);
 
+		//FIXME test not pass
 		Key key;
 		res = Key::isValidBitcoinPrivateKey(key.getPrivKey());
 		REQUIRE(res == true);

@@ -308,8 +308,8 @@ namespace Elastos {
 		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
 
 			bool result;
-			_executor->execute(Runnable([this, &result]() -> void {
-				result = _listener->networkIsReachable();
+			_executor->execute(Runnable([this, result]() -> void {
+				_listener->networkIsReachable();
 			}));
 			return result;
 		}

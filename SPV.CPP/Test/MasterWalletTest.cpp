@@ -16,7 +16,7 @@ class TestMasterWallet : public MasterWallet {
 public:
 	TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword) :
-			MasterWallet(phrasePassword, payPassword) {
+			MasterWallet(phrasePassword, payPassword, "english") {
 	}
 };
 
@@ -27,6 +27,7 @@ TEST_CASE("Master wallet basic", "[MasterWallet]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 	REQUIRE(masterWallet->Initialized());
 
+	// FIXME test not pass
 	std::string chainId = "chainid";
 	boost::scoped_ptr<ISubWallet> subWallet;
 	SECTION("Create sub wallet") {
