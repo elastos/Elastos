@@ -24,11 +24,11 @@ namespace Elastos {
 		}
 
 		bool Program::isValid() {
-			if (_parameter.GetSize() > 0 && !_parameter) {
+			if (!_parameter || _parameter.GetSize() <= 0) {
 				return false;
 			}
 
-			if (_code.GetSize() > 0 && !_code) {
+			if (!_code || _code.GetSize() <= 0) {
 				return false;
 			}
 			return true;

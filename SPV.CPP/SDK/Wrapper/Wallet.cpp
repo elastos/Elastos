@@ -361,7 +361,7 @@ namespace Elastos {
 			pthread_mutex_lock(&_wallet->lock);
 			const SharedWrapperList<TransactionInput, BRTxInput *> inputs = transaction->getInputs();
 
-			for (size_t i = 0; inputs.size(); i++) {
+			for (size_t i = 0; i < inputs.size(); i++) {
 				UInt256 hash = inputs[i]->getHash();
 				BRTransaction *t = (BRTransaction *) BRSetGet(_wallet->allTx, &hash);
 				uint32_t n = inputs[i]->getIndex();

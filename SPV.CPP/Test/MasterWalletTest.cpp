@@ -25,7 +25,8 @@ TEST_CASE("Master wallet basic", "[MasterWallet]") {
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
+	std::string language = "english";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 	REQUIRE(masterWallet->Initialized());
 
 	std::string chainId = "chainid";

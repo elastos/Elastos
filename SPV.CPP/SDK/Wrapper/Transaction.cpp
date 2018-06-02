@@ -300,6 +300,12 @@ namespace Elastos {
 								  input.getScript(), input.getScript().GetSize(),
 								  input.getSignature(), input.getSignature().GetSize(),
 								  input.getSequence());
+
+			BRTxInput *brTxInput = new BRTxInput;
+			transactionInputCopy(brTxInput, &_transaction->inputs[_transaction->inCount - 1]);
+			TransactionInputPtr inputPtr = TransactionInputPtr(new TransactionInput(brTxInput));
+			_inputs.push_back(inputPtr);
+
 		}
 
 		void Transaction::addOutput(const TransactionOutput &output) {
@@ -313,6 +319,17 @@ namespace Elastos {
 			elabrTransaction->outputLockList.push_back(output.getOutputLock());
 			const UInt168 programHash = output.getProgramHash();
 			elabrTransaction->outputProgramHashList.push_back(programHash);
+
+			ELABRTxOutput *brTxOutput = new ELABRTxOutput();
+			size_t index = _transaction->outCount - 1;
+			transactionOutputCopy((BRTxOutput *)brTxOutput, &_transaction->outputs[index]);
+
+			UInt256Set(&brTxOutput->assetId, assetID);
+			brTxOutput->outputLock = output.getOutputLock();
+			UInt168Set(&brTxOutput->programHash, programHash);
+
+			_outputs.push_back(TransactionOutputPtr(new TransactionOutput((BRTxOutput *) brTxOutput)));
+
 		}
 
 		void Transaction::shuffleOutputs() {
@@ -331,8 +348,16 @@ namespace Elastos {
 		}
 
 		bool Transaction::isSigned() {
-
-			return BRTransactionIsSigned(_transaction) != 0;
+			size_t len = _programs.size();
+			if (len <= 0) {
+				return false;
+			}
+			for (size_t i = 0; i < len; ++i) {
+				if (!_programs[i]->isValid()) {
+					return false;
+				}
+			}
+			return true;
 		}
 
 		void Transaction::sign(const WrapperList<Key, BRKey> &keys, int forkId) {
@@ -434,17 +459,19 @@ namespace Elastos {
 			}
 
 			uint64_t inputLength = istream.getVarUint();
-			_inputs.resize(inputLength);
+			TransactionInputPtr transactionInputPtr;
 			for (size_t i = 0; i < inputLength; i++) {
-				_inputs[i] = TransactionInputPtr(new TransactionInput);
-				_inputs[i]->Deserialize(istream);
+				transactionInputPtr = TransactionInputPtr(new TransactionInput);
+				transactionInputPtr->Deserialize(istream);
+				addInput(*transactionInputPtr.get());
 			}
 
 			uint64_t outputLength = istream.getVarUint();
-			_outputs.resize(outputLength);
+			TransactionOutputPtr transactionOutputPtr;
 			for (size_t i = 0; i < outputLength; i++) {
-				_outputs[i] = TransactionOutputPtr(new TransactionOutput);
-				_outputs[i]->Deserialize(istream);
+				transactionOutputPtr = TransactionOutputPtr(new TransactionOutput);
+				transactionOutputPtr->Deserialize(istream);
+				addOutput(*transactionOutputPtr.get());
 			}
 
 			uint8_t lockTimeData[32 / 8];
@@ -666,17 +693,14 @@ namespace Elastos {
 
 			_transaction->inCount = jsonData["inCount"].get<size_t>();
 
-			_transaction->inputs = nullptr;
-
 			_transaction->outCount = jsonData["outCount"].get<size_t>();
-
-			_transaction->outputs = nullptr;
 
 			_transaction->lockTime = jsonData["lockTime"].get<uint32_t>();
 
 			_transaction->blockHeight = jsonData["blockHeight"].get<uint32_t>();
 
 			_transaction->timestamp = jsonData["timestamp"].get<uint32_t>();
+
 		}
 
 		void Transaction::fromJson(nlohmann::json jsonData) {
@@ -708,17 +732,19 @@ namespace Elastos {
 			}
 
 			std::vector<nlohmann::json> inputs = jsonData["txInputs"];
-			_inputs.resize(inputs.size());
+			TransactionInputPtr transactionInputPtr;
 			for (size_t i = 0; i < inputs.size(); ++i) {
-				_inputs[i] = TransactionInputPtr(new TransactionInput);
-				_inputs[i]->fromJson(inputs[i]);
+				transactionInputPtr = TransactionInputPtr(new TransactionInput);
+				transactionInputPtr->fromJson(inputs[i]);
+				addInput(*transactionInputPtr.get());
 			}
 
 			std::vector<nlohmann::json> outputs = jsonData["txOutputs"];
-			_outputs.resize(outputs.size());
+			TransactionOutputPtr transactionOutputPtr;
 			for (size_t i = 0; i < outputs.size(); ++i) {
-				_outputs[i] = TransactionOutputPtr(new TransactionOutput);
-				_outputs[i]->fromJson(outputs[i]);
+				transactionOutputPtr = TransactionOutputPtr(new TransactionOutput);
+				transactionOutputPtr->fromJson(outputs[i]);
+				addOutput(*transactionOutputPtr.get());
 			}
 		}
 	}

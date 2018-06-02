@@ -35,14 +35,19 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
     SECTION("init test") {
         PayloadTransferCrossChainAsset ptcca, ptcca_re;
 
-        std::map<std::string, uint64_t> am;
-        am["addr"]  = 64;
-        am["addr1"] = 128;
-        ptcca.setAddressMap(am);
+        std::vector<std::string> crossChainAddress;
+        std::vector<uint64_t> crossChainIndex;
+        std::vector<uint64_t> crossChainAmount;
+        for (int i = 0; i < 10; ++i) {
+            std::string address = "test Address " + std::to_string(i + 1);
+            crossChainAddress.push_back(address);
+            crossChainIndex.push_back(i + 1);
+            crossChainAmount.push_back(i + 1);
+        }
+        ptcca.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
         ByteStream stream;
         ptcca.Serialize(stream);
-
 
         stream.setPosition(0);
 
@@ -60,10 +65,16 @@ TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsse
     SECTION("toJson fromJson test") {
         PayloadTransferCrossChainAsset ptcca, ptcca_re;
 
-        std::map<std::string, uint64_t> am;
-        am["addr"]  = 64;
-        am["addr1"] = 128;
-        ptcca.setAddressMap(am);
+        std::vector<std::string> crossChainAddress;
+        std::vector<uint64_t> crossChainIndex;
+        std::vector<uint64_t> crossChainAmount;
+        for (int i = 0; i < 10; ++i) {
+            std::string address = "test Address " + std::to_string(i + 1);
+            crossChainAddress.push_back(address);
+            crossChainIndex.push_back(i + 1);
+            crossChainAmount.push_back(i + 1);
+        }
+        ptcca.setCrossChainData(crossChainAddress, crossChainIndex, crossChainAmount);
 
         nlohmann::json jsonData = ptcca.toJson();
 

@@ -28,7 +28,7 @@ TEST_CASE("Transaction constructor test", "[Transaction]") {
 		{
 			Transaction transaction((BRTransaction *) raw);
 			REQUIRE(transaction.getRaw() != nullptr);
-			REQUIRE(transaction.getRaw() == (BRTransaction *)raw);
+			REQUIRE(transaction.getRaw() == (BRTransaction *) raw);
 		}
 		//raw shall be invalid pointer here
 	}
@@ -214,7 +214,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 
 	SECTION("transaction isSigned test") {
 		bool res = transaction.isSigned();
-		REQUIRE(res == true);
+		REQUIRE(res == false);
 
 		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
@@ -222,7 +222,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		Key key("0000000000000000000000000000000000000000000000000000000000000001");
 		transaction.addInput(TransactionInput(hash, 1, 1000, myaddress.getPubKeyScript(), key.sign(hash), 1));
 		res = transaction.isSigned();
-		REQUIRE(res == true);
+		REQUIRE(res == false);
 
 		transaction.addInput(TransactionInput(hash, 1, 1000, myaddress.getPubKeyScript(), CMBlock(), 1));
 		res = transaction.isSigned();
@@ -342,11 +342,16 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 		for (int i = 0; i < 5; ++i) {
 			BRTransactionAddInput(&raw->raw, hash, i, i, s, 21, nullptr, 0, i);
 		}
+		UInt168 programHash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6\xd4\x8f\x60\x7d\x42\xc1\xd2"
+											"\xa2\x15\x16";
 		for (int i = 0; i < 5; ++i) {
 			BRTransactionAddOutput(&raw->raw, i, s, 21);
+			raw->outputLockList.push_back(i);
+			raw->outputAssetIDList.push_back(hash);
+			raw->outputProgramHashList.push_back(programHash);
 		}
 
-		Transaction transaction((BRTransaction *)raw);
+		Transaction transaction((BRTransaction *) raw);
 		transaction.setTransactionType(Transaction::Type::CoinBase);
 
 		UInt256 hash1 = transaction.getHash();
@@ -421,9 +426,9 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 		payload.Serialize(stream);
 
 		CMBlock mb(stream.length());
-		uint8_t* tmp = stream.getBuf();
+		uint8_t *tmp = stream.getBuf();
 		memcpy(mb, tmp, mb.GetSize());
-		delete []tmp;
+		delete[]tmp;
 
 		raw->payloadData = mb;
 
@@ -438,7 +443,7 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 			CMBlock mb1(byteStream.length());
 			uint8_t *tmp = byteStream.getBuf();
 			memcpy(mb1, tmp, byteStream.length());
-			delete []tmp;
+			delete[]tmp;
 			raw->attributeData.push_back(mb1);
 		}
 		uint8_t s1[20] = {18, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 6, 182,
@@ -455,12 +460,12 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 			CMBlock mb(byteStream.length());
 			uint8_t *tmp = byteStream.getBuf();
 			memcpy(mb, tmp, byteStream.length());
-			delete []tmp;
+			delete[]tmp;
 			raw->programData.push_back(mb);
 		}
 
 		Transaction transaction((BRTransaction *) raw);
-		ELABRTransaction *raw1 = (ELABRTransaction *)transaction.convertToRaw();
+		ELABRTransaction *raw1 = (ELABRTransaction *) transaction.convertToRaw();
 
 		REQUIRE(raw1->raw.inCount == raw->raw.inCount);
 		REQUIRE(raw1->raw.outCount == raw->raw.outCount);
@@ -492,20 +497,20 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 		REQUIRE(result == 0);
 
 		REQUIRE(raw1->attributeData.size() == raw->attributeData.size());
-		for(size_t i = 0; i < raw->attributeData.size(); i++) {
+		for (size_t i = 0; i < raw->attributeData.size(); i++) {
 			REQUIRE(raw1->attributeData[i].GetSize() == raw->attributeData[i].GetSize());
 			result = memcmp(raw1->attributeData[i], raw->attributeData[i], raw->attributeData[i].GetSize());
 			REQUIRE(result == 0);
 		}
 
 		REQUIRE(raw1->programData.size() == raw->programData.size());
-		for(size_t i = 0; i < raw->programData.size(); i++) {
+		for (size_t i = 0; i < raw->programData.size(); i++) {
 			REQUIRE(raw1->programData[i].GetSize() == raw->programData[i].GetSize());
 			result = memcmp(raw1->programData[i], raw->programData[i], raw->programData[i].GetSize());
 			REQUIRE(result == 0);
 		}
 
-		ELABRTransactionFree((ELABRTransaction *)raw1);
+		ELABRTransactionFree((ELABRTransaction *) raw1);
 	}
 
 }

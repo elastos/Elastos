@@ -26,7 +26,8 @@ namespace Elastos {
 
 		std::string MainchainSubWallet::SendDepositTransaction(const std::string &fromAddress,
 															   const nlohmann::json &sidechainAccounts,
-															   const nlohmann::json &sidechainAmounts, uint64_t fee,
+															   const nlohmann::json &sidechainAmounts,
+															   const nlohmann::json &sidechainIndexs, uint64_t fee,
 															   const std::string &payPassword,
 															   const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
@@ -34,14 +35,12 @@ namespace Elastos {
 
 			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();
-			assert(accounts.size() == amounts.size());
-			std::map<std::string, uint64_t> addressMap;
-			for (int i = 0; i < accounts.size(); ++i) {
-				addressMap[accounts[i]] = amounts[i];
-			}
+			std::vector<uint64_t> indexs = sidechainIndexs.get<std::vector<uint64_t >>();
+			assert(accounts.size() == amounts.size() == indexs.size());
+
 			DepositTxParam *withdrawTxParam = dynamic_cast<DepositTxParam *>(txParam.get());
 			assert(withdrawTxParam != nullptr);
-			withdrawTxParam->setAddressMap(addressMap);
+			withdrawTxParam->setSidechainDatas(accounts, indexs, amounts);
 
 			//todo read main chain address from config
 			std::string mainchainAddress;
@@ -75,7 +74,9 @@ namespace Elastos {
 
 			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
 					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
-			payloadTransferCrossChainAsset->setAddressMap(depositTxParam->getAddressMap());
+			payloadTransferCrossChainAsset->setCrossChainData(depositTxParam->getCrossChainAddress(),
+			                                                  depositTxParam->getCrossChainOutputIndexs(),
+			                                                  depositTxParam->getCrosschainAmouts());
 
 			return ptr;
 		}
@@ -87,6 +88,28 @@ namespace Elastos {
 			}
 
 			return SubWallet::verifyRawTransaction(transaction);
+		}
+
+		bool MainchainSubWallet::checkTransactionPayload(const TransactionPtr &transaction) {
+			const PayloadPtr payloadPtr = transaction->getPayload();
+
+			bool isValid = SubWallet::checkTransactionPayload(transaction);
+
+			if (isValid) {
+				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
+						static_cast<PayloadTransferCrossChainAsset *>(payloadPtr.get());
+
+				std::vector<uint64_t> outputIndex = payloadTransferCrossChainAsset->getOutputIndex();
+				const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+				for (size_t i = 0; i < outputIndex.size(); ++i) {
+					if (outputIndex[i] > outputs.size() - 1) {
+						isValid = false;
+						break;
+					}
+				}
+
+			}
+			return isValid;
 		}
 
 		bool MainchainSubWallet::completeTransaction(const TransactionPtr &transaction) {

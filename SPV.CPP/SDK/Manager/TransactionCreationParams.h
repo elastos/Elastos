@@ -58,15 +58,23 @@ namespace Elastos {
 
 			void setSidechainAddress(const std::string &address);
 
-			const std::map<std::string, uint64_t> &getAddressMap() const;
+			const std::vector<std::string> &getCrossChainAddress() const;
 
-			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
+			const std::vector<uint64_t> &getCrossChainOutputIndexs() const;
+
+			const std::vector<uint64_t> &getCrosschainAmouts() const;
+
+			void setSidechainDatas(const std::vector<std::string> crossChainAddress,
+			                       const std::vector<uint64_t> outputIndex,
+			                       const std::vector<uint64_t> crossChainAmount);
 
 			virtual SubWalletType getType() const { return Mainchain;}
 
 		private:
 			std::string _sidechainAddress;
-			std::map<std::string, uint64_t> _addressMap;
+			std::vector<std::string> _crossChainAddress;
+			std::vector<uint64_t> _outputIndex;
+			std::vector<uint64_t> _crossChainAmount;
 		};
 
 		class WithdrawTxParam : public TxParam {
@@ -75,15 +83,23 @@ namespace Elastos {
 
 			void setMainchainAddress(const std::string &address);
 
-			const std::map<std::string, uint64_t> &getAddressMap() const;
+			const std::vector<std::string> &getCrossChainAddress() const;
 
-			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
+			const std::vector<uint64_t> &getCrossChainOutputIndexs() const;
+
+			const std::vector<uint64_t> &getCrosschainAmouts() const;
+
+			void setMainchainDatas(const std::vector<std::string> crossChainAddress,
+			                       const std::vector<uint64_t> outputIndex,
+			                       const std::vector<uint64_t> crossChainAmount);
 
 			virtual SubWalletType getType() const { return Sidechain;}
 
 		private:
 			std::string _mainchainAddress;
-			std::map<std::string, uint64_t> _addressMap;
+			std::vector<std::string> _crossChainAddress;
+			std::vector<uint64_t> _outputIndex;
+			std::vector<uint64_t> _crossChainAmount;
 		};
 
 		class IdTxParam : public TxParam {

@@ -17,6 +17,7 @@
 #include "Common/Utils.h"
 #include "Log.h"
 #include "Key.h"
+#include "ByteStream.h"
 
 #define BIP32_SEED_KEY "ELA seed"
 
@@ -365,10 +366,22 @@ namespace Elastos {
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {
-			//todo complete me
-			return "";
+			if (signType == ELA_MULTISIG_ADDRESS) {
+				return "";
+			}
+
+			uint64_t size = (getCompressed()) ? 33 : 65;
+
+			ByteStream buff(size + 2);
+
+			buff.put((uint8_t)size);
+
+			buff.putBytes(_key->pubKey, size);
+
+			buff.put((uint8_t)signType);
+
+			std::string script((char *)buff.getBuf(), buff.position());
+			return script;
 		}
-
-
 	}
 }

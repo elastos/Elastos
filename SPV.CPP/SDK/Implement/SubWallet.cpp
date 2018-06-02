@@ -378,7 +378,7 @@ namespace Elastos {
 			}
 			//todo complete fee
 			uint64_t inputFee = _walletManager->getWallet()->getInputsFee(transaction);
-
+//			assert(inputFee < UINT64_MAX);
 			uint64_t outputFee = _walletManager->getWallet()->getOutputFee(transaction);
 
 			if (inputFee - outputFee > 0) {
@@ -463,15 +463,16 @@ namespace Elastos {
 		}
 
 		bool SubWallet::completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount) {
-			BRTxOutput o = BR_TX_OUTPUT_NONE;
+			BRTxOutput *o = new BRTxOutput();
+			memset(o, 0, sizeof(BRTxOutput));
 			uint64_t maxAmount = _walletManager->getWallet()->getMaxOutputAmount();
-			o.amount = (amount < maxAmount) ? amount : maxAmount;
+			o->amount = (amount < maxAmount) ? amount : maxAmount;
 			std::string addr = _walletManager->getWallet()->getReceiveAddress();
-			memcpy(o.address, addr.data(), addr.size());
+			memcpy(o->address, addr.data(), addr.size());
 
-			BRTxOutputSetAddress(&o, addr.c_str());
+			BRTxOutputSetAddress(o, addr.c_str());
 
-			TransactionOutput output(&o);
+			TransactionOutput output(o);
 			transaction->addOutput(output);
 
 			return true;

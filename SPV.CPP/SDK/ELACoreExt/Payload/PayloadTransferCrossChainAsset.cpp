@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "PayloadTransferCrossChainAsset.h"
+#include "Address.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -11,18 +12,23 @@ namespace Elastos {
 
 		}
 
-		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(
-				const std::map<std::string, uint64_t> &addressMap) {
-			_addressMap = addressMap;
+		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset(const std::vector<std::string> crossChainAddress,
+		                                                               const std::vector<uint64_t> outputIndex,
+		                                                               const std::vector<uint64_t> crossChainAmount)
+		{
+			setCrossChainData(crossChainAddress, outputIndex, crossChainAmount);
 		}
 
 		PayloadTransferCrossChainAsset::~PayloadTransferCrossChainAsset() {
 
 		}
 
-		void PayloadTransferCrossChainAsset::setAddressMap(const std::map<std::string, uint64_t> &addressMap) {
-			_addressMap = addressMap;
-
+		void PayloadTransferCrossChainAsset::setCrossChainData(const std::vector<std::string> crossChainAddress,
+		                                                       const std::vector<uint64_t> outputIndex,
+		                                                       const std::vector<uint64_t> crossChainAmount) {
+			_crossChainAddress = crossChainAddress;
+			_outputIndex = outputIndex;
+			_crossChainAmount = crossChainAmount;
 		}
 
 		CMBlock PayloadTransferCrossChainAsset::getData() const {
@@ -38,60 +44,94 @@ namespace Elastos {
 		}
 
 		bool PayloadTransferCrossChainAsset::isValid() const {
-			return _addressMap.size() > 0;
+			size_t len = _crossChainAddress.size();
+			if (len <= 0 || len != _outputIndex.size() || len != _crossChainAmount.size()) {
+				return false;
+			}
+
+			for (size_t i = 0; i < len; ++i) {
+				Address address(_crossChainAddress[i]);
+				if (!address.isValid()) {
+					return false;
+				}
+
+				if (_crossChainAmount[i] <= 0) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		const std::vector<std::string> &PayloadTransferCrossChainAsset::getCrossChainAddress() const {
+			return _crossChainAddress;
+		}
+
+		const std::vector<uint64_t> &PayloadTransferCrossChainAsset::getOutputIndex() const {
+			return _outputIndex;
+		}
+
+		const std::vector<uint64_t> &PayloadTransferCrossChainAsset::getCrossChainAmout() const {
+			return _crossChainAmount;
 		}
 
 		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream) const {
-			uint64_t len = _addressMap.size();
+			size_t len = _crossChainAddress.size();
 			ostream.putVarUint(len);
+			for (size_t i = 0; i < len; ++i) {
+				ostream.putVarUint(_crossChainAddress[i].length());
+				ostream.putBytes((uint8_t *) _crossChainAddress[i].c_str(), _crossChainAddress[i].length());
 
-			std::string key = "";
-			uint64_t value = 0;
-			std::map<std::string, uint64_t>::const_iterator it;
-			for (it = _addressMap.begin(); it != _addressMap.end(); it++) {
-				key = 	it->first;
-				value = it->second;
-				ostream.putVarUint(key.length());
-				ostream.putBytes((uint8_t *) key.c_str(), key.length());
+				ostream.putVarUint(_outputIndex[i]);
 
-				ostream.putVarUint(value);
+				ostream.putUint64(_crossChainAmount[i]);
 			}
 		}
 
 		void PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream) {
-			_addressMap.clear();
-			uint64_t len = istream.getVarUint(), _len;
+			_crossChainAddress.clear();
+			_outputIndex.clear();
+			_crossChainAmount.clear();
+			uint64_t len = istream.getVarUint();
 
-			if (0 < len) {
-                std::string key = "";
-                uint64_t value = 0;
-                for (uint64_t i = 0; i < len; i++) {
-                    _len = istream.getVarUint();
-                    if (0 < _len) {
-                        char *utfBuffer = new char[_len + 1];
-                        if (utfBuffer) {
-                            istream.getBytes((uint8_t *) utfBuffer, _len);
-                            utfBuffer[_len] = '\0';
-                            key = utfBuffer;
-                            delete[] utfBuffer;
-                        }
-                    }
+			for (size_t i = 0; i < len; ++i) {
+				size_t size = istream.getVarUint();
+				char *buff = new char[size + 1];
+				if (buff) {
+					istream.getBytes((uint8_t *)buff, size);
+					buff[size] = '\0';
+					std::string address = buff;
+					_crossChainAddress.push_back(address);
+					delete[] buff;
+				}
 
-                    value = istream.getVarUint();
-                    _addressMap[key] = value;
-                }
-            }
+				uint64_t index = istream.getVarUint();
+				_outputIndex.push_back(index);
+
+				uint64_t amount = istream.getUint64();
+				_crossChainAmount.push_back(amount);
+
+			}
 		}
 
 		nlohmann::json PayloadTransferCrossChainAsset::toJson() {
-			nlohmann::json jsonData(_addressMap);
+			nlohmann::json jsonData;
+
+			jsonData["crossChainAddress"] = _crossChainAddress;
+
+			jsonData["outputIndex"] = _outputIndex;
+
+			jsonData["crossChainAmount"] = _crossChainAmount;
+
 			return jsonData;
 		}
 
 		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json &jsonData) {
-			for (nlohmann::json::const_iterator it = jsonData.cbegin(); it != jsonData.cend(); ++it) {
-				_addressMap[it.key()] = it.value();
-			}
+			_crossChainAddress = jsonData["crossChainAddress"].get<std::vector<std::string>>();
+
+			_outputIndex = jsonData["outputIndex"].get<std::vector<uint64_t>>();
+
+			_crossChainAmount = jsonData["crossChainAmount"].get<std::vector<uint64_t >>();
 		}
 	}
 }

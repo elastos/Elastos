@@ -17,13 +17,24 @@ namespace Elastos {
 		public:
 			PayloadTransferCrossChainAsset();
 
-			PayloadTransferCrossChainAsset(const std::map<std::string, uint64_t> &addressMap);
+			PayloadTransferCrossChainAsset(const std::vector<std::string> crossChainAddress,
+			                               const std::vector<uint64_t> outputIndex,
+			                               const std::vector<uint64_t> crossChainAmount);
 
 			~PayloadTransferCrossChainAsset();
 
-			void setAddressMap(const std::map<std::string, uint64_t> &addressMap);
+			void setCrossChainData(const std::vector<std::string> crossChainAddress,
+			                   const std::vector<uint64_t> outputIndex,
+			                   const std::vector<uint64_t> crossChainAmount);
 
 			virtual CMBlock getData() const;
+
+			const std::vector<std::string> &getCrossChainAddress() const;
+
+			const std::vector<uint64_t> &getOutputIndex() const;
+
+			const std::vector<uint64_t> &getCrossChainAmout() const;
+
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -36,9 +47,9 @@ namespace Elastos {
 			virtual bool isValid() const;
 
 		private:
-
-			std::map<std::string, uint64_t> _addressMap;
-
+			std::vector<std::string> _crossChainAddress;
+			std::vector<uint64_t> _outputIndex;
+			std::vector<uint64_t> _crossChainAmount;
 		};
 	}
 }

@@ -25,7 +25,8 @@ namespace Elastos {
 
 		std::string SidechainSubWallet::SendWithdrawTransaction(const std::string &fromAddress,
 																const nlohmann::json &mainchainAccounts,
-																const nlohmann::json &mainchainAmounts, uint64_t fee,
+																const nlohmann::json &mainchainAmounts,
+																const nlohmann::json &mainchainIndexs, uint64_t fee,
 																const std::string &payPassword,
 																const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
@@ -33,14 +34,12 @@ namespace Elastos {
 
 			std::vector<std::string> accounts = mainchainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = mainchainAmounts.get<std::vector<uint64_t>>();
-			assert(accounts.size() == amounts.size());
-			std::map<std::string, uint64_t> addressMap;
-			for (int i = 0; i < accounts.size(); ++i) {
-				addressMap[accounts[i]] = amounts[i];
-			}
+			std::vector<uint64_t> indexs = mainchainIndexs.get<std::vector<uint64_t>>();
+			assert(accounts.size() == amounts.size() == indexs.size());
+
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(txParam.get());
 			assert(withdrawTxParam != nullptr);
-			withdrawTxParam->setAddressMap(addressMap);
+			withdrawTxParam->setMainchainDatas(accounts, indexs, amounts);
 
 			//todo read main chain address from config
 			std::string mainchainAddress;
@@ -73,7 +72,9 @@ namespace Elastos {
 
 			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
 					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
-			payloadTransferCrossChainAsset->setAddressMap(withdrawTxParam->getAddressMap());
+			payloadTransferCrossChainAsset->setCrossChainData(withdrawTxParam->getCrossChainAddress(),
+			                                                  withdrawTxParam->getCrossChainOutputIndexs(),
+			                                                  withdrawTxParam->getCrosschainAmouts());
 
 			return ptr;
 		}

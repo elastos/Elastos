@@ -19,6 +19,7 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const nlohmann::json &sidechainAccounts,
 					const nlohmann::json &sidechainAmounts,
+					const nlohmann::json &sidechainIndexs,
 					uint64_t fee,
 					const std::string &payPassword,
 					const std::string &memo);
@@ -35,7 +36,10 @@ namespace Elastos {
 
 			virtual bool verifyRawTransaction(const TransactionPtr &transaction);
 
+			virtual bool checkTransactionPayload(const TransactionPtr &transaction);
+
 			virtual bool completeTransaction(const TransactionPtr &transaction);
+
 		};
 
 	}

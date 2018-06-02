@@ -67,12 +67,24 @@ namespace Elastos {
 			_sidechainAddress = address;
 		}
 
-		const std::map<std::string, uint64_t> &DepositTxParam::getAddressMap() const {
-			return _addressMap;
+		const std::vector<std::string> &DepositTxParam::getCrossChainAddress() const {
+			return _crossChainAddress;
 		}
 
-		void DepositTxParam::setAddressMap(const std::map<std::string, uint64_t> &addressMap) {
-			_addressMap = addressMap;
+		const std::vector<uint64_t> &DepositTxParam::getCrossChainOutputIndexs() const {
+			return _outputIndex;
+		}
+
+		const std::vector<uint64_t> &DepositTxParam::getCrosschainAmouts() const {
+			return _crossChainAmount;
+		}
+
+		void DepositTxParam::setSidechainDatas(const std::vector<std::string> crossChainAddress,
+		                                   const std::vector<uint64_t> outputIndex,
+		                                   const std::vector<uint64_t> crossChainAmount) {
+			_crossChainAddress = crossChainAddress;
+			_outputIndex = outputIndex;
+			_crossChainAmount = crossChainAmount;
 		}
 
 		std::string WithdrawTxParam::getMainchainAddress() const {
@@ -83,12 +95,24 @@ namespace Elastos {
 			_mainchainAddress = address;
 		}
 
-		const std::map<std::string, uint64_t> &WithdrawTxParam::getAddressMap() const {
-			return _addressMap;
+		const std::vector<std::string> &WithdrawTxParam::getCrossChainAddress() const {
+			return _crossChainAddress;
 		}
 
-		void WithdrawTxParam::setAddressMap(const std::map<std::string, uint64_t> &addressMap) {
-			_addressMap = addressMap;
+		const std::vector<uint64_t> &WithdrawTxParam::getCrossChainOutputIndexs() const {
+			return _outputIndex;
+		}
+
+		const std::vector<uint64_t> &WithdrawTxParam::getCrosschainAmouts() const {
+			return _crossChainAmount;
+		}
+
+		void WithdrawTxParam::setMainchainDatas(const std::vector<std::string> crossChainAddress,
+		                                        const std::vector<uint64_t> outputIndex,
+		                                        const std::vector<uint64_t> crossChainAmount) {
+			_crossChainAddress = crossChainAddress;
+			_outputIndex = outputIndex;
+			_crossChainAmount = crossChainAmount;
 		}
 
 		std::string IdTxParam::getId() const {

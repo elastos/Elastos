@@ -165,10 +165,14 @@ TEST_CASE("Key test", "[Key]") {
 		bool res = Key::isValidBitcoinPrivateKey("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz");
 		REQUIRE(res == false);
 
-		//FIXME test not pass
-//		Key key;
-//		res = Key::isValidBitcoinPrivateKey(key.getPrivKey());
-//		REQUIRE(res == true);
+		UInt128 entropy = Utils::generateRandomSeed();
+		CMBlock seedByte;
+		seedByte.SetMemFixed(entropy.u8, sizeof(entropy));
+		CMBlock privKey = Key::getAuthPrivKeyForAPI(seedByte);
+
+		std::string secretKey = (char *)(void *)privKey;
+		res = Key::isValidBitcoinPrivateKey(secretKey);
+		REQUIRE(res == true);
 	}
 
 	SECTION("Key encodeHex and decodeHex test") {
