@@ -3,8 +3,8 @@ package core
 import (
 	"bytes"
 	"encoding/hex"
-	"io"
 	"fmt"
+	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )

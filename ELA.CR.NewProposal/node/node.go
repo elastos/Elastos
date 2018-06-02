@@ -283,6 +283,8 @@ func (node *node) GetTime() int64 {
 }
 
 func (node *node) WaitForSyncFinish() {
+	start := time.Now()
+	timeout := time.Second * 10
 	for {
 		log.Trace("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
 		bc := chain.DefaultLedger.Blockchain
@@ -291,12 +293,20 @@ func (node *node) WaitForSyncFinish() {
 		heights, _ := node.GetNeighborHeights()
 		log.Trace("others height is ", heights)
 
+		if len(Parameters.SeedList) > 0 && len(heights) < 1 {
+			goto Wait
+		}
+
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 			LocalNode.SetSyncHeaders(false)
 			break
 		}
 
-		<-time.After(5 * time.Second)
+	Wait:
+		now := <-time.After(5 * time.Second)
+		if len(heights) < 1 && start.Add(timeout).Before(now) {
+			break
+		}
 	}
 }
 
