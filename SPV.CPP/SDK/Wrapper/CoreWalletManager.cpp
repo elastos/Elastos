@@ -7,6 +7,7 @@
 #include "Common/Log.h"
 #include "SingleAddressWallet.h"
 #include "CoreWalletManager.h"
+#include "AddressRegisteringWallet.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -33,20 +34,19 @@ namespace Elastos {
 		void CoreWalletManager::init(const MasterPubKeyPtr &masterPubKey,
 									 const ChainParams &chainParams,
 									 uint32_t earliestPeerTime,
-									 bool singleAddress,
-									 bool reset) {
+									 bool singleAddress) {
 			_masterPubKey = masterPubKey;
 			_earliestPeerTime = earliestPeerTime;
 			_chainParams = chainParams;
 			_singleAddress = singleAddress;
+		}
 
-			if (reset) {
-				_wallet.reset();
-				_wallet = nullptr;
-
-				_peerManager.reset();
-				_peerManager = nullptr;
-			}
+		void CoreWalletManager::init(const Elastos::SDK::ChainParams &chainParams,
+									 uint32_t earliestPeerTime,
+									 const std::vector<std::string> &initialAddresses) {
+			_earliestPeerTime = earliestPeerTime;
+			_chainParams = chainParams;
+			_wallet = WalletPtr(new AddressRegisteringWallet(createWalletListener(), initialAddresses));
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {

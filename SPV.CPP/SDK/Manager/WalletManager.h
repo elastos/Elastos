@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_WALLETMANAGER_H__
 #define __ELASTOS_SDK_WALLETMANAGER_H__
 
+#include <vector>
 #include <boost/function.hpp>
 #include <boost/filesystem.hpp>
 
@@ -34,6 +35,13 @@ namespace Elastos {
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
 						  int forkId,
+						  const ChainParams &chainParams = ChainParams::mainNet());
+
+			WalletManager(const boost::filesystem::path &dbPath,
+						  const boost::filesystem::path &peerConfigPath,
+						  uint32_t earliestPeerTime,
+						  int forkId,
+						  const std::vector<std::string> &initialAddresses,
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
 			virtual ~WalletManager();
@@ -80,7 +88,7 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
 
 			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
@@ -93,7 +101,7 @@ namespace Elastos {
 
 			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
 
-			virtual SharedWrapperList<Peer, BRPeer*> loadPeers();
+			virtual SharedWrapperList<Peer, BRPeer *> loadPeers();
 
 			virtual int getForkId() const;
 

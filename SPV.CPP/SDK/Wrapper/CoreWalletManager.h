@@ -28,8 +28,11 @@ namespace Elastos {
 			void init(const MasterPubKeyPtr &masterPubKey,
 					  const ChainParams &chainParams,
 					  uint32_t earliestPeerTime,
-					  bool singleAddress,
-					  bool reset = false);
+					  bool singleAddress);
+
+			void init(const ChainParams &chainParams,
+					  uint32_t earliestPeerTime,
+					  const std::vector<std::string> &initialAddresses);
 
 			const WalletPtr &getWallet();
 
@@ -66,7 +69,7 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
 
 			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
@@ -79,7 +82,7 @@ namespace Elastos {
 
 			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
 
-			virtual SharedWrapperList<Peer, BRPeer*> loadPeers();
+			virtual SharedWrapperList<Peer, BRPeer *> loadPeers();
 
 			virtual int getForkId() const;
 
@@ -128,7 +131,7 @@ namespace Elastos {
 
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
-			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
 
 			virtual bool networkIsReachable();
 
@@ -153,7 +156,7 @@ namespace Elastos {
 
 			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
-			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*> &peers);
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
 
 			virtual bool networkIsReachable();
 

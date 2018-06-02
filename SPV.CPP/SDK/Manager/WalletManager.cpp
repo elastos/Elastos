@@ -43,6 +43,18 @@ namespace Elastos {
 			init(_masterPubKey, chainParams, earliestPeerTime, singleAddress);
 		}
 
+		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
+									 const boost::filesystem::path &peerConfigPath, uint32_t earliestPeerTime,
+									 int forkId, const std::vector<std::string> &initialAddresses,
+									 const Elastos::SDK::ChainParams &chainParams) :
+				_executor(BACKGROUND_THREAD_COUNT),
+				_databaseManager(dbPath),
+				_masterPubKey(nullptr),
+				_forkId(forkId),
+				_peerConfigPath(peerConfigPath) {
+			init(chainParams, earliestPeerTime, initialAddresses);
+		}
+
 		WalletManager::~WalletManager() {
 
 		}
