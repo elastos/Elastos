@@ -396,9 +396,11 @@ int BRAddressIsValid(const char *addr)
     assert(addr != NULL);
 
     if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS);
+        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS || data[0] == ELA_MULTISIG_ADDRESS ||
+        data[0] == ELA_IDCHAIN_ADDRESS);
 #if BITCOIN_TESTNET
-        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS);
+        r = (data[0] == ELA_STAND_ADDRESS || data[0] == ELA_CROSSCHAIN_ADDRESS || data[0] == ELA_MULTISIG_ADDRESS ||
+        data[0] == ELA_IDCHAIN_ADDRESS);
 #endif
     }
     else if (BRBech32Decode(hrp, data, addr) > 2) {
