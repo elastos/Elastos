@@ -141,8 +141,10 @@ namespace Elastos {
 								  return;
 
 							  Transaction wrapperTx(transaction);
+							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
+									  wrapperTx.getPayload().get());
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
-									  SubWalletCallback::Updated), wrapperTx.toJson(), blockHeight);
+									  SubWalletCallback::Updated), payload->toJson(), blockHeight);
 						  });
 		}
 
@@ -156,8 +158,10 @@ namespace Elastos {
 								  return;
 
 							  Transaction wrapperTx(transaction);
+							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
+									  wrapperTx.getPayload().get());
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
-									  SubWalletCallback::Deleted), wrapperTx.toJson(), 0);
+									  SubWalletCallback::Deleted), payload->toJson(), 0);
 						  });
 		}
 

@@ -13,8 +13,7 @@
 #define BACKGROUND_THREAD_COUNT 1
 
 #define DATABASE_PATH "spv_wallet.db"
-//#define WALLET_STORE_FILE "wallet.dat"
-#define ISO "els"
+#define ISO "ela"
 
 namespace Elastos {
 	namespace SDK {

@@ -81,7 +81,7 @@ namespace Elastos {
 			}
 		}
 
-		void AddressRegisteringWallet::RegisterAddress(const std::string &address, bool needSync) {
+		void AddressRegisteringWallet::RegisterAddress(const std::string &address) {
 
 			pthread_mutex_lock(&_wallet->lock);
 
@@ -96,14 +96,12 @@ namespace Elastos {
 			BRWallet *wallet = nullptr;
 			BRTransaction *tx;
 
-//			assert(transactions != nullptr || txCount == 0);
 			wallet = (BRWallet *) calloc(1, sizeof(*wallet));
 			assert(wallet != nullptr);
 			memset(wallet, 0, sizeof(*wallet));
 			array_new(wallet->utxos, 100);
 			array_new(wallet->transactions, 100);
 			wallet->feePerKb = DEFAULT_FEE_PER_KB;
-//			wallet->masterPubKey = nullptr;
 			wallet->WalletUnusedAddrs = addressRegisteringWalletUnusedAddrs;
 			wallet->WalletAllAddrs = addressRegisteringWalletAllAddrs;
 			wallet->setApplyFreeTx = setApplyFreeTx;

@@ -19,7 +19,7 @@ namespace Elastos {
 
 			virtual ~AddressRegisteringWallet();
 
-			virtual void RegisterAddress(const std::string &address, bool needSync);
+			virtual void RegisterAddress(const std::string &address);
 
 		protected:
 			BRWallet *createRegisterAddress(const std::vector<std::string> &initialAddrs);

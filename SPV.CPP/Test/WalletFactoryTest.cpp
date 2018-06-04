@@ -4,14 +4,23 @@
 
 #define CATCH_CONFIG_MAIN
 
+#include <climits>
 #include <boost/scoped_ptr.hpp>
 #include <boost/filesystem.hpp>
 
 #include "catch.hpp"
 
 #include "WalletFactory.h"
+#include "MasterWallet.h"
 
 using namespace Elastos::SDK;
+
+class TestMasterWallet : public MasterWallet {
+public:
+	TestMasterWallet(const MasterWallet &wallet) : MasterWallet(wallet) {
+		_startSubWalletWhenCreating = false;
+	}
+};
 
 //////////////////////this case is to generate mnemonic of support language (english  chinese italian japanese spanish french)
 TEST_CASE("Wallet factory generate french mnemonic ", "[WalletFactory]") {
@@ -581,13 +590,12 @@ TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic english", "[WalletFa
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
+		TestMasterWallet dumyMasterWallet(*static_cast<MasterWallet *>(masterWallet));
+		ISubWallet *subWallet = dumyMasterWallet.CreateSubWallet(Normal, "ELA", 0, payPassword, false);
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
-
-
-		//masterWallet->DestroyWallet(subWallet);
-		//walletFactory->DestroyWallet(masterWallet);
+		dumyMasterWallet.DestroyWallet(subWallet);
+		walletFactory->DestroyWallet(masterWallet);
 	}
 }
 
