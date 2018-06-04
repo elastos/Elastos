@@ -17,6 +17,9 @@
     "NodeOpenPort": 20866,
     "OpenService": true,
     "PrintLevel": 0,
+    "MaxLogsSize": 0,
+    "MaxPerLogSize": 0,
+    "PrintLevel": 0,
     "IsTLS": false,
     "CertPath": "./sample-cert.pem",
     "KeyPath": "./sample-cert-key.pem",
@@ -24,7 +27,6 @@
     "MultiCoreNum": 4,
     "MaxTransactionInBlock": 10000,
     "MaxBlockSize": 8000000,
-    "ConsensusType": "pow",
     "PowConfiguration": {
       "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
       "AutoMining": true,

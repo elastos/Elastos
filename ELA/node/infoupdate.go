@@ -30,6 +30,10 @@ func (node *node) hasSyncPeer() (bool, Noder) {
 func (node *node) SyncBlocks() {
 	needSync := node.needSync()
 	log.Info("needSync: ", needSync)
+	log.Trace("BlockHeight = ", chain.DefaultLedger.Blockchain.BlockHeight)
+	chain.DefaultLedger.Blockchain.DumpState()
+	bc := chain.DefaultLedger.Blockchain
+	log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 	if needSync == false {
 		LocalNode.SetSyncHeaders(false)
 		syncNode, err := node.FindSyncNode()

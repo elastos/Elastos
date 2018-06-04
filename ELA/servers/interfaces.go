@@ -159,7 +159,7 @@ func SetLogLevel(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "level must be an integer in 0-6")
 	}
 
-	if err := log.Log.SetDebugLevel(int(level)); err != nil {
+	if err := log.Log.SetPrintLevel(int(level)); err != nil {
 		return ResponsePack(InvalidParams, err.Error())
 	}
 	return ResponsePack(Success, fmt.Sprint("log level has been set to ", level))
