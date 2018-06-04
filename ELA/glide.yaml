@@ -7,7 +7,7 @@ import:
   - leveldb/errors
   - leveldb/iterator
   - leveldb/opt
-- package: github.com/fsnotify/fsnotify.git
+- package: github.com/fsnotify/fsnotify
 - package: github.com/gorilla/websocket
 - package: github.com/pborman/uuid
 - package: github.com/mattn/go-sqlite3
