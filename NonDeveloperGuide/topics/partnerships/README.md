@@ -1,14 +1,14 @@
 ## Partnerships
 
-### How is NEO related to Elastos
+### How are NEO and Bitmain related to Elastos
 
-First of all, a common misconception is that Elastos is built on NEO platform. This is completely false. Elastos has its own blockchain and is NOT a NEP5 token. Elastos already has its main network that went live back in December 2017 at https://blockchain.elastos.org/. Da Hongfei of NEO and Jihan Wu of Bitmain are both early investors and advisors to Elastos. Jihan Wu has committed to redirecting hashing power from Bitcoin mining to Elastos. G3 is a co-operation between NEO, Elastos and Bitmain who share a vision of a decentralized economy and smart web. Key features of the smart web include the virtual machine, runtime environments and trust zone, provided by Elastos and Bitmain, consensus provided by NEO and KYC provided by Ontology. G3 is meant to cooperate with Chinese government regulations and considering two of the leading figures of Chinese blockchain are involved (Jihan Wu and Da Hongfei), the likelihood that these projects will greatly succeed when the Chinese adopt crypto-friendly regulations is very, very high.
+First of all, a common misconception is that Elastos is built on NEO platform. This is completely false. Elastos has its own blockchain and is NOT a NEP5 token. Elastos already has its main network that went live back in December 2017 at https://blockchain.elastos.org/. Da Hongfei of NEO and Jihan Wu of Bitmain are both early investors and advisors to Elastos. Jihan Wu has committed to merge mine Bitcoin with Elastos. G3 is a co-operation between NEO, Elastos and Bitmain who share a vision of a decentralized economy and smart web. Key features of the smart web include the virtual machine, runtime environments and trust zone, provided by Elastos and Bitmain, consensus provided by NEO and KYC provided by Ontology. G3 is meant to cooperate with Chinese government regulations and considering two of the leading figures of Chinese blockchain are involved (Jihan Wu and Da Hongfei), the likelihood that these projects will greatly succeed when the Chinese adopt crypto-friendly regulations is very, very high.
 
 ---
 
 ### Foxconn Group - World's Largest Electronics Manufacturer
 
-Elastos received a $31 million sponsorship from Foxconn group for R&D. FFoxconn Technology Group, is a multinational electronics contract manufacturing company headquartered in Tucheng, New Taipei, Taiwan. Foxconn is the world's largest contract electronics manufacturer. 
+Elastos received a $31 million sponsorship from Foxconn group for R&D. Foxconn Technology Group, is a multinational electronics contract manufacturing company headquartered in Tucheng, New Taipei, Taiwan. Foxconn is the world's largest contract electronics manufacturer. 
 
 ---
 
@@ -33,7 +33,7 @@ The entire research project had four parts:
 
 ### Zapya - P2P File Transfer App with 500 million users
 
-Zapya is a peer-to-peer file sharing app across different platforms such as Android and IOS phone, WP, PC etc. Zapya ranked #1 among the similar category Apps. This app enables users in countries even with low internet penetration and poor internet architecture to transfer and share files without using the internet, by creating a Wi-Fi hotspot to which other devices can connect. Zapya agrees to build on top of Elastos with a decentralized app called ViewChain.
+Zapya is a peer-to-peer file sharing app across different platforms such as Android and iOS phone, WP, PC etc. Zapya ranked #1 among the similar category apps. This app enables users in countries even with low internet penetration and poor internet architecture to transfer and share files without using the internet, by creating a Wi-Fi hotspot to which other devices can connect. Zapya agrees to build on top of Elastos with a decentralized app called ViewChain.
 
 ---
 
@@ -57,11 +57,11 @@ Tencent is a Chinese multinational investment holding conglomerate whose subsidi
 
 ### Huawei visits Elastos Headquarters
 
-On April 3, 2018, from 15:00 to 17:30, Timothy Yuan(Yuan Tingyuan), deputy director of the Central Research Institute of Huwaei Technologies Co., Ltd., has visisted the Shanghai Office of elastos and had an in-depth discussion with Elastos founder Rong Chen.
+On April 3, 2018, from 15:00 to 17:30, Timothy Yuan(Yuan Tingyuan), deputy director of the Central Research Institute of Huwaei Technologies Co., Ltd., has visisted the Shanghai office of Elastos and had an in-depth discussion with Elastos founder Rong Chen.
 
-At the beginning of the communications, Yuan Zhan frankly mentioned the intention of the visit: his admiration for Mr. Chen's many years of experience in the field of operatying systems. He aalso carefully read Elastos whitepaper, and he deeply recognized the ideas discussed in the Whitepaper. The understanding of technology fits well with Huawei's ideas. To this end, he would like to visit Elastos to learn more.
+At the beginning of the communications, Yuan Zhan frankly mentioned the intention of the visit: his admiration for Mr. Chen's many years of experience in the field of operatying systems. He also carefully read Elastos whitepaper, and he deeply recognized the ideas discussed in the Whitepaper. The understanding of technology fits well with Huawei's ideas. To this end, he would like to visit Elastos to learn more.
 
-The two sides conducted in-depth discussions on the understanding of the operating system and suggestions on the direction of Huawei's OS technology. At the same time, the two sides also conducted extensive exchanges in the areas of the Internet, blockchain, and digital assets.
+The two sides conducted in-depth discussions on the understanding of the operating system and suggestions on the direction of Huawei's OS technology. At the same time, the two sides also conducted extensive exchanges in the areas of the internet, blockchain, and digital assets.
 
 During the meeting, Yuan Zong very much agreed with Rong's understanding of the Internet safety: Applications do not need access to the public internet, only encrypted end to end communications. Rong was also convinced by the depth and breadth of this understanding of computers and networks, and expressed his understanding of the technical accumulation of Elastos.
 
@@ -71,9 +71,9 @@ In the end, Yuan Zeng clearly stated that he will continue to communicate with R
 
 ---
 
-### Far Eastern Air Transport - A Taiwan airlien company with 61 years of history
+### Far Eastern Air Transport - A Taiwan airline company with 61 years of history
 
-Huafu Group and FAT will accept ELA as a payment method for its commodities, services and real estate. The Elastos side-chain feature will be specifically applied to their daily operation. It will provide a good opportunity and test implementing Elastos features to the real economy and recommend the resources in the real economy or the airline industry needed in the future to Elastos. Meanwhile, Elastos can provide Huafu Group and FAT with the consulting and technical support of blockchain operation.
+Huafu Group and FAT will accept ELA as a payment method for its commodities, services and real estate. The Elastos sidechain feature will be specifically applied to their daily operation. It will provide a good opportunity and test implementing Elastos features to the real economy and recommend the resources in the real economy or the airline industry needed in the future to Elastos. Meanwhile, Elastos can provide Huafu Group and FAT with the consulting and technical support of blockchain operation.
 
 [Source](https://medium.com/elastos/ela-accepted-as-a-payment-method-in-commercial-airline-industry-4f5cade27dd)
 
@@ -97,7 +97,7 @@ Through blockchain technology and Elastos' operating system, FRESCO enables liqu
 
 ### Weatherblock
 
-Weatherblock allows users to monetize IoT weather data by using physical sensors to gain valuable ground level information. The two parties have signed an MOU to use the Elastos Runtime, Carrier, Dapp framework, and browser in the Weatherblock ecosystem. Weatherblock is also currently doing research to integrate the Elastos OS.
+Weatherblock allows users to monetize IoT weather data by using physical sensors to gain valuable ground level information. The two parties have signed an MOU to use the Elastos Runtime, Carrier, DApp framework, and browser in the Weatherblock ecosystem. Weatherblock is also currently doing research to integrate the Elastos OS.
 
 [Source](https://medium.com/elastos/elastos-partners-with-weatherblock-d99208603b)
 
