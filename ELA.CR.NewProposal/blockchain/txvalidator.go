@@ -15,7 +15,6 @@ import (
 
 // CheckTransactionSanity verifys received single transaction
 func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
-
 	if err := CheckTransactionSize(txn); err != nil {
 		log.Warn("[CheckTransactionSize],", err)
 		return ErrTransactionSize
@@ -303,7 +302,6 @@ func checkAmountPrecise(amount Fixed64, precision byte) bool {
 }
 
 func CheckTransactionPayload(txn *Transaction) error {
-
 	switch pld := txn.Payload.(type) {
 	case *PayloadRegisterAsset:
 		if pld.Asset.Precision < MinPrecision || pld.Asset.Precision > MaxPrecision {
