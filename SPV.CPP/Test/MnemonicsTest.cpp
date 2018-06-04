@@ -11,7 +11,7 @@
 
 using namespace Elastos::SDK;
 
-#define I18N_RELATIVE_PATH "../../Data/"
+#define I18N_RELATIVE_PATH "./Data/"
 
 TEST_CASE("Mnemonic of English test", "[English]") {
 

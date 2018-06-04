@@ -42,7 +42,7 @@ protected:
 	virtual void startPeerManager(SubWallet *wallet) {
 	}
 
-	virtual void stopPeermanager(SubWallet *wallet) {
+	virtual void stopPeerManager(SubWallet *wallet) {
 	}
 };
 
