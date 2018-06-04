@@ -44,12 +44,12 @@ type msgBlock struct {
 }
 
 type PowService struct {
-	PayToAddr     string
-	MsgBlock      msgBlock
-	Mutex         sync.Mutex
-	logDictionary string
-	Started       bool
-	discreteMining  bool
+	PayToAddr      string
+	MsgBlock       msgBlock
+	Mutex          sync.Mutex
+	logDictionary  string
+	Started        bool
+	discreteMining bool
 
 	blockPersistCompletedSubscriber events.Subscriber
 	RollbackTransactionSubscriber   events.Subscriber
@@ -366,11 +366,11 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 
 func NewPowService(logDictionary string) *PowService {
 	pow := &PowService{
-		PayToAddr:     config.Parameters.PowConfiguration.PayToAddr,
-		Started:       false,
-		discreteMining:  false,
-		MsgBlock:      msgBlock{BlockData: make(map[string]*Block)},
-		logDictionary: logDictionary,
+		PayToAddr:      config.Parameters.PowConfiguration.PayToAddr,
+		Started:        false,
+		discreteMining: false,
+		MsgBlock:       msgBlock{BlockData: make(map[string]*Block)},
+		logDictionary:  logDictionary,
 	}
 
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
