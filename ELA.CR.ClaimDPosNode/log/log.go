@@ -13,9 +13,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/fsnotify"
+	"github.com/fsnotify/fsnotify"
 )
 
 const (
@@ -32,7 +33,7 @@ func Color(code, msg string) string {
 }
 
 const (
-	debugLog = iota
+	debugLog    = iota
 	infoLog
 	warnLog
 	errorLog
@@ -87,7 +88,7 @@ type Logger struct {
 	maxLogsSize int64 // The max logs total size
 
 	// Current log file and printer
-	doneChan      chan *os.File
+	printLock     *sync.Mutex
 	maxPerLogSize int64
 	file          *os.File
 	logger        *log.Logger
@@ -111,10 +112,6 @@ func (l *Logger) init() {
 				l.handleFileEvents(event)
 			case err := <-l.watcher.Errors:
 				fmt.Println("error:", err.Error())
-			case file := <-l.doneChan:
-				if file != nil {
-					file.Close()
-				}
 			}
 		}
 	}()
@@ -138,8 +135,7 @@ func (l *Logger) prune() {
 	for _, f := range fileList {
 		totalSize += f.Size()
 	}
-	limit := l.getMaxLogsSize()
-	for totalSize >= limit {
+	for totalSize >= l.maxLogsSize {
 		// Get the oldest log file
 		file := fileList[0]
 		// Remove it
@@ -156,8 +152,6 @@ func (l *Logger) newLogFile() {
 
 	// create new log file
 	var err error
-	var previous *os.File
-	previous = l.file
 	l.file, err = newLogFile(OutputPath)
 	if err != nil {
 		fmt.Print("create log file failed,", err.Error())
@@ -173,8 +167,6 @@ func (l *Logger) newLogFile() {
 
 	// setup new printer
 	l.logger = log.New(io.MultiWriter(os.Stdout, l.file), "", log.Ldate|log.Lmicroseconds)
-	// close previous log file
-	l.doneChan <- previous
 
 	// watch log file change
 	l.watcher.Add(OutputPath + info.Name())
@@ -184,37 +176,36 @@ func (l *Logger) handleFileEvents(event fsnotify.Event) {
 	switch event.Op {
 	case fsnotify.Write:
 		info, _ := l.file.Stat()
-		if info.Size() >= l.getMaxPerLogSize() {
+		if info.Size() >= l.maxPerLogSize {
+			l.printLock.Lock()
+			// close previous log file
+			l.file.Close()
 			// unwatch it
 			l.watcher.Remove(OutputPath + info.Name())
 			// create a new log file
 			l.newLogFile()
+			l.printLock.Unlock()
 		}
-	}
-}
-
-func (l *Logger) getMaxLogsSize() int64 {
-	if l.maxLogsSize != 0 {
-		return l.maxLogsSize * MB_SIZE
-	} else {
-		return defaultMaxLogsSize
-	}
-}
-
-func (l *Logger) getMaxPerLogSize() int64 {
-	if l.maxPerLogSize != 0 {
-		return l.maxPerLogSize * MB_SIZE
-	} else {
-		return defaultMaxPerLogSize
 	}
 }
 
 func NewLogger(level int, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
 	logger := new(Logger)
 	logger.level = level
-	logger.maxPerLogSize = maxPerLogSizeMb
-	logger.maxLogsSize = maxLogsSizeMb
-	logger.doneChan = make(chan *os.File)
+	logger.printLock = new(sync.Mutex)
+
+	if maxPerLogSizeMb != 0 {
+		logger.maxPerLogSize = maxPerLogSizeMb * MB_SIZE
+	} else {
+		logger.maxPerLogSize = defaultMaxPerLogSize
+	}
+
+	if maxLogsSizeMb != 0 {
+		logger.maxLogsSize = maxLogsSizeMb * MB_SIZE
+	} else {
+		logger.maxLogsSize = defaultMaxLogsSize
+	}
+
 	logger.init()
 	return logger
 }
@@ -277,6 +268,8 @@ func (l *Logger) SetPrintLevel(level int) error {
 }
 
 func (l *Logger) Output(level int, a ...interface{}) error {
+	l.printLock.Lock()
+	defer l.printLock.Unlock()
 	if level >= l.level {
 		gidStr := strconv.FormatUint(GetGID(), 10)
 		a = append([]interface{}{LevelName(level), "GID", gidStr + ","}, a...)
@@ -286,6 +279,8 @@ func (l *Logger) Output(level int, a ...interface{}) error {
 }
 
 func (l *Logger) Outputf(level int, format string, v ...interface{}) error {
+	l.printLock.Lock()
+	defer l.printLock.Unlock()
 	if level >= l.level {
 		v = append([]interface{}{LevelName(level), "GID", GetGID()}, v...)
 		return l.logger.Output(callDepth, fmt.Sprintf("%s %s %d, "+format+"\n", v...))

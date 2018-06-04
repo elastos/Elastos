@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewLogger(t *testing.T) {
-	logger := NewLogger(0, 10, 100)
+	logger := NewLogger(0, 5, 50)
 	start := time.Now()
 	for {
 		logger.Info("Print info log")
@@ -20,7 +20,7 @@ func TestNewLogger(t *testing.T) {
 		logger.Debug("Print debug log")
 		logger.Debugf("Print debug log formatted")
 
-		if start.Add(time.Minute).Before(time.Now()) {
+		if start.Add(time.Second * 30).Before(time.Now()) {
 			break
 		}
 	}
