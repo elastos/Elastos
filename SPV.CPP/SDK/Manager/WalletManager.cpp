@@ -67,8 +67,7 @@ namespace Elastos {
 		}
 
 		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
-			CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
-			return transaction->getHash();
+			return CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::getTransactions(

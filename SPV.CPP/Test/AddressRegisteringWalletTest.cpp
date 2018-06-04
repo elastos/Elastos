@@ -55,7 +55,7 @@ TEST_CASE("Basic test for register address", "[AddressRegisteringWallet]") {
 		REQUIRE(wallet->getAllAddresses().empty());
 		REQUIRE(wallet->getReceiveAddress().empty());
 
-		wallet->RegisterAddress(DefaultAddress[0], false);
+		wallet->RegisterAddress(DefaultAddress[0]);
 		REQUIRE(wallet->getAllAddresses().size() == 1);
 		REQUIRE(wallet->getReceiveAddress() == DefaultAddress[0]);
 	}

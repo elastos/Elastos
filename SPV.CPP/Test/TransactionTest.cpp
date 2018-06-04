@@ -192,19 +192,24 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		Key key("0000000000000000000000000000000000000000000000000000000000000001");
 		transaction.addInput(TransactionInput(hash, 1, 1000, myaddress.getPubKeyScript(), key.sign(hash), 1));
 		res = transaction.isSigned();
-		REQUIRE(res == false);
-
-		transaction.addInput(TransactionInput(hash, 1, 1000, myaddress.getPubKeyScript(), CMBlock(), 1));
-		res = transaction.isSigned();
-		REQUIRE(res == false);
+		REQUIRE(res == true);
 	}
 
 	SECTION("transaction mulity sign and getReverseHash test") {
 		WrapperList<Key, BRKey> keys(3);
+		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
 		keys[0] = Key("0000000000000000000000000000000000000000000000000000000000000001");
 		keys[1] = Key("0000000000000000000000000000000000000000000000000000000000000010");
 		keys[2] = Key("0000000000000000000000000000000000000000000000000000000000000011");
-		transaction.sign(keys, 0);
+		WrapperList<Address, BRAddress> address(3);
+		for (int i = 0; i < 3; ++i) {
+			std::string addr = keys[0].address();
+			address[i] = Address(addr);
+			TransactionInput input = TransactionInput(hash, 1, 1000, address[i].getPubKeyScript(), CMBlock(), 1);
+			transaction.addInput(input);
+		}
+		bool r = transaction.sign(keys, 0);
+		REQUIRE(r == true);
 
 		UInt256 zero = UINT256_ZERO;
 		UInt256 tempHash = transaction.getHash();

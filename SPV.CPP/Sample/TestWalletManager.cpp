@@ -61,8 +61,10 @@ void TestWalletManager::testSendTransaction() {
 	brTxInput->amount = 400000000;
 	brTxInput->index = 567;
 	brTxInput->sequence = 98888;
-	brTxInput->scriptLen = 0;
-	brTxInput->script = nullptr;
+
+
+	BRAddressFromScriptPubKey((char *)input.getAddress().c_str(), input.getAddress().size(), brTxInput->script,
+	                          brTxInput->scriptLen);
 	transaction.addInput(input);
 
 	TransactionOutput transactionOutput1;
@@ -85,12 +87,12 @@ void TestWalletManager::testSendTransaction() {
 	transaction.addOutput(transactionOutput2);
 	transaction.setTransactionType(Transaction::Type::TransferAsset);
 
-	ByteStream byteStream;
-	transaction.Serialize(byteStream);
-	byteStream.setPosition(0);
-	TransactionPtr ptr(new Transaction());
-	ptr->Deserialize(byteStream);
-	hash = signAndPublishTransaction(ptr);
+//	ByteStream byteStream;
+//	transaction.Serialize(byteStream);
+//	byteStream.setPosition(0);
+//	TransactionPtr ptr(new Transaction());
+//	ptr->Deserialize(byteStream);
+	hash = signAndPublishTransaction(TransactionPtr(new Transaction(transaction.convertToRaw())));
 
 	Log::getLogger()->info("signAndPublishTransaction hash:{}", Utils::UInt256ToString(hash));
 

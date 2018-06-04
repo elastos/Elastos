@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/scoped_ptr.hpp>
+#include <Core/BRTransaction.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"
@@ -249,8 +250,52 @@ namespace Elastos {
 			// Convert phrase to its BIP38 512 bit seed.
 			UInt512 seed;
 			BRBIP39DeriveKey(&seed, phrase, NULL);
+			return walletSignTransaction(transaction, forkId, &seed, sizeof(seed));
+		}
 
-			return BRWalletSignTransaction(_wallet, transaction->getRaw(), forkId, &seed, sizeof(seed)) == 1;
+		bool Wallet::walletSignTransaction(const TransactionPtr &transaction, int forkId, const void *seed, size_t seedLen) {
+			BRTransaction *tx = transaction->getRaw();
+			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
+			size_t i, internalCount = 0, externalCount = 0;
+			bool r = false;
+
+			assert(tx != NULL);
+			pthread_mutex_lock(&_wallet->lock);
+
+			for (i = 0; tx && i < tx->inCount; i++) {
+				for (j = (uint32_t)array_count(_wallet->internalChain); j > 0; j--) {
+					if (BRAddressEq(tx->inputs[i].address, &_wallet->internalChain[j - 1]))
+						internalIdx[internalCount++] = j - 1;
+				}
+
+				for (j = (uint32_t)array_count(_wallet->externalChain); j > 0; j--) {
+					if (BRAddressEq(tx->inputs[i].address, &_wallet->externalChain[j - 1]))
+						externalIdx[externalCount++] = j - 1;
+				}
+			}
+
+			pthread_mutex_unlock(&_wallet->lock);
+
+			BRKey keys[internalCount + externalCount];
+			if (seed) {
+				BRBIP32PrivKeyList(keys, internalCount, seed, seedLen, SEQUENCE_INTERNAL_CHAIN, internalIdx);
+				BRBIP32PrivKeyList(&keys[internalCount], externalCount, seed, seedLen, SEQUENCE_EXTERNAL_CHAIN,
+				                   externalIdx);
+				// TODO: XXX wipe seed callback
+				seed = NULL;
+				if (tx) {
+					WrapperList<Key, BRKey> keyList;
+					for (i = 0; i < internalCount + externalCount; ++i) {
+						Key key(new BRKey);
+						memcpy(key.getRaw(), &keys[i], sizeof(BRKey));
+						keyList.push_back(key);
+					}
+					r = transaction->sign(keyList, forkId);
+				}
+			}
+			else r = false; // user canceled authentication
+
+			return r;
 		}
 
 		bool Wallet::containsTransaction(const TransactionPtr &transaction) {

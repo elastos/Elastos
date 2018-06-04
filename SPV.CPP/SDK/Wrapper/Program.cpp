@@ -6,6 +6,7 @@
 #include "BRInt.h"
 
 #include "Program.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -32,6 +33,23 @@ namespace Elastos {
 				return false;
 			}
 			return true;
+		}
+
+		const CMBlock &Program::getCode() {
+			return _code;
+		}
+
+		const CMBlock &Program::getParameter()
+		{
+			return _parameter;
+		}
+
+		void Program::setCode(const CMBlock &code) {
+			_code = code;
+		}
+
+		void Program::setParameter(const CMBlock &parameter) {
+			_parameter = parameter;
 		}
 
 		void Program::Serialize(ByteStream &ostream) const {

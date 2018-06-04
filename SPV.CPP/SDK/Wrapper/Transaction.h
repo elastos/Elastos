@@ -117,11 +117,6 @@ namespace Elastos {
 			void addOutput(const TransactionOutput &output);
 
 			/**
-			 * Shuffle the transaction's outputs.
-			 */
-			void shuffleOutputs();
-
-			/**
 			 * The the transactions' size in bytes if signed, or the estimated size assuming
 			 * compact pubkey sigs
 		
@@ -146,9 +141,9 @@ namespace Elastos {
 			bool isSigned();
 
 
-			void sign(const WrapperList<Key, BRKey> &keys, int forkId);
+			bool sign(const WrapperList<Key, BRKey> &keys, int forkId);
 
-			void sign(const Key &key, int forkId);
+			bool sign(const Key &key, int forkId);
 
 			/**
 			 * Return true if this transaction satisfied the rules in:
@@ -188,6 +183,8 @@ namespace Elastos {
 			nlohmann::json rawTransactionToJson();
 
 			void rawTransactionFromJson(nlohmann::json jsonData);
+
+			bool transactionSign(int forkId, BRKey keys[], size_t keysCount);
 
 		private:
 			bool _isRegistered;

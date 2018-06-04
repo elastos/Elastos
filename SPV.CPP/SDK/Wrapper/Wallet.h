@@ -225,6 +225,8 @@ namespace Elastos {
 			BRTransaction *
 			createBRTransaction(const char* fromAddress, uint64_t fee, const BRTxOutput outputs[], size_t outCount);
 
+			bool walletSignTransaction(const TransactionPtr &transaction, int forkId, const void *seed, size_t seedLen);
+
 			static void setApplyFreeTx(void *info, void *tx);
 
 			static void balanceChanged(void *info, uint64_t balance);

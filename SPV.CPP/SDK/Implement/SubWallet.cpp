@@ -342,11 +342,12 @@ namespace Elastos {
 			if(!verifyRawTransaction(transaction) || !completeTransaction(transaction))
 				return "";
 
-			_walletManager->signAndPublishTransaction(transaction);
+			UInt256 hash = _walletManager->signAndPublishTransaction(transaction);
+			if (UInt256IsZero(hash)) {
+				return "";
+			}
+			return Utils::UInt256ToString(hash);
 
-			std::string hash = Utils::UInt256ToString(transaction->getHash());
-
-			return hash;
 		}
 
 		bool SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
@@ -431,7 +432,7 @@ namespace Elastos {
 			const std::vector<ProgramPtr> programs = transaction->getPrograms();
 			size_t size = programs.size();
 			for (size_t i = 0; i < size; ++i) {
-				if (!programs[i]->isValid()) {
+ 				if (!programs[i]->isValid()) {
 					return false;
 				}
 			}
