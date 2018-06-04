@@ -46,7 +46,7 @@ namespace Elastos {
 			return _output.get();
 		}
 
-		const std::string &TransactionOutput::getAddress() const {
+		std::string TransactionOutput::getAddress() const {
 			return _output->address;
 		}
 

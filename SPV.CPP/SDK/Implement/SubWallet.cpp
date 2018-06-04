@@ -343,7 +343,7 @@ namespace Elastos {
 				return "";
 
 			UInt256 hash = _walletManager->signAndPublishTransaction(transaction);
-			if (UInt256IsZero(hash)) {
+			if (UInt256IsZero(&hash)) {
 				return "";
 			}
 			return Utils::UInt256ToString(hash);
