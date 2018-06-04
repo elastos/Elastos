@@ -3,9 +3,6 @@ package main
 import (
 	"os"
 	"runtime"
-	"time"
-
-
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
@@ -24,7 +21,11 @@ const (
 )
 
 func init() {
-	log.Init(log.Path, log.Stdout)
+	log.Init(
+		config.Parameters.PrintLevel,
+		config.Parameters.MaxPerLogSize,
+		config.Parameters.MaxLogsSize,
+	)
 	var coreNum int
 	if config.Parameters.MultiCoreNum > DefaultMultiCoreNum {
 		coreNum = int(config.Parameters.MultiCoreNum)
@@ -39,25 +40,6 @@ func init() {
 		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	}
 	runtime.GOMAXPROCS(coreNum)
-}
-
-func handleLogFile() {
-	go func() {
-		for {
-			time.Sleep(6 * time.Second)
-			log.Trace("BlockHeight = ", blockchain.DefaultLedger.Blockchain.BlockHeight)
-			blockchain.DefaultLedger.Blockchain.DumpState()
-			bc := blockchain.DefaultLedger.Blockchain
-			log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
-			//blockchain.DefaultLedger.Blockchain.DumpState()
-			isNeedNewFile := log.CheckIfNeedNewFile()
-			if isNeedNewFile {
-				log.ClosePrintLog()
-				log.Init(log.Path, os.Stdout)
-			}
-		} //for end
-	}()
-
 }
 
 func startConsensus() {
@@ -93,8 +75,6 @@ func main() {
 
 	servers.NodeForServers = noder
 	startConsensus()
-
-	handleLogFile()
 
 	log.Info("3. --Start the RPC service")
 	go httpjsonrpc.StartRPCServer()

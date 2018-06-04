@@ -26,7 +26,7 @@
       "127.0.0.1:40338"
     ],
     "HttpInfoPort": 10333,  //Local web portal port number. User can go to http://127.0.0.1:10333/info to access the web UI
-    "HttpInfoStart": true,  //ture to start the webUI, false to disable
+    "HttpInfoStart": true,  //true to start the webUI, false to disable
     "HttpRestPort": 10334,  //Restful port number
     "HttpWsPort": 10335,    //Websocket port number
     "WsHeartbeatInterval": 60,
@@ -34,7 +34,11 @@
     "NoticeServerUrl": "",  //
     "OauthServerUrl": "",
     "NodePort": 10338,      //P2P port number
+    "NodeOpenPort": 10866,  //P2P port number for open service
+    "OpenService": true,    //true to enable open service, false to disable
     "PrintLevel": 1,        //Log level. Level 0 is the highest, 6 is the lowest.
+    "MaxLogsSize": 5000,    //Max total logs size in MB
+    "MaxPerLogSize": 20,    //Max per log file size in MB
     "IsTLS": false,         //TLS connection, true or false
     "CertPath": "./sample-cert.pem",  //Certificate path
     "KeyPath": "./sample-cert-key.pem",
@@ -42,13 +46,8 @@
     "MultiCoreNum": 4,      //Max number of CPU cores to mine ELA
     "MaxTransactionInBlock": 10000, //Max transaction number in each block
     "MaxBlockSize": 8000000,        //Max size of a block
-    "ConsensusType": "pow",         //
     "PowConfiguration": {           //
-      "PayToAddr": "",              //Pay bonus to this address. Cannot be empty if AutoMining set to "true". 
-      "MiningServerIP": "127.0.0.1",  //Miner server address for mining pool usage. By detault set to the current node. No need to change without mining pool.
-      "MiningServerPort": 5555,     //Not in use so far
-      "MiningSelfPort": 10339,      //
-      "TestNet": true,              //No in use so far
+      "PayToAddr": "",              //Pay bonus to this address. Cannot be empty if AutoMining set to "true".
       "AutoMining": false,          //Start mining automatically? true or false
       "MinerInfo": "ELA",           //No need to change.
       "MinTxFee": 100,              //Minimal mining fee

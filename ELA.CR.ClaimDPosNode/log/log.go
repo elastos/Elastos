@@ -10,11 +10,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/elastos/Elastos.ELA/config"
+	"github.com/fsnotify"
 )
 
 const (
@@ -53,12 +54,14 @@ var (
 )
 
 const (
-	namePrefix        = "LEVEL"
-	callDepth         = 2
-	defaultMaxLogSize = 20
-	byteToMb          = 1024 * 1024
-	byteToKb          = 1024
-	Path              = "./Logs/"
+	OutputPath           = "./Logs/" // The log files output path
+	namePrefix           = "LEVEL"
+	callDepth            = 2
+	KB_SIZE              = int64(1024)
+	MB_SIZE              = KB_SIZE * 1024
+	GB_SIZE              = MB_SIZE * 1024
+	defaultMaxPerLogSize = 20 * MB_SIZE
+	defaultMaxLogsSize   = 5 * GB_SIZE
 )
 
 func GetGID() uint64 {
@@ -79,34 +82,192 @@ func LevelName(level int) string {
 	return namePrefix + strconv.Itoa(level)
 }
 
-func NameLevel(name string) int {
-	for k, v := range levels {
-		if v == name {
-			return k
+type Logger struct {
+	level       int   // The log print level
+	maxLogsSize int64 // The max logs total size
+
+	// Current log file and printer
+	doneChan      chan *os.File
+	maxPerLogSize int64
+	file          *os.File
+	logger        *log.Logger
+	watcher       *fsnotify.Watcher
+}
+
+func (l *Logger) init() {
+	// setup file watcher for the printing log file,
+	// watch the file size change and trigger new log
+	// file create when the MaxPerLogSize limit reached.
+	var err error
+	l.watcher, err = fsnotify.NewWatcher()
+	if err != nil {
+		fmt.Println("create log file watcher failed,", err)
+		os.Exit(-1)
+	}
+	go func() {
+		for {
+			select {
+			case event := <-l.watcher.Events:
+				l.handleFileEvents(event)
+			case err := <-l.watcher.Errors:
+				fmt.Println("error:", err.Error())
+			case file := <-l.doneChan:
+				if file != nil {
+					file.Close()
+				}
+			}
+		}
+	}()
+
+	// create new log file
+	l.newLogFile()
+}
+
+func (l *Logger) prune() {
+	// load the file list under logs output path
+	// so we can delete the oldest log file when
+	// the MaxLogsSize limit reached.
+	fileList, err := ioutil.ReadDir(OutputPath)
+	if err != nil {
+		fmt.Println("read logs path failed,", err)
+	}
+	SortLogFiles(fileList)
+
+	// calculate total size
+	var totalSize int64
+	for _, f := range fileList {
+		totalSize += f.Size()
+	}
+	limit := l.getMaxLogsSize()
+	for totalSize >= limit {
+		// Get the oldest log file
+		file := fileList[0]
+		// Remove it
+		os.Remove(OutputPath + file.Name())
+		fileList = fileList[1:]
+		// Update logs size
+		totalSize -= file.Size()
+	}
+}
+
+func (l *Logger) newLogFile() {
+	// prune before create a new log file
+	l.prune()
+
+	// create new log file
+	var err error
+	var previous *os.File
+	previous = l.file
+	l.file, err = newLogFile(OutputPath)
+	if err != nil {
+		fmt.Print("create log file failed,", err.Error())
+		os.Exit(-1)
+	}
+
+	// get file stat
+	info, err := l.file.Stat()
+	if err != nil {
+		fmt.Print("get log file stat failed,", err.Error())
+		os.Exit(-1)
+	}
+
+	// setup new printer
+	l.logger = log.New(io.MultiWriter(os.Stdout, l.file), "", log.Ldate|log.Lmicroseconds)
+	// close previous log file
+	l.doneChan <- previous
+
+	// watch log file change
+	l.watcher.Add(OutputPath + info.Name())
+}
+
+func (l *Logger) handleFileEvents(event fsnotify.Event) {
+	switch event.Op {
+	case fsnotify.Write:
+		info, _ := l.file.Stat()
+		if info.Size() >= l.getMaxPerLogSize() {
+			// unwatch it
+			l.watcher.Remove(OutputPath + info.Name())
+			// create a new log file
+			l.newLogFile()
 		}
 	}
-	var level int
-	if strings.HasPrefix(name, namePrefix) {
-		level, _ = strconv.Atoi(name[len(namePrefix):])
-	}
-	return level
 }
 
-type Logger struct {
-	level   int
-	logger  *log.Logger
-	logFile *os.File
-}
-
-func New(out io.Writer, prefix string, flag, level int, file *os.File) *Logger {
-	return &Logger{
-		level:   level,
-		logger:  log.New(out, prefix, flag),
-		logFile: file,
+func (l *Logger) getMaxLogsSize() int64 {
+	if l.maxLogsSize != 0 {
+		return l.maxLogsSize * MB_SIZE
+	} else {
+		return defaultMaxLogsSize
 	}
 }
 
-func (l *Logger) SetDebugLevel(level int) error {
+func (l *Logger) getMaxPerLogSize() int64 {
+	if l.maxPerLogSize != 0 {
+		return l.maxPerLogSize * MB_SIZE
+	} else {
+		return defaultMaxPerLogSize
+	}
+}
+
+func NewLogger(level int, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
+	logger := new(Logger)
+	logger.level = level
+	logger.maxPerLogSize = maxPerLogSizeMb
+	logger.maxLogsSize = maxLogsSizeMb
+	logger.doneChan = make(chan *os.File)
+	logger.init()
+	return logger
+}
+
+func newLogFile(path string) (*os.File, error) {
+	if fi, err := os.Stat(path); err == nil {
+		if !fi.IsDir() {
+			return nil, fmt.Errorf("open %s: not a directory", path)
+		}
+	} else if os.IsNotExist(err) {
+		if err := os.MkdirAll(path, 0766); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, err
+	}
+
+	var timestamp = time.Now().Format("2006-01-02_15.04.05")
+
+	file, err := os.OpenFile(path+timestamp+"_LOG.log", os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		return nil, err
+	}
+	return file, nil
+}
+
+func Init(level int, maxPerLogSizeMb, maxLogsSizeMb int64) {
+	Log = NewLogger(level, maxPerLogSizeMb, maxLogsSizeMb)
+}
+
+func SortLogFiles(files []os.FileInfo) {
+	sort.Sort(byTime(files))
+}
+
+type byTime []os.FileInfo
+
+// Len is the number of elements in the collection.
+func (f byTime) Len() int {
+	return len(f)
+}
+
+// Less reports whether the element with
+// index i should sort before the element with index j.
+func (f byTime) Less(i, j int) bool {
+	return f[i].Name() < f[j].Name()
+}
+
+// Swap swaps the elements with indexes i and j.
+func (f byTime) Swap(i, j int) {
+	f[i], f[j] = f[j], f[i]
+}
+
+func (l *Logger) SetPrintLevel(level int) error {
 	if level > maxLevelLog || level < 0 {
 		return errors.New("Invalid Debug Level")
 	}
@@ -117,12 +278,8 @@ func (l *Logger) SetDebugLevel(level int) error {
 
 func (l *Logger) Output(level int, a ...interface{}) error {
 	if level >= l.level {
-		gid := GetGID()
-		gidStr := strconv.FormatUint(gid, 10)
-
-		a = append([]interface{}{LevelName(level), "GID",
-			gidStr + ","}, a...)
-
+		gidStr := strconv.FormatUint(GetGID(), 10)
+		a = append([]interface{}{LevelName(level), "GID", gidStr + ","}, a...)
 		return l.logger.Output(callDepth, fmt.Sprintln(a...))
 	}
 	return nil
@@ -130,10 +287,7 @@ func (l *Logger) Output(level int, a ...interface{}) error {
 
 func (l *Logger) Outputf(level int, format string, v ...interface{}) error {
 	if level >= l.level {
-		gid := GetGID()
-		v = append([]interface{}{LevelName(level), "GID",
-			gid}, v...)
-
+		v = append([]interface{}{LevelName(level), "GID", GetGID()}, v...)
 		return l.logger.Output(callDepth, fmt.Sprintf("%s %s %d, "+format+"\n", v...))
 	}
 	return nil
@@ -289,92 +443,4 @@ func Errorf(format string, a ...interface{}) {
 
 func Fatalf(format string, a ...interface{}) {
 	Log.Fatalf(format, a...)
-}
-
-func FileOpen(path string) (*os.File, error) {
-	if fi, err := os.Stat(path); err == nil {
-		if !fi.IsDir() {
-			return nil, fmt.Errorf("open %s: not a directory", path)
-		}
-	} else if os.IsNotExist(err) {
-		if err := os.MkdirAll(path, 0766); err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, err
-	}
-
-	var currenttime string = time.Now().Format("2006-01-02_15.04.05")
-
-	logfile, err := os.OpenFile(path+currenttime+"_LOG.log", os.O_RDWR|os.O_CREATE, 0666)
-	if err != nil {
-		return nil, err
-	}
-	return logfile, nil
-}
-
-func Init(a ...interface{}) {
-	writers := []io.Writer{}
-	var logFile *os.File
-	var err error
-	if len(a) == 0 {
-		writers = append(writers, ioutil.Discard)
-	} else {
-		for _, o := range a {
-			switch o.(type) {
-			case string:
-				logFile, err = FileOpen(o.(string))
-				if err != nil {
-					fmt.Println("error: open log file failed")
-					os.Exit(1)
-				}
-				writers = append(writers, logFile)
-			case *os.File:
-				writers = append(writers, o.(*os.File))
-			default:
-				fmt.Println("error: invalid log location")
-				os.Exit(1)
-			}
-		}
-	}
-	fileAndStdoutWrite := io.MultiWriter(writers...)
-	var printlevel = config.Parameters.PrintLevel
-	Log = New(fileAndStdoutWrite, "", log.Ldate|log.Lmicroseconds, printlevel, logFile)
-}
-
-func GetLogFileSize() (int64, error) {
-	f, e := Log.logFile.Stat()
-	if e != nil {
-		return 0, e
-	}
-	return f.Size(), nil
-}
-
-func GetMaxLogChangeInterval() int64 {
-	if config.Parameters.MaxLogSize != 0 {
-		return (config.Parameters.MaxLogSize * byteToMb)
-	} else {
-		return (defaultMaxLogSize * byteToMb)
-	}
-}
-
-func CheckIfNeedNewFile() bool {
-	logFileSize, err := GetLogFileSize()
-	maxLogFileSize := GetMaxLogChangeInterval()
-	if err != nil {
-		return false
-	}
-	if logFileSize > maxLogFileSize {
-		return true
-	} else {
-		return false
-	}
-}
-
-func ClosePrintLog() error {
-	var err error
-	if Log.logFile != nil {
-		err = Log.logFile.Close()
-	}
-	return err
 }
