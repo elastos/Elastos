@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	"time"
@@ -105,7 +104,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 
 	for _, txVerify := range transactions {
 		if errCode := CheckTransactionSanity(version, txVerify); errCode != Success {
-			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verify block"))
+			return errors.New("CheckTransactionSanity failed when verify block")
 		}
 	}
 
