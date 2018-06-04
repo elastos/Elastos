@@ -88,7 +88,8 @@ type Configuration struct {
 	KeyPath             string           `json:"KeyPath"`
 	CAPath              string           `json:"CAPath"`
 	MultiCoreNum        uint             `json:"MultiCoreNum"`
-	MaxLogSize          int64            `json:"MaxLogSize"`
+	MaxLogsSize         int64            `json:"MaxLogsSize"`
+	MaxPerLogSize       int64            `json:"MaxPerLogSize"`
 	MaxTxInBlock        int              `json:"MaxTransactionInBlock"`
 	MaxBlockSize        int              `json:"MaxBlockSize"`
 	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
