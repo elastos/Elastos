@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	"time"
@@ -92,7 +91,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 
 		// Check for transaction sanity
 		if errCode := CheckTransactionSanity(version, txn); errCode != Success {
-			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verifiy block"))
+			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
 		// Check for duplicate UTXO inputs in a block

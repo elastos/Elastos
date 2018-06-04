@@ -52,7 +52,6 @@ type ChainStore struct {
 }
 
 func NewChainStore() (IChainStore, error) {
-	// TODO: read config file decide which db to use.
 	st, err := NewLevelDB("Chain")
 	if err != nil {
 		return nil, err
@@ -79,8 +78,7 @@ func (c *ChainStore) Close() {
 	closed := make(chan bool)
 	c.quit <- closed
 	<-closed
-
-	c.Close()
+	c.IStore.Close()
 }
 
 func (c *ChainStore) loop() {
