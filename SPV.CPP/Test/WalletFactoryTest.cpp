@@ -18,7 +18,13 @@ using namespace Elastos::SDK;
 class TestMasterWallet : public MasterWallet {
 public:
 	TestMasterWallet(const MasterWallet &wallet) : MasterWallet(wallet) {
-		_startSubWalletWhenCreating = false;
+	}
+
+protected:
+	virtual void startPeerManager(SubWallet *wallet) {
+	}
+
+	virtual void stopPeermanager(SubWallet *wallet) {
 	}
 };
 

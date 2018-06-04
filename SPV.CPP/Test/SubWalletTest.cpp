@@ -37,6 +37,13 @@ public:
 		std::string payPassword = "payPassword";
 		initFromPhrase(mnemonic, phrasePassword, payPassword);
 	}
+
+protected:
+	virtual void startPeerManager(SubWallet *wallet) {
+	}
+
+	virtual void stopPeermanager(SubWallet *wallet) {
+	}
 };
 
 class TestSubWallet : public SubWallet {
@@ -67,7 +74,7 @@ TEST_CASE("Sub wallet basic", "[SubWallet]") {
 
 		std::string newAddress = subWallet->CreateAddress(); //we did't create address actually because current addresses have not used
 		REQUIRE(!newAddress.empty());
-		REQUIRE(newAddress == DefaultAddress[5]);
+		REQUIRE(newAddress == DefaultAddress[SEQUENCE_GAP_LIMIT_INTERNAL]);
 
 		nlohmann::json j2 = subWallet->GetAllAddress(0, INT_MAX);
 		std::vector<std::string> addresses2 = j2["Addresses"].get<std::vector<std::string>>();

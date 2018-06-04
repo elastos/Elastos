@@ -17,7 +17,13 @@ public:
 	TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword, const std::string language) :
 			MasterWallet(phrasePassword, payPassword, language) {
-		_startSubWalletWhenCreating = false;
+	}
+
+protected:
+	virtual void startPeerManager(SubWallet *wallet) {
+	}
+
+	virtual void stopPeermanager(SubWallet *wallet) {
 	}
 };
 

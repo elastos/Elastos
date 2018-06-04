@@ -114,9 +114,12 @@ namespace Elastos {
 
 			void resetMnemonic(const std::string &language);
 
+			virtual void startPeerManager(SubWallet *wallet);
+
+			virtual void stopPeerManager(SubWallet *wallet);
+
 		protected:
 			bool _initialized;
-			bool _startSubWalletWhenCreating; //for unit testing
 			WalletMap _createdWallets;
 
 			CMBlock _encryptedKey;

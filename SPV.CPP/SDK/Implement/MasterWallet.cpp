@@ -26,8 +26,7 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &language) :
 				_initialized(false),
-				_dbRoot("Data"),
-				_startSubWalletWhenCreating(true) {
+				_dbRoot("Data") {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -37,8 +36,7 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::string &language) :
 				_initialized(true),
-				_dbRoot("Data"),
-				_startSubWalletWhenCreating(true) {
+				_dbRoot("Data") {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -73,8 +71,7 @@ namespace Elastos {
 			info.setFeePerKb(feePerKb);
 			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams::mainNet(), payPassword, this);
 			_createdWallets[chainID] = subWallet;
-			if (_startSubWalletWhenCreating)
-				subWallet->_walletManager->start();
+			startPeerManager(subWallet);
 			return subWallet;
 		}
 
@@ -101,8 +98,7 @@ namespace Elastos {
 											   }));
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
 			assert(walletInner != nullptr);
-			if (_startSubWalletWhenCreating)
-				walletInner->_walletManager->stop();
+			stopPeerManager(walletInner);
 			delete walletInner;
 		}
 
@@ -328,6 +324,14 @@ namespace Elastos {
 			id = wrappedKey.keyToAddress(ELA_IDCHAIN);
 			key = wrappedKey.toString();
 			return true;
+		}
+
+		void MasterWallet::startPeerManager(SubWallet *wallet) {
+			wallet->_walletManager->start();
+		}
+
+		void MasterWallet::stopPeerManager(SubWallet *wallet) {
+			wallet->_walletManager->start();
 		}
 
 	}
