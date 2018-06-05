@@ -1,7 +1,6 @@
 package: github.com/elastos/Elastos.ELA
 import:
 - package: github.com/elastos/Elastos.ELA.Utility
-  version: 633761e
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb
@@ -11,3 +10,4 @@ import:
 - package: github.com/gorilla/websocket
 - package: github.com/pborman/uuid
 - package: github.com/mattn/go-sqlite3
+- package: github.com/stretchr/testify/assert
