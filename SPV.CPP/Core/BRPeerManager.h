@@ -39,8 +39,7 @@
 extern "C" {
 #endif
 
-//todo for test
-#define PEER_MAX_CONNECTIONS 1
+#define PEER_MAX_CONNECTIONS 3
 
 typedef struct {
 	BRTransaction *tx;

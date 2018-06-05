@@ -636,7 +636,7 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
     struct timespec ts;
     pthread_t thread;
     pthread_attr_t attr;
-    UInt128 *addr, *addrList;
+    UInt128 *addr, *addrList = NULL;
     BRFindPeersInfo *info;
 
     if (! UInt128IsZero(&manager->fixedPeer.address)) {
@@ -646,7 +646,7 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
         manager->peers[0].timestamp = now;
     }
     else {
-        for (size_t i = 1; manager->params->dnsSeeds[i]; i++) {
+        for (size_t i = 1; manager->params->dnsSeeds && manager->params->dnsSeeds[i]; i++) {
             info = calloc(1, sizeof(BRFindPeersInfo));
             assert(info != NULL);
 			memset(info, 0, sizeof(*info));
@@ -657,8 +657,10 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
                 pthread_create(&thread, &attr, _findPeersThreadRoutine, info) == 0) manager->dnsThreadCount++;
         }
 
-        for (addr = addrList = _addressLookup(manager->params->dnsSeeds[0]); addr && ! UInt128IsZero(addr); addr++) {
-            array_add(manager->peers, ((BRPeer) { *addr, manager->params->standardPort, services, now, 0 }));
+        if (manager->params->dnsSeeds) {
+            for (addr = addrList = _addressLookup(manager->params->dnsSeeds[0]); addr && ! UInt128IsZero(addr); addr++) {
+                array_add(manager->peers, ((BRPeer) { *addr, manager->params->standardPort, services, now, 0 }));
+            }
         }
 
         if (addrList) free(addrList);

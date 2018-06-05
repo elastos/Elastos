@@ -193,6 +193,10 @@ namespace Elastos {
 		void WalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
 			PeerEntity peerEntity;
 
+			if (replace) {
+				_databaseManager.deleteAllPeers(ISO);
+			}
+
 			for (size_t i = 0; i < peers.size(); ++i) {
 				peerEntity.address = peers[i]->getAddress();
 				peerEntity.port = peers[i]->getPort();

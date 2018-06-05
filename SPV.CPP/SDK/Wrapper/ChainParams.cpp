@@ -61,6 +61,7 @@ namespace Elastos {
 		void ChainParams::tryInit() {
 			if (_paramsInit) return;
 
+			_mainNet.getRaw()->dnsSeeds = nullptr;
 			_mainNet.getRaw()->standardPort = 10866;
 			_mainNet.getRaw()->magicNumber = 7630401;
 			_mainNet.getRaw()->checkpointsCount = 0;
