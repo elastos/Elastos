@@ -27,13 +27,17 @@ namespace Elastos {
 		}
 
 		std::string
-		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress,
-											const nlohmann::json &payloadJson, const nlohmann::json &programJson,
-											uint64_t fee, const std::string &payPassword, const std::string &memo) {
+		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress, const std::string &toAddress,
+		                                    const uint64_t amount, const nlohmann::json &payloadJson,
+		                                    const nlohmann::json &programJson, uint64_t fee,
+		                                    const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Idchain, fromAddress, "", 0, fee, memo));
+					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo));
 
 			TransactionPtr transaction = createTransaction(txParam.get());
+			if (!transaction) {
+				return "";
+			}
 			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload().get());
 			payloadIdChain->fromJson(payloadJson);
 

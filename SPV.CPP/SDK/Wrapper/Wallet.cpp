@@ -135,9 +135,10 @@ namespace Elastos {
 			BRTxOutputSetAddress(&o, toAddress.c_str());
 
 			BRTransaction *brTransaction = createBRTransaction(fromAddress.c_str(), fee, &o, 1);
-
-			TransactionPtr transaction = TransactionPtr(new Transaction(brTransaction));
-			return transaction;
+			if (brTransaction) {
+				return TransactionPtr(new Transaction(brTransaction));
+			}
+			return nullptr;
 		}
 
 		BRTransaction *Wallet::createBRTransaction(const char *fromAddress, uint64_t fee, const BRTxOutput outputs[],
@@ -231,7 +232,10 @@ namespace Elastos {
 		TransactionPtr Wallet::createTransaction(uint64_t amount, const Address &address) {
 
 			BRTransaction *transaction = BRWalletCreateTransaction(_wallet, amount, address.toString().c_str());
-			return TransactionPtr(new Transaction(transaction));
+			if (transaction) {
+				return TransactionPtr(new Transaction(transaction));
+			}
+			return nullptr;
 		}
 
 		TransactionPtr Wallet::createTransactionForOutputs(const WrapperList<TransactionOutput, BRTxOutput> &outputs) {

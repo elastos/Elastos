@@ -25,18 +25,21 @@ namespace Elastos {
 		}
 
 		std::string MainchainSubWallet::SendDepositTransaction(const std::string &fromAddress,
+		                                                       const std::string &toAddress,
+		                                                       const uint64_t amount,
 															   const nlohmann::json &sidechainAccounts,
 															   const nlohmann::json &sidechainAmounts,
 															   const nlohmann::json &sidechainIndexs, uint64_t fee,
 															   const std::string &payPassword,
 															   const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Mainchain, fromAddress, "", 0, fee, memo));
+					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo));
 
 			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();
 			std::vector<uint64_t> indexs = sidechainIndexs.get<std::vector<uint64_t >>();
-			assert(accounts.size() == amounts.size() == indexs.size());
+			assert(accounts.size() == amounts.size());
+			assert(accounts.size() == indexs.size());
 
 			DepositTxParam *withdrawTxParam = dynamic_cast<DepositTxParam *>(txParam.get());
 			assert(withdrawTxParam != nullptr);
@@ -47,7 +50,10 @@ namespace Elastos {
 			withdrawTxParam->setSidechainAddress(mainchainAddress);
 
 			TransactionPtr transaction = createTransaction(txParam.get());
-			return sendTransactionInternal(transaction, payPassword);
+			if (transaction) {
+				return sendTransactionInternal(transaction, payPassword);
+			}
+			return "";
 		}
 
 		boost::shared_ptr<Transaction> MainchainSubWallet::createTransaction(TxParam *param) const {

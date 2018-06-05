@@ -15,6 +15,8 @@ namespace Elastos {
 
 			virtual std::string SendIdTransaction(
 					const std::string &fromAddress,
+					const std::string &toAddress,
+					const uint64_t amount,
 					const nlohmann::json &payloadJson,
 					const nlohmann::json &programJson,
 					uint64_t fee,

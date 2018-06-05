@@ -331,7 +331,7 @@ namespace Elastos {
 		}
 
 		void MasterWallet::stopPeerManager(SubWallet *wallet) {
-			wallet->_walletManager->start();
+			wallet->_walletManager->stop();
 		}
 
 	}

@@ -16,6 +16,8 @@ namespace Elastos {
 		public:
 			virtual std::string SendWithdrawTransaction(
 					const std::string &fromAddress,
+					const std::string &toAddress,
+					const uint64_t amount,
 					const nlohmann::json& mainchainAccounts,
 					const nlohmann::json& mainchainAmounts,
 					const nlohmann::json &mainchainIndexs,
