@@ -8,6 +8,9 @@
 #include "MasterWallet.h"
 #include "Log.h"
 
+#define MIN_PASSWORD_LENGTH 8
+#define MAX_PASSWORD_LENGTH 128
+
 namespace Elastos {
 	namespace SDK {
 
@@ -25,17 +28,25 @@ namespace Elastos {
 			}
 		};
 
-		WalletFactory::WalletFactory() {
+		WalletFactory::WalletFactory() noexcept {
 
 		}
 
-		WalletFactory::~WalletFactory() {
+		WalletFactory::~WalletFactory() noexcept {
 
 		}
 
 		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &phrasePassword,
 														 const std::string &payPassword,
 														 const std::string &language) {
+
+			if (phrasePassword.size() < MIN_PASSWORD_LENGTH || phrasePassword.size() > MAX_PASSWORD_LENGTH) {
+				throw std::invalid_argument("Phrase password should between 8 and 128.");
+			}
+			if (payPassword.size() < MIN_PASSWORD_LENGTH || payPassword.size() > MAX_PASSWORD_LENGTH) {
+				throw std::invalid_argument("Pay password should between 8 and 128.");
+			}
+
 			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword, language);
 			return masterWallet;
 		}

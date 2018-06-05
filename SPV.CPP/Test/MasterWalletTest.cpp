@@ -37,7 +37,7 @@ TEST_CASE("Master wallet basic", "[MasterWallet]") {
 
 	std::string chainId = "chainid";
 	ISubWallet *subWallet;
-	SECTION("Create sub wallet") {
+	SECTION("Test CreateSubWallet method") {
 		subWallet = masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false);
 		REQUIRE(subWallet != nullptr);
 
@@ -57,4 +57,14 @@ TEST_CASE("Master wallet basic", "[MasterWallet]") {
 		masterWallet->DestroyWallet(subWallet);
 		masterWallet->DestroyWallet(subWallet3);
 	}
+	SECTION("Test DeriveIdAndKeyForPurpose method") {
+		//todo complete me
+	}
+	SECTION("Test Sign and CheckSign method") {
+		//todo complete me
+	}
+}
+
+TEST_CASE("Master wallet basic", "[MasterWallet]") {
+
 }

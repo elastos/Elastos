@@ -14,9 +14,9 @@ namespace Elastos {
 
 		class WalletFactory : public IWalletFactory {
 		public:
-			WalletFactory();
+			WalletFactory() noexcept;
 
-			virtual ~WalletFactory();
+			virtual ~WalletFactory() noexcept;
 
 			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &phrasePassword,

@@ -995,6 +995,34 @@ TEST_CASE("Wallet factory key store export & import english mnemonic", "[WalletF
 	boost::filesystem::remove(keystorePath);
 }
 
+TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
+	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+
+	SECTION("Normal creation") {
+		IMasterWallet *masterWallet = walletFactory->CreateMasterWallet(phrasePassword, payPassword);
+		REQUIRE(masterWallet != nullptr);
+	}
+	SECTION("Create with phrase password that is empty or less than 8") {
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet("", payPassword), std::invalid_argument);
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet("ilegal", payPassword), std::invalid_argument);
+	}
+	SECTION("Create with phrase password that is more than 128") {
+		REQUIRE_THROWS_AS(walletFactory->CreateMasterWallet("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+														 payPassword), std::invalid_argument);
+	}
+	SECTION("Create with pay password that is empty or less than 8") {
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, ""), std::invalid_argument);
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, "ilegal"), std::invalid_argument);
+	}
+	SECTION("Create with phrase password that is more than 128") {
+		REQUIRE_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						  std::invalid_argument);
+	}
+	//mnemonic related test is in mnemonic special test suit
+}
+
 TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
 
 }
