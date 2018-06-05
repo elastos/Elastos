@@ -110,8 +110,6 @@ namespace Elastos {
 
 			void setTimestamp(uint32_t timestamp);
 
-			CMBlock serialize();
-
 			void addInput(const TransactionInput &input);
 
 			void addOutput(const TransactionOutput &output);
