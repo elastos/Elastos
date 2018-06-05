@@ -824,7 +824,9 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadSideMining:
 		obj := new(SideMiningInfo)
+		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
+		obj.SideGenesisHash = object.SideGenesisHash.String()
 		return obj
 	case *PayloadWithdrawAsset:
 		obj := new(WithdrawAssetInfo)
