@@ -104,7 +104,9 @@ type RegisterAssetInfo struct {
 }
 
 type SideMiningInfo struct {
-	SideBlockHash string
+	BlockHeight     uint64
+	SideBlockHash   string
+	SideGenesisHash string
 }
 
 type TransferCrossChainAssetInfo struct {

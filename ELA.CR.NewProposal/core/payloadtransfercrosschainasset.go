@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"errors"
 	"io"
 
@@ -14,8 +15,12 @@ type PayloadTransferCrossChainAsset struct {
 }
 
 func (a *PayloadTransferCrossChainAsset) Data(version byte) []byte {
-	//TODO: implement TransferCrossChainAsset.Data()
-	return []byte{0}
+	buf := new(bytes.Buffer)
+	if err := a.Serialize(buf, version); err != nil {
+		return []byte{0}
+	}
+
+	return buf.Bytes()
 }
 
 func (a *PayloadTransferCrossChainAsset) Serialize(w io.Writer, version byte) error {
