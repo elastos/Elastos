@@ -3,7 +3,6 @@ package servers
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/hex"
 	"fmt"
 	"time"
 
@@ -345,7 +344,7 @@ func DiscreteMining(param Params) map[string]interface{} {
 		//ret[i] = hash.ToString()
 		w := new(bytes.Buffer)
 		hash.Serialize(w)
-		ret[i] = BytesToHexString(BytesReverse(w.Bytes()))
+		ret[i] = BytesToHexString(w.Bytes())
 	}
 
 	return ResponsePack(Success, ret)
@@ -396,7 +395,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Weight:            uint32(block.GetSize() * 4),
 		Height:            block.Header.Height,
 		Version:           block.Header.Version,
-		VersionHex:        hex.EncodeToString(versionBytes[:]),
+		VersionHex:        BytesToHexString(versionBytes[:]),
 		MerkleRoot:        block.Header.MerkleRoot.String(),
 		Tx:                txs,
 		Time:              block.Header.Timestamp,
@@ -404,7 +403,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Nonce:             block.Header.Nonce,
 		Bits:              block.Header.Bits,
 		Difficulty:        chain.CalcCurrentDifficulty(block.Header.Bits),
-		ChainWork:         hex.EncodeToString(chainWork[:]),
+		ChainWork:         BytesToHexString(chainWork[:]),
 		PreviousBlockHash: block.Header.Previous.String(),
 		NextBlockHash:     nextBlockHash.String(),
 		AuxPow:            BytesToHexString(auxPow.Bytes()),
