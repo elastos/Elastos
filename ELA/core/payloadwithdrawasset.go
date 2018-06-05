@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"errors"
 	"io"
 
@@ -16,7 +17,12 @@ type PayloadWithdrawAsset struct {
 }
 
 func (t *PayloadWithdrawAsset) Data(version byte) []byte {
-	return []byte{0}
+	buf := new(bytes.Buffer)
+	if err := t.Serialize(buf, version); err != nil {
+		return []byte{0}
+	}
+
+	return buf.Bytes()
 }
 
 func (t *PayloadWithdrawAsset) Serialize(w io.Writer, version byte) error {
