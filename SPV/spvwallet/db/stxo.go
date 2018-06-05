@@ -20,7 +20,7 @@ func (stxo *STXO) String() string {
 	return fmt.Sprint(
 		"STXO:{",
 		"UTXO:{",
-		"Op:{TxID:", stxo.Op.TxID.String(), ", Index:", stxo.Op.Index, "},",
+		"Op:{TxId:", stxo.Op.TxID.String(), ", Index:", stxo.Op.Index, "},",
 		"Value:", stxo.Value.String(), ",",
 		"LockTime:", stxo.LockTime, ",",
 		"AtHeight:", stxo.AtHeight, "},",

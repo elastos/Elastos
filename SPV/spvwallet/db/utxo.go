@@ -25,7 +25,7 @@ type UTXO struct {
 func (utxo *UTXO) String() string {
 	return fmt.Sprint(
 		"UTXO:{",
-		"Op:{TxID:", utxo.Op.TxID.String(), ", Index:", utxo.Op.Index, "},",
+		"Op:{TxId:", utxo.Op.TxID.String(), ", Index:", utxo.Op.Index, "},",
 		"Value:", utxo.Value.String(), ",",
 		"LockTime:", utxo.LockTime, ",",
 		"AtHeight:", utxo.AtHeight,

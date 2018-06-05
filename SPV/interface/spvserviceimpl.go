@@ -1,7 +1,10 @@
 package _interface
 
 import (
+	"bytes"
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 
@@ -10,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/store"
 
-	"fmt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/bloom"
@@ -22,7 +24,7 @@ type SPVServiceImpl struct {
 	headers   *db.HeaderStore
 	dataStore db.DataStore
 	queue     db.Queue
-	listeners map[common.Uint168]TransactionListener
+	listeners map[common.Uint256]TransactionListener
 }
 
 func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string, minOutbound, maxConnections int) (*SPVServiceImpl, error) {
@@ -53,7 +55,7 @@ func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string, minOutboun
 		return nil, err
 	}
 
-	service.listeners = make(map[common.Uint168]TransactionListener)
+	service.listeners = make(map[common.Uint256]TransactionListener)
 
 	return service, nil
 }
@@ -63,15 +65,17 @@ func (service *SPVServiceImpl) RegisterTransactionListener(listener TransactionL
 	if err != nil {
 		return fmt.Errorf("address %s is not a valied address", listener.Address())
 	}
-	if _, ok := service.listeners[*address]; ok {
-		return fmt.Errorf("address %s already registered", listener.Address())
+	key := getListenerKey(listener)
+	if _, ok := service.listeners[key]; ok {
+		return fmt.Errorf("listener with address: %s type: %s flags: %d already registered",
+			listener.Address(), listener.Type().Name(), listener.Flags())
 	}
-	service.listeners[*address] = listener
+	service.listeners[key] = listener
 	return service.dataStore.Addrs().Put(address)
 }
 
-func (service *SPVServiceImpl) SubmitTransactionReceipt(txHash common.Uint256) error {
-	return service.queue.Delete(&txHash)
+func (service *SPVServiceImpl) SubmitTransactionReceipt(notifyId, txHash common.Uint256) error {
+	return service.queue.Delete(&notifyId, &txHash)
 }
 
 func (service *SPVServiceImpl) VerifyTransaction(proof bloom.MerkleProof, tx core.Transaction) error {
@@ -130,32 +134,33 @@ func (service *SPVServiceImpl) GetData() ([]*common.Uint168, []*core.OutPoint) {
 }
 
 func (service *SPVServiceImpl) CommitTx(tx *core.Transaction, height uint32) (bool, error) {
-	hits := 0
+	hits := make(map[common.Uint168]struct{})
 	for index, output := range tx.Outputs {
 		if service.dataStore.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
 			outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
 			if err := service.dataStore.Outpoints().Put(outpoint, output.ProgramHash); err != nil {
 				return false, err
 			}
-			hits++
+			hits[output.ProgramHash] = struct{}{}
 		}
 	}
 
 	for _, input := range tx.Inputs {
 		if addr := service.dataStore.Outpoints().IsExist(&input.Previous); addr != nil {
-			hits++
+			hits[*addr] = struct{}{}
 		}
 	}
 
-	if hits == 0 {
+	if len(hits) == 0 {
 		return true, nil
 	}
 
-	// Put hit transaction into notify queue
-	service.queue.Put(&db.QueueItem{
-		TxHash: tx.Hash(),
-		Height: height,
-	})
+	for _, listener := range service.listeners {
+		hash, _ := common.Uint168FromAddress(listener.Address())
+		if _, ok := hits[*hash]; ok {
+			service.queueMessageByListener(listener, tx, height)
+		}
+	}
 
 	return false, service.dataStore.Txs().Put(db.NewStoreTx(tx, height))
 }
@@ -190,14 +195,14 @@ func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*c
 			return
 		}
 		//	Get transaction from db
-		storeTx, err := service.dataStore.Txs().Get(&item.TxHash)
+		storeTx, err := service.dataStore.Txs().Get(&item.TxId)
 		if err != nil {
-			log.Error("Query transaction failed, tx hash:", item.TxHash.String())
+			log.Error("Query transaction failed, tx hash:", item.TxId.String())
 			return
 		}
 
 		// Notify listeners
-		service.notifyTransaction(*proof, storeTx.Transaction, header.Height-item.Height)
+		service.notifyTransaction(item.NotifyId, *proof, storeTx.Transaction, header.Height-item.Height)
 	}
 }
 
@@ -252,53 +257,53 @@ func (service *SPVServiceImpl) ResetStores() error {
 	return nil
 }
 
-func (service *SPVServiceImpl) notifyTransaction(proof bloom.MerkleProof, tx core.Transaction, confirmations uint32) {
-	// common function
-	notifyListener := func(listener TransactionListener) {
-		txId := tx.Hash()
+func (service *SPVServiceImpl) queueMessageByListener(
+	listener TransactionListener, tx *core.Transaction, height uint32) {
+	// skip transactions that not match the require type
+	if listener.Type() != tx.TxType {
+		return
+	}
 
-		// Remove notifications that not match the listener's type
-		if listener.Type() != tx.TxType {
-			service.queue.Delete(&txId)
-			return
-		}
+	// queue message
+	service.queue.Put(&db.QueueItem{
+		NotifyId: getListenerKey(listener),
+		TxId:     tx.Hash(),
+		Height:   height,
+	})
+}
 
-		// Remove notifications if FlagNotifyInSyncing not set
-		if service.SPVService.ChainState() == sdk.SYNCING &&
-			listener.Flags()&FlagNotifyInSyncing != FlagNotifyInSyncing {
+func (service *SPVServiceImpl) notifyTransaction(
+	notifyId common.Uint256, proof bloom.MerkleProof, tx core.Transaction, confirmations uint32) {
 
-			if listener.Flags()&FlagNotifyConfirmed == FlagNotifyConfirmed {
-				if confirmations >= getConfirmations(tx) {
-					service.queue.Delete(&txId)
-				}
-			} else {
-				service.queue.Delete(&txId)
-			}
-			return
-		}
+	listener, ok := service.listeners[notifyId]
+	if !ok {
+		return
+	}
 
-		// Notify listener
+	// Get transaction id
+	txId := tx.Hash()
+
+	// Remove notifications if FlagNotifyInSyncing not set
+	if service.SPVService.ChainState() == sdk.SYNCING &&
+		listener.Flags()&FlagNotifyInSyncing != FlagNotifyInSyncing {
+
 		if listener.Flags()&FlagNotifyConfirmed == FlagNotifyConfirmed {
 			if confirmations >= getConfirmations(tx) {
-				listener.Notify(proof, tx)
+				service.queue.Delete(&notifyId, &txId)
 			}
 		} else {
-			listener.Notify(proof, tx)
+			service.queue.Delete(&notifyId, &txId)
 		}
+		return
 	}
 
-	for _, output := range tx.Outputs {
-		if listener, ok := service.listeners[output.ProgramHash]; ok {
-			go notifyListener(listener)
+	// Notify listener
+	if listener.Flags()&FlagNotifyConfirmed == FlagNotifyConfirmed {
+		if confirmations >= getConfirmations(tx) {
+			go listener.Notify(notifyId, proof, tx)
 		}
-	}
-
-	for _, input := range tx.Inputs {
-		if addr := service.dataStore.Outpoints().IsExist(&input.Previous); addr != nil {
-			if listener, ok := service.listeners[*addr]; ok {
-				go notifyListener(listener)
-			}
-		}
+	} else {
+		go listener.Notify(notifyId, proof, tx)
 	}
 }
 
@@ -306,6 +311,13 @@ func (service *SPVServiceImpl) notifyRollback(height uint32) {
 	for _, listener := range service.listeners {
 		go listener.Rollback(height)
 	}
+}
+
+func getListenerKey(listener TransactionListener) common.Uint256 {
+	buf := new(bytes.Buffer)
+	addr, _ := common.Uint168FromAddress(listener.Address())
+	common.WriteElements(buf, addr[:], listener.Type(), listener.Flags())
+	return sha256.Sum256(buf.Bytes())
 }
 
 func getConfirmations(tx core.Transaction) uint32 {

@@ -68,7 +68,7 @@ func (t *OutpointStore) GetAll() (ops []*core.OutPoint, err error) {
 
 	err = t.View(func(tx *bolt.Tx) error {
 		return tx.Bucket(BKTOps).ForEach(func(k, v []byte) error {
-			op, err := core.OutPointFromBytes(v)
+			op, err := core.OutPointFromBytes(k)
 			if err != nil {
 				return err
 			}
