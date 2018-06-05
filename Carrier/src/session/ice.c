@@ -716,11 +716,19 @@ static void stream_on_ice_complete(pj_ice_strans *ice_st, pj_ice_strans_op op,
     }
 
     if (op == PJ_ICE_STRANS_OP_INIT) {
-        state = (status == PJ_SUCCESS ? ElaStreamState_initialized
-                 : ElaStreamState_failed);
+        if (status == PJ_SUCCESS) {
+            state = ElaStreamState_initialized;
+        } else {
+            vlogE("Session: Stream initialization error (0x%x)", ELA_ICE_ERROR(status));
+            state = ElaStreamState_failed;
+        }
     } else if (op == PJ_ICE_STRANS_OP_NEGOTIATION) {
-        state = (status == PJ_SUCCESS ? ElaStreamState_connected
-                 : ElaStreamState_failed);
+        if (status == PJ_SUCCESS) {
+            state = ElaStreamState_connected;
+        } else {
+            vlogE("Session: Stream negotiation error (0x%x)", ELA_ICE_ERROR(status));
+            state = ElaStreamState_failed;
+        }
     } else {
         pj_grp_lock_release(lock);
         return;
