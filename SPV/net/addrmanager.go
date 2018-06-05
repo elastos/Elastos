@@ -23,19 +23,11 @@ type AddrManager struct {
 	connected   map[string]*knownAddress
 }
 
-func newAddrManager(seeds []string, minOutbound int) *AddrManager {
+func newAddrManager(minOutbound int) *AddrManager {
 	am := new(AddrManager)
 	am.minOutbound = minOutbound
 	am.addrList = make(map[string]*knownAddress)
 	am.connected = make(map[string]*knownAddress)
-
-	for _, addr := range seeds {
-		// Only add valid address
-		if ka := NewKnownAddress(addr); ka != nil {
-			am.addrList[addr] = ka
-		}
-	}
-
 	return am
 }
 

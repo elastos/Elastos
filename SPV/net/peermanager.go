@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	MinConnections     = 3
 	InfoUpdateDuration = 5
 	KeepAliveTimeout   = 3
 )
@@ -35,6 +36,7 @@ type MessageHandler interface {
 
 type PeerManager struct {
 	magic uint32
+	seeds []string
 	*Peers
 	MessageHandler
 	am *AddrManager
@@ -45,8 +47,9 @@ func InitPeerManager(magic uint32, seeds []string, minOutbound, maxConnections i
 	// Initiate PeerManager
 	pm := new(PeerManager)
 	pm.magic = magic
+	pm.seeds = seeds
 	pm.Peers = newPeers(localPeer)
-	pm.am = newAddrManager(seeds, minOutbound)
+	pm.am = newAddrManager(minOutbound)
 	pm.cm = newConnManager(localPeer, maxConnections, pm)
 	return pm
 }
@@ -126,12 +129,24 @@ func (pm *PeerManager) KnownAddresses() []p2p.NetAddress {
 }
 
 func (pm *PeerManager) connectPeers() {
+	// connect seeds first
+	if pm.PeersCount() < MinConnections {
+		for _, addr := range pm.seeds {
+			if pm.cm.isConnected(addr) {
+				continue
+			}
+			go pm.cm.Connect(addr)
+		}
+	}
+
+	// connect more peers
 	if pm.PeersCount() < pm.am.minOutbound {
 		for _, addr := range pm.am.GetOutboundAddresses(pm.cm) {
 			go pm.cm.Connect(addr.String())
 		}
 	}
 
+	// request more addresses
 	if pm.am.NeedMoreAddresses() {
 		go pm.Broadcast(new(msg.GetAddr))
 	}
