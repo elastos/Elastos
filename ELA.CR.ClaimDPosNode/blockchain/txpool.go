@@ -166,7 +166,11 @@ func (pool *TxPool) verifyDoubleSpend(txn *Transaction) error {
 
 //check and add to sidechain tx pool
 func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
-	witPayload := txn.Payload.(*PayloadWithdrawAsset)
+	witPayload, ok := txn.Payload.(*PayloadWithdrawAsset)
+	if !ok {
+		return errors.New("convert the payload of withdraw tx failed")
+	}
+
 	for _, hash := range witPayload.SideChainTransactionHash {
 		_, ok := pool.sidechainTxList[hash]
 		if ok {
