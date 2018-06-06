@@ -1,6 +1,7 @@
-//
-// Created by jzh on 18-4-9.
-//
+// Copyright (c) 2012-2018 The Elastos Open Source Project
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 
 #ifndef __SPVCLIENT_UTIL_H__
 #define __SPVCLIENT_UTIL_H__
