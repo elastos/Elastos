@@ -815,7 +815,7 @@ BRTransaction *BRWalletTransactionForHash(BRWallet *wallet, UInt256 txHash)
     BRTransaction *tx;
 
     assert(wallet != NULL);
-    assert(! UInt256IsZero(&txHash));
+//    assert(! UInt256IsZero(&txHash));
     pthread_mutex_lock(&wallet->lock);
     tx = BRSetGet(wallet->allTx, &txHash);
     pthread_mutex_unlock(&wallet->lock);
