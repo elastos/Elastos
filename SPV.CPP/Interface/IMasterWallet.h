@@ -23,7 +23,7 @@ namespace Elastos {
 			virtual ISubWallet *CreateSubWallet(
 					SubWalletType type,
 					const std::string &chainID,
-					int coinTypeIndex,
+					uint32_t coinTypeIndex,
 					const std::string &payPassword,
 					bool singleAddress,
 					uint64_t feePerKb = 0) = 0;
@@ -31,10 +31,10 @@ namespace Elastos {
 			virtual ISubWallet *RecoverSubWallet(
 					SubWalletType type,
 					const std::string &chainID,
-					int coinTypeIndex,
+					uint32_t coinTypeIndex,
 					const std::string &payPassword,
 					bool singleAddress,
-					int limitGap,
+					uint32_t limitGap,
 					uint64_t feePerKb = 0) = 0;
 
 			virtual void DestroyWallet(ISubWallet *wallet) = 0;
@@ -46,7 +46,7 @@ namespace Elastos {
 					const std::string &payPassword) = 0;
 
 			virtual nlohmann::json CheckSign(
-					const std::string &address,
+					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
 

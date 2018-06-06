@@ -33,7 +33,7 @@ namespace Elastos {
 			virtual void ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
 					const std::string &backupPassword,
-					const std::string &keystorePath) =0;
+					const std::string &keystorePath) = 0;
 
 			virtual std::string ExportWalletWithMnemonic(
 					IMasterWallet *masterWallet,

@@ -15,9 +15,8 @@
 #include "MainchainSubWallet.h"
 #include "SidechainSubWallet.h"
 #include "Log.h"
-
-#define MNEMONIC_FILE_PREFIX "mnemonic_"
-#define MNEMONIC_FILE_EXTENSION ".txt"
+#include "Config.h"
+#include "ParamChecker.h"
 
 namespace fs = boost::filesystem;
 
@@ -50,13 +49,20 @@ namespace Elastos {
 		}
 
 		ISubWallet *
-		MasterWallet::CreateSubWallet(SubWalletType type, const std::string &chainID, int coinTypeIndex,
+		MasterWallet::CreateSubWallet(SubWalletType type, const std::string &chainID, uint32_t coinTypeIndex,
 									  const std::string &payPassword, bool singleAddress, uint64_t feePerKb) {
 
-			if (!Initialized()) {
-				Log::warn("Current master wallet is not initialized.");
-				return nullptr;
-			}
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
+			ParamChecker::checkNotEmpty(chainID);
+
+			if (chainID.size() > 128)
+				throw std::invalid_argument("Chain id should less than 128.");
+
+			ParamChecker::checkPassword(payPassword);
+
+			//todo limit coinTypeIndex and feePerKb if needed in future
 
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
@@ -76,13 +82,20 @@ namespace Elastos {
 		}
 
 		ISubWallet *
-		MasterWallet::RecoverSubWallet(SubWalletType type, const std::string &chainID, int coinTypeIndex,
-									   const std::string &payPassword, bool singleAddress, int limitGap,
+		MasterWallet::RecoverSubWallet(SubWalletType type, const std::string &chainID, uint32_t coinTypeIndex,
+									   const std::string &payPassword, bool singleAddress, uint32_t limitGap,
 									   uint64_t feePerKb) {
-			ISubWallet *subWallet = _createdWallets.find(chainID) == _createdWallets.end()
-									? CreateSubWallet(type, chainID, coinTypeIndex, payPassword, singleAddress,
-													  feePerKb)
-									: _createdWallets[chainID];
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
+			if (_createdWallets.find(chainID) != _createdWallets.end())
+				return _createdWallets[chainID];
+
+			if (limitGap > SEQUENCE_GAP_LIMIT_EXTERNAL) {
+				throw std::invalid_argument("Limit gap should less than or equal 10.");
+			}
+
+			ISubWallet *subWallet = CreateSubWallet(type, chainID, coinTypeIndex, payPassword, singleAddress, feePerKb);
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(subWallet);
 			assert(walletInner != nullptr);
 			walletInner->recover(limitGap);
@@ -92,6 +105,22 @@ namespace Elastos {
 		}
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
+
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
+			if (wallet == nullptr)
+				throw std::invalid_argument("Sub wallet can't be null.");
+
+			if (_createdWallets.empty())
+				throw std::logic_error("There is no sub wallet in this wallet.");
+
+			if (std::find_if(_createdWallets.begin(), _createdWallets.end(),
+							 [wallet](const WalletMap::value_type &item) {
+								 return item.second == wallet;
+							 }) == _createdWallets.end())
+				throw std::logic_error("Specified sub wallet is not belong to current master wallet.");
+
 			_createdWallets.erase(std::find_if(_createdWallets.begin(), _createdWallets.end(),
 											   [wallet](const WalletMap::value_type &item) {
 												   return item.second == wallet;
@@ -103,6 +132,9 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
 			return _publicKey;
 		}
 
@@ -226,13 +258,13 @@ namespace Elastos {
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
 			CMBlock keyData = Utils::decrypt(_encryptedKey, payPassword);
+			ParamChecker::checkDataNotEmpty(keyData);
+
 			Key key;
-			if (true == keyData) {
-				char *stmp = new char[keyData.GetSize()];
-				memcpy(stmp, keyData, keyData.GetSize());
-				std::string secret(stmp, keyData.GetSize());
-				key.setPrivKey(secret);
-			}
+			char *stmp = new char[keyData.GetSize()];
+			memcpy(stmp, keyData, keyData.GetSize());
+			std::string secret(stmp, keyData.GetSize());
+			key.setPrivKey(secret);
 			return key;
 		}
 
@@ -249,6 +281,12 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
+			ParamChecker::checkNotEmpty(message);
+			ParamChecker::checkPassword(payPassword);
+
 			Key key = deriveKey(payPassword);
 
 			UInt256 md;
@@ -265,6 +303,9 @@ namespace Elastos {
 		nlohmann::json
 		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
 			CMBlock signatureData(signature.size());
 			memcpy(signatureData, signature.c_str(), signature.size());
 
@@ -280,6 +321,8 @@ namespace Elastos {
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
 			CMBlock entropyData = Utils::decrypt(_encryptedEntropy, payPassword);
+			ParamChecker::checkDataNotEmpty(entropyData, false);
+
 			UInt128 entropy;
 			UInt128Get(&entropy, (void *) entropyData);
 
@@ -315,6 +358,11 @@ namespace Elastos {
 
 		bool MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword,
 													std::string &id, std::string &key) {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
+			ParamChecker::checkPassword(payPassword);
+
 			UInt512 seed = deriveSeed(payPassword);
 			BRKey *privkey = new BRKey;
 			UInt256 chainCode;
