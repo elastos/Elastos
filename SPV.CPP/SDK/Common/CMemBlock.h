@@ -150,6 +150,10 @@ public:
 		return nullptr != pValue ? pValue->GetSize() : 0;
 	}
 
+	SIZETYPE GetSize() {
+		return nullptr != pValue ? pValue->GetSize() : 0;
+	}
+
 	void Reverse() {
 		nullptr != pValue ? pValue->Reverse() : 0;
 	}
@@ -158,11 +162,23 @@ public:
 		return nullptr != pValue ? pValue->data ? true : false : false;
 	};
 
+	operator bool() {
+		return nullptr != pValue ? pValue->data ? true : false : false;
+	};
+
 	operator void *() const {
 		return (void *) nullptr != pValue ? pValue->data : 0;
 	}
 
+	operator void *() {
+		return (void *) nullptr != pValue ? pValue->data : 0;
+	}
+
 	operator const void *() const {
+		return (void *) nullptr != pValue ? pValue->data : 0;
+	}
+
+	operator const void *() {
 		return (void *) nullptr != pValue ? pValue->data : 0;
 	}
 
@@ -171,7 +187,16 @@ public:
 		return nullptr != pValue ? *pValue->data : t;
 	}
 
+	T &operator*() {
+		T t;
+		return nullptr != pValue ? *pValue->data : t;
+	}
+
 	operator T *() const {
+		return nullptr != pValue ? pValue->data : 0;
+	}
+
+	operator T *() {
 		return nullptr != pValue ? pValue->data : 0;
 	}
 
@@ -183,11 +208,24 @@ public:
 		return nullptr != pValue ? &pValue->data : 0;
 	}
 
+	T **operator&() {
+		return nullptr != pValue ? &pValue->data : 0;
+	}
+
 	T *operator+(SIZETYPE off) const {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
+	T *operator+(SIZETYPE off) {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
 	T &operator[](SIZETYPE off) const {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
+	T &operator[](SIZETYPE off) {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}

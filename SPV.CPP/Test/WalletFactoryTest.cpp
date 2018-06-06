@@ -1026,6 +1026,16 @@ TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
 	//mnemonic related test is in mnemonic special test suit
 }
 
+TEST_CASE("Wallet factory key store import", "[WalletFactory]") {
+	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
+	std::string payPassword = "11111111";
+	std::string backupPassword = "11111111";
+	std::string keystorePath = "webwallet.json";
+
+	boost::scoped_ptr<IMasterWallet> masterWallet(
+		walletFactory->ImportWalletWithKeystore(keystorePath, backupPassword, payPassword));
+}
+
 TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
 
 }

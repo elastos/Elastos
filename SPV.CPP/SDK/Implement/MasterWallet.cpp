@@ -17,6 +17,11 @@
 #include "Log.h"
 #include "Config.h"
 #include "ParamChecker.h"
+#include "BigInt.h"
+
+#define MNEMONIC_FILE_PREFIX "mnemonic_"
+#define MNEMONIC_FILE_EXTENSION ".txt"
+
 
 namespace fs = boost::filesystem;
 
@@ -155,24 +160,35 @@ namespace Elastos {
 
 			CMBlock phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
 					_keyStore.json().getEncryptedPhrasePassword());
-			CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
-			phrasePass_Raw1.Zero();
-			memcpy(phrasePass_Raw1, phrasePass_Raw0, phrasePass_Raw0.GetSize());
-			CMBlock phrasePassRaw = Utils::decrypt(phrasePass_Raw1, payPassword);
-			std::string phrasePass = Utils::convertToString(phrasePassRaw);
+			std::string phrasePass = "";
+			if (true == phrasePass_Raw0) {
+				CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
+				phrasePass_Raw1.Zero();
+				memcpy(phrasePass_Raw1, phrasePass_Raw0, phrasePass_Raw0.GetSize());
+				CMBlock phrasePassRaw = Utils::decrypt(phrasePass_Raw1, payPassword);
+				phrasePass = Utils::convertToString(phrasePassRaw);
+			}
 
 			CMBlock entropy0 = Utils::convertToMemBlock<unsigned char>(
 					_keyStore.json().getEncryptedEntropySource());
-			CMBlock entropy1(entropy0.GetSize() + 1);
-			entropy1.Zero();
-			memcpy(entropy1, entropy0, entropy0.GetSize());
-			CMBlock entropy2 = Utils::decrypt(entropy1, payPassword);
-			UInt128 entropy;
-			memcpy((void *) &entropy.u8[0], entropy2, sizeof(UInt128));
-
 			//resetMnemonic must before initFromEntropy because initFromEntropy use _mnemonic !!!!
-			resetMnemonic(_keyStore.json().getMnemonicLanguage());
-			initFromEntropy(entropy, phrasePass, payPassword);
+			if (phrasePass == "") {
+				// todo fixme to restore from keystore of webwallet
+			}
+			else {
+				CMBlock entropy1(entropy0.GetSize() + 1);
+				entropy1.Zero();
+				memcpy(entropy1, entropy0, entropy0.GetSize());
+				CMBlock entropy2 = Utils::decrypt(entropy1, payPassword);
+				if (false == entropy2) {
+					return false;
+				}
+				UInt128 entropy;
+				memcpy((void *) &entropy.u8[0], entropy2, sizeof(UInt128));
+
+				resetMnemonic(_keyStore.json().getMnemonicLanguage());
+				initFromEntropy(entropy, phrasePass, payPassword);
+			}
 
 			return true;
 		}

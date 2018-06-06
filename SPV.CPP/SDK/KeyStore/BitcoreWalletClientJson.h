@@ -19,6 +19,7 @@ namespace Elastos {
 			struct PubKeyItem {
 				std::string xPubKey;
 				std::string requestPubKey;
+				//std::string copayerName;
 
 			private:
 				JSON_SM_LS(PubKeyItem);
@@ -35,6 +36,8 @@ namespace Elastos {
 		public:
 			const std::string &getEncryptedEntropySource() const;
 			void setEncryptedEntropySource(const std::string &entropy);
+			const std::string &getMnemonic() const;
+			void setMnemonic(const std::string mnemonic);
 
 		private:
 			JSON_SM_LS(BitcoreWalletClientJson);
@@ -46,10 +49,11 @@ namespace Elastos {
 			std::string _coin;
 			std::string _network;
 			std::string _xPrivKey;
-			PubKeyItem _pubKeyItem;
-			std::vector<PubKeyItem> _publicKeyRing;
+			std::string _xPubKey;//
 			std::string _requestPrivKey;
+			std::string _requestPubKey;//
 			std::string _copayerId;
+			std::vector<PubKeyItem> _publicKeyRing;
 			std::string _walletId;
 			std::string _walletName;
 			int _m;
@@ -58,7 +62,9 @@ namespace Elastos {
 			std::string _personalEncryptingKey;
 			std::string _sharedEncryptingKey;
 			std::string _copayerName;
+			std::string _mnemonic;//
 			std::string _entropySource;
+			bool _mnemonicHasPassphrase;//
 			std::string _derivationStrategy;
 			int _account;
 			bool _compliantDerivation;

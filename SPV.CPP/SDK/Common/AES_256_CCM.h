@@ -10,7 +10,7 @@
 
 #include "CMemBlock.h"
 
-#define CIPHERTEXTMAXLENGTH 1024
+#define CIPHERTEXTMAXLENGTH 1024 * 3
 
 namespace Elastos {
 	namespace SDK {
@@ -20,12 +20,16 @@ namespace Elastos {
 		public:
 			static bool Init();
 
+			static bool GenerateSaltAndIV(CMemBlock<unsigned char> &salt, CMemBlock<unsigned char> &iv);
+
 			static CMBlock
 			encrypt(unsigned char *plaintText, size_t szPlainText, unsigned char *password, size_t szPassword,
+					unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
 					unsigned char *aad = nullptr, size_t szAad = 0);
 
 			static CMBlock
 			decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
+					unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
 					unsigned char *aad = nullptr, size_t szAad = 0);
 		};
 	}

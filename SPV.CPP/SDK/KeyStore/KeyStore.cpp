@@ -40,10 +40,14 @@ namespace Elastos {
 			}
 
 			std::vector<unsigned char> ct = Base64::toBits(sjclFile.getCt());
+			std::vector<unsigned char> salt = Base64::toBits(sjclFile.getSalt());
+			std::vector<unsigned char> iv = Base64::toBits(sjclFile.getIv());
 			std::vector<unsigned char> adata = Base64::toBits(sjclFile.getAdata());
-			CMBlock plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(),
-																	  (unsigned char *) password.c_str(),
-																	  password.size(), adata.data(), adata.size());
+			uint32_t ks = sjclFile.getKs();
+			CMBlock plaintext;
+			plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(), (unsigned char *) password.c_str(), password.size(),
+											 salt.data(), salt.size(), iv.data(), iv.size(), 128 == ks ? true : false,
+											 adata.data(), adata.size());
 			if (false == plaintext)
 				return false;
 
@@ -67,23 +71,28 @@ namespace Elastos {
 			ss << walletJson;
 			ss >> str_ss;
 
+			CMemBlock<unsigned char> salt, iv;
+			AES_256_CCM::GenerateSaltAndIV(salt, iv);
 			CMBlock ciphertext;
+			bool bAes128 = false;
 			ciphertext = AES_256_CCM::encrypt((unsigned char *) str_ss.c_str(), str_ss.size(),
-											  (unsigned char *) password.c_str(), password.size());
+											  (unsigned char *) password.c_str(), password.size(), salt, salt.GetSize(),
+											  iv, iv.GetSize(), bAes128);
 			if (false == ciphertext)
 				return false;
-
+			std::string salt_base64 = Base64::fromBits(salt, salt.GetSize());
+			std::string iv_base64 = Base64::fromBits(iv, iv.GetSize());
 			std::string ct_base64 = Base64::fromBits(ciphertext, ciphertext.GetSize());
 			nlohmann::json json;
-			json["iv"] = std::string("n2JUTJ0/yrLdCDPfIcqAzw==");
+			json["iv"] = iv_base64;
 			json["v"] = uint32_t(1);
 			json["iter"] = uint32_t(10000);
-			json["ks"] = uint32_t(256);
+			json["ks"] = !bAes128 ? uint32_t(256) : uint32_t(128);
 			json["ts"] = uint32_t(64);
 			json["mode"] = std::string("ccm");
 			json["adata"] = std::string("");
 			json["cipher"] = std::string("aes");
-			json["salt"] = std::string("ZRVja4LFrFY=");
+			json["salt"] = salt_base64;
 			json["ct"] = ct_base64;
 
 			std::ofstream outfile(path.string());

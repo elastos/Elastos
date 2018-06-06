@@ -4,6 +4,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <openssl/evp.h>
+#include <random>
+#include <ctime>
+#include<functional>
 
 #include "AES_256_CCM.h"
 
@@ -20,7 +23,7 @@ namespace Elastos {
 
 		static int _encryptccm(unsigned char *plaintext, int plaintext_len, unsigned char *aad,
 							   int aad_len, unsigned char *key, const unsigned char *iv,
-							   unsigned char *ciphertext, unsigned char *tag) {
+							   unsigned char *ciphertext, unsigned char *tag, bool bAes128 = false) {
 			EVP_CIPHER_CTX *ctx;
 
 			int len;
@@ -32,7 +35,7 @@ namespace Elastos {
 			if (!(ctx = EVP_CIPHER_CTX_new())) _handleEncryptErrors();
 
 			/* Initialise the encryption operation. */
-			if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_ccm(), NULL, NULL, NULL))
+			if (1 != EVP_EncryptInit_ex(ctx, !bAes128 ? EVP_aes_256_ccm() : EVP_aes_128_ccm(), NULL, NULL, NULL))
 				_handleEncryptErrors();
 
 			int lol = 2;
@@ -84,7 +87,7 @@ namespace Elastos {
 
 		static int _decryptccm(unsigned char *ciphertext, int ciphertext_len, unsigned char *aad,
 							   int aad_len, unsigned char *tag, unsigned char *key, const unsigned char *iv,
-							   unsigned char *plaintext) {
+							   unsigned char *plaintext, bool bAes128 = false) {
 			EVP_CIPHER_CTX *ctx;
 			int len;
 			int plaintext_len;
@@ -94,7 +97,7 @@ namespace Elastos {
 			if (!(ctx = EVP_CIPHER_CTX_new())) _handleDecryptErrors();
 
 			/* Initialise the decryption operation. */
-			if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_ccm(), NULL, NULL, NULL))
+			if (1 != EVP_DecryptInit_ex(ctx, !bAes128 ? EVP_aes_256_ccm() : EVP_aes_128_ccm(), NULL, NULL, NULL))
 				_handleDecryptErrors();
 
 			int lol = 2;
@@ -141,10 +144,6 @@ namespace Elastos {
 			}
 		}
 
-		static const unsigned char salt[] = {0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56};
-		static const unsigned char iv[] = {0x9F, 0x62, 0x54, 0x4C, 0x9D, 0x3F, 0xCA, 0xB2, 0xDD, 0x08, 0x33, 0xDF, 0x21,
-										   0xCA, 0x80, 0xCF};
-
 		bool AES_256_CCM::_bInit = false;
 
 		bool AES_256_CCM::Init() {
@@ -156,8 +155,29 @@ namespace Elastos {
 			return true;
 		}
 
+		bool AES_256_CCM::GenerateSaltAndIV(CMemBlock<unsigned char> &salt, CMemBlock<unsigned char> &iv) {
+			static unsigned char _salt[] = {0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56};
+			static unsigned char _iv[] = {0x9F, 0x62, 0x54, 0x4C, 0x9D, 0x3F, 0xCA, 0xB2, 0xDD, 0x08, 0x33, 0xDF, 0x21,
+										  0xCA, 0x80, 0xCF};
+			std::default_random_engine generator(time(NULL));
+			std::uniform_int_distribution<int> dis(0, 255);
+			auto dice = std::bind(dis, generator);
+			for (size_t i = 0; i < 16; i++) {
+
+				if (i < 8) {
+					_salt[i] = dice();
+				}
+				_iv[i] = dice();
+			}
+			salt.SetMemFixed(_salt, sizeof(_salt));
+			iv.SetMemFixed(_iv, sizeof(_iv));
+
+			return true;
+		}
+
 		CMBlock
 		AES_256_CCM::encrypt(unsigned char *plaintText, size_t szPlainText, unsigned char *password, size_t szPassword,
+							 unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
 							 unsigned char *aad, size_t szAad) {
 			CMBlock _ret;
 
@@ -167,16 +187,21 @@ namespace Elastos {
 			if (nullptr != cipher && nullptr != dgst) {
 				unsigned char key[EVP_MAX_KEY_LENGTH];
 				int iklen = EVP_CIPHER_key_length(cipher);
-				if (PKCS5_PBKDF2_HMAC((char *) password, szPassword, salt, sizeof(salt), 10000, dgst, iklen, key)) {
+				if (PKCS5_PBKDF2_HMAC((char *) password, szPassword, salt, szSalt, 10000, dgst, iklen, key)) {
 					unsigned char ciphertext[CIPHERTEXTMAXLENGTH] = {0};
 					static unsigned char tag[8] = {0};
-
-					int ret = _encryptccm(plaintText, szPlainText, nullptr == aad ? (unsigned char *) "" : aad, szAad,
-										  key, &iv[0], ciphertext, tag);
+					int ret = 0;
+					try {
+						ret = _encryptccm(plaintText, szPlainText, nullptr == aad ? (unsigned char *) "" : aad, szAad,
+										  key, iv, ciphertext, tag, bAes128);
+					}
+					catch (...) {
+						return _ret;
+					}
 					if (0 < ret) {
 						_ret.Resize(ret + 8);
 						memcpy(_ret, ciphertext, ret);
-						memcpy((unsigned char *)_ret + ret, tag, 8);
+						memcpy((unsigned char *) _ret + ret, tag, 8);
 					}
 				}
 			}
@@ -186,6 +211,7 @@ namespace Elastos {
 
 		CMBlock
 		AES_256_CCM::decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
+							 unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
 							 unsigned char *aad, size_t szAad) {
 			CMBlock _ret;
 
@@ -195,11 +221,16 @@ namespace Elastos {
 			if (nullptr != cipher && nullptr != dgst) {
 				unsigned char key[EVP_MAX_KEY_LENGTH];
 				int iklen = EVP_CIPHER_key_length(cipher);
-				if (PKCS5_PBKDF2_HMAC((char *) password, szPassword, salt, sizeof(salt), 10000, dgst, iklen, key)) {
+				if (PKCS5_PBKDF2_HMAC((char *) password, szPassword, salt, szSalt, 10000, dgst, iklen, key)) {
 					unsigned char plaintext[CIPHERTEXTMAXLENGTH] = {0};
-
-					int ret = _decryptccm(cipherText, szCipherText - 8, nullptr == aad ? (unsigned char *) "" : aad,
-										  szAad, &cipherText[szCipherText - 8], key, &iv[0], plaintext);
+					int ret = 0;
+					try {
+						ret = _decryptccm(cipherText, szCipherText - 8, nullptr == aad ? (unsigned char *) "" : aad,
+										  szAad, &cipherText[szCipherText - 8], key, iv, plaintext, bAes128);
+					}
+					catch (...) {
+						return _ret;
+					}
 					if (0 < ret) {
 						_ret.Resize(ret);
 						memcpy(_ret, plaintext, ret);

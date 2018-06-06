@@ -16,7 +16,7 @@ TEST_CASE("save/open", "[KeyStore]") {
 	SECTION("save") {
 		KeyStore ks;
 		const boost::filesystem::path path = "conf.json";
-		std::string password = "password";
+		std::string password = "11111111";
 
 		REQUIRE(true == ks.save(path, password));
 	}
@@ -24,8 +24,17 @@ TEST_CASE("save/open", "[KeyStore]") {
 	SECTION("open") {
 		KeyStore ks;
 		const boost::filesystem::path path = "conf.json";
-		std::string password = "password";
+		std::string password = "11111111";
 
+		REQUIRE(true == ks.open(path, password));
+	}
+}
+
+TEST_CASE("open", "[KeyStore]") {
+	SECTION("open existion") {
+		KeyStore ks;
+		const boost::filesystem::path path= "webwallet.json";
+		std::string password = "11111111";
 		REQUIRE(true == ks.open(path, password));
 	}
 }
