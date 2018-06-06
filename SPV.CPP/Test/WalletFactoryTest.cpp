@@ -28,140 +28,60 @@ protected:
 	}
 };
 
-/*
-//////////////////////this case is to generate mnemonic of support language (english  chinese italian japanese spanish french)
-TEST_CASE("Wallet factory generate french mnemonic ", "[WalletFactory]") {
+
+
+
+TEST_CASE("Wallet factory ExportWalletWithMnemonic generate  mnemonic (english  chinese italian japanese spanish french)", "[WalletFactory]") {
 
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->CreateMasterWallet(phrasePassword, payPassword, "french"));
-
 	std::string mnemonic;
 
-	//vexer lumière palourde séquence nuancer surface dioxyde paradoxe batterie hilarant subvenir grenat
+
 	SECTION("generate french mnemonic") {
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword, "french"));
 		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		//std::cout<<" generate french mnemonic ----->" <<std::endl;
-		//std::cout<< " <<<<<<< "<< mnemonic << ">>>>>>>>" <<std::endl;
-
 		REQUIRE(!mnemonic.empty());
 	}
-}
-
-/////generate spanish mnemonic
-TEST_CASE("Wallet factory generate spanish mnemonic ", "[WalletFactory]") {
-
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->CreateMasterWallet(phrasePassword, payPassword, "spanish"));
-
-	std::string mnemonic;
-
-	//separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina
 	SECTION("generate spanish mnemonic") {
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword, "spanish"));
 		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		//std::cout<<" generate spanish mnemonic ----->" <<std::endl;
-		//std::cout<< " <<<<<<< "<< mnemonic << ">>>>>>>>" <<std::endl;
-
 		REQUIRE(!mnemonic.empty());
 	}
-}
 
-/////generate japanese mnemonic
-TEST_CASE("Wallet factory generate japanese mnemonic ", "[WalletFactory]") {
-
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->CreateMasterWallet(phrasePassword, payPassword, "japanese"));
-
-	std::string mnemonic;
-
-	//separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina
 	SECTION("generate japanese mnemonic") {
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword, "japanese"));
 		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		//std::cout<<" generate japanese mnemonic ----->" <<std::endl;
-		//std::cout<< " <<<<<<< "<< mnemonic << ">>>>>>>>" <<std::endl;
-
 		REQUIRE(!mnemonic.empty());
 	}
-}
 
-/////generate italian mnemonic
-TEST_CASE("Wallet factory generate italian mnemonic ", "[WalletFactory]") {
-
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->CreateMasterWallet(phrasePassword, payPassword, "italian"));
-
-	std::string mnemonic;
-
-	//separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina
 	SECTION("generate italian mnemonic") {
-		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		//std::cout<<" generate italian mnemonic ----->" <<std::endl;
-		//std::cout<< " <<<<<<< "<< mnemonic << ">>>>>>>>" <<std::endl;
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword, "italian"));
 
+		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
 		REQUIRE(!mnemonic.empty());
 	}
-}
 
-//
-
-/////generate chinese mnemonic
-TEST_CASE("Wallet factory generate chinese mnemonic ", "[WalletFactory]") {
-
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->CreateMasterWallet(phrasePassword, payPassword, "chinese"));
-
-	std::string mnemonic;
-
-	//separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina
 	SECTION("generate chinese mnemonic") {
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword, "chinese"));
 		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		//std::cout<<" generate chinese mnemonic ----->" <<std::endl;
-		//std::cout<< " <<<<<<< "<< mnemonic << ">>>>>>>>" <<std::endl;
-
 		REQUIRE(!mnemonic.empty());
 	}
-}
-/////generate english mnemonic
-TEST_CASE("Wallet factory generate english mnemonic ", "[WalletFactory]") {
 
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->CreateMasterWallet(phrasePassword, payPassword, "english"));
-
-	std::string mnemonic;
-
-	//separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina
 	SECTION("generate english mnemonic") {
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->CreateMasterWallet(phrasePassword, payPassword, "english"));
 		mnemonic = walletFactory->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		//std::cout<<" generate english mnemonic ----->" <<std::endl;
-		//std::cout<< " <<<<<<< "<< mnemonic << ">>>>>>>>" <<std::endl;
-
 		REQUIRE(!mnemonic.empty());
 	}
 }
-////////////////////////////////
 
 
 TEST_CASE("Wallet factory basic", "[WalletFactory]") {
@@ -178,7 +98,8 @@ TEST_CASE("Wallet factory basic", "[WalletFactory]") {
 	}
 }
 
-//////////////////////////////// password is character ,digit,special symbol,  chinese, french,  italian, japanese, spanish and mix(all of this)
+/*
+ //////////////////////////////// password is character ,digit,special symbol,  chinese, french,  italian, japanese, spanish and mix(all of this)
 TEST_CASE("Wallet factory mnemonic export & import password is character", "[WalletFactory]") {
 
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
@@ -580,162 +501,12 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Walle
 		REQUIRE(masterWallet->GetPublicKey() != masterWallet3->GetPublicKey());
 	}
 }
-////////////////////////////////
-
-////////////////////////////////ImportWalletWithMnemonic mnemonic can be english   chinese french,  italian, japanese, spanish and mix(all of this)
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic english", "[WalletFactory]") {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-
-
-	SECTION("Create master wallet mnemonic english ") {
-		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword);
-
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-
-		TestMasterWallet dumyMasterWallet(*static_cast<MasterWallet *>(masterWallet));
-		ISubWallet *subWallet = dumyMasterWallet.CreateSubWallet(Normal, "ELA", 0, payPassword, false);
-		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-
-		dumyMasterWallet.DestroyWallet(subWallet);
-		walletFactory->DestroyWallet(masterWallet);
-	}
-}
-
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic chinese", "[WalletFactory]") {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-
-	std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 被";
-
-
-	//this is invalid mnemonic
-	//sstd::string mnemonic = "的 一 是 在 不 了 有 和 人 这 中 大";
-
-
-	SECTION("Create master wallet mnemonic chinese ") {
-		//IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "chinese");
-		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword,
-																			  "chinese");
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
-		REQUIRE(subWallet != nullptr);
-
-		//nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-
-
-		//masterWallet->DestroyWallet(subWallet);
-		//walletFactory->DestroyWallet(masterWallet);
-	}
-}
-
-
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic french", "[WalletFactory]") {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string mnemonic = "vexer lumière palourde séquence nuancer surface dioxyde paradoxe batterie hilarant subvenir grenat";
-
-
-	SECTION("Create master wallet mnemonic french ") {
-		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword,
-																			  "french");
-
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-
-
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
-		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-
-
-		//masterWallet->DestroyWallet(subWallet);
-		//walletFactory->DestroyWallet(masterWallet);
-	}
-}
-
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic spanish", "[WalletFactory]") {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string mnemonic = "separar sopa resto fraude tinta ánimo diseño misa nube sardina tóxico turbina";
-
-
-	SECTION("Create master wallet mnemonic spanish ") {
-		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword,
-																			  "spanish");
-
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
-		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
+*/
 
 
 
-		//masterWallet->DestroyWallet(subWallet);
-		//walletFactory->DestroyWallet(masterWallet);
-	}
-}
 
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic japanese", "[WalletFactory]") {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string mnemonic = "たたみ そこそこ ひそか ほうこく そんぞく したぎ のぼる うちがわ せきにん つける してき ひさい";
-
-
-	SECTION("Create master wallet mnemonic japanese ") {
-		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword,
-																			  "japanese");
-
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
-		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-
-		//masterWallet->DestroyWallet(subWallet);
-		//walletFactory->DestroyWallet(masterWallet);
-	}
-}
-
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic italian", "[WalletFactory]") {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string mnemonic = "casaccio sfilato bisturi onice pestifero acido profumo spuntino busta bibita angolare inalare";
-
-
-	SECTION("Create master wallet mnemonic spanish ") {
-		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword,
-																			  "italian");
-
-		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
-
-		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
-		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-
-
-		//masterWallet->DestroyWallet(subWallet);
-		//walletFactory->DestroyWallet(masterWallet);
-	}
-}*/
-
-TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic english2", "[WalletFactory]") {
+/*TEST_CASE("test p2p net stop error use --------", "[WalletFactory]") {
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 
 	std::string phrasePassword = "phrasePassword";
@@ -755,74 +526,57 @@ TEST_CASE("Wallet factory ImportWalletWithMnemonic mnemonic english2", "[WalletF
 		masterWallet->DestroyWallet(subWallet);
 		walletFactory->DestroyWallet(masterWallet);
 	}
-}
+}*/
 
 ////////////////////////////////////////////
 
 
 
-//TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
-//
-//}
-//
-//
-//TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner]") {
-//	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-//
-//	SECTION("languae is valid ImportWalletWithMnemonic correct") {
+
+TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner]") {
+	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
+
+	SECTION("languae is valid ImportWalletWithMnemonic correct") {
+		std::string phrasePassword = "phrasePassword";
+		std::string payPassword = "payPassword";
+		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 被";
+		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "chinese");
+		REQUIRE(masterWallet != nullptr);
+		REQUIRE(!masterWallet->GetPublicKey().empty());
+		walletFactory->DestroyWallet(masterWallet);
+	}
+//	SECTION("languae is invalid not support germany. will be assert.    so closed-------->") {
 //		std::string phrasePassword = "phrasePassword";
 //		std::string payPassword = "payPassword";
 //		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 被";
-//		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "chinese");
+//
+//		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "Germany");
 //		REQUIRE(masterWallet != nullptr);
 //		REQUIRE(!masterWallet->GetPublicKey().empty());
-//		walletFactory->DestroyWallet(masterWallet);
 //	}
-////	SECTION("languae is invalid not support germany. will be assert.    so closed-------->") {
-////		std::string phrasePassword = "phrasePassword";
-////		std::string payPassword = "payPassword";
-////		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 被";
-////
-////		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "Germany");
-////		REQUIRE(masterWallet != nullptr);
-////		REQUIRE(!masterWallet->GetPublicKey().empty());
-////	}
-//	SECTION("walletImportFun return false ") {
+	SECTION("walletImportFun return false ") {
+		std::string phrasePassword = "phrasePassword";
+		std::string payPassword = "payPassword";
+		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 漫";
+		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "chinese");
+		REQUIRE(masterWallet == nullptr);
+		walletFactory->DestroyWallet(masterWallet);
+	}
+
+//	SECTION("masterWallet->Initialized() return false  no this situation so cloesed -------->") {
 //		std::string phrasePassword = "phrasePassword";
 //		std::string payPassword = "payPassword";
-//		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 漫";
+//		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 Hello";
+//
 //		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "chinese");
-//		REQUIRE(masterWallet == nullptr);
-//		walletFactory->DestroyWallet(masterWallet);
-//	}
-//
-////	SECTION("masterWallet->Initialized() return false  no this situation so cloesed -------->") {
-////		std::string phrasePassword = "phrasePassword";
-////		std::string payPassword = "payPassword";
-////		std::string mnemonic = "脑 搅 墙 淀 式 移 协 分 地 欺 漫 Hello";
-////
-////		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "chinese");
-////		REQUIRE(masterWallet != nullptr);
-////		REQUIRE(!masterWallet->GetPublicKey().empty());
-////	}
-//
-//}
-//
-//
-//TEST_CASE("WalletFactory create destroy wallet", "[WalletFactory]") {
-//	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
-//	std::string phrasePassword = "phrasePassword";
-//	std::string payPassword = "payPassword";
-//
-//	SECTION("create destroy french wallet") {
-//		IMasterWallet *masterWallet = walletFactory->CreateMasterWallet(phrasePassword, payPassword, "french");
 //		REQUIRE(masterWallet != nullptr);
 //		REQUIRE(!masterWallet->GetPublicKey().empty());
-//		walletFactory->DestroyWallet(masterWallet);
 //	}
 
-
 }
+
+
+
 
 
 TEST_CASE("WalletFactory create destroy wallet", "[WalletFactory]") {
@@ -866,6 +620,43 @@ TEST_CASE("WalletFactory create destroy wallet", "[WalletFactory]") {
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 		walletFactory->DestroyWallet(masterWallet);
 	}
+}
+
+
+TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
+	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+
+	SECTION("Normal creation") {
+		IMasterWallet *masterWallet = walletFactory->CreateMasterWallet(phrasePassword, payPassword);
+		REQUIRE(masterWallet != nullptr);
+	}
+	SECTION("Create with phrase password that is empty or less than 8") {
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet("", payPassword), std::invalid_argument);
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet("ilegal", payPassword), std::invalid_argument);
+	}
+	SECTION("Create with phrase password that is more than 128") {
+		REQUIRE_THROWS_AS(walletFactory->CreateMasterWallet("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+														 payPassword), std::invalid_argument);
+	}
+	SECTION("Create with pay password that is empty or less than 8") {
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, ""), std::invalid_argument);
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, "ilegal"), std::invalid_argument);
+	}
+	SECTION("Create with pay password that is more than 128") {
+		REQUIRE_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						  std::invalid_argument);
+	}
+	SECTION("Language should not be null") {
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, payPassword, ""), std::invalid_argument);
+	}
+	//mnemonic related test is in mnemonic special test suit
+}
+
+TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
+
+
 }
 
 
@@ -1053,7 +844,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+
 	SECTION("Import Export  WalletWithMnemonic mnemonic english ") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword
