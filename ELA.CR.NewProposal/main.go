@@ -16,6 +16,8 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -32,11 +34,18 @@ func init() {
 	}
 	log.Debug("The Core number is ", coreNum)
 
-	blockchain.FoundationAddress = config.Parameters.Configuration.FoundationAddress
-
-	if blockchain.FoundationAddress == "" {
-		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	foundationAddress := config.Parameters.Configuration.FoundationAddress
+	if foundationAddress == "" {
+		foundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	}
+
+	address, err := common.Uint168FromAddress(foundationAddress)
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(-1)
+	}
+	blockchain.FoundationAddress = *address
+
 	runtime.GOMAXPROCS(coreNum)
 }
 
