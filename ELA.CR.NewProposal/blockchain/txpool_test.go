@@ -2,12 +2,14 @@ package blockchain
 
 import (
 	"crypto/rand"
-	"github.com/elastos/Elastos.ELA.Utility/common"
+	"os"
+	"testing"
+
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/log"
-	"os"
-	"testing"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var txPool TxPool

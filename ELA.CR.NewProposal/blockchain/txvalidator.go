@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math"
@@ -10,7 +11,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 
-	"bytes"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
