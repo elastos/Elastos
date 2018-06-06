@@ -21,8 +21,8 @@ namespace Elastos {
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 
 			size_t off = 0;
-			size_t count = UInt32GetLE(&msg[off]);
-			off += sizeof(uint32_t);
+			size_t count = UInt64GetLE(&msg[off]);
+			off += sizeof(uint64_t);
 
 			int r = 1;
 			if (off == 0 || off + count*30 > msgLen) {
@@ -47,7 +47,7 @@ namespace Elastos {
 					off += sizeof(uint64_t);
 					UInt128Get(&p.address, &msg[off]);
 					off += sizeof(UInt128);
-					p.port = UInt16GetBE(&msg[off]);
+					p.port = UInt16GetLE(&msg[off]);
 					off += sizeof(uint16_t);
 					uint64_t id = UInt64GetLE(&msg[off]);
 					off += sizeof(uint64_t);
