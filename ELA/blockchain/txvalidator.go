@@ -10,6 +10,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 
+	"bytes"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -70,6 +71,13 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return Success
 	}
 
+	if txn.IsSideminingTx() {
+		if err := CheckSideMiningConsensus(txn); err != nil {
+			log.Warn("[CheckSideMiningConsensus],", err)
+			return ErrSideMiningConsensus
+		}
+	}
+
 	if txn.IsWithdrawTx() {
 		witPayload := txn.Payload.(*PayloadWithdrawAsset)
 		for _, hash := range witPayload.SideChainTransactionHash {
@@ -81,7 +89,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 
 	// check double spent transaction
 	if DefaultLedger.IsDoubleSpend(txn) {
-		log.Info("[CheckTransactionContext] IsDoubleSpend check faild.")
+		log.Warn("[CheckTransactionContext] IsDoubleSpend check faild.")
 		return ErrDoubleSpend
 	}
 
@@ -330,5 +338,29 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 			existingHashs[hash] = struct{}{}
 		}
 	}
+	return nil
+}
+
+func CheckSideMiningConsensus(txn *Transaction) error {
+	arbitrators, err := config.Parameters.GetArbitrators()
+	if err != nil {
+		return err
+	}
+
+	for _, program := range txn.Programs {
+		publicKey := program.Code[1 : len(program.Code)-1]
+		found := false
+		for _, arbitratorPk := range arbitrators {
+			if bytes.Equal(arbitratorPk, publicKey) {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return errors.New("Invalid mining arbiter")
+		}
+	}
+
 	return nil
 }
