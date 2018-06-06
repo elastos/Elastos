@@ -80,10 +80,6 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 	if err != nil {
 		return nil, err
 	}
-	foundationProgramHash, err := common.Uint168FromAddress(FoundationAddress)
-	if err != nil {
-		return nil, err
-	}
 
 	pd := &PayloadCoinBase{
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
@@ -103,7 +99,7 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 		{
 			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       0,
-			ProgramHash: *foundationProgramHash,
+			ProgramHash: FoundationAddress,
 		},
 		{
 			AssetID:     DefaultLedger.Blockchain.AssetID,

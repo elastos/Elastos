@@ -169,11 +169,7 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 			if output.AssetID != DefaultLedger.Blockchain.AssetID {
 				return errors.New("asset ID in coinbase is invalid")
 			}
-			address, err := output.ProgramHash.ToAddress()
-			if err != nil {
-				return err
-			}
-			if address == FoundationAddress {
+			if FoundationAddress.IsEqual(output.ProgramHash) {
 				found = true
 			}
 		}
@@ -234,7 +230,7 @@ func CheckTransactionUTXOLock(txn *Transaction) error {
 func CheckTransactionSize(txn *Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
-		return errors.New(fmt.Sprintf("Invalid transaction size: %d bytes", size))
+		return fmt.Errorf("Invalid transaction size: %d bytes", size)
 	}
 
 	return nil

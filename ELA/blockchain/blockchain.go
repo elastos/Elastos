@@ -122,17 +122,13 @@ func GetGenesisBlock() (*Block, error) {
 		Outputs:    []*Output{},
 		Programs:   []*Program{},
 	}
-	foundation, err := Uint168FromAddress(FoundationAddress)
-	if err != nil {
-		return nil, err
-	}
 
 	coinBase := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
 	coinBase.Outputs = []*Output{
 		{
 			AssetID:     elaCoin.Hash(),
 			Value:       3300 * 10000 * 100000000,
-			ProgramHash: *foundation,
+			ProgramHash: FoundationAddress,
 		},
 	}
 
@@ -150,6 +146,7 @@ func GetGenesisBlock() (*Block, error) {
 	for _, tx := range block.Transactions {
 		hashes = append(hashes, tx.Hash())
 	}
+	var err error
 	block.Header.MerkleRoot, err = crypto.ComputeRoot(hashes)
 	if err != nil {
 		return nil, errors.New("[GenesisBlock] ,BuildMerkleRoot failed.")
