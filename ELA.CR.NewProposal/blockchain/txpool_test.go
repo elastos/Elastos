@@ -1,15 +1,41 @@
 package blockchain
 
 import (
+	"crypto/rand"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/log"
+	"os"
 	"testing"
 )
 
 var txPool TxPool
 
-func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
-	txPool.Init()
+func TestTxPoolInit(t *testing.T) {
+	log.Init(log.Path, os.Stdout)
+	FoundationAddress = config.Parameters.Configuration.FoundationAddress
 
+	if FoundationAddress == "" {
+		FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	}
+
+	chainStore, err := NewChainStore()
+	if err != nil {
+		t.Fatal("open LedgerStore err:", err)
+		os.Exit(1)
+	}
+	defer chainStore.Close()
+
+	err = Init(chainStore)
+	if err != nil {
+		t.Fatal(err, "BlockChain generate failed")
+	}
+
+	txPool.Init()
+}
+
+func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	// 1. Generate a withdraw transaction
 	txn1 := new(core.Transaction)
 	txn1.TxType = core.WithdrawAsset
@@ -112,5 +138,48 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 		if err != nil {
 			t.Error("Should not find the duplicate sidechain tx")
 		}
+	}
+}
+
+func TestTxPool_ReplaceDuplicateSideminingTx(t *testing.T) {
+	var sideBlockHash1 common.Uint256
+	var sideBlockHash2 common.Uint256
+	var sideGenesisHash common.Uint256
+	rand.Read(sideBlockHash1[:])
+	rand.Read(sideBlockHash2[:])
+	rand.Read(sideGenesisHash[:])
+
+	txn1 := new(core.Transaction)
+	txn1.TxType = core.SideMining
+	txn1.Payload = &core.PayloadSideMining{
+		SideBlockHash:   sideBlockHash1,
+		SideGenesisHash: sideGenesisHash,
+		BlockHeight:     100,
+	}
+
+	ok := txPool.addToTxList(txn1)
+	if !ok {
+		t.Error("Add sidemining txn1 to txpool failed")
+	}
+
+	txn2 := new(core.Transaction)
+	txn2.TxType = core.SideMining
+	txn2.Payload = &core.PayloadSideMining{
+		SideBlockHash:   sideBlockHash2,
+		SideGenesisHash: sideGenesisHash,
+		BlockHeight:     100,
+	}
+	txPool.replaceDuplicateSideminingTx(txn2)
+	ok = txPool.addToTxList(txn2)
+	if !ok {
+		t.Error("Add sidemining txn2 to txpool failed")
+	}
+
+	if txn := txPool.GetTransaction(txn1.Hash()); txn != nil {
+		t.Errorf("Txn1 should be replaced")
+	}
+
+	if txn := txPool.GetTransaction(txn2.Hash()); txn == nil {
+		t.Errorf("Txn2 should be added in txpool")
 	}
 }
