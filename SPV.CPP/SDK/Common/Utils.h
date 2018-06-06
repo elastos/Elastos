@@ -60,7 +60,7 @@ namespace Elastos {
 			template<class T>
 			static std::string convertToString(const CMemBlock<T, uint64_t> &data) {
 				assert(sizeof(T) == sizeof(char));
-				char *p = new char[data.GetSize()];
+				char p[data.GetSize()];
 				memcpy(p, data, data.GetSize());
 				std::string ret(p, data.GetSize());
 				return ret;

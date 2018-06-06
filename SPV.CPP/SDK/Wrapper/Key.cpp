@@ -351,18 +351,19 @@ namespace Elastos {
 		                            const CMBlock &signature) {
 			size_t len = publicKey.size();
 			int r = 0;
-			secp256k1_context *_ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);;
+			secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);;
 			secp256k1_pubkey pk;
 			secp256k1_ecdsa_signature s;
 			uint8_t pubKey[65];
 			memset(pubKey, 0, sizeof(pubKey));
 			memcpy(pubKey, publicKey.c_str(), len);
 
-			if (len > 0 && secp256k1_ec_pubkey_parse(_ctx, &pk, pubKey, len) &&
-			    secp256k1_ecdsa_signature_parse_der(_ctx, &s, signature, signature.GetSize())) {
-				if (secp256k1_ecdsa_verify(_ctx, &s, messageDigest.u8, &pk) == 1) r = 1; // success is 1, all other values are fail
+			if (len > 0 && secp256k1_ec_pubkey_parse(ctx, &pk, pubKey, len) &&
+			    secp256k1_ecdsa_signature_parse_der(ctx, &s, signature, signature.GetSize())) {
+				if (secp256k1_ecdsa_verify(ctx, &s, messageDigest.u8, &pk) == 1) r = 1; // success is 1, all other values are fail
 			}
-			return r;
+			secp256k1_context_destroy(ctx);
+			return r == 1;
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {

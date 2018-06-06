@@ -285,7 +285,7 @@ namespace Elastos {
 			ParamChecker::checkDataNotEmpty(keyData);
 
 			Key key;
-			char *stmp = new char[keyData.GetSize()];
+			char stmp[keyData.GetSize()];
 			memcpy(stmp, keyData, keyData.GetSize());
 			std::string secret(stmp, keyData.GetSize());
 			key.setPrivKey(secret);
@@ -299,7 +299,7 @@ namespace Elastos {
 				return;
 			}
 			size_t len = BRKeyPubKey(key.getRaw(), nullptr, 0);
-			uint8_t *pubKey = new uint8_t[len];
+			uint8_t pubKey[len];
 			BRKeyPubKey(key.getRaw(), pubKey, len);
 			_publicKey = std::string((char *) pubKey, len);
 		}
@@ -318,7 +318,7 @@ namespace Elastos {
 
 			CMBlock signedData = key.sign(md);
 
-			char *data = new char[signedData.GetSize()];
+			char data[signedData.GetSize()];
 			memcpy(data, signedData, signedData.GetSize());
 			std::string singedMsg(data, signedData.GetSize());
 			return singedMsg;

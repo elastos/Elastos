@@ -167,6 +167,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
 		REQUIRE_FALSE(idChainSubWallet != nullptr);
+
+		masterWallet->DestroyWallet(subWallet);
 	}
 	SECTION("Create mainchain sub wallet") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Mainchain, chainId, 0, payPassword, false);
@@ -176,6 +178,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
 		REQUIRE(mainchainSubWallet != nullptr);
+
+		masterWallet->DestroyWallet(subWallet);
 	}
 	SECTION("Create mainchain sub wallet") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Sidechain, chainId, 0, payPassword, false);
@@ -185,6 +189,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 		SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
 		REQUIRE(sidechainSubWallet != nullptr);
+
+		masterWallet->DestroyWallet(subWallet);
 	}
 	SECTION("Create idchain sub wallet") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Idchain, chainId, 0, payPassword, false);
@@ -194,6 +200,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
 		REQUIRE(idChainSubWallet != nullptr);
+
+		masterWallet->DestroyWallet(subWallet);
 	}
 	SECTION("Return exist sub wallet with same id") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false);

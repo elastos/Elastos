@@ -93,7 +93,7 @@ namespace Elastos {
 			char result[size];
 			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList, seed.u8, sizeof(seed));
 
-			char *resultChar = new char[size];
+			char resultChar[size];
 			memcpy(resultChar, result, size);
 			return std::string(resultChar, size);
 		}
