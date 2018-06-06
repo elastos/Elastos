@@ -27,10 +27,19 @@ var LocalPow *pow.PowService
 var PreChainHeight uint64
 var PreTime int64
 
+func ToReversedString(hash Uint256) string {
+	return BytesToHexString(BytesReverse(hash[:]))
+}
+
+func FromReversedString(reversed string) ([]byte, error) {
+	bytes, err := HexStringToBytes(reversed)
+	return BytesReverse(bytes), err
+}
+
 func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
-		inputs[i].TxID = BytesToHexString(v.Previous.TxID.Bytes())
+		inputs[i].TxID = ToReversedString(v.Previous.TxID)
 		inputs[i].VOut = v.Previous.Index
 		inputs[i].Sequence = v.Sequence
 	}
@@ -41,7 +50,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		outputs[i].Index = uint32(i)
 		address, _ := v.ProgramHash.ToAddress()
 		outputs[i].Address = address
-		outputs[i].AssetID = BytesToHexString(v.AssetID.Bytes())
+		outputs[i].AssetID = ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
 	}
 
@@ -58,15 +67,15 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	}
 
 	var txHash = tx.Hash()
-	var txHashStr = txHash.String()
+	var txHashStr = ToReversedString(txHash)
 	var size = uint32(tx.GetSize())
-	var blockHash Uint256
+	var blockHash string
 	var confirmations uint32
 	var time uint32
 	var blockTime uint32
 	if header != nil {
 		confirmations = chain.DefaultLedger.Blockchain.GetBestHeight() - header.Height + 1
-		blockHash = header.Hash()
+		blockHash = ToReversedString(header.Hash())
 		time = header.Timestamp
 		blockTime = header.Timestamp
 	}
@@ -80,7 +89,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		LockTime:       tx.LockTime,
 		Inputs:         inputs,
 		Outputs:        outputs,
-		BlockHash:      blockHash.String(),
+		BlockHash:      blockHash,
 		Confirmations:  confirmations,
 		Time:           time,
 		BlockTime:      blockTime,
@@ -99,7 +108,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	hex, err := HexStringToBytes(str)
+	hex, err := FromReversedString(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -138,7 +147,7 @@ func GetNeighbors(param Params) map[string]interface{} {
 
 func GetNodeState(param Params) map[string]interface{} {
 	n := NodeInfo{
-		State:    uint(NodeForServers.State()),
+		State:    NodeForServers.State(),
 		Time:     NodeForServers.GetTime(),
 		Port:     NodeForServers.Port(),
 		ID:       NodeForServers.ID(),
@@ -153,7 +162,7 @@ func GetNodeState(param Params) map[string]interface{} {
 }
 
 func SetLogLevel(param Params) map[string]interface{} {
-	level, ok := param["level"].(float64)
+	level, ok := param.Int("level")
 	if !ok || level < 0 {
 		return ResponsePack(InvalidParams, "level must be an integer in 0-6")
 	}
@@ -224,6 +233,7 @@ func GenerateAuxBlock(addr string) (*Block, string, bool) {
 			return nil, "msgBlock generate err", false
 		}
 
+		// TODO is this hash needs to reverse ?
 		curHash := msgBlock.Hash()
 		curHashStr := BytesToHexString(curHash.Bytes())
 
@@ -341,10 +351,7 @@ func DiscreteMining(param Params) map[string]interface{} {
 	}
 
 	for i, hash := range blockHashes {
-		//ret[i] = hash.ToString()
-		w := new(bytes.Buffer)
-		hash.Serialize(w)
-		ret[i] = BytesToHexString(w.Bytes())
+		ret[i] = ToReversedString(*hash)
 	}
 
 	return ResponsePack(Success, ret)
@@ -363,8 +370,6 @@ func GetTransactionPool(param Params) map[string]interface{} {
 }
 
 func GetBlockInfo(block *Block, verbose bool) BlockInfo {
-	hash := block.Hash()
-
 	var txs []interface{}
 	if verbose {
 		for _, tx := range block.Transactions {
@@ -372,8 +377,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		}
 	} else {
 		for _, tx := range block.Transactions {
-			hash := tx.Hash()
-			txs = append(txs, BytesToHexString(hash.Bytes()))
+			txs = append(txs, ToReversedString(tx.Hash()))
 		}
 	}
 	var versionBytes [4]byte
@@ -388,7 +392,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 	block.Header.AuxPow.Serialize(auxPow)
 
 	return BlockInfo{
-		Hash:              hash.String(),
+		Hash:              ToReversedString(block.Hash()),
 		Confirmations:     chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
 		StrippedSize:      uint32(block.GetSize()),
 		Size:              uint32(block.GetSize()),
@@ -405,7 +409,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Difficulty:        chain.CalcCurrentDifficulty(block.Header.Bits),
 		ChainWork:         BytesToHexString(chainWork[:]),
 		PreviousBlockHash: block.Header.Previous.String(),
-		NextBlockHash:     nextBlockHash.String(),
+		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            BytesToHexString(auxPow.Bytes()),
 	}
 }
@@ -433,11 +437,11 @@ func GetBlockByHash(param Params) map[string]interface{} {
 	}
 
 	var hash Uint256
-	hex, err := HexStringToBytes(str)
+	hashBytes, err := FromReversedString(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "invalid block hash")
 	}
-	if err := hash.Deserialize(bytes.NewReader(hex)); err != nil {
+	if err := hash.Deserialize(bytes.NewReader(hashBytes)); err != nil {
 		ResponsePack(InvalidParams, "invalid block hash")
 	}
 
@@ -465,13 +469,12 @@ func SendRawTransaction(param Params) map[string]interface{} {
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
 		return ResponsePack(InvalidTransaction, "transaction deserialize error")
 	}
-	var hash Uint256
-	hash = txn.Hash()
+
 	if errCode := VerifyAndSendTx(&txn); errCode != Success {
 		return ResponsePack(errCode, errCode.Message())
 	}
 
-	return ResponsePack(Success, BytesToHexString(hash.Bytes()))
+	return ResponsePack(Success, ToReversedString(txn.Hash()))
 }
 
 func GetBlockHeight(param Params) map[string]interface{} {
@@ -497,23 +500,21 @@ func GetBlockHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	return ResponsePack(Success, BytesToHexString(hash.Bytes()))
+	return ResponsePack(Success, ToReversedString(hash))
 }
 
 func GetBlockTransactions(block *Block) interface{} {
 	trans := make([]string, len(block.Transactions))
 	for i := 0; i < len(block.Transactions); i++ {
-		h := block.Transactions[i].Hash()
-		trans[i] = BytesToHexString(h.Bytes())
+		trans[i] = ToReversedString(block.Transactions[i].Hash())
 	}
-	hash := block.Hash()
 	type BlockTransactions struct {
 		Hash         string
 		Height       uint32
 		Transactions []string
 	}
 	b := BlockTransactions{
-		Hash:         BytesToHexString(hash.Bytes()),
+		Hash:         ToReversedString(block.Hash()),
 		Height:       block.Header.Height,
 		Transactions: trans,
 	}
@@ -596,12 +597,12 @@ func GetAssetByHash(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	hex, err := HexStringToBytes(str)
+	hashBytes, err := FromReversedString(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 	var hash Uint256
-	err = hash.Deserialize(bytes.NewReader(hex))
+	err = hash.Deserialize(bytes.NewReader(hashBytes))
 	if err != nil {
 		return ResponsePack(InvalidAsset, "")
 	}
@@ -648,17 +649,24 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	assetId, ok := param.String("assetid")
+	assetIdStr, ok := param.String("assetid")
 	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+	assetIdBytes, err := FromReversedString(assetIdStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	assetId, err := Uint256FromBytes(assetIdBytes)
+	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
 	unspents, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
 	var balance Fixed64 = 0
 	for k, u := range unspents {
-		assid := BytesToHexString(k.Bytes())
 		for _, v := range u {
-			if assetId == assid {
+			if assetId.IsEqual(k) {
 				balance = balance + v.Value
 			}
 		}
@@ -690,16 +698,15 @@ func GetUnspends(param Params) map[string]interface{} {
 	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
 
 	for k, u := range unspends {
-		assetid := BytesToHexString(k.Bytes())
 		asset, err := chain.DefaultLedger.Store.GetAsset(k)
 		if err != nil {
 			return ResponsePack(InternalError, "")
 		}
 		var unspendsInfo []UTXOUnspentInfo
 		for _, v := range u {
-			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{BytesToHexString(v.TxId.Bytes()), v.Index, v.Value.String()})
+			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{ToReversedString(v.TxId), v.Index, v.Value.String()})
 		}
-		results = append(results, Result{assetid, asset.Name, unspendsInfo})
+		results = append(results, Result{ToReversedString(k), asset.Name, unspendsInfo})
 	}
 	return ResponsePack(Success, results)
 }
@@ -717,7 +724,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	bys, err := HexStringToBytes(assetId)
+	bys, err := FromReversedString(assetId)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -738,7 +745,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	}
 	var UTXOoutputs []UTXOUnspentInfo
 	for _, v := range infos {
-		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: BytesToHexString(v.TxId.Bytes()), Index: v.Index, Value: v.Value.String()})
+		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: ToReversedString(v.TxId), Index: v.Index, Value: v.Value.String()})
 	}
 	return ResponsePack(Success, UTXOoutputs)
 }
@@ -750,7 +757,7 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	bys, err := HexStringToBytes(str)
+	bys, err := FromReversedString(str)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
