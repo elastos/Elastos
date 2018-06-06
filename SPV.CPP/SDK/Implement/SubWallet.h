@@ -107,7 +107,8 @@ namespace Elastos {
 			virtual std::string sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														const std::string &payPassword);
 
-			void signTransaction(BRTransaction *transaction, int forkId, const std::string &payPassword);
+			void signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
+			                     const std::string &payPassword);
 
 			void recover(int limitGap);
 

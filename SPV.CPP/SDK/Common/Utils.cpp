@@ -171,6 +171,12 @@ namespace Elastos {
 			return BTCBase58::EncodeBase58(data, dataLen);
 		}
 
+		UInt168 Utils::AddressToUInt168(const std::string &address) {
+			UInt168 hash = UINT168_ZERO;
+			BRAddressHash168(&hash, address.c_str());
+			return hash;
+		}
+
 		bool Utils::UInt168IsValid(const UInt168 &u168) {
 			if (UInt168IsZero(&u168) == true) {
 				return false;

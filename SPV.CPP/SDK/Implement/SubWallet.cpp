@@ -215,12 +215,10 @@ namespace Elastos {
 
 		std::string SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 													   const std::string &payPassword) {
-			BRTransaction *rawTransaction = transaction->convertToRaw();
-			signTransaction(rawTransaction, _info.getForkId(), payPassword);
+			signTransaction(transaction, _info.getForkId(), payPassword);
 			_walletManager->getPeerManager()->publishTransaction(transaction);
 
-			Transaction txForHash(rawTransaction);
-			return std::string(Utils::UInt256ToString(txForHash.getHash()), 32);
+			return Utils::UInt256ToString(transaction->getHash());
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
@@ -281,13 +279,15 @@ namespace Elastos {
 			Key::deriveKeyAndChain(key, chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
 		}
 
-		void SubWallet::signTransaction(BRTransaction *transaction, int forkId, const std::string &payPassword) {
+		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
+		                                const std::string &payPassword) {
 			BRKey masterKey;
 			UInt256 chainCode;
 			deriveKeyAndChain(&masterKey, chainCode, payPassword);
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 
-			uint32_t j, internalIdx[transaction->inCount], externalIdx[transaction->inCount];
+			BRTransaction *tx = transaction->getRaw();
+			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
 			size_t i, internalCount = 0, externalCount = 0;
 			int r = 0;
 
@@ -296,14 +296,14 @@ namespace Elastos {
 
 			pthread_mutex_lock(&wallet->lock);
 
-			for (i = 0; i < transaction->inCount; i++) {
+			for (i = 0; i < tx->inCount; i++) {
 				for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
-					if (BRAddressEq(transaction->inputs[i].address, &wallet->internalChain[j - 1]))
+					if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1]))
 						internalIdx[internalCount++] = j - 1;
 				}
 
 				for (j = (uint32_t) array_count(wallet->externalChain); j > 0; j--) {
-					if (BRAddressEq(transaction->inputs[i].address, &wallet->externalChain[j - 1]))
+					if (BRAddressEq(tx->inputs[i].address, &wallet->externalChain[j - 1]))
 						externalIdx[externalCount++] = j - 1;
 				}
 			}
@@ -316,7 +316,16 @@ namespace Elastos {
 			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
 
-			BRTransactionSign(transaction, forkId, keys, internalCount + externalCount);
+			if (tx) {
+				WrapperList<Key, BRKey> keyList;
+				for (i = 0; i < internalCount + externalCount; ++i) {
+					Key key(new BRKey);
+					memcpy(key.getRaw(), &keys[i], sizeof(BRKey));
+					keyList.push_back(key);
+				}
+				r = transaction->sign(keyList, forkId);
+			}
+
 			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
 		}
 

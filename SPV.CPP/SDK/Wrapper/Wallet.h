@@ -8,6 +8,7 @@
 #include <string>
 #include <BRWallet.h>
 #include <boost/weak_ptr.hpp>
+#include <SDK/ELACoreExt/ELABRTransaction.h>
 
 #include "BRInt.h"
 
@@ -215,6 +216,9 @@ namespace Elastos {
 			uint64_t getOutputFee(const TransactionPtr &transaction) const;
 
 			const UInt256 &getSystemAssetId() const;
+
+			void ELATransactionAddOutput(ELABRTransaction *transaction, uint64_t amount, const uint8_t *script,
+			                             size_t scriptLen);
 
 		protected:
 			Wallet();

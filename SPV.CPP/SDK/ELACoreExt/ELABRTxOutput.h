@@ -17,6 +17,8 @@ namespace Elastos {
 			UInt168 programHash;
 		} ELABRTxOutput;
 
+#define ELABR_TX_OUTPUT_NONE ((ELABRTxOutput) {BR_TX_OUTPUT_NONE, UINT256_ZERO, 0, UINT168_ZERO})
+
 	}
 }
 

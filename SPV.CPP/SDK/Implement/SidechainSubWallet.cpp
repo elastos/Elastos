@@ -34,6 +34,14 @@ namespace Elastos {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount, fee, memo));
 
+			//todo modify to throw
+			assert(mainchainAccounts.is_array() == true);
+			assert(mainchainAccounts.size() > 0);
+			assert(mainchainAmounts.is_array() == true);
+			assert(mainchainAmounts.size() > 0);
+			assert(mainchainIndexs.is_array() == true);
+			assert(mainchainIndexs.size() > 0);
+
 			std::vector<std::string> accounts = mainchainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = mainchainAmounts.get<std::vector<uint64_t>>();
 			std::vector<uint64_t> indexs = mainchainIndexs.get<std::vector<uint64_t>>();
