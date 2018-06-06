@@ -1016,9 +1016,12 @@ TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
 		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, ""), std::invalid_argument);
 		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, "ilegal"), std::invalid_argument);
 	}
-	SECTION("Create with phrase password that is more than 128") {
+	SECTION("Create with pay password that is more than 128") {
 		REQUIRE_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 						  std::invalid_argument);
+	}
+	SECTION("Language should not be null") {
+		CHECK_THROWS_AS(walletFactory->CreateMasterWallet(phrasePassword, payPassword, ""), std::invalid_argument);
 	}
 	//mnemonic related test is in mnemonic special test suit
 }

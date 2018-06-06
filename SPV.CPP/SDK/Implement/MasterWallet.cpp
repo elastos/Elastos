@@ -27,6 +27,8 @@ namespace Elastos {
 				_initialized(false),
 				_dbRoot("Data") {
 
+			ParamChecker::checkNotEmpty(language);
+
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
 		}
@@ -36,6 +38,10 @@ namespace Elastos {
 								   const std::string &language) :
 				_initialized(true),
 				_dbRoot("Data") {
+
+			ParamChecker::checkPassword(phrasePassword);
+			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkNotEmpty(language);
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -64,8 +70,10 @@ namespace Elastos {
 
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
-			if (_createdWallets.find(chainID) != _createdWallets.end())
+			if (_createdWallets.find(chainID) != _createdWallets.end()) {
+				deriveKey(payPassword);
 				return _createdWallets[chainID];
+			}
 
 			CoinInfo info;
 			info.setWalletType(type);
@@ -362,6 +370,9 @@ namespace Elastos {
 				throw std::logic_error("Current master wallet is not initialized.");
 
 			ParamChecker::checkPassword(payPassword);
+
+			if (purpose == 44)
+				throw std::invalid_argument("Can not use reserved purpose.");
 
 			UInt512 seed = deriveSeed(payPassword);
 			BRKey *privkey = new BRKey;

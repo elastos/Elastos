@@ -37,9 +37,6 @@ namespace Elastos {
 		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &phrasePassword,
 														 const std::string &payPassword,
 														 const std::string &language) {
-			ParamChecker::checkPassword(phrasePassword);
-			ParamChecker::checkPassword(payPassword);
-
 			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword, language);
 			return masterWallet;
 		}

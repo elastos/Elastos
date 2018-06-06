@@ -48,7 +48,7 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 
 	SECTION("Class public methods should throw when master wallet is not initialized") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
-		REQUIRE(!masterWallet->Initialized());
+		REQUIRE_FALSE(masterWallet->Initialized());
 
 		CHECK_THROWS_AS(masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->RecoverSubWallet(Normal, chainId, 0, payPassword, false, 1), std::logic_error);
@@ -67,6 +67,8 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
 
+		REQUIRE(masterWallet->Initialized());
+
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false);
 		REQUIRE(subWallet != nullptr);
 
@@ -75,10 +77,16 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 
 		std::string message = "mymessage";
 		std::string signedMessage = masterWallet->Sign(message, payPassword);
+
 		REQUIRE_FALSE(signedMessage.empty());
 
 		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage);
 		REQUIRE(j["Result"].get<bool>());
+
+		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
+	}
+	SECTION("Language should not be null") {
+		CHECK_THROWS_AS(TestMasterWallet(""), std::invalid_argument);
 	}
 }
 
@@ -115,6 +123,27 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 
 		REQUIRE(masterWallet->GetPublicKey() != masterWallet1->GetPublicKey());
 	}
+	SECTION("Create with phrase password that is empty or less than 8") {
+		CHECK_THROWS_AS(TestMasterWallet("", payPassword, language), std::invalid_argument);
+		CHECK_THROWS_AS(TestMasterWallet("ilegal", payPassword, language), std::invalid_argument);
+	}
+	SECTION("Create with phrase password that is more than 128") {
+		REQUIRE_THROWS_AS(TestMasterWallet(
+				"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+				payPassword, language), std::invalid_argument);
+	}
+	SECTION("Create with pay password that is empty or less than 8") {
+		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "", language), std::invalid_argument);
+		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "ilegal", language), std::invalid_argument);
+	}
+	SECTION("Create with pay password that is more than 128") {
+		REQUIRE_THROWS_AS(TestMasterWallet(phrasePassword,
+										   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+										   language), std::invalid_argument);
+	}
+	SECTION("Language should not be null") {
+		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, payPassword, ""), std::invalid_argument);
+	}
 }
 
 TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
@@ -147,12 +176,6 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
 		REQUIRE(mainchainSubWallet != nullptr);
-
-		SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
-		REQUIRE_FALSE(sidechainSubWallet != nullptr);
-
-		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
-		REQUIRE_FALSE(idChainSubWallet != nullptr);
 	}
 	SECTION("Create mainchain sub wallet") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Sidechain, chainId, 0, payPassword, false);
@@ -160,26 +183,14 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
 		REQUIRE(normalSubWallet != nullptr);
 
-		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
-		REQUIRE_FALSE(mainchainSubWallet != nullptr);
-
 		SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
 		REQUIRE(sidechainSubWallet != nullptr);
-
-		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
-		REQUIRE_FALSE(idChainSubWallet != nullptr);
 	}
 	SECTION("Create idchain sub wallet") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Idchain, chainId, 0, payPassword, false);
 
 		SubWallet *normalSubWallet = dynamic_cast<SubWallet *>(subWallet);
 		REQUIRE(normalSubWallet != nullptr);
-
-		MainchainSubWallet *mainchainSubWallet = dynamic_cast<MainchainSubWallet *>(subWallet);
-		REQUIRE_FALSE(mainchainSubWallet != nullptr);
-
-		SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
-		REQUIRE_FALSE(sidechainSubWallet != nullptr);
 
 		IdChainSubWallet *idChainSubWallet = dynamic_cast<IdChainSubWallet *>(subWallet);
 		REQUIRE(idChainSubWallet != nullptr);
@@ -192,9 +203,9 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 		ISubWallet *subWallet1 = masterWallet->CreateSubWallet(Normal, chainId, 0, payPassword, false);
 		REQUIRE(subWallet == subWallet1);
 
-		//Return same sub wallet even if parameter of others are different
-		ISubWallet *subWallet2 = masterWallet->CreateSubWallet(Mainchain, chainId, 1, "other password", true);
-		REQUIRE(subWallet == subWallet2);
+		//Throw param exception when chain id is exist
+		REQUIRE_THROWS_AS(masterWallet->CreateSubWallet(Mainchain, chainId, 1, "other password", true),
+						  std::invalid_argument);
 
 		//Create another sub wallet
 		ISubWallet *subWallet3 = masterWallet->CreateSubWallet(Normal, "chain2", 1, payPassword, false);
@@ -366,15 +377,15 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	std::string key;
 	SECTION("Normal derive") {
 		masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword, id, key);
-		INFO(id);
-		INFO(key);
+		REQUIRE(id == "ifQS7H4CkXatj1j4SVaMjY9LB8UgB2ZVaE");
+		REQUIRE(key == "2139b1d83a49ae9042cbb4e27c3872aba680f72dfb7ca504e32ce8d2adc06def");
 	}
 	SECTION("Derive reserved purpose") {
 		try {
 			masterWallet->DeriveIdAndKeyForPurpose(44, 1, payPassword, id, key);
 		}
 		catch (const std::invalid_argument &e) {
-			REQUIRE(strcmp(e.what(), "") == 0);
+			REQUIRE(strcmp(e.what(), "Can not use reserved purpose.") == 0);
 		}
 		//todo add other reserved purpose test in future
 	}
