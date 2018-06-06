@@ -38,16 +38,18 @@ func (pool *TxPool) Init() {
 func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	//verify transaction with Concurrency
 	if errCode := CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
-		log.Info("Transaction verification failed", txn.Hash())
+		log.Info("[TxPool CheckTransactionSanity] failed", txn.Hash())
 		return errCode
 	}
 	if errCode := CheckTransactionContext(txn); errCode != Success {
-		log.Info("Transaction verification with ledger failed", txn.Hash())
+		log.Info("[TxPool CheckTransactionContext] failed", txn.Hash())
 		return errCode
 	}
+
 	//verify transaction by pool with lock
-	if ok := pool.verifyTransactionWithTxnPool(txn); !ok {
-		return ErrDoubleSpend
+	if errCode := pool.verifyTransactionWithTxnPool(txn); errCode != Success {
+		log.Info("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
+		return errCode
 	}
 
 	txn.Fee = GetTxFee(txn, DefaultLedger.Blockchain.AssetID)
@@ -104,20 +106,25 @@ func (pool *TxPool) GetTransaction(hash Uint256) *Transaction {
 }
 
 //verify transaction with txnpool
-func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) bool {
+func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 	// check if the transaction includes double spent UTXO inputs
 	if err := pool.verifyDoubleSpend(txn); err != nil {
 		log.Info(err)
-		return false
+		return ErrDoubleSpend
 	}
 
-	// check if the transaction includes duplicate sidechain tx in pool
-	if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
-		log.Info(err)
-		return false
+	if txn.IsWithdrawTx() {
+		// check if the withdraw transaction includes duplicate sidechain tx in pool
+		if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
+			log.Info(err)
+			return ErrSidechainTxHashDuplicate
+		}
+	} else if txn.IsSideminingTx() {
+		// check and replace the duplicate sidemining tx
+		pool.replaceDuplicateSideminingTx(txn)
 	}
 
-	return true
+	return Success
 }
 
 //remove from associated map
@@ -159,17 +166,34 @@ func (pool *TxPool) verifyDoubleSpend(txn *Transaction) error {
 
 //check and add to sidechain tx pool
 func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
-	if txn.IsWithdrawTx() {
-		witPayload := txn.Payload.(*PayloadWithdrawAsset)
-		for _, hash := range witPayload.SideChainTransactionHash {
-			_, ok := pool.sidechainTxList[hash]
-			if ok {
-				return errors.New("duplicate sidechain tx detected")
-			}
+	witPayload := txn.Payload.(*PayloadWithdrawAsset)
+	for _, hash := range witPayload.SideChainTransactionHash {
+		_, ok := pool.sidechainTxList[hash]
+		if ok {
+			return errors.New("duplicate sidechain tx detected")
 		}
 	}
 
 	return nil
+}
+
+// check and replace the duplicate sidemining tx
+func (pool *TxPool) replaceDuplicateSideminingTx(txn *Transaction) {
+	for _, v := range pool.txnList {
+		if v.TxType == SideMining {
+			oldPayload := v.Payload.Data(SideMiningPayloadVersion)
+			oldGenesisHashData := oldPayload[32:64]
+
+			newPayload := txn.Payload.Data(SideMiningPayloadVersion)
+			newGenesisHashData := newPayload[32:64]
+
+			if bytes.Equal(oldGenesisHashData, newGenesisHashData) {
+				txid := txn.Hash()
+				log.Info("replace sidemining transaction, txid=", txid.String())
+				pool.removeTransaction(v)
+			}
+		}
+	}
 }
 
 //clean txnpool utxo map

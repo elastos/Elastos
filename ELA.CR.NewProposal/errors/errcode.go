@@ -21,18 +21,20 @@ const (
 	ErrInvalidReferedTxn        ErrCode = 45017
 	ErrIneffectiveCoinbase      ErrCode = 45018
 	ErrUTXOLocked               ErrCode = 45019
-	SessionExpired              ErrCode = 41001
-	IllegalDataFormat           ErrCode = 41003
-	OauthTimeout                ErrCode = 41004
-	InvalidMethod               ErrCode = 42001
-	InvalidParams               ErrCode = 42002
-	InvalidToken                ErrCode = 42003
-	InvalidTransaction          ErrCode = 43001
-	InvalidAsset                ErrCode = 43002
-	UnknownTransaction          ErrCode = 44001
-	UnknownAsset                ErrCode = 44002
-	UnknownBlock                ErrCode = 44003
-	InternalError               ErrCode = 45002
+	ErrSideMiningConsensus      ErrCode = 45020
+
+	SessionExpired     ErrCode = 41001
+	IllegalDataFormat  ErrCode = 41003
+	OauthTimeout       ErrCode = 41004
+	InvalidMethod      ErrCode = 42001
+	InvalidParams      ErrCode = 42002
+	InvalidToken       ErrCode = 42003
+	InvalidTransaction ErrCode = 43001
+	InvalidAsset       ErrCode = 43002
+	UnknownTransaction ErrCode = 44001
+	UnknownAsset       ErrCode = 44002
+	UnknownBlock       ErrCode = 44003
+	InternalError      ErrCode = 45002
 )
 
 var ErrMap = map[ErrCode]string{

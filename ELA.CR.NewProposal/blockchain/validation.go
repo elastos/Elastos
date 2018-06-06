@@ -211,10 +211,10 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 		return errors.New("Invalid arbitrator count.")
 	}
 
-	for arbitrator := range arbitrators {
+	for _, arbitrator := range arbitrators {
 		found := false
-		for pk := range publicKeys {
-			if arbitrator == pk {
+		for _, pk := range publicKeys {
+			if bytes.Equal(arbitrator, pk) {
 				found = true
 				break
 			}

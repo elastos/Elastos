@@ -274,6 +274,10 @@ func (tx *Transaction) Hash() Uint256 {
 	return *tx.hash
 }
 
+func (tx *Transaction) IsSideminingTx() bool {
+	return tx.TxType == SideMining
+}
+
 func (tx *Transaction) IsWithdrawTx() bool {
 	return tx.TxType == WithdrawAsset
 }
