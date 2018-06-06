@@ -400,7 +400,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Height:            block.Header.Height,
 		Version:           block.Header.Version,
 		VersionHex:        BytesToHexString(versionBytes[:]),
-		MerkleRoot:        block.Header.MerkleRoot.String(),
+		MerkleRoot:        ToReversedString(block.Header.MerkleRoot),
 		Tx:                txs,
 		Time:              block.Header.Timestamp,
 		MedianTime:        block.Header.Timestamp,
