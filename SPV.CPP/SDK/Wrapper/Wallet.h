@@ -53,6 +53,10 @@ namespace Elastos {
 
 			virtual BRWallet *getRaw() const;
 
+			nlohmann::json GetBalanceInfo();
+
+			uint64_t GetBalanceWithAddress(const std::string &address);
+
 			// returns the first unused external address
 			std::string getReceiveAddress() const;
 

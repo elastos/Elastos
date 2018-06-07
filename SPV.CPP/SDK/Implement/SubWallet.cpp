@@ -64,41 +64,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetBalanceInfo() {
-			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-			assert(wallet != nullptr);
-
-			size_t utxosCount = BRWalletUTXOs(wallet, nullptr, 0);
-			BRUTXO utxos[utxosCount];
-			BRWalletUTXOs(wallet, utxos, utxosCount);
-
-			nlohmann::json j;
-
-			ELABRTransaction *t;
-			std::map<std::string, uint64_t> addressesBalanceMap;
-			pthread_mutex_lock(&wallet->lock);
-			for (size_t i = 0; i < utxosCount; ++i) {
-				void *tempPtr = BRSetGet(wallet->allTx, &utxos[utxosCount].hash);
-				if (tempPtr == nullptr) continue;
-				t = static_cast<ELABRTransaction *>(tempPtr);
-
-				if (addressesBalanceMap.find(t->outputs[utxos->n].raw.address) != addressesBalanceMap.end()) {
-					addressesBalanceMap[t->outputs[utxos->n].raw.address] += t->outputs[utxos->n].raw.amount;
-				} else {
-					addressesBalanceMap[t->outputs[utxos->n].raw.address] = t->outputs[utxos->n].raw.amount;
-				}
-			}
-			pthread_mutex_unlock(&wallet->lock);
-
-			std::vector<nlohmann::json> balances;
-			std::for_each(addressesBalanceMap.begin(), addressesBalanceMap.end(),
-						  [&addressesBalanceMap, &balances](const std::map<std::string, uint64_t>::value_type &item) {
-							  nlohmann::json balanceKeyValue;
-							  balanceKeyValue[item.first] = item.second;
-							  balances.push_back(balanceKeyValue);
-						  });
-
-			j["Balances"] = balances;
-			return j;
+			return  _walletManager->getWallet()->GetBalanceInfo();
 		}
 
 		uint64_t SubWallet::GetBalance() {
@@ -120,27 +86,7 @@ namespace Elastos {
 		}
 
 		uint64_t SubWallet::GetBalanceWithAddress(const std::string &address) {
-			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-			assert(wallet != nullptr);
-
-			size_t utxosCount = BRWalletUTXOs(wallet, nullptr, 0);
-			BRUTXO utxos[utxosCount];
-			BRWalletUTXOs(wallet, utxos, utxosCount);
-
-			ELABRTransaction *t;
-			uint64_t balance = 0;
-			pthread_mutex_lock(&wallet->lock);
-			for (size_t i = 0; i < utxosCount; ++i) {
-				void *tempPtr = BRSetGet(wallet->allTx, &utxos[utxosCount].hash);
-				if (tempPtr == nullptr) continue;
-				t = static_cast<ELABRTransaction *>(tempPtr);
-				if (BRAddressEq(t->outputs[utxos->n].raw.address, address.c_str())) {
-					balance += t->outputs[utxos->n].raw.amount;
-				}
-			}
-			pthread_mutex_unlock(&wallet->lock);
-
-			return balance;
+			return _walletManager->getWallet()->GetBalanceWithAddress(address);
 		}
 
 		void SubWallet::AddCallback(ISubWalletCallback *subCallback) {

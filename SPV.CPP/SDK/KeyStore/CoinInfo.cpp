@@ -10,10 +10,12 @@ namespace Elastos {
 		CoinInfo::CoinInfo() :
 				_chainId(""),
 				_earliestPeerTime(0),
+				_forkId(0),
 				_index(0),
 				_usedMaxAddressIndex(0),
 				_singleAddress(false),
-				_forkId(0) {
+				_feePerKb(0),
+				_walletType(Normal) {
 
 		}
 

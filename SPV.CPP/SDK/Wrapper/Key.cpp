@@ -272,8 +272,7 @@ namespace Elastos {
 		}
 
 		std::string Key::encodeHex(const CMBlock &in) {
-			char *dataHex = Utils::encodeHexCreate(nullptr, in, in.GetSize());
-			return dataHex;
+			return Utils::encodeHexCreate(nullptr, in, in.GetSize());
 		}
 
 		CMBlock Key::decodeHex(const std::string &s) {

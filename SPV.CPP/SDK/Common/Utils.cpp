@@ -115,12 +115,12 @@ namespace Elastos {
 			return 2 * byteArrayLen + 1;
 		}
 
-		char *Utils::encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen) {
+		std::string Utils::encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen) {
 			size_t length = encodeHexLength(sourceLen);
 			if (nullptr != targetLen) *targetLen = length;
-			char *target = (char *) malloc(length);
+			char target[length];
 			encodeHex(target, length, source, sourceLen);
-			return target;
+			return std::string(target, length - 1);
 		}
 
 		UInt128 Utils::generateRandomSeed() {

@@ -29,7 +29,6 @@ namespace Elastos {
 
 		void Mnemonic::setLanguage(const std::string &language) {
 			_words.clear();
-			_words.reserve(BIP39_WORDLIST_COUNT);
 
 			if (language == "english") {
 				for (std::string str : BRBIP39WordsEn) {

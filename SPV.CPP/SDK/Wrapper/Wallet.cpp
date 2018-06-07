@@ -62,6 +62,63 @@ namespace Elastos {
 			return _wallet;
 		}
 
+		nlohmann::json Wallet::GetBalanceInfo() {
+
+			size_t utxosCount = BRWalletUTXOs(_wallet, nullptr, 0);
+			BRUTXO utxos[utxosCount];
+			BRWalletUTXOs(_wallet, utxos, utxosCount);
+
+			nlohmann::json j;
+
+			ELABRTransaction *t;
+			std::map<std::string, uint64_t> addressesBalanceMap;
+			pthread_mutex_lock(&_wallet->lock);
+			for (size_t i = 0; i < utxosCount; ++i) {
+				void *tempPtr = BRSetGet(_wallet->allTx, &utxos[utxosCount].hash);
+				if (tempPtr == nullptr) continue;
+				t = static_cast<ELABRTransaction *>(tempPtr);
+
+				if (addressesBalanceMap.find(t->outputs[utxos->n].raw.address) != addressesBalanceMap.end()) {
+					addressesBalanceMap[t->outputs[utxos->n].raw.address] += t->outputs[utxos->n].raw.amount;
+				} else {
+					addressesBalanceMap[t->outputs[utxos->n].raw.address] = t->outputs[utxos->n].raw.amount;
+				}
+			}
+			pthread_mutex_unlock(&_wallet->lock);
+
+			std::vector<nlohmann::json> balances;
+			std::for_each(addressesBalanceMap.begin(), addressesBalanceMap.end(),
+						  [&addressesBalanceMap, &balances](const std::map<std::string, uint64_t>::value_type &item) {
+							  nlohmann::json balanceKeyValue;
+							  balanceKeyValue[item.first] = item.second;
+							  balances.push_back(balanceKeyValue);
+						  });
+
+			j["Balances"] = balances;
+			return j;
+		}
+
+		uint64_t Wallet::GetBalanceWithAddress(const std::string &address) {
+			size_t utxosCount = BRWalletUTXOs(_wallet, nullptr, 0);
+			BRUTXO utxos[utxosCount];
+			BRWalletUTXOs(_wallet, utxos, utxosCount);
+
+			ELABRTransaction *t;
+			uint64_t balance = 0;
+			pthread_mutex_lock(&_wallet->lock);
+			for (size_t i = 0; i < utxosCount; ++i) {
+				void *tempPtr = BRSetGet(_wallet->allTx, &utxos[utxosCount].hash);
+				if (tempPtr == nullptr) continue;
+				t = static_cast<ELABRTransaction *>(tempPtr);
+				if (BRAddressEq(t->outputs[utxos->n].raw.address, address.c_str())) {
+					balance += t->outputs[utxos->n].raw.amount;
+				}
+			}
+			pthread_mutex_unlock(&_wallet->lock);
+
+			return balance;
+		}
+
 		SharedWrapperList<Transaction, BRTransaction *> Wallet::getTransactions() const {
 
 			size_t transactionCount = BRWalletTransactions(_wallet, NULL, 0);

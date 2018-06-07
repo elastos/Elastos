@@ -949,7 +949,9 @@ TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
 		delete masterWallet;
 	}
 	SECTION("Create with phrase password can be empty") {
-		CHECK_NOTHROW(walletFactory->CreateMasterWallet("", payPassword));
+		IMasterWallet *masterWallet = walletFactory->CreateMasterWallet("", payPassword);
+		REQUIRE(masterWallet != nullptr);
+		delete masterWallet;
 	}
 	SECTION("Create with phrase password that is empty or less than 8") {
 		CHECK_THROWS_AS(walletFactory->CreateMasterWallet("ilegal", payPassword), std::invalid_argument);
@@ -1019,7 +1021,9 @@ TEST_CASE("Wallet ImportWalletWithMnemonic method", "[ImportWalletWithMnemonic]"
 		REQUIRE_NOTHROW(walletFactory->DestroyWallet(masterWallet));
 	}
 	SECTION("Import with phrase password can be empty") {
-		REQUIRE_NOTHROW(walletFactory->ImportWalletWithMnemonic(mnemonic, "", payPassword));
+		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, "", payPassword);
+		REQUIRE(masterWallet != nullptr);
+		REQUIRE_NOTHROW(walletFactory->DestroyWallet(masterWallet));
 	}
 	SECTION("Import with phrase password that is less than 8") {
 		REQUIRE_THROWS_AS(walletFactory->ImportWalletWithMnemonic(mnemonic, "ilegal", payPassword),

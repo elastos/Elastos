@@ -196,7 +196,7 @@ TEST_CASE("Key test", "[Key]") {
 		seedByte.SetMemFixed(entropy.u8, sizeof(entropy));
 		CMBlock privKey = Key::getAuthPrivKeyForAPI(seedByte);
 
-		char *data = new char[privKey.GetSize()];
+		char data[privKey.GetSize()];
 		memcpy(data, privKey, privKey.GetSize());
 		std::string ret(data, privKey.GetSize());
 
