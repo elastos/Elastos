@@ -109,14 +109,14 @@ func (pool *TxPool) GetTransaction(hash Uint256) *Transaction {
 func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 	// check if the transaction includes double spent UTXO inputs
 	if err := pool.verifyDoubleSpend(txn); err != nil {
-		log.Info(err)
+		log.Warn(err)
 		return ErrDoubleSpend
 	}
 
 	if txn.IsWithdrawTx() {
 		// check if the withdraw transaction includes duplicate sidechain tx in pool
 		if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
-			log.Info(err)
+			log.Warn(err)
 			return ErrSidechainTxHashDuplicate
 		}
 	} else if txn.IsSideminingTx() {
@@ -193,7 +193,7 @@ func (pool *TxPool) replaceDuplicateSideminingTx(txn *Transaction) {
 
 			if bytes.Equal(oldGenesisHashData, newGenesisHashData) {
 				txid := txn.Hash()
-				log.Info("replace sidemining transaction, txid=", txid.String())
+				log.Warn("replace sidemining transaction, txid=", txid.String())
 				pool.removeTransaction(v)
 			}
 		}
