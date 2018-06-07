@@ -7,6 +7,8 @@
 
 #include <string>
 #include <assert.h>
+#include <random>
+#include<functional>
 
 #include "BRInt.h"
 
@@ -31,6 +33,14 @@ namespace Elastos {
 			static UInt128 UInt128FromString(const std::string &str);
 
 			static UInt128 generateRandomSeed();
+
+			static inline uint8_t getRandomByte() {
+				std::random_device rd;
+				std::mt19937_64 gen(rd());
+				std::uniform_int_distribution<> dis(0, 255);
+				auto dice = std::bind(dis, gen);
+				return dice();
+			}
 
 			static CMBlock
 			encrypt(const CMBlock &data, const std::string &password);

@@ -4,9 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <openssl/evp.h>
-#include <random>
-#include <ctime>
-#include<functional>
+#include "Utils.h"
 
 #include "AES_256_CCM.h"
 
@@ -159,15 +157,12 @@ namespace Elastos {
 			static unsigned char _salt[] = {0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56};
 			static unsigned char _iv[] = {0x9F, 0x62, 0x54, 0x4C, 0x9D, 0x3F, 0xCA, 0xB2, 0xDD, 0x08, 0x33, 0xDF, 0x21,
 										  0xCA, 0x80, 0xCF};
-			std::default_random_engine generator(time(NULL));
-			std::uniform_int_distribution<int> dis(0, 255);
-			auto dice = std::bind(dis, generator);
 			for (size_t i = 0; i < 16; i++) {
 
 				if (i < 8) {
-					_salt[i] = dice();
+					_salt[i] = Utils::getRandomByte();
 				}
-				_iv[i] = dice();
+				_iv[i] = Utils::getRandomByte();
 			}
 			salt.SetMemFixed(_salt, sizeof(_salt));
 			iv.SetMemFixed(_iv, sizeof(_iv));

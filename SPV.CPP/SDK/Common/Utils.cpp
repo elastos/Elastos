@@ -4,7 +4,6 @@
 
 #include <sstream>
 #include <stdlib.h>
-#include <random>
 #include <Core/BRCrypto.h>
 #include <algorithm>
 #include <iterator>
@@ -126,11 +125,8 @@ namespace Elastos {
 
 		UInt128 Utils::generateRandomSeed() {
 			UInt128 result;
-			std::random_device rd;   // non-deterministic generator
-			std::mt19937 gen(rd());  // to seed mersenne twister.
-			std::uniform_int_distribution<> dist(0, 255); // distribute results between 0 and 255 inclusive.
 			for (size_t i = 0; i < sizeof(result); ++i) {
-				result.u8[i] = dist(gen);
+				result.u8[i] = getRandomByte();
 			}
 			return result;
 		}

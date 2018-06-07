@@ -4,9 +4,7 @@
 
 #include <fstream>
 #include <iconv.h>
-#include <random>
-#include <ctime>
-#include <functional>
+#include "Utils.h"
 
 #include "BigIntFormat.h"
 #include "BRCrypto.h"
@@ -47,11 +45,8 @@ namespace Elastos {
 		CMemBlock<uint8_t> Wallet_Tool::GetRandom(size_t bits) {
 			size_t bytes = 0 == bits % 8 ? bits / 8 : bits / 8 + 1;
 			CMemBlock<uint8_t> out(bytes);
-			std::default_random_engine generator(time(NULL));
-			std::uniform_int_distribution<int> dis(0, 255);
-			auto dice = std::bind(dis, generator);
 			for (size_t i = 0; i < bytes; i++) {
-				out[i] = dice();
+				out[i] = Utils::getRandomByte();
 			}
 			return out;
 		}
