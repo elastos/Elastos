@@ -30,10 +30,10 @@ func GetPayload(txType TransactionType) (Payload, error) {
 		p = new(PayloadRecord)
 	case SideMining:
 		p = new(PayloadSideMining)
-	case IssueToken:
-		p = new(PayloadIssueToken)
-	case WithdrawAsset:
-		p = new(PayloadWithdrawAsset)
+	case RechargeToSideChain:
+		p = new(PayloadRechargeToSideChain)
+	case WithdrawFromSideChain:
+		p = new(PayloadWithdrawFromSideChain)
 	case TransferCrossChainAsset:
 		p = new(PayloadTransferCrossChainAsset)
 	default:

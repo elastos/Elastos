@@ -8,8 +8,8 @@ import (
 func TestCheckDuplicateSidechainTx(t *testing.T) {
 	// 1. Generate the ill withdraw transaction which have duplicate sidechain tx
 	txn := new(core.Transaction)
-	txn.TxType = core.WithdrawAsset
-	txn.Payload = &core.PayloadWithdrawAsset{
+	txn.TxType = core.WithdrawFromSideChain
+	txn.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHash: []string{

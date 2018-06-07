@@ -306,8 +306,8 @@ func (c *ChainStore) PersistTransactions(b *Block) error {
 				return err
 			}
 		}
-		if txn.TxType == WithdrawAsset {
-			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		if txn.TxType == WithdrawFromSideChain {
+			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHash {
 				c.PersistSidechainTx(hash)
 			}
@@ -326,8 +326,8 @@ func (c *ChainStore) RollbackTransactions(b *Block) error {
 				return err
 			}
 		}
-		if txn.TxType == WithdrawAsset {
-			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		if txn.TxType == WithdrawFromSideChain {
+			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHash {
 				if err := c.RollbackSidechainTx(hash); err != nil {
 					return err
