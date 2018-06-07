@@ -9,7 +9,7 @@
 #include <ctime>
 #include <functional>
 
-#include "BigInt.h"
+#include "BigIntFormat.h"
 #include "BRCrypto.h"
 #include "BRBIP39Mnemonic.h"
 #include "BRBIP39WordsEn.h"

@@ -17,7 +17,7 @@
 #include "Log.h"
 #include "Config.h"
 #include "ParamChecker.h"
-#include "BigInt.h"
+#include "BigIntFormat.h"
 
 #define MNEMONIC_FILE_PREFIX "mnemonic_"
 #define MNEMONIC_FILE_EXTENSION ".txt"

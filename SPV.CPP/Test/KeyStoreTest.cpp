@@ -34,7 +34,9 @@ TEST_CASE("open", "[KeyStore]") {
 	SECTION("open existion") {
 		KeyStore ks;
 		const boost::filesystem::path path= "webwallet.json";
-		std::string password = "11111111";
-		REQUIRE(true == ks.open(path, password));
+		if (boost::filesystem::exists(path)) {
+			std::string password = "11111111";
+			REQUIRE(true == ks.open(path, password));
+		}
 	}
 }

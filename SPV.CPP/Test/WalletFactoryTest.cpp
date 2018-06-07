@@ -623,7 +623,7 @@ TEST_CASE("WalletFactory create destroy wallet", "[WalletFactory]") {
 }
 
 
-TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
+TEST_CASE("Wallet CreateMasterWallet method 0", "[CreateMasterWallet]") {
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -654,7 +654,7 @@ TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
 	//mnemonic related test is in mnemonic special test suit
 }
 
-TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
+TEST_CASE("Mnemonic i18n test 0", "[WalletFactory]") {
 
 
 }
@@ -971,7 +971,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 	}
 }
 
-TEST_CASE("Wallet CreateMasterWallet method", "[CreateMasterWallet]") {
+TEST_CASE("Wallet CreateMasterWallet method 1", "[CreateMasterWallet]") {
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -1008,11 +1008,13 @@ TEST_CASE("Wallet factory key store import", "[WalletFactory]") {
 	std::string backupPassword = "11111111";
 	std::string keystorePath = "webwallet.json";
 
-	boost::scoped_ptr<IMasterWallet> masterWallet(
-		walletFactory->ImportWalletWithKeystore(keystorePath, backupPassword, payPassword));
+	if (boost::filesystem::exists(keystorePath)) {
+		boost::scoped_ptr<IMasterWallet> masterWallet(
+			walletFactory->ImportWalletWithKeystore(keystorePath, backupPassword, payPassword));
+	}
 }
 
-TEST_CASE("Mnemonic i18n test", "[WalletFactory]") {
+TEST_CASE("Mnemonic i18n test 1", "[WalletFactory]") {
 
 
 }
