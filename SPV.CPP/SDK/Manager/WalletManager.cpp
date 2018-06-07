@@ -169,6 +169,10 @@ namespace Elastos {
 		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
 			MerkleBlockEntity blockEntity;
 
+			if (replace) {
+				_databaseManager.deleteAllBlocks(ISO);
+			}
+
 			for (size_t i = 0; i < blocks.size(); ++i) {
 				ByteStream ostream;
 				blocks[i]->Serialize(ostream);
