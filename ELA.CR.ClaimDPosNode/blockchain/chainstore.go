@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"container/list"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -343,7 +342,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 		return err
 	}
 
-	log.Debug(fmt.Sprintf("asset key: %x", assetKey))
+	log.Debugf("asset key: %x", assetKey)
 
 	// PUT VALUE
 	c.BatchPut(assetKey.Bytes(), w.Bytes())
@@ -439,7 +438,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	log.Debug(fmt.Sprintf("transaction header + hash: %x", key))
+	log.Debugf("transaction header + hash: %x", key)
 
 	// generate value
 	value := new(bytes.Buffer)
@@ -449,7 +448,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := tx.Serialize(value); err != nil {
 		return err
 	}
-	log.Debug(fmt.Sprintf("transaction tx data: %x", value))
+	log.Debugf("transaction tx data: %x", value)
 
 	// put value
 	c.BatchPut(key.Bytes(), value.Bytes())
