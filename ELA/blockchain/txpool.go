@@ -38,17 +38,17 @@ func (pool *TxPool) Init() {
 func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	//verify transaction with Concurrency
 	if errCode := CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
-		log.Info("[TxPool CheckTransactionSanity] failed", txn.Hash())
+		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash())
 		return errCode
 	}
 	if errCode := CheckTransactionContext(txn); errCode != Success {
-		log.Info("[TxPool CheckTransactionContext] failed", txn.Hash())
+		log.Warn("[TxPool CheckTransactionContext] failed", txn.Hash())
 		return errCode
 	}
 
 	//verify transaction by pool with lock
 	if errCode := pool.verifyTransactionWithTxnPool(txn); errCode != Success {
-		log.Info("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
+		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
 		return errCode
 	}
 
@@ -107,21 +107,21 @@ func (pool *TxPool) GetTransaction(hash Uint256) *Transaction {
 
 //verify transaction with txnpool
 func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
-	// check if the transaction includes double spent UTXO inputs
-	if err := pool.verifyDoubleSpend(txn); err != nil {
-		log.Warn(err)
-		return ErrDoubleSpend
-	}
-
-	if txn.IsWithdrawTx() {
+	if txn.IsSideminingTx() {
+		// check and replace the duplicate sidemining tx
+		pool.replaceDuplicateSideminingTx(txn)
+	} else if txn.IsWithdrawTx() {
 		// check if the withdraw transaction includes duplicate sidechain tx in pool
 		if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
 			log.Warn(err)
 			return ErrSidechainTxHashDuplicate
 		}
-	} else if txn.IsSideminingTx() {
-		// check and replace the duplicate sidemining tx
-		pool.replaceDuplicateSideminingTx(txn)
+	}
+
+	// check if the transaction includes double spent UTXO inputs
+	if err := pool.verifyDoubleSpend(txn); err != nil {
+		log.Warn(err)
+		return ErrDoubleSpend
 	}
 
 	return Success
