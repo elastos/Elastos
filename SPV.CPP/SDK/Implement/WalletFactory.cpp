@@ -43,8 +43,8 @@ namespace Elastos {
 		}
 
 		void WalletFactory::DestroyWallet(IMasterWallet *masterWallet) {
-			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
-			delete masterWalletInner;
+			if (masterWallet != nullptr)
+				delete masterWallet;
 		}
 
 		IMasterWallet *
@@ -69,7 +69,7 @@ namespace Elastos {
 		WalletFactory::ImportWalletWithMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
 												const std::string &payPassword, const std::string &language,
 												const std::string &rootPath) {
-			ParamChecker::checkPassword(phrasePassword);
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
 
 			return WalletFactoryInner::importWalletInternal(language,
@@ -99,6 +99,7 @@ namespace Elastos {
 		std::string
 		WalletFactory::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
 
+			ParamChecker::checkNullPointer(masterWallet);
 			ParamChecker::checkPassword(payPassword);
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
@@ -107,10 +108,10 @@ namespace Elastos {
 			}
 
 			std::string mnemonic;
-			if (wallet->exportMnemonic(payPassword, mnemonic)) {
-				return mnemonic;
+			if (!wallet->exportMnemonic(payPassword, mnemonic)) {
+				throw std::logic_error("Password is wrong.");
 			}
-			return "";
+			return mnemonic;
 		}
 	}
 }

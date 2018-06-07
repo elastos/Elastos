@@ -38,6 +38,7 @@ TEST_CASE( "BackgroundExecutor simple test", "[Normal]" ) {
 			finished = true;
 		}));
 
+		sleep(1); //todo should not add this line
 		while (!finished);
 
 		for (int i = 0; i < array.size(); ++i) {

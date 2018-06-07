@@ -48,6 +48,7 @@ namespace Elastos {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkNotEmpty(language);
+			ParamChecker::checkNotEmpty(rootPath);
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
@@ -356,6 +357,10 @@ namespace Elastos {
 			nlohmann::json jsonData;
 			jsonData["Result"] = r;
 			return jsonData;
+		}
+
+		bool MasterWallet::IsIdValid(const std::string &id) {
+			return Key::isValidIdAddress(id);
 		}
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {

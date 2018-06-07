@@ -10,6 +10,15 @@
 namespace Elastos {
 	namespace SDK {
 
+		void ParamChecker::checkNullPointer(void *pointer, bool isParam) {
+			if (pointer == nullptr) {
+				if (isParam)
+					throw std::invalid_argument("Pointer should not be null.");
+				else
+					throw std::logic_error("Pointer should not be null.");
+			}
+		}
+
 		void ParamChecker::checkPassword(const std::string &password, bool isParam) {
 			if (password.size() < MIN_PASSWORD_LENGTH || password.size() > MAX_PASSWORD_LENGTH) {
 				if (isParam)

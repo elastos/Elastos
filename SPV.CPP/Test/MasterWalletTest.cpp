@@ -131,8 +131,8 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 	}
 	SECTION("Create with phrase password that is more than 128") {
 		REQUIRE_THROWS_AS(TestMasterWallet(
-				"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-				payPassword, language), std::invalid_argument);
+								  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+										  payPassword, language), std::invalid_argument);
 	}
 	SECTION("Create with pay password that is empty or less than 8") {
 		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "", language), std::invalid_argument);
@@ -411,4 +411,8 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	SECTION("Derive by wrong password") {
 		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "wrongPassword", id, key), std::logic_error);
 	}
+}
+
+TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
+	//todo complete me
 }

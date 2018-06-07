@@ -417,7 +417,7 @@ namespace Elastos {
 			}
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutputPtr output = outputs[i];
-				if (!Utils::UInt168IsValid(output->getProgramHash())) {
+				if (!Key::isValidAddress(output->getProgramHash())) {
 					return false;
 				}
 			}

@@ -62,6 +62,8 @@ namespace Elastos {
 					std::string &id,
 					std::string &key);
 
+			virtual bool IsIdValid(const std::string &id);
+
 			bool Initialized() const;
 
 		protected:

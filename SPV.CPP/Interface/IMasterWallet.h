@@ -56,6 +56,8 @@ namespace Elastos {
 					const std::string &payPassword,
 					std::string &id,
 					std::string &key) = 0;
+
+			virtual bool IsIdValid(const std::string &id) = 0;
 		};
 
 	}

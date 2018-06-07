@@ -15,6 +15,8 @@ namespace Elastos {
 
 		class ParamChecker {
 		public:
+			static void checkNullPointer(void *pointer, bool isParam = true);
+
 			static void checkPassword(const std::string &password, bool isParam = true);
 
 			static void checkPasswordWithNullLegal(const std::string &password, bool isParam = true);

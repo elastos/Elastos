@@ -199,23 +199,10 @@ namespace Elastos {
 			return hash;
 		}
 
-		bool Utils::UInt168IsValid(const UInt168 &u168) {
-			if (UInt168IsZero(&u168) == true) {
-				return false;
-			}
-			int prefix = u168.u8[0];
-			if (prefix != ELA_STAND_ADDRESS && prefix != ELA_MULTISIG_ADDRESS && prefix != ELA_CROSSCHAIN_ADDRESS &&
-				prefix != ELA_IDCHAIN_ADDRESS) {
-				return false;
-			}
-			return true;
-		}
-
 		const UInt256 Utils::getSystemAssetId() {
 			Transaction elaCoin;
 			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
 			return elaCoin.getHash();
 		}
-
 	}
 }
