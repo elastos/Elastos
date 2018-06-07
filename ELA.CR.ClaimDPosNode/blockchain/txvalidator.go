@@ -63,7 +63,7 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 func CheckTransactionContext(txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
-		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
+		log.Warn("[CheckTransactionContext] duplicate transaction check faild.")
 		return ErrTxHashDuplicate
 	}
 
@@ -333,7 +333,7 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 		existingHashs := make(map[string]struct{})
 		for _, hash := range witPayload.SideChainTransactionHash {
 			if _, exist := existingHashs[hash]; exist {
-				return errors.New("there are duplicate sidechain tx in a transaction")
+				return errors.New("Duplicate sidechain tx detected in a transaction")
 			}
 			existingHashs[hash] = struct{}{}
 		}
@@ -346,19 +346,14 @@ func CheckSideMiningConsensus(txn *Transaction) error {
 	if err != nil {
 		return err
 	}
+	height := DefaultLedger.Store.GetHeight()
+	index := height % uint32(len(arbitrators))
+	arbitrator := arbitrators[index]
 
 	for _, program := range txn.Programs {
 		publicKey := program.Code[1 : len(program.Code)-1]
-		found := false
-		for _, arbitratorPk := range arbitrators {
-			if bytes.Equal(arbitratorPk, publicKey) {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			return errors.New("Invalid mining arbiter")
+		if !bytes.Equal(arbitrator, publicKey) {
+			return errors.New("Arbitrator is not matched")
 		}
 	}
 
