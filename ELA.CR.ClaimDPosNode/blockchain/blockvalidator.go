@@ -23,10 +23,10 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	header := block.Header
 	hash := header.Hash()
 	if !header.AuxPow.Check(&hash, AuxPowChainID) {
-		return errors.New("[PowCheckBlockSanity] block check proof is failed")
+		return errors.New("[PowCheckBlockSanity] block check aux pow failed")
 	}
 	if CheckProofOfWork(&header, powLimit) != nil {
-		return errors.New("[PowCheckBlockSanity] block check proof is failed.")
+		return errors.New("[PowCheckBlockSanity] block check proof of work failed")
 	}
 
 	// A block timestamp must not have a greater precision than one second.

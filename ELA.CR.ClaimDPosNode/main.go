@@ -84,14 +84,12 @@ func main() {
 	log.Info("1. BlockChain init")
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
-		log.Fatal("open LedgerStore err:", err)
-		os.Exit(1)
+		goto ERROR
 	}
 	defer chainStore.Close()
 
 	err = blockchain.Init(chainStore)
 	if err != nil {
-		log.Fatal(err, "BlockChain generate failed")
 		goto ERROR
 	}
 
@@ -113,5 +111,6 @@ func main() {
 	}
 	select {}
 ERROR:
-	os.Exit(1)
+	log.Error(err)
+	os.Exit(-1)
 }

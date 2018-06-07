@@ -3,11 +3,16 @@ package blockchain
 import (
 	"bytes"
 	"encoding/hex"
-	"math/big"
 	"fmt"
+	"math/big"
+	"os"
 	"testing"
 
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -30,7 +35,12 @@ const (
 )
 
 func TestCheckBlockSanity(t *testing.T) {
-	FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	log.Init(log.Path, os.Stdout)
+	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
+	if !assert.NoError(t, err) {
+		return
+	}
+	FoundationAddress = *foundation
 	chainStore, err := NewChainStore()
 	if err != nil {
 		t.Error(err.Error())
@@ -57,19 +67,12 @@ func TestCheckBlockSanity(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	var errMsg string
 	// change of time stamp, this will change the block hash
 	// and the proof check would fail
 	block.Timestamp = uint32(timeSource.AdjustedTime().Unix())
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
-	if err == nil {
-		t.Error("[Error] block passed check with invalid hash")
-	}
-	errMsg = "[PowCheckBlockSanity] block check proof is failed"
-	if err.Error() != errMsg {
-		t.Errorf("Wrong error, expect [%s] got [%s]", errMsg, err.Error())
-	}
-	t.Logf("[Passed] invalid block hash, %s", err.Error())
+	assert.Error(t, err, "[Error] block passed check with invalid hash")
+	assert.EqualError(t, err, "[PowCheckBlockSanity] block check proof is failed")
 
 	block.Nonce = 0
 	err = PowCheckBlockSanity(&block, powLimit, timeSource)
