@@ -71,7 +71,7 @@ func CheckTransactionContext(txn *ela.Transaction) ErrCode {
 		return ErrTransactionSignature
 	}
 
-	if txn.IsIssueTokenTx() {
+	if txn.IsRechargeToSideChainTx() {
 		return Success
 	}
 
@@ -134,7 +134,7 @@ func CheckTransactionInput(txn *ela.Transaction) error {
 		return nil
 	}
 
-	if txn.IsIssueTokenTx() {
+	if txn.IsRechargeToSideChainTx() {
 		return nil
 	}
 
@@ -180,7 +180,7 @@ func CheckTransactionOutput(txn *ela.Transaction) error {
 		return nil
 	}
 
-	if txn.IsIssueTokenTx() {
+	if txn.IsRechargeToSideChainTx() {
 		return nil
 	}
 
@@ -314,8 +314,8 @@ func CheckTransactionPayload(txn *ela.Transaction) error {
 	case *ela.PayloadRecord:
 	case *ela.PayloadCoinBase:
 	case *ela.PayloadSideMining:
-	case *ela.PayloadWithdrawAsset:
-	case *ela.PayloadIssueToken:
+	case *ela.PayloadWithdrawFromSideChain:
+	case *ela.PayloadRechargeToSideChain:
 	case *ela.PayloadTransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")

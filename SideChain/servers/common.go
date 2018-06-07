@@ -107,12 +107,12 @@ type SideMiningInfo struct {
 	SideBlockHash string
 }
 
-type IssueTokenInfo struct {
+type RechargeToSideChainInfo struct {
 	Proof                string
 	MainChainTransaction string
 }
 
-type WithdrawAssetInfo struct {
+type WithdrawFromSideChainInfo struct {
 	BlockHeight uint32
 }
 
