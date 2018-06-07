@@ -31,7 +31,7 @@ func Color(code, msg string) string {
 }
 
 const (
-	debugLog    = iota
+	debugLog = iota
 	infoLog
 	warnLog
 	errorLog

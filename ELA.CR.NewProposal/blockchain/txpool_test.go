@@ -5,22 +5,22 @@ import (
 	"os"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/stretchr/testify/assert"
 )
 
 var txPool TxPool
 
 func TestTxPoolInit(t *testing.T) {
 	log.Init(log.Path, os.Stdout)
-	FoundationAddress = config.Parameters.Configuration.FoundationAddress
-
-	if FoundationAddress == "" {
-		FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
+	if !assert.NoError(t, err) {
+		return
 	}
+	FoundationAddress = *foundation
 
 	chainStore, err := NewChainStore()
 	if err != nil {

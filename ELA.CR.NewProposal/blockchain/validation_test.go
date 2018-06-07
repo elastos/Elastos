@@ -348,18 +348,19 @@ func newMultiAccount(num int, t *testing.T) *multiAccount {
 func buildTx() *core.Transaction {
 	tx := new(core.Transaction)
 	tx.TxType = core.TransferAsset
+	tx.Payload = new(core.PayloadTransferAsset)
 	tx.Inputs = randomInputs()
 	tx.Outputs = randomOutputs()
 	return tx
 }
 
 func randomInputs() []*core.Input {
-	num := math.Intn(1000)
+	num := math.Intn(100) + 1
 	inputs := make([]*core.Input, 0, num)
 	for i := 0; i < num; i++ {
 		var txId common.Uint256
 		rand.Read(txId[:])
-		index := math.Intn(1000)
+		index := math.Intn(100)
 		inputs = append(inputs, &core.Input{
 			Previous: *core.NewOutPoint(txId, uint16(index)),
 		})
@@ -368,7 +369,7 @@ func randomInputs() []*core.Input {
 }
 
 func randomOutputs() []*core.Output {
-	num := math.Intn(1000)
+	num := math.Intn(100) + 1
 	outputs := make([]*core.Output, 0, num)
 	var asset common.Uint256
 	rand.Read(asset[:])

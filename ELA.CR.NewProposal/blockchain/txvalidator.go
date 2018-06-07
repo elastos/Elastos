@@ -48,7 +48,7 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 
 	if err := CheckDuplicateSidechainTx(txn); err != nil {
 		log.Warn("[CheckDuplicateSidechainTx],", err)
-		return ErrSidechainTxHashDuplicate
+		return ErrSidechainTxDuplicate
 	}
 
 	// check iterms above for Coinbase transaction
@@ -64,7 +64,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
 		log.Warn("[CheckTransactionContext] duplicate transaction check faild.")
-		return ErrTxHashDuplicate
+		return ErrTransactionDuplicate
 	}
 
 	if txn.IsCoinBaseTx() {
@@ -82,7 +82,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 		for _, hash := range witPayload.SideChainTransactionHash {
 			if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
-				return ErrSidechainTxHashDuplicate
+				return ErrSidechainTxDuplicate
 			}
 		}
 	}
@@ -114,12 +114,12 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		referTxn, _, err := DefaultLedger.Store.GetTransaction(referHash)
 		if err != nil {
 			log.Warn("Referenced transaction can not be found", BytesToHexString(referHash.Bytes()))
-			return ErrUnknownReferedTxn
+			return ErrUnknownReferedTx
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
 		if referTxnOut.Value <= 0 {
 			log.Warn("Value of referenced transaction output is invalid")
-			return ErrInvalidReferedTxn
+			return ErrInvalidReferedTx
 		}
 		// coinbase transaction only can be spent after got SpendCoinbaseSpan times confirmations
 		if referTxn.IsCoinBaseTx() {
@@ -260,7 +260,7 @@ func CheckAssetPrecision(txn *Transaction) error {
 	if len(txn.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[Uint256][]*Output, len(txn.Outputs))
+	assetOutputs := make(map[Uint256][]*Output)
 
 	for _, v := range txn.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
@@ -272,7 +272,7 @@ func CheckAssetPrecision(txn *Transaction) error {
 		}
 		precision := asset.Precision
 		for _, output := range outputs {
-			if checkAmountPrecise(output.Value, precision) {
+			if !checkAmountPrecise(output.Value, precision) {
 				return errors.New("The precision of asset is incorrect.")
 			}
 		}
@@ -314,7 +314,7 @@ func CheckTransactionSignature(txn *Transaction) error {
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {
-	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
+	return amount.IntValue()%int64(math.Pow(10, float64(8-precision))) == 0
 }
 
 func CheckTransactionPayload(txn *Transaction) error {
@@ -323,7 +323,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 		if pld.Asset.Precision < MinPrecision || pld.Asset.Precision > MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
-		if checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
+		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
 	case *PayloadTransferAsset:

@@ -60,7 +60,7 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	if ok := pool.addToTxList(txn); !ok {
 		// reject duplicated transaction
 		log.Debugf("Transaction duplicate %s", txn.Hash().String())
-		return ErrTxHashDuplicate
+		return ErrTransactionDuplicate
 	}
 	return Success
 }
@@ -114,7 +114,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 		// check if the withdraw transaction includes duplicate sidechain tx in pool
 		if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
 			log.Warn(err)
-			return ErrSidechainTxHashDuplicate
+			return ErrSidechainTxDuplicate
 		}
 	}
 
