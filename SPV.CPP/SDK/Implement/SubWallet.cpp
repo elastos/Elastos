@@ -73,18 +73,18 @@ namespace Elastos {
 
 			nlohmann::json j;
 
-			BRTransaction *t;
+			ELABRTransaction *t;
 			std::map<std::string, uint64_t> addressesBalanceMap;
 			pthread_mutex_lock(&wallet->lock);
 			for (size_t i = 0; i < utxosCount; ++i) {
 				void *tempPtr = BRSetGet(wallet->allTx, &utxos[utxosCount].hash);
 				if (tempPtr == nullptr) continue;
-				t = static_cast<BRTransaction *>(tempPtr);
+				t = static_cast<ELABRTransaction *>(tempPtr);
 
-				if (addressesBalanceMap.find(t->outputs[utxos->n].address) != addressesBalanceMap.end()) {
-					addressesBalanceMap[t->outputs[utxos->n].address] += t->outputs[utxos->n].amount;
+				if (addressesBalanceMap.find(t->outputs[utxos->n].raw.address) != addressesBalanceMap.end()) {
+					addressesBalanceMap[t->outputs[utxos->n].raw.address] += t->outputs[utxos->n].raw.amount;
 				} else {
-					addressesBalanceMap[t->outputs[utxos->n].address] = t->outputs[utxos->n].amount;
+					addressesBalanceMap[t->outputs[utxos->n].raw.address] = t->outputs[utxos->n].raw.amount;
 				}
 			}
 			pthread_mutex_unlock(&wallet->lock);
@@ -127,15 +127,15 @@ namespace Elastos {
 			BRUTXO utxos[utxosCount];
 			BRWalletUTXOs(wallet, utxos, utxosCount);
 
-			BRTransaction *t;
+			ELABRTransaction *t;
 			uint64_t balance = 0;
 			pthread_mutex_lock(&wallet->lock);
 			for (size_t i = 0; i < utxosCount; ++i) {
 				void *tempPtr = BRSetGet(wallet->allTx, &utxos[utxosCount].hash);
 				if (tempPtr == nullptr) continue;
-				t = static_cast<BRTransaction *>(tempPtr);
-				if (BRAddressEq(t->outputs[utxos->n].address, address.c_str())) {
-					balance += t->outputs[utxos->n].amount;
+				t = static_cast<ELABRTransaction *>(tempPtr);
+				if (BRAddressEq(t->outputs[utxos->n].raw.address, address.c_str())) {
+					balance += t->outputs[utxos->n].raw.amount;
 				}
 			}
 			pthread_mutex_unlock(&wallet->lock);
@@ -457,16 +457,17 @@ namespace Elastos {
 		bool SubWallet::completedTransactionInputs(const TransactionPtr &transaction) {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			BRUTXO *o = nullptr;
-			BRTransaction *tx = nullptr;
+			ELABRTransaction *tx = nullptr;
 			for (size_t i = 0; i < array_count(wallet->utxos); i++) {
 				o = &wallet->utxos[i];
-				tx = (BRTransaction *)BRSetGet(wallet->allTx, o);
-				if (! tx || o->n >= tx->outCount) continue;
+				tx = (ELABRTransaction *)BRSetGet(wallet->allTx, o);
+				if (! tx || o->n >= tx->raw.outCount) continue;
 
-				CMBlock script(tx->outputs[o->n].scriptLen);
-				memcpy(script, tx->outputs[o->n].script, tx->outputs[o->n].scriptLen);
+				CMBlock script(tx->outputs[o->n].raw.scriptLen);
+				memcpy(script, tx->outputs[o->n].raw.script, tx->outputs[o->n].raw.scriptLen);
 
-				TransactionInput input(tx->txHash, o->n, tx->outputs[o->n].amount, script, CMBlock(), TXIN_SEQUENCE);
+				TransactionInput input(tx->raw.txHash, o->n, tx->outputs[o->n].raw.amount, script, CMBlock(),
+				                       TXIN_SEQUENCE);
 				transaction->addInput(input);
 			}
 			return true;
@@ -496,7 +497,7 @@ namespace Elastos {
 			}
 
 			UInt256 zero = UINT256_ZERO;
-			UInt256 assetID = _walletManager->getWallet()->getSystemAssetId();
+			UInt256 assetID = Utils::getSystemAssetId();
 
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutputPtr output = outputs[i];

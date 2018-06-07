@@ -4,13 +4,13 @@
 
 #include <cstdlib>
 #include <cstring>
-//#include <string.h>
 
 #include <BRTransaction.h>
 
 #include "BRArray.h"
 #include "ELABRTransaction.h"
-#include "ELABRTxOutput.h"
+#include "Utils.h"
+#include "BRAddress.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -26,14 +26,25 @@ namespace Elastos {
 				array_new(raw.inputs, 1);
 			}
 
-			if (0 < raw.outCount && raw.outputs) {
+			if (0 < raw.outCount) {
 				for (size_t i = 0; i < raw.outCount; i++) {
-					BRTxOutputSetScript(&raw.outputs[i], NULL, 0);
+					if (raw.outputs) {
+						BRTxOutputSetScript(&raw.outputs[i], NULL, 0);
+					}
+					if (outputs) {
+						BRTxOutputSetScript((BRTxOutput *)&outputs[i], NULL, 0);
+					}
 				}
 				raw.outCount = 0;
 				raw.outputs = NULL;
-				array_free(raw.outputs);
+				if (raw.outputs) {
+					array_free(raw.outputs);
+				}
+				if (outputs) {
+					array_free(outputs);
+				}
 				array_new(raw.outputs, 2);
+				array_new(outputs, 2);
 			}
 
 			raw = ebt.raw;
@@ -41,10 +52,16 @@ namespace Elastos {
 				BRTransactionAddInput(&raw, ebt.raw.inputs[i].txHash, ebt.raw.inputs[i].index, ebt.raw.inputs[i].amount,
 									  ebt.raw.inputs[i].script, ebt.raw.inputs[i].scriptLen,
 									  ebt.raw.inputs[i].signature, ebt.raw.inputs[i].sigLen, ebt.raw.inputs[i].sequence);
+
+
 			}
 
 			for (size_t i = 0; i < ebt.raw.outCount; i++) {
-				BRTransactionAddOutput(&raw, ebt.raw.outputs[i].amount, ebt.raw.outputs[i].script, ebt.raw.outputs[i].scriptLen);
+				ELABRTransactionAddOutput(this, ebt.outputs[i].raw.amount, ebt.outputs[i].raw.script,
+				                          ebt.outputs[i].raw.scriptLen);
+				UInt256Set(&outputs[i].assetId, ebt.outputs[i].assetId);
+				outputs[i].outputLock = ebt.outputs[i].outputLock;
+				UInt168Set(&outputs[i].programHash, ebt.outputs[i].programHash);
 			}
 			type = ebt.type;
 			payloadVersion = ebt.payloadVersion;
@@ -63,6 +80,10 @@ namespace Elastos {
 			memset(tx, 0, sizeof(ELABRTransaction));
 			array_new(tx->raw.inputs, 1);
 			array_new(tx->raw.outputs, 2);
+			array_new(tx->outputs, 2);
+			for (int i = 0; i < 2; i++) {
+				tx->outputs[i] = ELABR_TX_OUTPUT_NONE;
+			}
 			BRTransaction *temp = BRTransactionNew();
 			tx->raw.version = temp->version;
 			tx->raw.lockTime = temp->lockTime;
@@ -96,7 +117,11 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < tx->raw.outCount; i++) {
-				BRTransactionAddOutput(&elabrTransaction->raw, tx->raw.outputs[i].amount, tx->raw.outputs[i].script, tx->raw.outputs[i].scriptLen);
+				ELABRTransactionAddOutput(elabrTransaction, tx->outputs[i].raw.amount, tx->outputs[i].raw.script,
+											tx->outputs[i].raw.scriptLen);
+				UInt256Set(&elabrTransaction->outputs[i].assetId, tx->outputs[i].assetId);
+				elabrTransaction->outputs[i].outputLock = tx->outputs[i].outputLock;
+				UInt168Set(&elabrTransaction->outputs[i].programHash, tx->outputs[i].programHash);
 			}
 
 
@@ -134,6 +159,31 @@ namespace Elastos {
 			return elabrTransaction;
 		}
 
+		void ELABRTransactionAddOutput(ELABRTransaction *tx, uint64_t amount, const uint8_t *script,
+		                               size_t scriptLen) {
+			ELABRTxOutput output = ELABR_TX_OUTPUT_NONE;
+			output.raw.amount = amount;
+			assert(tx != NULL);
+			assert(script != NULL || scriptLen == 0);
+
+			if (tx) {
+				BRTxOutputSetScript(&(output.raw), script, scriptLen);
+				output.programHash = Utils::AddressToUInt168(output.raw.address);
+				output.assetId = Utils::getSystemAssetId();
+				array_add(tx->outputs, output);
+				ELABRTxOutput temp = ELABR_TX_OUTPUT_NONE;
+				temp.assetId = output.assetId;
+				memcpy(temp.raw.address, output.raw.address, sizeof(output.raw.address));
+				temp.raw.amount = output.raw.amount;
+				temp.raw.scriptLen = output.raw.scriptLen;
+				BRTxOutputSetScript(&(temp.raw), script, scriptLen);
+				temp.outputLock = output.outputLock;
+				temp.programHash = output.programHash;
+				array_add(tx->raw.outputs, *(BRTxOutput *)&temp);
+				tx->raw.outCount = array_count(tx->outputs);
+			}
+		}
+
 		// frees memory allocated for tx
 		void ELABRTransactionFree(ELABRTransaction *tx) {
 			if (0 < tx->raw.inCount && tx->raw.inputs) {
@@ -144,11 +194,18 @@ namespace Elastos {
 				array_free(tx->raw.inputs);
 			}
 
-			if (0 < tx->raw.outCount && tx->raw.outputs) {
+			if (0 < tx->raw.outCount) {
 				for (size_t i = 0; i < tx->raw.outCount; i++) {
-					BRTxOutputSetScript(&tx->raw.outputs[i], NULL, 0);
+					if (tx->raw.outputs) {
+						BRTxOutputSetScript(&tx->raw.outputs[i], NULL, 0);
+					}
+
+					BRTxOutputSetScript((BRTxOutput *)&tx->outputs[i], NULL, 0);
 				}
-				array_free(tx->raw.outputs);
+				if (tx->raw.outputs) {
+					array_free(tx->raw.outputs);
+				}
+				array_free(tx->outputs);
 			}
 
 			tx->payloadData.Clear();
@@ -159,5 +216,31 @@ namespace Elastos {
 
 			free(tx);
 		}
+
+		// size in bytes if signed, or estimated size assuming compact pubkey sigs
+		size_t ELABRTransactionSize(const ELABRTransaction *tx)
+		{
+			BRTxInput *input;
+			size_t size;
+
+			assert(tx != NULL);
+			size = (tx) ? 8 + BRVarIntSize(tx->raw.inCount) + BRVarIntSize(tx->raw.outCount) : 0;
+
+			for (size_t i = 0; tx && i < tx->raw.inCount; i++) {
+				input = &tx->raw.inputs[i];
+
+				if (input->signature) {
+					size += sizeof(UInt256) + sizeof(uint32_t) + BRVarIntSize(input->sigLen) + input->sigLen + sizeof(uint32_t);
+				}
+				else size += TX_INPUT_SIZE;
+			}
+
+			for (size_t i = 0; tx && i < tx->raw.outCount; i++) {
+				size += sizeof(uint64_t) + BRVarIntSize(tx->outputs[i].raw.scriptLen) + tx->outputs[i].raw.scriptLen;
+			}
+
+			return size;
+		}
 	}
+
 }

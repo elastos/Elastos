@@ -8,6 +8,7 @@
 #include <string>
 
 #include "CMemBlock.h"
+#include "nlohmann/json.hpp"
 
 namespace Elastos {
 	namespace SDK {
@@ -21,6 +22,8 @@ namespace Elastos {
 			static void checkNotEmpty(const std::string &message, bool isParam = true);
 
 			static void checkDataNotEmpty(const CMBlock &mem, bool isParam = true);
+
+			static void checkJsonArrayNotEmpty(nlohmann::json jsonData, bool isParam = true);
 		};
 
 	}

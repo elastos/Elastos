@@ -42,5 +42,14 @@ namespace Elastos {
 					throw std::logic_error("Data should not be empty.");
 			}
 		}
+
+		void ParamChecker::checkJsonArrayNotEmpty(nlohmann::json jsonData, bool isParam) {
+			if (!jsonData.is_array() || jsonData.size() <= 0) {
+				if (isParam)
+					throw std::invalid_argument("json should not be empty.");
+				else
+					throw std::logic_error("json should not be empty.");
+			}
+		}
 	}
 }

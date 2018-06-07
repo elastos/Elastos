@@ -4,12 +4,13 @@
 
 #define CATCH_CONFIG_MAIN
 
-#include <ELACoreExt/ELABRTransaction.h>
+#include "ELABRTxOutput.h"
 #include "ELABRTransaction.h"
 #include "catch.hpp"
 #include "Transaction.h"
 #include "Address.h"
 #include "Payload/PayloadCoinBase.h"
+#include "Utils.h"
 
 using namespace Elastos::SDK;
 
@@ -320,7 +321,7 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 		UInt168 programHash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6\xd4\x8f\x60\x7d\x42\xc1\xd2"
 											"\xa2\x15\x16";
 		for (int i = 0; i < 5; ++i) {
-			BRTransactionAddOutput(&raw->raw, i, s, 21);
+			ELABRTransactionAddOutput(raw, i, s, 21);
 			raw->outputLockList.push_back(i);
 			raw->outputAssetIDList.push_back(hash);
 			raw->outputProgramHashList.push_back(programHash);
@@ -381,10 +382,11 @@ TEST_CASE("Transaction conver method test", "[Transaction]") {
 			result = memcmp(raw1->inputs[i].script, raw->raw.inputs[i].script, raw->raw.inputs[i].scriptLen);
 			REQUIRE(result == 0);
 		}
+		ELABRTransaction *elaRaw1 = (ELABRTransaction *)raw1;
 		for (size_t i = 0; i < raw->raw.outCount; i++) {
-			REQUIRE(raw1->outputs[i].amount == raw->raw.outputs[i].amount);
-			REQUIRE(raw1->outputs[i].scriptLen == raw->raw.outputs[i].scriptLen);
-			result = memcmp(raw1->outputs[i].script, raw->raw.outputs[i].script, raw->raw.outputs[i].scriptLen);
+			REQUIRE(elaRaw1->outputs[i].raw.amount == raw->outputs[i].raw.amount);
+			REQUIRE(elaRaw1->outputs[i].raw.scriptLen == raw->outputs[i].raw.scriptLen);
+			result = memcmp(elaRaw1->outputs[i].raw.script, raw->outputs[i].raw.script, raw->outputs[i].raw.scriptLen);
 			REQUIRE(result == 0);
 		}
 

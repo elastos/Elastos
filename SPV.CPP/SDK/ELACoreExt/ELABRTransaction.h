@@ -9,6 +9,7 @@
 
 #include "BRTransaction.h"
 #include "CMemBlock.h"
+#include "ELABRTxOutput.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -18,6 +19,7 @@ namespace Elastos {
 			uint8_t  type;
 			uint8_t payloadVersion;
 			CMBlock payloadData;
+			ELABRTxOutput *outputs;
 			std::vector<CMBlock> attributeData;
 			std::vector<CMBlock> programData;
 			std::vector<UInt256>  outputAssetIDList;
@@ -31,7 +33,13 @@ namespace Elastos {
 		ELABRTransaction *ELABRTransactionNew(void);
 		ELABRTransaction *ELABRTransactioCopy(const ELABRTransaction *tx);
 
+		// adds an output to tx
+		void ELABRTransactionAddOutput(ELABRTransaction *tx, uint64_t amount, const uint8_t *script, size_t scriptLen);
+
 		void ELABRTransactionFree(ELABRTransaction *tx);
+
+		// size in bytes if signed, or estimated size assuming compact pubkey sigs
+		size_t ELABRTransactionSize(const ELABRTransaction *tx);
 	}
 }
 

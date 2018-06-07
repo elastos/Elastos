@@ -11,6 +11,7 @@
 #include "Payload/PayloadTransferCrossChainAsset.h"
 #include "ELACoreExt/ELABRTxOutput.h"
 #include "Utils.h"
+#include "ParamChecker.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -35,15 +36,11 @@ namespace Elastos {
 															   const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo));
-			txParam->setAssetId(_walletManager->getWallet()->getSystemAssetId());
+			txParam->setAssetId(Utils::getSystemAssetId());
 
-			//todo modify to throw
-			assert(sidechainAccounts.is_array() == true);
-			assert(sidechainAccounts.size() > 0);
-			assert(sidechainAmounts.is_array() == true);
-			assert(sidechainAmounts.size() > 0);
-			assert(sidechainIndexs.is_array() == true);
-			assert(sidechainIndexs.size() > 0);
+			ParamChecker::checkJsonArrayNotEmpty(sidechainAccounts);
+			ParamChecker::checkJsonArrayNotEmpty(sidechainAmounts);
+			ParamChecker::checkJsonArrayNotEmpty(sidechainIndexs);
 
 			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();

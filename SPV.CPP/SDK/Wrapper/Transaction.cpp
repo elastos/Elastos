@@ -176,12 +176,14 @@ namespace Elastos {
 			BRTxInputSetSignature(target, source->signature, source->sigLen);
 		}
 
-		void Transaction::transactionOutputCopy(BRTxOutput *target, const BRTxOutput *source) const {
+		void Transaction::transactionOutputCopy(ELABRTxOutput *target, const ELABRTxOutput *source) const {
 			assert (target != nullptr);
 			assert (source != nullptr);
 			*target = *source;
-			target->script = nullptr;
-			BRTxOutputSetScript(target, source->script, source->scriptLen);
+			target->raw.script = nullptr;
+			if (source->raw.scriptLen > 0) {
+				BRTxOutputSetScript((BRTxOutput *)target, source->raw.script, source->raw.scriptLen);
+			}
 		}
 
 		std::vector<std::string> Transaction::getInputAddresses() {
@@ -201,12 +203,7 @@ namespace Elastos {
 			if (_outputs.empty()) {
 				for (int i = 0; i < _transaction->outCount; i++) {
 					ELABRTxOutput *output = new ELABRTxOutput;
-					transactionOutputCopy((BRTxOutput *) output, &_transaction->outputs[i]);
-
-					UInt256Set(&output->assetId, elabrTransaction->outputAssetIDList[i]);
-					output->outputLock = elabrTransaction->outputLockList[i];
-					UInt168Set(&output->programHash, elabrTransaction->outputProgramHashList[i]);
-
+					transactionOutputCopy(output, &elabrTransaction->outputs[i]);
 					_outputs.push_back(TransactionOutputPtr(new TransactionOutput((BRTxOutput *) output)));
 				}
 			}
@@ -279,11 +276,11 @@ namespace Elastos {
 		}
 
 		void Transaction::addOutput(const TransactionOutput &output) {
-
-			BRTransactionAddOutput(_transaction, output.getAmount(),
-								   output.getScript(), output.getScript().GetSize());
-
 			ELABRTransaction *elabrTransaction = (ELABRTransaction *) _transaction;
+
+			ELABRTransactionAddOutput(elabrTransaction, output.getAmount(), output.getScript(),
+			                          output.getScript().GetSize());
+
 			const UInt256 assetID = output.getAssetId();
 			elabrTransaction->outputAssetIDList.push_back(assetID);
 			elabrTransaction->outputLockList.push_back(output.getOutputLock());
@@ -292,7 +289,7 @@ namespace Elastos {
 
 			ELABRTxOutput *brTxOutput = new ELABRTxOutput();
 			size_t index = _transaction->outCount - 1;
-			transactionOutputCopy((BRTxOutput *)brTxOutput, &_transaction->outputs[index]);
+			transactionOutputCopy(brTxOutput, &elabrTransaction->outputs[index]);
 
 			UInt256Set(&brTxOutput->assetId, assetID);
 			brTxOutput->outputLock = output.getOutputLock();
@@ -304,7 +301,7 @@ namespace Elastos {
 
 		size_t Transaction::getSize() {
 
-			return BRTransactionSize(_transaction);
+			return ELABRTransactionSize((ELABRTransaction *)_transaction);
 		}
 
 		uint64_t Transaction::getStandardFee() {
@@ -546,8 +543,8 @@ namespace Elastos {
 
 			for (ssize_t i = 0; i < len; i++) {
 				output = outputs[i].get();
-				BRTransactionAddOutput(&transaction->raw, output->getAmount(), output->getScript(),
-									   output->getScript().GetSize());
+				ELABRTransactionAddOutput(transaction, output->getAmount(), output->getScript(),
+				                          output->getScript().GetSize());
 				const UInt256 assetID = output->getAssetId();
 				transaction->outputAssetIDList.push_back(assetID);
 				transaction->outputLockList.push_back(output->getOutputLock());

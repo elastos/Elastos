@@ -7,7 +7,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "BRTransaction.h"
+#include "ELABRTransaction.h"
 
 #include "../ELACoreExt/Payload/IPayload.h"
 #include "Wrapper.h"
@@ -172,7 +172,7 @@ namespace Elastos {
 
 			void transactionInputCopy(BRTxInput *target, const BRTxInput *source) const;
 
-			void transactionOutputCopy (BRTxOutput *target, const BRTxOutput *source) const;
+			void transactionOutputCopy (ELABRTxOutput *target, const ELABRTxOutput *source) const;
 
 			void setPayloadByTransactionType();
 

@@ -158,7 +158,7 @@ namespace Elastos {
 
 			for (i = 0; outputs && i < outCount; i++) {
 				assert(outputs[i].script != NULL && outputs[i].scriptLen > 0);
-				ELATransactionAddOutput(elabrTransaction, outputs[i].amount, outputs[i].script, outputs[i].scriptLen);
+				ELABRTransactionAddOutput(elabrTransaction, outputs[i].amount, outputs[i].script, outputs[i].scriptLen);
 				amount += outputs[i].amount;
 			}
 			minAmount = BRWalletMinOutputAmount(_wallet);
@@ -193,6 +193,7 @@ namespace Elastos {
 						}
 
 						newOutputs[outCount - 1].amount -= amount + feeAmount - balance; // reduce last output amount
+						//todo BRWalletCreateTxForOutputs should wrapper of ELABRTransactionAddOutput;
 						transaction = BRWalletCreateTxForOutputs(_wallet, newOutputs, outCount);
 					} else
 						transaction = BRWalletCreateTxForOutputs(_wallet, outputs, outCount - 1); // remove last output
@@ -216,13 +217,13 @@ namespace Elastos {
 			pthread_mutex_unlock(&_wallet->lock);
 
 			if (transaction && (outCount < 1 || balance < amount + feeAmount)) { // no outputs/insufficient funds
-				BRTransactionFree(transaction);
+				ELABRTransactionFree(elabrTransaction);
 				transaction = NULL;
 			} else if (transaction && balance - (amount + feeAmount) > minAmount) { // add change output
 				_wallet->WalletUnusedAddrs(_wallet, &addr, 1, 1);
 				uint8_t script[BRAddressScriptPubKey(NULL, 0, addr.s)];
 				size_t scriptLen = BRAddressScriptPubKey(script, sizeof(script), addr.s);
-				ELATransactionAddOutput(elabrTransaction, balance - (amount + feeAmount), script, scriptLen);
+				ELABRTransactionAddOutput(elabrTransaction,  balance - (amount + feeAmount), script, scriptLen);
 				BRTransactionShuffleOutputs(transaction);
 			}
 
@@ -243,22 +244,6 @@ namespace Elastos {
 			BRTransaction *transaction = BRWalletCreateTxForOutputs(_wallet, outputs.getRawArray().data(),
 																	outputs.size());
 			return TransactionPtr(new Transaction(transaction));
-		}
-
-		void Wallet::ELATransactionAddOutput(ELABRTransaction *transaction, uint64_t amount, const uint8_t *script,
-		                             size_t scriptLen) {
-			BRTransaction *tx = (BRTransaction *)transaction;
-			ELABRTxOutput output = ELABR_TX_OUTPUT_NONE;
-			output.raw.amount = amount;
-			assert(tx != NULL);
-			assert(script != NULL || scriptLen == 0);
-
-			if (tx) {
-				BRTxOutputSetScript(&output.raw, script, scriptLen);
-				array_add(tx->outputs, *(BRTxOutput *)&output);
-				tx->outCount = array_count(tx->outputs);
-			}
-
 		}
 
 		bool Wallet::signTransaction(const TransactionPtr &transaction, int forkId, const CMBlock &phraseData) {
@@ -510,12 +495,6 @@ namespace Elastos {
 				list.push_back((BRTransaction *) transaction);
 			}
 			return list;
-		}
-
-		const UInt256 &Wallet::getSystemAssetId() const {
-			Transaction elaCoin;
-			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
-			return elaCoin.getHash();
 		}
 
 		void Wallet::setApplyFreeTx(void *info, void *tx) {

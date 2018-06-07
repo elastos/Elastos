@@ -184,6 +184,8 @@ namespace Elastos {
 			if(_output->scriptLen > 0) {
 				std::string script = jsonData["script"].get<std::string>();
 				memcpy(_output->script, script.c_str(), _output->scriptLen);
+			}else {
+				_output->script = nullptr;
 			}
 
 			std::string assetID = jsonData["assetId"].get<std::string>();

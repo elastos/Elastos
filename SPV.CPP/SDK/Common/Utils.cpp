@@ -15,6 +15,7 @@
 #include "BTCBase58.h"
 #include "Base64.h"
 #include "BRAddress.h"
+#include "Transaction.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -139,7 +140,7 @@ namespace Elastos {
 										 0xCA, 0x80,
 										 0xCF};
 			static unsigned char salt[] = {0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56};
-			CMemBlock<unsigned char> _iv, _salt;
+			CMBlock _iv, _salt;
 			_iv.SetMemFixed(iv, sizeof(iv));
 			_salt.SetMemFixed(salt, sizeof(salt));
 			return encrypt(data, password, _salt, _iv, true);
@@ -150,7 +151,7 @@ namespace Elastos {
 										 0xCA, 0x80,
 										 0xCF};
 			static unsigned char salt[] = {0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56};
-			CMemBlock<unsigned char> _iv, _salt;
+			CMBlock _iv, _salt;
 			_iv.SetMemFixed(iv, sizeof(iv));
 			_salt.SetMemFixed(salt, sizeof(salt));
 			return decrypt(encryptedData, password, _salt, _iv, true);
@@ -212,6 +213,12 @@ namespace Elastos {
 				return false;
 			}
 			return true;
+		}
+
+		const UInt256 Utils::getSystemAssetId() {
+			Transaction elaCoin;
+			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+			return elaCoin.getHash();
 		}
 
 	}

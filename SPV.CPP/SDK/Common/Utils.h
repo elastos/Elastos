@@ -79,6 +79,8 @@ namespace Elastos {
 			static UInt168 AddressToUInt168(const std::string &address);
 
 			static bool UInt168IsValid(const UInt168 &u168);
+
+			static const UInt256 getSystemAssetId();
 		};
 	}
 }

@@ -4,7 +4,6 @@
 
 #include <fstream>
 #include <iconv.h>
-#include <uchar.h>
 #include <random>
 #include <ctime>
 #include <functional>
