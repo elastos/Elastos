@@ -20,10 +20,6 @@ const ValueExist = 1
 
 const TaskChanCap = 4
 
-var (
-	ErrDBNotFound = errors.New("leveldb: not found")
-)
-
 type persistTask interface{}
 
 type rollbackBlockTask struct {
@@ -44,8 +40,7 @@ type ChainStore struct {
 	mu          sync.RWMutex // guard the following var
 	headerIndex map[uint32]Uint256
 	headerCache map[Uint256]*Header
-	//blockCache  map[Uint256]*Block
-	headerIdx *list.List
+	headerIdx   *list.List
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
@@ -58,9 +53,8 @@ func NewChainStore() (IChainStore, error) {
 	}
 
 	store := &ChainStore{
-		IStore:      st,
-		headerIndex: map[uint32]Uint256{},
-		//blockCache:         map[Uint256]*Block{},
+		IStore:             st,
+		headerIndex:        map[uint32]Uint256{},
 		headerCache:        map[Uint256]*Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
@@ -581,89 +575,27 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 }
 
 func (c *ChainStore) handlePersistBlockTask(b *Block) {
-
 	if b.Header.Height <= c.currentBlockHeight {
 		return
 	}
 
-	//	c.mu.Lock()
-	//c.blockCache[b.Hash()] = b
-	//c.mu.Unlock()
-
-	//log.Trace(b.Blockdata.Height)
-	//log.Trace(b.Blockdata)
-	//log.Trace(b.Transactions[0])
-	//if b.Blockdata.Height < uint32(len(c.headerIndex)) {
 	c.persistBlock(b)
-
-	//c.NewBatch()
-	//storedHeaderCount := c.storedHeaderCount
-	//for c.currentBlockHeight-storedHeaderCount >= HeaderHashListCount {
-	//	hashBuffer := new(bytes.Buffer)
-	//	serialize.WriteVarUint(hashBuffer, uint64(HeaderHashListCount))
-	//	var hashArray []byte
-	//	for i := 0; i < HeaderHashListCount; i++ {
-	//		index := storedHeaderCount + uint32(i)
-	//		thash := c.headerIndex[index]
-	//		thehash := thash.ToArray()
-	//		hashArray = append(hashArray, thehash...)
-	//	}
-	//	hashBuffer.Write(hashArray)
-
-	//	hhlPrefix := new(bytes.Buffer)
-	//	hhlPrefix.WriteByte(byte(IX_HeaderHashList))
-	//	serialize.WriteUint32(hhlPrefix, storedHeaderCount)
-
-	//	c.BatchPut(hhlPrefix.Bytes(), hashBuffer.Bytes())
-	//	storedHeaderCount += HeaderHashListCount
-	//}
-
-	//err := c.BatchCommit()
-	//if err != nil {
-	//	log.Error("failed to persist header hash list:", err)
-	//	return
-	//}
-	//c.mu.Lock()
-	//c.storedHeaderCount = storedHeaderCount
-	//c.mu.Unlock()
 	c.clearCache(b)
-	//}
 }
 
 func (c *ChainStore) persistBlock(block *Block) {
-	//stopHeight := uint32(len(c.headerIndex))
-	//for h := c.currentBlockHeight + 1; h <= stopHeight; h++ {
-	//hash := c.headerIndex[h]
-	//block, ok := c.blockCache[hash]
-	//if !ok {
-	//	break
-	//}
-	//log.Trace(block.Blockdata)
-	//log.Trace(block.Transactions[0])
 	err := c.persist(block)
 	if err != nil {
 		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
 		return
 	}
 
-	// PersistCompleted event
-	//ledger.Blockchain.BlockHeight = block.Blockdata.Height
 	DefaultLedger.Blockchain.UpdateBestHeight(block.Header.Height)
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
 
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
-	//log.Tracef("The latest block height:%d, block hash: %x", block.Blockdata.Height, hash)
-	//}
-
-}
-
-func (c *ChainStore) BlockInCache(hash Uint256) bool {
-	//TODO mutex
-	//_, ok := c.ledger.Blockchain.Index[hash]
-	//return ok
-	return false
 }
 
 func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
