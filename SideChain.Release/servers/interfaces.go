@@ -363,7 +363,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 
 	type SideAuxBlock struct {
 		GenesisHash       string `json:"genesishash"`
-		Height            uint64 `json:"height"`
+		Height            uint32 `json:"height"`
 		Bits              string `json:"bits"`
 		Hash              string `json:"hash"`
 		PreviousBlockHash string `json:"previousblockhash"`
@@ -382,7 +382,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 
 	SendToAux := SideAuxBlock{
 		GenesisHash:       genesisHashStr,
-		Height:            NodeForServers.Height(),
+		Height:            chain.DefaultLedger.Store.GetHeight(),
 		Bits:              fmt.Sprintf("%x", msgBlock.Bits), //difficulty
 		Hash:              curHashStr,
 		PreviousBlockHash: preHashStr,
