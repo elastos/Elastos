@@ -26,8 +26,6 @@
 #ifndef brBIP39WordsCh_h
 #define brBIP39WordsCh_h
 
-#include "BRBIP39Mnemonic.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
