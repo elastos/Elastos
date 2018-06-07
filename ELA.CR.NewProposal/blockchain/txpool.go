@@ -166,7 +166,7 @@ func (pool *TxPool) verifyDoubleSpend(txn *Transaction) error {
 
 //check and add to sidechain tx pool
 func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
-	witPayload, ok := txn.Payload.(*PayloadWithdrawAsset)
+	witPayload, ok := txn.Payload.(*PayloadWithdrawFromSideChain)
 	if !ok {
 		return errors.New("convert the payload of withdraw tx failed")
 	}
@@ -214,7 +214,7 @@ func (pool *TxPool) cleanUTXOList(txs []*Transaction) {
 func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 	for _, txn := range txs {
 		if txn.IsWithdrawTx() {
-			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range witPayload.SideChainTransactionHash {
 				pool.delSidechainTx(hash)
 			}
