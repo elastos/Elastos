@@ -40,11 +40,12 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &phrasePassword,
 								   const std::string &payPassword,
-								   const std::string &language) :
+								   const std::string &language,
+								   const std::string &rootPath) :
 				_initialized(true),
-				_dbRoot("Data") {
+				_dbRoot(rootPath) {
 
-			ParamChecker::checkPassword(phrasePassword);
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkNotEmpty(language);
 
@@ -152,7 +153,16 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::importFromKeyStore(const std::string &keystorePath, const std::string &backupPassword,
-											  const std::string &payPassword) {
+											  const std::string &payPassword, const std::string &phrasePassword,
+											  const std::string &rootPath) {
+			ParamChecker::checkNotEmpty(keystorePath);
+			ParamChecker::checkPassword(backupPassword);
+			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
+			ParamChecker::checkNotEmpty(rootPath);
+
+			_dbRoot = rootPath;
+
 			if (!_keyStore.open(keystorePath, backupPassword)) {
 				Log::error("Import key error.");
 				return false;
@@ -194,7 +204,13 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
-											  const std::string &payPassword) {
+											  const std::string &payPassword, const std::string &rootPath) {
+			ParamChecker::checkNotEmpty(mnemonic);
+			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
+			ParamChecker::checkNotEmpty(rootPath);
+
+			_dbRoot = rootPath;
 
 			if (!MasterPubKey::validateRecoveryPhrase(_mnemonic.words(), mnemonic)) {
 				Log::error("Invalid mnemonic.");

@@ -77,15 +77,19 @@ namespace Elastos {
 
 			MasterWallet(const std::string &phrasePassword,
 						 const std::string &payPassword,
-						 const std::string &language);
+						 const std::string &language,
+						 const std::string &rootPath);
 
 			bool importFromKeyStore(const std::string &keystorePath,
 									const std::string &backupPassword,
-									const std::string &payPassword);
+									const std::string &payPassword,
+									const std::string &phrasePassword,
+									const std::string &rootPath);
 
 			bool importFromMnemonic(const std::string &mnemonic,
 									const std::string &phrasePassword,
-									const std::string &payPassword);
+									const std::string &payPassword,
+									const std::string &rootPath);
 
 			bool exportKeyStore(const std::string &backupPassword,
 								const std::string &keystorePath);

@@ -19,6 +19,12 @@ namespace Elastos {
 			}
 		}
 
+		void ParamChecker::checkPasswordWithNullLegal(const std::string &password, bool isParam) {
+			if (password.empty())
+				return;
+			checkPassword(password, isParam);
+		}
+
 		void ParamChecker::checkNotEmpty(const std::string &message, bool isParam) {
 			if (message.empty()) {
 				if (isParam)

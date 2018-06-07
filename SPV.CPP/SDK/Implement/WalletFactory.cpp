@@ -36,8 +36,9 @@ namespace Elastos {
 
 		IMasterWallet *WalletFactory::CreateMasterWallet(const std::string &phrasePassword,
 														 const std::string &payPassword,
-														 const std::string &language) {
-			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword, language);
+														 const std::string &language,
+														 const std::string &rootPath) {
+			MasterWallet *masterWallet = new MasterWallet(phrasePassword, payPassword, language, rootPath);
 			return masterWallet;
 		}
 
@@ -48,26 +49,37 @@ namespace Elastos {
 
 		IMasterWallet *
 		WalletFactory::ImportWalletWithKeystore(const std::string &keystorePath, const std::string &backupPassword,
-												const std::string &payPassword) {
+												const std::string &payPassword, const std::string &phrasePassword,
+												const std::string &rootPath) {
 			ParamChecker::checkPassword(backupPassword);
 			ParamChecker::checkPassword(payPassword);
 
-			return WalletFactoryInner::importWalletInternal("english", [&keystorePath, &backupPassword, &payPassword](
-					MasterWallet *masterWallet) {
-				return masterWallet->importFromKeyStore(keystorePath, backupPassword, payPassword);
-			});
+			return WalletFactoryInner::importWalletInternal("english",
+															[&keystorePath, &backupPassword, &payPassword, &phrasePassword, &rootPath](
+																	MasterWallet *masterWallet) {
+																return masterWallet->importFromKeyStore(keystorePath,
+																										backupPassword,
+																										payPassword,
+																										phrasePassword,
+																										rootPath);
+															});
 		}
 
 		IMasterWallet *
 		WalletFactory::ImportWalletWithMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
-												const std::string &payPassword, const std::string &language) {
+												const std::string &payPassword, const std::string &language,
+												const std::string &rootPath) {
 			ParamChecker::checkPassword(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
 
-			return WalletFactoryInner::importWalletInternal(language, [&mnemonic, &phrasePassword, &payPassword](
-					MasterWallet *masterWallet) {
-				return masterWallet->importFromMnemonic(mnemonic, phrasePassword, payPassword);
-			});
+			return WalletFactoryInner::importWalletInternal(language,
+															[&mnemonic, &phrasePassword, &payPassword, &rootPath](
+																	MasterWallet *masterWallet) {
+																return masterWallet->importFromMnemonic(mnemonic,
+																										phrasePassword,
+																										payPassword,
+																										rootPath);
+															});
 		}
 
 		void WalletFactory::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,

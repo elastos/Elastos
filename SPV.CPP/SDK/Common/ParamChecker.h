@@ -16,6 +16,8 @@ namespace Elastos {
 		public:
 			static void checkPassword(const std::string &password, bool isParam = true);
 
+			static void checkPasswordWithNullLegal(const std::string &password, bool isParam = true);
+
 			static void checkNotEmpty(const std::string &message, bool isParam = true);
 
 			static void checkDataNotEmpty(const CMBlock &mem, bool isParam = true);

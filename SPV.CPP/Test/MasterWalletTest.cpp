@@ -23,13 +23,13 @@ public:
 
 	TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword, const std::string language) :
-			MasterWallet(phrasePassword, payPassword, language) {
+			MasterWallet(phrasePassword, payPassword, language, "Data") {
 	}
 
 	bool importFromMnemonicWraper(const std::string &mnemonic,
 								  const std::string &phrasePassword,
 								  const std::string &payPassword) {
-		return importFromMnemonic(mnemonic, phrasePassword, payPassword);
+		return importFromMnemonic(mnemonic, phrasePassword, payPassword, "Data");
 	}
 
 protected:
@@ -123,8 +123,10 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 
 		REQUIRE(masterWallet->GetPublicKey() != masterWallet1->GetPublicKey());
 	}
-	SECTION("Create with phrase password that is empty or less than 8") {
-		CHECK_THROWS_AS(TestMasterWallet("", payPassword, language), std::invalid_argument);
+	SECTION("Create with phrase password can be empty") {
+		CHECK_NOTHROW(TestMasterWallet("", payPassword, language));
+	}
+	SECTION("Create with phrase password that is less than 8") {
 		CHECK_THROWS_AS(TestMasterWallet("ilegal", payPassword, language), std::invalid_argument);
 	}
 	SECTION("Create with phrase password that is more than 128") {
