@@ -115,7 +115,7 @@ type TransferCrossChainAssetInfo struct {
 	CrossChainAmount  []common.Fixed64
 }
 
-type WithdrawAssetInfo struct {
+type WithdrawFromSideChainInfo struct {
 	BlockHeight              uint32
 	GenesisBlockAddress      string
 	SideChainTransactionHash []string

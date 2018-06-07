@@ -104,7 +104,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 
 		if txn.IsWithdrawTx() {
-			witPayload := txn.Payload.(*PayloadWithdrawAsset)
+			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 
 			// Check for duplicate sidechain tx in a block
 			for _, hash := range witPayload.SideChainTransactionHash {

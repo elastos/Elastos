@@ -79,7 +79,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	}
 
 	if txn.IsWithdrawTx() {
-		witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 		for _, hash := range witPayload.SideChainTransactionHash {
 			if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
 				return ErrSidechainTxHashDuplicate
@@ -330,7 +330,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 	case *PayloadRecord:
 	case *PayloadCoinBase:
 	case *PayloadSideMining:
-	case *PayloadWithdrawAsset:
+	case *PayloadWithdrawFromSideChain:
 	case *PayloadTransferCrossChainAsset:
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
@@ -341,7 +341,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 //validate the transaction of duplicate sidechain transaction
 func CheckDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawTx() {
-		witPayload := txn.Payload.(*PayloadWithdrawAsset)
+		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 		existingHashs := make(map[string]struct{})
 		for _, hash := range witPayload.SideChainTransactionHash {
 			if _, exist := existingHashs[hash]; exist {

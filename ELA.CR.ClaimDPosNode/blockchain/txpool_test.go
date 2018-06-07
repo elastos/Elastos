@@ -40,8 +40,8 @@ func TestTxPoolInit(t *testing.T) {
 func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	// 1. Generate a withdraw transaction
 	txn1 := new(core.Transaction)
-	txn1.TxType = core.WithdrawAsset
-	txn1.Payload = &core.PayloadWithdrawAsset{
+	txn1.TxType = core.WithdrawFromSideChain
+	txn1.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHash: []string{
@@ -51,7 +51,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 2. Add sidechain Tx to pool
-	witPayload := txn1.Payload.(*core.PayloadWithdrawAsset)
+	witPayload := txn1.Payload.(*core.PayloadWithdrawFromSideChain)
 	for _, hash := range witPayload.SideChainTransactionHash {
 		success := txPool.addSidechainTx(hash)
 		if !success {
@@ -61,8 +61,8 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
 	txn2 := new(core.Transaction)
-	txn2.TxType = core.WithdrawAsset
-	txn2.Payload = &core.PayloadWithdrawAsset{
+	txn2.TxType = core.WithdrawFromSideChain
+	txn2.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHash: []string{
@@ -80,8 +80,8 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 func TestTxPool_CleanSidechainTx(t *testing.T) {
 	// 1. Generate some withdraw transactions
 	txn1 := new(core.Transaction)
-	txn1.TxType = core.WithdrawAsset
-	txn1.Payload = &core.PayloadWithdrawAsset{
+	txn1.TxType = core.WithdrawFromSideChain
+	txn1.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHash: []string{
@@ -91,8 +91,8 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	}
 
 	txn2 := new(core.Transaction)
-	txn2.TxType = core.WithdrawAsset
-	txn2.Payload = &core.PayloadWithdrawAsset{
+	txn2.TxType = core.WithdrawFromSideChain
+	txn2.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHash: []string{
@@ -101,8 +101,8 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	}
 
 	txn3 := new(core.Transaction)
-	txn3.TxType = core.WithdrawAsset
-	txn3.Payload = &core.PayloadWithdrawAsset{
+	txn3.TxType = core.WithdrawFromSideChain
+	txn3.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
 		SideChainTransactionHash: []string{
@@ -114,7 +114,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 
 	// 2. Add to sidechain txs pool
 	for _, txn := range txns {
-		witPayload := txn.Payload.(*core.PayloadWithdrawAsset)
+		witPayload := txn.Payload.(*core.PayloadWithdrawFromSideChain)
 		for _, hash := range witPayload.SideChainTransactionHash {
 			success := txPool.addSidechainTx(hash)
 			if !success {
