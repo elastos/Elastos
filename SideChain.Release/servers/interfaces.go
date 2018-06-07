@@ -977,8 +977,8 @@ func getPayload(pInfo PayloadInfo) (ela.Payload, error) {
 		controller, err := Uint168FromBytes(bytes)
 		obj.Controller = *controller
 		return obj, nil
-	case *IssueTokenInfo:
-		obj := new(ela.PayloadIssueToken)
+	case *RechargeToSideChainInfo:
+		obj := new(ela.PayloadRechargeToSideChain)
 		proofBytes, err := HexStringToBytes(object.Proof)
 		if err != nil {
 			return nil, err
@@ -1017,8 +1017,8 @@ func getPayloadInfo(p ela.Payload) PayloadInfo {
 		obj := new(SideMiningInfo)
 		obj.SideBlockHash = object.SideBlockHash.String()
 		return obj
-	case *ela.PayloadWithdrawAsset:
-		obj := new(WithdrawAssetInfo)
+	case *ela.PayloadWithdrawFromSideChain:
+		obj := new(WithdrawFromSideChainInfo)
 		obj.BlockHeight = object.BlockHeight
 		return obj
 	case *ela.PayloadTransferCrossChainAsset:
@@ -1060,10 +1060,10 @@ func getTransactionInfo(txInfoBytes []byte) (*TransactionInfo, error) {
 		assetInfo = &RegisterAssetInfo{}
 	case ela.SideMining:
 		assetInfo = &SideMiningInfo{}
-	case ela.IssueToken:
-		assetInfo = &IssueTokenInfo{}
-	case ela.WithdrawAsset:
-		assetInfo = &WithdrawAssetInfo{}
+	case ela.RechargeToSideChain:
+		assetInfo = &RechargeToSideChainInfo{}
+	case ela.WithdrawFromSideChain:
+		assetInfo = &WithdrawFromSideChainInfo{}
 	case ela.TransferCrossChainAsset:
 		assetInfo = &TransferCrossChainAssetInfo{}
 	default:

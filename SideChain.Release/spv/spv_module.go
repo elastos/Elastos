@@ -37,14 +37,14 @@ func VerifyTransaction(tx *ela.Transaction) error {
 	mainChainTransaction := new(ela.Transaction)
 
 	switch object := tx.Payload.(type) {
-	case *ela.PayloadIssueToken:
+	case *ela.PayloadRechargeToSideChain:
 		reader := bytes.NewReader(object.MerkleProof)
 		if err := proof.Deserialize(reader); err != nil {
-			return errors.New("IssueToken payload deserialize failed")
+			return errors.New("RechargeToSideChain payload deserialize failed")
 		}
 		reader = bytes.NewReader(object.MainChainTransaction)
 		if err := mainChainTransaction.Deserialize(reader); err != nil {
-			return errors.New("IssueToken mainChainTransaction deserialize failed")
+			return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
 		}
 	default:
 		return errors.New("Invalid payload")

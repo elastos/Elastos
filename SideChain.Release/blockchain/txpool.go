@@ -300,8 +300,8 @@ func GetTxFee(tx *ela.Transaction, assetId Uint256) Fixed64 {
 func GetTxFeeMap(tx *ela.Transaction) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
 
-	if tx.IsIssueTokenTx() {
-		depositPayload := tx.Payload.(*ela.PayloadIssueToken)
+	if tx.IsRechargeToSideChainTx() {
+		depositPayload := tx.Payload.(*ela.PayloadRechargeToSideChain)
 		mainChainTransaction := new(ela.Transaction)
 		reader := bytes.NewReader(depositPayload.MainChainTransaction)
 		if err := mainChainTransaction.Deserialize(reader); err != nil {
