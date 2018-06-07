@@ -36,7 +36,7 @@ namespace Elastos {
 															   const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo));
-			txParam->setAssetId(Utils::getSystemAssetId());
+			txParam->setAssetId(Key::getSystemAssetId());
 
 			ParamChecker::checkJsonArrayNotEmpty(sidechainAccounts);
 			ParamChecker::checkJsonArrayNotEmpty(sidechainAmounts);
@@ -94,13 +94,13 @@ namespace Elastos {
 			return ptr;
 		}
 
-		bool MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
+		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo different verify from base class
 			if (transaction->getTransactionType() != Transaction::TransferCrossChainAsset) {
-				return false;
+				throw std::logic_error("MainchainSubWallet transaction type error");
 			}
 
-			return SubWallet::verifyRawTransaction(transaction);
+			SubWallet::verifyRawTransaction(transaction);
 		}
 
 		bool MainchainSubWallet::checkTransactionPayload(const TransactionPtr &transaction) {
@@ -125,7 +125,7 @@ namespace Elastos {
 			return isValid;
 		}
 
-		bool MainchainSubWallet::completeTransaction(const TransactionPtr &transaction) {
+		void MainchainSubWallet::completeTransaction(const TransactionPtr &transaction) {
 			//todo different complete from base class
 			return SubWallet::completeTransaction(transaction);
 		}

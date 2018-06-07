@@ -112,9 +112,9 @@ namespace Elastos {
 
 			void recover(int limitGap);
 
-			virtual bool verifyRawTransaction(const TransactionPtr &transaction);
+			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 
-			virtual bool completeTransaction(const TransactionPtr &transaction);
+			virtual void completeTransaction(const TransactionPtr &transaction);
 
 			bool filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid);
 
@@ -126,13 +126,13 @@ namespace Elastos {
 
 			virtual bool checkTransactionPayload(const TransactionPtr &transaction);
 
-			virtual bool completedTransactionInputs(const TransactionPtr &transaction);
+			virtual void completedTransactionInputs(const TransactionPtr &transaction);
 
-			virtual bool completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount);
+			virtual void completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount);
 
-			virtual bool completedTransactionAssetID(const TransactionPtr &transaction);
+			virtual void completedTransactionAssetID(const TransactionPtr &transaction);
 
-			virtual bool completedTransactionPayload(const TransactionPtr &transaction);
+			virtual void completedTransactionPayload(const TransactionPtr &transaction);
 
 		protected:
 

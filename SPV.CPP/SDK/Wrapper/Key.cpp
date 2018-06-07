@@ -18,6 +18,7 @@
 #include "Log.h"
 #include "Key.h"
 #include "ByteStream.h"
+#include "Transaction.h"
 
 #define BIP32_SEED_KEY "ELA seed"
 
@@ -385,26 +386,10 @@ namespace Elastos {
 			return script;
 		}
 
-		bool Key::isValidAddress(const std::string &address) {
-			//todo complete me
-			return false;
-		}
-
-		bool Key::isValidAddress(const UInt168 &u168) {
-			if (UInt168IsZero(&u168) == true) {
-				return false;
-			}
-			int prefix = u168.u8[0];
-			if (prefix != ELA_STAND_ADDRESS && prefix != ELA_MULTISIG_ADDRESS && prefix != ELA_CROSSCHAIN_ADDRESS &&
-				prefix != ELA_IDCHAIN_ADDRESS) {
-				return false;
-			}
-			return true;
-		}
-
-		bool Key::isValidIdAddress(const std::string &address) {
-			//todo complete me
-			return false;
+		const UInt256 Key::getSystemAssetId() {
+			Transaction elaCoin;
+			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+			return elaCoin.getHash();
 		}
 	}
 }

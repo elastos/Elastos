@@ -34,6 +34,8 @@ TEST_CASE( "Address test", "[Address]" )
 	}
 
 	SECTION("Create Address width ScriptPubKey") {
+		CHECK_THROWS_AS(Address::fromScriptPubKey(CMBlock()), std::logic_error);
+
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
 
@@ -45,6 +47,8 @@ TEST_CASE( "Address test", "[Address]" )
 	}
 
 	SECTION("Create Address with ScriptSignature") {
+
+		CHECK_THROWS_AS(Address::fromScriptSignature(CMBlock()), std::logic_error);
 		//todo completed width Signature Script ; now is no signature Script
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
@@ -52,8 +56,7 @@ TEST_CASE( "Address test", "[Address]" )
 		CMBlock script = myaddress.getPubKeyScript();
 
 		boost::shared_ptr<Address> address1 = Address::fromScriptSignature(script);
-		Address* address2 = address1.get();
-		REQUIRE(address2->toString() != content);
+		REQUIRE(address1->toString() != content);
 	}
 
 	SECTION("Address Valid Test") {

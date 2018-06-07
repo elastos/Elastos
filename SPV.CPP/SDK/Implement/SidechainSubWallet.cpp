@@ -90,18 +90,18 @@ namespace Elastos {
 			return ptr;
 		}
 
-		bool SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
+		void SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo different verify from base class
 			if (transaction->getTransactionType() != Transaction::TransferCrossChainAsset) {
-				return false;
+				throw std::logic_error("SidechainSubWallet transaction type error");
 			}
 
-			return SubWallet::verifyRawTransaction(transaction);
+			SubWallet::verifyRawTransaction(transaction);
 		}
 
-		bool SidechainSubWallet::completeTransaction(const TransactionPtr &transaction) {
+		void SidechainSubWallet::completeTransaction(const TransactionPtr &transaction) {
 			//todo different complete from base class
-			return SubWallet::completeTransaction(transaction);
+			 SubWallet::completeTransaction(transaction);
 		}
 	}
 }

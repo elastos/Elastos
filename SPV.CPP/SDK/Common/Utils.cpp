@@ -198,11 +198,5 @@ namespace Elastos {
 			BRAddressHash168(&hash, address.c_str());
 			return hash;
 		}
-
-		const UInt256 Utils::getSystemAssetId() {
-			Transaction elaCoin;
-			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
-			return elaCoin.getHash();
-		}
 	}
 }

@@ -360,7 +360,7 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::IsIdValid(const std::string &id) {
-			return Key::isValidIdAddress(id);
+			return Address::isValidIdAddress(id);
 		}
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {

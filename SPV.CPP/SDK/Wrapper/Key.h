@@ -91,12 +91,7 @@ namespace Elastos {
 			static bool verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 			                              const CMBlock &signature);
 
-			static bool isValidAddress(const std::string &address);
-
-			static bool isValidAddress(const UInt168 &u168);
-
-			static bool isValidIdAddress(const std::string &address);
-
+			static const UInt256 getSystemAssetId();
 
 		private:
 			bool setSecret(const UInt256 &data, bool compressed);

@@ -82,9 +82,9 @@ namespace Elastos {
 			return ptr;
 		}
 
-		bool IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
+		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo different verify from base class
-			return SubWallet::verifyRawTransaction(transaction);
+			SubWallet::verifyRawTransaction(transaction);
 		}
 
 		bool IdChainSubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
@@ -114,9 +114,9 @@ namespace Elastos {
 			return true;
 		}
 
-		bool IdChainSubWallet::completeTransaction(const TransactionPtr &transaction) {
+		void IdChainSubWallet::completeTransaction(const TransactionPtr &transaction) {
 			//todo different complete from base class
-			return SubWallet::completeTransaction(transaction);
+			SubWallet::completeTransaction(transaction);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {

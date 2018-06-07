@@ -348,45 +348,40 @@ namespace Elastos {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(transactionJson);
 
-			if(!verifyRawTransaction(transaction) || !completeTransaction(transaction))
-				return "";
+			verifyRawTransaction(transaction);
+			completeTransaction(transaction);
 
 			UInt256 hash = _walletManager->signAndPublishTransaction(transaction);
 			if (UInt256IsZero(&hash)) {
-				return "";
+				throw std::logic_error("send rawTransaction error.");
 			}
+
 			return Utils::UInt256ToString(hash);
-
 		}
 
-		bool SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			//todo check output
+		void SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			if (!checkTransactionOutput(transaction)) {
-				return false;
-			}
-			//todo check attribute(nounce)
-			if (!checkTransactionAttribute(transaction)) {
-				return false;
-			}
-			//todo check program
-			if (!checkTransactionProgram(transaction)) {
-				return false;
-			}
-			//todo check Payload
-			if (!checkTransactionPayload(transaction)) {
-				return false;
+				throw std::logic_error("checkTransactionOutput error.");
 			}
 
-			return true;
+			if (!checkTransactionAttribute(transaction)) {
+				throw std::logic_error("checkTransactionAttribute error.");
+			}
+
+			if (!checkTransactionProgram(transaction)) {
+				throw std::logic_error("checkTransactionProgram error.");
+			}
+
+			if (!checkTransactionPayload(transaction)) {
+				throw std::logic_error("checkTransactionPayload error.");
+			}
 		}
 
-		bool SubWallet::completeTransaction(const TransactionPtr &transaction) {
-
-			//todo complete input
+		void SubWallet::completeTransaction(const TransactionPtr &transaction) {
 			if (transaction->getInputs().size() <= 0) {
 				completedTransactionInputs(transaction);
 			}
-			//todo complete fee
+
 			uint64_t inputFee = _walletManager->getWallet()->getInputsFee(transaction);
 //			assert(inputFee < UINT64_MAX);
 			uint64_t outputFee = _walletManager->getWallet()->getOutputFee(transaction);
@@ -394,13 +389,10 @@ namespace Elastos {
 			if (inputFee - outputFee > 0) {
 				completedTransactionOutputs(transaction, inputFee - outputFee);
 			}
-			//todo complete asset id
+
 			completedTransactionAssetID(transaction);
 
-			//todo complete payload
 			completedTransactionPayload(transaction);
-
-			return true;
 		}
 
 		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
@@ -417,7 +409,7 @@ namespace Elastos {
 			}
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutputPtr output = outputs[i];
-				if (!Key::isValidAddress(output->getProgramHash())) {
+				if (!Address::UInt168IsValid(output->getProgramHash())) {
 					return false;
 				}
 			}
@@ -454,7 +446,7 @@ namespace Elastos {
 			return payloadPtr->isValid();
 		}
 
-		bool SubWallet::completedTransactionInputs(const TransactionPtr &transaction) {
+		void SubWallet::completedTransactionInputs(const TransactionPtr &transaction) {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			BRUTXO *o = nullptr;
 			ELABRTransaction *tx = nullptr;
@@ -470,10 +462,9 @@ namespace Elastos {
 				                       TXIN_SEQUENCE);
 				transaction->addInput(input);
 			}
-			return true;
 		}
 
-		bool SubWallet::completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount) {
+		void SubWallet::completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount) {
 			BRTxOutput *o = new BRTxOutput();
 			memset(o, 0, sizeof(BRTxOutput));
 			uint64_t maxAmount = _walletManager->getWallet()->getMaxOutputAmount();
@@ -485,19 +476,17 @@ namespace Elastos {
 
 			TransactionOutput output(o);
 			transaction->addOutput(output);
-
-			return true;
 		}
 
-		bool SubWallet::completedTransactionAssetID(const TransactionPtr &transaction) {
+		void SubWallet::completedTransactionAssetID(const TransactionPtr &transaction) {
 			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
 			size_t size = outputs.size();
 			if (size < 1) {
-				return false;
+				throw std::logic_error("completedTransactionAssetID transaction has't outputs");
 			}
 
 			UInt256 zero = UINT256_ZERO;
-			UInt256 assetID = Utils::getSystemAssetId();
+			UInt256 assetID = Key::getSystemAssetId();
 
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutputPtr output = outputs[i];
@@ -505,12 +494,10 @@ namespace Elastos {
 					output->setAssetId(assetID);
 				}
 			}
-
-			return true;
 		}
 
-		bool SubWallet::completedTransactionPayload(const TransactionPtr &transaction) {
-			return true;
+		void SubWallet::completedTransactionPayload(const TransactionPtr &transaction) {
+
 		}
 	}
 }

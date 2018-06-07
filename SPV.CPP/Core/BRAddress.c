@@ -258,9 +258,9 @@ size_t BRAddressFromScriptPubKey(char *addr, size_t addrLen, const uint8_t *scri
     }
     else if (count == 3 && *elems[0] == OP_HASH160 && *elems[1] == 20 && *elems[2] == OP_EQUAL) {
         // pay-to-script-hash scriptPubKey
-        data[0] = ELA_MULTISIG_ADDRESS;
+        data[0] = ELA_STAND_ADDRESS;
 #if BITCOIN_TESTNET
-        data[0] = ELA_MULTISIG_ADDRESS;
+        data[0] = ELA_STAND_ADDRESS;
 #endif
         memcpy(&data[1], BRScriptData(elems[1], &l), 20);
         r = BRBase58CheckEncode(addr, addrLen, data, 21);

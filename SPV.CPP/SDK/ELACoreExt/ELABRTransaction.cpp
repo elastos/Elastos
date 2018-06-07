@@ -11,6 +11,7 @@
 #include "ELABRTransaction.h"
 #include "Utils.h"
 #include "BRAddress.h"
+#include "Key.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -169,7 +170,7 @@ namespace Elastos {
 			if (tx) {
 				BRTxOutputSetScript(&(output.raw), script, scriptLen);
 				output.programHash = Utils::AddressToUInt168(output.raw.address);
-				output.assetId = Utils::getSystemAssetId();
+				output.assetId = Key::getSystemAssetId();
 				array_add(tx->outputs, output);
 				ELABRTxOutput temp = ELABR_TX_OUTPUT_NONE;
 				temp.assetId = output.assetId;
