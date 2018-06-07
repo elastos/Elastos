@@ -214,7 +214,7 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 	for _, arbitrator := range arbitrators {
 		found := false
 		for _, pk := range publicKeys {
-			if bytes.Equal(arbitrator, pk) {
+			if bytes.Equal(arbitrator, pk[1:]) {
 				found = true
 				break
 			}
