@@ -318,7 +318,9 @@ namespace Elastos {
 			size_t len = BRKeyPubKey(key.getRaw(), nullptr, 0);
 			uint8_t pubKey[len];
 			BRKeyPubKey(key.getRaw(), pubKey, len);
-			_publicKey = std::string((char *) pubKey, len);
+			CMBlock data;
+			data.SetMemFixed(pubKey, len);
+			_publicKey = Key::encodeHex(data);
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {

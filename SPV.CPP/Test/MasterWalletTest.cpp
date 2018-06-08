@@ -413,6 +413,21 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	}
 }
 
+TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
+	SECTION("Normal test") {
+		std::string phrasePassword = "phrasePassword";
+		std::string payPassword = "payPassword";
+		std::string language = "english";
+
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
+
+		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+
+		REQUIRE(masterWallet->GetPublicKey() == "02f7fc47a94041b776eed8894cfe90bb824297bd3e957fe10d1f408b25b5046bac");
+	}
+}
+
 TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
 	//todo complete me
 }

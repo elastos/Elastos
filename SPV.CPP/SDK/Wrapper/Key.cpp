@@ -349,16 +349,13 @@ namespace Elastos {
 
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 		                            const CMBlock &signature) {
-			size_t len = publicKey.size();
 			int r = 0;
 			secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);;
 			secp256k1_pubkey pk;
 			secp256k1_ecdsa_signature s;
-			uint8_t pubKey[65];
-			memset(pubKey, 0, sizeof(pubKey));
-			memcpy(pubKey, publicKey.c_str(), len);
+			CMBlock pubData = decodeHex(publicKey);
 
-			if (len > 0 && secp256k1_ec_pubkey_parse(ctx, &pk, pubKey, len) &&
+			if (pubData.GetSize() > 0 && secp256k1_ec_pubkey_parse(ctx, &pk, pubData, pubData.GetSize()) &&
 			    secp256k1_ecdsa_signature_parse_der(ctx, &s, signature, signature.GetSize())) {
 				if (secp256k1_ecdsa_verify(ctx, &s, messageDigest.u8, &pk) == 1) r = 1; // success is 1, all other values are fail
 			}
