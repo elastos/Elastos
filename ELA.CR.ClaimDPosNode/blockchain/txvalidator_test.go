@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func init() {
+func TestTxValidatorInit(t *testing.T) {
 	log.Init(log.Path, os.Stdout)
 	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
 	if err != nil {
@@ -219,6 +219,46 @@ func TestCheckAssetPrecision(t *testing.T) {
 	err = CheckAssetPrecision(tx)
 	assert.EqualError(t, err, "The asset not exist in local blockchain.")
 
+	// register asset
+	asset := core.Asset{
+		Name:      "TEST",
+		Precision: 0x04,
+		AssetType: 0x00,
+	}
+	register :=  &core.Transaction{
+		TxType:         core.RegisterAsset,
+		PayloadVersion: 0,
+		Payload: &core.PayloadRegisterAsset{
+			Asset: asset,
+			Amount:     0 * 100000000,
+		},
+	}
+	DefaultLedger.Store.(*ChainStore).NewBatch()
+	DefaultLedger.Store.PersistAsset(register.Hash(), asset)
+	DefaultLedger.Store.(*ChainStore).BatchCommit()
+
+	// valid precision
+	for _, output := range tx.Outputs {
+		output.AssetID = register.Hash()
+		output.ProgramHash = common.Uint168{}
+		output.Value = 123456780000
+	}
+	err = CheckAssetPrecision(tx)
+	assert.NoError(t, err)
+
+	// invalid precision
+	for _, output := range tx.Outputs {
+		output.AssetID = register.Hash()
+		output.ProgramHash = common.Uint168{}
+		output.Value = 12345678000
+	}
+	err = CheckAssetPrecision(tx)
+	assert.EqualError(t, err, "The precision of asset is incorrect.")
+
+	t.Log("[TestCheckAssetPrecision] PASSED")
+}
+
+func TestCheckAmountPrecision(t *testing.T) {
 	// precision check
 	for i := 8; i >= 0; i-- {
 		amount := common.Fixed64(math.Pow(10, float64(i)))
@@ -226,8 +266,7 @@ func TestCheckAssetPrecision(t *testing.T) {
 		assert.Equal(t, true, checkAmountPrecise(amount, byte(8-i)))
 		assert.Equal(t, false, checkAmountPrecise(amount, byte(8-i-1)))
 	}
-
-	t.Log("[TestCheckAssetPrecision] PASSED")
+	t.Log("[TestCheckAmountPrecision] PASSED")
 }
 
 func TestCheckAttributeProgram(t *testing.T) {
@@ -283,4 +322,8 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 	assert.EqualError(t, err, "Duplicate sidechain tx detected in a transaction")
 
 	t.Log("[TestCheckDuplicateSidechainTx] PASSED")
+}
+
+func TestTxValidatorDone(t *testing.T) {
+	DefaultLedger.Store.Close()
 }
