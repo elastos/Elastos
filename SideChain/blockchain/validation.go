@@ -97,7 +97,7 @@ func GetTxProgramHashes(tx *core.Transaction) ([]Uint168, error) {
 		}
 	}
 
-	//remove dupilicated hashes
+	//remove duplicated hashes
 	uniq := make(map[Uint168]bool)
 	for _, v := range hashes {
 		uniq[v] = true

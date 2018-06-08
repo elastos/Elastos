@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"container/list"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
@@ -17,6 +19,7 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -91,27 +94,28 @@ func Init(store IChainStore) error {
 }
 
 func GetGenesisBlock() (*core.Block, error) {
-	// payload
-	registerAsset := &core.PayloadRegisterAsset{
-		Asset: core.Asset{
-			Name:      "ELA",
-			Precision: 0x08,
-			AssetType: 0x00,
-		},
-		Amount:     0 * 100000000,
-		Controller: Uint168{},
-	}
-
 	// ELA coin
 	elaCoin := core.Transaction{
 		TxType:         core.RegisterAsset,
 		PayloadVersion: 0,
-		Payload:        registerAsset,
-		Attributes:     []*core.Attribute{},
-		Inputs:         []*core.Input{},
-		Outputs:        []*core.Output{},
-		Programs:       []*core.Program{},
+		Payload: &core.PayloadRegisterAsset{
+			Asset: core.Asset{
+				Name:      "ELA",
+				Precision: 0x08,
+				AssetType: 0x00,
+			},
+			Amount:     0 * 100000000,
+			Controller: Uint168{},
+		},
+		Attributes: []*core.Attribute{},
+		Inputs:     []*core.Input{},
+		Outputs:    []*core.Output{},
+		Programs:   []*core.Program{},
 	}
+	var sideTx ela.Transaction
+	buf := new(bytes.Buffer)
+	elaCoin.Serialize(buf)
+	sideTx.Deserialize(buf)
 
 	// header
 	header := core.Header{
@@ -122,6 +126,9 @@ func GetGenesisBlock() (*core.Block, error) {
 		Bits:       0x1d03ffff,
 		Nonce:      core.GenesisNonce,
 		Height:     uint32(0),
+		SideAuxPow: auxpow.SideAuxPow{
+			SideAuxBlockTx: sideTx,
+		},
 	}
 
 	//block
@@ -168,14 +175,13 @@ func (bc *Blockchain) GetBestHeight() uint32 {
 	return bc.BlockHeight
 }
 
-func (bc *Blockchain) UpdateBestHeight(val uint32) {
-	//bc.mutex.Lock()
-	//defer bc.mutex.Unlock()
-	bc.BlockHeight = val
+func (bc *Blockchain) UpdateBestHeight(height uint32) {
+	bc.mutex.Lock()
+	defer bc.mutex.Unlock()
+	bc.BlockHeight = height
 }
 
 func (bc *Blockchain) AddBlock(block *core.Block) (bool, bool, error) {
-	log.Debug()
 	bc.mutex.Lock()
 	defer bc.mutex.Unlock()
 
