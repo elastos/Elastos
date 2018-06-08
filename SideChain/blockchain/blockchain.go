@@ -1,7 +1,6 @@
 package blockchain
 
 import (
-	"bytes"
 	"container/list"
 	"errors"
 	"fmt"
@@ -112,10 +111,6 @@ func GetGenesisBlock() (*core.Block, error) {
 		Outputs:    []*core.Output{},
 		Programs:   []*core.Program{},
 	}
-	var sideTx ela.Transaction
-	buf := new(bytes.Buffer)
-	elaCoin.Serialize(buf)
-	sideTx.Deserialize(buf)
 
 	// header
 	header := core.Header{
@@ -127,7 +122,11 @@ func GetGenesisBlock() (*core.Block, error) {
 		Nonce:      core.GenesisNonce,
 		Height:     uint32(0),
 		SideAuxPow: auxpow.SideAuxPow{
-			SideAuxBlockTx: sideTx,
+			SideAuxBlockTx: ela.Transaction{
+				TxType:ela.SideMining,
+				PayloadVersion: ela.SideMiningPayloadVersion,
+				Payload: new(ela.PayloadSideMining),
+			},
 		},
 	}
 
