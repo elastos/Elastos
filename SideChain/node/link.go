@@ -97,14 +97,6 @@ func (n *node) listenConnections(listener net.Listener) {
 	}
 }
 
-func localPortFromConn(conn net.Conn) uint16 {
-	// Get node connection port
-	addr := conn.LocalAddr().String()
-	portIndex := strings.LastIndex(addr, ":")
-	port, _ := strconv.ParseUint(string([]byte(addr)[portIndex+1:]), 10, 16)
-	return uint16(port)
-}
-
 func initNonTlsListen() (net.Listener, error) {
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(Parameters.NodePort))
 	if err != nil {
