@@ -22,12 +22,11 @@ func TestTxPoolInit(t *testing.T) {
 	}
 	FoundationAddress = *foundation
 
-	chainStore, err := NewChainStore()
+	chainStore, err := newTestChainStore()
 	if err != nil {
 		t.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
-	defer chainStore.Close()
 
 	err = Init(chainStore)
 	if err != nil {

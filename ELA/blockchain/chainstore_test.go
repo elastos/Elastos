@@ -2,15 +2,17 @@ package blockchain
 
 import (
 	"container/list"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	ela "github.com/elastos/Elastos.ELA/core"
 	"testing"
+
+	ela "github.com/elastos/Elastos.ELA/core"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var store *ChainStore
 var sidechainTxHash string
 
-func newChainStore() (*ChainStore, error) {
+func newTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
 	st, err := NewLevelDB("Chain_UnitTest")
 	if err != nil {
@@ -36,7 +38,7 @@ func newChainStore() (*ChainStore, error) {
 func TestInit(t *testing.T) {
 	// Get new chainstore
 	var err error
-	store, err = newChainStore()
+	store, err = newTestChainStore()
 	if err != nil {
 		t.Error("Create chainstore failed")
 	}
