@@ -1001,6 +1001,23 @@ TEST_CASE("Wallet DestroyWallet method", "[DestroyWallet]") {
 	}
 }
 
+TEST_CASE("test nlohmann::json", "[nlohmann::json]") {
+	nlohmann::json j;
+	std::string s = "jfdfk djkdjfkd dkkfdl kkkk";
+	j["s"] = s;
+
+	std::string str_ss;
+	std::stringstream ss;
+	ss.setf(std::ios::skipws);
+	ss << j;
+	ss >> str_ss;
+
+	std::string tmp = ss.str();
+
+
+	int pause = 0;
+}
+
 TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]") {
 	//todo [zcl] complete me
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());

@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/filesystem.hpp>
+#include <Core/BRKey.h>
 
 #include "BRBase58.h"
 #include "BRBIP39Mnemonic.h"
@@ -384,6 +385,7 @@ namespace Elastos {
 
 			std::string prikey_base58 = Wallet_Tool::getDeriveKey_base58(mnemonic, phrasePassword);
 			CMemBlock<uint8_t> prikey = BTCBase58::DecodeBase58(prikey_base58);
+			assert(prikey.GetSize() == sizeof(result));
 			memcpy(&result, prikey, prikey.GetSize());
 
 			return result;
@@ -424,7 +426,6 @@ namespace Elastos {
 			BRKey *privkey = new BRKey;
 			UInt256 chainCode;
 			Key::deriveKeyAndChain(privkey, chainCode, &seed, sizeof(seed), 2, purpose, index);
-
 			Key wrappedKey(privkey);
 			id = wrappedKey.keyToAddress(ELA_IDCHAIN);
 			key = wrappedKey.toString();
