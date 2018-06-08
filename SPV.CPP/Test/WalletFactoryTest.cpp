@@ -831,7 +831,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
-		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length() - 1);;
+		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
 		dumyMasterWallet.DestroyWallet(subWallet);
@@ -852,7 +852,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
-		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length() - 1);;
+		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
 		dumyMasterWallet.DestroyWallet(subWallet);
@@ -873,7 +873,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
-		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length() - 1);;
+		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
 		dumyMasterWallet.DestroyWallet(subWallet);
@@ -894,7 +894,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
-		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length() - 1);;
+		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
 		dumyMasterWallet.DestroyWallet(subWallet);
@@ -915,7 +915,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
-		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length() - 1);;
+		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
 		dumyMasterWallet.DestroyWallet(subWallet);
@@ -936,7 +936,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Wallet
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 
 		std::string mnemonicExport = walletFactory->ExportWalletWithMnemonic(masterWallet, payPassword);
-		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length() - 1);;
+		mnemonicExport = mnemonicExport.substr(0, mnemonicExport.length());;
 		REQUIRE(mnemonicExport == mnemonic);
 
 		dumyMasterWallet.DestroyWallet(subWallet);

@@ -375,15 +375,17 @@ namespace Elastos {
 			CMBlock entropyData = Utils::decrypt(_encryptedMnemonic, payPassword);
 			ParamChecker::checkDataNotEmpty(entropyData, false);
 
-			UInt128 entropy;
-			UInt128Get(&entropy, (void *) entropyData);
+			CMemBlock<char> mnemonic;
+			mnemonic.SetMemFixed((const char *) (uint8_t *) entropyData, entropyData.GetSize());
 
 			std::string phrasePassword = _encryptedPhrasePass.GetSize() == 0
 										 ? ""
 										 : Utils::convertToString(Utils::decrypt(_encryptedPhrasePass, payPassword));
 
-			std::string phrase = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
-			BRBIP39DeriveKey(result.u8, phrase.c_str(), phrasePassword.c_str());
+			std::string prikey_base58 = Wallet_Tool::getDeriveKey_base58(mnemonic, phrasePassword);
+			CMemBlock<uint8_t> prikey = BTCBase58::DecodeBase58(prikey_base58);
+			memcpy(&result, prikey, prikey.GetSize());
+
 			return result;
 		}
 
