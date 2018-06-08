@@ -69,7 +69,7 @@ namespace Elastos {
 			walletJson << _walletJson;
 			std::stringstream ss;
 			ss << walletJson;
-			ss >> str_ss;
+			str_ss = ss.str();
 
 			CMemBlock<unsigned char> salt, iv;
 			AES_256_CCM::GenerateSaltAndIV(salt, iv);

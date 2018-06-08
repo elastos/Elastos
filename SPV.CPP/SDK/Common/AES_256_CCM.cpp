@@ -171,7 +171,7 @@ namespace Elastos {
 		}
 
 		CMBlock
-		AES_256_CCM::encrypt(unsigned char *plaintText, size_t szPlainText, unsigned char *password, size_t szPassword,
+		AES_256_CCM::encrypt(unsigned char *plainText, size_t szPlainText, unsigned char *password, size_t szPassword,
 							 unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
 							 unsigned char *aad, size_t szAad) {
 			CMBlock _ret;
@@ -187,7 +187,7 @@ namespace Elastos {
 					static unsigned char tag[8] = {0};
 					int ret = 0;
 					try {
-						ret = _encryptccm(plaintText, szPlainText, nullptr == aad ? (unsigned char *) "" : aad, szAad,
+						ret = _encryptccm(plainText, szPlainText, nullptr == aad ? (unsigned char *) "" : aad, szAad,
 										  key, iv, ciphertext, tag, bAes128);
 					}
 					catch (...) {

@@ -168,7 +168,7 @@ namespace Elastos {
 			return out;
 		}
 
-		std::string Wallet_Tool::getDeriveKey_base58(CMemBlock<char> &phrase, const std::string &passphrase) {
+		std::string Wallet_Tool::getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase) {
 			uint8_t prikey[64] = {0};
 			BRBIP39DeriveKey(prikey, phrase, passphrase.c_str());
 			return BTCBase58::EncodeBase58((unsigned char *) prikey, 64);

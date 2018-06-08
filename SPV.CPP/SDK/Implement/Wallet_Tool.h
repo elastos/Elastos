@@ -39,7 +39,7 @@ namespace Elastos {
 
 			static CMemBlock<uint8_t> getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language);
 
-			static std::string getDeriveKey_base58(CMemBlock<char> &phrase, const std::string &passphrase);
+			static std::string getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase);
 		};
 	}
 }

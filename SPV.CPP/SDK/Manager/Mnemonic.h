@@ -20,6 +20,7 @@ namespace Elastos {
 			const std::vector<std::string> &words() const;
 
 			void setLanguage(const std::string &language);
+			std::string getLanguage() const;
 
 			void setI18nPath(const boost::filesystem::path &path);
 
@@ -27,6 +28,7 @@ namespace Elastos {
 			void loadLanguage(const boost::filesystem::path &path);
 
 		private:
+			std::string _language;
 			boost::filesystem::path _i18nPath;
 			std::vector<std::string> _words;
 		};

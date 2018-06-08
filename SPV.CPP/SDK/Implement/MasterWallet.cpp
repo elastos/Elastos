@@ -18,6 +18,8 @@
 #include "Config.h"
 #include "ParamChecker.h"
 #include "BigIntFormat.h"
+#include "Wallet_Tool.h"
+#include "BTCBase58.h"
 
 #define MNEMONIC_FILE_PREFIX "mnemonic_"
 #define MNEMONIC_FILE_EXTENSION ".txt"
@@ -29,8 +31,8 @@ namespace Elastos {
 	namespace SDK {
 
 		MasterWallet::MasterWallet(const std::string &language) :
-				_initialized(false),
-				_dbRoot("Data") {
+			_initialized(false),
+			_dbRoot("Data") {
 
 			ParamChecker::checkNotEmpty(language);
 
@@ -42,8 +44,8 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::string &language,
 								   const std::string &rootPath) :
-				_initialized(true),
-				_dbRoot(rootPath) {
+			_initialized(true),
+			_dbRoot(rootPath) {
 
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
@@ -53,8 +55,10 @@ namespace Elastos {
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
 
-			UInt128 entropy = Utils::generateRandomSeed();
-			initFromEntropy(entropy, phrasePassword, payPassword);
+			CMemBlock<uint8_t> seed128 = Wallet_Tool::GenerateSeed128();
+			CMemBlock<char> phrase = Wallet_Tool::GeneratePhraseFromSeed(seed128, language);
+			std::string str_phrase = (const char *) phrase;
+			initFromPhrase(str_phrase, phrasePassword, payPassword);
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -170,7 +174,7 @@ namespace Elastos {
 			}
 
 			CMBlock phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
-					_keyStore.json().getEncryptedPhrasePassword());
+				_keyStore.json().getEncryptedPhrasePassword());
 			std::string phrasePass = "";
 			if (true == phrasePass_Raw0) {
 				CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
@@ -179,29 +183,15 @@ namespace Elastos {
 				CMBlock phrasePassRaw = Utils::decrypt(phrasePass_Raw1, payPassword);
 				phrasePass = Utils::convertToString(phrasePassRaw);
 			}
+			phrasePass = phrasePassword != "" ? phrasePassword : phrasePass;
 
-			CMBlock entropy0 = Utils::convertToMemBlock<unsigned char>(
-					_keyStore.json().getEncryptedEntropySource());
-			//resetMnemonic must before initFromEntropy because initFromEntropy use _mnemonic !!!!
-			if (phrasePass == "") {
-				// todo fixme to restore from keystore of webwallet
-			}
-			else {
-				CMBlock entropy1(entropy0.GetSize() + 1);
-				entropy1.Zero();
-				memcpy(entropy1, entropy0, entropy0.GetSize());
-				CMBlock entropy2 = Utils::decrypt(entropy1, payPassword);
-				if (false == entropy2) {
-					return false;
-				}
-				UInt128 entropy;
-				memcpy((void *) &entropy.u8[0], entropy2, sizeof(UInt128));
+			std::string mnemonic = _keyStore.json().getMnemonic();
+			CMBlock cb_mnemonic;
+			cb_mnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
+			_encryptedMnemonic = Utils::encrypt(cb_mnemonic, payPassword);
+			resetMnemonic(_keyStore.json().getMnemonicLanguage());
 
-				resetMnemonic(_keyStore.json().getMnemonicLanguage());
-				initFromEntropy(entropy, phrasePass, payPassword);
-			}
-
-			return true;
+			return initFromPhrase(mnemonic, phrasePass, payPassword);
 		}
 
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
@@ -213,7 +203,9 @@ namespace Elastos {
 
 			_dbRoot = rootPath;
 
-			if (!MasterPubKey::validateRecoveryPhrase(_mnemonic.words(), mnemonic)) {
+			CMemBlock<char> cb_mnemonic;
+			cb_mnemonic.SetMemFixed(mnemonic.c_str(), mnemonic.size() + 1);
+			if (!Wallet_Tool::PhraseIsValid(cb_mnemonic, _mnemonic.getLanguage())) {
 				Log::error("Invalid mnemonic.");
 				return false;
 			}
@@ -221,11 +213,19 @@ namespace Elastos {
 			return initFromPhrase(mnemonic, phrasePassword, payPassword);
 		}
 
-		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &keystorePath) {
+		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword,
+										  const std::string &keystorePath) {
 			if (_keyStore.json().getEncryptedPhrasePassword().empty())
 				_keyStore.json().setEncryptedPhrasePassword((const char *) (unsigned char *) _encryptedPhrasePass);
-			if (_keyStore.json().getEncryptedEntropySource().empty())
-				_keyStore.json().setEncryptedEntropySource((const char *) (unsigned char *) _encryptedEntropy);
+			CMBlock cb_Mnemonic = Utils::decrypt(_encryptedMnemonic, payPassword);
+			if (false == cb_Mnemonic) {
+				return false;
+			}
+			CMemBlock<char> cb_char_Mnemonic(cb_Mnemonic.GetSize() + 1);
+			cb_char_Mnemonic.Zero();
+			memcpy(cb_char_Mnemonic, cb_Mnemonic, cb_Mnemonic.GetSize());
+			if (_keyStore.json().getMnemonic().empty())
+				_keyStore.json().setMnemonic((const char *) cb_char_Mnemonic);
 
 			_keyStore.json().clearCoinInfo();
 			std::for_each(_createdWallets.begin(), _createdWallets.end(), [this](const WalletMap::value_type &item) {
@@ -243,10 +243,14 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
-			CMBlock entropyBytes = Utils::decrypt(_encryptedEntropy, payPassword);
-			UInt128 entropy = UINT128_ZERO;
-			memcpy(entropy.u8, entropyBytes, entropyBytes.GetSize());
-			mnemonic = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
+			CMBlock cb_Mnemonic = Utils::decrypt(_encryptedMnemonic, payPassword);
+			if (false == cb_Mnemonic) {
+				return false;
+			}
+			CMemBlock<char> cb_char_Mnemonic(cb_Mnemonic.GetSize() + 1);
+			cb_char_Mnemonic.Zero();
+			memcpy(cb_char_Mnemonic, cb_Mnemonic, cb_Mnemonic.GetSize());
+			mnemonic = (const char *) cb_char_Mnemonic;
 			return true;
 		}
 
@@ -264,31 +268,32 @@ namespace Elastos {
 		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
 										  const std::string &payPassword) {
 			assert(phrase.size() > 0);
-			CMBlock encryptedPhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
-			_encryptedPhrasePass = Utils::encrypt(encryptedPhrasePass, payPassword);
-
-			//init _encryptedEntropy by phrase
-			UInt128 entropy = UINT128_ZERO;
-
-			std::vector<std::string> words = _mnemonic.words();
-			size_t len = words.size();
-			const char *wordList[len];
-			for (size_t i = 0; i < len; ++i) {
-				wordList[i] = words[i].c_str();
+			CMemBlock<char> cb_phrase_;
+			cb_phrase_.SetMemFixed(phrase.c_str(), phrase.size() + 1);
+			std::string language = _keyStore.json().getMnemonicLanguage();
+			if (!Wallet_Tool::PhraseIsValid(cb_phrase_, language)) {
+				if (!Wallet_Tool::PhraseIsValid(cb_phrase_, "chinese")) {
+					Log::error("Phrase is unvalid.");
+					return false;
+				} else {
+					_keyStore.json().setMnemonicLanguage("chinese");
+				}
 			}
 
-			BRBIP39Decode(entropy.u8, sizeof(entropy), wordList, phrase.c_str());
-
-			CMBlock entropyBytes;
-			entropyBytes.SetMemFixed((const unsigned char *) entropy.u8, sizeof(entropy));
-			_encryptedEntropy = Utils::encrypt(entropyBytes, payPassword);
+			CMBlock cb_phrase0 = Utils::convertToMemBlock<unsigned char>(phrase);
+			_encryptedMnemonic = Utils::encrypt(cb_phrase0, payPassword);
+			CMBlock PhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
+			_encryptedPhrasePass = Utils::encrypt(PhrasePass, payPassword);
 
 			//init master public key and private key
-			CMBlock phraseBlock;
-			phraseBlock.SetMemFixed((const uint8_t *) phrase.c_str(), phrase.size() + 1);
-			CMBlock seed = Key::getSeedFromPhrase(phraseBlock, phrasePassword);
+			CMemBlock<char> cb_phrase;
+			cb_phrase.SetMemFixed(phrase.c_str(), phrase.size() + 1);
+			std::string prikey_base58 = Wallet_Tool::getDeriveKey_base58(cb_phrase, phrasePassword);
+			CMemBlock<unsigned char> prikey = BTCBase58::DecodeBase58(prikey_base58);
 
-			CMBlock privKey = Key::getAuthPrivKeyForAPI(seed);
+			CMBlock cb_tmp;
+			cb_tmp.SetMemFixed((const uint8_t *) (void *) prikey, prikey.GetSize());
+			CMBlock privKey = Key::getAuthPrivKeyForAPI(cb_tmp);
 
 			_encryptedKey = Utils::encrypt(privKey, payPassword);
 			initPublicKey(payPassword);
@@ -367,7 +372,7 @@ namespace Elastos {
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
-			CMBlock entropyData = Utils::decrypt(_encryptedEntropy, payPassword);
+			CMBlock entropyData = Utils::decrypt(_encryptedMnemonic, payPassword);
 			ParamChecker::checkDataNotEmpty(entropyData, false);
 
 			UInt128 entropy;

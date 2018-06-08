@@ -94,6 +94,7 @@ namespace Elastos {
 									const std::string &rootPath);
 
 			bool exportKeyStore(const std::string &backupPassword,
+								const std::string &payPassword,
 								const std::string &keystorePath);
 
 			bool exportMnemonic(const std::string &payPassword,
@@ -129,7 +130,7 @@ namespace Elastos {
 			WalletMap _createdWallets;
 
 			CMBlock _encryptedKey;
-			CMBlock _encryptedEntropy;
+			CMBlock _encryptedMnemonic;
 			CMBlock _encryptedPhrasePass;
 
 			KeyStore _keyStore;

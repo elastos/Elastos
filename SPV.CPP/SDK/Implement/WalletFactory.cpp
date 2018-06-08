@@ -56,7 +56,7 @@ namespace Elastos {
 
 			return WalletFactoryInner::importWalletInternal("english",
 															[&keystorePath, &backupPassword, &payPassword, &phrasePassword, &rootPath](
-																	MasterWallet *masterWallet) {
+																MasterWallet *masterWallet) {
 																return masterWallet->importFromKeyStore(keystorePath,
 																										backupPassword,
 																										payPassword,
@@ -74,7 +74,7 @@ namespace Elastos {
 
 			return WalletFactoryInner::importWalletInternal(language,
 															[&mnemonic, &phrasePassword, &payPassword, &rootPath](
-																	MasterWallet *masterWallet) {
+																MasterWallet *masterWallet) {
 																return masterWallet->importFromMnemonic(mnemonic,
 																										phrasePassword,
 																										payPassword,
@@ -83,9 +83,10 @@ namespace Elastos {
 		}
 
 		void WalletFactory::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
-													 const std::string &keystorePath) {
+													 const std::string &payPassword, const std::string &keystorePath) {
 
 			ParamChecker::checkPassword(backupPassword);
+			ParamChecker::checkPassword(payPassword);
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 			if (!wallet->Initialized()) {
@@ -93,7 +94,9 @@ namespace Elastos {
 				return;
 			}
 
-			wallet->exportKeyStore(backupPassword, keystorePath);
+			if (!wallet->exportKeyStore(backupPassword, payPassword, keystorePath)) {
+				throw std::logic_error("Password is wrong.");
+			}
 		}
 
 		std::string

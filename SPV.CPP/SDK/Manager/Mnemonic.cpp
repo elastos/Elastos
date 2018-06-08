@@ -19,18 +19,23 @@ namespace Elastos {
 
 		Mnemonic::Mnemonic(const std::string &language) :
 			_i18nPath("data") {
+			_language = language;
 			setLanguage(language);
 		}
 
 		Mnemonic::Mnemonic(const std::string &language, const boost::filesystem::path &path) {
 			setI18nPath(path);
+			_language = language;
 			setLanguage(language);
 		}
 
 		void Mnemonic::setLanguage(const std::string &language) {
 			_words.clear();
 
-			if (language == "english") {
+			_words.reserve(BIP39_WORDLIST_COUNT);
+			_language = language;
+
+			if (language == "english" || language == "") {
 				for (std::string str : BRBIP39WordsEn) {
 					_words.push_back(str);
 				}
@@ -41,6 +46,10 @@ namespace Elastos {
 			}
 
 			assert(_words.size() == BIP39_WORDLIST_COUNT);
+		}
+
+		std::string Mnemonic::getLanguage() const {
+			return _language;
 		}
 
 		void Mnemonic::loadLanguage(const fs::path &path) {
