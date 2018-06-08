@@ -26,8 +26,7 @@ namespace Elastos {
 			/*
 			 * construct wallet manager from mnemonic
 			 */
-			WalletManager(const CMBlock &phrase, const std::string language = "english",
-						  const ChainParams &chainParams = ChainParams::mainNet());
+			WalletManager(const CMBlock &phrase, const ChainParams &chainParams = ChainParams::mainNet());
 
 			WalletManager(const MasterPubKeyPtr &masterPubKey,
 						  const boost::filesystem::path &dbPath,
@@ -95,6 +94,8 @@ namespace Elastos {
 
 			// Called on publishTransaction
 			virtual void txPublished(const std::string &error);
+
+			virtual void blockHeightIncreased(uint32_t blockHeight);
 
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();

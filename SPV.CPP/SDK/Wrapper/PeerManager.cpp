@@ -99,6 +99,13 @@ namespace Elastos {
 					//releaseEnv();
 				}
 			}
+
+			static void blockHeightIncreased(void *info, uint32_t height) {
+				WeakListener *listener = (WeakListener *) info;
+				if (!listener->expired()) {
+					listener->lock()->blockHeightIncreased(height);
+				}
+			}
 		}
 
 		PeerManager::PeerManager(const ChainParams &params,
@@ -140,7 +147,8 @@ namespace Elastos {
 									  saveBlocks,
 									  savePeers,
 									  networkIsReachable,
-									  threadCleanup);
+									  threadCleanup,
+									  blockHeightIncreased);
 		}
 
 		PeerManager::~PeerManager() {

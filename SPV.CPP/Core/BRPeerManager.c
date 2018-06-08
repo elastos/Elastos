@@ -28,6 +28,7 @@
 #include "BRArray.h"
 #include "BRInt.h"
 #include "BRPeerMessages.h"
+#include "BRMerkleBlock.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -1220,6 +1221,8 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
 
         BRSetAdd(manager->blocks, block);
         manager->lastBlock = block;
+        if(manager->blockHeightIncreased) manager->blockHeightIncreased(manager->info, block->height);
+
         if (txCount > 0) BRWalletUpdateTransactions(manager->wallet, txHashes, txCount, block->height, txTime);
         if (manager->downloadPeer) BRPeerSetCurrentBlockHeight(manager->downloadPeer, block->height);
 
@@ -1305,6 +1308,11 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
             }
 
             manager->lastBlock = block;
+            if(manager->blockHeightIncreased) {
+                for (int k = 1; k <= block->height - b2->height; ++k) {
+                    manager->blockHeightIncreased(manager->info, b2->height + k);
+                }
+            }
 
             if (block->height == manager->estimatedHeight) { // chain download is complete
                 saveCount = (block->height % BLOCK_DIFFICULTY_INTERVAL) + BLOCK_DIFFICULTY_INTERVAL + 1;
@@ -1522,7 +1530,8 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
                                void (*saveBlocks)(void *info, int replace, BRMerkleBlock *blocks[], size_t blocksCount),
                                void (*savePeers)(void *info, int replace, const BRPeer peers[], size_t peersCount),
                                int (*networkIsReachable)(void *info),
-                               void (*threadCleanup)(void *info))
+                               void (*threadCleanup)(void *info),
+                               void (*blockHeightIncreased)(void *info, uint32_t height))
 {
     assert(manager != NULL);
     manager->info = info;
@@ -1532,6 +1541,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
     manager->saveBlocks = saveBlocks;
     manager->savePeers = savePeers;
     manager->networkIsReachable = networkIsReachable;
+    manager->blockHeightIncreased = blockHeightIncreased;
     manager->threadCleanup = (threadCleanup) ? threadCleanup : _dummyThreadCleanup;
 }
 

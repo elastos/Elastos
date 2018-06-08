@@ -14,6 +14,7 @@ namespace Elastos {
 
 		class ISubWalletCallback {
 		public:
+			virtual ~ISubWalletCallback() noexcept {}
 
 			virtual void OnTransactionStatusChanged(
 					const std::string &txid,

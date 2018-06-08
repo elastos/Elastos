@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_SUBWALLET_H__
 #define __ELASTOS_SDK_SUBWALLET_H__
 
+#include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -20,7 +21,7 @@ namespace Elastos {
 		class MasterWallet;
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public Wallet::Listener {
+		class SubWallet : public virtual ISubWallet, public Wallet::Listener, public PeerManager::Listener {
 		public:
 			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
 
@@ -92,6 +93,29 @@ namespace Elastos {
 
 			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
+		protected: //implement PeerManager::Listener
+			virtual void syncStarted() {}
+
+			// func syncStopped(_ error: BRPeerManagerError?)
+			virtual void syncStopped(const std::string &error) {}
+
+			// func txStatusUpdate()
+			virtual void txStatusUpdate() {}
+
+			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
+			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *>& blocks) {}
+
+			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*>& peers) {}
+
+			// func networkIsReachable() -> Bool}
+			virtual bool networkIsReachable() {}
+
+			// Called on publishTransaction
+			virtual void txPublished(const std::string &error) {}
+
+			virtual void blockHeightIncreased(uint32_t blockHeight);
+
 		protected:
 			friend class MasterWallet;
 
@@ -134,12 +158,19 @@ namespace Elastos {
 
 			virtual void completedTransactionPayload(const TransactionPtr &transaction);
 
-		protected:
+			virtual void fireTransactionStatusChanged(const std::string &txid,
+													  const std::string &status,
+													  const nlohmann::json &desc,
+													  uint32_t confirms);
 
+		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;
 			MasterWallet *_parent;
 			CoinInfo _info;
+
+			typedef std::map<std::string, TransactionPtr> TransactionMap;
+			TransactionMap _confirmingTxs;
 		};
 
 	}

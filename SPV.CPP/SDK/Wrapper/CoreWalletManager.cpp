@@ -142,6 +142,10 @@ namespace Elastos {
 
 		}
 
+		void CoreWalletManager::blockHeightIncreased(uint32_t blockHeight) {
+
+		}
+
 		SharedWrapperList<Transaction, BRTransaction *> CoreWalletManager::loadTransactions() {
 			//todo complete me
 			return SharedWrapperList<Transaction, BRTransaction *>();
@@ -271,6 +275,18 @@ namespace Elastos {
 			}
 		}
 
+		void WrappedExceptionPeerManagerListener::blockHeightIncreased(uint32_t blockHeight) {
+			try {
+				_listener->blockHeightIncreased(blockHeight);
+			}
+			catch (std::exception ex) {
+				Log::trace(ex.what());
+			}
+			catch (...) {
+				Log::trace("Unknown exception.");
+			}
+		}
+
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
 				Executor *executor) :
@@ -324,6 +340,12 @@ namespace Elastos {
 
 			_executor->execute(Runnable([this, &error]() -> void {
 				_listener->txPublished(error);
+			}));
+		}
+
+		void WrappedExecutorPeerManagerListener::blockHeightIncreased(uint32_t blockHeight) {
+			_executor->execute(Runnable([this, blockHeight]() -> void {
+				_listener->blockHeightIncreased(blockHeight);
 			}));
 		}
 

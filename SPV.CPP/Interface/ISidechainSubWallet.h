@@ -14,6 +14,8 @@ namespace Elastos {
 
 		class ISidechainSubWallet : public virtual ISubWallet {
 		public:
+			virtual ~ISidechainSubWallet() noexcept {}
+
 			virtual std::string SendWithdrawTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,

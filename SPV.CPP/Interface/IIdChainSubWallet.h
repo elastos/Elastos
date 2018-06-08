@@ -13,6 +13,8 @@ namespace Elastos {
 		class IIdChainSubWallet : public virtual ISubWallet {
 		public:
 
+			virtual ~IIdChainSubWallet() noexcept {}
+
 			virtual std::string SendIdTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,

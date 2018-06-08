@@ -28,9 +28,9 @@ namespace Elastos {
 
 		std::string
 		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress, const std::string &toAddress,
-		                                    const uint64_t amount, const nlohmann::json &payloadJson,
-		                                    const nlohmann::json &programJson, uint64_t fee,
-		                                    const std::string &payPassword, const std::string &memo) {
+											const uint64_t amount, const nlohmann::json &payloadJson,
+											const nlohmann::json &programJson, uint64_t fee,
+											const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo));
 
@@ -64,7 +64,7 @@ namespace Elastos {
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-				                                                     param->getAmount(), param->getToAddress());
+																	 param->getAmount(), param->getToAddress());
 			} else {
 				Address address(param->getToAddress());
 				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
@@ -106,7 +106,7 @@ namespace Elastos {
 					return false;
 				}
 
-				if(output->getAmount() != 0) {
+				if (output->getAmount() != 0) {
 					return false;
 				}
 
@@ -138,15 +138,15 @@ namespace Elastos {
 		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, blockHeight, timeStamp, this](ISubWalletCallback *callback) {
-							  BRTransaction *transaction = BRWalletTransactionForHash(
-									  _walletManager->getWallet()->getRaw(), Utils::UInt256FromString(hash));
+
+							  TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
+									  Utils::UInt256FromString(hash));
 							  if (transaction == nullptr ||
-								  ((ELABRTransaction *) transaction)->type != Transaction::RegisterIdentification)
+								  transaction->getTransactionType() != Transaction::RegisterIdentification)
 								  return;
 
-							  Transaction wrapperTx(transaction);
 							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
-									  wrapperTx.getPayload().get());
+									  transaction->getPayload().get());
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
 									  SubWalletCallback::Updated), payload->toJson(), blockHeight);
 						  });
@@ -155,15 +155,14 @@ namespace Elastos {
 		void IdChainSubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [&hash, notifyUser, recommendRescan, this](ISubWalletCallback *callback) {
-							  BRTransaction *transaction = BRWalletTransactionForHash(
-									  _walletManager->getWallet()->getRaw(), Utils::UInt256FromString(hash));
+							  TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
+									  Utils::UInt256FromString(hash));
 							  if (transaction == nullptr ||
-								  ((ELABRTransaction *) transaction)->type != Transaction::RegisterIdentification)
+								  transaction->getTransactionType() != Transaction::RegisterIdentification)
 								  return;
 
-							  Transaction wrapperTx(transaction);
 							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
-									  wrapperTx.getPayload().get());
+									  transaction->getPayload().get());
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
 									  SubWalletCallback::Deleted), payload->toJson(), 0);
 						  });

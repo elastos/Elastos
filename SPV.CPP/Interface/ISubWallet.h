@@ -14,6 +14,8 @@ namespace Elastos {
 
 		class ISubWallet {
 		public:
+			virtual ~ISubWallet() noexcept {}
+
 			virtual nlohmann::json GetBalanceInfo() = 0;
 
 			virtual uint64_t GetBalance() = 0;

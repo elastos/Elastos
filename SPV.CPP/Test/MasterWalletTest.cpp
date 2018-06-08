@@ -416,11 +416,11 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 }
 
 TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
-	SECTION("Normal test") {
-		std::string phrasePassword = "phrasePassword";
-		std::string payPassword = "payPassword";
-		std::string language = "english";
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+	std::string language = "english";
 
+	SECTION("Normal test") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
 
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";

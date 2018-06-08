@@ -18,8 +18,7 @@
 namespace Elastos {
 	namespace SDK {
 
-		WalletManager::WalletManager(const CMBlock &phrase, const std::string language,
-									 const ChainParams &chainParams) :
+		WalletManager::WalletManager(const CMBlock &phrase, const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(DATABASE_PATH),
 				_phraseData(phrase) {
@@ -67,6 +66,7 @@ namespace Elastos {
 		}
 
 		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
+			if (_phraseData.GetSize() == 0) throw std::logic_error("Can not sign with empty phrase.");
 			return CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
 		}
 
@@ -229,6 +229,14 @@ namespace Elastos {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [&error](PeerManager::Listener *listener) {
 							  listener->txPublished(error);
+						  });
+		}
+
+		void WalletManager::blockHeightIncreased(uint32_t blockHeight) {
+
+			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
+						  [blockHeight](PeerManager::Listener *listener) {
+							  listener->blockHeightIncreased(blockHeight);
 						  });
 		}
 

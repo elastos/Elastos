@@ -77,6 +77,8 @@ namespace Elastos {
 			// Called on publishTransaction
 			virtual void txPublished(const std::string &error);
 
+			virtual void blockHeightIncreased(uint32_t blockHeight);
+
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 
@@ -137,6 +139,8 @@ namespace Elastos {
 
 			virtual void txPublished(const std::string &error);
 
+			virtual void blockHeightIncreased(uint32_t blockHeight);
+
 		private:
 			PeerManager::Listener *_listener;
 		};
@@ -161,6 +165,8 @@ namespace Elastos {
 			virtual bool networkIsReachable();
 
 			virtual void txPublished(const std::string &error);
+
+			virtual void blockHeightIncreased(uint32_t blockHeight);
 
 		private:
 			PeerManager::Listener *_listener;

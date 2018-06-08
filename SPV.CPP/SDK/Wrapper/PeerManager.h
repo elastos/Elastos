@@ -48,6 +48,8 @@ namespace Elastos {
 
                 // Called on publishTransaction
                 virtual void txPublished(const std::string &error) = 0;
+
+                virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
             };
 
         public:

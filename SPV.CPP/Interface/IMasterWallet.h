@@ -19,6 +19,7 @@ namespace Elastos {
 
 		class IMasterWallet {
 		public:
+			virtual ~IMasterWallet() noexcept {}
 
 			virtual ISubWallet *CreateSubWallet(
 					SubWalletType type,
