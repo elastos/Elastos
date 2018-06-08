@@ -376,8 +376,9 @@ namespace Elastos {
 			CMBlock entropyData = Utils::decrypt(_encryptedMnemonic, payPassword);
 			ParamChecker::checkDataNotEmpty(entropyData, false);
 
-			CMemBlock<char> mnemonic;
-			mnemonic.SetMemFixed((const char *) (uint8_t *) entropyData, entropyData.GetSize());
+			CMemBlock<char> mnemonic(entropyData.GetSize() + 1);
+			mnemonic.Zero();
+			memcpy(mnemonic, entropyData, entropyData.GetSize());
 
 			std::string phrasePassword = _encryptedPhrasePass.GetSize() == 0
 										 ? ""
@@ -423,6 +424,7 @@ namespace Elastos {
 				throw std::invalid_argument("Can not use reserved purpose.");
 
 			UInt512 seed = deriveSeed(payPassword);
+
 			BRKey *privkey = new BRKey;
 			UInt256 chainCode;
 			Key::deriveKeyAndChain(privkey, chainCode, &seed, sizeof(seed), 2, purpose, index);

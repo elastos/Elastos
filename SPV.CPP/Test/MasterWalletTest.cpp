@@ -394,8 +394,8 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 		std::string id;
 		std::string key;
 		if (true == masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword, id, key)) {
-			REQUIRE(id == "injhRSH8ekakNcVLqMiKpegYgqGjxBLZoF");
-			REQUIRE(key == "8b0319079c205813e9fee52ad93cc1e8744abb5e6d9549fb7d0a5322e4cbbe97");
+			REQUIRE(id == "ifQS7H4CkXatj1j4SVaMjY9LB8UgB2ZVaE");
+			REQUIRE(key == "2139b1d83a49ae9042cbb4e27c3872aba680f72dfb7ca504e32ce8d2adc06def");
 		}
 	}
 //	SECTION("Derive reserved purpose") {
