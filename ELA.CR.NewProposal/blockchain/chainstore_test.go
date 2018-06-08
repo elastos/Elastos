@@ -35,7 +35,7 @@ func newTestChainStore() (*ChainStore, error) {
 	return store, nil
 }
 
-func TestInit(t *testing.T) {
+func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
 	var err error
 	store, err = newTestChainStore()
@@ -137,7 +137,7 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	}
 }
 
-func TestDone(t *testing.T) {
+func TestChainStoreDone(t *testing.T) {
 	if store == nil {
 		t.Error("Chainstore init failed")
 	}
