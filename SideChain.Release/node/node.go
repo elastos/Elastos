@@ -183,10 +183,11 @@ func InitNode() Noder {
 }
 
 func (n *node) NodeDisconnect(v interface{}) {
-	if node, ok := v.(*node); ok {
+	if node, ok := v.(Noder); ok {
 		node.SetState(p2p.INACTIVITY)
 		conn := node.GetConn()
 		conn.Close()
+		LocalNode.nbrNodes.DelNbrNode(n.ID())
 	}
 }
 
@@ -273,7 +274,7 @@ func (node *node) WaitForSyncFinish() {
 		bc := chain.DefaultLedger.Blockchain
 		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 
-		heights, _ := node.GetNeighborHeights()
+		heights := node.GetNeighborHeights()
 		log.Trace("others height is ", heights)
 
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
@@ -370,7 +371,7 @@ func (node node) IsSyncFailed() bool {
 }
 
 func (node *node) needSync() bool {
-	heights, _ := node.GetNeighborHeights()
+	heights := node.GetNeighborHeights()
 	log.Info("nbr heigh-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
 	if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 		return false
