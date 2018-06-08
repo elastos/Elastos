@@ -2,21 +2,15 @@ package net
 
 import (
 	"time"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"net"
-	"sort"
-	"strconv"
-	"strings"
 )
 
 const (
 	// numMissingDays is the number of days before which we assume an
 	// address has vanished if we have not seen it announced  in that long.
 	numMissingDays = 30
-	// numRetries is the number of tried without a single success before
-	// we assume an address is bad.
-	numRetries = 10
 )
 
 type knownAddress struct {
@@ -24,22 +18,6 @@ type knownAddress struct {
 	lastAttempt    time.Time
 	lastDisconnect time.Time
 	attempts       uint32
-}
-
-func NewKnownAddress(addr string) *knownAddress {
-	ka := new(knownAddress)
-	portIndex := strings.LastIndex(addr, ":")
-	if portIndex < 0 {
-		return nil
-	}
-	copy(ka.IP[:], net.ParseIP(string([]byte(addr)[:portIndex])).To16())
-	port, err := strconv.ParseUint(string([]byte(addr)[portIndex+1:]), 10, 16)
-	if err != nil {
-		return nil
-	}
-	ka.Port = uint16(port)
-	ka.Time = time.Now().UnixNano()
-	return ka
 }
 
 func (ka *knownAddress) LastAttempt() time.Time {
@@ -85,22 +63,10 @@ func (ka *knownAddress) chance() float64 {
 	return c
 }
 
-// isBad returns true if the address in question has not been tried in the last
-// minute and meets one of the following criteria:
-// 1) Just tried in one minute
-// 2) It hasn't been seen in over a month
-// 3) It has failed at least ten times
-// 4) It has failed ten times in the last week
-// All addresses that meet these criteria are assumed to be worthless and not
-// worth keeping hold of.
+// isBad returns true if the address in question has not been seen in over a month
 func (ka *knownAddress) isBad() bool {
 	// Over a month old?
-	if ka.Time < (time.Now().Add(-1 * numMissingDays * time.Hour * 24)).UnixNano() {
-		return true
-	}
-
-	// tried too many times?
-	if ka.attempts > numRetries {
+	if ka.Time < time.Now().Add(-1 * numMissingDays * time.Hour * 24).UnixNano() {
 		return true
 	}
 

@@ -40,8 +40,7 @@ func (am *AddrManager) GetOutboundAddresses(cm *ConnManager) []p2p.NetAddress {
 	defer am.Unlock()
 
 	var addrs []p2p.NetAddress
-	addrListByChance := SortAddressMap(am.addrList)
-	for _, addr := range addrListByChance {
+	for _, addr := range SortAddressMap(am.addrList) {
 		address := addr.String()
 		// Skip connecting address
 		if cm.isConnecting(address) {

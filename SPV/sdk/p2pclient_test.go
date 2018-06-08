@@ -10,23 +10,18 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"math/rand"
+	"sort"
 )
 
 func TestP2PClient(t *testing.T) {
 	log.Init(log.LevelInfo)
 
-	var clientNumber = 100
+	var clientNumber = 150
 
 	var clients []*Client
-	var seeds = []string{
-		"127.0.0.1:50000",
-		"127.0.0.1:50001",
-		"127.0.0.1:50002",
-		"127.0.0.1:50003",
-		"127.0.0.1:50004",
-	}
 	for i := 0; i < clientNumber; i++ {
-		client, err := NewClient(i, seeds)
+		client, err := NewClient(i, randomSeeds(clientNumber))
 		if err != nil {
 			t.Errorf("GetP2PClient failed %s", err.Error())
 		}
@@ -38,28 +33,34 @@ func TestP2PClient(t *testing.T) {
 	select {}
 }
 
+func randomSeeds(num int) []string {
+	seeds := make([]string, 0, num)
+	for i := 0; i < 5; i++ {
+		seeds = append(seeds, fmt.Sprint("127.0.0.1:", 50000+rand.Intn(num)))
+	}
+	return seeds
+}
+
 func monitorConnections(clients []*Client) {
 	ticker := time.NewTicker(time.Second * 5)
+	num := len(clients)
+	conns := make([]int, num)
+	addrs := make([]int, num)
 	for range ticker.C {
-		var min = -1
-		var max = -1
-		var total = 0
-		for _, c := range clients {
-			connections := c.PeerManager().PeersCount()
-			total += connections
-			if min == -1 {
-				min = connections
-			}
-			if connections < min {
-				min = connections
-			}
-			if connections > max {
-				max = connections
-			}
-			fmt.Printf("Client %d connections %d known addresses %d\n",
-				c.id, c.PeerManager().PeersCount(), len(c.PeerManager().KnownAddresses()))
+		var totalAddr = 0
+		var totalConn = 0
+		for i, c := range clients {
+			addrs[i] = len(c.PeerManager().KnownAddresses())
+			conns[i] = c.PeerManager().PeersCount()
+			totalAddr += addrs[i]
+			totalConn += conns[i]
 		}
-		fmt.Printf("Min: %d, Max: %d, Avg: %d, Total: %d\n", min, max, total/len(clients), total)
+		sort.Ints(conns)
+		sort.Ints(addrs)
+		avgAddr := totalAddr / num
+		avgConn := totalConn / num
+		fmt.Printf("[Addresses] Min: %d, Max: %d, Avg: %d\n", addrs[0], addrs[num-1], avgAddr)
+		fmt.Printf("[Connections] Min: %d, Max: %d, Avg: %d, Total: %d\n", conns[0], conns[num-1], avgConn, totalConn)
 	}
 }
 
