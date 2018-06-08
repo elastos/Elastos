@@ -219,7 +219,7 @@ namespace Elastos {
 			if (output.scriptLen != 0) {
 				output.script = (uint8_t *) malloc(output.scriptLen * sizeof(uint8_t));
 				istream.getBytes(output.script, output.scriptLen);
-			}
+			} else BRTxOutputSetScript(&output, nullptr, 0);
 		}
 
 		void AuxPow::serializeBtcBlockHeader(ByteStream &ostream) const {

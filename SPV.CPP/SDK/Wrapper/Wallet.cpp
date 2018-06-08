@@ -107,7 +107,7 @@ namespace Elastos {
 			uint64_t balance = 0;
 			pthread_mutex_lock(&_wallet->lock);
 			for (size_t i = 0; i < utxosCount; ++i) {
-				void *tempPtr = BRSetGet(_wallet->allTx, &utxos[utxosCount].hash);
+				void *tempPtr = BRSetGet(_wallet->allTx, &utxos[i].hash);
 				if (tempPtr == nullptr) continue;
 				t = static_cast<ELABRTransaction *>(tempPtr);
 				if (BRAddressEq(t->outputs[utxos->n].raw.address, address.c_str())) {
@@ -228,7 +228,7 @@ namespace Elastos {
 				o = &_wallet->utxos[i];
 				tx = (BRTransaction *) BRSetGet(_wallet->allTx, o);
 				if (!tx || o->n >= tx->outCount) continue;
-				if (strcmp(tx->outputs[i].address, fromAddress) != 0) continue;
+				if (strcmp(tx->outputs[o->n].address, fromAddress) != 0) continue;
 
 				BRTransactionAddInput(transaction, tx->txHash, o->n, tx->outputs[o->n].amount,
 									  tx->outputs[o->n].script, tx->outputs[o->n].scriptLen, NULL, 0, TXIN_SEQUENCE);

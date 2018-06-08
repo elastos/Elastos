@@ -11,9 +11,9 @@ namespace Elastos {
 		class ByteStream {
 		public:
 
-			ByteStream(bool isBe=true);
+			ByteStream(bool isBe = false);
 
-			ByteStream(uint64_t size, bool isBe=true);
+			ByteStream(uint64_t size, bool isBe = false);
 
 			ByteStream(uint8_t *buf, uint64_t size, bool autorelease = true, bool isBe = false);
 
