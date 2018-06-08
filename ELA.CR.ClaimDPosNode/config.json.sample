@@ -1,4 +1,4 @@
-{
+﻿{
   "Configuration": {
     "Magic": 7630401,
     "Version": 23,
@@ -19,7 +19,6 @@
     "PrintLevel": 0,
     "MaxLogsSize": 0,
     "MaxPerLogSize": 0,
-    "PrintLevel": 0,
     "IsTLS": false,
     "CertPath": "./sample-cert.pem",
     "KeyPath": "./sample-cert-key.pem",
