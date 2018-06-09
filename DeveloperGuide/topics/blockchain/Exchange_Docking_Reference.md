@@ -11,6 +11,10 @@ The exchange maintains the UTXO set of every address to generate the currency tr
 
 ## Reference
 ### ELA Node:https://github.com/elastos/Elastos.ELA
+#### Main net config file: https://github.com/elastos/Elastos/blob/master/DeveloperGuide/topics/blockchain/mainnet_config.json
+Please put this file in the directory of ELA node and change file name to config.json.
+#### Test net config file: https://github.com/elastos/Elastos/blob/master/DeveloperGuide/topics/blockchain/testnet_config.json
+Please put this file in the directory of ELA node and change file name to config.json.
 ### Transaction utility: https://github.com/elastos/Elastos.ELA.Utilities.Java
 Make and sign transaction
 ### RPC interface:https://github.com/elastos/Elastos.ELA/blob/master/docs/jsonrpc_apis.md
