@@ -396,6 +396,7 @@ namespace Elastos {
 					memcpy(parameter, script, scriptLen);
 					program->setParameter(parameter);
 				}
+				delete data;
 			}
 
 			return isSigned();

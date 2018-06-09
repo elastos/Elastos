@@ -328,23 +328,15 @@ namespace Elastos {
 		Key::calculatePrivateKeyList(BRKey *keys, size_t keysCount, UInt256 *secret, UInt256 *chainCode,
 		                             uint32_t chain, const uint32_t *indexes) {
 			UInt512 I;
-			UInt256 *s, *c;
 
 			assert(keys != nullptr || keysCount == 0);
 			assert(indexes != nullptr || keysCount == 0);
-
-			if (keys && keysCount > 0 && indexes) {
-
-				_CKDpriv(secret, chainCode, 0 | BIP32_HARD); // path m/0H
-				_CKDpriv(secret, chainCode, chain); // path m/0H/chain
-
+			if (keys && keysCount > 0 && indexes)
 				for (size_t i = 0; i < keysCount; i++) {
-					s = secret;
-					c = chainCode;
-					_CKDpriv(s, c, indexes[i]); // index'th key in chain
-					BRKeySetSecret(&keys[i], s, 1);
+					_CKDpriv(secret, chainCode, chain); // path m/0H
+					_CKDpriv(secret, chainCode, indexes[i]); // path m/0H/chain
+					BRKeySetSecret(&keys[i], secret, 1);
 				}
-			}
 		}
 
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
