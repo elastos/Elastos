@@ -159,7 +159,7 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 	var message p2p.Message
 	if s == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
-		message = NewVersion(node)
+		message = NewVersion(LocalNode)
 	} else if s == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
