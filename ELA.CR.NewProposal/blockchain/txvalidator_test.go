@@ -18,6 +18,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var ELA = int64(math.Pow(10, 8))
+
 func TestTxValidatorInit(t *testing.T) {
 	log.Init(log.Path, os.Stdout)
 	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
@@ -26,7 +28,7 @@ func TestTxValidatorInit(t *testing.T) {
 		os.Exit(-1)
 	}
 	FoundationAddress = *foundation
-	chainStore, err := NewChainStore()
+	chainStore, err := newTestChainStore()
 	if err != nil {
 		log.Error(err)
 		os.Exit(-1)
@@ -324,6 +326,62 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 	assert.EqualError(t, err, "Duplicate sidechain tx detected in a transaction")
 
 	t.Log("[TestCheckDuplicateSidechainTx] PASSED")
+}
+
+func TestCheckTransactionBalance(t *testing.T) {
+	// WithdrawFromSideChain will pass check in any condition
+	tx := new(core.Transaction)
+	tx.TxType = core.WithdrawFromSideChain
+	err := CheckTransactionBalance(tx)
+	assert.NoError(t, err)
+
+	// foundation reword should >= 30% in coinbase
+	deposit := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
+	deposit.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(100 * ELA)},
+	}
+	DefaultLedger.Store.(*ChainStore).NewBatch()
+	DefaultLedger.Store.(*ChainStore).PersistTransaction(deposit, 0)
+	DefaultLedger.Store.(*ChainStore).BatchCommit()
+
+	// invalid output value
+	tx = NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
+	}
+	err = CheckTransactionBalance(tx)
+	assert.EqualError(t, err, "Invalide transaction UTXO output.")
+
+	// normal coinbase
+	tx.Inputs = []*core.Input{
+		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
+	}
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(60 * ELA)},
+	}
+	err = CheckTransactionBalance(tx)
+	assert.NoError(t, err)
+
+	// foundation reword should < 30% in coinbase
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(20 * ELA)},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(60 * ELA)},
+	}
+	err = CheckTransactionBalance(tx)
+	assert.EqualError(t, err, "Reword to foundation in coinbase < 30%")
+
+	// invalid transaction fee
+	config.Parameters.PowConfiguration.MinTxFee = int(1 * ELA)
+	tx.Outputs = []*core.Output{
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(70 * ELA)},
+	}
+	err = CheckTransactionBalance(tx)
+	assert.EqualError(t, err, "Transaction fee not enough")
+
+	t.Log("[TestCheckTransactionBalance] PASSED")
 }
 
 func TestTxValidatorDone(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-var store *ChainStore
+var testChainStore *ChainStore
 var sidechainTxHash string
 
 func newTestChainStore() (*ChainStore, error) {
@@ -30,6 +30,7 @@ func newTestChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 
+	go store.loop()
 	store.NewBatch()
 
 	return store, nil
@@ -38,7 +39,7 @@ func newTestChainStore() (*ChainStore, error) {
 func TestChainStoreInit(t *testing.T) {
 	// Get new chainstore
 	var err error
-	store, err = newTestChainStore()
+	testChainStore, err = newTestChainStore()
 	if err != nil {
 		t.Error("Create chainstore failed")
 	}
@@ -48,24 +49,24 @@ func TestChainStoreInit(t *testing.T) {
 }
 
 func TestChainStore_PersisSidechainTx(t *testing.T) {
-	if store == nil {
+	if testChainStore == nil {
 		t.Error("Chainstore init failed")
 	}
 
 	// 1. The sidechain Tx should not exist in DB.
-	_, err := store.GetSidechainTx(sidechainTxHash)
+	_, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err == nil {
 		t.Error("Found the sidechain Tx which should not exist in DB")
 	}
 
 	// 2. Run PersistSidechainTx
-	store.PersistSidechainTx(sidechainTxHash)
+	testChainStore.PersistSidechainTx(sidechainTxHash)
 
 	// Need batch commit here because PersistSidechainTx use BatchPut
-	store.BatchCommit()
+	testChainStore.BatchCommit()
 
 	// 3. Verify PersistSidechainTx
-	exist, err := store.GetSidechainTx(sidechainTxHash)
+	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
 	}
@@ -75,12 +76,12 @@ func TestChainStore_PersisSidechainTx(t *testing.T) {
 }
 
 func TestChainStore_RollbackSidechainTx(t *testing.T) {
-	if store == nil {
+	if testChainStore == nil {
 		t.Error("Chainstore init failed")
 	}
 
 	// 1. The sidechain Tx hash should exist in DB.
-	exist, err := store.GetSidechainTx(sidechainTxHash)
+	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
 	}
@@ -89,40 +90,40 @@ func TestChainStore_RollbackSidechainTx(t *testing.T) {
 	}
 
 	// 2. Run Rollback
-	err = store.RollbackSidechainTx(sidechainTxHash)
+	err = testChainStore.RollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}
 
 	// Need batch commit here because RollbackSidechainTx use BatchDelete
-	store.BatchCommit()
+	testChainStore.BatchCommit()
 
 	// 3. Verify RollbackSidechainTx
-	_, err = store.GetSidechainTx(sidechainTxHash)
+	_, err = testChainStore.GetSidechainTx(sidechainTxHash)
 	if err == nil {
 		t.Error("Found the sidechain Tx which should been deleted")
 	}
 }
 
 func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
-	if store == nil {
+	if testChainStore == nil {
 		t.Error("Chainstore init failed")
 	}
 
 	// 1. The sidechain Tx should not exist in DB.
-	_, err := store.GetSidechainTx(sidechainTxHash)
+	_, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err == nil {
 		t.Error("Found the sidechain Tx which should not exist in DB")
 	}
 
 	// 2. Persist the sidechain Tx hash
-	store.PersistSidechainTx(sidechainTxHash)
+	testChainStore.PersistSidechainTx(sidechainTxHash)
 
 	// Need batch commit here because PersistSidechainTx use BatchPut
-	store.BatchCommit()
+	testChainStore.BatchCommit()
 
 	// 3. Verify PersistSidechainTx
-	exist, err := store.GetSidechainTx(sidechainTxHash)
+	exist, err := testChainStore.GetSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Not found the sidechain Tx")
 	}
@@ -131,21 +132,21 @@ func TestChainStore_IsSidechainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 4. Run IsSidechainTxHashDuplicate
-	isDuplicate := store.IsSidechainTxHashDuplicate(sidechainTxHash)
+	isDuplicate := testChainStore.IsSidechainTxHashDuplicate(sidechainTxHash)
 	if !isDuplicate {
 		t.Error("Sidechain Tx hash should be checked to be duplicated")
 	}
 }
 
 func TestChainStoreDone(t *testing.T) {
-	if store == nil {
+	if testChainStore == nil {
 		t.Error("Chainstore init failed")
 	}
 
-	err := store.RollbackSidechainTx(sidechainTxHash)
+	err := testChainStore.RollbackSidechainTx(sidechainTxHash)
 	if err != nil {
 		t.Error("Rollback the sidechain Tx failed")
 	}
 
-	store.BatchCommit()
+	testChainStore.BatchCommit()
 }
