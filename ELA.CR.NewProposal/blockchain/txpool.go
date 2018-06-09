@@ -110,7 +110,7 @@ func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
 	if txn.IsSideminingTx() {
 		// check and replace the duplicate sidemining tx
 		pool.replaceDuplicateSideminingTx(txn)
-	} else if txn.IsWithdrawTx() {
+	} else if txn.IsWithdrawFromSideChainTx() {
 		// check if the withdraw transaction includes duplicate sidechain tx in pool
 		if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
 			log.Warn(err)
@@ -171,7 +171,7 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 		return errors.New("convert the payload of withdraw tx failed")
 	}
 
-	for _, hash := range witPayload.SideChainTransactionHash {
+	for _, hash := range witPayload.SideChainTransactionHashes {
 		_, ok := pool.sidechainTxList[hash]
 		if ok {
 			return errors.New("duplicate sidechain tx detected")
@@ -213,9 +213,9 @@ func (pool *TxPool) cleanUTXOList(txs []*Transaction) {
 // clean the sidechain tx pool
 func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 	for _, txn := range txs {
-		if txn.IsWithdrawTx() {
+		if txn.IsWithdrawFromSideChainTx() {
 			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
-			for _, hash := range witPayload.SideChainTransactionHash {
+			for _, hash := range witPayload.SideChainTransactionHashes {
 				pool.delSidechainTx(hash)
 			}
 		}

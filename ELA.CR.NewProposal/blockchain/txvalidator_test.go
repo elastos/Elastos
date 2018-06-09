@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"bytes"
+	"crypto/elliptic"
 	"crypto/rand"
 	"fmt"
 	"math"
@@ -13,6 +14,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -225,12 +227,12 @@ func TestCheckAssetPrecision(t *testing.T) {
 		Precision: 0x04,
 		AssetType: 0x00,
 	}
-	register :=  &core.Transaction{
+	register := &core.Transaction{
 		TxType:         core.RegisterAsset,
 		PayloadVersion: 0,
 		Payload: &core.PayloadRegisterAsset{
-			Asset: asset,
-			Amount:     0 * 100000000,
+			Asset:  asset,
+			Amount: 0 * 100000000,
 		},
 	}
 	DefaultLedger.Store.(*ChainStore).NewBatch()
@@ -310,7 +312,7 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 	txn.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHash: []string{
+		SideChainTransactionHashes: []string{
 			"8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62",
 			"cc62e14f5f9526b7f4ff9d34dcd0643dacb7886707c57f49ec97b95ec5c4edac",
 			"8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62", // duplicate tx hash
@@ -326,4 +328,45 @@ func TestCheckDuplicateSidechainTx(t *testing.T) {
 
 func TestTxValidatorDone(t *testing.T) {
 	DefaultLedger.Store.Close()
+}
+
+func TestCheckSideMiningConsensus(t *testing.T) {
+	// 1. Generate a side mining transaction
+	txn := new(core.Transaction)
+	txn.TxType = core.SideMining
+	txn.Payload = &core.PayloadSideMining{
+		SideBlockHash:   common.Uint256{1, 1, 1},
+		SideGenesisHash: common.Uint256{2, 2, 2},
+		BlockHeight:     uint32(10),
+	}
+
+	//2. Get arbitrator
+	password1 := "1234"
+	privateKey1, _ := common.HexStringToBytes(password1)
+	publicKey := new(crypto.PublicKey)
+	publicKey.X, publicKey.Y = elliptic.P256().ScalarBaseMult(privateKey1)
+	arbitrator1, _ := publicKey.EncodePoint(true)
+
+	password2 := "5678"
+	privateKey2, _ := common.HexStringToBytes(password2)
+	publicKey2 := new(crypto.PublicKey)
+	publicKey2.X, publicKey2.Y = elliptic.P256().ScalarBaseMult(privateKey2)
+	arbitrator2, _ := publicKey2.EncodePoint(true)
+
+	//3. Sign transaction by arbitrator1
+	buf := new(bytes.Buffer)
+	txn.Payload.Serialize(buf, core.SideMiningPayloadVersion)
+	signature, _ := crypto.Sign(privateKey1, buf.Bytes()[0:68])
+	txn.Payload.(*core.PayloadSideMining).SignedData = signature
+
+	//4. Run CheckSideMiningConsensus
+	err := CheckSideMiningConsensus(txn, arbitrator1)
+	if err != nil {
+		t.Error("TestCheckSideMiningConsensus failed.")
+	}
+
+	err = CheckSideMiningConsensus(txn, arbitrator2)
+	if err == nil {
+		t.Error("TestCheckSideMiningConsensus failed.")
+	}
 }

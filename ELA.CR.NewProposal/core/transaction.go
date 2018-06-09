@@ -278,7 +278,7 @@ func (tx *Transaction) IsSideminingTx() bool {
 	return tx.TxType == SideMining
 }
 
-func (tx *Transaction) IsWithdrawTx() bool {
+func (tx *Transaction) IsWithdrawFromSideChainTx() bool {
 	return tx.TxType == WithdrawFromSideChain
 }
 
