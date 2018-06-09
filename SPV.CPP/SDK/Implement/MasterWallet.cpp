@@ -54,10 +54,13 @@ namespace Elastos {
 			ParamChecker::checkNotEmpty(rootPath);
 
 			resetMnemonic(language);
-			_keyStore.json().setMnemonicLanguage(language);
 
 			CMemBlock<uint8_t> seed128 = Wallet_Tool::GenerateSeed128();
+#ifndef MNEMONIC_SOURCE_H
+			CMemBlock<char> phrase = Wallet_Tool::GeneratePhraseFromSeed(seed128, _mnemonic->words());
+#else
 			CMemBlock<char> phrase = Wallet_Tool::GeneratePhraseFromSeed(seed128, language);
+#endif
 			std::string str_phrase = (const char *) phrase;
 			initFromPhrase(str_phrase, phrasePassword, payPassword);
 		}
@@ -206,7 +209,11 @@ namespace Elastos {
 
 			CMemBlock<char> cb_mnemonic;
 			cb_mnemonic.SetMemFixed(mnemonic.c_str(), mnemonic.size() + 1);
-			if (!Wallet_Tool::PhraseIsValid(cb_mnemonic, _mnemonic.getLanguage())) {
+#ifdef MNEMONIC_SOURCE_H
+			if (!Wallet_Tool::PhraseIsValid(cb_mnemonic, _mnemonic->getLanguage())) {
+#else
+			if (!Wallet_Tool::PhraseIsValid(cb_mnemonic, _mnemonic->words())) {
+#endif
 				Log::error("Invalid mnemonic.");
 				return false;
 			}
@@ -262,7 +269,7 @@ namespace Elastos {
 		bool MasterWallet::initFromEntropy(const UInt128 &entropy, const std::string &phrasePassword,
 										   const std::string &payPassword) {
 
-			std::string phrase = MasterPubKey::generatePaperKey(entropy, _mnemonic.words());
+			std::string phrase = MasterPubKey::generatePaperKey(entropy, _mnemonic->words());
 			return initFromPhrase(phrase, phrasePassword, payPassword);
 		}
 
@@ -272,6 +279,11 @@ namespace Elastos {
 			CMemBlock<char> cb_phrase_;
 			cb_phrase_.SetMemFixed(phrase.c_str(), phrase.size() + 1);
 			std::string language = _keyStore.json().getMnemonicLanguage();
+			std::string _language = _mnemonic->getLanguage();
+			if (language != "" && language != _language) {
+				resetMnemonic(language);
+			}
+#ifdef MNEMONIC_SOURCE_H
 			if (!Wallet_Tool::PhraseIsValid(cb_phrase_, language)) {
 				if (!Wallet_Tool::PhraseIsValid(cb_phrase_, "chinese")) {
 					Log::error("Phrase is unvalid.");
@@ -280,7 +292,15 @@ namespace Elastos {
 					_keyStore.json().setMnemonicLanguage("chinese");
 				}
 			}
-
+#else
+			if (!Wallet_Tool::PhraseIsValid(cb_phrase_, _mnemonic->words())) {
+				resetMnemonic("chinese");
+				if (!Wallet_Tool::PhraseIsValid(cb_phrase_, _mnemonic->words())) {
+					Log::error("Phrase is unvalid.");
+					return false;
+				}
+			}
+#endif
 			CMBlock cb_phrase0 = Utils::convertToMemBlock<unsigned char>(phrase);
 			_encryptedMnemonic = Utils::encrypt(cb_phrase0, payPassword);
 			CMBlock PhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
@@ -408,9 +428,9 @@ namespace Elastos {
 		}
 
 		void MasterWallet::resetMnemonic(const std::string &language) {
+			_keyStore.json().setMnemonicLanguage(language);
 			fs::path mnemonicPath = _dbRoot;
-			//mnemonicPath /= MNEMONIC_FILE_PREFIX + language + MNEMONIC_FILE_EXTENSION;
-			_mnemonic = Mnemonic(language, mnemonicPath);
+			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, mnemonicPath));
 		}
 
 		bool MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword,

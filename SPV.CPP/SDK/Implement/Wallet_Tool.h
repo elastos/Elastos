@@ -7,6 +7,8 @@
 
 #include "CMemBlock.h"
 
+//#define MNEMONIC_SOURCE_H
+
 namespace Elastos {
 	namespace SDK {
 		class Wallet_Tool {
@@ -33,11 +35,24 @@ namespace Elastos {
 
 			static CMemBlock<uint8_t> getSeedFromString(const std::string &str_seed);
 
+#ifdef MNEMONIC_SOURCE_H
+
 			static CMemBlock<char> GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language);
 
 			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::string &language);
 
 			static CMemBlock<uint8_t> getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language);
+
+#else
+			static CMemBlock<char>
+			GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList);
+
+			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
+
+			static CMemBlock<uint8_t>
+			getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
+
+#endif
 
 			static std::string getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase);
 		};

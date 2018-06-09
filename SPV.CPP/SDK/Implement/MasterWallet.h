@@ -135,7 +135,7 @@ namespace Elastos {
 
 			KeyStore _keyStore;
 			boost::filesystem::path _dbRoot;
-			Mnemonic _mnemonic;
+			boost::shared_ptr<Mnemonic> _mnemonic;
 
 			std::string _publicKey;
 		};

@@ -6,17 +6,23 @@
 #include <iconv.h>
 #include "Utils.h"
 
+#include "Wallet_Tool.h"
+#include "BTCBase58.h"
 #include "BigIntFormat.h"
 #include "BRCrypto.h"
 #include "BRBIP39Mnemonic.h"
+
+#ifdef MNEMONIC_SOURCE_H
+
 #include "BRBIP39WordsEn.h"
-#include "brBIP39WordsCh.h"
-#include "brBIP39WordsFrench.h"
-#include "brBIP39WordsItalian.h"
-#include "brBIP39WordsJapanese.h"
-#include "brBIP39WordsSpanish.h"
-#include "BTCBase58.h"
-#include "Wallet_Tool.h"
+#include "Data/brBIP39WordsChinese.h"
+#include "Data/brBIP39WordsFrench.h"
+#include "Data/brBIP39WordsItalian.h"
+#include "Data/brBIP39WordsJapanese.h"
+#include "Data/brBIP39WordsSpanish.h"
+
+#endif
+
 
 #define MAX_BUFFER 1024 * 6
 
@@ -122,7 +128,10 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<char> Wallet_Tool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language) {
+#ifdef MNEMONIC_SOURCE_H
+
+		CMemBlock<char>
+		Wallet_Tool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language) {
 			CMemBlock<char> out;
 			if (true == seed) {
 				const char **wordList = language == "english" ? BRBIP39WordsEn :
@@ -167,6 +176,51 @@ namespace Elastos {
 			}
 			return out;
 		}
+
+#else
+		CMemBlock<char>
+		Wallet_Tool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList) {
+			CMemBlock<char> out;
+			if (true == seed && 0 < WordList.size()) {
+				const char *wordList[WordList.size()] = {0};
+				for (size_t i = 0; i < WordList.size(); i++) {
+					wordList[i] = WordList[i].c_str();
+				}
+				size_t phraselen = BRBIP39Encode(nullptr, 0, wordList, seed, seed.GetSize());
+				out.Resize(phraselen);
+				phraselen = BRBIP39Encode(out, phraselen, wordList, seed, seed.GetSize());
+			}
+			return out;
+		}
+
+		bool Wallet_Tool::PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
+			bool out = false;
+			if (true == phrase && 0 < WordList.size()) {
+				const char *wordList[WordList.size()] = {0};
+				for (size_t i = 0; i < WordList.size(); i++) {
+					wordList[i] = WordList[i].c_str();
+				}
+				out = 1 == BRBIP39PhraseIsValid(wordList, phrase) ? true : false;
+			}
+			return out;
+		}
+
+		CMemBlock<uint8_t>
+		Wallet_Tool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
+			CMemBlock<uint8_t> out;
+			if (true == phrase && 0 < WordList.size()) {
+				const char *wordList[WordList.size()] = {0};
+				for (size_t i = 0; i < WordList.size(); i++) {
+					wordList[i] = WordList[i].c_str();
+				}
+				size_t datalen = BRBIP39Decode(nullptr, 0, wordList, phrase);
+				out.Resize(datalen);
+				datalen = BRBIP39Decode(out, datalen, wordList, phrase);
+			}
+			return out;
+		}
+
+#endif
 
 		std::string Wallet_Tool::getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase) {
 			uint8_t prikey[64] = {0};
