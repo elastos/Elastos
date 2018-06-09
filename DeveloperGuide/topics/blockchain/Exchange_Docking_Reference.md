@@ -22,4 +22,4 @@ Get blocks and transactions
 ### ELA client: https://github.com/elastos/Elastos.ELA.Client
 This is a command line tool. Used for testing.
 ### ELA Locking transaction recognition：https://github.com/elastos/Elastos/blob/master/DeveloperGuide/topics/blockchain/Locking_transaction_recognition.md
-In case of Recharged utxo can't be spended
+In case of recharged utxo can't be spended
