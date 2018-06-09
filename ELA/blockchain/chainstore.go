@@ -25,6 +25,7 @@ type rollbackBlockTask struct {
 	blockHash Uint256
 	reply     chan bool
 }
+
 type persistBlockTask struct {
 	block *Block
 	reply chan bool
@@ -549,13 +550,6 @@ func (c *ChainStore) addHeader(header *Header) {
 
 func (c *ChainStore) SaveBlock(b *Block) error {
 	log.Debug("SaveBlock()")
-	//log.Trace("validation.PowVerifyBlock(b, ledger, false)")
-	//err := validation.PowVerifyBlock(b, ledger, false)
-	//if err != nil {
-	//	log.Error("PowVerifyBlock error!")
-	//	return err
-	//}
-	//log.Trace("validation.PowVerifyBlock(b, ledger, false)222222")
 
 	reply := make(chan bool)
 	c.taskCh <- &persistBlockTask{block: b, reply: reply}

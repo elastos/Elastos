@@ -182,8 +182,6 @@ func (bc *Blockchain) GetBestHeight() uint32 {
 }
 
 func (bc *Blockchain) UpdateBestHeight(val uint32) {
-	//bc.mutex.Lock()
-	//defer bc.mutex.Unlock()
 	bc.BlockHeight = val
 }
 

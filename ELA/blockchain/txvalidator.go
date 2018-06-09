@@ -234,7 +234,7 @@ func CheckTransactionUTXOLock(txn *Transaction) error {
 	}
 	references, err := DefaultLedger.Store.GetTxReference(txn)
 	if err != nil {
-		return errors.New(fmt.Sprintf("GetReference failed: %s", err))
+		return fmt.Errorf("GetReference failed: %s", err)
 	}
 	for input, output := range references {
 
@@ -289,21 +289,36 @@ func CheckTransactionBalance(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
 		return nil
 	}
-
-	// TODO: check coinbase balance 30%-70%
-	for _, v := range txn.Outputs {
-		if v.Value < Fixed64(0) {
+	// output value must >= 0
+	for _, output := range txn.Outputs {
+		if output.Value < Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
+
+	// foundation reword should >= 30% in coinbase
+	// FIXME coinbase reword should match 4% inflation per year
+	if txn.IsCoinBaseTx() {
+		var totalReword = Fixed64(0)
+		var foundationReword = Fixed64(0)
+		for _, output := range txn.Outputs {
+			totalReword += output.Value
+			if output.ProgramHash.IsEqual(FoundationAddress) {
+				foundationReword += output.Value
+			}
+		}
+		if float64(foundationReword)/float64(totalReword) < 0.3 {
+			return errors.New("Reword to foundation in coinbase < 30%")
+		}
+	}
+
 	results, err := GetTxFeeMap(txn)
 	if err != nil {
 		return err
 	}
-	for k, v := range results {
+	for _, v := range results {
 		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
-			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
+			return fmt.Errorf("Transaction fee not enough")
 		}
 	}
 	return nil
