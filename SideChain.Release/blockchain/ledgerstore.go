@@ -12,7 +12,6 @@ type IChainStore interface {
 
 	SaveBlock(b *core.Block) error
 	GetBlock(hash Uint256) (*core.Block, error)
-	BlockInCache(hash Uint256) bool
 	GetBlockHash(height uint32) (Uint256, error)
 	IsDoubleSpend(tx *core.Transaction) bool
 
