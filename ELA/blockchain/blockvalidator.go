@@ -103,11 +103,11 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 			existingTxInputs[referKey] = struct{}{}
 		}
 
-		if txn.IsWithdrawTx() {
+		if txn.IsWithdrawFromSideChainTx() {
 			witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 
 			// Check for duplicate sidechain tx in a block
-			for _, hash := range witPayload.SideChainTransactionHash {
+			for _, hash := range witPayload.SideChainTransactionHashes {
 				if _, exists := existingSideTxs[hash]; exists {
 					return errors.New("[PowCheckBlockSanity] block contains duplicate sidechain Tx")
 				}

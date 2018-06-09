@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"errors"
 	"io"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -13,6 +14,7 @@ type PayloadSideMining struct {
 	SideBlockHash   Uint256
 	SideGenesisHash Uint256
 	BlockHeight     uint32
+	SignedData      []byte
 }
 
 func (a *PayloadSideMining) Data(version byte) []byte {
@@ -27,15 +29,19 @@ func (a *PayloadSideMining) Data(version byte) []byte {
 func (a *PayloadSideMining) Serialize(w io.Writer, version byte) error {
 	err := a.SideBlockHash.Serialize(w)
 	if err != nil {
-		return err
+		return errors.New("[PayloadSideMining], SideBlockHash serialize failed.")
 	}
 	err = a.SideGenesisHash.Serialize(w)
 	if err != nil {
-		return err
+		return errors.New("[PayloadSideMining], SideGenesisHash serialize failed.")
 	}
 	err = WriteUint32(w, a.BlockHeight)
 	if err != nil {
-		return err
+		return errors.New("[PayloadSideMining], BlockHeight serialize failed.")
+	}
+	err = WriteVarBytes(w, a.SignedData)
+	if err != nil {
+		return errors.New("[PayloadSideMining], SignatureData serialize failed.")
 	}
 	return nil
 }
@@ -43,16 +49,18 @@ func (a *PayloadSideMining) Serialize(w io.Writer, version byte) error {
 func (a *PayloadSideMining) Deserialize(r io.Reader, version byte) error {
 	err := a.SideBlockHash.Deserialize(r)
 	if err != nil {
-		return err
+		return errors.New("[PayloadSideMining], SignatureData dserialize failed.")
 	}
 	err = a.SideGenesisHash.Deserialize(r)
 	if err != nil {
-		return err
+		return errors.New("[PayloadSideMining], SignatureData dserialize failed.")
 	}
-	height, err := ReadUint32(r)
+	a.BlockHeight, err = ReadUint32(r)
 	if err != nil {
-		return err
+		return errors.New("[PayloadSideMining], SignatureData dserialize failed.")
 	}
-	a.BlockHeight = height
+	if a.SignedData, err = ReadVarBytes(r); err != nil {
+		return errors.New("[PayloadSideMining], SignatureData dserialize failed.")
+	}
 	return nil
 }

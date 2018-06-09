@@ -12,6 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	. "github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
 // CheckTransactionSanity verifys received single transaction
@@ -72,15 +73,19 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	}
 
 	if txn.IsSideminingTx() {
-		if err := CheckSideMiningConsensus(txn); err != nil {
+		arbitrtor, err := GetCurrentArbiter()
+		if err != nil {
+			return ErrSideMiningConsensus
+		}
+		if err = CheckSideMiningConsensus(txn, arbitrtor); err != nil {
 			log.Warn("[CheckSideMiningConsensus],", err)
 			return ErrSideMiningConsensus
 		}
 	}
 
-	if txn.IsWithdrawTx() {
+	if txn.IsWithdrawFromSideChainTx() {
 		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
-		for _, hash := range witPayload.SideChainTransactionHash {
+		for _, hash := range witPayload.SideChainTransactionHashes {
 			if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
 				return ErrSidechainTxDuplicate
 			}
@@ -281,7 +286,7 @@ func CheckAssetPrecision(txn *Transaction) error {
 }
 
 func CheckTransactionBalance(txn *Transaction) error {
-	if txn.IsWithdrawTx() {
+	if txn.IsWithdrawFromSideChainTx() {
 		return nil
 	}
 
@@ -340,10 +345,10 @@ func CheckTransactionPayload(txn *Transaction) error {
 
 //validate the transaction of duplicate sidechain transaction
 func CheckDuplicateSidechainTx(txn *Transaction) error {
-	if txn.IsWithdrawTx() {
+	if txn.IsWithdrawFromSideChainTx() {
 		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 		existingHashs := make(map[string]struct{})
-		for _, hash := range witPayload.SideChainTransactionHash {
+		for _, hash := range witPayload.SideChainTransactionHashes {
 			if _, exist := existingHashs[hash]; exist {
 				return errors.New("Duplicate sidechain tx detected in a transaction")
 			}
@@ -353,20 +358,38 @@ func CheckDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-func CheckSideMiningConsensus(txn *Transaction) error {
+func GetCurrentArbiter() ([]byte, error) {
 	arbitrators, err := config.Parameters.GetArbitrators()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	height := DefaultLedger.Store.GetHeight()
 	index := height % uint32(len(arbitrators))
 	arbitrator := arbitrators[index]
 
-	for _, program := range txn.Programs {
-		publicKey := program.Code[1 : len(program.Code)-1]
-		if !bytes.Equal(arbitrator, publicKey) {
-			return errors.New("Arbitrator is not matched")
-		}
+	return arbitrator, nil
+}
+
+func CheckSideMiningConsensus(txn *Transaction, arbitrator []byte) error {
+	payloadSideMining, ok := txn.Payload.(*PayloadSideMining)
+	if !ok {
+		return errors.New("Side mining transaction has invalid payload")
+	}
+
+	publicKey, err := DecodePoint(arbitrator)
+	if err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
+	err = payloadSideMining.Serialize(buf, SideMiningPayloadVersion)
+	if err != nil {
+		return err
+	}
+
+	err = Verify(*publicKey, buf.Bytes()[0:68], payloadSideMining.SignedData)
+	if err != nil {
+		return errors.New("Arbitrator is not matched")
 	}
 
 	return nil

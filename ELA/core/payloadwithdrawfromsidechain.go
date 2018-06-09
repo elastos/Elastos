@@ -11,9 +11,9 @@ import (
 const WithdrawFromSideChainPayloadVersion byte = 0x00
 
 type PayloadWithdrawFromSideChain struct {
-	BlockHeight              uint32
-	GenesisBlockAddress      string
-	SideChainTransactionHash []string
+	BlockHeight                uint32
+	GenesisBlockAddress        string
+	SideChainTransactionHashes []string
 }
 
 func (t *PayloadWithdrawFromSideChain) Data(version byte) []byte {
@@ -27,19 +27,19 @@ func (t *PayloadWithdrawFromSideChain) Data(version byte) []byte {
 
 func (t *PayloadWithdrawFromSideChain) Serialize(w io.Writer, version byte) error {
 	if err := common.WriteUint32(w, t.BlockHeight); err != nil {
-		return errors.New("[WithdrawFromSideChain], BlockHeight serialize failed.")
+		return errors.New("[PayloadWithdrawFromSideChain], BlockHeight serialize failed.")
 	}
 	if err := common.WriteVarString(w, t.GenesisBlockAddress); err != nil {
-		return errors.New("[WithdrawFromSideChain], GenesisBlockAddress serialize failed.")
+		return errors.New("[PayloadWithdrawFromSideChain], GenesisBlockAddress serialize failed.")
 	}
 
-	if err := common.WriteVarUint(w, uint64(len(t.SideChainTransactionHash))); err != nil {
-		return errors.New("PayloadTransferCrossChainAsset length serialize failed")
+	if err := common.WriteVarUint(w, uint64(len(t.SideChainTransactionHashes))); err != nil {
+		return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashes length serialize failed")
 	}
 
-	for _, txHash := range t.SideChainTransactionHash {
+	for _, txHash := range t.SideChainTransactionHashes {
 		if err := common.WriteVarString(w, txHash); err != nil {
-			return errors.New("[WithdrawFromSideChain], SideChainTransactionHash serialize failed.")
+			return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashes serialize failed.")
 		}
 	}
 	return nil
@@ -48,26 +48,26 @@ func (t *PayloadWithdrawFromSideChain) Serialize(w io.Writer, version byte) erro
 func (t *PayloadWithdrawFromSideChain) Deserialize(r io.Reader, version byte) error {
 	height, err := common.ReadUint32(r)
 	if err != nil {
-		return errors.New("[WithdrawFromSideChain], BlockHeight deserialize failed.")
+		return errors.New("[PayloadWithdrawFromSideChain], BlockHeight deserialize failed.")
 	}
 	address, err := common.ReadVarString(r)
 	if err != nil {
-		return errors.New("[WithdrawFromSideChain], GenesisBlockAddress deserialize failed.")
+		return errors.New("[PayloadWithdrawFromSideChain], GenesisBlockAddress deserialize failed.")
 	}
 
 	length, err := common.ReadVarUint(r, 0)
 	if err != nil {
-		return errors.New("PayloadTransferCrossChainAsset length deserialize failed")
+		return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashes length deserialize failed")
 	}
 
-	t.SideChainTransactionHash = nil
-	t.SideChainTransactionHash = make([]string, length)
+	t.SideChainTransactionHashes = nil
+	t.SideChainTransactionHashes = make([]string, length)
 	for i := uint64(0); i < length; i++ {
 		hash, err := common.ReadVarString(r)
 		if err != nil {
-			return errors.New("[WithdrawFromSideChain], SideChainTransactionHash deserialize failed.")
+			return errors.New("[WithdrawFromSideChain], SideChainTransactionHashes deserialize failed.")
 		}
-		t.SideChainTransactionHash[i] = hash
+		t.SideChainTransactionHashes[i] = hash
 	}
 
 	t.BlockHeight = height
