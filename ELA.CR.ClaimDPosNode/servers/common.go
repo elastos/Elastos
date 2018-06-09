@@ -107,6 +107,7 @@ type SideMiningInfo struct {
 	BlockHeight     uint32
 	SideBlockHash   string
 	SideGenesisHash string
+	SignedData      string
 }
 
 type TransferCrossChainAssetInfo struct {
@@ -116,7 +117,7 @@ type TransferCrossChainAssetInfo struct {
 }
 
 type WithdrawFromSideChainInfo struct {
-	BlockHeight              uint32
-	GenesisBlockAddress      string
-	SideChainTransactionHash []string
+	BlockHeight                uint32
+	GenesisBlockAddress        string
+	SideChainTransactionHashes []string
 }
