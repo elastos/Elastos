@@ -1,0 +1,38 @@
+{
+  "Configuration": {
+    "Magic": 2018001,
+    "Version": 23,
+    "SeedList": [
+      "node-testnet-002.elastos.org:21866"
+    ],
+    "HttpInfoPort": 21333,
+    "HttpInfoStart": true,
+    "HttpRestPort": 21334,
+    "HttpWsPort": 21335,
+    "WsHeartbeatInterval": 60,
+    "HttpJsonPort": 21336,
+    "NoticeServerUrl": "",
+    "OauthServerUrl": "",
+    "NodePort": 21338,
+    "NodeOpenPort": 21866,
+    "OpenService": false,
+    "PrintLevel": 1,
+    "MaxLogsSize": 0,
+    "MaxPerLogSize": 0,
+    "IsTLS": false,
+    "CertPath": "",
+    "KeyPath": "",
+    "CAPath": "",
+    "MultiCoreNum": 4,
+    "MaxTransactionInBlock": 10000,
+    "MaxBlockSize": 8000000,
+    "FoundationAddress": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+    "PowConfiguration": {
+      "PayToAddr": "EeEkSiRMZqg5rd9a2yPaWnvdPcikFtsrjE",
+      "AutoMining": false,
+      "MinerInfo": "ELA",
+      "MinTxFee": 100,
+      "ActiveNet": "MainNet"
+    }
+  }
+}
