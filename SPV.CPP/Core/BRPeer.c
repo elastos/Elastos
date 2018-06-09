@@ -92,7 +92,7 @@ inline static int _BRPeerIsIPv4(const BRPeer *peer)
 
 static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type)
 {
-    peer_log(peer, "------start _BRPeerAcceptMessage: type %s --------", type);
+    //peer_log(peer, "------start _BRPeerAcceptMessage: type %s --------", type);
 
     BRPeerContext *ctx = (BRPeerContext *)peer;
     int r = 1;
@@ -227,8 +227,14 @@ static void *_peerThreadRoutine(void *arg)
             while (socket >= 0 && ! error && len < HEADER_LENGTH) {
                 n = read(socket, &header[len], sizeof(header) - len);
                 if (n > 0) len += n;
-                if (n == 0) error = ECONNRESET;
-                if (n < 0 && errno != EWOULDBLOCK) error = errno;
+                if (n == 0)
+                    error = ECONNRESET;
+                if (n < 0 && errno != EWOULDBLOCK)
+                {
+                    error = errno;
+                    peer_log(peer, "n < 0 && errno != EWOULDBLOCK 11111111111 error %d", error);
+                }
+
                 gettimeofday(&tv, NULL);
                 time = tv.tv_sec + (double)tv.tv_usec/1000000;
 				//todo consider timeout later
@@ -249,7 +255,7 @@ static void *_peerThreadRoutine(void *arg)
             }
 
             if (error) {
-                peer_log(peer, "%s", strerror(error));
+                peer_log(peer, "_peerThreadRoutine %s", strerror(error));
             }
             else if (header[15] != 0) { // verify header type field is NULL terminated
                 peer_log(peer, "malformed message header: type not NULL terminated");
@@ -275,14 +281,21 @@ static void *_peerThreadRoutine(void *arg)
 
                     while (socket >= 0 && ! error && len < msgLen) {
                         n = read(socket, &payload[len], msgLen - len);
-                        peer_log(peer, "read socket n %ld", n);
+                        //peer_log(peer, "read socket n %ld", n);
                         if (n > 0) len += n;
-                        if (n == 0) error = ECONNRESET;
-                        if (n < 0 && errno != EWOULDBLOCK) error = errno;
+                        if (n == 0)
+                            error = ECONNRESET;
+                        if (n < 0 && errno != EWOULDBLOCK)
+                        {
+                            error = errno;
+                            peer_log(peer, "n < 0 && errno != EWOULDBLOCK 2222error %d", error);
+                        }
+
                         gettimeofday(&tv, NULL);
                         time = tv.tv_sec + (double)tv.tv_usec/1000000;
                         if (n > 0) msgTimeout = time + MESSAGE_TIMEOUT;
-                        if (! error && time >= msgTimeout) error = ETIMEDOUT;
+                        if (! error && time >= msgTimeout)
+                            error = ETIMEDOUT;
                         socket = ctx->socket;
                     }
 

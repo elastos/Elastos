@@ -24,7 +24,7 @@ namespace Elastos {
 		}
 
 		KeyStore::~KeyStore() {
-
+			//EVP_cleanup();
 		}
 
 		bool KeyStore::open(const boost::filesystem::path &path, const std::string &password) {

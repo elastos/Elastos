@@ -913,7 +913,7 @@ static int _BRPeerAcceptFeeFilterMessage(BRPeer *peer, const uint8_t *msg, size_
 
 static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type)
 {
-	peer_log(peer, "------start _BRPeerAcceptMessage: type %s --------", type);
+	//peer_log(peer, "------start _BRPeerAcceptMessage: type %s --------", type);
 
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 	int r = 1;

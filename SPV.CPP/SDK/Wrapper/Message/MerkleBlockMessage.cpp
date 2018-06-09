@@ -71,7 +71,7 @@ namespace Elastos {
 					ELAMerkleBlockFree(elablock);
 				}
 			}
-			Log::getLogger()->info("MerkleBlockMessage::Accept return {}:", r);
+			//Log::getLogger()->info("MerkleBlockMessage::Accept return {}:", r);
 			return r;
 		}
 

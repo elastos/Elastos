@@ -782,6 +782,8 @@ static void _peerDisconnected(void *info, int error)
     int willSave = 0, willReconnect = 0, txError = 0;
     size_t txCount = 0;
 
+    peer_log(peer, "_peerDisconnected !!!!!!!!!!!!!!!!!!!!!!!!!!! error %d", error);
+
     //free(info);
     pthread_mutex_lock(&manager->lock);
 
@@ -792,7 +794,8 @@ static void _peerDisconnected(void *info, int error)
     }
     else if (error) { // timeout or some non-protocol related network error
         for (size_t i = array_count(manager->peers); i > 0; i--) {
-            if (BRPeerEq(&manager->peers[i - 1], peer)) array_rm(manager->peers, i - 1);
+            if (BRPeerEq(&manager->peers[i - 1], peer))
+            	array_rm(manager->peers, i - 1);
         }
 
         manager->connectFailureCount++;
@@ -807,7 +810,8 @@ static void _peerDisconnected(void *info, int error)
         peerList = &manager->txRelays[i - 1];
 
         for (size_t j = array_count(peerList->peers); j > 0; j--) {
-            if (BRPeerEq(&peerList->peers[j - 1], peer)) array_rm(peerList->peers, j - 1);
+            if (BRPeerEq(&peerList->peers[j - 1], peer))
+            	array_rm(peerList->peers, j - 1);
         }
     }
 
@@ -824,9 +828,13 @@ static void _peerDisconnected(void *info, int error)
         array_clear(manager->peers);
         txError = ENOTCONN; // trigger any pending tx publish callbacks
         willSave = 1;
-        peer_log(peer, "sync failed");
+        peer_log(peer, "_peerDisconnected  array_clear sync failed");
     }
-    else if (manager->connectFailureCount < MAX_CONNECT_FAILURES) willReconnect = 1;
+    else if (manager->connectFailureCount < MAX_CONNECT_FAILURES)
+    {
+        if((error != ECONNRESET) &&  (error != EBADF))
+            willReconnect = 1;
+    }
 
     if (txError) {
         for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
@@ -839,8 +847,10 @@ static void _peerDisconnected(void *info, int error)
     }
 
     for (size_t i = array_count(manager->connectedPeers); i > 0; i--) {
-        if (manager->connectedPeers[i - 1] != peer) continue;
+        if (manager->connectedPeers[i - 1] != peer)
+        	continue;
         array_rm(manager->connectedPeers, i - 1);
+		peer_log(peer, "_peerDisconnected array_rm connectedPeers sync failed");
         break;
     }
 
@@ -853,7 +863,8 @@ static void _peerDisconnected(void *info, int error)
 
     if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect) BRPeerManagerConnect(manager); // try connecting to another peer
+    if (willReconnect)
+            BRPeerManagerConnect(manager); // try connecting to another peer
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 

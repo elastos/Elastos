@@ -506,7 +506,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Walle
 
 
 
-/*TEST_CASE("test p2p net stop error use --------", "[WalletFactory]") {
+TEST_CASE("test p2p net stop error use", "[WalletFactory]") {
 	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory());
 
 	std::string phrasePassword = "phrasePassword";
@@ -514,20 +514,48 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Walle
 	std::string mnemonic = "drink false ribbon equal reward happy olive later silly track business sail";
 
 
-	SECTION("Create master wallet mnemonic english ") {
+	SECTION("Create master wallet mnemonic english") {
+		int i =   1 ;
+		i ++;
+
 		IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword,
 																			  "english");
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 
+		printf("before  CreateSubWallet -----> \n");
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
 		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-
+		sleep(1);
+		printf("before DestroyWallet subWallet -----> \n");
 		masterWallet->DestroyWallet(subWallet);
+
+		printf("before DestroyWallet masterWallet -----> \n");
 		walletFactory->DestroyWallet(masterWallet);
 	}
-}*/
+}
 
+
+TEST_CASE("Test crash", "[WalletFactory]")
+{
+	boost::scoped_ptr<WalletFactory> walletFact(new WalletFactory());
+	std::string phrasePassword = "phrasepassword";
+	std::string payPassword = "payPassword";
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+
+	SECTION("my test carsh")
+	{
+		IMasterWallet *masterWallet = walletFact->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword, "english");
+		REQUIRE(masterWallet != nullptr);
+		REQUIRE(!masterWallet->GetPublicKey().empty());
+		ISubWallet* subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
+		nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
+		sleep(1);
+		masterWallet->DestroyWallet(subWallet);
+		walletFact->DestroyWallet(masterWallet);
+	}
+
+}
 ////////////////////////////////////////////
 
 

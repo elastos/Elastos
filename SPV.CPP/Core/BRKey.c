@@ -59,6 +59,7 @@ static pthread_once_t _ctx_once = PTHREAD_ONCE_INIT;
 
 static void _ctx_init()
 {
+    //pthread_detach(pthread_self());
     _ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
 }
 
