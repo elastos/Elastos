@@ -12,7 +12,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com//howeyc/gopass"
+	"github.com/howeyc/gopass"
 	"github.com/urfave/cli"
 )
 
