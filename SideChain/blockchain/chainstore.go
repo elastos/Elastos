@@ -41,7 +41,6 @@ type ChainStore struct {
 	mu          sync.RWMutex // guard the following var
 	headerIndex map[uint32]Uint256
 	headerCache map[Uint256]*core.Header
-	//blockCache  map[Uint256]*Block
 	headerIdx *list.List
 
 	currentBlockHeight uint32
@@ -58,7 +57,6 @@ func NewChainStore() (IChainStore, error) {
 	store := &ChainStore{
 		IStore:      st,
 		headerIndex: map[uint32]Uint256{},
-		//blockCache:         map[Uint256]*Block{},
 		headerCache:        map[Uint256]*core.Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
@@ -77,7 +75,7 @@ func (c *ChainStore) Close() {
 	c.quit <- closed
 	<-closed
 
-	c.Close()
+	c.IStore.Close()
 }
 
 func (c *ChainStore) loop() {
@@ -159,7 +157,6 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 		return 0, errors.New("genesis block is not consistent with the chain")
 	}
 	DefaultLedger.Blockchain.GenesisHash = hash
-	//c.headerIndex[0] = hash
 
 	// Get Current Block
 	currentBlockPrefix := []byte{byte(SYS_CurrentBlock)}
@@ -197,7 +194,6 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 		DefaultLedger.Blockchain.BestChain = node
 
 	}
-	//c.ledger.Blockchain.DumpState()
 
 	return c.currentBlockHeight, nil
 
@@ -301,7 +297,6 @@ func (c *ChainStore) GetHeader(hash Uint256) (*core.Header, error) {
 
 	prefix := []byte{byte(DATA_Header)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
-	//log.Debug( "Get Header Data: %x\n",  data )
 	if err != nil {
 		//TODO: implement error process
 		return nil, err
