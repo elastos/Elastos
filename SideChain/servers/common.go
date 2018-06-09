@@ -104,16 +104,15 @@ type RegisterAssetInfo struct {
 }
 
 type SideMiningInfo struct {
-	SideBlockHash string
+	BlockHeight     uint32
+	SideBlockHash   string
+	SideGenesisHash string
+	SignedData      string
 }
 
 type RechargeToSideChainInfo struct {
 	Proof                string
 	MainChainTransaction string
-}
-
-type WithdrawFromSideChainInfo struct {
-	BlockHeight uint32
 }
 
 type TransferCrossChainAssetInfo struct {
