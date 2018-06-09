@@ -16,7 +16,7 @@ import (
 func VerifySignature(tx *ela.Transaction) (bool, error) {
 	if tx.TxType == ela.RechargeToSideChain {
 		if err := spv.VerifyTransaction(tx); err != nil {
-			return false, errors.New("Issue token transaction validate failed.")
+			return false, err
 		}
 		return true, nil
 	}

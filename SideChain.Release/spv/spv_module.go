@@ -2,14 +2,16 @@ package spv
 
 import (
 	"bytes"
+	"crypto/rand"
+	"encoding/binary"
 	"errors"
-	"math/rand"
+	"os"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	"github.com/elastos/Elastos.ELA.SPV/interface"
 	spvlog "github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
@@ -17,17 +19,26 @@ import (
 var spvService _interface.SPVService
 
 func SpvInit() error {
+	var err error
 	spvlog.Init(config.Parameters.SpvPrintLevel)
-	service, err := _interface.NewSPVService(config.Parameters.SpvMagic,
-		uint64(rand.Int63()), config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
+
+	var id = make([]byte, 8)
+	var clientId uint64
+	rand.Read(id)
+	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
+
+	spvService, err = _interface.NewSPVService(config.Parameters.SpvMagic, clientId,
+		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
 	if err != nil {
 		return err
 	}
-	spvService = service
+
 	go func() {
 		if err := spvService.Start(); err != nil {
-			log.Info("spvService start failed ：", err)
+			log.Info("Spv service start failed ：", err)
 		}
+		log.Info("Spv service stoped")
+		os.Exit(-1)
 	}()
 	return nil
 }

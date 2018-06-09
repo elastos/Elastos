@@ -1015,11 +1015,10 @@ func getPayloadInfo(p ela.Payload) PayloadInfo {
 		return obj
 	case *ela.PayloadSideMining:
 		obj := new(SideMiningInfo)
-		obj.SideBlockHash = object.SideBlockHash.String()
-		return obj
-	case *ela.PayloadWithdrawFromSideChain:
-		obj := new(WithdrawFromSideChainInfo)
 		obj.BlockHeight = object.BlockHeight
+		obj.SideBlockHash = object.SideBlockHash.String()
+		obj.SideGenesisHash = object.SideGenesisHash.String()
+		obj.SignedData = BytesToHexString(object.SignedData)
 		return obj
 	case *ela.PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
@@ -1062,8 +1061,6 @@ func getTransactionInfo(txInfoBytes []byte) (*TransactionInfo, error) {
 		assetInfo = &SideMiningInfo{}
 	case ela.RechargeToSideChain:
 		assetInfo = &RechargeToSideChainInfo{}
-	case ela.WithdrawFromSideChain:
-		assetInfo = &WithdrawFromSideChainInfo{}
 	case ela.TransferCrossChainAsset:
 		assetInfo = &TransferCrossChainAssetInfo{}
 	default:
