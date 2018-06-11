@@ -28,12 +28,8 @@ func GetPayload(txType TransactionType) (Payload, error) {
 		p = new(PayloadTransferAsset)
 	case Record:
 		p = new(PayloadRecord)
-	case SideMining:
-		p = new(PayloadSideMining)
 	case RechargeToSideChain:
 		p = new(PayloadRechargeToSideChain)
-	case WithdrawFromSideChain:
-		p = new(PayloadWithdrawFromSideChain)
 	case TransferCrossChainAsset:
 		p = new(PayloadTransferCrossChainAsset)
 	case RegisterIdentification:

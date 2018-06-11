@@ -123,9 +123,9 @@ func GetGenesisBlock() (*core.Block, error) {
 		Height:     uint32(0),
 		SideAuxPow: auxpow.SideAuxPow{
 			SideAuxBlockTx: ela.Transaction{
-				TxType:ela.SideMining,
-				PayloadVersion: ela.SideMiningPayloadVersion,
-				Payload: new(ela.PayloadSideMining),
+				TxType:         ela.SideChainPow,
+				PayloadVersion: ela.SideChainPowPayloadVersion,
+				Payload:        new(ela.PayloadSideChainPow),
 			},
 		},
 	}

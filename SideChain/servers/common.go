@@ -104,7 +104,7 @@ type RegisterAssetInfo struct {
 	Controller string
 }
 
-type SideMiningInfo struct {
+type SideChainPowInfo struct {
 	BlockHeight     uint32
 	SideBlockHash   string
 	SideGenesisHash string

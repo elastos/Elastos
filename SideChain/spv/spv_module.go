@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
@@ -19,7 +18,6 @@ import (
 )
 
 var spvService _interface.SPVService
-var maxConnections = 12
 
 func SpvInit() error {
 	var err error

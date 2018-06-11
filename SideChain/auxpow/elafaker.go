@@ -8,22 +8,22 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-func getSideMiningTx(msgBlockHash Uint256, genesisHash Uint256) *ela.Transaction {
+func getSideChainPowTx(msgBlockHash Uint256, genesisHash Uint256) *ela.Transaction {
 
-	txPayload := &ela.PayloadSideMining{
+	txPayload := &ela.PayloadSideChainPow{
 		SideBlockHash:   msgBlockHash,
 		SideGenesisHash: genesisHash,
 	}
 
-	sideMiningTx := NewSideMiningTx(txPayload, 0)
+	sideChainPowTx := NewSideChainPowTx(txPayload, 0)
 
-	return sideMiningTx
+	return sideChainPowTx
 }
 
 func GenerateSideAuxPow(msgBlockHash Uint256, genesisHash Uint256) *SideAuxPow {
 	sideAuxMerkleBranch := make([]Uint256, 0)
 	sideAuxMerkleIndex := 0
-	sideAuxBlockTx := getSideMiningTx(msgBlockHash, genesisHash)
+	sideAuxBlockTx := getSideChainPowTx(msgBlockHash, genesisHash)
 	elaBlockHeader := ela.Header{
 		Version:    0x7fffffff,
 		Previous:   EmptyHash,
@@ -49,9 +49,9 @@ func GenerateSideAuxPow(msgBlockHash Uint256, genesisHash Uint256) *SideAuxPow {
 	return sideAuxPow
 }
 
-func NewSideMiningTx(payload *ela.PayloadSideMining, currentHeight uint32) *ela.Transaction {
+func NewSideChainPowTx(payload *ela.PayloadSideChainPow, currentHeight uint32) *ela.Transaction {
 	return &ela.Transaction{
-		TxType:  ela.SideMining,
+		TxType:  ela.SideChainPow,
 		Payload: payload,
 		Inputs: []*ela.Input{
 			{
