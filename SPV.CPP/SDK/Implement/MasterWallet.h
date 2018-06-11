@@ -12,9 +12,11 @@
 
 #include "MasterPubKey.h"
 #include "Interface/IMasterWallet.h"
-#include "Manager/Mnemonic.h"
+#include "Interface/IIdAgent.h"
+#include "SDK/KeyStore/Mnemonic.h"
 #include "KeyStore/KeyStore.h"
 #include "KeyStore/MasterWalletStore.h"
+#include "IdAgent/IdAgentImpl.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -24,9 +26,13 @@ namespace Elastos {
 		class SubWallet;
 		class KeyStore;
 
-		class MasterWallet : public IMasterWallet {
+		class MasterWallet : public IMasterWallet, public IIdAgent {
 		public:
 			virtual ~MasterWallet();
+
+			bool Initialized() const;
+
+		public: //override from IMasterWallet
 
 			virtual std::string GetId() const;
 
@@ -58,21 +64,33 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
-			virtual bool DeriveIdAndKeyForPurpose(
+		public: //override from IIdAgent
+			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
 					uint32_t index,
-					const std::string &payPassword,
-					std::string &id,
-					std::string &key);
+					const std::string &payPassword);
 
 			virtual bool IsIdValid(const std::string &id);
 
-			bool Initialized() const;
+			virtual nlohmann::json GenerateProgram(
+					const std::string &id,
+					const std::string &message,
+					const std::string &password);
+
+			virtual std::string Sign(
+					const std::string &id,
+					const std::string &message,
+					const std::string &password);
+
+			virtual std::vector<std::string> GetAllIds() const;
 
 		protected:
 
 			friend class MasterWalletManager;
+
 			friend class WalletFactoryInner;
+
+			friend class IdAgentImpl;
 
 			friend class SubWallet;
 
@@ -139,11 +157,12 @@ namespace Elastos {
 
 			MasterWalletStore _localStore;
 			KeyStore _keyStore;
-			boost::filesystem::path _dbRoot;
 			boost::shared_ptr<Mnemonic> _mnemonic;
 
 			std::string _publicKey;
 			std::string _id;
+
+			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
 		};
 
 	}

@@ -9,7 +9,7 @@
 #include "TransactionDataStore.h"
 #include "DatabaseManager.h"
 #include "catch.hpp"
-#include "Manager/BackgroundExecutor.h"
+#include "SpvService/BackgroundExecutor.h"
 #include "Utils.h"
 #include "Log.h"
 

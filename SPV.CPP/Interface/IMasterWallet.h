@@ -96,29 +96,6 @@ namespace Elastos {
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
-
-			/**
-			 * Derive id and key by specified purpose and index.
-			 * @param purpose for indicating a subtree to derive a chain of sub keys. Purpose should not be 44, which is reserved HD wallet path purpose.
-			 * @param index for generating sub keys sequentially.
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param id return generated id correspond to the \p key.
-			 * @param key return generated key.
-			 * @return True if success, otherwise return false.
-			 */
-			virtual bool DeriveIdAndKeyForPurpose(
-					uint32_t purpose,
-					uint32_t index,
-					const std::string &payPassword,
-					std::string &id,
-					std::string &key) = 0;
-
-			/**
-			 * Verify a id (address).
-			 * @param id to be verified.
-			 * @return True if valid, otherwise return false.
-			 */
-			virtual bool IsIdValid(const std::string &id) = 0;
 		};
 
 	}

@@ -5,7 +5,7 @@
 #ifndef _ELATSOS_SAMPLE_TESTWALLET_H
 #define _ELATSOS_SAMPLE_TESTWALLET_H
 
-#include "Manager/WalletManager.h"
+#include "SpvService/WalletManager.h"
 #include "Wrapper/Transaction.h"
 
 using namespace Elastos::SDK;

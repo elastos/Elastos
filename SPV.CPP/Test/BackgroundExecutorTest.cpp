@@ -4,7 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "Manager/BackgroundExecutor.h"
+#include "SpvService/BackgroundExecutor.h"
 
 using namespace Elastos::SDK;
 

@@ -42,6 +42,8 @@ namespace Elastos {
 
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
+
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -65,6 +67,8 @@ namespace Elastos {
 #endif
 			std::string str_phrase = (const char *) phrase;
 			initFromPhrase(str_phrase, phrasePassword, payPassword);
+
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -451,25 +455,27 @@ namespace Elastos {
 			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, mnemonicPath));
 		}
 
-		bool MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword,
-													std::string &id, std::string &key) {
+		std::string MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword) {
 			if (!Initialized())
 				throw std::logic_error("Current master wallet is not initialized.");
 
-			ParamChecker::checkPassword(payPassword);
+			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index, payPassword);
+		}
 
-			if (purpose == 44)
-				throw std::invalid_argument("Can not use reserved purpose.");
+		nlohmann::json
+		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
+			nlohmann::json j;
+			j["parameter"] = _idAgentImpl->Sign(id, message, password);
+			j["code"] = _idAgentImpl->GenerateRedeemScript(id, password);
+			return j;
+		}
 
-			UInt512 seed = deriveSeed(payPassword);
+		std::string MasterWallet::Sign(const std::string &id, const std::string &message, const std::string &password) {
+			return _idAgentImpl->Sign(id, message, password);
+		}
 
-			BRKey *privkey = new BRKey;
-			UInt256 chainCode;
-			Key::deriveKeyAndChain(privkey, chainCode, &seed, sizeof(seed), 2, purpose, index);
-			Key wrappedKey(privkey);
-			id = wrappedKey.keyToAddress(ELA_IDCHAIN);
-			key = wrappedKey.toString();
-			return true;
+		std::vector<std::string> MasterWallet::GetAllIds() const {
+			return _idAgentImpl->GetAllIds();
 		}
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {

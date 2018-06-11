@@ -79,7 +79,7 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 		CHECK_THROWS_AS(masterWallet->CheckSign("ilegal pubKey", "mymessage", "ilegal signature"), std::logic_error);
 		std::string id;
 		std::string key;
-		CHECK_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(44, 0, payPassword, id, key), std::logic_error);
+		CHECK_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(44, 0, payPassword), std::logic_error);
 	}
 	SECTION("Class public methods will not throw after mater initialized by importFromMnemonic") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
@@ -408,14 +408,12 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	std::string key;
 
 	SECTION("Normal derive") {
-		if (masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword, id, key)) {
-			REQUIRE(id == "im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y");
-			REQUIRE(key == "b8d18295a6a21b5ad147d02e1e182ec193c682bd7465dad59fbfc76bf36c8083");
-		}
+		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+		REQUIRE(id == "im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y");
 	}
 	SECTION("Derive reserved purpose") {
 		try {
-			masterWallet->DeriveIdAndKeyForPurpose(44, 1, payPassword, id, key);
+			id = masterWallet->DeriveIdAndKeyForPurpose(44, 1, payPassword);
 		}
 		catch (const std::invalid_argument &e) {
 			REQUIRE(strcmp(e.what(), "Can not use reserved purpose.") == 0);
@@ -423,16 +421,16 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 		//todo add other reserved purpose test in future
 	}
 	SECTION("Derive with pay password that is empty or less than 8") {
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "", id, key), std::invalid_argument);
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "invalid", id, key), std::invalid_argument);
+		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, ""), std::invalid_argument);
+		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "invalid"), std::invalid_argument);
 	}
 	SECTION("Derive with pay password that is more than 128") {
 		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1,
-																 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-																 id, key), std::invalid_argument);
+																 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						  std::invalid_argument);
 	}
 	SECTION("Derive by wrong password") {
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "wrongPassword", id, key), std::logic_error);
+		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "wrongPassword"), std::logic_error);
 	}
 }
 

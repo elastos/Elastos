@@ -7,7 +7,7 @@
 #include <fstream>
 #include <catch.hpp>
 
-#include "Mnemonic.h"
+#include "SDK/KeyStore/Mnemonic.h"
 #include "Wallet_Tool.h"
 #include "BTCBase58.h"
 

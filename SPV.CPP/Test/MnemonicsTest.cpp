@@ -7,7 +7,7 @@
 #include "BRBIP39Mnemonic.h"
 
 #include "catch.hpp"
-#include "Manager/Mnemonic.h"
+#include "KeyStore/Mnemonic.h"
 
 using namespace Elastos::SDK;
 
