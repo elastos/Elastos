@@ -23,12 +23,9 @@ func SpvInit() error {
 	var err error
 	spvlog.Init(config.Parameters.SpvPrintLevel)
 
-	var id = make([]byte, 8)
-	var clientId uint64
-	rand.Read(id)
-	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-
-	spvService, err = _interface.NewSPVService(config.Parameters.SpvMagic, clientId,
+	var clientId = make([]byte, 8)
+	rand.Read(clientId)
+	spvService, err = _interface.NewSPVService(config.Parameters.SpvMagic, binary.LittleEndian.Uint64(clientId),
 		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
 	if err != nil {
 		return err
