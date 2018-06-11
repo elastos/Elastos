@@ -72,14 +72,14 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return Success
 	}
 
-	if txn.IsSideminingTx() {
+	if txn.IsSideChainPowTx() {
 		arbitrtor, err := GetCurrentArbiter()
 		if err != nil {
-			return ErrSideMiningConsensus
+			return ErrSideChainPowConsensus
 		}
-		if err = CheckSideMiningConsensus(txn, arbitrtor); err != nil {
-			log.Warn("[CheckSideMiningConsensus],", err)
-			return ErrSideMiningConsensus
+		if err = CheckSideChainPowConsensus(txn, arbitrtor); err != nil {
+			log.Warn("[CheckSideChainPowConsensus],", err)
+			return ErrSideChainPowConsensus
 		}
 	}
 
@@ -336,7 +336,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 	case *PayloadTransferAsset:
 	case *PayloadRecord:
 	case *PayloadCoinBase:
-	case *PayloadSideMining:
+	case *PayloadSideChainPow:
 	case *PayloadWithdrawFromSideChain:
 	case *PayloadTransferCrossChainAsset:
 	default:
@@ -372,8 +372,8 @@ func GetCurrentArbiter() ([]byte, error) {
 	return arbitrator, nil
 }
 
-func CheckSideMiningConsensus(txn *Transaction, arbitrator []byte) error {
-	payloadSideMining, ok := txn.Payload.(*PayloadSideMining)
+func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
+	payloadSideChainPow, ok := txn.Payload.(*PayloadSideChainPow)
 	if !ok {
 		return errors.New("Side mining transaction has invalid payload")
 	}
@@ -384,12 +384,12 @@ func CheckSideMiningConsensus(txn *Transaction, arbitrator []byte) error {
 	}
 
 	buf := new(bytes.Buffer)
-	err = payloadSideMining.Serialize(buf, SideMiningPayloadVersion)
+	err = payloadSideChainPow.Serialize(buf, SideChainPowPayloadVersion)
 	if err != nil {
 		return err
 	}
 
-	err = Verify(*publicKey, buf.Bytes()[0:68], payloadSideMining.SignedData)
+	err = Verify(*publicKey, buf.Bytes()[0:68], payloadSideChainPow.SignedData)
 	if err != nil {
 		return errors.New("Arbitrator is not matched")
 	}

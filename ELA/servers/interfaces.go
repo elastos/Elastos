@@ -822,8 +822,8 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *PayloadSideMining:
-		obj := new(SideMiningInfo)
+	case *PayloadSideChainPow:
+		obj := new(SideChainPowInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.SideBlockHash = object.SideBlockHash.String()
 		obj.SideGenesisHash = object.SideGenesisHash.String()
