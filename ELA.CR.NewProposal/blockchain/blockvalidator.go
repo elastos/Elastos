@@ -48,7 +48,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	// A block must not have more transactions than the max block payload.
-	if numTx > config.Parameters.MaxTxInBlock {
+	if numTx > config.Parameters.MaxTxsInBlock {
 		return errors.New("[PowCheckBlockSanity]  block contains too many transactions")
 	}
 
@@ -58,17 +58,34 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 
-	// The first transaction in a block must be a coinbase.
 	transactions := block.Transactions
-	if !transactions[0].IsCoinBaseTx() {
-		return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
-	}
+	var rewardInCoinbase = Fixed64(0)
+	var totalTxFee = Fixed64(0)
+	for index, tx := range transactions {
+		// The first transaction in a block must be a coinbase.
+		if index == 0 {
+			if !tx.IsCoinBaseTx() {
+				return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
+			}
+			// Calculate reward in coinbase
+			for _, output := range tx.Outputs {
+				rewardInCoinbase += output.Value
+			}
+			continue
+		}
 
-	// A block must not have more than one coinbase.
-	for _, tx := range transactions[1:] {
+		// A block must not have more than one coinbase.
 		if tx.IsCoinBaseTx() {
 			return errors.New("[PowCheckBlockSanity] block contains second coinbase")
 		}
+
+		// Calculate transaction fee
+		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+	}
+
+	// Reward in coinbase must match inflation 4% per year
+	if rewardInCoinbase-totalTxFee != GetBlockRewardAmount(block.Height) {
+		return errors.New("[PowCheckBlockSanity] reward amount in coinbase not correct")
 	}
 
 	// Check transaction outputs after a update checkpoint.
