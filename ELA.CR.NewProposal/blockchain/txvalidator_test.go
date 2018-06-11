@@ -160,13 +160,13 @@ func TestCheckTransactionOutput(t *testing.T) {
 	err = CheckTransactionOutput(core.CheckTxOut, tx)
 	assert.EqualError(t, err, "asset ID in coinbase is invalid")
 
-	// no output to foundation
+	// reward to foundation in coinbase < 30%
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(29 * ELA)},
+		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(71 * ELA)},
 	}
 	err = CheckTransactionOutput(core.CheckTxOut, tx)
-	assert.EqualError(t, err, "no foundation address in coinbase output")
+	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
 
 	// normal transaction
 	tx = buildTx()
@@ -335,7 +335,7 @@ func TestCheckTransactionBalance(t *testing.T) {
 	err := CheckTransactionBalance(tx)
 	assert.NoError(t, err)
 
-	// foundation reword should >= 30% in coinbase
+	// deposit 100 ELA to foundation account
 	deposit := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
 	deposit.Outputs = []*core.Output{
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(100 * ELA)},
@@ -346,31 +346,15 @@ func TestCheckTransactionBalance(t *testing.T) {
 
 	// invalid output value
 	tx = NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
+	tx.Inputs = []*core.Input{
+		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
+	}
 	tx.Outputs = []*core.Output{
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
 	}
 	err = CheckTransactionBalance(tx)
 	assert.EqualError(t, err, "Invalide transaction UTXO output.")
-
-	// normal coinbase
-	tx.Inputs = []*core.Input{
-		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
-	}
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(60 * ELA)},
-	}
-	err = CheckTransactionBalance(tx)
-	assert.NoError(t, err)
-
-	// foundation reword should < 30% in coinbase
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(20 * ELA)},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(60 * ELA)},
-	}
-	err = CheckTransactionBalance(tx)
-	assert.EqualError(t, err, "Reword to foundation in coinbase < 30%")
 
 	// invalid transaction fee
 	config.Parameters.PowConfiguration.MinTxFee = int(1 * ELA)
@@ -380,6 +364,11 @@ func TestCheckTransactionBalance(t *testing.T) {
 	}
 	err = CheckTransactionBalance(tx)
 	assert.EqualError(t, err, "Transaction fee not enough")
+
+	// rollback deposit above
+	DefaultLedger.Store.(*ChainStore).NewBatch()
+	DefaultLedger.Store.(*ChainStore).RollbackTransaction(deposit)
+	DefaultLedger.Store.(*ChainStore).BatchCommit()
 
 	t.Log("[TestCheckTransactionBalance] PASSED")
 }
