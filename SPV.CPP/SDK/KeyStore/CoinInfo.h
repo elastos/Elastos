@@ -10,7 +10,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Mstream.h"
-#include "IMasterWallet.h"
+#include "SubWalletType.h"
 
 namespace Elastos {
 	namespace SDK {

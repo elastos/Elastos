@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_PARAMCHECKER_H__
 
 #include <string>
+#include <boost/filesystem.hpp>
 
 #include "CMemBlock.h"
 #include "nlohmann/json.hpp"
@@ -26,6 +27,8 @@ namespace Elastos {
 			static void checkDataNotEmpty(const CMBlock &mem, bool isParam = true);
 
 			static void checkJsonArrayNotEmpty(nlohmann::json jsonData, bool isParam = true);
+
+			static void checkPathExists(const boost::filesystem::path &path, bool isParam = true);
 		};
 
 	}

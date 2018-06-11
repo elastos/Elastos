@@ -16,6 +16,13 @@ namespace Elastos {
 		public:
 			virtual ~ISubWalletCallback() noexcept {}
 
+			/**
+			 * Call back method fired when status of a transaction changed.
+			 * @param txid indicate hash of the transaction.
+			 * @param status can be "Added", "Deleted" or "Updated".
+			 * @param desc is an detail description of transaction status.
+			 * @param confirms is confirm count util this callback fired.
+			 */
 			virtual void OnTransactionStatusChanged(
 					const std::string &txid,
 					const std::string &status,

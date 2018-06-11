@@ -10,33 +10,36 @@
 #include <boost/filesystem.hpp>
 #include <SDK/Wrapper/Transaction.h>
 
-#include "Interface/IMasterWallet.h"
-#include "KeyStore/KeyStore.h"
-#include "Manager/Mnemonic.h"
 #include "MasterPubKey.h"
+#include "Interface/IMasterWallet.h"
+#include "Manager/Mnemonic.h"
+#include "KeyStore/KeyStore.h"
+#include "KeyStore/MasterWalletStore.h"
 
 namespace Elastos {
 	namespace SDK {
 
+		class CoinInfo;
 		class ChainParams;
 		class SubWallet;
+		class KeyStore;
 
 		class MasterWallet : public IMasterWallet {
 		public:
 			virtual ~MasterWallet();
 
+			virtual std::string GetId() const;
+
+			virtual std::vector<ISubWallet *> GetAllSubWallets() const;
+
 			virtual ISubWallet *CreateSubWallet(
-					SubWalletType type,
 					const std::string &chainID,
-					uint32_t coinTypeIndex,
 					const std::string &payPassword,
 					bool singleAddress,
 					uint64_t feePerKb = 0);
 
 			virtual ISubWallet *RecoverSubWallet(
-					SubWalletType type,
 					const std::string &chainID,
-					uint32_t coinTypeIndex,
 					const std::string &payPassword,
 					bool singleAddress,
 					uint32_t limitGap,
@@ -67,31 +70,32 @@ namespace Elastos {
 			bool Initialized() const;
 
 		protected:
-			friend class WalletFactory;
 
+			friend class MasterWalletManager;
 			friend class WalletFactoryInner;
 
 			friend class SubWallet;
 
 			typedef std::map<std::string, ISubWallet *> WalletMap;
 
-			MasterWallet(const std::string &language);
+			MasterWallet(const std::string &id,
+						 const std::string &language);
 
-			MasterWallet(const std::string &phrasePassword,
+			MasterWallet(const std::string &id,
+						 const std::string &phrasePassword,
 						 const std::string &payPassword,
-						 const std::string &language,
-						 const std::string &rootPath);
+						 const std::string &language);
 
 			bool importFromKeyStore(const std::string &keystorePath,
 									const std::string &backupPassword,
 									const std::string &payPassword,
-									const std::string &phrasePassword,
-									const std::string &rootPath);
+									const std::string &phrasePassword);
+
+			virtual void restoreSubWallets(const std::vector<CoinInfo> &coinInfoList);
 
 			bool importFromMnemonic(const std::string &mnemonic,
 									const std::string &phrasePassword,
-									const std::string &payPassword,
-									const std::string &rootPath);
+									const std::string &payPassword);
 
 			bool exportKeyStore(const std::string &backupPassword,
 								const std::string &payPassword,
@@ -133,11 +137,13 @@ namespace Elastos {
 			CMBlock _encryptedMnemonic;
 			CMBlock _encryptedPhrasePass;
 
+			MasterWalletStore _localStore;
 			KeyStore _keyStore;
 			boost::filesystem::path _dbRoot;
 			boost::shared_ptr<Mnemonic> _mnemonic;
 
 			std::string _publicKey;
+			std::string _id;
 		};
 
 	}

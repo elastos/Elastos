@@ -11,7 +11,7 @@
 #include "BRInt.h"
 
 #include "CMemBlock.h"
-#include "IMasterWallet.h"
+#include "SubWalletType.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -64,9 +64,9 @@ namespace Elastos {
 
 			const std::vector<uint64_t> &getCrosschainAmouts() const;
 
-			void setSidechainDatas(const std::vector<std::string> crossChainAddress,
-			                       const std::vector<uint64_t> outputIndex,
-			                       const std::vector<uint64_t> crossChainAmount);
+			void setSidechainDatas(const std::vector<std::string> &crossChainAddress,
+			                       const std::vector<uint64_t> &outputIndex,
+			                       const std::vector<uint64_t> &crossChainAmount);
 
 			virtual SubWalletType getType() const { return Mainchain;}
 

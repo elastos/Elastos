@@ -79,9 +79,9 @@ namespace Elastos {
 			return _crossChainAmount;
 		}
 
-		void DepositTxParam::setSidechainDatas(const std::vector<std::string> crossChainAddress,
-		                                   const std::vector<uint64_t> outputIndex,
-		                                   const std::vector<uint64_t> crossChainAmount) {
+		void DepositTxParam::setSidechainDatas(const std::vector<std::string> &crossChainAddress,
+		                                   const std::vector<uint64_t> &outputIndex,
+		                                   const std::vector<uint64_t> &crossChainAmount) {
 			_crossChainAddress = crossChainAddress;
 			_outputIndex = outputIndex;
 			_crossChainAmount = crossChainAmount;

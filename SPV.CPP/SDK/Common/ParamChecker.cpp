@@ -55,9 +55,18 @@ namespace Elastos {
 		void ParamChecker::checkJsonArrayNotEmpty(nlohmann::json jsonData, bool isParam) {
 			if (!jsonData.is_array() || jsonData.size() <= 0) {
 				if (isParam)
-					throw std::invalid_argument("json should not be empty.");
+					throw std::invalid_argument("Json should not be empty.");
 				else
-					throw std::logic_error("json should not be empty.");
+					throw std::logic_error("Json should not be empty.");
+			}
+		}
+
+		void ParamChecker::checkPathExists(const boost::filesystem::path &path, bool isParam) {
+			if(!boost::filesystem::exists(path)) {
+				if (isParam)
+					throw std::invalid_argument("Path should valid.");
+				else
+					throw std::logic_error("Path should valid.");
 			}
 		}
 	}

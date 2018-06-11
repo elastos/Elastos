@@ -4,7 +4,7 @@
 #include "BRChainParams.h"
 
 #include "Wrapper/ChainParams.h"
-#include "WalletFactory.h"
+#include "MasterWalletManager.h"
 
 #include "TestConnectPeer.h"
 #include "TestWalletManager.h"
@@ -49,14 +49,14 @@ void TestConnectPeer::runPeerConnectTest_WalletManager() {
 }
 
 void TestConnectPeer::runPeerConnectTest_WalletFactory() {
-	boost::scoped_ptr<WalletFactory> walletFactory(new WalletFactory);
+	boost::scoped_ptr<MasterWalletManager> walletFactory(new MasterWalletManager);
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	std::string phrasePassword = "";
 	std::string payPassword = "payPassword";
-	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic(mnemonic, phrasePassword, payPassword);
+	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic("MasterWalletId", mnemonic, phrasePassword, payPassword);
 
-	ISubWallet *subWallet = masterWallet->CreateSubWallet(Normal, "ELA", 0, payPassword, false);
+	ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
 	nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 	std::cout << "wallet addrs: " << addresses << std::endl;
 

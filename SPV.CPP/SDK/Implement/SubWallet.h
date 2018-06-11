@@ -30,6 +30,8 @@ namespace Elastos {
 			const WalletManagerPtr &GetWalletManager() const;
 
 		public: //implement ISubWallet
+			virtual std::string GetChainId() const;
+
 			virtual nlohmann::json GetBalanceInfo();
 
 			virtual uint64_t GetBalance();

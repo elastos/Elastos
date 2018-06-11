@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <vector>
 #include <boost/filesystem.hpp>
 #include <Core/BRKey.h>
 
@@ -15,6 +16,7 @@
 #include "IdChainSubWallet.h"
 #include "MainchainSubWallet.h"
 #include "SidechainSubWallet.h"
+#include "Enviroment.h"
 #include "Log.h"
 #include "Config.h"
 #include "ParamChecker.h"
@@ -31,9 +33,10 @@ namespace fs = boost::filesystem;
 namespace Elastos {
 	namespace SDK {
 
-		MasterWallet::MasterWallet(const std::string &language) :
-			_initialized(false),
-			_dbRoot("Data") {
+		MasterWallet::MasterWallet(const std::string &id,
+								   const std::string &language) :
+				_id(id),
+				_initialized(false) {
 
 			ParamChecker::checkNotEmpty(language);
 
@@ -41,17 +44,16 @@ namespace Elastos {
 			_keyStore.json().setMnemonicLanguage(language);
 		}
 
-		MasterWallet::MasterWallet(const std::string &phrasePassword,
+		MasterWallet::MasterWallet(const std::string &id,
+								   const std::string &phrasePassword,
 								   const std::string &payPassword,
-								   const std::string &language,
-								   const std::string &rootPath) :
-			_initialized(true),
-			_dbRoot(rootPath) {
-
+								   const std::string &language) :
+				_id(id),
+				_initialized(true) {
+			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkNotEmpty(language);
-			ParamChecker::checkNotEmpty(rootPath);
 
 			resetMnemonic(language);
 
@@ -69,9 +71,22 @@ namespace Elastos {
 
 		}
 
+		std::vector<ISubWallet *> MasterWallet::GetAllSubWallets() const {
+			std::vector<ISubWallet *> result;
+			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
+				result.push_back(it->second);
+			}
+
+			return result;
+		}
+
+		std::string MasterWallet::GetId() const {
+			return _id;
+		}
+
 		ISubWallet *
-		MasterWallet::CreateSubWallet(SubWalletType type, const std::string &chainID, uint32_t coinTypeIndex,
-									  const std::string &payPassword, bool singleAddress, uint64_t feePerKb) {
+		MasterWallet::CreateSubWallet(const std::string &chainID, const std::string &payPassword, bool singleAddress,
+									  uint64_t feePerKb) {
 
 			if (!Initialized())
 				throw std::logic_error("Current master wallet is not initialized.");
@@ -91,9 +106,10 @@ namespace Elastos {
 			}
 
 			CoinInfo info;
-			info.setWalletType(type);
 			info.setEaliestPeerTime(0);
-			info.setIndex(coinTypeIndex);
+			//todo find type and index info from mainchain through chainId
+//			info.setWalletType(type);
+//			info.setIndex(coinTypeIndex);
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
@@ -105,9 +121,8 @@ namespace Elastos {
 		}
 
 		ISubWallet *
-		MasterWallet::RecoverSubWallet(SubWalletType type, const std::string &chainID, uint32_t coinTypeIndex,
-									   const std::string &payPassword, bool singleAddress, uint32_t limitGap,
-									   uint64_t feePerKb) {
+		MasterWallet::RecoverSubWallet(const std::string &chainID, const std::string &payPassword, bool singleAddress,
+									   uint32_t limitGap, uint64_t feePerKb) {
 			if (!Initialized())
 				throw std::logic_error("Current master wallet is not initialized.");
 
@@ -118,13 +133,23 @@ namespace Elastos {
 				throw std::invalid_argument("Limit gap should less than or equal 10.");
 			}
 
-			ISubWallet *subWallet = CreateSubWallet(type, chainID, coinTypeIndex, payPassword, singleAddress, feePerKb);
+			ISubWallet *subWallet = CreateSubWallet(chainID, payPassword, singleAddress, feePerKb);
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(subWallet);
 			assert(walletInner != nullptr);
 			walletInner->recover(limitGap);
 
 			_createdWallets[chainID] = subWallet;
 			return subWallet;
+		}
+
+		void MasterWallet::restoreSubWallets(const std::vector<CoinInfo> &coinInfoList) {
+
+			for (int i = 0; i < coinInfoList.size(); ++i) {
+				if (_createdWallets.find(coinInfoList[i].getChainId()) != _createdWallets.end()) continue;
+
+				_createdWallets[coinInfoList[i].getChainId()] =
+						SubWalletFactoryMethod(coinInfoList[i], ChainParams::mainNet(), "", this);
+			}
 		}
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
@@ -162,15 +187,11 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::importFromKeyStore(const std::string &keystorePath, const std::string &backupPassword,
-											  const std::string &payPassword, const std::string &phrasePassword,
-											  const std::string &rootPath) {
+											  const std::string &payPassword, const std::string &phrasePassword) {
 			ParamChecker::checkNotEmpty(keystorePath);
 			ParamChecker::checkPassword(backupPassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
-			ParamChecker::checkNotEmpty(rootPath);
-
-			_dbRoot = rootPath;
 
 			if (!_keyStore.open(keystorePath, backupPassword)) {
 				Log::error("Import key error.");
@@ -178,7 +199,7 @@ namespace Elastos {
 			}
 
 			CMBlock phrasePass_Raw0 = Utils::convertToMemBlock<unsigned char>(
-				_keyStore.json().getEncryptedPhrasePassword());
+					_keyStore.json().getEncryptedPhrasePassword());
 			std::string phrasePass = "";
 			if (true == phrasePass_Raw0) {
 				CMBlock phrasePass_Raw1(phrasePass_Raw0.GetSize() + 1);
@@ -199,13 +220,10 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
-											  const std::string &payPassword, const std::string &rootPath) {
+											  const std::string &payPassword) {
 			ParamChecker::checkNotEmpty(mnemonic);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
-			ParamChecker::checkNotEmpty(rootPath);
-
-			_dbRoot = rootPath;
 
 			CMemBlock<char> cb_mnemonic;
 			cb_mnemonic.SetMemFixed(mnemonic.c_str(), mnemonic.size() + 1);
@@ -429,7 +447,7 @@ namespace Elastos {
 
 		void MasterWallet::resetMnemonic(const std::string &language) {
 			_keyStore.json().setMnemonicLanguage(language);
-			fs::path mnemonicPath = _dbRoot;
+			fs::path mnemonicPath = Enviroment::GetRootPath();
 			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, mnemonicPath));
 		}
 

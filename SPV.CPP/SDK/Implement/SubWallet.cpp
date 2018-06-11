@@ -12,6 +12,7 @@
 #include "BRKey.h"
 #include "BRArray.h"
 
+#include "Enviroment.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
 #include "SubWalletCallback.h"
@@ -34,21 +35,26 @@ namespace Elastos {
 				_parent(parent),
 				_info(info) {
 
-			fs::path subWalletDbPath = _parent->_dbRoot;
+			fs::path subWalletDbPath = Enviroment::GetRootPath();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
-			fs::path peerConnectionPath = _parent->_dbRoot;
+			fs::path peerConnectionPath = Enviroment::GetRootPath();
 			peerConnectionPath /= info.getChainId() + PEER_CONFIG_EXTENSION;
 
-			BRKey key;
-			UInt256 chainCode;
-			deriveKeyAndChain(&key, chainCode, payPassword);
-			MasterPubKeyPtr masterPubKey(new MasterPubKey(key, chainCode));
+			if(!payPassword.empty()) {
+				BRKey key;
+				UInt256 chainCode;
+				deriveKeyAndChain(&key, chainCode, payPassword);
+				MasterPubKeyPtr masterPubKey(new MasterPubKey(key, chainCode));
 
-			_walletManager = WalletManagerPtr(
-					new WalletManager(masterPubKey, subWalletDbPath, peerConnectionPath, _info.getEarliestPeerTime(),
-									  _info.getSingleAddress(), _info.getForkId(), chainParams));
-			_walletManager->registerWalletListener(this);
+				_walletManager = WalletManagerPtr(
+						new WalletManager(masterPubKey, subWalletDbPath, peerConnectionPath,
+										  _info.getEarliestPeerTime(),
+										  _info.getSingleAddress(), _info.getForkId(), chainParams));
+				_walletManager->registerWalletListener(this);
+			} else {
+				//todo import from local
+			}
 
 			if (info.getFeePerKb() > 0) {
 				_walletManager->getWallet()->setFeePerKb(info.getFeePerKb());
@@ -57,6 +63,10 @@ namespace Elastos {
 
 		SubWallet::~SubWallet() {
 
+		}
+
+		std::string SubWallet::GetChainId() const {
+			return _info.getChainId();
 		}
 
 		const SubWallet::WalletManagerPtr &SubWallet::GetWalletManager() const {

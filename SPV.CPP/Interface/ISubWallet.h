@@ -14,12 +14,33 @@ namespace Elastos {
 
 		class ISubWallet {
 		public:
+			/**
+			 * Virtual destructor.
+			 */
 			virtual ~ISubWallet() noexcept {}
 
+			/**
+			 * Get the sub wallet chain id.
+			 * @return sub wallet chain id.
+			 */
+			virtual std::string GetChainId() const = 0;
+
+			/**
+			 * Get balances of all addresses in json format.
+			 * @return balances of all addresses in json format.
+			 */
 			virtual nlohmann::json GetBalanceInfo() = 0;
 
+			/**
+			 * Get sum of balances of all addresses.
+			 * @return sum of balances。
+			 */
 			virtual uint64_t GetBalance() = 0;
 
+			/**
+			 * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
+			 * @return a new address or existing unused address.
+			 */
 			virtual std::string CreateAddress() = 0;
 
 			virtual nlohmann::json GetAllAddress(
