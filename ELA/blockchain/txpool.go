@@ -68,7 +68,7 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 //get the transaction in txnpool
 func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*Transaction {
 	pool.RLock()
-	count := config.Parameters.MaxTxInBlock
+	count := config.Parameters.MaxTxsInBlock
 	if count <= 0 {
 		byCount = false
 	}
