@@ -111,7 +111,7 @@ namespace Elastos {
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*>& peers) {}
 
 			// func networkIsReachable() -> Bool}
-			virtual bool networkIsReachable() {}
+			virtual bool networkIsReachable() {return false;}
 
 			// Called on publishTransaction
 			virtual void txPublished(const std::string &error) {}

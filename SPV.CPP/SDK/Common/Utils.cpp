@@ -198,5 +198,41 @@ namespace Elastos {
 			BRAddressHash168(&hash, address.c_str());
 			return hash;
 		}
+
+		uint32_t Utils::getAddressTypeBySignType(const int signType) {
+			if (signType == ELA_STANDARD) {
+				return ELA_STAND_ADDRESS;
+			} else if (signType == ELA_MULTISIG) {
+				return ELA_MULTISIG_ADDRESS;
+			} else if (signType == ELA_CROSSCHAIN) {
+				return ELA_CROSSCHAIN_ADDRESS;
+			} else if (signType == ELA_IDCHAIN) {
+				return ELA_IDCHAIN_ADDRESS;
+			} else {
+				throw std::logic_error("error signType.");
+			}
+		}
+
+		UInt168 Utils::codeToProgramHash(const std::string &redeemScript) {
+			size_t scriptLen = 0;
+			uint8_t *script = Utils::decodeHexCreate(&scriptLen, (char *)(redeemScript.c_str()), redeemScript.size());
+			CMBlock redeedScript(scriptLen);
+			memcpy(redeedScript, script, scriptLen);
+
+			return codeToProgramHash(redeedScript);
+		}
+
+		UInt168 Utils::codeToProgramHash(const CMBlock &redeemScript) {
+			UInt160 hash = UINT160_ZERO;
+			size_t  len = redeemScript.GetSize();
+			BRHash160(&hash, redeemScript, len);
+			int signType = redeemScript[len - 1];
+			uint32_t addressType = Utils::getAddressTypeBySignType(signType);
+
+			UInt168 uInt168 = UINT168_ZERO;
+			memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8));
+			uInt168.u8[0] = addressType;
+			return uInt168;
+		}
 	}
 }

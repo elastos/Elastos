@@ -333,8 +333,8 @@ namespace Elastos {
 			assert(indexes != nullptr || keysCount == 0);
 			if (keys && keysCount > 0 && indexes)
 				for (size_t i = 0; i < keysCount; i++) {
-					_CKDpriv(secret, chainCode, chain); // path m/0H
-					_CKDpriv(secret, chainCode, indexes[i]); // path m/0H/chain
+					_CKDpriv(secret, chainCode, chain);
+					_CKDpriv(secret, chainCode, indexes[i]);
 					BRKeySetSecret(&keys[i], secret, 1);
 				}
 		}
@@ -370,8 +370,12 @@ namespace Elastos {
 
 			buff.put((uint8_t)signType);
 
-			std::string script((char *)buff.getBuf(), buff.position());
-			return script;
+			uint8_t *script = buff.getBuf();
+			size_t scriptLen = 0;
+			std::string str = Utils::encodeHexCreate(&scriptLen, script, buff.position());
+			delete script;
+
+			return str;
 		}
 
 		const UInt256 Key::getSystemAssetId() {
