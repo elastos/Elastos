@@ -126,11 +126,11 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 			log.Warn("Value of referenced transaction output is invalid")
 			return ErrInvalidReferedTx
 		}
-		// coinbase transaction only can be spent after got SpendCoinbaseSpan times confirmations
+		// coinbase transaction only can be spent after got CoinbaseLockTime times confirmations
 		if referTxn.IsCoinBaseTx() {
 			lockHeight := referTxn.LockTime
 			currentHeight := DefaultLedger.Store.GetHeight()
-			if currentHeight-lockHeight < config.Parameters.ChainParam.SpendCoinbaseSpan {
+			if currentHeight-lockHeight < config.Parameters.ChainParam.CoinbaseLockTime {
 				return ErrIneffectiveCoinbase
 			}
 		}
@@ -177,7 +177,7 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
 		}
-		// FIXME coinbase reward should match 4% inflation per year
+
 		var totalReward = Fixed64(0)
 		var foundationReward = Fixed64(0)
 		for _, output := range txn.Outputs {
