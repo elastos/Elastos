@@ -3,6 +3,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.Utility
   version: dev
 - package: github.com/syndtr/goleveldb
+- package: github.com/itchyny/base58-go
   subpackages:
   - leveldb
   - leveldb/errors
