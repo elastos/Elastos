@@ -1,15 +1,16 @@
 package blockchain
 
 import (
+	"bytes"
 	"crypto/rand"
 	"os"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/log"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/auxpow"
+	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -221,5 +222,88 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	inPool := txPool.IsDuplicateSidechainTx(sideTx1.String())
 	if !inPool {
 		t.Error("Should find duplicate sidechain tx")
+	}
+}
+
+func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
+	var input *core.Input
+	var inputTxID common.Uint256
+	inputTxID.Deserialize(bytes.NewReader([]byte("6817addb1eb959d0d56117fd54b6e795788d54ec2a950c209d858da182cf3291")))
+	input = &core.Input{
+		Previous: core.OutPoint{
+			//TxID:  inputTxID,
+			Index: 0,
+		},
+		Sequence: 100,
+	}
+	//two mock transactions
+	tx1 := new(core.Transaction)
+	tx1.TxType = core.TransferAsset
+	tx1.PayloadVersion = 0
+	tx1.Payload = &core.PayloadTransferAsset{}
+	var attribute1 *core.Attribute
+	attribute1 = &core.Attribute{
+		Usage: core.Nonce,
+		Data: []byte("5217023ca4139475f8a4c2772a113168568da958c05faaaedff1b3" +
+			"77d420ed328f39f15420f48ce4e9c83b69b14e88da00ab6c87f35dc5841c064" +
+			"35b7c49dbf3a944171e3d8604dd817324bb2c77f0500000ae0858a6c4222a83" +
+			"ba0c42ea3d8038177531a4dfc8183a0ab1de6741e6da79b8bddeacdeeefb78f" +
+			"586c8bc45e9c"),
+	}
+	tx1.Attributes = []*core.Attribute{attribute1}
+
+	tx1.Inputs = []*core.Input{input}
+	//var output *core.Output
+	//*output = core.Output{AssetID: *assetIDUint256, Value: common.Fixed64(1)}
+
+	tx2 := new(core.Transaction)
+	tx2.TxType = core.TransferAsset
+	tx2.PayloadVersion = 0
+	tx2.Payload = &core.PayloadTransferAsset{}
+	var attribute2 *core.Attribute
+	attribute2 = &core.Attribute{
+		Usage: core.Nonce,
+		Data: []byte("202bf0908cfe9687d04f4dc29f3b73eea8d0f7b00d159a3f4843a4" +
+			"400a86297404bda1c1f2f5c497149db3fdea371f1bb9e71c86dafccce128944" +
+			"b26a7181ebafa9e4869cdfbc7a6e1f34b8818a78f361888907452a05d04c399" +
+			"1c10e92b1041e7258611dc52059917f4a946ea89cf68b7af0808e89aa5d8241" +
+			"e453410fb1f46"),
+	}
+	tx2.Attributes = []*core.Attribute{attribute2}
+	tx2.Inputs = []*core.Input{input}
+
+	// a mock block
+	var newBLock core.Block
+	var previousBlockHash common.Uint256
+	var merkleRoot common.Uint256
+	var blockAuxpow auxpow.AuxPow
+	blockAuxpow.Deserialize(bytes.NewReader([]byte("01000000010000000000000000" +
+		"000000000000000000000000000000000000000000000000000000002cfabe6d6d0" +
+		"5282102a9ced24c5d8260407b8685f57ec3e9485e00a17d9a43d66f90e776aa0100" +
+		"0000000000000000000000000000000000000000000000000000000000000000000" +
+		"00000000000000000000000000000000000000000000000ffffff7f000000000000" +
+		"000000000000000000000000000000000000000000000000000029a6f8a6f4b265a" +
+		"4b96f83a570025c07552480934ca17ccbac69d43db7331bd86229275b0000000003" +
+		"000000")))
+	previousBlockHash.Deserialize(bytes.NewReader([]byte("5570625560dcd24ceeb8a5758aafd5a66045c159b5b00edcbaec59566b4d65bf")))
+	merkleRoot.Deserialize(bytes.NewReader([]byte("0cd26e5ef833e469ed0e0df7cdc7b22f4cf294492c450e677c8a47846afecf22")))
+	newBLock.Version = 0
+	newBLock.Previous = previousBlockHash
+	newBLock.MerkleRoot = merkleRoot
+	newBLock.Timestamp = 1529293192
+	newBLock.Bits = 545259519
+	newBLock.Nonce = 0
+	newBLock.Height = 221
+	newBLock.AuxPow = blockAuxpow
+	newBLock.Transactions = []*core.Transaction{tx2}
+
+	txPool.addToTxList(tx1)
+	txPool.addInputUTXOList(tx1, input)
+
+	txPool.CleanSubmittedTransactions(&newBLock)
+
+	tx := txPool.txnList[tx1.Hash()]
+	if tx != nil {
+		t.Error("Should delete double spent utxo transaction")
 	}
 }
