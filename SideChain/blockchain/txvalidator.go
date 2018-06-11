@@ -223,7 +223,7 @@ func CheckTransactionUTXOLock(txn *core.Transaction) error {
 	}
 	references, err := DefaultLedger.Store.GetTxReference(txn)
 	if err != nil {
-		return errors.New(fmt.Sprintf("GetReference failed: %s", err))
+		return fmt.Errorf("GetReference failed: %s", err)
 	}
 	for input, output := range references {
 
@@ -244,7 +244,7 @@ func CheckTransactionUTXOLock(txn *core.Transaction) error {
 func CheckTransactionSize(txn *core.Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
-		return errors.New(fmt.Sprintf("Invalid transaction size: %d bytes", size))
+		return fmt.Errorf("Invalid transaction size: %d bytes", size)
 	}
 
 	return nil
@@ -266,7 +266,7 @@ func CheckAssetPrecision(txn *core.Transaction) error {
 		}
 		precision := asset.Precision
 		for _, output := range outputs {
-			if checkAmountPrecise(output.Value, precision) {
+			if !checkAmountPrecise(output.Value, precision) {
 				return errors.New("The precision of asset is incorrect.")
 			}
 		}
@@ -275,9 +275,8 @@ func CheckAssetPrecision(txn *core.Transaction) error {
 }
 
 func CheckTransactionBalance(txn *core.Transaction) error {
-	// TODO: check coinbase balance 30%-70%
 	for _, v := range txn.Outputs {
-		if v.Value <= Fixed64(0) {
+		if v.Value < Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
@@ -285,10 +284,9 @@ func CheckTransactionBalance(txn *core.Transaction) error {
 	if err != nil {
 		return err
 	}
-	for k, v := range results {
+	for _, v := range results {
 		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			log.Debug(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
-			return errors.New(fmt.Sprintf("AssetID %x in Transfer transactions %x , input < output .\n", k, txn.Hash()))
+			return fmt.Errorf("transaction fee not enough")
 		}
 	}
 	return nil
@@ -304,17 +302,16 @@ func CheckTransactionSignature(txn *core.Transaction) error {
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {
-	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) != 0
+	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) == 0
 }
 
 func CheckTransactionPayload(txn *core.Transaction) error {
-
 	switch pld := txn.Payload.(type) {
 	case *core.PayloadRegisterAsset:
 		if pld.Asset.Precision < core.MinPrecision || pld.Asset.Precision > core.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
-		if checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
+		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
 	case *core.PayloadTransferAsset:
