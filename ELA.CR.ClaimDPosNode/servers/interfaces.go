@@ -801,8 +801,12 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 
 	var resultTxHashes []string
 	for _, txHash := range txHashes {
-		exist := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(txHash)
-		if exist {
+		inStore := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(txHash)
+		if inStore {
+			resultTxHashes = append(resultTxHashes, txHash)
+		}
+		inTxPool := NodeForServers.IsDuplicateSidechainTx(txHash)
+		if inTxPool {
 			resultTxHashes = append(resultTxHashes, txHash)
 		}
 	}
