@@ -177,17 +177,20 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
 		}
-		found := false
+		// FIXME coinbase reward should match 4% inflation per year
+		var totalReward = Fixed64(0)
+		var foundationReward = Fixed64(0)
 		for _, output := range txn.Outputs {
 			if output.AssetID != DefaultLedger.Blockchain.AssetID {
 				return errors.New("asset ID in coinbase is invalid")
 			}
-			if FoundationAddress.IsEqual(output.ProgramHash) {
-				found = true
+			totalReward += output.Value
+			if output.ProgramHash.IsEqual(FoundationAddress) {
+				foundationReward += output.Value
 			}
 		}
-		if !found {
-			return errors.New("no foundation address in coinbase output")
+		if float64(foundationReward)/float64(totalReward) < 0.3 {
+			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
 		return nil
@@ -285,34 +288,18 @@ func CheckAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(txn *Transaction) error {
-	if txn.IsWithdrawFromSideChainTx() {
+func CheckTransactionBalance(tx *Transaction) error {
+	if tx.IsWithdrawFromSideChainTx() {
 		return nil
 	}
 	// output value must >= 0
-	for _, output := range txn.Outputs {
+	for _, output := range tx.Outputs {
 		if output.Value < Fixed64(0) {
 			return errors.New("Invalide transaction UTXO output.")
 		}
 	}
 
-	// foundation reword should >= 30% in coinbase
-	// FIXME coinbase reword should match 4% inflation per year
-	if txn.IsCoinBaseTx() {
-		var totalReword = Fixed64(0)
-		var foundationReword = Fixed64(0)
-		for _, output := range txn.Outputs {
-			totalReword += output.Value
-			if output.ProgramHash.IsEqual(FoundationAddress) {
-				foundationReword += output.Value
-			}
-		}
-		if float64(foundationReword)/float64(totalReword) < 0.3 {
-			return errors.New("Reword to foundation in coinbase < 30%")
-		}
-	}
-
-	results, err := GetTxFeeMap(txn)
+	results, err := GetTxFeeMap(tx)
 	if err != nil {
 		return err
 	}
