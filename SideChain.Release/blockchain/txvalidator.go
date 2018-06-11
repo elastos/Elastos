@@ -317,8 +317,6 @@ func CheckTransactionPayload(txn *core.Transaction) error {
 	case *core.PayloadTransferAsset:
 	case *core.PayloadRecord:
 	case *core.PayloadCoinBase:
-	case *core.PayloadSideMining:
-	case *core.PayloadWithdrawFromSideChain:
 	case *core.PayloadRechargeToSideChain:
 	case *core.PayloadTransferCrossChainAsset:
 	default:

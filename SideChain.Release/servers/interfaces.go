@@ -1011,10 +1011,6 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *PayloadSideMining:
-		obj := new(SideMiningInfo)
-		obj.SideBlockHash = object.SideBlockHash.String()
-		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.CrossChainAddress = object.CrossChainAddress
@@ -1052,8 +1048,8 @@ func getTransactionInfo(txInfoBytes []byte) (*TransactionInfo, error) {
 		assetInfo = &CoinbaseInfo{}
 	case RegisterAsset:
 		assetInfo = &RegisterAssetInfo{}
-	case SideMining:
-		assetInfo = &SideMiningInfo{}
+	case SideChainPow:
+		assetInfo = &SideChainPowInfo{}
 	case RechargeToSideChain:
 		assetInfo = &RechargeToSideChainInfo{}
 	case TransferCrossChainAsset:
