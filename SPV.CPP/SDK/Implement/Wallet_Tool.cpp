@@ -182,7 +182,7 @@ namespace Elastos {
 		Wallet_Tool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList) {
 			CMemBlock<char> out;
 			if (true == seed && 0 < WordList.size()) {
-				const char *wordList[WordList.size()] = {0};
+				const char *wordList[WordList.size()];
 				for (size_t i = 0; i < WordList.size(); i++) {
 					wordList[i] = WordList[i].c_str();
 				}
@@ -196,7 +196,7 @@ namespace Elastos {
 		bool Wallet_Tool::PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
 			bool out = false;
 			if (true == phrase && 0 < WordList.size()) {
-				const char *wordList[WordList.size()] = {0};
+				const char *wordList[WordList.size()];
 				for (size_t i = 0; i < WordList.size(); i++) {
 					wordList[i] = WordList[i].c_str();
 				}
@@ -209,7 +209,7 @@ namespace Elastos {
 		Wallet_Tool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
 			CMemBlock<uint8_t> out;
 			if (true == phrase && 0 < WordList.size()) {
-				const char *wordList[WordList.size()] = {0};
+				const char *wordList[WordList.size()];
 				for (size_t i = 0; i < WordList.size(); i++) {
 					wordList[i] = WordList[i].c_str();
 				}
