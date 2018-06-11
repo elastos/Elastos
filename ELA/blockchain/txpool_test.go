@@ -184,3 +184,37 @@ func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 		t.Errorf("Txn2 should be added in txpool")
 	}
 }
+
+func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
+	var sideTx1 common.Uint256
+	var sideTx2 common.Uint256
+	rand.Read(sideTx1[:])
+	rand.Read(sideTx2[:])
+
+	// 1. Generate a withdraw transaction
+	txn1 := new(core.Transaction)
+	txn1.TxType = core.WithdrawFromSideChain
+	txn1.Payload = &core.PayloadWithdrawFromSideChain{
+		BlockHeight:         100,
+		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
+		SideChainTransactionHashes: []string{
+			sideTx1.String(),
+			sideTx2.String(),
+		},
+	}
+
+	// 2. Add sidechain Tx to pool
+	witPayload := txn1.Payload.(*core.PayloadWithdrawFromSideChain)
+	for _, hash := range witPayload.SideChainTransactionHashes {
+		success := txPool.addSidechainTx(hash)
+		if !success {
+			t.Error("Add sidechain Tx to pool failed")
+		}
+	}
+
+	// 3. Run IsDuplicateSidechainTx
+	inPool := txPool.IsDuplicateSidechainTx(sideTx1.String())
+	if !inPool {
+		t.Error("Should find duplicate sidechain tx")
+	}
+}
