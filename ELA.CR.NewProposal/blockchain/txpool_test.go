@@ -18,6 +18,7 @@ func TestTxPoolInit(t *testing.T) {
 	log.Init(log.Path, os.Stdout)
 	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
 	if !assert.NoError(t, err) {
+		return
 	}
 	FoundationAddress = *foundation
 
@@ -141,7 +142,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	}
 }
 
-func TestTxPool_ReplaceDuplicateSideminingTx(t *testing.T) {
+func TestTxPool_ReplaceDuplicateSideChainPowTx(t *testing.T) {
 	var sideBlockHash1 common.Uint256
 	var sideBlockHash2 common.Uint256
 	var sideGenesisHash common.Uint256
@@ -150,8 +151,8 @@ func TestTxPool_ReplaceDuplicateSideminingTx(t *testing.T) {
 	rand.Read(sideGenesisHash[:])
 
 	txn1 := new(core.Transaction)
-	txn1.TxType = core.SideMining
-	txn1.Payload = &core.PayloadSideMining{
+	txn1.TxType = core.SideChainPow
+	txn1.Payload = &core.PayloadSideChainPow{
 		SideBlockHash:   sideBlockHash1,
 		SideGenesisHash: sideGenesisHash,
 		BlockHeight:     100,
@@ -159,20 +160,20 @@ func TestTxPool_ReplaceDuplicateSideminingTx(t *testing.T) {
 
 	ok := txPool.addToTxList(txn1)
 	if !ok {
-		t.Error("Add sidemining txn1 to txpool failed")
+		t.Error("Add sidechainpow txn1 to txpool failed")
 	}
 
 	txn2 := new(core.Transaction)
-	txn2.TxType = core.SideMining
-	txn2.Payload = &core.PayloadSideMining{
+	txn2.TxType = core.SideChainPow
+	txn2.Payload = &core.PayloadSideChainPow{
 		SideBlockHash:   sideBlockHash2,
 		SideGenesisHash: sideGenesisHash,
 		BlockHeight:     100,
 	}
-	txPool.replaceDuplicateSideminingTx(txn2)
+	txPool.replaceDuplicateSideChainPowTx(txn2)
 	ok = txPool.addToTxList(txn2)
 	if !ok {
-		t.Error("Add sidemining txn2 to txpool failed")
+		t.Error("Add sidechainpow txn2 to txpool failed")
 	}
 
 	if txn := txPool.GetTransaction(txn1.Hash()); txn != nil {

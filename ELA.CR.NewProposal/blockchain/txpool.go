@@ -107,9 +107,9 @@ func (pool *TxPool) GetTransaction(hash Uint256) *Transaction {
 
 //verify transaction with txnpool
 func (pool *TxPool) verifyTransactionWithTxnPool(txn *Transaction) ErrCode {
-	if txn.IsSideminingTx() {
-		// check and replace the duplicate sidemining tx
-		pool.replaceDuplicateSideminingTx(txn)
+	if txn.IsSideChainPowTx() {
+		// check and replace the duplicate sidechainpow tx
+		pool.replaceDuplicateSideChainPowTx(txn)
 	} else if txn.IsWithdrawFromSideChainTx() {
 		// check if the withdraw transaction includes duplicate sidechain tx in pool
 		if err := pool.verifyDuplicateSidechainTx(txn); err != nil {
@@ -181,19 +181,19 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 	return nil
 }
 
-// check and replace the duplicate sidemining tx
-func (pool *TxPool) replaceDuplicateSideminingTx(txn *Transaction) {
+// check and replace the duplicate sidechainpow tx
+func (pool *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 	for _, v := range pool.txnList {
-		if v.TxType == SideMining {
-			oldPayload := v.Payload.Data(SideMiningPayloadVersion)
+		if v.TxType == SideChainPow {
+			oldPayload := v.Payload.Data(SideChainPowPayloadVersion)
 			oldGenesisHashData := oldPayload[32:64]
 
-			newPayload := txn.Payload.Data(SideMiningPayloadVersion)
+			newPayload := txn.Payload.Data(SideChainPowPayloadVersion)
 			newGenesisHashData := newPayload[32:64]
 
 			if bytes.Equal(oldGenesisHashData, newGenesisHashData) {
 				txid := txn.Hash()
-				log.Warn("replace sidemining transaction, txid=", txid.String())
+				log.Warn("replace sidechainpow transaction, txid=", txid.String())
 				pool.removeTransaction(v)
 			}
 		}

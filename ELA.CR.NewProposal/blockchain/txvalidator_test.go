@@ -377,11 +377,11 @@ func TestTxValidatorDone(t *testing.T) {
 	DefaultLedger.Store.Close()
 }
 
-func TestCheckSideMiningConsensus(t *testing.T) {
-	// 1. Generate a side mining transaction
+func TestCheckSideChainPowConsensus(t *testing.T) {
+	// 1. Generate a side chain pow transaction
 	txn := new(core.Transaction)
-	txn.TxType = core.SideMining
-	txn.Payload = &core.PayloadSideMining{
+	txn.TxType = core.SideChainPow
+	txn.Payload = &core.PayloadSideChainPow{
 		SideBlockHash:   common.Uint256{1, 1, 1},
 		SideGenesisHash: common.Uint256{2, 2, 2},
 		BlockHeight:     uint32(10),
@@ -402,18 +402,18 @@ func TestCheckSideMiningConsensus(t *testing.T) {
 
 	//3. Sign transaction by arbitrator1
 	buf := new(bytes.Buffer)
-	txn.Payload.Serialize(buf, core.SideMiningPayloadVersion)
+	txn.Payload.Serialize(buf, core.SideChainPowPayloadVersion)
 	signature, _ := crypto.Sign(privateKey1, buf.Bytes()[0:68])
-	txn.Payload.(*core.PayloadSideMining).SignedData = signature
+	txn.Payload.(*core.PayloadSideChainPow).SignedData = signature
 
-	//4. Run CheckSideMiningConsensus
-	err := CheckSideMiningConsensus(txn, arbitrator1)
+	//4. Run CheckSideChainPowConsensus
+	err := CheckSideChainPowConsensus(txn, arbitrator1)
 	if err != nil {
-		t.Error("TestCheckSideMiningConsensus failed.")
+		t.Error("TestCheckSideChainPowConsensus failed.")
 	}
 
-	err = CheckSideMiningConsensus(txn, arbitrator2)
+	err = CheckSideChainPowConsensus(txn, arbitrator2)
 	if err == nil {
-		t.Error("TestCheckSideMiningConsensus failed.")
+		t.Error("TestCheckSideChainPowConsensus failed.")
 	}
 }
