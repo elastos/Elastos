@@ -189,7 +189,7 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 				foundationReward += output.Value
 			}
 		}
-		if float64(foundationReward)/float64(totalReward) < 0.3 {
+		if Fixed64(foundationReward) < Fixed64(float64(totalReward)*0.3) {
 			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
