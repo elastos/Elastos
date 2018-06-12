@@ -1,0 +1,10 @@
+{
+  "ELA": {
+    "Type": "Mainchain",
+    "CoinIndex": 0
+  },
+  "IdChain": {
+    "Type": "Idchain",
+    "CoinIndex": 1
+  }
+}

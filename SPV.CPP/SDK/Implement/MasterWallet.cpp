@@ -25,6 +25,7 @@
 #include "BTCBase58.h"
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
+#define COIN_COINFIG_FILE "CoinConfig.json"
 
 namespace fs = boost::filesystem;
 
@@ -77,7 +78,6 @@ namespace Elastos {
 		}
 
 		MasterWallet::~MasterWallet() {
-			Save();
 		}
 
 		void MasterWallet::Save() {
@@ -134,9 +134,15 @@ namespace Elastos {
 			CoinInfo info;
 			info.setEaliestPeerTime(0);
 
-			//todo find type and index info from mainchain through chainId
-			info.setWalletType(Normal);
-			info.setIndex(0);
+			if (!_coinConfigReader.IsInitialized()) {
+				boost::filesystem::path configPath = Enviroment::GetRootPath();
+				configPath /= COIN_COINFIG_FILE;
+				_coinConfigReader.Load(configPath);
+			}
+
+			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
+			info.setWalletType(coinConfig.Type);
+			info.setIndex(coinConfig.Index);
 
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);

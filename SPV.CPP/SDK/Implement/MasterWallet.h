@@ -9,12 +9,14 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
 #include <SDK/Wrapper/Transaction.h>
+#include <SDK/KeyStore/CoinConfig.h>
 
 #include "MasterPubKey.h"
 #include "Interface/IMasterWallet.h"
 #include "Interface/IIdAgent.h"
 #include "SDK/KeyStore/Mnemonic.h"
 #include "KeyStore/KeyStore.h"
+#include "KeyStore/CoinInfo.h"
 #include "KeyStore/MasterWalletStore.h"
 #include "IdAgent/IdAgentImpl.h"
 
@@ -164,6 +166,7 @@ namespace Elastos {
 			std::string _publicKey;
 			std::string _id;
 
+			CoinConfigReader _coinConfigReader;
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
 		};
 

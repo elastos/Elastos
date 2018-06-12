@@ -104,8 +104,6 @@ namespace Elastos {
 		private:
 			void initMasterWallets();
 
-			void storeMasterWallets();
-
 		private:
 
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;

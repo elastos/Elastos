@@ -40,7 +40,6 @@ namespace Elastos {
 		}
 
 		MasterWalletManager::~MasterWalletManager() {
-
 		}
 
 		void MasterWalletManager::SaveConfigs() {
@@ -178,12 +177,5 @@ namespace Elastos {
 			}
 		}
 
-		void MasterWalletManager::storeMasterWallets() {
-			path rootPath = Enviroment::GetRootPath();
-
-			for(MasterWalletMap::iterator it = _masterWalletMap.begin(); it != _masterWalletMap.end(); ++it){
-
-			}
-		}
 	}
 }

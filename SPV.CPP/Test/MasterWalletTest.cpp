@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include <boost/scoped_ptr.hpp>
+#include <Interface/Enviroment.h>
 
 #include "catch.hpp"
 
@@ -69,6 +70,8 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 	std::string language = "english";
 	std::string chainId = "chainid";
 
+	Enviroment::InitializeRootPath("Data");
+
 	SECTION("Class public methods should throw when master wallet is not initialized") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
 		REQUIRE_FALSE(masterWallet->Initialized());
@@ -119,6 +122,8 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 	std::string payPassword = "payPassword";
 	std::string language = "english";
 	std::string chainId = "chainid";
+
+	Enviroment::InitializeRootPath("Data");
 
 	SECTION("Class public methods behave well when construct with phrase password and pay password") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
@@ -176,6 +181,8 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	std::string payPassword = "payPassword";
 	std::string language = "english";
 	std::string chainId = "chainid";
+
+	Enviroment::InitializeRootPath("Data");
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 
 	SECTION("Create normal sub wallet") {
@@ -272,6 +279,8 @@ TEST_CASE("Master wallet RecoverSubWallet method test", "[RecoverSubWallet]") {
 	std::string payPassword = "payPassword";
 	std::string language = "english";
 	std::string chainId = "chainid";
+
+	Enviroment::InitializeRootPath("Data");
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 
 	SECTION("Return exist sub wallet with same id") {
@@ -308,6 +317,8 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 	std::string payPassword = "payPassword";
 	std::string language = "english";
 	std::string chainId = "chainid";
+
+	Enviroment::InitializeRootPath("Data");
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 
 	SECTION("Normal destroy sub wallets") {
