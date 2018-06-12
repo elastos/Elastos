@@ -101,6 +101,7 @@ namespace Elastos {
 			j["Mmemonic"] = Utils::encodeHex(p.GetEncryptedMnemonic());
 			j["PhrasePasword"] = Utils::encodeHex(p.GetEncrptedPhrasePassword());
 			j["Language"] = p.GetLanguage();
+			j["PublicKey"] = p.GetPublicKey();
 			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
 			for (size_t i = 0; i < p.GetSubWalletInfoList().size(); i++) {
@@ -114,6 +115,7 @@ namespace Elastos {
 			p.SetEncryptedMnemonic(Utils::decodeHex(j["Mmemonic"].get<std::string>()));
 			p.SetEncryptedPhrasePassword(Utils::decodeHex(j["PhrasePasword"].get<std::string>()));
 			p.SetLanguage(j["Language"].get<std::string>());
+			p.SetPublicKey(j["PublicKey"].get<std::string>());
 			p.SetIdAgentInfo(j["IdAgent"]);
 
 			std::vector<CoinInfo> coinInfoList;
