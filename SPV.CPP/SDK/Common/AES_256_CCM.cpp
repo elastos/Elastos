@@ -210,6 +210,10 @@ namespace Elastos {
 							 unsigned char *aad, size_t szAad) {
 			CMBlock _ret;
 
+			if (nullptr == cipherText || 8 >= szCipherText) {
+				return _ret;
+			}
+
 			Init();
 			const EVP_CIPHER *cipher = EVP_get_cipherbyname("aes-256-ccm");
 			const EVP_MD *dgst = EVP_sha256();

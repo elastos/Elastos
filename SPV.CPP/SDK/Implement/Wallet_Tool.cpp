@@ -183,6 +183,7 @@ namespace Elastos {
 			CMemBlock<char> out;
 			if (true == seed && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
+				memset(wordList, 0, sizeof(wordList));
 				for (size_t i = 0; i < WordList.size(); i++) {
 					wordList[i] = WordList[i].c_str();
 				}
@@ -197,6 +198,7 @@ namespace Elastos {
 			bool out = false;
 			if (true == phrase && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
+				memset(wordList, 0, sizeof(wordList));
 				for (size_t i = 0; i < WordList.size(); i++) {
 					wordList[i] = WordList[i].c_str();
 				}
@@ -210,6 +212,7 @@ namespace Elastos {
 			CMemBlock<uint8_t> out;
 			if (true == phrase && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
+				memset(wordList, 0, sizeof(wordList));
 				for (size_t i = 0; i < WordList.size(); i++) {
 					wordList[i] = WordList[i].c_str();
 				}

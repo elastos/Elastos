@@ -172,6 +172,9 @@ namespace Elastos {
 		Utils::decrypt(const CMBlock &encryptedData, const std::string &password, CMBlock &salt, CMBlock &iv,
 					   bool bAes128) {
 			CMBlock ret;
+			if (false == encryptedData) {
+				return ret;
+			}
 			std::string enc_str = (const char *) (void *) encryptedData;
 			std::vector<unsigned char> enc = Base64::toBits(enc_str);
 			ret = AES_256_CCM::decrypt(enc.data(), enc.size(), (unsigned char *) password.c_str(), password.size(),
