@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"container/list"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -15,11 +14,10 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-const TaskChanCap = 4
+const ValueNone = 0
+const ValueExist = 1
 
-var (
-	ErrDBNotFound = errors.New("leveldb: not found")
-)
+const TaskChanCap = 4
 
 type persistTask interface{}
 
@@ -27,6 +25,7 @@ type rollbackBlockTask struct {
 	blockHash Uint256
 	reply     chan bool
 }
+
 type persistBlockTask struct {
 	block *Block
 	reply chan bool
@@ -41,8 +40,7 @@ type ChainStore struct {
 	mu          sync.RWMutex // guard the following var
 	headerIndex map[uint32]Uint256
 	headerCache map[Uint256]*Header
-	//blockCache  map[Uint256]*Block
-	headerIdx *list.List
+	headerIdx   *list.List
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
@@ -55,9 +53,8 @@ func NewChainStore() (IChainStore, error) {
 	}
 
 	store := &ChainStore{
-		IStore:      st,
-		headerIndex: map[uint32]Uint256{},
-		//blockCache:         map[Uint256]*Block{},
+		IStore:             st,
+		headerIndex:        map[uint32]Uint256{},
 		headerCache:        map[Uint256]*Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
@@ -74,7 +71,7 @@ func NewChainStore() (IChainStore, error) {
 func (c *ChainStore) Close() {
 	closed := make(chan bool)
 	c.quit <- closed
-	<- closed
+	<-closed
 	c.IStore.Close()
 }
 
@@ -88,12 +85,12 @@ func (c *ChainStore) loop() {
 				c.handlePersistBlockTask(task.block)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle block exetime: %g num transactions:%d \n", tcall, len(task.block.Transactions))
+				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
 			case *rollbackBlockTask:
 				c.handleRollbackBlockTask(task.blockHash)
 				task.reply <- true
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
-				log.Debugf("handle block rollback exetime: %g \n", tcall)
+				log.Debugf("handle block rollback exetime: %g", tcall)
 			}
 
 		case closed := <-c.quit:
@@ -205,6 +202,16 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *Block) (uint32, error) {
 func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 	prefix := []byte{byte(DATA_Transaction)}
 	_, err := c.Get(append(prefix, txhash.Bytes()...))
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash string) bool {
+	prefix := []byte{byte(IX_SideChain_Tx)}
+	_, err := c.Get(append(prefix, []byte(sidechainTxHash)...))
 	if err != nil {
 		return false
 	} else {
@@ -336,7 +343,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 		return err
 	}
 
-	log.Debug(fmt.Sprintf("asset key: %x\n", assetKey))
+	log.Debugf("asset key: %x", assetKey)
 
 	// PUT VALUE
 	c.BatchPut(assetKey.Bytes(), w.Bytes())
@@ -344,7 +351,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 }
 
 func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	log.Debugf("GetAsset Hash: %s\n", hash.String())
+	log.Debugf("GetAsset Hash: %s", hash.String())
 
 	asset := new(Asset)
 	prefix := []byte{byte(ST_Info)}
@@ -352,7 +359,7 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("GetAsset Data: %s\n", data)
+	log.Debugf("GetAsset Data: %s", data)
 
 	err = asset.Deserialize(bytes.NewReader(data))
 	if err != nil {
@@ -360,6 +367,24 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	}
 
 	return asset, nil
+}
+
+func (c *ChainStore) PersistSidechainTx(sidechainTxHash string) {
+	key := []byte{byte(IX_SideChain_Tx)}
+	key = append(key, []byte(sidechainTxHash)...)
+
+	// PUT VALUE
+	c.BatchPut(key, []byte{byte(ValueExist)})
+}
+
+func (c *ChainStore) GetSidechainTx(sidechainTxHash string) (byte, error) {
+	key := []byte{byte(IX_SideChain_Tx)}
+	data, err := c.Get(append(key, []byte(sidechainTxHash)...))
+	if err != nil {
+		return ValueNone, err
+	}
+
+	return data[0], nil
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
@@ -414,7 +439,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	log.Debug(fmt.Sprintf("transaction header + hash: %x\n", key))
+	log.Debugf("transaction header + hash: %x", key)
 
 	// generate value
 	value := new(bytes.Buffer)
@@ -424,7 +449,7 @@ func (c *ChainStore) PersistTransaction(tx *Transaction, height uint32) error {
 	if err := tx.Serialize(value); err != nil {
 		return err
 	}
-	log.Debug(fmt.Sprintf("transaction tx data: %x\n", value))
+	log.Debugf("transaction tx data: %x", value)
 
 	// put value
 	c.BatchPut(key.Bytes(), value.Bytes())
@@ -510,7 +535,7 @@ func (c *ChainStore) persist(b *Block) error {
 // can only be invoked by backend write goroutine
 func (c *ChainStore) addHeader(header *Header) {
 
-	log.Debugf("addHeader(), Height=%d\n", header.Height)
+	log.Debugf("addHeader(), Height=%d", header.Height)
 
 	hash := header.Hash()
 
@@ -525,13 +550,6 @@ func (c *ChainStore) addHeader(header *Header) {
 
 func (c *ChainStore) SaveBlock(b *Block) error {
 	log.Debug("SaveBlock()")
-	//log.Trace("validation.PowVerifyBlock(b, ledger, false)")
-	//err := validation.PowVerifyBlock(b, ledger, false)
-	//if err != nil {
-	//	log.Error("PowVerifyBlock error!")
-	//	return err
-	//}
-	//log.Trace("validation.PowVerifyBlock(b, ledger, false)222222")
 
 	reply := make(chan bool)
 	c.taskCh <- &persistBlockTask{block: b, reply: reply}
@@ -550,89 +568,27 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
 }
 
 func (c *ChainStore) handlePersistBlockTask(b *Block) {
-
 	if b.Header.Height <= c.currentBlockHeight {
 		return
 	}
 
-	//	c.mu.Lock()
-	//c.blockCache[b.Hash()] = b
-	//c.mu.Unlock()
-
-	//log.Trace(b.Blockdata.Height)
-	//log.Trace(b.Blockdata)
-	//log.Trace(b.Transactions[0])
-	//if b.Blockdata.Height < uint32(len(c.headerIndex)) {
 	c.persistBlock(b)
-
-	//c.NewBatch()
-	//storedHeaderCount := c.storedHeaderCount
-	//for c.currentBlockHeight-storedHeaderCount >= HeaderHashListCount {
-	//	hashBuffer := new(bytes.Buffer)
-	//	serialize.WriteVarUint(hashBuffer, uint64(HeaderHashListCount))
-	//	var hashArray []byte
-	//	for i := 0; i < HeaderHashListCount; i++ {
-	//		index := storedHeaderCount + uint32(i)
-	//		thash := c.headerIndex[index]
-	//		thehash := thash.ToArray()
-	//		hashArray = append(hashArray, thehash...)
-	//	}
-	//	hashBuffer.Write(hashArray)
-
-	//	hhlPrefix := new(bytes.Buffer)
-	//	hhlPrefix.WriteByte(byte(IX_HeaderHashList))
-	//	serialize.WriteUint32(hhlPrefix, storedHeaderCount)
-
-	//	c.BatchPut(hhlPrefix.Bytes(), hashBuffer.Bytes())
-	//	storedHeaderCount += HeaderHashListCount
-	//}
-
-	//err := c.BatchCommit()
-	//if err != nil {
-	//	log.Error("failed to persist header hash list:", err)
-	//	return
-	//}
-	//c.mu.Lock()
-	//c.storedHeaderCount = storedHeaderCount
-	//c.mu.Unlock()
 	c.clearCache(b)
-	//}
 }
 
 func (c *ChainStore) persistBlock(block *Block) {
-	//stopHeight := uint32(len(c.headerIndex))
-	//for h := c.currentBlockHeight + 1; h <= stopHeight; h++ {
-	//hash := c.headerIndex[h]
-	//block, ok := c.blockCache[hash]
-	//if !ok {
-	//	break
-	//}
-	//log.Trace(block.Blockdata)
-	//log.Trace(block.Transactions[0])
 	err := c.persist(block)
 	if err != nil {
 		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
 		return
 	}
 
-	// PersistCompleted event
-	//ledger.Blockchain.BlockHeight = block.Blockdata.Height
 	DefaultLedger.Blockchain.UpdateBestHeight(block.Header.Height)
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
 
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
-	//log.Tracef("The latest block height:%d, block hash: %x", block.Blockdata.Height, hash)
-	//}
-
-}
-
-func (c *ChainStore) BlockInCache(hash Uint256) bool {
-	//TODO mutex
-	//_, ok := c.ledger.Blockchain.Index[hash]
-	//return ok
-	return false
 }
 
 func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
@@ -855,7 +811,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		_, _ = ReadBytes(rk, 1)
 		var assetid Uint256
 		assetid.Deserialize(rk)
-		log.Tracef("[GetAssets] assetid: %x\n", assetid.Bytes())
+		log.Tracef("[GetAssets] assetid: %x", assetid.Bytes())
 
 		asset := new(Asset)
 		r := bytes.NewReader(iter.Value())

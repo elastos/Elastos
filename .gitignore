@@ -4,7 +4,6 @@ idea/*
 temp/*
 temp/
 idea/
-build/
 *.patch
 .idea/
 .log
@@ -15,7 +14,8 @@ build/
 /glide.lock
 /vendor/*
 /Chain/*
-/Logs/*
+/Chain_UnitTest/*
+Logs/*
 /ela
 /ela-cli
 *.db
