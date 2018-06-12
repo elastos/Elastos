@@ -82,11 +82,10 @@ func (nm *nbrNodes) NodeEstablished(id uint64) bool {
 	return true
 }
 
-func (node *node) GetNeighborAddrs() ([]p2p.NetAddress, uint64) {
+func (node *node) GetNeighborAddrs() []p2p.NetAddress {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
-	var i uint64
 	var addrs []p2p.NetAddress
 	for _, n := range node.nbrNodes.List {
 		if n.State() != p2p.ESTABLISH {
@@ -99,34 +98,30 @@ func (node *node) GetNeighborAddrs() ([]p2p.NetAddress, uint64) {
 		addr.Port = n.Port()
 		addr.ID = n.ID()
 		addrs = append(addrs, addr)
-
-		i++
 	}
 
-	return addrs, i
+	return addrs
 }
 
-func (node *node) GetNeighborHeights() ([]uint64, uint64) {
+func (node *node) GetNeighborHeights() []uint64 {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
-	var i uint64
-	heights := []uint64{}
+	heights := make([]uint64, 0, len(node.nbrNodes.List))
 	for _, n := range node.nbrNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			height := n.Height()
 			heights = append(heights, height)
-			i++
 		}
 	}
-	return heights, i
+	return heights
 }
 
 func (node *node) GetNeighborNoder() []protocol.Noder {
-
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
-	nodes := []protocol.Noder{}
+
+	nodes := make([]protocol.Noder, 0, len(node.nbrNodes.List))
 	for _, n := range node.nbrNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			node := n
@@ -163,10 +158,6 @@ func (node *node) IsNeighborNoder(n protocol.Noder) bool {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
-	for _, noder := range node.nbrNodes.List {
-		if n.ID() == noder.ID() {
-			return true
-		}
-	}
-	return false
+	_, ok := node.nbrNodes.List[n.ID()]
+	return ok
 }
