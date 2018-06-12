@@ -172,7 +172,7 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 
 	blockReward := GetBlockRewardAmount(nextBlockHeight)
 	totalReward := totalTxFee + blockReward
-	rewardFoundation := common.Fixed64(float64(totalReward) * 30 / 100)
+	rewardFoundation := common.Fixed64(float64(totalReward) * 0.3)
 	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
 	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(totalReward) - rewardFoundation
 
