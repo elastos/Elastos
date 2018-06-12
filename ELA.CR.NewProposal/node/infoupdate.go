@@ -146,8 +146,7 @@ func (node *node) ConnectSeeds() {
 func (node *node) ConnectNode() {
 	cntcount := node.nbrNodes.GetConnectionCnt()
 	if cntcount < MaxOutBoundCount {
-		nbrAddr, _ := node.GetNeighborAddrs()
-		addrs := node.RandGetAddresses(nbrAddr)
+		addrs := node.RandGetAddresses(node.GetNeighborAddrs())
 		for _, addr := range addrs {
 			go node.Connect(addr.String())
 		}

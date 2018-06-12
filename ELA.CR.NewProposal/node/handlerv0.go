@@ -120,7 +120,7 @@ func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 func (h *HandlerV0) onInv(inv *v0.Inv) error {
 	log.Debug()
 	node := h.node
-	log.Debugf("[OnInv] count %d hashes: %v\n", len(inv.Hashes), inv.Hashes)
+	log.Debugf("[OnInv] count %d hashes: %v", len(inv.Hashes), inv.Hashes)
 
 	if LocalNode.IsSyncHeaders() && !node.IsSyncHeaders() {
 		return nil

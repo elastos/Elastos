@@ -33,6 +33,7 @@ func StartRPCServer() {
 	mainMux["setloglevel"] = SetLogLevel
 	mainMux["getinfo"] = GetInfo
 	mainMux["getblock"] = GetBlockByHash
+	mainMux["getcurrentheight"] = GetBlockHeight
 	mainMux["getblockhash"] = GetBlockHash
 	mainMux["getconnectioncount"] = GetConnectionCount
 	mainMux["getrawmempool"] = GetTransactionPool
@@ -43,8 +44,8 @@ func StartRPCServer() {
 	mainMux["getarbitratorgroupbyheight"] = GetArbitratorGroupByHeight
 	mainMux["getbestblockhash"] = GetBestBlockHash
 	mainMux["getblockcount"] = GetBlockCount
-	mainMux["gettransaction"] = GetTransactionByHash
 	mainMux["getblockbyheight"] = GetBlockByHeight
+	mainMux["getexistwithdrawtransactions"] = GetExistWithdrawTransactions
 
 	// aux interfaces
 	mainMux["help"] = AuxHelp
@@ -119,7 +120,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	if response["Error"] != errors.ErrCode(0) {
 		data, _ = json.Marshal(map[string]interface{}{
 			"jsonrpc": "2.0",
-			"result": nil,
+			"result":  nil,
 			"error": map[string]interface{}{
 				"code":    response["Error"],
 				"message": response["Result"],
@@ -132,24 +133,24 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 			"jsonrpc": "2.0",
 			"result":  response["Result"],
 			"id":      request["id"],
-			"error": nil,
+			"error":   nil,
 		})
 	}
-	w.Header().Set("Content-type","application/json")
+	w.Header().Set("Content-type", "application/json")
 	w.Write(data)
 }
 
 func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, message string) {
 	data, _ := json.Marshal(map[string]interface{}{
 		"jsonrpc": "2.0",
-		"result": nil,
+		"result":  nil,
 		"error": map[string]interface{}{
 			"code":    code,
 			"message": message,
 			"id":      nil,
 		},
 	})
-	w.Header().Set("Content-type","application/json")
+	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(httpStatus)
 	w.Write(data)
 }

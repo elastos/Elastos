@@ -3,6 +3,7 @@ package servers
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -141,8 +142,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetNeighbors(param Params) map[string]interface{} {
-	addr, _ := NodeForServers.GetNeighborAddrs()
-	return ResponsePack(Success, addr)
+	return ResponsePack(Success, NodeForServers.GetNeighborAddrs())
 }
 
 func GetNodeState(param Params) map[string]interface{} {
@@ -788,6 +788,35 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, GetTransactionInfo(header, txn))
 }
 
+func GetExistWithdrawTransactions(param Params) map[string]interface{} {
+	txsStr, ok := param.String("txs")
+	if !ok {
+		return ResponsePack(InvalidParams, "txs not found")
+	}
+
+	txsBytes, err := HexStringToBytes(txsStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var txHashes []string
+	err = json.Unmarshal(txsBytes, &txHashes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var resultTxHashes []string
+	for _, txHash := range txHashes {
+		inStore := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(txHash)
+		inTxPool := NodeForServers.IsDuplicateSidechainTx(txHash)
+		if inTxPool || inStore {
+			resultTxHashes = append(resultTxHashes, txHash)
+		}
+	}
+
+	return ResponsePack(Success, resultTxHashes)
+}
+
 func getPayloadInfo(p Payload) PayloadInfo {
 	switch object := p.(type) {
 	case *PayloadCoinBase:
@@ -800,17 +829,24 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *PayloadSideMining:
-		obj := new(SideMiningInfo)
-		obj.SideBlockHash = object.SideBlockHash.String()
-		return obj
-	case *PayloadWithdrawAsset:
-		obj := new(WithdrawAssetInfo)
+	case *PayloadSideChainPow:
+		obj := new(SideChainPowInfo)
 		obj.BlockHeight = object.BlockHeight
+		obj.SideBlockHash = object.SideBlockHash.String()
+		obj.SideGenesisHash = object.SideGenesisHash.String()
+		obj.SignedData = BytesToHexString(object.SignedData)
+		return obj
+	case *PayloadWithdrawFromSideChain:
+		obj := new(WithdrawFromSideChainInfo)
+		obj.BlockHeight = object.BlockHeight
+		obj.GenesisBlockAddress = object.GenesisBlockAddress
+		obj.SideChainTransactionHashes = object.SideChainTransactionHashes
 		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.AddressesMap = object.AddressesMap
+		obj.CrossChainAddress = object.CrossChainAddress
+		obj.OutputIndex = object.OutputIndex
+		obj.CrossChainAmount = object.CrossChainAmount
 		return obj
 	case *PayloadTransferAsset:
 	case *PayloadRecord:
