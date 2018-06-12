@@ -3,6 +3,8 @@ package main
 import (
 	"os"
 	"runtime"
+
+	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
@@ -13,7 +15,8 @@ import (
 	"github.com/elastos/Elastos.ELA/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA/servers/httprestful"
 	"github.com/elastos/Elastos.ELA/servers/httpwebsocket"
-	"github.com/elastos/Elastos.ELA/blockchain"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -34,11 +37,18 @@ func init() {
 	}
 	log.Debug("The Core number is ", coreNum)
 
-	blockchain.FoundationAddress = config.Parameters.Configuration.FoundationAddress
-
-	if blockchain.FoundationAddress == "" {
-		blockchain.FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	foundationAddress := config.Parameters.Configuration.FoundationAddress
+	if foundationAddress == "" {
+		foundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	}
+
+	address, err := common.Uint168FromAddress(foundationAddress)
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(-1)
+	}
+	blockchain.FoundationAddress = *address
+
 	runtime.GOMAXPROCS(coreNum)
 }
 
@@ -58,14 +68,12 @@ func main() {
 	log.Info("1. BlockChain init")
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
-		log.Fatal("open LedgerStore err:", err)
-		os.Exit(1)
+		goto ERROR
 	}
 	defer chainStore.Close()
 
 	err = blockchain.Init(chainStore)
 	if err != nil {
-		log.Fatal(err, "BlockChain generate failed")
 		goto ERROR
 	}
 
@@ -85,5 +93,6 @@ func main() {
 	}
 	select {}
 ERROR:
-	os.Exit(1)
+	log.Error(err)
+	os.Exit(-1)
 }

@@ -55,6 +55,7 @@ type Noder interface {
 	GetConnectionCnt() uint
 	GetTxnPool(bool) map[Uint256]*Transaction
 	AppendToTxnPool(*Transaction) ErrCode
+	IsDuplicateSidechainTx(sidechainTxHash string) bool
 	ExistedID(id Uint256) bool
 	ReqNeighborList()
 	DumpInfo()
@@ -69,13 +70,13 @@ type Noder interface {
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighborAddrs() ([]p2p.NetAddress, uint64)
+	GetNeighborAddrs() []p2p.NetAddress
 	GetTransaction(hash Uint256) *Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
 
-	GetNeighborHeights() ([]uint64, uint64)
+	GetNeighborHeights() []uint64
 	WaitForSyncFinish()
 	CleanSubmittedTransactions(block *Block) error
 	MaybeAcceptTransaction(txn *Transaction) error

@@ -1,7 +1,6 @@
 package core
 
 import (
-	"bytes"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -26,10 +25,7 @@ func (i *Input) Deserialize(r io.Reader) error {
 }
 
 func (i *Input) ReferKey() string {
-	buf := new(bytes.Buffer)
-	i.Previous.Serialize(buf)
-	hash := Sha256D(buf.Bytes())
-	return hex.EncodeToString(hash[:])
+	return hex.EncodeToString(i.Previous.Bytes())
 }
 
 func (i *Input) IsEqual(o Input) bool {
@@ -42,10 +38,10 @@ func (i *Input) IsEqual(o Input) bool {
 	return true
 }
 
-func (o Input) String() string {
-	return "{\n\t\t" +
-		"tx id: " + o.Previous.TxID.String() + "\n\t\t" +
-		"index: " + fmt.Sprint(o.Previous.Index) + "\n\t\t" +
-		"sequence: " + fmt.Sprint(o.Sequence) + "\n\t\t" +
-		"}"
+func (i Input) String() string {
+	return fmt.Sprint("{",
+		"TxId: ", i.Previous.TxID.String(),
+		" Index: ", fmt.Sprint(i.Previous.Index),
+		" Sequence: ", fmt.Sprint(i.Sequence),
+		"}")
 }

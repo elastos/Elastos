@@ -19,9 +19,9 @@ const (
 	TransferAsset           TransactionType = 0x02
 	Record                  TransactionType = 0x03
 	Deploy                  TransactionType = 0x04
-	SideMining              TransactionType = 0x05
-	IssueToken              TransactionType = 0x06
-	WithdrawAsset           TransactionType = 0x07
+	SideChainPow            TransactionType = 0x05
+	RechargeToSideChain     TransactionType = 0x06
+	WithdrawFromSideChain   TransactionType = 0x07
 	TransferCrossChainAsset TransactionType = 0x08
 )
 
@@ -37,12 +37,12 @@ func (self TransactionType) Name() string {
 		return "Record"
 	case Deploy:
 		return "Deploy"
-	case SideMining:
-		return "SideMining"
-	case IssueToken:
-		return "IssueToken"
-	case WithdrawAsset:
-		return "WithdrawAsset"
+	case SideChainPow:
+		return "SideChainPow"
+	case RechargeToSideChain:
+		return "RechargeToSideChain"
+	case WithdrawFromSideChain:
+		return "WithdrawFromSideChain"
 	case TransferCrossChainAsset:
 		return "TransferCrossChainAsset"
 	default:
@@ -274,12 +274,16 @@ func (tx *Transaction) Hash() Uint256 {
 	return *tx.hash
 }
 
-func (tx *Transaction) IsWithdrawTx() bool {
-	return tx.TxType == WithdrawAsset
+func (tx *Transaction) IsSideChainPowTx() bool {
+	return tx.TxType == SideChainPow
 }
 
-func (tx *Transaction) IsIssueTokenTx() bool {
-	return tx.TxType == IssueToken
+func (tx *Transaction) IsWithdrawFromSideChainTx() bool {
+	return tx.TxType == WithdrawFromSideChain
+}
+
+func (tx *Transaction) IsRechargeToSideChainTx() bool {
+	return tx.TxType == RechargeToSideChain
 }
 
 func (tx *Transaction) IsCoinBaseTx() bool {

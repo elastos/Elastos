@@ -12,7 +12,6 @@ type IChainStore interface {
 
 	SaveBlock(b *Block) error
 	GetBlock(hash Uint256) (*Block, error)
-	BlockInCache(hash Uint256) bool
 	GetBlockHash(height uint32) (Uint256, error)
 	IsDoubleSpend(tx *Transaction) bool
 
@@ -26,6 +25,9 @@ type IChainStore interface {
 	PersistAsset(assetid Uint256, asset Asset) error
 	GetAsset(hash Uint256) (*Asset, error)
 
+	PersistSidechainTx(sidechainTxHash string)
+	GetSidechainTx(sidechainTxHash string) (byte, error)
+
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 
@@ -38,6 +40,7 @@ type IChainStore interface {
 	GetAssets() map[Uint256]*Asset
 
 	IsTxHashDuplicate(txhash Uint256) bool
+	IsSidechainTxHashDuplicate(sidechainTxHash string) bool
 	IsBlockInStore(hash Uint256) bool
 	Close()
 }
