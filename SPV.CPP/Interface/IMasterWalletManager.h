@@ -18,18 +18,28 @@ namespace Elastos {
 			virtual ~IMasterWalletManager() noexcept {}
 
 			/**
-			 * Create an new master wallet, an random seed will be generated combined with phrase password to create
-			 * 	root key and chain code.
-			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * Create a new master wallet.
+			 * @param masterWalletId identity of master wallet, should be unique other wise will return exist wallet.
 			 * @param language specify language of mnemonic. Language should not be empty, and exit corresponding language config file under the root path. The config begin with fixed prefix "mnemonic_" and end with ".txt" extension, for example mnemonic of Chinese config will be "mnemonic_chinese.txt".
 			 * @return If success will return a pointer of master wallet interface.
 			 */
 			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &masterWalletId,
+					const std::string &language = "english") = 0;
+
+			/**
+			 * Initialize a master wallet
+			 * @param masterWalletId identity of master wallet, should give an id of created uninitialized master wallet.
+			 * @param mnemonic for initialize the master wallet.
+			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success will return true, else return false.
+			 */
+			virtual bool InitializeMasterWallet(
+					const std::string &masterWalletId,
+					const std::string &mnemonic,
 					const std::string &phrasePassword,
-					const std::string &payPassword,
-					const std::string &language) = 0;
+					const std::string &payPassword) = 0;
 
 			/**
 			 * Get manager existing master wallets.

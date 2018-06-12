@@ -24,7 +24,9 @@ public:
 
 	TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword, const std::string language) :
-			MasterWallet("MasterWalletTest", phrasePassword, payPassword, language) {
+			MasterWallet("MasterWalletTest", language) {
+		std::string mnemonic = GenerateMnemonic();
+		importFromMnemonic(mnemonic, phrasePassword, payPassword);
 	}
 
 	bool importFromMnemonicWraper(const std::string &mnemonic,

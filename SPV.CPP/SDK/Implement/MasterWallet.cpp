@@ -37,6 +37,7 @@ namespace Elastos {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
+			resetMnemonic(_localStore.GetLanguage());
 			_initialized = true;
 		}
 
@@ -45,6 +46,7 @@ namespace Elastos {
 				_id(id),
 				_initialized(false) {
 
+			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
 
 			resetMnemonic(language);
@@ -53,33 +55,14 @@ namespace Elastos {
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
 		}
 
-		MasterWallet::MasterWallet(const std::string &id,
-								   const std::string &phrasePassword,
-								   const std::string &payPassword,
-								   const std::string &language) :
-				_id(id),
-				_initialized(true) {
-			ParamChecker::checkNotEmpty(id);
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
-			ParamChecker::checkPassword(payPassword);
-			ParamChecker::checkNotEmpty(language);
-
-			resetMnemonic(language);
-
-			CMemBlock<uint8_t> seed128 = Wallet_Tool::GenerateSeed128();
-#ifndef MNEMONIC_SOURCE_H
-			CMemBlock<char> phrase = Wallet_Tool::GeneratePhraseFromSeed(seed128, _mnemonic->words());
-#else
-			CMemBlock<char> phrase = Wallet_Tool::GeneratePhraseFromSeed(seed128, language);
-#endif
-			std::string str_phrase = (const char *) phrase;
-			initFromPhrase(str_phrase, phrasePassword, payPassword);
-
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
-		}
-
 		MasterWallet::~MasterWallet() {
 			Save();
+		}
+
+		std::string MasterWallet::GenerateMnemonic() const {
+			CMemBlock<uint8_t> seed128 = Wallet_Tool::GenerateSeed128();
+			CMemBlock<char> phrase = Wallet_Tool::GeneratePhraseFromSeed(seed128, _mnemonic->words());
+			return (const char *) phrase;
 		}
 
 		void MasterWallet::Save() {

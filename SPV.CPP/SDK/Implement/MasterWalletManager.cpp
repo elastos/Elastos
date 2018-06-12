@@ -38,33 +38,50 @@ namespace Elastos {
 			initMasterWallets();
 		}
 
+		MasterWalletManager::MasterWalletManager(const Elastos::SDK::MasterWalletManager::MasterWalletMap &walletMap) :
+				_masterWalletMap(walletMap) {
+		}
+
 		MasterWalletManager::~MasterWalletManager() {
 		}
 
 		void MasterWalletManager::SaveConfigs() {
-			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(), [](const MasterWalletMap::value_type &item){
-				MasterWallet *masterWallet = static_cast<MasterWallet *>(item.second);
-				masterWallet->Save();
-			});
+			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
+						  [](const MasterWalletMap::value_type &item) {
+							  MasterWallet *masterWallet = static_cast<MasterWallet *>(item.second);
+							  masterWallet->Save();
+						  });
 		}
 
-		IMasterWallet *MasterWalletManager::CreateMasterWallet(const std::string &masterWalletId,
-															   const std::string &phrasePassword,
-															   const std::string &payPassword,
-															   const std::string &language) {
-
+		IMasterWallet *
+		MasterWalletManager::CreateMasterWallet(const std::string &masterWalletId, const std::string &language) {
 			ParamChecker::checkNotEmpty(masterWalletId);
-			if(_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, phrasePassword, payPassword, language);
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, language);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
 
+		bool MasterWalletManager::InitializeMasterWallet(const std::string &masterWalletId,
+														 const std::string &mnemonic,
+														 const std::string &phrasePassword,
+														 const std::string &payPassword) {
+
+			ParamChecker::checkNotEmpty(masterWalletId);
+			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
+				return false;
+
+			MasterWallet *masterWallet = static_cast<MasterWallet *>(_masterWalletMap[masterWalletId]);
+			if (masterWallet->Initialized())
+				return false;
+			return masterWallet->importFromMnemonic(mnemonic, phrasePassword, payPassword);
+		}
+
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {
 			std::vector<IMasterWallet *> result;
-			for(MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it){
+			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
 				result.push_back(it->second);
 			}
 			return result;
@@ -73,7 +90,7 @@ namespace Elastos {
 		void MasterWalletManager::DestroyWallet(const std::string &masterWalletId) {
 			ParamChecker::checkNotEmpty(masterWalletId);
 
-			if(_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
+			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
 				return;
 
 			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
@@ -89,7 +106,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(backupPassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkNotEmpty(masterWalletId);
-			if(_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
 			return WalletFactoryInner::importWalletInternal(masterWalletId, "english",
@@ -109,7 +126,7 @@ namespace Elastos {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkNotEmpty(masterWalletId);
-			if(_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
 			return WalletFactoryInner::importWalletInternal(masterWalletId, language,

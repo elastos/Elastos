@@ -38,6 +38,8 @@ namespace Elastos {
 
 		public: //override from IMasterWallet
 
+			virtual std::string GenerateMnemonic() const;
+
 			virtual std::string GetId() const;
 
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const;
@@ -105,11 +107,6 @@ namespace Elastos {
 			MasterWallet(const boost::filesystem::path &localStore);
 
 			MasterWallet(const std::string &id,
-						 const std::string &language);
-
-			MasterWallet(const std::string &id,
-						 const std::string &phrasePassword,
-						 const std::string &payPassword,
 						 const std::string &language);
 
 			bool importFromKeyStore(const std::string &keystorePath,

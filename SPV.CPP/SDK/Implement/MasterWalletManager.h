@@ -20,6 +20,10 @@ namespace Elastos {
 
 			void SaveConfigs();
 
+			virtual IMasterWallet *CreateMasterWallet(
+					const std::string &masterWalletId,
+					const std::string &language = "english");
+
 			/**
 			 * Create an new master wallet, an random seed will be generated combined with phrase password to create
 			 * 	root key and chain code.
@@ -29,11 +33,11 @@ namespace Elastos {
 			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
-			virtual IMasterWallet *CreateMasterWallet(
+			virtual bool InitializeMasterWallet(
 					const std::string &masterWalletId,
+					const std::string &mnemonic,
 					const std::string &phrasePassword,
-					const std::string &payPassword,
-					const std::string &language = "english");
+					const std::string &payPassword);
 
 			/**
 			 * Get manager existing master wallets.
@@ -45,7 +49,8 @@ namespace Elastos {
 			 * Destroy a master wallet.
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 */
-			virtual void DestroyWallet(const std::string &masterWalletId);
+			virtual void DestroyWallet(
+					const std::string &masterWalletId);
 
 			/**
 			 * Import master wallet by key store file.
@@ -101,12 +106,14 @@ namespace Elastos {
 					IMasterWallet *masterWallet,
 					const std::string &payPassword);
 
-		private:
+		protected:
+			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
+
+			explicit MasterWalletManager(const MasterWalletMap& walletMap);
+
 			void initMasterWallets();
 
-		private:
-
-			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
+		protected:
 			MasterWalletMap _masterWalletMap;
 		};
 	}

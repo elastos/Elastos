@@ -16,6 +16,12 @@
 
 using namespace Elastos::SDK;
 
+class TestMasterWalletManager : public MasterWalletManager {
+public:
+	TestMasterWalletManager() : MasterWalletManager(MasterWalletMap()) {
+	}
+};
+
 class TestMasterWallet : public MasterWallet {
 public:
 	TestMasterWallet(const MasterWallet &wallet) : MasterWallet(wallet) {
@@ -35,60 +41,77 @@ TEST_CASE(
 		"[MasterWalletManager]") {
 
 	Enviroment::InitializeRootPath("Data");
-	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
+	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string mnemonic;
 
 
 	SECTION("generate french mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", phrasePassword, payPassword, "french"));
-		mnemonic = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(!mnemonic.empty());
+				masterWalletManager->CreateMasterWallet("MasterWalletId", "french"));
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		REQUIRE(mnemonic == mnemonic2);
 	}
 	SECTION("generate spanish mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", phrasePassword, payPassword, "spanish"));
-		mnemonic = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(!mnemonic.empty());
+				masterWalletManager->CreateMasterWallet("MasterWalletId", "spanish"));
+
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		REQUIRE(mnemonic == mnemonic2);
 	}
 
 	SECTION("generate japanese mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", phrasePassword, payPassword, "japanese"));
-		mnemonic = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(!mnemonic.empty());
+				masterWalletManager->CreateMasterWallet("MasterWalletId", "japanese"));
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		REQUIRE(mnemonic == mnemonic2);
 	}
 
 	SECTION("generate italian mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", phrasePassword, payPassword, "italian"));
+				masterWalletManager->CreateMasterWallet("MasterWalletId", "italian"));
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
 
-		mnemonic = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(!mnemonic.empty());
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		REQUIRE(mnemonic == mnemonic2);
 	}
 
 	SECTION("generate chinese mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", phrasePassword, payPassword, "chinese"));
-		mnemonic = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(!mnemonic.empty());
+				masterWalletManager->CreateMasterWallet("MasterWalletId", "chinese"));
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		REQUIRE(mnemonic == mnemonic2);
 	}
 
 	SECTION("generate english mnemonic") {
 		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", phrasePassword, payPassword, "english"));
-		mnemonic = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(!mnemonic.empty());
+				masterWalletManager->CreateMasterWallet("MasterWalletId", "english"));
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		REQUIRE(mnemonic == mnemonic2);
 	}
 }
 
 
 TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 	Enviroment::InitializeRootPath("Data");
-	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
+	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -96,9 +119,12 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 
 	boost::scoped_ptr<IMasterWallet> masterWallet;
 	SECTION("Create master wallet") {
-		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId, phrasePassword, payPassword));
+		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId));
 		REQUIRE(masterWallet != nullptr);
-		REQUIRE(!masterWallet->GetPublicKey().empty());
+
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+		REQUIRE_FALSE(masterWallet->GetPublicKey().empty());
 	}
 }
 

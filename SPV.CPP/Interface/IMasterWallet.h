@@ -18,6 +18,12 @@ namespace Elastos {
 			virtual ~IMasterWallet() noexcept {}
 
 			/**
+			 * Generate a mnemonic from random entropy
+			 * @return mnemonic string
+			 */
+			virtual std::string GenerateMnemonic() const = 0;
+
+			/**
 			 * Get the master wallet id.
 			 * @return master wallet id.
 			 */
