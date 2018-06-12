@@ -66,9 +66,9 @@ func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
 	case *msg.VerAck:
 		err = h.onVerAck(message)
 	case *msg.GetAddr:
-		err = h.onAddrsReq(message)
+		err = h.onGetAddr(message)
 	case *msg.Addr:
-		err = h.onAddrs(message)
+		err = h.onAddr(message)
 	default:
 		err = errors.New("unknown message type")
 	}
@@ -170,7 +170,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	return nil
 }
 
-func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
+func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 	var addrs []p2p.NetAddress
 	// Only send addresses that enabled SPV service
 	if h.node.IsFromExtraNet() {
@@ -188,8 +188,8 @@ func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
 	return nil
 }
 
-func (h *HandlerBase) onAddrs(addrs *msg.Addr) error {
-	for _, addr := range addrs.AddrList {
+func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
+	for _, addr := range msgAddr.AddrList {
 		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", addr.String(), addr.ID))
 
 		if addr.ID == LocalNode.ID() {
