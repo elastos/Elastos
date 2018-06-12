@@ -165,11 +165,7 @@ func CheckTransactionOutput(txn *core.Transaction) error {
 			if output.AssetID != DefaultLedger.Blockchain.AssetID {
 				return errors.New("asset ID in coinbase is invalid")
 			}
-			address, err := output.ProgramHash.ToAddress()
-			if err != nil {
-				return err
-			}
-			if address == FoundationAddress {
+			if FoundationAddress.IsEqual(output.ProgramHash) {
 				found = true
 			}
 		}

@@ -17,9 +17,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
+	FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	DefaultMultiCoreNum = 4
 )
 
@@ -31,6 +34,14 @@ func init() {
 	} else {
 		coreNum = DefaultMultiCoreNum
 	}
+
+	address, err := common.Uint168FromAddress(FoundationAddress)
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(-1)
+	}
+	blockchain.FoundationAddress = *address
+
 	log.Debug("The Core number is ", coreNum)
 	runtime.GOMAXPROCS(coreNum)
 }
