@@ -96,6 +96,8 @@ namespace Elastos {
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
+
+			virtual bool IsAddressValid(const std::string &address) = 0;
 		};
 
 	}

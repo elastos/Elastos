@@ -26,7 +26,7 @@ namespace Elastos {
 
 		}
 
-		std::string
+		nlohmann::json
 		IdChainSubWallet::SendIdTransaction(const std::string &fromAddress, const std::string &toAddress,
 											const uint64_t amount, const nlohmann::json &payloadJson,
 											const nlohmann::json &programJson, uint64_t fee,
@@ -35,8 +35,8 @@ namespace Elastos {
 					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo));
 
 			TransactionPtr transaction = createTransaction(txParam.get());
-			if (!transaction) {
-				return "";
+			if (transaction == nullptr) {
+				throw std::logic_error("Create transaction error.");
 			}
 			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload().get());
 			payloadIdChain->fromJson(payloadJson);

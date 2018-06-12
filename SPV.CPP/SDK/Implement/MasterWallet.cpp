@@ -513,5 +513,9 @@ namespace Elastos {
 			wallet->_walletManager->stop();
 		}
 
+		bool MasterWallet::IsAddressValid(const std::string &address) {
+			return Address::isValidAddress(address);
+		}
+
 	}
 }

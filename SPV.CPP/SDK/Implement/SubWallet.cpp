@@ -131,7 +131,7 @@ namespace Elastos {
 			_callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), subCallback), _callbacks.end());
 		}
 
-		std::string
+		nlohmann::json
 		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, uint64_t amount,
 								   uint64_t fee, const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
@@ -191,12 +191,15 @@ namespace Elastos {
 			return ptr;
 		}
 
-		std::string SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
+		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 													   const std::string &payPassword) {
 			signTransaction(transaction, _info.getForkId(), payPassword);
 			_walletManager->getPeerManager()->publishTransaction(transaction);
 
-			return Utils::UInt256ToString(transaction->getHash());
+			nlohmann::json j;
+			j["TxHash"] = Utils::UInt256ToString(transaction->getHash());
+			j["Fee"] = transaction->getStandardFee();
+			return j;
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
@@ -333,20 +336,15 @@ namespace Elastos {
 			return nlohmann::json();
 		}
 
-		std::string
-		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const nlohmann::json &signJson) {
+		nlohmann::json
+		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, const std::string &payPassword) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(transactionJson);
 
 			verifyRawTransaction(transaction);
 			completeTransaction(transaction);
 
-			UInt256 hash = _walletManager->signAndPublishTransaction(transaction);
-			if (UInt256IsZero(&hash)) {
-				throw std::logic_error("send rawTransaction error.");
-			}
-
-			return Utils::UInt256ToString(hash);
+			return sendTransactionInternal(transaction, payPassword);
 		}
 
 		void SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {

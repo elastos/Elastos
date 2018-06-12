@@ -15,7 +15,7 @@ namespace Elastos {
 		public:
 			~IdChainSubWallet();
 
-			virtual std::string SendIdTransaction(
+			virtual nlohmann::json SendIdTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					const uint64_t amount,

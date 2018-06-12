@@ -24,9 +24,9 @@ namespace Elastos {
 
 		}
 
-		std::string SidechainSubWallet::SendWithdrawTransaction(const std::string &fromAddress,
-		                                                        const std::string &toAddress,
-		                                                        const uint64_t amount,
+		nlohmann::json SidechainSubWallet::SendWithdrawTransaction(const std::string &fromAddress,
+																const std::string &toAddress,
+																const uint64_t amount,
 																const nlohmann::json &mainchainAccounts,
 																const nlohmann::json &mainchainAmounts,
 																const nlohmann::json &mainchainIndexs, uint64_t fee,
@@ -54,10 +54,10 @@ namespace Elastos {
 			withdrawTxParam->setMainchainAddress(mainchainAddress);
 
 			TransactionPtr transaction = createTransaction(txParam.get());
-			if (transaction) {
-				return sendTransactionInternal(transaction, payPassword);
+			if (transaction == nullptr) {
+				throw std::logic_error("Create transaction error.");
 			}
-			return "";
+			return sendTransactionInternal(transaction, payPassword);
 		}
 
 		boost::shared_ptr<Transaction> SidechainSubWallet::createTransaction(TxParam *param) const {
@@ -67,7 +67,7 @@ namespace Elastos {
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-				                                                     param->getAmount(), param->getToAddress());
+																	 param->getAmount(), param->getToAddress());
 			} else {
 				Address address(param->getToAddress());
 				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
@@ -84,8 +84,8 @@ namespace Elastos {
 			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
 					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
 			payloadTransferCrossChainAsset->setCrossChainData(withdrawTxParam->getCrossChainAddress(),
-			                                                  withdrawTxParam->getCrossChainOutputIndexs(),
-			                                                  withdrawTxParam->getCrosschainAmouts());
+															  withdrawTxParam->getCrossChainOutputIndexs(),
+															  withdrawTxParam->getCrosschainAmouts());
 
 			return ptr;
 		}
@@ -101,7 +101,7 @@ namespace Elastos {
 
 		void SidechainSubWallet::completeTransaction(const TransactionPtr &transaction) {
 			//todo different complete from base class
-			 SubWallet::completeTransaction(transaction);
+			SubWallet::completeTransaction(transaction);
 		}
 	}
 }

@@ -47,7 +47,7 @@ namespace Elastos {
 
 			virtual void RemoveCallback(ISubWalletCallback *subCallback);
 
-			virtual std::string SendTransaction(
+			virtual nlohmann::json SendTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
@@ -68,9 +68,9 @@ namespace Elastos {
 					const std::string &payPassword,
 					const std::string &memo);
 
-			virtual std::string SendRawTransaction(
+			virtual nlohmann::json SendRawTransaction(
 					const nlohmann::json &transactionJson,
-					const nlohmann::json &signJson);
+					const std::string &payPassword);
 
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
@@ -132,7 +132,7 @@ namespace Elastos {
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
-			virtual std::string sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
+			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														const std::string &payPassword);
 
 			void signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,

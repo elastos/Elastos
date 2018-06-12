@@ -26,14 +26,14 @@ namespace Elastos {
 
 		}
 
-		std::string MainchainSubWallet::SendDepositTransaction(const std::string &fromAddress,
-		                                                       const std::string &toAddress,
-		                                                       const uint64_t amount,
-															   const nlohmann::json &sidechainAccounts,
-															   const nlohmann::json &sidechainAmounts,
-															   const nlohmann::json &sidechainIndexs, uint64_t fee,
-															   const std::string &payPassword,
-															   const std::string &memo) {
+		nlohmann::json MainchainSubWallet::SendDepositTransaction(const std::string &fromAddress,
+																  const std::string &toAddress,
+																  const uint64_t amount,
+																  const nlohmann::json &sidechainAccounts,
+																  const nlohmann::json &sidechainAmounts,
+																  const nlohmann::json &sidechainIndexs, uint64_t fee,
+																  const std::string &payPassword,
+																  const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo));
 			txParam->setAssetId(Key::getSystemAssetId());
@@ -57,10 +57,10 @@ namespace Elastos {
 			withdrawTxParam->setSidechainAddress(mainchainAddress);
 
 			TransactionPtr transaction = createTransaction(txParam.get());
-			if (transaction) {
-				return sendTransactionInternal(transaction, payPassword);
+			if (transaction == nullptr) {
+				throw std::logic_error("Create transaction error.");
 			}
-			return "";
+			return sendTransactionInternal(transaction, payPassword);
 		}
 
 		boost::shared_ptr<Transaction> MainchainSubWallet::createTransaction(TxParam *param) const {
@@ -70,7 +70,7 @@ namespace Elastos {
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-				                                                     param->getAmount(), param->getToAddress());
+																	 param->getAmount(), param->getToAddress());
 			} else {
 				Address address(param->getToAddress());
 				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
@@ -88,8 +88,8 @@ namespace Elastos {
 			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
 					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
 			payloadTransferCrossChainAsset->setCrossChainData(depositTxParam->getCrossChainAddress(),
-			                                                  depositTxParam->getCrossChainOutputIndexs(),
-			                                                  depositTxParam->getCrosschainAmouts());
+															  depositTxParam->getCrossChainOutputIndexs(),
+															  depositTxParam->getCrosschainAmouts());
 
 			return ptr;
 		}

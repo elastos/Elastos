@@ -15,7 +15,7 @@ namespace Elastos {
 		public:
 			~SidechainSubWallet();
 
-			virtual std::string SendWithdrawTransaction(
+			virtual nlohmann::json SendWithdrawTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					const uint64_t amount,

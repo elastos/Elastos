@@ -66,6 +66,8 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
+			virtual bool IsAddressValid(const std::string &address);
+
 		public: //override from IIdAgent
 			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
