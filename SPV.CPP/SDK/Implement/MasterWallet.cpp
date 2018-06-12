@@ -120,12 +120,7 @@ namespace Elastos {
 			CoinInfo info;
 			info.setEaliestPeerTime(0);
 
-			if (!_coinConfigReader.IsInitialized()) {
-				boost::filesystem::path configPath = Enviroment::GetRootPath();
-				configPath /= COIN_COINFIG_FILE;
-				_coinConfigReader.Load(configPath);
-			}
-
+			tryInitCoinConfig();
 			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
 			info.setWalletType(coinConfig.Type);
 			info.setIndex(coinConfig.Index);
@@ -507,6 +502,19 @@ namespace Elastos {
 
 		bool MasterWallet::IsAddressValid(const std::string &address) {
 			return Address::isValidAddress(address);
+		}
+
+		std::vector<std::string> MasterWallet::GetSupportedChains() {
+			tryInitCoinConfig();
+			return _coinConfigReader.GetAllChainId();
+		}
+
+		void MasterWallet::tryInitCoinConfig() {
+			if (!_coinConfigReader.IsInitialized()) {
+				boost::filesystem::path configPath = Enviroment::GetRootPath();
+				configPath /= COIN_COINFIG_FILE;
+				_coinConfigReader.Load(configPath);
+			}
 		}
 
 	}

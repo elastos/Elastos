@@ -36,6 +36,8 @@ namespace Elastos {
 
 			void Load(const boost::filesystem::path &path);
 
+			std::vector<std::string> GetAllChainId() const;
+
 			const CoinConfig &FindConfig(const std::string &chainId);
 
 		private:

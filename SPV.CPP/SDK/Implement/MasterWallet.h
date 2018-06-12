@@ -72,6 +72,8 @@ namespace Elastos {
 
 			virtual bool IsAddressValid(const std::string &address);
 
+			virtual std::vector<std::string> GetSupportedChains();
+
 		public: //override from IIdAgent
 			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
@@ -151,6 +153,8 @@ namespace Elastos {
 			virtual void startPeerManager(SubWallet *wallet);
 
 			virtual void stopPeerManager(SubWallet *wallet);
+
+			void tryInitCoinConfig();
 
 		protected:
 			bool _initialized;

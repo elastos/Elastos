@@ -57,5 +57,13 @@ namespace Elastos {
 			}
 			return _configMap[chainId];
 		}
+
+		std::vector<std::string> CoinConfigReader::GetAllChainId() const {
+			std::vector<std::string> result;
+			std::for_each(_configMap.begin(), _configMap.end(), [&result](const CoinConfigMap::value_type &item){
+				result.push_back(item.first);
+			});
+			return result;
+		}
 	}
 }

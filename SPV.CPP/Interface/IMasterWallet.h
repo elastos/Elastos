@@ -104,6 +104,8 @@ namespace Elastos {
 					const std::string &signature) = 0;
 
 			virtual bool IsAddressValid(const std::string &address) = 0;
+
+			virtual std::vector<std::string> GetSupportedChains() = 0;
 		};
 
 	}

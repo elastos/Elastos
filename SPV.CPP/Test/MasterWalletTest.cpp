@@ -467,3 +467,15 @@ TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
 TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
 	//todo complete me
 }
+
+TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]") {
+	//todo update me when CoinConfig.json file changed
+
+	Enviroment::InitializeRootPath("Data");
+	std::string language = "english";
+	SECTION("Normal test") {
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
+		std::vector<std::string> chainIdList = masterWallet->GetSupportedChains();
+		REQUIRE(chainIdList.size() == 2);
+	}
+}
