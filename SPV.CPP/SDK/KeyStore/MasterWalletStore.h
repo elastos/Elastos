@@ -37,6 +37,10 @@ namespace Elastos {
 
 			void SetEncryptedPhrasePassword(const CMBlock &data);
 
+			const std::string &GetPublicKey() const;
+
+			void SetPublicKey(const std::string &pubKey);
+
 			const std::string &GetLanguage() const;
 
 			void SetLanguage(const std::string &language);
@@ -59,6 +63,7 @@ namespace Elastos {
 			CMBlock _encryptedKey;
 			CMBlock _encryptedMnemonic;
 			CMBlock _encryptedPhrasePass;
+			std::string _publicKey;
 			std::string _language;
 			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;

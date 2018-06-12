@@ -63,5 +63,5 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	while (true) sleep(1);
 
 	masterWallet->DestroyWallet(subWallet);
-	walletFactory->DestroyWallet(masterWallet);
+	walletFactory->DestroyWallet(masterWallet->GetId());
 }

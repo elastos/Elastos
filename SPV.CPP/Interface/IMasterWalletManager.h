@@ -41,7 +41,7 @@ namespace Elastos {
 			 * Destroy a master wallet.
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 */
-			virtual void DestroyWallet(IMasterWallet *masterWallet) = 0;
+			virtual void DestroyWallet(const std::string &masterWalletId) = 0;
 
 			/**
 			 * Import master wallet by key store file.

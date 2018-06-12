@@ -60,6 +60,14 @@ namespace Elastos {
 			_encryptedPhrasePass = data;
 		}
 
+		const std::string& MasterWalletStore::GetPublicKey() const {
+			return _publicKey;
+		}
+
+		void MasterWalletStore::SetPublicKey(const std::string &pubKey) {
+			_publicKey = pubKey;
+		}
+
 		const std::vector<CoinInfo> &MasterWalletStore::GetSubWalletInfoList() const {
 			return _subWalletsInfoList;
 		}

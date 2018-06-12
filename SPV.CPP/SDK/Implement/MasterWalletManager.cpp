@@ -20,8 +20,7 @@ namespace Elastos {
 
 		class WalletFactoryInner {
 		public:
-			static IMasterWallet *importWalletInternal(MasterWalletManager *masterWalletManager,
-													   const std::string &masterWalletId, const std::string &language,
+			static IMasterWallet *importWalletInternal(const std::string &masterWalletId, const std::string &language,
 													   const boost::function<bool(MasterWallet *)> &walletImportFun) {
 				ParamChecker::checkNotEmpty(masterWalletId);
 
@@ -71,13 +70,14 @@ namespace Elastos {
 			return result;
 		};
 
-		void MasterWalletManager::DestroyWallet(IMasterWallet *masterWallet) {
-			ParamChecker::checkNullPointer(masterWallet);
+		void MasterWalletManager::DestroyWallet(const std::string &masterWalletId) {
+			ParamChecker::checkNotEmpty(masterWalletId);
 
-			if(_masterWalletMap.find(masterWallet->GetId()) == _masterWalletMap.end())
+			if(_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
 				return;
 
-			_masterWalletMap.erase(masterWallet->GetId());
+			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
+			_masterWalletMap.erase(masterWalletId);
 			delete masterWallet;
 		}
 
@@ -92,7 +92,7 @@ namespace Elastos {
 			if(_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			return WalletFactoryInner::importWalletInternal(this, masterWalletId, "english",
+			return WalletFactoryInner::importWalletInternal(masterWalletId, "english",
 															[&keystorePath, &backupPassword, &payPassword, &phrasePassword](
 																	MasterWallet *masterWallet) {
 																return masterWallet->importFromKeyStore(keystorePath,
@@ -112,7 +112,7 @@ namespace Elastos {
 			if(_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			return WalletFactoryInner::importWalletInternal(this, masterWalletId, language,
+			return WalletFactoryInner::importWalletInternal(masterWalletId, language,
 															[&mnemonic, &phrasePassword, &payPassword](
 																	MasterWallet *masterWallet) {
 																return masterWallet->importFromMnemonic(mnemonic,
@@ -171,8 +171,10 @@ namespace Elastos {
 
 				std::string masterWalletId = temp.filename().string();
 				temp /= MASTER_WALLET_STORE_FILE;
-				MasterWallet *masterWallet = new MasterWallet(temp);
-				_masterWalletMap[masterWalletId] = masterWallet;
+				if (exists(temp)) {
+					MasterWallet *masterWallet = new MasterWallet(temp);
+					_masterWalletMap[masterWalletId] = masterWallet;
+				}
 				++it;
 			}
 		}

@@ -36,7 +36,8 @@ namespace Elastos {
 				_initialized(false) {
 
 			_localStore.Load(localStore);
-			_id = localStore.relative_path().string();
+			_id = localStore.parent_path().filename().string();
+			_initialized = true;
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -78,6 +79,7 @@ namespace Elastos {
 		}
 
 		MasterWallet::~MasterWallet() {
+			Save();
 		}
 
 		void MasterWallet::Save() {
@@ -94,6 +96,7 @@ namespace Elastos {
 			path /= GetId();
 			if(!boost::filesystem::exists(path))
 				boost::filesystem::create_directory(path);
+			path /= MASTER_WALLET_STORE_FILE;
 			_localStore.Save(path);
 		}
 
@@ -217,7 +220,7 @@ namespace Elastos {
 			if (!Initialized())
 				throw std::logic_error("Current master wallet is not initialized.");
 
-			return _publicKey;
+			return _localStore.GetPublicKey();
 		}
 
 		bool MasterWallet::importFromKeyStore(const std::string &keystorePath, const std::string &backupPassword,
@@ -399,7 +402,7 @@ namespace Elastos {
 			BRKeyPubKey(key.getRaw(), pubKey, len);
 			CMBlock data;
 			data.SetMemFixed(pubKey, len);
-			_publicKey = Utils::encodeHex(data);
+			_localStore.SetPublicKey(Utils::encodeHex(data));
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {

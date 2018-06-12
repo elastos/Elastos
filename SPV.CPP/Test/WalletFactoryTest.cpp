@@ -87,6 +87,7 @@ TEST_CASE(
 
 
 TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
+	Enviroment::InitializeRootPath("Data");
 	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";

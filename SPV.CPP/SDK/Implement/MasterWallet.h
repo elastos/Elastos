@@ -163,7 +163,6 @@ namespace Elastos {
 			KeyStore _keyStore;
 			boost::shared_ptr<Mnemonic> _mnemonic;
 
-			std::string _publicKey;
 			std::string _id;
 
 			CoinConfigReader _coinConfigReader;
