@@ -8,7 +8,7 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-var FoundationAddress string
+var FoundationAddress Uint168
 
 var DefaultLedger *Ledger
 

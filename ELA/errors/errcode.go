@@ -3,35 +3,38 @@ package errors
 type ErrCode int
 
 const (
-	Error                   ErrCode = -1
-	Success                 ErrCode = 0
-	ErrInvalidInput         ErrCode = 45003
-	ErrInvalidOutput        ErrCode = 45004
-	ErrAssetPrecision       ErrCode = 45005
-	ErrTransactionBalance   ErrCode = 45006
-	ErrAttributeProgram     ErrCode = 45007
-	ErrTransactionSignature ErrCode = 45008
-	ErrTransactionPayload   ErrCode = 45009
-	ErrDoubleSpend          ErrCode = 45010
-	ErrTxHashDuplicate      ErrCode = 45011
-	ErrXmitFail             ErrCode = 45014
-	ErrTransactionSize      ErrCode = 45015
-	ErrUnknownReferedTxn    ErrCode = 45016
-	ErrInvalidReferedTxn    ErrCode = 45017
-	ErrIneffectiveCoinbase  ErrCode = 45018
-	ErrUTXOLocked           ErrCode = 45019
-	SessionExpired          ErrCode = 41001
-	IllegalDataFormat       ErrCode = 41003
-	OauthTimeout            ErrCode = 41004
-	InvalidMethod           ErrCode = 42001
-	InvalidParams           ErrCode = 42002
-	InvalidToken            ErrCode = 42003
-	InvalidTransaction      ErrCode = 43001
-	InvalidAsset            ErrCode = 43002
-	UnknownTransaction      ErrCode = 44001
-	UnknownAsset            ErrCode = 44002
-	UnknownBlock            ErrCode = 44003
-	InternalError           ErrCode = 45002
+	Error                    ErrCode = -1
+	Success                  ErrCode = 0
+	ErrInvalidInput          ErrCode = 45003
+	ErrInvalidOutput         ErrCode = 45004
+	ErrAssetPrecision        ErrCode = 45005
+	ErrTransactionBalance    ErrCode = 45006
+	ErrAttributeProgram      ErrCode = 45007
+	ErrTransactionSignature  ErrCode = 45008
+	ErrTransactionPayload    ErrCode = 45009
+	ErrDoubleSpend           ErrCode = 45010
+	ErrTransactionDuplicate  ErrCode = 45011
+	ErrSidechainTxDuplicate  ErrCode = 45012
+	ErrXmitFail              ErrCode = 45014
+	ErrTransactionSize       ErrCode = 45015
+	ErrUnknownReferedTx      ErrCode = 45016
+	ErrInvalidReferedTx      ErrCode = 45017
+	ErrIneffectiveCoinbase   ErrCode = 45018
+	ErrUTXOLocked            ErrCode = 45019
+	ErrSideChainPowConsensus ErrCode = 45020
+
+	SessionExpired     ErrCode = 41001
+	IllegalDataFormat  ErrCode = 41003
+	OauthTimeout       ErrCode = 41004
+	InvalidMethod      ErrCode = 42001
+	InvalidParams      ErrCode = 42002
+	InvalidToken       ErrCode = 42003
+	InvalidTransaction ErrCode = 43001
+	InvalidAsset       ErrCode = 43002
+	UnknownTransaction ErrCode = 44001
+	UnknownAsset       ErrCode = 44002
+	UnknownBlock       ErrCode = 44003
+	InternalError      ErrCode = 45002
 )
 
 var ErrMap = map[ErrCode]string{
@@ -57,11 +60,12 @@ var ErrMap = map[ErrCode]string{
 	ErrTransactionSignature: "INTERNAL ERROR, ErrTransactionSignature",
 	ErrTransactionPayload:   "INTERNAL ERROR, ErrTransactionPayload",
 	ErrDoubleSpend:          "INTERNAL ERROR, ErrDoubleSpend",
-	ErrTxHashDuplicate:      "INTERNAL ERROR, ErrTxHashDuplicate",
+	ErrTransactionDuplicate: "INTERNAL ERROR, ErrTransactionDuplicate",
+	ErrSidechainTxDuplicate: "INTERNAL ERROR, ErrSidechainTxDuplicate",
 	ErrXmitFail:             "INTERNAL ERROR, ErrXmitFail",
 	ErrTransactionSize:      "INTERNAL ERROR, ErrTransactionSize",
-	ErrUnknownReferedTxn:    "INTERNAL ERROR, ErrUnknownReferedTxn",
-	ErrInvalidReferedTxn:    "INTERNAL ERROR, ErrInvalidReferedTxn",
+	ErrUnknownReferedTx:     "INTERNAL ERROR, ErrUnknownReferedTx",
+	ErrInvalidReferedTx:     "INTERNAL ERROR, ErrInvalidReferedTx",
 	ErrIneffectiveCoinbase:  "INTERNAL ERROR, ErrIneffectiveCoinbase",
 }
 

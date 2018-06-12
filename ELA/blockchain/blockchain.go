@@ -122,17 +122,13 @@ func GetGenesisBlock() (*Block, error) {
 		Outputs:    []*Output{},
 		Programs:   []*Program{},
 	}
-	foundation, err := Uint168FromAddress(FoundationAddress)
-	if err != nil {
-		return nil, err
-	}
 
 	coinBase := NewCoinBaseTransaction(&PayloadCoinBase{}, 0)
 	coinBase.Outputs = []*Output{
 		{
 			AssetID:     elaCoin.Hash(),
 			Value:       3300 * 10000 * 100000000,
-			ProgramHash: *foundation,
+			ProgramHash: FoundationAddress,
 		},
 	}
 
@@ -150,6 +146,7 @@ func GetGenesisBlock() (*Block, error) {
 	for _, tx := range block.Transactions {
 		hashes = append(hashes, tx.Hash())
 	}
+	var err error
 	block.Header.MerkleRoot, err = crypto.ComputeRoot(hashes)
 	if err != nil {
 		return nil, errors.New("[GenesisBlock] ,BuildMerkleRoot failed.")
@@ -185,8 +182,6 @@ func (bc *Blockchain) GetBestHeight() uint32 {
 }
 
 func (bc *Blockchain) UpdateBestHeight(val uint32) {
-	//bc.mutex.Lock()
-	//defer bc.mutex.Unlock()
 	bc.BlockHeight = val
 }
 
@@ -1037,9 +1032,8 @@ func (bc *Blockchain) ProcessBlock(block *Block) (bool, bool, error) {
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = PowCheckBlockSanity(block, PowLimit, bc.TimeSource)
 	err := PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
-
 	if err != nil {
-		log.Error("PowCheckBlockSanity error!")
+		log.Errorf("PowCheckBlockSanity error %s", err.Error())
 		return false, false, err
 	}
 
@@ -1124,17 +1118,20 @@ func (b *Blockchain) LatestBlockLocator() ([]*Uint256, error) {
 	// The best chain is set, so use its hash.
 	return b.blockLocatorFromHash(b.BestChain.Hash), nil
 }
+
 func (b *Blockchain) AddNodeToIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 
 	b.Index[*node.Hash] = node
 }
+
 func (b *Blockchain) RemoveNodeFromIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 	delete(b.Index, *node.Hash)
 }
+
 func (b *Blockchain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
