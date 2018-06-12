@@ -6,6 +6,7 @@
 
 #include "ParamChecker.h"
 #include "Config.h"
+#include "BRBIP39Mnemonic.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -68,6 +69,12 @@ namespace Elastos {
 				else
 					throw std::logic_error("Path should valid.");
 			}
+		}
+
+		//check language words count is BIP39_WORDLIST_COUNT
+		void ParamChecker::checkLangWordsCnt(const uint32_t cnt ){
+			if(cnt != BIP39_WORDLIST_COUNT)
+				throw std::invalid_argument("Language words count invalid.");
 		}
 	}
 }

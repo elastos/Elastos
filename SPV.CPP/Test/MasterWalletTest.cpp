@@ -14,6 +14,8 @@
 #include "SidechainSubWallet.h"
 #include "IdChainSubWallet.h"
 
+#include <Interface/Enviroment.h>
+
 using namespace Elastos::SDK;
 
 class TestMasterWallet : public MasterWallet {

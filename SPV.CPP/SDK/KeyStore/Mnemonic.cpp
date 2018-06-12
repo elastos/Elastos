@@ -11,6 +11,7 @@
 
 #define MNEMONIC_PREFIX "mnemonic_"
 #define MNEMONIC_EXTENSION ".txt"
+#include "SDK/Common/ParamChecker.h"
 
 namespace fs = boost::filesystem;
 
@@ -45,7 +46,8 @@ namespace Elastos {
 				loadLanguage(fileName);
 			}
 
-			assert(_words.size() == BIP39_WORDLIST_COUNT);
+			ParamChecker::checkLangWordsCnt(_words.size());
+			//assert(_words.size() == BIP39_WORDLIST_COUNT);
 		}
 
 		std::string Mnemonic::getLanguage() const {

@@ -29,6 +29,9 @@ namespace Elastos {
 			static void checkJsonArrayNotEmpty(nlohmann::json jsonData, bool isParam = true);
 
 			static void checkPathExists(const boost::filesystem::path &path, bool isParam = true);
+
+			//check language words count is BIP39_WORDLIST_COUNT
+			static void checkLangWordsCnt(const uint32_t cnt);
 		};
 
 	}
