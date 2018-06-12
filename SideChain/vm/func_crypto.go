@@ -4,7 +4,6 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"errors"
-	"fmt"
 	"hash"
 )
 
@@ -21,6 +20,9 @@ func opHash(e *ExecutionEngine) (VMState, error) {
 }
 
 func opCheckSig(e *ExecutionEngine) (VMState, error) {
+	if e.dataContainer == nil {
+		return FAULT, nil
+	}
 	if e.evaluationStack.Count() < 2 {
 		return FAULT, nil
 	}
@@ -39,7 +41,6 @@ func opCheckMultiSig(e *ExecutionEngine) (VMState, error) {
 		return FAULT, errors.New("element count is not enough")
 	}
 	n := int(AssertStackItem(e.evaluationStack.Pop()).GetBigInteger().Int64())
-	fmt.Printf("n = %d\n", n)
 	if n < 1 {
 		return FAULT, errors.New("invalid n in multisig")
 	}
@@ -67,9 +68,9 @@ func opCheckMultiSig(e *ExecutionEngine) (VMState, error) {
 		return FAULT, errors.New("too many signatures in stack")
 	}
 
-	signatures := make([][]byte, m)
-	for i := 0; i < m; i++ {
-		signatures[i] = AssertStackItem(e.evaluationStack.Pop()).GetByteArray()
+	signatures := make([][]byte, 0, n)
+	for e.evaluationStack.Count() > 0 {
+		signatures = append(signatures, AssertStackItem(e.evaluationStack.Pop()).GetByteArray())
 	}
 
 	data := e.dataContainer.GetData()
