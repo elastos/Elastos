@@ -288,7 +288,7 @@ void ela_session_close(ElaSession *session);
 
 /**
  * \~English
- * Get the remote peer id of the session.
+ * Get the remote peer's address of the session.
  *
  * @param
  *      session     [in] A handle to the carrier session.
