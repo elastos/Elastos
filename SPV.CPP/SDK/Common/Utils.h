@@ -55,17 +55,21 @@ namespace Elastos {
 			decrypt(const CMBlock &encryptedData, const std::string &password, CMBlock &salt, CMBlock &iv,
 					bool bAes128 = false);
 
-			static void decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen);
-
-			static size_t decodeHexLength(size_t stringLen);
-
-			static uint8_t *decodeHexCreate(size_t *targetLen, char *source, size_t sourceLen);
+			static std::string encodeHex(const CMBlock &in);
 
 			static void encodeHex(char *target, size_t targetLen, const uint8_t *source, size_t sourceLen);
 
 			static size_t encodeHexLength(size_t byteArrayLen);
 
 			static std::string encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen);
+
+			static CMBlock decodeHex(const std::string &s);
+
+			static void decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen);
+
+			static size_t decodeHexLength(size_t stringLen);
+
+			static uint8_t *decodeHexCreate(size_t *targetLen, char *source, size_t sourceLen);
 
 			template<class T>
 			static std::string convertToString(const CMemBlock<T, uint64_t> &data) {

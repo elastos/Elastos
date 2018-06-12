@@ -19,11 +19,12 @@
 #include "Utils.h"
 #include "Log.h"
 #include "TransactionOutput.h"
+#include "ElaPeerConfig.h"
+#include "ParamChecker.h"
 
 namespace fs = boost::filesystem;
 
 #define DB_FILE_EXTENSION ".db"
-#define PEER_CONFIG_EXTENSION "_PeerConnection.json"
 
 namespace Elastos {
 	namespace SDK {
@@ -38,23 +39,44 @@ namespace Elastos {
 			fs::path subWalletDbPath = Enviroment::GetRootPath();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
-			fs::path peerConnectionPath = Enviroment::GetRootPath();
-			peerConnectionPath /= info.getChainId() + PEER_CONFIG_EXTENSION;
+			nlohmann::json peerConfig =
+					info.getWalletType() == Mainchain || info.getWalletType() == Normal ? ElaPeerConfig
+																						: readPeerConfig();
 
-			if(!payPassword.empty()) {
+			MasterPubKeyPtr masterPubKey = nullptr;
+			if (!payPassword.empty()) {
 				BRKey key;
 				UInt256 chainCode;
 				deriveKeyAndChain(&key, chainCode, payPassword);
-				MasterPubKeyPtr masterPubKey(new MasterPubKey(key, chainCode));
 
-				_walletManager = WalletManagerPtr(
-						new WalletManager(masterPubKey, subWalletDbPath, peerConnectionPath,
-										  _info.getEarliestPeerTime(),
-										  _info.getSingleAddress(), _info.getForkId(), chainParams));
-				_walletManager->registerWalletListener(this);
+				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
+				BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
+
+				CMBlock ret(sizeof(rawKey));
+				memcpy(ret, &rawKey, sizeof(rawKey));
+				CMBlock encryptedData = Utils::encrypt(ret, payPassword);
+
+				_info.setEncryptedKey(Utils::encodeHex(encryptedData));
+				_info.setChainCode(Utils::UInt256ToString(chainCode));
+
+				masterPubKey.reset(new MasterPubKey(key, chainCode));
+
 			} else {
-				//todo import from local
+				ParamChecker::checkNotEmpty(_info.getEncryptedKey(), false);
+				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
+
+				CMBlock keyRaw = Utils::decodeHex(_info.getEncryptedKey());
+				BRKey key;
+				BRKeySetPrivKey(&key, (char *) (void *) keyRaw);
+
+				masterPubKey.reset(new MasterPubKey(key, Utils::UInt256FromString(_info.getChainCode())));
 			}
+
+			_walletManager = WalletManagerPtr(
+					new WalletManager(masterPubKey, subWalletDbPath, peerConfig,
+									  _info.getEarliestPeerTime(),
+									  _info.getSingleAddress(), _info.getForkId(), chainParams));
+			_walletManager->registerWalletListener(this);
 
 			if (info.getFeePerKb() > 0) {
 				_walletManager->getWallet()->setFeePerKb(info.getFeePerKb());
@@ -178,10 +200,8 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
-			BRKey *rawKey = new BRKey;
-			UInt256 chainCode;
-			deriveKeyAndChain(rawKey, chainCode, payPassword);
-			Key key(rawKey);
+
+			Key key = deriveKey(payPassword);
 			UInt256 md;
 			BRSHA256(&md, message.c_str(), message.size());
 			CMBlock signedData = key.sign(md);
@@ -208,8 +228,8 @@ namespace Elastos {
 			_confirmingTxs[Utils::UInt256ToString(transaction->getHash())] = transaction;
 
 			fireTransactionStatusChanged(Utils::UInt256ToString(transaction->getHash()),
-										 SubWalletCallback::convertToString(SubWalletCallback::Added), nlohmann::json(),
-										 0);
+										 SubWalletCallback::convertToString(SubWalletCallback::Added),
+										 transaction->toJson(), 0);
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
@@ -219,7 +239,7 @@ namespace Elastos {
 
 			uint32_t confirm = blockHeight - _confirmingTxs[hash]->getBlockHeight();
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-										 nlohmann::json(), confirm);
+										 _confirmingTxs[hash]->toJson(), confirm);
 		}
 
 		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
@@ -229,6 +249,19 @@ namespace Elastos {
 
 		void SubWallet::recover(int limitGap) {
 			_walletManager->recover(limitGap);
+		}
+
+		Key SubWallet::deriveKey(const std::string &payPassword) {
+			CMBlock raw = Utils::decodeHex(_info.getEncryptedKey());
+			CMBlock keyData = Utils::decrypt(raw, payPassword);
+			ParamChecker::checkDataNotEmpty(keyData);
+
+			Key key;
+			char stmp[keyData.GetSize()];
+			memcpy(stmp, keyData, keyData.GetSize());
+			std::string secret(stmp, keyData.GetSize());
+			key.setPrivKey(secret);
+			return key;
 		}
 
 		void SubWallet::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword) {
@@ -460,11 +493,11 @@ namespace Elastos {
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
 				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-											 nlohmann::json(), blockHeight - it->second->getBlockHeight());
+											 it->second->toJson(), blockHeight - it->second->getBlockHeight());
 			}
 
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end();) {
-				if(blockHeight - it->second->getBlockHeight() >= 6)
+				if (blockHeight - it->second->getBlockHeight() >= 6)
 					_confirmingTxs.erase(it++);
 				else
 					++it;
@@ -477,6 +510,11 @@ namespace Elastos {
 						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
 							  callback->OnTransactionStatusChanged(txid, status, desc, confirms);
 						  });
+		}
+
+		nlohmann::json SubWallet::readPeerConfig() {
+			//todo read from main chain(ela)
+			return nlohmann::json();
 		}
 
 	}

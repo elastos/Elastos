@@ -126,6 +126,8 @@ namespace Elastos {
 					  const std::string &payPassword,
 					  MasterWallet *parent);
 
+			Key deriveKey(const std::string &payPassword);
+
 			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
@@ -137,6 +139,8 @@ namespace Elastos {
 			                     const std::string &payPassword);
 
 			void recover(int limitGap);
+
+			nlohmann::json readPeerConfig();
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 

@@ -47,6 +47,8 @@ public:
 		info.setUsedMaxAddressIndex(0);
 		info.setChainId(chainID);
 		info.setFeePerKb(feePerKb);
+		info.setEncryptedKey("4c336d6e4d6b724b55676f666f6e716e464b79394a5532533657724b314350555955356f35577a4d6e4a5054715963526370734700");
+		info.setChainCode("0000000000000000000000000000000000000000000000000000000000000000");
 		std::vector<CoinInfo> coinInfoList = {info};
 		restoreSubWallets(coinInfoList);
 

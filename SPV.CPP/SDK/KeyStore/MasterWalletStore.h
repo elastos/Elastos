@@ -10,6 +10,7 @@
 
 #include "CMemBlock.h"
 #include "CoinInfo.h"
+#include "IdAgent/IdAgentImpl.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -24,17 +25,25 @@ namespace Elastos {
 
 			void Save(const boost::filesystem::path &path);
 
-			const std::string &GetEncrpytedKey() const;
+			const CMBlock &GetEncrpytedKey() const;
 
-			void SetEncryptedKey(const std::string &data);
+			void SetEncryptedKey(const CMBlock &data);
 
-			const std::string &GetEncryptedMnemonic() const;
+			const CMBlock &GetEncryptedMnemonic() const;
 
-			void SetEncryptedMnemonic(const std::string &data);
+			void SetEncryptedMnemonic(const CMBlock &data);
 
-			const std::string &GetEncrptedPhrasePassword() const;
+			const CMBlock &GetEncrptedPhrasePassword() const;
 
-			void SetEncryptedPhrasePassword(const std::string &data);
+			void SetEncryptedPhrasePassword(const CMBlock &data);
+
+			const std::string &GetLanguage() const;
+
+			void SetLanguage(const std::string &language);
+
+			const IdAgentInfo &GetIdAgentInfo() const;
+
+			void SetIdAgentInfo(const IdAgentInfo &info);
 
 			const std::vector<CoinInfo> &GetSubWalletInfoList() const;
 
@@ -47,9 +56,11 @@ namespace Elastos {
 			FROM_JSON(MasterWalletStore);
 
 		private:
-			std::string _encryptedKey;
-			std::string _encryptedMnemonic;
-			std::string _encryptedPhrasePass;
+			CMBlock _encryptedKey;
+			CMBlock _encryptedMnemonic;
+			CMBlock _encryptedPhrasePass;
+			std::string _language;
+			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;
 		};
 

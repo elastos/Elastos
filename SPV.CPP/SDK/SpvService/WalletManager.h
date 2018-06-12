@@ -9,6 +9,8 @@
 #include <boost/function.hpp>
 #include <boost/filesystem.hpp>
 
+#include <nlohmann/json.hpp>
+
 #include "TransactionCreationParams.h"
 #include "CoreWalletManager.h"
 #include "DatabaseManager.h"
@@ -30,14 +32,14 @@ namespace Elastos {
 
 			WalletManager(const MasterPubKeyPtr &masterPubKey,
 						  const boost::filesystem::path &dbPath,
-						  const boost::filesystem::path &peerConfigPath,
+						  const nlohmann::json &peerConfig,
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
 						  int forkId,
 						  const ChainParams &chainParams = ChainParams::mainNet());
 
 			WalletManager(const boost::filesystem::path &dbPath,
-						  const boost::filesystem::path &peerConfigPath,
+						  const nlohmann::json &peerConfig,
 						  uint32_t earliestPeerTime,
 						  int forkId,
 						  const std::vector<std::string> &initialAddresses,
@@ -116,7 +118,7 @@ namespace Elastos {
 			MasterPubKeyPtr _masterPubKey;
 			CMBlock _phraseData;
 			int _forkId;
-			boost::filesystem::path _peerConfigPath;
+			nlohmann::json _peerConfig;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

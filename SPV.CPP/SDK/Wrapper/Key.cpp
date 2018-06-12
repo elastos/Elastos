@@ -271,21 +271,6 @@ namespace Elastos {
 			return BRBIP38KeyIsValid(key.c_str()) == 1;
 		}
 
-		std::string Key::encodeHex(const CMBlock &in) {
-			return Utils::encodeHexCreate(nullptr, in, in.GetSize());
-		}
-
-		CMBlock Key::decodeHex(const std::string &s) {
-			size_t dataLen = 0;
-			char *str = const_cast<char *>(s.c_str());
-			uint8_t *data = Utils::decodeHexCreate(&dataLen, str, strlen(str));
-
-			CMBlock ret;
-			ret.SetMem(data, dataLen);
-
-			return ret;
-		}
-
 		UInt256 Key::encodeSHA256(const std::string &message) {
 			UInt256 md;
 			BRSHA256((void *) &md, (void *) message.c_str(), strlen(message.c_str()));
@@ -345,7 +330,7 @@ namespace Elastos {
 			secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);;
 			secp256k1_pubkey pk;
 			secp256k1_ecdsa_signature s;
-			CMBlock pubData = decodeHex(publicKey);
+			CMBlock pubData = Utils::decodeHex(publicKey);
 
 			if (pubData.GetSize() > 0 && secp256k1_ec_pubkey_parse(ctx, &pk, pubData, pubData.GetSize()) &&
 			    secp256k1_ecdsa_signature_parse_der(ctx, &s, signature, signature.GetSize())) {

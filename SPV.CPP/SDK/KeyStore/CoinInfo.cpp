@@ -86,6 +86,8 @@ namespace Elastos {
 			j["UsedMaxAddressIndex"] = p._usedMaxAddressIndex;
 			j["SingleAddress"] = p._singleAddress;
 			j["WalletType"] = int(p.getWalletType());
+			j["EncryptedKey"] = p._encryptedKey;
+			j["ChainCode"] = p._chainCode;
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
@@ -95,6 +97,8 @@ namespace Elastos {
 			p._usedMaxAddressIndex = j["UsedMaxAddressIndex"].get<int>();
 			p._singleAddress = j["SingleAddress"].get<bool>();
 			p._walletType = (SubWalletType) j["WalletType"].get<int>();
+			p._encryptedKey = j["EncryptedKey"].get<std::string>();
+			p._chainCode = j["ChainCode"].get<std::string>();
 		}
 
 		int CoinInfo::getForkId() const {
@@ -111,6 +115,22 @@ namespace Elastos {
 
 		void CoinInfo::setWalletType(SubWalletType type) {
 			_walletType = type;
+		}
+
+		const std::string &CoinInfo::getEncryptedKey() const {
+			return _encryptedKey;
+		}
+
+		void CoinInfo::setEncryptedKey(const std::string &key) {
+			_encryptedKey = key;
+		}
+
+		const std::string &CoinInfo::getChainCode() const {
+			return _chainCode;
+		}
+
+		void CoinInfo::setChainCode(const std::string &code) {
+			_chainCode = code;
 		}
 	}
 }

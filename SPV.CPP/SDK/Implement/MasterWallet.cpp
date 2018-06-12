@@ -24,14 +24,19 @@
 #include "Wallet_Tool.h"
 #include "BTCBase58.h"
 
-#define MNEMONIC_FILE_PREFIX "mnemonic_"
-#define MNEMONIC_FILE_EXTENSION ".txt"
-
+#define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 
 namespace fs = boost::filesystem;
 
 namespace Elastos {
 	namespace SDK {
+
+		MasterWallet::MasterWallet(const boost::filesystem::path &localStore) :
+				_initialized(false) {
+
+			_localStore.Load(localStore);
+			_id = localStore.relative_path().string();
+		}
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const std::string &language) :
@@ -72,7 +77,24 @@ namespace Elastos {
 		}
 
 		MasterWallet::~MasterWallet() {
+			Save();
+		}
 
+		void MasterWallet::Save() {
+
+			std::vector<CoinInfo> coinInfos;
+			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet == nullptr) continue;
+				coinInfos.push_back(subWallet->_info);
+			}
+			_localStore.SetSubWalletInfoList(coinInfos);
+
+			boost::filesystem::path path = Enviroment::GetRootPath();
+			path /= GetId();
+			if(!boost::filesystem::exists(path))
+				boost::filesystem::create_directory(path);
+			_localStore.Save(path);
 		}
 
 		std::vector<ISubWallet *> MasterWallet::GetAllSubWallets() const {
@@ -111,9 +133,11 @@ namespace Elastos {
 
 			CoinInfo info;
 			info.setEaliestPeerTime(0);
+
 			//todo find type and index info from mainchain through chainId
-//			info.setWalletType(type);
-//			info.setIndex(coinTypeIndex);
+			info.setWalletType(Normal);
+			info.setIndex(0);
+
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
@@ -217,7 +241,7 @@ namespace Elastos {
 			std::string mnemonic = _keyStore.json().getMnemonic();
 			CMBlock cb_mnemonic;
 			cb_mnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
-			_encryptedMnemonic = Utils::encrypt(cb_mnemonic, payPassword);
+			_localStore.SetEncryptedMnemonic(Utils::encrypt(cb_mnemonic, payPassword));
 			resetMnemonic(_keyStore.json().getMnemonicLanguage());
 
 			return initFromPhrase(mnemonic, phrasePass, payPassword);
@@ -246,8 +270,9 @@ namespace Elastos {
 		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword,
 										  const std::string &keystorePath) {
 			if (_keyStore.json().getEncryptedPhrasePassword().empty())
-				_keyStore.json().setEncryptedPhrasePassword((const char *) (unsigned char *) _encryptedPhrasePass);
-			CMBlock cb_Mnemonic = Utils::decrypt(_encryptedMnemonic, payPassword);
+				_keyStore.json().setEncryptedPhrasePassword(Utils::encodeHex(_localStore.GetEncrptedPhrasePassword()));
+
+			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
 			if (false == cb_Mnemonic) {
 				return false;
 			}
@@ -273,7 +298,7 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
-			CMBlock cb_Mnemonic = Utils::decrypt(_encryptedMnemonic, payPassword);
+			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
 			if (false == cb_Mnemonic) {
 				return false;
 			}
@@ -324,9 +349,9 @@ namespace Elastos {
 			}
 #endif
 			CMBlock cb_phrase0 = Utils::convertToMemBlock<unsigned char>(phrase);
-			_encryptedMnemonic = Utils::encrypt(cb_phrase0, payPassword);
+			_localStore.SetEncryptedMnemonic(Utils::encrypt(cb_phrase0, payPassword));
 			CMBlock PhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
-			_encryptedPhrasePass = Utils::encrypt(PhrasePass, payPassword);
+			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(PhrasePass, payPassword));
 
 			//init master public key and private key
 			CMemBlock<char> cb_phrase;
@@ -338,7 +363,7 @@ namespace Elastos {
 			cb_tmp.SetMemFixed((const uint8_t *) (void *) prikey, prikey.GetSize());
 			CMBlock privKey = Key::getAuthPrivKeyForAPI(cb_tmp);
 
-			_encryptedKey = Utils::encrypt(privKey, payPassword);
+			_localStore.SetEncryptedKey(Utils::encrypt(privKey, payPassword));
 			initPublicKey(payPassword);
 
 			_initialized = true;
@@ -346,7 +371,7 @@ namespace Elastos {
 		}
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
-			CMBlock keyData = Utils::decrypt(_encryptedKey, payPassword);
+			CMBlock keyData = Utils::decrypt(_localStore.GetEncrpytedKey(), payPassword);
 			ParamChecker::checkDataNotEmpty(keyData);
 
 			Key key;
@@ -368,7 +393,7 @@ namespace Elastos {
 			BRKeyPubKey(key.getRaw(), pubKey, len);
 			CMBlock data;
 			data.SetMemFixed(pubKey, len);
-			_publicKey = Key::encodeHex(data);
+			_publicKey = Utils::encodeHex(data);
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
@@ -415,16 +440,17 @@ namespace Elastos {
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
-			CMBlock entropyData = Utils::decrypt(_encryptedMnemonic, payPassword);
+			CMBlock entropyData = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
 			ParamChecker::checkDataNotEmpty(entropyData, false);
 
 			CMemBlock<char> mnemonic(entropyData.GetSize() + 1);
 			mnemonic.Zero();
 			memcpy(mnemonic, entropyData, entropyData.GetSize());
 
-			std::string phrasePassword = _encryptedPhrasePass.GetSize() == 0
+			std::string phrasePassword = _localStore.GetEncrptedPhrasePassword().GetSize() == 0
 										 ? ""
-										 : Utils::convertToString(Utils::decrypt(_encryptedPhrasePass, payPassword));
+										 : Utils::convertToString(
+							Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), payPassword));
 
 			std::string prikey_base58 = Wallet_Tool::getDeriveKey_base58(mnemonic, phrasePassword);
 			CMemBlock<uint8_t> prikey = BTCBase58::DecodeBase58(prikey_base58);
@@ -455,7 +481,8 @@ namespace Elastos {
 			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, mnemonicPath));
 		}
 
-		std::string MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword) {
+		std::string
+		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword) {
 			if (!Initialized())
 				throw std::logic_error("Current master wallet is not initialized.");
 

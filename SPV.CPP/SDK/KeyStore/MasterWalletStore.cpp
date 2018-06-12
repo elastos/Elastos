@@ -6,6 +6,7 @@
 
 #include "MasterWalletStore.h"
 #include "ParamChecker.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -35,36 +36,44 @@ namespace Elastos {
 			j >> o;
 		}
 
-		const std::string &MasterWalletStore::GetEncrpytedKey() const {
+		const CMBlock &MasterWalletStore::GetEncrpytedKey() const {
 			return _encryptedKey;
 		}
 
-		void MasterWalletStore::SetEncryptedKey(const std::string &data) {
+		void MasterWalletStore::SetEncryptedKey(const CMBlock &data) {
 			_encryptedKey = data;
 		}
 
-		const std::string &MasterWalletStore::GetEncryptedMnemonic() const {
+		const CMBlock &MasterWalletStore::GetEncryptedMnemonic() const {
 			return _encryptedMnemonic;
 		}
 
-		void MasterWalletStore::SetEncryptedMnemonic(const std::string &data) {
+		void MasterWalletStore::SetEncryptedMnemonic(const CMBlock &data) {
 			_encryptedMnemonic = data;
 		}
 
-		const std::string& MasterWalletStore::GetEncrptedPhrasePassword() const {
+		const CMBlock &MasterWalletStore::GetEncrptedPhrasePassword() const {
 			return _encryptedPhrasePass;
 		}
 
-		void MasterWalletStore::SetEncryptedPhrasePassword(const std::string &data) {
+		void MasterWalletStore::SetEncryptedPhrasePassword(const CMBlock &data) {
 			_encryptedPhrasePass = data;
 		}
 
-		const std::vector<CoinInfo> & MasterWalletStore::GetSubWalletInfoList() const {
+		const std::vector<CoinInfo> &MasterWalletStore::GetSubWalletInfoList() const {
 			return _subWalletsInfoList;
 		}
 
 		void MasterWalletStore::SetSubWalletInfoList(const std::vector<CoinInfo> &infoList) {
 			_subWalletsInfoList = infoList;
+		}
+
+		const IdAgentInfo &MasterWalletStore::GetIdAgentInfo() const {
+			return _idAgentInfo;
+		}
+
+		void MasterWalletStore::SetIdAgentInfo(const IdAgentInfo &info) {
+			_idAgentInfo = info;
 		}
 
 		nlohmann::json &operator<<(nlohmann::json &j, const MasterWalletStore &p) {
@@ -80,26 +89,38 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const MasterWalletStore &p) {
-			j["Key"] = p.GetEncrpytedKey();
-			j["Mmemonic"] = p.GetEncryptedMnemonic();
-			j["PhrasePasword"] = p.GetEncrptedPhrasePassword();
+			j["Key"] = Utils::encodeHex(p.GetEncrpytedKey());
+			j["Mmemonic"] = Utils::encodeHex(p.GetEncryptedMnemonic());
+			j["PhrasePasword"] = Utils::encodeHex(p.GetEncrptedPhrasePassword());
+			j["Language"] = p.GetLanguage();
+			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
-			for(size_t i =0; i < p.GetSubWalletInfoList().size(); i++) {
+			for (size_t i = 0; i < p.GetSubWalletInfoList().size(); i++) {
 				subWallets.push_back(p.GetSubWalletInfoList()[i]);
 			}
 			j["SubWallets"] = subWallets;
 		}
 
 		void from_json(const nlohmann::json &j, MasterWalletStore &p) {
-			p.SetEncryptedKey(j["Key"].get<std::string>());
-			p.SetEncryptedMnemonic(j["Mmemonic"].get<std::string>());
-			p.SetEncryptedPhrasePassword(j["PhrasePasword"].get<std::string>());
+			p.SetEncryptedKey(Utils::decodeHex(j["Key"].get<std::string>()));
+			p.SetEncryptedMnemonic(Utils::decodeHex(j["Mmemonic"].get<std::string>()));
+			p.SetEncryptedPhrasePassword(Utils::decodeHex(j["PhrasePasword"].get<std::string>()));
+			p.SetLanguage(j["Language"].get<std::string>());
+			p.SetIdAgentInfo(j["IdAgent"]);
 
 			std::vector<CoinInfo> coinInfoList;
 			std::vector<nlohmann::json> subWallets = j["SubWallets"];
-			for(size_t i =0; i < subWallets.size(); i++) {
+			for (size_t i = 0; i < subWallets.size(); i++) {
 				coinInfoList.push_back(subWallets[i]);
 			}
+		}
+
+		const std::string &MasterWalletStore::GetLanguage() const {
+			return _language;
+		}
+
+		void MasterWalletStore::SetLanguage(const std::string &language) {
+			_language = language;
 		}
 
 	}

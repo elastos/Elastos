@@ -75,10 +75,6 @@ namespace Elastos {
 
 			static bool isValidBitcoinBIP38Key(const std::string &key);
 
-			static std::string encodeHex(const CMBlock &in);
-
-			static CMBlock decodeHex(const std::string &s);
-
 			static UInt256 encodeSHA256(const std::string &message);
 
 			static void

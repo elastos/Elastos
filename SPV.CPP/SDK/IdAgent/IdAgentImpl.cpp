@@ -9,8 +9,36 @@
 #include "MasterWallet.h"
 #include "Wrapper/Address.h"
 
+using namespace nlohmann;
+
 namespace Elastos {
 	namespace SDK {
+
+		json &operator<<(json &j, const IdAgentInfo &p) {
+			to_json(j, p);
+
+			return j;
+		}
+
+		const json &operator>>(const json &j, IdAgentInfo &p) {
+			from_json(j, p);
+
+			return j;
+		}
+
+		void to_json(json &j, const IdAgentInfo &p) {
+			for(IdAgentInfo::IdMap::const_iterator it = p.Ids.cbegin(); it != p.Ids.cend(); ++it) {
+				std::vector<uint32_t> values = {it->second.Purpose, it->second.Index};
+				j[it->first] = values;
+			}
+		}
+
+		void from_json(const json &j, IdAgentInfo &p) {
+			p.Ids.clear();
+			for (json::const_iterator it = j.cbegin(); it != j.cend(); ++it) {
+				p.Ids[it.key()] = IdPath(it.value().at(0), it.value().at(1));
+			}
+		}
 
 		IdAgentImpl::IdAgentImpl(MasterWallet *parentWallet) :
 				_parentWallet(parentWallet) {
@@ -42,7 +70,7 @@ namespace Elastos {
 			Key wrappedKey(privkey);
 			std::string id = wrappedKey.keyToAddress(ELA_IDCHAIN);
 
-			_idMap[id] = path;
+			_info.Ids[id] = path;
 			return id;
 		}
 
@@ -66,17 +94,17 @@ namespace Elastos {
 
 		std::vector<std::string> IdAgentImpl::GetAllIds() const {
 			std::vector<std::string> result;
-			std::for_each(_idMap.begin(), _idMap.end(), [&result](const IdMap::value_type &item) {
+			std::for_each(_info.Ids.begin(), _info.Ids.end(), [&result](const IdAgentInfo::IdMap::value_type &item) {
 				result.push_back(item.first);
 			});
 			return result;
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			if(_idMap.find(id) != _idMap.end()) {
+			if(_info.Ids.find(id) != _info.Ids.end()) {
 				throw std::logic_error("Unknown id.");
 			}
-			IdPath path = _idMap[id];
+			IdPath path = _info.Ids[id];
 
 			UInt512 seed = _parentWallet->deriveSeed(password);
 			BRKey *privkey = new BRKey;
@@ -86,7 +114,7 @@ namespace Elastos {
 		}
 
 		bool IdAgentImpl::findIdByPath(const IdPath &path, std::string &id) {
-			for (IdMap::iterator it = _idMap.begin(); it != _idMap.end(); it++) {
+			for (IdAgentInfo::IdMap::iterator it = _info.Ids.begin(); it != _info.Ids.end(); it++) {
 				if(it->second == path) {
 					id = it->first;
 					return true;
@@ -99,5 +127,6 @@ namespace Elastos {
 			KeyPtr key = generateKey(id, password);
 			return key->keyToRedeemScript(ELA_IDCHAIN);
 		}
+
 	}
 }

@@ -31,25 +31,25 @@ namespace Elastos {
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
-									 const boost::filesystem::path &peerConfigPath, uint32_t earliestPeerTime,
+									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
 									 bool singleAddress, int forkId, const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_masterPubKey(masterPubKey),
 				_forkId(forkId),
-				_peerConfigPath(peerConfigPath) {
+				_peerConfig(peerConfig) {
 			init(_masterPubKey, chainParams, earliestPeerTime, singleAddress);
 		}
 
 		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
-									 const boost::filesystem::path &peerConfigPath, uint32_t earliestPeerTime,
+									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
 									 int forkId, const std::vector<std::string> &initialAddresses,
 									 const Elastos::SDK::ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_masterPubKey(nullptr),
 				_forkId(forkId),
-				_peerConfigPath(peerConfigPath) {
+				_peerConfig(peerConfig) {
 			init(chainParams, earliestPeerTime, initialAddresses);
 		}
 
@@ -293,7 +293,7 @@ namespace Elastos {
 			if (!peers.empty())
 				return peers;
 
-			return PeerConfigReader().readPeersFromFile(_peerConfigPath);
+			return PeerConfigReader().readPeersFromJson(_peerConfig);
 		}
 
 		int WalletManager::getForkId() const {

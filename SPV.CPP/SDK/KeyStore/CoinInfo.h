@@ -51,6 +51,14 @@ namespace Elastos {
 
 			void setWalletType(SubWalletType type);
 
+			const std::string &getEncryptedKey() const;
+
+			void setEncryptedKey(const std::string &key);
+
+			const std::string &getChainCode() const;
+
+			void setChainCode(const std::string &code);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -66,6 +74,8 @@ namespace Elastos {
 			bool _singleAddress;
 			uint64_t _feePerKb;
 			SubWalletType _walletType;
+			std::string _encryptedKey;
+			std::string _chainCode;
 		};
 
 	}

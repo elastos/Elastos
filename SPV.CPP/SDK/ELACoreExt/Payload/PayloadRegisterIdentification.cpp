@@ -123,8 +123,8 @@ namespace Elastos {
 			j["Id"] = _id;
 			j["Path"] = _path;
 			j["DataHash"] = Utils::UInt256ToString(_dataHash);
-			j["Proof"] = Utils::convertToString(_proof);
-			j["Sign"] = Utils::convertToString(_sign);
+			j["Proof"] = Utils::encodeHex(_proof);
+			j["Sign"] = Utils::encodeHex(_sign);
 			return j;
 		}
 
@@ -132,8 +132,8 @@ namespace Elastos {
 			_id = j["Id"].get<std::string>();
 			_path = j["Path"].get<std::string>();
 			_dataHash = Utils::UInt256FromString(j["DataHash"].get<std::string>());
-			_proof = Utils::convertToMemBlock<uint8_t>(j["Proof"].get<std::string>());
-			_sign = Utils::convertToMemBlock<uint8_t>(j["Sign"].get<std::string>());
+			_proof = Utils::decodeHex(j["Proof"].get<std::string>());
+			_sign = Utils::decodeHex(j["Sign"].get<std::string>());
 		}
 	}
 }

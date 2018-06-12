@@ -224,15 +224,30 @@ namespace Elastos {
 
 		UInt168 Utils::codeToProgramHash(const CMBlock &redeemScript) {
 			UInt160 hash = UINT160_ZERO;
-			size_t  len = redeemScript.GetSize();
+			size_t len = redeemScript.GetSize();
 			BRHash160(&hash, redeemScript, len);
 			int signType = redeemScript[len - 1];
 			uint32_t addressType = Utils::getAddressTypeBySignType(signType);
 
 			UInt168 uInt168 = UINT168_ZERO;
-			memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8));
+			memcpy(&uInt168.u8[1], &hash.u8[0], sizeof(hash.u8));
 			uInt168.u8[0] = addressType;
 			return uInt168;
+		}
+
+		std::string Utils::encodeHex(const CMBlock &in) {
+			return encodeHexCreate(nullptr, in, in.GetSize());
+		}
+
+		CMBlock Utils::decodeHex(const std::string &s) {
+			size_t dataLen = 0;
+			char *str = const_cast<char *>(s.c_str());
+			uint8_t *data = decodeHexCreate(&dataLen, str, strlen(str));
+
+			CMBlock ret;
+			ret.SetMem(data, dataLen);
+
+			return ret;
 		}
 	}
 }

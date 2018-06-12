@@ -175,19 +175,6 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(res == true);
 	}
 
-	SECTION("Key encodeHex and decodeHex test") {
-		uint8_t bytes1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		CMBlock data;
-		data.SetMemFixed(bytes1, sizeof(bytes1) - 1);
-
-		std::string str = Key::encodeHex(data);
-		REQUIRE(str == "000102030405060708090a0b0c0d0e0f");
-
-		CMBlock decodeByte = Key::decodeHex(str);
-		int res = memcmp(bytes1, decodeByte, decodeByte.GetSize());
-		REQUIRE(res == 0);
-	}
-
 	SECTION("keyToAddress test") {
 		Key key;
 		UInt128 entropy = Utils::generateRandomSeed();

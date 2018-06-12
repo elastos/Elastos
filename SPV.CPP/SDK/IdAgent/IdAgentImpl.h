@@ -10,11 +10,23 @@
 
 #include "IdPath.h"
 #include "Wrapper/Key.h"
+#include "KeyStore/Mstream.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		class MasterWallet;
+
+		struct IdAgentInfo {
+			typedef std::map<std::string, IdPath> IdMap;
+
+			IdMap Ids;
+
+			JSON_SM_LS(IdAgentInfo);
+			JSON_SM_RS(IdAgentInfo);
+			TO_JSON(IdAgentInfo);
+			FROM_JSON(IdAgentInfo);
+		};
 
 		class IdAgentImpl {
 		public:
@@ -44,9 +56,8 @@ namespace Elastos {
 			bool findIdByPath(const IdPath &path, std::string &id);
 
 		private:
-			typedef std::map<std::string, IdPath> IdMap;
-			IdMap _idMap;
 
+			IdAgentInfo _info;
 			MasterWallet *_parentWallet;
 		};
 

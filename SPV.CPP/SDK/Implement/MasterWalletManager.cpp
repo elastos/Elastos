@@ -3,11 +3,17 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/function.hpp>
+#include <boost/filesystem.hpp>
 
 #include "MasterWalletManager.h"
 #include "Log.h"
 #include "MasterWallet.h"
 #include "ParamChecker.h"
+#include "Enviroment.h"
+
+using namespace boost::filesystem;
+
+#define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 
 namespace Elastos {
 	namespace SDK {
@@ -29,12 +35,19 @@ namespace Elastos {
 			}
 		};
 
-		MasterWalletManager::MasterWalletManager() noexcept {
+		MasterWalletManager::MasterWalletManager() {
+			initMasterWallets();
+		}
+
+		MasterWalletManager::~MasterWalletManager() {
 
 		}
 
-		MasterWalletManager::~MasterWalletManager() noexcept {
-
+		void MasterWalletManager::SaveConfigs() {
+			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(), [](const MasterWalletMap::value_type &item){
+				MasterWallet *masterWallet = static_cast<MasterWallet *>(item.second);
+				masterWallet->Save();
+			});
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(const std::string &masterWalletId,
@@ -143,6 +156,34 @@ namespace Elastos {
 				throw std::logic_error("Password is wrong.");
 			}
 			return mnemonic;
+		}
+
+		void MasterWalletManager::initMasterWallets() {
+			path rootPath = Enviroment::GetRootPath();
+
+			directory_iterator it{rootPath};
+			while (it != directory_iterator{}) {
+
+				path temp = *it;
+				if (!exists(temp) || !is_directory(temp)) {
+					++it;
+					continue;
+				}
+
+				std::string masterWalletId = temp.filename().string();
+				temp /= MASTER_WALLET_STORE_FILE;
+				MasterWallet *masterWallet = new MasterWallet(temp);
+				_masterWalletMap[masterWalletId] = masterWallet;
+				++it;
+			}
+		}
+
+		void MasterWalletManager::storeMasterWallets() {
+			path rootPath = Enviroment::GetRootPath();
+
+			for(MasterWalletMap::iterator it = _masterWalletMap.begin(); it != _masterWalletMap.end(); ++it){
+
+			}
 		}
 	}
 }
