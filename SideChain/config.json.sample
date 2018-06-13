@@ -22,6 +22,8 @@
     "OauthServerUrl": "",
     "NodePort": 20338,
     "PrintLevel": 0,
+    "MaxLogsSize": 5000,
+    "MaxPerLogSize": 20,
     "IsTLS": false,
     "CertPath": "./sample-cert.pem",
     "KeyPath": "./sample-cert-key.pem",
