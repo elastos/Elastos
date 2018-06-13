@@ -76,10 +76,16 @@ typedef struct BRWalletStruct {
     size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal);
 	size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount);
 	void (*setApplyFreeTx)(void *info, void *tx);
+	void (*WalletUpdateBalance)(BRWallet *wallet);
+	int (*WalletContainsTx)(BRWallet *wallet, const BRTransaction *tx);
+	void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx);
+	BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
+	uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet);
+	uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx);
     pthread_mutex_t lock;
 } BRWallet;
 
-inline uint64_t _txFee(uint64_t feePerKb, size_t size);
+uint64_t _txFee(uint64_t feePerKb, size_t size);
 
 inline size_t _txChainIndex(const BRTransaction *tx, const BRAddress *addrChain);
 
@@ -87,7 +93,7 @@ inline int _BRWalletTxIsAscending(BRWallet *wallet, BRTransaction *tx1, BRTransa
 
 inline int _BRWalletTxCompare(BRWallet *wallet, BRTransaction *tx1, BRTransaction *tx2);
 
-inline void _BRWalletInsertTx(BRWallet *wallet, BRTransaction *tx);
+void _BRWalletInsertTx(BRWallet *wallet, BRTransaction *tx);
 
 int _BRWalletContainsTx(BRWallet *wallet, const BRTransaction *tx);
 
@@ -97,7 +103,13 @@ void _BRWalletUpdateBalance(BRWallet *wallet);
 BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
                       size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal),
 					  size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount),
-					  void (*setApplyFreeTx)(void *info, void *tx));
+					  void (*setApplyFreeTx)(void *info, void *tx),
+					  void (*WalletUpdateBalance)(BRWallet *wallet),
+					  int (*WalletContainsTx)(BRWallet *wallet, const BRTransaction *tx),
+					  void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
+					  BRTransaction *(*BRWalletCreateTxForOutputs)(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount),
+					  uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
+					  uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx));
 
 // not thread-safe, set callbacks once after BRWalletNew(), before calling other BRWallet functions
 // info is a void pointer that will be passed along with each callback call

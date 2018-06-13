@@ -5,7 +5,7 @@
 #include "BRTransaction.h"
 
 #include "PeerConfigReader.h"
-#include "ELACoreExt/ELABRTxOutput.h"
+#include "ELACoreExt/ELATxOutput.h"
 #include "WalletManager.h"
 #include "Utils.h"
 #include "Log.h"
@@ -106,8 +106,8 @@ namespace Elastos {
 			ByteStream byteStream;
 			tx->Serialize(byteStream);
 			uint8_t *buff = byteStream.getBuf();
-			CMBlock datas(byteStream.position());
-			memcpy(datas, buff, byteStream.position());
+			CMBlock datas(byteStream.length());
+			memcpy(datas, buff, byteStream.length());
 			delete[] buff;
 
 			TransactionEntity txEntity(datas, tx->getBlockHeight(),
@@ -173,12 +173,12 @@ namespace Elastos {
 				_databaseManager.deleteAllBlocks(ISO);
 			}
 
+			ByteStream ostream;
 			for (size_t i = 0; i < blocks.size(); ++i) {
-				if (blocks[i]->getHeight() == 0) {
+				if (blocks[i]->getHeight() == 0)
 					continue;
-				}
 
-				ByteStream ostream;
+				ostream.setPosition(0);
 				blocks[i]->Serialize(ostream);
 				CMBlock bytes(ostream.length());
 				blockEntity.blockBytes.Resize(ostream.length());
@@ -273,10 +273,10 @@ namespace Elastos {
 			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.getAllMerkleBlocks(ISO);
 
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
-				MerkleBlock *block = new MerkleBlock;
-				ByteStream stream;
-				stream.putBytes(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize());
+				MerkleBlock *block = new MerkleBlock();
 				block->setHeight(blocksEntity[i].blockHeight);
+				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
+				stream.setPosition(0);
 				block->Deserialize(stream);
 				blocks.push_back(MerkleBlockPtr(block));
 			}

@@ -24,8 +24,8 @@ namespace Elastos {
 
 		}
 
-		void PayloadTransferAsset::Deserialize(ByteStream &istream) {
-
+		bool PayloadTransferAsset::Deserialize(ByteStream &istream) {
+			return true;
 		}
 
 		nlohmann::json PayloadTransferAsset::toJson() {

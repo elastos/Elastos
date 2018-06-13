@@ -37,7 +37,7 @@ namespace Elastos {
 			}
 		}
 
-		void PayloadIssueToken::Deserialize(ByteStream &istream) {
+		bool PayloadIssueToken::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
 			if (0 < len) {
 				uint8_t *buff = new uint8_t[len];
@@ -47,6 +47,8 @@ namespace Elastos {
 					memcpy(_merkeProof, buff, len);
 				}
 			}
+
+			return true;
 		}
 
 		nlohmann::json PayloadIssueToken::toJson() {

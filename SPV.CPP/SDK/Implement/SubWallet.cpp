@@ -4,7 +4,7 @@
 
 #include <boost/scoped_ptr.hpp>
 #include <algorithm>
-#include <SDK/ELACoreExt/ELABRTxOutput.h>
+#include <SDK/ELACoreExt/ELATxOutput.h>
 #include <Core/BRTransaction.h>
 
 #include "BRTransaction.h"
@@ -161,7 +161,7 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
-				TransactionPtr transactionPtr(new Transaction(transactions[i]));
+				TransactionPtr transactionPtr(new Transaction((ELATransaction *)transactions[i]));
 				jsonList[i] = transactionPtr->toJson();
 			}
 			nlohmann::json j;
@@ -182,11 +182,11 @@ namespace Elastos {
 			}
 			if (!ptr) return nullptr;
 
-			ptr->setTransactionType(Transaction::TransferAsset);
+			ptr->setTransactionType(ELATransaction::TransferAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELABRTxOutput *) output->getRaw())->assetId = param->getAssetId();
+							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
 						  });
 
 			return ptr;
@@ -367,7 +367,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::completeTransaction(const TransactionPtr &transaction) {
-			if (transaction->getInputs().size() <= 0) {
+			if (transaction->getRaw()->inCount <= 0) {
 				completedTransactionInputs(transaction);
 			}
 
@@ -438,32 +438,27 @@ namespace Elastos {
 		void SubWallet::completedTransactionInputs(const TransactionPtr &transaction) {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			BRUTXO *o = nullptr;
-			ELABRTransaction *tx = nullptr;
+			ELATransaction *tx = nullptr;
 			for (size_t i = 0; i < array_count(wallet->utxos); i++) {
 				o = &wallet->utxos[i];
-				tx = (ELABRTransaction *) BRSetGet(wallet->allTx, o);
-				if (!tx || o->n >= tx->raw.outCount) continue;
+				tx = (ELATransaction *)BRSetGet(wallet->allTx, o);
+				if (! tx || o->n >= tx->raw.outCount) continue;
 
-				CMBlock script(tx->outputs[o->n].raw.scriptLen);
-				memcpy(script, tx->outputs[o->n].raw.script, tx->outputs[o->n].raw.scriptLen);
-
-				TransactionInput input(tx->raw.txHash, o->n, tx->outputs[o->n].raw.amount, script, CMBlock(),
-									   TXIN_SEQUENCE);
-				transaction->addInput(input);
+				CMBlock script = tx->outputs[o->n]->getScript();
+				transaction->addInput(tx->raw.txHash, o->n, tx->outputs[o->n]->getAmount(), script, CMBlock(), TXIN_SEQUENCE);
 			}
 		}
 
 		void SubWallet::completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount) {
-			BRTxOutput *o = new BRTxOutput();
-			memset(o, 0, sizeof(BRTxOutput));
+			ELATxOutput *o = new ELATxOutput();
 			uint64_t maxAmount = _walletManager->getWallet()->getMaxOutputAmount();
-			o->amount = (amount < maxAmount) ? amount : maxAmount;
+			o->raw.amount = (amount < maxAmount) ? amount : maxAmount;
 			std::string addr = _walletManager->getWallet()->getReceiveAddress();
-			memcpy(o->address, addr.data(), addr.size());
+			memcpy(o->raw.address, addr.data(), addr.size());
 
-			BRTxOutputSetAddress(o, addr.c_str());
+			BRTxOutputSetAddress((BRTxOutput *)o, addr.c_str());
 
-			TransactionOutput output(o);
+			TransactionOutput *output = new TransactionOutput(o);
 			transaction->addOutput(output);
 		}
 

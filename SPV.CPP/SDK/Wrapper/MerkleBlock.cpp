@@ -152,7 +152,7 @@ namespace Elastos {
 			}
 
 			ostream.putVarUint(_merkleBlock->raw.flagsLen);
-			for (uint32_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+			for (uint32_t i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
 				ostream.put(_merkleBlock->raw.flags[i]);
 			}
 		}
@@ -187,7 +187,7 @@ namespace Elastos {
 			ostream.putBytes(heightData, 32 / 8);
 		}
 
-		void MerkleBlock::Deserialize(ByteStream &istream) {
+		bool MerkleBlock::Deserialize(ByteStream &istream) {
 			uint8_t versionData[32 / 8];
 			istream.getBytes(versionData, 32 / 8);
 			_merkleBlock->raw.version = UInt32GetLE(versionData);
@@ -241,6 +241,8 @@ namespace Elastos {
 			for (uint32_t i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
 				_merkleBlock->raw.flags[i] = istream.get();
 			}
+
+			return true;
 		}
 
 		const AuxPow &MerkleBlock::getAuxPow() const {

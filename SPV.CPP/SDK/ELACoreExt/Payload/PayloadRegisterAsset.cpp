@@ -76,7 +76,7 @@ namespace Elastos {
 			ostream.putBytes(controllerData, sizeof(controllerData));
 		}
 
-		void PayloadRegisterAsset::Deserialize(ByteStream &istream) {
+		bool PayloadRegisterAsset::Deserialize(ByteStream &istream) {
 			_asset.Deserialize(istream);
 
 			uint8_t amountData[64 / 8];

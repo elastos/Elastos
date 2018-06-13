@@ -4,9 +4,9 @@
 
 #include <boost/scoped_ptr.hpp>
 
-#include "ELACoreExt/ELABRTxOutput.h"
+#include "ELACoreExt/ELATxOutput.h"
 #include "ELACoreExt/Payload/PayloadRegisterIdentification.h"
-#include "ELACoreExt/ELABRTransaction.h"
+#include "ELACoreExt/ELATransaction.h"
 
 #include "Utils.h"
 #include "IdChainSubWallet.h"
@@ -45,11 +45,11 @@ namespace Elastos {
 			newProgram->fromJson(programJson);
 			transaction->addProgram(newProgram);
 
-			TransactionOutput transactionOutput;
-			transactionOutput.setAddress(payloadIdChain->getId());
-			transactionOutput.setAmount(0);
-			transactionOutput.setAssetId(txParam->getAssetId());
-			transactionOutput.setProgramHash(Utils::UInt168FromString(payloadIdChain->getId()));
+			TransactionOutput *transactionOutput = new TransactionOutput();
+			transactionOutput->setAddress(payloadIdChain->getId());
+			transactionOutput->setAmount(0);
+			transactionOutput->setAssetId(txParam->getAssetId());
+			transactionOutput->setProgramHash(Utils::UInt168FromString(payloadIdChain->getId()));
 			transaction->addOutput(transactionOutput);
 
 			return sendTransactionInternal(transaction, payPassword);
@@ -71,12 +71,12 @@ namespace Elastos {
 			}
 
 			if (!ptr) return nullptr;
-			ptr->setTransactionType(Transaction::RegisterIdentification);
+			ptr->setTransactionType(ELATransaction::RegisterIdentification);
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELABRTxOutput *) output->getRaw())->assetId = param->getAssetId();
+							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
 						  });
 
 			return ptr;
@@ -89,7 +89,7 @@ namespace Elastos {
 
 		bool IdChainSubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
 
-			if (transaction->getTransactionType() != Transaction::RegisterIdentification) {
+			if (transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
 				return false;
 			}
 
@@ -123,7 +123,7 @@ namespace Elastos {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [transaction](ISubWalletCallback *callback) {
 
-							  if (transaction->getTransactionType() != Transaction::RegisterIdentification)
+							  if (transaction->getTransactionType() != ELATransaction::RegisterIdentification)
 								  return;
 
 							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
@@ -142,7 +142,7 @@ namespace Elastos {
 							  TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 									  Utils::UInt256FromString(hash));
 							  if (transaction == nullptr ||
-								  transaction->getTransactionType() != Transaction::RegisterIdentification)
+								  transaction->getTransactionType() != ELATransaction::RegisterIdentification)
 								  return;
 
 							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
@@ -158,7 +158,7 @@ namespace Elastos {
 							  TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 									  Utils::UInt256FromString(hash));
 							  if (transaction == nullptr ||
-								  transaction->getTransactionType() != Transaction::RegisterIdentification)
+								  transaction->getTransactionType() != ELATransaction::RegisterIdentification)
 								  return;
 
 							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(

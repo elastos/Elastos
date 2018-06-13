@@ -63,7 +63,7 @@ namespace Elastos {
 			ostream.putBytes((uint8_t *) _sideChainTransactionHash.c_str(), len);
 		}
 
-		void PayloadWithDrawAsset::Deserialize(ByteStream &istream) {
+		bool PayloadWithDrawAsset::Deserialize(ByteStream &istream) {
 			//blockHeight = istream.getVarUint();
 			uint8_t heightData[32 / 8];
 			istream.getBytes(heightData, (uint64_t)sizeof(heightData));
@@ -82,14 +82,16 @@ namespace Elastos {
 
 			len = istream.getVarUint();
 			if (0 < len) {
-                char *utfBuffer = new char[len + 1];
-                if (utfBuffer) {
-                    istream.getBytes((uint8_t *) utfBuffer, len);
-                    utfBuffer[len] = '\0';
-                    _sideChainTransactionHash = utfBuffer;
-                    delete[] utfBuffer;
-                }
-            }
+				char *utfBuffer = new char[len + 1];
+				if (utfBuffer) {
+					istream.getBytes((uint8_t *) utfBuffer, len);
+					utfBuffer[len] = '\0';
+					_sideChainTransactionHash = utfBuffer;
+					delete[] utfBuffer;
+				}
+			}
+
+			return true;
 		}
 
 		nlohmann::json PayloadWithDrawAsset::toJson() {

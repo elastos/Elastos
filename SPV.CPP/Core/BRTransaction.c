@@ -327,7 +327,6 @@ BRTransaction *BRTransactionNew(void)
     BRTransaction *tx = calloc(1, sizeof(*tx));
 
     assert(tx != NULL);
-	memset(tx, 0, sizeof(*tx));
     tx->version = TX_VERSION;
     array_new(tx->inputs, 1);
     array_new(tx->outputs, 2);

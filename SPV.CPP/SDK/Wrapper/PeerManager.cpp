@@ -10,7 +10,7 @@
 #include "Message/PeerMessageManager.h"
 #include "Log.h"
 #include "BRArray.h"
-#include "ELABRTransaction.h"
+#include "ELATransaction.h"
 #include "ELAMerkleBlock.h"
 
 namespace Elastos {
@@ -230,10 +230,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &transaction) {
-			BRTransaction *raw = transaction->convertToRaw();
-			BRPeerManagerPublishTx(_manager, raw, &_listener, txPublished);
-			// Should not free raw here
-//			ELABRTransactionFree((ELABRTransaction *)raw);
+			BRPeerManagerPublishTx(_manager, transaction->getRaw(), &_listener, txPublished);
 		}
 
 		uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {

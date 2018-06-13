@@ -89,7 +89,7 @@ namespace Elastos {
 			ostream.putBytes((uint8_t *)_sign, _sign.GetSize());
 		}
 
-		void PayloadRegisterIdentification::Deserialize(ByteStream &istream) {
+		bool PayloadRegisterIdentification::Deserialize(ByteStream &istream) {
 			uint64_t idLen = istream.getVarUint();
 			assert(idLen > 0);
 			char *idData = new char[idLen];

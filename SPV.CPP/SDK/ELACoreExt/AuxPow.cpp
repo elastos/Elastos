@@ -4,6 +4,7 @@
 
 #include <BRTransaction.h>
 #include <stdlib.h>
+#include <Core/BRTransaction.h>
 
 #include "BRMerkleBlock.h"
 #include "BRAddress.h"
@@ -12,26 +13,6 @@
 
 namespace Elastos {
 	namespace SDK {
-
-		uint64_t ReadVarInt(ByteStream &istream, uint8_t h) {
-			if (h < 0xFD) {
-				return (uint64_t) h;
-			} else if (h == 0xfd) {
-				uint8_t txInCountData[16 / 8];
-				istream.getBytes(txInCountData, 16 / 8);
-				return (uint64_t) UInt16GetLE(txInCountData);
-			} else if (h == 0xfe) {
-				uint8_t txInCountData[32 / 8];
-				istream.getBytes(txInCountData, 32 / 8);
-				return (uint64_t) UInt32GetLE(txInCountData);
-			} else if (h == 0xff) {
-				uint8_t txInCountData[64 / 8];
-				istream.getBytes(txInCountData, 64 / 8);
-				return (uint64_t) UInt64GetLE(txInCountData);
-			}
-
-			return 0;
-		}
 
 		AuxPow::AuxPow() {
 			_btcTransaction = BRTransactionNew();
@@ -80,7 +61,7 @@ namespace Elastos {
 			serializeBtcBlockHeader(ostream);
 		}
 
-		void AuxPow::Deserialize(ByteStream &istream) {
+		bool AuxPow::Deserialize(ByteStream &istream) {
 			deserializeBtcTransaction(istream);
 
 			uint8_t parentHashData[256 / 8];
@@ -91,9 +72,7 @@ namespace Elastos {
 			istream.getBytes(auxMerkleIndexData, 32 / 8);
 			_auxMerkleIndex = UInt32GetLE(auxMerkleIndexData);
 
-			uint8_t auxMerkleBranchCountHead;
-			istream.getBytes(&auxMerkleBranchCountHead, 8 / 8);
-			uint64_t auxMerkleBranchCount = ReadVarInt(istream, auxMerkleBranchCountHead);
+			uint64_t auxMerkleBranchCount = istream.getVarUint();
 
 			_auxMerkleBranch.resize(auxMerkleBranchCount);
 			uint8_t auxMerkleBranchData[256 / 8];
@@ -115,6 +94,8 @@ namespace Elastos {
 			}
 
 			deserializeBtcBlockHeader(istream);
+
+			return true;
 		}
 
 		void AuxPow::serializeBtcTransaction(ByteStream &ostream) const {
@@ -166,10 +147,7 @@ namespace Elastos {
 			UInt32SetLE(indexData, input.index);
 			ostream.putBytes(indexData, 32 / 8);
 
-			uint8_t signatureScriptLengthData[64 / 8];
-			UInt64SetLE(signatureScriptLengthData, uint64_t(input.sigLen));
-			ostream.putBytes(indexData, 64 / 8);
-
+			ostream.putVarUint(input.sigLen);
 			ostream.putBytes(input.signature, input.sigLen);
 
 			uint8_t sequenceData[32 / 8];
@@ -186,9 +164,7 @@ namespace Elastos {
 			istream.getBytes(indexData, 32 / 8);
 			input.index = UInt32GetLE(indexData);
 
-			uint8_t signatureScriptLengthDataHead;
-			istream.getBytes(&signatureScriptLengthDataHead, 8 / 8);
-			input.sigLen = (size_t) ReadVarInt(istream, signatureScriptLengthDataHead);
+			input.sigLen = (size_t) istream.getVarUint();
 
 			if (input.sigLen != 0) {
 				uint8_t signature[input.sigLen];

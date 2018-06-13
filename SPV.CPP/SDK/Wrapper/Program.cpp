@@ -15,6 +15,13 @@ namespace Elastos {
 
 		}
 
+		Program::Program(const Program &program) {
+			ByteStream stream;
+			program.Serialize(stream);
+			stream.setPosition(0);
+			this->Deserialize(stream);
+		}
+
 		Program::Program(const CMBlock &code, const CMBlock &parameter) :
 				_parameter(parameter),
 				_code(code) {
@@ -60,12 +67,14 @@ namespace Elastos {
 			ostream.putBytes(_code, _code.GetSize());
 		}
 
-		void Program::Deserialize(ByteStream &istream) {
+		bool Program::Deserialize(ByteStream &istream) {
 			_parameter.Resize(istream.getVarUint());
 			istream.getBytes(_parameter, _parameter.GetSize());
 
 			_code.Resize(istream.getVarUint());
 			istream.getBytes(_code, _code.GetSize());
+
+			return true;
 		}
 
 		nlohmann::json Program::toJson() {

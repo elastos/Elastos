@@ -64,7 +64,6 @@ extern "C" {
     assert(_array_cap >= 0);\
     (array) = (typeof(array))((size_t *)calloc(1, _array_cap*sizeof(*(array)) + sizeof(size_t)*2) + 2);\
     assert((array) != NULL);\
-	memset(array, 0, _array_cap*sizeof(*(array)));\
     array_capacity(array) = _array_cap;\
     array_count(array) = 0;\
 } while (0)

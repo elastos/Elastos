@@ -7,19 +7,18 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "ELABRTransaction.h"
-
-#include "../ELACoreExt/Payload/IPayload.h"
 #include "Wrapper.h"
 #include "CMemBlock.h"
 #include "SharedWrapperList.h"
-#include "TransactionInput.h"
 #include "TransactionOutput.h"
 #include "Key.h"
 #include "WrapperList.h"
-#include "ELAMessageSerializable.h"
-#include "../ELACoreExt/Attribute.h"
 #include "Program.h"
+#include "ELATransaction.h"
+#include "ELAMessageSerializable.h"
+#include "ELACoreExt/Attribute.h"
+#include "ELACoreExt/Payload/IPayload.h"
+#include "ELACoreExt/ELATransaction.h"
 
 
 namespace Elastos {
@@ -28,24 +27,13 @@ namespace Elastos {
 		class Transaction :
 				public Wrapper<BRTransaction>,
 				public ELAMessageSerializable {
-		public:
-			enum Type {
-				CoinBase                = 0x00,
-				RegisterAsset           = 0x01,
-				TransferAsset           = 0x02,
-				Record                  = 0x03,
-				Deploy                  = 0x04,
-				SideMining              = 0x05,
-				IssueToken              = 0x06,
-				WithdrawAsset           = 0x07,
-				TransferCrossChainAsset = 0x08,
-				RegisterIdentification	= 0x09,
-			};
 
 		public:
 			Transaction();
 
-			Transaction(BRTransaction *transaction);
+			Transaction(const ELATransaction *transaction);
+
+			Transaction(const ELATransaction &tx);
 
 			Transaction(const CMBlock &buffer);
 
@@ -59,9 +47,7 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual void Deserialize(ByteStream &istream);
-
-			BRTransaction *convertToRaw() const;
+			virtual bool Deserialize(ByteStream &istream);
 
 			bool isRegistered() const;
 
@@ -73,17 +59,15 @@ namespace Elastos {
 
 			uint32_t getVersion() const;
 
-			const SharedWrapperList<TransactionInput, BRTxInput *> &getInputs() const;
-
 			std::vector<std::string> getInputAddresses();
 
 			const SharedWrapperList<TransactionOutput, BRTxOutput *> &getOutputs() const;
 
 			std::vector<std::string> getOutputAddresses();
 
-			void setTransactionType(Transaction::Type type);
+			void setTransactionType(ELATransaction::Type type);
 
-			Transaction::Type getTransactionType() const;
+			ELATransaction::Type getTransactionType() const;
 
 			/**
 			 * The transaction's lockTime
@@ -110,9 +94,12 @@ namespace Elastos {
 
 			void setTimestamp(uint32_t timestamp);
 
-			void addInput(const TransactionInput &input);
+			void addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
+							 const CMBlock script, const CMBlock signature, uint32_t sequence);
 
-			void addOutput(const TransactionOutput &output);
+			void addOutput(TransactionOutput *output);
+
+			void shuffleOutputs();
 
 			/**
 			 * The the transactions' size in bytes if signed, or the estimated size assuming
@@ -163,18 +150,12 @@ namespace Elastos {
 
 			void addProgram(const ProgramPtr &program);
 
-			const std::vector<AttributePtr> getAttributes() const;
+			const std::vector<AttributePtr> &getAttributes() const;
 
-			const std::vector<ProgramPtr> getPrograms() const;
+			const std::vector<ProgramPtr> &getPrograms() const;
 
 		private:
-			void convertFrom(const BRTransaction *raw);
-
-			void transactionInputCopy(BRTxInput *target, const BRTxInput *source) const;
-
-			void transactionOutputCopy (ELABRTxOutput *target, const ELABRTxOutput *source) const;
-
-			void setPayloadByTransactionType();
+			PayloadPtr newPayload(ELATransaction::Type type);
 
 			void serializeUnsigned(ByteStream &ostream) const;
 
@@ -186,15 +167,7 @@ namespace Elastos {
 
 		private:
 			bool _isRegistered;
-
-			BRTransaction *_transaction;
-			Type _type;
-			uint8_t _payloadVersion;
-			PayloadPtr _payload;
-			std::vector<AttributePtr> _attributes;
-			std::vector<ProgramPtr> _programs;
-			mutable SharedWrapperList<TransactionInput, BRTxInput *> _inputs;
-			mutable SharedWrapperList<TransactionOutput, BRTxOutput *> _outputs;
+			ELATransaction *_transaction;
 		};
 
 		typedef boost::shared_ptr<Transaction> TransactionPtr;

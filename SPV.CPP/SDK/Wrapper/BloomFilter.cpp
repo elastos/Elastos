@@ -53,7 +53,7 @@ namespace Elastos {
 		}
 
 		//todo add max size check of BLOOM_MAX_FILTER_LENGTH
-		void BloomFilter::Deserialize(ByteStream &istream) {
+		bool BloomFilter::Deserialize(ByteStream &istream) {
 			uint8_t lengthData[64 / 8];
 			istream.getBytes(lengthData, 64 / 8);
 			_bloomFilter->length = UInt64GetLE(lengthData);
@@ -68,6 +68,8 @@ namespace Elastos {
 			uint8_t tweakData[32 / 8];
 			istream.getBytes(tweakData, 32 / 8);
 			_bloomFilter->tweak = UInt32GetLE(tweakData);
+
+			return true;
 		}
 
 		nlohmann::json BloomFilter::toJson() {

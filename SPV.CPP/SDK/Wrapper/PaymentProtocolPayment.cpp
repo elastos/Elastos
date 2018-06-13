@@ -40,7 +40,7 @@ namespace Elastos {
 
 			SharedWrapperList<Transaction, BRTransaction *> results;
 			for (int index = 0; index < transactionCount; index++) {
-				results.push_back(TransactionPtr(new Transaction(_protocolPayment->transactions[index])));
+				results.push_back(TransactionPtr(new Transaction((ELATransaction*)_protocolPayment->transactions[index])));
 			}
 
 			return results;

@@ -10,7 +10,7 @@
 #include "Transaction.h"
 #include "Log.h"
 #include "Utils.h"
-#include "ELABRTransaction.h"
+#include "ELATransaction.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -25,27 +25,27 @@ namespace Elastos {
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
-			Transaction wrappedTx;
-			wrappedTx.Deserialize(stream);
+			Transaction tx;
 
-			BRTransaction *tx = wrappedTx.convertToRaw();
 			UInt256 txHash;
 			int r = 1;
 
-			if (!tx) {
+			if (!tx.Deserialize(stream)) {
 				Log::getLogger()->warn("malformed tx message with length: {}", msgLen);
 				r = 0;
 			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
 				Log::warn("got tx message before loading filter");
-				BRTransactionFree(tx);
+//				BRTransactionFree(tx);
 				r = 0;
 			} else {
-				txHash = wrappedTx.getHash();
+				txHash = tx.getHash();
 				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
-					ctx->relayedTx(ctx->info, tx);
-				} else BRTransactionFree(tx);
+					ctx->relayedTx(ctx->info, tx.getRaw());
+//				} else {
+//					BRTransactionFree(tx.getRaw());
+				}
 
 				if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock
 					for (size_t i = array_count(ctx->currentBlockTxHashes); i > 0; i--) {
@@ -68,8 +68,8 @@ namespace Elastos {
 
 		void TransactionMessage::Send(BRPeer *peer, void *serializable) {
 
-			ELABRTransaction *tx = (ELABRTransaction *)serializable;
-			Transaction transaction((BRTransaction *)ELABRTransactioCopy(tx));
+			ELATransaction *tx = (ELATransaction *)serializable;
+			Transaction transaction(tx);
 			ByteStream stream;
 			transaction.Serialize(stream);
 			BRPeerSendMessage(peer, stream.getBuf(), stream.length(), MSG_TX);

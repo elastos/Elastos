@@ -4,10 +4,11 @@
 #include <BRPeer.h>
 #include <Common/Log.h>
 #include <BRTransaction.h>
+#include <Core/BRTransaction.h>
 
 #include "TestWalletManager.h"
 #include "Utils.h"
-#include "ELACoreExt/ELABRTxOutput.h"
+#include "ELACoreExt/ELATxOutput.h"
 #include "ELACoreExt/Payload/Asset.h"
 
 #include "Key.h"
@@ -50,49 +51,52 @@ SharedWrapperList<Peer, BRPeer*> TestWalletManager::loadPeers() {
 void TestWalletManager::testSendTransaction() {
 
 	Transaction elaCoin;
-	elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+	elaCoin.setTransactionType(ELATransaction::Type::RegisterAsset);
 
 	Transaction transaction;
-	TransactionInput input;
-	input.setAddress("EWEfdKMyjPkAkHtvxiDvsRPssQi2Ymeupr");
-	BRTxInput *brTxInput = input.getRaw();
+	BRTxInput input;
+
+//	input.setAddress("EWEfdKMyjPkAkHtvxiDvsRPssQi2Ymeupr");
+	BRTxInputSetAddress(&input, "EWEfdKMyjPkAkHtvxiDvsRPssQi2Ymeupr");
 	UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-	brTxInput->txHash = hash;
-	brTxInput->amount = 400000000;
-	brTxInput->index = 567;
-	brTxInput->sequence = 98888;
+	input.txHash = hash;
+	input.amount = 400000000;
+	input.index = 567;
+	input.sequence = 98888;
 
 
-	BRAddressFromScriptPubKey((char *)input.getAddress().c_str(), input.getAddress().size(), brTxInput->script,
-	                          brTxInput->scriptLen);
-	transaction.addInput(input);
+	CMBlock script(input.scriptLen);
+	memcpy(script, input.script, input.scriptLen);
+//	BRAddressFromScriptPubKey((char *)input.getAddress().c_str(), input.getAddress().size(), brTxInput->script,
+//	                          brTxInput->scriptLen);
+	transaction.addInput(hash, 567, 400000000, script, CMBlock(), input.sequence);
 
-	TransactionOutput transactionOutput1;
-	transactionOutput1.setAddress("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP");
-	transactionOutput1.setAmount(100000000);
+	TransactionOutput *transactionOutput1 = new TransactionOutput();
+	transactionOutput1->setAddress("ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP");
+	transactionOutput1->setAmount(100000000);
 	hash = elaCoin.getHash();
-	transactionOutput1.setAssetId(hash);
-	transactionOutput1.setOutputLock(1);
-	transactionOutput1.setProgramHash(Utils::UInt168FromString("215505da55ee9de910658619b4d5e4e6c59acaeb00"));
+	transactionOutput1->setAssetId(hash);
+	transactionOutput1->setOutputLock(1);
+	transactionOutput1->setProgramHash(Utils::UInt168FromString("215505da55ee9de910658619b4d5e4e6c59acaeb00"));
 
-	TransactionOutput transactionOutput2;
-	transactionOutput2.setAddress("EQuTwZ7sQzXyoteFxuwyqhVHqBsh4kFVhV");
-	transactionOutput2.setAmount(150598174);
+	TransactionOutput *transactionOutput2 = new TransactionOutput();
+	transactionOutput2->setAddress("EQuTwZ7sQzXyoteFxuwyqhVHqBsh4kFVhV");
+	transactionOutput2->setAmount(150598174);
 	hash = elaCoin.getHash();
-	transactionOutput2.setAssetId(hash);
-	transactionOutput2.setOutputLock(2);
-	transactionOutput2.setProgramHash(Utils::UInt168FromString("2119acda6f6e57aceb7572260ff1e9e6fc50b99733"));
+	transactionOutput2->setAssetId(hash);
+	transactionOutput2->setOutputLock(2);
+	transactionOutput2->setProgramHash(Utils::UInt168FromString("2119acda6f6e57aceb7572260ff1e9e6fc50b99733"));
 
 	transaction.addOutput(transactionOutput1);
 	transaction.addOutput(transactionOutput2);
-	transaction.setTransactionType(Transaction::Type::TransferAsset);
+	transaction.setTransactionType(ELATransaction::Type::TransferAsset);
 
 //	ByteStream byteStream;
 //	transaction.Serialize(byteStream);
 //	byteStream.setPosition(0);
 //	TransactionPtr ptr(new Transaction());
 //	ptr->Deserialize(byteStream);
-	hash = signAndPublishTransaction(TransactionPtr(new Transaction(transaction.convertToRaw())));
+	hash = signAndPublishTransaction(TransactionPtr(new Transaction((ELATransaction *)transaction.getRaw())));
 
 	Log::getLogger()->info("signAndPublishTransaction hash:{}", Utils::UInt256ToString(hash));
 
@@ -100,7 +104,7 @@ void TestWalletManager::testSendTransaction() {
 
 void TestWalletManager::testCreateTransaction() {
 	Transaction elaCoin;
-	elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+	elaCoin.setTransactionType(ELATransaction::Type::RegisterAsset);
 
 	UInt256 hash = elaCoin.getHash();
 
@@ -121,12 +125,12 @@ TransactionPtr TestWalletManager::createTransaction(const TxParam &param) {
 												   param.getToAddress().c_str());
 	if (!tmp) return nullptr;
 
-	TransactionPtr ptr(new Transaction(tmp));
-	ptr->setTransactionType(Transaction::TransferAsset);
+	TransactionPtr ptr(new Transaction((ELATransaction*)tmp));
+	ptr->setTransactionType(ELATransaction::Type::TransferAsset);
 	SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 	std::for_each(outList.begin(), outList.end(),
 				  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-					  ((ELABRTxOutput *) output->getRaw())->assetId = param.getAssetId();
+					  ((ELATxOutput *) output->getRaw())->assetId = param.getAssetId();
 				  });
 
 	return ptr;

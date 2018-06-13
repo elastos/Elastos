@@ -88,7 +88,7 @@ namespace Elastos {
 			}
 		}
 
-		void PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream) {
+		bool PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream) {
 			_crossChainAddress.clear();
 			_outputIndex.clear();
 			_crossChainAmount.clear();
@@ -112,6 +112,8 @@ namespace Elastos {
 				_crossChainAmount.push_back(amount);
 
 			}
+
+			return true;
 		}
 
 		nlohmann::json PayloadTransferCrossChainAsset::toJson() {

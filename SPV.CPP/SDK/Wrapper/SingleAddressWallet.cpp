@@ -69,7 +69,7 @@ namespace Elastos {
 												 const MasterPubKeyPtr &masterPubKey,
 												 const boost::shared_ptr<Wallet::Listener> &listener) {
 
-			_wallet = createSingleWallet(getRawTransactions(transactions).data(),
+			_wallet = createSingleWallet(transactions.getRawPointerArray().data(),
 										 transactions.size(), *masterPubKey->getRaw());
 
 			assert(listener != nullptr);

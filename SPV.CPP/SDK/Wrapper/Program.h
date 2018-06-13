@@ -18,6 +18,8 @@ namespace Elastos {
 		public:
 			Program();
 
+			Program(const Program &program);
+
 			Program(const CMBlock &code, const CMBlock &parameter);
 
 			~Program();
@@ -34,7 +36,7 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual void Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream);
 
 			virtual nlohmann::json toJson();
 

@@ -12,6 +12,13 @@ namespace Elastos {
 			_usage(Nonce) {
 		}
 
+		Attribute::Attribute(const Attribute &attr) {
+			ByteStream stream;
+			attr.Serialize(stream);
+			stream.setPosition(0);
+			this->Deserialize(stream);
+		}
+
 		Attribute::Attribute(Attribute::Usage usage, const CMBlock &data) :
 			_usage(usage),
 			_data(data) {
@@ -36,12 +43,14 @@ namespace Elastos {
 			ostream.putBytes(_data, _data.GetSize());
 		}
 
-		void Attribute::Deserialize(ByteStream &istream) {
+		bool Attribute::Deserialize(ByteStream &istream) {
 			_usage = (Usage)istream.get();
 
 			uint64_t len = istream.getVarUint();
 			_data.Resize(len);
 			istream.getBytes(_data, len);
+
+			return true;
 		}
 
 		nlohmann::json Attribute::toJson() {

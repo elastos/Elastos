@@ -52,7 +52,7 @@ namespace Elastos {
 			ostream.putBytes(genesisData, sizeof(_sideGenesisHash));
 		}
 
-		void PayloadSideMining::Deserialize(ByteStream &istream) {
+		bool PayloadSideMining::Deserialize(ByteStream &istream) {
 			uint8_t blockData[sizeof(_sideBlockHash)];
 			istream.getBytes(blockData, sizeof(blockData));
 			UInt256Get(&_sideBlockHash, blockData);
@@ -60,6 +60,8 @@ namespace Elastos {
 			uint8_t genesisData[sizeof(_sideGenesisHash)];
 			istream.getBytes(genesisData, sizeof(_sideGenesisHash));
 			UInt256Get(&_sideGenesisHash, genesisData);
+
+			return true;
 		}
 
 		nlohmann::json PayloadSideMining::toJson() {

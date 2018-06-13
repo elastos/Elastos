@@ -8,7 +8,7 @@
 #include <string>
 #include <BRWallet.h>
 #include <boost/weak_ptr.hpp>
-#include <SDK/ELACoreExt/ELABRTransaction.h>
+#include <SDK/ELACoreExt/ELATransaction.h>
 
 #include "BRInt.h"
 
@@ -115,7 +115,7 @@ namespace Elastos {
 			 * @param outputs the outputs to include
 			 * @return a consistently constructed transaction (input selected, fees handled, etc)
 			 */
-			TransactionPtr createTransactionForOutputs(const WrapperList<TransactionOutput, BRTxOutput> &outputs);
+			TransactionPtr createTransactionForOutputs(const SharedWrapperList<TransactionOutput, BRTxOutput *> &outputs);
 
 			/**
 			 * Sign `transaction` for the provided `forkId` (BTC or BCH) using `phrase`.  The `phrase` must
@@ -222,13 +222,23 @@ namespace Elastos {
 		protected:
 			Wallet();
 
-			std::vector<BRTransaction *>
-			getRawTransactions(const SharedWrapperList<Transaction, BRTransaction *> &transactions);
+			TransactionPtr createTxForOutputs(const std::string &fromAddress, uint64_t fee,
+											  SharedWrapperList<TransactionOutput, BRTxOutput *> &output);
 
-			BRTransaction *
-			createBRTransaction(const char* fromAddress, uint64_t fee, const BRTxOutput outputs[], size_t outCount);
 
 			bool walletSignTransaction(const TransactionPtr &transaction, int forkId, const void *seed, size_t seedLen);
+
+			static uint64_t WalletMaxOutputAmount(BRWallet *wallet);
+
+			static uint64_t WalletFeeForTx(BRWallet *wallet, const BRTransaction *tx);
+
+			static void WalletUpdateBalance(BRWallet *wallet);
+
+			static BRTransaction *WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
+
+			static int WalletContainsTx(BRWallet *wallet, const BRTransaction *tx);
+
+			static void WalletAddUsedAddrs(BRWallet *wallet, const BRTransaction *tx);
 
 			static void setApplyFreeTx(void *info, void *tx);
 

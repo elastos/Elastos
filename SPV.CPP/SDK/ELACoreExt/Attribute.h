@@ -27,6 +27,8 @@ namespace Elastos {
 		public:
 			Attribute();
 
+			Attribute(const Attribute &attr);
+
 			Attribute(Usage usage, const CMBlock &data);
 
 			~Attribute();
@@ -34,7 +36,7 @@ namespace Elastos {
 			bool isValid();
 
 			virtual void Serialize(ByteStream &ostream) const;
-			virtual void Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream);
 
 			virtual nlohmann::json toJson();
 

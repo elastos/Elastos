@@ -59,6 +59,8 @@ namespace Elastos {
 
 			static void encodeHex(char *target, size_t targetLen, const uint8_t *source, size_t sourceLen);
 
+			static std::string encodeHex(const uint8_t *hex, size_t hexLen);
+
 			static size_t encodeHexLength(size_t byteArrayLen);
 
 			static std::string encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen);

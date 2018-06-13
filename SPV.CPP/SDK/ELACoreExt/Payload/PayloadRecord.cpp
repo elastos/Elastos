@@ -62,7 +62,7 @@ namespace Elastos {
 			}
 		}
 
-		void PayloadRecord::Deserialize(ByteStream &istream) {
+		bool PayloadRecord::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
 			if (0 < len) {
 				char *utfBuffer = new char[len + 1];
@@ -84,6 +84,8 @@ namespace Elastos {
 					delete[] buff;
 				}
 			}
+
+			return true;
 		}
 
 		nlohmann::json PayloadRecord::toJson() {

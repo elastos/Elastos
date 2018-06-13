@@ -9,7 +9,7 @@
 #include "MainchainSubWallet.h"
 #include "KeyStore/CoinInfo.h"
 #include "Payload/PayloadTransferCrossChainAsset.h"
-#include "ELACoreExt/ELABRTxOutput.h"
+#include "ELACoreExt/ELATxOutput.h"
 #include "Utils.h"
 #include "ParamChecker.h"
 
@@ -78,11 +78,11 @@ namespace Elastos {
 
 			if (!ptr) return nullptr;
 
-			ptr->setTransactionType(Transaction::TransferCrossChainAsset);
+			ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELABRTxOutput *) output->getRaw())->assetId = param->getAssetId();
+							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
 						  });
 
 			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
@@ -96,7 +96,7 @@ namespace Elastos {
 
 		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
 			//todo different verify from base class
-			if (transaction->getTransactionType() != Transaction::TransferCrossChainAsset) {
+			if (transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset) {
 				throw std::logic_error("MainchainSubWallet transaction type error");
 			}
 

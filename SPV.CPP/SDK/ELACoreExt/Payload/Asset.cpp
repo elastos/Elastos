@@ -78,7 +78,7 @@ namespace Elastos {
 			ostream.put((uint8_t)_assetRecordType);
 		}
 
-		void Asset::Deserialize(ByteStream &istream) {
+		bool Asset::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
 			char *utfBuffer = new char[len + 1];
 			istream.getBytes((uint8_t *) utfBuffer, len);
@@ -97,6 +97,8 @@ namespace Elastos {
 			_assetType = AssetType(istream.get());
 
 			_assetRecordType = AssetRecordType(istream.get());
+
+			return true;
 		}
 
 		nlohmann::json Asset::toJson() {

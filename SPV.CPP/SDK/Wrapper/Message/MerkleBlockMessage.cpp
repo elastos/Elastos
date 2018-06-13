@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRMerkleBlock.h>
+#include <Core/BRMerkleBlock.h>
 
 #include "BRPeerManager.h"
 #include "BRPeerMessages.h"
@@ -32,7 +33,7 @@ namespace Elastos {
 			int r = 1;
 
 			if (!wrappedBlock.isValid((uint32_t) time(nullptr))) {
-				Log::getLogger()->warn("invalid merkleblock: {}",
+				Log::getLogger()->error("invalid merkleblock: {}",
 									   Utils::UInt256ToString(block->blockHash));
 				ELAMerkleBlockFree(elablock);
 				block = nullptr;
@@ -43,7 +44,6 @@ namespace Elastos {
 				block = nullptr;
 				r = 0;
 			} else {
-//				size_t count = wrappedBlock.getTransactionCount();
 				size_t count = BRMerkleBlockTxHashes(block, NULL, 0);
 				UInt256 _hashes[(sizeof(UInt256) * count <= 0x1000) ? count : 0],
 						*hashes = (sizeof(UInt256) * count <= 0x1000) ? _hashes : (UInt256 *) malloc(
@@ -56,9 +56,6 @@ namespace Elastos {
 				}
 
 				if (hashes != _hashes) free(hashes);
-
-				//should not directly send get data here
-				//ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, hashes, count, nullptr, 0);
 			}
 
 			if (block) {

@@ -15,6 +15,7 @@
 #include "Base64.h"
 #include "BRAddress.h"
 #include "Transaction.h"
+#include "Log.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -31,6 +32,11 @@ namespace Elastos {
 
 		UInt256 Utils::UInt256FromString(const std::string &s) {
 			UInt256 result = {0};
+
+			if (s.length() / 2 != sizeof(UInt256)) {
+				Log::getLogger()->error("UInt256 convert from string=\"{}\" error", s);
+				return result;
+			}
 
 			for (int i = 0; i < sizeof(result.u8); ++i) {
 				result.u8[i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
@@ -52,6 +58,11 @@ namespace Elastos {
 		UInt168 Utils::UInt168FromString(const std::string &str) {
 			UInt168 result = {0};
 
+			if (str.length() / 2 != sizeof(UInt168)) {
+				Log::getLogger()->error("UInt168 convert from string=\"{}\" error", str);
+				return result;
+			}
+
 			for (int i = 0; i < sizeof(result.u8); ++i) {
 				result.u8[i] = (_hexu((str)[2 * i]) << 4) | _hexu((str)[2 * i + 1]);
 			}
@@ -72,6 +83,11 @@ namespace Elastos {
 		UInt128 Utils::UInt128FromString(const std::string &str) {
 			UInt128 result = {0};
 
+			if (str.length() / 2 != sizeof(UInt128)) {
+				Log::getLogger()->error("UInt128 From String error: str=\"{}\" ", str);
+				return result;
+			}
+
 			for (int i = 0; i < sizeof(result.u8); ++i) {
 				result.u8[i] = (_hexu((str)[2 * i]) << 4) | _hexu((str)[2 * i + 1]);
 			}
@@ -80,8 +96,10 @@ namespace Elastos {
 		}
 
 		void Utils::decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen) {
-			assert (0 == sourceLen % 2);
-			assert (2 * targetLen == sourceLen);
+			if (2 * targetLen < sourceLen || 0 != sourceLen % 2) {
+				Log::getLogger()->error("decodeHex error: targetLen={}, sourceLen={}", targetLen, sourceLen);
+				return;
+			}
 
 			for (int i = 0; i < targetLen; i++) {
 				target[i] = (uint8_t) ((_hexu(source[2 * i]) << 4) | _hexu(source[(2 * i) + 1]));
@@ -109,6 +127,18 @@ namespace Elastos {
 				target[2 * i + 1] = (uint8_t) _hexc (source[i]);
 			}
 			target[2 * sourceLen] = '\0';
+		}
+
+		std::string Utils::encodeHex(const uint8_t *hex, size_t hexLen) {
+			if (hexLen == 0) {
+				return std::string();
+			}
+
+			char buf[hexLen * 2 + 1];
+			encodeHex(buf, hexLen * 2 + 1, hex, hexLen);
+			std::string str(buf);
+
+			return str;
 		}
 
 		size_t Utils::encodeHexLength(size_t byteArrayLen) {

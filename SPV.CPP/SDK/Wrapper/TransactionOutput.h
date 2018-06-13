@@ -8,7 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "BRTransaction.h"
-
+#include "SDK/ELACoreExt/ELATxOutput.h"
 #include "Wrapper.h"
 #include "CMemBlock.h"
 #include "ELAMessageSerializable.h"
@@ -24,9 +24,13 @@ namespace Elastos {
 
 			TransactionOutput();
 
-			TransactionOutput(BRTxOutput *output);
+			explicit TransactionOutput(ELATxOutput *output);
+
+			TransactionOutput(const TransactionOutput &output);
 
 			TransactionOutput(uint64_t amount, const CMBlock &script);
+
+			~TransactionOutput();
 
 			virtual std::string toString() const;
 
@@ -34,9 +38,7 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual void Deserialize(ByteStream &istream);
-
-			BRTxOutput *convertToRaw() const;
+			virtual bool Deserialize(ByteStream &istream);
 
 			std::string getAddress() const;
 
@@ -65,13 +67,7 @@ namespace Elastos {
 			virtual void fromJson(nlohmann::json jsonData);
 
 		private:
-			void convertFrom(const BRTxOutput *raw);
-
-		private:
-			boost::shared_ptr<BRTxOutput> _output;
-			UInt256 _assetId;
-			uint32_t _outputLock;
-			UInt168 _programHash;
+			ELATxOutput *_output;
 		};
 
 		typedef boost::shared_ptr<TransactionOutput> TransactionOutputPtr;

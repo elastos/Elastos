@@ -6,6 +6,8 @@
 
 #include <cstring>
 #include <BRTransaction.h>
+#include <SDK/Common/Log.h>
+#include <Core/BRTransaction.h>
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
@@ -17,9 +19,8 @@
 #include "Payload/PayloadTransferCrossChainAsset.h"
 #include "Payload/PayloadTransferAsset.h"
 #include "Payload/PayloadRegisterIdentification.h"
-#include "ELABRTransaction.h"
 #include "BRCrypto.h"
-#include "ELABRTxOutput.h"
+#include "ELATxOutput.h"
 #include "Utils.h"
 #include "BRAddress.h"
 
@@ -27,44 +28,44 @@ namespace Elastos {
 	namespace SDK {
 
 		Transaction::Transaction() :
-				_isRegistered(false),
-				_payload(nullptr) {
-
-			_transaction = (BRTransaction *) ELABRTransactionNew();
-			convertFrom(_transaction);
+			_isRegistered(false) {
+			_transaction = ELATransactionNew();
 		}
 
-		Transaction::Transaction(BRTransaction *transaction) :
-				_transaction(transaction),
-				_isRegistered(false),
-				_payload(nullptr) {
-			convertFrom(transaction);
+		Transaction::Transaction(const ELATransaction *tx) :
+				_isRegistered(false) {
+			_transaction = ELATransactioCopy(tx);
+		}
+
+		Transaction::Transaction(const ELATransaction &tx) :
+				_isRegistered(false) {
+			_transaction = ELATransactioCopy(&tx);
+
 		}
 
 		Transaction::Transaction(const CMBlock &buffer) :
-				_isRegistered(false),
-				_payload(nullptr) {
-			_transaction = BRTransactionParse(buffer, buffer.GetSize());
-			assert (nullptr != _transaction);
-			convertFrom(_transaction);
+				_isRegistered(false) {
+			_transaction = ELATransactionNew();
+
+			ByteStream stream(buffer, buffer.GetSize(), false);
+			this->Deserialize(stream);
 		}
 
 		Transaction::Transaction(const CMBlock &buffer, uint32_t blockHeight, uint32_t timeStamp) :
-				_isRegistered(false),
-				_payload(nullptr) {
+				_isRegistered(false) {
 
-			_transaction = BRTransactionParse(buffer, buffer.GetSize());
-			assert (nullptr != _transaction);
-			setPayloadByTransactionType();
-			convertFrom(_transaction);
+			_transaction = ELATransactionNew();
 
-			_transaction->blockHeight = blockHeight;
-			_transaction->timestamp = timeStamp;
+			ByteStream stream(buffer, buffer.GetSize(), false);
+			this->Deserialize(stream);
+
+			_transaction->raw.blockHeight = blockHeight;
+			_transaction->raw.timestamp = timeStamp;
 		}
 
 		Transaction::~Transaction() {
 			if (_transaction != nullptr)
-				ELABRTransactionFree((ELABRTransaction *) _transaction);
+				ELATransactionFree(_transaction);
 		}
 
 		std::string Transaction::toString() const {
@@ -73,7 +74,7 @@ namespace Elastos {
 		}
 
 		BRTransaction *Transaction::getRaw() const {
-			return _transaction;
+			return &_transaction->raw;
 		}
 
 		bool Transaction::isRegistered() const {
@@ -85,83 +86,50 @@ namespace Elastos {
 		}
 
 		void Transaction::resetHash() {
-			UInt256Set(&_transaction->txHash, UINT256_ZERO);
+			UInt256Set(&_transaction->raw.txHash, UINT256_ZERO);
 		}
 
 		UInt256 Transaction::getHash() const {
 			UInt256 zero = UINT256_ZERO;
-			if (UInt256Eq(&_transaction->txHash, &zero)) {
+			if (UInt256Eq(&_transaction->raw.txHash, &zero)) {
 				ByteStream ostream;
 				serializeUnsigned(ostream);
 				uint8_t *buff = ostream.getBuf();
 				UInt256 hash = UINT256_ZERO;
 				BRSHA256_2(&hash, buff, ostream.position());
-				UInt256Set(&_transaction->txHash, hash);
+				UInt256Set(&_transaction->raw.txHash, hash);
 				delete buff;
 			}
-			return _transaction->txHash;
+			return _transaction->raw.txHash;
 		}
 
 		uint32_t Transaction::getVersion() const {
-			return _transaction->version;
+			return _transaction->raw.version;
 		}
 
-		void Transaction::setTransactionType(Transaction::Type type) {
-			if (_type != type) {
-				_type = type;
-				setPayloadByTransactionType();
+		void Transaction::setTransactionType(ELATransaction::Type type) {
+			if (_transaction->type != type) {
+				_transaction->type = type;
+				_transaction->payload = newPayload(type);
 			}
 		}
 
-		Transaction::Type Transaction::getTransactionType() const {
-			return _type;
+		ELATransaction::Type Transaction::getTransactionType() const {
+			return _transaction->type;
 		}
 
-		void Transaction::setPayloadByTransactionType() {
+		PayloadPtr Transaction::newPayload(ELATransaction::Type type) {
 			//todo initializing payload other than just creating
-			if (_type == CoinBase) {
-				_payload = boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
-
-			} else if (_type == RegisterAsset) {
-				_payload = boost::shared_ptr<PayloadRegisterAsset>(new PayloadRegisterAsset());
-
-			} else if (_type == TransferAsset) {
-				_payload = boost::shared_ptr<PayloadTransferAsset>(new PayloadTransferAsset());
-
-			} else if (_type == Record) {
-				_payload = boost::shared_ptr<PayloadRecord>(new PayloadRecord());
-			} else if (_type == Deploy) {
-				//todo add deploy payload
-				//_payload = boost::shared_ptr<
-
-			} else if (_type == SideMining) {
-				_payload = boost::shared_ptr<PayloadSideMining>(new PayloadSideMining());
-
-			} else if (_type == IssueToken) {
-				_payload = boost::shared_ptr<PayloadIssueToken>(new PayloadIssueToken());
-
-			} else if (_type == WithdrawAsset) {
-				_payload = boost::shared_ptr<PayloadWithDrawAsset>(new PayloadWithDrawAsset());
-
-			} else if (_type == TransferCrossChainAsset) {
-				_payload = boost::shared_ptr<PayloadTransferCrossChainAsset>(new PayloadTransferCrossChainAsset());
-			} else if (_type == RegisterIdentification) {
-				_payload = boost::shared_ptr<PayloadRegisterIdentification>(new PayloadRegisterIdentification());
-			}
+			return ELAPayloadNew(type);
 		}
 
+#if 0
 		const SharedWrapperList<TransactionInput, BRTxInput *> &Transaction::getInputs() const {
-
-			if (_inputs.empty()) {
-				for (int i = 0; i < _transaction->inCount; i++) {
-					BRTxInput *input = new BRTxInput;
-					transactionInputCopy(input, &_transaction->inputs[i]);
-					TransactionInputPtr inputPtr = TransactionInputPtr(new TransactionInput(input));
-					_inputs.push_back(inputPtr);
-				}
+			SharedWrapperList<TransactionInput, BRTxInput *> inputs;
+			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
+				inputs.push_back(TransactionInputPtr(new TransactionInput(&_transaction->raw.inputs[i])));
 			}
-
-			return _inputs;
+			return inputs;
 		}
 
 		void Transaction::transactionInputCopy(BRTxInput *target, const BRTxInput *source) const {
@@ -176,7 +144,7 @@ namespace Elastos {
 			BRTxInputSetSignature(target, source->signature, source->sigLen);
 		}
 
-		void Transaction::transactionOutputCopy(ELABRTxOutput *target, const ELABRTxOutput *source) const {
+		void Transaction::transactionOutputCopy(ELATxOutput *target, const ELATxOutput *source) const {
 			assert (target != nullptr);
 			assert (source != nullptr);
 			*target = *source;
@@ -185,30 +153,19 @@ namespace Elastos {
 				BRTxOutputSetScript((BRTxOutput *)target, source->raw.script, source->raw.scriptLen);
 			}
 		}
+#endif
 
 		std::vector<std::string> Transaction::getInputAddresses() {
 
-			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
-			ssize_t len = inputs.size();
-			std::vector<std::string> addresses(len);
-			for (int i = 0; i < len; i++)
-				addresses[i] = inputs[i]->getAddress();
+			std::vector<std::string> addresses(_transaction->raw.inCount);
+			for (int i = 0; i < _transaction->raw.inCount; i++)
+				addresses[i] = _transaction->raw.inputs[i].address;
 
 			return addresses;
 		}
 
 		const SharedWrapperList<TransactionOutput, BRTxOutput *> &Transaction::getOutputs() const {
-
-			ELABRTransaction *elabrTransaction = (ELABRTransaction *) _transaction;
-			if (_outputs.empty()) {
-				for (int i = 0; i < _transaction->outCount; i++) {
-					ELABRTxOutput *output = new ELABRTxOutput;
-					transactionOutputCopy(output, &elabrTransaction->outputs[i]);
-					_outputs.push_back(TransactionOutputPtr(new TransactionOutput((BRTxOutput *) output)));
-				}
-			}
-
-			return _outputs;
+			return _transaction->outputs;
 		}
 
 		std::vector<std::string> Transaction::getOutputAddresses() {
@@ -224,98 +181,65 @@ namespace Elastos {
 
 		uint32_t Transaction::getLockTime() {
 
-			return _transaction->lockTime;
+			return _transaction->raw.lockTime;
 		}
 
 		void Transaction::setLockTime(uint32_t lockTime) {
 
-			_transaction->lockTime = lockTime;
+			_transaction->raw.lockTime = lockTime;
 		}
 
 		uint32_t Transaction::getBlockHeight() {
 
-			return _transaction->blockHeight;
+			return _transaction->raw.blockHeight;
 		}
 
 		uint32_t Transaction::getTimestamp() {
 
-			return _transaction->timestamp;
+			return _transaction->raw.timestamp;
 		}
 
 		void Transaction::setTimestamp(uint32_t timestamp) {
 
-			_transaction->timestamp = timestamp;
+			_transaction->raw.timestamp = timestamp;
 		}
 
-		void Transaction::addInput(const TransactionInput &input) {
-
-			BRTransactionAddInput(_transaction, input.getHash(), input.getIndex(), input.getAmount(),
-								  input.getScript(), input.getScript().GetSize(),
-								  input.getSignature(), input.getSignature().GetSize(),
-								  input.getSequence());
-
-			BRTxInput *brTxInput = new BRTxInput;
-			transactionInputCopy(brTxInput, &_transaction->inputs[_transaction->inCount - 1]);
-			TransactionInputPtr inputPtr = TransactionInputPtr(new TransactionInput(brTxInput));
-			_inputs.push_back(inputPtr);
+		void Transaction::addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
+								   const CMBlock script, const CMBlock signature, uint32_t sequence) {
+			BRTransactionAddInput(&_transaction->raw, hash, index, amount,
+								  script, script.GetSize(), signature, signature.GetSize(),
+								  sequence);
 
 			ProgramPtr programPtr(new Program());
-			if (input.getScript() && input.getScript().GetSize() > 0) {
-				CMBlock code(input.getScript().GetSize());
-				memcpy(code, input.getScript(), input.getScript().GetSize());
-				programPtr->setCode(code);
-			}
-
-			if (input.getSignature() && input.getSignature().GetSize() > 0) {
-				CMBlock parameter(input.getSignature().GetSize());
-				memcpy(parameter, input.getSignature(), input.getSignature().GetSize());
-				programPtr->setParameter(parameter);
-			}
+			programPtr->setCode(script);
+			programPtr->setParameter(signature);
 			addProgram(programPtr);
-
 		}
 
-		void Transaction::addOutput(const TransactionOutput &output) {
-			ELABRTransaction *elabrTransaction = (ELABRTransaction *) _transaction;
+		void Transaction::addOutput(TransactionOutput *output) {
+			_transaction->outputs.push_back(TransactionOutputPtr(output));
+		}
 
-			ELABRTransactionAddOutput(elabrTransaction, output.getAmount(), output.getScript(),
-			                          output.getScript().GetSize());
-
-			const UInt256 assetID = output.getAssetId();
-			elabrTransaction->outputAssetIDList.push_back(assetID);
-			elabrTransaction->outputLockList.push_back(output.getOutputLock());
-			const UInt168 programHash = output.getProgramHash();
-			elabrTransaction->outputProgramHashList.push_back(programHash);
-
-			ELABRTxOutput *brTxOutput = new ELABRTxOutput();
-			size_t index = _transaction->outCount - 1;
-			transactionOutputCopy(brTxOutput, &elabrTransaction->outputs[index]);
-
-			UInt256Set(&brTxOutput->assetId, assetID);
-			brTxOutput->outputLock = output.getOutputLock();
-			UInt168Set(&brTxOutput->programHash, programHash);
-
-			_outputs.push_back(TransactionOutputPtr(new TransactionOutput((BRTxOutput *) brTxOutput)));
-
+		// shuffles order of tx outputs
+		void Transaction::shuffleOutputs() {
+			ELATransactionShuffleOutputs(_transaction);
 		}
 
 		size_t Transaction::getSize() {
-
-			return ELABRTransactionSize((ELABRTransaction *)_transaction);
+			return ELATransactionSize(_transaction);
 		}
 
 		uint64_t Transaction::getStandardFee() {
-
-			return BRTransactionStandardFee(_transaction);
+			return BRTransactionStandardFee(&_transaction->raw);
 		}
 
 		bool Transaction::isSigned() {
-			size_t len = _programs.size();
+			size_t len = _transaction->programs.size();
 			if (len <= 0) {
 				return false;
 			}
 			for (size_t i = 0; i < len; ++i) {
-				if (!_programs[i]->isValid()) {
+				if (!_transaction->programs[i]->isValid()) {
 					return false;
 				}
 			}
@@ -343,18 +267,17 @@ namespace Elastos {
 			for (i = 0; i < keysCount; i++) {
 				if (! BRKeyAddress(&keys[i], addrs[i].s, sizeof(addrs[i]))) addrs[i] = BR_ADDRESS_NONE;
 			}
-			size_t size = _transaction->inCount;
-			for (i = 0; i < size; i++) {
-				BRTxInput *input = &_transaction->inputs[i];
-				if (i >= _programs.size())
-				{
-					CMBlock code(input->scriptLen);
-					memcpy(code, input->script, input->scriptLen);
+
+			for (i = 0; i < _transaction->raw.inCount; i++) {
+				BRTxInput *input = &_transaction->raw.inputs[i];
+				if (i >= _transaction->programs.size()) {
 					ProgramPtr programPtr(new Program());
-					programPtr->setCode(code);
-					_programs.push_back(programPtr);
+					CMBlock script(_transaction->raw.inCount);
+					memcpy(script, input->script, input->scriptLen);
+					programPtr->setCode(script);
+					_transaction->programs.push_back(programPtr);
 				}
-				ProgramPtr program = _programs[i];
+				ProgramPtr program = _transaction->programs[i];
 				if (! BRAddressFromScriptPubKey(address.s, sizeof(address), program->getCode(),
 				                                program->getCode().GetSize())) continue;
 				j = 0;
@@ -403,13 +326,12 @@ namespace Elastos {
 		}
 
 		bool Transaction::isStandard() {
-
-			return BRTransactionIsStandard(_transaction) != 0;
+			return BRTransactionIsStandard(&_transaction->raw) != 0;
 		}
 
 		UInt256 Transaction::getReverseHash() {
 
-			return UInt256Reverse(&_transaction->txHash);
+			return UInt256Reverse(&_transaction->raw.txHash);
 		}
 
 		uint64_t Transaction::getMinOutputAmount() {
@@ -418,47 +340,56 @@ namespace Elastos {
 		}
 
 		const PayloadPtr &Transaction::getPayload() const {
-			return _payload;
+			return _transaction->payload;
 		}
 
-		const std::vector<AttributePtr> Transaction::getAttributes() const {
-			return _attributes;
+		const std::vector<AttributePtr> &Transaction::getAttributes() const {
+			return _transaction->attributes;
 		}
 
 		void Transaction::addProgram(const ProgramPtr &program) {
-			_programs.push_back(program);
+			_transaction->programs.push_back(program);
 		}
 
-		const std::vector<ProgramPtr> Transaction::getPrograms() const {
-			return _programs;
+		const std::vector<ProgramPtr> &Transaction::getPrograms() const {
+			return _transaction->programs;
 		}
 
 		void Transaction::Serialize(ByteStream &ostream) const {
 			serializeUnsigned(ostream);
 
-			ostream.putVarUint(_programs.size());
-			for (size_t i = 0; i < _programs.size(); i++) {
-				_programs[i]->Serialize(ostream);
+			ostream.putVarUint(_transaction->programs.size());
+			for (size_t i = 0; i < _transaction->programs.size(); i++) {
+				_transaction->programs[i]->Serialize(ostream);
 			}
 		}
 
 		void Transaction::serializeUnsigned(ByteStream &ostream) const {
-			ostream.put((uint8_t) _type);
+			ostream.put((uint8_t) _transaction->type);
 
-			ostream.put(_payloadVersion);
+			ostream.put(_transaction->payloadVersion);
 
-			assert(_payload != nullptr);
-			_payload->Serialize(ostream);
+			assert(_transaction->payload != nullptr);
+			_transaction->payload->Serialize(ostream);
 
-			ostream.putVarUint(_attributes.size());
-			for (size_t i = 0; i < _attributes.size(); i++) {
-				_attributes[i]->Serialize(ostream);
+			ostream.putVarUint(_transaction->attributes.size());
+			for (size_t i = 0; i < _transaction->attributes.size(); i++) {
+				_transaction->attributes[i]->Serialize(ostream);
 			}
 
-			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
-			ostream.putVarUint(inputs.size());
-			for (size_t i = 0; i < inputs.size(); i++) {
-				inputs[i]->Serialize(ostream);
+			ostream.putVarUint(_transaction->raw.inCount);
+			for (size_t i = 0; i < _transaction->raw.inCount; i++) {
+				uint8_t transactionHashData[256 / 8];
+				UInt256Set(transactionHashData, _transaction->raw.inputs[i].txHash);
+				ostream.putBytes(transactionHashData, 256 / 8);
+
+				uint8_t indexData[16 / 8];
+				UInt16SetLE(indexData, uint16_t(_transaction->raw.inputs[i].index));
+				ostream.putBytes(indexData, 16 / 8);
+
+				uint8_t sequenceData[32 / 8];
+				UInt32SetLE(sequenceData, _transaction->raw.inputs[i].sequence);
+				ostream.putBytes(sequenceData, 32 / 8);
 			}
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
@@ -468,313 +399,203 @@ namespace Elastos {
 			}
 
 			uint8_t lockTimeData[32 / 8];
-			memset(lockTimeData, 0, sizeof(lockTimeData));
-			UInt32SetLE(lockTimeData, _transaction->lockTime);
+			UInt32SetLE(lockTimeData, _transaction->raw.lockTime);
 			ostream.putBytes(lockTimeData, sizeof(lockTimeData));
 		}
 
-		void Transaction::Deserialize(ByteStream &istream) {
-			_type = Type(istream.get());
-			setPayloadByTransactionType();
+		bool Transaction::Deserialize(ByteStream &istream) {
+			_transaction->type = ELATransaction::Type(istream.get());
 
-			_payloadVersion = istream.get();
+			_transaction->payloadVersion = istream.get();
 
-			_payload->Deserialize(istream);
+			_transaction->payload = newPayload(_transaction->type);
+			if (_transaction->payload == nullptr) {
+				Log::getLogger()->error("new payload when deserialize error");
+				return false;
+			}
+			_transaction->payload->Deserialize(istream);
 
 			uint64_t attributeLength = istream.getVarUint();
-			_attributes.resize(attributeLength);
+			_transaction->attributes.resize(attributeLength);
+
 			for (size_t i = 0; i < attributeLength; i++) {
-				_attributes[i] = AttributePtr(new Attribute);
-				_attributes[i]->Deserialize(istream);
+				_transaction->attributes[i] = AttributePtr(new Attribute);
+				_transaction->attributes[i]->Deserialize(istream);
 			}
 
-			uint64_t inputLength = istream.getVarUint();
-			TransactionInputPtr transactionInputPtr;
-			for (size_t i = 0; i < inputLength; i++) {
-				transactionInputPtr = TransactionInputPtr(new TransactionInput);
-				transactionInputPtr->Deserialize(istream);
-				addInput(*transactionInputPtr.get());
+			size_t inCount = istream.getVarUint();
+			for (size_t i = 0; i < inCount; i++) {
+				uint8_t transactionHashData[256 / 8];
+				istream.getBytes(transactionHashData, 256 / 8);
+				UInt256 txHash;
+				UInt256Get(&txHash, transactionHashData);
+
+				uint8_t indexData[16 / 8];
+				istream.getBytes(indexData, 16 / 8);
+				uint16_t index = UInt16GetLE(indexData);
+
+				uint8_t sequenceData[32 / 8];
+				istream.getBytes(sequenceData, 32 / 8);
+				uint32_t sequence = UInt32GetLE(sequenceData);
+
+				BRTransactionAddInput(&_transaction->raw, txHash, index, 0, nullptr, 0, nullptr, 0, sequence);
 			}
 
 			uint64_t outputLength = istream.getVarUint();
-			TransactionOutputPtr transactionOutputPtr;
+			_transaction->outputs.resize(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
-				transactionOutputPtr = TransactionOutputPtr(new TransactionOutput);
-				transactionOutputPtr->Deserialize(istream);
-				addOutput(*transactionOutputPtr.get());
+				_transaction->outputs[i] = TransactionOutputPtr(new TransactionOutput());
+				_transaction->outputs[i]->Deserialize(istream);
 			}
 
 			uint8_t lockTimeData[32 / 8];
 			istream.getBytes(lockTimeData, sizeof(lockTimeData));
-			_transaction->lockTime = UInt32GetLE(lockTimeData);
+			_transaction->raw.lockTime = UInt32GetLE(lockTimeData);
 
 			uint64_t programLength = istream.getVarUint();
-			_programs.resize(programLength);
+			_transaction->programs.resize(programLength);
 			for (size_t i = 0; i < programLength; i++) {
-				_programs[i] = ProgramPtr(new Program());
-				_programs[i]->Deserialize(istream);
+				_transaction->programs[i] = ProgramPtr(new Program());
+				_transaction->programs[i]->Deserialize(istream);
 			}
+
+			return true;
 		}
 
-		BRTransaction *Transaction::convertToRaw() const {
-			ELABRTransaction *transaction = ELABRTransactionNew();
-			transaction->raw.txHash = getHash();
-			transaction->raw.version = _transaction->version;
-			transaction->raw.blockHeight = _transaction->blockHeight;
-			transaction->raw.inCount = _transaction->inCount;
-			transaction->raw.lockTime = _transaction->lockTime;
-			transaction->raw.timestamp = _transaction->timestamp;
-			transaction->raw.outCount = _transaction->outCount;
+		nlohmann::json Transaction::rawTransactionToJson() {
+			nlohmann::json jsonData;
+			BRTransaction *raw = &_transaction->raw;
 
-			SharedWrapperList<TransactionInput, BRTxInput *> inputs = getInputs();
-			size_t len = inputs.size();
-			transaction->raw.inCount = len;
-			TransactionInput *input = nullptr;
-			for (ssize_t i = 0; i < len; ++i) {
-				input = inputs[i].get();
-				BRTransactionAddInput(&transaction->raw, input->getHash(), input->getIndex(), input->getAmount(),
-									  input->getScript(), input->getScript().GetSize(), input->getSignature(),
-									  input->getSignature().GetSize(), input->getSequence());
+			jsonData["TxHash"]      = Utils::UInt256ToString(raw->txHash);
+			jsonData["Version"]     = raw->version;
+			jsonData["LockTime"]    = raw->lockTime;
+			jsonData["BlockHeight"] = raw->blockHeight;
+			jsonData["Timestamp"]   = raw->timestamp;
+//			jsonData["InputCount"]  = raw->inCount;
+
+			std::vector<nlohmann::json> inputs(raw->inCount);
+			for (size_t i = 0; i < raw->inCount; ++i) {
+				BRTxInput *input = &raw->inputs[i];
+				nlohmann::json jsonData;
+
+				jsonData["TxHash"] = Utils::UInt256ToString(input->txHash);
+				jsonData["Index"] = input->index;
+				jsonData["Address"] = std::string(input->address);
+				jsonData["Amount"] = input->amount;
+//				jsonData["ScriptLen"] = input->scriptLen;
+				jsonData["Script"] = Utils::encodeHex(input->script, input->scriptLen);
+//				jsonData["SigLen"] = input->sigLen;
+				jsonData["Signature"] = Utils::encodeHex(input->signature, input->sigLen);
+				jsonData["Sequence"] = input->sequence;
+
+				inputs[i] = jsonData;
 			}
+			jsonData["Inputs"] = inputs;
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
-			transaction->raw.outCount = len = outputs.size();
-			TransactionOutput *output = nullptr;
-			uint8_t *scriptPubkey = nullptr;
-
-			for (ssize_t i = 0; i < len; i++) {
-				output = outputs[i].get();
-				ELABRTransactionAddOutput(transaction, output->getAmount(), output->getScript(),
-				                          output->getScript().GetSize());
-				const UInt256 assetID = output->getAssetId();
-				transaction->outputAssetIDList.push_back(assetID);
-				transaction->outputLockList.push_back(output->getOutputLock());
-				const UInt168 programHash = output->getProgramHash();
-				transaction->outputProgramHashList.push_back(programHash);
-			}
-
-			transaction->type = _type;
-			transaction->payloadVersion = _payloadVersion;
-			ByteStream byteStream;
-			_payload->Serialize(byteStream);
-			transaction->payloadData.Resize(byteStream.length());
-			if (transaction->payloadData.GetSize() > 0) {
-				uint8_t *tmp = byteStream.getBuf();
-				memcpy(transaction->payloadData, tmp, byteStream.length());
-				delete[]tmp;
-			}
-
-			transaction->attributeData.clear();
-			len = _attributes.size();
-			for (ssize_t i = 0; i < len; i++) {
-				AttributePtr attr = _attributes[i];
-				byteStream.reSet();
-				attr->Serialize(byteStream);
-				CMBlock pd(byteStream.length());
-				uint8_t *tmp = byteStream.getBuf();
-				memcpy(pd, tmp, pd.GetSize());
-				delete[]tmp;
-				transaction->attributeData.push_back(pd);
-			}
-
-			transaction->programData.clear();
-			len = _programs.size();
-			for (ssize_t i = 0; i < len; i++) {
-
-				ProgramPtr programPtr = _programs[i];
-				byteStream.reSet();
-				programPtr->Serialize(byteStream);
-				CMBlock pd(byteStream.length());
-				uint8_t *tmp = byteStream.getBuf();
-				memcpy(pd, tmp, pd.GetSize());
-				delete[]tmp;
-				transaction->programData.push_back(pd);
-			}
-
-			return (BRTransaction *) transaction;
-		}
-
-		void Transaction::convertFrom(const BRTransaction *raw) {
-			assert(raw != nullptr);
-			ELABRTransaction *elabrTransaction = ELABRTransactioCopy((ELABRTransaction *) raw);
-
-			//ELABRTransaction *elabrTransaction = ELABRTransactionNew();
-
-			//memcpy(elabrTransaction, raw, sizeof(*elabrTransaction));
-			//*elabrTransaction = *((ELABRTransaction*)raw);
-
-			_inputs.clear();
-			getInputs();
-
-			_outputs.clear();
-			getOutputs();
-
-			_type = (Type) elabrTransaction->type;
-			_payloadVersion = elabrTransaction->payloadVersion;
-
-			setPayloadByTransactionType();
-			if (elabrTransaction->payloadData && elabrTransaction->payloadData.GetSize() > 0) {
-				uint8_t *data = new uint8_t[elabrTransaction->payloadData.GetSize()];
-				memcpy(data, elabrTransaction->payloadData, elabrTransaction->payloadData.GetSize());
-				ByteStream byteStream1(data, elabrTransaction->payloadData.GetSize());
-				_payload->Deserialize(byteStream1);
-			}
-
-			_attributes.clear();
-			ssize_t len = elabrTransaction->attributeData.size();
-			if (len > 0) {
-				for (ssize_t i = 0; i < len; ++i) {
-					CMBlock byteData = elabrTransaction->attributeData[i];
-					uint8_t *data = new uint8_t[byteData.GetSize()];
-					memcpy(data, byteData, byteData.GetSize());
-					ByteStream byteStream1(data, byteData.GetSize());
-					AttributePtr attr(new Attribute());
-					attr->Deserialize(byteStream1);
-					_attributes.push_back(attr);
-				}
-			}
-
-			_programs.clear();
-			len = elabrTransaction->programData.size();
-			if (len > 0) {
-				for (ssize_t i = 0; i < len; i++) {
-					CMBlock byteData = elabrTransaction->programData[i];
-					uint8_t *data = new uint8_t[byteData.GetSize()];
-					memcpy(data, byteData, byteData.GetSize());
-					ByteStream byteStream(data, byteData.GetSize());
-					ProgramPtr programPtr(new Program);
-					programPtr->Deserialize(byteStream);
-					_programs.push_back(programPtr);
-				}
-			}
-
-			ELABRTransactionFree(elabrTransaction);
+			return jsonData;
 		}
 
 		nlohmann::json Transaction::toJson() {
 			nlohmann::json jsonData;
 
-			jsonData["isRegistered"] = _isRegistered;
+			jsonData["IsRegistered"] = _isRegistered;
+			jsonData["Raw"] = rawTransactionToJson();
+			jsonData["Type"] = (uint8_t)_transaction->type;
+			jsonData["PayloadVersion"] = _transaction->payloadVersion;
+			jsonData["PayLoad"] = _transaction->payload->toJson();
 
-			jsonData["transaction"] = rawTransactionToJson();
-
-			jsonData["type"] = _type;
-
-			jsonData["payloadVersion"] = _payloadVersion;
-
-			jsonData["payLoad"] = _payload->toJson();
-
-			std::vector<nlohmann::json> attributes(_attributes.size());
+			std::vector<nlohmann::json> attributes(_transaction->attributes.size());
 			for (size_t i = 0; i < attributes.size(); ++i) {
-				attributes[i] = _attributes[i]->toJson();
+				attributes[i] = _transaction->attributes[i]->toJson();
 			}
-			jsonData["attributes"] = attributes;
+			jsonData["Attributes"] = attributes;
 
-			std::vector<nlohmann::json> programs(_programs.size());
-			for (size_t i = 0; i < _programs.size(); ++i) {
-				programs[i] = _programs[i]->toJson();
+			std::vector<nlohmann::json> programs(_transaction->programs.size());
+			for (size_t i = 0; i < programs.size(); ++i) {
+				programs[i] = _transaction->programs[i]->toJson();
 			}
-			jsonData["programs"] = programs;
-
-			SharedWrapperList<TransactionInput, BRTxInput *> txInputs = getInputs();
-			std::vector<nlohmann::json> inputs(txInputs.size());
-			for (size_t i = 0; i < txInputs.size(); ++i) {
-				nlohmann::json inputJson = txInputs[i]->toJson();
-				inputs[i] = inputJson;
-			}
-			jsonData["txInputs"] = inputs;
+			jsonData["Programs"] = programs;
 
 			SharedWrapperList<TransactionOutput, BRTxOutput *> txOutputs = getOutputs();
 			std::vector<nlohmann::json> outputs(txOutputs.size());
 			for (size_t i = 0; i < txOutputs.size(); ++i) {
 				outputs[i] = txOutputs[i]->toJson();
 			}
-			jsonData["txOutputs"] = outputs;
-
-			return jsonData;
-		}
-
-		nlohmann::json Transaction::rawTransactionToJson() {
-			nlohmann::json jsonData;
-
-			jsonData["txHash"] = Utils::UInt256ToString(_transaction->txHash);
-
-			jsonData["version"] = _transaction->version;
-
-			jsonData["inCount"] = _transaction->inCount;
-
-			jsonData["outCount"] = _transaction->outCount;
-
-			jsonData["lockTime"] = _transaction->lockTime;
-
-			jsonData["blockHeight"] = _transaction->blockHeight;
-
-			jsonData["timestamp"] = _transaction->timestamp;
+			jsonData["Outputs"] = outputs;
 
 			return jsonData;
 		}
 
 		void Transaction::rawTransactionFromJson(nlohmann::json jsonData) {
-			std::string txHash = jsonData["txHash"];
+			BRTransaction *raw = &_transaction->raw;
 
-			_transaction->txHash = Utils::UInt256FromString(txHash);
+			raw->txHash      = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			raw->version     = jsonData["Version"].get<uint32_t>();
+			raw->lockTime    = jsonData["LockTime"].get<uint32_t>();
+			raw->blockHeight = jsonData["BlockHeight"].get<uint32_t>();
+			raw->timestamp   = jsonData["Timestamp"].get<uint32_t>();
 
-			_transaction->version = jsonData["version"].get<uint32_t>();
+			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
+			raw->inCount     = inputs.size();
 
-			_transaction->inCount = jsonData["inCount"].get<size_t>();
+			for (size_t i = 0; i < raw->inCount; ++i) {
+				nlohmann::json jsonData = inputs[i];
 
-			_transaction->outCount = jsonData["outCount"].get<size_t>();
+				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+				uint32_t index = jsonData["Index"].get<uint32_t>();
+				std::string address = jsonData["Address"].get<std::string>();
+				uint64_t amount = jsonData["Amount"].get<uint64_t>();
 
-			_transaction->lockTime = jsonData["lockTime"].get<uint32_t>();
+				std::string scriptString = jsonData["Script"].get<std::string>();
+				size_t scriptLen = scriptString.length() / 2;
+				uint8_t *script = new uint8_t[scriptLen];
+				Utils::decodeHex(script, scriptLen, scriptString.c_str(), scriptString.length());
 
-			_transaction->blockHeight = jsonData["blockHeight"].get<uint32_t>();
+				std::string signatureString = jsonData["Signature"].get<std::string>();
+				size_t sigLen = signatureString.length() / 2;
+				uint8_t *signature =  new uint8_t[sigLen];
+				Utils::decodeHex(signature, sigLen, signatureString.c_str(), signatureString.length());
 
-			_transaction->timestamp = jsonData["timestamp"].get<uint32_t>();
+				uint32_t sequence = jsonData["Sequence"].get<uint32_t>();
 
+				BRTransactionAddInput(raw, txHash, index, amount, script, scriptLen, signature, sigLen, sequence);
+				delete[] script;
+				delete[] signature;
+			}
 		}
 
 		void Transaction::fromJson(nlohmann::json jsonData) {
-			_isRegistered = jsonData["isRegistered"];
+			_isRegistered = jsonData["IsRegistered"];
+			rawTransactionFromJson(jsonData["Raw"]);
+			_transaction->type = ELATransaction::Type(jsonData["Type"].get<uint8_t>());
+			_transaction->payloadVersion = jsonData["PayloadVersion"];
 
-			rawTransactionFromJson(jsonData["transaction"]);
-
-			_type = jsonData["type"].get<Type>();
-
-			setPayloadByTransactionType();
-
-			_payloadVersion = jsonData["payloadVersion"];
-
-			nlohmann::json payLoad = jsonData["payLoad"];
-			_payload->fromJson(payLoad);
-
-			std::vector<nlohmann::json> attributes = jsonData["attributes"];
-			_attributes.resize(attributes.size());
-			for (size_t i = 0; i < attributes.size(); ++i) {
-				_attributes[i] = AttributePtr(new Attribute);
-				_attributes[i]->fromJson(attributes[i]);
+			_transaction->payload = newPayload(_transaction->type);
+			if (_transaction->payload == nullptr) {
+				Log::getLogger()->error("payload is nullptr when convert from json");
+			} else {
+				_transaction->payload->fromJson(jsonData["PayLoad"]);
 			}
 
-			std::vector<nlohmann::json> programs = jsonData["programs"];
-			_programs.resize(programs.size());
-			for (size_t i = 0; i < _programs.size(); ++i) {
-				_programs[i] = ProgramPtr(new Program());
-				_programs[i]->fromJson(programs[i]);
+			std::vector<nlohmann::json> attributes = jsonData["Attributes"];
+			_transaction->attributes.resize(attributes.size());
+			for (size_t i = 0; i < _transaction->attributes.size(); ++i) {
+				_transaction->attributes[i] = AttributePtr(new Attribute);
+				_transaction->attributes[i]->fromJson(attributes[i]);
 			}
 
-			std::vector<nlohmann::json> inputs = jsonData["txInputs"];
-			TransactionInputPtr transactionInputPtr;
-			for (size_t i = 0; i < inputs.size(); ++i) {
-				transactionInputPtr = TransactionInputPtr(new TransactionInput);
-				transactionInputPtr->fromJson(inputs[i]);
-				addInput(*transactionInputPtr.get());
+			std::vector<nlohmann::json> programs = jsonData["Programs"];
+			_transaction->programs.resize(programs.size());
+			for (size_t i = 0; i < _transaction->programs.size(); ++i) {
+				_transaction->programs[i] = ProgramPtr(new Program());
+				_transaction->programs[i]->fromJson(programs[i]);
 			}
 
-			std::vector<nlohmann::json> outputs = jsonData["txOutputs"];
-			TransactionOutputPtr transactionOutputPtr;
+			std::vector<nlohmann::json> outputs = jsonData["Outputs"];
+			_transaction->outputs.resize(outputs.size());
 			for (size_t i = 0; i < outputs.size(); ++i) {
-				transactionOutputPtr = TransactionOutputPtr(new TransactionOutput);
-				transactionOutputPtr->fromJson(outputs[i]);
-				addOutput(*transactionOutputPtr.get());
+				_transaction->outputs[i] = TransactionOutputPtr(new TransactionOutput());
+				_transaction->outputs[i]->fromJson(outputs[i]);
 			}
 		}
 	}

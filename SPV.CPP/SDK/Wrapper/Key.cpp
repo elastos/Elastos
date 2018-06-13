@@ -365,7 +365,7 @@ namespace Elastos {
 
 		const UInt256 Key::getSystemAssetId() {
 			Transaction elaCoin;
-			elaCoin.setTransactionType(Transaction::Type::RegisterAsset);
+			elaCoin.setTransactionType(ELATransaction::RegisterAsset);
 			return elaCoin.getHash();
 		}
 	}

@@ -38,7 +38,7 @@ namespace Elastos {
 
 			virtual void Serialize(ByteStream &ostream) const;
 
-			virtual void Deserialize(ByteStream &istream);
+			virtual bool Deserialize(ByteStream &istream);
 
 			virtual nlohmann::json toJson();
 

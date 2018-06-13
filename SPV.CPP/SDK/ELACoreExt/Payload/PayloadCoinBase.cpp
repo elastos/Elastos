@@ -35,7 +35,7 @@ namespace Elastos {
 			}
 		}
 
-		void PayloadCoinBase::Deserialize(ByteStream &istream) {
+		bool PayloadCoinBase::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
 
 			if (0 < len) {
@@ -46,6 +46,8 @@ namespace Elastos {
 					memcpy(_coinBaseData, data, len);
 				}
 			}
+
+			return true;
 		}
 
 		nlohmann::json PayloadCoinBase::toJson() {

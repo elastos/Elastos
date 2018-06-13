@@ -3,38 +3,49 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <iostream>
-#include <SDK/Common/Utils.h>
+#include <cstring>
+#include <Core/BRTransaction.h>
 
-#include "ELABRTxOutput.h"
+#include "Core/BRTransaction.h"
+#include "ELATxOutput.h"
 #include "TransactionOutput.h"
 #include "Utils.h"
+#include "Log.h"
+#include "Key.h"
 
 namespace Elastos {
 	namespace SDK {
 
 		TransactionOutput::TransactionOutput() {
-			ELABRTxOutput *elabrTxOutput = new ELABRTxOutput();
-			memset(elabrTxOutput, 0, sizeof(ELABRTxOutput));
-			_output = boost::shared_ptr<BRTxOutput>((BRTxOutput *)elabrTxOutput);
-			_output.get()->script = nullptr;
-			_output.get()->scriptLen = 0;
-			_assetId = UINT256_ZERO;
-			_programHash = UINT168_ZERO;
+			_output = ELATxOutputNew();
 		}
 
-		TransactionOutput::TransactionOutput(BRTxOutput *output) {
-			assert(output != nullptr);
-			_output = boost::shared_ptr<BRTxOutput>(output);
-			convertFrom(output);
+		TransactionOutput::TransactionOutput(ELATxOutput *output) :
+			_output(output) {
+		}
+
+		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
+			_output = ELATxOutputNew();
+			CMBlock script = output.getScript();
+			BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
+			_output->raw.amount = output.getAmount();
+			_output->assetId = output.getAssetId();
+			_output->programHash = output.getProgramHash();
+			_output->outputLock = output.getOutputLock();
 		}
 
 		TransactionOutput::TransactionOutput(uint64_t amount, const CMBlock &script) {
-			_output = boost::shared_ptr<BRTxOutput>(new BRTxOutput);
-			_output.get()->script = nullptr;
-			BRTxOutputSetScript(_output.get(), script, script.GetSize());
-			_output->amount = amount;
-			_assetId = UINT256_ZERO;
-			_programHash = UINT168_ZERO;
+			_output = ELATxOutputNew();
+			BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
+			_output->raw.amount = amount;
+			_output->assetId = Key::getSystemAssetId();
+			_output->programHash = Utils::AddressToUInt168(_output->raw.address);
+		}
+
+		TransactionOutput::~TransactionOutput() {
+			if (_output) {
+				ELATxOutputFree(_output);
+			}
 		}
 
 		std::string TransactionOutput::toString() const {
@@ -43,158 +54,142 @@ namespace Elastos {
 		}
 
 		BRTxOutput *TransactionOutput::getRaw() const {
-			return _output.get();
+			return &_output->raw;
 		}
 
 		std::string TransactionOutput::getAddress() const {
-			return _output->address;
+			return _output->raw.address;
 		}
 
 		void TransactionOutput::setAddress(const std::string &address) {
-			BRTxOutputSetAddress(_output.get(), address.c_str());
+			BRTxOutputSetAddress(&_output->raw, address.c_str());
 		}
 
 		uint64_t TransactionOutput::getAmount() const {
-			return _output->amount;
+			return _output->raw.amount;
 		}
 
-		void TransactionOutput::setAmount(
-				uint64_t amount) {
-			_output->amount = amount;
+		void TransactionOutput::setAmount(uint64_t amount) {
+			_output->raw.amount = amount;
 		}
 
 		CMBlock TransactionOutput::getScript() const {
-			CMBlock data(_output->scriptLen);
-			memcpy(data, _output->script, _output->scriptLen);
-
+			CMBlock data(_output->raw.scriptLen);
+			memcpy(data, _output->raw.script, _output->raw.scriptLen);
 			return data;
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
 			uint8_t assetIdData[256 / 8];
-			UInt256Set(assetIdData, _assetId);
+			UInt256Set(assetIdData, _output->assetId);
 			ostream.putBytes(assetIdData, 256 / 8);
 
 			uint8_t amountData[64 / 8];
-			UInt64SetLE(amountData, _output->amount);
+			UInt64SetLE(amountData, _output->raw.amount);
 			ostream.putBytes(amountData, 64 / 8);
 
 			uint8_t outputLockData[32 / 8];
-			UInt32SetLE(outputLockData, _outputLock);
+			UInt32SetLE(outputLockData, _output->outputLock);
 			ostream.putBytes(outputLockData, 32 / 8);
 
 			uint8_t programHashData[168 / 8];
-			UInt168Set(programHashData, _programHash);
+			UInt168Set(programHashData, _output->programHash);
 			ostream.putBytes(programHashData, 168 / 8);
 		}
 
-		void TransactionOutput::Deserialize(ByteStream &istream) {
+		bool TransactionOutput::Deserialize(ByteStream &istream) {
 			uint8_t assetIdData[256 / 8];
 			istream.getBytes(assetIdData, 256 / 8);
-			UInt256Get(&_assetId, assetIdData);
+			UInt256Get(&_output->assetId, assetIdData);
 
 			uint8_t amountData[64 / 8];
 			istream.getBytes(amountData, 64 / 8);
-			_output->amount = UInt64GetLE(amountData);
+			_output->raw.amount = UInt64GetLE(amountData);
 
 			uint8_t outputLockData[32 / 8];
 			istream.getBytes(outputLockData, 32 / 8);
-			_outputLock = UInt32GetLE(outputLockData);
+			_output->outputLock = UInt32GetLE(outputLockData);
 
 			uint8_t programHashData[168 / 8];
 			istream.getBytes(programHashData, 168 / 8);
-			UInt168Get(&_programHash, programHashData);
+			UInt168Get(&_output->programHash, programHashData);
 
-			setAddress(Utils::UInt168ToAddress(_programHash));
+			setAddress(Utils::UInt168ToAddress(_output->programHash));
+
+			return true;
 		}
 
 		const UInt256 &TransactionOutput::getAssetId() const {
-			return _assetId;
+			return _output->assetId;
 		}
 
 		void TransactionOutput::setAssetId(const UInt256 &assetId) {
-			_assetId = assetId;
+			_output->assetId = assetId;
 		}
 
 		uint32_t TransactionOutput::getOutputLock() const {
-			return _outputLock;
+			return _output->outputLock;
 		}
 
 		void TransactionOutput::setOutputLock(uint32_t outputLock) {
-			_outputLock = outputLock;
+			_output->outputLock = outputLock;
 		}
 
 		const UInt168 &TransactionOutput::getProgramHash() const {
-			return _programHash;
+			return _output->programHash;
 		}
 
 		void TransactionOutput::setProgramHash(const UInt168 &hash) {
-			_programHash = hash;
-		}
-
-		BRTxOutput *TransactionOutput::convertToRaw() const {
-			boost::shared_ptr<ELABRTxOutput> output = boost::shared_ptr<ELABRTxOutput>(new ELABRTxOutput);
-			output->raw.script = nullptr;
-			BRTxOutputSetScript(&output->raw, _output->script, _output->scriptLen);
-			output->raw.amount = _output->amount;
-			output->outputLock = _outputLock;
-			UInt256Set(&output->assetId, _assetId);
-			UInt168Set(&output->programHash, _programHash);
-			return (BRTxOutput *) output.get();
-		}
-
-		void TransactionOutput::convertFrom(const BRTxOutput *raw) {
-			ELABRTxOutput *elabrTxOutput = (ELABRTxOutput *) raw;
-			UInt256Set(&_assetId, elabrTxOutput->assetId);
-			UInt168Set(&_programHash, elabrTxOutput->programHash);
-			_outputLock = elabrTxOutput->outputLock;
+			_output->programHash = hash;
 		}
 
 		nlohmann::json TransactionOutput::toJson() {
 			nlohmann::json jsonData;
 
-			std::string addr = _output->address;
+			std::string addr = _output->raw.address;
 			jsonData["address"] = addr;
 
-			jsonData["amount"] = _output->amount;
+			jsonData["amount"] = _output->raw.amount;
 
-			jsonData["scriptLen"] = _output->scriptLen;
-			char *script = new char[_output->scriptLen];
-			memcpy(script, _output->script, _output->scriptLen);
-			std::string scriptStr(script, _output->scriptLen);
-			jsonData["script"] = scriptStr;
+			jsonData["scriptLen"] = _output->raw.scriptLen;
 
-			jsonData["assetId"] = Utils::UInt256ToString(_assetId);
+			jsonData["script"] = Utils::encodeHex((const uint8_t *)_output->raw.script, _output->raw.scriptLen);
 
-			jsonData["outputLock"] = _outputLock;
+			jsonData["assetId"] = Utils::UInt256ToString(_output->assetId);
 
-			jsonData["programHash"] = Utils::UInt168ToString(_programHash);
+			jsonData["outputLock"] = _output->outputLock;
+
+			jsonData["programHash"] = Utils::UInt168ToString(_output->programHash);
 
 			return jsonData;
 		}
 
 		void TransactionOutput::fromJson(nlohmann::json jsonData) {
-			std::string address = jsonData["address"];
-			memset(_output->address, 0, sizeof(_output->address));
-			memcpy(_output->address, address.data(), address.size());
+			std::string address = jsonData["address"].get<std::string>();
+			size_t addressSize = sizeof(_output->raw.address);
+			strncpy(_output->raw.address, address.c_str(), addressSize - 1);
+			_output->raw.address[addressSize - 1] = 0;
 
-			_output->amount = jsonData["amount"].get<uint64_t>();
+			_output->raw.amount = jsonData["amount"].get<uint64_t>();
 
-			_output->scriptLen = jsonData["scriptLen"].get<size_t>();
-			if(_output->scriptLen > 0) {
-				std::string script = jsonData["script"].get<std::string>();
-				memcpy(_output->script, script.c_str(), _output->scriptLen);
-			}else {
-				_output->script = nullptr;
+			_output->raw.scriptLen = jsonData["scriptLen"].get<size_t>();
+			std::string scriptString = jsonData["script"].get<std::string>();
+			BRTxOutputSetScript(&_output->raw, nullptr, 0);
+			if (_output->raw.scriptLen > 0) {
+				if (_output->raw.scriptLen == scriptString.length() / 2) {
+					uint8_t *script = new uint8_t[_output->raw.scriptLen];
+					Utils::decodeHex(script, _output->raw.scriptLen, scriptString.c_str(), scriptString.length());
+					BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, _output->raw.scriptLen);
+					delete[] script;
+				} else {
+					Log::getLogger()->error("scriptLen={} and script=\"{}\" do not match of json",
+											_output->raw.scriptLen, scriptString);
+				}
 			}
 
-			std::string assetID = jsonData["assetId"].get<std::string>();
-			_assetId = Utils::UInt256FromString(assetID);
-
-			_outputLock = jsonData["outputLock"].get<uint32_t>();
-
-			std::string programHash = jsonData["programHash"].get<std::string>();
-			_programHash = Utils::UInt168FromString(programHash);
+			_output->assetId = Utils::UInt256FromString(jsonData["assetId"].get<std::string>());
+			_output->outputLock = jsonData["outputLock"].get<uint32_t>();
+			_output->programHash = Utils::UInt168FromString(jsonData["programHash"].get<std::string>());
 		}
 
 	}
