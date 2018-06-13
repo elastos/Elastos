@@ -175,6 +175,8 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "mine")
 	case "discretemining":
 		return FromArray(params, "count")
+	case "sendrawtransaction":
+		return FromArray(params, "data")
 	default:
 		return Params{}
 	}
