@@ -10,7 +10,34 @@
 #include "arith_uint256.h"
 
 TEST_CASE("test", "[arith_uint256]") {
-	base_uint<256> bu(3);
-	bu << 3;
+	arith_uint256 bu(3);
+	bu <<= 3;
+	REQUIRE(true == bu.EqualTo(24));
+	bu >>= 3;
+	REQUIRE(true == bu.EqualTo(3));
+
+	uint32_t ui32_ct = bu.GetCompact();
+	bu.SetCompact(ui32_ct);
+	REQUIRE(true == bu.EqualTo(3));
+
+	bu += 1;
+	REQUIRE(true == bu.EqualTo(4));
+	bu -= 1;
+	REQUIRE(true == bu.EqualTo(3));
+	bu *= 2;
+	REQUIRE(true == bu.EqualTo(6));
+	bu /= 2;
+	REQUIRE(true == bu.EqualTo(3));
+	bu |= 0;
+	REQUIRE(true == bu.EqualTo(3));
+	bu &= 0x03;
+	REQUIRE(true == bu.EqualTo(3));
+	bu ^= 0x03;
+	REQUIRE(true == bu.EqualTo(0));
+	bu = 3;
+	arith_uint256 bu1(3);
+	bu *= bu1;
+	REQUIRE(true == bu.EqualTo(9));
+
 	int pause = 0;
 }

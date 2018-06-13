@@ -219,8 +219,8 @@ namespace Elastos {
 		UInt168 Utils::codeToProgramHash(const std::string &redeemScript) {
 			size_t scriptLen = 0;
 			uint8_t *script = Utils::decodeHexCreate(&scriptLen, (char *)(redeemScript.c_str()), redeemScript.size());
-			CMBlock redeedScript(scriptLen);
-			memcpy(redeedScript, script, scriptLen);
+			CMBlock redeedScript;
+			redeedScript.SetMem(script, scriptLen);
 
 			return codeToProgramHash(redeedScript);
 		}

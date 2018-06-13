@@ -57,15 +57,17 @@ namespace Elastos {
 
 		static inline CMemBlock<uint8_t> Str2Hex(CMemBlock<char> bigStr) {
 			CMemBlock<uint8_t> ret;
-			assert(1 == bigStr.GetSize() % 2);
-			ret.Resize(bigStr.GetSize() / 2);
-			for (size_t i = 0; i < ret.GetSize(); i++) {
-				ret[i] = (_toU(bigStr[2 * i]) << 4) + _toU(bigStr[2 * i + 1]);
+			if (0 < bigStr.GetSize()) {
+				assert(1 == bigStr.GetSize() % 2);
+				ret.Resize(bigStr.GetSize() / 2);
+				for (size_t i = 0; i < ret.GetSize(); i++) {
+					ret[i] = (_toU(bigStr[2 * i]) << 4) + _toU(bigStr[2 * i + 1]);
+				}
 			}
 			return ret;
 		}
 
-		static inline CMemBlock<char> DecToStr(CMemBlock<uint8_t> bigHex) {
+		static inline CMemBlock<char> Dec2Str(CMemBlock<uint8_t> bigHex) {
 			CMemBlock<uint8_t> tmp = _toDec(bigHex);
 			CMemBlock<char> ret;
 			if (0 < tmp.GetSize()) {
