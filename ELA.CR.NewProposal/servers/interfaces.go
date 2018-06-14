@@ -678,6 +678,44 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 	return ResponsePack(Success, balance.String())
 }
 
+func ListUnspent(param Params) map[string]interface{} {
+	bestHeight := chain.DefaultLedger.Blockchain.GetBestHeight()
+
+	var result []UTXOInfo
+	addresses, ok := param.ArrayString("addresses")
+	if !ok {
+		return ResponsePack(InvalidParams, "need addresses in an array!")
+	}
+	for _, address := range addresses {
+		programHash, err := Uint168FromAddress(address)
+		if err != nil {
+			return ResponsePack(InvalidParams, "Invalid address: "+address)
+		}
+		unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+		if err != nil {
+			return ResponsePack(InvalidParams, "cannot get asset with program")
+		}
+
+		unspents := unspends[chain.DefaultLedger.Blockchain.AssetID]
+		for _, unspent := range unspents {
+			_, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxId)
+			if err != nil {
+				return ResponsePack(InternalError,
+					"unknown transaction "+unspent.TxId.String()+" from persisted utxo")
+			}
+			result = append(result, UTXOInfo{
+				AssetId:       ToReversedString(chain.DefaultLedger.Blockchain.AssetID),
+				Txid:          ToReversedString(unspent.TxId),
+				VOut:          unspent.Index,
+				Amount:        unspent.Value.String(),
+				Address:       address,
+				Confirmations: bestHeight - height + 1,
+			})
+		}
+	}
+	return ResponsePack(Success, result)
+}
+
 func GetUnspends(param Params) map[string]interface{} {
 	addr, ok := param.String("addr")
 	if !ok {
