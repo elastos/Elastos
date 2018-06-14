@@ -21,6 +21,7 @@
     "NoticeServerUrl": "",
     "OauthServerUrl": "",
     "NodePort": 20338,
+    "OpenService": true,
     "PrintLevel": 0,
     "MaxLogsSize": 5000,
     "MaxPerLogSize": 20,
@@ -34,9 +35,6 @@
     "ConsensusType": "pow",
     "PowConfiguration": {
       "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
-      "MiningServerIP": "127.0.0.1",
-      "MiningServerPort": 5555,
-      "MiningSelfPort": 20339,
       "TestNet": true,
       "AutoMining": true,
       "MinerInfo": "ELA",

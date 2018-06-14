@@ -79,7 +79,7 @@ func main() {
 	spv.SpvInit()
 
 	log.Info("3. Start the P2P networks")
-	noder = node.InitNode()
+	noder = node.InitLocalNode()
 	noder.WaitForSyncFinish()
 
 	servers.NodeForServers = noder

@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -98,7 +97,7 @@ func (n *node) listenConnections(listener net.Listener) {
 }
 
 func initNonTlsListen() (net.Listener, error) {
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(Parameters.NodePort))
+	listener, err := net.Listen("tcp", fmt.Sprint(":", Parameters.NodePort))
 	if err != nil {
 		log.Error("Error listening\n", err.Error())
 		return nil, err
@@ -136,8 +135,8 @@ func initTlsListen() (net.Listener, error) {
 		ClientCAs:    pool,
 	}
 
-	log.Info("TLS listen port is ", strconv.Itoa(Parameters.NodePort))
-	listener, err := tls.Listen("tcp", ":"+strconv.Itoa(Parameters.NodePort), tlsConfig)
+	log.Info("TLS listen port is ", Parameters.NodePort)
+	listener, err := tls.Listen("tcp", fmt.Sprint(":", Parameters.NodePort), tlsConfig)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -200,7 +199,7 @@ func (node *node) Connect(nodeAddr string) error {
 
 func NonTLSDial(nodeAddr string) (net.Conn, error) {
 	log.Debug()
-	conn, err := net.DialTimeout("tcp", nodeAddr, time.Second*DIALTIMEOUT)
+	conn, err := net.DialTimeout("tcp", nodeAddr, time.Second*DialTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +230,7 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	}
 
 	var dialer net.Dialer
-	dialer.Timeout = time.Second * DIALTIMEOUT
+	dialer.Timeout = time.Second * DialTimeout
 	conn, err := tls.DialWithDialer(&dialer, "tcp", nodeAddr, conf)
 	if err != nil {
 		return nil, err
