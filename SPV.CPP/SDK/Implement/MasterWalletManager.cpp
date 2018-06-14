@@ -23,7 +23,7 @@ namespace Elastos {
 			static IMasterWallet *importWalletInternal(const std::string &masterWalletId, const std::string &language,
 													   const boost::function<bool(MasterWallet *)> &walletImportFun) {
 				ParamChecker::checkNotEmpty(masterWalletId);
-				ParamChecker::checkNullPointer(masterWalletManager);
+				//ParamChecker::checkNullPointer(masterWalletManager);
 
 				MasterWallet *masterWallet = new MasterWallet(masterWalletId, language);
 
@@ -112,7 +112,7 @@ namespace Elastos {
 
 
 			IMasterWallet* masterWallet = NULL;
-			masterWallet = WalletFactoryInner::importWalletInternal(this, masterWalletId, "english",
+			masterWallet = WalletFactoryInner::importWalletInternal( masterWalletId, "english",
 																	[&keystorePath, &backupPassword, &payPassword, &phrasePassword](
 																		MasterWallet *masterWallet) {
 																		return masterWallet->importFromKeyStore(keystorePath,
@@ -137,7 +137,7 @@ namespace Elastos {
 
 			IMasterWallet* masterWallet = NULL;
 
-			masterWallet = WalletFactoryInner::importWalletInternal(this, masterWalletId, language,
+			masterWallet = WalletFactoryInner::importWalletInternal( masterWalletId, language,
 													 [&mnemonic, &phrasePassword, &payPassword](
 														 MasterWallet *masterWallet) {
 														 return masterWallet->importFromMnemonic(mnemonic,
