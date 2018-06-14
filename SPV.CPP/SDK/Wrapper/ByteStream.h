@@ -90,7 +90,7 @@ namespace Elastos {
 			bool checkSize(uint64_t readSize);
 
 		private:
-			uint64_t _count;
+			uint64_t _pos, _count;
 			uint64_t _size;
 			uint8_t *_buf;
 			bool _autorelease;
