@@ -1,5 +1,6 @@
 
 #include <boost/scoped_ptr.hpp>
+#include <Interface/Enviroment.h>
 
 #include "BRChainParams.h"
 
@@ -49,6 +50,7 @@ void TestConnectPeer::runPeerConnectTest_WalletManager() {
 }
 
 void TestConnectPeer::runPeerConnectTest_WalletFactory() {
+	Enviroment::InitializeRootPath("Data");
 	boost::scoped_ptr<MasterWalletManager> walletFactory(new MasterWalletManager);
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";

@@ -174,6 +174,10 @@ namespace Elastos {
 			}
 
 			for (size_t i = 0; i < blocks.size(); ++i) {
+				if (blocks[i]->getHeight() == 0) {
+					continue;
+				}
+
 				ByteStream ostream;
 				blocks[i]->Serialize(ostream);
 				CMBlock bytes(ostream.length());
