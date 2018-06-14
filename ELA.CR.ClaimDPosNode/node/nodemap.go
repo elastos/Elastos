@@ -49,7 +49,7 @@ func (nm *nbrNodes) DelNbrNode(id uint64) (protocol.Noder, bool) {
 	return n, true
 }
 
-func (nm *nbrNodes) GetConnectionCnt() uint {
+func (nm *nbrNodes) GetConnectionCount() uint {
 	nm.RLock()
 	defer nm.RUnlock()
 
@@ -131,7 +131,7 @@ func (node *node) GetNeighborNoder() []protocol.Noder {
 	return nodes
 }
 
-func (node *node) GetNbrNodeCnt() uint32 {
+func (node *node) GetNeighbourCount() uint32 {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	var count uint32
