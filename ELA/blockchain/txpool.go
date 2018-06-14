@@ -38,11 +38,11 @@ func (pool *TxPool) Init() {
 func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 	//verify transaction with Concurrency
 	if errCode := CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
-		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash())
+		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash().String())
 		return errCode
 	}
 	if errCode := CheckTransactionContext(txn); errCode != Success {
-		log.Warn("[TxPool CheckTransactionContext] failed", txn.Hash())
+		log.Warn("[TxPool CheckTransactionContext] failed", txn.Hash().String())
 		return errCode
 	}
 

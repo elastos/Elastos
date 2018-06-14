@@ -53,7 +53,7 @@ func init() {
 }
 
 func startConsensus() {
-	servers.LocalPow = pow.NewPowService("logPow")
+	servers.LocalPow = pow.NewPowService()
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
 		go servers.LocalPow.Start()
@@ -79,18 +79,19 @@ func main() {
 
 	log.Info("2. Start the P2P networks")
 	noder = node.InitLocalNode()
-	noder.WaitForSyncFinish()
 
 	servers.NodeForServers = noder
-	startConsensus()
 
 	log.Info("3. --Start the RPC service")
 	go httpjsonrpc.StartRPCServer()
+
+	noder.WaitForSyncFinish()
 	go httprestful.StartServer()
 	go httpwebsocket.StartServer()
 	if config.Parameters.HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}
+	startConsensus()
 	select {}
 ERROR:
 	log.Error(err)
