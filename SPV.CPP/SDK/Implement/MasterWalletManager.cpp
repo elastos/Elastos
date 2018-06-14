@@ -71,7 +71,7 @@ namespace Elastos {
 
 			ParamChecker::checkNotEmpty(masterWalletId);
 			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
-				return false;
+				throw std::invalid_argument("Unknown master wallet id.");
 
 			MasterWallet *masterWallet = static_cast<MasterWallet *>(_masterWalletMap[masterWalletId]);
 			if (masterWallet->Initialized())

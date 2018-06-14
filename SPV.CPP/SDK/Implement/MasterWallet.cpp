@@ -335,8 +335,7 @@ namespace Elastos {
 			if (!Wallet_Tool::PhraseIsValid(cb_phrase_, _mnemonic->words())) {
 				resetMnemonic("chinese");
 				if (!Wallet_Tool::PhraseIsValid(cb_phrase_, _mnemonic->words())) {
-					Log::error("Phrase is unvalid.");
-					return false;
+					throw std::logic_error("Phrase is invalid.");
 				}
 			}
 #endif

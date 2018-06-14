@@ -50,6 +50,12 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
+	SECTION("Master id should not be empty") {
+		REQUIRE_THROWS_AS(masterWalletManager->CreateMasterWallet(""), std::invalid_argument);
+	}
+	SECTION("Language should not be null") {
+		REQUIRE_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, ""), std::invalid_argument);
+	}
 }
 
 TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMasterWallet]") {
@@ -62,17 +68,62 @@ TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMaste
 	IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
 
 	SECTION("Normal initialization") {
-		REQUIRE_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
+		CHECK_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
 
 		std::string mnemonic = masterWallet->GenerateMnemonic();
 		CHECK(masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword,
 														  payPassword));
-		REQUIRE_NOTHROW(masterWallet->GetPublicKey());
+		CHECK_NOTHROW(masterWallet->GetPublicKey());
 
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
+	SECTION("Should initialize with valid master wallet id") {
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK_THROWS_AS(
+				masterWalletManager->InitializeMasterWallet("InvalidId", mnemonic, phrasePassword, payPassword),
+				std::invalid_argument);
+	}
+	SECTION("Mnemonic should not be empty") {
+		CHECK_THROWS_AS(
+				masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), "", phrasePassword, payPassword),
+				std::invalid_argument);
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+	SECTION("Create with phrase password can be empty") {
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, "",
+																				  payPassword));
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+	SECTION("Create with phrase password that is empty or less than 8") {
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, "ilegal", payPassword),
+						std::invalid_argument);
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+	SECTION("Create with phrase password that is more than 128") {
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic,
+																  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+																  payPassword), std::invalid_argument);
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+	SECTION("Create with pay password that is empty or less than 8") {
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, ""),
+						std::invalid_argument);
+		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, "ilegal"),
+						std::invalid_argument);
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+	SECTION("Create with pay password that is more than 128") {
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						  std::invalid_argument);
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
 }
-
 
 TEST_CASE(
 		"Wallet factory ExportWalletWithMnemonic generate  mnemonic (english  chinese italian japanese spanish french)",
