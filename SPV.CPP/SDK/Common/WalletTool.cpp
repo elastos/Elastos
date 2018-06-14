@@ -93,9 +93,9 @@ namespace Elastos {
 		std::string WalletTool::getDeriveKeyFromEntropySource_base58(const std::string &seed) {
 			std::string out = "";
 			if (seed != "") {
-				CMemBlock<char> cb_seed;
-				cb_seed.SetMemFixed(seed.c_str(), seed.size() + 1);
-				CMemBlock<uint8_t> entropySource = Str2Hex(cb_seed);
+				CMemBlock<char> cbSeed;
+				cbSeed.SetMemFixed(seed.c_str(), seed.size() + 1);
+				CMemBlock<uint8_t> entropySource = Str2Hex(cbSeed);
 				if (true == entropySource) {
 					uint8_t key64[64] = {0};
 					uint8_t key[] = "reqPrivKey";

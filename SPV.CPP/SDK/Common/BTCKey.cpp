@@ -80,5 +80,32 @@ namespace Elastos {
 			}
 			return out;
 		}
+
+		bool BTCKey::PublickeyIsValid(CMemBlock<uint8_t> pubKey, int nid) {
+			bool out = false;
+			if (0 == pubKey.GetSize()) {
+				return out;
+			}
+			EC_KEY *key = EC_KEY_new_by_curve_name(nid);
+			if (nullptr != key) {
+				BIGNUM *_pubkey = BN_bin2bn((const unsigned char *) (uint8_t *) pubKey, (int) pubKey.GetSize(),
+											nullptr);
+				if (nullptr != _pubkey) {
+					const EC_GROUP *curve = EC_KEY_get0_group(key);
+					EC_POINT *ec_p = EC_POINT_bn2point(curve, _pubkey, nullptr, nullptr);
+					if (nullptr != ec_p) {
+						if (1 == EC_KEY_set_public_key(key, ec_p)) {
+							if (1 == EC_KEY_check_key(key)) {
+								out = true;
+							}
+						}
+						EC_POINT_free(ec_p);
+					}
+					BN_free(_pubkey);
+				}
+				EC_KEY_free(key);
+			}
+			return out;
+		}
 	}
 }

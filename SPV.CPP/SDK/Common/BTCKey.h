@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_BTCKEY_H__
 
 #include <openssl/obj_mac.h>
+#include <BRInt.h>
 
 #include "CMemBlock.h"
 
@@ -15,6 +16,7 @@ namespace Elastos {
 		public:
 			static bool generateKey(CMemBlock<uint8_t> &privKey, CMemBlock<uint8_t> &pubKey, int nid = NID_secp256k1);
 			static CMemBlock<uint8_t> getPubKeyFromPrivKey(CMemBlock<uint8_t> privKey, int nid = NID_secp256k1);
+			static bool PublickeyIsValid(CMemBlock<uint8_t> pubKey, int nid = NID_secp256k1);
 		};
 	}
 }

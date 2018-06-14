@@ -49,9 +49,9 @@ namespace Elastos {
 			std::string _coin;
 			std::string _network;
 			std::string _xPrivKey;
-			std::string _xPubKey;//
+			std::string _xPubKey;
 			std::string _requestPrivKey;
-			std::string _requestPubKey;//
+			std::string _requestPubKey;
 			std::string _copayerId;
 			std::vector<PubKeyItem> _publicKeyRing;
 			std::string _walletId;
@@ -62,9 +62,9 @@ namespace Elastos {
 			std::string _personalEncryptingKey;
 			std::string _sharedEncryptingKey;
 			std::string _copayerName;
-			std::string _mnemonic;//
+			std::string _mnemonic;
 			std::string _entropySource;
-			bool _mnemonicHasPassphrase;//
+			bool _mnemonicHasPassphrase;
 			std::string _derivationStrategy;
 			int _account;
 			bool _compliantDerivation;
