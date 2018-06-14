@@ -64,7 +64,7 @@ namespace Elastos {
 			const std::string TX_ISO = "transactionISO";
 
 			const std::string TX_DATABASE_CREATE = "create table if not exists " + TX_TABLE_NAME + " (" +
-				TX_COLUMN_ID + " text, " +
+				TX_COLUMN_ID + " text primary key not null, " +
 				TX_BUFF + " blob, " +
 				TX_BLOCK_HEIGHT + " integer, " +
 				TX_TIME_STAMP + " integer, " +
