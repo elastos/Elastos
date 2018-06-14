@@ -20,14 +20,6 @@ namespace Elastos {
 
 			~ElaNewWalletJson();
 
-			const std::string &getID() const;
-
-			void setID(const std::string &id);
-
-			const std::string &getIDInfo() const;
-
-			void setIDInfo(const std::string &value);
-
 			const std::string &getMnemonicLanguage() const;
 
 			void setMnemonicLanguage(const std::string &language);
@@ -49,8 +41,6 @@ namespace Elastos {
 			FROM_JSON(ElaNewWalletJson);
 
 		private:
-			std::string _id;
-			std::string _idInfo;
 			std::string _mnemonicLanguage;
 			std::string _encryptedPhrasePassword;
 			std::vector<CoinInfo> _coinInfoList;

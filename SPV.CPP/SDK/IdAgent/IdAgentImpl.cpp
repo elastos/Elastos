@@ -102,7 +102,7 @@ namespace Elastos {
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			if(_info.Ids.find(id) != _info.Ids.end()) {
+			if(_info.Ids.find(id) == _info.Ids.end()) {
 				throw std::logic_error("Unknown id.");
 			}
 			IdPath path = _info.Ids[id];

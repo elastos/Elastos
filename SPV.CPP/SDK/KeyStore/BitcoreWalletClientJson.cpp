@@ -7,7 +7,12 @@
 namespace Elastos {
 	namespace SDK {
 
-		BitcoreWalletClientJson::BitcoreWalletClientJson() {
+		BitcoreWalletClientJson::BitcoreWalletClientJson() :
+				_m(0),
+				_n(0),
+				_account(0),
+				_mnemonicHasPassphrase(false),
+				_compliantDerivation(false) {
 
 		}
 
@@ -75,7 +80,7 @@ namespace Elastos {
 			j["requestPrivKey"] = p._requestPrivKey;
 			j["requestPubKey"] = p._requestPubKey;
 			j["copayerId"] = p._copayerId;
-			j["publicKeyRing"]= p._publicKeyRing;
+			j["publicKeyRing"] = p._publicKeyRing;
 			j["walletId"] = p._walletId;
 			j["walletName"] = p._walletName;
 			j["m"] = p._m;

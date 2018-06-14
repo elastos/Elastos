@@ -22,12 +22,6 @@ namespace Elastos {
 
 			bool save(const boost::filesystem::path &path, const std::string &password);
 
-			const std::string &getMasterPrivateKey() const;
-
-			const std::string &getID() const;
-
-			const std::string &getIDInfo() const;
-
 			const ElaNewWalletJson &json() const;
 
 			ElaNewWalletJson &json();

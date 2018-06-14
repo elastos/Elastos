@@ -33,7 +33,7 @@ namespace Elastos {
 			 * @param mnemonic for initialize the master wallet.
 			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @return If success will return true, else return false.
+			 * @return If success will return true, else if master wallet has been initialized will false.
 			 */
 			virtual bool InitializeMasterWallet(
 					const std::string &masterWalletId,

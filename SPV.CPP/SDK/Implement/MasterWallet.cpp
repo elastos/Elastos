@@ -37,9 +37,8 @@ namespace Elastos {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
-			resetMnemonic(_localStore.GetLanguage());
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			_initialized = true;
+
+			initFromLocalStore(_localStore);
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -66,15 +65,11 @@ namespace Elastos {
 		}
 
 		void MasterWallet::Save() {
-			_localStore.SetIdAgentInfo(_idAgentImpl->GetIdAgentInfo());
 
-			std::vector<CoinInfo> coinInfos;
-			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				if (subWallet == nullptr) continue;
-				coinInfos.push_back(subWallet->_info);
-			}
-			_localStore.SetSubWalletInfoList(coinInfos);
+			if (!Initialized())
+				return;
+
+			restoreLocalStore();
 
 			boost::filesystem::path path = Enviroment::GetRootPath();
 			path /= GetId();
@@ -213,30 +208,11 @@ namespace Elastos {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 
 			KeyStore keyStore;
-			if (!keyStore.open(keystorePath, backupPassword)) {
-				Log::error("Import key error.");
-				return false;
-			}
+			if (!keyStore.open(keystorePath, backupPassword))
+				throw std::logic_error("Import key error.");
 
-			CMBlock phrasePassRaw0 = Utils::convertToMemBlock<unsigned char>(
-					keyStore.json().getEncryptedPhrasePassword());
-			std::string phrasePass = "";
-			if (true == phrasePassRaw0) {
-				CMBlock phrasePassRaw1(phrasePassRaw0.GetSize() + 1);
-				phrasePassRaw1.Zero();
-				memcpy(phrasePassRaw1, phrasePassRaw0, phrasePassRaw0.GetSize());
-				CMBlock phrasePassRaw = Utils::decrypt(phrasePassRaw1, payPassword);
-				phrasePass = Utils::convertToString(phrasePassRaw);
-			}
-			phrasePass = phrasePassword != "" ? phrasePassword : phrasePass;
-
-			std::string mnemonic = keyStore.json().getMnemonic();
-			CMBlock cbMnemonic;
-			cbMnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
-			resetMnemonic(keyStore.json().getMnemonicLanguage());
-			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
-
-			return initFromPhrase(mnemonic, phrasePass, payPassword);
+			initFromKeyStore(keyStore, payPassword, phrasePassword);
+			return true;
 		}
 
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
@@ -245,40 +221,13 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 
-			CMemBlock<char> cb_mnemonic;
-			cb_mnemonic.SetMemFixed(mnemonic.c_str(), mnemonic.size() + 1);
-#ifdef MNEMONIC_SOURCE_H
-			if (!Wallet_Tool::PhraseIsValid(cb_mnemonic, _mnemonic->getLanguage())) {
-#else
-			if (!WalletTool::PhraseIsValid(cb_mnemonic, _mnemonic->words())) {
-#endif
-				Log::error("Invalid mnemonic.");
-				return false;
-			}
-
 			return initFromPhrase(mnemonic, phrasePassword, payPassword);
 		}
 
 		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword,
 										  const std::string &keystorePath) {
 			KeyStore keyStore;
-			keyStore.json().setEncryptedPhrasePassword(Utils::encodeHex(_localStore.GetEncrptedPhrasePassword()));
-
-			CMBlock cbMnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
-			if (false == cbMnemonic) {
-				return false;
-			}
-			CMemBlock<char> charMnemonic(cbMnemonic.GetSize() + 1);
-			charMnemonic.Zero();
-			memcpy(charMnemonic, cbMnemonic, cbMnemonic.GetSize());
-			if (keyStore.json().getMnemonic().empty())
-				keyStore.json().setMnemonic((const char *) charMnemonic);
-
-			keyStore.json().clearCoinInfo();
-			std::for_each(_createdWallets.begin(), _createdWallets.end(), [&keyStore](const WalletMap::value_type &item) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
-				keyStore.json().addCoinInfo(subWallet->_info);
-			});
+			restoreKeyStore(keyStore, payPassword);
 
 			if (!keyStore.save(keystorePath, backupPassword)) {
 				Log::error("Export key error.");
@@ -357,6 +306,21 @@ namespace Elastos {
 
 			_initialized = true;
 			return true;
+		}
+
+		void MasterWallet::initFromLocalStore(const Elastos::SDK::MasterWalletStore &localStore) {
+			resetMnemonic(localStore.GetLanguage());
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
+			initSubWallets(localStore.GetSubWalletInfoList());
+			_initialized = true;
+		}
+
+		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
+			for (int i = 0; i < coinInfoList.size(); ++i) {
+				SubWallet *subWallet = new SubWallet(coinInfoList[i], ChainParams::mainNet(), "", this);
+				startPeerManager(subWallet);
+				_createdWallets[subWallet->GetChainId()] = subWallet;
+			}
 		}
 
 		Key MasterWallet::deriveKey(const std::string &payPassword) {
@@ -487,6 +451,10 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::Sign(const std::string &id, const std::string &message, const std::string &password) {
+			ParamChecker::checkNotEmpty(id);
+			ParamChecker::checkNotEmpty(message);
+			ParamChecker::checkPassword(password);
+
 			return _idAgentImpl->Sign(id, message, password);
 		}
 
@@ -518,8 +486,70 @@ namespace Elastos {
 			if (!_coinConfigReader.IsInitialized()) {
 				boost::filesystem::path configPath = Enviroment::GetRootPath();
 				configPath /= COIN_COINFIG_FILE;
+				if(!boost::filesystem::exists(configPath))
+					throw std::logic_error("Coin config file not found.");
 				_coinConfigReader.Load(configPath);
 			}
+		}
+
+		void MasterWallet::restoreLocalStore() {
+			_localStore.SetIdAgentInfo(_idAgentImpl->GetIdAgentInfo());
+
+			std::vector<CoinInfo> coinInfos;
+			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet == nullptr) continue;
+				coinInfos.push_back(subWallet->_info);
+			}
+			_localStore.SetSubWalletInfoList(coinInfos);
+		}
+
+		void MasterWallet::initFromKeyStore(const KeyStore &keyStore, const std::string &payPassword,
+											const std::string &phrasePassword) {
+			CMBlock phrasePassRaw0 = Utils::convertToMemBlock<unsigned char>(
+					keyStore.json().getEncryptedPhrasePassword());
+			std::string phrasePass = "";
+			if (true == phrasePassRaw0) {
+				CMBlock phrasePassRaw1(phrasePassRaw0.GetSize() + 1);
+				phrasePassRaw1.Zero();
+				memcpy(phrasePassRaw1, phrasePassRaw0, phrasePassRaw0.GetSize());
+				CMBlock phrasePassRaw = Utils::decrypt(phrasePassRaw1, payPassword);
+				phrasePass = Utils::convertToString(phrasePassRaw);
+			}
+			phrasePass = phrasePassword != "" ? phrasePassword : phrasePass;
+
+			std::string mnemonic = keyStore.json().getMnemonic();
+			CMBlock cbMnemonic;
+			cbMnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
+			resetMnemonic(keyStore.json().getMnemonicLanguage());
+			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
+
+			if (!initFromPhrase(mnemonic, phrasePass, payPassword))
+				throw std::logic_error("Initialize from phrase error.");
+
+			initSubWallets(keyStore.json().getCoinInfoList());
+		}
+
+		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
+			keyStore.json().setEncryptedPhrasePassword(Utils::encodeHex(_localStore.GetEncrptedPhrasePassword()));
+
+			CMBlock cbMnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
+			if (false == cbMnemonic) {
+				throw std::logic_error("Wrong password.");
+			}
+
+			CMemBlock<char> charMnemonic(cbMnemonic.GetSize() + 1);
+			charMnemonic.Zero();
+			memcpy(charMnemonic, cbMnemonic, cbMnemonic.GetSize());
+			if (keyStore.json().getMnemonic().empty())
+				keyStore.json().setMnemonic((const char *) charMnemonic);
+
+			keyStore.json().clearCoinInfo();
+			std::for_each(_createdWallets.begin(), _createdWallets.end(),
+						  [&keyStore](const WalletMap::value_type &item) {
+							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
+							  keyStore.json().addCoinInfo(subWallet->_info);
+						  });
 		}
 
 	}

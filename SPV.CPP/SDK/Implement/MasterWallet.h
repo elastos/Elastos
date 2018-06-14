@@ -116,8 +116,6 @@ namespace Elastos {
 									const std::string &payPassword,
 									const std::string &phrasePassword);
 
-			virtual void restoreSubWallets(const std::vector<CoinInfo> &coinInfoList);
-
 			bool importFromMnemonic(const std::string &mnemonic,
 									const std::string &phrasePassword,
 									const std::string &payPassword);
@@ -136,6 +134,20 @@ namespace Elastos {
 			bool initFromPhrase(const std::string &phrase,
 								const std::string &phrasePassword,
 								const std::string &payPassword);
+
+			void initFromLocalStore(const MasterWalletStore &localStore);
+
+			void initFromKeyStore(const KeyStore &keyStore,
+								  const std::string &payPassword,
+								  const std::string &phrasePassword);
+
+			void initSubWallets(const std::vector<CoinInfo> &coinInfoList);
+
+			void restoreSubWallets(const std::vector<CoinInfo> &coinInfoList);
+
+			void restoreKeyStore(KeyStore &keyStore, const std::string &payPassword);
+
+			void restoreLocalStore();
 
 			Key deriveKey(const std::string &payPassword);
 

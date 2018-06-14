@@ -101,19 +101,6 @@ namespace Elastos {
 			return true;
 		}
 
-		const std::string &KeyStore::getMasterPrivateKey() const {
-			//todo get from BitcoreWalletClientJson
-			return "";
-		}
-
-		const std::string &KeyStore::getID() const {
-			return _walletJson.getID();
-		}
-
-		const std::string &KeyStore::getIDInfo() const {
-			return _walletJson.getIDInfo();
-		}
-
 		const ElaNewWalletJson &KeyStore::json() const {
 			return _walletJson;
 		}

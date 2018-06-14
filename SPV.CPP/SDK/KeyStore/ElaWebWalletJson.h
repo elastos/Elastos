@@ -10,7 +10,7 @@
 
 namespace Elastos {
 	namespace SDK {
-
+		
 		class ElaWebWalletJson : public BitcoreWalletClientJson {
 		public:
 			ElaWebWalletJson();

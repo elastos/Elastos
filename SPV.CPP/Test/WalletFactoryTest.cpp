@@ -582,7 +582,7 @@ TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner
 
 		CHECK_THROWS_AS(masterWalletManager->ImportWalletWithMnemonic("MasterWalletId", mnemonic, phrasePassword,
 																	  payPassword,
-																	  "chinese"), std::invalid_argument);
+																	  "chinese"), std::logic_error);
 	}
 
 
