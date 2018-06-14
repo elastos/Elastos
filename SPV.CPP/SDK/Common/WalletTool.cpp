@@ -6,7 +6,7 @@
 #include <iconv.h>
 #include "Utils.h"
 
-#include "Wallet_Tool.h"
+#include "WalletTool.h"
 #include "BTCBase58.h"
 #include "BigIntFormat.h"
 #include "BRCrypto.h"
@@ -29,7 +29,7 @@
 namespace Elastos {
 	namespace SDK {
 		CMemBlock<char>
-		Wallet_Tool::_Code_Convert(const std::string from_charset, const std::string to_charset,
+		WalletTool::_Code_Convert(const std::string from_charset, const std::string to_charset,
 								   const CMemBlock<char> &input) {
 			CMemBlock<char> output;
 			if (true == input) {
@@ -52,7 +52,7 @@ namespace Elastos {
 			return output;
 		}
 
-		CMemBlock<uint8_t> Wallet_Tool::GetRandom(size_t bits) {
+		CMemBlock<uint8_t> WalletTool::GetRandom(size_t bits) {
 			size_t bytes = 0 == bits % 8 ? bits / 8 : bits / 8 + 1;
 			CMemBlock<uint8_t> out(bytes);
 			for (size_t i = 0; i < bytes; i++) {
@@ -61,23 +61,23 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<char> Wallet_Tool::U8ToU16(const CMemBlock<char> &input) {
+		CMemBlock<char> WalletTool::U8ToU16(const CMemBlock<char> &input) {
 			return _Code_Convert("utf-8", "utf-16", input);
 		}
 
-		CMemBlock<char> Wallet_Tool::U16ToU8(const CMemBlock<char> &input) {
+		CMemBlock<char> WalletTool::U16ToU8(const CMemBlock<char> &input) {
 			return _Code_Convert("utf-16", "utf-8", input);
 		}
 
-		CMemBlock<uint8_t> Wallet_Tool::GenerateSeed128() {
+		CMemBlock<uint8_t> WalletTool::GenerateSeed128() {
 			return GetRandom(128);
 		}
 
-		CMemBlock<uint8_t> Wallet_Tool::GenerateSeed256() {
+		CMemBlock<uint8_t> WalletTool::GenerateSeed256() {
 			return GetRandom(256);
 		}
 
-		std::string Wallet_Tool::GenerateEntropySource(const CMemBlock<uint8_t> &seed) {
+		std::string WalletTool::GenerateEntropySource(const CMemBlock<uint8_t> &seed) {
 			std::string out = "";
 			if (true == seed) {
 				uint8_t t[32];
@@ -90,7 +90,7 @@ namespace Elastos {
 			return out;
 		}
 
-		std::string Wallet_Tool::getDeriveKeyFromEntropySource_base58(const std::string &seed) {
+		std::string WalletTool::getDeriveKeyFromEntropySource_base58(const std::string &seed) {
 			std::string out = "";
 			if (seed != "") {
 				CMemBlock<char> cb_seed;
@@ -109,7 +109,7 @@ namespace Elastos {
 			return out;
 		}
 
-		std::string Wallet_Tool::getStringFromSeed(const CMemBlock<uint8_t> &seed) {
+		std::string WalletTool::getStringFromSeed(const CMemBlock<uint8_t> &seed) {
 			std::string out = "";
 			if (true == seed) {
 				CMemBlock<char> str = Hex2Str(seed);
@@ -118,7 +118,7 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<uint8_t> Wallet_Tool::getSeedFromString(const std::string &str_seed) {
+		CMemBlock<uint8_t> WalletTool::getSeedFromString(const std::string &str_seed) {
 			CMemBlock<uint8_t> out;
 			if (str_seed != "") {
 				CMemBlock<char> str_chg;
@@ -131,7 +131,7 @@ namespace Elastos {
 #ifdef MNEMONIC_SOURCE_H
 
 		CMemBlock<char>
-		Wallet_Tool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language) {
+		WalletTool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language) {
 			CMemBlock<char> out;
 			if (true == seed) {
 				const char **wordList = language == "english" ? BRBIP39WordsEn :
@@ -147,7 +147,7 @@ namespace Elastos {
 			return out;
 		}
 
-		bool Wallet_Tool::PhraseIsValid(const CMemBlock<char> &phrase, const std::string &language) {
+		bool WalletTool::PhraseIsValid(const CMemBlock<char> &phrase, const std::string &language) {
 			bool out = false;
 			if (true == phrase) {
 				const char **wordList = language == "english" ? BRBIP39WordsEn :
@@ -161,7 +161,7 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<uint8_t> Wallet_Tool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language) {
+		CMemBlock<uint8_t> WalletTool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language) {
 			CMemBlock<uint8_t> out;
 			if (true == phrase) {
 				const char **wordList = language == "english" ? BRBIP39WordsEn :
@@ -179,7 +179,7 @@ namespace Elastos {
 
 #else
 		CMemBlock<char>
-		Wallet_Tool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList) {
+		WalletTool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList) {
 			CMemBlock<char> out;
 			if (true == seed && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
@@ -194,7 +194,7 @@ namespace Elastos {
 			return out;
 		}
 
-		bool Wallet_Tool::PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
+		bool WalletTool::PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
 			bool out = false;
 			if (true == phrase && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
@@ -208,7 +208,7 @@ namespace Elastos {
 		}
 
 		CMemBlock<uint8_t>
-		Wallet_Tool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
+		WalletTool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
 			CMemBlock<uint8_t> out;
 			if (true == phrase && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
@@ -225,7 +225,7 @@ namespace Elastos {
 
 #endif
 
-		std::string Wallet_Tool::getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase) {
+		std::string WalletTool::getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase) {
 			uint8_t prikey[64] = {0};
 			BRBIP39DeriveKey(prikey, phrase, passphrase.c_str());
 			return BTCBase58::EncodeBase58((unsigned char *) prikey, 64);

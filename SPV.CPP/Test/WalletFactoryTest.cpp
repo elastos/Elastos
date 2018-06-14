@@ -92,7 +92,7 @@ TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMaste
 	SECTION("Create with phrase password can be empty") {
 		std::string mnemonic = masterWallet->GenerateMnemonic();
 		CHECK(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, "",
-																				  payPassword));
+														  payPassword));
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 	SECTION("Create with phrase password that is empty or less than 8") {
@@ -104,8 +104,8 @@ TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMaste
 	SECTION("Create with phrase password that is more than 128") {
 		std::string mnemonic = masterWallet->GenerateMnemonic();
 		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic,
-																  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-																  payPassword), std::invalid_argument);
+																	"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+																	payPassword), std::invalid_argument);
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 	SECTION("Create with pay password that is empty or less than 8") {
@@ -119,8 +119,8 @@ TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMaste
 	SECTION("Create with pay password that is more than 128") {
 		std::string mnemonic = masterWallet->GenerateMnemonic();
 		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword,
-																  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-						  std::invalid_argument);
+																	"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						std::invalid_argument);
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 }

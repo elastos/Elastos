@@ -11,7 +11,7 @@
 
 namespace Elastos {
 	namespace SDK {
-		class Wallet_Tool {
+		class WalletTool {
 		private:
 			static CMemBlock<char>
 			_Code_Convert(const std::string from_charset, const std::string to_charset, const CMemBlock<char> &input);

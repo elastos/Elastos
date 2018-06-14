@@ -8,7 +8,7 @@
 #include <catch.hpp>
 
 #include "SDK/KeyStore/Mnemonic.h"
-#include "Wallet_Tool.h"
+#include "WalletTool.h"
 #include "BTCBase58.h"
 
 using namespace Elastos::SDK;
@@ -20,13 +20,13 @@ TEST_CASE("bitcoin keystore with special phrase and no passphrase", "[bitcoin te
 	CMemBlock<char> phrase;
 	phrase.SetMemFixed(pPhrase, strlen(pPhrase) + 1);
 #ifdef MNEMONIC_SOURCE_H
-	bool isValid = Wallet_Tool::PhraseIsValid(phrase, "english");
+	bool isValid = WalletTool::PhraseIsValid(phrase, "english");
 #else
 	Mnemonic _mnemonic("english", "Data");
-	bool isValid = Wallet_Tool::PhraseIsValid(phrase, _mnemonic.words());
+	bool isValid = WalletTool::PhraseIsValid(phrase, _mnemonic.words());
 #endif
 
-	std::string prikey_encode_base58 = Wallet_Tool::getDeriveKey_base58(phrase, "");
+	std::string prikey_encode_base58 = WalletTool::getDeriveKey_base58(phrase, "");
 
 	CMemBlock<unsigned char> prikey = BTCBase58::DecodeBase58(prikey_encode_base58);
 	std::vector<uint8_t> arr_prikey;
@@ -48,16 +48,16 @@ TEST_CASE("bitcoin keystore with special phrase and no passphrase", "[bitcoin te
 }
 
 TEST_CASE("bitcoin keystore with entropy", "[bitcoin test]") {
-	CMemBlock<uint8_t> seed = Wallet_Tool::GenerateSeed256();
-	std::string entropySource = Wallet_Tool::GenerateEntropySource(seed);
-	std::string prikey_base58 = Wallet_Tool::getDeriveKeyFromEntropySource_base58(entropySource);
+	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed256();
+	std::string entropySource = WalletTool::GenerateEntropySource(seed);
+	std::string prikey_base58 = WalletTool::getDeriveKeyFromEntropySource_base58(entropySource);
 
 	int i = 0;
 }
 
 TEST_CASE("bitcoin keystore with special entropy", "[bitcoin test]") {
 	const char *entropySource = "c4dd4e848e5e2909dbb6eb80db222b2a4f716569e63c0b8605918f050b3002dc";
-	std::string prikey_base58 = Wallet_Tool::getDeriveKeyFromEntropySource_base58(entropySource);
+	std::string prikey_base58 = WalletTool::getDeriveKeyFromEntropySource_base58(entropySource);
 
 	int i = 0;
 }
@@ -69,11 +69,11 @@ TEST_CASE("unicode to utf8 convert", "[bitcoin test]") {
 
 	CMemBlock<char> cb_in_u8;
 	cb_in_u8.SetMemFixed(in_utf8, sizeof(in_utf8));
-	CMemBlock<char> u16 = Wallet_Tool::U8ToU16(cb_in_u8);
+	CMemBlock<char> u16 = WalletTool::U8ToU16(cb_in_u8);
 
 	CMemBlock<char> cb_in_u16;
 	cb_in_u16.SetMemFixed((char *) in_utf16, sizeof(in_utf16));
-	CMemBlock<char> u8 = Wallet_Tool::U16ToU8(cb_in_u16);
+	CMemBlock<char> u8 = WalletTool::U16ToU8(cb_in_u16);
 	printf("utf16-->utf8 out=%s\n", (char *) u8);
 	bool bEqual = 0 == memcmp(u8, in_utf8, strlen(in_utf8));
 
@@ -82,9 +82,9 @@ TEST_CASE("unicode to utf8 convert", "[bitcoin test]") {
 
 TEST_CASE("Seed serialize/deserialize", "[bitcoin test]") {
 
-	CMemBlock<uint8_t> seed = Wallet_Tool::GenerateSeed256();
-	std::string str_seed = Wallet_Tool::getStringFromSeed(seed);
-	CMemBlock<uint8_t> seed_re = Wallet_Tool::getSeedFromString(str_seed);
+	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed256();
+	std::string str_seed = WalletTool::getStringFromSeed(seed);
+	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromString(str_seed);
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 
 	int pause = 0;
@@ -92,60 +92,60 @@ TEST_CASE("Seed serialize/deserialize", "[bitcoin test]") {
 
 TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase", "[bitcoin test]") {
 
-	CMemBlock<uint8_t> seed = Wallet_Tool::GenerateSeed128();
+	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed128();
 	CMemBlock<char> phrase;
 #ifdef MNEMONIC_SOURCE_H
-	phrase = Wallet_Tool::GeneratePhraseFromSeed(seed, "french");
+	phrase = WalletTool::GeneratePhraseFromSeed(seed, "french");
 
-	bool bValid = Wallet_Tool::PhraseIsValid(phrase, "french");
+	bool bValid = WalletTool::PhraseIsValid(phrase, "french");
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = Wallet_Tool::getSeedFromPhrase(phrase, "french");
+	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, "french");
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #else
 	Mnemonic _mnemonic("french", "Data");
-	phrase = Wallet_Tool::GeneratePhraseFromSeed(seed, _mnemonic.words());
+	phrase = WalletTool::GeneratePhraseFromSeed(seed, _mnemonic.words());
 
-	bool bValid = Wallet_Tool::PhraseIsValid(phrase, _mnemonic.words());
+	bool bValid = WalletTool::PhraseIsValid(phrase, _mnemonic.words());
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = Wallet_Tool::getSeedFromPhrase(phrase, _mnemonic.words());
+	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #endif
 
-	std::string prikey = Wallet_Tool::getDeriveKey_base58(phrase, "");
+	std::string prikey = WalletTool::getDeriveKey_base58(phrase, "");
 
 	int i = 0;
 }
 
 TEST_CASE("bitcoin keystore in japanese with generating phrase and no passphrase", "[bitcoin test]") {
 
-	CMemBlock<uint8_t> seed = Wallet_Tool::GenerateSeed128();
+	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed128();
 	CMemBlock<char> phrase;
 #ifdef MNEMONIC_SOURCE_H
-	phrase = Wallet_Tool::GeneratePhraseFromSeed(seed, "japanese");
+	phrase = WalletTool::GeneratePhraseFromSeed(seed, "japanese");
 
-	bool bValid = Wallet_Tool::PhraseIsValid(phrase, "japanese");
+	bool bValid = WalletTool::PhraseIsValid(phrase, "japanese");
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = Wallet_Tool::getSeedFromPhrase(phrase, "japanese");
+	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, "japanese");
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #else
 	Mnemonic _mnemonic("japanese", "Data");
-	phrase = Wallet_Tool::GeneratePhraseFromSeed(seed, _mnemonic.words());
+	phrase = WalletTool::GeneratePhraseFromSeed(seed, _mnemonic.words());
 
-	bool bValid = Wallet_Tool::PhraseIsValid(phrase, _mnemonic.words());
+	bool bValid = WalletTool::PhraseIsValid(phrase, _mnemonic.words());
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = Wallet_Tool::getSeedFromPhrase(phrase, _mnemonic.words());
+	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #endif
 
-	std::string prikey = Wallet_Tool::getDeriveKey_base58(phrase, "");
+	std::string prikey = WalletTool::getDeriveKey_base58(phrase, "");
 
 	int i = 0;
 }

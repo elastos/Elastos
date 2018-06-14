@@ -429,6 +429,8 @@ TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {
 }
 
 TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKeyForPurpose]") {
+	Enviroment::InitializeRootPath("Data");
+
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string language = "english";

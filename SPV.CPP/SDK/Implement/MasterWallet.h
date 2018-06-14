@@ -161,7 +161,6 @@ namespace Elastos {
 			WalletMap _createdWallets;
 
 			MasterWalletStore _localStore;
-			KeyStore _keyStore;
 			boost::shared_ptr<Mnemonic> _mnemonic;
 
 			std::string _id;

@@ -37,6 +37,7 @@ namespace Elastos {
 				_info(info) {
 
 			fs::path subWalletDbPath = Enviroment::GetRootPath();
+			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
 			nlohmann::json peerConfig =
