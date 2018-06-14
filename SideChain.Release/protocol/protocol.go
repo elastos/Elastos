@@ -4,28 +4,34 @@ import (
 	"net"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 const (
 	MinConnectionCount = 3
-	TIMESOFUPDATETIME  = 2
+	TimesOfUpdateTime  = 2
 )
 
 const (
-	PROTOCOLVERSION  = 1
-	KEEPALIVETIMEOUT = 3
-	DIALTIMEOUT      = 6
-	CONNMONITOR      = 6
-	MAXSYNCHDRREQ    = 2 //Max Concurrent Sync Header Request
+	ProtocolVersion  = 1
+	KeepAliveTimeout = 3
+	DialTimeout      = 6
+	ConnMonitor      = 6
+	MaxSyncHdrReq    = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount = 8
 	DefaultMaxPeers  = 125
-	MAXIDCACHED      = 5000
+	MaxIdCached      = 5000
+)
+
+const (
+	OpenService = 1 << 2
 )
 
 type Noder interface {
@@ -55,6 +61,8 @@ type Noder interface {
 		port uint16, nonce uint64, relay uint8, height uint64)
 	ConnectSeeds()
 	Connect(nodeAddr string) error
+	LoadFilter(filter *msg.FilterLoad)
+	BloomFilter() *bloom.Filter
 	Send(msg p2p.Message)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool

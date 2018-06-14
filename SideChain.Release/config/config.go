@@ -13,7 +13,7 @@ import (
 const (
 	DefaultConfigFilename = "./config.json"
 	MINGENBLOCKTIME       = 2
-	DEFAULTGENBLOCKTIME   = 6
+	DefaultGenBlockTime   = 6
 )
 
 var (
@@ -79,12 +79,13 @@ type Configuration struct {
 	RestKeyPath         string           `json:"RestKeyPath"`
 	HttpInfoPort        uint16           `json:"HttpInfoPort"`
 	HttpInfoStart       bool             `json:"HttpInfoStart"`
+	OpenService         bool             `json:"OpenService"`
 	HttpWsPort          int              `json:"HttpWsPort"`
 	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
 	HttpJsonPort        int              `json:"HttpJsonPort"`
 	OauthServerUrl      string           `json:"OauthServerUrl"`
 	NoticeServerUrl     string           `json:"NoticeServerUrl"`
-	NodePort            int              `json:"NodePort"`
+	NodePort            uint16           `json:"NodePort"`
 	WebSocketPort       int              `json:"WebSocketPort"`
 	PrintLevel          int              `json:"PrintLevel"`
 	IsTLS               bool             `json:"IsTLS"`
@@ -144,5 +145,4 @@ func init() {
 	} else if Parameters.PowConfiguration.ActiveNet == "RegNet" {
 		Parameters.ChainParam = regNet
 	}
-
 }

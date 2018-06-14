@@ -6,12 +6,13 @@ import (
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	"github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -57,6 +58,8 @@ func (h *MsgHandlerV1) OnMakeMessage(cmd string) (message p2p.Message, err error
 		message = new(msg.Ping)
 	case p2p.CmdPong:
 		message = new(msg.Pong)
+	case p2p.CmdFilterLoad:
+		message = new(msg.FilterLoad)
 	case p2p.CmdGetBlocks:
 		message = new(msg.GetBlocks)
 	case p2p.CmdInv:
@@ -69,6 +72,8 @@ func (h *MsgHandlerV1) OnMakeMessage(cmd string) (message p2p.Message, err error
 		message = msg.NewTx(new(core.Transaction))
 	case p2p.CmdNotFound:
 		message = new(msg.NotFound)
+	case p2p.CmdMemPool:
+		message = new(msg.MemPool)
 	case p2p.CmdReject:
 		message = new(msg.Reject)
 	default:
@@ -95,6 +100,8 @@ func (h *MsgHandlerV1) OnMessageDecoded(message p2p.Message) {
 		err = h.onPing(message)
 	case *msg.Pong:
 		err = h.onPong(message)
+	case *msg.FilterLoad:
+		err = h.onFilterLoad(message)
 	case *msg.GetBlocks:
 		err = h.onGetBlocks(message)
 	case *msg.Inventory:
@@ -107,6 +114,8 @@ func (h *MsgHandlerV1) OnMessageDecoded(message p2p.Message) {
 		err = h.onTx(message)
 	case *msg.NotFound:
 		err = h.onNotFound(message)
+	case *msg.MemPool:
+		err = h.onMemPool(message)
 	case *msg.Reject:
 		err = h.onReject(message)
 	default:
@@ -217,6 +226,17 @@ func (h *MsgHandlerV1) onAddrs(addrs *msg.Addr) error {
 		//save the node address in address list
 		LocalNode.AddAddressToKnownAddress(addr)
 	}
+	return nil
+}
+
+func (h *MsgHandlerV1) onFilterLoad(msg *msg.FilterLoad) error {
+	// Only allow filterload requests if server enabled OpenService
+	if LocalNode.Services()&protocol.OpenService != protocol.OpenService {
+		h.node.CloseConn()
+		return fmt.Errorf("peer %d sent filterload request with open service disabled", h.node.ID())
+	}
+
+	h.node.LoadFilter(msg)
 	return nil
 }
 
@@ -355,6 +375,28 @@ func (h *MsgHandlerV1) onGetData(getData *msg.GetData) error {
 
 			node.Send(msg.NewTx(tx))
 
+		case msg.InvTypeFilteredBlock:
+			if !h.node.BloomFilter().IsLoaded() {
+				return nil
+			}
+
+			block, err := chain.DefaultLedger.Store.GetBlock(iv.Hash)
+			if err != nil {
+				log.Debug("Can't get block from hash: ", iv.Hash, " ,send not found message")
+				notFound.AddInvVect(iv)
+				return err
+			}
+
+			merkle, matchedIndexes := bloom.NewMerkleBlock(block, h.node.BloomFilter())
+
+			// Send merkleblock
+			node.Send(merkle)
+
+			// Send any matched transactions
+			for _, index := range matchedIndexes {
+				node.Send(msg.NewTx(block.Transactions[index]))
+			}
+
 		default:
 			log.Warnf("Unknown type in inventory request %d", iv.Type)
 			continue
@@ -441,6 +483,30 @@ func (h *MsgHandlerV1) onNotFound(inv *msg.NotFound) error {
 	for _, iv := range inv.InvList {
 		log.Warnf("data not found type: %s hash: %s", iv.Type.String(), iv.Hash.String())
 	}
+	return nil
+}
+
+func (h *MsgHandlerV1) onMemPool(*msg.MemPool) error {
+	// Only allow mempool requests if server enabled OpenService
+	if LocalNode.Services()&protocol.OpenService != protocol.OpenService {
+		h.node.CloseConn()
+		return fmt.Errorf("peer %d sent mempool request with spen service disabled", h.node.ID())
+	}
+
+	txMemPool := LocalNode.GetTxnPool(false)
+	inv := msg.NewInventory()
+
+	for _, tx := range txMemPool {
+		if !h.node.BloomFilter().IsLoaded() || h.node.BloomFilter().MatchTxAndUpdate(tx) {
+			txId := tx.Hash()
+			inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
+		}
+	}
+
+	if len(inv.InvList) > 0 {
+		h.node.Send(inv)
+	}
+
 	return nil
 }
 

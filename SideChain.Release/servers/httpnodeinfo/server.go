@@ -20,7 +20,7 @@ type Info struct {
 	HttpWsPort    int
 	HttpJsonPort  int
 	HttpLocalPort int
-	NodePort      int
+	NodePort      uint16
 	NodeId        string
 }
 

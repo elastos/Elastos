@@ -18,8 +18,8 @@ type idCache struct {
 
 func (c *idCache) init() {
 	c.index = 0
-	c.idmaplsit = make(map[Uint256]int, protocol.MAXIDCACHED)
-	c.idarray = make([]Uint256, protocol.MAXIDCACHED)
+	c.idmaplsit = make(map[Uint256]int, protocol.MaxIdCached)
+	c.idarray = make([]Uint256, protocol.MaxIdCached)
 }
 
 func (c *idCache) add(id Uint256) {
@@ -29,7 +29,7 @@ func (c *idCache) add(id Uint256) {
 	c.idmaplsit[id] = c.index
 	c.index++
 	c.lastid = id
-	c.index = c.index % protocol.MAXIDCACHED
+	c.index = c.index % protocol.MaxIdCached
 }
 
 func (c *idCache) ExistedID(id Uint256) bool {

@@ -65,11 +65,11 @@ func (node *node) SendPingToNbr() {
 
 func (node *node) HeartBeatMonitor() {
 	noders := LocalNode.GetNeighborNoder()
-	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
+	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
 	for _, n := range noders {
 		if n.State() == p2p.ESTABLISH {
 			t := n.GetLastActiveTime()
-			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KEEPALIVETIMEOUT)) {
+			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KeepAliveTimeout)) {
 				log.Warn("keepalive timeout!!!")
 				n.SetState(p2p.INACTIVITY)
 				n.CloseConn()
@@ -135,7 +135,7 @@ func getNodeAddr(n *node) p2p.NetAddress {
 // a node map method
 // Fixme the Nodes should be a parameter
 func (node *node) updateNodeInfo() {
-	periodUpdateTime := config.DEFAULTGENBLOCKTIME / TIMESOFUPDATETIME
+	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
 	ticker := time.NewTicker(time.Second * (time.Duration(periodUpdateTime)) * 2)
 	for {
 		select {
@@ -158,7 +158,7 @@ func (node *node) CheckConnCnt() {
 }
 
 func (node *node) updateConnection() {
-	t := time.NewTicker(time.Second * CONNMONITOR)
+	t := time.NewTicker(time.Second * ConnMonitor)
 	for {
 		select {
 		case <-t.C:
