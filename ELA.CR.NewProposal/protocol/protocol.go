@@ -20,14 +20,14 @@ const (
 )
 
 const (
-	ProtocolVersion  = 0
-	KeepAliveTimeout = 3
-	DialTimeout      = 6
-	ConnMonitor      = 6
-	MaxSyncHdrReq    = 2 //Max Concurrent Sync Header Request
-	MaxOutBoundCount = 8
-	DefaultMaxPeers  = 125
-	MaxIdCached      = 5000
+	ProtocolVersion   = 0
+	KeepAliveTimeout  = 3
+	DialTimeout       = 6
+	ConnectionMonitor = 6
+	MaxSyncHdrReq     = 2 //Max Concurrent Sync Header Request
+	MaxOutBoundCount  = 8
+	DefaultMaxPeers   = 125
+	MaxIdCached       = 5000
 )
 
 const (
@@ -52,7 +52,7 @@ type Noder interface {
 	Height() uint64
 	GetConn() net.Conn
 	CloseConn()
-	GetConnectionCnt() uint
+	GetConnectionCount() uint
 	GetTxnPool(bool) map[Uint256]*Transaction
 	AppendToTxnPool(*Transaction) ErrCode
 	IsDuplicateSidechainTx(sidechainTxHash string) bool
@@ -62,7 +62,7 @@ type Noder interface {
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay uint8, height uint64)
 	UpdateMsgHelper(handler p2p.MsgHandler)
-	ConnectSeeds()
+	ConnectNodes()
 	Connect(nodeAddr string) error
 	LoadFilter(filter *msg.FilterLoad)
 	BloomFilter() *bloom.Filter
@@ -83,7 +83,7 @@ type Noder interface {
 	RemoveTransaction(txn *Transaction)
 
 	GetNeighborNoder() []Noder
-	GetNbrNodeCnt() uint32
+	GetNeighbourCount() uint32
 	UpdateLastActive()
 	GetLastActiveTime() time.Time
 	SetHeight(height uint64)

@@ -39,21 +39,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState               // node state
-	id            uint64        // The nodes's id
-	version       uint32        // The network protocol the node used
-	services      uint64        // The services the node supplied
-	relay         bool          // The relay capability of the node (merge into capbility flag)
-	height        uint64        // The node latest block height
-	fromExtraNet  bool          // If this node is connected from extra net
-	txnCnt        uint64        // The transactions be transmit by this node
-	rxTxnCnt      uint64        // The transaction received by this node
-	link                        // The link status and infomation
-	nbrNodes                    // The neighbor node connect with currently node except itself
-	eventQueue                  // The event queue to notice notice other modules
-	chain.TxPool                // Unconfirmed transaction pool
-	idCache                     // The buffer to store the id of the items which already be processed
-	filter        *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState              // node state
+	id           uint64        // The nodes's id
+	version      uint32        // The network protocol the node used
+	services     uint64        // The services the node supplied
+	relay        bool          // The relay capability of the node (merge into capbility flag)
+	height       uint64        // The node latest block height
+	fromExtraNet bool          // If this node is connected from extra net
+	txnCnt       uint64        // The transactions be transmit by this node
+	rxTxnCnt     uint64        // The transaction received by this node
+	link                       // The link status and infomation
+	nbrNodes                   // The neighbor node connect with currently node except itself
+	eventQueue                 // The event queue to notice notice other modules
+	chain.TxPool               // Unconfirmed transaction pool
+	idCache                    // The buffer to store the id of the items which already be processed
+	filter       *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -65,13 +65,13 @@ type node struct {
 	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
-	DefaultMaxPeers    uint
-	headerFirstMode    bool
-	RequestedBlockList map[Uint256]time.Time
-	SyncBlkReqSem      Semaphore
-	SyncHdrReqSem      Semaphore
-	StartHash          Uint256
-	StopHash           Uint256
+	DefaultMaxPeers          uint
+	headerFirstMode          bool
+	RequestedBlockList       map[Uint256]time.Time
+	SyncBlkReqSem            Semaphore
+	SyncHdrReqSem            Semaphore
+	StartHash                Uint256
+	StopHash                 Uint256
 }
 
 type ConnectingNodes struct {
@@ -113,10 +113,22 @@ func InitLocalNode() protocol.Noder {
 	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
 	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
 	LocalNode.initConnection()
-	go LocalNode.updateConnection()
-	go LocalNode.updateNodeInfo()
-
+	go LocalNode.Start()
 	return LocalNode
+}
+
+func (node *node) Start() {
+	node.ConnectNodes()
+	node.waitForNeighbourConnections()
+
+	ticker := time.NewTicker(time.Second * protocol.ConnectionMonitor)
+	for {
+		node.ConnectNodes()
+		node.SendPingToNbr()
+		node.SyncBlocks()
+		node.HeartBeatMonitor()
+		<-ticker.C
+	}
 }
 
 func (node *node) UpdateMsgHelper(handler p2p.MsgHandler) {
@@ -283,8 +295,9 @@ func (node *node) GetTime() int64 {
 }
 
 func (node *node) WaitForSyncFinish() {
-	start := time.Now()
-	timeout := time.Second * 10
+	if len(Parameters.SeedList) <= 0 {
+		return
+	}
 	for {
 		log.Trace("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
 		bc := chain.DefaultLedger.Blockchain
@@ -293,19 +306,30 @@ func (node *node) WaitForSyncFinish() {
 		heights := node.GetNeighborHeights()
 		log.Trace("others height is ", heights)
 
-		if len(Parameters.SeedList) > 0 && len(heights) < 1 {
-			goto Wait
-		}
-
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 			LocalNode.SetSyncHeaders(false)
 			break
 		}
+		time.Sleep(5 * time.Second)
+	}
+}
 
-	Wait:
-		now := <-time.After(5 * time.Second)
-		if len(heights) < 1 && start.Add(timeout).Before(now) {
-			break
+func (node *node) waitForNeighbourConnections() {
+	if len(Parameters.SeedList) <= 0 {
+		return
+	}
+	ticker := time.NewTicker(time.Millisecond * 100)
+	timer := time.NewTimer(time.Second * 10)
+	for {
+		select {
+		case <-ticker.C:
+			if node.GetNeighbourCount() > 0 {
+				log.Info("successfully connect to neighbours, neighbour count:", node.GetNeighbourCount())
+				return
+			}
+		case <-timer.C:
+			log.Warn("cannot connect to any neighbours, waiting for neighbour connections time out")
+			return
 		}
 	}
 }

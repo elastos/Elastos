@@ -115,8 +115,9 @@ func (node *node) ReqNeighborList() {
 	go node.Send(new(msg.GetAddr))
 }
 
-func (node *node) ConnectSeeds() {
-	if node.nbrNodes.GetConnectionCnt() < MinConnectionCount {
+func (node *node) ConnectNodes() {
+	connectionCount := node.nbrNodes.GetConnectionCount()
+	if connectionCount < MinConnectionCount {
 		for _, nodeAddr := range config.Parameters.SeedList {
 			found := false
 			var n Noder
@@ -141,15 +142,16 @@ func (node *node) ConnectSeeds() {
 			}
 		}
 	}
-}
 
-func (node *node) ConnectNode() {
-	cntcount := node.nbrNodes.GetConnectionCnt()
-	if cntcount < MaxOutBoundCount {
+	if connectionCount < MaxOutBoundCount {
 		addrs := node.RandGetAddresses(node.GetNeighborAddrs())
 		for _, addr := range addrs {
 			go node.Connect(addr.String())
 		}
+	}
+
+	if connectionCount > DefaultMaxPeers {
+		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.RandGetANbr())
 	}
 }
 
@@ -161,41 +163,4 @@ func getNodeAddr(n *node) p2p.NetAddress {
 	addr.Port = n.Port()
 	addr.ID = n.ID()
 	return addr
-}
-
-// FIXME part of node info update function could be a node method itself intead of
-// a node map method
-// Fixme the Nodes should be a parameter
-func (node *node) updateNodeInfo() {
-	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
-	ticker := time.NewTicker(time.Second * (time.Duration(periodUpdateTime)) * 2)
-	for {
-		select {
-		case <-ticker.C:
-			node.SendPingToNbr()
-			node.SyncBlocks()
-			node.HeartBeatMonitor()
-		}
-	}
-	// TODO when to close the timer
-	//close(quit)
-}
-
-func (node *node) CheckConnCnt() {
-	//compare if connect count is larger than DefaultMaxPeers, disconnect one of the connection
-	if node.nbrNodes.GetConnectionCnt() > DefaultMaxPeers {
-		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.RandGetANbr())
-	}
-}
-
-func (node *node) updateConnection() {
-	t := time.NewTicker(time.Second * ConnMonitor)
-	for {
-		select {
-		case <-t.C:
-			node.ConnectSeeds()
-			node.ConnectNode()
-			node.CheckConnCnt()
-		}
-	}
 }

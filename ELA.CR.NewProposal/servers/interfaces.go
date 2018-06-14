@@ -303,7 +303,7 @@ func GetInfo(param Params) map[string]interface{} {
 		Balance:        0,
 		Blocks:         NodeForServers.Height(),
 		Timeoffset:     0,
-		Connections:    NodeForServers.GetConnectionCnt(),
+		Connections:    NodeForServers.GetConnectionCount(),
 		Keypoololdest:  0,
 		Keypoolsize:    0,
 		Unlocked_until: 0,
@@ -338,6 +338,10 @@ func ToggleMining(param Params) map[string]interface{} {
 }
 
 func DiscreteMining(param Params) map[string]interface{} {
+
+	if LocalPow == nil{
+		return ResponsePack(PowServiceNotStarted, "")
+	}
 	count, ok := param.Uint("count")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -358,7 +362,7 @@ func DiscreteMining(param Params) map[string]interface{} {
 }
 
 func GetConnectionCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, NodeForServers.GetConnectionCnt())
+	return ResponsePack(Success, NodeForServers.GetConnectionCount())
 }
 
 func GetTransactionPool(param Params) map[string]interface{} {
@@ -858,7 +862,7 @@ func VerifyAndSendTx(txn *Transaction) ErrCode {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")
-		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool.")
+		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", errCode)
 		return errCode
 	}
 	if err := NodeForServers.Relay(nil, txn); err != nil {
