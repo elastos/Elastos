@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"math/big"
 	"time"
@@ -57,48 +56,70 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 
-	// The first transaction in a block must be a coinbase.
 	transactions := block.Transactions
-	if !transactions[0].IsCoinBaseTx() {
-		return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
-	}
+	var rewardInCoinbase = Fixed64(0)
+	var totalTxFee = Fixed64(0)
+	for index, tx := range transactions {
+		// The first transaction in a block must be a coinbase.
+		if index == 0 {
+			if !tx.IsCoinBaseTx() {
+				return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
+			}
+			// Calculate reward in coinbase
+			for _, output := range tx.Outputs {
+				rewardInCoinbase += output.Value
+			}
+			continue
+		}
 
-	// A block must not have more than one coinbase.
-	for _, tx := range transactions[1:] {
+		// A block must not have more than one coinbase.
 		if tx.IsCoinBaseTx() {
 			return errors.New("[PowCheckBlockSanity] block contains second coinbase")
 		}
+
+		// Calculate transaction fee
+		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
 	}
 
-	var tharray []Uint256
-	for _, txn := range transactions {
-		txhash := txn.Hash()
-		tharray = append(tharray, txhash)
+	// Reward in coinbase must match total transaction fee
+	if rewardInCoinbase != totalTxFee {
+		return errors.New("[PowCheckBlockSanity] reward amount in coinbase not correct")
 	}
-	calcTransactionsRoot, err := crypto.ComputeRoot(tharray)
+
+	txIds := make([]Uint256, 0, len(transactions))
+	existingTxIds := make(map[Uint256]struct{})
+	existingTxInputs := make(map[string]struct{})
+	for _, txn := range transactions {
+		txId := txn.Hash()
+		// Check for duplicate transactions.
+		if _, exists := existingTxIds[txId]; exists {
+			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
+		}
+		existingTxIds[txId] = struct{}{}
+
+		// Check for transaction sanity
+		if errCode := CheckTransactionSanity(txn); errCode != Success {
+			return errors.New("CheckTransactionSanity failed when verifiy block")
+		}
+
+		// Check for duplicate UTXO inputs in a block
+		for _, input := range txn.Inputs {
+			referKey := input.ReferKey()
+			if _, exists := existingTxInputs[referKey]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate UTXO")
+			}
+			existingTxInputs[referKey] = struct{}{}
+		}
+
+		// Append transaction to list
+		txIds = append(txIds, txId)
+	}
+	calcTransactionsRoot, err := crypto.ComputeRoot(txIds)
 	if err != nil {
 		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
 	}
 	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
 		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
-	}
-
-	// Check for duplicate transactions.  This check will be fairly quick
-	// since the transaction hashes are already cached due to building the
-	// merkle tree above.
-	existingTxHashes := make(map[Uint256]struct{})
-	for _, txn := range transactions {
-		txHash := txn.Hash()
-		if _, exists := existingTxHashes[txHash]; exists {
-			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
-		}
-		existingTxHashes[txHash] = struct{}{}
-	}
-
-	for _, txVerify := range transactions {
-		if errCode := CheckTransactionSanity(txVerify); errCode != Success {
-			return errors.New(fmt.Sprintf("CheckTransactionSanity failed when verifiy block"))
-		}
 	}
 
 	return nil
@@ -140,13 +161,6 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 			return errors.New("block contains unfinalized transaction")
 		}
 	}
-
-	// for _, txVerify := range block.Transactions {
-	// 	if errCode := CheckTransactionContext(txVerify, ledger); errCode != ErrNoError {
-	// 		fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
-	// 		return errors.New(fmt.Sprintf("CheckTransactionContext failed when verifiy block"))
-	// 	}
-	// }
 
 	return nil
 }
