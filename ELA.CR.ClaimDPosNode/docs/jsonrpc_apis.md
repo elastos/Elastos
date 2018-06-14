@@ -387,6 +387,52 @@ result sample:
   "jsonrpc": "2.0",
 }
 ```
+
+#### listunspent
+
+description: list all utxo of given addresses 
+
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| addresses | arrry[string] | addresses | 
+
+result:
+please see below
+
+argument sample:
+```json
+{
+    "method":"listunspent",
+    "params":{"addresses": ["8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3", "EeEkSiRMZqg5rd9a2yPaWnvdPcikFtsrjE"]}
+}
+```
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": [
+        {
+            "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+            "txid": "9132cf82a18d859d200c952aec548d7895e7b654fd1761d5d059b91edbad1768",
+            "vout": 0,
+            "address": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+            "amount": "33000000",
+            "confirmations": 1102
+        },
+        {
+            "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+            "txid": "3edbcc839fd4f16c0b70869f2d477b56a006d31dc7a10d8cb49bd12628d6352e",
+            "vout": 0,
+            "address": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+            "amount": "0.01255707",
+            "confirmations": 846
+        }
+    ]
+```
 #### setloglevel
 
 description: set log level
