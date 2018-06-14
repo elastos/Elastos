@@ -160,17 +160,20 @@ func CheckTransactionOutput(txn *core.Transaction) error {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
 		}
-		found := false
+
+		var totalReward = Fixed64(0)
+		var foundationReward = Fixed64(0)
 		for _, output := range txn.Outputs {
 			if output.AssetID != DefaultLedger.Blockchain.AssetID {
 				return errors.New("asset ID in coinbase is invalid")
 			}
-			if FoundationAddress.IsEqual(output.ProgramHash) {
-				found = true
+			totalReward += output.Value
+			if output.ProgramHash.IsEqual(FoundationAddress) {
+				foundationReward += output.Value
 			}
 		}
-		if !found {
-			return errors.New("no foundation address in coinbase output")
+		if Fixed64(foundationReward) < Fixed64(float64(totalReward)*0.3) {
+			return errors.New("Reward to foundation in coinbase < 30%")
 		}
 
 		return nil
@@ -187,7 +190,7 @@ func CheckTransactionOutput(txn *core.Transaction) error {
 	// check if output address is valid
 	for _, output := range txn.Outputs {
 		if output.AssetID != DefaultLedger.Blockchain.AssetID {
-			return errors.New("asset ID in coinbase is invalid")
+			return errors.New("asset ID in output is invalid")
 		}
 
 		if !CheckOutputProgramHash(output.ProgramHash) {
@@ -282,7 +285,7 @@ func CheckTransactionBalance(txn *core.Transaction) error {
 	}
 	for _, v := range results {
 		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			return fmt.Errorf("transaction fee not enough")
+			return fmt.Errorf("Transaction fee not enough")
 		}
 	}
 	return nil
@@ -298,7 +301,7 @@ func CheckTransactionSignature(txn *core.Transaction) error {
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {
-	return amount.IntValue()%int64(math.Pow(10, 8-float64(precision))) == 0
+	return amount.IntValue()%int64(math.Pow(10, float64(8-precision))) == 0
 }
 
 func CheckTransactionPayload(txn *core.Transaction) error {
