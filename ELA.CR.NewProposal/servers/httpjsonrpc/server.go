@@ -45,7 +45,7 @@ func StartRPCServer() {
 	mainMux["getblockcount"] = GetBlockCount
 	mainMux["gettransaction"] = GetTransactionByHash
 	mainMux["getblockbyheight"] = GetBlockByHeight
-
+	mainMux["listunspent"] = ListUnspent
 	// aux interfaces
 	mainMux["help"] = AuxHelp
 	mainMux["submitauxblock"] = SubmitAuxBlock
@@ -176,6 +176,8 @@ func convertParams(method string, params []interface{}) Params {
 		return FromArray(params, "count")
 	case "sendrawtransaction":
 		return FromArray(params, "data")
+	case "listunspent":
+		return FromArray(params, "addresses")
 	default:
 		return Params{}
 	}
