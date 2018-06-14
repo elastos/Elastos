@@ -8,6 +8,7 @@
 
 #include "CMemBlock.h"
 #include "Utils.h"
+#include "WalletTool.h"
 
 using namespace Elastos::SDK;
 
@@ -145,4 +146,40 @@ TEST_CASE ("enctrypt/decrept content without nothing and password with "" ", "[a
 
 		REQUIRE(0 == strcmp(content, (const char *) (const void *) DataBeDecrypted));
 	}
+}
+
+TEST_CASE("uint256 string", "[Utils]") {
+	CMemBlock<uint8_t> mb_rand = WalletTool::GenerateSeed256();
+	UInt256 u256 = {0};
+	UInt256Get(&u256, (const void *) mb_rand);
+
+	std::string strUI256 = Utils::UInt256ToString(u256);
+	UInt256 u256_recov = Utils::UInt256FromString(strUI256);
+
+	REQUIRE(1 == UInt256Eq(&u256_recov, &u256));
+}
+
+TEST_CASE("uint168 string", "[Utils]") {
+	CMemBlock<uint8_t> mb_rand(21);
+	for (size_t i = 0; i < 21; i++) {
+		mb_rand[i] = Utils::getRandomByte();
+	}
+	UInt168 u168 = {0};
+	UInt168Get(&u168, (const void *) mb_rand);
+
+	std::string strUI168 = Utils::UInt168ToString(u168);
+	UInt168 u168_recov = Utils::UInt168FromString(strUI168);
+
+	REQUIRE(1 == UInt168Eq(&u168_recov, &u168));
+}
+
+TEST_CASE("uint128 string", "[Utils]") {
+	CMemBlock<uint8_t> mb_rand = WalletTool::GenerateSeed128();
+	UInt128 u128 = {0};
+	UInt128Get(&u128, (const void *) mb_rand);
+
+	std::string strUI128 = Utils::UInt128ToString(u128);
+	UInt128 u128_recov = Utils::UInt128FromString(strUI128);
+
+	REQUIRE(1 == UInt128Eq(&u128_recov, &u128));
 }

@@ -245,6 +245,17 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 
+			CMemBlock<char> cb_mnemonic;
+			cb_mnemonic.SetMemFixed(mnemonic.c_str(), mnemonic.size() + 1);
+#ifdef MNEMONIC_SOURCE_H
+			if (!Wallet_Tool::PhraseIsValid(cb_mnemonic, _mnemonic->getLanguage())) {
+#else
+			if (!WalletTool::PhraseIsValid(cb_mnemonic, _mnemonic->words())) {
+#endif
+				Log::error("Invalid mnemonic.");
+				return false;
+			}
+
 			return initFromPhrase(mnemonic, phrasePassword, payPassword);
 		}
 
@@ -315,7 +326,7 @@ namespace Elastos {
 					Log::error("Phrase is unvalid.");
 					return false;
 				} else {
-					_keyStore.json().setMnemonicLanguage("chinese");
+					_localStore.json().setMnemonicLanguage("chinese");
 				}
 			}
 #else
@@ -328,8 +339,8 @@ namespace Elastos {
 #endif
 			CMBlock cbPhrase0 = Utils::convertToMemBlock<unsigned char>(phrase);
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbPhrase0, payPassword));
-			CMBlock PhrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
-			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(PhrasePass, payPassword));
+			CMBlock phrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
+			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, payPassword));
 
 			//init master public key and private key
 			CMemBlock<char> cbPhrase;
