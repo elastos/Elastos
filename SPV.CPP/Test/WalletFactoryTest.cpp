@@ -35,6 +35,44 @@ protected:
 	}
 };
 
+TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]") {
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+	std::string masterWalletId = "MasterWalletId";
+
+	Enviroment::InitializeRootPath("Data");
+	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
+
+	SECTION("Normal creation") {
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
+		MasterWallet *masterWallet1 = static_cast<MasterWallet *>(masterWallet);
+		REQUIRE_FALSE(masterWallet1->Initialized());
+
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+}
+
+TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMasterWallet]") {
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+	std::string masterWalletId = "MasterWalletId";
+
+	Enviroment::InitializeRootPath("Data");
+	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
+	IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
+
+	SECTION("Normal initialization") {
+		REQUIRE_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
+
+		std::string mnemonic = masterWallet->GenerateMnemonic();
+		CHECK(masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword,
+														  payPassword));
+		REQUIRE_NOTHROW(masterWallet->GetPublicKey());
+
+		masterWalletManager->DestroyWallet(masterWallet->GetId());
+	}
+}
+
 
 TEST_CASE(
 		"Wallet factory ExportWalletWithMnemonic generate  mnemonic (english  chinese italian japanese spanish french)",
@@ -115,7 +153,7 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string masterWalletId = "masterWalletId";
+	std::string masterWalletId = "MasterWalletId";
 
 	boost::scoped_ptr<IMasterWallet> masterWallet;
 	SECTION("Create master wallet") {
@@ -685,7 +723,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 //	std::string phrasePassword = "phrasePassword";
 //	std::string payPassword = "payPassword";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //
 //
 //	SECTION("export & import  WithKeystore mnemonic spanish ") {
@@ -1021,7 +1059,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 //	std::string phrasePassword = "phrasePassword";
 //	std::string payPassword = "payPassword";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //
 //	SECTION("Normal creation") {
 //		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, phrasePassword,
@@ -1065,7 +1103,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 //	std::string phrasePassword = "phrasePassword";
 //	std::string payPassword = "payPassword";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //
 //	SECTION("Normal destroying") {
 //		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, phrasePassword,
@@ -1102,7 +1140,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	std::string phrasePassword = "phrasePassword";
 //	std::string payPassword = "payPassword";
 //	std::string backupPassword = "backupPassword";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //
 //	SECTION("Save") {
 //		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, phrasePassword,
@@ -1117,7 +1155,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 //	std::string phrasePassword = "phrasePassword";
 //	std::string payPassword = "payPassword";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 //
 //	SECTION("Normal importing") {
@@ -1173,7 +1211,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 //	std::string phrasePassword = "phrasePassword";
 //	std::string payPassword = "payPassword";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 //	boost::scoped_ptr<IMasterWallet> masterWallet(
 //			masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic, phrasePassword, payPassword));
@@ -1209,7 +1247,7 @@ TEST_CASE("Wallet factory mnemonic export & import password is mix all", "[Maste
 //	boost::scoped_ptr<MasterWalletManager> masterWalletManager(new MasterWalletManager());
 //	std::string payPassword = "11111111";
 //	std::string backupPassword = "11111111";
-//	std::string masterWalletId = "masterWalletId";
+//	std::string masterWalletId = "MasterWalletId";
 //	std::string keystorePath = "webwallet.json";
 //
 //	if (boost::filesystem::exists(keystorePath)) {

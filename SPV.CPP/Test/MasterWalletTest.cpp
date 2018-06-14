@@ -50,7 +50,8 @@ public:
 		info.setUsedMaxAddressIndex(0);
 		info.setChainId(chainID);
 		info.setFeePerKb(feePerKb);
-		info.setEncryptedKey("4c336d6e4d6b724b55676f666f6e716e464b79394a5532533657724b314350555955356f35577a4d6e4a5054715963526370734700");
+		info.setEncryptedKey(
+				"4c336d6e4d6b724b55676f666f6e716e464b79394a5532533657724b314350555955356f35577a4d6e4a5054715963526370734700");
 		info.setChainCode("0000000000000000000000000000000000000000000000000000000000000000");
 		std::vector<CoinInfo> coinInfoList = {info};
 		restoreSubWallets(coinInfoList);
@@ -78,15 +79,26 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
 		REQUIRE_FALSE(masterWallet->Initialized());
 
+		//override from IMasterWallet
+		CHECK_NOTHROW(masterWallet->GenerateMnemonic());
+		CHECK_NOTHROW(masterWallet->GetId());
+		CHECK_NOTHROW(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
+		CHECK_NOTHROW(masterWallet->GetSupportedChains());
 		CHECK_THROWS_AS(masterWallet->CreateSubWallet(chainId, payPassword, false), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->RecoverSubWallet(chainId, payPassword, false, 1), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->DestroyWallet(nullptr), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->Sign("mymessage", payPassword), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->CheckSign("ilegal pubKey", "mymessage", "ilegal signature"), std::logic_error);
-		std::string id;
-		std::string key;
+
+		//override from IIdAgent
+		CHECK_NOTHROW(masterWallet->IsIdValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
 		CHECK_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(44, 0, payPassword), std::logic_error);
+		CHECK_THROWS_AS(masterWallet->GenerateProgram("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y", "mymessage", payPassword),
+						std::logic_error);
+		CHECK_THROWS_AS(masterWallet->Sign("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y", "mymessage", payPassword),
+						std::logic_error);
+		CHECK_THROWS_AS(masterWallet->GetAllIds(), std::logic_error);
 	}
 	SECTION("Class public methods will not throw after mater initialized by importFromMnemonic") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
@@ -97,15 +109,14 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 
 		REQUIRE(masterWallet->Initialized());
 
+		//override from IMasterWallet
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
 		REQUIRE(subWallet != nullptr);
-
 		ISubWallet *subWallet1 = masterWallet->RecoverSubWallet(chainId, payPassword, false, 1);
 		REQUIRE(subWallet1 != nullptr);
 
 		std::string message = "mymessage";
 		std::string signedMessage = masterWallet->Sign(message, payPassword);
-
 		REQUIRE_FALSE(signedMessage.empty());
 
 		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), message, signedMessage);
@@ -274,6 +285,10 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 														"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 														false), std::invalid_argument);
 	}
+}
+
+TEST_CASE("Master wallet GenerateMnemonic method test", "[GenerateMnemonic]") {
+
 }
 
 TEST_CASE("Master wallet RecoverSubWallet method test", "[RecoverSubWallet]") {
@@ -464,8 +479,47 @@ TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
 	}
 }
 
+TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
+	std::string language = "english";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
+
+	SECTION("Normal test") {
+		REQUIRE(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3")); //normal
+		REQUIRE(masterWallet->IsAddressValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y")); //id
+		REQUIRE(masterWallet->IsAddressValid("XFjTcbZ9sN8CAmUhNTjf67AFFC3RBYoCRB")); //cross chain
+		REQUIRE(masterWallet->IsAddressValid("8FQZdRrN8bSJuzSJh4im2teMqZoenmeJ4u")); //multi-sign
+	}
+	SECTION("Invalid id with not base58 character") {
+		REQUIRE_FALSE(masterWallet->IsAddressValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26I"));
+	}
+	SECTION("Invalid id with wrong length") {
+		REQUIRE_FALSE(masterWallet->IsAddressValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26"));
+	}
+	SECTION("Invalid id with wrong prefix") {
+		REQUIRE_FALSE(masterWallet->IsAddressValid("Ym1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
+	}
+}
+
 TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
-	//todo complete me
+	std::string language = "english";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(language));
+
+	SECTION("Normal test") {
+		REQUIRE(masterWallet->IsIdValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
+	}
+	SECTION("Invalid id with not base58 character") {
+		REQUIRE_FALSE(masterWallet->IsIdValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26I"));
+	}
+	SECTION("Invalid id with wrong length") {
+		REQUIRE_FALSE(masterWallet->IsIdValid("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26"));
+	}
+	SECTION("Invalid id with wrong prefix") {
+		REQUIRE_FALSE(masterWallet->IsIdValid("Ym1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y"));
+	}
+	SECTION("Invalid even is a valid normal address") {
+		REQUIRE(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
+		REQUIRE_FALSE(masterWallet->IsIdValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
+	}
 }
 
 TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]") {

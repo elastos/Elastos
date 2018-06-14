@@ -34,7 +34,7 @@ namespace Elastos {
 
 			bool Initialized() const;
 
-			void Save();
+			virtual void Save();
 
 		public: //override from IMasterWallet
 

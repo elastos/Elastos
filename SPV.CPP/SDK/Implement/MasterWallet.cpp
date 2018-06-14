@@ -38,6 +38,7 @@ namespace Elastos {
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
 			resetMnemonic(_localStore.GetLanguage());
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 			_initialized = true;
 		}
 
@@ -52,7 +53,7 @@ namespace Elastos {
 			resetMnemonic(language);
 			_keyStore.json().setMnemonicLanguage(language);
 
-			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this));
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -66,6 +67,7 @@ namespace Elastos {
 		}
 
 		void MasterWallet::Save() {
+			_localStore.SetIdAgentInfo(_idAgentImpl->GetIdAgentInfo());
 
 			std::vector<CoinInfo> coinInfos;
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
@@ -83,17 +85,20 @@ namespace Elastos {
 			_localStore.Save(path);
 		}
 
+		std::string MasterWallet::GetId() const {
+			return _id;
+		}
+
 		std::vector<ISubWallet *> MasterWallet::GetAllSubWallets() const {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
 			std::vector<ISubWallet *> result;
 			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
 				result.push_back(it->second);
 			}
 
 			return result;
-		}
-
-		std::string MasterWallet::GetId() const {
-			return _id;
 		}
 
 		ISubWallet *
@@ -489,6 +494,9 @@ namespace Elastos {
 		}
 
 		std::vector<std::string> MasterWallet::GetAllIds() const {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
 			return _idAgentImpl->GetAllIds();
 		}
 

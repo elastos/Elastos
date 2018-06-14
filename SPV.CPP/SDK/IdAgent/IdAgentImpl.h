@@ -30,7 +30,7 @@ namespace Elastos {
 
 		class IdAgentImpl {
 		public:
-			IdAgentImpl(MasterWallet *parentWallet);
+			IdAgentImpl(MasterWallet *parentWallet, const IdAgentInfo &info);
 
 			~IdAgentImpl();
 
@@ -49,6 +49,8 @@ namespace Elastos {
 			std::string GenerateRedeemScript(const std::string &id, const std::string &password);
 
 			std::vector<std::string> GetAllIds() const;
+
+			const IdAgentInfo &GetIdAgentInfo() const;
 
 		private:
 			KeyPtr generateKey(const std::string &id, const std::string &password);

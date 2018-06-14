@@ -40,8 +40,9 @@ namespace Elastos {
 			}
 		}
 
-		IdAgentImpl::IdAgentImpl(MasterWallet *parentWallet) :
-				_parentWallet(parentWallet) {
+		IdAgentImpl::IdAgentImpl(MasterWallet *parentWallet, const IdAgentInfo &info) :
+				_parentWallet(parentWallet),
+				_info(info) {
 
 		}
 
@@ -126,6 +127,10 @@ namespace Elastos {
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
 			return key->keyToRedeemScript(ELA_IDCHAIN);
+		}
+
+		const IdAgentInfo& IdAgentImpl::GetIdAgentInfo() const {
+			return _info;
 		}
 
 	}
