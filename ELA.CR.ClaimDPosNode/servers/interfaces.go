@@ -408,7 +408,7 @@ func GetBlockInfo(block *Block, verbose bool) BlockInfo {
 		Bits:              block.Header.Bits,
 		Difficulty:        chain.CalcCurrentDifficulty(block.Header.Bits),
 		ChainWork:         BytesToHexString(chainWork[:]),
-		PreviousBlockHash: block.Header.Previous.String(),
+		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),
 		AuxPow:            BytesToHexString(auxPow.Bytes()),
 	}
