@@ -43,7 +43,6 @@ type PowService struct {
 	PayToAddr     string
 	MsgBlock      msgBlock
 	Mutex         sync.Mutex
-	logDictionary string
 	started       bool
 	manualMining  bool
 	localNode     protocol.Noder
@@ -221,7 +220,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	defer ticker.Stop()
 
 	for {
-		log.Trace("<================Manual Mining==============>\n")
+		log.Trace("<================Discrete Mining==============>\n")
 
 		msgBlock, err := pow.GenerateBlock(pow.PayToAddr)
 		if err != nil {
@@ -346,14 +345,13 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 	}
 }
 
-func NewPowService(logDictionary string, localNode protocol.Noder) *PowService {
+func NewPowService(localNode protocol.Noder) *PowService {
 	pow := &PowService{
 		PayToAddr:     config.Parameters.PowConfiguration.PayToAddr,
 		started:       false,
 		manualMining:  false,
 		MsgBlock:      msgBlock{BlockData: make(map[string]*core.Block)},
 		localNode:     localNode,
-		logDictionary: logDictionary,
 	}
 
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)

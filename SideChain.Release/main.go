@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/node"
+	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/protocol"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
@@ -15,13 +16,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
-	"github.com/elastos/Elastos.ELA.SideChain/pow"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
-	FoundationAddress = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	FoundationAddress   = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	DefaultMultiCoreNum = 4
 )
 
@@ -50,10 +50,10 @@ func init() {
 }
 
 func startConsensus(noder protocol.Noder) {
-	servers.Pow = pow.NewPowService("logPow", noder)
+	servers.LocalPow = pow.NewPowService(noder)
 	if config.Parameters.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
-		go servers.Pow.Start()
+		go servers.LocalPow.Start()
 	}
 }
 
