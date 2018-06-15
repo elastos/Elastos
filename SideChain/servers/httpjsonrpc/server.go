@@ -33,7 +33,6 @@ func StartRPCServer() {
 	mainMux["setloglevel"] = SetLogLevel
 	mainMux["getinfo"] = GetInfo
 	mainMux["getblock"] = GetBlockByHash
-	mainMux["getcurrentheight"] = GetCurrentHeight
 	mainMux["getblockhash"] = GetBlockHash
 	mainMux["getconnectioncount"] = GetConnectionCount
 	mainMux["getrawmempool"] = GetTransactionPool
@@ -42,13 +41,11 @@ func StartRPCServer() {
 	mainMux["getnodestate"] = GetNodeState
 	mainMux["sendtransactioninfo"] = SendTransactionInfo
 	mainMux["sendrawtransaction"] = SendRawTransaction
-	mainMux["submitblock"] = SubmitBlock
 	mainMux["getbestblockhash"] = GetBestBlockHash
 	mainMux["getblockcount"] = GetBlockCount
-	mainMux["gettransaction"] = GetTransactionByHash
+	mainMux["getblockbyheight"] = GetBlockByHeight
 	mainMux["getdestroyedtransactions"] = GetDestroyedTransactionsByHeight
 	mainMux["getexistdeposittransactions"] = GetExistDepositTransactions
-	mainMux["getblockbyheight"] = GetBlockByHeight
 
 	// aux interfaces
 	mainMux["help"] = AuxHelp
