@@ -16,8 +16,8 @@ import (
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
-	LocalNode.nbrNodes.RLock()
-	defer LocalNode.nbrNodes.RUnlock()
+	LocalNode.neighbourNodes.RLock()
+	defer LocalNode.neighbourNodes.RUnlock()
 	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
 		if n.IsSyncHeaders() {
@@ -111,56 +111,54 @@ func (node *node) HeartBeatMonitor() {
 	}
 }
 
-func (node *node) ReqNeighborList() {
+func (node *node) RequireNeighbourList() {
 	go node.Send(new(msg.GetAddr))
 }
 
 func (node *node) ConnectNodes() {
-	connectionCount := node.nbrNodes.GetConnectionCount()
+	connectionCount := node.neighbourNodes.GetConnectionCount()
 	if connectionCount < MinConnectionCount {
-		for _, nodeAddr := range config.Parameters.SeedList {
-			found := false
-			var n Noder
-			node.nbrNodes.Lock()
-			for _, tn := range node.nbrNodes.List {
-				addr := getNodeAddr(tn)
-				if nodeAddr == addr.String() {
-					n = tn
-					found = true
-					break
-				}
-			}
-			node.nbrNodes.Unlock()
-			if found {
-				if n.State() == p2p.ESTABLISH {
-					if LocalNode.NeedMoreAddresses() {
-						n.ReqNeighborList()
-					}
-				}
+		for _, seedAddress := range config.Parameters.SeedList {
+			neighbour, ok := existedInNeighbourList(seedAddress, node.neighbourNodes)
+			if ok && neighbour.State() == p2p.ESTABLISH {
+				neighbour.RequireNeighbourList()
 			} else { //not found
-				go node.Connect(nodeAddr)
+				go node.Connect(seedAddress)
 			}
 		}
 	}
 
 	if connectionCount < MaxOutBoundCount {
-		addrs := node.RandGetAddresses(node.GetNeighborAddrs())
-		for _, addr := range addrs {
+		address := node.RandGetAddresses(node.GetNeighbourAddress())
+		for _, addr := range address {
 			go node.Connect(addr.String())
 		}
 	}
 
 	if connectionCount > DefaultMaxPeers {
-		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.RandGetANbr())
+		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly())
 	}
 }
 
-func getNodeAddr(n *node) p2p.NetAddress {
+func existedInNeighbourList(seedAddress string, neighbours neighbourNodes) (*node, bool) {
+	neighbours.Lock()
+	defer neighbours.Unlock()
+
+	for _, neighbour := range neighbours.List {
+		neighbourAddress := neighbour.getNodeAddress()
+		if seedAddress == neighbourAddress {
+			return neighbour, true
+		}
+	}
+	return nil, false
+}
+
+func (node *node) getNodeAddress() string {
 	var addr p2p.NetAddress
-	addr.IP, _ = n.Addr16()
-	addr.Time = n.GetTime()
-	addr.Services = n.Services()
-	addr.Port = n.Port()
-	addr.ID = n.ID()
-	return addr
+	addr.IP, _ = node.Addr16()
+	addr.Time = node.GetTime()
+	addr.Services = node.Services()
+	addr.Port = node.Port()
+	addr.ID = node.ID()
+	return addr.String()
 }
