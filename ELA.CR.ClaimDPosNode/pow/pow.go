@@ -49,14 +49,9 @@ type PowService struct {
 	quit chan struct{}
 }
 
-func (pow *PowService) GetTransactionCount() int {
-	transactionsPool := node.LocalNode.GetTxnPool(true)
-	return len(transactionsPool)
-}
-
 func (pow *PowService) CollectTransactions(MsgBlock *Block) int {
 	txs := 0
-	transactionsPool := node.LocalNode.GetTxnPool(true)
+	transactionsPool := node.LocalNode.GetTransactionPool(true)
 
 	for _, tx := range transactionsPool {
 		log.Trace(tx)
@@ -140,7 +135,7 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 	txCount := 1
 	totalTxFee := common.Fixed64(0)
 	var txsByFeeDesc byFeeDesc
-	txsInPool := node.LocalNode.GetTxnPool(false)
+	txsInPool := node.LocalNode.GetTransactionPool(false)
 	txsByFeeDesc = make([]*Transaction, 0, len(txsInPool))
 	for _, v := range txsInPool {
 		txsByFeeDesc = append(txsByFeeDesc, v)
