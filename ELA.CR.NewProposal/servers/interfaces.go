@@ -155,7 +155,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetNeighbors(param Params) map[string]interface{} {
-	return ResponsePack(Success, NodeForServers.GetNeighborAddrs())
+	return ResponsePack(Success, NodeForServers.GetNeighbourAddress())
 }
 
 func GetNodeState(param Params) map[string]interface{} {
@@ -352,7 +352,7 @@ func ToggleMining(param Params) map[string]interface{} {
 
 func DiscreteMining(param Params) map[string]interface{} {
 
-	if LocalPow == nil{
+	if LocalPow == nil {
 		return ResponsePack(PowServiceNotStarted, "")
 	}
 	count, ok := param.Uint("count")

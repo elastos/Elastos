@@ -39,21 +39,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState              // node state
-	id           uint64        // The nodes's id
-	version      uint32        // The network protocol the node used
-	services     uint64        // The services the node supplied
-	relay        bool          // The relay capability of the node (merge into capbility flag)
-	height       uint64        // The node latest block height
-	fromExtraNet bool          // If this node is connected from extra net
-	txnCnt       uint64        // The transactions be transmit by this node
-	rxTxnCnt     uint64        // The transaction received by this node
-	link                       // The link status and infomation
-	nbrNodes                   // The neighbor node connect with currently node except itself
-	eventQueue                 // The event queue to notice notice other modules
-	chain.TxPool               // Unconfirmed transaction pool
-	idCache                    // The buffer to store the id of the items which already be processed
-	filter       *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState                // node state
+	id             uint64        // The nodes's id
+	version        uint32        // The network protocol the node used
+	services       uint64        // The services the node supplied
+	relay          bool          // The relay capability of the node (merge into capbility flag)
+	height         uint64        // The node latest block height
+	fromExtraNet   bool          // If this node is connected from extra net
+	txnCnt         uint64        // The transactions be transmit by this node
+	rxTxnCnt       uint64        // The transaction received by this node
+	link                         // The link status and infomation
+	neighbourNodes               // The neighbor node connect with currently node except itself
+	eventQueue                   // The event queue to notice notice other modules
+	chain.TxPool                 // Unconfirmed transaction pool
+	idCache                      // The buffer to store the id of the items which already be processed
+	filter         *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -65,13 +65,13 @@ type node struct {
 	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
-	DefaultMaxPeers          uint
-	headerFirstMode          bool
-	RequestedBlockList       map[Uint256]time.Time
-	SyncBlkReqSem            Semaphore
-	SyncHdrReqSem            Semaphore
-	StartHash                Uint256
-	StopHash                 Uint256
+	DefaultMaxPeers    uint
+	headerFirstMode    bool
+	RequestedBlockList map[Uint256]time.Time
+	SyncBlkReqSem      Semaphore
+	SyncHdrReqSem      Semaphore
+	StartHash          Uint256
+	StopHash           Uint256
 }
 
 type ConnectingNodes struct {
@@ -104,7 +104,7 @@ func InitLocalNode() protocol.Noder {
 	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(LocalNode.id))
 
 	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
-	LocalNode.nbrNodes.init()
+	LocalNode.neighbourNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
 	LocalNode.eventQueue.init()
@@ -150,9 +150,9 @@ func (node *node) DumpInfo() {
 }
 
 func (node *node) IsAddrInNbrList(addr string) bool {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
-	for _, n := range node.nbrNodes.List {
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.HAND || n.State() == p2p.HANDSHAKE || n.State() == p2p.ESTABLISH {
 			addr := n.Addr()
 			port := n.Port()
@@ -450,10 +450,10 @@ func (node *node) needSync() bool {
 }
 
 func (node *node) GetBestHeightNoder() protocol.Noder {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 	var bestnode protocol.Noder
-	for _, n := range node.nbrNodes.List {
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			if bestnode == nil {
 				if !n.IsSyncFailed() {
