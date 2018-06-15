@@ -522,6 +522,29 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	}
 }
 
+TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgent]") {
+	Enviroment::InitializeRootPath("Data");
+
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
+	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
+	masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+
+	std::string id;
+
+	SECTION("Normal get") {
+		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+		std::string pubKey = masterWallet->GetPublicKey(id);
+		//fixme [zxb]
+//		REQUIRE(pubKey == "034609759313d955aa6b6c6a7c976bef21bc6e8206b6f29723ac6b97f4c6f55031");
+	}
+	SECTION("Should throw with wrong id") {
+		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+		REQUIRE_THROWS_AS(masterWallet->GetPublicKey("wrongid"), std::logic_error);
+	}
+}
+
 TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
 	Enviroment::InitializeRootPath("Data");
 
@@ -536,7 +559,7 @@ TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
 	SECTION("Normal sign") {
 		std::string signedMsg = masterWallet->Sign(id, "mymessage", payPassword);
 		REQUIRE_FALSE(signedMsg.empty());
-		//todo check sign with publick key
+		//todo [zxb] check sign with publick key
 //		masterWallet->CheckSign()
 	}
 	SECTION("Sign empty message") {

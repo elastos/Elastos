@@ -465,6 +465,10 @@ namespace Elastos {
 			return _idAgentImpl->GetAllIds();
 		}
 
+		std::string MasterWallet::GetPublicKey(const std::string &id) {
+			return _idAgentImpl->GetPublicKey(id);
+		}
+
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
 			wallet->_walletManager->start();
 		}

@@ -8,7 +8,7 @@
 #include <map>
 #include <vector>
 
-#include "IdPath.h"
+#include "IdItem.h"
 #include "Wrapper/Key.h"
 #include "KeyStore/Mstream.h"
 
@@ -18,7 +18,7 @@ namespace Elastos {
 		class MasterWallet;
 
 		struct IdAgentInfo {
-			typedef std::map<std::string, IdPath> IdMap;
+			typedef std::map<std::string, IdItem> IdMap;
 
 			IdMap Ids;
 
@@ -52,10 +52,12 @@ namespace Elastos {
 
 			const IdAgentInfo &GetIdAgentInfo() const;
 
+			std::string GetPublicKey(const std::string &id);
+
 		private:
 			KeyPtr generateKey(const std::string &id, const std::string &password);
 
-			bool findIdByPath(const IdPath &path, std::string &id);
+			bool findIdByPath(const IdItem &item, std::string &id);
 
 		private:
 

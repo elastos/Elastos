@@ -94,6 +94,8 @@ namespace Elastos {
 
 			virtual std::vector<std::string> GetAllIds() const;
 
+			virtual std::string GetPublicKey(const std::string &id);
+
 		protected:
 
 			friend class MasterWalletManager;

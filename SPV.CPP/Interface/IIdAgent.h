@@ -40,6 +40,8 @@ namespace Elastos {
 					const std::string &password) = 0;
 
 			virtual std::vector<std::string> GetAllIds() const = 0;
+
+			virtual std::string GetPublicKey(const std::string &id) = 0;
 		};
 
 	}
