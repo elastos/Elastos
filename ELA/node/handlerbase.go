@@ -25,8 +25,10 @@ type HandlerBase struct {
 // this method will callback the error
 func (h *HandlerBase) OnError(err error) {
 	switch err {
-	case p2p.ErrUnmatchedMagic:
-		log.Error("[MsgHandler] unmatched magic")
+	case p2p.ErrInvalidHeader,
+		p2p.ErrUnmatchedMagic,
+		p2p.ErrMsgSizeExceeded:
+		log.Error(err)
 		h.node.CloseConn()
 	case p2p.ErrDisconnected:
 		log.Error("[MsgHandler] connection disconnected")
