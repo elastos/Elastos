@@ -32,7 +32,7 @@ TEST_CASE("Simple json sample test", "[PeerConfigReader]") {
 	REQUIRE(peers[0]->getPort() == 20866);
 	UInt128 address = ((UInt128) {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 127, 0, 0, 1});
 	REQUIRE(UInt128Eq(&peers[0]->getRaw()->address, &address));
-	REQUIRE(peers[0]->getTimestamp() == 0);
+	REQUIRE(peers[0]->getTimestamp() != 0);
 	REQUIRE(peers[0]->getRaw()->services == 1);
 	REQUIRE(peers[0]->getRaw()->flags == 0);
 }
