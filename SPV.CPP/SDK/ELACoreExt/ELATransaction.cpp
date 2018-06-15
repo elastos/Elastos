@@ -121,7 +121,7 @@ namespace Elastos {
 		}
 
 		void ELATransactionFree(ELATransaction *tx) {
-			if (0 < tx->raw.inCount && tx->raw.inputs) {
+			if (tx->raw.inputs) {
 				for (size_t i = 0; i < tx->raw.inCount; i++) {
 					BRTxInputSetScript(&tx->raw.inputs[i], nullptr, 0);
 					BRTxInputSetSignature(&tx->raw.inputs[i], nullptr, 0);
@@ -129,7 +129,7 @@ namespace Elastos {
 				array_free(tx->raw.inputs);
 			}
 
-			if (0 < tx->raw.outCount && tx->raw.outputs) {
+			if (tx->raw.outputs) {
 				for (size_t i = 0; i < tx->raw.outCount; i++) {
 					BRTxOutputSetScript(&tx->raw.outputs[i], nullptr, 0);
 				}
