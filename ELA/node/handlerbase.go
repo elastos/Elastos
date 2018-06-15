@@ -163,7 +163,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	}
 
 	if LocalNode.NeedMoreAddresses() {
-		node.ReqNeighborList()
+		node.RequireNeighbourList()
 	}
 	addr := node.Addr()
 	port := node.Port()

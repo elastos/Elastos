@@ -10,18 +10,18 @@ import (
 )
 
 // The neigbor node list
-type nbrNodes struct {
+type neighbourNodes struct {
 	sync.RWMutex
 	// Todo using the Pool structure
 	List map[uint64]*node
 }
 
-func (nm *nbrNodes) NodeExisted(uid uint64) bool {
+func (nm *neighbourNodes) NodeExisted(uid uint64) bool {
 	_, ok := nm.List[uid]
 	return ok
 }
 
-func (nm *nbrNodes) AddNbrNode(n protocol.Noder) {
+func (nm *neighbourNodes) AddNbrNode(n protocol.Noder) {
 	nm.Lock()
 	defer nm.Unlock()
 
@@ -37,7 +37,7 @@ func (nm *nbrNodes) AddNbrNode(n protocol.Noder) {
 	}
 }
 
-func (nm *nbrNodes) DelNbrNode(id uint64) (protocol.Noder, bool) {
+func (nm *neighbourNodes) DelNbrNode(id uint64) (protocol.Noder, bool) {
 	nm.Lock()
 	defer nm.Unlock()
 
@@ -49,7 +49,7 @@ func (nm *nbrNodes) DelNbrNode(id uint64) (protocol.Noder, bool) {
 	return n, true
 }
 
-func (nm *nbrNodes) GetConnectionCount() uint {
+func (nm *neighbourNodes) GetConnectionCount() uint {
 	nm.RLock()
 	defer nm.RUnlock()
 
@@ -62,11 +62,11 @@ func (nm *nbrNodes) GetConnectionCount() uint {
 	return cnt
 }
 
-func (nm *nbrNodes) init() {
+func (nm *neighbourNodes) init() {
 	nm.List = make(map[uint64]*node)
 }
 
-func (nm *nbrNodes) NodeEstablished(id uint64) bool {
+func (nm *neighbourNodes) NodeEstablished(id uint64) bool {
 	nm.RLock()
 	defer nm.RUnlock()
 
@@ -82,12 +82,12 @@ func (nm *nbrNodes) NodeEstablished(id uint64) bool {
 	return true
 }
 
-func (node *node) GetNeighborAddrs() []p2p.NetAddress {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+func (node *node) GetNeighbourAddress() []p2p.NetAddress {
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 
 	var addrs []p2p.NetAddress
-	for _, n := range node.nbrNodes.List {
+	for _, n := range node.neighbourNodes.List {
 		if n.State() != p2p.ESTABLISH {
 			continue
 		}
@@ -104,11 +104,11 @@ func (node *node) GetNeighborAddrs() []p2p.NetAddress {
 }
 
 func (node *node) GetNeighborHeights() []uint64 {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 
-	heights := make([]uint64, 0, len(node.nbrNodes.List))
-	for _, n := range node.nbrNodes.List {
+	heights := make([]uint64, 0, len(node.neighbourNodes.List))
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			height := n.Height()
 			heights = append(heights, height)
@@ -118,11 +118,11 @@ func (node *node) GetNeighborHeights() []uint64 {
 }
 
 func (node *node) GetNeighborNoder() []protocol.Noder {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 
-	nodes := make([]protocol.Noder, 0, len(node.nbrNodes.List))
-	for _, n := range node.nbrNodes.List {
+	nodes := make([]protocol.Noder, 0, len(node.neighbourNodes.List))
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			node := n
 			nodes = append(nodes, node)
@@ -132,10 +132,10 @@ func (node *node) GetNeighborNoder() []protocol.Noder {
 }
 
 func (node *node) GetNeighbourCount() uint32 {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 	var count uint32
-	for _, n := range node.nbrNodes.List {
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			count++
 		}
@@ -143,10 +143,10 @@ func (node *node) GetNeighbourCount() uint32 {
 	return count
 }
 
-func (node *node) RandGetANbr() protocol.Noder {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
-	for _, n := range node.nbrNodes.List {
+func (node *node) GetANeighbourRandomly() protocol.Noder {
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			return n
 		}
@@ -155,9 +155,9 @@ func (node *node) RandGetANbr() protocol.Noder {
 }
 
 func (node *node) IsNeighborNoder(n protocol.Noder) bool {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 
-	_, ok := node.nbrNodes.List[n.ID()]
+	_, ok := node.neighbourNodes.List[n.ID()]
 	return ok
 }
