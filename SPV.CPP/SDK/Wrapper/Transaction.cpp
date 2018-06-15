@@ -90,16 +90,6 @@ namespace Elastos {
 		}
 
 		UInt256 Transaction::getHash() const {
-			UInt256 zero = UINT256_ZERO;
-			if (UInt256Eq(&_transaction->raw.txHash, &zero)) {
-				ByteStream ostream;
-				serializeUnsigned(ostream);
-				uint8_t *buff = ostream.getBuf();
-				UInt256 hash = UINT256_ZERO;
-				BRSHA256_2(&hash, buff, ostream.position());
-				UInt256Set(&_transaction->raw.txHash, hash);
-				delete buff;
-			}
 			return _transaction->raw.txHash;
 		}
 
@@ -296,7 +286,7 @@ namespace Elastos {
 				ByteStream ostream;
 				serializeUnsigned(ostream);
 				uint8_t *data = ostream.getBuf();
-				size_t dataLen = ostream.position();
+				size_t dataLen = ostream.length();
 
 				if (elemsCount >= 2 && *elems[elemsCount - 2] == OP_EQUALVERIFY) { // pay-to-pubkey-hash
 					BRSHA256_2(&md, data, dataLen);
@@ -458,6 +448,12 @@ namespace Elastos {
 				_transaction->programs[i] = ProgramPtr(new Program());
 				_transaction->programs[i]->Deserialize(istream);
 			}
+
+			ByteStream ostream;
+			serializeUnsigned(ostream);
+			uint8_t *buff = ostream.getBuf();
+			BRSHA256_2(&_transaction->raw.txHash, buff, ostream.length());
+			delete buff;
 
 			return true;
 		}

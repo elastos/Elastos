@@ -257,7 +257,6 @@ namespace Elastos {
 				memcpy(buff, txsEntity[i].buff, len);
 				ByteStream byteStream(buff, len);
 				transaction->Deserialize(byteStream);
-				transaction->getHash();
 				BRTransaction *raw = transaction->getRaw();
 				raw->blockHeight = txsEntity[i].blockHeight;
 				raw->timestamp = txsEntity[i].timeStamp;
