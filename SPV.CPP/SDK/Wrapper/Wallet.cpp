@@ -27,8 +27,12 @@ namespace Elastos {
 					   const MasterPubKeyPtr &masterPubKey,
 					   const boost::shared_ptr<Listener> &listener) {
 
-			_wallet = BRWalletNew(transactions.getRawPointerArray().data(),
-								  transactions.size(), *masterPubKey->getRaw(), BRWalletUnusedAddrs,
+			BRTransaction *trans[transactions.size()];
+			for (size_t i = 0; i < transactions.size(); ++i) {
+				trans[i] = (BRTransaction *)ELATransactioCopy((ELATransaction *)transactions[i]->getRaw());
+			}
+
+			_wallet = BRWalletNew(trans, transactions.size(), *masterPubKey->getRaw(), BRWalletUnusedAddrs,
 								  BRWalletAllAddrs, setApplyFreeTx, WalletUpdateBalance,
 								  WalletContainsTx, WalletAddUsedAddrs, WalletCreateTxForOutputs,
 								  WalletMaxOutputAmount, WalletFeeForTx);

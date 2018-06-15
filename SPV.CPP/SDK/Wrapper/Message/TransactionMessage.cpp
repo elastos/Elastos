@@ -35,16 +35,13 @@ namespace Elastos {
 				r = 0;
 			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
 				Log::warn("got tx message before loading filter");
-//				BRTransactionFree(tx);
 				r = 0;
 			} else {
 				txHash = tx.getHash();
 				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
-					ctx->relayedTx(ctx->info, tx.getRaw());
-//				} else {
-//					BRTransactionFree(tx.getRaw());
+					ctx->relayedTx(ctx->info, (BRTransaction *)ELATransactioCopy((const ELATransaction *)tx.getRaw()));
 				}
 
 				if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock

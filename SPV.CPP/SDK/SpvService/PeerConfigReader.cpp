@@ -42,6 +42,8 @@ namespace Elastos {
 			peer->timestamp = peerJson["Timestamp"].get<uint64_t>();
 			peer->services = peerJson["Services"].get<uint64_t>();
 			peer->flags = peerJson["Flags"].get<uint8_t>();
+
+			peer->timestamp = (uint64_t)time(nullptr);
 			return result;
 		}
 
