@@ -83,7 +83,7 @@ func NewNode(magic uint32, conn net.Conn) *node {
 	node := new(node)
 	node.conn = conn
 	node.filter = bloom.LoadFilter(nil)
-	node.MsgHelper = p2p.NewMsgHelper(magic, conn, &HandlerBase{node: node})
+	node.MsgHelper = p2p.NewMsgHelper(magic, uint32(Parameters.MaxBlockSize), conn, &HandlerBase{node: node})
 	runtime.SetFinalizer(node, rmNode)
 	return node
 }
