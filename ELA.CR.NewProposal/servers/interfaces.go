@@ -118,25 +118,38 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
+
+	var header *Header
+	var targetTransaction *Transaction
 	tx, height, err := chain.DefaultLedger.Store.GetTransaction(hash)
 	if err != nil {
-		return ResponsePack(UnknownTransaction, "")
-	}
-	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
-	if err != nil {
-		return ResponsePack(UnknownTransaction, "")
-	}
-	header, err := chain.DefaultLedger.Store.GetHeader(bHash)
-	if err != nil {
-		return ResponsePack(UnknownTransaction, "")
+		//try to find transaction in transaction pool.
+		for txid, tx := range NodeForServers.GetTransactionPool(false) {
+			if txid == hash {
+				targetTransaction = tx
+				break
+			}
+			return ResponsePack(UnknownTransaction,
+				"cannot find transaction in blockchain and transactionpool")
+		}
+	} else {
+		targetTransaction = tx
+		bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+		if err != nil {
+			return ResponsePack(UnknownTransaction, "")
+		}
+		header, err = chain.DefaultLedger.Store.GetHeader(bHash)
+		if err != nil {
+			return ResponsePack(UnknownTransaction, "")
+		}
 	}
 
-	verbose, ok := param.Bool("verbose")
+	verbose, _ := param.Bool("verbose")
 	if verbose {
-		return ResponsePack(Success, GetTransactionInfo(header, tx))
+		return ResponsePack(Success, GetTransactionInfo(header, targetTransaction))
 	} else {
 		buf := new(bytes.Buffer)
-		tx.Serialize(buf)
+		targetTransaction.Serialize(buf)
 		return ResponsePack(Success, BytesToHexString(buf.Bytes()))
 	}
 }
@@ -367,7 +380,7 @@ func GetConnectionCount(param Params) map[string]interface{} {
 
 func GetTransactionPool(param Params) map[string]interface{} {
 	txs := make([]*TransactionInfo, 0)
-	for _, t := range NodeForServers.GetTxnPool(false) {
+	for _, t := range NodeForServers.GetTransactionPool(false) {
 		txs = append(txs, GetTransactionInfo(nil, t))
 	}
 	return ResponsePack(Success, txs)

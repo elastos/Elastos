@@ -195,7 +195,7 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 				SendGetBlocks(node, locator, common.EmptyHash)
 			}
 		case msg.InvTypeTx:
-			if _, ok := node.GetTxnPool(false)[hash]; !ok {
+			if _, ok := node.GetTransactionPool(false)[hash]; !ok {
 				getData.AddInvVect(iv)
 			}
 		default:
@@ -233,7 +233,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			}
 
 		case msg.InvTypeTx:
-			tx, ok := node.GetTxnPool(false)[iv.Hash]
+			tx, ok := node.GetTransactionPool(false)[iv.Hash]
 			if !ok {
 				notFound.AddInvVect(iv)
 				continue
@@ -359,7 +359,7 @@ func (h *HandlerEIP001) onMemPool(*msg.MemPool) error {
 		return fmt.Errorf("peer %d sent mempool request with SPV service disabled", h.node.ID())
 	}
 
-	txMemPool := LocalNode.GetTxnPool(false)
+	txMemPool := LocalNode.GetTransactionPool(false)
 	inv := msg.NewInventory()
 
 	for _, tx := range txMemPool {
