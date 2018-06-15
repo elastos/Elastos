@@ -53,7 +53,7 @@ type Noder interface {
 	GetConn() net.Conn
 	CloseConn()
 	GetConnectionCount() uint
-	GetTxnPool(bool) map[Uint256]*Transaction
+	GetTransactionPool(bool) map[Uint256]*Transaction
 	AppendToTxnPool(*Transaction) ErrCode
 	IsDuplicateSidechainTx(sidechainTxHash string) bool
 	ExistedID(id Uint256) bool
