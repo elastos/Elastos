@@ -35,18 +35,20 @@ type MessageHandler interface {
 }
 
 type PeerManager struct {
-	magic uint32
-	seeds []string
+	magic      uint32
+	maxMsgSize uint32
+	seeds      []string
 	*Peers
 	MessageHandler
 	am *AddrManager
 	cm *ConnManager
 }
 
-func InitPeerManager(magic uint32, seeds []string, minOutbound, maxConnections int, localPeer *Peer) *PeerManager {
+func InitPeerManager(magic, maxMsgSize uint32, seeds []string, minOutbound, maxConnections int, localPeer *Peer) *PeerManager {
 	// Initiate PeerManager
 	pm := new(PeerManager)
 	pm.magic = magic
+	pm.maxMsgSize = maxMsgSize
 	pm.seeds = seeds
 	pm.Peers = newPeers(localPeer)
 	pm.am = newAddrManager(minOutbound)
@@ -70,7 +72,7 @@ func (pm *PeerManager) NewPeer(conn net.Conn) *Peer {
 	peer := new(Peer)
 	peer.conn = conn
 	copy(peer.ip16[:], getIp(conn))
-	peer.msgHelper = p2p.NewMsgHelper(pm.magic, conn, peer)
+	peer.msgHelper = p2p.NewMsgHelper(pm.magic, pm.maxMsgSize, conn, peer)
 	peer.handler = pm
 	return peer
 }
@@ -153,12 +155,11 @@ func (pm *PeerManager) connectPeers() {
 }
 
 func (pm *PeerManager) keepConnections() {
-	pm.connectPeers()
-
 	ticker := time.NewTicker(time.Second * InfoUpdateDuration)
 	defer ticker.Stop()
-	for range ticker.C {
+	for {
 		pm.connectPeers()
+		<-ticker.C
 	}
 }
 

@@ -81,6 +81,7 @@ func NewClient(i int, seeds []string) (*Client, error) {
 	var err error
 	client.P2PClient, err = GetP2PClient(
 		987654321,
+		1024*1024*8,
 		client.id,
 		seeds,
 		uint16(clientPortBase+i),

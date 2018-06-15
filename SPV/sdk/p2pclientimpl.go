@@ -9,7 +9,7 @@ type P2PClientImpl struct {
 	peerManager *net.PeerManager
 }
 
-func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string, port uint16, minOutbound, maxConnections int) (*P2PClientImpl, error) {
+func NewP2PClientImpl(magic, maxMsgSize uint32, clientId uint64, seeds []string, port uint16, minOutbound, maxConnections int) (*P2PClientImpl, error) {
 	// Initialize local peer
 	local := new(net.Peer)
 	local.SetID(clientId)
@@ -28,7 +28,7 @@ func NewP2PClientImpl(magic uint32, clientId uint64, seeds []string, port uint16
 	client := new(P2PClientImpl)
 
 	// Initialize peer manager
-	client.peerManager = net.InitPeerManager(magic, seeds, minOutbound, maxConnections, local)
+	client.peerManager = net.InitPeerManager(magic, maxMsgSize, seeds, minOutbound, maxConnections, local)
 
 	return client, nil
 }

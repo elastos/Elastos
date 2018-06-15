@@ -18,7 +18,7 @@ type SPVClientImpl struct {
 
 func NewSPVClientImpl(magic uint32, clientId uint64, seeds []string, minOutbound, maxConnections int) (*SPVClientImpl, error) {
 	// Initialize P2P client
-	p2pClient, err := GetP2PClient(magic, clientId, seeds, 0, minOutbound, maxConnections)
+	p2pClient, err := GetP2PClient(magic, MaxMsgSize, clientId, seeds, 0, minOutbound, maxConnections)
 	if err != nil {
 		return nil, err
 	}

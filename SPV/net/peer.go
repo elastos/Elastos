@@ -125,11 +125,13 @@ func (peer *Peer) Height() uint64 {
 
 func (peer *Peer) OnError(err error) {
 	switch err {
-	case p2p.ErrDisconnected:
-		peer.handler.OnDisconnected(peer)
-	case p2p.ErrUnmatchedMagic:
+	case p2p.ErrInvalidHeader,
+		p2p.ErrUnmatchedMagic,
+		p2p.ErrMsgSizeExceeded:
 		log.Error(err)
 		peer.Disconnect()
+	case p2p.ErrDisconnected:
+		peer.handler.OnDisconnected(peer)
 	default:
 		log.Error(err, ", peer id is: ", peer.ID())
 	}

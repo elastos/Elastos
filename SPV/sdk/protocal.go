@@ -4,6 +4,7 @@ import "github.com/elastos/Elastos.ELA.Utility/p2p"
 
 const (
 	ProtocolVersion = p2p.EIP001Version // The protocol version implemented SPV protocol
+	MaxMsgSize      = 1024 * 1024 * 8   // The max size of a message in P2P network
 	OpenService     = 1 << 2
 
 	GenesisHeader = "000000000000000000000000000000000000000000000000000000000000000000000000" +
