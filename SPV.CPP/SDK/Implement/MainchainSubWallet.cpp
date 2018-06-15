@@ -45,11 +45,10 @@ namespace Elastos {
 			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();
 			std::vector<uint64_t> indexs = sidechainIndexs.get<std::vector<uint64_t >>();
-			assert(accounts.size() == amounts.size());
-			assert(accounts.size() == indexs.size());
+			if(accounts.size() != amounts.size() || accounts.size() != indexs.size())
+				throw std::invalid_argument("Length of sidechain accounts amounts and indices should same.");
 
-			DepositTxParam *withdrawTxParam = dynamic_cast<DepositTxParam *>(txParam.get());
-			assert(withdrawTxParam != nullptr);
+			DepositTxParam *withdrawTxParam = static_cast<DepositTxParam *>(txParam.get());
 			withdrawTxParam->setSidechainDatas(accounts, indexs, amounts);
 
 			//todo read main chain address from config

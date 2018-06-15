@@ -20,8 +20,7 @@
 namespace po = boost::program_options;
 
 #define WALLET_FACTORY_SAMPLE 1
-#define WALLET_MANAGER_SAMPLE 2
-#define WALLET_CLIENT_SAMPLE 3
+#define WALLET_CLIENT_SAMPLE 2
 
 #define CURRENT_SAMPLE 1
 
@@ -29,9 +28,6 @@ int main(int argc, char *argv[]) {
 
 #if CURRENT_SAMPLE == WALLET_FACTORY_SAMPLE
 	TestConnectPeer::runPeerConnectTest_WalletFactory();
-	return 0;
-#elif CURRENT_SAMPLE == WALLET_MANAGER_SAMPLE
-	TestConnectPeer::runPeerConnectTest_WalletManager();
 	return 0;
 #elif CURRENT_SAMPLE == WALLET_CLIENT_SAMPLE
 	std::string strName = "NAME:\n         cli-spv - command line tool for ELA blockchain \n";

@@ -135,6 +135,8 @@ namespace Elastos {
 			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														const std::string &payPassword);
 
+			virtual void publishTransaction(const TransactionPtr &transaction);
+
 			void signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
 			                     const std::string &payPassword);
 

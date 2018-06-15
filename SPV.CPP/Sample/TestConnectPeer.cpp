@@ -1,4 +1,7 @@
 
+
+#include <climits>
+#include <iostream>
 #include <boost/scoped_ptr.hpp>
 #include <Interface/Enviroment.h>
 
@@ -8,7 +11,6 @@
 #include "MasterWalletManager.h"
 
 #include "TestConnectPeer.h"
-#include "TestWalletManager.h"
 
 using namespace Elastos::SDK;
 
@@ -28,25 +30,6 @@ static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *bl
 
 	previous = (const BRMerkleBlock *) BRSetGet(blockSet, &block->prevBlock);
 	return BRMerkleBlockVerifyDifficulty(block, previous, (b) ? b->timestamp : 0);
-}
-
-void TestConnectPeer::runPeerConnectTest_WalletManager() {
-
-	boost::scoped_ptr<TestWalletManager> wallet(new TestWalletManager());
-	wallet->start();
-
-	WalletPtr pwallet = wallet->getWallet();
-	std::vector<std::string> addresses = pwallet->getAllAddresses();
-	for (size_t i = 0; i < addresses.size(); ++i) {
-		std::cout << "wallet addr: " << addresses[i] << std::endl;
-	}
-
-
-	//wallet->testCreateTransaction();
-	//wallet->testSendTransaction();
-
-	while (BRPeerManagerPeerCount(wallet->getPeerManager()->getRaw()) > 0) sleep(1);
-	//process end
 }
 
 void TestConnectPeer::runPeerConnectTest_WalletFactory() {

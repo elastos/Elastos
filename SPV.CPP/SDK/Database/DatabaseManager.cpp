@@ -9,6 +9,7 @@ namespace Elastos {
 	namespace SDK {
 
 		DatabaseManager::DatabaseManager(const boost::filesystem::path &path) :
+			_path(path),
 			_sqlite(path),
 			_peerDataSource(&_sqlite),
 			_transactionDataStore(&_sqlite),
@@ -85,6 +86,10 @@ namespace Elastos {
 
 		std::vector<MerkleBlockEntity> DatabaseManager::getAllMerkleBlocks(const std::string &iso) const {
 			return _merkleBlockDataSource.getAllMerkleBlocks(iso);
+		}
+
+		const boost::filesystem::path &DatabaseManager::getPath() const {
+			return _path;
 		}
 
 	}

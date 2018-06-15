@@ -195,12 +195,16 @@ namespace Elastos {
 		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 													   const std::string &payPassword) {
 			signTransaction(transaction, _info.getForkId(), payPassword);
-			_walletManager->getPeerManager()->publishTransaction(transaction);
+			publishTransaction(transaction);
 
 			nlohmann::json j;
 			j["TxHash"] = Utils::UInt256ToString(transaction->getHash());
 			j["Fee"] = transaction->getStandardFee();
 			return j;
+		}
+
+		void SubWallet::publishTransaction(const TransactionPtr &transaction) {
+			_walletManager->getPeerManager()->publishTransaction(transaction);
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {

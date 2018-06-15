@@ -40,11 +40,14 @@ namespace Elastos {
 			bool deleteAllBlocks(const std::string &iso);
 			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
 
+			const boost::filesystem::path &getPath() const;
+
 		private:
-			Sqlite                _sqlite;
-			PeerDataSource        _peerDataSource;
-			TransactionDataStore  _transactionDataStore;
-			MerkleBlockDataSource _merkleBlockDataSource;
+			boost::filesystem::path _path;
+			Sqlite                	_sqlite;
+			PeerDataSource        	_peerDataSource;
+			TransactionDataStore  	_transactionDataStore;
+			MerkleBlockDataSource 	_merkleBlockDataSource;
 		};
 
 	}

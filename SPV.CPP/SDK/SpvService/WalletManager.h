@@ -25,10 +25,8 @@ namespace Elastos {
 		class WalletManager :
 				public CoreWalletManager {
 		public:
-			/*
-			 * construct wallet manager from mnemonic
-			 */
-			WalletManager(const CMBlock &phrase, const ChainParams &chainParams = ChainParams::mainNet());
+
+			WalletManager(const WalletManager &proto);
 
 			WalletManager(const MasterPubKeyPtr &masterPubKey,
 						  const boost::filesystem::path &dbPath,
@@ -50,8 +48,6 @@ namespace Elastos {
 			void start();
 
 			void stop();
-
-			UInt256 signAndPublishTransaction(const TransactionPtr &transaction);
 
 			SharedWrapperList<Transaction, BRTransaction *> getTransactions(
 					const boost::function<bool(const TransactionPtr &)> filter) const;
@@ -115,8 +111,6 @@ namespace Elastos {
 		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
-			MasterPubKeyPtr _masterPubKey;
-			CMBlock _phraseData;
 			int _forkId;
 			nlohmann::json _peerConfig;
 

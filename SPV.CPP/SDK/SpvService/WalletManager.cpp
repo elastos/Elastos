@@ -18,16 +18,12 @@
 namespace Elastos {
 	namespace SDK {
 
-		WalletManager::WalletManager(const CMBlock &phrase, const ChainParams &chainParams) :
+		WalletManager::WalletManager(const Elastos::SDK::WalletManager &proto) :
 				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(DATABASE_PATH),
-				_phraseData(phrase) {
-
-			uint32_t earliestPeerTime = 0;
-			_masterPubKey = MasterPubKeyPtr(
-					new MasterPubKey(Utils::convertToString(phrase), ""));
-
-			init(_masterPubKey, chainParams, earliestPeerTime, false);
+				_databaseManager(proto._databaseManager.getPath()),
+				_forkId(proto._forkId),
+				_peerConfig(proto._peerConfig) {
+			init(proto._masterPubKey, proto._chainParams, proto._earliestPeerTime, proto._singleAddress);
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
@@ -35,10 +31,9 @@ namespace Elastos {
 									 bool singleAddress, int forkId, const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_masterPubKey(masterPubKey),
 				_forkId(forkId),
 				_peerConfig(peerConfig) {
-			init(_masterPubKey, chainParams, earliestPeerTime, singleAddress);
+			init(masterPubKey, chainParams, earliestPeerTime, singleAddress);
 		}
 
 		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
@@ -47,7 +42,6 @@ namespace Elastos {
 									 const Elastos::SDK::ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_masterPubKey(nullptr),
 				_forkId(forkId),
 				_peerConfig(peerConfig) {
 			init(chainParams, earliestPeerTime, initialAddresses);
@@ -63,11 +57,6 @@ namespace Elastos {
 
 		void WalletManager::stop() {
 			getPeerManager()->disconnect();
-		}
-
-		UInt256 WalletManager::signAndPublishTransaction(const TransactionPtr &transaction) {
-			if (_phraseData.GetSize() == 0) throw std::logic_error("Can not sign with empty phrase.");
-			return CoreWalletManager::signAndPublishTransaction(transaction, _phraseData);
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::getTransactions(
