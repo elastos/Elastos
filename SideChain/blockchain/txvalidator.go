@@ -13,6 +13,10 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const (
+	PrefixRegisterId = 0x67
+)
+
 // CheckTransactionSanity verifys received single transaction
 func CheckTransactionSanity(txn *core.Transaction) ErrCode {
 
@@ -207,6 +211,7 @@ func CheckOutputProgramHash(programHash Uint168) bool {
 	if prefix == PrefixStandard ||
 		prefix == PrefixMultisig ||
 		prefix == PrefixCrossChain ||
+		prefix == PrefixRegisterId ||
 		programHash == empty {
 		return true
 	}
