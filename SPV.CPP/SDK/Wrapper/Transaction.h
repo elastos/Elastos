@@ -31,7 +31,7 @@ namespace Elastos {
 		public:
 			Transaction();
 
-			Transaction(const ELATransaction *transaction);
+			Transaction(const ELATransaction *transaction, bool manageRaw = true);
 
 			Transaction(const ELATransaction &tx);
 
@@ -167,6 +167,7 @@ namespace Elastos {
 
 		private:
 			bool _isRegistered;
+			bool _manageRaw;
 			ELATransaction *_transaction;
 		};
 

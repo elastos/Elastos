@@ -500,7 +500,11 @@ namespace Elastos {
 		}
 
 		bool Wallet::registerTransaction(const TransactionPtr &transaction) {
-			return BRWalletRegisterTransaction(_wallet, transaction->getRaw()) != 0;
+			ELATransaction *elaTransaction = ELATransactioCopy((ELATransaction *)transaction->getRaw());
+			bool result = BRWalletRegisterTransaction(_wallet, (BRTransaction *) elaTransaction) != 0;
+			if(!result)
+				ELATransactionFree(elaTransaction);
+			return result;
 		}
 
 		void Wallet::removeTransaction(const UInt256 &transactionHash) {

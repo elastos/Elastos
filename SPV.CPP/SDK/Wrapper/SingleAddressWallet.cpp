@@ -4,6 +4,7 @@
 
 #include "Core/BRArray.h"
 
+#include "ParamChecker.h"
 #include "SingleAddressWallet.h"
 
 namespace Elastos {
@@ -69,11 +70,12 @@ namespace Elastos {
 												 const MasterPubKeyPtr &masterPubKey,
 												 const boost::shared_ptr<Wallet::Listener> &listener) {
 
+			ParamChecker::checkNullPointer(listener.get());
+			_listener = boost::weak_ptr<Listener>(listener);
+
 			_wallet = createSingleWallet(transactions.getRawPointerArray().data(),
 										 transactions.size(), *masterPubKey->getRaw());
-
-			assert(listener != nullptr);
-			_listener = boost::weak_ptr<Listener>(listener);
+			ParamChecker::checkNullPointer(_wallet, false);
 
 			BRWalletSetCallbacks(_wallet, &_listener,
 								 balanceChanged,
@@ -110,6 +112,12 @@ namespace Elastos {
 			wallet->WalletUnusedAddrs = SingleAddressWalletUnusedAddrs;
 			wallet->WalletAllAddrs = singleAddressWalletAllAddrs;
 			wallet->setApplyFreeTx = setApplyFreeTx;
+			wallet->WalletUpdateBalance = Wallet::WalletUpdateBalance;
+			wallet->WalletContainsTx = Wallet::WalletContainsTx;
+			wallet->WalletAddUsedAddrs = Wallet::WalletAddUsedAddrs;
+			wallet->WalletCreateTxForOutputs = Wallet::WalletCreateTxForOutputs;
+			wallet->WalletMaxOutputAmount = Wallet::WalletMaxOutputAmount;
+			wallet->WalletFeeForTx = Wallet::WalletFeeForTx;
 			wallet->internalChain = nullptr;
 			array_new(wallet->externalChain, 1);
 			array_new(wallet->balanceHist, txCount + 100);
@@ -127,18 +135,15 @@ namespace Elastos {
 				BRSetAdd(wallet->allTx, tx);
 				_BRWalletInsertTx(wallet, tx);
 
-				for (size_t j = 0; j < tx->outCount; j++) {
-					if (tx->outputs[j].address[0] != '\0') BRSetAdd(wallet->usedAddrs, tx->outputs[j].address);
-				}
+				wallet->WalletAddUsedAddrs(wallet, tx);
 			}
 
 			wallet->WalletUnusedAddrs(wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 			wallet->WalletUnusedAddrs(wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-			_BRWalletUpdateBalance(wallet);
+			wallet->WalletUpdateBalance(wallet);
 
-			if (txCount > 0 &&
-				!_BRWalletContainsTx(wallet, transactions[0])) { // verify transactions match master pubKey
-				BRWalletFree(wallet);
+			if (txCount > 0 && !wallet->WalletContainsTx(wallet, transactions[0])) {
+				singleAddressWalletFree(wallet);
 				wallet = nullptr;
 			}
 

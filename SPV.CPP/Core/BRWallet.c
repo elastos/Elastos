@@ -42,6 +42,8 @@ uint64_t _txFee(uint64_t feePerKb, size_t size)
 // chain position of first tx output address that appears in chain
 size_t _txChainIndex(const BRTransaction *tx, const BRAddress *addrChain)
 {
+    if(addrChain == NULL) return SIZE_MAX;
+
     for (size_t i = array_count(addrChain); i > 0; i--) {
         for (size_t j = 0; j < tx->outCount; j++) {
             if (BRAddressEq(tx->outputs[j].address, &addrChain[i - 1])) return i - 1;

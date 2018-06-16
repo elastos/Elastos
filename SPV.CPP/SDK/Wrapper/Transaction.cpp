@@ -28,23 +28,27 @@ namespace Elastos {
 	namespace SDK {
 
 		Transaction::Transaction() :
-			_isRegistered(false) {
+				_isRegistered(false),
+				_manageRaw(true) {
 			_transaction = ELATransactionNew();
 		}
 
-		Transaction::Transaction(const ELATransaction *tx) :
-				_isRegistered(false) {
+		Transaction::Transaction(const ELATransaction *tx, bool manageRaw) :
+				_isRegistered(false),
+				_manageRaw(manageRaw) {
 			_transaction = ELATransactioCopy(tx);
 		}
 
 		Transaction::Transaction(const ELATransaction &tx) :
-				_isRegistered(false) {
+				_isRegistered(false),
+				_manageRaw(true) {
 			_transaction = ELATransactioCopy(&tx);
 
 		}
 
 		Transaction::Transaction(const CMBlock &buffer) :
-				_isRegistered(false) {
+				_isRegistered(false),
+				_manageRaw(true) {
 			_transaction = ELATransactionNew();
 
 			ByteStream stream(buffer, buffer.GetSize(), false);
@@ -52,7 +56,8 @@ namespace Elastos {
 		}
 
 		Transaction::Transaction(const CMBlock &buffer, uint32_t blockHeight, uint32_t timeStamp) :
-				_isRegistered(false) {
+				_isRegistered(false),
+				_manageRaw(true) {
 
 			_transaction = ELATransactionNew();
 
@@ -64,7 +69,7 @@ namespace Elastos {
 		}
 
 		Transaction::~Transaction() {
-			if (_transaction != nullptr)
+			if (_manageRaw && _transaction != nullptr)
 				ELATransactionFree(_transaction);
 		}
 
@@ -255,7 +260,7 @@ namespace Elastos {
 			assert(keys != NULL || keysCount == 0);
 
 			for (i = 0; i < keysCount; i++) {
-				if (! BRKeyAddress(&keys[i], addrs[i].s, sizeof(addrs[i]))) addrs[i] = BR_ADDRESS_NONE;
+				if (!BRKeyAddress(&keys[i], addrs[i].s, sizeof(addrs[i]))) addrs[i] = BR_ADDRESS_NONE;
 			}
 
 			for (i = 0; i < _transaction->raw.inCount; i++) {
@@ -268,15 +273,16 @@ namespace Elastos {
 					_transaction->programs.push_back(programPtr);
 				}
 				ProgramPtr program = _transaction->programs[i];
-				if (! BRAddressFromScriptPubKey(address.s, sizeof(address), program->getCode(),
-				                                program->getCode().GetSize())) continue;
+				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), program->getCode(),
+											   program->getCode().GetSize()))
+					continue;
 				j = 0;
-				while (j < keysCount && ! BRAddressEq(&addrs[j], &address)) j++;
+				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
 				if (j >= keysCount) continue;
 
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
-				size_t elemsCount = BRScriptElements(elems, sizeof(elems)/sizeof(*elems), program->getCode(),
-				                                     program->getCode().GetSize());
+				size_t elemsCount = BRScriptElements(elems, sizeof(elems) / sizeof(*elems), program->getCode(),
+													 program->getCode().GetSize());
 				uint8_t pubKey[BRKeyPubKey(&keys[j], NULL, 0)];
 				size_t pkLen = BRKeyPubKey(&keys[j], pubKey, sizeof(pubKey));
 				uint8_t sig[73], script[1 + sizeof(sig) + 1 + sizeof(pubKey)];
@@ -298,8 +304,7 @@ namespace Elastos {
 					CMBlock parameter(scriptLen);
 					memcpy(parameter, script, scriptLen);
 					program->setParameter(parameter);
-				}
-				else { // pay-to-pubkey
+				} else { // pay-to-pubkey
 					BRSHA256_2(&md, data, dataLen);
 					sigLen = BRKeySign(&keys[j], sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
@@ -462,11 +467,11 @@ namespace Elastos {
 			nlohmann::json jsonData;
 			BRTransaction *raw = &_transaction->raw;
 
-			jsonData["TxHash"]      = Utils::UInt256ToString(raw->txHash);
-			jsonData["Version"]     = raw->version;
-			jsonData["LockTime"]    = raw->lockTime;
+			jsonData["TxHash"] = Utils::UInt256ToString(raw->txHash);
+			jsonData["Version"] = raw->version;
+			jsonData["LockTime"] = raw->lockTime;
 			jsonData["BlockHeight"] = raw->blockHeight;
-			jsonData["Timestamp"]   = raw->timestamp;
+			jsonData["Timestamp"] = raw->timestamp;
 //			jsonData["InputCount"]  = raw->inCount;
 
 			std::vector<nlohmann::json> inputs(raw->inCount);
@@ -496,7 +501,7 @@ namespace Elastos {
 
 			jsonData["IsRegistered"] = _isRegistered;
 			jsonData["Raw"] = rawTransactionToJson();
-			jsonData["Type"] = (uint8_t)_transaction->type;
+			jsonData["Type"] = (uint8_t) _transaction->type;
 			jsonData["PayloadVersion"] = _transaction->payloadVersion;
 			jsonData["PayLoad"] = _transaction->payload->toJson();
 
@@ -525,14 +530,14 @@ namespace Elastos {
 		void Transaction::rawTransactionFromJson(nlohmann::json jsonData) {
 			BRTransaction *raw = &_transaction->raw;
 
-			raw->txHash      = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
-			raw->version     = jsonData["Version"].get<uint32_t>();
-			raw->lockTime    = jsonData["LockTime"].get<uint32_t>();
+			raw->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			raw->version = jsonData["Version"].get<uint32_t>();
+			raw->lockTime = jsonData["LockTime"].get<uint32_t>();
 			raw->blockHeight = jsonData["BlockHeight"].get<uint32_t>();
-			raw->timestamp   = jsonData["Timestamp"].get<uint32_t>();
+			raw->timestamp = jsonData["Timestamp"].get<uint32_t>();
 
 			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
-			raw->inCount     = inputs.size();
+			raw->inCount = inputs.size();
 
 			for (size_t i = 0; i < raw->inCount; ++i) {
 				nlohmann::json jsonData = inputs[i];
@@ -549,7 +554,7 @@ namespace Elastos {
 
 				std::string signatureString = jsonData["Signature"].get<std::string>();
 				size_t sigLen = signatureString.length() / 2;
-				uint8_t *signature =  new uint8_t[sigLen];
+				uint8_t *signature = new uint8_t[sigLen];
 				Utils::decodeHex(signature, sigLen, signatureString.c_str(), signatureString.length());
 
 				uint32_t sequence = jsonData["Sequence"].get<uint32_t>();
