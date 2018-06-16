@@ -12,6 +12,7 @@
     "SpvMinOutbound": 1,
     "SpvMaxConnections": 3,
     "SpvPrintLevel": 1,
+    "ExchangeRate": 10.0,
     "HttpInfoPort": 20333,
     "HttpInfoStart": true,
     "HttpRestPort": 20334,

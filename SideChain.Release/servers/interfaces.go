@@ -1049,6 +1049,11 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadTransferAsset:
 	case *PayloadRecord:
+	case *PayloadRechargeToSideChain:
+		obj := new(RechargeToSideChainInfo)
+		obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
+		obj.Proof = BytesToHexString(object.MerkleProof)
+		return obj
 	}
 	return nil
 }
