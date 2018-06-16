@@ -76,6 +76,10 @@ func CheckTransactionContext(txn *core.Transaction) ErrCode {
 	}
 
 	if txn.IsRechargeToSideChainTx() {
+		if err := CheckRechargeToSideChainTransaction(txn); err != nil {
+			log.Warn("[CheckRechargeToSideChainTransaction],", err)
+			return ErrInvalidOutput
+		}
 		return Success
 	}
 

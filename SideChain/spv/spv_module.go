@@ -23,9 +23,12 @@ func SpvInit() error {
 	var err error
 	spvlog.Init(config.Parameters.SpvPrintLevel)
 
-	var clientId = make([]byte, 8)
-	rand.Read(clientId)
-	spvService, err = _interface.NewSPVService(config.Parameters.SpvMagic, binary.LittleEndian.Uint64(clientId),
+	var id = make([]byte, 8)
+	var clientId uint64
+	rand.Read(id)
+	binary.Read(bytes.NewReader(id), binary.LittleEndian, &clientId)
+
+	spvService, err = _interface.NewSPVService(config.Parameters.SpvMagic, clientId,
 		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
 	if err != nil {
 		return err
@@ -45,18 +48,18 @@ func VerifyTransaction(tx *core.Transaction) error {
 	proof := new(MerkleProof)
 	mainChainTransaction := new(ela.Transaction)
 
-	switch object := tx.Payload.(type) {
-	case *core.PayloadRechargeToSideChain:
-		reader := bytes.NewReader(object.MerkleProof)
-		if err := proof.Deserialize(reader); err != nil {
-			return errors.New("RechargeToSideChain payload deserialize failed")
-		}
-		reader = bytes.NewReader(object.MainChainTransaction)
-		if err := mainChainTransaction.Deserialize(reader); err != nil {
-			return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
-		}
-	default:
-		return errors.New("Invalid payload")
+	payloadObj, ok := tx.Payload.(*core.PayloadRechargeToSideChain)
+	if !ok {
+		return errors.New("Invalid payload core.PayloadRechargeToSideChain")
+	}
+
+	reader := bytes.NewReader(payloadObj.MerkleProof)
+	if err := proof.Deserialize(reader); err != nil {
+		return errors.New("RechargeToSideChain payload deserialize failed")
+	}
+	reader = bytes.NewReader(payloadObj.MainChainTransaction)
+	if err := mainChainTransaction.Deserialize(reader); err != nil {
+		return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
 	}
 
 	if err := spvService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {

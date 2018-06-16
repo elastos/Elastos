@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sort"
 
+	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
@@ -13,6 +14,8 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	. "github.com/elastos/Elastos.ELA/bloom"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 func VerifySignature(tx *core.Transaction) error {
@@ -143,6 +146,78 @@ func checkCrossChainTransaction(txn *core.Transaction) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
+	proof := new(MerkleProof)
+	mainChainTransaction := new(ela.Transaction)
+
+	payloadRecharge, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
+	if !ok {
+		return errors.New("Invalid payload core.PayloadRechargeToSideChain")
+	}
+
+	reader := bytes.NewReader(payloadRecharge.MerkleProof)
+	if err := proof.Deserialize(reader); err != nil {
+		return errors.New("RechargeToSideChain payload deserialize failed")
+	}
+	reader = bytes.NewReader(payloadRecharge.MainChainTransaction)
+	if err := mainChainTransaction.Deserialize(reader); err != nil {
+		return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
+	}
+
+	payloadObj, ok := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
+	if !ok {
+		return errors.New("Invalid payload ela.PayloadTransferCrossChainAsset")
+	}
+
+	genesisHash, _ := DefaultLedger.Store.GetBlockHash(uint32(0))
+	buf := new(bytes.Buffer)
+	buf.WriteByte(byte(len(genesisHash.Bytes())))
+	buf.Write(genesisHash.Bytes())
+	buf.WriteByte(byte(CROSSCHAIN))
+	genesisProgramHash, err := crypto.ToProgramHash(buf.Bytes())
+	if err != nil {
+		return errors.New("genesis block bytes to program hash failed")
+	}
+
+	//check output fee and rate
+	rate := Fixed64(config.Parameters.ExchangeRate)
+
+	var oriTotalFee Fixed64
+	var oriOutputTotalAmount Fixed64
+	for i := 0; i < len(mainChainTransaction.Outputs); i++ {
+		if mainChainTransaction.Outputs[i].ProgramHash.IsEqual(*genesisProgramHash) {
+			oriOutputTotalAmount += mainChainTransaction.Outputs[i].Value
+			oriTotalFee += mainChainTransaction.Outputs[i].Value - payloadObj.CrossChainAmount[i]
+
+			programHash, err := Uint168FromAddress(payloadObj.CrossChainAddress[i])
+			if err != nil {
+				return errors.New("Check deposit transaction failed, invalid payload cross chain address")
+			}
+			isContained := false
+			for _, output := range txn.Outputs {
+				if output.ProgramHash == *programHash && output.Value == payloadObj.CrossChainAmount[i]*rate {
+					isContained = true
+					break
+				}
+			}
+			if !isContained {
+				return errors.New("Check deposit transaction failed, invalid outputs")
+			}
+		}
+	}
+
+	var targetOutputTotalAmount Fixed64
+	for _, output := range txn.Outputs {
+		targetOutputTotalAmount += output.Value
+	}
+
+	if targetOutputTotalAmount != (oriOutputTotalAmount-oriTotalFee)*rate {
+		return errors.New("Check deposit transaction failed, output and fee verify failed")
+	}
+
 	return nil
 }
 
