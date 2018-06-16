@@ -20,7 +20,7 @@ type PayloadRegisterIdentification struct {
 
 func (a *PayloadRegisterIdentification) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
-	a.Serialize(buf, RecordPayloadVersion)
+	a.Serialize(buf, RegisterIdentificationVersion)
 	return buf.Bytes()
 }
 
@@ -57,4 +57,9 @@ func (a *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) e
 	}
 
 	return nil
+}
+
+// VM IDataContainer interface
+func (a *PayloadRegisterIdentification) GetData() []byte {
+	return a.Data(RegisterIdentificationVersion)
 }
