@@ -1,17 +1,27 @@
 package: github.com/elastos/Elastos.ELA.SideChain
 import:
-- package: github.com/elastos/Elastos.ELA
-  version: dev
+- package: golang.org/x/crypto
+  repo: https://github.com/golang/crypto.git
+  vcs: git
+- package: golang.org/x/sys
+  repo: https://github.com/golang/sys.git
+  vcs: git
+- package: github.com/AlexpanXX/fsnotify
 - package: github.com/elastos/Elastos.ELA.SPV
-  repo:    git@github.com:elastos/Elastos.ELA.SPV.git
+- package: github.com/elastos/Elastos.ELA.Utility
+- package: github.com/elastos/Elastos.ELA
+- package: github.com/gorilla/websocket
+- package: github.com/mattn/go-sqlite3
+- package: github.com/pborman/uuid
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb
   - leveldb/errors
+  - leveldb/filter
   - leveldb/iterator
   - leveldb/opt
-- package: github.com/gorilla/websocket
-- package: github.com/pborman/uuid
-ignore:
-  - golang.org/x/sys/unix
-  - golang.org/x/sys/windows
+  - leveldb/util
+testImport:
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert
