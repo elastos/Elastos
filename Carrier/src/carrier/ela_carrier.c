@@ -1418,6 +1418,7 @@ static void notify_friend_added(ElaCarrier *w, ElaFriendInfo *fi)
 
         event->le.data = event;
         list_push_tail(w->friend_events, &event->le);
+        deref(event);
     }
 }
 
@@ -1437,6 +1438,7 @@ static void notify_friend_removed(ElaCarrier *w, ElaFriendInfo *fi)
 
         event->le.data = event;
         list_push_tail(w->friend_events, &event->le);
+        deref(event);
     }
 }
 

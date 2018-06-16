@@ -255,6 +255,7 @@ ShellConfig *load_config(const char *config_file)
         config->bootstraps[i] = node;
     }
 
+    cfg_free(cfg);
     return config;
 }
 

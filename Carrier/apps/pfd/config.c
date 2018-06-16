@@ -481,5 +481,6 @@ PFConfig *load_config(const char *config_file)
         }
     }
 
+    cfg_free(cfg);
     return config;
 }
