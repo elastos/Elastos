@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
+
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -277,6 +279,10 @@ func (tx *Transaction) Hash() Uint256 {
 	return *tx.hash
 }
 
+func (tx *Transaction) IsCoinBaseTx() bool {
+	return tx.TxType == CoinBase
+}
+
 func (tx *Transaction) IsSideChainPowTx() bool {
 	return tx.TxType == SideChainPow
 }
@@ -285,8 +291,8 @@ func (tx *Transaction) IsRechargeToSideChainTx() bool {
 	return tx.TxType == RechargeToSideChain
 }
 
-func (tx *Transaction) IsCoinBaseTx() bool {
-	return tx.TxType == CoinBase
+func (tx *Transaction) IsRegisterIdentificationTx() bool {
+	return tx.TxType == RegisterIdentification
 }
 
 func NewTrimmedTx(hash Uint256) *Transaction {
@@ -297,12 +303,19 @@ func NewTrimmedTx(hash Uint256) *Transaction {
 
 // VM IDataContainer interface
 func (tx *Transaction) GetData() []byte {
+	buf := new(bytes.Buffer)
+	tx.SerializeUnsigned(buf)
+	return buf.Bytes()
+}
+
+func (tx *Transaction) GetDataContainer(programHash *Uint168) interfaces.IDataContainer {
 	switch tx.TxType {
 	case RegisterIdentification:
-		return tx.Payload.Data(RegisterIdentificationVersion)
-	default:
-		buf := new(bytes.Buffer)
-		tx.SerializeUnsigned(buf)
-		return buf.Bytes()
+		for _, output := range tx.Outputs {
+			if programHash.IsEqual(output.ProgramHash) {
+				return tx.Payload.(*PayloadRegisterIdentification)
+			}
+		}
 	}
+	return tx
 }

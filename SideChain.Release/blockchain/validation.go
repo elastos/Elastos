@@ -10,8 +10,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
-	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	. "github.com/elastos/Elastos.ELA/bloom"
@@ -19,7 +17,7 @@ import (
 )
 
 func VerifySignature(tx *core.Transaction) error {
-	if tx.TxType == core.RechargeToSideChain {
+	if tx.IsRechargeToSideChainTx() {
 		if err := spv.VerifyTransaction(tx); err != nil {
 			return err
 		}
@@ -31,6 +29,16 @@ func VerifySignature(tx *core.Transaction) error {
 		return err
 	}
 
+	// Add ID program hash to hashes
+	if tx.IsRegisterIdentificationTx() {
+		for _, output := range tx.Outputs {
+			if output.ProgramHash[0] == PrefixRegisterId {
+				hashes = append(hashes, output.ProgramHash)
+				break
+			}
+		}
+	}
+
 	// Sort first
 	SortProgramHashes(hashes)
 	SortPrograms(tx.Programs)
@@ -38,7 +46,7 @@ func VerifySignature(tx *core.Transaction) error {
 	return RunPrograms(tx, hashes, tx.Programs)
 }
 
-func RunPrograms(data interfaces.IDataContainer, hashes []Uint168, programs []*core.Program) error {
+func RunPrograms(tx *core.Transaction, hashes []Uint168, programs []*core.Program) error {
 	if len(hashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
@@ -53,7 +61,7 @@ func RunPrograms(data interfaces.IDataContainer, hashes []Uint168, programs []*c
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 		//execute program on VM
-		se := vm.NewExecutionEngine(data, new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
+		se := vm.NewExecutionEngine(tx.GetDataContainer(programHash), new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
 		se.LoadScript(programs[i].Code, false)
 		se.LoadScript(programs[i].Parameter, true)
 		se.Execute()
