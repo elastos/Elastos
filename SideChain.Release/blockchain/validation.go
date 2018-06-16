@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"sort"
 
@@ -10,10 +11,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
+
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	. "github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
+	"golang.org/x/crypto/ripemd160"
 )
 
 func VerifySignature(tx *core.Transaction) error {
@@ -185,7 +188,15 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 	buf.WriteByte(byte(len(genesisHash.Bytes())))
 	buf.Write(genesisHash.Bytes())
 	buf.WriteByte(byte(CROSSCHAIN))
-	genesisProgramHash, err := crypto.ToProgramHash(buf.Bytes())
+
+	sum168 := func(prefix byte, code []byte) []byte {
+		hash := sha256.Sum256(code)
+		md160 := ripemd160.New()
+		md160.Write(hash[:])
+		return md160.Sum([]byte{prefix})
+	}
+
+	genesisProgramHash, err := Uint168FromBytes(sum168(PrefixCrossChain, buf.Bytes()))
 	if err != nil {
 		return errors.New("genesis block bytes to program hash failed")
 	}
