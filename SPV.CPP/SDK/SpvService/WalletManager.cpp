@@ -240,7 +240,8 @@ namespace Elastos {
 			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				TransactionPtr transaction(new Transaction());
+				ELATransaction *tx = ELATransactionNew();
+				TransactionPtr transaction(new Transaction(tx, false));
 				size_t len = txsEntity[i].buff.GetSize();
 				uint8_t *buff = new uint8_t[len];
 				memcpy(buff, txsEntity[i].buff, len);

@@ -8,6 +8,7 @@
 #include <string>
 #include <BRWallet.h>
 #include <boost/weak_ptr.hpp>
+#include <boost/function.hpp>
 #include <SDK/ELACoreExt/ELATransaction.h>
 
 #include "BRInt.h"
@@ -222,19 +223,21 @@ namespace Elastos {
 		protected:
 			Wallet();
 
-			TransactionPtr createTxForOutputs(const std::string &fromAddress, uint64_t fee,
-											  SharedWrapperList<TransactionOutput, BRTxOutput *> &output);
+			static bool AddressFilter(const std::string &fromAddress, const std::string &filtAddress);
 
+			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
+											  uint64_t fee, const std::string &fromAddress,
+											  bool(*filter)(const std::string &fromAddress, const std::string &addr));
 
-			bool walletSignTransaction(const TransactionPtr &transaction, int forkId, const void *seed, size_t seedLen);
+			static BRTransaction *WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
+
+			bool WalletSignTransaction(const TransactionPtr &transaction, int forkId, const void *seed, size_t seedLen);
 
 			static uint64_t WalletMaxOutputAmount(BRWallet *wallet);
 
 			static uint64_t WalletFeeForTx(BRWallet *wallet, const BRTransaction *tx);
 
 			static void WalletUpdateBalance(BRWallet *wallet);
-
-			static BRTransaction *WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
 
 			static int WalletContainsTx(BRWallet *wallet, const BRTransaction *tx);
 

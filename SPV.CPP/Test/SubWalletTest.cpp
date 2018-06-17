@@ -5,6 +5,9 @@
 #define CATCH_CONFIG_MAIN
 
 #include <boost/scoped_ptr.hpp>
+#include <SDK/Common/Utils.h>
+#include <Core/BRTransaction.h>
+#include <SDK/Common/Log.h>
 
 #include "catch.hpp"
 
@@ -52,6 +55,63 @@ public:
 				  const std::string &payPassword,
 				  MasterWallet *parent) :
 			SubWallet(info, ChainParams::mainNet(), payPassword, parent) {
+	}
+};
+
+#define BASIC_UINT 100000000ULL
+
+class TestWalletManager : public WalletManager {
+public:
+	TestWalletManager(const WalletManager &parent) :
+		WalletManager(parent) {
+	}
+
+protected:
+	virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions() {
+		SharedWrapperList<Transaction, BRTransaction *> txList;
+
+		UInt168 u168Address = UINT168_ZERO;
+		Utils::UInt168FromAddress(u168Address, DefaultAddress[0]);
+
+		ELATransaction *elaTransaction = ELATransactionNew();
+		TransactionPtr tx(new Transaction(elaTransaction, false));
+		elaTransaction->type = ELATransaction::CoinBase;
+		TransactionOutputPtr out(new TransactionOutput());
+		out->setAddress(DefaultAddress[0]);
+		out->setAmount(150 * BASIC_UINT);
+		out->setProgramHash(u168Address);
+		elaTransaction->outputs.push_back(out);
+		elaTransaction->raw.txHash = UINT256_ZERO;
+		txList.push_back(tx);
+
+		ELATransaction *elaTransaction1 = ELATransactionNew();
+		TransactionPtr tx1(new Transaction(elaTransaction1, false));
+		elaTransaction1->type = ELATransaction::CoinBase;
+		TransactionOutputPtr out1(new TransactionOutput());
+		out1->setAddress(DefaultAddress[0]);
+		out1->setAmount(250 * BASIC_UINT);
+		out1->setProgramHash(u168Address);
+		elaTransaction1->outputs.push_back(out1);
+		elaTransaction1->raw.txHash = Utils::UInt256FromString(
+			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+		txList.push_back(tx1);
+
+		return txList;
+	}
+};
+
+class TestTransactionSubWallet : public SubWallet {
+public:
+	TestTransactionSubWallet(const CoinInfo &info,
+				  const std::string &payPassword,
+				  MasterWallet *parent) :
+			SubWallet(info, ChainParams::mainNet(), payPassword, parent) {
+		_walletManager.reset(new TestWalletManager(*_walletManager));
+	}
+
+protected:
+	virtual void publishTransaction(const TransactionPtr &transaction) {
+
 	}
 };
 
@@ -126,5 +186,35 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 		std::string newAddress = subWallet->CreateAddress();
 		REQUIRE(!newAddress.empty());
 		REQUIRE(subWallet->GetBalanceWithAddress(newAddress) == 0);
+	}
+}
+
+TEST_CASE("Sub wallet send transaction", "SubWallet") {
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet);
+
+	CoinInfo info;
+	info.setSingleAddress(false);
+	std::string payPassword = "payPassword";
+	boost::scoped_ptr<TestTransactionSubWallet> subWallet(new TestTransactionSubWallet(info, payPassword, masterWallet.get()));
+
+	SECTION("Send transaction") {
+		SECTION("Send transaction with invalid address") {
+			nlohmann::json result;
+
+			REQUIRE(subWallet->GetBalance() == 400 * BASIC_UINT);
+
+			CHECK_THROWS_AS(subWallet->SendTransaction("XQd1DCi6H62NQdWZQhJCRnrPn7sF9CTjaU",
+													   "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+													   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
+			CHECK_THROWS_AS(subWallet->SendTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+													   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
+			CHECK_THROWS_AS(subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3", "",
+													   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
+		}
+
+	}
+
+	SECTION("send raw transaction") {
+
 	}
 }

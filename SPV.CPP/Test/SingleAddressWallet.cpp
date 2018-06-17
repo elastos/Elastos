@@ -109,7 +109,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
 	REQUIRE(singleAddressWallet.getBalance() == 100000000);
 
-	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction, false)))); //register the same transaction again
+	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction)))); //register the same transaction again
 	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
 
 	//register the second transaction
@@ -120,7 +120,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	transaction2->outputs.push_back(output2);
 	transaction2->raw.txHash = Utils::UInt256FromString(
 			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
-	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2, false))));
+	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2))));
 
 	REQUIRE(singleAddressWallet.getBalance() == 300000000);
 }

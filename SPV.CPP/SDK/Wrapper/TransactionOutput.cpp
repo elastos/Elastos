@@ -39,7 +39,9 @@ namespace Elastos {
 			BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
 			_output->raw.amount = amount;
 			_output->assetId = Key::getSystemAssetId();
-			_output->programHash = Utils::AddressToUInt168(_output->raw.address);
+			if (!Utils::UInt168FromAddress(_output->programHash, _output->raw.address)) {
+				Log::getLogger()->error("Invalid receiver address: {}", _output->raw.address);
+			}
 		}
 
 		TransactionOutput::~TransactionOutput() {

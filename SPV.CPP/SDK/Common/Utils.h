@@ -90,9 +90,9 @@ namespace Elastos {
 				return result;
 			}
 
-			static std::string UInt168ToAddress(const UInt168 &u168);
+			static std::string UInt168ToAddress(const UInt168 &u);
 
-			static UInt168 AddressToUInt168(const std::string &address);
+			static bool UInt168FromAddress(UInt168 &u, const std::string &address);
 
 			static uint32_t getAddressTypeBySignType(const int signType);
 

@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <Core/BRTransaction.h>
 
+#include "SDK/ELACoreExt/Payload/PayloadCoinBase.h"
 #include "SDK/Wrapper/SharedWrapperList.h"
 #include "SDK/Wrapper/TransactionOutput.h"
 #include "SDK/Wrapper/Program.h"
@@ -17,6 +18,7 @@
 #include "Attribute.h"
 #include "ELATxOutput.h"
 #include "ELACoreExt/Payload/IPayload.h"
+#include "BRArray.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -49,6 +51,19 @@ namespace Elastos {
 				outputs.clear();
 				attributes.clear();
 				programs.clear();
+
+				BRTransaction *txRaw = BRTransactionNew();
+				raw = *txRaw;
+				BRTransactionFree(txRaw);
+
+				raw.inputs = nullptr;
+				raw.outputs = nullptr;
+				raw.inCount = 0;
+				raw.outCount = 0;
+
+				array_new(raw.inputs, 1);
+
+				payload = boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
 			}
 
 			BRTransaction raw;

@@ -25,23 +25,28 @@ namespace Elastos {
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
-			Transaction tx;
+			ELATransaction *tx = ELATransactionNew();
+			Transaction trans(tx, false);
 
 			UInt256 txHash;
 			int r = 1;
 
-			if (!tx.Deserialize(stream)) {
+			if (!trans.Deserialize(stream)) {
 				Log::getLogger()->warn("malformed tx message with length: {}", msgLen);
 				r = 0;
+				ELATransactionFree(tx);
 			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
 				Log::warn("got tx message before loading filter");
 				r = 0;
+				ELATransactionFree(tx);
 			} else {
-				txHash = tx.getHash();
+				txHash = trans.getHash();
 				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
 
 				if (ctx->relayedTx) {
-					ctx->relayedTx(ctx->info, (BRTransaction *)ELATransactioCopy((const ELATransaction *)tx.getRaw()));
+					ctx->relayedTx(ctx->info, (BRTransaction *)tx);
+				} else {
+					ELATransactionFree(tx);
 				}
 
 				if (ctx->currentBlock) { // we're collecting tx messages for a merkleblock
@@ -66,7 +71,7 @@ namespace Elastos {
 		void TransactionMessage::Send(BRPeer *peer, void *serializable) {
 
 			ELATransaction *tx = (ELATransaction *)serializable;
-			Transaction transaction(tx);
+			Transaction transaction(tx, false);
 			ByteStream stream;
 			transaction.Serialize(stream);
 			BRPeerSendMessage(peer, stream.getBuf(), stream.length(), MSG_TX);

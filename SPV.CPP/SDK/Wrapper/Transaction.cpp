@@ -33,10 +33,10 @@ namespace Elastos {
 			_transaction = ELATransactionNew();
 		}
 
-		Transaction::Transaction(const ELATransaction *tx, bool manageRaw) :
+		Transaction::Transaction(ELATransaction *tx, bool manageRaw) :
 				_isRegistered(false),
 				_manageRaw(manageRaw) {
-			_transaction = ELATransactioCopy(tx);
+			_transaction = tx;
 		}
 
 		Transaction::Transaction(const ELATransaction &tx) :

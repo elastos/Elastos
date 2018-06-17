@@ -34,7 +34,8 @@ TEST_CASE("ProgramHash and AddressHash Test", "") {
 
 	std::string addr = Utils::UInt168ToAddress(hash);
 
-	UInt168 addrHash = Utils::AddressToUInt168(addr);
+	UInt168 addrHash = UINT168_ZERO;
+	REQUIRE(true == Utils::UInt168FromAddress(addrHash, addr));
 	r = UInt168Eq(&addrHash, &targetHash);
 	REQUIRE(r == 1);
 }

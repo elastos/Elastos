@@ -54,34 +54,21 @@ namespace Elastos {
 
 		// returns a newly allocated empty transaction that must be freed by calling ELATransactionFree()
 		ELATransaction *ELATransactionNew(void) {
-			ELATransaction *tx = new ELATransaction();
-			BRTransaction *txRaw = BRTransactionNew();
-			tx->raw = *txRaw;
-			BRTransactionFree(txRaw);
-
-			tx->raw.inputs = nullptr;
-			tx->raw.outputs = nullptr;
-			tx->raw.inCount = 0;
-			tx->raw.outCount = 0;
-
-			array_new(tx->raw.inputs, 1);
-
-			tx->payload = ELAPayloadNew(tx->type);
-
-			return tx;
+			return new ELATransaction();
 		}
 
 
 		ELATransaction *ELATransactioCopy(const ELATransaction *orig) {
 			ELATransaction *tx = new ELATransaction();
 
-			tx->raw = orig->raw;
-			tx->raw.inputs = nullptr;
-			tx->raw.outputs = nullptr;
-			tx->raw.inCount = 0;
-			tx->raw.outCount = 0;
+			BRTxInput *inputs = tx->raw.inputs;
+			BRTxOutput *outputs = tx->raw.outputs;
 
-			array_new(tx->raw.inputs, 1);
+			assert(orig != NULL);
+			*tx = *orig;
+			tx->raw.inputs = inputs;
+			tx->raw.outputs = outputs;
+			tx->raw.inCount = tx->raw.outCount = 0;
 
 			tx->type = orig->type;
 			tx->payloadVersion = orig->payloadVersion;

@@ -138,6 +138,9 @@ namespace Elastos {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo));
 			TransactionPtr transaction = createTransaction(txParam.get());
+			if (!transaction)
+				throw std::logic_error("create transaction error.");
+
 			return sendTransactionInternal(transaction, payPassword);
 		}
 
@@ -161,7 +164,7 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
-				TransactionPtr transactionPtr(new Transaction((ELATransaction *)transactions[i]));
+				TransactionPtr transactionPtr(new Transaction((ELATransaction *)transactions[i], false));
 				jsonList[i] = transactionPtr->toJson();
 			}
 			nlohmann::json j;
@@ -279,18 +282,18 @@ namespace Elastos {
 
 		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
 										const std::string &payPassword) {
+			assert(transaction != nullptr);
 			BRKey masterKey;
 			UInt256 chainCode;
 			deriveKeyAndChain(&masterKey, chainCode, payPassword);
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
+			assert(wallet != nullptr);
 
 			BRTransaction *tx = transaction->getRaw();
 			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
 			size_t i, internalCount = 0, externalCount = 0;
 			int r = 0;
 
-			assert(wallet != nullptr);
-			assert(transaction != nullptr);
 
 			pthread_mutex_lock(&wallet->lock);
 
