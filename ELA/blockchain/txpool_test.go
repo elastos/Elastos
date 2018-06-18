@@ -3,6 +3,7 @@ package blockchain
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/hex"
 	"os"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -223,6 +225,21 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	if !inPool {
 		t.Error("Should find duplicate sidechain tx")
 	}
+}
+
+func TestTxPool_AppendToTxnPool(t *testing.T) {
+	tx := new(core.Transaction)
+	txBytes, _ := hex.DecodeString("000403454c41010008803e6306563b26de010" +
+		"000000000000000000000000000000000000000000000000000000000000000ffff" +
+		"ffffffff02b037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a" +
+		"4ead0a39becdc01000000000000000012c8a2e0677227144df822b7d9246c58df68" +
+		"eb11ceb037db964a231458d2d6ffd5ea18944c4f90e63d547c5d3b9874df66a4ead" +
+		"0a3c1d258040000000000000000129e9cf1c5f336fcf3a6c954444ed482c5d916e5" +
+		"06dd00000000")
+	tx.Deserialize(bytes.NewReader(txBytes))
+	errCode := txPool.AppendToTxnPool(tx)
+	assert.Equal(t, errCode, errors.ErrIneffectiveCoinbase)
+
 }
 
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
