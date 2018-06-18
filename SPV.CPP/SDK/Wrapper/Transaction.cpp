@@ -95,6 +95,14 @@ namespace Elastos {
 		}
 
 		UInt256 Transaction::getHash() const {
+			UInt256 emptyHash = UINT256_ZERO;
+			if (UInt256Eq(&_transaction->raw.txHash, &emptyHash)) {
+				ByteStream ostream;
+				serializeUnsigned(ostream);
+				uint8_t *buff = ostream.getBuf();
+				BRSHA256_2(&_transaction->raw.txHash, buff, ostream.length());
+				delete buff;
+			}
 			return _transaction->raw.txHash;
 		}
 
@@ -117,38 +125,6 @@ namespace Elastos {
 			//todo initializing payload other than just creating
 			return ELAPayloadNew(type);
 		}
-
-#if 0
-		const SharedWrapperList<TransactionInput, BRTxInput *> &Transaction::getInputs() const {
-			SharedWrapperList<TransactionInput, BRTxInput *> inputs;
-			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
-				inputs.push_back(TransactionInputPtr(new TransactionInput(&_transaction->raw.inputs[i])));
-			}
-			return inputs;
-		}
-
-		void Transaction::transactionInputCopy(BRTxInput *target, const BRTxInput *source) const {
-			assert (target != nullptr);
-			assert (source != nullptr);
-			*target = *source;
-
-			target->script = nullptr;
-			BRTxInputSetScript(target, source->script, source->scriptLen);
-
-			target->signature = nullptr;
-			BRTxInputSetSignature(target, source->signature, source->sigLen);
-		}
-
-		void Transaction::transactionOutputCopy(ELATxOutput *target, const ELATxOutput *source) const {
-			assert (target != nullptr);
-			assert (source != nullptr);
-			*target = *source;
-			target->raw.script = nullptr;
-			if (source->raw.scriptLen > 0) {
-				BRTxOutputSetScript((BRTxOutput *)target, source->raw.script, source->raw.scriptLen);
-			}
-		}
-#endif
 
 		std::vector<std::string> Transaction::getInputAddresses() {
 
@@ -225,20 +201,11 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::getStandardFee() {
-			return BRTransactionStandardFee(&_transaction->raw);
+			return ELATransactionStandardFee(_transaction);
 		}
 
 		bool Transaction::isSigned() {
-			size_t len = _transaction->programs.size();
-			if (len <= 0) {
-				return false;
-			}
-			for (size_t i = 0; i < len; ++i) {
-				if (!_transaction->programs[i]->isValid()) {
-					return false;
-				}
-			}
-			return true;
+			return ELATransactionIsSign(_transaction);
 		}
 
 		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, int forkId) {

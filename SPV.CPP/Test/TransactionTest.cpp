@@ -113,8 +113,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		//contructor transaction is no hash, if send a transaction then must sign ,then has a hash;
 		UInt256 hash = transaction.getHash();
 		UInt256 zero = UINT256_ZERO;
-		int result = UInt256Eq(&hash, &zero);
-		REQUIRE(result == 1);
+		REQUIRE(UInt256Eq(&hash, &zero) != 1);
 	}
 
 	SECTION("transaction getVersion test") {
@@ -192,8 +191,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 
 		UInt256 zero = UINT256_ZERO;
 		UInt256 tempHash = transaction.getHash();
-		int result = UInt256Eq(&tempHash, &zero);
-		REQUIRE(result == 1);
+		REQUIRE(UInt256Eq(&tempHash, &zero) != 1);
 
 		UInt256 reverseHash = transaction.getReverseHash();
 		ssize_t size = sizeof(reverseHash.u8);

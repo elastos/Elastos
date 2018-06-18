@@ -47,6 +47,7 @@ namespace Elastos {
 				raw.blockHeight = TX_UNCONFIRMED;
 				type = CoinBase;
 				payloadVersion = 0;
+				fee = 0;
 				payload = nullptr;
 				outputs.clear();
 				attributes.clear();
@@ -69,6 +70,7 @@ namespace Elastos {
 			BRTransaction raw;
 			Type type;
 			uint8_t payloadVersion;
+			uint64_t fee;
 			PayloadPtr payload;
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs;
 			std::vector<AttributePtr> attributes;
@@ -82,6 +84,8 @@ namespace Elastos {
 
 		void ELATransactionShuffleOutputs(ELATransaction *tx);
 		size_t ELATransactionSize(const ELATransaction *tx);
+		uint64_t ELATransactionStandardFee(const ELATransaction *tx);
+		bool ELATransactionIsSign(const ELATransaction *tx);
 	}
 }
 

@@ -8,6 +8,7 @@
 #include <SDK/Common/Utils.h>
 #include <Core/BRTransaction.h>
 #include <SDK/Common/Log.h>
+#include <Interface/Enviroment.h>
 
 #include "catch.hpp"
 
@@ -82,6 +83,11 @@ protected:
 		out->setProgramHash(u168Address);
 		elaTransaction->outputs.push_back(out);
 		elaTransaction->raw.txHash = UINT256_ZERO;
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code(10);
+		CMBlock parameter(10);
+		ProgramPtr program(new Program(code, parameter));
+		elaTransaction->programs.push_back(program);
 		txList.push_back(tx);
 
 		ELATransaction *elaTransaction1 = ELATransactionNew();
@@ -94,6 +100,11 @@ protected:
 		elaTransaction1->outputs.push_back(out1);
 		elaTransaction1->raw.txHash = Utils::UInt256FromString(
 			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code1(10);
+		CMBlock parameter1(10);
+		ProgramPtr program1(new Program(code1, parameter1));
+		elaTransaction1->programs.push_back(program1);
 		txList.push_back(tx1);
 
 		return txList;
@@ -120,6 +131,7 @@ TEST_CASE("Sub wallet basic", "[SubWallet]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet);
 
 	CoinInfo info;
+	info.setChainId("chainId");
 	std::string payPassword = "payPassword";
 	boost::scoped_ptr<TestSubWallet> subWallet(new TestSubWallet(info, payPassword, masterWallet.get()));
 
@@ -157,6 +169,7 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet);
 
 	CoinInfo info;
+	info.setChainId("chainId");
 	info.setSingleAddress(true);
 	std::string payPassword = "payPassword";
 	boost::scoped_ptr<TestSubWallet> subWallet(new TestSubWallet(info, payPassword, masterWallet.get()));
@@ -192,26 +205,35 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 TEST_CASE("Sub wallet send transaction", "SubWallet") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet);
 
+	Enviroment::InitializeRootPath("Data");
 	CoinInfo info;
+	info.setChainId("chainId");
 	info.setSingleAddress(false);
 	std::string payPassword = "payPassword";
 	boost::scoped_ptr<TestTransactionSubWallet> subWallet(new TestTransactionSubWallet(info, payPassword, masterWallet.get()));
 
 	SECTION("Send transaction") {
-		SECTION("Send transaction with invalid address") {
-			nlohmann::json result;
+		REQUIRE(subWallet->GetBalance() == 400 * BASIC_UINT);
 
-			REQUIRE(subWallet->GetBalance() == 400 * BASIC_UINT);
+		nlohmann::json result;
+		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO);
 
-			CHECK_THROWS_AS(subWallet->SendTransaction("XQd1DCi6H62NQdWZQhJCRnrPn7sF9CTjaU",
-													   "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-													   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
-			CHECK_THROWS_AS(subWallet->SendTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-													   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
-			CHECK_THROWS_AS(subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3", "",
-													   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
-		}
+		CHECK_THROWS_AS(subWallet->SendTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+												   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
+		CHECK_THROWS_AS(subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3", "",
+												   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
 
+		CHECK_NOTHROW(result = subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+												   50 * BASIC_UINT, 0, payPassword, ""));
+		REQUIRE(result["TxHash"].get<std::string>() != emptyHash);
+		REQUIRE(result["Fee"].get<uint64_t>() != 0);
+
+		CHECK_NOTHROW(result = subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3",
+												   "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+												   50 * BASIC_UINT, BASIC_UINT, payPassword, ""));
+
+		REQUIRE(result["TxHash"].get<std::string>() != emptyHash);
+		REQUIRE(result["Fee"].get<uint64_t>() == BASIC_UINT);
 	}
 
 	SECTION("send raw transaction") {

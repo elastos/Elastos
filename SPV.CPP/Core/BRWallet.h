@@ -82,6 +82,7 @@ typedef struct BRWalletStruct {
 	BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
 	uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet);
 	uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx);
+	int (*TransactionIsSigned)(const BRTransaction *tx);
     pthread_mutex_t lock;
 } BRWallet;
 
@@ -109,7 +110,8 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
 					  void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
 					  BRTransaction *(*BRWalletCreateTxForOutputs)(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount),
 					  uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
-					  uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx));
+					  uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
+					  int (*TransactionIsSigned)(const BRTransaction *tx));
 
 // not thread-safe, set callbacks once after BRWalletNew(), before calling other BRWallet functions
 // info is a void pointer that will be passed along with each callback call

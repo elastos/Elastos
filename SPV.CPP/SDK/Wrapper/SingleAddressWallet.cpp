@@ -118,6 +118,7 @@ namespace Elastos {
 			wallet->WalletCreateTxForOutputs = Wallet::WalletCreateTxForOutputs;
 			wallet->WalletMaxOutputAmount = Wallet::WalletMaxOutputAmount;
 			wallet->WalletFeeForTx = Wallet::WalletFeeForTx;
+			wallet->TransactionIsSigned = Wallet::TransactionIsSigned;
 			wallet->internalChain = nullptr;
 			array_new(wallet->externalChain, 1);
 			array_new(wallet->balanceHist, txCount + 100);
@@ -131,7 +132,7 @@ namespace Elastos {
 
 			for (size_t i = 0; transactions && i < txCount; i++) {
 				tx = transactions[i];
-				if (!BRTransactionIsSigned(tx) || BRSetContains(wallet->allTx, tx)) continue;
+				if (!wallet->TransactionIsSigned(tx) || BRSetContains(wallet->allTx, tx)) continue;
 				BRSetAdd(wallet->allTx, tx);
 				_BRWalletInsertTx(wallet, tx);
 

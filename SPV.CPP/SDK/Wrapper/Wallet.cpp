@@ -32,7 +32,7 @@ namespace Elastos {
 			_wallet = BRWalletNew(transactions.getRawPointerArray().data(), transactions.size(), *masterPubKey->getRaw(), BRWalletUnusedAddrs,
 								  BRWalletAllAddrs, setApplyFreeTx, WalletUpdateBalance,
 								  WalletContainsTx, WalletAddUsedAddrs, WalletCreateTxForOutputs,
-								  WalletMaxOutputAmount, WalletFeeForTx);
+								  WalletMaxOutputAmount, WalletFeeForTx, TransactionIsSigned);
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
@@ -217,6 +217,7 @@ namespace Elastos {
 			minAmount = BRWalletMinOutputAmount(wallet);
 			pthread_mutex_lock(&wallet->lock);
 			feeAmount = fee > 0 ? fee : _txFee(wallet->feePerKb, ELATransactionSize(transaction) + TX_OUTPUT_SIZE);
+			transaction->fee = fee > 0 ? fee : 0;
 
 			// TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
 			// TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
@@ -811,6 +812,10 @@ namespace Elastos {
 			for (size_t j = 0; j < outCount; j++) {
 				if (txn->outputs[j]->getRaw()->address[0] != '\0') BRSetAdd(wallet->usedAddrs, txn->outputs[j]->getRaw()->address);
 			}
+		}
+
+		int Wallet::TransactionIsSigned(const BRTransaction *tx) {
+			return true == ELATransactionIsSign((ELATransaction *)tx);
 		}
 
 		void Wallet::setApplyFreeTx(void *info, void *tx) {

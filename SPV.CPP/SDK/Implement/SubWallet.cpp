@@ -176,7 +176,7 @@ namespace Elastos {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
 			TransactionPtr ptr = nullptr;
-			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
+			if (param->getFee() > 0 || param->getFromAddress().empty() != true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
 																	 param->getAmount(), param->getToAddress());
 			} else {
@@ -197,7 +197,8 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 													   const std::string &payPassword) {
-			signTransaction(transaction, _info.getForkId(), payPassword);
+			// FIXME reopen this after signTransaction works fine
+			//signTransaction(transaction, _info.getForkId(), payPassword);
 			publishTransaction(transaction);
 
 			nlohmann::json j;

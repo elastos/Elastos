@@ -243,6 +243,8 @@ namespace Elastos {
 
 			static void WalletAddUsedAddrs(BRWallet *wallet, const BRTransaction *tx);
 
+			static int TransactionIsSigned(const BRTransaction *tx);
+
 			static void setApplyFreeTx(void *info, void *tx);
 
 			static void balanceChanged(void *info, uint64_t balance);

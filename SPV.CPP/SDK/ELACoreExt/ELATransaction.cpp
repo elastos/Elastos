@@ -172,6 +172,26 @@ namespace Elastos {
 
 			return size;
 		}
+
+		// minimum transaction fee needed for tx to relay across the bitcoin network
+		uint64_t ELATransactionStandardFee(const ELATransaction *tx)
+		{
+			assert(tx != NULL);
+			return tx->fee ? tx->fee : ((ELATransactionSize(tx) + 999)/1000)*TX_FEE_PER_KB;
+		}
+
+		bool ELATransactionIsSign(const ELATransaction *tx) {
+			size_t len = tx->programs.size();
+			if (len <= 0) {
+				return false;
+			}
+			for (size_t i = 0; i < len; ++i) {
+				if (!tx->programs[i]->isValid()) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 
 }

@@ -71,6 +71,11 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		output->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
 		transaction->outputs.push_back(output);
 		transaction->raw.txHash = UINT256_ZERO;
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code(10);
+		CMBlock parameter(10);
+		ProgramPtr program(new Program(code, parameter));
+		transaction->programs.push_back(program);
 		transactions.push_back(TransactionPtr(new Transaction(transaction, false)));
 
 		ELATransaction *transaction2 = new ELATransaction;
@@ -80,6 +85,11 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		transaction2->outputs.push_back(output2);
 		transaction2->raw.txHash = Utils::UInt256FromString(
 				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code2(10);
+		CMBlock parameter2(10);
+		ProgramPtr program2(new Program(code2, parameter2));
+		transaction2->programs.push_back(program2);
 		transactions.push_back(TransactionPtr(new Transaction(transaction2, false)));
 
 		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
@@ -104,6 +114,11 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	output->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
 	transaction->outputs.push_back(output);
 	transaction->raw.txHash = UINT256_ZERO;
+	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+	CMBlock code(10);
+	CMBlock parameter(10);
+	ProgramPtr program(new Program(code, parameter));
+	transaction->programs.push_back(program);
 	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction, false))));
 
 	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
@@ -120,6 +135,11 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	transaction2->outputs.push_back(output2);
 	transaction2->raw.txHash = Utils::UInt256FromString(
 			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+	CMBlock code2(10);
+	CMBlock parameter2(10);
+	ProgramPtr program2(new Program(code2, parameter2));
+	transaction2->programs.push_back(program2);
 	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2))));
 
 	REQUIRE(singleAddressWallet.getBalance() == 300000000);

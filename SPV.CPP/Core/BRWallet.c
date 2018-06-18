@@ -238,7 +238,8 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
                       void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
                       BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount),
                       uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
-                      uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx))
+                      uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
+                      int (*TransactionIsSigned)(const BRTransaction *tx))
 {
     BRWallet *wallet = NULL;
     BRTransaction *tx;
@@ -260,6 +261,7 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
     wallet->WalletCreateTxForOutputs = WalletCreateTxForOutputs;
     wallet->WalletMaxOutputAmount = WalletMaxOutputAmount;
     wallet->WalletFeeForTx = WalletFeeForTx;
+    wallet->TransactionIsSigned = TransactionIsSigned;
     array_new(wallet->internalChain, 100);
     array_new(wallet->externalChain, 100);
     array_new(wallet->balanceHist, txCount + 100);
@@ -273,7 +275,7 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
 
     for (size_t i = 0; transactions && i < txCount; i++) {
         tx = transactions[i];
-        if (! BRTransactionIsSigned(tx) || BRSetContains(wallet->allTx, tx)) continue;
+        if (! wallet->TransactionIsSigned(tx) || BRSetContains(wallet->allTx, tx)) continue;
         BRSetAdd(wallet->allTx, tx);
         _BRWalletInsertTx(wallet, tx);
 
@@ -722,9 +724,9 @@ int BRWalletRegisterTransaction(BRWallet *wallet, BRTransaction *tx)
     int wasAdded = 0, r = 1;
 
     assert(wallet != NULL);
-    assert(tx != NULL && BRTransactionIsSigned(tx));
+    assert(tx != NULL && wallet->TransactionIsSigned(tx));
 
-    if (tx && BRTransactionIsSigned(tx)) {
+    if (tx && wallet->TransactionIsSigned(tx)) {
         pthread_mutex_lock(&wallet->lock);
 
         if (! BRSetContains(wallet->allTx, tx)) {
@@ -847,7 +849,7 @@ int BRWalletTransactionIsValid(BRWallet *wallet, const BRTransaction *tx)
     int r = 1;
 
     assert(wallet != NULL);
-    assert(tx != NULL && BRTransactionIsSigned(tx));
+    assert(tx != NULL && wallet->TransactionIsSigned(tx));
 
     // TODO: XXX attempted double spends should cause conflicted tx to remain unverified until they're confirmed
     // TODO: XXX conflicted tx with the same wallet outputs should be presented as the same tx to the user
@@ -882,7 +884,7 @@ int BRWalletTransactionIsPending(BRWallet *wallet, const BRTransaction *tx)
     int r = 0;
 
     assert(wallet != NULL);
-    assert(tx != NULL && BRTransactionIsSigned(tx));
+    assert(tx != NULL && wallet->TransactionIsSigned(tx));
     pthread_mutex_lock(&wallet->lock);
     blockHeight = wallet->blockHeight;
     pthread_mutex_unlock(&wallet->lock);
@@ -917,7 +919,7 @@ int BRWalletTransactionIsVerified(BRWallet *wallet, const BRTransaction *tx)
     int r = 1;
 
     assert(wallet != NULL);
-    assert(tx != NULL && BRTransactionIsSigned(tx));
+    assert(tx != NULL && wallet->TransactionIsSigned(tx));
 
     if (tx && tx->blockHeight == TX_UNCONFIRMED) { // only unconfirmed transactions can be unverified
         if (tx->timestamp == 0 || ! BRWalletTransactionIsValid(wallet, tx) ||
@@ -1073,7 +1075,7 @@ uint64_t BRWalletBalanceAfterTx(BRWallet *wallet, const BRTransaction *tx)
     uint64_t balance;
 
     assert(wallet != NULL);
-    assert(tx != NULL && BRTransactionIsSigned(tx));
+    assert(tx != NULL && wallet->TransactionIsSigned(tx));
     pthread_mutex_lock(&wallet->lock);
     balance = wallet->balance;
 

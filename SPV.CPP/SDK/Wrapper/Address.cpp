@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRAddress.h>
+#include <Core/BRAddress.h>
 
 #include "BRBase58.h"
 #include "BRBech32.h"
@@ -18,18 +19,9 @@ namespace Elastos {
 		}
 
 		Address::Address(std::string address) {
-			assert(!address.empty());
-
 			_address = boost::shared_ptr<BRAddress>(new BRAddress());
-			size_t stringLen = address.size();
-			size_t stringLenMax = sizeof(_address->s) - 1;
-
-			if (stringLen > stringLenMax) {
-				stringLen = stringLenMax;
-			}
-
-			const char* stringChars = address.c_str();
-			memcpy(_address->s, stringChars, stringLen);
+			memset(_address->s, 0, sizeof(_address->s));
+			strncpy(_address->s, address.c_str(), sizeof(_address->s) - 1);
 		}
 
 		Address::Address(const BRAddress &addr) {
