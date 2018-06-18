@@ -65,10 +65,9 @@ namespace Elastos {
 
 			UInt512 seed = _parentWallet->deriveSeed(payPassword);
 
-			BRKey *privkey = new BRKey;
+			Key wrappedKey;
 			UInt256 chainCode;
-			Key::deriveKeyAndChain(privkey, chainCode, &seed, sizeof(seed), 2, purpose, index);
-			Key wrappedKey(privkey);
+			wrappedKey.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 2, purpose, index);
 			std::string id = wrappedKey.keyToAddress(ELA_IDCHAIN);
 			item.PublicKey = Utils::encodeHex(wrappedKey.getPubkey());
 
@@ -109,10 +108,10 @@ namespace Elastos {
 			IdItem item = _info.Ids[id];
 
 			UInt512 seed = _parentWallet->deriveSeed(password);
-			BRKey *privkey = new BRKey;
 			UInt256 chainCode;
-			Key::deriveKeyAndChain(privkey, chainCode, &seed, sizeof(seed), 2, item.Purpose, item.Index);
-			return KeyPtr(new Key(privkey));
+			KeyPtr keyPtr(new Key());
+			keyPtr->deriveKeyAndChain(chainCode, &seed, sizeof(seed), 2, item.Purpose, item.Index);
+			return keyPtr;
 		}
 
 		bool IdAgentImpl::findIdByPath(const IdItem &item, std::string &id) {

@@ -163,7 +163,7 @@ namespace Elastos {
 
 			void rawTransactionFromJson(nlohmann::json jsonData);
 
-			bool transactionSign(int forkId, BRKey keys[], size_t keysCount);
+			bool transactionSign(int forkId, const WrapperList<Key, BRKey> keys);
 
 		private:
 			bool _isRegistered;

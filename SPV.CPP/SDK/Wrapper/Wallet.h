@@ -256,6 +256,10 @@ namespace Elastos {
 
 			static void txDeleted(void *info, UInt256 txHash, int notifyUser, int recommendRescan);
 
+			static size_t KeyToAddress(const BRKey *key, char *addr ,size_t addrLen);
+
+			static size_t WalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal);
+
 		protected:
 			BRWallet *_wallet;
 

@@ -7,6 +7,8 @@
 #include <SDK/ELACoreExt/ELATxOutput.h>
 #include <boost/function.hpp>
 #include <SDK/Common/Log.h>
+#include <Core/BRAddress.h>
+#include <Core/BRBIP32Sequence.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"
@@ -29,11 +31,10 @@ namespace Elastos {
 					   const MasterPubKeyPtr &masterPubKey,
 					   const boost::shared_ptr<Listener> &listener) {
 
-			_wallet = BRWalletNew(transactions.getRawPointerArray().data(), transactions.size(), *masterPubKey->getRaw(), BRWalletUnusedAddrs,
+			_wallet = BRWalletNew(transactions.getRawPointerArray().data(), transactions.size(), *masterPubKey->getRaw(), WalletUnusedAddrs,
 								  BRWalletAllAddrs, setApplyFreeTx, WalletUpdateBalance,
 								  WalletContainsTx, WalletAddUsedAddrs, WalletCreateTxForOutputs,
-								  WalletMaxOutputAmount, WalletFeeForTx, TransactionIsSigned);
-
+								  WalletMaxOutputAmount, WalletFeeForTx, TransactionIsSigned, KeyToAddress);
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
@@ -862,5 +863,79 @@ namespace Elastos {
 			}
 		}
 
+		size_t Wallet::KeyToAddress(const BRKey *key, char *addr, size_t addrLen) {
+			BRKey *brKey = new BRKey;
+			memcpy(brKey, key, sizeof(BRKey));
+
+			KeyPtr keyPtr(new Key(brKey));
+
+			std::string address = keyPtr->address();
+
+			memset(addr, '\0', addrLen);
+			strncpy(addr, address.c_str(), addrLen - 1);
+
+			return address.size();
+		}
+
+		size_t Wallet::WalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal) {
+			BRAddress *addrChain, emptyAddress = BR_ADDRESS_NONE;
+			size_t i, j = 0, count, startCount;
+			uint32_t chain = (internal) ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+
+			assert(wallet != NULL);
+			assert(gapLimit > 0);
+			pthread_mutex_lock(&wallet->lock);
+			addrChain = (internal) ? wallet->internalChain : wallet->externalChain;
+			i = count = startCount = array_count(addrChain);
+
+			// keep only the trailing contiguous block of addresses with no transactions
+			while (i > 0 && ! BRSetContains(wallet->usedAddrs, &addrChain[i - 1])) i--;
+
+			while (i + gapLimit > count) { // generate new addresses up to gapLimit
+				Key key;
+				BRAddress address = BR_ADDRESS_NONE;
+				uint8_t pubKey[MasterPubKey::BIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
+				size_t len = MasterPubKey::BIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
+
+				CMemBlock<uint8_t> publicKey(len);
+				memcpy(publicKey, pubKey, len);
+
+				if (! key.setPubKey(publicKey)) break;
+				if (! wallet->KeyToAddress(key.getRaw(), address.s, sizeof(BRAddress)) ||
+						BRAddressEq(&address, &emptyAddress)) break;
+				array_add(addrChain, address);
+				count++;
+				if (BRSetContains(wallet->usedAddrs, &address)) i = count;
+			}
+
+			if (addrs && i + gapLimit <= count) {
+				for (j = 0; j < gapLimit; j++) {
+					addrs[j] = addrChain[i + j];
+				}
+			}
+
+			// was addrChain moved to a new memory location?
+			if (addrChain == (internal ? wallet->internalChain : wallet->externalChain)) {
+				for (i = startCount; i < count; i++) {
+					BRSetAdd(wallet->allAddrs, &addrChain[i]);
+				}
+			}
+			else {
+				if (internal) wallet->internalChain = addrChain;
+				if (! internal) wallet->externalChain = addrChain;
+				BRSetClear(wallet->allAddrs); // clear and rebuild allAddrs
+
+				for (i = array_count(wallet->internalChain); i > 0; i--) {
+					BRSetAdd(wallet->allAddrs, &wallet->internalChain[i - 1]);
+				}
+
+				for (i = array_count(wallet->externalChain); i > 0; i--) {
+					BRSetAdd(wallet->allAddrs, &wallet->externalChain[i - 1]);
+				}
+			}
+
+			pthread_mutex_unlock(&wallet->lock);
+			return j;
+		}
 	}
 }

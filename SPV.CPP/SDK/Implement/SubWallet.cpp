@@ -277,8 +277,15 @@ namespace Elastos {
 		}
 
 		void SubWallet::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword) {
+			ParamChecker::checkNullPointer(key);
+
 			UInt512 seed = _parent->deriveSeed(payPassword);
-			Key::deriveKeyAndChain(key, chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
+			Key wrapperKey;
+			wrapperKey.deriveKeyAndChain( chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
+			UInt256Set(&key->secret, wrapperKey.getSecret());
+			key->compressed = wrapperKey.getCompressed();
+			CMBlock pubKey = wrapperKey.getPubkey();
+			memcpy(key->pubKey, pubKey, pubKey.GetSize());
 		}
 
 		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
@@ -297,16 +304,19 @@ namespace Elastos {
 
 
 			pthread_mutex_lock(&wallet->lock);
-
 			for (i = 0; i < tx->inCount; i++) {
 				for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1]))
+					if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1])){
 						internalIdx[internalCount++] = j - 1;
+					}
+
 				}
 
 				for (j = (uint32_t) array_count(wallet->externalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &wallet->externalChain[j - 1]))
+					if (BRAddressEq(tx->inputs[i].address, &wallet->externalChain[j - 1])) {
 						externalIdx[externalCount++] = j - 1;
+					}
+
 				}
 			}
 
@@ -321,11 +331,13 @@ namespace Elastos {
 			if (tx) {
 				WrapperList<Key, BRKey> keyList;
 				for (i = 0; i < internalCount + externalCount; ++i) {
-					Key key(new BRKey);
-					memcpy(key.getRaw(), &keys[i], sizeof(BRKey));
+					Key key(keys[i].secret, keys[i].compressed);
 					keyList.push_back(key);
 				}
 				r = transaction->sign(keyList, forkId);
+				if (!r) {
+					throw std::logic_error("Transaction Sign error!");
+				}
 			}
 
 			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);

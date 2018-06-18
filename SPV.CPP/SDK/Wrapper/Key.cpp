@@ -12,54 +12,20 @@
 #include "BRBIP38Key.h"
 #include "BRCrypto.h"
 #include "BRAddress.h"
-#include "BRKey.h"
 
 #include "Common/Utils.h"
 #include "Log.h"
 #include "Key.h"
 #include "ByteStream.h"
 #include "Transaction.h"
+#include "BTCKey.h"
+#include "ParamChecker.h"
+#include "ELABIP32Sequence.h"
 
 #define BIP32_SEED_KEY "ELA seed"
 
 namespace Elastos {
 	namespace SDK {
-		namespace {
-			// Private parent key -> private child key
-			//
-			// CKDpriv((kpar, cpar), i) -> (ki, ci) computes a child extended private key from the parent extended private key:
-			//
-			// - Check whether i >= 2^31 (whether the child is a hardened key).
-			//     - If so (hardened child): let I = HMAC-SHA512(Key = cpar, Data = 0x00 || ser256(kpar) || ser32(i)).
-			//       (Note: The 0x00 pads the private key to make it 33 bytes long.)
-			//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(point(kpar)) || ser32(i)).
-			// - Split I into two 32-byte sequences, IL and IR.
-			// - The returned child key ki is parse256(IL) + kpar (mod n).
-			// - The returned chain code ci is IR.
-			// - In case parse256(IL) >= n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i
-			//   (Note: this has probability lower than 1 in 2^127.)
-			//
-			static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i) {
-				uint8_t buf[sizeof(BRECPoint) + sizeof(i)];
-				UInt512 I;
-
-				if (i & BIP32_HARD) {
-					buf[0] = 0;
-					UInt256Set(&buf[1], *k);
-				} else BRSecp256k1PointGen((BRECPoint *) buf, k);
-
-				UInt32SetBE(&buf[sizeof(BRECPoint)], i);
-
-				BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf,
-				       sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
-
-				BRSecp256k1ModAdd(k, (UInt256 *) &I); // k = IL + k (mod n)
-				*c = *(UInt256 *) &I.u8[sizeof(UInt256)]; // c = IR
-
-				var_clean(&I);
-				mem_clean(buf, sizeof(buf));
-			}
-		}
 
 		Key::Key() {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
@@ -96,7 +62,7 @@ namespace Elastos {
 
 		Key::Key(const CMBlock &seed, uint32_t chain, uint32_t index) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
-			BRBIP32PrivKey(_key.get(), seed, seed.GetSize(), chain, index);
+			ELABIP32Sequence::BIP32PrivKey(_key.get(), seed, seed.GetSize(), chain, index);
 		}
 
 		std::string Key::toString() const {
@@ -112,10 +78,25 @@ namespace Elastos {
 		}
 
 		CMBlock Key::getPubkey() const {
-			CMBlock ret(65);
-			memcpy(ret, _key->pubKey, 65);
+			size_t size = getCompressed() ? 33 : 65;
+			CMBlock ret(size);
+			memcpy(ret, _key->pubKey, size);
 
 			return ret;
+		}
+
+		bool Key::setPubKey(const CMemBlock<uint8_t> pubKey) {
+
+			CMBlock publicKey;
+			publicKey.SetMemFixed(pubKey, pubKey.GetSize());
+			ParamChecker::checkDataNotEmpty(publicKey, true);
+			assert(publicKey.GetSize() == 33 || publicKey.GetSize() == 65);
+
+			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
+			_key->compressed = (pubKey.GetSize() <= 33);
+
+			//todo add pubKey verify is effective
+			return true;
 		}
 
 		bool Key::getCompressed() const {
@@ -144,10 +125,9 @@ namespace Elastos {
 
 		CMBlock Key::getAuthPrivKeyForAPI(const CMBlock &seed) {
 			BRKey key;
-			BRBIP32APIAuthKey(&key, (void *) seed, seed.GetSize());
+			ELABIP32Sequence::BIP32APIAuthKey(&key, seed, seed.GetSize());
 			char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
 			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-
 			CMBlock ret(sizeof(rawKey));
 			memcpy(ret, &rawKey, sizeof(rawKey));
 
@@ -157,14 +137,29 @@ namespace Elastos {
 		std::string Key::getAuthPublicKeyForAPI(const CMBlock &privKey) {
 			BRKey key;
 			BRKeySetPrivKey(&key, (const char *) (void *) privKey);
-			size_t len = BRKeyPubKey(&key, nullptr, 0);
-			uint8_t pubKey[len];
-			BRKeyPubKey(&key, &pubKey, len);
+
+			CMemBlock<uint8_t> pubKey;
+			CMemBlock<uint8_t> secret;
+			secret.SetMemFixed(key.secret.u8, sizeof(key.secret));
+			pubKey = Key::getPubKeyFromPrivKey(secret);
+
+			size_t len = pubKey.GetSize();
 			size_t strLen = BRBase58Encode(nullptr, 0, pubKey, len);
 			char base58string[strLen];
 			BRBase58Encode(base58string, strLen, pubKey, len);
 
 			return base58string;
+		}
+
+		CMemBlock<uint8_t> Key::getPublicKeyByKey(const Key &key) {
+			UInt256 secret = key.getSecret();
+			if(UInt256IsZero(&secret)) {
+				throw std::logic_error("secret key is zero!");
+			}
+			CMemBlock<uint8_t> secretMem;
+			secretMem.SetMemFixed(secret.u8, sizeof(secret));
+
+			return Key::getPubKeyFromPrivKey(secretMem);
 		}
 
 		std::string Key::decryptBip38Key(const std::string &privKey, const std::string &pass) {
@@ -182,11 +177,33 @@ namespace Elastos {
 		}
 
 		bool Key::setPrivKey(const std::string &privKey) {
-			return BRKeySetPrivKey(_key.get(), privKey.c_str()) != 0;
+			bool ret = BRKeySetPrivKey(_key.get(), privKey.c_str()) != 0;
+			if (ret) {
+				setPublicKey();
+			}
+			return ret;
 		}
 
 		bool Key::setSecret(const UInt256 &secret, bool compressed) {
-			return BRKeySetSecret(_key.get(), (const UInt256 *) &secret, compressed) != 0;
+			bool ret = BRKeySetSecret(_key.get(), &secret, compressed) != 0;
+			if (ret) {
+				setPublicKey();
+			}
+			return ret;
+		}
+
+		void Key::setPublicKey() {
+			UInt256 secret = getSecret();
+			if (UInt256IsZero(&secret)) {
+				throw std::logic_error("secret is zero, can't generate publicKey!");
+			}
+			CMemBlock<uint8_t> secretData;
+			secretData.SetMemFixed(secret.u8, sizeof(secret));
+
+			CMemBlock<uint8_t> pubKey = Key::getPubKeyFromPrivKey(secretData);
+
+			memset(_key->pubKey, 0, sizeof(_key->pubKey));
+			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
 		}
 
 		CMBlock Key::compactSign(const CMBlock &data) const {
@@ -195,7 +212,6 @@ namespace Elastos {
 			size_t sigLen = BRKeyCompactSign(_key.get(), nullptr, 0, md32);
 			CMBlock compactSig(sigLen);
 			sigLen = BRKeyCompactSign(_key.get(), compactSig, sigLen, md32);
-
 			return compactSig;
 		}
 
@@ -221,32 +237,24 @@ namespace Elastos {
 
 		CMBlock Key::sign(const UInt256 &messageDigest) const {
 			CMBlock signature(256);
-			size_t signatureLen = BRKeySign(_key.get(), signature, 256, messageDigest);
+			size_t signatureLen = BRKeySign(_key.get(), signature, signature.GetSize(), messageDigest);
 			assert (signatureLen <= 256);
 			signature.Resize(signatureLen);
 			return signature;
 		}
 
 		std::string Key::keyToAddress(const int signType) const {
-			UInt168 hash;
-			uint8_t data[21];
-			BRAddress address = BR_ADDRESS_NONE;
-			size_t addrLen = sizeof(address);
+			std::string redeedScript = keyToRedeemScript(signType);
 
-			hash = keyToUInt168BySignType(signType);
+			UInt168 hash = Utils::codeToProgramHash(redeedScript);
 
-			UInt168Set(&data[0], hash);
-			if (! UInt168IsZero(&hash)) {
-				BRBase58CheckEncode(address.s, addrLen, data, sizeof(data));
-			}
+			std::string address = Utils::UInt168ToAddress(hash);
 
-			assert(address.s[0] != '\0');
-
-			return address.s;
+			return address;
 		}
 
-		UInt168 Key::keyToUInt168BySignType(const int signType) const {
-			UInt168 uInt168 = BRKeyHash168(_key.get());
+		UInt168 Key::keyToUInt168BySignType(const int signType) {
+			UInt168 uInt168 = hashTo168();
 			if(signType == ELA_STANDARD) {
 				uInt168.u8[0] = ELA_STAND_ADDRESS;
 			} else if (signType == ELA_MULTISIG) {
@@ -277,36 +285,62 @@ namespace Elastos {
 			return md;
 		}
 
-		void Key::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...) {
+		void Key::deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...) {
 			va_list ap;
 
 			va_start(ap, depth);
-			deriveKeyAndChain(key, chainCode, seed, seedLen, depth, ap);
+			deriveKeyAndChain(chainCode, seed, seedLen, depth, ap);
 			va_end(ap);
 		}
 
-		void Key::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth,
-		                            va_list vlist) {
+		void Key::deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, va_list vlist) {
 			UInt512 I;
 			UInt256 secret;
 
-			assert(key != NULL);
+			assert(_key.get() != NULL);
 			assert(seed != NULL || seedLen == 0);
 			assert(depth >= 0);
 
-			if (key && (seed || seedLen == 0)) {
+			if (_key.get() && (seed || seedLen == 0)) {
 				BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
 				secret = *(UInt256 *) &I;
 				chainCode = *(UInt256 *) &I.u8[sizeof(UInt256)];
 				var_clean(&I);
 
 				for (int i = 0; i < depth; i++) {
-					_CKDpriv(&secret, &chainCode, va_arg(vlist, uint32_t));
+					ELABIP32Sequence::CKDpriv(&secret, &chainCode, va_arg(vlist, uint32_t));
 				}
 
-				BRKeySetSecret(key, &secret, 1);
+				setSecret(secret, true);
+
 				var_clean(&secret, &chainCode);
+
 			}
+		}
+
+		const UInt160 Key::hashTo160() {
+			UInt160 hash = UINT160_ZERO;
+			size_t len = getCompressed() ? 33 : 65;
+			//todo add publicKey verify
+			if (true) {
+				BRHash160(&hash, _key->pubKey, len);
+			}
+			return hash;
+		}
+
+		const UInt168 Key::hashTo168() {
+			UInt168 hash = UINT168_ZERO;
+			size_t len;
+			int size = sizeof(hash);
+			hash.u8[size - 1] = ELA_STANDARD;
+			//todo add publicKey verify
+			if (true) {
+				BRHash168(&hash, _key->pubKey, len);
+			}
+			UInt168 uInt168 = UINT168_ZERO;
+			uInt168.u8[0] = ELA_STAND_ADDRESS;
+			memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8) - 1);
+			return uInt168;
 		}
 
 		void
@@ -318,9 +352,16 @@ namespace Elastos {
 			assert(indexes != nullptr || keysCount == 0);
 			if (keys && keysCount > 0 && indexes)
 				for (size_t i = 0; i < keysCount; i++) {
-					_CKDpriv(secret, chainCode, chain);
-					_CKDpriv(secret, chainCode, indexes[i]);
-					BRKeySetSecret(&keys[i], secret, 1);
+					UInt256 code;
+					UInt256Set(&code, *chainCode);
+
+					UInt256 privateKey;
+					UInt256Set(&privateKey, *secret);
+
+					ELABIP32Sequence::CKDpriv(&privateKey, &code, chain);
+					ELABIP32Sequence::CKDpriv(&privateKey, &code, indexes[i]);
+
+					BRKeySetSecret(&keys[i], &privateKey, 1);
 				}
 		}
 
@@ -367,6 +408,10 @@ namespace Elastos {
 			Transaction elaCoin;
 			elaCoin.setTransactionType(ELATransaction::RegisterAsset);
 			return elaCoin.getHash();
+		}
+
+		CMemBlock<uint8_t> Key::getPubKeyFromPrivKey(const CMemBlock<uint8_t> &privKey, int nid) {
+			return BTCKey::getPubKeyFromPrivKey(privKey, nid);
 		}
 	}
 }

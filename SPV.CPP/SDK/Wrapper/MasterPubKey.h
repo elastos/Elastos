@@ -40,11 +40,15 @@ namespace Elastos {
 
 			boost::shared_ptr<Key> getPubKeyAsKey() const;
 
+		public:
 			static CMBlock bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri);
 
 			static bool validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase);
 
 			static std::string generatePaperKey(const UInt128 &seed, const std::vector<std::string> &words);
+
+			static size_t BIP32PubKey(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, uint32_t chain,
+			                          uint32_t index);
 
 		private:
 			boost::shared_ptr<BRMasterPubKey> _masterPubKey;

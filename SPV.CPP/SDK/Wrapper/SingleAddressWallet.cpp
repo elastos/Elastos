@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <Core/BRAddress.h>
 #include "Core/BRArray.h"
 
 #include "ParamChecker.h"
@@ -50,10 +51,14 @@ namespace Elastos {
 					BRAddress address = BR_ADDRESS_NONE;
 					uint8_t pubKey[BRBIP32PubKey(nullptr, 0, wallet->masterPubKey, 0, count)];
 					size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, 0, (uint32_t) count);
-					BRKey key;
-					if (!BRKeySetPubKey(&key, pubKey, len))
+					Key key;
+					CMemBlock<uint8_t> publicKey;
+					publicKey.SetMemFixed(pubKey, len);
+					if (!key.setPubKey(publicKey))
 						return 0;
-					if (!BRKeyAddress(&key, address.s, sizeof(address)))
+					std::string addr = key.address();
+					strncpy(address.s, addr.c_str(), sizeof(address.s));
+					if (!Address::isValidAddress(addr))
 						return 0;
 					array_add(wallet->externalChain, address);
 					BRSetAdd(wallet->allAddrs, wallet->externalChain);

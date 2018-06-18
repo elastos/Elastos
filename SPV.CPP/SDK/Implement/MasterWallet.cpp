@@ -342,11 +342,7 @@ namespace Elastos {
 			if (key.getPrivKey() == "") {
 				return;
 			}
-			size_t len = BRKeyPubKey(key.getRaw(), nullptr, 0);
-			uint8_t pubKey[len];
-			BRKeyPubKey(key.getRaw(), pubKey, len);
-			CMBlock data;
-			data.SetMemFixed(pubKey, len);
+			CMBlock data = key.getPubkey();
 			_localStore.SetPublicKey(Utils::encodeHex(data));
 		}
 

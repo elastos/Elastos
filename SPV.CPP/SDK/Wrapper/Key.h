@@ -7,6 +7,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "openssl/obj_mac.h"
+
 #include "BRKey.h"
 #include "BRAddress.h"
 #include "Wrapper.h"
@@ -38,9 +40,13 @@ namespace Elastos {
 
 			CMBlock getPubkey() const;
 
+			bool setPubKey(const CMemBlock<uint8_t> pubKey);
+
 			bool getCompressed() const;
 
 			std::string getPrivKey() const;
+
+			bool setSecret(const UInt256 &data, bool compressed);
 
 			bool setPrivKey(const std::string &privKey);
 
@@ -58,9 +64,15 @@ namespace Elastos {
 
 			std::string keyToAddress(const int signType) const;
 
-			UInt168 keyToUInt168BySignType(const int signType) const;
+			UInt168 keyToUInt168BySignType(const int signType);
 
 			std::string keyToRedeemScript(int signType) const;
+
+			void deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...);
+
+			const UInt160 hashTo160();
+
+			const UInt168 hashTo168();
 
 		public:
 			static CMBlock getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass = "");
@@ -68,6 +80,8 @@ namespace Elastos {
 			static CMBlock getAuthPrivKeyForAPI(const CMBlock &seed);
 
 			static std::string getAuthPublicKeyForAPI(const CMBlock &privKey);
+
+			static CMemBlock<uint8_t> getPublicKeyByKey(const Key &key);
 
 			static std::string decryptBip38Key(const std::string &privKey, const std::string &pass);
 
@@ -78,9 +92,6 @@ namespace Elastos {
 			static UInt256 encodeSHA256(const std::string &message);
 
 			static void
-			deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...);
-
-			static void
 			calculatePrivateKeyList(BRKey keys[], size_t keysCount, UInt256 *secret, UInt256 *chainCode,
 			                        uint32_t chain, const uint32_t indexes[]);
 
@@ -89,11 +100,14 @@ namespace Elastos {
 
 			static const UInt256 getSystemAssetId();
 
-		private:
-			bool setSecret(const UInt256 &data, bool compressed);
+			static CMemBlock<uint8_t> getPubKeyFromPrivKey(const CMemBlock<uint8_t> &privKey,
+			                                               int nid = NID_X9_62_prime256v1);
 
-			static void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const void *seed, size_t seedLen, int depth,
-			                              va_list vlist);
+		private:
+
+			void setPublicKey();
+
+			void deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, va_list vlist);
 
 		private:
 			boost::shared_ptr<BRKey> _key;

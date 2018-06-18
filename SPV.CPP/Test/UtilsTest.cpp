@@ -196,3 +196,20 @@ TEST_CASE("mem string", "[Utils]") {
 	REQUIRE(block.GetSize() == mbRand256recov.GetSize());
 	REQUIRE(0 == memcmp(mbRand256recov, block, block.GetSize()));
 }
+
+TEST_CASE("AddressToUInt168 and UInt168ToAddress Test", "[Utils]") {
+
+	SECTION("UInt168 test") {
+		UInt168 targetHash = Utils::UInt168FromString("213a3b4511636bf45a582a02b2ee0a0d3c9c52dfe1");
+
+		std::string address = Utils::UInt168ToAddress(targetHash);
+		REQUIRE(address.empty() == false);
+
+		UInt168 hash = UINT168_ZERO;
+		bool ret = Utils::UInt168FromAddress(hash, address);
+		REQUIRE(ret == true);
+
+		int r = UInt168Eq(&targetHash, &hash);
+		REQUIRE(r == 1);
+	}
+}

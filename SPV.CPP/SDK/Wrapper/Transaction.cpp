@@ -7,7 +7,6 @@
 #include <cstring>
 #include <BRTransaction.h>
 #include <SDK/Common/Log.h>
-#include <Core/BRTransaction.h>
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
@@ -209,7 +208,7 @@ namespace Elastos {
 		}
 
 		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, int forkId) {
-			return transactionSign(forkId, keys.getRawArray().data(), keys.size());
+			return transactionSign(forkId, keys);
 		}
 
 		bool Transaction::sign(const Key &key, int forkId) {
@@ -219,68 +218,69 @@ namespace Elastos {
 			return sign(keys, forkId);
 		}
 
-		bool Transaction::transactionSign(int forkId, BRKey keys[], size_t keysCount) {
+		bool Transaction::transactionSign(int forkId, const WrapperList<Key, BRKey> keys) {
 			const int SIGHASH_ALL = 0x01; // default, sign all of the outputs
+			size_t i, j, keysCount = keys.size();
 			BRAddress addrs[keysCount], address;
-			size_t i, j;
 
-			assert(keys != NULL || keysCount == 0);
+			assert(keysCount > 0);
 
 			for (i = 0; i < keysCount; i++) {
-				if (!BRKeyAddress(&keys[i], addrs[i].s, sizeof(addrs[i]))) addrs[i] = BR_ADDRESS_NONE;
+				addrs[i] = BR_ADDRESS_NONE;
+				std::string tempAddr = keys[i].address();
+				if(!tempAddr.empty()) {
+					strncpy(addrs[i].s, tempAddr.c_str(), sizeof(BRAddress) - 1);
+				}
 			}
 
-			for (i = 0; i < _transaction->raw.inCount; i++) {
+			size_t size = _transaction->raw.inCount;
+			for (i = 0; i < size; i++) {
 				BRTxInput *input = &_transaction->raw.inputs[i];
 				if (i >= _transaction->programs.size()) {
+					std::string redeemScript = keys[i].keyToRedeemScript(ELA_STANDARD);
+					CMBlock code = Utils::decodeHex(redeemScript);
 					ProgramPtr programPtr(new Program());
-					CMBlock script(_transaction->raw.inCount);
-					memcpy(script, input->script, input->scriptLen);
-					programPtr->setCode(script);
+					programPtr->setCode(code);
 					_transaction->programs.push_back(programPtr);
 				}
 				ProgramPtr program = _transaction->programs[i];
-				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), program->getCode(),
-											   program->getCode().GetSize()))
-					continue;
+				if (! BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
 				j = 0;
 				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
 				if (j >= keysCount) continue;
 
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
 				size_t elemsCount = BRScriptElements(elems, sizeof(elems) / sizeof(*elems), program->getCode(),
-													 program->getCode().GetSize());
-				uint8_t pubKey[BRKeyPubKey(&keys[j], NULL, 0)];
-				size_t pkLen = BRKeyPubKey(&keys[j], pubKey, sizeof(pubKey));
-				uint8_t sig[73], script[1 + sizeof(sig) + 1 + sizeof(pubKey)];
+				                                     program->getCode().GetSize());
+				CMBlock pubKey = keys[j].getPubkey();
+				size_t  pkLen = pubKey.GetSize();
+				uint8_t sig[73], script[1 + sizeof(sig) + 1 + pkLen];
 				size_t sigLen, scriptLen;
 				UInt256 md = UINT256_ZERO;
-
 				ByteStream ostream;
 				serializeUnsigned(ostream);
 				uint8_t *data = ostream.getBuf();
 				size_t dataLen = ostream.length();
-
 				if (elemsCount >= 2 && *elems[elemsCount - 2] == OP_EQUALVERIFY) { // pay-to-pubkey-hash
 					BRSHA256_2(&md, data, dataLen);
-					sigLen = BRKeySign(&keys[j], sig, sizeof(sig) - 1, md);
+					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
 					scriptLen = BRScriptPushData(script, sizeof(script), sig, sigLen);
 					scriptLen += BRScriptPushData(&script[scriptLen], sizeof(script) - scriptLen, pubKey, pkLen);
 					BRTxInputSetSignature(input, script, scriptLen);
-					CMBlock parameter(scriptLen);
-					memcpy(parameter, script, scriptLen);
-					program->setParameter(parameter);
-				} else { // pay-to-pubkey
+				}
+				else { // pay-to-pubkey
 					BRSHA256_2(&md, data, dataLen);
-					sigLen = BRKeySign(&keys[j], sig, sizeof(sig) - 1, md);
+					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
 					scriptLen = BRScriptPushData(script, sizeof(script), sig, sigLen);
 					BRTxInputSetSignature(input, script, scriptLen);
-					CMBlock parameter(scriptLen);
-					memcpy(parameter, script, scriptLen);
-					program->setParameter(parameter);
 				}
+
+				CMBlock shaData(sizeof(UInt256));
+				BRSHA256(shaData, data, dataLen);
+				CMBlock signData = keys[j].compactSign(shaData);
+				program->setParameter(signData);
 				delete data;
 			}
 

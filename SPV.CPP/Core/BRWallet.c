@@ -239,7 +239,8 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
                       BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount),
                       uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
                       uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
-                      int (*TransactionIsSigned)(const BRTransaction *tx))
+                      int (*TransactionIsSigned)(const BRTransaction *tx),
+                      size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen))
 {
     BRWallet *wallet = NULL;
     BRTransaction *tx;
@@ -262,6 +263,7 @@ BRWallet *BRWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPub
     wallet->WalletMaxOutputAmount = WalletMaxOutputAmount;
     wallet->WalletFeeForTx = WalletFeeForTx;
     wallet->TransactionIsSigned = TransactionIsSigned;
+    wallet->KeyToAddress = KeyToAddress;
     array_new(wallet->internalChain, 100);
     array_new(wallet->externalChain, 100);
     array_new(wallet->balanceHist, txCount + 100);
@@ -351,7 +353,7 @@ size_t BRWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimi
         size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, (uint32_t)count);
 
         if (! BRKeySetPubKey(&key, pubKey, len)) break;
-        if (! BRKeyAddress(&key, address.s, sizeof(address)) || BRAddressEq(&address, &BR_ADDRESS_NONE)) break;
+        if (! wallet->KeyToAddress(&key, address.s, sizeof(BRAddress)) || BRAddressEq(&address, &BR_ADDRESS_NONE)) break;
         array_add(addrChain, address);
         count++;
         if (BRSetContains(wallet->usedAddrs, &address)) i = count;
