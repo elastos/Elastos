@@ -23,7 +23,7 @@ type link struct {
 	port         uint16    // The server port of the node
 	httpInfoPort uint16    // The node information server port of the node
 	lastActive   time.Time // The latest time the node activity
-	connCnt      uint64    // The connection count
+	handshakeQueue
 	*p2p.MsgHelper
 }
 
@@ -69,16 +69,15 @@ func (node *node) listenNodePort() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Error("Error accepting ", err.Error())
+			log.Error("Error accepting", err.Error())
 			return
 		}
-		log.Info("Remote node connect with ", conn.RemoteAddr(), conn.LocalAddr())
-
-		node.link.connCnt++
+		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.Read()
+		LocalNode.AddToHandshakeQueue(node)
 	}
 }
 
@@ -121,7 +120,7 @@ func initTlsListen() (net.Listener, error) {
 		ClientCAs:    pool,
 	}
 
-	log.Info("TLS listen port is ", Parameters.NodePort)
+	log.Info("TLS listen port is", Parameters.NodePort)
 	listener, err := tls.Listen("tcp", fmt.Sprint(":", Parameters.NodePort), tlsConfig)
 	if err != nil {
 		log.Error(err)
@@ -145,7 +144,7 @@ func (node *node) Connect(nodeAddr string) error {
 	if node.IsAddrInNbrList(nodeAddr) {
 		return nil
 	}
-	if !node.SetAddrInConnectingList(nodeAddr) {
+	if !node.AddToConnectingList(nodeAddr) {
 		return errors.New("node exist in connecting list, cancel")
 	}
 
@@ -156,30 +155,30 @@ func (node *node) Connect(nodeAddr string) error {
 	if isTls {
 		conn, err = TLSDial(nodeAddr)
 		if err != nil {
-			node.RemoveAddrInConnectingList(nodeAddr)
-			log.Error("TLS connect failed: ", err)
+			node.RemoveFromConnectingList(nodeAddr)
+			log.Error("TLS connect failed:", err)
 			return err
 		}
 	} else {
 		conn, err = NonTLSDial(nodeAddr)
 		if err != nil {
-			node.RemoveAddrInConnectingList(nodeAddr)
-			log.Error("non TLS connect failed: ", err)
+			node.RemoveFromConnectingList(nodeAddr)
+			log.Error("non TLS connect failed:", err)
 			return err
 		}
 	}
-	node.link.connCnt++
 	n := NewNode(Parameters.Magic, conn)
 	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
 
-	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
+	log.Infof("Local node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
-		conn.RemoteAddr().Network()))
+		conn.RemoteAddr().Network())
 	n.Read()
 
 	n.SetState(p2p.HAND)
 	n.Send(NewVersion(node))
 
+	node.AddToHandshakeQueue(n)
 	return nil
 }
 

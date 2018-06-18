@@ -23,13 +23,12 @@ func (node *node) listenNodeOpenPort() {
 			log.Error("Error accepting ", err.Error())
 			return
 		}
-		log.Info("Remote node connect with ", conn.RemoteAddr(), conn.LocalAddr())
-
-		node.link.connCnt++
+		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		node := NewNode(config.Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.fromExtraNet = true
 		node.Read()
+		LocalNode.AddToHandshakeQueue(node)
 	}
 }
