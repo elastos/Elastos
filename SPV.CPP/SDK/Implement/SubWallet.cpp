@@ -514,8 +514,24 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::readPeerConfig() {
-			//todo read from main chain(ela)
-			return nlohmann::json();
+			//fixme read from main chain(ela)
+			nlohmann::json idChainPeerConfig =
+					R"(
+						  {
+							"MagicNumber": 7630401,
+							"KnowingPeers":
+							[
+								{
+									"Address": "127.0.0.1",
+									"Port": 20866,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								}
+							]
+						}
+					)"_json;
+			return idChainPeerConfig;
 		}
 
 	}

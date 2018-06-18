@@ -74,6 +74,8 @@ namespace Elastos {
 
 			virtual std::vector<std::string> GetSupportedChains();
 
+			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
+
 		public: //override from IIdAgent
 			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,

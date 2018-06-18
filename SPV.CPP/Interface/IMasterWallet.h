@@ -106,6 +106,8 @@ namespace Elastos {
 			virtual bool IsAddressValid(const std::string &address) = 0;
 
 			virtual std::vector<std::string> GetSupportedChains() = 0;
+
+			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 		};
 
 	}

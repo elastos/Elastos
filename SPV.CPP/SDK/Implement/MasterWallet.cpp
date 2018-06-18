@@ -131,6 +131,7 @@ namespace Elastos {
 			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams::mainNet(), payPassword, this);
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
+			Save();
 			return subWallet;
 		}
 
@@ -484,6 +485,25 @@ namespace Elastos {
 		std::vector<std::string> MasterWallet::GetSupportedChains() {
 			tryInitCoinConfig();
 			return _coinConfigReader.GetAllChainId();
+		}
+
+		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
+			if (!Initialized())
+				throw std::logic_error("Current master wallet is not initialized.");
+
+			ParamChecker::checkPassword(oldPassword);
+			ParamChecker::checkPassword(newPassword);
+
+			CMBlock key = Utils::decrypt(_localStore.GetEncrpytedKey(), oldPassword);
+			ParamChecker::checkDataNotEmpty(key, false);
+			CMBlock phrasePass = Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), oldPassword);
+			ParamChecker::checkDataNotEmpty(phrasePass, false);
+			CMBlock mnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), oldPassword);
+			ParamChecker::checkDataNotEmpty(mnemonic, false);
+
+			_localStore.SetEncryptedKey(Utils::encrypt(key, newPassword));
+			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, newPassword));
+			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
 		}
 
 		void MasterWallet::tryInitCoinConfig() {

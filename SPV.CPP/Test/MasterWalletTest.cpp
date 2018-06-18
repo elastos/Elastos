@@ -116,6 +116,7 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 		CHECK_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->Sign("mymessage", payPassword), std::logic_error);
 		CHECK_THROWS_AS(masterWallet->CheckSign("ilegal pubKey", "mymessage", "ilegal signature"), std::logic_error);
+		CHECK_THROWS_AS(masterWallet->ChangePassword(payPassword, "newPayPassword"), std::logic_error);
 
 		//override from IIdAgent
 		CHECK_NOTHROW(masterWallet->IsIdValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
@@ -271,6 +272,13 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 
 		masterWallet->DestroyWallet(subWallet);
 	}
+	SECTION("Create all sub wallets in list") {
+		std::vector<std::string> chainIds = masterWallet->GetSupportedChains();
+		for (int i = 0; i < chainIds.size(); ++i) {
+			ISubWallet *subWallet = masterWallet->CreateSubWallet(chainIds[i], payPassword, false);
+			REQUIRE(subWallet != nullptr);
+		}
+	}
 	SECTION("Return exist sub wallet with same id") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
 		REQUIRE(subWallet != nullptr);
@@ -424,6 +432,45 @@ TEST_CASE("Master wallet Sign method test", "[Sign]") {
 	}
 	SECTION("Sign with wrong password") {
 		REQUIRE_THROWS_AS(masterWallet->Sign("mymessage", "wrongpassword"), std::logic_error);
+	}
+}
+
+TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+	std::string language = "english";
+	std::string chainId = "chainid";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+
+	SECTION("Normal change") {
+		REQUIRE_FALSE(masterWallet->Sign("mymessage", payPassword).empty());
+
+		std::string newPayPassword = "newPayPassword";
+		masterWallet->ChangePassword(payPassword, newPayPassword);
+
+		REQUIRE_THROWS_AS(masterWallet->Sign("mymessage", payPassword), std::logic_error);
+		REQUIRE_FALSE(masterWallet->Sign("mymessage", newPayPassword).empty());
+	}
+	SECTION("Check change with wrong pay password") {
+		REQUIRE_THROWS_AS(masterWallet->ChangePassword("wrongPassword", "newPayPassword"), std::logic_error);
+	}
+	SECTION("Change with old pay password that is empty or less than 8") {
+		CHECK_THROWS_AS(masterWallet->ChangePassword("", "newPayPassword"), std::invalid_argument);
+		CHECK_THROWS_AS(masterWallet->ChangePassword("ilegal", "newPayPassword"), std::invalid_argument);
+	}
+	SECTION("Change with old pay password that is more than 128") {
+		REQUIRE_THROWS_AS(masterWallet->ChangePassword(
+				"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+				"newPayPassword"), std::invalid_argument);
+	}
+	SECTION("Change with new pay password that is empty or less than 8") {
+		CHECK_THROWS_AS(masterWallet->ChangePassword(payPassword, ""), std::invalid_argument);
+		CHECK_THROWS_AS(masterWallet->ChangePassword(payPassword, "ilegal"), std::invalid_argument);
+	}
+	SECTION("Change with new pay password that is more than 128") {
+		REQUIRE_THROWS_AS(masterWallet->ChangePassword(payPassword,
+													   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						  std::invalid_argument);
 	}
 }
 
