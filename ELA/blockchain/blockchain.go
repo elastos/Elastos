@@ -787,8 +787,6 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 	// Notify the caller that the block was disconnected from the main
 	// chain.  The caller would typically want to react with actions such as
 	// updating wallets.
-	//TODO
-	//bc.sendNotification(NTBlockDisconnected, block)
 
 	return nil
 }
