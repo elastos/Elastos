@@ -1,4 +1,4 @@
-# Elastos.ELA
+# Elastos.ELA [![Build Status](https://travis-ci.org/elastos/Elastos.ELA.svg?branch=dev)](https://travis-ci.org/elastos/Elastos.ELA)
 
 ## Summary
 
