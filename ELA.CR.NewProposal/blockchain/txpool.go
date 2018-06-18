@@ -36,6 +36,12 @@ func (pool *TxPool) Init() {
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
 func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
+
+	if txn.IsCoinBaseTx() {
+		log.Warn("coinbase cannot be added into transaction pool", txn.Hash().String())
+		return ErrIneffectiveCoinbase
+	}
+
 	//verify transaction with Concurrency
 	if errCode := CheckTransactionSanity(CheckTxOut, txn); errCode != Success {
 		log.Warn("[TxPool CheckTransactionSanity] failed", txn.Hash().String())
