@@ -123,6 +123,7 @@ namespace Elastos {
 			for (size_t i = 0; i < subWallets.size(); i++) {
 				coinInfoList.push_back(subWallets[i]);
 			}
+			p.SetSubWalletInfoList(coinInfoList);
 		}
 
 		const std::string &MasterWalletStore::GetLanguage() const {

@@ -37,6 +37,10 @@ public:
 		initFromLocalStore(localStore);
 	}
 
+	TestMasterWallet(const boost::filesystem::path &localStore) :
+			MasterWallet(localStore) {
+	}
+
 	void restoreLocalStoreWrapper() {
 		restoreLocalStore();
 	}
@@ -749,4 +753,30 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 
 	REQUIRE(publicKey == publicKey1);
 	REQUIRE(masterWallet->GetAllSubWallets().size() == 2);
+}
+
+TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
+	Enviroment::InitializeRootPath("Data");
+
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+
+	SECTION("Import from master wallet store should load all sub wallets") {
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
+		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+		masterWallet->CreateSubWallet("ELA", payPassword, false);
+		masterWallet->CreateSubWallet("IdChain", payPassword, false);
+
+		boost::filesystem::path localStore = Enviroment::GetRootPath();
+		localStore /= "MasterWalletTest";
+		localStore /= "MasterWalletStore.json";
+		masterWallet->Save();
+		masterWallet.reset(new TestMasterWallet(localStore)); //save and reload in this line
+
+		std::vector<ISubWallet *> subwallets = masterWallet->GetAllSubWallets();
+		REQUIRE(subwallets.size() == 2);
+		REQUIRE(subwallets[0] != nullptr);
+		REQUIRE(subwallets[1] != nullptr);
+	}
 }
