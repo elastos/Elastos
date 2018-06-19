@@ -1,15 +1,14 @@
 package: github.com/elastos/Elastos.ELA.SideChain
 import:
-- package: golang.org/x/crypto
-  repo: https://github.com/golang/crypto.git
-  vcs: git
-- package: golang.org/x/sys
-  repo: https://github.com/golang/sys.git
-  vcs: git
+- package: github.com/golang/crypto
+- package: github.com/golang/sys
 - package: github.com/AlexpanXX/fsnotify
 - package: github.com/elastos/Elastos.ELA.SPV
+  version: dev
 - package: github.com/elastos/Elastos.ELA.Utility
+  version: dev
 - package: github.com/elastos/Elastos.ELA
+  version: dev
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 - package: github.com/pborman/uuid
