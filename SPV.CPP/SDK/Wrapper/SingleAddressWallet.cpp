@@ -12,80 +12,18 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		namespace {
-			static size_t singleAddressWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount) {
-				pthread_mutex_unlock(&wallet->lock);
-				size_t externalCount = array_count(wallet->externalChain);
-				if (addrs && externalCount > 0) {
-					addrs[0] = wallet->externalChain[0];
-				}
-				pthread_mutex_unlock(&wallet->lock);
-
-				return externalCount;
-			}
-
-			static size_t
-			SingleAddressWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal) {
-				pthread_mutex_unlock(&wallet->lock);
-				size_t count = array_count(wallet->externalChain);
-				if (count == 0) {
-
-#ifdef TEMPORARY_HD_STRATEGY
-					ELAWallet *elaWallet = (ELAWallet *) wallet;
-
-					Key rootKey;
-					CMBlock keyData = Utils::decrypt(elaWallet->PrivKeyRoot.GetEncryptedKey(),
-													 elaWallet->TemporaryPassword);
-					char stmp[keyData.GetSize()];
-					memcpy(stmp, keyData, keyData.GetSize());
-					std::string secret(stmp, keyData.GetSize());
-					rootKey.setPrivKey(secret);
-
-					BRKey keys[1];
-					uint32_t indices[1] = {0};
-					UInt256 secreteInt = rootKey.getSecret();
-					Key::calculatePrivateKeyList(keys, 1, &secreteInt,
-												 const_cast<UInt256 *>(&elaWallet->PrivKeyRoot.GetChainCode()),
-												 SEQUENCE_EXTERNAL_CHAIN, indices);
-					Key wrapperKey(keys[0]);
-					Address wrapperAddress(wrapperKey.keyToAddress(ELA_STANDARD));
-					array_add(wallet->externalChain, *wrapperAddress.getRaw());
-#else
-					BRAddress address = BR_ADDRESS_NONE;
-					uint8_t pubKey[BRBIP32PubKey(nullptr, 0, wallet->masterPubKey, 0, count)];
-					size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, 0, (uint32_t) count);
-					Key key;
-					CMemBlock<uint8_t> publicKey;
-					publicKey.SetMemFixed(pubKey, len);
-					if (!key.setPubKey(publicKey))
-						return 0;
-					std::string addr = key.address();
-					strncpy(address.s, addr.c_str(), sizeof(address.s));
-					if (!Address::isValidAddress(addr))
-						return 0;
-					array_add(wallet->externalChain, address);
-#endif
-					BRSetAdd(wallet->allAddrs, wallet->externalChain);
-				} else if (addrs && count > 0) {
-					addrs[0] = wallet->externalChain[0];
-				}
-				pthread_mutex_unlock(&wallet->lock);
-
-				return count;
-			}
-		}
-
 #ifdef TEMPORARY_HD_STRATEGY
 
 		SingleAddressWallet::SingleAddressWallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 												 const MasterPrivKey &masterPrivKey,
 												 const std::string &payPassword,
+												 DatabaseManager *databaseManager,
 												 const boost::shared_ptr<Listener> &listener) {
 			ParamChecker::checkNullPointer(listener.get());
 			_listener = boost::weak_ptr<Listener>(listener);
 
 			_wallet = createSingleWallet(transactions.getRawPointerArray().data(), transactions.size(),
-										 masterPrivKey, payPassword);
+										 masterPrivKey, databaseManager, payPassword);
 			ParamChecker::checkNullPointer(_wallet, false);
 
 			BRWalletSetCallbacks((BRWallet *) _wallet, &_listener,
@@ -137,6 +75,7 @@ namespace Elastos {
 
 		ELAWallet *SingleAddressWallet::createSingleWallet(BRTransaction **transactions, size_t txCount,
 														   const MasterPrivKey &masterPrivKey,
+														   DatabaseManager *databaseManager,
 														   const std::string &payPassword) {
 			ELAWallet *wallet = nullptr;
 			BRTransaction *tx;
@@ -151,7 +90,7 @@ namespace Elastos {
 //			wallet->Raw.masterPubKey = ;
 			wallet->PrivKeyRoot = masterPrivKey;
 			wallet->TemporaryPassword = payPassword;
-			wallet->Cache = nullptr;
+			wallet->Cache = new AddressCache(masterPrivKey, databaseManager, 0, 1);
 			wallet->Raw.WalletUnusedAddrs = SingleAddressWalletUnusedAddrs;
 			wallet->Raw.WalletAllAddrs = singleAddressWalletAllAddrs;
 			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
@@ -250,5 +189,60 @@ namespace Elastos {
 			return wallet;
 		}
 #endif
+
+		size_t
+		SingleAddressWallet::singleAddressWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount) {
+			pthread_mutex_unlock(&wallet->lock);
+			size_t externalCount = array_count(wallet->externalChain);
+			if (addrs && externalCount > 0) {
+				addrs[0] = wallet->externalChain[0];
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			return externalCount;
+		}
+
+		size_t
+		SingleAddressWallet::SingleAddressWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
+															int internal) {
+			pthread_mutex_unlock(&wallet->lock);
+			size_t count = array_count(wallet->externalChain);
+			if (count == 0) {
+
+				BRAddress address = BR_ADDRESS_NONE;
+#ifdef TEMPORARY_HD_STRATEGY
+				ELAWallet *elaWallet = (ELAWallet *) wallet;
+				if (!elaWallet->TemporaryPassword.empty()) {
+					elaWallet->Cache->Reset(elaWallet->TemporaryPassword, 0, internal != 1);
+				}
+				std::vector<std::string> addresses = elaWallet->Cache->FetchAddresses(0, internal != 1);
+				if (addresses.empty())
+					throw std::logic_error("Get address error.");
+
+				Address wrapperAddr(addresses[0]);
+				address = *wrapperAddr.getRaw();
+#else
+				uint8_t pubKey[BRBIP32PubKey(nullptr, 0, wallet->masterPubKey, 0, count)];
+				size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, 0, (uint32_t) count);
+				Key key;
+				CMemBlock<uint8_t> publicKey;
+				publicKey.SetMemFixed(pubKey, len);
+				if (!key.setPubKey(publicKey))
+					return 0;
+				std::string addr = key.address();
+				strncpy(address.s, addr.c_str(), sizeof(address.s));
+				if (!Address::isValidAddress(addr))
+					return 0;
+#endif
+				array_add(wallet->externalChain, address);
+				BRSetAdd(wallet->allAddrs, wallet->externalChain);
+			} else if (addrs && count > 0) {
+				addrs[0] = wallet->externalChain[0];
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			return count;
+		}
+
 	}
 }

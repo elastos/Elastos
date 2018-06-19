@@ -5,9 +5,10 @@
 #ifndef __ELASTOS_SDK_BTCKEY_H__
 #define __ELASTOS_SDK_BTCKEY_H__
 
+#include <BRInt.h>
+#include <string>
 #include <openssl/obj_mac.h>
 #include <openssl/ec.h>
-#include <BRInt.h>
 
 #include "CMemBlock.h"
 

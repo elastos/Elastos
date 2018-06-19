@@ -64,9 +64,10 @@ namespace Elastos {
 				_peerConfig(peerConfig) {
 			init(nullptr, chainParams, earliestPeerTime, singleAddress);
 			_wallet = WalletPtr(!_singleAddress
-								? new Wallet(loadTransactions(), masterPrivKey, payPassword, &_databaseManager, createWalletListener())
+								? new Wallet(loadTransactions(), masterPrivKey, payPassword, &_databaseManager,
+											 createWalletListener())
 								: new SingleAddressWallet(loadTransactions(), masterPrivKey, payPassword,
-														  createWalletListener()));
+														  &_databaseManager, createWalletListener()));
 		}
 
 #endif

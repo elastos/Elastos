@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <vector>
+#include <cstdint>
 
 // CMemBlock for C block
 template<class T, class SIZETYPE=size_t>

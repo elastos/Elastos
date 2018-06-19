@@ -23,6 +23,11 @@ namespace Elastos {
 
 		protected:
 			ELAWallet *createRegisterAddress(const std::vector<std::string> &initialAddrs);
+
+			static size_t addressRegisteringWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount);
+
+			static size_t
+			addressRegisteringWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal);
 		};
 
 	}

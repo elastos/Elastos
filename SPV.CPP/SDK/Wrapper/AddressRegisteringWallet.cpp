@@ -11,34 +11,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		namespace {
-			static size_t addressRegisteringWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount) {
-				pthread_mutex_unlock(&wallet->lock);
-				size_t externalCount = array_count(wallet->externalChain);
-				if (addrs && externalCount > 0) {
-					size_t realCount = std::min(externalCount, addrsCount);
-					for (int i = 0; i < realCount; ++i) {
-						addrs[i] = wallet->externalChain[i];
-					}
-				}
-				pthread_mutex_unlock(&wallet->lock);
-
-				return externalCount;
-			}
-
-			static size_t
-			addressRegisteringWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal) {
-				pthread_mutex_unlock(&wallet->lock);
-				int count = array_count(wallet->externalChain);
-				if (addrs && count > 0) {
-					addrs[0] = wallet->externalChain[0];
-				}
-				pthread_mutex_unlock(&wallet->lock);
-
-				return 1;
-			}
-		}
-
 		AddressRegisteringWallet::AddressRegisteringWallet(
 				const boost::shared_ptr<Listener> &listener,
 				const std::vector<std::string> &initialAddrs) {
@@ -88,6 +60,14 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs = addressRegisteringWalletUnusedAddrs;
 			wallet->Raw.WalletAllAddrs = addressRegisteringWalletAllAddrs;
 			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
+			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
+			wallet->Raw.WalletUpdateBalance = Wallet::WalletUpdateBalance;
+			wallet->Raw.WalletContainsTx = Wallet::WalletContainsTx;
+			wallet->Raw.WalletAddUsedAddrs = Wallet::WalletAddUsedAddrs;
+			wallet->Raw.WalletCreateTxForOutputs = Wallet::WalletCreateTxForOutputs;
+			wallet->Raw.WalletMaxOutputAmount = Wallet::WalletMaxOutputAmount;
+			wallet->Raw.WalletFeeForTx = Wallet::WalletFeeForTx;
+			wallet->Raw.TransactionIsSigned = Wallet::TransactionIsSigned;
 			wallet->Raw.internalChain = nullptr;
 			array_new(wallet->Raw.externalChain, 100);
 			array_new(wallet->Raw.balanceHist, 100);
@@ -99,8 +79,8 @@ namespace Elastos {
 			wallet->Raw.allAddrs = BRSetNew(BRAddressHash, BRAddressEq, 100);
 			pthread_mutex_init(&wallet->Raw.lock, nullptr);
 
-			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
 			for (size_t i = 0; i < initialAddrs.size(); ++i) {
 				Address addr(initialAddrs[i]);
@@ -109,6 +89,33 @@ namespace Elastos {
 			BRSetAdd(wallet->Raw.allAddrs, wallet->Raw.externalChain);
 
 			return wallet;
+		}
+
+		size_t AddressRegisteringWallet::addressRegisteringWalletAllAddrs(BRWallet *wallet, BRAddress addrs[],
+																		  size_t addrsCount) {
+			pthread_mutex_unlock(&wallet->lock);
+			size_t externalCount = array_count(wallet->externalChain);
+			if (addrs && externalCount > 0) {
+				size_t realCount = std::min(externalCount, addrsCount);
+				for (int i = 0; i < realCount; ++i) {
+					addrs[i] = wallet->externalChain[i];
+				}
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			return externalCount;
+		}
+
+		size_t AddressRegisteringWallet::addressRegisteringWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[],
+																			 uint32_t gapLimit, int internal) {
+			pthread_mutex_unlock(&wallet->lock);
+			size_t count = array_count(wallet->externalChain);
+			if (addrs && count > 0) {
+				addrs[0] = wallet->externalChain[0];
+			}
+			pthread_mutex_unlock(&wallet->lock);
+
+			return 1;
 		}
 	}
 }
