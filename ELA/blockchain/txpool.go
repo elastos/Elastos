@@ -109,10 +109,10 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 		if blockTx.TxType == CoinBase {
 			continue
 		}
-
 		inputUtxos, err := DefaultLedger.Store.GetTxReference(blockTx)
 		if err != nil {
-			log.Info("get tx reference failed", err)
+			log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", blockTx.Hash()), err)
+			continue
 		}
 		for input := range inputUtxos {
 			// we search transactions in transaction pool which have the same utxos with those transactions
@@ -131,8 +131,12 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 						"block transaction hash: %x, transaction hash: %x, the same input: %s, index: %d",
 						blockTx.Hash(), tx.Hash(), input.Previous.TxID, input.Previous.Index)
 				}
+				//1.remove from txnList
 				pool.delFromTxList(tx.Hash())
-				pool.delInputUTXOList(input)
+				//2.remove from UTXO list map
+				for _, input := range tx.Inputs {
+					pool.delInputUTXOList(input)
+				}
 				deleteCount++
 			}
 		}
