@@ -113,7 +113,7 @@ func newMessage(cmd string) p2p.Message {
 	case p2p.CmdBlock:
 		message = msg.NewBlock(new(core.Block))
 	case p2p.CmdTx:
-		message = msg.NewTx(new(core.Transaction))
+		message = msg.NewTx(NewCoinBaseTransaction(new(core.PayloadCoinBase), 0))
 	case p2p.CmdPing:
 		message = new(msg.Ping)
 	case p2p.CmdPong:

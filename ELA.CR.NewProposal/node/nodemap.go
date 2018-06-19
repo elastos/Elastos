@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA/protocol"
@@ -9,35 +8,24 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
-// The neigbor node list
+// The neighbor node list
 type neighbourNodes struct {
 	sync.RWMutex
-	// Todo using the Pool structure
-	List map[uint64]*node
+	List map[uint64]protocol.Noder
 }
 
-func (nm *neighbourNodes) NodeExisted(uid uint64) bool {
-	_, ok := nm.List[uid]
-	return ok
+func (nm *neighbourNodes) init() {
+	nm.List = make(map[uint64]protocol.Noder)
 }
 
-func (nm *neighbourNodes) AddNbrNode(n protocol.Noder) {
+func (nm *neighbourNodes) AddNeighborNode(n protocol.Noder) {
 	nm.Lock()
 	defer nm.Unlock()
 
-	if nm.NodeExisted(n.ID()) {
-		fmt.Printf("Insert a existed node\n")
-	} else {
-		node, err := n.(*node)
-		if err == false {
-			fmt.Println("Convert the noder error when add node")
-			return
-		}
-		nm.List[n.ID()] = node
-	}
+	nm.List[n.ID()] = n
 }
 
-func (nm *neighbourNodes) DelNbrNode(id uint64) (protocol.Noder, bool) {
+func (nm *neighbourNodes) DelNeighborNode(id uint64) (protocol.Noder, bool) {
 	nm.Lock()
 	defer nm.Unlock()
 
@@ -62,10 +50,6 @@ func (nm *neighbourNodes) GetConnectionCount() uint {
 	return cnt
 }
 
-func (nm *neighbourNodes) init() {
-	nm.List = make(map[uint64]*node)
-}
-
 func (nm *neighbourNodes) NodeEstablished(id uint64) bool {
 	nm.RLock()
 	defer nm.RUnlock()
@@ -82,7 +66,7 @@ func (nm *neighbourNodes) NodeEstablished(id uint64) bool {
 	return true
 }
 
-func (node *node) GetNeighbourAddress() []p2p.NetAddress {
+func (node *node) GetNeighbourAddresses() []p2p.NetAddress {
 	node.neighbourNodes.RLock()
 	defer node.neighbourNodes.RUnlock()
 

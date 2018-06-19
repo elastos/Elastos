@@ -155,7 +155,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetNeighbors(param Params) map[string]interface{} {
-	return ResponsePack(Success, NodeForServers.GetNeighbourAddress())
+	return ResponsePack(Success, NodeForServers.GetNeighbourAddresses())
 }
 
 func GetNodeState(param Params) map[string]interface{} {
