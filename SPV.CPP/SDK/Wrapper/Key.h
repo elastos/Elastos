@@ -24,6 +24,8 @@ namespace Elastos {
 
 			Key(BRKey *brkey);
 
+			Key(const BRKey &brkey);
+
 			Key(const std::string &privKey);
 
 			Key(const CMBlock &privKey);

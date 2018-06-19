@@ -44,10 +44,11 @@ namespace Elastos {
 					info.getWalletType() == Mainchain || info.getWalletType() == Normal ? ElaPeerConfig
 																						: readPeerConfig();
 
+			CMBlock encryptedKey;
+			UInt256 chainCode;
 			MasterPubKeyPtr masterPubKey = nullptr;
 			if (!payPassword.empty()) {
 				BRKey key;
-				UInt256 chainCode;
 				deriveKeyAndChain(&key, chainCode, payPassword);
 
 				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
@@ -55,28 +56,40 @@ namespace Elastos {
 
 				CMBlock ret(sizeof(rawKey));
 				memcpy(ret, &rawKey, sizeof(rawKey));
-				CMBlock encryptedData = Utils::encrypt(ret, payPassword);
+				encryptedKey = Utils::encrypt(ret, payPassword);
 
-				_info.setEncryptedKey(Utils::encodeHex(encryptedData));
+				_info.setEncryptedKey(Utils::encodeHex(encryptedKey));
 				_info.setChainCode(Utils::UInt256ToString(chainCode));
 
 				masterPubKey.reset(new MasterPubKey(key, chainCode));
 
 			} else {
+				BRKey key;
+
 				ParamChecker::checkNotEmpty(_info.getEncryptedKey(), false);
 				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
 
-				CMBlock keyRaw = Utils::decodeHex(_info.getEncryptedKey());
-				BRKey key;
-				BRKeySetPrivKey(&key, (char *) (void *) keyRaw);
+				encryptedKey = Utils::decodeHex(_info.getEncryptedKey());
+				BRKeySetPrivKey(&key, (char *) (void *) encryptedKey);
+				chainCode = Utils::UInt256FromString(_info.getChainCode());
 
 				masterPubKey.reset(new MasterPubKey(key, Utils::UInt256FromString(_info.getChainCode())));
 			}
 
+#ifdef TEMPORARY_HD_STRATEGY
+			MasterPrivKey masterPrivKey;
+			masterPrivKey.SetChainCode(chainCode);
+			masterPrivKey.SetEncryptedKey(encryptedKey);
+			_walletManager = WalletManagerPtr(new WalletManager(masterPrivKey, subWalletDbPath, peerConfig, payPassword,
+																_info.getEarliestPeerTime(), _info.getSingleAddress(),
+																_info.getForkId(), chainParams));
+#else
 			_walletManager = WalletManagerPtr(
 					new WalletManager(masterPubKey, subWalletDbPath, peerConfig,
 									  _info.getEarliestPeerTime(),
 									  _info.getSingleAddress(), _info.getForkId(), chainParams));
+#endif
+
 			_walletManager->registerWalletListener(this);
 
 			if (info.getFeePerKb() > 0) {
@@ -94,6 +107,10 @@ namespace Elastos {
 
 		const SubWallet::WalletManagerPtr &SubWallet::GetWalletManager() const {
 			return _walletManager;
+		}
+
+		void SubWallet::ResetAddressCache(const std::string &payPassword) {
+			_walletManager->getWallet()->resetAddressCache(payPassword);
 		}
 
 		nlohmann::json SubWallet::GetBalanceInfo() {
@@ -137,7 +154,7 @@ namespace Elastos {
 								   uint64_t fee, const std::string &payPassword, const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo));
-			TransactionPtr transaction = createTransaction(txParam.get());
+			TransactionPtr transaction = createTransaction(txParam.get(), payPassword);
 			if (!transaction)
 				throw std::logic_error("create transaction error.");
 
@@ -164,7 +181,7 @@ namespace Elastos {
 
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
-				TransactionPtr transactionPtr(new Transaction((ELATransaction *)transactions[i], false));
+				TransactionPtr transactionPtr(new Transaction((ELATransaction *) transactions[i], false));
 				jsonList[i] = transactionPtr->toJson();
 			}
 			nlohmann::json j;
@@ -172,16 +189,18 @@ namespace Elastos {
 			return j;
 		}
 
-		boost::shared_ptr<Transaction> SubWallet::createTransaction(TxParam *param) const {
+		boost::shared_ptr<Transaction>
+		SubWallet::createTransaction(TxParam *param, const std::string &payPassword) const {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() != true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress());
+																	 param->getAmount(), param->getToAddress(),
+																	 payPassword);
 			} else {
 				Address address(param->getToAddress());
-				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address, payPassword);
 			}
 			if (!ptr) return nullptr;
 
@@ -196,7 +215,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
-													   const std::string &payPassword) {
+														  const std::string &payPassword) {
 			// FIXME reopen this after signTransaction works fine
 			//signTransaction(transaction, _info.getForkId(), payPassword);
 			publishTransaction(transaction);
@@ -281,7 +300,7 @@ namespace Elastos {
 
 			UInt512 seed = _parent->deriveSeed(payPassword);
 			Key wrapperKey;
-			wrapperKey.deriveKeyAndChain( chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
+			wrapperKey.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
 			UInt256Set(&key->secret, wrapperKey.getSecret());
 			key->compressed = wrapperKey.getCompressed();
 			CMBlock pubKey = wrapperKey.getPubkey();
@@ -306,7 +325,7 @@ namespace Elastos {
 			pthread_mutex_lock(&wallet->lock);
 			for (i = 0; i < tx->inCount; i++) {
 				for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1])){
+					if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1])) {
 						internalIdx[internalCount++] = j - 1;
 					}
 
@@ -461,11 +480,12 @@ namespace Elastos {
 			ELATransaction *tx = nullptr;
 			for (size_t i = 0; i < array_count(wallet->utxos); i++) {
 				o = &wallet->utxos[i];
-				tx = (ELATransaction *)BRSetGet(wallet->allTx, o);
-				if (! tx || o->n >= tx->raw.outCount) continue;
+				tx = (ELATransaction *) BRSetGet(wallet->allTx, o);
+				if (!tx || o->n >= tx->raw.outCount) continue;
 
 				CMBlock script = tx->outputs[o->n]->getScript();
-				transaction->addInput(tx->raw.txHash, o->n, tx->outputs[o->n]->getAmount(), script, CMBlock(), TXIN_SEQUENCE);
+				transaction->addInput(tx->raw.txHash, o->n, tx->outputs[o->n]->getAmount(), script, CMBlock(),
+									  TXIN_SEQUENCE);
 			}
 		}
 
@@ -476,7 +496,7 @@ namespace Elastos {
 			std::string addr = _walletManager->getWallet()->getReceiveAddress();
 			memcpy(o->raw.address, addr.data(), addr.size());
 
-			BRTxOutputSetAddress((BRTxOutput *)o, addr.c_str());
+			BRTxOutputSetAddress((BRTxOutput *) o, addr.c_str());
 
 			TransactionOutput *output = new TransactionOutput(o);
 			transaction->addOutput(output);

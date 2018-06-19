@@ -309,7 +309,7 @@ namespace Elastos {
 			return true;
 		}
 
-		void MasterWallet::initFromLocalStore(const Elastos::SDK::MasterWalletStore &localStore) {
+		void MasterWallet::initFromLocalStore(const MasterWalletStore &localStore) {
 			resetMnemonic(localStore.GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
 			initSubWallets(localStore.GetSubWalletInfoList());
@@ -502,11 +502,19 @@ namespace Elastos {
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
 		}
 
+		void MasterWallet::ResetAddressCache(const std::string &payPassword) {
+			std::for_each(_createdWallets.begin(), _createdWallets.end(),
+						  [&payPassword](const WalletMap::value_type &item) {
+							  SubWallet *wallet = dynamic_cast<SubWallet *>(item.second);
+							  wallet->ResetAddressCache(payPassword);
+						  });
+		}
+
 		void MasterWallet::tryInitCoinConfig() {
 			if (!_coinConfigReader.IsInitialized()) {
 				boost::filesystem::path configPath = Enviroment::GetRootPath();
 				configPath /= COIN_COINFIG_FILE;
-				if(!boost::filesystem::exists(configPath))
+				if (!boost::filesystem::exists(configPath))
 					throw std::logic_error("Coin config file not found.");
 				_coinConfigReader.Load(configPath);
 			}

@@ -34,7 +34,7 @@ namespace Elastos {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo));
 
-			TransactionPtr transaction = createTransaction(txParam.get());
+			TransactionPtr transaction = createTransaction(txParam.get(), payPassword);
 			if (transaction == nullptr) {
 				throw std::logic_error("Create transaction error.");
 			}
@@ -55,7 +55,8 @@ namespace Elastos {
 			return sendTransactionInternal(transaction, payPassword);
 		}
 
-		boost::shared_ptr<Transaction> IdChainSubWallet::createTransaction(TxParam *param) const {
+		boost::shared_ptr<Transaction>
+		IdChainSubWallet::createTransaction(TxParam *param, const std::string &payPassword) const {
 			IdTxParam *idTxParam = dynamic_cast<IdTxParam *>(param);
 			assert(idTxParam != nullptr);
 
@@ -64,10 +65,11 @@ namespace Elastos {
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress());
+																	 param->getAmount(), param->getToAddress(),
+																	 payPassword);
 			} else {
 				Address address(param->getToAddress());
-				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address, payPassword);
 			}
 
 			if (!ptr) return nullptr;

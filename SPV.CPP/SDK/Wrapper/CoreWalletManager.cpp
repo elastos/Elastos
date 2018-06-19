@@ -50,13 +50,15 @@ namespace Elastos {
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {
-			//todo create single address wallet if _singleAddress is true
+#ifdef TEMPORARY_HD_STRATEGY
+#else
 			if (_wallet == nullptr) {
 				_wallet = WalletPtr(!_singleAddress
 									? new Wallet(loadTransactions(), _masterPubKey, createWalletListener())
 									: new SingleAddressWallet(loadTransactions(), _masterPubKey,
 															  createWalletListener()));
 			}
+#endif
 			return _wallet;
 		}
 

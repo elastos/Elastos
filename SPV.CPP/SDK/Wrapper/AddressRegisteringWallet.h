@@ -22,7 +22,7 @@ namespace Elastos {
 			virtual void RegisterAddress(const std::string &address);
 
 		protected:
-			BRWallet *createRegisterAddress(const std::vector<std::string> &initialAddrs);
+			ELAWallet *createRegisterAddress(const std::vector<std::string> &initialAddrs);
 		};
 
 	}

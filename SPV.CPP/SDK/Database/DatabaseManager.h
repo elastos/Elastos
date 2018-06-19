@@ -8,6 +8,8 @@
 #include "MerkleBlockDataSource.h"
 #include "TransactionDataStore.h"
 #include "PeerDataSource.h"
+#include "ExternalAddresses.h"
+#include "InternalAddresses.h"
 #include "Sqlite.h"
 
 namespace Elastos {
@@ -40,11 +42,27 @@ namespace Elastos {
 			bool deleteAllBlocks(const std::string &iso);
 			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
 
+			// InternalAddresses's database interface
+			bool putInternalAddress(uint32_t startIndex, const std::string &address);
+			bool putInternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
+			bool clearInternalAddresses();
+			std::vector<std::string> getInternalAddresses(uint32_t startIndex, uint32_t count);
+			uint32_t getInternalAvailableAddresses(uint32_t startIndex);
+
+			// ExternalAddresses's database interface
+			bool putExternalAddress(uint32_t startIndex, const std::string &address);
+			bool putExternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
+			bool clearExternalAddresses();
+			std::vector<std::string> getExternalAddresses(uint32_t startIndex, uint32_t count);
+			uint32_t getExternalAvailableAddresses(uint32_t startIndex);
+
 			const boost::filesystem::path &getPath() const;
 
 		private:
 			boost::filesystem::path _path;
 			Sqlite                	_sqlite;
+			ExternalAddresses		_externalAddresses;
+			InternalAddresses		_internalAddresses;
 			PeerDataSource        	_peerDataSource;
 			TransactionDataStore  	_transactionDataStore;
 			MerkleBlockDataSource 	_merkleBlockDataSource;

@@ -29,6 +29,8 @@ namespace Elastos {
 
 			const WalletManagerPtr &GetWalletManager() const;
 
+			void ResetAddressCache(const std::string &payPassword);
+
 		public: //implement ISubWallet
 			virtual std::string GetChainId() const;
 
@@ -130,7 +132,7 @@ namespace Elastos {
 
 			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
 
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
+			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param, const std::string &payPassword) const;
 
 			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														const std::string &payPassword);

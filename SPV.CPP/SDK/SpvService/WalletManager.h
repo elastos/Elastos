@@ -18,6 +18,7 @@
 #include "KeyStore/KeyStore.h"
 #include "Transaction.h"
 #include "CMemBlock.h"
+#include "MasterPrivKey.h"
 
 namespace Elastos {
 	namespace SDK {
@@ -42,6 +43,17 @@ namespace Elastos {
 						  int forkId,
 						  const std::vector<std::string> &initialAddresses,
 						  const ChainParams &chainParams = ChainParams::mainNet());
+
+#ifdef TEMPORARY_HD_STRATEGY
+			WalletManager(const MasterPrivKey &masterPrivKey,
+						  const boost::filesystem::path &dbPath,
+						  const nlohmann::json &peerConfig,
+						  const std::string &payPassword,
+						  uint32_t earliestPeerTime,
+						  bool singleAddress,
+						  int forkId,
+						  const ChainParams &chainParams = ChainParams::mainNet());
+#endif
 
 			virtual ~WalletManager();
 

@@ -45,7 +45,7 @@ namespace Elastos {
 			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();
 			std::vector<uint64_t> indexs = sidechainIndexs.get<std::vector<uint64_t >>();
-			if(accounts.size() != amounts.size() || accounts.size() != indexs.size())
+			if (accounts.size() != amounts.size() || accounts.size() != indexs.size())
 				throw std::invalid_argument("Length of sidechain accounts amounts and indices should same.");
 
 			DepositTxParam *withdrawTxParam = static_cast<DepositTxParam *>(txParam.get());
@@ -55,24 +55,26 @@ namespace Elastos {
 			std::string mainchainAddress;
 			withdrawTxParam->setSidechainAddress(mainchainAddress);
 
-			TransactionPtr transaction = createTransaction(txParam.get());
+			TransactionPtr transaction = createTransaction(txParam.get(), payPassword);
 			if (transaction == nullptr) {
 				throw std::logic_error("Create transaction error.");
 			}
 			return sendTransactionInternal(transaction, payPassword);
 		}
 
-		boost::shared_ptr<Transaction> MainchainSubWallet::createTransaction(TxParam *param) const {
+		boost::shared_ptr<Transaction>
+		MainchainSubWallet::createTransaction(TxParam *param, const std::string &payPassword) const {
 			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
 			assert(depositTxParam != nullptr);
 
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress());
+																	 param->getAmount(), param->getToAddress(),
+																	 payPassword);
 			} else {
 				Address address(param->getToAddress());
-				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address, payPassword);
 			}
 
 			if (!ptr) return nullptr;

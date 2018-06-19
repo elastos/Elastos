@@ -26,26 +26,6 @@ namespace Elastos {
 				return externalCount;
 			}
 
-			static void addressRegisteringWalletFree(BRWallet *wallet) {
-				assert(wallet != NULL);
-				pthread_mutex_lock(&wallet->lock);
-				BRSetFree(wallet->allAddrs);
-				BRSetFree(wallet->usedAddrs);
-				BRSetFree(wallet->invalidTx);
-				BRSetFree(wallet->pendingTx);
-				BRSetApply(wallet->allTx, NULL, wallet->setApplyFreeTx);
-				BRSetFree(wallet->allTx);
-				BRSetFree(wallet->spentOutputs);
-				array_free(wallet->externalChain);
-
-				array_free(wallet->balanceHist);
-				array_free(wallet->transactions);
-				array_free(wallet->utxos);
-				pthread_mutex_unlock(&wallet->lock);
-				pthread_mutex_destroy(&wallet->lock);
-				free(wallet);
-			}
-
 			static size_t
 			addressRegisteringWalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal) {
 				pthread_mutex_unlock(&wallet->lock);
@@ -67,7 +47,7 @@ namespace Elastos {
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
-			BRWalletSetCallbacks(_wallet, &_listener,
+			BRWalletSetCallbacks((BRWallet *) _wallet, &_listener,
 								 balanceChanged,
 								 txAdded,
 								 txUpdated,
@@ -76,57 +56,59 @@ namespace Elastos {
 
 		AddressRegisteringWallet::~AddressRegisteringWallet() {
 			if (_wallet != nullptr) {
-				addressRegisteringWalletFree(_wallet);
+				ELAWalletFree(_wallet, false);
 				_wallet = nullptr;
 			}
 		}
 
 		void AddressRegisteringWallet::RegisterAddress(const std::string &address) {
 
-			pthread_mutex_lock(&_wallet->lock);
+			pthread_mutex_lock(&_wallet->Raw.lock);
 
 			Address addr(address);
-			array_add(_wallet->externalChain, *addr.getRaw());
-			BRSetAdd(_wallet->allAddrs, _wallet->externalChain);
+			array_add(_wallet->Raw.externalChain, *addr.getRaw());
+			BRSetAdd(_wallet->Raw.allAddrs, _wallet->Raw.externalChain);
 
-			pthread_mutex_unlock(&_wallet->lock);
+			pthread_mutex_unlock(&_wallet->Raw.lock);
 		}
 
-		BRWallet *AddressRegisteringWallet::createRegisterAddress(const std::vector<std::string> &initialAddrs) {
-			BRWallet *wallet = nullptr;
+		ELAWallet *AddressRegisteringWallet::createRegisterAddress(const std::vector<std::string> &initialAddrs) {
+			ELAWallet *wallet = nullptr;
 			BRTransaction *tx;
 
-			wallet = (BRWallet *) calloc(1, sizeof(*wallet));
+			wallet = (ELAWallet *) calloc(1, sizeof(*wallet));
 			assert(wallet != nullptr);
 			memset(wallet, 0, sizeof(*wallet));
-			array_new(wallet->utxos, 100);
-			array_new(wallet->transactions, 100);
-			wallet->feePerKb = DEFAULT_FEE_PER_KB;
-			wallet->WalletUnusedAddrs = addressRegisteringWalletUnusedAddrs;
-			wallet->WalletAllAddrs = addressRegisteringWalletAllAddrs;
-			wallet->setApplyFreeTx = setApplyFreeTx;
-			wallet->internalChain = nullptr;
-			array_new(wallet->externalChain, 100);
-			array_new(wallet->balanceHist, 100);
-			wallet->allTx = BRSetNew(BRTransactionHash, BRTransactionEq, 100);
-			wallet->invalidTx = BRSetNew(BRTransactionHash, BRTransactionEq, 10);
-			wallet->pendingTx = BRSetNew(BRTransactionHash, BRTransactionEq, 10);
-			wallet->spentOutputs = BRSetNew(BRUTXOHash, BRUTXOEq, 100);
-			wallet->usedAddrs = BRSetNew(BRAddressHash, BRAddressEq, 100);
-			wallet->allAddrs = BRSetNew(BRAddressHash, BRAddressEq, 100);
-			pthread_mutex_init(&wallet->lock, nullptr);
+			array_new(wallet->Raw.utxos, 100);
+			array_new(wallet->Raw.transactions, 100);
+			wallet->Raw.feePerKb = DEFAULT_FEE_PER_KB;
+#ifdef TEMPORARY_HD_STRATEGY
+			wallet->Cache = nullptr;
+#endif
+			wallet->Raw.WalletUnusedAddrs = addressRegisteringWalletUnusedAddrs;
+			wallet->Raw.WalletAllAddrs = addressRegisteringWalletAllAddrs;
+			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
+			wallet->Raw.internalChain = nullptr;
+			array_new(wallet->Raw.externalChain, 100);
+			array_new(wallet->Raw.balanceHist, 100);
+			wallet->Raw.allTx = BRSetNew(BRTransactionHash, BRTransactionEq, 100);
+			wallet->Raw.invalidTx = BRSetNew(BRTransactionHash, BRTransactionEq, 10);
+			wallet->Raw.pendingTx = BRSetNew(BRTransactionHash, BRTransactionEq, 10);
+			wallet->Raw.spentOutputs = BRSetNew(BRUTXOHash, BRUTXOEq, 100);
+			wallet->Raw.usedAddrs = BRSetNew(BRAddressHash, BRAddressEq, 100);
+			wallet->Raw.allAddrs = BRSetNew(BRAddressHash, BRAddressEq, 100);
+			pthread_mutex_init(&wallet->Raw.lock, nullptr);
 
-			wallet->WalletUnusedAddrs(wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-			wallet->WalletUnusedAddrs(wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
 			for (size_t i = 0; i < initialAddrs.size(); ++i) {
 				Address addr(initialAddrs[i]);
-				array_add(wallet->externalChain, *addr.getRaw());
+				array_add(wallet->Raw.externalChain, *addr.getRaw());
 			}
-			BRSetAdd(wallet->allAddrs, wallet->externalChain);
+			BRSetAdd(wallet->Raw.allAddrs, wallet->Raw.externalChain);
 
 			return wallet;
 		}
-
 	}
 }

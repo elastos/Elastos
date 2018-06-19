@@ -20,9 +20,58 @@
 #include "MasterPubKey.h"
 #include "TransactionOutput.h"
 #include "WrapperList.h"
+#include "MasterPrivKey.h"
+#include "AddressCache.h"
 
 namespace Elastos {
 	namespace SDK {
+
+		struct ELAWallet {
+			BRWallet Raw;
+
+#ifdef TEMPORARY_HD_STRATEGY
+			MasterPrivKey PrivKeyRoot;
+			std::string TemporaryPassword;
+			AddressCache *Cache;
+#endif
+		};
+
+#ifdef TEMPORARY_HD_STRATEGY
+		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, const MasterPrivKey &masterPrivKey,
+								const std::string &password, DatabaseManager *databaseManager,
+								size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
+															int internal),
+								size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount),
+								void (*setApplyFreeTx)(void *info, void *tx),
+								void (*WalletUpdateBalance)(BRWallet *wallet),
+								int (*WalletContainsTx)(BRWallet *wallet, const BRTransaction *tx),
+								void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
+								BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet,
+																		   const BRTxOutput outputs[],
+																		   size_t outCount),
+								uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
+								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
+								int (*TransactionIsSigned)(const BRTransaction *tx),
+								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
+#else
+		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
+								size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
+															int internal),
+								size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount),
+								void (*setApplyFreeTx)(void *info, void *tx),
+								void (*WalletUpdateBalance)(BRWallet *wallet),
+								int (*WalletContainsTx)(BRWallet *wallet, const BRTransaction *tx),
+								void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
+								BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet,
+																			 const BRTxOutput outputs[],
+																			 size_t outCount),
+								uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
+								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
+								int (*TransactionIsSigned)(const BRTransaction *tx),
+								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
+#endif
+
+		void ELAWalletFree(ELAWallet *wallet, bool freeInternal = true);
 
 		class Wallet :
 				public Wrapper<BRWallet> {
@@ -44,15 +93,26 @@ namespace Elastos {
 			};
 
 		public:
+
+#ifdef TEMPORARY_HD_STRATEGY
+			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
+				   const MasterPrivKey &masterPrivKey,
+				   const std::string &payPassword,
+				   DatabaseManager *databaseManager,
+				   const boost::shared_ptr<Listener> &listener);
+#else
 			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 				   const MasterPubKeyPtr &masterPubKey,
 				   const boost::shared_ptr<Listener> &listener);
+#endif
 
 			virtual ~Wallet();
 
 			virtual std::string toString() const;
 
 			virtual BRWallet *getRaw() const;
+
+			void resetAddressCache(const std::string &payPassword);
 
 			nlohmann::json GetBalanceInfo();
 
@@ -61,7 +121,7 @@ namespace Elastos {
 			// returns the first unused external address
 			std::string getReceiveAddress() const;
 
-			// writes all addresses previously genereated with BRWalletUnusedAddrs() to addrs
+			// writes all addresses previously generated with BRWalletUnusedAddrs() to addrs
 			// returns the number addresses written, or total number available if addrs is NULL
 			std::vector<std::string> getAllAddresses();
 
@@ -105,10 +165,10 @@ namespace Elastos {
 			 * @param address the address to send to
 			 * @return a consistently constructed transaction.
 			 */
-			TransactionPtr createTransaction(uint64_t amount, const Address &address);
+			TransactionPtr createTransaction(uint64_t amount, const Address &address, const std::string &payPassword);
 
 			TransactionPtr createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-			                                 const std::string &toAddress);
+											 const std::string &toAddress, const std::string &payPassword);
 
 			/**
 			 * Create a BRCoreTransaction with the provided outputs
@@ -116,7 +176,8 @@ namespace Elastos {
 			 * @param outputs the outputs to include
 			 * @return a consistently constructed transaction (input selected, fees handled, etc)
 			 */
-			TransactionPtr createTransactionForOutputs(const SharedWrapperList<TransactionOutput, BRTxOutput *> &outputs);
+			TransactionPtr
+			createTransactionForOutputs(const SharedWrapperList<TransactionOutput, BRTxOutput *> &outputs);
 
 			/**
 			 * Sign `transaction` for the provided `forkId` (BTC or BCH) using `phrase`.  The `phrase` must
@@ -226,10 +287,12 @@ namespace Elastos {
 			static bool AddressFilter(const std::string &fromAddress, const std::string &filtAddress);
 
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
-											  uint64_t fee, const std::string &fromAddress,
-											  bool(*filter)(const std::string &fromAddress, const std::string &addr));
+													 uint64_t fee, const std::string &fromAddress,
+													 bool(*filter)(const std::string &fromAddress,
+																   const std::string &addr));
 
-			static BRTransaction *WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
+			static BRTransaction *
+			WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
 
 			bool WalletSignTransaction(const TransactionPtr &transaction, int forkId, const void *seed, size_t seedLen);
 
@@ -256,12 +319,12 @@ namespace Elastos {
 
 			static void txDeleted(void *info, UInt256 txHash, int notifyUser, int recommendRescan);
 
-			static size_t KeyToAddress(const BRKey *key, char *addr ,size_t addrLen);
+			static size_t KeyToAddress(const BRKey *key, char *addr, size_t addrLen);
 
 			static size_t WalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal);
 
 		protected:
-			BRWallet *_wallet;
+			ELAWallet *_wallet;
 
 			boost::weak_ptr<Listener> _listener;
 		};
