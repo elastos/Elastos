@@ -5,7 +5,7 @@
 #include "SjclFile.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		SjclFile::SjclFile() {
 

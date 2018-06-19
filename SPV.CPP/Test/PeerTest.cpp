@@ -9,7 +9,7 @@
 #include "catch.hpp"
 #include "Peer.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "Peer construct test", "[PeerConstruct]" ) {
 

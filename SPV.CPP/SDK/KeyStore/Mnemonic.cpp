@@ -16,7 +16,7 @@
 namespace fs = boost::filesystem;
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		Mnemonic::Mnemonic(const std::string &language) :
 			_i18nPath("data") {

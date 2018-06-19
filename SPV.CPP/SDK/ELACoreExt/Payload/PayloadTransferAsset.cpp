@@ -5,7 +5,7 @@
 #include "PayloadTransferAsset.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadTransferAsset::PayloadTransferAsset() {
 

@@ -10,7 +10,7 @@
 #define __ELASTOS_SDK_BIGINT_H__
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		static inline char _toC(uint8_t u) {
 			return (u & 0x0f) + ((u & 0x0f) <= 9 ? '0' : 'A' - 0x0a);
 		}

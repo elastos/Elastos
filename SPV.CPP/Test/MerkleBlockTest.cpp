@@ -11,7 +11,7 @@
 #include "MerkleBlock.h"
 #include "Log.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 

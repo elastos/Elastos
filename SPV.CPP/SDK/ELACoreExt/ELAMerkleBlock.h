@@ -9,7 +9,7 @@
 #include "AuxPow.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		struct ELAMerkleBlock {
 			BRMerkleBlock raw;

@@ -11,7 +11,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		typedef int (*ExecCallBack)(void*,int,char**,char**);
 		typedef void (*BindCallBack)(void*);

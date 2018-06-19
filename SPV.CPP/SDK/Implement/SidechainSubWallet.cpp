@@ -12,7 +12,7 @@
 #include "ParamChecker.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		SidechainSubWallet::SidechainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
 											   const std::string &payPassword, MasterWallet *parent) :

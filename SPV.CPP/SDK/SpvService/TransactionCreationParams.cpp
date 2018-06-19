@@ -6,7 +6,7 @@
 #include "TransactionCreationParams.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		TxParam::TxParam() :
 				_toAddress(""),

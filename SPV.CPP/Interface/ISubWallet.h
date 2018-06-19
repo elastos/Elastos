@@ -10,7 +10,7 @@
 #include "ISubWalletCallback.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ISubWallet {
 		public:

@@ -12,7 +12,7 @@
 #include "Utils.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 
 		void GetDataMessage::SendGetData(BRPeer *peer, const UInt256 *txHashes,

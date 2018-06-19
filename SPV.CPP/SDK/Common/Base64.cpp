@@ -9,7 +9,7 @@
 #include "Base64.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		static std::string _Encode(const unsigned char *Data, size_t DataByte) {
 			//Encodeing table
 			static const char EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

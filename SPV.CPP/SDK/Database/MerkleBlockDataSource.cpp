@@ -8,7 +8,7 @@
 #include "MerkleBlockDataSource.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		MerkleBlockDataSource::MerkleBlockDataSource(Sqlite *sqlite) :
 			_sqlite(sqlite),

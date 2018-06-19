@@ -12,7 +12,7 @@
 
 #include "TestConnectPeer.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet) {
 	const BRMerkleBlock *previous, *b = NULL;

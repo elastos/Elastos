@@ -5,7 +5,7 @@
 #include "ELATxOutput.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		ELATxOutput *ELATxOutputNew() {
 			ELATxOutput *output = new ELATxOutput();

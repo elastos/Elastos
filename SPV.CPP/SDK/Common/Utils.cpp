@@ -18,7 +18,7 @@
 #include "Log.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		std::string Utils::UInt256ToString(const UInt256 &u256) {
 			std::stringstream ss;

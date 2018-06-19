@@ -11,7 +11,7 @@
 #include "IPayload.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class PayloadRegisterIdentification : public IPayload {
 		public:

@@ -7,7 +7,7 @@
 using namespace nlohmann;
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		json &operator<<(json &j, const IdItem &p) {
 			to_json(j, p);

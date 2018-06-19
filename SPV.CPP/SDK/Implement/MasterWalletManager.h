@@ -10,7 +10,7 @@
 #include "Interface/IMasterWalletManager.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MasterWalletManager : public IMasterWalletManager {
 		public:

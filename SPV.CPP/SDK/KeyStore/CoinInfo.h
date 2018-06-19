@@ -13,7 +13,7 @@
 #include "SubWalletType.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class CoinInfo {
 		public:

@@ -11,7 +11,7 @@
 #include "Log.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		NotFoundMessage::NotFoundMessage() {
 

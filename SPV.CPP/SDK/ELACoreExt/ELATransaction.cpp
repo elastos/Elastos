@@ -23,7 +23,7 @@
 #include "BRAddress.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadPtr ELAPayloadNew(ELATransaction::Type type) {
 			if (type == ELATransaction::CoinBase) {

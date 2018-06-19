@@ -15,7 +15,7 @@
 #include "MasterWallet.h"
 #include "SubWallet.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 const std::vector<std::string> DefaultAddress = {"ELoSrHmgLwcw3apokmsBhQMGFkJkJZuPXR",
 												 "EXvNZt1CyoBVNaf63Vmax4kh6g2MUYa7zm",

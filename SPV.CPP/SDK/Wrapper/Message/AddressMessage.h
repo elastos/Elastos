@@ -8,7 +8,7 @@
 #include "IMessage.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class AddressMessage :
 			public IMessage {

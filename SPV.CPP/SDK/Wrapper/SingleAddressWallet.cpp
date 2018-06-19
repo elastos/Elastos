@@ -10,7 +10,7 @@
 #include "SingleAddressWallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 			static size_t singleAddressWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount) {

@@ -16,7 +16,7 @@
 #include "WalletManager.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MasterWallet;
 		class Transaction;

@@ -30,7 +30,7 @@
 namespace fs = boost::filesystem;
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		MasterWallet::MasterWallet(const boost::filesystem::path &localStore) :
 				_initialized(false) {

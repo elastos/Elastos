@@ -10,7 +10,7 @@
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class IWrapperMessage {
 		public:

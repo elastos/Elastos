@@ -9,7 +9,7 @@
 #include "BRBIP39Mnemonic.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		void ParamChecker::checkNullPointer(void *pointer, bool isParam) {
 			if (pointer == nullptr) {

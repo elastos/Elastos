@@ -5,7 +5,7 @@
 #include "BitcoreWalletClientJson.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		BitcoreWalletClientJson::BitcoreWalletClientJson() :
 				_m(0),

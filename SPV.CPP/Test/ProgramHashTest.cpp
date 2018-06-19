@@ -9,7 +9,7 @@
 #include "Utils.h"
 #include "Key.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("ProgramHash and AddressHash Test", "") {
 	UInt168 targetHash = Utils::UInt168FromString("213a3b4511636bf45a582a02b2ee0a0d3c9c52dfe1");

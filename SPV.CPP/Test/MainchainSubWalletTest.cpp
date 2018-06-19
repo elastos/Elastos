@@ -15,7 +15,7 @@
 
 #define BASIC_UINT 100000000
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 const std::vector<std::string> DefaultAddress = {"EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3",
 												 "EgSMqA8v4RJYyHareuXcFULKFjx2jNK9Zs",

@@ -10,7 +10,7 @@
 #include "Log.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		int PongMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 			BRPeerContext *ctx = (BRPeerContext *)peer;

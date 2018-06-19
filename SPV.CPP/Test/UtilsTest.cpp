@@ -10,7 +10,7 @@
 #include "Utils.h"
 #include "WalletTool.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 
 TEST_CASE("Utils test 0", "[Utils]") {

@@ -14,7 +14,7 @@
 #include "PingMessage.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		int PingMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 			return BRPeerAcceptPingMessage(peer, msg, msgLen);

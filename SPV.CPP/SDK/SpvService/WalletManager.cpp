@@ -17,9 +17,9 @@
 #define ISO "ela"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
-		WalletManager::WalletManager(const Elastos::SDK::WalletManager &proto) :
+		WalletManager::WalletManager(const WalletManager &proto) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
 				_forkId(proto._forkId),
@@ -40,7 +40,7 @@ namespace Elastos {
 		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
 									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
 									 int forkId, const std::vector<std::string> &initialAddresses,
-									 const Elastos::SDK::ChainParams &chainParams) :
+									 const ChainParams &chainParams) :
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_forkId(forkId),

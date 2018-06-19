@@ -2,7 +2,7 @@
 #include "BRAddress.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 
 		ByteStream::ByteStream(bool isBe)

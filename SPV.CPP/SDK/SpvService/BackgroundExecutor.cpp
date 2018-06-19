@@ -8,7 +8,7 @@ using namespace boost;
 using namespace asio;
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		BackgroundExecutor::BackgroundExecutor(uint8_t threadCount) {
 			initThread(threadCount);

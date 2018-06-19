@@ -6,7 +6,7 @@
 #include "Log.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		TableBase::TableBase(Sqlite *sqlite) :
 				_sqlite(sqlite),

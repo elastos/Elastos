@@ -9,7 +9,7 @@
 #include "Mstream.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		
 		class ElaWebWalletJson : public BitcoreWalletClientJson {
 		public:

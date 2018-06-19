@@ -6,7 +6,7 @@
 #include "catch.hpp"
 #include "SpvService/BackgroundExecutor.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "BackgroundExecutor simple test", "[Normal]" ) {
 	SECTION("Single thread test (default)") {

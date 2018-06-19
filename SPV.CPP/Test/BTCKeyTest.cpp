@@ -10,7 +10,7 @@
 #include "BTCKey.h"
 #include "BigIntFormat.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("generate key", "[BTCKey]") {
 	CMemBlock<uint8_t> privKey, pubKey;

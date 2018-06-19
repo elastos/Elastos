@@ -9,7 +9,7 @@
 #include "BRInt.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class PayloadSideMining :
 				public IPayload {

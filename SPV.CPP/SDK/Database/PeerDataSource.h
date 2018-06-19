@@ -12,7 +12,7 @@
 #include "Sqlite.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		struct PeerEntity {
 			PeerEntity() :

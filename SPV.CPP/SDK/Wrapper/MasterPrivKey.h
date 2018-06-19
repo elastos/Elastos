@@ -11,7 +11,7 @@
 //#define TEMPORARY_HD_STRATEGY
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MasterPrivKey {
 		public:

@@ -9,7 +9,7 @@
 
 #include "BTCBase58.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("encode/decode", "[BTCBase58]") {
 	SECTION("encode/decode") {

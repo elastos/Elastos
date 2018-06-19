@@ -5,7 +5,7 @@
 #include "MasterPrivKey.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		MasterPrivKey::MasterPrivKey() {
 

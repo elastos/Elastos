@@ -21,7 +21,7 @@
 #include "MasterPrivKey.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class WalletManager :
 				public CoreWalletManager {

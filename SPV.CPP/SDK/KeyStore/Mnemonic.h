@@ -9,7 +9,7 @@
 #include <boost/filesystem.hpp>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class Mnemonic {
 		public:

@@ -10,7 +10,7 @@
 #include "catch.hpp"
 #include "MasterPubKey.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("MasterPubKey test", "[MasterPubKey]") {
 	SECTION("Default constructor") {

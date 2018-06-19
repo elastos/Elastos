@@ -22,7 +22,7 @@
 #include "ELATxOutput.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 #ifdef TEMPORARY_HD_STRATEGY
 

@@ -6,7 +6,7 @@
 #include <vector>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ByteStream {
 		public:

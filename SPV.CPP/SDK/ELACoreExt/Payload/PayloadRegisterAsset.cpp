@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadRegisterAsset::PayloadRegisterAsset() :
 				_amount(0),

@@ -10,7 +10,7 @@
 #include <CMemBlock.h>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		class Base64 {
 		public:
 			static std::vector<unsigned char> toBits(const std::string &base64Str);

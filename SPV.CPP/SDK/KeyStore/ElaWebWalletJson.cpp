@@ -5,7 +5,7 @@
 #include "ElaWebWalletJson.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		ElaWebWalletJson::ElaWebWalletJson() {
 

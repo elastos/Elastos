@@ -7,7 +7,7 @@
 #include "PayloadIssueToken.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadIssueToken::PayloadIssueToken() {
 

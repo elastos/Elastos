@@ -17,7 +17,7 @@
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		InventoryMessage::InventoryMessage() {
 

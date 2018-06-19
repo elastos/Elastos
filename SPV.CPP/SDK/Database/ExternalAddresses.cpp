@@ -5,7 +5,7 @@
 #include "ExternalAddresses.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		ExternalAddresses::ExternalAddresses(Sqlite *sqlite) :
 			TableBase(sqlite) {

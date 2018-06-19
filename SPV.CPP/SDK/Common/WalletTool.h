@@ -10,7 +10,7 @@
 //#define MNEMONIC_SOURCE_H
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		class WalletTool {
 		private:
 			static CMemBlock<char>

@@ -13,7 +13,7 @@
 #include "ELATransaction.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		TransactionMessage::TransactionMessage() {
 

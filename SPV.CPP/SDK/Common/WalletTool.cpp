@@ -27,7 +27,7 @@
 #define MAX_BUFFER 1024 * 6
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		CMemBlock<char>
 		WalletTool::_Code_Convert(const std::string from_charset, const std::string to_charset,
 								   const CMemBlock<char> &input) {

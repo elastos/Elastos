@@ -9,7 +9,7 @@
 #include "AddressRegisteringWallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 			static size_t addressRegisteringWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount) {
@@ -40,7 +40,7 @@ namespace Elastos {
 		}
 
 		AddressRegisteringWallet::AddressRegisteringWallet(
-				const boost::shared_ptr<Elastos::SDK::Wallet::Listener> &listener,
+				const boost::shared_ptr<Listener> &listener,
 				const std::vector<std::string> &initialAddrs) {
 			_wallet = createRegisterAddress(initialAddrs);
 

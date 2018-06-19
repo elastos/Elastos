@@ -15,7 +15,7 @@
 #include "ELACoreExt/ELAMerkleBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MerkleBlock :
 			public Wrapper<BRMerkleBlock>,

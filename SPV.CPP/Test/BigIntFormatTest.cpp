@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "BigIntFormat.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("tesing Normal", "[BigIntFormatTest.cpp]") {
 	uint8_t block[] = {0xBF, 0xCE, 0x24, 0x45, 0x67, 0xA6};

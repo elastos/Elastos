@@ -9,7 +9,7 @@
 #include "catch.hpp"
 #include "KeyStore/Mnemonic.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 #define I18N_RELATIVE_PATH "./Data/"
 

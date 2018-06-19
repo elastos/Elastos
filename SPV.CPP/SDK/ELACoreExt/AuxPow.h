@@ -14,7 +14,7 @@
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class AuxPow :
 				public ELAMessageSerializable {

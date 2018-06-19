@@ -22,7 +22,7 @@
 
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class Transaction :
 				public Wrapper<BRTransaction>,

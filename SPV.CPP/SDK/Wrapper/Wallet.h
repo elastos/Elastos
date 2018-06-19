@@ -24,7 +24,7 @@
 #include "AddressCache.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		struct ELAWallet {
 			BRWallet Raw;

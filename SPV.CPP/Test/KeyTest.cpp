@@ -11,7 +11,7 @@
 #include "Log.h"
 #include "Utils.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("Key test", "[Key]") {
 

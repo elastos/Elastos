@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "Payload/Asset.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("Asset test", "[Asset]") {
 

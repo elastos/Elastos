@@ -7,7 +7,7 @@
 #include "BTCKey.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		bool BTCKey::generateKey(CMemBlock<uint8_t> &privKey, CMemBlock<uint8_t> &pubKey, int nid) {
 			bool out = false;
 			EC_GROUP *curve = nullptr;

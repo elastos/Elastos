@@ -12,7 +12,7 @@
 #include "nlohmann/json.hpp"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ParamChecker {
 		public:

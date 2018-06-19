@@ -10,7 +10,7 @@
 
 #include "KeyStore/KeyStore.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("save/open", "[KeyStore]") {
 	SECTION("save") {

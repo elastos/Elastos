@@ -10,7 +10,7 @@
 #define __ELASTOS_SDK_ISIDECHAINSUBWALLET_H__
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ISidechainSubWallet : public virtual ISubWallet {
 		public:

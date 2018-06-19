@@ -13,7 +13,7 @@
 using namespace nlohmann;
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		json &operator<<(json &j, const IdAgentInfo &p) {
 			to_json(j, p);

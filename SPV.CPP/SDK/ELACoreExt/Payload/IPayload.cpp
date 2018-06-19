@@ -5,7 +5,7 @@
 #include "IPayload.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		IPayload::~IPayload() {
 

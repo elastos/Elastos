@@ -12,7 +12,7 @@
 #include "Executor.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class BackgroundExecutor :
 			public Executor {

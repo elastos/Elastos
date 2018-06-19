@@ -10,7 +10,7 @@
 #include "BRInt.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		class PayloadRegisterAsset :
 				public IPayload {
 		public:

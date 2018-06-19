@@ -27,7 +27,7 @@ namespace fs = boost::filesystem;
 #define DB_FILE_EXTENSION ".db"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		SubWallet::SubWallet(const CoinInfo &info,
 							 const ChainParams &chainParams,

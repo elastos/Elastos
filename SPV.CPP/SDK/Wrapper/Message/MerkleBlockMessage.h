@@ -8,7 +8,7 @@
 #include "IWrapperMessage.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MerkleBlockMessage :
 			public IWrapperMessage {

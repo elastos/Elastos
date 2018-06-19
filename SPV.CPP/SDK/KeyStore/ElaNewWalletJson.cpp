@@ -5,7 +5,7 @@
 #include "ElaNewWalletJson.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		ElaNewWalletJson::ElaNewWalletJson() :
 			_mnemonicLanguage("english") {

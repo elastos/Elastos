@@ -11,7 +11,7 @@
 #include "Sqlite.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class TableBase {
 		public:

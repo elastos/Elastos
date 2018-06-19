@@ -16,7 +16,7 @@ using namespace boost::filesystem;
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class WalletFactoryInner {
 		public:
@@ -39,7 +39,7 @@ namespace Elastos {
 			initMasterWallets();
 		}
 
-		MasterWalletManager::MasterWalletManager(const Elastos::SDK::MasterWalletManager::MasterWalletMap &walletMap) :
+		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap) :
 				_masterWalletMap(walletMap) {
 		}
 

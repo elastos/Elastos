@@ -14,7 +14,7 @@
 #include "MasterPubKey.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class CoreWalletManager :
 				public Wallet::Listener,

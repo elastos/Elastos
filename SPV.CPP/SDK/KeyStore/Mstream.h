@@ -7,7 +7,7 @@
 #define __ELASTOS_SDK__MSTREAM_H__
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 #define JSON_SM_LS(T) \
         friend nlohmann::json &operator<<(nlohmann::json&, const T&);

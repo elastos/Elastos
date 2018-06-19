@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		static nlohmann::json ElaPeerConfig =
 					R"(

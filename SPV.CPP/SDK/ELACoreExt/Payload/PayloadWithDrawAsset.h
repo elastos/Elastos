@@ -8,7 +8,7 @@
 #include "IPayload.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class PayloadWithDrawAsset :
 				public IPayload {

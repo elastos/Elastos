@@ -21,7 +21,7 @@
 #include "BRArray.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		#define TX_VERSION           0x00000001
 		#define TX_LOCKTIME          0x00000000
 

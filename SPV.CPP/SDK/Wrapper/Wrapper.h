@@ -8,7 +8,7 @@
 #include <string>
 
 namespace Elastos {
-    namespace SDK {
+    namespace ElaWallet {
 
         template <class T>
         class Wrapper {

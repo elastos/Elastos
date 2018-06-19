@@ -12,7 +12,7 @@
 static int PLAINTEXTMAXLENGTH = CIPHERTEXTMAXLENGTH;
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		void _handleEncryptErrors() {
 		}
 

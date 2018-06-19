@@ -11,7 +11,7 @@
 #include "WalletTool.h"
 #include "BTCBase58.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("bitcoin keystore with special phrase and no passphrase", "[bitcoin test]") {
 

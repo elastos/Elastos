@@ -13,7 +13,7 @@
 #include "Utils.h"
 #include "Log.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 #if 0
 const int totalThreadCount = 200;
 const int loopCount = 5;

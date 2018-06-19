@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "Payload/PayloadIssueToken.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadIssueToken test", "[PayloadIssueToken]") {
 	uint8_t script[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 8, 182, 57, 98};

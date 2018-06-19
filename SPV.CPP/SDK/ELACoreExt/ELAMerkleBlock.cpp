@@ -9,7 +9,7 @@
 #include "ELAMerkleBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		ELAMerkleBlock *ELAMerkleBlockNew() {
 			ELAMerkleBlock *elablock = new ELAMerkleBlock;

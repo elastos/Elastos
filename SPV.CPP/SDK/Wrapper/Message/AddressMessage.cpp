@@ -10,7 +10,7 @@
 #include "AddressMessage.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		AddressMessage::AddressMessage() {
 
 		}

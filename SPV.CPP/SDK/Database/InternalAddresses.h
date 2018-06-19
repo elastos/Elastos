@@ -8,7 +8,7 @@
 #include "TableBase.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class InternalAddresses : public TableBase {
 		public:

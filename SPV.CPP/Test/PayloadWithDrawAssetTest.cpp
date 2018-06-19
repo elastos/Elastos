@@ -8,7 +8,7 @@
 #include "BRInt.h"
 #include "Payload/PayloadWithDrawAsset.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 

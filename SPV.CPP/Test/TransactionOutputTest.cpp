@@ -10,7 +10,7 @@
 #include "BRAddress.h"
 #include "Utils.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 	SECTION("constructor with null and object") {

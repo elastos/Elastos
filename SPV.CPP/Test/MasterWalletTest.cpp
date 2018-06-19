@@ -17,7 +17,7 @@
 
 #include <Interface/Enviroment.h>
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 class TestMasterWallet : public MasterWallet {
 public:

@@ -13,7 +13,7 @@
 #define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
 
 namespace Elastos {
-    namespace SDK {
+    namespace ElaWallet {
 		Address::Address() {
 			_address = boost::shared_ptr<BRAddress>(new BRAddress());
 		}

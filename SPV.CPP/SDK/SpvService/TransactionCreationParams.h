@@ -14,7 +14,7 @@
 #include "SubWalletType.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class TxParam {
 		public:

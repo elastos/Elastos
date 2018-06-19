@@ -6,7 +6,7 @@
 #include "Attribute.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		Attribute::Attribute() :
 			_usage(Nonce) {

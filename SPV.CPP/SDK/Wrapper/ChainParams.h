@@ -12,7 +12,7 @@
 #include "BRChainParams.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ChainParams :
 				public Wrapper<BRChainParams> {

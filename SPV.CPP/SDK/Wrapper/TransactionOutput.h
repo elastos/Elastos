@@ -14,7 +14,7 @@
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class TransactionOutput :
 				public Wrapper<BRTxOutput>,

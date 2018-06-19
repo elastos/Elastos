@@ -14,7 +14,7 @@
 #define EXTERNAL_ADDRESS_CACHE_SIZE 1000
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class AddressCache {
 		public:

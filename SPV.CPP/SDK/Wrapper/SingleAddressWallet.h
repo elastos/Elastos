@@ -8,7 +8,7 @@
 #include "Wallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class SingleAddressWallet : public Wallet {
 		public:

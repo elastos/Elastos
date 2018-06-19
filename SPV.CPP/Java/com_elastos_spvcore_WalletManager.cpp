@@ -11,7 +11,7 @@
 #include "ELATransaction.h"
 #include "com_elastos_spvcore_WalletManager.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 JNIEXPORT void JNICALL Java_com_elastos_spvcore_WalletManager_disposeWalletManager
 	(JNIEnv *env, jobject thisObject) {

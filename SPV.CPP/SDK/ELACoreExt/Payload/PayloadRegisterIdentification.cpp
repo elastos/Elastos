@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadRegisterIdentification::PayloadRegisterIdentification() :
 				_id(""),

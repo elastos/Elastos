@@ -8,7 +8,7 @@
 #include "Utils.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadSideMining::PayloadSideMining() :
 				_sideBlockHash(UINT256_ZERO),

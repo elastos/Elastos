@@ -8,7 +8,7 @@
 #include "ISubWallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class IIdChainSubWallet : public virtual ISubWallet {
 		public:

@@ -8,7 +8,7 @@
 #include "IMasterWallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class IMasterWalletManager {
 		public:

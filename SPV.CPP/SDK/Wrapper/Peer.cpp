@@ -8,7 +8,7 @@
 #include "Peer.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		const uint32_t DEFAULT_MAGICNUMBER = uint32_t(0);
 

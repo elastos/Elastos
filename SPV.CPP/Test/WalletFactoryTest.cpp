@@ -14,7 +14,7 @@
 #include "MasterWalletManager.h"
 #include "MasterWallet.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 class TestMasterWalletManager : public MasterWalletManager {
 public:

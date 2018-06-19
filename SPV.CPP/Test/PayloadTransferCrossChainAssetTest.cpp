@@ -8,7 +8,7 @@
 #include "BRInt.h"
 #include "Payload/PayloadTransferCrossChainAsset.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadTransferCrossChainAsset Test", "[PayloadTransferCrossChainAsset]") {
 

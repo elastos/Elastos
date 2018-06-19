@@ -25,7 +25,7 @@
 #define BIP32_SEED_KEY "ELA seed"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		Key::Key() {
 			_key = boost::shared_ptr<BRKey>(new BRKey);

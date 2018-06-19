@@ -6,7 +6,7 @@
 #include "JniSmartPointerWrapper.h"
 #include "com_elastos_spvcore_TransactionPtr.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 JNIEXPORT void JNICALL Java_com_elastos_spvcore_TransactionPtr_disposeTransaction
 	(JNIEnv *env, jobject thisObject) {

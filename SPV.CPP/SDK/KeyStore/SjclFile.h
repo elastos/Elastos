@@ -11,7 +11,7 @@
 #include "Mstream.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class SjclFile {
 		public:

@@ -7,7 +7,7 @@
 #include "catch.hpp"
 #include "Payload/PayloadRecord.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadRecord test", "PayloadRecord") {
 

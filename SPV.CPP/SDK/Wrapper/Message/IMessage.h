@@ -8,7 +8,7 @@
 #define __ELASTOS_SDK_IMESSAGE_H__
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class IMessage {
 		public:

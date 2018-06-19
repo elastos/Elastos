@@ -16,7 +16,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MasterPubKey :
 			public Wrapper<BRMasterPubKey> {

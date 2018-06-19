@@ -10,7 +10,7 @@
 #include <CMemBlock.h>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class BTCBase58 {
 		public:

@@ -10,7 +10,7 @@
 #include "Wallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class AddressRegisteringWallet : public Wallet {
 		public:

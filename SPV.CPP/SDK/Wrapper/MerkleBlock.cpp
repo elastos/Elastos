@@ -10,7 +10,7 @@
 #include "MerkleBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 			namespace {

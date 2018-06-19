@@ -9,7 +9,7 @@
 #include "SubWallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class MainchainSubWallet : public IMainchainSubWallet, public SubWallet {
 		public:

@@ -11,7 +11,7 @@
 #include "ByteStream.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 

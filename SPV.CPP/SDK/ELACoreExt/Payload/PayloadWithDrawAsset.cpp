@@ -6,7 +6,7 @@
 #include "BRInt.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadWithDrawAsset::PayloadWithDrawAsset() :
 				_blockHeight(0),

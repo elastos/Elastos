@@ -8,7 +8,7 @@
 #include <spdlog/spdlog.h>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class Log {
 		public:

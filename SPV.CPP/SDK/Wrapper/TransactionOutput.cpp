@@ -14,7 +14,7 @@
 #include "Key.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		TransactionOutput::TransactionOutput() {
 			_output = ELATxOutputNew();

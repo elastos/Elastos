@@ -8,7 +8,7 @@
 
 #include "com_elastos_spvcore_TxParam.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 JNIEXPORT void JNICALL Java_com_elastos_spvcore_TxParam_disposeTxParam
 	(JNIEnv *env, jobject thisObject) {

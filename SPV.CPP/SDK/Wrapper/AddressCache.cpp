@@ -10,7 +10,7 @@
 #include "Key.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		AddressCache::AddressCache(const MasterPrivKey &masterPrivKey, DatabaseManager *databaseManager,
 								   uint32_t internalCacheSize, uint32_t externalCacheSize) :

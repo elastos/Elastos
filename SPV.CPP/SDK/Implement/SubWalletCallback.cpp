@@ -5,7 +5,7 @@
 #include "SubWalletCallback.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		SubWalletCallback::~SubWalletCallback() {
 

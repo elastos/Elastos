@@ -21,7 +21,7 @@
 #include "IdAgent/IdAgentImpl.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class CoinInfo;
 		class ChainParams;

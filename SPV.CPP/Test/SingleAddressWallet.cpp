@@ -13,7 +13,7 @@
 #include "BRBIP39Mnemonic.h"
 #include "SingleAddressWallet.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 class TestListener : public Wallet::Listener {
 public:

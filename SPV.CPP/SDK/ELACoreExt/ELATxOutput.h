@@ -8,7 +8,7 @@
 #include "BRTransaction.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		struct ELATxOutput {
 

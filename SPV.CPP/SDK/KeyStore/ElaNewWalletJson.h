@@ -11,7 +11,7 @@
 #include "CoinInfo.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ElaNewWalletJson :
 				public ElaWebWalletJson {

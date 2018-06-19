@@ -11,7 +11,7 @@
 
 #include "PeerConfigReader.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("Simple json sample test", "[PeerConfigReader]") {
 	nlohmann::json j = "{\n"

@@ -8,7 +8,7 @@
 
 #include "Base64.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "toBits method test", "[Base64]" ) {
 

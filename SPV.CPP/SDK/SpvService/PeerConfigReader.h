@@ -13,7 +13,7 @@
 #include "Peer.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class PeerConfigReader {
 		public:

@@ -14,7 +14,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class Peer :
 			public Wrapper<BRPeer> {

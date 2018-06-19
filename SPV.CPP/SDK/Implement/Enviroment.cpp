@@ -9,7 +9,7 @@
 #include "MasterWalletManager.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		std::string Enviroment::_rootPath = "";
 		IMasterWalletManager *Enviroment::_manager = nullptr;

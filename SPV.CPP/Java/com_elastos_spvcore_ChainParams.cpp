@@ -7,7 +7,7 @@
 #include "ChainParams.h"
 #include "com_elastos_spvcore_ChainParams.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 JNIEXPORT void JNICALL Java_com_elastos_spvcore_ChainParams_disposeChainParams
 	(JNIEnv *env, jobject thisObject) {

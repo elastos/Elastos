@@ -5,7 +5,7 @@
 #include "CoinInfo.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		CoinInfo::CoinInfo() :
 				_chainId(""),

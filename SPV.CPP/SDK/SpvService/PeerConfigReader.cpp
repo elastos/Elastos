@@ -8,7 +8,7 @@
 #include "PeerConfigReader.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		SharedWrapperList<Peer, BRPeer *> PeerConfigReader::readPeersFromJson(const nlohmann::json &j) const {
 			SharedWrapperList<Peer, BRPeer *> result;

@@ -6,7 +6,7 @@
 #define __SPVSDK_SUBWALLETTYPE_H__
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		enum SubWalletType {
 			Normal = 0,

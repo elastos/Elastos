@@ -7,7 +7,7 @@
 #include "CoinConfig.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 			SubWalletType convertToSubWalletType(const std::string &str) {

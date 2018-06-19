@@ -14,7 +14,7 @@
 #include "ELAMerkleBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 

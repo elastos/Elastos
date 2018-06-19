@@ -7,7 +7,7 @@
 #include "Utils.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		int GetBlocksMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 			return 0;

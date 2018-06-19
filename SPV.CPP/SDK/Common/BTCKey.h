@@ -11,7 +11,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		class BTCKey {
 		public:
 			static bool generateKey(CMemBlock<uint8_t> &privKey, CMemBlock<uint8_t> &pubKey, int nid = NID_secp256k1);

@@ -10,7 +10,7 @@
 #include "BRBCashParams.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		namespace {
 			static int MainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet) {

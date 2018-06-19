@@ -6,7 +6,7 @@
 #include "catch.hpp"
 #include "Wallet.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "Wallet test", "[Wallet]" )
 {

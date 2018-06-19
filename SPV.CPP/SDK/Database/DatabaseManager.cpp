@@ -6,7 +6,7 @@
 #include "DatabaseManager.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		DatabaseManager::DatabaseManager(const boost::filesystem::path &path) :
 			_path(path),

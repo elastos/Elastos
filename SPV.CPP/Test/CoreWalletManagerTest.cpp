@@ -6,7 +6,7 @@
 #include "catch.hpp"
 #include "CoreWalletManager.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "CoreWalletManager test", "[CoreWalletManager]" )
 {

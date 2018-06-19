@@ -8,7 +8,7 @@
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		class Asset :
 				public ELAMessageSerializable {
 		public:

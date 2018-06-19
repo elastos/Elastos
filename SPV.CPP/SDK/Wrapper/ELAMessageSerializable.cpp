@@ -5,7 +5,7 @@
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		ELAMessageSerializable::~ELAMessageSerializable() {
 

@@ -6,7 +6,7 @@
 #include "catch.hpp"
 #include "ChainParams.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "ChainParams construct test", "[ChainParams]" ) {
 

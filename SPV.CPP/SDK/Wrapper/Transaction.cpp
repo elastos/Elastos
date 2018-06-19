@@ -24,7 +24,7 @@
 #include "BRAddress.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		Transaction::Transaction() :
 				_isRegistered(false),

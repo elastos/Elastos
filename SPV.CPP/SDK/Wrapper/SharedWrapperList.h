@@ -11,7 +11,7 @@
 #include "Wrapper.h"
 
 namespace Elastos {
-    namespace SDK {
+    namespace ElaWallet {
 
         template <class T, class Raw>
         class SharedWrapperList :

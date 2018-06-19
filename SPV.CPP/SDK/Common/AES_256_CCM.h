@@ -13,7 +13,7 @@
 #define CIPHERTEXTMAXLENGTH 1024 * 3
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class AES_256_CCM {
 			static bool _bInit;

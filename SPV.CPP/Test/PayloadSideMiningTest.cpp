@@ -8,7 +8,7 @@
 #include "BRInt.h"
 #include "Payload/PayloadSideMining.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadSideMining Test", "[PayloadSideMining]") {
 

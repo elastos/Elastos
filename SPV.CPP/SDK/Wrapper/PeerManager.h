@@ -20,7 +20,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-    namespace SDK {
+    namespace ElaWallet {
 
         class PeerManager :
             public Wrapper<BRPeerManager> {

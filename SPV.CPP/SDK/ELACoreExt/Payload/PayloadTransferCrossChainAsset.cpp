@@ -6,7 +6,7 @@
 #include "Address.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PayloadTransferCrossChainAsset::PayloadTransferCrossChainAsset() {
 

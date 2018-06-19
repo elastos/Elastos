@@ -11,7 +11,7 @@
 #define BIP32_SEED_KEY "Bitcoin seed"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		void ELABIP32Sequence::BIP32APIAuthKey(const BRKey *key, const void *seed, size_t seedLen) {
 			ELABIP32Sequence::BIP32PrivKeyPath(key, (const void *)seed, seedLen, 2, 1 | BIP32_HARD, 0);

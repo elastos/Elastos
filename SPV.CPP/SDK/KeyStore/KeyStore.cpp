@@ -17,7 +17,7 @@
 #define WALLET_DATA_MAX_SIZE 10000
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		KeyStore::KeyStore() {
 			OpenSSL_add_all_algorithms();

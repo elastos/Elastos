@@ -8,7 +8,7 @@
 #include <boost/function.hpp>
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		struct Runnable {
 			Runnable(const boost::function<void()> &closure) :

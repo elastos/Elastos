@@ -10,7 +10,7 @@
 #include "AddressRegisteringWallet.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		bool CoreWalletManager::SHOW_CALLBACK = true;
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL = false;
@@ -41,7 +41,7 @@ namespace Elastos {
 			_singleAddress = singleAddress;
 		}
 
-		void CoreWalletManager::init(const Elastos::SDK::ChainParams &chainParams,
+		void CoreWalletManager::init(const ChainParams &chainParams,
 									 uint32_t earliestPeerTime,
 									 const std::vector<std::string> &initialAddresses) {
 			_earliestPeerTime = earliestPeerTime;

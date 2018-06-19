@@ -14,7 +14,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class Address :
 				public Wrapper<BRAddress> {

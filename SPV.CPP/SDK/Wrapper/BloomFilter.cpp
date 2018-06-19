@@ -10,7 +10,7 @@
 #include "BloomFilter.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		BloomFilter::BloomFilter(double falsePositiveRate, size_t elemCount, uint32_t tweak, uint8_t flags) {
 			_bloomFilter = BRBloomFilterNew(falsePositiveRate, elemCount, tweak, flags);

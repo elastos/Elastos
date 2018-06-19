@@ -10,7 +10,7 @@
 #include "Log.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		Sqlite::Sqlite(const boost::filesystem::path &path) {
 			open(path);

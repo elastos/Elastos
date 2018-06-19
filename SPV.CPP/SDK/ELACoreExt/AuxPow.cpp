@@ -12,7 +12,7 @@
 #include "AuxPow.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		AuxPow::AuxPow() {
 			_btcTransaction = BRTransactionNew();

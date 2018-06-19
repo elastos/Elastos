@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_IDAGENT_H__
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class IIdAgent {
 		public:

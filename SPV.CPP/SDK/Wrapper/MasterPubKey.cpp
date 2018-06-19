@@ -9,7 +9,7 @@
 #include "MasterPubKey.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		namespace {
 			// Public parent key -> public child key
 			//

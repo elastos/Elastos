@@ -13,7 +13,7 @@
 #include "Sqlite.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class DatabaseManager {
 		public:

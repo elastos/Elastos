@@ -9,7 +9,7 @@
 #include "Utils.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		MasterWalletStore::MasterWalletStore() {
 

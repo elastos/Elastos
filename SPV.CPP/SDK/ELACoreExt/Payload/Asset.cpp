@@ -8,7 +8,7 @@
 #include "BRInt.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 		Asset::Asset() :
 				_name(""),
 				_description(""),

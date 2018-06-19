@@ -14,7 +14,7 @@
 #include "IWrapperMessage.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class PeerMessageManager {
 		public:

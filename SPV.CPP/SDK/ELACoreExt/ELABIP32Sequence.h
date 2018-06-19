@@ -13,7 +13,7 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		class ELABIP32Sequence {
 		public:

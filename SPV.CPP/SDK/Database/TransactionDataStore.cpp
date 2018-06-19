@@ -11,7 +11,7 @@
 #include "TransactionDataStore.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) :
 			_sqlite(sqlite),

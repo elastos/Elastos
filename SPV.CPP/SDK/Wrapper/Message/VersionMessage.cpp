@@ -12,7 +12,7 @@
 #include "VersionMessage.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		VersionMessage::VersionMessage() {
 

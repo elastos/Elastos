@@ -5,7 +5,7 @@
 #include "InternalAddresses.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		InternalAddresses::InternalAddresses(Sqlite *sqlite) :
 			TableBase(sqlite) {

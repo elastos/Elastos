@@ -9,7 +9,7 @@
 #include "PeerDataSource.h"
 
 namespace Elastos {
-	namespace SDK {
+	namespace ElaWallet {
 
 		PeerDataSource::PeerDataSource(Sqlite *sqlite) :
 			_sqlite(sqlite),

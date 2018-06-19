@@ -11,7 +11,7 @@
 #include "Address.h"
 #include "Transaction.h"
 
-using namespace Elastos::SDK;
+using namespace Elastos::ElaWallet;
 
 TEST_CASE( "Address test", "[Address]" )
 {
