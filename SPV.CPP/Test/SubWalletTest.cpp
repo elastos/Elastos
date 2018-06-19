@@ -69,47 +69,50 @@ public:
 
 protected:
 	//fixme [ymz] when child publicKey is correct then test this
-//	virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions() {
-//		SharedWrapperList<Transaction, BRTransaction *> txList;
-//
-//		UInt168 u168Address = UINT168_ZERO;
-//		Utils::UInt168FromAddress(u168Address, DefaultAddress[0]);
-//
-//		ELATransaction *elaTransaction = ELATransactionNew();
-//		TransactionPtr tx(new Transaction(elaTransaction, false));
-//		elaTransaction->type = ELATransaction::CoinBase;
-//		TransactionOutputPtr out(new TransactionOutput());
-//		out->setAddress(DefaultAddress[0]);
-//		out->setAmount(150 * BASIC_UINT);
-//		out->setProgramHash(u168Address);
-//		elaTransaction->outputs.push_back(out);
-//		elaTransaction->raw.txHash = UINT256_ZERO;
-//		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-//		CMBlock code(10);
-//		CMBlock parameter(10);
-//		ProgramPtr program(new Program(code, parameter));
-//		elaTransaction->programs.push_back(program);
-//		txList.push_back(tx);
-//
-//		ELATransaction *elaTransaction1 = ELATransactionNew();
-//		TransactionPtr tx1(new Transaction(elaTransaction1, false));
-//		elaTransaction1->type = ELATransaction::CoinBase;
-//		TransactionOutputPtr out1(new TransactionOutput());
-//		out1->setAddress(DefaultAddress[0]);
-//		out1->setAmount(250 * BASIC_UINT);
-//		out1->setProgramHash(u168Address);
-//		elaTransaction1->outputs.push_back(out1);
-//		elaTransaction1->raw.txHash = Utils::UInt256FromString(
-//			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
-//		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-//		CMBlock code1(10);
-//		CMBlock parameter1(10);
-//		ProgramPtr program1(new Program(code1, parameter1));
-//		elaTransaction1->programs.push_back(program1);
-//		txList.push_back(tx1);
-//
-//		return txList;
-//	}
+	virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions() {
+		SharedWrapperList<Transaction, BRTransaction *> txList;
+
+		UInt168 u168Address = UINT168_ZERO;
+		Utils::UInt168FromAddress(u168Address, DefaultAddress[0]);
+
+		ELATransaction *elaTransaction = ELATransactionNew();
+		TransactionPtr tx(new Transaction(elaTransaction, false));
+		elaTransaction->type = ELATransaction::CoinBase;
+		TransactionOutputPtr out(new TransactionOutput());
+		out->setAddress(DefaultAddress[0]);
+		out->setAmount(150 * BASIC_UINT);
+		out->setProgramHash(u168Address);
+		out->setAssetId(Key::getSystemAssetId());
+		elaTransaction->outputs.push_back(out);
+		elaTransaction->raw.txHash = Utils::UInt256FromString(
+			"0000000000000000011111111111111111111111111111111111111111111111");
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code(10);
+		CMBlock parameter(10);
+		ProgramPtr program(new Program(code, parameter));
+		elaTransaction->programs.push_back(program);
+		txList.push_back(tx);
+
+		ELATransaction *elaTransaction1 = ELATransactionNew();
+		TransactionPtr tx1(new Transaction(elaTransaction1, false));
+		elaTransaction1->type = ELATransaction::CoinBase;
+		TransactionOutputPtr out1(new TransactionOutput());
+		out1->setAddress(DefaultAddress[0]);
+		out1->setAmount(250 * BASIC_UINT);
+		out1->setProgramHash(u168Address);
+		out1->setAssetId(Key::getSystemAssetId());
+		elaTransaction1->outputs.push_back(out1);
+		elaTransaction1->raw.txHash = Utils::UInt256FromString(
+			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code1(10);
+		CMBlock parameter1(10);
+		ProgramPtr program1(new Program(code1, parameter1));
+		elaTransaction1->programs.push_back(program1);
+		txList.push_back(tx1);
+
+		return txList;
+	}
 };
 
 class TestTransactionSubWallet : public SubWallet {

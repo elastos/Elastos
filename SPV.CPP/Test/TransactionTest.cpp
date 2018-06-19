@@ -6,15 +6,45 @@
 
 #include <Core/BRTransaction.h>
 #include "ELATxOutput.h"
+#include "TransactionOutput.h"
 #include "ELATransaction.h"
 #include "catch.hpp"
 #include "Transaction.h"
+#include "BRTransaction.h"
 #include "Address.h"
 #include "Payload/PayloadCoinBase.h"
 #include "Utils.h"
 #include "Log.h"
 
 using namespace Elastos::ElaWallet;
+
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+UInt256 getRandUInt256(void) {
+	UInt256 u;
+	for (size_t i = 0; i < ARRAY_SIZE(u.u32); ++i) {
+		u.u32[i] = rand();
+	}
+	return u;
+}
+
+UInt168 getRandUInt168(void) {
+	UInt168 u;
+	for (size_t i = 0; i < ARRAY_SIZE(u.u8); ++i) {
+		u.u8[i] = rand();
+	}
+	return u;
+}
+
+CMBlock getRandCMBlock(size_t size) {
+	CMBlock block(size);
+
+	for (size_t i = 0; i < size; ++i) {
+		block[i] = (uint8_t)rand();
+	}
+
+	return block;
+}
 
 TEST_CASE("Transaction constructor test", "[Transaction]") {
 
@@ -274,3 +304,52 @@ TEST_CASE("Transaction Serialize test", "[Transaction]") {
 	}
 
 }
+
+TEST_CASE("Convert to and from json", "[Transaction]") {
+	srand(time(nullptr));
+
+	SECTION("to and from json") {
+		Transaction tx;
+		tx.isRegistered() = true;
+		ELATransaction *ela = (ELATransaction *)tx.getRaw();
+
+		ela->raw.txHash = getRandUInt256();
+		ela->raw.version = rand();
+		ela->raw.inCount = 3;
+		for (size_t i = 0; i < 3; ++i) {
+			CMBlock script = getRandCMBlock(25);
+			CMBlock signature = getRandCMBlock(28);
+			BRTransactionAddInput(&ela->raw, getRandUInt256(), i, rand(),
+					script, script.GetSize(), signature, signature.GetSize(), rand());
+		}
+
+		ela->raw.lockTime = rand();
+		ela->raw.blockHeight = rand();
+		ela->raw.timestamp = rand();
+		ela->type = ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
+		ela->payloadVersion = rand() % sizeof(ela->payloadVersion);
+		ela->fee = rand();
+		ela->payload = ELAPayloadNew(ela->type);
+
+		for (size_t i = 0; i < 4; ++i) {
+			TransactionOutputPtr output(new TransactionOutput());
+			ELATxOutput *o = (ELATxOutput *)output->getRaw();
+			CMBlock script = getRandCMBlock(25);
+			BRTxOutputSetScript((BRTxOutput *)o, script, script.GetSize());
+			o->raw.amount = rand();
+			o->assetId = getRandUInt256();
+			o->outputLock = rand();
+			o->programHash = getRandUInt168();
+			ela->outputs.push_back(output);
+		}
+
+		nlohmann::json txJson = tx.toJson();
+
+		/* verify transaction */
+		Transaction txn;
+		txn.fromJson(txJson);
+
+		// TODO [heropan] complete me later
+	}
+}
+

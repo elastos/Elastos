@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include "CMemBlock.h"
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -31,6 +33,8 @@ namespace Elastos {
 			uint64_t availableSize();
 
 			void skip(int bytes);
+
+			CMBlock getBuffer();
 
 			uint8_t *getBuf();
 

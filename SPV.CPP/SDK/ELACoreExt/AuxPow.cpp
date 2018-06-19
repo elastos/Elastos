@@ -5,6 +5,7 @@
 #include <BRTransaction.h>
 #include <stdlib.h>
 #include <Core/BRTransaction.h>
+#include <Core/BRMerkleBlock.h>
 
 #include "BRMerkleBlock.h"
 #include "BRAddress.h"
@@ -307,278 +308,232 @@ namespace Elastos {
 			for (size_t i = 0; i < len; ++i) {
 				auxMerkleBranch[i] = Utils::UInt256ToString(_auxMerkleBranch[i]);
 			}
-			jsonData["auxMerkleBranch"] = auxMerkleBranch;
+			jsonData["AuxMerkleBranch"] = auxMerkleBranch;
 
 			len = _parCoinBaseMerkle.size();
 			std::vector<std::string> parCoinBaseMerkle(len);
 			for (size_t i = 0; i < len; ++i) {
 				parCoinBaseMerkle[i] = Utils::UInt256ToString(_parCoinBaseMerkle[i]);
 			}
-			jsonData["parCoinBaseMerkle"] = parCoinBaseMerkle;
+			jsonData["ParCoinBaseMerkle"] = parCoinBaseMerkle;
 
-			jsonData["auxMerkleIndex"] = _auxMerkleIndex;
-
-			nlohmann::json transaction = transactionToJson();
-			jsonData["transaction"] = transaction;
-
-			jsonData["parMerkleIndex"] = _parMerkleIndex;
-
-			jsonData["parBlockHeader"] = merkleBlockToJson();
-
-			jsonData["parentHash"] = Utils::UInt256ToString(_parentHash);
+			jsonData["AuxMerkleIndex"] = _auxMerkleIndex;
+			jsonData["Transaction"] = transactionToJson();
+			jsonData["ParMerkleIndex"] = _parMerkleIndex;
+			jsonData["ParBlockHeader"] = merkleBlockToJson();
+			jsonData["ParentHash"] = Utils::UInt256ToString(_parentHash);
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::transactionToJson() {
+		nlohmann::json AuxPow::transactionToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["txHash"] = Utils::UInt256ToString(_btcTransaction->txHash);
+			jsonData["TxHash"] = Utils::UInt256ToString(_btcTransaction->txHash);
+			jsonData["Version"] = _btcTransaction->version;
 
-			jsonData["version"] = _btcTransaction->version;
-
-			jsonData["inCount"] = _btcTransaction->inCount;
 			std::vector<nlohmann::json> inputs(_btcTransaction->inCount);
 			for (size_t i = 0; i < _btcTransaction->inCount; ++i) {
-				nlohmann::json inputsJson = txInputsToJson(i);
-				inputs[i] = inputsJson;
+				inputs[i] = txInputsToJson(_btcTransaction->inputs[i]);;
 			}
+			jsonData["Inputs"] = inputs;
 
-			jsonData["inputs"] = inputs;
-
-			jsonData["outCount"] = _btcTransaction->outCount;
 			std::vector<nlohmann::json> outputs(_btcTransaction->outCount);
 			for (size_t i = 0; i < _btcTransaction->outCount; ++i) {
-				nlohmann::json outputsJson = txOutputsToJson(i);
-				outputs[i] = outputsJson;
+				outputs[i] = txOutputsToJson(_btcTransaction->outputs[i]);
 			}
-			jsonData["outputs"] = outputs;
+			jsonData["Outputs"] = outputs;
 
-			jsonData["lockTime"] = _btcTransaction->lockTime;
-
-			jsonData["blockHeight"] = _btcTransaction->blockHeight;
-
-			jsonData["timestamp"] = _btcTransaction->timestamp;
+			jsonData["LockTime"] = _btcTransaction->lockTime;
+			jsonData["BlockHeight"] = _btcTransaction->blockHeight;
+			jsonData["Timestamp"] = _btcTransaction->timestamp;
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::txInputsToJson(size_t index) {
+		nlohmann::json AuxPow::txInputsToJson(const BRTxInput &input) const {
 			nlohmann::json jsonData;
-			BRTxInput input = _btcTransaction->inputs[index];
-			jsonData["txHash"] = Utils::UInt256ToString(input.txHash);
-			jsonData["index"] = input.index;
 
-			std::string addr = input.address;
-			jsonData["address"] = addr;
-
-			jsonData["amount"] = input.amount;
-
-			jsonData["scriptLen"] = input.scriptLen;
-			char *script = new char[input.scriptLen];
-			memcpy(script, input.script, input.scriptLen);
-			std::string scriptStr(script, input.scriptLen);
-			jsonData["script"] = scriptStr;
-
-			jsonData["sigLen"] = input.sigLen;
-			char *signature = new char[input.sigLen];
-			memcpy(signature, input.signature, input.sigLen);
-			std::string signatureStr(signature, input.sigLen);
-			jsonData["signature"] = signatureStr;
-
-			jsonData["sequence"] = input.sequence;
+			jsonData["TxHash"] = Utils::UInt256ToString(input.txHash);
+			jsonData["Index"] = input.index;
+			jsonData["Address"] = std::string(input.address);
+			jsonData["Amount"] = input.amount;
+			jsonData["Script"] = Utils::encodeHex(input.script, input.scriptLen);
+			jsonData["Signature"] = Utils::encodeHex(input.signature, input.sigLen);
+			jsonData["Sequence"] = input.sequence;
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::txOutputsToJson(size_t index) {
+		nlohmann::json AuxPow::txOutputsToJson(const BRTxOutput &output) const {
 			nlohmann::json jsonData;
-			BRTxOutput output = _btcTransaction->outputs[index];
 
-			jsonData["address"] = output.address;
-
-			jsonData["amount"] = output.amount;
-
-			jsonData["scriptLen"] = output.scriptLen;
-
-			char *script = new char[output.scriptLen];
-			memcpy(script, output.script, output.scriptLen);
-			std::string scriptStr(script, output.scriptLen);
-			jsonData["script"] = scriptStr;
+			jsonData["Address"] = std::string(output.address);
+			jsonData["Amount"] = output.amount;
+			jsonData["Script"] = Utils::encodeHex(output.script, output.scriptLen);
 
 			return jsonData;
 		}
 
-		nlohmann::json AuxPow::merkleBlockToJson() {
+		nlohmann::json AuxPow::merkleBlockToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["blockHash"] = Utils::UInt256ToString(_parBlockHeader->blockHash);
+			jsonData["BlockHash"] = Utils::UInt256ToString(_parBlockHeader->blockHash);
+			jsonData["Version"] = _parBlockHeader->version;
+			jsonData["PrevBlock"] = Utils::UInt256ToString(_parBlockHeader->prevBlock);
+			jsonData["MerkleRoot"] = Utils::UInt256ToString(_parBlockHeader->merkleRoot);
+			jsonData["Timestamp"] = _parBlockHeader->timestamp;
+			jsonData["Target"] = _parBlockHeader->target;
+			jsonData["Nonce"] = _parBlockHeader->nonce;
+			jsonData["TotalTx"] = _parBlockHeader->totalTx;
 
-			jsonData["version"] = _parBlockHeader->version;
-
-			jsonData["prevBlock"] = Utils::UInt256ToString(_parBlockHeader->prevBlock);
-
-			jsonData["merkleRoot"] = Utils::UInt256ToString(_parBlockHeader->merkleRoot);
-
-			jsonData["timestamp"] = _parBlockHeader->timestamp;
-
-			jsonData["target"] = _parBlockHeader->target;
-
-			jsonData["nonce"] = _parBlockHeader->nonce;
-
-			jsonData["totalTx"] = _parBlockHeader->totalTx;
-
-			jsonData["hashesCount"] = _parBlockHeader->hashesCount;
 			std::vector<std::string> hashes(_parBlockHeader->hashesCount);
 			for (size_t i = 0; i < _parBlockHeader->hashesCount; ++i) {
 				hashes[i] = Utils::UInt256ToString(_parBlockHeader->hashes[i]);
 			}
-			jsonData["hashes"] = hashes;
+			jsonData["Hashes"] = hashes;
 
-			jsonData["flagsLen"] = _parBlockHeader->flagsLen;
-
-			char *flags = new char[_parBlockHeader->flagsLen];
-			memcpy(flags, _parBlockHeader->flags, _parBlockHeader->flagsLen);
-			std::string flagsStr(flags, _parBlockHeader->flagsLen);
-			jsonData["flags"] = flagsStr;
-
-			jsonData["height"] = _parBlockHeader->height;
+			jsonData["Flags"] = Utils::encodeHex(_parBlockHeader->flags, _parBlockHeader->flagsLen);;
+			jsonData["Height"] = _parBlockHeader->height;
 
 			return jsonData;
 		}
 
 		void AuxPow::fromJson(const nlohmann::json &jsonData) {
-			std::vector<std::string> auxMerkleBranch = jsonData["auxMerkleBranch"];
+			std::vector<std::string> auxMerkleBranch = jsonData["AuxMerkleBranch"];
 			_auxMerkleBranch.resize(auxMerkleBranch.size());
 			for (size_t i = 0; i < _auxMerkleBranch.size(); ++i) {
 				_auxMerkleBranch[i] = Utils::UInt256FromString(auxMerkleBranch[i]);
 			}
 
-			std::vector<std::string> parCoinBaseMerkle = jsonData["parCoinBaseMerkle"];
+			std::vector<std::string> parCoinBaseMerkle = jsonData["ParCoinBaseMerkle"];
 			_parCoinBaseMerkle.resize(parCoinBaseMerkle.size());
 			for (size_t i = 0; i < parCoinBaseMerkle.size(); ++i) {
 				_parCoinBaseMerkle[i] = Utils::UInt256FromString(parCoinBaseMerkle[i]);
 			}
 
-			_auxMerkleIndex = jsonData["auxMerkleIndex"].get<uint32_t>();
-
-			transactionFromJson(jsonData["transaction"]);
-
-			_parMerkleIndex = jsonData["parMerkleIndex"].get<uint32_t>();
-
-			merkleBlockFromJson(jsonData["parBlockHeader"]);
-
-			std::string parentHash = jsonData["parentHash"].get<std::string>();
-			_parentHash = Utils::UInt256FromString(parentHash);
+			_auxMerkleIndex = jsonData["AuxMerkleIndex"].get<uint32_t>();
+			transactionFromJson(jsonData["Transaction"]);
+			_parMerkleIndex = jsonData["ParMerkleIndex"].get<uint32_t>();
+			merkleBlockFromJson(jsonData["ParBlockHeader"]);
+			_parentHash = Utils::UInt256FromString(jsonData["ParentHash"].get<std::string>());
 		}
 
-		void AuxPow::transactionFromJson(nlohmann::json jsonData) const {
+		void AuxPow::transactionFromJson(const nlohmann::json &jsonData) {
+			_btcTransaction->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			_btcTransaction->version = jsonData["Version"].get<uint32_t>();
 
-			std::string txHash = jsonData["txHash"].get<std::string>();
-			_btcTransaction->txHash = Utils::UInt256FromString(txHash);
+			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
+			for (size_t i = 0; i < inputs.size(); ++i) {
+				txInputsFromJson(inputs[i]);
+			}
 
-			_btcTransaction->version = jsonData["version"].get<uint32_t>();
+			std::vector<nlohmann::json> outputs = jsonData["Outputs"];
+			for (size_t i = 0; i < outputs.size(); ++i) {
+				txOutputsFromJson(outputs[i]);
+			}
 
-			_btcTransaction->inCount = jsonData["inCount"].get<size_t>();
-
-			txInputsFromJson(jsonData["inputs"]);
-
-			_btcTransaction->outCount = jsonData["outCount"].get<size_t>();
-
-			txOutputsFromJson(jsonData["outputs"]);
-
-			_btcTransaction->lockTime = jsonData["lockTime"].get<uint32_t>();
-
-			_btcTransaction->blockHeight = jsonData["blockHeight"].get<uint32_t>();
-
-			_btcTransaction->timestamp = jsonData["timestamp"].get<uint32_t>();
+			_btcTransaction->lockTime = jsonData["LockTime"].get<uint32_t>();
+			_btcTransaction->blockHeight = jsonData["BlockHeight"].get<uint32_t>();
+			_btcTransaction->timestamp = jsonData["Timestamp"].get<uint32_t>();
 		}
 
-		void AuxPow::merkleBlockFromJson(nlohmann::json jsonData) const {
+		void AuxPow::merkleBlockFromJson(nlohmann::json jsonData) {
 
-			std::string blockHash = jsonData["blockHash"].get<std::string>();
+			std::string blockHash = jsonData["BlockHash"].get<std::string>();
 			_parBlockHeader->blockHash = Utils::UInt256FromString(blockHash);
-
-			_parBlockHeader->version = jsonData["version"].get<uint32_t>();
-
-			std::string prevBlock = jsonData["prevBlock"].get<std::string>();
+			_parBlockHeader->version = jsonData["Version"].get<uint32_t>();
+			std::string prevBlock = jsonData["PrevBlock"].get<std::string>();
 			_parBlockHeader->prevBlock = Utils::UInt256FromString(prevBlock);
-
-			std::string merkleRoot = jsonData["merkleRoot"].get<std::string>();
+			std::string merkleRoot = jsonData["MerkleRoot"].get<std::string>();
 			_parBlockHeader->merkleRoot = Utils::UInt256FromString(merkleRoot);
+			_parBlockHeader->timestamp = jsonData["Timestamp"].get<uint32_t>();
+			_parBlockHeader->target = jsonData["Target"].get<uint32_t>();
+			_parBlockHeader->nonce = jsonData["Nonce"].get<uint32_t>();
+			_parBlockHeader->totalTx = jsonData["TotalTx"].get<uint32_t>();
 
-			_parBlockHeader->timestamp = jsonData["timestamp"].get<uint32_t>();
-
-			_parBlockHeader->target = jsonData["target"].get<uint32_t>();
-
-			_parBlockHeader->nonce = jsonData["nonce"].get<uint32_t>();
-
-			_parBlockHeader->totalTx = jsonData["totalTx"].get<uint32_t>();
-
-			_parBlockHeader->hashesCount = jsonData["hashesCount"].get<size_t>();
-
-			std::vector<std::string> hashs = jsonData["hashes"];
+			std::vector<std::string> hashArray = jsonData["Hashes"];
+			_parBlockHeader->hashesCount = hashArray.size();
 			UInt256 hashes[_parBlockHeader->hashesCount];
 			for (size_t i = 0; i < _parBlockHeader->hashesCount; ++i) {
-				hashes[i] = Utils::UInt256FromString(hashs[i]);
+				hashes[i] = Utils::UInt256FromString(hashArray[i]);
 			}
 
-			_parBlockHeader->flagsLen = jsonData["flagsLen"].get<size_t>();
-
-			std::string flags = jsonData["flags"].get<std::string>();
+			CMBlock flags = Utils::decodeHex(jsonData["Flags"].get<std::string>());
+			_parBlockHeader->flagsLen = flags.GetSize();
 
 			BRMerkleBlockSetTxHashes(_parBlockHeader, hashes, _parBlockHeader->hashesCount,
-			                         (const uint8_t *) flags.data(), _parBlockHeader->flagsLen);
+									 flags, _parBlockHeader->flagsLen);
 
-			_parBlockHeader->height = jsonData["height"].get<uint32_t>();
-
+			_parBlockHeader->height = jsonData["Height"].get<uint32_t>();
 		}
 
-		void AuxPow::txInputsFromJson(std::vector<nlohmann::json> inputs) const {
+		void AuxPow::txInputsFromJson(const nlohmann::json &input) {
+			UInt256 hash = Utils::UInt256FromString(input["TxHash"]);
+			uint32_t index = input["Index"].get<uint32_t>();
+			uint64_t amount = input["Amount"].get<uint64_t>();
+			CMBlock script = Utils::decodeHex(input["Script"].get<std::string>());
+			CMBlock signature = Utils::decodeHex(input["Signature"].get<std::string>());
+			uint32_t sequence = input["Sequence"].get<uint32_t>();
 
-			size_t len = inputs.size();
-			for (size_t i = 0; i < len; ++i) {
-				nlohmann::json jsonData = inputs[i];
-
-				UInt256 hash = Utils::UInt256FromString(jsonData["txHash"]);
-				uint32_t index = jsonData["index"].get<uint32_t>();
-				uint64_t amount = jsonData["amount"].get<uint64_t>();
-				size_t scriptLen = jsonData["scriptLen"].get<size_t>();
-				std::string scriptStr = jsonData["script"].get<std::string>();
-				size_t sigLen = jsonData["sigLen"].get<size_t>();
-				std::string signature = jsonData["signature"].get<std::string>();
-				uint32_t sequence = jsonData["sequence"].get<uint32_t>();
-
-				BRTransactionAddInput(_btcTransaction, hash, index, amount,
-				                      (uint8_t *) scriptStr.data(), scriptLen,
-				                      (uint8_t *) signature.data(), sigLen,
-				                      sequence);
-				std::string address = jsonData["address"].get<std::string>();
-				memset(_btcTransaction->inputs[i].address, 0, sizeof(_btcTransaction->inputs[i]));
-				memcpy(_btcTransaction->inputs[i].address, address.c_str(), address.size());
-
-			}
+			BRTransactionAddInput(_btcTransaction, hash, index, amount,
+								  script, script.GetSize(),
+								  signature, signature.GetSize(),
+								  sequence);
+#ifndef NDEBUG
+			std::string address = input["Address"].get<std::string>();
+			assert(address == std::string(_btcTransaction->inputs[_btcTransaction->inCount - 1].address));
+#endif
 		}
 
-		void AuxPow::txOutputsFromJson(std::vector<nlohmann::json> outputs) const {
-			size_t len = outputs.size();
-			for (size_t i = 0; i < len; ++i) {
-				nlohmann::json jsonData = outputs[i];
+		void AuxPow::txOutputsFromJson(const nlohmann::json &output) {
+			uint64_t amount = output["Amount"].get<uint64_t>();
+			CMBlock script = Utils::decodeHex(output["Script"].get<std::string>());
+			BRTransactionAddOutput(_btcTransaction, amount, script, script.GetSize());
+#ifndef NDEBUG
+			std::string address = output["Address"].get<std::string>();
+			assert(address == std::string(_btcTransaction->outputs[_btcTransaction->outCount - 1].address));
+#endif
+		}
 
-				uint64_t amount = jsonData["amount"].get<uint64_t>();
-				uint8_t *script = nullptr;
-				size_t scriptLen = jsonData["scriptLen"].get<size_t>();
-				if (scriptLen > 0) {
-					std::string scriptStr = jsonData["script"].get<std::string>();
-					script = (uint8_t *) scriptStr.data();
-				}
+		void AuxPow::setAuxMerkleBranch(const std::vector<UInt256> &hashes) {
+			_auxMerkleBranch = hashes;
+		}
 
-				BRTransactionAddOutput(_btcTransaction, amount, script, scriptLen);
+		void AuxPow::setCoinBaseMerkle(const std::vector<UInt256> &hashes) {
+			_parCoinBaseMerkle = hashes;
+		}
 
-				std::string address = jsonData["address"];
-				memset(_btcTransaction->outputs[i].address, 0, sizeof(_btcTransaction->outputs[i].address));
-				memcpy(_btcTransaction->outputs[i].address, address.data(), address.size());
-			}
+		void AuxPow::setAuxMerkleIndex(uint32_t index) {
+			_auxMerkleIndex = index;
+		}
+
+		void AuxPow::setParMerkleIndex(uint32_t index) {
+			_parMerkleIndex = index;
+		}
+
+		void AuxPow::setParentHash(const UInt256 &hash) {
+			_parentHash = hash;
+		}
+
+		uint32_t AuxPow::getAuxMerkleIndex() const {
+			return _auxMerkleIndex;
+		}
+
+		uint32_t AuxPow::getParMerkleIndex() const {
+			return _parMerkleIndex;
+		}
+
+		const UInt256 &AuxPow::getParentHash() const {
+			return _parentHash;
+		}
+
+		const std::vector<UInt256> &AuxPow::getAuxMerkleBranch() {
+			return _auxMerkleBranch;
+		}
+
+		const std::vector<UInt256> &AuxPow::getParCoinBaseMerkle() {
+			return _parCoinBaseMerkle;
 		}
 
 	}

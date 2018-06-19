@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRInt.h>
+#include "Utils.h"
 #include "Attribute.h"
 
 namespace Elastos {
@@ -55,23 +56,15 @@ namespace Elastos {
 
 		nlohmann::json Attribute::toJson() {
 			nlohmann::json jsonData;
-			jsonData["usage"] = _usage;
-
-			char *data = new char[_data.GetSize()];
-			memcpy(data, _data, _data.GetSize());
-			std::string content(data, _data.GetSize());
-			jsonData["data"] = data;
+			jsonData["Usage"] = _usage;
+			jsonData["Data"] = Utils::encodeHex(_data);
 
 			return jsonData;
 		}
 
 		void Attribute::fromJson(const nlohmann::json &jsonData) {
-			_usage = jsonData["usage"].get<Usage>();
-
-			std::string content = jsonData["data"].get<std::string>();
-			const char* data = content.c_str();
-			_data.Resize(content.size());
-			memcpy(_data, data, content.size());
+			_usage = jsonData["Usage"].get<Usage>();
+			_data = Utils::decodeHex(jsonData["Data"].get<std::string>());
 		}
 	}
 }

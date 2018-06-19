@@ -148,6 +148,8 @@ namespace Elastos {
 
 			const PayloadPtr &getPayload() const;
 
+			void addAttribute(const AttributePtr &attribute);
+
 			void addProgram(const ProgramPtr &program);
 
 			const std::vector<AttributePtr> &getAttributes() const;
@@ -158,10 +160,6 @@ namespace Elastos {
 			PayloadPtr newPayload(ELATransaction::Type type);
 
 			void serializeUnsigned(ByteStream &ostream) const;
-
-			nlohmann::json rawTransactionToJson();
-
-			void rawTransactionFromJson(nlohmann::json jsonData);
 
 			bool transactionSign(int forkId, const WrapperList<Key, BRKey> keys);
 

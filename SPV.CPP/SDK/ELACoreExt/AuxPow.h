@@ -25,6 +25,17 @@ namespace Elastos {
 
 			~AuxPow();
 
+			void setAuxMerkleBranch(const std::vector<UInt256> &hashes);
+			void setCoinBaseMerkle(const std::vector<UInt256> &hashes);
+			void setAuxMerkleIndex(uint32_t index);
+			void setParMerkleIndex(uint32_t index);
+			void setParentHash(const UInt256 &hash);
+			uint32_t getAuxMerkleIndex() const;
+			uint32_t getParMerkleIndex() const;
+			const UInt256 &getParentHash() const;
+			const std::vector<UInt256> &getAuxMerkleBranch();
+			const std::vector<UInt256> &getParCoinBaseMerkle();
+
 			UInt256 getParBlockHeaderHash() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
@@ -62,21 +73,21 @@ namespace Elastos {
 
 			void deserializeBtcBlockHeader(ByteStream &istream);
 
-			nlohmann::json transactionToJson();
+			nlohmann::json transactionToJson() const;
 
-			void transactionFromJson(nlohmann::json jsonData) const;
+			void transactionFromJson(const nlohmann::json &jsonData);
 
-			nlohmann::json txInputsToJson(size_t index);
+			nlohmann::json txInputsToJson(const BRTxInput &input) const;
 
-			void txInputsFromJson(std::vector<nlohmann::json> inputs) const;
+			void txInputsFromJson(const nlohmann::json &input);
 
-			nlohmann::json txOutputsToJson(size_t index);
+			nlohmann::json txOutputsToJson(const BRTxOutput &output) const;
 
-			void txOutputsFromJson(std::vector<nlohmann::json> outputs) const;
+			void txOutputsFromJson(const nlohmann::json &output);
 
-			nlohmann::json  merkleBlockToJson();
+			nlohmann::json  merkleBlockToJson() const;
 
-			void merkleBlockFromJson(nlohmann::json jsonData) const;
+			void merkleBlockFromJson(nlohmann::json jsonData);
 		private:
 			std::vector<UInt256> _auxMerkleBranch;
 			std::vector<UInt256> _parCoinBaseMerkle;

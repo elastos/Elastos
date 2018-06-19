@@ -38,6 +38,7 @@ namespace Elastos {
 				WithdrawAsset           = 0x07,
 				TransferCrossChainAsset = 0x08,
 				RegisterIdentification	= 0x09,
+				TypeMaxCount
 			};
 
 			ELATransaction() {

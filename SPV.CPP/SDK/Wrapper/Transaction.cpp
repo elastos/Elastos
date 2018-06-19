@@ -305,6 +305,10 @@ namespace Elastos {
 			return _transaction->payload;
 		}
 
+		void Transaction::addAttribute(const AttributePtr &attribute) {
+			_transaction->attributes.push_back(attribute);
+		}
+
 		const std::vector<AttributePtr> &Transaction::getAttributes() const {
 			return _transaction->attributes;
 		}
@@ -430,29 +434,27 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Transaction::rawTransactionToJson() {
+		nlohmann::json Transaction::toJson() {
 			nlohmann::json jsonData;
-			BRTransaction *raw = &_transaction->raw;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(raw->txHash);
-			jsonData["Version"] = raw->version;
-			jsonData["LockTime"] = raw->lockTime;
-			jsonData["BlockHeight"] = raw->blockHeight;
-			jsonData["Timestamp"] = raw->timestamp;
-//			jsonData["InputCount"]  = raw->inCount;
+			jsonData["IsRegistered"] = _isRegistered;
 
-			std::vector<nlohmann::json> inputs(raw->inCount);
-			for (size_t i = 0; i < raw->inCount; ++i) {
-				BRTxInput *input = &raw->inputs[i];
+			jsonData["TxHash"] = Utils::UInt256ToString(getHash());
+			jsonData["Version"] = _transaction->raw.version;
+			jsonData["LockTime"] = _transaction->raw.lockTime;
+			jsonData["BlockHeight"] = _transaction->raw.blockHeight;
+			jsonData["Timestamp"] = _transaction->raw.timestamp;
+
+			std::vector<nlohmann::json> inputs(_transaction->raw.inCount);
+			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
+				BRTxInput *input = &_transaction->raw.inputs[i];
 				nlohmann::json jsonData;
 
 				jsonData["TxHash"] = Utils::UInt256ToString(input->txHash);
 				jsonData["Index"] = input->index;
 				jsonData["Address"] = std::string(input->address);
 				jsonData["Amount"] = input->amount;
-//				jsonData["ScriptLen"] = input->scriptLen;
 				jsonData["Script"] = Utils::encodeHex(input->script, input->scriptLen);
-//				jsonData["SigLen"] = input->sigLen;
 				jsonData["Signature"] = Utils::encodeHex(input->signature, input->sigLen);
 				jsonData["Sequence"] = input->sequence;
 
@@ -460,14 +462,6 @@ namespace Elastos {
 			}
 			jsonData["Inputs"] = inputs;
 
-			return jsonData;
-		}
-
-		nlohmann::json Transaction::toJson() {
-			nlohmann::json jsonData;
-
-			jsonData["IsRegistered"] = _isRegistered;
-			jsonData["Raw"] = rawTransactionToJson();
 			jsonData["Type"] = (uint8_t) _transaction->type;
 			jsonData["PayloadVersion"] = _transaction->payloadVersion;
 			jsonData["PayLoad"] = _transaction->payload->toJson();
@@ -494,47 +488,33 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Transaction::rawTransactionFromJson(nlohmann::json jsonData) {
-			BRTransaction *raw = &_transaction->raw;
-
-			raw->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
-			raw->version = jsonData["Version"].get<uint32_t>();
-			raw->lockTime = jsonData["LockTime"].get<uint32_t>();
-			raw->blockHeight = jsonData["BlockHeight"].get<uint32_t>();
-			raw->timestamp = jsonData["Timestamp"].get<uint32_t>();
-
-			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
-			raw->inCount = inputs.size();
-
-			for (size_t i = 0; i < raw->inCount; ++i) {
-				nlohmann::json jsonData = inputs[i];
-
-				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
-				uint32_t index = jsonData["Index"].get<uint32_t>();
-				std::string address = jsonData["Address"].get<std::string>();
-				uint64_t amount = jsonData["Amount"].get<uint64_t>();
-
-				std::string scriptString = jsonData["Script"].get<std::string>();
-				size_t scriptLen = scriptString.length() / 2;
-				uint8_t *script = new uint8_t[scriptLen];
-				Utils::decodeHex(script, scriptLen, scriptString.c_str(), scriptString.length());
-
-				std::string signatureString = jsonData["Signature"].get<std::string>();
-				size_t sigLen = signatureString.length() / 2;
-				uint8_t *signature = new uint8_t[sigLen];
-				Utils::decodeHex(signature, sigLen, signatureString.c_str(), signatureString.length());
-
-				uint32_t sequence = jsonData["Sequence"].get<uint32_t>();
-
-				BRTransactionAddInput(raw, txHash, index, amount, script, scriptLen, signature, sigLen, sequence);
-				delete[] script;
-				delete[] signature;
-			}
-		}
-
 		void Transaction::fromJson(nlohmann::json jsonData) {
 			_isRegistered = jsonData["IsRegistered"];
-			rawTransactionFromJson(jsonData["Raw"]);
+
+			_transaction->raw.txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			_transaction->raw.version = jsonData["Version"].get<uint32_t>();
+			_transaction->raw.lockTime = jsonData["LockTime"].get<uint32_t>();
+			_transaction->raw.blockHeight = jsonData["BlockHeight"].get<uint32_t>();
+			_transaction->raw.timestamp = jsonData["Timestamp"].get<uint32_t>();
+
+			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
+			_transaction->raw.inCount = inputs.size();
+
+			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
+				nlohmann::json jsonData = inputs[i];
+
+				std::string address = jsonData["Address"].get<std::string>();
+				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+				uint32_t index = jsonData["Index"].get<uint32_t>();
+				uint64_t amount = jsonData["Amount"].get<uint64_t>();
+				CMBlock script = Utils::decodeHex(jsonData["Script"].get<std::string>());
+				CMBlock signature = Utils::decodeHex(jsonData["Signature"].get<std::string>());
+				uint32_t sequence = jsonData["Sequence"].get<uint32_t>();
+
+				BRTransactionAddInput(&_transaction->raw, txHash, index, amount, script, script.GetSize(), signature, signature.GetSize(), sequence);
+				assert(0 == strcmp(address.c_str(), _transaction->raw.inputs[i].address));
+			}
+
 			_transaction->type = ELATransaction::Type(jsonData["Type"].get<uint8_t>());
 			_transaction->payloadVersion = jsonData["PayloadVersion"];
 

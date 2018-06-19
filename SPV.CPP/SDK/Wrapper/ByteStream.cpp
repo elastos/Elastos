@@ -1,3 +1,4 @@
+#include "CMemBlock.h"
 #include "ByteStream.h"
 #include "BRAddress.h"
 
@@ -408,6 +409,16 @@ namespace Elastos {
 		char *ByteStream::getUTF8() {
 			int len = 0;
 			return getUTF8(len);
+		}
+
+		CMBlock ByteStream::getBuffer() {
+			if (_count <= 0) {
+				return CMBlock();
+			}
+
+			CMBlock buff(_count);
+			memcpy(buff, _buf, _count);
+			return buff;
 		}
 
 		uint8_t *ByteStream::getBuf() {
