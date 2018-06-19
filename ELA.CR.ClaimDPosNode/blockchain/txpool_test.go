@@ -7,12 +7,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/config"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/log"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -245,10 +246,11 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	var input *core.Input
 	var inputTxID common.Uint256
-	inputTxID.Deserialize(bytes.NewReader([]byte("6817addb1eb959d0d56117fd54b6e795788d54ec2a950c209d858da182cf3291")))
+	inputTxIDBytes, _ := hex.DecodeString("b07c062090c44682e29832f1993d4a0f47e49a148d8b0e07d739a32670ff3a95")
+	inputTxID.Deserialize(bytes.NewReader(inputTxIDBytes))
 	input = &core.Input{
 		Previous: core.OutPoint{
-			//TxID:  inputTxID,
+			TxID:  inputTxID,
 			Index: 0,
 		},
 		Sequence: 100,
@@ -313,7 +315,6 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	newBLock.Height = 221
 	newBLock.AuxPow = blockAuxpow
 	newBLock.Transactions = []*core.Transaction{tx2}
-
 	txPool.addToTxList(tx1)
 	txPool.addInputUTXOList(tx1, input)
 
@@ -322,5 +323,12 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx := txPool.txnList[tx1.Hash()]
 	if tx != nil {
 		t.Error("Should delete double spent utxo transaction")
+	}
+
+	for _, input := range tx1.Inputs {
+		utxoInput := txPool.inputUTXOList[input.ReferKey()]
+		if utxoInput != nil {
+			t.Error("Should delete double spent utxo transaction")
+		}
 	}
 }
