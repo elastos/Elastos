@@ -28,9 +28,8 @@ func NewHandlerEIP001(node protocol.Noder) *HandlerEIP001 {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *HandlerEIP001) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-	// Filter messages through SPV protocol
-	err = FilterMessage(h.node, cmd)
-	if err != nil {
+	// Filter messages through open port message filter
+	if err = h.FilterMessage(cmd); err != nil {
 		return message, err
 	}
 	// Update node last active time

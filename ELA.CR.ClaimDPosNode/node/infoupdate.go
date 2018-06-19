@@ -129,7 +129,7 @@ func (node *node) ConnectNodes() {
 	}
 
 	if connectionCount < MaxOutBoundCount {
-		address := node.RandGetAddresses(node.GetNeighbourAddress())
+		address := node.RandGetAddresses(node.GetNeighbourAddresses())
 		for _, addr := range address {
 			go node.Connect(addr.String())
 		}
@@ -140,25 +140,24 @@ func (node *node) ConnectNodes() {
 	}
 }
 
-func existedInNeighbourList(seedAddress string, neighbours neighbourNodes) (*node, bool) {
+func existedInNeighbourList(seedAddress string, neighbours neighbourNodes) (Noder, bool) {
 	neighbours.Lock()
 	defer neighbours.Unlock()
 
 	for _, neighbour := range neighbours.List {
-		neighbourAddress := neighbour.getNodeAddress()
-		if seedAddress == neighbourAddress {
+		if seedAddress == neighbour.NetAddress().String() {
 			return neighbour, true
 		}
 	}
 	return nil, false
 }
 
-func (node *node) getNodeAddress() string {
+func (node *node) NetAddress() p2p.NetAddress {
 	var addr p2p.NetAddress
 	addr.IP, _ = node.Addr16()
 	addr.Time = node.GetTime()
 	addr.Services = node.Services()
 	addr.Port = node.Port()
 	addr.ID = node.ID()
-	return addr.String()
+	return addr
 }

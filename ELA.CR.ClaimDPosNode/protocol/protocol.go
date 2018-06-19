@@ -41,6 +41,7 @@ type Noder interface {
 	Services() uint64
 	Addr() string
 	Addr16() ([16]byte, error)
+	NetAddress() p2p.NetAddress
 	Port() uint16
 	IsFromExtraNet() bool
 	HttpInfoPort() int
@@ -48,8 +49,8 @@ type Noder interface {
 	SetState(state uint)
 	State() uint
 	IsRelay() bool
-	DelNbrNode(id uint64) (Noder, bool)
-	AddNbrNode(Noder)
+	AddNeighborNode(Noder)
+	DelNeighborNode(id uint64) (Noder, bool)
 	Height() uint64
 	GetConn() net.Conn
 	CloseConn()
@@ -73,7 +74,7 @@ type Noder interface {
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighbourAddress() []p2p.NetAddress
+	GetNeighbourAddresses() []p2p.NetAddress
 	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64

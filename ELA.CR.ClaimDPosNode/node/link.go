@@ -40,14 +40,14 @@ func (node *node) GetLastActiveTime() time.Time {
 }
 
 func (node *node) initConnection() {
-	go node.listenNodePort()
+	go listenNodePort()
 	// Listen open port if OpenService enabled
 	if Parameters.OpenService {
-		go node.listenNodeOpenPort()
+		go listenNodeOpenPort()
 	}
 }
 
-func (node *node) listenNodePort() {
+func listenNodePort() {
 	var err error
 	var listener net.Listener
 
