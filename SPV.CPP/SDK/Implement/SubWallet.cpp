@@ -424,8 +424,31 @@ namespace Elastos {
 		}
 
 		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
-			//todo complete me
-			return true;
+			ELATransaction *tx = (ELATransaction *)transaction;
+
+			for (size_t i = 0; i < tx->raw.inCount; ++i) {
+				BRTxInput *input = &tx->raw.inputs[i];
+				std::string addr(input->address);
+				if (addr == addressOrTxid) {
+					return true;
+				}
+			}
+			for (size_t i = 0; i < tx->outputs.size(); ++i) {
+				TransactionOutputPtr output = tx->outputs[i];
+				if (output->getAddress() == addressOrTxid) {
+					return true;
+				}
+			}
+
+			if (addressOrTxid.length() == sizeof(UInt256) * 2) {
+				Transaction txn(tx, false);
+				UInt256 Txid = Utils::UInt256FromString(addressOrTxid);
+				if (UInt256Eq(&Txid, &tx->raw.txHash)) {
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		bool SubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
