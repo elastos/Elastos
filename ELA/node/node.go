@@ -209,7 +209,7 @@ func (n *node) NodeDisconnect(v interface{}) {
 	if node, ok := v.(protocol.Noder); ok {
 		node.SetState(p2p.INACTIVITY)
 		node.GetConn().Close()
-		n.DelNbrNode(node.ID())
+		n.DelNeighborNode(node.ID())
 	}
 }
 

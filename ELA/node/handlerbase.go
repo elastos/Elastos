@@ -96,7 +96,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 	}
 
 	// Obsolete node
-	n, ret := LocalNode.DelNbrNode(version.Nonce)
+	n, ret := LocalNode.DelNeighborNode(version.Nonce)
 	if ret == true {
 		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
 		// Close the connection and release the node soure
@@ -106,7 +106,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	node.UpdateInfo(time.Now(), version.Version, version.Services,
 		version.Port, version.Nonce, version.Relay, version.Height)
-	LocalNode.AddNbrNode(node)
+	LocalNode.AddNeighborNode(node)
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
@@ -115,8 +115,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 		node.UpdateMsgHelper(NewHandlerEIP001(node))
 	}
 
-	// Do not add SPV client as a known address,
-	// so node will not start a connection to SPV client
+	// Do not add extra node address into known addresses, for this can
+	// stop inner node from creating an outbound connection to extra node.
 	if !node.IsFromExtraNet() {
 		ip, _ := node.Addr16()
 		addr := p2p.NetAddress{
@@ -193,7 +193,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 
 func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
 	for _, addr := range msgAddr.AddrList {
-		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", addr.String(), addr.ID))
+		log.Debugf("The ip address is %s id is 0x%x", addr.String(), addr.ID)
 
 		if addr.ID == LocalNode.ID() {
 			continue
