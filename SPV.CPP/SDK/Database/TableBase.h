@@ -24,7 +24,7 @@ namespace Elastos {
 		protected:
 			void initializeTable(const std::string &constructScript);
 
-			bool doTransaction(const boost::function<void()> &fun);
+			bool doTransaction(const boost::function<void()> &fun) const;
 
 		protected:
 			Sqlite *_sqlite;

@@ -10,6 +10,7 @@
 
 #include "BRInt.h"
 #include "Sqlite.h"
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -37,7 +38,7 @@ namespace Elastos {
 			uint64_t timeStamp;
 		};
 
-		class PeerDataSource {
+		class PeerDataSource : public TableBase {
 
 		public:
 			PeerDataSource(Sqlite *sqlite);
@@ -51,9 +52,9 @@ namespace Elastos {
 			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
 
 		private:
-			Sqlite *_sqlite;
-			SqliteTransactionType _txType;
-			mutable boost::mutex _lockMutex;
+			bool putPeerInternal(const std::string &iso, const PeerEntity &peerEntity);
+
+		private:
 			/*
 			 * peer table
 			 */

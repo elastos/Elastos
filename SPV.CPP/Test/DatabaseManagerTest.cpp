@@ -24,6 +24,15 @@ int thread_call_count = 0;
 #define DBFILE "wallet.db"
 #define TEST_ASCII_BEGIN 48
 
+std::string getRandString(size_t length) {
+	char buf[length];
+	for (size_t i = 0; i < length; ++i) {
+		buf[i] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % 75);
+	}
+
+	return std::string(buf);
+}
+
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("Prepare to test") {
@@ -296,6 +305,167 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(0 == readTx.size());
 		}
 
+	}
+
+//	// InternalAddresses's database interface
+//	bool putInternalAddress(uint32_t startIndex, const std::string &address);
+//	bool putInternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
+//	bool clearInternalAddresses();
+//	std::vector<std::string> getInternalAddresses(uint32_t startIndex, uint32_t count);
+//	uint32_t getInternalAvailableAddresses(uint32_t startIndex);
+//
+//	// ExternalAddresses's database interface
+//	bool putExternalAddress(uint32_t startIndex, const std::string &address);
+//	bool putExternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
+//	bool clearExternalAddresses();
+//	std::vector<std::string> getExternalAddresses(uint32_t startIndex, uint32_t count);
+//	uint32_t getExternalAvailableAddresses(uint32_t startIndex);
+	SECTION("InternalAddresses test") {
+		DatabaseManager dbm(DBFILE);
+
+		size_t count = 111111;
+		REQUIRE(dbm.clearInternalAddresses());
+		count = dbm.getInternalAvailableAddresses(0);
+		REQUIRE(0 == count);
+
+		std::string addr0 = getRandString(40);
+		REQUIRE(dbm.putInternalAddress(0, addr0));
+		std::string addr1 = getRandString(40);
+		REQUIRE(dbm.putInternalAddress(1, addr1));
+		std::string addr2 = getRandString(40);
+		REQUIRE(dbm.putInternalAddress(2, addr2));
+		std::string addr3 = getRandString(40);
+		REQUIRE(dbm.putInternalAddress(3, addr3));
+
+		std::vector<std::string> gotAddresses = dbm.getInternalAddresses(0, 2);
+		REQUIRE(gotAddresses.size() == 2);
+		REQUIRE(gotAddresses[0] == addr0);
+		REQUIRE(gotAddresses[1] == addr1);
+
+		gotAddresses = dbm.getInternalAddresses(0, 4);
+		REQUIRE(gotAddresses.size() == 4);
+		REQUIRE(gotAddresses[0] == addr0);
+		REQUIRE(gotAddresses[1] == addr1);
+		REQUIRE(gotAddresses[2] == addr2);
+		REQUIRE(gotAddresses[3] == addr3);
+
+		gotAddresses = dbm.getInternalAddresses(2, 1000);
+		REQUIRE(gotAddresses.size() == 2);
+		REQUIRE(gotAddresses[0] == addr2);
+		REQUIRE(gotAddresses[1] == addr3);
+
+		gotAddresses = dbm.getInternalAddresses(1, 1);
+		REQUIRE(gotAddresses.size() == 1);
+		REQUIRE(gotAddresses[0] == addr1);
+
+		gotAddresses = dbm.getInternalAddresses(0, 0);
+		REQUIRE(gotAddresses.size() == 0);
+
+		gotAddresses = dbm.getInternalAddresses(2, 0);
+		REQUIRE(gotAddresses.size() == 0);
+
+		count = dbm.getInternalAvailableAddresses(0);
+		REQUIRE(count == 4);
+		count = dbm.getInternalAvailableAddresses(2);
+		REQUIRE(count == 2);
+		count = dbm.getInternalAvailableAddresses(4);
+		REQUIRE(count == 0);
+
+		std::vector<std::string> addresses(10);
+		for (size_t i = 0; i < addresses.size(); ++i) {
+			addresses[i] = getRandString(40);
+		}
+		REQUIRE(dbm.putInternalAddresses(4, addresses));
+
+		count = dbm.getInternalAvailableAddresses(20);
+		REQUIRE(count == 0);
+
+		count = dbm.getInternalAvailableAddresses(0);
+		REQUIRE(count == 14);
+
+		gotAddresses = dbm.getInternalAddresses(0, count);
+		REQUIRE(gotAddresses.size() == count);
+		REQUIRE(gotAddresses[4] == addresses[0]);
+		REQUIRE(gotAddresses[6] == addresses[2]);
+		REQUIRE(gotAddresses[13] == addresses[9]);
+
+		REQUIRE(dbm.clearInternalAddresses());
+		count = dbm.getInternalAvailableAddresses(0);
+		REQUIRE(0 == count);
+	}
+
+	SECTION("ExternalAddresses test") {
+		DatabaseManager dbm(DBFILE);
+
+		size_t count = 111111;
+		REQUIRE(dbm.clearExternalAddresses());
+		count = dbm.getExternalAvailableAddresses(0);
+		REQUIRE(0 == count);
+
+		std::string addr0 = getRandString(40);
+		REQUIRE(dbm.putExternalAddress(0, addr0));
+		std::string addr1 = getRandString(40);
+		REQUIRE(dbm.putExternalAddress(1, addr1));
+		std::string addr2 = getRandString(40);
+		REQUIRE(dbm.putExternalAddress(2, addr2));
+		std::string addr3 = getRandString(40);
+		REQUIRE(dbm.putExternalAddress(3, addr3));
+
+		std::vector<std::string> gotAddresses = dbm.getExternalAddresses(0, 2);
+		REQUIRE(gotAddresses.size() == 2);
+		REQUIRE(gotAddresses[0] == addr0);
+		REQUIRE(gotAddresses[1] == addr1);
+
+		gotAddresses = dbm.getExternalAddresses(0, 4);
+		REQUIRE(gotAddresses.size() == 4);
+		REQUIRE(gotAddresses[0] == addr0);
+		REQUIRE(gotAddresses[1] == addr1);
+		REQUIRE(gotAddresses[2] == addr2);
+		REQUIRE(gotAddresses[3] == addr3);
+
+		gotAddresses = dbm.getExternalAddresses(2, 1000);
+		REQUIRE(gotAddresses.size() == 2);
+		REQUIRE(gotAddresses[0] == addr2);
+		REQUIRE(gotAddresses[1] == addr3);
+
+		gotAddresses = dbm.getExternalAddresses(1, 1);
+		REQUIRE(gotAddresses.size() == 1);
+		REQUIRE(gotAddresses[0] == addr1);
+
+		gotAddresses = dbm.getExternalAddresses(0, 0);
+		REQUIRE(gotAddresses.size() == 0);
+
+		gotAddresses = dbm.getExternalAddresses(2, 0);
+		REQUIRE(gotAddresses.size() == 0);
+
+		count = dbm.getExternalAvailableAddresses(0);
+		REQUIRE(count == 4);
+		count = dbm.getExternalAvailableAddresses(2);
+		REQUIRE(count == 2);
+		count = dbm.getExternalAvailableAddresses(4);
+		REQUIRE(count == 0);
+
+		std::vector<std::string> addresses(10);
+		for (size_t i = 0; i < addresses.size(); ++i) {
+			addresses[i] = getRandString(40);
+		}
+		REQUIRE(dbm.putExternalAddresses(4, addresses));
+
+		count = dbm.getExternalAvailableAddresses(20);
+		REQUIRE(count == 0);
+
+		count = dbm.getExternalAvailableAddresses(0);
+		REQUIRE(count == 14);
+
+		gotAddresses = dbm.getExternalAddresses(0, count);
+		REQUIRE(gotAddresses.size() == count);
+		REQUIRE(gotAddresses[4] == addresses[0]);
+		REQUIRE(gotAddresses[6] == addresses[2]);
+		REQUIRE(gotAddresses[13] == addresses[9]);
+
+		REQUIRE(dbm.clearExternalAddresses());
+		count = dbm.getExternalAvailableAddresses(0);
+		REQUIRE(0 == count);
 	}
 
 }

@@ -24,21 +24,23 @@ namespace Elastos {
 
 			bool clearAddresses();
 
-			std::vector<std::string> getAddresses(uint32_t startIndex, uint32_t count);
+			std::vector<std::string> getAddresses(uint32_t startIndex, uint32_t count) const;
 
-			uint32_t getAvailableAddresses(uint32_t startIndex);
+			uint32_t getAvailableAddresses(uint32_t startIndex) const;
+
+		private:
+			bool putAddressInternal(uint32_t startIndex, const std::string &address);
 
 		private:
 			/*
 			 * Internal addresses table
 			 */
-			const std::string MB_TABLE_NAME = "internalAddresses";
-			const std::string MB_COLUMN_ID = "_id";
-			const std::string MB_ADDRESS = "address";
+			const std::string IA_TABLE_NAME = "internalAddresses";
+			const std::string IA_COLUMN_ID = "_id";
+			const std::string IA_ADDRESS = "address";
 
-			const std::string MB_DATABASE_CREATE = "create table if not exists " + MB_TABLE_NAME + " (" +
-												   MB_COLUMN_ID + " integer primary key autoincrement, " +
-												   MB_ADDRESS + " text);";
+			const std::string MB_DATABASE_CREATE = "create table if not exists " + IA_TABLE_NAME + " (" +
+				IA_COLUMN_ID + " integer primary key, " + IA_ADDRESS + " text);";
 		};
 
 	}

@@ -11,6 +11,7 @@
 #include "BRInt.h"
 #include "Sqlite.h"
 #include "CMemBlock.h"
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -34,7 +35,7 @@ namespace Elastos {
 			uint32_t blockHeight;
 		};
 
-		class MerkleBlockDataSource {
+		class MerkleBlockDataSource : public TableBase {
 
 		public:
 			MerkleBlockDataSource(Sqlite *sqlite);
@@ -48,9 +49,10 @@ namespace Elastos {
 			std::vector<MerkleBlockEntity> getAllMerkleBlocks(const std::string &iso) const;
 
 		private:
-			Sqlite *_sqlite;
-			SqliteTransactionType _txType;
-			mutable  boost::mutex _lockMutex;
+			bool putMerkleBlockInternal(const std::string &iso, const MerkleBlockEntity &blockEntity);
+
+
+		private:
 			/*
 			 * merkle block table
 			 */

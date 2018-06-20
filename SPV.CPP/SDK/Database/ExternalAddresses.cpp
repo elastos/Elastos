@@ -23,35 +23,110 @@ namespace Elastos {
 
 		bool ExternalAddresses::putAddress(uint32_t startIndex, const std::string &address) {
 			return doTransaction([startIndex, &address, this](){
-				//todo complete me
+				this->putAddressInternal(startIndex, address);
 			});
 		}
 
 		bool ExternalAddresses::putAddresses(uint32_t startIndex, const std::vector<std::string> &addresses) {
-			return doTransaction([startIndex, &addresses, this](){
-				//todo complete me
+			return doTransaction([startIndex, &addresses, this]() {
+				for (size_t i = 0; i < addresses.size(); ++i) {
+					this->putAddressInternal(startIndex + i, addresses[i]);
+				}
 			});
+		}
+
+		bool ExternalAddresses::putAddressInternal(uint32_t startIndex, const std::string &address) {
+			std::stringstream ss;
+
+			ss << "INSERT INTO " << EA_TABLE_NAME << " (" <<
+			   EA_COLUMN_ID      << "," <<
+			   EA_ADDRESS        <<
+			   ") VALUES (?, ?);";
+
+			sqlite3_stmt *stmt;
+			if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				std::stringstream ess;
+				ess << "prepare sql " << ss.str() << " fail";
+				throw std::logic_error(ess.str());
+			}
+
+			_sqlite->bindInt(stmt, 1, startIndex);
+			_sqlite->bindText(stmt, 2, address, nullptr);
+
+			_sqlite->step(stmt);
+			_sqlite->finalize(stmt);
+
+			return true;
 		}
 
 		bool ExternalAddresses::clearAddresses() {
 			return doTransaction([this](){
-				//todo complete me
+				std::stringstream ss;
+
+				ss << "DELETE FROM " << EA_TABLE_NAME << ";";
+
+				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
+					std::stringstream ess;
+					ess << "exec sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
 			});
 		}
 
-		std::vector<std::string> ExternalAddresses::getAddresses(uint32_t startIndex, uint32_t count) {
+		std::vector<std::string> ExternalAddresses::getAddresses(uint32_t startIndex, uint32_t count) const {
 			std::vector<std::string> results;
+
 			doTransaction([startIndex, count, &results, this]() {
-				//todo complete me
+				std::string addr;
+				std::stringstream ss;
+				ss << "SELECT " <<
+				   EA_ADDRESS   <<
+				   " FROM "     << EA_TABLE_NAME <<
+				   " WHERE "    << EA_COLUMN_ID << " >= " << startIndex <<
+				   " AND "      << EA_COLUMN_ID << " < "  << startIndex + count << ";";
+
+				sqlite3_stmt *stmt;
+				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+					std::stringstream ess;
+					ess << "prepare sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
+
+				while (SQLITE_ROW == _sqlite->step(stmt)) {
+					addr = _sqlite->columnText(stmt, 0);
+					results.push_back(addr);
+				}
+
+				_sqlite->finalize(stmt);
 			});
+
 			return results;
 		}
 
-		uint32_t ExternalAddresses::getAvailableAddresses(uint32_t startIndex) {
+		uint32_t ExternalAddresses::getAvailableAddresses(uint32_t startIndex) const {
 			uint32_t results;
+
 			doTransaction([startIndex, &results, this]() {
-				//todo complete me
+				std::stringstream ss;
+				ss << "SELECT " <<
+					" COUNT("   << EA_ADDRESS    << ") AS nums " <<
+					" FROM "    << EA_TABLE_NAME <<
+					" WHERE "   << EA_COLUMN_ID  << " >= " << startIndex << ";";
+
+				sqlite3_stmt *stmt;
+				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+					std::stringstream ess;
+					ess << "prepare sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
+
+				while (SQLITE_ROW == _sqlite->step(stmt)) {
+					results = (uint32_t)_sqlite->columnInt(stmt, 0);
+				}
+
+				_sqlite->finalize(stmt);
 			});
+
 			return results;
 		}
 	}

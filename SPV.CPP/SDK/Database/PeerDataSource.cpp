@@ -12,49 +12,49 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		PeerDataSource::PeerDataSource(Sqlite *sqlite) :
-			_sqlite(sqlite),
-			_txType(EXCLUSIVE) {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
-			_sqlite->transaction(_txType, PEER_DATABASE_CREATE, nullptr, nullptr);
+			TableBase(sqlite) {
+			initializeTable(PEER_DATABASE_CREATE);
 		}
 
 		PeerDataSource::PeerDataSource(SqliteTransactionType type, Sqlite *sqlite) :
-			_sqlite(sqlite),
-			_txType(type) {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
-			_sqlite->transaction(_txType, PEER_DATABASE_CREATE, nullptr, nullptr);
+			TableBase(type, sqlite) {
+			initializeTable(PEER_DATABASE_CREATE);
 		}
 
 		PeerDataSource::~PeerDataSource() {
 		}
 
 		bool PeerDataSource::putPeer(const std::string &iso, const PeerEntity &peerEntity) {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
+			return doTransaction([&iso, &peerEntity, this]() {
+				this->putPeerInternal(iso, peerEntity);
+			});
+		}
+
+		bool PeerDataSource::putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
+			return doTransaction([&iso, &peerEntities, this] {
+				for (size_t i = 0; i < peerEntities.size(); ++i) {
+					this->putPeerInternal(iso, peerEntities[i]);
+				}
+			});
+		}
+
+		bool PeerDataSource::putPeerInternal(const std::string &iso, const PeerEntity &peerEntity) {
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << PEER_TABLE_NAME << " (" <<
-				PEER_ADDRESS   << "," <<
-				PEER_PORT      << "," <<
-				PEER_TIMESTAMP << "," <<
-				PEER_ISO       <<
-				") VALUES (?, ?, ?, ?);";
-
-			_sqlite->beginTransaction(_txType);
+			   PEER_ADDRESS   << "," <<
+			   PEER_PORT      << "," <<
+			   PEER_TIMESTAMP << "," <<
+			   PEER_ISO       <<
+			   ") VALUES (?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
-				_sqlite->endTransaction();
-				return false;
+			if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+				throw std::logic_error("put peer prepare error");
 			}
 
 			CMBlock addr((uint64_t)sizeof(peerEntity.address.u8));
-			memcpy(addr, (uint8_t*)&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
+			memcpy(addr, &peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
 			_sqlite->bindBlob(stmt, 1, addr, nullptr);
 			_sqlite->bindInt(stmt, 2, peerEntity.port);
 			_sqlite->bindInt64(stmt, 3, peerEntity.timeStamp);
@@ -64,88 +64,83 @@ namespace Elastos {
 
 			_sqlite->finalize(stmt);
 
-			return _sqlite->endTransaction();
-		}
-
-		bool PeerDataSource::putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities) {
-			for (size_t i = 0; i < peerEntities.size(); ++i) {
-				if (true != putPeer(iso, peerEntities[i])) {
-					return false;
-				}
-			}
 			return true;
 		}
 
 		bool PeerDataSource::deletePeer(const std::string &iso, const PeerEntity &peerEntity) {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
-			std::stringstream ss;
+			return doTransaction([&iso, &peerEntity, this]() {
+				std::stringstream ss;
 
-			ss << "DELETE FROM " << PEER_TABLE_NAME <<
-				" WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id <<
-				" AND " << PEER_ISO << " = '" << iso << "';";
+				ss << "DELETE FROM " << PEER_TABLE_NAME <<
+				   " WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id <<
+				   " AND " << PEER_ISO << " = '" << iso << "';";
 
-			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
+				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
+					std::stringstream ess;
+					ess << "exec sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
+			});
 		}
 
 		bool PeerDataSource::deleteAllPeers(const std::string &iso) {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
-			std::stringstream ss;
+			return doTransaction([&iso, this]() {
+				std::stringstream ss;
 
-			ss << "DELETE FROM " << PEER_TABLE_NAME <<
-				" WHERE " << PEER_ISO << " = '" << iso << "';";
+				ss << "DELETE FROM " << PEER_TABLE_NAME <<
+				   " WHERE " << PEER_ISO << " = '" << iso << "';";
 
-			return _sqlite->transaction(_txType, ss.str(), nullptr, nullptr);
+				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
+					std::stringstream ess;
+					ess << "exec sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
+			});
 		}
 
 		std::vector<PeerEntity> PeerDataSource::getAllPeers(const std::string &iso) const {
-#ifdef SQLITE_MUTEX_LOCK_ON
-			boost::mutex::scoped_lock lock(_lockMutex);
-#endif
-			PeerEntity peer;
 			std::vector<PeerEntity> peers;
-			std::stringstream ss;
 
-			ss << "SELECT " <<
-				PEER_COLUMN_ID << ", " <<
-				PEER_ADDRESS   << ", " <<
-				PEER_PORT      << ", " <<
-				PEER_TIMESTAMP <<
-				" FROM " << PEER_TABLE_NAME <<
-				" WHERE " << PEER_ISO << " = '" << iso << "';";
+			doTransaction([&iso, &peers, this]() {
+				PeerEntity peer;
+				std::stringstream ss;
 
-			_sqlite->beginTransaction(_txType);
+				ss << "SELECT " <<
+				   PEER_COLUMN_ID << ", " <<
+				   PEER_ADDRESS   << ", " <<
+				   PEER_PORT      << ", " <<
+				   PEER_TIMESTAMP <<
+				   " FROM " << PEER_TABLE_NAME <<
+				   " WHERE " << PEER_ISO << " = '" << iso << "';";
 
-			sqlite3_stmt *stmt;
-			if (true != _sqlite->prepare(ss.str(), &stmt, nullptr)) {
-				_sqlite->endTransaction();
-				return peers;
-			}
+				sqlite3_stmt *stmt;
+				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+					std::stringstream ess;
+					ess << "prepare sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
 
-			while (SQLITE_ROW == _sqlite->step(stmt)) {
-				// id
-				peer.id = _sqlite->columnInt(stmt, 0);
+				while (SQLITE_ROW == _sqlite->step(stmt)) {
+					// id
+					peer.id = _sqlite->columnInt(stmt, 0);
 
-				// address
-				const uint8_t *paddr = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
-				size_t len = _sqlite->columnBytes(stmt, 1);
-				len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
-				memcpy(peer.address.u8, paddr, len);
+					// address
+					const uint8_t *paddr = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
+					size_t len = _sqlite->columnBytes(stmt, 1);
+					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
+					memcpy(peer.address.u8, paddr, len);
 
-				// port
-				peer.port = _sqlite->columnInt(stmt, 2);
+					// port
+					peer.port = _sqlite->columnInt(stmt, 2);
 
-				// timestamp
-				peer.timeStamp = _sqlite->columnInt64(stmt, 3);
+					// timestamp
+					peer.timeStamp = _sqlite->columnInt64(stmt, 3);
 
-				peers.push_back(peer);
-			}
+					peers.push_back(peer);
+				}
 
-			_sqlite->finalize(stmt);
-			_sqlite->endTransaction();
+				_sqlite->finalize(stmt);
+			});
 
 			return peers;
 		}

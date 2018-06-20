@@ -54,27 +54,27 @@ namespace Elastos {
 			return exec("COMMIT;", nullptr, nullptr);
 		}
 
-		bool Sqlite::transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg) {
-			std::string typeStr;
-
-			if (true != beginTransaction(type)) {
-				Log::getLogger()->error("sqlite beginTransaction error", typeStr);
-				return false;
-			}
-
-			if (true != exec(sql.c_str(), callBack, arg)) {
-				Log::getLogger()->error("sqlite exec \"{}\"", sql);
-				endTransaction();
-				return false;
-			}
-
-			if (true != endTransaction()) {
-				Log::getLogger()->error("sqlite endTransaction error");
-				return false;
-			}
-
-			return true;
-		}
+//		bool Sqlite::transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg) {
+//			std::string typeStr;
+//
+//			if (true != beginTransaction(type)) {
+//				Log::getLogger()->error("sqlite beginTransaction error", typeStr);
+//				return false;
+//			}
+//
+//			if (true != exec(sql.c_str(), callBack, arg)) {
+//				Log::getLogger()->error("sqlite exec \"{}\"", sql);
+//				endTransaction();
+//				return false;
+//			}
+//
+//			if (true != endTransaction()) {
+//				Log::getLogger()->error("sqlite endTransaction error");
+//				return false;
+//			}
+//
+//			return true;
+//		}
 
 		bool Sqlite::prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail) {
 			int r = 0;

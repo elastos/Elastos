@@ -46,7 +46,7 @@ namespace Elastos {
 			 * After a BEGIN IMMEDIATE, no other database connection will be able to write to
 			 * the database or do a BEGIN IMMEDIATE or BEGIN EXCLUSIVE.
 			 */
-			bool transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg);
+//			bool transaction(SqliteTransactionType type, const std::string &sql, ExecCallBack callBack, void *arg);
 
 			bool prepare(const std::string &sql, sqlite3_stmt **ppStmt, const char **pzTail);
 			int step(sqlite3_stmt *pStmt);

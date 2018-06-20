@@ -15,15 +15,17 @@ namespace Elastos {
 
 		TableBase::TableBase(SqliteTransactionType type, Sqlite *sqlite) :
 				_sqlite(sqlite),
-				_txType(EXCLUSIVE) {
+				_txType(type) {
 		}
 
 		TableBase::~TableBase() {
 
 		}
 
-		bool TableBase::doTransaction(const boost::function<void()> &fun) {
-
+		bool TableBase::doTransaction(const boost::function<void()> &fun) const {
+#ifdef SQLITE_MUTEX_LOCK_ON
+			boost::mutex::scoped_lock lock(_lockMutex);
+#endif
 			bool result = true;
 			_sqlite->beginTransaction(_txType);
 			try {
@@ -46,7 +48,9 @@ namespace Elastos {
 #ifdef SQLITE_MUTEX_LOCK_ON
 			boost::mutex::scoped_lock lock(_lockMutex);
 #endif
-			_sqlite->transaction(_txType, constructScript, nullptr, nullptr);
+			_sqlite->beginTransaction(_txType);
+			_sqlite->exec(constructScript, nullptr, nullptr);
+			_sqlite->endTransaction();
 		}
 	}
 }

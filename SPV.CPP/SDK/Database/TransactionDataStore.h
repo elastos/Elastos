@@ -11,6 +11,7 @@
 #include "BRInt.h"
 #include "Sqlite.h"
 #include "CMemBlock.h"
+#include "TableBase.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -37,7 +38,7 @@ namespace Elastos {
 			std::string txHash;
 		};
 
-		class TransactionDataStore {
+		class TransactionDataStore : public TableBase {
 		public:
 			TransactionDataStore(Sqlite *sqlite);
 			TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite);
@@ -50,9 +51,6 @@ namespace Elastos {
 			bool deleteTxByHash(const std::string &iso, const std::string &hash);
 
 		private:
-			Sqlite *_sqlite;
-			SqliteTransactionType _txType;
-			mutable boost::mutex _lockMutex;
 			/*
 			 * transaction table
 			 */
