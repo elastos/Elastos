@@ -213,23 +213,60 @@ public:
 		return nullptr != pValue ? &pValue->data : 0;
 	}
 
-	T *operator+(SIZETYPE off) const {
+	T *operator+(uint64_t off) const {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T *operator+(SIZETYPE off) {
+	T *operator+(uint64_t off) {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T &operator[](SIZETYPE off) const {
+	T *operator+(int off) const {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
+	T *operator+(int off) {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
+	T *operator+(size_t off) const {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
+	T *operator+(size_t off) {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
+	T &operator[](uint64_t off) const {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
 
-	T &operator[](SIZETYPE off) {
+	T &operator[](uint64_t off) {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
+
+	T &operator[](int off) const {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
+	T &operator[](int off) {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
+	T &operator[](size_t off) const {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
+	T &operator[](size_t off) {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
 
 private:
 	class Value {

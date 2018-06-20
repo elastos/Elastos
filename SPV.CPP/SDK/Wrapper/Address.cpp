@@ -36,7 +36,7 @@ namespace Elastos {
 
 		boost::shared_ptr<Address> Address::fromScriptPubKey(CMBlock script) {
 			BRAddress address = {'\0'};
-			size_t scriptLen = script.GetSize(), addrLen = sizeof(address.s);
+			size_t scriptLen = script.GetSize(), addrSize = sizeof(address.s);
 
 			if (! script || scriptLen == 0 || scriptLen > MAX_SCRIPT_LENGTH) {
 				throw std::logic_error("fromScriptPubKey params error");
@@ -55,7 +55,7 @@ namespace Elastos {
 				data[0] = ELA_STAND_ADDRESS;
 #endif
 				memcpy(&data[1], BRScriptData(elems[2], &l), 20);
-				r = BRBase58CheckEncode(address.s, addrLen, data, 21);
+				r = BRBase58CheckEncode(address.s, addrSize, data, 21);
 			}
 			else if (count == 3 && *elems[0] == OP_HASH160 && *elems[1] == 20 && *elems[2] == OP_EQUAL) {
 				// pay-to-script-hash scriptPubKey
@@ -64,7 +64,7 @@ namespace Elastos {
 				data[0] = ELA_MULTISIG_ADDRESS;
 #endif
 				memcpy(&data[1], BRScriptData(elems[1], &l), 20);
-				r = BRBase58CheckEncode(address.s, addrLen, data, 21);
+				r = BRBase58CheckEncode(address.s, addrSize, data, 21);
 			}
 			else if (count == 2 && (*elems[0] == 65 || *elems[0] == 33) && *elems[1] == OP_CHECKSIG) {
 				// pay-to-pubkey scriptPubKey
@@ -74,7 +74,7 @@ namespace Elastos {
 #endif
 				d = BRScriptData(elems[0], &l);
 				BRHash160(&data[1], d, l);
-				r = BRBase58CheckEncode(address.s, addrLen, data, 21);
+				r = BRBase58CheckEncode(address.s, addrSize, data, 21);
 			}
 			else if (count == 2 && ((*elems[0] == OP_0 && (*elems[1] == 20 || *elems[1] == 32)) ||
 			                        (*elems[0] >= OP_1 && *elems[0] <= OP_16 && *elems[1] >= 2 && *elems[1] <= 40))) {
@@ -83,8 +83,8 @@ namespace Elastos {
 #if BITCOIN_TESTNET
 				r = BRBech32Encode(a, "tb", script);
 #endif
-				if (address.s && r > addrLen) r = 0;
-				if (address.s) memcpy(address.s, a, r);
+				memset(address.s, 0, sizeof(address.s));
+				strncpy(address.s, a, sizeof(address.s) - 1);
 			}
 
 			boost::shared_ptr<Address> addr = boost::shared_ptr<Address>(new Address(address));

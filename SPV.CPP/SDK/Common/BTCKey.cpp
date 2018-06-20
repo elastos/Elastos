@@ -161,8 +161,8 @@ namespace Elastos {
 			assert(fOk);
 
 			CMBlock sigData(64);
-			BN_bn2bin(r,&sigData[32 - (nBitsR + 7) / 8]);
-			BN_bn2bin(s,&sigData[64 - (nBitsS + 7) / 8]);
+			BN_bn2bin(r, &sigData[32 - (nBitsR + 7) / 8]);
+			BN_bn2bin(s, &sigData[64 - (nBitsS + 7) / 8]);
 
 			CMBlock signature(65);
 			signature[0] = 27 + rec + 4;

@@ -11,8 +11,8 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json ELAMessageSerializable::toJson(){
-
+		nlohmann::json ELAMessageSerializable::toJson() {
+			return nlohmann::json();
 		}
 
 		void ELAMessageSerializable::fromJson(const nlohmann::json &) {
