@@ -66,13 +66,7 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 2. Add sidechain Tx to pool
-	witPayload := txn1.Payload.(*core.PayloadWithdrawFromSideChain)
-	for _, hash := range witPayload.SideChainTransactionHashes {
-		success := txPool.addSidechainTx(hash)
-		if !success {
-			t.Error("Add sidechain Tx to pool failed")
-		}
-	}
+	txPool.addSidechainTx(txn1)
 
 	// 3. Generate a withdraw transaction with duplicate sidechain Tx which already in the pool
 	txn2 := new(core.Transaction)
@@ -145,13 +139,7 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 
 	// 2. Add to sidechain txs pool
 	for _, txn := range txns {
-		witPayload := txn.Payload.(*core.PayloadWithdrawFromSideChain)
-		for _, hash := range witPayload.SideChainTransactionHashes {
-			success := txPool.addSidechainTx(hash)
-			if !success {
-				t.Error("Add to sidechain tx pool failed")
-			}
-		}
+		txPool.addSidechainTx(txn)
 	}
 
 	// Verify sidechain tx pool state
@@ -236,13 +224,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 2. Add sidechain Tx to pool
-	witPayload := txn1.Payload.(*core.PayloadWithdrawFromSideChain)
-	for _, hash := range witPayload.SideChainTransactionHashes {
-		success := txPool.addSidechainTx(hash)
-		if !success {
-			t.Error("Add sidechain Tx to pool failed")
-		}
-	}
+	txPool.addSidechainTx(txn1)
 
 	// 3. Run IsDuplicateSidechainTx
 	inPool := txPool.IsDuplicateSidechainTx(sideTx1)
@@ -267,6 +249,7 @@ func TestTxPool_AppendToTxnPool(t *testing.T) {
 }
 
 func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
+	txPool.Init()
 	var input *core.Input
 	var inputTxID common.Uint256
 	inputTxIDBytes, _ := hex.DecodeString("b07c062090c44682e29832f1993d4a0f47e49a148d8b0e07d739a32670ff3a95")
@@ -278,7 +261,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 		},
 		Sequence: 100,
 	}
-	//two mock transactions
+	//two mock transactions, they are double-spent to each other.
 	tx1 := new(core.Transaction)
 	tx1.TxType = core.TransferAsset
 	tx1.PayloadVersion = 0
@@ -295,8 +278,6 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	tx1.Attributes = []*core.Attribute{attribute1}
 
 	tx1.Inputs = []*core.Input{input}
-	//var output *core.Output
-	//*output = core.Output{AssetID: *assetIDUint256, Value: common.Fixed64(1)}
 
 	tx2 := new(core.Transaction)
 	tx2.TxType = core.TransferAsset
@@ -353,5 +334,55 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 		if utxoInput != nil {
 			t.Error("Should delete double spent utxo transaction")
 		}
+	}
+	/*------------------------------------------------------------*/
+
+	// re-initialize the tx pool
+	var sideBlockHash1 common.Uint256
+	var sideBlockHash2 common.Uint256
+	var sideBlockHash3 common.Uint256
+	var sideBlockHash4 common.Uint256
+	var sideBlockHash5 common.Uint256
+
+	rand.Read(sideBlockHash1[:])
+	rand.Read(sideBlockHash2[:])
+	rand.Read(sideBlockHash3[:])
+	rand.Read(sideBlockHash4[:])
+	rand.Read(sideBlockHash5[:])
+
+	txPool.Init()
+	//two mock transactions again, they have some identical sidechain hashes
+	tx3 := new(core.Transaction)
+	tx3.TxType = core.WithdrawFromSideChain
+	tx3.Payload = &core.PayloadWithdrawFromSideChain{
+		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash2, sideBlockHash3},
+	}
+
+	tx4 := new(core.Transaction)
+	tx4.TxType = core.WithdrawFromSideChain
+	tx4.Payload = &core.PayloadWithdrawFromSideChain{
+		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash4},
+	}
+
+	tx5 := new(core.Transaction)
+	tx5.TxType = core.WithdrawFromSideChain
+	tx5.Payload = &core.PayloadWithdrawFromSideChain{
+		SideChainTransactionHashes: []common.Uint256{sideBlockHash2, sideBlockHash5},
+	}
+
+	newBLock.Transactions = []*core.Transaction{tx3}
+
+	txPool.addToTxList(tx4)
+	txPool.addSidechainTx(tx4)
+
+	txPool.addToTxList(tx5)
+	txPool.addSidechainTx(tx5)
+
+	txPool.CleanSubmittedTransactions(&newBLock)
+	if len(txPool.txnList) != 0 || len(txPool.inputUTXOList) != 0 || len(txPool.sidechainTxList) != 0 {
+		t.Error("all tx pools should be cleaned.")
+		t.Log("tx list length:", len(txPool.txnList))
+		t.Log("input utxo list length:", len(txPool.inputUTXOList))
+		t.Log("sidechain tx list length:", len(txPool.sidechainTxList))
 	}
 }

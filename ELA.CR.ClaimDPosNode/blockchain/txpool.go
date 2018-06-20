@@ -19,8 +19,8 @@ type TxPool struct {
 	txnCnt  uint64                   // count
 	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
-	inputUTXOList   map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
-	sidechainTxList map[Uint256]struct{}    // sidechain tx pool
+	inputUTXOList   map[string]*Transaction  // transaction which pass the verify will add the UTXO to this map
+	sidechainTxList map[Uint256]*Transaction // sidechain tx pool
 }
 
 func (pool *TxPool) Init() {
@@ -30,7 +30,7 @@ func (pool *TxPool) Init() {
 	pool.inputUTXOList = make(map[string]*Transaction)
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*Transaction)
-	pool.sidechainTxList = make(map[Uint256]struct{})
+	pool.sidechainTxList = make(map[Uint256]*Transaction)
 }
 
 //append transaction to txnpool when check ok.
@@ -137,6 +137,17 @@ func (pool *TxPool) cleanTransactions(blockTxs []*Transaction) error {
 				for _, input := range tx.Inputs {
 					pool.delInputUTXOList(input)
 				}
+
+				//delete sidechain tx list
+				if tx.TxType == WithdrawFromSideChain {
+					payload, ok := tx.Payload.(*PayloadWithdrawFromSideChain)
+					if !ok {
+						log.Error("type cast failed when clean sidechain tx:", tx.Hash())
+					}
+					for _, hash := range payload.SideChainTransactionHashes {
+						pool.delSidechainTx(hash)
+					}
+				}
 				deleteCount++
 			}
 		}
@@ -229,17 +240,13 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 		return errors.New("convert the payload of withdraw tx failed")
 	}
 
-	sidechainTxs := []Uint256{}
 	for _, hash := range withPayload.SideChainTransactionHashes {
 		_, ok := pool.sidechainTxList[hash]
 		if ok {
 			return errors.New("duplicate sidechain tx detected")
 		}
-		sidechainTxs = append(sidechainTxs, hash)
 	}
-	for _, v := range sidechainTxs {
-		pool.addSidechainTx(v)
-	}
+	pool.addSidechainTx(txn)
 
 	return nil
 }
@@ -269,7 +276,23 @@ func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 		if txn.IsWithdrawFromSideChainTx() {
 			withPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 			for _, hash := range withPayload.SideChainTransactionHashes {
-				pool.delSidechainTx(hash)
+				poolTx := pool.sidechainTxList[hash]
+				if poolTx != nil {
+					// delete tx
+					pool.delFromTxList(poolTx.Hash())
+					//delete utxo map
+					for _, input := range poolTx.Inputs {
+						pool.delInputUTXOList(input)
+					}
+					//delete sidechain tx map
+					payload, ok := poolTx.Payload.(*PayloadWithdrawFromSideChain)
+					if !ok {
+						log.Error("type cast failed when clean sidechain tx:", poolTx.Hash())
+					}
+					for _, hash := range payload.SideChainTransactionHashes {
+						pool.delSidechainTx(hash)
+					}
+				}
 			}
 		}
 	}
@@ -344,16 +367,13 @@ func (pool *TxPool) delInputUTXOList(input *Input) bool {
 	return true
 }
 
-func (pool *TxPool) addSidechainTx(hash Uint256) bool {
+func (pool *TxPool) addSidechainTx(txn *Transaction) {
 	pool.Lock()
 	defer pool.Unlock()
-	_, ok := pool.sidechainTxList[hash]
-	if ok {
-		return false
+	witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+	for _, hash := range witPayload.SideChainTransactionHashes {
+		pool.sidechainTxList[hash] = txn
 	}
-	pool.sidechainTxList[hash] = struct{}{}
-
-	return true
 }
 
 func (pool *TxPool) delSidechainTx(hash Uint256) bool {
