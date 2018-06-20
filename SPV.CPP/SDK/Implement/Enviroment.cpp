@@ -34,6 +34,8 @@ namespace Elastos {
 		}
 
 		void Enviroment::SaveConfigs() {
+			if(_manager == nullptr)
+				return;
 			MasterWalletManager *manager = static_cast<MasterWalletManager *>(_manager);
 			manager->SaveConfigs();
 		}
