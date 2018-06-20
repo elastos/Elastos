@@ -235,7 +235,7 @@ namespace Elastos {
 					return 0;
 #endif
 				array_add(wallet->externalChain, address);
-				BRSetAdd(wallet->allAddrs, wallet->externalChain);
+				BRSetAdd(wallet->allAddrs, &wallet->externalChain[0]);
 			} else if (addrs && count > 0) {
 				addrs[0] = wallet->externalChain[0];
 			}

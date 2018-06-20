@@ -318,8 +318,11 @@ namespace Elastos {
 
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
-				SubWallet *subWallet = new SubWallet(coinInfoList[i], ChainParams::mainNet(), "", this);
-				startPeerManager(subWallet);
+				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams::mainNet(), "", this);
+				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
+				if(subWalletImpl == nullptr)
+					throw std::logic_error("Recover sub wallet error: unknown sub wallet implement type.");
+				startPeerManager(subWalletImpl);
 				_createdWallets[subWallet->GetChainId()] = subWallet;
 			}
 		}

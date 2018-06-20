@@ -58,22 +58,24 @@ namespace Elastos {
 				memcpy(ret, &rawKey, sizeof(rawKey));
 				encryptedKey = Utils::encrypt(ret, payPassword);
 
+				Key wrapperKey(key.secret, key.compressed);
+				CMBlock pubKey = wrapperKey.getPubkey();
+
 				_info.setEncryptedKey(Utils::encodeHex(encryptedKey));
 				_info.setChainCode(Utils::UInt256ToString(chainCode));
+				_info.setPublicKey(Utils::encodeHex(pubKey));
 
 				masterPubKey.reset(new MasterPubKey(key, chainCode));
 
 			} else {
-				BRKey key;
-
 				ParamChecker::checkNotEmpty(_info.getEncryptedKey(), false);
+				ParamChecker::checkNotEmpty(_info.getPublicKey(), false);
 				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
 
-				encryptedKey = Utils::decodeHex(_info.getEncryptedKey());
-				BRKeySetPrivKey(&key, (char *) (void *) encryptedKey);
 				chainCode = Utils::UInt256FromString(_info.getChainCode());
+				CMBlock pubKey = Utils::decodeHex(_info.getPublicKey());
 
-				masterPubKey.reset(new MasterPubKey(key, Utils::UInt256FromString(_info.getChainCode())));
+				masterPubKey.reset(new MasterPubKey(pubKey, Utils::UInt256FromString(_info.getChainCode())));
 			}
 
 #ifdef TEMPORARY_HD_STRATEGY

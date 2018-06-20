@@ -37,10 +37,12 @@ namespace Elastos {
 
 			pthread_mutex_lock(&_wallet->Raw.lock);
 
-			Address addr(address);
-			array_add(_wallet->Raw.externalChain, *addr.getRaw());
-			BRSetAdd(_wallet->Raw.allAddrs, _wallet->Raw.externalChain);
-
+			if (BRSetContains(_wallet->Raw.allAddrs, address.c_str()) == 0) {
+				Address addr(address);
+				size_t count = array_count(_wallet->Raw.externalChain);
+				array_add(_wallet->Raw.externalChain, *addr.getRaw());
+				BRSetAdd(_wallet->Raw.allAddrs, &_wallet->Raw.externalChain[count]);
+			}
 			pthread_mutex_unlock(&_wallet->Raw.lock);
 		}
 
@@ -82,11 +84,14 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
-			for (size_t i = 0; i < initialAddrs.size(); ++i) {
-				Address addr(initialAddrs[i]);
+			std::vector<std::string> uniqueAddress = initialAddrs;
+			std::sort(uniqueAddress.begin(), uniqueAddress.end());
+			uniqueAddress.erase(std::unique(uniqueAddress.begin(), uniqueAddress.end()), uniqueAddress.end());
+			for (size_t i = 0; i < uniqueAddress.size(); ++i) {
+				Address addr(uniqueAddress[i]);
 				array_add(wallet->Raw.externalChain, *addr.getRaw());
+				BRSetAdd(wallet->Raw.allAddrs, &wallet->Raw.externalChain[i]);
 			}
-			BRSetAdd(wallet->Raw.allAddrs, wallet->Raw.externalChain);
 
 			return wallet;
 		}

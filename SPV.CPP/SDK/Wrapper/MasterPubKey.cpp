@@ -133,6 +133,13 @@ namespace Elastos {
 			return std::string(resultChar, size);
 		}
 
+		MasterPubKey::MasterPubKey(const CMBlock &pubKey, const UInt256 &chainCode) {
+			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
+
+			memcpy(_masterPubKey->pubKey, pubKey, pubKey.GetSize());
+			_masterPubKey->chainCode = chainCode;
+		}
+
 		MasterPubKey::MasterPubKey(const BRKey &key, const UInt256 &chainCode) {
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 

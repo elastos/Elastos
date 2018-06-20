@@ -82,8 +82,9 @@ public:
 		info.setChainId(chainID);
 		info.setFeePerKb(feePerKb);
 		info.setEncryptedKey(
-				"4c336d6e4d6b724b55676f666f6e716e464b79394a5532533657724b314350555955356f35577a4d6e4a5054715963526370734700");
+				"4142434b78676563675253724d494d3035523030467831564b3459672f6967737743566347563443474c6171594e4573744e6d312b4e46497a34496846394949327a505565714c564e387a510d0a3949645835413d3d00");
 		info.setChainCode("0000000000000000000000000000000000000000000000000000000000000000");
+		info.setPublicKey("038bc7fbfa77b10b85cdf9ef75c0d994924adab73a7a7486e9c392398899faac33");
 		std::vector<CoinInfo> coinInfoList = {info};
 		restoreSubWallets(coinInfoList);
 
@@ -763,8 +764,12 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
-		masterWallet->CreateSubWallet("ELA", payPassword, false);
-		masterWallet->CreateSubWallet("IdChain", payPassword, false);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
+		REQUIRE(subWallet != nullptr);
+		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
+		subWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
+		REQUIRE(subWallet != nullptr);
+		REQUIRE(dynamic_cast<IdChainSubWallet *>(subWallet) != nullptr);
 
 		boost::filesystem::path localStore = Enviroment::GetRootPath();
 		localStore /= "MasterWalletTest";
@@ -776,5 +781,11 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		REQUIRE(subwallets.size() == 2);
 		REQUIRE(subwallets[0] != nullptr);
 		REQUIRE(subwallets[1] != nullptr);
+		for (int i = 0; i < 2; ++i) {
+			if (subwallets[i]->GetChainId() == "ELA")
+				REQUIRE(dynamic_cast<MainchainSubWallet *>(subwallets[i]) != nullptr);
+			else if (subwallets[i]->GetChainId() == "IdChain")
+				REQUIRE(dynamic_cast<IdChainSubWallet *>(subwallets[i]) != nullptr);
+		}
 	}
 }

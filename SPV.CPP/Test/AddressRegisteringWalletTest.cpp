@@ -64,6 +64,25 @@ TEST_CASE("Basic test for register address", "[AddressRegisteringWallet]") {
 				listener, DefaultAddress));
 
 		REQUIRE(wallet->getAllAddresses().size() == DefaultAddress.size());
-		REQUIRE(wallet->getReceiveAddress() == DefaultAddress[0]);
+		REQUIRE(std::find(DefaultAddress.cbegin(), DefaultAddress.cend(), wallet->getReceiveAddress()) !=
+				DefaultAddress.cend());
+	}
+	SECTION("Ignore redundant address when registering") {
+		boost::scoped_ptr<AddressRegisteringWallet> wallet(new AddressRegisteringWallet(
+				listener, DefaultAddress));
+
+		REQUIRE(wallet->getAllAddresses().size() == DefaultAddress.size());
+
+		wallet->RegisterAddress(DefaultAddress[0]);
+
+		REQUIRE(wallet->getAllAddresses().size() == DefaultAddress.size());
+	}
+	SECTION("Ignore redundant address when initializing") {
+		std::vector<std::string> addressesWithRedundant = DefaultAddress;
+		addressesWithRedundant.push_back(DefaultAddress[0]);
+		boost::scoped_ptr<AddressRegisteringWallet> wallet(new AddressRegisteringWallet(
+				listener, addressesWithRedundant));
+
+		REQUIRE(wallet->getAllAddresses().size() == DefaultAddress.size());
 	}
 }

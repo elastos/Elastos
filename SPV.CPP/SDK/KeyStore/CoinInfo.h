@@ -59,6 +59,10 @@ namespace Elastos {
 
 			void setChainCode(const std::string &code);
 
+			const std::string &getPublicKey() const;
+
+			void setPublicKey(const std::string &pubKey);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -74,6 +78,7 @@ namespace Elastos {
 			bool _singleAddress;
 			uint64_t _feePerKb;
 			SubWalletType _walletType;
+			std::string _publicKey;
 			std::string _encryptedKey;
 			std::string _chainCode;
 		};

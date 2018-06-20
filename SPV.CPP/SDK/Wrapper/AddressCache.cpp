@@ -29,7 +29,7 @@ namespace Elastos {
 		std::vector<std::string> AddressCache::FetchAddresses(size_t size, bool external) {
 			if ((external && size > _databaseManager->getExternalAvailableAddresses(_externalStartIndex)) ||
 				(!external && size > _databaseManager->getInternalAvailableAddresses(_internalStartIndex)))
-				throw std::logic_error("Insufficient cache.");
+				throw std::runtime_error("Insufficient cache.");
 
 			return external ? _databaseManager->getExternalAddresses(_externalStartIndex, size)
 							: _databaseManager->getInternalAddresses(_internalStartIndex, size);
