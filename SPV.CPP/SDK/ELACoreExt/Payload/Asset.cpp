@@ -80,17 +80,16 @@ namespace Elastos {
 
 		bool Asset::Deserialize(ByteStream &istream) {
 			uint64_t len = istream.getVarUint();
-			char *utfBuffer = new char[len + 1];
-			istream.getBytes((uint8_t *) utfBuffer, len);
-			utfBuffer[len] = '\0';
-			_name = utfBuffer;
+			char nameBuf[len + 1];
+			istream.getBytes((uint8_t *) nameBuf, len);
+			nameBuf[len] = '\0';
+			_name = std::string(nameBuf);
 
 			len = istream.getVarUint();
-			utfBuffer = new char[len + 1];
-			memset(utfBuffer, 0, len + 1);
-			istream.getBytes((uint8_t *) utfBuffer, len);
-			utfBuffer[len] = '\0';
-			_description = utfBuffer;
+			char description[len + 1];
+			istream.getBytes((uint8_t *) description, len);
+			description[len] = '\0';
+			_description = std::string(description);
 
 			_precision = istream.get();
 

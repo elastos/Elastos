@@ -35,12 +35,7 @@ namespace Elastos {
 			//todo implement IPayload getData
 			ByteStream stream;
 			Serialize(stream);
-			uint8_t* buf = stream.getBuf();
-			uint64_t len = stream.length();
-			CMBlock db(len);
-			memcpy(db, buf, len);
-
-			return db;
+			return stream.getBuffer();
 		}
 
 		bool PayloadTransferCrossChainAsset::isValid() const {

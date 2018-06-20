@@ -36,7 +36,7 @@ namespace Elastos {
 
 			CMBlock getBuffer();
 
-			uint8_t *getBuf();
+//			uint8_t *getBuf();
 
 		public:
 			void put(uint8_t byte);

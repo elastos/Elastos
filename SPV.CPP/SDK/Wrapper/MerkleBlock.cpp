@@ -55,7 +55,8 @@ namespace Elastos {
 				ByteStream ostream;
 				serializeNoAux(ostream);
 				UInt256 hash = UINT256_ZERO;
-				BRSHA256_2(&hash, ostream.getBuf(), ostream.position());
+				CMBlock buf = ostream.getBuffer();
+				BRSHA256_2(&hash, buf, buf.GetSize());
 				UInt256Set(&_merkleBlock->raw.blockHash, hash);
 			}
 			return _merkleBlock->raw.blockHash;

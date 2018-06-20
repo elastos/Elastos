@@ -40,7 +40,8 @@ namespace Elastos {
 			wrappedFilter.Serialize(byteStream);
 			((BRPeerContext *)peer)->sentFilter = 1;
 			((BRPeerContext *)peer)->sentMempool = 0;
-			BRPeerSendMessage(peer, byteStream.getBuf(), byteStream.length(), MSG_FILTERLOAD);
+			CMBlock buf = byteStream.getBuffer();
+			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_FILTERLOAD);
 		}
 	}
 }

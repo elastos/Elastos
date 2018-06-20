@@ -38,15 +38,9 @@ namespace Elastos {
 		}
 
 		CMBlock PayloadWithDrawAsset::getData() const {
-			//todo implement IPayload getData
 			ByteStream stream;
 			Serialize(stream);
-			uint8_t *buf = stream.getBuf();
-			uint64_t len = stream.length();
-			CMBlock bd(len);
-			memcpy(bd, buf, len);
-
-			return bd;
+			return stream.getBuffer();
 		}
 
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream) const {
@@ -70,26 +64,16 @@ namespace Elastos {
 			_blockHeight = UInt32GetLE(heightData);
 
 			uint64_t len = istream.getVarUint();
-			if (0 < len) {
-                char *utfBuffer = new char[len + 1];
-                if (utfBuffer) {
-                    istream.getBytes((uint8_t *) utfBuffer, len);
-                    utfBuffer[len] = '\0';
-                    _genesisBlockAddress = utfBuffer;
-                    delete[] utfBuffer;
-                }
-            }
+			char addr[len + 1];
+			istream.getBytes((uint8_t *) addr, len);
+			addr[len] = '\0';
+			_genesisBlockAddress = std::string(addr);
 
 			len = istream.getVarUint();
-			if (0 < len) {
-				char *utfBuffer = new char[len + 1];
-				if (utfBuffer) {
-					istream.getBytes((uint8_t *) utfBuffer, len);
-					utfBuffer[len] = '\0';
-					_sideChainTransactionHash = utfBuffer;
-					delete[] utfBuffer;
-				}
-			}
+			char hash[len + 1];
+			istream.getBytes((uint8_t *) hash, len);
+			hash[len] = '\0';
+			_sideChainTransactionHash = std::string(hash);
 
 			return true;
 		}
@@ -97,21 +81,21 @@ namespace Elastos {
 		nlohmann::json PayloadWithDrawAsset::toJson() {
 			nlohmann::json jsonData;
 
-			jsonData["blockHeight"] = _blockHeight;
+			jsonData["BlockHeight"] = _blockHeight;
 
-			jsonData["genesisBlockAddress"] = _genesisBlockAddress;
+			jsonData["GenesisBlockAddress"] = _genesisBlockAddress;
 
-			jsonData["sideChainTransactionHash"] = _sideChainTransactionHash;
+			jsonData["SideChainTransactionHash"] = _sideChainTransactionHash;
 
 			return jsonData;
 		}
 
 		void PayloadWithDrawAsset::fromJson(const nlohmann::json &jsonData) {
-			_blockHeight = jsonData["blockHeight"];
+			_blockHeight = jsonData["BlockHeight"];
 
-			_genesisBlockAddress = jsonData["genesisBlockAddress"];
+			_genesisBlockAddress = jsonData["GenesisBlockAddress"];
 
-			_sideChainTransactionHash = jsonData["sideChainTransactionHash"];
+			_sideChainTransactionHash = jsonData["SideChainTransactionHash"];
 		}
 	}
 }

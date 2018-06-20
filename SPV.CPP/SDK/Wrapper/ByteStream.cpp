@@ -421,14 +421,14 @@ namespace Elastos {
 			return buff;
 		}
 
-		uint8_t *ByteStream::getBuf() {
-			if (_count <= 0) {
-				return nullptr;
-			}
-			uint8_t *ret = new uint8_t[_count];
-			memcpy(ret, _buf, _count);
-			return ret;
-		}
+//		uint8_t *ByteStream::getBuf() {
+//			if (_count <= 0) {
+//				return nullptr;
+//			}
+//			uint8_t *ret = new uint8_t[_count];
+//			memcpy(ret, _buf, _count);
+//			return ret;
+//		}
 
 		void ByteStream::skip(int bytes) {
 			if (checkSize(bytes))

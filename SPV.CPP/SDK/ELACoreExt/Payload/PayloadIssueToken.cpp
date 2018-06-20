@@ -21,13 +21,9 @@ namespace Elastos {
 		}
 
 		CMBlock PayloadIssueToken::getData() const {
-			ByteStream byteStream;
-			Serialize(byteStream);
-			CMBlock ret(byteStream.length());
-			uint8_t *tmp = byteStream.getBuf();
-			memcpy(ret, tmp, byteStream.length());
-			delete []tmp;
-			return ret;
+			ByteStream stream;
+			Serialize(stream);
+			return stream.getBuffer();
 		}
 
 		void PayloadIssueToken::Serialize(ByteStream &ostream) const {

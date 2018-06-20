@@ -378,20 +378,16 @@ namespace Elastos {
 
 			uint64_t size = (getCompressed()) ? 33 : 65;
 
-			ByteStream buff(size + 2);
+			ByteStream stream(size + 2);
 
-			buff.put((uint8_t)size);
+			stream.put((uint8_t)size);
 
-			buff.putBytes(_key->pubKey, size);
+			stream.putBytes(_key->pubKey, size);
 
-			buff.put((uint8_t)signType);
+			stream.put((uint8_t)signType);
 
-			uint8_t *script = buff.getBuf();
-			size_t scriptLen = 0;
-			std::string str = Utils::encodeHexCreate(&scriptLen, script, buff.position());
-			delete script;
-
-			return str;
+			CMBlock script = stream.getBuffer();
+			return Utils::encodeHex(script);
 		}
 
 		const UInt256 Key::getSystemAssetId() {

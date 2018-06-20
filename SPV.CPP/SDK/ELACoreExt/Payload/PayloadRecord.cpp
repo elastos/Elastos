@@ -43,12 +43,7 @@ namespace Elastos {
 			ByteStream stream;
 			Serialize(stream);
 
-			CMBlock ret(stream.length());
-			uint8_t *tmp = stream.getBuf();
-			memcpy(ret, tmp, stream.length());
-			delete []tmp;
-
-			return ret;
+			return stream.getBuffer();
 		}
 
 		void PayloadRecord::Serialize(ByteStream &ostream) const {

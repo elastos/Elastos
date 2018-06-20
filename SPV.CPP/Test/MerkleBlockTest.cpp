@@ -25,25 +25,20 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 					         "5da84ff58cd5676504e3fcc3734d7e7cb96ee5b38daa0e3a4ed67ad3b9ea6ae690185b0000000000000000"
 			                 "010100000001000000feb5cacf7b43c1fed8e6a32bac7e6626548603e779b02fad199f0a0b37b343db0100";
 
-		size_t hexLen = mbData.length() / 2;
-		uint8_t *hex = new uint8_t[hexLen];
-		Utils::decodeHex(hex, hexLen, mbData.c_str(), mbData.length());
+		CMBlock hex = Utils::decodeHex(mbData);
 
-		std::string mbString = Utils::encodeHex(hex, hexLen);
+		std::string mbString = Utils::encodeHex(hex, hex.GetSize());
 
 		REQUIRE(mbString == mbData);
 		MerkleBlock mbOrig;
-		ByteStream stream(hex, hexLen, false);
+		ByteStream stream(hex, hex.GetSize(), false);
 		mbOrig.Deserialize(stream);
 
 		ByteStream newStream;
 		mbOrig.Serialize(newStream);
-		uint8_t *buf = newStream.getBuf();
-		size_t length = newStream.length();
-		REQUIRE(length == hexLen);
-		REQUIRE(0 == memcmp(hex, buf, length));
-		delete[] buf;
-		delete[] hex;
+		CMBlock buf = newStream.getBuffer();
+		REQUIRE(buf.GetSize() == hex.GetSize());
+		REQUIRE(0 == memcmp(hex, buf, buf.GetSize()));
 	}
 
 	SECTION("serialize and deserialize") {

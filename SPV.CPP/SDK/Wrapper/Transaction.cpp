@@ -98,9 +98,8 @@ namespace Elastos {
 			if (UInt256Eq(&_transaction->raw.txHash, &emptyHash)) {
 				ByteStream ostream;
 				serializeUnsigned(ostream);
-				uint8_t *buff = ostream.getBuf();
-				BRSHA256_2(&_transaction->raw.txHash, buff, ostream.length());
-				delete buff;
+				CMBlock buff = ostream.getBuffer();
+				BRSHA256_2(&_transaction->raw.txHash, buff, buff.GetSize());
 			}
 			return _transaction->raw.txHash;
 		}
@@ -259,18 +258,16 @@ namespace Elastos {
 				UInt256 md = UINT256_ZERO;
 				ByteStream ostream;
 				serializeUnsigned(ostream);
-				uint8_t *data = ostream.getBuf();
-				size_t dataLen = ostream.length();
+				CMBlock data = ostream.getBuffer();
 				if (elemsCount >= 2 && *elems[elemsCount - 2] == OP_EQUALVERIFY) { // pay-to-pubkey-hash
-					BRSHA256_2(&md, data, dataLen);
+					BRSHA256_2(&md, data, data.GetSize());
 					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
 					scriptLen = BRScriptPushData(script, sizeof(script), sig, sigLen);
 					scriptLen += BRScriptPushData(&script[scriptLen], sizeof(script) - scriptLen, pubKey, pkLen);
 					BRTxInputSetSignature(input, script, scriptLen);
-				}
-				else { // pay-to-pubkey
-					BRSHA256_2(&md, data, dataLen);
+				} else { // pay-to-pubkey
+					BRSHA256_2(&md, data, data.GetSize());
 					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
 					scriptLen = BRScriptPushData(script, sizeof(script), sig, sigLen);
@@ -278,10 +275,9 @@ namespace Elastos {
 				}
 
 				CMBlock shaData(sizeof(UInt256));
-				BRSHA256(shaData, data, dataLen);
+				BRSHA256(shaData, data, data.GetSize());
 				CMBlock signData = keys[j].compactSign(shaData);
 				program->setParameter(signData);
-				delete data;
 			}
 
 			return isSigned();
@@ -427,9 +423,8 @@ namespace Elastos {
 
 			ByteStream ostream;
 			serializeUnsigned(ostream);
-			uint8_t *buff = ostream.getBuf();
-			BRSHA256_2(&_transaction->raw.txHash, buff, ostream.length());
-			delete buff;
+			CMBlock buff = ostream.getBuffer();
+			BRSHA256_2(&_transaction->raw.txHash, buff, buff.GetSize());
 
 			return true;
 		}

@@ -255,7 +255,8 @@ namespace Elastos {
 			ByteStream stream;
 			serializeBtcBlockHeader(stream);
 			UInt256 hash = UINT256_ZERO;
-			BRSHA256_2(&hash, stream.getBuf(), stream.position());
+			CMBlock buf = stream.getBuffer();
+			BRSHA256_2(&hash, buf, buf.GetSize());
 			return hash;
 		}
 

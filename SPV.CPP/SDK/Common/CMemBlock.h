@@ -213,11 +213,11 @@ public:
 		return nullptr != pValue ? &pValue->data : 0;
 	}
 
-	T *operator+(uint64_t off) const {
+	T *operator+(unsigned long long off) const {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T *operator+(uint64_t off) {
+	T *operator+(unsigned long long off) {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
@@ -229,20 +229,28 @@ public:
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T *operator+(size_t off) const {
+	T *operator+(unsigned int off) const {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T *operator+(size_t off) {
+	T *operator+(unsigned int off) {
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T &operator[](uint64_t off) const {
+	T *operator+(unsigned long off) const {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
+	T *operator+(unsigned long off) {
+		return nullptr != pValue ? pValue->data + off : 0;
+	}
+
+	T &operator[](unsigned long long off) const {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
 
-	T &operator[](uint64_t off) {
+	T &operator[](unsigned long long off) {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
@@ -257,12 +265,22 @@ public:
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
 
-	T &operator[](size_t off) const {
+	T &operator[](unsigned int off) const {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}
 
-	T &operator[](size_t off) {
+	T &operator[](unsigned int off) {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
+	T &operator[](unsigned long off) const {
+		T t;
+		return nullptr != pValue->data ? pValue->data[off] : t;
+	}
+
+	T &operator[](unsigned long off) {
 		T t;
 		return nullptr != pValue->data ? pValue->data[off] : t;
 	}

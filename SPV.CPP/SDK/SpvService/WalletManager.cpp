@@ -117,14 +117,12 @@ namespace Elastos {
 		}
 
 		void WalletManager::onTxAdded(const TransactionPtr &tx) {
-			ByteStream byteStream;
-			tx->Serialize(byteStream);
-			uint8_t *buff = byteStream.getBuf();
-			CMBlock datas(byteStream.length());
-			memcpy(datas, buff, byteStream.length());
-			delete[] buff;
+			ByteStream stream;
+			tx->Serialize(stream);
 
-			TransactionEntity txEntity(datas, tx->getBlockHeight(),
+			CMBlock data = stream.getBuffer();
+
+			TransactionEntity txEntity(data, tx->getBlockHeight(),
 									   tx->getTimestamp(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
@@ -194,13 +192,7 @@ namespace Elastos {
 
 				ostream.setPosition(0);
 				blocks[i]->Serialize(ostream);
-				CMBlock bytes(ostream.length());
-				blockEntity.blockBytes.Resize(ostream.length());
-				if (blockEntity.blockBytes.GetSize() > 0) {
-					uint8_t *tmp = ostream.getBuf();
-					memcpy(blockEntity.blockBytes, tmp, ostream.length());
-					delete[]tmp;
-				}
+				blockEntity.blockBytes = ostream.getBuffer();
 				blockEntity.blockHeight = blocks[i]->getHeight();
 				_databaseManager.putMerkleBlock(ISO, blockEntity);
 			}

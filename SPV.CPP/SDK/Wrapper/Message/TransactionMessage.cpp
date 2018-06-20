@@ -74,7 +74,8 @@ namespace Elastos {
 			Transaction transaction(tx, false);
 			ByteStream stream;
 			transaction.Serialize(stream);
-			BRPeerSendMessage(peer, stream.getBuf(), stream.length(), MSG_TX);
+			CMBlock buf = stream.getBuffer();
+			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_TX);
 		}
 	}
 }
