@@ -16,13 +16,13 @@ namespace Elastos {
 	namespace ElaWallet {
 		class BTCKey {
 		public:
-			static bool generateKey(CMemBlock<uint8_t> &privKey, CMemBlock<uint8_t> &pubKey, int nid = NID_secp256k1);
+			static bool generateKey(CMBlock &privKey, CMBlock &pubKey, int nid = NID_secp256k1);
 
-			static CMemBlock<uint8_t> getPubKeyFromPrivKey(CMemBlock<uint8_t> privKey, int nid = NID_secp256k1);
+			static CMBlock getPubKeyFromPrivKey(CMBlock privKey, int nid = NID_secp256k1);
 
-			static bool PublickeyIsValid(CMemBlock<uint8_t> pubKey, int nid = NID_secp256k1);
+			static bool PublickeyIsValid(CMBlock pubKey, int nid = NID_secp256k1);
 
-			static CMBlock SignCompact(const CMemBlock<uint8_t> &privKey, const CMemBlock<uint8_t> msg);
+			static CMBlock SignCompact(const CMBlock &privKey, const CMBlock msg);
 
 			static bool VerifyCompact(const std::string &publicKey, const UInt256 &msg, const CMBlock &signature);
 

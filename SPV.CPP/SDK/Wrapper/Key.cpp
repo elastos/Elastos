@@ -89,7 +89,7 @@ namespace Elastos {
 			return ret;
 		}
 
-		bool Key::setPubKey(const CMemBlock<uint8_t> pubKey) {
+		bool Key::setPubKey(const CMBlock pubKey) {
 
 			if (!BTCKey::PublickeyIsValid(pubKey, NID_X9_62_prime256v1)) {
 				return false;
@@ -143,8 +143,8 @@ namespace Elastos {
 			BRKey key;
 			BRKeySetPrivKey(&key, (const char *) (void *) privKey);
 
-			CMemBlock<uint8_t> pubKey;
-			CMemBlock<uint8_t> secret;
+			CMBlock pubKey;
+			CMBlock secret;
 			secret.SetMemFixed(key.secret.u8, sizeof(key.secret));
 			pubKey = Key::getPubKeyFromPrivKey(secret);
 
@@ -156,12 +156,12 @@ namespace Elastos {
 			return base58string;
 		}
 
-		CMemBlock<uint8_t> Key::getPublicKeyByKey(const Key &key) {
+		CMBlock Key::getPublicKeyByKey(const Key &key) {
 			UInt256 secret = key.getSecret();
 			if(UInt256IsZero(&secret)) {
 				throw std::logic_error("secret key is zero!");
 			}
-			CMemBlock<uint8_t> secretMem;
+			CMBlock secretMem;
 			secretMem.SetMemFixed(secret.u8, sizeof(secret));
 
 			return Key::getPubKeyFromPrivKey(secretMem);
@@ -202,20 +202,20 @@ namespace Elastos {
 			if (UInt256IsZero(&secret)) {
 				throw std::logic_error("secret is zero, can't generate publicKey!");
 			}
-			CMemBlock<uint8_t> secretData;
+			CMBlock secretData;
 			secretData.SetMemFixed(secret.u8, sizeof(secret));
 
-			CMemBlock<uint8_t> pubKey = Key::getPubKeyFromPrivKey(secretData);
+			CMBlock pubKey = Key::getPubKeyFromPrivKey(secretData);
 
 			memset(_key->pubKey, 0, sizeof(_key->pubKey));
 			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
 		}
 
 		CMBlock Key::compactSign(const CMBlock &data) const {
-			CMemBlock<uint8_t> md32;
+			CMBlock md32;
 			md32.SetMemFixed(data, data.GetSize());
 
-			CMemBlock<uint8_t> privKey;
+			CMBlock privKey;
 			privKey.SetMemFixed(_key->secret.u8, sizeof(_key->secret));
 
 			return BTCKey::SignCompact(privKey, md32);
@@ -400,7 +400,7 @@ namespace Elastos {
 			return elaCoin.getHash();
 		}
 
-		CMemBlock<uint8_t> Key::getPubKeyFromPrivKey(const CMemBlock<uint8_t> &privKey, int nid) {
+		CMBlock Key::getPubKeyFromPrivKey(const CMBlock &privKey, int nid) {
 			return BTCKey::getPubKeyFromPrivKey(privKey, nid);
 		}
 	}

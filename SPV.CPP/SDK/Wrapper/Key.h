@@ -42,7 +42,7 @@ namespace Elastos {
 
 			CMBlock getPubkey() const;
 
-			bool setPubKey(const CMemBlock<uint8_t> pubKey);
+			bool setPubKey(const CMBlock pubKey);
 
 			bool getCompressed() const;
 
@@ -81,7 +81,7 @@ namespace Elastos {
 
 			static std::string getAuthPublicKeyForAPI(const CMBlock &privKey);
 
-			static CMemBlock<uint8_t> getPublicKeyByKey(const Key &key);
+			static CMBlock getPublicKeyByKey(const Key &key);
 
 			static std::string decryptBip38Key(const std::string &privKey, const std::string &pass);
 
@@ -100,7 +100,7 @@ namespace Elastos {
 
 			static const UInt256 getSystemAssetId();
 
-			static CMemBlock<uint8_t> getPubKeyFromPrivKey(const CMemBlock<uint8_t> &privKey,
+			static CMBlock getPubKeyFromPrivKey(const CMBlock &privKey,
 			                                               int nid = NID_X9_62_prime256v1);
 
 		private:

@@ -15,7 +15,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("generate key", "[BTCKey]") {
-	CMemBlock<uint8_t> privKey, pubKey;
+	CMBlock privKey, pubKey;
 
 	bool ret = BTCKey::generateKey(privKey, pubKey, NID_secp256k1);
 	REQUIRE(ret == true);
@@ -31,7 +31,7 @@ TEST_CASE("generate key", "[BTCKey]") {
 }
 
 TEST_CASE("get public key from private key", "[BTCKey]") {
-	CMemBlock<uint8_t> pubKey;
+	CMBlock pubKey;
 	uint8_t privateKey[] = {137, 130, 127, 138, 111, 69, 76, 178, 118, 250, 113, 184, 5, 173, 174, 142, 115, 153, 49,
 						  170, 3, 12, 53, 42, 210, 47, 58, 180, 204, 87, 159, 54};
 
@@ -41,7 +41,7 @@ TEST_CASE("get public key from private key", "[BTCKey]") {
 	uint8_t golang_pub[] = {3, 238, 47, 108, 60, 240, 239, 93, 249, 29, 16, 178, 198, 27, 188, 188, 14, 172, 45, 14, 65,
 	                        93, 34, 68, 127, 27, 210, 116, 98, 137, 246, 77, 210};
 
- 	CMemBlock<uint8_t> mb_privKey;
+	CMBlock mb_privKey;
 	mb_privKey.SetMemFixed(privateKey, sizeof(privateKey));
 
 	pubKey = BTCKey::getPubKeyFromPrivKey(mb_privKey, NID_secp256k1);
@@ -55,7 +55,7 @@ TEST_CASE("get public key from private key", "[BTCKey]") {
 }
 
 TEST_CASE("verify public key with NID_secp256k1", "[BTCKey]") {
-	CMemBlock<uint8_t> privKey, pubKey;
+	CMBlock privKey, pubKey;
 	bool ret = BTCKey::generateKey(privKey, pubKey, NID_secp256k1);
 	REQUIRE(true == ret);
 
@@ -64,7 +64,7 @@ TEST_CASE("verify public key with NID_secp256k1", "[BTCKey]") {
 }
 
 TEST_CASE("verify public key with NID_X9_62_prime256v1", "[BTCKey]") {
-	CMemBlock<uint8_t> privKey, pubKey;
+	CMBlock privKey, pubKey;
 	bool ret = BTCKey::generateKey(privKey, pubKey, NID_X9_62_prime256v1);
 	REQUIRE(true == ret);
 
@@ -75,15 +75,15 @@ TEST_CASE("verify public key with NID_X9_62_prime256v1", "[BTCKey]") {
 TEST_CASE("BTCKey signatrue and verify Test", "[BTCKey]") {
 	uint8_t privateKey[] = {247,142,52,74,196,253,223,144,25,37,217,85,90,68,219,124,39,167,120,92,213,45,147,112,101,195,206,220,127,13,126,191};
 	std::string message = "message to signature";
-	CMemBlock<uint8_t> privKey;
+	CMBlock privKey;
 	privKey.SetMemFixed(privateKey, sizeof(privateKey));
 
-	CMemBlock<uint8_t> publicKey = BTCKey::getPubKeyFromPrivKey(privKey, NID_X9_62_prime256v1);
+	CMBlock publicKey = BTCKey::getPubKeyFromPrivKey(privKey, NID_X9_62_prime256v1);
 	CMBlock pubData(publicKey.GetSize());
 	memcpy(pubData, publicKey, publicKey.GetSize());
 	std::string pubKey = Utils::encodeHex(pubData);
 
-	CMemBlock<uint8_t> shaData(sizeof(UInt256));
+	CMBlock shaData(sizeof(UInt256));
 	BRSHA256(shaData, message.c_str(), message.size());
 
 	CMBlock signature = BTCKey::SignCompact(privKey, shaData);

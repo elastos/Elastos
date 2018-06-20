@@ -225,7 +225,7 @@ namespace Elastos {
 				uint8_t pubKey[BRBIP32PubKey(nullptr, 0, wallet->masterPubKey, 0, count)];
 				size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, 0, (uint32_t) count);
 				Key key;
-				CMemBlock<uint8_t> publicKey;
+				CMBlock publicKey;
 				publicKey.SetMemFixed(pubKey, len);
 				if (!key.setPubKey(publicKey))
 					return 0;

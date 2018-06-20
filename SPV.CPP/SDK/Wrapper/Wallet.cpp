@@ -1170,7 +1170,7 @@ namespace Elastos {
 				uint8_t pubKey[MasterPubKey::BIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
 				size_t len = MasterPubKey::BIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
 
-				CMemBlock<uint8_t> publicKey(len);
+				CMBlock publicKey(len);
 				memcpy(publicKey, pubKey, len);
 
 				if (!key.setPubKey(publicKey)) break;

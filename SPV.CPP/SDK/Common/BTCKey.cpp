@@ -9,7 +9,7 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		bool BTCKey::generateKey(CMemBlock<uint8_t> &privKey, CMemBlock<uint8_t> &pubKey, int nid) {
+		bool BTCKey::generateKey(CMBlock &privKey, CMBlock &pubKey, int nid) {
 			bool out = false;
 			EC_GROUP *curve = nullptr;
 			if (nullptr != (curve = EC_GROUP_new_by_curve_name(nid))) {
@@ -48,8 +48,8 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<uint8_t> BTCKey::getPubKeyFromPrivKey(CMemBlock<uint8_t> privKey, int nid) {
-			CMemBlock<uint8_t> out;
+		CMBlock BTCKey::getPubKeyFromPrivKey(CMBlock privKey, int nid) {
+			CMBlock out;
 			BIGNUM *_privkey = nullptr;
 			if (32 != privKey.GetSize()) {
 				return out;
@@ -82,7 +82,7 @@ namespace Elastos {
 			return out;
 		}
 
-		bool BTCKey::PublickeyIsValid(CMemBlock<uint8_t> pubKey, int nid) {
+		bool BTCKey::PublickeyIsValid(CMBlock pubKey, int nid) {
 			bool out = false;
 			if (0 == pubKey.GetSize()) {
 				return out;
@@ -109,7 +109,7 @@ namespace Elastos {
 			return out;
 		}
 
-		CMBlock BTCKey::SignCompact(const CMemBlock<uint8_t> &privKey, const CMemBlock<uint8_t> msg) {
+		CMBlock BTCKey::SignCompact(const CMBlock &privKey, const CMBlock msg) {
 			const int nid = NID_X9_62_prime256v1;
 			EC_KEY *ec_key = EC_KEY_new_by_curve_name(nid);
 			if (ec_key == nullptr) {
@@ -136,7 +136,7 @@ namespace Elastos {
 			bool fOk = false;
 			int rec = -1;
 			if (nBitsR <= 256 && nBitsS <= 256) {
-				CMemBlock<uint8_t> pubKey = getPubKeyFromPrivKey(privKey, nid);
+				CMBlock pubKey = getPubKeyFromPrivKey(privKey, nid);
 				for (int i = 0; i < 4; ++i) {
 					if (ECDSA_SIG_recover_key_GFp(ec_key, sig, msg, msg.GetSize(), i , 1) == 1) {
 						EC_KEY_set_conv_form(ec_key, POINT_CONVERSION_COMPRESSED);
@@ -147,7 +147,7 @@ namespace Elastos {
 						memset(c, 0, 65);
 						unsigned char *pbegin = c;
 						nSize = i2o_ECPublicKey(ec_key, &pbegin);
-						CMemBlock<uint8_t> tempPubKey;
+						CMBlock tempPubKey;
 						tempPubKey.SetMemFixed(&c[0], nSize);
 						if (memcmp(tempPubKey, pubKey, nSize) == 0) {
 							rec = i;
@@ -176,7 +176,7 @@ namespace Elastos {
 		bool BTCKey::VerifyCompact(const std::string &publicKey, const UInt256 &msg, const CMBlock &signature) {
 			const int nid = NID_X9_62_prime256v1;
 			CMBlock pubData = Utils::decodeHex(publicKey);
-			CMemBlock<uint8_t> publicData;
+			CMBlock publicData;
 			publicData.SetMemFixed(pubData, pubData.GetSize());
 			if (!BTCKey::PublickeyIsValid(publicData, nid)) {
 				return false;
@@ -213,7 +213,7 @@ namespace Elastos {
 				memset(c, 0, 65);
 				unsigned char *pbegin = c;
 				nSize = i2o_ECPublicKey(ec_key, &pbegin);
-				CMemBlock<uint8_t> tempPubKey;
+				CMBlock tempPubKey;
 				tempPubKey.SetMemFixed(&c[0], nSize);
 				ret = memcmp(tempPubKey, publicData, nSize) == 0;
 			}
