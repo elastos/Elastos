@@ -233,9 +233,9 @@ namespace Elastos {
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
 
 			Key key = deriveKey(payPassword);
-			UInt256 md;
-			BRSHA256(&md, message.c_str(), message.size());
-			CMBlock signedData = key.sign(md);
+			CMBlock md(sizeof(UInt256));
+			BRSHA256(md, message.c_str(), message.size());
+			CMBlock signedData = key.compactSign(md);
 
 			char *data = new char[signedData.GetSize()];
 			memcpy(data, signedData, signedData.GetSize());

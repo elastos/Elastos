@@ -480,20 +480,12 @@ namespace Elastos {
 								  script, script.GetSize(),
 								  signature, signature.GetSize(),
 								  sequence);
-#ifndef NDEBUG
-			std::string address = input["Address"].get<std::string>();
-			assert(address == std::string(_btcTransaction->inputs[_btcTransaction->inCount - 1].address));
-#endif
 		}
 
 		void AuxPow::txOutputsFromJson(const nlohmann::json &output) {
 			uint64_t amount = output["Amount"].get<uint64_t>();
 			CMBlock script = Utils::decodeHex(output["Script"].get<std::string>());
 			BRTransactionAddOutput(_btcTransaction, amount, script, script.GetSize());
-#ifndef NDEBUG
-			std::string address = output["Address"].get<std::string>();
-			assert(address == std::string(_btcTransaction->outputs[_btcTransaction->outCount - 1].address));
-#endif
 		}
 
 		void AuxPow::setAuxMerkleBranch(const std::vector<UInt256> &hashes) {

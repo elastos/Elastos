@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_BTCKEY_H__
 
 #include <openssl/obj_mac.h>
+#include <openssl/ec.h>
 #include <BRInt.h>
 
 #include "CMemBlock.h"
@@ -19,6 +20,13 @@ namespace Elastos {
 			static CMemBlock<uint8_t> getPubKeyFromPrivKey(CMemBlock<uint8_t> privKey, int nid = NID_secp256k1);
 
 			static bool PublickeyIsValid(CMemBlock<uint8_t> pubKey, int nid = NID_secp256k1);
+
+			static CMBlock SignCompact(const CMemBlock<uint8_t> &privKey, const CMemBlock<uint8_t> msg);
+
+			static bool VerifyCompact(const std::string &publicKey, const UInt256 &msg, const CMBlock &signature);
+
+			static size_t ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const uint8_t *msg, size_t msglen,
+			                                        size_t recid, size_t check);
 		};
 	}
 }

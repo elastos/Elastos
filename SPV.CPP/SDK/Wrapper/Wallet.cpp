@@ -217,10 +217,10 @@ namespace Elastos {
 
 #ifdef TEMPORARY_HD_STRATEGY
 
-		Wallet::Wallet(const Elastos::SDK::SharedWrapperList<Elastos::SDK::Transaction, BRTransaction *> &transactions,
-					   const Elastos::SDK::MasterPrivKey &masterPrivKey, const std::string &payPassword,
+		Wallet::Wallet(const Elastos::ElaWallet::SharedWrapperList<Elastos::ElaWallet::Transaction, BRTransaction *> &transactions,
+					   const Elastos::ElaWallet::MasterPrivKey &masterPrivKey, const std::string &payPassword,
 					   DatabaseManager *databaseManager,
-					   const boost::shared_ptr<Elastos::SDK::Wallet::Listener> &listener) {
+					   const boost::shared_ptr<Elastos::ElaWallet::Wallet::Listener> &listener) {
 
 			_wallet = ELAWalletNew(transactions.getRawPointerArray().data(), transactions.size(), masterPrivKey,
 								   payPassword, databaseManager,

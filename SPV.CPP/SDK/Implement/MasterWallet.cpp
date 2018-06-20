@@ -331,7 +331,7 @@ namespace Elastos {
 			Key key;
 			char stmp[keyData.GetSize()];
 			memcpy(stmp, keyData, keyData.GetSize());
-			std::string secret(stmp, keyData.GetSize());
+			std::string secret(stmp, keyData.GetSize() - 1);
 			key.setPrivKey(secret);
 			return key;
 		}
@@ -355,10 +355,10 @@ namespace Elastos {
 
 			Key key = deriveKey(payPassword);
 
-			UInt256 md;
-			BRSHA256(&md, message.c_str(), message.size());
+			CMBlock md(sizeof(UInt256));
+			BRSHA256(&md[0], message.c_str(), message.size());
 
-			CMBlock signedData = key.sign(md);
+			CMBlock signedData = key.compactSign(md);
 
 			char data[signedData.GetSize()];
 			memcpy(data, signedData, signedData.GetSize());

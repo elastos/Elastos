@@ -97,32 +97,23 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(key1.getPrivKey() == key2.getPrivKey());
 	}
 
-	SECTION("Key encodeSHA256, sign ,verify and compactSign test") {
+	SECTION("Key encodeSHA256 ,compactSign and verify test") {
 		std::string str = "Everything should be made as simple as possible, but not simpler.";
 		UInt256 hash = Key::encodeSHA256(str);
 		UInt256 zero = UINT256_ZERO;
 		int res = UInt256Eq(&hash, &zero);
 		REQUIRE(res == 0);
 
-		uint8_t signedData[] = "\x30\x44\x02\x20\x33\xa6\x9c\xd2\x06\x54\x32\xa3\x0f\x3d\x1c\xe4\xeb\x0d\x59\xb8\xab"
-				"\x58\xc7\x4f\x27\xc4\x1a\x7f\xdb\x56\x96\xad\x4e\x61\x08\xc9\x02\x20\x6f\x80\x79\x82"
-				"\x86\x6f\x78\x5d\x3f\x64\x18\xd2\x41\x63\xdd\xae\x11\x7b\x7d\xb4\xd5\xfd\xf0\x07\x1d"
-				"\xe0\x69\xfa\x54\x34\x22\x62";
 		UInt256 secret = uint256("0000000000000000000000000000000000000000000000000000000000000001");
 		Key key(secret, true);
-		CMBlock byteData = key.sign(hash);
-		REQUIRE(byteData.GetSize() == sizeof(signedData) - 1);
-		REQUIRE(byteData != false);
-		for (uint64_t i = 0; i < sizeof(signedData) - 1; i++) {
-			REQUIRE(signedData[i] == byteData[i]);
-		}
-		//fixme [ymz] verify is not availed because this publicKey is not secp256k1
-//		bool result = key.verify(hash, byteData);
-//		REQUIRE(result == true);
 
-		CMBlock compactData = key.compactSign(byteData);
-		REQUIRE(compactData.GetSize() > 0);
-		REQUIRE(compactData != false);
+		CMBlock md;
+		md.SetMemFixed(hash.u8, sizeof(hash));
+		CMBlock compactData = key.compactSign(md);
+		REQUIRE(compactData.GetSize() == 65);
+
+		bool ret = key.verify(hash, compactData);
+		REQUIRE(ret == true);
 	}
 
 	SECTION("Key encryptNative test") {

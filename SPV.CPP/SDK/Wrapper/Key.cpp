@@ -91,6 +91,9 @@ namespace Elastos {
 
 		bool Key::setPubKey(const CMemBlock<uint8_t> pubKey) {
 
+			if (!BTCKey::PublickeyIsValid(pubKey, NID_X9_62_prime256v1)) {
+				return false;
+			}
 			CMBlock publicKey;
 			publicKey.SetMemFixed(pubKey, pubKey.GetSize());
 			ParamChecker::checkDataNotEmpty(publicKey, true);
@@ -98,8 +101,6 @@ namespace Elastos {
 
 			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
 			_key->compressed = (pubKey.GetSize() <= 33);
-
-			//todo add pubKey verify is effective
 			return true;
 		}
 
@@ -211,12 +212,13 @@ namespace Elastos {
 		}
 
 		CMBlock Key::compactSign(const CMBlock &data) const {
-			UInt256 md32;
-			UInt256Get(&md32, data);
-			size_t sigLen = BRKeyCompactSign(_key.get(), nullptr, 0, md32);
-			CMBlock compactSig(sigLen);
-			sigLen = BRKeyCompactSign(_key.get(), compactSig, sigLen, md32);
-			return compactSig;
+			CMemBlock<uint8_t> md32;
+			md32.SetMemFixed(data, data.GetSize());
+
+			CMemBlock<uint8_t> privKey;
+			privKey.SetMemFixed(_key->secret.u8, sizeof(_key->secret));
+
+			return BTCKey::SignCompact(privKey, md32);
 		}
 
 		CMBlock Key::encryptNative(const CMBlock &data, const CMBlock &nonce) const {
@@ -237,14 +239,6 @@ namespace Elastos {
 
 		std::string Key::address() const {
 			return keyToAddress(ELA_STANDARD);
-		}
-
-		CMBlock Key::sign(const UInt256 &messageDigest) const {
-			CMBlock signature(256);
-			size_t signatureLen = BRKeySign(_key.get(), signature, signature.GetSize(), messageDigest);
-			assert (signatureLen <= 256);
-			signature.Resize(signatureLen);
-			return signature;
 		}
 
 		std::string Key::keyToAddress(const int signType) const {
@@ -272,7 +266,10 @@ namespace Elastos {
 		}
 
 		bool Key::verify(const UInt256 &messageDigest, const CMBlock &signature) const {
-			return BRKeyVerify(_key.get(), messageDigest, signature, signature.GetSize()) == 1;
+			CMBlock publicKey = getPubkey();
+			std::string pubKey = Utils::encodeHex(publicKey);
+
+			return Key::verifyByPublicKey(pubKey, messageDigest, signature);
 		}
 
 		bool Key::isValidBitcoinPrivateKey(const std::string &key) {
@@ -371,18 +368,7 @@ namespace Elastos {
 
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 		                            const CMBlock &signature) {
-			int r = 0;
-			secp256k1_context *ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);;
-			secp256k1_pubkey pk;
-			secp256k1_ecdsa_signature s;
-			CMBlock pubData = Utils::decodeHex(publicKey);
-
-			if (pubData.GetSize() > 0 && secp256k1_ec_pubkey_parse(ctx, &pk, pubData, pubData.GetSize()) &&
-			    secp256k1_ecdsa_signature_parse_der(ctx, &s, signature, signature.GetSize())) {
-				if (secp256k1_ecdsa_verify(ctx, &s, messageDigest.u8, &pk) == 1) r = 1; // success is 1, all other values are fail
-			}
-			secp256k1_context_destroy(ctx);
-			return r == 1;
+			return BTCKey::VerifyCompact(publicKey, messageDigest, signature);
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {

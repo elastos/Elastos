@@ -9,6 +9,8 @@
 
 #include "BTCKey.h"
 #include "BigIntFormat.h"
+#include "Key.h"
+#include "Utils.h"
 
 using namespace Elastos::ElaWallet;
 
@@ -68,4 +70,27 @@ TEST_CASE("verify public key with NID_X9_62_prime256v1", "[BTCKey]") {
 
 	bool verified_pubkey = BTCKey::PublickeyIsValid(pubKey, NID_X9_62_prime256v1);
 	REQUIRE(true == verified_pubkey);
+}
+
+TEST_CASE("BTCKey signatrue and verify Test", "[BTCKey]") {
+	uint8_t privateKey[] = {247,142,52,74,196,253,223,144,25,37,217,85,90,68,219,124,39,167,120,92,213,45,147,112,101,195,206,220,127,13,126,191};
+	std::string message = "message to signature";
+	CMemBlock<uint8_t> privKey;
+	privKey.SetMemFixed(privateKey, sizeof(privateKey));
+
+	CMemBlock<uint8_t> publicKey = BTCKey::getPubKeyFromPrivKey(privKey, NID_X9_62_prime256v1);
+	CMBlock pubData(publicKey.GetSize());
+	memcpy(pubData, publicKey, publicKey.GetSize());
+	std::string pubKey = Utils::encodeHex(pubData);
+
+	CMemBlock<uint8_t> shaData(sizeof(UInt256));
+	BRSHA256(shaData, message.c_str(), message.size());
+
+	CMBlock signature = BTCKey::SignCompact(privKey, shaData);
+	REQUIRE(signature.GetSize() == 65);
+
+	UInt256 shaMsg;
+	memcpy(shaMsg.u8, shaData, shaData.GetSize());
+	bool ret = BTCKey::VerifyCompact(pubKey, shaMsg, signature);
+	REQUIRE(ret == true);
 }

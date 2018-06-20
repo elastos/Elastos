@@ -199,7 +199,9 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
 		Key key("0000000000000000000000000000000000000000000000000000000000000001");
-		transaction.addInput(hash, 1, 1000, myaddress.getPubKeyScript(), key.sign(hash), 1);
+		CMBlock mb;
+		mb.SetMemFixed(hash.u8, sizeof(hash));
+		transaction.addInput(hash, 1, 1000, myaddress.getPubKeyScript(), key.compactSign(mb), 1);
 		res = transaction.isSigned();
 		REQUIRE(res == true);
 	}

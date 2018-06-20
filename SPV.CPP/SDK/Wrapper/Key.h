@@ -60,8 +60,6 @@ namespace Elastos {
 
 			std::string address() const;
 
-			CMBlock sign(const UInt256 &messageDigest) const;
-
 			bool verify(const UInt256 &messageDigest, const CMBlock &signature) const;
 
 			std::string keyToAddress(const int signType) const;
