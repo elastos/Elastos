@@ -20,32 +20,35 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		WalletManager::WalletManager(const WalletManager &proto) :
+				CoreWalletManager(proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
 				_forkId(proto._forkId),
 				_peerConfig(proto._peerConfig) {
-			init(proto._masterPubKey, proto._chainParams, proto._earliestPeerTime, proto._singleAddress);
+			init(proto._masterPubKey, proto._earliestPeerTime, proto._singleAddress);
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
 									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
 									 bool singleAddress, int forkId, const ChainParams &chainParams) :
+				CoreWalletManager(chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_forkId(forkId),
 				_peerConfig(peerConfig) {
-			init(masterPubKey, chainParams, earliestPeerTime, singleAddress);
+			init(masterPubKey, earliestPeerTime, singleAddress);
 		}
 
 		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
 									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
 									 int forkId, const std::vector<std::string> &initialAddresses,
 									 const ChainParams &chainParams) :
+				CoreWalletManager(chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_forkId(forkId),
 				_peerConfig(peerConfig) {
-			init(chainParams, earliestPeerTime, initialAddresses);
+			init(earliestPeerTime, initialAddresses);
 		}
 
 #ifdef TEMPORARY_HD_STRATEGY

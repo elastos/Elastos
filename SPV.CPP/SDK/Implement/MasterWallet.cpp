@@ -128,7 +128,7 @@ namespace Elastos {
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
-			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams::mainNet(), payPassword, this);
+			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams(coinConfig), payPassword, this);
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
 			Save();
@@ -162,8 +162,9 @@ namespace Elastos {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
 				if (_createdWallets.find(coinInfoList[i].getChainId()) != _createdWallets.end()) continue;
 
+				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
 				_createdWallets[coinInfoList[i].getChainId()] =
-						SubWalletFactoryMethod(coinInfoList[i], ChainParams::mainNet(), "", this);
+						SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "", this);
 			}
 		}
 
@@ -310,6 +311,7 @@ namespace Elastos {
 		}
 
 		void MasterWallet::initFromLocalStore(const MasterWalletStore &localStore) {
+			tryInitCoinConfig();
 			resetMnemonic(localStore.GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
 			initSubWallets(localStore.GetSubWalletInfoList());
@@ -318,7 +320,8 @@ namespace Elastos {
 
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
-				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams::mainNet(), "", this);
+				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
+				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "", this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 				if(subWalletImpl == nullptr)
 					throw std::logic_error("Recover sub wallet error: unknown sub wallet implement type.");

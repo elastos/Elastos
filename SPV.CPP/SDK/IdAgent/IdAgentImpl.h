@@ -10,7 +10,7 @@
 
 #include "IdItem.h"
 #include "Wrapper/Key.h"
-#include "KeyStore/Mstream.h"
+#include "SDK/Common/Mstream.h"
 
 namespace Elastos {
 	namespace ElaWallet {

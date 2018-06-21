@@ -6,6 +6,8 @@
 #ifndef __ELASTOS_SDK__MSTREAM_H__
 #define __ELASTOS_SDK__MSTREAM_H__
 
+#include <nlohmann/json.hpp>
+
 namespace Elastos {
 	namespace ElaWallet {
 

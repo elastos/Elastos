@@ -86,8 +86,9 @@ class TestMainchainSubWallet : public MainchainSubWallet {
 public:
 	TestMainchainSubWallet(const CoinInfo &info,
 						   const std::string &payPassword,
+						   const ChainParams &chainParams,
 						   MasterWallet *parent) :
-			MainchainSubWallet(info, ChainParams::mainNet(), payPassword, parent) {
+			MainchainSubWallet(info, chainParams, payPassword, parent) {
 		_walletManager.reset(new TestWalletManager(*_walletManager));
 	}
 
@@ -96,6 +97,16 @@ protected:
 
 	}
 };
+
+ChainParams createChainParams() {
+	CoinConfig coinConfig;
+	coinConfig.TargetTimeSpan = 86400;
+	coinConfig.TargetTimePerBlock = 120;
+	coinConfig.StandardPort = 20866;
+	coinConfig.MagicNumber = 7630401;
+	coinConfig.Services = 0;
+	return ChainParams(coinConfig);
+}
 
 TEST_CASE("Mainchain sub wallet SendDepositTransaction method", "[SendDepositTransaction]") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet);

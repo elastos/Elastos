@@ -8,18 +8,28 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-#include "Wrapper.h"
 #include "BRChainParams.h"
+
+#include "Wrapper.h"
+#include "KeyStore/CoinConfig.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		struct ELAChainParams {
+			BRChainParams Raw;
+
+			//time unit is second
+			uint32_t TargetTimeSpan;
+			uint32_t TargetTimePerBlock;
+		};
+
 		class ChainParams :
 				public Wrapper<BRChainParams> {
 		public:
-			ChainParams();
-
 			ChainParams(const ChainParams &chainParams);
+
+			ChainParams(const CoinConfig &coinConfig);
 
 			ChainParams &operator=(const ChainParams &params);
 
@@ -29,30 +39,15 @@ namespace Elastos {
 
 			uint32_t getMagicNumber() const;
 
-			static const ChainParams &mainNet();
-
-			static const ChainParams &testNet();
-
-			int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet) const;
 
 		private:
-			ChainParams(const BRChainParams &chainParams);
-
-			static void tryInit();
-
-			int verifyDifficaltyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous,
-									  uint32_t transitionTime) const;
+			void tryInit(const CoinConfig &coinConfig);
 
 		private:
-			//time unit is second
-			uint64_t _targetTimespan;
-			uint64_t _targetTimePerBlock;
 
-			boost::shared_ptr<BRChainParams> _chainParams;
+			std::vector<BRCheckPoint> _checkPoints;
 
-			static bool _paramsInit;
-			static ChainParams _mainNet;
-			static ChainParams _testNet;
+			boost::shared_ptr<ELAChainParams> _chainParams;
 		};
 
 	}

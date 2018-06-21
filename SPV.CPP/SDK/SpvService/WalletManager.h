@@ -35,14 +35,14 @@ namespace Elastos {
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
 						  int forkId,
-						  const ChainParams &chainParams = ChainParams::mainNet());
+						  const ChainParams &chainParams);
 
 			WalletManager(const boost::filesystem::path &dbPath,
 						  const nlohmann::json &peerConfig,
 						  uint32_t earliestPeerTime,
 						  int forkId,
 						  const std::vector<std::string> &initialAddresses,
-						  const ChainParams &chainParams = ChainParams::mainNet());
+						  const ChainParams &chainParams);
 
 #ifdef TEMPORARY_HD_STRATEGY
 			WalletManager(const MasterPrivKey &masterPrivKey,

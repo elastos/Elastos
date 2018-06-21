@@ -54,17 +54,28 @@ class TestSubWallet : public SubWallet {
 public:
 	TestSubWallet(const CoinInfo &info,
 				  const std::string &payPassword,
+				  const ChainParams &chainParams,
 				  MasterWallet *parent) :
-			SubWallet(info, ChainParams::mainNet(), payPassword, parent) {
+			SubWallet(info, chainParams, payPassword, parent) {
 	}
 };
+
+ChainParams createChainParams() {
+	CoinConfig coinConfig;
+	coinConfig.TargetTimeSpan = 86400;
+	coinConfig.TargetTimePerBlock = 120;
+	coinConfig.StandardPort = 20866;
+	coinConfig.MagicNumber = 7630401;
+	coinConfig.Services = 0;
+	return ChainParams(coinConfig);
+}
 
 #define BASIC_UINT 100000000ULL
 
 class TestWalletManager : public WalletManager {
 public:
 	TestWalletManager(const WalletManager &parent) :
-		WalletManager(parent) {
+			WalletManager(parent) {
 	}
 
 protected:
@@ -85,7 +96,7 @@ protected:
 		out->setAssetId(Key::getSystemAssetId());
 		elaTransaction->outputs.push_back(out);
 		elaTransaction->raw.txHash = Utils::UInt256FromString(
-			"0000000000000000011111111111111111111111111111111111111111111111");
+				"0000000000000000011111111111111111111111111111111111111111111111");
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code(10);
 		CMBlock parameter(10);
@@ -103,7 +114,7 @@ protected:
 		out1->setAssetId(Key::getSystemAssetId());
 		elaTransaction1->outputs.push_back(out1);
 		elaTransaction1->raw.txHash = Utils::UInt256FromString(
-			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code1(10);
 		CMBlock parameter1(10);
@@ -118,9 +129,10 @@ protected:
 class TestTransactionSubWallet : public SubWallet {
 public:
 	TestTransactionSubWallet(const CoinInfo &info,
-				  const std::string &payPassword,
-				  MasterWallet *parent) :
-			SubWallet(info, ChainParams::mainNet(), payPassword, parent) {
+							 const std::string &payPassword,
+							 const ChainParams &chainParams,
+							 MasterWallet *parent) :
+			SubWallet(info, chainParams, payPassword, parent) {
 		_walletManager.reset(new TestWalletManager(*_walletManager));
 	}
 
@@ -137,7 +149,7 @@ TEST_CASE("Sub wallet basic", "[SubWallet]") {
 	CoinInfo info;
 	info.setChainId("chainId");
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestSubWallet> subWallet(new TestSubWallet(info, payPassword, masterWallet.get()));
+	boost::scoped_ptr<TestSubWallet> subWallet(new TestSubWallet(info, payPassword, createChainParams(), masterWallet.get()));
 
 	SECTION("Address related") {
 		nlohmann::json j = subWallet->GetAllAddress(0, INT_MAX);
@@ -176,7 +188,7 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 	info.setChainId("chainId");
 	info.setSingleAddress(true);
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestSubWallet> subWallet(new TestSubWallet(info, payPassword, masterWallet.get()));
+	boost::scoped_ptr<TestSubWallet> subWallet(new TestSubWallet(info, payPassword, createChainParams(), masterWallet.get()));
 
 	SECTION("Address related") {
 		nlohmann::json j = subWallet->GetAllAddress(0, INT_MAX);
@@ -214,7 +226,8 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 	info.setChainId("chainId");
 	info.setSingleAddress(false);
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestTransactionSubWallet> subWallet(new TestTransactionSubWallet(info, payPassword, masterWallet.get()));
+	boost::scoped_ptr<TestTransactionSubWallet> subWallet(
+			new TestTransactionSubWallet(info, payPassword, createChainParams(), masterWallet.get()));
 
 	SECTION("Send transaction") {
 		//fixme [ymz] when child publicKey is correct and had token

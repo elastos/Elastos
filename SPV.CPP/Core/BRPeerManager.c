@@ -1102,7 +1102,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
     }
 
     // verify block difficulty
-    if (r && ! manager->params->verifyDifficulty(block, manager->blocks)) {
+    if (r && ! manager->verifyDifficulty(manager->params, block, manager->blocks)) {
         peer_log(peer, "relayed block with invalid difficulty target %x, blockHash: %s", block->target,
                  u256hex(block->blockHash));
         r = 0;
@@ -1531,7 +1531,8 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
                                void (*savePeers)(void *info, int replace, const BRPeer peers[], size_t peersCount),
                                int (*networkIsReachable)(void *info),
                                void (*threadCleanup)(void *info),
-                               void (*blockHeightIncreased)(void *info, uint32_t height))
+                               void (*blockHeightIncreased)(void *info, uint32_t height),
+                               int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet))
 {
     assert(manager != NULL);
     manager->info = info;
@@ -1543,6 +1544,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
     manager->networkIsReachable = networkIsReachable;
     manager->blockHeightIncreased = blockHeightIncreased;
     manager->threadCleanup = (threadCleanup) ? threadCleanup : _dummyThreadCleanup;
+    manager->verifyDifficulty = verifyDifficulty;
 }
 
 // specifies a single fixed peer to use when connecting to the bitcoin network

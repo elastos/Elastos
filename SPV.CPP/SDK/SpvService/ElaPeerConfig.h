@@ -17,7 +17,21 @@ namespace Elastos {
 							"KnowingPeers":
 							[
 								{
-									"Address": "127.0.0.1",
+									"Address": "54.165.10.201",
+									"Port": 20866,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								},
+								{
+									"Address": "34.198.67.91",
+									"Port": 20866,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								},
+								{
+									"Address": "52.55.40.251",
 									"Port": 20866,
 									"Timestamp": 0,
 									"Services": 1,

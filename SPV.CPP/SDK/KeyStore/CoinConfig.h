@@ -12,6 +12,7 @@
 
 #include "SubWalletType.h"
 #include "Mstream.h"
+#include "CheckPoint.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,6 +21,12 @@ namespace Elastos {
 			std::string ChainId;
 			SubWalletType Type;
 			uint32_t Index;
+			uint32_t TargetTimeSpan;
+			uint32_t TargetTimePerBlock;
+			uint16_t StandardPort;
+			uint32_t MagicNumber;
+			uint32_t Services;
+			std::vector<CheckPoint> CheckPoints;
 		};
 
 		/**

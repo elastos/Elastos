@@ -1,10 +1,36 @@
 {
   "ELA": {
     "Type": "Mainchain",
-    "CoinIndex": 0
+    "CoinIndex": 0,
+    "TargetTimeSpan": 86400,
+    "TargetTimePerBlock": 120,
+    "StandardPort": 20866,
+    "MagicNumber": 7630401,
+    "Services": 0,
+    "CheckPoints": [
+      {
+        "Height": 0,
+        "Hash": "05f458a5522851622cae2bb138498dec60a8f0b233802c97a1ca41f9f214708d",
+        "Timestamp": 1513936800,
+        "Target": 486801407
+      }
+    ]
   },
   "IdChain": {
     "Type": "Idchain",
-    "CoinIndex": 1
+    "CoinIndex": 1,
+    "TargetTimeSpan": 86400,
+    "TargetTimePerBlock": 120,
+    "StandardPort": 13338,
+    "MagicNumber": 7630404,
+    "Services": 0,
+    "CheckPoints": [
+      {
+        "Height": 0,
+        "Hash": "7c1a76281736d40599d6ae347d1bad924ab02b06c6cf9acd84f519dfdeb78d16",
+        "Timestamp": 1513936800,
+        "Target": 486801407
+      }
+    ]
   }
 }

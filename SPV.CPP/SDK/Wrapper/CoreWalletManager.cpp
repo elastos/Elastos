@@ -18,13 +18,14 @@ namespace Elastos {
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_STATUS = false;
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_IO = false;
 
-		CoreWalletManager::CoreWalletManager() :
+		CoreWalletManager::CoreWalletManager(const ChainParams &chainParams) :
 				_wallet(nullptr),
 				_walletListener(nullptr),
 				_peerManager(nullptr),
 				_peerManagerListener(nullptr),
 				_masterPubKey(nullptr),
-				_singleAddress(false) {
+				_singleAddress(false),
+				_chainParams(chainParams) {
 		}
 
 		CoreWalletManager::~CoreWalletManager() {
@@ -32,20 +33,16 @@ namespace Elastos {
 		}
 
 		void CoreWalletManager::init(const MasterPubKeyPtr &masterPubKey,
-									 const ChainParams &chainParams,
 									 uint32_t earliestPeerTime,
 									 bool singleAddress) {
 			_masterPubKey = masterPubKey;
 			_earliestPeerTime = earliestPeerTime;
-			_chainParams = chainParams;
 			_singleAddress = singleAddress;
 		}
 
-		void CoreWalletManager::init(const ChainParams &chainParams,
-									 uint32_t earliestPeerTime,
+		void CoreWalletManager::init(uint32_t earliestPeerTime,
 									 const std::vector<std::string> &initialAddresses) {
 			_earliestPeerTime = earliestPeerTime;
-			_chainParams = chainParams;
 			_wallet = WalletPtr(new AddressRegisteringWallet(createWalletListener(), initialAddresses));
 		}
 

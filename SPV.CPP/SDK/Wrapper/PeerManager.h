@@ -20,103 +20,116 @@
 #include "CMemBlock.h"
 
 namespace Elastos {
-    namespace ElaWallet {
+	namespace ElaWallet {
 
-        class PeerManager :
-            public Wrapper<BRPeerManager> {
-        public:
+		class PeerManager :
+				public Wrapper<BRPeerManager> {
+		public:
 
-            class Listener {
-            public:
-                // func syncStarted()
-                virtual void syncStarted() = 0;
+			class Listener {
+			public:
+				// func syncStarted()
+				virtual void syncStarted() = 0;
 
-                // func syncStopped(_ error: BRPeerManagerError?)
-                virtual void syncStopped(const std::string &error) = 0;
+				// func syncStopped(_ error: BRPeerManagerError?)
+				virtual void syncStopped(const std::string &error) = 0;
 
-                // func txStatusUpdate()
-                virtual void txStatusUpdate() = 0;
+				// func txStatusUpdate()
+				virtual void txStatusUpdate() = 0;
 
-                // func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-                virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *>& blocks) = 0;
+				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
+				virtual void
+				saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) = 0;
 
-                // func savePeers(_ replace: Bool, _ peers: [BRPeer])
-                virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*>& peers) = 0;
+				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
+				virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) = 0;
 
-                // func networkIsReachable() -> Bool}
-                virtual bool networkIsReachable() = 0;
+				// func networkIsReachable() -> Bool}
+				virtual bool networkIsReachable() = 0;
 
-                // Called on publishTransaction
-                virtual void txPublished(const std::string &error) = 0;
+				// Called on publishTransaction
+				virtual void txPublished(const std::string &error) = 0;
 
-                virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
-            };
+				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
+			};
 
-        public:
-            PeerManager(const ChainParams& params,
-                        const WalletPtr &wallet,
-                        uint32_t earliestKeyTime,
-                        const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
-                        const SharedWrapperList<Peer, BRPeer*> &peers,
-                        const boost::shared_ptr<Listener> &listener);
-            ~PeerManager();
+		public:
+			PeerManager(const ChainParams &params,
+						const WalletPtr &wallet,
+						uint32_t earliestKeyTime,
+						const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+						const SharedWrapperList<Peer, BRPeer *> &peers,
+						const boost::shared_ptr<Listener> &listener);
 
-            virtual std::string toString() const;
+			~PeerManager();
 
-            virtual BRPeerManager *getRaw() const;
+			virtual std::string toString() const;
 
-            /**
-            * Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
-            * status changes)
-            */
-            void connect();
+			virtual BRPeerManager *getRaw() const;
 
-            /**
-            * Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or
-            * savePeers() callbacks to fire)
-            */
-            void disconnect();
+			/**
+			* Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
+			* status changes)
+			*/
+			void connect();
 
-            void rescan();
+			/**
+			* Disconnect from bitcoin peer-to-peer network (may cause syncFailed(), saveBlocks() or
+			* savePeers() callbacks to fire)
+			*/
+			void disconnect();
 
-            uint32_t getEstimatedBlockHeight() const;
+			void rescan();
 
-            uint32_t getLastBlockHeight() const;
+			uint32_t getEstimatedBlockHeight() const;
 
-            uint32_t getLastBlockTimestamp() const;
+			uint32_t getLastBlockHeight() const;
 
-            double getSyncProgress(uint32_t startHeight);
+			uint32_t getLastBlockTimestamp() const;
 
-            Peer::ConnectStatus getConnectStatus() const;
+			double getSyncProgress(uint32_t startHeight);
 
-            bool useFixedPeer(const std::string &node, int port);
+			Peer::ConnectStatus getConnectStatus() const;
 
-            std::string getCurrentPeerName() const;
+			bool useFixedPeer(const std::string &node, int port);
 
-            std::string getDownloadPeerName() const;
+			std::string getCurrentPeerName() const;
 
-            size_t getPeerCount() const;
+			std::string getDownloadPeerName() const;
 
-            void publishTransaction(const TransactionPtr& transaction);
+			size_t getPeerCount() const;
 
-            uint64_t getRelayCount (const UInt256 &txHash) const;
+			void publishTransaction(const TransactionPtr &transaction);
+
+			uint64_t getRelayCount(const UInt256 &txHash) const;
 
 		private:
-            void createGenesisBlock() const;
+			void createGenesisBlock() const;
 
-            std::vector<BRMerkleBlock *>
-            getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
-        private:
-            BRPeerManager* _manager;
+			std::vector<BRMerkleBlock *>
+			getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
 
-            WalletPtr _wallet;
+			static int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
+											   const BRSet *blockSet);
 
-            boost::weak_ptr<Listener> _listener;
-        };
+			static int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
+										uint32_t targetTimePerBlock);
 
-        typedef boost::shared_ptr<PeerManager> PeerManagerPtr;
+			static int
+			verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous, uint32_t transitionTime,
+								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock);
 
-    }
+		private:
+			BRPeerManager *_manager;
+
+			WalletPtr _wallet;
+			ChainParams _chainParams;
+			boost::weak_ptr<Listener> _listener;
+		};
+
+		typedef boost::shared_ptr<PeerManager> PeerManagerPtr;
+
+	}
 }
 
 #endif //__ELASTOS_SDK_PEERMANAGER_H__

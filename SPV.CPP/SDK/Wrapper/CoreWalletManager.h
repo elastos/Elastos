@@ -21,17 +21,15 @@ namespace Elastos {
 				public PeerManager::Listener {
 
 		public:
-			CoreWalletManager();
+			CoreWalletManager(const ChainParams &chainParams);
 
 			virtual ~CoreWalletManager();
 
 			void init(const MasterPubKeyPtr &masterPubKey,
-					  const ChainParams &chainParams,
 					  uint32_t earliestPeerTime,
 					  bool singleAddress);
 
-			void init(const ChainParams &chainParams,
-					  uint32_t earliestPeerTime,
+			void init(uint32_t earliestPeerTime,
 					  const std::vector<std::string> &initialAddresses);
 
 			const WalletPtr &getWallet();

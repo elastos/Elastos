@@ -12,6 +12,7 @@
 #include "BRArray.h"
 #include "ELATransaction.h"
 #include "ELAMerkleBlock.h"
+#include "arith_uint256.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -51,7 +52,8 @@ namespace Elastos {
 
 					SharedWrapperList<MerkleBlock, BRMerkleBlock *> *coreBlocks = new SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
-						coreBlocks->push_back(MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *)blocks[i]))));
+						coreBlocks->push_back(
+								MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *) blocks[i]))));
 					}
 					listener->lock()->saveBlocks(replace, *coreBlocks);
 				}
@@ -62,7 +64,7 @@ namespace Elastos {
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
 
-					SharedWrapperList<Peer, BRPeer*> *corePeers = new SharedWrapperList<Peer, BRPeer*>();
+					SharedWrapperList<Peer, BRPeer *> *corePeers = new SharedWrapperList<Peer, BRPeer *>();
 					for (size_t i = 0; i < count; ++i) {
 						corePeers->push_back(PeerPtr(new Peer(peers[i])));
 					}
@@ -112,9 +114,10 @@ namespace Elastos {
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
 								 const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
-								 const SharedWrapperList<Peer, BRPeer*> &peers,
+								 const SharedWrapperList<Peer, BRPeer *> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener) :
-				_wallet(wallet) {
+				_wallet(wallet),
+				_chainParams(params) {
 
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
@@ -125,7 +128,7 @@ namespace Elastos {
 			}
 
 			_manager = BRPeerManagerNew(
-					params.getRaw(),
+					_chainParams.getRaw(),
 					wallet->getRaw(),
 					earliestKeyTime,
 					getRawMerkleBlocks(blocks).data(),
@@ -136,9 +139,9 @@ namespace Elastos {
 			);
 			PeerMessageManager::instance().initMessages(_manager);
 
-			if(_manager->lastBlock == nullptr) {
-				createGenesisBlock();
-			}
+//			if (_manager->lastBlock == nullptr) {
+//				createGenesisBlock();
+//			}
 
 			BRPeerManagerSetCallbacks(_manager, &_listener,
 									  syncStarted,
@@ -148,7 +151,8 @@ namespace Elastos {
 									  savePeers,
 									  networkIsReachable,
 									  threadCleanup,
-									  blockHeightIncreased);
+									  blockHeightIncreased,
+									  verifyDifficultyWrapper);
 		}
 
 		PeerManager::~PeerManager() {
@@ -240,11 +244,12 @@ namespace Elastos {
 		void PeerManager::createGenesisBlock() const {
 			ELAMerkleBlock *block = ELAMerkleBlockNew();
 			block->raw.height = 0;
-			block->raw.blockHash = Utils::UInt256FromString("8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");
+			block->raw.blockHash = Utils::UInt256FromString(
+					"8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");
 			block->raw.timestamp = 1513936800;
 			block->raw.target = 486801407;
 			BRSetAdd(_manager->blocks, block);
-			_manager->lastBlock = (BRMerkleBlock *)block;
+			_manager->lastBlock = (BRMerkleBlock *) block;
 		}
 
 		std::vector<BRMerkleBlock *>
@@ -253,11 +258,75 @@ namespace Elastos {
 
 			size_t len = blocks.size();
 			for (size_t i = 0; i < len; ++i) {
-				ELAMerkleBlock *temp = (ELAMerkleBlock *)blocks[i]->getRaw();
-				list.push_back((BRMerkleBlock *)ELAMerkleBlockCopy(temp));
+				ELAMerkleBlock *temp = (ELAMerkleBlock *) blocks[i]->getRaw();
+				list.push_back((BRMerkleBlock *) ELAMerkleBlockCopy(temp));
 			}
 
 			return list;
+		}
+
+		int PeerManager::verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
+												 const BRSet *blockSet) {
+			const ELAChainParams *wrapperParams = (const ELAChainParams *) params;
+			return verifyDifficulty(block, blockSet, wrapperParams->TargetTimeSpan, wrapperParams->TargetTimePerBlock);
+		}
+
+		int PeerManager::verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
+										  uint32_t targetTimePerBlock) {
+			const BRMerkleBlock *previous, *b = nullptr;
+			uint32_t i;
+
+			assert(block != nullptr);
+			assert(blockSet != nullptr);
+
+			uint64_t blocksPerRetarget = targetTimeSpan / targetTimePerBlock;
+
+			// check if we hit a difficulty transition, and find previous transition block
+			if ((block->height % blocksPerRetarget) == 0) {
+				for (i = 0, b = block; b && i < blocksPerRetarget; i++) {
+					b = (const BRMerkleBlock *) BRSetGet(blockSet, &b->prevBlock);
+				}
+			}
+
+			previous = (const BRMerkleBlock *) BRSetGet(blockSet, &block->prevBlock);
+			return verifyDifficultyInner(block, previous, (b) ? b->timestamp : 0, targetTimeSpan, targetTimePerBlock);
+		}
+
+		int PeerManager::verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous,
+											   uint32_t transitionTime, uint32_t targetTimeSpan,
+											   uint32_t targetTimePerBlock) {
+			int r = 1;
+
+			assert(block != nullptr);
+			assert(previous != nullptr);
+
+			uint64_t blocksPerRetarget = targetTimeSpan / targetTimePerBlock;
+
+			if (!previous || !UInt256Eq(&(block->prevBlock), &(previous->blockHash)) ||
+				block->height != previous->height + 1)
+				r = 0;
+			if (r && (block->height % blocksPerRetarget) == 0 && transitionTime == 0) r = 0;
+
+			if (r && (block->height % blocksPerRetarget) == 0) {
+				uint32_t timespan = previous->timestamp - transitionTime;
+
+				arith_uint256 target;
+				target.SetCompact(previous->target);
+
+				// limit difficulty transition to -75% or +400%
+				if (timespan < targetTimeSpan / 4) timespan = uint32_t(targetTimeSpan) / 4;
+				if (timespan > targetTimeSpan * 4) timespan = uint32_t(targetTimeSpan) * 4;
+
+				// TARGET_TIMESPAN happens to be a multiple of 256, and since timespan is at least TARGET_TIMESPAN/4, we don't
+				// lose precision when target is multiplied by timespan and then divided by TARGET_TIMESPAN/256
+				target *= timespan;
+				target /= targetTimeSpan;
+
+				uint32_t actualTargetCompact = target.GetCompact();
+				if (block->target != actualTargetCompact) r = 0;
+			} else if (r && previous->height != 0 && block->target != previous->target) r = 0;
+
+			return r;
 		}
 	}
 }
