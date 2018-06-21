@@ -172,55 +172,57 @@ namespace Elastos {
 		PeerMessageManager::~PeerMessageManager() {
 		}
 
-		void PeerMessageManager::initMessages(BRPeerManager *peerManager) {
+		BRPeerMessages *PeerMessageManager::createMessageManager() {
 
-			peerManager->peerMessages = BRPeerMessageNew();
+			BRPeerMessages *peerMessages = BRPeerMessageNew();
 
-			peerManager->peerMessages->MerkleBlockNew = BRMerkleBlockNewWrapper;
-			peerManager->peerMessages->MerkleBlockFree = BRMerkleBlockFreeWrapper;
-			peerManager->peerMessages->ApplyFreeBlock = setApplyFreeBlock;
+			peerMessages->MerkleBlockNew = BRMerkleBlockNewWrapper;
+			peerMessages->MerkleBlockFree = BRMerkleBlockFreeWrapper;
+			peerMessages->ApplyFreeBlock = setApplyFreeBlock;
 
-			peerManager->peerMessages->BRPeerAcceptTxMessage = PeerAcceptTxMessage;
-			peerManager->peerMessages->BRPeerSendTxMessage = PeerSendTxMessage;
+			peerMessages->BRPeerAcceptTxMessage = PeerAcceptTxMessage;
+			peerMessages->BRPeerSendTxMessage = PeerSendTxMessage;
 			_wrapperMessages[MSG_TX] = WrapperMessagePtr(new TransactionMessage);
 
-			peerManager->peerMessages->BRPeerAcceptMerkleblockMessage = PeerAcceptMerkleblockMessage;
+			peerMessages->BRPeerAcceptMerkleblockMessage = PeerAcceptMerkleblockMessage;
 			_wrapperMessages[MSG_MERKLEBLOCK] = WrapperMessagePtr(new MerkleBlockMessage);
 
-			peerManager->peerMessages->BRPeerAcceptVersionMessage = PeerAcceptVersionMessage;
-			peerManager->peerMessages->BRPeerSendVersionMessage = PeerSendVersionMessage;
+			peerMessages->BRPeerAcceptVersionMessage = PeerAcceptVersionMessage;
+			peerMessages->BRPeerSendVersionMessage = PeerSendVersionMessage;
 			_messages[MSG_VERSION] = MessagePtr(new VersionMessage);
 
-			peerManager->peerMessages->BRPeerAcceptInventoryMessage = PeerAcceptInventoryMessage;
-			peerManager->peerMessages->BRPeerSendInventoryMessage = PeerSendInventoryMessage;
+			peerMessages->BRPeerAcceptInventoryMessage = PeerAcceptInventoryMessage;
+			peerMessages->BRPeerSendInventoryMessage = PeerSendInventoryMessage;
 			_messages[MSG_INV] = MessagePtr(new InventoryMessage);
 
-			peerManager->peerMessages->BRPeerAcceptAddressMessage = PeerAcceptAddressMessage;
-			peerManager->peerMessages->BRPeerSendAddressMessage = PeerSendAddressMessage;
+			peerMessages->BRPeerAcceptAddressMessage = PeerAcceptAddressMessage;
+			peerMessages->BRPeerSendAddressMessage = PeerSendAddressMessage;
 			_messages[MSG_ADDR] = MessagePtr(new AddressMessage);
 
-			peerManager->peerMessages->BRPeerAcceptNotFoundMessage = PeerAcceptNotFoundMessage;
+			peerMessages->BRPeerAcceptNotFoundMessage = PeerAcceptNotFoundMessage;
 			_messages[MSG_NOTFOUND] = MessagePtr(new NotFoundMessage);
 
-			peerManager->peerMessages->BRPeerSendFilterloadMessage = PeerSendFilterload;
+			peerMessages->BRPeerSendFilterloadMessage = PeerSendFilterload;
 			_wrapperMessages[MSG_FILTERLOAD] = WrapperMessagePtr(new BloomFilterMessage);
 
-			peerManager->peerMessages->BRPeerSendGetblocksMessage = PeerSendGetblocks;
+			peerMessages->BRPeerSendGetblocksMessage = PeerSendGetblocks;
 			_messages[MSG_GETBLOCKS] = MessagePtr(new GetBlocksMessage);
 
 			//use same message with getblocks
-			peerManager->peerMessages->BRPeerSendGetheadersMessage = PeerSendGetblocks;
+			peerMessages->BRPeerSendGetheadersMessage = PeerSendGetblocks;
 
-			peerManager->peerMessages->BRPeerSendGetdataMessage = PeerSendGetdata;
-			peerManager->peerMessages->BRPeerAcceptGetdataMessage = PeerAcceptGetData;
+			peerMessages->BRPeerSendGetdataMessage = PeerSendGetdata;
+			peerMessages->BRPeerAcceptGetdataMessage = PeerAcceptGetData;
 			_messages[MSG_GETDATA] = MessagePtr(new GetDataMessage);
 
-			peerManager->peerMessages->BRPeerSendPingMessage = PeerSendPingMessage;
-			peerManager->peerMessages->BRPeerAcceptPingMessage = PeerAcceptPingMessage;
+			peerMessages->BRPeerSendPingMessage = PeerSendPingMessage;
+			peerMessages->BRPeerAcceptPingMessage = PeerAcceptPingMessage;
 			_messages[MSG_PING] = MessagePtr(new PingMessage);
 
-			peerManager->peerMessages->BRPeerAcceptPongMessage = PeerAcceptPongMessage;
+			peerMessages->BRPeerAcceptPongMessage = PeerAcceptPongMessage;
 			_messages[MSG_PONG] = MessagePtr(new PongMessage);
+
+			return peerMessages;
 		}
 
 		PeerMessageManager &PeerMessageManager::instance() {

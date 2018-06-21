@@ -28,7 +28,7 @@ namespace Elastos {
 			typedef boost::shared_ptr<IWrapperMessage> WrapperMessagePtr;
 			const WrapperMessagePtr &getWrapperMessage(const std::string &message);
 
-			void initMessages(BRPeerManager *peerManager);
+			BRPeerMessages *createMessageManager();
 
 		private:
 			PeerMessageManager();

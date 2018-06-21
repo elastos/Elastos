@@ -15,6 +15,8 @@ namespace Elastos {
 		ChainParams::ChainParams(const ChainParams &chainParams) {
 			_chainParams = boost::shared_ptr<ELAChainParams>(
 					new ELAChainParams(*(ELAChainParams *) chainParams.getRaw()));
+			_checkPoints = chainParams._checkPoints;
+			_chainParams->Raw.checkpoints = _checkPoints.data();
 		}
 
 		ChainParams::ChainParams(const CoinConfig &coinConfig) {
@@ -52,6 +54,8 @@ namespace Elastos {
 
 		ChainParams &ChainParams::operator=(const ChainParams &params) {
 			_chainParams = boost::shared_ptr<ELAChainParams>(new ELAChainParams(*(ELAChainParams *) params.getRaw()));
+			_checkPoints = params._checkPoints;
+			_chainParams->Raw.checkpoints = _checkPoints.data();
 			return *this;
 		}
 

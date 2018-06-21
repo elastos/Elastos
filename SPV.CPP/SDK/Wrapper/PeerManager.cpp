@@ -135,9 +135,8 @@ namespace Elastos {
 					blocks.size(),
 					peerArray,
 					peers.size(),
-					nullptr
+					PeerMessageManager::instance().createMessageManager()
 			);
-			PeerMessageManager::instance().initMessages(_manager);
 
 //			if (_manager->lastBlock == nullptr) {
 //				createGenesisBlock();
