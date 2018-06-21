@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/elastos/Elastos.ELA.SideChain/common"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	. "github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
@@ -368,15 +368,12 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 	}
 
 	genesisHash, _ := DefaultLedger.Store.GetBlockHash(uint32(0))
-	genesisProgramHash, err := crypto.GetGenesisProgramHash(genesisHash)
+	genesisProgramHash, err := common.GetGenesisProgramHash(genesisHash)
 	if err != nil {
 		return errors.New("Genesis block bytes to program hash failed")
 	}
 
 	//check output fee and rate
-	rate := Fixed64(config.Parameters.ExchangeRate)
-
-	var oriTotalFee Fixed64
 	var oriOutputTotalAmount Fixed64
 	for i := 0; i < len(mainChainTransaction.Outputs); i++ {
 		if mainChainTransaction.Outputs[i].ProgramHash.IsEqual(*genesisProgramHash) {
@@ -386,8 +383,8 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 			if payloadObj.CrossChainAmount[i] > mainChainTransaction.Outputs[i].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
 				return errors.New("Invalid transaction fee")
 			}
-			oriOutputTotalAmount += mainChainTransaction.Outputs[i].Value
-			oriTotalFee += mainChainTransaction.Outputs[i].Value - payloadObj.CrossChainAmount[i]
+			crossChainAmount := Fixed64(payloadObj.CrossChainAmount[i] * Fixed64(config.Parameters.ExchangeRate*100000000) / 100000000)
+			oriOutputTotalAmount += crossChainAmount
 
 			programHash, err := Uint168FromAddress(payloadObj.CrossChainAddress[i])
 			if err != nil {
@@ -395,7 +392,7 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 			}
 			isContained := false
 			for _, output := range txn.Outputs {
-				if output.ProgramHash == *programHash && output.Value == payloadObj.CrossChainAmount[i]*rate {
+				if output.ProgramHash == *programHash && output.Value == crossChainAmount {
 					isContained = true
 					break
 				}
@@ -411,7 +408,7 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 		targetOutputTotalAmount += output.Value
 	}
 
-	if targetOutputTotalAmount != (oriOutputTotalAmount-oriTotalFee)*rate {
+	if targetOutputTotalAmount != oriOutputTotalAmount {
 		return errors.New("Output and fee verify failed")
 	}
 
@@ -431,16 +428,12 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 	}
 
 	//check cross chain output index in payload
-	for _, index := range payloadObj.OutputIndex {
-		count := 0
-		for _, i := range payloadObj.OutputIndex {
-			if i == index {
-				count++
-			}
-		}
-		if count != 1 {
+	outputIndexMap := make(map[uint64]struct{})
+	for _, outputIndex := range payloadObj.OutputIndex {
+		if _, exist := outputIndexMap[outputIndex]; exist {
 			return errors.New("Invalid transaction payload cross chain index")
 		}
+		outputIndexMap[outputIndex] = struct{}{}
 	}
 
 	//check address in outputs and payload
@@ -452,6 +445,11 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 	}
 	if len(payloadObj.CrossChainAddress) != crossChainCount {
 		return errors.New("Invalid transaction cross chain counts")
+	}
+	for _, address := range payloadObj.CrossChainAddress {
+		if address == "" {
+			return errors.New("Invalid transaction cross chain address")
+		}
 	}
 
 	//check cross chain amount in payload
