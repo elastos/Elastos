@@ -70,6 +70,7 @@ type Configuration struct {
 	Version             int              `json:"Version"`
 	SeedList            []string         `json:"SeedList"`
 	HttpRestPort        int              `json:"HttpRestPort"`
+	MinCrossChainTxFee  int              `json:"MinCrossChainTxFee"`
 	RestCertPath        string           `json:"RestCertPath"`
 	RestKeyPath         string           `json:"RestKeyPath"`
 	HttpInfoPort        uint16           `json:"HttpInfoPort"`
@@ -90,7 +91,7 @@ type Configuration struct {
 	MultiCoreNum        uint             `json:"MultiCoreNum"`
 	MaxLogsSize         int64            `json:"MaxLogsSize"`
 	MaxPerLogSize       int64            `json:"MaxPerLogSize"`
-	MaxTxsInBlock        int              `json:"MaxTransactionInBlock"`
+	MaxTxsInBlock       int              `json:"MaxTransactionInBlock"`
 	MaxBlockSize        int              `json:"MaxBlockSize"`
 	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
 	Arbiters            []string         `json:"Arbiters"`
