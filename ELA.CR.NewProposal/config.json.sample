@@ -5,6 +5,7 @@
     "SeedList": [
       "127.0.0.1:30338"
     ],
+    "MinCrossChainTxFee": 10000,
     "HttpInfoPort": 20333,
     "HttpInfoStart": true,
     "HttpRestPort": 20334,
