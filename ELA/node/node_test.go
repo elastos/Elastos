@@ -1,6 +1,8 @@
 package node
 
 import (
+	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"testing"
 	"time"
@@ -17,7 +19,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInitLocalNode(t *testing.T) {
+func initLocalNode(t *testing.T) {
 	log.Init(
 		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
@@ -32,7 +34,6 @@ func TestInitLocalNode(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	defer chainStore.Close()
 
 	err = Init(chainStore)
 	if err != nil {
@@ -42,22 +43,57 @@ func TestInitLocalNode(t *testing.T) {
 	InitLocalNode()
 }
 
+func newTestNode(t *testing.T, port uint16) ( protocol.Noder, protocol.Noder) {
+	buf := make([]byte, 8)
+	conn, err := NonTLSDial(fmt.Sprint("127.0.0.1:", port))
+	if err != nil {
+		t.FailNow()
+	}
+	this := NewNode(config.Parameters.Magic, conn)
+	rand.Read(buf)
+	this.id = binary.BigEndian.Uint64(buf)
+	this.addr, err = parseIPaddr(conn.RemoteAddr().String())
+
+	log.Infof("Local node %s connect with %s with %s",
+		conn.LocalAddr().String(), conn.RemoteAddr().String(),
+		conn.RemoteAddr().Network())
+	this.Read()
+
+	that := <-LocalNode.handshakeQueue.capChan
+	LocalNode.handshakeQueue.capChan <- that
+	LocalNode.RemoveFromHandshakeQueue(that)
+
+	this.SetState(p2p.ESTABLISH)
+	that.SetState(p2p.ESTABLISH)
+
+	return this, that
+}
+
 func TestNode_Connect(t *testing.T) {
-	for i := 0; i < protocol.DefaultMaxPeers+10; i++ {
+	initLocalNode(t)
+
+	// handshake queue do not over flow capacity
+	for i := 0; i < protocol.DefaultMaxPeers*2; i++ {
 		_, err := NonTLSDial(fmt.Sprint("127.0.0.1:", config.Parameters.NodePort))
 		assert.NoError(t, err)
 	}
-	if len(LocalNode.handshakeQueue.conns) > protocol.DefaultMaxPeers {
-		t.Errorf("InboundQueue outof capacity %d", len(LocalNode.handshakeQueue.conns))
+	assert.Equal(t, protocol.DefaultMaxPeers, len(LocalNode.handshakeQueue.conns))
+
+	// handshake queue should cleaned after handshake timeout
+	start := time.Now()
+	for len(LocalNode.handshakeQueue.conns) > 0 {
+		time.Sleep(time.Millisecond * 100)
 	}
-	time.Sleep(time.Second * protocol.HandshakeTimeout)
+	end := time.Now()
+	if end.After(start.Add(time.Second * 5)) {
+		t.Errorf("Timeout duration longer than expected, actual duration %s", end.Sub(start).String())
+	}
+	t.Logf("Timeout duration %s", end.Sub(start).String())
 }
 
 func TestMessages(t *testing.T) {
 	// Only cased message types can go through
 	openMsgTypes := []string{
-		p2p.CmdVersion,
-		p2p.CmdVerAck,
 		p2p.CmdGetAddr,
 		p2p.CmdPing,
 		p2p.CmdPong,
@@ -79,15 +115,18 @@ func TestMessages(t *testing.T) {
 
 	allMsgTypes := append(openMsgTypes, innerMsgTypes...)
 
-	conn, err := NonTLSDial(fmt.Sprint("127.0.0.1:", config.Parameters.NodePort))
-	if !assert.NoError(t, err) {
-		t.FailNow()
+	this, that := newTestNode(t, config.Parameters.NodeOpenPort)
+	this.UpdateMsgHelper(NewHandlerEIP001(this))
+	that.UpdateMsgHelper(NewHandlerEIP001(that))
+	for _, cmd := range openMsgTypes {
+		this.(*node).Write(newMessage(cmd))
 	}
 
-	node := NewNode(config.Parameters.Magic, conn)
-	node.UpdateMsgHelper(NewHandlerEIP001(node))
+	this, that = newTestNode(t, config.Parameters.NodePort)
+	this.UpdateMsgHelper(NewHandlerEIP001(this))
+	that.UpdateMsgHelper(NewHandlerEIP001(that))
 	for _, cmd := range allMsgTypes {
-		node.Write(newMessage(cmd))
+		this.(*node).Write(newMessage(cmd))
 	}
 }
 
@@ -128,4 +167,8 @@ func newMessage(cmd string) p2p.Message {
 		message = new(msg.Reject)
 	}
 	return message
+}
+
+func TestNodeDone(t *testing.T) {
+	//DefaultLedger.Store.Close()
 }

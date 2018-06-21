@@ -69,7 +69,7 @@ func listenNodePort() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Error("Error accepting", err.Error())
+			log.Error("Error accepting", err)
 			return
 		}
 		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
@@ -84,7 +84,7 @@ func listenNodePort() {
 func initNonTlsListen() (net.Listener, error) {
 	listener, err := net.Listen("tcp", fmt.Sprint(":", Parameters.NodePort))
 	if err != nil {
-		log.Error("Error listening\n", err.Error())
+		log.Error("Error listening", err)
 		return nil, err
 	}
 	return listener, nil
