@@ -424,6 +424,7 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 		return errors.New("Invalid transaction payload type")
 	}
 	if len(payloadObj.CrossChainAddress) == 0 ||
+		len(payloadObj.CrossChainAddress) > len(txn.Outputs) ||
 		len(payloadObj.CrossChainAddress) != len(payloadObj.CrossChainAmount) ||
 		len(payloadObj.CrossChainAmount) != len(payloadObj.OutputIndex) {
 		return errors.New("Invalid transaction payload content")
@@ -442,7 +443,7 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 		}
 	}
 
-	//check cross chain address in payload
+	//check address in outputs and payload
 	var crossChainCount int
 	for _, output := range txn.Outputs {
 		if output.ProgramHash.IsEqual(Uint168{}) {
@@ -451,17 +452,6 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 	}
 	if len(payloadObj.CrossChainAddress) != crossChainCount {
 		return errors.New("Invalid transaction cross chain counts")
-	}
-
-	genesisHash, _ := DefaultLedger.Store.GetBlockHash(uint32(0))
-	genesisAddress, err := crypto.GetGenesisAddress(genesisHash)
-	if err != nil {
-		return errors.New("Get genesis address failed")
-	}
-	for _, address := range payloadObj.CrossChainAddress {
-		if address != genesisAddress {
-			return errors.New("Invalid transaction cross chain address")
-		}
 	}
 
 	//check cross chain amount in payload
