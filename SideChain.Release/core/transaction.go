@@ -291,6 +291,10 @@ func (tx *Transaction) IsRechargeToSideChainTx() bool {
 	return tx.TxType == RechargeToSideChain
 }
 
+func (tx *Transaction) IsTransferCrossChainAssetTx() bool {
+	return tx.TxType == TransferCrossChainAsset
+}
+
 func (tx *Transaction) IsRegisterIdentificationTx() bool {
 	return tx.TxType == RegisterIdentification
 }
