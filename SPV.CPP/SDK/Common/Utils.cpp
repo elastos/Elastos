@@ -14,7 +14,7 @@
 #include "BTCBase58.h"
 #include "Base64.h"
 #include "BRAddress.h"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "Log.h"
 
 namespace Elastos {

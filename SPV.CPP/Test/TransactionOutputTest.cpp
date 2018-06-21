@@ -6,7 +6,7 @@
 
 #include "ELATxOutput.h"
 #include "catch.hpp"
-#include "TransactionOutput.h"
+#include "SDK/Transaction/TransactionOutput.h"
 #include "BRAddress.h"
 #include "Utils.h"
 

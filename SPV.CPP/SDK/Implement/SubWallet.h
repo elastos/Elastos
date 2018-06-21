@@ -151,25 +151,9 @@ namespace Elastos {
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 
-			virtual void completeTransaction(const TransactionPtr &transaction);
+			virtual void completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 			bool filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid);
-
-			virtual bool checkTransactionOutput(const TransactionPtr &transaction);
-
-			virtual bool checkTransactionAttribute(const TransactionPtr &transaction);
-
-			virtual bool checkTransactionProgram(const TransactionPtr &transaction);
-
-			virtual bool checkTransactionPayload(const TransactionPtr &transaction);
-
-			virtual void completedTransactionInputs(const TransactionPtr &transaction);
-
-			virtual void completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount);
-
-			virtual void completedTransactionAssetID(const TransactionPtr &transaction);
-
-			virtual void completedTransactionPayload(const TransactionPtr &transaction);
 
 			virtual void fireTransactionStatusChanged(const std::string &txid,
 													  const std::string &status,

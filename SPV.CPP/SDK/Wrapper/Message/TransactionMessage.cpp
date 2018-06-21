@@ -7,7 +7,7 @@
 
 #include "Peer.h"
 #include "TransactionMessage.h"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "Log.h"
 #include "Utils.h"
 #include "ELATransaction.h"

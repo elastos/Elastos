@@ -8,7 +8,7 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <SDK/Wrapper/Transaction.h>
+#include <SDK/Transaction/Transaction.h>
 #include <SDK/KeyStore/CoinConfig.h>
 
 #include "MasterPubKey.h"

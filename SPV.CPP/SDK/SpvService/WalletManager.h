@@ -16,7 +16,7 @@
 #include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
 #include "KeyStore/KeyStore.h"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "CMemBlock.h"
 #include "MasterPrivKey.h"
 

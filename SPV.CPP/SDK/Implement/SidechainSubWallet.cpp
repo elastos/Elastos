@@ -10,6 +10,8 @@
 #include "ELACoreExt/ELATxOutput.h"
 #include "ELACoreExt/Payload/PayloadTransferCrossChainAsset.h"
 #include "ParamChecker.h"
+#include "Transaction/SidechainTransactionChecker.h"
+#include "Transaction/SidechainTransactionCompleter.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -92,17 +94,13 @@ namespace Elastos {
 		}
 
 		void SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			//todo different verify from base class
-			if (transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset) {
-				throw std::logic_error("SidechainSubWallet transaction type error");
-			}
-
-			SubWallet::verifyRawTransaction(transaction);
+			SidechainTransactionChecker checker(transaction);
+			checker.Check();
 		}
 
-		void SidechainSubWallet::completeTransaction(const TransactionPtr &transaction) {
-			//todo different complete from base class
-			SubWallet::completeTransaction(transaction);
+		void SidechainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+			SidechainTransactionCompleter completer(transaction, _walletManager->getWallet());
+			completer.Complete(actualFee);
 		}
 	}
 }

@@ -18,9 +18,11 @@
 #include "SubWalletCallback.h"
 #include "Utils.h"
 #include "Log.h"
-#include "TransactionOutput.h"
 #include "ElaPeerConfig.h"
 #include "ParamChecker.h"
+#include "Transaction/TransactionOutput.h"
+#include "Transaction/TransactionChecker.h"
+#include "Transaction/TransactionCompleter.h"
 
 namespace fs = boost::filesystem;
 
@@ -385,48 +387,20 @@ namespace Elastos {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(transactionJson);
 
-			//todo [ymz] edit fee
-
 			verifyRawTransaction(transaction);
-			completeTransaction(transaction);
+			completeTransaction(transaction, fee);
 
 			return sendTransactionInternal(transaction, payPassword);
 		}
 
 		void SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			if (!checkTransactionOutput(transaction)) {
-				throw std::logic_error("checkTransactionOutput error.");
-			}
-
-			if (!checkTransactionAttribute(transaction)) {
-				throw std::logic_error("checkTransactionAttribute error.");
-			}
-
-			if (!checkTransactionProgram(transaction)) {
-				throw std::logic_error("checkTransactionProgram error.");
-			}
-
-			if (!checkTransactionPayload(transaction)) {
-				throw std::logic_error("checkTransactionPayload error.");
-			}
+			TransactionChecker checker(transaction);
+			checker.Check();
 		}
 
-		void SubWallet::completeTransaction(const TransactionPtr &transaction) {
-			if (transaction->getRaw()->inCount <= 0) {
-				completedTransactionInputs(transaction);
-			}
-
-			uint64_t inputFee = _walletManager->getWallet()->getInputsFee(transaction);
-//			assert(inputFee < UINT64_MAX);
-			uint64_t outputFee = _walletManager->getWallet()->getOutputFee(transaction);
-
-			if (inputFee - outputFee > 0) {
-				completedTransactionOutputs(transaction, inputFee - outputFee);
-			}
-
-			completedTransactionAssetID(transaction);
-
-			completedTransactionPayload(transaction);
+		void SubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+			TransactionCompleter completer(transaction, _walletManager->getWallet());
+			completer.Complete(actualFee);
 		}
 
 		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
@@ -455,102 +429,6 @@ namespace Elastos {
 			}
 
 			return false;
-		}
-
-		bool SubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
-
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
-			size_t size = outputs.size();
-			if (size < 1) {
-				return false;
-			}
-			for (size_t i = 0; i < size; ++i) {
-				TransactionOutputPtr output = outputs[i];
-				if (!Address::UInt168IsValid(output->getProgramHash())) {
-					return false;
-				}
-			}
-			return true;
-
-		}
-
-		bool SubWallet::checkTransactionAttribute(const TransactionPtr &transaction) {
-			const std::vector<AttributePtr> attributes = transaction->getAttributes();
-			size_t size = attributes.size();
-			for (size_t i = 0; i < size; ++i) {
-				AttributePtr attr = attributes[i];
-				if (!attr->isValid()) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		bool SubWallet::checkTransactionProgram(const TransactionPtr &transaction) {
-			const std::vector<ProgramPtr> programs = transaction->getPrograms();
-			size_t size = programs.size();
-			for (size_t i = 0; i < size; ++i) {
-				if (!programs[i]->isValid()) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-
-		bool SubWallet::checkTransactionPayload(const TransactionPtr &transaction) {
-			const PayloadPtr payloadPtr = transaction->getPayload();
-			return payloadPtr->isValid();
-		}
-
-		void SubWallet::completedTransactionInputs(const TransactionPtr &transaction) {
-			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-			BRUTXO *o = nullptr;
-			ELATransaction *tx = nullptr;
-			for (size_t i = 0; i < array_count(wallet->utxos); i++) {
-				o = &wallet->utxos[i];
-				tx = (ELATransaction *) BRSetGet(wallet->allTx, o);
-				if (!tx || o->n >= tx->raw.outCount) continue;
-
-				CMBlock script = tx->outputs[o->n]->getScript();
-				transaction->addInput(tx->raw.txHash, o->n, tx->outputs[o->n]->getAmount(), script, CMBlock(),
-									  TXIN_SEQUENCE);
-			}
-		}
-
-		void SubWallet::completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount) {
-			ELATxOutput *o = new ELATxOutput();
-			uint64_t maxAmount = _walletManager->getWallet()->getMaxOutputAmount();
-			o->raw.amount = (amount < maxAmount) ? amount : maxAmount;
-			std::string addr = _walletManager->getWallet()->getReceiveAddress();
-			memcpy(o->raw.address, addr.data(), addr.size());
-
-			BRTxOutputSetAddress((BRTxOutput *) o, addr.c_str());
-
-			TransactionOutput *output = new TransactionOutput(o);
-			transaction->addOutput(output);
-		}
-
-		void SubWallet::completedTransactionAssetID(const TransactionPtr &transaction) {
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
-			size_t size = outputs.size();
-			if (size < 1) {
-				throw std::logic_error("completedTransactionAssetID transaction has't outputs");
-			}
-
-			UInt256 zero = UINT256_ZERO;
-			UInt256 assetID = Key::getSystemAssetId();
-
-			for (size_t i = 0; i < size; ++i) {
-				TransactionOutputPtr output = outputs[i];
-				if (UInt256Eq(&output->getAssetId(), &zero) == 1) {
-					output->setAssetId(assetID);
-				}
-			}
-		}
-
-		void SubWallet::completedTransactionPayload(const TransactionPtr &transaction) {
-
 		}
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {

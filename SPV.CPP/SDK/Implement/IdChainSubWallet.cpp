@@ -12,6 +12,8 @@
 #include "IdChainSubWallet.h"
 #include "Utils.h"
 #include "SubWalletCallback.h"
+#include "Transaction/IdchainTransactionChecker.h"
+#include "Transaction/IdchainTransactionCompleter.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -83,40 +85,13 @@ namespace Elastos {
 		}
 
 		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			//todo different verify from base class
-			SubWallet::verifyRawTransaction(transaction);
+			IdchainTransactionChecker checker(transaction);
+			checker.Check();
 		}
 
-		bool IdChainSubWallet::checkTransactionOutput(const TransactionPtr &transaction) {
-
-			if (transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
-				return false;
-			}
-
-			SubWallet::checkTransactionOutput(transaction);
-
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
-			size_t size = outputs.size();
-			if (size < 1) {
-				return false;
-			}
-			for (size_t i = 0; i < size; ++i) {
-				TransactionOutputPtr output = outputs[i];
-				if (output->getAddress().empty()) {
-					return false;
-				}
-
-				if (output->getAmount() != 0) {
-					return false;
-				}
-
-			}
-			return true;
-		}
-
-		void IdChainSubWallet::completeTransaction(const TransactionPtr &transaction) {
-			//todo different complete from base class
-			SubWallet::completeTransaction(transaction);
+		void IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+			IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
+			completer.Complete(actualFee);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {

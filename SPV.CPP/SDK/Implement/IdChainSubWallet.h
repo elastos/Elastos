@@ -36,15 +36,13 @@ namespace Elastos {
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 
-			virtual void completeTransaction(const TransactionPtr &transaction);
+			virtual void completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
 			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
-
-			virtual bool checkTransactionOutput(const TransactionPtr &transaction);
 
 		};
 

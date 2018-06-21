@@ -12,6 +12,8 @@
 #include "ELACoreExt/ELATxOutput.h"
 #include "Utils.h"
 #include "ParamChecker.h"
+#include "Transaction/MainchainTransactionChecker.h"
+#include "Transaction/MainchainTransactionCompleter.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -95,39 +97,13 @@ namespace Elastos {
 		}
 
 		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			//todo different verify from base class
-			if (transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset) {
-				throw std::logic_error("MainchainSubWallet transaction type error");
-			}
-
-			SubWallet::verifyRawTransaction(transaction);
+			MainchainTransactionChecker checker(transaction);
+			checker.Check();
 		}
 
-		bool MainchainSubWallet::checkTransactionPayload(const TransactionPtr &transaction) {
-			const PayloadPtr payloadPtr = transaction->getPayload();
-
-			bool isValid = SubWallet::checkTransactionPayload(transaction);
-
-			if (isValid) {
-				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-						static_cast<PayloadTransferCrossChainAsset *>(payloadPtr.get());
-
-				std::vector<uint64_t> outputIndex = payloadTransferCrossChainAsset->getOutputIndex();
-				const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
-				for (size_t i = 0; i < outputIndex.size(); ++i) {
-					if (outputIndex[i] > outputs.size() - 1) {
-						isValid = false;
-						break;
-					}
-				}
-
-			}
-			return isValid;
-		}
-
-		void MainchainSubWallet::completeTransaction(const TransactionPtr &transaction) {
-			//todo different complete from base class
-			return SubWallet::completeTransaction(transaction);
+		void MainchainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+			MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
+			completer.Complete(actualFee);
 		}
 	}
 }

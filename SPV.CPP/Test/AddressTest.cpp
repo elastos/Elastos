@@ -9,7 +9,7 @@
 
 #include "catch.hpp"
 #include "Address.h"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 
 using namespace Elastos::ElaWallet;
 

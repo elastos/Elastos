@@ -17,7 +17,7 @@
 #include "Log.h"
 #include "Key.h"
 #include "ByteStream.h"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "BTCKey.h"
 #include "ParamChecker.h"
 #include "ELABIP32Sequence.h"

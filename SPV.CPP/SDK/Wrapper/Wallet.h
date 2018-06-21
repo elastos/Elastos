@@ -14,11 +14,11 @@
 #include "BRInt.h"
 
 #include "Wrapper.h"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "Address.h"
 #include "SharedWrapperList.h"
 #include "MasterPubKey.h"
-#include "TransactionOutput.h"
+#include "SDK/Transaction/TransactionOutput.h"
 #include "WrapperList.h"
 #include "MasterPrivKey.h"
 #include "AddressCache.h"

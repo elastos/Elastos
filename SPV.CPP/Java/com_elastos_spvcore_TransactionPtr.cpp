@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "JniSmartPointerWrapper.h"
 #include "com_elastos_spvcore_TransactionPtr.h"
 

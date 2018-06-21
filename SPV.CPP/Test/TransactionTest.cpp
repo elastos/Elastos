@@ -6,10 +6,10 @@
 
 #include <Core/BRTransaction.h>
 #include "ELATxOutput.h"
-#include "TransactionOutput.h"
+#include "SDK/Transaction/TransactionOutput.h"
 #include "ELATransaction.h"
 #include "catch.hpp"
-#include "Transaction.h"
+#include "SDK/Transaction/Transaction.h"
 #include "BRTransaction.h"
 #include "Address.h"
 #include "Payload/PayloadCoinBase.h"

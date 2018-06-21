@@ -11,7 +11,7 @@
 
 #include "SDK/ELACoreExt/Payload/PayloadCoinBase.h"
 #include "SDK/Wrapper/SharedWrapperList.h"
-#include "SDK/Wrapper/TransactionOutput.h"
+#include "SDK/Transaction/TransactionOutput.h"
 #include "SDK/Wrapper/Program.h"
 #include "BRTransaction.h"
 #include "CMemBlock.h"
