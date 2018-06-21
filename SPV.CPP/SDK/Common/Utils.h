@@ -73,19 +73,15 @@ namespace Elastos {
 
 			static uint8_t *decodeHexCreate(size_t *targetLen, char *source, size_t sourceLen);
 
-			template<class T>
-			static std::string convertToString(const CMemBlock<T, uint64_t> &data) {
-				assert(sizeof(T) == sizeof(char));
+			static std::string convertToString(const CMBlock &data) {
 				char p[data.GetSize()];
 				memcpy(p, data, data.GetSize());
 				std::string ret(p, data.GetSize());
 				return ret;
 			}
 
-			template<class T>
-			static CMemBlock<T, uint64_t> convertToMemBlock(const std::string &str) {
-				assert(sizeof(T) == sizeof(char));
-				CMemBlock<T, uint64_t> result(str.size());
+			static CMBlock convertToMemBlock(const std::string &str) {
+				CMBlock result(str.size());
 				memcpy(result, str.c_str(), str.size());
 				return result;
 			}

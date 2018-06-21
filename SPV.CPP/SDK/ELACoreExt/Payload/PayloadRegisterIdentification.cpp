@@ -116,6 +116,8 @@ namespace Elastos {
 			assert(signLen > 0);
 			_sign = CMBlock(signLen);
 			istream.getBytes(_sign, signLen);
+
+			return true;
 		}
 
 		nlohmann::json PayloadRegisterIdentification::toJson() {

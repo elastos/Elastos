@@ -185,13 +185,13 @@ TEST_CASE("uint128 string", "[Utils]") {
 }
 
 TEST_CASE("mem string", "[Utils]") {
-	CMemBlock<uint8_t, uint64_t> block;
-	CMemBlock<uint8_t> mbRand256 = WalletTool::GenerateSeed256();
+	CMBlock block;
+	CMBlock mbRand256 = WalletTool::GenerateSeed256();
 	block.SetMemFixed(mbRand256, (uint64_t)mbRand256.GetSize());
 
-	std::string strRand256 = Utils::convertToString<uint8_t>(block);
+	std::string strRand256 = Utils::convertToString(block);
 
-	CMemBlock<uint8_t, uint64_t> mbRand256recov = Utils::convertToMemBlock<uint8_t>(strRand256);
+	CMBlock mbRand256recov = Utils::convertToMemBlock(strRand256);
 
 	REQUIRE(block.GetSize() == mbRand256recov.GetSize());
 	REQUIRE(0 == memcmp(mbRand256recov, block, block.GetSize()));

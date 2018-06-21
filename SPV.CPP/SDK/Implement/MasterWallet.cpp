@@ -286,9 +286,9 @@ namespace Elastos {
 				}
 			}
 #endif
-			CMBlock cbPhrase0 = Utils::convertToMemBlock<unsigned char>(phrase);
+			CMBlock cbPhrase0 = Utils::convertToMemBlock(phrase);
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbPhrase0, payPassword));
-			CMBlock phrasePass = Utils::convertToMemBlock<unsigned char>(phrasePassword);
+			CMBlock phrasePass = Utils::convertToMemBlock(phrasePassword);
 			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, payPassword));
 
 			//init master public key and private key
@@ -540,7 +540,7 @@ namespace Elastos {
 											const std::string &phrasePassword) {
 			tryInitCoinConfig();
 
-			CMBlock phrasePassRaw0 = Utils::convertToMemBlock<unsigned char>(
+			CMBlock phrasePassRaw0 = Utils::convertToMemBlock(
 					keyStore.json().getEncryptedPhrasePassword());
 			std::string phrasePass = "";
 			if (true == phrasePassRaw0) {

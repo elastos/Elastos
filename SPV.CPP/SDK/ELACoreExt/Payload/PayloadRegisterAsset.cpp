@@ -79,6 +79,8 @@ namespace Elastos {
 			uint8_t controllerData[168 / 8];
 			istream.getBytes(controllerData, sizeof(controllerData));
 			UInt168Get(&_controller, controllerData);
+
+			return true;
 		}
 
 		nlohmann::json PayloadRegisterAsset::toJson() {
