@@ -289,9 +289,6 @@ func CheckAssetPrecision(txn *Transaction) error {
 }
 
 func CheckTransactionBalance(tx *Transaction) error {
-	if tx.IsWithdrawFromSideChainTx() {
-		return nil
-	}
 	// output value must >= 0
 	for _, output := range tx.Outputs {
 		if output.Value < Fixed64(0) {
