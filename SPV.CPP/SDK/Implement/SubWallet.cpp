@@ -153,9 +153,10 @@ namespace Elastos {
 
 		nlohmann::json
 		SubWallet::SendTransaction(const std::string &fromAddress, const std::string &toAddress, uint64_t amount,
-								   uint64_t fee, const std::string &payPassword, const std::string &memo) {
+								   uint64_t fee, uint64_t feePerKb, const std::string &payPassword,
+								   const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo));
+					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, feePerKb, memo));
 			TransactionPtr transaction = createTransaction(txParam.get(), payPassword);
 			if (!transaction)
 				throw std::logic_error("create transaction error.");
@@ -196,10 +197,10 @@ namespace Elastos {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
 			TransactionPtr ptr = nullptr;
-			if (param->getFee() > 0 || param->getFromAddress().empty() != true) {
+			if (param->getFee() > 0 || param->getFeePerKb() > 0 || param->getFromAddress().empty() != true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress(),
-																	 payPassword);
+																	 param->getFeePerKb(), param->getAmount(),
+																	 param->getToAddress(), payPassword);
 			} else {
 				Address address(param->getToAddress());
 				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address, payPassword);
@@ -372,8 +373,8 @@ namespace Elastos {
 
 		nlohmann::json
 		SubWallet::GenerateMultiSignTransaction(const std::string &fromAddress, const std::string &toAddress,
-												uint64_t amount, uint64_t fee, const std::string &payPassword,
-												const std::string &memo) {
+												uint64_t amount, uint64_t fee, uint64_t feePerKb,
+												const std::string &payPassword, const std::string &memo) {
 			//todo complete me
 			return nlohmann::json();
 		}
@@ -426,7 +427,7 @@ namespace Elastos {
 		}
 
 		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
-			ELATransaction *tx = (ELATransaction *)transaction;
+			ELATransaction *tx = (ELATransaction *) transaction;
 
 			for (size_t i = 0; i < tx->raw.inCount; ++i) {
 				BRTxInput *input = &tx->raw.inputs[i];

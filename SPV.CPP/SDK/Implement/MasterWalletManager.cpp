@@ -95,7 +95,16 @@ namespace Elastos {
 				return;
 
 			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
-			_masterWalletMap.erase(masterWalletId);
+
+			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
+			if(masterWalletInner->Initialized()) {
+				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+				for (int i = 0; i < subWallets.size(); ++i) {
+					masterWallet->DestroyWallet(subWallets[i]);
+				}
+			}
+
+			 _masterWalletMap.erase(masterWalletId);
 			delete masterWallet;
 		}
 

@@ -54,6 +54,7 @@ namespace Elastos {
 								int (*TransactionIsSigned)(const BRTransaction *tx),
 								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
 #else
+
 		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
 								size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
 															int internal),
@@ -63,12 +64,13 @@ namespace Elastos {
 								int (*WalletContainsTx)(BRWallet *wallet, const BRTransaction *tx),
 								void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
 								BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet,
-																			 const BRTxOutput outputs[],
-																			 size_t outCount),
+																		   const BRTxOutput outputs[],
+																		   size_t outCount),
 								uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
 								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
 								int (*TransactionIsSigned)(const BRTransaction *tx),
 								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
+
 #endif
 
 		void ELAWalletFree(ELAWallet *wallet, bool freeInternal = true);
@@ -101,9 +103,11 @@ namespace Elastos {
 				   DatabaseManager *databaseManager,
 				   const boost::shared_ptr<Listener> &listener);
 #else
+
 			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 				   const MasterPubKeyPtr &masterPubKey,
 				   const boost::shared_ptr<Listener> &listener);
+
 #endif
 
 			virtual ~Wallet();
@@ -167,8 +171,9 @@ namespace Elastos {
 			 */
 			TransactionPtr createTransaction(uint64_t amount, const Address &address, const std::string &payPassword);
 
-			TransactionPtr createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-											 const std::string &toAddress, const std::string &payPassword);
+			TransactionPtr
+			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t feePerKb, uint64_t amount,
+							  const std::string &toAddress, const std::string &payPassword);
 
 			/**
 			 * Create a BRCoreTransaction with the provided outputs
@@ -287,7 +292,7 @@ namespace Elastos {
 			static bool AddressFilter(const std::string &fromAddress, const std::string &filtAddress);
 
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
-													 uint64_t fee, const std::string &fromAddress,
+													 uint64_t fee, uint64_t feePerKb, const std::string &fromAddress,
 													 bool(*filter)(const std::string &fromAddress,
 																   const std::string &addr));
 

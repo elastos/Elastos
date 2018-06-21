@@ -54,6 +54,7 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
+					uint64_t feePerKb,
 					const std::string &payPassword,
 					const std::string &memo);
 
@@ -67,6 +68,7 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
+					uint64_t feePerKb,
 					const std::string &payPassword,
 					const std::string &memo);
 

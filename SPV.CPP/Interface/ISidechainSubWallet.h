@@ -24,6 +24,7 @@ namespace Elastos {
 					const nlohmann::json& mainchainAmounts,
 					const nlohmann::json &mainchainIndexs,
 					uint64_t fee,
+					uint64_t feePerKb,
 					const std::string &payPassword,
 					const std::string &memo) = 0;
 		};
