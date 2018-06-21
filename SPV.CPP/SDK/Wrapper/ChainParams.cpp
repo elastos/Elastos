@@ -42,6 +42,7 @@ namespace Elastos {
 			_chainParams->Raw.standardPort = coinConfig.StandardPort;
 			_chainParams->Raw.magicNumber = coinConfig.MagicNumber;
 			_chainParams->Raw.checkpointsCount = coinConfig.CheckPoints.size();
+			_chainParams->Raw.services = coinConfig.Services;
 			_checkPoints.clear();
 			for (int i = 0; i < coinConfig.CheckPoints.size(); ++i) {
 				_checkPoints.push_back(*coinConfig.CheckPoints[i].getRaw());

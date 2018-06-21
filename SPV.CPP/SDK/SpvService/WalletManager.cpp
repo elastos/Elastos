@@ -95,7 +95,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
 				TransactionPtr transaction(new Transaction());
-				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize());
+				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
 				transaction->Deserialize(byteStream);
 				BRTransaction *raw = transaction->getRaw();
 				raw->blockHeight = txsEntity[i].blockHeight;

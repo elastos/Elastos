@@ -124,14 +124,14 @@ namespace Elastos {
 			istream.getBytes(versionData, 32 / 8);
 			_btcTransaction->version = UInt32GetLE(versionData);
 
-			_btcTransaction->inCount = istream.getVarUint();
-			for (uint64_t i = 0; i < _btcTransaction->inCount; ++i) {
-				deserializeBtcTxIn(istream, _btcTransaction->inputs[i]);
+			size_t inCount = istream.getVarUint();
+			for (uint64_t i = 0; i < inCount; ++i) {
+				deserializeBtcTxIn(istream, _btcTransaction);
 			}
 
-			_btcTransaction->outCount = istream.getVarUint();
-			for (uint64_t i = 0; i < _btcTransaction->outCount; ++i) {
-				deserializeBtcTxOut(istream, _btcTransaction->outputs[i]);
+			size_t outCount = istream.getVarUint();
+			for (uint64_t i = 0; i < outCount; ++i) {
+				deserializeBtcTxOut(istream, _btcTransaction);
 			}
 
 			uint8_t lockTimeData[32 / 8];
@@ -156,26 +156,25 @@ namespace Elastos {
 			ostream.putBytes(sequenceData, 32 / 8);
 		}
 
-		void AuxPow::deserializeBtcTxIn(ByteStream &istream, BRTxInput &input) {
-			uint8_t hashData[256 / 8];
-			istream.getBytes(hashData, 256 / 8);
-			UInt256Get(&input.txHash, hashData);
+		void AuxPow::deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx) {
+			UInt256 txHash;
+			istream.getBytes(txHash.u8, sizeof(txHash.u8));
 
 			uint8_t indexData[32 / 8];
 			istream.getBytes(indexData, 32 / 8);
-			input.index = UInt32GetLE(indexData);
+			uint32_t index = UInt32GetLE(indexData);
 
-			input.sigLen = (size_t) istream.getVarUint();
+			size_t sigLen = (size_t) istream.getVarUint();
 
-			if (input.sigLen != 0) {
-				uint8_t signature[input.sigLen];
-				istream.getBytes(signature, input.sigLen);
-				BRTxInputSetSignature(&input, signature, input.sigLen);
-			}
+			uint8_t signature[sigLen];
+			istream.getBytes(signature, sigLen);
 
 			uint8_t sequenceData[32 / 8];
 			istream.getBytes(sequenceData, 32 / 8);
-			input.sequence = UInt32GetLE(sequenceData);
+			uint32_t sequence = UInt32GetLE(sequenceData);
+
+			BRTransactionAddInput(tx, txHash, index, 0, nullptr, 0,
+								  sigLen > 0 ? signature : nullptr, sigLen, sequence);
 		}
 
 		void AuxPow::serializeBtcTxOut(ByteStream &ostream, const BRTxOutput &output) const {
@@ -187,16 +186,16 @@ namespace Elastos {
 			ostream.putBytes(output.script, output.scriptLen);
 		}
 
-		void AuxPow::deserializeBtcTxOut(ByteStream &istream, BRTxOutput &output) {
+		void AuxPow::deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx) {
 			uint8_t amountData[64 / 8];
 			istream.getBytes(amountData, 64 / 8);
-			output.amount = UInt64GetLE(amountData);
+			uint64_t amount = UInt64GetLE(amountData);
 
-			output.scriptLen = istream.getVarUint();
-			if (output.scriptLen != 0) {
-				output.script = (uint8_t *) malloc(output.scriptLen * sizeof(uint8_t));
-				istream.getBytes(output.script, output.scriptLen);
-			} else BRTxOutputSetScript(&output, nullptr, 0);
+			size_t scriptLen = istream.getVarUint();
+			uint8_t script[scriptLen];
+			istream.getBytes(script, scriptLen);
+
+			BRTransactionAddOutput(tx, amount, scriptLen > 0 ? script : nullptr, scriptLen);
 		}
 
 		void AuxPow::serializeBtcBlockHeader(ByteStream &ostream) const {

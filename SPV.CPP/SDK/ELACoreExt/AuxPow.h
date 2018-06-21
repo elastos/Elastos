@@ -63,11 +63,11 @@ namespace Elastos {
 
 			void serializeBtcTxIn(ByteStream &ostream, const BRTxInput &input) const;
 
-			void deserializeBtcTxIn(ByteStream &istream, BRTxInput &input);
+			void deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx);
 
 			void serializeBtcTxOut(ByteStream &ostream, const BRTxOutput &output) const;
 
-			void deserializeBtcTxOut(ByteStream &istream, BRTxOutput &output);
+			void deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx);
 
 			void serializeBtcBlockHeader(ByteStream &ostream) const;
 
