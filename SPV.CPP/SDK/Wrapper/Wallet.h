@@ -169,11 +169,11 @@ namespace Elastos {
 			 * @param address the address to send to
 			 * @return a consistently constructed transaction.
 			 */
-			TransactionPtr createTransaction(uint64_t amount, const Address &address, const std::string &payPassword);
+			TransactionPtr createTransaction(uint64_t amount, const Address &address);
 
 			TransactionPtr
-			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t feePerKb, uint64_t amount,
-							  const std::string &toAddress, const std::string &payPassword);
+			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+							  const std::string &toAddress);
 
 			/**
 			 * Create a BRCoreTransaction with the provided outputs
@@ -292,7 +292,7 @@ namespace Elastos {
 			static bool AddressFilter(const std::string &fromAddress, const std::string &filtAddress);
 
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
-													 uint64_t fee, uint64_t feePerKb, const std::string &fromAddress,
+													 uint64_t fee, const std::string &fromAddress,
 													 bool(*filter)(const std::string &fromAddress,
 																   const std::string &addr));
 

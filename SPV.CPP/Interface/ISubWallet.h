@@ -53,13 +53,11 @@ namespace Elastos {
 
 			virtual void RemoveCallback(ISubWalletCallback *subCallback) = 0;
 
-			virtual nlohmann::json SendTransaction(
+			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
-					uint64_t feePerKb,
-					const std::string &payPassword,
 					const std::string &memo) = 0;
 
 			virtual std::string CreateMultiSignAddress(
@@ -67,17 +65,16 @@ namespace Elastos {
 					uint32_t totalSignNum,
 					uint32_t requiredSignNum) = 0;
 
-			virtual nlohmann::json GenerateMultiSignTransaction(
+			virtual nlohmann::json CreateMultiSignTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
-					uint64_t feePerKb,
-					const std::string &payPassword,
 					const std::string &memo) = 0;
 
 			virtual nlohmann::json SendRawTransaction(
 					const nlohmann::json &transactionJson,
+					uint64_t fee,
 					const std::string &payPassword) = 0;
 
 			virtual nlohmann::json GetAllTransaction(
@@ -93,6 +90,11 @@ namespace Elastos {
 					const std::string &address,
 					const std::string &message,
 					const std::string &signature) = 0;
+
+			virtual uint64_t CalculateTransactionFee(
+					const nlohmann::json &rawTransaction,
+					uint64_t feePerKb
+					) = 0;
 		};
 
 	}

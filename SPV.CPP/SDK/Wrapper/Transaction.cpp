@@ -227,7 +227,7 @@ namespace Elastos {
 			for (i = 0; i < keysCount; i++) {
 				addrs[i] = BR_ADDRESS_NONE;
 				std::string tempAddr = keys[i].address();
-				if(!tempAddr.empty()) {
+				if (!tempAddr.empty()) {
 					strncpy(addrs[i].s, tempAddr.c_str(), sizeof(BRAddress) - 1);
 				}
 			}
@@ -243,16 +243,16 @@ namespace Elastos {
 					_transaction->programs.push_back(programPtr);
 				}
 				ProgramPtr program = _transaction->programs[i];
-				if (! BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
+				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
 				j = 0;
 				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
 				if (j >= keysCount) continue;
 
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
 				size_t elemsCount = BRScriptElements(elems, sizeof(elems) / sizeof(*elems), program->getCode(),
-				                                     program->getCode().GetSize());
+													 program->getCode().GetSize());
 				CMBlock pubKey = keys[j].getPubkey();
-				size_t  pkLen = pubKey.GetSize();
+				size_t pkLen = pubKey.GetSize();
 				uint8_t sig[73], script[1 + sizeof(sig) + 1 + pkLen];
 				size_t sigLen, scriptLen;
 				UInt256 md = UINT256_ZERO;
@@ -506,7 +506,8 @@ namespace Elastos {
 				CMBlock signature = Utils::decodeHex(jsonData["Signature"].get<std::string>());
 				uint32_t sequence = jsonData["Sequence"].get<uint32_t>();
 
-				BRTransactionAddInput(&_transaction->raw, txHash, index, amount, script, script.GetSize(), signature, signature.GetSize(), sequence);
+				BRTransactionAddInput(&_transaction->raw, txHash, index, amount, script, script.GetSize(), signature,
+									  signature.GetSize(), sequence);
 				assert(0 == strcmp(address.c_str(), _transaction->raw.inputs[i].address));
 			}
 
@@ -540,6 +541,11 @@ namespace Elastos {
 				_transaction->outputs[i] = TransactionOutputPtr(new TransactionOutput());
 				_transaction->outputs[i]->fromJson(outputs[i]);
 			}
+		}
+
+		uint64_t Transaction::calculateFee(uint64_t feePerKb) {
+			uint64_t size = ELATransactionSize(_transaction);
+			return  ((size + 999) / 1000) * feePerKb;
 		}
 	}
 }

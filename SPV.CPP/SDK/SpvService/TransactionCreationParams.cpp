@@ -60,14 +60,6 @@ namespace Elastos {
 			_fee = fee;
 		}
 
-		uint64_t TxParam::getFeePerKb() const {
-			return _feePerKb;
-		}
-
-		void TxParam::setFeePerKb(uint64_t feePerKb) {
-			_feePerKb = feePerKb;
-		}
-
 		std::string DepositTxParam::getSidechainAddress() const {
 			return _sidechainAddress;
 		}
@@ -142,7 +134,7 @@ namespace Elastos {
 
 		TxParam *
 		TxParamFactory::createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
-									  uint64_t amount, uint64_t fee, uint64_t feePerKb, const std::string &memo) {
+									  uint64_t amount, uint64_t fee, const std::string &memo) {
 			TxParam *result = nullptr;
 			switch (type) {
 				case Normal:
@@ -162,7 +154,6 @@ namespace Elastos {
 			result->setToAddress(toAddress);
 			result->setAmount(amount);
 			result->setFee(fee);
-			result->setFeePerKb(feePerKb);
 			result->setAssetId(Key::getSystemAssetId());
 			return result;
 		}

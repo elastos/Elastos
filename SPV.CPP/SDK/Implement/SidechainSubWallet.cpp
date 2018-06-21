@@ -24,18 +24,16 @@ namespace Elastos {
 
 		}
 
-		nlohmann::json SidechainSubWallet::SendWithdrawTransaction(const std::string &fromAddress,
+		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(const std::string &fromAddress,
 																   const std::string &toAddress,
 																   const uint64_t amount,
 																   const nlohmann::json &mainchainAccounts,
 																   const nlohmann::json &mainchainAmounts,
 																   const nlohmann::json &mainchainIndexs,
 																   uint64_t fee,
-																   uint64_t feePerKb,
-																   const std::string &payPassword,
 																   const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount, fee, feePerKb, memo));
+					TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount, fee, memo));
 
 			ParamChecker::checkJsonArrayNotEmpty(mainchainAccounts);
 			ParamChecker::checkJsonArrayNotEmpty(mainchainAmounts);
@@ -55,26 +53,25 @@ namespace Elastos {
 			std::string mainchainAddress;
 			withdrawTxParam->setMainchainAddress(mainchainAddress);
 
-			TransactionPtr transaction = createTransaction(txParam.get(), payPassword);
+			TransactionPtr transaction = createTransaction(txParam.get());
 			if (transaction == nullptr) {
 				throw std::logic_error("Create transaction error.");
 			}
-			return sendTransactionInternal(transaction, payPassword);
+			return transaction->toJson();
 		}
 
 		boost::shared_ptr<Transaction>
-		SidechainSubWallet::createTransaction(TxParam *param, const std::string &payPassword) const {
+		SidechainSubWallet::createTransaction(TxParam *param) const {
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(param);
 			assert(withdrawTxParam != nullptr);
 
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getFeePerKb(), param->getAmount(),
-																	 param->getToAddress(), payPassword);
+																	 param->getAmount(), param->getToAddress());
 			} else {
 				Address address(param->getToAddress());
-				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address, payPassword);
+				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
 			}
 			if (!ptr) return nullptr;
 

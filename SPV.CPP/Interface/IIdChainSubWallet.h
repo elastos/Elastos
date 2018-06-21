@@ -15,15 +15,13 @@ namespace Elastos {
 
 			virtual ~IIdChainSubWallet() noexcept {}
 
-			virtual nlohmann::json SendIdTransaction(
+			virtual nlohmann::json CreateIdTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					const uint64_t amount,
 					const nlohmann::json &payloadJson,
 					const nlohmann::json &programJson,
 					uint64_t fee,
-					uint64_t feePerKb,
-					const std::string &payPassword,
 					const std::string &memo) = 0;
 		};
 

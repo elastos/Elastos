@@ -49,13 +49,11 @@ namespace Elastos {
 
 			virtual void RemoveCallback(ISubWalletCallback *subCallback);
 
-			virtual nlohmann::json SendTransaction(
+			virtual nlohmann::json CreateTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
-					uint64_t feePerKb,
-					const std::string &payPassword,
 					const std::string &memo);
 
 			virtual std::string CreateMultiSignAddress(
@@ -63,17 +61,16 @@ namespace Elastos {
 					uint32_t totalSignNum,
 					uint32_t requiredSignNum);
 
-			virtual nlohmann::json GenerateMultiSignTransaction(
+			virtual nlohmann::json CreateMultiSignTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
-					uint64_t feePerKb,
-					const std::string &payPassword,
 					const std::string &memo);
 
 			virtual nlohmann::json SendRawTransaction(
 					const nlohmann::json &transactionJson,
+					uint64_t fee,
 					const std::string &payPassword);
 
 			virtual nlohmann::json GetAllTransaction(
@@ -86,9 +83,13 @@ namespace Elastos {
 					const std::string &payPassword);
 
 			virtual nlohmann::json CheckSign(
-					const std::string &publicKey,
+					const std::string &address,
 					const std::string &message,
 					const std::string &signature);
+
+			virtual uint64_t CalculateTransactionFee(
+					const nlohmann::json &rawTransaction,
+					uint64_t feePerKb);
 
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(uint64_t balance);
@@ -134,7 +135,7 @@ namespace Elastos {
 
 			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
 
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param, const std::string &payPassword) const;
+			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
 			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														const std::string &payPassword);

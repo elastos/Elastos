@@ -49,6 +49,8 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
+			uint64_t calculateFee(uint64_t feePerKb);
+
 			bool isRegistered() const;
 
 			bool &isRegistered();

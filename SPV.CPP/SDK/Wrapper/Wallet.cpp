@@ -414,7 +414,7 @@ namespace Elastos {
 		}
 
 		BRTransaction *Wallet::CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
-												  uint64_t fee, uint64_t feePerKb, const std::string &fromAddress,
+												  uint64_t fee, const std::string &fromAddress,
 												  bool(*filter)(const std::string &fromAddress,
 																const std::string &addr)) {
 			ELATransaction *tx, *transaction = ELATransactionNew();
@@ -437,7 +437,7 @@ namespace Elastos {
 
 			minAmount = BRWalletMinOutputAmount(wallet);
 			pthread_mutex_lock(&wallet->lock);
-			feeAmount = fee > 0 ? fee : _txFee(feePerKb > 0 ? feePerKb : wallet->feePerKb,
+			feeAmount = fee > 0 ? fee : _txFee(wallet->feePerKb,
 											   ELATransactionSize(transaction) + TX_OUTPUT_SIZE);
 			transaction->fee = feeAmount;
 
@@ -480,10 +480,9 @@ namespace Elastos {
 
 						newOutputs[outCount - 1].amount -= amount + feeAmount - balance; // reduce last output amount
 						transaction = (ELATransaction *) CreateTxForOutputs(wallet, (BRTxOutput *) newOutputs, outCount,
-																			fee, feePerKb, fromAddress, filter);
+																			fee, fromAddress, filter);
 					} else {
 						transaction = (ELATransaction *) CreateTxForOutputs(wallet, outputs, outCount - 1, fee,
-																			feePerKb,
 																			fromAddress, filter); // remove last output
 					}
 
@@ -532,12 +531,12 @@ namespace Elastos {
 		}
 
 		BRTransaction *Wallet::WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount) {
-			return CreateTxForOutputs(wallet, outputs, outCount, 0, 0, "", nullptr);
+			return CreateTxForOutputs(wallet, outputs, outCount, 0, "", nullptr);
 		}
 
 		TransactionPtr
-		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t feePerKb, uint64_t amount,
-								  const std::string &toAddress, const std::string &payPassword) {
+		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+								  const std::string &toAddress) {
 			UInt168 u168Address = UINT168_ZERO;
 			if (!Utils::UInt168FromAddress(u168Address, fromAddress)) {
 				std::ostringstream oss;
@@ -564,7 +563,7 @@ namespace Elastos {
 #ifdef TEMPORARY_HD_STRATEGY
 			_wallet->TemporaryPassword = payPassword;
 #endif
-			ELATransaction *tx = (ELATransaction *) CreateTxForOutputs((BRWallet *) _wallet, outputs, 1, fee, feePerKb,
+			ELATransaction *tx = (ELATransaction *) CreateTxForOutputs((BRWallet *) _wallet, outputs, 1, fee,
 																	   fromAddress, AddressFilter);
 #ifdef TEMPORARY_HD_STRATEGY
 			_wallet->TemporaryPassword.clear();
@@ -579,7 +578,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr
-		Wallet::createTransaction(uint64_t amount, const Address &address, const std::string &payPassword) {
+		Wallet::createTransaction(uint64_t amount, const Address &address) {
 			UInt168 u168Address = UINT168_ZERO;
 			if (!Utils::UInt168FromAddress(u168Address, address.stringify())) {
 				std::ostringstream oss;

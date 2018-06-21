@@ -42,10 +42,6 @@ namespace Elastos {
 
 			void setFee(uint64_t fee);
 
-			uint64_t getFeePerKb() const;
-
-			void setFeePerKb(uint64_t feePerKb);
-
 			virtual SubWalletType getType() const { return Normal;}
 
 		private:
@@ -53,7 +49,6 @@ namespace Elastos {
 			std::string _toAddress;
 			uint64_t _amount;
 			uint64_t _fee;
-			uint64_t _feePerKb;
 			UInt256 _assetId;
 		};
 
@@ -127,7 +122,7 @@ namespace Elastos {
 		class TxParamFactory {
 		public:
 			static TxParam *createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
-												uint64_t amount, uint64_t fee, uint64_t feePerKb, const std::string &memo);
+												uint64_t amount, uint64_t fee, const std::string &memo);
 		};
 	}
 }
