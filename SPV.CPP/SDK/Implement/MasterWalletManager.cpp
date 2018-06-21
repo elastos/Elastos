@@ -101,8 +101,9 @@ namespace Elastos {
 
 		IMasterWallet *
 		MasterWalletManager::ImportWalletWithKeystore(const std::string &masterWalletId,
-													  const std::string &keystorePath,
-													  const std::string &backupPassword, const std::string &payPassword,
+													  const nlohmann::json &keystoreContent,
+													  const std::string &backupPassword,
+													  const std::string &payPassword,
 													  const std::string &phrasePassword) {
 			ParamChecker::checkPassword(backupPassword);
 			ParamChecker::checkPassword(payPassword);
@@ -111,18 +112,19 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 
-			IMasterWallet* masterWallet = NULL;
-			masterWallet = WalletFactoryInner::importWalletInternal( masterWalletId, "english",
-																	[&keystorePath, &backupPassword, &payPassword, &phrasePassword](
-																		MasterWallet *masterWallet) {
-																		return masterWallet->importFromKeyStore(keystorePath,
-																												backupPassword,
-																												payPassword,
-																												phrasePassword);
+			IMasterWallet *masterWallet = NULL;
+			masterWallet = WalletFactoryInner::importWalletInternal(masterWalletId, "english",
+																	[&keystoreContent, &backupPassword, &payPassword, &phrasePassword](
+																			MasterWallet *masterWallet) {
+																		return masterWallet->importFromKeyStore(
+																				keystoreContent,
+																				backupPassword,
+																				payPassword,
+																				phrasePassword);
 																	});
 			ParamChecker::checkNullPointer(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
-			return masterWallet ;
+			return masterWallet;
 		}
 
 		IMasterWallet *
@@ -135,23 +137,24 @@ namespace Elastos {
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			IMasterWallet* masterWallet = NULL;
+			IMasterWallet *masterWallet = NULL;
 
-			masterWallet = WalletFactoryInner::importWalletInternal( masterWalletId, language,
-													 [&mnemonic, &phrasePassword, &payPassword](
-														 MasterWallet *masterWallet) {
-														 return masterWallet->importFromMnemonic(mnemonic,
-																								 phrasePassword,
-																								 payPassword);
-													 });
+			masterWallet = WalletFactoryInner::importWalletInternal(masterWalletId, language,
+																	[&mnemonic, &phrasePassword, &payPassword](
+																			MasterWallet *masterWallet) {
+																		return masterWallet->importFromMnemonic(
+																				mnemonic,
+																				phrasePassword,
+																				payPassword);
+																	});
 			ParamChecker::checkNullPointer(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
-			return masterWallet ;
+			return masterWallet;
 		}
 
-		void
+		nlohmann::json
 		MasterWalletManager::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
-													  const std::string &payPassword, const std::string &keystorePath) {
+													  const std::string &payPassword) {
 
 			ParamChecker::checkPassword(backupPassword);
 			ParamChecker::checkPassword(payPassword);
@@ -159,12 +162,10 @@ namespace Elastos {
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 			if (!wallet->Initialized()) {
 				Log::warn("Exporting failed, check if the wallet has been initialized.");
-				return;
+				return nlohmann::json();
 			}
 
-			if (!wallet->exportKeyStore(backupPassword, payPassword, keystorePath)) {
-				throw std::logic_error("exportKeyStore fail");
-			}
+			return wallet->exportKeyStore(backupPassword, payPassword);
 		}
 
 		std::string

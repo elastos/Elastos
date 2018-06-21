@@ -20,7 +20,11 @@ namespace Elastos {
 
 			bool open(const boost::filesystem::path &path, const std::string &password);
 
+			bool open(const nlohmann::json &json, const std::string &password);
+
 			bool save(const boost::filesystem::path &path, const std::string &password);
+
+			bool save(nlohmann::json &json, const std::string &password);
 
 			const ElaNewWalletJson &json() const;
 

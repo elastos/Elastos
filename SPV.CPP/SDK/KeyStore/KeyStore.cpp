@@ -32,8 +32,12 @@ namespace Elastos {
 			nlohmann::json j;
 			i >> j;
 
+			return open(j, password);
+		}
+
+		bool KeyStore::open(const nlohmann::json &json, const std::string &password) {
 			SjclFile sjclFile;
-			j >> sjclFile;
+			json >> sjclFile;
 
 			if (sjclFile.getMode() != "ccm") {
 				return false;
@@ -64,6 +68,16 @@ namespace Elastos {
 		}
 
 		bool KeyStore::save(const boost::filesystem::path &path, const std::string &password) {
+			nlohmann::json json;
+			save(json, password);
+
+			std::ofstream outfile(path.string());
+			json >> outfile;
+
+			return true;
+		}
+
+		bool KeyStore::save(nlohmann::json &json, const std::string &password) {
 			std::string str_ss;
 			nlohmann::json walletJson;
 			walletJson << _walletJson;
@@ -83,7 +97,7 @@ namespace Elastos {
 			std::string salt_base64 = Base64::fromBits(salt, salt.GetSize());
 			std::string iv_base64 = Base64::fromBits(iv, iv.GetSize());
 			std::string ct_base64 = Base64::fromBits(ciphertext, ciphertext.GetSize());
-			nlohmann::json json;
+
 			json["iv"] = iv_base64;
 			json["v"] = uint32_t(1);
 			json["iter"] = uint32_t(10000);
@@ -94,11 +108,6 @@ namespace Elastos {
 			json["cipher"] = std::string("aes");
 			json["salt"] = salt_base64;
 			json["ct"] = ct_base64;
-
-			std::ofstream outfile(path.string());
-			json >> outfile;
-
-			return true;
 		}
 
 		const ElaNewWalletJson &KeyStore::json() const {

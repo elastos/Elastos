@@ -63,7 +63,7 @@ namespace Elastos {
 			 */
 			virtual IMasterWallet *ImportWalletWithKeystore(
 					const std::string &masterWalletId,
-					const std::string &keystorePath,
+					const nlohmann::json &keystoreContent,
 					const std::string &backupPassword,
 					const std::string &payPassword,
 					const std::string &phrasePassword) = 0;
@@ -89,11 +89,10 @@ namespace Elastos {
 			 * @param backupPassword use to decrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param keystorePath specify the key store path to export. Key store path should not be empty.
 			 */
-			virtual void ExportWalletWithKeystore(
+			virtual nlohmann::json ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
 					const std::string &backupPassword,
-					const std::string &payPassword,
-					const std::string &keystorePath) = 0;
+					const std::string &payPassword) = 0;
 
 			/**
 			 * Export mnemonic of the master wallet.

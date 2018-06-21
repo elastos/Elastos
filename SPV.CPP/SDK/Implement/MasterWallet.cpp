@@ -202,15 +202,14 @@ namespace Elastos {
 			return _localStore.GetPublicKey();
 		}
 
-		bool MasterWallet::importFromKeyStore(const std::string &keystorePath, const std::string &backupPassword,
+		bool MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
 											  const std::string &payPassword, const std::string &phrasePassword) {
-			ParamChecker::checkNotEmpty(keystorePath);
 			ParamChecker::checkPassword(backupPassword);
 			ParamChecker::checkPassword(payPassword);
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
 
 			KeyStore keyStore;
-			if (!keyStore.open(keystorePath, backupPassword))
+			if (!keyStore.open(keystoreContent, backupPassword))
 				throw std::logic_error("Import key error.");
 
 			initFromKeyStore(keyStore, payPassword, phrasePassword);
@@ -226,17 +225,17 @@ namespace Elastos {
 			return initFromPhrase(mnemonic, phrasePassword, payPassword);
 		}
 
-		bool MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword,
-										  const std::string &keystorePath) {
+		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword) {
 			KeyStore keyStore;
 			restoreKeyStore(keyStore, payPassword);
 
-			if (!keyStore.save(keystorePath, backupPassword)) {
+			nlohmann::json result;
+			if (!keyStore.save(result, backupPassword)) {
 				Log::error("Export key error.");
 				return false;
 			}
 
-			return true;
+			return result;
 		}
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
