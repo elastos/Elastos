@@ -83,7 +83,7 @@ func NewNode(magic uint32, conn net.Conn) *node {
 	node := new(node)
 	node.conn = conn
 	node.filter = bloom.LoadFilter(nil)
-	node.MsgHelper = p2p.NewMsgHelper(magic, uint32(Parameters.MaxBlockSize), conn, &HandlerBase{node: node})
+	node.MsgHelper = p2p.NewMsgHelper(magic, uint32(Parameters.MaxBlockSize), conn, NewHandlerBase(node))
 	runtime.SetFinalizer(node, rmNode)
 	return node
 }
@@ -154,10 +154,7 @@ func (node *node) IsAddrInNbrList(addr string) bool {
 	defer node.neighbourNodes.RUnlock()
 	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.HAND || n.State() == p2p.HANDSHAKE || n.State() == p2p.ESTABLISH {
-			addr := n.Addr()
-			port := n.Port()
-			na := addr + ":" + strconv.Itoa(int(port))
-			if strings.Compare(na, addr) == 0 {
+			if strings.Compare(n.NetAddress().String(), addr) == 0 {
 				return true
 			}
 		}
