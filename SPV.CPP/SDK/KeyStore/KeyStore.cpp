@@ -98,16 +98,19 @@ namespace Elastos {
 			std::string iv_base64 = Base64::fromBits(iv, iv.GetSize());
 			std::string ct_base64 = Base64::fromBits(ciphertext, ciphertext.GetSize());
 
-			json["iv"] = iv_base64;
-			json["v"] = uint32_t(1);
-			json["iter"] = uint32_t(10000);
-			json["ks"] = !bAes128 ? uint32_t(256) : uint32_t(128);
-			json["ts"] = uint32_t(64);
-			json["mode"] = std::string("ccm");
-			json["adata"] = std::string("");
-			json["cipher"] = std::string("aes");
-			json["salt"] = salt_base64;
-			json["ct"] = ct_base64;
+			SjclFile sjclFile;
+			sjclFile.setIv(iv_base64);
+			sjclFile.setV(1);
+			sjclFile.setIter(10000);
+			sjclFile.setKs(!bAes128 ? uint32_t(256) : uint32_t(128));
+			sjclFile.setTs(64);
+			sjclFile.setMode("ccm");
+			sjclFile.setAdata("");
+			sjclFile.setCipher("aes");
+			sjclFile.setSalt(salt_base64);
+			sjclFile.setCt(ct_base64);
+			json << sjclFile;
+			return true;
 		}
 
 		const ElaNewWalletJson &KeyStore::json() const {

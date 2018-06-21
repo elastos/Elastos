@@ -231,8 +231,7 @@ namespace Elastos {
 
 			nlohmann::json result;
 			if (!keyStore.save(result, backupPassword)) {
-				Log::error("Export key error.");
-				return false;
+				throw std::logic_error("Export key error.");
 			}
 
 			return result;
@@ -539,6 +538,8 @@ namespace Elastos {
 
 		void MasterWallet::initFromKeyStore(const KeyStore &keyStore, const std::string &payPassword,
 											const std::string &phrasePassword) {
+			tryInitCoinConfig();
+
 			CMBlock phrasePassRaw0 = Utils::convertToMemBlock<unsigned char>(
 					keyStore.json().getEncryptedPhrasePassword());
 			std::string phrasePass = "";

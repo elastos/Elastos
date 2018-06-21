@@ -7,10 +7,12 @@
 #include <climits>
 #include <boost/scoped_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <Interface/Enviroment.h>
 
 #include "catch.hpp"
 
+#include "Interface/Enviroment.h"
+#include "MainchainSubWallet.h"
+#include "IdChainSubWallet.h"
 #include "MasterWalletManager.h"
 #include "MasterWallet.h"
 
@@ -1148,6 +1150,37 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 																					 backupPassword, payPassword);
 		REQUIRE(masterWallet == masterWallet2);
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
+	}
+	SECTION("Full version of export and import") {
+		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic, phrasePassword,
+																					payPassword);
+		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
+		REQUIRE(subWallet != nullptr);
+		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);
+		subWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
+		REQUIRE(subWallet != nullptr);
+		REQUIRE(dynamic_cast<IdChainSubWallet *>(subWallet) != nullptr);
+
+		nlohmann::json keyStoreContent = masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
+		masterWalletManager->DestroyWallet(masterWalletId);
+
+		std::stringstream ss;
+		ss << keyStoreContent;
+		std::string test = ss.str();
+
+		masterWallet = masterWalletManager->ImportWalletWithKeystore(masterWalletId, keyStoreContent, backupPassword, payPassword, phrasePassword);
+
+		std::vector<ISubWallet *> subwallets = masterWallet->GetAllSubWallets();
+		REQUIRE(subwallets.size() == 2);
+		REQUIRE(subwallets[0] != nullptr);
+		REQUIRE(subwallets[1] != nullptr);
+		for (int i = 0; i < 2; ++i) {
+			if (subwallets[i]->GetChainId() == "ELA")
+				REQUIRE(dynamic_cast<MainchainSubWallet *>(subwallets[i]) != nullptr);
+			else if (subwallets[i]->GetChainId() == "IdChain")
+				REQUIRE(dynamic_cast<IdChainSubWallet *>(subwallets[i]) != nullptr);
+		}
 	}
 }
 
