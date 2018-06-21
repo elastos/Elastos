@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math"
@@ -11,6 +12,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	. "github.com/elastos/Elastos.ELA/bloom"
+	ela "github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -81,6 +85,13 @@ func CheckTransactionContext(txn *core.Transaction) ErrCode {
 			return ErrInvalidOutput
 		}
 		return Success
+	}
+
+	if txn.IsTransferCrossChainAssetTx() {
+		if err := CheckTransferCrossChainAssetTransaction(txn); err != nil {
+			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
+			return ErrInvalidOutput
+		}
 	}
 
 	// check double spent transaction
@@ -330,5 +341,139 @@ func CheckTransactionPayload(txn *core.Transaction) error {
 	default:
 		return errors.New("[txValidator],invalidate transaction payload type.")
 	}
+	return nil
+}
+
+func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
+	proof := new(MerkleProof)
+	mainChainTransaction := new(ela.Transaction)
+
+	payloadRecharge, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
+	if !ok {
+		return errors.New("Invalid payload core.PayloadRechargeToSideChain")
+	}
+
+	reader := bytes.NewReader(payloadRecharge.MerkleProof)
+	if err := proof.Deserialize(reader); err != nil {
+		return errors.New("RechargeToSideChain payload deserialize failed")
+	}
+	reader = bytes.NewReader(payloadRecharge.MainChainTransaction)
+	if err := mainChainTransaction.Deserialize(reader); err != nil {
+		return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
+	}
+
+	payloadObj, ok := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
+	if !ok {
+		return errors.New("Invalid payload ela.PayloadTransferCrossChainAsset")
+	}
+
+	genesisHash, _ := DefaultLedger.Store.GetBlockHash(uint32(0))
+	genesisProgramHash, err := crypto.GetGenesisProgramHash(genesisHash)
+	if err != nil {
+		return errors.New("Genesis block bytes to program hash failed")
+	}
+
+	//check output fee and rate
+	rate := Fixed64(config.Parameters.ExchangeRate)
+
+	var oriTotalFee Fixed64
+	var oriOutputTotalAmount Fixed64
+	for i := 0; i < len(mainChainTransaction.Outputs); i++ {
+		if mainChainTransaction.Outputs[i].ProgramHash.IsEqual(*genesisProgramHash) {
+			if payloadObj.CrossChainAmount[i] < 0 {
+				return errors.New("Invalid transaction cross chain amount")
+			}
+			if payloadObj.CrossChainAmount[i] > mainChainTransaction.Outputs[i].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
+				return errors.New("Invalid transaction fee")
+			}
+			oriOutputTotalAmount += mainChainTransaction.Outputs[i].Value
+			oriTotalFee += mainChainTransaction.Outputs[i].Value - payloadObj.CrossChainAmount[i]
+
+			programHash, err := Uint168FromAddress(payloadObj.CrossChainAddress[i])
+			if err != nil {
+				return errors.New("Invalid transaction payload cross chain address")
+			}
+			isContained := false
+			for _, output := range txn.Outputs {
+				if output.ProgramHash == *programHash && output.Value == payloadObj.CrossChainAmount[i]*rate {
+					isContained = true
+					break
+				}
+			}
+			if !isContained {
+				return errors.New("Invalid transaction outputs")
+			}
+		}
+	}
+
+	var targetOutputTotalAmount Fixed64
+	for _, output := range txn.Outputs {
+		targetOutputTotalAmount += output.Value
+	}
+
+	if targetOutputTotalAmount != (oriOutputTotalAmount-oriTotalFee)*rate {
+		return errors.New("Output and fee verify failed")
+	}
+
+	return nil
+}
+
+func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
+	payloadObj, ok := txn.Payload.(*core.PayloadTransferCrossChainAsset)
+	if !ok {
+		return errors.New("Invalid transaction payload type")
+	}
+	if len(payloadObj.CrossChainAddress) == 0 ||
+		len(payloadObj.CrossChainAddress) != len(payloadObj.CrossChainAmount) ||
+		len(payloadObj.CrossChainAmount) != len(payloadObj.OutputIndex) {
+		return errors.New("Invalid transaction payload content")
+	}
+
+	//check cross chain output index in payload
+	for _, index := range payloadObj.OutputIndex {
+		count := 0
+		for _, i := range payloadObj.OutputIndex {
+			if i == index {
+				count++
+			}
+		}
+		if count != 1 {
+			return errors.New("Invalid transaction payload cross chain index")
+		}
+	}
+
+	//check cross chain address in payload
+	var crossChainCount int
+	for _, output := range txn.Outputs {
+		if output.ProgramHash.IsEqual(Uint168{}) {
+			crossChainCount++
+		}
+	}
+	if len(payloadObj.CrossChainAddress) != crossChainCount {
+		return errors.New("Invalid transaction cross chain counts")
+	}
+
+	genesisHash, _ := DefaultLedger.Store.GetBlockHash(uint32(0))
+	genesisAddress, err := crypto.GetGenesisAddress(genesisHash)
+	if err != nil {
+		return errors.New("Get genesis address failed")
+	}
+	for _, address := range payloadObj.CrossChainAddress {
+		if address != genesisAddress {
+			return errors.New("Invalid transaction cross chain address")
+		}
+	}
+
+	//check cross chain amount in payload
+	for i := 0; i < len(payloadObj.OutputIndex); i++ {
+		if !txn.Outputs[payloadObj.OutputIndex[i]].ProgramHash.IsEqual(Uint168{}) {
+			return errors.New("Invalid transaction output program hash")
+		}
+		if txn.Outputs[payloadObj.OutputIndex[i]].Value < 0 || payloadObj.CrossChainAmount[i] < 0 ||
+			payloadObj.CrossChainAmount[i] > txn.Outputs[payloadObj.OutputIndex[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
+			return errors.New("Invalid transaction outputs")
+		}
+	}
+
 	return nil
 }

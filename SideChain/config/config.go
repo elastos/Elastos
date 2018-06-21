@@ -75,6 +75,7 @@ type Configuration struct {
 	SpvMaxConnections   int              `json:"SpvMaxConnections"`
 	SpvPrintLevel       uint8            `json:"SpvPrintLevel"`
 	ExchangeRate        float32          `json:"ExchangeRate"`
+	MinCrossChainTxFee  float32          `json:"MinCrossChainTxFee"`
 	HttpRestPort        int              `json:"HttpRestPort"`
 	RestCertPath        string           `json:"RestCertPath"`
 	RestKeyPath         string           `json:"RestKeyPath"`
