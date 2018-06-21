@@ -21,6 +21,8 @@
 #include "BTCKey.h"
 #include "ParamChecker.h"
 #include "ELABIP32Sequence.h"
+#include "BTCKey.h"
+#include "BigIntFormat.h"
 
 #define BIP32_SEED_KEY "ELA seed"
 
@@ -82,11 +84,9 @@ namespace Elastos {
 		}
 
 		CMBlock Key::getPubkey() const {
-			size_t size = getCompressed() ? 33 : 65;
-			CMBlock ret(size);
-			memcpy(ret, _key->pubKey, size);
-
-			return ret;
+			CMBlock privKey;
+			privKey.SetMemFixed((uint8_t *) &_key->secret, sizeof(_key->secret));
+			return BTCKey::getPubKeyFromPrivKey(privKey, NID_X9_62_prime256v1);
 		}
 
 		bool Key::setPubKey(const CMBlock pubKey) {
@@ -158,7 +158,7 @@ namespace Elastos {
 
 		CMBlock Key::getPublicKeyByKey(const Key &key) {
 			UInt256 secret = key.getSecret();
-			if(UInt256IsZero(&secret)) {
+			if (UInt256IsZero(&secret)) {
 				throw std::logic_error("secret key is zero!");
 			}
 			CMBlock secretMem;
@@ -205,7 +205,7 @@ namespace Elastos {
 			CMBlock secretData;
 			secretData.SetMemFixed(secret.u8, sizeof(secret));
 
-			CMBlock pubKey = Key::getPubKeyFromPrivKey(secretData);
+			CMBlock pubKey = Key::getPubKeyFromPrivKey(secretData, NID_X9_62_prime256v1);
 
 			memset(_key->pubKey, 0, sizeof(_key->pubKey));
 			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
@@ -218,20 +218,22 @@ namespace Elastos {
 			CMBlock privKey;
 			privKey.SetMemFixed(_key->secret.u8, sizeof(_key->secret));
 
-			return BTCKey::SignCompact(privKey, md32);
+			CMBlock signedData;
+			BTCKey::ECDSACompactSign_sha256(privKey, *(UInt256 *) &md32[0], signedData, NID_X9_62_prime256v1);
+			return signedData;
 		}
 
 		CMBlock Key::encryptNative(const CMBlock &data, const CMBlock &nonce) const {
 			CMBlock out(16 + data.GetSize());
 			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.GetSize(), _key.get(), nonce,
-			                                               data, data.GetSize(), nullptr, 0);
+														   data, data.GetSize(), nullptr, 0);
 			return out;
 		}
 
 		CMBlock Key::decryptNative(const CMBlock &data, const CMBlock &nonce) const {
 			CMBlock out(1024);
 			size_t outSize = BRChacha20Poly1305AEADDecrypt(out, data.GetSize(), _key.get(), nonce,
-			                                               data, data.GetSize(), nullptr, 0);
+														   data, data.GetSize(), nullptr, 0);
 			out.Resize(outSize);
 			return out;
 		}
@@ -253,13 +255,13 @@ namespace Elastos {
 
 		UInt168 Key::keyToUInt168BySignType(const int signType) {
 			UInt168 uInt168 = hashTo168();
-			if(signType == ELA_STANDARD) {
+			if (signType == ELA_STANDARD) {
 				uInt168.u8[0] = ELA_STAND_ADDRESS;
 			} else if (signType == ELA_MULTISIG) {
 				uInt168.u8[0] = ELA_MULTISIG_ADDRESS;
 			} else if (signType == ELA_CROSSCHAIN) {
 				uInt168.u8[0] = ELA_CROSSCHAIN_ADDRESS;
-			} else if(signType == ELA_IDCHAIN) {
+			} else if (signType == ELA_IDCHAIN) {
 				uInt168.u8[0] = ELA_IDCHAIN_ADDRESS;
 			}
 			return uInt168;
@@ -267,7 +269,8 @@ namespace Elastos {
 
 		bool Key::verify(const UInt256 &messageDigest, const CMBlock &signature) const {
 			CMBlock publicKey = getPubkey();
-			std::string pubKey = Utils::encodeHex(publicKey);
+			CMemBlock<char> mbcPubKey = Hex2Str(publicKey);
+			std::string pubKey = (const char *) mbcPubKey;
 
 			return Key::verifyByPublicKey(pubKey, messageDigest, signature);
 		}
@@ -340,13 +343,13 @@ namespace Elastos {
 			}
 			UInt168 uInt168 = UINT168_ZERO;
 			uInt168.u8[0] = ELA_STAND_ADDRESS;
-			memcpy(&uInt168.u8[1],&hash.u8[0], sizeof(hash.u8) - 1);
+			memcpy(&uInt168.u8[1], &hash.u8[0], sizeof(hash.u8) - 1);
 			return uInt168;
 		}
 
 		void
 		Key::calculatePrivateKeyList(BRKey *keys, size_t keysCount, UInt256 *secret, UInt256 *chainCode,
-		                             uint32_t chain, const uint32_t *indexes) {
+									 uint32_t chain, const uint32_t *indexes) {
 			UInt512 I;
 
 			assert(keys != nullptr || keysCount == 0);
@@ -367,8 +370,12 @@ namespace Elastos {
 		}
 
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
-		                            const CMBlock &signature) {
-			return BTCKey::VerifyCompact(publicKey, messageDigest, signature);
+									const CMBlock &signature) {
+			CMemBlock<char> mbcPubKey;
+			mbcPubKey.SetMemFixed(publicKey.c_str(), publicKey.size() + 1);
+			CMBlock pubKey = Str2Hex(mbcPubKey);
+
+			return BTCKey::ECDSACompactVerify_sha256(pubKey, messageDigest, signature, NID_X9_62_prime256v1);
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {
@@ -378,16 +385,16 @@ namespace Elastos {
 
 			uint64_t size = (getCompressed()) ? 33 : 65;
 
-			ByteStream stream(size + 2);
+			ByteStream buff(size + 2);
 
-			stream.put((uint8_t)size);
+			buff.put((uint8_t) size);
 
-			stream.putBytes(_key->pubKey, size);
+			buff.putBytes(_key->pubKey, size);
 
-			stream.put((uint8_t)signType);
+			buff.put((uint8_t) signType);
 
-			CMBlock script = stream.getBuffer();
-			return Utils::encodeHex(script);
+			CMBlock script = buff.getBuffer();
+            return  Utils::encodeHex(script, script.GetSize());
 		}
 
 		const UInt256 Key::getSystemAssetId() {

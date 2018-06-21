@@ -16,40 +16,40 @@ namespace Elastos {
 			static CMemBlock<char>
 			_Code_Convert(const std::string from_charset, const std::string to_charset, const CMemBlock<char> &input);
 
-			static CMemBlock<uint8_t> GetRandom(size_t bits);
+			static CMBlock GetRandom(size_t bits);
 
 		public:
 			static CMemBlock<char> U8ToU16(const CMemBlock<char> &input);
 
 			static CMemBlock<char> U16ToU8(const CMemBlock<char> &input);
 
-			static CMemBlock<uint8_t> GenerateSeed128();
+			static CMBlock GenerateSeed128();
 
-			static CMemBlock<uint8_t> GenerateSeed256();
+			static CMBlock GenerateSeed256();
 
-			static std::string GenerateEntropySource(const CMemBlock<uint8_t> &seed);
+			static std::string GenerateEntropySource(const CMBlock &seed);
 
 			static std::string getDeriveKeyFromEntropySource_base58(const std::string &seed);
 
-			static std::string getStringFromSeed(const CMemBlock<uint8_t> &seed);
+			static std::string getStringFromSeed(const CMBlock &seed);
 
-			static CMemBlock<uint8_t> getSeedFromString(const std::string &str_seed);
+			static CMBlock getSeedFromString(const std::string &str_seed);
 
 #ifdef MNEMONIC_SOURCE_H
 
-			static CMemBlock<char> GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language);
+			static CMemBlock<char> GeneratePhraseFromSeed(const CMBlock &seed, const std::string &language);
 
 			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::string &language);
 
-			static CMemBlock<uint8_t> getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language);
+			static CMBlock getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language);
 
 #else
 			static CMemBlock<char>
-			GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList);
+			GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList);
 
 			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
 
-			static CMemBlock<uint8_t>
+			static CMBlock
 			getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
 
 #endif

@@ -52,9 +52,9 @@ namespace Elastos {
 			return output;
 		}
 
-		CMemBlock<uint8_t> WalletTool::GetRandom(size_t bits) {
+		CMBlock WalletTool::GetRandom(size_t bits) {
 			size_t bytes = 0 == bits % 8 ? bits / 8 : bits / 8 + 1;
-			CMemBlock<uint8_t> out(bytes);
+			CMBlock out(bytes);
 			for (size_t i = 0; i < bytes; i++) {
 				out[i] = Utils::getRandomByte();
 			}
@@ -69,20 +69,20 @@ namespace Elastos {
 			return _Code_Convert("utf-16", "utf-8", input);
 		}
 
-		CMemBlock<uint8_t> WalletTool::GenerateSeed128() {
+		CMBlock WalletTool::GenerateSeed128() {
 			return GetRandom(128);
 		}
 
-		CMemBlock<uint8_t> WalletTool::GenerateSeed256() {
+		CMBlock WalletTool::GenerateSeed256() {
 			return GetRandom(256);
 		}
 
-		std::string WalletTool::GenerateEntropySource(const CMemBlock<uint8_t> &seed) {
+		std::string WalletTool::GenerateEntropySource(const CMBlock &seed) {
 			std::string out = "";
 			if (true == seed) {
 				uint8_t t[32];
 				BRSHA256_2(t, seed, seed.GetSize());
-				CMemBlock<uint8_t> tmp;
+				CMBlock tmp;
 				tmp.SetMemFixed(t, sizeof(t));
 				CMemBlock<char> cb_entropy = Hex2Str(tmp);
 				out = (const char *) cb_entropy;
@@ -95,13 +95,14 @@ namespace Elastos {
 			if (seed != "") {
 				CMemBlock<char> cbSeed;
 				cbSeed.SetMemFixed(seed.c_str(), seed.size() + 1);
-				CMemBlock<uint8_t> entropySource = Str2Hex(cbSeed);
+				CMBlock entropySource = Str2Hex(cbSeed);
+
 				if (true == entropySource) {
 					uint8_t key64[64] = {0};
 					uint8_t key[] = "reqPrivKey";
 					BRHMAC(key64, BRSHA512, 512 / 8, key, strlen((const char *) key), entropySource,
 						   entropySource.GetSize());
-					CMemBlock<uint8_t> tmp;
+					CMBlock tmp;
 					tmp.SetMemFixed(key64, sizeof(key64));
 					out = BTCBase58::EncodeBase58((unsigned char *) key64, sizeof(key64));
 				}
@@ -109,7 +110,7 @@ namespace Elastos {
 			return out;
 		}
 
-		std::string WalletTool::getStringFromSeed(const CMemBlock<uint8_t> &seed) {
+		std::string WalletTool::getStringFromSeed(const CMBlock &seed) {
 			std::string out = "";
 			if (true == seed) {
 				CMemBlock<char> str = Hex2Str(seed);
@@ -118,8 +119,8 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<uint8_t> WalletTool::getSeedFromString(const std::string &str_seed) {
-			CMemBlock<uint8_t> out;
+		CMBlock WalletTool::getSeedFromString(const std::string &str_seed) {
+			CMBlock out;
 			if (str_seed != "") {
 				CMemBlock<char> str_chg;
 				str_chg.SetMemFixed(str_seed.c_str(), str_seed.size() + 1);
@@ -131,7 +132,7 @@ namespace Elastos {
 #ifdef MNEMONIC_SOURCE_H
 
 		CMemBlock<char>
-		WalletTool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::string &language) {
+		WalletTool::GeneratePhraseFromSeed(const CMBlock &seed, const std::string &language) {
 			CMemBlock<char> out;
 			if (true == seed) {
 				const char **wordList = language == "english" ? BRBIP39WordsEn :
@@ -161,8 +162,8 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<uint8_t> WalletTool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language) {
-			CMemBlock<uint8_t> out;
+		CMBlock WalletTool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language) {
+			CMBlock out;
 			if (true == phrase) {
 				const char **wordList = language == "english" ? BRBIP39WordsEn :
 										language == "chinese" ? brBIP39WordsCh :
@@ -179,7 +180,7 @@ namespace Elastos {
 
 #else
 		CMemBlock<char>
-		WalletTool::GeneratePhraseFromSeed(const CMemBlock<uint8_t> &seed, const std::vector<std::string> &WordList) {
+		WalletTool::GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList) {
 			CMemBlock<char> out;
 			if (true == seed && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
@@ -207,9 +208,9 @@ namespace Elastos {
 			return out;
 		}
 
-		CMemBlock<uint8_t>
+		CMBlock
 		WalletTool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
-			CMemBlock<uint8_t> out;
+			CMBlock out;
 			if (true == phrase && 0 < WordList.size()) {
 				const char *wordList[WordList.size()];
 				memset(wordList, 0, sizeof(wordList));

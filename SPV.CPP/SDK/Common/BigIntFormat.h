@@ -20,8 +20,8 @@ namespace Elastos {
              c >= 'A' && c <= 'F' ? c - ('A' - 0x0a) : -1;
 		}
 
-		static inline CMemBlock<uint8_t> _toDec(CMemBlock<uint8_t> bigHex) {
-			CMemBlock<uint8_t> ret;
+		static inline CMBlock _toDec(CMBlock bigHex) {
+			CMBlock ret;
 			for (size_t i = 0; i < bigHex.GetSize(); i++) {
 				uint8_t u = bigHex[i];
 				uint8_t alen = 0;
@@ -42,7 +42,7 @@ namespace Elastos {
 			return ret;
 		}
 
-		static inline CMemBlock<char> Hex2Str(CMemBlock<uint8_t> bigNum) {
+		static inline CMemBlock<char> Hex2Str(CMBlock bigNum) {
 			CMemBlock<char> ret;
 			if (0 < bigNum.GetSize()) {
 				ret.Resize(bigNum.GetSize() * 2 + 1);
@@ -55,8 +55,8 @@ namespace Elastos {
 			return ret;
 		}
 
-		static inline CMemBlock<uint8_t> Str2Hex(CMemBlock<char> bigStr) {
-			CMemBlock<uint8_t> ret;
+		static inline CMBlock Str2Hex(CMemBlock<char> bigStr) {
+			CMBlock ret;
 			if (0 < bigStr.GetSize()) {
 				assert(1 == bigStr.GetSize() % 2);
 				ret.Resize(bigStr.GetSize() / 2);
@@ -67,8 +67,8 @@ namespace Elastos {
 			return ret;
 		}
 
-		static inline CMemBlock<char> Dec2Str(CMemBlock<uint8_t> bigHex) {
-			CMemBlock<uint8_t> tmp = _toDec(bigHex);
+		static inline CMemBlock<char> Dec2Str(CMBlock bigHex) {
+			CMBlock tmp = _toDec(bigHex);
 			CMemBlock<char> ret;
 			if (0 < tmp.GetSize()) {
 				ret.Resize(tmp.GetSize() + 1);
@@ -81,8 +81,8 @@ namespace Elastos {
 			return ret;
 		}
 
-		static inline CMemBlock<uint8_t> Str2Dec(CMemBlock<char> bigDec) {
-			CMemBlock<uint8_t> ret;
+		static inline CMBlock Str2Dec(CMemBlock<char> bigDec) {
+			CMBlock ret;
 			assert(1 == bigDec.GetSize() % 3);
 			ret.Resize(bigDec.GetSize() / 3);
 			ret.Zero();
