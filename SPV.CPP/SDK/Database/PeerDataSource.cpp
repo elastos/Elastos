@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PreCompiled.h"
 #include <sstream>
+#include <SDK/Common/Utils.h>
 
 #include "CMemBlock.h"
 #include "PeerDataSource.h"
@@ -53,9 +53,15 @@ namespace Elastos {
 				throw std::logic_error("put peer prepare error");
 			}
 
-			CMBlock addr((uint64_t)sizeof(peerEntity.address.u8));
-			memcpy(addr, &peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
+			CMBlock addr;
+			addr.SetMemFixed(&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
+#ifdef NDEBUG
 			_sqlite->bindBlob(stmt, 1, addr, nullptr);
+#else
+			std::string str = Utils::encodeHex(addr);
+			addr.SetMemFixed((const uint8_t *)str.c_str(), str.length() + 1);
+			_sqlite->bindBlob(stmt, 1, addr, nullptr);
+#endif
 			_sqlite->bindInt(stmt, 2, peerEntity.port);
 			_sqlite->bindInt64(stmt, 3, peerEntity.timeStamp);
 			_sqlite->bindText(stmt, 4, iso, nullptr);
@@ -127,8 +133,15 @@ namespace Elastos {
 					// address
 					const uint8_t *paddr = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
 					size_t len = _sqlite->columnBytes(stmt, 1);
+#ifdef NDEBUG
 					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
 					memcpy(peer.address.u8, paddr, len);
+#else
+					std::string str((const char *)paddr);
+					CMBlock addr = Utils::decodeHex(str);
+					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
+					memcpy(peer.address.u8, addr, len);
+#endif
 
 					// port
 					peer.port = _sqlite->columnInt(stmt, 2);

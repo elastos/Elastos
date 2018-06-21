@@ -2,12 +2,11 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PreCompiled.h"
-
 #include <string>
 #include <string>
 #include <sstream>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
 
 #include "TransactionDataStore.h"
 
@@ -48,7 +47,14 @@ namespace Elastos {
 				}
 
 				_sqlite->bindText(stmt, 1, transactionEntity.txHash, nullptr);
+#ifdef NDEBUG
 				_sqlite->bindBlob(stmt, 2, transactionEntity.buff, nullptr);
+#else
+				std::string str = Utils::encodeHex(transactionEntity.buff);
+				CMBlock bytes;
+				bytes.SetMemFixed((const uint8_t *)str.c_str(), str.length() + 1);
+				_sqlite->bindBlob(stmt, 2, bytes, nullptr);
+#endif
 				_sqlite->bindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->bindInt(stmt, 4, transactionEntity.timeStamp);
 				_sqlite->bindText(stmt, 5, iso, nullptr);
@@ -106,9 +112,14 @@ namespace Elastos {
 					const uint8_t *pdata = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
 					size_t len = _sqlite->columnBytes(stmt, 1);
 
+#ifdef NDEBUG
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
 					tx.buff = buff;
+#else
+					std::string str((char *)pdata);
+					tx.buff = Utils::decodeHex(str);
+#endif
 
 					// block height
 					tx.blockHeight = _sqlite->columnInt(stmt, 2);

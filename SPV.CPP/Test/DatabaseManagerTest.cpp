@@ -33,6 +33,16 @@ std::string getRandString(size_t length) {
 	return std::string(buf);
 }
 
+CMBlock getRandCMBlock(size_t size) {
+	CMBlock block(size);
+
+	for (size_t i = 0; i < size; ++i) {
+		block[i] = (uint8_t)rand();
+	}
+
+	return block;
+}
+
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("Prepare to test") {
@@ -47,7 +57,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	SECTION("Merkle Block test ") {
 #define TEST_MERKLEBLOCK_RECORD_CNT uint64_t(20)
-#define TEST_MERKLEBLOCK_DATALEN uint64_t(75)
 
 		static std::vector<MerkleBlockEntity> blocksToSave;
 
@@ -55,14 +64,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			for (uint64_t i = 0; i < TEST_MERKLEBLOCK_RECORD_CNT; ++i) {
 				MerkleBlockEntity block;
 
-				CMBlock buff;
-				buff.Resize(TEST_MERKLEBLOCK_DATALEN);
-				for (uint64_t j = 0; j < TEST_MERKLEBLOCK_DATALEN; ++j) {
-					buff[j] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % TEST_MERKLEBLOCK_DATALEN);
-				}
-				buff[TEST_MERKLEBLOCK_DATALEN - 1] = 0;
-
-				block.blockBytes = buff;
+				block.blockBytes = getRandCMBlock(40);
 				block.blockHeight = static_cast<uint32_t>(i);
 
 				blocksToSave.push_back(block);
@@ -80,9 +82,9 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			std::vector<MerkleBlockEntity> blocksRead = dbm.getAllMerkleBlocks(ISO);
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
-				REQUIRE(TEST_MERKLEBLOCK_DATALEN == blocksRead[i].blockBytes.GetSize());
+				REQUIRE(blocksToSave[i].blockBytes.GetSize() == blocksRead[i].blockBytes.GetSize());
 				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
-				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, TEST_MERKLEBLOCK_DATALEN));
+				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, blocksRead[i].blockBytes.GetSize()));
 			}
 		}
 
@@ -108,8 +110,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(blocksRead.size() == blocksToSave.size());
 			for (int i = 0; i < blocksRead.size(); ++i) {
 				REQUIRE(blocksRead[i].blockHeight == blocksToSave[i].blockHeight);
-				REQUIRE(TEST_MERKLEBLOCK_DATALEN == blocksRead[i].blockBytes.GetSize());
-				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, TEST_MERKLEBLOCK_DATALEN));
+				REQUIRE(blocksToSave[i].blockBytes.GetSize() == blocksRead[i].blockBytes.GetSize());
+				REQUIRE(0 == memcmp(blocksRead[i].blockBytes, blocksToSave[i].blockBytes, blocksRead[i].blockBytes.GetSize()));
 			}
 		}
 
@@ -135,9 +137,10 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer Prepare for test") {
 			for (int i = 0; i < TEST_PEER_RECORD_CNT; i++) {
 				PeerEntity peer;
-				peer.address = ((UInt128) {'1', '2', '7', '.', '0', '.', '0', '.', (uint8_t)('0' + i), ':', '8', '0', '8', '0', '.', 0});
-				peer.port = static_cast<uint16_t>(8000 + i);
-				peer.timeStamp = static_cast<uint64_t>(1000 + i);
+				CMBlock addr = getRandCMBlock(sizeof(UInt128));
+				memcpy(peer.address.u8, addr, addr.GetSize());
+				peer.port = (uint16_t)rand();
+				peer.timeStamp = (uint64_t)rand();
 				peerToSave.push_back(peer);
 			}
 
@@ -152,7 +155,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer read test") {
 			DatabaseManager dbm(DBFILE);
 			std::vector<PeerEntity> peers = dbm.getAllPeers(ISO);
-			REQUIRE(peers.size() == TEST_PEER_RECORD_CNT);
+			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
 				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
 				REQUIRE(peers[i].port == peerToSave[i].port);
@@ -178,7 +181,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Peer read test") {
 			DatabaseManager dbm(DBFILE);
 			std::vector<PeerEntity> peers = dbm.getAllPeers(ISO);
-			REQUIRE(peers.size() == TEST_PEER_RECORD_CNT);
+			REQUIRE(peers.size() == peerToSave.size());
 			for (int i = 0; i < peers.size(); i++) {
 				REQUIRE(UInt128Eq(&peers[i].address, &peerToSave[i].address));
 				REQUIRE(peers[i].port == peerToSave[i].port);
@@ -190,7 +193,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			DatabaseManager dbm(DBFILE);
 
 			std::vector<PeerEntity> PeersBeforeDelete = dbm.getAllPeers(ISO);
-			REQUIRE(PeersBeforeDelete.size() == TEST_PEER_RECORD_CNT);
+			REQUIRE(PeersBeforeDelete.size() == peerToSave.size());
 
 			for (int i = 0; i < PeersBeforeDelete.size(); ++i) {
 				REQUIRE(dbm.deletePeer(ISO, PeersBeforeDelete[i]));
@@ -203,48 +206,27 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 	}
 
 #define TEST_TX_RECORD_CNT 20
-#define TEST_TX_DATALEN    uint64_t(75)
-#define TEST_TX_HASH_LEN   256
 	SECTION("Transaction test") {
 		static std::vector<TransactionEntity> txToSave;
 		static std::vector<TransactionEntity> txToUpdate;
 
 		SECTION("Transaction prepare for testing") {
-			char buf[TEST_TX_HASH_LEN + 1];
-
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
 				TransactionEntity tx;
 
-				CMBlock buff;
-				buff.Resize(TEST_TX_DATALEN);
-				for (uint64_t j = 0; j < TEST_TX_DATALEN; ++j) {
-					buff[j] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % TEST_TX_DATALEN);
-				}
-				buff[TEST_TX_DATALEN - 1] = 0;
-
-				tx.buff = buff;
-				tx.blockHeight = static_cast<uint32_t>(i + 100);
-				tx.timeStamp = static_cast<uint32_t>(i + 200);
-				for (int j = 0; j < TEST_TX_HASH_LEN; j++) {
-					buf[j] = static_cast<char>(rand() % TEST_TX_DATALEN + TEST_ASCII_BEGIN);
-				}
-				tx.txHash = buf;
+				tx.buff = getRandCMBlock(35);
+				tx.blockHeight = (uint32_t)rand();
+				tx.timeStamp = (uint32_t)rand();
+				tx.txHash = getRandString(25);
 				txToSave.push_back(tx);
 			}
 
 			for (uint64_t i = 0; i < TEST_TX_RECORD_CNT; ++i) {
 				TransactionEntity tx;
 
-				CMBlock buff;
-				buff.Resize(TEST_TX_DATALEN);
-				for (uint64_t j = 0; j < TEST_TX_DATALEN; ++j) {
-					buff[j] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % TEST_TX_DATALEN);
-				}
-				buff[TEST_TX_DATALEN - 1] = 0;
-
-				tx.buff = buff;
-				tx.blockHeight = static_cast<uint32_t>(i + 300);
-				tx.timeStamp = static_cast<uint32_t>(i + 400);
+				tx.buff = getRandCMBlock(49);
+				tx.blockHeight = (uint32_t)rand();
+				tx.timeStamp = (uint32_t)rand();
 				tx.txHash = txToSave[i].txHash;
 				txToUpdate.push_back(tx);
 			}
@@ -260,11 +242,11 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		SECTION("Transaction read test") {
 			DatabaseManager dbm(DBFILE);
 			std::vector<TransactionEntity> readTx = dbm.getAllTransactions(ISO);
-			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
+			REQUIRE(txToSave.size() == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(TEST_TX_DATALEN == readTx[i].buff.GetSize());
-				REQUIRE(0 == memcmp(readTx[i].buff, txToSave[i].buff, TEST_TX_DATALEN));
+				REQUIRE(txToSave[i].buff.GetSize() == readTx[i].buff.GetSize());
+				REQUIRE(0 == memcmp(readTx[i].buff, txToSave[i].buff, txToSave[i].buff.GetSize()));
 				REQUIRE(readTx[i].txHash == txToSave[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToSave[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToSave[i].blockHeight);
@@ -285,9 +267,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 			REQUIRE(TEST_TX_RECORD_CNT == readTx.size());
 
 			for (int i = 0; i < readTx.size(); ++i) {
-				REQUIRE(TEST_TX_DATALEN == readTx[i].buff.GetSize());
-				//do not need to compare buff, because updateTransaction() do not update this member.
-				//REQUIRE(0 == memcmp(readTx[i].buff, txToUpdate[i].buff, TEST_TX_DATALEN));
+				REQUIRE(txToSave[i].buff.GetSize() == readTx[i].buff.GetSize());
+				REQUIRE(0 == memcmp(readTx[i].buff, txToSave[i].buff, txToSave[i].buff.GetSize()));
 				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);
@@ -307,19 +288,6 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 
 	}
 
-//	// InternalAddresses's database interface
-//	bool putInternalAddress(uint32_t startIndex, const std::string &address);
-//	bool putInternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
-//	bool clearInternalAddresses();
-//	std::vector<std::string> getInternalAddresses(uint32_t startIndex, uint32_t count);
-//	uint32_t getInternalAvailableAddresses(uint32_t startIndex);
-//
-//	// ExternalAddresses's database interface
-//	bool putExternalAddress(uint32_t startIndex, const std::string &address);
-//	bool putExternalAddresses(uint32_t startIndex, const std::vector<std::string> &addresses);
-//	bool clearExternalAddresses();
-//	std::vector<std::string> getExternalAddresses(uint32_t startIndex, uint32_t count);
-//	uint32_t getExternalAvailableAddresses(uint32_t startIndex);
 	SECTION("InternalAddresses test") {
 		DatabaseManager dbm(DBFILE);
 

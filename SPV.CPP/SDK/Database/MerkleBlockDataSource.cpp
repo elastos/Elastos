@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "PreCompiled.h"
 #include <sstream>
+#include <SDK/Common/Utils.h>
 
 #include "MerkleBlockDataSource.h"
 
@@ -52,8 +52,14 @@ namespace Elastos {
 				ess << "prepare sql " << ss.str() << " fail";
 				throw std::logic_error(ess.str());
 			}
-
+#ifdef NDEBUG
 			_sqlite->bindBlob(stmt, 1, blockEntity.blockBytes, nullptr);
+#else
+			std::string str = Utils::encodeHex(blockEntity.blockBytes);
+			CMBlock bytes;
+			bytes.SetMemFixed((const uint8_t *)str.c_str(), str.length() + 1);
+			_sqlite->bindBlob(stmt, 1, bytes, nullptr);
+#endif
 			_sqlite->bindInt(stmt, 2, blockEntity.blockHeight);
 			_sqlite->bindText(stmt, 3, iso, nullptr);
 
@@ -121,11 +127,15 @@ namespace Elastos {
 					// blockBytes
 					const uint8_t *pblob = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
 					size_t len = _sqlite->columnBytes(stmt, 1);
-
+#ifdef NDEBUG
 					blockBytes.Resize(len);
 					memcpy(blockBytes, pblob, len);
 
 					merkleBlock.blockBytes = blockBytes;
+#else
+					std::string str((char *)pblob);
+					merkleBlock.blockBytes = Utils::decodeHex(str);
+#endif
 
 					// blockHeight
 					merkleBlock.blockHeight = _sqlite->columnInt(stmt, 2);
