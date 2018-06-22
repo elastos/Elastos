@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/auxpow"
 	"github.com/elastos/Elastos.ELA/core"
 )
@@ -46,8 +47,8 @@ func run(txs uint32) {
 
 	merkleRoot := *mBlock.CalcHash(treeDepth(txs), 0)
 	// Create and return the merkle block.
-	merkleBlock := MerkleBlock{
-		Header: core.Header{
+	merkleBlock := msg.MerkleBlock{
+		Header: &core.Header{
 			MerkleRoot: merkleRoot,
 		},
 		Transactions: mBlock.NumTx,
@@ -68,7 +69,7 @@ func run(txs uint32) {
 	}
 
 	for i := range txIds {
-		mb, err := merkleBlock.GetTxMerkleBranch(txIds[i])
+		mb, err := GetTxMerkleBranch(merkleBlock, txIds[i])
 		if err != nil {
 			fmt.Println(err.Error())
 			os.Exit(0)
