@@ -520,11 +520,11 @@ namespace Elastos {
 			return _parentHash;
 		}
 
-		const std::vector<UInt256> &AuxPow::getAuxMerkleBranch() {
+		const std::vector<UInt256> &AuxPow::getAuxMerkleBranch() const {
 			return _auxMerkleBranch;
 		}
 
-		const std::vector<UInt256> &AuxPow::getParCoinBaseMerkle() {
+		const std::vector<UInt256> &AuxPow::getParCoinBaseMerkle() const {
 			return _parCoinBaseMerkle;
 		}
 

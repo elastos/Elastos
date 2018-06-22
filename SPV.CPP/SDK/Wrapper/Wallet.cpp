@@ -692,7 +692,7 @@ namespace Elastos {
 		}
 
 		bool Wallet::registerTransaction(const TransactionPtr &transaction) {
-			ELATransaction *elaTransaction = ELATransactioCopy((ELATransaction *) transaction->getRaw());
+			ELATransaction *elaTransaction = ELATransactionCopy((ELATransaction *) transaction->getRaw());
 			bool result = BRWalletRegisterTransaction((BRWallet *) _wallet, (BRTransaction *) elaTransaction) != 0;
 			if (!result)
 				ELATransactionFree(elaTransaction);

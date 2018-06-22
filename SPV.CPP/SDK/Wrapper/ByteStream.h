@@ -11,6 +11,10 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class ByteStream {
+			enum ByteOrder {
+				LittleEndian,
+				BigEndian
+			};
 		public:
 
 			ByteStream(bool isBe = false);
@@ -47,6 +51,7 @@ namespace Elastos {
 
 			void putInt(int32_t v);
 
+
 			void putUint32(uint32_t v);
 
 			void putLong(int64_t v);
@@ -72,6 +77,7 @@ namespace Elastos {
 
 			uint32_t getUint32();
 
+
 			uint64_t getUint64();
 
 			uint16_t getUint16();
@@ -87,6 +93,13 @@ namespace Elastos {
 			void getInts(int32_t *buf, int32_t len);
 
 			uint64_t getVarUint();
+
+		public:
+			void increasePosition(size_t len);
+			bool readUint32(uint32_t &val, ByteOrder byteEndian = LittleEndian);
+			void writeUint32(uint32_t val, ByteOrder byteEndian = LittleEndian);
+			bool readBytes(uint8_t *buf, size_t len, ByteOrder byteOrder = LittleEndian);
+			void writeBytes(const uint8_t *buf, size_t len, ByteOrder byteOrder = LittleEndian);
 
 		private:
 			void ensureCapacity(uint64_t newsize);

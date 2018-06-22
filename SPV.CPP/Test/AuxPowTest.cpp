@@ -8,28 +8,9 @@
 #include "catch.hpp"
 #include "AuxPow.h"
 #include "Log.h"
+#include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
-
-UInt256 getRandUInt256(void) {
-	UInt256 u;
-	for (size_t i = 0; i < ARRAY_SIZE(u.u32); ++i) {
-		u.u32[i] = rand();
-	}
-	return u;
-}
-
-CMBlock getRandCMBlock(size_t size) {
-	CMBlock block(size);
-
-	for (size_t i = 0; i < size; ++i) {
-		block[i] = (uint8_t)rand();
-	}
-
-	return block;
-}
 
 TEST_CASE("AuxPow test", "[AuxPow]") {
 

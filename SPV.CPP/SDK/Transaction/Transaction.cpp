@@ -39,8 +39,21 @@ namespace Elastos {
 		Transaction::Transaction(const ELATransaction &tx) :
 				_isRegistered(false),
 				_manageRaw(true) {
-			_transaction = ELATransactioCopy(&tx);
+			_transaction = ELATransactionCopy(&tx);
 
+		}
+
+		Transaction::Transaction(const Transaction &tx) :
+				_manageRaw(true) {
+			_isRegistered = tx._isRegistered;
+			_transaction = ELATransactionCopy(tx._transaction);
+		}
+
+		Transaction &Transaction::operator=(const Transaction &tx) {
+			_manageRaw = true;
+			_isRegistered = tx._isRegistered;
+			_transaction = ELATransactionCopy(tx._transaction);
+			return *this;
 		}
 
 		Transaction::Transaction(const CMBlock &buffer) :

@@ -444,5 +444,89 @@ namespace Elastos {
 			}
 		}
 
+		void ByteStream::increasePosition(size_t len) {
+			_pos += len;
+		}
+
+		bool ByteStream::readUint32(uint32_t &val, ByteOrder byteOrder) {
+			if (!checkSize(sizeof(uint32_t)))
+				return false;
+
+			size_t pos = position();
+
+			if (byteOrder == LittleEndian) {
+				val = (uint32_t) _buf[pos++];
+				val |= (int32_t) (_buf[pos++] << 8);
+				val |= (int32_t) (_buf[pos++] << 16);
+				val |= (int32_t) (_buf[pos++] << 24);
+			} else {
+				val = (uint32_t) (_buf[pos++] << 24);
+				val |= (int32_t) (_buf[pos++] << 16);
+				val |= (int32_t) (_buf[pos++] << 8);
+				val |= (int32_t) _buf[pos++];
+			}
+
+			increasePosition(sizeof(uint32_t));
+
+			return true;
+		}
+
+		void ByteStream::writeUint32(uint32_t val, ByteOrder byteOrder) {
+			ensureCapacity(position() + sizeof(uint32_t));
+
+			size_t pos = position();
+
+			if (byteOrder == LittleEndian) {
+				_buf[pos++] = (uint8_t)(val & 0xff);
+				_buf[pos++] = (uint8_t)(val >> 8 & 0xff);
+				_buf[pos++] = (uint8_t)(val >> 16 & 0xff);
+				_buf[pos++] = (uint8_t)(val >> 24 & 0xff);
+			} else {
+				_buf[pos++] = (uint8_t)((val >> 24) & 0xff);
+				_buf[pos++] = (uint8_t)((val >> 16) & 0xff);
+				_buf[pos++] = (uint8_t)((val >> 8) & 0xff);
+				_buf[pos++] = (uint8_t)(val & 0xff);
+			}
+
+			increasePosition(sizeof(uint32_t));
+			_count = position();
+		}
+
+		bool ByteStream::readBytes(uint8_t *buf, size_t len, ByteOrder byteOrder) {
+			if (!checkSize(sizeof(uint8_t) * len))
+				return false;
+
+			size_t pos = position();
+
+			if (byteOrder == LittleEndian) {
+				memcpy(buf, &_buf[pos], len);
+			} else {
+				for (size_t i = 0; i < len; ++i) {
+					buf[i] = _buf[len - 1 - i + pos];
+				}
+			}
+
+			increasePosition(len);
+
+			return true;
+		}
+
+		void ByteStream::writeBytes(const uint8_t *buf, size_t len, ByteOrder byteOrder) {
+			ensureCapacity(position() + len);
+
+			size_t pos = position();
+
+			if (byteOrder == LittleEndian) {
+				memcpy(&_buf[pos], buf, len);
+			} else {
+				for (size_t i = 0; i < len; ++i) {
+					_buf[pos + i] = buf[len - i - 1];
+				}
+			}
+
+			increasePosition(len);
+			_count = position();
+		}
+
 	}
 }

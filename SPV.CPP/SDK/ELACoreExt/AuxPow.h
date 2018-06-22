@@ -33,8 +33,8 @@ namespace Elastos {
 			uint32_t getAuxMerkleIndex() const;
 			uint32_t getParMerkleIndex() const;
 			const UInt256 &getParentHash() const;
-			const std::vector<UInt256> &getAuxMerkleBranch();
-			const std::vector<UInt256> &getParCoinBaseMerkle();
+			const std::vector<UInt256> &getAuxMerkleBranch() const;
+			const std::vector<UInt256> &getParCoinBaseMerkle() const;
 
 			UInt256 getParBlockHeaderHash() const;
 

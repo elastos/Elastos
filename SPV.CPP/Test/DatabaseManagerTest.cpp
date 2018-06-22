@@ -12,36 +12,12 @@
 #include "SpvService/BackgroundExecutor.h"
 #include "Utils.h"
 #include "Log.h"
+#include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
-#if 0
-const int totalThreadCount = 200;
-const int loopCount = 5;
-int thread_call_count = 0;
-#endif
 
 #define ISO "els"
 #define DBFILE "wallet.db"
-#define TEST_ASCII_BEGIN 48
-
-std::string getRandString(size_t length) {
-	char buf[length];
-	for (size_t i = 0; i < length; ++i) {
-		buf[i] = static_cast<uint8_t>(TEST_ASCII_BEGIN + rand() % 75);
-	}
-
-	return std::string(buf);
-}
-
-CMBlock getRandCMBlock(size_t size) {
-	CMBlock block(size);
-
-	for (size_t i = 0; i < size; ++i) {
-		block[i] = (uint8_t)rand();
-	}
-
-	return block;
-}
 
 TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 

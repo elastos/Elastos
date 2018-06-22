@@ -80,7 +80,7 @@ namespace Elastos {
 
 		PayloadPtr ELAPayloadNew(ELATransaction::Type type);
 		ELATransaction *ELATransactionNew(void);
-		ELATransaction *ELATransactioCopy(const ELATransaction *tx);
+		ELATransaction *ELATransactionCopy(const ELATransaction *tx);
 		void ELATransactionFree(ELATransaction *tx);
 
 		void ELATransactionShuffleOutputs(ELATransaction *tx);

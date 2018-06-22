@@ -5,49 +5,48 @@
 #include <cstring>
 #include <stdlib.h>
 #include <assert.h>
-#include <SDK/Common/Utils.h>
 
-#include "ELAMerkleBlock.h"
+#include "Utils.h"
+#include "IdMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		ELAMerkleBlock *ELAMerkleBlockNew() {
-			return new ELAMerkleBlock;
+		IdMerkleBlock *IdMerkleBlockNew() {
+			return new IdMerkleBlock;
 		}
 
-		ELAMerkleBlock *ELAMerkleBlockCopy(ELAMerkleBlock *orig) {
+		IdMerkleBlock *IdMerkleBlockCopy(IdMerkleBlock *orig) {
 			assert(orig != nullptr);
 
-			ELAMerkleBlock *cpy = ELAMerkleBlockNew();
+			IdMerkleBlock *cpy = IdMerkleBlockNew();
 			*cpy = *orig;
 
-			BRMerkleBlock *proto = (BRMerkleBlock *)orig;
 			cpy->raw.hashes = nullptr;
 			cpy->raw.flags = nullptr;
-			BRMerkleBlockSetTxHashes(&cpy->raw, proto->hashes, proto->hashesCount, proto->flags, proto->flagsLen);
+			BRMerkleBlockSetTxHashes(&cpy->raw, orig->raw.hashes, orig->raw.hashesCount, orig->raw.flags, orig->raw.flagsLen);
 
 			return cpy;
 		}
 
-		void ELAMerkleBlockFree(ELAMerkleBlock *elablock) {
-			assert(elablock != nullptr);
+		void IdMerkleBlockFree(IdMerkleBlock *idBlock) {
+			assert(idBlock != nullptr);
 
-			BRMerkleBlock *block = (BRMerkleBlock *)elablock;
+			BRMerkleBlock *block = (BRMerkleBlock *)idBlock;
 
 			if (block->hashes) free(block->hashes);
 			if (block->flags) free(block->flags);
 
-			delete elablock;
+			delete idBlock;
 		}
 
-		ELAMerkleBlock &ELAMerkleBlock::operator=(const ELAMerkleBlock &orig) {
+		IdMerkleBlock &IdMerkleBlock::operator=(const IdMerkleBlock &orig) {
 			this->raw = orig.raw;
 			this->raw.hashes = nullptr;
 			this->raw.flags = nullptr;
 			BRMerkleBlockSetTxHashes(&this->raw, orig.raw.hashes, orig.raw.hashesCount, orig.raw.flags, orig.raw.flagsLen);
 
-			this->auxPow = orig.auxPow;
+			this->idAuxPow = orig.idAuxPow;
 
 			return *this;
 		}

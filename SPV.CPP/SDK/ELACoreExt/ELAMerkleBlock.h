@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_ELAMERKLEBLOCK_H__
 #define __ELASTOS_SDK_ELAMERKLEBLOCK_H__
 
+#include <Core/BRMerkleBlock.h>
 #include "BRMerkleBlock.h"
 #include "AuxPow.h"
 
@@ -12,8 +13,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct ELAMerkleBlock {
+			ELAMerkleBlock() {
+				memset(&this->raw, 0, sizeof(this->raw));
+				this->raw.height = BLOCK_UNKNOWN_HEIGHT;
+			}
+
 			BRMerkleBlock raw;
 			AuxPow auxPow;
+
+			ELAMerkleBlock &operator=(const ELAMerkleBlock &elaMerkleBlock);
 		};
 
 		ELAMerkleBlock *ELAMerkleBlockNew();
@@ -21,6 +29,7 @@ namespace Elastos {
 		ELAMerkleBlock *ELAMerkleBlockCopy(ELAMerkleBlock *elaproto);
 
 		void ELAMerkleBlockFree(ELAMerkleBlock *block);
+
 	}
 }
 

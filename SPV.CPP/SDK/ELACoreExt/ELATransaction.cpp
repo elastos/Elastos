@@ -58,7 +58,7 @@ namespace Elastos {
 		}
 
 
-		ELATransaction *ELATransactioCopy(const ELATransaction *orig) {
+		ELATransaction *ELATransactionCopy(const ELATransaction *orig) {
 			ELATransaction *tx = new ELATransaction();
 
 			BRTxInput *inputs = tx->raw.inputs;

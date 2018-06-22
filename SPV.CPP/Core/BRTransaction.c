@@ -134,7 +134,7 @@ static size_t _BRTxInputData(const BRTxInput *input, uint8_t *data, size_t dataL
 void BRTxOutputSetAddress(BRTxOutput *output, const char *address)
 {
     assert(output != NULL);
-    assert(address == NULL || BRAddressIsValid(address));
+//    assert(address == NULL || BRAddressIsValid(address));
     if (output->script) array_free(output->script);
     output->script = NULL;
     output->scriptLen = 0;

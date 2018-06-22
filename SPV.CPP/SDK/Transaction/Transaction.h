@@ -35,6 +35,10 @@ namespace Elastos {
 
 			Transaction(const ELATransaction &tx);
 
+			Transaction(const Transaction &tx);
+
+			Transaction &operator=(const Transaction &tx);
+
 			Transaction(const CMBlock &buffer);
 
 			Transaction(const CMBlock &buffer, uint32_t blockHeight, uint32_t timeStamp);
