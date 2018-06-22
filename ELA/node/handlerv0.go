@@ -59,9 +59,15 @@ func (h *HandlerV0) OnMakeMessage(cmd string) (message p2p.Message, err error) {
 	return message, err
 }
 
+func (h *HandlerV0) OnMessageDecoded(message p2p.Message) {
+	if err := h.HandleMessage(message); err != nil {
+		log.Error("Handle message error: " + err.Error())
+	}
+}
+
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
-func (h *HandlerV0) OnMessageDecoded(message p2p.Message) {
+func (h *HandlerV0) HandleMessage(message p2p.Message) error {
 	var err error
 	switch message := message.(type) {
 	case *msg.Ping:
@@ -83,9 +89,7 @@ func (h *HandlerV0) OnMessageDecoded(message p2p.Message) {
 	default:
 		h.HandlerBase.OnMessageDecoded(message)
 	}
-	if err != nil {
-		log.Error("Handler message error: " + err.Error())
-	}
+	return err
 }
 
 func (h *HandlerV0) onPing(ping *msg.Ping) error {
@@ -112,7 +116,10 @@ func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 	if err != nil {
 		return err
 	}
-	go node.Send(v0.NewInv(hashes))
+
+	if len(hashes) > 0 {
+		go node.Send(v0.NewInv(hashes))
+	}
 	return nil
 }
 
@@ -156,6 +163,7 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 }
 
 func (h *HandlerV0) onGetData(req *v0.GetData) error {
+	log.Debug()
 	node := h.node
 	hash := req.Hash
 
@@ -178,24 +186,20 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNoder(node) {
-		log.Trace("received headers message from unknown peer")
-		return fmt.Errorf("received headers message from unknown peer")
+		log.Trace("received block message from unknown peer")
+		return fmt.Errorf("received block message from unknown peer")
 	}
 
 	if chain.DefaultLedger.BlockInLedger(hash) {
 		h.duplicateBlocks++
 		log.Trace("Receive ", h.duplicateBlocks, " duplicated block.")
-		return nil
+		return fmt.Errorf("received duplicated block")
 	}
 
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 	_, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(block)
 	if err != nil {
-		reject := msg.NewReject(msgBlock.CMD(), msg.RejectInvalid, err.Error())
-		reject.Hash = block.Hash()
-
-		node.Send(reject)
 		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
 	}
 
@@ -223,17 +227,11 @@ func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
 
 	if !LocalNode.ExistedID(tx.Hash()) && !LocalNode.IsSyncHeaders() {
 		if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
-			reject := msg.NewReject(msgTx.CMD(), msg.RejectInvalid, errCode.Message())
-			reject.Hash = tx.Hash()
-
-			node.Send(reject)
 			return fmt.Errorf("[HandlerBase] VerifyTransaction failed when AppendToTxnPool")
 		}
 		LocalNode.Relay(node, tx)
-		log.Info("Relay Transaction")
+		log.Debugf("Relay Transaction hash %s type %s", tx.Hash().String(), tx.TxType.Name())
 		LocalNode.IncRxTxnCnt()
-		log.Debug("RX Transaction message hash", tx.Hash().String())
-		log.Debug("RX Transaction message type", tx.TxType.Name())
 	}
 
 	return nil
