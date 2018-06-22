@@ -281,6 +281,16 @@ namespace Elastos {
 			return md;
 		}
 
+		nlohmann::json MerkleBlock::toJson() {
+			nlohmann::json j;
+			to_json(j, *this);
+			return j;
+		}
+
+		void MerkleBlock::fromJson(const nlohmann::json &j) {
+			from_json(j, *this);
+		}
+
 		void to_json(nlohmann::json &j, const MerkleBlock &p) {
 			BRMerkleBlock *pblock = p.getRaw();
 

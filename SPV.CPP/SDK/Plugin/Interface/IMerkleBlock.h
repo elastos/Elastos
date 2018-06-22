@@ -2,21 +2,22 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#ifndef __ELASTOS_SDK_IMERKLEBLOCK_H__
+#define __ELASTOS_SDK_IMERKLEBLOCK_H__
+
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		ELAMessageSerializable::~ELAMessageSerializable() {
+		class IMerkleBlock : public ELAMessageSerializable {
+		public:
+			virtual ~IMerkleBlock() {}
 
-		}
 
-		nlohmann::json ELAMessageSerializable::toJson() {
-			return nlohmann::json();
-		}
+		};
 
-		void ELAMessageSerializable::fromJson(const nlohmann::json &) {
-
-		}
 	}
 }
+
+#endif //__ELASTOS_SDK_IMERKLEBLOCK_H__

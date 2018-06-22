@@ -8,7 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "CMemBlock.h"
-#include "ELAMessageSerializable.h"
+#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -10,7 +10,7 @@
 
 #include "Wrapper.h"
 #include "CMemBlock.h"
-#include "ELAMessageSerializable.h"
+#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 #include "ELACoreExt/AuxPow.h"
 #include "ELACoreExt/ELAMerkleBlock.h"
 
@@ -35,6 +35,10 @@ namespace Elastos {
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
+
+			virtual nlohmann::json toJson();
+
+			virtual void fromJson(const nlohmann::json &);
 
 			UInt256 getBlockHash() const;
 

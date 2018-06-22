@@ -494,7 +494,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void Transaction::fromJson(nlohmann::json jsonData) {
+		void Transaction::fromJson(const nlohmann::json &jsonData) {
 			_isRegistered = jsonData["IsRegistered"];
 
 			_transaction->raw.txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());

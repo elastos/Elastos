@@ -166,7 +166,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void TransactionOutput::fromJson(nlohmann::json jsonData) {
+		void TransactionOutput::fromJson(const nlohmann::json &jsonData) {
 			std::string address = jsonData["address"].get<std::string>();
 			size_t addressSize = sizeof(_output->raw.address);
 			strncpy(_output->raw.address, address.c_str(), addressSize - 1);

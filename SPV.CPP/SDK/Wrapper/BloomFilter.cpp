@@ -88,7 +88,7 @@ namespace Elastos {
 			return jsonData;
 		}
 
-		void BloomFilter::fromJson(nlohmann::json jsonData) {
+		void BloomFilter::fromJson(const nlohmann::json &jsonData) {
 			_bloomFilter->length = jsonData["length"].get<uint32_t>();
 
 			_bloomFilter->filter = (uint8_t *)malloc(_bloomFilter->length);

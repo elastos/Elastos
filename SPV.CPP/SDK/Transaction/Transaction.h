@@ -15,7 +15,7 @@
 #include "WrapperList.h"
 #include "Program.h"
 #include "ELATransaction.h"
-#include "ELAMessageSerializable.h"
+#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 #include "ELACoreExt/Attribute.h"
 #include "ELACoreExt/Payload/IPayload.h"
 #include "ELACoreExt/ELATransaction.h"
@@ -148,7 +148,7 @@ namespace Elastos {
 
 			virtual nlohmann::json toJson();
 
-			virtual void fromJson(nlohmann::json jsonData);
+			virtual void fromJson(const nlohmann::json &jsonData);
 
 			static uint64_t getMinOutputAmount();
 

@@ -8,7 +8,7 @@
 #include "BRBloomFilter.h"
 
 #include "Wrapper.h"
-#include "ELAMessageSerializable.h"
+#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -33,7 +33,7 @@ namespace Elastos {
 
 			virtual nlohmann::json toJson();
 
-			virtual void fromJson(nlohmann::json jsonData);
+			virtual void fromJson(const nlohmann::json &jsonData);
 
 		private:
 			BRBloomFilter *_bloomFilter;

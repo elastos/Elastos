@@ -7,7 +7,7 @@
 
 #include "BRPeer.h"
 
-#include "ELAMessageSerializable.h"
+#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {

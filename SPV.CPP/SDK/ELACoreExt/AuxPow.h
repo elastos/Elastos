@@ -11,7 +11,7 @@
 #include "BRTransaction.h"
 #include "BRMerkleBlock.h"
 
-#include "ELAMessageSerializable.h"
+#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {

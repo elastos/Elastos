@@ -16,13 +16,13 @@ namespace Elastos {
 
 		class ELAMessageSerializable {
 		public:
-			virtual ~ELAMessageSerializable();
+			virtual ~ELAMessageSerializable() {}
 
 			virtual void Serialize(ByteStream &ostream) const = 0;
 			virtual bool Deserialize(ByteStream &istream) = 0;
 
-			virtual nlohmann::json toJson();
-			virtual void fromJson(const nlohmann::json &);
+			virtual nlohmann::json toJson() = 0;
+			virtual void fromJson(const nlohmann::json &) = 0;
 		};
 
 	}
