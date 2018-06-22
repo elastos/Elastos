@@ -862,8 +862,16 @@ func GetExistWithdrawTransactions(param Params) map[string]interface{} {
 
 	var resultTxHashes []string
 	for _, txHash := range txHashes {
-		inStore := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(txHash)
-		inTxPool := NodeForServers.IsDuplicateSidechainTx(txHash)
+		txHashBytes, err := HexStringToBytes(txHash)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		hash, err := Uint256FromBytes(txHashBytes)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		inStore := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(*hash)
+		inTxPool := NodeForServers.IsDuplicateSidechainTx(*hash)
 		if inTxPool || inStore {
 			resultTxHashes = append(resultTxHashes, txHash)
 		}
@@ -895,13 +903,15 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(WithdrawFromSideChainInfo)
 		obj.BlockHeight = object.BlockHeight
 		obj.GenesisBlockAddress = object.GenesisBlockAddress
-		obj.SideChainTransactionHashes = object.SideChainTransactionHashes
+		for _, hash := range object.SideChainTransactionHashes {
+			obj.SideChainTransactionHashes = append(obj.SideChainTransactionHashes, hash.String())
+		}
 		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.CrossChainAddress = object.CrossChainAddress
-		obj.OutputIndex = object.OutputIndex
-		obj.CrossChainAmount = object.CrossChainAmount
+		obj.CrossChainAddresses = object.CrossChainAddresses
+		obj.OutputIndexes = object.OutputIndexes
+		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
 	case *PayloadTransferAsset:
 	case *PayloadRecord:

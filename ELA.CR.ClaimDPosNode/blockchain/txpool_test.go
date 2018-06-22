@@ -46,15 +46,22 @@ func TestTxPoolInit(t *testing.T) {
 }
 
 func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
+	hashStr1 := "8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62"
+	hashBytes1, _ := common.HexStringToBytes(hashStr1)
+	hash1, _ := common.Uint256FromBytes(hashBytes1)
+	hashStr2 := "cc62e14f5f9526b7f4ff9d34dcd0643dacb7886707c57f49ec97b95ec5c4edac"
+	hashBytes2, _ := common.HexStringToBytes(hashStr2)
+	hash2, _ := common.Uint256FromBytes(hashBytes2)
+
 	// 1. Generate a withdraw transaction
 	txn1 := new(core.Transaction)
 	txn1.TxType = core.WithdrawFromSideChain
 	txn1.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			"8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62",
-			"cc62e14f5f9526b7f4ff9d34dcd0643dacb7886707c57f49ec97b95ec5c4edac",
+		SideChainTransactionHashes: []common.Uint256{
+			*hash1,
+			*hash2,
 		},
 	}
 
@@ -73,8 +80,8 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 	txn2.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			"8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62", // duplicate sidechain Tx
+		SideChainTransactionHashes: []common.Uint256{
+			*hash1, // duplicate sidechain Tx
 		},
 	}
 
@@ -86,15 +93,31 @@ func TestTxPool_VerifyDuplicateSidechainTx(t *testing.T) {
 }
 
 func TestTxPool_CleanSidechainTx(t *testing.T) {
+	hashStr1 := "300db7783393a6f60533c1223108445df57de4fb4842f84f55d07df57caa0c7d"
+	hashBytes1, _ := common.HexStringToBytes(hashStr1)
+	hash1, _ := common.Uint256FromBytes(hashBytes1)
+	hashStr2 := "d6c2cb8345a8fe4af0d103cc4e40dbb0654bb169a85bb8cc57923d0c72f3658f"
+	hashBytes2, _ := common.HexStringToBytes(hashStr2)
+	hash2, _ := common.Uint256FromBytes(hashBytes2)
+	hashStr3 := "326218253e6feaa21e3521eff27418b942a5fbd45347505f3e5aca0463baffe2"
+	hashBytes3, _ := common.HexStringToBytes(hashStr3)
+	hash3, _ := common.Uint256FromBytes(hashBytes3)
+	hashStr4 := "645b614eaaa0a1bfd7015d88f3c1343048343924fc105e403b735ba754caa8db"
+	hashBytes4, _ := common.HexStringToBytes(hashStr4)
+	hash4, _ := common.Uint256FromBytes(hashBytes4)
+	hashStr5 := "9dcad6d4ec2851bf522ddd301c7567caf98554a82a0bcce866de80b503909642"
+	hashBytes5, _ := common.HexStringToBytes(hashStr5)
+	hash5, _ := common.Uint256FromBytes(hashBytes5)
+
 	// 1. Generate some withdraw transactions
 	txn1 := new(core.Transaction)
 	txn1.TxType = core.WithdrawFromSideChain
 	txn1.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			"300db7783393a6f60533c1223108445df57de4fb4842f84f55d07df57caa0c7d",
-			"d6c2cb8345a8fe4af0d103cc4e40dbb0654bb169a85bb8cc57923d0c72f3658f",
+		SideChainTransactionHashes: []common.Uint256{
+			*hash1,
+			*hash2,
 		},
 	}
 
@@ -103,8 +126,8 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	txn2.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			"326218253e6feaa21e3521eff27418b942a5fbd45347505f3e5aca0463baffe2",
+		SideChainTransactionHashes: []common.Uint256{
+			*hash3,
 		},
 	}
 
@@ -113,9 +136,9 @@ func TestTxPool_CleanSidechainTx(t *testing.T) {
 	txn3.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			"645b614eaaa0a1bfd7015d88f3c1343048343924fc105e403b735ba754caa8db",
-			"9dcad6d4ec2851bf522ddd301c7567caf98554a82a0bcce866de80b503909642",
+		SideChainTransactionHashes: []common.Uint256{
+			*hash4,
+			*hash5,
 		},
 	}
 	txns := []*core.Transaction{txn1, txn2, txn3}
@@ -206,9 +229,9 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	txn1.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			sideTx1.String(),
-			sideTx2.String(),
+		SideChainTransactionHashes: []common.Uint256{
+			sideTx1,
+			sideTx2,
 		},
 	}
 
@@ -222,7 +245,7 @@ func TestTxPool_IsDuplicateSidechainTx(t *testing.T) {
 	}
 
 	// 3. Run IsDuplicateSidechainTx
-	inPool := txPool.IsDuplicateSidechainTx(sideTx1.String())
+	inPool := txPool.IsDuplicateSidechainTx(sideTx1)
 	if !inPool {
 		t.Error("Should find duplicate sidechain tx")
 	}

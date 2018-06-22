@@ -111,9 +111,9 @@ type SideChainPowInfo struct {
 }
 
 type TransferCrossChainAssetInfo struct {
-	CrossChainAddress []string
-	OutputIndex       []uint64
-	CrossChainAmount  []common.Fixed64
+	CrossChainAddresses []string
+	OutputIndexes       []uint64
+	CrossChainAmounts   []common.Fixed64
 }
 
 type WithdrawFromSideChainInfo struct {

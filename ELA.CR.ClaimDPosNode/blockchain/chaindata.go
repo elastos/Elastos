@@ -363,9 +363,9 @@ func (c *ChainStore) RollbackAsset(assetId Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackSidechainTx(sidechainTxHash string) error {
+func (c *ChainStore) RollbackSidechainTx(sidechainTxHash Uint256) error {
 	key := []byte{byte(IX_SideChain_Tx)}
-	key = append(key, []byte(sidechainTxHash)...)
+	key = append(key, sidechainTxHash.Bytes()...)
 
 	c.BatchDelete(key)
 	return nil
