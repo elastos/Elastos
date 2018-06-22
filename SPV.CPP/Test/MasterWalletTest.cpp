@@ -509,7 +509,7 @@ TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
 
-		REQUIRE(masterWallet->GetPublicKey() == "0373a18fb2193428ecb92fb4b04c7786f27927050b99c7e4cf8d7c46141189a89e");
+		REQUIRE(masterWallet->GetPublicKey() == "020145e5c9d42017c103b7378ab0d9548c666eeb1739f55fcacb855f33c319518a");
 	}
 }
 
@@ -546,7 +546,7 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 
 	SECTION("Normal derive") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
-		REQUIRE(id == "inS8NkPEQ5gafdQu518DAf7KqvhQCK36HY");
+		REQUIRE(id == "ikYVfmDjnEJM2E2NXk4Ay18ehx2tH14LsQ");
 	}
 	SECTION("Derive reserved purpose") {
 		try {
@@ -585,7 +585,7 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 	SECTION("Normal get") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
 		std::string pubKey = masterWallet->GetPublicKey(id);
-		REQUIRE(pubKey == "0205c3e582e733a9e28464100610db982595c83de10a80818ea462e8261d1560bb");
+		REQUIRE(pubKey == "0300151c783bf85a0f9be26e7f9483714e8042f8cafdb659c1c87ca1c9c666d2c9");
 	}
 	SECTION("Should throw with wrong id") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);

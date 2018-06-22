@@ -82,9 +82,9 @@ TEST_CASE("unicode to utf8 convert", "[bitcoin test]") {
 
 TEST_CASE("Seed serialize/deserialize", "[bitcoin test]") {
 
-	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed256();
+	CMBlock seed = WalletTool::GenerateSeed256();
 	std::string str_seed = WalletTool::getStringFromSeed(seed);
-	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromString(str_seed);
+	CMBlock seed_re = WalletTool::getSeedFromString(str_seed);
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 
 	int pause = 0;

@@ -233,7 +233,8 @@ namespace Elastos {
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &transaction) {
-			BRPeerManagerPublishTx(_manager, transaction->getRaw(), &_listener, txPublished);
+			ELATransaction *elaTransaction = ELATransactioCopy((ELATransaction *)transaction->getRaw());
+			BRPeerManagerPublishTx(_manager, (BRTransaction *)elaTransaction, &_listener, txPublished);
 		}
 
 		uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {

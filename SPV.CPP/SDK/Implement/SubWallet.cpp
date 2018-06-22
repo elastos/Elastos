@@ -47,7 +47,7 @@ namespace Elastos {
 																						: readPeerConfig();
 
 			CMBlock encryptedKey;
-			UInt256 chainCode;
+			UInt256 chainCode = UINT256_ZERO;
 			MasterPubKeyPtr masterPubKey = nullptr;
 			if (!payPassword.empty()) {
 				BRKey key;
@@ -217,8 +217,7 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														  const std::string &payPassword) {
-			// FIXME reopen this after signTransaction works fine
-			//signTransaction(transaction, _info.getForkId(), payPassword);
+			signTransaction(transaction, _info.getForkId(), payPassword);
 			publishTransaction(transaction);
 
 			nlohmann::json j;
@@ -318,7 +317,7 @@ namespace Elastos {
 										const std::string &payPassword) {
 			assert(transaction != nullptr);
 			BRKey masterKey;
-			UInt256 chainCode;
+			UInt256 chainCode = UINT256_ZERO;
 			deriveKeyAndChain(&masterKey, chainCode, payPassword);
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			assert(wallet != nullptr);
@@ -351,7 +350,7 @@ namespace Elastos {
 			BRKey keys[internalCount + externalCount];
 			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
+			Key::calculatePrivateKeyList(keys, externalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
 
 			if (tx) {

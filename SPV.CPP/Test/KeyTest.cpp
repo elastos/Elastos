@@ -83,7 +83,7 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(key.getPrivKey().empty() == false);
 
 		UInt256 hash = key.getSecret();
-		UInt256 target = uint256("00136c1ad038f9a00871895322a487ed14f1cdc4d22ad351cfa1a0d235975dd7");
+		UInt256 target = uint256("1de5823636a0033939ed2ca1e776f9b20b6caaad957580851462c0039b94c95f");
 		int res = UInt256Eq(&hash, &target);
 		REQUIRE(res == 1);
 	}

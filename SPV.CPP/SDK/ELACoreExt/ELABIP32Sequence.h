@@ -18,25 +18,17 @@ namespace Elastos {
 		class ELABIP32Sequence {
 		public:
 			// key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth - path m/1H/0
-			static void BIP32APIAuthKey(const BRKey *key, const void *seed, size_t seedLen);
+			static void BIP32APIAuthKey(const BRKey *key, const CMBlock &seed);
 
-			static void BIP32PrivKey(BRKey *key, const void *seed, size_t seedLen, uint32_t chain, uint32_t index);
+			static void BIP32PrivKey(BRKey *key, const CMBlock &seed, uint32_t chain, uint32_t index);
 
 			// sets the private key for the specified path to key
 			// depth is the number of arguments used to specify the path
-			static void BIP32PrivKeyPath(const BRKey *key, const void *seed, size_t seedLen, int depth, ...);
+			static void BIP32PrivKeyPath(const BRKey *key, const CMBlock &seed, int depth, ...);
 
 			// sets the private key for the path specified by vlist to key
 			// depth is the number of arguments in vlist
-			static void BIP32vPrivKeyPath(const BRKey *key, const void *seed, size_t seedLen, int depth, va_list vlist);
-
-			static void CKDpriv(UInt256 *k, UInt256 *c, uint32_t i);
-
-			static BRMasterPubKey BIP32MasterPubKey(const void *seed, size_t seedLen);
-
-			// sets the private key for path m/0H/chain/index to each element in keys
-			static void BIP32PrivKeyList(BRKey keys[], size_t keysCount, const void *seed, size_t seedLen,
-			                             uint32_t chain, const uint32_t indexes[]);
+			static void BIP32vPrivKeyPath(const BRKey *key, const CMBlock &seed, int depth, va_list vlist);
 		};
 	}
 }

@@ -104,10 +104,7 @@ namespace Elastos {
 			                                               int nid = NID_X9_62_prime256v1);
 
 		private:
-
 			void setPublicKey();
-
-			void deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, va_list vlist);
 
 		private:
 			boost::shared_ptr<BRKey> _key;

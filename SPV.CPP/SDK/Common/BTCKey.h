@@ -15,6 +15,8 @@
 #include "BRBIP32Sequence.h"
 #include "CMemBlock.h"
 
+#define BIP32_SEED_KEY "ELA SEED"
+
 namespace Elastos {
 	namespace ElaWallet {
 		class BTCKey {

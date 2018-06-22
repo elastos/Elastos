@@ -96,7 +96,6 @@ namespace Elastos {
 				CMemBlock<char> cbSeed;
 				cbSeed.SetMemFixed(seed.c_str(), seed.size() + 1);
 				CMBlock entropySource = Str2Hex(cbSeed);
-
 				if (true == entropySource) {
 					uint8_t key64[64] = {0};
 					uint8_t key[] = "reqPrivKey";
@@ -113,7 +112,9 @@ namespace Elastos {
 		std::string WalletTool::getStringFromSeed(const CMBlock &seed) {
 			std::string out = "";
 			if (true == seed) {
-				CMemBlock<char> str = Hex2Str(seed);
+				CMBlock seeds;
+				seeds.SetMemFixed(seed, seed.GetSize());
+				CMemBlock<char> str = Hex2Str(seeds);
 				out = (const char *) str;
 			}
 			return out;

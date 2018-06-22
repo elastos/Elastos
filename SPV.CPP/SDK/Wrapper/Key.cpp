@@ -24,8 +24,6 @@
 #include "BTCKey.h"
 #include "BigIntFormat.h"
 
-#define BIP32_SEED_KEY "ELA seed"
-
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -68,7 +66,7 @@ namespace Elastos {
 
 		Key::Key(const CMBlock &seed, uint32_t chain, uint32_t index) {
 			_key = boost::shared_ptr<BRKey>(new BRKey);
-			ELABIP32Sequence::BIP32PrivKey(_key.get(), seed, seed.GetSize(), chain, index);
+			ELABIP32Sequence::BIP32PrivKey(_key.get(), seed, chain, index);
 		}
 
 		std::string Key::toString() const {
@@ -130,7 +128,7 @@ namespace Elastos {
 
 		CMBlock Key::getAuthPrivKeyForAPI(const CMBlock &seed) {
 			BRKey key;
-			ELABIP32Sequence::BIP32APIAuthKey(&key, seed, seed.GetSize());
+			ELABIP32Sequence::BIP32APIAuthKey(&key, seed);
 			char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
 			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
 			CMBlock ret(sizeof(rawKey));
@@ -291,42 +289,19 @@ namespace Elastos {
 
 		void Key::deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...) {
 			va_list ap;
-
 			va_start(ap, depth);
-			deriveKeyAndChain(chainCode, seed, seedLen, depth, ap);
+			CMBlock seeds;
+			seeds.SetMemFixed((uint8_t *)seed, seedLen);
+			ELABIP32Sequence::BIP32PrivKeyPath(_key.get(), seeds, depth, ap);
 			va_end(ap);
-		}
-
-		void Key::deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, va_list vlist) {
-			UInt512 I;
-			UInt256 secret;
-
-			assert(_key.get() != NULL);
-			assert(seed != NULL || seedLen == 0);
-			assert(depth >= 0);
-
-			if (_key.get() && (seed || seedLen == 0)) {
-				BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
-				secret = *(UInt256 *) &I;
-				chainCode = *(UInt256 *) &I.u8[sizeof(UInt256)];
-				var_clean(&I);
-
-				for (int i = 0; i < depth; i++) {
-					ELABIP32Sequence::CKDpriv(&secret, &chainCode, va_arg(vlist, uint32_t));
-				}
-
-				setSecret(secret, true);
-
-				var_clean(&secret, &chainCode);
-
-			}
 		}
 
 		const UInt160 Key::hashTo160() {
 			UInt160 hash = UINT160_ZERO;
 			size_t len = getCompressed() ? 33 : 65;
-			//todo add publicKey verify
-			if (true) {
+			CMBlock pubKey = getPubkey();
+			bool ret = BTCKey::PublickeyIsValid(pubKey, NID_X9_62_prime256v1);
+			if (ret) {
 				BRHash160(&hash, _key->pubKey, len);
 			}
 			return hash;
@@ -356,16 +331,15 @@ namespace Elastos {
 			assert(indexes != nullptr || keysCount == 0);
 			if (keys && keysCount > 0 && indexes)
 				for (size_t i = 0; i < keysCount; i++) {
-					UInt256 code;
-					UInt256Set(&code, *chainCode);
 
-					UInt256 privateKey;
-					UInt256Set(&privateKey, *secret);
+					CMBlock privateKey;
+					privateKey.SetMemFixed(secret->u8, sizeof(UInt256));
 
-					ELABIP32Sequence::CKDpriv(&privateKey, &code, chain);
-					ELABIP32Sequence::CKDpriv(&privateKey, &code, indexes[i]);
-
-					BRKeySetSecret(&keys[i], &privateKey, 1);
+					CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret(privateKey, chain, indexes[i], *chainCode,
+					                                                         NID_X9_62_prime256v1);
+					UInt256 privKey;
+					memcpy(privKey.u8, mbChildPrivkey, mbChildPrivkey.GetSize());
+					BRKeySetSecret(&keys[i], &privKey, 1);
 				}
 		}
 

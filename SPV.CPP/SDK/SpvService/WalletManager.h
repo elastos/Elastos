@@ -52,7 +52,7 @@ namespace Elastos {
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
 						  int forkId,
-						  const ChainParams &chainParams = ChainParams::mainNet());
+						  const ChainParams &chainParams);
 #endif
 
 			virtual ~WalletManager();

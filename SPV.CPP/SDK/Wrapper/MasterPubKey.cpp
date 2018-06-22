@@ -3,50 +3,16 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstring>
+#include <Core/BRBIP32Sequence.h>
 
 #include "BRBIP39Mnemonic.h"
 #include "BRBIP32Sequence.h"
 #include "MasterPubKey.h"
+#include "BTCKey.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-		namespace {
-			// Public parent key -> public child key
-			//
-			// CKDpub((Kpar, cpar), i) -> (Ki, ci) computes a child extended public key from the parent extended public key.
-			// It is only defined for non-hardened child keys.
-			//
-			// - Check whether i >= 2^31 (whether the child is a hardened key).
-			//     - If so (hardened child): return failure
-			//     - If not (normal child): let I = HMAC-SHA512(Key = cpar, Data = serP(Kpar) || ser32(i)).
-			// - Split I into two 32-byte sequences, IL and IR.
-			// - The returned child key Ki is point(parse256(IL)) + Kpar.
-			// - The returned chain code ci is IR.
-			// - In case parse256(IL) >= n or Ki is the point at infinity, the resulting key is invalid, and one should proceed with
-			//   the next value for i.
-			//
-			static void _CKDpub(BRECPoint *K, UInt256 *c, uint32_t i)
-			{
-				uint8_t buf[sizeof(*K) + sizeof(i)];
-				UInt512 I;
-
-				if ((i & BIP32_HARD) != BIP32_HARD) { // can't derive private child key from public parent key
-					*(BRECPoint *)buf = *K;
-					UInt32SetBE(&buf[sizeof(*K)], i);
-
-					BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf, sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
-
-					*c = *(UInt256 *)&I.u8[sizeof(UInt256)];
-
-					BRSecp256k1PointAdd(K, (UInt256 *)&I);
-
-					var_clean(&I);
-					mem_clean(buf, sizeof(buf));
-				}
-			}
-
-		}
-
 		MasterPubKey::MasterPubKey() {
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 		}
@@ -158,11 +124,13 @@ namespace Elastos {
 			assert(memcmp(&mpk, &zeroPubKey, sizeof(mpk)) != 0);
 
 			if (pubKey && sizeof(BRECPoint) <= pubKeyLen) {
-				*(BRECPoint *)pubKey = *(BRECPoint *)mpk.pubKey;
 
-				_CKDpub((BRECPoint *)pubKey, &chainCode, chain); // path N(m/0H/chain)
+				CMBlock publicKey;
+				publicKey.SetMemFixed(mpk.pubKey, sizeof(mpk.pubKey));
 
-				_CKDpub((BRECPoint *)pubKey, &chainCode, index); // index'th key in chain
+				CMBlock mbChildPubKey = BTCKey::getDerivePubKey(publicKey, chain, index, chainCode, NID_X9_62_prime256v1);
+
+				memcpy(pubKey, mbChildPubKey, mbChildPubKey.GetSize());
 
 				var_clean(&chainCode);
 			}

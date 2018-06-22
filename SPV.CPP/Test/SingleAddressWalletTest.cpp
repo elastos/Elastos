@@ -41,7 +41,7 @@ MasterPubKeyPtr createDummyPublicKey() {
 	std::string phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	BRBIP39DeriveKey(seed.u8, phrase.c_str(), "");
 
-	UInt256 chainCode;
+	UInt256 chainCode = UINT256_ZERO;
 	Key key;
 	key.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 3, 44, 0, 0);
 
@@ -54,7 +54,7 @@ MasterPrivKey createDummyPrivateKey(const std::string &password) {
 	std::string phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	BRBIP39DeriveKey(seed.u8, phrase.c_str(), "");
 
-	UInt256 chainCode;
+	UInt256 chainCode = UINT256_ZERO;
 	Key key;
 	key.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 3, 44, 0, 0);
 
@@ -98,24 +98,21 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 
 		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
 		REQUIRE(addresses.size() == 1);
-		//fixme [ymz] then publicKey derive is correct then fix this test
-		REQUIRE(addresses[0] == "ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
+		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
 
 		REQUIRE(singleAddressWallet.getBalance() == 0);
 #else
-//		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
-//
-//		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
-//		REQUIRE(addresses.size() == 1);
-//		//fixme [ymz] then publicKey derive is correct then fix this test
-//		REQUIRE(addresses[0] == "ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-//
-//		REQUIRE(singleAddressWallet.getBalance() == 0);
+		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
+
+		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
+		REQUIRE(addresses.size() == 1);
+		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+
+		REQUIRE(singleAddressWallet.getBalance() == 0);
 #endif
 	}
 	SECTION("Initialize with transactions") {
 #ifdef TEMPORARY_HD_STRATEGY
-		//fixme [ymz] then child publicKey correct
 		SharedWrapperList<Transaction, BRTransaction *> transactions;
 
 		ELATransaction *transaction = new ELATransaction;
@@ -157,43 +154,42 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 
 		REQUIRE(singleAddressWallet.getBalance() == 300000000);
 #else
-//		//fixme [ymz] then child publicKey correct
-//		SharedWrapperList<Transaction, BRTransaction *> transactions;
-//
-//		ELATransaction *transaction = new ELATransaction;
-//		TransactionOutputPtr output(new TransactionOutput);
-//		output->setAmount(100000000);
-//		output->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-//		transaction->outputs.push_back(output);
-//		transaction->raw.txHash = UINT256_ZERO;
-//		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-//		CMBlock code(10);
-//		CMBlock parameter(10);
-//		ProgramPtr program(new Program(code, parameter));
-//		transaction->programs.push_back(program);
-//		transactions.push_back(TransactionPtr(new Transaction(transaction, false)));
-//
-//		ELATransaction *transaction2 = new ELATransaction;
-//		TransactionOutputPtr output2(new TransactionOutput);
-//		output2->setAmount(200000000);
-//		output2->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-//		transaction2->outputs.push_back(output2);
-//		transaction2->raw.txHash = Utils::UInt256FromString(
-//				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
-//		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-//		CMBlock code2(10);
-//		CMBlock parameter2(10);
-//		ProgramPtr program2(new Program(code2, parameter2));
-//		transaction2->programs.push_back(program2);
-//		transactions.push_back(TransactionPtr(new Transaction(transaction2, false)));
-//
-//		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
-//
-//		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
-//		REQUIRE(addresses.size() == 1);
-//		REQUIRE(addresses[0] == "ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-//
-//		REQUIRE(singleAddressWallet.getBalance() == 300000000);
+		SharedWrapperList<Transaction, BRTransaction *> transactions;
+
+		ELATransaction *transaction = new ELATransaction;
+		TransactionOutputPtr output(new TransactionOutput);
+		output->setAmount(100000000);
+		output->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+		transaction->outputs.push_back(output);
+		transaction->raw.txHash = UINT256_ZERO;
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code(10);
+		CMBlock parameter(10);
+		ProgramPtr program(new Program(code, parameter));
+		transaction->programs.push_back(program);
+		transactions.push_back(TransactionPtr(new Transaction(transaction, false)));
+
+		ELATransaction *transaction2 = new ELATransaction;
+		TransactionOutputPtr output2(new TransactionOutput);
+		output2->setAmount(200000000);
+		output2->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+		transaction2->outputs.push_back(output2);
+		transaction2->raw.txHash = Utils::UInt256FromString(
+				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+		CMBlock code2(10);
+		CMBlock parameter2(10);
+		ProgramPtr program2(new Program(code2, parameter2));
+		transaction2->programs.push_back(program2);
+		transactions.push_back(TransactionPtr(new Transaction(transaction2, false)));
+
+		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
+
+		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
+		REQUIRE(addresses.size() == 1);
+		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+
+		REQUIRE(singleAddressWallet.getBalance() == 300000000);
 #endif
 	}
 }
@@ -214,7 +210,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	ELATransaction *transaction = new ELATransaction;
 	TransactionOutputPtr output(new TransactionOutput);
 	output->setAmount(100000000);
-	output->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
+	output->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
 	transaction->outputs.push_back(output);
 	transaction->raw.txHash = UINT256_ZERO;
 	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
@@ -235,7 +231,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	ELATransaction *transaction2 = new ELATransaction;
 	TransactionOutputPtr output2(new TransactionOutput);
 	output2->setAmount(200000000);
-	output2->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
+	output2->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
 	transaction2->outputs.push_back(output2);
 	transaction2->raw.txHash = Utils::UInt256FromString(
 			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
@@ -248,46 +244,45 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 
 	REQUIRE(singleAddressWallet.getBalance() == 300000000);
 #else
-//	//fixme [ymz] then child publicKey correct
-//	boost::shared_ptr<Wallet::Listener> listener(new TestListener);
-//	SharedWrapperList<Transaction, BRTransaction *> transactions;
-//	SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
-//
-//	ELATransaction *transaction = new ELATransaction;
-//	TransactionOutputPtr output(new TransactionOutput);
-//	output->setAmount(100000000);
-//	output->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-//	transaction->outputs.push_back(output);
-//	transaction->raw.txHash = UINT256_ZERO;
-//	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-//	CMBlock code(10);
-//	CMBlock parameter(10);
-//	ProgramPtr program(new Program(code, parameter));
-//	transaction->programs.push_back(program);
-//	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction, false))));
-//
-//	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
-//	REQUIRE(singleAddressWallet.getBalance() == 100000000);
-//
-//	REQUIRE(singleAddressWallet.registerTransaction(
-//			TransactionPtr(new Transaction(transaction)))); //register the same transaction again
-//	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
-//
-//	//register the second transaction
-//	ELATransaction *transaction2 = new ELATransaction;
-//	TransactionOutputPtr output2(new TransactionOutput);
-//	output2->setAmount(200000000);
-//	output2->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-//	transaction2->outputs.push_back(output2);
-//	transaction2->raw.txHash = Utils::UInt256FromString(
-//			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
-//	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-//	CMBlock code2(10);
-//	CMBlock parameter2(10);
-//	ProgramPtr program2(new Program(code2, parameter2));
-//	transaction2->programs.push_back(program2);
-//	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2))));
-//
-//	REQUIRE(singleAddressWallet.getBalance() == 300000000);
+	boost::shared_ptr<Wallet::Listener> listener(new TestListener);
+	SharedWrapperList<Transaction, BRTransaction *> transactions;
+	SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
+
+	ELATransaction *transaction = new ELATransaction;
+	TransactionOutputPtr output(new TransactionOutput);
+	output->setAmount(100000000);
+	output->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+	transaction->outputs.push_back(output);
+	transaction->raw.txHash = UINT256_ZERO;
+	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+	CMBlock code(10);
+	CMBlock parameter(10);
+	ProgramPtr program(new Program(code, parameter));
+	transaction->programs.push_back(program);
+	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction, false))));
+
+	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
+	REQUIRE(singleAddressWallet.getBalance() == 100000000);
+
+	REQUIRE(singleAddressWallet.registerTransaction(
+			TransactionPtr(new Transaction(transaction)))); //register the same transaction again
+	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
+
+	//register the second transaction
+	ELATransaction *transaction2 = new ELATransaction;
+	TransactionOutputPtr output2(new TransactionOutput);
+	output2->setAmount(200000000);
+	output2->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+	transaction2->outputs.push_back(output2);
+	transaction2->raw.txHash = Utils::UInt256FromString(
+			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
+	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
+	CMBlock code2(10);
+	CMBlock parameter2(10);
+	ProgramPtr program2(new Program(code2, parameter2));
+	transaction2->programs.push_back(program2);
+	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2))));
+
+	REQUIRE(singleAddressWallet.getBalance() == 300000000);
 #endif
 }

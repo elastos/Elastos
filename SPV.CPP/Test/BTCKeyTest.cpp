@@ -36,7 +36,7 @@ TEST_CASE("generate key", "[BTCKey]") {
 TEST_CASE("get public key from private key", "[BTCKey]") {
 	CMBlock pubKey;
 	uint8_t privateKey[] = {137, 130, 127, 138, 111, 69, 76, 178, 118, 250, 113, 184, 5, 173, 174, 142, 115, 153, 49,
-							170, 3, 12, 53, 42, 210, 47, 58, 180, 204, 87, 159, 54};
+	                        170, 3, 12, 53, 42, 210, 47, 58, 180, 204, 87, 159, 54};
 	CMBlock mbPrivKey;
 	mbPrivKey.SetMemFixed(privateKey, sizeof(privateKey));
 
@@ -410,7 +410,7 @@ TEST_CASE("4 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 
 		for (uint32_t count = 0; count < 10; count++) {
 			CMBlock mbHDPrivkey = BTCKey::getDerivePrivKey_Secret(mbPrivkey, chain, count, chainCode,
-																			 NID_X9_62_prime256v1);
+			                                                      NID_X9_62_prime256v1);
 			vecHDPrivkey.push_back(mbHDPrivkey);
 
 #ifdef BTCKEY_DEBUG_MSG
@@ -438,7 +438,7 @@ TEST_CASE("4 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 
 		for (uint32_t count = 0; count < 10; count++) {
 			CMBlock mbHDPubKey = BTCKey::getDerivePubKey(mbPubkey, chain, count, chainCode,
-																	NID_X9_62_prime256v1);
+			                                             NID_X9_62_prime256v1);
 			vecHDPubkey.push_back(mbHDPubKey);
 
 #ifdef BTCKEY_DEBUG_MSG
@@ -544,9 +544,9 @@ TEST_CASE("Derive PrivateKey and PublicKey for ECDSA NID_X9_62_prime256v1", "[BT
 
 	for (uint32_t index = 0; index < 10; index++) {
 		CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret(mbMasterPrivKey, chain, index, chainCode,
-																			ECDSA_NID);
+		                                                         ECDSA_NID);
 		CMBlock mbChildPubKey = BTCKey::BTCKey::getDerivePubKey(mbMastePubKey, chain, index, chainCode,
-																			   ECDSA_NID);
+		                                                        ECDSA_NID);
 		REQUIRE(true == BTCKey::KeyIsValid(mbChildPrivkey, mbChildPubKey, ECDSA_NID));
 
 		uint8_t data[] = {0, 1, 2, 3, 4, 5};

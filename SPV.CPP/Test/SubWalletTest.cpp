@@ -17,21 +17,21 @@
 
 using namespace Elastos::ElaWallet;
 
-const std::vector<std::string> DefaultAddress = {"ELoSrHmgLwcw3apokmsBhQMGFkJkJZuPXR",
-												 "EXvNZt1CyoBVNaf63Vmax4kh6g2MUYa7zm",
-												 "EHicoRvz7dMtv1ZMy1QditubQqciJv5V5p",
-												 "EUjtNzXkof6DJtDn9Xq1ETTVC3uFNzcySH",
-												 "EHgpTwgC8Bkiqt6GknA42DV5kZfrDGRWsx",
-												 "ETh7tVb33Xx9fcAEkAp94h5aDmgRZn8YUX",
-												 "EWz9NRRW5muicEY9rZKWkdCZsT2gfnh8Ad",
-												 "EKjZxMEj3G9amH6YKRncS2YzypqoeMwh9j",
-												 "Ea2SQvxQ4NEMYye4Xx3MbRjoCcfXb5YnTL",
-												 "ELN6gqV4wqhfBJfyaeT4Uu4Dpa82reKoS2",
-												 "ETqHqV7BUdwo4VpVpUwJ2jtKf31AAjDEuG",
-												 "ELEoKj319gpW6pUbDVDf4BNGJ8vhuasdkT",
-												 "Eej9JqsUuqdnC54YDu5JqoYs6MJM3vvSwn",
-												 "EfFbRm33DQmEzp7iHmWttpoJGgufX8uqhy",
-												 "ETR7p8qPTYxB1b2ZQRvFVpGYpDCrjX6rHT"};
+const std::vector<std::string> DefaultAddress = {"EV11DFAXUSjPQMsLnrNuXtR9YbJjUkCfQJ",
+												 "EepSEKrvMdMeDwbfkkwkQMKqr3fc8sKvK6",
+												 "EL8FJnCCMbiDTDsUyPWGEV69CzDS1bzZDu",
+												 "EPmqJPc9sYWns8LTTNSGULsywviAeLQLEL",
+												 "EUVp5Ry272dbipB4iXxCDJfPUyfRWPhfbp",
+												 "EXR58FarbAcKPoCVTLtxW6rehHswieMRKi",
+												 "EUGVuqbpS9SycPVDELYCs2wy5naRh222xu",
+												 "EUaHsnMekkVUJaVxr1chUDBV49RNoMsjE3",
+												 "Ed2GBw6RHykvZ9fECnBW8SScMZtsrz1bFT",
+												 "EP8UHVsEKHh3A4f9bzHNv3rrSt9pnB7CVY",
+												 "EKAjgtMWHVNGipJLxuvUMAFhJybWASC26k",
+												 "EcQBPHW85DJSEaDadV5Xh91VB8JMNPmcPx",
+												 "Eaz8Y2JchazUCbAcjKsS5z3pgdnW2DtTVZ",
+												 "ENL5WnkrifDkV9Vwb813Ti9WMmhnwBG6Hm",
+												 "ESqnui4pxFG5J6fh38GPFUgFhcAuugPi6t"};
 
 class TestMasterWallet : public MasterWallet {
 public:
@@ -79,7 +79,6 @@ public:
 	}
 
 protected:
-	//fixme [ymz] when child publicKey is correct then test this
 	virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions() {
 		SharedWrapperList<Transaction, BRTransaction *> txList;
 
@@ -154,19 +153,19 @@ TEST_CASE("Sub wallet basic", "[SubWallet]") {
 	SECTION("Address related") {
 		nlohmann::json j = subWallet->GetAllAddress(0, INT_MAX);
 		std::vector<std::string> addresses = j["Addresses"].get<std::vector<std::string>>();
-		//fixme [ymz] need child publicKey is available
-//		REQUIRE(addresses.size() == DefaultAddress.size());
-//		for (int i = 0; i < addresses.size(); ++i) {
-//			REQUIRE(addresses[i] == DefaultAddress[i]);
-//		}
-//
-//		std::string newAddress = subWallet->CreateAddress(); //we did't create address actually because current addresses have not used
-//		REQUIRE(!newAddress.empty());
-//		REQUIRE(newAddress == DefaultAddress[SEQUENCE_GAP_LIMIT_INTERNAL]);
-//
-//		nlohmann::json j2 = subWallet->GetAllAddress(0, INT_MAX);
-//		std::vector<std::string> addresses2 = j2["Addresses"].get<std::vector<std::string>>();
-//		REQUIRE(addresses.size() == addresses2.size());
+		REQUIRE(addresses.size() == DefaultAddress.size());
+		for (int i = 0; i < addresses.size(); ++i) {
+			printf("i=%d, addr=%s\n", i, addresses[i].c_str());
+			REQUIRE(addresses[i] == DefaultAddress[i]);
+		}
+
+		std::string newAddress = subWallet->CreateAddress(); //we did't create address actually because current addresses have not used
+		REQUIRE(!newAddress.empty());
+		REQUIRE(newAddress == DefaultAddress[SEQUENCE_GAP_LIMIT_INTERNAL]);
+
+		nlohmann::json j2 = subWallet->GetAllAddress(0, INT_MAX);
+		std::vector<std::string> addresses2 = j2["Addresses"].get<std::vector<std::string>>();
+		REQUIRE(addresses.size() == addresses2.size());
 	}
 	SECTION("Balance related") {
 		REQUIRE(subWallet->GetBalance() == 0);
@@ -194,8 +193,7 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 		nlohmann::json j = subWallet->GetAllAddress(0, INT_MAX);
 		std::vector<std::string> addresses = j["Addresses"].get<std::vector<std::string>>();
 		REQUIRE(addresses.size() == 1);
-		//fixme [ymz] need child publicKey is available
-//		REQUIRE(addresses[0] == "ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
+		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
 
 		std::string newAddress = subWallet->CreateAddress(); //we did't create address actually because current addresses have not used
 		REQUIRE(!newAddress.empty());

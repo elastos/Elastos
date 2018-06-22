@@ -190,7 +190,6 @@ TEST_CASE("mem string", "[Utils]") {
 	block.SetMemFixed(mbRand256, (uint64_t)mbRand256.GetSize());
 
 	std::string strRand256 = Utils::convertToString(block);
-
 	CMBlock mbRand256recov = Utils::convertToMemBlock(strRand256);
 
 	REQUIRE(block.GetSize() == mbRand256recov.GetSize());
