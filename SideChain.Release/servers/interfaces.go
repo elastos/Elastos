@@ -1020,9 +1020,9 @@ func getPayload(pInfo PayloadInfo) (Payload, error) {
 		return obj, nil
 	case *TransferCrossChainAssetInfo:
 		obj := new(PayloadTransferCrossChainAsset)
-		obj.CrossChainAddress = object.CrossChainAddress
-		obj.OutputIndex = object.OutputIndex
-		obj.CrossChainAmount = object.CrossChainAmount
+		obj.CrossChainAddresses = object.CrossChainAddresses
+		obj.OutputIndexes = object.OutputIndexes
+		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj, nil
 	}
 
@@ -1043,9 +1043,9 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.CrossChainAddress = object.CrossChainAddress
-		obj.OutputIndex = object.OutputIndex
-		obj.CrossChainAmount = object.CrossChainAmount
+		obj.CrossChainAddresses = object.CrossChainAddresses
+		obj.OutputIndexes = object.OutputIndexes
+		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
 	case *PayloadTransferAsset:
 	case *PayloadRecord:
