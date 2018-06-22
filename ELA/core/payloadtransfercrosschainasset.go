@@ -9,9 +9,9 @@ import (
 )
 
 type PayloadTransferCrossChainAsset struct {
-	CrossChainAddress []string
-	OutputIndex       []uint64
-	CrossChainAmount  []common.Fixed64
+	CrossChainAddresses []string
+	OutputIndexes       []uint64
+	CrossChainAmounts   []common.Fixed64
 }
 
 func (a *PayloadTransferCrossChainAsset) Data(version byte) []byte {
@@ -24,26 +24,26 @@ func (a *PayloadTransferCrossChainAsset) Data(version byte) []byte {
 }
 
 func (a *PayloadTransferCrossChainAsset) Serialize(w io.Writer, version byte) error {
-	if len(a.CrossChainAddress) != len(a.OutputIndex) || len(a.OutputIndex) != len(a.CrossChainAmount) {
+	if len(a.CrossChainAddresses) != len(a.OutputIndexes) || len(a.OutputIndexes) != len(a.CrossChainAmounts) {
 		return errors.New("Invalid cross chain asset")
 	}
 
-	if err := common.WriteVarUint(w, uint64(len(a.CrossChainAddress))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(a.CrossChainAddresses))); err != nil {
 		return errors.New("PayloadTransferCrossChainAsset length serialize failed")
 	}
 
-	for i := 0; i < len(a.CrossChainAddress); i++ {
-		if err := common.WriteVarString(w, a.CrossChainAddress[i]); err != nil {
-			return errors.New("CrossChainAddress serialize failed")
+	for i := 0; i < len(a.CrossChainAddresses); i++ {
+		if err := common.WriteVarString(w, a.CrossChainAddresses[i]); err != nil {
+			return errors.New("CrossChainAddresses serialize failed")
 		}
 
-		if err := common.WriteVarUint(w, a.OutputIndex[i]); err != nil {
-			return errors.New("OutputIndex serialize failed")
+		if err := common.WriteVarUint(w, a.OutputIndexes[i]); err != nil {
+			return errors.New("OutputIndexes serialize failed")
 		}
 
-		err := a.CrossChainAmount[i].Serialize(w)
+		err := a.CrossChainAmounts[i].Serialize(w)
 		if err != nil {
-			return errors.New("CrossChainAmount serialize failed")
+			return errors.New("CrossChainAmounts serialize failed")
 		}
 	}
 
@@ -59,23 +59,23 @@ func (a *PayloadTransferCrossChainAsset) Deserialize(r io.Reader, version byte) 
 	for i := uint64(0); i < length; i++ {
 		address, err := common.ReadVarString(r)
 		if err != nil {
-			return errors.New("CrossChainAddress deserialize failed")
+			return errors.New("CrossChainAddresses deserialize failed")
 		}
 
 		index, err := common.ReadVarUint(r, 0)
 		if err != nil {
-			return errors.New("OutputIndex index deserialize failed")
+			return errors.New("OutputIndexes index deserialize failed")
 		}
 
 		var amount common.Fixed64
 		err = amount.Deserialize(r)
 		if err != nil {
-			return errors.New("CrossChainAmount deserialize failed")
+			return errors.New("CrossChainAmounts deserialize failed")
 		}
 
-		a.CrossChainAddress = append(a.CrossChainAddress, address)
-		a.OutputIndex = append(a.OutputIndex, index)
-		a.CrossChainAmount = append(a.CrossChainAmount, amount)
+		a.CrossChainAddresses = append(a.CrossChainAddresses, address)
+		a.OutputIndexes = append(a.OutputIndexes, index)
+		a.CrossChainAmounts = append(a.CrossChainAmounts, amount)
 	}
 
 	return nil

@@ -167,7 +167,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	// reward to foundation in coinbase = 30%
 	totalReward := GetBlockRewardAmount(0)
 	t.Logf("Block reward amount %s", totalReward.String())
-	foundationReward := common.Fixed64(float64(totalReward)*0.3)
+	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
 	t.Logf("Foundation reward amount %s", foundationReward.String())
 	minerReward := totalReward - foundationReward
 	t.Logf("Miner reward amount %s", minerReward.String())
@@ -179,7 +179,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	assert.NoError(t, err)
 
 	// reward to foundation in coinbase < 30%
-	foundationReward = common.Fixed64(float64(totalReward)*0.2999999)
+	foundationReward = common.Fixed64(float64(totalReward) * 0.2999999)
 	t.Logf("Foundation reward amount %s", foundationReward.String())
 	minerReward = totalReward - foundationReward
 	t.Logf("Miner reward amount %s", minerReward.String())
@@ -330,16 +330,23 @@ func TestCheckTransactionPayload(t *testing.T) {
 }
 
 func TestCheckDuplicateSidechainTx(t *testing.T) {
+	hashStr1 := "8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62"
+	hashBytes1, _ := common.HexStringToBytes(hashStr1)
+	hash1, _ := common.Uint256FromBytes(hashBytes1)
+	hashStr2 := "cc62e14f5f9526b7f4ff9d34dcd0643dacb7886707c57f49ec97b95ec5c4edac"
+	hashBytes2, _ := common.HexStringToBytes(hashStr2)
+	hash2, _ := common.Uint256FromBytes(hashBytes2)
+
 	// 1. Generate the ill withdraw transaction which have duplicate sidechain tx
 	txn := new(core.Transaction)
 	txn.TxType = core.WithdrawFromSideChain
 	txn.Payload = &core.PayloadWithdrawFromSideChain{
 		BlockHeight:         100,
 		GenesisBlockAddress: "eb7adb1fea0dd6185b09a43bdcd4924bb22bff7151f0b1b4e08699840ab1384b",
-		SideChainTransactionHashes: []string{
-			"8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62",
-			"cc62e14f5f9526b7f4ff9d34dcd0643dacb7886707c57f49ec97b95ec5c4edac",
-			"8a6cb4b5ff1a4f8368c6513a536c663381e3fdeff738e9b437bd8fce3fb30b62", // duplicate tx hash
+		SideChainTransactionHashes: []common.Uint256{
+			*hash1,
+			*hash2,
+			*hash1, // duplicate tx hash
 		},
 	}
 

@@ -10,7 +10,7 @@ import (
 )
 
 var testChainStore *ChainStore
-var sidechainTxHash string
+var sidechainTxHash common.Uint256
 
 func newTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
@@ -45,7 +45,10 @@ func TestChainStoreInit(t *testing.T) {
 	}
 
 	// Assume the sidechain Tx hash
-	sidechainTxHash = "39fc8ba05b0064381e51afed65b4cf91bb8db60efebc38242e965d1b1fed0701"
+	txHashStr := "39fc8ba05b0064381e51afed65b4cf91bb8db60efebc38242e965d1b1fed0701"
+	txHashBytes, _ := common.HexStringToBytes(txHashStr)
+	txHash, _ := common.Uint256FromBytes(txHashBytes)
+	sidechainTxHash = *txHash
 }
 
 func TestChainStore_PersisSidechainTx(t *testing.T) {

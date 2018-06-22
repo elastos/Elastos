@@ -13,7 +13,7 @@ const WithdrawFromSideChainPayloadVersion byte = 0x00
 type PayloadWithdrawFromSideChain struct {
 	BlockHeight                uint32
 	GenesisBlockAddress        string
-	SideChainTransactionHashes []string
+	SideChainTransactionHashes []common.Uint256
 }
 
 func (t *PayloadWithdrawFromSideChain) Data(version byte) []byte {
@@ -37,9 +37,10 @@ func (t *PayloadWithdrawFromSideChain) Serialize(w io.Writer, version byte) erro
 		return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashes length serialize failed")
 	}
 
-	for _, txHash := range t.SideChainTransactionHashes {
-		if err := common.WriteVarString(w, txHash); err != nil {
-			return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashes serialize failed.")
+	for _, hash := range t.SideChainTransactionHashes {
+		err := hash.Serialize(w)
+		if err != nil {
+			return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashes serialize failed")
 		}
 	}
 	return nil
@@ -61,9 +62,10 @@ func (t *PayloadWithdrawFromSideChain) Deserialize(r io.Reader, version byte) er
 	}
 
 	t.SideChainTransactionHashes = nil
-	t.SideChainTransactionHashes = make([]string, length)
+	t.SideChainTransactionHashes = make([]common.Uint256, length)
 	for i := uint64(0); i < length; i++ {
-		hash, err := common.ReadVarString(r)
+		var hash common.Uint256
+		err := hash.Deserialize(r)
 		if err != nil {
 			return errors.New("[WithdrawFromSideChain], SideChainTransactionHashes deserialize failed.")
 		}

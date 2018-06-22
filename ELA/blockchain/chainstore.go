@@ -209,9 +209,9 @@ func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
 	}
 }
 
-func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash string) bool {
+func (c *ChainStore) IsSidechainTxHashDuplicate(sidechainTxHash Uint256) bool {
 	prefix := []byte{byte(IX_SideChain_Tx)}
-	_, err := c.Get(append(prefix, []byte(sidechainTxHash)...))
+	_, err := c.Get(append(prefix, sidechainTxHash.Bytes()...))
 	if err != nil {
 		return false
 	} else {
@@ -369,17 +369,17 @@ func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
 	return asset, nil
 }
 
-func (c *ChainStore) PersistSidechainTx(sidechainTxHash string) {
+func (c *ChainStore) PersistSidechainTx(sidechainTxHash Uint256) {
 	key := []byte{byte(IX_SideChain_Tx)}
-	key = append(key, []byte(sidechainTxHash)...)
+	key = append(key, sidechainTxHash.Bytes()...)
 
 	// PUT VALUE
 	c.BatchPut(key, []byte{byte(ValueExist)})
 }
 
-func (c *ChainStore) GetSidechainTx(sidechainTxHash string) (byte, error) {
+func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	key := []byte{byte(IX_SideChain_Tx)}
-	data, err := c.Get(append(key, []byte(sidechainTxHash)...))
+	data, err := c.Get(append(key, sidechainTxHash.Bytes()...))
 	if err != nil {
 		return ValueNone, err
 	}
