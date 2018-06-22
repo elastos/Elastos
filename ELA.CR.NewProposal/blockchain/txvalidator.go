@@ -351,7 +351,7 @@ func CheckTransactionPayload(txn *Transaction) error {
 func CheckDuplicateSidechainTx(txn *Transaction) error {
 	if txn.IsWithdrawFromSideChainTx() {
 		witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
-		existingHashs := make(map[string]struct{})
+		existingHashs := make(map[Uint256]struct{})
 		for _, hash := range witPayload.SideChainTransactionHashes {
 			if _, exist := existingHashs[hash]; exist {
 				return errors.New("Duplicate sidechain tx detected in a transaction")
@@ -403,7 +403,7 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction) error {
 	witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
 	for _, hash := range witPayload.SideChainTransactionHashes {
 		if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
-			return errors.New("Invalid side chain transaction hash in paylod")
+			return errors.New("Duplicate side chain transaction hash in paylod")
 		}
 	}
 
@@ -425,16 +425,16 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 	if !ok {
 		return errors.New("Invalid transaction payload type")
 	}
-	if len(payloadObj.CrossChainAddress) == 0 ||
-		len(payloadObj.CrossChainAddress) > len(txn.Outputs) ||
-		len(payloadObj.CrossChainAddress) != len(payloadObj.CrossChainAmount) ||
-		len(payloadObj.CrossChainAmount) != len(payloadObj.OutputIndex) {
+	if len(payloadObj.CrossChainAddresses) == 0 ||
+		len(payloadObj.CrossChainAddresses) > len(txn.Outputs) ||
+		len(payloadObj.CrossChainAddresses) != len(payloadObj.CrossChainAmounts) ||
+		len(payloadObj.CrossChainAmounts) != len(payloadObj.OutputIndexes) {
 		return errors.New("Invalid transaction payload content")
 	}
 
 	//check cross chain output index in payload
 	outputIndexMap := make(map[uint64]struct{})
-	for _, outputIndex := range payloadObj.OutputIndex {
+	for _, outputIndex := range payloadObj.OutputIndexes {
 		if _, exist := outputIndexMap[outputIndex]; exist {
 			return errors.New("Invalid transaction payload cross chain index")
 		}
@@ -442,18 +442,18 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 	}
 
 	//check address in outputs and payload
-	for i := 0; i < len(payloadObj.CrossChainAddress); i++ {
-		if bytes.Compare(txn.Outputs[payloadObj.OutputIndex[i]].ProgramHash[0:1], []byte{PrefixCrossChain}) != 0 {
+	for i := 0; i < len(payloadObj.CrossChainAddresses); i++ {
+		if bytes.Compare(txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash[0:1], []byte{PrefixCrossChain}) != 0 {
 			return errors.New("Invalid transaction output address, without \"X\" at beginning")
 		}
-		if payloadObj.CrossChainAddress[i] == "" {
+		if payloadObj.CrossChainAddresses[i] == "" {
 			return errors.New("Invalid transaction cross chain address ")
 		}
 	}
 
 	//check cross chain amount in payload
-	for i := 0; i < len(payloadObj.CrossChainAmount); i++ {
-		if payloadObj.CrossChainAmount[i] > txn.Outputs[payloadObj.OutputIndex[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
+	for i := 0; i < len(payloadObj.CrossChainAmounts); i++ {
+		if payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
 			return errors.New("Invalid transaction cross chain amount")
 		}
 	}

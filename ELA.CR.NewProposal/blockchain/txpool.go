@@ -20,7 +20,7 @@ type TxPool struct {
 	txnList map[Uint256]*Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
 	inputUTXOList   map[string]*Transaction // transaction which pass the verify will add the UTXO to this map
-	sidechainTxList map[string]struct{}     // sidechain tx pool
+	sidechainTxList map[Uint256]struct{}    // sidechain tx pool
 }
 
 func (pool *TxPool) Init() {
@@ -30,7 +30,7 @@ func (pool *TxPool) Init() {
 	pool.inputUTXOList = make(map[string]*Transaction)
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*Transaction)
-	pool.sidechainTxList = make(map[string]struct{})
+	pool.sidechainTxList = make(map[Uint256]struct{})
 }
 
 //append transaction to txnpool when check ok.
@@ -213,7 +213,7 @@ func (pool *TxPool) verifyDoubleSpend(txn *Transaction) error {
 	return nil
 }
 
-func (pool *TxPool) IsDuplicateSidechainTx(sidechainTxHash string) bool {
+func (pool *TxPool) IsDuplicateSidechainTx(sidechainTxHash Uint256) bool {
 	_, ok := pool.sidechainTxList[sidechainTxHash]
 	if ok {
 		return true
@@ -229,7 +229,7 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 		return errors.New("convert the payload of withdraw tx failed")
 	}
 
-	sidechainTxs := []string{}
+	sidechainTxs := []Uint256{}
 	for _, hash := range withPayload.SideChainTransactionHashes {
 		_, ok := pool.sidechainTxList[hash]
 		if ok {
@@ -344,7 +344,7 @@ func (pool *TxPool) delInputUTXOList(input *Input) bool {
 	return true
 }
 
-func (pool *TxPool) addSidechainTx(hash string) bool {
+func (pool *TxPool) addSidechainTx(hash Uint256) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	_, ok := pool.sidechainTxList[hash]
@@ -356,7 +356,7 @@ func (pool *TxPool) addSidechainTx(hash string) bool {
 	return true
 }
 
-func (pool *TxPool) delSidechainTx(hash string) bool {
+func (pool *TxPool) delSidechainTx(hash Uint256) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	_, ok := pool.sidechainTxList[hash]

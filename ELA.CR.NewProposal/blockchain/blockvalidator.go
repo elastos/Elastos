@@ -97,7 +97,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	txIds := make([]Uint256, 0, len(transactions))
 	existingTxIds := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
-	existingSideTxs := make(map[string]struct{})
+	existingSideTxs := make(map[Uint256]struct{})
 	for _, txn := range transactions {
 		txId := txn.Hash()
 		// Check for duplicate transactions.
