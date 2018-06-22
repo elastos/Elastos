@@ -75,7 +75,7 @@ namespace Elastos {
 			tx->payload = ELAPayloadNew(orig->type);
 			if (tx->payload) {
 				ByteStream stream;
-				tx->payload->Serialize(stream);
+				orig->payload->Serialize(stream);
 				stream.setPosition(0);
 				tx->payload->Deserialize(stream);
 			}

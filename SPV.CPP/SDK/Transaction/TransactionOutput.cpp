@@ -176,7 +176,6 @@ namespace Elastos {
 
 			_output->raw.scriptLen = jsonData["scriptLen"].get<size_t>();
 			std::string scriptString = jsonData["script"].get<std::string>();
-			BRTxOutputSetScript(&_output->raw, nullptr, 0);
 			if (_output->raw.scriptLen > 0) {
 				if (_output->raw.scriptLen == scriptString.length() / 2) {
 					uint8_t *script = new uint8_t[_output->raw.scriptLen];

@@ -155,7 +155,6 @@ TEST_CASE("Sub wallet basic", "[SubWallet]") {
 		std::vector<std::string> addresses = j["Addresses"].get<std::vector<std::string>>();
 		REQUIRE(addresses.size() == DefaultAddress.size());
 		for (int i = 0; i < addresses.size(); ++i) {
-			printf("i=%d, addr=%s\n", i, addresses[i].c_str());
 			REQUIRE(addresses[i] == DefaultAddress[i]);
 		}
 
