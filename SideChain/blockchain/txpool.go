@@ -311,12 +311,12 @@ func GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
 
 		for _, v := range tx.Outputs {
 			var mcAmount Fixed64
-			for i := 0; i < len(crossChainPayload.CrossChainAddress); i++ {
+			for i := 0; i < len(crossChainPayload.CrossChainAddresses); i++ {
 				targetAddress, err := v.ProgramHash.ToAddress()
 				if err != nil {
 					return nil, err
 				}
-				if targetAddress == crossChainPayload.CrossChainAddress[i] {
+				if targetAddress == crossChainPayload.CrossChainAddresses[i] {
 					mcAmount = mainChainTransaction.Outputs[i].Value
 				}
 			}

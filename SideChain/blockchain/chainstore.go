@@ -41,7 +41,7 @@ type ChainStore struct {
 	mu          sync.RWMutex // guard the following var
 	headerIndex map[uint32]Uint256
 	headerCache map[Uint256]*core.Header
-	headerIdx *list.List
+	headerIdx   *list.List
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
@@ -55,8 +55,8 @@ func NewChainStore() (IChainStore, error) {
 	}
 
 	store := &ChainStore{
-		IStore:      st,
-		headerIndex: map[uint32]Uint256{},
+		IStore:             st,
+		headerIndex:        map[uint32]Uint256{},
 		headerCache:        map[Uint256]*core.Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
@@ -706,6 +706,7 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 	return unspents, nil
 
 }
+
 func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error) {
 	uxtoUnspents := make(map[Uint256][]*UTXO)
 
