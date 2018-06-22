@@ -107,7 +107,7 @@ namespace Elastos {
 			if (chainID.size() > 128)
 				throw std::invalid_argument("Chain id should less than 128.");
 
-			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPassword(payPassword, "Pay");
 
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
@@ -205,9 +205,9 @@ namespace Elastos {
 
 		bool MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
 											  const std::string &payPassword, const std::string &phrasePassword) {
-			ParamChecker::checkPassword(backupPassword);
-			ParamChecker::checkPassword(payPassword);
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
+			ParamChecker::checkPassword(backupPassword, "Backup");
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			KeyStore keyStore;
 			if (!keyStore.open(keystoreContent, backupPassword))
@@ -220,8 +220,8 @@ namespace Elastos {
 		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
 											  const std::string &payPassword) {
 			ParamChecker::checkNotEmpty(mnemonic);
-			ParamChecker::checkPassword(payPassword);
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			return initFromPhrase(mnemonic, phrasePassword, payPassword);
 		}
@@ -492,8 +492,8 @@ namespace Elastos {
 			if (!Initialized())
 				throw std::logic_error("Current master wallet is not initialized.");
 
-			ParamChecker::checkPassword(oldPassword);
-			ParamChecker::checkPassword(newPassword);
+			ParamChecker::checkPassword(oldPassword, "Old");
+			ParamChecker::checkPassword(newPassword, "New");
 
 			CMBlock key = Utils::decrypt(_localStore.GetEncrpytedKey(), oldPassword);
 			ParamChecker::checkDataNotEmpty(key, false);

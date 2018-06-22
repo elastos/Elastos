@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <sstream>
 #include <stdexcept>
 
 #include "ParamChecker.h"
@@ -20,19 +21,21 @@ namespace Elastos {
 			}
 		}
 
-		void ParamChecker::checkPassword(const std::string &password, bool isParam) {
+		void ParamChecker::checkPassword(const std::string &password, const std::string &passName, bool isParam) {
 			if (password.size() < MIN_PASSWORD_LENGTH || password.size() > MAX_PASSWORD_LENGTH) {
+				std::stringstream ss;
+				ss << passName << " " << "Password should between 8 and 128.";
 				if (isParam)
-					throw std::invalid_argument("Password should between 8 and 128.");
+					throw std::invalid_argument(ss.str());
 				else
-					throw std::logic_error("Password should between 8 and 128.");
+					throw std::logic_error(ss.str());
 			}
 		}
 
-		void ParamChecker::checkPasswordWithNullLegal(const std::string &password, bool isParam) {
+		void ParamChecker::checkPasswordWithNullLegal(const std::string &password, const std::string &passName, bool isParam) {
 			if (password.empty())
 				return;
-			checkPassword(password, isParam);
+			checkPassword(password, passName, isParam);
 		}
 
 		void ParamChecker::checkNotEmpty(const std::string &message, bool isParam) {
@@ -63,7 +66,7 @@ namespace Elastos {
 		}
 
 		void ParamChecker::checkPathExists(const boost::filesystem::path &path, bool isParam) {
-			if(!boost::filesystem::exists(path)) {
+			if (!boost::filesystem::exists(path)) {
 				if (isParam)
 					throw std::invalid_argument("Path should valid.");
 				else
@@ -72,8 +75,8 @@ namespace Elastos {
 		}
 
 		//check language words count is BIP39_WORDLIST_COUNT
-		void ParamChecker::checkLangWordsCnt(const uint32_t cnt ){
-			if(cnt != BIP39_WORDLIST_COUNT)
+		void ParamChecker::checkLangWordsCnt(const uint32_t cnt) {
+			if (cnt != BIP39_WORDLIST_COUNT)
 				throw std::invalid_argument("Language words count invalid.");
 		}
 	}

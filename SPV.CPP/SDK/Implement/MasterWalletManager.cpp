@@ -114,8 +114,8 @@ namespace Elastos {
 													  const std::string &backupPassword,
 													  const std::string &payPassword,
 													  const std::string &phrasePassword) {
-			ParamChecker::checkPassword(backupPassword);
-			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPassword(backupPassword, "Backup");
+			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkNotEmpty(masterWalletId);
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
@@ -140,8 +140,8 @@ namespace Elastos {
 		MasterWalletManager::ImportWalletWithMnemonic(const std::string &masterWalletId, const std::string &mnemonic,
 													  const std::string &phrasePassword, const std::string &payPassword,
 													  const std::string &language) {
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword);
-			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
+			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkNotEmpty(masterWalletId);
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
@@ -165,8 +165,8 @@ namespace Elastos {
 		MasterWalletManager::ExportWalletWithKeystore(IMasterWallet *masterWallet, const std::string &backupPassword,
 													  const std::string &payPassword) {
 
-			ParamChecker::checkPassword(backupPassword);
-			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPassword(backupPassword, "Backup");
+			ParamChecker::checkPassword(payPassword, "Pay");
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 			if (!wallet->Initialized()) {
@@ -181,7 +181,7 @@ namespace Elastos {
 		MasterWalletManager::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
 
 			ParamChecker::checkNullPointer(masterWallet);
-			ParamChecker::checkPassword(payPassword);
+			ParamChecker::checkPassword(payPassword, "Pay");
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 			if (!wallet->Initialized()) {

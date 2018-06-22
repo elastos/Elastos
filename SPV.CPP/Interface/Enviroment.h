@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_ENVIROMENT_H__
 
 #include <string>
+#include <memory>
 
 #include "IMasterWalletManager.h"
 
@@ -34,7 +35,7 @@ namespace Elastos {
 			static void CheckRootPath();
 
 			static std::string _rootPath;
-			static IMasterWalletManager *_manager;
+			static std::shared_ptr<IMasterWalletManager> _manager;
 		};
 
 	}

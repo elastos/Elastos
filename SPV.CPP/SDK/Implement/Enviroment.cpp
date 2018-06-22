@@ -12,7 +12,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		std::string Enviroment::_rootPath = "";
-		IMasterWalletManager *Enviroment::_manager = nullptr;
+		std::shared_ptr<IMasterWalletManager> Enviroment::_manager = nullptr;
 
 		void Enviroment::InitializeRootPath(const std::string &rootPath) {
 			ParamChecker::checkNotEmpty(rootPath);
@@ -29,14 +29,14 @@ namespace Elastos {
 			CheckRootPath();
 
 			if (_manager == nullptr)
-				_manager = new MasterWalletManager();
-			return _manager;
+				_manager = std::make_shared<MasterWalletManager>();
+			return _manager.get();
 		}
 
 		void Enviroment::SaveConfigs() {
 			if(_manager == nullptr)
 				return;
-			MasterWalletManager *manager = static_cast<MasterWalletManager *>(_manager);
+			MasterWalletManager *manager = static_cast<MasterWalletManager *>(_manager.get());
 			manager->SaveConfigs();
 		}
 
