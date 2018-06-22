@@ -36,7 +36,7 @@ namespace Elastos {
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 
-			virtual void completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
+			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

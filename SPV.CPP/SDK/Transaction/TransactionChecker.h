@@ -6,13 +6,14 @@
 #define __ELASTOS_SDK_TRANSACTIONCHECKER_H__
 
 #include "Transaction.h"
+#include "Wallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class TransactionChecker {
 		public:
-			TransactionChecker(const TransactionPtr &transaction);
+			TransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet);
 
 			virtual ~TransactionChecker();
 
@@ -29,6 +30,7 @@ namespace Elastos {
 
 		protected:
 			TransactionPtr _transaction;
+			WalletPtr _wallet;
 		};
 
 	}

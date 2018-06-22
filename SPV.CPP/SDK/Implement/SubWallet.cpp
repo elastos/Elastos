@@ -197,7 +197,8 @@ namespace Elastos {
 			//todo initialize asset id if null
 			TransactionPtr ptr = nullptr;
 			if (param->getFee() > 0 || param->getFromAddress().empty() != true) {
-				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(),
+																	 std::max(param->getFee(), _info.getMinFee()),
 																	 param->getAmount(), param->getToAddress());
 			} else {
 				Address address(param->getToAddress());
@@ -251,7 +252,7 @@ namespace Elastos {
 		uint64_t SubWallet::CalculateTransactionFee(const nlohmann::json &rawTransaction, uint64_t feePerKb) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(rawTransaction);
-			return transaction->calculateFee(feePerKb);
+			return std::max(transaction->calculateFee(feePerKb), _info.getMinFee());
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
@@ -382,7 +383,8 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, uint64_t fee, const std::string &payPassword) {
+		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, uint64_t fee,
+									  const std::string &payPassword) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(transactionJson);
 
@@ -393,13 +395,13 @@ namespace Elastos {
 		}
 
 		void SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			TransactionChecker checker(transaction);
+			TransactionChecker checker(transaction, _walletManager->getWallet());
 			checker.Check();
 		}
 
-		void SubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+		TransactionPtr SubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
 			TransactionCompleter completer(transaction, _walletManager->getWallet());
-			completer.Complete(actualFee);
+			return completer.Complete(actualFee);
 		}
 
 		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {

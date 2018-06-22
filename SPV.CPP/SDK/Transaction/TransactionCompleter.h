@@ -17,16 +17,20 @@ namespace Elastos {
 
 			virtual ~TransactionCompleter();
 
-			virtual void Complete(uint64_t actualFee);
+			virtual TransactionPtr Complete(uint64_t actualFee);
 
 		protected:
-			virtual void completedTransactionInputs(const TransactionPtr &transaction);
+			virtual TransactionPtr recreateTransaction(uint64_t fee, uint64_t amount, const std::string& toAddress);
 
-			virtual void completedTransactionOutputs(const TransactionPtr &transaction, uint64_t amount);
+			virtual void modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange);
 
 			virtual void completedTransactionAssetID(const TransactionPtr &transaction);
 
 			virtual void completedTransactionPayload(const TransactionPtr &transaction);
+
+			uint64_t getInputsAmount(const TransactionPtr &transaction) const;
+
+			uint64_t getOutputAmount(const TransactionPtr &transaction, std::string &address) const;
 
 		protected:
 			WalletPtr _wallet;

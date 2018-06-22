@@ -97,13 +97,13 @@ namespace Elastos {
 		}
 
 		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			MainchainTransactionChecker checker(transaction);
+			MainchainTransactionChecker checker(transaction, _walletManager->getWallet());
 			checker.Check();
 		}
 
-		void MainchainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+		TransactionPtr MainchainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
 			MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
-			completer.Complete(actualFee);
+			return completer.Complete(actualFee);
 		}
 	}
 }

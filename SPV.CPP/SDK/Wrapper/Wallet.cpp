@@ -789,41 +789,6 @@ namespace Elastos {
 			return BRWalletFeeForTxSize((BRWallet *) _wallet, size);
 		}
 
-		uint64_t Wallet::getInputsFee(const TransactionPtr &transaction) const {
-			uint64_t amount = 0;
-
-			assert(transaction != NULL);
-			pthread_mutex_lock(&_wallet->Raw.lock);
-
-			for (size_t i = 0; i < transaction->getRaw()->inCount; i++) {
-				UInt256 hash = transaction->getRaw()->inputs[i].txHash;
-				ELATransaction *t = (ELATransaction *) BRSetGet(_wallet->Raw.allTx, &hash);
-				uint32_t n = transaction->getRaw()->inputs[i].index;
-
-				if (t && n < t->outputs.size()) {
-					amount += t->outputs[n]->getAmount();
-				} else amount = UINT64_MAX;
-			}
-
-			pthread_mutex_unlock(&_wallet->Raw.lock);
-
-			return amount;
-		}
-
-		uint64_t Wallet::getOutputFee(const TransactionPtr &transaction) const {
-			assert(transaction != nullptr);
-
-			uint64_t amount = 0;
-
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
-
-			for (size_t i = 0; i < outputs.size(); i++) {
-				amount += outputs[i]->getAmount();
-			}
-
-			return amount;
-		}
-
 		uint64_t Wallet::getFeeForTransactionAmount(uint64_t amount) {
 
 			return BRWalletFeeForTxAmount((BRWallet *) _wallet, amount);

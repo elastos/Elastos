@@ -142,5 +142,13 @@ namespace Elastos {
 		void CoinInfo::setPublicKey(const std::string &pubKey) {
 			_publicKey = pubKey;
 		}
+
+		uint64_t CoinInfo::getMinFee() const {
+			return _minFee;
+		}
+
+		void CoinInfo::setMinFee(uint64_t fee) {
+			_minFee = fee;
+		}
 	}
 }

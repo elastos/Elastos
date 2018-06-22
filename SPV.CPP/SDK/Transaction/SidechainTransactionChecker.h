@@ -12,7 +12,7 @@ namespace Elastos {
 
 		class SidechainTransactionChecker : public TransactionChecker {
 		public:
-			SidechainTransactionChecker(const TransactionPtr &transaction);
+			SidechainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet);
 
 			virtual ~SidechainTransactionChecker();
 

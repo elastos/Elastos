@@ -94,11 +94,11 @@ namespace Elastos {
 		}
 
 		void SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			SidechainTransactionChecker checker(transaction);
+			SidechainTransactionChecker checker(transaction, _walletManager->getWallet());
 			checker.Check();
 		}
 
-		void SidechainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+		TransactionPtr SidechainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
 			SidechainTransactionCompleter completer(transaction, _walletManager->getWallet());
 			completer.Complete(actualFee);
 		}

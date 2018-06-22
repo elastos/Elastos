@@ -63,6 +63,10 @@ namespace Elastos {
 
 			void setPublicKey(const std::string &pubKey);
 
+			uint64_t getMinFee() const;
+
+			void setMinFee(uint64_t fee);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -76,6 +80,7 @@ namespace Elastos {
 			int _index;
 			int _usedMaxAddressIndex;
 			bool _singleAddress;
+			uint64_t _minFee;
 			uint64_t _feePerKb;
 			SubWalletType _walletType;
 			std::string _publicKey;

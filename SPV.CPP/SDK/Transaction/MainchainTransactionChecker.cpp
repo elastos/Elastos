@@ -8,8 +8,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		MainchainTransactionChecker::MainchainTransactionChecker(const TransactionPtr &transaction)
-				: TransactionChecker(transaction) {
+		MainchainTransactionChecker::MainchainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet)
+				: TransactionChecker(transaction, wallet) {
 
 		}
 

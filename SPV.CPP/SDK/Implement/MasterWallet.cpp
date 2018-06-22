@@ -123,6 +123,7 @@ namespace Elastos {
 			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
 			info.setWalletType(coinConfig.Type);
 			info.setIndex(coinConfig.Index);
+			info.setMinFee(coinConfig.MinFee);
 
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);

@@ -8,8 +8,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		TransactionChecker::TransactionChecker(const TransactionPtr &transaction) :
-			_transaction(transaction) {
+		TransactionChecker::TransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet) :
+			_transaction(transaction),
+			_wallet(wallet) {
 		}
 
 		TransactionChecker::~TransactionChecker() {
@@ -41,14 +42,26 @@ namespace Elastos {
 			if (size < 1) {
 				return false;
 			}
+
+			bool hasChange = false;
+			bool hasOutput = false;
+			std::vector<std::string> addresses = _wallet->getAllAddresses();
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutputPtr output = outputs[i];
 				if (!Address::UInt168IsValid(output->getProgramHash())) {
 					return false;
 				}
+				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) != addresses.end()) {
+					if (hasChange) //should have only one change output per tx
+						return false;
+					hasChange = true;
+				} else {
+					if (hasOutput) //todo we support only one output, modify this if we support multi-output later
+						return false;
+					hasOutput = true;
+				}
 			}
-			return true;
-
+			return hasOutput;
 		}
 
 		bool TransactionChecker::checkTransactionAttribute(const TransactionPtr &transaction) {

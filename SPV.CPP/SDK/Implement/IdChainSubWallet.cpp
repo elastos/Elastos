@@ -85,13 +85,13 @@ namespace Elastos {
 		}
 
 		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			IdchainTransactionChecker checker(transaction);
+			IdchainTransactionChecker checker(transaction, _walletManager->getWallet());
 			checker.Check();
 		}
 
-		void IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
+		TransactionPtr IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
 			IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
-			completer.Complete(actualFee);
+			return completer.Complete(actualFee);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
