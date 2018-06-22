@@ -71,7 +71,7 @@ func (h *HandlerBase) FilterMessage(msgType string) error {
 		case p2p.CmdTx:
 		case p2p.CmdMemPool:
 		default:
-			return fmt.Errorf("unsupport messsage for extra net node %s", msgType)
+			return fmt.Errorf("unsupported messsage type [%s] from extra node", msgType)
 		}
 	}
 	return nil
