@@ -100,7 +100,7 @@ namespace Elastos {
 
 		TransactionPtr SidechainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
 			SidechainTransactionCompleter completer(transaction, _walletManager->getWallet());
-			completer.Complete(actualFee);
+			return completer.Complete(actualFee);
 		}
 	}
 }

@@ -233,7 +233,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &transaction) {
-			ELATransaction *elaTransaction = ELATransactioCopy((ELATransaction *)transaction->getRaw());
+			ELATransaction *elaTransaction = ELATransactionCopy((ELATransaction *)transaction->getRaw());
 			BRPeerManagerPublishTx(_manager, (BRTransaction *)elaTransaction, &_listener, txPublished);
 		}
 

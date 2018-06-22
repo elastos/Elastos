@@ -174,14 +174,13 @@ namespace Elastos {
 
 			_output->raw.amount = jsonData["amount"].get<uint64_t>();
 
-			_output->raw.scriptLen = jsonData["scriptLen"].get<size_t>();
+			size_t scriptLen = jsonData["scriptLen"].get<size_t>();
 			std::string scriptString = jsonData["script"].get<std::string>();
-			if (_output->raw.scriptLen > 0) {
-				if (_output->raw.scriptLen == scriptString.length() / 2) {
-					uint8_t *script = new uint8_t[_output->raw.scriptLen];
-					Utils::decodeHex(script, _output->raw.scriptLen, scriptString.c_str(), scriptString.length());
-					BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, _output->raw.scriptLen);
-					delete[] script;
+			BRTxOutputSetScript(&_output->raw, nullptr, 0);
+			if (scriptLen > 0) {
+				if (scriptLen == scriptString.length() / 2) {
+					CMBlock script = Utils::decodeHex(scriptString);
+					BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
 				} else {
 					Log::getLogger()->error("scriptLen={} and script=\"{}\" do not match of json",
 											_output->raw.scriptLen, scriptString);
