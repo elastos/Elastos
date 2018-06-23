@@ -128,6 +128,10 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 	node := h.node
 	log.Debugf("[OnInv] count %d hashes: %v", len(inv.Hashes), inv.Hashes)
 
+	if node.IsFromExtraNet() {
+		return fmt.Errorf("receive inv message from extra node")
+	}
+
 	if LocalNode.IsSyncHeaders() && !node.IsSyncHeaders() {
 		return nil
 	}

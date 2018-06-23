@@ -10,7 +10,7 @@ but can not send a block to inner node.
 There are several rules between inner node and extra node.
 1. Inner node do not start an outbound connection to an extra node.
 2. Inner node do not receive Addrs message from an extra node.
-3. Inner node do not receive Inv message from an extra node.
+3. Inner node do not receive Inv type block message from an extra node.
 4. Inner node do not receive Block message from an extra node.
 5. Inner node do not send non-OpenServers inner nodes to an extra node in Addrs message.
 */
@@ -67,6 +67,7 @@ func (h *HandlerBase) FilterMessage(msgType string) error {
 		case p2p.CmdPong:
 		case p2p.CmdFilterLoad:
 		case p2p.CmdGetBlocks:
+		case p2p.CmdInv:
 		case p2p.CmdGetData:
 		case p2p.CmdTx:
 		case p2p.CmdMemPool:
