@@ -19,8 +19,8 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class MerkleBlock :
-			public Wrapper<BRMerkleBlock>,
-			public IMerkleBlock {
+				public Wrapper<BRMerkleBlock>,
+				public IMerkleBlock {
 
 		public:
 			MerkleBlock();
@@ -73,13 +73,11 @@ namespace Elastos {
 
 			virtual BRMerkleBlock *getRawBlock() const;
 
-			virtual std::string getBlockType() const { return "ELA";}
+			virtual std::string getBlockType() const { return "ELA"; }
 
-		private:
+			static void serializeNoAux(ByteStream &ostream, const BRMerkleBlock &raw);
 
-			void serializeNoAux(ByteStream &ostream) const;
-
-			UInt256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const;
+			static UInt256 MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth, const BRMerkleBlock &raw);
 
 		private:
 			ELAMerkleBlock *_merkleBlock;

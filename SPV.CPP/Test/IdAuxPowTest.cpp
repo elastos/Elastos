@@ -8,7 +8,7 @@
 #include <SDK/Common/Utils.h>
 
 #include "catch.hpp"
-#include "IdAuxPow.h"
+#include "SDK/Plugin/Block/IdAuxPow.h"
 #include "Log.h"
 #include "TestHelper.h"
 

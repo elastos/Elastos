@@ -12,7 +12,7 @@
 #include "BRMerkleBlock.h"
 
 #include "Transaction/Transaction.h"
-#include "ELAMessageSerializable.h"
+#include "Plugin/Interface/ELAMessageSerializable.h"
 #include "ELAMerkleBlock.h"
 
 namespace Elastos {

@@ -61,7 +61,7 @@ namespace Elastos {
 			UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_merkleBlock->raw.blockHash, &zero)) {
 				ByteStream ostream;
-				serializeNoAux(ostream);
+				serializeNoAux(ostream, _merkleBlock->raw);
 				UInt256 hash = UINT256_ZERO;
 				CMBlock buf = ostream.getBuffer();
 				BRSHA256_2(&hash, buf, buf.GetSize());
@@ -111,7 +111,7 @@ namespace Elastos {
 			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
 			const uint32_t size = _merkleBlock->raw.target >> 24, target = _merkleBlock->raw.target & 0x00ffffff;
 			size_t hashIdx = 0, flagIdx = 0;
-			UInt256 merkleRoot = MerkleBlockRootR(&hashIdx, &flagIdx, 0), t = UINT256_ZERO;
+			UInt256 merkleRoot = MerkleBlockRootR(&hashIdx, &flagIdx, 0, _merkleBlock->raw), t = UINT256_ZERO;
 			int r = 1;
 
 			// check if merkle root is correct
@@ -140,7 +140,7 @@ namespace Elastos {
 		}
 
 		void MerkleBlock::Serialize(ByteStream &ostream) const {
-			serializeNoAux(ostream);
+			serializeNoAux(ostream, _merkleBlock->raw);
 
 			_merkleBlock->auxPow.Serialize(ostream);
 
@@ -166,33 +166,33 @@ namespace Elastos {
 			}
 		}
 
-		void MerkleBlock::serializeNoAux(ByteStream &ostream) const {
+		void MerkleBlock::serializeNoAux(ByteStream &ostream, const BRMerkleBlock &raw) {
 			uint8_t versionData[32 / 8];
-			UInt32SetLE(versionData, _merkleBlock->raw.version);
+			UInt32SetLE(versionData, raw.version);
 			ostream.putBytes(versionData, 32 / 8);
 
 			uint8_t prevBlockData[256 / 8];
-			UInt256Set(prevBlockData, _merkleBlock->raw.prevBlock);
+			UInt256Set(prevBlockData, raw.prevBlock);
 			ostream.putBytes(prevBlockData, 256 / 8);
 
 			uint8_t merkleRootData[256 / 8];
-			UInt256Set(merkleRootData, _merkleBlock->raw.merkleRoot);
+			UInt256Set(merkleRootData, raw.merkleRoot);
 			ostream.putBytes(merkleRootData, 256 / 8);
 
 			uint8_t timeStampData[32 / 8];
-			UInt32SetLE(timeStampData, _merkleBlock->raw.timestamp);
+			UInt32SetLE(timeStampData, raw.timestamp);
 			ostream.putBytes(timeStampData, 32 / 8);
 
 			uint8_t bitsData[32 / 8];
-			UInt32SetLE(bitsData, _merkleBlock->raw.target);
+			UInt32SetLE(bitsData, raw.target);
 			ostream.putBytes(bitsData, 32 / 8);
 
 			uint8_t nonceData[32 / 8];
-			UInt32SetLE(nonceData, _merkleBlock->raw.nonce);
+			UInt32SetLE(nonceData, raw.nonce);
 			ostream.putBytes(nonceData, 32 / 8);
 
 			uint8_t heightData[32 / 8];
-			UInt32SetLE(heightData, _merkleBlock->raw.height);
+			UInt32SetLE(heightData, raw.height);
 			ostream.putBytes(heightData, 32 / 8);
 		}
 
@@ -265,17 +265,17 @@ namespace Elastos {
 		// recursively walks the merkle tree to calculate the merkle root
 		// NOTE: this merkle tree design has a security vulnerability (CVE-2012-2459), which can be defended against by
 		// considering the merkle root invalid if there are duplicate hashes in any rows with an even number of elements
-		UInt256 MerkleBlock::MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth) const {
+		UInt256 MerkleBlock::MerkleBlockRootR(size_t *hashIdx, size_t *flagIdx, int depth, const BRMerkleBlock &raw) {
 			uint8_t flag;
 			UInt256 hashes[2], md = UINT256_ZERO;
 
-			if (*flagIdx/8 < _merkleBlock->raw.flagsLen && *hashIdx < _merkleBlock->raw.hashesCount) {
-				flag = (_merkleBlock->raw.flags[*flagIdx/8] & (1 << (*flagIdx % 8)));
+			if (*flagIdx/8 < raw.flagsLen && *hashIdx < raw.hashesCount) {
+				flag = (raw.flags[*flagIdx/8] & (1 << (*flagIdx % 8)));
 				(*flagIdx)++;
 
-				if (flag && depth != _ceil_log2(_merkleBlock->raw.totalTx)) {
-					hashes[0] = MerkleBlockRootR(hashIdx, flagIdx, depth + 1); // left branch
-					hashes[1] = MerkleBlockRootR(hashIdx, flagIdx, depth + 1); // right branch
+				if (flag && depth != _ceil_log2(raw.totalTx)) {
+					hashes[0] = MerkleBlockRootR(hashIdx, flagIdx, depth + 1, raw); // left branch
+					hashes[1] = MerkleBlockRootR(hashIdx, flagIdx, depth + 1, raw); // right branch
 
 					if (! UInt256IsZero(&hashes[0]) && ! UInt256Eq(&(hashes[0]), &(hashes[1]))) {
 						if (UInt256IsZero(&hashes[1])) hashes[1] = hashes[0]; // if right branch is missing, dup left branch
@@ -283,7 +283,7 @@ namespace Elastos {
 					}
 					else *hashIdx = SIZE_MAX; // defend against (CVE-2012-2459)
 				}
-				else md = _merkleBlock->raw.hashes[(*hashIdx)++]; // leaf
+				else md = raw.hashes[(*hashIdx)++]; // leaf
 			}
 
 			return md;

@@ -9,7 +9,7 @@
 #include "Utils.h"
 #include "catch.hpp"
 #include "Log.h"
-#include "MerkleBlock.h"
+#include "SDK/Plugin/Block/MerkleBlock.h"
 
 using namespace Elastos::ElaWallet;
 
