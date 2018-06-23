@@ -7,12 +7,13 @@
 
 #include "PeerManager.h"
 #include "Utils.h"
-#include "Message/PeerMessageManager.h"
 #include "Log.h"
 #include "BRArray.h"
 #include "ELATransaction.h"
 #include "ELAMerkleBlock.h"
 #include "arith_uint256.h"
+#include "Message/PeerMessageManager.h"
+#include "Plugin/Registry.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -47,15 +48,19 @@ namespace Elastos {
 
 			static void saveBlocks(void *info, int replace, BRMerkleBlock *blocks[], size_t blockCount) {
 
-				WeakListener *listener = (WeakListener *) info;
-				if (!listener->expired()) {
+				WeakListener *weakListener = (WeakListener *) info;
+				if (!weakListener->expired()) {
 
-					SharedWrapperList<MerkleBlock, BRMerkleBlock *> *coreBlocks = new SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
+					PeerManager::Listener *listener = weakListener->lock().get();
+					SharedWrapperList<IMerkleBlock, BRMerkleBlock *> *coreBlocks =
+							new SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
-						coreBlocks->push_back(
-								MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *) blocks[i]))));
+						MerkleBlockPtr wrappedBlock(
+								Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType));
+						wrappedBlock->initFromRaw(blocks[i]);
+						coreBlocks->push_back(wrappedBlock);
 					}
-					listener->lock()->saveBlocks(replace, *coreBlocks);
+					listener->saveBlocks(replace, *coreBlocks);
 				}
 			}
 
@@ -110,13 +115,19 @@ namespace Elastos {
 			}
 		}
 
+		PeerManager::Listener::Listener(const Elastos::ElaWallet::PluginTypes &pluginTypes) :
+				_pluginTypes(pluginTypes) {
+		}
+
 		PeerManager::PeerManager(const ChainParams &params,
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
-								 const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+								 const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
 								 const SharedWrapperList<Peer, BRPeer *> &peers,
-								 const boost::shared_ptr<PeerManager::Listener> &listener) :
+								 const boost::shared_ptr<PeerManager::Listener> &listener,
+								 const PluginTypes &plugins) :
 				_wallet(wallet),
+				_pluginTypes(plugins),
 				_chainParams(params) {
 
 			assert(listener != nullptr);
@@ -127,7 +138,7 @@ namespace Elastos {
 				peerArray[i] = *peers[i]->getRaw();
 			}
 
-			_manager = BRPeerManagerNew(
+			_manager = ELAPeerManagerNew(
 					_chainParams.getRaw(),
 					wallet->getRaw(),
 					earliestKeyTime,
@@ -135,14 +146,11 @@ namespace Elastos {
 					blocks.size(),
 					peerArray,
 					peers.size(),
-					PeerMessageManager::instance().createMessageManager()
+					PeerMessageManager::instance().createMessageManager(),
+					plugins
 			);
 
-//			if (_manager->lastBlock == nullptr) {
-//				createGenesisBlock();
-//			}
-
-			BRPeerManagerSetCallbacks(_manager, &_listener,
+			BRPeerManagerSetCallbacks((BRPeerManager *) _manager, &_listener,
 									  syncStarted,
 									  syncStopped,
 									  txStatusUpdate,
@@ -155,7 +163,7 @@ namespace Elastos {
 		}
 
 		PeerManager::~PeerManager() {
-			BRPeerManagerFree(_manager);
+			ELAPeerManagerFree(_manager);
 		}
 
 		std::string PeerManager::toString() const {
@@ -164,7 +172,7 @@ namespace Elastos {
 		}
 
 		BRPeerManager *PeerManager::getRaw() const {
-			return _manager;
+			return (BRPeerManager *) _manager;
 		}
 
 		Peer::ConnectStatus PeerManager::getConnectStatus() const {
@@ -173,35 +181,35 @@ namespace Elastos {
 		}
 
 		void PeerManager::connect() {
-			BRPeerManagerConnect(_manager);
+			BRPeerManagerConnect((BRPeerManager *) _manager);
 		}
 
 		void PeerManager::disconnect() {
-			BRPeerManagerDisconnect(_manager);
+			BRPeerManagerDisconnect((BRPeerManager *) _manager);
 		}
 
 		void PeerManager::rescan() {
-			BRPeerManagerRescan(_manager);
+			BRPeerManagerRescan((BRPeerManager *) _manager);
 		}
 
 		uint32_t PeerManager::getEstimatedBlockHeight() const {
-			return BRPeerManagerEstimatedBlockHeight(_manager);
+			return BRPeerManagerEstimatedBlockHeight((BRPeerManager *) _manager);
 		}
 
 		uint32_t PeerManager::getLastBlockHeight() const {
-			return BRPeerManagerLastBlockHeight(_manager);
+			return BRPeerManagerLastBlockHeight((BRPeerManager *) _manager);
 		}
 
 		uint32_t PeerManager::getLastBlockTimestamp() const {
-			return BRPeerManagerLastBlockTimestamp(_manager);
+			return BRPeerManagerLastBlockTimestamp((BRPeerManager *) _manager);
 		}
 
 		double PeerManager::getSyncProgress(uint32_t startHeight) {
-			return BRPeerManagerSyncProgress(_manager, startHeight);;
+			return BRPeerManagerSyncProgress((BRPeerManager *) _manager, startHeight);
 		}
 
 		bool PeerManager::useFixedPeer(const std::string &node, int port) {
-			const BRChainParams *chainParams = BRPeerManagerChainParams(_manager);
+			const BRChainParams *chainParams = BRPeerManagerChainParams((BRPeerManager *) _manager);
 
 			UInt128 address = UINT128_ZERO;
 			uint16_t _port = (uint16_t) port;
@@ -216,29 +224,30 @@ namespace Elastos {
 				_port = 0;
 			}
 
-			BRPeerManagerSetFixedPeer(_manager, address, _port);
+			BRPeerManagerSetFixedPeer((BRPeerManager *) _manager, address, _port);
 			return true;
 		}
 
 		std::string PeerManager::getCurrentPeerName() const {
-			return BRPeerManagerDownloadPeerName(_manager);
+			return BRPeerManagerDownloadPeerName((BRPeerManager *) _manager);
 		}
 
 		std::string PeerManager::getDownloadPeerName() const {
-			return BRPeerManagerDownloadPeerName(_manager);
+			return BRPeerManagerDownloadPeerName((BRPeerManager *) _manager);
 		}
 
 		size_t PeerManager::getPeerCount() const {
-			return BRPeerManagerPeerCount(_manager);
+			return BRPeerManagerPeerCount((BRPeerManager *) _manager);
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &transaction) {
-			ELATransaction *elaTransaction = ELATransactionCopy((ELATransaction *)transaction->getRaw());
-			BRPeerManagerPublishTx(_manager, (BRTransaction *)elaTransaction, &_listener, txPublished);
+			ELATransaction *elaTransaction = ELATransactionCopy((ELATransaction *) transaction->getRaw());
+			BRPeerManagerPublishTx((BRPeerManager *) _manager, (BRTransaction *) elaTransaction, &_listener,
+								   txPublished);
 		}
 
 		uint64_t PeerManager::getRelayCount(const UInt256 &txHash) const {
-			return BRPeerManagerRelayCount(_manager, txHash);
+			return BRPeerManagerRelayCount((BRPeerManager *) _manager, txHash);
 		}
 
 		void PeerManager::createGenesisBlock() const {
@@ -248,17 +257,17 @@ namespace Elastos {
 					"8d7014f2f941caa1972c8033b2f0a860ec8d4938b12bae2c62512852a558f405");
 			block->raw.timestamp = 1513936800;
 			block->raw.target = 486801407;
-			BRSetAdd(_manager->blocks, block);
-			_manager->lastBlock = (BRMerkleBlock *) block;
+			BRSetAdd(_manager->Raw.blocks, block);
+			_manager->Raw.lastBlock = (BRMerkleBlock *) block;
 		}
 
 		std::vector<BRMerkleBlock *>
-		PeerManager::getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+		PeerManager::getRawMerkleBlocks(const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 			std::vector<BRMerkleBlock *> list;
 
 			size_t len = blocks.size();
 			for (size_t i = 0; i < len; ++i) {
-				ELAMerkleBlock *temp = (ELAMerkleBlock *) blocks[i]->getRaw();
+				ELAMerkleBlock *temp = (ELAMerkleBlock *) blocks[i]->getRawBlock();
 				list.push_back((BRMerkleBlock *) ELAMerkleBlockCopy(temp));
 			}
 
@@ -328,5 +337,6 @@ namespace Elastos {
 
 			return r;
 		}
+
 	}
 }

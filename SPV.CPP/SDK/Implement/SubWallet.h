@@ -110,7 +110,7 @@ namespace Elastos {
 			virtual void txStatusUpdate() {}
 
 			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *>& blocks) {}
+			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *>& blocks) {}
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*>& peers) {}
@@ -129,6 +129,7 @@ namespace Elastos {
 			SubWallet(const CoinInfo &info,
 					  const ChainParams &chainParams,
 					  const std::string &payPassword,
+					  const PluginTypes &pluginTypes,
 					  MasterWallet *parent);
 
 			Key deriveKey(const std::string &payPassword);

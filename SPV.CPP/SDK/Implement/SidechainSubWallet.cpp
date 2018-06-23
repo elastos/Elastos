@@ -17,8 +17,9 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		SidechainSubWallet::SidechainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
-											   const std::string &payPassword, MasterWallet *parent) :
-				SubWallet(info, chainParams, payPassword, parent) {
+											   const std::string &payPassword, const PluginTypes &pluginTypes,
+											   MasterWallet *parent) :
+				SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
 
 		}
 
@@ -27,13 +28,13 @@ namespace Elastos {
 		}
 
 		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(const std::string &fromAddress,
-																   const std::string &toAddress,
-																   const uint64_t amount,
-																   const nlohmann::json &mainchainAccounts,
-																   const nlohmann::json &mainchainAmounts,
-																   const nlohmann::json &mainchainIndexs,
-																   uint64_t fee,
-																   const std::string &memo) {
+																	 const std::string &toAddress,
+																	 const uint64_t amount,
+																	 const nlohmann::json &mainchainAccounts,
+																	 const nlohmann::json &mainchainAmounts,
+																	 const nlohmann::json &mainchainIndexs,
+																	 uint64_t fee,
+																	 const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount, fee, memo));
 

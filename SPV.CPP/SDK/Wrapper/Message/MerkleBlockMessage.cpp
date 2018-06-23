@@ -2,8 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRMerkleBlock.h>
-#include <Core/BRMerkleBlock.h>
+#include <boost/scoped_ptr.hpp>
 
 #include "BRPeerManager.h"
 #include "BRPeerMessages.h"
@@ -11,11 +10,13 @@
 #include "BRMerkleBlock.h"
 
 #include "Peer.h"
-#include "MerkleBlock.h"
 #include "MerkleBlockMessage.h"
 #include "Log.h"
 #include "Utils.h"
 #include "AuxPow.h"
+#include "ELACoreExt/ELAPeerManager.h"
+#include "ELACoreExt/ELAMerkleBlock.h"
+#include "Plugin/Registry.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -24,15 +25,18 @@ namespace Elastos {
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 			// msg is holding by payload pointer create by malloc, do not match delete[] in ByteStream
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
-			MerkleBlock wrappedBlock;
-			wrappedBlock.Deserialize(stream);
 
-			ELAMerkleBlock *elablock = ELAMerkleBlockCopy((ELAMerkleBlock *)wrappedBlock.getRaw());
+			ELAPeerManager *elaPeerManager = (ELAPeerManager *)ctx->manager;
+			MerkleBlockPtr wrappedBlock(Registry::Instance()->CreateMerkleBlock(elaPeerManager->Plugins.BlockType));
+			assert(wrappedBlock != nullptr);
+			wrappedBlock->Deserialize(stream);
+
+			ELAMerkleBlock *elablock = ELAMerkleBlockCopy((ELAMerkleBlock *)wrappedBlock->getRawBlock());
 			BRMerkleBlock *block = (BRMerkleBlock *)elablock;
-			block->blockHash = wrappedBlock.getBlockHash();
+			block->blockHash = wrappedBlock->getBlockHash();
 			int r = 1;
 
-			if (!wrappedBlock.isValid((uint32_t) time(nullptr))) {
+			if (!wrappedBlock->isValid((uint32_t) time(nullptr))) {
 				Log::getLogger()->error("invalid merkleblock: {}",
 									   Utils::UInt256ToString(block->blockHash));
 				ELAMerkleBlockFree(elablock);

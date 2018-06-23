@@ -12,12 +12,14 @@
 #include "BRPeerManager.h"
 
 #include "Peer.h"
-#include "MerkleBlock.h"
 #include "ChainParams.h"
 #include "Wallet.h"
 #include "SharedWrapperList.h"
 #include "WrapperList.h"
 #include "CMemBlock.h"
+#include "ELACoreExt/ELAPeerManager.h"
+#include "Plugin/PluginTypes.h"
+#include "Plugin/Interface/IMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -28,6 +30,10 @@ namespace Elastos {
 
 			class Listener {
 			public:
+				Listener(const PluginTypes &pluginTypes);
+
+				virtual ~Listener() {}
+
 				// func syncStarted()
 				virtual void syncStarted() = 0;
 
@@ -39,7 +45,7 @@ namespace Elastos {
 
 				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 				virtual void
-				saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) = 0;
+				saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) = 0;
 
 				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 				virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) = 0;
@@ -51,15 +57,21 @@ namespace Elastos {
 				virtual void txPublished(const std::string &error) = 0;
 
 				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
+
+				const PluginTypes &getPluginTypes() const { return _pluginTypes;}
+
+			protected:
+				PluginTypes _pluginTypes;
 			};
 
 		public:
 			PeerManager(const ChainParams &params,
 						const WalletPtr &wallet,
 						uint32_t earliestKeyTime,
-						const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+						const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
 						const SharedWrapperList<Peer, BRPeer *> &peers,
-						const boost::shared_ptr<Listener> &listener);
+						const boost::shared_ptr<Listener> &listener,
+						const PluginTypes &plugins);
 
 			~PeerManager();
 
@@ -107,7 +119,7 @@ namespace Elastos {
 			void createGenesisBlock() const;
 
 			std::vector<BRMerkleBlock *>
-			getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+			getRawMerkleBlocks(const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
 
 			static int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
 											   const BRSet *blockSet);
@@ -120,8 +132,9 @@ namespace Elastos {
 								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock);
 
 		private:
-			BRPeerManager *_manager;
+			ELAPeerManager *_manager;
 
+			PluginTypes _pluginTypes;
 			WalletPtr _wallet;
 			ChainParams _chainParams;
 			boost::weak_ptr<Listener> _listener;

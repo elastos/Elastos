@@ -8,8 +8,8 @@
 #include "BRMerkleBlock.h"
 #include "Utils.h"
 #include "catch.hpp"
-#include "MerkleBlock.h"
 #include "Log.h"
+#include "MerkleBlock.h"
 
 using namespace Elastos::ElaWallet;
 

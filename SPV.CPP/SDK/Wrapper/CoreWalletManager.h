@@ -12,6 +12,7 @@
 #include "PeerManager.h"
 #include "ChainParams.h"
 #include "MasterPubKey.h"
+#include "Plugin/PluginTypes.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -21,7 +22,7 @@ namespace Elastos {
 				public PeerManager::Listener {
 
 		public:
-			CoreWalletManager(const ChainParams &chainParams);
+			CoreWalletManager(const PluginTypes &pluginTypes, const ChainParams &chainParams);
 
 			virtual ~CoreWalletManager();
 
@@ -64,7 +65,7 @@ namespace Elastos {
 			virtual void txStatusUpdate();
 
 			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
@@ -80,7 +81,7 @@ namespace Elastos {
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 
-			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+			virtual SharedWrapperList<IMerkleBlock, BRMerkleBlock *> loadBlocks();
 
 			virtual SharedWrapperList<Peer, BRPeer *> loadPeers();
 
@@ -103,6 +104,8 @@ namespace Elastos {
 
 			MasterPubKeyPtr _masterPubKey;
 
+			PluginTypes _pluginTypes;
+
 			ChainParams _chainParams;
 			bool _singleAddress;
 
@@ -121,7 +124,7 @@ namespace Elastos {
 		class WrappedExceptionPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener);
+			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginTypes &pluginTypes);
 
 			virtual void syncStarted();
 
@@ -129,7 +132,7 @@ namespace Elastos {
 
 			virtual void txStatusUpdate();
 
-			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
 
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
 
@@ -148,7 +151,8 @@ namespace Elastos {
 		class WrappedExecutorPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener, Executor *executor);
+			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener, Executor *executor,
+											   const PluginTypes &pluginTypes);
 
 			virtual void syncStarted();
 
@@ -156,7 +160,7 @@ namespace Elastos {
 
 			virtual void txStatusUpdate();
 
-			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
 
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
 

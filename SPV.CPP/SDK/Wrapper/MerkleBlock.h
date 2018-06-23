@@ -10,7 +10,8 @@
 
 #include "Wrapper.h"
 #include "CMemBlock.h"
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
+#include "Plugin/Interface/IMerkleBlock.h"
+#include "Plugin/Registry.h"
 #include "ELACoreExt/AuxPow.h"
 #include "ELACoreExt/ELAMerkleBlock.h"
 
@@ -19,7 +20,7 @@ namespace Elastos {
 
 		class MerkleBlock :
 			public Wrapper<BRMerkleBlock>,
-			public ELAMessageSerializable {
+			public IMerkleBlock {
 
 		public:
 			MerkleBlock();
@@ -30,7 +31,11 @@ namespace Elastos {
 
 			virtual std::string toString() const;
 
+			virtual IMerkleBlock *Clone() const;
+
 			virtual BRMerkleBlock *getRaw() const;
+
+			virtual void initFromRaw(BRMerkleBlock *block);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -40,7 +45,7 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &);
 
-			UInt256 getBlockHash() const;
+			virtual UInt256 getBlockHash() const;
 
 			uint32_t getVersion() const;
 
@@ -56,15 +61,19 @@ namespace Elastos {
 
 			uint32_t getTransactionCount() const;
 
-			uint32_t getHeight() const;
+			virtual uint32_t getHeight() const;
 
-			void setHeight(uint32_t height);
+			virtual void setHeight(uint32_t height);
+
+			virtual bool isValid(uint32_t currentTime) const;
 
 			const AuxPow &getAuxPow() const;
 
-			bool isValid(uint32_t currentTime) const;
-
 			bool containsTransactionHash(UInt256 hash) const;
+
+			virtual BRMerkleBlock *getRawBlock() const;
+
+			virtual std::string getBlockType() const { return "ELA";}
 
 		private:
 
@@ -75,8 +84,6 @@ namespace Elastos {
 		private:
 			ELAMerkleBlock *_merkleBlock;
 		};
-
-		typedef boost::shared_ptr<MerkleBlock> MerkleBlockPtr;
 
 		//support for json converting
 		//read "Arbitrary types conversions" section in readme of

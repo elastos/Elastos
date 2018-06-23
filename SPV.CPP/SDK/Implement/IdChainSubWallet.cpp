@@ -19,8 +19,9 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		IdChainSubWallet::IdChainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
-										   const std::string &payPassword, MasterWallet *parent) :
-				SubWallet(info, chainParams, payPassword, parent) {
+										   const std::string &payPassword, const PluginTypes &pluginTypes,
+										   MasterWallet *parent) :
+				SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
 
 		}
 
@@ -30,8 +31,9 @@ namespace Elastos {
 
 		nlohmann::json
 		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const std::string &toAddress,
-											const uint64_t amount, const nlohmann::json &payloadJson,
-											const nlohmann::json &programJson, uint64_t fee, const std::string &memo) {
+											  const uint64_t amount, const nlohmann::json &payloadJson,
+											  const nlohmann::json &programJson, uint64_t fee,
+											  const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo));
 

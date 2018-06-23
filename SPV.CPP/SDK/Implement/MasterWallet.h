@@ -19,6 +19,7 @@
 #include "KeyStore/CoinInfo.h"
 #include "KeyStore/MasterWalletStore.h"
 #include "IdAgent/IdAgentImpl.h"
+#include "Plugin/PluginTypes.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -163,6 +164,7 @@ namespace Elastos {
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
 											  const ChainParams &chainParams,
 											  const std::string &payPassword,
+											  const PluginTypes &pluginTypes,
 											  MasterWallet *parent);
 
 			void resetMnemonic(const std::string &language);

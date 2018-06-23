@@ -35,12 +35,14 @@ namespace Elastos {
 						  uint32_t earliestPeerTime,
 						  bool singleAddress,
 						  int forkId,
+						  const PluginTypes &pluginTypes,
 						  const ChainParams &chainParams);
 
 			WalletManager(const boost::filesystem::path &dbPath,
 						  const nlohmann::json &peerConfig,
 						  uint32_t earliestPeerTime,
 						  int forkId,
+						  const PluginTypes &pluginTypes,
 						  const std::vector<std::string> &initialAddresses,
 						  const ChainParams &chainParams);
 
@@ -94,7 +96,7 @@ namespace Elastos {
 			virtual void txStatusUpdate();
 
 			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
@@ -110,7 +112,7 @@ namespace Elastos {
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 
-			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+			virtual SharedWrapperList<IMerkleBlock, BRMerkleBlock *> loadBlocks();
 
 			virtual SharedWrapperList<Peer, BRPeer *> loadPeers();
 

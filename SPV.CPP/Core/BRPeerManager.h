@@ -91,6 +91,18 @@ typedef struct BRPeerManagerStruct {
 	BRPeerMessages *peerMessages;
 } BRPeerManager;
 
+int _peerTimestampCompare(const void *peer, const void *otherPeer);
+
+size_t _BRPrevBlockHash(const void *block);
+
+int _BRPrevBlockEq(const void *block, const void *otherBlock);
+
+size_t _BRBlockHeightHash(const void *block);
+
+int _BRBlockHeightEq(const void *block, const void *otherBlock);
+
+void dummyThreadCleanup(void *info);
+
 // returns a newly allocated BRPeerManager struct that must be freed by calling BRPeerManagerFree()
 BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, uint32_t earliestKeyTime,
 								BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[], size_t peersCount,

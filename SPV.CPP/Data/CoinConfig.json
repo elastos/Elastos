@@ -8,6 +8,7 @@
     "MagicNumber": 7630401,
     "Services": 0,
     "MinFee": 10000,
+    "BlockType": "ELA",
     "CheckPoints": [
       {
         "Height": 0,
@@ -26,6 +27,7 @@
     "MagicNumber": 7630404,
     "Services": 0,
     "MinFee": 10000,
+    "BlockType": "SideStandard",
     "CheckPoints": [
       {
         "Height": 0,

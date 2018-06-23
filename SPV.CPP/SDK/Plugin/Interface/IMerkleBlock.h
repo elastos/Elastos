@@ -5,17 +5,36 @@
 #ifndef __ELASTOS_SDK_IMERKLEBLOCK_H__
 #define __ELASTOS_SDK_IMERKLEBLOCK_H__
 
+#include <boost/shared_ptr.hpp>
+
+#include "BRMerkleBlock.h"
+
+#include "IClonable.h"
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IMerkleBlock : public ELAMessageSerializable {
+		class IMerkleBlock : public ELAMessageSerializable, public IClonable<IMerkleBlock> {
 		public:
 			virtual ~IMerkleBlock() {}
 
+			virtual BRMerkleBlock *getRawBlock() const = 0;
 
+			virtual void initFromRaw(BRMerkleBlock *block) = 0;
+
+			virtual UInt256 getBlockHash() const = 0;
+
+			virtual uint32_t getHeight() const = 0;
+
+			virtual void setHeight(uint32_t height) = 0;
+
+			virtual bool isValid(uint32_t currentTime) const = 0;
+
+			virtual std::string getBlockType() const = 0;
 		};
+
+		typedef boost::shared_ptr<IMerkleBlock> MerkleBlockPtr;
 
 	}
 }

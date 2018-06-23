@@ -18,13 +18,15 @@ namespace Elastos {
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_STATUS = false;
 		bool CoreWalletManager::SHOW_CALLBACK_DETAIL_TX_IO = false;
 
-		CoreWalletManager::CoreWalletManager(const ChainParams &chainParams) :
+		CoreWalletManager::CoreWalletManager(const PluginTypes &pluginTypes, const ChainParams &chainParams) :
+				PeerManager::Listener(pluginTypes),
 				_wallet(nullptr),
 				_walletListener(nullptr),
 				_peerManager(nullptr),
 				_peerManagerListener(nullptr),
 				_masterPubKey(nullptr),
 				_singleAddress(false),
+				_pluginTypes(pluginTypes),
 				_chainParams(chainParams) {
 		}
 
@@ -67,7 +69,8 @@ namespace Elastos {
 						_earliestPeerTime,
 						loadBlocks(),
 						loadPeers(),
-						createPeerManagerListener()));
+						createPeerManagerListener(),
+						_pluginTypes));
 			}
 
 			return _peerManager;
@@ -125,7 +128,7 @@ namespace Elastos {
 		}
 
 		void
-		CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+		CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 
 		}
 
@@ -150,9 +153,9 @@ namespace Elastos {
 			return SharedWrapperList<Transaction, BRTransaction *>();
 		}
 
-		SharedWrapperList<MerkleBlock, BRMerkleBlock *> CoreWalletManager::loadBlocks() {
+		SharedWrapperList<IMerkleBlock, BRMerkleBlock *> CoreWalletManager::loadBlocks() {
 			//todo complete me
-			return SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
+			return SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 		}
 
 		SharedWrapperList<Peer, BRPeer *> CoreWalletManager::loadPeers() {
@@ -167,7 +170,7 @@ namespace Elastos {
 
 		const CoreWalletManager::PeerManagerListenerPtr &CoreWalletManager::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
-				_peerManagerListener = PeerManagerListenerPtr(new WrappedExceptionPeerManagerListener(this));
+				_peerManagerListener = PeerManagerListenerPtr(new WrappedExceptionPeerManagerListener(this, _pluginTypes));
 			}
 			return _peerManagerListener;
 		}
@@ -179,7 +182,9 @@ namespace Elastos {
 			return _walletListener;
 		}
 
-		WrappedExceptionPeerManagerListener::WrappedExceptionPeerManagerListener(PeerManager::Listener *listener) :
+		WrappedExceptionPeerManagerListener::WrappedExceptionPeerManagerListener(PeerManager::Listener *listener,
+																				 const PluginTypes &pluginTypes) :
+				PeerManager::Listener(pluginTypes),
 				_listener(listener) {
 		}
 
@@ -221,7 +226,7 @@ namespace Elastos {
 
 		void WrappedExceptionPeerManagerListener::saveBlocks(
 				bool replace,
-				const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 
 			try {
 				_listener->saveBlocks(replace, blocks);
@@ -288,7 +293,9 @@ namespace Elastos {
 
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
-				Executor *executor) :
+				Executor *executor,
+				const PluginTypes &pluginTypes) :
+				PeerManager::Listener(pluginTypes),
 				_listener(listener),
 				_executor(executor) {
 		}
@@ -313,7 +320,7 @@ namespace Elastos {
 
 		void WrappedExecutorPeerManagerListener::saveBlocks(
 				bool replace,
-				const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 			_executor->execute(Runnable([this, replace, &blocks]() -> void {
 				_listener->saveBlocks(replace, blocks);
 			}));

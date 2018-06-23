@@ -129,7 +129,8 @@ namespace Elastos {
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
-			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams(coinConfig), payPassword, this);
+			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams(coinConfig), payPassword,
+														  PluginTypes(coinConfig), this);
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
 			Save();
@@ -165,7 +166,8 @@ namespace Elastos {
 
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
 				_createdWallets[coinInfoList[i].getChainId()] =
-						SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "", this);
+						SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "", PluginTypes(coinConfig),
+											   this);
 			}
 		}
 
@@ -320,9 +322,10 @@ namespace Elastos {
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
-				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "", this);
+				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "",
+															   PluginTypes(coinConfig), this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
-				if(subWalletImpl == nullptr)
+				if (subWalletImpl == nullptr)
 					throw std::logic_error("Recover sub wallet error: unknown sub wallet implement type.");
 				startPeerManager(subWalletImpl);
 				_createdWallets[subWallet->GetChainId()] = subWallet;
@@ -416,17 +419,18 @@ namespace Elastos {
 		}
 
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const ChainParams &chainParams,
-														const std::string &payPassword, MasterWallet *parent) {
+														const std::string &payPassword, const PluginTypes &pluginTypes,
+														MasterWallet *parent) {
 			switch (info.getWalletType()) {
 				case Mainchain:
-					return new MainchainSubWallet(info, chainParams, payPassword, parent);
+					return new MainchainSubWallet(info, chainParams, payPassword, pluginTypes, parent);
 				case Sidechain:
-					return new SidechainSubWallet(info, chainParams, payPassword, parent);
+					return new SidechainSubWallet(info, chainParams, payPassword, pluginTypes, parent);
 				case Idchain:
-					return new IdChainSubWallet(info, chainParams, payPassword, parent);
+					return new IdChainSubWallet(info, chainParams, payPassword, pluginTypes, parent);
 				case Normal:
 				default:
-					return new SubWallet(info, chainParams, payPassword, parent);
+					return new SubWallet(info, chainParams, payPassword, pluginTypes, parent);
 			}
 		}
 

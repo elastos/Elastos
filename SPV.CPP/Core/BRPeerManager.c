@@ -125,7 +125,7 @@ static int _BRTxPeerListRemovePeer(BRTxPeerList *list, UInt256 txHash, const BRP
 }
 
 // comparator for sorting peers by timestamp, most recent first
-inline static int _peerTimestampCompare(const void *peer, const void *otherPeer)
+int _peerTimestampCompare(const void *peer, const void *otherPeer)
 {
     if (((const BRPeer *)peer)->timestamp < ((const BRPeer *)otherPeer)->timestamp) return 1;
     if (((const BRPeer *)peer)->timestamp > ((const BRPeer *)otherPeer)->timestamp) return -1;
@@ -133,26 +133,26 @@ inline static int _peerTimestampCompare(const void *peer, const void *otherPeer)
 }
 
 // returns a hash value for a block's prevBlock value suitable for use in a hashtable
-inline static size_t _BRPrevBlockHash(const void *block)
+size_t _BRPrevBlockHash(const void *block)
 {
     return (size_t)((const BRMerkleBlock *)block)->prevBlock.u32[0];
 }
 
 // true if block and otherBlock have equal prevBlock values
-inline static int _BRPrevBlockEq(const void *block, const void *otherBlock)
+int _BRPrevBlockEq(const void *block, const void *otherBlock)
 {
     return UInt256Eq(&(((BRMerkleBlock *)block)->prevBlock), &(((BRMerkleBlock *)otherBlock)->prevBlock));
 }
 
 // returns a hash value for a block's height value suitable for use in a hashtable
-inline static size_t _BRBlockHeightHash(const void *block)
+size_t _BRBlockHeightHash(const void *block)
 {
     // (FNV_OFFSET xor height)*FNV_PRIME
     return (size_t)((0x811C9dc5 ^ ((const BRMerkleBlock *)block)->height)*0x01000193);
 }
 
 // true if block and otherBlock have equal height values
-inline static int _BRBlockHeightEq(const void *block, const void *otherBlock)
+int _BRBlockHeightEq(const void *block, const void *otherBlock)
 {
     return (((const BRMerkleBlock *)block)->height == ((const BRMerkleBlock *)otherBlock)->height);
 }

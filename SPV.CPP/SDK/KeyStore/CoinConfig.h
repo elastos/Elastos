@@ -27,6 +27,7 @@ namespace Elastos {
 			uint32_t MagicNumber;
 			uint32_t Services;
 			uint64_t MinFee;
+			std::string BlockType;
 			std::vector<CheckPoint> CheckPoints;
 		};
 

@@ -341,7 +341,7 @@ static void *_peerThreadRoutine(void *arg)
     return NULL; // detached threads don't need to return a value
 }
 
-static void _dummyThreadCleanup(void *info)
+void _dummyThreadCleanup(void *info)
 {
 }
 

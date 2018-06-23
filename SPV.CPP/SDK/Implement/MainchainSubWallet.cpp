@@ -19,8 +19,9 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		MainchainSubWallet::MainchainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
-											   const std::string &payPassword, MasterWallet *parent) :
-				SubWallet(info, chainParams, payPassword, parent) {
+											   const std::string &payPassword, const PluginTypes &pluginTypes,
+											   MasterWallet *parent) :
+				SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
 
 		}
 

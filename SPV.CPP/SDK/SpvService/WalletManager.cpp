@@ -5,11 +5,12 @@
 #include "BRTransaction.h"
 
 #include "PeerConfigReader.h"
-#include "ELACoreExt/ELATxOutput.h"
 #include "WalletManager.h"
 #include "Utils.h"
 #include "Log.h"
 #include "SingleAddressWallet.h"
+#include "ELACoreExt/ELATxOutput.h"
+#include "Plugin/Registry.h"
 
 #define BACKGROUND_THREAD_COUNT 1
 
@@ -20,7 +21,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		WalletManager::WalletManager(const WalletManager &proto) :
-				CoreWalletManager(proto._chainParams),
+				CoreWalletManager(proto._pluginTypes, proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
 				_forkId(proto._forkId),
@@ -29,9 +30,9 @@ namespace Elastos {
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
-									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
-									 bool singleAddress, int forkId, const ChainParams &chainParams) :
-				CoreWalletManager(chainParams),
+									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime, bool singleAddress,
+									 int forkId, const PluginTypes &pluginTypes, const ChainParams &chainParams) :
+				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_forkId(forkId),
@@ -39,11 +40,11 @@ namespace Elastos {
 			init(masterPubKey, earliestPeerTime, singleAddress);
 		}
 
-		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
-									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime,
-									 int forkId, const std::vector<std::string> &initialAddresses,
+		WalletManager::WalletManager(const boost::filesystem::path &dbPath, const nlohmann::json &peerConfig,
+									 uint32_t earliestPeerTime, int forkId, const PluginTypes &pluginTypes,
+									 const std::vector<std::string> &initialAddresses,
 									 const ChainParams &chainParams) :
-				CoreWalletManager(chainParams),
+				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_forkId(forkId),
@@ -181,7 +182,7 @@ namespace Elastos {
 						  });
 		}
 
-		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 			MerkleBlockEntity blockEntity;
 
 			if (replace) {
@@ -276,13 +277,13 @@ namespace Elastos {
 			return txs;
 		}
 
-		SharedWrapperList<MerkleBlock, BRMerkleBlock *> WalletManager::loadBlocks() {
-			SharedWrapperList<MerkleBlock, BRMerkleBlock *> blocks;
+		SharedWrapperList<IMerkleBlock, BRMerkleBlock *> WalletManager::loadBlocks() {
+			SharedWrapperList<IMerkleBlock, BRMerkleBlock *> blocks;
 
 			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.getAllMerkleBlocks(ISO);
 
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
-				MerkleBlock *block = new MerkleBlock();
+				IMerkleBlock *block = Registry::Instance()->CreateMerkleBlock(_pluginTypes.BlockType);
 				block->setHeight(blocksEntity[i].blockHeight);
 				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
 				stream.setPosition(0);
@@ -315,7 +316,8 @@ namespace Elastos {
 
 		const CoreWalletManager::PeerManagerListenerPtr &WalletManager::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
-				_peerManagerListener = PeerManagerListenerPtr(new WrappedExecutorPeerManagerListener(this, &_executor));
+				_peerManagerListener = PeerManagerListenerPtr(
+						new WrappedExecutorPeerManagerListener(this, &_executor, _pluginTypes));
 			}
 			return _peerManagerListener;
 		}

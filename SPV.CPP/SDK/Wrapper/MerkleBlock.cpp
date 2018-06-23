@@ -49,6 +49,14 @@ namespace Elastos {
 			return (BRMerkleBlock *) _merkleBlock;
 		}
 
+		void MerkleBlock::initFromRaw(BRMerkleBlock *block) {
+			_merkleBlock = (ELAMerkleBlock *)block;
+		}
+
+		IMerkleBlock* MerkleBlock::Clone() const {
+			return new MerkleBlock(ELAMerkleBlockCopy(_merkleBlock));
+		}
+
 		UInt256 MerkleBlock::getBlockHash() const {
 			UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_merkleBlock->raw.blockHash, &zero)) {
@@ -291,6 +299,10 @@ namespace Elastos {
 			from_json(j, *this);
 		}
 
+		BRMerkleBlock *MerkleBlock::getRawBlock() const {
+			return getRaw();
+		}
+
 		void to_json(nlohmann::json &j, const MerkleBlock &p) {
 			BRMerkleBlock *pblock = p.getRaw();
 
@@ -363,5 +375,6 @@ namespace Elastos {
 			block->height = j["height"].get<uint32_t>();
 		}
 
+		REGISTER_MERKLEBLOCKPLUGIN(MerkleBlock);
 	}
 }

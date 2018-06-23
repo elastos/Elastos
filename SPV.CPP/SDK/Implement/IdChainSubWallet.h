@@ -30,6 +30,7 @@ namespace Elastos {
 			IdChainSubWallet(const CoinInfo &info,
 							 const ChainParams &chainParams,
 							 const std::string &payPassword,
+							 const PluginTypes &pluginTypes,
 							 MasterWallet *parent);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;

@@ -50,6 +50,7 @@ namespace Elastos {
 				config.MagicNumber = it.value()["MagicNumber"].get<uint32_t>();
 				config.Services = it.value()["Services"].get<uint32_t>();
 				config.MinFee = it.value()["MinFee"].get<uint64_t>();
+				config.BlockType = it.value()["BlockType"].get<std::string>();
 				std::vector<nlohmann::json> checkPoints = it.value()["CheckPoints"];
 				for (int k = 0; k < checkPoints.size(); ++k) {
 					config.CheckPoints.push_back(checkPoints[k]);
