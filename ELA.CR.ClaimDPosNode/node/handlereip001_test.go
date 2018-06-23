@@ -100,8 +100,7 @@ func TestNewHandlerEIP001(t *testing.T) {
 	getData.InvList = invs[0].InvList
 	err = handler.Write(getData)
 	assert.NoError(t, err)
-	time.Sleep(time.Millisecond * 100)
-	for len(handler.thisHandler.msgChan) > 0 {
+	for i := 0; i < len(getData.InvList); i++ {
 		response, _ := handler.Read()
 		switch response.(type) {
 		case *msg.Ping:
@@ -111,6 +110,7 @@ func TestNewHandlerEIP001(t *testing.T) {
 		assert.Equal(t, p2p.CmdBlock, response.CMD())
 		blocks = append(blocks, response)
 	}
+	fmt.Printf("invlist length %d received blocks %d\n", len(getData.InvList), len(blocks))
 
 	// message block
 	for _, block := range blocks {
@@ -120,8 +120,11 @@ func TestNewHandlerEIP001(t *testing.T) {
 	}
 
 	// message tx
+	LocalNode.SetSyncHeaders(false)
 	err = handler.Write(newMessage(p2p.CmdTx))
 	assert.EqualError(t, err, "[HandlerEIP001] VerifyTransaction failed when AppendToTxnPool")
+	response, err = handler.Read()
+	assert.Equal(t, p2p.CmdReject, response.CMD())
 
 	// message notfound
 	err = handler.Write(newMessage(p2p.CmdNotFound))
