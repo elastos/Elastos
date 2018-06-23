@@ -3,13 +3,12 @@
 #include <climits>
 #include <iostream>
 #include <boost/scoped_ptr.hpp>
-#include <Interface/Enviroment.h>
-#include <SDK/Common/Log.h>
 
 #include "BRChainParams.h"
 
 #include "Wrapper/ChainParams.h"
 #include "MasterWalletManager.h"
+#include "Log.h"
 
 #include "TestConnectPeer.h"
 
@@ -34,8 +33,8 @@ static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *bl
 }
 
 void TestConnectPeer::runPeerConnectTest_WalletFactory() {
-	Enviroment::InitializeRootPath("Data");
-	boost::scoped_ptr<MasterWalletManager> walletFactory(new MasterWalletManager);
+
+	boost::scoped_ptr<MasterWalletManager> walletFactory(new MasterWalletManager("Data"));
 
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	std::string phrasePassword = "";

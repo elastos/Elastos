@@ -11,7 +11,6 @@
 #include "BRTransaction.h"
 
 #include "Utils.h"
-#include "Enviroment.h"
 #include "BRBIP39Mnemonic.h"
 #include "SingleAddressWallet.h"
 
@@ -71,8 +70,7 @@ MasterPrivKey createDummyPrivateKey(const std::string &password) {
 }
 
 boost::filesystem::path tryInitDatabasePath() {
-	Enviroment::InitializeRootPath("Data");
-	boost::filesystem::path databasePath = Enviroment::GetRootPath();
+	boost::filesystem::path databasePath = "Data";
 	databasePath /= "SingleAddressWallet";
 	if (boost::filesystem::exists(databasePath))
 		boost::filesystem::create_directory(databasePath);

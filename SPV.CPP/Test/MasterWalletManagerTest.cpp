@@ -10,7 +10,6 @@
 
 #include "catch.hpp"
 
-#include "Interface/Enviroment.h"
 #include "MainchainSubWallet.h"
 #include "IdChainSubWallet.h"
 #include "MasterWalletManager.h"
@@ -20,7 +19,7 @@ using namespace Elastos::ElaWallet;
 
 class TestMasterWalletManager : public MasterWalletManager {
 public:
-	TestMasterWalletManager() : MasterWalletManager(MasterWalletMap()) {
+	TestMasterWalletManager() : MasterWalletManager(MasterWalletMap(), "Data") {
 	}
 };
 
@@ -43,7 +42,7 @@ TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	SECTION("Normal creation") {
@@ -66,7 +65,7 @@ TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMaste
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
 
@@ -133,7 +132,7 @@ TEST_CASE(
 		"Wallet factory ExportWalletWithMnemonic generate  mnemonic (english  chinese italian japanese spanish french)",
 		"[MasterWalletManager]") {
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
@@ -203,7 +202,7 @@ TEST_CASE(
 
 
 TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
@@ -222,7 +221,7 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 }
 
 TEST_CASE("InitializeMasterWallet", "[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
@@ -275,7 +274,7 @@ TEST_CASE("InitializeMasterWallet", "[MasterWalletManager]") {
 }
 
 TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
@@ -345,7 +344,7 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 TEST_CASE(
 		"export & import password is character ,digit,special symbol,  chinese, french,  italian, japanese, spanish and mix(all of this)",
 		"[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	std::string masterWalletId = "masterWalletId";
 
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
@@ -526,7 +525,7 @@ TEST_CASE(
 //
 
 //TEST_CASE("Test crash", "[MasterWalletManager]") {
-//	Enviroment::InitializeRootPath("Data");
+//
 //	boost::scoped_ptr<TestMasterWalletManager> walletFact(new TestMasterWalletManager());
 //	std::string phrasePassword = "phrasepassword";
 //	std::string payPassword = "payPassword";
@@ -549,7 +548,7 @@ TEST_CASE(
 //////////////////////////////////////////////
 
 TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	SECTION("function para valid languae is valid ImportWalletWithMnemonic correct") {
@@ -598,7 +597,7 @@ TEST_CASE("WalletFactoryInner::importWalletInternal Test ", "[WalletFactoryInner
 
 
 TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -629,7 +628,7 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 
 	}
 	SECTION("CreateMasterWallet twice destroy twice wallet") {
-		Enviroment::InitializeRootPath("Data");
+
 		boost::scoped_ptr<TestMasterWalletManager> masterWalletManager1(new TestMasterWalletManager());
 		boost::scoped_ptr<TestMasterWalletManager> masterWalletManager2(new TestMasterWalletManager());
 
@@ -723,7 +722,7 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 
 
 TEST_CASE("Wallet factory export & import  WithKeystore mnemonic", "[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -899,7 +898,7 @@ TEST_CASE("Wallet factory export & import  WithKeystore mnemonic", "[MasterWalle
 
 
 TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[MasterWalletManager]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string masterWalletId = "masterWalletId";
 	std::string phrasePassword = "phrasePassword";
@@ -1046,7 +1045,7 @@ TEST_CASE("Wallet factory Import Export  WalletWithMnemonic mnemonic ", "[Master
 
 TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]") {
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -1196,7 +1195,7 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 
 
 TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -1271,7 +1270,7 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 }
 
 TEST_CASE("Wallet ImportWalletWithMnemonic method", "[ImportWalletWithMnemonic]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -1353,7 +1352,7 @@ TEST_CASE("Wallet ImportWalletWithMnemonic method", "[ImportWalletWithMnemonic]"
 }
 
 TEST_CASE("Wallet ExportWalletWithMnemonic method", "[ExportWalletWithMnemonic]") {
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";

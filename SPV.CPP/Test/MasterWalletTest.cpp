@@ -5,7 +5,6 @@
 #define CATCH_CONFIG_MAIN
 
 #include <boost/scoped_ptr.hpp>
-#include <Interface/Enviroment.h>
 
 #include "catch.hpp"
 
@@ -15,30 +14,28 @@
 #include "IdChainSubWallet.h"
 #include "Utils.h"
 
-#include <Interface/Enviroment.h>
-
 using namespace Elastos::ElaWallet;
 
 class TestMasterWallet : public MasterWallet {
 public:
 	TestMasterWallet() :
-			MasterWallet("MasterWalletTest", "english") {
+			MasterWallet("MasterWalletTest", "english", "Data") {
 	}
 
 	TestMasterWallet(const std::string &phrasePassword,
 					 const std::string &payPassword, const std::string language) :
-			MasterWallet("MasterWalletTest", language) {
+			MasterWallet("MasterWalletTest", language, "Data") {
 		std::string mnemonic = GenerateMnemonic();
 		importFromMnemonic(mnemonic, phrasePassword, payPassword);
 	}
 
 	TestMasterWallet(const MasterWalletStore &localStore) :
-			MasterWallet("MasterWalletTest", "english") {
+			MasterWallet("MasterWalletTest", "english", "Data") {
 		initFromLocalStore(localStore);
 	}
 
 	TestMasterWallet(const boost::filesystem::path &localStore) :
-			MasterWallet(localStore) {
+			MasterWallet(localStore, "Data") {
 	}
 
 	void restoreLocalStoreWrapper() {
@@ -104,8 +101,6 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 	std::string payPassword = "payPassword";
 	std::string chainId = "chainid";
 
-	Enviroment::InitializeRootPath("Data");
-
 	SECTION("Class public methods should throw when master wallet is not initialized") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		REQUIRE_FALSE(masterWallet->Initialized());
@@ -164,7 +159,7 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 	std::string language = "english";
 	std::string chainId = "chainid";
 
-	Enviroment::InitializeRootPath("Data");
+
 
 	SECTION("Class public methods behave well when construct with phrase password and pay password") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
@@ -222,7 +217,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	std::string language = "english";
 	std::string chainId = "chainid";
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 
 	SECTION("Create normal sub wallet") {
@@ -332,7 +327,7 @@ TEST_CASE("Master wallet RecoverSubWallet method test", "[RecoverSubWallet]") {
 	std::string language = "english";
 	std::string chainId = "chainid";
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 
 	SECTION("Return exist sub wallet with same id") {
@@ -370,7 +365,7 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 	std::string language = "english";
 	std::string chainId = "chainid";
 
-	Enviroment::InitializeRootPath("Data");
+
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
 
 	SECTION("Normal destroy sub wallets") {
@@ -534,7 +529,7 @@ TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 }
 
 TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKeyForPurpose]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -572,7 +567,7 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 }
 
 TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgent]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -594,7 +589,7 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 }
 
 TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -655,7 +650,7 @@ TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
 TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]") {
 	//todo update me when CoinConfig.json file changed
 
-	Enviroment::InitializeRootPath("Data");
+
 	SECTION("Normal test") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		std::vector<std::string> chainIdList = masterWallet->GetSupportedChains();
@@ -664,7 +659,7 @@ TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]"
 }
 
 TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -702,7 +697,7 @@ TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 }
 
 TEST_CASE("Master wallet manager restoreKeyStore method", "[restoreKeyStore]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -728,7 +723,7 @@ TEST_CASE("Master wallet manager restoreKeyStore method", "[restoreKeyStore]") {
 }
 
 TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -755,7 +750,7 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 }
 
 TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
-	Enviroment::InitializeRootPath("Data");
+
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
@@ -771,7 +766,7 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IdChainSubWallet *>(subWallet) != nullptr);
 
-		boost::filesystem::path localStore = Enviroment::GetRootPath();
+		boost::filesystem::path localStore = "Data";
 		localStore /= "MasterWalletTest";
 		localStore /= "MasterWalletStore.json";
 		masterWallet->Save();

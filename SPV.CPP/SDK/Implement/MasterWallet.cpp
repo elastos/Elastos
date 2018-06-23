@@ -16,7 +16,6 @@
 #include "IdChainSubWallet.h"
 #include "MainchainSubWallet.h"
 #include "SidechainSubWallet.h"
-#include "Enviroment.h"
 #include "Log.h"
 #include "Config.h"
 #include "ParamChecker.h"
@@ -32,8 +31,9 @@ namespace fs = boost::filesystem;
 namespace Elastos {
 	namespace ElaWallet {
 
-		MasterWallet::MasterWallet(const boost::filesystem::path &localStore) :
-				_initialized(false) {
+		MasterWallet::MasterWallet(const boost::filesystem::path &localStore, const std::string &rootPath) :
+				_initialized(false),
+				_rootPath(rootPath) {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
@@ -42,8 +42,10 @@ namespace Elastos {
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
-								   const std::string &language) :
+								   const std::string &language,
+								   const std::string &rootPath) :
 				_id(id),
+				_rootPath(rootPath),
 				_initialized(false) {
 
 			ParamChecker::checkNotEmpty(id);
@@ -71,7 +73,7 @@ namespace Elastos {
 
 			restoreLocalStore();
 
-			boost::filesystem::path path = Enviroment::GetRootPath();
+			boost::filesystem::path path = _rootPath;
 			path /= GetId();
 			if (!boost::filesystem::exists(path))
 				boost::filesystem::create_directory(path);
@@ -436,8 +438,7 @@ namespace Elastos {
 
 		void MasterWallet::resetMnemonic(const std::string &language) {
 			_localStore.SetLanguage(language);
-			fs::path mnemonicPath = Enviroment::GetRootPath();
-			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, mnemonicPath));
+			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, _rootPath));
 		}
 
 		std::string
@@ -521,7 +522,7 @@ namespace Elastos {
 
 		void MasterWallet::tryInitCoinConfig() {
 			if (!_coinConfigReader.IsInitialized()) {
-				boost::filesystem::path configPath = Enviroment::GetRootPath();
+				boost::filesystem::path configPath = _rootPath;
 				configPath /= COIN_COINFIG_FILE;
 				if (!boost::filesystem::exists(configPath))
 					throw std::logic_error("Coin config file not found.");

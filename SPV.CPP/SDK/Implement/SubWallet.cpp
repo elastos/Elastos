@@ -12,7 +12,6 @@
 #include "BRKey.h"
 #include "BRArray.h"
 
-#include "Enviroment.h"
 #include "SubWallet.h"
 #include "MasterWallet.h"
 #include "SubWalletCallback.h"
@@ -40,7 +39,7 @@ namespace Elastos {
 				_parent(parent),
 				_info(info) {
 
-			fs::path subWalletDbPath = Enviroment::GetRootPath();
+			fs::path subWalletDbPath = _parent->_rootPath;
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 

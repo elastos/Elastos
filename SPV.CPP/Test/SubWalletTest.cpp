@@ -8,7 +8,6 @@
 #include <SDK/Common/Utils.h>
 #include <Core/BRTransaction.h>
 #include <SDK/Common/Log.h>
-#include <Interface/Enviroment.h>
 
 #include "catch.hpp"
 
@@ -35,7 +34,7 @@ const std::vector<std::string> DefaultAddress = {"EV11DFAXUSjPQMsLnrNuXtR9YbJjUk
 
 class TestMasterWallet : public MasterWallet {
 public:
-	TestMasterWallet() : MasterWallet("MasterWalletTest", "english") {
+	TestMasterWallet() : MasterWallet("MasterWalletTest", "english", "Data") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		std::string phrasePassword = "";
 		std::string payPassword = "payPassword";
@@ -218,7 +217,7 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 TEST_CASE("Sub wallet send transaction", "SubWallet") {
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet);
 
-	Enviroment::InitializeRootPath("Data");
+
 	CoinInfo info;
 	info.setChainId("chainId");
 	info.setSingleAddress(false);

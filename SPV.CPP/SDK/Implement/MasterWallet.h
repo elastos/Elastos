@@ -113,10 +113,9 @@ namespace Elastos {
 
 			typedef std::map<std::string, ISubWallet *> WalletMap;
 
-			MasterWallet(const boost::filesystem::path &localStore);
+			MasterWallet(const boost::filesystem::path &localStore, const std::string &rootPath);
 
-			MasterWallet(const std::string &id,
-						 const std::string &language);
+			MasterWallet(const std::string &id, const std::string &language, const std::string &rootPath);
 
 			bool importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
@@ -183,6 +182,7 @@ namespace Elastos {
 			boost::shared_ptr<Mnemonic> _mnemonic;
 
 			std::string _id;
+			std::string _rootPath;
 
 			CoinConfigReader _coinConfigReader;
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;

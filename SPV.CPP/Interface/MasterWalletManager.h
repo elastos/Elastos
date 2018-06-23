@@ -14,7 +14,7 @@ namespace Elastos {
 
 		class MasterWalletManager : public IMasterWalletManager {
 		public:
-			MasterWalletManager();
+			MasterWalletManager(const std::string &rootPath);
 
 			virtual ~MasterWalletManager();
 
@@ -108,11 +108,12 @@ namespace Elastos {
 		protected:
 			typedef std::map<std::string, IMasterWallet *> MasterWalletMap;
 
-			explicit MasterWalletManager(const MasterWalletMap &walletMap);
+			MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath);
 
 			void initMasterWallets();
 
 		protected:
+			std::string _rootPath;
 			MasterWalletMap _masterWalletMap;
 		};
 	}
