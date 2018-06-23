@@ -450,6 +450,13 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 		if address == "" {
 			return errors.New("Invalid transaction cross chain address")
 		}
+		programHash, err := Uint168FromAddress(address)
+		if err != nil {
+			return errors.New("Invalid transaction cross chain address")
+		}
+		if !bytes.Equal(programHash[0:1], []byte{PrefixStandard}) && !bytes.Equal(programHash[0:1], []byte{PrefixMultisig}) {
+			return errors.New("Invalid transaction cross chain address")
+		}
 	}
 
 	//check cross chain amount in payload
