@@ -18,7 +18,8 @@ namespace Elastos {
 
 		void SidechainTransactionChecker::Check() {
 
-			if (_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset) {
+			if (_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset &&
+				_transaction->getTransactionType() != ELATransaction::TransferAsset) {
 				throw std::logic_error("SidechainSubWallet transaction type error");
 			}
 			TransactionChecker::Check();

@@ -327,7 +327,6 @@ namespace Elastos {
 			BRTransaction *tx = transaction->getRaw();
 			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
 			size_t i, internalCount = 0, externalCount = 0;
-			int r = 0;
 
 
 			pthread_mutex_lock(&wallet->lock);
@@ -361,8 +360,7 @@ namespace Elastos {
 					Key key(keys[i].secret, keys[i].compressed);
 					keyList.push_back(key);
 				}
-				r = transaction->sign(keyList, forkId);
-				if (!r) {
+				if (!transaction->sign(keyList, forkId)) {
 					throw std::logic_error("Transaction Sign error!");
 				}
 			}

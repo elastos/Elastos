@@ -1192,28 +1192,6 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 				REQUIRE(dynamic_cast<IdChainSubWallet *>(subwallets[i]) != nullptr);
 		}
 	}
-	SECTION("Import with existing json") {
-		nlohmann::json keyStoreContent = {
-				{"adata",  ""},
-				{"cipher", "aes"},
-				{"ct",     "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\r\nZ1VBn2EafUlO"},
-				{"iter",   10000},
-				{"iv",     "xdnjOQ5wg48exhbg6bZxOw=="},
-				{"ks",     256},
-				{"mode",   "ccm"},
-				{"salt",   "q7iyWo5+iiY="},
-				{"ts",     64},
-				{"v",      1}
-		};
-		std::string importPayPassword = "s12345678";
-		std::string importKeystorePasword = "s12345678";
-		std::string importMasterId = "1";
-		IMasterWallet *masterWallet = masterWalletManager->ImportWalletWithKeystore(importMasterId, keyStoreContent,
-																					importKeystorePasword,
-																					importPayPassword, "");
-		std::vector<ISubWallet *> subwallets = masterWallet->GetAllSubWallets();
-		REQUIRE(subwallets.size() == 2);
-	}
 }
 
 

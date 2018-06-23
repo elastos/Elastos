@@ -17,7 +17,8 @@ namespace Elastos {
 		}
 
 		void IdchainTransactionChecker::Check() {
-			if (_transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
+			if (_transaction->getTransactionType() != ELATransaction::RegisterIdentification &&
+				_transaction->getTransactionType() != ELATransaction::TransferAsset) {
 				throw std::logic_error("MainchainSubWallet transaction type error");
 			}
 			TransactionChecker::Check();

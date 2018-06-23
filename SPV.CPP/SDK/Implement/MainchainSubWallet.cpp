@@ -67,33 +67,35 @@ namespace Elastos {
 
 		boost::shared_ptr<Transaction>
 		MainchainSubWallet::createTransaction(TxParam *param) const {
-			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
-			assert(depositTxParam != nullptr);
-
 			TransactionPtr ptr = nullptr;
-			if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
-				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress());
+			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
+			if(depositTxParam == nullptr) {
+				ptr = SubWallet::createTransaction(param);
 			} else {
-				Address address(param->getToAddress());
-				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+				if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
+					ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+																		 param->getAmount(), param->getToAddress());
+				} else {
+					Address address(param->getToAddress());
+					ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
+				}
+
+
+				if (!ptr) return nullptr;
+
+				ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
+				SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+				std::for_each(outList.begin(), outList.end(),
+							  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+								  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
+							  });
+
+				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
+						static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
+				payloadTransferCrossChainAsset->setCrossChainData(depositTxParam->getCrossChainAddress(),
+																  depositTxParam->getCrossChainOutputIndexs(),
+																  depositTxParam->getCrosschainAmouts());
 			}
-
-			if (!ptr) return nullptr;
-
-			ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
-			std::for_each(outList.begin(), outList.end(),
-						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
-						  });
-
-			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
-			payloadTransferCrossChainAsset->setCrossChainData(depositTxParam->getCrossChainAddress(),
-															  depositTxParam->getCrossChainOutputIndexs(),
-															  depositTxParam->getCrosschainAmouts());
-
 			return ptr;
 		}
 

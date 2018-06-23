@@ -89,6 +89,7 @@ namespace Elastos {
 			j["EncryptedKey"] = p._encryptedKey;
 			j["ChainCode"] = p._chainCode;
 			j["PublicKey"] = p._publicKey;
+			j["MinFee"] = p._minFee;
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
@@ -101,6 +102,7 @@ namespace Elastos {
 			p._encryptedKey = j["EncryptedKey"].get<std::string>();
 			p._chainCode = j["ChainCode"].get<std::string>();
 			p._publicKey = j["PublicKey"].get<std::string>();
+			p._minFee = j["MinFee"].get<uint64_t>();
 		}
 
 		int CoinInfo::getForkId() const {

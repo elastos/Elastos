@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/scoped_ptr.hpp>
 #include <Interface/Enviroment.h>
+#include <SDK/Common/Log.h>
 
 #include "BRChainParams.h"
 
@@ -39,13 +40,23 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	std::string phrasePassword = "";
 	std::string payPassword = "payPassword";
-	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic("MasterWalletId", mnemonic, phrasePassword, payPassword);
+	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic("ELA", mnemonic, phrasePassword, payPassword);
 
 	ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
 	nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
 	std::cout << "wallet addrs: " << addresses << std::endl;
+	Log::getLogger()->info("wallet balance = {}", subWallet->GetBalance());
 
-	while (true) sleep(1);
+	sleep(4);
+
+//	nlohmann::json tx = subWallet->CreateTransaction("EV11DFAXUSjPQMsLnrNuXtR9YbJjUkCfQJ", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", 3000000, 100000, "");
+//	nlohmann::json result = subWallet->SendRawTransaction(tx, 100000, payPassword);
+//	Log::getLogger()->info("send tx result = {}", result.dump());
+
+	while (true) {
+		sleep(10);
+		Log::getLogger()->info("wallet balance = {}", subWallet->GetBalance());
+	}
 
 	masterWallet->DestroyWallet(subWallet);
 	walletFactory->DestroyWallet(masterWallet->GetId());
