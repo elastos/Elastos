@@ -19,19 +19,35 @@ using namespace Elastos::ElaWallet;
 class TestMasterWallet : public MasterWallet {
 public:
 	TestMasterWallet() :
-			MasterWallet("MasterWalletTest", "english", "Data") {
+		MasterWallet("MasterWalletTest",
+					 "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+					 "phrasePassword",
+					 "payPassword",
+					 "english",
+					 "Data") {
 	}
 
 	TestMasterWallet(const std::string &phrasePassword,
-					 const std::string &payPassword, const std::string language) :
-			MasterWallet("MasterWalletTest", language, "Data") {
-		std::string mnemonic = GenerateMnemonic();
-		importFromMnemonic(mnemonic, phrasePassword, payPassword);
+					 const std::string &payPassword) :
+			MasterWallet("MasterWalletTest",
+						 "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+						 phrasePassword,
+						 payPassword,
+						 "english",
+						 "Data") {
 	}
 
-	TestMasterWallet(const MasterWalletStore &localStore) :
-			MasterWallet("MasterWalletTest", "english", "Data") {
-		initFromLocalStore(localStore);
+	TestMasterWallet(const std::string &mnemonic,
+					 const std::string &phrasePassword,
+					 const std::string &payPassword) :
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, "english", "Data") {
+	}
+
+	TestMasterWallet(const std::string &mnemonic,
+					 const std::string &phrasePassword,
+					 const std::string &payPassword,
+					 const std::string language) :
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, language, "Data") {
 	}
 
 	TestMasterWallet(const boost::filesystem::path &localStore) :
@@ -43,12 +59,6 @@ public:
 	}
 
 	const MasterWalletStore &getMasterWalletStore() { return _localStore; }
-
-	bool importFromMnemonicWraper(const std::string &mnemonic,
-								  const std::string &phrasePassword,
-								  const std::string &payPassword) {
-		return importFromMnemonic(mnemonic, phrasePassword, payPassword);
-	}
 
 	void initFromKeyStoreWrapper(const KeyStore &keyStore, const std::string &payPassword,
 								 const std::string &phrasePassword) {
@@ -101,40 +111,8 @@ TEST_CASE("Master wallet constructor with language only", "[Constructor1]") {
 	std::string payPassword = "payPassword";
 	std::string chainId = "chainid";
 
-	SECTION("Class public methods should throw when master wallet is not initialized") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
-		REQUIRE_FALSE(masterWallet->Initialized());
-
-		//override from IMasterWallet
-		CHECK_NOTHROW(masterWallet->GenerateMnemonic());
-		CHECK_NOTHROW(masterWallet->GetId());
-		CHECK_NOTHROW(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
-		CHECK_NOTHROW(masterWallet->GetSupportedChains());
-		CHECK_THROWS_AS(masterWallet->CreateSubWallet(chainId, payPassword, false), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->RecoverSubWallet(chainId, payPassword, false, 1), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->DestroyWallet(nullptr), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->Sign("mymessage", payPassword), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->CheckSign("ilegal pubKey", "mymessage", "ilegal signature"), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->ChangePassword(payPassword, "newPayPassword"), std::logic_error);
-
-		//override from IIdAgent
-		CHECK_NOTHROW(masterWallet->IsIdValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3"));
-		CHECK_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(44, 0, payPassword), std::logic_error);
-		CHECK_THROWS_AS(masterWallet->GenerateProgram("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y", "mymessage", payPassword),
-						std::logic_error);
-		CHECK_THROWS_AS(masterWallet->Sign("im1NmKj6QKGmFToknsNP8cJyfCoU5sS26Y", "mymessage", payPassword),
-						std::logic_error);
-		CHECK_THROWS_AS(masterWallet->GetAllIds(), std::logic_error);
-	}
 	SECTION("Class public methods will not throw after mater initialized by importFromMnemonic") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
-		REQUIRE_FALSE(masterWallet->Initialized());
-
-		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
-
-		REQUIRE(masterWallet->Initialized());
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 		//override from IMasterWallet
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
@@ -156,14 +134,10 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string language = "english";
 	std::string chainId = "chainid";
 
-
-
 	SECTION("Class public methods behave well when construct with phrase password and pay password") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
-		REQUIRE(masterWallet->Initialized());
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
 		REQUIRE(subWallet != nullptr);
@@ -180,34 +154,25 @@ TEST_CASE("Master wallet constructor with phrase password and pay password", "[C
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet));
 		REQUIRE_NOTHROW(masterWallet->DestroyWallet(subWallet1));
 	}
-	SECTION("Master key and public key should generate randomly") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
-		boost::scoped_ptr<TestMasterWallet> masterWallet1(new TestMasterWallet(phrasePassword, payPassword, language));
-
-		REQUIRE(masterWallet->GetPublicKey() != masterWallet1->GetPublicKey());
-	}
 	SECTION("Create with phrase password can be empty") {
-		CHECK_NOTHROW(TestMasterWallet("", payPassword, language));
+		CHECK_NOTHROW(TestMasterWallet("", payPassword));
 	}
 	SECTION("Create with phrase password that is less than 8") {
-		CHECK_THROWS_AS(TestMasterWallet("ilegal", payPassword, language), std::invalid_argument);
+		CHECK_THROWS_AS(TestMasterWallet("ilegal", payPassword), std::invalid_argument);
 	}
 	SECTION("Create with phrase password that is more than 128") {
 		REQUIRE_THROWS_AS(TestMasterWallet(
 								  "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-										  payPassword, language), std::invalid_argument);
+										  payPassword), std::invalid_argument);
 	}
 	SECTION("Create with pay password that is empty or less than 8") {
-		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "", language), std::invalid_argument);
-		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "ilegal", language), std::invalid_argument);
+		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, ""), std::invalid_argument);
+		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, "ilegal"), std::invalid_argument);
 	}
 	SECTION("Create with pay password that is more than 128") {
 		REQUIRE_THROWS_AS(TestMasterWallet(phrasePassword,
-										   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-										   language), std::invalid_argument);
-	}
-	SECTION("Language should not be null") {
-		CHECK_THROWS_AS(TestMasterWallet(phrasePassword, payPassword, ""), std::invalid_argument);
+										   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+						  std::invalid_argument);
 	}
 }
 
@@ -218,7 +183,7 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 	std::string chainId = "chainid";
 
 
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 	SECTION("Create normal sub wallet") {
 		ISubWallet *subWallet = masterWallet->CreateSubWalletEx(chainId, payPassword, false, Normal, 0);
@@ -317,18 +282,49 @@ TEST_CASE("Master wallet CreateSubWallet method test", "[CreateSubWallet]") {
 }
 
 TEST_CASE("Master wallet GenerateMnemonic method test", "[GenerateMnemonic]") {
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
-	REQUIRE(masterWallet->GenerateMnemonic() != masterWallet->GenerateMnemonic());
+	//mnemonic generating should be random
+	SECTION("generate french mnemonic") {
+		std::string mnemonic = MasterWallet::GenerateMnemonic("french", "Data");
+		std::string mnemonic2 = MasterWallet::GenerateMnemonic("french", "Data");
+		REQUIRE(mnemonic != mnemonic2);
+	}
+	SECTION("generate spanish mnemonic") {
+		std::string mnemonic = MasterWallet::GenerateMnemonic("spanish", "Data");
+		std::string mnemonic2 = MasterWallet::GenerateMnemonic("spanish", "Data");
+		REQUIRE(mnemonic != mnemonic2);
+	}
+
+	SECTION("generate japanese mnemonic") {
+		std::string mnemonic = MasterWallet::GenerateMnemonic("japanese", "Data");
+		std::string mnemonic2 = MasterWallet::GenerateMnemonic("japanese", "Data");
+		REQUIRE(mnemonic != mnemonic2);
+	}
+
+	SECTION("generate italian mnemonic") {
+		std::string mnemonic = MasterWallet::GenerateMnemonic("italian", "Data");
+		std::string mnemonic2 = MasterWallet::GenerateMnemonic("italian", "Data");
+		REQUIRE(mnemonic != mnemonic2);
+	}
+
+	SECTION("generate chinese mnemonic") {
+		std::string mnemonic = MasterWallet::GenerateMnemonic("chinese", "Data");
+		std::string mnemonic2 = MasterWallet::GenerateMnemonic("chinese", "Data");
+		REQUIRE(mnemonic != mnemonic2);
+	}
+
+	SECTION("generate english mnemonic") {
+		std::string mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
+		std::string mnemonic2 = MasterWallet::GenerateMnemonic("english", "Data");
+		REQUIRE(mnemonic != mnemonic2);
+	}
 }
 
 TEST_CASE("Master wallet RecoverSubWallet method test", "[RecoverSubWallet]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string language = "english";
 	std::string chainId = "chainid";
 
-
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 	SECTION("Return exist sub wallet with same id") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
@@ -362,11 +358,9 @@ TEST_CASE("Master wallet RecoverSubWallet method test", "[RecoverSubWallet]") {
 TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string language = "english";
 	std::string chainId = "chainid";
 
-
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 	SECTION("Normal destroy sub wallets") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
@@ -390,7 +384,7 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 		REQUIRE_THROWS_AS(masterWallet->DestroyWallet(nullptr), std::invalid_argument);
 	}
 	SECTION("Destroy sub wallet that is not belong to current master wallet") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet1(new TestMasterWallet(phrasePassword, payPassword, language));
+		boost::scoped_ptr<TestMasterWallet> masterWallet1(new TestMasterWallet(phrasePassword, payPassword));
 		ISubWallet *subWallet1 = masterWallet1->CreateSubWallet(chainId, payPassword, false);
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
 
@@ -409,9 +403,8 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 TEST_CASE("Master wallet Sign method test", "[Sign]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string language = "english";
 	std::string chainId = "chainid";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 	SECTION("Normal sign") {
 		REQUIRE_FALSE(masterWallet->Sign("mymessage", payPassword).empty());
@@ -436,9 +429,8 @@ TEST_CASE("Master wallet Sign method test", "[Sign]") {
 TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string language = "english";
 	std::string chainId = "chainid";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 	SECTION("Normal change") {
 		REQUIRE_FALSE(masterWallet->Sign("mymessage", payPassword).empty());
@@ -475,9 +467,8 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	std::string language = "english";
 	std::string chainId = "chainid";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword, language));
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 	std::string message = "mymessage";
 	std::string signedData = masterWallet->Sign(message, payPassword);
 	SECTION("Normal check sign") {
@@ -499,17 +490,17 @@ TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
 	std::string payPassword = "payPassword";
 
 	SECTION("Normal test") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
-
-		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 		REQUIRE(masterWallet->GetPublicKey() == "020145e5c9d42017c103b7378ab0d9548c666eeb1739f55fcacb855f33c319518a");
 	}
 }
 
 TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
 	SECTION("Normal test") {
 		REQUIRE(masterWallet->IsAddressValid("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3")); //normal
@@ -529,13 +520,15 @@ TEST_CASE("Master wallet IsAddressValid method test", "[IsAddressValid]") {
 }
 
 TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKeyForPurpose]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
-	masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+	std::string language = "english";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(
+			mnemonic,
+			phrasePassword,
+			payPassword,
+			language));
 
 	std::string id;
 
@@ -567,13 +560,11 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 }
 
 TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgent]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
-	masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+	std::string language = "english";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword, language));
 
 	std::string id;
 
@@ -589,13 +580,11 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 }
 
 TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 	std::string mnemonic = "you train view salon cancel impulse phrase oxygen sport crack peasant observe";
-	masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+	std::string language = "english";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword, language));
 
 	std::string id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
 
@@ -649,8 +638,6 @@ TEST_CASE("Master wallet IsIdValid method test", "[IsIdValid]") {
 
 TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]") {
 	//todo update me when CoinConfig.json file changed
-
-
 	SECTION("Normal test") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		std::vector<std::string> chainIdList = masterWallet->GetSupportedChains();
@@ -659,15 +646,12 @@ TEST_CASE("Master wallet GetSupportedChains method test", "[GetSupportedChains]"
 }
 
 TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 
 	SECTION("Test normal adding") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
 
 		REQUIRE(masterWallet->GetAllSubWallets().empty());
 
@@ -679,35 +663,17 @@ TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 		masterWallet->CreateSubWallet("IdChain", payPassword, false);
 		REQUIRE(masterWallet->GetAllSubWallets().size() == 2);
 	}
-	SECTION("Import from master wallet store should load all sub wallets") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
-		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
-		masterWallet->CreateSubWallet("ELA", payPassword, false);
-		masterWallet->CreateSubWallet("IdChain", payPassword, false);
-
-		masterWallet->restoreLocalStoreWrapper();
-		MasterWalletStore masterWalletStore = masterWallet->getMasterWalletStore();
-		masterWallet.reset();
-
-		masterWallet.reset(new TestMasterWallet(masterWalletStore));
-
-		REQUIRE(masterWallet->GetAllSubWallets().size() == 2);
-	}
 }
 
 TEST_CASE("Master wallet manager restoreKeyStore method", "[restoreKeyStore]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
 
 	std::string chainId1 = "ELA";
 	std::string chainId2 = "IdChain";
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
 	masterWallet->CreateSubWallet(chainId1, payPassword, false);
 	masterWallet->CreateSubWallet(chainId2, payPassword, false);
 
@@ -723,15 +689,12 @@ TEST_CASE("Master wallet manager restoreKeyStore method", "[restoreKeyStore]") {
 }
 
 TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
 
-	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
 	masterWallet->CreateSubWallet("ELA", payPassword, false);
 	masterWallet->CreateSubWallet("IdChain", payPassword, false);
 
@@ -750,15 +713,12 @@ TEST_CASE("Master wallet manager initFromKeyStore method", "[initFromKeyStore]")
 }
 
 TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
-
-
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 
 	SECTION("Import from master wallet store should load all sub wallets") {
-		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-		masterWallet->importFromMnemonicWraper(mnemonic, phrasePassword, payPassword);
+		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
 		ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<MainchainSubWallet *>(subWallet) != nullptr);

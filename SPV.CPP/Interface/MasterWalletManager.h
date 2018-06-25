@@ -20,10 +20,6 @@ namespace Elastos {
 
 			void SaveConfigs();
 
-			virtual IMasterWallet *CreateMasterWallet(
-					const std::string &masterWalletId,
-					const std::string &language = "english");
-
 			/**
 			 * Create an new master wallet, an random seed will be generated combined with phrase password to create
 			 * 	root key and chain code.
@@ -33,11 +29,12 @@ namespace Elastos {
 			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
-			virtual bool InitializeMasterWallet(
+			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
-					const std::string &payPassword);
+					const std::string &payPassword,
+					const std::string &language = "english");
 
 			/**
 			 * Get manager existing master wallets.

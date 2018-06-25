@@ -38,168 +38,131 @@ protected:
 
 
 TEST_CASE("Master wallet manager CreateMasterWallet test", "[CreateMasterWallet]") {
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
-
 
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	SECTION("Normal creation") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
-		MasterWallet *masterWallet1 = static_cast<MasterWallet *>(masterWallet);
-		REQUIRE_FALSE(masterWallet1->Initialized());
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword);
+		MasterWallet *masterWallet1 = dynamic_cast<MasterWallet *>(masterWallet);
+		REQUIRE(masterWallet1 != nullptr);
 
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
-	}
-	SECTION("Master id should not be empty") {
-		REQUIRE_THROWS_AS(masterWalletManager->CreateMasterWallet(""), std::invalid_argument);
-	}
-	SECTION("Language should not be null") {
-		REQUIRE_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, ""), std::invalid_argument);
-	}
-}
-
-TEST_CASE("Master wallet manager InitializeMasterWallet test", "[InitializeMasterWallet]") {
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string masterWalletId = "MasterWalletId";
-
-
-	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
-	IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
-
-	SECTION("Normal initialization") {
-		CHECK_THROWS_AS(masterWallet->GetPublicKey(), std::logic_error);
-
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK(masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword,
-														  payPassword));
 		CHECK_NOTHROW(masterWallet->GetPublicKey());
 
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
-	SECTION("Should initialize with valid master wallet id") {
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK_THROWS_AS(
-				masterWalletManager->InitializeMasterWallet("InvalidId", mnemonic, phrasePassword, payPassword),
+	SECTION("Master id should not be empty") {
+		REQUIRE_THROWS_AS(masterWalletManager->CreateMasterWallet("", mnemonic, phrasePassword, payPassword),
+						  std::invalid_argument);
+	}
+	SECTION("Language should not be null") {
+		REQUIRE_THROWS_AS(
+				masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword, ""),
 				std::invalid_argument);
 	}
 	SECTION("Mnemonic should not be empty") {
 		CHECK_THROWS_AS(
-				masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), "", phrasePassword, payPassword),
+				masterWalletManager->CreateMasterWallet(masterWalletId, "", phrasePassword, payPassword),
 				std::invalid_argument);
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 	SECTION("Create with phrase password can be empty") {
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, "",
-														  payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, "",
+																			  payPassword);
 		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 	SECTION("Create with phrase password that is empty or less than 8") {
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, "ilegal", payPassword),
+		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, "ilegal", payPassword),
 						std::invalid_argument);
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 	SECTION("Create with phrase password that is more than 128") {
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic,
-																	"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-																	payPassword), std::invalid_argument);
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
+		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic,
+																"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+																payPassword), std::invalid_argument);
 	}
 	SECTION("Create with pay password that is empty or less than 8") {
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, ""),
+		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, ""),
 						std::invalid_argument);
-		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, "ilegal"),
+		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, "ilegal"),
 						std::invalid_argument);
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 	SECTION("Create with pay password that is more than 128") {
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		CHECK_THROWS_AS(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword,
-																	"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
+		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 						std::invalid_argument);
-		masterWalletManager->DestroyWallet(masterWallet->GetId());
 	}
 }
-
 
 TEST_CASE(
 		"Wallet factory ExportWalletWithMnemonic generate  mnemonic (english  chinese italian japanese spanish french)",
 		"[MasterWalletManager]") {
-
-
 	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 
-
 	SECTION("generate french mnemonic") {
-		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", "french"));
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
+		std::string mnemonic = MasterWallet::GenerateMnemonic("french", "Data");
+		IMasterWallet *masterWallet(
+				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
+														"french"));
 
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
 		REQUIRE(mnemonic == mnemonic2);
 	}
-	SECTION("generate spanish mnemonic") {
-		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", "spanish"));
-
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
-
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(mnemonic == mnemonic2);
-	}
-
-	SECTION("generate japanese mnemonic") {
-		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", "japanese"));
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
-
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(mnemonic == mnemonic2);
-	}
-
-	SECTION("generate italian mnemonic") {
-		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", "italian"));
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
-
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(mnemonic == mnemonic2);
-	}
-
-	SECTION("generate chinese mnemonic") {
-		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", "chinese"));
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
-
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(mnemonic == mnemonic2);
-	}
-
-	SECTION("generate english mnemonic") {
-		boost::scoped_ptr<IMasterWallet> masterWallet(
-				masterWalletManager->CreateMasterWallet("MasterWalletId", "english"));
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
-
-		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
-		REQUIRE(mnemonic == mnemonic2);
-	}
+//	SECTION("generate spanish mnemonic") {
+//		std::string mnemonic = MasterWallet::GenerateMnemonic("spanish", "Data");
+//		IMasterWallet *masterWallet(
+//				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
+//														"spanish"));
+//
+//		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+//		REQUIRE(mnemonic == mnemonic2);
+//	}
+//
+//	SECTION("generate japanese mnemonic") {
+//		std::string mnemonic = MasterWallet::GenerateMnemonic("japanese", "Data");
+//		IMasterWallet *masterWallet(
+//				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
+//														"japanese"));
+//
+//		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+//		REQUIRE(mnemonic == mnemonic2);
+//	}
+//
+//	SECTION("generate italian mnemonic") {
+//		std::string mnemonic = MasterWallet::GenerateMnemonic("italian", "Data");
+//		IMasterWallet *masterWallet(
+//				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
+//														"italian"));
+//
+//		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+//		REQUIRE(mnemonic == mnemonic2);
+//	}
+//
+//	SECTION("generate chinese mnemonic") {
+//		std::string mnemonic = MasterWallet::GenerateMnemonic("chinese", "Data");
+//		IMasterWallet *masterWallet(
+//				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
+//														"chinese"));
+//
+//		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+//		REQUIRE(mnemonic == mnemonic2);
+//	}
+//
+//	SECTION("generate english mnemonic") {
+//		std::string mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
+//		IMasterWallet *masterWallet(
+//				masterWalletManager->CreateMasterWallet("MasterWalletId", mnemonic, phrasePassword, payPassword,
+//														"english"));
+//
+//		std::string mnemonic2 = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
+//		REQUIRE(mnemonic == mnemonic2);
+//	}
 }
-
 
 TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 
@@ -209,68 +172,14 @@ TEST_CASE("Wallet factory basic", "[MasterWalletManager]") {
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "masterWalletId";
 
-	boost::scoped_ptr<IMasterWallet> masterWallet;
 	SECTION("Create master wallet") {
-		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId));
+		std::string mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
+		IMasterWallet *masterWallet(
+				masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
 		REQUIRE(masterWallet != nullptr);
 
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
 		REQUIRE_FALSE(masterWallet->GetPublicKey().empty());
 	}
-}
-
-TEST_CASE("InitializeMasterWallet", "[MasterWalletManager]") {
-
-	boost::scoped_ptr<TestMasterWalletManager> masterWalletManager(new TestMasterWalletManager());
-
-	std::string phrasePassword = "phrasePassword";
-	std::string payPassword = "payPassword";
-	std::string masterWalletId = "masterWalletId";
-
-	boost::scoped_ptr<IMasterWallet> masterWallet;
-	SECTION("InitializeMasterWallet masterWalletId not CreateMasterWallet") {
-//		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId));
-//		REQUIRE(masterWallet != nullptr);
-
-		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-
-		CHECK_THROWS_AS(
-				(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword)),
-				std::invalid_argument);
-
-	}
-	SECTION("InitializeMasterWallet twice") {
-		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId));
-		REQUIRE(masterWallet != nullptr);
-
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword);
-		REQUIRE_FALSE(masterWallet->GetPublicKey().empty());
-
-		REQUIRE_FALSE(
-				masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
-	}
-	SECTION("InitializeMasterWallet normal  success") {
-		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId));
-		REQUIRE(masterWallet != nullptr);
-
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-		masterWalletManager->InitializeMasterWallet(masterWallet->GetId(), mnemonic, phrasePassword, payPassword);
-		REQUIRE_FALSE(masterWallet->GetPublicKey().empty());
-	}
-	SECTION("InitializeMasterWallet masterWalletId empty str") {
-		masterWallet.reset(masterWalletManager->CreateMasterWallet(masterWalletId));
-		REQUIRE(masterWallet != nullptr);
-
-		std::string mnemonic = masterWallet->GenerateMnemonic();
-
-		masterWalletId = "";
-		CHECK_THROWS_AS(
-				masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword),
-				std::invalid_argument);
-	}
-
 }
 
 TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
@@ -286,10 +195,9 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 	IMasterWallet *masterWallet = nullptr;
 	IMasterWallet *masterWallet2 = nullptr;
 	SECTION("GetAllMasterWallets only one master wallet") {
-		masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "english");
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
+		masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword);
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 
@@ -301,22 +209,20 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 	SECTION("GetAllMasterWallets two master wallet") {
-		masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "english");
+		mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
+		masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword);
 
-		mnemonic = masterWallet->GenerateMnemonic();
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
 
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 
 		std::string masterWalletId2 = "masterWalletId2";
-		masterWallet2 = masterWalletManager->CreateMasterWallet(masterWalletId2, "english");
+		mnemonic2 = MasterWallet::GenerateMnemonic("english", "Data");
+		masterWallet2 = masterWalletManager->CreateMasterWallet(masterWalletId2, mnemonic2, phrasePassword,
+																payPassword);
 		REQUIRE(masterWallet2 != nullptr);
-
-		mnemonic2 = masterWallet->GenerateMnemonic();
 		REQUIRE(mnemonic2.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId2, mnemonic2, phrasePassword, payPassword));
 
 		REQUIRE(!masterWallet2->GetPublicKey().empty());
 		REQUIRE_FALSE(masterWallet2 == masterWallet);
@@ -602,48 +508,45 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 	std::string phrasePassword = "phrasePassword";
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "MasterWalletId";
-	std::string mnemonic = "";
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 	std::string mnemonic2 = "";
 
 	SECTION("CreateMasterWallet MasterWalletId empty str") {
-		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet("", "french"), std::invalid_argument);
+		CHECK_THROWS_AS(masterWalletManager->CreateMasterWallet("", mnemonic, phrasePassword, payPassword),
+						std::invalid_argument);
 	}
 	SECTION("CreateMasterWallet twice destroy wallet") {
-		IMasterWallet *masterWallet1 = masterWalletManager->CreateMasterWallet(masterWalletId, "french");
-
-		mnemonic = masterWallet1->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("french", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet1 = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			   payPassword, "french");
 
 		REQUIRE(masterWallet1 != nullptr);
 		REQUIRE(!masterWallet1->GetPublicKey().empty());
 
-		IMasterWallet *masterWallet2 = masterWalletManager->CreateMasterWallet(masterWalletId, "french");
+		IMasterWallet *masterWallet2 = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			   payPassword, "french");
 		REQUIRE(masterWallet1 == masterWallet2);
-		REQUIRE(mnemonic.length() > 0);
-		REQUIRE_FALSE(
-				masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
 
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 
 	}
 	SECTION("CreateMasterWallet twice destroy twice wallet") {
-
 		boost::scoped_ptr<TestMasterWalletManager> masterWalletManager1(new TestMasterWalletManager());
 		boost::scoped_ptr<TestMasterWalletManager> masterWalletManager2(new TestMasterWalletManager());
 
-		IMasterWallet *masterWallet1 = masterWalletManager1->CreateMasterWallet(masterWalletId, "french");
-		mnemonic = masterWallet1->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("french", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager1->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet1 = masterWalletManager1->CreateMasterWallet(masterWalletId, mnemonic,
+																				phrasePassword, payPassword, "french");
 
 		REQUIRE(masterWallet1 != nullptr);
 		REQUIRE(!masterWallet1->GetPublicKey().empty());
 
-		IMasterWallet *masterWallet2 = masterWalletManager2->CreateMasterWallet(masterWalletId, "french");
-		mnemonic2 = masterWallet2->GenerateMnemonic();
+		mnemonic2 = MasterWallet::GenerateMnemonic("french", "Data");
 		REQUIRE(mnemonic2.length() > 0);
-		REQUIRE(masterWalletManager2->InitializeMasterWallet(masterWalletId, mnemonic2, phrasePassword, payPassword));
+		IMasterWallet *masterWallet2 = masterWalletManager2->CreateMasterWallet(masterWalletId, mnemonic2,
+																				phrasePassword, payPassword, "french");
 
 		REQUIRE(masterWallet2 != nullptr);
 		REQUIRE(!masterWallet2->GetPublicKey().empty());
@@ -657,62 +560,60 @@ TEST_CASE("MasterWalletManager create destroy wallet", "[MasterWalletManager]") 
 		//REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWallet2));
 	}
 	SECTION("create destroy french wallet") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "french");
-
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("french", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword, "french");
 
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 	SECTION("create destroy spanish wallet") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "spanish");
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("spanish", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword, "spanish");
 
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 	SECTION("create destroy japanese wallet") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "japanese");
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("japanese", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword, "japanese");
 
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 	SECTION("create destroy italian wallet") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "italian");
-
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("italian", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword, "italian");
+
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 	SECTION("create destroy chinese wallet") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "chinese");
-
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("chinese", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword, "chinese");
 
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
 	SECTION("create destroy english wallet") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, "english");
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword, "english");
 
 		REQUIRE(masterWallet != nullptr);
 		REQUIRE(!masterWallet->GetPublicKey().empty());
@@ -1177,7 +1078,8 @@ TEST_CASE("Wallet ImportWalletWithKeystore method", "[ImportWalletWithKeystore]"
 		resultSs << test;
 		resultKeyStoreContent << resultSs;
 
-		masterWallet = masterWalletManager->ImportWalletWithKeystore(masterWalletId, resultKeyStoreContent, backupPassword,
+		masterWallet = masterWalletManager->ImportWalletWithKeystore(masterWalletId, resultKeyStoreContent,
+																	 backupPassword,
 																	 payPassword, phrasePassword);
 
 		std::vector<ISubWallet *> subwallets = masterWallet->GetAllSubWallets();
@@ -1256,12 +1158,10 @@ TEST_CASE("Wallet ExportWalletWithKeystore method", "[ExportWalletWithKeystore]"
 				std::invalid_argument);
 	}
 	SECTION("Save") {
-		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId);
-
-		mnemonic = masterWallet->GenerateMnemonic();
+		mnemonic = MasterWallet::GenerateMnemonic("english", "Data");
 		REQUIRE(mnemonic.length() > 0);
-		REQUIRE(masterWalletManager->InitializeMasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword));
-
+		IMasterWallet *masterWallet = masterWalletManager->CreateMasterWallet(masterWalletId, mnemonic, phrasePassword,
+																			  payPassword);
 
 		REQUIRE(masterWallet != nullptr);
 		masterWalletManager->ExportWalletWithKeystore(masterWallet, backupPassword, payPassword);
@@ -1358,15 +1258,15 @@ TEST_CASE("Wallet ExportWalletWithMnemonic method", "[ExportWalletWithMnemonic]"
 	std::string payPassword = "payPassword";
 	std::string masterWalletId = "masterWalletId";
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	boost::scoped_ptr<IMasterWallet> masterWallet(
+	IMasterWallet *masterWallet(
 			masterWalletManager->ImportWalletWithMnemonic(masterWalletId, mnemonic, phrasePassword, payPassword));
 
 	SECTION("Normal exporting") {
-		std::string actual = masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), payPassword);
+		std::string actual = masterWalletManager->ExportWalletWithMnemonic(masterWallet, payPassword);
 		REQUIRE(actual == mnemonic);
 	}
 	SECTION("Export with wrong password") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), "wrongPassword"),
+		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, "wrongPassword"),
 						std::logic_error);
 	}
 
@@ -1375,12 +1275,12 @@ TEST_CASE("Wallet ExportWalletWithMnemonic method", "[ExportWalletWithMnemonic]"
 						std::invalid_argument);
 	}
 	SECTION("Export with pay password that is empty or less than 8") {
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), ""), std::invalid_argument);
-		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(), "ilegal"),
+		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, ""), std::invalid_argument);
+		CHECK_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet, "ilegal"),
 						std::invalid_argument);
 	}
 	SECTION("Export with pay password that is more than 128") {
-		REQUIRE_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet.get(),
+		REQUIRE_THROWS_AS(masterWalletManager->ExportWalletWithMnemonic(masterWallet,
 																		"1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 						  std::invalid_argument);
 	}

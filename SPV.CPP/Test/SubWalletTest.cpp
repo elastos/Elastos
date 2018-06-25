@@ -34,11 +34,13 @@ const std::vector<std::string> DefaultAddress = {"EV11DFAXUSjPQMsLnrNuXtR9YbJjUk
 
 class TestMasterWallet : public MasterWallet {
 public:
-	TestMasterWallet() : MasterWallet("MasterWalletTest", "english", "Data") {
-		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-		std::string phrasePassword = "";
-		std::string payPassword = "payPassword";
-		initFromPhrase(mnemonic, phrasePassword, payPassword);
+	TestMasterWallet() : MasterWallet(
+			"MasterWalletTest",
+			"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+			"",
+			"payPassword",
+			"english",
+			"Data") {
 	}
 
 protected:

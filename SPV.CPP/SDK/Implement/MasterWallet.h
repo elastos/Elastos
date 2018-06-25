@@ -33,13 +33,11 @@ namespace Elastos {
 		public:
 			virtual ~MasterWallet();
 
-			bool Initialized() const;
-
 			virtual void Save();
 
 		public: //override from IMasterWallet
 
-			virtual std::string GenerateMnemonic() const;
+			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath);
 
 			virtual std::string GetId() const;
 
@@ -115,7 +113,22 @@ namespace Elastos {
 
 			MasterWallet(const boost::filesystem::path &localStore, const std::string &rootPath);
 
-			MasterWallet(const std::string &id, const std::string &language, const std::string &rootPath);
+			MasterWallet(
+					const std::string &id,
+					const std::string &mnemonic,
+					const std::string &phrasePassword,
+					const std::string &payPassword,
+					const std::string &language,
+					const std::string &rootPath);
+
+			MasterWallet(
+					const std::string &id,
+					const nlohmann::json &keystoreContent,
+					const std::string &backupPassword,
+					const std::string &payPassword,
+					const std::string &phrasePassword,
+					const std::string &rootPath,
+					bool reserve);
 
 			bool importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
@@ -175,7 +188,6 @@ namespace Elastos {
 			void tryInitCoinConfig();
 
 		protected:
-			bool _initialized;
 			WalletMap _createdWallets;
 
 			MasterWalletStore _localStore;

@@ -32,7 +32,6 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		MasterWallet::MasterWallet(const boost::filesystem::path &localStore, const std::string &rootPath) :
-				_initialized(false),
 				_rootPath(rootPath) {
 
 			_localStore.Load(localStore);
@@ -42,35 +41,57 @@ namespace Elastos {
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
+								   const std::string &mnemonic,
+								   const std::string &phrasePassword,
+								   const std::string &payPassword,
 								   const std::string &language,
 								   const std::string &rootPath) :
 				_id(id),
-				_rootPath(rootPath),
-				_initialized(false) {
+				_rootPath(rootPath) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Pay");
 
 			resetMnemonic(language);
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
+			importFromMnemonic(mnemonic, phrasePassword, payPassword);
+		}
+
+		MasterWallet::MasterWallet(const std::string &id,
+								   const nlohmann::json &keystoreContent,
+								   const std::string &backupPassword,
+								   const std::string &payPassword,
+								   const std::string &phrasePassword,
+								   const std::string &rootPath,
+								   bool reserve) :
+				_id(id),
+				_rootPath(rootPath) {
+
+			ParamChecker::checkNotEmpty(id);
+			ParamChecker::checkPassword(backupPassword, "Backup");
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Pay");
+			ParamChecker::checkNotEmpty(rootPath);
+
+			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
+			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
 		}
 
 		MasterWallet::~MasterWallet() {
 			Save();
 		}
 
-		std::string MasterWallet::GenerateMnemonic() const {
+		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
 			CMemBlock<uint8_t> seed128 = WalletTool::GenerateSeed128();
-			CMemBlock<char> phrase = WalletTool::GeneratePhraseFromSeed(seed128, _mnemonic->words());
+			Mnemonic mnemonic(language, rootPath);
+			CMemBlock<char> phrase = WalletTool::GeneratePhraseFromSeed(seed128, mnemonic.words());
 			return (const char *) phrase;
 		}
 
 		void MasterWallet::Save() {
-
-			if (!Initialized())
-				return;
-
 			restoreLocalStore();
 
 			boost::filesystem::path path = _rootPath;
@@ -86,8 +107,6 @@ namespace Elastos {
 		}
 
 		std::vector<ISubWallet *> MasterWallet::GetAllSubWallets() const {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
 
 			std::vector<ISubWallet *> result;
 			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
@@ -100,9 +119,6 @@ namespace Elastos {
 		ISubWallet *
 		MasterWallet::CreateSubWallet(const std::string &chainID, const std::string &payPassword, bool singleAddress,
 									  uint64_t feePerKb) {
-
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
 
 			ParamChecker::checkNotEmpty(chainID);
 
@@ -142,8 +158,6 @@ namespace Elastos {
 		ISubWallet *
 		MasterWallet::RecoverSubWallet(const std::string &chainID, const std::string &payPassword, bool singleAddress,
 									   uint32_t limitGap, uint64_t feePerKb) {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
 
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
@@ -175,9 +189,6 @@ namespace Elastos {
 
 		void MasterWallet::DestroyWallet(ISubWallet *wallet) {
 
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
-
 			if (wallet == nullptr)
 				throw std::invalid_argument("Sub wallet can't be null.");
 
@@ -201,9 +212,6 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
-
 			return _localStore.GetPublicKey();
 		}
 
@@ -253,10 +261,6 @@ namespace Elastos {
 			memcpy(cb_char_Mnemonic, cb_Mnemonic, cb_Mnemonic.GetSize());
 			mnemonic = (const char *) cb_char_Mnemonic;
 			return true;
-		}
-
-		bool MasterWallet::Initialized() const {
-			return _initialized;
 		}
 
 		bool MasterWallet::initFromEntropy(const UInt128 &entropy, const std::string &phrasePassword,
@@ -309,7 +313,6 @@ namespace Elastos {
 			_localStore.SetEncryptedKey(Utils::encrypt(privKey, payPassword));
 			initPublicKey(payPassword);
 
-			_initialized = true;
 			return true;
 		}
 
@@ -318,7 +321,6 @@ namespace Elastos {
 			resetMnemonic(localStore.GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
 			initSubWallets(localStore.GetSubWalletInfoList());
-			_initialized = true;
 		}
 
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
@@ -357,8 +359,6 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
 
 			ParamChecker::checkNotEmpty(message);
 			ParamChecker::checkPassword(payPassword);
@@ -379,8 +379,6 @@ namespace Elastos {
 		nlohmann::json
 		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
 
 			CMBlock signatureData(signature.size());
 			memcpy(signatureData, signature.c_str(), signature.size());
@@ -443,9 +441,6 @@ namespace Elastos {
 
 		std::string
 		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword) {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
-
 			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index, payPassword);
 		}
 
@@ -466,9 +461,6 @@ namespace Elastos {
 		}
 
 		std::vector<std::string> MasterWallet::GetAllIds() const {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
-
 			return _idAgentImpl->GetAllIds();
 		}
 
@@ -494,9 +486,6 @@ namespace Elastos {
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			if (!Initialized())
-				throw std::logic_error("Current master wallet is not initialized.");
-
 			ParamChecker::checkPassword(oldPassword, "Old");
 			ParamChecker::checkPassword(newPassword, "New");
 
