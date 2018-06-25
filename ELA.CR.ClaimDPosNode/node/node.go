@@ -62,7 +62,6 @@ type node struct {
 	cachelock                sync.RWMutex
 	requestedBlockLock       sync.RWMutex
 	nodeDisconnectSubscriber events.Subscriber
-	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
 	DefaultMaxPeers    uint
@@ -109,7 +108,6 @@ func InitLocalNode() protocol.Noder {
 	LocalNode.TxPool.Init()
 	LocalNode.eventQueue.init()
 	LocalNode.idCache.init()
-	LocalNode.cachedHashes = make([]Uint256, 0)
 	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
 	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
 	LocalNode.handshakeQueue.init()
@@ -351,11 +349,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 			switch message := message.(type) {
 			case *Transaction:
 				log.Debug("Relay transaction message")
-
-				if nbr.ExistHash(message.Hash()) {
-					continue
-				}
-
 				if nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(message) {
 					inv := msg.NewInventory()
 					txId := message.Hash()
@@ -370,11 +363,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				}
 			case *Block:
 				log.Debug("Relay block message")
-
-				if nbr.ExistHash(message.Hash()) {
-					continue
-				}
-
 				if nbr.BloomFilter().IsLoaded() {
 					inv := msg.NewInventory()
 					blockHash := message.Hash()
@@ -394,17 +382,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 	}
 
 	return nil
-}
-
-func (node *node) ExistHash(hash Uint256) bool {
-	node.cachelock.Lock()
-	defer node.cachelock.Unlock()
-	for _, v := range node.cachedHashes {
-		if v == hash {
-			return true
-		}
-	}
-	return false
 }
 
 func (node node) IsSyncHeaders() bool {
