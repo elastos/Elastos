@@ -376,14 +376,14 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,
                                      int status, const char *reason,
-                                     const char *data, size_t len, void *context)
+                                     const void *data, size_t len, void *context)
 {
     output("Got invite response from %s. ", friendid);
     if (status == 0) {
         char *new_arg[1] = {NULL};
         char *add_stream_arg[2] = {NULL, NULL};
 
-        output("message within response: %.*s\n", (int)len, data);
+        output("message within response: %.*s\n", (int)len, (const char *)data);
 
         session_init(w);
         output("Session initialized successfully.\n");

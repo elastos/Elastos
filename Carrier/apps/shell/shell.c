@@ -800,11 +800,11 @@ static void send_message(ElaCarrier *w, int argc, char *argv[])
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,
                                      int status, const char *reason,
-                                     const char *data, size_t len, void *context)
+                                     const void *data, size_t len, void *context)
 {
     output("Got invite response from %s. ", friendid);
     if (status == 0) {
-        output("message within response: %.*s\n", (int)len, data);
+        output("message within response: %.*s\n", (int)len, (const char *)data);
     } else {
         output("refused: %s\n", reason);
     }

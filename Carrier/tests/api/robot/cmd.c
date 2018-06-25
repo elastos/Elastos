@@ -348,12 +348,13 @@ static void fremove(TestContext *context, int argc, char *argv[])
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,
                                      int status, const char *reason,
-                                     const char *data, size_t len, void *context)
+                                     const void *data, size_t len, void *context)
 {
     robot_log_debug("Received invite response from friend %s\n", friendid);
 
     if (status == 0) {
-        robot_log_debug("Message within response: %.*s\n", (int)len, data);
+        robot_log_debug("Message within response: %.*s\n", (int)len,
+                        (const char *)data);
     } else {
         robot_log_debug("Refused: %s\n", reason);
     }

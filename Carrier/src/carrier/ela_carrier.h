@@ -1143,7 +1143,7 @@ int ela_send_friend_message(ElaCarrier *carrier, const char *to,
 typedef void ElaFriendInviteResponseCallback(ElaCarrier *carrier,
                                              const char *from,
                                              int status, const char *reason,
-                                             const char *data, size_t len,
+                                             const void *data, size_t len,
                                              void *context);
 
 /**

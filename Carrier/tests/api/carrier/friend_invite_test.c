@@ -118,7 +118,7 @@ static TestContext test_context = {
 };
 
 static void friend_invite_response_cb(ElaCarrier *w, const char *from, int status,
-                                      const char *reason, const char *content, size_t len,
+                                      const char *reason, const void *content, size_t len,
                                       void *context)
 {
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
@@ -126,7 +126,7 @@ static void friend_invite_response_cb(ElaCarrier *w, const char *from, int statu
     extra->from   = strdup(from);
     extra->status = status;
     extra->reason = (status != 0) ? (reason  ? strdup(reason ) : NULL) : NULL;
-    extra->data   = (status == 0) ? (content ? strdup(content) : NULL) : NULL;
+    extra->data   = (status == 0) ? (content ? strdup((const char *)content) : NULL) : NULL;
     extra->len    = (status == 0) ? (int)len : 0;
 
     wakeup(context);

@@ -788,7 +788,7 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
 
     default:
         assert(0);
-        ref = NULL; // to clean builder.
+        ref = 0; // to clean builder.
         break;
     }
 

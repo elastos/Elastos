@@ -406,12 +406,12 @@ void ela_session_close(ElaSession *ws)
 
 static void friend_invite_response(ElaCarrier *w, const char *from,
                                    int status, const char *reason,
-                                   const char *sdp, size_t len, void *context)
+                                   const void *sdp, size_t len, void *context)
 {
     ElaSession *ws = (ElaSession*)context;
 
     if (ws->complete_callback) {
-        ws->complete_callback(ws, status, reason, sdp, len, ws->context);
+        ws->complete_callback(ws, status, reason, (const char *)sdp, len, ws->context);
     }
 }
 
