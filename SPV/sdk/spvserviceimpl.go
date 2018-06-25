@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -201,6 +200,10 @@ func (s *SPVServiceImpl) needSync() bool {
 }
 
 func (s *SPVServiceImpl) syncBlocks() {
+	// Return if current download not finished
+	if !s.downloading.finished() {
+		return
+	}
 	// Check if blockchain need sync
 	if s.needSync() {
 		// Return if already in syncing
@@ -314,12 +317,7 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 		queueHash := <-s.blockQueue
 		if !blockHash.IsEqual(queueHash) {
 			s.changeSyncPeerAndRestart()
-			return fmt.Errorf("Peer%d is sending us blocks out of order", peer.ID())
-		}
-
-		if !s.downloading.finished() {
-			s.changeSyncPeerAndRestart()
-			return fmt.Errorf("Peer%d is sending block with download block not finished", peer.ID())
+			return fmt.Errorf("peer %d is sending us blocks out of order", peer.ID())
 		}
 
 		// Request next block list
@@ -330,7 +328,7 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 
 	txIds, err := bloom.CheckMerkleBlock(*block)
 	if err != nil {
-		return errors.New("Invalid merkle block received: " + err.Error())
+		return fmt.Errorf("invalid merkleblock received %s", err.Error())
 	}
 
 	// Save block as download block
@@ -387,7 +385,6 @@ func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
 	newTip, reorgFrom, err := s.chain.CommitHeader(*header)
 	if err != nil {
 		log.Errorf("Commit header failed %d", err.Error())
-		s.changeSyncPeerAndRestart()
 		return
 	}
 	if !newTip {

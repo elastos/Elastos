@@ -143,7 +143,7 @@ func (peer *Peer) OnMakeMessage(cmd string) (p2p.Message, error) {
 
 func (peer *Peer) OnMessageDecoded(msg p2p.Message) {
 	if err := peer.handler.HandleMessage(peer, msg); err != nil {
-		log.Error(err, ", peer id is: ", peer.ID())
+		log.Error(err)
 	}
 }
 
