@@ -138,7 +138,7 @@ ElaCP *elacp_create(uint8_t type, const char *ext_name)
         break;
     default:
         assert(0);
-        break;
+        return NULL;
     }
 
     cp = (ElaCP *)calloc(1, len);
@@ -174,7 +174,7 @@ const char *elacp_get_extension(ElaCP *cp)
 const char *elacp_get_name(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *name;
+    const char *name = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -197,7 +197,7 @@ const char *elacp_get_name(ElaCP *cp)
 const char *elacp_get_descr(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *descr;
+    const char *descr = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -220,7 +220,7 @@ const char *elacp_get_descr(ElaCP *cp)
 const char *elacp_get_gender(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *gender;
+    const char *gender = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -240,7 +240,7 @@ const char *elacp_get_gender(ElaCP *cp)
 const char *elacp_get_phone(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *phone;
+    const char *phone = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -260,7 +260,7 @@ const char *elacp_get_phone(ElaCP *cp)
 const char *elacp_get_email(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *email;
+    const char *email = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -280,7 +280,7 @@ const char *elacp_get_email(ElaCP *cp)
 const char *elacp_get_region(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *region;
+    const char *region = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -300,7 +300,7 @@ const char *elacp_get_region(ElaCP *cp)
 bool elacp_get_has_avatar(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    bool has_avatar;
+    bool has_avatar = 0;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -320,7 +320,7 @@ bool elacp_get_has_avatar(ElaCP *cp)
 const char *elacp_get_hello(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *hello;
+    const char *hello = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -340,7 +340,7 @@ const char *elacp_get_hello(ElaCP *cp)
 int64_t elacp_get_tid(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    int64_t tid;
+    int64_t tid = 0;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -363,7 +363,7 @@ int64_t elacp_get_tid(ElaCP *cp)
 int elacp_get_status(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    int status;
+    int status = 0;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -383,7 +383,7 @@ int elacp_get_status(ElaCP *cp)
 const void *elacp_get_raw_data(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const void *data;
+    const void *data = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -409,7 +409,7 @@ const void *elacp_get_raw_data(ElaCP *cp)
 size_t elacp_get_raw_data_length(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    size_t len;
+    size_t len = 0;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -435,7 +435,7 @@ size_t elacp_get_raw_data_length(ElaCP *cp)
 const char *elacp_get_reason(ElaCP *cp)
 {
     struct elacp_packet_t pkt;
-    const char *reason;
+    const char *reason = NULL;
 
     assert(cp);
     pkt.u.cp = cp;
@@ -788,6 +788,7 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
 
     default:
         assert(0);
+        ref = NULL; // to clean builder.
         break;
     }
 
@@ -814,7 +815,7 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
         break;
     default:
         assert(0);
-        break;
+        return NULL;
     }
 
     elacp_packet_start_as_root(&builder);

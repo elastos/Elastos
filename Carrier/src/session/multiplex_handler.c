@@ -662,6 +662,7 @@ int multiplex_handler_open_channel(Multiplexer *mux, ChannelType type,
         size = sizeof(Channel);
     } else {
         assert(0);
+        return ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS);
     }
 
     ch = (Channel *)rc_zalloc(size, channel_destroy);
