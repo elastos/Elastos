@@ -32,7 +32,7 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 		REQUIRE(transactionOutput.getScript().GetSize() == sizeof(dummyScript));
 
 		CMBlock temp = transactionOutput.getScript();
-		for (uint64_t i = 0; i < sizeof(dummyScript); i++) {
+		for (size_t i = 0; i < sizeof(dummyScript); i++) {
 			uint8_t t = temp[i];
 			REQUIRE(dummyScript[i] == t);
 		}

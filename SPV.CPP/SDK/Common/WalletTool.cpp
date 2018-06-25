@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <fstream>
-#include <iconv.h>
+//#include <iconv.h>
 #include "Utils.h"
 
 #include "WalletTool.h"
@@ -33,20 +33,20 @@ namespace Elastos {
 								   const CMemBlock<char> &input) {
 			CMemBlock<char> output;
 			if (true == input) {
-				iconv_t cd;
-				char **pin = &input;
-				static char sc_tmp[MAX_BUFFER] = {0};
-				char *out[1] = {sc_tmp};
-				size_t inlen = input.GetSize(), outlen = MAX_BUFFER;
-
-				cd = iconv_open(to_charset.c_str(), from_charset.c_str());
-				if (nullptr != cd) {
-					if (-1 != iconv(cd, pin, &inlen, &out[0], &outlen) && 0 < outlen) {
-						output.Resize(MAX_BUFFER - outlen);
-						memcpy(output, sc_tmp, output.GetSize());
-					}
-					iconv_close(cd);
-				}
+//				iconv_t cd;
+//				char **pin = &input;
+//				static char sc_tmp[MAX_BUFFER] = {0};
+//				char *out[1] = {sc_tmp};
+//				size_t inlen = input.GetSize(), outlen = MAX_BUFFER;
+//
+//				cd = iconv_open(to_charset.c_str(), from_charset.c_str());
+//				if (nullptr != cd) {
+//					if (-1 != iconv(cd, pin, &inlen, &out[0], &outlen) && 0 < outlen) {
+//						output.Resize(size_t(MAX_BUFFER - outlen));
+//						memcpy(output, sc_tmp, output.GetSize());
+//					}
+//					iconv_close(cd);
+//				}
 			}
 
 			return output;

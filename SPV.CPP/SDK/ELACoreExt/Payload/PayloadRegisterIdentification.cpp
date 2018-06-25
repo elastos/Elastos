@@ -108,13 +108,13 @@ namespace Elastos {
 
 			uint64_t proofLen = istream.getVarUint();
 			if (proofLen > 0) {
-				_proof = CMBlock(proofLen);
+				_proof = CMBlock((size_t)proofLen);
 				istream.getBytes(_proof, proofLen);
 			}
 
 			uint64_t signLen = istream.getVarUint();
 			assert(signLen > 0);
-			_sign = CMBlock(signLen);
+			_sign = CMBlock((size_t)signLen);
 			istream.getBytes(_sign, signLen);
 
 			return true;

@@ -96,7 +96,7 @@ TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
 			TransactionOutputPtr output = outputs[i];
 			CMBlock s = output->getScript();
 			REQUIRE(s.GetSize() == script.GetSize());
-			for (uint64_t j = 0; j < s.GetSize(); j++) {
+			for (size_t j = 0; j < s.GetSize(); j++) {
 				REQUIRE(s[j] == script[j]);
 			}
 			REQUIRE(output->getAmount() == 8888 + i);

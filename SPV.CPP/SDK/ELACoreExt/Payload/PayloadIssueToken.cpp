@@ -39,7 +39,7 @@ namespace Elastos {
 				uint8_t *buff = new uint8_t[len];
 				if (buff) {
 					istream.getBytes(buff, len);
-					_merkeProof.Resize(len);
+					_merkeProof.Resize(size_t(len));
 					memcpy(_merkeProof, buff, len);
 				}
 			}

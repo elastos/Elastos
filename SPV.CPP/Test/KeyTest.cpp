@@ -51,7 +51,7 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(byteData1 != false);
 		CMBlock byteData2 = key1.getPubkey();
 		REQUIRE(byteData1.GetSize() == byteData2.GetSize());
-		for (uint64_t i = 0; i < byteData1.GetSize(); i++) {
+		for (size_t i = 0; i < byteData1.GetSize(); i++) {
 			REQUIRE(byteData1[i] == byteData2[i]);
 		}
 

@@ -36,7 +36,7 @@ TEST_CASE("generate key", "[BTCKey]") {
 TEST_CASE("get public key from private key", "[BTCKey]") {
 	CMBlock pubKey;
 	uint8_t privateKey[] = {137, 130, 127, 138, 111, 69, 76, 178, 118, 250, 113, 184, 5, 173, 174, 142, 115, 153, 49,
-	                        170, 3, 12, 53, 42, 210, 47, 58, 180, 204, 87, 159, 54};
+							170, 3, 12, 53, 42, 210, 47, 58, 180, 204, 87, 159, 54};
 	CMBlock mbPrivKey;
 	mbPrivKey.SetMemFixed(privateKey, sizeof(privateKey));
 
@@ -52,7 +52,7 @@ TEST_CASE("get public key from private key", "[BTCKey]") {
 	}
 }
 
-TEST_CASE("verify public key", "[BTCKey]") {
+TEST_CASE("verify public key ", "[BTCKey]") {
 	CMBlock privKey, pubKey;
 	if (true == BTCKey::generateKey(privKey, pubKey, NID_secp256k1)) {
 		REQUIRE(true == BTCKey::KeyIsValid(privKey, pubKey));
@@ -235,7 +235,7 @@ TEST_CASE("2 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 	CMBlock mbPubkey = BTCKey::getPubKeyFromPrivKey(mbPrivkey);
 
 
-	std::vector<CMBlock > vecHDPrivkey, vecHDPubkey;
+	std::vector<CMBlock> vecHDPrivkey, vecHDPubkey;
 
 #ifdef BTCKEY_DEBUG_MSG
 	printf("\n\n***************************\n\n");
@@ -293,7 +293,6 @@ TEST_CASE("2 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 
 	REQUIRE(true == BTCKey::KeyIsValid(mbPrivkey, mbPubkey));
 
-	printf("\nhd key verifying\n\n");
 	for (size_t i = 0; i < 10; i++) {
 		bool b = BTCKey::KeyIsValid(vecHDPrivkey[i], vecHDPubkey[i]);
 		REQUIRE(true == b);
@@ -312,7 +311,7 @@ TEST_CASE("3 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 	uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
 	UInt256 chainCode = UINT256_ZERO;
 
-	std::vector<CMBlock > vecHDPrivkey, vecHDPubkey;
+	std::vector<CMBlock> vecHDPrivkey, vecHDPubkey;
 
 #ifdef BTCKEY_DEBUG_MSG
 	printf("\n\n***************************\n\n");
@@ -327,7 +326,7 @@ TEST_CASE("3 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 		printf("\n\n");
 #endif
 
-		std::vector<CMBlock > privKeys(10);
+		std::vector<CMBlock> privKeys(10);
 		const uint32_t indexes[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 		BTCKey::getDerivePrivKey_Secret(privKeys, mbPrivkey, chain, indexes, chainCode);
 		for (uint32_t count = 0; count < 10; count++) {
@@ -393,7 +392,7 @@ TEST_CASE("4 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 	uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
 	UInt256 chainCode = UINT256_ZERO;
 
-	std::vector<CMBlock > vecHDPrivkey, vecHDPubkey;
+	std::vector<CMBlock> vecHDPrivkey, vecHDPubkey;
 
 #ifdef BTCKEY_DEBUG_MSG
 	printf("\n\n***************************\n\n");
@@ -410,7 +409,7 @@ TEST_CASE("4 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 
 		for (uint32_t count = 0; count < 10; count++) {
 			CMBlock mbHDPrivkey = BTCKey::getDerivePrivKey_Secret(mbPrivkey, chain, count, chainCode,
-			                                                      NID_X9_62_prime256v1);
+																  NID_X9_62_prime256v1);
 			vecHDPrivkey.push_back(mbHDPrivkey);
 
 #ifdef BTCKEY_DEBUG_MSG
@@ -438,7 +437,7 @@ TEST_CASE("4 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 
 		for (uint32_t count = 0; count < 10; count++) {
 			CMBlock mbHDPubKey = BTCKey::getDerivePubKey(mbPubkey, chain, count, chainCode,
-			                                             NID_X9_62_prime256v1);
+														 NID_X9_62_prime256v1);
 			vecHDPubkey.push_back(mbHDPubKey);
 
 #ifdef BTCKEY_DEBUG_MSG
@@ -455,6 +454,163 @@ TEST_CASE("4 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 
 	for (size_t i = 0; i < 10; i++) {
 		REQUIRE(true == BTCKey::KeyIsValid(vecHDPrivkey[i], vecHDPubkey[i], NID_X9_62_prime256v1));
+	}
+}
+
+TEST_CASE("5 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+	CMBlock seed = BTCKey::getPrivKeySeed(mnemonic, "", "Data");
+	CMemBlock<char> mbcSeed = Hex2Str(seed);
+
+#ifdef BTCKEY_DEBUG_MSG
+	printf("\r\nSeed:\r\n");
+	printf("%s\n", (const char *) mbcSeed);
+#endif
+
+	uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
+	UInt256 chainCode = UINT256_ZERO;
+	CMBlock mbPrivkey = BTCKey::getMasterPrivkey(seed);
+	CMBlock mbPubkey = BTCKey::getPubKeyFromPrivKey(mbPrivkey);
+
+
+	std::vector<CMBlock> vecHDPrivkey, vecHDPubkey;
+
+#ifdef BTCKEY_DEBUG_MSG
+	printf("\n\n***************************\n\n");
+	printf("NID_secp256k1 generate privKey\n");
+#endif
+	if (true == mbPrivkey) {
+#ifdef BTCKEY_DEBUG_MSG
+		printf("\nprivKey:\n");
+		for (size_t i = 0; i < mbPrivkey.GetSize(); i++) {
+			printf("%02X ", mbPrivkey[i]);
+		}
+		printf("\n\n");
+#endif
+
+		for (uint32_t count = 0; count < 10; count++) {
+			CMBlock mbuPrivkey = BTCKey::getDerivePrivKey_depth(seed, chainCode, false, NID_secp256k1, 4,
+																1 | BIP32_HARD, chain, chain, count);
+			vecHDPrivkey.push_back(mbuPrivkey);
+
+#ifdef BTCKEY_DEBUG_MSG
+			printf("generate hd privkey%d, len=%zu:\n", count, mbuPrivkey.GetSize());
+			for (size_t i = 0; i < mbuPrivkey.GetSize(); i++) {
+				printf("%02X ", mbuPrivkey[i]);
+			}
+			printf("\n");
+#endif
+		}
+	}
+
+#ifdef BTCKEY_DEBUG_MSG
+	printf("\n\n***************************\n\n");
+	printf("NID_secp256k1 generate pubKey\n");
+#endif
+	if (true == mbPubkey && true == BTCKey::PublickeyIsValid(mbPubkey)) {
+#ifdef BTCKEY_DEBUG_MSG
+		printf("\npubKey:\n");
+		for (size_t i = 0; i < mbPubkey.GetSize(); i++) {
+			printf("%02X ", mbPubkey[i]);
+		}
+		printf("\n\n");
+#endif
+
+		for (uint32_t count = 0; count < 10; count++) {
+			CMBlock mbuPubKey = BTCKey::getDerivePubKey(mbPubkey, chain, count, chainCode);
+			vecHDPubkey.push_back(mbuPubKey);
+
+#ifdef BTCKEY_DEBUG_MSG
+			printf("generate hd pubkey%d, len=%zu:\n", count, mbuPubKey.GetSize());
+			for (size_t i = 0; i < mbuPubKey.GetSize(); i++) {
+				printf("%02X ", mbuPubKey[i]);
+			}
+			printf("\n");
+#endif
+		}
+	}
+
+	REQUIRE(true == BTCKey::KeyIsValid(mbPrivkey, mbPubkey));
+
+	for (size_t i = 0; i < 10; i++) {
+		bool b = BTCKey::KeyIsValid(vecHDPrivkey[i], vecHDPubkey[i]);
+		REQUIRE(true == b);
+	}
+}
+
+TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
+	CMBlock mbPrivkey, mbPubkey;
+	if (false == BTCKey::generateKey(mbPrivkey, mbPubkey)) {
+		return;
+	}
+	if (false == BTCKey::PublickeyIsValid(mbPubkey)) {
+		return;
+	}
+
+	uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
+	UInt256 chainCode = UINT256_ZERO;
+
+	std::vector<CMBlock> vecHDPrivkey, vecHDPubkey;
+
+#ifdef BTCKEY_DEBUG_MSG
+	printf("\n\n***************************\n\n");
+	printf("NID_secp256k1 generate privKey\n");
+#endif
+	if (true == mbPrivkey) {
+#ifdef BTCKEY_DEBUG_MSG
+		printf("\nprivKey:\n");
+		for (size_t i = 0; i < mbPrivkey.GetSize(); i++) {
+			printf("%02X ", mbPrivkey[i]);
+		}
+		printf("\n\n");
+#endif
+
+		for (uint32_t count = 0; count < 10; count++) {
+			CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret_depth(mbPrivkey, chainCode, false, NID_secp256k1,
+																		   4, 1 | BIP32_HARD, chain, chain, count);
+			vecHDPrivkey.push_back(mbChildPrivkey);
+
+#ifdef BTCKEY_DEBUG_MSG
+//			printf("generate hd privkey%d, len=%zu:\n", count, privKeys[count].GetSize());
+//			for (size_t i = 0; i < privKeys[count].GetSize(); i++) {
+//				printf("%02X ", privKeys[count][i]);
+//			}
+//			printf("\n");
+#endif
+		}
+	}
+
+#ifdef BTCKEY_DEBUG_MSG
+	printf("\n\n***************************\n\n");
+	printf("NID_secp256k1 generate pubKey\n");
+#endif
+	if (true == mbPubkey && true == BTCKey::PublickeyIsValid(mbPubkey)) {
+#ifdef BTCKEY_DEBUG_MSG
+		printf("\npubKey:\n");
+		for (size_t i = 0; i < mbPubkey.GetSize(); i++) {
+			printf("%02X ", mbPubkey[i]);
+		}
+		printf("\n\n");
+#endif
+
+		for (uint32_t count = 0; count < 10; count++) {
+			CMBlock mbHDPubKey = BTCKey::getDerivePubKey(mbPubkey, chain, count, chainCode);
+			vecHDPubkey.push_back(mbHDPubKey);
+
+#ifdef BTCKEY_DEBUG_MSG
+			printf("generate hd pubkey%d, len=%zu:\n", count, mbHDPubKey.GetSize());
+			for (size_t i = 0; i < mbHDPubKey.GetSize(); i++) {
+				printf("%02X ", mbHDPubKey[i]);
+			}
+			printf("\n");
+#endif
+		}
+	}
+
+	REQUIRE(true == BTCKey::KeyIsValid(mbPrivkey, mbPubkey));
+
+	for (size_t i = 0; i < 10; i++) {
+		REQUIRE(true == BTCKey::KeyIsValid(vecHDPrivkey[i], vecHDPubkey[i]));
 	}
 }
 

@@ -416,7 +416,7 @@ namespace Elastos {
 				return CMBlock();
 			}
 
-			CMBlock buff(_count);
+			CMBlock buff((size_t)_count);
 			memcpy(buff, _buf, _count);
 			return buff;
 		}

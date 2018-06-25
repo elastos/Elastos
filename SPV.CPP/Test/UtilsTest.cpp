@@ -149,7 +149,7 @@ TEST_CASE ("enctrypt/decrept content without nothing and password with "" ", "[a
 }
 
 TEST_CASE("uint256 string", "[Utils]") {
-	CMemBlock<uint8_t> mbRand = WalletTool::GenerateSeed256();
+	CMBlock mbRand = WalletTool::GenerateSeed256();
 	UInt256 u256 = {0};
 	UInt256Get(&u256, (const void *) mbRand);
 
@@ -160,7 +160,7 @@ TEST_CASE("uint256 string", "[Utils]") {
 }
 
 TEST_CASE("uint168 string", "[Utils]") {
-	CMemBlock<uint8_t> mbRand(21);
+	CMBlock mbRand(21);
 	for (size_t i = 0; i < 21; i++) {
 		mbRand[i] = Utils::getRandomByte();
 	}
@@ -174,7 +174,7 @@ TEST_CASE("uint168 string", "[Utils]") {
 }
 
 TEST_CASE("uint128 string", "[Utils]") {
-	CMemBlock<uint8_t> mbrand = WalletTool::GenerateSeed128();
+	CMBlock mbrand = WalletTool::GenerateSeed128();
 	UInt128 u128 = {0};
 	UInt128Get(&u128, (const void *) mbrand);
 

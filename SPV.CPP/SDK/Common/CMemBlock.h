@@ -6,6 +6,8 @@
 #ifndef TEMPLATE_C_UTIL
 #define TEMPLATE_C_UTIL
 
+//#define USE_VARY_MACRO
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -13,7 +15,81 @@
 #include <vector>
 #include <cstdint>
 
-// CMemBlock for C block
+
+/** As Smart Block, CMemBlock containing any data type recognized by C such as
+ *  through malloc calloc..., auto freed when ending with ref number, surely used in module.
+ *  \template T  data type contained by Smart Block.
+ *  \template SIZETYPE  index/operator type with Smart Block.
+ *  size_type is was used for index/operator type outer
+ *
+ *  Demo 1:
+ *  CMemBlock<int> cmBlock;
+ *  cmBlock::size_type i, j = 3, n = 10;
+ *  for (i = 0; i < n; i++) {
+ *  	cmBlock[i] = 0;
+ *  }
+ *  *(cmBlock + j) = 16;
+ *  *(cmBlock + 2) = 15;
+ *  cmBlock[7] = 8;
+ *  cmBlock[9] = 10;
+ *
+ *  Demo 2:
+ *  CMemBlock<int> cmBlock;
+ *  int *arrCon = (int *) malloc(100 * sizeof(int));
+ *  cmBlock.SetMem(arrCon, 100 * sizeof(int));
+ *  for (CMemBlock<int>::size_type i = 0; i < 100; i++) {
+ *  	cmBlock[i] = i;
+ *  }
+ *
+ *  Demo 3:
+ *  CMemBlock<int> cmBlock1, cmBlock2;
+ *	Anytype arr1[10] = {0, 1, 2, 3, 4};
+ *	Anytype arr2[10] = {0, 1, 2, 3, 4};
+ *	cmBlock1.SetMemFixed(arr1, sizeof(arr1));
+ *	cmBlock2.SetMemFixed(arr2, sizeof(arr2));
+ *	CMemBlock<int> cmTotal = cmBlock1 + cmBlock2;
+ *	memcpy(cmTotal + 3, arr1, 3);
+ *
+ *	Demo 4:
+ *	CMemBlock<double> cmBlock;
+ *	int size = 100;
+ *	double arr[size];
+ *	memset(arr, 0, sizeof(arr));
+ *	cmBlock.Resize(CMemBlock<double>::size_type(size));
+ *	double d = double(0.34567864);
+ *	for (CMemBlock<double>::size_type i = 0; i < 100; i++) {
+ *		cmBlock[i] = d;
+ *	}
+ *
+ *	Demo 5:
+ *	void funcAdd(const CMemBlock<int> &in_cmBlock, CMemBlock<int> &out_cmBlock) {
+ *		CMemBlock<int>::size_type count = in_cmBlock.GetSize(), i;
+ *		out_cmBlock.Resize(count);
+ *		int i_add = 10;
+ *		for(i = 0; i < count; i++) {
+ *			out_cmBlock[i] = in_cmBlock[i] + i_add;
+ *		}
+ *	}
+ *
+ *  CMemBlock<int> funcGet() {
+ * 		int arr[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+ * 		int *pArr = (int *) malloc(sizeof(arr));
+ * 		memcpy(pArr, arr, sizeof(arr));
+ * 		CMemBlock<int> cmBlock;
+ * 		cmBlock.SetMem(pArr, sizeof(arr));
+ * 		return cmBlock;
+ *  }
+ *	void main() {
+ *		CMemBlock<int> cmBlock1 = funcGet(), cmBlock2;
+ *		funcAdd(cmBlock1, cmBlock2);
+ *		CMemBlock<int>::size_type count = cmBlock2.GetSize();
+ *		int i_add = 10;
+ *		for (CMemBlock<int>::size_type i = 0; i < count; i++) {
+ *			cmBlock2[i] = cmBlock2[i] - i_add;
+ *		}
+ *	}
+ */
+
 template<class T, class SIZETYPE=size_t>
 class CMemBlock {
 public:
@@ -24,7 +100,15 @@ public:
 		pValue->AddRef();
 	}
 
+	CMemBlock(int size) {
+		pValue = new Value(size_type(size));
+		pValue->AddRef();
+	}
+
 	CMemBlock(size_type size) {
+#ifdef USE_VARY_MACRO
+		__glibcxx_requires_subscript(size);
+#endif
 		pValue = new Value(size);
 		pValue->AddRef();
 	}
@@ -141,6 +225,10 @@ public:
 		return nullptr != pValue ? pValue->SetMemFixed(pV, len) : 0;
 	}
 
+	size_type Resize(int size) {
+		return Resize(size_type(size));
+	}
+
 	size_type Resize(size_type size) {
 		return nullptr != pValue ? pValue->Resize(size) : 0;
 	}
@@ -205,6 +293,10 @@ public:
 		return nullptr != pValue ? pValue->data : 0;
 	}
 
+	operator const T *() {
+		return nullptr != pValue ? pValue->data : 0;
+	}
+
 	T **operator&() const {
 		return nullptr != pValue ? &pValue->data : 0;
 	}
@@ -213,67 +305,47 @@ public:
 		return nullptr != pValue ? &pValue->data : 0;
 	}
 
-	T *operator+(unsigned long long off) const {
-		return nullptr != pValue ? pValue->data + off : 0;
-	}
-
-	T *operator+(unsigned long long off) {
-		return nullptr != pValue ? pValue->data + off : 0;
-	}
-
-	T *operator+(unsigned long off) const {
-		return nullptr != pValue ? pValue->data + off : 0;
-	}
-
-	T *operator+(unsigned long off) {
-		return nullptr != pValue ? pValue->data + off : 0;
-	}
-
-	T *operator+(unsigned int off) const {
-		return nullptr != pValue ? pValue->data + off : 0;
-	}
-
-	T *operator+(unsigned int off) {
-		return nullptr != pValue ? pValue->data + off : 0;
-	}
-
 	T *operator+(int off) const {
-		return nullptr != pValue ? pValue->data + off : 0;
+		return operator+(size_type(off));
 	}
 
 	T *operator+(int off) {
+		return operator+(size_type(off));
+	}
+
+	T *operator+(size_type off) const {
+#ifdef USE_VARY_MACRO
+		__glibcxx_requires_subscript(off);
+#endif
 		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T &operator[](unsigned long long off) const {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
+	T *operator+(size_type off) {
+#ifdef USE_VARY_MACRO
+		__glibcxx_requires_subscript(off);
+#endif
+		return nullptr != pValue ? pValue->data + off : 0;
 	}
 
-	T &operator[](unsigned long long off) {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
-	}
-
-	T &operator[](unsigned long off) const {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
-	}
-
-	T &operator[](unsigned long off) {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
-	}
-
-    T &operator[](unsigned int off) const {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
-	}
-
-	T &operator[](unsigned int off) {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
-	}
- 
 	T &operator[](int off) const {
-		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
+		return operator[](size_type(off));
 	}
 
 	T &operator[](int off) {
+		return operator[](size_type(off));
+	}
+
+	T &operator[](size_type off) const {
+#ifdef USE_VARY_MACRO
+		__glibcxx_requires_subscript(off);
+#endif
+		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
+	}
+
+	T &operator[](size_type off) {
+#ifdef USE_VARY_MACRO
+		__glibcxx_requires_subscript(off);
+#endif
 		return nullptr != pValue->data ? pValue->data[off] : (*this)[0];
 	}
 

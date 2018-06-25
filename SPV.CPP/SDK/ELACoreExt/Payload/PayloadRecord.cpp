@@ -74,7 +74,7 @@ namespace Elastos {
 				uint8_t *buff = new uint8_t[len];
 				if (buff) {
 					istream.getBytes(buff, len);
-					_recordData.Resize(len);
+					_recordData.Resize(size_t(len));
 					memcpy(_recordData, buff, len);
 					delete[] buff;
 				}

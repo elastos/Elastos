@@ -34,10 +34,11 @@ namespace Elastos {
 		}
 
 		CMBlock PayloadSideMining::getData() const {
-			CMBlock buff(uint64_t(sizeof(_sideBlockHash) + sizeof(_sideGenesisHash)));
+			size_t c = sizeof(_sideBlockHash) + sizeof(_sideGenesisHash);
+			CMBlock buff(c);
 
 			memcpy(buff, _sideBlockHash.u8, sizeof(_sideBlockHash));
-			memcpy(&buff[(uint64_t)sizeof(_sideBlockHash)], _sideGenesisHash.u8, sizeof(_sideGenesisHash));
+			memcpy(&buff[sizeof(_sideBlockHash)], _sideGenesisHash.u8, sizeof(_sideGenesisHash));
 
 			return buff;
 		}

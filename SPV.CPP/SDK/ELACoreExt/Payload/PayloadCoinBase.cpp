@@ -39,10 +39,10 @@ namespace Elastos {
 			uint64_t len = istream.getVarUint();
 
 			if (0 < len) {
-				CMBlock data(len);
+				CMBlock data((size_t)len);
 				if (data) {
-					istream.getBytes(data, len);
-					_coinBaseData.Resize(len);
+					istream.getBytes((uint8_t *) (void *) data, len);
+					_coinBaseData.Resize(size_t(len));
 					memcpy(_coinBaseData, data, len);
 				}
 			}

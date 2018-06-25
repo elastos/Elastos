@@ -411,7 +411,7 @@ namespace Elastos {
 							Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), payPassword));
 
 			std::string prikey_base58 = WalletTool::getDeriveKey_base58(mnemonic, phrasePassword);
-			CMemBlock<uint8_t> prikey = BTCBase58::DecodeBase58(prikey_base58);
+			CMBlock prikey = BTCBase58::DecodeBase58(prikey_base58);
 			assert(prikey.GetSize() == sizeof(result));
 			memcpy(&result, prikey, prikey.GetSize());
 

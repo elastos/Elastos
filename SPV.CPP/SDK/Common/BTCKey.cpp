@@ -24,7 +24,7 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-		bool BTCKey::generateKey(CMBlock &privKey, CMBlock &pubKey, const int nid) {
+		bool BTCKey::generateKey(CMBlock &privKey, CMBlock &pubKey, int nid) {
 			bool out = false;
 			EC_GROUP *curve = nullptr;
 			if (nullptr != (curve = EC_GROUP_new_by_curve_name(nid))) {
@@ -35,7 +35,7 @@ namespace Elastos {
 							const BIGNUM *_privkey = nullptr;
 							const EC_POINT *_pubkey = nullptr;
 							if (nullptr != (_privkey = EC_KEY_get0_private_key(key)) &&
-							    nullptr != (_pubkey = EC_KEY_get0_public_key(key))) {
+								nullptr != (_pubkey = EC_KEY_get0_public_key(key))) {
 								uint8_t arrBN[256] = {0};
 								int len = BN_bn2bin(_privkey, arrBN);
 								if (0 < len) {
@@ -43,7 +43,7 @@ namespace Elastos {
 									memcpy(privKey, arrBN, (size_t) len);
 								}
 								BIGNUM *__pubkey = EC_POINT_point2bn(curve, _pubkey, POINT_CONVERSION_COMPRESSED,
-								                                     nullptr, nullptr);
+																	 nullptr, nullptr);
 								if (nullptr != __pubkey) {
 									len = BN_bn2bin(__pubkey, arrBN);
 									if (0 < len) {
@@ -63,8 +63,8 @@ namespace Elastos {
 			return out;
 		}
 
-		size_t _ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const uint8_t *msg, size_t msglen,
-		                                  size_t recid, size_t check) {
+		int _ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const uint8_t *msg, size_t msglen,
+										  size_t recid, size_t check) {
 			if (!eckey) {
 				return 0;
 			}
@@ -72,7 +72,8 @@ namespace Elastos {
 			BIGNUM *x = nullptr, *e = nullptr, *order = nullptr, *sor = nullptr, *eor = nullptr, *field = nullptr;
 			EC_POINT *R = nullptr, *O = nullptr, *Q = nullptr;
 			BIGNUM *rr = nullptr, *zero = nullptr;
-			size_t n = 0, ret = 0;
+			size_t n = 0;
+			int ret = 0;
 			size_t i = recid / 2;
 			const BIGNUM *r = nullptr;
 			const BIGNUM *s = nullptr;
@@ -192,8 +193,7 @@ namespace Elastos {
 			return ret;
 		}
 
-		bool BTCKey::ECDSASign(const CMBlock &privKey, const CMBlock &data,
-		                       CMBlock &signedData, const int nid) {
+		bool BTCKey::ECDSASign(const CMBlock &privKey, const CMBlock &data, CMBlock &signedData, int nid) {
 			bool out = false;
 			if (32 != privKey.GetSize() && 0 == data.GetSize()) {
 				return out;
@@ -247,8 +247,7 @@ namespace Elastos {
 			return out;
 		}
 
-		bool BTCKey::ECDSAVerify(const CMBlock &pubKey, const CMBlock &data,
-		                         const CMBlock &signedData, const int nid) {
+		bool BTCKey::ECDSAVerify(const CMBlock &pubKey, const CMBlock &data, const CMBlock &signedData, int nid) {
 			bool out = false;
 			if (33 != pubKey.GetSize() || 0 == data.GetSize() || 0 == signedData.GetSize()) {
 				return out;
@@ -280,9 +279,9 @@ namespace Elastos {
 							UInt256 md;
 							BRSHA256(&md, pPlainText, szPlainText);
 							if (1 ==
-							    ECDSA_verify(0, (unsigned char *) &md, sizeof(md),
-							                 (unsigned char *) (void *) signedData,
-							                 (int) signedData.GetSize(), key)) {
+								ECDSA_verify(0, (unsigned char *) &md, sizeof(md),
+											 (unsigned char *) (void *) signedData,
+											 (int) signedData.GetSize(), key)) {
 								out = true;
 							}
 						}
@@ -303,8 +302,7 @@ namespace Elastos {
 		}
 
 		bool
-		BTCKey::ECDSACompactSign(const CMBlock &privKey, const CMBlock &data,
-		                         CMBlock &signedData, const int nid) {
+		BTCKey::ECDSACompactSign(const CMBlock &privKey, const CMBlock &data, CMBlock &signedData, int nid) {
 			bool out = false;
 			if (32 != privKey.GetSize() || 0 == data.GetSize()) {
 				return out;
@@ -325,7 +323,7 @@ namespace Elastos {
 				EC_KEY *key = EC_KEY_new_by_curve_name(nid);
 				if (key) {
 					BIGNUM *_privkey = BN_bin2bn((const unsigned char *) (uint8_t *) privKey, (int) privKey.GetSize(),
-					                             nullptr);
+												 nullptr);
 					if (_privkey) {
 						if (1 == EC_KEY_set_private_key(key, _privkey)) {
 							UInt256 md = UINT256_ZERO;
@@ -343,7 +341,7 @@ namespace Elastos {
 									CMBlock pubKey = getPubKeyFromPrivKey(privKey, nid);
 									for (int i = 0; i < 4; i++) {
 										if (1 ==
-										    _ECDSA_SIG_recover_key_GFp(key, sig, (uint8_t *) &md, sizeof(md), i, 1)) {
+											_ECDSA_SIG_recover_key_GFp(key, sig, (uint8_t *) &md, sizeof(md), i, 1)) {
 											EC_KEY_set_conv_form(key, POINT_CONVERSION_COMPRESSED);
 											int nSize = i2o_ECPublicKey(key, nullptr);
 											assert(nSize);
@@ -382,8 +380,7 @@ namespace Elastos {
 		}
 
 		bool
-		BTCKey::ECDSACompactVerify(const CMBlock &pubKey, const CMBlock &data,
-		                           const CMBlock &signedData, const int nid) {
+		BTCKey::ECDSACompactVerify(const CMBlock &pubKey, const CMBlock &data, const CMBlock &signedData, int nid) {
 			bool out = false;
 			if (33 != pubKey.GetSize() || 0 == data.GetSize() || 65 != signedData.GetSize()) {
 				return out;
@@ -418,8 +415,8 @@ namespace Elastos {
 									BIGNUM *s = BN_bin2bn(&p64[32], 32, nullptr);
 									ECDSA_SIG_set0(sig, r, s);
 									if (1 ==
-									    _ECDSA_SIG_recover_key_GFp(key, sig, (unsigned char *) &md, sizeof(md), recid,
-									                               0)) {
+										_ECDSA_SIG_recover_key_GFp(key, sig, (unsigned char *) &md, sizeof(md), recid,
+																   0)) {
 										int nSize = i2o_ECPublicKey(key, nullptr);
 										assert(nSize);
 										assert(nSize <= 65);
@@ -451,9 +448,8 @@ namespace Elastos {
 		}
 
 		bool
-
 		BTCKey::ECDSACompactSign_sha256(const CMBlock &privKey, const UInt256 &md, CMBlock &signedData,
-		                                const int nid) {
+										int nid) {
 			bool out = false;
 			if (32 != privKey.GetSize()) {
 				return out;
@@ -472,7 +468,7 @@ namespace Elastos {
 				EC_KEY *key = EC_KEY_new_by_curve_name(nid);
 				if (key) {
 					BIGNUM *_privkey = BN_bin2bn((const unsigned char *) (uint8_t *) privKey, (int) privKey.GetSize(),
-					                             nullptr);
+												 nullptr);
 					if (_privkey) {
 						if (1 == EC_KEY_set_private_key(key, _privkey)) {
 							ECDSA_SIG *sig = ECDSA_do_sign((unsigned char *) &md, sizeof(md), key);
@@ -488,7 +484,7 @@ namespace Elastos {
 									CMBlock pubKey = getPubKeyFromPrivKey(privKey, nid);
 									for (int i = 0; i < 4; i++) {
 										if (1 ==
-										    _ECDSA_SIG_recover_key_GFp(key, sig, (uint8_t *) &md, sizeof(md), i, 1)) {
+											_ECDSA_SIG_recover_key_GFp(key, sig, (uint8_t *) &md, sizeof(md), i, 1)) {
 											EC_KEY_set_conv_form(key, POINT_CONVERSION_COMPRESSED);
 											int nSize = i2o_ECPublicKey(key, nullptr);
 											assert(nSize);
@@ -528,7 +524,7 @@ namespace Elastos {
 
 		bool
 		BTCKey::ECDSACompactVerify_sha256(const CMBlock &pubKey, const UInt256 &md, const CMBlock &signedData,
-		                                  const int nid) {
+										  int nid) {
 			bool out = false;
 			if (33 != pubKey.GetSize() || 65 != signedData.GetSize()) {
 				return out;
@@ -559,8 +555,8 @@ namespace Elastos {
 									BIGNUM *s = BN_bin2bn(&p64[32], 32, nullptr);
 									ECDSA_SIG_set0(sig, r, s);
 									if (1 ==
-									    _ECDSA_SIG_recover_key_GFp(key, sig, (unsigned char *) &md, sizeof(md), recid,
-									                               0)) {
+										_ECDSA_SIG_recover_key_GFp(key, sig, (unsigned char *) &md, sizeof(md), recid,
+																   0)) {
 										EC_KEY_set_conv_form(key, POINT_CONVERSION_COMPRESSED);
 										int nSize = i2o_ECPublicKey(key, nullptr);
 										assert(nSize);
@@ -614,19 +610,19 @@ namespace Elastos {
 			strcpy(salt, "mnemonic");
 			if (passphrase) strcpy(salt + strlen("mnemonic"), passphrase);
 			PKCS5_PBKDF2_HMAC(phrase, strlen(phrase), (unsigned char *) salt, strlen(salt), 2048, EVP_sha512(),
-			                  sizeof(master_seed.raw), master_seed.raw);
+							  sizeof(master_seed.raw), master_seed.raw);
 
 			ext_hd_t extended_private_key;
 			size_t extended_private_keylen = sizeof(master_seed.raw);
 			HMAC(EVP_sha512(), salt, strlen(salt), master_seed.raw, sizeof(master_seed.raw),
-			     extended_private_key.raw,
-			     (unsigned int *) &extended_private_keylen);
+				 extended_private_key.raw,
+				 (unsigned int *) &extended_private_keylen);
 			memcpy(key64, extended_private_key.raw, extended_private_keylen);
 		}
 
 		CMBlock
 		BTCKey::getPrivKeySeed(const std::string &phrase, const std::string &phrasePassword,
-		                       const boost::filesystem::path &i18nPath, const std::string language, const int nid) {
+							   const boost::filesystem::path &i18nPath, const std::string &language, int nid) {
 			CMBlock out;
 			if (phrase == "" || i18nPath == "") {
 				return out;
@@ -664,7 +660,7 @@ namespace Elastos {
 			return out;
 		}
 
-		CMBlock BTCKey::getPubKeyFromPrivKey(const CMBlock &privKey, const int nid) {
+		CMBlock BTCKey::getPubKeyFromPrivKey(const CMBlock &privKey, int nid) {
 			CMBlock out;
 			BIGNUM *_privkey = nullptr;
 			if (32 != privKey.GetSize()) {
@@ -679,7 +675,7 @@ namespace Elastos {
 				if (_pubkey) {
 					if (1 == EC_POINT_mul(curve, _pubkey, _privkey, nullptr, nullptr, nullptr)) {
 						BIGNUM *__pubkey = EC_POINT_point2bn(curve, _pubkey, POINT_CONVERSION_COMPRESSED, nullptr,
-						                                     nullptr);
+															 nullptr);
 						if (nullptr != __pubkey) {
 							uint8_t arrBN[256] = {0};
 							int len = BN_bn2bin(__pubkey, arrBN);
@@ -698,7 +694,7 @@ namespace Elastos {
 			return out;
 		}
 
-		bool BTCKey::PublickeyIsValid(const CMBlock &pubKey, const int nid) {
+		bool BTCKey::PublickeyIsValid(const CMBlock &pubKey, int nid) {
 			bool out = false;
 			if (0 == pubKey.GetSize()) {
 				return out;
@@ -706,7 +702,7 @@ namespace Elastos {
 			EC_KEY *key = EC_KEY_new_by_curve_name(nid);
 			if (nullptr != key) {
 				BIGNUM *_pubkey = BN_bin2bn((const unsigned char *) (uint8_t *) pubKey, (int) pubKey.GetSize(),
-				                            nullptr);
+											nullptr);
 				if (nullptr != _pubkey) {
 					const EC_GROUP *curve = EC_KEY_get0_group(key);
 					EC_POINT *ec_p = EC_POINT_bn2point(curve, _pubkey, nullptr, nullptr);
@@ -725,7 +721,7 @@ namespace Elastos {
 			return out;
 		}
 
-		bool BTCKey::KeyIsValid(const CMBlock &privKey, const CMBlock &pubKey, const int nid) {
+		bool BTCKey::KeyIsValid(const CMBlock &privKey, const CMBlock &pubKey, int nid) {
 			bool out = false;
 			if (32 != privKey.GetSize() || 33 != pubKey.GetSize()) {
 				return out;
@@ -733,14 +729,14 @@ namespace Elastos {
 			EC_KEY *key = EC_KEY_new_by_curve_name(nid);
 			if (nullptr != key) {
 				BIGNUM *pubkey = BN_bin2bn((const unsigned char *) (uint8_t *) pubKey, (int) pubKey.GetSize(),
-				                           nullptr);
+										   nullptr);
 				if (nullptr != pubkey) {
 					const EC_GROUP *curve = EC_KEY_get0_group(key);
 					EC_POINT *ec_p = EC_POINT_bn2point(curve, pubkey, nullptr, nullptr);
 					if (nullptr != ec_p) {
 						if (1 == EC_KEY_set_public_key(key, ec_p)) {
 							BIGNUM *privkey = BN_bin2bn((const unsigned char *) (uint8_t *) privKey,
-							                            (int) privKey.GetSize(), nullptr);
+														(int) privKey.GetSize(), nullptr);
 							if (nullptr != privkey) {
 								if (1 == EC_KEY_set_private_key(key, privkey)) {
 									if (1 == EC_KEY_check_key(key)) {
@@ -768,7 +764,7 @@ namespace Elastos {
 			BIGNUM *bnOrder = BN_CTX_get(ctx);
 			BIGNUM *bnOne = BN_CTX_get(ctx);
 			EC_GROUP_get_order(group, bnOrder,
-			                   ctx); // what a grossly inefficient way to get the (constant) group order...
+							   ctx); // what a grossly inefficient way to get the (constant) group order...
 			BN_bin2bn(vchTweak, 32, bnTweak);
 			if (BN_cmp(bnTweak, bnOrder) >= 0)
 				return out; // extremely unlikely
@@ -798,7 +794,7 @@ namespace Elastos {
 			EC_KEY *key = EC_KEY_new_by_curve_name(nid);
 			if (nullptr != key) {
 				BIGNUM *pubKey = BN_bin2bn((const unsigned char *) (uint8_t *) K->p, sizeof(K->p),
-				                           nullptr);
+										   nullptr);
 				if (nullptr != pubKey) {
 					const EC_GROUP *curve = EC_KEY_get0_group(key);
 					EC_POINT *ec_p = EC_POINT_bn2point(curve, pubKey, nullptr, nullptr);
@@ -830,7 +826,7 @@ namespace Elastos {
 				UInt32SetBE(&buf[sizeof(*K)], i);
 
 				BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf,
-				       sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
+					   sizeof(buf)); // I = HMAC-SHA512(c, P(K) || i)
 				*c = *(UInt256 *) &I.u8[sizeof(UInt256)]; // c = IR
 				if (NID_secp256k1 == nid) {
 					BRSecp256k1PointAdd(K, (UInt256 *) &I); // K = P(IL) + K
@@ -844,11 +840,11 @@ namespace Elastos {
 		}
 
 		CMBlock
-		BTCKey::getDerivePubKey(const CMBlock &pubKey, const uint32_t &chain, const uint32_t &index,
-		                        UInt256 chainCode, const int nid) {
+		BTCKey::getDerivePubKey(const CMBlock &pubKey, uint32_t chain, uint32_t index,
+								UInt256 chainCode, int nid) {
 			CMBlock out;
 			if (true != pubKey ||
-			    33 != pubKey.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
+				33 != pubKey.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
 				return out;
 			}
 			BRECPoint ecPoint;
@@ -861,7 +857,7 @@ namespace Elastos {
 		}
 
 		static bool _TweakSecret(unsigned char vchSecretOut[32], const unsigned char vchSecretIn[32],
-		                         const unsigned char vchTweak[32], int nid) {
+								 const unsigned char vchTweak[32], int nid) {
 			bool ret = true;
 			BN_CTX *ctx = BN_CTX_new();
 			BN_CTX_start(ctx);
@@ -870,7 +866,7 @@ namespace Elastos {
 			BIGNUM *bnOrder = BN_CTX_get(ctx);
 			EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
 			EC_GROUP_get_order(group, bnOrder,
-			                   ctx); // what a grossly inefficient way to get the (constant) group order...
+							   ctx); // what a grossly inefficient way to get the (constant) group order...
 			BN_bin2bn(vchTweak, 32, bnTweak);
 			if (BN_cmp(bnTweak, bnOrder) >= 0)
 				ret = false; // extremely unlikely
@@ -910,14 +906,14 @@ namespace Elastos {
 			UInt32SetBE(&buf[sizeof(BRECPoint)], i);
 
 			BRHMAC(&I, BRSHA512, sizeof(UInt512), c, sizeof(*c), buf,
-			       sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
+				   sizeof(buf)); // I = HMAC-SHA512(c, k|P(k) || i)
 
 			if (NID_secp256k1 == nid) {
 				BRSecp256k1ModAdd(k, (UInt256 *) &I); // k = IL + k (mod n)
 			} else {
 				UInt256 kOut;
 				_TweakSecret((unsigned char *) &kOut.u8[0], (unsigned char *) &k->u8[0], (unsigned char *) &I.u8[0],
-				             nid);
+							 nid);
 				*k = kOut;
 			}
 			*c = *(UInt256 *) &I.u8[sizeof(UInt256)]; // c = IR
@@ -930,8 +926,7 @@ namespace Elastos {
 		// depth is the number of arguments in vlist
 		static void
 		_BRBIP32vPrivKeyPath(BRKey *key, int nid, bool bSecret, UInt256 &chainCode, bool useChainCode,
-		                     const void *seed,
-		                     size_t seedLen, int depth, va_list vlist) {
+							 const void *seed, size_t seedLen, int depth, va_list vlist) {
 			UInt512 I;
 			UInt256 secret, s = UINT256_ZERO, c = UINT256_ZERO, cmp = UINT256_ZERO;
 
@@ -986,7 +981,7 @@ namespace Elastos {
 		// depth is the number of arguments used to specify the path
 		static void
 		_BRBIP32PrivKeyPath(BRKey *key, int nid, bool bSecret, UInt256 &chainCode, bool useChainCode,
-		                    const void *seed, size_t seedLen, int depth, ...) {
+							const void *seed, size_t seedLen, int depth, ...) {
 			va_list ap;
 			va_start(ap, depth);
 			_BRBIP32vPrivKeyPath(key, nid, bSecret, chainCode, useChainCode, seed, seedLen, depth, ap);
@@ -996,14 +991,14 @@ namespace Elastos {
 		// sets the private key for path m/0H/chain/index to key
 		static void
 		_BRBIP32PrivKey(BRKey *key, int nid, bool bSecret, UInt256 &chainCode, bool useChainCode, const void *seed,
-		                size_t seedLen, uint32_t chain, uint32_t index) {
+						size_t seedLen, uint32_t chain, uint32_t index) {
 			_BRBIP32PrivKeyPath(key, nid, bSecret, chainCode, useChainCode, seed, seedLen, 4, 1 | BIP32_HARD, chain,
-			                    chain, index);
+								chain, index);
 		}
 
 		CMBlock
-		BTCKey::getDerivePrivKey(const CMBlock &seed, const uint32_t &chain, const uint32_t &index, UInt256 &chainCode,
-		                         const bool useChainCode, const int nid) {
+		BTCKey::getDerivePrivKey(const CMBlock &seed, uint32_t chain, uint32_t index, UInt256 &chainCode,
+								 bool useChainCode, int nid) {
 			CMBlock out;
 			if (0 == seed.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
 				return out;
@@ -1016,8 +1011,39 @@ namespace Elastos {
 		}
 
 		CMBlock
-		BTCKey::getDerivePrivKey_Secret(const CMBlock &privKey, const uint32_t &chain, const uint32_t &index,
-		                                UInt256 chainCode, const int nid) {
+		BTCKey::getDerivePrivKey_depth(const CMBlock &seed, UInt256 &chainCode, bool useChainCode, int nid,
+									   int depth, ...) {
+			CMBlock out;
+			if (0 == seed.GetSize()) {
+				return out;
+			}
+			BRKey key;
+			va_list ap;
+			va_start(ap, depth);
+			_BRBIP32vPrivKeyPath(&key, nid, false, chainCode, useChainCode, seed, seed.GetSize(), depth, ap);
+			va_end(ap);
+			out.Resize(sizeof(key.secret));
+			memcpy(out, &key.secret.u8[0], sizeof(key.secret));
+			return out;
+		}
+
+		CMBlock
+		BTCKey::getDerivePrivKey_depth(const CMBlock &seed, UInt256 &chainCode, bool useChainCode, int nid,
+							   int depth, va_list ap) {
+			CMBlock out;
+			if (0 == seed.GetSize()) {
+				return out;
+			}
+			BRKey key;
+			_BRBIP32vPrivKeyPath(&key, nid, false, chainCode, useChainCode, seed, seed.GetSize(), depth, ap);
+			out.Resize(sizeof(key.secret));
+			memcpy(out, &key.secret.u8[0], sizeof(key.secret));
+			return out;
+		}
+
+		CMBlock
+		BTCKey::getDerivePrivKey_Secret(const CMBlock &privKey, uint32_t chain, uint32_t index,
+										UInt256 chainCode, int nid) {
 			CMBlock out;
 			if (32 != privKey.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
 				return out;
@@ -1029,10 +1055,41 @@ namespace Elastos {
 			return out;
 		}
 
+		CMBlock
+		BTCKey::getDerivePrivKey_Secret_depth(const CMBlock &privKey, UInt256 chainCode, bool useChainCode,
+											  int nid, int depth, ...) {
+			CMBlock out;
+			if (32 != privKey.GetSize()) {
+				return out;
+			}
+			BRKey key;
+			va_list ap;
+			va_start(ap, depth);
+			_BRBIP32vPrivKeyPath(&key, nid, true, chainCode, useChainCode, privKey, privKey.GetSize(), depth, ap);
+			va_end(ap);
+			out.Resize(sizeof(key.secret));
+			memcpy(out, &key.secret.u8[0], sizeof(key.secret));
+			return out;
+		}
+
+		CMBlock
+		BTCKey::getDerivePrivKey_Secret_depth(const CMBlock &privKey, UInt256 chainCode, bool useChainCode,
+									  int nid, int depth, va_list ap) {
+			CMBlock out;
+			if (32 != privKey.GetSize()) {
+				return out;
+			}
+			BRKey key;
+			_BRBIP32vPrivKeyPath(&key, nid, true, chainCode, useChainCode, privKey, privKey.GetSize(), depth, ap);
+			out.Resize(sizeof(key.secret));
+			memcpy(out, &key.secret.u8[0], sizeof(key.secret));
+			return out;
+		}
+
 		// sets the private key for path m/0H/chain/index to each element in keys
 		void _BRBIP32PrivKeyList(BRKey keys[], size_t keysCount, bool bSecret, const void *seed, size_t seedLen,
-		                         uint32_t chain, const uint32_t indexes[], UInt256 &chainCode, bool useChainCode,
-		                         int nid) {
+								 uint32_t chain, const uint32_t indexes[], UInt256 &chainCode, bool useChainCode,
+								 int nid) {
 			UInt512 I;
 			UInt256 secret, s, c;
 
@@ -1076,18 +1133,18 @@ namespace Elastos {
 
 		void
 		BTCKey::getDerivePrivKey(std::vector<CMBlock> &privKeys, const CMBlock &seed,
-		                         const uint32_t &chain, const uint32_t indexes[], UInt256 &chainCode,
-		                         const bool useChainCode, const int nid) {
+								 uint32_t chain, const uint32_t indexes[], UInt256 &chainCode,
+								 bool useChainCode, int nid) {
 			if (0 == privKeys.size() || 0 == seed.GetSize() ||
-			    !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN) || !indexes) {
+				!(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN) || !indexes) {
 				return;
 			}
 			size_t keysCount = privKeys.size();
 			BRKey keys[keysCount];
 			memset(keys, 0, sizeof(keys));
 			_BRBIP32PrivKeyList(keys, keysCount, false, seed, seed.GetSize(), chain, indexes, chainCode,
-			                    useChainCode,
-			                    nid);
+								useChainCode,
+								nid);
 			for (size_t i = 0; i < keysCount; i++) {
 				CMBlock mbSecret(sizeof(keys[i].secret));
 				memcpy(mbSecret, &keys[i].secret, sizeof(keys[i].secret));
@@ -1097,17 +1154,17 @@ namespace Elastos {
 
 		void
 		BTCKey::getDerivePrivKey_Secret(std::vector<CMBlock> &privKeys, const CMBlock &privKey,
-		                                const uint32_t &chain, const uint32_t indexes[], UInt256 chainCode,
-		                                const int nid) {
+										uint32_t chain, const uint32_t indexes[], UInt256 chainCode,
+										int nid) {
 			if (0 == privKeys.size() || 32 != privKey.GetSize() ||
-			    !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN) || !indexes) {
+				!(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN) || !indexes) {
 				return;
 			}
 			size_t keysCount = privKeys.size();
 			BRKey keys[keysCount];
 			memset(keys, 0, sizeof(keys));
 			_BRBIP32PrivKeyList(keys, keysCount, true, privKey, privKey.GetSize(), chain, indexes, chainCode, true,
-			                    nid);
+								nid);
 			for (size_t i = 0; i < keysCount; i++) {
 				CMBlock mbSecret(sizeof(keys[i].secret));
 				memcpy(mbSecret, &keys[i].secret, sizeof(keys[i].secret));
@@ -1121,7 +1178,7 @@ namespace Elastos {
 		}
 
 		CMBlock
-		BTCKey::getMasterPrivkey(const CMBlock &seed, const int nid) {
+		BTCKey::getMasterPrivkey(const CMBlock &seed, int nid) {
 			CMBlock out;
 			if (0 == seed.GetSize()) {
 				return out;

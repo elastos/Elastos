@@ -48,7 +48,7 @@ TEST_CASE("bitcoin keystore with special phrase and no passphrase", "[bitcoin te
 }
 
 TEST_CASE("bitcoin keystore with entropy", "[bitcoin test]") {
-	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed256();
+	CMBlock seed = WalletTool::GenerateSeed256();
 	std::string entropySource = WalletTool::GenerateEntropySource(seed);
 	std::string prikey_base58 = WalletTool::getDeriveKeyFromEntropySource_base58(entropySource);
 
@@ -64,20 +64,20 @@ TEST_CASE("bitcoin keystore with special entropy", "[bitcoin test]") {
 
 TEST_CASE("unicode to utf8 convert", "[bitcoin test]") {
 
-	char in_utf8[] = u8"哈";
-	char16_t in_utf16[] = u"哈";
-
-	CMemBlock<char> cb_in_u8;
-	cb_in_u8.SetMemFixed(in_utf8, sizeof(in_utf8));
-	CMemBlock<char> u16 = WalletTool::U8ToU16(cb_in_u8);
-
-	CMemBlock<char> cb_in_u16;
-	cb_in_u16.SetMemFixed((char *) in_utf16, sizeof(in_utf16));
-	CMemBlock<char> u8 = WalletTool::U16ToU8(cb_in_u16);
-	printf("utf16-->utf8 out=%s\n", (char *) u8);
-	bool bEqual = 0 == memcmp(u8, in_utf8, strlen(in_utf8));
-
-	int pause = 0;
+//	char in_utf8[] = u8"哈";
+//	char16_t in_utf16[] = u"哈";
+//
+//	CMemBlock<char> cb_in_u8;
+//	cb_in_u8.SetMemFixed(in_utf8, sizeof(in_utf8));
+//	CMemBlock<char> u16 = WalletTool::U8ToU16(cb_in_u8);
+//
+//	CMemBlock<char> cb_in_u16;
+//	cb_in_u16.SetMemFixed((char *) in_utf16, sizeof(in_utf16));
+//	CMemBlock<char> u8 = WalletTool::U16ToU8(cb_in_u16);
+//	printf("utf16-->utf8 out=%s\n", (char *) u8);
+//	bool bEqual = 0 == memcmp(u8, in_utf8, strlen(in_utf8));
+//
+//	int pause = 0;
 }
 
 TEST_CASE("Seed serialize/deserialize", "[bitcoin test]") {
@@ -92,7 +92,7 @@ TEST_CASE("Seed serialize/deserialize", "[bitcoin test]") {
 
 TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase", "[bitcoin test]") {
 
-	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed128();
+	CMBlock seed = WalletTool::GenerateSeed128();
 	CMemBlock<char> phrase;
 #ifdef MNEMONIC_SOURCE_H
 	phrase = WalletTool::GeneratePhraseFromSeed(seed, "french");
@@ -101,7 +101,7 @@ TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase",
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, "french");
+	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, "french");
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #else
 	Mnemonic _mnemonic("french", "Data");
@@ -111,7 +111,7 @@ TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase",
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
+	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #endif
 
@@ -122,7 +122,7 @@ TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase",
 
 TEST_CASE("bitcoin keystore in japanese with generating phrase and no passphrase", "[bitcoin test]") {
 
-	CMemBlock<uint8_t> seed = WalletTool::GenerateSeed128();
+	CMBlock seed = WalletTool::GenerateSeed128();
 	CMemBlock<char> phrase;
 #ifdef MNEMONIC_SOURCE_H
 	phrase = WalletTool::GeneratePhraseFromSeed(seed, "japanese");
@@ -131,7 +131,7 @@ TEST_CASE("bitcoin keystore in japanese with generating phrase and no passphrase
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, "japanese");
+	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, "japanese");
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #else
 	Mnemonic _mnemonic("japanese", "Data");
@@ -141,7 +141,7 @@ TEST_CASE("bitcoin keystore in japanese with generating phrase and no passphrase
 	REQUIRE(true == bValid);
 	std::string str_phrase = (const char *) phrase;
 
-	CMemBlock<uint8_t> seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
+	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
 #endif
 

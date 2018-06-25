@@ -48,7 +48,7 @@ namespace Elastos {
 			_usage = (Usage)istream.get();
 
 			uint64_t len = istream.getVarUint();
-			_data.Resize(len);
+			_data.Resize(size_t(len));
 			istream.getBytes(_data, len);
 
 			return true;

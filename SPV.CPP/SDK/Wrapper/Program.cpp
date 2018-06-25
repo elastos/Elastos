@@ -69,10 +69,10 @@ namespace Elastos {
 		}
 
 		bool Program::Deserialize(ByteStream &istream) {
-			_parameter.Resize(istream.getVarUint());
+			_parameter.Resize(size_t(istream.getVarUint()));
 			istream.getBytes(_parameter, _parameter.GetSize());
 
-			_code.Resize(istream.getVarUint());
+			_code.Resize(size_t(istream.getVarUint()));
 			istream.getBytes(_code, _code.GetSize());
 
 			return true;
