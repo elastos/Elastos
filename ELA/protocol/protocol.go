@@ -101,7 +101,6 @@ type Noder interface {
 	RandSelectAddresses() []p2p.NetAddress
 	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
-	ExistHash(hash common.Uint256) bool
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
 	IsSyncFailed() bool
