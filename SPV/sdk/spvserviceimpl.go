@@ -23,31 +23,45 @@ const (
 )
 
 type downloadBlock struct {
-	mutex sync.Mutex
+	mutex sync.RWMutex
 	*msg.MerkleBlock
-	txsQueue map[common.Uint256]uint32
-	txs      []*ela.Transaction
+	txQueue map[common.Uint256]uint32
+	txs     []*ela.Transaction
 }
 
-func (b *downloadBlock) queueTx(txId common.Uint256, height uint32) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
-	if b.txsQueue == nil {
-		b.txsQueue = make(map[common.Uint256]uint32)
-	}
-	b.txsQueue[txId] = height
+func newDownloadBlock() *downloadBlock {
+	return &downloadBlock{txQueue: make(map[common.Uint256]uint32)}
 }
 
-func (b *downloadBlock) dequeueTx(tx *ela.Transaction) (uint32, bool) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
+func (d *downloadBlock) queueTx(txId common.Uint256, height uint32) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	d.txQueue[txId] = height
+}
+
+func (d *downloadBlock) inQueue(txId common.Uint256) bool {
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
+	_, ok := d.txQueue[txId]
+	return ok
+}
+
+func (d *downloadBlock) dequeueTx(tx *ela.Transaction) (uint32, bool) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
 	txId := tx.Hash()
-	height, ok := b.txsQueue[txId]
+	height, ok := d.txQueue[txId]
 	if !ok {
 		return 0, false
 	}
-	delete(b.txsQueue, txId)
+	delete(d.txQueue, txId)
 	return height, true
+}
+
+func (d *downloadBlock) finished() bool {
+	d.mutex.RLock()
+	defer d.mutex.RUnlock()
+	return len(d.txQueue) == 0
 }
 
 // The SPV service implementation
@@ -56,9 +70,10 @@ type SPVServiceImpl struct {
 	SPVClient
 	chain       *Blockchain
 	blockQueue  chan common.Uint256
-	download    *downloadBlock
+	downloading *downloadBlock
 	commitQueue chan *downloadBlock
-	txAppend    chan *common.Uint256
+	pendingTx   common.Uint256
+	txAccept    chan *common.Uint256
 	txReject    chan *msg.Reject
 	handler     SPVHandler
 	fPositives  int
@@ -77,7 +92,7 @@ func NewSPVServiceImpl(client SPVClient, headerStore store.HeaderStore, handler 
 	}
 
 	service.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*3)
-	service.download = new(downloadBlock)
+	service.downloading = newDownloadBlock()
 	service.commitQueue = make(chan *downloadBlock, p2p.MaxBlocksPerMsg*2)
 
 	// Initialize local peer height
@@ -122,35 +137,34 @@ func (s *SPVServiceImpl) SendTransaction(tx ela.Transaction) (*common.Uint256, e
 	s.Lock()
 	defer s.Unlock()
 
-	if s.chain.IsSyncing() || s.PeerManager().Peers.PeersCount() == 0 {
-		return nil, fmt.Errorf("method not available, please try later")
+	if s.PeerManager().Peers.PeersCount() == 0 {
+		return nil, fmt.Errorf("method not available, no peers connected")
 	}
 
-	s.txAppend = make(chan *common.Uint256, 1)
+	txId := tx.Hash()
+	s.txAccept = make(chan *common.Uint256, 1)
 	s.txReject = make(chan *msg.Reject, 1)
 
 	finish := func(txId common.Uint256) {
-		close(s.txAppend)
+		close(s.txAccept)
 		close(s.txReject)
-		s.txAppend = nil
+		s.txAccept = nil
 		s.txReject = nil
-		s.download.dequeueTx(&tx)
 	}
-	// Add transaction to queue
-	s.download.queueTx(tx.Hash(), 0)
+	// Set transaction in pending
+	s.pendingTx = txId
 	// Broadcast transaction to neighbor peers
 	s.PeerManager().Broadcast(msg.NewTx(&tx))
 	// Query neighbors mempool see if transaction was successfully added to mempool
 	s.PeerManager().Broadcast(new(msg.MemPool))
 
 	// Wait for result
-	txId := tx.Hash()
 	timer := time.NewTimer(time.Second * SendTxTimeout)
 	select {
 	case <-timer.C:
 		finish(txId)
 		return nil, fmt.Errorf("Send transaction timeout")
-	case <-s.txAppend:
+	case <-s.txAccept:
 		timer.Stop()
 		finish(txId)
 		// commit unconfirmed transaction to db
@@ -215,7 +229,7 @@ func (s *SPVServiceImpl) stopSyncing() {
 		}
 
 		// Reset download block
-		s.download = new(downloadBlock)
+		s.downloading = newDownloadBlock()
 		// Clear commit queue
 		for len(s.commitQueue) > 0 {
 			<-s.commitQueue
@@ -270,12 +284,12 @@ func (s *SPVServiceImpl) OnInventory(peer *net.Peer, m *msg.Inventory) error {
 				s.blockQueue <- inv.Hash
 			}
 		case msg.InvTypeTx:
-			if _, ok := s.download.txsQueue[inv.Hash]; s.txAppend != nil && ok {
-				s.txAppend <- nil
+			if s.txAccept != nil && s.pendingTx.IsEqual(inv.Hash) {
+				s.txAccept <- nil
 				continue
 			}
 			gData.AddInvVect(inv)
-			s.download.queueTx(inv.Hash, 0)
+			s.downloading.queueTx(inv.Hash, 0)
 		default:
 			continue
 		}
@@ -303,7 +317,7 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 			return fmt.Errorf("Peer%d is sending us blocks out of order", peer.ID())
 		}
 
-		if len(s.download.txsQueue) > 0 {
+		if !s.downloading.finished() {
 			s.changeSyncPeerAndRestart()
 			return fmt.Errorf("Peer%d is sending block with download block not finished", peer.ID())
 		}
@@ -320,18 +334,18 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 	}
 
 	// Save block as download block
-	s.download.MerkleBlock = block
+	s.downloading.MerkleBlock = block
 
 	// No transactions to download, just commit the block
 	if len(txIds) == 0 {
-		s.commitQueue <- s.download
-		s.download = new(downloadBlock)
+		s.commitQueue <- s.downloading
+		s.downloading = newDownloadBlock()
 		return nil
 	}
 
 	// Download transactions of this block
 	for _, txId := range txIds {
-		s.download.queueTx(*txId, header.Height)
+		s.downloading.queueTx(*txId, header.Height)
 	}
 
 	return nil
@@ -342,7 +356,7 @@ func (s *SPVServiceImpl) OnTx(peer *net.Peer, msg *msg.Tx) error {
 	defer s.Unlock()
 
 	tx := msg.Transaction.(*ela.Transaction)
-	height, ok := s.download.dequeueTx(tx)
+	height, ok := s.downloading.dequeueTx(tx)
 	if !ok {
 		return fmt.Errorf("Transaction not found in download queue %s", tx.Hash().String())
 	}
@@ -357,12 +371,12 @@ func (s *SPVServiceImpl) OnTx(peer *net.Peer, msg *msg.Tx) error {
 	}
 
 	// Add tx to download
-	s.download.txs = append(s.download.txs, tx)
+	s.downloading.txs = append(s.downloading.txs, tx)
 
 	// All transactions of the download block have been received, commit the download block
-	if len(s.download.txsQueue) == 0 {
-		s.commitQueue <- s.download
-		s.download = new(downloadBlock)
+	if s.downloading.finished() {
+		s.commitQueue <- s.downloading
+		s.downloading = newDownloadBlock()
 	}
 
 	return nil
@@ -425,7 +439,7 @@ func (s *SPVServiceImpl) OnNotFound(peer *net.Peer, msg *msg.NotFound) error {
 }
 
 func (s *SPVServiceImpl) OnReject(peer *net.Peer, msg *msg.Reject) error {
-	if _, ok := s.download.txsQueue[msg.Hash]; s.txReject != nil && ok {
+	if s.pendingTx.IsEqual(msg.Hash); s.txReject != nil {
 		s.txReject <- msg
 		return nil
 	}

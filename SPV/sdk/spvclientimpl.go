@@ -77,21 +77,21 @@ func (client *SPVClientImpl) MakeMessage(cmd string) (message p2p.Message, err e
 }
 
 func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) error {
-	switch msg := message.(type) {
+	switch message := message.(type) {
 	case *msg.Ping:
-		return client.OnPing(peer, msg)
+		return client.OnPing(peer, message)
 	case *msg.Pong:
-		return client.OnPong(peer, msg)
+		return client.OnPong(peer, message)
 	case *msg.Inventory:
-		return client.msgHandler.OnInventory(peer, msg)
+		return client.msgHandler.OnInventory(peer, message)
 	case *msg.MerkleBlock:
-		return client.msgHandler.OnMerkleBlock(peer, msg)
+		return client.msgHandler.OnMerkleBlock(peer, message)
 	case *msg.Tx:
-		return client.msgHandler.OnTx(peer, msg)
+		return client.msgHandler.OnTx(peer, message)
 	case *msg.NotFound:
-		return client.msgHandler.OnNotFound(peer, msg)
+		return client.msgHandler.OnNotFound(peer, message)
 	case *msg.Reject:
-		return client.msgHandler.OnReject(peer, msg)
+		return client.msgHandler.OnReject(peer, message)
 	default:
 		return errors.New("handle message unknown type")
 	}
