@@ -477,3 +477,43 @@ func GetTxFeeMap(tx *Transaction) (map[Uint256]Fixed64, error) {
 	}
 	return feeMap, nil
 }
+
+func (pool *TxPool) isTransactionCleaned(tx *Transaction) error {
+	if tx := pool.txnList[tx.Hash()]; tx != nil {
+		return errors.New("has transaction in transaction pool" + tx.Hash().String())
+	}
+	for _, input := range tx.Inputs {
+		if poolInput := pool.inputUTXOList[input.ReferKey()]; poolInput != nil {
+			return errors.New("has utxo inputs in input list pool" + input.String())
+		}
+	}
+	if tx.TxType == WithdrawFromSideChain {
+		payload := tx.Payload.(*PayloadWithdrawFromSideChain)
+		for _, hash := range payload.SideChainTransactionHashes {
+			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx != nil {
+				return errors.New("has sidechain hash in sidechain list pool" + hash.String())
+			}
+		}
+	}
+	return nil
+}
+
+func (pool *TxPool) isTransactionExisted(tx *Transaction) error {
+	if tx := pool.txnList[tx.Hash()]; tx == nil {
+		return errors.New("does not have transaction in transaction pool" + tx.Hash().String())
+	}
+	for _, input := range tx.Inputs {
+		if poolInput := pool.inputUTXOList[input.ReferKey()]; poolInput == nil {
+			return errors.New("does not have utxo inputs in input list pool" + input.String())
+		}
+	}
+	if tx.TxType == WithdrawFromSideChain {
+		payload := tx.Payload.(*PayloadWithdrawFromSideChain)
+		for _, hash := range payload.SideChainTransactionHashes {
+			if sidechainPoolTx := pool.sidechainTxList[hash]; sidechainPoolTx == nil {
+				return errors.New("does not have sidechain hash in sidechain list pool" + hash.String())
+			}
+		}
+	}
+	return nil
+}
