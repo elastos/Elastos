@@ -366,7 +366,7 @@ void cbOnFriendRequest(ElaCarrier* carrier, const char* userId, const ElaUserInf
 }
 
 static
-void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const char* message, size_t length,
+void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const void* message, size_t length,
                        void* context)
 {
     HandlerContext* hc = (HandlerContext*)context;
@@ -386,7 +386,7 @@ void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const char* me
         logE("New Java String object error");
         return;
     }
-    jmessage = (*hc->env)->NewStringUTF(hc->env, message);
+    jmessage = (*hc->env)->NewStringUTF(hc->env, (const char *)message);
     if (!jmessage) {
         logE("New Java String object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
@@ -405,7 +405,7 @@ void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const char* me
 }
 
 static
-void cbOnFriendInviteRquest(ElaCarrier* carrier, const char* from, const char* hello,
+void cbOnFriendInviteRquest(ElaCarrier* carrier, const char* from, const void* hello,
                             size_t length, void* context)
 {
     HandlerContext* hc = (HandlerContext*)context;
@@ -426,7 +426,7 @@ void cbOnFriendInviteRquest(ElaCarrier* carrier, const char* from, const char* h
         logE("New java String object error");
         return;
     }
-    jhello = (*hc->env)->NewStringUTF(hc->env, hello);
+    jhello = (*hc->env)->NewStringUTF(hc->env, (const char *)hello);
     if (!jhello) {
         logE("New java String object error");
         (*hc->env)->DeleteLocalRef(hc->env, jfrom);

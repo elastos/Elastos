@@ -80,30 +80,106 @@ typedef enum ElaStreamType {
     ElaStreamType_message
 } ElaStreamType;
 
+/**
+ * \~English
+ * Stream address type.
+ */
 typedef enum ElaCandidateType {
+    /**
+     * \~English
+     * The address is host local address.
+     */
     ElaCandidateType_Host,
+    /**
+     * \~English
+     * The address is server reflexive address.
+     */
     ElaCandidateType_ServerReflexive,
+    /**
+     * \~English
+     * The address is peer reflexive address.
+     */
     ElaCandidateType_PeerReflexive,
+    /**
+     * \~English
+     * The address is relayed address.
+     */
     ElaCandidateType_Relayed,
 } ElaCandidateType;
 
+/**
+ * \~English
+ * Peers network topology type.
+ */
 typedef enum ElaNetworkTopology {
+    /**
+     * \~English
+     * The stream peers is in LAN, using direct connection.
+     */
     ElaNetworkTopology_LAN,
+    /**
+     * \~English
+     * The stream peers behind NAT, using P2P direct connection.
+     */
     ElaNetworkTopology_P2P,
+    /**
+     * \~English
+     * The stream peers behind NAT, using relayed connection.
+     */
     ElaNetworkTopology_RELAYED,
 } ElaNetworkTopology;
 
+/**
+ * \~English
+ * Carrier stream address information.
+ */
 typedef struct ElaAddressInfo {
+    /**
+     * \~English
+     * The candidate address type.
+     */
     ElaCandidateType type;
+    /**
+     * \~English
+     * The IP/host of the address.
+     */
     char addr[ELA_MAX_IP_STRING_LEN + 1];
+    /**
+     * \~English
+     * The port of the address.
+     */
     int port;
+    /**
+     * \~English
+     * The IP/host of the related address.
+     */
     char related_addr[ELA_MAX_IP_STRING_LEN + 1];
+    /**
+     * \~English
+     * The port of the related address.
+     */
     int related_port;
 } ElaAddressInfo;
 
+/**
+ * \~English
+ * Carrier stream transport information.
+ */
 typedef struct ElaTransportInfo {
+    /**
+     * \~English
+     * The network topology type: LAN, P2P or relayed.
+     */
     ElaNetworkTopology topology;
+    /**
+     * \~English
+     * The local address information.
+     */
     ElaAddressInfo local;
+    /**
+     * \~English
+     * The remote address information.
+     */
     ElaAddressInfo remote;
 } ElaTransportInfo;
 
@@ -162,7 +238,7 @@ typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_init(ElaCarrier *carrier, 
+int ela_session_init(ElaCarrier *carrier,
                 ElaSessionRequestCallback *callback, void *context);
 
 /**
@@ -212,7 +288,7 @@ void ela_session_close(ElaSession *session);
 
 /**
  * \~English
- * Get the remote peer id of the session.
+ * Get the remote peer's address of the session.
  *
  * @param
  *      session     [in] A handle to the carrier session.
@@ -557,10 +633,38 @@ typedef struct ElaStreamCallbacks {
                            void *context);
 } ElaStreamCallbacks;
 
+/**
+ * Compress option, indicates data would be compressed before transmission.
+ * For now, just reserved this bit option for future implement.
+ */
 #define ELA_STREAM_COMPRESS             0x01
+
+/**
+ * Encrypt option, indicates data would be transmitted with plain mode.
+ * which means that transmitting data would be encrypted in default.
+ */
 #define ELA_STREAM_PLAIN                0x02
+
+/**
+ * Relaible option, indicates data transmission would be reliable, and be
+ * guranteed to received by remote peer, which acts as TCP transmission
+ * protocol. Without this option bitwised, the transmission would be
+ * unreliable as UDP transmission protocol.
+ */
 #define ELA_STREAM_RELIABLE             0x04
+
+/**
+ * Multiplexing option, indicates multiplexing would be activated on
+ * enstablished stream, and need to use multipexing APIs related with channel
+ * instread of APIs related strema to send/receive data.
+ */
 #define ELA_STREAM_MULTIPLEXING         0x08
+
+/**
+ * PortForwarding option, indicates port forwarding would be activated
+ * on established stream. This options should bitwise with 'Multiplexing'
+ * option.
+ */
 #define ELA_STREAM_PORT_FORWARDING      0x10
 
 /**

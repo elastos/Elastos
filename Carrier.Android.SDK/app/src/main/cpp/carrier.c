@@ -566,7 +566,7 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jstring jmsg)
 
 static
 void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
-                              const char* reason, const char* data, size_t length, void* context)
+                              const char* reason, const void* data, size_t length, void* context)
 {
     jstring jfrom = NULL;
     jstring jreason = NULL;
@@ -586,7 +586,7 @@ void friendInviteRspCallback(ElaCarrier* carrier, const char* from, int status,
     if (status != 0)
         jreason = (*env)->NewStringUTF(env, reason);
     else
-        jdata = (*env)->NewStringUTF(env, data);
+        jdata = (*env)->NewStringUTF(env, (const char *)data);
 
     if (!jreason && !jdata) {
         (*env)->DeleteLocalRef(env, jfrom);
