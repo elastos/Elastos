@@ -1,6 +1,7 @@
 package node
 
 import (
+	"crypto/rand"
 	"fmt"
 	"testing"
 	"time"
@@ -76,7 +77,25 @@ func TestNewHandlerEIP001(t *testing.T) {
 		assert.NoError(t, err)
 	}
 
-	// message inventory
+	// message inventory type tx
+	inv := msg.NewInventory()
+	for i := 0; i < 50; i++ {
+		var hash common.Uint256
+		rand.Read(hash[:])
+		inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &hash))
+	}
+	err = handler.Write(inv)
+	assert.NoError(t, err)
+	for len(handler.thisHandler.msgChan) > 0 {
+		response, err := handler.Read()
+		assert.NoError(t, err)
+		assert.Equal(t, p2p.CmdGetData, response.CMD())
+		for _, inv := range response.(*msg.GetData).InvList {
+			assert.Equal(t, msg.InvTypeTx, inv.Type)
+		}
+	}
+
+	// message inventory type block
 	err = handler.Write(invs[0])
 	assert.NoError(t, err)
 	time.Sleep(time.Millisecond * 100)
@@ -84,6 +103,9 @@ func TestNewHandlerEIP001(t *testing.T) {
 		response, err := handler.Read()
 		assert.NoError(t, err)
 		assert.Equal(t, p2p.CmdGetData, response.CMD())
+		for _, inv := range response.(*msg.GetData).InvList {
+			assert.Equal(t, msg.InvTypeBlock, inv.Type)
+		}
 	}
 
 	// message getdata notfound
