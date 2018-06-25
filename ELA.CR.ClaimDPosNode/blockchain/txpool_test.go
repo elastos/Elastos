@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"testing"
 
@@ -345,44 +346,121 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	var sideBlockHash5 common.Uint256
 
 	rand.Read(sideBlockHash1[:])
+	fmt.Println("sideBlockHash1:", sideBlockHash1)
 	rand.Read(sideBlockHash2[:])
+	fmt.Println("sideBlockHash2:", sideBlockHash2)
 	rand.Read(sideBlockHash3[:])
+	fmt.Println("sideBlockHash3:", sideBlockHash3)
 	rand.Read(sideBlockHash4[:])
+	fmt.Println("sideBlockHash4:", sideBlockHash4)
 	rand.Read(sideBlockHash5[:])
+	fmt.Println("sideBlockHash5:", sideBlockHash5)
 
 	txPool.Init()
 	//two mock transactions again, they have some identical sidechain hashes
 	tx3 := new(core.Transaction)
 	tx3.TxType = core.WithdrawFromSideChain
 	tx3.Payload = &core.PayloadWithdrawFromSideChain{
-		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash2, sideBlockHash3},
+		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash2},
 	}
-
+	tx3.Inputs = []*core.Input{
+		{
+			Previous: core.OutPoint{
+				TxID:  inputTxID,
+				Index: 0,
+			},
+			Sequence: 100,
+		},
+	}
 	tx4 := new(core.Transaction)
 	tx4.TxType = core.WithdrawFromSideChain
 	tx4.Payload = &core.PayloadWithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash1, sideBlockHash4},
 	}
-
+	tx4.Inputs = []*core.Input{
+		{
+			Previous: core.OutPoint{
+				TxID:  inputTxID,
+				Index: 1,
+			},
+			Sequence: 100,
+		},
+	}
 	tx5 := new(core.Transaction)
 	tx5.TxType = core.WithdrawFromSideChain
 	tx5.Payload = &core.PayloadWithdrawFromSideChain{
 		SideChainTransactionHashes: []common.Uint256{sideBlockHash2, sideBlockHash5},
 	}
-
-	newBLock.Transactions = []*core.Transaction{tx3}
+	tx5.Inputs = []*core.Input{
+		{
+			Previous: core.OutPoint{
+				TxID:  inputTxID,
+				Index: 2,
+			},
+			Sequence: 100,
+		},
+	}
+	tx6 := new(core.Transaction)
+	tx6.TxType = core.WithdrawFromSideChain
+	tx6.Payload = &core.PayloadWithdrawFromSideChain{
+		SideChainTransactionHashes: []common.Uint256{sideBlockHash3},
+	}
+	tx6.Inputs = []*core.Input{
+		{
+			Previous: core.OutPoint{
+				TxID:  inputTxID,
+				Index: 3,
+			},
+			Sequence: 100,
+		},
+	}
 
 	txPool.addToTxList(tx4)
+	for _, v := range tx4.Inputs {
+		txPool.addInputUTXOList(tx4, v)
+	}
 	txPool.addSidechainTx(tx4)
 
 	txPool.addToTxList(tx5)
+	for _, v := range tx5.Inputs {
+		txPool.addInputUTXOList(tx5, v)
+	}
 	txPool.addSidechainTx(tx5)
 
+	txPool.addToTxList(tx6)
+	for _, v := range tx6.Inputs {
+		txPool.addInputUTXOList(tx6, v)
+	}
+	txPool.addSidechainTx(tx6)
+
+	newBLock.Transactions = []*core.Transaction{tx3}
 	txPool.CleanSubmittedTransactions(&newBLock)
-	if len(txPool.txnList) != 0 || len(txPool.inputUTXOList) != 0 || len(txPool.sidechainTxList) != 0 {
-		t.Error("all tx pools should be cleaned.")
-		t.Log("tx list length:", len(txPool.txnList))
-		t.Log("input utxo list length:", len(txPool.inputUTXOList))
-		t.Log("sidechain tx list length:", len(txPool.sidechainTxList))
+	if err := txPool.isTransactionCleaned(tx4); err != nil {
+		t.Error("should clean transaction tx4:", err)
+	}
+
+	if err := txPool.isTransactionCleaned(tx5); err != nil {
+		t.Error("should clean transaction: tx5:", err)
+	}
+
+	if err := txPool.isTransactionExisted(tx6); err != nil {
+		t.Error("should have transaction: tx6", err)
+	}
+
+	/*------------------------------------------------------------*/
+	txPool.Init()
+
+	txPool.addToTxList(tx4)
+	for _, v := range tx4.Inputs {
+		txPool.addInputUTXOList(tx4, v)
+	}
+	txPool.addSidechainTx(tx4)
+
+	newBLock.Transactions = []*core.Transaction{tx4}
+
+	txPool.CleanSubmittedTransactions(&newBLock)
+
+	if err := txPool.isTransactionCleaned(tx4); err != nil {
+		t.Error("should clean transaction tx4:", err)
 	}
 }
