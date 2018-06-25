@@ -2,8 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "nlohmann/json.hpp"
-
 #include "ISubWallet.h"
 
 #ifndef __ELASTOS_SDK_IMAINCHAINSUBWALLET_H__

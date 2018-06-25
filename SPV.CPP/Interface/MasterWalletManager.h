@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "Interface/IMasterWalletManager.h"
+#include "IMasterWalletManager.h"
 
 namespace Elastos {
 	namespace ElaWallet {
