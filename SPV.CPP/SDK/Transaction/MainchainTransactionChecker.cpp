@@ -31,7 +31,7 @@ namespace Elastos {
 
 			bool isValid = TransactionChecker::checkTransactionPayload(transaction);
 
-			if (isValid) {
+			if (isValid && transaction->getTransactionType() == ELATransaction::Type::TransferCrossChainAsset) {
 				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
 						static_cast<PayloadTransferCrossChainAsset *>(payloadPtr.get());
 

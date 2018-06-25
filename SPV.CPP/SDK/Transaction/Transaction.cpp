@@ -491,6 +491,8 @@ namespace Elastos {
 			}
 			jsonData["Outputs"] = outputs;
 
+			jsonData["Fee"] = _transaction->fee;
+
 			return jsonData;
 		}
 
@@ -552,6 +554,9 @@ namespace Elastos {
 				_transaction->outputs[i] = TransactionOutputPtr(new TransactionOutput());
 				_transaction->outputs[i]->fromJson(outputs[i]);
 			}
+
+			_transaction->fee = jsonData["Fee"].get<uint64_t>();
+
 		}
 
 		uint64_t Transaction::calculateFee(uint64_t feePerKb) {

@@ -15,6 +15,7 @@ namespace Elastos {
 				_usedMaxAddressIndex(0),
 				_singleAddress(false),
 				_feePerKb(0),
+				_minFee(0),
 				_walletType(Normal) {
 
 		}

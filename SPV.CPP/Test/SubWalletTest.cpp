@@ -227,29 +227,27 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 	boost::scoped_ptr<TestTransactionSubWallet> subWallet(
 			new TestTransactionSubWallet(info, payPassword, createChainParams(), masterWallet.get()));
 
-	SECTION("Send transaction") {
-		//fixme [ymz] when child publicKey is correct and had token
-//		REQUIRE(subWallet->GetBalance() == 400 * BASIC_UINT);
-//
-//		nlohmann::json result;
-//		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO);
-//
-//		CHECK_THROWS_AS(subWallet->SendTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-//												   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
-//		CHECK_THROWS_AS(subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3", "",
-//												   50 * BASIC_UINT, BASIC_UINT, payPassword, ""), std::logic_error);
-//
-//		CHECK_NOTHROW(result = subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-//												   50 * BASIC_UINT, 0, payPassword, ""));
-//		REQUIRE(result["TxHash"].get<std::string>() != emptyHash);
-//		REQUIRE(result["Fee"].get<uint64_t>() != 0);
-//
-//		CHECK_NOTHROW(result = subWallet->SendTransaction("EZuWALdKM92U89NYAN5DDP5ynqMuyqG5i3",
-//												   "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-//												   50 * BASIC_UINT, BASIC_UINT, payPassword, ""));
-//
-//		REQUIRE(result["TxHash"].get<std::string>() != emptyHash);
-//		REQUIRE(result["Fee"].get<uint64_t>() == BASIC_UINT);
+	SECTION("Create and Send transaction") {
+		REQUIRE(subWallet->GetBalance() == 400 * BASIC_UINT);
+
+		nlohmann::json result;
+		nlohmann::json txJson;
+		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO);
+		CHECK_THROWS_AS(subWallet->CreateTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+				50 * BASIC_UINT, BASIC_UINT, ""), std::logic_error);
+
+		CHECK_THROWS_AS(subWallet->CreateTransaction("EV11DFAXUSjPQMsLnrNuXtR9YbJjUkCfQJ", "",
+		                                             50 * BASIC_UINT, BASIC_UINT, ""), std::logic_error);
+
+		CHECK_NOTHROW(txJson = subWallet->CreateTransaction("EV11DFAXUSjPQMsLnrNuXtR9YbJjUkCfQJ",
+				"ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", 50 * BASIC_UINT, BASIC_UINT, ""));
+
+		REQUIRE(txJson["TxHash"].get<std::string>() != emptyHash);
+
+		CHECK_NOTHROW(result = subWallet->SendRawTransaction(txJson, BASIC_UINT, payPassword));
+
+		REQUIRE(result["TxHash"].get<std::string>() != emptyHash);
+		REQUIRE(result["Fee"].get<uint64_t>() == BASIC_UINT);
 	}
 
 	SECTION("send raw transaction") {
