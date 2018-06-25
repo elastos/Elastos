@@ -190,20 +190,20 @@ static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from,
-                             const char *msg, size_t len, void *context)
+                             const void *msg, size_t len, void *context)
 {
     robot_log_debug("Received message from %s\n", from);
-    robot_log_debug(" msg: %s\n", msg);
+    robot_log_debug(" msg: %s\n", (const char *)msg);
     robot_log_debug("\n");
 
     robot_ack("%s\n", msg);
 }
 
 static void friend_invite_cb(ElaCarrier *w, const char *from,
-                             const char *data, size_t len, void *context)
+                             const void *data, size_t len, void *context)
 {
     robot_log_debug("Recevied friend invite from %s\n", from);
-    robot_log_debug(" data: %s\n", data);
+    robot_log_debug(" data: %s\n", (const char *)data);
 
     robot_ack("data %s\n", data);
 }

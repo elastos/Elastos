@@ -1004,12 +1004,12 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const char *msg, size_t len, void *context)
+                             const void *msg, size_t len, void *context)
 {
     output("Message from friend[%s]: %.*s\n", from, (int)len, msg);
 
     if (g_mode == PASSIVE_MODE) {
-        g_data_len = atoi(msg);
+        g_data_len = atoi((const char *)msg);
         output("Got data length: %zu.\n", g_data_len);
     } else {
         char *arg[] = {(char*)"md5sum", (char*)"-b", g_transferred_file, NULL};
@@ -1024,7 +1024,7 @@ static void message_callback(ElaCarrier *w, const char *from,
         else
             output("My md5 checksum:%s\n", buf);
 
-        if (strcasecmp(buf, msg) == 0) {
+        if (strcasecmp(buf, (const char *)msg) == 0) {
             output("Sent data successfully!\n");
         } else {
             output("Sent data unsuccessfully!\n");
@@ -1034,12 +1034,12 @@ static void message_callback(ElaCarrier *w, const char *from,
 }
 
 static void invite_request_callback(ElaCarrier *w, const char *from,
-                                    const char *data, size_t len, void *context)
+                                    const void *data, size_t len, void *context)
 {
     char *new_arg[1] = {NULL};
     char *add_stream_arg[2] = {NULL, NULL};
 
-    output("Invite request from[%s] with data: %.*s\n", from, (int)len, data);
+    output("Invite request from[%s] with data: %.*s\n", from, (int)len, (const char *)data);
 
     strcpy(g_peer_id, from);
     session_init(w);

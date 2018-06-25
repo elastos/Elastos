@@ -584,7 +584,7 @@ typedef struct ElaCallbacks {
      *      context     [in] The application defined context data.
      */
     void (*friend_message)(ElaCarrier *carrier, const char *from,
-                           const char *msg, size_t len, void *context);
+                           const void *msg, size_t len, void *context);
 
     /**
      * \~English
@@ -602,7 +602,7 @@ typedef struct ElaCallbacks {
      *      context     [in] The application defined context data.
      */
     void (*friend_invite)(ElaCarrier *carrier, const char *from,
-                          const char *data, size_t len, void *context);
+                          const void *data, size_t len, void *context);
 
 } ElaCallbacks;
 
@@ -1116,7 +1116,7 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  */
 CARRIER_API
 int ela_send_friend_message(ElaCarrier *carrier, const char *to,
-                            const char *msg, size_t len);
+                            const void *msg, size_t len);
 
 /**
  * \~English
@@ -1174,7 +1174,7 @@ typedef void ElaFriendInviteResponseCallback(ElaCarrier *carrier,
  */
 CARRIER_API
 int ela_invite_friend(ElaCarrier *carrier, const char *to,
-                      const char *data, size_t len,
+                      const void *data, size_t len,
                       ElaFriendInviteResponseCallback *callback,
                       void *context);
 
@@ -1209,7 +1209,7 @@ int ela_invite_friend(ElaCarrier *carrier, const char *to,
 CARRIER_API
 int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
                             int status, const char *reason,
-                            const char *data, size_t len);
+                            const void *data, size_t len);
 /******************************************************************************
  * Error handling
  *****************************************************************************/

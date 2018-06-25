@@ -1500,7 +1500,7 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     FriendInfo *fi;
     char friendid[ELA_MAX_ID_LEN + 1];
     const char *name;
-    const char *msg;
+    const void *msg;
     size_t len;
 
     assert(w);
@@ -2301,7 +2301,7 @@ static void parse_address(const char *addr, char **uid, char **ext)
     }
 }
 
-int ela_send_friend_message(ElaCarrier *w, const char *to, const char *msg,
+int ela_send_friend_message(ElaCarrier *w, const char *to, const void *msg,
                             size_t len)
 {
     char *addr, *userid, *ext_name;
@@ -2392,7 +2392,7 @@ static int64_t generate_tid(void)
 }
 
 int ela_invite_friend(ElaCarrier *w, const char *to,
-                      const char *data, size_t len,
+                      const void *data, size_t len,
                       ElaFriendInviteResponseCallback *callback,
                       void *context)
 {
@@ -2486,7 +2486,7 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
 
 int ela_reply_friend_invite(ElaCarrier *w, const char *to,
                                 int status, const char *reason,
-                                const char *data, size_t len)
+                                const void *data, size_t len)
 {
     char *addr, *userid, *ext_name;
     uint32_t friend_number;

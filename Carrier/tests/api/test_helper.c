@@ -167,7 +167,7 @@ static void carrier_friend_removed_cb(ElaCarrier *w, const char *friendid,
 }
 
 static void carrier_friend_message_cb(ElaCarrier *w, const char *from,
-                                      const char *msg, size_t len, void *context)
+                                      const void *msg, size_t len, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
 
@@ -176,7 +176,7 @@ static void carrier_friend_message_cb(ElaCarrier *w, const char *from,
 }
 
 static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,
-                                     const char *data, size_t len,
+                                     const void *data, size_t len,
                                      void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;

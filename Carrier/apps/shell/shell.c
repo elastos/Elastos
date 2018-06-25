@@ -1821,15 +1821,15 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 }
 
 static void message_callback(ElaCarrier *w, const char *from,
-                             const char *msg, size_t len, void *context)
+                             const void *msg, size_t len, void *context)
 {
-    output("Message from friend[%s]: %.*s\n", from, (int)len, msg);
+    output("Message from friend[%s]: %.*s\n", from, (int)len, (const char *)msg);
 }
 
 static void invite_request_callback(ElaCarrier *w, const char *from,
-                                    const char *data, size_t len, void *context)
+                                    const void *data, size_t len, void *context)
 {
-    output("Invite request from[%s] with data: %.*s\n", from, (int)len, data);
+    output("Invite request from[%s] with data: %.*s\n", from, (int)len, (const char *)data);
     output("Reply use following commands:\n");
     output("  ireply %s confirm [message]\n", from);
     output("  ireply %s refuse [reason]\n", from);

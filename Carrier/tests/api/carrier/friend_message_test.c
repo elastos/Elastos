@@ -74,13 +74,13 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                     connection_str(status));
 }
 
-static void friend_message_cb(ElaCarrier *w, const char *from, const char *msg, size_t len,
+static void friend_message_cb(ElaCarrier *w, const char *from, const void *msg, size_t len,
                               void *context)
 {
     CarrierContextExtra *extra = ((CarrierContext *)context)->extra;
 
     extra->from = strdup(from);
-    extra->msg  = strdup(msg);
+    extra->msg  = strdup((const char *)msg);
     extra->len  = (int)len;
 
     wakeup(context);
