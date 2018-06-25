@@ -77,6 +77,7 @@ namespace Elastos {
 			array_new(manager->Raw.txRequests, 10);
 			array_new(manager->Raw.publishedTx, 10);
 			array_new(manager->Raw.publishedTxHashes, 10);
+			manager->Plugins = plugins;
 			pthread_mutex_init(&manager->Raw.lock, NULL);
 			manager->Raw.threadCleanup = _dummyThreadCleanup;
 			return manager;
