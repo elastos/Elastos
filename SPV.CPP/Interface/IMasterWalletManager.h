@@ -17,6 +17,8 @@ namespace Elastos {
 			 */
 			virtual ~IMasterWalletManager() noexcept {}
 
+			virtual std::string GenerateMnemonic(const std::string &language) = 0;
+
 			/**
 			 * Create an new master wallet, an random seed will be generated combined with phrase password to create
 			 * 	root key and chain code.

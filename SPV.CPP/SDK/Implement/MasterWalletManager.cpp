@@ -46,8 +46,11 @@ namespace Elastos {
 						  });
 		}
 
-		IMasterWallet *
-		MasterWalletManager::CreateMasterWallet(
+		std::string MasterWalletManager::GenerateMnemonic(const std::string &language) {
+			return MasterWallet::GenerateMnemonic(language, _rootPath);
+		}
+
+		IMasterWallet *MasterWalletManager::CreateMasterWallet(
 				const std::string &masterWalletId,
 				const std::string &mnemonic,
 				const std::string &phrasePassword,
