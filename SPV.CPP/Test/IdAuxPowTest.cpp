@@ -43,7 +43,7 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 		tx->raw.lockTime = rand();
 		tx->raw.blockHeight = rand();
 		tx->raw.timestamp = rand();
-		tx->type = ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
+		tx->type = ELATransaction::Type::TransferAsset;//ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
 		tx->payloadVersion = rand() % sizeof(tx->payloadVersion);
 		tx->fee = rand();
 		tx->payload = ELAPayloadNew(tx->type);

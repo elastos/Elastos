@@ -40,13 +40,13 @@
 //#if defined(TARGET_OS_MAC)
 //#include <Foundation/Foundation.h>
 //#define _peer_log(...) NSLog(__VA_ARGS__)
-//#elif defined(__ANDROID__)
-//#include <android/log.h>
-//#define _peer_log(...) __android_log_print(ANDROID_LOG_INFO, "bread", __VA_ARGS__)
-//#else
+#if defined(__ANDROID__)
+#include <android/log.h>
+#define _peer_log(...) __android_log_print(ANDROID_LOG_INFO, "Elastos", __VA_ARGS__)
+#else
 #include <stdio.h>
 #define _peer_log(...) printf(__VA_ARGS__)
-//#endif
+#endif
 
 #ifdef __cplusplus
 extern "C" {
