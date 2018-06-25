@@ -262,6 +262,8 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 		},
 		Sequence: 100,
 	}
+	/*------------------------------------------------------------*/
+	/* check double spend but not duplicate txs */
 	//two mock transactions, they are double-spent to each other.
 	tx1 := new(core.Transaction)
 	tx1.TxType = core.TransferAsset
@@ -337,7 +339,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 		}
 	}
 	/*------------------------------------------------------------*/
-
+	/* check duplicated sidechain hashes */
 	// re-initialize the tx pool
 	var sideBlockHash1 common.Uint256
 	var sideBlockHash2 common.Uint256
@@ -448,6 +450,7 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 	}
 
 	/*------------------------------------------------------------*/
+	/* check double spend and duplicate txs */
 	txPool.Init()
 
 	txPool.addToTxList(tx4)
@@ -462,5 +465,18 @@ func TestTxPool_CleanSubmittedTransactions(t *testing.T) {
 
 	if err := txPool.isTransactionCleaned(tx4); err != nil {
 		t.Error("should clean transaction tx4:", err)
+	}
+
+	/*------------------------------------------------------------*/
+	/* normal case */
+	txPool.addToTxList(tx6)
+	for _, v := range tx6.Inputs {
+		txPool.addInputUTXOList(tx6, v)
+	}
+	txPool.addSidechainTx(tx6)
+	newBLock.Transactions = []*core.Transaction{tx3}
+	txPool.CleanSubmittedTransactions(&newBLock)
+	if err := txPool.isTransactionExisted(tx6); err != nil {
+		t.Error("should have transaction: tx6", err)
 	}
 }
