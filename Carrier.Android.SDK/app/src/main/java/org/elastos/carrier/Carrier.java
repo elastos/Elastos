@@ -677,7 +677,7 @@ public class Carrier {
 	 * 		IllegalArgumentException
 	 * 		ElastosException
 	 */
-	public void LabelFriend(String userId, String label) throws ElastosException {
+	public void labelFriend(String userId, String label) throws ElastosException {
 		if (userId == null || userId.length() == 0 ||
 			label  == null || label.length() == 0)
 			throw new IllegalArgumentException();
@@ -747,7 +747,7 @@ public class Carrier {
 	 *		IllegalArgumentException
 	 * 		ElastosException
 	 */
-	public void AcceptFriend(String userId) throws ElastosException {
+	public void acceptFriend(String userId) throws ElastosException {
 		if (userId == null || userId.length() == 0)
 			throw new IllegalArgumentException();
 

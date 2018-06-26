@@ -209,7 +209,7 @@ public class RobotService extends Service {
 			String userId = msg.getData().getString("userId");
 
 			if (!carrierInst.isFriend(userId))
-				carrierInst.AcceptFriend(userId);
+				carrierInst.acceptFriend(userId);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
