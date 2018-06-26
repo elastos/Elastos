@@ -26,30 +26,18 @@ namespace Elastos {
 
 		void ELABIP32Sequence::BIP32vPrivKeyPath(const BRKey *key, const CMBlock &seed, int depth, va_list vlist) {
 
-			UInt512 I;
-			UInt256 secret, chainCode;
-
 			assert(key != nullptr);
 			assert(seed.GetSize() > 0);
 			assert(depth >= 0);
 
+			UInt256 secret, chainCode = UINT256_ZERO;
 			if (seed.GetSize() > 0) {
-				BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seed.GetSize());
-				secret = *(UInt256 *)&I;
-				chainCode = *(UInt256 *)&I.u8[sizeof(UInt256)];
-				var_clean(&I);
-
-				CMBlock privateKey;
-				privateKey.SetMemFixed(secret.u8, sizeof(UInt256));
-				for (int i = 0; i < depth; i++) {
-
-					CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret(privateKey, SEQUENCE_INTERNAL_CHAIN, 0,
-							chainCode, NID_X9_62_prime256v1);
-					memcpy(privateKey, mbChildPrivkey, privateKey.GetSize());
-				}
+				CMBlock privateKey = BTCKey::getDerivePrivKey_depth(seed, chainCode, true, NID_X9_62_prime256v1, depth,
+				                                                    vlist);
+				memcpy(secret.u8, privateKey, privateKey.GetSize());
 				BRKeySetSecret((BRKey *)key, &secret, 1);
-				var_clean(&secret, &chainCode);
 			}
+			var_clean(&secret, &chainCode);
 		}
 
 		// sets the private key for path m/0H/chain/index to key

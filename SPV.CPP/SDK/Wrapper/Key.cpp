@@ -292,7 +292,13 @@ namespace Elastos {
 			va_start(ap, depth);
 			CMBlock seeds;
 			seeds.SetMemFixed((uint8_t *)seed, seedLen);
-			ELABIP32Sequence::BIP32PrivKeyPath(_key.get(), seeds, depth, ap);
+
+			CMBlock priKey = BTCKey::getDerivePrivKey_depth(seeds, chainCode, true, NID_X9_62_prime256v1, depth, ap);
+
+			UInt256 secret = UINT256_ZERO;
+			memcpy(secret.u8, priKey, priKey.GetSize());
+			BRKeySetSecret(_key.get(), &secret, 1);
+
 			va_end(ap);
 		}
 

@@ -104,7 +104,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 
 		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
 		REQUIRE(addresses.size() == 1);
-		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+		REQUIRE(addresses[0] == "EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 
 		REQUIRE(singleAddressWallet.getBalance() == 0);
 #endif
@@ -157,7 +157,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		ELATransaction *transaction = new ELATransaction;
 		TransactionOutputPtr output(new TransactionOutput);
 		output->setAmount(100000000);
-		output->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+		output->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 		transaction->outputs.push_back(output);
 		transaction->raw.txHash = UINT256_ZERO;
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
@@ -170,7 +170,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		ELATransaction *transaction2 = new ELATransaction;
 		TransactionOutputPtr output2(new TransactionOutput);
 		output2->setAmount(200000000);
-		output2->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+		output2->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 		transaction2->outputs.push_back(output2);
 		transaction2->raw.txHash = Utils::UInt256FromString(
 				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
@@ -185,7 +185,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 
 		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
 		REQUIRE(addresses.size() == 1);
-		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+		REQUIRE(addresses[0] == "EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 
 		REQUIRE(singleAddressWallet.getBalance() == 300000000);
 #endif
@@ -249,7 +249,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	ELATransaction *transaction = new ELATransaction;
 	TransactionOutputPtr output(new TransactionOutput);
 	output->setAmount(100000000);
-	output->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+	output->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 	transaction->outputs.push_back(output);
 	transaction->raw.txHash = UINT256_ZERO;
 	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
@@ -270,7 +270,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	ELATransaction *transaction2 = new ELATransaction;
 	TransactionOutputPtr output2(new TransactionOutput);
 	output2->setAmount(200000000);
-	output2->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
+	output2->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 	transaction2->outputs.push_back(output2);
 	transaction2->raw.txHash = Utils::UInt256FromString(
 			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");

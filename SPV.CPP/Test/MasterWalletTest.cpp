@@ -492,7 +492,7 @@ TEST_CASE("Master wallet GetPublicKey method test", "[GetPublicKey]") {
 	SECTION("Normal test") {
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(phrasePassword, payPassword));
 
-		REQUIRE(masterWallet->GetPublicKey() == "020145e5c9d42017c103b7378ab0d9548c666eeb1739f55fcacb855f33c319518a");
+		REQUIRE(masterWallet->GetPublicKey() == "02f935530c46633300bae1a764b03977874ee0608f1b745223271890383f3d82ec");
 	}
 }
 
@@ -571,7 +571,7 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 	SECTION("Normal get") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
 		std::string pubKey = masterWallet->GetPublicKey(id);
-		REQUIRE(pubKey == "0300151c783bf85a0f9be26e7f9483714e8042f8cafdb659c1c87ca1c9c666d2c9");
+		REQUIRE(pubKey == "03a6ce5f14b32e9e5a8ef4376b412e7c540ef26dc44aff60bd451a32e6fb5ac3c4");
 	}
 	SECTION("Should throw with wrong id") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
