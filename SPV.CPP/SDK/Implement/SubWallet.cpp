@@ -256,33 +256,40 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
-
+			Log::getLogger()->info("Tx callback (balanceChanged): balance={}", balance);
 		}
 
 		void SubWallet::onTxAdded(const TransactionPtr &transaction) {
 			if (transaction == nullptr)
 				return;
 
+			Log::getLogger()->info("Tx callback (onTxAdded): Tx hash={}", Utils::UInt256ToString(transaction->getHash()));
 			_confirmingTxs[Utils::UInt256ToString(transaction->getHash())] = transaction;
 
 			fireTransactionStatusChanged(Utils::UInt256ToString(transaction->getHash()),
 										 SubWalletCallback::convertToString(SubWalletCallback::Added),
 										 transaction->toJson(), 0);
+			Log::getLogger()->info("Tx callback (onTxAdded) finished.");
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+			Log::getLogger()->info("Tx callback (onTxUpdated)");
 			if (_confirmingTxs.find(hash) == _confirmingTxs.end()) {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
 			}
 
+			Log::getLogger()->info("Tx callback (onTxUpdated): Tx hash={}", hash);
 			uint32_t confirm = blockHeight - _confirmingTxs[hash]->getBlockHeight();
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 										 _confirmingTxs[hash]->toJson(), confirm);
+			Log::getLogger()->info("Tx callback (onTxUpdated) finished.");
 		}
 
 		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+			Log::getLogger()->info("Tx callback (onTxDeleted) begin");
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Deleted),
 										 nlohmann::json(), 0);
+			Log::getLogger()->info("Tx callback (onTxDeleted) finished.");
 		}
 
 		void SubWallet::recover(int limitGap) {
