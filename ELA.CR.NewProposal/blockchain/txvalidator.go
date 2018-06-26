@@ -127,7 +127,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 			return ErrUnknownReferedTx
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
-		if referTxnOut.Value <= 0 {
+		if referTxnOut.Value < 0 {
 			log.Warn("Value of referenced transaction output is invalid")
 			return ErrInvalidReferedTx
 		}
