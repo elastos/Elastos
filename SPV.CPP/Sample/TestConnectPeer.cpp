@@ -48,13 +48,23 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 
 	sleep(4);
 
-//	nlohmann::json tx = subWallet->CreateTransaction("EV11DFAXUSjPQMsLnrNuXtR9YbJjUkCfQJ", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", 3000000, 100000, "");
-//	nlohmann::json result = subWallet->SendRawTransaction(tx, 100000, payPassword);
-//	Log::getLogger()->info("send tx result = {}", result.dump());
+	bool hasSentTransaction = false;
 
 	while (true) {
 		sleep(10);
-		Log::getLogger()->info("wallet balance = {}", subWallet->GetBalance());
+		uint64_t balance = subWallet->GetBalance();
+		Log::getLogger()->info("wallet balance = {}", balance);
+
+		if (balance > 1000000 && !hasSentTransaction) {
+			try {
+				nlohmann::json tx = subWallet->CreateTransaction("EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", balance / 2, 100000, "");
+				nlohmann::json result = subWallet->SendRawTransaction(tx, 100000, payPassword);
+				Log::getLogger()->info("send tx result = {}", result.dump());
+			} catch (std::exception e) {
+				Log::getLogger()->error("send transaction from EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2 to ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork error: {}", e.what());
+			}
+			hasSentTransaction = true;
+		}
 	}
 
 	masterWallet->DestroyWallet(subWallet);

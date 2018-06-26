@@ -108,7 +108,7 @@ namespace Elastos {
 
 			int PeerAcceptNotFoundMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 				NotFoundMessage *message = static_cast<NotFoundMessage *>(
-						PeerMessageManager::instance().getMessage(MSG_GETADDR).get());
+						PeerMessageManager::instance().getMessage(MSG_NOTFOUND).get());
 
 				return message->Accept(peer, msg, msgLen);
 			}
