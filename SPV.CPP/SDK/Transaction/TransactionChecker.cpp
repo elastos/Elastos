@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include "Log.h"
 #include "Address.h"
 #include "TransactionChecker.h"
 
@@ -52,8 +53,8 @@ namespace Elastos {
 					return false;
 				}
 				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) != addresses.end()) {
-					if (hasChange) //should have only one change output per tx
-						return false;
+//					if (hasChange) //should have only one change output per tx
+//						return false;
 					hasChange = true;
 				} else {
 					if (hasOutput) //todo we support only one output, modify this if we support multi-output later
@@ -61,6 +62,8 @@ namespace Elastos {
 					hasOutput = true;
 				}
 			}
+			if(hasChange)
+				Log::warn("Transaction outputs have multiple change output.");
 			return hasOutput;
 		}
 
