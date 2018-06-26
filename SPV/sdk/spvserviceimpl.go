@@ -194,9 +194,7 @@ func (s *SPVServiceImpl) needSync() bool {
 	if bestPeer == nil { // no peers connected, return false
 		return false
 	}
-	chainHeight := uint64(s.chain.Height())
-
-	return bestPeer.Height() > chainHeight
+	return bestPeer.Height() > uint64(s.chain.Height())
 }
 
 func (s *SPVServiceImpl) syncBlocks() {
@@ -384,7 +382,7 @@ func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
 	header := block.Header.(*ela.Header)
 	newTip, reorgFrom, err := s.chain.CommitHeader(*header)
 	if err != nil {
-		log.Errorf("Commit header failed %d", err.Error())
+		log.Errorf("Commit header failed %s", err.Error())
 		return
 	}
 	if !newTip {
@@ -428,9 +426,22 @@ func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
 	s.handler.OnBlockCommitted(block.MerkleBlock, block.txs)
 }
 
-func (s *SPVServiceImpl) OnNotFound(peer *net.Peer, msg *msg.NotFound) error {
-	for _, iv := range msg.InvList {
+func (s *SPVServiceImpl) OnNotFound(peer *net.Peer, notFound *msg.NotFound) error {
+	s.Lock()
+	defer s.Unlock()
+	for _, iv := range notFound.InvList {
 		log.Warnf("Data not found type %s, hash %s", iv.Type.String(), iv.Hash.String())
+		switch iv.Type {
+		case msg.InvTypeTx:
+			if s.downloading.inQueue(iv.Hash) {
+				s.downloading = newDownloadBlock()
+			}
+		case msg.InvTypeBlock:
+			if s.chain.IsSyncing() &&
+				s.PeerManager().GetSyncPeer() != nil && s.PeerManager().GetSyncPeer().ID() == peer.ID() {
+				s.changeSyncPeerAndRestart()
+			}
+		}
 	}
 	return nil
 }
@@ -440,7 +451,6 @@ func (s *SPVServiceImpl) OnReject(peer *net.Peer, msg *msg.Reject) error {
 		s.txReject <- msg
 		return nil
 	}
-
 	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
 		peer.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
 }
