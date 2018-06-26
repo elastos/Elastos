@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRMerkleBlock.h>
+#include <Core/BRMerkleBlock.h>
 #include "BRCrypto.h"
 #include "BRMerkleBlock.h"
 #include "Utils.h"
@@ -146,112 +147,77 @@ namespace Elastos {
 
 			ostream.put(1);    //correspond to serialization of node, should add one byte here
 
-			uint8_t totalTxData[32 / 8];
-			UInt32SetLE(totalTxData, _merkleBlock->raw.totalTx);
-			ostream.putBytes(totalTxData, 32 / 8);
+			ostream.writeUint32(_merkleBlock->raw.totalTx);
 
-			uint8_t hashesCountData[32 / 8];
-			UInt32SetLE(hashesCountData, uint32_t(_merkleBlock->raw.hashesCount));
-			ostream.putBytes(hashesCountData, 32 / 8);
-
-			uint8_t hashData[256 / 8];
-			for (uint32_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
-				UInt256Set(hashData, _merkleBlock->raw.hashes[i]);
-				ostream.putBytes(hashData, 256 / 8);
+			ostream.writeUint32((uint32_t)_merkleBlock->raw.hashesCount);
+			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				ostream.writeBytes(_merkleBlock->raw.hashes[i].u8, sizeof(UInt256));
 			}
 
-			ostream.putVarUint(_merkleBlock->raw.flagsLen);
-			for (uint32_t i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
-				ostream.put(_merkleBlock->raw.flags[i]);
-			}
+			ostream.writeVarBytes(_merkleBlock->raw.flags, _merkleBlock->raw.flagsLen);
 		}
 
 		void MerkleBlock::serializeNoAux(ByteStream &ostream, const BRMerkleBlock &raw) {
-			uint8_t versionData[32 / 8];
-			UInt32SetLE(versionData, raw.version);
-			ostream.putBytes(versionData, 32 / 8);
-
-			uint8_t prevBlockData[256 / 8];
-			UInt256Set(prevBlockData, raw.prevBlock);
-			ostream.putBytes(prevBlockData, 256 / 8);
-
-			uint8_t merkleRootData[256 / 8];
-			UInt256Set(merkleRootData, raw.merkleRoot);
-			ostream.putBytes(merkleRootData, 256 / 8);
-
-			uint8_t timeStampData[32 / 8];
-			UInt32SetLE(timeStampData, raw.timestamp);
-			ostream.putBytes(timeStampData, 32 / 8);
-
-			uint8_t bitsData[32 / 8];
-			UInt32SetLE(bitsData, raw.target);
-			ostream.putBytes(bitsData, 32 / 8);
-
-			uint8_t nonceData[32 / 8];
-			UInt32SetLE(nonceData, raw.nonce);
-			ostream.putBytes(nonceData, 32 / 8);
-
-			uint8_t heightData[32 / 8];
-			UInt32SetLE(heightData, raw.height);
-			ostream.putBytes(heightData, 32 / 8);
+			ostream.writeUint32(raw.version);
+			ostream.writeBytes(raw.prevBlock.u8, sizeof(UInt256));
+			ostream.writeBytes(raw.merkleRoot.u8, sizeof(UInt256));
+			ostream.writeUint32(raw.timestamp);
+			ostream.writeUint32(raw.target);
+			ostream.writeUint32(raw.nonce);
+			ostream.writeUint32(raw.height);
 		}
 
 		bool MerkleBlock::Deserialize(ByteStream &istream) {
-			uint8_t versionData[32 / 8];
-			istream.getBytes(versionData, 32 / 8);
-			_merkleBlock->raw.version = UInt32GetLE(versionData);
+			if (!istream.readUint32(_merkleBlock->raw.version))
+				return false;
 
-			uint8_t prevBlockData[256 / 8];
-			istream.getBytes(prevBlockData, 256 / 8);
-			UInt256Get(&_merkleBlock->raw.prevBlock, prevBlockData);
+			if (!istream.readBytes(_merkleBlock->raw.prevBlock.u8, sizeof(UInt256)))
+				return false;
 
-			uint8_t merkleRootData[256 / 8];
-			istream.getBytes(merkleRootData, 256 / 8);
-			UInt256Get(&_merkleBlock->raw.merkleRoot, merkleRootData);
+			if (!istream.readBytes(_merkleBlock->raw.merkleRoot.u8, sizeof(UInt256)))
+				return false;
 
-			uint8_t timeStampData[32 / 8];
-			istream.getBytes(timeStampData, 32 / 8);
-			_merkleBlock->raw.timestamp = UInt32GetLE(timeStampData);
+			if (!istream.readUint32(_merkleBlock->raw.timestamp))
+				return false;
 
-			uint8_t bitsData[32 / 8];
-			istream.getBytes(bitsData, 32 / 8);
-			_merkleBlock->raw.target = UInt32GetLE(bitsData);
+			if (!istream.readUint32(_merkleBlock->raw.target))
+				return false;
 
-			uint8_t nonceData[32 / 8];
-			istream.getBytes(nonceData, 32 / 8);
-			_merkleBlock->raw.nonce = UInt32GetLE(nonceData);
+			if (!istream.readUint32(_merkleBlock->raw.nonce))
+				return false;
 
-			uint8_t heightData[32 / 8];
-			istream.getBytes(heightData, 32 / 8);
-			_merkleBlock->raw.height = UInt32GetLE(heightData);
+			if (!istream.readUint32(_merkleBlock->raw.height))
+				return false;
 
-			_merkleBlock->auxPow.Deserialize(istream);
+			if (!_merkleBlock->auxPow.Deserialize(istream))
+				return false;
 
 			istream.get();    //correspond to serialization of node, should get one byte here
 
-			uint8_t totalTxData[32 / 8];
-			istream.getBytes(totalTxData, 32 / 8);
-			_merkleBlock->raw.totalTx = UInt32GetLE(totalTxData);
+			if (!istream.readUint32(_merkleBlock->raw.totalTx))
+				return false;
 
-			uint8_t hashesCountData[32 / 8];
-			istream.getBytes(hashesCountData, 32 / 8);
-			_merkleBlock->raw.hashesCount = UInt32GetLE(hashesCountData);
+			uint32_t hashesCount = 0;
+			if (!istream.readUint32(hashesCount))
+				return false;
+
+			_merkleBlock->raw.hashesCount = hashesCount;
+
+			if (_merkleBlock->raw.hashes)
+				free(_merkleBlock->raw.hashes);
 
 			_merkleBlock->raw.hashes = (UInt256 *) calloc(_merkleBlock->raw.hashesCount, sizeof(UInt256));
-			uint8_t hashData[256 / 8];
-			for (uint32_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
-				istream.getBytes(hashData, 256 / 8);
-				UInt256Get(&_merkleBlock->raw.hashes[i], hashData);
+			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				if (!istream.readBytes(_merkleBlock->raw.hashes[i].u8, sizeof(UInt256)))
+					return false;
 			}
 
-			_merkleBlock->raw.flagsLen = istream.getVarUint();
-			_merkleBlock->raw.flags = (_merkleBlock->raw.flagsLen > 0) ? (uint8_t *) malloc(_merkleBlock->raw.flagsLen)
-																	   : NULL;
-			for (uint32_t i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
-				_merkleBlock->raw.flags[i] = istream.get();
+			if (_merkleBlock->raw.flags) {
+				free(_merkleBlock->raw.flags);
+				_merkleBlock->raw.flags = nullptr;
 			}
 
-			return true;
+			return istream.readVarBytes((void **)&_merkleBlock->raw.flags, &_merkleBlock->raw.flagsLen);
 		}
 
 		const AuxPow &MerkleBlock::getAuxPow() const {
@@ -291,88 +257,88 @@ namespace Elastos {
 
 		nlohmann::json MerkleBlock::toJson() {
 			nlohmann::json j;
-			to_json(j, *this);
+			if (_merkleBlock == nullptr)
+				return j;
+
+			std::vector<std::string> hashes;
+			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				hashes.push_back(Utils::UInt256ToString(_merkleBlock->raw.hashes[i]));
+			}
+
+			std::vector<uint8_t> flags;
+			for (int i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
+				flags.push_back(_merkleBlock->raw.flags[i]);
+			}
+
+			j["BlockHash"] = Utils::UInt256ToString(_merkleBlock->raw.blockHash);
+			j["Version"] = _merkleBlock->raw.version;
+			j["PrevBlock"] = Utils::UInt256ToString(_merkleBlock->raw.prevBlock);
+			j["MerkleRoot"] = Utils::UInt256ToString(_merkleBlock->raw.merkleRoot);
+			j["Timestamp"] = _merkleBlock->raw.timestamp;
+			j["Target"] = _merkleBlock->raw.target;
+			j["Nonce"] = _merkleBlock->raw.nonce;
+			j["TotalTx"] = _merkleBlock->raw.totalTx;
+			j["Hashes"] = hashes;
+			j["Flags"] = flags;
+			j["Height"] = _merkleBlock->raw.height;
+
+//			j["AuxPow"] = _merkleBlock->auxPow.toJson();
+
 			return j;
 		}
 
 		void MerkleBlock::fromJson(const nlohmann::json &j) {
-			from_json(j, *this);
+			assert(_merkleBlock != nullptr);
+
+			if (_merkleBlock == nullptr) {
+				return;
+			}
+
+			_merkleBlock->raw.blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>());
+			_merkleBlock->raw.version = j["Version"].get<uint32_t>();
+			_merkleBlock->raw.prevBlock = Utils::UInt256FromString(j["PrevBlock"].get<std::string>());
+			_merkleBlock->raw.merkleRoot = Utils::UInt256FromString(j["MerkleRoot"].get<std::string>());
+			_merkleBlock->raw.timestamp = j["Timestamp"].get<uint32_t>();
+			_merkleBlock->raw.target = j["Target"].get<uint32_t>();
+			_merkleBlock->raw.nonce = j["Nonce"].get<uint32_t>();
+			_merkleBlock->raw.totalTx = j["TotalTx"].get<uint32_t>();
+
+			if (_merkleBlock->raw.hashes != nullptr) {
+				free(_merkleBlock->raw.hashes);
+				_merkleBlock->raw.hashes = nullptr;
+			}
+
+			std::vector<std::string> hashes = j["Hashes"].get<std::vector<std::string>>();
+			_merkleBlock->raw.hashesCount = hashes.size();
+			_merkleBlock->raw.hashes = (_merkleBlock->raw.hashesCount > 0) ?
+				(UInt256 *) malloc(sizeof(UInt256) * _merkleBlock->raw.hashesCount) : nullptr;
+
+			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				UInt256 hash = Utils::UInt256FromString(hashes[i]);
+				memcpy(&_merkleBlock->raw.hashes[i], &hash, sizeof(hash));
+			}
+
+			if (_merkleBlock->raw.flags != nullptr) {
+				free(_merkleBlock->raw.flags);
+				_merkleBlock->raw.flags = nullptr;
+			}
+
+			std::vector<uint8_t> flags = j["Flags"].get<std::vector<uint8_t>>();
+			_merkleBlock->raw.flagsLen = flags.size();
+			_merkleBlock->raw.flags = (_merkleBlock->raw.flagsLen > 0) ?
+				(uint8_t *) malloc(_merkleBlock->raw.flagsLen) : nullptr;
+			for (int i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
+				_merkleBlock->raw.flags[i] = flags[i];
+			}
+
+			_merkleBlock->raw.height = j["Height"].get<uint32_t>();
+
+//			nlohmann::json auxPowJson = j["AuxPow"];
+//			_merkleBlock->auxPow.fromJson(auxPowJson);
 		}
 
 		BRMerkleBlock *MerkleBlock::getRawBlock() const {
 			return getRaw();
-		}
-
-		void to_json(nlohmann::json &j, const MerkleBlock &p) {
-			BRMerkleBlock *pblock = p.getRaw();
-
-			std::vector<std::string> hashes;
-			for (int i = 0; i < pblock->hashesCount; ++i) {
-				hashes.push_back(Utils::UInt256ToString(pblock->hashes[i]));
-			}
-
-			std::vector<uint8_t> flags;
-			for (int i = 0; i < pblock->flagsLen; ++i) {
-				flags.push_back(pblock->flags[i]);
-			}
-
-			j["blockHash"] = Utils::UInt256ToString(pblock->blockHash);
-			j["version"] = pblock->version;
-			j["prevBlock"] = Utils::UInt256ToString(pblock->prevBlock);
-			j["merkleRoot"] = Utils::UInt256ToString(pblock->merkleRoot);
-			j["timestamp"] = pblock->timestamp;
-			j["target"] = pblock->target;
-			j["nonce"] = pblock->nonce;
-			j["totalTx"] = pblock->totalTx;
-			j["hashes"] = hashes;
-			j["flags"] = flags;
-			j["height"] = pblock->height;
-		}
-
-		void from_json(const nlohmann::json &j, MerkleBlock &p) {
-			ELAMerkleBlock *pblock = (ELAMerkleBlock *) p.getRaw();
-			if (pblock == nullptr) {
-				pblock = ELAMerkleBlockNew();
-				p = MerkleBlock(pblock);
-			}
-
-			BRMerkleBlock *block = (BRMerkleBlock *) pblock;
-			block->blockHash = Utils::UInt256FromString(j["blockHash"].get<std::string>());
-			block->version = j["version"].get<uint32_t>();
-			block->prevBlock = Utils::UInt256FromString(j["prevBlock"].get<std::string>());
-			block->merkleRoot = Utils::UInt256FromString(j["merkleRoot"].get<std::string>());
-			block->timestamp = j["timestamp"].get<uint32_t>();
-			block->target = j["target"].get<uint32_t>();
-			block->nonce = j["nonce"].get<uint32_t>();
-			block->totalTx = j["totalTx"].get<uint32_t>();
-
-			if (block->hashes != nullptr) {
-				free(block->hashes);
-				block->hashes = nullptr;
-			}
-
-			std::vector<std::string> hashes = j["hashes"].get<std::vector<std::string>>();
-			block->hashesCount = hashes.size();
-			block->hashes = (block->hashesCount > 0) ? (UInt256 *) malloc(sizeof(UInt256) * block->hashesCount)
-													 : nullptr;
-			for (int i = 0; i < block->hashesCount; ++i) {
-				UInt256 hash = Utils::UInt256FromString(hashes[i]);
-				memcpy(&block->hashes[i], &hash, sizeof(hash));
-			}
-
-			if (block->flags != nullptr) {
-				free(block->flags);
-				block->flags = nullptr;
-			}
-
-			std::vector<uint8_t> flags = j["flags"].get<std::vector<uint8_t>>();
-			block->flagsLen = flags.size();
-			block->flags = (block->flagsLen > 0) ? (uint8_t *) malloc(block->flagsLen) : nullptr;
-			for (int i = 0; i < block->flagsLen; ++i) {
-				block->flags[i] = flags[i];
-			}
-
-			block->height = j["height"].get<uint32_t>();
 		}
 
 		REGISTER_MERKLEBLOCKPLUGIN(MerkleBlock);

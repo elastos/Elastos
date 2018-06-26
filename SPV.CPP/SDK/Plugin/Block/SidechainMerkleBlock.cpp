@@ -5,6 +5,7 @@
 #include <sstream>
 #include <Core/BRMerkleBlock.h>
 
+#include "Utils.h"
 #include "MerkleBlock.h"
 #include "SidechainMerkleBlock.h"
 
@@ -40,21 +41,153 @@ namespace Elastos {
 		}
 
 		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {
-			//todo complete me
+			MerkleBlock::serializeNoAux(ostream, _merkleBlock->raw);
+
+			_merkleBlock->idAuxPow.Serialize(ostream);
+
+			ostream.put(1);
+
+			ostream.writeUint32(_merkleBlock->raw.totalTx);
+
+			ostream.writeUint32((uint32_t)_merkleBlock->raw.hashesCount);
+			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				ostream.writeBytes(_merkleBlock->raw.hashes[i].u8, sizeof(_merkleBlock->raw.hashes[i].u8));
+			}
+
+			ostream.writeVarBytes(_merkleBlock->raw.flags, _merkleBlock->raw.flagsLen);
 		}
 
 		bool SidechainMerkleBlock::Deserialize(ByteStream &istream) {
-			//todo complete me
-			return false;
+			if (!istream.readUint32(_merkleBlock->raw.version))
+				return false;
+
+			if (!istream.readBytes(_merkleBlock->raw.prevBlock.u8, sizeof(_merkleBlock->raw.prevBlock.u8)))
+				return false;
+
+			if (!istream.readBytes(_merkleBlock->raw.merkleRoot.u8, sizeof(_merkleBlock->raw.merkleRoot.u8)))
+				return false;
+
+			if (!istream.readUint32(_merkleBlock->raw.timestamp))
+				return false;
+
+			if (!istream.readUint32(_merkleBlock->raw.target))
+				return false;
+
+			if (!istream.readUint32(_merkleBlock->raw.nonce))
+				return false;
+
+			if (!istream.readUint32(_merkleBlock->raw.height))
+				return false;
+
+			if (!_merkleBlock->idAuxPow.Deserialize(istream))
+				return false;
+
+			istream.get();
+
+			if (!istream.readUint32(_merkleBlock->raw.totalTx))
+				return false;
+
+			uint32_t hashesCount = 0;
+			if (!istream.readUint32(hashesCount))
+				return false;
+
+			_merkleBlock->raw.hashesCount = hashesCount;
+
+			if (_merkleBlock->raw.hashes)
+				free(_merkleBlock->raw.hashes);
+
+			_merkleBlock->raw.hashes = (UInt256 *) calloc(_merkleBlock->raw.hashesCount, sizeof(UInt256));
+			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				if (!istream.readBytes(_merkleBlock->raw.hashes[i].u8, sizeof(UInt256)))
+					return false;
+			}
+
+			if (_merkleBlock->raw.flags)
+				free(_merkleBlock->raw.flags);
+
+			return istream.readVarBytes((void **)&_merkleBlock->raw.flags, &_merkleBlock->raw.flagsLen);
 		}
 
 		nlohmann::json SidechainMerkleBlock::toJson() {
-			//todo complete me
-			return nlohmann::json();
+			nlohmann::json j;
+			if (_merkleBlock == nullptr)
+				return j;
+
+			std::vector<std::string> hashes;
+			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				hashes.push_back(Utils::UInt256ToString(_merkleBlock->raw.hashes[i]));
+			}
+
+			std::vector<uint8_t> flags;
+			for (int i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
+				flags.push_back(_merkleBlock->raw.flags[i]);
+			}
+
+			j["BlockHash"] = Utils::UInt256ToString(_merkleBlock->raw.blockHash);
+			j["Version"] = _merkleBlock->raw.version;
+			j["PrevBlock"] = Utils::UInt256ToString(_merkleBlock->raw.prevBlock);
+			j["MerkleRoot"] = Utils::UInt256ToString(_merkleBlock->raw.merkleRoot);
+			j["Timestamp"] = _merkleBlock->raw.timestamp;
+			j["Target"] = _merkleBlock->raw.target;
+			j["Nonce"] = _merkleBlock->raw.nonce;
+			j["TotalTx"] = _merkleBlock->raw.totalTx;
+			j["Hashes"] = hashes;
+			j["Flags"] = flags;
+			j["Height"] = _merkleBlock->raw.height;
+
+			j["IdAuxPow"] = _merkleBlock->idAuxPow.toJson();
+
+			return j;
 		}
 
-		void SidechainMerkleBlock::fromJson(const nlohmann::json &) {
-			//todo complete me
+		void SidechainMerkleBlock::fromJson(const nlohmann::json &j) {
+			assert(_merkleBlock != nullptr);
+
+			if (_merkleBlock == nullptr) {
+				return;
+			}
+
+			_merkleBlock->raw.blockHash = Utils::UInt256FromString(j["BlockHash"].get<std::string>());
+			_merkleBlock->raw.version = j["Version"].get<uint32_t>();
+			_merkleBlock->raw.prevBlock = Utils::UInt256FromString(j["PrevBlock"].get<std::string>());
+			_merkleBlock->raw.merkleRoot = Utils::UInt256FromString(j["MerkleRoot"].get<std::string>());
+			_merkleBlock->raw.timestamp = j["Timestamp"].get<uint32_t>();
+			_merkleBlock->raw.target = j["Target"].get<uint32_t>();
+			_merkleBlock->raw.nonce = j["Nonce"].get<uint32_t>();
+			_merkleBlock->raw.totalTx = j["TotalTx"].get<uint32_t>();
+
+			if (_merkleBlock->raw.hashes != nullptr) {
+				free(_merkleBlock->raw.hashes);
+				_merkleBlock->raw.hashes = nullptr;
+			}
+
+			std::vector<std::string> hashes = j["Hashes"].get<std::vector<std::string>>();
+			_merkleBlock->raw.hashesCount = hashes.size();
+			_merkleBlock->raw.hashes = (_merkleBlock->raw.hashesCount > 0) ?
+									   (UInt256 *) malloc(sizeof(UInt256) * _merkleBlock->raw.hashesCount) : nullptr;
+
+			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
+				UInt256 hash = Utils::UInt256FromString(hashes[i]);
+				memcpy(&_merkleBlock->raw.hashes[i], &hash, sizeof(hash));
+			}
+
+			if (_merkleBlock->raw.flags != nullptr) {
+				free(_merkleBlock->raw.flags);
+				_merkleBlock->raw.flags = nullptr;
+			}
+
+			std::vector<uint8_t> flags = j["Flags"].get<std::vector<uint8_t>>();
+			_merkleBlock->raw.flagsLen = flags.size();
+			_merkleBlock->raw.flags = (_merkleBlock->raw.flagsLen > 0) ?
+									  (uint8_t *) malloc(_merkleBlock->raw.flagsLen) : nullptr;
+			for (int i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
+				_merkleBlock->raw.flags[i] = flags[i];
+			}
+
+			_merkleBlock->raw.height = j["Height"].get<uint32_t>();
+
+			nlohmann::json auxPowJson = j["IdAuxPow"];
+			_merkleBlock->idAuxPow.fromJson(auxPowJson);
 		}
 
 		BRMerkleBlock *SidechainMerkleBlock::getRawBlock() const {

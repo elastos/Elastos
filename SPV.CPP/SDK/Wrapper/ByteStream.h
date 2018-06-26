@@ -26,7 +26,7 @@ namespace Elastos {
 			~ByteStream();
 
 		public:
-			void reSet();
+			void reset();
 
 			void setPosition(uint64_t position);
 
@@ -39,8 +39,6 @@ namespace Elastos {
 			void skip(int bytes);
 
 			CMBlock getBuffer();
-
-//			uint8_t *getBuf();
 
 		public:
 			void put(uint8_t byte);
@@ -98,8 +96,19 @@ namespace Elastos {
 			void increasePosition(size_t len);
 			bool readUint32(uint32_t &val, ByteOrder byteEndian = LittleEndian);
 			void writeUint32(uint32_t val, ByteOrder byteEndian = LittleEndian);
-			bool readBytes(uint8_t *buf, size_t len, ByteOrder byteOrder = LittleEndian);
-			void writeBytes(const uint8_t *buf, size_t len, ByteOrder byteOrder = LittleEndian);
+			bool readBytes(void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
+			void writeBytes(const void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
+			bool readVarBytes(void **buf, size_t *len);
+			bool readVarBytes(CMBlock &bytes);
+			void writeVarBytes(const void *bytes, size_t len);
+			void writeVarBytes(const CMBlock &bytes);
+			bool readVarUint(uint64_t &value);
+			void writeVarUint(uint64_t value);
+			bool readVarString(char *str, size_t strSize);
+			bool readVarString(std::string &str);
+			void writeVarString(const char *str);
+			void writeVarString(const std::string &str);
+
 
 		private:
 			void ensureCapacity(uint64_t newsize);

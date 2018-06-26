@@ -421,27 +421,19 @@ namespace Elastos {
 			return buff;
 		}
 
-//		uint8_t *ByteStream::getBuf() {
-//			if (_count <= 0) {
-//				return nullptr;
-//			}
-//			uint8_t *ret = new uint8_t[_count];
-//			memcpy(ret, _buf, _count);
-//			return ret;
-//		}
-
 		void ByteStream::skip(int bytes) {
 			if (checkSize(bytes))
 				_pos += bytes;
 		}
 
-		void ByteStream::reSet() {
+		void ByteStream::reset() {
 			this->setPosition(0);
 			this->_size = 0;
 			if (this->_buf != nullptr) {
 				delete[] this->_buf;
 				this->_buf = nullptr;
 			}
+			this->_count = 0;
 		}
 
 		void ByteStream::increasePosition(size_t len) {
@@ -492,17 +484,19 @@ namespace Elastos {
 			_count = position();
 		}
 
-		bool ByteStream::readBytes(uint8_t *buf, size_t len, ByteOrder byteOrder) {
-			if (!checkSize(sizeof(uint8_t) * len))
+		bool ByteStream::readBytes(void *buf, size_t len, ByteOrder byteOrder) {
+			if (!checkSize(len))
 				return false;
 
 			size_t pos = position();
 
-			if (byteOrder == LittleEndian) {
-				memcpy(buf, &_buf[pos], len);
-			} else {
-				for (size_t i = 0; i < len; ++i) {
-					buf[i] = _buf[len - 1 - i + pos];
+			if (buf != nullptr) {
+				if (byteOrder == LittleEndian) {
+					memcpy(buf, &_buf[pos], len);
+				} else {
+					for (size_t i = 0; i < len; ++i) {
+						((uint8_t *)buf)[i] = _buf[len - 1 - i + pos];
+					}
 				}
 			}
 
@@ -511,7 +505,7 @@ namespace Elastos {
 			return true;
 		}
 
-		void ByteStream::writeBytes(const uint8_t *buf, size_t len, ByteOrder byteOrder) {
+		void ByteStream::writeBytes(const void *buf, size_t len, ByteOrder byteOrder) {
 			ensureCapacity(position() + len);
 
 			size_t pos = position();
@@ -520,12 +514,98 @@ namespace Elastos {
 				memcpy(&_buf[pos], buf, len);
 			} else {
 				for (size_t i = 0; i < len; ++i) {
-					_buf[pos + i] = buf[len - i - 1];
+					_buf[pos + i] = ((uint8_t *)buf)[len - i - 1];
 				}
 			}
 
 			increasePosition(len);
 			_count = position();
+		}
+
+		bool ByteStream::readVarBytes(void **buf, size_t *len) {
+			uint64_t length = 0;
+			if (!readVarUint(length)) {
+				return false;
+			}
+
+			*len = length;
+
+			if (buf) {
+				*buf = (*len > 0) ? malloc(*len) : nullptr;
+				if (!readBytes(*buf, *len)) {
+					if (*buf)
+						free(*buf);
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		bool ByteStream::readVarBytes(CMBlock &bytes) {
+			uint64_t length = 0;
+			if (!readVarUint(length)) {
+				return false;
+			}
+
+			bytes.Resize((size_t)length);
+			return readBytes(bytes, bytes.GetSize());
+		}
+
+		void ByteStream::writeVarBytes(const void *bytes, size_t len) {
+			writeVarUint((uint64_t)len);
+			writeBytes(bytes, len);
+		}
+
+		void ByteStream::writeVarBytes(const CMBlock &bytes) {
+			writeVarUint((uint64_t)bytes.GetSize());
+			writeBytes(bytes, bytes.GetSize());
+		}
+
+		bool ByteStream::readVarUint(uint64_t &value) {
+			size_t len = 0;
+			value = BRVarInt(&_buf[_pos], 9, &len);
+			return readBytes(nullptr, len);
+		}
+
+		void ByteStream::writeVarUint(uint64_t value) {
+			size_t len = BRVarIntSet(nullptr, 0, value);
+
+			ensureCapacity(position() + len);
+			BRVarIntSet(&_buf[position()], len, value);
+
+			increasePosition(len);
+			_count = position();
+		}
+
+		bool ByteStream::readVarString(char *str, size_t strSize) {
+			CMBlock bytes;
+			if (!readVarBytes(bytes)) {
+				return false;
+			}
+			size_t len = bytes.GetSize() > strSize - 1 ? strSize - 1 : bytes.GetSize();
+			strncpy(str, (const char *)(const void *)bytes, len);
+			str[len] = '\0';
+
+			return true;
+		}
+
+		bool ByteStream::readVarString(std::string &str) {
+			CMBlock bytes;
+			if (!readVarBytes(bytes)) {
+				return false;
+			}
+			str = std::string((const char *)(const void *)bytes, (size_t)bytes.GetSize());
+
+			return true;
+		}
+
+		void ByteStream::writeVarString(const char *str) {
+			writeVarBytes(str, strlen(str));
+		}
+
+		void ByteStream::writeVarString(const std::string &str) {
+			writeVarBytes(str.c_str(), str.length());
 		}
 
 	}
