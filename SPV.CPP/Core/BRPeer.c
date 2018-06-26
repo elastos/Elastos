@@ -101,7 +101,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
         peer_log(peer, "incomplete merkleblock %s, expected %zu more tx, got %s", u256hex(ctx->currentBlock->blockHash),
                  array_count(ctx->currentBlockTxHashes), type);
         array_clear(ctx->currentBlockTxHashes);
-        BRMerkleBlockFree(ctx->currentBlock);
+        ctx->manager->peerMessages->MerkleBlockFree(ctx->currentBlock);
         ctx->currentBlock = NULL;
         r = 0;
     }
@@ -229,10 +229,12 @@ static void *_peerThreadRoutine(void *arg)
                 if (n > 0) len += n;
                 if (n == 0)
                     error = ECONNRESET;
-                if (n < 0 && errno != EWOULDBLOCK)
-                {
+                if (n < 0 && errno != EWOULDBLOCK) {
                     error = errno;
-                    peer_log(peer, "n < 0 && errno != EWOULDBLOCK 11111111111 error %d", error);
+                    if (error == EINTR) {
+                        error = 0;
+                        continue;
+                    }
                 }
 
                 gettimeofday(&tv, NULL);
@@ -255,7 +257,7 @@ static void *_peerThreadRoutine(void *arg)
             }
 
             if (error) {
-                peer_log(peer, "_peerThreadRoutine %s", strerror(error));
+                peer_log(peer, "read socket error: %s", strerror(error));
             }
             else if (header[15] != 0) { // verify header type field is NULL terminated
                 peer_log(peer, "malformed message header: type not NULL terminated");
@@ -285,10 +287,12 @@ static void *_peerThreadRoutine(void *arg)
                         if (n > 0) len += n;
                         if (n == 0)
                             error = ECONNRESET;
-                        if (n < 0 && errno != EWOULDBLOCK)
-                        {
+                        if (n < 0 && errno != EWOULDBLOCK) {
                             error = errno;
-                            peer_log(peer, "n < 0 && errno != EWOULDBLOCK 2222error %d", error);
+                            if (error == EINTR) {
+                                error = 0;
+                                continue;
+                            }
                         }
 
                         gettimeofday(&tv, NULL);
@@ -300,7 +304,7 @@ static void *_peerThreadRoutine(void *arg)
                     }
 
                     if (error) {
-                        peer_log(peer, "%s", strerror(error));
+                        peer_log(peer, "read socket error: %s", strerror(error));
                     }
                     else if (len == msgLen) {
                         BRSHA256_2(&hash, payload, msgLen);
