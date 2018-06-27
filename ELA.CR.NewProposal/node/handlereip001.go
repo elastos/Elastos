@@ -245,7 +245,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			}
 
 		case msg.InvTypeTx:
-			tx, ok := node.GetTransactionPool(false)[iv.Hash]
+			tx, ok := LocalNode.GetTransactionPool(false)[iv.Hash]
 			if !ok {
 				notFound.AddInvVect(iv)
 				continue
