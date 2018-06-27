@@ -405,12 +405,8 @@ namespace Elastos {
 			return DEFAULT_FEE_PER_KB;
 		}
 
-		bool Wallet::AddressFilter(const std::string &fromAddress, const std::string &filtAddress) {
-			if (filtAddress == fromAddress) {
-				return true;
-			}
-
-			return false;
+		bool Wallet::AddressFilter(const std::string &fromAddress, const std::string &filterAddress) {
+			return filterAddress == fromAddress;
 		}
 
 		BRTransaction *Wallet::CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
@@ -449,7 +445,7 @@ namespace Elastos {
 				o = &wallet->utxos[i];
 				tx = (ELATransaction *) BRSetGet(wallet->allTx, o);
 				if (!tx || o->n >= tx->outputs.size()) continue;
-				if (filter && !filter(fromAddress, tx->outputs[o->n]->getAddress())) {
+				if (filter && !fromAddress.empty() && !filter(fromAddress, tx->outputs[o->n]->getAddress())) {
 					continue;
 				}
 
@@ -538,7 +534,7 @@ namespace Elastos {
 		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
 								  const std::string &toAddress) {
 			UInt168 u168Address = UINT168_ZERO;
-			if (!Utils::UInt168FromAddress(u168Address, fromAddress)) {
+			if (!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress)) {
 				std::ostringstream oss;
 				oss << "Invalid spender address: " << fromAddress;
 				throw std::logic_error(oss.str());
@@ -570,40 +566,6 @@ namespace Elastos {
 #endif
 
 			TransactionPtr result = nullptr;
-			if (tx != nullptr) {
-				result = TransactionPtr(new Transaction(tx));
-			}
-
-			return result;
-		}
-
-		TransactionPtr
-		Wallet::createTransaction(uint64_t amount, const Address &address) {
-			UInt168 u168Address = UINT168_ZERO;
-			if (!Utils::UInt168FromAddress(u168Address, address.stringify())) {
-				std::ostringstream oss;
-				oss << "Invalid receiver address: " << address.stringify();
-				throw std::logic_error(oss.str());
-			}
-
-			TransactionOutput *output = new TransactionOutput();
-			output->setAmount(amount);
-			output->setAddress(address.stringify());
-			output->setAssetId(Key::getSystemAssetId());
-			output->setProgramHash(u168Address);
-			output->setOutputLock(0);
-
-			BRTxOutput outputs[1];
-			outputs[0] = *output->getRaw();
-
-			TransactionPtr result = nullptr;
-#ifdef TEMPORARY_HD_STRATEGY
-			_wallet->TemporaryPassword = payPassword;
-#endif
-			ELATransaction *tx = (ELATransaction *) WalletCreateTxForOutputs((BRWallet *) _wallet, outputs, 1);
-#ifdef TEMPORARY_HD_STRATEGY
-			_wallet->TemporaryPassword.clear();
-#endif
 			if (tx != nullptr) {
 				result = TransactionPtr(new Transaction(tx));
 			}

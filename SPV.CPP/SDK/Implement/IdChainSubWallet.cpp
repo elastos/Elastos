@@ -65,15 +65,8 @@ namespace Elastos {
 
 			//todo create transaction without to address
 
-			TransactionPtr ptr = nullptr;
-			if (param->getFee() > 0 || !param->getFromAddress().empty()) {
-				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+			TransactionPtr ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
 																	 param->getAmount(), param->getToAddress());
-			} else {
-				Address address(param->getToAddress());
-				ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
-			}
-
 			if (!ptr) return nullptr;
 			ptr->setTransactionType(ELATransaction::RegisterIdentification);
 

@@ -30,13 +30,13 @@ namespace Elastos {
 		}
 
 		nlohmann::json MainchainSubWallet::CreateDepositTransaction(const std::string &fromAddress,
-																  const std::string &toAddress,
-																  const uint64_t amount,
-																  const nlohmann::json &sidechainAccounts,
-																  const nlohmann::json &sidechainAmounts,
-																  const nlohmann::json &sidechainIndexs,
-																  uint64_t fee,
-																  const std::string &memo) {
+																	const std::string &toAddress,
+																	const uint64_t amount,
+																	const nlohmann::json &sidechainAccounts,
+																	const nlohmann::json &sidechainAmounts,
+																	const nlohmann::json &sidechainIndexs,
+																	uint64_t fee,
+																	const std::string &memo) {
 			boost::scoped_ptr<TxParam> txParam(
 					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo));
 			txParam->setAssetId(Key::getSystemAssetId());
@@ -69,17 +69,11 @@ namespace Elastos {
 		MainchainSubWallet::createTransaction(TxParam *param) const {
 			TransactionPtr ptr = nullptr;
 			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
-			if(depositTxParam == nullptr) {
+			if (depositTxParam == nullptr) {
 				ptr = SubWallet::createTransaction(param);
 			} else {
-				if (param->getFee() > 0 || !param->getFromAddress().empty()) {
-					ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																		 param->getAmount(), param->getToAddress());
-				} else {
-					Address address(param->getToAddress());
-					ptr = _walletManager->getWallet()->createTransaction(param->getAmount(), address);
-				}
-
+				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
+																	 param->getAmount(), param->getToAddress());
 
 				if (!ptr) return nullptr;
 

@@ -233,8 +233,8 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 		nlohmann::json result;
 		nlohmann::json txJson;
 		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO);
-		CHECK_THROWS_AS(subWallet->CreateTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-				50 * BASIC_UINT, BASIC_UINT, ""), std::logic_error);
+		CHECK_NOTHROW(subWallet->CreateTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
+				50 * BASIC_UINT, BASIC_UINT, ""));
 
 		CHECK_THROWS_AS(subWallet->CreateTransaction("EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2", "",
 		                                             50 * BASIC_UINT, BASIC_UINT, ""), std::logic_error);

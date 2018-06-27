@@ -155,22 +155,6 @@ namespace Elastos {
 
 			uint64_t getDefaultFeePerKb();
 
-			/**
-			 * Creates a Transaction for sending `amount` to `address`.  Will create a
-			 * TransactionOutput for `address` with a script of:
-			 *      DUP HASH160 <pub key hash for address> EQUALVERIFY CHECKSIG
-			 * (provided `address` is a 'pub key address'; otherwise produces a script for a scriptAddress)
-			 *
-			 * Will iterate over the wallet's UTXOs adding in their transaction output (amount, script) as
-			 * a BRCoreTransactionInput.  If the UTXOs can't cover `amount` then `null` is returned;
-			 * otherwise a 'change' output is added for an unused wallet address.
-			 *
-			 * @param amount the amount to send
-			 * @param address the address to send to
-			 * @return a consistently constructed transaction.
-			 */
-			TransactionPtr createTransaction(uint64_t amount, const Address &address);
-
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
 							  const std::string &toAddress);
@@ -285,7 +269,7 @@ namespace Elastos {
 		protected:
 			Wallet();
 
-			static bool AddressFilter(const std::string &fromAddress, const std::string &filtAddress);
+			static bool AddressFilter(const std::string &fromAddress, const std::string &filterAddress);
 
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 													 uint64_t fee, const std::string &fromAddress,
