@@ -21,40 +21,58 @@ const (
 	MaxFalsePositives = 7
 )
 
+type downloadTx struct {
+	mutex sync.RWMutex
+	queue map[common.Uint256]struct{}
+}
+
+func newDownloadTx() *downloadTx {
+	return &downloadTx{queue: make(map[common.Uint256]struct{})}
+}
+
+func (d *downloadTx) queueTx(txId common.Uint256) {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	d.queue[txId] = struct{}{}
+}
+
+func (d *downloadTx) dequeueTx(txId common.Uint256) bool {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
+	_, ok := d.queue[txId]
+	if !ok {
+		return false
+	}
+	delete(d.queue, txId)
+	return true
+}
+
 type downloadBlock struct {
 	mutex sync.RWMutex
 	*msg.MerkleBlock
-	txQueue map[common.Uint256]uint32
+	txQueue map[common.Uint256]struct{}
 	txs     []*ela.Transaction
 }
 
 func newDownloadBlock() *downloadBlock {
-	return &downloadBlock{txQueue: make(map[common.Uint256]uint32)}
+	return &downloadBlock{txQueue: make(map[common.Uint256]struct{})}
 }
 
-func (d *downloadBlock) queueTx(txId common.Uint256, height uint32) {
+func (d *downloadBlock) queueTx(txId common.Uint256) {
 	d.mutex.Lock()
 	defer d.mutex.Unlock()
-	d.txQueue[txId] = height
+	d.txQueue[txId] = struct{}{}
 }
 
-func (d *downloadBlock) inQueue(txId common.Uint256) bool {
-	d.mutex.RLock()
-	defer d.mutex.RUnlock()
+func (d *downloadBlock) dequeueTx(txId common.Uint256) bool {
+	d.mutex.Lock()
+	defer d.mutex.Unlock()
 	_, ok := d.txQueue[txId]
-	return ok
-}
-
-func (d *downloadBlock) dequeueTx(tx *ela.Transaction) (uint32, bool) {
-	d.mutex.Lock()
-	defer d.mutex.Unlock()
-	txId := tx.Hash()
-	height, ok := d.txQueue[txId]
 	if !ok {
-		return 0, false
+		return false
 	}
 	delete(d.txQueue, txId)
-	return height, true
+	return true
 }
 
 func (d *downloadBlock) finished() bool {
@@ -71,6 +89,7 @@ type SPVServiceImpl struct {
 	blockQueue  chan common.Uint256
 	downloading *downloadBlock
 	commitQueue chan *downloadBlock
+	downloadTx  *downloadTx
 	pendingTx   common.Uint256
 	txAccept    chan *common.Uint256
 	txReject    chan *msg.Reject
@@ -90,9 +109,13 @@ func NewSPVServiceImpl(client SPVClient, headerStore store.HeaderStore, handler 
 		return nil, err
 	}
 
+	// Block downloading and commit
 	service.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*3)
 	service.downloading = newDownloadBlock()
 	service.commitQueue = make(chan *downloadBlock, p2p.MaxBlocksPerMsg*2)
+
+	// Transaction downloading
+	service.downloadTx = newDownloadTx()
 
 	// Initialize local peer height
 	service.updateLocalHeight(service.chain.Height())
@@ -228,13 +251,15 @@ func (s *SPVServiceImpl) stopSyncing() {
 		for len(s.blockQueue) > 0 {
 			<-s.blockQueue
 		}
-
 		// Reset download block
 		s.downloading = newDownloadBlock()
 		// Clear commit queue
 		for len(s.commitQueue) > 0 {
 			<-s.commitQueue
 		}
+
+		// Reset download transaction
+		s.downloadTx = newDownloadTx()
 	}
 }
 
@@ -290,7 +315,7 @@ func (s *SPVServiceImpl) OnInventory(peer *net.Peer, m *msg.Inventory) error {
 				continue
 			}
 			gData.AddInvVect(inv)
-			s.downloading.queueTx(inv.Hash, 0)
+			s.downloadTx.queueTx(inv.Hash)
 		default:
 			continue
 		}
@@ -306,8 +331,7 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 	s.Lock()
 	defer s.Unlock()
 
-	header := block.Header.(*ela.Header)
-	blockHash := header.Hash()
+	blockHash := block.Header.(*ela.Header).Hash()
 
 	// Merkleblock from sync peer
 	if s.chain.IsSyncing() &&
@@ -341,7 +365,7 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 
 	// Download transactions of this block
 	for _, txId := range txIds {
-		s.downloading.queueTx(*txId, header.Height)
+		s.downloading.queueTx(*txId)
 	}
 
 	return nil
@@ -352,18 +376,18 @@ func (s *SPVServiceImpl) OnTx(peer *net.Peer, msg *msg.Tx) error {
 	defer s.Unlock()
 
 	tx := msg.Transaction.(*ela.Transaction)
-	height, ok := s.downloading.dequeueTx(tx)
-	if !ok {
-		return fmt.Errorf("Transaction not found in download queue %s", tx.Hash().String())
-	}
-
-	if height == 0 {
+	if s.downloadTx.dequeueTx(tx.Hash()) {
 		// commit unconfirmed transaction
 		_, err := s.handler.CommitTx(tx, 0)
 		if err == nil {
 			s.updateFilterAndSend(peer)
 		}
 		return err
+	}
+
+	if !s.downloading.dequeueTx(tx.Hash()) {
+		s.downloading = newDownloadBlock()
+		return fmt.Errorf("Transaction not found in download queue %s", tx.Hash().String())
 	}
 
 	// Add tx to download
@@ -433,7 +457,9 @@ func (s *SPVServiceImpl) OnNotFound(peer *net.Peer, notFound *msg.NotFound) erro
 		log.Warnf("Data not found type %s, hash %s", iv.Type.String(), iv.Hash.String())
 		switch iv.Type {
 		case msg.InvTypeTx:
-			if s.downloading.inQueue(iv.Hash) {
+			if s.downloadTx.dequeueTx(iv.Hash) {
+			}
+			if s.downloading.dequeueTx(iv.Hash) {
 				s.downloading = newDownloadBlock()
 			}
 		case msg.InvTypeBlock:
