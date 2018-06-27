@@ -47,7 +47,7 @@ namespace Elastos {
 					type = (inv_type)UInt32GetLE(&msg[off]);
 					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
 
-					Log::getLogger()->info("not found type = {}, hash = {}", type, Utils::UInt256ToString(hash));
+					peer_log(peer, "not found type = %d, hash = %s", type, Utils::UInt256ToString(hash).c_str());
 
 					switch (type) {
 						case inv_tx: array_add(txHashes, hash); break;

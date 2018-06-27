@@ -35,11 +35,11 @@ namespace Elastos {
 			off += sizeof(UInt256);
 
 			if (locatorsCount > 0) {
-				Log::getLogger()->warn("calling getblocks with {} locators: [{},{} {}]",
+				peer_log(peer, "calling getblocks with %zu locators: [%s,%s %s]",
 									   locatorsCount,
-									   Utils::UInt256ToString(locators[0]),
+									   Utils::UInt256ToString(locators[0]).c_str(),
 									   (locatorsCount > 2 ? " ...," : ""),
-									   (locatorsCount > 1 ? Utils::UInt256ToString(locators[locatorsCount - 1]) : ""));
+									   (locatorsCount > 1 ? Utils::UInt256ToString(locators[locatorsCount - 1]).c_str() : ""));
 				BRPeerSendMessage(peer, msg, off, MSG_GETBLOCKS);
 			}
 		}

@@ -19,14 +19,12 @@ namespace Elastos {
 			int r = 1;
 
 			if (sizeof(uint64_t) > msgLen) {
-				Log::getLogger()->warn("malformed pong message, length is %zu, should be %zu", msgLen, sizeof(uint64_t));
+				peer_log(peer, "malformed pong message, length is %zu, should be %zu", msgLen, sizeof(uint64_t));
 				r = 0;
-			}
-			else if (array_count(ctx->pongCallback) == 0) {
-				Log::getLogger()->warn("got unexpected pong");
+			} else if (array_count(ctx->pongCallback) == 0) {
+				peer_log(peer, "got unexpected pong");
 				r = 0;
-			}
-			else {
+			} else {
 				if (ctx->startTime > 1) {
 					gettimeofday(&tv, nullptr);
 					pingTime = tv.tv_sec + (double)tv.tv_usec/1000000 - ctx->startTime;
@@ -34,9 +32,10 @@ namespace Elastos {
 					// 50% low pass filter on current ping time
 					ctx->pingTime = ctx->pingTime*0.5 + pingTime*0.5;
 					ctx->startTime = 0;
-					Log::getLogger()->info("got pong in {}", pingTime);
+					peer_log(peer, "got pong in %fs", pingTime);
+				} else {
+					peer_log(peer, "got pong");
 				}
-				else Log::getLogger()->info("got pong");
 
 				if (array_count(ctx->pongCallback) > 0) {
 					void (*pongCallback)(void *, int) = ctx->pongCallback[0];

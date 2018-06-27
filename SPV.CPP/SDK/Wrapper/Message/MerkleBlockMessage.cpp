@@ -37,13 +37,12 @@ namespace Elastos {
 			int r = 1;
 
 			if (!wrappedBlock->isValid((uint32_t) time(nullptr))) {
-				Log::getLogger()->error("invalid merkleblock: {}",
-									   Utils::UInt256ToString(block->blockHash));
+				peer_log(peer, "invalid merkleblock: %s", Utils::UInt256ToString(block->blockHash).c_str());
 				ELAMerkleBlockFree(elablock);
 				block = nullptr;
 				r = 0;
 			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
-				Log::getLogger()->warn("got merkleblock message before loading a filter");
+				peer_log(peer, "got merkleblock message before loading a filter");
 				ELAMerkleBlockFree(elablock);
 				block = nullptr;
 				r = 0;
@@ -72,7 +71,6 @@ namespace Elastos {
 					ELAMerkleBlockFree(elablock);
 				}
 			}
-			//Log::getLogger()->info("MerkleBlockMessage::Accept return {}:", r);
 			return r;
 		}
 

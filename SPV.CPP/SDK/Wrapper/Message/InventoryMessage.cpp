@@ -24,8 +24,6 @@ namespace Elastos {
 		}
 
 		int InventoryMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			Log::getLogger()->warn("InventoryMessage.Accept");
-
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 			size_t off = 0;
 			inv_type type;
@@ -36,13 +34,13 @@ namespace Elastos {
 			int r = 1;
 
 			if (count > MAX_GETDATA_HASHES) {
-				Log::getLogger()->warn("dropping inv message, {} is too many items, max is {}", count,
+				peer_log(peer, "dropping inv message, %zu is too many items, max is %d", count,
 									   MAX_GETDATA_HASHES);
 			} else {
 				const uint8_t *transactions[count], *blocks[count];
 				size_t i, j, txCount = 0, blockCount = 0;
 
-				Log::getLogger()->warn("got inv with {} item(s)", count);
+				peer_log(peer, "got inv with %zu item(s)", count);
 
 				for (i = 0; i < count; i++) {
 					type = inv_type(UInt32GetLE(&msg[off]));
@@ -64,14 +62,14 @@ namespace Elastos {
 				}
 
 				if (txCount > 0 && !ctx->sentFilter && !ctx->sentMempool && !ctx->sentGetblocks) {
-					Log::getLogger()->warn("got inv message before loading a filter");
+					peer_log(peer, "got inv message before loading a filter");
 					r = 0;
 				} else if (txCount > 10000) { // sanity check
-					Log::getLogger()->warn("too many transactions, disconnecting");
+					peer_log(peer, "too many transactions, disconnecting");
 					r = 0;
 				} else if (ctx->currentBlockHeight > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
 						   ctx->currentBlockHeight + array_count(ctx->knownBlockHashes) + blockCount < ctx->lastblock) {
-					Log::getLogger()->warn("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
+					peer_log(peer, "non-standard inv, %zu is fewer block hash(es) than expected", blockCount);
 					r = 0;
 				} else {
 					if (!ctx->sentFilter && !ctx->sentGetblocks) blockCount = 0;
@@ -114,7 +112,7 @@ namespace Elastos {
 					}
 
 					if (txCount > 0 && ctx->mempoolCallback) {
-						Log::getLogger()->warn("got initial mempool response");
+						peer_log(peer, "got initial mempool response");
 						ctx->manager->peerMessages->BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
 						ctx->mempoolCallback = nullptr;
 						ctx->mempoolTime = DBL_MAX;
@@ -129,8 +127,6 @@ namespace Elastos {
 		}
 
 		void InventoryMessage::Send(BRPeer *peer, const UInt256 txHashes[], size_t txCount) {
-			Log::getLogger()->warn("InventoryMessage.Send");
-
 			BRPeerContext *ctx = (BRPeerContext *) peer;
 			size_t knownCount = array_count(ctx->knownTxHashes);
 
@@ -148,6 +144,7 @@ namespace Elastos {
 					UInt256Set(&msg[off], ctx->knownTxHashes[knownCount + i]);
 					off += sizeof(UInt256);
 				}
+				peer_log(peer, "sending inv tx count=%zu type=%d", txCount, inv_tx);
 				BRPeerSendMessage(peer, msg, off, MSG_INV);
 			}
 		}

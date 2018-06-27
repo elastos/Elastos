@@ -32,16 +32,16 @@ namespace Elastos {
 			int r = 1;
 
 			if (!trans.Deserialize(stream)) {
-				Log::getLogger()->warn("malformed tx message with length: {}", msgLen);
+				peer_log(peer, "malformed tx message with length: %zu", msgLen);
 				r = 0;
 				ELATransactionFree(tx);
 			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
-				Log::warn("got tx message before loading filter");
+				peer_log(peer, "got tx message before loading filter");
 				r = 0;
 				ELATransactionFree(tx);
 			} else {
 				txHash = trans.getHash();
-				Log::getLogger()->info("got tx: {}", Utils::UInt256ToString(txHash));
+				peer_log(peer, "got tx: %s", Utils::UInt256ToString(txHash).c_str());
 
 				if (ctx->relayedTx) {
 					ctx->relayedTx(ctx->info, (BRTransaction *)tx);
