@@ -20,7 +20,8 @@ namespace Elastos {
 			assert(orig != nullptr);
 
 			ELAMerkleBlock *cpy = ELAMerkleBlockNew();
-			*cpy = *orig;
+			cpy->raw = orig->raw;
+			cpy->auxPow = orig->auxPow;
 
 			BRMerkleBlock *proto = (BRMerkleBlock *)orig;
 			cpy->raw.hashes = nullptr;
@@ -35,7 +36,7 @@ namespace Elastos {
 
 			BRMerkleBlock *block = (BRMerkleBlock *)elablock;
 
-			if (block->hashes) free(block->hashes);
+ 			if (block->hashes) free(block->hashes);
 			if (block->flags) free(block->flags);
 
 			delete elablock;

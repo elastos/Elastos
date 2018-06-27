@@ -64,7 +64,10 @@ namespace Elastos {
 			}
 			if(hasChange)
 				Log::warn("Transaction outputs have multiple change output.");
-			return hasOutput;
+			if(hasOutput)
+				Log::warn("Transaction has no outcoming output.");
+
+			return true;
 		}
 
 		bool TransactionChecker::checkTransactionAttribute(const TransactionPtr &transaction) {
