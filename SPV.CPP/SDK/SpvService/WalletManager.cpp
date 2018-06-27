@@ -183,13 +183,14 @@ namespace Elastos {
 		}
 
 		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
-			MerkleBlockEntity blockEntity;
 
 			if (replace) {
 				_databaseManager.deleteAllBlocks(ISO);
 			}
 
 			ByteStream ostream;
+			std::vector<MerkleBlockEntity> merkleBlockList;
+			MerkleBlockEntity blockEntity;
 			for (size_t i = 0; i < blocks.size(); ++i) {
 				if (blocks[i]->getHeight() == 0)
 					continue;
@@ -198,8 +199,9 @@ namespace Elastos {
 				blocks[i]->Serialize(ostream);
 				blockEntity.blockBytes = ostream.getBuffer();
 				blockEntity.blockHeight = blocks[i]->getHeight();
-				_databaseManager.putMerkleBlock(ISO, blockEntity);
+				merkleBlockList.push_back(blockEntity);
 			}
+			_databaseManager.putMerkleBlocks(ISO, merkleBlockList);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &blocks](PeerManager::Listener *listener) {
@@ -209,18 +211,20 @@ namespace Elastos {
 		}
 
 		void WalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
-			PeerEntity peerEntity;
 
 			if (replace) {
 				_databaseManager.deleteAllPeers(ISO);
 			}
 
+			std::vector<PeerEntity> peerEntityList;
+			PeerEntity peerEntity;
 			for (size_t i = 0; i < peers.size(); ++i) {
 				peerEntity.address = peers[i]->getAddress();
 				peerEntity.port = peers[i]->getPort();
 				peerEntity.timeStamp = peers[i]->getTimestamp();
-				_databaseManager.putPeer(ISO, peerEntity);
+				peerEntityList.push_back(peerEntity);
 			}
+			_databaseManager.putPeers(ISO, peerEntityList);
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [replace, &peers](PeerManager::Listener *listener) {

@@ -34,7 +34,7 @@ namespace Elastos {
 							  masterWalletIds.push_back(item.first);
 						  });
 			std::for_each(masterWalletIds.begin(), masterWalletIds.end(), [this](const std::string &id){
-				this->DestroyWallet(id);
+				this->removeWallet(id);
 			});
 		}
 
@@ -76,7 +76,7 @@ namespace Elastos {
 			return result;
 		};
 
-		void MasterWalletManager::DestroyWallet(const std::string &masterWalletId) {
+		void MasterWalletManager::removeWallet(const std::string &masterWalletId, bool saveMaster) {
 			ParamChecker::checkNotEmpty(masterWalletId);
 
 			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
@@ -89,8 +89,18 @@ namespace Elastos {
 				masterWallet->DestroyWallet(subWallets[i]);
 			}
 
+			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
+			if(saveMaster)
+				masterWalletInner->Save();
+			else
+				masterWalletInner->ClearLocal();
+
 			_masterWalletMap.erase(masterWalletId);
 			delete masterWallet;
+		}
+
+		void MasterWalletManager::DestroyWallet(const std::string &masterWalletId) {
+			removeWallet(masterWalletId, false);
 		}
 
 		IMasterWallet *

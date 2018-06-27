@@ -111,6 +111,8 @@ namespace Elastos {
 
 			void initMasterWallets();
 
+			void removeWallet(const std::string &masterWalletId, bool saveMaster = true);
+
 		protected:
 			std::string _rootPath;
 			MasterWalletMap _masterWalletMap;

@@ -81,7 +81,6 @@ namespace Elastos {
 		}
 
 		MasterWallet::~MasterWallet() {
-			Save();
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
@@ -89,6 +88,13 @@ namespace Elastos {
 			Mnemonic mnemonic(language, rootPath);
 			CMemBlock<char> phrase = WalletTool::GeneratePhraseFromSeed(seed128, mnemonic.words());
 			return (const char *) phrase;
+		}
+
+		void MasterWallet::ClearLocal() {
+			boost::filesystem::path path = _rootPath;
+			path /= GetId();
+			if (boost::filesystem::exists(path))
+				boost::filesystem::remove_all(path);
 		}
 
 		void MasterWallet::Save() {
