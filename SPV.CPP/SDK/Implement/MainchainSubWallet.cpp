@@ -72,7 +72,7 @@ namespace Elastos {
 			if(depositTxParam == nullptr) {
 				ptr = SubWallet::createTransaction(param);
 			} else {
-				if (param->getFee() > 0 || param->getFromAddress().empty() == true) {
+				if (param->getFee() > 0 || !param->getFromAddress().empty()) {
 					ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
 																		 param->getAmount(), param->getToAddress());
 				} else {

@@ -196,7 +196,7 @@ namespace Elastos {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
 			TransactionPtr ptr = nullptr;
-			if (param->getFee() > 0 || param->getFromAddress().empty() != true) {
+			if (param->getFee() > 0 || !param->getFromAddress().empty()) {
 				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(),
 																	 std::max(param->getFee(), _info.getMinFee()),
 																	 param->getAmount(), param->getToAddress());
