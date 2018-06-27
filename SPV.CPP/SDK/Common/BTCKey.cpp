@@ -4,6 +4,7 @@
 
 //Add * accorded with breadwallet by zhangcl 791398105@qq.com
 
+#include <fstream>
 #include <openssl/aes.h>
 #include <openssl/rand.h>
 #include <openssl/hmac.h>

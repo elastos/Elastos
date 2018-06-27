@@ -251,19 +251,20 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	output->setAmount(100000000);
 	output->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 	transaction->outputs.push_back(output);
-	transaction->raw.txHash = UINT256_ZERO;
 	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 	CMBlock code(10);
 	CMBlock parameter(10);
 	ProgramPtr program(new Program(code, parameter));
 	transaction->programs.push_back(program);
-	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction, false))));
+	TransactionPtr txPtr(new Transaction(transaction, false));
+	txPtr->getHash();
+	REQUIRE(singleAddressWallet.registerTransaction(txPtr));
 
 	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
 	REQUIRE(singleAddressWallet.getBalance() == 100000000);
 
 	REQUIRE(singleAddressWallet.registerTransaction(
-			TransactionPtr(new Transaction(transaction)))); //register the same transaction again
+			TransactionPtr(new Transaction(transaction, false)))); //register the same transaction again
 	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
 
 	//register the second transaction
@@ -272,14 +273,14 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	output2->setAmount(200000000);
 	output2->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 	transaction2->outputs.push_back(output2);
-	transaction2->raw.txHash = Utils::UInt256FromString(
-			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
 	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 	CMBlock code2(10);
 	CMBlock parameter2(10);
 	ProgramPtr program2(new Program(code2, parameter2));
 	transaction2->programs.push_back(program2);
-	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2))));
+	TransactionPtr tx2Ptr(new Transaction(transaction2, false));
+	tx2Ptr->getHash();
+	REQUIRE(singleAddressWallet.registerTransaction(tx2Ptr));
 
 	REQUIRE(singleAddressWallet.getBalance() == 300000000);
 #endif

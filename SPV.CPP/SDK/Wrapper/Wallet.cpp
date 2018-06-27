@@ -654,11 +654,7 @@ namespace Elastos {
 		}
 
 		bool Wallet::registerTransaction(const TransactionPtr &transaction) {
-			ELATransaction *elaTransaction = ELATransactionCopy((ELATransaction *) transaction->getRaw());
-			bool result = BRWalletRegisterTransaction((BRWallet *) _wallet, (BRTransaction *) elaTransaction) != 0;
-			if (!result)
-				ELATransactionFree(elaTransaction);
-			return result;
+			return BRWalletRegisterTransaction((BRWallet *) _wallet, transaction->getRaw()) != 0;
 		}
 
 		void Wallet::removeTransaction(const UInt256 &transactionHash) {
@@ -1013,7 +1009,7 @@ namespace Elastos {
 
 			WeakListener *listener = (WeakListener *) info;
 			if (!listener->expired()) {
-				listener->lock()->onTxAdded(TransactionPtr(new Transaction(*(ELATransaction *) tx)));
+				listener->lock()->onTxAdded(TransactionPtr(new Transaction((ELATransaction *) tx, false)));
 			}
 		}
 
