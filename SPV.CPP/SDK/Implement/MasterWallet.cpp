@@ -370,29 +370,14 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword);
 
 			Key key = deriveKey(payPassword);
-
-			CMBlock md(sizeof(UInt256));
-			BRSHA256(&md[0], message.c_str(), message.size());
-
-			CMBlock signedData = key.compactSign(md);
-
-			char data[signedData.GetSize()];
-			memcpy(data, signedData, signedData.GetSize());
-			std::string singedMsg(data, signedData.GetSize());
-			return singedMsg;
+			return key.compactSign(message);
 		}
 
 		nlohmann::json
 		MasterWallet::CheckSign(const std::string &publicKey, const std::string &message,
 								const std::string &signature) {
 
-			CMBlock signatureData(signature.size());
-			memcpy(signatureData, signature.c_str(), signature.size());
-
-			UInt256 md;
-			BRSHA256(&md, message.c_str(), message.size());
-
-			bool r = Key::verifyByPublicKey(publicKey, md, signatureData);
+			bool r = Key::verifyByPublicKey(publicKey, message, signature);
 			nlohmann::json jsonData;
 			jsonData["Result"] = r;
 			return jsonData;

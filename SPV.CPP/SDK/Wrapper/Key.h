@@ -54,6 +54,8 @@ namespace Elastos {
 
 			CMBlock compactSign(const CMBlock &data) const;
 
+			std::string compactSign(const std::string &message) const;
+
 			CMBlock encryptNative(const CMBlock &data, const CMBlock &nonce) const;
 
 			CMBlock decryptNative(const CMBlock &data, const CMBlock &nonce) const;
@@ -94,6 +96,9 @@ namespace Elastos {
 			static void
 			calculatePrivateKeyList(BRKey keys[], size_t keysCount, UInt256 *secret, UInt256 *chainCode,
 			                        uint32_t chain, const uint32_t indexes[]);
+
+			static bool verifyByPublicKey(const std::string &publicKey, const std::string &message,
+										  const std::string &signature);
 
 			static bool verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 			                              const CMBlock &signature);

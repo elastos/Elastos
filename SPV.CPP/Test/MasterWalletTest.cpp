@@ -480,8 +480,7 @@ TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {
 		REQUIRE_FALSE(j["Result"].get<bool>());
 	}
 	SECTION("Check sign with wrong signed data") {
-		nlohmann::json j = masterWallet->CheckSign(masterWallet->GetPublicKey(), message, "wrangData");
-		REQUIRE_FALSE(j["Result"].get<bool>());
+		REQUIRE_THROWS_AS(masterWallet->CheckSign(masterWallet->GetPublicKey(), message, "wrangData"), std::logic_error);
 	}
 }
 

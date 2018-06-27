@@ -23,6 +23,7 @@
 #include "ELABIP32Sequence.h"
 #include "BTCKey.h"
 #include "BigIntFormat.h"
+#include "Utils.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -221,6 +222,14 @@ namespace Elastos {
 			return signedData;
 		}
 
+		std::string Key::compactSign(const std::string &message) const {
+			CMBlock md(sizeof(UInt256));
+			BRSHA256(md, message.c_str(), message.size());
+
+			CMBlock signedData = compactSign(md);
+			return Utils::encodeHex(signedData);
+		}
+
 		CMBlock Key::encryptNative(const CMBlock &data, const CMBlock &nonce) const {
 			CMBlock out(16 + data.GetSize());
 			size_t outSize = BRChacha20Poly1305AEADEncrypt(out, 16 + data.GetSize(), _key.get(), nonce,
@@ -347,6 +356,16 @@ namespace Elastos {
 					memcpy(privKey.u8, mbChildPrivkey, mbChildPrivkey.GetSize());
 					BRKeySetSecret(&keys[i], &privKey, 1);
 				}
+		}
+
+		bool Key::verifyByPublicKey(const std::string &publicKey, const std::string &message,
+									const std::string &signature) {
+			CMBlock signatureData = Utils::decodeHex(signature);
+
+			UInt256 md;
+			BRSHA256(&md, message.c_str(), message.size());
+
+			return verifyByPublicKey(publicKey, md, signatureData);
 		}
 
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,

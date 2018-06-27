@@ -81,16 +81,7 @@ namespace Elastos {
 
 		std::string IdAgentImpl::Sign(const std::string &id, const std::string &message, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
-
-			CMBlock md(sizeof(UInt256));
-			BRSHA256(md, message.c_str(), message.size());
-
-			CMBlock signedData = key->compactSign(md);
-
-			char data[signedData.GetSize()];
-			memcpy(data, signedData, signedData.GetSize());
-			std::string singedMsg(data, signedData.GetSize());
-			return singedMsg;
+			return key->compactSign(message);
 		}
 
 		std::vector<std::string> IdAgentImpl::GetAllIds() const {

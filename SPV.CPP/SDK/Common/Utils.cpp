@@ -107,7 +107,8 @@ namespace Elastos {
 		}
 
 		size_t Utils::decodeHexLength(size_t stringLen) {
-			assert (0 == stringLen % 2);
+			if (0 != stringLen % 2)
+				throw std::logic_error("Invalid string length.");
 			return stringLen / 2;
 		}
 
