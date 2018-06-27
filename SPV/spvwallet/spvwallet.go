@@ -110,18 +110,21 @@ func (wallet *SPVWallet) CommitTx(tx *core.Transaction, height uint32) (bool, er
 		return false, nil
 	}
 
-	dubs, err := wallet.checkDoubleSpends(tx)
-	if err != nil {
-		return false, nil
-	}
-	if len(dubs) > 0 {
-		if height == 0 {
+	// Do not check double spends when syncing
+	if wallet.SPVService.ChainState() == sdk.WAITING {
+		dubs, err := wallet.checkDoubleSpends(tx)
+		if err != nil {
 			return false, nil
-		} else {
-			// Rollback any double spend transactions
-			for _, dub := range dubs {
-				if err := wallet.dataStore.RollbackTx(dub); err != nil {
-					return false, nil
+		}
+		if len(dubs) > 0 {
+			if height == 0 {
+				return false, nil
+			} else {
+				// Rollback any double spend transactions
+				for _, dub := range dubs {
+					if err := wallet.dataStore.RollbackTx(dub); err != nil {
+						return false, nil
+					}
 				}
 			}
 		}
@@ -160,7 +163,7 @@ func (wallet *SPVWallet) CommitTx(tx *core.Transaction, height uint32) (bool, er
 	}
 
 	// Save transaction
-	err = wallet.dataStore.Txs().Put(db.NewTx(*tx, height))
+	err := wallet.dataStore.Txs().Put(db.NewTx(*tx, height))
 	if err != nil {
 		return false, err
 	}

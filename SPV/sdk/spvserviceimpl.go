@@ -190,8 +190,8 @@ func (s *SPVServiceImpl) SendTransaction(tx ela.Transaction) (*common.Uint256, e
 		timer.Stop()
 		finish(txId)
 		// commit unconfirmed transaction to db
-		s.handler.CommitTx(&tx, 0)
-		return &txId, nil
+		_, err := s.handler.CommitTx(&tx, 0)
+		return &txId, err
 	case msg := <-s.txReject:
 		timer.Stop()
 		finish(txId)
