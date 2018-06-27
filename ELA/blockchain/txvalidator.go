@@ -85,7 +85,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 
 	if txn.IsWithdrawFromSideChainTx() {
 		if err := CheckWithdrawFromSideChainTransaction(txn); err != nil {
-			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
+			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
 			return ErrSidechainTxDuplicate
 		}
 	}
@@ -453,7 +453,7 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 
 	//check cross chain amount in payload
 	for i := 0; i < len(payloadObj.CrossChainAmounts); i++ {
-		if payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
+		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
 			return errors.New("Invalid transaction cross chain amount")
 		}
 	}
