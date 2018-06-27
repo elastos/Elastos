@@ -2,11 +2,11 @@ package rpc
 
 import (
 	"bytes"
-	"encoding/json"
-	"net/http"
-	"io/ioutil"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"net/http"
 
 	"github.com/elastos/Elastos.ELA/core"
 )

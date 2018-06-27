@@ -2,18 +2,20 @@ package rpc
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.SPV/log"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 func InitServer() *Server {
 	server := new(Server)
-	server.Server = http.Server{Addr: ":" + RPCPort}
+	server.Server = http.Server{Addr: fmt.Sprint(":", RPCPort)}
 	server.methods = map[string]func(Req) Resp{
 		"notifynewaddress": server.notifyNewAddress,
 		"sendtransaction":  server.sendTransaction,

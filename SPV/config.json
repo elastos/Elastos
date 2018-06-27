@@ -1,6 +1,7 @@
 {
   "Magic": 7630401,
   "PrintLevel": 4,
+  "RPCPort": 20477,
   "SeedList": [
     "127.0.0.1:20866"
   ]

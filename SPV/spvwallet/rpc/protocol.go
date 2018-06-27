@@ -1,8 +1,14 @@
 package rpc
 
-const (
-	RPCPort = "20877"
-	RPCAddr = "http://127.0.0.1:" + RPCPort + "/spvwallet/"
+import (
+	"fmt"
+
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+)
+
+var (
+	RPCPort = config.Values().RPCPort
+	RPCAddr = fmt.Sprint("http://127.0.0.1:", RPCPort, "/spvwallet/")
 )
 
 type Req struct {

@@ -2,9 +2,9 @@ package config
 
 import (
 	"bytes"
-	"io/ioutil"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 )
 
 const (
@@ -16,6 +16,7 @@ var config *Config // The single instance of config
 type Config struct {
 	Magic      uint32
 	PrintLevel uint8
+	RPCPort    uint16
 	SeedList   []string
 }
 
