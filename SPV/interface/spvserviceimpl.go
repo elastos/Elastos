@@ -169,15 +169,15 @@ func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*c
 	header := block.Header.(*core.Header)
 
 	// Store merkle proof
-	err := service.dataStore.Proofs().Put(&bloom.MerkleProof{
+	proof := bloom.MerkleProof{
 		BlockHash:    header.Hash(),
 		Height:       header.Height,
 		Transactions: block.Transactions,
 		Hashes:       block.Hashes,
 		Flags:        block.Flags,
-	})
+	}
 
-	if err != nil {
+	if err := service.dataStore.Proofs().Put(&proof); err != nil {
 		log.Errorf("[SPV_SERVICE] store merkle proof failed, error %s", err.Error())
 		return
 	}
@@ -191,14 +191,14 @@ func (service *SPVServiceImpl) OnBlockCommitted(block *msg.MerkleBlock, txs []*c
 		//	Get proof from db
 		proof, err := service.dataStore.Proofs().Get(item.Height)
 		if err != nil {
-			log.Error("Query merkle proof at height %d failed, %s", item.Height, err.Error())
-			return
+			log.Errorf("query merkle proof at height %d failed, %s", item.Height, err.Error())
+			continue
 		}
 		//	Get transaction from db
 		storeTx, err := service.dataStore.Txs().Get(&item.TxId)
 		if err != nil {
-			log.Error("Query transaction failed, tx hash:", item.TxId.String())
-			return
+			log.Errorf("query transaction failed, txId %s", item.TxId.String())
+			continue
 		}
 
 		// Notify listeners
@@ -259,6 +259,11 @@ func (service *SPVServiceImpl) ResetStores() error {
 
 func (service *SPVServiceImpl) queueMessageByListener(
 	listener TransactionListener, tx *core.Transaction, height uint32) {
+	// skip unpacked transaction
+	if height == 0 {
+		return
+	}
+
 	// skip transactions that not match the require type
 	if listener.Type() != tx.TxType {
 		return
