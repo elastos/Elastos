@@ -113,8 +113,6 @@ type Noder interface {
 	GetBestHeightNoder() Noder
 	AcqSyncBlkReqSem()
 	RelSyncBlkReqSem()
-	AcqSyncHdrReqSem()
-	RelSyncHdrReqSem()
 	SetStartHash(hash common.Uint256)
 	GetStartHash() common.Uint256
 	SetStopHash(hash common.Uint256)

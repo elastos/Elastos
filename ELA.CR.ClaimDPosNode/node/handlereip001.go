@@ -126,8 +126,8 @@ func (h *HandlerEIP001) onPong(pong *msg.Pong) error {
 func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) error {
 	log.Debug()
 	node := h.node
-	LocalNode.AcqSyncHdrReqSem()
-	defer LocalNode.RelSyncHdrReqSem()
+	LocalNode.AcqSyncBlkReqSem()
+	defer LocalNode.RelSyncBlkReqSem()
 
 	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
 	hashes, err := GetBlockHashes(*start, req.HashStop, p2p.MaxBlocksPerMsg)
