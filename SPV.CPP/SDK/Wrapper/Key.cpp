@@ -306,8 +306,7 @@ namespace Elastos {
 
 			UInt256 secret = UINT256_ZERO;
 			memcpy(secret.u8, priKey, priKey.GetSize());
-			BRKeySetSecret(_key.get(), &secret, 1);
-
+			setSecret(secret, true);
 			va_end(ap);
 		}
 
