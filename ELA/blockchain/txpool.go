@@ -98,6 +98,7 @@ func (pool *TxPool) GetTransactionPool(hasMaxCount bool) map[Uint256]*Transactio
 func (pool *TxPool) CleanSubmittedTransactions(block *Block) error {
 	pool.cleanTransactions(block.Transactions)
 	pool.cleanSidechainTx(block.Transactions)
+	pool.cleanSideChainPowTx()
 
 	return nil
 }
@@ -292,6 +293,29 @@ func (pool *TxPool) cleanSidechainTx(txs []*Transaction) {
 					for _, hash := range payload.SideChainTransactionHashes {
 						pool.delSidechainTx(hash)
 					}
+				}
+			}
+		}
+	}
+}
+
+// clean the sidechainpow tx pool
+func (pool *TxPool) cleanSideChainPowTx() {
+	arbitrtor, err := GetCurrentArbiter()
+	if err != nil {
+		log.Error("get current arbiter failed")
+		return
+	}
+	pool.Lock()
+	defer pool.Unlock()
+	for hash, txn := range pool.txnList {
+		if txn.IsSideChainPowTx() {
+			if err = CheckSideChainPowConsensus(txn, arbitrtor); err != nil {
+				// delete tx
+				delete(pool.txnList, hash)
+				//delete utxo map
+				for _, input := range txn.Inputs {
+					delete(pool.inputUTXOList, input.ReferKey())
 				}
 			}
 		}

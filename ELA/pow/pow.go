@@ -13,6 +13,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
@@ -154,7 +155,10 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 		if !IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-
+		if errCode := CheckTransactionContext(tx); errCode != Success {
+			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
+			continue
+		}
 		fee := GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
 		if fee != tx.Fee {
 			continue
