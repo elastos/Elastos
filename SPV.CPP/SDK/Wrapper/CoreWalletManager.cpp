@@ -118,7 +118,11 @@ namespace Elastos {
 		}
 
 		void
+#ifdef MERKLE_BLOCK_PLUGIN
 		CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+#else
+		CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+#endif
 
 		}
 
@@ -143,10 +147,17 @@ namespace Elastos {
 			return SharedWrapperList<Transaction, BRTransaction *>();
 		}
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		SharedWrapperList<IMerkleBlock, BRMerkleBlock *> CoreWalletManager::loadBlocks() {
 			//todo complete me
 			return SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 		}
+#else
+		SharedWrapperList<MerkleBlock, BRMerkleBlock *> CoreWalletManager::loadBlocks() {
+			//todo complete me
+			return SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
+		}
+#endif
 
 		SharedWrapperList<Peer, BRPeer *> CoreWalletManager::loadPeers() {
 			//todo complete me
@@ -217,7 +228,11 @@ namespace Elastos {
 
 		void WrappedExceptionPeerManagerListener::saveBlocks(
 				bool replace,
+#ifdef MERKLE_BLOCK_PLUGIN
 				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+#else
+				const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+#endif
 
 			try {
 				_listener->saveBlocks(replace, blocks);
@@ -335,7 +350,11 @@ namespace Elastos {
 
 		void WrappedExecutorPeerManagerListener::saveBlocks(
 				bool replace,
+#ifdef MERKLE_BLOCK_PLUGIN
 				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+#else
+				const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+#endif
 			_executor->execute(Runnable([this, replace, &blocks]() -> void {
 				try {
 					_listener->saveBlocks(replace, blocks);

@@ -14,6 +14,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		SidechainMerkleBlock::SidechainMerkleBlock() {
 			_merkleBlock = IdMerkleBlockNew();
 		}
@@ -255,5 +256,7 @@ namespace Elastos {
 		}
 
 		REGISTER_MERKLEBLOCKPLUGIN(SidechainMerkleBlock);
+#endif
+
 	}
 }

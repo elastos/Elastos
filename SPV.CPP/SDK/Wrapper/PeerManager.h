@@ -20,6 +20,7 @@
 #include "ELACoreExt/ELAPeerManager.h"
 #include "Plugin/PluginTypes.h"
 #include "Plugin/Interface/IMerkleBlock.h"
+#include "Plugin/Block/MerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -44,8 +45,13 @@ namespace Elastos {
 				virtual void txStatusUpdate() = 0;
 
 				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
+#ifdef MERKLE_BLOCK_PLUGIN
 				virtual void
 				saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) = 0;
+#else
+				virtual void
+				saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) = 0;
+#endif
 
 				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 				virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) = 0;
@@ -68,7 +74,11 @@ namespace Elastos {
 			PeerManager(const ChainParams &params,
 						const WalletPtr &wallet,
 						uint32_t earliestKeyTime,
+#ifdef MERKLE_BLOCK_PLUGIN
 						const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
+#else
+						const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+#endif
 						const SharedWrapperList<Peer, BRPeer *> &peers,
 						const boost::shared_ptr<Listener> &listener,
 						const PluginTypes &plugins);
@@ -119,7 +129,11 @@ namespace Elastos {
 			void createGenesisBlock() const;
 
 			std::vector<BRMerkleBlock *>
+#ifdef MERKLE_BLOCK_PLUGIN
 			getRawMerkleBlocks(const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
+#else
+			getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+#endif
 
 			static int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
 											   const BRSet *blockSet);

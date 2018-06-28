@@ -14,6 +14,7 @@
 #include "arith_uint256.h"
 #include "Message/PeerMessageManager.h"
 #include "Plugin/Registry.h"
+#include "Plugin/Block/MerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -47,7 +48,7 @@ namespace Elastos {
 			}
 
 			static void saveBlocks(void *info, int replace, BRMerkleBlock *blocks[], size_t blockCount) {
-
+#ifdef MERKLE_BLOCK_PLUGIN
 				WeakListener *weakListener = (WeakListener *) info;
 				if (!weakListener->expired()) {
 
@@ -62,6 +63,18 @@ namespace Elastos {
 					}
 					listener->saveBlocks(replace, *coreBlocks);
 				}
+#else
+				WeakListener *listener = (WeakListener *) info;
+				if (!listener->expired()) {
+
+					SharedWrapperList<MerkleBlock, BRMerkleBlock *> *coreBlocks = new SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
+					for (size_t i = 0; i < blockCount; ++i) {
+						coreBlocks->push_back(
+								MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *) blocks[i]))));
+					}
+					listener->lock()->saveBlocks(replace, *coreBlocks);
+				}
+#endif
 			}
 
 			static void savePeers(void *info, int replace, const BRPeer peers[], size_t count) {
@@ -122,7 +135,11 @@ namespace Elastos {
 		PeerManager::PeerManager(const ChainParams &params,
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
-								 const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
+#ifdef MERKLE_BLOCK_PLUGIN
+				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
+#else
+								 const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+#endif
 								 const SharedWrapperList<Peer, BRPeer *> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
 								 const PluginTypes &plugins) :
@@ -262,7 +279,11 @@ namespace Elastos {
 		}
 
 		std::vector<BRMerkleBlock *>
+#ifdef MERKLE_BLOCK_PLUGIN
 		PeerManager::getRawMerkleBlocks(const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+#else
+		PeerManager::getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+#endif
 			std::vector<BRMerkleBlock *> list;
 
 			size_t len = blocks.size();

@@ -11,6 +11,7 @@
 #include "SingleAddressWallet.h"
 #include "ELACoreExt/ELATxOutput.h"
 #include "Plugin/Registry.h"
+#include "Plugin/Block/MerkleBlock.h"
 
 #define BACKGROUND_THREAD_COUNT 1
 
@@ -182,7 +183,11 @@ namespace Elastos {
 						  });
 		}
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+#else
+		void WalletManager::saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
+#endif
 
 			if (replace) {
 				_databaseManager.deleteAllBlocks(ISO);
@@ -283,18 +288,27 @@ namespace Elastos {
 			return txs;
 		}
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		SharedWrapperList<IMerkleBlock, BRMerkleBlock *> WalletManager::loadBlocks() {
 			SharedWrapperList<IMerkleBlock, BRMerkleBlock *> blocks;
+#else
+		SharedWrapperList<MerkleBlock, BRMerkleBlock *> WalletManager::loadBlocks() {
+			SharedWrapperList<MerkleBlock, BRMerkleBlock *> blocks;
+#endif
 
 			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.getAllMerkleBlocks(ISO);
 
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
-				IMerkleBlock *block = Registry::Instance()->CreateMerkleBlock(_pluginTypes.BlockType);
+#ifdef MERKLE_BLOCK_PLUGIN
+				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes.BlockType));
+#else
+				MerkleBlockPtr block(new MerkleBlock);
+#endif
 				block->setHeight(blocksEntity[i].blockHeight);
 				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
 				stream.setPosition(0);
 				block->Deserialize(stream);
-				blocks.push_back(MerkleBlockPtr(block));
+				blocks.push_back(block);
 			}
 
 			return blocks;

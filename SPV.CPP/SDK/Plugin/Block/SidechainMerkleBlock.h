@@ -11,6 +11,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		class SidechainMerkleBlock :
 				public Wrapper<BRMerkleBlock>,
 				public IMerkleBlock {
@@ -52,6 +53,7 @@ namespace Elastos {
 		private:
 			IdMerkleBlock *_merkleBlock;
 		};
+#endif
 
 	}
 }

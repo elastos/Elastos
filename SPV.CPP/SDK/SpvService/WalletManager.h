@@ -96,7 +96,11 @@ namespace Elastos {
 			virtual void txStatusUpdate();
 
 			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
+#ifdef MERKLE_BLOCK_PLUGIN
 			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
+#else
+			virtual void saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
+#endif
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers);
@@ -112,7 +116,11 @@ namespace Elastos {
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 
+#ifdef MERKLE_BLOCK_PLUGIN
 			virtual SharedWrapperList<IMerkleBlock, BRMerkleBlock *> loadBlocks();
+#else
+			virtual SharedWrapperList<MerkleBlock, BRMerkleBlock *> loadBlocks();
+#endif
 
 			virtual SharedWrapperList<Peer, BRPeer *> loadPeers();
 

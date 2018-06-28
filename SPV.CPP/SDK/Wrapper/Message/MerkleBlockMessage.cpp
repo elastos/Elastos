@@ -17,12 +17,14 @@
 #include "ELACoreExt/ELAPeerManager.h"
 #include "ELACoreExt/ELAMerkleBlock.h"
 #include "Plugin/Registry.h"
+#include "Plugin/Block/MerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		int MerkleBlockMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 			BRPeerContext *ctx = (BRPeerContext *) peer;
+#ifdef MERKLE_BLOCK_PLUGIN
 			// msg is holding by payload pointer create by malloc, do not match delete[] in ByteStream
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
 
@@ -37,6 +39,18 @@ namespace Elastos {
 			int r = 1;
 
 			if (!wrappedBlock->isValid((uint32_t) time(nullptr))) {
+#else
+			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
+			MerkleBlock wrappedBlock;
+			wrappedBlock.Deserialize(stream);
+
+			ELAMerkleBlock *elablock = ELAMerkleBlockCopy((ELAMerkleBlock *)wrappedBlock.getRaw());
+			BRMerkleBlock *block = (BRMerkleBlock *)elablock;
+			block->blockHash = wrappedBlock.getBlockHash();
+			int r = 1;
+
+			if (!wrappedBlock.isValid((uint32_t) time(nullptr))) {
+#endif
 				peer_log(peer, "invalid merkleblock: %s", Utils::UInt256ToString(block->blockHash).c_str());
 				ELAMerkleBlockFree(elablock);
 				block = nullptr;

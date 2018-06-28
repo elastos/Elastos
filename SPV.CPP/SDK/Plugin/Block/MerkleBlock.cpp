@@ -54,9 +54,11 @@ namespace Elastos {
 			_merkleBlock = (ELAMerkleBlock *)block;
 		}
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		IMerkleBlock* MerkleBlock::Clone() const {
 			return new MerkleBlock(ELAMerkleBlockCopy(_merkleBlock));
 		}
+#endif
 
 		UInt256 MerkleBlock::getBlockHash() const {
 			UInt256 zero = UINT256_ZERO;
@@ -341,6 +343,9 @@ namespace Elastos {
 			return getRaw();
 		}
 
+#ifdef MERKLE_BLOCK_PLUGIN
 		REGISTER_MERKLEBLOCKPLUGIN(MerkleBlock);
+#endif
+
 	}
 }
