@@ -65,7 +65,7 @@ namespace Elastos {
 		}
 
 		int _ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const uint8_t *msg, size_t msglen,
-										  size_t recid, size_t check) {
+									   size_t recid, size_t check) {
 			if (!eckey) {
 				return 0;
 			}
@@ -360,13 +360,15 @@ namespace Elastos {
 								}
 								if (fOk) {
 									signedData.Resize(65);
+									signedData.Zero();
 									signedData[0] = 27 + rec + 4;
 									uint8_t arrBIN[256] = {0};
 									size_t szLen = 0;
 									szLen = BN_bn2bin(r, arrBIN);
-									memcpy(signedData + 1, arrBIN, 32);
+									memcpy(signedData + 1 + (32 - szLen), arrBIN, szLen);
+									memset(arrBIN, 0, sizeof(arrBIN));
 									szLen = BN_bn2bin(s, arrBIN);
-									memcpy(signedData + 1 + 32, arrBIN, 32);
+									memcpy(signedData + 1 + 32 + (32 - szLen), arrBIN, szLen);
 									out = true;
 								}
 								ECDSA_SIG_free(sig);
@@ -503,13 +505,15 @@ namespace Elastos {
 								}
 								if (fOk) {
 									signedData.Resize(65);
+									signedData.Zero();
 									signedData[0] = 27 + rec + 4;
 									uint8_t arrBIN[256] = {0};
 									size_t szLen = 0;
 									szLen = BN_bn2bin(r, arrBIN);
-									memcpy(signedData + 1, arrBIN, 32);
+									memcpy(signedData + 1 + (32 - szLen), arrBIN, szLen);
+									memset(arrBIN, 0, sizeof(arrBIN));
 									szLen = BN_bn2bin(s, arrBIN);
-									memcpy(signedData + 1 + 32, arrBIN, 32);
+									memcpy(signedData + 1 + 32 + (32 - szLen), arrBIN, szLen);
 									out = true;
 								}
 								ECDSA_SIG_free(sig);
@@ -845,7 +849,7 @@ namespace Elastos {
 								UInt256 chainCode, int nid) {
 			CMBlock out;
 			if (true != pubKey ||
-				33 != pubKey.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
+				33 != pubKey.GetSize()/* || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)*/) {
 				return out;
 			}
 			BRECPoint ecPoint;
@@ -1001,7 +1005,7 @@ namespace Elastos {
 		BTCKey::getDerivePrivKey(const CMBlock &seed, uint32_t chain, uint32_t index, UInt256 &chainCode,
 								 bool useChainCode, int nid) {
 			CMBlock out;
-			if (0 == seed.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
+			if (0 == seed.GetSize()) {
 				return out;
 			}
 			BRKey key;
@@ -1030,7 +1034,7 @@ namespace Elastos {
 
 		CMBlock
 		BTCKey::getDerivePrivKey_depth(const CMBlock &seed, UInt256 &chainCode, bool useChainCode, int nid,
-							   int depth, va_list ap) {
+									   int depth, va_list ap) {
 			CMBlock out;
 			if (0 == seed.GetSize()) {
 				return out;
@@ -1046,7 +1050,7 @@ namespace Elastos {
 		BTCKey::getDerivePrivKey_Secret(const CMBlock &privKey, uint32_t chain, uint32_t index,
 										UInt256 chainCode, int nid) {
 			CMBlock out;
-			if (32 != privKey.GetSize() || !(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN)) {
+			if (32 != privKey.GetSize()) {
 				return out;
 			}
 			BRKey key;
@@ -1075,7 +1079,7 @@ namespace Elastos {
 
 		CMBlock
 		BTCKey::getDerivePrivKey_Secret_depth(const CMBlock &privKey, UInt256 chainCode, bool useChainCode,
-									  int nid, int depth, va_list ap) {
+											  int nid, int depth, va_list ap) {
 			CMBlock out;
 			if (32 != privKey.GetSize()) {
 				return out;
@@ -1136,8 +1140,7 @@ namespace Elastos {
 		BTCKey::getDerivePrivKey(std::vector<CMBlock> &privKeys, const CMBlock &seed,
 								 uint32_t chain, const uint32_t indexes[], UInt256 &chainCode,
 								 bool useChainCode, int nid) {
-			if (0 == privKeys.size() || 0 == seed.GetSize() ||
-				!(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN) || !indexes) {
+			if (0 == privKeys.size() || 0 == seed.GetSize() || !indexes) {
 				return;
 			}
 			size_t keysCount = privKeys.size();
@@ -1157,8 +1160,7 @@ namespace Elastos {
 		BTCKey::getDerivePrivKey_Secret(std::vector<CMBlock> &privKeys, const CMBlock &privKey,
 										uint32_t chain, const uint32_t indexes[], UInt256 chainCode,
 										int nid) {
-			if (0 == privKeys.size() || 32 != privKey.GetSize() ||
-				!(chain == SEQUENCE_EXTERNAL_CHAIN || chain == SEQUENCE_INTERNAL_CHAIN) || !indexes) {
+			if (0 == privKeys.size() || 32 != privKey.GetSize() || !indexes) {
 				return;
 			}
 			size_t keysCount = privKeys.size();

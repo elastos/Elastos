@@ -22,11 +22,11 @@ using namespace Elastos::ElaWallet;
 
 TEST_CASE("generate key", "[BTCKey]") {
 	CMBlock privKey, pubKey;
-	if (true == BTCKey::generateKey(privKey, pubKey, NID_secp256k1)) {
+	if (true == BTCKey::generateKey(privKey, pubKey, NID_X9_62_prime256v1)) {
 		CMemBlock<char> cPrivkey, cPubkey;
 		cPrivkey = Hex2Str(privKey);
 		cPubkey = Hex2Str(pubKey);
-		REQUIRE(true == BTCKey::KeyIsValid(privKey, pubKey));
+		REQUIRE(true == BTCKey::KeyIsValid(privKey, pubKey, NID_X9_62_prime256v1));
 #ifdef BTCKEY_DEBUG_MSG
 		std::cout << "privKey=" << (const char *) cPrivkey << ":" << "pubkey=" << (const char *) cPubkey << std::endl;
 #endif
@@ -538,12 +538,12 @@ TEST_CASE("5 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 	}
 }
 
-TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
+TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_X9_62_prime256v1", "[BTCKey]") {
 	CMBlock mbPrivkey, mbPubkey;
-	if (false == BTCKey::generateKey(mbPrivkey, mbPubkey)) {
+	if (false == BTCKey::generateKey(mbPrivkey, mbPubkey, NID_X9_62_prime256v1)) {
 		return;
 	}
-	if (false == BTCKey::PublickeyIsValid(mbPubkey)) {
+	if (false == BTCKey::PublickeyIsValid(mbPubkey, NID_X9_62_prime256v1)) {
 		return;
 	}
 
@@ -566,16 +566,17 @@ TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 #endif
 
 		for (uint32_t count = 0; count < 10; count++) {
-			CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret_depth(mbPrivkey, chainCode, false, NID_secp256k1,
-																		   4, 1 | BIP32_HARD, chain, chain, count);
+			CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret_depth(mbPrivkey, chainCode, false,
+																		   NID_X9_62_prime256v1, 4, 1 | BIP32_HARD,
+																		   chain, chain, count);
 			vecHDPrivkey.push_back(mbChildPrivkey);
 
 #ifdef BTCKEY_DEBUG_MSG
-//			printf("generate hd privkey%d, len=%zu:\n", count, privKeys[count].GetSize());
-//			for (size_t i = 0; i < privKeys[count].GetSize(); i++) {
-//				printf("%02X ", privKeys[count][i]);
-//			}
-//			printf("\n");
+			//			printf("generate hd privkey%d, len=%zu:\n", count, privKeys[count].GetSize());
+			//			for (size_t i = 0; i < privKeys[count].GetSize(); i++) {
+			//				printf("%02X ", privKeys[count][i]);
+			//			}
+			//			printf("\n");
 #endif
 		}
 	}
@@ -584,7 +585,7 @@ TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 	printf("\n\n***************************\n\n");
 	printf("NID_secp256k1 generate pubKey\n");
 #endif
-	if (true == mbPubkey && true == BTCKey::PublickeyIsValid(mbPubkey)) {
+	if (true == mbPubkey && true == BTCKey::PublickeyIsValid(mbPubkey, NID_X9_62_prime256v1)) {
 #ifdef BTCKEY_DEBUG_MSG
 		printf("\npubKey:\n");
 		for (size_t i = 0; i < mbPubkey.GetSize(); i++) {
@@ -594,7 +595,7 @@ TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 #endif
 
 		for (uint32_t count = 0; count < 10; count++) {
-			CMBlock mbHDPubKey = BTCKey::getDerivePubKey(mbPubkey, chain, count, chainCode);
+			CMBlock mbHDPubKey = BTCKey::getDerivePubKey(mbPubkey, chain, count, chainCode, NID_X9_62_prime256v1);
 			vecHDPubkey.push_back(mbHDPubKey);
 
 #ifdef BTCKEY_DEBUG_MSG
@@ -607,10 +608,10 @@ TEST_CASE("6 BRBIP32PrivKey BRBIP32PubKey NID_secp256k1", "[BTCKey]") {
 		}
 	}
 
-	REQUIRE(true == BTCKey::KeyIsValid(mbPrivkey, mbPubkey));
+	REQUIRE(true == BTCKey::KeyIsValid(mbPrivkey, mbPubkey, NID_X9_62_prime256v1));
 
 	for (size_t i = 0; i < 10; i++) {
-		REQUIRE(true == BTCKey::KeyIsValid(vecHDPrivkey[i], vecHDPubkey[i]));
+		REQUIRE(true == BTCKey::KeyIsValid(vecHDPrivkey[i], vecHDPubkey[i], NID_X9_62_prime256v1));
 	}
 }
 
@@ -684,36 +685,39 @@ TEST_CASE("ECDSACompactSign_sha256/ECDSACompactVerify_sha256 for ECDSA NID_X9_62
 	}
 }
 
-//fixme
-//// It is very importent test demo for demostrating ECDSA NID_X9_62_prime256v1's use from mnemonic, seed, masterprivatekey
-//// masterpublickey to derive child privatekey, derive child publickkey and signature/verify
-//TEST_CASE("Derive PrivateKey and PublicKey for ECDSA NID_X9_62_prime256v1", "[BTCKey]") {
-//	static int ECDSA_NID = NID_X9_62_prime256v1;
-//
-//	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-//	CMBlock seed = BTCKey::getPrivKeySeed(mnemonic, "", "Data", "english", ECDSA_NID);
-//
-//	CMBlock mbMasterPrivKey = BTCKey::getMasterPrivkey(seed, ECDSA_NID);
-//	CMBlock mbMastePubKey = BTCKey::getPubKeyFromPrivKey(mbMasterPrivKey, ECDSA_NID);
-//
-//	uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
-//	UInt256 chainCode = UINT256_ZERO;
-//
-//	for (uint32_t index = 0; index < 10; index++) {
-//		CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret(mbMasterPrivKey, chain, index, chainCode,
-//		                                                         ECDSA_NID);
-//		CMBlock mbChildPubKey = BTCKey::BTCKey::getDerivePubKey(mbMastePubKey, chain, index, chainCode,
-//		                                                        ECDSA_NID);
-//		REQUIRE(true == BTCKey::KeyIsValid(mbChildPrivkey, mbChildPubKey, ECDSA_NID));
-//
-//		uint8_t data[] = {0, 1, 2, 3, 4, 5};
-//		UInt256 md = UINT256_ZERO;
-//		BRSHA256(&md, data, sizeof(data));
-//
-//		CMBlock mbSignedData;
-//		if (BTCKey::ECDSACompactSign_sha256(mbChildPrivkey, md, mbSignedData, ECDSA_NID)) {
-//			bool bVerify = BTCKey::ECDSACompactVerify_sha256(mbChildPubKey, md, mbSignedData, ECDSA_NID);
-//			REQUIRE(true == bVerify);
-//		}
-//	}
-//}
+// It is very importent test demo for demostrating ECDSA NID_X9_62_prime256v1's use from mnemonic, seed, masterprivatekey
+// masterpublickey to derive child privatekey, derive child publickkey and signature/verify
+TEST_CASE("Derive PrivateKey and PublicKey for ECDSA NID_X9_62_prime256v1", "[BTCKey]") {
+	static int PRINT_SIGN_RESULT = 1;
+	static int ECDSA_NID = NID_X9_62_prime256v1;
+
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+	CMBlock seed = BTCKey::getPrivKeySeed(mnemonic, "", "Data", "english", ECDSA_NID);
+
+	CMBlock mbMasterPrivKey = BTCKey::getMasterPrivkey(seed, ECDSA_NID);
+	CMBlock mbMastePubKey = BTCKey::getPubKeyFromPrivKey(mbMasterPrivKey, ECDSA_NID);
+
+	uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
+	UInt256 chainCode = UINT256_ZERO;
+
+	for (uint32_t index = 0; index < 10; index++) {
+		CMBlock mbChildPrivkey = BTCKey::getDerivePrivKey_Secret(mbMasterPrivKey, chain, index, chainCode,
+																 ECDSA_NID);
+		CMBlock mbChildPubKey = BTCKey::BTCKey::getDerivePubKey(mbMastePubKey, chain, index, chainCode,
+																ECDSA_NID);
+		REQUIRE(true == BTCKey::KeyIsValid(mbChildPrivkey, mbChildPubKey, ECDSA_NID));
+
+		uint8_t data[] = {0, 1, 2, 3, 4, 5};
+		UInt256 md = UINT256_ZERO;
+		BRSHA256(&md, data, sizeof(data));
+
+		CMBlock mbSignedData;
+		if (BTCKey::ECDSACompactSign_sha256(mbChildPrivkey, md, mbSignedData, ECDSA_NID)) {
+			bool bVerify = BTCKey::ECDSACompactVerify_sha256(mbChildPubKey, md, mbSignedData, ECDSA_NID);
+			if (!bVerify && 1 == PRINT_SIGN_RESULT) {
+				printf("child index %d occured in error\n", index);
+			}
+			REQUIRE(true == bVerify);
+		}
+	}
+}

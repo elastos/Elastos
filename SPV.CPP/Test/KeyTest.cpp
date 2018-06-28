@@ -187,3 +187,21 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(addr.substr(0,1) == "E");
 	}
 }
+
+TEST_CASE("Key sign pressure test", "[KeySign]") {
+
+	bool result = true;
+	std::string message = "mymessage";
+	for (int i = 0; i < 10000; ++i) {
+		Key key("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
+
+		std::string signedData = key.compactSign(message);
+		if(!Key::verifyByPublicKey(Utils::encodeHex(key.getPubkey()), message, signedData)) {
+			result = false;
+			printf("index %d occured in error\n", i);
+			REQUIRE(false);
+		}
+	}
+
+	std::cout << result;
+}
