@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/config"
@@ -18,11 +19,12 @@ import (
 )
 
 type link struct {
-	addr         string    // The address of the node
-	conn         net.Conn  // Connect socket with the peer node
-	port         uint16    // The server port of the node
-	httpInfoPort uint16    // The node information server port of the node
-	lastActive   time.Time // The latest time the node activity
+	addr         string       // The address of the node
+	conn         net.Conn     // Connect socket with the peer node
+	port         uint16       // The server port of the node
+	httpInfoPort uint16       // The node information server port of the node
+	activeLock   sync.RWMutex // The read and write lock for active time
+	lastActive   time.Time    // The latest time the node activity
 	handshakeQueue
 	*p2p.MsgHelper
 }
@@ -32,10 +34,14 @@ func (link *link) CloseConn() {
 }
 
 func (node *node) UpdateLastActive() {
+	node.activeLock.Lock()
+	defer node.activeLock.Unlock()
 	node.lastActive = time.Now()
 }
 
 func (node *node) GetLastActiveTime() time.Time {
+	node.activeLock.RLock()
+	defer node.activeLock.RUnlock()
 	return node.lastActive
 }
 
@@ -229,4 +235,5 @@ func (node *node) Send(msg p2p.Message) {
 	}
 
 	node.MsgHelper.Write(msg)
+	node.UpdateLastActive()
 }
