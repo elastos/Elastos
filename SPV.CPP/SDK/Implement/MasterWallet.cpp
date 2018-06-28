@@ -241,7 +241,9 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			return initFromPhrase(mnemonic, phrasePassword, payPassword);
+			bool result = initFromPhrase(mnemonic, phrasePassword, payPassword);
+			CreateSubWallet("ELA", payPassword, false); //we create ela sub wallet by default
+			return result;
 		}
 
 		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword) {

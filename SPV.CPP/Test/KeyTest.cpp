@@ -188,6 +188,8 @@ TEST_CASE("Key test", "[Key]") {
 	}
 }
 
+#ifdef PRESSURE_TEST
+
 TEST_CASE("Key sign pressure test", "[KeySign]") {
 
 	bool result = true;
@@ -205,3 +207,5 @@ TEST_CASE("Key sign pressure test", "[KeySign]") {
 
 	std::cout << result;
 }
+
+#endif
