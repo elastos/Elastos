@@ -750,8 +750,6 @@ static void _peerConnected(void *info)
 		_BRPeerManagerPublishPendingTx(manager, peer);
 
         if (manager->lastBlock->height < BRPeerLastBlock(peer)) { // start blockchain sync
-            peer_log(peer, "*********start sync *************");
-
             UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
             size_t count = _BRPeerManagerBlockLocators(manager, locators, sizeof(locators)/sizeof(*locators));
 
@@ -765,13 +763,11 @@ static void _peerConnected(void *info)
             else manager->peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
         }
         else { // we're already synced
-            peer_log(peer, "*********_BRPeerManagerLoadMempools*************");
             manager->connectFailureCount = 0; // reset connect failure count
             _BRPeerManagerLoadMempools(manager);
         }
     }
 
-    peer_log(peer, "*******unlock*******");
     pthread_mutex_unlock(&manager->lock);
 }
 
