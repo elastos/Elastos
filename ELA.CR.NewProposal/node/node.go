@@ -68,7 +68,6 @@ type node struct {
 	headerFirstMode    bool
 	RequestedBlockList map[Uint256]time.Time
 	SyncBlkReqSem      Semaphore
-	SyncHdrReqSem      Semaphore
 	StartHash          Uint256
 	StopHash           Uint256
 }
@@ -92,7 +91,6 @@ func InitLocalNode() protocol.Noder {
 	LocalNode.version = protocol.ProtocolVersion
 
 	LocalNode.SyncBlkReqSem = MakeSemaphore(protocol.MaxSyncHdrReq)
-	LocalNode.SyncHdrReqSem = MakeSemaphore(protocol.MaxSyncHdrReq)
 
 	LocalNode.link.port = Parameters.NodePort
 	if Parameters.OpenService {
@@ -493,13 +491,6 @@ func (node *node) AcqSyncBlkReqSem() {
 
 func (node *node) RelSyncBlkReqSem() {
 	node.SyncBlkReqSem.release()
-}
-func (node *node) AcqSyncHdrReqSem() {
-	node.SyncHdrReqSem.acquire()
-}
-
-func (node *node) RelSyncHdrReqSem() {
-	node.SyncHdrReqSem.release()
 }
 
 func (node *node) SetStartHash(hash Uint256) {

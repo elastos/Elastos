@@ -108,8 +108,8 @@ func (h *HandlerV0) onPong(pong *msg.Pong) error {
 func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 	log.Debug()
 	node := h.node
-	LocalNode.AcqSyncHdrReqSem()
-	defer LocalNode.RelSyncHdrReqSem()
+	LocalNode.AcqSyncBlkReqSem()
+	defer LocalNode.RelSyncBlkReqSem()
 
 	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
 	hashes, err := GetBlockHashes(*start, req.HashStop, p2p.MaxHeaderHashes)
@@ -173,7 +173,7 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 
 	block, err := chain.DefaultLedger.Store.GetBlock(hash)
 	if err != nil {
-		log.Debug("Can't get block from hash: ", hash, " ,send not found message")
+		log.Debugf("Can't get block from hash %s, send not found message", hash)
 		node.Send(v0.NewNotFound(hash))
 		return err
 	}
