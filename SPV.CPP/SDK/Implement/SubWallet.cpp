@@ -195,12 +195,12 @@ namespace Elastos {
 		}
 
 		boost::shared_ptr<Transaction>
-		SubWallet::createTransaction(TxParam *param) const {
+		SubWallet::createTransaction(TxParam *param, bool isShuffle) const {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
 			TransactionPtr ptr = _walletManager->getWallet()->
 					createTransaction(param->getFromAddress(), std::max(param->getFee(), _info.getMinFee()),
-									  param->getAmount(), param->getToAddress(), param->getRemark());
+									  param->getAmount(), param->getToAddress(), param->getRemark(), isShuffle);
 			if (!ptr) return nullptr;
 
 			ptr->setTransactionType(ELATransaction::TransferAsset);

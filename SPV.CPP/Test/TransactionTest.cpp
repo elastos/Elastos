@@ -86,7 +86,7 @@ TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
 		Address myaddress(content);
 		CMBlock script = myaddress.getPubKeyScript();
 		for (int i = 0; i < 10; i++) {
-			TransactionOutput *output = new TransactionOutput(8888 + i, script);
+			TransactionOutput *output = new TransactionOutput(8888 + i, script, ELA_STANDARD);
 			transaction.addOutput(output);
 		}
 
@@ -152,7 +152,7 @@ TEST_CASE("transaction public method test", "[Transaction]") {
 		REQUIRE(inputSize > size);
 
 		for (int i = 0; i < 10; i++) {
-			TransactionOutput *output = new TransactionOutput(8888 + i, myaddress.getPubKeyScript());
+			TransactionOutput *output = new TransactionOutput(8888 + i, myaddress.getPubKeyScript(), ELA_STANDARD);
 			transaction.addOutput(output);
 		}
 		size = transaction.getSize();
@@ -310,7 +310,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 			TransactionOutputPtr output(new TransactionOutput());
 			ELATxOutput *o = (ELATxOutput *)output->getRaw();
 			CMBlock script = getRandCMBlock(25);
-			BRTxOutputSetScript((BRTxOutput *)o, script, script.GetSize());
+			ELATxOutputSetScript(o, script, script.GetSize());
 			o->raw.amount = rand();
 			o->assetId = getRandUInt256();
 			o->outputLock = rand();

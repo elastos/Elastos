@@ -9,6 +9,7 @@
 #include "BRBech32.h"
 
 #include "Address.h"
+#include "Utils.h"
 
 #define MAX_SCRIPT_LENGTH 0x100 // scripts over this size will not be parsed for an address
 
@@ -34,7 +35,10 @@ namespace Elastos {
 			return addr;
 		}
 
-		boost::shared_ptr<Address> Address::fromScriptPubKey(CMBlock script) {
+		boost::shared_ptr<Address> Address::fromScriptPubKey(CMBlock script, int signType) {
+			int addressPrefix = Utils::getAddressTypeBySignType(signType);
+
+
 			BRAddress address = {'\0'};
 			size_t scriptLen = script.GetSize(), addrSize = sizeof(address.s);
 
@@ -50,7 +54,7 @@ namespace Elastos {
 			if (count == 5 && *elems[0] == OP_DUP && *elems[1] == OP_HASH160 && *elems[2] == 20 &&
 			    *elems[3] == OP_EQUALVERIFY && *elems[4] == OP_CHECKSIG) {
 				// pay-to-pubkey-hash scriptPubKey
-				data[0] = ELA_STAND_ADDRESS;
+				data[0] = addressPrefix;
 #if BITCOIN_TESTNET
 				data[0] = ELA_STAND_ADDRESS;
 #endif
@@ -59,7 +63,7 @@ namespace Elastos {
 			}
 			else if (count == 3 && *elems[0] == OP_HASH160 && *elems[1] == 20 && *elems[2] == OP_EQUAL) {
 				// pay-to-script-hash scriptPubKey
-				data[0] = ELA_MULTISIG_ADDRESS;
+				data[0] = addressPrefix;
 #if BITCOIN_TESTNET
 				data[0] = ELA_MULTISIG_ADDRESS;
 #endif
@@ -68,7 +72,7 @@ namespace Elastos {
 			}
 			else if (count == 2 && (*elems[0] == 65 || *elems[0] == 33) && *elems[1] == OP_CHECKSIG) {
 				// pay-to-pubkey scriptPubKey
-				data[0] = ELA_STAND_ADDRESS;
+				data[0] = addressPrefix;
 #if BITCOIN_TESTNET
 				data[0] = ELA_STAND_ADDRESS;
 #endif
@@ -149,6 +153,25 @@ namespace Elastos {
 			return data;
 		}
 
+	    int Address::getSignType() const {
+		    const char *addr = _address->s;
+		    uint8_t data[42];
+		    if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
+				if (data[0] == ELA_STAND_ADDRESS) {
+					return ELA_STANDARD;
+				} else if(data[0] == ELA_CROSSCHAIN_ADDRESS) {
+					return ELA_CROSSCHAIN;
+				} else if(data[0] == ELA_MULTISIG_ADDRESS) {
+					return ELA_MULTISIG;
+				} else if(data[0] == ELA_IDCHAIN_ADDRESS) {
+					return ELA_IDCHAIN;
+				}
+		    } else {
+			    throw std::logic_error("error address!");
+		    }
+		    return -1;
+		}
+
 		std::string Address::stringify() const {
 			BRAddress* address = getRaw();
 			return address->s;
@@ -211,5 +234,30 @@ namespace Elastos {
 
 		    return r;
 	    }
+
+	    bool Address::isValidProgramHash(const UInt168 &u168, const ELATransaction::Type &type) {
+		    if (UInt168IsZero(&u168) == true) {
+			    return false;
+		    }
+
+		    int prefix = u168.u8[0];
+		    bool result = false;
+
+		    switch (type) {
+			    case  ELATransaction::TransferCrossChainAsset:
+				    result = prefix == ELA_CROSSCHAIN_ADDRESS;
+				    break;
+			    case ELATransaction::TransferAsset:
+				    result = prefix == ELA_STAND_ADDRESS;
+				    break;
+			    case ELATransaction::RegisterIdentification:
+				    result = prefix == ELA_IDCHAIN_ADDRESS;
+				    break;
+			    default:
+				    result = Address::UInt168IsValid(u168);
+				    break;
+		    }
+		    return result;
+		}
     }
 }

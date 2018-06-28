@@ -12,6 +12,7 @@
 #include "BRInt.h"
 #include "Wrapper.h"
 #include "CMemBlock.h"
+#include "ELATransaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -29,6 +30,8 @@ namespace Elastos {
 
 			CMBlock getPubKeyScript();
 
+			int getSignType() const;
+
 			virtual std::string toString() const;
 
 			virtual BRAddress *getRaw() const;
@@ -38,7 +41,7 @@ namespace Elastos {
 		public:
 			static boost::shared_ptr<Address> createAddress(const std::string &address);
 
-			static boost::shared_ptr<Address> fromScriptPubKey(CMBlock script);
+			static boost::shared_ptr<Address> fromScriptPubKey(CMBlock script, int signType);
 
 			static boost::shared_ptr<Address> fromScriptSignature(CMBlock script);
 
@@ -47,6 +50,8 @@ namespace Elastos {
 			static bool UInt168IsValid(const UInt168 &u168);
 
 			static bool isValidIdAddress(const std::string &address);
+
+			static bool isValidProgramHash(const UInt168 &u168, const ELATransaction::Type &type);
 
 		private:
 			boost::shared_ptr<BRAddress> _address;

@@ -34,15 +34,21 @@ TEST_CASE( "Address test", "[Address]" )
 	}
 
 	SECTION("Create Address width ScriptPubKey") {
-		CHECK_THROWS_AS(Address::fromScriptPubKey(CMBlock()), std::logic_error);
+		CHECK_THROWS_AS(Address::fromScriptPubKey(CMBlock(), ELA_STANDARD), std::logic_error);
 
 		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
 		Address myaddress(content);
 
 		CMBlock script = myaddress.getPubKeyScript();
-		boost::shared_ptr<Address> address1 = Address::fromScriptPubKey(script);
+		boost::shared_ptr<Address> address1 = Address::fromScriptPubKey(script, ELA_STANDARD);
 		Address* address2 = address1.get();
 		REQUIRE(address2->toString() == content);
+
+		content = "XQd1DCi6H62NQdWZQhJCRnrPn7sF9CTjaU";
+		Address crossAddress(content);
+		script = crossAddress.getPubKeyScript();
+		address1 = Address::fromScriptPubKey(script, ELA_CROSSCHAIN);
+		REQUIRE(address1->toString() == content);
 
 	}
 

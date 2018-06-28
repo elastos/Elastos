@@ -27,16 +27,17 @@ namespace Elastos {
 		TransactionOutput::TransactionOutput(const TransactionOutput &output) {
 			_output = ELATxOutputNew();
 			CMBlock script = output.getScript();
-			BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
+			ELATxOutputSetScript(_output, (const uint8_t *)script, script.GetSize(), output.getAddressSignType());
 			_output->raw.amount = output.getAmount();
 			_output->assetId = output.getAssetId();
 			_output->programHash = output.getProgramHash();
 			_output->outputLock = output.getOutputLock();
+
 		}
 
-		TransactionOutput::TransactionOutput(uint64_t amount, const CMBlock &script) {
+		TransactionOutput::TransactionOutput(uint64_t amount, const CMBlock &script, int signType) {
 			_output = ELATxOutputNew();
-			BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
+			ELATxOutputSetScript(_output, (const uint8_t *)script, script.GetSize(), signType);
 			_output->raw.amount = amount;
 			_output->assetId = Key::getSystemAssetId();
 			if (!Utils::UInt168FromAddress(_output->programHash, _output->raw.address)) {
@@ -65,6 +66,14 @@ namespace Elastos {
 
 		void TransactionOutput::setAddress(const std::string &address) {
 			BRTxOutputSetAddress(&_output->raw, address.c_str());
+		}
+
+		void TransactionOutput::setAddressSignType(int signType) {
+			_output->signType = signType;
+		}
+
+		int TransactionOutput::getAddressSignType() const {
+			return _output->signType;
 		}
 
 		uint64_t TransactionOutput::getAmount() const {
@@ -149,47 +158,51 @@ namespace Elastos {
 			nlohmann::json jsonData;
 
 			std::string addr = _output->raw.address;
-			jsonData["address"] = addr;
+			jsonData["Address"] = addr;
 
-			jsonData["amount"] = _output->raw.amount;
+			jsonData["Amount"] = _output->raw.amount;
 
-			jsonData["scriptLen"] = _output->raw.scriptLen;
+			jsonData["ScriptLen"] = _output->raw.scriptLen;
 
-			jsonData["script"] = Utils::encodeHex((const uint8_t *)_output->raw.script, _output->raw.scriptLen);
+			jsonData["Script"] = Utils::encodeHex((const uint8_t *)_output->raw.script, _output->raw.scriptLen);
 
-			jsonData["assetId"] = Utils::UInt256ToString(_output->assetId);
+			jsonData["AssetId"] = Utils::UInt256ToString(_output->assetId);
 
-			jsonData["outputLock"] = _output->outputLock;
+			jsonData["OutputLock"] = _output->outputLock;
 
-			jsonData["programHash"] = Utils::UInt168ToString(_output->programHash);
+			jsonData["ProgramHash"] = Utils::UInt168ToString(_output->programHash);
+
+			jsonData["SignType"] = _output->signType;
 
 			return jsonData;
 		}
 
 		void TransactionOutput::fromJson(const nlohmann::json &jsonData) {
-			std::string address = jsonData["address"].get<std::string>();
+			std::string address = jsonData["Address"].get<std::string>();
 			size_t addressSize = sizeof(_output->raw.address);
 			strncpy(_output->raw.address, address.c_str(), addressSize - 1);
 			_output->raw.address[addressSize - 1] = 0;
 
-			_output->raw.amount = jsonData["amount"].get<uint64_t>();
+			_output->raw.amount = jsonData["Amount"].get<uint64_t>();
 
-			size_t scriptLen = jsonData["scriptLen"].get<size_t>();
-			std::string scriptString = jsonData["script"].get<std::string>();
-			BRTxOutputSetScript(&_output->raw, nullptr, 0);
+			_output->signType = jsonData["SignType"].get<int>();
+
+			size_t scriptLen = jsonData["ScriptLen"].get<size_t>();
+			std::string scriptString = jsonData["Script"].get<std::string>();
+			ELATxOutputSetScript(_output, nullptr, 0);
 			if (scriptLen > 0) {
 				if (scriptLen == scriptString.length() / 2) {
 					CMBlock script = Utils::decodeHex(scriptString);
-					BRTxOutputSetScript(&_output->raw, (const uint8_t *)script, script.GetSize());
+					ELATxOutputSetScript(_output, (const uint8_t *)script, script.GetSize(), _output->signType);
 				} else {
 					Log::getLogger()->error("scriptLen={} and script=\"{}\" do not match of json",
 											_output->raw.scriptLen, scriptString);
 				}
 			}
 
-			_output->assetId = Utils::UInt256FromString(jsonData["assetId"].get<std::string>());
-			_output->outputLock = jsonData["outputLock"].get<uint32_t>();
-			_output->programHash = Utils::UInt168FromString(jsonData["programHash"].get<std::string>());
+			_output->assetId = Utils::UInt256FromString(jsonData["AssetId"].get<std::string>());
+			_output->outputLock = jsonData["OutputLock"].get<uint32_t>();
+			_output->programHash = Utils::UInt168FromString(jsonData["ProgramHash"].get<std::string>());
 		}
 
 	}

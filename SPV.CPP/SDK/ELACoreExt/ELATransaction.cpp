@@ -19,8 +19,8 @@
 
 #include "BRArray.h"
 #include "ELATransaction.h"
+#include "ELATxOutput.h"
 #include "Utils.h"
-#include "BRAddress.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -118,7 +118,7 @@ namespace Elastos {
 
 			if (tx->raw.outputs) {
 				for (size_t i = 0; i < tx->raw.outCount; i++) {
-					BRTxOutputSetScript(&tx->raw.outputs[i], nullptr, 0);
+					ELATxOutputSetScript((ELATxOutput *)&tx->raw.outputs[i], nullptr, 0);
 				}
 				array_free(tx->raw.outputs);
 			}
@@ -192,6 +192,7 @@ namespace Elastos {
 			}
 			return true;
 		}
+
 	}
 
 }

@@ -533,7 +533,7 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 
 	SECTION("Normal derive") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
-		REQUIRE(id == "ikYVfmDjnEJM2E2NXk4Ay18ehx2tH14LsQ");
+		REQUIRE(id == "iiYz7WnFKyTK6zhMz3PGqs9jj6y3uWJdAr");
 	}
 	SECTION("Derive reserved purpose") {
 		try {

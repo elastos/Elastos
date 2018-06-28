@@ -412,7 +412,7 @@ namespace Elastos {
 		BRTransaction *Wallet::CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 												  uint64_t fee, const std::string &fromAddress,
 												  bool(*filter)(const std::string &fromAddress,
-																const std::string &addr)) {
+																const std::string &addr), bool isShuffle) {
 			ELATransaction *tx, *transaction = ELATransactionNew();
 			uint64_t feeAmount, amount = 0, balance = 0, minAmount;
 			size_t i, j, cpfpSize = 0;
@@ -426,7 +426,10 @@ namespace Elastos {
 				assert(outputs[i].script != NULL && outputs[i].scriptLen > 0);
 				CMBlock script;
 				script.SetMemFixed(outputs[i].script, outputs[i].scriptLen);
-				TransactionOutput *output = new TransactionOutput(outputs[i].amount, script);
+
+				Address address(outputs[i].address);
+
+				TransactionOutput *output = new TransactionOutput(outputs[i].amount, script, address.getSignType());
 				transaction->outputs.push_back(TransactionOutputPtr(output));
 				amount += outputs[i].amount;
 			}
@@ -517,10 +520,15 @@ namespace Elastos {
 				wallet->WalletUnusedAddrs(wallet, &addr, 1, 1);
 				CMBlock script(BRAddressScriptPubKey(nullptr, 0, addr.s));
 				BRAddressScriptPubKey(script, script.GetSize(), addr.s);
+				Address address(addr.s);
 
-				TransactionOutput *output = new TransactionOutput(balance - (amount + feeAmount), script);
+				TransactionOutput *output = new TransactionOutput(balance - (amount + feeAmount), script,
+						address.getSignType());
 				transaction->outputs.push_back(TransactionOutputPtr(output));
-				ELATransactionShuffleOutputs(transaction);
+				if (isShuffle) {
+					ELATransactionShuffleOutputs(transaction);
+				}
+
 			}
 
 			return (BRTransaction *) transaction;
@@ -532,7 +540,7 @@ namespace Elastos {
 
 		TransactionPtr
 		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-								  const std::string &toAddress, const std::string &remark) {
+								  const std::string &toAddress, const std::string &remark, bool isShuffle) {
 			UInt168 u168Address = UINT168_ZERO;
 			if (!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress)) {
 				std::ostringstream oss;
@@ -717,11 +725,6 @@ namespace Elastos {
 
 		uint64_t Wallet::getFeeForTransactionSize(size_t size) {
 			return BRWalletFeeForTxSize((BRWallet *) _wallet, size);
-		}
-
-		uint64_t Wallet::getFeeForTransactionAmount(uint64_t amount) {
-
-			return BRWalletFeeForTxAmount((BRWallet *) _wallet, amount);
 		}
 
 		uint64_t Wallet::getMinOutputAmount() {

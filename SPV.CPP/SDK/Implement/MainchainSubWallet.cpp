@@ -71,11 +71,11 @@ namespace Elastos {
 			TransactionPtr ptr = nullptr;
 			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
 			if (depositTxParam == nullptr) {
-				ptr = SubWallet::createTransaction(param);
+				ptr = SubWallet::createTransaction(param, false);
 			} else {
 				ptr = _walletManager->getWallet()->
 						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-										  param->getToAddress(), param->getRemark());
+										  param->getToAddress(), param->getRemark(), false);
 
 				if (!ptr) return nullptr;
 

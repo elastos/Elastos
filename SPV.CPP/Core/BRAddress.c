@@ -351,7 +351,7 @@ size_t BRAddressScriptPubKey(uint8_t *script, size_t scriptLen, const char *addr
 #endif
 
     if (BRBase58CheckDecode(data, sizeof(data), addr) == 21) {
-        if (data[0] == pubkeyAddress) {
+        if (BRAddressIsValid(addr)) {
             if (script && 25 <= scriptLen) {
                 script[0] = OP_DUP;
                 script[1] = OP_HASH160;

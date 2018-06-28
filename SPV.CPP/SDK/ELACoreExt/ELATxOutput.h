@@ -5,10 +5,18 @@
 #ifndef __ELASTOS_SDK_ELATxOutput_H
 #define __ELASTOS_SDK_ELATxOutput_H
 
+#include "BRAddress.h"
 #include "BRTransaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
+		struct ELATxOutput;
+
+		ELATxOutput *ELATxOutputNew();
+		ELATxOutput *ELATxOutputCopy(const ELATxOutput *output);
+		void ELATxOutputFree(ELATxOutput *output);
+		void ELATxOutputSetScript(ELATxOutput *output, const uint8_t *script, size_t scriptLen,
+		                          int signType = ELA_STANDARD);
 
 		struct ELATxOutput {
 
@@ -17,6 +25,7 @@ namespace Elastos {
 				assetId = UINT256_ZERO;
 				outputLock = 0;
 				programHash = UINT168_ZERO;
+				signType = ELA_STANDARD;
 			}
 
 			ELATxOutput(const ELATxOutput *output) {
@@ -24,20 +33,18 @@ namespace Elastos {
 				assetId = output->assetId;
 				outputLock = output->outputLock;
 				programHash = output->programHash;
+				signType = output->signType;
 
 				raw.script = nullptr;
-				BRTxOutputSetScript(&raw, output->raw.script, output->raw.scriptLen);
+				ELATxOutputSetScript((ELATxOutput *)output, output->raw.script, output->raw.scriptLen, signType);
 			}
 
 			BRTxOutput raw;
 			UInt256 assetId;
 			uint32_t outputLock;
 			UInt168 programHash;
+			int signType;
 		};
-
-		ELATxOutput *ELATxOutputNew();
-		ELATxOutput *ELATxOutputCopy(const ELATxOutput *output);
-		void ELATxOutputFree(ELATxOutput *output);
 
 	}
 }

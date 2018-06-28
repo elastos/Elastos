@@ -28,7 +28,7 @@ namespace Elastos {
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(uint64_t amount, const CMBlock &script);
+			TransactionOutput(uint64_t amount, const CMBlock &script, int signType);
 
 			~TransactionOutput();
 
@@ -43,6 +43,10 @@ namespace Elastos {
 			std::string getAddress() const;
 
 			void setAddress(const std::string &address);
+
+			void setAddressSignType(int signType);
+
+			int getAddressSignType() const;
 
 			uint64_t getAmount() const;
 

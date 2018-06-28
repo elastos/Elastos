@@ -52,7 +52,7 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 			TransactionOutputPtr output(new TransactionOutput());
 			ELATxOutput *o = (ELATxOutput *)output->getRaw();
 			CMBlock script = getRandCMBlock(25);
-			BRTxOutputSetScript(&o->raw, script, script.GetSize());
+			ELATxOutputSetScript(o, script, script.GetSize());
 			o->raw.amount = rand();
 			o->assetId = getRandUInt256();
 			o->outputLock = rand();

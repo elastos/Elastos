@@ -25,7 +25,7 @@ TEST_CASE("TransactionOutput test", "[TransactionOutput]") {
 
 		CMBlock mb;
 		mb.SetMemFixed(dummyScript, sizeof(dummyScript));
-		TransactionOutput transactionOutput(10000, mb);
+		TransactionOutput transactionOutput(10000, mb, ELA_STANDARD);
 
 		REQUIRE(transactionOutput.getRaw() != nullptr);
 		REQUIRE(transactionOutput.getAmount() == 10000);

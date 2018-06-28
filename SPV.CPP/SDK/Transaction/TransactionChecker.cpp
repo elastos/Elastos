@@ -52,6 +52,7 @@ namespace Elastos {
 				if (!Address::UInt168IsValid(output->getProgramHash())) {
 					return false;
 				}
+
 				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) != addresses.end()) {
 //					if (hasChange) //should have only one change output per tx
 //						return false;
@@ -59,12 +60,15 @@ namespace Elastos {
 				} else {
 					if (hasOutput) //todo we support only one output, modify this if we support multi-output later
 						return false;
+					if (!Address::isValidProgramHash(output->getProgramHash(), transaction->getTransactionType())) {
+						return false;
+					}
 					hasOutput = true;
 				}
 			}
-			if(hasChange)
+			if (hasChange)
 				Log::warn("Transaction outputs have multiple change output.");
-			if(hasOutput)
+			if (!hasOutput)
 				Log::warn("Transaction has no outcoming output.");
 
 			return true;

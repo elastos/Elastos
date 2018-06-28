@@ -159,7 +159,7 @@ namespace Elastos {
 
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-							  const std::string &toAddress, const std::string &remark);
+							  const std::string &toAddress, const std::string &remark, bool isShuffle = true);
 
 			bool containsTransaction(const TransactionPtr &transaction);
 
@@ -242,8 +242,6 @@ namespace Elastos {
 
 			uint64_t getFeeForTransactionSize(size_t size);
 
-			uint64_t getFeeForTransactionAmount(uint64_t amount);
-
 			uint64_t getMinOutputAmount();
 
 			uint64_t getMaxOutputAmount();
@@ -256,7 +254,7 @@ namespace Elastos {
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 													 uint64_t fee, const std::string &fromAddress,
 													 bool(*filter)(const std::string &fromAddress,
-																   const std::string &addr));
+																   const std::string &addr), bool isShuffle = true);
 
 			static BRTransaction *
 			WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);
