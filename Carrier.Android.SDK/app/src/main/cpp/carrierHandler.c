@@ -254,7 +254,7 @@ void cbOnFriendPresence(ElaCarrier* carrier, const char* friendId,
 
     if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
                         "onFriendPresence",
-                        "("_W("Carrier;")_J("String;")_J("String;)V"),
+                        "("_W("Carrier;")_J("String;")_W("PresenceStatus;)V"),
                         hc->carrier, jfriendId, jpresence)){
         logE("Call Carrier.Callbacks.onFriendPresence error");
     }
