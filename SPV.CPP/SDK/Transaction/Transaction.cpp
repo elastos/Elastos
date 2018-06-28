@@ -235,6 +235,7 @@ namespace Elastos {
 			BRAddress addrs[keysCount], address;
 
 			assert(keysCount > 0);
+			Log::getLogger()->info("Transaction transactionSign method begin, key counts = {}.", keysCount);
 
 			for (i = 0; i < keysCount; i++) {
 				addrs[i] = BR_ADDRESS_NONE;
@@ -244,6 +245,7 @@ namespace Elastos {
 				}
 			}
 
+			Log::getLogger()->info("Transaction transactionSign input sign begin.");
 			size_t size = _transaction->raw.inCount;
 			for (i = 0; i < size; i++) {
 				BRTxInput *input = &_transaction->raw.inputs[i];
@@ -260,6 +262,7 @@ namespace Elastos {
 				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
 				if (j >= keysCount) continue;
 
+				Log::getLogger()->info("Transaction transactionSign begin sign the {} input.", i);
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
 				size_t elemsCount = BRScriptElements(elems, sizeof(elems) / sizeof(*elems), program->getCode(),
 													 program->getCode().GetSize());
@@ -272,6 +275,8 @@ namespace Elastos {
 				serializeUnsigned(ostream);
 				CMBlock data = ostream.getBuffer();
 				if (elemsCount >= 2 && *elems[elemsCount - 2] == OP_EQUALVERIFY) { // pay-to-pubkey-hash
+					Log::getLogger()->info("Transaction transactionSign the {} input pay to pubkey hash.", i);
+
 					BRSHA256_2(&md, data, data.GetSize());
 					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
@@ -279,6 +284,8 @@ namespace Elastos {
 					scriptLen += BRScriptPushData(&script[scriptLen], sizeof(script) - scriptLen, pubKey, pkLen);
 					BRTxInputSetSignature(input, script, scriptLen);
 				} else { // pay-to-pubkey
+					Log::getLogger()->info("Transaction transactionSign the {} input pay to pubkey.", i);
+
 					BRSHA256_2(&md, data, data.GetSize());
 					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
@@ -290,6 +297,8 @@ namespace Elastos {
 				BRSHA256(shaData, data, data.GetSize());
 				CMBlock signData = keys[j].compactSign(shaData);
 				program->setParameter(signData);
+
+				Log::getLogger()->info("Transaction transactionSign end sign the {} input.", i);
 			}
 
 			return isSigned();

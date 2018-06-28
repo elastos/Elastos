@@ -314,18 +314,22 @@ namespace Elastos {
 
 		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
 										const std::string &payPassword) {
-			assert(transaction != nullptr);
+			Log::getLogger()->info("SubWallet signTransaction method begin.");
+
+			ParamChecker::checkNullPointer(transaction.get());
 			BRKey masterKey;
 			UInt256 chainCode = UINT256_ZERO;
 			deriveKeyAndChain(&masterKey, chainCode, payPassword);
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-			assert(wallet != nullptr);
+			ParamChecker::checkNullPointer(wallet);
+			Log::getLogger()->info("SubWallet signTransaction derive key down.");
 
 			BRTransaction *tx = transaction->getRaw();
 			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
 			size_t i, internalCount = 0, externalCount = 0;
 
 
+			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
 			pthread_mutex_lock(&wallet->lock);
 			for (i = 0; i < tx->inCount; i++) {
 				for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
@@ -342,16 +346,18 @@ namespace Elastos {
 
 				}
 			}
-
 			pthread_mutex_unlock(&wallet->lock);
+			Log::getLogger()->info("SubWallet signTransaction end get indices.");
 
 			BRKey keys[internalCount + externalCount];
 			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
 			Key::calculatePrivateKeyList(keys, externalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
+			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
 
 			if (tx) {
+				Log::getLogger()->info("SubWallet signTransaction begin sign method.");
 				WrapperList<Key, BRKey> keyList;
 				for (i = 0; i < internalCount + externalCount; ++i) {
 					Key key(keys[i].secret, keys[i].compressed);
@@ -360,6 +366,7 @@ namespace Elastos {
 				if (!transaction->sign(keyList, forkId)) {
 					throw std::logic_error("Transaction Sign error!");
 				}
+				Log::getLogger()->info("SubWallet signTransaction end sign method.");
 			}
 
 			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
