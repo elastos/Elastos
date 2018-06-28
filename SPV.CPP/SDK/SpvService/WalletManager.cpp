@@ -127,7 +127,7 @@ namespace Elastos {
 			CMBlock data = stream.getBuffer();
 
 			TransactionEntity txEntity(data, tx->getBlockHeight(),
-									   tx->getTimestamp(), Utils::UInt256ToString(tx->getHash()));
+									   tx->getTimestamp(), tx->getToAddress(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
@@ -267,14 +267,16 @@ namespace Elastos {
 			for (size_t i = 0; i < txsEntity.size(); ++i) {
 				ELATransaction *tx = ELATransactionNew();
 				TransactionPtr transaction(new Transaction(tx, false));
-				size_t len = txsEntity[i].buff.GetSize();
-				uint8_t *buff = new uint8_t[len];
-				memcpy(buff, txsEntity[i].buff, len);
-				ByteStream byteStream(buff, len);
+
+				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
 				transaction->Deserialize(byteStream);
+				transaction->setToAddress(txsEntity[i].toAddress);
+				transaction->setRemark(txsEntity[i].remark);
+
 				BRTransaction *raw = transaction->getRaw();
 				raw->blockHeight = txsEntity[i].blockHeight;
 				raw->timestamp = txsEntity[i].timeStamp;
+
 				txs.push_back(transaction);
 			}
 

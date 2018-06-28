@@ -194,6 +194,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				tx.blockHeight = (uint32_t)rand();
 				tx.timeStamp = (uint32_t)rand();
 				tx.txHash = getRandString(25);
+				tx.toAddress = getRandString(30);
+				tx.remark = getRandString(40);
 				txToSave.push_back(tx);
 			}
 
@@ -204,6 +206,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				tx.blockHeight = (uint32_t)rand();
 				tx.timeStamp = (uint32_t)rand();
 				tx.txHash = txToSave[i].txHash;
+				tx.toAddress = getRandString(35);
+				tx.remark = getRandString(45);
 				txToUpdate.push_back(tx);
 			}
 		}
@@ -226,6 +230,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(readTx[i].txHash == txToSave[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToSave[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToSave[i].blockHeight);
+				REQUIRE(readTx[i].toAddress == txToSave[i].toAddress);
+				REQUIRE(readTx[i].remark == txToSave[i].remark);
 			}
 		}
 
@@ -248,6 +254,8 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);
+				REQUIRE(readTx[i].toAddress == txToUpdate[i].toAddress);
+				REQUIRE(readTx[i].remark == txToUpdate[i].remark);
 			}
 		}
 

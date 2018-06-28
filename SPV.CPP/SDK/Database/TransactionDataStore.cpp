@@ -27,6 +27,47 @@ namespace Elastos {
 		}
 
 		bool TransactionDataStore::putTransaction(const std::string &iso, const TransactionEntity &transactionEntity) {
+			TransactionEntity txEntity;
+
+			if (selectTxByHash(iso, transactionEntity.txHash, txEntity)) {
+				return doTransaction([&iso, &transactionEntity, this]() {
+					std::stringstream ss;
+
+					ss << "UPDATE "    << TX_TABLE_NAME << " SET " <<
+					   TX_BUFF         << " = ?, " <<
+					   TX_BLOCK_HEIGHT << " = ?, " <<
+					   TX_TIME_STAMP   << " = ?, " <<
+					   TX_TOADDRESS    << " = ?, " <<
+					   TX_REMARK       << " = ? "  <<
+					   " WHERE "       << TX_ISO   << " = '" << iso << "'" <<
+					   " AND "         << TX_COLUMN_ID << " = '" << transactionEntity.txHash << "';";
+
+					sqlite3_stmt *stmt;
+					if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+						std::stringstream ess;
+						ess << "prepare sql " << ss.str() << " fail";
+						throw std::logic_error(ess.str());
+					}
+
+#ifdef NDEBUG
+					_sqlite->bindBlob(stmt, 1, transactionEntity.buff, nullptr);
+#else
+					std::string str = Utils::encodeHex(transactionEntity.buff);
+					CMBlock bytes;
+					bytes.SetMemFixed((const uint8_t *)str.c_str(), str.length());
+					_sqlite->bindBlob(stmt, 1, bytes, nullptr);
+#endif
+					_sqlite->bindInt(stmt, 2, transactionEntity.blockHeight);
+					_sqlite->bindInt(stmt, 3, transactionEntity.timeStamp);
+					_sqlite->bindText(stmt, 4, transactionEntity.toAddress, nullptr);
+					_sqlite->bindText(stmt, 5, transactionEntity.remark, nullptr);
+
+					_sqlite->step(stmt);
+
+					_sqlite->finalize(stmt);
+				});
+			}
+
 			return doTransaction([&iso, &transactionEntity, this]() {
 				std::stringstream ss;
 
@@ -35,8 +76,10 @@ namespace Elastos {
 				   TX_BUFF         << "," <<
 				   TX_BLOCK_HEIGHT << "," <<
 				   TX_TIME_STAMP   << "," <<
+				   TX_TOADDRESS    << "," <<
+				   TX_REMARK       << "," <<
 				   TX_ISO          <<
-				   ") VALUES (?, ?, ?, ?, ?);";
+				   ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -52,12 +95,14 @@ namespace Elastos {
 #else
 				std::string str = Utils::encodeHex(transactionEntity.buff);
 				CMBlock bytes;
-				bytes.SetMemFixed((const uint8_t *)str.c_str(), str.length() + 1);
+				bytes.SetMemFixed((const uint8_t *)str.c_str(), str.length());
 				_sqlite->bindBlob(stmt, 2, bytes, nullptr);
 #endif
 				_sqlite->bindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->bindInt(stmt, 4, transactionEntity.timeStamp);
-				_sqlite->bindText(stmt, 5, iso, nullptr);
+				_sqlite->bindText(stmt, 5, transactionEntity.toAddress, nullptr);
+				_sqlite->bindText(stmt, 6, transactionEntity.remark, nullptr);
+				_sqlite->bindText(stmt, 7, iso, nullptr);
 
 				_sqlite->step(stmt);
 
@@ -87,13 +132,15 @@ namespace Elastos {
 			doTransaction([&iso, &transactions, this]() {
 				std::stringstream ss;
 
-				ss << "SELECT " <<
+				ss << "SELECT "    <<
 				   TX_COLUMN_ID    << ", " <<
 				   TX_BUFF         << ", " <<
 				   TX_BLOCK_HEIGHT << ", " <<
-				   TX_TIME_STAMP   <<
-				   " FROM " << TX_TABLE_NAME <<
-				   " WHERE " << TX_ISO << " = '" << iso << "';";
+				   TX_TIME_STAMP   << ", " <<
+				   TX_TOADDRESS    << ", " <<
+				   TX_REMARK       <<
+				   " FROM "        << TX_TABLE_NAME <<
+				   " WHERE "       << TX_ISO << " = '" << iso << "';";
 
 				sqlite3_stmt *stmt;
 				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
@@ -104,28 +151,25 @@ namespace Elastos {
 
 				TransactionEntity tx;
 				while (SQLITE_ROW == _sqlite->step(stmt)) {
-					CMBlock buff;
-					// id
 					tx.txHash = _sqlite->columnText(stmt, 0);
 
-					// block data
 					const uint8_t *pdata = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
-					size_t len = _sqlite->columnBytes(stmt, 1);
+					size_t len = (size_t)_sqlite->columnBytes(stmt, 1);
 
 #ifdef NDEBUG
+					CMBlock buff;
 					buff.Resize(len);
 					memcpy(buff, pdata, len);
 					tx.buff = buff;
 #else
-					std::string str((char *)pdata);
+					std::string str((char *)pdata, len);
 					tx.buff = Utils::decodeHex(str);
 #endif
 
-					// block height
-					tx.blockHeight = _sqlite->columnInt(stmt, 2);
-
-					// timestamp
-					tx.timeStamp = _sqlite->columnInt(stmt, 3);
+					tx.blockHeight = (uint32_t)_sqlite->columnInt(stmt, 2);
+					tx.timeStamp = (uint32_t)_sqlite->columnInt(stmt, 3);
+					tx.toAddress = _sqlite->columnText(stmt, 4);
+					tx.remark = _sqlite->columnText(stmt, 5);
 
 					transactions.push_back(tx);
 				}
@@ -140,9 +184,11 @@ namespace Elastos {
 			return doTransaction([&iso, &txEntity, this]() {
 				std::stringstream ss;
 
-				ss << "UPDATE " << TX_TABLE_NAME << " SET " <<
+				ss << "UPDATE "     << TX_TABLE_NAME << " SET " <<
 					TX_BLOCK_HEIGHT << " = ?, " <<
-					TX_TIME_STAMP   << " = ? "
+					TX_TIME_STAMP   << " = ?, " <<
+					TX_TOADDRESS    << " = ?, " <<
+					TX_REMARK       << " = ? "  <<
 					" WHERE " << TX_ISO << " = '" << iso << "'" <<
 					" AND " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
 
@@ -155,6 +201,8 @@ namespace Elastos {
 
 				_sqlite->bindInt(stmt, 1, txEntity.blockHeight);
 				_sqlite->bindInt(stmt, 2, txEntity.timeStamp);
+				_sqlite->bindText(stmt, 3, txEntity.toAddress, nullptr);
+				_sqlite->bindText(stmt, 4, txEntity.remark, nullptr);
 
 				_sqlite->step(stmt);
 
@@ -176,6 +224,57 @@ namespace Elastos {
 					throw std::logic_error(ess.str());
 				}
 			});
+		}
+
+		bool TransactionDataStore::selectTxByHash(const std::string &iso, const std::string &hash, TransactionEntity &txEntity) const {
+			bool found = false;
+
+			doTransaction([&iso, &hash, &txEntity, &found, this]() {
+				std::stringstream ss;
+
+				ss << "SELECT "    <<
+				   TX_BUFF         << ", " <<
+				   TX_BLOCK_HEIGHT << ", " <<
+				   TX_TIME_STAMP   << ", " <<
+				   TX_TOADDRESS    << ", " <<
+				   TX_REMARK       <<
+				   " FROM "        << TX_TABLE_NAME <<
+				   " WHERE "       << TX_ISO << " = '" << iso << "'" <<
+				   " AND "         << TX_COLUMN_ID << " = '" << hash << "';";
+
+				sqlite3_stmt *stmt;
+				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+					std::stringstream ess;
+					ess << "prepare sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
+
+				while (SQLITE_ROW == _sqlite->step(stmt)) {
+					found = true;
+
+					txEntity.txHash = hash;
+
+					const uint8_t *pdata = (const uint8_t *) _sqlite->columnBlob(stmt, 0);
+					size_t len = (size_t) _sqlite->columnBytes(stmt, 0);
+
+#ifdef NDEBUG
+					CMBlock buff;
+					buff.Resize(len);
+					memcpy(buff, pdata, len);
+					txEntity.buff = buff;
+#else
+					std::string str((char *) pdata, len);
+					txEntity.buff = Utils::decodeHex(str);
+#endif
+
+					txEntity.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 1);
+					txEntity.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 2);
+					txEntity.toAddress = _sqlite->columnText(stmt, 3);
+					txEntity.remark = _sqlite->columnText(stmt, 4);
+				}
+			});
+
+			return found;
 		}
 
 	}
