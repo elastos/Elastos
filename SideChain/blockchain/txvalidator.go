@@ -353,6 +353,10 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 		return errors.New("Invalid payload core.PayloadRechargeToSideChain")
 	}
 
+	if config.Parameters.ExchangeRate <= 0 {
+		return errors.New("Invalid config exchange rate")
+	}
+
 	reader := bytes.NewReader(payloadRecharge.MerkleProof)
 	if err := proof.Deserialize(reader); err != nil {
 		return errors.New("RechargeToSideChain payload deserialize failed")
@@ -375,16 +379,15 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 
 	//check output fee and rate
 	var oriOutputTotalAmount Fixed64
-	for i := 0; i < len(mainChainTransaction.Outputs); i++ {
-		if mainChainTransaction.Outputs[i].ProgramHash.IsEqual(*genesisProgramHash) {
-			if payloadObj.CrossChainAmounts[i] < 0 {
+	for i := 0; i < len(payloadObj.CrossChainAddresses); i++ {
+		if mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].ProgramHash.IsEqual(*genesisProgramHash) {
+			if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] >
+				mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
 				return errors.New("Invalid transaction cross chain amount")
 			}
-			if payloadObj.CrossChainAmounts[i] > mainChainTransaction.Outputs[i].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
-				return errors.New("Invalid transaction fee")
-			}
-			crossChainAmounts := Fixed64(payloadObj.CrossChainAmounts[i] * Fixed64(config.Parameters.ExchangeRate*100000000) / 100000000)
-			oriOutputTotalAmount += crossChainAmounts
+
+			crossChainAmount := Fixed64(float64(payloadObj.CrossChainAmounts[i]) * config.Parameters.ExchangeRate)
+			oriOutputTotalAmount += crossChainAmount
 
 			programHash, err := Uint168FromAddress(payloadObj.CrossChainAddresses[i])
 			if err != nil {
@@ -392,7 +395,7 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 			}
 			isContained := false
 			for _, output := range txn.Outputs {
-				if output.ProgramHash == *programHash && output.Value == crossChainAmounts {
+				if output.ProgramHash == *programHash && output.Value == crossChainAmount {
 					isContained = true
 					break
 				}
@@ -405,6 +408,9 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 
 	var targetOutputTotalAmount Fixed64
 	for _, output := range txn.Outputs {
+		if output.Value < 0 {
+			return errors.New("Invalid transaction output value")
+		}
 		targetOutputTotalAmount += output.Value
 	}
 
