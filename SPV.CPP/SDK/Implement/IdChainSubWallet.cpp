@@ -33,9 +33,9 @@ namespace Elastos {
 		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const std::string &toAddress,
 											  const uint64_t amount, const nlohmann::json &payloadJson,
 											  const nlohmann::json &programJson, uint64_t fee,
-											  const std::string &memo) {
+											  const std::string &memo, const std::string &remark) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo));
+					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo, remark));
 
 			TransactionPtr transaction = createTransaction(txParam.get());
 			if (transaction == nullptr) {
@@ -65,8 +65,9 @@ namespace Elastos {
 
 			//todo create transaction without to address
 
-			TransactionPtr ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress());
+			TransactionPtr ptr = _walletManager->getWallet()->
+					createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+									  param->getToAddress(), param->getRemark());
 			if (!ptr) return nullptr;
 			ptr->setTransactionType(ELATransaction::RegisterIdentification);
 

@@ -23,7 +23,8 @@ namespace Elastos {
 					const nlohmann::json& mainchainAmounts,
 					const nlohmann::json &mainchainIndexs,
 					uint64_t fee,
-					const std::string &memo);
+					const std::string &memo,
+					const std::string &remark);
 
 		protected:
 			friend class MasterWallet;

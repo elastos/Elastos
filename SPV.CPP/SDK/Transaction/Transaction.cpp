@@ -20,6 +20,7 @@
 #include "ELATxOutput.h"
 #include "Utils.h"
 #include "BRAddress.h"
+#include "Wallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -328,6 +329,23 @@ namespace Elastos {
 			return _transaction->programs;
 		}
 
+
+		const std::string Transaction::getRemark() const {
+			return _remark;
+		}
+
+		void Transaction::setRemark(const std::string &remark) {
+			_remark = remark;
+		}
+
+		const std::string& Transaction::getToAddress() const {
+			return _toAddress;
+		}
+
+		void Transaction::setToAddress(const std::string &address) {
+			_toAddress = address;
+		}
+
 		void Transaction::Serialize(ByteStream &ostream) const {
 			serializeUnsigned(ostream);
 
@@ -493,6 +511,10 @@ namespace Elastos {
 
 			jsonData["Fee"] = _transaction->fee;
 
+			jsonData["ToAddress"] = _toAddress;
+
+			jsonData["Remark"] = _remark;
+
 			return jsonData;
 		}
 
@@ -557,11 +579,50 @@ namespace Elastos {
 
 			_transaction->fee = jsonData["Fee"].get<uint64_t>();
 
+			_toAddress = jsonData["ToAddress"].get<std::string>();
+
+			_remark = jsonData["Remark"].get<std::string>();
 		}
 
 		uint64_t Transaction::calculateFee(uint64_t feePerKb) {
 			uint64_t size = ELATransactionSize(_transaction);
 			return  ((size + 999) / 1000) * feePerKb;
+		}
+
+		void
+		Transaction::generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet) {
+
+			uint64_t outAmount = 0;
+			for (int i = 0; i < _transaction->outputs.size(); ++i) {
+				if (_transaction->outputs[i]->getAddress() == _toAddress)
+					outAmount = _transaction->outputs[i]->getAmount();
+			}
+
+			nlohmann::json summary;
+			summary["Status"] = getStatus(wallet);
+			summary["ConfirmStatus"] = getConfirmInfo(wallet);
+			summary["Amount"] = outAmount;
+			summary["Type"] = wallet->containsAddress(_toAddress) ? "Incoming" : "Outcoming";
+			summary["ToAddress"] = _toAddress;
+			summary["Remark"] = _remark;
+
+			rawTxJson["Summary"] = summary;
+		}
+
+		std::string Transaction::getConfirmInfo(const boost::shared_ptr<Wallet> &wallet) {
+			if(getBlockHeight() == TX_UNCONFIRMED)
+				return std::to_string(0);
+
+			uint32_t confirmCount = wallet->getBlockHeight() - getBlockHeight();
+			return confirmCount <= 6 ? std::to_string(confirmCount) : "6+";
+		}
+
+		std::string Transaction::getStatus(const boost::shared_ptr<Wallet> &wallet) {
+			if(getBlockHeight() == TX_UNCONFIRMED)
+				return "Unconfirmed";
+
+			uint32_t confirmCount = wallet->getBlockHeight() - getBlockHeight();
+			return confirmCount <= 6 ? "Pending" : "Confirmed";
 		}
 	}
 }

@@ -42,7 +42,11 @@ namespace Elastos {
 
 			void setFee(uint64_t fee);
 
-			virtual SubWalletType getType() const { return Normal;}
+			virtual SubWalletType getType() const { return Normal; }
+
+			const std::string &getRemark() const;
+
+			void setRemark(const std::string &remark);
 
 		private:
 			std::string _fromAddress;
@@ -50,6 +54,7 @@ namespace Elastos {
 			uint64_t _amount;
 			uint64_t _fee;
 			UInt256 _assetId;
+			std::string _remark;
 		};
 
 		class DepositTxParam : public TxParam {
@@ -65,10 +70,10 @@ namespace Elastos {
 			const std::vector<uint64_t> &getCrosschainAmouts() const;
 
 			void setSidechainDatas(const std::vector<std::string> &crossChainAddress,
-			                       const std::vector<uint64_t> &outputIndex,
-			                       const std::vector<uint64_t> &crossChainAmount);
+								   const std::vector<uint64_t> &outputIndex,
+								   const std::vector<uint64_t> &crossChainAmount);
 
-			virtual SubWalletType getType() const { return Mainchain;}
+			virtual SubWalletType getType() const { return Mainchain; }
 
 		private:
 			std::string _sidechainAddress;
@@ -90,10 +95,10 @@ namespace Elastos {
 			const std::vector<uint64_t> &getCrosschainAmouts() const;
 
 			void setMainchainDatas(const std::vector<std::string> crossChainAddress,
-			                       const std::vector<uint64_t> outputIndex,
-			                       const std::vector<uint64_t> crossChainAmount);
+								   const std::vector<uint64_t> outputIndex,
+								   const std::vector<uint64_t> crossChainAmount);
 
-			virtual SubWalletType getType() const { return Sidechain;}
+			virtual SubWalletType getType() const { return Sidechain; }
 
 		private:
 			std::string _mainchainAddress;
@@ -112,7 +117,7 @@ namespace Elastos {
 
 			void setData(const CMBlock &data);
 
-			virtual SubWalletType getType() const { return Idchain;}
+			virtual SubWalletType getType() const { return Idchain; }
 
 		private:
 			std::string _id;
@@ -121,8 +126,9 @@ namespace Elastos {
 
 		class TxParamFactory {
 		public:
-			static TxParam *createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
-												uint64_t amount, uint64_t fee, const std::string &memo);
+			static TxParam *
+			createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
+						  uint64_t amount, uint64_t fee, const std::string &memo, const std::string &remark);
 		};
 	}
 }

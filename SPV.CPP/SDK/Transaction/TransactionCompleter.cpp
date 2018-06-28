@@ -25,7 +25,7 @@ namespace Elastos {
 			if (inputAmount > outputAmount && inputAmount - outputAmount >= actualFee) {
 				modifyTransactionChange(resultTx, inputAmount - outputAmount - actualFee);
 			} else {
-				resultTx = recreateTransaction(actualFee, outputAmount, outAddr);
+				resultTx = recreateTransaction(actualFee, outputAmount, outAddr, resultTx->getRemark());
 			}
 
 			completedTransactionAssetID(resultTx);
@@ -89,8 +89,9 @@ namespace Elastos {
 		}
 
 		TransactionPtr
-		TransactionCompleter::recreateTransaction(uint64_t fee, uint64_t amount, const std::string &toAddress) {
-			return _wallet->createTransaction("", fee, amount, toAddress);
+		TransactionCompleter::recreateTransaction(uint64_t fee, uint64_t amount, const std::string &toAddress,
+												  const std::string &remark) {
+			return _wallet->createTransaction("", fee, amount, toAddress, remark);
 		}
 
 		void TransactionCompleter::modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange) {

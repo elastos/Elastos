@@ -532,7 +532,7 @@ namespace Elastos {
 
 		TransactionPtr
 		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-								  const std::string &toAddress) {
+								  const std::string &toAddress, const std::string &remark) {
 			UInt168 u168Address = UINT168_ZERO;
 			if (!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress)) {
 				std::ostringstream oss;
@@ -568,39 +568,11 @@ namespace Elastos {
 			TransactionPtr result = nullptr;
 			if (tx != nullptr) {
 				result = TransactionPtr(new Transaction(tx));
+				result->setToAddress(toAddress);
+				result->setRemark(remark);
 			}
 
 			return result;
-		}
-
-		TransactionPtr
-		Wallet::createTransactionForOutputs(const SharedWrapperList<TransactionOutput, BRTxOutput *> &outputs) {
-			SharedWrapperList<TransactionOutput, BRTxOutput *> o;
-			for (size_t i = 0; i < outputs.size(); ++i) {
-				o.push_back(TransactionOutputPtr(new TransactionOutput(*outputs[i])));
-			}
-
-			TransactionPtr result = nullptr;
-			ELATransaction *tx = (ELATransaction *) WalletCreateTxForOutputs((BRWallet *) _wallet,
-																			 (const BRTxOutput *) o.getRawPointerArray().data(),
-																			 o.size());
-			if (tx != nullptr) {
-				result = TransactionPtr(new Transaction(tx));
-			}
-
-			return result;
-		}
-
-		bool Wallet::signTransaction(const TransactionPtr &transaction, int forkId, const CMBlock &phraseData) {
-
-			char phrase[1 + phraseData.GetSize()];
-			memcpy(phrase, phraseData, phraseData.GetSize());
-			phrase[phraseData.GetSize()] = '\0';
-
-			// Convert phrase to its BIP38 512 bit seed.
-			UInt512 seed;
-			BRBIP39DeriveKey(&seed, phrase, NULL);
-			return WalletSignTransaction(transaction, forkId, &seed, sizeof(seed));
 		}
 
 		bool
@@ -1047,6 +1019,10 @@ namespace Elastos {
 			strncpy(addr, address.c_str(), addrLen - 1);
 
 			return address.size();
+		}
+
+		uint32_t Wallet::getBlockHeight() const {
+			return _wallet->Raw.blockHeight;
 		}
 
 		void Wallet::resetAddressCache(const std::string &payPassword) {

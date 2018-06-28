@@ -116,6 +116,8 @@ namespace Elastos {
 
 			virtual BRWallet *getRaw() const;
 
+			uint32_t getBlockHeight() const;
+
 			void resetAddressCache(const std::string &payPassword);
 
 			nlohmann::json GetBalanceInfo();
@@ -157,27 +159,7 @@ namespace Elastos {
 
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-							  const std::string &toAddress);
-
-			/**
-			 * Create a BRCoreTransaction with the provided outputs
-			 *
-			 * @param outputs the outputs to include
-			 * @return a consistently constructed transaction (input selected, fees handled, etc)
-			 */
-			TransactionPtr
-			createTransactionForOutputs(const SharedWrapperList<TransactionOutput, BRTxOutput *> &outputs);
-
-			/**
-			 * Sign `transaction` for the provided `forkId` (BTC or BCH) using `phrase`.  The `phrase` must
-			 * be the 'paper key' used when the wallet's MasterPubKey was originally created.
-			 *
-			 * @param transaction
-			 * @param forkId
-			 * @param phrase
-			 * @return
-			 */
-			bool signTransaction(const TransactionPtr &transaction, int forkId, const CMBlock &phrase);
+							  const std::string &toAddress, const std::string &remark);
 
 			bool containsTransaction(const TransactionPtr &transaction);
 

@@ -37,8 +37,6 @@ namespace Elastos {
 
 			const PeerManagerPtr &getPeerManager();
 
-			UInt256 signAndPublishTransaction(const TransactionPtr &transaction, const CMBlock &phase);
-
 			std::string toString() const;
 
 		public: //override from Wallet

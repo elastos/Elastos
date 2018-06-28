@@ -131,9 +131,9 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
 												uint32_t count) {
-			std::vector <std::string> addresses = _walletManager->getWallet()->getAllAddresses();
+			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
 			uint32_t end = std::min(start + count, (uint32_t) addresses.size());
-			std::vector <std::string> results(addresses.begin() + start, addresses.begin() + end);
+			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
 			nlohmann::json j;
 			j["Addresses"] = addresses;
 			return j;
@@ -154,9 +154,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
-													uint64_t amount, uint64_t fee, const std::string &memo) {
+													uint64_t amount, uint64_t fee, const std::string &memo,
+													const std::string &remark) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo));
+					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo, remark));
 			TransactionPtr transaction = createTransaction(txParam.get());
 			if (!transaction)
 				throw std::logic_error("create transaction error.");
@@ -181,10 +182,12 @@ namespace Elastos {
 			}
 			pthread_mutex_unlock(&wallet->lock);
 
-			std::vector <nlohmann::json> jsonList(realCount);
+			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
 				TransactionPtr transactionPtr(new Transaction((ELATransaction *) transactions[i], false));
-				jsonList[i] = transactionPtr->toJson();
+				nlohmann::json txJson = transactionPtr->toJson();
+				transactionPtr->generateExtraTransactionInfo(txJson, _walletManager->getWallet());
+				jsonList[i] = txJson;
 			}
 			nlohmann::json j;
 			j["Transactions"] = jsonList;
@@ -195,13 +198,13 @@ namespace Elastos {
 		SubWallet::createTransaction(TxParam *param) const {
 			//todo consider the situation of from address and fee not null
 			//todo initialize asset id if null
-			TransactionPtr ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(),
-																	 std::max(param->getFee(), _info.getMinFee()),
-																	 param->getAmount(), param->getToAddress());
+			TransactionPtr ptr = _walletManager->getWallet()->
+					createTransaction(param->getFromAddress(), std::max(param->getFee(), _info.getMinFee()),
+									  param->getAmount(), param->getToAddress(), param->getRemark());
 			if (!ptr) return nullptr;
 
 			ptr->setTransactionType(ELATransaction::TransferAsset);
-			SharedWrapperList < TransactionOutput, BRTxOutput * > outList = ptr->getOutputs();
+			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
 						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
 							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
@@ -250,7 +253,8 @@ namespace Elastos {
 			if (transaction == nullptr)
 				return;
 
-			Log::getLogger()->info("Tx callback (onTxAdded): Tx hash={}", Utils::UInt256ToString(transaction->getHash()));
+			Log::getLogger()->info("Tx callback (onTxAdded): Tx hash={}",
+								   Utils::UInt256ToString(transaction->getHash()));
 			_confirmingTxs[Utils::UInt256ToString(transaction->getHash())] = transaction;
 
 			fireTransactionStatusChanged(Utils::UInt256ToString(transaction->getHash()),
@@ -348,7 +352,7 @@ namespace Elastos {
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
 
 			if (tx) {
-				WrapperList <Key, BRKey> keyList;
+				WrapperList<Key, BRKey> keyList;
 				for (i = 0; i < internalCount + externalCount; ++i) {
 					Key key(keys[i].secret, keys[i].compressed);
 					keyList.push_back(key);

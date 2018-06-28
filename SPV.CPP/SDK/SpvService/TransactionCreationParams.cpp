@@ -60,6 +60,14 @@ namespace Elastos {
 			_fee = fee;
 		}
 
+		const std::string &TxParam::getRemark() const {
+			return _remark;
+		}
+
+		void TxParam::setRemark(const std::string &remark) {
+			_remark = remark;
+		}
+
 		std::string DepositTxParam::getSidechainAddress() const {
 			return _sidechainAddress;
 		}
@@ -81,8 +89,8 @@ namespace Elastos {
 		}
 
 		void DepositTxParam::setSidechainDatas(const std::vector<std::string> &crossChainAddress,
-		                                   const std::vector<uint64_t> &outputIndex,
-		                                   const std::vector<uint64_t> &crossChainAmount) {
+											   const std::vector<uint64_t> &outputIndex,
+											   const std::vector<uint64_t> &crossChainAmount) {
 			_crossChainAddress = crossChainAddress;
 			_outputIndex = outputIndex;
 			_crossChainAmount = crossChainAmount;
@@ -109,8 +117,8 @@ namespace Elastos {
 		}
 
 		void WithdrawTxParam::setMainchainDatas(const std::vector<std::string> crossChainAddress,
-		                                        const std::vector<uint64_t> outputIndex,
-		                                        const std::vector<uint64_t> crossChainAmount) {
+												const std::vector<uint64_t> outputIndex,
+												const std::vector<uint64_t> crossChainAmount) {
 			_crossChainAddress = crossChainAddress;
 			_outputIndex = outputIndex;
 			_crossChainAmount = crossChainAmount;
@@ -134,7 +142,8 @@ namespace Elastos {
 
 		TxParam *
 		TxParamFactory::createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
-									  uint64_t amount, uint64_t fee, const std::string &memo) {
+									  uint64_t amount, uint64_t fee, const std::string &memo,
+									  const std::string &remark) {
 			TxParam *result = nullptr;
 			switch (type) {
 				case Normal:
@@ -155,6 +164,7 @@ namespace Elastos {
 			result->setAmount(amount);
 			result->setFee(fee);
 			result->setAssetId(Key::getSystemAssetId());
+			result->setRemark(remark);
 			return result;
 		}
 	}

@@ -76,16 +76,6 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		UInt256 CoreWalletManager::signAndPublishTransaction(const TransactionPtr &transaction, const CMBlock &phase) {
-			bool res = _wallet->signTransaction(transaction, getForkId(), phase);
-			if (res == true) {
-				_peerManager->publishTransaction(transaction);
-				return transaction->getHash();
-			} else {
-				return UINT256_ZERO;
-			}
-		}
-
 		std::string CoreWalletManager::toString() const {
 			std::stringstream ss;
 			ss << "BRCoreWalletManager {" <<

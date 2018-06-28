@@ -36,9 +36,10 @@ namespace Elastos {
 																	const nlohmann::json &sidechainAmounts,
 																	const nlohmann::json &sidechainIndexs,
 																	uint64_t fee,
-																	const std::string &memo) {
+																	const std::string &memo,
+																	const std::string &remark) {
 			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo));
+					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo, remark));
 			txParam->setAssetId(Key::getSystemAssetId());
 
 			ParamChecker::checkJsonArrayNotEmpty(sidechainAccounts);
@@ -72,8 +73,9 @@ namespace Elastos {
 			if (depositTxParam == nullptr) {
 				ptr = SubWallet::createTransaction(param);
 			} else {
-				ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(), param->getFee(),
-																	 param->getAmount(), param->getToAddress());
+				ptr = _walletManager->getWallet()->
+						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+										  param->getToAddress(), param->getRemark());
 
 				if (!ptr) return nullptr;
 

@@ -60,7 +60,8 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					uint64_t fee,
-					const std::string &memo) = 0;
+					const std::string &memo,
+					const std::string &remark) = 0;
 
 			virtual std::string CreateMultiSignAddress(
 					const nlohmann::json &multiPublicKeyJson,

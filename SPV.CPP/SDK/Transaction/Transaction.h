@@ -24,6 +24,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class Wallet;
+
 		class Transaction :
 				public Wrapper<BRTransaction>,
 				public ELAMessageSerializable {
@@ -162,6 +164,16 @@ namespace Elastos {
 
 			const std::vector<ProgramPtr> &getPrograms() const;
 
+			const std::string getRemark() const;
+
+			void setRemark(const std::string &remark);
+
+			const std::string &getToAddress() const;
+
+			void setToAddress(const std::string &address);
+
+			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet);
+
 		private:
 			PayloadPtr newPayload(ELATransaction::Type type);
 
@@ -169,9 +181,15 @@ namespace Elastos {
 
 			bool transactionSign(int forkId, const WrapperList<Key, BRKey> keys);
 
+			std::string getConfirmInfo(const boost::shared_ptr<Wallet> &wallet);
+
+			std::string getStatus(const boost::shared_ptr<Wallet> &wallet);
+
 		private:
 			bool _isRegistered;
 			bool _manageRaw;
+			std::string _remark;
+			std::string _toAddress;
 			ELATransaction *_transaction;
 		};
 
