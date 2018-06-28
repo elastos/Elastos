@@ -18,6 +18,7 @@ const (
 
 var (
 	Parameters configParams
+	Version    string
 	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
@@ -74,7 +75,7 @@ type Configuration struct {
 	SpvMinOutbound      int              `json:"SpvMinOutbound"`
 	SpvMaxConnections   int              `json:"SpvMaxConnections"`
 	SpvPrintLevel       uint8            `json:"SpvPrintLevel"`
-	ExchangeRate        float32          `json:"ExchangeRate"`
+	ExchangeRate        float64          `json:"ExchangeRate"`
 	MinCrossChainTxFee  int              `json:"MinCrossChainTxFee"`
 	HttpRestPort        int              `json:"HttpRestPort"`
 	RestCertPath        string           `json:"RestCertPath"`
