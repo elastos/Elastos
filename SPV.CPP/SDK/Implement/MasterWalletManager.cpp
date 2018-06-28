@@ -33,7 +33,7 @@ namespace Elastos {
 						  [&masterWalletIds](const MasterWalletMap::value_type &item) {
 							  masterWalletIds.push_back(item.first);
 						  });
-			std::for_each(masterWalletIds.begin(), masterWalletIds.end(), [this](const std::string &id){
+			std::for_each(masterWalletIds.begin(), masterWalletIds.end(), [this](const std::string &id) {
 				this->removeWallet(id);
 			});
 		}
@@ -84,18 +84,31 @@ namespace Elastos {
 
 			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
 
+			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
+			if (saveMaster) {
+				Log::getLogger()->info("[MasterWalletManager::removeWallet] Begin save ({}).", masterWalletId);
+				masterWalletInner->Save();
+				Log::getLogger()->info("[MasterWalletManager::removeWallet] End save ({}).", masterWalletId);
+			} else {
+				Log::getLogger()->info("[MasterWalletManager::removeWallet] Begin clear local ({}).", masterWalletId);
+				masterWalletInner->ClearLocal();
+				Log::getLogger()->info("[MasterWalletManager::removeWallet] End clear local ({}).", masterWalletId);
+			}
+
+			Log::getLogger()->info("[MasterWalletManager::removeWallet] Begin destroy sub wallets ({}).",
+								   masterWalletId);
 			std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 			for (int i = 0; i < subWallets.size(); ++i) {
 				masterWallet->DestroyWallet(subWallets[i]);
 			}
+			Log::getLogger()->info("[MasterWalletManager::removeWallet] End destroy sub wallets of ({}).",
+								   masterWalletId);
 
-			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
-			if(saveMaster)
-				masterWalletInner->Save();
-			else
-				masterWalletInner->ClearLocal();
-
+			Log::getLogger()->info("[MasterWalletManager::removeWallet] Removing master wallet from map ({}).",
+								   masterWalletId);
 			_masterWalletMap.erase(masterWalletId);
+
+			Log::getLogger()->info("[MasterWalletManager::removeWallet] Deleting master wallet ({}).", masterWalletId);
 			delete masterWallet;
 		}
 
