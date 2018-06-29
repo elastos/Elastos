@@ -373,6 +373,9 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 		ISubWallet *subWallet = masterWallet->CreateSubWallet(chainId, payPassword, false);
 
 		masterWallet->DestroyWallet(subWallet);
+		std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+		REQUIRE(subWallets.size() == 1);
+		masterWallet->DestroyWallet(subWallets[0]);
 		try {
 			masterWallet->DestroyWallet(subWallet);
 		}
@@ -652,7 +655,7 @@ TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
 
-		REQUIRE(masterWallet->GetAllSubWallets().empty());
+		REQUIRE(masterWallet->GetAllSubWallets().size() == 1);
 
 		std::string masterWalletId = masterWallet->GetId();
 
