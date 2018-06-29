@@ -283,13 +283,13 @@ func SetLogLevel(param Params) map[string]interface{} {
 	return ResponsePack(Success, fmt.Sprint("log level has been set to ", level))
 }
 
-func SubmitAuxBlock(param Params) map[string]interface{} {
+func SubmitSideAuxBlock(param Params) map[string]interface{} {
 	blockHash, ok := param.String("blockhash")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 	if _, ok := LocalPow.MsgBlock.BlockData[blockHash]; !ok {
-		log.Trace("[json-rpc:SubmitAuxBlock] receive invalid block hash value:", blockHash)
+		log.Trace("[json-rpc:SubmitSideAuxBlock] receive invalid block hash value:", blockHash)
 		return ResponsePack(InvalidParams, "")
 	}
 
@@ -302,7 +302,7 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	err := LocalPow.MsgBlock.BlockData[blockHash].Header.SideAuxPow.Deserialize(bytes.NewReader(buf))
 	if err != nil {
 		log.Trace(err)
-		return ResponsePack(InternalError, "[json-rpc:SubmitAuxBlock] deserialize side aux pow failed")
+		return ResponsePack(InternalError, "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
 	_, _, err = chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
@@ -431,7 +431,7 @@ func GetInfo(param Params) map[string]interface{} {
 func AuxHelp(param Params) map[string]interface{} {
 
 	//TODO  and description for this rpc-interface
-	return ResponsePack(Success, "createauxblock==submitauxblock")
+	return ResponsePack(Success, "createauxblock==submitsideauxblock")
 }
 
 func ToggleMining(param Params) map[string]interface{} {
@@ -453,6 +453,9 @@ func ToggleMining(param Params) map[string]interface{} {
 }
 
 func DiscreteMining(param Params) map[string]interface{} {
+	if LocalPow == nil {
+		return ResponsePack(PowServiceNotStarted, "")
+	}
 	count, ok := param.Uint("count")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -636,7 +639,7 @@ func GetBestBlockHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	return ResponsePack(Success, BytesToHexString(hash.Bytes()))
+	return ResponsePack(Success, ToReversedString(hash))
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
