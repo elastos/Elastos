@@ -20,7 +20,8 @@ type TxPool struct {
 	txnCnt  uint64                        // count
 	txnList map[Uint256]*core.Transaction // transaction which have been verifyed will put into this map
 	//issueSummary  map[Uint256]Fixed64           // transaction which pass the verify will summary the amout to this map
-	inputUTXOList map[string]*core.Transaction // transaction which pass the verify will add the UTXO to this map
+	inputUTXOList   map[string]*core.Transaction  // transaction which pass the verify will add the UTXO to this map
+	mainchainTxList map[Uint256]*core.Transaction // mainchain tx pool
 }
 
 func (pool *TxPool) Init() {
@@ -30,6 +31,7 @@ func (pool *TxPool) Init() {
 	pool.inputUTXOList = make(map[string]*core.Transaction)
 	//pool.issueSummary = make(map[Uint256]Fixed64)
 	pool.txnList = make(map[Uint256]*core.Transaction)
+	pool.mainchainTxList = make(map[Uint256]*core.Transaction)
 }
 
 //append transaction to txnpool when check ok.
@@ -45,13 +47,9 @@ func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 		return errCode
 	}
 	//verify transaction by pool with lock
-	if ok := pool.verifyTransactionWithTxnPool(txn); !ok {
-		return ErrDoubleSpend
-	}
-
-	if err := checkCrossChainTransaction(txn); err != nil {
-		log.Info("Transaction verification failed:", err)
-		return ErrDoubleSpend
+	if errCode := pool.verifyTransactionWithTxnPool(txn); errCode != Success {
+		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
+		return errCode
 	}
 
 	txn.Fee = GetTxFee(txn, DefaultLedger.Blockchain.AssetID)
@@ -102,14 +100,22 @@ func (pool *TxPool) GetTransaction(hash Uint256) *core.Transaction {
 }
 
 //verify transaction with txnpool
-func (pool *TxPool) verifyTransactionWithTxnPool(txn *core.Transaction) bool {
+func (pool *TxPool) verifyTransactionWithTxnPool(txn *core.Transaction) ErrCode {
+	if txn.IsRechargeToSideChainTx() {
+		// check if the recharge transaction includes duplicate mainchain tx in pool
+		if err := pool.verifyDuplicateMainchainTx(txn); err != nil {
+			log.Warn(err)
+			return ErrMainchainTxDuplicate
+		}
+	}
+
 	// check if the transaction includes double spent UTXO inputs
 	if err := pool.verifyDoubleSpend(txn); err != nil {
 		log.Info(err)
-		return false
+		return ErrDoubleSpend
 	}
 
-	return true
+	return Success
 }
 
 //remove from associated map
@@ -145,6 +151,36 @@ func (pool *TxPool) verifyDoubleSpend(txn *core.Transaction) error {
 	for _, v := range inputs {
 		pool.addInputUTXOList(txn, v)
 	}
+
+	return nil
+}
+
+func (pool *TxPool) IsDuplicateMainchainTx(mainchainTxHash Uint256) bool {
+	_, ok := pool.mainchainTxList[mainchainTxHash]
+	if ok {
+		return true
+	}
+
+	return false
+}
+
+//check and add to mainchain tx pool
+func (pool *TxPool) verifyDuplicateMainchainTx(txn *core.Transaction) error {
+	rechargePayload, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
+	if !ok {
+		return errors.New("convert the payload of recharge tx failed")
+	}
+
+	hash, err := rechargePayload.GetMainchainTxHash()
+	if err != nil {
+		return err
+	}
+	_, exist := pool.mainchainTxList[*hash]
+	if exist {
+		return errors.New("duplicate mainchain tx detected")
+	}
+
+	pool.addMainchainTx(txn)
 
 	return nil
 }
@@ -245,6 +281,28 @@ func (pool *TxPool) delInputUTXOList(input *core.Input) bool {
 		return false
 	}
 	delete(pool.inputUTXOList, id)
+	return true
+}
+
+func (pool *TxPool) addMainchainTx(txn *core.Transaction) {
+	pool.Lock()
+	defer pool.Unlock()
+	rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+	hash, err := rechargePayload.GetMainchainTxHash()
+	if err != nil {
+		return
+	}
+	pool.mainchainTxList[*hash] = txn
+}
+
+func (pool *TxPool) delMainchainTx(hash Uint256) bool {
+	pool.Lock()
+	defer pool.Unlock()
+	_, ok := pool.mainchainTxList[hash]
+	if !ok {
+		return false
+	}
+	delete(pool.mainchainTxList, hash)
 	return true
 }
 

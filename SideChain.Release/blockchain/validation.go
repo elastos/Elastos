@@ -1,16 +1,13 @@
 package blockchain
 
 import (
-	"bytes"
 	"errors"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
@@ -116,45 +113,6 @@ func GetTxProgramHashes(tx *core.Transaction) ([]Uint168, error) {
 		uniqueHashes = append(uniqueHashes, k)
 	}
 	return uniqueHashes, nil
-}
-
-func checkCrossChainTransaction(txn *core.Transaction) error {
-	if !txn.IsRechargeToSideChainTx() {
-		return nil
-	}
-
-	depositPayload, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
-	if !ok {
-		return errors.New("Invalid payload type.")
-	}
-
-	if mainchain.DbCache == nil {
-		dbCache, err := mainchain.OpenDataStore()
-		if err != nil {
-			errors.New("Open data store failed")
-		}
-		mainchain.DbCache = dbCache
-	}
-
-	mainChainTransaction := new(core.Transaction)
-	reader := bytes.NewReader(depositPayload.MainChainTransaction)
-	if err := mainChainTransaction.Deserialize(reader); err != nil {
-		return errors.New("PayloadRechargeToSideChain mainChainTransaction deserialize failed")
-	}
-
-	ok, err := mainchain.DbCache.HasMainChainTx(mainChainTransaction.Hash().String())
-	if err != nil {
-		return err
-	}
-	if ok {
-		log.Error("Reduplicate withdraw transaction, transaction hash:", mainChainTransaction.Hash().String())
-		return errors.New("Reduplicate withdraw transaction")
-	}
-	err = mainchain.DbCache.AddMainChainTx(mainChainTransaction.Hash().String())
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func SortPrograms(programs []*core.Program) {
