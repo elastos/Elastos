@@ -14,6 +14,8 @@ const (
 	ErrTransactionPayload   ErrCode = 45009
 	ErrDoubleSpend          ErrCode = 45010
 	ErrTxHashDuplicate      ErrCode = 45011
+	ErrSidechainTxDuplicate ErrCode = 45012
+	ErrMainchainTxDuplicate ErrCode = 45013
 	ErrXmitFail             ErrCode = 45014
 	ErrTransactionSize      ErrCode = 45015
 	ErrUnknownReferedTxn    ErrCode = 45016
