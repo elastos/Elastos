@@ -26,7 +26,7 @@ namespace Elastos {
 
 		ELAMerkleBlock *ELAMerkleBlockNew();
 
-		ELAMerkleBlock *ELAMerkleBlockCopy(ELAMerkleBlock *elaproto);
+		ELAMerkleBlock *ELAMerkleBlockCopy(const ELAMerkleBlock *elaproto);
 
 		void ELAMerkleBlockFree(ELAMerkleBlock *block);
 

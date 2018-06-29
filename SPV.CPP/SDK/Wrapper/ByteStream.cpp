@@ -522,25 +522,25 @@ namespace Elastos {
 			_count = position();
 		}
 
-		bool ByteStream::readVarBytes(void **buf, size_t *len) {
-			uint64_t length = 0;
-			if (!readVarUint(length)) {
-				return false;
-			}
-
-			*len = length;
-
-			if (buf) {
-				*buf = (*len > 0) ? malloc(*len) : nullptr;
-				if (!readBytes(*buf, *len)) {
-					if (*buf)
-						free(*buf);
-					return false;
-				}
-			}
-
-			return true;
-		}
+//		bool ByteStream::readVarBytes(void **buf, size_t *len) {
+//			uint64_t length = 0;
+//			if (!readVarUint(length)) {
+//				return false;
+//			}
+//
+//			*len = length;
+//
+//			if (buf) {
+//				*buf = (*len > 0) ? malloc(*len) : nullptr;
+//				if (!readBytes(*buf, *len)) {
+//					if (*buf)
+//						free(*buf);
+//					return false;
+//				}
+//			}
+//
+//			return true;
+//		}
 
 		bool ByteStream::readVarBytes(CMBlock &bytes) {
 			uint64_t length = 0;

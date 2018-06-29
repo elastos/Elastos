@@ -72,7 +72,7 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 		tx->timestamp = rand();
 		block->auxPow.setBTCTransaction(tx);
 
-		MerkleBlock mbOrig(block);
+		MerkleBlock mbOrig(block, true);
 		ByteStream stream;
 		mbOrig.Serialize(stream);
 
@@ -112,7 +112,7 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 TEST_CASE("Json convert", "[json]") {
 
 	ELAMerkleBlock *merkleBlock = ELAMerkleBlockNew();
-	MerkleBlock mb(merkleBlock);
+	MerkleBlock mb(merkleBlock, true);
 
 	SECTION("Convert to json") {
 		std::vector<std::string> hashes = {

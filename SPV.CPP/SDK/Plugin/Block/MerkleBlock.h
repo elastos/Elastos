@@ -27,7 +27,9 @@ namespace Elastos {
 		public:
 			MerkleBlock();
 
-			MerkleBlock(ELAMerkleBlock *merkleBlock);
+			MerkleBlock(ELAMerkleBlock *merkleBlock, bool manageRaw);
+
+			MerkleBlock(const ELAMerkleBlock &merkleBlock);
 
 			~MerkleBlock();
 
@@ -39,7 +41,7 @@ namespace Elastos {
 
 			virtual BRMerkleBlock *getRaw() const;
 
-			virtual void initFromRaw(BRMerkleBlock *block);
+			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -85,6 +87,7 @@ namespace Elastos {
 
 		private:
 			ELAMerkleBlock *_merkleBlock;
+			bool _manageRaw;
 		};
 
 #ifndef MERKLE_BLOCK_PLUGIN

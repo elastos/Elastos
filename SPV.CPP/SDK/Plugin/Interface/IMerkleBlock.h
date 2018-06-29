@@ -22,7 +22,7 @@ namespace Elastos {
 
 			virtual BRMerkleBlock *getRawBlock() const = 0;
 
-			virtual void initFromRaw(BRMerkleBlock *block) = 0;
+			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;
 
 			virtual UInt256 getBlockHash() const = 0;
 

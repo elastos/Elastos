@@ -70,7 +70,7 @@ namespace Elastos {
 					SharedWrapperList<MerkleBlock, BRMerkleBlock *> *coreBlocks = new SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
 						coreBlocks->push_back(
-								MerkleBlockPtr(new MerkleBlock(ELAMerkleBlockCopy((ELAMerkleBlock *) blocks[i]))));
+								MerkleBlockPtr(new MerkleBlock((ELAMerkleBlock *) blocks[i], false)));
 					}
 					listener->lock()->saveBlocks(replace, *coreBlocks);
 				}

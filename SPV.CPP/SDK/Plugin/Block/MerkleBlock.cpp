@@ -28,16 +28,23 @@ namespace Elastos {
 			}
 		}
 
-		MerkleBlock::MerkleBlock() {
+		MerkleBlock::MerkleBlock() :
+			_manageRaw(true) {
 			_merkleBlock = ELAMerkleBlockNew();
 		}
 
-		MerkleBlock::MerkleBlock(ELAMerkleBlock *merkleBlock) :
-				_merkleBlock(merkleBlock) {
+		MerkleBlock::MerkleBlock(ELAMerkleBlock *merkleBlock, bool manageRaw) :
+			_manageRaw(manageRaw),
+			_merkleBlock(merkleBlock) {
+		}
+
+		MerkleBlock::MerkleBlock(const ELAMerkleBlock &merkleBlock) :
+			_manageRaw(true) {
+			_merkleBlock = ELAMerkleBlockCopy(&merkleBlock);
 		}
 
 		MerkleBlock::~MerkleBlock() {
-			if (_merkleBlock != nullptr)
+			if (_merkleBlock != nullptr && _manageRaw)
 				ELAMerkleBlockFree(_merkleBlock);
 		}
 
@@ -50,8 +57,9 @@ namespace Elastos {
 			return (BRMerkleBlock *) _merkleBlock;
 		}
 
-		void MerkleBlock::initFromRaw(BRMerkleBlock *block) {
+		void MerkleBlock::initFromRaw(BRMerkleBlock *block, bool manageRaw) {
 			_merkleBlock = (ELAMerkleBlock *)block;
+			_manageRaw = manageRaw;
 		}
 
 #ifdef MERKLE_BLOCK_PLUGIN
@@ -205,21 +213,25 @@ namespace Elastos {
 
 			_merkleBlock->raw.hashesCount = hashesCount;
 
-			if (_merkleBlock->raw.hashes)
-				free(_merkleBlock->raw.hashes);
-
-			_merkleBlock->raw.hashes = (UInt256 *) calloc(_merkleBlock->raw.hashesCount, sizeof(UInt256));
+			std::vector<UInt256> hashes;
 			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
-				if (!istream.readBytes(_merkleBlock->raw.hashes[i].u8, sizeof(UInt256)))
+				UInt256 hash;
+				if (!istream.readBytes(hash.u8, sizeof(UInt256)))
 					return false;
+				hashes.push_back(hash);
 			}
 
-			if (_merkleBlock->raw.flags) {
-				free(_merkleBlock->raw.flags);
-				_merkleBlock->raw.flags = nullptr;
-			}
+			CMBlock flags;
+			if (!istream.readVarBytes(flags))
+				return false;
 
-			return istream.readVarBytes((void **)&_merkleBlock->raw.flags, &_merkleBlock->raw.flagsLen);
+			_merkleBlock->raw.flagsLen = flags.GetSize();
+
+			BRMerkleBlockSetTxHashes(&_merkleBlock->raw, hashes.data(), hashesCount, flags, flags.GetSize());
+
+			getBlockHash();
+
+			return true;
 		}
 
 		const AuxPow &MerkleBlock::getAuxPow() const {

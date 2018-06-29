@@ -16,7 +16,7 @@ namespace Elastos {
 			return new ELAMerkleBlock;
 		}
 
-		ELAMerkleBlock *ELAMerkleBlockCopy(ELAMerkleBlock *orig) {
+		ELAMerkleBlock *ELAMerkleBlockCopy(const ELAMerkleBlock *orig) {
 			assert(orig != nullptr);
 
 			ELAMerkleBlock *cpy = ELAMerkleBlockNew();

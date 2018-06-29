@@ -55,6 +55,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 		uint64_t balance = subWallet->GetBalance();
 		Log::getLogger()->info("wallet balance = {}", balance);
 
+#if 0
 		if (balance > 1000000 && !hasSentTransaction) {
 			try {
 				nlohmann::json tx = subWallet->CreateTransaction("EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", balance / 2, 100000, "", "");
@@ -65,6 +66,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 			}
 			hasSentTransaction = true;
 		}
+#endif
 	}
 
 	masterWallet->DestroyWallet(subWallet);

@@ -776,6 +776,8 @@ static void _peerConnected(void *info)
     }
 
     pthread_mutex_unlock(&manager->lock);
+
+    manager->wallet->WalletUpdateBalance(manager->wallet);
 }
 
 static void _peerDisconnected(void *info, int error)

@@ -18,7 +18,7 @@ namespace Elastos {
 		public:
 			SidechainMerkleBlock();
 
-			SidechainMerkleBlock(IdMerkleBlock *merkleBlock);
+			SidechainMerkleBlock(IdMerkleBlock *merkleBlock, bool manageRaw);
 
 			virtual ~SidechainMerkleBlock();
 
@@ -38,7 +38,7 @@ namespace Elastos {
 
 			virtual BRMerkleBlock *getRawBlock() const;
 
-			virtual void initFromRaw(BRMerkleBlock *block);
+			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
 
 			virtual UInt256 getBlockHash() const;
 

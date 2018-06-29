@@ -98,7 +98,7 @@ namespace Elastos {
 			void writeUint32(uint32_t val, ByteOrder byteEndian = LittleEndian);
 			bool readBytes(void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
 			void writeBytes(const void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
-			bool readVarBytes(void **buf, size_t *len);
+//			bool readVarBytes(void **buf, size_t *len);
 			bool readVarBytes(CMBlock &bytes);
 			void writeVarBytes(const void *bytes, size_t len);
 			void writeVarBytes(const CMBlock &bytes);
