@@ -11,13 +11,15 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
-	"github.com/elastos/Elastos.ELA.SPV/interface"
+	spv "github.com/elastos/Elastos.ELA.SPV/interface"
 	spvlog "github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/bloom"
 	. "github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-var spvService _interface.SPVService
+var spvService spv.SPVService
 
 func SpvInit() error {
 	var err error
@@ -28,8 +30,10 @@ func SpvInit() error {
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, &clientId)
 
-	spvService, err = _interface.NewSPVService(config.Parameters.SpvMagic, clientId,
+	spvService, err = spv.NewSPVService(config.Parameters.SpvMagic, clientId,
 		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
+	//register an invalid address to prevent bloom filter from sending all data
+	spvService.RegisterTransactionListener(&SpvListener{ListenAddress: "0000000000000000000000000000000000"})
 	if err != nil {
 		return err
 	}
@@ -67,4 +71,28 @@ func VerifyTransaction(tx *core.Transaction) error {
 	}
 
 	return nil
+}
+
+type SpvListener struct {
+	ListenAddress string
+}
+
+func (l *SpvListener) Address() string {
+	return l.ListenAddress
+}
+
+func (l *SpvListener) Type() ela.TransactionType {
+	return ela.RechargeToSideChain
+}
+
+func (l *SpvListener) Flags() uint64 {
+	return spv.FlagNotifyInSyncing
+}
+
+func (l *SpvListener) Rollback(height uint32) {
+}
+
+func (l *SpvListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx ela.Transaction) {
+	// Submit transaction receipt
+	defer spvService.SubmitTransactionReceipt(id, tx.Hash())
 }
