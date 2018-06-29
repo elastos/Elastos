@@ -9,6 +9,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -20,6 +21,13 @@ const (
 
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Header
+
+	// A block's main chain block header must contain in spv module
+	mainChainBlockHash := header.SideAuxPow.MainBlockHeader.Hash()
+	if err := spv.VerifyElaHeader(&mainChainBlockHash); err != nil {
+		return err
+	}
+
 	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
