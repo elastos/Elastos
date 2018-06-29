@@ -82,7 +82,7 @@ func CheckTransactionContext(txn *core.Transaction) ErrCode {
 	if txn.IsRechargeToSideChainTx() {
 		if err := CheckRechargeToSideChainTransaction(txn); err != nil {
 			log.Warn("[CheckRechargeToSideChainTransaction],", err)
-			return ErrInvalidOutput
+			return ErrRechargeToSideChain
 		}
 		return Success
 	}
@@ -364,6 +364,11 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 	reader = bytes.NewReader(payloadRecharge.MainChainTransaction)
 	if err := mainChainTransaction.Deserialize(reader); err != nil {
 		return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
+	}
+
+	mainchainTxhash := mainChainTransaction.Hash()
+	if exist := DefaultLedger.Store.IsMainchainTxHashDuplicate(mainchainTxhash); exist {
+		return errors.New("Duplicate mainchain transaction hash in paylod")
 	}
 
 	payloadObj, ok := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
