@@ -88,7 +88,7 @@ func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*core.Transaction {
 func (pool *TxPool) CleanSubmittedTransactions(block *core.Block) error {
 	pool.cleanTransactionList(block.Transactions)
 	pool.cleanUTXOList(block.Transactions)
-	//pool.cleanIssueSummary(block.Transactions)
+	pool.cleanMainchainTx(block.Transactions)
 	return nil
 }
 
@@ -213,6 +213,32 @@ func (pool *TxPool) cleanTransactionList(txns []*core.Transaction) error {
 	}
 	log.Debug(fmt.Sprintf("[cleanTransactionList],transaction %d Requested, %d cleaned, Remains %d in TxPool", txnsNum, cleaned, pool.GetTransactionCount()))
 	return nil
+}
+
+// clean the mainchain tx pool
+func (pool *TxPool) cleanMainchainTx(txs []*core.Transaction) {
+	for _, txn := range txs {
+		if txn.IsRechargeToSideChainTx() {
+			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+			mainTxHash, err := rechargePayload.GetMainchainTxHash()
+			if err != nil {
+				log.Error("get hash failed when clean mainchain tx:", txn.Hash())
+				continue
+			}
+			poolTx := pool.mainchainTxList[*mainTxHash]
+			if poolTx != nil {
+				// delete tx
+				pool.delFromTxList(poolTx.Hash())
+				// delete utxo
+				for _, input := range poolTx.Inputs {
+					pool.delInputUTXOList(input)
+				}
+				// delete mainchain tx
+				pool.delMainchainTx(*mainTxHash)
+
+			}
+		}
+	}
 }
 
 func (pool *TxPool) addToTxList(txn *core.Transaction) bool {
