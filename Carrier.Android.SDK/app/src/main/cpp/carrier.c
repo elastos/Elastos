@@ -696,7 +696,7 @@ jboolean replyFriendInvite(JNIEnv* env, jobject thiz, jstring jto, jint jstatus,
     }
 
     rc  = ela_reply_friend_invite(getCarrier(env, thiz), to, jstatus, reason,
-                                  data, strlen(data));
+                                  data, data ? strlen(data) : 0);
 
     (*env)->ReleaseStringUTFChars(env, jto, to);
     if (data)   (*env)->ReleaseStringUTFChars(env, jdata, data);
