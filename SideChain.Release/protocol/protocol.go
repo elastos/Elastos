@@ -54,6 +54,7 @@ type Noder interface {
 	GetConnectionCnt() uint
 	GetTxnPool(bool) map[Uint256]*Transaction
 	AppendToTxnPool(*Transaction) ErrCode
+	IsDuplicateMainchainTx(mainchainTxHash Uint256) bool
 	ExistedID(id Uint256) bool
 	ReqNeighborList()
 	DumpInfo()

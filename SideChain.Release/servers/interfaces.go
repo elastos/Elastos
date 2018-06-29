@@ -13,7 +13,6 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
-	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
@@ -925,15 +924,20 @@ func GetExistDepositTransactions(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	if mainchain.DbCache == nil {
-		return ResponsePack(Success, "")
-	}
-
 	var resultTxHashes []string
-	for _, reversedTxHash := range reversedTxHashes {
-		txHashBytes, _ := FromReversedString(reversedTxHash)
-		if ok, _ := mainchain.DbCache.HasMainChainTx(BytesToHexString(txHashBytes)); ok {
-			resultTxHashes = append(resultTxHashes, reversedTxHash)
+	for _, txHash := range reversedTxHashes {
+		txHashBytes, err := HexStringToBytes(txHash)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		hash, err := Uint256FromBytes(txHashBytes)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		inStore := chain.DefaultLedger.Store.IsMainchainTxHashDuplicate(*hash)
+		inTxPool := NodeForServers.IsDuplicateMainchainTx(*hash)
+		if inTxPool || inStore {
+			resultTxHashes = append(resultTxHashes, txHash)
 		}
 	}
 
