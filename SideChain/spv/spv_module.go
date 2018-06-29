@@ -73,6 +73,16 @@ func VerifyTransaction(tx *core.Transaction) error {
 	return nil
 }
 
+func VerifyElaHeader(hash *common.Uint256) error {
+	blockChain := spvService.HeaderStore()
+	_, err := blockChain.GetHeader(hash)
+	if err != nil {
+		return errors.New("Verify ela header failed.")
+	}
+
+	return nil
+}
+
 type SpvListener struct {
 	ListenAddress string
 }
