@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -146,6 +147,10 @@ func init() {
 
 func (config *Configuration) GetArbitrators() ([][]byte, error) {
 	//todo finish this when arbitrator election scenario is done
+	if len(config.Arbiters) == 0 {
+		return nil, errors.New("arbiters not configured")
+	}
+
 	var arbitersByte [][]byte
 	for _, arbiter := range config.Arbiters {
 		arbiterByte, err := common.HexStringToBytes(arbiter)
