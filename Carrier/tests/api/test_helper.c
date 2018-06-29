@@ -204,13 +204,16 @@ static ElaCallbacks callbacks = {
 int test_suite_init_ext(TestContext *context, bool udp_disabled)
 {
     CarrierContext *wctxt = context->carrier;
+    char datadir[PATH_MAX];
     ElaOptions opts = {
         .udp_enabled = !udp_disabled,
-        .persistent_location = global_config.tests.data_location,
+        .persistent_location = datadir,
         .bootstraps_size = global_config.bootstraps_size,
         .bootstraps = NULL
     };
     int i = 0;
+
+    sprintf(datadir, "%s/tests", global_config.data_location);
 
     opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
     if (!opts.bootstraps) {

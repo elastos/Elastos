@@ -83,7 +83,6 @@ static void ready_cb(ElaCarrier *w, void *context)
     ela_get_userid(w, robotid, sizeof(robotid));
     ela_get_address(w, address, sizeof(address));
     
-
     robot_log_info("Robot is ready\n");
     robot_ack("ready %s %s\n", robotid, address);
 }
@@ -250,14 +249,17 @@ int robot_main(int argc, char *argv[])
 {
     ElaCarrier *w;
     int rc;
+    char datadir[PATH_MAX];
 
     ElaOptions opts = {
         .udp_enabled     = true,
         .bootstraps      = NULL,
         .bootstraps_size = global_config.bootstraps_size,
-        .persistent_location = global_config.robot.data_location
+        .persistent_location = datadir
     };
     int i;
+
+    sprintf(datadir, "%s/robot", global_config.data_location);
 
     opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
     if (!opts.bootstraps) {

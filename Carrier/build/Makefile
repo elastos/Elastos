@@ -18,7 +18,7 @@ toxcore: libsodium
 ifneq (, $(findstring $(HOST), iOS Android))
 carrier: libsodium toxcore flatcc pjsip
 else
-carrier: libsodium toxcore flatcc pjsip confuse CUnit
+carrier: libsodium toxcore flatcc pjsip libconfig CUnit
 endif
 
 endif
@@ -26,7 +26,7 @@ endif
 help:
 	@echo "Usage: MODULE=[module] TARGET=[target] HOST=[platform] ARCH=[machine] BUILD=[build] make [module]"
 	@echo "module options:"
-	@echo "    confuse"
+	@echo "    libconfig"
 	@echo "    CUnit"
 	@echo "    pjsip"
 	@echo "    libsodium"
