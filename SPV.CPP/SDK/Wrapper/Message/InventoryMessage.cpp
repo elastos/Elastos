@@ -33,7 +33,11 @@ namespace Elastos {
 
 			int r = 1;
 
-			if (count > MAX_GETDATA_HASHES) {
+			if (off + count * 36 > msgLen) {
+				peer_log(peer, "malformed inv message, length is %zu, should be %zu for %zu item(s)", msgLen,
+					off + count * 36, count);
+				r = 0;
+			} else if (count > MAX_GETDATA_HASHES) {
 				peer_log(peer, "dropping inv message, %zu is too many items, max is %d", count,
 									   MAX_GETDATA_HASHES);
 			} else {
@@ -47,16 +51,10 @@ namespace Elastos {
 					off += sizeof(uint32_t);
 
 					if (type == inv_block) {
-						if (0 == blockCount) {
-							blockCount = count;
-						}
-						blocks[i] = &msg[off];
+						blocks[blockCount++] = &msg[off];
 						off += sizeof(UInt256);
 					} else if (type == inv_tx) {
-						if (0 == txCount) {
-							txCount = count;
-						}
-						transactions[i] = &msg[off];
+						transactions[txCount++] = &msg[off];
 						off += sizeof(UInt256);
 					}
 				}
@@ -74,9 +72,11 @@ namespace Elastos {
 				} else {
 					if (!ctx->sentFilter && !ctx->sentGetblocks) blockCount = 0;
 					UInt256 blockHash;
-					UInt256Get(&blockHash, blocks[0]);
-					if (blockCount == 1 && UInt256Eq(&(ctx->lastBlockHash), &blockHash)) blockCount = 0;
-					if (blockCount == 1)UInt256Get(&ctx->lastBlockHash, blocks[0]);
+					if (blockCount > 0) {
+						UInt256Get(&blockHash, blocks[0]);
+						if (blockCount == 1 && UInt256Eq(&(ctx->lastBlockHash), &blockHash)) blockCount = 0;
+						if (blockCount == 1) UInt256Get(&ctx->lastBlockHash, blocks[0]);
+					}
 
 					UInt256 hash, blockHashes[blockCount], txHashes[txCount];
 
@@ -100,6 +100,7 @@ namespace Elastos {
 						} else txHashes[j++] = hash;
 					}
 
+					peer_log(peer, "got inv with txCount=%zu, blockCount=%zu", j, blockCount);
 					BRPeerAddKnownTxHashes(peer, txHashes, j);
 					if (j > 0 || blockCount > 0)
 						ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, j, blockHashes, blockCount);
