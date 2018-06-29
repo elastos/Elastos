@@ -4,13 +4,13 @@ import (
 	"container/list"
 	"testing"
 
-	ela "github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 var testChainStore *ChainStore
-var sidechainTxHash string
+var mainchainTxHash common.Uint256
 
 func newTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
@@ -22,7 +22,7 @@ func newTestChainStore() (*ChainStore, error) {
 	store := &ChainStore{
 		IStore:             st,
 		headerIndex:        map[uint32]common.Uint256{},
-		headerCache:        map[common.Uint256]*ela.Header{},
+		headerCache:        map[common.Uint256]*core.Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,
@@ -44,8 +44,103 @@ func TestChainStoreInit(t *testing.T) {
 		t.Error("Create chainstore failed")
 	}
 
-	// Assume the sidechain Tx hash
-	sidechainTxHash = "39fc8ba05b0064381e51afed65b4cf91bb8db60efebc38242e965d1b1fed0701"
+	// Assume the mainchain Tx hash
+	txHashStr := "39fc8ba05b0064381e51afed65b4cf91bb8db60efebc38242e965d1b1fed0701"
+	txHashBytes, _ := common.HexStringToBytes(txHashStr)
+	txHash, _ := common.Uint256FromBytes(txHashBytes)
+	mainchainTxHash = *txHash
+}
+
+func TestChainStore_PersisMainchainTx(t *testing.T) {
+	if testChainStore == nil {
+		t.Error("Chainstore init failed")
+	}
+
+	// 1. The mainchain Tx should not exist in DB.
+	_, err := testChainStore.GetMainchainTx(mainchainTxHash)
+	if err == nil {
+		t.Error("Found the mainchain Tx which should not exist in DB")
+	}
+
+	// 2. Run PersistMainchainTx
+	testChainStore.PersistMainchainTx(mainchainTxHash)
+
+	// Need batch commit here because PersistMainchainTx use BatchPut
+	testChainStore.BatchCommit()
+
+	// 3. Verify PersistMainchainTx
+	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
+	if err != nil {
+		t.Error("Not found the mainchain Tx")
+	}
+	if exist != ValueExist {
+		t.Error("Mainchian Tx matched wrong value")
+	}
+}
+
+
+func TestChainStore_RollbackMainchainTx(t *testing.T) {
+	if testChainStore == nil {
+		t.Error("Chainstore init failed")
+	}
+
+	// 1. The mainchain Tx hash should exist in DB.
+	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
+	if err != nil {
+		t.Error("Not found the mainchain Tx")
+	}
+	if exist != ValueExist {
+		t.Error("Mainchian Tx matched wrong value")
+	}
+
+	// 2. Run Rollback
+	err = testChainStore.RollbackMainchainTx(mainchainTxHash)
+	if err != nil {
+		t.Error("Rollback the mainchain Tx failed")
+	}
+
+	// Need batch commit here because RollbackMainchainTx use BatchDelete
+	testChainStore.BatchCommit()
+
+	// 3. Verify RollbackMainchainTx
+	_, err = testChainStore.GetMainchainTx(mainchainTxHash)
+	if err == nil {
+		t.Error("Found the mainchain Tx which should been deleted")
+	}
+}
+
+
+func TestChainStore_IsMainchainTxHashDuplicate(t *testing.T) {
+	if testChainStore == nil {
+		t.Error("Chainstore init failed")
+	}
+
+	// 1. The mainchain Tx should not exist in DB.
+	_, err := testChainStore.GetMainchainTx(mainchainTxHash)
+	if err == nil {
+		t.Error("Found the mainchain Tx which should not exist in DB")
+	}
+
+	// 2. Persist the mainchain Tx hash
+	testChainStore.PersistMainchainTx(mainchainTxHash)
+
+	// Need batch commit here because PersistMainchainTx use BatchPut
+	testChainStore.BatchCommit()
+
+	// 3. Verify PersistMainchainTx
+	exist, err := testChainStore.GetMainchainTx(mainchainTxHash)
+	if err != nil {
+		t.Error("Not found the mainchain Tx")
+	}
+	if exist != ValueExist {
+		t.Error("Mainchian Tx matched wrong value")
+	}
+
+	// 4. Run IsMainchainTxHashDuplicate
+	isDuplicate := testChainStore.IsMainchainTxHashDuplicate(mainchainTxHash)
+	if !isDuplicate {
+		t.Error("Mainchain Tx hash should be checked to be duplicated")
+	}
 }
 
 func TestChainStoreDone(t *testing.T) {
@@ -54,5 +149,11 @@ func TestChainStoreDone(t *testing.T) {
 		return
 	}
 
+	err := testChainStore.RollbackMainchainTx(mainchainTxHash)
+	if err != nil {
+		t.Error("Rollback the mainchain Tx failed")
+	}
+
+	testChainStore.BatchCommit()
 	testChainStore.Close()
 }

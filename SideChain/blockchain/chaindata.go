@@ -301,6 +301,14 @@ func (c *ChainStore) PersistTransactions(b *core.Block) error {
 				return err
 			}
 		}
+		if txn.TxType == core.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+			hash, err := rechargePayload.GetMainchainTxHash()
+			if err != nil {
+				return err
+			}
+			c.PersistMainchainTx(*hash)
+		}
 	}
 	return nil
 }
@@ -314,6 +322,14 @@ func (c *ChainStore) RollbackTransactions(b *core.Block) error {
 			if err := c.RollbackAsset(txn.Hash()); err != nil {
 				return err
 			}
+		}
+		if txn.TxType == core.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+			hash, err := rechargePayload.GetMainchainTxHash()
+			if err != nil {
+				return err
+			}
+			c.RollbackMainchainTx(*hash)
 		}
 	}
 
@@ -338,6 +354,15 @@ func (c *ChainStore) RollbackAsset(assetId Uint256) error {
 	c.BatchDelete(key.Bytes())
 	return nil
 }
+
+func (c *ChainStore) RollbackMainchainTx(mainchainTxHash Uint256) error {
+	key := []byte{byte(IX_MainChain_Tx)}
+	key = append(key, mainchainTxHash.Bytes()...)
+
+	c.BatchDelete(key)
+	return nil
+}
+
 
 func (c *ChainStore) PersistUnspend(b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
