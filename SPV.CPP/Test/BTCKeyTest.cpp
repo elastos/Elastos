@@ -54,18 +54,21 @@ TEST_CASE("get public key from private key", "[BTCKey]") {
 
 TEST_CASE("verify public key ", "[BTCKey]") {
 	CMBlock privKey, pubKey;
-	if (true == BTCKey::generateKey(privKey, pubKey, NID_secp256k1)) {
-		REQUIRE(true == BTCKey::KeyIsValid(privKey, pubKey));
-		CMemBlock<char> cPrivkey, cPubkey;
-		cPrivkey = Hex2Str(privKey);
-		cPubkey = Hex2Str(pubKey);
+	size_t loop = 10000;
+	while (loop--) {
+		if (true == BTCKey::generateKey(privKey, pubKey, NID_secp256k1)) {
+			REQUIRE(true == BTCKey::KeyIsValid(privKey, pubKey, NID_secp256k1));
+			CMemBlock<char> cPrivkey, cPubkey;
+			cPrivkey = Hex2Str(privKey);
+			cPubkey = Hex2Str(pubKey);
 #ifdef BTCKEY_DEBUG_MSG
-		std::cout << "privKey=" << (const char *) cPrivkey << ":" << "pubKey=" << (const char *) cPubkey << std::endl;
+			std::cout << "privKey=" << (const char *) cPrivkey << ":" << "pubKey=" << (const char *) cPubkey << std::endl;
 #endif
-	}
+		}
 
-	bool verified_pubkey = BTCKey::PublickeyIsValid(pubKey, NID_secp256k1);
-	REQUIRE(true == verified_pubkey);
+		bool verified_pubkey = BTCKey::PublickeyIsValid(pubKey, NID_secp256k1);
+		REQUIRE(true == verified_pubkey);
+	}
 }
 
 TEST_CASE("secp256k1 sign/verify", "[BTCKey]") {

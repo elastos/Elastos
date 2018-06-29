@@ -37,19 +37,19 @@ namespace Elastos {
 							const EC_POINT *_pubkey = nullptr;
 							if (nullptr != (_privkey = EC_KEY_get0_private_key(key)) &&
 								nullptr != (_pubkey = EC_KEY_get0_public_key(key))) {
-								uint8_t arrBN[256] = {0};
+								unsigned char arrBN[256] = {0};
 								int len = BN_bn2bin(_privkey, arrBN);
 								if (0 < len) {
 									privKey.Resize((size_t) len);
-									memcpy(privKey, arrBN, (size_t) len);
+									memcpy((void *) privKey, arrBN, (size_t) len);
 								}
 								BIGNUM *__pubkey = EC_POINT_point2bn(curve, _pubkey, POINT_CONVERSION_COMPRESSED,
 																	 nullptr, nullptr);
 								if (nullptr != __pubkey) {
 									len = BN_bn2bin(__pubkey, arrBN);
 									if (0 < len) {
-										pubKey.Resize(len);
-										memcpy(pubKey, arrBN, (size_t) len);
+										pubKey.Resize((size_t) len);
+										memcpy((void *) pubKey, arrBN, (size_t) len);
 										out = true;
 									}
 									BN_free(__pubkey);
@@ -728,7 +728,7 @@ namespace Elastos {
 
 		bool BTCKey::KeyIsValid(const CMBlock &privKey, const CMBlock &pubKey, int nid) {
 			bool out = false;
-			if (32 != privKey.GetSize() || 33 != pubKey.GetSize()) {
+			if (0 == privKey.GetSize() || 0 == pubKey.GetSize()) {
 				return out;
 			}
 			EC_KEY *key = EC_KEY_new_by_curve_name(nid);
