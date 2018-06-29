@@ -33,6 +33,7 @@ func StartRPCServer() {
 	mainMux["setloglevel"] = SetLogLevel
 	mainMux["getinfo"] = GetInfo
 	mainMux["getblock"] = GetBlockByHash
+	mainMux["getcurrentheight"] = GetBlockHeight
 	mainMux["getblockhash"] = GetBlockHash
 	mainMux["getconnectioncount"] = GetConnectionCount
 	mainMux["getrawmempool"] = GetTransactionPool
@@ -49,7 +50,7 @@ func StartRPCServer() {
 
 	// aux interfaces
 	mainMux["help"] = AuxHelp
-	mainMux["submitauxblock"] = SubmitAuxBlock
+	mainMux["submitsideauxblock"] = SubmitSideAuxBlock
 	mainMux["createauxblock"] = CreateAuxBlock
 	// mining interfaces
 	mainMux["togglemining"] = ToggleMining
@@ -131,6 +132,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 			"jsonrpc": "2.0",
 			"result":  response["Result"],
 			"id":      request["id"],
+			"error":   nil,
 		})
 	}
 	w.Write(data)
@@ -153,7 +155,7 @@ func convertParams(method string, params []interface{}) Params {
 	switch method {
 	case "createauxblock":
 		return FromArray(params, "paytoaddress")
-	case "submitauxblock":
+	case "submitsideauxblock":
 		return FromArray(params, "blockhash", "auxpow")
 	case "getblockhash":
 		return FromArray(params, "index")
