@@ -52,7 +52,7 @@ namespace Elastos {
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
 			ParamChecker::checkPassword(payPassword, "Pay");
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			resetMnemonic(language);
 
@@ -73,7 +73,7 @@ namespace Elastos {
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(backupPassword, "Backup");
 			ParamChecker::checkPassword(payPassword, "Pay");
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 			ParamChecker::checkNotEmpty(rootPath);
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));

@@ -640,7 +640,14 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
     UInt128 *addr, *addrList = NULL;
     BRFindPeersInfo *info;
 
-    if (! UInt128IsZero(&manager->fixedPeer.address)) {
+    size_t peersCount = manager->fiexedPeers ?  0 : array_count(manager->fiexedPeers);
+	if(peersCount > 0) {
+		array_set_count(manager->peers, peersCount);
+		for (int i = 0; i < peersCount; ++i) {
+			manager->peers[i] = manager->fiexedPeers[i];
+		}
+    }
+    else if (! UInt128IsZero(&manager->fixedPeer.address)) {
         array_set_count(manager->peers, 1);
         manager->peers[0] = manager->fixedPeer;
         manager->peers[0].services = services;
@@ -1455,6 +1462,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
     assert(peers != NULL || peersCount == 0);
 	memset(manager, 0, sizeof(*manager));
 
+	manager->fiexedPeers = NULL;
 	manager->peerMessages = peerMessages;
     manager->params = params;
     manager->wallet = wallet;

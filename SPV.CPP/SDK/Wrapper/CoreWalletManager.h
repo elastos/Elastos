@@ -35,7 +35,7 @@ namespace Elastos {
 
 			const WalletPtr &getWallet();
 
-			const PeerManagerPtr &getPeerManager();
+			virtual const PeerManagerPtr &getPeerManager();
 
 			std::string toString() const;
 

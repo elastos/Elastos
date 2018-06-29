@@ -113,6 +113,22 @@ namespace Elastos {
 			//todo implement recover logic
 		}
 
+		const PeerManagerPtr& WalletManager::getPeerManager() {
+			if (_peerManager == nullptr) {
+				_peerManager = PeerManagerPtr(new PeerManager(
+						_chainParams,
+						getWallet(),
+						_earliestPeerTime,
+						loadBlocks(),
+						loadPeers(),
+						createPeerManagerListener(),
+						_pluginTypes));
+				_peerManager->setFixedPeers(PeerConfigReader().readPeersFromJson(_peerConfig));
+			}
+
+			return _peerManager;
+		}
+
 		//override Wallet listener
 		void WalletManager::balanceChanged(uint64_t balance) {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),

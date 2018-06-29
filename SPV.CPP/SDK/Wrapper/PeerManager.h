@@ -113,6 +113,8 @@ namespace Elastos {
 
 			Peer::ConnectStatus getConnectStatus() const;
 
+			void setFixedPeers(const SharedWrapperList<Peer, BRPeer *> &peers);
+
 			bool useFixedPeer(const std::string &node, int port);
 
 			std::string getCurrentPeerName() const;

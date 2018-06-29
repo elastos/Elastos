@@ -225,6 +225,17 @@ namespace Elastos {
 			return BRPeerManagerSyncProgress((BRPeerManager *) _manager, startHeight);
 		}
 
+		void PeerManager::setFixedPeers(
+				const Elastos::ElaWallet::SharedWrapperList<Elastos::ElaWallet::Peer, BRPeer *> &peers) {
+			if (_manager->Raw.fiexedPeers != nullptr)
+				array_clear(_manager->Raw.fiexedPeers);
+
+			array_new(_manager->Raw.fiexedPeers, peers.size());
+			for (int i = 0; i < peers.size(); ++i) {
+				array_add(_manager->Raw.fiexedPeers, *peers[i]->getRaw());
+			}
+		}
+
 		bool PeerManager::useFixedPeer(const std::string &node, int port) {
 			const BRChainParams *chainParams = BRPeerManagerChainParams((BRPeerManager *) _manager);
 

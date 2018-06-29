@@ -57,7 +57,7 @@ typedef struct BRPeerManagerStruct {
 	const BRChainParams *params;
 	BRWallet *wallet;
 	int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount;
-	BRPeer *peers, *downloadPeer, fixedPeer, **connectedPeers;
+	BRPeer *peers, *downloadPeer, fixedPeer, **connectedPeers, *fiexedPeers;
 	char downloadPeerName[INET6_ADDRSTRLEN + 6];
 	uint32_t earliestKeyTime, syncStartHeight, filterUpdateHeight, estimatedHeight;
 	BRBloomFilter *bloomFilter;

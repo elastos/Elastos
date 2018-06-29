@@ -72,6 +72,8 @@ namespace Elastos {
 
 			void recover(int limitGap);
 
+			virtual const PeerManagerPtr &getPeerManager();
+
 		public:
 			// func balanceChanged(_ balance: UInt64)
 			virtual void balanceChanged(uint64_t balance);
