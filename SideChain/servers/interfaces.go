@@ -918,14 +918,14 @@ func GetExistDepositTransactions(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	var reversedTxHashes []string
-	err = json.Unmarshal(txsBytes, &reversedTxHashes)
+	var txHashes []string
+	err = json.Unmarshal(txsBytes, &txHashes)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
 	var resultTxHashes []string
-	for _, txHash := range reversedTxHashes {
+	for _, txHash := range txHashes {
 		txHashBytes, err := HexStringToBytes(txHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
