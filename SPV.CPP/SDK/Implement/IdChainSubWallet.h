@@ -6,14 +6,14 @@
 #define __ELASTOS_SDK_IDCHAINSUBWALLET_H__
 
 #include "Interface/IIdChainSubWallet.h"
-#include "SubWallet.h"
+#include "SidechainSubWallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IdChainSubWallet : public IIdChainSubWallet, public SubWallet {
+		class IdChainSubWallet : public IIdChainSubWallet, public SidechainSubWallet {
 		public:
-			~IdChainSubWallet();
+			virtual ~IdChainSubWallet();
 
 			virtual nlohmann::json CreateIdTransaction(
 					const std::string &fromAddress,

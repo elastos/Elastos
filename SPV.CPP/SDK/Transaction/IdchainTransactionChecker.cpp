@@ -7,8 +7,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		IdchainTransactionChecker::IdchainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet) :
-				TransactionChecker(transaction, wallet) {
+		IdchainTransactionChecker::IdchainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet)
+				: SidechainTransactionChecker(transaction, wallet) {
 
 		}
 
@@ -18,14 +18,15 @@ namespace Elastos {
 
 		void IdchainTransactionChecker::Check() {
 			if (_transaction->getTransactionType() != ELATransaction::RegisterIdentification &&
-				_transaction->getTransactionType() != ELATransaction::TransferAsset) {
+				_transaction->getTransactionType() != ELATransaction::TransferAsset &&
+				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset) {
 				throw std::logic_error("MainchainSubWallet transaction type error");
 			}
 			TransactionChecker::Check();
 		}
 
 		bool IdchainTransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
-			TransactionChecker::checkTransactionOutput(transaction);
+			SidechainTransactionChecker::checkTransactionOutput(transaction);
 
 			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
 			size_t size = outputs.size();

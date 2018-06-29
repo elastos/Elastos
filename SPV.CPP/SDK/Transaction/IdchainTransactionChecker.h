@@ -5,12 +5,12 @@
 #ifndef __ELASTOS_SDK_IDCHAINTRANSACTIONCHECKER_H__
 #define __ELASTOS_SDK_IDCHAINTRANSACTIONCHECKER_H__
 
-#include "TransactionChecker.h"
+#include "SidechainTransactionChecker.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IdchainTransactionChecker : public TransactionChecker {
+		class IdchainTransactionChecker : public SidechainTransactionChecker {
 		public:
 			IdchainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet);
 

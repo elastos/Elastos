@@ -13,7 +13,7 @@ namespace Elastos {
 
 		class SidechainSubWallet : public ISidechainSubWallet, public SubWallet {
 		public:
-			~SidechainSubWallet();
+			virtual ~SidechainSubWallet();
 
 			virtual nlohmann::json CreateWithdrawTransaction(
 					const std::string &fromAddress,

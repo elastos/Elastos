@@ -21,7 +21,7 @@ namespace Elastos {
 		IdChainSubWallet::IdChainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
 										   const std::string &payPassword, const PluginTypes &pluginTypes,
 										   MasterWallet *parent) :
-				SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
+				SidechainSubWallet(info, chainParams, payPassword, pluginTypes, parent) {
 
 		}
 
@@ -61,33 +61,42 @@ namespace Elastos {
 		boost::shared_ptr<Transaction>
 		IdChainSubWallet::createTransaction(TxParam *param) const {
 			IdTxParam *idTxParam = dynamic_cast<IdTxParam *>(param);
-			assert(idTxParam != nullptr);
 
-			//todo create transaction without to address
+			if(idTxParam != nullptr) {
+				//todo create transaction without to address
 
-			TransactionPtr ptr = _walletManager->getWallet()->
-					createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-									  param->getToAddress(), param->getRemark());
-			if (!ptr) return nullptr;
-			ptr->setTransactionType(ELATransaction::RegisterIdentification);
+				TransactionPtr ptr = _walletManager->getWallet()->
+						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+										  param->getToAddress(), param->getRemark());
+				if (!ptr) return nullptr;
+				ptr->setTransactionType(ELATransaction::RegisterIdentification);
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
-			std::for_each(outList.begin(), outList.end(),
-						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
-						  });
+				SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+				std::for_each(outList.begin(), outList.end(),
+							  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+								  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
+							  });
 
-			return ptr;
+				return ptr;
+			} else {
+				SidechainSubWallet::createTransaction(param);
+			}
 		}
 
 		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			IdchainTransactionChecker checker(transaction, _walletManager->getWallet());
-			checker.Check();
+			if(transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+				IdchainTransactionChecker checker(transaction, _walletManager->getWallet());
+				checker.Check();
+			} else
+				SidechainSubWallet::verifyRawTransaction(transaction);
 		}
 
 		TransactionPtr IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
-			return completer.Complete(actualFee);
+			if(transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+				IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
+				return completer.Complete(actualFee);
+			} else
+				SidechainSubWallet::completeTransaction(transaction, actualFee);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
