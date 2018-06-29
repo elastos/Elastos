@@ -24,6 +24,7 @@ public:
 					 "phrasePassword",
 					 "payPassword",
 					 "english",
+					 false,
 					 "Data") {
 	}
 
@@ -34,24 +35,25 @@ public:
 						 phrasePassword,
 						 payPassword,
 						 "english",
+						 false,
 						 "Data") {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &phrasePassword,
 					 const std::string &payPassword) :
-			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, "english", "Data") {
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, "english", false, "Data") {
 	}
 
 	TestMasterWallet(const std::string &mnemonic,
 					 const std::string &phrasePassword,
 					 const std::string &payPassword,
 					 const std::string language) :
-			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, language, "Data") {
+			MasterWallet("MasterWalletTest", mnemonic, phrasePassword, payPassword, language, false, "Data") {
 	}
 
 	TestMasterWallet(const boost::filesystem::path &localStore) :
-			MasterWallet(localStore, "Data") {
+			MasterWallet(localStore, "Data", false) {
 	}
 
 	void restoreLocalStoreWrapper() {
@@ -96,13 +98,6 @@ public:
 		restoreSubWallets(coinInfoList);
 
 		return _createdWallets[chainID];
-	}
-
-protected:
-	virtual void startPeerManager(SubWallet *wallet) {
-	}
-
-	virtual void stopPeerManager(SubWallet *wallet) {
 	}
 };
 

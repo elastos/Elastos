@@ -18,13 +18,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		MasterWalletManager::MasterWalletManager(const std::string &rootPath) :
-				_rootPath(rootPath) {
+				_rootPath(rootPath),
+				_p2pEnable(true) {
 			initMasterWallets();
 		}
 
 		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath) :
 				_masterWalletMap(walletMap),
-				_rootPath(rootPath) {
+				_rootPath(rootPath),
+				_p2pEnable(true) {
 		}
 
 		MasterWalletManager::~MasterWalletManager() {
@@ -62,7 +64,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, _rootPath);
+														  language, _p2pEnable, _rootPath);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -131,7 +133,7 @@ namespace Elastos {
 
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
-														  payPassword, phrasePassword, _rootPath, false);
+														  payPassword, phrasePassword, _rootPath, _p2pEnable);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -147,7 +149,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, _rootPath);
+														  language, _p2pEnable, _rootPath);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -193,7 +195,7 @@ namespace Elastos {
 				std::string masterWalletId = temp.filename().string();
 				temp /= MASTER_WALLET_STORE_FILE;
 				if (exists(temp)) {
-					MasterWallet *masterWallet = new MasterWallet(temp, _rootPath);
+					MasterWallet *masterWallet = new MasterWallet(temp, _rootPath, _p2pEnable);
 					_masterWalletMap[masterWalletId] = masterWallet;
 				}
 				++it;

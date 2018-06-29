@@ -41,6 +41,7 @@ public:
 			"",
 			"payPassword",
 			"english",
+			false,
 			"Data") {
 	}
 

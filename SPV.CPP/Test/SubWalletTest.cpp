@@ -40,14 +40,8 @@ public:
 			"",
 			"payPassword",
 			"english",
+			false,
 			"Data") {
-	}
-
-protected:
-	virtual void startPeerManager(SubWallet *wallet) {
-	}
-
-	virtual void stopPeerManager(SubWallet *wallet) {
 	}
 };
 

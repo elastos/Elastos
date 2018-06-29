@@ -113,7 +113,10 @@ namespace Elastos {
 
 			typedef std::map<std::string, ISubWallet *> WalletMap;
 
-			MasterWallet(const boost::filesystem::path &localStore, const std::string &rootPath);
+			MasterWallet(
+					const boost::filesystem::path &localStore,
+					const std::string &rootPath,
+					bool p2pEnable);
 
 			MasterWallet(
 					const std::string &id,
@@ -121,6 +124,7 @@ namespace Elastos {
 					const std::string &phrasePassword,
 					const std::string &payPassword,
 					const std::string &language,
+					bool p2pEnable,
 					const std::string &rootPath);
 
 			MasterWallet(
@@ -130,7 +134,7 @@ namespace Elastos {
 					const std::string &payPassword,
 					const std::string &phrasePassword,
 					const std::string &rootPath,
-					bool reserve);
+					bool p2pEnable);
 
 			bool importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
@@ -200,6 +204,7 @@ namespace Elastos {
 
 			CoinConfigReader _coinConfigReader;
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
+			bool _p2pEnable;
 		};
 
 	}

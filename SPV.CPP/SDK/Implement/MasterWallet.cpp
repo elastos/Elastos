@@ -31,8 +31,11 @@ namespace fs = boost::filesystem;
 namespace Elastos {
 	namespace ElaWallet {
 
-		MasterWallet::MasterWallet(const boost::filesystem::path &localStore, const std::string &rootPath) :
-				_rootPath(rootPath) {
+		MasterWallet::MasterWallet(const boost::filesystem::path &localStore,
+								   const std::string &rootPath,
+								   bool p2pEnable) :
+				_rootPath(rootPath),
+				_p2pEnable(p2pEnable) {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
@@ -45,9 +48,11 @@ namespace Elastos {
 								   const std::string &phrasePassword,
 								   const std::string &payPassword,
 								   const std::string &language,
+								   bool p2pEnable,
 								   const std::string &rootPath) :
 				_id(id),
-				_rootPath(rootPath) {
+				_rootPath(rootPath),
+				_p2pEnable(p2pEnable) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
@@ -66,9 +71,10 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::string &phrasePassword,
 								   const std::string &rootPath,
-								   bool reserve) :
+								   bool p2pEnable) :
 				_id(id),
-				_rootPath(rootPath) {
+				_rootPath(rootPath),
+				_p2pEnable(p2pEnable) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(backupPassword, "Backup");
@@ -462,11 +468,13 @@ namespace Elastos {
 		}
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
-			wallet->_walletManager->start();
+			if (_p2pEnable)
+				wallet->_walletManager->start();
 		}
 
 		void MasterWallet::stopPeerManager(SubWallet *wallet) {
-			wallet->_walletManager->stop();
+			if (_p2pEnable)
+				wallet->_walletManager->stop();
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) {

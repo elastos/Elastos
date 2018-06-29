@@ -115,6 +115,7 @@ namespace Elastos {
 
 		protected:
 			std::string _rootPath;
+			bool _p2pEnable;
 			MasterWalletMap _masterWalletMap;
 		};
 	}
