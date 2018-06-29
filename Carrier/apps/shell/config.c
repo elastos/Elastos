@@ -24,68 +24,14 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <assert.h>
+#include <unistd.h>
 
-#include <confuse.h>
+#include <libconfig.h>
 #include <rc_mem.h>
 
 #include "config.h"
 
-static void config_error(cfg_t *cfg, const char *fmt, va_list ap)
-{
-    fprintf(stderr, "Config file error, line %d: ", cfg->line);
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-}
-
-static int bootstrap_validator(cfg_t *cfg, cfg_opt_t *opt)
-{
-    cfg_t *sec;
-
-    sec = cfg_opt_getnsec(opt, cfg_opt_size(opt) - 1);
-
-    if (cfg_getstr(sec, "ipv4") == NULL &&
-        cfg_getstr(sec, "ipv6") == NULL) {
-        cfg_error(cfg, "ipv4 and ipv6 options both missing.");
-        return -1;
-    }
-
-    if (cfg_getstr(sec, "port") == NULL) {
-        cfg_error(cfg, "port option missing.");
-        return -1;
-    }
-
-    if (cfg_getstr(sec, "public_key") == NULL) {
-        cfg_error(cfg, "public_key option missing");
-        return -1;
-    }
-
-    return 0;
-}
-
-static int bootstraps_validator(cfg_t *cfg, cfg_opt_t *opt)
-{
-    int nbootstraps;
-
-    nbootstraps = cfg_size(cfg, "bootstraps|bootstrap");
-    if (nbootstraps == 0) {
-        cfg_error(cfg, "no bootstraps defined.");
-        return -1;
-    }
-
-    return 0;
-}
-
-static int not_null_validator(cfg_t *cfg, cfg_opt_t *opt)
-{
-    if (cfg_getstr(cfg, opt->name) == NULL) {
-        cfg_error(cfg, "option '%s' missing.", opt->name);
-        return -1;
-    }
-
-    return 0;
-}
-
-static void config_destroy(void *p)
+static void config_destructor(void *p)
 {
     ShellConfig *config = (ShellConfig *)p;
 
@@ -108,7 +54,7 @@ static void config_destroy(void *p)
     }
 }
 
-static void bootstrap_destroy(void *p)
+static void bootstrap_destructor(void *p)
 {
     BootstrapNode *node = (BootstrapNode *)p;
 
@@ -128,126 +74,146 @@ static void bootstrap_destroy(void *p)
         free((void *)node->public_key);
 }
 
+static void qualified_path(const char *path, const char *ref, char *qualified)
+{
+    if (*path == '/') {
+        strcpy(qualified, path);
+    } else if (*path == '~') {
+        sprintf(qualified, "%s%s", getenv("HOME"), path+1);
+    } else {
+        if (ref) {
+            const char *p = strrchr(ref, '/');
+            if (!p) p = ref;
+
+            if (p - ref > 0)
+                strncpy(qualified, ref, p - ref);
+            else
+                *qualified = 0;
+        } else {
+            getcwd(qualified, PATH_MAX);
+        }
+
+        if (*qualified)
+            strcat(qualified, "/");
+
+        strcat(qualified, path);
+    }
+}
+
 ShellConfig *load_config(const char *config_file)
 {
     ShellConfig *config;
-    cfg_t *cfg, *bootstraps, *sec;
+    config_t cfg;
+    config_setting_t *setting;
     const char *stropt;
-    int nsecs;
+    char number[64];
+    int intopt;
+    int entries;
     int i;
     int rc;
 
-    cfg_opt_t bootstrap_opts[] = {
-        CFG_STR("ipv4", NULL, CFGF_NONE),
-        CFG_STR("ipv6", NULL, CFGF_NONE),
-        CFG_STR("port", "33445", CFGF_NONE),
-        CFG_STR("public_key", NULL, CFGF_NONE),
-        CFG_END()
-    };
+    config_init(&cfg);
 
-    cfg_opt_t bootstraps_opts[] = {
-        CFG_SEC("bootstrap", bootstrap_opts, CFGF_MULTI | CFGF_NO_TITLE_DUPES),
-    };
-
-    cfg_opt_t cfg_opts[] = {
-        CFG_BOOL("udp_enabled", true, CFGF_NONE),
-        CFG_INT("loglevel", 3, CFGF_NONE),
-        CFG_STR("logfile", NULL, CFGF_NONE),
-        CFG_STR("datadir", NULL, CFGF_NONE),
-        CFG_SEC("bootstraps", bootstraps_opts, CFGF_NONE),
-        CFG_END()
-    };
-
-    cfg = cfg_init(cfg_opts, CFGF_NONE);
-    cfg_set_error_function(cfg, config_error);
-    cfg_set_validate_func(cfg, NULL, not_null_validator);
-    cfg_set_validate_func(cfg, "bootstraps", bootstraps_validator);
-    cfg_set_validate_func(cfg, "bootstraps|bootstrap", bootstrap_validator);
-
-    rc = cfg_parse(cfg, config_file);
-    if (rc != CFG_SUCCESS) {
-        cfg_error(cfg, "can not pase config file: %s.", config_file);
-        cfg_free(cfg);
+    rc = config_read_file(&cfg, config_file);
+    if (!rc) {
+        fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
+                config_error_line(&cfg), config_error_text(&cfg));
+        config_destroy(&cfg);
         return NULL;
     }
 
-    config = (ShellConfig *)rc_zalloc(sizeof(ShellConfig), config_destroy);
+    config = (ShellConfig *)rc_zalloc(sizeof(ShellConfig), config_destructor);
     if (!config) {
-        cfg_error(cfg, "out of memory.");
-        cfg_free(cfg);
+        fprintf(stderr, "Load configuration failed, out of memory.\n");
+        config_destroy(&cfg);
         return NULL;
     }
 
-    config->udp_enabled = cfg_getbool(cfg, "udp_enabled");
+    rc = config_lookup_bool (&cfg, "udp_enabled", &intopt);
+    if (rc && intopt) {
+        config->udp_enabled = true;
+    }
 
-    config->loglevel = (int)cfg_getint(cfg, "loglevel");
+    config->loglevel = 3;
+    config_lookup_int(&cfg, "loglevel", &config->loglevel);
 
-    stropt = cfg_getstr(cfg, "logfile");
-    if (stropt)
+    rc = config_lookup_string(&cfg, "logfile", &stropt);
+    if (rc && *stropt) {
         config->logfile = strdup(stropt);
+    }
 
-    stropt = cfg_getstr(cfg, "datadir");
-    if (!stropt) {
-        char datadir[PATH_MAX];
+    rc = config_lookup_string(&cfg, "datadir", &stropt);
+    if (!rc || !*stropt) {
+        fprintf(stderr, "Missing datadir option.\n");
+        config_destroy(&cfg);
+        deref(config);
+        return NULL;
+    } else {
+        char path[PATH_MAX];
+        qualified_path(stropt, config_file, path);
+        config->datadir = strdup(path);
+    }
 
-        sprintf(datadir, "%s/%s", getenv("HOME"), ".wshell");
-        config->datadir = strdup(datadir);
-    } else
-        config->datadir = strdup(stropt);
-
-    bootstraps = cfg_getsec(cfg, "bootstraps");
-    if (!bootstraps) {
-        cfg_error(cfg, "missing services section.");
-        cfg_free(cfg);
+    setting = config_lookup(&cfg, "bootstraps");
+    if (!setting) {
+        fprintf(stderr, "Missing bootstraps section.\n");
+        config_destroy(&cfg);
         deref(config);
         return NULL;
     }
 
-    nsecs = cfg_size(bootstraps, "bootstrap");
+    entries = config_setting_length(setting);
+    if (entries <= 0) {
+        fprintf(stderr, "Empty bootstraps option.\n");
+        config_destroy(&cfg);
+        deref(config);
+        return NULL;
+    }
 
-    config->bootstraps_size = nsecs;
+    config->bootstraps_size = entries;
     config->bootstraps = (BootstrapNode **)calloc(1, config->bootstraps_size *
                                                   sizeof(BootstrapNode *));
     if (!config->bootstraps) {
-        cfg_error(cfg, "out of memory.");
-        cfg_free(cfg);
+        fprintf(stderr, "Out of memory.\n");
+        config_destroy(&cfg);
         deref(config);
         return NULL;
     }
 
-    for (i = 0; i < nsecs; i++) {
+    for (i = 0; i < entries; i++) {
         BootstrapNode *node;
 
-        node = rc_zalloc(sizeof(BootstrapNode), bootstrap_destroy);
+        node = rc_zalloc(sizeof(BootstrapNode), bootstrap_destructor);
         if (!node) {
-            cfg_error(cfg, "out of memory.");
-            cfg_free(cfg);
+            fprintf(stderr, "Out of memory.\n");
+            config_destroy(&cfg);
             deref(config);
             return NULL;
         }
 
-        sec = cfg_getnsec(bootstraps, "bootstrap", i);
+        config_setting_t *bs = config_setting_get_elem(setting, i);
 
-        stropt = cfg_getstr(sec, "ipv4");
-        if (stropt)
+        rc = config_setting_lookup_string(bs, "ipv4", &stropt);
+        if (rc && *stropt)
             node->ipv4 = (const char *)strdup(stropt);
         else
             node->ipv4 = NULL;
 
-        stropt = cfg_getstr(sec, "ipv6");
-        if (stropt)
+        rc = config_setting_lookup_string(bs, "ipv6", &stropt);
+        if (rc && *stropt)
             node->ipv6 = (const char *)strdup(stropt);
         else
             node->ipv6 = NULL;
 
-        stropt = cfg_getstr(sec, "port");
-        if (stropt)
-            node->port = (const char *)strdup(stropt);
-        else
+        rc = config_setting_lookup_int(bs, "port", &intopt);
+        if (rc && intopt) {
+            sprintf(number, "%d", intopt);
+            node->port = (const char *)strdup(number);
+        } else
             node->port = NULL;
 
-        stropt = cfg_getstr(sec, "public_key");
-        if (stropt)
+        rc = config_setting_lookup_string(bs, "public_key", &stropt);
+        if (rc && *stropt)
             node->public_key = (const char *)strdup(stropt);
         else
             node->public_key = NULL;
@@ -255,7 +221,7 @@ ShellConfig *load_config(const char *config_file)
         config->bootstraps[i] = node;
     }
 
-    cfg_free(cfg);
+    config_destroy(&cfg);
     return config;
 }
 

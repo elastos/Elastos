@@ -24,7 +24,7 @@ case "$1" in
         echo "Error: Not supported for arch $1"
         exit 1;;
 
-    "libsodium" | "toxcore" | "flatcc" | "pjsip" | "confuse" | "CUnit" | "carrier")
+    "libsodium" | "toxcore" | "flatcc" | "pjsip" | "libconfig" | "CUnit" | "carrier")
         TARGET_MODULE=$1
         shift;;
 
@@ -41,7 +41,7 @@ case "$1" in
         echo "Usage: $0 [ module ] [ arch ] [ target ] [ build ]"
         echo "module options(default carrier):"
         echo "    libsodium    | toxcore      | flatcc"
-        echo "    pjsip        | confuse      | CUnit    | carrier"
+        echo "    pjsip        | libconfig    | CUnit    | carrier"
         echo ""
         echo "arch options(default $(uname -m)):"
         echo "    x86_64       | x86(i386)"

@@ -205,9 +205,14 @@ static void cleanup_screen(void)
 
 static void open_log_files(void)
 {
-    run_log_file = fopen("run.log", "w+");
-    test_log_file = fopen("tests.log", "w+");
-    robot_log_file = fopen("robot.log", "w+");
+    char filename[PATH_MAX];
+
+    sprintf(filename, "%s/run.log", global_config.data_location);
+    run_log_file = fopen(filename, "w+");
+    sprintf(filename, "%s/tests.log", global_config.data_location);
+    test_log_file = fopen(filename, "w+");
+    sprintf(filename, "%s/robot.log", global_config.data_location);
+    robot_log_file = fopen(filename, "w+");
 }
 
 static void close_log_files(void)

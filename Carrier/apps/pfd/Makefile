@@ -9,7 +9,7 @@ INSTALL ?= cp -a
 
 CFLAGS := $(CFLAGS) -I../../src/common -I$(INSTALL_INCLUDE_PATH) -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
 
-LIBS = -lelacommon -lelacarrier -lelasession -lsodium -lconfuse -lpthread
+LIBS = -lelacommon -lelacarrier -lelasession -lsodium -lconfig -lpthread
 
 OBJS = pfd.o config.o
 

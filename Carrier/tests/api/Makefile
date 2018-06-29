@@ -28,7 +28,7 @@ LDFLAGS := $(LDFLAGS) \
           -L../../src/common \
           -L../../src/session
 
-LIBS   := -lelacommon -lelacarrier -lelasession -lcunit -lconfuse -lncurses -lm
+LIBS   := -lelacommon -lelacarrier -lelasession -lcunit -lconfig -lncurses -lm
 
 ifeq ($(HOST), Android)
 	LIBS := $(LIBS) -llog

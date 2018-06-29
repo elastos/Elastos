@@ -30,15 +30,14 @@
 typedef struct TestConfig {
     int shuffle;
     int log2file;
+    char data_location[PATH_MAX];
 
     struct {
         int loglevel;
-        char data_location[PATH_MAX];
     } tests;
 
     struct {
         int loglevel;
-        char data_location[PATH_MAX];
     } robot;
 
     int bootstraps_size;

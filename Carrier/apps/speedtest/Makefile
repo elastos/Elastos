@@ -9,7 +9,7 @@ INSTALL ?= cp -a
 
 CFLAGS := $(CFLAGS) -I$(INSTALL_INCLUDE_PATH) -I../../src/common  -fPIC -Wall  -Wstrict-prototypes -Wwrite-strings
 
-LIBS := $(LIBS) -lelacommon -lelacarrier -lelasession -lconfuse
+LIBS := $(LIBS) -lelacommon -lelacarrier -lelasession -lconfig
 
 ifeq (, $(findstring $(HOST), Darwin iOS))
 	LDFLAGS = -Wl,-rpath-link=$(INSTALL_LIBRARY_PATH)
