@@ -90,10 +90,10 @@ TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
 			transaction.addOutput(output);
 		}
 
-		SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction.getOutputs();
+		const std::vector<TransactionOutput *> &outputs = transaction.getOutputs();
 		REQUIRE(outputs.size() == 10);
 		for (int i = 0; i < 10; i++) {
-			TransactionOutputPtr output = outputs[i];
+			TransactionOutput *output = outputs[i];
 			CMBlock s = output->getScript();
 			REQUIRE(s.GetSize() == script.GetSize());
 			for (size_t j = 0; j < s.GetSize(); j++) {
@@ -262,11 +262,11 @@ TEST_CASE("Transaction Serialize test", "[Transaction]") {
 			REQUIRE(UInt256Eq(&hash, &hash) == 1);
 		}
 
-		SharedWrapperList<TransactionOutput, BRTxOutput *> outputs1 = transaction.getOutputs();
-		SharedWrapperList<TransactionOutput, BRTxOutput *> outputs2 = transaction1.getOutputs();
+		const std::vector<TransactionOutput *> &outputs1 = transaction.getOutputs();
+		const std::vector<TransactionOutput *> &outputs2 = transaction1.getOutputs();
 		REQUIRE(outputs1.size() == outputs2.size());
 		for (int i = 0; i < outputs1.size(); i++) {
-			boost::shared_ptr<TransactionOutput> outPut = outputs1[i];
+			TransactionOutput *outPut = outputs1[i];
 			REQUIRE(outPut->getAmount() == outputs2[i]->getAmount());
 			REQUIRE(outPut->getOutputLock() == outputs2[i]->getOutputLock());
 
@@ -307,7 +307,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 		ela->payload = ELAPayloadNew(ela->type);
 
 		for (size_t i = 0; i < 4; ++i) {
-			TransactionOutputPtr output(new TransactionOutput());
+			TransactionOutput *output = new TransactionOutput();
 			ELATxOutput *o = (ELATxOutput *)output->getRaw();
 			CMBlock script = getRandCMBlock(25);
 			ELATxOutputSetScript(o, script, script.GetSize());

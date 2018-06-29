@@ -300,7 +300,7 @@ namespace Elastos {
 			return _parBlockHeader;
 		}
 
-		nlohmann::json AuxPow::toJson() {
+		nlohmann::json AuxPow::toJson() const {
 			nlohmann::json jsonData;
 
 			size_t len = _auxMerkleBranch.size();

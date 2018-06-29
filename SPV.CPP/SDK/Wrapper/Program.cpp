@@ -78,7 +78,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Program::toJson() {
+		nlohmann::json Program::toJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["Parameter"] = Utils::encodeHex(_parameter);

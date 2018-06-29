@@ -35,8 +35,9 @@ namespace Elastos {
 
 			virtual std::string toString() const;
 
+			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
 #ifdef MERKLE_BLOCK_PLUGIN
-			virtual IMerkleBlock *Clone() const;
+			virtual IMerkleBlock *Clone(bool manageRaw) const;
 #endif
 
 			virtual BRMerkleBlock *getRaw() const;
@@ -47,7 +48,7 @@ namespace Elastos {
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson();
+			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &);
 
@@ -78,6 +79,8 @@ namespace Elastos {
 			bool containsTransactionHash(UInt256 hash) const;
 
 			virtual BRMerkleBlock *getRawBlock() const;
+
+			virtual void deleteRawBlock();
 
 			virtual std::string getBlockType() const { return "ELA"; }
 

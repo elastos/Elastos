@@ -38,7 +38,7 @@ namespace Elastos {
 
 		bool TransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
 
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			size_t size = outputs.size();
 			if (size < 1) {
 				return false;
@@ -51,7 +51,7 @@ namespace Elastos {
 
 			std::vector<std::string> addresses = _wallet->getAllAddresses();
 			for (size_t i = 0; i < size; ++i) {
-				TransactionOutputPtr output = outputs[i];
+				TransactionOutput *output = outputs[i];
 				if (!Address::UInt168IsValid(output->getProgramHash())) {
 					return false;
 				}
@@ -86,10 +86,10 @@ namespace Elastos {
 		}
 
 		bool TransactionChecker::checkTransactionAttribute(const TransactionPtr &transaction) {
-			const std::vector<AttributePtr> attributes = transaction->getAttributes();
+			const std::vector<Attribute *> &attributes = transaction->getAttributes();
 			size_t size = attributes.size();
 			for (size_t i = 0; i < size; ++i) {
-				AttributePtr attr = attributes[i];
+				Attribute *attr = attributes[i];
 				if (!attr->isValid()) {
 					return false;
 				}
@@ -98,7 +98,7 @@ namespace Elastos {
 		}
 
 		bool TransactionChecker::checkTransactionProgram(const TransactionPtr &transaction) {
-			const std::vector<ProgramPtr> programs = transaction->getPrograms();
+			const std::vector<Program *> &programs = transaction->getPrograms();
 			size_t size = programs.size();
 			for (size_t i = 0; i < size; ++i) {
 				if (!programs[i]->isValid()) {
@@ -110,8 +110,7 @@ namespace Elastos {
 		}
 
 		bool TransactionChecker::checkTransactionPayload(const TransactionPtr &transaction) {
-			const PayloadPtr payloadPtr = transaction->getPayload();
-			return payloadPtr->isValid();
+			return transaction->getPayload()->isValid();
 		}
 	}
 }

@@ -28,7 +28,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadTransferAsset::toJson() {
+		nlohmann::json PayloadTransferAsset::toJson() const {
 			nlohmann::json jsonData;
 			return jsonData;
 		}

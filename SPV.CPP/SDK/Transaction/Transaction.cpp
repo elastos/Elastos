@@ -131,7 +131,7 @@ namespace Elastos {
 			return _transaction->type;
 		}
 
-		PayloadPtr Transaction::newPayload(ELATransaction::Type type) {
+		IPayload *Transaction::newPayload(ELATransaction::Type type) {
 			//todo initializing payload other than just creating
 			return ELAPayloadNew(type);
 		}
@@ -145,13 +145,13 @@ namespace Elastos {
 			return addresses;
 		}
 
-		const SharedWrapperList<TransactionOutput, BRTxOutput *> &Transaction::getOutputs() const {
+		const std::vector<TransactionOutput *> &Transaction::getOutputs() const {
 			return _transaction->outputs;
 		}
 
 		std::vector<std::string> Transaction::getOutputAddresses() {
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
+			const std::vector<TransactionOutput *> &outputs = getOutputs();
 			ssize_t len = outputs.size();
 			std::vector<std::string> addresses(len);
 			for (int i = 0; i < len; i++)
@@ -191,14 +191,14 @@ namespace Elastos {
 								  script, script.GetSize(), signature, signature.GetSize(),
 								  sequence);
 
-			ProgramPtr programPtr(new Program());
-			programPtr->setCode(script);
-			programPtr->setParameter(signature);
-			addProgram(programPtr);
+			Program *program(new Program());
+			program->setCode(script);
+			program->setParameter(signature);
+			addProgram(program);
 		}
 
 		void Transaction::addOutput(TransactionOutput *output) {
-			_transaction->outputs.push_back(TransactionOutputPtr(output));
+			_transaction->outputs.push_back(output);
 		}
 
 		// shuffles order of tx outputs
@@ -252,11 +252,11 @@ namespace Elastos {
 				if (i >= _transaction->programs.size()) {
 					std::string redeemScript = keys[i].keyToRedeemScript(ELA_STANDARD);
 					CMBlock code = Utils::decodeHex(redeemScript);
-					ProgramPtr programPtr(new Program());
-					programPtr->setCode(code);
-					_transaction->programs.push_back(programPtr);
+					Program *program(new Program());
+					program->setCode(code);
+					_transaction->programs.push_back(program);
 				}
-				ProgramPtr program = _transaction->programs[i];
+				Program *program = _transaction->programs[i];
 				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
 				j = 0;
 				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
@@ -318,23 +318,27 @@ namespace Elastos {
 			return TX_MIN_OUTPUT_AMOUNT;
 		}
 
-		const PayloadPtr &Transaction::getPayload() const {
+		const IPayload *Transaction::getPayload() const {
 			return _transaction->payload;
 		}
 
-		void Transaction::addAttribute(const AttributePtr &attribute) {
+		IPayload *Transaction::getPayload() {
+			return _transaction->payload;
+		}
+
+		void Transaction::addAttribute(Attribute *attribute) {
 			_transaction->attributes.push_back(attribute);
 		}
 
-		const std::vector<AttributePtr> &Transaction::getAttributes() const {
+		const std::vector<Attribute *> &Transaction::getAttributes() const {
 			return _transaction->attributes;
 		}
 
-		void Transaction::addProgram(const ProgramPtr &program) {
+		void Transaction::addProgram(Program *program) {
 			_transaction->programs.push_back(program);
 		}
 
-		const std::vector<ProgramPtr> &Transaction::getPrograms() const {
+		const std::vector<Program *> &Transaction::getPrograms() const {
 			return _transaction->programs;
 		}
 
@@ -384,7 +388,7 @@ namespace Elastos {
 				ostream.putBytes(sequenceData, 32 / 8);
 			}
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = getOutputs();
+			const std::vector<TransactionOutput *> &outputs = getOutputs();
 			ostream.putVarUint(outputs.size());
 			for (size_t i = 0; i < outputs.size(); i++) {
 				outputs[i]->Serialize(ostream);
@@ -396,47 +400,72 @@ namespace Elastos {
 		}
 
 		bool Transaction::Deserialize(ByteStream &istream) {
-			_transaction->type = ELATransaction::Type(istream.get());
+			if (!istream.readBytes(&_transaction->type, 1))
+				return false;
+			if (!istream.readBytes(&_transaction->payloadVersion, 1))
+				return false;
 
-			_transaction->payloadVersion = istream.get();
+			if (_transaction->payload)
+				delete _transaction->payload;
 
 			_transaction->payload = newPayload(_transaction->type);
 			if (_transaction->payload == nullptr) {
-				Log::getLogger()->error("new payload when deserialize error");
+				Log::getLogger()->error("new payload with type={} when deserialize error", _transaction->type);
 				return false;
 			}
-			_transaction->payload->Deserialize(istream);
+			if (!_transaction->payload->Deserialize(istream))
+				return false;
 
-			uint64_t attributeLength = istream.getVarUint();
+			uint64_t attributeLength = 0;
+			if (!istream.readVarUint(attributeLength))
+				return false;
+
 			_transaction->attributes.resize(attributeLength);
-
 			for (size_t i = 0; i < attributeLength; i++) {
-				_transaction->attributes[i] = AttributePtr(new Attribute);
-				_transaction->attributes[i]->Deserialize(istream);
+				_transaction->attributes[i] = new Attribute();
+				if (!_transaction->attributes[i]->Deserialize(istream)) {
+					Log::getLogger()->error("deserialize tx attribute[{}] error", i);
+				}
 			}
 
-			size_t inCount = istream.getVarUint();
+			uint64_t inCount = 0;
+			if (!istream.readVarUint(inCount)) {
+				Log::getLogger()->error("deserialize tx inCount error");
+				return false;
+			}
+
 			for (size_t i = 0; i < inCount; i++) {
-				uint8_t transactionHashData[256 / 8];
-				istream.getBytes(transactionHashData, 256 / 8);
 				UInt256 txHash;
-				UInt256Get(&txHash, transactionHashData);
+				if (!istream.readBytes(txHash.u8, sizeof(txHash))) {
+					Log::getLogger()->error("deserialize tx's txHash error");
+					return false;
+				}
 
-				uint8_t indexData[16 / 8];
-				istream.getBytes(indexData, 16 / 8);
-				uint16_t index = UInt16GetLE(indexData);
+				uint16_t index = 0;
+				if (!istream.readBytes(&index, sizeof(index))) {
+					Log::getLogger()->error("deserialize tx input[{}] error", i);
+					return false;
+				}
 
-				uint8_t sequenceData[32 / 8];
-				istream.getBytes(sequenceData, 32 / 8);
-				uint32_t sequence = UInt32GetLE(sequenceData);
+				uint32_t sequence = 0;
+				if (!istream.readBytes(&sequence, sizeof(sequence))) {
+					Log::getLogger()->error("deserialize tx sequence error");
+					return false;
+				}
 
 				BRTransactionAddInput(&_transaction->raw, txHash, index, 0, nullptr, 0, nullptr, 0, sequence);
 			}
 
-			uint64_t outputLength = istream.getVarUint();
+			uint64_t outputLength = 0;
+			if (!istream.readVarUint(outputLength)) {
+				Log::getLogger()->error("deserialize tx output len error");
+				return false;
+			}
+
+			// TODO possible memory leak
 			_transaction->outputs.resize(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
-				_transaction->outputs[i] = TransactionOutputPtr(new TransactionOutput());
+				_transaction->outputs[i] = new TransactionOutput();
 				_transaction->outputs[i]->Deserialize(istream);
 			}
 
@@ -447,7 +476,7 @@ namespace Elastos {
 			uint64_t programLength = istream.getVarUint();
 			_transaction->programs.resize(programLength);
 			for (size_t i = 0; i < programLength; i++) {
-				_transaction->programs[i] = ProgramPtr(new Program());
+				_transaction->programs[i] = new Program();
 				_transaction->programs[i]->Deserialize(istream);
 			}
 
@@ -459,7 +488,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Transaction::toJson() {
+		nlohmann::json Transaction::toJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["IsRegistered"] = _isRegistered;
@@ -503,7 +532,7 @@ namespace Elastos {
 			}
 			jsonData["Programs"] = programs;
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> txOutputs = getOutputs();
+			const std::vector<TransactionOutput *> &txOutputs = getOutputs();
 			std::vector<nlohmann::json> outputs(txOutputs.size());
 			for (size_t i = 0; i < txOutputs.size(); ++i) {
 				outputs[i] = txOutputs[i]->toJson();
@@ -555,24 +584,25 @@ namespace Elastos {
 				_transaction->payload->fromJson(jsonData["PayLoad"]);
 			}
 
+			// TODO possible memory leak
 			std::vector<nlohmann::json> attributes = jsonData["Attributes"];
 			_transaction->attributes.resize(attributes.size());
 			for (size_t i = 0; i < _transaction->attributes.size(); ++i) {
-				_transaction->attributes[i] = AttributePtr(new Attribute);
+				_transaction->attributes[i] = new Attribute();
 				_transaction->attributes[i]->fromJson(attributes[i]);
 			}
 
 			std::vector<nlohmann::json> programs = jsonData["Programs"];
 			_transaction->programs.resize(programs.size());
 			for (size_t i = 0; i < _transaction->programs.size(); ++i) {
-				_transaction->programs[i] = ProgramPtr(new Program());
+				_transaction->programs[i] = new Program();
 				_transaction->programs[i]->fromJson(programs[i]);
 			}
 
 			std::vector<nlohmann::json> outputs = jsonData["Outputs"];
 			_transaction->outputs.resize(outputs.size());
 			for (size_t i = 0; i < outputs.size(); ++i) {
-				_transaction->outputs[i] = TransactionOutputPtr(new TransactionOutput());
+				_transaction->outputs[i] = new TransactionOutput();
 				_transaction->outputs[i]->fromJson(outputs[i]);
 			}
 

@@ -8,6 +8,7 @@
 #include <vector>
 #include <cstdint>
 #include <Core/BRTransaction.h>
+#include <SDK/ELACoreExt/Payload/PayloadRegisterAsset.h>
 
 #include "SDK/ELACoreExt/Payload/PayloadCoinBase.h"
 #include "SDK/Wrapper/SharedWrapperList.h"
@@ -46,13 +47,10 @@ namespace Elastos {
 				raw.version = TX_VERSION;
 				raw.lockTime = TX_LOCKTIME;
 				raw.blockHeight = TX_UNCONFIRMED;
-				type = CoinBase;
+				type = TransferAsset;
 				payloadVersion = 0;
 				fee = 0;
 				payload = nullptr;
-				outputs.clear();
-				attributes.clear();
-				programs.clear();
 
 				BRTransaction *txRaw = BRTransactionNew();
 				raw = *txRaw;
@@ -65,21 +63,21 @@ namespace Elastos {
 
 				array_new(raw.inputs, 1);
 
-				payload = boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
+				payload = new PayloadRegisterAsset();
 			}
 
 			BRTransaction raw;
 			Type type;
 			uint8_t payloadVersion;
 			uint64_t fee;
-			PayloadPtr payload;
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs;
-			std::vector<AttributePtr> attributes;
-			std::vector<ProgramPtr> programs;
+			IPayload *payload;
+			std::vector<TransactionOutput *> outputs;
+			std::vector<Attribute *> attributes;
+			std::vector<Program *> programs;
 			std::string Remark;
 		};
 
-		PayloadPtr ELAPayloadNew(ELATransaction::Type type);
+		IPayload *ELAPayloadNew(ELATransaction::Type type);
 		ELATransaction *ELATransactionNew(void);
 		ELATransaction *ELATransactionCopy(const ELATransaction *tx);
 		void ELATransactionFree(ELATransaction *tx);

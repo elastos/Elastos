@@ -27,16 +27,14 @@ namespace Elastos {
 		}
 
 		bool MainchainTransactionChecker::checkTransactionPayload(const TransactionPtr &transaction) {
-			const PayloadPtr payloadPtr = transaction->getPayload();
-
 			bool isValid = TransactionChecker::checkTransactionPayload(transaction);
 
 			if (isValid && transaction->getTransactionType() == ELATransaction::Type::TransferCrossChainAsset) {
-				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-						static_cast<PayloadTransferCrossChainAsset *>(payloadPtr.get());
+				const PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
+						static_cast<const PayloadTransferCrossChainAsset *>(transaction->getPayload());
 
 				std::vector<uint64_t> outputIndex = payloadTransferCrossChainAsset->getOutputIndex();
-				const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+				const std::vector<TransactionOutput*> &outputs = transaction->getOutputs();
 				for (size_t i = 0; i < outputIndex.size(); ++i) {
 					if (outputIndex[i] > outputs.size() - 1) {
 						isValid = false;

@@ -100,7 +100,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json Asset::toJson() {
+		nlohmann::json Asset::toJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["name"] = _name;

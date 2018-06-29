@@ -34,6 +34,12 @@
 
 #define peer_log(peer, ...) _peer_log("%s:%" PRIu16 " " _va_first(__VA_ARGS__, NULL) "\n", BRPeerHost(peer),\
                                       (peer)->port _va_rest(__VA_ARGS__))
+#ifdef NDEBUG
+#define peer_dbg(...)
+#else
+#define peer_dbg(...) peer_log(__VA_ARGS__)
+#endif
+
 #define _va_first(first, ...) first
 #define _va_rest(first, ...) ,##__VA_ARGS__
 

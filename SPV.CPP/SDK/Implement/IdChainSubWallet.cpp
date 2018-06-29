@@ -41,10 +41,10 @@ namespace Elastos {
 			if (transaction == nullptr) {
 				throw std::logic_error("Create transaction error.");
 			}
-			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload().get());
+			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload());
 			payloadIdChain->fromJson(payloadJson);
 
-			ProgramPtr newProgram(new Program());
+			Program *newProgram = new Program();
 			newProgram->fromJson(programJson);
 			transaction->addProgram(newProgram);
 
@@ -62,7 +62,7 @@ namespace Elastos {
 		IdChainSubWallet::createTransaction(TxParam *param) const {
 			IdTxParam *idTxParam = dynamic_cast<IdTxParam *>(param);
 
-			if(idTxParam != nullptr) {
+			if (idTxParam != nullptr) {
 				//todo create transaction without to address
 
 				TransactionPtr ptr = _walletManager->getWallet()->
@@ -71,11 +71,10 @@ namespace Elastos {
 				if (!ptr) return nullptr;
 				ptr->setTransactionType(ELATransaction::RegisterIdentification);
 
-				SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
-				std::for_each(outList.begin(), outList.end(),
-							  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
-								  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
-							  });
+				const std::vector<TransactionOutput *> &outList = ptr->getOutputs();
+				for (size_t i = 0; i < outList.size(); ++i) {
+					((ELATxOutput *) outList[i]->getRaw())->assetId = param->getAssetId();
+				}
 
 				return ptr;
 			} else {
@@ -84,7 +83,7 @@ namespace Elastos {
 		}
 
 		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			if(transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				IdchainTransactionChecker checker(transaction, _walletManager->getWallet());
 				checker.Check();
 			} else
@@ -92,7 +91,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			if(transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
 				return completer.Complete(actualFee);
 			} else
@@ -106,8 +105,8 @@ namespace Elastos {
 							  if (transaction->getTransactionType() != ELATransaction::RegisterIdentification)
 								  return;
 
-							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
-									  transaction->getPayload().get());
+							  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
+									  transaction->getPayload());
 							  callback->OnTransactionStatusChanged(std::string((char *) transaction->getHash().u8, 32),
 																   SubWalletCallback::convertToString(
 																		   SubWalletCallback::Added),
@@ -125,8 +124,8 @@ namespace Elastos {
 								  transaction->getTransactionType() != ELATransaction::RegisterIdentification)
 								  return;
 
-							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
-									  transaction->getPayload().get());
+							  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
+									  transaction->getPayload());
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
 									  SubWalletCallback::Updated), payload->toJson(), blockHeight);
 						  });
@@ -141,8 +140,8 @@ namespace Elastos {
 								  transaction->getTransactionType() != ELATransaction::RegisterIdentification)
 								  return;
 
-							  PayloadRegisterIdentification *payload = static_cast<PayloadRegisterIdentification *>(
-									  transaction->getPayload().get());
+							  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
+									  transaction->getPayload());
 							  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
 									  SubWalletCallback::Deleted), payload->toJson(), 0);
 						  });

@@ -69,7 +69,7 @@ namespace Elastos {
 
 			std::vector<std::string> getInputAddresses();
 
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> &getOutputs() const;
+			const std::vector<TransactionOutput *> &getOutputs() const;
 
 			std::vector<std::string> getOutputAddresses();
 
@@ -148,21 +148,23 @@ namespace Elastos {
 
 			UInt256 getReverseHash();
 
-			virtual nlohmann::json toJson();
+			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
 			static uint64_t getMinOutputAmount();
 
-			const PayloadPtr &getPayload() const;
+			const IPayload *getPayload() const;
 
-			void addAttribute(const AttributePtr &attribute);
+			IPayload *getPayload();
 
-			void addProgram(const ProgramPtr &program);
+			void addAttribute(Attribute *attribute);
 
-			const std::vector<AttributePtr> &getAttributes() const;
+			void addProgram(Program *program);
 
-			const std::vector<ProgramPtr> &getPrograms() const;
+			const std::vector<Attribute *> &getAttributes() const;
+
+			const std::vector<Program *> &getPrograms() const;
 
 			const std::string getRemark() const;
 
@@ -171,7 +173,7 @@ namespace Elastos {
 			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet);
 
 		private:
-			PayloadPtr newPayload(ELATransaction::Type type);
+			IPayload *newPayload(ELATransaction::Type type);
 
 			void serializeUnsigned(ByteStream &ostream) const;
 

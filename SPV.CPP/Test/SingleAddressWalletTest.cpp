@@ -155,7 +155,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		SharedWrapperList<Transaction, BRTransaction *> transactions;
 
 		ELATransaction *transaction = new ELATransaction;
-		TransactionOutputPtr output(new TransactionOutput);
+		TransactionOutput *output = new TransactionOutput();
 		output->setAmount(100000000);
 		output->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 		transaction->outputs.push_back(output);
@@ -163,12 +163,12 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code(10);
 		CMBlock parameter(10);
-		ProgramPtr program(new Program(code, parameter));
+		Program *program = new Program(code, parameter);
 		transaction->programs.push_back(program);
 		transactions.push_back(TransactionPtr(new Transaction(transaction, false)));
 
 		ELATransaction *transaction2 = new ELATransaction;
-		TransactionOutputPtr output2(new TransactionOutput);
+		TransactionOutput *output2 = new TransactionOutput();
 		output2->setAmount(200000000);
 		output2->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 		transaction2->outputs.push_back(output2);
@@ -177,7 +177,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code2(10);
 		CMBlock parameter2(10);
-		ProgramPtr program2(new Program(code2, parameter2));
+		Program *program2 = new Program(code2, parameter2);
 		transaction2->programs.push_back(program2);
 		transactions.push_back(TransactionPtr(new Transaction(transaction2, false)));
 
@@ -247,14 +247,14 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
 
 	ELATransaction *transaction = new ELATransaction;
-	TransactionOutputPtr output(new TransactionOutput);
+	TransactionOutput *output = new TransactionOutput();
 	output->setAmount(100000000);
 	output->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 	transaction->outputs.push_back(output);
 	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 	CMBlock code(10);
 	CMBlock parameter(10);
-	ProgramPtr program(new Program(code, parameter));
+	Program *program = new Program(code, parameter);
 	transaction->programs.push_back(program);
 	TransactionPtr txPtr(new Transaction(transaction, false));
 	txPtr->getHash();
@@ -269,14 +269,14 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 
 	//register the second transaction
 	ELATransaction *transaction2 = new ELATransaction;
-	TransactionOutputPtr output2(new TransactionOutput);
+	TransactionOutput *output2 = new TransactionOutput();
 	output2->setAmount(200000000);
 	output2->setAddress("EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
 	transaction2->outputs.push_back(output2);
 	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 	CMBlock code2(10);
 	CMBlock parameter2(10);
-	ProgramPtr program2(new Program(code2, parameter2));
+	Program *program2 = new Program(code2, parameter2);
 	transaction2->programs.push_back(program2);
 	TransactionPtr tx2Ptr(new Transaction(transaction2, false));
 	tx2Ptr->getHash();

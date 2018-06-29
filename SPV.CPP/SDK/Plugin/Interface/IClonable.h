@@ -13,7 +13,7 @@ namespace Elastos {
 		public:
 			virtual ~IClonable() {}
 
-			virtual T *Clone() const = 0;
+			virtual T *Clone(bool manageRaw) const = 0;
 		};
 
 	}

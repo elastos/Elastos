@@ -25,28 +25,28 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		PayloadPtr ELAPayloadNew(ELATransaction::Type type) {
+		IPayload *ELAPayloadNew(ELATransaction::Type type) {
 			if (type == ELATransaction::CoinBase) {
-				return boost::shared_ptr<PayloadCoinBase>(new PayloadCoinBase());
+				return new PayloadCoinBase();
 			} else if (type == ELATransaction::RegisterAsset) {
-				return boost::shared_ptr<PayloadRegisterAsset>(new PayloadRegisterAsset());
+				return new PayloadRegisterAsset();
 			} else if (type == ELATransaction::TransferAsset) {
-				return boost::shared_ptr<PayloadTransferAsset>(new PayloadTransferAsset());
+				return new PayloadTransferAsset();
 			} else if (type == ELATransaction::Record) {
-				return boost::shared_ptr<PayloadRecord>(new PayloadRecord());
+				return new PayloadRecord();
 			} else if (type == ELATransaction::Deploy) {
 				//todo add deploy payload
 				//_transaction->payload = boost::shared_ptr<PayloadDeploy>(new PayloadDeploy());
 			} else if (type == ELATransaction::SideMining) {
-				return boost::shared_ptr<PayloadSideMining>(new PayloadSideMining());
+				return new PayloadSideMining();
 			} else if (type == ELATransaction::IssueToken) {
-				return boost::shared_ptr<PayloadIssueToken>(new PayloadIssueToken());
+				return new PayloadIssueToken();
 			} else if (type == ELATransaction::WithdrawAsset) {
-				return boost::shared_ptr<PayloadWithDrawAsset>(new PayloadWithDrawAsset());
+				return new PayloadWithDrawAsset();
 			} else if (type == ELATransaction::TransferCrossChainAsset) {
-				return boost::shared_ptr<PayloadTransferCrossChainAsset>(new PayloadTransferCrossChainAsset());
+				return new PayloadTransferCrossChainAsset();
 			} else if (type == ELATransaction::RegisterIdentification) {
-				return boost::shared_ptr<PayloadRegisterIdentification>(new PayloadRegisterIdentification());
+				return new PayloadRegisterIdentification();
 			}
 
 			return nullptr;
@@ -66,14 +66,16 @@ namespace Elastos {
 
 			assert(orig != NULL);
 			*tx = *orig;
-			tx->raw.inputs = inputs;
+			tx->raw.inputs =  inputs;
 			tx->raw.outputs = outputs;
 			tx->raw.inCount = tx->raw.outCount = 0;
 
 			tx->type = orig->type;
 			tx->payloadVersion = orig->payloadVersion;
-			tx->payload = ELAPayloadNew(orig->type);
-			if (tx->payload) {
+
+			if (orig->payload) {
+				tx->payload = ELAPayloadNew(orig->type);
+
 				ByteStream stream;
 				orig->payload->Serialize(stream);
 				stream.setPosition(0);
@@ -86,22 +88,16 @@ namespace Elastos {
 									  orig->raw.inputs[i].signature, orig->raw.inputs[i].sigLen, orig->raw.inputs[i].sequence);
 			}
 
-			tx->outputs.clear();
 			for (size_t i = 0; i < orig->outputs.size(); ++i) {
-				TransactionOutput *output = new TransactionOutput(*orig->outputs[i]);
-				tx->outputs.push_back(TransactionOutputPtr(output));
+				tx->outputs.push_back(new TransactionOutput(*orig->outputs[i]));
 			}
 
-			tx->attributes.clear();
 			for (size_t i = 0; i < orig->attributes.size(); ++i) {
-				Attribute *attr = new Attribute(*orig->attributes[i]);
-				tx->attributes.push_back(AttributePtr(attr));
+				tx->attributes.push_back(new Attribute(*orig->attributes[i]));
 			}
 
-			tx->programs.clear();
 			for (size_t i = 0; i < orig->programs.size(); ++i) {
-				Program *program = new Program(*orig->programs[i]);
-				tx->programs.push_back(ProgramPtr(program));
+				tx->programs.push_back(new Program(*orig->programs[i]));
 			}
 
 			tx->Remark = orig->Remark;
@@ -124,11 +120,17 @@ namespace Elastos {
 				array_free(tx->raw.outputs);
 			}
 
-			tx->payload = nullptr;
-			tx->outputs.clear();
-			tx->attributes.clear();
-			tx->programs.clear();
+			//fixme
+//			for (size_t i = 0; i < tx->outputs.size(); ++i)
+//				delete tx->outputs[i];
+//
+//			for (size_t i = 0; i < tx->attributes.size(); ++i)
+//				delete tx->attributes[i];
+//
+//			for (size_t i = 0; i < tx->programs.size(); ++i)
+//				delete tx->programs[i];
 
+			delete tx->payload;
 			delete tx;
 		}
 
@@ -138,7 +140,7 @@ namespace Elastos {
 
 			for (uint32_t i = 0; tx && i + 1 < tx->outputs.size(); i++) { // fischer-yates shuffle
 				uint32_t j = i + BRRand((uint32_t)tx->outputs.size() - i);
-				TransactionOutputPtr t;
+				TransactionOutput *t;
 
 				if (j != i) {
 					t = tx->outputs[i];

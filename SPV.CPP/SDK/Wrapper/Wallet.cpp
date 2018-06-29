@@ -463,7 +463,7 @@ namespace Elastos {
 				Address address(outputs[i].address);
 
 				TransactionOutput *output = new TransactionOutput(outputs[i].amount, script, address.getSignType());
-				transaction->outputs.push_back(TransactionOutputPtr(output));
+				transaction->outputs.push_back(output);
 				amount += outputs[i].amount;
 			}
 
@@ -557,7 +557,8 @@ namespace Elastos {
 
 				TransactionOutput *output = new TransactionOutput(balance - (amount + feeAmount), script,
 						address.getSignType());
-				transaction->outputs.push_back(TransactionOutputPtr(output));
+
+				transaction->outputs.push_back(output);
 			}
 
 			return (BRTransaction *) transaction;
@@ -741,7 +742,7 @@ namespace Elastos {
 
 		std::string Wallet::getTransactionAddressOutputs(const TransactionPtr &transaction) {
 
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput*> &outputs = transaction->getOutputs();
 			for (size_t i = 0; i < outputs.size(); i++) {
 
 				std::string address = outputs[i]->getAddress();

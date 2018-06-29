@@ -83,7 +83,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterAsset::toJson() {
+		nlohmann::json PayloadRegisterAsset::toJson() const {
 			nlohmann::json jsonData;
 			nlohmann::json assetJson = _asset.toJson();
 			jsonData["asset"] = assetJson;

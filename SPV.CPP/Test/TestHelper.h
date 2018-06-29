@@ -9,6 +9,7 @@
 #define TEST_ASCII_BEGIN 48
 
 #include "AuxPow.h"
+#include "ELAMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -144,7 +145,9 @@ namespace Elastos {
 			for (size_t i = 0; i < txn->inCount; ++i) {
 				REQUIRE(UInt256Eq(&origTxn->inputs[i].txHash, &txn->inputs[i].txHash));
 				REQUIRE(origTxn->inputs[i].index == txn->inputs[i].index);
-				REQUIRE(0 == strcmp(origTxn->inputs[i].address, txn->inputs[i].address));
+				if (checkAll) {
+					REQUIRE(0 == strcmp(origTxn->inputs[i].address, txn->inputs[i].address));
+				}
 				if (checkAll) {
 					REQUIRE(origTxn->inputs[i].amount == txn->inputs[i].amount);
 					REQUIRE(origTxn->inputs[i].scriptLen == txn->inputs[i].scriptLen);
@@ -191,6 +194,88 @@ namespace Elastos {
 				}
 				REQUIRE(origBlock->height == blockVerify->height);
 			}
+		}
+
+		static ELAMerkleBlock *createELAMerkleBlock() {
+			ELAMerkleBlock *block = ELAMerkleBlockNew();
+
+			block->raw.height = (uint32_t)rand();
+			block->raw.timestamp = (uint32_t)rand();
+			block->raw.version = (uint32_t)rand();
+
+			block->raw.flagsLen = 10;
+			block->raw.flags = (uint8_t *)malloc(block->raw.flagsLen);
+			for (size_t i = 0; i < block->raw.flagsLen; ++i) {
+				block->raw.flags[i] = (uint8_t)rand();
+			}
+
+			block->raw.hashesCount = 10;
+			block->raw.hashes = (UInt256 *) malloc(sizeof(UInt256) * block->raw.hashesCount);
+			for (size_t i = 0; i < block->raw.hashesCount; ++i) {
+				block->raw.hashes[i] = getRandUInt256();
+			}
+			block->raw.merkleRoot = getRandUInt256();
+			block->raw.nonce = (uint32_t)rand();
+			block->raw.prevBlock = getRandUInt256();
+			block->raw.target = (uint32_t)rand();
+			block->raw.totalTx = (uint32_t)rand();
+
+			std::vector<UInt256> hashes;
+			for (size_t i = 0; i < 10; ++i) {
+				hashes.push_back(getRandUInt256());
+			}
+			block->auxPow.setAuxMerkleBranch(hashes);
+
+			hashes.clear();
+			for (size_t i = 0; i < 10; ++i) {
+				hashes.push_back(getRandUInt256());
+			}
+			block->auxPow.setCoinBaseMerkle(hashes);
+			block->auxPow.setAuxMerkleIndex(rand());
+
+			BRTransaction *tx = BRTransactionNew();
+			tx->txHash = getRandUInt256();
+			tx->version = (uint32_t)rand();
+			for (size_t i = 0; i < 10; ++i) {
+				CMBlock script = getRandCMBlock(25);
+				CMBlock signature = getRandCMBlock(35);
+				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t)rand(), (uint64_t)rand(), script, script.GetSize(), signature, signature.GetSize(), (uint32_t)rand());
+			}
+			for (size_t i = 0; i < 10; ++i) {
+				CMBlock script = getRandCMBlock(25);
+				BRTransactionAddOutput(tx, rand(), script, script.GetSize());
+			}
+			tx->lockTime = rand();
+			tx->blockHeight = rand();
+			tx->timestamp = rand();
+			block->auxPow.setBTCTransaction(tx);
+
+			return block;
+		}
+
+		static void verifyELAMerkleBlock(ELAMerkleBlock *newBlock, ELAMerkleBlock *block) {
+
+			REQUIRE(0 == memcmp(&newBlock->raw.blockHash, &block->raw.blockHash, sizeof(UInt256)));
+			REQUIRE(newBlock->raw.height == block->raw.height);
+			REQUIRE(newBlock->raw.timestamp == block->raw.timestamp);
+			REQUIRE(newBlock->raw.version == block->raw.version);
+			REQUIRE(newBlock->raw.flagsLen == block->raw.flagsLen);
+			for (size_t i = 0; i < block->raw.flagsLen; ++i) {
+				REQUIRE(newBlock->raw.flags[i] == block->raw.flags[i]);
+			}
+			REQUIRE(newBlock->raw.hashesCount == block->raw.hashesCount);
+			for (size_t i = 0; i < block->raw.hashesCount; ++i) {
+				REQUIRE(0 == memcmp(&newBlock->raw.hashes[i], &block->raw.hashes[i], sizeof(UInt256)));
+			}
+			REQUIRE(0 == memcmp(&newBlock->raw.hashes[1], &block->raw.hashes[1], sizeof(UInt256)));
+			REQUIRE(0 == memcmp(&newBlock->raw.hashes[2], &block->raw.hashes[2], sizeof(UInt256)));
+			REQUIRE(0 == memcmp(&newBlock->raw.merkleRoot, &block->raw.merkleRoot, sizeof(UInt256)));
+			REQUIRE(newBlock->raw.nonce == block->raw.nonce);
+			REQUIRE(0 == memcmp(&newBlock->raw.prevBlock, &block->raw.prevBlock, sizeof(UInt256)));
+			REQUIRE(newBlock->raw.target == block->raw.target);
+			REQUIRE(newBlock->raw.totalTx == block->raw.totalTx);
+
+			verrifyAuxPowEqual(newBlock->auxPow, block->auxPow, false);
 		}
 
 	}

@@ -66,7 +66,7 @@ protected:
 		TransactionPtr tx(new Transaction());
 		ELATransaction *elaTransaction = (ELATransaction *) tx->getRaw();
 		elaTransaction->type = ELATransaction::CoinBase;
-		TransactionOutputPtr out(new TransactionOutput());
+		TransactionOutput *out = new TransactionOutput();
 		out->setAddress(DefaultAddress[0]);
 		out->setAmount(100 * BASIC_UINT);
 		elaTransaction->outputs.push_back(out);
@@ -75,7 +75,7 @@ protected:
 		TransactionPtr tx1(new Transaction());
 		ELATransaction *elaTransaction1 = (ELATransaction *) tx->getRaw();
 		elaTransaction1->type = ELATransaction::CoinBase;
-		TransactionOutputPtr out1(new TransactionOutput());
+		TransactionOutput *out1 = new TransactionOutput();
 		out1->setAddress(DefaultAddress[0]);
 		out1->setAmount(100 * BASIC_UINT);
 		elaTransaction1->outputs.push_back(out1);

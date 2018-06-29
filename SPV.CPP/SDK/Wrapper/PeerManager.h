@@ -130,13 +130,6 @@ namespace Elastos {
 		private:
 			void createGenesisBlock() const;
 
-			std::vector<BRMerkleBlock *>
-#ifdef MERKLE_BLOCK_PLUGIN
-			getRawMerkleBlocks(const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
-#else
-			getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks);
-#endif
-
 			static int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
 											   const BRSet *blockSet);
 

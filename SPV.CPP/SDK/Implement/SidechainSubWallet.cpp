@@ -79,14 +79,15 @@ namespace Elastos {
 			if (!ptr) return nullptr;
 
 			ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+			const std::vector<TransactionOutput *> &outList = ptr->getOutputs();
+
 			std::for_each(outList.begin(), outList.end(),
-						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+						  [&param](TransactionOutput *output) {
 							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
 						  });
 
 			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload().get());
+					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
 			payloadTransferCrossChainAsset->setCrossChainData(withdrawTxParam->getCrossChainAddress(),
 															  withdrawTxParam->getCrossChainOutputIndexs(),
 															  withdrawTxParam->getCrosschainAmouts());

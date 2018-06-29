@@ -72,7 +72,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json BloomFilter::toJson() {
+		nlohmann::json BloomFilter::toJson() const {
 			nlohmann::json jsonData;
 			jsonData["length"] = _bloomFilter->length;
 

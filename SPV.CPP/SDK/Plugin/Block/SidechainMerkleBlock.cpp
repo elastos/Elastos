@@ -15,16 +15,18 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #ifdef MERKLE_BLOCK_PLUGIN
-		SidechainMerkleBlock::SidechainMerkleBlock() {
+		SidechainMerkleBlock::SidechainMerkleBlock() :
+			_manageRaw(true) {
 			_merkleBlock = IdMerkleBlockNew();
 		}
 
-		SidechainMerkleBlock::SidechainMerkleBlock(Elastos::ElaWallet::IdMerkleBlock *merkleBlock) :
-			_merkleBlock(merkleBlock) {
+		SidechainMerkleBlock::SidechainMerkleBlock(IdMerkleBlock *merkleBlock, bool manageRaw) :
+			_merkleBlock(merkleBlock),
+			_manageRaw(manageRaw) {
 		}
 
 		SidechainMerkleBlock::~SidechainMerkleBlock() {
-			if (_merkleBlock != nullptr)
+			if (_merkleBlock != nullptr && _manageRaw)
 				IdMerkleBlockFree(_merkleBlock);
 		}
 
@@ -37,8 +39,12 @@ namespace Elastos {
 			return (BRMerkleBlock *)_merkleBlock;
 		}
 
-		IMerkleBlock *SidechainMerkleBlock::Clone() const {
-			return new SidechainMerkleBlock(IdMerkleBlockCopy(_merkleBlock));
+		IMerkleBlock *SidechainMerkleBlock::CreateFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			return new SidechainMerkleBlock((IdMerkleBlock *)block, manageRaw);
+		}
+
+		IMerkleBlock *SidechainMerkleBlock::Clone(bool manageRaw) const {
+			return new SidechainMerkleBlock(IdMerkleBlockCopy(_merkleBlock), manageRaw);
 		}
 
 		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {
@@ -83,6 +89,8 @@ namespace Elastos {
 			if (!_merkleBlock->idAuxPow.Deserialize(istream))
 				return false;
 
+			// TODO fix me later
+			istream.get();
 			istream.get();
 
 			if (!istream.readUint32(_merkleBlock->raw.totalTx))
@@ -94,22 +102,28 @@ namespace Elastos {
 
 			_merkleBlock->raw.hashesCount = hashesCount;
 
-			if (_merkleBlock->raw.hashes)
-				free(_merkleBlock->raw.hashes);
-
-			_merkleBlock->raw.hashes = (UInt256 *) calloc(_merkleBlock->raw.hashesCount, sizeof(UInt256));
+			std::vector<UInt256> hashes;
 			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
-				if (!istream.readBytes(_merkleBlock->raw.hashes[i].u8, sizeof(UInt256)))
+				UInt256 hash;
+				if (!istream.readBytes(hash.u8, sizeof(UInt256)))
 					return false;
+				hashes.push_back(hash);
 			}
 
-			if (_merkleBlock->raw.flags)
-				free(_merkleBlock->raw.flags);
+			CMBlock flags;
+			if (!istream.readVarBytes(flags))
+				return false;
 
-			return istream.readVarBytes((void **)&_merkleBlock->raw.flags, &_merkleBlock->raw.flagsLen);
+			_merkleBlock->raw.flagsLen = flags.GetSize();
+
+			BRMerkleBlockSetTxHashes(&_merkleBlock->raw, hashes.data(), hashesCount, flags, flags.GetSize());
+
+			getBlockHash();
+
+			return true;
 		}
 
-		nlohmann::json SidechainMerkleBlock::toJson() {
+		nlohmann::json SidechainMerkleBlock::toJson() const {
 			nlohmann::json j;
 			if (_merkleBlock == nullptr)
 				return j;
@@ -195,8 +209,18 @@ namespace Elastos {
 			return getRaw();
 		}
 
-		void SidechainMerkleBlock::initFromRaw(BRMerkleBlock *block) {
+		void SidechainMerkleBlock::deleteRawBlock() {
+			if (_merkleBlock)
+				IdMerkleBlockFree(_merkleBlock);
+			_merkleBlock = nullptr;
+		}
+
+		void SidechainMerkleBlock::initFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			if (_merkleBlock) {
+				IdMerkleBlockFree((IdMerkleBlock *)block);
+			}
 			_merkleBlock = (IdMerkleBlock *)block;
+			_manageRaw = manageRaw;
 		}
 
 		UInt256 SidechainMerkleBlock::getBlockHash() const {

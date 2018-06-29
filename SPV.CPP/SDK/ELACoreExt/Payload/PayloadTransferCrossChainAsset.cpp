@@ -111,7 +111,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadTransferCrossChainAsset::toJson() {
+		nlohmann::json PayloadTransferCrossChainAsset::toJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["crossChainAddress"] = _crossChainAddress;

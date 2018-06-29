@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRInt.h>
+#include <SDK/Common/Log.h>
 #include "Utils.h"
 #include "Attribute.h"
 
@@ -30,11 +31,10 @@ namespace Elastos {
 		}
 
 		bool Attribute::isValid() {
-			if (_usage != Attribute::Usage::Description && _usage != Attribute::Usage::DescriptionUrl &&
-				_usage != Attribute::Usage::Memo && _usage != Attribute::Usage::Script) {
-				return false;
-			}
-			return  true;
+			return (_usage == Attribute::Usage::Description ||
+					_usage == Attribute::Usage::DescriptionUrl ||
+					_usage == Attribute::Usage::Memo ||
+					_usage == Attribute::Usage::Script);
 		}
 
 		void Attribute::Serialize(ByteStream &ostream) const {
@@ -45,16 +45,18 @@ namespace Elastos {
 		}
 
 		bool Attribute::Deserialize(ByteStream &istream) {
-			_usage = (Usage)istream.get();
+			if (!istream.readBytes(&_usage, 1))
+				return false;
 
-			uint64_t len = istream.getVarUint();
-			_data.Resize(size_t(len));
-			istream.getBytes(_data, len);
+//			if (!isValid()) {
+//				Log::getLogger()->error("invalid attribute usage: {}", (uint8_t)_usage);
+//				return false;
+//			}
 
-			return true;
+			return istream.readVarBytes(_data);
 		}
 
-		nlohmann::json Attribute::toJson() {
+		nlohmann::json Attribute::toJson() const {
 			nlohmann::json jsonData;
 			jsonData["Usage"] = _usage;
 			jsonData["Data"] = Utils::encodeHex(_data);

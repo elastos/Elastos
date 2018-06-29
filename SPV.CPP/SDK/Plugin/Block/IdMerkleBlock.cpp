@@ -20,7 +20,8 @@ namespace Elastos {
 			assert(orig != nullptr);
 
 			IdMerkleBlock *cpy = IdMerkleBlockNew();
-			*cpy = *orig;
+			cpy->raw = orig->raw;
+			cpy->idAuxPow = orig->idAuxPow;
 
 			cpy->raw.hashes = nullptr;
 			cpy->raw.flags = nullptr;

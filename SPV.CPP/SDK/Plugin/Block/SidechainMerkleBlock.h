@@ -26,17 +26,21 @@ namespace Elastos {
 
 			virtual BRMerkleBlock *getRaw() const;
 
-			virtual IMerkleBlock *Clone() const;
+			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
+
+			virtual IMerkleBlock *Clone(bool manageRaw) const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
 
-			virtual nlohmann::json toJson();
+			virtual nlohmann::json toJson() const;
 
 			virtual void fromJson(const nlohmann::json &);
 
 			virtual BRMerkleBlock *getRawBlock() const;
+
+			virtual void deleteRawBlock();
 
 			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
 
@@ -52,6 +56,7 @@ namespace Elastos {
 
 		private:
 			IdMerkleBlock *_merkleBlock;
+			bool _manageRaw;
 		};
 #endif
 

@@ -28,13 +28,13 @@ namespace Elastos {
 		bool IdchainTransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
 			SidechainTransactionChecker::checkTransactionOutput(transaction);
 
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput*> &outputs = transaction->getOutputs();
 			size_t size = outputs.size();
 			if (size < 1) {
 				return false;
 			}
 			for (size_t i = 0; i < size; ++i) {
-				TransactionOutputPtr output = outputs[i];
+				TransactionOutput *output = outputs[i];
 				if (output->getAddress().empty()) {
 					return false;
 				}

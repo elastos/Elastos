@@ -78,7 +78,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadWithDrawAsset::toJson() {
+		nlohmann::json PayloadWithDrawAsset::toJson() const {
 			nlohmann::json jsonData;
 
 			jsonData["BlockHeight"] = _blockHeight;

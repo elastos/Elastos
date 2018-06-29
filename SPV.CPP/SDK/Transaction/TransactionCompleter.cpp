@@ -34,7 +34,7 @@ namespace Elastos {
 		}
 
 		void TransactionCompleter::completedTransactionAssetID(const TransactionPtr &transaction) {
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			size_t size = outputs.size();
 			if (size < 1) {
 				throw std::logic_error("completedTransactionAssetID transaction has't outputs");
@@ -44,7 +44,7 @@ namespace Elastos {
 			UInt256 assetID = Key::getSystemAssetId();
 
 			for (size_t i = 0; i < size; ++i) {
-				TransactionOutputPtr output = outputs[i];
+				TransactionOutput *output = outputs[i];
 				if (UInt256Eq(&output->getAssetId(), &zero) == 1) {
 					output->setAssetId(assetID);
 				}
@@ -76,7 +76,7 @@ namespace Elastos {
 			uint64_t amount = 0;
 
 			std::vector<std::string> addresses = _wallet->getAllAddresses();
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			for (size_t i = 0; i < outputs.size(); i++) {
 				//filter the output for change
 				if (std::find(addresses.begin(), addresses.end(), outputs[i]->getAddress()) == addresses.end()) {
@@ -95,7 +95,7 @@ namespace Elastos {
 		}
 
 		void TransactionCompleter::modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange) {
-			const SharedWrapperList<TransactionOutput, BRTxOutput *> outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			std::vector<std::string> addresses = _wallet->getAllAddresses();
 			for (size_t i = 0; i < outputs.size(); ++i) {
 				if (std::find(addresses.begin(), addresses.end(), outputs[i]->getAddress()) != addresses.end()) {

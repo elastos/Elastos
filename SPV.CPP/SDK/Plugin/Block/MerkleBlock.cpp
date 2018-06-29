@@ -58,13 +58,20 @@ namespace Elastos {
 		}
 
 		void MerkleBlock::initFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			if (_merkleBlock) {
+				ELAMerkleBlockFree((ELAMerkleBlock *)block);
+			}
 			_merkleBlock = (ELAMerkleBlock *)block;
 			_manageRaw = manageRaw;
 		}
 
+		IMerkleBlock *MerkleBlock::CreateFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			return new MerkleBlock((ELAMerkleBlock *)block, manageRaw);
+		}
+
 #ifdef MERKLE_BLOCK_PLUGIN
-		IMerkleBlock* MerkleBlock::Clone() const {
-			return new MerkleBlock(ELAMerkleBlockCopy(_merkleBlock));
+		IMerkleBlock* MerkleBlock::Clone(bool manageRaw) const {
+			return new MerkleBlock(ELAMerkleBlockCopy(_merkleBlock), manageRaw);
 		}
 #endif
 
@@ -269,7 +276,7 @@ namespace Elastos {
 			return md;
 		}
 
-		nlohmann::json MerkleBlock::toJson() {
+		nlohmann::json MerkleBlock::toJson() const {
 			nlohmann::json j;
 			if (_merkleBlock == nullptr)
 				return j;
@@ -353,6 +360,13 @@ namespace Elastos {
 
 		BRMerkleBlock *MerkleBlock::getRawBlock() const {
 			return getRaw();
+		}
+
+		void MerkleBlock::deleteRawBlock() {
+			if (_merkleBlock)
+				ELAMerkleBlockFree(_merkleBlock);
+
+			_merkleBlock = nullptr;
 		}
 
 #ifdef MERKLE_BLOCK_PLUGIN

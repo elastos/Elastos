@@ -323,7 +323,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < blocksEntity.size(); ++i) {
 #ifdef MERKLE_BLOCK_PLUGIN
-				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes.BlockType));
+				MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(_pluginTypes.BlockType, false));
 #else
 				MerkleBlockPtr block(new MerkleBlock);
 #endif

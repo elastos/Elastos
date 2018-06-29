@@ -83,7 +83,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRecord::toJson() {
+		nlohmann::json PayloadRecord::toJson() const {
 			nlohmann::json jsonData;
 			jsonData["recordType"] = _recordType;
 

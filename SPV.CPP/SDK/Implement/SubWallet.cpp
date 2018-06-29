@@ -205,9 +205,9 @@ namespace Elastos {
 			if (!ptr) return nullptr;
 
 			ptr->setTransactionType(ELATransaction::TransferAsset);
-			SharedWrapperList<TransactionOutput, BRTxOutput *> outList = ptr->getOutputs();
+			const std::vector<TransactionOutput *> &outList = ptr->getOutputs();
 			std::for_each(outList.begin(), outList.end(),
-						  [&param](const SharedWrapperList<TransactionOutput, BRTxOutput *>::TPtr &output) {
+						  [&param](TransactionOutput *output) {
 							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
 						  });
 
@@ -426,7 +426,7 @@ namespace Elastos {
 				}
 			}
 			for (size_t i = 0; i < tx->outputs.size(); ++i) {
-				TransactionOutputPtr output = tx->outputs[i];
+				TransactionOutput *output = tx->outputs[i];
 				if (output->getAddress() == addressOrTxid) {
 					return true;
 				}
@@ -475,21 +475,21 @@ namespace Elastos {
 							[
 								{
 									"Address": "54.165.10.201",
-									"Port": 10338,
+									"Port": 13338,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
 									"Address": "34.198.67.91",
-									"Port": 10338,
+									"Port": 13338,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
 									"Address": "52.55.40.251",
-									"Port": 10338,
+									"Port": 13338,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0

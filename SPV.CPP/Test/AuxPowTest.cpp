@@ -15,7 +15,7 @@ using namespace Elastos::ElaWallet;
 
 TEST_CASE("AuxPow test", "[AuxPow]") {
 
-	srand((unsigned int)time(nullptr));
+	srand((unsigned int) time(nullptr));
 
 	SECTION("To json and from json") {
 		AuxPow auxPow = createDummyAuxPow();
@@ -31,6 +31,7 @@ TEST_CASE("AuxPow test", "[AuxPow]") {
 		verrifyAuxPowEqual(auxPow, auxPowVerify);
 	}
 	SECTION("Serialize and deserialize") {
+
 		AuxPow auxPow = createDummyAuxPow();
 
 		ByteStream byteStream;

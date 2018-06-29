@@ -164,7 +164,7 @@ namespace Elastos {
 			_mainBlockHeader->auxPow.fromJson(j["AuxPow"]);
 		}
 
-		nlohmann::json IdAuxPow::toJson() {
+		nlohmann::json IdAuxPow::toJson() const {
 			nlohmann::json j;
 
 			size_t len = _idAuxMerkleBranch.size();

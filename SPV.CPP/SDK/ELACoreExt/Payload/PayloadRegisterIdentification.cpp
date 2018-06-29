@@ -120,7 +120,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadRegisterIdentification::toJson() {
+		nlohmann::json PayloadRegisterIdentification::toJson() const {
 			nlohmann::json j;
 			j["Id"] = _id;
 			j["Path"] = _path;

@@ -50,7 +50,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadCoinBase::toJson() {
+		nlohmann::json PayloadCoinBase::toJson() const {
 			char *data = new char[_coinBaseData.GetSize()];
 			memcpy(data, _coinBaseData, _coinBaseData.GetSize());
 			std::string content(data, _coinBaseData.GetSize());

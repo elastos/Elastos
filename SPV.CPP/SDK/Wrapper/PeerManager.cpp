@@ -57,8 +57,7 @@ namespace Elastos {
 							new SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
 						MerkleBlockPtr wrappedBlock(
-								Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType));
-						wrappedBlock->initFromRaw(blocks[i]);
+							Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType, blocks[i], false));
 						coreBlocks->push_back(wrappedBlock);
 					}
 					listener->saveBlocks(replace, *coreBlocks);
@@ -155,11 +154,16 @@ namespace Elastos {
 				peerArray[i] = *peers[i]->getRaw();
 			}
 
+			std::vector<BRMerkleBlock *> blockArray;
+			for(SharedWrapperList<IMerkleBlock, BRMerkleBlock *>::const_iterator it = blocks.cbegin(); it != blocks.cend(); ++it) {
+				blockArray.push_back((*it)->getRawBlock());
+			}
+
 			_manager = ELAPeerManagerNew(
 					_chainParams.getRaw(),
 					wallet->getRaw(),
 					earliestKeyTime,
-					getRawMerkleBlocks(blocks).data(),
+					blockArray.data(),
 					blocks.size(),
 					peerArray,
 					peers.size(),
@@ -287,23 +291,6 @@ namespace Elastos {
 			block->raw.target = 486801407;
 			BRSetAdd(_manager->Raw.blocks, block);
 			_manager->Raw.lastBlock = (BRMerkleBlock *) block;
-		}
-
-		std::vector<BRMerkleBlock *>
-#ifdef MERKLE_BLOCK_PLUGIN
-		PeerManager::getRawMerkleBlocks(const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
-#else
-		PeerManager::getRawMerkleBlocks(const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) {
-#endif
-			std::vector<BRMerkleBlock *> list;
-
-			size_t len = blocks.size();
-			for (size_t i = 0; i < len; ++i) {
-				ELAMerkleBlock *temp = (ELAMerkleBlock *) blocks[i]->getRawBlock();
-				list.push_back((BRMerkleBlock *) ELAMerkleBlockCopy(temp));
-			}
-
-			return list;
 		}
 
 		int PeerManager::verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,

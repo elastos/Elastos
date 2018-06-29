@@ -47,7 +47,7 @@ namespace Elastos {
 			return true;
 		}
 
-		nlohmann::json PayloadIssueToken::toJson() {
+		nlohmann::json PayloadIssueToken::toJson() const {
 			char *data = new char[_merkeProof.GetSize()];
 			memcpy(data, _merkeProof, _merkeProof.GetSize());
 			std::string content(data, _merkeProof.GetSize());

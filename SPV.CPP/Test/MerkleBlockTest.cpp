@@ -19,94 +19,37 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 	srand(time(nullptr));
 
 	SECTION("serialize and deserialize") {
-		ELAMerkleBlock *block = ELAMerkleBlockNew();
+		for (int i = 0; i < 10000; ++i) {
+			ELAMerkleBlock *block = createELAMerkleBlock();
 
-		block->raw.height = (uint32_t)rand();
-		block->raw.timestamp = (uint32_t)rand();
-		block->raw.version = (uint32_t)rand();
+			MerkleBlock mbOrig(block, true);
+			ByteStream stream;
+			mbOrig.Serialize(stream);
 
-		block->raw.flagsLen = 10;
-		block->raw.flags = (uint8_t *)malloc(block->raw.flagsLen);
-		for (size_t i = 0; i < block->raw.flagsLen; ++i) {
-			block->raw.flags[i] = (uint8_t)rand();
+			MerkleBlock mb;
+			stream.setPosition(0);
+			mb.Deserialize(stream);
+			ELAMerkleBlock *newBlock = (ELAMerkleBlock *) mb.getRaw();
+
+			mbOrig.getBlockHash();
+			mb.getBlockHash();
+
+			REQUIRE(nullptr != mb.getRaw());
+			verifyELAMerkleBlock(newBlock, block);
 		}
-
-		block->raw.hashesCount = 10;
-		block->raw.hashes = (UInt256 *) malloc(sizeof(UInt256) * block->raw.hashesCount);
-		for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-			block->raw.hashes[i] = getRandUInt256();
-		}
-		block->raw.merkleRoot = getRandUInt256();
-		block->raw.nonce = (uint32_t)rand();
-		block->raw.prevBlock = getRandUInt256();
-		block->raw.target = (uint32_t)rand();
-		block->raw.totalTx = (uint32_t)rand();
-
-		std::vector<UInt256> hashes;
-		for (size_t i = 0; i < 10; ++i) {
-			hashes.push_back(getRandUInt256());
-		}
-		block->auxPow.setAuxMerkleBranch(hashes);
-
-		hashes.clear();
-		for (size_t i = 0; i < 10; ++i) {
-			hashes.push_back(getRandUInt256());
-		}
-		block->auxPow.setCoinBaseMerkle(hashes);
-		block->auxPow.setAuxMerkleIndex(rand());
-
-		BRTransaction *tx = BRTransactionNew();
-		tx->txHash = getRandUInt256();
-		tx->version = (uint32_t)rand();
-		for (size_t i = 0; i < 10; ++i) {
-			CMBlock script = getRandCMBlock(25);
-			CMBlock signature = getRandCMBlock(35);
-			BRTransactionAddInput(tx, getRandUInt256(), (uint32_t)rand(), (uint64_t)rand(), script, script.GetSize(), signature, signature.GetSize(), (uint32_t)rand());
-		}
-		for (size_t i = 0; i < 10; ++i) {
-			CMBlock script = getRandCMBlock(25);
-			BRTransactionAddOutput(tx, rand(), script, script.GetSize());
-		}
-		tx->lockTime = rand();
-		tx->blockHeight = rand();
-		tx->timestamp = rand();
-		block->auxPow.setBTCTransaction(tx);
-
-		MerkleBlock mbOrig(block, true);
-		ByteStream stream;
-		mbOrig.Serialize(stream);
-
-		MerkleBlock mb;
-		stream.setPosition(0);
-		mb.Deserialize(stream);
-		ELAMerkleBlock *newBlock = (ELAMerkleBlock *)mb.getRaw();
-
-		mbOrig.getBlockHash();
-		mb.getBlockHash();
-
-		REQUIRE(nullptr != mb.getRaw());
-
-		REQUIRE(0 == memcmp(&newBlock->raw.blockHash, &block->raw.blockHash, sizeof(UInt256)));
-		REQUIRE(newBlock->raw.height == block->raw.height);
-		REQUIRE(newBlock->raw.timestamp == block->raw.timestamp);
-		REQUIRE(newBlock->raw.version == block->raw.version);
-		REQUIRE(newBlock->raw.flagsLen == block->raw.flagsLen);
-		for (size_t i = 0; i < block->raw.flagsLen; ++i) {
-			REQUIRE(newBlock->raw.flags[i] == block->raw.flags[i]);
-		}
-		REQUIRE(newBlock->raw.hashesCount == block->raw.hashesCount);
-		for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-			REQUIRE(0 == memcmp(&newBlock->raw.hashes[i], &block->raw.hashes[i], sizeof(UInt256)));
-		}
-		REQUIRE(0 == memcmp(&newBlock->raw.hashes[1], &block->raw.hashes[1], sizeof(UInt256)));
-		REQUIRE(0 == memcmp(&newBlock->raw.hashes[2], &block->raw.hashes[2], sizeof(UInt256)));
-		REQUIRE(0 == memcmp(&newBlock->raw.merkleRoot, &block->raw.merkleRoot, sizeof(UInt256)));
-		REQUIRE(newBlock->raw.nonce == block->raw.nonce);
-		REQUIRE(0 == memcmp(&newBlock->raw.prevBlock, &block->raw.prevBlock, sizeof(UInt256)));
-		REQUIRE(newBlock->raw.target == block->raw.target);
-		REQUIRE(newBlock->raw.totalTx == block->raw.totalTx);
 	}
+	SECTION("Clone test") {
+		for (int i = 0; i < 10000; ++i) {
 
+			ELAMerkleBlock *block = createELAMerkleBlock();
+
+			MerkleBlock mbOrig(block, true);
+
+			MerkleBlockPtr clonedBlock(mbOrig.Clone(true));
+
+			verifyELAMerkleBlock((ELAMerkleBlock *) clonedBlock->getRawBlock(), block);
+		}
+	}
 }
 
 TEST_CASE("Json convert", "[json]") {

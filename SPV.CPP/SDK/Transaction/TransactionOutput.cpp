@@ -154,7 +154,7 @@ namespace Elastos {
 			_output->programHash = hash;
 		}
 
-		nlohmann::json TransactionOutput::toJson() {
+		nlohmann::json TransactionOutput::toJson() const {
 			nlohmann::json jsonData;
 
 			std::string addr = _output->raw.address;
