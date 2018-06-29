@@ -458,5 +458,23 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 		}
 	}
 
+	//check transaction fee
+	var totalInput Fixed64
+	reference, err := DefaultLedger.Store.GetTxReference(txn)
+	if err != nil {
+		return errors.New("Invalid transaction inputs")
+	}
+	for _, v := range reference {
+		totalInput += v.Value
+	}
+
+	var totalOutput Fixed64
+	for _, output := range txn.Outputs {
+		totalOutput += output.Value
+	}
+
+	if totalInput-totalOutput < Fixed64(config.Parameters.MinCrossChainTxFee) {
+		return errors.New("Invalid transaction fee")
+	}
 	return nil
 }
