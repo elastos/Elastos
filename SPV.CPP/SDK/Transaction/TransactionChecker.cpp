@@ -59,7 +59,8 @@ namespace Elastos {
 					hasChange = true;
 				} else {
 					if (hasOutput) //todo we support only one output, modify this if we support multi-output later
-						return false;
+						Log::warn("Transaction outputs have multiple outcoming output.");
+//						return false;
 					if (!Address::isValidProgramHash(output->getProgramHash(), transaction->getTransactionType())) {
 						return false;
 					}
