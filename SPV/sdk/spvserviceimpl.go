@@ -300,6 +300,11 @@ func (s *SPVServiceImpl) OnInventory(peer *net.Peer, m *msg.Inventory) error {
 	for _, inv := range m.InvList {
 		switch inv.Type {
 		case msg.InvTypeBlock:
+			// Filter duplicated block
+			if s.chain.IsKnownHeader(&inv.Hash) {
+				continue
+			}
+
 			// Kind of lame to send separate getData messages but this allows us
 			// to take advantage of the timeout on the upper layer. Otherwise we
 			// need separate timeout handling.

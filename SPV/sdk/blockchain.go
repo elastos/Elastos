@@ -161,6 +161,12 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*common.Uint256 {
 	return ret
 }
 
+// IsKnownHeader returns if a header is already stored in database by it's hash
+func (bc *Blockchain) IsKnownHeader(hash *common.Uint256) bool {
+	header, _ := bc.HeaderStore.GetHeader(hash)
+	return header != nil
+}
+
 // Commit header add a header into blockchain, return if this header
 // is a new tip, or meet a reorganize (reorgFrom > 0), and error
 func (bc *Blockchain) CommitHeader(header core.Header) (newTip bool, reorgFrom uint32, err error) {
