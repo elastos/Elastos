@@ -233,7 +233,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
-					continue
+					return nil, err
 				}
 				//TODO if co-mining condition
 				if isOrphan || !inMainChain {

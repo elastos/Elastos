@@ -1033,7 +1033,7 @@ func (bc *Blockchain) ProcessBlock(block *core.Block, timeSource MedianTimeSourc
 	err = PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
 
 	if err != nil {
-		log.Error("PowCheckBlockSanity error!")
+		log.Error("PowCheckBlockSanity error!", err)
 		return false, false, err
 	}
 
