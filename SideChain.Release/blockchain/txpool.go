@@ -310,22 +310,21 @@ func GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
 		crossChainPayload := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
 
 		for _, v := range tx.Outputs {
-			var mcAmount Fixed64
 			for i := 0; i < len(crossChainPayload.CrossChainAddresses); i++ {
 				targetAddress, err := v.ProgramHash.ToAddress()
 				if err != nil {
 					return nil, err
 				}
 				if targetAddress == crossChainPayload.CrossChainAddresses[i] {
-					mcAmount = mainChainTransaction.Outputs[i].Value
-				}
-			}
+					mcAmount := mainChainTransaction.Outputs[crossChainPayload.OutputIndexes[i]].Value
 
-			amount, ok := feeMap[v.AssetID]
-			if ok {
-				feeMap[v.AssetID] = amount + mcAmount - v.Value
-			} else {
-				feeMap[v.AssetID] = mcAmount - v.Value
+					amount, ok := feeMap[v.AssetID]
+					if ok {
+						feeMap[v.AssetID] = amount + Fixed64(float64(mcAmount)*config.Parameters.ExchangeRate) - v.Value
+					} else {
+						feeMap[v.AssetID] = Fixed64(float64(mcAmount)*config.Parameters.ExchangeRate) - v.Value
+					}
+				}
 			}
 		}
 
