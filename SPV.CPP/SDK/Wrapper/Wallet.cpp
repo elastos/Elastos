@@ -181,6 +181,7 @@ namespace Elastos {
 				wallet = NULL;
 			}
 
+			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 			return wallet;
 		}
 
@@ -210,6 +211,26 @@ namespace Elastos {
 #endif
 			free(wallet);
 		}
+
+		const std::string& ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash) {
+			if (wallet->TxRemarkMap.find(txHash) == wallet->TxRemarkMap.end())
+				return "";
+			return wallet->TxRemarkMap[txHash];
+		}
+
+		void ELAWalletRegisterRemark(ELAWallet *wallet, const std::string &txHash,
+												   const std::string &remark) {
+			wallet->TxRemarkMap[txHash] = remark;
+		}
+
+		void ELAWalletLoadRemarks(ELAWallet *wallet,
+												const SharedWrapperList<Transaction, BRTransaction *> &transaction) {
+			for (int i = 0; i < transaction.size(); ++i) {
+				wallet->TxRemarkMap[Utils::UInt256ToString(transaction[i]->getHash())] =
+						((ELATransaction *) transaction[i]->getRaw())->Remark;
+			}
+		}
+
 
 		Wallet::Wallet() {
 
@@ -264,6 +285,8 @@ namespace Elastos {
 			for (Transactions::const_iterator it = transactions.cbegin(); it != transactions.cend(); ++it) {
 				(*it)->isRegistered() = true;
 			}
+
+			ELAWalletLoadRemarks(_wallet, transactions);
 		}
 
 #endif
@@ -282,6 +305,16 @@ namespace Elastos {
 
 		BRWallet *Wallet::getRaw() const {
 			return (BRWallet *) _wallet;
+		}
+
+		void Wallet::RegisterRemark(const TransactionPtr &transaction) {
+			ELAWalletRegisterRemark(_wallet,
+									Utils::UInt256ToString(transaction->getHash()),
+									((ELATransaction *)transaction->getRaw())->Remark);
+		}
+
+		const std::string& Wallet::GetRemark(const std::string &txHash) {
+			return ELAWalletGetRemark(_wallet, txHash);
 		}
 
 		nlohmann::json Wallet::GetBalanceInfo() {
@@ -412,7 +445,7 @@ namespace Elastos {
 		BRTransaction *Wallet::CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 												  uint64_t fee, const std::string &fromAddress,
 												  bool(*filter)(const std::string &fromAddress,
-																const std::string &addr), bool isShuffle) {
+																const std::string &addr)) {
 			ELATransaction *tx, *transaction = ELATransactionNew();
 			uint64_t feeAmount, amount = 0, balance = 0, minAmount;
 			size_t i, j, cpfpSize = 0;
@@ -525,10 +558,6 @@ namespace Elastos {
 				TransactionOutput *output = new TransactionOutput(balance - (amount + feeAmount), script,
 						address.getSignType());
 				transaction->outputs.push_back(TransactionOutputPtr(output));
-				if (isShuffle) {
-					ELATransactionShuffleOutputs(transaction);
-				}
-
 			}
 
 			return (BRTransaction *) transaction;
@@ -576,7 +605,6 @@ namespace Elastos {
 			TransactionPtr result = nullptr;
 			if (tx != nullptr) {
 				result = TransactionPtr(new Transaction(tx));
-				result->setToAddress(toAddress);
 				result->setRemark(remark);
 			}
 

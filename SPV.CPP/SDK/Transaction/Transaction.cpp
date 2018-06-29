@@ -340,19 +340,11 @@ namespace Elastos {
 
 
 		const std::string Transaction::getRemark() const {
-			return _remark;
+			return _transaction->Remark;
 		}
 
 		void Transaction::setRemark(const std::string &remark) {
-			_remark = remark;
-		}
-
-		const std::string& Transaction::getToAddress() const {
-			return _toAddress;
-		}
-
-		void Transaction::setToAddress(const std::string &address) {
-			_toAddress = address;
+			_transaction->Remark = remark;
 		}
 
 		void Transaction::Serialize(ByteStream &ostream) const {
@@ -520,9 +512,7 @@ namespace Elastos {
 
 			jsonData["Fee"] = _transaction->fee;
 
-			jsonData["ToAddress"] = _toAddress;
-
-			jsonData["Remark"] = _remark;
+			jsonData["Remark"] = _transaction->Remark;
 
 			return jsonData;
 		}
@@ -588,9 +578,7 @@ namespace Elastos {
 
 			_transaction->fee = jsonData["Fee"].get<uint64_t>();
 
-			_toAddress = jsonData["ToAddress"].get<std::string>();
-
-			_remark = jsonData["Remark"].get<std::string>();
+			_transaction->Remark = jsonData["Remark"].get<std::string>();
 		}
 
 		uint64_t Transaction::calculateFee(uint64_t feePerKb) {
@@ -601,19 +589,17 @@ namespace Elastos {
 		void
 		Transaction::generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet) {
 
-			uint64_t outAmount = 0;
-			for (int i = 0; i < _transaction->outputs.size(); ++i) {
-				if (_transaction->outputs[i]->getAddress() == _toAddress)
-					outAmount = _transaction->outputs[i]->getAmount();
-			}
+			std::string remark = wallet->GetRemark(Utils::UInt256ToString(getHash()));
+			setRemark(remark);
 
 			nlohmann::json summary;
 			summary["Status"] = getStatus(wallet);
 			summary["ConfirmStatus"] = getConfirmInfo(wallet);
-			summary["Amount"] = outAmount;
-			summary["Type"] = wallet->containsAddress(_toAddress) ? "Incoming" : "Outcoming";
-			summary["ToAddress"] = _toAddress;
-			summary["Remark"] = _remark;
+			summary["Amount"] = _transaction->outputs.empty() ? 0 : _transaction->outputs[0]->getAmount();
+			std::string toAddress = _transaction->outputs.empty() ? "" : _transaction->outputs[0]->getAddress();
+			summary["Type"] = wallet->containsAddress(toAddress) ? "Incoming" : "Outcoming";
+			summary["ToAddress"] = toAddress;
+			summary["Remark"] = getRemark();
 
 			rawTxJson["Summary"] = summary;
 		}

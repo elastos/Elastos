@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_SPVCLIENT_WALLET_H__
 #define __ELASTOS_SDK_SPVCLIENT_WALLET_H__
 
+#include <map>
 #include <string>
 #include <BRWallet.h>
 #include <boost/weak_ptr.hpp>
@@ -28,6 +29,8 @@ namespace Elastos {
 
 		struct ELAWallet {
 			BRWallet Raw;
+			typedef std::map<std::string, std::string> TransactionRemarkMap;
+			TransactionRemarkMap TxRemarkMap;
 
 #ifdef TEMPORARY_HD_STRATEGY
 			MasterPrivKey PrivKeyRoot;
@@ -75,6 +78,14 @@ namespace Elastos {
 
 		void ELAWalletFree(ELAWallet *wallet, bool freeInternal = true);
 
+		const std::string &ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash);
+
+		void ELAWalletRegisterRemark(ELAWallet *wallet, const std::string &txHash,
+												   const std::string &remark);
+
+		void ELAWalletLoadRemarks(ELAWallet *wallet,
+												const SharedWrapperList<Transaction, BRTransaction *> &transaction);
+
 		class Wallet :
 				public Wrapper<BRWallet> {
 
@@ -121,6 +132,10 @@ namespace Elastos {
 			void resetAddressCache(const std::string &payPassword);
 
 			nlohmann::json GetBalanceInfo();
+
+			void RegisterRemark(const TransactionPtr &transaction);
+
+			const std::string &GetRemark(const std::string &txHash);
 
 			uint64_t GetBalanceWithAddress(const std::string &address);
 
@@ -254,7 +269,7 @@ namespace Elastos {
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 													 uint64_t fee, const std::string &fromAddress,
 													 bool(*filter)(const std::string &fromAddress,
-																   const std::string &addr), bool isShuffle = true);
+																   const std::string &addr));
 
 			static BRTransaction *
 			WalletCreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount);

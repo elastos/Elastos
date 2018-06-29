@@ -225,7 +225,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::publishTransaction(const TransactionPtr &transaction) {
-			_walletManager->getPeerManager()->publishTransaction(transaction);
+			_walletManager->publishTransaction(transaction);
 		}
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
@@ -252,6 +252,12 @@ namespace Elastos {
 		void SubWallet::onTxAdded(const TransactionPtr &transaction) {
 			if (transaction == nullptr)
 				return;
+
+			nlohmann::json j;
+			transaction->generateExtraTransactionInfo(j, _walletManager->getWallet());
+			std::stringstream ss;
+			ss << j;
+			Log::info(ss.str());
 
 			Log::getLogger()->info("Tx callback (onTxAdded): Tx hash={}",
 								   Utils::UInt256ToString(transaction->getHash()));

@@ -104,6 +104,7 @@ namespace Elastos {
 				tx->programs.push_back(ProgramPtr(program));
 			}
 
+			tx->Remark = orig->Remark;
 			return tx;
 		}
 

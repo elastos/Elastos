@@ -76,6 +76,7 @@ namespace Elastos {
 			SharedWrapperList<TransactionOutput, BRTxOutput *> outputs;
 			std::vector<AttributePtr> attributes;
 			std::vector<ProgramPtr> programs;
+			std::string Remark;
 		};
 
 		PayloadPtr ELAPayloadNew(ELATransaction::Type type);

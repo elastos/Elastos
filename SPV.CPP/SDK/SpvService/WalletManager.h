@@ -70,6 +70,8 @@ namespace Elastos {
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);
 
+			void publishTransaction(const TransactionPtr &transaction);
+
 			void recover(int limitGap);
 
 			virtual const PeerManagerPtr &getPeerManager();

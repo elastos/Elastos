@@ -109,6 +109,11 @@ namespace Elastos {
 			return txs;
 		}
 
+		void WalletManager::publishTransaction(const TransactionPtr &transaction) {
+			getPeerManager()->publishTransaction(transaction);
+			getWallet()->RegisterRemark(transaction);
+		}
+
 		void WalletManager::recover(int limitGap) {
 			//todo implement recover logic
 		}
@@ -143,8 +148,11 @@ namespace Elastos {
 
 			CMBlock data = stream.getBuffer();
 
+			std::string remark = _wallet->GetRemark(Utils::UInt256ToString(tx->getHash()));
+			tx->setRemark(remark);
+
 			TransactionEntity txEntity(data, tx->getBlockHeight(),
-									   tx->getTimestamp(), tx->getToAddress(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
+									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
@@ -291,7 +299,6 @@ namespace Elastos {
 
 				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
 				transaction->Deserialize(byteStream);
-				transaction->setToAddress(txsEntity[i].toAddress);
 				transaction->setRemark(txsEntity[i].remark);
 
 				BRTransaction *raw = transaction->getRaw();

@@ -168,10 +168,6 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			const std::string &getToAddress() const;
-
-			void setToAddress(const std::string &address);
-
 			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet);
 
 		private:
@@ -188,8 +184,6 @@ namespace Elastos {
 		private:
 			bool _isRegistered;
 			bool _manageRaw;
-			std::string _remark;
-			std::string _toAddress;
 			ELATransaction *_transaction;
 		};
 
