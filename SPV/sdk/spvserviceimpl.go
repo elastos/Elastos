@@ -287,7 +287,7 @@ func (s *SPVServiceImpl) changeSyncPeerAndRestart() {
 	log.Debug("Change sync peer and restart")
 	// Disconnect current sync peer
 	syncPeer := s.PeerManager().GetSyncPeer()
-	s.PeerManager().OnDisconnected(syncPeer)
+	syncPeer.Disconnect()
 
 	s.stopSyncing()
 	// Restart
@@ -412,6 +412,7 @@ func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
 	newTip, reorgFrom, err := s.chain.CommitHeader(*header)
 	if err != nil {
 		log.Errorf("Commit header failed %s", err.Error())
+		s.changeSyncPeerAndRestart()
 		return
 	}
 	if !newTip {
