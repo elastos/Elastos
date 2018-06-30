@@ -17,6 +17,7 @@
 #include "SubWalletCallback.h"
 #include "Utils.h"
 #include "Log.h"
+#include "ErrorCode.h"
 #include "ElaPeerConfig.h"
 #include "ParamChecker.h"
 #include "Transaction/TransactionOutput.h"
@@ -296,7 +297,8 @@ namespace Elastos {
 		Key SubWallet::deriveKey(const std::string &payPassword) {
 			CMBlock raw = Utils::decodeHex(_info.getEncryptedKey());
 			CMBlock keyData = Utils::decrypt(raw, payPassword);
-			ParamChecker::checkDataNotEmpty(keyData);
+			if (keyData.GetSize() == 0)
+				ErrorCode::StandardLogicError(ErrorCode::PasswordError, "Invalid password.");
 
 			Key key;
 			char stmp[keyData.GetSize()];

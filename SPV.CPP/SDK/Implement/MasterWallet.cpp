@@ -22,6 +22,7 @@
 #include "BigIntFormat.h"
 #include "WalletTool.h"
 #include "BTCBase58.h"
+#include "ErrorCode.h"
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
@@ -398,7 +399,8 @@ namespace Elastos {
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
 			CMBlock entropyData = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
-			ParamChecker::checkDataNotEmpty(entropyData, false);
+			if (entropyData.GetSize() == 0)
+				ErrorCode::StandardLogicError(ErrorCode::PasswordError, "Invalid password.");
 
 			CMemBlock<char> mnemonic(entropyData.GetSize() + 1);
 			mnemonic.Zero();
