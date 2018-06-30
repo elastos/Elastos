@@ -16,6 +16,7 @@ const (
 	DescriptionUrl AttributeUsage = 0x81
 	Description    AttributeUsage = 0x90
 	Memo           AttributeUsage = 0x91
+	Confirmations  AttributeUsage = 0x92
 )
 
 func (self AttributeUsage) Name() string {
@@ -28,14 +29,19 @@ func (self AttributeUsage) Name() string {
 		return "DescriptionUrl"
 	case Description:
 		return "Description"
+	case Confirmations:
+		return "Confirmations"
 	default:
 		return "Unknown"
 	}
 }
 
 func IsValidAttributeType(usage AttributeUsage) bool {
-	return usage == Nonce || usage == Script ||
-		usage == DescriptionUrl || usage == Description || usage == Memo
+	switch usage {
+	case Nonce, Script, Memo, Description, DescriptionUrl, Confirmations:
+		return true
+	}
+	return false
 }
 
 type Attribute struct {
