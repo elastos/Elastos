@@ -35,7 +35,8 @@
     "MaxTransactionInBlock": 10000,
     "MaxBlockSize": 8000000,
     "ConsensusType": "pow",
-    "FoundationAddr": "EbaPmewJcXEuUW3Da8FJhPfeuJ8iVUueH1",
+    "MainChainFoundationAddress": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+    "FoundationAddress": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
     "PowConfiguration": {
       "PayToAddr": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
       "TestNet": true,

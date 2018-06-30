@@ -30,7 +30,7 @@ func SpvInit() error {
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, &clientId)
 
-	spvService, err = spv.NewSPVService(config.Parameters.SpvMagic, config.Parameters.FoundationAddr, clientId,
+	spvService, err = spv.NewSPVService(config.Parameters.SpvMagic, config.Parameters.MainChainFoundationAddress, clientId,
 		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
 	//register an invalid address to prevent bloom filter from sending all data
 	spvService.RegisterTransactionListener(&SpvListener{ListenAddress: "0000000000000000000000000000000000"})
