@@ -46,13 +46,18 @@ namespace Elastos {
 
 			bool hasChange = false;
 			bool hasOutput = false;
+			std::string toAddress = outputs[0]->getAddress();
+			int toAddressCount = 0;
+
 			std::vector<std::string> addresses = _wallet->getAllAddresses();
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutputPtr output = outputs[i];
 				if (!Address::UInt168IsValid(output->getProgramHash())) {
 					return false;
 				}
-
+				if (output->getAddress() == toAddress) {
+					toAddressCount ++;
+				}
 				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) != addresses.end()) {
 //					if (hasChange) //should have only one change output per tx
 //						return false;
@@ -67,6 +72,11 @@ namespace Elastos {
 					hasOutput = true;
 				}
 			}
+
+			if (toAddressCount > 1) {
+				return false;
+			}
+
 			if (hasChange)
 				Log::warn("Transaction outputs have multiple change output.");
 			if (!hasOutput)
