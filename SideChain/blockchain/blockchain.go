@@ -117,9 +117,9 @@ func GetGenesisBlock() (*core.Block, error) {
 		Version:    core.BlockVersion,
 		Previous:   EmptyHash,
 		MerkleRoot: EmptyHash,
-		Timestamp:  uint32(time.Unix(time.Date(2018, time.March, 25, 10, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
+		Timestamp:  uint32(time.Unix(time.Date(2018, time.June, 30, 12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
 		Bits:       0x1d03ffff,
-		Nonce:      core.GenesisNonce + config.Parameters.Magic,
+		Nonce:      core.GenesisNonce,
 		Height:     uint32(0),
 		SideAuxPow: auxpow.SideAuxPow{
 			SideAuxBlockTx: ela.Transaction{
