@@ -70,6 +70,6 @@ there are two implementations you need to do, DataStore and GetBloomFilter() met
 DataStore is an interface including all methods you need to implement placed in db/datastore.go.
 Also an sample APP spvwallet is contain in this project placed in spvwallet folder.
 */
-func GetSPVService(client SPVClient, headerStore store.HeaderStore, handler SPVHandler) (SPVService, error) {
-	return NewSPVServiceImpl(client, headerStore, handler)
+func GetSPVService(client SPVClient, foundation string, headerStore store.HeaderStore, handler SPVHandler) (SPVService, error) {
+	return NewSPVServiceImpl(client, foundation, headerStore, handler)
 }

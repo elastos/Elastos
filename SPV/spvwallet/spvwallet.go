@@ -47,7 +47,7 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	}
 
 	// Initialize spv service
-	wallet.SPVService, err = sdk.GetSPVService(client, wallet.headerStore, wallet)
+	wallet.SPVService, err = sdk.GetSPVService(client, config.Values().Foundation, wallet.headerStore, wallet)
 	if err != nil {
 		return nil, err
 	}

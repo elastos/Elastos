@@ -27,7 +27,7 @@ type SPVServiceImpl struct {
 	listeners map[common.Uint256]TransactionListener
 }
 
-func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string, minOutbound, maxConnections int) (*SPVServiceImpl, error) {
+func NewSPVServiceImpl(magic uint32, foundation string, clientId uint64, seeds []string, minOutbound, maxConnections int) (*SPVServiceImpl, error) {
 	var err error
 	service := new(SPVServiceImpl)
 	service.headers, err = db.NewHeaderStore()
@@ -50,7 +50,7 @@ func NewSPVServiceImpl(magic uint32, clientId uint64, seeds []string, minOutboun
 		return nil, err
 	}
 
-	service.SPVService, err = sdk.GetSPVService(spvClient, service.headers, service)
+	service.SPVService, err = sdk.GetSPVService(spvClient, foundation, service.headers, service)
 	if err != nil {
 		return nil, err
 	}

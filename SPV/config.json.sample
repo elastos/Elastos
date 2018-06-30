@@ -2,6 +2,7 @@
   "Magic": 7630401,
   "PrintLevel": 4,
   "RPCPort": 20477,
+  "Foundation" : "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
   "SeedList": [
     "127.0.0.1:20866"
   ]

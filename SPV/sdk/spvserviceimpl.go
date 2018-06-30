@@ -98,13 +98,13 @@ type SPVServiceImpl struct {
 }
 
 // Create a instance of SPV service implementation.
-func NewSPVServiceImpl(client SPVClient, headerStore store.HeaderStore, handler SPVHandler) (*SPVServiceImpl, error) {
+func NewSPVServiceImpl(client SPVClient, foundation string, headerStore store.HeaderStore, handler SPVHandler) (*SPVServiceImpl, error) {
 	var err error
 	service := new(SPVServiceImpl)
 	// Set spv client
 	service.SPVClient = client
 	// Initialize blockchain
-	service.chain, err = NewBlockchain(headerStore)
+	service.chain, err = NewBlockchain(foundation, headerStore)
 	if err != nil {
 		return nil, err
 	}

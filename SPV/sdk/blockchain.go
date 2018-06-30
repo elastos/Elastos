@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math/big"
@@ -49,7 +48,7 @@ type Blockchain struct {
 }
 
 // Create a instance of *Blockchain
-func NewBlockchain(headerStore store.HeaderStore) (*Blockchain, error) {
+func NewBlockchain(foundation string, headerStore store.HeaderStore) (*Blockchain, error) {
 	blockchain := &Blockchain{
 		lock:        new(sync.RWMutex),
 		state:       WAITING,
@@ -59,10 +58,18 @@ func NewBlockchain(headerStore store.HeaderStore) (*Blockchain, error) {
 	// Init genesis header
 	_, err := blockchain.GetBestHeader()
 	if err != nil {
-		var genesisHeader core.Header
-		genesisHeaderData, _ := common.HexStringToBytes(GenesisHeader)
-		genesisHeader.Deserialize(bytes.NewReader(genesisHeaderData))
-		storeHeader := &store.StoreHeader{Header: genesisHeader, TotalWork: new(big.Int)}
+		var err error
+		var foundationAddress *common.Uint168
+		if len(foundation) == 34 {
+			foundationAddress, err = common.Uint168FromAddress(foundation)
+		} else {
+			foundationAddress, err = common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
+		}
+		if err != nil {
+			return nil, errors.New("parse foundation address failed")
+		}
+		genesisHeader := GenesisHeader(foundationAddress)
+		storeHeader := &store.StoreHeader{Header: *genesisHeader, TotalWork: new(big.Int)}
 		blockchain.PutHeader(storeHeader, true)
 	}
 

@@ -17,6 +17,7 @@ type Config struct {
 	Magic      uint32
 	PrintLevel uint8
 	RPCPort    uint16
+	Foundation string
 	SeedList   []string
 }
 
