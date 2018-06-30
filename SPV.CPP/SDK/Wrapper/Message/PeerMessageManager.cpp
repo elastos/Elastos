@@ -5,6 +5,8 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <BRPeerMessages.h>
+#include <SDK/ELACoreExt/ELAPeerManager.h>
+#include <SDK/Plugin/Block/IdMerkleBlock.h>
 
 #include "BRPeerMessages.h"
 
@@ -37,10 +39,15 @@ namespace Elastos {
 				ELAMerkleBlockFree(elablock);
 			}
 
-			void setApplyFreeBlock(void *info, void *block)
-			{
-				ELAMerkleBlock *elablock = (ELAMerkleBlock *)block;
-				ELAMerkleBlockFree(elablock);
+			void setApplyFreeBlock(void *info, void *block) {
+				ELAPeerManager *manager = (ELAPeerManager *) info;
+				if (manager->Plugins.BlockType == "ELA") {
+					ELAMerkleBlock *elablock = (ELAMerkleBlock *) block;
+					ELAMerkleBlockFree(elablock);
+				} else if(manager->Plugins.BlockType == "SideStandard") {
+					IdMerkleBlock *idMerkleBlock = (IdMerkleBlock *) block;
+					IdMerkleBlockFree(idMerkleBlock);
+				}
 			}
 
 			int PeerAcceptTxMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen) {

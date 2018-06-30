@@ -65,7 +65,7 @@ namespace Elastos {
 			BRTxOutput *outputs = tx->raw.outputs;
 
 			assert(orig != NULL);
-			*tx = *orig;
+			tx->raw = orig->raw;
 			tx->raw.inputs =  inputs;
 			tx->raw.outputs = outputs;
 			tx->raw.inCount = tx->raw.outCount = 0;

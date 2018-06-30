@@ -232,7 +232,7 @@ static void _BRPeerManagerLoadBloomFilter(BRPeerManager *manager, BRPeer *peer)
     manager->wallet->WalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
     manager->wallet->WalletUnusedAddrs(manager->wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 
-    BRSetApply(manager->orphans, NULL, manager->peerMessages->ApplyFreeBlock);
+    BRSetApply(manager->orphans, manager, manager->peerMessages->ApplyFreeBlock);
     BRSetClear(manager->orphans); // clear out orphans that may have been received on an old filter
     manager->lastOrphan = NULL;
     manager->filterUpdateHeight = manager->lastBlock->height;
@@ -1917,9 +1917,9 @@ void BRPeerManagerFree(BRPeerManager *manager)
     array_free(manager->peers);
     for (size_t i = array_count(manager->connectedPeers); i > 0; i--) BRPeerFree(manager->connectedPeers[i - 1]);
     array_free(manager->connectedPeers);
-    BRSetApply(manager->blocks, NULL, manager->peerMessages->ApplyFreeBlock);
+    BRSetApply(manager->blocks, manager, manager->peerMessages->ApplyFreeBlock);
     BRSetFree(manager->blocks);
-    BRSetApply(manager->orphans, NULL, manager->peerMessages->ApplyFreeBlock);
+    BRSetApply(manager->orphans, manager, manager->peerMessages->ApplyFreeBlock);
     BRSetFree(manager->orphans);
     BRSetFree(manager->checkpoints);
     for (size_t i = array_count(manager->txRelays); i > 0; i--) free(manager->txRelays[i - 1].peers);

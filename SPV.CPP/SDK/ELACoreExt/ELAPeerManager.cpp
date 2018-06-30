@@ -91,9 +91,9 @@ namespace Elastos {
 			array_free(manager->Raw.peers);
 			for (size_t i = array_count(manager->Raw.connectedPeers); i > 0; i--) BRPeerFree(manager->Raw.connectedPeers[i - 1]);
 			array_free(manager->Raw.connectedPeers);
-			BRSetApply(manager->Raw.blocks, NULL, manager->Raw.peerMessages->ApplyFreeBlock);
+			BRSetApply(manager->Raw.blocks, manager, manager->Raw.peerMessages->ApplyFreeBlock);
 			BRSetFree(manager->Raw.blocks);
-			BRSetApply(manager->Raw.orphans, NULL, manager->Raw.peerMessages->ApplyFreeBlock);
+			BRSetApply(manager->Raw.orphans, manager, manager->Raw.peerMessages->ApplyFreeBlock);
 			BRSetFree(manager->Raw.orphans);
 			BRSetFree(manager->Raw.checkpoints);
 			for (size_t i = array_count(manager->Raw.txRelays); i > 0; i--) free(manager->Raw.txRelays[i - 1].peers);

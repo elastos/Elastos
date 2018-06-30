@@ -78,7 +78,7 @@ namespace Elastos {
 
 				return ptr;
 			} else {
-				SidechainSubWallet::createTransaction(param);
+				return SidechainSubWallet::createTransaction(param);
 			}
 		}
 
@@ -94,8 +94,8 @@ namespace Elastos {
 			if (transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
 				return completer.Complete(actualFee);
-			} else
-				SidechainSubWallet::completeTransaction(transaction, actualFee);
+			}
+			return SidechainSubWallet::completeTransaction(transaction, actualFee);
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
