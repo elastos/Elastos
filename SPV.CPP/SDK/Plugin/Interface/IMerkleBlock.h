@@ -24,6 +24,8 @@ namespace Elastos {
 
 			virtual void deleteRawBlock() = 0;
 
+			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw) = 0;
+
 			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;
 
 			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;

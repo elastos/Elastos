@@ -1101,7 +1101,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
 
             if (b && (b->height % BLOCK_DIFFICULTY_INTERVAL) != 0) {
                 BRSetRemove(manager->blocks, b);
-                manager->peerMessages->MerkleBlockFree(b);
+                manager->peerMessages->MerkleBlockFree(manager, b);
             }
         }
     }
@@ -1176,11 +1176,11 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
 
     // ignore block headers that are newer than one week before earliestKeyTime (it's a header if it has 0 totalTx)
     if (block->totalTx == 0 && block->timestamp + 7*24*60*60 > manager->earliestKeyTime + 2*60*60) {
-        manager->peerMessages->MerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(manager, block);
         block = NULL;
     }
     else if (manager->bloomFilter == NULL) { // ingore potentially incomplete blocks when a filter update is pending
-        manager->peerMessages->MerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(manager, block);
         block = NULL;
 
         if (peer == manager->downloadPeer && manager->lastBlock->height < manager->estimatedHeight) {
@@ -1194,7 +1194,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
                  manager->lastBlock->height);
 
         if (block->timestamp + 7*24*60*60 < time(NULL)) { // ignore orphans older than one week ago
-            manager->peerMessages->MerkleBlockFree(block);
+            manager->peerMessages->MerkleBlockFree(manager, block);
             block = NULL;
         }
         else {
@@ -1215,7 +1215,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
     }
     else if (! _BRPeerManagerVerifyBlock(manager, block, prev, peer)) { // block is invalid
         peer_log(peer, "relayed invalid block");
-        manager->peerMessages->MerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(manager, block);
         block = NULL;
         _BRPeerManagerPeerMisbehavin(manager, peer);
     }
@@ -1261,7 +1261,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
         if (b != block) {
             if (BRSetGet(manager->orphans, b) == b) BRSetRemove(manager->orphans, b);
             if (manager->lastOrphan == b) manager->lastOrphan = NULL;
-            manager->peerMessages->MerkleBlockFree(b);
+            manager->peerMessages->MerkleBlockFree(manager, b);
         }
     }
     else if (manager->lastBlock->height < BRPeerLastBlock(peer) &&
@@ -1273,7 +1273,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
     else if (block->height <= manager->params->checkpoints[manager->params->checkpointsCount - 1].height) { // old fork
         peer_log(peer, "ignoring block on fork older than most recent checkpoint, block #%"PRIu32", hash: %s",
                  block->height, u256hex(block->blockHash));
-        manager->peerMessages->MerkleBlockFree(block);
+        manager->peerMessages->MerkleBlockFree(manager, block);
         block = NULL;
     }
     else { // new block is on a fork

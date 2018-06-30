@@ -31,6 +31,7 @@ namespace Elastos {
 
 			ELAPeerManager *elaPeerManager = (ELAPeerManager *)ctx->manager;
 
+//			peer_dbg(peer, "block orig data: %s", Utils::encodeHex(msg, msgLen).c_str());
 			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(elaPeerManager->Plugins.BlockType, false));
 			assert(block != nullptr);
 			if (!block->Deserialize(stream)) {
@@ -40,7 +41,7 @@ namespace Elastos {
 				return 0;
 			}
 
-			peer_dbg(peer, "got block[%d] %s, type %s", block->getHeight(), Utils::UInt256ToString(block->getBlockHash()).c_str(), elaPeerManager->Plugins.BlockType.c_str());
+//			peer_dbg(peer, "got block[%d] %s, type %s", block->getHeight(), Utils::UInt256ToString(block->getBlockHash()).c_str(), elaPeerManager->Plugins.BlockType.c_str());
 
 			BRMerkleBlock *blockRaw = block->getRawBlock();
 			int r = 1;

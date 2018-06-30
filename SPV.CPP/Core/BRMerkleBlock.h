@@ -104,7 +104,7 @@ inline static int BRMerkleBlockEq(const void *block, const void *otherBlock)
 }
 
 // frees memory allocated for block
-void BRMerkleBlockFree(BRMerkleBlock *block);
+void BRMerkleBlockFree(void *info, BRMerkleBlock *block);
 
 #ifdef __cplusplus
 }

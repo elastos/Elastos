@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <Core/BRMerkleBlock.h>
+#include <SDK/Common/Log.h>
 
 #include "Utils.h"
 #include "MerkleBlock.h"
@@ -39,6 +40,10 @@ namespace Elastos {
 			return (BRMerkleBlock *)_merkleBlock;
 		}
 
+		IMerkleBlock *SidechainMerkleBlock::CreateMerkleBlock(bool manageRaw) {
+			return new SidechainMerkleBlock(IdMerkleBlockNew(), manageRaw);
+		}
+
 		IMerkleBlock *SidechainMerkleBlock::CreateFromRaw(BRMerkleBlock *block, bool manageRaw) {
 			return new SidechainMerkleBlock((IdMerkleBlock *)block, manageRaw);
 		}
@@ -52,6 +57,7 @@ namespace Elastos {
 
 			_merkleBlock->idAuxPow.Serialize(ostream);
 
+			ostream.put(1);
 			ostream.put(1);
 
 			ostream.writeUint32(_merkleBlock->raw.totalTx);

@@ -509,13 +509,13 @@ static int _BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, siz
 	}
 	else if (! BRMerkleBlockIsValid(block, (uint32_t)time(NULL))) {
 		peer_log(peer, "invalid merkleblock: %s", u256hex(block->blockHash));
-		ctx->manager->peerMessages->MerkleBlockFree(block);
+		ctx->manager->peerMessages->MerkleBlockFree(ctx->manager, block);
 		block = NULL;
 		r = 0;
 	}
 	else if (! ctx->sentFilter && ! ctx->sentGetdata) {
 		peer_log(peer, "got merkleblock message before loading a filter");
-		ctx->manager->peerMessages->MerkleBlockFree(block);
+		ctx->manager->peerMessages->MerkleBlockFree(ctx->manager, block);
 		block = NULL;
 		r = 0;
 	}
@@ -542,7 +542,7 @@ static int _BRPeerAcceptMerkleblockMessage(BRPeer *peer, const uint8_t *msg, siz
 		else if (ctx->relayedBlock) {
 			ctx->relayedBlock(ctx->info, block);
 		}
-		else ctx->manager->peerMessages->MerkleBlockFree(block);
+		else ctx->manager->peerMessages->MerkleBlockFree(ctx->manager, block);
 	}
 
 	return r;
@@ -676,13 +676,13 @@ int BRPeerAcceptHeadersMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 
 				if (! BRMerkleBlockIsValid(block, (uint32_t)now)) {
 					peer_log(peer, "invalid block header: %s", u256hex(block->blockHash));
-					ctx->manager->peerMessages->MerkleBlockFree(block);
+					ctx->manager->peerMessages->MerkleBlockFree(ctx->manager, block);
 					r = 0;
 				}
 				else if (ctx->relayedBlock) {
 					ctx->relayedBlock(ctx->info, block);
 				}
-				else ctx->manager->peerMessages->MerkleBlockFree(block);
+				else ctx->manager->peerMessages->MerkleBlockFree(ctx->manager, block);
 			}
 		}
 		else {
@@ -922,7 +922,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
 		peer_log(peer, "incomplete merkleblock %s, expected %zu more tx, got %s", u256hex(ctx->currentBlock->blockHash),
 				 array_count(ctx->currentBlockTxHashes), type);
 		array_clear(ctx->currentBlockTxHashes);
-		BRMerkleBlockFree(ctx->currentBlock);
+		ctx->manager->peerMessages->MerkleBlockFree(ctx->manager, ctx->currentBlock);
 		ctx->currentBlock = NULL;
 		r = 0;
 	}
@@ -947,7 +947,7 @@ static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen,
 
 static void _setApplyFreeBlock(void *info, void *block)
 {
-	BRMerkleBlockFree(block);
+	BRMerkleBlockFree(info, block);
 }
 
 BRPeerMessages *BRPeerMessageNew(void) {

@@ -330,7 +330,9 @@ namespace Elastos {
 				block->setHeight(blocksEntity[i].blockHeight);
 				ByteStream stream(blocksEntity[i].blockBytes, blocksEntity[i].blockBytes.GetSize(), false);
 				stream.setPosition(0);
-				block->Deserialize(stream);
+				if (!block->Deserialize(stream)) {
+					Log::getLogger()->error("block deserialize fail");
+				}
 				blocks.push_back(block);
 			}
 

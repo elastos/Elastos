@@ -35,6 +35,8 @@ namespace Elastos {
 
 			virtual std::string toString() const;
 
+			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
+
 			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
 #ifdef MERKLE_BLOCK_PLUGIN
 			virtual IMerkleBlock *Clone(bool manageRaw) const;

@@ -4,6 +4,7 @@
 
 #include <BRMerkleBlock.h>
 #include <Core/BRMerkleBlock.h>
+#include <SDK/Common/Log.h>
 #include "BRCrypto.h"
 #include "BRMerkleBlock.h"
 #include "Utils.h"
@@ -63,6 +64,10 @@ namespace Elastos {
 			}
 			_merkleBlock = (ELAMerkleBlock *)block;
 			_manageRaw = manageRaw;
+		}
+
+		IMerkleBlock *MerkleBlock::CreateMerkleBlock(bool manageRaw) {
+			return new MerkleBlock(ELAMerkleBlockNew(), manageRaw);
 		}
 
 		IMerkleBlock *MerkleBlock::CreateFromRaw(BRMerkleBlock *block, bool manageRaw) {

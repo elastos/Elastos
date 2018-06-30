@@ -120,15 +120,14 @@ namespace Elastos {
 				array_free(tx->raw.outputs);
 			}
 
-			//fixme
-//			for (size_t i = 0; i < tx->outputs.size(); ++i)
-//				delete tx->outputs[i];
-//
-//			for (size_t i = 0; i < tx->attributes.size(); ++i)
-//				delete tx->attributes[i];
-//
-//			for (size_t i = 0; i < tx->programs.size(); ++i)
-//				delete tx->programs[i];
+			for (size_t i = 0; i < tx->outputs.size(); ++i)
+				delete tx->outputs[i];
+
+			for (size_t i = 0; i < tx->attributes.size(); ++i)
+				delete tx->attributes[i];
+
+			for (size_t i = 0; i < tx->programs.size(); ++i)
+				delete tx->programs[i];
 
 			delete tx->payload;
 			delete tx;

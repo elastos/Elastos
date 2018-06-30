@@ -365,7 +365,7 @@ int BRMerkleBlockVerifyDifficulty(const BRMerkleBlock *block, const BRMerkleBloc
 }
 
 // frees memory allocated by BRMerkleBlockParse
-void BRMerkleBlockFree(BRMerkleBlock *block)
+void BRMerkleBlockFree(void *info, BRMerkleBlock *block)
 {
     assert(block != NULL);
 

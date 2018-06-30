@@ -34,9 +34,15 @@ namespace Elastos {
 				return (BRMerkleBlock *)elablock;
 			}
 
-			void BRMerkleBlockFreeWrapper(BRMerkleBlock *block) {
-				ELAMerkleBlock *elablock = (ELAMerkleBlock *)block;
-				ELAMerkleBlockFree(elablock);
+			void BRMerkleBlockFreeWrapper(void *info, BRMerkleBlock *block) {
+				ELAPeerManager *manager = (ELAPeerManager *) info;
+				if (manager->Plugins.BlockType == "ELA") {
+					ELAMerkleBlock *elablock = (ELAMerkleBlock *) block;
+					ELAMerkleBlockFree(elablock);
+				} else if (manager->Plugins.BlockType == "SideStandard") {
+					IdMerkleBlock *idMerkleBlock = (IdMerkleBlock *) block;
+					IdMerkleBlockFree(idMerkleBlock);
+				}
 			}
 
 			void setApplyFreeBlock(void *info, void *block) {
@@ -44,7 +50,7 @@ namespace Elastos {
 				if (manager->Plugins.BlockType == "ELA") {
 					ELAMerkleBlock *elablock = (ELAMerkleBlock *) block;
 					ELAMerkleBlockFree(elablock);
-				} else if(manager->Plugins.BlockType == "SideStandard") {
+				} else if (manager->Plugins.BlockType == "SideStandard") {
 					IdMerkleBlock *idMerkleBlock = (IdMerkleBlock *) block;
 					IdMerkleBlockFree(idMerkleBlock);
 				}

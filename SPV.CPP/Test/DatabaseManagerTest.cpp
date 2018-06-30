@@ -251,7 +251,7 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 				REQUIRE(readTx[i].txHash == txToUpdate[i].txHash);
 				REQUIRE(readTx[i].timeStamp == txToUpdate[i].timeStamp);
 				REQUIRE(readTx[i].blockHeight == txToUpdate[i].blockHeight);
-				REQUIRE(readTx[i].remark == txToUpdate[i].remark);
+				REQUIRE(readTx[i].remark == txToSave[i].remark);
 			}
 		}
 

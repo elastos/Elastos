@@ -27,7 +27,7 @@ namespace Elastos {
 			if (_btcTransaction != nullptr)
 				BRTransactionFree(_btcTransaction);
 			if (_parBlockHeader)
-				BRMerkleBlockFree(_parBlockHeader);
+				BRMerkleBlockFree(nullptr, _parBlockHeader);
 		}
 
 		void AuxPow::Serialize(ByteStream &ostream) const {
@@ -277,7 +277,7 @@ namespace Elastos {
 
 		void AuxPow::setParBlockHeader(BRMerkleBlock *block) {
 			if (_parBlockHeader != nullptr)
-				BRMerkleBlockFree(_parBlockHeader);
+				BRMerkleBlockFree(nullptr, _parBlockHeader);
 			_parBlockHeader = block;
 		}
 

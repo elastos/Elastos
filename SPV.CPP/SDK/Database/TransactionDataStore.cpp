@@ -180,8 +180,7 @@ namespace Elastos {
 
 				ss << "UPDATE "     << TX_TABLE_NAME << " SET " <<
 					TX_BLOCK_HEIGHT << " = ?, " <<
-					TX_TIME_STAMP   << " = ?, " <<
-					TX_REMARK       << " = ? "  <<
+					TX_TIME_STAMP   << " = ? " <<
 					" WHERE " << TX_ISO << " = '" << iso << "'" <<
 					" AND " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
 
@@ -194,7 +193,6 @@ namespace Elastos {
 
 				_sqlite->bindInt(stmt, 1, txEntity.blockHeight);
 				_sqlite->bindInt(stmt, 2, txEntity.timeStamp);
-				_sqlite->bindText(stmt, 3, txEntity.remark, nullptr);
 
 				_sqlite->step(stmt);
 

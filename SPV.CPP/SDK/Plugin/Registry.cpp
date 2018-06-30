@@ -29,11 +29,18 @@ namespace Elastos {
 			_merkleBlocks.erase(merkleBlock->getBlockType());
 		}
 
-		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, bool manageRaw) {
+		IMerkleBlock *Registry::CloneMerkleBlock(const std::string &blockType, bool manageRaw) {
 			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
 				return nullptr;
 
 			return _merkleBlocks[blockType]->Clone(manageRaw);
+		}
+
+		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, bool manageRaw) {
+			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
+				return nullptr;
+
+			return _merkleBlocks[blockType]->CreateMerkleBlock(manageRaw);
 		}
 
 		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, BRMerkleBlock *block, bool manageRaw) {
