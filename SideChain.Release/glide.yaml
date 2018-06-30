@@ -8,7 +8,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.Utility
   version: dev
 - package: github.com/elastos/Elastos.ELA
-  version: dev
+  version: release_v0.1.1
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 - package: github.com/pborman/uuid
