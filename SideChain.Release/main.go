@@ -76,7 +76,10 @@ func main() {
 	}
 
 	log.Info("2. SPV module init")
-	spv.SpvInit()
+	if err := spv.SpvInit(); err != nil {
+		log.Fatal(err, "SPV module initialize failed")
+		goto ERROR
+	}
 
 	log.Info("3. Start the P2P networks")
 	noder = node.InitLocalNode()
