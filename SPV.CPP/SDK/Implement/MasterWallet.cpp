@@ -155,6 +155,7 @@ namespace Elastos {
 			info.setWalletType(coinConfig.Type);
 			info.setIndex(coinConfig.Index);
 			info.setMinFee(coinConfig.MinFee);
+			info.setGenesisAddress(coinConfig.GenesisAddress);
 
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);

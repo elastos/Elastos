@@ -67,6 +67,10 @@ namespace Elastos {
 
 			void setMinFee(uint64_t fee);
 
+			const std::string &getGenesisAddress() const;
+
+			void setGenesisAddress(const std::string &address);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -86,6 +90,7 @@ namespace Elastos {
 			std::string _publicKey;
 			std::string _encryptedKey;
 			std::string _chainCode;
+			std::string _genesisAddress;
 		};
 
 	}

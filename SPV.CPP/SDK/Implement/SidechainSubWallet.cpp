@@ -64,6 +64,10 @@ namespace Elastos {
 			return transaction->toJson();
 		}
 
+		std::string SidechainSubWallet::GetGenesisAddress() const {
+			return _info.getGenesisAddress();
+		}
+
 		boost::shared_ptr<Transaction>
 		SidechainSubWallet::createTransaction(TxParam *param) const {
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(param);

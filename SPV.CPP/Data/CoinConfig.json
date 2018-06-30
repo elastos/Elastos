@@ -9,6 +9,7 @@
     "Services": 0,
     "MinFee": 10000,
     "BlockType": "ELA",
+    "GenesisAddress" : "",
     "CheckPoints": [
       {
         "Height": 0,
@@ -28,6 +29,7 @@
     "Services": 0,
     "MinFee": 10000,
     "BlockType": "SideStandard",
+    "GenesisAddress" : "",
     "CheckPoints": [
       {
         "Height": 0,

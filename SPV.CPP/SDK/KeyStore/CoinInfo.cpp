@@ -153,5 +153,14 @@ namespace Elastos {
 		void CoinInfo::setMinFee(uint64_t fee) {
 			_minFee = fee;
 		}
+
+		const std::string& CoinInfo::getGenesisAddress() const {
+			return _genesisAddress;
+		}
+
+		void CoinInfo::setGenesisAddress(const std::string &address) {
+			_genesisAddress = address;
+		}
+
 	}
 }

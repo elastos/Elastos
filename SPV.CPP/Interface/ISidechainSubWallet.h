@@ -24,6 +24,8 @@ namespace Elastos {
 					uint64_t fee,
 					const std::string &memo,
 					const std::string &remark) = 0;
+
+			virtual std::string GetGenesisAddress() const = 0;
 		};
 
 	}

@@ -26,6 +26,8 @@ namespace Elastos {
 					const std::string &memo,
 					const std::string &remark);
 
+			virtual std::string GetGenesisAddress() const;
+
 		protected:
 			friend class MasterWallet;
 
