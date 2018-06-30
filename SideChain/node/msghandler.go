@@ -331,7 +331,7 @@ func (h *MsgHandlerV1) onInventory(inv *msg.Inventory) error {
 				SendGetBlocks(node, locator, common.EmptyHash)
 			}
 		case msg.InvTypeTx:
-			if _, ok := node.GetTxnPool(false)[hash]; !ok {
+			if _, ok := LocalNode.GetTxInPool(hash); !ok {
 				getData.AddInvVect(iv)
 			}
 		default:
@@ -369,7 +369,7 @@ func (h *MsgHandlerV1) onGetData(getData *msg.GetData) error {
 			}
 
 		case msg.InvTypeTx:
-			tx, ok := node.GetTxnPool(false)[iv.Hash]
+			tx, ok := LocalNode.GetTxInPool(iv.Hash)
 			if !ok {
 				notFound.AddInvVect(iv)
 				continue
@@ -495,7 +495,7 @@ func (h *MsgHandlerV1) onMemPool(*msg.MemPool) error {
 		return fmt.Errorf("peer %d sent mempool request with spen service disabled", h.node.ID())
 	}
 
-	txMemPool := LocalNode.GetTxnPool(false)
+	txMemPool := LocalNode.GetTxsInPool()
 	inv := msg.NewInventory()
 
 	for _, tx := range txMemPool {

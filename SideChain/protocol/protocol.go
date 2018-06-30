@@ -52,7 +52,7 @@ type Noder interface {
 	GetConn() net.Conn
 	CloseConn()
 	GetConnectionCnt() uint
-	GetTxnPool(bool) map[Uint256]*Transaction
+	GetTxsInPool() map[Uint256]*Transaction
 	AppendToTxnPool(*Transaction) ErrCode
 	IsDuplicateMainchainTx(mainchainTxHash Uint256) bool
 	ExistedID(id Uint256) bool

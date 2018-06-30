@@ -480,7 +480,7 @@ func GetConnectionCount(param Params) map[string]interface{} {
 
 func GetTransactionPool(param Params) map[string]interface{} {
 	txs := make([]*TransactionInfo, 0)
-	for _, t := range NodeForServers.GetTxnPool(false) {
+	for _, t := range NodeForServers.GetTxsInPool() {
 		txs = append(txs, GetTransactionInfo(nil, t))
 	}
 	return ResponsePack(Success, txs)

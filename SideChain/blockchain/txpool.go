@@ -61,27 +61,25 @@ func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 	return Success
 }
 
-//get the transaction in txnpool
-func (pool *TxPool) GetTxnPool(byCount bool) map[Uint256]*core.Transaction {
+// GetTxInPool returns a transaction in transaction pool by the given
+// transaction id. If no transaction match the transaction id, return nil, false
+func (pool *TxPool) GetTxInPool(txId Uint256) (*core.Transaction, bool) {
 	pool.RLock()
-	count := config.Parameters.MaxTxInBlock
-	if count <= 0 {
-		byCount = false
+	defer pool.RUnlock()
+	tx, ok := pool.txnList[txId]
+	return tx, ok
+}
+
+// GetTxsInPool returns a copy of the transactions in transaction pool,
+// It is safe to modify the returned map.
+func (pool *TxPool) GetTxsInPool() map[Uint256]*core.Transaction {
+	pool.RLock()
+	defer pool.RUnlock()
+	copy := make(map[Uint256]*core.Transaction)
+	for txId, tx := range pool.txnList {
+		copy[txId] = tx
 	}
-	if len(pool.txnList) < count || !byCount {
-		count = len(pool.txnList)
-	}
-	var num int
-	txnMap := make(map[Uint256]*core.Transaction, count)
-	for txnId, tx := range pool.txnList {
-		txnMap[txnId] = tx
-		num++
-		if num >= count {
-			break
-		}
-	}
-	pool.RUnlock()
-	return txnMap
+	return copy
 }
 
 //clean the trasaction Pool with committed block.
