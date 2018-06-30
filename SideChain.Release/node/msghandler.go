@@ -200,7 +200,8 @@ func (h *MsgHandlerV1) onVerAck(verAck *msg.VerAck) error {
 	addr := node.Addr()
 	port := node.Port()
 	nodeAddr := addr + ":" + strconv.Itoa(int(port))
-	LocalNode.RemoveAddrInConnectingList(nodeAddr)
+	LocalNode.RemoveFromHandshakeQueue(node)
+	LocalNode.RemoveFromConnectingList(nodeAddr)
 	return nil
 }
 

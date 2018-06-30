@@ -112,6 +112,7 @@ func InitLocalNode() Noder {
 	LocalNode.cachedHashes = make([]Uint256, 0)
 	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
 	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
+	LocalNode.handshakeQueue.init()
 	LocalNode.initConnection()
 	go LocalNode.updateConnection()
 	go LocalNode.updateNodeInfo()
@@ -130,7 +131,6 @@ func (node *node) DumpInfo() {
 	log.Info("\t port = ", node.port)
 	log.Info("\t relay = ", node.relay)
 	log.Info("\t height = ", node.height)
-	log.Info("\t conn cnt = ", node.link.connCnt)
 }
 
 func (node *node) IsAddrInNbrList(addr string) bool {
@@ -149,7 +149,7 @@ func (node *node) IsAddrInNbrList(addr string) bool {
 	return false
 }
 
-func (node *node) SetAddrInConnectingList(addr string) (added bool) {
+func (node *node) AddToConnectionList(addr string) (added bool) {
 	node.ConnectingNodes.Lock()
 	defer node.ConnectingNodes.Unlock()
 	for _, a := range node.ConnectingAddrs {
@@ -161,7 +161,7 @@ func (node *node) SetAddrInConnectingList(addr string) (added bool) {
 	return true
 }
 
-func (node *node) RemoveAddrInConnectingList(addr string) {
+func (node *node) RemoveFromConnectingList(addr string) {
 	node.ConnectingNodes.Lock()
 	defer node.ConnectingNodes.Unlock()
 	addrs := []string{}
