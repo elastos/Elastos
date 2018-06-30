@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	FoundationAddress   = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	DefaultMultiCoreNum = 4
 )
 
@@ -38,7 +37,7 @@ func init() {
 		coreNum = DefaultMultiCoreNum
 	}
 
-	address, err := common.Uint168FromAddress(FoundationAddress)
+	address, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(-1)
