@@ -101,6 +101,7 @@ type Configuration struct {
 	MaxTxInBlock        int              `json:"MaxTransactionInBlock"`
 	MaxBlockSize        int              `json:"MaxBlockSize"`
 	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
+	FoundationAddr      string           `json:"FoundationAddr"`
 }
 
 type ConfigFile struct {
