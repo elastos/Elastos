@@ -285,13 +285,15 @@ func (s *SPVServiceImpl) startBlockCommitQueue() {
 
 func (s *SPVServiceImpl) changeSyncPeerAndRestart() {
 	log.Debug("Change sync peer and restart")
-	// Disconnect current sync peer
 	syncPeer := s.PeerManager().GetSyncPeer()
-	syncPeer.Disconnect()
+	if syncPeer != nil {
+		// Disconnect current sync peer
+		syncPeer.Disconnect()
 
-	s.stopSyncing()
-	// Restart
-	s.syncBlocks()
+		// Restart
+		s.stopSyncing()
+		s.syncBlocks()
+	}
 }
 
 func (s *SPVServiceImpl) OnInventory(peer *net.Peer, m *msg.Inventory) error {

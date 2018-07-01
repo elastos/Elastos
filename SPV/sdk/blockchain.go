@@ -170,6 +170,8 @@ func (bc *Blockchain) GetBlockLocatorHashes() []*common.Uint256 {
 
 // IsKnownHeader returns if a header is already stored in database by it's hash
 func (bc *Blockchain) IsKnownHeader(hash *common.Uint256) bool {
+	bc.lock.Lock()
+	defer bc.lock.Unlock()
 	header, _ := bc.HeaderStore.GetHeader(hash)
 	return header != nil
 }
