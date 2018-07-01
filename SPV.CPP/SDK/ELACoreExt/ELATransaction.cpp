@@ -72,6 +72,7 @@ namespace Elastos {
 
 			tx->type = orig->type;
 			tx->payloadVersion = orig->payloadVersion;
+			tx->fee = orig->fee;
 
 			if (orig->payload) {
 				tx->payload = ELAPayloadNew(orig->type);

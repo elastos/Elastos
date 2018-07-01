@@ -57,6 +57,8 @@ namespace Elastos {
 
 			uint64_t calculateFee(uint64_t feePerKb);
 
+			uint64_t getTxFee(const boost::shared_ptr<Wallet> &wallet);
+
 			bool isRegistered() const;
 
 			bool &isRegistered();
@@ -170,7 +172,7 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet);
+			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet, uint32_t blockHeight);
 
 		private:
 			IPayload *newPayload(ELATransaction::Type type);
@@ -179,9 +181,9 @@ namespace Elastos {
 
 			bool transactionSign(int forkId, const WrapperList<Key, BRKey> keys);
 
-			std::string getConfirmInfo(const boost::shared_ptr<Wallet> &wallet);
+			std::string getConfirmInfo(uint32_t blockHeight);
 
-			std::string getStatus(const boost::shared_ptr<Wallet> &wallet);
+			std::string getStatus(uint32_t blockHeight);
 
 		private:
 			bool _isRegistered;

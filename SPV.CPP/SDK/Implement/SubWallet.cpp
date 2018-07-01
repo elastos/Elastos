@@ -179,10 +179,10 @@ namespace Elastos {
 			uint32_t realCount = 0;
 			for (size_t i = 0; i < pageCount; i++) {
 				if (!filterByAddressOrTxId(
-						wallet->transactions[(fullTxCount - start) - i], addressOrTxid))
+						wallet->transactions[start + pageCount - i - 1], addressOrTxid))
 					continue;
 				transactions[realCount] =
-						wallet->transactions[(fullTxCount - start) - i];
+						wallet->transactions[start + pageCount - i - 1];
 				realCount++;
 			}
 			pthread_mutex_unlock(&wallet->lock);
@@ -191,7 +191,7 @@ namespace Elastos {
 			for (size_t i = 0; i < realCount; ++i) {
 				TransactionPtr transactionPtr(new Transaction((ELATransaction *) transactions[i], false));
 				nlohmann::json txJson = transactionPtr->toJson();
-				transactionPtr->generateExtraTransactionInfo(txJson, _walletManager->getWallet());
+				transactionPtr->generateExtraTransactionInfo(txJson, _walletManager->getWallet(), _walletManager->getPeerManager()->getLastBlockHeight());
 				jsonList[i] = txJson;
 			}
 			nlohmann::json j;
