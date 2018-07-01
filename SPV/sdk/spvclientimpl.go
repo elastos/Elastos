@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/net"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
@@ -98,6 +99,7 @@ func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) 
 }
 
 func (client *SPVClientImpl) OnPeerEstablish(peer *net.Peer) {
+	log.Debug()
 	client.msgHandler.OnPeerEstablish(peer)
 
 	// Start heartbeat
@@ -105,6 +107,7 @@ func (client *SPVClientImpl) OnPeerEstablish(peer *net.Peer) {
 }
 
 func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
+	log.Debug()
 	peer.SetHeight(p.Nonce)
 	// Return pong message to peer
 	peer.Send(msg.NewPong(uint32(client.PeerManager().Local().Height())))
@@ -112,6 +115,7 @@ func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
 }
 
 func (client *SPVClientImpl) OnPong(peer *net.Peer, p *msg.Pong) error {
+	log.Debug()
 	peer.SetHeight(p.Nonce)
 	return nil
 }
