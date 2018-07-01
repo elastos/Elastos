@@ -1,13 +1,12 @@
 package sdk
 
 import (
-	"encoding/binary"
-	"math/rand"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
+
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
@@ -73,8 +72,8 @@ func GenesisHeader(foundation *common.Uint168) *ela.Header {
 			ProgramHash: *foundation,
 		},
 	}
-	nonce := make([]byte, 8)
-	binary.BigEndian.PutUint64(nonce, rand.Uint64())
+
+	nonce := []byte{0x4d, 0x65, 0x82, 0x21, 0x07, 0xfc, 0xfd, 0x52}
 	txAttr := ela.NewAttribute(ela.Nonce, nonce)
 	coinBase.Attributes = append(coinBase.Attributes, &txAttr)
 
