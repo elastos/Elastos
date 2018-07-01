@@ -94,7 +94,7 @@ func (d *DataStoreImpl) Rollback(height uint32) error {
 		}
 
 		for hash := range txMap {
-			var txn core.Transaction
+			var txn StoreTx
 			data := tx.Bucket(BKTTxs).Get(hash.Bytes())
 			if err = txn.Deserialize(bytes.NewReader(data)); err != nil {
 				return err
