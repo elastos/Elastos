@@ -7,9 +7,9 @@ RUN apt-get update && apt-get install -y git curl
 RUN apt-get install -y software-properties-common && add-apt-repository -y ppa:gophers/archive && apt-get update && apt-get install -y golang-1.9-go
 
 # Prepare environment
-RUN mkdir /root/dev/bin -p && mkdir /root/dev/src
+RUN mkdir -p /root/dev/bin -p && mkdir -p /root/dev/src/github.com/elastos/
 
-WORKDIR /root/dev/src
+WORKDIR /root/dev/src/github.com/elastos/
 
 # Install glide
 RUN export GOROOT=/usr/lib/go-1.9  GOPATH=$HOME/dev && export GOBIN=$GOPATH/bin PATH=$GOROOT/bin:$PATH && export PATH=$GOBIN:$PATH && curl https://glide.sh/get | sh
