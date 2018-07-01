@@ -23,7 +23,7 @@ var spvService spv.SPVService
 
 func SpvInit() error {
 	var err error
-	spvlog.Init(config.Parameters.SpvPrintLevel)
+	spvlog.Init(config.Parameters.SpvPrintLevel, 20, 1024)
 
 	var id = make([]byte, 8)
 	var clientId uint64
