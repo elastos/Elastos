@@ -138,6 +138,7 @@ func (peer *Peer) OnError(err error) {
 }
 
 func (peer *Peer) OnMakeMessage(cmd string) (p2p.Message, error) {
+	peer.lastActive = time.Now()
 	return peer.handler.MakeMessage(cmd)
 }
 
@@ -157,6 +158,7 @@ func (peer *Peer) Send(msg p2p.Message) {
 	}
 
 	peer.msgHelper.Write(msg)
+	peer.lastActive = time.Now()
 }
 
 func (peer *Peer) NewVersionMsg() *msg.Version {

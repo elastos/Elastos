@@ -99,6 +99,9 @@ func (client *SPVClientImpl) HandleMessage(peer *net.Peer, message p2p.Message) 
 
 func (client *SPVClientImpl) OnPeerEstablish(peer *net.Peer) {
 	client.msgHandler.OnPeerEstablish(peer)
+
+	// Start heartbeat
+	go client.heartBeat(peer)
 }
 
 func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
@@ -113,25 +116,25 @@ func (client *SPVClientImpl) OnPong(peer *net.Peer, p *msg.Pong) error {
 	return nil
 }
 
-func (client *SPVClientImpl) keepUpdate() {
+func (client *SPVClientImpl) heartBeat(peer *net.Peer) {
 	ticker := time.NewTicker(time.Second * net.InfoUpdateDuration)
 	defer ticker.Stop()
 	for range ticker.C {
+		// Quit if peer disconnected
+		if !client.PeerManager().Exist(peer) {
+			goto QUIT
+		}
 
-		// Update peers info
-		for _, peer := range client.PeerManager().ConnectedPeers() {
-			if peer.State() == p2p.ESTABLISH {
+		// Disconnect peer if keep alive timeout
+		if time.Now().After(peer.LastActive().Add(time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
+			client.PeerManager().OnDisconnected(peer)
+			goto QUIT
+		}
 
-				// Disconnect inactive peer
-				if time.Now().After(
-					peer.LastActive().Add(time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
-					client.PeerManager().OnDisconnected(peer)
-					continue
-				}
-
-				// Send ping message to peer
-				peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
-			}
+		// Send ping message to peer
+		if peer.State() == p2p.ESTABLISH {
+			peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
 		}
 	}
+QUIT:
 }
