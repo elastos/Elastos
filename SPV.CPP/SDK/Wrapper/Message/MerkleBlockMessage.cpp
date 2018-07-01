@@ -81,7 +81,7 @@ namespace Elastos {
 					array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
 				}
 
-				peer_dbg(peer, "block[%d]: %s, txCount = %zu", block->getHeight(), Utils::UInt256ToString(block->getBlockHash()).c_str(), count);
+//				peer_dbg(peer, "block[%d]: %s, txCount = %zu", block->getHeight(), Utils::UInt256ToString(block->getBlockHash()).c_str(), count);
 				if (hashes != _hashes) free(hashes);
 			}
 

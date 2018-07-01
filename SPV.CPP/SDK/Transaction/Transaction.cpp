@@ -540,7 +540,7 @@ namespace Elastos {
 			}
 			jsonData["Outputs"] = outputs;
 
-//			jsonData["Fee"] = _transaction->fee;
+			jsonData["Fee"] = _transaction->fee;
 
 			jsonData["Remark"] = _transaction->Remark;
 
@@ -664,7 +664,6 @@ namespace Elastos {
 				return std::to_string(0);
 
 			uint32_t confirmCount = blockHeight >= getBlockHeight() ? blockHeight - getBlockHeight() + 1 : 0;
-			Log::getLogger()->info("confirmCount = {}", confirmCount);
 			return confirmCount <= 6 ? std::to_string(confirmCount) : "6+";
 		}
 
