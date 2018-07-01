@@ -29,7 +29,7 @@
     "Services": 0,
     "MinFee": 10000,
     "BlockType": "SideStandard",
-    "GenesisAddress" : "",
+    "GenesisAddress" : "XQd1DCi6H62NQdWZQhJCRnrPn7sF9CTjaU",
     "CheckPoints": [
       {
         "Height": 0,
