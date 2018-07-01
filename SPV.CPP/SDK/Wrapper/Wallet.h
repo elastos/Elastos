@@ -78,7 +78,7 @@ namespace Elastos {
 
 		void ELAWalletFree(ELAWallet *wallet, bool freeInternal = true);
 
-		const std::string &ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash);
+		std::string ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash);
 
 		void ELAWalletRegisterRemark(ELAWallet *wallet, const std::string &txHash,
 												   const std::string &remark);
@@ -135,7 +135,7 @@ namespace Elastos {
 
 			void RegisterRemark(const TransactionPtr &transaction);
 
-			const std::string &GetRemark(const std::string &txHash);
+			std::string GetRemark(const std::string &txHash);
 
 			uint64_t GetBalanceWithAddress(const std::string &address);
 

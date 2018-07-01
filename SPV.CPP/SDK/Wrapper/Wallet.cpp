@@ -212,7 +212,7 @@ namespace Elastos {
 			free(wallet);
 		}
 
-		const std::string& ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash) {
+		std::string ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash) {
 			if (wallet->TxRemarkMap.find(txHash) == wallet->TxRemarkMap.end())
 				return "";
 			return wallet->TxRemarkMap[txHash];
@@ -313,7 +313,7 @@ namespace Elastos {
 									((ELATransaction *)transaction->getRaw())->Remark);
 		}
 
-		const std::string& Wallet::GetRemark(const std::string &txHash) {
+		std::string Wallet::GetRemark(const std::string &txHash) {
 			return ELAWalletGetRemark(_wallet, txHash);
 		}
 

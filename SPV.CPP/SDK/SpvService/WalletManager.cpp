@@ -148,7 +148,9 @@ namespace Elastos {
 
 			CMBlock data = stream.getBuffer();
 
-			std::string remark = _wallet->GetRemark(Utils::UInt256ToString(tx->getHash()));
+			UInt256 hash = tx->getHash();
+			std::string hashStr = Utils::UInt256ToString(hash);
+			std::string remark = _wallet->GetRemark(hashStr);
 			tx->setRemark(remark);
 
 			TransactionEntity txEntity(data, tx->getBlockHeight(),
