@@ -15,7 +15,11 @@ import (
 var Version string
 
 func init() {
-	log.Init(config.Values().PrintLevel)
+	log.Init(
+		config.Values().PrintLevel,
+		config.Values().MaxPerLogSize,
+		config.Values().MaxLogsSize,
+	)
 }
 
 func main() {
