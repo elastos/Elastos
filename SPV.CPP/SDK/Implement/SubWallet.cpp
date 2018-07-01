@@ -169,16 +169,20 @@ namespace Elastos {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			assert(wallet != nullptr);
 
-			size_t maxCount = count;
+			size_t fullTxCount = array_count(wallet->transactions);
+			size_t pageCount = count;
 			pthread_mutex_lock(&wallet->lock);
-			if (array_count(wallet->transactions) < start + count)
-				maxCount = array_count(wallet->transactions) - start;
+			if (fullTxCount < start + count)
+				pageCount = fullTxCount - start;
 
-			BRTransaction *transactions[maxCount];
+			BRTransaction *transactions[pageCount];
 			uint32_t realCount = 0;
-			for (size_t i = 0; i < maxCount; i++) {
-				if (!filterByAddressOrTxId(wallet->transactions[i + start], addressOrTxid)) continue;
-				transactions[realCount] = wallet->transactions[i + start];
+			for (size_t i = 0; i < pageCount; i++) {
+				if (!filterByAddressOrTxId(
+						wallet->transactions[(fullTxCount - start) - i], addressOrTxid))
+					continue;
+				transactions[realCount] =
+						wallet->transactions[(fullTxCount - start) - i];
 				realCount++;
 			}
 			pthread_mutex_unlock(&wallet->lock);
