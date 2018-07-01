@@ -15,7 +15,7 @@ namespace Elastos {
 		public:
 			PayloadIssueToken();
 
-			PayloadIssueToken(const CMBlock &merkeProff);
+			PayloadIssueToken(const CMBlock &merkeProff, const CMBlock &mainChainTransaction);
 
 			~PayloadIssueToken();
 
@@ -31,6 +31,7 @@ namespace Elastos {
 
 		private:
 			CMBlock _merkeProof;
+			CMBlock _mainChainTransaction;
 		};
 	}
 }

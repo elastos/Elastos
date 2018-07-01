@@ -184,15 +184,23 @@ namespace Elastos {
 		}
 
 		bool ELATransactionIsSign(const ELATransaction *tx) {
-			size_t len = tx->programs.size();
-			if (len <= 0) {
-				return false;
-			}
-			for (size_t i = 0; i < len; ++i) {
-				if (!tx->programs[i]->isValid()) {
+			if (tx->type == ELATransaction::Type::TransferAsset) {
+				size_t len = tx->programs.size();
+				if (len <= 0) {
 					return false;
 				}
+				for (size_t i = 0; i < len; ++i) {
+					if (!tx->programs[i]->isValid()) {
+						return false;
+					}
+				}
+			} else if (tx->type == ELATransaction::Type::IssueToken) {
+				// TODO verify merkle proof
+				return true;
+			} else if (tx->type == ELATransaction::Type::CoinBase) {
+				return true;
 			}
+
 			return true;
 		}
 

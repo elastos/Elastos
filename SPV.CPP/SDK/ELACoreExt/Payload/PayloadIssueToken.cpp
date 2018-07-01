@@ -3,6 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstring>
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
 
 #include "PayloadIssueToken.h"
 
@@ -13,8 +15,9 @@ namespace Elastos {
 
 		}
 
-		PayloadIssueToken::PayloadIssueToken(const CMBlock &merkeProff) {
+		PayloadIssueToken::PayloadIssueToken(const CMBlock &merkeProff, const CMBlock &mainChainTransaction) {
 			_merkeProof = merkeProff;
+			_mainChainTransaction = mainChainTransaction;
 		}
 
 		PayloadIssueToken::~PayloadIssueToken() {
@@ -27,41 +30,36 @@ namespace Elastos {
 		}
 
 		void PayloadIssueToken::Serialize(ByteStream &ostream) const {
-			ostream.putVarUint(_merkeProof.GetSize());
-			if (_merkeProof.GetSize() > 0) {
-				ostream.putBytes(_merkeProof, _merkeProof.GetSize());
-			}
+			ostream.writeVarBytes(_merkeProof);
+			ostream.writeVarBytes(_mainChainTransaction);
 		}
 
 		bool PayloadIssueToken::Deserialize(ByteStream &istream) {
-			uint64_t len = istream.getVarUint();
-			if (0 < len) {
-				uint8_t *buff = new uint8_t[len];
-				if (buff) {
-					istream.getBytes(buff, len);
-					_merkeProof.Resize(size_t(len));
-					memcpy(_merkeProof, buff, len);
-				}
+			if (!istream.readVarBytes(_merkeProof)) {
+				Log::getLogger()->error("PayloadIssueToken deserialize merke proof error");
+				return false;
+			}
+
+			if (!istream.readVarBytes(_mainChainTransaction)) {
+				Log::getLogger()->error("PayloadIssueToken deserialize main chain transaction error");
+				return false;
 			}
 
 			return true;
 		}
 
 		nlohmann::json PayloadIssueToken::toJson() const {
-			char *data = new char[_merkeProof.GetSize()];
-			memcpy(data, _merkeProof, _merkeProof.GetSize());
-			std::string content(data, _merkeProof.GetSize());
+			nlohmann::json j;
 
-			nlohmann::json jsonData;
-			jsonData["data"] = content;
-			return jsonData;
+			j["MerkleProof"] = Utils::encodeHex(_merkeProof);
+			j["MainChainTransaction"] = Utils::encodeHex(_mainChainTransaction);
+
+			return j;
 		}
 
-		void PayloadIssueToken::fromJson(const nlohmann::json &jsonData) {
-			std::string content = jsonData["data"].get<std::string>();
-			const char* data = content.c_str();
-			_merkeProof.Resize(content.size());
-			memcpy(_merkeProof, data, content.size());
+		void PayloadIssueToken::fromJson(const nlohmann::json &j) {
+			_merkeProof = Utils::decodeHex(j["MerkleProof"].get<std::string>());
+			_mainChainTransaction = Utils::decodeHex(j["MainChainTransaction"].get<std::string>());
 		}
 	}
 }

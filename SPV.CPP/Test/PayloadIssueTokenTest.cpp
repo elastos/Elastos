@@ -6,33 +6,24 @@
 
 #include "catch.hpp"
 #include "Payload/PayloadIssueToken.h"
+#include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadIssueToken test", "[PayloadIssueToken]") {
-	uint8_t script[21] = {33, 110, 179, 17, 41, 134, 242, 38, 145, 166, 17, 187, 37, 147, 24, 60, 75, 8, 182, 57, 98};
-	CMBlock data;
-	data.SetMemFixed(script, sizeof(script));
+	CMBlock merkleProof = getRandCMBlock(50);
+	CMBlock mainChainTx = getRandCMBlock(100);
 
-	PayloadIssueToken issueToken(data);
-
-	CMBlock data1 = issueToken.getData();
-	size_t diff = data1.GetSize() - data.GetSize();
-	REQUIRE(diff > 0);
-
-	int result = memcmp(data, &data1[diff], data.GetSize());
-	REQUIRE(result == 0);
-
-	ByteStream byteStream;
-	issueToken.Serialize(byteStream);
-	REQUIRE(byteStream.length() > 0);
-	byteStream.setPosition(0);
-
+	PayloadIssueToken issueToken(merkleProof, mainChainTx);
+	ByteStream stream;
+	issueToken.Serialize(stream);
+	stream.setPosition(0);
 	PayloadIssueToken issueToken1;
-	issueToken1.Deserialize(byteStream);
+	REQUIRE(issueToken1.Deserialize(stream));
 
-	CMBlock data2 = issueToken1.getData();
-	REQUIRE(data2.GetSize() == data1.GetSize());
-	result = memcmp(data2, data1, data1.GetSize());
-	REQUIRE(result == 0);
+	CMBlock data = issueToken.getData();
+	CMBlock data1 = issueToken1.getData();
+
+	REQUIRE(data.GetSize() == data1.GetSize());
+	REQUIRE(0 == memcmp(data, data1, data.GetSize()));
 }
