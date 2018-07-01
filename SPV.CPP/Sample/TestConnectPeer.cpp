@@ -42,18 +42,20 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	IMasterWallet *masterWallet = walletFactory->ImportWalletWithMnemonic("ELA", mnemonic, phrasePassword, payPassword);
 
 	ISubWallet *subWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
+	ISubWallet *elaWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
 	nlohmann::json addresses = subWallet->GetAllAddress(0, INT_MAX);
-	std::cout << "wallet addrs: " << addresses << std::endl;
-	Log::getLogger()->info("wallet balance = {}", subWallet->GetBalance());
-
+	std::cout << "IdChain wallet addrs: " << addresses << std::endl;
+	std::cout << "ELA wallet addrs: " << elaWallet->GetAllAddress(0, INT_MAX);
 	sleep(4);
 
 	bool hasSentTransaction = false;
 
 	while (true) {
 		sleep(10);
-		uint64_t balance = subWallet->GetBalance();
-		Log::getLogger()->info("wallet balance = {}", balance);
+		subWallet->GetAllTransaction(0, 20, "");
+		elaWallet->GetAllTransaction(0, 20, "");
+		Log::getLogger()->info("IdChain wallet balance = {}", subWallet->GetBalance());
+		Log::getLogger()->info("ELA wallet balance = {}", elaWallet->GetBalance());
 
 #if 0
 		if (balance > 1000000 && !hasSentTransaction) {
