@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
 #define __ELASTOS_SDK_PAYLOADWITHDRAWASSET_H
 
+#include <Core/BRInt.h>
 #include "IPayload.h"
 
 namespace Elastos {
@@ -15,14 +16,17 @@ namespace Elastos {
 		public:
 			PayloadWithDrawAsset();
 
-			PayloadWithDrawAsset(const uint32_t blockHeight, const std::string genesisBlockAddress,
-			                     const std::string sideChainTransactionHash);
+			PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
+								 const std::vector<UInt256> &sideChainTransactionHash);
 
 			~PayloadWithDrawAsset();
 
-			void setBlockHeight(const uint32_t blockHeight);
-			void setGenesisBlockAddress(const std::string genesisBlockAddress);
-			void setSideChainTransacitonHash(const std::string sideChainTransactionHash);
+			void setBlockHeight(uint32_t blockHeight);
+			uint32_t getBlockHeight() const;
+			void setGenesisBlockAddress(const std::string &genesisBlockAddress);
+			const std::string &getGenesisBlockAddress() const;
+			void setSideChainTransacitonHash(const std::vector<UInt256> &sideChainTransactionHash);
+			const std::vector<UInt256> &getSideChainTransacitonHash() const;
 
 			virtual CMBlock getData() const;
 
@@ -37,7 +41,7 @@ namespace Elastos {
 		private:
 			uint32_t _blockHeight;
 			std::string _genesisBlockAddress;
-			std::string _sideChainTransactionHash;
+			std::vector<UInt256> _sideChainTransactionHash;
 		};
 	}
 }

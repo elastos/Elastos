@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstring>
+#include <SDK/Common/Utils.h>
 
 #include "PayloadCoinBase.h"
 #include "BRInt.h"
@@ -29,42 +30,22 @@ namespace Elastos {
 		}
 
 		void PayloadCoinBase::Serialize(ByteStream &ostream) const {
-			ostream.putVarUint(_coinBaseData.GetSize());
-			if (_coinBaseData.GetSize() > 0) {
-				ostream.putBytes(_coinBaseData, _coinBaseData.GetSize());
-			}
+			ostream.writeVarBytes(_coinBaseData);
 		}
 
 		bool PayloadCoinBase::Deserialize(ByteStream &istream) {
-			uint64_t len = istream.getVarUint();
-
-			if (0 < len) {
-				CMBlock data((size_t)len);
-				if (data) {
-					istream.getBytes((uint8_t *) (void *) data, len);
-					_coinBaseData.Resize(size_t(len));
-					memcpy(_coinBaseData, data, len);
-				}
-			}
-
-			return true;
+			return istream.readVarBytes(_coinBaseData);
 		}
 
 		nlohmann::json PayloadCoinBase::toJson() const {
-			char *data = new char[_coinBaseData.GetSize()];
-			memcpy(data, _coinBaseData, _coinBaseData.GetSize());
-			std::string content(data, _coinBaseData.GetSize());
-
-			nlohmann::json jsonData;
-			jsonData["data"] = content;
-			return jsonData;
+			nlohmann::json j;
+			j["CoinBaseData"] = Utils::encodeHex(_coinBaseData);
+			return j;
 		}
 
-		void PayloadCoinBase::fromJson(const nlohmann::json &jsonData) {
-			std::string content = jsonData["data"].get<std::string>();
-			const char* data = content.c_str();
-			_coinBaseData.Resize(content.size());
-			memcpy(_coinBaseData, data, content.size());
+		void PayloadCoinBase::fromJson(const nlohmann::json &j) {
+			_coinBaseData = Utils::decodeHex(j["CoinBaseData"].get<std::string>());
+
 		}
 	}
 }

@@ -14,13 +14,13 @@ namespace Elastos {
 		public:
 			PayloadRecord();
 
-			PayloadRecord(const std::string &recordType, const CMBlock recordData);
+			PayloadRecord(const std::string &recordType, const CMBlock &recordData);
 
 			~PayloadRecord();
 
 			void setRecordType(const std::string &recordType);
 
-			void setRecordData(const CMBlock recordData);
+			void setRecordData(const CMBlock &recordData);
 
 			std::string getRecordType() const;
 			CMBlock getRecordData() const;

@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
 #include "PayloadRecord.h"
 #include "BRAddress.h"
 #include "BRInt.h"
@@ -14,7 +16,7 @@ namespace Elastos {
 
 		}
 
-		PayloadRecord::PayloadRecord(const std::string &recordType, const CMBlock recordData) {
+		PayloadRecord::PayloadRecord(const std::string &recordType, const CMBlock &recordData) {
 			_recordType = recordType;
 			_recordData = recordData;
 		}
@@ -26,7 +28,7 @@ namespace Elastos {
 			_recordType = recordType;
 		}
 
-		void PayloadRecord::setRecordData(const CMBlock recordData) {
+		void PayloadRecord::setRecordData(const CMBlock &recordData) {
 			_recordData = recordData;
 		}
 
@@ -39,7 +41,6 @@ namespace Elastos {
 		}
 
 		CMBlock PayloadRecord::getData() const {
-			//todo: implement IPayload interface
 			ByteStream stream;
 			Serialize(stream);
 
@@ -47,62 +48,36 @@ namespace Elastos {
 		}
 
 		void PayloadRecord::Serialize(ByteStream &ostream) const {
-			size_t len = _recordType.length();
-			ostream.putVarUint(len);
-			ostream.putBytes((uint8_t *)_recordType.c_str(), (uint64_t)len);
-
-			ostream.putVarUint(_recordData.GetSize());
-			if (_recordData.GetSize() > 0) {
-				ostream.putBytes(_recordData, _recordData.GetSize());
-			}
+			ostream.writeVarString(_recordType);
+			ostream.writeVarBytes(_recordData);
 		}
 
 		bool PayloadRecord::Deserialize(ByteStream &istream) {
-			uint64_t len = istream.getVarUint();
-			if (0 < len) {
-				char *utfBuffer = new char[len + 1];
-				if (utfBuffer) {
-					istream.getBytes((uint8_t *) utfBuffer, len);
-					utfBuffer[len] = '\0';
-					_recordType = utfBuffer;
-					delete[] utfBuffer;
-				}
+			if (!istream.readVarString(_recordType)) {
+				Log::getLogger()->error("Payload record deserialize type fail");
+				return false;
 			}
 
-			len = istream.getVarUint();
-			if (0 < len) {
-				uint8_t *buff = new uint8_t[len];
-				if (buff) {
-					istream.getBytes(buff, len);
-					_recordData.Resize(size_t(len));
-					memcpy(_recordData, buff, len);
-					delete[] buff;
-				}
+			if (!istream.readVarBytes(_recordData)) {
+				Log::getLogger()->error("Payload record deserialize data fail");
+				return false;
 			}
 
 			return true;
 		}
 
 		nlohmann::json PayloadRecord::toJson() const {
-			nlohmann::json jsonData;
-			jsonData["recordType"] = _recordType;
+			nlohmann::json j;
 
-			char *data = new char[_recordData.GetSize()];
-			memcpy(data, _recordData, _recordData.GetSize());
-			std::string content(data, _recordData.GetSize());
+			j["RecordType"] = _recordType;
+			j["RecordData"] = Utils::encodeHex(_recordData);
 
-			jsonData["recordData"] = content;
-
-			return jsonData;
+			return j;
 		}
 
-		void PayloadRecord::fromJson(const nlohmann::json &jsonData) {
-			_recordType = jsonData["recordType"].get<std::string>();
-
-			std::string content = jsonData["recordData"].get<std::string>();
-			const char* data = content.c_str();
-			_recordData.Resize(content.size());
-			memcpy(_recordData, data, content.size());
+		void PayloadRecord::fromJson(const nlohmann::json &j) {
+			_recordType = j["RecordType"].get<std::string>();
+			_recordData = Utils::decodeHex(j["RecordData"].get<std::string>());
 		}
 	}
 }

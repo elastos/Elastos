@@ -94,11 +94,16 @@ namespace Elastos {
 
 		public:
 			void increasePosition(size_t len);
-			bool readUint32(uint32_t &val, ByteOrder byteEndian = LittleEndian);
-			void writeUint32(uint32_t val, ByteOrder byteEndian = LittleEndian);
+			bool readUint8(uint8_t &val);
+			void writeUint8(uint8_t val);
+			bool readUint16(uint16_t &val, ByteOrder byteOrder = LittleEndian);
+			void writeUint16(uint16_t val, ByteOrder byteOrder = LittleEndian);
+			bool readUint32(uint32_t &val, ByteOrder byteOrder = LittleEndian);
+			void writeUint32(uint32_t val, ByteOrder byteOrder = LittleEndian);
+			bool readUint64(uint64_t &val, ByteOrder byteOrder = LittleEndian);
+			void writeUint64(uint64_t val, ByteOrder byteOrder = LittleEndian);
 			bool readBytes(void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
 			void writeBytes(const void *buf, size_t len, ByteOrder byteOrder = LittleEndian);
-//			bool readVarBytes(void **buf, size_t *len);
 			bool readVarBytes(CMBlock &bytes);
 			void writeVarBytes(const void *bytes, size_t len);
 			void writeVarBytes(const CMBlock &bytes);

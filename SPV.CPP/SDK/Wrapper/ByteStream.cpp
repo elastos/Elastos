@@ -440,48 +440,36 @@ namespace Elastos {
 			_pos += len;
 		}
 
+		bool ByteStream::readUint8(uint8_t &val) {
+			return readBytes(&val, 1);
+		}
+
+		void ByteStream::writeUint8(uint8_t val) {
+			writeBytes(&val, 1);
+		}
+
+		bool ByteStream::readUint16(uint16_t &val, ByteOrder byteOrder) {
+			return readBytes(&val, sizeof(uint16_t), byteOrder);
+		}
+
+		void ByteStream::writeUint16(uint16_t val, ByteOrder byteOrder) {
+			writeBytes(&val, sizeof(uint16_t), byteOrder);
+		}
+
 		bool ByteStream::readUint32(uint32_t &val, ByteOrder byteOrder) {
-			if (!checkSize(sizeof(uint32_t)))
-				return false;
-
-			size_t pos = position();
-
-			if (byteOrder == LittleEndian) {
-				val = (uint32_t) _buf[pos++];
-				val |= (int32_t) (_buf[pos++] << 8);
-				val |= (int32_t) (_buf[pos++] << 16);
-				val |= (int32_t) (_buf[pos++] << 24);
-			} else {
-				val = (uint32_t) (_buf[pos++] << 24);
-				val |= (int32_t) (_buf[pos++] << 16);
-				val |= (int32_t) (_buf[pos++] << 8);
-				val |= (int32_t) _buf[pos++];
-			}
-
-			increasePosition(sizeof(uint32_t));
-
-			return true;
+			return readBytes(&val, sizeof(uint32_t), byteOrder);
 		}
 
 		void ByteStream::writeUint32(uint32_t val, ByteOrder byteOrder) {
-			ensureCapacity(position() + sizeof(uint32_t));
+			writeBytes(&val, sizeof(uint32_t), byteOrder);
+		}
 
-			size_t pos = position();
+		bool ByteStream::readUint64(uint64_t &val, ByteOrder byteOrder) {
+			return readBytes(&val, sizeof(uint64_t), byteOrder);
+		}
 
-			if (byteOrder == LittleEndian) {
-				_buf[pos++] = (uint8_t)(val & 0xff);
-				_buf[pos++] = (uint8_t)(val >> 8 & 0xff);
-				_buf[pos++] = (uint8_t)(val >> 16 & 0xff);
-				_buf[pos++] = (uint8_t)(val >> 24 & 0xff);
-			} else {
-				_buf[pos++] = (uint8_t)((val >> 24) & 0xff);
-				_buf[pos++] = (uint8_t)((val >> 16) & 0xff);
-				_buf[pos++] = (uint8_t)((val >> 8) & 0xff);
-				_buf[pos++] = (uint8_t)(val & 0xff);
-			}
-
-			increasePosition(sizeof(uint32_t));
-			_count = position();
+		void ByteStream::writeUint64(uint64_t val, ByteOrder byteOrder) {
+			writeBytes(&val, sizeof(uint64_t), byteOrder);
 		}
 
 		bool ByteStream::readBytes(void *buf, size_t len, ByteOrder byteOrder) {
@@ -521,26 +509,6 @@ namespace Elastos {
 			increasePosition(len);
 			_count = position();
 		}
-
-//		bool ByteStream::readVarBytes(void **buf, size_t *len) {
-//			uint64_t length = 0;
-//			if (!readVarUint(length)) {
-//				return false;
-//			}
-//
-//			*len = length;
-//
-//			if (buf) {
-//				*buf = (*len > 0) ? malloc(*len) : nullptr;
-//				if (!readBytes(*buf, *len)) {
-//					if (*buf)
-//						free(*buf);
-//					return false;
-//				}
-//			}
-//
-//			return true;
-//		}
 
 		bool ByteStream::readVarBytes(CMBlock &bytes) {
 			uint64_t length = 0;

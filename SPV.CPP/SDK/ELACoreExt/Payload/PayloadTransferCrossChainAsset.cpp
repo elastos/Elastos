@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Log.h>
 #include "PayloadTransferCrossChainAsset.h"
 #include "Address.h"
 
@@ -71,64 +72,67 @@ namespace Elastos {
 		}
 
 		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream) const {
+			if (_crossChainAddress.size() != _outputIndex.size() || _outputIndex.size() != _crossChainAmount.size()) {
+				Log::getLogger()->error("Invalid cross chain asset: len(crossChainAddress)={},"
+							" len(outputIndex)={}, len(crossChainAddress)={}", _crossChainAddress.size(),
+										_outputIndex.size(), _crossChainAmount.size());
+				return ;
+			}
+
 			size_t len = _crossChainAddress.size();
-			ostream.putVarUint(len);
+			ostream.writeVarUint((uint64_t)len);
 			for (size_t i = 0; i < len; ++i) {
-				ostream.putVarUint(_crossChainAddress[i].length());
-				ostream.putBytes((uint8_t *) _crossChainAddress[i].c_str(), _crossChainAddress[i].length());
-
-				ostream.putVarUint(_outputIndex[i]);
-
-				ostream.putUint64(_crossChainAmount[i]);
+				ostream.writeVarString(_crossChainAddress[i]);
+				ostream.writeVarUint(_outputIndex[i]);
+				ostream.writeUint64(_crossChainAmount[i]);
 			}
 		}
 
 		bool PayloadTransferCrossChainAsset::Deserialize(ByteStream &istream) {
-			_crossChainAddress.clear();
-			_outputIndex.clear();
-			_crossChainAmount.clear();
-			uint64_t len = istream.getVarUint();
+			uint64_t len = 0;
+			if (!istream.readVarUint(len)) {
+				Log::error("Payload transfer cross chain asset deserialize fail");
+				return false;
+			}
 
-			for (size_t i = 0; i < len; ++i) {
-				size_t size = istream.getVarUint();
-				char *buff = new char[size + 1];
-				if (buff) {
-					istream.getBytes((uint8_t *)buff, size);
-					buff[size] = '\0';
-					std::string address = buff;
-					_crossChainAddress.push_back(address);
-					delete[] buff;
+			_crossChainAddress.resize(len);
+			_outputIndex.resize(len);
+			_crossChainAmount.resize(len);
+
+			for (uint64_t i = 0; i < len; ++i) {
+				if (!istream.readVarString(_crossChainAddress[i])) {
+					Log::error("Payload transfer cross chain asset deserialize cross chain address fail");
+					return false;
 				}
 
-				uint64_t index = istream.getVarUint();
-				_outputIndex.push_back(index);
+				if (!istream.readVarUint(_outputIndex[i])) {
+					Log::error("Payload transfer cross chain asset deserialize output index fail");
+					return false;
+				}
 
-				uint64_t amount = istream.getUint64();
-				_crossChainAmount.push_back(amount);
-
+				if (!istream.readUint64(_crossChainAmount[i])) {
+					Log::error("Payload transfer cross chain asset deserialize cross chain amount fail");
+					return false;
+				}
 			}
 
 			return true;
 		}
 
 		nlohmann::json PayloadTransferCrossChainAsset::toJson() const {
-			nlohmann::json jsonData;
+			nlohmann::json j;
 
-			jsonData["crossChainAddress"] = _crossChainAddress;
+			j["CrossChainAddress"] = _crossChainAddress;
+			j["OutputIndex"] = _outputIndex;
+			j["CrossChainAmount"] = _crossChainAmount;
 
-			jsonData["outputIndex"] = _outputIndex;
-
-			jsonData["crossChainAmount"] = _crossChainAmount;
-
-			return jsonData;
+			return j;
 		}
 
-		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json &jsonData) {
-			_crossChainAddress = jsonData["crossChainAddress"].get<std::vector<std::string>>();
-
-			_outputIndex = jsonData["outputIndex"].get<std::vector<uint64_t>>();
-
-			_crossChainAmount = jsonData["crossChainAmount"].get<std::vector<uint64_t >>();
+		void PayloadTransferCrossChainAsset::fromJson(const nlohmann::json &j) {
+			_crossChainAddress = j["CrossChainAddress"].get<std::vector<std::string>>();
+			_outputIndex = j["OutputIndex"].get<std::vector<uint64_t>>();
+			_crossChainAmount = j["CrossChainAmount"].get<std::vector<uint64_t >>();
 		}
 	}
 }

@@ -6,57 +6,55 @@
 
 #include "catch.hpp"
 #include "Payload/Asset.h"
+#include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("Asset test", "[Asset]") {
 
+	srand(time(nullptr));
+
 	SECTION("Asset interface Test") {
 		Asset asset;
-		std::string name = "testName";
-		std::string desc = "a test description";
 
-		asset.setName(name);
-		asset.setDescription(desc);
+		asset.setName(getRandString(50));
+		asset.setDescription(getRandString(80));
+		asset.setPrecision(rand());
 		asset.setAssetType(Asset::AssetType::Share);
 		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
 
-		REQUIRE(asset.getName() == name);
-		REQUIRE(asset.getDescription() == desc);
-		REQUIRE(asset.getAssetType() == Asset::AssetType::Share);
-		REQUIRE(asset.getAssetRecordType() == Asset::AssetRecordType::Balance);
+		ByteStream stream;
+		asset.Serialize(stream);
 
-		ByteStream byteStream;
-		asset.Serialize(byteStream);
-
-		byteStream.setPosition(0);
+		stream.setPosition(0);
 
 		Asset asset1;
-		asset1.Deserialize(byteStream);
+		asset1.Deserialize(stream);
 
 		REQUIRE(asset1.getName() == asset.getName());
 		REQUIRE(asset1.getDescription() == asset.getDescription());
+		REQUIRE(asset1.getPrecision() == asset.getPrecision());
 		REQUIRE(asset1.getAssetType() == asset.getAssetType());
 		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
 	}
 
 	SECTION("toJson fromJson test") {
 		Asset asset;
-		std::string name = "testName";
-		std::string desc = "a test description";
 
-		asset.setName(name);
-		asset.setDescription(desc);
+		asset.setName(getRandString(80));
+		asset.setDescription(getRandString(40));
+		asset.setPrecision(rand());
 		asset.setAssetType(Asset::AssetType::Share);
 		asset.setAssetRecordType(Asset::AssetRecordType::Balance);
 
-		nlohmann::json jsonData = asset.toJson();
+		nlohmann::json j = asset.toJson();
 
 		Asset asset1;
-		asset1.fromJson(jsonData);
+		asset1.fromJson(j);
 
 		REQUIRE(asset1.getName() == asset.getName());
 		REQUIRE(asset1.getDescription() == asset.getDescription());
+		REQUIRE(asset1.getPrecision() == asset.getPrecision());
 		REQUIRE(asset1.getAssetType() == asset.getAssetType());
 		REQUIRE(asset1.getAssetRecordType() == asset.getAssetRecordType());
 	}

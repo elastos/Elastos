@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <cstring>
+#include <SDK/Common/Log.h>
 
 #include "Asset.h"
 #include "BRInt.h"
@@ -14,7 +15,7 @@ namespace Elastos {
 				_description(""),
 				_precision(0),
 				_assetType(AssetType::Share),
-				_assetRecordType(AssetRecordType::Unspent) {
+				_recordType(AssetRecordType::Unspent) {
 
 		}
 
@@ -38,7 +39,7 @@ namespace Elastos {
 			return _description;
 		}
 
-		void Asset::setAssetType(const Asset::AssetType type) {
+		void Asset::setAssetType(Asset::AssetType type) {
 			_assetType = type;
 		}
 
@@ -46,15 +47,15 @@ namespace Elastos {
 			return _assetType;
 		}
 
-		void Asset::setAssetRecordType(const Asset::AssetRecordType type) {
-			_assetRecordType = type;
+		void Asset::setAssetRecordType(Asset::AssetRecordType type) {
+			_recordType = type;
 		}
 
 		Asset::AssetRecordType Asset::getAssetRecordType() const {
-			return _assetRecordType;
+			return _recordType;
 		}
 
-		void Asset::setPrecision(const uint8_t precision) {
+		void Asset::setPrecision(uint8_t precision) {
 			_precision = precision;
 		}
 
@@ -63,69 +64,60 @@ namespace Elastos {
 		}
 
 		void Asset::Serialize(ByteStream &ostream) const {
-			uint64_t len = _name.length();
-			ostream.putVarUint(len);
-			ostream.putBytes((uint8_t *) _name.c_str(), len);
-
-			len = _description.length();
-			ostream.putVarUint(len);
-			ostream.putBytes((uint8_t *) _description.c_str(), len);
-
-			ostream.put(_precision);
-
-			ostream.put((uint8_t)_assetType);
-
-			ostream.put((uint8_t)_assetRecordType);
+			ostream.writeVarString(_name);
+			ostream.writeVarString(_description);
+			ostream.writeBytes(&_precision, 1);
+			ostream.writeBytes(&_assetType, 1);
+			ostream.writeBytes(&_recordType, 1);
 		}
 
 		bool Asset::Deserialize(ByteStream &istream) {
-			uint64_t len = istream.getVarUint();
-			char nameBuf[len + 1];
-			istream.getBytes((uint8_t *) nameBuf, len);
-			nameBuf[len] = '\0';
-			_name = std::string(nameBuf);
+			if (!istream.readVarString(_name)) {
+				Log::getLogger()->error("Asset payload deserialize name fail");
+				return false;
+			}
 
-			len = istream.getVarUint();
-			char description[len + 1];
-			istream.getBytes((uint8_t *) description, len);
-			description[len] = '\0';
-			_description = std::string(description);
+			if (!istream.readVarString(_description)) {
+				Log::getLogger()->error("Asset payload deserialize description fail");
+				return false;
+			}
 
-			_precision = istream.get();
+			if (!istream.readBytes(&_precision, 1)) {
+				Log::getLogger()->error("Asset payload deserialize precision fail");
+				return false;
+			}
 
-			_assetType = AssetType(istream.get());
+			if (!istream.readBytes(&_assetType, 1)) {
+				Log::getLogger()->error("Asset payload deserialize asset type fail");
+				return false;
+			}
 
-			_assetRecordType = AssetRecordType(istream.get());
+			if (!istream.readBytes(&_recordType, 1)) {
+				Log::getLogger()->error("Asset payload deserialize record type fail");
+				return false;
+			}
 
 			return true;
 		}
 
 		nlohmann::json Asset::toJson() const {
-			nlohmann::json jsonData;
+			nlohmann::json j;
 
-			jsonData["name"] = _name;
+			j["Name"] = _name;
+			j["Description"] = _description;
+			j["Precision"] = _precision;
+			j["AssetType"] = _assetType;
+			j["RecordType"] = _recordType;
 
-			jsonData["description"] = _description;
-
-			jsonData["precision"] = _precision;
-
-			jsonData["assetType"] = _assetType;
-
-			jsonData["assetRecordType"] = _assetRecordType;
-
-			return jsonData;
+			return j;
 		}
 
-		void Asset::fromJson(const nlohmann::json &jsonData) {
-			_name = jsonData["name"].get<std::string>();
-
-			_description = jsonData["description"].get<std::string>();
-
-			_precision = jsonData["precision"].get<uint8_t>();
-
-			_assetType = jsonData["assetType"].get<AssetType>();
-
-			_assetRecordType = jsonData["assetRecordType"].get<AssetRecordType>();
+		void Asset::fromJson(const nlohmann::json &j) {
+			_name = j["Name"].get<std::string>();
+			_description = j["Description"].get<std::string>();
+			_precision = j["Precision"].get<uint8_t>();
+			_assetType = j["AssetType"].get<AssetType>();
+			_recordType = j["RecordType"].get<AssetRecordType>();
 		}
 	}
 }

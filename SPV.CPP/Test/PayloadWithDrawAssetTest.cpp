@@ -7,48 +7,61 @@
 #include "catch.hpp"
 #include "BRInt.h"
 #include "Payload/PayloadWithDrawAsset.h"
+#include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("PayloadWithDrawAsset Test", "[PayloadWithDrawAsset]") {
 
-    SECTION("none init test") {
-        PayloadWithDrawAsset pwda, pwda_re;
-        CMBlock bd_src, bd_re;
-        ByteStream stream;
+	srand(time(nullptr));
 
-        pwda.Serialize(stream);
-        stream.setPosition(0);
-        pwda_re.Deserialize(stream);
+	SECTION("Serialize and deserialize test") {
+		PayloadWithDrawAsset pa, pb;
+		ByteStream stream;
 
-        bd_src = pwda.getData();
-        bd_re = pwda_re.getData();
+		pa.setBlockHeight(rand());
+		pa.setGenesisBlockAddress(getRandString(100));
+		std::vector<UInt256> hashes;
+		for (size_t i = 0; i < 20; ++i) {
+			hashes.push_back(getRandUInt256());
+		}
+		pa.setSideChainTransacitonHash(hashes);
+		pa.Serialize(stream);
 
-        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
+		stream.setPosition(0);
+		REQUIRE(pb.Deserialize(stream));
 
-        if (bd_src && bd_re)
-            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
-    }
+		REQUIRE(pa.getBlockHeight() == pb.getBlockHeight());
+		REQUIRE(pa.getGenesisBlockAddress() == pb.getGenesisBlockAddress());
+		std::vector<UInt256> pbHashes = pb.getSideChainTransacitonHash();
+		REQUIRE(hashes.size() == pbHashes.size());
+		for (size_t i = 0; i < pbHashes.size(); ++i) {
+			REQUIRE(UInt256Eq(&hashes[i], &pbHashes[i]));
+		}
+	}
 
-    SECTION("init test") {
-        PayloadWithDrawAsset pwda, pwda_re;
-        CMBlock bd_src, bd_re;
-        ByteStream stream;
+	SECTION("To and from json") {
+		PayloadWithDrawAsset pa, pb;
 
-        pwda.setBlockHeight(100);
-        pwda.setGenesisBlockAddress("address");
-        pwda.setSideChainTransacitonHash("hash");
-        pwda.Serialize(stream);
-        stream.setPosition(0);
-        pwda_re.Deserialize(stream);
+		pa.setBlockHeight(rand());
+		pa.setGenesisBlockAddress(getRandString(100));
+		std::vector<UInt256> hashes;
+		for (size_t i = 0; i < 20; ++i) {
+			hashes.push_back(getRandUInt256());
+		}
+		pa.setSideChainTransacitonHash(hashes);
 
-        bd_src = pwda.getData();
-        bd_re = pwda_re.getData();
+		nlohmann::json j = pa.toJson();
 
-        REQUIRE(bd_src.GetSize()==bd_re.GetSize());
+		pb.fromJson(j);
 
-        if (bd_src && bd_re)
-            REQUIRE(0==memcmp(bd_src, bd_re, bd_src.GetSize()));
-    }
+		REQUIRE(pa.getBlockHeight() == pb.getBlockHeight());
+		REQUIRE(pa.getGenesisBlockAddress() == pb.getGenesisBlockAddress());
+		std::vector<UInt256> pbHashes = pb.getSideChainTransacitonHash();
+		REQUIRE(hashes.size() == pbHashes.size());
+		for (size_t i = 0; i < pbHashes.size(); ++i) {
+			REQUIRE(UInt256Eq(&hashes[i], &pbHashes[i]));
+		}
+	}
 
 }

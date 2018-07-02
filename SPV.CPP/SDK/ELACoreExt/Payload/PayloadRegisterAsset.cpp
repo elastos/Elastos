@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Log.h>
 #include "PayloadRegisterAsset.h"
 #include "Utils.h"
 
@@ -60,48 +61,43 @@ namespace Elastos {
 		void PayloadRegisterAsset::Serialize(ByteStream &ostream) const {
 			_asset.Serialize(ostream);
 
-			uint8_t amountData[64 / 8];
-			UInt64SetLE(amountData, _amount);
-			ostream.putBytes(amountData, sizeof(amountData));
-
-			uint8_t controllerData[168 / 8];
-			UInt168Set(controllerData, _controller);
-			ostream.putBytes(controllerData, sizeof(controllerData));
+			ostream.writeBytes(&_amount, sizeof(_amount));
+			ostream.writeBytes(_controller.u8, sizeof(_controller));
 		}
 
 		bool PayloadRegisterAsset::Deserialize(ByteStream &istream) {
-			_asset.Deserialize(istream);
+			if (!_asset.Deserialize(istream)) {
+				Log::error("Payload register asset deserialize asset fail");
+				return false;
+			}
 
-			uint8_t amountData[64 / 8];
-			istream.getBytes(amountData, sizeof(amountData));
-			_amount = UInt64GetLE(amountData);
+			if (!istream.readBytes(&_amount, sizeof(_amount))) {
+				Log::error("Payload register asset deserialize amount fail");
+				return false;
+			}
 
-			uint8_t controllerData[168 / 8];
-			istream.getBytes(controllerData, sizeof(controllerData));
-			UInt168Get(&_controller, controllerData);
+			if (!istream.readBytes(_controller.u8, sizeof(_controller))) {
+				Log::error("Payload register asset deserialize controller fail");
+				return false;
+			}
 
 			return true;
 		}
 
 		nlohmann::json PayloadRegisterAsset::toJson() const {
-			nlohmann::json jsonData;
-			nlohmann::json assetJson = _asset.toJson();
-			jsonData["asset"] = assetJson;
+			nlohmann::json j;
 
-			jsonData["amount"] = _amount;
+			j["Asset"] = _asset.toJson();
+			j["Amount"] = _amount;
+			j["Controller"] = Utils::UInt168ToString(_controller);
 
-			jsonData["controller"] = Utils::UInt168ToString(_controller);
-
-			return jsonData;
+			return j;
 		}
 
-		void PayloadRegisterAsset::fromJson(const nlohmann::json &jsonData) {
-			_asset.fromJson(jsonData["asset"]);
-
-			_amount = jsonData["amount"].get<uint64_t>();
-
-			std::string controller = jsonData["controller"].get<std::string>();
-			_controller = Utils::UInt168FromString(controller);
+		void PayloadRegisterAsset::fromJson(const nlohmann::json &j) {
+			_asset.fromJson(j["Asset"]);
+			_amount = j["Amount"].get<uint64_t>();
+			_controller = Utils::UInt168FromString(j["Controller"].get<std::string>());
 		}
 	}
 }

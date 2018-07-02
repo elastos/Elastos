@@ -35,15 +35,15 @@ namespace Elastos {
 
 			std::string getDescription() const;
 
-			void setAssetType(const Asset::AssetType type);
+			void setAssetType(Asset::AssetType type);
 
 			Asset::AssetType getAssetType() const;
 
-			void setAssetRecordType(const Asset::AssetRecordType type);
+			void setAssetRecordType(Asset::AssetRecordType type);
 
 			Asset::AssetRecordType getAssetRecordType() const;
 
-			void setPrecision(const uint8_t precision);
+			void setPrecision(uint8_t precision);
 
 			uint8_t getPrecision() const;
 
@@ -60,7 +60,7 @@ namespace Elastos {
 			std::string _description;
 			uint8_t _precision;
 			AssetType _assetType;
-			AssetRecordType _assetRecordType;
+			AssetRecordType _recordType;
 		};
 	}
 }

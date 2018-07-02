@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Log.h>
+#include <SDK/Common/Utils.h>
 #include "PayloadWithDrawAsset.h"
 #include "BRInt.h"
 
@@ -10,13 +12,12 @@ namespace Elastos {
 
 		PayloadWithDrawAsset::PayloadWithDrawAsset() :
 				_blockHeight(0),
-				_genesisBlockAddress(""),
-				_sideChainTransactionHash("") {
+				_genesisBlockAddress("") {
 
 		}
 
-		PayloadWithDrawAsset::PayloadWithDrawAsset(const uint32_t blockHeight, const std::string genesisBlockAddress,
-		                                           const std::string sideChainTransactionHash) {
+		PayloadWithDrawAsset::PayloadWithDrawAsset(uint32_t blockHeight, const std::string &genesisBlockAddress,
+		                                           const std::vector<UInt256> &sideChainTransactionHash) {
 			_blockHeight = blockHeight;
 			_genesisBlockAddress = genesisBlockAddress;
 			_sideChainTransactionHash = sideChainTransactionHash;
@@ -25,16 +26,28 @@ namespace Elastos {
 		PayloadWithDrawAsset::~PayloadWithDrawAsset() {
 		}
 
-		void PayloadWithDrawAsset::setBlockHeight(const uint32_t blockHeight) {
+		void PayloadWithDrawAsset::setBlockHeight(uint32_t blockHeight) {
 			_blockHeight = blockHeight;
 		}
 
-		void PayloadWithDrawAsset::setGenesisBlockAddress(const std::string genesisBlockAddress) {
+		uint32_t PayloadWithDrawAsset::getBlockHeight() const {
+			return _blockHeight;
+		}
+
+		void PayloadWithDrawAsset::setGenesisBlockAddress(const std::string &genesisBlockAddress) {
 			_genesisBlockAddress = genesisBlockAddress;
 		}
 
-		void PayloadWithDrawAsset::setSideChainTransacitonHash(const std::string sideChainTransactionHash) {
+		const std::string &PayloadWithDrawAsset::getGenesisBlockAddress() const {
+			return _genesisBlockAddress;
+		}
+
+		void PayloadWithDrawAsset::setSideChainTransacitonHash(const std::vector<UInt256> &sideChainTransactionHash) {
 			_sideChainTransactionHash = sideChainTransactionHash;
+		}
+
+		const std::vector<UInt256> &PayloadWithDrawAsset::getSideChainTransacitonHash() const {
+			return _sideChainTransactionHash;
 		}
 
 		CMBlock PayloadWithDrawAsset::getData() const {
@@ -44,58 +57,67 @@ namespace Elastos {
 		}
 
 		void PayloadWithDrawAsset::Serialize(ByteStream &ostream) const {
-			uint8_t heightData[32 / 8];
-			UInt32SetLE(heightData, _blockHeight);
-			ostream.putBytes(heightData, sizeof(heightData));
+			ostream.writeUint32(_blockHeight);
+			ostream.writeVarString(_genesisBlockAddress);
+			ostream.writeVarUint((uint64_t)_sideChainTransactionHash.size());
 
-			uint64_t len = _genesisBlockAddress.length();
-			ostream.putVarUint(len);
-			ostream.putBytes((uint8_t *) _genesisBlockAddress.c_str(), len);
-
-			len = _sideChainTransactionHash.length();
-			ostream.putVarUint(len);
-			ostream.putBytes((uint8_t *) _sideChainTransactionHash.c_str(), len);
+			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i) {
+				ostream.writeBytes(_sideChainTransactionHash[i].u8, sizeof(UInt256));
+			}
 		}
 
 		bool PayloadWithDrawAsset::Deserialize(ByteStream &istream) {
-			//blockHeight = istream.getVarUint();
-			uint8_t heightData[32 / 8];
-			istream.getBytes(heightData, (uint64_t)sizeof(heightData));
-			_blockHeight = UInt32GetLE(heightData);
+			if (!istream.readUint32(_blockHeight)) {
+				Log::error("Payload with draw asset deserialize block height fail");
+				return false;
+			}
 
-			uint64_t len = istream.getVarUint();
-			char addr[len + 1];
-			istream.getBytes((uint8_t *) addr, len);
-			addr[len] = '\0';
-			_genesisBlockAddress = std::string(addr);
+			if (!istream.readVarString(_genesisBlockAddress)) {
+				Log::error("Payload with draw asset deserialize genesis block address fail");
+				return false;
+			}
 
-			len = istream.getVarUint();
-			char hash[len + 1];
-			istream.getBytes((uint8_t *) hash, len);
-			hash[len] = '\0';
-			_sideChainTransactionHash = std::string(hash);
+			uint64_t len = 0;
+			if (!istream.readVarUint(len)) {
+				Log::error("Payload with draw asset deserialize side chain tx hash len fail");
+				return false;
+			}
+
+			_sideChainTransactionHash.resize(len);
+			for (uint64_t i = 0; i < len; ++i) {
+				if (!istream.readBytes(_sideChainTransactionHash[i].u8, sizeof(UInt256))) {
+					Log::getLogger()->error("Payload with draw asset deserialize side chain tx hash[{}] fail", i);
+					return false;
+				}
+			}
 
 			return true;
 		}
 
 		nlohmann::json PayloadWithDrawAsset::toJson() const {
-			nlohmann::json jsonData;
+			nlohmann::json j;
 
-			jsonData["BlockHeight"] = _blockHeight;
+			j["BlockHeight"] = _blockHeight;
+			j["GenesisBlockAddress"] = _genesisBlockAddress;
+			std::vector<std::string> hashes;
+			for (size_t i = 0; i < _sideChainTransactionHash.size(); ++i) {
+				std::string str = Utils::UInt256ToString(_sideChainTransactionHash[i]);
+				hashes.push_back(str);
+			}
+			j["SideChainTransactionHash"] = hashes;
 
-			jsonData["GenesisBlockAddress"] = _genesisBlockAddress;
-
-			jsonData["SideChainTransactionHash"] = _sideChainTransactionHash;
-
-			return jsonData;
+			return j;
 		}
 
-		void PayloadWithDrawAsset::fromJson(const nlohmann::json &jsonData) {
-			_blockHeight = jsonData["BlockHeight"];
+		void PayloadWithDrawAsset::fromJson(const nlohmann::json &j) {
+			_blockHeight = j["BlockHeight"].get<uint32_t>();
+			_genesisBlockAddress = j["GenesisBlockAddress"].get<std::string>();
 
-			_genesisBlockAddress = jsonData["GenesisBlockAddress"];
-
-			_sideChainTransactionHash = jsonData["SideChainTransactionHash"];
+			std::vector<std::string> hashes = j["SideChainTransactionHash"].get<std::vector<std::string>>();
+			_sideChainTransactionHash.resize(hashes.size());
+			for (size_t i = 0; i < hashes.size(); ++i) {
+				_sideChainTransactionHash[i] = Utils::UInt256FromString(hashes[i]);
+			}
 		}
 	}
 }

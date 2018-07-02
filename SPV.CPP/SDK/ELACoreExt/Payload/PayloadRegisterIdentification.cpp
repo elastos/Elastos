@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Log.h>
 #include "PayloadRegisterIdentification.h"
 #include "Utils.h"
 
@@ -71,51 +72,38 @@ namespace Elastos {
 			assert(!_path.empty());
 			assert(_sign.GetSize() > 0);
 
-			ostream.putVarUint(_id.size());
-			ostream.putBytes((const uint8_t *) _id.c_str(), _id.size());
-
-			ostream.putVarUint(_path.size());
-			ostream.putBytes((const uint8_t *) _path.c_str(), _path.size());
-
-			uint8_t dataHashData[256 / 8];
-			UInt256Set(dataHashData, _dataHash);
-			ostream.putBytes(dataHashData, 256 / 8);
-
-			ostream.putVarUint(_proof.GetSize());
-			if (_proof.GetSize() != 0)
-				ostream.putBytes((uint8_t *)_proof, _proof.GetSize());
-
-			ostream.putVarUint(_sign.GetSize());
-			ostream.putBytes((uint8_t *)_sign, _sign.GetSize());
+			ostream.writeVarString(_id);
+			ostream.writeVarString(_path);
+			ostream.writeBytes(_dataHash.u8, sizeof(_dataHash));
+			ostream.writeVarBytes(_proof);
+			ostream.writeVarBytes(_sign);
 		}
 
 		bool PayloadRegisterIdentification::Deserialize(ByteStream &istream) {
-			uint64_t idLen = istream.getVarUint();
-			assert(idLen > 0);
-			char *idData = new char[idLen];
-			istream.getBytes((uint8_t *) idData, idLen);
-			_id = std::string(idData, idLen);
-
-			uint64_t pathLen = istream.getVarUint();
-			assert(pathLen > 0);
-			char *pathData = new char[pathLen];
-			istream.getBytes((uint8_t *) pathData, pathLen);
-			_path = std::string(pathData, pathLen);
-
-			uint8_t dataHashData[256 / 8];
-			istream.getBytes(dataHashData, 256 / 8);
-			UInt256Get(&_dataHash, dataHashData);
-
-			uint64_t proofLen = istream.getVarUint();
-			if (proofLen > 0) {
-				_proof = CMBlock((size_t)proofLen);
-				istream.getBytes(_proof, proofLen);
+			if (!istream.readVarString(_id)) {
+				Log::error("Payload register identification deserialize id fail");
+				return false;
 			}
 
-			uint64_t signLen = istream.getVarUint();
-			assert(signLen > 0);
-			_sign = CMBlock((size_t)signLen);
-			istream.getBytes(_sign, signLen);
+			if (!istream.readVarString(_path)) {
+				Log::error("Payload register identification deserialize path fail");
+				return false;
+			}
+
+			if (!istream.readBytes(_dataHash.u8, sizeof(_dataHash))) {
+				Log::error("Payload register identification deserialize data hash fail");
+				return false;
+			}
+
+			if (!istream.readVarBytes(_proof)) {
+				Log::error("Payload register identification deserialize proof fail");
+				return false;
+			}
+
+			if (!istream.readVarBytes(_sign)) {
+				Log::error("Payload register identification deserialize sign fail");
+				return false;
+			}
 
 			return true;
 		}
