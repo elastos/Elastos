@@ -29,6 +29,7 @@
 #include "BRInt.h"
 #include "BRPeerMessages.h"
 #include "BRMerkleBlock.h"
+#include "BRPeer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -40,6 +41,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <unistd.h>
 
 #define PROTOCOL_TIMEOUT      20.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
@@ -640,11 +642,12 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
     UInt128 *addr, *addrList = NULL;
     BRFindPeersInfo *info;
 
-    size_t peersCount = manager->fiexedPeers ?  0 : array_count(manager->fiexedPeers);
+    size_t peersCount = manager->fiexedPeers == NULL ?  0 : array_count(manager->fiexedPeers);
 	if(peersCount > 0) {
 		array_set_count(manager->peers, peersCount);
 		for (int i = 0; i < peersCount; ++i) {
 			manager->peers[i] = manager->fiexedPeers[i];
+			manager->peers[i].timestamp = now;
 		}
     }
     else if (! UInt128IsZero(&manager->fixedPeer.address)) {
@@ -788,8 +791,6 @@ static void _peerDisconnected(void *info, int error)
     int willSave = 0, willReconnect = 0, txError = 0;
     size_t txCount = 0;
 
-    peer_log(peer, "_peerDisconnected !!!!!!!!!!!!!!!!!!!!!!!!!!! error %d", error);
-
     //free(info);
     pthread_mutex_lock(&manager->lock);
 
@@ -835,10 +836,7 @@ static void _peerDisconnected(void *info, int error)
         txError = ENOTCONN; // trigger any pending tx publish callbacks
         willSave = 1;
         peer_log(peer, "_peerDisconnected  array_clear sync failed");
-    }
-    else if (manager->connectFailureCount < MAX_CONNECT_FAILURES)
-    {
-        if((error != ECONNRESET) &&  (error != EBADF))
+    } else if (manager->connectFailureCount < MAX_CONNECT_FAILURES) {
             willReconnect = 1;
     }
 
@@ -862,6 +860,12 @@ static void _peerDisconnected(void *info, int error)
 
     BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
+
+    if (array_count(manager->connectedPeers) <= 0 && array_count(manager->peers) <= 0) {
+        _peer_log("No connected peers left, going to find peers and do reconnect again");
+        sleep(5);
+        willReconnect = 1;
+    }
 
     for (size_t i = 0; i < txCount; i++) {
         pubTx[i].callback(pubTx[i].info, txError);
