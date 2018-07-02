@@ -318,7 +318,7 @@ func SubmitSideAuxBlock(param Params) map[string]interface{} {
 	log.Trace("AddBlock called finished and LocalPow.MsgBlock.BlockData has been deleted completely")
 
 	log.Info(sideAuxPow, blockHash)
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, blockHash)
 }
 
 func GenerateAuxBlock(addr string) (*Block, string, bool) {
