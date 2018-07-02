@@ -190,7 +190,7 @@ public class Stream {
         if (channel < 0)
             throw new ElastosException(get_error_code());
 
-        Log.d(TAG, String.format("Channel %d on component %d created", channel));
+        Log.d(TAG, String.format("Channel %d on stream %d created", channel, streamId));
 
         return channel;
     }
@@ -214,7 +214,7 @@ public class Stream {
         if (!result)
             throw new ElastosException(get_error_code());
 
-        Log.d(TAG, String.format("Channel %d on component %d closed", channel));
+        Log.d(TAG, String.format("Channel %d on stream %d closed", channel, streamId));
     }
 
     /**

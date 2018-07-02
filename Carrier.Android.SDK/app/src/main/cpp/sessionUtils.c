@@ -299,11 +299,11 @@ int setJavaTransportInfo(JNIEnv *env, jobject jtransport, ElaTransportInfo *info
         return 0;
     }
 
-    result = callVoidMethod(env, clazz, jtransport, "setRelatedAddressInfo",
+    result = callVoidMethod(env, clazz, jtransport, "setRemoteAddressInfo",
                             "("_S("AddressInfo;)V"),
                             jremotedAddrInfo);
     if (!result) {
-        logE("Call method setAddressInfo error");
+        logE("Call method setRemoteAddressInfo error");
         (*env)->DeleteLocalRef(env, jremotedAddrInfo);
         return 0;
     }
