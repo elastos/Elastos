@@ -301,7 +301,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 		ela->raw.lockTime = rand();
 		ela->raw.blockHeight = rand();
 		ela->raw.timestamp = rand();
-		ela->type = ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
+		ela->type = ELATransaction::Type::TransferAsset;// ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
 		ela->payloadVersion = rand() % sizeof(ela->payloadVersion);
 		ela->fee = rand();
 		ela->payload = ELAPayloadNew(ela->type);

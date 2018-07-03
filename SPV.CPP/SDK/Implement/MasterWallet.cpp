@@ -364,10 +364,10 @@ namespace Elastos {
 			ParamChecker::checkDataNotEmpty(keyData);
 
 			Key key;
-			char stmp[keyData.GetSize()];
-			memcpy(stmp, keyData, keyData.GetSize());
-			std::string secret(stmp, keyData.GetSize() - 1);
-			key.setPrivKey(secret);
+			UInt256 secret;
+			memcpy(secret.u8, keyData, keyData.GetSize());
+			key.setSecret(secret, true);
+
 			return key;
 		}
 

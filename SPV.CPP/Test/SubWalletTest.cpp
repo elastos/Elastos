@@ -16,21 +16,21 @@
 
 using namespace Elastos::ElaWallet;
 
-const std::vector<std::string> DefaultAddress = {"EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2",
-												 "EZtc45NGEL24XQuELByQSsYLPByufqkRdk",
-												 "EPKRAkQ4sCafEsN3SPvu1iLC3ZrmARocdr",
-												 "EZhYHLWJkfY17UApDKXqzWhL2DxriGTPmJ",
-												 "EP9ddfGU8xVhyvT2F2waDxtPQ4cxgxHocM",
-												 "EdTnJ92D6quqRKTJULzXAu3Tgk3zbv12pQ",
-												 "EZB7pMspUsmoHHjMEWYmgw1ig831dnqv81",
-												 "EYrHUoi6n2H9MMkaGsRESFGqv93NV5Ebmh",
-												 "EeRzG9UF15t1uXNoUbbEKBxE4MEPZsXBYt",
-												 "ETvGpXAXj3y4g7rXTCmDkCaHedoi9qEndF",
-												 "EHUx8tCvb9gXft7AzVFWTjwLbf9M4Pr7nZ",
-												 "EZ8niD7SZLoDXND5tmLWi3eE7wnMqZ4KpA",
-												 "ERSJuZ9hn2tenNoryJxgemAy7ZuUNneoh4",
-												 "EWugpfbNrbyNPzSHEr8LrHbAxfub8Xw8MB",
-												 "EXwjpPEDCTRErWPRAzSSVPRhWTfN5kAXR9"};
+const std::vector<std::string> DefaultAddress = {"EZcvtcsT8wXSXBTeijCdSXvT2sk62yPii5",
+												 "ETjMGz4GAGxMjMaoNwhJR1ynjrEGEUDpQQ",
+												 "ESAQdQkT5PKbNtpfwQmQRMkYRmUvgXp691",
+												 "EeUmo1rGzS3QYvJwN5JcvDhEWnWrWHeKh4",
+												 "EKWns42jGDcyywWcyW3Q6sZASabcnMeJ2b",
+												 "ETcSvQZcnnSouBzTu2bVsLaxUmNAiQVVHt",
+												 "EYJivg6CgYZahvSciWyMeq1x1XkkWzK4kr",
+												 "EJp7CJjNHhPnJF73w2EKBcbdwHZ4apKFQ6",
+												 "EVQPDnDdhZMEzT8z6xVQ2EUMtwrUXFzw9f",
+												 "Eg6Yzkk2V1YgSdK4qzQiTuZohAYo28zPG8",
+												 "EWijTKFpy74Z8kqjvrBF4Ku6qb952zVpzM",
+												 "EM6b5VuftZWPd2kwQtZFRfuJXu1wHNSTA9",
+												 "EgUPP1SsvdmH1epbPSy7ZNDtTqFyfUQrSX",
+												 "EKpkNcPf11ssfk1cNcUgBx44pg7sKZ32gU",
+												 "ET8H6JMCDQiKShGjshmJzTdbLYbfYkQRJ9"};
 
 class TestMasterWallet : public MasterWallet {
 public:
@@ -187,7 +187,7 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 		nlohmann::json j = subWallet->GetAllAddress(0, INT_MAX);
 		std::vector<std::string> addresses = j["Addresses"].get<std::vector<std::string>>();
 		REQUIRE(addresses.size() == 1);
-		REQUIRE(addresses[0] == "EYcnUa1FkBKE5ff7hhpYM8g7kxta9MEPaq");
+		REQUIRE(addresses[0] == "EYC6q2vatgiN7KaNX4BDHSUAJ5nqNKvisD");
 
 		std::string newAddress = subWallet->CreateAddress(); //we did't create address actually because current addresses have not used
 		REQUIRE(!newAddress.empty());
@@ -230,10 +230,10 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 		CHECK_NOTHROW(subWallet->CreateTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
 				50 * BASIC_UINT, BASIC_UINT, "", ""));
 
-		CHECK_THROWS_AS(subWallet->CreateTransaction("EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2", "",
+		CHECK_THROWS_AS(subWallet->CreateTransaction("EZcvtcsT8wXSXBTeijCdSXvT2sk62yPii5", "",
 		                                             50 * BASIC_UINT, BASIC_UINT, "", ""), std::logic_error);
 
-		CHECK_NOTHROW(txJson = subWallet->CreateTransaction("EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2",
+		CHECK_NOTHROW(txJson = subWallet->CreateTransaction("EZcvtcsT8wXSXBTeijCdSXvT2sk62yPii5",
 				"ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", 50 * BASIC_UINT, BASIC_UINT, "", ""));
 
 		REQUIRE(txJson["TxHash"].get<std::string>() != emptyHash);

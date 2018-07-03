@@ -15,6 +15,7 @@ namespace Elastos {
 	namespace ElaWallet {
 		MasterPubKey::MasterPubKey() {
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
+			*_masterPubKey = BR_MASTER_PUBKEY_NONE;
 		}
 
 		MasterPubKey::MasterPubKey(const std::string &phrase, const std::string &phrasePassword) {
@@ -54,6 +55,7 @@ namespace Elastos {
 			return ret;
 		}
 
+		//todo fix or remove ? this is not use derive is not use BRBIP32PubKey
 		boost::shared_ptr<Key> MasterPubKey::getPubKeyAsKey() const {
 			uint8_t pubKey[33];
 			BRBIP32PubKey(pubKey, sizeof(pubKey), *_masterPubKey, 0, 0);

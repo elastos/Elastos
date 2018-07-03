@@ -72,7 +72,11 @@ namespace Elastos {
 
 			Key key;
 			key.setPubKey(mbChildPubKey);
-			return key.keyToAddress(ELA_IDCHAIN);
+			std::string id = key.keyToAddress(ELA_IDCHAIN);
+			item.PublicKey = Utils::encodeHex(mbChildPubKey);
+			_info.Ids[id] = item;
+
+			return id;
 		}
 
 		bool IdAgentImpl::IsIdValid(const std::string &id) {
@@ -101,7 +105,7 @@ namespace Elastos {
 			UInt512 seed = _parentWallet->deriveSeed(password);
 			UInt256 chainCode;
 			KeyPtr keyPtr(new Key());
-			keyPtr->deriveKeyAndChain(chainCode, &seed, sizeof(seed), 2, item.Purpose, item.Index);
+			keyPtr->deriveKeyAndChain(chainCode, &seed, sizeof(seed), 4, 1 | BIP32_HARD, 0, item.Purpose, item.Index);
 			return keyPtr;
 		}
 

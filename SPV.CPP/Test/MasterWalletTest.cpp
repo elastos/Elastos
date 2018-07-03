@@ -531,7 +531,7 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 
 	SECTION("Normal derive") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
-		REQUIRE(id == "iiYz7WnFKyTK6zhMz3PGqs9jj6y3uWJdAr");
+		REQUIRE(id == "ieEtD2XVGgvat7JZbhWTM3VfdF9szifokU");
 		std::string id2 = masterWallet->DeriveIdAndKeyForPurpose(1, 2);
 		REQUIRE(id != id2);
 	}
@@ -558,7 +558,7 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 	SECTION("Normal get") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
 		std::string pubKey = masterWallet->GetPublicKey(id);
-		REQUIRE(pubKey == "03a6ce5f14b32e9e5a8ef4376b412e7c540ef26dc44aff60bd451a32e6fb5ac3c4");
+		REQUIRE(pubKey == "031d15c3d151fef9a347e635c736d3d5492bf20626e2ab821d44496964d5656eab");
 	}
 	SECTION("Should throw with wrong id") {
 		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);

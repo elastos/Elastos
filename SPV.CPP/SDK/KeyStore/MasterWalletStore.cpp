@@ -102,7 +102,7 @@ namespace Elastos {
 			j["PhrasePasword"] = Utils::encodeHex(p.GetEncrptedPhrasePassword());
 			j["Language"] = p.GetLanguage();
 			j["PublicKey"] = p.GetPublicKey();
-			j["MasterKeyChainCode"] = Utils::UInt256ToString(p.GetMasterPubKey().getChainCode());
+			j["ChainCode"] = Utils::UInt256ToString(p.GetMasterPubKey().getChainCode());
 			j["MasterKeyPubKey"] = Utils::encodeHex(p.GetMasterPubKey().getPubKey());
 			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
