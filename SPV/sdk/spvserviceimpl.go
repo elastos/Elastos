@@ -19,6 +19,7 @@ import (
 const (
 	SendTxTimeout     = 10
 	MaxFalsePositives = 7
+	SyncBlockTimeout  = 10
 )
 
 type downloadTx struct {
@@ -130,11 +131,57 @@ func (cq *commitQueue) finished() bool {
 	return len(cq.commitChan) == 0
 }
 
+type syncTimer struct {
+	timeout    time.Duration
+	lastUpdate time.Time
+	quit       chan struct{}
+	onTimeout  func()
+}
+
+func newSyncTimer(onTimeout func()) *syncTimer {
+	return &syncTimer{
+		timeout:   time.Second * SyncBlockTimeout,
+		onTimeout: onTimeout,
+	}
+}
+
+func (t *syncTimer) start() {
+	go func() {
+		t.quit = make(chan struct{}, 1)
+		ticker := time.NewTicker(time.Millisecond * 25)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if time.Now().After(t.lastUpdate.Add(t.timeout)) {
+					t.onTimeout()
+					goto QUIT
+				}
+			case <-t.quit:
+				goto QUIT
+			}
+		}
+	QUIT:
+		t.quit = nil
+	}()
+}
+
+func (t *syncTimer) update() {
+	t.lastUpdate = time.Now()
+}
+
+func (t *syncTimer) stop() {
+	if t.quit != nil {
+		t.quit <- struct{}{}
+	}
+}
+
 // The SPV service implementation
 type SPVServiceImpl struct {
 	sync.Mutex
 	SPVClient
 	chain       *Blockchain
+	syncTimer   *syncTimer
 	blockQueue  chan common.Uint256
 	downloading *downloadBlock
 	commitQueue *commitQueue
@@ -159,6 +206,7 @@ func NewSPVServiceImpl(client SPVClient, foundation string, headerStore store.He
 	}
 
 	// Block downloading and commit
+	service.syncTimer = newSyncTimer(service.changeSyncPeerAndRestart)
 	service.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*3)
 	service.downloading = newDownloadBlock()
 	service.commitQueue = newCommitQueue(service.chain.ChainTip().Hash())
@@ -290,6 +338,8 @@ func (s *SPVServiceImpl) syncBlocks() {
 		s.chain.SetChainState(SYNCING)
 		// Request blocks
 		s.requestBlocks()
+		// Start sync timer
+		s.syncTimer.start()
 	} else {
 		s.stopSyncing()
 	}
@@ -297,6 +347,8 @@ func (s *SPVServiceImpl) syncBlocks() {
 
 func (s *SPVServiceImpl) stopSyncing() {
 	if s.chain.IsSyncing() {
+		// Stop sync timer
+		s.syncTimer.stop()
 		// Set blockchain state to waiting
 		s.chain.SetChainState(WAITING)
 		// Remove sync peer
@@ -456,6 +508,9 @@ func (s *SPVServiceImpl) OnTx(peer *net.Peer, msg *msg.Tx) error {
 }
 
 func (s *SPVServiceImpl) finishDownload(peer *net.Peer) {
+	// Update sync timer
+	s.syncTimer.update()
+	// Commit downloaded block
 	s.commitQueue.Add(s.downloading)
 	s.downloading = newDownloadBlock()
 	// Request next block list when in syncing
