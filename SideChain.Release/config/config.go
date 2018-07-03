@@ -12,8 +12,6 @@ import (
 
 const (
 	DefaultConfigFilename = "./config.json"
-	MINGENBLOCKTIME       = 2
-	DefaultGenBlockTime   = 6
 )
 
 var (

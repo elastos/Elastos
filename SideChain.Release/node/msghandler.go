@@ -138,8 +138,7 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 		return fmt.Errorf("The node handshake with itself")
 	}
 
-	s := node.State()
-	if s != p2p.INIT && s != p2p.HAND {
+	if node.State() != p2p.INIT && node.State() != p2p.HAND {
 		log.Warn("Unknown status to receive version")
 		return fmt.Errorf("Unknown status to receive version")
 	}
@@ -168,10 +167,10 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 	LocalNode.AddAddressToKnownAddress(addr)
 
 	var message p2p.Message
-	if s == p2p.INIT {
+	if node.State() == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
 		message = NewVersion(LocalNode)
-	} else if s == p2p.HAND {
+	} else if node.State() == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
 	}
@@ -182,20 +181,20 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 
 func (h *MsgHandlerV1) onVerAck(verAck *msg.VerAck) error {
 	node := h.node
-	s := node.State()
-	if s != p2p.HANDSHAKE && s != p2p.HANDSHAKED {
+	if node.State() != p2p.HANDSHAKE && node.State() != p2p.HANDSHAKED {
 		log.Warn("unknown status to received verack")
 		return fmt.Errorf("unknown status to received verack")
 	}
 
-	node.SetState(p2p.ESTABLISH)
-
-	if s == p2p.HANDSHAKE {
+	if node.State() == p2p.HANDSHAKE {
 		node.Send(verAck)
 	}
 
+	node.SetState(p2p.ESTABLISH)
+	go node.Heartbeat()
+
 	if LocalNode.NeedMoreAddresses() {
-		node.ReqNeighborList()
+		node.Send(new(msg.Addr))
 	}
 	addr := node.Addr()
 	port := node.Port()
@@ -340,7 +339,9 @@ func (h *MsgHandlerV1) onInventory(inv *msg.Inventory) error {
 		}
 	}
 
-	node.Send(getData)
+	if len(getData.InvList) > 0 {
+		node.Send(getData)
+	}
 	return nil
 }
 
