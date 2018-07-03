@@ -111,6 +111,10 @@ func (node *node) HeartBeatMonitor() {
 }
 
 func (node *node) RequireNeighbourList() {
+	// Do not request addresses from extra node
+	if node.IsFromExtraNet() {
+		return
+	}
 	go node.Send(new(msg.GetAddr))
 }
 
