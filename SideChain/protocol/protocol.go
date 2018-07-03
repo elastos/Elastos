@@ -15,20 +15,16 @@ import (
 )
 
 const (
+	ProtocolVersion    = 1
+	HandshakeTimeout   = 2
 	MinConnectionCount = 3
-	TimesOfUpdateTime  = 2
-)
-
-const (
-	ProtocolVersion  = 1
-	HandshakeTimeout = 2
-	KeepAliveTimeout = 3
-	DialTimeout      = 6
-	ConnMonitor      = 6
-	MaxSyncHdrReq    = 2 //Max Concurrent Sync Header Request
-	MaxOutBoundCount = 8
-	DefaultMaxPeers  = 125
-	MaxIdCached      = 5000
+	KeepAliveTimeout   = 30
+	DialTimeout        = 6
+	HeartbeatDuration  = 6
+	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
+	MaxOutBoundCount   = 8
+	DefaultMaxPeers    = 125
+	MaxIdCached        = 5000
 )
 
 const (
@@ -47,6 +43,7 @@ type Noder interface {
 	SetState(state uint)
 	State() uint
 	IsRelay() bool
+	Heartbeat()
 	DelNbrNode(id uint64) (Noder, bool)
 	AddNbrNode(Noder)
 	Height() uint64
@@ -57,7 +54,6 @@ type Noder interface {
 	AppendToTxnPool(*core.Transaction) errors.ErrCode
 	IsDuplicateMainchainTx(mainchainTxHash common.Uint256) bool
 	ExistedID(id common.Uint256) bool
-	ReqNeighborList()
 	DumpInfo()
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay uint8, height uint64)

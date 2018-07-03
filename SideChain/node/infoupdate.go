@@ -54,32 +54,27 @@ func (node *node) SyncBlocks() {
 	}
 }
 
-func (node *node) SendPingToNbr() {
-	noders := LocalNode.GetNeighborNoder()
-	for _, n := range noders {
-		if n.State() == p2p.ESTABLISH {
-			n.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
+func (node *node) Heartbeat() {
+	ticker := time.NewTicker(time.Second * HeartbeatDuration)
+	defer ticker.Stop()
+	for range ticker.C {
+		// quit when node disconnected
+		if !LocalNode.IsNeighborNoder(node) {
+			goto QUIT
 		}
-	}
-}
 
-func (node *node) HeartBeatMonitor() {
-	noders := LocalNode.GetNeighborNoder()
-	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
-	for _, n := range noders {
-		if n.State() == p2p.ESTABLISH {
-			t := n.GetLastActiveTime()
-			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KeepAliveTimeout)) {
-				log.Warn("keepalive timeout!!!")
-				n.SetState(p2p.INACTIVITY)
-				n.CloseConn()
-			}
+		// quit when node keep alive timeout
+		if time.Now().After(node.lastActive.Add(time.Second * KeepAliveTimeout)) {
+			log.Warn("keepalive timeout!!!")
+			node.SetState(p2p.INACTIVITY)
+			node.CloseConn()
+			goto QUIT
 		}
-	}
-}
 
-func (node *node) ReqNeighborList() {
-	go node.Send(new(msg.GetAddr))
+		// send ping message to node
+		go node.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
+	}
+QUIT:
 }
 
 func (node *node) ConnectSeeds() {
@@ -101,7 +96,7 @@ func (node *node) ConnectSeeds() {
 			if found {
 				if n.State() == p2p.ESTABLISH {
 					if LocalNode.NeedMoreAddresses() {
-						n.ReqNeighborList()
+						n.Send(new(msg.Addr))
 					}
 				}
 			} else { //not found
@@ -131,22 +126,14 @@ func getNodeAddr(n *node) p2p.NetAddress {
 	return addr
 }
 
-// FIXME part of node info update function could be a node method itself intead of
-// a node map method
-// Fixme the Nodes should be a parameter
 func (node *node) updateNodeInfo() {
-	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
-	ticker := time.NewTicker(time.Second * (time.Duration(periodUpdateTime)) * 2)
+	ticker := time.NewTicker(time.Second * HeartbeatDuration)
 	for {
 		select {
 		case <-ticker.C:
-			node.SendPingToNbr()
 			node.SyncBlocks()
-			node.HeartBeatMonitor()
 		}
 	}
-	// TODO when to close the timer
-	//close(quit)
 }
 
 func (node *node) CheckConnCnt() {
@@ -158,7 +145,7 @@ func (node *node) CheckConnCnt() {
 }
 
 func (node *node) updateConnection() {
-	t := time.NewTicker(time.Second * ConnMonitor)
+	t := time.NewTicker(time.Second * HeartbeatDuration)
 	for {
 		select {
 		case <-t.C:
