@@ -9,10 +9,55 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
+
+type syncTimer struct {
+	timeout    time.Duration
+	lastUpdate time.Time
+	quit       chan struct{}
+	onTimeout  func()
+}
+
+func newSyncTimer(onTimeout func()) *syncTimer {
+	return &syncTimer{
+		timeout:   time.Second * SyncBlockTimeout,
+		onTimeout: onTimeout,
+	}
+}
+
+func (t *syncTimer) start() {
+	go func() {
+		t.quit = make(chan struct{}, 1)
+		ticker := time.NewTicker(time.Millisecond * 25)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if time.Now().After(t.lastUpdate.Add(t.timeout)) {
+					t.onTimeout()
+					goto QUIT
+				}
+			case <-t.quit:
+				goto QUIT
+			}
+		}
+	QUIT:
+		t.quit = nil
+	}()
+}
+
+func (t *syncTimer) update() {
+	t.lastUpdate = time.Now()
+}
+
+func (t *syncTimer) stop() {
+	if t.quit != nil {
+		t.quit <- struct{}{}
+	}
+}
 
 func (node *node) hasSyncPeer() (bool, Noder) {
 	LocalNode.nbrNodes.RLock()
@@ -33,15 +78,10 @@ func (node *node) SyncBlocks() {
 	chain.DefaultLedger.Blockchain.DumpState()
 	bc := chain.DefaultLedger.Blockchain
 	log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
-	if needSync == false {
-		LocalNode.SetSyncHeaders(false)
-		syncNode, err := node.FindSyncNode()
-		if err == nil {
-			syncNode.SetSyncHeaders(false)
-			LocalNode.SetStartHash(EmptyHash)
-			LocalNode.SetStopHash(EmptyHash)
+	if needSync {
+		if LocalNode.IsSyncHeaders() {
+			return
 		}
-	} else {
 		LocalNode.ResetRequestedBlock()
 		hasSyncPeer, syncNode := LocalNode.hasSyncPeer()
 		if hasSyncPeer == false {
@@ -50,7 +90,25 @@ func (node *node) SyncBlocks() {
 		hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 		locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
-		SendGetBlocks(syncNode, locator, EmptyHash)
+		SendGetBlocks(syncNode, locator, common.EmptyHash)
+		LocalNode.SetSyncHeaders(true)
+		syncNode.SetSyncHeaders(true)
+		// Start sync timer
+		LocalNode.syncTimer.start()
+	} else {
+		LocalNode.stopSyncing()
+	}
+}
+
+func (node *node) stopSyncing() {
+	// Stop sync timer
+	LocalNode.syncTimer.stop()
+	LocalNode.SetSyncHeaders(false)
+	syncNode, err := node.FindSyncNode()
+	if err == nil {
+		syncNode.SetSyncHeaders(false)
+		LocalNode.SetStartHash(common.EmptyHash)
+		LocalNode.SetStopHash(common.EmptyHash)
 	}
 }
 

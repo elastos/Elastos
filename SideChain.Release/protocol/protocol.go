@@ -20,6 +20,7 @@ const (
 	MinConnectionCount = 3
 	KeepAliveTimeout   = 30
 	DialTimeout        = 6
+	SyncBlockTimeout   = 10
 	HeartbeatDuration  = 6
 	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount   = 8
