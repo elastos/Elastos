@@ -285,6 +285,7 @@ func (pm *PeerManager) OnAddr(peer *Peer, addr *msg.Addr) error {
 }
 
 func (pm *PeerManager) OnGetAddr(peer *Peer, req *msg.GetAddr) error {
-	peer.Send(msg.NewAddr(pm.am.RandGetAddresses()))
+	// FIXME temporary disable getaddr message to prevent disconnection from main node
+	//peer.Send(msg.NewAddr(pm.am.RandGetAddresses()))
 	return nil
 }
