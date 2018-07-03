@@ -647,7 +647,6 @@ func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 	log.Debug("Get block key: ", BytesToHexString(append(prefix, hash.Bytes()...)))
 	blockData, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
-		log.Error("Get block in store failed: ", err)
 		return false
 	}
 
