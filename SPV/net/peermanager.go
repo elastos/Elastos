@@ -218,7 +218,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 
 	// Handle peer handshake
 	if err := pm.MessageHandler.OnHandshake(v); err != nil {
-		pm.OnDisconnected(peer)
+		peer.Disconnect()
 		return err
 	}
 

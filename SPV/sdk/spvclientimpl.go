@@ -131,13 +131,13 @@ func (client *SPVClientImpl) heartBeat(peer *net.Peer) {
 
 		// Disconnect peer if keep alive timeout
 		if time.Now().After(peer.LastActive().Add(time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
-			client.PeerManager().OnDisconnected(peer)
+			peer.Disconnect()
 			goto QUIT
 		}
 
 		// Send ping message to peer
 		if peer.State() == p2p.ESTABLISH {
-			peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
+			go peer.Send(msg.NewPing(uint32(client.PeerManager().Local().Height())))
 		}
 	}
 QUIT:
