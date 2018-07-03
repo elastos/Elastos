@@ -36,8 +36,7 @@ namespace Elastos {
 
 			std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
-					uint32_t index,
-					const std::string &payPassword);
+					uint32_t index);
 
 			bool IsIdValid(const std::string &id);
 

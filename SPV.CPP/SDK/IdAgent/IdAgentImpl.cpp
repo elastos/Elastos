@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/BTCKey.h>
 
 #include "Utils.h"
 #include "IdAgentImpl.h"
@@ -28,7 +29,7 @@ namespace Elastos {
 		}
 
 		void to_json(json &j, const IdAgentInfo &p) {
-			for(IdAgentInfo::IdMap::const_iterator it = p.Ids.cbegin(); it != p.Ids.cend(); ++it) {
+			for (IdAgentInfo::IdMap::const_iterator it = p.Ids.cbegin(); it != p.Ids.cend(); ++it) {
 				j[it->first] = it->second;
 			}
 		}
@@ -51,8 +52,7 @@ namespace Elastos {
 		}
 
 		std::string
-		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword) {
-			ParamChecker::checkPassword(payPassword);
+		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
 
 			if (purpose == 44)
 				throw std::invalid_argument("Can not use reserved purpose.");
@@ -63,16 +63,16 @@ namespace Elastos {
 				return existedId;
 			}
 
-			UInt512 seed = _parentWallet->deriveSeed(payPassword);
+			CMBlock mbChildPubKey =
+					BTCKey::getDerivePubKey(_parentWallet->_localStore.GetMasterPubKey().getPubKey(),
+											purpose,
+											index,
+											_parentWallet->_localStore.GetMasterPubKey().getChainCode(),
+											NID_X9_62_prime256v1);
 
-			Key wrappedKey;
-			UInt256 chainCode;
-			wrappedKey.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 2, purpose, index);
-			std::string id = wrappedKey.keyToAddress(ELA_IDCHAIN);
-			item.PublicKey = Utils::encodeHex(wrappedKey.getPubkey());
-
-			_info.Ids[id] = item;
-			return id;
+			Key key;
+			key.setPubKey(mbChildPubKey);
+			return key.keyToAddress(ELA_IDCHAIN);
 		}
 
 		bool IdAgentImpl::IsIdValid(const std::string &id) {
@@ -93,7 +93,7 @@ namespace Elastos {
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			if(_info.Ids.find(id) == _info.Ids.end()) {
+			if (_info.Ids.find(id) == _info.Ids.end()) {
 				throw std::logic_error("Unknown id.");
 			}
 			IdItem item = _info.Ids[id];
@@ -107,7 +107,7 @@ namespace Elastos {
 
 		bool IdAgentImpl::findIdByPath(const IdItem &item, std::string &id) {
 			for (IdAgentInfo::IdMap::iterator it = _info.Ids.begin(); it != _info.Ids.end(); it++) {
-				if(it->second == item) {
+				if (it->second == item) {
 					id = it->first;
 					return true;
 				}
@@ -120,12 +120,12 @@ namespace Elastos {
 			return key->keyToRedeemScript(ELA_IDCHAIN);
 		}
 
-		const IdAgentInfo& IdAgentImpl::GetIdAgentInfo() const {
+		const IdAgentInfo &IdAgentImpl::GetIdAgentInfo() const {
 			return _info;
 		}
 
 		std::string IdAgentImpl::GetPublicKey(const std::string &id) {
-			if(_info.Ids.find(id) == _info.Ids.end()) {
+			if (_info.Ids.find(id) == _info.Ids.end()) {
 				throw std::logic_error("Unknown id.");
 			}
 			return _info.Ids[id].PublicKey;

@@ -23,8 +23,7 @@ namespace Elastos {
 			 */
 			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
-					uint32_t index,
-					const std::string &payPassword) = 0;
+					uint32_t index) = 0;
 
 			/**
 			 * Verify a id (address).

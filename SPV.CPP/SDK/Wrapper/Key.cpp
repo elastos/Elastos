@@ -138,6 +138,10 @@ namespace Elastos {
 			return ret;
 		}
 
+		void Key::getAuthPrivKeyAndChainCode(const CMBlock &seed, CMBlock &key, UInt256 &chainCode) {
+			key = BTCKey::getDerivePrivKey_depth(seed, chainCode, true, NID_X9_62_prime256v1, 2, 1 | BIP32_HARD, 0);
+		}
+
 		std::string Key::getAuthPublicKeyForAPI(const CMBlock &privKey) {
 			BRKey key;
 			BRKeySetPrivKey(&key, (const char *) (void *) privKey);

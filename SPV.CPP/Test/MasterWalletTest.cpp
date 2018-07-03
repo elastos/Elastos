@@ -530,29 +530,19 @@ TEST_CASE("Master wallet DeriveIdAndKeyForPurpose method test", "[DeriveIdAndKey
 	std::string id;
 
 	SECTION("Normal derive") {
-		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
 		REQUIRE(id == "iiYz7WnFKyTK6zhMz3PGqs9jj6y3uWJdAr");
+		std::string id2 = masterWallet->DeriveIdAndKeyForPurpose(1, 2);
+		REQUIRE(id != id2);
 	}
 	SECTION("Derive reserved purpose") {
 		try {
-			id = masterWallet->DeriveIdAndKeyForPurpose(44, 1, payPassword);
+			id = masterWallet->DeriveIdAndKeyForPurpose(44, 1);
 		}
 		catch (const std::invalid_argument &e) {
 			REQUIRE(strcmp(e.what(), "Can not use reserved purpose.") == 0);
 		}
 		//todo add other reserved purpose test in future
-	}
-	SECTION("Derive with pay password that is empty or less than 8") {
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, ""), std::invalid_argument);
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "invalid"), std::invalid_argument);
-	}
-	SECTION("Derive with pay password that is more than 128") {
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1,
-																 "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
-						  std::invalid_argument);
-	}
-	SECTION("Derive by wrong password") {
-		REQUIRE_THROWS_AS(masterWallet->DeriveIdAndKeyForPurpose(1, 1, "wrongPassword"), std::logic_error);
 	}
 }
 
@@ -566,12 +556,12 @@ TEST_CASE("Master wallet GetPublicKey method of id agent", "[GetPublicKey-IdAgen
 	std::string id;
 
 	SECTION("Normal get") {
-		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
 		std::string pubKey = masterWallet->GetPublicKey(id);
 		REQUIRE(pubKey == "03a6ce5f14b32e9e5a8ef4376b412e7c540ef26dc44aff60bd451a32e6fb5ac3c4");
 	}
 	SECTION("Should throw with wrong id") {
-		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+		id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
 		REQUIRE_THROWS_AS(masterWallet->GetPublicKey("wrongid"), std::logic_error);
 	}
 }
@@ -583,7 +573,7 @@ TEST_CASE("Master wallet Sign method of id agent", "[Sign-IdAgent]") {
 	std::string language = "english";
 	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword, language));
 
-	std::string id = masterWallet->DeriveIdAndKeyForPurpose(1, 1, payPassword);
+	std::string id = masterWallet->DeriveIdAndKeyForPurpose(1, 1);
 
 	SECTION("Normal sign") {
 		std::string signedMsg = masterWallet->Sign(id, "mymessage", payPassword);

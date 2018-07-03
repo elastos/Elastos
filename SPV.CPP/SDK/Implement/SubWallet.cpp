@@ -313,7 +313,8 @@ namespace Elastos {
 
 			UInt512 seed = _parent->deriveSeed(payPassword);
 			Key wrapperKey;
-			wrapperKey.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 3, 44, _info.getIndex(), 0);
+			wrapperKey.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 5, 1 | BIP32_HARD, 0,
+										 44, _info.getIndex(), 0);
 			UInt256Set(&key->secret, wrapperKey.getSecret());
 			key->compressed = wrapperKey.getCompressed();
 			CMBlock pubKey = wrapperKey.getPubkey();

@@ -82,8 +82,7 @@ namespace Elastos {
 		public: //override from IIdAgent
 			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,
-					uint32_t index,
-					const std::string &payPassword);
+					uint32_t index);
 
 			virtual bool IsIdValid(const std::string &id);
 

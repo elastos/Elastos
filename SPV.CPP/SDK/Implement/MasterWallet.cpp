@@ -317,17 +317,24 @@ namespace Elastos {
 			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, payPassword));
 
 			//init master public key and private key
-			CMemBlock<char> cbPhrase;
-			cbPhrase.SetMemFixed(phrase.c_str(), phrase.size() + 1);
-			std::string prikeyBase58 = WalletTool::getDeriveKey_base58(cbPhrase, phrasePassword);
-			CMemBlock<unsigned char> prikey = BTCBase58::DecodeBase58(prikeyBase58);
+			UInt512 seed = deriveSeed(payPassword);
 
 			CMBlock cbTmp;
-			cbTmp.SetMemFixed((const uint8_t *) (void *) prikey, prikey.GetSize());
-			CMBlock privKey = Key::getAuthPrivKeyForAPI(cbTmp);
+			cbTmp.SetMemFixed(seed.u8, sizeof(seed));
+			CMBlock masterPrivKey;
+			UInt256 masterChainCode;
+			Key::getAuthPrivKeyAndChainCode(cbTmp, masterPrivKey, masterChainCode);
 
-			_localStore.SetEncryptedKey(Utils::encrypt(privKey, payPassword));
-			initPublicKey(payPassword);
+			_localStore.SetEncryptedKey(Utils::encrypt(masterPrivKey, payPassword));
+
+			Key key = deriveKey(payPassword);
+			if(key.getPrivKey().empty())
+				throw std::logic_error("Invalid key");
+			Key compressedKey(key.getRaw()->secret, true);
+			_localStore.SetMasterPubKey(MasterPubKey(compressedKey.getPubkey(), masterChainCode));
+
+			CMBlock data = key.getPubkey();
+			_localStore.SetPublicKey(Utils::encodeHex(data));
 
 			return true;
 		}
@@ -442,8 +449,8 @@ namespace Elastos {
 		}
 
 		std::string
-		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index, const std::string &payPassword) {
-			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index, payPassword);
+		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
+			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index);
 		}
 
 		nlohmann::json

@@ -102,6 +102,8 @@ namespace Elastos {
 			j["PhrasePasword"] = Utils::encodeHex(p.GetEncrptedPhrasePassword());
 			j["Language"] = p.GetLanguage();
 			j["PublicKey"] = p.GetPublicKey();
+			j["MasterKeyChainCode"] = Utils::UInt256ToString(p.GetMasterPubKey().getChainCode());
+			j["MasterKeyPubKey"] = Utils::encodeHex(p.GetMasterPubKey().getPubKey());
 			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
 			for (size_t i = 0; i < p.GetSubWalletInfoList().size(); i++) {
@@ -116,6 +118,9 @@ namespace Elastos {
 			p.SetEncryptedPhrasePassword(Utils::decodeHex(j["PhrasePasword"].get<std::string>()));
 			p.SetLanguage(j["Language"].get<std::string>());
 			p.SetPublicKey(j["PublicKey"].get<std::string>());
+			UInt256 chainCode = Utils::UInt256FromString(j["ChainCode"].get<std::string>());
+			CMBlock pubKey = Utils::decodeHex(j["MasterKeyPubKey"].get<std::string>());
+			p.SetMasterPubKey(MasterPubKey(pubKey, chainCode));
 			p.SetIdAgentInfo(j["IdAgent"]);
 
 			std::vector<CoinInfo> coinInfoList;
@@ -132,6 +137,14 @@ namespace Elastos {
 
 		void MasterWalletStore::SetLanguage(const std::string &language) {
 			_language = language;
+		}
+
+		const MasterPubKey &MasterWalletStore::GetMasterPubKey() const {
+			return _masterPubKey;
+		}
+
+		void MasterWalletStore::SetMasterPubKey(const MasterPubKey &masterPubKey) {
+			_masterPubKey = masterPubKey;
 		}
 
 	}

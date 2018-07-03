@@ -63,6 +63,10 @@ namespace Elastos {
 			return boost::shared_ptr<Key>(key);
 		}
 
+		const UInt256& MasterPubKey::getChainCode() const {
+			return _masterPubKey->chainCode;
+		}
+
 		CMBlock MasterPubKey::bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri) {
 			BRKey key;
 			BRBIP32BitIDKey(&key, seed, (size_t) seed.GetSize(), (uint32_t) index, uri.c_str());

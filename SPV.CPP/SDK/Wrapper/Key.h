@@ -81,6 +81,8 @@ namespace Elastos {
 
 			static CMBlock getAuthPrivKeyForAPI(const CMBlock &seed);
 
+			static void getAuthPrivKeyAndChainCode(const CMBlock &seed, CMBlock &key, UInt256 &chainCode);
+
 			static std::string getAuthPublicKeyForAPI(const CMBlock &privKey);
 
 			static CMBlock getPublicKeyByKey(const Key &key);

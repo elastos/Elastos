@@ -42,6 +42,8 @@ namespace Elastos {
 
 			boost::shared_ptr<Key> getPubKeyAsKey() const;
 
+			const UInt256 &getChainCode() const;
+
 		public:
 			static CMBlock bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri);
 
