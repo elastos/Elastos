@@ -68,6 +68,7 @@ type node struct {
 	DefaultMaxPeers    uint
 	headerFirstMode    bool
 	RequestedBlockList map[Uint256]time.Time
+	syncTimer          *syncTimer
 	SyncBlkReqSem      Semaphore
 	SyncHdrReqSem      Semaphore
 	StartHash          Uint256
@@ -113,6 +114,7 @@ func InitLocalNode() Noder {
 	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
 	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
 	LocalNode.handshakeQueue.init()
+	LocalNode.syncTimer = newSyncTimer(LocalNode.stopSyncing)
 	LocalNode.initConnection()
 	go LocalNode.updateConnection()
 	go LocalNode.updateNodeInfo()
