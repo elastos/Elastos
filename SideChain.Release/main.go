@@ -39,7 +39,7 @@ func init() {
 
 	address, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
 	if err != nil {
-		log.Error(err.Error())
+		log.Info("Please set correct foundation address in config file")
 		os.Exit(-1)
 	}
 	blockchain.FoundationAddress = *address
