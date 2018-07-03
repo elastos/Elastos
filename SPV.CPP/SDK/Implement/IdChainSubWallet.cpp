@@ -52,7 +52,12 @@ namespace Elastos {
 			transactionOutput->setAddress(payloadIdChain->getId());
 			transactionOutput->setAmount(0);
 			transactionOutput->setAssetId(txParam->getAssetId());
-			transactionOutput->setProgramHash(Utils::UInt168FromString(payloadIdChain->getId()));
+			UInt168 programHash = UINT168_ZERO;
+			bool ret = Utils::UInt168FromAddress(programHash, payloadIdChain->getId());
+			if (!ret) {
+				throw std::logic_error("payloadIdChain ID is error!");
+			}
+			transactionOutput->setProgramHash(programHash);
 			transaction->addOutput(transactionOutput);
 
 			return transaction->toJson();

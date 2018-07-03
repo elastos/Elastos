@@ -33,16 +33,19 @@ namespace Elastos {
 			if (size < 1) {
 				return false;
 			}
+
+			std::vector<std::string> addresses = _wallet->getAllAddresses();
+
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutput *output = outputs[i];
 				if (output->getAddress().empty()) {
 					return false;
 				}
-
-				if (output->getAmount() != 0) {
-					return false;
+				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) == addresses.end()) {
+					if (output->getAmount() != 0) {
+						return false;
+					}
 				}
-
 			}
 			return true;
 		}
