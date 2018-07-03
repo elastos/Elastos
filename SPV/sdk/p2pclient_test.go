@@ -15,7 +15,7 @@ import (
 )
 
 func TestP2PClient(t *testing.T) {
-	log.Init(log.LevelInfo)
+	log.Init(0, 5, 100)
 
 	var clientNumber = 150
 
