@@ -96,6 +96,7 @@ namespace Elastos {
 #endif
 
 			_walletManager->registerWalletListener(this);
+			_walletManager->registerPeerManagerListener(this);
 
 			if (info.getFeePerKb() > 0) {
 				_walletManager->getWallet()->setFeePerKb(info.getFeePerKb());
@@ -450,6 +451,8 @@ namespace Elastos {
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
+				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}",
+					it->first, blockHeight - it->second->getBlockHeight());
 				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 it->second->toJson(), blockHeight - it->second->getBlockHeight());
 			}
