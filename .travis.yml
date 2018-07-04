@@ -9,4 +9,4 @@ install:
   - glide install
 branches:
   only:
-  - dev
+  - master
