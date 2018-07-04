@@ -506,7 +506,7 @@ namespace Elastos {
 								if (fOk) {
 									signedData.Resize(65);
 									signedData.Zero();
-									signedData[0] = 27 + rec + 4;
+									signedData[0] = 64;
 									uint8_t arrBIN[256] = {0};
 									size_t szLen = 0;
 									szLen = BN_bn2bin(r, arrBIN);
