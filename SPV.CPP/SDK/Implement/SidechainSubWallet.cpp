@@ -71,38 +71,44 @@ namespace Elastos {
 		boost::shared_ptr<Transaction>
 		SidechainSubWallet::createTransaction(TxParam *param) const {
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(param);
-			assert(withdrawTxParam != nullptr);
+			if (withdrawTxParam != nullptr) {
+				TransactionPtr ptr = _walletManager->getWallet()->
+						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+										  param->getToAddress(), param->getRemark());
+				if (!ptr) return nullptr;
 
-			TransactionPtr ptr = _walletManager->getWallet()->
-					createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-									  param->getToAddress(), param->getRemark());
-			if (!ptr) return nullptr;
+				ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
+				const std::vector<TransactionOutput *> &outList = ptr->getOutputs();
 
-			ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
-			const std::vector<TransactionOutput *> &outList = ptr->getOutputs();
+				std::for_each(outList.begin(), outList.end(),
+							  [&param](TransactionOutput *output) {
+								  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
+							  });
 
-			std::for_each(outList.begin(), outList.end(),
-						  [&param](TransactionOutput *output) {
-							  ((ELATxOutput *) output->getRaw())->assetId = param->getAssetId();
-						  });
-
-			PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
-			payloadTransferCrossChainAsset->setCrossChainData(withdrawTxParam->getCrossChainAddress(),
-															  withdrawTxParam->getCrossChainOutputIndexs(),
-															  withdrawTxParam->getCrosschainAmouts());
-
-			return ptr;
+				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
+						static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
+				payloadTransferCrossChainAsset->setCrossChainData(withdrawTxParam->getCrossChainAddress(),
+																  withdrawTxParam->getCrossChainOutputIndexs(),
+																  withdrawTxParam->getCrosschainAmouts());
+				return ptr;
+			} else
+				return SubWallet::createTransaction(param);
 		}
 
 		void SidechainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			SidechainTransactionChecker checker(transaction, _walletManager->getWallet());
-			checker.Check();
+			if (transaction->getTransactionType() == ELATransaction::TransferCrossChainAsset) {
+				SidechainTransactionChecker checker(transaction, _walletManager->getWallet());
+				checker.Check();
+			} else
+				SubWallet::verifyRawTransaction(transaction);
 		}
 
 		TransactionPtr SidechainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			SidechainTransactionCompleter completer(transaction, _walletManager->getWallet());
-			return completer.Complete(actualFee);
+			if (transaction->getTransactionType() == ELATransaction::TransferCrossChainAsset) {
+				SidechainTransactionCompleter completer(transaction, _walletManager->getWallet());
+				return completer.Complete(actualFee);
+			} else
+				SubWallet::completeTransaction(transaction, actualFee);
 		}
 	}
 }

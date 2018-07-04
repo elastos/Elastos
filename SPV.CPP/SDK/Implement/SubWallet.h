@@ -141,7 +141,7 @@ namespace Elastos {
 
 			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
 
-			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param, bool isShuffle = true) const;
+			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
 			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														const std::string &payPassword);

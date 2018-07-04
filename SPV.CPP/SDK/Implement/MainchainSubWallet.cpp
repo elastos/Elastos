@@ -71,7 +71,7 @@ namespace Elastos {
 			TransactionPtr ptr = nullptr;
 			DepositTxParam *depositTxParam = dynamic_cast<DepositTxParam *>(param);
 			if (depositTxParam == nullptr) {
-				ptr = SubWallet::createTransaction(param, false);
+				ptr = SubWallet::createTransaction(param);
 			} else {
 				ptr = _walletManager->getWallet()->
 						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
@@ -96,13 +96,19 @@ namespace Elastos {
 		}
 
 		void MainchainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			MainchainTransactionChecker checker(transaction, _walletManager->getWallet());
-			checker.Check();
+			if (transaction->getTransactionType() == ELATransaction::TransferCrossChainAsset) {
+				MainchainTransactionChecker checker(transaction, _walletManager->getWallet());
+				checker.Check();
+			} else
+				SubWallet::verifyRawTransaction(transaction);
 		}
 
 		TransactionPtr MainchainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
-			return completer.Complete(actualFee);
+			if(transaction->getTransactionType() == ELATransaction::TransferCrossChainAsset) {
+				MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
+				return completer.Complete(actualFee);
+			} else
+				SubWallet::completeTransaction(transaction, actualFee);
 		}
 	}
 }
