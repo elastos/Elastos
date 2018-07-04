@@ -343,13 +343,13 @@ namespace Elastos {
 			tryInitCoinConfig();
 			resetMnemonic(localStore.GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
-			initSubWallets(localStore.GetSubWalletInfoList());
+			initSubWallets(localStore.GetSubWalletInfoList(), "");
 		}
 
-		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
+		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList, const std::string &payPassword) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
-				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), "",
+				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), payPassword,
 															   PluginTypes(coinConfig), this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 				if (subWalletImpl == nullptr)
@@ -567,7 +567,7 @@ namespace Elastos {
 			if (!initFromPhrase(mnemonic, phrasePass, payPassword))
 				throw std::logic_error("Initialize from phrase error.");
 
-			initSubWallets(keyStore.json().getCoinInfoList());
+			initSubWallets(keyStore.json().getCoinInfoList(), payPassword);
 		}
 
 		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {

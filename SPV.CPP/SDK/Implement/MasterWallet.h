@@ -164,7 +164,7 @@ namespace Elastos {
 								  const std::string &payPassword,
 								  const std::string &phrasePassword);
 
-			void initSubWallets(const std::vector<CoinInfo> &coinInfoList);
+			void initSubWallets(const std::vector<CoinInfo> &coinInfoList, const std::string &payPassword);
 
 			void restoreSubWallets(const std::vector<CoinInfo> &coinInfoList);
 
