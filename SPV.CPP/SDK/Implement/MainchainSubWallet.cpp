@@ -108,7 +108,7 @@ namespace Elastos {
 				MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
 				return completer.Complete(actualFee);
 			} else
-				SubWallet::completeTransaction(transaction, actualFee);
+				return SubWallet::completeTransaction(transaction, actualFee);
 		}
 	}
 }
