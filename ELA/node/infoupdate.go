@@ -16,8 +16,8 @@ import (
 )
 
 func (node *node) hasSyncPeer() (bool, Noder) {
-	LocalNode.nbrNodes.RLock()
-	defer LocalNode.nbrNodes.RUnlock()
+	LocalNode.neighbourNodes.RLock()
+	defer LocalNode.neighbourNodes.RUnlock()
 	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
 		if n.IsSyncHeaders() {
@@ -98,11 +98,10 @@ func (node *node) SendPingToNbr() {
 
 func (node *node) HeartBeatMonitor() {
 	noders := LocalNode.GetNeighborNoder()
-	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
 	for _, n := range noders {
 		if n.State() == p2p.ESTABLISH {
 			t := n.GetLastActiveTime()
-			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KeepAliveTimeout)) {
+			if t.Before(time.Now().Add(-1 * time.Second * KeepAliveTimeout)) {
 				log.Warn("keepalive timeout!!!")
 				n.SetState(p2p.INACTIVITY)
 				n.CloseConn()
@@ -111,92 +110,53 @@ func (node *node) HeartBeatMonitor() {
 	}
 }
 
-func (node *node) ReqNeighborList() {
+func (node *node) RequireNeighbourList() {
 	go node.Send(new(msg.GetAddr))
 }
 
-func (node *node) ConnectSeeds() {
-	if node.nbrNodes.GetConnectionCnt() < MinConnectionCount {
-		for _, nodeAddr := range config.Parameters.SeedList {
-			found := false
-			var n Noder
-			node.nbrNodes.Lock()
-			for _, tn := range node.nbrNodes.List {
-				addr := getNodeAddr(tn)
-				if nodeAddr == addr.String() {
-					n = tn
-					found = true
-					break
-				}
-			}
-			node.nbrNodes.Unlock()
-			if found {
-				if n.State() == p2p.ESTABLISH {
-					if LocalNode.NeedMoreAddresses() {
-						n.ReqNeighborList()
-					}
-				}
+func (node *node) ConnectNodes() {
+	connectionCount := node.neighbourNodes.GetConnectionCount()
+	if connectionCount < MinConnectionCount {
+		for _, seedAddress := range config.Parameters.SeedList {
+			neighbour, ok := existedInNeighbourList(seedAddress, node.neighbourNodes)
+			if ok && neighbour.State() == p2p.ESTABLISH {
+				neighbour.RequireNeighbourList()
 			} else { //not found
-				go node.Connect(nodeAddr)
+				go node.Connect(seedAddress)
 			}
 		}
 	}
-}
 
-func (node *node) ConnectNode() {
-	cntcount := node.nbrNodes.GetConnectionCnt()
-	if cntcount < MaxOutBoundCount {
-		nbrAddr, _ := node.GetNeighborAddrs()
-		addrs := node.RandGetAddresses(nbrAddr)
-		for _, addr := range addrs {
+	if connectionCount < MaxOutBoundCount {
+		address := node.RandGetAddresses(node.GetNeighbourAddresses())
+		for _, addr := range address {
 			go node.Connect(addr.String())
 		}
 	}
+
+	if connectionCount > DefaultMaxPeers {
+		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly())
+	}
 }
 
-func getNodeAddr(n *node) p2p.NetAddress {
+func existedInNeighbourList(seedAddress string, neighbours neighbourNodes) (Noder, bool) {
+	neighbours.Lock()
+	defer neighbours.Unlock()
+
+	for _, neighbour := range neighbours.List {
+		if seedAddress == neighbour.NetAddress().String() {
+			return neighbour, true
+		}
+	}
+	return nil, false
+}
+
+func (node *node) NetAddress() p2p.NetAddress {
 	var addr p2p.NetAddress
-	addr.IP, _ = n.Addr16()
-	addr.Time = n.GetTime()
-	addr.Services = n.Services()
-	addr.Port = n.Port()
-	addr.ID = n.ID()
+	addr.IP, _ = node.Addr16()
+	addr.Time = node.GetTime()
+	addr.Services = node.Services()
+	addr.Port = node.Port()
+	addr.ID = node.ID()
 	return addr
-}
-
-// FIXME part of node info update function could be a node method itself intead of
-// a node map method
-// Fixme the Nodes should be a parameter
-func (node *node) updateNodeInfo() {
-	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
-	ticker := time.NewTicker(time.Second * (time.Duration(periodUpdateTime)) * 2)
-	for {
-		select {
-		case <-ticker.C:
-			node.SendPingToNbr()
-			node.SyncBlocks()
-			node.HeartBeatMonitor()
-		}
-	}
-	// TODO when to close the timer
-	//close(quit)
-}
-
-func (node *node) CheckConnCnt() {
-	//compare if connect count is larger than DefaultMaxPeers, disconnect one of the connection
-	if node.nbrNodes.GetConnectionCnt() > DefaultMaxPeers {
-		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.RandGetANbr())
-	}
-}
-
-func (node *node) updateConnection() {
-	t := time.NewTicker(time.Second * ConnMonitor)
-	for {
-		select {
-		case <-t.C:
-			node.ConnectSeeds()
-			node.ConnectNode()
-			node.CheckConnCnt()
-		}
-	}
 }
