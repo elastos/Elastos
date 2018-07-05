@@ -8,7 +8,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 #if defined(__ANDROID__)
-		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::android_logger("Elastos", "ElaWallet");
+		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::android_logger("Elastos", "spvsdk");
 #else
 		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::stdout_color_mt("console");
 #endif

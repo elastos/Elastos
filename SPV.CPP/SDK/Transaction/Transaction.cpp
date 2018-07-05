@@ -124,6 +124,9 @@ namespace Elastos {
 		void Transaction::setTransactionType(ELATransaction::Type type) {
 			if (_transaction->type != type) {
 				_transaction->type = type;
+				if (_transaction->payload) {
+					delete _transaction->payload;
+				}
 				_transaction->payload = newPayload(type);
 			}
 		}
@@ -186,17 +189,17 @@ namespace Elastos {
 			_transaction->raw.timestamp = timestamp;
 		}
 
-		void Transaction::addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
-								   const CMBlock script, const CMBlock signature, uint32_t sequence) {
-			BRTransactionAddInput(&_transaction->raw, hash, index, amount,
-								  script, script.GetSize(), signature, signature.GetSize(),
-								  sequence);
-
-			Program *program(new Program());
-			program->setCode(script);
-			program->setParameter(signature);
-			addProgram(program);
-		}
+//		void Transaction::addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
+//								   const CMBlock script, const CMBlock signature, uint32_t sequence) {
+//			BRTransactionAddInput(&_transaction->raw, hash, index, amount,
+//								  script, script.GetSize(), signature, signature.GetSize(),
+//								  sequence);
+//
+//			Program *program(new Program());
+//			program->setCode(script);
+//			program->setParameter(signature);
+//			addProgram(program);
+//		}
 
 		void Transaction::addOutput(TransactionOutput *output) {
 			_transaction->outputs.push_back(output);
@@ -562,7 +565,6 @@ namespace Elastos {
 			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
 				nlohmann::json jsonData = inputs[i];
 
-				std::string address = jsonData["Address"].get<std::string>();
 				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
 				uint32_t index = jsonData["Index"].get<uint32_t>();
 				uint64_t amount = jsonData["Amount"].get<uint64_t>();
@@ -572,7 +574,9 @@ namespace Elastos {
 
 				BRTransactionAddInput(&_transaction->raw, txHash, index, amount, script, script.GetSize(), signature,
 									  signature.GetSize(), sequence);
-				assert(0 == strcmp(address.c_str(), _transaction->raw.inputs[i].address));
+				std::string address = jsonData["Address"].get<std::string>();
+				memset(_transaction->raw.inputs[i].address, 0, sizeof(_transaction->raw.inputs[i].address));
+				strncpy(_transaction->raw.inputs[i].address, address.c_str(), sizeof(_transaction->raw.inputs[i].address) - 1);
 			}
 
 			_transaction->type = ELATransaction::Type(jsonData["Type"].get<uint8_t>());

@@ -488,6 +488,11 @@ namespace Elastos {
 				BRTransactionAddInput(&transaction->raw, tx->raw.txHash, o->n, tx->outputs[o->n]->getAmount(),
 									  tx->outputs[o->n]->getRaw()->script, tx->outputs[o->n]->getRaw()->scriptLen,
 									  nullptr, 0, TXIN_SEQUENCE);
+				std::string addr = Utils::UInt168ToAddress(tx->outputs[o->n]->getProgramHash());
+				size_t inCount = transaction->raw.inCount;
+				BRTxInput *input = &transaction->raw.inputs[inCount - 1];
+				memset(input->address, 0, sizeof(input->address));
+				strncpy(input->address, addr.c_str(), sizeof(input->address) - 1);
 
 				if (ELATransactionSize(transaction) + TX_OUTPUT_SIZE >
 					TX_MAX_SIZE) { // transaction size-in-bytes too large

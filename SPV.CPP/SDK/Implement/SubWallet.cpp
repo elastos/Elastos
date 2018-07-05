@@ -419,6 +419,10 @@ namespace Elastos {
 		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
 			ELATransaction *tx = (ELATransaction *) transaction;
 
+			if (addressOrTxid == "") {
+				return true;
+			}
+
 			for (size_t i = 0; i < tx->raw.inCount; ++i) {
 				BRTxInput *input = &tx->raw.inputs[i];
 				std::string addr(input->address);

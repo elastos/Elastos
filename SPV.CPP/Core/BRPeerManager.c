@@ -862,7 +862,7 @@ static void _peerDisconnected(void *info, int error)
     pthread_mutex_unlock(&manager->lock);
 
     if (array_count(manager->connectedPeers) <= 0 && array_count(manager->peers) <= 0) {
-        _peer_log("No connected peers left, going to find peers and do reconnect again");
+        _peer_log("No connected peers left, going to find peers and do reconnect again\n");
         sleep(5);
         willReconnect = 1;
     }

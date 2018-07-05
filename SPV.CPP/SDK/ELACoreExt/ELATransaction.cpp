@@ -87,6 +87,8 @@ namespace Elastos {
 				BRTransactionAddInput(&tx->raw, orig->raw.inputs[i].txHash, orig->raw.inputs[i].index,
 									  orig->raw.inputs[i].amount, orig->raw.inputs[i].script, orig->raw.inputs[i].scriptLen,
 									  orig->raw.inputs[i].signature, orig->raw.inputs[i].sigLen, orig->raw.inputs[i].sequence);
+				memset(tx->raw.inputs[i].address, 0, sizeof(tx->raw.inputs[i].address));
+				strncpy(tx->raw.inputs[i].address, orig->raw.inputs[i].address, sizeof(tx->raw.inputs[i].address) - 1);
 			}
 
 			for (size_t i = 0; i < orig->outputs.size(); ++i) {

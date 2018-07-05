@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <Core/BRTransaction.h>
 #include <SDK/ELACoreExt/Payload/PayloadRegisterAsset.h>
+#include <SDK/ELACoreExt/Payload/PayloadTransferAsset.h>
 
 #include "SDK/ELACoreExt/Payload/PayloadCoinBase.h"
 #include "SDK/Wrapper/SharedWrapperList.h"
@@ -63,7 +64,7 @@ namespace Elastos {
 
 				array_new(raw.inputs, 1);
 
-				payload = new PayloadRegisterAsset();
+				payload = new PayloadTransferAsset();
 			}
 
 			BRTransaction raw;

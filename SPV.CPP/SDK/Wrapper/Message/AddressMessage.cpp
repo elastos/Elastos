@@ -75,7 +75,7 @@ namespace Elastos {
 			size_t msgLen = BRVarIntSet(msg, sizeof(msg), 0);
 
 			//TODO: send peer addresses we know about
-			BRPeerSendMessage(peer, msg, msgLen, MSG_ADDR);
+//			BRPeerSendMessage(peer, msg, msgLen, MSG_ADDR);
 		}
 
 

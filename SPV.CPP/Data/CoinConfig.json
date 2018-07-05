@@ -29,11 +29,11 @@
     "Services": 0,
     "MinFee": 10000,
     "BlockType": "SideStandard",
-    "GenesisAddress" : "XQd1DCi6H62NQdWZQhJCRnrPn7sF9CTjaU",
+    "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
     "CheckPoints": [
       {
         "Height": 0,
-        "Hash": "7c1a76281736d40599d6ae347d1bad924ab02b06c6cf9acd84f519dfdeb78d16",
+        "Hash": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
         "Timestamp": 1513936800,
         "Target": 486801407
       }

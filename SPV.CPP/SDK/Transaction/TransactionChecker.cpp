@@ -53,6 +53,7 @@ namespace Elastos {
 			for (size_t i = 0; i < size; ++i) {
 				TransactionOutput *output = outputs[i];
 				if (!Address::UInt168IsValid(output->getProgramHash())) {
+					Log::error("output's program hash is not valid");
 					return false;
 				}
 				if (output->getAddress() == toAddress) {
@@ -66,9 +67,9 @@ namespace Elastos {
 					if (hasOutput) //todo we support only one output, modify this if we support multi-output later
 						Log::warn("Transaction outputs have multiple outcoming output.");
 //						return false;
-					if (!Address::isValidProgramHash(output->getProgramHash(), transaction->getTransactionType())) {
-						return false;
-					}
+//					if (!Address::isValidProgramHash(output->getProgramHash(), transaction->getTransactionType())) {
+//						return false;
+//					}
 					hasOutput = true;
 				}
 			}
