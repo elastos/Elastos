@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/config"
@@ -18,12 +19,13 @@ import (
 )
 
 type link struct {
-	addr         string    // The address of the node
-	conn         net.Conn  // Connect socket with the peer node
-	port         uint16    // The server port of the node
-	httpInfoPort uint16    // The node information server port of the node
-	lastActive   time.Time // The latest time the node activity
-	connCnt      uint64    // The connection count
+	addr         string       // The address of the node
+	conn         net.Conn     // Connect socket with the peer node
+	port         uint16       // The server port of the node
+	httpInfoPort uint16       // The node information server port of the node
+	activeLock   sync.RWMutex // The read and write lock for active time
+	lastActive   time.Time    // The latest time the node activity
+	handshakeQueue
 	*p2p.MsgHelper
 }
 
@@ -32,22 +34,26 @@ func (link *link) CloseConn() {
 }
 
 func (node *node) UpdateLastActive() {
+	node.activeLock.Lock()
+	defer node.activeLock.Unlock()
 	node.lastActive = time.Now()
 }
 
 func (node *node) GetLastActiveTime() time.Time {
+	node.activeLock.RLock()
+	defer node.activeLock.RUnlock()
 	return node.lastActive
 }
 
 func (node *node) initConnection() {
-	go node.listenNodePort()
+	go listenNodePort()
 	// Listen open port if OpenService enabled
 	if Parameters.OpenService {
-		go node.listenNodeOpenPort()
+		go listenNodeOpenPort()
 	}
 }
 
-func (node *node) listenNodePort() {
+func listenNodePort() {
 	var err error
 	var listener net.Listener
 
@@ -69,23 +75,22 @@ func (node *node) listenNodePort() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Error("Error accepting ", err.Error())
+			log.Error("Error accepting", err)
 			return
 		}
-		log.Info("Remote node connect with ", conn.RemoteAddr(), conn.LocalAddr())
-
-		node.link.connCnt++
+		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.Read()
+		LocalNode.AddToHandshakeQueue(node)
 	}
 }
 
 func initNonTlsListen() (net.Listener, error) {
 	listener, err := net.Listen("tcp", fmt.Sprint(":", Parameters.NodePort))
 	if err != nil {
-		log.Error("Error listening\n", err.Error())
+		log.Error("Error listening", err)
 		return nil, err
 	}
 	return listener, nil
@@ -121,7 +126,7 @@ func initTlsListen() (net.Listener, error) {
 		ClientCAs:    pool,
 	}
 
-	log.Info("TLS listen port is ", Parameters.NodePort)
+	log.Info("TLS listen port is", Parameters.NodePort)
 	listener, err := tls.Listen("tcp", fmt.Sprint(":", Parameters.NodePort), tlsConfig)
 	if err != nil {
 		log.Error(err)
@@ -145,7 +150,7 @@ func (node *node) Connect(nodeAddr string) error {
 	if node.IsAddrInNbrList(nodeAddr) {
 		return nil
 	}
-	if !node.SetAddrInConnectingList(nodeAddr) {
+	if !node.AddToConnectingList(nodeAddr) {
 		return errors.New("node exist in connecting list, cancel")
 	}
 
@@ -156,30 +161,30 @@ func (node *node) Connect(nodeAddr string) error {
 	if isTls {
 		conn, err = TLSDial(nodeAddr)
 		if err != nil {
-			node.RemoveAddrInConnectingList(nodeAddr)
-			log.Error("TLS connect failed: ", err)
+			node.RemoveFromConnectingList(nodeAddr)
+			log.Error("TLS connect failed:", err)
 			return err
 		}
 	} else {
 		conn, err = NonTLSDial(nodeAddr)
 		if err != nil {
-			node.RemoveAddrInConnectingList(nodeAddr)
-			log.Error("non TLS connect failed: ", err)
+			node.RemoveFromConnectingList(nodeAddr)
+			log.Error("non TLS connect failed:", err)
 			return err
 		}
 	}
-	node.link.connCnt++
 	n := NewNode(Parameters.Magic, conn)
 	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
 
-	log.Info(fmt.Sprintf("Connect node %s connect with %s with %s",
+	log.Infof("Local node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
-		conn.RemoteAddr().Network()))
+		conn.RemoteAddr().Network())
 	n.Read()
 
 	n.SetState(p2p.HAND)
 	n.Send(NewVersion(node))
 
+	node.AddToHandshakeQueue(n)
 	return nil
 }
 
@@ -230,4 +235,5 @@ func (node *node) Send(msg p2p.Message) {
 	}
 
 	node.MsgHelper.Write(msg)
+	node.UpdateLastActive()
 }

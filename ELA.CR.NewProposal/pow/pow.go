@@ -13,6 +13,7 @@ import (
 	. "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
+	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
@@ -30,14 +31,6 @@ const (
 	hashUpdateSecs = 15
 )
 
-var (
-	TargetTimePerBlock = int64(config.Parameters.ChainParam.TargetTimePerBlock / time.Second)
-
-	OrginAmountOfEla = 3300 * 10000 * 100000000
-	SubsidyInterval  = 365 * 24 * 60 * 60 / TargetTimePerBlock
-	RetargetPersent  = 25
-)
-
 type msgBlock struct {
 	BlockData map[string]*Block
 	Mutex     sync.Mutex
@@ -47,7 +40,6 @@ type PowService struct {
 	PayToAddr      string
 	MsgBlock       msgBlock
 	Mutex          sync.Mutex
-	logDictionary  string
 	Started        bool
 	discreteMining bool
 
@@ -70,12 +62,8 @@ func (pow *PowService) CollectTransactions(MsgBlock *Block) int {
 	return txs
 }
 
-func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*Transaction, error) {
+func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, addr string) (*Transaction, error) {
 	minerProgramHash, err := common.Uint168FromAddress(addr)
-	if err != nil {
-		return nil, err
-	}
-	foundationProgramHash, err := common.Uint168FromAddress(FoundationAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +86,7 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 		{
 			AssetID:     DefaultLedger.Blockchain.AssetID,
 			Value:       0,
-			ProgramHash: *foundationProgramHash,
+			ProgramHash: FoundationAddress,
 		},
 		{
 			AssetID:     DefaultLedger.Blockchain.AssetID,
@@ -111,42 +99,19 @@ func (pow *PowService) CreateCoinbaseTrx(nextBlockHeight uint32, addr string) (*
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
 	txAttr := NewAttribute(Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
-	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }
 
-func calcBlockSubsidy(currentHeight uint32) common.Fixed64 {
-	ToTalAmountOfEla := int64(OrginAmountOfEla)
-	for i := uint32(0); i < (currentHeight / uint32(SubsidyInterval)); i++ {
-		incr := float64(ToTalAmountOfEla) / float64(RetargetPersent)
-		subsidyPerBlock := int64(float64(incr) / float64(SubsidyInterval))
-		ToTalAmountOfEla += subsidyPerBlock * int64(SubsidyInterval)
-	}
-	incr := float64(ToTalAmountOfEla) / float64(RetargetPersent)
-	subsidyPerBlock := common.Fixed64(float64(incr) / float64(SubsidyInterval))
-	log.Trace("subsidyPerBlock: ", subsidyPerBlock)
+type byFeeDesc []*Transaction
 
-	return subsidyPerBlock
-}
-
-type txSorter []*Transaction
-
-func (s txSorter) Len() int {
-	return len(s)
-}
-
-func (s txSorter) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s txSorter) Less(i, j int) bool {
-	return s[i].FeePerKB < s[j].FeePerKB
-}
+func (s byFeeDesc) Len() int           { return len(s) }
+func (s byFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s byFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
 func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
-	coinBaseTx, err := pow.CreateCoinbaseTrx(nextBlockHeight, addr)
+	coinBaseTx, err := pow.CreateCoinbaseTx(nextBlockHeight, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -167,44 +132,47 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 	}
 
 	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
-	calcTxsSize := coinBaseTx.GetSize()
-	calcTxsAmount := 1
-	totalFee := common.Fixed64(0)
-	var txPool txSorter
-	txPool = make([]*Transaction, 0)
-	transactionsPool := node.LocalNode.GetTransactionPool(false)
-	for _, v := range transactionsPool {
-		txPool = append(txPool, v)
+	totalTxsSize := coinBaseTx.GetSize()
+	txCount := 1
+	totalTxFee := common.Fixed64(0)
+	var txsByFeeDesc byFeeDesc
+	txsInPool := node.LocalNode.GetTransactionPool(false)
+	txsByFeeDesc = make([]*Transaction, 0, len(txsInPool))
+	for _, v := range txsInPool {
+		txsByFeeDesc = append(txsByFeeDesc, v)
 	}
-	sort.Sort(sort.Reverse(txPool))
+	sort.Sort(txsByFeeDesc)
 
-	for _, tx := range txPool {
-		if (tx.GetSize() + calcTxsSize) > config.Parameters.MaxBlockSize {
+	for _, tx := range txsByFeeDesc {
+		totalTxsSize = totalTxsSize + tx.GetSize()
+		if totalTxsSize > config.Parameters.MaxBlockSize {
 			break
 		}
-		if calcTxsAmount >= config.Parameters.MaxTxInBlock {
+		if txCount >= config.Parameters.MaxTxsInBlock {
 			break
 		}
 
 		if !IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
-
+		if errCode := CheckTransactionContext(tx); errCode != Success {
+			log.Warn("check transaction context failed, wrong transaction:", tx.Hash().String())
+			continue
+		}
 		fee := GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
 		if fee != tx.Fee {
 			continue
 		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
-		calcTxsSize = calcTxsSize + tx.GetSize()
-		calcTxsAmount++
-		totalFee += fee
+		totalTxFee += fee
+		txCount++
 	}
 
-	subsidy := calcBlockSubsidy(nextBlockHeight)
-	reward := totalFee + subsidy
-	rewardFoundation := common.Fixed64(float64(reward) * 0.3)
+	blockReward := GetBlockRewardAmount(nextBlockHeight)
+	totalReward := totalTxFee + blockReward
+	rewardFoundation := common.Fixed64(float64(totalReward) * 0.3)
 	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
-	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(reward) - rewardFoundation
+	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(totalReward) - rewardFoundation
 
 	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
 	for _, tx := range msgBlock.Transactions {
@@ -359,13 +327,12 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 	}
 }
 
-func NewPowService(logDictionary string) *PowService {
+func NewPowService() *PowService {
 	pow := &PowService{
 		PayToAddr:      config.Parameters.PowConfiguration.PayToAddr,
 		Started:        false,
 		discreteMining: false,
 		MsgBlock:       msgBlock{BlockData: make(map[string]*Block)},
-		logDictionary:  logDictionary,
 	}
 
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)

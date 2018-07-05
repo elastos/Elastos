@@ -3,6 +3,7 @@ package servers
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -123,11 +124,8 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	tx, height, err := chain.DefaultLedger.Store.GetTransaction(hash)
 	if err != nil {
 		//try to find transaction in transaction pool.
-		for txid, tx := range NodeForServers.GetTransactionPool(false) {
-			if txid == hash {
-				targetTransaction = tx
-				break
-			}
+		targetTransaction, ok = NodeForServers.GetTransactionPool(false)[hash]
+		if !ok {
 			return ResponsePack(UnknownTransaction,
 				"cannot find transaction in blockchain and transactionpool")
 		}
@@ -154,8 +152,7 @@ func GetRawTransaction(param Params) map[string]interface{} {
 }
 
 func GetNeighbors(param Params) map[string]interface{} {
-	addr, _ := NodeForServers.GetNeighborAddrs()
-	return ResponsePack(Success, addr)
+	return ResponsePack(Success, NodeForServers.GetNeighbourAddresses())
 }
 
 func GetNodeState(param Params) map[string]interface{} {
@@ -316,7 +313,7 @@ func GetInfo(param Params) map[string]interface{} {
 		Balance:        0,
 		Blocks:         NodeForServers.Height(),
 		Timeoffset:     0,
-		Connections:    NodeForServers.GetConnectionCnt(),
+		Connections:    NodeForServers.GetConnectionCount(),
 		Keypoololdest:  0,
 		Keypoolsize:    0,
 		Unlocked_until: 0,
@@ -351,6 +348,10 @@ func ToggleMining(param Params) map[string]interface{} {
 }
 
 func DiscreteMining(param Params) map[string]interface{} {
+
+	if LocalPow == nil {
+		return ResponsePack(PowServiceNotStarted, "")
+	}
 	count, ok := param.Uint("count")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -371,7 +372,7 @@ func DiscreteMining(param Params) map[string]interface{} {
 }
 
 func GetConnectionCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, NodeForServers.GetConnectionCnt())
+	return ResponsePack(Success, NodeForServers.GetConnectionCount())
 }
 
 func GetTransactionPool(param Params) map[string]interface{} {
@@ -839,6 +840,43 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, GetTransactionInfo(header, txn))
 }
 
+func GetExistWithdrawTransactions(param Params) map[string]interface{} {
+	txsStr, ok := param.String("txs")
+	if !ok {
+		return ResponsePack(InvalidParams, "txs not found")
+	}
+
+	txsBytes, err := HexStringToBytes(txsStr)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var txHashes []string
+	err = json.Unmarshal(txsBytes, &txHashes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	var resultTxHashes []string
+	for _, txHash := range txHashes {
+		txHashBytes, err := HexStringToBytes(txHash)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		hash, err := Uint256FromBytes(txHashBytes)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		inStore := chain.DefaultLedger.Store.IsSidechainTxHashDuplicate(*hash)
+		inTxPool := NodeForServers.IsDuplicateSidechainTx(*hash)
+		if inTxPool || inStore {
+			resultTxHashes = append(resultTxHashes, txHash)
+		}
+	}
+
+	return ResponsePack(Success, resultTxHashes)
+}
+
 func getPayloadInfo(p Payload) PayloadInfo {
 	switch object := p.(type) {
 	case *PayloadCoinBase:
@@ -851,17 +889,26 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *PayloadSideMining:
-		obj := new(SideMiningInfo)
-		obj.SideBlockHash = object.SideBlockHash.String()
-		return obj
-	case *PayloadWithdrawAsset:
-		obj := new(WithdrawAssetInfo)
+	case *PayloadSideChainPow:
+		obj := new(SideChainPowInfo)
 		obj.BlockHeight = object.BlockHeight
+		obj.SideBlockHash = object.SideBlockHash.String()
+		obj.SideGenesisHash = object.SideGenesisHash.String()
+		obj.SignedData = BytesToHexString(object.SignedData)
+		return obj
+	case *PayloadWithdrawFromSideChain:
+		obj := new(WithdrawFromSideChainInfo)
+		obj.BlockHeight = object.BlockHeight
+		obj.GenesisBlockAddress = object.GenesisBlockAddress
+		for _, hash := range object.SideChainTransactionHashes {
+			obj.SideChainTransactionHashes = append(obj.SideChainTransactionHashes, hash.String())
+		}
 		return obj
 	case *PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.AddressesMap = object.AddressesMap
+		obj.CrossChainAddresses = object.CrossChainAddresses
+		obj.OutputIndexes = object.OutputIndexes
+		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
 	case *PayloadTransferAsset:
 	case *PayloadRecord:
@@ -873,7 +920,7 @@ func VerifyAndSendTx(txn *Transaction) ErrCode {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if errCode := NodeForServers.AppendToTxnPool(txn); errCode != Success {
 		log.Warn("Can NOT add the transaction to TxnPool")
-		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool.")
+		log.Info("[httpjsonrpc] VerifyTransaction failed when AppendToTxnPool. Errcode:", errCode)
 		return errCode
 	}
 	if err := NodeForServers.Relay(nil, txn); err != nil {

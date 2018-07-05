@@ -39,21 +39,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState               // node state
-	id            uint64        // The nodes's id
-	version       uint32        // The network protocol the node used
-	services      uint64        // The services the node supplied
-	relay         bool          // The relay capability of the node (merge into capbility flag)
-	height        uint64        // The node latest block height
-	fromExtraNet  bool          // If this node is connected from extra net
-	txnCnt        uint64        // The transactions be transmit by this node
-	rxTxnCnt      uint64        // The transaction received by this node
-	link                        // The link status and infomation
-	nbrNodes                    // The neighbor node connect with currently node except itself
-	eventQueue                  // The event queue to notice notice other modules
-	chain.TxPool                // Unconfirmed transaction pool
-	idCache                     // The buffer to store the id of the items which already be processed
-	filter        *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState                // node state
+	id             uint64        // The nodes's id
+	version        uint32        // The network protocol the node used
+	services       uint64        // The services the node supplied
+	relay          bool          // The relay capability of the node (merge into capbility flag)
+	height         uint64        // The node latest block height
+	fromExtraNet   bool          // If this node is connected from extra net
+	txnCnt         uint64        // The transactions be transmit by this node
+	rxTxnCnt       uint64        // The transaction received by this node
+	link                         // The link status and infomation
+	neighbourNodes               // The neighbor node connect with currently node except itself
+	eventQueue                   // The event queue to notice notice other modules
+	chain.TxPool                 // Unconfirmed transaction pool
+	idCache                      // The buffer to store the id of the items which already be processed
+	filter         *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -62,7 +62,6 @@ type node struct {
 	cachelock                sync.RWMutex
 	requestedBlockLock       sync.RWMutex
 	nodeDisconnectSubscriber events.Subscriber
-	cachedHashes             []Uint256
 	ConnectingNodes
 	KnownAddressList
 	DefaultMaxPeers    uint
@@ -83,7 +82,7 @@ func NewNode(magic uint32, conn net.Conn) *node {
 	node := new(node)
 	node.conn = conn
 	node.filter = bloom.LoadFilter(nil)
-	node.MsgHelper = p2p.NewMsgHelper(magic, conn, &HandlerBase{node: node})
+	node.MsgHelper = p2p.NewMsgHelper(magic, uint32(Parameters.MaxBlockSize), conn, NewHandlerBase(node))
 	runtime.SetFinalizer(node, rmNode)
 	return node
 }
@@ -104,19 +103,31 @@ func InitLocalNode() protocol.Noder {
 	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(LocalNode.id))
 
 	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
-	LocalNode.nbrNodes.init()
+	LocalNode.neighbourNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
 	LocalNode.eventQueue.init()
 	LocalNode.idCache.init()
-	LocalNode.cachedHashes = make([]Uint256, 0)
 	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
 	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
+	LocalNode.handshakeQueue.init()
 	LocalNode.initConnection()
-	go LocalNode.updateConnection()
-	go LocalNode.updateNodeInfo()
-
+	go LocalNode.Start()
 	return LocalNode
+}
+
+func (node *node) Start() {
+	node.ConnectNodes()
+	node.waitForNeighbourConnections()
+
+	ticker := time.NewTicker(time.Second * protocol.ConnectionMonitor)
+	for {
+		node.ConnectNodes()
+		node.SendPingToNbr()
+		node.SyncBlocks()
+		node.HeartBeatMonitor()
+		<-ticker.C
+	}
 }
 
 func (node *node) UpdateMsgHelper(handler p2p.MsgHandler) {
@@ -134,18 +145,14 @@ func (node *node) DumpInfo() {
 	log.Info("\t port = ", node.port)
 	log.Info("\t relay = ", node.relay)
 	log.Info("\t height = ", node.height)
-	log.Info("\t conn cnt = ", node.link.connCnt)
 }
 
 func (node *node) IsAddrInNbrList(addr string) bool {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
-	for _, n := range node.nbrNodes.List {
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.HAND || n.State() == p2p.HANDSHAKE || n.State() == p2p.ESTABLISH {
-			addr := n.Addr()
-			port := n.Port()
-			na := addr + ":" + strconv.Itoa(int(port))
-			if strings.Compare(na, addr) == 0 {
+			if strings.Compare(n.NetAddress().String(), addr) == 0 {
 				return true
 			}
 		}
@@ -153,7 +160,7 @@ func (node *node) IsAddrInNbrList(addr string) bool {
 	return false
 }
 
-func (node *node) SetAddrInConnectingList(addr string) (added bool) {
+func (node *node) AddToConnectingList(addr string) (added bool) {
 	node.ConnectingNodes.Lock()
 	defer node.ConnectingNodes.Unlock()
 	for _, a := range node.ConnectingAddrs {
@@ -165,7 +172,7 @@ func (node *node) SetAddrInConnectingList(addr string) (added bool) {
 	return true
 }
 
-func (node *node) RemoveAddrInConnectingList(addr string) {
+func (node *node) RemoveFromConnectingList(addr string) {
 	node.ConnectingNodes.Lock()
 	defer node.ConnectingNodes.Unlock()
 	addrs := []string{}
@@ -197,7 +204,7 @@ func (n *node) NodeDisconnect(v interface{}) {
 	if node, ok := v.(protocol.Noder); ok {
 		node.SetState(p2p.INACTIVITY)
 		node.GetConn().Close()
-		n.DelNbrNode(node.ID())
+		n.DelNeighborNode(node.ID())
 	}
 }
 
@@ -283,29 +290,41 @@ func (node *node) GetTime() int64 {
 }
 
 func (node *node) WaitForSyncFinish() {
-	start := time.Now()
-	timeout := time.Second * 10
+	if len(Parameters.SeedList) <= 0 {
+		return
+	}
 	for {
 		log.Trace("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
 		bc := chain.DefaultLedger.Blockchain
 		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 
-		heights, _ := node.GetNeighborHeights()
+		heights := node.GetNeighborHeights()
 		log.Trace("others height is ", heights)
-
-		if len(Parameters.SeedList) > 0 && len(heights) < 1 {
-			goto Wait
-		}
 
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 			LocalNode.SetSyncHeaders(false)
 			break
 		}
+		time.Sleep(5 * time.Second)
+	}
+}
 
-	Wait:
-		now := <-time.After(5 * time.Second)
-		if len(heights) < 1 && start.Add(timeout).Before(now) {
-			break
+func (node *node) waitForNeighbourConnections() {
+	if len(Parameters.SeedList) <= 0 {
+		return
+	}
+	ticker := time.NewTicker(time.Millisecond * 100)
+	timer := time.NewTimer(time.Second * 10)
+	for {
+		select {
+		case <-ticker.C:
+			if node.GetNeighbourCount() > 0 {
+				log.Info("successfully connect to neighbours, neighbour count:", node.GetNeighbourCount())
+				return
+			}
+		case <-timer.C:
+			log.Warn("cannot connect to any neighbours, waiting for neighbour connections time out")
+			return
 		}
 	}
 }
@@ -330,11 +349,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 			switch message := message.(type) {
 			case *Transaction:
 				log.Debug("Relay transaction message")
-
-				if nbr.ExistHash(message.Hash()) {
-					continue
-				}
-
 				if nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(message) {
 					inv := msg.NewInventory()
 					txId := message.Hash()
@@ -349,11 +363,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				}
 			case *Block:
 				log.Debug("Relay block message")
-
-				if nbr.ExistHash(message.Hash()) {
-					continue
-				}
-
 				if nbr.BloomFilter().IsLoaded() {
 					inv := msg.NewInventory()
 					blockHash := message.Hash()
@@ -373,17 +382,6 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 	}
 
 	return nil
-}
-
-func (node *node) ExistHash(hash Uint256) bool {
-	node.cachelock.Lock()
-	defer node.cachelock.Unlock()
-	for _, v := range node.cachedHashes {
-		if v == hash {
-			return true
-		}
-	}
-	return false
 }
 
 func (node node) IsSyncHeaders() bool {
@@ -417,7 +415,7 @@ func (node node) IsSyncFailed() bool {
 }
 
 func (node *node) needSync() bool {
-	heights, _ := node.GetNeighborHeights()
+	heights := node.GetNeighborHeights()
 	log.Info("nbr heigh-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
 	if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
 		return false
@@ -426,10 +424,10 @@ func (node *node) needSync() bool {
 }
 
 func (node *node) GetBestHeightNoder() protocol.Noder {
-	node.nbrNodes.RLock()
-	defer node.nbrNodes.RUnlock()
+	node.neighbourNodes.RLock()
+	defer node.neighbourNodes.RUnlock()
 	var bestnode protocol.Noder
-	for _, n := range node.nbrNodes.List {
+	for _, n := range node.neighbourNodes.List {
 		if n.State() == p2p.ESTABLISH {
 			if bestnode == nil {
 				if !n.IsSyncFailed() {

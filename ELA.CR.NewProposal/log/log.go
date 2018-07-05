@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fsnotify/fsnotify"
+	"github.com/AlexpanXX/fsnotify"
 )
 
 const (

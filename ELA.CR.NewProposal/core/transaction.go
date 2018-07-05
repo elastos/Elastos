@@ -19,9 +19,9 @@ const (
 	TransferAsset           TransactionType = 0x02
 	Record                  TransactionType = 0x03
 	Deploy                  TransactionType = 0x04
-	SideMining              TransactionType = 0x05
-	IssueToken              TransactionType = 0x06
-	WithdrawAsset           TransactionType = 0x07
+	SideChainPow            TransactionType = 0x05
+	RechargeToSideChain     TransactionType = 0x06
+	WithdrawFromSideChain   TransactionType = 0x07
 	TransferCrossChainAsset TransactionType = 0x08
 )
 
@@ -37,12 +37,12 @@ func (self TransactionType) Name() string {
 		return "Record"
 	case Deploy:
 		return "Deploy"
-	case SideMining:
-		return "SideMining"
-	case IssueToken:
-		return "IssueToken"
-	case WithdrawAsset:
-		return "WithdrawAsset"
+	case SideChainPow:
+		return "SideChainPow"
+	case RechargeToSideChain:
+		return "RechargeToSideChain"
+	case WithdrawFromSideChain:
+		return "WithdrawFromSideChain"
 	case TransferCrossChainAsset:
 		return "TransferCrossChainAsset"
 	default:
@@ -93,8 +93,8 @@ func (tx *Transaction) Serialize(w io.Writer) error {
 	if err := WriteVarUint(w, uint64(len(tx.Programs))); err != nil {
 		return errors.New("Transaction program count failed.")
 	}
-	for _, p := range tx.Programs {
-		if err := p.Serialize(w); err != nil {
+	for _, program := range tx.Programs {
+		if err := program.Serialize(w); err != nil {
 			return errors.New("Transaction Programs Serialize failed, " + err.Error())
 		}
 	}
@@ -151,8 +151,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 //deserialize the Transaction
 func (tx *Transaction) Deserialize(r io.Reader) error {
 	// tx deserialize
-	err := tx.DeserializeUnsigned(r)
-	if err != nil {
+	if err := tx.DeserializeUnsigned(r); err != nil {
 		return errors.New("transaction Deserialize error: " + err.Error())
 	}
 
@@ -161,17 +160,13 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 	if err != nil {
 		return errors.New("transaction write program count error: " + err.Error())
 	}
-
-	programHashes := make([]*Program, 0, count)
 	for i := uint64(0); i < count; i++ {
-		outputHashes := new(Program)
-		err = outputHashes.Deserialize(r)
-		if err != nil {
+		var program Program
+		if err := program.Deserialize(r); err != nil {
 			return errors.New("transaction deserialize program error: " + err.Error())
 		}
-		programHashes = append(programHashes, outputHashes)
+		tx.Programs = append(tx.Programs, &program)
 	}
-	tx.Programs = programHashes
 	return nil
 }
 
@@ -197,57 +192,46 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 
 	err = tx.Payload.Deserialize(r, tx.PayloadVersion)
 	if err != nil {
-		return errors.New("Payload Parse error")
+		return errors.New("deserialize Payload failed")
 	}
-	//attributes
-	Len, err := ReadVarUint(r, 0)
+	// attributes
+	count, err := ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
-	if Len > uint64(0) {
-		for i := uint64(0); i < Len; i++ {
-			attr := new(Attribute)
-			err = attr.Deserialize(r)
-			if err != nil {
-				return err
-			}
-			tx.Attributes = append(tx.Attributes, attr)
+	for i := uint64(0); i < count; i++ {
+		var attr Attribute
+		if err := attr.Deserialize(r); err != nil {
+			return err
 		}
+		tx.Attributes = append(tx.Attributes, &attr)
 	}
-	//Inputs
-	Len, err = ReadVarUint(r, 0)
+	// inputs
+	count, err = ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
-	if Len > uint64(0) {
-		for i := uint64(0); i < Len; i++ {
-			utxo := new(Input)
-			err = utxo.Deserialize(r)
-			if err != nil {
-				return err
-			}
-			tx.Inputs = append(tx.Inputs, utxo)
+	for i := uint64(0); i < count; i++ {
+		var input Input
+		if err := input.Deserialize(r); err != nil {
+			return err
 		}
+		tx.Inputs = append(tx.Inputs, &input)
 	}
-	//TODO balanceInputs
-	//Outputs
-	Len, err = ReadVarUint(r, 0)
+	// outputs
+	count, err = ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
-	if Len > uint64(0) {
-		for i := uint64(0); i < Len; i++ {
-			output := new(Output)
-			err = output.Deserialize(r)
-			if err != nil {
-				return err
-			}
-			tx.Outputs = append(tx.Outputs, output)
+	for i := uint64(0); i < count; i++ {
+		var output Output
+		if err := output.Deserialize(r); err != nil {
+			return err
 		}
+		tx.Outputs = append(tx.Outputs, &output)
 	}
 
-	temp, err := ReadUint32(r)
-	tx.LockTime = uint32(temp)
+	tx.LockTime, err = ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -256,12 +240,11 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 }
 
 func (tx *Transaction) GetSize() int {
-	var buffer bytes.Buffer
-	if err := tx.Serialize(&buffer); err != nil {
+	buf := new(bytes.Buffer)
+	if err := tx.Serialize(buf); err != nil {
 		return InvalidTransactionSize
 	}
-
-	return buffer.Len()
+	return buf.Len()
 }
 
 func (tx *Transaction) Hash() Uint256 {
@@ -274,12 +257,20 @@ func (tx *Transaction) Hash() Uint256 {
 	return *tx.hash
 }
 
-func (tx *Transaction) IsWithdrawTx() bool {
-	return tx.TxType == WithdrawAsset
+func (tx *Transaction) IsSideChainPowTx() bool {
+	return tx.TxType == SideChainPow
 }
 
-func (tx *Transaction) IsIssueTokenTx() bool {
-	return tx.TxType == IssueToken
+func (tx *Transaction) IsTransferCrossChainAssetTx() bool {
+	return tx.TxType == TransferCrossChainAsset
+}
+
+func (tx *Transaction) IsWithdrawFromSideChainTx() bool {
+	return tx.TxType == WithdrawFromSideChain
+}
+
+func (tx *Transaction) IsRechargeToSideChainTx() bool {
+	return tx.TxType == RechargeToSideChain
 }
 
 func (tx *Transaction) IsCoinBaseTx() bool {

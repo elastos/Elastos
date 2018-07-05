@@ -1,6 +1,7 @@
 package servers
 
 import (
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	. "github.com/elastos/Elastos.ELA/core"
 )
 
@@ -102,16 +103,23 @@ type RegisterAssetInfo struct {
 	Controller string
 }
 
-type SideMiningInfo struct {
-	SideBlockHash string
+type SideChainPowInfo struct {
+	BlockHeight     uint32
+	SideBlockHash   string
+	SideGenesisHash string
+	SignedData      string
 }
 
 type TransferCrossChainAssetInfo struct {
-	AddressesMap map[string]uint64
+	CrossChainAddresses []string
+	OutputIndexes       []uint64
+	CrossChainAmounts   []common.Fixed64
 }
 
-type WithdrawAssetInfo struct {
-	BlockHeight uint32
+type WithdrawFromSideChainInfo struct {
+	BlockHeight                uint32
+	GenesisBlockAddress        string
+	SideChainTransactionHashes []string
 }
 
 type UTXOInfo struct {

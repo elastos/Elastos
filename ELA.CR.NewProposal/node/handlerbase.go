@@ -21,12 +21,19 @@ type HandlerBase struct {
 	node protocol.Noder
 }
 
+// NewHandlerBase create a new HandlerBase instance
+func NewHandlerBase(node protocol.Noder) *HandlerBase {
+	return &HandlerBase{node: node}
+}
+
 // When something wrong on read or decode message
 // this method will callback the error
 func (h *HandlerBase) OnError(err error) {
 	switch err {
-	case p2p.ErrUnmatchedMagic:
-		log.Error("[MsgHandler] unmatched magic")
+	case p2p.ErrInvalidHeader,
+		p2p.ErrUnmatchedMagic,
+		p2p.ErrMsgSizeExceeded:
+		log.Error(err)
 		h.node.CloseConn()
 	case p2p.ErrDisconnected:
 		log.Error("[MsgHandler] connection disconnected")
@@ -59,6 +66,12 @@ func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error)
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
 func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
+	if err := h.HandleMessage(message); err != nil {
+		log.Errorf("Handle message error %s", err.Error())
+	}
+}
+
+func (h *HandlerBase) HandleMessage(message p2p.Message) error {
 	var err error
 	switch message := message.(type) {
 	case *msg.Version:
@@ -66,20 +79,17 @@ func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
 	case *msg.VerAck:
 		err = h.onVerAck(message)
 	case *msg.GetAddr:
-		err = h.onAddrsReq(message)
+		err = h.onGetAddr(message)
 	case *msg.Addr:
-		err = h.onAddrs(message)
+		err = h.onAddr(message)
 	default:
 		err = errors.New("unknown message type")
 	}
-	if err != nil {
-		log.Error("Handler message error: " + err.Error())
-	}
+	return err
 }
 
 func (h *HandlerBase) onVersion(version *msg.Version) error {
 	node := h.node
-
 	// Exclude the node itself
 	if version.Nonce == LocalNode.ID() {
 		log.Warn("The node handshake with itself")
@@ -87,14 +97,13 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 		return errors.New("The node handshake with itself")
 	}
 
-	s := node.State()
-	if s != p2p.INIT && s != p2p.HAND {
-		log.Warn("Unknown status to receive version")
-		return errors.New("Unknown status to receive version")
+	if node.State() != p2p.INIT && node.State() != p2p.HAND {
+		log.Warn("unknown status to receive version")
+		return errors.New("unknown status to receive version")
 	}
 
 	// Obsolete node
-	n, ret := LocalNode.DelNbrNode(version.Nonce)
+	n, ret := LocalNode.DelNeighborNode(version.Nonce)
 	if ret == true {
 		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
 		// Close the connection and release the node soure
@@ -104,7 +113,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	node.UpdateInfo(time.Now(), version.Version, version.Services,
 		version.Port, version.Nonce, version.Relay, version.Height)
-	LocalNode.AddNbrNode(node)
+	LocalNode.AddNeighborNode(node)
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
@@ -113,8 +122,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 		node.UpdateMsgHelper(NewHandlerEIP001(node))
 	}
 
-	// Do not add SPV client as a known address,
-	// so node will not start a connection to SPV client
+	// Do not add extra node address into known addresses, for this can
+	// stop inner node from creating an outbound connection to extra node.
 	if !node.IsFromExtraNet() {
 		ip, _ := node.Addr16()
 		addr := p2p.NetAddress{
@@ -128,7 +137,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 	}
 
 	var message p2p.Message
-	if s == p2p.INIT {
+	if node.State() == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
 		version := NewVersion(LocalNode)
 		if node.IsFromExtraNet() {
@@ -137,7 +146,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 			version.Port = config.Parameters.NodePort
 		}
 		message = version
-	} else if s == p2p.HAND {
+	} else if node.State() == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
 	}
@@ -148,29 +157,29 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	node := h.node
-	s := node.State()
-	if s != p2p.HANDSHAKE && s != p2p.HANDSHAKED {
+	if node.State() != p2p.HANDSHAKE && node.State() != p2p.HANDSHAKED {
 		log.Warn("unknown status to received verack")
 		return errors.New("unknown status to received verack")
 	}
 
-	node.SetState(p2p.ESTABLISH)
-
-	if s == p2p.HANDSHAKE {
+	if node.State() == p2p.HANDSHAKE {
 		node.Send(verAck)
 	}
 
+	node.SetState(p2p.ESTABLISH)
+
 	if LocalNode.NeedMoreAddresses() {
-		node.ReqNeighborList()
+		node.RequireNeighbourList()
 	}
 	addr := node.Addr()
 	port := node.Port()
 	nodeAddr := addr + ":" + strconv.Itoa(int(port))
-	LocalNode.RemoveAddrInConnectingList(nodeAddr)
+	LocalNode.RemoveFromHandshakeQueue(node)
+	LocalNode.RemoveFromConnectingList(nodeAddr)
 	return nil
 }
 
-func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
+func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 	var addrs []p2p.NetAddress
 	// Only send addresses that enabled SPV service
 	if h.node.IsFromExtraNet() {
@@ -188,9 +197,9 @@ func (h *HandlerBase) onAddrsReq(req *msg.GetAddr) error {
 	return nil
 }
 
-func (h *HandlerBase) onAddrs(addrs *msg.Addr) error {
-	for _, addr := range addrs.AddrList {
-		log.Info(fmt.Sprintf("The ip address is %s id is 0x%x", addr.String(), addr.ID))
+func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
+	for _, addr := range msgAddr.AddrList {
+		log.Debugf("The ip address is %s id is 0x%x", addr.String(), addr.ID)
 
 		if addr.ID == LocalNode.ID() {
 			continue
@@ -213,7 +222,6 @@ func NewVersion(node protocol.Noder) *msg.Version {
 	msg := new(msg.Version)
 	msg.Version = node.Version()
 	msg.Services = node.Services()
-
 	msg.TimeStamp = uint32(time.Now().UTC().UnixNano())
 	msg.Port = node.Port()
 	msg.Nonce = node.ID()
