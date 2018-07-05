@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/errors"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
@@ -20,14 +20,15 @@ const (
 )
 
 const (
-	ProtocolVersion  = 0
-	KeepAliveTimeout = 3
-	DialTimeout      = 6
-	ConnMonitor      = 6
-	MaxSyncHdrReq    = 2 //Max Concurrent Sync Header Request
-	MaxOutBoundCount = 8
-	DefaultMaxPeers  = 125
-	MaxIdCached      = 5000
+	ProtocolVersion   = 0
+	HandshakeTimeout  = 2
+	KeepAliveTimeout  = 30
+	DialTimeout       = 6
+	ConnectionMonitor = 6
+	MaxSyncHdrReq     = 2 //Max Concurrent Sync Header Request
+	MaxOutBoundCount  = 8
+	DefaultMaxPeers   = 125
+	MaxIdCached       = 5000
 )
 
 const (
@@ -40,6 +41,7 @@ type Noder interface {
 	Services() uint64
 	Addr() string
 	Addr16() ([16]byte, error)
+	NetAddress() p2p.NetAddress
 	Port() uint16
 	IsFromExtraNet() bool
 	HttpInfoPort() int
@@ -47,21 +49,24 @@ type Noder interface {
 	SetState(state uint)
 	State() uint
 	IsRelay() bool
-	DelNbrNode(id uint64) (Noder, bool)
-	AddNbrNode(Noder)
+	AddNeighborNode(Noder)
+	DelNeighborNode(id uint64) (Noder, bool)
 	Height() uint64
 	GetConn() net.Conn
 	CloseConn()
-	GetConnectionCnt() uint
-	GetTransactionPool(bool) map[Uint256]*Transaction
-	AppendToTxnPool(*Transaction) ErrCode
-	ExistedID(id Uint256) bool
-	ReqNeighborList()
+	AddToHandshakeQueue(node Noder)
+	RemoveFromHandshakeQueue(node Noder)
+	GetConnectionCount() uint
+	GetTransactionPool(bool) map[common.Uint256]*core.Transaction
+	AppendToTxnPool(*core.Transaction) errors.ErrCode
+	IsDuplicateSidechainTx(sidechainTxHash common.Uint256) bool
+	ExistedID(id common.Uint256) bool
+	RequireNeighbourList()
 	DumpInfo()
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay uint8, height uint64)
 	UpdateMsgHelper(handler p2p.MsgHandler)
-	ConnectSeeds()
+	ConnectNodes()
 	Connect(nodeAddr string) error
 	LoadFilter(filter *msg.FilterLoad)
 	BloomFilter() *bloom.Filter
@@ -69,26 +74,26 @@ type Noder interface {
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetEvent(eventName string) *events.Event
-	GetNeighborAddrs() ([]p2p.NetAddress, uint64)
-	GetTransaction(hash Uint256) *Transaction
+	GetNeighbourAddresses() []p2p.NetAddress
+	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
 
-	GetNeighborHeights() ([]uint64, uint64)
+	GetNeighborHeights() []uint64
 	WaitForSyncFinish()
-	CleanSubmittedTransactions(block *Block) error
-	MaybeAcceptTransaction(txn *Transaction) error
-	RemoveTransaction(txn *Transaction)
+	CleanSubmittedTransactions(block *core.Block) error
+	MaybeAcceptTransaction(txn *core.Transaction) error
+	RemoveTransaction(txn *core.Transaction)
 
 	GetNeighborNoder() []Noder
-	GetNbrNodeCnt() uint32
+	GetNeighbourCount() uint32
 	UpdateLastActive()
 	GetLastActiveTime() time.Time
 	SetHeight(height uint64)
 	IsAddrInNbrList(addr string) bool
-	SetAddrInConnectingList(addr string) bool
-	RemoveAddrInConnectingList(addr string)
+	AddToConnectingList(addr string) bool
+	RemoveFromConnectingList(addr string)
 	GetAddressCnt() uint64
 	AddKnownAddress(na p2p.NetAddress)
 	RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.NetAddress
@@ -96,14 +101,13 @@ type Noder interface {
 	RandSelectAddresses() []p2p.NetAddress
 	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
-	ExistHash(hash Uint256) bool
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
 	IsSyncFailed() bool
-	IsRequestedBlock(hash Uint256) bool
-	AddRequestedBlock(hash Uint256)
-	DeleteRequestedBlock(hash Uint256)
-	GetRequestBlockList() map[Uint256]time.Time
+	IsRequestedBlock(hash common.Uint256) bool
+	AddRequestedBlock(hash common.Uint256)
+	DeleteRequestedBlock(hash common.Uint256)
+	GetRequestBlockList() map[common.Uint256]time.Time
 	IsNeighborNoder(n Noder) bool
 	FindSyncNode() (Noder, error)
 	GetBestHeightNoder() Noder
@@ -111,9 +115,9 @@ type Noder interface {
 	RelSyncBlkReqSem()
 	AcqSyncHdrReqSem()
 	RelSyncHdrReqSem()
-	SetStartHash(hash Uint256)
-	GetStartHash() Uint256
-	SetStopHash(hash Uint256)
-	GetStopHash() Uint256
+	SetStartHash(hash common.Uint256)
+	GetStartHash() common.Uint256
+	SetStopHash(hash common.Uint256)
+	GetStopHash() common.Uint256
 	ResetRequestedBlock()
 }

@@ -28,9 +28,8 @@ func NewHandlerEIP001(node protocol.Noder) *HandlerEIP001 {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *HandlerEIP001) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-	// Filter messages through SPV protocol
-	err = FilterMessage(h.node, cmd)
-	if err != nil {
+	// Filter messages through open port message filter
+	if err = h.FilterMessage(cmd); err != nil {
 		return message, err
 	}
 	// Update node last active time
@@ -69,6 +68,12 @@ func (h *HandlerEIP001) OnMakeMessage(cmd string) (message p2p.Message, err erro
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
 func (h *HandlerEIP001) OnMessageDecoded(message p2p.Message) {
+	if err := h.HandleMessage(message); err != nil {
+		log.Error("Handle message error: " + err.Error())
+	}
+}
+
+func (h *HandlerEIP001) HandleMessage(message p2p.Message) error {
 	var err error
 	switch message := message.(type) {
 	case *msg.Ping:
@@ -96,28 +101,30 @@ func (h *HandlerEIP001) OnMessageDecoded(message p2p.Message) {
 	default:
 		h.HandlerBase.OnMessageDecoded(message)
 	}
-	if err != nil {
-		log.Error("Handler message error: " + err.Error())
-	}
+	return err
 }
 
 func (h *HandlerEIP001) onFilterLoad(msg *msg.FilterLoad) error {
+	log.Debug()
 	h.node.LoadFilter(msg)
 	return nil
 }
 
 func (h *HandlerEIP001) onPing(ping *msg.Ping) error {
+	log.Debug()
 	h.node.SetHeight(ping.Nonce)
 	h.node.Send(msg.NewPong(chain.DefaultLedger.Blockchain.BestChain.Height))
 	return nil
 }
 
 func (h *HandlerEIP001) onPong(pong *msg.Pong) error {
+	log.Debug()
 	h.node.SetHeight(pong.Nonce)
 	return nil
 }
 
 func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) error {
+	log.Debug()
 	node := h.node
 	LocalNode.AcqSyncHdrReqSem()
 	defer LocalNode.RelSyncHdrReqSem()
@@ -146,13 +153,14 @@ func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) error {
 }
 
 func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
+	log.Debug()
 	node := h.node
 	if LocalNode.IsSyncHeaders() && !node.IsSyncHeaders() {
 		return nil
 	}
 
-	// Attempt to find the final block in the inventory list.  There may
-	// not be one.
+	// Attempt to find the final block in the inventory list.
+	// There may not be one.
 	lastBlock := -1
 	for i := len(inv.InvList) - 1; i >= 0; i-- {
 		if inv.InvList[i].Type == msg.InvTypeBlock {
@@ -167,6 +175,9 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 		hash := iv.Hash
 		switch iv.Type {
 		case msg.InvTypeBlock:
+			if node.IsFromExtraNet() {
+				return fmt.Errorf("receive InvTypeBlock from extra node")
+			}
 			haveInv := chain.DefaultLedger.BlockInLedger(hash) ||
 				chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash) || LocalNode.IsRequestedBlock(hash)
 
@@ -195,7 +206,7 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 				SendGetBlocks(node, locator, common.EmptyHash)
 			}
 		case msg.InvTypeTx:
-			if _, ok := node.GetTransactionPool(false)[hash]; !ok {
+			if _, ok := LocalNode.GetTransactionPool(false)[hash]; !ok {
 				getData.AddInvVect(iv)
 			}
 		default:
@@ -208,6 +219,7 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 }
 
 func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
+	log.Debug()
 	node := h.node
 	notFound := msg.NewNotFound()
 
@@ -218,7 +230,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			if err != nil {
 				log.Debug("Can't get block from hash: ", iv.Hash, " ,send not found message")
 				notFound.AddInvVect(iv)
-				return err
+				continue
 			}
 			log.Debug("block height is ", block.Header.Height, " ,hash is ", iv.Hash.String())
 
@@ -233,7 +245,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			}
 
 		case msg.InvTypeTx:
-			tx, ok := node.GetTransactionPool(false)[iv.Hash]
+			tx, ok := LocalNode.GetTransactionPool(false)[iv.Hash]
 			if !ok {
 				notFound.AddInvVect(iv)
 				continue
@@ -250,7 +262,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			if err != nil {
 				log.Debug("Can't get block from hash: ", iv.Hash, " ,send not found message")
 				notFound.AddInvVect(iv)
-				return err
+				continue
 			}
 
 			merkle, matchedIndexes := bloom.NewMerkleBlock(block, h.node.BloomFilter())
@@ -269,21 +281,25 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 		}
 	}
 
+	if len(notFound.InvList) > 0 {
+		node.Send(notFound)
+	}
+
 	return nil
 }
 
 func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
+	log.Debug()
 	node := h.node
 	block := msgBlock.Block.(*core.Block)
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNoder(node) {
-		return fmt.Errorf("received block message from unknown peer")
+		return fmt.Errorf("receive block message from unknown peer")
 	}
 
 	if chain.DefaultLedger.BlockInLedger(hash) {
-		log.Trace("Receive duplicated block, ", hash.String())
-		return nil
+		return fmt.Errorf("receive duplicated block %s", hash.String())
 	}
 
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
@@ -313,6 +329,7 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 }
 
 func (h *HandlerEIP001) onTx(msgTx *msg.Tx) error {
+	log.Debug()
 	node := h.node
 	tx := msgTx.Transaction.(*core.Transaction)
 
@@ -346,6 +363,7 @@ func (h *HandlerEIP001) onTx(msgTx *msg.Tx) error {
 }
 
 func (h *HandlerEIP001) onNotFound(inv *msg.NotFound) error {
+	log.Debug()
 	for _, iv := range inv.InvList {
 		log.Warnf("data not found type: %s hash: %s", iv.Type.String(), iv.Hash.String())
 	}
@@ -353,6 +371,7 @@ func (h *HandlerEIP001) onNotFound(inv *msg.NotFound) error {
 }
 
 func (h *HandlerEIP001) onMemPool(*msg.MemPool) error {
+	log.Debug()
 	// Only allow mempool requests if server enabled SPV service
 	if LocalNode.Services()&protocol.OpenService != protocol.OpenService {
 		h.node.CloseConn()
@@ -377,6 +396,7 @@ func (h *HandlerEIP001) onMemPool(*msg.MemPool) error {
 }
 
 func (h *HandlerEIP001) onReject(msg *msg.Reject) error {
+	log.Debug()
 	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
 		h.node.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
 }

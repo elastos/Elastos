@@ -24,7 +24,6 @@ const (
 	Api_Getblockbyhash      = "/api/v1/block/details/hash/:hash"
 	Api_Getblockheight      = "/api/v1/block/height"
 	Api_Getblockhash        = "/api/v1/block/hash/:height"
-	Api_GetTotalIssued      = "/api/v1/totalissued/:assetid"
 	Api_Gettransaction      = "/api/v1/transaction/:hash"
 	Api_Getasset            = "/api/v1/asset/:hash"
 	Api_GetBalanceByAddr    = "/api/v1/asset/balances/:addr"
@@ -131,8 +130,6 @@ func (rt *restServer) getPath(url string) string {
 		return Api_Getblockbyhash
 	} else if strings.Contains(url, strings.TrimRight(Api_Getblockhash, ":height")) {
 		return Api_Getblockhash
-	} else if strings.Contains(url, strings.TrimRight(Api_GetTotalIssued, ":assetid")) {
-		return Api_GetTotalIssued
 	} else if strings.Contains(url, strings.TrimRight(Api_Gettransaction, ":hash")) {
 		return Api_Gettransaction
 	} else if strings.Contains(url, strings.TrimRight(Api_GetBalanceByAddr, ":addr")) {
@@ -168,9 +165,6 @@ func (rt *restServer) getParams(r *http.Request, url string, req map[string]inte
 
 	case Api_Getblockhash:
 		req["height"] = getParam(r, "height")
-
-	case Api_GetTotalIssued:
-		req["assetid"] = getParam(r, "assetid")
 
 	case Api_Gettransaction:
 		req["hash"] = getParam(r, "hash")
