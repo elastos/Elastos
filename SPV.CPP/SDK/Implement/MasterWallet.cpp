@@ -456,8 +456,8 @@ namespace Elastos {
 		nlohmann::json
 		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
 			nlohmann::json j;
-			j["parameter"] = _idAgentImpl->Sign(id, message, password);
-			j["code"] = _idAgentImpl->GenerateRedeemScript(id, password);
+			j["Parameter"] = _idAgentImpl->Sign(id, message, password);
+			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
 			return j;
 		}
 
