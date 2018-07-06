@@ -24,7 +24,7 @@ const (
 	HandshakeTimeout  = 2
 	KeepAliveTimeout  = 30
 	DialTimeout       = 6
-	ConnectionMonitor = 6
+	HeartbeatDuration = 6
 	MaxSyncHdrReq     = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount  = 8
 	DefaultMaxPeers   = 125
@@ -49,6 +49,7 @@ type Noder interface {
 	SetState(state uint)
 	State() uint
 	IsRelay() bool
+	Heartbeat()
 	AddNeighborNode(Noder)
 	DelNeighborNode(id uint64) (Noder, bool)
 	Height() uint64

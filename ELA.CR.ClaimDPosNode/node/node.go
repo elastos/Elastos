@@ -118,12 +118,10 @@ func (node *node) Start() {
 	node.ConnectNodes()
 	node.waitForNeighbourConnections()
 
-	ticker := time.NewTicker(time.Second * protocol.ConnectionMonitor)
+	ticker := time.NewTicker(time.Second * protocol.HeartbeatDuration)
 	for {
 		node.ConnectNodes()
-		node.SendPingToNbr()
 		node.SyncBlocks()
-		node.HeartBeatMonitor()
 		<-ticker.C
 	}
 }
