@@ -406,7 +406,7 @@ void BRPeerSendInv(BRPeer *peer, const UInt256 txHashes[], size_t txCount)
 int BRPeerAcceptGetAddrMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	peer_log(peer, "got getaddr");
-	BRPeerSendAddr(peer);
+//	BRPeerSendAddr(peer);
 	return 1;
 }
 
