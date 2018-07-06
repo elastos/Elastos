@@ -31,8 +31,6 @@ namespace Elastos {
 
 			uint64_t getInputsAmount(const TransactionPtr &transaction) const;
 
-			uint64_t getOutputAmount(const TransactionPtr &transaction, std::string &address) const;
-
 		protected:
 			WalletPtr _wallet;
 			TransactionPtr _transaction;

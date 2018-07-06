@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Utils.h>
 #include "TransactionCompleter.h"
 
 namespace Elastos {
@@ -19,10 +20,12 @@ namespace Elastos {
 		TransactionPtr TransactionCompleter::Complete(uint64_t actualFee) {
 			std::string outAddr;
 			uint64_t inputAmount = getInputsAmount(_transaction);
-			uint64_t outputAmount = getOutputAmount(_transaction, outAddr);
+			uint64_t outputAmount = _transaction->getOutputs()[0]->getAmount();
+			uint64_t changeAmount = _transaction->getOutputs().size() > 1
+									? _transaction->getOutputs()[1]->getAmount() : 0;
 
 			TransactionPtr resultTx = _transaction;
-			if (inputAmount > outputAmount && inputAmount - outputAmount >= actualFee) {
+			if (inputAmount > outputAmount && inputAmount - outputAmount - changeAmount >= actualFee) {
 				modifyTransactionChange(resultTx, inputAmount - outputAmount - actualFee);
 			} else {
 				resultTx = recreateTransaction(actualFee, outputAmount, outAddr, resultTx->getRemark());
@@ -73,22 +76,6 @@ namespace Elastos {
 			return amount;
 		}
 
-		uint64_t TransactionCompleter::getOutputAmount(const TransactionPtr &transaction, std::string &address) const {
-			uint64_t amount = 0;
-
-			std::vector<std::string> addresses = _wallet->getAllAddresses();
-			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
-			for (size_t i = 0; i < outputs.size(); i++) {
-				//filter the output for change
-				if (std::find(addresses.begin(), addresses.end(), outputs[i]->getAddress()) == addresses.end()) {
-					amount += outputs[i]->getAmount();
-					address = outputs[i]->getAddress();
-				}
-			}
-
-			return amount;
-		}
-
 		TransactionPtr
 		TransactionCompleter::recreateTransaction(uint64_t fee, uint64_t amount, const std::string &toAddress,
 												  const std::string &remark) {
@@ -97,11 +84,20 @@ namespace Elastos {
 
 		void TransactionCompleter::modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange) {
 			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
-			std::vector<std::string> addresses = _wallet->getAllAddresses();
-			for (size_t i = 0; i < outputs.size(); ++i) {
-				if (std::find(addresses.begin(), addresses.end(), outputs[i]->getAddress()) != addresses.end()) {
-					outputs[i]->setAmount(actualChange);
-				}
+			if (outputs.size() >= 2) {
+				outputs[1]->setAmount(actualChange);
+			} else if (outputs.size() == 1) {
+
+				std::string changeAddress = _wallet->getAllAddresses()[0];
+				TransactionOutput *output = new TransactionOutput;
+				output->setAddress(changeAddress);
+				output->setAmount(actualChange);
+				output->setAssetId(Key::getSystemAssetId());
+				output->setOutputLock(0);
+				UInt168 u168Address = UINT168_ZERO;
+				Utils::UInt168FromAddress(u168Address, changeAddress);
+				output->setProgramHash(u168Address);
+				transaction->addOutput(output);
 			}
 		}
 
