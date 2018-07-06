@@ -44,7 +44,7 @@ TEST_CASE("test sideChain Create Transaction", "") {
 	std::vector<uint64_t> amounts;
 	std::vector<uint64_t> indexs;
 	indexs.push_back(0);
-	amounts.push_back(50);
+	amounts.push_back(10000);
 
 	nlohmann::json mainChainAccount(accounts);
 	nlohmann::json mainChainIndex(indexs);
@@ -56,11 +56,11 @@ TEST_CASE("test sideChain Create Transaction", "") {
 
 		if (value > 10000 && !isSend) {
 
-			nlohmann::json txJson = sidechainSubWallet->CreateWithdrawTransaction("", "1111111111111111111114oLvT2", 10001, mainChainAccount,
-			                                              mainChainAmount, mainChainIndex, 10001, "memo", "remark");
-
-			nlohmann::json result = sidechainSubWallet->SendRawTransaction(txJson, 10001, payPassword);
-			std::cout<< "result" << result << std::endl;
+//			nlohmann::json txJson = sidechainSubWallet->CreateWithdrawTransaction("", "1111111111111111111114oLvT2", 20000, mainChainAccount,
+//			                                              mainChainAmount, mainChainIndex, 10002, "memo", "remark");
+//
+//			nlohmann::json result = sidechainSubWallet->SendRawTransaction(txJson, 10002, payPassword);
+//			std::cout<< "result" << result << std::endl;
 
 			isSend = true;
 		}

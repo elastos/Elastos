@@ -238,7 +238,9 @@ namespace Elastos {
 			size_t i, j, keysCount = keys.size();
 			BRAddress addrs[keysCount], address;
 
-			assert(keysCount > 0);
+			if (keysCount <= 0) {
+				throw std::logic_error("transaction sign keysCount is 0.");
+			}
 			Log::getLogger()->info("Transaction transactionSign method begin, key counts = {}.", keysCount);
 
 			for (i = 0; i < keysCount; i++) {
