@@ -165,6 +165,8 @@ namespace Elastos {
 					return ELA_MULTISIG;
 				} else if(data[0] == ELA_IDCHAIN_ADDRESS) {
 					return ELA_IDCHAIN;
+				} else if(data[0] == ELA_DESTROY_ADDRESS) {
+					return ELA_DESTROY;
 				}
 		    } else {
 			    throw std::logic_error("error address!");
@@ -202,12 +204,16 @@ namespace Elastos {
 #endif
 		    }
 
+		    if (r == 0 && strcmp(address.c_str(), "1111111111111111111114oLvT2") == 0) {
+		    	r = 1;
+		    }
+
 		    return r;
 	    }
 
 	    bool Address::UInt168IsValid(const UInt168 &u168) {
 		    if (UInt168IsZero(&u168) == true) {
-			    return false;
+			    return true;
 		    }
 		    int prefix = u168.u8[0];
 		    if (prefix != ELA_STAND_ADDRESS && prefix != ELA_MULTISIG_ADDRESS && prefix != ELA_CROSSCHAIN_ADDRESS &&
@@ -237,7 +243,7 @@ namespace Elastos {
 
 	    bool Address::isValidProgramHash(const UInt168 &u168, const ELATransaction::Type &type) {
 		    if (UInt168IsZero(&u168) == true) {
-			    return false;
+			    return true;
 		    }
 
 		    int prefix = u168.u8[0];

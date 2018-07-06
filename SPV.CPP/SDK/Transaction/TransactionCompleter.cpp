@@ -30,6 +30,7 @@ namespace Elastos {
 
 			completedTransactionAssetID(resultTx);
 			completedTransactionPayload(resultTx);
+			resultTx->resetHash();
 			return resultTx;
 		}
 

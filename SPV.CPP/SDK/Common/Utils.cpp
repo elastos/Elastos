@@ -239,6 +239,8 @@ namespace Elastos {
 				return ELA_CROSSCHAIN_ADDRESS;
 			} else if (signType == ELA_IDCHAIN) {
 				return ELA_IDCHAIN_ADDRESS;
+			} else if (signType == ELA_DESTROY) {
+				return ELA_DESTROY_ADDRESS;
 			} else {
 				throw std::logic_error("error signType.");
 			}
