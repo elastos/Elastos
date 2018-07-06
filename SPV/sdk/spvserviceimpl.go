@@ -358,13 +358,13 @@ func (s *SPVServiceImpl) stopSyncing() {
 		for len(s.blockQueue) > 0 {
 			<-s.blockQueue
 		}
-		// Reset download block
-		s.downloading = newDownloadBlock()
 		// Clear commit queue
 		s.commitQueue.clear()
-		// Reset download transaction
-		s.downloadTx = newDownloadTx()
 	}
+	// Reset download block
+	s.downloading = newDownloadBlock()
+	// Reset download transaction
+	s.downloadTx = newDownloadTx()
 }
 
 func (s *SPVServiceImpl) requestBlocks() {
@@ -582,6 +582,9 @@ func (s *SPVServiceImpl) OnNotFound(peer *net.Peer, notFound *msg.NotFound) erro
 				s.downloading = newDownloadBlock()
 			}
 		case msg.InvTypeBlock:
+			// reset downloading block
+			s.downloading = newDownloadBlock()
+
 			if s.chain.IsSyncing() &&
 				s.PeerManager().GetSyncPeer() != nil && s.PeerManager().GetSyncPeer().ID() == peer.ID() {
 				s.changeSyncPeerAndRestart()
