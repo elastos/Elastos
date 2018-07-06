@@ -626,7 +626,8 @@ void BRTransactionFree(BRTransaction *tx)
             BRTxOutputSetScript(&tx->outputs[i], NULL, 0);
         }
 
-        array_free(tx->outputs);
+        if (tx->outputs)
+	        array_free(tx->outputs);
         array_free(tx->inputs);
         free(tx);
     }
