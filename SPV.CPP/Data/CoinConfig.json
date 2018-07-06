@@ -2,11 +2,11 @@
   "ELA": {
     "Type": "Mainchain",
     "CoinIndex": 0,
-    "NetType": "RegNet",
+    "NetType": "MainNet",
     "TargetTimeSpan": 86400,
     "TargetTimePerBlock": 120,
-    "StandardPort": 20866,
-    "MagicNumber": 7630401,
+    "StandardPort": 21866,
+    "MagicNumber": 2018001,
     "Services": 0,
     "MinFee": 10000,
     "BlockType": "ELA",
@@ -14,7 +14,7 @@
     "CheckPoints": [
       {
         "Height": 0,
-        "Hash": "05f458a5522851622cae2bb138498dec60a8f0b233802c97a1ca41f9f214708d",
+        "Hash": "6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3",
         "Timestamp": 1513936800,
         "Target": 486801407
       }
@@ -23,11 +23,11 @@
   "IdChain": {
     "Type": "Idchain",
     "CoinIndex": 1,
-    "NetType": "RegNet",
+    "NetType": "MainNet",
     "TargetTimeSpan": 86400,
     "TargetTimePerBlock": 120,
     "StandardPort": 13338,
-    "MagicNumber": 7630404,
+    "MagicNumber": 20180011,
     "Services": 0,
     "MinFee": 10000,
     "BlockType": "SideStandard",

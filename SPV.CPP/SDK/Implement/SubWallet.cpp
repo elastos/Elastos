@@ -475,26 +475,40 @@ namespace Elastos {
 			nlohmann::json idChainPeerConfig =
 					R"(
 						  {
-							"MagicNumber": 7630404,
+							"MagicNumber": 20180011,
 							"KnowingPeers":
 							[
 								{
-									"Address": "54.165.10.201",
-									"Port": 13338,
+									"Address": "13.251.123.24",
+									"Port": 21608,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
-									"Address": "34.198.67.91",
-									"Port": 13338,
+									"Address": "52.62.27.83",
+									"Port": 21608,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
-									"Address": "52.55.40.251",
-									"Port": 13338,
+									"Address": "35.158.227.3",
+									"Port": 21608,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								},
+								{
+									"Address": "18.130.87.94",
+									"Port": 21608,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								},
+								{
+									"Address": "52.9.136.86",
+									"Port": 21608,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
