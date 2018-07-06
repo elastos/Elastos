@@ -76,7 +76,7 @@ namespace Elastos {
 			ByteStream stream;
 			transaction.Serialize(stream);
 			CMBlock buf = stream.getBuffer();
-			peer_log(peer, "Sending tx: tx hash = %s", Utils::UInt256ToString(tx->raw.txHash));
+			peer_log(peer, "Sending tx: tx hash = %s", Utils::UInt256ToString(tx->raw.txHash).c_str());
 			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_TX);
 		}
 	}
