@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <Core/BRTransaction.h>
 #include "BRArray.h"
 #include "BRPeerMessages.h"
 
@@ -75,6 +76,7 @@ namespace Elastos {
 			ByteStream stream;
 			transaction.Serialize(stream);
 			CMBlock buf = stream.getBuffer();
+			peer_log(peer, "Sending tx: tx hash = %s", Utils::UInt256ToString(tx->raw.txHash));
 			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_TX);
 		}
 	}
