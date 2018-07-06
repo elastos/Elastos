@@ -75,6 +75,7 @@ namespace Elastos {
 			tx->fee = orig->fee;
 
 			if (orig->payload) {
+				delete tx->payload;
 				tx->payload = ELAPayloadNew(orig->type);
 
 				ByteStream stream;
