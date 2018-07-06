@@ -216,7 +216,7 @@ func (bc *Blockchain) CommitHeader(header core.Header) (newTip bool, reorgFrom u
 	// If the cumulative work is greater than the total work of our best header
 	// then we have a new best header. Update the chain tip and check for a reorg.
 	var forkPoint *store.StoreHeader
-	if cumulativeWork.Cmp(tip.TotalWork) == 1 {
+	if cumulativeWork.Cmp(tip.TotalWork) > 0 {
 		newTip = true
 		// If this header is not extending the previous best header then we have a reorg.
 		if !tipHash.IsEqual(parentHeader.Hash()) {
@@ -226,14 +226,14 @@ func (bc *Blockchain) CommitHeader(header core.Header) (newTip bool, reorgFrom u
 				log.Errorf("error calculating common ancestor: %s", err.Error())
 				return newTip, reorgFrom, err
 			}
-			fmt.Printf("Reorganize At block %d, Wiped out %d blocks\n",
+			log.Infof("Reorganize At block %d, Wiped out %d blocks",
 				int(tip.Height), int(tip.Height-forkPoint.Height))
 		}
 	}
 
 	// If common ancestor exists, means we have an fork chan
 	// so we need to rollback to the last good point.
-	if forkPoint != nil {
+	if bc.state != SYNCING && forkPoint != nil {
 		reorgFrom = tip.Height
 		// Save reorganize point as the new tip
 		err = bc.PutHeader(forkPoint, newTip)
