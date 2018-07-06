@@ -17,7 +17,7 @@ namespace Elastos {
 
 		AuxPow::AuxPow() {
 			_btcTransaction = BRTransactionNew();
-			_parBlockHeader = BRMerkleBlockNew();
+			_parBlockHeader = BRMerkleBlockNew(nullptr);
 			_auxMerkleIndex = 0;
 			_parMerkleIndex = 0;
 			_parentHash = UINT256_ZERO;

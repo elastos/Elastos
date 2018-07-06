@@ -29,6 +29,8 @@ namespace Elastos {
 			assert(peers != NULL || peersCount == 0);
 			memset(manager, 0, sizeof(*manager));
 
+			manager->Raw.isShutDown = 0;
+			manager->Plugins = plugins;
 			manager->Raw.peerMessages = peerMessages;
 			manager->Raw.params = params;
 			manager->Raw.wallet = wallet;
@@ -44,7 +46,7 @@ namespace Elastos {
 			manager->Raw.checkpoints = BRSetNew(_BRBlockHeightHash, _BRBlockHeightEq, 100); // checkpoints are indexed by height
 
 			for (size_t i = 0; i < manager->Raw.params->checkpointsCount; i++) {
-				block = manager->Raw.peerMessages->MerkleBlockNew();
+				block = manager->Raw.peerMessages->MerkleBlockNew(manager);
 				block->height = manager->Raw.params->checkpoints[i].height;
 				block->blockHash = UInt256Reverse(&manager->Raw.params->checkpoints[i].hash);
 				block->timestamp = manager->Raw.params->checkpoints[i].timestamp;
@@ -77,7 +79,6 @@ namespace Elastos {
 			array_new(manager->Raw.txRequests, 10);
 			array_new(manager->Raw.publishedTx, 10);
 			array_new(manager->Raw.publishedTxHashes, 10);
-			manager->Plugins = plugins;
 			pthread_mutex_init(&manager->Raw.lock, NULL);
 			manager->Raw.threadCleanup = _dummyThreadCleanup;
 			return manager;

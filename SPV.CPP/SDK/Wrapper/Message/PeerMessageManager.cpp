@@ -29,9 +29,17 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		namespace {
-			BRMerkleBlock *BRMerkleBlockNewWrapper() {
-				ELAMerkleBlock *elablock = ELAMerkleBlockNew();
-				return (BRMerkleBlock *)elablock;
+			BRMerkleBlock *BRMerkleBlockNewWrapper(void *info) {
+				BRMerkleBlock *block = nullptr;
+
+				ELAPeerManager *manager = (ELAPeerManager *) info;
+				if (manager->Plugins.BlockType == "ELA") {
+					block = (BRMerkleBlock *)ELAMerkleBlockNew();
+				} else if (manager->Plugins.BlockType == "SideStandard") {
+					block = (BRMerkleBlock *)IdMerkleBlockNew();
+				}
+
+				return block;
 			}
 
 			void BRMerkleBlockFreeWrapper(void *info, BRMerkleBlock *block) {

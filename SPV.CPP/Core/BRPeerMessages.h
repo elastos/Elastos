@@ -81,7 +81,7 @@ typedef struct {
 
 typedef struct {
 
-	BRMerkleBlock *(*MerkleBlockNew)(void);
+	BRMerkleBlock *(*MerkleBlockNew)(void *info);
 	void (*MerkleBlockFree)(void *info, BRMerkleBlock *block);
 	void (*ApplyFreeBlock)(void *info, void *block);
 

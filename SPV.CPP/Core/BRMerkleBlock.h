@@ -57,7 +57,7 @@ typedef struct {
     ((BRMerkleBlock) { UINT256_ZERO, 0, UINT256_ZERO, UINT256_ZERO, 0, 0, 0, 0, NULL, 0, NULL, 0, 0 })
 
 // returns a newly allocated merkle block struct that must be freed by calling BRMerkleBlockFree()
-BRMerkleBlock *BRMerkleBlockNew(void);
+BRMerkleBlock *BRMerkleBlockNew(void *info);
 
 // returns a deep copy of block and that must be freed by calling BRMerkleBlockFree()
 BRMerkleBlock *BRMerkleBlockCopy(const BRMerkleBlock *block);

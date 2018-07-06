@@ -208,6 +208,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::disconnect() {
+			_manager->Raw.isShutDown = 1;
 			BRPeerManagerDisconnect((BRPeerManager *) _manager);
 		}
 

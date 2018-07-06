@@ -73,7 +73,7 @@ inline static int _ceil_log2(int x)
 // considering the merkle root invalid if there are duplicate hashes in any rows with an even number of elements
 
 // returns a newly allocated merkle block struct that must be freed by calling BRMerkleBlockFree()
-BRMerkleBlock *BRMerkleBlockNew(void)
+BRMerkleBlock *BRMerkleBlockNew(void *info)
 {
 	BRMerkleBlock *block = calloc(1, sizeof(*block));
 
@@ -87,7 +87,7 @@ BRMerkleBlock *BRMerkleBlockNew(void)
 // returns a deep copy of block and that must be freed by calling BRMerkleBlockFree()
 BRMerkleBlock *BRMerkleBlockCopy(const BRMerkleBlock *block)
 {
-    BRMerkleBlock *cpy = BRMerkleBlockNew();
+    BRMerkleBlock *cpy = BRMerkleBlockNew(NULL);
 
     assert(block != NULL);
     *cpy = *block;
@@ -101,7 +101,7 @@ BRMerkleBlock *BRMerkleBlockCopy(const BRMerkleBlock *block)
 // returns a merkle block struct that must be freed by calling BRMerkleBlockFree()
 BRMerkleBlock *BRMerkleBlockParse(const uint8_t *buf, size_t bufLen)
 {
-    BRMerkleBlock *block = (buf && 80 <= bufLen) ? BRMerkleBlockNew() : NULL;
+    BRMerkleBlock *block = (buf && 80 <= bufLen) ? BRMerkleBlockNew(NULL) : NULL;
     size_t off = 0, len = 0;
 
     assert(buf != NULL || bufLen == 0);

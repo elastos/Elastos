@@ -861,8 +861,8 @@ static void _peerDisconnected(void *info, int error)
     BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
 
-    if (array_count(manager->connectedPeers) <= 0 && array_count(manager->peers) <= 0) {
-        _peer_log("No connected peers left, going to find peers and do reconnect again\n");
+    if (!manager->isShutDown && array_count(manager->connectedPeers) <= 0 && array_count(manager->peers) <= 0) {
+        _peer_log("No connected peers left, going to find peers and do reconnect again, shutdown = %d\n", manager->isShutDown);
         sleep(5);
         willReconnect = 1;
     }
@@ -1484,7 +1484,7 @@ BRPeerManager *BRPeerManagerNew(const BRChainParams *params, BRWallet *wallet, u
     manager->checkpoints = BRSetNew(_BRBlockHeightHash, _BRBlockHeightEq, 100); // checkpoints are indexed by height
 
     for (size_t i = 0; i < manager->params->checkpointsCount; i++) {
-        block = manager->peerMessages->MerkleBlockNew();
+        block = manager->peerMessages->MerkleBlockNew(manager);
         block->height = manager->params->checkpoints[i].height;
         block->blockHash = UInt256Reverse(&manager->params->checkpoints[i].hash);
         block->timestamp = manager->params->checkpoints[i].timestamp;
