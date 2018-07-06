@@ -302,6 +302,8 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 		return fmt.Errorf("receive duplicated block %s", hash.String())
 	}
 
+	// Update sync timer
+	LocalNode.syncTimer.update()
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 

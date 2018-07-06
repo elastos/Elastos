@@ -15,20 +15,17 @@ import (
 )
 
 const (
+	ProtocolVersion    = 0
+	HandshakeTimeout   = 2
 	MinConnectionCount = 3
-	TimesOfUpdateTime  = 2
-)
-
-const (
-	ProtocolVersion   = 0
-	HandshakeTimeout  = 2
-	KeepAliveTimeout  = 30
-	DialTimeout       = 6
-	HeartbeatDuration = 6
-	MaxSyncHdrReq     = 2 //Max Concurrent Sync Header Request
-	MaxOutBoundCount  = 8
-	DefaultMaxPeers   = 125
-	MaxIdCached       = 5000
+	KeepAliveTimeout   = 30
+	DialTimeout        = 6
+	SyncBlockTimeout   = 10
+	HeartbeatDuration  = 6
+	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
+	MaxOutBoundCount   = 8
+	DefaultMaxPeers    = 125
+	MaxIdCached        = 5000
 )
 
 const (
