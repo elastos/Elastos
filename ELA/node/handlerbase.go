@@ -241,8 +241,6 @@ func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop comm
 		return
 	}
 
-	LocalNode.SetSyncHeaders(true)
-	node.SetSyncHeaders(true)
 	LocalNode.SetStartHash(*locator[0])
 	LocalNode.SetStopHash(hashStop)
 	node.Send(msg.NewGetBlocks(locator, hashStop))

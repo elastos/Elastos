@@ -15,6 +15,51 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg/v0"
 )
 
+type syncTimer struct {
+	timeout    time.Duration
+	lastUpdate time.Time
+	quit       chan struct{}
+	onTimeout  func()
+}
+
+func newSyncTimer(onTimeout func()) *syncTimer {
+	return &syncTimer{
+		timeout:   time.Second * SyncBlockTimeout,
+		onTimeout: onTimeout,
+	}
+}
+
+func (t *syncTimer) start() {
+	go func() {
+		t.quit = make(chan struct{}, 1)
+		ticker := time.NewTicker(time.Millisecond * 25)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if time.Now().After(t.lastUpdate.Add(t.timeout)) {
+					t.onTimeout()
+					goto QUIT
+				}
+			case <-t.quit:
+				goto QUIT
+			}
+		}
+	QUIT:
+		t.quit = nil
+	}()
+}
+
+func (t *syncTimer) update() {
+	t.lastUpdate = time.Now()
+}
+
+func (t *syncTimer) stop() {
+	if t.quit != nil {
+		t.quit <- struct{}{}
+	}
+}
+
 func (node *node) hasSyncPeer() (bool, Noder) {
 	LocalNode.neighbourNodes.RLock()
 	defer LocalNode.neighbourNodes.RUnlock()
@@ -34,16 +79,7 @@ func (node *node) SyncBlocks() {
 	chain.DefaultLedger.Blockchain.DumpState()
 	bc := chain.DefaultLedger.Blockchain
 	log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
-	if needSync == false {
-		LocalNode.SetSyncHeaders(false)
-		syncNode, err := node.FindSyncNode()
-		if err == nil {
-			syncNode.SetSyncHeaders(false)
-			LocalNode.SetStartHash(EmptyHash)
-			LocalNode.SetStopHash(EmptyHash)
-		}
-		LocalNode.ResetRequestedBlock()
-	} else {
+	if needSync {
 		hasSyncPeer, syncNode := LocalNode.hasSyncPeer()
 		if hasSyncPeer == false {
 			LocalNode.ResetRequestedBlock()
@@ -52,17 +88,19 @@ func (node *node) SyncBlocks() {
 			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
 			SendGetBlocks(syncNode, locator, EmptyHash)
+			LocalNode.SetSyncHeaders(true)
+			syncNode.SetSyncHeaders(true)
+			// Start sync timer
+			LocalNode.syncTimer.start()
 		} else if syncNode.Version() < p2p.EIP001Version {
 			list := LocalNode.GetRequestBlockList()
-			var requests = make(map[Uint256]time.Time, p2p.MaxHeaderHashes)
-			x := 1
+			var requests = make(map[Uint256]time.Time)
 			node.requestedBlockLock.Lock()
 			for i, v := range list {
-				if x == p2p.MaxHeaderHashes {
+				requests[i] = v
+				if len(requests) >= p2p.MaxHeaderHashes {
 					break
 				}
-				requests[i] = v
-				x += 1
 			}
 			node.requestedBlockLock.Unlock()
 			if len(requests) == 0 {
@@ -75,8 +113,8 @@ func (node *node) SyncBlocks() {
 
 				SendGetBlocks(syncNode, locator, EmptyHash)
 			} else {
-				for hash := range requests {
-					if requests[hash].Before(time.Now().Add(-3 * time.Second)) {
+				for hash, t := range requests {
+					if time.Now().After(t.Add(time.Second*3)) {
 						log.Infof("request block hash %x ", hash.Bytes())
 						LocalNode.AddRequestedBlock(hash)
 						syncNode.Send(v0.NewGetData(hash))
@@ -84,6 +122,20 @@ func (node *node) SyncBlocks() {
 				}
 			}
 		}
+	} else {
+		LocalNode.stopSyncing()
+	}
+}
+
+func (node *node) stopSyncing() {
+	// Stop sync timer
+	LocalNode.syncTimer.stop()
+	LocalNode.SetSyncHeaders(false)
+	LocalNode.SetStartHash(EmptyHash)
+	LocalNode.SetStopHash(EmptyHash)
+	syncNode, err := node.FindSyncNode()
+	if err == nil {
+		syncNode.SetSyncHeaders(false)
 	}
 }
 
