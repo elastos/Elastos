@@ -167,6 +167,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	}
 
 	node.SetState(p2p.ESTABLISH)
+	go node.Heartbeat()
 
 	if LocalNode.NeedMoreAddresses() {
 		node.RequireNeighbourList()
