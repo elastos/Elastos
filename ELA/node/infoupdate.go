@@ -87,27 +87,27 @@ func (node *node) SyncBlocks() {
 	}
 }
 
-func (node *node) SendPingToNbr() {
-	noders := LocalNode.GetNeighborNoder()
-	for _, n := range noders {
-		if n.State() == p2p.ESTABLISH {
-			n.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
+func (node *node) Heartbeat() {
+	ticker := time.NewTicker(time.Second * HeartbeatDuration)
+	defer ticker.Stop()
+	for range ticker.C {
+		// quit when node disconnected
+		if !LocalNode.IsNeighborNoder(node) {
+			goto QUIT
 		}
-	}
-}
 
-func (node *node) HeartBeatMonitor() {
-	noders := LocalNode.GetNeighborNoder()
-	for _, n := range noders {
-		if n.State() == p2p.ESTABLISH {
-			t := n.GetLastActiveTime()
-			if t.Before(time.Now().Add(-1 * time.Second * KeepAliveTimeout)) {
-				log.Warn("keepalive timeout!!!")
-				n.SetState(p2p.INACTIVITY)
-				n.CloseConn()
-			}
+		// quit when node keep alive timeout
+		if time.Now().After(node.lastActive.Add(time.Second * KeepAliveTimeout)) {
+			log.Warn("keepalive timeout!!!")
+			node.SetState(p2p.INACTIVITY)
+			node.CloseConn()
+			goto QUIT
 		}
+
+		// send ping message to node
+		go node.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
 	}
+QUIT:
 }
 
 func (node *node) RequireNeighbourList() {
