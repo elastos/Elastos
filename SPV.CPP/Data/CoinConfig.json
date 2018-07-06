@@ -2,6 +2,7 @@
   "ELA": {
     "Type": "Mainchain",
     "CoinIndex": 0,
+    "NetType": "RegNet",
     "TargetTimeSpan": 86400,
     "TargetTimePerBlock": 120,
     "StandardPort": 20866,
@@ -22,6 +23,7 @@
   "IdChain": {
     "Type": "Idchain",
     "CoinIndex": 1,
+    "NetType": "RegNet",
     "TargetTimeSpan": 86400,
     "TargetTimePerBlock": 120,
     "StandardPort": 13338,

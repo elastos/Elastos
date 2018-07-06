@@ -134,11 +134,11 @@ namespace Elastos {
 											   const BRSet *blockSet);
 
 			static int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
-										uint32_t targetTimePerBlock);
+										uint32_t targetTimePerBlock, const std::string &netType);
 
 			static int
 			verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous, uint32_t transitionTime,
-								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock);
+								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock, const std::string &netType);
 
 		private:
 			ELAPeerManager *_manager;

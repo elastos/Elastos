@@ -22,6 +22,7 @@ namespace Elastos {
 			//time unit is second
 			uint32_t TargetTimeSpan;
 			uint32_t TargetTimePerBlock;
+			std::string NetType;
 		};
 
 		class ChainParams :
@@ -38,7 +39,6 @@ namespace Elastos {
 			virtual BRChainParams *getRaw() const;
 
 			uint32_t getMagicNumber() const;
-
 
 		private:
 			void tryInit(const CoinConfig &coinConfig);

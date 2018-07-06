@@ -51,6 +51,7 @@ namespace Elastos {
 			_chainParams->Raw.verifyDifficulty = nullptr;
 			_chainParams->TargetTimeSpan = coinConfig.TargetTimeSpan;
 			_chainParams->TargetTimePerBlock = coinConfig.TargetTimePerBlock;
+			_chainParams->NetType = coinConfig.NetType;
 		}
 
 		ChainParams &ChainParams::operator=(const ChainParams &params) {

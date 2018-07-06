@@ -57,7 +57,8 @@ namespace Elastos {
 							new SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
 						MerkleBlockPtr wrappedBlock(
-							Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType, blocks[i], false));
+								Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType, blocks[i],
+																		false));
 						coreBlocks->push_back(wrappedBlock);
 					}
 					listener->saveBlocks(replace, *coreBlocks);
@@ -135,9 +136,9 @@ namespace Elastos {
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
 #ifdef MERKLE_BLOCK_PLUGIN
-				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
+								 const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
 #else
-								 const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
+				const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
 #endif
 								 const SharedWrapperList<Peer, BRPeer *> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
@@ -155,7 +156,8 @@ namespace Elastos {
 			}
 
 			std::vector<BRMerkleBlock *> blockArray;
-			for(SharedWrapperList<IMerkleBlock, BRMerkleBlock *>::const_iterator it = blocks.cbegin(); it != blocks.cend(); ++it) {
+			for (SharedWrapperList<IMerkleBlock, BRMerkleBlock *>::const_iterator it = blocks.cbegin();
+				 it != blocks.cend(); ++it) {
 				blockArray.push_back((*it)->getRawBlock());
 			}
 
@@ -296,11 +298,12 @@ namespace Elastos {
 		int PeerManager::verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
 												 const BRSet *blockSet) {
 			const ELAChainParams *wrapperParams = (const ELAChainParams *) params;
-			return verifyDifficulty(block, blockSet, wrapperParams->TargetTimeSpan, wrapperParams->TargetTimePerBlock);
+			return verifyDifficulty(block, blockSet, wrapperParams->TargetTimeSpan,
+									wrapperParams->TargetTimePerBlock, wrapperParams->NetType);
 		}
 
 		int PeerManager::verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
-										  uint32_t targetTimePerBlock) {
+										  uint32_t targetTimePerBlock, const std::string &netType) {
 			const BRMerkleBlock *previous, *b = nullptr;
 			uint32_t i;
 
@@ -317,13 +320,16 @@ namespace Elastos {
 			}
 
 			previous = (const BRMerkleBlock *) BRSetGet(blockSet, &block->prevBlock);
-			return verifyDifficultyInner(block, previous, (b) ? b->timestamp : 0, targetTimeSpan, targetTimePerBlock);
+			return verifyDifficultyInner(block, previous, (b) ? b->timestamp : 0, targetTimeSpan,
+										 targetTimePerBlock, netType);
 		}
 
 		int PeerManager::verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous,
 											   uint32_t transitionTime, uint32_t targetTimeSpan,
-											   uint32_t targetTimePerBlock) {
+											   uint32_t targetTimePerBlock, const std::string &netType) {
 			int r = 1;
+ 			if (netType == "RegNet")
+				return r;
 
 			assert(block != nullptr);
 			assert(previous != nullptr);

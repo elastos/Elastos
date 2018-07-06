@@ -20,6 +20,7 @@ namespace Elastos {
 		struct CoinConfig {
 			std::string ChainId;
 			SubWalletType Type;
+			std::string NetType;
 			uint32_t Index;
 			uint32_t TargetTimeSpan;
 			uint32_t TargetTimePerBlock;

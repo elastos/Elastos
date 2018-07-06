@@ -51,6 +51,7 @@ namespace Elastos {
 				config.Services = it.value()["Services"].get<uint32_t>();
 				config.MinFee = it.value()["MinFee"].get<uint64_t>();
 				config.BlockType = it.value()["BlockType"].get<std::string>();
+				config.NetType = it.value()["NetType"].get<std::string>();
 				config.GenesisAddress = it.value()["GenesisAddress"].get<std::string>();
 				std::vector<nlohmann::json> checkPoints = it.value()["CheckPoints"];
 				for (int k = 0; k < checkPoints.size(); ++k) {
