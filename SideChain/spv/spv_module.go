@@ -32,8 +32,12 @@ func SpvInit() error {
 
 	spvService, err = spv.NewSPVService(config.Parameters.SpvMagic, config.Parameters.MainChainFoundationAddress, clientId,
 		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
+	if err != nil {
+		return err
+	}
+
 	//register an invalid address to prevent bloom filter from sending all data
-	spvService.RegisterTransactionListener(&SpvListener{ListenAddress: "0000000000000000000000000000000000"})
+	err = spvService.RegisterTransactionListener(&SpvListener{ListenAddress: "XagqqFetxiDb9wbartKDrXgnqLagy5yY1z"})
 	if err != nil {
 		return err
 	}
