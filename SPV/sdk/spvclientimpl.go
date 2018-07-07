@@ -107,7 +107,6 @@ func (client *SPVClientImpl) OnPeerEstablish(peer *net.Peer) {
 }
 
 func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
-	log.Debug()
 	peer.SetHeight(p.Nonce)
 	// Return pong message to peer
 	peer.Send(msg.NewPong(uint32(client.PeerManager().Local().Height())))
@@ -115,7 +114,6 @@ func (client *SPVClientImpl) OnPing(peer *net.Peer, p *msg.Ping) error {
 }
 
 func (client *SPVClientImpl) OnPong(peer *net.Peer, p *msg.Pong) error {
-	log.Debug()
 	peer.SetHeight(p.Nonce)
 	return nil
 }
