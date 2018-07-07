@@ -82,55 +82,6 @@ func (d *downloadBlock) finished() bool {
 	return len(d.txQueue) == 0
 }
 
-type commitQueue struct {
-	sync.Mutex
-	best       common.Uint256
-	orphans    map[common.Uint256]*downloadBlock
-	commitChan chan *downloadBlock
-}
-
-func newCommitQueue(best common.Uint256) *commitQueue {
-	queue := new(commitQueue)
-	queue.best = best
-	queue.orphans = make(map[common.Uint256]*downloadBlock)
-	queue.commitChan = make(chan *downloadBlock, p2p.MaxBlocksPerMsg*2)
-	return queue
-}
-
-func (cq *commitQueue) Add(block *downloadBlock) {
-	cq.Lock()
-	defer cq.Unlock()
-	cq.commit(block)
-}
-
-func (cq *commitQueue) commit(block *downloadBlock) {
-	header := block.Header.(*ela.Header)
-	previous := header.Previous
-	current := header.Hash()
-	if cq.best.IsEqual(previous) {
-		cq.commitChan <- block
-		delete(cq.orphans, current)
-		cq.best = current
-	} else {
-		cq.orphans[previous] = block
-	}
-
-	// Commit known orphans
-	if block, ok := cq.orphans[cq.best]; ok {
-		cq.commit(block)
-	}
-}
-
-func (cq *commitQueue) clear() {
-	for len(cq.commitChan) > 0 {
-		<-cq.commitChan
-	}
-}
-
-func (cq *commitQueue) finished() bool {
-	return len(cq.commitChan) == 0
-}
-
 type syncTimer struct {
 	timeout    time.Duration
 	lastUpdate time.Time
@@ -184,7 +135,6 @@ type SPVServiceImpl struct {
 	syncTimer   *syncTimer
 	blockQueue  chan common.Uint256
 	downloading *downloadBlock
-	commitQueue *commitQueue
 	downloadTx  *downloadTx
 	pendingTx   common.Uint256
 	txAccept    chan *common.Uint256
@@ -207,9 +157,8 @@ func NewSPVServiceImpl(client SPVClient, foundation string, headerStore store.He
 
 	// Block downloading and commit
 	service.syncTimer = newSyncTimer(service.changeSyncPeerAndRestart)
-	service.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*3)
+	service.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*2)
 	service.downloading = newDownloadBlock()
-	service.commitQueue = newCommitQueue(service.chain.ChainTip().Hash())
 
 	// Transaction downloading
 	service.downloadTx = newDownloadTx()
@@ -223,7 +172,6 @@ func NewSPVServiceImpl(client SPVClient, foundation string, headerStore store.He
 	// Set SPV handler implement
 	service.handler = handler
 
-	go service.startBlockCommitQueue()
 	return service, nil
 }
 
@@ -324,10 +272,6 @@ func (s *SPVServiceImpl) syncBlocks() {
 	if !s.downloading.finished() {
 		return
 	}
-	// Return if commit queue not finished
-	if !s.commitQueue.finished() {
-		return
-	}
 	// Check if blockchain need sync
 	if s.needSync() {
 		// Return if already in syncing
@@ -358,8 +302,6 @@ func (s *SPVServiceImpl) stopSyncing() {
 		for len(s.blockQueue) > 0 {
 			<-s.blockQueue
 		}
-		// Clear commit queue
-		s.commitQueue.clear()
 	}
 	// Reset download block
 	s.downloading = newDownloadBlock()
@@ -379,12 +321,6 @@ func (s *SPVServiceImpl) requestBlocks() {
 	getBlocks := msg.NewGetBlocks(s.chain.GetBlockLocatorHashes(), common.EmptyHash)
 
 	syncPeer.Send(getBlocks)
-}
-
-func (s *SPVServiceImpl) startBlockCommitQueue() {
-	for block := range s.commitQueue.commitChan {
-		s.commitBlock(block)
-	}
 }
 
 func (s *SPVServiceImpl) changeSyncPeerAndRestart() {
@@ -511,11 +447,11 @@ func (s *SPVServiceImpl) finishDownload(peer *net.Peer) {
 	// Update sync timer
 	s.syncTimer.update()
 	// Commit downloaded block
-	s.commitQueue.Add(s.downloading)
+	s.commitBlock(s.downloading)
 	s.downloading = newDownloadBlock()
 	// Request next block list when in syncing
 	if s.chain.IsSyncing() && len(s.blockQueue) == 0 {
-		peer.Send(msg.NewGetBlocks([]*common.Uint256{&s.commitQueue.best}, common.EmptyHash))
+		s.requestBlocks()
 	}
 }
 
@@ -524,7 +460,10 @@ func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
 	newTip, reorgFrom, err := s.chain.CommitHeader(*header)
 	if err != nil {
 		log.Errorf("Commit header failed %s", err.Error())
-		s.changeSyncPeerAndRestart()
+		// If a syncing peer send us bad block, disconnect it.
+		if s.chain.IsSyncing() {
+			s.changeSyncPeerAndRestart()
+		}
 		return
 	}
 	if !newTip {
