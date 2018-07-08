@@ -124,11 +124,8 @@ func GetRawTransaction(param Params) map[string]interface{} {
 	tx, height, err := chain.DefaultLedger.Store.GetTransaction(hash)
 	if err != nil {
 		//try to find transaction in transaction pool.
-		for txid, tx := range NodeForServers.GetTransactionPool(false) {
-			if txid == hash {
-				targetTransaction = tx
-				break
-			}
+		targetTransaction, ok = NodeForServers.GetTransactionPool(false)[hash]
+		if !ok {
 			return ResponsePack(UnknownTransaction,
 				"cannot find transaction in blockchain and transactionpool")
 		}

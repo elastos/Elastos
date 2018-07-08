@@ -206,7 +206,7 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 				SendGetBlocks(node, locator, common.EmptyHash)
 			}
 		case msg.InvTypeTx:
-			if _, ok := node.GetTransactionPool(false)[hash]; !ok {
+			if _, ok := LocalNode.GetTransactionPool(false)[hash]; !ok {
 				getData.AddInvVect(iv)
 			}
 		default:
@@ -245,7 +245,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			}
 
 		case msg.InvTypeTx:
-			tx, ok := node.GetTransactionPool(false)[iv.Hash]
+			tx, ok := LocalNode.GetTransactionPool(false)[iv.Hash]
 			if !ok {
 				notFound.AddInvVect(iv)
 				continue

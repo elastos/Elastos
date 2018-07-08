@@ -85,7 +85,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 
 	if txn.IsWithdrawFromSideChainTx() {
 		if err := CheckWithdrawFromSideChainTransaction(txn); err != nil {
-			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
+			log.Warn("[CheckWithdrawFromSideChainTransaction],", err)
 			return ErrSidechainTxDuplicate
 		}
 	}
@@ -127,7 +127,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 			return ErrUnknownReferedTx
 		}
 		referTxnOut := referTxn.Outputs[referTxnOutIndex]
-		if referTxnOut.Value <= 0 {
+		if referTxnOut.Value < 0 {
 			log.Warn("Value of referenced transaction output is invalid")
 			return ErrInvalidReferedTx
 		}
@@ -453,10 +453,28 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 
 	//check cross chain amount in payload
 	for i := 0; i < len(payloadObj.CrossChainAmounts); i++ {
-		if payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
+		if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
 			return errors.New("Invalid transaction cross chain amount")
 		}
 	}
 
+	//check transaction fee
+	var totalInput Fixed64
+	reference, err := DefaultLedger.Store.GetTxReference(txn)
+	if err != nil {
+		return errors.New("Invalid transaction inputs")
+	}
+	for _, v := range reference {
+		totalInput += v.Value
+	}
+
+	var totalOutput Fixed64
+	for _, output := range txn.Outputs {
+		totalOutput += output.Value
+	}
+
+	if totalInput-totalOutput < Fixed64(config.Parameters.MinCrossChainTxFee) {
+		return errors.New("Invalid transaction fee")
+	}
 	return nil
 }
