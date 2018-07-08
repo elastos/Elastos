@@ -98,11 +98,10 @@ func (node *node) SendPingToNbr() {
 
 func (node *node) HeartBeatMonitor() {
 	noders := LocalNode.GetNeighborNoder()
-	periodUpdateTime := config.DefaultGenBlockTime / TimesOfUpdateTime
 	for _, n := range noders {
 		if n.State() == p2p.ESTABLISH {
 			t := n.GetLastActiveTime()
-			if t.Before(time.Now().Add(-1 * time.Second * time.Duration(periodUpdateTime) * KeepAliveTimeout)) {
+			if t.Before(time.Now().Add(-1 * time.Second * KeepAliveTimeout)) {
 				log.Warn("keepalive timeout!!!")
 				n.SetState(p2p.INACTIVITY)
 				n.CloseConn()
