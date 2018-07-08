@@ -22,7 +22,7 @@ const (
 const (
 	ProtocolVersion   = 0
 	HandshakeTimeout  = 2
-	KeepAliveTimeout  = 3
+	KeepAliveTimeout  = 30
 	DialTimeout       = 6
 	ConnectionMonitor = 6
 	MaxSyncHdrReq     = 2 //Max Concurrent Sync Header Request
