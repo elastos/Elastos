@@ -119,6 +119,12 @@ HashWorld is a blockchain game that allows users to learn about blockchain techn
 
 ---
 
+### IoeX
+
+IoeX is an internet of things smart platform based on the Elastos infrastructure. IoeX creates a decentralized peer-to-peer network based on existing servers and smart devices. The interconnection of devices creates a network that enables software to be updated without using an OTA server. Smart device manufacturers, software companies, and solution providers can install ioeX onto their smart devices, creating a peer node that when combined with bootstrap nodes, form a decentralized network. As more industries join the network, more devices become peer nodes, and the scale of the network increases.
+
+---
+
 ### Collaborations of Elastos Dev Community at MIT
 
 Professor Huang hosted a private Elastos seminar at MIT. Elastos OS was discussed on its application to MIT food safety inspection, big data, and management along with P2P network. A consensus was reached for future collaborations of an Elastos dev community at MIT 

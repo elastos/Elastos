@@ -19,6 +19,8 @@ Additional benefits of merged mining include:
 * The transfer of trust over multiple chains. The Elastos main chain is merged mined along with the Bitcoin main chain. This merged mining characteristic can be extended to Elastos sidechains as long as the sidechain adopts the same Proof of Work consensus. Thus, layers of chains can be merged mined recursively, which establishes a hierarchy of trust among chains.
 * Isolated nodes. An auxiliary blockchain, or sidechain, dependent on merged mining does not need a consensus of multiple nodes. In the extreme case, one chain only needs one node and does not diminish the reliability of the ledger information on the main chain or other chains. No other blockchain consensus algorithm has this kind of advantage.
 
+[Read an article on ID Sidechain and the benefits of merged mining](https://medium.com/@kiran.pachhai/elastos-did-the-backbone-of-the-new-internet-26182108bf6a)
+
 ---
 
 ### Overview of Main chain and Sidechains in the elastos ecosystem
@@ -98,3 +100,5 @@ The first stage of atomic swap will be achieved using hash lock mechanism and wi
 5. Alice sees Transaction #2 on Friendchain F and uses the number x along with her private key on Friendchain E to unlock this transaction. The 25 FTOKENs are then transferred to Alice
 6. Bob sees that Transaction #2 has been unlocked and retrieves x
 7. Bob signs Transaction #1 with his private key on Elastos main chain E along with the number x. This unlocks Transaction #1 for Bob and finally 5 ELAs are transferred to his address on Elastos main chain E
+
+[Read an article on the main chain, sidechains and friendchains](https://medium.com/@kiran.pachhai/elastos-architecture-the-main-chain-sidechains-and-friendchains-3727ef477d8e)
