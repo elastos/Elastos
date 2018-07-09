@@ -178,6 +178,8 @@ namespace Elastos {
 
 			bool containsTransaction(const TransactionPtr &transaction);
 
+			bool containsTransaction(const UInt256 &hash) const;
+
 			bool registerTransaction(const TransactionPtr &transaction);
 
 			void removeTransaction(const UInt256 &transactionHash);

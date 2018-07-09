@@ -189,18 +189,6 @@ namespace Elastos {
 			_transaction->raw.timestamp = timestamp;
 		}
 
-//		void Transaction::addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
-//								   const CMBlock script, const CMBlock signature, uint32_t sequence) {
-//			BRTransactionAddInput(&_transaction->raw, hash, index, amount,
-//								  script, script.GetSize(), signature, signature.GetSize(),
-//								  sequence);
-//
-//			Program *program(new Program());
-//			program->setCode(script);
-//			program->setParameter(signature);
-//			addProgram(program);
-//		}
-
 		void Transaction::addOutput(TransactionOutput *output) {
 			_transaction->outputs.push_back(output);
 		}
@@ -655,10 +643,25 @@ namespace Elastos {
 			nlohmann::json summary;
 			summary["Status"] = getStatus(blockHeight);
 			summary["ConfirmStatus"] = getConfirmInfo(blockHeight);
-			summary["Amount"] = _transaction->outputs.empty() ? 0 : _transaction->outputs[0]->getAmount();
-			std::string toAddress = _transaction->outputs.empty() ? "" : _transaction->outputs[0]->getAddress();
-			summary["Type"] = wallet->containsAddress(toAddress) ? "Incoming" : "Outcoming";
-			summary["ToAddress"] = toAddress;
+			if (_transaction->raw.inCount > 0 && wallet->containsTransaction(_transaction->raw.inputs[0].txHash)) {
+				summary["Amount"] = _transaction->outputs.empty() ? 0 : _transaction->outputs[0]->getAmount();
+				std::string toAddress = _transaction->outputs.empty() ? "" : _transaction->outputs[0]->getAddress();
+				summary["ToAddress"] = toAddress;
+				summary["Type"] = "Outcoming";
+			} else {
+				summary["Amount"] = 0;
+				summary["Type"] = "Incoming";
+				summary["ToAddress"] = "";
+
+				for (size_t i = 0; i < _transaction->outputs.size(); ++i) {
+					if (wallet->containsAddress(_transaction->outputs[i]->getAddress())) {
+						summary["Amount"] = _transaction->outputs[i]->getAmount();
+						summary["Type"] = "Incoming";
+						summary["ToAddress"] = _transaction->outputs[i]->getAmount();
+					}
+				}
+			}
+
 			summary["Remark"] = getRemark();
 			summary["Fee"] = getTxFee(wallet);
 

@@ -104,9 +104,6 @@ namespace Elastos {
 
 			void setTimestamp(uint32_t timestamp);
 
-//			void addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
-//							 const CMBlock script, const CMBlock signature, uint32_t sequence);
-
 			void addOutput(TransactionOutput *output);
 
 			void shuffleOutputs();
