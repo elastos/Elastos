@@ -18,10 +18,6 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-const (
-	PrefixRegisterId = 0x67
-)
-
 // CheckTransactionSanity verifys received single transaction
 func CheckTransactionSanity(txn *core.Transaction) ErrCode {
 

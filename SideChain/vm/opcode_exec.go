@@ -108,6 +108,7 @@ var (
 		HASH160:       {HASH160, "HASH160", opHash},
 		HASH256:       {HASH256, "HASH256", opHash},
 		CHECKSIG:      {CHECKSIG, "CHECKSIG", opCheckSig},
+		CHECKREGID:    {CHECKREGID, "CHECKREGID", opCheckSig},
 		CHECKMULTISIG: {CHECKMULTISIG, "CHECKMULTISIG", opCheckMultiSig},
 
 		//Array
