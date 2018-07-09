@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
@@ -157,12 +157,9 @@ func (al *KnownAddressList) AddKnownAddress(na p2p.NetAddress) {
 	al.Lock()
 	defer al.Unlock()
 
-	log.Debugf("AddKnownAddress %s", na.String())
-
 	ka := new(KnownAddress)
 	ka.SaveAddr(na)
 	if al.AddressExisted(ka.GetID()) {
-		log.Debug("It is a existed addr\n")
 		al.UpdateAddress(ka.GetID(), na)
 	} else {
 		al.List[ka.GetID()] = ka
