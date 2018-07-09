@@ -88,7 +88,7 @@ namespace Elastos {
 			auxPow.setBTCTransaction(tx);
 
 			// init merkle block
-			BRMerkleBlock *block = BRMerkleBlockNew();
+			BRMerkleBlock *block = BRMerkleBlockNew(nullptr);
 			block->blockHash = getRandUInt256();
 			block->version = rand();
 			block->prevBlock = getRandUInt256();
