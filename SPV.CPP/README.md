@@ -1,11 +1,11 @@
 # Elastos.ELA.SPV.Cpp
 
 ## Summary
-SPV SDK and wallet.
+This repository is a basic library aimed to provide a serials of wallet related interfaces for anyone who want to build a wallet themselves.   
 
 ## Build on Ubuntu/MacOs
 ### Check the required tools
-Make sure your computer have installed the required below:
+Make sure your computer have installed the required packages below:
 * [git](https://www.git-scm.com/downloads)
 * [cmake](https://cmake.org/download)
 * [libboost](https://www.boost.org/)
@@ -38,7 +38,7 @@ $ make
 
 ## Build for Android
 ### Check the required tools
-Make sure your computer have installed the required below:
+Make sure your computer have installed the required packages below:
 * [git](https://www.git-scm.com/downloads)
 * [cmake](https://cmake.org/download)
 * [wget](https://www.gnu.org/software/wget)
@@ -75,3 +75,9 @@ $ cd cmake-build-ndk-release
 $ cmake -DSPV_FOR_ANDROID=ON ..
 $ make
 ```
+
+## More
+
+Learn more about this repository please refer to the following links:
+- [interfaces definition](https://github.com/elastos/Elastos.ELA.SPV.Cpp/tree/dev/Interface)
+- [wiki](https://github.com/elastos/Elastos.ELA.SPV.Cpp/wiki) 
