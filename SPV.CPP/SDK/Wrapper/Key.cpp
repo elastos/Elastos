@@ -222,7 +222,7 @@ namespace Elastos {
 			privKey.SetMemFixed(_key->secret.u8, sizeof(_key->secret));
 
 			CMBlock signedData;
-			BTCKey::ECDSACompactSign_sha256(privKey, *(UInt256 *) &md32[0], signedData, NID_X9_62_prime256v1);
+			BTCKey::ECDSA65Sign_sha256(privKey, *(UInt256 *) &md32[0], signedData, NID_X9_62_prime256v1);
 			return signedData;
 		}
 
@@ -377,7 +377,7 @@ namespace Elastos {
 			mbcPubKey.SetMemFixed(publicKey.c_str(), publicKey.size() + 1);
 			CMBlock pubKey = Str2Hex(mbcPubKey);
 
-			return BTCKey::ECDSACompactVerify_sha256(pubKey, messageDigest, signature, NID_X9_62_prime256v1);
+			return BTCKey::ECDSA65Verify_sha256(pubKey, messageDigest, signature, NID_X9_62_prime256v1);
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {

@@ -96,6 +96,28 @@ namespace Elastos {
 			ECDSACompactVerify_sha256(const CMBlock &pubKey, const UInt256 &md, const CMBlock &signedData,
 									  int nid = NID_secp256k1);
 
+			/** Signatures data for ECDSA.
+		  	 *  \param  privKey CMemBlock for Sign's PrivateKey.
+		     *  \param  md UInt256 to be signed.
+		     * 	\param  signedData CMemBlock for returned SignedData.
+		     * 	\param  nid int for style of ECDSA.
+		     *  \return true on success and false on failure.
+		     */
+			static bool
+			ECDSA65Sign_sha256(const CMBlock &privKey, const UInt256 &md, CMBlock &signedData,
+							   int nid = NID_secp256k1);
+
+			/** Verifys signature's for ECDSA.
+ 			 *  \param  pubKey CMemBlock for verify's PublicKey.
+ 			 *  \param  md UInt256 for PlainText.
+ 			 * 	\param  signedData CMemBlock for SignedData.
+ 			 * 	\param  nid int for style of ECDSA.
+ 			 *  \return true on success and false on failure.
+ 			 */
+			static bool
+			ECDSA65Verify_sha256(const CMBlock &pubKey, const UInt256 &md, const CMBlock &signedData,
+								 int nid = NID_secp256k1);
+
 			/** Get MasterPrivateKey' seed for ECDSA.
  			 *  \param  phrase std::string for mnemonic.
  			 *  \param  phrasePassword CMemBlock for mnemonic's password.
@@ -239,7 +261,7 @@ namespace Elastos {
  			 */
 			static CMBlock
 			getDerivePrivKey_Secret_depth(const CMBlock &privKey, UInt256 chainCode, bool useChainCode,
-										 int nid, int depth, va_list ap);
+										  int nid, int depth, va_list ap);
 
 			/** Get Derived PrivateKey list from MasterPrivateKey for ECDSA.
 			 *  \param  privKeys std::vector<CMBlock > initials to size equal to
