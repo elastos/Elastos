@@ -512,14 +512,6 @@ namespace Elastos {
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
 		}
 
-		void MasterWallet::ResetAddressCache(const std::string &payPassword) {
-			std::for_each(_createdWallets.begin(), _createdWallets.end(),
-						  [&payPassword](const WalletMap::value_type &item) {
-							  SubWallet *wallet = dynamic_cast<SubWallet *>(item.second);
-							  wallet->ResetAddressCache(payPassword);
-						  });
-		}
-
 		void MasterWallet::tryInitCoinConfig() {
 			if (!_coinConfigReader.IsInitialized()) {
 				boost::filesystem::path configPath = _rootPath;

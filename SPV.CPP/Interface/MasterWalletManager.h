@@ -14,23 +14,39 @@ namespace Elastos {
 
 		class MasterWalletManager : public IMasterWalletManager {
 		public:
-			MasterWalletManager(const std::string &rootPath);
-
-			virtual ~MasterWalletManager();
-
-			void SaveConfigs();
-
-			virtual std::string GenerateMnemonic(const std::string &language);
+			/**
+			 * Constructor
+			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
+			 */
+			explicit MasterWalletManager(const std::string &rootPath);
 
 			/**
-			 * Create an new master wallet, an random seed will be generated combined with phrase password to create
-			 * 	root key and chain code.
-			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param language specify language of mnemonic. Language should not be empty, and exit corresponding language config file under the root path. The config begin with fixed prefix "mnemonic_" and end with ".txt" extension, for example mnemonic of Chinese config will be "mnemonic_chinese.txt".
-			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
-			 * @return If success will return a pointer of master wallet interface.
+			 * Virtual destructor
 			 */
+			virtual ~MasterWalletManager();
+
+			/**
+			 * Save local storage specifically. Note that the storage saving will be called automatically in destructor.
+			 */
+			void SaveConfigs();
+
+			/**
+			 * Generate a mnemonic by random 128 entropy. We support English, Chinese, French, Italian, Japanese, and
+			 * 	Spanish 6 types of mnemonic currently.
+			 * @param language specify mnemonic language.
+			 * @return a random mnemonic.
+			 */
+			virtual std::string GenerateMnemonic(const std::string &language);
+
+			 /**
+			  * Create a new master wallet by mnemonic and phrase password, or return existing master wallet if current master wallet manager has the master wallet id.
+			  * @param masterWalletId is the unique identification of a master wallet object.
+			  * @param mnemonic use to generate seed which deriving the master private key and chain code.
+			  * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
+			  * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			  * @param language specify language of mnemonic, value of language should correspond to the language of \p mnemonic.
+			  * @return If success will return a pointer of master wallet interface.
+			  */
 			virtual IMasterWallet *CreateMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &mnemonic,
@@ -53,11 +69,11 @@ namespace Elastos {
 
 			/**
 			 * Import master wallet by key store file.
-			 * @param keystorePath specify key store file path to import wallet. Key store path should not be empty and really exist.
+			 * @param masterWalletId is the unique identification of a master wallet object.
+			 * @param keystoreContent specify key store content in json format.
 			 * @param backupPassword use to encrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
 			virtual IMasterWallet *ImportWalletWithKeystore(
@@ -69,11 +85,11 @@ namespace Elastos {
 
 			/**
 			 * Import master wallet by mnemonic.
+			 * @param masterWalletId is the unique identification of a master wallet object.
 			 * @param mnemonic for importing the master wallet.
 			 * @param phrasePassword combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param language specify language of mnemonic. Language should not be empty, and exit corresponding language config file under the root path. The config begin with fixed prefix "mnemonic_" and end with ".txt" extension, for example mnemonic of Chinese config will be "mnemonic_chinese.txt".
-			 * @param rootPath specify directory for all config files, including mnemonic config files and peer connection config files. Root should not be empty, otherwise will throw invalid argument exception.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
 			virtual IMasterWallet *ImportWalletWithMnemonic(
@@ -84,10 +100,11 @@ namespace Elastos {
 					const std::string &language = "english");
 
 			/**
-			 * Export key store of the master wallet.
+			 * Export key store content of the master wallet in json format.
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 * @param backupPassword use to decrypt key store file. Backup password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @param keystorePath specify the key store path to export. Key store path should not be empty.
+			 * @param payPassword use to decrypt and generate mnemonic temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success will return key store content in json format.
 			 */
 			virtual nlohmann::json ExportWalletWithKeystore(
 					IMasterWallet *masterWallet,
