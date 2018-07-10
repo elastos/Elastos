@@ -186,6 +186,7 @@ namespace Elastos {
 				wallet = nullptr;
 			}
 
+			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 			return wallet;
 		}
 #endif
@@ -209,6 +210,7 @@ namespace Elastos {
 			size_t count = array_count(wallet->externalChain);
 			if (count == 0) {
 
+				uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
 				BRAddress address = BR_ADDRESS_NONE;
 #ifdef TEMPORARY_HD_STRATEGY
 				ELAWallet *elaWallet = (ELAWallet *) wallet;
@@ -222,8 +224,8 @@ namespace Elastos {
 				Address wrapperAddr(addresses[0]);
 				address = *wrapperAddr.getRaw();
 #else
-				uint8_t pubKey[BRBIP32PubKey(nullptr, 0, wallet->masterPubKey, 0, count)];
-				size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, 0, (uint32_t) count);
+				uint8_t pubKey[MasterPubKey::BIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
+				size_t len = MasterPubKey::BIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
 				Key key;
 				CMBlock publicKey;
 				publicKey.SetMemFixed(pubKey, len);

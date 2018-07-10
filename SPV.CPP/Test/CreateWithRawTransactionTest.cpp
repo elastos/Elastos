@@ -50,25 +50,20 @@ TEST_CASE("test sideChain Create Transaction", "") {
 	nlohmann::json mainChainIndex(indexs);
 	nlohmann::json mainChainAmount(amounts);
 
-	bool isSend = false;
 	while (1) {
 		sleep(5);
+		if (value > 10000) {
 
-		if (value > 10000 && !isSend) {
+			nlohmann::json txJson = sidechainSubWallet->CreateWithdrawTransaction("", "1111111111111111111114oLvT2", 20000, mainChainAccount,
+			                                              mainChainAmount, mainChainIndex, 10002, "memo", "remark");
 
-//			nlohmann::json txJson = sidechainSubWallet->CreateWithdrawTransaction("", "1111111111111111111114oLvT2", 20000, mainChainAccount,
-//			                                              mainChainAmount, mainChainIndex, 10002, "memo", "remark");
-//
-//			nlohmann::json result = sidechainSubWallet->SendRawTransaction(txJson, 10002, payPassword);
-//			std::cout<< "result" << result << std::endl;
+			nlohmann::json result = sidechainSubWallet->SendRawTransaction(txJson, 10002, payPassword);
+			std::cout<< "result" << result << std::endl;
 
-			isSend = true;
+			break;
 		}
-
 		value = subWallet->GetBalance();
-		std::cout<< "balance22=" << value << std::endl;
+		std::cout<< "balance=" << value << std::endl;
 	}
-
 	masterWallet->DestroyWallet(subWallet);
-	walletFactory->DestroyWallet(masterWallet->GetId());
 }

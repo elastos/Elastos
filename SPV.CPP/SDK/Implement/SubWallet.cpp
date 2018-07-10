@@ -341,12 +341,14 @@ namespace Elastos {
 			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
 			pthread_mutex_lock(&wallet->lock);
 			for (i = 0; i < tx->inCount; i++) {
-				for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1])) {
-						internalIdx[internalCount++] = j - 1;
+				if (wallet->internalChain) {
+					for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
+						if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1])) {
+							internalIdx[internalCount++] = j - 1;
+						}
 					}
-
 				}
+
 
 				for (j = (uint32_t) array_count(wallet->externalChain); j > 0; j--) {
 					if (BRAddressEq(tx->inputs[i].address, &wallet->externalChain[j - 1])) {
