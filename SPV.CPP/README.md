@@ -3,40 +3,15 @@
 ## Summary
 SPV SDK and wallet.
 
-## Build on Ubuntu
-### Check OS version
-Make sure your ubuntu version is 16.04+
-```shell
-$ cat /etc/issue
-Ubuntu 16.04.3 LTS \n \l
-```
-
-### Install git
-```shell
-$ sudo apt-get install -y git
-```
-
-### Install cmake
-```shell
-$ sudo apt-get install -y cmake
-```
-
-### Install wget
-```
-$ sudo apt-get install -y wget
-```
-
-### Install ndk
-`Ndk` version: r16+
-
-Download [ndk](https://developer.android.com/ndk/downloads/)
-
-Unzip to somewhere, for example `/home/xxx/dev/android-ndk-r16`
-
-Set system environment variable `ANDROID_NDK` to `/home/xxx/dev/android-ndk-r16`
+## Build on Ubuntu/MacOs
+### Check the required tools
+Make sure your computer have installed the required below:
+* [git](https://www.git-scm.com/downloads)
+* [cmake](https://cmake.org/download)
+* [libboost](https://www.boost.org/)
 
 ### Clone source code
-Open terminal, go to `/home/xxx/dev`
+Open a terminal, go to `/home/xxx/dev`
 ```shell
 $ cd /home/xxx/dev/
 $ git clone git@github.com:elastos/Elastos.ELA.SPV.Cpp.git
@@ -47,51 +22,30 @@ $ git submodule update
 
 ### Build Elastos.ELA.SPV.Cpp
 
-Create a build directory `cmake-build-ndk-debug`
+Create a build directory `cmake-build-release`
 ```shell
 $ cd /home/xxx/dev/Elastos.ELA.SPV.Cpp
-$ mkdir cmake-build-ndk-debug
+$ mkdir cmake-build-release
 ```
 
 Execute cmake command to generate Makefile, and make
 ```shell
-$ cd cmake-build-ndk-debug
-$ cmake -DSPV_FOR_ANDROID=ON -DCMAKE_BUILD_TYPE=Debug ..
+$ cd cmake-build-release
+$ cmake ..
 $ make
 ```
 
 
-## Build on Mac
-### Check OS version
-Make sure the OSX version is 16.7+
-
-```shell
-$ uname -srm
-Darwin 16.7.0 x86_64
-```
-
-### Install git
-```
-brew install git
-```
-Download and install [git](https://www.git-scm.com/downloads).
-
-### Install cmake
-`cmake` version: 3.11+
-```
-$ brew install cmake
-```
-Download and install [cmake](https://cmake.org/download/)
-
-### Install wget
-```
-$ brew install wget
-```
+## Build for Android
+### Check the required tools
+Make sure your computer have installed the required below:
+* [git](https://www.git-scm.com/downloads)
+* [cmake](https://cmake.org/download)
+* [wget](https://www.gnu.org/software/wget)
+* [ndk](https://developer.android.com/ndk/downloads/)
 
 ### Install ndk
 `NDK` version: r16+
-
-Download [ndk](https://developer.android.com/ndk/downloads/)
 
 Unzip to somewhere, for example `/Users/xxx/dev/android-ndk-r16`
 
@@ -109,20 +63,15 @@ $ git submodule update
 
 ### Build Elastos.ELA.SPV.Cpp
 
-Create a build directory `cmake-build-ndk-debug`
+Create a build directory `cmake-build-ndk-release`
 ```shell
 $ cd /Users/xxx/dev/Elastos.ELA.SPV.Cpp
-$ mkdir cmake-build-ndk-debug
+$ mkdir cmake-build-ndk-release
 ```
 
 Execute cmake command to generate Makefile, and make
 ```shell
-$ cd cmake-build-ndk-debug
-$ cmake -DSPV_FOR_ANDROID=ON -DCMAKE_BUILD_TYPE=Debug ..
+$ cd cmake-build-ndk-release
+$ cmake -DSPV_FOR_ANDROID=ON ..
 $ make
 ```
-
-
-## Build on windows
-
-Good luck.

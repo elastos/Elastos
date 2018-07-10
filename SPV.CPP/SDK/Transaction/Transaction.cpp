@@ -643,27 +643,51 @@ namespace Elastos {
 			nlohmann::json summary;
 			summary["Status"] = getStatus(blockHeight);
 			summary["ConfirmStatus"] = getConfirmInfo(blockHeight);
+			summary["Remark"] = getRemark();
+			summary["Fee"] = getTxFee(wallet);
+			nlohmann::json jOut;
+			nlohmann::json jIn;
+
 			if (_transaction->raw.inCount > 0 && wallet->containsTransaction(_transaction->raw.inputs[0].txHash)) {
-				summary["Amount"] = _transaction->outputs.empty() ? 0 : _transaction->outputs[0]->getAmount();
-				std::string toAddress = _transaction->outputs.empty() ? "" : _transaction->outputs[0]->getAddress();
-				summary["ToAddress"] = toAddress;
-				summary["Type"] = "Outcoming";
+				std::string toAddress = "";
+
+				if (wallet->containsAddress(_transaction->outputs[0]->getAddress())) {
+					// transfer to my other address of wallet
+					jOut["Amount"] = _transaction->outputs[0]->getAmount();
+					jOut["ToAddress"] = _transaction->outputs[0]->getAddress();
+					summary["Outcoming"] = jOut;
+
+					jIn["Amount"] = _transaction->outputs[0]->getAmount();
+					jIn["ToAddress"] = _transaction->outputs[0]->getAddress();
+					summary["Incoming"] = jIn;
+				} else {
+					jOut["Amount"] = _transaction->outputs[0]->getAmount();
+					jOut["ToAddress"] = _transaction->outputs[0]->getAddress();
+					summary["Outcoming"] = jOut;
+
+					jIn["Amount"] = 0;
+					jIn["ToAddress"] = "";
+					summary["Incoming"] = jIn;
+				}
 			} else {
-				summary["Amount"] = 0;
-				summary["Type"] = "Incoming";
-				summary["ToAddress"] = "";
+				uint64_t inputAmount = 0;
+				std::string toAddress = "";
 
 				for (size_t i = 0; i < _transaction->outputs.size(); ++i) {
 					if (wallet->containsAddress(_transaction->outputs[i]->getAddress())) {
-						summary["Amount"] = _transaction->outputs[i]->getAmount();
-						summary["Type"] = "Incoming";
-						summary["ToAddress"] = _transaction->outputs[i]->getAmount();
+						inputAmount = _transaction->outputs[i]->getAmount();
+						toAddress = _transaction->outputs[i]->getAddress();
 					}
 				}
-			}
 
-			summary["Remark"] = getRemark();
-			summary["Fee"] = getTxFee(wallet);
+				jOut["Amount"] = 0;
+				jOut["ToAddress"] = "";
+				summary["Outcoming"] = jOut;
+
+				jIn["Amount"] = inputAmount;
+				jIn["ToAddress"] = toAddress;
+				summary["Incoming"] = jIn;
+			}
 
 			rawTxJson["Summary"] = summary;
 		}
