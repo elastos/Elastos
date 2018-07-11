@@ -668,12 +668,14 @@ namespace Elastos {
 			return BRWalletContainsTransaction((BRWallet *) _wallet, transaction->getRaw()) != 0;
 		}
 
-		bool Wallet::containsTransaction(const UInt256 &hash) const {
+		bool Wallet::inputFromWallet(const BRTxInput *in) {
 			BRWallet *wallet = &_wallet->Raw;
 			for (size_t i = 0; i < array_count(wallet->transactions); i++) {
 				ELATransaction *tx = (ELATransaction *) wallet->transactions[i];
-				if (UInt256Eq(&hash, &tx->raw.txHash)) {
-					return true;
+				if (UInt256Eq(&in->txHash, &tx->raw.txHash)) {
+					if (containsAddress(tx->outputs[in->index]->getAddress())) {
+						return true;
+					}
 				}
 			}
 

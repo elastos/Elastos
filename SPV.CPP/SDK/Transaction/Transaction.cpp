@@ -648,7 +648,7 @@ namespace Elastos {
 			nlohmann::json jOut;
 			nlohmann::json jIn;
 
-			if (_transaction->raw.inCount > 0 && wallet->containsTransaction(_transaction->raw.inputs[0].txHash)) {
+			if (_transaction->raw.inCount > 0 && wallet->inputFromWallet(&_transaction->raw.inputs[0])) {
 				std::string toAddress = "";
 
 				if (wallet->containsAddress(_transaction->outputs[0]->getAddress())) {
