@@ -93,6 +93,7 @@ namespace Elastos {
 				BRSetAdd(wallet->Raw.allAddrs, &wallet->Raw.externalChain[i]);
 			}
 
+			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 			return wallet;
 		}
 
