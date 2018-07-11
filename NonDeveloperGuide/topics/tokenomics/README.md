@@ -41,14 +41,16 @@ In addition to this, another reason there’s a 4% inflation also has to do with
 
 Another way to look at the elastos platform is to imagine it being a self sustaining ecosystem. Elastos is building a smart web. A simple example of this is a micro-website(without an ip address) that will be running completely peer to peer. These micro websites need to have domain names, storage service and any other services websites need. All of these services will be paid with ELA. One thing to keep in mind is that proceeds from domain name registrations, etc will be used to fund hard drives(such as IPFS), supernodes for relaying videos, music, etc. Everyone can provide these services and they’re all helping the ecosystem, so they’ll need to be awarded accordingly. This is a self running economy so there needs to be a currency with a healthy economic inflation that can provide a long term sustainment and an equal growth of the entire ecosystem as a whole.
 
----
-
-### Elastos platform has no gas fees unline other platforms
-
-On elastos platform, there are no gas fees. Different DApps can build their own sidechains to issue their own tokens for different purposes. It’s up to these sidechains where smart contracts will be run that are going to decide whether they want to charge gas for certain transactions. Elastos won’t be charging any gas fees of its own. However, the sidechains themselves may charge gas fees of their own to run smart contracts.
-
 --- 
 
 ### Any existing smart contract VM may be ported to Elastos
 
 Elastos provides a platform for any kind of DApps to be built that can run directly on the device instead of running on top of the blockchain itself like most DApps today. This creates an incentive to port existing VMs(eg. NEO, Ethereum, etc) from other blockchains to be run on top of elastos, thereby leading to the true interoperability between all the different kinds of blockchains all running under the same umbrella that provides solutions to three of the most common problems faced today by most blockchains and DApps — scalibility, security and decentralization, all without sacrificing anything in the process.
+
+---
+
+### Token Specifics
+
+- Check out how the circulating supply of ELA is calculated at https://medium.com/elastos/ela-metrics-how-is-the-circulating-supply-calculated-92b666c4f6e0
+
+- You can find info about when the locked up ELA will be released over time by going to the following site at https://elanews.net/2018/07/10/ela-release-and-burn-schedule/
