@@ -698,7 +698,7 @@ static void _peerConnected(void *info)
     BRPeerCallbackInfo *peerInfo;
     time_t now = time(NULL);
 
-    pthread_mutex_trylock(&manager->lock);
+    pthread_mutex_lock(&manager->lock);
 
 
     if (peer->timestamp > now + 2*60*60 || peer->timestamp < now - 2*60*60) peer->timestamp = now; // sanity check
