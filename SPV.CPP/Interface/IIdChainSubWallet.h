@@ -5,12 +5,12 @@
 #ifndef __ELASTOS_SDK_IIDCHAINSUBWALLET_H__
 #define __ELASTOS_SDK_IIDCHAINSUBWALLET_H__
 
-#include "ISubWallet.h"
+#include "ISidechainSubWallet.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IIdChainSubWallet : public virtual ISubWallet {
+		class IIdChainSubWallet : public virtual ISidechainSubWallet {
 		public:
 
 			/**
