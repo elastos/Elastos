@@ -321,7 +321,7 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncStopped(const std::string &error) {
-			_executor->execute(Runnable([this, &error]() -> void {
+			_executor->execute(Runnable([this, error]() -> void {
 				try {
 					_listener->syncStopped(error);
 				}
@@ -402,7 +402,7 @@ namespace Elastos {
 
 		void WrappedExecutorPeerManagerListener::txPublished(const std::string &error) {
 
-			_executor->execute(Runnable([this, &error]() -> void {
+			_executor->execute(Runnable([this, error]() -> void {
 				try {
 					_listener->txPublished(error);
 				}
@@ -537,7 +537,7 @@ namespace Elastos {
 
 		void WrappedExecutorWalletListener::onTxDeleted(
 				const std::string &hash, bool notifyUser, bool recommendRescan) {
-			_executor->execute(Runnable([this, &hash, notifyUser, recommendRescan]() -> void {
+			_executor->execute(Runnable([this, hash, notifyUser, recommendRescan]() -> void {
 				try {
 					_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 				}
