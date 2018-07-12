@@ -314,6 +314,11 @@ func CheckTransactionBalance(tx *Transaction) error {
 }
 
 func CheckAttributeProgram(tx *Transaction) error {
+	// Coinbase transaction do not check attribute and program
+	if tx.IsCoinBaseTx() {
+		return nil
+	}
+
 	// Check attributes
 	for _, attr := range tx.Attributes {
 		if !IsValidAttributeType(attr.Usage) {
