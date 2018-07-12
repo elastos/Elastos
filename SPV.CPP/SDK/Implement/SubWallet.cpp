@@ -362,7 +362,7 @@ namespace Elastos {
 			BRKey keys[internalCount + externalCount];
 			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			Key::calculatePrivateKeyList(keys, externalCount, &masterKey.secret, &chainCode,
+			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
 			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
 

@@ -243,18 +243,20 @@ namespace Elastos {
 			size_t size = _transaction->raw.inCount;
 			for (i = 0; i < size; i++) {
 				BRTxInput *input = &_transaction->raw.inputs[i];
+
+				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
+				j = 0;
+				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
+				if (j >= keysCount) continue;
+
 				if (i >= _transaction->programs.size()) {
-					std::string redeemScript = keys[i].keyToRedeemScript(ELA_STANDARD);
+					std::string redeemScript = keys[j].keyToRedeemScript(ELA_STANDARD);
 					CMBlock code = Utils::decodeHex(redeemScript);
 					Program *program(new Program());
 					program->setCode(code);
 					_transaction->programs.push_back(program);
 				}
 				Program *program = _transaction->programs[i];
-				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
-				j = 0;
-				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
-				if (j >= keysCount) continue;
 
 				Log::getLogger()->info("Transaction transactionSign begin sign the {} input.", i);
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
@@ -291,7 +293,6 @@ namespace Elastos {
 				BRSHA256(shaData, data, data.GetSize());
 				CMBlock signData = keys[j].compactSign(shaData);
 				program->setParameter(signData);
-
 				Log::getLogger()->info("Transaction transactionSign end sign the {} input.", i);
 			}
 
