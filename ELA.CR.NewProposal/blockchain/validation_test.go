@@ -405,9 +405,29 @@ func sign(private []byte, data []byte) (signature []byte, err error) {
 }
 
 func TestSortPrograms(t *testing.T) {
+	// invalid program code
+	getInvalidCode := func() []byte {
+		var code = make([]byte, 21)
+	NEXT:
+		rand.Read(code)
+		switch code[len(code)-1] {
+		case common.STANDARD, common.MULTISIG, common.CROSSCHAIN:
+			goto NEXT
+		}
+		return code
+	}
+	programs := make([]*core.Program, 0, 10)
+	for i := 0; i < 2; i++ {
+		program := new(core.Program)
+		program.Code = getInvalidCode()
+		programs = append(programs, program)
+	}
+	err := SortPrograms(programs)
+	assert.Error(t, err)
+
 	count := 100
 	hashes := make([]common.Uint168, 0, count)
-	programs := make([]*core.Program, 0, count)
+	programs = make([]*core.Program, 0, count)
 	for i := 0; i < count; i++ {
 		program := new(core.Program)
 		randType := math.Uint32()
