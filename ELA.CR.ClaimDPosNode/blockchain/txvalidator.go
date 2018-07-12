@@ -427,7 +427,10 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 }
 
 func CheckWithdrawFromSideChainTransaction(txn *Transaction) error {
-	witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+	witPayload, ok := txn.Payload.(*PayloadWithdrawFromSideChain)
+	if !ok {
+		return errors.New("Invalid withdraw from side chain payload type")
+	}
 	for _, hash := range witPayload.SideChainTransactionHashes {
 		if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
 			return errors.New("Duplicate side chain transaction hash in paylod")
@@ -450,7 +453,7 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction) error {
 func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 	payloadObj, ok := txn.Payload.(*PayloadTransferCrossChainAsset)
 	if !ok {
-		return errors.New("Invalid transaction payload type")
+		return errors.New("Invalid transfer cross chain asset payload type")
 	}
 	if len(payloadObj.CrossChainAddresses) == 0 ||
 		len(payloadObj.CrossChainAddresses) > len(txn.Outputs) ||
@@ -462,7 +465,7 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 	//check cross chain output index in payload
 	outputIndexMap := make(map[uint64]struct{})
 	for _, outputIndex := range payloadObj.OutputIndexes {
-		if _, exist := outputIndexMap[outputIndex]; exist {
+		if _, exist := outputIndexMap[outputIndex]; exist || int(outputIndex) >= len(txn.Outputs) {
 			return errors.New("Invalid transaction payload cross chain index")
 		}
 		outputIndexMap[outputIndex] = struct{}{}
