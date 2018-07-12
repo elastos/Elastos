@@ -296,7 +296,79 @@ func TestCheckAmountPrecision(t *testing.T) {
 }
 
 func TestCheckAttributeProgram(t *testing.T) {
-	// Fixme method not implemented
+	// valid attributes
+	tx := buildTx()
+	usages := []core.AttributeUsage{
+		core.Nonce,
+		core.Script,
+		core.Description,
+		core.DescriptionUrl,
+		core.Memo,
+	}
+	for _, usage := range usages {
+		attr := core.NewAttribute(usage, nil)
+		tx.Attributes = append(tx.Attributes, &attr)
+	}
+	err := CheckAttributeProgram(tx)
+	assert.EqualError(t, err, "no programs found in transaction")
+
+	// invalid attributes
+	getInvalidUsage := func() core.AttributeUsage {
+		var usage = make([]byte, 1)
+	NEXT:
+		rand.Read(usage)
+		for _, u := range usages {
+			if u == core.AttributeUsage(usage[0]) {
+				goto NEXT
+			}
+		}
+		return core.AttributeUsage(usage[0])
+	}
+	for i := 0; i < 10; i++ {
+		attr := core.NewAttribute(getInvalidUsage(), nil)
+		tx.Attributes = []*core.Attribute{&attr}
+		err := CheckAttributeProgram(tx)
+		assert.EqualError(t, err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
+	}
+	tx.Attributes = nil
+
+	// empty programs
+	tx.Programs = []*core.Program{}
+	err = CheckAttributeProgram(tx)
+	assert.EqualError(t, err, "no programs found in transaction")
+
+	// nil program code
+	program := &core.Program{}
+	tx.Programs = append(tx.Programs, program)
+	err = CheckAttributeProgram(tx)
+	assert.EqualError(t, err, "invalid program code nil")
+
+	// nil program parameter
+	var code = make([]byte, 21)
+	rand.Read(code)
+	program = &core.Program{Code: code}
+	tx.Programs = []*core.Program{program}
+	err = CheckAttributeProgram(tx)
+	assert.EqualError(t, err, "invalid program parameter nil")
+
+	// invalid program code
+	getInvalidCode := func() []byte {
+		var code = make([]byte, 21)
+	NEXT:
+		rand.Read(code)
+		switch code[len(code)-1] {
+		case common.STANDARD, common.MULTISIG, common.CROSSCHAIN:
+			goto NEXT
+		}
+		return code
+	}
+	for i := 0; i < 10; i++ {
+		program = &core.Program{Code: getInvalidCode(), Parameter: make([]byte, 1)}
+		tx.Programs = []*core.Program{program}
+		err = CheckAttributeProgram(tx)
+		assert.EqualError(t, err, fmt.Sprintf("invalid program code %x", program.Code))
+	}
+
 	t.Log("[TestCheckAttributeProgram] PASSED")
 }
 
