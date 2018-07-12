@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA/config"
@@ -24,7 +25,9 @@ func VerifySignature(tx *Transaction) error {
 
 	// Sort first
 	common.SortProgramHashes(hashes)
-	SortPrograms(tx.Programs)
+	if err := SortPrograms(tx.Programs); err != nil {
+		return err
+	}
 
 	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
 }
@@ -227,8 +230,14 @@ func checkCrossChainArbitrators(publicKeys [][]byte) error {
 	return nil
 }
 
-func SortPrograms(programs []*Program) {
+func SortPrograms(programs []*Program) (err error) {
+	defer func() {
+		if code := recover(); code != nil {
+			err = fmt.Errorf("invalid program code %x", code)
+		}
+	}()
 	sort.Sort(byHash(programs))
+	return err
 }
 
 type byHash []*Program
@@ -236,7 +245,13 @@ type byHash []*Program
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byHash) Less(i, j int) bool {
-	hashi, _ := crypto.ToProgramHash(p[i].Code)
-	hashj, _ := crypto.ToProgramHash(p[j].Code)
+	hashi, err := crypto.ToProgramHash(p[i].Code)
+	if err != nil {
+		panic(p[i].Code)
+	}
+	hashj, err := crypto.ToProgramHash(p[j].Code)
+	if err != nil {
+		panic(p[j].Code)
+	}
 	return hashi.Compare(*hashj) < 0
 }

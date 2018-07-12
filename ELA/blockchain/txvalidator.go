@@ -313,8 +313,30 @@ func CheckTransactionBalance(tx *Transaction) error {
 	return nil
 }
 
-func CheckAttributeProgram(txn *Transaction) error {
-	//TODO: implement CheckAttributeProgram
+func CheckAttributeProgram(tx *Transaction) error {
+	// Check attributes
+	for _, attr := range tx.Attributes {
+		if !IsValidAttributeType(attr.Usage) {
+			return fmt.Errorf("invalid attribute usage %v", attr.Usage)
+		}
+	}
+
+	// Check programs
+	if len(tx.Programs) == 0 {
+		return fmt.Errorf("no programs found in transaction")
+	}
+	for _, program := range tx.Programs {
+		if program.Code == nil {
+			return fmt.Errorf("invalid program code nil")
+		}
+		if program.Parameter == nil {
+			return fmt.Errorf("invalid program parameter nil")
+		}
+		_, err := ToProgramHash(program.Code)
+		if err != nil {
+			return fmt.Errorf("invalid program code %x", program.Code)
+		}
+	}
 	return nil
 }
 
