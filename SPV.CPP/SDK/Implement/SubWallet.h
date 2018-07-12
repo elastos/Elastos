@@ -102,10 +102,10 @@ namespace Elastos {
 			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
 
 		protected: //implement PeerManager::Listener
-			virtual void syncStarted() {}
+			virtual void syncStarted();
 
 			// func syncStopped(_ error: BRPeerManagerError?)
-			virtual void syncStopped(const std::string &error) {}
+			virtual void syncStopped(const std::string &error);
 
 			// func txStatusUpdate()
 			virtual void txStatusUpdate() {}
@@ -174,6 +174,7 @@ namespace Elastos {
 
 			typedef std::map<std::string, TransactionPtr> TransactionMap;
 			TransactionMap _confirmingTxs;
+			uint32_t _syncStartHeight;
 		};
 
 	}

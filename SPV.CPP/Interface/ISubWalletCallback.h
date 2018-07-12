@@ -17,7 +17,7 @@ namespace Elastos {
 			virtual ~ISubWalletCallback() noexcept {}
 
 			/**
-			 * Call back method fired when status of a transaction changed.
+			 * Callback method fired when status of a transaction changed.
 			 * @param txid indicate hash of the transaction.
 			 * @param status can be "Added", "Deleted" or "Updated".
 			 * @param desc is an detail description of transaction status.
@@ -28,6 +28,23 @@ namespace Elastos {
 					const std::string &status,
 					const nlohmann::json &desc,
 					uint32_t confirms) = 0;
+
+			/**
+			 * Callback method fired when block begin synchronizing with a peer. This callback could be used to show progress.
+			 */
+			virtual void OnBlockSyncStarted() = 0;
+
+			/**
+			 * Callback method fired when best block chain height increased. This callback could be used to show progress.
+			 * @param currentBlockHeight is the of current block when callback fired.
+			 * @param progress is current progress when block height increased.
+			 */
+			virtual void OnBlockHeightIncreased(uint32_t currentBlockHeight, double progress) = 0;
+
+			/**
+			 * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
+			 */
+			virtual void OnBlockSyncStopped() = 0;
 		};
 
 	}

@@ -103,6 +103,8 @@ namespace Elastos {
 
 			void rescan();
 
+			uint32_t getSyncStartHeight() const;
+
 			uint32_t getEstimatedBlockHeight() const;
 
 			uint32_t getLastBlockHeight() const;

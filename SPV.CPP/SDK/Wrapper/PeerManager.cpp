@@ -216,6 +216,10 @@ namespace Elastos {
 			BRPeerManagerRescan((BRPeerManager *) _manager);
 		}
 
+		uint32_t PeerManager::getSyncStartHeight() const {
+			return _manager->Raw.syncStartHeight;
+		}
+
 		uint32_t PeerManager::getEstimatedBlockHeight() const {
 			return BRPeerManagerEstimatedBlockHeight((BRPeerManager *) _manager);
 		}

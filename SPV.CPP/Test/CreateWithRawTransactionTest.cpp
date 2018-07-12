@@ -20,6 +20,7 @@
 using namespace Elastos::ElaWallet;
 
 TEST_CASE("test sideChain Create Transaction", "") {
+#ifdef ONLINE_TEST
 	std::string mnemonic = "clarify polar wrong ethics someone cabbage wing doctor brain add say room";
 	std::string phrasePassword = "";
 	std::string payPassword = "payPassword";
@@ -66,4 +67,5 @@ TEST_CASE("test sideChain Create Transaction", "") {
 //		std::cout<< "balance=" << value << std::endl;
 //	}
 	masterWallet->DestroyWallet(subWallet);
+#endif
 }
