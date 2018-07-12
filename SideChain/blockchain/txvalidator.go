@@ -351,7 +351,7 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 
 	payloadRecharge, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
 	if !ok {
-		return errors.New("Invalid payload core.PayloadRechargeToSideChain")
+		return errors.New("Invalid recharge to side chain payload type")
 	}
 
 	if config.Parameters.ExchangeRate <= 0 {
@@ -430,7 +430,7 @@ func CheckRechargeToSideChainTransaction(txn *core.Transaction) error {
 func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 	payloadObj, ok := txn.Payload.(*core.PayloadTransferCrossChainAsset)
 	if !ok {
-		return errors.New("Invalid transaction payload type")
+		return errors.New("Invalid transfer cross chain asset payload type")
 	}
 	if len(payloadObj.CrossChainAddresses) == 0 ||
 		len(payloadObj.CrossChainAddresses) > len(txn.Outputs) ||
@@ -442,7 +442,7 @@ func CheckTransferCrossChainAssetTransaction(txn *core.Transaction) error {
 	//check cross chain output index in payload
 	outputIndexMap := make(map[uint64]struct{})
 	for _, outputIndex := range payloadObj.OutputIndexes {
-		if _, exist := outputIndexMap[outputIndex]; exist {
+		if _, exist := outputIndexMap[outputIndex]; exist || int(outputIndex) >= len(txn.Outputs) {
 			return errors.New("Invalid transaction payload cross chain index")
 		}
 		outputIndexMap[outputIndex] = struct{}{}
