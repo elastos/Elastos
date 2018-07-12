@@ -7,7 +7,7 @@ import (
 )
 
 type Peers struct {
-	syncPeerLock *sync.Mutex
+	syncPeerLock *sync.RWMutex
 	syncPeer     *Peer
 
 	local     *Peer
@@ -18,7 +18,7 @@ type Peers struct {
 func newPeers(localPeer *Peer) *Peers {
 	peers := new(Peers)
 	peers.local = localPeer
-	peers.syncPeerLock = new(sync.Mutex)
+	peers.syncPeerLock = new(sync.RWMutex)
 	peers.peersLock = new(sync.RWMutex)
 	peers.peers = make(map[uint64]*Peer)
 	return peers
@@ -91,10 +91,6 @@ func (p *Peers) GetBestPeer() *Peer {
 	p.peersLock.RLock()
 	defer p.peersLock.RUnlock()
 
-	return p.getBestPeer()
-}
-
-func (p *Peers) getBestPeer() *Peer {
 	var bestPeer *Peer
 	for _, peer := range p.peers {
 
@@ -148,15 +144,15 @@ func (p *Peers) GetSyncPeer() *Peer {
 	defer p.syncPeerLock.Unlock()
 
 	if p.syncPeer == nil {
-		p.syncPeer = p.getBestPeer()
+		p.syncPeer = p.GetBestPeer()
 	}
 
 	return p.syncPeer
 }
 
 func (p *Peers) IsSyncPeer(peer *Peer) bool {
-	p.syncPeerLock.Lock()
-	defer p.syncPeerLock.Unlock()
+	p.syncPeerLock.RLock()
+	defer p.syncPeerLock.RUnlock()
 
 	if p.syncPeer == nil || peer == nil {
 		return false
