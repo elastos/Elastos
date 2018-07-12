@@ -550,9 +550,9 @@ namespace Elastos {
 			_transaction->raw.timestamp = jsonData["Timestamp"].get<uint32_t>();
 
 			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
-			_transaction->raw.inCount = inputs.size();
+			size_t inCount = inputs.size();
 
-			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
+			for (size_t i = 0; i < inCount; ++i) {
 				nlohmann::json jsonData = inputs[i];
 
 				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
