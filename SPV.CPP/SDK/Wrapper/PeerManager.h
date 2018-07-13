@@ -45,13 +45,7 @@ namespace Elastos {
 				virtual void txStatusUpdate() = 0;
 
 				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-#ifdef MERKLE_BLOCK_PLUGIN
-				virtual void
-				saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) = 0;
-#else
-				virtual void
-				saveBlocks(bool replace, const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks) = 0;
-#endif
+				virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) = 0;
 
 				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 				virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) = 0;
@@ -74,11 +68,7 @@ namespace Elastos {
 			PeerManager(const ChainParams &params,
 						const WalletPtr &wallet,
 						uint32_t earliestKeyTime,
-#ifdef MERKLE_BLOCK_PLUGIN
 						const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
-#else
-						const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
-#endif
 						const SharedWrapperList<Peer, BRPeer *> &peers,
 						const boost::shared_ptr<Listener> &listener,
 						const PluginTypes &plugins);

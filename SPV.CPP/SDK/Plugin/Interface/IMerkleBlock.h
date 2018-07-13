@@ -15,7 +15,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#ifdef MERKLE_BLOCK_PLUGIN
 		class IMerkleBlock : public ELAMessageSerializable, public IClonable<IMerkleBlock> {
 		public:
 			virtual ~IMerkleBlock() {}
@@ -42,7 +41,6 @@ namespace Elastos {
 		};
 
 		typedef boost::shared_ptr<IMerkleBlock> MerkleBlockPtr;
-#endif
 
 	}
 }

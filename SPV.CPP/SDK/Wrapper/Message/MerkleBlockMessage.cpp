@@ -25,13 +25,11 @@ namespace Elastos {
 
 		int MerkleBlockMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 			BRPeerContext *ctx = (BRPeerContext *) peer;
-#ifdef MERKLE_BLOCK_PLUGIN
 			// msg is holding by payload pointer create by malloc, do not match delete[] in ByteStream
 			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
 
 			ELAPeerManager *elaPeerManager = (ELAPeerManager *)ctx->manager;
 
-//			peer_dbg(peer, "block orig data: %s", Utils::encodeHex(msg, msgLen).c_str());
 			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(elaPeerManager->Plugins.BlockType, false));
 			assert(block != nullptr);
 			if (!block->Deserialize(stream)) {
@@ -41,25 +39,10 @@ namespace Elastos {
 				return 0;
 			}
 
-//			peer_dbg(peer, "got block[%d] %s, type %s", block->getHeight(), Utils::UInt256ToString(block->getBlockHash()).c_str(), elaPeerManager->Plugins.BlockType.c_str());
-
 			BRMerkleBlock *blockRaw = block->getRawBlock();
 			int r = 1;
 
 			if (!block->isValid((uint32_t) time(nullptr))) {
-#else
-			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
-			ELAMerkleBlock *blockRaw = ELAMerkleBlockNew();
-			MerkleBlockPtr block(new MerkleBlock(blockRaw, false));
-			if (!block.Deserialize(stream)) {
-				peer_log(peer, "error: merkle deserialize fail!");
-				return 0;
-			}
-
-			int r = 1;
-
-			if (!block.isValid((uint32_t) time(nullptr))) {
-#endif
 				peer_log(peer, "error: invalid merkleblock: %s", Utils::UInt256ToString(block->getBlockHash()).c_str());
 				block->deleteRawBlock();
 				blockRaw = nullptr;
@@ -81,7 +64,6 @@ namespace Elastos {
 					array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
 				}
 
-//				peer_dbg(peer, "block[%d]: %s, txCount = %zu", block->getHeight(), Utils::UInt256ToString(block->getBlockHash()).c_str(), count);
 				if (hashes != _hashes) free(hashes);
 			}
 

@@ -48,7 +48,6 @@ namespace Elastos {
 			}
 
 			static void saveBlocks(void *info, int replace, BRMerkleBlock *blocks[], size_t blockCount) {
-#ifdef MERKLE_BLOCK_PLUGIN
 				WeakListener *weakListener = (WeakListener *) info;
 				if (!weakListener->expired()) {
 
@@ -63,18 +62,6 @@ namespace Elastos {
 					}
 					listener->saveBlocks(replace, *coreBlocks);
 				}
-#else
-				WeakListener *listener = (WeakListener *) info;
-				if (!listener->expired()) {
-
-					SharedWrapperList<MerkleBlock, BRMerkleBlock *> *coreBlocks = new SharedWrapperList<MerkleBlock, BRMerkleBlock *>();
-					for (size_t i = 0; i < blockCount; ++i) {
-						coreBlocks->push_back(
-								MerkleBlockPtr(new MerkleBlock((ELAMerkleBlock *) blocks[i], false)));
-					}
-					listener->lock()->saveBlocks(replace, *coreBlocks);
-				}
-#endif
 			}
 
 			static void savePeers(void *info, int replace, const BRPeer peers[], size_t count) {
@@ -135,11 +122,7 @@ namespace Elastos {
 		PeerManager::PeerManager(const ChainParams &params,
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
-#ifdef MERKLE_BLOCK_PLUGIN
 								 const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
-#else
-				const SharedWrapperList<MerkleBlock, BRMerkleBlock *> &blocks,
-#endif
 								 const SharedWrapperList<Peer, BRPeer *> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
 								 const PluginTypes &plugins) :

@@ -11,7 +11,6 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-#ifdef MERKLE_BLOCK_PLUGIN
 		IdMerkleBlock *IdMerkleBlockNew() {
 			return new IdMerkleBlock;
 		}
@@ -51,7 +50,6 @@ namespace Elastos {
 
 			return *this;
 		}
-#endif
 
 	}
 }

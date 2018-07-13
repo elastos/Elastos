@@ -19,9 +19,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class MerkleBlock :
-#ifdef MERKLE_BLOCK_PLUGIN
 				public IMerkleBlock,
-#endif
 				public Wrapper<BRMerkleBlock> {
 
 		public:
@@ -38,9 +36,7 @@ namespace Elastos {
 			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
 
 			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
-#ifdef MERKLE_BLOCK_PLUGIN
 			virtual IMerkleBlock *Clone(bool manageRaw) const;
-#endif
 
 			virtual BRMerkleBlock *getRaw() const;
 
@@ -94,10 +90,6 @@ namespace Elastos {
 			ELAMerkleBlock *_merkleBlock;
 			bool _manageRaw;
 		};
-
-#ifndef MERKLE_BLOCK_PLUGIN
-		typedef boost::shared_ptr<MerkleBlock> MerkleBlockPtr;
-#endif
 
 	}
 }

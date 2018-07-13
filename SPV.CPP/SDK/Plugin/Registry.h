@@ -13,7 +13,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#ifdef MERKLE_BLOCK_PLUGIN
 		class Registry {
 		public:
 			static Registry *Instance(bool erase = false);
@@ -60,8 +59,6 @@ namespace Elastos {
 
 #define REGISTER_MERKLEBLOCKPLUGIN(classname) \
     static Elastos::ElaWallet::RegisterMerkleBlockProxy<classname> g_proxy_##classname;
-
-#endif
 
 	}
 }

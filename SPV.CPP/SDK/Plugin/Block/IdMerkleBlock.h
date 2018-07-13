@@ -11,8 +11,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#ifdef MERKLE_BLOCK_PLUGIN
-
 		struct IdMerkleBlock {
 			IdMerkleBlock() {
 				memset(&this->raw, 0, sizeof(this->raw));
@@ -30,8 +28,6 @@ namespace Elastos {
 		IdMerkleBlock *IdMerkleBlockCopy(IdMerkleBlock *block);
 
 		void IdMerkleBlockFree(IdMerkleBlock *block);
-
-#endif
 
 	}
 }

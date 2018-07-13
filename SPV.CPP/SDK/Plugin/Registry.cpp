@@ -7,7 +7,6 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-#ifdef MERKLE_BLOCK_PLUGIN
 		Registry::Registry() {
 
 		}
@@ -49,7 +48,6 @@ namespace Elastos {
 
 			return _merkleBlocks[blockType]->CreateFromRaw(block, manageRaw);
 		}
-#endif
 
 	}
 }

@@ -152,8 +152,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_DEBUG_ON)
 endif()
 
-add_definitions(-DMERKLE_BLOCK_PLUGIN)
-
 add_subdirectory(ThirdParty)
 add_subdirectory(Core)
 add_subdirectory(SDK)
