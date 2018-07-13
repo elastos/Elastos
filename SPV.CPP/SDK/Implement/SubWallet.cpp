@@ -96,6 +96,7 @@ namespace Elastos {
 #endif
 
 			_walletManager->registerWalletListener(this);
+			_walletManager->registerPeerManagerListener(this);
 
 			if (info.getFeePerKb() > 0) {
 				_walletManager->getWallet()->setFeePerKb(info.getFeePerKb());
@@ -363,7 +364,7 @@ namespace Elastos {
 			BRKey keys[internalCount + externalCount];
 			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			Key::calculatePrivateKeyList(keys, externalCount, &masterKey.secret, &chainCode,
+			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
 			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
 
@@ -452,6 +453,8 @@ namespace Elastos {
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
+				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}",
+					it->first, blockHeight - it->second->getBlockHeight());
 				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 it->second->toJson(), blockHeight - it->second->getBlockHeight());
 			}
@@ -477,26 +480,40 @@ namespace Elastos {
 			nlohmann::json idChainPeerConfig =
 					R"(
 						  {
-							"MagicNumber": 7630404,
+							"MagicNumber": 20180011,
 							"KnowingPeers":
 							[
 								{
-									"Address": "54.165.10.201",
-									"Port": 13338,
+									"Address": "13.251.123.24",
+									"Port": 21608,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
-									"Address": "34.198.67.91",
-									"Port": 13338,
+									"Address": "52.62.27.83",
+									"Port": 21608,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
-									"Address": "52.55.40.251",
-									"Port": 13338,
+									"Address": "35.158.227.3",
+									"Port": 21608,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								},
+								{
+									"Address": "18.130.87.94",
+									"Port": 21608,
+									"Timestamp": 0,
+									"Services": 1,
+									"Flags": 0
+								},
+								{
+									"Address": "52.9.136.86",
+									"Port": 21608,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0

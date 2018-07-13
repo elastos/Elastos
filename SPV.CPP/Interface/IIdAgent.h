@@ -15,10 +15,9 @@ namespace Elastos {
 		class IIdAgent {
 		public:
 			/**
-			 * Derive id and key by specified purpose and index.
+			 * Derive id by specified purpose and index.
 			 * @param purpose for indicating a subtree to derive a chain of sub keys. Purpose should not be 44, which is reserved HD wallet path purpose.
 			 * @param index for generating sub keys sequentially.
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return If success return generated id correspond to the \p key.
 			 */
 			virtual std::string DeriveIdAndKeyForPurpose(
@@ -32,18 +31,41 @@ namespace Elastos {
 			 */
 			virtual bool IsIdValid(const std::string &id) = 0;
 
+			/**
+			 * Generate a program data by passing payload of id transaction
+			 * @param id specify id address
+			 * @param message is the content of payload in json format.
+			 * @param password is the pay password of the master wallet.
+			 * @return If success return program data in json format.
+			 */
 			virtual nlohmann::json GenerateProgram(
 					const std::string &id,
 					const std::string &message,
 					const std::string &password) = 0;
 
+			/**
+			 * Sign message through private key of the id.
+			 * @param id specify id address
+			 * @param message need to signed, it should not be empty.
+			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return signed data of the message.
+			 */
 			virtual std::string Sign(
 					const std::string &id,
 					const std::string &message,
 					const std::string &password) = 0;
 
+			/**
+			 * Get all generated ids.
+			 * @return list of id.
+			 */
 			virtual std::vector<std::string> GetAllIds() const = 0;
 
+			/**
+			 * Get public key of the id.
+			 * @param id specify id address
+			 * @return public key in hex string format.
+			 */
 			virtual std::string GetPublicKey(const std::string &id) = 0;
 		};
 

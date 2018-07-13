@@ -10,6 +10,7 @@
 #include <SDK/Common/Log.h>
 #include <Core/BRAddress.h>
 #include <Core/BRBIP32Sequence.h>
+#include <Core/BRWallet.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"
@@ -365,8 +366,8 @@ namespace Elastos {
 				void *tempPtr = BRSetGet(_wallet->Raw.allTx, &utxos[i].hash);
 				if (tempPtr == nullptr) continue;
 				t = static_cast<ELATransaction *>(tempPtr);
-				if (BRAddressEq(t->outputs[utxos->n]->getRaw()->address, address.c_str())) {
-					balance += t->outputs[utxos->n]->getAmount();
+				if (BRAddressEq(t->outputs[utxos[i].n]->getRaw()->address, address.c_str())) {
+					balance += t->outputs[utxos[i].n]->getAmount();
 				}
 			}
 			pthread_mutex_unlock(&_wallet->Raw.lock);
@@ -665,6 +666,20 @@ namespace Elastos {
 
 		bool Wallet::containsTransaction(const TransactionPtr &transaction) {
 			return BRWalletContainsTransaction((BRWallet *) _wallet, transaction->getRaw()) != 0;
+		}
+
+		bool Wallet::inputFromWallet(const BRTxInput *in) {
+			BRWallet *wallet = &_wallet->Raw;
+			for (size_t i = 0; i < array_count(wallet->transactions); i++) {
+				ELATransaction *tx = (ELATransaction *) wallet->transactions[i];
+				if (UInt256Eq(&in->txHash, &tx->raw.txHash)) {
+					if (containsAddress(tx->outputs[in->index]->getAddress())) {
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 
 		bool Wallet::registerTransaction(const TransactionPtr &transaction) {

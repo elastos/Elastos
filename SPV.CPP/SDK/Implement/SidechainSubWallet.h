@@ -11,7 +11,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class SidechainSubWallet : public ISidechainSubWallet, public SubWallet {
+		class SidechainSubWallet : public virtual ISidechainSubWallet, public SubWallet {
 		public:
 			virtual ~SidechainSubWallet();
 

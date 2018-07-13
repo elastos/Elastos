@@ -17,10 +17,11 @@ namespace Elastos {
 		}
 
 		Program::Program(const Program &program) {
-			ByteStream stream;
-			program.Serialize(stream);
-			stream.setPosition(0);
-			this->Deserialize(stream);
+			this->_code.Resize(program._code.GetSize());
+			memcpy(this->_code, program._code, program._code.GetSize());
+
+			this->_parameter.Resize(program._parameter.GetSize());
+			memcpy(this->_parameter, program._parameter, program._parameter.GetSize());
 		}
 
 		Program::Program(const CMBlock &code, const CMBlock &parameter) :
