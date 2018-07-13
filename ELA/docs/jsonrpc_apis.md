@@ -448,7 +448,8 @@ result sample:
             "vout": 0,
             "address": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
             "amount": "33000000",
-            "confirmations": 1102
+            "confirmations": 1102,
+            "outputlock": 0
         },
         {
             "assetid": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
@@ -456,7 +457,8 @@ result sample:
             "vout": 0,
             "address": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
             "amount": "0.01255707",
-            "confirmations": 846
+            "confirmations": 846,
+            "outputlock": 0
         }
     ]
 ```
