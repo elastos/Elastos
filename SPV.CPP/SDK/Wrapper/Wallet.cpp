@@ -175,6 +175,7 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 			wallet->Raw.WalletUpdateBalance((BRWallet *) wallet);
+			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 
 			if (txCount > 0 && !wallet->Raw.WalletContainsTx((BRWallet *) wallet,
 															 transactions[0])) { // verify transactions match master pubKey
@@ -182,7 +183,6 @@ namespace Elastos {
 				wallet = NULL;
 			}
 
-			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 			return wallet;
 		}
 

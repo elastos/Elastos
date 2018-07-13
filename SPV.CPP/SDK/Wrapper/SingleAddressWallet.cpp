@@ -180,13 +180,13 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 			wallet->Raw.WalletUpdateBalance((BRWallet *)wallet);
+			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 
 			if (txCount > 0 && !wallet->Raw.WalletContainsTx((BRWallet *)wallet, transactions[0])) {
 				ELAWalletFree(wallet, false);
 				wallet = nullptr;
 			}
 
-			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 			return wallet;
 		}
 #endif

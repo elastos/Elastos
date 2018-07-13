@@ -187,7 +187,7 @@ TEST_CASE("Sub wallet with single address", "[SubWallet]") {
 		nlohmann::json j = subWallet->GetAllAddress(0, INT_MAX);
 		std::vector<std::string> addresses = j["Addresses"].get<std::vector<std::string>>();
 		REQUIRE(addresses.size() == 1);
-		REQUIRE(addresses[0] == "EYC6q2vatgiN7KaNX4BDHSUAJ5nqNKvisD");
+		REQUIRE(addresses[0] == "ETcSvQZcnnSouBzTu2bVsLaxUmNAiQVVHt");
 
 		std::string newAddress = subWallet->CreateAddress(); //we did't create address actually because current addresses have not used
 		REQUIRE(!newAddress.empty());
