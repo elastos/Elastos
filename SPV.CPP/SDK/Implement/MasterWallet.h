@@ -77,8 +77,6 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
-			virtual void ResetAddressCache(const std::string &payPassword);
-
 		public: //override from IIdAgent
 			virtual std::string DeriveIdAndKeyForPurpose(
 					uint32_t purpose,

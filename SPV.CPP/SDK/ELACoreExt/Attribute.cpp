@@ -15,10 +15,9 @@ namespace Elastos {
 		}
 
 		Attribute::Attribute(const Attribute &attr) {
-			ByteStream stream;
-			attr.Serialize(stream);
-			stream.setPosition(0);
-			this->Deserialize(stream);
+			this->_usage = attr._usage;
+			this->_data.Resize(attr._data.GetSize());
+			memcpy(this->_data, attr._data, attr._data.GetSize());
 		}
 
 		Attribute::Attribute(Attribute::Usage usage, const CMBlock &data) :
@@ -28,6 +27,14 @@ namespace Elastos {
 		}
 
 		Attribute::~Attribute() {
+		}
+
+		Attribute::Usage Attribute::GetUsage() const {
+			return _usage;
+		}
+
+		const CMBlock &Attribute::GetData() const {
+			return _data;
 		}
 
 		bool Attribute::isValid() {

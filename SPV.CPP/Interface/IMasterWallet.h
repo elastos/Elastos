@@ -31,9 +31,7 @@ namespace Elastos {
 
 			/**
 			 * Create a sub wallet by specifying wallet type.
-			 * @param type sub wallet type, it can be Normal, Mainchain, Sidechain, and Idchain.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param coinTypeIndex specify index of HD wallet path.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
@@ -47,9 +45,7 @@ namespace Elastos {
 
 			/**
 			 * Recover a sub wallet from scratch.
-			 * @param type sub wallet type, it can be Normal, Mainchain, Sidechain, and Idchain.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param coinTypeIndex specify index of HD wallet path.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param limitGap specify the max gap length for recover addresses and transactions.
@@ -97,13 +93,25 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature) = 0;
 
+			/**
+			 * Verify an address which can be normal, multi-sign, cross chain, or id address.
+			 * @param address to be verified.
+			 * @return True if valid, otherwise return false.
+			 */
 			virtual bool IsAddressValid(const std::string &address) = 0;
 
+			/**
+			 * Get all chain ids of supported chains.
+			 * @return a list of chain id.
+			 */
 			virtual std::vector<std::string> GetSupportedChains() = 0;
 
+			/**
+			 * Change pay password which encrypted private key and other important data in memory.
+			 * @param oldPassword the old pay password.
+			 * @param newPassword new pay password.
+			 */
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
-
-			virtual void ResetAddressCache(const std::string &payPassword) = 0;
 		};
 
 	}

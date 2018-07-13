@@ -19,263 +19,163 @@
 
 using namespace Elastos::ElaWallet;
 
-TEST_CASE("Transaction constructor test", "[Transaction]") {
+static ELATransaction *createELATransaction() {
+	ELATransaction *tx = ELATransactionNew();
 
-	SECTION("Default constructor") {
+	tx->raw.outCount = 0;
+	tx->raw.outputs = nullptr;
+	tx->raw.version = rand();
+	for (size_t i = 0; i < 20; ++i) {
+		UInt256 txHash = getRandUInt256();
+		uint32_t index = (uint16_t)rand();
+		uint64_t amount = rand();
+		CMBlock script = getRandCMBlock(25);
+		CMBlock signature = getRandCMBlock(50);
+		uint32_t squence = rand();
+		BRTransactionAddInput(&tx->raw, txHash, index, amount,
+							  script, script.GetSize(), signature, signature.GetSize(),
+							  squence);
+	}
 
-		Transaction transaction;
-		REQUIRE(transaction.getRaw() != nullptr);
+	for (size_t i = 0; i < 20; ++i) {
+		ELATxOutput *o = ELATxOutputNew();
+		o->assetId = getRandUInt256();
+		o->programHash = getRandUInt168();
+		o->outputLock = rand();
+		o->signType = rand();
+		uint64_t amount = rand();
+		CMBlock script = getRandCMBlock(25);
+		ELATxOutputSetScript(o, script, script.GetSize());
+		TransactionOutput *output = new TransactionOutput(o);
+		tx->outputs.push_back(output);
+	}
+	tx->raw.lockTime = rand();
+	tx->raw.blockHeight = rand();
+	tx->raw.timestamp = rand();
+
+	tx->type = ELATransaction::TransferAsset;
+	delete tx->payload;
+	tx->payload = ELAPayloadNew(tx->type);
+
+	tx->payloadVersion = rand();
+	tx->fee = rand();
+
+	for (size_t i = 0; i < 20; ++i) {
+		CMBlock data = getRandCMBlock(25);
+		Attribute *attr = new Attribute(Attribute::Script, data);
+		tx->attributes.push_back(attr);
+	}
+
+	for (size_t i = 0; i < 20; ++i) {
+		CMBlock code = getRandCMBlock(25);
+		CMBlock parameter = getRandCMBlock(25);
+		Program *program = new Program(code, parameter);
+		tx->programs.push_back(program);
+	}
+
+	tx->Remark = getRandString(40);
+
+	return tx;
+}
+
+static void verifyELATransaction(const ELATransaction *tx1, const ELATransaction *tx, bool checkAll = true) {
+	REQUIRE(tx1->raw.outCount == tx->raw.outCount);
+	REQUIRE(tx1->raw.outputs == nullptr);
+	REQUIRE(UInt256Eq(&tx1->raw.txHash, &tx->raw.txHash));
+	if (checkAll)
+		REQUIRE(tx1->raw.version == tx->raw.version);
+	REQUIRE(tx1->raw.inCount == tx->raw.inCount);
+	for (size_t i = 0; i < tx1->raw.inCount; ++i) {
+		REQUIRE(UInt256Eq(&tx1->raw.inputs[i].txHash, &tx->raw.inputs[i].txHash));
+		if (checkAll) {
+			REQUIRE(!strcmp(tx1->raw.inputs[i].address, tx->raw.inputs[i].address));
+			REQUIRE(tx1->raw.inputs[i].amount == tx->raw.inputs[i].amount);
+		}
+		REQUIRE(tx1->raw.inputs[i].index == tx->raw.inputs[i].index);
+		REQUIRE(tx1->raw.inputs[i].sequence == tx->raw.inputs[i].sequence);
+		if (checkAll) {
+			REQUIRE(tx1->raw.inputs[i].scriptLen == tx->raw.inputs[i].scriptLen);
+			REQUIRE(!memcmp(tx1->raw.inputs[i].script, tx->raw.inputs[i].script, tx->raw.inputs[i].scriptLen));
+			REQUIRE(tx1->raw.inputs[i].sigLen == tx->raw.inputs[i].sigLen);
+			REQUIRE(!memcmp(tx1->raw.inputs[i].signature, tx->raw.inputs[i].signature, tx->raw.inputs[i].sigLen));
+		}
+	}
+
+	REQUIRE(tx1->outputs.size() == tx->outputs.size());
+	for (size_t i = 0; i < tx->outputs.size(); ++i) {
+		ELATxOutput *o, *o1;
+		o = (ELATxOutput *)tx->outputs[i]->getRaw();
+		o1 = (ELATxOutput *)tx1->outputs[i]->getRaw();
+		REQUIRE(UInt256Eq(&o1->assetId, &o->assetId));
+		REQUIRE(o1->signType == o->signType);
+		REQUIRE(UInt168Eq(&o1->programHash, &o->programHash));
+		REQUIRE(o1->outputLock == o->outputLock);
+		if (checkAll) {
+			REQUIRE(o1->raw.scriptLen == o->raw.scriptLen);
+			REQUIRE(!memcmp(o1->raw.script, o->raw.script, o->raw.scriptLen));
+		}
+		REQUIRE(o1->raw.amount == o->raw.amount);
+		if (checkAll) {
+			REQUIRE(!strcmp(o1->raw.address, o->raw.address));
+		}
+	}
+
+	REQUIRE(tx1->raw.lockTime == tx->raw.lockTime);
+	if (checkAll) {
+		REQUIRE(tx1->raw.blockHeight == tx->raw.blockHeight);
+		REQUIRE(tx1->raw.timestamp == tx->raw.timestamp);
+	}
+	REQUIRE(tx1->type == tx->type);
+	REQUIRE(tx1->payloadVersion == tx->payloadVersion);
+	if (checkAll) {
+		REQUIRE(tx1->fee == tx->fee);
+		REQUIRE(tx1->Remark == tx->Remark);
+	}
+	REQUIRE(tx1->attributes.size() == tx->attributes.size());
+	for (size_t i = 0; i < tx1->attributes.size(); ++i) {
+		REQUIRE(tx1->attributes[i]->GetUsage() == tx->attributes[i]->GetUsage());
+		const CMBlock &data = tx->attributes[i]->GetData();
+		const CMBlock &data1 = tx1->attributes[i]->GetData();
+		REQUIRE(data1.GetSize() == data.GetSize());
+		REQUIRE(!memcmp(data1, data, data.GetSize()));
+	}
+
+	REQUIRE(tx1->programs.size() == tx->programs.size());
+	for (size_t i = 0; i < tx->programs.size(); ++i) {
+		const CMBlock &code = tx->programs[i]->getCode();
+		const CMBlock &code1 = tx1->programs[i]->getCode();
+		REQUIRE(code1.GetSize() == code.GetSize());
+		REQUIRE(!memcmp(code1, code, code.GetSize()));
+		const CMBlock &parameter = tx->programs[i]->getParameter();
+		const CMBlock &parameter1 = tx1->programs[i]->getParameter();
+		REQUIRE(parameter1.GetSize() == parameter.GetSize());
+		REQUIRE(!memcmp(parameter1, parameter, parameter.GetSize()));
 	}
 }
 
-TEST_CASE("New empty transaction behavior", "[Transaction]") {
-
-	Transaction transaction;
-
-	SECTION("Input and related addresses") {
-//		REQUIRE(transaction.getInputs().empty());
-		REQUIRE(transaction.getInputAddresses().empty());
-	}
-
-	SECTION("Output and related addresses") {
-		REQUIRE(transaction.getOutputs().empty());
-		REQUIRE(transaction.getOutputAddresses().empty());
-	}
-
-	SECTION("Should not registered") {
-		REQUIRE(transaction.isRegistered() == false);
-	}
-}
-
-TEST_CASE("transaction with inpus and outputs", "[Transaction]") {
-
-	SECTION("transaction with inputs") {
-		Transaction transaction;
-		uint32_t index = 8000;
-		uint64_t amount = 10000;
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		uint32_t sequence = 8888;
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		CMBlock script = myaddress.getPubKeyScript();
-
-		for (int i = 0; i < 10; i++) {
-			transaction.addInput(hash, i + 1, amount + i, myaddress.getPubKeyScript(), CMBlock(), sequence + i);
-		}
-		REQUIRE(transaction.getRaw()->inCount == 10);
-		for (int i = 0; i < 10; i++) {
-			BRTxInput *input = &transaction.getRaw()->inputs[i];
-
-			REQUIRE(UInt256Eq(&hash, &input->txHash) == 1);
-			REQUIRE(input->index == i + 1);
-			REQUIRE(input->amount == amount + i);
-			REQUIRE(input->sequence == sequence + i);
-			REQUIRE(input->scriptLen == script.GetSize());
-			REQUIRE(0 == memcmp(script, input->script, input->scriptLen));
-		}
-
-		std::vector<std::string> addressList = transaction.getInputAddresses();
-		for (int i = 0; i < addressList.size(); i++) {
-			REQUIRE(addressList[i] == content);
-		}
-	}
-
-	SECTION("transaction with outputs") {
-		Transaction transaction;
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		CMBlock script = myaddress.getPubKeyScript();
-		for (int i = 0; i < 10; i++) {
-			TransactionOutput *output = new TransactionOutput(8888 + i, script, ELA_STANDARD);
-			transaction.addOutput(output);
-		}
-
-		const std::vector<TransactionOutput *> &outputs = transaction.getOutputs();
-		REQUIRE(outputs.size() == 10);
-		for (int i = 0; i < 10; i++) {
-			TransactionOutput *output = outputs[i];
-			CMBlock s = output->getScript();
-			REQUIRE(s.GetSize() == script.GetSize());
-			for (size_t j = 0; j < s.GetSize(); j++) {
-				REQUIRE(s[j] == script[j]);
-			}
-			REQUIRE(output->getAmount() == 8888 + i);
-		}
-
-		std::vector<std::string> addressList = transaction.getOutputAddresses();
-		for (int i = 0; i < addressList.size(); i++) {
-			REQUIRE(addressList[i] == content);
-		}
-	}
-}
-
-TEST_CASE("transaction public method test", "[Transaction]") {
-
-	Transaction transaction;
-	SECTION("transaction getHash test") {
-		//contructor transaction is no hash, if send a transaction then must sign ,then has a hash;
-		UInt256 hash = transaction.getHash();
-		UInt256 zero = UINT256_ZERO;
-		REQUIRE(UInt256Eq(&hash, &zero) != 1);
-	}
-
-	SECTION("transaction getVersion test") {
-		REQUIRE(transaction.getVersion() == 0x00000001);
-	}
-
-	SECTION("transaction getLockTime test") {
-		REQUIRE(transaction.getLockTime() == 0);
-
-		transaction.setLockTime(0x00002345);
-		REQUIRE(transaction.getLockTime() == 0x00002345);
-	}
-
-	SECTION("transaction setTimestamp test") {
-		REQUIRE(transaction.getTimestamp() == 0);
-
-		transaction.setTimestamp(1523863152);
-		REQUIRE(transaction.getTimestamp() == 1523863152);
-	}
-
-	SECTION("transaction getSize test") {
-		size_t size = transaction.getSize();
-		REQUIRE(size == 10);
-
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		uint32_t sequence = 8888;
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		for (int i = 0; i < 10; i++) {
-			transaction.addInput(hash, i + 1, 1000 + i, myaddress.getPubKeyScript(), CMBlock(), i + 1);
-		}
-		size_t inputSize = transaction.getSize();
-		REQUIRE(inputSize > size);
-
-		for (int i = 0; i < 10; i++) {
-			TransactionOutput *output = new TransactionOutput(8888 + i, myaddress.getPubKeyScript(), ELA_STANDARD);
-			transaction.addOutput(output);
-		}
-		size = transaction.getSize();
-		REQUIRE(size > inputSize);
-	}
-
-	SECTION("transaction getStandardFee test") {
-		uint64_t fee = transaction.getStandardFee();
-		REQUIRE(fee > 0);
-	}
-
-	SECTION("transaction isSigned test") {
-		bool res = transaction.isSigned();
-		REQUIRE(res == false);
-
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		Key key("0000000000000000000000000000000000000000000000000000000000000001");
-		CMBlock mb;
-		mb.SetMemFixed(hash.u8, sizeof(hash));
-		transaction.addInput(hash, 1, 1000, myaddress.getPubKeyScript(), key.compactSign(mb), 1);
-		res = transaction.isSigned();
-		REQUIRE(res == true);
-	}
-
-	SECTION("transaction mulity sign and getReverseHash test") {
-		WrapperList<Key, BRKey> keys(3);
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		keys[0] = Key("0000000000000000000000000000000000000000000000000000000000000001");
-		keys[1] = Key("0000000000000000000000000000000000000000000000000000000000000010");
-		keys[2] = Key("0000000000000000000000000000000000000000000000000000000000000011");
-		WrapperList<Address, BRAddress> address(3);
-		for (int i = 0; i < 3; ++i) {
-			std::string addr = keys[0].address();
-			address[i] = Address(addr);
-			transaction.addInput(hash, 1, 1000, address[i].getPubKeyScript(), CMBlock(), 1);
-		}
-		bool r = transaction.sign(keys, 0);
-		REQUIRE(r == true);
-
-		UInt256 zero = UINT256_ZERO;
-		UInt256 tempHash = transaction.getHash();
-		REQUIRE(UInt256Eq(&tempHash, &zero) != 1);
-
-		UInt256 reverseHash = transaction.getReverseHash();
-		ssize_t size = sizeof(reverseHash.u8);
-		REQUIRE(size == 32);
-		for (int i = 0; i < size; i++) {
-			REQUIRE(reverseHash.u8[i] == tempHash.u8[size - 1 - i]);
-		}
-	}
-
-	SECTION("transaction getMinOutputAmount test") {
-		uint64_t value = transaction.getMinOutputAmount();
-		REQUIRE(value == TX_MIN_OUTPUT_AMOUNT);
-	}
-
-	SECTION("transaction isStandard test") {
-		//todo result is always true,it's didn't has transaction type judge
-		bool result = transaction.isStandard();
-		REQUIRE(result == true);
-	}
-}
-
-TEST_CASE("Transaction Serialize test", "[Transaction]") {
+TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
 
 	SECTION("transaction Serialize test") {
-		Transaction transaction;
-		std::string content = "ETFELUtMYwPpb96QrYaP6tBztEsUbQrytP";
-		Address myaddress(content);
-		UInt256 hash = uint256("000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f");
-		for (int i = 0; i < 10; i++) {
-			transaction.addInput(hash, i + 1, 10000 + i, myaddress.getPubKeyScript(), CMBlock(), i);
-		}
+		ELATransaction *tx = createELATransaction();
 
-		UInt256 outHash = uint256("0000000000000000008e5d72027ef42ca050a0776b7184c96d0d4b300fa5da9e");
+		Transaction txn(tx);
+		tx->raw.txHash = txn.getHash();
 
-		UInt168 programHash = *(UInt168 *) "\x21\xc2\xe2\x51\x72\xcb\x15\x19\x3c\xb1\xc6\xd4\x8f\x60\x7d\x42\xc1\xd2\xa2\x15\x16";
+		ByteStream stream;
+		txn.Serialize(stream);
 
-		for (int i = 0; i < 10; i++) {
-			TransactionOutput *output = new TransactionOutput();
-			output->setAssetId(outHash);
-			output->setAmount(888);
-			output->setOutputLock(i + 1);
-			output->setProgramHash(programHash);
-			transaction.addOutput(output);
-		}
-		transaction.setLockTime(1524231034);
-		transaction.setTransactionType(ELATransaction::Type::CoinBase);
+		Transaction txn1;
+		stream.setPosition(0);
+		REQUIRE(txn1.Deserialize(stream));
 
-		ByteStream byteStream;
-		transaction.Serialize(byteStream);
-		byteStream.setPosition(0);
+		ELATransaction *tx1 = (ELATransaction *)txn1.getRaw();
 
-		Transaction transaction1;
-		transaction1.Deserialize(byteStream);
+		verifyELATransaction(tx1, tx, false);
 
-		REQUIRE(transaction.getLockTime() == transaction1.getLockTime());
+		Transaction txn2 = txn;
+		ELATransaction *tx2 = (ELATransaction *)txn2.getRaw();
 
-		REQUIRE(10 == transaction.getRaw()->inCount);
-		for (int i = 0; i < transaction.getRaw()->inCount; i++) {
-			BRTxInput *input = &transaction.getRaw()->inputs[i];
-			REQUIRE(input->index == i + 1);
-			REQUIRE(input->sequence == i);
-			UInt256 hash = input->txHash;
-			REQUIRE(UInt256Eq(&hash, &hash) == 1);
-		}
-
-		const std::vector<TransactionOutput *> &outputs1 = transaction.getOutputs();
-		const std::vector<TransactionOutput *> &outputs2 = transaction1.getOutputs();
-		REQUIRE(outputs1.size() == outputs2.size());
-		for (int i = 0; i < outputs1.size(); i++) {
-			TransactionOutput *outPut = outputs1[i];
-			REQUIRE(outPut->getAmount() == outputs2[i]->getAmount());
-			REQUIRE(outPut->getOutputLock() == outputs2[i]->getOutputLock());
-
-			int result = UInt256Eq(&outPut->getAssetId(), &outputs2[i]->getAssetId());
-			REQUIRE(result == 1);
-
-			result = UInt168Eq(&outPut->getProgramHash(), &outputs2[i]->getProgramHash());
-			REQUIRE(result == 1);
-		}
+		verifyELATransaction(tx2, tx, true);
 	}
 
 }
@@ -290,7 +190,6 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 
 		ela->raw.txHash = getRandUInt256();
 		ela->raw.version = rand();
-		ela->raw.inCount = 3;
 		for (size_t i = 0; i < 3; ++i) {
 			CMBlock script = getRandCMBlock(25);
 			CMBlock signature = getRandCMBlock(28);
@@ -327,4 +226,3 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 		// TODO [heropan] complete me later
 	}
 }
-

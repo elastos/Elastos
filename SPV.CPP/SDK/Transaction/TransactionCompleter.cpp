@@ -18,7 +18,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr TransactionCompleter::Complete(uint64_t actualFee) {
-			std::string outAddr;
+			std::string outAddr = _transaction->getOutputs()[0]->getAddress();
 			uint64_t inputAmount = getInputsAmount(_transaction);
 			uint64_t outputAmount = _transaction->getOutputs()[0]->getAmount();
 			uint64_t changeAmount = _transaction->getOutputs().size() > 1

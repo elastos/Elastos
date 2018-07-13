@@ -329,7 +329,7 @@ namespace Elastos {
 											   uint32_t transitionTime, uint32_t targetTimeSpan,
 											   uint32_t targetTimePerBlock, const std::string &netType) {
 			int r = 1;
- 			if (netType == "RegNet")
+			if (1 || netType == "RegNet")
 				return r;
 
 			assert(block != nullptr);

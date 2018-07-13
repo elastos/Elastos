@@ -189,7 +189,7 @@ namespace Elastos {
 
 			size_t scriptLen = jsonData["ScriptLen"].get<size_t>();
 			std::string scriptString = jsonData["Script"].get<std::string>();
-			ELATxOutputSetScript(_output, nullptr, 0);
+			ELATxOutputSetScript(_output, nullptr, 0, _output->signType);
 			if (scriptLen > 0) {
 				if (scriptLen == scriptString.length() / 2) {
 					CMBlock script = Utils::decodeHex(scriptString);

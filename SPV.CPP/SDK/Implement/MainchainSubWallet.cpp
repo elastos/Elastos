@@ -34,7 +34,7 @@ namespace Elastos {
 																	const uint64_t amount,
 																	const nlohmann::json &sidechainAccounts,
 																	const nlohmann::json &sidechainAmounts,
-																	const nlohmann::json &sidechainIndexs,
+																	const nlohmann::json &sidechainIndices,
 																	uint64_t fee,
 																	const std::string &memo,
 																	const std::string &remark) {
@@ -44,11 +44,11 @@ namespace Elastos {
 
 			ParamChecker::checkJsonArrayNotEmpty(sidechainAccounts);
 			ParamChecker::checkJsonArrayNotEmpty(sidechainAmounts);
-			ParamChecker::checkJsonArrayNotEmpty(sidechainIndexs);
+			ParamChecker::checkJsonArrayNotEmpty(sidechainIndices);
 
 			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();
-			std::vector<uint64_t> indexs = sidechainIndexs.get<std::vector<uint64_t >>();
+			std::vector<uint64_t> indexs = sidechainIndices.get<std::vector<uint64_t >>();
 			if (accounts.size() != amounts.size() || accounts.size() != indexs.size())
 				throw std::invalid_argument("Length of sidechain accounts amounts and indices should same.");
 

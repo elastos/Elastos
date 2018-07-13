@@ -178,6 +178,8 @@ namespace Elastos {
 
 			bool containsTransaction(const TransactionPtr &transaction);
 
+			bool inputFromWallet(const BRTxInput *in);
+
 			bool registerTransaction(const TransactionPtr &transaction);
 
 			void removeTransaction(const UInt256 &transactionHash);

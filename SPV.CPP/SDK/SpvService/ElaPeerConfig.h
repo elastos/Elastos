@@ -13,26 +13,26 @@ namespace Elastos {
 		static nlohmann::json ElaPeerConfig =
 					R"(
 						  {
-							"MagicNumber": 7630401,
+							"MagicNumber": 2018001,
 							"KnowingPeers":
 							[
 								{
-									"Address": "54.165.10.201",
-									"Port": 20866,
+									"Address": "13.210.251.118",
+									"Port": 21866,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
-									"Address": "34.198.67.91",
-									"Port": 20866,
+									"Address": "18.194.136.248",
+									"Port": 21866,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0
 								},
 								{
-									"Address": "52.55.40.251",
-									"Port": 20866,
+									"Address": "35.177.55.45",
+									"Port": 21866,
 									"Timestamp": 0,
 									"Services": 1,
 									"Flags": 0

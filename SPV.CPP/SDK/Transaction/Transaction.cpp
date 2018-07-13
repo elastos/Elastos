@@ -189,18 +189,6 @@ namespace Elastos {
 			_transaction->raw.timestamp = timestamp;
 		}
 
-//		void Transaction::addInput(const UInt256 &hash, uint32_t index, uint64_t amount,
-//								   const CMBlock script, const CMBlock signature, uint32_t sequence) {
-//			BRTransactionAddInput(&_transaction->raw, hash, index, amount,
-//								  script, script.GetSize(), signature, signature.GetSize(),
-//								  sequence);
-//
-//			Program *program(new Program());
-//			program->setCode(script);
-//			program->setParameter(signature);
-//			addProgram(program);
-//		}
-
 		void Transaction::addOutput(TransactionOutput *output) {
 			_transaction->outputs.push_back(output);
 		}
@@ -255,18 +243,20 @@ namespace Elastos {
 			size_t size = _transaction->raw.inCount;
 			for (i = 0; i < size; i++) {
 				BRTxInput *input = &_transaction->raw.inputs[i];
+
+				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
+				j = 0;
+				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
+				if (j >= keysCount) continue;
+
 				if (i >= _transaction->programs.size()) {
-					std::string redeemScript = keys[i].keyToRedeemScript(ELA_STANDARD);
+					std::string redeemScript = keys[j].keyToRedeemScript(ELA_STANDARD);
 					CMBlock code = Utils::decodeHex(redeemScript);
 					Program *program(new Program());
 					program->setCode(code);
 					_transaction->programs.push_back(program);
 				}
 				Program *program = _transaction->programs[i];
-				if (!BRAddressFromScriptPubKey(address.s, sizeof(address), input->script, input->scriptLen)) continue;
-				j = 0;
-				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
-				if (j >= keysCount) continue;
 
 				Log::getLogger()->info("Transaction transactionSign begin sign the {} input.", i);
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
@@ -303,7 +293,6 @@ namespace Elastos {
 				BRSHA256(shaData, data, data.GetSize());
 				CMBlock signData = keys[j].compactSign(shaData);
 				program->setParameter(signData);
-
 				Log::getLogger()->info("Transaction transactionSign end sign the {} input.", i);
 			}
 
@@ -562,9 +551,9 @@ namespace Elastos {
 			_transaction->raw.timestamp = jsonData["Timestamp"].get<uint32_t>();
 
 			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
-			_transaction->raw.inCount = inputs.size();
+			size_t inCount = inputs.size();
 
-			for (size_t i = 0; i < _transaction->raw.inCount; ++i) {
+			for (size_t i = 0; i < inCount; ++i) {
 				nlohmann::json jsonData = inputs[i];
 
 				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
@@ -655,12 +644,51 @@ namespace Elastos {
 			nlohmann::json summary;
 			summary["Status"] = getStatus(blockHeight);
 			summary["ConfirmStatus"] = getConfirmInfo(blockHeight);
-			summary["Amount"] = _transaction->outputs.empty() ? 0 : _transaction->outputs[0]->getAmount();
-			std::string toAddress = _transaction->outputs.empty() ? "" : _transaction->outputs[0]->getAddress();
-			summary["Type"] = wallet->containsAddress(toAddress) ? "Incoming" : "Outcoming";
-			summary["ToAddress"] = toAddress;
 			summary["Remark"] = getRemark();
 			summary["Fee"] = getTxFee(wallet);
+			nlohmann::json jOut;
+			nlohmann::json jIn;
+
+			if (_transaction->raw.inCount > 0 && wallet->inputFromWallet(&_transaction->raw.inputs[0])) {
+				std::string toAddress = "";
+
+				if (wallet->containsAddress(_transaction->outputs[0]->getAddress())) {
+					// transfer to my other address of wallet
+					jOut["Amount"] = _transaction->outputs[0]->getAmount();
+					jOut["ToAddress"] = _transaction->outputs[0]->getAddress();
+					summary["Outcoming"] = jOut;
+
+					jIn["Amount"] = _transaction->outputs[0]->getAmount();
+					jIn["ToAddress"] = _transaction->outputs[0]->getAddress();
+					summary["Incoming"] = jIn;
+				} else {
+					jOut["Amount"] = _transaction->outputs[0]->getAmount();
+					jOut["ToAddress"] = _transaction->outputs[0]->getAddress();
+					summary["Outcoming"] = jOut;
+
+					jIn["Amount"] = 0;
+					jIn["ToAddress"] = "";
+					summary["Incoming"] = jIn;
+				}
+			} else {
+				uint64_t inputAmount = 0;
+				std::string toAddress = "";
+
+				for (size_t i = 0; i < _transaction->outputs.size(); ++i) {
+					if (wallet->containsAddress(_transaction->outputs[i]->getAddress())) {
+						inputAmount = _transaction->outputs[i]->getAmount();
+						toAddress = _transaction->outputs[i]->getAddress();
+					}
+				}
+
+				jOut["Amount"] = 0;
+				jOut["ToAddress"] = "";
+				summary["Outcoming"] = jOut;
+
+				jIn["Amount"] = inputAmount;
+				jIn["ToAddress"] = toAddress;
+				summary["Incoming"] = jIn;
+			}
 
 			rawTxJson["Summary"] = summary;
 		}
