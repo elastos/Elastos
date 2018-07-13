@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	. "github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
@@ -311,8 +312,35 @@ func CheckTransactionBalance(txn *core.Transaction) error {
 	return nil
 }
 
-func CheckAttributeProgram(txn *core.Transaction) error {
-	//TODO: implement CheckAttributeProgram
+func CheckAttributeProgram(tx *core.Transaction) error {
+	// Coinbase transaction do not check attribute and program
+	if tx.IsCoinBaseTx() {
+		return nil
+	}
+
+	// Check attributes
+	for _, attr := range tx.Attributes {
+		if !core.IsValidAttributeType(attr.Usage) {
+			return fmt.Errorf("invalid attribute usage %v", attr.Usage)
+		}
+	}
+
+	// Check programs
+	if len(tx.Programs) == 0 {
+		return fmt.Errorf("no programs found in transaction")
+	}
+	for _, program := range tx.Programs {
+		if program.Code == nil {
+			return fmt.Errorf("invalid program code nil")
+		}
+		if program.Parameter == nil {
+			return fmt.Errorf("invalid program parameter nil")
+		}
+		_, err := crypto.ToProgramHash(program.Code)
+		if err != nil {
+			return fmt.Errorf("invalid program code %x", program.Code)
+		}
+	}
 	return nil
 }
 
