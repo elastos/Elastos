@@ -723,14 +723,13 @@ func ListUnspent(param Params) map[string]interface{} {
 		if err != nil {
 			return ResponsePack(InvalidParams, "Invalid address: "+address)
 		}
-		unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+		unspents, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "cannot get asset with program")
 		}
 
-		unspents := unspends[chain.DefaultLedger.Blockchain.AssetID]
-		for _, unspent := range unspents {
-			_, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxId)
+		for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
+			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxId)
 			if err != nil {
 				return ResponsePack(InternalError,
 					"unknown transaction "+unspent.TxId.String()+" from persisted utxo")
@@ -742,6 +741,7 @@ func ListUnspent(param Params) map[string]interface{} {
 				Amount:        unspent.Value.String(),
 				Address:       address,
 				Confirmations: bestHeight - height + 1,
+				OutputLock:    tx.Outputs[unspent.Index].OutputLock,
 			})
 		}
 	}
