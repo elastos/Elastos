@@ -38,7 +38,7 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 	}
 
 	if err := CheckAttributeProgram(txn); err != nil {
-		log.Warn("[CheckTransactionAttribute],", err)
+		log.Warn("[CheckAttributeProgram],", err)
 		return ErrAttributeProgram
 	}
 
