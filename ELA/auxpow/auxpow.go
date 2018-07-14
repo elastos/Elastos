@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	AuxPowChainID         = 1
+	AuxPowChainID         = 6
 	pchMergedMiningHeader = []byte{0xfa, 0xbe, 'm', 'm'}
 )
 
@@ -49,32 +49,7 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		return err
 	}
 
-	idx := uint32(ap.AuxMerkleIndex)
-	err = common.WriteUint32(w, idx)
-	if err != nil {
-		return err
-	}
-
-	count := uint64(len(ap.AuxMerkleBranch))
-	err = common.WriteVarUint(w, count)
-	if err != nil {
-		return err
-	}
-
-	for _, amb := range ap.AuxMerkleBranch {
-		err = amb.Serialize(w)
-		if err != nil {
-			return err
-		}
-	}
-
-	idx = uint32(ap.ParMerkleIndex)
-	err = common.WriteUint32(w, idx)
-	if err != nil {
-		return err
-	}
-
-	count = uint64(len(ap.ParCoinBaseMerkle))
+	count := uint64(len(ap.ParCoinBaseMerkle))
 	err = common.WriteVarUint(w, count)
 	if err != nil {
 		return err
@@ -87,10 +62,36 @@ func (ap *AuxPow) Serialize(w io.Writer) error {
 		}
 	}
 
+	idx := uint32(ap.ParMerkleIndex)
+	err = common.WriteUint32(w, idx)
+	if err != nil {
+		return err
+	}
+
+	count = uint64(len(ap.AuxMerkleBranch))
+	err = common.WriteVarUint(w, count)
+	if err != nil {
+		return err
+	}
+
+	for _, amb := range ap.AuxMerkleBranch {
+		err = amb.Serialize(w)
+		if err != nil {
+			return err
+		}
+	}
+
+	idx = uint32(ap.AuxMerkleIndex)
+	err = common.WriteUint32(w, idx)
+	if err != nil {
+		return err
+	}
+
 	err = ap.ParBlockHeader.Serialize(w)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -105,13 +106,28 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 		return err
 	}
 
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+
+	ap.ParCoinBaseMerkle = make([]common.Uint256, count)
+	for i := uint64(0); i < count; i++ {
+		temp := common.Uint256{}
+		err = temp.Deserialize(r)
+		if err != nil {
+			return err
+		}
+		ap.ParCoinBaseMerkle[i] = temp
+	}
+
 	temp, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
-	ap.AuxMerkleIndex = int(temp)
+	ap.ParMerkleIndex = int(temp)
 
-	count, err := common.ReadVarUint(r, 0)
+	count, err = common.ReadVarUint(r, 0)
 	if err != nil {
 		return err
 	}
@@ -130,23 +146,7 @@ func (ap *AuxPow) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	ap.ParMerkleIndex = int(temp)
-
-	count, err = common.ReadVarUint(r, 0)
-	if err != nil {
-		return err
-	}
-
-	ap.ParCoinBaseMerkle = make([]common.Uint256, count)
-	for i := uint64(0); i < count; i++ {
-		temp := common.Uint256{}
-		err = temp.Deserialize(r)
-		if err != nil {
-			return err
-		}
-		ap.ParCoinBaseMerkle[i] = temp
-
-	}
+	ap.AuxMerkleIndex = int(temp)
 
 	err = ap.ParBlockHeader.Deserialize(r)
 	if err != nil {
