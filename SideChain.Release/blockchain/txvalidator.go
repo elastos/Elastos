@@ -46,7 +46,7 @@ func CheckTransactionSanity(txn *core.Transaction) ErrCode {
 	}
 
 	if err := CheckAttributeProgram(txn); err != nil {
-		log.Warn("[CheckTransactionAttribute],", err)
+		log.Warn("[CheckAttributeProgram],", err)
 		return ErrAttributeProgram
 	}
 
@@ -313,11 +313,6 @@ func CheckTransactionBalance(txn *core.Transaction) error {
 }
 
 func CheckAttributeProgram(tx *core.Transaction) error {
-	// Coinbase transaction do not check attribute and program
-	if tx.IsCoinBaseTx() {
-		return nil
-	}
-
 	// Check attributes
 	for _, attr := range tx.Attributes {
 		if !core.IsValidAttributeType(attr.Usage) {
@@ -326,9 +321,6 @@ func CheckAttributeProgram(tx *core.Transaction) error {
 	}
 
 	// Check programs
-	if len(tx.Programs) == 0 {
-		return fmt.Errorf("no programs found in transaction")
-	}
 	for _, program := range tx.Programs {
 		if program.Code == nil {
 			return fmt.Errorf("invalid program code nil")
