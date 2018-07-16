@@ -72,7 +72,7 @@ namespace Elastos {
 
 				TransactionPtr ptr = _walletManager->getWallet()->
 						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-										  param->getToAddress(), param->getRemark());
+										  param->getToAddress(), param->getRemark(), param->getMemo());
 				if (!ptr) return nullptr;
 				ptr->setTransactionType(ELATransaction::RegisterIdentification);
 

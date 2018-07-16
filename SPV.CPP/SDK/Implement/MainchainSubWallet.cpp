@@ -75,7 +75,7 @@ namespace Elastos {
 			} else {
 				ptr = _walletManager->getWallet()->
 						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-										  param->getToAddress(), param->getRemark(), false);
+										  param->getToAddress(), param->getRemark(), param->getMemo());
 
 				if (!ptr) return nullptr;
 

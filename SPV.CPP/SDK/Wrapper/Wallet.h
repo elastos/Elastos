@@ -174,7 +174,8 @@ namespace Elastos {
 
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-							  const std::string &toAddress, const std::string &remark, bool isShuffle = true);
+							  const std::string &toAddress, const std::string &remark,
+							  const std::string &memo);
 
 			bool containsTransaction(const TransactionPtr &transaction);
 

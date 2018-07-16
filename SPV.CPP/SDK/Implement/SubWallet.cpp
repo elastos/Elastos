@@ -208,7 +208,8 @@ namespace Elastos {
 			//todo initialize asset id if null
 			TransactionPtr ptr = _walletManager->getWallet()->
 					createTransaction(param->getFromAddress(), std::max(param->getFee(), _info.getMinFee()),
-									  param->getAmount(), param->getToAddress(), param->getRemark());
+									  param->getAmount(), param->getToAddress(), param->getRemark(),
+									  param->getMemo());
 			if (!ptr) return nullptr;
 
 			ptr->setTransactionType(ELATransaction::TransferAsset);
@@ -491,8 +492,9 @@ namespace Elastos {
 			}
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [blockHeight, this](ISubWalletCallback *callback) {callback->OnBlockHeightIncreased(
-						  		blockHeight, _walletManager->getPeerManager()->getSyncProgress(_syncStartHeight));
+						  [blockHeight, this](ISubWalletCallback *callback) {
+							  callback->OnBlockHeightIncreased(
+									  blockHeight, _walletManager->getPeerManager()->getSyncProgress(_syncStartHeight));
 						  });
 		}
 

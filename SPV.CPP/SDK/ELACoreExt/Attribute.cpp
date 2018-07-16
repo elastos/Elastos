@@ -41,7 +41,9 @@ namespace Elastos {
 			return (_usage == Attribute::Usage::Description ||
 					_usage == Attribute::Usage::DescriptionUrl ||
 					_usage == Attribute::Usage::Memo ||
-					_usage == Attribute::Usage::Script);
+					_usage == Attribute::Usage::Script ||
+					_usage == Attribute::Usage::Nonce ||
+					_usage == Attribute::Usage::Confirmations);
 		}
 
 		void Attribute::Serialize(ByteStream &ostream) const {

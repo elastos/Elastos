@@ -576,7 +576,8 @@ namespace Elastos {
 
 		TransactionPtr
 		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-								  const std::string &toAddress, const std::string &remark, bool isShuffle) {
+								  const std::string &toAddress, const std::string &remark,
+								  const std::string &memo) {
 			UInt168 u168Address = UINT168_ZERO;
 			if (!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress)) {
 				std::ostringstream oss;
@@ -613,6 +614,12 @@ namespace Elastos {
 			if (tx != nullptr) {
 				result = TransactionPtr(new Transaction(tx));
 				result->setRemark(remark);
+
+				result->addAttribute(new Attribute(Attribute::Nonce, Utils::convertToMemBlock(std::to_string(std::rand()))));
+				if(!memo.empty())
+					result->addAttribute(new Attribute(Attribute::Memo, Utils::convertToMemBlock(memo)));
+				if(tx->type == ELATransaction::TransferCrossChainAsset)
+					result->addAttribute(new Attribute(Attribute::Confirmations, Utils::convertToMemBlock(std::to_string(1))));
 			}
 
 			return result;

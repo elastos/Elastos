@@ -68,6 +68,14 @@ namespace Elastos {
 			_remark = remark;
 		}
 
+		const std::string &TxParam::getMemo() const {
+			return _memo;
+		}
+
+		void TxParam::setMemo(const std::string &memo) {
+			_memo = memo;
+		}
+
 		std::string DepositTxParam::getSidechainAddress() const {
 			return _sidechainAddress;
 		}
@@ -165,6 +173,7 @@ namespace Elastos {
 			result->setFee(fee);
 			result->setAssetId(Key::getSystemAssetId());
 			result->setRemark(remark);
+			result->setMemo(memo);
 			return result;
 		}
 	}

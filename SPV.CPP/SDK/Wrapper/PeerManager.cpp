@@ -316,6 +316,7 @@ namespace Elastos {
 											   uint32_t transitionTime, uint32_t targetTimeSpan,
 											   uint32_t targetTimePerBlock, const std::string &netType) {
 			int r = 1;
+			//fixme figure out why difficult validation fails occasionally
 			if (1 || netType == "RegNet")
 				return r;
 

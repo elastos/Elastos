@@ -21,7 +21,8 @@ namespace Elastos {
 				Script = 0x20,
 				DescriptionUrl = 0x81,
 				Description = 0x90,
-				Memo        = 0x91
+				Memo = 0x91,
+				Confirmations = 0x92
 			};
 
 		public:
@@ -34,10 +35,13 @@ namespace Elastos {
 			~Attribute();
 
 			Usage GetUsage() const;
+
 			const CMBlock &GetData() const;
+
 			bool isValid();
 
 			virtual void Serialize(ByteStream &ostream) const;
+
 			virtual bool Deserialize(ByteStream &istream);
 
 			virtual nlohmann::json toJson() const;

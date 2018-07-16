@@ -28,7 +28,8 @@ namespace Elastos {
 			if (inputAmount > outputAmount && inputAmount - outputAmount - changeAmount >= actualFee) {
 				modifyTransactionChange(resultTx, inputAmount - outputAmount - actualFee);
 			} else {
-				resultTx = recreateTransaction(actualFee, outputAmount, outAddr, resultTx->getRemark());
+				resultTx = recreateTransaction(actualFee, outputAmount, outAddr, resultTx->getRemark(),
+											   getMemo());
 			}
 
 			completedTransactionAssetID(resultTx);
@@ -78,8 +79,8 @@ namespace Elastos {
 
 		TransactionPtr
 		TransactionCompleter::recreateTransaction(uint64_t fee, uint64_t amount, const std::string &toAddress,
-												  const std::string &remark) {
-			return _wallet->createTransaction("", fee, amount, toAddress, remark);
+												  const std::string &remark, const std::string &memo) {
+			return _wallet->createTransaction("", fee, amount, toAddress, remark, memo);
 		}
 
 		void TransactionCompleter::modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange) {
@@ -99,6 +100,14 @@ namespace Elastos {
 				output->setProgramHash(u168Address);
 				transaction->addOutput(output);
 			}
+		}
+
+		std::string TransactionCompleter::getMemo() const {
+			for (int i = 0; i < _transaction->getAttributes().size(); ++i) {
+				if (_transaction->getAttributes()[i]->GetUsage() == Attribute::Memo)
+					return Utils::convertToString(_transaction->getAttributes()[i]->GetData());
+			}
+			return "";
 		}
 
 	}

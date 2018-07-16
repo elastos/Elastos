@@ -48,6 +48,10 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
+			const std::string &getMemo() const;
+
+			void setMemo(const std::string &memo);
+
 		private:
 			std::string _fromAddress;
 			std::string _toAddress;
@@ -55,6 +59,7 @@ namespace Elastos {
 			uint64_t _fee;
 			UInt256 _assetId;
 			std::string _remark;
+			std::string _memo;
 		};
 
 		class DepositTxParam : public TxParam {
