@@ -131,7 +131,7 @@ void load_config(const char *config_file)
 {
     config_t cfg;
     config_setting_t *bootstraps;
-    char *stropt;
+    const char *stropt;
     char number[64];
     char path[PATH_MAX];
     int intopt;
