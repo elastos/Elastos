@@ -18,3 +18,6 @@
 ### [Rong Chen Lecture: The History of the Internet: From Birth to Blockchain and Beyond - Apr 28, 2018](https://medium.com/elastos/rong-chen-lecture-the-history-of-the-internet-from-birth-to-blockchain-and-beyond-c7ca07b0cc6d)
 ### [Logo Contest and Re-Brand Update - May 1, 2018](https://medium.com/elastos/logo-contest-and-re-brand-update-b4c170ff318a)
 ### [Elastos SPV and Technical Integration Update - May 4, 2018](https://medium.com/elastos/elastos-spv-and-technical-integration-update-97b062490081)
+### [Rong Chen's Speech at the Elastos and BIT.GAME Meetup - June 18, 2018](https://medium.com/elastos/rong-chens-speech-at-the-elastos-and-bit-game-meetup-171a1b8f3e85)
+### [Elastos Moving to ELA News - July 03, 2018](https://medium.com/elastos/elastos-moving-to-ela-news-bcfd733d3a54)
+### [Elastos Welcomes Luis Llovera To Advisory Board](https://elanews.net/2018/07/05/elastos-welcomes-luis-llovera-to-advisory-board/)

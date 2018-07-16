@@ -9,3 +9,5 @@
 ### [Elastos Announces Cooperation with Two British Firms at U.K. Meetups - Apr 21, 2018](https://medium.com/elastos/elastos-announces-cooperation-with-two-british-firms-at-u-k-meetups-bc093b3e2a25)
 ### [Elastos Partners with Weatherblock](https://medium.com/elastos/elastos-partners-with-weatherblock-d99208603b)
 ### [Elastos Partners with BIT.GAME and joins META Union Alliance](https://medium.com/elastos/elastos-partners-with-bit-game-and-joins-meta-union-alliance-4023938c5b1)
+### [Elastos Partners with HashWorld](https://medium.com/elastos/elastos-partners-with-hashworld-92fcc7db4749)
+### [Elastos Partners with ioeX](https://medium.com/elastos/elastos-partners-with-ioex-379982cf0249)

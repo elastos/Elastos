@@ -46,13 +46,13 @@ Elastos is not a typical operating system. Usually, when you think about operati
 
 This is material for any non-developer who wants to learn about Elastos and what it has to offer to an end-user/consumer/investor. This guide explains the Elastos core technology and how it differs from various other projects in the blockchain industry. First and foremost, it's important to note that Elastos is not a blockchain project. It is a network operating system project powered by the blockchain technology so in that sense, Elastos is not competing with any other blockchain projects but can work together with them to form this new ecosystem where the DApps run directly on the device instead of running on the blockchain along with decentralized peer to peer network to transfer assets in a completely closed sandboxed environment, thereby solving the trilemma of the blockchain technology - security, scalibility and decentralization all in one. 
 
-[A Non-Developer guide](./NonDeveloperGuide/README.md)
+[A Non-Developer guide](https://github.com/elastos/Elastos/wiki/A-Non-Developer-Guide-to-Elastos)
 
 **A Beginner's Guide to Elastos for Developers**
 
 This is material for any developer who has some experience with programming languages like Javascript/NodeJS, HTML5, Java, Swift, C++, Golang, etc and wants to get started with various github projects that are open sourced by Elastos. This includes the core development of the product such as the Elastos Runtime environment, Elastos Blockchain, creating and integrating ELA into wallets, or creating applications using the SDK if you're a DApp developer. In order to make it very easy for any developer(even to someone who's not very familiar with blockchain), Elastos provides the SDK in various languages that makes it easy to start developing a decentralized application integrated with blockchain technology without having to fully learn about how blockchain works underneath.
 
-[A Developer guide](./DeveloperGuide/README.md)
+[A Developer guide](https://github.com/elastos/Elastos/wiki/A-Developer-Guide-to-Elastos)
 
 ### Current State of Elastos
 

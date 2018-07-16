@@ -1,7 +1,0 @@
-## Elastos Runtime
-
-Elastos Runtime can be thought of as an App Engine or a Virtual Machine(VM). It is a runtime sandboxed closed environment that runs on top of existing OS, such as Android, iOS, Linux, etc. It provides SDK for DApps to be running on top of RT. As for the DApp developers, they do not need to worry too much about the technical details of the layer underneath(blockchain layer). They just need to call the RT.SDK. Building DApps will be much eaiser than before. DApp developers will be using Cordova to develop their HTML5 applications that will be running on trinity browser. Non-Elastos apps can access the Elastos Smart Web via the RT SDK(C++ SDK) because android and iOS apps can call C++ SDK. This is done to make it easier for existing mobile developers to integrate their existing mobile apps with Elastos.
-
-Elastos Runtime runs on the user’s equipment to achieve a “reliable runtime environment.” By developing Elastos DApp, independent developers can use (play) digital assets such as digital audio and video playback. VM guarantees digital assets will run under blockchain control, providing users with the ability to consume and invest in digital content.
-
-[Github Source Code](https://github.com/elastos/Elastos.RT)
