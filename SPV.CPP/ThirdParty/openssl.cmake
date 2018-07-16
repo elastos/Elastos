@@ -7,7 +7,7 @@ set(
 
 set(OPENSSL_SSL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/openssl/install/lib/libssl.a)
 set(OPENSSL_CRYPTO_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/openssl/install/lib/libcrypto.a)
-set(OPENSSL_PREPARE_ENV chmod a+x ../Setenv-android.sh && source ../Setenv-android.sh)
+set(OPENSSL_PREPARE_ENV chmod a+x ../Setenv-android.sh && . ../Setenv-android.sh)
 set(OPENSSL_CONFIG_COMMAND ./config shared --openssldir=${CMAKE_CURRENT_SOURCE_DIR}/openssl/install --prefix=${CMAKE_CURRENT_SOURCE_DIR}/openssl/install)
 set(OPENSSL_BUILD_COMMAND make all && make install_sw)
 

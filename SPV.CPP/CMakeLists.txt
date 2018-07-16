@@ -182,7 +182,7 @@ endif()
 if(APPLE)
 	target_link_libraries(spvsdk iconv)
 endif()
-add_dependencies(spvsdk ssl crypto sqlite bigint)
+add_dependencies(spvsdk ssl crypto sqlite bigint ${Boost_LIBRARIES})
 
 if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)

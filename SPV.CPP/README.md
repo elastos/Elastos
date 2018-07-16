@@ -8,7 +8,7 @@ This repository is a basic library aimed to provide a serials of wallet related 
 Make sure your computer have installed the required packages below:
 * [git](https://www.git-scm.com/downloads)
 * [cmake](https://cmake.org/download)
-* [libboost](https://www.boost.org/)
+* [wget](https://www.gnu.org/software/wget)
 
 ### Clone source code
 Open a terminal, go to `/home/xxx/dev`

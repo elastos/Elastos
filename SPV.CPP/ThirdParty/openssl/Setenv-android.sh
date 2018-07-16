@@ -118,12 +118,12 @@ if [ -z "$ANDROID_TOOLCHAIN" ] || [ ! -d "$ANDROID_TOOLCHAIN" ]; then
 fi
 
 case $_ANDROID_ARCH in
-	arch-arm)	  
+	arch-arm)
       ANDROID_TOOLS="arm-linux-androideabi-gcc arm-linux-androideabi-ranlib arm-linux-androideabi-ld"
 	  ;;
-	arch-x86)	  
+	arch-x86)
       ANDROID_TOOLS="i686-linux-android-gcc i686-linux-android-ranlib i686-linux-android-ld"
-	  ;;	  
+	  ;;
 	*)
 	  echo "ERROR ERROR ERROR"
 	  ;;
@@ -198,7 +198,7 @@ export SYSTEM=android
 export ARCH=arm
 export CROSS_COMPILE="arm-linux-androideabi-"
 
-if [ "$_ANDROID_ARCH" == "arch-x86" ]; then
+if [ "$_ANDROID_ARCH" = "arch-x86" ]; then
 	export MACHINE=i686
 	export RELEASE=2.6.37
 	export SYSTEM=android
