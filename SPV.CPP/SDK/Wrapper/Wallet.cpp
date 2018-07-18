@@ -39,7 +39,8 @@ namespace Elastos {
 								uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
 								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
 								int (*TransactionIsSigned)(const BRTransaction *tx),
-								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen)) {
+								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen),
+								uint64_t (*balanceAfterTx)(BRWallet *wallet, const BRTransaction *tx)) {
 			ELAWallet *wallet = NULL;
 			BRTransaction *tx;
 
@@ -62,6 +63,7 @@ namespace Elastos {
 			wallet->Raw.WalletFeeForTx = WalletFeeForTx;
 			wallet->Raw.TransactionIsSigned = TransactionIsSigned;
 			wallet->Raw.KeyToAddress = KeyToAddress;
+			wallet->Raw.balanceAfterTx = balanceAfterTx;
 			array_new(wallet->Raw.internalChain, 100);
 			array_new(wallet->Raw.externalChain, 100);
 			array_new(wallet->Raw.balanceHist, txCount + 100);
@@ -92,6 +94,7 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 			wallet->Raw.WalletUpdateBalance((BRWallet *) wallet);
 			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
+			wallet->ListeningAddrs = std::vector<std::string>();
 
 			if (txCount > 0 && !wallet->Raw.WalletContainsTx((BRWallet *) wallet,
 															 transactions[0])) { // verify transactions match master pubKey
@@ -156,7 +159,8 @@ namespace Elastos {
 								   *masterPubKey->getRaw(),
 								   WalletUnusedAddrs, BRWalletAllAddrs, setApplyFreeTx, WalletUpdateBalance,
 								   WalletContainsTx, WalletAddUsedAddrs, WalletCreateTxForOutputs,
-								   WalletMaxOutputAmount, WalletFeeForTx, TransactionIsSigned, KeyToAddress);
+								   WalletMaxOutputAmount, WalletFeeForTx, TransactionIsSigned, KeyToAddress,
+								   BalanceAfterTx);
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
@@ -179,6 +183,10 @@ namespace Elastos {
 				ELAWalletFree(_wallet);
 				_wallet = nullptr;
 			}
+		}
+
+		void Wallet::initListeningAddresses(const std::vector<std::string> &addrs) {
+			_wallet->ListeningAddrs = addrs;
 		}
 
 		std::string Wallet::toString() const {
@@ -621,7 +629,7 @@ namespace Elastos {
 
 		uint64_t Wallet::getBalanceAfterTransaction(const TransactionPtr &transaction) {
 
-			return BRWalletBalanceAfterTx((BRWallet *) _wallet, transaction->getRaw());
+			return _wallet->Raw.balanceAfterTx((BRWallet *) _wallet, transaction->getRaw());
 		}
 
 		std::string Wallet::getTransactionAddress(const TransactionPtr &transaction) {
@@ -774,6 +782,7 @@ namespace Elastos {
 
 			for (i = 0; i < array_count(wallet->transactions); i++) {
 				tx = (ELATransaction *) wallet->transactions[i];
+				if (tx->type == ELATransaction::RegisterIdentification) continue;
 
 				// check if any inputs are invalid or already spent
 				if (tx->raw.blockHeight == TX_UNCONFIRMED) {
@@ -875,6 +884,14 @@ namespace Elastos {
 				uint32_t n = txn->raw.inputs[i].index;
 
 				if (t && n < outCount && BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address)) r = 1;
+			}
+
+			//for listening addresses
+			ELAWallet *elaWallet = (ELAWallet *)wallet;
+			for (size_t i = 0; i < outCount; ++i) {
+				if (std::find(elaWallet->ListeningAddrs.begin(), elaWallet->ListeningAddrs.end(),
+							  txn->outputs[i]->getRaw()->address) != elaWallet->ListeningAddrs.end())
+					r = 1;
 			}
 
 			return r;
@@ -1023,6 +1040,27 @@ namespace Elastos {
 
 			pthread_mutex_unlock(&wallet->lock);
 			return j;
+		}
+
+		uint64_t Wallet::BalanceAfterTx(BRWallet *wallet, const BRTransaction *tx) {
+			uint64_t balance;
+
+			assert(wallet != NULL);
+			assert(tx != NULL && wallet->TransactionIsSigned(tx));
+			pthread_mutex_lock(&wallet->lock);
+			balance = wallet->balance;
+
+			for (size_t i = array_count(wallet->transactions); tx && i > 0; i--) {
+				if (! BRTransactionEq(tx, wallet->transactions[i - 1])) continue;
+				ELATransaction *elaTransaction = (ELATransaction *)wallet->transactions[i - 1];
+				if (elaTransaction->type == ELATransaction::RegisterIdentification) continue;
+
+				balance = wallet->balanceHist[i - 1];
+				break;
+			}
+
+			pthread_mutex_unlock(&wallet->lock);
+			return balance;
 		}
 	}
 }

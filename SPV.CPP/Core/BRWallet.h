@@ -84,6 +84,7 @@ typedef struct BRWalletStruct {
 	uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx);
 	int (*TransactionIsSigned)(const BRTransaction *tx);
 	size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen);
+	uint64_t (*balanceAfterTx)(BRWallet *wallet, const BRTransaction *tx);
     pthread_mutex_t lock;
 } BRWallet;
 

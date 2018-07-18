@@ -31,6 +31,7 @@ namespace Elastos {
 			BRWallet Raw;
 			typedef std::map<std::string, std::string> TransactionRemarkMap;
 			TransactionRemarkMap TxRemarkMap;
+			std::vector<std::string> ListeningAddrs;
 		};
 
 		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
@@ -47,7 +48,8 @@ namespace Elastos {
 								uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
 								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
 								int (*TransactionIsSigned)(const BRTransaction *tx),
-								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
+								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen),
+								uint64_t (*balanceAfterTx)(BRWallet *wallet, const BRTransaction *tx));
 
 		void ELAWalletFree(ELAWallet *wallet, bool freeInternal = true);
 
@@ -85,6 +87,8 @@ namespace Elastos {
 				   const boost::shared_ptr<Listener> &listener);
 
 			virtual ~Wallet();
+
+			void initListeningAddresses(const std::vector<std::string> &addrs);
 
 			virtual std::string toString() const;
 
@@ -268,6 +272,8 @@ namespace Elastos {
 			static size_t KeyToAddress(const BRKey *key, char *addr, size_t addrLen);
 
 			static size_t WalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal);
+
+			static uint64_t BalanceAfterTx(BRWallet *wallet, const BRTransaction *tx);
 
 		protected:
 			ELAWallet *_wallet;

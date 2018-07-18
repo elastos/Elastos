@@ -597,7 +597,7 @@ Java_com_elastos_spvcore_CoreWallet_getBalanceAfterTransaction
 (JNIEnv *env, jobject thisObject, jobject transactionObject) {
 	BRWallet *wallet = (BRWallet *) getJNIReference (env, thisObject);
 	BRTransaction *transaction = (BRTransaction *) getJNIReference (env, transactionObject);
-	return (jlong) BRWalletBalanceAfterTx (wallet, transaction);
+	return (jlong) wallet->balanceAfterTx (wallet, transaction);
 }
 
 /*

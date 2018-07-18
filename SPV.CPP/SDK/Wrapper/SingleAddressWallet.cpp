@@ -65,6 +65,8 @@ namespace Elastos {
 			wallet->Raw.WalletMaxOutputAmount = Wallet::WalletMaxOutputAmount;
 			wallet->Raw.WalletFeeForTx = Wallet::WalletFeeForTx;
 			wallet->Raw.TransactionIsSigned = Wallet::TransactionIsSigned;
+			wallet->Raw.KeyToAddress = Wallet::KeyToAddress;
+			wallet->Raw.balanceAfterTx = Wallet::BalanceAfterTx;
 			wallet->Raw.internalChain = nullptr;
 			array_new(wallet->Raw.externalChain, 1);
 			array_new(wallet->Raw.balanceHist, txCount + 100);
@@ -89,6 +91,7 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs((BRWallet *)wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 			wallet->Raw.WalletUpdateBalance((BRWallet *)wallet);
 			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
+			wallet->ListeningAddrs = std::vector<std::string>();
 
 			if (txCount > 0 && !wallet->Raw.WalletContainsTx((BRWallet *)wallet, transactions[0])) {
 				ELAWalletFree(wallet, false);

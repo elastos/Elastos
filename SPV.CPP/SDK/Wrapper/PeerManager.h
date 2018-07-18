@@ -132,6 +132,8 @@ namespace Elastos {
 			verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous, uint32_t transitionTime,
 								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock, const std::string &netType);
 
+			static void loadBloomFilter(BRPeerManager *manager, BRPeer *peer);
+
 		private:
 			ELAPeerManager *_manager;
 

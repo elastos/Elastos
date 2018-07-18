@@ -365,7 +365,7 @@ static void _updateFilterPingDone(void *info, int success)
 
         if (manager->lastBlock->height < manager->estimatedHeight) { // if we're syncing, only update download peer
             if (manager->downloadPeer) {
-                _BRPeerManagerLoadBloomFilter(manager, manager->downloadPeer);
+                manager->loadBloomFilter(manager, manager->downloadPeer);
                 manager->peerMessages->BRPeerSendPingMessage(manager->downloadPeer, info, _updateFilterLoadDone); // wait for pong so filter is loaded
             }
             else free(info);
@@ -379,7 +379,7 @@ static void _updateFilterPingDone(void *info, int success)
                 assert(peerInfo != NULL);
                 peerInfo->peer = manager->connectedPeers[i - 1];
                 peerInfo->manager = manager;
-                _BRPeerManagerLoadBloomFilter(manager, peerInfo->peer);
+                manager->loadBloomFilter(manager, peerInfo->peer);
                 manager->peerMessages->BRPeerSendPingMessage(peerInfo->peer, peerInfo, _updateFilterLoadDone); // wait for pong so filter is loaded
             }
         }
@@ -568,7 +568,7 @@ static void _BRPeerManagerLoadMempools(BRPeerManager *manager)
         info->manager = manager;
 
         if (peer != manager->downloadPeer || manager->fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE*5.0) {
-            _BRPeerManagerLoadBloomFilter(manager, peer);
+            manager->loadBloomFilter(manager, peer);
             _BRPeerManagerPublishPendingTx(manager, peer);
             manager->peerMessages->BRPeerSendPingMessage(peer, info, _loadBloomFilterDone); // load mempool after updating bloomfilter
         }
@@ -727,7 +727,7 @@ static void _peerConnected(void *info)
               manager->lastBlock->height >= BRPeerLastBlock(peer))) {
         if (manager->lastBlock->height >= BRPeerLastBlock(peer)) { // only load bloom filter if we're done syncing
             manager->connectFailureCount = 0; // also reset connect failure count if we're already synced
-            _BRPeerManagerLoadBloomFilter(manager, peer);
+            manager->loadBloomFilter(manager, peer);
             _BRPeerManagerPublishPendingTx(manager, peer);
             peerInfo = calloc(1, sizeof(*peerInfo));
             assert(peerInfo != NULL);
@@ -755,7 +755,7 @@ static void _peerConnected(void *info)
         manager->downloadPeer = peer;
         manager->isConnected = 1;
         manager->estimatedHeight = BRPeerLastBlock(peer);
-		_BRPeerManagerLoadBloomFilter(manager, peer);
+        manager->loadBloomFilter(manager, peer);
 		BRPeerSetCurrentBlockHeight(peer, manager->lastBlock->height);
 		_BRPeerManagerPublishPendingTx(manager, peer);
 
@@ -1542,7 +1542,8 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
                                int (*networkIsReachable)(void *info),
                                void (*threadCleanup)(void *info),
                                void (*blockHeightIncreased)(void *info, uint32_t height),
-                               int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet))
+                               int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet),
+                               void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer))
 {
     assert(manager != NULL);
     manager->info = info;
@@ -1555,6 +1556,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
     manager->blockHeightIncreased = blockHeightIncreased;
     manager->threadCleanup = (threadCleanup) ? threadCleanup : _dummyThreadCleanup;
     manager->verifyDifficulty = verifyDifficulty;
+    manager->loadBloomFilter = loadBloomFilter;
 }
 
 // specifies a single fixed peer to use when connecting to the bitcoin network

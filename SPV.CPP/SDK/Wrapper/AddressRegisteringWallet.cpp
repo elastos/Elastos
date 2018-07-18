@@ -60,7 +60,6 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs = addressRegisteringWalletUnusedAddrs;
 			wallet->Raw.WalletAllAddrs = addressRegisteringWalletAllAddrs;
 			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
-			wallet->Raw.setApplyFreeTx = setApplyFreeTx;
 			wallet->Raw.WalletUpdateBalance = Wallet::WalletUpdateBalance;
 			wallet->Raw.WalletContainsTx = Wallet::WalletContainsTx;
 			wallet->Raw.WalletAddUsedAddrs = Wallet::WalletAddUsedAddrs;
@@ -68,6 +67,8 @@ namespace Elastos {
 			wallet->Raw.WalletMaxOutputAmount = Wallet::WalletMaxOutputAmount;
 			wallet->Raw.WalletFeeForTx = Wallet::WalletFeeForTx;
 			wallet->Raw.TransactionIsSigned = Wallet::TransactionIsSigned;
+			wallet->Raw.KeyToAddress = Wallet::KeyToAddress;
+			wallet->Raw.balanceAfterTx = Wallet::BalanceAfterTx;
 			wallet->Raw.internalChain = nullptr;
 			array_new(wallet->Raw.externalChain, 100);
 			array_new(wallet->Raw.balanceHist, 100);
