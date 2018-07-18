@@ -87,19 +87,6 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 	SECTION("Normal procedure") {
 		SharedWrapperList<Transaction, BRTransaction *> transactions;
 
-#ifdef TEMPORARY_HD_STRATEGY
-		boost::filesystem::path dbPath = dbRoot;
-		dbPath /= "test1.db";
-		boost::scoped_ptr<DatabaseManager> databaseManager(new DatabaseManager(dbPath));
-		MasterPrivKey masterPrivKey = createDummyPrivateKey(payPassword);
-		SingleAddressWallet singleAddressWallet(transactions, masterPrivKey, payPassword, databaseManager.get(), listener);
-
-		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
-		REQUIRE(addresses.size() == 1);
-		REQUIRE(addresses[0] == "ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
-
-		REQUIRE(singleAddressWallet.getBalance() == 0);
-#else
 		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
 
 		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
@@ -107,51 +94,8 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		REQUIRE(addresses[0] == "EdTnJ92D6quqRKTJULzXAu3Tgk3zbv12pQ");
 
 		REQUIRE(singleAddressWallet.getBalance() == 0);
-#endif
 	}
 	SECTION("Initialize with transactions") {
-#ifdef TEMPORARY_HD_STRATEGY
-		SharedWrapperList<Transaction, BRTransaction *> transactions;
-
-		ELATransaction *transaction = new ELATransaction;
-		TransactionOutputPtr output(new TransactionOutput);
-		output->setAmount(100000000);
-		output->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-		transaction->outputs.push_back(output);
-		transaction->raw.txHash = UINT256_ZERO;
-		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-		CMBlock code(10);
-		CMBlock parameter(10);
-		ProgramPtr program(new Program(code, parameter));
-		transaction->programs.push_back(program);
-		transactions.push_back(TransactionPtr(new Transaction(transaction, false)));
-
-		ELATransaction *transaction2 = new ELATransaction;
-		TransactionOutputPtr output2(new TransactionOutput);
-		output2->setAmount(200000000);
-		output2->setAddress("ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-		transaction2->outputs.push_back(output2);
-		transaction2->raw.txHash = Utils::UInt256FromString(
-				"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
-		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-		CMBlock code2(10);
-		CMBlock parameter2(10);
-		ProgramPtr program2(new Program(code2, parameter2));
-		transaction2->programs.push_back(program2);
-		transactions.push_back(TransactionPtr(new Transaction(transaction2, false)));
-
-		boost::filesystem::path dbPath = dbRoot;
-		dbPath /= "test1.db";
-		boost::scoped_ptr<DatabaseManager> databaseManager(new DatabaseManager(dbPath));
-		SingleAddressWallet singleAddressWallet(transactions, createDummyPrivateKey(payPassword), payPassword,
-			databaseManager.get(), listener);
-
-		std::vector<std::string> addresses = singleAddressWallet.getAllAddresses();
-		REQUIRE(addresses.size() == 1);
-		REQUIRE(addresses[0] == "ELR8gBDqJoF3CxyqTT1qxPHqgJUUcd6o8V");
-
-		REQUIRE(singleAddressWallet.getBalance() == 300000000);
-#else
 		SharedWrapperList<Transaction, BRTransaction *> transactions;
 
 		ELATransaction *transaction = new ELATransaction;
@@ -188,60 +132,12 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		REQUIRE(addresses[0] == "EdTnJ92D6quqRKTJULzXAu3Tgk3zbv12pQ");
 
 		REQUIRE(singleAddressWallet.getBalance() == 300000000);
-#endif
 	}
 }
 
 TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	boost::filesystem::path	dbRoot = tryInitDatabasePath();
 
-#ifdef TEMPORARY_HD_STRATEGY
-	std::string payPassword = "payPassword";
-	boost::shared_ptr<Wallet::Listener> listener(new TestListener);
-	SharedWrapperList<Transaction, BRTransaction *> transactions;
-	boost::filesystem::path dbPath = dbRoot;
-	dbPath /= "test1.db";
-	boost::scoped_ptr<DatabaseManager> databaseManager(new DatabaseManager(dbPath));
-	SingleAddressWallet singleAddressWallet(transactions, createDummyPrivateKey(payPassword), payPassword,
-		databaseManager.get(), listener);
-
-	ELATransaction *transaction = new ELATransaction;
-	TransactionOutputPtr output(new TransactionOutput);
-	output->setAmount(100000000);
-	output->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
-	transaction->outputs.push_back(output);
-	transaction->raw.txHash = UINT256_ZERO;
-	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-	CMBlock code(10);
-	CMBlock parameter(10);
-	ProgramPtr program(new Program(code, parameter));
-	transaction->programs.push_back(program);
-	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction, false))));
-
-	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
-	REQUIRE(singleAddressWallet.getBalance() == 100000000);
-
-	REQUIRE(singleAddressWallet.registerTransaction(
-			TransactionPtr(new Transaction(transaction)))); //register the same transaction again
-	REQUIRE(singleAddressWallet.getAllAddresses().size() == 1);
-
-	//register the second transaction
-	ELATransaction *transaction2 = new ELATransaction;
-	TransactionOutputPtr output2(new TransactionOutput);
-	output2->setAmount(200000000);
-	output2->setAddress("ERZSVX4nPFXoAdm5GGkdDSGSjwTC9u41Ac");
-	transaction2->outputs.push_back(output2);
-	transaction2->raw.txHash = Utils::UInt256FromString(
-			"000000000000000002df2dd9d4fe0578392e519610e341dd09025469f101cfa1");
-	// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
-	CMBlock code2(10);
-	CMBlock parameter2(10);
-	ProgramPtr program2(new Program(code2, parameter2));
-	transaction2->programs.push_back(program2);
-	REQUIRE(singleAddressWallet.registerTransaction(TransactionPtr(new Transaction(transaction2))));
-
-	REQUIRE(singleAddressWallet.getBalance() == 300000000);
-#else
 	boost::shared_ptr<Wallet::Listener> listener(new TestListener);
 	SharedWrapperList<Transaction, BRTransaction *> transactions;
 	SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
@@ -283,5 +179,4 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	REQUIRE(singleAddressWallet.registerTransaction(tx2Ptr));
 
 	REQUIRE(singleAddressWallet.getBalance() == 300000000);
-#endif
 }

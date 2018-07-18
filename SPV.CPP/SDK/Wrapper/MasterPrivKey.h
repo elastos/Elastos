@@ -8,8 +8,6 @@
 #include "Key.h"
 #include "CMemBlock.h"
 
-//#define TEMPORARY_HD_STRATEGY
-
 namespace Elastos {
 	namespace ElaWallet {
 

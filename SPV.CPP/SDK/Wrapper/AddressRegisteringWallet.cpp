@@ -56,9 +56,7 @@ namespace Elastos {
 			array_new(wallet->Raw.utxos, 100);
 			array_new(wallet->Raw.transactions, 100);
 			wallet->Raw.feePerKb = DEFAULT_FEE_PER_KB;
-#ifdef TEMPORARY_HD_STRATEGY
-			wallet->Cache = nullptr;
-#endif
+
 			wallet->Raw.WalletUnusedAddrs = addressRegisteringWalletUnusedAddrs;
 			wallet->Raw.WalletAllAddrs = addressRegisteringWalletAllAddrs;
 			wallet->Raw.setApplyFreeTx = setApplyFreeTx;

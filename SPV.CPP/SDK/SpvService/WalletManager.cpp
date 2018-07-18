@@ -53,30 +53,6 @@ namespace Elastos {
 			init(earliestPeerTime, initialAddresses);
 		}
 
-#ifdef TEMPORARY_HD_STRATEGY
-
-		WalletManager::WalletManager(const MasterPrivKey &masterPrivKey,
-									 const boost::filesystem::path &dbPath,
-									 const nlohmann::json &peerConfig,
-									 const std::string &payPassword,
-									 uint32_t earliestPeerTime,
-									 bool singleAddress,
-									 int forkId,
-									 const ChainParams &chainParams) :
-				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(dbPath),
-				_forkId(forkId),
-				_peerConfig(peerConfig) {
-			init(nullptr, chainParams, earliestPeerTime, singleAddress);
-			_wallet = WalletPtr(!_singleAddress
-								? new Wallet(loadTransactions(), masterPrivKey, payPassword, &_databaseManager,
-											 createWalletListener())
-								: new SingleAddressWallet(loadTransactions(), masterPrivKey, payPassword,
-														  &_databaseManager, createWalletListener()));
-		}
-
-#endif
-
 		WalletManager::~WalletManager() {
 
 		}

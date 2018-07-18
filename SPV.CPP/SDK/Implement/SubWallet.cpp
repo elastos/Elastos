@@ -83,18 +83,9 @@ namespace Elastos {
 				masterPubKey.reset(new MasterPubKey(pubKey, Utils::UInt256FromString(_info.getChainCode())));
 			}
 
-#ifdef TEMPORARY_HD_STRATEGY
-			MasterPrivKey masterPrivKey;
-			masterPrivKey.SetChainCode(chainCode);
-			masterPrivKey.SetEncryptedKey(encryptedKey);
-			_walletManager = WalletManagerPtr(new WalletManager(masterPrivKey, subWalletDbPath, peerConfig, payPassword,
-																_info.getEarliestPeerTime(), _info.getSingleAddress(),
-																_info.getForkId(), chainParams));
-#else
 			_walletManager = WalletManagerPtr(
 					new WalletManager(masterPubKey, subWalletDbPath, peerConfig, _info.getEarliestPeerTime(),
 									  _info.getSingleAddress(), _info.getForkId(), pluginTypes, chainParams));
-#endif
 
 			_walletManager->registerWalletListener(this);
 			_walletManager->registerPeerManagerListener(this);

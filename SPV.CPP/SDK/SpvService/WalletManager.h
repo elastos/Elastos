@@ -46,17 +46,6 @@ namespace Elastos {
 						  const std::vector<std::string> &initialAddresses,
 						  const ChainParams &chainParams);
 
-#ifdef TEMPORARY_HD_STRATEGY
-			WalletManager(const MasterPrivKey &masterPrivKey,
-						  const boost::filesystem::path &dbPath,
-						  const nlohmann::json &peerConfig,
-						  const std::string &payPassword,
-						  uint32_t earliestPeerTime,
-						  bool singleAddress,
-						  int forkId,
-						  const ChainParams &chainParams);
-#endif
-
 			virtual ~WalletManager();
 
 			void start();

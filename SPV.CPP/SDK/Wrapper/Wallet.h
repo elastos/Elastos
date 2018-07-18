@@ -31,32 +31,7 @@ namespace Elastos {
 			BRWallet Raw;
 			typedef std::map<std::string, std::string> TransactionRemarkMap;
 			TransactionRemarkMap TxRemarkMap;
-
-#ifdef TEMPORARY_HD_STRATEGY
-			MasterPrivKey PrivKeyRoot;
-			std::string TemporaryPassword;
-			AddressCache *Cache;
-#endif
 		};
-
-#ifdef TEMPORARY_HD_STRATEGY
-		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, const MasterPrivKey &masterPrivKey,
-								const std::string &password, DatabaseManager *databaseManager,
-								size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
-															int internal),
-								size_t (*WalletAllAddrs)(BRWallet *wallet, BRAddress addrs[], size_t addrsCount),
-								void (*setApplyFreeTx)(void *info, void *tx),
-								void (*WalletUpdateBalance)(BRWallet *wallet),
-								int (*WalletContainsTx)(BRWallet *wallet, const BRTransaction *tx),
-								void (*WalletAddUsedAddrs)(BRWallet *wallet, const BRTransaction *tx),
-								BRTransaction *(*WalletCreateTxForOutputs)(BRWallet *wallet,
-																		   const BRTxOutput outputs[],
-																		   size_t outCount),
-								uint64_t (*WalletMaxOutputAmount)(BRWallet *wallet),
-								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
-								int (*TransactionIsSigned)(const BRTransaction *tx),
-								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
-#else
 
 		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
 								size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
@@ -73,8 +48,6 @@ namespace Elastos {
 								uint64_t (*WalletFeeForTx)(BRWallet *wallet, const BRTransaction *tx),
 								int (*TransactionIsSigned)(const BRTransaction *tx),
 								size_t (*KeyToAddress)(const BRKey *key, char *addr, size_t addrLen));
-
-#endif
 
 		void ELAWalletFree(ELAWallet *wallet, bool freeInternal = true);
 
@@ -107,19 +80,9 @@ namespace Elastos {
 
 		public:
 
-#ifdef TEMPORARY_HD_STRATEGY
-			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
-				   const MasterPrivKey &masterPrivKey,
-				   const std::string &payPassword,
-				   DatabaseManager *databaseManager,
-				   const boost::shared_ptr<Listener> &listener);
-#else
-
 			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 				   const MasterPubKeyPtr &masterPubKey,
 				   const boost::shared_ptr<Listener> &listener);
-
-#endif
 
 			virtual ~Wallet();
 

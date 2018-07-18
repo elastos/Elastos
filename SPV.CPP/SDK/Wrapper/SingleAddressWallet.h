@@ -12,32 +12,14 @@ namespace Elastos {
 
 		class SingleAddressWallet : public Wallet {
 		public:
-#ifdef TEMPORARY_HD_STRATEGY
-
-			SingleAddressWallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
-								const MasterPrivKey &masterPrivKey,
-								const std::string &payPassword,
-								DatabaseManager *databaseManager,
-								const boost::shared_ptr<Listener> &listener);
-
-#else
 			SingleAddressWallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 								const MasterPubKeyPtr &masterPubKey,
 								const boost::shared_ptr<Listener> &listener);
-#endif
 
 			virtual ~SingleAddressWallet();
 
 		private:
-#ifdef TEMPORARY_HD_STRATEGY
-
-			ELAWallet *
-			createSingleWallet(BRTransaction *transactions[], size_t txCount, const MasterPrivKey &masterPrivKey,
-							   DatabaseManager *databaseManager, const std::string &payPassword);
-
-#else
 			ELAWallet *createSingleWallet(BRTransaction *transactions[], size_t txCount, const BRMasterPubKey &mpk);
-#endif
 
 			static size_t singleAddressWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount);
 
