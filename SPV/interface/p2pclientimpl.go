@@ -28,7 +28,7 @@ func (c *P2PClientImpl) InitLocalPeer(initLocal func(peer *net.Peer)) {
 	// Create peer manager of the P2P network
 	local := new(net.Peer)
 	initLocal(local)
-	c.pm = net.InitPeerManager(c.magic, c.maxMsgSize, c.seeds, c.minOutbound, c.maxConnections, local)
+	c.pm = net.NewPeerManager(c.magic, c.maxMsgSize, c.seeds, c.minOutbound, c.maxConnections, local)
 }
 
 func (c *P2PClientImpl) SetMessageHandler(msgHandler net.MessageHandler) {

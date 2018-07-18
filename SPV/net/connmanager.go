@@ -12,8 +12,6 @@ import (
 const (
 	ConnTimeOut      = 5
 	HandshakeTimeout = 3
-	RetryDuration    = 15
-	MaxRetryCount    = 5
 )
 
 type ConnectionListener interface {
@@ -28,9 +26,6 @@ type ConnManager struct {
 	connectingLock *sync.RWMutex
 	connectingList map[string]string
 
-	retryLock *sync.RWMutex
-	retryList map[string]int
-
 	connsLock   *sync.RWMutex
 	handshakes  map[net.Conn]struct{}
 	connections map[string]net.Conn
@@ -44,8 +39,6 @@ func newConnManager(localPeer *Peer, maxConnections int, listener ConnectionList
 	cm.maxConnections = maxConnections
 	cm.connectingLock = new(sync.RWMutex)
 	cm.connectingList = make(map[string]string)
-	cm.retryLock = new(sync.RWMutex)
-	cm.retryList = make(map[string]int)
 	cm.connsLock = new(sync.RWMutex)
 	cm.handshakes = make(map[net.Conn]struct{})
 	cm.connections = make(map[string]net.Conn)
@@ -54,7 +47,7 @@ func newConnManager(localPeer *Peer, maxConnections int, listener ConnectionList
 }
 
 func (cm *ConnManager) Connect(addr string) {
-	if cm.isConnecting(addr) {
+	if cm.IsConnecting(addr) {
 		return
 	}
 
@@ -65,27 +58,23 @@ func (cm *ConnManager) Connect(addr string) {
 	cm.connectPeer(addr)
 }
 
-func (cm *ConnManager) isConnecting(addr string) bool {
+func (cm *ConnManager) IsConnecting(addr string) bool {
 	cm.connectingLock.RLock()
+	defer cm.connectingLock.RUnlock()
 	_, ok := cm.connectingList[addr]
-	cm.connectingLock.RUnlock()
 	return ok
 }
 
-func (cm *ConnManager) deConnecting(addr string) {
-	cm.retryLock.Lock()
-	delete(cm.retryList, addr)
-	cm.retryLock.Unlock()
-
+func (cm *ConnManager) DeConnecting(addr string) {
 	cm.connectingLock.Lock()
+	defer cm.connectingLock.Unlock()
 	delete(cm.connectingList, addr)
-	cm.connectingLock.Unlock()
 }
 
-func (cm *ConnManager) isConnected(addr string) bool {
+func (cm *ConnManager) IsConnected(addr string) bool {
 	cm.connsLock.RLock()
+	defer cm.connsLock.RUnlock()
 	_, ok := cm.connections[addr]
-	cm.connsLock.RUnlock()
 	return ok
 }
 
@@ -100,23 +89,22 @@ func (cm *ConnManager) connectPeer(addr string) {
 	conn, err := net.DialTimeout("tcp", addr, time.Second*ConnTimeOut)
 	if err != nil {
 		log.Error("Connect to addr ", addr, " failed, err", err)
-		cm.retry(addr)
 		return
 	}
 
 	// Start handshake
-	cm.startHandshake(conn)
+	cm.StartHandshake(conn)
 	// de connecting address
-	cm.deConnecting(addr)
+	cm.DeConnecting(addr)
 	// Callback connection
 	cm.listener.OnOutbound(conn)
 }
 
-func (cm *ConnManager) startHandshake(conn net.Conn) {
-	// Put into handshakes
+func (cm *ConnManager) StartHandshake(conn net.Conn) {
 	cm.connsLock.Lock()
+	defer cm.connsLock.Unlock()
+	// Put into handshakes
 	cm.handshakes[conn] = struct{}{}
-	cm.connsLock.Unlock()
 
 	// Close handshake timeout connections
 	go cm.handleTimeout(conn)
@@ -142,7 +130,7 @@ func (cm *ConnManager) PeerConnected(addr string, conn net.Conn) {
 }
 
 func (cm *ConnManager) PeerDisconnected(addr string) {
-	cm.deConnecting(addr)
+	cm.DeConnecting(addr)
 
 	cm.connsLock.Lock()
 	if conn, ok := cm.connections[addr]; ok {
@@ -150,28 +138,6 @@ func (cm *ConnManager) PeerDisconnected(addr string) {
 		delete(cm.connections, addr)
 	}
 	cm.connsLock.Unlock()
-}
-
-func (cm *ConnManager) retry(addr string) {
-	cm.retryLock.RLock()
-	retryTimes, ok := cm.retryList[addr]
-	if !ok {
-		retryTimes = 0
-	} else {
-		retryTimes += 1
-	}
-	cm.retryLock.RUnlock()
-	log.Debugf("Put %s into retry queue, %d times", addr, retryTimes)
-	if retryTimes > MaxRetryCount {
-		cm.deConnecting(addr)
-		return
-	}
-	cm.retryLock.Lock()
-	cm.retryList[addr] = retryTimes
-	cm.retryLock.Unlock()
-
-	time.Sleep(time.Second * RetryDuration)
-	cm.connectPeer(addr)
 }
 
 func (cm *ConnManager) listenConnection() {
@@ -190,7 +156,7 @@ func (cm *ConnManager) listenConnection() {
 		}
 		log.Debugf("New connection accepted, remote: %s local: %s\n", conn.RemoteAddr(), conn.LocalAddr())
 
-		cm.startHandshake(conn)
+		cm.StartHandshake(conn)
 		cm.listener.OnInbound(conn)
 	}
 }

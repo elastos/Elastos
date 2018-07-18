@@ -28,7 +28,7 @@ func NewP2PClientImpl(magic, maxMsgSize uint32, clientId uint64, seeds []string,
 	client := new(P2PClientImpl)
 
 	// Initialize peer manager
-	client.peerManager = net.InitPeerManager(magic, maxMsgSize, seeds, minOutbound, maxConnections, local)
+	client.peerManager = net.NewPeerManager(magic, maxMsgSize, seeds, minOutbound, maxConnections, local)
 
 	return client, nil
 }

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"sync"
 )
 
 const (
@@ -47,7 +47,7 @@ type PeerManager struct {
 	cm *ConnManager
 }
 
-func InitPeerManager(magic, maxMsgSize uint32, seeds []string, minOutbound, maxConnections int, localPeer *Peer) *PeerManager {
+func NewPeerManager(magic, maxMsgSize uint32, seeds []string, minOutbound, maxConnections int, localPeer *Peer) *PeerManager {
 	// Initiate PeerManager
 	pm := new(PeerManager)
 	pm.magic = magic
@@ -142,7 +142,7 @@ func (pm *PeerManager) connectPeers() {
 	// connect seeds first
 	if pm.PeersCount() < MinConnections {
 		for _, addr := range pm.seeds {
-			if pm.cm.isConnected(addr) {
+			if pm.cm.IsConnected(addr) {
 				continue
 			}
 			go pm.cm.Connect(addr)
