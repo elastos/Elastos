@@ -10,6 +10,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"sync"
 )
 
 const (
@@ -38,6 +39,8 @@ type PeerManager struct {
 	magic      uint32
 	maxMsgSize uint32
 	seeds      []string
+
+	lock *sync.Mutex
 	*Peers
 	MessageHandler
 	am *AddrManager
@@ -50,6 +53,7 @@ func InitPeerManager(magic, maxMsgSize uint32, seeds []string, minOutbound, maxC
 	pm.magic = magic
 	pm.maxMsgSize = maxMsgSize
 	pm.seeds = seeds
+	pm.lock = new(sync.Mutex)
 	pm.Peers = newPeers(localPeer)
 	pm.am = newAddrManager(minOutbound)
 	pm.cm = newConnManager(localPeer, maxConnections, pm)
@@ -99,6 +103,8 @@ func (pm *PeerManager) OnInbound(conn net.Conn) {
 }
 
 func (pm *PeerManager) AddConnectedPeer(peer *Peer) {
+	pm.lock.Lock()
+	defer pm.lock.Unlock()
 	log.Trace("PeerManager add connected peer:", peer)
 	// Add peer to list
 	pm.Peers.AddPeer(peer)
@@ -112,8 +118,10 @@ func (pm *PeerManager) OnDisconnected(peer *Peer) {
 	if peer == nil {
 		return
 	}
+	pm.lock.Lock()
+	defer pm.lock.Unlock()
 	log.Trace("PeerManager peer disconnected:", peer.String())
-	peer, ok := pm.RemovePeer(peer.ID())
+	peer, ok := pm.Peers.RemovePeer(peer.ID())
 	if ok {
 		na := peer.Addr()
 		addr := na.String()
