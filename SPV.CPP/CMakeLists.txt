@@ -35,11 +35,11 @@ if(SPV_FOR_ANDROID)
 	set(CMAKE_ANDROID_NDK $ENV{ANDROID_NDK})
 	set(CMAKE_ANDROID_NDK_TOOLCHAIN_VERSION clang)
 
-	# can be value below: arm64-v8a armeabi-v7a armeabi-v6 armeabi x86 x86_64
+	# can be value below: arm64-v8a armeabi-v7a armeabi mips mips64 x86 x86_64
 	if(NOT DEFINED CMAKE_ANDROID_ARCH_ABI)
 		set(CMAKE_ANDROID_ARCH_ABI armeabi-v7a CACHE STRING "Android ABI (architecture)" FORCE)
 	endif()
-	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS arm64-v8a armeabi-v7a armeabi-v6 armeabi x86 x86_64)
+	set_property(CACHE CMAKE_ANDROID_ARCH_ABI PROPERTY STRINGS arm64-v8a armeabi-v7a armeabi mips mips64 x86 x86_64)
 endif()
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
