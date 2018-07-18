@@ -4,6 +4,7 @@
 
 #include <climits>
 #include <algorithm>
+#include <set>
 #include "Core/BRArray.h"
 
 #include "AddressRegisteringWallet.h"
@@ -83,13 +84,13 @@ namespace Elastos {
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, nullptr, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
 			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, nullptr, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 
-			std::vector<std::string> uniqueAddress = initialAddrs;
-			std::sort(uniqueAddress.begin(), uniqueAddress.end());
-			uniqueAddress.erase(std::unique(uniqueAddress.begin(), uniqueAddress.end()), uniqueAddress.end());
-			for (size_t i = 0; i < uniqueAddress.size(); ++i) {
-				Address addr(uniqueAddress[i]);
+			std::set<std::string> uniqueAddress(initialAddrs.cbegin(), initialAddrs.cend());
+			int index = 0;
+			for (std::set<std::string>::iterator it = uniqueAddress.begin(); it != uniqueAddress.end(); ++it) {
+				Address addr(*it);
 				array_add(wallet->Raw.externalChain, *addr.getRaw());
-				BRSetAdd(wallet->Raw.allAddrs, &wallet->Raw.externalChain[i]);
+				BRSetAdd(wallet->Raw.allAddrs, &wallet->Raw.externalChain[index]);
+				index++;
 			}
 
 			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();

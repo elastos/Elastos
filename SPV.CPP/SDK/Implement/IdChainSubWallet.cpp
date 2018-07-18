@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <set>
 #include <boost/scoped_ptr.hpp>
 
 #include "ELACoreExt/ELATxOutput.h"
@@ -9,11 +10,14 @@
 #include "ELACoreExt/ELATransaction.h"
 
 #include "Utils.h"
+#include "MasterWallet.h"
 #include "IdChainSubWallet.h"
 #include "Utils.h"
 #include "SubWalletCallback.h"
 #include "Transaction/IdchainTransactionChecker.h"
 #include "Transaction/IdchainTransactionCompleter.h"
+
+#define ID_REGISTER_BUFFER_COUNT 100
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -23,6 +27,16 @@ namespace Elastos {
 										   MasterWallet *parent) :
 				SidechainSubWallet(info, chainParams, payPassword, pluginTypes, parent) {
 
+			std::vector<std::string> registeredIds = _parent->GetAllIds();
+
+			uint32_t purpose = (uint32_t) info.getIndex();
+			std::set<std::string> bufferIds(registeredIds.begin(), registeredIds.end());
+			for (int i = 0; i < registeredIds.size() + ID_REGISTER_BUFFER_COUNT; ++i) {
+				bufferIds.insert(_parent->DeriveIdAndKeyForPurpose(purpose, i));
+			}
+
+			std::vector<std::string> addrs(bufferIds.begin(), bufferIds.end());
+			_walletManager->getWallet()->initListeningAddresses(addrs);
 		}
 
 		IdChainSubWallet::~IdChainSubWallet() {
