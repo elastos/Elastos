@@ -688,6 +688,28 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 	return ResponsePack(Success, balance.String())
 }
 
+func GetReceivedByAddress(param Params) map[string]interface{} {
+	address, ok := param.String("address")
+	if !ok {
+		return ResponsePack(InvalidParams, "need a parameter named address")
+	}
+	programHash, err := Uint168FromAddress(address)
+	if err != nil {
+		return ResponsePack(InvalidParams, "Invalid address: "+address)
+	}
+	UTXOsWithAssetID, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	if err != nil {
+		return ResponsePack(InvalidParams, err)
+	}
+	UTXOs := UTXOsWithAssetID[chain.DefaultLedger.Blockchain.AssetID]
+	var totalValue Fixed64
+	for _, unspent := range UTXOs {
+		totalValue += unspent.Value
+	}
+
+	return ResponsePack(Success, totalValue.String())
+}
+
 func ListUnspent(param Params) map[string]interface{} {
 	bestHeight := chain.DefaultLedger.Blockchain.GetBestHeight()
 

@@ -388,6 +388,33 @@ result sample:
 }
 ```
 
+#### getreceivedbyaddress
+description: get the balance of a address
+
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| address | string | address |
+
+result: the balance of the address
+
+argument sample:
+```json
+{
+	"method":"getreceivedbyaddress",
+	"params":{"address":"8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"}
+}
+```
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": "33000000"
+}
+```
 #### listunspent
 
 description: list all utxo of given addresses 
