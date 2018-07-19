@@ -782,7 +782,6 @@ namespace Elastos {
 
 			for (i = 0; i < array_count(wallet->transactions); i++) {
 				tx = (ELATransaction *) wallet->transactions[i];
-				if (tx->type == ELATransaction::RegisterIdentification) continue;
 
 				// check if any inputs are invalid or already spent
 				if (tx->raw.blockHeight == TX_UNCONFIRMED) {
@@ -1052,8 +1051,6 @@ namespace Elastos {
 
 			for (size_t i = array_count(wallet->transactions); tx && i > 0; i--) {
 				if (! BRTransactionEq(tx, wallet->transactions[i - 1])) continue;
-				ELATransaction *elaTransaction = (ELATransaction *)wallet->transactions[i - 1];
-				if (elaTransaction->type == ELATransaction::RegisterIdentification) continue;
 
 				balance = wallet->balanceHist[i - 1];
 				break;
