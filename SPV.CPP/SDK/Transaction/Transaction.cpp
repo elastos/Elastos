@@ -248,15 +248,22 @@ namespace Elastos {
 				j = 0;
 				while (j < keysCount && !BRAddressEq(&addrs[j], &address)) j++;
 				if (j >= keysCount) continue;
+				Program *program = nullptr;
+				Address tempAddr(address.s);
+				int signType = tempAddr.getSignType();
+				std::string redeemScript = keys[j].keyToRedeemScript(signType);
+				CMBlock code = Utils::decodeHex(redeemScript);
+				if (_transaction->type == ELATransaction::Type::RegisterIdentification ||
+				    i >= _transaction->programs.size()) {
 
-				if (i >= _transaction->programs.size()) {
-					std::string redeemScript = keys[j].keyToRedeemScript(ELA_STANDARD);
-					CMBlock code = Utils::decodeHex(redeemScript);
-					Program *program(new Program());
-					program->setCode(code);
-					_transaction->programs.push_back(program);
+					Program *newProgram(new Program());
+					newProgram->setCode(code);
+					_transaction->programs.push_back(newProgram);
+					program = newProgram;
+
+				} else if (i < _transaction->programs.size()) {
+					program = _transaction->programs[i];
 				}
-				Program *program = _transaction->programs[i];
 
 				SPDLOG_DEBUG(Log::getLogger(),"Transaction transactionSign begin sign the {} input.", i);
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
@@ -337,6 +344,29 @@ namespace Elastos {
 			return _transaction->programs;
 		}
 
+		void Transaction::clearPrograms() {
+			for (size_t i = 0; i < _transaction->programs.size(); ++i) {
+				delete _transaction->programs[i];
+			}
+			_transaction->programs.clear();
+		}
+
+		void Transaction::removeDuplicatePrograms() {
+			std::map<std::string, Program *> programMap;
+
+			for (std::vector<Program *>::iterator iter = _transaction->programs.begin();
+					iter != _transaction->programs.end();) {
+				Program *program = *iter;
+				std::string key = Utils::encodeHex(program->getCode());
+				if (programMap.find(key) == programMap.end()) {
+					programMap[key] = program;
+					++iter;
+				} else {
+					iter = _transaction->programs.erase(iter);
+					delete program;
+				}
+			}
+		}
 
 		const std::string Transaction::getRemark() const {
 			return _transaction->Remark;
@@ -573,6 +603,7 @@ namespace Elastos {
 			_transaction->type = ELATransaction::Type(jsonData["Type"].get<uint8_t>());
 			_transaction->payloadVersion = jsonData["PayloadVersion"];
 
+			delete _transaction->payload;
 			_transaction->payload = newPayload(_transaction->type);
 			if (_transaction->payload == nullptr) {
 				Log::getLogger()->error("payload is nullptr when convert from json");

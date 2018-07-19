@@ -154,6 +154,7 @@ static void verifyELATransaction(const ELATransaction *tx1, const ELATransaction
 }
 
 TEST_CASE("Transaction Serialize and Deserialize", "[Transaction]") {
+	srand(time(nullptr));
 
 	SECTION("transaction Serialize test") {
 		ELATransaction *tx = createELATransaction();
@@ -203,6 +204,7 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 		ela->type = ELATransaction::Type::TransferAsset;// ELATransaction::Type(rand() % ELATransaction::Type::TypeMaxCount);
 		ela->payloadVersion = rand() % sizeof(ela->payloadVersion);
 		ela->fee = rand();
+		delete ela->payload;
 		ela->payload = ELAPayloadNew(ela->type);
 
 		for (size_t i = 0; i < 4; ++i) {
@@ -224,5 +226,85 @@ TEST_CASE("Convert to and from json", "[Transaction]") {
 		txn.fromJson(txJson);
 
 		// TODO [heropan] complete me later
+	}
+}
+
+TEST_CASE("public function test", "[Transaction]") {
+	srand(time(nullptr));
+
+	SECTION("removeDuplicatePrograms test") {
+		SECTION("situation 1") {
+			Transaction tx;
+			for (size_t i = 0; i < 20; ++i) {
+				CMBlock code = getRandCMBlock(25);
+				CMBlock parameter = getRandCMBlock(25);
+				Program *program = new Program(code, parameter);
+				tx.addProgram(program);
+			}
+
+			REQUIRE(tx.getPrograms().size() == 20);
+
+			tx.addProgram(new Program(*tx.getPrograms()[0]));
+			tx.addProgram(new Program(*tx.getPrograms()[1]));
+			tx.addProgram(new Program(*tx.getPrograms()[1]));
+			tx.addProgram(new Program(*tx.getPrograms()[3]));
+			tx.addProgram(new Program(*tx.getPrograms()[5]));
+			tx.addProgram(new Program(*tx.getPrograms()[7]));
+			tx.addProgram(new Program(*tx.getPrograms()[19]));
+
+			REQUIRE(tx.getPrograms().size() == 27);
+
+			for (size_t i = 0; i < 20; ++i) {
+				CMBlock code = getRandCMBlock(25);
+				CMBlock parameter = getRandCMBlock(25);
+				Program *program = new Program(code, parameter);
+				tx.addProgram(program);
+			}
+
+			REQUIRE(tx.getPrograms().size() == 47);
+
+			tx.removeDuplicatePrograms();
+
+			REQUIRE(tx.getPrograms().size() == 40);
+		}
+
+		SECTION("situation 2") {
+			Transaction tx;
+			for (size_t i = 0; i < 20; ++i) {
+				CMBlock code = getRandCMBlock(25);
+				CMBlock parameter = getRandCMBlock(25);
+				Program *program = new Program(code, parameter);
+				tx.addProgram(program);
+			}
+
+			REQUIRE(tx.getPrograms().size() == 20);
+
+			for (size_t i = 0; i < 20; ++i) {
+				tx.addProgram(new Program(*tx.getPrograms()[i]));
+			}
+
+			REQUIRE(tx.getPrograms().size() == 40);
+
+			tx.removeDuplicatePrograms();
+
+			REQUIRE(tx.getPrograms().size() == 20);
+		}
+
+		SECTION("situation 3") {
+			Transaction tx;
+			for (size_t i = 0; i < 20; ++i) {
+				CMBlock code = getRandCMBlock(25);
+				CMBlock parameter = getRandCMBlock(25);
+				Program *program = new Program(code, parameter);
+				tx.addProgram(program);
+			}
+
+			REQUIRE(tx.getPrograms().size() == 20);
+
+			tx.removeDuplicatePrograms();
+
+			REQUIRE(tx.getPrograms().size() == 20);
+		}
+
 	}
 }

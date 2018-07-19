@@ -216,6 +216,7 @@ namespace Elastos {
 		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														  const std::string &payPassword) {
 			signTransaction(transaction, _info.getForkId(), payPassword);
+			transaction->removeDuplicatePrograms();
 			publishTransaction(transaction);
 
 			nlohmann::json j;
