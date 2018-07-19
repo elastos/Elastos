@@ -89,7 +89,7 @@ namespace Elastos {
 			nlohmann::json sendingTx = transaction->toJson();
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
-			Log::getLogger()->info("Sending transaction, json info: {}, hex String: {}",
+			SPDLOG_DEBUG(Log::getLogger(),"Sending transaction, json info: {}, hex String: {}",
 				sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
 
 			getPeerManager()->publishTransaction(transaction);

@@ -114,7 +114,8 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+		void
+		CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 
 		}
 
@@ -180,10 +181,10 @@ namespace Elastos {
 				_listener->syncStarted();
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (syncStarted) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (syncStarted) error.");
 			}
 		}
 
@@ -192,10 +193,10 @@ namespace Elastos {
 				_listener->syncStopped(error);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (syncStopped) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (syncStopped) error.");
 			}
 		}
 
@@ -204,10 +205,10 @@ namespace Elastos {
 				_listener->txStatusUpdate();
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (txStatusUpdate) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (txStatusUpdate) error.");
 			}
 		}
 
@@ -219,10 +220,10 @@ namespace Elastos {
 				_listener->saveBlocks(replace, blocks);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (saveBlocks) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (saveBlocks) error.");
 			}
 		}
 
@@ -233,10 +234,10 @@ namespace Elastos {
 				_listener->savePeers(replace, peers);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (savePeers) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (savePeers) error.");
 			}
 		}
 
@@ -245,10 +246,10 @@ namespace Elastos {
 				return _listener->networkIsReachable();
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (networkIsReachable) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (networkIsReachable) error.");
 			}
 
 			return false;
@@ -259,10 +260,10 @@ namespace Elastos {
 				_listener->txPublished(error);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (txPublished) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (txPublished) error.");
 			}
 		}
 
@@ -271,10 +272,10 @@ namespace Elastos {
 				_listener->blockHeightIncreased(blockHeight);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error.");
 			}
 		}
 
@@ -415,10 +416,10 @@ namespace Elastos {
 				_listener->balanceChanged(balance);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Wallet callback (balanceChanged) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::error("Wallet callback (balanceChanged) error.");
 			}
 		}
 
@@ -427,10 +428,10 @@ namespace Elastos {
 				return _listener->onTxAdded(transaction);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Wallet callback (onTxAdded) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::error("Wallet callback (onTxAdded) error.");
 			}
 		}
 
@@ -441,10 +442,10 @@ namespace Elastos {
 				_listener->onTxUpdated(hash, blockHeight, timeStamp);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Wallet callback (onTxUpdated) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::error("Wallet callback (onTxUpdated) error.");
 			}
 		}
 
@@ -455,10 +456,10 @@ namespace Elastos {
 				_listener->onTxDeleted(hash, notifyUser, recommendRescan);
 			}
 			catch (std::exception ex) {
-				Log::trace(ex.what());
+				Log::getLogger()->error("Wallet callback (onTxDeleted) error: {}", ex.what());
 			}
 			catch (...) {
-				Log::trace("Unknown exception.");
+				Log::error("Wallet callback (onTxDeleted) error.");
 			}
 		}
 

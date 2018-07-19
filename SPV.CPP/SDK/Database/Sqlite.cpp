@@ -171,7 +171,7 @@ namespace Elastos {
 
 			boost::filesystem::path parentPath = path.parent_path();
 			if (!parentPath.empty() && !boost::filesystem::exists(parentPath)) {
-				Log::getLogger()->warn("directory \"{}\" do not exist", parentPath.string());
+				SPDLOG_TRACE(Log::getLogger(), "directory \"{}\" do not exist", parentPath.string());
 				if (!boost::filesystem::create_directories(parentPath)) {
 					Log::getLogger()->error("create directory \"{}\" error", parentPath.string());
 					return false;

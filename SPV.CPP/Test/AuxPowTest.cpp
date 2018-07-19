@@ -22,7 +22,7 @@ TEST_CASE("AuxPow test", "[AuxPow]") {
 
 		nlohmann::json auxPowJson = auxPow.toJson();
 
-		//Log::getLogger()->info("auxPow json = {}", auxPowJson.dump());
+		//SPDLOG_DEBUG(Log::getLogger(),"auxPow json = {}", auxPowJson.dump());
 
 		/* from json and verify */
 		AuxPow auxPowVerify;

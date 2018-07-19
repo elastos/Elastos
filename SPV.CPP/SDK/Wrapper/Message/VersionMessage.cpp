@@ -43,7 +43,7 @@ namespace Elastos {
 		}
 
 		void VersionMessage::Send(BRPeer *peer) {
-			peer_log(peer, "%s", "VersionMessage.Send");
+			peer_dbg(peer, "%s", "VersionMessage.Send");
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 			size_t off = 0;
 			uint8_t msg[35];

@@ -151,6 +151,7 @@ endif(SPV_BUILD_SHARED_LIB)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_DEBUG_ON)
 endif()
+add_definitions(-DSPDLOG_TRACE_ON)
 
 add_subdirectory(ThirdParty)
 add_subdirectory(Core)

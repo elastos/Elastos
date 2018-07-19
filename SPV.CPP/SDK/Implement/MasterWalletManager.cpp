@@ -88,29 +88,29 @@ namespace Elastos {
 
 			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
 			if (saveMaster) {
-				Log::getLogger()->info("[MasterWalletManager::removeWallet] Begin save ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Begin save ({}).", masterWalletId);
 				masterWalletInner->Save();
-				Log::getLogger()->info("[MasterWalletManager::removeWallet] End save ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] End save ({}).", masterWalletId);
 			} else {
-				Log::getLogger()->info("[MasterWalletManager::removeWallet] Begin clear local ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Begin clear local ({}).", masterWalletId);
 				masterWalletInner->ClearLocal();
-				Log::getLogger()->info("[MasterWalletManager::removeWallet] End clear local ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] End clear local ({}).", masterWalletId);
 			}
 
-			Log::getLogger()->info("[MasterWalletManager::removeWallet] Begin destroy sub wallets ({}).",
+			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Begin destroy sub wallets ({}).",
 								   masterWalletId);
 			std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 			for (int i = 0; i < subWallets.size(); ++i) {
 				masterWallet->DestroyWallet(subWallets[i]);
 			}
-			Log::getLogger()->info("[MasterWalletManager::removeWallet] End destroy sub wallets of ({}).",
+			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] End destroy sub wallets of ({}).",
 								   masterWalletId);
 
-			Log::getLogger()->info("[MasterWalletManager::removeWallet] Removing master wallet from map ({}).",
+			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Removing master wallet from map ({}).",
 								   masterWalletId);
 			_masterWalletMap.erase(masterWalletId);
 
-			Log::getLogger()->info("[MasterWalletManager::removeWallet] Deleting master wallet ({}).", masterWalletId);
+			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Deleting master wallet ({}).", masterWalletId);
 			delete masterWallet;
 		}
 

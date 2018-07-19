@@ -98,7 +98,7 @@ TEST_CASE("IdAuxPow test", "[IdAuxPow]") {
 //		ByteStream stream;
 //		idAuxPow.Serialize(stream);
 
-//		Log::getLogger()->info("idAuxPow serialization = {}", Utils::encodeHex(stream.getBuffer()));
+//		SPDLOG_DEBUG(Log::getLogger(),"idAuxPow serialization = {}", Utils::encodeHex(stream.getBuffer()));
 
 		// verify
 //		IdAuxPow idAuxPowVerify;

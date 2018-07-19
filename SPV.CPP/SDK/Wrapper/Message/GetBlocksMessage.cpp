@@ -35,7 +35,7 @@ namespace Elastos {
 			off += sizeof(UInt256);
 
 			if (locatorsCount > 0) {
-				peer_log(peer, "calling getblocks with %zu locators: [%s,%s %s]",
+				peer_dbg(peer, "calling getblocks with %zu locators: [%s,%s %s]",
 									   locatorsCount,
 									   Utils::UInt256ToString(locators[0]).c_str(),
 									   (locatorsCount > 2 ? " ...," : ""),

@@ -54,15 +54,15 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 		sleep(10);
 		subWallet->GetAllTransaction(0, 20, "");
 		elaWallet->GetAllTransaction(0, 20, "");
-		Log::getLogger()->info("IdChain wallet balance = {}", subWallet->GetBalance());
-		Log::getLogger()->info("ELA wallet balance = {}", elaWallet->GetBalance());
+		SPDLOG_DEBUG(Log::getLogger(),"IdChain wallet balance = {}", subWallet->GetBalance());
+		SPDLOG_DEBUG(Log::getLogger(),"ELA wallet balance = {}", elaWallet->GetBalance());
 
 #if 0
 		if (balance > 1000000 && !hasSentTransaction) {
 			try {
 				nlohmann::json tx = subWallet->CreateTransaction("EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", balance / 2, 100000, "", "");
 				nlohmann::json result = subWallet->SendRawTransaction(tx, 100000, payPassword);
-				Log::getLogger()->info("send tx result = {}", result.dump());
+				SPDLOG_DEBUG(Log::getLogger(),"send tx result = {}", result.dump());
 			} catch (std::exception e) {
 				Log::getLogger()->error("send transaction from EZ3PoRzcr95ADMrDLCDb8DQAMRs7j8DkB2 to ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork error: {}", e.what());
 			}

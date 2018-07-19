@@ -65,7 +65,7 @@ namespace Elastos {
 					hasChange = true;
 				} else {
 					if (hasOutput) //todo we support only one output, modify this if we support multi-output later
-						Log::warn("Transaction outputs have multiple outcoming output.");
+						SPDLOG_TRACE(Log::getLogger(), "Transaction outputs have multiple outcoming output.");
 //						return false;
 //					if (!Address::isValidProgramHash(output->getProgramHash(), transaction->getTransactionType())) {
 //						return false;
@@ -79,9 +79,9 @@ namespace Elastos {
 			}
 
 			if (hasChange)
-				Log::warn("Transaction outputs have multiple change output.");
+				SPDLOG_TRACE(Log::getLogger(), "Transaction outputs have multiple change output.");
 			if (!hasOutput)
-				Log::warn("Transaction has no outcoming output.");
+				SPDLOG_TRACE(Log::getLogger(), "Transaction has no outcoming output.");
 
 			return true;
 		}
