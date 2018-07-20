@@ -188,7 +188,8 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	if !ok {
 		return ResponsePack(InvalidParams, "parameter blockhash not found")
 	}
-	if _, ok := LocalPow.MsgBlock.BlockData[blockHash]; !ok {
+	var msgAuxBlock *Block
+	if msgAuxBlock, ok = LocalPow.MsgBlock.BlockData[blockHash]; !ok {
 		log.Trace("[json-rpc:SubmitAuxBlock] block hash unknown", blockHash)
 		return ResponsePack(InternalError, "block hash unknown")
 	}
@@ -205,12 +206,14 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 		return ResponsePack(InternalError, "auxpow deserialization failed")
 	}
 
-	LocalPow.MsgBlock.BlockData[blockHash].Header.AuxPow = aux
-	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
+	msgAuxBlock.Header.AuxPow = aux
+	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(msgAuxBlock)
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "adding block failed")
 	}
+
+	LocalPow.BroadcastBlock(msgAuxBlock)
 
 	LocalPow.MsgBlock.Mutex.Lock()
 	for key := range LocalPow.MsgBlock.BlockData {
