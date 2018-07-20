@@ -186,30 +186,30 @@ func SetLogLevel(param Params) map[string]interface{} {
 func SubmitAuxBlock(param Params) map[string]interface{} {
 	blockHash, ok := param.String("blockhash")
 	if !ok {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "parameter blockhash not found")
 	}
 	if _, ok := LocalPow.MsgBlock.BlockData[blockHash]; !ok {
-		log.Trace("[json-rpc:SubmitAuxBlock] receive invalid block hash value:", blockHash)
-		return ResponsePack(InvalidParams, "")
+		log.Trace("[json-rpc:SubmitAuxBlock] block hash unknown", blockHash)
+		return ResponsePack(InternalError, "block hash unknown")
 	}
 
 	auxPow, ok := param.String("auxpow")
 	if !ok {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "parameter auxpow not found")
 	}
 
 	var aux aux.AuxPow
 	buf, _ := HexStringToBytes(auxPow)
 	if err := aux.Deserialize(bytes.NewReader(buf)); err != nil {
-		log.Trace("[json-rpc:SubmitAuxBlock] can not resolve auxpow parameter: ", auxPow)
-		return ResponsePack(InvalidParams, "can not resolve auxpow parameter")
+		log.Trace("[json-rpc:SubmitAuxBlock] auxpow deserialization failed", auxPow)
+		return ResponsePack(InternalError, "auxpow deserialization failed")
 	}
 
 	LocalPow.MsgBlock.BlockData[blockHash].Header.AuxPow = aux
 	_, _, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
-		return ResponsePack(InternalError, "")
+		return ResponsePack(InternalError, "adding block failed")
 	}
 
 	LocalPow.MsgBlock.Mutex.Lock()
@@ -220,7 +220,7 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	log.Trace("AddBlock called finished and LocalPow.MsgBlock.BlockData has been deleted completely")
 
 	log.Info(auxPow, blockHash)
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, true)
 }
 
 func GenerateAuxBlock(addr string) (*Block, string, bool) {
