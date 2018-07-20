@@ -389,7 +389,7 @@ result sample:
 ```
 
 #### getreceivedbyaddress
-description: get the balance of a address
+description: get the balance of an address
 
 parameters:
 
