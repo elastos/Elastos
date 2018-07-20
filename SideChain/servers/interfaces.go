@@ -304,11 +304,16 @@ func SubmitSideAuxBlock(param Params) map[string]interface{} {
 		return ResponsePack(InternalError, "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
-	_, _, err = chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
+	inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "")
 	}
+
+	if isOrphan || !inMainChain {
+		return ResponsePack(InternalError, "")
+	}
+	LocalPow.BroadcastBlock(LocalPow.MsgBlock.BlockData[blockHash])
 
 	LocalPow.MsgBlock.Mutex.Lock()
 	for key := range LocalPow.MsgBlock.BlockData {
