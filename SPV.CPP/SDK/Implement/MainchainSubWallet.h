@@ -22,7 +22,6 @@ namespace Elastos {
 					const nlohmann::json &sidechainAccounts,
 					const nlohmann::json &sidechainAmounts,
 					const nlohmann::json &sidechainIndices,
-					uint64_t fee,
 					const std::string &memo,
 					const std::string &remark);
 

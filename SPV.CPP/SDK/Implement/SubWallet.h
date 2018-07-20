@@ -29,8 +29,6 @@ namespace Elastos {
 
 			const WalletManagerPtr &GetWalletManager() const;
 
-			void ResetAddressCache(const std::string &payPassword);
-
 		public: //implement ISubWallet
 			virtual std::string GetChainId() const;
 
@@ -53,7 +51,6 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					uint64_t fee,
 					const std::string &memo,
 					const std::string &remark);
 
@@ -66,7 +63,6 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					uint64_t fee,
 					const std::string &memo);
 
 			virtual nlohmann::json SendRawTransaction(

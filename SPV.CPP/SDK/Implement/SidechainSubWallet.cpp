@@ -33,11 +33,10 @@ namespace Elastos {
 																	 const nlohmann::json &mainchainAccounts,
 																	 const nlohmann::json &mainchainAmounts,
 																	 const nlohmann::json &mainchainIndexs,
-																	 uint64_t fee,
 																	 const std::string &memo,
 																	 const std::string &remark) {
-			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount, fee, memo, remark));
+			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount,
+																			 _info.getMinFee(), memo, remark));
 
 			ParamChecker::checkJsonArrayNotEmpty(mainchainAccounts);
 			ParamChecker::checkJsonArrayNotEmpty(mainchainAmounts);

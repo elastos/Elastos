@@ -107,10 +107,6 @@ namespace Elastos {
 			return _walletManager;
 		}
 
-		void SubWallet::ResetAddressCache(const std::string &payPassword) {
-			_walletManager->getWallet()->resetAddressCache(payPassword);
-		}
-
 		nlohmann::json SubWallet::GetBalanceInfo() {
 			return _walletManager->getWallet()->GetBalanceInfo();
 		}
@@ -148,10 +144,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::CreateTransaction(const std::string &fromAddress, const std::string &toAddress,
-													uint64_t amount, uint64_t fee, const std::string &memo,
+													uint64_t amount, const std::string &memo,
 													const std::string &remark) {
-			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount, fee, memo, remark));
+			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount,
+																			 _info.getMinFee(), memo, remark));
 			TransactionPtr transaction = createTransaction(txParam.get());
 			if (!transaction)
 				throw std::logic_error("create transaction error.");
@@ -386,7 +382,7 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::CreateMultiSignTransaction(const std::string &fromAddress,
 															 const std::string &toAddress, uint64_t amount,
-															 uint64_t fee, const std::string &memo) {
+															 const std::string &memo) {
 			//todo complete me
 			return nlohmann::json();
 		}

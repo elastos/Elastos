@@ -25,7 +25,6 @@ namespace Elastos {
 			 * @param mainchainAccounts a list of mainchain accounts in json format.
 			 * @param mainchainAmounts a list of mainchain amounts in json format, each amount should correspond to \p mainchainAccounts by order.
 			 * @param mainchainIndexs a list of mainchain indices in json format, each index should correspond to \p mainchainAccounts by order.
-			 * @param fee [Obsoleted] specify fee for miners.
 			 * @param memo input memo attribute for describing.
 			 * @param remark is used to record message of local wallet.
 			 * @return If success return the content of transaction in json format.
@@ -37,7 +36,6 @@ namespace Elastos {
 					const nlohmann::json& mainchainAccounts,
 					const nlohmann::json& mainchainAmounts,
 					const nlohmann::json &mainchainIndexs,
-					uint64_t fee,
 					const std::string &memo,
 					const std::string &remark) = 0;
 

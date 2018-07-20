@@ -975,9 +975,6 @@ namespace Elastos {
 			return _wallet->Raw.blockHeight;
 		}
 
-		void Wallet::resetAddressCache(const std::string &payPassword) {
-		}
-
 		size_t Wallet::WalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal) {
 			BRAddress *addrChain, emptyAddress = BR_ADDRESS_NONE;
 			size_t i, j = 0, count, startCount;

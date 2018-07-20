@@ -217,6 +217,7 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 	CoinInfo info;
 	info.setChainId("chainId");
 	info.setSingleAddress(false);
+	info.setMinFee(BASIC_UINT);
 	std::string payPassword = "payPassword";
 	boost::scoped_ptr<TestTransactionSubWallet> subWallet(
 			new TestTransactionSubWallet(info, payPassword, createChainParams(), masterWallet.get()));
@@ -228,13 +229,13 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 		nlohmann::json txJson;
 		std::string emptyHash = Utils::UInt256ToString(UINT256_ZERO);
 		CHECK_NOTHROW(subWallet->CreateTransaction("", "ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork",
-				50 * BASIC_UINT, BASIC_UINT, "", ""));
+				50 * BASIC_UINT, "", ""));
 
 		CHECK_THROWS_AS(subWallet->CreateTransaction("EZcvtcsT8wXSXBTeijCdSXvT2sk62yPii5", "",
-		                                             50 * BASIC_UINT, BASIC_UINT, "", ""), std::logic_error);
+		                                             50 * BASIC_UINT, "", ""), std::logic_error);
 
 		CHECK_NOTHROW(txJson = subWallet->CreateTransaction("EZcvtcsT8wXSXBTeijCdSXvT2sk62yPii5",
-				"ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", 50 * BASIC_UINT, BASIC_UINT, "", ""));
+				"ERcEon7MC8fUBZSadvCUTVYmdHyRK1Jork", 50 * BASIC_UINT, "", ""));
 
 		REQUIRE(txJson["TxHash"].get<std::string>() != emptyHash);
 

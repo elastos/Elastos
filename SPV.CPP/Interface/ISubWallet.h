@@ -79,7 +79,6 @@ namespace Elastos {
 			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
 			 * @param toAddress specify which address we want to send.
 			 * @param amount specify amount we want to send.
-			 * @param fee [Obsoleted] specify fee for miners.
 			 * @param memo input memo attribute for describing.
 			 * @param remark is used to record message of local wallet.
 			 * @return If success return the content of transaction in json format.
@@ -88,7 +87,6 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					uint64_t fee,
 					const std::string &memo,
 					const std::string &remark) = 0;
 
@@ -109,7 +107,6 @@ namespace Elastos {
 			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
 			 * @param toAddress specify which address we want to send.
 			 * @param amount specify amount we want to send.
-			 * @param fee [Obsoleted] specify fee for miners.
 			 * @param memo input memo attribute for describing.
 			 * @return If success return the content of transaction in json format.
 			 */
@@ -117,7 +114,6 @@ namespace Elastos {
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
-					uint64_t fee,
 					const std::string &memo) = 0;
 
 			/**

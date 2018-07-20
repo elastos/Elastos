@@ -96,8 +96,6 @@ namespace Elastos {
 
 			uint32_t getBlockHeight() const;
 
-			void resetAddressCache(const std::string &payPassword);
-
 			nlohmann::json GetBalanceInfo();
 
 			void RegisterRemark(const TransactionPtr &transaction);

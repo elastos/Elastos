@@ -44,12 +44,12 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const std::string &toAddress,
-											  const uint64_t amount, const nlohmann::json &payloadJson,
-											  const nlohmann::json &programJson, uint64_t fee,
-											  const std::string &memo, const std::string &remark) {
-			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, amount, fee, memo, remark));
+		IdChainSubWallet::CreateIdTransaction(const std::string &fromAddress, const nlohmann::json &payloadJson,
+											  const nlohmann::json &programJson, const std::string &memo,
+											  const std::string &remark) {
+			std::string toAddress = payloadJson["Id"].get<std::string>();
+			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, 0,
+																			 _info.getMinFee(), memo, remark));
 
 			TransactionPtr transaction = createTransaction(txParam.get());
 			if (transaction == nullptr) {

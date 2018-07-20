@@ -35,11 +35,10 @@ namespace Elastos {
 																	const nlohmann::json &sidechainAccounts,
 																	const nlohmann::json &sidechainAmounts,
 																	const nlohmann::json &sidechainIndices,
-																	uint64_t fee,
 																	const std::string &memo,
 																	const std::string &remark) {
-			boost::scoped_ptr<TxParam> txParam(
-					TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount, fee, memo, remark));
+			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount,
+																			 _info.getMinFee(), memo, remark));
 			txParam->setAssetId(Key::getSystemAssetId());
 
 			ParamChecker::checkJsonArrayNotEmpty(sidechainAccounts);
@@ -104,7 +103,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr MainchainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			if(transaction->getTransactionType() == ELATransaction::TransferCrossChainAsset) {
+			if (transaction->getTransactionType() == ELATransaction::TransferCrossChainAsset) {
 				MainchainTransactionCompleter completer(transaction, _walletManager->getWallet());
 				return completer.Complete(actualFee);
 			} else
