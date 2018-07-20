@@ -161,21 +161,21 @@ func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
 		return false
 	}
 
-	if len(ap.AuxMerkleBranch) > 0 {
-		hashAuxBlockBytes := common.BytesReverse(hashAuxBlock.Bytes())
-		hashAuxBlock, _ = common.Uint256FromBytes(hashAuxBlockBytes)
-	}
+	// reverse the hashAuxBlock
+	hashAuxBlockBytes := common.BytesReverse(hashAuxBlock.Bytes())
+	hashAuxBlock, _ = common.Uint256FromBytes(hashAuxBlockBytes)
 
-	auxRootHashReverse := GetMerkleRoot(*hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
+	auxRootHash := GetMerkleRoot(*hashAuxBlock, ap.AuxMerkleBranch, ap.AuxMerkleIndex)
 
 	script := ap.ParCoinbaseTx.TxIn[0].SignatureScript
 	scriptStr := hex.EncodeToString(script)
-	//fixme reverse
-	auxRootHashStr := hex.EncodeToString(auxRootHashReverse.Bytes())
+
+	// reverse the auxRootHash
+	auxRootHashReverseStr := hex.EncodeToString(common.BytesReverse(auxRootHash.Bytes()))
 	pchMergedMiningHeaderStr := hex.EncodeToString(pchMergedMiningHeader)
 
 	headerIndex := strings.Index(scriptStr, pchMergedMiningHeaderStr)
-	rootHashIndex := strings.Index(scriptStr, auxRootHashStr)
+	rootHashIndex := strings.Index(scriptStr, auxRootHashReverseStr)
 
 	if (headerIndex == -1) || (rootHashIndex == -1) {
 		return false
@@ -189,7 +189,7 @@ func (ap *AuxPow) Check(hashAuxBlock *common.Uint256, chainId int) bool {
 		return false
 	}
 
-	rootHashIndex += len(auxRootHashStr)
+	rootHashIndex += len(auxRootHashReverseStr)
 	if len(scriptStr)-rootHashIndex < 8 {
 		return false
 	}
