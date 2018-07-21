@@ -23,6 +23,7 @@
 #include "WalletTool.h"
 #include "BTCBase58.h"
 #include "ErrorCode.h"
+#include "Payload/PayloadRegisterIdentification.h"
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
@@ -455,8 +456,16 @@ namespace Elastos {
 
 		nlohmann::json
 		MasterWallet::GenerateProgram(const std::string &id, const std::string &message, const std::string &password) {
+			PayloadRegisterIdentification payload;
+			nlohmann::json payLoadJson = nlohmann::json::parse(message);
+			payload.fromJson(payLoadJson);
+
+			ByteStream ostream;
+			payload.Serialize(ostream);
+			CMBlock payloadData = ostream.getBuffer();
+
 			nlohmann::json j;
-			j["Parameter"] = _idAgentImpl->Sign(id, message, password);
+			j["Parameter"] = _idAgentImpl->Sign(id, Utils::convertToString(payloadData), password);
 			j["Code"] = _idAgentImpl->GenerateRedeemScript(id, password);
 			return j;
 		}
