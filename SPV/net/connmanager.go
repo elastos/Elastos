@@ -47,44 +47,17 @@ func newConnManager(localPeer *Peer, maxConnections int, listener ConnectionList
 }
 
 func (cm *ConnManager) Connect(addr string) {
-	if cm.IsConnecting(addr) {
-		return
-	}
-
-	cm.connectingLock.Lock()
-	cm.connectingList[addr] = addr
-	cm.connectingLock.Unlock()
-
-	cm.connectPeer(addr)
-}
-
-func (cm *ConnManager) IsConnecting(addr string) bool {
-	cm.connectingLock.RLock()
-	defer cm.connectingLock.RUnlock()
-	_, ok := cm.connectingList[addr]
-	return ok
-}
-
-func (cm *ConnManager) DeConnecting(addr string) {
 	cm.connectingLock.Lock()
 	defer cm.connectingLock.Unlock()
-	delete(cm.connectingList, addr)
-}
 
-func (cm *ConnManager) IsConnected(addr string) bool {
-	cm.connsLock.RLock()
-	defer cm.connsLock.RUnlock()
-	_, ok := cm.connections[addr]
-	return ok
-}
-
-func (cm *ConnManager) connectPeer(addr string) {
-	cm.connsLock.RLock()
-	if len(cm.handshakes)+len(cm.connections) > cm.maxConnections {
-		cm.connsLock.RUnlock()
+	if _, ok := cm.connectingList[addr]; ok {
 		return
 	}
-	cm.connsLock.RUnlock()
+	// add to connecting list
+	cm.connectingList[addr] = addr
+
+	// de connecting address after connection created or failed
+	defer delete(cm.connectingList, addr)
 
 	conn, err := net.DialTimeout("tcp", addr, time.Second*ConnTimeOut)
 	if err != nil {
@@ -94,10 +67,22 @@ func (cm *ConnManager) connectPeer(addr string) {
 
 	// Start handshake
 	cm.StartHandshake(conn)
-	// de connecting address
-	cm.DeConnecting(addr)
 	// Callback connection
 	cm.listener.OnOutbound(conn)
+}
+
+func (cm *ConnManager) IsConnecting(addr string) bool {
+	cm.connectingLock.RLock()
+	defer cm.connectingLock.RUnlock()
+	_, ok := cm.connectingList[addr]
+	return ok
+}
+
+func (cm *ConnManager) IsConnected(addr string) bool {
+	cm.connsLock.RLock()
+	defer cm.connsLock.RUnlock()
+	_, ok := cm.connections[addr]
+	return ok
 }
 
 func (cm *ConnManager) StartHandshake(conn net.Conn) {
@@ -130,14 +115,13 @@ func (cm *ConnManager) PeerConnected(addr string, conn net.Conn) {
 }
 
 func (cm *ConnManager) PeerDisconnected(addr string) {
-	cm.DeConnecting(addr)
-
 	cm.connsLock.Lock()
+	defer cm.connsLock.Unlock()
+
 	if conn, ok := cm.connections[addr]; ok {
 		conn.Close()
 		delete(cm.connections, addr)
 	}
-	cm.connsLock.Unlock()
 }
 
 func (cm *ConnManager) listenConnection() {
