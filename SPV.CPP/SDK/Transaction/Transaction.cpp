@@ -140,6 +140,10 @@ namespace Elastos {
 			return ELAPayloadNew(type);
 		}
 
+		void Transaction::reinit() {
+			ELATransactionReinit(_transaction);
+		}
+
 		std::vector<std::string> Transaction::getInputAddresses() {
 
 			std::vector<std::string> addresses(_transaction->raw.inCount);
@@ -425,15 +429,22 @@ namespace Elastos {
 		}
 
 		bool Transaction::Deserialize(ByteStream &istream) {
+			reinit();
+
 			if (!istream.readBytes(&_transaction->type, 1))
 				return false;
 			if (!istream.readBytes(&_transaction->payloadVersion, 1))
 				return false;
 
-			if (_transaction->payload)
-				delete _transaction->payload;
+			if (_transaction->payload) {
+				if (_transaction->type != DEFAULT_PAYLOAD_TYPE) {
+					delete _transaction->payload;
+					_transaction->payload = newPayload(_transaction->type);
+				}
+			} else {
+				_transaction->payload = newPayload(_transaction->type);
+			}
 
-			_transaction->payload = newPayload(_transaction->type);
 			if (_transaction->payload == nullptr) {
 				Log::getLogger()->error("new payload with type={} when deserialize error", _transaction->type);
 				return false;
@@ -572,6 +583,8 @@ namespace Elastos {
 		}
 
 		void Transaction::fromJson(const nlohmann::json &jsonData) {
+			reinit();
+
 			_isRegistered = jsonData["IsRegistered"];
 
 			_transaction->raw.txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
@@ -603,15 +616,21 @@ namespace Elastos {
 			_transaction->type = ELATransaction::Type(jsonData["Type"].get<uint8_t>());
 			_transaction->payloadVersion = jsonData["PayloadVersion"];
 
-			delete _transaction->payload;
-			_transaction->payload = newPayload(_transaction->type);
+			if (_transaction->payload) {
+				if (_transaction->type != DEFAULT_PAYLOAD_TYPE) {
+					delete _transaction->payload;
+					_transaction->payload = newPayload(_transaction->type);
+				}
+			} else {
+				_transaction->payload = newPayload(_transaction->type);
+			}
+
 			if (_transaction->payload == nullptr) {
 				Log::getLogger()->error("payload is nullptr when convert from json");
 			} else {
 				_transaction->payload->fromJson(jsonData["PayLoad"]);
 			}
 
-			// TODO possible memory leak
 			std::vector<nlohmann::json> attributes = jsonData["Attributes"];
 			_transaction->attributes.resize(attributes.size());
 			for (size_t i = 0; i < _transaction->attributes.size(); ++i) {

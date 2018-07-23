@@ -26,6 +26,8 @@ namespace Elastos {
 	namespace ElaWallet {
 		#define TX_VERSION           0x00000001
 		#define TX_LOCKTIME          0x00000000
+		#define DEFAULT_PAYLOAD_TYPE  ELATransaction::TransferAsset
+		#define DEFAULT_PAYLOAD_NEW() new PayloadTransferAsset()
 
 		struct ELATransaction {
 
@@ -48,7 +50,6 @@ namespace Elastos {
 				raw.version = TX_VERSION;
 				raw.lockTime = TX_LOCKTIME;
 				raw.blockHeight = TX_UNCONFIRMED;
-				type = TransferAsset;
 				payloadVersion = 0;
 				fee = 0;
 				payload = nullptr;
@@ -64,7 +65,8 @@ namespace Elastos {
 
 				array_new(raw.inputs, 1);
 
-				payload = new PayloadTransferAsset();
+				type = DEFAULT_PAYLOAD_TYPE;
+				payload = DEFAULT_PAYLOAD_NEW();
 			}
 
 			BRTransaction raw;
@@ -81,6 +83,7 @@ namespace Elastos {
 		IPayload *ELAPayloadNew(ELATransaction::Type type);
 		ELATransaction *ELATransactionNew(void);
 		ELATransaction *ELATransactionCopy(const ELATransaction *tx);
+		void ELATransactionReinit(ELATransaction *tx);
 		void ELATransactionFree(ELATransaction *tx);
 
 		void ELATransactionShuffleOutputs(ELATransaction *tx);

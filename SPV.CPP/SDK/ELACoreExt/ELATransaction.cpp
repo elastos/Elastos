@@ -108,7 +108,7 @@ namespace Elastos {
 			return tx;
 		}
 
-		void ELATransactionFree(ELATransaction *tx) {
+		void ELATransactionCleanup(ELATransaction *tx) {
 			if (tx->raw.inputs) {
 				for (size_t i = 0; i < tx->raw.inCount; i++) {
 					BRTxInputSetScript(&tx->raw.inputs[i], nullptr, 0);
@@ -134,6 +134,25 @@ namespace Elastos {
 				delete tx->programs[i];
 
 			delete tx->payload;
+		}
+
+		void ELATransactionReinit(ELATransaction *tx) {
+			ELATransactionCleanup(tx);
+
+			tx->type = DEFAULT_PAYLOAD_TYPE;
+			tx->payload = ELAPayloadNew(tx->type);
+
+			tx->raw.version = TX_VERSION;
+			tx->raw.lockTime = TX_LOCKTIME;
+			tx->raw.blockHeight = TX_UNCONFIRMED;
+			tx->payloadVersion = 0;
+			tx->fee = 0;
+
+			array_new(tx->raw.inputs, 1);
+		}
+
+		void ELATransactionFree(ELATransaction *tx) {
+			ELATransactionCleanup(tx);
 			delete tx;
 		}
 

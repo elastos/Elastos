@@ -175,6 +175,8 @@ namespace Elastos {
 
 			void removeDuplicatePrograms();
 		private:
+			void reinit();
+
 			IPayload *newPayload(ELATransaction::Type type);
 
 			void serializeUnsigned(ByteStream &ostream) const;
