@@ -1,6 +1,4 @@
 # Exchange Docking Reference
-## Build a full node
-Please see https://github.com/elastos/Elastos/wiki/A-Developer-Guide-to-Elastos
 
 ## Data synchronization and storage
 Use the node’s RPC interface synchronize blocks and transactions, then save all the received blocks and transactions.
