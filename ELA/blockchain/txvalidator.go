@@ -178,6 +178,10 @@ func CheckTransactionInput(txn *Transaction) error {
 }
 
 func CheckTransactionOutput(version uint32, txn *Transaction) error {
+	if len(txn.Outputs) > math.MaxUint16 {
+		return errors.New("output count should not be greater than 65535(MaxUint16)")
+	}
+
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
