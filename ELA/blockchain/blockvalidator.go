@@ -84,7 +84,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != GetBlockRewardAmount(block.Height) {
+	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
 		return errors.New("[PowCheckBlockSanity] reward amount in coinbase not correct")
 	}
 
