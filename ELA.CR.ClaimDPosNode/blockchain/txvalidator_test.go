@@ -165,7 +165,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	assert.EqualError(t, err, "asset ID in coinbase is invalid")
 
 	// reward to foundation in coinbase = 30%
-	totalReward := GetBlockRewardAmount(0)
+	totalReward := RewardAmountPerBlock
 	t.Logf("Block reward amount %s", totalReward.String())
 	foundationReward := common.Fixed64(float64(totalReward) * 0.3)
 	t.Logf("Foundation reward amount %s", foundationReward.String())
