@@ -794,12 +794,29 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
+	var rewardInCoinbase = Fixed64(0)
+	var totalTxFee = Fixed64(0)
 
-	for _, txVerify := range block.Transactions {
-		if errCode := CheckTransactionContext(txVerify); errCode != Success {
+	for index, tx := range block.Transactions {
+		if errCode := CheckTransactionContext(tx); errCode != Success {
 			fmt.Println("CheckTransactionContext failed when verify block", errCode)
 			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verify block"))
 		}
+
+		if index == 0 {
+			// Calculate reward in coinbase
+			for _, output := range tx.Outputs {
+				rewardInCoinbase += output.Value
+			}
+			continue
+		}
+		// Calculate transaction fee
+		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+	}
+
+	// Reward in coinbase must match inflation 4% per year
+	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+		return errors.New("reward amount in coinbase not correct")
 	}
 
 	// Make sure it's extending the end of the best chain.
