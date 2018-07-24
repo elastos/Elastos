@@ -529,7 +529,7 @@ namespace Elastos {
 
 			jsonData["IsRegistered"] = _isRegistered;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(getHash());
+			jsonData["TxHash"] = Utils::UInt256ToString(getHash(), true);
 			jsonData["Version"] = _transaction->raw.version;
 			jsonData["LockTime"] = _transaction->raw.lockTime;
 			jsonData["BlockHeight"] = _transaction->raw.blockHeight;
@@ -540,7 +540,7 @@ namespace Elastos {
 				BRTxInput *input = &_transaction->raw.inputs[i];
 				nlohmann::json jsonData;
 
-				jsonData["TxHash"] = Utils::UInt256ToString(input->txHash);
+				jsonData["TxHash"] = Utils::UInt256ToString(input->txHash, true);
 				jsonData["Index"] = input->index;
 				jsonData["Address"] = std::string(input->address);
 				jsonData["Amount"] = input->amount;
@@ -587,7 +587,7 @@ namespace Elastos {
 
 			_isRegistered = jsonData["IsRegistered"];
 
-			_transaction->raw.txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			_transaction->raw.txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
 			_transaction->raw.version = jsonData["Version"].get<uint32_t>();
 			_transaction->raw.lockTime = jsonData["LockTime"].get<uint32_t>();
 			_transaction->raw.blockHeight = jsonData["BlockHeight"].get<uint32_t>();
@@ -599,7 +599,7 @@ namespace Elastos {
 			for (size_t i = 0; i < inCount; ++i) {
 				nlohmann::json jsonData = inputs[i];
 
-				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+				UInt256 txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>(), true);
 				uint32_t index = jsonData["Index"].get<uint32_t>();
 				uint64_t amount = jsonData["Amount"].get<uint64_t>();
 				CMBlock script = Utils::decodeHex(jsonData["Script"].get<std::string>());

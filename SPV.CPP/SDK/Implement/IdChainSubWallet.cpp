@@ -112,7 +112,7 @@ namespace Elastos {
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 										  transaction->getPayload());
 								  callback->OnTransactionStatusChanged(
-										  std::string((char *) transaction->getHash().u8, 32),
+										  Utils::UInt256ToString(transaction->getHash(), true),
 										  SubWalletCallback::convertToString(
 												  SubWalletCallback::Added),
 										  payload->toJson(), transaction->getBlockHeight());
@@ -126,12 +126,13 @@ namespace Elastos {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
 			if (transaction != nullptr && transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
+				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&hash, blockHeight, timeStamp, &transaction, this](ISubWalletCallback *callback) {
+							  [&reversedId, blockHeight, timeStamp, &transaction, this](ISubWalletCallback *callback) {
 
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 										  transaction->getPayload());
-								  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
+								  callback->OnTransactionStatusChanged(reversedId, SubWalletCallback::convertToString(
 										  SubWalletCallback::Updated), payload->toJson(), blockHeight);
 							  });
 			} else {
@@ -143,12 +144,13 @@ namespace Elastos {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
 			if (transaction != nullptr && transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
+				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&hash, notifyUser, recommendRescan, &transaction, this](ISubWalletCallback *callback) {
+							  [&reversedId, notifyUser, recommendRescan, &transaction, this](ISubWalletCallback *callback) {
 
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 										  transaction->getPayload());
-								  callback->OnTransactionStatusChanged(hash, SubWalletCallback::convertToString(
+								  callback->OnTransactionStatusChanged(reversedId, SubWalletCallback::convertToString(
 										  SubWalletCallback::Deleted), payload->toJson(), 0);
 							  });
 			} else {

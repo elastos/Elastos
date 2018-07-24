@@ -432,7 +432,7 @@ namespace Elastos {
 
 			if (addressOrTxid.length() == sizeof(UInt256) * 2) {
 				Transaction txn(tx, false);
-				UInt256 Txid = Utils::UInt256FromString(addressOrTxid);
+				UInt256 Txid = Utils::UInt256FromString(addressOrTxid, true);
 				if (UInt256Eq(&Txid, &tx->raw.txHash)) {
 					return true;
 				}
@@ -492,9 +492,10 @@ namespace Elastos {
 
 		void SubWallet::fireTransactionStatusChanged(const std::string &txid, const std::string &status,
 													 const nlohmann::json &desc, uint32_t confirms) {
+			std::string reversedId(txid.rbegin(), txid.rend());
 			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [&txid, &status, &desc, confirms](ISubWalletCallback *callback) {
-							  callback->OnTransactionStatusChanged(txid, status, desc, confirms);
+						  [&reversedId, &status, &desc, confirms](ISubWalletCallback *callback) {
+							  callback->OnTransactionStatusChanged(reversedId, status, desc, confirms);
 						  });
 		}
 

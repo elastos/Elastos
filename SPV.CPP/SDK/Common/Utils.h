@@ -20,9 +20,9 @@ namespace Elastos {
 		class Utils {
 		public:
 
-			static std::string UInt256ToString(const UInt256 &u256);
+			static std::string UInt256ToString(const UInt256 &u256, bool reverse = false);
 
-			static UInt256 UInt256FromString(const std::string &u256);
+			static UInt256 UInt256FromString(const std::string &u256, bool reverse = false);
 
 			static std::string UInt168ToString(const UInt168 &u168);
 

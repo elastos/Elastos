@@ -19,17 +19,23 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		std::string Utils::UInt256ToString(const UInt256 &u256) {
+		std::string Utils::UInt256ToString(const UInt256 &u256, bool reverse) {
 			std::stringstream ss;
 
-			for (int i = 0; i < sizeof(u256.u8); ++i) {
-				ss << (char) _hexc(u256.u8[i] >> 4) << (char) _hexc(u256.u8[i]);
+			if(!reverse) {
+				for (int i = 0; i < sizeof(u256.u8); ++i) {
+					ss << (char) _hexc(u256.u8[i] >> 4) << (char) _hexc(u256.u8[i]);
+				}
+			} else {
+				for (int i = sizeof(u256.u8) - 1; i >= 0; --i) {
+					ss << (char) _hexc(u256.u8[i] >> 4) << (char) _hexc(u256.u8[i]);
+				}
 			}
 
 			return ss.str();
 		}
 
-		UInt256 Utils::UInt256FromString(const std::string &s) {
+		UInt256 Utils::UInt256FromString(const std::string &s, bool reverse) {
 			UInt256 result = {0};
 
 			if (s.length() / 2 != sizeof(UInt256)) {
@@ -37,8 +43,14 @@ namespace Elastos {
 				return result;
 			}
 
-			for (int i = 0; i < sizeof(result.u8); ++i) {
-				result.u8[i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
+			if(!reverse) {
+				for (int i = 0; i < sizeof(result.u8); ++i) {
+					result.u8[i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
+				}
+			} else {
+				for (int i = sizeof(result.u8) - 1; i >= 0; --i) {
+					result.u8[i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
+				}
 			}
 
 			return result;
