@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 #include "ParamChecker.h"
-#include "Config.h"
+#include "CommonConfig.h"
 #include "BRBIP39Mnemonic.h"
 
 namespace Elastos {

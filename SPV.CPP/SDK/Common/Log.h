@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_LOG_H__
 
 #include <spdlog/spdlog.h>
+#include "Config.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -61,6 +62,13 @@ namespace Elastos {
 
 		private:
 			static std::shared_ptr<spdlog::logger> _consoleLog;
+		};
+
+		class SetLogLevel {
+		public:
+			SetLogLevel() {
+				spdlog::set_level(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
+			}
 		};
 
 	}

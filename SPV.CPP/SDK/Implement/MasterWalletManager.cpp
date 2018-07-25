@@ -9,6 +9,7 @@
 #include "Log.h"
 #include "MasterWallet.h"
 #include "ParamChecker.h"
+#include "Config.h"
 
 using namespace boost::filesystem;
 
@@ -182,6 +183,8 @@ namespace Elastos {
 
 		void MasterWalletManager::initMasterWallets() {
 			path rootPath = _rootPath;
+
+			Log::getLogger()->critical("libspvsdk.so version {}", SPVSDK_VERSION_MESSAGE);
 
 			directory_iterator it{rootPath};
 			while (it != directory_iterator{}) {

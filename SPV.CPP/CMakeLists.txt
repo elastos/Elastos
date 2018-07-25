@@ -48,10 +48,21 @@ endif()
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Release Debug RelWithDebInfo MinSizeRel)
 
 
-project(SPVSDK VERSION 0.1.0.0)
+project(SPVSDK)
 
 
 #set(CMAKE_VERBOSE_MAKEFILE ON)
+
+execute_process(
+	COMMAND git describe --dirty --always --tags
+	COMMAND tr -d "\n"
+	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
+)
+
+if(NOT DEFINED SPDLOG_LEVEL)
+	set(SPDLOG_LEVEL debug CACHE STRING "Android ABI (architecture)" FORCE)
+endif()
+set_property(CACHE SPDLOG_LEVEL PROPERTY STRINGS trace debug info warning error critical off)
 
 if(SPV_FOR_ANDROID)
 	message(STATUS "Android stl type -- ${CMAKE_ANDROID_STL_TYPE}")
@@ -150,8 +161,13 @@ endif(SPV_BUILD_SHARED_LIB)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_DEBUG_ON)
+	add_definitions(-DSPDLOG_TRACE_ON)
 endif()
-add_definitions(-DSPDLOG_TRACE_ON)
+
+configure_file(
+	"${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/Config.h"
+)
 
 add_subdirectory(ThirdParty)
 add_subdirectory(Core)
@@ -162,6 +178,7 @@ if(SPV_FOR_ANDROID AND SPV_EXPORT_JNI)
 endif()
 
 include_directories(
+	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${ThirdParty_INC_DIRS}
 	${SPVCORE_INC_DIRS}
@@ -179,9 +196,6 @@ add_library(spvsdk ${SPV_LIBRARY_TYPE}
 target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
 if(ANDROID)
 	target_link_libraries(spvsdk log atomic)
-endif()
-if(APPLE)
-	target_link_libraries(spvsdk iconv)
 endif()
 add_dependencies(spvsdk ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
 

@@ -464,7 +464,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
-			SPDLOG_TRACE(Log::getLogger(), "Saving blocks: block count = {}, chain id = {}", blocks.size(),
+			Log::getLogger()->info("Saving blocks: block count = {}, chain id = {}", blocks.size(),
 						 _info.getChainId());
 		}
 
