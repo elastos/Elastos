@@ -49,7 +49,7 @@ namespace Elastos {
 				}
 			} else {
 				for (int i = sizeof(result.u8) - 1; i >= 0; --i) {
-					result.u8[i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
+					result.u8[sizeof(result.u8) - 1 - i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
 				}
 			}
 

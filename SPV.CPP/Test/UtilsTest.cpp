@@ -45,8 +45,12 @@ TEST_CASE("Utils test 0", "[Utils]") {
 						0x4f, 0xf7, 0x63, 0xae, 0x46, 0xa2, 0xa6, 0xc1, 0x72, 0xb3, 0xf1, 0xb6, 0x0a, 0x8c, 0xe2, 0x6f
 				}
 		};
+		UInt256 expectUInt256;
+		for (int i = 0; i < sizeof(u1); ++i) {
+			expectUInt256.u8[sizeof(u1) - 1 - i] = u1.u8[i];
+		}
 		UInt256 u2 = Utils::UInt256FromString(rawStr, true);
-		REQUIRE(0 == memcmp(&u1, &u2, sizeof(UInt256)));
+		REQUIRE(0 == memcmp(&expectUInt256, &u2, sizeof(UInt256)));
 
 
 		u1 = {

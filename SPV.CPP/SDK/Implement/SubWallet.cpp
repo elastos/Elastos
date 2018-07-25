@@ -216,7 +216,7 @@ namespace Elastos {
 			publishTransaction(transaction);
 
 			nlohmann::json j;
-			j["TxHash"] = Utils::UInt256ToString(transaction->getHash());
+			j["TxHash"] = Utils::UInt256ToString(transaction->getHash(), true);
 			j["Fee"] = transaction->getStandardFee();
 			return j;
 		}
