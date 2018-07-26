@@ -164,9 +164,15 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_TRACE_ON)
 endif()
 
+set(
+	OTHER_INC_DIRS
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${CMAKE_CURRENT_BINARY_DIR}
+	CACHE INTERNAL "config files" FORCE
+)
 configure_file(
-	"${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/Config.h"
+	${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in
+	${CMAKE_CURRENT_BINARY_DIR}/Config.h
 )
 
 add_subdirectory(ThirdParty)
@@ -178,8 +184,7 @@ if(SPV_FOR_ANDROID AND SPV_EXPORT_JNI)
 endif()
 
 include_directories(
-	${CMAKE_CURRENT_BINARY_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}
+	${OTHER_INC_DIRS}
 	${ThirdParty_INC_DIRS}
 	${SPVCORE_INC_DIRS}
 	${SPVSDK_INC_DIRS}
