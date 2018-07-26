@@ -43,11 +43,11 @@ namespace Elastos {
 			_dataHash = dataHash;
 		}
 
-		const CMBlock &PayloadRegisterIdentification::getProof() const {
+		const std::string &PayloadRegisterIdentification::getProof() const {
 			return _proof;
 		}
 
-		void PayloadRegisterIdentification::setProof(const CMBlock &proof) {
+		void PayloadRegisterIdentification::setProof(const std::string &proof) {
 			_proof = proof;
 		}
 
@@ -75,7 +75,7 @@ namespace Elastos {
 			ostream.writeVarString(_id);
 			ostream.writeVarString(_path);
 			ostream.writeBytes(_dataHash.u8, sizeof(_dataHash));
-			ostream.writeVarBytes(_proof);
+			ostream.writeVarString(_proof);
 			ostream.writeVarBytes(_sign);
 		}
 
@@ -95,7 +95,7 @@ namespace Elastos {
 				return false;
 			}
 
-			if (!istream.readVarBytes(_proof)) {
+			if (!istream.readVarString(_proof)) {
 				Log::error("Payload register identification deserialize proof fail");
 				return false;
 			}
@@ -113,7 +113,7 @@ namespace Elastos {
 			j["Id"] = _id;
 			j["Path"] = _path;
 			j["DataHash"] = Utils::UInt256ToString(_dataHash);
-			j["Proof"] = Utils::convertToString(_proof);
+			j["Proof"] = _proof;
 			j["Sign"] = Utils::encodeHex(_sign);
 			return j;
 		}
@@ -122,7 +122,7 @@ namespace Elastos {
 			_id = j["Id"].get<std::string>();
 			_path = j["Path"].get<std::string>();
 			_dataHash = Utils::UInt256FromString(j["DataHash"].get<std::string>());
-			_proof = Utils::convertToMemBlock(j["Proof"].get<std::string>());
+			_proof = j["Proof"].get<std::string>();
 			_sign = Utils::decodeHex(j["Sign"].get<std::string>());
 		}
 	}

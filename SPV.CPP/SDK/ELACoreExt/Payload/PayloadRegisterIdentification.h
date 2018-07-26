@@ -31,9 +31,9 @@ namespace Elastos {
 
 			void setDataHash(const UInt256 &dataHash);
 
-			const CMBlock &getProof() const;
+			const std::string &getProof() const;
 
-			void setProof(const CMBlock &proof);
+			void setProof(const std::string &proof);
 
 			const CMBlock &getSign() const;
 
@@ -53,7 +53,7 @@ namespace Elastos {
 			std::string _id;
 			std::string _path;
 			UInt256 _dataHash;
-			CMBlock _proof;
+			std::string _proof;
 			CMBlock _sign;
 		};
 
