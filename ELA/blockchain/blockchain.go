@@ -13,7 +13,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
@@ -794,29 +793,11 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
-	var rewardInCoinbase = Fixed64(0)
-	var totalTxFee = Fixed64(0)
 
-	for index, tx := range block.Transactions {
-		if errCode := CheckTransactionContext(tx); errCode != Success {
-			fmt.Println("CheckTransactionContext failed when verify block", errCode)
-			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verify block"))
-		}
-
-		if index == 0 {
-			// Calculate reward in coinbase
-			for _, output := range tx.Outputs {
-				rewardInCoinbase += output.Value
-			}
-			continue
-		}
-		// Calculate transaction fee
-		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
-	}
-
-	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
-		return errors.New("reward amount in coinbase not correct")
+	err := CheckBlockContext(block)
+	if err != nil {
+		log.Errorf("PowCheckBlockSanity error %s", err.Error())
+		return err
 	}
 
 	// Make sure it's extending the end of the best chain.
@@ -827,7 +808,7 @@ func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 	}
 
 	// Insert the block into the database which houses the main chain.
-	err := DefaultLedger.Store.SaveBlock(block)
+	err = DefaultLedger.Store.SaveBlock(block)
 	if err != nil {
 		return err
 	}
