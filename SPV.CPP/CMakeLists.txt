@@ -56,6 +56,7 @@ project(SPVSDK)
 execute_process(
 	COMMAND git describe --dirty --always --tags
 	COMMAND tr -d "\n"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	OUTPUT_VARIABLE SPVSDK_VERSION_MESSAGE
 )
 
