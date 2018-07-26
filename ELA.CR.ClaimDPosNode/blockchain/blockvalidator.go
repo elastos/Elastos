@@ -132,6 +132,33 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	return nil
 }
 
+func CheckBlockContext(block *Block) error {
+	var rewardInCoinbase = Fixed64(0)
+	var totalTxFee = Fixed64(0)
+
+	for index, tx := range block.Transactions {
+		if errCode := CheckTransactionContext(tx); errCode != Success {
+			return errors.New("CheckTransactionContext failed when verify block")
+		}
+
+		if index == 0 {
+			// Calculate reward in coinbase
+			for _, output := range tx.Outputs {
+				rewardInCoinbase += output.Value
+			}
+			continue
+		}
+		// Calculate transaction fee
+		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+	}
+
+	// Reward in coinbase must match inflation 4% per year
+	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+		return errors.New("reward amount in coinbase not correct")
+	}
+	return nil
+}
+
 func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
