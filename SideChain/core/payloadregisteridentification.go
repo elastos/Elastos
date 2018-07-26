@@ -14,7 +14,7 @@ type PayloadRegisterIdentification struct {
 	ID       string
 	Path     string
 	DataHash common.Uint256
-	Proof    []byte
+	Proof    string
 	Sign     []byte
 }
 
@@ -34,8 +34,16 @@ func (a *PayloadRegisterIdentification) Serialize(w io.Writer, version byte) err
 		return errors.New("[RegisterIdentification], path serialize failed.")
 	}
 
-	if err := common.WriteElements(w, a.DataHash, a.Proof, a.Sign); err != nil {
-		return errors.New("[RegisterIdentification], others serialize failed.")
+	if err := common.WriteElement(w, a.DataHash); err != nil {
+		return errors.New("[RegisterIdentification], DataHash serialize failed.")
+	}
+
+	if err := common.WriteVarString(w, a.Proof); err != nil {
+		return errors.New("[RegisterIdentification], Proof serialize failed.")
+	}
+
+	if err := common.WriteElement(w, a.Sign); err != nil {
+		return errors.New("[RegisterIdentification], Sign serialize failed.")
 	}
 	return nil
 }
@@ -47,13 +55,23 @@ func (a *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) e
 	if err != nil {
 		return errors.New("[RegisterIdentification], ID deserialize failed.")
 	}
+
 	a.Path, err = common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[RegisterIdentification], path deserialize failed.")
 	}
 
-	if err := common.ReadElements(r, &a.DataHash, &a.Proof, &a.Sign); err != nil {
-		return errors.New("[RegisterIdentification], others deserialize failed.")
+	if err := common.ReadElement(r, &a.DataHash); err != nil {
+		return errors.New("[RegisterIdentification], DataHash deserialize failed.")
+	}
+
+	a.Proof, err = common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[RegisterIdentification], Proof deserialize failed.")
+	}
+
+	if err := common.ReadElement(r, &a.Sign); err != nil {
+		return errors.New("[RegisterIdentification], Sign deserialize failed.")
 	}
 
 	return nil
