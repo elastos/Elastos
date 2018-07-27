@@ -14,7 +14,7 @@ you can see how to extend the SDK and create your own apps.
 */
 type SPVClient interface {
 	// Set the message handler to extend the client
-	SetMessageHandler(SPVMessageHandler)
+	SetMessageHandler(func() SPVMessageHandler)
 
 	// Start the client
 	Start()

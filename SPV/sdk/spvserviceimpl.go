@@ -19,7 +19,6 @@ import (
 const (
 	SendTxTimeout     = 10
 	MaxFalsePositives = 7
-	SyncBlockTimeout  = 10
 )
 
 type downloadTx struct {
@@ -82,65 +81,14 @@ func (d *downloadBlock) finished() bool {
 	return len(d.txQueue) == 0
 }
 
-type syncTimer struct {
-	timeout    time.Duration
-	lastUpdate time.Time
-	quit       chan struct{}
-	onTimeout  func()
-}
-
-func newSyncTimer(onTimeout func()) *syncTimer {
-	return &syncTimer{
-		timeout:   time.Second * SyncBlockTimeout,
-		onTimeout: onTimeout,
-	}
-}
-
-func (t *syncTimer) start() {
-	go func() {
-		t.quit = make(chan struct{}, 1)
-		ticker := time.NewTicker(time.Millisecond * 25)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				if time.Now().After(t.lastUpdate.Add(t.timeout)) {
-					t.onTimeout()
-					goto QUIT
-				}
-			case <-t.quit:
-				goto QUIT
-			}
-		}
-	QUIT:
-		t.quit = nil
-	}()
-}
-
-func (t *syncTimer) update() {
-	t.lastUpdate = time.Now()
-}
-
-func (t *syncTimer) stop() {
-	if t.quit != nil {
-		t.quit <- struct{}{}
-	}
-}
-
 // The SPV service implementation
 type SPVServiceImpl struct {
-	sync.Mutex
 	SPVClient
-	chain       *Blockchain
-	syncTimer   *syncTimer
-	blockQueue  chan common.Uint256
-	downloading *downloadBlock
-	downloadTx  *downloadTx
-	pendingTx   common.Uint256
-	txAccept    chan *common.Uint256
-	txReject    chan *msg.Reject
-	handler     SPVHandler
-	fPositives  int
+	chain     *Blockchain
+	pendingTx common.Uint256
+	txAccept  chan *common.Uint256
+	txReject  chan *msg.Reject
+	handler   SPVHandler
 }
 
 // Create a instance of SPV service implementation.
@@ -155,29 +103,36 @@ func NewSPVServiceImpl(client SPVClient, foundation string, headerStore store.He
 		return nil, err
 	}
 
-	// Block downloading and commit
-	service.syncTimer = newSyncTimer(service.changeSyncPeerAndRestart)
-	service.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*2)
-	service.downloading = newDownloadBlock()
-
-	// Transaction downloading
-	service.downloadTx = newDownloadTx()
+	// Set SPV handler implement
+	service.handler = handler
 
 	// Initialize local peer height
 	service.updateLocalHeight(service.chain.Height())
 
 	// Set p2p message handler
-	service.SPVClient.SetMessageHandler(service)
-
-	// Set SPV handler implement
-	service.handler = handler
+	service.SPVClient.SetMessageHandler(service.newSpvMsgHandler)
 
 	return service, nil
 }
 
-func (s *SPVServiceImpl) OnPeerEstablish(peer *net.Peer) {
-	// Send filterload message
-	s.updateFilterAndSend(peer)
+// Update local peer height with current chain height
+func (s *SPVServiceImpl) updateLocalHeight(height uint32) {
+	log.Info("LocalChain height:", height)
+	s.PeerManager().Local().SetHeight(uint64(height))
+}
+
+func (s *SPVServiceImpl) newSpvMsgHandler() SPVMessageHandler {
+	handler := new(spvMsgHandler)
+	handler.service = s
+
+	// Block downloading and commit
+	handler.blockQueue = make(chan common.Uint256, p2p.MaxBlocksPerMsg*2)
+	handler.downloading = newDownloadBlock()
+
+	// Transaction downloading
+	handler.downloadTx = newDownloadTx()
+
+	return handler
 }
 
 func (s *SPVServiceImpl) Start() {
@@ -187,7 +142,6 @@ func (s *SPVServiceImpl) Start() {
 }
 
 func (s *SPVServiceImpl) Stop() {
-	s.stopSyncing()
 	s.chain.Close()
 	log.Info("SPV service stopped...")
 }
@@ -203,25 +157,22 @@ func (s *SPVServiceImpl) ReloadFilter() {
 
 func (s *SPVServiceImpl) SendTransaction(tx ela.Transaction) (*common.Uint256, error) {
 	log.Debug()
-	s.Lock()
-	defer s.Unlock()
 
 	if s.PeerManager().Peers.PeersCount() == 0 {
 		return nil, fmt.Errorf("method not available, no peers connected")
 	}
 
-	txId := tx.Hash()
 	s.txAccept = make(chan *common.Uint256, 1)
 	s.txReject = make(chan *msg.Reject, 1)
 
-	finish := func(txId common.Uint256) {
+	finish := func() {
 		close(s.txAccept)
 		close(s.txReject)
 		s.txAccept = nil
 		s.txReject = nil
 	}
 	// Set transaction in pending
-	s.pendingTx = txId
+	s.pendingTx = tx.Hash()
 	// Broadcast transaction to neighbor peers
 	s.PeerManager().Broadcast(msg.NewTx(&tx))
 	// Query neighbors mempool see if transaction was successfully added to mempool
@@ -231,17 +182,17 @@ func (s *SPVServiceImpl) SendTransaction(tx ela.Transaction) (*common.Uint256, e
 	timer := time.NewTimer(time.Second * SendTxTimeout)
 	select {
 	case <-timer.C:
-		finish(txId)
+		finish()
 		return nil, fmt.Errorf("Send transaction timeout")
 	case <-s.txAccept:
 		timer.Stop()
-		finish(txId)
+		finish()
 		// commit unconfirmed transaction to db
 		_, err := s.handler.CommitTx(&tx, 0)
-		return &txId, err
+		return &s.pendingTx, err
 	case msg := <-s.txReject:
 		timer.Stop()
-		finish(txId)
+		finish()
 		return nil, fmt.Errorf("Transaction rejected Code: %s, Reason: %s", msg.Code.String(), msg.Reason)
 	}
 }
@@ -255,10 +206,6 @@ func (s *SPVServiceImpl) keepUpdate() {
 	}
 }
 
-func (s *SPVServiceImpl) updateFilterAndSend(peer *net.Peer) {
-	peer.Send(BuildBloomFilter(s.handler.GetData()).GetFilterLoadMsg())
-}
-
 func (s *SPVServiceImpl) needSync() bool {
 	bestPeer := s.PeerManager().GetBestPeer()
 	if bestPeer == nil { // no peers connected, return false
@@ -268,10 +215,6 @@ func (s *SPVServiceImpl) needSync() bool {
 }
 
 func (s *SPVServiceImpl) syncBlocks() {
-	// Return if current download not finished
-	if !s.downloading.finished() {
-		return
-	}
 	// Check if blockchain need sync
 	if s.needSync() {
 		// Return if already in syncing
@@ -282,31 +225,17 @@ func (s *SPVServiceImpl) syncBlocks() {
 		s.chain.SetChainState(SYNCING)
 		// Request blocks
 		s.requestBlocks()
-		// Start sync timer
-		s.syncTimer.start()
 	} else {
-		s.stopSyncing()
-	}
-}
-
-func (s *SPVServiceImpl) stopSyncing() {
-	if s.chain.IsSyncing() {
-		// Stop sync timer
-		s.syncTimer.stop()
+		if !s.chain.IsSyncing() {
+			return
+		}
 		// Set blockchain state to waiting
 		s.chain.SetChainState(WAITING)
 		// Remove sync peer
 		s.PeerManager().SetSyncPeer(nil)
-
-		// Clear block queue
-		for len(s.blockQueue) > 0 {
-			<-s.blockQueue
-		}
+		// Update bloom filter
+		s.ReloadFilter()
 	}
-	// Reset download block
-	s.downloading = newDownloadBlock()
-	// Reset download transaction
-	s.downloadTx = newDownloadTx()
 }
 
 func (s *SPVServiceImpl) requestBlocks() {
@@ -323,28 +252,55 @@ func (s *SPVServiceImpl) requestBlocks() {
 	syncPeer.Send(getBlocks)
 }
 
-func (s *SPVServiceImpl) changeSyncPeerAndRestart() {
-	log.Debug("Change sync peer and restart")
+func (s *SPVServiceImpl) changeSyncPeer() {
+	log.Debug("Change sync peer")
 	syncPeer := s.PeerManager().GetSyncPeer()
 	if syncPeer != nil {
 		// Disconnect current sync peer
 		syncPeer.Disconnect()
+		s.PeerManager().RemovePeer(syncPeer.ID())
 
 		// Restart
-		s.stopSyncing()
-		s.syncBlocks()
+		s.requestBlocks()
 	}
 }
 
-func (s *SPVServiceImpl) OnInventory(peer *net.Peer, m *msg.Inventory) error {
-	log.Debug()
+type spvMsgHandler struct {
+	peer        *net.Peer
+	service     *SPVServiceImpl
+	blockQueue  chan common.Uint256
+	downloading *downloadBlock
+	downloadTx  *downloadTx
+	fPositives  int
+}
+
+func (h *spvMsgHandler) isSyncPeer() bool {
+	return h.service.chain.IsSyncing() && h.service.PeerManager().GetSyncPeer() != nil &&
+		h.service.PeerManager().GetSyncPeer().ID() == h.peer.ID()
+}
+
+func (h *spvMsgHandler) updateBloomFilter() {
+	bloomFilter := BuildBloomFilter(h.service.handler.GetData())
+	h.peer.Send(bloomFilter.GetFilterLoadMsg())
+}
+
+func (h *spvMsgHandler) OnPeerEstablish(peer *net.Peer) {
+	log.Debug(peer)
+	// Set handler's peer
+	h.peer = peer
+	// Send filterload message
+	h.updateBloomFilter()
+}
+
+func (h *spvMsgHandler) OnInventory(peer *net.Peer, m *msg.Inventory) error {
+	log.Debug(peer)
 	gData := msg.NewGetData()
 
 	for _, inv := range m.InvList {
 		switch inv.Type {
 		case msg.InvTypeBlock:
 			// Filter duplicated block
-			if s.chain.IsKnownHeader(&inv.Hash) {
+			if h.service.chain.IsKnownHeader(&inv.Hash) {
 				continue
 			}
 
@@ -353,40 +309,37 @@ func (s *SPVServiceImpl) OnInventory(peer *net.Peer, m *msg.Inventory) error {
 			// need separate timeout handling.
 			inv.Type = msg.InvTypeFilteredBlock
 			gData.AddInvVect(inv)
-			if s.chain.IsSyncing() &&
-				s.PeerManager().GetSyncPeer() != nil && s.PeerManager().GetSyncPeer().ID() == peer.ID() {
-				s.blockQueue <- inv.Hash
+			if h.isSyncPeer() {
+				h.blockQueue <- inv.Hash
 			}
 		case msg.InvTypeTx:
-			if s.txAccept != nil && s.pendingTx.IsEqual(inv.Hash) {
-				s.txAccept <- nil
+			if h.service.txAccept != nil && h.service.pendingTx.IsEqual(inv.Hash) {
+				h.service.txAccept <- nil
 				continue
 			}
 			gData.AddInvVect(inv)
-			s.downloadTx.queueTx(inv.Hash)
+			h.downloadTx.queueTx(inv.Hash)
 		default:
 			continue
 		}
 	}
 
 	if len(gData.InvList) > 0 {
+		// Start sync timer
 		peer.Send(gData)
 	}
 	return nil
 }
 
-func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) error {
-	log.Debug()
-	s.Lock()
-	defer s.Unlock()
+func (h *spvMsgHandler) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) error {
+	log.Debug(peer)
 	blockHash := block.Header.(*ela.Header).Hash()
 
 	// Merkleblock from sync peer
-	if s.chain.IsSyncing() &&
-		s.PeerManager().GetSyncPeer() != nil && s.PeerManager().GetSyncPeer().ID() == peer.ID() {
-		queueHash := <-s.blockQueue
+	if h.isSyncPeer() {
+		queueHash := <-h.blockQueue
 		if !blockHash.IsEqual(queueHash) {
-			s.changeSyncPeerAndRestart()
+			h.changeSyncPeer()
 			return fmt.Errorf("peer %d is sending us blocks out of order", peer.ID())
 		}
 	}
@@ -397,72 +350,117 @@ func (s *SPVServiceImpl) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) e
 	}
 
 	// Save block as download block
-	s.downloading.MerkleBlock = block
+	h.downloading.MerkleBlock = block
 
 	// No transactions to download, just finish it
 	if len(txIds) == 0 {
-		s.finishDownload(peer)
+		h.finishDownload()
 		return nil
 	}
 
 	// Download transactions of this block
 	for _, txId := range txIds {
-		s.downloading.queueTx(*txId)
+		h.downloading.queueTx(*txId)
 	}
 
 	return nil
 }
 
-func (s *SPVServiceImpl) OnTx(peer *net.Peer, msg *msg.Tx) error {
-	log.Debug()
-	s.Lock()
-	defer s.Unlock()
+func (h *spvMsgHandler) OnTx(peer *net.Peer, msg *msg.Tx) error {
+	log.Debug(peer)
 	tx := msg.Transaction.(*ela.Transaction)
-	if s.downloadTx.dequeueTx(tx.Hash()) {
+	if h.downloadTx.dequeueTx(tx.Hash()) {
 		// commit unconfirmed transaction
-		_, err := s.handler.CommitTx(tx, 0)
+		_, err := h.service.handler.CommitTx(tx, 0)
 		if err == nil {
-			s.updateFilterAndSend(peer)
+			h.updateBloomFilter()
 		}
 		return err
 	}
 
-	if !s.downloading.dequeueTx(tx.Hash()) {
-		s.downloading = newDownloadBlock()
+	if !h.downloading.dequeueTx(tx.Hash()) {
+		h.downloading = newDownloadBlock()
 		return fmt.Errorf("Transaction not found in download queue %s", tx.Hash().String())
 	}
 
 	// Add tx to download
-	s.downloading.txs = append(s.downloading.txs, tx)
+	h.downloading.txs = append(h.downloading.txs, tx)
 
 	// All transactions of the download block have been received, commit the download block
-	if s.downloading.finished() {
-		s.finishDownload(peer)
+	if h.downloading.finished() {
+		h.finishDownload()
 	}
 
 	return nil
 }
 
-func (s *SPVServiceImpl) finishDownload(peer *net.Peer) {
-	// Update sync timer
-	s.syncTimer.update()
+func (h *spvMsgHandler) OnNotFound(peer *net.Peer, notFound *msg.NotFound) error {
+	log.Debug(peer)
+	for _, iv := range notFound.InvList {
+		log.Warnf("Data not found type %s, hash %s", iv.Type.String(), iv.Hash.String())
+		switch iv.Type {
+		case msg.InvTypeTx:
+			if h.downloadTx.dequeueTx(iv.Hash) {
+			}
+			if h.downloading.dequeueTx(iv.Hash) {
+				h.downloading = newDownloadBlock()
+			}
+		case msg.InvTypeBlock:
+			// reset downloading block
+			h.downloading = newDownloadBlock()
+
+			if h.isSyncPeer() {
+				h.changeSyncPeer()
+			}
+		}
+	}
+	return nil
+}
+
+func (h *spvMsgHandler) OnReject(peer *net.Peer, msg *msg.Reject) error {
+	log.Debug(peer)
+	if h.service.pendingTx.IsEqual(msg.Hash); h.service.txReject != nil {
+		h.service.txReject <- msg
+		return nil
+	}
+	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
+		peer.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
+}
+
+func (h *spvMsgHandler) changeSyncPeer() {
+	// Reset downloading block
+	h.downloading = newDownloadBlock()
+	// Reset downloading transaction
+	h.downloadTx = newDownloadTx()
+
+	// Clear download block queue
+	for len(h.blockQueue) > 0 {
+		<-h.blockQueue
+	}
+
+	// Change sync peer
+	h.service.changeSyncPeer()
+}
+
+func (h *spvMsgHandler) finishDownload() {
 	// Commit downloaded block
-	s.commitBlock(s.downloading)
-	s.downloading = newDownloadBlock()
+	h.commitBlock(h.downloading)
+	h.downloading = newDownloadBlock()
 	// Request next block list when in syncing
-	if s.chain.IsSyncing() && len(s.blockQueue) == 0 {
-		s.requestBlocks()
+	if h.isSyncPeer() && len(h.blockQueue) == 0 {
+		// Request more blocks
+		h.service.requestBlocks()
 	}
 }
 
-func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
+func (h *spvMsgHandler) commitBlock(block *downloadBlock) {
 	header := block.Header.(*ela.Header)
-	newTip, reorgFrom, err := s.chain.CommitHeader(*header)
+	newTip, reorgFrom, err := h.service.chain.CommitHeader(*header)
 	if err != nil {
 		log.Errorf("Commit header failed %s", err.Error())
 		// If a syncing peer send us bad block, disconnect it.
-		if s.chain.IsSyncing() {
-			s.changeSyncPeerAndRestart()
+		if h.isSyncPeer() {
+			h.changeSyncPeer()
 		}
 		return
 	}
@@ -470,81 +468,39 @@ func (s *SPVServiceImpl) commitBlock(block *downloadBlock) {
 		return
 	}
 
-	newHeight := s.chain.Height()
+	newHeight := h.service.chain.Height()
 	if reorgFrom > 0 {
 		for i := reorgFrom; i > newHeight; i-- {
-			if err = s.handler.OnRollback(i); err != nil {
+			if err = h.service.handler.OnRollback(i); err != nil {
 				log.Errorf("Rollback transaction at height %d failed %s", i, err.Error())
 				return
 			}
 		}
 
-		if !s.chain.IsSyncing() {
-			s.syncBlocks()
+		if !h.service.chain.IsSyncing() {
+			h.service.syncBlocks()
 			return
 		}
 	}
 
 	for _, tx := range block.txs {
-		falsePositive, err := s.handler.CommitTx(tx, header.Height)
+		falsePositive, err := h.service.handler.CommitTx(tx, header.Height)
 		if err != nil {
 			log.Errorf("Commit transaction %s failed %s", tx.Hash().String(), err.Error())
 			return
 		}
 
 		if falsePositive {
-			s.fPositives++
-			if s.fPositives > MaxFalsePositives {
+			h.fPositives++
+			if h.fPositives > MaxFalsePositives {
 				// Broadcast filterload message to connected peers
-				s.ReloadFilter()
-				s.fPositives = 0
+				h.updateBloomFilter()
+				h.fPositives = 0
 			}
 			continue
 		}
 	}
 
-	s.updateLocalHeight(newHeight)
-	s.handler.OnBlockCommitted(block.MerkleBlock, block.txs)
-}
-
-func (s *SPVServiceImpl) OnNotFound(peer *net.Peer, notFound *msg.NotFound) error {
-	log.Debug()
-	s.Lock()
-	defer s.Unlock()
-	for _, iv := range notFound.InvList {
-		log.Warnf("Data not found type %s, hash %s", iv.Type.String(), iv.Hash.String())
-		switch iv.Type {
-		case msg.InvTypeTx:
-			if s.downloadTx.dequeueTx(iv.Hash) {
-			}
-			if s.downloading.dequeueTx(iv.Hash) {
-				s.downloading = newDownloadBlock()
-			}
-		case msg.InvTypeBlock:
-			// reset downloading block
-			s.downloading = newDownloadBlock()
-
-			if s.chain.IsSyncing() &&
-				s.PeerManager().GetSyncPeer() != nil && s.PeerManager().GetSyncPeer().ID() == peer.ID() {
-				s.changeSyncPeerAndRestart()
-			}
-		}
-	}
-	return nil
-}
-
-func (s *SPVServiceImpl) OnReject(peer *net.Peer, msg *msg.Reject) error {
-	log.Debug()
-	if s.pendingTx.IsEqual(msg.Hash); s.txReject != nil {
-		s.txReject <- msg
-		return nil
-	}
-	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
-		peer.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
-}
-
-// Update local peer height with current chain height
-func (s *SPVServiceImpl) updateLocalHeight(height uint32) {
-	log.Info("LocalChain height:", height)
-	s.PeerManager().Local().SetHeight(uint64(height))
+	h.service.updateLocalHeight(newHeight)
+	h.service.handler.OnBlockCommitted(block.MerkleBlock, block.txs)
 }

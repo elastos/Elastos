@@ -12,7 +12,8 @@ import (
 )
 
 type PeerHandler interface {
-	MessageHandler
+	MakeMessage(cmd string) (p2p.Message, error)
+	HandleMessage(peer *Peer, msg p2p.Message) error
 	OnDisconnected(peer *Peer)
 }
 

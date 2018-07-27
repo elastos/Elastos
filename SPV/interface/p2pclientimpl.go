@@ -31,8 +31,8 @@ func (c *P2PClientImpl) InitLocalPeer(initLocal func(peer *net.Peer)) {
 	c.pm = net.NewPeerManager(c.magic, c.maxMsgSize, c.seeds, c.minOutbound, c.maxConnections, local)
 }
 
-func (c *P2PClientImpl) SetMessageHandler(msgHandler net.MessageHandler) {
-	c.pm.SetMessageHandler(msgHandler)
+func (c *P2PClientImpl) SetMessageHandler(messageHandler func() net.MessageHandler) {
+	c.pm.SetMessageHandler(messageHandler)
 }
 
 func (c *P2PClientImpl) Start() {

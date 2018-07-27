@@ -96,7 +96,7 @@ func TestGetListenerKey(t *testing.T) {
 }
 
 func TestNewSPVService(t *testing.T) {
-	log.Init(log.LevelDebug)
+	log.Init(0, 5, 20)
 
 	var id = make([]byte, 8)
 	var clientId uint64

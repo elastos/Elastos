@@ -42,9 +42,9 @@ type PeerManager struct {
 
 	lock *sync.Mutex
 	*Peers
-	MessageHandler
-	am *AddrManager
-	cm *ConnManager
+	handler func() MessageHandler
+	am      *AddrManager
+	cm      *ConnManager
 }
 
 func NewPeerManager(magic, maxMsgSize uint32, seeds []string, minOutbound, maxConnections int, localPeer *Peer) *PeerManager {
@@ -60,8 +60,8 @@ func NewPeerManager(magic, maxMsgSize uint32, seeds []string, minOutbound, maxCo
 	return pm
 }
 
-func (pm *PeerManager) SetMessageHandler(msgHandler MessageHandler) {
-	pm.MessageHandler = msgHandler
+func (pm *PeerManager) SetMessageHandler(messageHandler func() MessageHandler) {
+	pm.handler = messageHandler
 }
 
 func (pm *PeerManager) Start() {
@@ -77,7 +77,7 @@ func (pm *PeerManager) NewPeer(conn net.Conn) *Peer {
 	peer.conn = conn
 	copy(peer.ip16[:], getIp(conn))
 	peer.msgHelper = p2p.NewMsgHelper(pm.magic, pm.maxMsgSize, conn, peer)
-	peer.handler = pm
+	peer.handler = NewBaseHandler(pm)
 	return peer
 }
 
@@ -171,7 +171,16 @@ func (pm *PeerManager) keepConnections() {
 	}
 }
 
-func (pm *PeerManager) MakeMessage(cmd string) (p2p.Message, error) {
+type BaseHandler struct {
+	pm         *PeerManager
+	msgHandler MessageHandler
+}
+
+func NewBaseHandler(pm *PeerManager) *BaseHandler {
+	return &BaseHandler{pm: pm, msgHandler: pm.handler()}
+}
+
+func (h *BaseHandler) MakeMessage(cmd string) (p2p.Message, error) {
 	var message p2p.Message
 	switch cmd {
 	case p2p.CmdVersion:
@@ -183,30 +192,34 @@ func (pm *PeerManager) MakeMessage(cmd string) (p2p.Message, error) {
 	case p2p.CmdAddr:
 		message = new(msg.Addr)
 	default:
-		return pm.MessageHandler.MakeMessage(cmd)
+		return h.msgHandler.MakeMessage(cmd)
 	}
 
 	return message, nil
 }
 
-func (pm *PeerManager) HandleMessage(peer *Peer, message p2p.Message) error {
+func (h *BaseHandler) HandleMessage(peer *Peer, message p2p.Message) error {
 	switch message := message.(type) {
 	case *msg.Version:
-		return pm.OnVersion(peer, message)
+		return h.OnVersion(peer, message)
 	case *msg.VerAck:
-		return pm.OnVerAck(peer, message)
+		return h.OnVerAck(peer, message)
 	case *msg.GetAddr:
-		return pm.OnGetAddr(peer, message)
+		return h.OnGetAddr(peer, message)
 	case *msg.Addr:
-		return pm.OnAddr(peer, message)
+		return h.OnAddr(peer, message)
 	default:
-		return pm.MessageHandler.HandleMessage(peer, message)
+		return h.msgHandler.HandleMessage(peer, message)
 	}
 }
 
-func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
+func (h *BaseHandler) OnDisconnected(peer *Peer) {
+	h.pm.OnDisconnected(peer)
+}
+
+func (h *BaseHandler) OnVersion(peer *Peer, v *msg.Version) error {
 	// Check if handshake with itself
-	if v.Nonce == pm.Local().ID() {
+	if v.Nonce == h.pm.Local().ID() {
 		log.Error("SPV disconnect peer, peer handshake with itself")
 		peer.Disconnect()
 		return errors.New("Peer handshake with itself")
@@ -218,14 +231,14 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 	}
 
 	// Remove duplicate peer connection
-	knownPeer, ok := pm.RemovePeer(v.Nonce)
+	knownPeer, ok := h.pm.RemovePeer(v.Nonce)
 	if ok {
 		log.Trace("Reconnect peer ", v.Nonce)
 		knownPeer.Disconnect()
 	}
 
 	// Handle peer handshake
-	if err := pm.MessageHandler.OnHandshake(v); err != nil {
+	if err := h.msgHandler.OnHandshake(v); err != nil {
 		peer.Disconnect()
 		return err
 	}
@@ -236,7 +249,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 	var message p2p.Message
 	if peer.State() == p2p.INIT {
 		peer.SetState(p2p.HANDSHAKE)
-		message = pm.local.NewVersionMsg()
+		message = h.pm.Local().NewVersionMsg()
 	} else if peer.State() == p2p.HAND {
 		peer.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
@@ -247,7 +260,7 @@ func (pm *PeerManager) OnVersion(peer *Peer, v *msg.Version) error {
 	return nil
 }
 
-func (pm *PeerManager) OnVerAck(peer *Peer, va *msg.VerAck) error {
+func (h *BaseHandler) OnVerAck(peer *Peer, va *msg.VerAck) error {
 	if peer.State() != p2p.HANDSHAKE && peer.State() != p2p.HANDSHAKED {
 		return errors.New("Unknow status to received verack")
 	}
@@ -259,26 +272,26 @@ func (pm *PeerManager) OnVerAck(peer *Peer, va *msg.VerAck) error {
 	peer.SetState(p2p.ESTABLISH)
 
 	// Add to connected peer
-	pm.AddConnectedPeer(peer)
+	h.pm.AddConnectedPeer(peer)
 
 	// Notify peer connected
-	pm.MessageHandler.OnPeerEstablish(peer)
+	h.msgHandler.OnPeerEstablish(peer)
 
-	if pm.am.NeedMoreAddresses() {
+	if h.pm.am.NeedMoreAddresses() {
 		peer.Send(new(msg.GetAddr))
 	}
 
 	return nil
 }
 
-func (pm *PeerManager) OnAddr(peer *Peer, addr *msg.Addr) error {
+func (h *BaseHandler) OnAddr(peer *Peer, addr *msg.Addr) error {
 	for _, addr := range addr.AddrList {
 		// Skip local peer
-		if addr.ID == pm.Local().ID() {
+		if addr.ID == h.pm.Local().ID() {
 			continue
 		}
 		// Skip peer already connected
-		if pm.EstablishedPeer(addr.ID) {
+		if h.pm.EstablishedPeer(addr.ID) {
 			continue
 		}
 		// Skip invalid port
@@ -286,14 +299,13 @@ func (pm *PeerManager) OnAddr(peer *Peer, addr *msg.Addr) error {
 			continue
 		}
 		// Save to address list
-		pm.am.AddOrUpdateAddress(&addr)
+		h.pm.am.AddOrUpdateAddress(&addr)
 	}
 
 	return nil
 }
 
-func (pm *PeerManager) OnGetAddr(peer *Peer, req *msg.GetAddr) error {
-	// FIXME temporary disable getaddr message to prevent disconnection from main node
-	//peer.Send(msg.NewAddr(pm.am.RandGetAddresses()))
+func (h *BaseHandler) OnGetAddr(peer *Peer, req *msg.GetAddr) error {
+	peer.Send(msg.NewAddr(h.pm.am.RandGetAddresses()))
 	return nil
 }

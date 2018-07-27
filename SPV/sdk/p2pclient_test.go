@@ -2,6 +2,8 @@ package sdk
 
 import (
 	"fmt"
+	"math/rand"
+	"sort"
 	"testing"
 	"time"
 
@@ -10,8 +12,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"math/rand"
-	"sort"
 )
 
 func TestP2PClient(t *testing.T) {
@@ -88,18 +88,30 @@ func NewClient(i int, seeds []string) (*Client, error) {
 		minOutbound,
 		maxConnections,
 	)
-	client.P2PClient.PeerManager().SetMessageHandler(client)
+	client.P2PClient.PeerManager().SetMessageHandler(client.newHandler)
 
 	return client, err
 }
 
+func (c *Client) newHandler() net.MessageHandler {
+	return newTestHandler(c.id)
+}
+
+type TestHandler struct {
+	id uint64
+}
+
+func newTestHandler(id uint64) net.MessageHandler {
+	return &TestHandler{id: id}
+}
+
 // A handshake message received
-func (c *Client) OnHandshake(v *msg.Version) error {
+func (c *TestHandler) OnHandshake(v *msg.Version) error {
 	return nil
 }
 
 // Create a message instance by the given cmd parameter
-func (c *Client) MakeMessage(cmd string) (p2p.Message, error) {
+func (c *TestHandler) MakeMessage(cmd string) (p2p.Message, error) {
 	var message p2p.Message
 	switch cmd {
 	case p2p.CmdPing:
@@ -112,12 +124,12 @@ func (c *Client) MakeMessage(cmd string) (p2p.Message, error) {
 
 // VerAck message received from a connected peer
 // which means the connected peer is established
-func (c *Client) OnPeerEstablish(peer *net.Peer) {
+func (c *TestHandler) OnPeerEstablish(peer *net.Peer) {
 	go c.pingWithPeer(peer)
 }
 
 // Handle messages received from the connected peer
-func (c *Client) HandleMessage(peer *net.Peer, message p2p.Message) error {
+func (c *TestHandler) HandleMessage(peer *net.Peer, message p2p.Message) error {
 	switch message.(type) {
 	case *msg.Ping:
 		peer.Send(msg.NewPong(uint32(c.id)))
@@ -126,7 +138,7 @@ func (c *Client) HandleMessage(peer *net.Peer, message p2p.Message) error {
 	return nil
 }
 
-func (c *Client) pingWithPeer(peer *net.Peer) {
+func (c *TestHandler) pingWithPeer(peer *net.Peer) {
 	ticker := time.NewTicker(time.Second * 5)
 	for range ticker.C {
 		peer.Send(msg.NewPing(uint32(c.id)))
