@@ -8,7 +8,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} TEST_SOURCE_FILES)
 foreach(src ${TEST_SOURCE_FILES})
 	string(REGEX REPLACE ".*/\(.*\).cpp$" "\\1" TEST_TARGET_NAME ${src})
 	add_executable(${TEST_TARGET_NAME} ${src})
-	target_link_libraries(${TEST_TARGET_NAME} spvsdk)
+	target_link_libraries(${TEST_TARGET_NAME} ${SPVSDK_SHARED_TARGET})
 	target_link_libraries(${TEST_TARGET_NAME} dl)
 
 	if("${AUTO_TEST_COMMAND}" STREQUAL "")

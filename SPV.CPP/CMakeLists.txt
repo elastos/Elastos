@@ -83,11 +83,6 @@ if(UNIX)
 		######### Unix/Linux ###########
 		message(STATUS "Unix/Linux platform detected")
 		set(PLATFORM Unix)
-		#show gcc/g++ compile info
-		#set(CMAKE_VERBOSE_MAKEFILE ON)
-#		if(CMAKE_COMPILER_IS_GNUCXX)
-#			add_definitions("-fpermissive")
-#		endif(CMAKE_COMPILER_IS_GNUCXX)
 	endif()
 else(UNIX)
 	if(WIN32)
@@ -124,11 +119,7 @@ endif(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
 message(STATUS "Build ${BIT}bit")
 
 if(NOT DEFINED SPV_INSTALL_PREFIX)
-	if(WIN32)
-		set(SPV_INSTALL_PREFIX "c:/${TARGET_NAME}")
-	else(WIN32)
-		set(SPV_INSTALL_PREFIX "/usr/local/")
-	endif(WIN32)
+	set(SPV_INSTALL_PREFIX "/usr/local/")
 endif(NOT DEFINED SPV_INSTALL_PREFIX)
 
 set(
@@ -153,12 +144,6 @@ option_with_default(SPV_EXTRA_WARNINGS "Enable Maximum Warnings Level" OFF)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELEASE NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL NDEBUG)
 set_directory_properties(PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO NDEBUG)
-
-if(SPV_BUILD_SHARED_LIB)
-	set(SPV_LIBRARY_TYPE SHARED)
-else(SPV_BUILD_SHARED_LIB)
-	set(SPV_LIBRARY_TYPE STATIC)
-endif(SPV_BUILD_SHARED_LIB)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DSPDLOG_DEBUG_ON)
@@ -193,17 +178,40 @@ include_directories(
 	${INTERFACE_INC_DIRS}
 )
 
-add_library(spvsdk ${SPV_LIBRARY_TYPE}
+set(
+	SPVSDK_LIB_NAME
+	spvsdk
+)
+
+set(SPVSDK_OBJECT_TARGET ${SPVSDK_LIB_NAME}_object)
+set(SPVSDK_SHARED_TARGET ${SPVSDK_LIB_NAME}_shared)
+set(SPVSDK_STATIC_TARGET ${SPVSDK_LIB_NAME}_static)
+
+add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVSDK_SOURCE_FILES}
 	${SPVJNI_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
 
-target_link_libraries(spvsdk dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
-if(ANDROID)
-	target_link_libraries(spvsdk log atomic)
-endif()
-add_dependencies(spvsdk ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+set(SPVSDK_TARGET_LIST ${SPVSDK_SHARED_TARGET} ${SPVSDK_STATIC_TARGET})
+
+foreach(SPVSDK_TARGET ${SPVSDK_TARGET_LIST})
+	if(SPVSDK_TARGET STREQUAL "${SPVSDK_STATIC_TARGET}")
+		set(SPVSDK_LIBRARY_TYPE STATIC)
+	else()
+		set(SPVSDK_LIBRARY_TYPE SHARED)
+	endif()
+
+	add_library(${SPVSDK_TARGET} ${SPVSDK_LIBRARY_TYPE} $<TARGET_OBJECTS:${SPVSDK_OBJECT_TARGET}>)
+
+	set_target_properties(${SPVSDK_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+	set_target_properties(${SPVSDK_TARGET} PROPERTIES OUTPUT_NAME "${SPVSDK_LIB_NAME}")
+	target_link_libraries(${SPVSDK_TARGET} dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+	if(ANDROID)
+		target_link_libraries(${SPVSDK_TARGET} log atomic)
+	endif()
+endforeach()
 
 if(SPV_BUILD_TEST_CASES)
 	add_subdirectory(Test)
@@ -212,3 +220,11 @@ endif()
 if(SPV_BUILD_SAMPLE)
 	add_subdirectory(Sample)
 endif()
+
+file(GLOB INSTALL_HEADER_FILES "Interface/*.h")
+install(TARGETS ${SPVSDK_SHARED_TARGET} ${SPVSDK_STATIC_TARGET}
+	LIBRARY DESTINATION lib
+	ARCHIVE DESTINATION lib
+)
+install(FILES ${INSTALL_HEADER_FILES} DESTINATION include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Interface/nlohmann/json.hpp DESTINATION include/nlohmann)
