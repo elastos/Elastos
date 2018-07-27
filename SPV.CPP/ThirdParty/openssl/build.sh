@@ -65,6 +65,16 @@ do_ndk_root() {
 	fi
 }
 
+NDK_API_LEVEL=
+register_option "--ndk-api-level=<num>" do_ndk_api_level "Select api level. To see available execute ls ANDROID_NDK/platforms/android-<num>."
+do_ndk_api_level() {
+    NDK_API_LEVEL=$1
+    if [ ! -d $ANDROID_NDK/platforms/android-$NDK_API_LEVEL ]; then
+        echo "ERROR: invalid api level $NDK_API_LEVEL"
+        exit 1
+    fi
+}
+
 extract_parameters $@
 
 if [ -z "$NCPU" ]; then
@@ -208,7 +218,7 @@ android_openssl_build() {
 			fi
 		fi
 
-		cd $ARCH_BUILD_DIR && $PROGDIR/Configure $TARGET shared -fPIC -latomic --prefix=$PREFIX/$ARCH && make all && make install_sw
+		cd $ARCH_BUILD_DIR && $PROGDIR/Configure $TARGET shared -D__ANDROID_API__=$NDK_API_LEVEL -fPIC -latomic --prefix=$PREFIX/$ARCH && make all && make install_sw
 	done
 }
 

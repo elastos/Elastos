@@ -18,6 +18,7 @@ if(SPV_FOR_ANDROID)
 		--extract-dir=${BOOST_EXTRACT_DIR}
 		--arch=${CMAKE_ANDROID_ARCH_ABI}
 		--ndk-root=$ENV{ANDROID_NDK}
+		--ndk-api-level=${CMAKE_SYSTEM_VERSION}
 	)
 	set(Boost_INCLUDE_DIRS ${BOOST_INSTALL_DIR}/${CMAKE_ANDROID_ARCH_ABI}/include)
 else()
