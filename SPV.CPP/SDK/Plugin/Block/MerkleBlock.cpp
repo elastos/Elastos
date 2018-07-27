@@ -74,8 +74,8 @@ namespace Elastos {
 			return new MerkleBlock((ELAMerkleBlock *)block, manageRaw);
 		}
 
-		IMerkleBlock* MerkleBlock::Clone(bool manageRaw) const {
-			return new MerkleBlock(ELAMerkleBlockCopy(_merkleBlock), manageRaw);
+		IMerkleBlock* MerkleBlock::Clone(const BRMerkleBlock *block, bool manageRaw) const {
+			return new MerkleBlock(ELAMerkleBlockCopy((const ELAMerkleBlock *)block), manageRaw);
 		}
 
 		UInt256 MerkleBlock::getBlockHash() const {

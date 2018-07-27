@@ -25,7 +25,7 @@ namespace Elastos {
 
 		IdMerkleBlock *IdMerkleBlockNew();
 
-		IdMerkleBlock *IdMerkleBlockCopy(IdMerkleBlock *block);
+		IdMerkleBlock *IdMerkleBlockCopy(const IdMerkleBlock *block);
 
 		void IdMerkleBlockFree(IdMerkleBlock *block);
 

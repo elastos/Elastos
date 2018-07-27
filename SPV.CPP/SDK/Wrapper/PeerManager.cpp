@@ -56,8 +56,8 @@ namespace Elastos {
 							new SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
 						MerkleBlockPtr wrappedBlock(
-								Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType, blocks[i],
-																		false));
+								Registry::Instance()->CloneMerkleBlock(listener->getPluginTypes().BlockType, blocks[i],
+																		true));
 						coreBlocks->push_back(wrappedBlock);
 					}
 					listener->saveBlocks(replace, *coreBlocks);

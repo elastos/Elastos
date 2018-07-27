@@ -36,7 +36,7 @@ namespace Elastos {
 			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
 
 			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
-			virtual IMerkleBlock *Clone(bool manageRaw) const;
+			virtual IMerkleBlock *Clone(const BRMerkleBlock *block, bool manageRaw) const;
 
 			virtual BRMerkleBlock *getRaw() const;
 

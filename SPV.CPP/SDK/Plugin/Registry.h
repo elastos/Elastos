@@ -17,7 +17,7 @@ namespace Elastos {
 		public:
 			static Registry *Instance(bool erase = false);
 
-			IMerkleBlock *CloneMerkleBlock(const std::string &blockType, bool manageRaw);
+			IMerkleBlock *CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw);
 
 			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, bool manageRaw);
 

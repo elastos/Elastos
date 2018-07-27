@@ -47,8 +47,8 @@ namespace Elastos {
 			return new SidechainMerkleBlock((IdMerkleBlock *)block, manageRaw);
 		}
 
-		IMerkleBlock *SidechainMerkleBlock::Clone(bool manageRaw) const {
-			return new SidechainMerkleBlock(IdMerkleBlockCopy(_merkleBlock), manageRaw);
+		IMerkleBlock *SidechainMerkleBlock::Clone(const BRMerkleBlock *block, bool manageRaw) const {
+			return new SidechainMerkleBlock(IdMerkleBlockCopy((const IdMerkleBlock *)block), manageRaw);
 		}
 
 		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {

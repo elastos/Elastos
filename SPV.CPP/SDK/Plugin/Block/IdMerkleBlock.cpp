@@ -15,7 +15,7 @@ namespace Elastos {
 			return new IdMerkleBlock;
 		}
 
-		IdMerkleBlock *IdMerkleBlockCopy(IdMerkleBlock *orig) {
+		IdMerkleBlock *IdMerkleBlockCopy(const IdMerkleBlock *orig) {
 			assert(orig != nullptr);
 
 			IdMerkleBlock *cpy = IdMerkleBlockNew();
