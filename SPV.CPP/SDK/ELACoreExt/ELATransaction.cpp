@@ -116,6 +116,7 @@ namespace Elastos {
 				}
 				array_free(tx->raw.inputs);
 			}
+			tx->raw.inCount = 0;
 
 			if (tx->raw.outputs) {
 				for (size_t i = 0; i < tx->raw.outCount; i++) {
@@ -123,17 +124,22 @@ namespace Elastos {
 				}
 				array_free(tx->raw.outputs);
 			}
+			tx->raw.outCount = 0;
 
 			for (size_t i = 0; i < tx->outputs.size(); ++i)
 				delete tx->outputs[i];
+			tx->outputs.clear();
 
 			for (size_t i = 0; i < tx->attributes.size(); ++i)
 				delete tx->attributes[i];
+			tx->attributes.clear();
 
 			for (size_t i = 0; i < tx->programs.size(); ++i)
 				delete tx->programs[i];
+			tx->programs.clear();
 
 			delete tx->payload;
+			tx->payload = nullptr;
 		}
 
 		void ELATransactionReinit(ELATransaction *tx) {
