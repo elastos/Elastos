@@ -16,3 +16,6 @@
 [submodule "ThirdParty/openssl/openssl"]
 	path = SPV.CPP/ThirdParty/openssl/openssl
 	url = https://github.com/heropan/openssl.git
+[submodule "ThirdParty/fruit"]
+	path = SPV.CPP/ThirdParty/fruit
+	url = git@github.com:google/fruit.git

@@ -3,6 +3,8 @@ set(OPENSSL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openssl)
 set(OPENSSL_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl/build)
 set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl/install)
 
+file(MAKE_DIRECTORY ${OPENSSL_BUILD_DIR})
+
 if(SPV_FOR_ANDROID)
 	set(OPENSSL_SELECT_VERSION cd ${OPENSSL_ROOT_DIR}/openssl && git reset --hard origin/master || echo Never mind)
 	set(

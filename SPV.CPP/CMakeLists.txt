@@ -118,23 +118,10 @@ else (${CMAKE_SIZEOF_VOID_P} MATCHES "8")
 endif(${CMAKE_SIZEOF_VOID_P} MATCHES "8")
 message(STATUS "Build ${BIT}bit")
 
-if(NOT DEFINED SPV_INSTALL_PREFIX)
-	set(SPV_INSTALL_PREFIX "/usr/local/")
-endif(NOT DEFINED SPV_INSTALL_PREFIX)
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+	set(CMAKE_INSTALL_PREFIX "/usr/local/" CACHE PATH "Install prefix prepended to target to create install location")
+endif(NOT DEFINED CMAKE_INSTALL_PREFIX)
 
-set(
-	SPV_INSTALL_PREFIX
-	${SPV_INSTALL_PREFIX}
-	CACHE PATH "Install prefix prepended to target to create install location"
-)
-
-set(
-	CMAKE_INSTALL_PREFIX
-	${SPV_INSTALL_PREFIX}
-	CACHE INTERNAL "Prefix to install" FORCE
-)
-
-option_with_default(SPV_BUILD_SHARED_LIB "Build shared SPV libs" ON)
 option_with_default(SPV_BUILD_TEST_CASES "Build test cases" OFF)
 option_with_default(SPV_BUILD_SAMPLE "Build sample" OFF)
 option_with_default(CMAKE_EXPORT_COMPILE_COMMANDS "Export to compile_commands.json" OFF)
@@ -176,6 +163,7 @@ include_directories(
 	${SPVSDK_INC_DIRS}
 	${SPVJNI_INC_DIRS}
 	${INTERFACE_INC_DIRS}
+	${FRUIT_INC_DIRS}
 )
 
 set(
@@ -192,7 +180,7 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVJNI_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
 
 set(SPVSDK_TARGET_LIST ${SPVSDK_SHARED_TARGET} ${SPVSDK_STATIC_TARGET})
 
@@ -207,7 +195,7 @@ foreach(SPVSDK_TARGET ${SPVSDK_TARGET_LIST})
 
 	set_target_properties(${SPVSDK_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 	set_target_properties(${SPVSDK_TARGET} PROPERTIES OUTPUT_NAME "${SPVSDK_LIB_NAME}")
-	target_link_libraries(${SPVSDK_TARGET} dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
+	target_link_libraries(${SPVSDK_TARGET} dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
 	if(ANDROID)
 		target_link_libraries(${SPVSDK_TARGET} log atomic)
 	endif()
@@ -228,3 +216,4 @@ install(TARGETS ${SPVSDK_SHARED_TARGET} ${SPVSDK_STATIC_TARGET}
 )
 install(FILES ${INSTALL_HEADER_FILES} DESTINATION include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/Interface/nlohmann/json.hpp DESTINATION include/nlohmann)
+

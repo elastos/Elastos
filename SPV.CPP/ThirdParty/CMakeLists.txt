@@ -1,6 +1,7 @@
 
 include(openssl.cmake)
 include(boost.cmake)
+include(fruit.cmake)
 include(sqlite.cmake)
 include(catch2.cmake)
 include(json.cmake)

@@ -45,7 +45,7 @@ TEST_CASE("MerkleBlock construct test", "[MerkleBlock]") {
 
 			MerkleBlock mbOrig(block, true);
 
-			MerkleBlockPtr clonedBlock(mbOrig.Clone(true));
+			MerkleBlockPtr clonedBlock(mbOrig.Clone(mbOrig.getRaw(), true));
 
 			verifyELAMerkleBlock((ELAMerkleBlock *) clonedBlock->getRawBlock(), block);
 		}
