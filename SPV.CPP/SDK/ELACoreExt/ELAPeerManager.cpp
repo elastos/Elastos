@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <time.h>
+
 #include "Core/BRArray.h"
 
 #include "ELAPeerManager.h"
@@ -45,6 +47,7 @@ namespace Elastos {
 			manager->Raw.orphans = BRSetNew(_BRPrevBlockHash, _BRPrevBlockEq, blocksCount); // orphans are indexed by prevBlock
 			manager->Raw.checkpoints = BRSetNew(_BRBlockHeightHash, _BRBlockHeightEq, 100); // checkpoints are indexed by height
 
+			time_t now = time(nullptr);
 			for (size_t i = 0; i < manager->Raw.params->checkpointsCount; i++) {
 				block = manager->Raw.peerMessages->MerkleBlockNew(manager);
 				block->height = manager->Raw.params->checkpoints[i].height;
@@ -53,7 +56,9 @@ namespace Elastos {
 				block->target = manager->Raw.params->checkpoints[i].target;
 				BRSetAdd(manager->Raw.checkpoints, block);
 				BRSetAdd(manager->Raw.blocks, block);
-				if (i == 0 || block->timestamp + 7*24*60*60 < manager->Raw.earliestKeyTime) manager->Raw.lastBlock = block;
+				if (i == 0 || block->timestamp + 1*24*60*60 < manager->Raw.earliestKeyTime ||
+					(manager->Raw.earliestKeyTime == 0 && block->timestamp + 1*24*60*60 < now))
+					manager->Raw.lastBlock = block;
 			}
 
 			block = NULL;

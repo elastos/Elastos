@@ -23,6 +23,7 @@
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
 #include "Transaction/TransactionCompleter.h"
+#include "TimeUtils.h"
 
 namespace fs = boost::filesystem;
 
@@ -444,6 +445,9 @@ namespace Elastos {
 
 		void SubWallet::syncStarted() {
 			_syncStartHeight = _walletManager->getPeerManager()->getSyncStartHeight();
+			if (_info.getEarliestPeerTime() == 0) {
+				_info.setEaliestPeerTime(TimeUtils::getCurrentTime());
+			}
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [](ISubWalletCallback *callback) {
