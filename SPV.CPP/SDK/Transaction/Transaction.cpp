@@ -383,49 +383,42 @@ namespace Elastos {
 		void Transaction::Serialize(ByteStream &ostream) const {
 			serializeUnsigned(ostream);
 
-			ostream.putVarUint(_transaction->programs.size());
+			ostream.writeVarUint(_transaction->programs.size());
 			for (size_t i = 0; i < _transaction->programs.size(); i++) {
 				_transaction->programs[i]->Serialize(ostream);
 			}
 		}
 
 		void Transaction::serializeUnsigned(ByteStream &ostream) const {
-			ostream.put((uint8_t) _transaction->type);
+			ostream.writeBytes(&_transaction->type, 1);
 
-			ostream.put(_transaction->payloadVersion);
+			ostream.writeBytes(&_transaction->payloadVersion, 1);
 
-			assert(_transaction->payload != nullptr);
+			if (_transaction->payload == nullptr) {
+				Log::getLogger()->error("payload should not be null, payload type = {}, version = {}", _transaction->type, _transaction->payloadVersion);
+				throw std::logic_error("payload should not be null");
+			}
 			_transaction->payload->Serialize(ostream);
 
-			ostream.putVarUint(_transaction->attributes.size());
+			ostream.writeVarUint(_transaction->attributes.size());
 			for (size_t i = 0; i < _transaction->attributes.size(); i++) {
 				_transaction->attributes[i]->Serialize(ostream);
 			}
 
-			ostream.putVarUint(_transaction->raw.inCount);
+			ostream.writeVarUint(_transaction->raw.inCount);
 			for (size_t i = 0; i < _transaction->raw.inCount; i++) {
-				uint8_t transactionHashData[256 / 8];
-				UInt256Set(transactionHashData, _transaction->raw.inputs[i].txHash);
-				ostream.putBytes(transactionHashData, 256 / 8);
-
-				uint8_t indexData[16 / 8];
-				UInt16SetLE(indexData, uint16_t(_transaction->raw.inputs[i].index));
-				ostream.putBytes(indexData, 16 / 8);
-
-				uint8_t sequenceData[32 / 8];
-				UInt32SetLE(sequenceData, _transaction->raw.inputs[i].sequence);
-				ostream.putBytes(sequenceData, 32 / 8);
+				ostream.writeBytes(_transaction->raw.inputs[i].txHash.u8, sizeof(UInt256));
+				ostream.writeUint16(uint16_t(_transaction->raw.inputs[i].index));
+				ostream.writeUint32(_transaction->raw.inputs[i].sequence);
 			}
 
 			const std::vector<TransactionOutput *> &outputs = getOutputs();
-			ostream.putVarUint(outputs.size());
+			ostream.writeVarUint(outputs.size());
 			for (size_t i = 0; i < outputs.size(); i++) {
 				outputs[i]->Serialize(ostream);
 			}
 
-			uint8_t lockTimeData[32 / 8];
-			UInt32SetLE(lockTimeData, _transaction->raw.lockTime);
-			ostream.putBytes(lockTimeData, sizeof(lockTimeData));
+			ostream.writeUint32(_transaction->raw.lockTime);
 		}
 
 		bool Transaction::Deserialize(ByteStream &istream) {
@@ -456,11 +449,11 @@ namespace Elastos {
 			if (!istream.readVarUint(attributeLength))
 				return false;
 
-			_transaction->attributes.resize(attributeLength);
 			for (size_t i = 0; i < attributeLength; i++) {
-				_transaction->attributes[i] = new Attribute();
+				_transaction->attributes.push_back(new Attribute());
 				if (!_transaction->attributes[i]->Deserialize(istream)) {
 					Log::getLogger()->error("deserialize tx attribute[{}] error", i);
+					return false;
 				}
 			}
 
@@ -478,13 +471,13 @@ namespace Elastos {
 				}
 
 				uint16_t index = 0;
-				if (!istream.readBytes(&index, sizeof(index))) {
+				if (!istream.readUint16(index)) {
 					Log::getLogger()->error("deserialize tx input[{}] error", i);
 					return false;
 				}
 
 				uint32_t sequence = 0;
-				if (!istream.readBytes(&sequence, sizeof(sequence))) {
+				if (!istream.readUint32(sequence)) {
 					Log::getLogger()->error("deserialize tx sequence error");
 					return false;
 				}
@@ -498,22 +491,31 @@ namespace Elastos {
 				return false;
 			}
 
-			// TODO possible memory leak
-			_transaction->outputs.resize(outputLength);
 			for (size_t i = 0; i < outputLength; i++) {
-				_transaction->outputs[i] = new TransactionOutput();
-				_transaction->outputs[i]->Deserialize(istream);
+				_transaction->outputs.push_back(new TransactionOutput());
+				if (!_transaction->outputs[i]->Deserialize(istream)) {
+					Log::getLogger()->error("deserialize tx output[{}] error", i);
+					return false;
+				}
 			}
 
-			uint8_t lockTimeData[32 / 8];
-			istream.getBytes(lockTimeData, sizeof(lockTimeData));
-			_transaction->raw.lockTime = UInt32GetLE(lockTimeData);
+			if (!istream.readUint32(_transaction->raw.lockTime)) {
+				Log::getLogger()->error("deserialize tx lock time error");
+				return false;
+			}
 
-			uint64_t programLength = istream.getVarUint();
-			_transaction->programs.resize(programLength);
+			uint64_t programLength = 0;
+			if (!istream.readVarUint(programLength)) {
+				Log::getLogger()->error("deserialize tx program length error");
+				return false;
+			}
+
 			for (size_t i = 0; i < programLength; i++) {
-				_transaction->programs[i] = new Program();
-				_transaction->programs[i]->Deserialize(istream);
+				_transaction->programs.push_back(new Program());
+				if (!_transaction->programs[i]->Deserialize(istream)) {
+					Log::getLogger()->error("deserialize program[{}] error", i);
+					return false;
+				}
 			}
 
 			ByteStream ostream;
@@ -632,23 +634,20 @@ namespace Elastos {
 			}
 
 			std::vector<nlohmann::json> attributes = jsonData["Attributes"];
-			_transaction->attributes.resize(attributes.size());
-			for (size_t i = 0; i < _transaction->attributes.size(); ++i) {
-				_transaction->attributes[i] = new Attribute();
+			for (size_t i = 0; i < attributes.size(); ++i) {
+				_transaction->attributes.push_back(new Attribute());
 				_transaction->attributes[i]->fromJson(attributes[i]);
 			}
 
 			std::vector<nlohmann::json> programs = jsonData["Programs"];
-			_transaction->programs.resize(programs.size());
-			for (size_t i = 0; i < _transaction->programs.size(); ++i) {
-				_transaction->programs[i] = new Program();
+			for (size_t i = 0; i < programs.size(); ++i) {
+				_transaction->programs.push_back(new Program());
 				_transaction->programs[i]->fromJson(programs[i]);
 			}
 
 			std::vector<nlohmann::json> outputs = jsonData["Outputs"];
-			_transaction->outputs.resize(outputs.size());
 			for (size_t i = 0; i < outputs.size(); ++i) {
-				_transaction->outputs[i] = new TransactionOutput();
+				_transaction->outputs.push_back(new TransactionOutput());
 				_transaction->outputs[i]->fromJson(outputs[i]);
 			}
 
@@ -741,6 +740,7 @@ namespace Elastos {
 			}
 
 			rawTxJson["Summary"] = summary;
+			Log::getLogger()->info("transaction summary = {}", summary.dump());
 		}
 
 		std::string Transaction::getConfirmInfo(uint32_t blockHeight) {

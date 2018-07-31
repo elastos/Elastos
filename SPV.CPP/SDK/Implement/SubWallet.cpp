@@ -112,6 +112,7 @@ namespace Elastos {
 		}
 
 		uint64_t SubWallet::GetBalance() {
+			Log::getLogger()->info("chain = {}, balance = {}", _info.getChainId(), _walletManager->getWallet()->getBalance());
 			return _walletManager->getWallet()->getBalance();
 		}
 
@@ -257,7 +258,7 @@ namespace Elastos {
 
 			fireTransactionStatusChanged(txHash, SubWalletCallback::convertToString(SubWalletCallback::Added),
 										 transaction->toJson(), 0);
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxAdded) finished. Details: txHash={}, confirm count={}.",
+			Log::getLogger()->info("Tx callback (onTxAdded) finished. Details: txHash={}, confirm count={}.",
 						 txHash, 0);
 		}
 
@@ -271,7 +272,7 @@ namespace Elastos {
 			uint32_t confirm = blockHeight - _confirmingTxs[hash]->getBlockHeight() + 1;
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 										 _confirmingTxs[hash]->toJson(), confirm);
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxUpdated) finished. Details: txHash={}, confirm count={}.",
+			Log::getLogger()->info("Tx callback (onTxUpdated) finished. Details: txHash={}, confirm count={}.",
 						 hash, confirm);
 		}
 
@@ -279,7 +280,7 @@ namespace Elastos {
 			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxDeleted) begin");
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Deleted),
 										 nlohmann::json(), 0);
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxDeleted) finished.");
+			Log::getLogger()->info("Tx callback (onTxDeleted hash={}) finished.", hash);
 		}
 
 		void SubWallet::recover(int limitGap) {
@@ -470,14 +471,14 @@ namespace Elastos {
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
-				SPDLOG_DEBUG(Log::getLogger(), "Transaction height increased: txHash = {}, confirms = {}",
-							 it->first, blockHeight - it->second->getBlockHeight());
+				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}",
+							 it->first, blockHeight - it->second->getBlockHeight() + 1);
 				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-											 it->second->toJson(), blockHeight - it->second->getBlockHeight());
+											 it->second->toJson(), blockHeight - it->second->getBlockHeight() + 1);
 			}
 
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end();) {
-				if (blockHeight - it->second->getBlockHeight() >= 6)
+				if (blockHeight - it->second->getBlockHeight() + 1 >= 6)
 					_confirmingTxs.erase(it++);
 				else
 					++it;

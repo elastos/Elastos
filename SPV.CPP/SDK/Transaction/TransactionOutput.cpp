@@ -91,39 +91,32 @@ namespace Elastos {
 		}
 
 		void TransactionOutput::Serialize(ByteStream &ostream) const {
-			uint8_t assetIdData[256 / 8];
-			UInt256Set(assetIdData, _output->assetId);
-			ostream.putBytes(assetIdData, 256 / 8);
-
-			uint8_t amountData[64 / 8];
-			UInt64SetLE(amountData, _output->raw.amount);
-			ostream.putBytes(amountData, 64 / 8);
-
-			uint8_t outputLockData[32 / 8];
-			UInt32SetLE(outputLockData, _output->outputLock);
-			ostream.putBytes(outputLockData, 32 / 8);
-
-			uint8_t programHashData[168 / 8];
-			UInt168Set(programHashData, _output->programHash);
-			ostream.putBytes(programHashData, 168 / 8);
+			ostream.writeBytes(_output->assetId.u8, sizeof(_output->assetId));
+			ostream.writeUint64(_output->raw.amount);
+			ostream.writeUint32(_output->outputLock);
+			ostream.writeBytes(_output->programHash.u8, sizeof(_output->programHash));
 		}
 
 		bool TransactionOutput::Deserialize(ByteStream &istream) {
-			uint8_t assetIdData[256 / 8];
-			istream.getBytes(assetIdData, 256 / 8);
-			UInt256Get(&_output->assetId, assetIdData);
+			if (!istream.readBytes(_output->assetId.u8, sizeof(_output->assetId))) {
+				Log::getLogger()->error("deserialize output assetid error");
+				return false;
+			}
 
-			uint8_t amountData[64 / 8];
-			istream.getBytes(amountData, 64 / 8);
-			_output->raw.amount = UInt64GetLE(amountData);
+			if (!istream.readUint64(_output->raw.amount)) {
+				Log::getLogger()->error("deserialize output amount error");
+				return false;
+			}
 
-			uint8_t outputLockData[32 / 8];
-			istream.getBytes(outputLockData, 32 / 8);
-			_output->outputLock = UInt32GetLE(outputLockData);
+			if (!istream.readUint32(_output->outputLock)) {
+				Log::getLogger()->error("deserialize output lock error");
+				return false;
+			}
 
-			uint8_t programHashData[168 / 8];
-			istream.getBytes(programHashData, 168 / 8);
-			UInt168Get(&_output->programHash, programHashData);
+			if (!istream.readBytes(_output->programHash.u8, sizeof(_output->programHash))) {
+				Log::getLogger()->error("deserialize output program hash error");
+				return false;
+			}
 
 			setAddress(Utils::UInt168ToAddress(_output->programHash));
 
