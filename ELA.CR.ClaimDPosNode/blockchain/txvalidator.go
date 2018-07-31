@@ -163,14 +163,15 @@ func CheckTransactionInput(txn *Transaction) error {
 	if len(txn.Inputs) <= 0 {
 		return errors.New("transaction has no inputs")
 	}
-	for i, utxoin := range txn.Inputs {
-		if utxoin.Previous.TxID.IsEqual(EmptyHash) && (utxoin.Previous.Index == math.MaxUint16) {
+	inputSet := make(map[string]bool)
+	for _, input := range txn.Inputs {
+		if input.Previous.TxID.IsEqual(EmptyHash) && (input.Previous.Index == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
-		for j := 0; j < i; j++ {
-			if utxoin.Previous.IsEqual(txn.Inputs[j].Previous) {
-				return errors.New("duplicated transaction inputs")
-			}
+		if _, ok := inputSet[input.ReferKey()]; ok {
+			return errors.New("duplicated transaction inputs")
+		} else {
+			inputSet[input.ReferKey()] = true
 		}
 	}
 
