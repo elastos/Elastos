@@ -113,7 +113,8 @@ namespace Elastos {
 		}
 
 		uint64_t SubWallet::GetBalance() {
-			Log::getLogger()->info("chain = {}, balance = {}", _info.getChainId(), _walletManager->getWallet()->getBalance());
+			Log::getLogger()->info("chain = {}, balance = {}", _info.getChainId(),
+								   _walletManager->getWallet()->getBalance());
 			return _walletManager->getWallet()->getBalance();
 		}
 
@@ -245,7 +246,7 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (balanceChanged): balance={}", balance);
+			Log::getLogger()->info("Tx callback (balanceChanged): balance={}", balance);
 		}
 
 		void SubWallet::onTxAdded(const TransactionPtr &transaction) {
@@ -254,31 +255,31 @@ namespace Elastos {
 
 
 			std::string txHash = Utils::UInt256ToString(transaction->getHash());
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxAdded): Tx hash={}", txHash);
+			Log::getLogger()->info("Tx callback (onTxAdded): Tx hash={}", txHash);
 			_confirmingTxs[txHash] = transaction;
 
 			fireTransactionStatusChanged(txHash, SubWalletCallback::convertToString(SubWalletCallback::Added),
 										 transaction->toJson(), 0);
 			Log::getLogger()->info("Tx callback (onTxAdded) finished. Details: txHash={}, confirm count={}.",
-						 txHash, 0);
+								   txHash, 0);
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxUpdated)");
+			Log::getLogger()->info("Tx callback (onTxUpdated)");
 			if (_confirmingTxs.find(hash) == _confirmingTxs.end()) {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
 			}
 
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxUpdated): Tx hash={}", hash);
+			Log::getLogger()->info("Tx callback (onTxUpdated): Tx hash={}", hash);
 			uint32_t confirm = blockHeight - _confirmingTxs[hash]->getBlockHeight() + 1;
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 										 _confirmingTxs[hash]->toJson(), confirm);
 			Log::getLogger()->info("Tx callback (onTxUpdated) finished. Details: txHash={}, confirm count={}.",
-						 hash, confirm);
+								   hash, confirm);
 		}
 
 		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
-			SPDLOG_DEBUG(Log::getLogger(), "Tx callback (onTxDeleted) begin");
+			Log::getLogger()->info("Tx callback (onTxDeleted) begin");
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Deleted),
 										 nlohmann::json(), 0);
 			Log::getLogger()->info("Tx callback (onTxDeleted hash={}) finished.", hash);
@@ -317,7 +318,7 @@ namespace Elastos {
 
 		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
 										const std::string &payPassword) {
-			SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction method begin.");
+			Log::getLogger()->info("SubWallet signTransaction method begin.");
 
 			ParamChecker::checkNullPointer(transaction.get());
 			BRKey masterKey;
@@ -325,14 +326,14 @@ namespace Elastos {
 			deriveKeyAndChain(&masterKey, chainCode, payPassword);
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			ParamChecker::checkNullPointer(wallet);
-			SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction derive key down.");
+			Log::getLogger()->info("SubWallet signTransaction derive key down.");
 
 			BRTransaction *tx = transaction->getRaw();
 			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
 			size_t i, internalCount = 0, externalCount = 0;
 
 
-			SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction begin get indices.");
+			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
 			pthread_mutex_lock(&wallet->lock);
 			for (i = 0; i < tx->inCount; i++) {
 				if (wallet->internalChain) {
@@ -351,17 +352,17 @@ namespace Elastos {
 				}
 			}
 			pthread_mutex_unlock(&wallet->lock);
-			SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction end get indices.");
+			Log::getLogger()->info("SubWallet signTransaction end get indices.");
 
 			BRKey keys[internalCount + externalCount];
 			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
 			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
 										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
-			SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction calculate private key list done.");
+			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
 
 			if (tx) {
-				SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction begin sign method.");
+				Log::getLogger()->info("SubWallet signTransaction begin sign method.");
 				WrapperList<Key, BRKey> keyList;
 				for (i = 0; i < internalCount + externalCount; ++i) {
 					Key key(keys[i].secret, keys[i].compressed);
@@ -370,7 +371,7 @@ namespace Elastos {
 				if (!transaction->sign(keyList, forkId)) {
 					throw std::logic_error("Transaction Sign error!");
 				}
-				SPDLOG_DEBUG(Log::getLogger(), "SubWallet signTransaction end sign method.");
+				Log::getLogger()->info("SubWallet signTransaction end sign method.");
 			}
 
 			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
@@ -470,13 +471,13 @@ namespace Elastos {
 
 		void SubWallet::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
 			Log::getLogger()->info("Saving blocks: block count = {}, chain id = {}", blocks.size(),
-						 _info.getChainId());
+								   _info.getChainId());
 		}
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
 				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}",
-							 it->first, blockHeight - it->second->getBlockHeight() + 1);
+									   it->first, blockHeight - it->second->getBlockHeight());
 				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 it->second->toJson(), blockHeight - it->second->getBlockHeight() + 1);
 			}
