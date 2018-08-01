@@ -64,7 +64,7 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 func CheckTransactionContext(txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
-		log.Warn("[CheckTransactionContext] duplicate transaction check faild.")
+		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
 		return ErrTransactionDuplicate
 	}
 
@@ -103,45 +103,47 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return ErrDoubleSpend
 	}
 
-	if err := CheckTransactionUTXOLock(txn); err != nil {
+	references, err := DefaultLedger.Store.GetTxReference(txn)
+	if err != nil {
+		log.Warn("[CheckTransactionContext] get transaction reference failed")
+		return ErrUnknownReferedTx
+	}
+
+	if err := CheckTransactionUTXOLock(txn, references); err != nil {
 		log.Warn("[CheckTransactionUTXOLock],", err)
 		return ErrUTXOLocked
 	}
 
-	if err := CheckTransactionBalance(txn); err != nil {
-		log.Warn("[CheckTransactionBalance],", err)
+	if err := CheckTransactionFee(txn, references); err != nil {
+		log.Warn("[CheckTransactionFee],", err)
 		return ErrTransactionBalance
 	}
 
-	if err := CheckTransactionSignature(txn); err != nil {
+	if err := CheckTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
 	}
-	// check referenced Output value
+
+	if err := CheckTransactionCoinbaseOutputLock(txn); err != nil {
+		log.Warn("[CheckTransactionCoinbaseLock]", err)
+		return ErrIneffectiveCoinbase
+	}
+	return Success
+}
+
+func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID
-		referTxnOutIndex := input.Previous.Index
-		referTxn, _, err := DefaultLedger.Store.GetTransaction(referHash)
-		if err != nil {
-			log.Warn("Referenced transaction can not be found", BytesToHexString(referHash.Bytes()))
-			return ErrUnknownReferedTx
-		}
-		referTxnOut := referTxn.Outputs[referTxnOutIndex]
-		if referTxnOut.Value < 0 {
-			log.Warn("Value of referenced transaction output is invalid")
-			return ErrInvalidReferedTx
-		}
-		// coinbase transaction only can be spent after got CoinbaseLockTime times confirmations
+		referTxn, _, _ := DefaultLedger.Store.GetTransaction(referHash)
 		if referTxn.IsCoinBaseTx() {
 			lockHeight := referTxn.LockTime
 			currentHeight := DefaultLedger.Store.GetHeight()
 			if currentHeight-lockHeight < config.Parameters.ChainParam.CoinbaseLockTime {
-				return ErrIneffectiveCoinbase
+				return errors.New("cannot unlock coinbase transaction output")
 			}
 		}
 	}
-
-	return Success
+	return nil
 }
 
 //validate the transaction of duplicate UTXO input
@@ -220,6 +222,11 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 			if !CheckOutputProgramHash(output.ProgramHash) {
 				return errors.New("output address is invalid")
 			}
+			// output value must >= 0
+			if output.Value < Fixed64(0) {
+				return errors.New("Invalide transaction UTXO output.")
+			}
+
 		}
 	}
 
@@ -238,16 +245,9 @@ func CheckOutputProgramHash(programHash Uint168) bool {
 	return false
 }
 
-func CheckTransactionUTXOLock(txn *Transaction) error {
+func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
 	if txn.IsCoinBaseTx() {
 		return nil
-	}
-	if len(txn.Inputs) <= 0 {
-		return errors.New("Transaction has no inputs")
-	}
-	references, err := DefaultLedger.Store.GetTxReference(txn)
-	if err != nil {
-		return fmt.Errorf("GetReference failed: %s", err)
 	}
 	for input, output := range references {
 
@@ -298,22 +298,17 @@ func CheckAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(tx *Transaction) error {
-	// output value must >= 0
+func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
+	var outputValue Fixed64
+	var inputValue Fixed64
 	for _, output := range tx.Outputs {
-		if output.Value < Fixed64(0) {
-			return errors.New("Invalide transaction UTXO output.")
-		}
+		outputValue += output.Value
 	}
-
-	results, err := GetTxFeeMap(tx)
-	if err != nil {
-		return err
+	for _, reference := range references {
+		inputValue += reference.Value
 	}
-	for _, v := range results {
-		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			return fmt.Errorf("Transaction fee not enough")
-		}
+	if inputValue < Fixed64(config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+		return fmt.Errorf("transaction fee not enough")
 	}
 	return nil
 }
@@ -350,8 +345,20 @@ func CheckAttributeProgram(tx *Transaction) error {
 	return nil
 }
 
-func CheckTransactionSignature(txn *Transaction) error {
-	return VerifySignature(txn)
+func CheckTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
+	hashes, err := GetTxProgramHashes(tx, references)
+	if err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
+	tx.SerializeUnsigned(buf)
+
+	// Sort first
+	SortProgramHashes(hashes)
+	SortPrograms(tx.Programs)
+
+	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {

@@ -433,9 +433,8 @@ func TestCheckTransactionBalance(t *testing.T) {
 	// WithdrawFromSideChain will pass check in any condition
 	tx := new(core.Transaction)
 	tx.TxType = core.WithdrawFromSideChain
-	err := CheckTransactionBalance(tx)
-	assert.NoError(t, err)
-
+	references, _ := DefaultLedger.Store.GetTxReference(tx)
+	var err error
 	// deposit 100 ELA to foundation account
 	deposit := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
 	deposit.Outputs = []*core.Output{
@@ -445,17 +444,18 @@ func TestCheckTransactionBalance(t *testing.T) {
 	DefaultLedger.Store.(*ChainStore).PersistTransaction(deposit, 0)
 	DefaultLedger.Store.(*ChainStore).BatchCommit()
 
-	// invalid output value
+	// // invalid output value
 	tx = NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
 	tx.Inputs = []*core.Input{
 		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
 	}
-	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
-	}
-	err = CheckTransactionBalance(tx)
-	assert.EqualError(t, err, "Invalide transaction UTXO output.")
+	//tx.Outputs = []*core.Output{
+	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
+	//	{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
+	//}
+	//references, _ = DefaultLedger.Store.GetTxReference(tx)
+	//err = CheckTransactionFee(tx, references)
+	//assert.EqualError(t, err, "Invalide transaction UTXO output.")
 
 	// invalid transaction fee
 	config.Parameters.PowConfiguration.MinTxFee = int(1 * ELA)
@@ -463,8 +463,9 @@ func TestCheckTransactionBalance(t *testing.T) {
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
 		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(70 * ELA)},
 	}
-	err = CheckTransactionBalance(tx)
-	assert.EqualError(t, err, "Transaction fee not enough")
+	references, _ = DefaultLedger.Store.GetTxReference(tx)
+	err = CheckTransactionFee(tx, references)
+	assert.EqualError(t, err, "transaction fee not enough")
 
 	// rollback deposit above
 	DefaultLedger.Store.(*ChainStore).NewBatch()
