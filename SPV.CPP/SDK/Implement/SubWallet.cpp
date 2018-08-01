@@ -260,8 +260,8 @@ namespace Elastos {
 
 			fireTransactionStatusChanged(txHash, SubWalletCallback::convertToString(SubWalletCallback::Added),
 										 transaction->toJson(), 0);
-			Log::getLogger()->info("Tx callback (onTxAdded) finished. Details: txHash={}, confirm count={}.",
-								   txHash, 0);
+			Log::getLogger()->info("Tx callback (onTxAdded) finished. Details: txHash={}, tx height = {}, confirm count={}.",
+						 txHash, transaction->getBlockHeight(), 0);
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
@@ -476,13 +476,20 @@ namespace Elastos {
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
-				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}",
-									   it->first, blockHeight - it->second->getBlockHeight());
+				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}, tx height = {}, last block height = {}",
+							 it->first, blockHeight - it->second->getBlockHeight() + 1, it->second->getBlockHeight(), blockHeight);
+
+				if (it->second->getBlockHeight() == TX_UNCONFIRMED)
+					continue;
+
 				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 											 it->second->toJson(), blockHeight - it->second->getBlockHeight() + 1);
 			}
 
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end();) {
+				if (it->second->getBlockHeight() == TX_UNCONFIRMED)
+					continue;
+
 				if (blockHeight - it->second->getBlockHeight() + 1 >= 6)
 					_confirmingTxs.erase(it++);
 				else

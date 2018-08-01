@@ -131,7 +131,7 @@ namespace Elastos {
 		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
-			if (transaction != nullptr && transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				Log::getLogger()->info("Tx callback (onTxUpdated): Tx hash={}", hash);
 
 				std::string reversedId(hash.rbegin(), hash.rend());
@@ -152,7 +152,7 @@ namespace Elastos {
 		void IdChainSubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
-			if (transaction != nullptr && transaction->getTransactionType() != ELATransaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				Log::getLogger()->info("Tx callback (onTxDeleted) begin");
 				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
