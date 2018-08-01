@@ -211,23 +211,22 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 	if len(txn.Outputs) < 1 {
 		return errors.New("transaction has no outputs")
 	}
-
 	// check if output address is valid
-	if version&CheckTxOut == CheckTxOut {
-		for _, output := range txn.Outputs {
-			if output.AssetID != DefaultLedger.Blockchain.AssetID {
-				return errors.New("asset ID in output is invalid")
-			}
+	for _, output := range txn.Outputs {
+		if output.AssetID != DefaultLedger.Blockchain.AssetID {
+			return errors.New("asset ID in output is invalid")
+		}
 
+		// output value must >= 0
+		if output.Value < Fixed64(0) {
+			return errors.New("Invalide transaction UTXO output.")
+		}
+		if version&CheckTxOut == CheckTxOut {
 			if !CheckOutputProgramHash(output.ProgramHash) {
 				return errors.New("output address is invalid")
 			}
-			// output value must >= 0
-			if output.Value < Fixed64(0) {
-				return errors.New("Invalide transaction UTXO output.")
-			}
-
 		}
+
 	}
 
 	return nil
