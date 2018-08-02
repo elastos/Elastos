@@ -7,6 +7,7 @@
 #include <iostream>
 #include <catch.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <Core/BRTransaction.h>
 
 #include "BRTransaction.h"
 
@@ -104,6 +105,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		output->setAddress("EdTnJ92D6quqRKTJULzXAu3Tgk3zbv12pQ");
 		transaction->outputs.push_back(output);
 		transaction->raw.txHash = UINT256_ZERO;
+		transaction->raw.blockHeight = 1;
 		// FIXME cheat TransactionIsSign(), fix this after signTransaction works fine
 		CMBlock code(10);
 		CMBlock parameter(10);
@@ -123,6 +125,7 @@ TEST_CASE("Single address wallet Constructor method", "[Constructor]") {
 		CMBlock parameter2(10);
 		Program *program2 = new Program(code2, parameter2);
 		transaction2->programs.push_back(program2);
+		transaction2->raw.blockHeight = 1;
 		transactions.push_back(TransactionPtr(new Transaction(transaction2, false)));
 
 		SingleAddressWallet singleAddressWallet(transactions, createDummyPublicKey(), listener);
@@ -152,6 +155,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	CMBlock parameter(10);
 	Program *program = new Program(code, parameter);
 	transaction->programs.push_back(program);
+	transaction->raw.blockHeight = 1;
 	TransactionPtr txPtr(new Transaction(transaction, false));
 	txPtr->getHash();
 	REQUIRE(singleAddressWallet.registerTransaction(txPtr));
@@ -174,6 +178,7 @@ TEST_CASE("Single address wallet transaction related method", "[register,]") {
 	CMBlock parameter2(10);
 	Program *program2 = new Program(code2, parameter2);
 	transaction2->programs.push_back(program2);
+	transaction2->raw.blockHeight = 1;
 	TransactionPtr tx2Ptr(new Transaction(transaction2, false));
 	tx2Ptr->getHash();
 	REQUIRE(singleAddressWallet.registerTransaction(tx2Ptr));

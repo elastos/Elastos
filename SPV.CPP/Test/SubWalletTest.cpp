@@ -83,6 +83,7 @@ protected:
 		ELATransaction *elaTransaction = ELATransactionNew();
 		TransactionPtr tx(new Transaction(elaTransaction, false));
 		elaTransaction->type = ELATransaction::CoinBase;
+		elaTransaction->raw.blockHeight = 1;
 		TransactionOutput *out(new TransactionOutput());
 		out->setAddress(DefaultAddress[0]);
 		out->setAmount(150 * BASIC_UINT);
@@ -101,6 +102,7 @@ protected:
 		ELATransaction *elaTransaction1 = ELATransactionNew();
 		TransactionPtr tx1(new Transaction(elaTransaction1, false));
 		elaTransaction1->type = ELATransaction::CoinBase;
+		elaTransaction1->raw.blockHeight = 1;
 		TransactionOutput *out1 = new TransactionOutput();
 		out1->setAddress(DefaultAddress[0]);
 		out1->setAmount(250 * BASIC_UINT);
