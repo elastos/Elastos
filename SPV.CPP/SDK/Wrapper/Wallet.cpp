@@ -835,7 +835,7 @@ namespace Elastos {
 				// TODO: don't add outputs below TX_MIN_OUTPUT_AMOUNT
 				// TODO: don't add coin generation outputs < 100 blocks deep
 				// NOTE: balance/UTXOs will then need to be recalculated when last block changes
-				for (j = 0; j < tx->outputs.size(); j++) {
+				for (j = 0; tx->raw.blockHeight != TX_UNCONFIRMED && j < tx->outputs.size(); j++) {
 					if (tx->outputs[j]->getRaw()->address[0] != '\0') {
 						BRSetAdd(wallet->usedAddrs, tx->outputs[j]->getRaw()->address);
 

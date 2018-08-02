@@ -25,6 +25,7 @@
 #include "BRWallet.h"
 #include "BRAddress.h"
 #include "BRArray.h"
+#include "BRTransaction.h"
 #include <stdlib.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -954,6 +955,9 @@ void BRWalletUpdateTransactions(BRWallet *wallet, const UInt256 txHashes[], size
     for (i = 0, j = 0; txHashes && i < txCount; i++) {
         tx = BRSetGet(wallet->allTx, &txHashes[i]);
         if (! tx || (tx->blockHeight == blockHeight && tx->timestamp == timestamp)) continue;
+
+        if (tx->blockHeight == TX_UNCONFIRMED) needsUpdate = 1;
+
         tx->timestamp = timestamp;
         tx->blockHeight = blockHeight;
 

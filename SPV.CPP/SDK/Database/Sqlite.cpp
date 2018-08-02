@@ -31,8 +31,6 @@ namespace Elastos {
 				return false;
 			}
 
-			SPDLOG_DEBUG(Log::getLogger(), "sqlite exec \"{}\"", sql);
-
 			int r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
