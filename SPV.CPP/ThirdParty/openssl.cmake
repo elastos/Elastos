@@ -44,7 +44,7 @@ add_custom_command(
 	WORKING_DIRECTORY ${OPENSSL_ROOT_DIR}
 )
 
-add_custom_target(build_openssl ALL DEPENDS ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
+add_custom_target(build_openssl DEPENDS ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
 
 add_library(ssl STATIC IMPORTED GLOBAL)
 add_library(crypto STATIC IMPORTED GLOBAL)

@@ -2,6 +2,13 @@ add_custom_target(
 	auto_run_test ALL
 )
 
+add_custom_command(
+	COMMENT "Copy Data to Test..."
+	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Data
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../Data ${CMAKE_CURRENT_BINARY_DIR}/Data
+	)
+add_custom_target(copy_test_data DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Data)
+
 unset(AUTO_TEST_COMMAND)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} TEST_SOURCE_FILES)
@@ -10,6 +17,7 @@ foreach(src ${TEST_SOURCE_FILES})
 	add_executable(${TEST_TARGET_NAME} ${src})
 	target_link_libraries(${TEST_TARGET_NAME} ${SPVSDK_SHARED_TARGET})
 	target_link_libraries(${TEST_TARGET_NAME} dl)
+	add_dependencies(${TEST_TARGET_NAME} copy_test_data)
 
 	if("${AUTO_TEST_COMMAND}" STREQUAL "")
 		set(AUTO_TEST_COMMAND ./${TEST_TARGET_NAME})
@@ -25,10 +33,11 @@ foreach(src ${TEST_SOURCE_FILES})
 	endif()
 endforeach()
 
-add_custom_command(
-	TARGET auto_run_test
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/../Data ${CMAKE_CURRENT_BINARY_DIR}/Data
-	COMMAND ${AUTO_TEST_COMMAND}
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-)
+if(NOT SPV_FOR_ANDROID)
+	add_custom_command(
+		TARGET auto_run_test
+		POST_BUILD
+		COMMAND ${AUTO_TEST_COMMAND}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	)
+endif()
