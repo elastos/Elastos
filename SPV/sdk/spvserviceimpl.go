@@ -19,7 +19,7 @@ import (
 const (
 	SendTxTimeout       = 10
 	MaxFalsePositives   = 7
-	SyncTickInterval    = 15 * time.Second
+	SyncTickInterval    = 10 * time.Second
 	SyncResponseTimeout = 30 * time.Second
 )
 
@@ -91,7 +91,6 @@ type SPVServiceImpl struct {
 	txAccept    chan *common.Uint256
 	txReject    chan *msg.Reject
 	handler     SPVHandler
-	syncQuit    chan struct{}
 	syncControl chan p2p.Message
 }
 
@@ -108,7 +107,6 @@ func NewSPVServiceImpl(client SPVClient, foundation string, headerStore store.He
 		SPVClient:   client,
 		chain:       chain,
 		handler:     handler,
-		syncQuit:    make(chan struct{}, 1),
 		syncControl: make(chan p2p.Message, 1),
 	}
 
@@ -266,8 +264,6 @@ func (s *SPVServiceImpl) stopSyncing() {
 	s.chain.SetChainState(WAITING)
 	// Remove sync peer
 	s.PeerManager().SetSyncPeer(nil)
-	// Quit sync handler
-	s.syncQuit <- struct{}{}
 	// Update bloom filter
 	s.ReloadFilter()
 }
@@ -288,31 +284,31 @@ func (s *SPVServiceImpl) syncHandler() {
 	syncTicker := time.NewTicker(SyncTickInterval)
 	defer syncTicker.Stop()
 
-	// pendingResponses tracks the expected response deadline times.
-	pendingResponses := make(map[string]time.Time)
+	// pendingResponses tracks the expected responses.
+	pendingResponses := make(map[string]struct{})
 
-start:
-	// Reset pending response map if not empty
-	if len(pendingResponses) > 0 {
-		pendingResponses = make(map[string]time.Time)
-	}
+	// lastActive tracks the last active sync message.
+	var lastActive time.Time
 
 	for {
 		select {
 		case ctrMsg := <-s.syncControl:
+			// update last active time
+			lastActive = time.Now()
+
 			switch message := ctrMsg.(type) {
 			case *msg.GetBlocks:
-				// Add deadline for expected inventory message
-				pendingResponses[p2p.CmdInv] = time.Now().Add(SyncResponseTimeout)
+				// Add expected response
+				pendingResponses[p2p.CmdInv] = struct{}{}
 
 			case *msg.Inventory:
-				// Remove received inventory from expected response map.
+				// Remove inventory from expected response map.
 				delete(pendingResponses, p2p.CmdInv)
 
 			case *msg.GetData:
-				// Add deadline for expected messages
+				// Add expected responses
 				for _, iv := range message.InvList {
-					pendingResponses[iv.Hash.String()] = time.Now().Add(SyncResponseTimeout)
+					pendingResponses[iv.Hash.String()] = struct{}{}
 				}
 
 			case *msg.MerkleBlock:
@@ -325,38 +321,35 @@ start:
 
 			case *msg.NotFound:
 				// NotFound should not received from sync peer
-				s.changeSyncPeer()
-				goto start
+				goto QUIT
 			}
 
 		case <-syncTicker.C:
-			// Disconnect the peer if any of the pending responses
-			// don't arrive by their adjusted deadline.
-			now := time.Now()
-			for pending, deadline := range pendingResponses {
-				if now.Before(deadline) {
-					continue
-				}
-
-				log.Debugf("peer %v appears to be stalled or misbehaving,"+
-					" %s timeout -- disconnecting", s.PeerManager().GetSyncPeer(), pending)
-				s.changeSyncPeer()
-				goto start
+			// Blockchian not in syncing mode
+			if !s.chain.IsSyncing() {
+				continue
 			}
 
-		case <-s.syncQuit:
-			goto start
+			// There are no pending responses
+			if len(pendingResponses) == 0 {
+				continue
+			}
+
+			// Disconnect the peer if any of the pending responses
+			// don't arrive by their adjusted deadline.
+			if time.Now().Before(lastActive.Add(SyncResponseTimeout)) {
+				continue
+			}
+
+			log.Debugf("peer %v appears to be stalled or misbehaving,"+
+				" response timeout -- disconnecting", s.PeerManager().GetSyncPeer())
+			goto QUIT
 		}
 	}
 
-cleanup:
-	for {
-		select {
-		case <-s.syncControl:
-		default:
-			break cleanup
-		}
-	}
+QUIT:
+	s.changeSyncPeer()
+	go s.syncHandler()
 }
 
 func (s *SPVServiceImpl) changeSyncPeer() {
@@ -364,7 +357,7 @@ func (s *SPVServiceImpl) changeSyncPeer() {
 	syncPeer := s.PeerManager().GetSyncPeer()
 	if syncPeer != nil {
 		// Disconnect current sync peer
-		syncPeer.Disconnect()
+		s.PeerManager().PeerDisconnected(syncPeer)
 
 		// Restart
 		s.stopSyncing()
@@ -398,7 +391,6 @@ func (h *spvMsgHandler) updateBloomFilter() {
 }
 
 func (h *spvMsgHandler) OnPeerEstablish(peer *net.Peer) {
-	log.Debug(peer)
 	// Set handler's peer
 	h.peer = peer
 	// Send filterload message
@@ -406,8 +398,7 @@ func (h *spvMsgHandler) OnPeerEstablish(peer *net.Peer) {
 }
 
 func (h *spvMsgHandler) OnInventory(peer *net.Peer, m *msg.Inventory) error {
-	log.Debug(peer)
-	// Sync control
+	// Notify sync control
 	h.syncControl(m)
 
 	getData := msg.NewGetData()
@@ -443,7 +434,7 @@ func (h *spvMsgHandler) OnInventory(peer *net.Peer, m *msg.Inventory) error {
 	}
 
 	if len(getData.InvList) > 0 {
-		// Sync control
+		// Notify sync control
 		h.syncControl(getData)
 
 		peer.Send(getData)
@@ -452,8 +443,7 @@ func (h *spvMsgHandler) OnInventory(peer *net.Peer, m *msg.Inventory) error {
 }
 
 func (h *spvMsgHandler) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) error {
-	log.Debug(peer)
-	// Sync control
+	// Notify sync control
 	h.syncControl(block)
 
 	blockHash := block.Header.(*ela.Header).Hash()
@@ -487,15 +477,14 @@ func (h *spvMsgHandler) OnMerkleBlock(peer *net.Peer, block *msg.MerkleBlock) er
 		getData.AddInvVect(msg.NewInvVect(msg.InvTypeTx, txId))
 		h.downloading.queueTx(*txId)
 	}
-	// Sync control
+	// Notify sync control
 	h.syncControl(getData)
 
 	return nil
 }
 
 func (h *spvMsgHandler) OnTx(peer *net.Peer, msg *msg.Tx) error {
-	log.Debug(peer)
-	// Sync control
+	// Notify sync control
 	h.syncControl(msg)
 
 	tx := msg.Transaction.(*ela.Transaction)
@@ -525,8 +514,7 @@ func (h *spvMsgHandler) OnTx(peer *net.Peer, msg *msg.Tx) error {
 }
 
 func (h *spvMsgHandler) OnNotFound(peer *net.Peer, notFound *msg.NotFound) error {
-	log.Debug(peer)
-	// Sync control
+	// Notify sync control
 	h.syncControl(notFound)
 
 	for _, iv := range notFound.InvList {
@@ -549,7 +537,6 @@ func (h *spvMsgHandler) OnNotFound(peer *net.Peer, notFound *msg.NotFound) error
 }
 
 func (h *spvMsgHandler) OnReject(peer *net.Peer, msg *msg.Reject) error {
-	log.Debug(peer)
 	if h.service.pendingTx.IsEqual(msg.Hash); h.service.txReject != nil {
 		h.service.txReject <- msg
 		return nil
