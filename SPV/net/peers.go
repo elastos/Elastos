@@ -7,8 +7,7 @@ import (
 )
 
 type Peers struct {
-	syncPeerLock *sync.RWMutex
-	syncPeer     *Peer
+	syncPeer *Peer
 
 	local     *Peer
 	peersLock *sync.RWMutex
@@ -18,7 +17,6 @@ type Peers struct {
 func newPeers(localPeer *Peer) *Peers {
 	peers := new(Peers)
 	peers.local = localPeer
-	peers.syncPeerLock = new(sync.RWMutex)
 	peers.peersLock = new(sync.RWMutex)
 	peers.peers = make(map[uint64]*Peer)
 	return peers
@@ -113,50 +111,38 @@ func (p *Peers) GetBestPeer() *Peer {
 }
 
 func (p *Peers) Broadcast(msg Message) {
-	p.peersLock.RLock()
-	defer p.peersLock.RUnlock()
+	// Make a copy of neighbor peers list,
+	// This can prevent mutex lock when peer.Send()
+	// method fire a disconnect event.
+	neighbors := p.ConnectedPeers()
 
-	for _, peer := range p.peers {
+	// Do broadcast
+	go func() {
+		for _, peer := range neighbors {
 
-		// Skip unestablished peer
-		if peer.State() != ESTABLISH {
-			continue
+			// Skip unestablished peer
+			if peer.State() != ESTABLISH {
+				continue
+			}
+
+			// Skip non relay peer
+			if peer.Relay() == 0 {
+				continue
+			}
+
+			peer.Send(msg)
 		}
-
-		// Skip non relay peer
-		if peer.Relay() == 0 {
-			continue
-		}
-
-		peer.Send(msg)
-	}
+	}()
 }
 
-func (p *Peers) SetSyncPeer(peer *Peer) {
-	p.syncPeerLock.Lock()
-	defer p.syncPeerLock.Unlock()
-
-	p.syncPeer = peer
+func (p *Peers) ClearSyncPeer() {
+	p.syncPeer = nil
 }
 
 func (p *Peers) GetSyncPeer() *Peer {
-	p.syncPeerLock.Lock()
-	defer p.syncPeerLock.Unlock()
-
 	if p.syncPeer == nil {
 		p.syncPeer = p.GetBestPeer()
 	}
 
 	return p.syncPeer
-}
-
-func (p *Peers) IsSyncPeer(peer *Peer) bool {
-	p.syncPeerLock.RLock()
-	defer p.syncPeerLock.RUnlock()
-
-	if p.syncPeer == nil || peer == nil {
-		return false
-	}
-
-	return p.syncPeer.ID() == peer.ID()
 }

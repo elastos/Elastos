@@ -262,8 +262,8 @@ func (s *SPVServiceImpl) stopSyncing() {
 	}
 	// Set blockchain state to waiting
 	s.chain.SetChainState(WAITING)
-	// Remove sync peer
-	s.PeerManager().SetSyncPeer(nil)
+	// Clear sync peer
+	s.PeerManager().ClearSyncPeer()
 	// Update bloom filter
 	s.ReloadFilter()
 }

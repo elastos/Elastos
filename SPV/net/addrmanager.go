@@ -10,44 +10,73 @@ import (
 const (
 	// needAddressThreshold is the number of addresses under which the
 	// address manager will claim to need more addresses.
-	needAddressThreshold = 1000
+	needAddressThreshold = 100
 	// addressListMonitorDuration is the time gap to check and remove
 	// any bad addresses from address list
 	addressListMonitorDuration = time.Hour * 12
 )
 
 type AddrManager struct {
-	sync.RWMutex
+	mutex       sync.RWMutex
 	minOutbound int
-	addrList    map[string]*knownAddress
-	connected   map[string]*knownAddress
+	addresses   *addrList
+	connected   *addrList
+}
+
+type addrList struct {
+	list map[string]*knownAddress
+}
+
+func newAddressesList() *addrList {
+	return &addrList{
+		list: make(map[string]*knownAddress),
+	}
+}
+
+func (a *addrList) Put(key string, value *knownAddress) {
+	a.list[key] = value
+}
+
+func (a *addrList) Get(key string) *knownAddress {
+	return a.list[key]
+}
+
+func (a *addrList) Exit(key string) bool {
+	_, ok := a.list[key]
+	return ok
+}
+
+func (a *addrList) Del(key string) {
+	delete(a.list, key)
+}
+
+func (a *addrList) Len() int {
+	return len(a.list)
 }
 
 func newAddrManager(minOutbound int) *AddrManager {
 	am := new(AddrManager)
 	am.minOutbound = minOutbound
-	am.addrList = make(map[string]*knownAddress)
-	am.connected = make(map[string]*knownAddress)
+	am.addresses = newAddressesList()
+	am.connected = newAddressesList()
 	return am
 }
 
 func (am *AddrManager) NeedMoreAddresses() bool {
-	return len(am.addrList) < needAddressThreshold
+	am.mutex.RLock()
+	defer am.mutex.RUnlock()
+	return am.addresses.Len() < needAddressThreshold
 }
 
-func (am *AddrManager) GetOutboundAddresses(cm *ConnManager) []p2p.NetAddress {
-	am.Lock()
-	defer am.Unlock()
+func (am *AddrManager) GetOutboundAddresses() []p2p.NetAddress {
+	am.mutex.RLock()
+	defer am.mutex.RUnlock()
 
 	var addrs []p2p.NetAddress
-	for _, addr := range SortAddressMap(am.addrList) {
+	for _, addr := range SortAddressMap(am.addresses.list) {
 		address := addr.String()
-		// Skip connecting address
-		if cm.IsConnecting(address) {
-			continue
-		}
 		// Skip connected address
-		if _, ok := am.connected[address]; ok {
+		if am.connected.Exit(address) {
 			continue
 		}
 		addr.increaseAttempts()
@@ -65,11 +94,11 @@ func (am *AddrManager) GetOutboundAddresses(cm *ConnManager) []p2p.NetAddress {
 }
 
 func (am *AddrManager) RandGetAddresses() []p2p.NetAddress {
-	am.Lock()
-	defer am.Unlock()
+	am.mutex.RLock()
+	defer am.mutex.RUnlock()
 
 	var addrs []p2p.NetAddress
-	for _, addr := range am.addrList {
+	for _, addr := range am.addresses.list {
 		if addr.isBad() {
 			continue
 		}
@@ -82,34 +111,34 @@ func (am *AddrManager) RandGetAddresses() []p2p.NetAddress {
 }
 
 func (am *AddrManager) AddressConnected(na *p2p.NetAddress) {
-	am.Lock()
-	defer am.Unlock()
+	am.mutex.Lock()
+	defer am.mutex.Unlock()
 
 	addr := na.String()
 	// Try add to address list
 	am.addOrUpdateAddress(na)
-	if _, ok := am.connected[addr]; !ok {
-		ka := am.addrList[addr]
+	if !am.connected.Exit(addr) {
+		ka := am.addresses.Get(addr)
 		ka.SaveAddr(na)
-		am.connected[addr] = ka
+		am.connected.Put(addr, ka)
 	}
 }
 
 func (am *AddrManager) AddressDisconnect(na *p2p.NetAddress) {
-	am.Lock()
-	defer am.Unlock()
+	am.mutex.Lock()
+	defer am.mutex.Unlock()
 
 	addr := na.String()
 	// Update disconnect time
-	ka := am.addrList[addr]
+	ka := am.addresses.Get(addr)
 	ka.updateLastDisconnect()
 	// Delete from connected list
-	delete(am.connected, addr)
+	am.connected.Del(addr)
 }
 
 func (am *AddrManager) AddOrUpdateAddress(na *p2p.NetAddress) {
-	am.Lock()
-	defer am.Unlock()
+	am.mutex.Lock()
+	defer am.mutex.Unlock()
 
 	am.addOrUpdateAddress(na)
 }
@@ -117,14 +146,26 @@ func (am *AddrManager) AddOrUpdateAddress(na *p2p.NetAddress) {
 func (am *AddrManager) addOrUpdateAddress(na *p2p.NetAddress) {
 	addr := na.String()
 	// Update already known address
-	if ka, ok := am.addrList[addr]; ok {
+	ka := am.addresses.Get(addr)
+	if ka == nil {
+		ka := new(knownAddress)
 		ka.SaveAddr(na)
-		return
+		// Add to address list
+		am.addresses.Put(addr, ka)
+	} else {
+		ka.SaveAddr(na)
 	}
-	ka := new(knownAddress)
-	ka.SaveAddr(na)
-	// Add to address list
-	am.addrList[addr] = ka
+}
+
+func (am *AddrManager) KnowAddresses() []p2p.NetAddress {
+	am.mutex.RLock()
+	defer am.mutex.RUnlock()
+
+	nas := make([]p2p.NetAddress, 0, am.addresses.Len())
+	for _, ka := range am.addresses.list {
+		nas = append(nas, ka.NetAddress)
+	}
+	return nas
 }
 
 func (am *AddrManager) monitorAddresses() {
@@ -132,12 +173,12 @@ func (am *AddrManager) monitorAddresses() {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		am.Lock()
-		for _, ka := range am.addrList {
+		am.mutex.Lock()
+		for addr, ka := range am.addresses.list {
 			if ka.isBad() {
-				delete(am.addrList, ka.String())
+				delete(am.addresses.list, addr)
 			}
 		}
-		am.Unlock()
+		am.mutex.Unlock()
 	}
 }

@@ -23,7 +23,7 @@ func TestPeerManager_AddConnectedPeer(t *testing.T) {
 		peer.SetState(p2p.ESTABLISH)
 		rand.Read(peer.ip16[:])
 		peer.port = uint16(rand.Uint32())
-		pm.AddConnectedPeer(peer)
+		pm.PeerConnected(peer)
 		assert.Equal(t, true, pm.cm.IsConnected(peer.Addr().String()))
 		if pm.PeersCount() < 10 {
 			goto ADD
@@ -46,7 +46,7 @@ func TestPeerManager_AddConnectedPeer(t *testing.T) {
 			if peer == nil {
 				goto NEXT
 			}
-			pm.OnDisconnected(peer)
+			pm.PeerDisconnected(peer)
 			assert.Equal(t, false, pm.cm.IsConnected(peer.Addr().String()))
 			count++
 			if count > 100 {

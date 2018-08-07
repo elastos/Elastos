@@ -131,19 +131,19 @@ func (h *spvHandler) OnPong(peer *net.Peer, p *msg.Pong) error {
 func (h *spvHandler) heartBeat(peer *net.Peer) {
 	ticker := time.NewTicker(time.Second * net.InfoUpdateDuration)
 	defer ticker.Stop()
-	for {
-		select {
-		case <-ticker.C:
-			// Disconnect peer if keep alive timeout
-			if time.Now().After(peer.LastActive().Add(time.Second * net.InfoUpdateDuration * net.KeepAliveTimeout)) {
-				peer.Disconnect()
-				return
-			}
-
-			// Send ping message to peer
-			if peer.State() == p2p.ESTABLISH {
-				peer.Send(msg.NewPing(uint32(h.peerManager.Local().Height())))
-			}
+	for range ticker.C {
+		// Check if peer already disconnected
+		if peer.State() == p2p.INACTIVITY {
+			return
 		}
+
+		// Disconnect peer if keep alive timeout
+		if time.Now().After(peer.LastActive().Add(time.Second * net.KeepAliveTimeout)) {
+			peer.Disconnect()
+			return
+		}
+
+		// Send ping message to peer
+		peer.Send(msg.NewPing(uint32(h.peerManager.Local().Height())))
 	}
 }
