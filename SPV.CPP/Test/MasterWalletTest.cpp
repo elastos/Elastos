@@ -460,6 +460,11 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
 													   "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"),
 						  std::invalid_argument);
 	}
+	SECTION("Change password with phrase password not null") {
+        boost::scoped_ptr<TestMasterWallet> masterWallet2(new TestMasterWallet("", payPassword));
+        std::string newPayPassword = "newPayPassword";
+        REQUIRE_NOTHROW(masterWallet->ChangePassword(payPassword, newPayPassword));
+	}
 }
 
 TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {

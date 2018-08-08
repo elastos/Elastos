@@ -691,6 +691,7 @@ namespace Elastos {
 			setRemark(remark);
 
 			nlohmann::json summary;
+			summary["TxHash"] = rawTxJson["TxHash"].get<std::string>();
 			summary["Status"] = getStatus(blockHeight);
 			summary["ConfirmStatus"] = getConfirmInfo(blockHeight);
 			summary["Remark"] = getRemark();

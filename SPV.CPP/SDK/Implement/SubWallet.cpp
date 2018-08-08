@@ -161,6 +161,8 @@ namespace Elastos {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			assert(wallet != nullptr);
 
+			Log::getLogger()->info("GetAllTransaction: start = {}, count = {}, addressOrTxid = {}", start, count, addressOrTxid);
+
 			size_t fullTxCount = array_count(wallet->transactions);
 			size_t pageCount = count;
 			pthread_mutex_lock(&wallet->lock);

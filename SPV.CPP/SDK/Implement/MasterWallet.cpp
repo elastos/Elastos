@@ -512,7 +512,6 @@ namespace Elastos {
 			CMBlock key = Utils::decrypt(_localStore.GetEncrpytedKey(), oldPassword);
 			ParamChecker::checkDataNotEmpty(key, false);
 			CMBlock phrasePass = Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), oldPassword);
-			ParamChecker::checkDataNotEmpty(phrasePass, false);
 			CMBlock mnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), oldPassword);
 			ParamChecker::checkDataNotEmpty(mnemonic, false);
 
