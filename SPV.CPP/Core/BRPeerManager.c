@@ -863,7 +863,7 @@ static void _peerDisconnected(void *info, int error)
 
     if (!manager->isShutDown && array_count(manager->connectedPeers) <= 0 && array_count(manager->peers) <= 0) {
         _peer_log("No connected peers left, going to find peers and do reconnect again, shutdown = %d\n", manager->isShutDown);
-        sleep(5);
+        sleep(15);
         willReconnect = 1;
     }
 

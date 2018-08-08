@@ -171,13 +171,10 @@ namespace Elastos {
 
 			BRTransaction *transactions[pageCount];
 			uint32_t realCount = 0;
-			for (size_t i = 0; i < pageCount; i++) {
-				if (!filterByAddressOrTxId(
-						wallet->transactions[start + pageCount - i - 1], addressOrTxid))
+			for (int i = fullTxCount - 1 - start; i >= 0 && realCount < pageCount; --i) {
+				if (!filterByAddressOrTxId(wallet->transactions[i], addressOrTxid))
 					continue;
-				transactions[realCount] =
-						wallet->transactions[start + pageCount - i - 1];
-				realCount++;
+				transactions[realCount++] = wallet->transactions[i];
 			}
 			pthread_mutex_unlock(&wallet->lock);
 
