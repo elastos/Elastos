@@ -55,8 +55,7 @@ set(SRC
     api/test_helper.c
     api/tests.c
     robot/cmd.c
-    robot/robot.c
-    spopen.c)
+    robot/robot.c)
 
 add_definitions(-DLIBCONFIG_STATIC)
 
