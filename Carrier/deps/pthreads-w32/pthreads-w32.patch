@@ -1,6 +1,6 @@
 diff -ru pthreads-w32/pthreads.2/Makefile pthreads-w32-mod/pthreads.2/Makefile
---- pthreads-w32/pthreads.2/Makefile	2012-05-27 14:18:10.000000000 +0800
-+++ pthreads-w32-mod/pthreads.2/Makefile	2018-07-30 14:57:07.000000000 +0800
+--- pthreads-w32/pthreads.2/Makefile	2018-08-08 09:44:21.000000000 +0800
++++ pthreads-w32-mod/pthreads.2/Makefile	2018-08-08 11:12:15.000000000 +0800
 @@ -13,7 +13,7 @@
  
  DEVROOT	= C:\pthreads
@@ -10,9 +10,19 @@ diff -ru pthreads-w32/pthreads.2/Makefile pthreads-w32-mod/pthreads.2/Makefile
  LIBDEST	= $(DEVROOT)\lib
  HDRDEST	= $(DEVROOT)\include
  
+@@ -469,6 +469,9 @@
+ 
+ 
+ install:
++	if not exist $(DLLDEST) mkdir $(DLLDEST)
++	if not exist $(LIBDEST) mkdir $(LIBDEST)
++	if not exist $(HDRDEST) mkdir $(HDRDEST)
+ 	copy pthread*.dll $(DLLDEST)
+ 	copy pthread*.lib $(LIBDEST)
+ 	copy pthread.h $(HDRDEST)
 diff -ru pthreads-w32/pthreads.2/pthread.h pthreads-w32-mod/pthreads.2/pthread.h
---- pthreads-w32/pthreads.2/pthread.h	2012-05-27 14:18:10.000000000 +0800
-+++ pthreads-w32-mod/pthreads.2/pthread.h	2018-07-30 15:10:10.000000000 +0800
+--- pthreads-w32/pthreads.2/pthread.h	2018-08-08 09:44:21.000000000 +0800
++++ pthreads-w32-mod/pthreads.2/pthread.h	2018-08-08 11:10:37.000000000 +0800
 @@ -313,7 +313,7 @@
  #endif
  #endif
