@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"sync"
+	"fmt"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
@@ -45,9 +46,18 @@ func (db *STXOsDB) FromUTXO(outPoint *core.OutPoint, spendTxId *common.Uint256, 
 	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash, SpendHash, SpendHeight)
 			SELECT UTXOs.OutPoint, UTXOs.Value, UTXOs.LockTime, UTXOs.AtHeight, UTXOs.ScriptHash, ?, ? FROM UTXOs
 			WHERE OutPoint=?`
-	_, err = tx.Exec(sql, spendTxId.Bytes(), spendHeight, outPoint.Bytes())
+	result, err := tx.Exec(sql, spendTxId.Bytes(), spendHeight, outPoint.Bytes())
 	if err != nil {
 		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return nil
+	}
+
+	if rows == 0 {
+		return fmt.Errorf("no rows effected")
 	}
 
 	_, err = tx.Exec("DELETE FROM UTXOs WHERE OutPoint=?", outPoint.Bytes())
