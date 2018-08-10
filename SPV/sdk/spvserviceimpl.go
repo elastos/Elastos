@@ -18,7 +18,7 @@ import (
 
 const (
 	SendTxTimeout       = 10
-	MaxFalsePositives   = 7
+	FalsePositiveRate   = float32(1) / float32(1000)
 	SyncTickInterval    = 10 * time.Second
 	SyncResponseTimeout = 30 * time.Second
 )
@@ -371,6 +371,7 @@ type spvMsgHandler struct {
 	blockQueue  chan common.Uint256
 	downloading *downloadBlock
 	downloadTx  *downloadTx
+	receivedTxs int
 	fPositives  int
 }
 
@@ -602,21 +603,26 @@ func (h *spvMsgHandler) commitBlock(block *downloadBlock) {
 	}
 
 	for _, tx := range block.txs {
+		// Increase received transaction count
+		h.receivedTxs++
+
 		falsePositive, err := h.service.handler.CommitTx(tx, header.Height)
 		if err != nil {
 			log.Errorf("Commit transaction %s failed %s", tx.Hash().String(), err.Error())
 			return
 		}
 
+		// Increase false positive count
 		if falsePositive {
 			h.fPositives++
-			if h.fPositives > MaxFalsePositives {
-				// Broadcast filterload message to connected peers
-				h.updateBloomFilter()
-				h.fPositives = 0
-			}
-			continue
 		}
+	}
+
+	// Refresh bloom filter if false positives meet target rate
+	if float32(h.fPositives)/float32(h.receivedTxs) > FalsePositiveRate {
+		h.updateBloomFilter()
+		h.receivedTxs = 0
+		h.fPositives = 0
 	}
 
 	h.service.updateLocalHeight(newHeight)
