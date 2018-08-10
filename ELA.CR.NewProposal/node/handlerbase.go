@@ -46,6 +46,11 @@ func (h *HandlerBase) OnError(err error) {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error) {
+	// Nothing to do if node already disconnected
+	if h.node.State() == p2p.INACTIVITY {
+		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
+	}
+
 	switch cmd {
 	case p2p.CmdVersion:
 		message = new(msg.Version)

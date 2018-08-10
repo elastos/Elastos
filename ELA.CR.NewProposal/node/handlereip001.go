@@ -28,6 +28,10 @@ func NewHandlerEIP001(node protocol.Noder) *HandlerEIP001 {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *HandlerEIP001) OnMakeMessage(cmd string) (message p2p.Message, err error) {
+	// Nothing to do if node already disconnected
+	if h.node.State() == p2p.INACTIVITY {
+		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
+	}
 	// Filter messages through open port message filter
 	if err = h.FilterMessage(cmd); err != nil {
 		return message, err
