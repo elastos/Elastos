@@ -52,7 +52,7 @@ type Noder interface {
 	Height() uint64
 	GetConn() net.Conn
 	CloseConn()
-	AddToHandshakeQueue(node Noder)
+	AddToHandshakeQueue(addr string, node Noder)
 	RemoveFromHandshakeQueue(node Noder)
 	GetConnectionCount() uint
 	GetTransactionPool(bool) map[common.Uint256]*core.Transaction
