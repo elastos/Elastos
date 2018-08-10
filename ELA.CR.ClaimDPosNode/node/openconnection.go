@@ -49,7 +49,7 @@ func listenNodeOpenPort() {
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.fromExtraNet = true
 		node.Read()
-		LocalNode.AddToHandshakeQueue(node)
+		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
 	}
 }
 
