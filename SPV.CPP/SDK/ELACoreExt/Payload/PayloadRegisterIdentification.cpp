@@ -110,6 +110,7 @@ namespace Elastos {
                 content["Path"] = _contents[i].Path;
                 content["DataHash"] = Utils::UInt256ToString(_contents[i].DataHash);
                 content["Proof"] = _contents[i].Proof;
+                contents.push_back(content);
             }
             j["Contents"] = contents;
             return j;
@@ -117,16 +118,17 @@ namespace Elastos {
 
         void PayloadRegisterIdentification::fromJson(const nlohmann::json &j) {
             _id = j["Id"].get<std::string>();
-            _sign = Utils::decodeHex(j["Sign"].get<std::string>());
+            if(j.find("Sign") != j.end())
+                _sign = Utils::decodeHex(j["Sign"].get<std::string>());
 
             std::vector<nlohmann::json> contents = j["Contents"];
             _contents.clear();
             for (int i = 0; i < contents.size(); ++i) {
                 SignContent content;
 
-                content.Path = j["Path"].get<std::string>();
-                content.DataHash = Utils::UInt256FromString(j["DataHash"].get<std::string>());
-                content.Proof = j["Proof"].get<std::string>();
+                content.Path = contents[i]["Path"].get<std::string>();
+                content.DataHash = Utils::UInt256FromString(contents[i]["DataHash"].get<std::string>());
+                content.Proof = contents[i]["Proof"].get<std::string>();
                 _contents.push_back(content);
             }
         }
