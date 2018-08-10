@@ -3,7 +3,6 @@ package node
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
@@ -172,11 +171,9 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	if LocalNode.NeedMoreAddresses() {
 		node.RequireNeighbourList()
 	}
-	addr := node.Addr()
-	port := node.Port()
-	nodeAddr := addr + ":" + strconv.Itoa(int(port))
+
 	LocalNode.RemoveFromHandshakeQueue(node)
-	LocalNode.RemoveFromConnectingList(nodeAddr)
+	LocalNode.RemoveFromConnectingList(node.NetAddress().String())
 	return nil
 }
 

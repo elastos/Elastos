@@ -83,7 +83,7 @@ func listenNodePort() {
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.Read()
-		LocalNode.AddToHandshakeQueue(node)
+		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
 	}
 }
 
@@ -144,31 +144,42 @@ func parseIPaddr(s string) (string, error) {
 	return s[:i], nil
 }
 
-func (node *node) Connect(nodeAddr string) error {
+func resolveAddr(addr string) (string, error) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
+	if err != nil {
+		log.Debugf("Can not resolve address %s", addr)
+		return addr, err
+	}
+
+	return tcpAddr.String(), nil
+}
+
+func (node *node) Connect(addr string) error {
 	log.Debug()
 
-	if node.IsAddrInNbrList(nodeAddr) {
+	if node.IsAddrInNbrList(addr) {
+		log.Debugf("addr %s in neighbor list, cancel", addr)
 		return nil
 	}
-	if !node.AddToConnectingList(nodeAddr) {
-		return errors.New("node exist in connecting list, cancel")
+	if !node.AddToConnectingList(addr) {
+		log.Debugf("addr %s in connecting list, cancel", addr)
+		return nil
 	}
 
-	isTls := Parameters.IsTLS
 	var conn net.Conn
 	var err error
 
-	if isTls {
-		conn, err = TLSDial(nodeAddr)
+	if Parameters.IsTLS {
+		conn, err = TLSDial(addr)
 		if err != nil {
-			node.RemoveFromConnectingList(nodeAddr)
+			node.RemoveFromConnectingList(addr)
 			log.Error("TLS connect failed:", err)
 			return err
 		}
 	} else {
-		conn, err = NonTLSDial(nodeAddr)
+		conn, err = NonTLSDial(addr)
 		if err != nil {
-			node.RemoveFromConnectingList(nodeAddr)
+			node.RemoveFromConnectingList(addr)
 			log.Error("non TLS connect failed:", err)
 			return err
 		}
@@ -184,7 +195,7 @@ func (node *node) Connect(nodeAddr string) error {
 	n.SetState(p2p.HAND)
 	n.Send(NewVersion(node))
 
-	node.AddToHandshakeQueue(n)
+	node.AddToHandshakeQueue(addr, n)
 	return nil
 }
 

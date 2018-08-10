@@ -26,7 +26,7 @@ func (q *handshakeQueue) init() {
 	q.conns = make(map[protocol.Noder]net.Conn, protocol.DefaultMaxPeers)
 }
 
-func (q *handshakeQueue) AddToHandshakeQueue(node protocol.Noder) {
+func (q *handshakeQueue) AddToHandshakeQueue(addr string, node protocol.Noder) {
 	q.capChan <- node
 
 	q.Lock()
@@ -34,7 +34,7 @@ func (q *handshakeQueue) AddToHandshakeQueue(node protocol.Noder) {
 	q.Unlock()
 
 	// Close handshake timeout connections
-	go q.handleTimeout(node)
+	go q.handleTimeout(addr, node)
 }
 
 func (q *handshakeQueue) RemoveFromHandshakeQueue(node protocol.Noder) {
@@ -46,12 +46,13 @@ func (q *handshakeQueue) RemoveFromHandshakeQueue(node protocol.Noder) {
 	q.Unlock()
 }
 
-func (q *handshakeQueue) handleTimeout(node protocol.Noder) {
+func (q *handshakeQueue) handleTimeout(addr string, node protocol.Noder) {
 	time.Sleep(time.Second * protocol.HandshakeTimeout)
 	q.Lock()
 	if conn, ok := q.conns[node]; ok {
 		conn.Close()
 		delete(q.conns, node)
+		node.RemoveFromConnectingList(addr)
 		<-q.capChan
 	}
 	q.Unlock()

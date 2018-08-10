@@ -114,7 +114,7 @@ func (node *node) SyncBlocks() {
 				SendGetBlocks(syncNode, locator, EmptyHash)
 			} else {
 				for hash, t := range requests {
-					if time.Now().After(t.Add(time.Second*3)) {
+					if time.Now().After(t.Add(time.Second * 3)) {
 						log.Infof("request block hash %x ", hash.Bytes())
 						LocalNode.AddRequestedBlock(hash)
 						syncNode.Send(v0.NewGetData(hash))
@@ -173,13 +173,14 @@ func (node *node) RequireNeighbourList() {
 func (node *node) ConnectNodes() {
 	connectionCount := node.neighbourNodes.GetConnectionCount()
 	if connectionCount < MinConnectionCount {
-		for _, seedAddress := range config.Parameters.SeedList {
-			neighbour, ok := existedInNeighbourList(seedAddress, node.neighbourNodes)
-			if ok && neighbour.State() == p2p.ESTABLISH {
-				neighbour.RequireNeighbourList()
-			} else { //not found
-				go node.Connect(seedAddress)
+		for _, seed := range config.Parameters.SeedList {
+			// Resolve seed address first
+			addr, err := resolveAddr(seed)
+			if err != nil {
+				continue
 			}
+			log.Debugf("Seed %s, resolved addr %s", seed, addr)
+			go node.Connect(addr)
 		}
 	}
 
@@ -189,22 +190,16 @@ func (node *node) ConnectNodes() {
 			go node.Connect(addr.String())
 		}
 	}
+	
+	if node.NeedMoreAddresses() {
+		for _, nbr := range node.GetNeighborNoder() {
+			nbr.RequireNeighbourList()
+		}
+	}
 
 	if connectionCount > DefaultMaxPeers {
 		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly())
 	}
-}
-
-func existedInNeighbourList(seedAddress string, neighbours neighbourNodes) (Noder, bool) {
-	neighbours.Lock()
-	defer neighbours.Unlock()
-
-	for _, neighbour := range neighbours.List {
-		if seedAddress == neighbour.NetAddress().String() {
-			return neighbour, true
-		}
-	}
-	return nil, false
 }
 
 func (node *node) NetAddress() p2p.NetAddress {

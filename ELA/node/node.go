@@ -39,21 +39,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState                // node state
-	id             uint64        // The nodes's id
-	version        uint32        // The network protocol the node used
-	services       uint64        // The services the node supplied
-	relay          bool          // The relay capability of the node (merge into capbility flag)
-	height         uint64        // The node latest block height
-	fromExtraNet   bool          // If this node is connected from extra net
-	txnCnt         uint64        // The transactions be transmit by this node
-	rxTxnCnt       uint64        // The transaction received by this node
-	link                         // The link status and infomation
-	neighbourNodes               // The neighbor node connect with currently node except itself
-	eventQueue                   // The event queue to notice notice other modules
-	chain.TxPool                 // Unconfirmed transaction pool
-	idCache                      // The buffer to store the id of the items which already be processed
-	filter         *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState              // node state
+	id           uint64        // The nodes's id
+	version      uint32        // The network protocol the node used
+	services     uint64        // The services the node supplied
+	relay        bool          // The relay capability of the node (merge into capbility flag)
+	height       uint64        // The node latest block height
+	fromExtraNet bool          // If this node is connected from extra net
+	txnCnt       uint64        // The transactions be transmit by this node
+	rxTxnCnt     uint64        // The transaction received by this node
+	link                       // The link status and infomation
+	neighbourNodes             // The neighbor node connect with currently node except itself
+	eventQueue                 // The event queue to notice notice other modules
+	chain.TxPool               // Unconfirmed transaction pool
+	idCache                    // The buffer to store the id of the items which already be processed
+	filter       *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -75,7 +75,27 @@ type node struct {
 
 type ConnectingNodes struct {
 	sync.RWMutex
-	ConnectingAddrs []string
+	List map[string]struct{}
+}
+
+func (cn *ConnectingNodes) init() {
+	cn.List = make(map[string]struct{})
+}
+
+func (cn *ConnectingNodes) add(addr string) bool {
+	cn.Lock()
+	defer cn.Unlock()
+	_, ok := cn.List[addr]
+	if !ok {
+		cn.List[addr] = struct{}{}
+	}
+	return !ok
+}
+
+func (cn *ConnectingNodes) del(addr string) {
+	cn.Lock()
+	defer cn.Unlock()
+	delete(cn.List, addr)
 }
 
 func NewNode(magic uint32, conn net.Conn) *node {
@@ -103,6 +123,7 @@ func InitLocalNode() protocol.Noder {
 
 	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
 	LocalNode.neighbourNodes.init()
+	LocalNode.ConnectingNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
 	LocalNode.eventQueue.init()
@@ -158,28 +179,12 @@ func (node *node) IsAddrInNbrList(addr string) bool {
 	return false
 }
 
-func (node *node) AddToConnectingList(addr string) (added bool) {
-	node.ConnectingNodes.Lock()
-	defer node.ConnectingNodes.Unlock()
-	for _, a := range node.ConnectingAddrs {
-		if strings.Compare(a, addr) == 0 {
-			return false
-		}
-	}
-	node.ConnectingAddrs = append(node.ConnectingAddrs, addr)
-	return true
+func (node *node) AddToConnectingList(addr string) bool {
+	return node.ConnectingNodes.add(addr)
 }
 
 func (node *node) RemoveFromConnectingList(addr string) {
-	node.ConnectingNodes.Lock()
-	defer node.ConnectingNodes.Unlock()
-	addrs := []string{}
-	for i, a := range node.ConnectingAddrs {
-		if strings.Compare(a, addr) == 0 {
-			addrs = append(node.ConnectingAddrs[:i], node.ConnectingAddrs[i+1:]...)
-		}
-	}
-	node.ConnectingAddrs = addrs
+	node.ConnectingNodes.del(addr)
 }
 
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
