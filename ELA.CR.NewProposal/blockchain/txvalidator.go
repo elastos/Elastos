@@ -118,7 +118,9 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		log.Warn("[CheckTransactionFee],", err)
 		return ErrTransactionBalance
 	}
-
+	if err := CheckDestructionAddress(references); err != nil {
+		log.Warn("[CheckDestructionAddress], ", err)
+	}
 	if err := CheckTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
@@ -129,6 +131,19 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return ErrIneffectiveCoinbase
 	}
 	return Success
+}
+
+func CheckDestructionAddress(references map[*Input]*Output) error {
+	for _, output := range references {
+		// this uint168 code
+		// is the program hash of the Elastos foundation destruction address ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr
+		// we allow no output from destruction address.
+		// So add a check here in case someone crack the private key of this address.
+		if output.ProgramHash == Uint168([21]uint8{33, 32, 254, 229, 215, 235, 62, 92, 125, 49, 151, 254, 207, 108, 13, 227, 15, 136, 154, 206, 247}) {
+			return errors.New("cannot use utxo in the Elastos foundation destruction address")
+		}
+	}
+	return nil
 }
 
 func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
