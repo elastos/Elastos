@@ -2,6 +2,7 @@ package node
 
 import (
 	"sync"
+	"sort"
 
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -75,29 +76,22 @@ func (node *node) GetNeighbourAddresses() []p2p.NetAddress {
 		if n.State() != p2p.ESTABLISH {
 			continue
 		}
-		var addr p2p.NetAddress
-		addr.IP, _ = n.Addr16()
-		addr.Time = n.GetTime()
-		addr.Services = n.Services()
-		addr.Port = n.Port()
-		addr.ID = n.ID()
-		addrs = append(addrs, addr)
+		addrs = append(addrs, n.NetAddress())
 	}
 
 	return addrs
 }
 
 func (node *node) GetNeighborHeights() []uint64 {
-	node.neighbourNodes.RLock()
-	defer node.neighbourNodes.RUnlock()
-
-	heights := make([]uint64, 0, len(node.neighbourNodes.List))
-	for _, n := range node.neighbourNodes.List {
+	neighbors := node.GetNeighborNoder()
+	heights := make([]uint64, 0, len(neighbors))
+	for _, n := range neighbors {
 		if n.State() == p2p.ESTABLISH {
 			height := n.Height()
 			heights = append(heights, height)
 		}
 	}
+
 	return heights
 }
 
@@ -112,6 +106,10 @@ func (node *node) GetNeighborNoder() []protocol.Noder {
 			nodes = append(nodes, node)
 		}
 	}
+
+	// Sort by node id before return
+	sort.Sort(nodeById(nodes))
+
 	return nodes
 }
 
@@ -145,3 +143,9 @@ func (node *node) IsNeighborNoder(n protocol.Noder) bool {
 	_, ok := node.neighbourNodes.List[n.ID()]
 	return ok
 }
+
+type nodeById []protocol.Noder
+
+func (ns nodeById) Len() int           { return len(ns) }
+func (ns nodeById) Less(i, j int) bool { return ns[i].ID() < ns[j].ID() }
+func (ns nodeById) Swap(i, j int)      { ns[i], ns[j] = ns[j], ns[i] }
