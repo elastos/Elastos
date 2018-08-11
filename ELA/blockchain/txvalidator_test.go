@@ -519,3 +519,15 @@ func TestCheckSideChainPowConsensus(t *testing.T) {
 		t.Error("TestCheckSideChainPowConsensus failed.")
 	}
 }
+
+func TestCheckDestructionAddress(t *testing.T) {
+	destructionAddress := "ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr"
+	txID, _ := common.Uint256FromHexString("7e8863a503e90e6464529feb1c25d98c903e01bec00ccfea2475db4e37d7328b")
+	programHash, _ := common.Uint168FromAddress(destructionAddress)
+	reference := map[*core.Input]*core.Output{
+		&core.Input{core.OutPoint{*txID, 1234}, 123456}: &core.Output{ProgramHash: *programHash},
+	}
+
+	err := CheckDestructionAddress(reference)
+	assert.EqualError(t, err, fmt.Sprintf("cannot use utxo in the Elastos foundation destruction address"))
+}
