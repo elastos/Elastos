@@ -134,6 +134,7 @@ func InitLocalNode() protocol.Noder {
 	LocalNode.syncTimer = newSyncTimer(LocalNode.stopSyncing)
 	LocalNode.initConnection()
 	go LocalNode.Start()
+	go monitorNodeState()
 	return LocalNode
 }
 
@@ -151,19 +152,6 @@ func (node *node) Start() {
 
 func (node *node) UpdateMsgHelper(handler p2p.MsgHandler) {
 	node.MsgHelper.Update(handler)
-}
-
-func (node *node) DumpInfo() {
-	log.Info("Node info:")
-	log.Info("\t state = ", node.State())
-	log.Info(fmt.Sprintf("\t id = 0x%x", node.id))
-	log.Info("\t addr = ", node.addr)
-	log.Info("\t conn = ", node.conn)
-	log.Info("\t version = ", node.version)
-	log.Info("\t services = ", node.services)
-	log.Info("\t port = ", node.port)
-	log.Info("\t relay = ", node.relay)
-	log.Info("\t height = ", node.height)
 }
 
 func (node *node) IsAddrInNbrList(addr string) bool {

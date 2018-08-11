@@ -60,7 +60,6 @@ type Noder interface {
 	IsDuplicateSidechainTx(sidechainTxHash common.Uint256) bool
 	ExistedID(id common.Uint256) bool
 	RequireNeighbourList()
-	DumpInfo()
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay uint8, height uint64)
 	UpdateMsgHelper(handler p2p.MsgHandler)
