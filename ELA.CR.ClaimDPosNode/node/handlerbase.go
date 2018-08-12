@@ -118,27 +118,12 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	node.UpdateInfo(time.Now(), version.Version, version.Services,
 		version.Port, version.Nonce, version.Relay, version.Height)
-	LocalNode.AddNeighborNode(node)
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
 		node.UpdateMsgHelper(NewHandlerV0(node))
 	} else {
 		node.UpdateMsgHelper(NewHandlerEIP001(node))
-	}
-
-	// Do not add extra node address into known addresses, for this can
-	// stop inner node from creating an outbound connection to extra node.
-	if !node.IsFromExtraNet() {
-		ip, _ := node.Addr16()
-		addr := p2p.NetAddress{
-			Time:     node.GetTime(),
-			Services: version.Services,
-			IP:       ip,
-			Port:     version.Port,
-			ID:       version.Nonce,
-		}
-		LocalNode.AddKnownAddress(addr)
 	}
 
 	var message p2p.Message
@@ -172,14 +157,28 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	}
 
 	node.SetState(p2p.ESTABLISH)
-	go node.Heartbeat()
 
+	// Finish handshake
+	LocalNode.RemoveFromHandshakeQueue(node)
+	LocalNode.RemoveFromConnectingList(node.NetAddress().String())
+
+	// Add node to neighbor list
+	LocalNode.AddNeighborNode(node)
+
+	// Do not add extra node address into known addresses, for this can
+	// stop inner node from creating an outbound connection to extra node.
+	if !node.IsFromExtraNet() {
+		LocalNode.AddKnownAddress(node.NetAddress())
+	}
+
+	// Request more neighbor addresses
 	if LocalNode.NeedMoreAddresses() {
 		node.RequireNeighbourList()
 	}
 
-	LocalNode.RemoveFromHandshakeQueue(node)
-	LocalNode.RemoveFromConnectingList(node.NetAddress().String())
+	// Start heartbeat
+	go node.Heartbeat()
+
 	return nil
 }
 
