@@ -35,7 +35,6 @@ func (h *HandlerBase) OnError(err error) {
 		log.Error(err)
 		h.node.CloseConn()
 	case p2p.ErrDisconnected:
-		log.Error("[MsgHandler] connection disconnected")
 		LocalNode.GetEvent("disconnect").Notify(events.EventNodeDisconnect, h.node)
 	default:
 		log.Error(err)
@@ -70,9 +69,11 @@ func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error)
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
 func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
+	log.Debugf("-----> [%s] from peer [0x%x] STARTED", message.CMD(), h.node.ID())
 	if err := h.HandleMessage(message); err != nil {
-		log.Errorf("Handle message error %s", err.Error())
+		log.Error("Handle message error: " + err.Error())
 	}
+	log.Debugf("-----> [%s] from peer [0x%x] FINISHED", message.CMD(), h.node.ID())
 }
 
 func (h *HandlerBase) HandleMessage(message p2p.Message) error {

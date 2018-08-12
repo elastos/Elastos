@@ -144,8 +144,8 @@ func (node *node) Start() {
 
 	ticker := time.NewTicker(time.Second * protocol.HeartbeatDuration)
 	for {
-		node.ConnectNodes()
-		node.SyncBlocks()
+		go node.ConnectNodes()
+		go node.SyncBlocks()
 		<-ticker.C
 	}
 }
@@ -193,6 +193,7 @@ func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 
 func (n *node) NodeDisconnect(v interface{}) {
 	if node, ok := v.(protocol.Noder); ok {
+		log.Debugf("Node [0x%x] disconnected", node.ID())
 		node.SetState(p2p.INACTIVITY)
 		node.GetConn().Close()
 		n.DelNeighborNode(node.ID())
