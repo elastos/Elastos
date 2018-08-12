@@ -38,7 +38,7 @@ func (nm *neighbourNodes) DelNeighborNode(id uint64) (protocol.Noder, bool) {
 	return n, true
 }
 
-func (nm *neighbourNodes) GetConnectionCount() (total uint) {
+func (nm *neighbourNodes) GetConnectionCount() (internal uint, total uint) {
 	nm.RLock()
 	defer nm.RUnlock()
 
@@ -48,10 +48,16 @@ func (nm *neighbourNodes) GetConnectionCount() (total uint) {
 			continue
 		}
 
+		// Count internal nodes
+		if !node.IsFromExtraNet() {
+			internal++
+		}
+
 		// Count total nodes
 		total++
 	}
-	return total
+
+	return internal, total
 }
 
 func (nm *neighbourNodes) NodeEstablished(id uint64) bool {

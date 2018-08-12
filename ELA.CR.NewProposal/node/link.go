@@ -244,5 +244,4 @@ func (node *node) Send(msg p2p.Message) {
 	}
 
 	node.MsgHelper.Write(msg)
-	node.UpdateLastActive()
 }
