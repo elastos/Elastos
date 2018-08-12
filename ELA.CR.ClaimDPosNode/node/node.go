@@ -395,16 +395,6 @@ func (node *node) SetSyncHeaders(b bool) {
 	}
 }
 
-func (node node) IsSyncFailed() bool {
-	node.flagLock.RLock()
-	defer node.flagLock.RUnlock()
-	if (node.syncFlag & 0x02) == 0x02 {
-		return true
-	} else {
-		return false
-	}
-}
-
 func (node *node) needSync() bool {
 	heights := node.GetNeighborHeights()
 	log.Info("nbr heigh-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
@@ -417,21 +407,23 @@ func (node *node) needSync() bool {
 func (node *node) GetBestHeightNoder() protocol.Noder {
 	node.neighbourNodes.RLock()
 	defer node.neighbourNodes.RUnlock()
-	var bestnode protocol.Noder
-	for _, n := range node.neighbourNodes.List {
-		if n.State() == p2p.ESTABLISH {
-			if bestnode == nil {
-				if !n.IsSyncFailed() {
-					bestnode = n
-				}
-			} else {
-				if (n.Height() > bestnode.Height()) && !n.IsSyncFailed() {
-					bestnode = n
-				}
-			}
+	var best protocol.Noder
+	for _, nbr := range node.neighbourNodes.List {
+		// Do not let extra node become sync node
+		if nbr.State() != p2p.ESTABLISH || nbr.IsFromExtraNet() {
+			continue
+		}
+
+		if best == nil {
+			best = nbr
+			continue
+		}
+
+		if nbr.Height() > best.Height() {
+			best = nbr
 		}
 	}
-	return bestnode
+	return best
 }
 
 func (node *node) GetRequestBlockList() map[Uint256]time.Time {

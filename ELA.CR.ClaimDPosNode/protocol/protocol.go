@@ -54,7 +54,7 @@ type Noder interface {
 	CloseConn()
 	AddToHandshakeQueue(addr string, node Noder)
 	RemoveFromHandshakeQueue(node Noder)
-	GetConnectionCount() uint
+	GetConnectionCount() (uint, uint)
 	GetTransactionPool(bool) map[common.Uint256]*core.Transaction
 	AppendToTxnPool(*core.Transaction) errors.ErrCode
 	IsDuplicateSidechainTx(sidechainTxHash common.Uint256) bool
@@ -90,7 +90,6 @@ type Noder interface {
 	Relay(Noder, interface{}) error
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
-	IsSyncFailed() bool
 	IsRequestedBlock(hash common.Uint256) bool
 	AddRequestedBlock(hash common.Uint256)
 	DeleteRequestedBlock(hash common.Uint256)

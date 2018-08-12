@@ -171,8 +171,8 @@ func (node *node) RequireNeighbourList() {
 }
 
 func (node *node) ConnectNodes() {
-	connectionCount := node.neighbourNodes.GetConnectionCount()
-	if connectionCount < MinConnectionCount {
+	internal, total := node.GetConnectionCount()
+	if internal < MinConnectionCount {
 		for _, seed := range config.Parameters.SeedList {
 			// Resolve seed address first
 			addr, err := resolveAddr(seed)
@@ -184,20 +184,19 @@ func (node *node) ConnectNodes() {
 		}
 	}
 
-	if connectionCount < MaxOutBoundCount {
-		address := node.RandGetAddresses()
-		for _, addr := range address {
+	if total < MaxOutBoundCount {
+		for _, addr := range node.RandGetAddresses() {
 			go node.Connect(addr.String())
 		}
 	}
-	
+
 	if node.NeedMoreAddresses() {
 		for _, nbr := range node.GetNeighborNoder() {
 			nbr.RequireNeighbourList()
 		}
 	}
 
-	if connectionCount > DefaultMaxPeers {
+	if total > DefaultMaxPeers {
 		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly())
 	}
 }
