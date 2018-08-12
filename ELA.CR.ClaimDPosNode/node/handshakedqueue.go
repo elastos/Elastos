@@ -52,7 +52,7 @@ func (q *handshakeQueue) handleTimeout(addr string, node protocol.Noder) {
 	if conn, ok := q.conns[node]; ok {
 		conn.Close()
 		delete(q.conns, node)
-		node.RemoveFromConnectingList(addr)
+		LocalNode.RemoveFromConnectingList(addr)
 		<-q.capChan
 	}
 	q.Unlock()
