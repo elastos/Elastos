@@ -86,17 +86,7 @@ type Noder interface {
 	GetNeighborNoder() []Noder
 	GetNeighbourCount() uint32
 	UpdateLastActive()
-	GetLastActiveTime() time.Time
 	SetHeight(height uint64)
-	IsAddrInNbrList(addr string) bool
-	AddToConnectingList(addr string) bool
-	RemoveFromConnectingList(addr string)
-	GetAddressCnt() uint64
-	AddKnownAddress(na p2p.NetAddress)
-	RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.NetAddress
-	NeedMoreAddresses() bool
-	RandSelectAddresses() []p2p.NetAddress
-	UpdateLastDisconn(id uint64)
 	Relay(Noder, interface{}) error
 	IsSyncHeaders() bool
 	SetSyncHeaders(b bool)
@@ -105,7 +95,7 @@ type Noder interface {
 	AddRequestedBlock(hash common.Uint256)
 	DeleteRequestedBlock(hash common.Uint256)
 	GetRequestBlockList() map[common.Uint256]time.Time
-	IsNeighborNoder(n Noder) bool
+	IsNeighborNoder(id uint64) bool
 	FindSyncNode() (Noder, error)
 	GetBestHeightNoder() Noder
 	AcqSyncBlkReqSem()

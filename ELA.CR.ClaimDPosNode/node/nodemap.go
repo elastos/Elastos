@@ -38,17 +38,20 @@ func (nm *neighbourNodes) DelNeighborNode(id uint64) (protocol.Noder, bool) {
 	return n, true
 }
 
-func (nm *neighbourNodes) GetConnectionCount() uint {
+func (nm *neighbourNodes) GetConnectionCount() (total uint) {
 	nm.RLock()
 	defer nm.RUnlock()
 
-	var cnt uint
 	for _, node := range nm.List {
-		if node.State() == p2p.ESTABLISH {
-			cnt++
+		// Skip unestablished nodes
+		if node.State() != p2p.ESTABLISH {
+			continue
 		}
+
+		// Count total nodes
+		total++
 	}
-	return cnt
+	return total
 }
 
 func (nm *neighbourNodes) NodeEstablished(id uint64) bool {
@@ -136,11 +139,11 @@ func (node *node) GetANeighbourRandomly() protocol.Noder {
 	return nil
 }
 
-func (node *node) IsNeighborNoder(n protocol.Noder) bool {
+func (node *node) IsNeighborNoder(id uint64) bool {
 	node.neighbourNodes.RLock()
 	defer node.neighbourNodes.RUnlock()
 
-	_, ok := node.neighbourNodes.List[n.ID()]
+	_, ok := node.neighbourNodes.List[id]
 	return ok
 }
 
