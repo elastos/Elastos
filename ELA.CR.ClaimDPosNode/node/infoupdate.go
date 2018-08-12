@@ -182,13 +182,7 @@ func (node *node) ConnectNodes() {
 	internal, total := node.GetConnectionCount()
 	if internal < MinConnectionCount {
 		for _, seed := range config.Parameters.SeedList {
-			// Resolve seed address first
-			addr, err := resolveAddr(seed)
-			if err != nil {
-				continue
-			}
-			log.Debugf("Seed %s, resolved addr %s", seed, addr)
-			node.Connect(addr)
+			node.Connect(seed)
 		}
 	}
 
