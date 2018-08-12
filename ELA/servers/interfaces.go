@@ -298,6 +298,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 }
 
 func GetInfo(param Params) map[string]interface{} {
+	_, count := NodeForServers.GetConnectionCount()
 	RetVal := struct {
 		Version        int    `json:"version"`
 		Balance        int    `json:"balance"`
@@ -316,7 +317,7 @@ func GetInfo(param Params) map[string]interface{} {
 		Balance:        0,
 		Blocks:         NodeForServers.Height(),
 		Timeoffset:     0,
-		Connections:    NodeForServers.GetConnectionCount(),
+		Connections:    count,
 		Keypoololdest:  0,
 		Keypoolsize:    0,
 		Unlocked_until: 0,
@@ -375,7 +376,8 @@ func DiscreteMining(param Params) map[string]interface{} {
 }
 
 func GetConnectionCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, NodeForServers.GetConnectionCount())
+	_, count := NodeForServers.GetConnectionCount()
+	return ResponsePack(Success, count)
 }
 
 func GetTransactionPool(param Params) map[string]interface{} {
