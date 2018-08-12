@@ -64,9 +64,11 @@ func (h *HandlerV0) OnMakeMessage(cmd string) (message p2p.Message, err error) {
 }
 
 func (h *HandlerV0) OnMessageDecoded(message p2p.Message) {
+	log.Debugf("-----> [%s] from peer [0x%x] STARTED", message.CMD(), h.node.ID())
 	if err := h.HandleMessage(message); err != nil {
 		log.Error("Handle message error: " + err.Error())
 	}
+	log.Debugf("-----> [%s] from peer [0x%x] FINISHED", message.CMD(), h.node.ID())
 }
 
 // After message has been successful decoded, this method
@@ -97,20 +99,17 @@ func (h *HandlerV0) HandleMessage(message p2p.Message) error {
 }
 
 func (h *HandlerV0) onPing(ping *msg.Ping) error {
-	log.Debug()
 	h.node.SetHeight(ping.Nonce)
 	h.node.Send(msg.NewPong(chain.DefaultLedger.Store.GetHeight()))
 	return nil
 }
 
 func (h *HandlerV0) onPong(pong *msg.Pong) error {
-	log.Debug()
 	h.node.SetHeight(pong.Nonce)
 	return nil
 }
 
 func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
-	log.Debug()
 	node := h.node
 	LocalNode.AcqSyncBlkReqSem()
 	defer LocalNode.RelSyncBlkReqSem()
@@ -122,13 +121,12 @@ func (h *HandlerV0) onGetBlocks(req *msg.GetBlocks) error {
 	}
 
 	if len(hashes) > 0 {
-		go node.Send(v0.NewInv(hashes))
+		node.Send(v0.NewInv(hashes))
 	}
 	return nil
 }
 
 func (h *HandlerV0) onInv(inv *v0.Inv) error {
-	log.Debug()
 	node := h.node
 	log.Debugf("[OnInv] count %d hashes: %v", len(inv.Hashes), inv.Hashes)
 
@@ -171,7 +169,6 @@ func (h *HandlerV0) onInv(inv *v0.Inv) error {
 }
 
 func (h *HandlerV0) onGetData(req *v0.GetData) error {
-	log.Debug()
 	node := h.node
 	hash := req.Hash
 
@@ -188,7 +185,6 @@ func (h *HandlerV0) onGetData(req *v0.GetData) error {
 }
 
 func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
-	log.Debug()
 	node := h.node
 	block := msgBlock.Block.(*core.Block)
 
@@ -231,7 +227,6 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 }
 
 func (h *HandlerV0) onTx(msgTx *msg.Tx) error {
-	log.Debug()
 	node := h.node
 	tx := msgTx.Transaction.(*core.Transaction)
 

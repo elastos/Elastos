@@ -240,8 +240,10 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 
 func (node *node) Send(msg p2p.Message) {
 	if node.State() == p2p.INACTIVITY {
+		log.Errorf("-----> Push [%s] to INACTIVE peer [0x%x]", msg.CMD(), node.ID())
 		return
 	}
-
+	log.Debugf("-----> Push [%s] to peer [0x%x] STARTED", msg.CMD(), node.ID())
 	node.MsgHelper.Write(msg)
+	log.Debugf("-----> Push [%s] to peer [0x%x] FINISHED", msg.CMD(), node.ID())
 }
