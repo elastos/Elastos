@@ -35,7 +35,7 @@ func (h *HandlerBase) OnError(err error) {
 		log.Error(err)
 		h.node.CloseConn()
 	case p2p.ErrDisconnected:
-		LocalNode.GetEvent("disconnect").Notify(events.EventNodeDisconnect, h.node)
+		LocalNode.Events().Notify(events.EventNodeDisconnect, h.node.ID())
 	default:
 		log.Error(err)
 	}
