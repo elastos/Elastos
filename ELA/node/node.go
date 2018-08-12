@@ -50,7 +50,7 @@ type node struct {
 	rxTxnCnt     uint64        // The transaction received by this node
 	link                       // The link status and infomation
 	neighbourNodes             // The neighbor node connect with currently node except itself
-	eventQueue                 // The event queue to notice notice other modules
+	events       *events.Event // The event queue to notice notice other modules
 	chain.TxPool               // Unconfirmed transaction pool
 	idCache                    // The buffer to store the id of the items which already be processed
 	filter       *bloom.Filter // The bloom filter of a spv node
@@ -126,9 +126,9 @@ func InitLocalNode() protocol.Noder {
 	LocalNode.ConnectingNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
-	LocalNode.eventQueue.init()
+	LocalNode.events = events.NewEvent()
 	LocalNode.idCache.init()
-	LocalNode.nodeDisconnectSubscriber = LocalNode.GetEvent("disconnect").Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
+	LocalNode.nodeDisconnectSubscriber = LocalNode.Events().Subscribe(events.EventNodeDisconnect, LocalNode.NodeDisconnect)
 	LocalNode.RequestedBlockList = make(map[Uint256]time.Time)
 	LocalNode.handshakeQueue.init()
 	LocalNode.syncTimer = newSyncTimer(LocalNode.stopSyncing)
@@ -191,12 +191,11 @@ func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	node.height = uint64(height)
 }
 
-func (n *node) NodeDisconnect(v interface{}) {
-	if node, ok := v.(protocol.Noder); ok {
-		log.Debugf("Node [0x%x] disconnected", node.ID())
-		node.SetState(p2p.INACTIVITY)
-		node.GetConn().Close()
-		n.DelNeighborNode(node.ID())
+func (node *node) NodeDisconnect(v interface{}) {
+	if n, ok := node.DelNeighborNode(v.(uint64)); ok {
+		log.Debugf("Node [0x%x] disconnected", n.ID())
+		n.SetState(p2p.INACTIVITY)
+		n.GetConn().Close()
 	}
 }
 
@@ -279,6 +278,10 @@ func (node *node) Addr16() ([16]byte, error) {
 func (node *node) GetTime() int64 {
 	t := time.Now()
 	return t.UnixNano()
+}
+
+func (node *node) Events() *events.Event {
+	return node.events
 }
 
 func (node *node) WaitForSyncFinish() {

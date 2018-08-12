@@ -199,7 +199,7 @@ func (node *node) ConnectNodes() {
 	}
 
 	if total > DefaultMaxPeers {
-		node.GetEvent("disconnect").Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly())
+		node.Events().Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly().ID())
 	}
 }
 

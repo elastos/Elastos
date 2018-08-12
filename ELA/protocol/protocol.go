@@ -7,8 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/errors"
-	"github.com/elastos/Elastos.ELA/events"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -70,7 +68,6 @@ type Noder interface {
 	Send(msg p2p.Message)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
-	GetEvent(eventName string) *events.Event
 	GetNeighbourAddresses() []p2p.NetAddress
 	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
