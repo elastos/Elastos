@@ -155,8 +155,6 @@ func resolveAddr(addr string) (string, error) {
 }
 
 func (node *node) Connect(addr string) error {
-	log.Debug()
-
 	if node.IsAddrInNbrList(addr) {
 		log.Debugf("addr %s in neighbor list, cancel", addr)
 		return nil
