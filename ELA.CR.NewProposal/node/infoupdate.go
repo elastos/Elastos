@@ -144,7 +144,7 @@ func (node *node) Heartbeat() {
 	defer ticker.Stop()
 	for range ticker.C {
 		// quit when node disconnected
-		if !LocalNode.IsNeighborNoder(node.ID()) {
+		if node.State() == p2p.INACTIVITY {
 			goto QUIT
 		}
 
@@ -157,7 +157,7 @@ func (node *node) Heartbeat() {
 		}
 
 		// send ping message to node
-		go node.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
+		node.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
 	}
 QUIT:
 }
@@ -167,10 +167,12 @@ func (node *node) RequireNeighbourList() {
 	if node.IsFromExtraNet() {
 		return
 	}
-	go node.Send(new(msg.GetAddr))
+
+	node.Send(new(msg.GetAddr))
 }
 
 func (node *node) ConnectNodes() {
+	log.Debug()
 	internal, total := node.GetConnectionCount()
 	if internal < MinConnectionCount {
 		for _, seed := range config.Parameters.SeedList {
@@ -180,13 +182,13 @@ func (node *node) ConnectNodes() {
 				continue
 			}
 			log.Debugf("Seed %s, resolved addr %s", seed, addr)
-			go node.Connect(addr)
+			node.Connect(addr)
 		}
 	}
 
 	if total < MaxOutBoundCount {
 		for _, addr := range node.RandGetAddresses() {
-			go node.Connect(addr.String())
+			node.Connect(addr.String())
 		}
 	}
 
