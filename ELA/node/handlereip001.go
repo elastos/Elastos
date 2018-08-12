@@ -298,7 +298,7 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 	block := msgBlock.Block.(*core.Block)
 
 	hash := block.Hash()
-	if !LocalNode.IsNeighborNoder(node) {
+	if !LocalNode.IsNeighborNoder(node.ID()) {
 		return fmt.Errorf("receive block message from unknown peer")
 	}
 
@@ -339,7 +339,7 @@ func (h *HandlerEIP001) onTx(msgTx *msg.Tx) error {
 	node := h.node
 	tx := msgTx.Transaction.(*core.Transaction)
 
-	if !LocalNode.IsNeighborNoder(node) {
+	if !LocalNode.IsNeighborNoder(node.ID()) {
 		return fmt.Errorf("received transaction message from unknown peer")
 	}
 

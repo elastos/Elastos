@@ -202,11 +202,10 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 
 func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
 	for _, addr := range msgAddr.AddrList {
-		log.Debugf("The ip address is %s id is 0x%x", addr.String(), addr.ID)
-
 		if addr.ID == LocalNode.ID() {
 			continue
 		}
+
 		if LocalNode.NodeEstablished(addr.ID) {
 			continue
 		}

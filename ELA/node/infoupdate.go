@@ -144,7 +144,7 @@ func (node *node) Heartbeat() {
 	defer ticker.Stop()
 	for range ticker.C {
 		// quit when node disconnected
-		if !LocalNode.IsNeighborNoder(node) {
+		if !LocalNode.IsNeighborNoder(node.ID()) {
 			goto QUIT
 		}
 
@@ -185,7 +185,7 @@ func (node *node) ConnectNodes() {
 	}
 
 	if connectionCount < MaxOutBoundCount {
-		address := node.RandGetAddresses(node.GetNeighbourAddresses())
+		address := node.RandGetAddresses()
 		for _, addr := range address {
 			go node.Connect(addr.String())
 		}

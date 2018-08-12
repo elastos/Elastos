@@ -193,7 +193,7 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 	block := msgBlock.Block.(*core.Block)
 
 	hash := block.Hash()
-	if !LocalNode.IsNeighborNoder(node) {
+	if !LocalNode.IsNeighborNoder(node.ID()) {
 		log.Trace("received block message from unknown peer")
 		return fmt.Errorf("received block message from unknown peer")
 	}
