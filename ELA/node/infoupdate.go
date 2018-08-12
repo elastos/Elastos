@@ -84,6 +84,9 @@ func (node *node) SyncBlocks() {
 		if hasSyncPeer == false {
 			LocalNode.ResetRequestedBlock()
 			syncNode = node.GetBestHeightNoder()
+			if syncNode == nil {
+				return
+			}
 			hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 			locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
@@ -108,6 +111,9 @@ func (node *node) SyncBlocks() {
 				LocalNode.SetStartHash(EmptyHash)
 				LocalNode.SetStopHash(EmptyHash)
 				syncNode := node.GetBestHeightNoder()
+				if syncNode == nil {
+					return
+				}
 				hash := chain.DefaultLedger.Store.GetCurrentBlockHash()
 				locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
