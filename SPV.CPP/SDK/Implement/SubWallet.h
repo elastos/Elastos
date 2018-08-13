@@ -29,6 +29,8 @@ namespace Elastos {
 
 			const WalletManagerPtr &GetWalletManager() const;
 
+			void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
+
 		public: //implement ISubWallet
 			virtual std::string GetChainId() const;
 

@@ -511,6 +511,11 @@ namespace Elastos {
 						  });
 		}
 
+		void SubWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
+			CMBlock key = Utils::decrypt(Utils::decodeHex(_info.getEncryptedKey()), oldPassword);
+			_info.setEncryptedKey(Utils::encodeHex(Utils::encrypt(key, newPassword)));
+		}
+
 		nlohmann::json SubWallet::readPeerConfig() {
 			//fixme read from main chain(ela)
 			nlohmann::json idChainPeerConfig =

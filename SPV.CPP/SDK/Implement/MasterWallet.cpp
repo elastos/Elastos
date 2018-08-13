@@ -329,7 +329,7 @@ namespace Elastos {
 			_localStore.SetEncryptedKey(Utils::encrypt(masterPrivKey, payPassword));
 
 			Key key = deriveKey(payPassword);
-			if(key.getPrivKey().empty())
+			if (key.getPrivKey().empty())
 				throw std::logic_error("Invalid key");
 			Key compressedKey(key.getRaw()->secret, true);
 			_localStore.SetMasterPubKey(MasterPubKey(compressedKey.getPubkey(), masterChainCode));
@@ -518,6 +518,12 @@ namespace Elastos {
 			_localStore.SetEncryptedKey(Utils::encrypt(key, newPassword));
 			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, newPassword));
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
+
+			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet == nullptr) continue;
+				subWallet->ChangePassword(oldPassword, newPassword);
+			}
 		}
 
 		void MasterWallet::tryInitCoinConfig() {

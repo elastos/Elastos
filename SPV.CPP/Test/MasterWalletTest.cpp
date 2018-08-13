@@ -465,6 +465,17 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
         std::string newPayPassword = "newPayPassword";
         REQUIRE_NOTHROW(masterWallet->ChangePassword(payPassword, newPayPassword));
 	}
+	SECTION("Change password should be effective for sub wallets") {
+		std::string newPayPassword = "newPayPassword";
+
+		REQUIRE_NOTHROW(masterWallet->GetAllSubWallets()[0]->Sign("MyMessage", payPassword));
+		REQUIRE_THROWS(masterWallet->GetAllSubWallets()[0]->Sign("MyMessage", newPayPassword));
+
+		masterWallet->ChangePassword(payPassword, newPayPassword);
+
+		REQUIRE_THROWS(masterWallet->GetAllSubWallets()[0]->Sign("MyMessage", payPassword));
+		REQUIRE_NOTHROW(masterWallet->GetAllSubWallets()[0]->Sign("MyMessage", newPayPassword));
+	}
 }
 
 TEST_CASE("Master wallet CheckSign method test", "[CheckSign]") {
