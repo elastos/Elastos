@@ -606,7 +606,7 @@ void BRPeerSendMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const ch
         }
 
         if (error) {
-            peer_log(peer, "%s", strerror(error));
+            peer_log(peer, "ERROR: sending %s message %s", type, strerror(error));
             BRPeerDisconnect(peer);
         }
     }

@@ -31,9 +31,9 @@ namespace Elastos {
 
 			void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
-			bool StartP2P();
+			void StartP2P();
 
-			bool StopP2P();
+			void StopP2P();
 
 		public: //implement ISubWallet
 			virtual std::string GetChainId() const;

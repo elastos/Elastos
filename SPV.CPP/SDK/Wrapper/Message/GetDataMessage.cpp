@@ -4,6 +4,7 @@
 
 #include <BRPeerMessages.h>
 #include <BRPeerManager.h>
+#include <Core/BRPeer.h>
 #include "BRArray.h"
 #include "BRPeerMessages.h"
 
@@ -18,27 +19,39 @@ namespace Elastos {
 		void GetDataMessage::SendGetData(BRPeer *peer, const UInt256 *txHashes,
 		                                 size_t txCount, const UInt256 *blockHashes, size_t blockCount) {
 			size_t i, off = 0;
-			size_t count = txCount > 0 ? txCount : blockCount;
-			size_t msgLen = sizeof(uint32_t) + count * (sizeof(uint32_t) + sizeof(UInt256));
-			uint8_t msg[msgLen];
+			uint32_t count = uint32_t(txCount + blockCount);
 
-			UInt32SetLE(&msg[off], uint32_t(count));
-			off += sizeof(uint32_t);
-			for (i = 0; i < txCount; i++) {
-				UInt32SetLE(&msg[off], uint32_t(inv_tx));
-				off += sizeof(uint32_t);
-				UInt256Set(&msg[off], txHashes[i]);
-				off += sizeof(UInt256);
+			if (count > 1000) {
+				Log::getLogger()->warn("{}:{} couldn't send getdata, {} is too many items, max is {}", BRPeerHost(peer), peer->port, count, 1000);
+				count = 1000;
 			}
 
-			for (i = 0; i < blockCount; i++) {
-				UInt32SetLE(&msg[off], uint32_t(inv_filtered_block));
+			if (count > 0) {
+				size_t msgLen = sizeof(uint32_t) + count * (sizeof(uint32_t) + sizeof(UInt256));
+				uint8_t msg[msgLen];
+
+				UInt32SetLE(&msg[off], count);
 				off += sizeof(uint32_t);
-				UInt256Set(&msg[off], blockHashes[i]);
-				off += sizeof(UInt256);
+				peer_log(peer, "off = %zu", off);
+
+				for (i = 0; i < txCount; i++) {
+					UInt32SetLE(&msg[off], uint32_t(inv_tx));
+					off += sizeof(uint32_t);
+					UInt256Set(&msg[off], txHashes[i]);
+					off += sizeof(UInt256);
+				}
+				peer_log(peer, "inv_tx off = %zu", off);
+
+				for (i = 0; i < blockCount; i++) {
+					UInt32SetLE(&msg[off], uint32_t(inv_filtered_block));
+					off += sizeof(uint32_t);
+					UInt256Set(&msg[off], blockHashes[i]);
+					off += sizeof(UInt256);
+				}
+				peer_log(peer, "inv_filtered_block off = %zu", off);
+				((BRPeerContext *) peer)->sentGetdata = 1;
+				BRPeerSendMessage(peer, msg, off, MSG_GETDATA);
 			}
-			BRPeerSendMessage(peer, msg, off, MSG_GETDATA);
-			((BRPeerContext *) peer)->sentGetdata = 1;
 		}
 
 		int GetDataMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {

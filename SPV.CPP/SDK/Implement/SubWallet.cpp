@@ -520,12 +520,12 @@ namespace Elastos {
 			_info.setEncryptedKey(Utils::encodeHex(Utils::encrypt(key, newPassword)));
 		}
 
-		bool SubWallet::StartP2P() {
+		void SubWallet::StartP2P() {
 			if (_info.getEnableP2P())
 				_walletManager->start();
 		}
 
-		bool SubWallet::StopP2P() {
+		void SubWallet::StopP2P() {
 			if (_info.getEnableP2P())
 				_walletManager->stop();
 		}
