@@ -30,6 +30,7 @@ namespace Elastos {
 			uint64_t MinFee;
 			std::string GenesisAddress;
 			std::string BlockType;
+			bool EnableP2P;
 			std::vector<CheckPoint> CheckPoints;
 		};
 

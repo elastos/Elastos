@@ -157,6 +157,7 @@ namespace Elastos {
 			info.setIndex(coinConfig.Index);
 			info.setMinFee(coinConfig.MinFee);
 			info.setGenesisAddress(coinConfig.GenesisAddress);
+			info.setEnableP2P(coinConfig.EnableP2P);
 
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);
@@ -488,12 +489,12 @@ namespace Elastos {
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
 			if (_p2pEnable)
-				wallet->_walletManager->start();
+				wallet->StartP2P();
 		}
 
 		void MasterWallet::stopPeerManager(SubWallet *wallet) {
 			if (_p2pEnable)
-				wallet->_walletManager->stop();
+				wallet->StopP2P();
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) {

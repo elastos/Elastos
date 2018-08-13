@@ -71,6 +71,10 @@ namespace Elastos {
 
 			void setGenesisAddress(const std::string &address);
 
+			bool getEnableP2P() const;
+
+			void setEnableP2P(bool enable);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -84,6 +88,7 @@ namespace Elastos {
 			int _index;
 			int _usedMaxAddressIndex;
 			bool _singleAddress;
+			bool _enableP2P;
 			uint64_t _minFee;
 			uint64_t _feePerKb;
 			SubWalletType _walletType;

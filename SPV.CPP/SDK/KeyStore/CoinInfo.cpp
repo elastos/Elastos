@@ -14,6 +14,7 @@ namespace Elastos {
 				_index(0),
 				_usedMaxAddressIndex(0),
 				_singleAddress(false),
+				_enableP2P(true),
 				_feePerKb(0),
 				_minFee(0),
 				_walletType(Normal) {
@@ -91,6 +92,7 @@ namespace Elastos {
 			j["ChainCode"] = p._chainCode;
 			j["PublicKey"] = p._publicKey;
 			j["MinFee"] = p._minFee;
+			j["EnableP2P"] = p._enableP2P;
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
@@ -104,6 +106,8 @@ namespace Elastos {
 			p._chainCode = j["ChainCode"].get<std::string>();
 			p._publicKey = j["PublicKey"].get<std::string>();
 			p._minFee = j["MinFee"].get<uint64_t>();
+			if (j.find("EnableP2P") != j.end())
+				p._enableP2P = j["EnableP2P"].get<bool>();
 		}
 
 		int CoinInfo::getForkId() const {
@@ -154,12 +158,20 @@ namespace Elastos {
 			_minFee = fee;
 		}
 
-		const std::string& CoinInfo::getGenesisAddress() const {
+		const std::string &CoinInfo::getGenesisAddress() const {
 			return _genesisAddress;
 		}
 
 		void CoinInfo::setGenesisAddress(const std::string &address) {
 			_genesisAddress = address;
+		}
+
+		bool CoinInfo::getEnableP2P() const {
+			return _enableP2P;
+		}
+
+		void CoinInfo::setEnableP2P(bool enable) {
+			_enableP2P = enable;
 		}
 
 	}

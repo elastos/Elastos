@@ -53,6 +53,9 @@ namespace Elastos {
 				config.BlockType = it.value()["BlockType"].get<std::string>();
 				config.NetType = it.value()["NetType"].get<std::string>();
 				config.GenesisAddress = it.value()["GenesisAddress"].get<std::string>();
+				config.EnableP2P = true;
+				if (it.value().find("EnableP2P") != it.value().end())
+					config.EnableP2P = it.value()["EnableP2P"].get<bool>();
 				std::vector<nlohmann::json> checkPoints = it.value()["CheckPoints"];
 				for (int k = 0; k < checkPoints.size(); ++k) {
 					config.CheckPoints.push_back(checkPoints[k]);
