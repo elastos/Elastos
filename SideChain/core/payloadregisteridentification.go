@@ -10,10 +10,14 @@ import (
 
 const RegisterIdentificationVersion = 0x00
 
-type RegisterIdentificationContent struct {
-	Path     string
+type RegisterIdentificationValue struct {
 	DataHash common.Uint256
 	Proof    string
+}
+
+type RegisterIdentificationContent struct {
+	Path   string
+	Values []RegisterIdentificationValue
 }
 
 type PayloadRegisterIdentification struct {
@@ -48,12 +52,18 @@ func (a *PayloadRegisterIdentification) Serialize(w io.Writer, version byte) err
 			return errors.New("[RegisterIdentification], path serialize failed.")
 		}
 
-		if err := common.WriteElement(w, content.DataHash); err != nil {
-			return errors.New("[RegisterIdentification], DataHash serialize failed.")
+		if err := common.WriteVarUint(w, uint64(len(content.Values))); err != nil {
+			return errors.New("[RegisterIdentification], Values size serialize failed.")
 		}
 
-		if err := common.WriteVarString(w, content.Proof); err != nil {
-			return errors.New("[RegisterIdentification], Proof serialize failed.")
+		for _, value := range content.Values {
+			if err := common.WriteElement(w, value.DataHash); err != nil {
+				return errors.New("[RegisterIdentification], DataHash serialize failed.")
+			}
+
+			if err := common.WriteVarString(w, value.Proof); err != nil {
+				return errors.New("[RegisterIdentification], Proof serialize failed.")
+			}
 		}
 	}
 
@@ -86,14 +96,24 @@ func (a *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) e
 			return errors.New("[RegisterIdentification], path deserialize failed.")
 		}
 
-		if err := common.ReadElement(r, &content.DataHash); err != nil {
-			return errors.New("[RegisterIdentification], DataHash deserialize failed.")
+		valueSize, err := common.ReadVarUint(r, 0)
+		if err != nil {
+			return errors.New("[RegisterIdentification], Values size deserialize failed.")
 		}
 
-		content.Proof, err = common.ReadVarString(r)
-		if err != nil {
-			return errors.New("[RegisterIdentification], Proof deserialize failed.")
+		content.Values = make([]RegisterIdentificationValue, valueSize)
+		for j := uint64(0); j < valueSize; j++ {
+			value := RegisterIdentificationValue{}
+			if err := common.ReadElement(r, &value.DataHash); err != nil {
+				return errors.New("[RegisterIdentification], DataHash deserialize failed.")
+			}
+
+			value.Proof, err = common.ReadVarString(r)
+			if err != nil {
+				return errors.New("[RegisterIdentification], Proof deserialize failed.")
+			}
 		}
+
 		a.Contents[i] = content
 	}
 
