@@ -162,7 +162,7 @@ func (node *node) Connect(addr string) error {
 	}
 	log.Debugf("Addr %s, resolved tcpAddr %s", addr, tcpAddr)
 
-	if node.IsAddrInNbrList(tcpAddr) {
+	if node.IsNeighborAddr(tcpAddr) {
 		log.Debugf("addr %s in neighbor list, cancel", addr)
 		return nil
 	}
