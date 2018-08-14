@@ -11,7 +11,7 @@ import (
 
 // The neighbor node list
 type neighbours struct {
-	sync.RWMutex
+	sync.Mutex
 	List map[uint64]protocol.Noder
 }
 
@@ -37,8 +37,8 @@ func (ns *neighbours) DelNeighborNode(id uint64) (protocol.Noder, bool) {
 }
 
 func (ns *neighbours) IsNeighborAddr(addr string) bool {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 	for _, n := range ns.List {
 		if n.State() == p2p.ESTABLISH {
 			if n.NetAddress().String() == addr {
@@ -50,8 +50,8 @@ func (ns *neighbours) IsNeighborAddr(addr string) bool {
 }
 
 func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 	for _, node := range ns.List {
 		// Skip unestablished nodes
 		if node.State() != p2p.ESTABLISH {
@@ -71,8 +71,8 @@ func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
 }
 
 func (ns *neighbours) NodeEstablished(id uint64) bool {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 
 	node, ok := ns.List[id]
 	if ok == false {
@@ -87,8 +87,8 @@ func (ns *neighbours) NodeEstablished(id uint64) bool {
 }
 
 func (ns *neighbours) GetNeighbourAddresses() []p2p.NetAddress {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 
 	var addrs []p2p.NetAddress
 	for _, n := range ns.List {
@@ -116,8 +116,8 @@ func (ns *neighbours) GetNeighborHeights() []uint64 {
 }
 
 func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 
 	nodes := make([]protocol.Noder, 0, len(ns.List))
 	for _, n := range ns.List {
@@ -139,8 +139,8 @@ func (ns *neighbours) GetNeighbourCount() uint {
 }
 
 func (ns *neighbours) GetANeighbourRandomly() protocol.Noder {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 	for _, n := range ns.List {
 		if n.State() == p2p.ESTABLISH {
 			return n
@@ -150,15 +150,15 @@ func (ns *neighbours) GetANeighbourRandomly() protocol.Noder {
 }
 
 func (ns *neighbours) IsNeighborNode(id uint64) bool {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 	_, ok := ns.List[id]
 	return ok
 }
 
 func (ns *neighbours) GetSyncNode() protocol.Noder {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 	for _, n := range ns.List {
 		if n.IsSyncHeaders() {
 			return n
@@ -168,8 +168,8 @@ func (ns *neighbours) GetSyncNode() protocol.Noder {
 }
 
 func (ns *neighbours) GetBestNode() protocol.Noder {
-	ns.RLock()
-	defer ns.RUnlock()
+	ns.Lock()
+	defer ns.Unlock()
 
 	var best protocol.Noder
 	for _, nbr := range ns.List {
