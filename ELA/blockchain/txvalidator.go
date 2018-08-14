@@ -120,6 +120,7 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 	}
 	if err := CheckDestructionAddress(references); err != nil {
 		log.Warn("[CheckDestructionAddress], ", err)
+		return ErrInvalidInput
 	}
 	if err := CheckTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
