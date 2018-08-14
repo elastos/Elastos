@@ -33,7 +33,7 @@ var templates = template.Must(template.New("info").Parse(page))
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	var ngbrNodersInfo []NgbNodeInfo
-	var node = servers.NodeForServers
+	var node = servers.ServerNode
 
 	ngbrNoders := node.GetNeighborNoder()
 
