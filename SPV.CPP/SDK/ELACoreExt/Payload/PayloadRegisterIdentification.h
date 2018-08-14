@@ -15,10 +15,14 @@ namespace Elastos {
 
 		class PayloadRegisterIdentification : public IPayload {
 		public:
-			struct SignContent {
-				std::string Path;
+			struct ValueItem {
 				UInt256 DataHash;
 				std::string Proof;
+			};
+
+			struct SignContent {
+				std::string Path;
+				std::vector<ValueItem> Values;
 			};
 
 		public:
@@ -34,13 +38,13 @@ namespace Elastos {
 
 			void setPath(const std::string &path, size_t index);
 
-			const UInt256 &getDataHash(size_t index) const;
+			const UInt256 &getDataHash(size_t index, size_t valueIndex) const;
 
-			void setDataHash(const UInt256 &dataHash, size_t index);
+			void setDataHash(const UInt256 &dataHash, size_t index, size_t valueIndex);
 
-			const std::string &getProof(size_t index) const;
+			const std::string &getProof(size_t index, size_t valueIndex) const;
 
-			void setProof(const std::string &proof, size_t index);
+			void setProof(const std::string &proof, size_t index, size_t valueIndex);
 
 			size_t getContentCount() const;
 
