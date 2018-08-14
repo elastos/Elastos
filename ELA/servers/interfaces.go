@@ -164,6 +164,7 @@ func GetNodeState(param Params) map[string]interface{} {
 		state.SetState(node.State())
 		neighbors = append(neighbors, Neighbor{
 			ID:         node.ID(),
+			HexID:      fmt.Sprintf("0x%x", node.ID()),
 			Height:     node.Height(),
 			Services:   node.Services(),
 			Relay:      node.IsRelay(),
@@ -175,6 +176,7 @@ func GetNodeState(param Params) map[string]interface{} {
 	nodeState := NodeState{
 		Compile:     config.Version,
 		ID:          ServerNode.ID(),
+		HexID:       fmt.Sprintf("0x%x", ServerNode.ID()),
 		Height:      uint64(chain.DefaultLedger.Blockchain.BlockHeight),
 		Version:     ServerNode.Version(),
 		Services:    ServerNode.Services(),
