@@ -70,10 +70,10 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		payload.addContent(content);
 
 		PayloadRegisterIdentification::SignContent content2;
-		content2.Path = Content1_Path1;
+		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
-		item2.Proof = Content1_Proof1;
-		item2.DataHash = Utils::UInt256FromString(Content1_DataHash1);
+		item2.Proof = Content2_Proof2;
+		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2);
 		content2.Values.push_back(item2);
 		payload.addContent(content2);
 
@@ -110,18 +110,15 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		payload.addContent(content);
 
 		PayloadRegisterIdentification::SignContent content2;
-		content2.Path = Content1_Path1;
+		content2.Path = Content2_Path2;
 		PayloadRegisterIdentification::ValueItem item2;
-		item2.Proof = Content1_Proof1;
-		item2.DataHash = Utils::UInt256FromString(Content1_DataHash1);
+		item2.Proof = Content2_Proof2;
+		item2.DataHash = Utils::UInt256FromString(Content2_DataHash2);
 		content2.Values.push_back(item2);
 		payload.addContent(content2);
 
 		ByteStream stream;
 		payload.Serialize(stream);
-
-		std::string str = Utils::encodeHex(stream.getBuffer());
-		std::cout << str;
 
 		stream.setPosition(0);	
 		PayloadRegisterIdentification payload2;
