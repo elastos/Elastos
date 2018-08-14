@@ -60,18 +60,6 @@ func (t *syncTimer) stop() {
 	}
 }
 
-func (node *node) hasSyncPeer() (bool, Noder) {
-	LocalNode.neighbourNodes.RLock()
-	defer LocalNode.neighbourNodes.RUnlock()
-	noders := LocalNode.GetNeighborNoder()
-	for _, n := range noders {
-		if n.IsSyncHeaders() {
-			return true, n
-		}
-	}
-	return false, nil
-}
-
 func (node *node) SyncBlocks() {
 	needSync := node.needSync()
 	log.Info("needSync: ", needSync)
@@ -80,10 +68,10 @@ func (node *node) SyncBlocks() {
 	bc := chain.DefaultLedger.Blockchain
 	log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 	if needSync {
-		hasSyncPeer, syncNode := LocalNode.hasSyncPeer()
-		if hasSyncPeer == false {
+		syncNode := LocalNode.GetSyncNode()
+		if syncNode == nil {
 			LocalNode.ResetRequestedBlock()
-			syncNode = node.GetBestHeightNoder()
+			syncNode = node.GetBestNode()
 			if syncNode == nil {
 				return
 			}
@@ -110,7 +98,7 @@ func (node *node) SyncBlocks() {
 				syncNode.SetSyncHeaders(false)
 				LocalNode.SetStartHash(EmptyHash)
 				LocalNode.SetStopHash(EmptyHash)
-				syncNode := node.GetBestHeightNoder()
+				syncNode := node.GetBestNode()
 				if syncNode == nil {
 					return
 				}
@@ -193,7 +181,7 @@ func (node *node) ConnectNodes() {
 	}
 
 	if node.NeedMoreAddresses() {
-		for _, nbr := range node.GetNeighborNoder() {
+		for _, nbr := range node.GetNeighborNodes() {
 			nbr.RequireNeighbourList()
 		}
 	}

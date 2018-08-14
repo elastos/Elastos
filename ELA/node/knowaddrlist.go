@@ -198,7 +198,7 @@ func (al *KnownAddressList) RandGetAddresses() []p2p.NetAddress {
 	neighbors := LocalNode.GetNeighbourCount()
 	addrs := make([]p2p.NetAddress, 0, MaxOutBoundCount)
 	for id, addr := range al.List {
-		if LocalNode.IsNeighborNoder(id) || addr.isBad() {
+		if LocalNode.IsNeighborNode(id) || addr.isBad() {
 			continue
 		}
 

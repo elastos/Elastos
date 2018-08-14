@@ -9,7 +9,6 @@ import (
 	"net"
 	"runtime"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -49,7 +48,7 @@ type node struct {
 	txnCnt       uint64        // The transactions be transmit by this node
 	rxTxnCnt     uint64        // The transaction received by this node
 	link                       // The link status and infomation
-	neighbourNodes             // The neighbor node connect with currently node except itself
+	neighbours                 // The neighbor node connect with currently node except itself
 	events       *events.Event // The event queue to notice notice other modules
 	chain.TxPool               // Unconfirmed transaction pool
 	idCache                    // The buffer to store the id of the items which already be processed
@@ -122,7 +121,7 @@ func InitLocalNode() protocol.Noder {
 	binary.Read(bytes.NewBuffer(idHash[:8]), binary.LittleEndian, &(LocalNode.id))
 
 	log.Info(fmt.Sprintf("Init node ID to 0x%x", LocalNode.id))
-	LocalNode.neighbourNodes.init()
+	LocalNode.neighbours.init()
 	LocalNode.ConnectingNodes.init()
 	LocalNode.KnownAddressList.init()
 	LocalNode.TxPool.Init()
@@ -152,19 +151,6 @@ func (node *node) Start() {
 
 func (node *node) UpdateMsgHelper(handler p2p.MsgHandler) {
 	node.MsgHelper.Update(handler)
-}
-
-func (node *node) IsAddrInNbrList(addr string) bool {
-	node.neighbourNodes.RLock()
-	defer node.neighbourNodes.RUnlock()
-	for _, n := range node.neighbourNodes.List {
-		if n.State() == p2p.HAND || n.State() == p2p.HANDSHAKE || n.State() == p2p.ESTABLISH {
-			if strings.Compare(n.NetAddress().String(), addr) == 0 {
-				return true
-			}
-		}
-	}
-	return false
 }
 
 func (node *node) AddToConnectingList(addr string) bool {
@@ -338,7 +324,7 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 		return nil
 	}
 
-	for _, nbr := range node.GetNeighborNoder() {
+	for _, nbr := range node.GetNeighborNodes() {
 		if from == nil || nbr.ID() != from.ID() {
 
 			switch message := message.(type) {
@@ -408,28 +394,6 @@ func (node *node) needSync() bool {
 	return true
 }
 
-func (node *node) GetBestHeightNoder() protocol.Noder {
-	node.neighbourNodes.RLock()
-	defer node.neighbourNodes.RUnlock()
-	var best protocol.Noder
-	for _, nbr := range node.neighbourNodes.List {
-		// Do not let extra node become sync node
-		if nbr.State() != p2p.ESTABLISH || nbr.IsFromExtraNet() {
-			continue
-		}
-
-		if best == nil {
-			best = nbr
-			continue
-		}
-
-		if nbr.Height() > best.Height() {
-			best = nbr
-		}
-	}
-	return best
-}
-
 func (node *node) GetRequestBlockList() map[Uint256]time.Time {
 	return node.RequestedBlockList
 }
@@ -465,7 +429,7 @@ func (node *node) DeleteRequestedBlock(hash Uint256) {
 }
 
 func (node *node) FindSyncNode() (protocol.Noder, error) {
-	noders := LocalNode.GetNeighborNoder()
+	noders := LocalNode.GetNeighborNodes()
 	for _, n := range noders {
 		if n.IsSyncHeaders() {
 			return n, nil
