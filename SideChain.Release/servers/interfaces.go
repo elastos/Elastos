@@ -951,12 +951,12 @@ func GetExistDepositTransactions(param Params) map[string]interface{} {
 
 func GetBlockTransactionsDetail(block *Block, filter func(*Transaction) bool) interface{} {
 	var trans []*TransactionInfo
-	for i := 0; i < len(block.Transactions); i++ {
-		if filter(block.Transactions[i]) {
+	for _, tx := range block.Transactions {
+		if !filter(tx) {
 			continue
 		}
 
-		trans = append(trans, GetTransactionInfo(&block.Header, block.Transactions[i]))
+		trans = append(trans, GetTransactionInfo(&block.Header, tx))
 	}
 	hash := block.Hash()
 	type BlockTransactions struct {
@@ -990,12 +990,16 @@ func GetDestroyedTransactionsByHeight(param Params) map[string]interface{} {
 
 	destroyHash := Uint168{}
 	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *Transaction) bool {
+		_, ok := tran.Payload.(*PayloadTransferCrossChainAsset)
+		if !ok {
+			return false
+		}
 		for _, output := range tran.Outputs {
 			if output.ProgramHash == destroyHash {
-				return false
+				return true
 			}
 		}
-		return true
+		return false
 	}))
 }
 
