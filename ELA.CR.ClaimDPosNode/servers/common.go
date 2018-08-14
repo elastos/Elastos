@@ -76,6 +76,7 @@ type BlockInfo struct {
 type NodeState struct {
 	Compile     string // The compile version of this server node
 	ID          uint64 // The nodes's id
+	HexID       string // The nodes's id in hex format
 	Height      uint64 // The ServerNode latest block height
 	Version     uint32 // The network protocol the ServerNode used
 	Services    uint64 // The services the local node supplied
@@ -93,6 +94,7 @@ type NodeState struct {
 
 type Neighbor struct {
 	ID         uint64 // The neighbor ID
+	HexID      string // The neighbor ID in hex format
 	Height     uint64 // The neighbor height
 	Services   uint64 // The services the neighbor node supplied
 	Relay      bool   // If this neighbor relay block and transactions
