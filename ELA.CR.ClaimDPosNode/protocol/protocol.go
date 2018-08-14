@@ -68,20 +68,19 @@ type Noder interface {
 	Send(msg p2p.Message)
 	GetTime() int64
 	NodeEstablished(uid uint64) bool
-	GetNeighbourAddresses() []p2p.NetAddress
 	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
 	GetRxTxnCnt() uint64
 
-	GetNeighborHeights() []uint64
+	GetNeighborNodes() []Noder
+	GetNeighbourAddresses() []p2p.NetAddress
+
 	WaitForSyncFinish()
 	CleanSubmittedTransactions(block *core.Block) error
 	MaybeAcceptTransaction(txn *core.Transaction) error
 	RemoveTransaction(txn *core.Transaction)
 
-	GetNeighborNoder() []Noder
-	GetNeighbourCount() uint32
 	UpdateLastActive()
 	SetHeight(height uint64)
 	Relay(Noder, interface{}) error
@@ -91,9 +90,7 @@ type Noder interface {
 	AddRequestedBlock(hash common.Uint256)
 	DeleteRequestedBlock(hash common.Uint256)
 	GetRequestBlockList() map[common.Uint256]time.Time
-	IsNeighborNoder(id uint64) bool
 	FindSyncNode() (Noder, error)
-	GetBestHeightNoder() Noder
 	AcqSyncBlkReqSem()
 	RelSyncBlkReqSem()
 	SetStartHash(hash common.Uint256)

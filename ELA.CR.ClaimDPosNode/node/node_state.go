@@ -29,7 +29,7 @@ func monitorNodeState() {
 
 func dumpNodeState() {
 	state := " ***** DUMP NODE STATE INFORMATION ***** \n"
-	neighbors := LocalNode.GetNeighborNoder()
+	neighbors := LocalNode.GetNeighborNodes()
 
 	// Dump node information
 	state += separateLine()
