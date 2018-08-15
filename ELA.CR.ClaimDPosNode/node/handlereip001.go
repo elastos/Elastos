@@ -176,8 +176,8 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 		hash := iv.Hash
 		switch iv.Type {
 		case msg.InvTypeBlock:
-			if node.IsFromExtraNet() {
-				return fmt.Errorf("receive InvTypeBlock from extra node")
+			if node.IsExternal() {
+				return fmt.Errorf("receive InvTypeBlock from external node")
 			}
 			haveInv := chain.DefaultLedger.BlockInLedger(hash) ||
 				chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash) || LocalNode.IsRequestedBlock(hash)

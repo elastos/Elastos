@@ -38,21 +38,21 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState              // node state
-	id           uint64        // The nodes's id
-	version      uint32        // The network protocol the node used
-	services     uint64        // The services the node supplied
-	relay        bool          // The relay capability of the node (merge into capbility flag)
-	height       uint64        // The node latest block height
-	fromExtraNet bool          // If this node is connected from extra net
-	txnCnt       uint64        // The transactions be transmit by this node
-	rxTxnCnt     uint64        // The transaction received by this node
-	link                       // The link status and infomation
-	neighbours                 // The neighbor node connect with currently node except itself
-	events       *events.Event // The event queue to notice notice other modules
-	chain.TxPool               // Unconfirmed transaction pool
-	idCache                    // The buffer to store the id of the items which already be processed
-	filter       *bloom.Filter // The bloom filter of a spv node
+	p2p.PeerState          // node state
+	id       uint64        // The nodes's id
+	version  uint32        // The network protocol the node used
+	services uint64        // The services the node supplied
+	relay    bool          // The relay capability of the node (merge into capbility flag)
+	height   uint64        // The node latest block height
+	external bool          // Indicate if this is an external node
+	txnCnt   uint64        // The transactions be transmit by this node
+	rxTxnCnt uint64        // The transaction received by this node
+	link                   // The link status and infomation
+	neighbours             // The neighbor node connect with currently node except itself
+	events   *events.Event // The event queue to notice notice other modules
+	chain.TxPool           // Unconfirmed transaction pool
+	idCache                // The buffer to store the id of the items which already be processed
+	filter   *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -201,8 +201,8 @@ func (node *node) Port() uint16 {
 	return node.port
 }
 
-func (node *node) IsFromExtraNet() bool {
-	return node.fromExtraNet
+func (node *node) IsExternal() bool {
+	return node.external
 }
 
 func (node *node) HttpInfoPort() int {

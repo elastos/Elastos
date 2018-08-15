@@ -38,7 +38,7 @@ type Noder interface {
 	Addr16() ([16]byte, error)
 	NetAddress() p2p.NetAddress
 	Port() uint16
-	IsFromExtraNet() bool
+	IsExternal() bool
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
 	SetState(state uint)

@@ -59,7 +59,7 @@ func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
 		}
 
 		// Count internal nodes
-		if !node.IsFromExtraNet() {
+		if !node.IsExternal() {
 			internal++
 		}
 
@@ -173,8 +173,8 @@ func (ns *neighbours) GetBestNode() protocol.Noder {
 
 	var best protocol.Noder
 	for _, nbr := range ns.List {
-		// Do not let extra node become sync node
-		if nbr.State() != p2p.ESTABLISH || nbr.IsFromExtraNet() {
+		// Do not let external node become sync node
+		if nbr.State() != p2p.ESTABLISH || nbr.IsExternal() {
 			continue
 		}
 

@@ -103,7 +103,7 @@ func dumpNeighborLine(index int, n *node) string {
 		n.Height(),
 		n.Services(),
 		n.IsRelay(),
-		n.IsFromExtraNet(),
+		n.IsExternal(),
 		n.PeerState.String(),
 		n.NetAddress().String(),
 	)
