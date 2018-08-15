@@ -42,8 +42,12 @@ else
 	DYLIBNAME = $(LIBNAME).so
 endif
 
+ifeq ($(HOST), iOS)
+	LDFLAGS := $(LDFLAGS) -install_name @rpath/$(DYLIBNAME)
+endif
+
 elacp_generated.h: elacp.fbs
-	${FLATCC} --outfile $@ -a $< 
+	${FLATCC} --outfile $@ -a $<
 
 elacp.o : elacp_generated.h
 

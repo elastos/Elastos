@@ -33,6 +33,10 @@ else
 	DYLIBNAME = $(LIBNAME).so
 endif
 
+ifeq ($(HOST), iOS)
+	LDFLAGS := $(LDFLAGS) -install_name @rpath/$(DYLIBNAME)
+endif
+
 PSEUDOTCP_SRCS = pseudotcp/pseudotcp.c pseudotcp/glist.c pseudotcp/gqueue.c
 SRCS = session.c crypto_handler.c reliable_handler.c multiplex_handler.c portforwarding.c fdset.c udp_eventfd.c  ice.c $(PSEUDOTCP_SRCS)
 
@@ -74,7 +78,7 @@ install: all
 	$(INSTALL) $(STLIBNAME) $(INSTALL_LIBRARY_PATH)
 
 clean:
-	rm -rf $(DYLIBNAME) $(STLIBNAME) 
+	rm -rf $(DYLIBNAME) $(STLIBNAME)
 	rm -rf *.o *.lo
 	rm -rf pseudotcp/*.o pseudotcp/*.lo
 
