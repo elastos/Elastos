@@ -7,3 +7,5 @@
 ### [AMA With Elastos CMo - Fay Li - Apr 24, 2018](https://medium.com/elastos/ama-with-elastos-cmo-fay-li-c9f4a52bd919)
 ### [ELA NEWS Exclusive Q&A with Kevin Zhang, New Head of the Developers Community - Apr 24, 2018](https://medium.com/elastos/ela-news-exclusive-q-a-with-kevin-zhang-new-head-of-the-developers-community-1fe13cf8ab13)
 ### [Discussion between Feng Han and Jim Glassman of JPMorgan Chase - May 1, 2018](https://medium.com/elastos/discussion-between-feng-han-and-jim-glassman-of-jpmorgan-chase-9cff8f0fe70b)
+### [Elastos San Francisco Developer Meetup and AMA Live Stream [Video] - May 7, 2018](https://elanews.net/2018/05/07/watch-elastos-sf-developer-meetup-and-ama-live-stream/)
+### [Rong Chen interview with Huobi Talk [Video] - July 3, 2018](https://elanews.net/2018/07/03/video-rong-chen-interview-with-huobi-talk/)
