@@ -130,7 +130,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 	if node.State() == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
 		version := NewVersion(LocalNode)
-		if node.IsFromExtraNet() {
+		// External node connect with open port
+		if node.IsExternal() {
 			version.Port = config.Parameters.NodeOpenPort
 		} else {
 			version.Port = config.Parameters.NodePort
@@ -165,9 +166,9 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	// Add node to neighbor list
 	LocalNode.AddNeighborNode(node)
 
-	// Do not add extra node address into known addresses, for this can
-	// stop inner node from creating an outbound connection to extra node.
-	if !node.IsFromExtraNet() {
+	// Do not add external node address into known addresses, for this can
+	// stop internal node from creating an outbound connection to it.
+	if !node.IsExternal() {
 		LocalNode.AddKnownAddress(node.NetAddress())
 	}
 
@@ -185,7 +186,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 	var addrs []p2p.NetAddress
 	// Only send addresses that enabled SPV service
-	if h.node.IsFromExtraNet() {
+	if h.node.IsExternal() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
 			if addr.Services&protocol.OpenService == protocol.OpenService {
 				addr.Port = config.Parameters.NodeOpenPort

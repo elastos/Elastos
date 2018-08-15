@@ -157,8 +157,8 @@ QUIT:
 }
 
 func (node *node) RequireNeighbourList() {
-	// Do not request addresses from extra node
-	if node.IsFromExtraNet() {
+	// Do not request addresses from external node
+	if node.IsExternal() {
 		return
 	}
 

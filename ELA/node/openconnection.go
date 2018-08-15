@@ -1,18 +1,18 @@
 /*
 Open connections are the connections came from the open service port configured
-by NodeOpenPort parameter. This port is used for nodes from the extra net.
-The different between an inner node and an extra node is that the messages
-from an extra node are filtered. That makes an extra node can sync blocks and
+by NodeOpenPort parameter. This port is used for nodes from the external net.
+The different between an inner node and an external node is that the messages
+from an external node are filtered. That makes an external node can sync blocks and
 transaction from an inner node, but an inner node will not sync data from an
-extra node. And also, an extra node can send an transaction to inner node,
+external node. And also, an external node can send an transaction to inner node,
 but can not send a block to inner node.
 
-There are several rules between inner node and extra node.
-1. Inner node do not start an outbound connection to an extra node.
-2. Inner node do not receive Addrs message from an extra node.
-3. Inner node do not receive Inv type block message from an extra node.
-4. Inner node do not receive Block message from an extra node.
-5. Inner node do not send non-OpenServers inner nodes to an extra node in Addrs message.
+There are several rules between inner node and external node.
+1. Inner node do not start an outbound connection to an external node.
+2. Inner node do not receive Addrs message from an external node.
+3. Inner node do not receive Inv type block message from an external node.
+4. Inner node do not receive Block message from an external node.
+5. Inner node do not send non-OpenServers inner nodes to an external node in Addrs message.
 */
 
 package node
@@ -27,7 +27,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
-// listen the NodeOpenPort to accept connections from extra net.
+// listen the NodeOpenPort to accept connections from external net.
 func listenNodeOpenPort() {
 	listener, err := net.Listen("tcp", fmt.Sprint(":", config.Parameters.NodeOpenPort))
 	if err != nil {
@@ -47,17 +47,17 @@ func listenNodeOpenPort() {
 
 		node := NewNode(config.Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
-		node.fromExtraNet = true
+		node.external = true
 		node.Read()
 		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
 	}
 }
 
-// Extra net nodes will connect through the specific NodeOpenPort
+// External nodes will connect through the specific NodeOpenPort
 // only limited messages can go through, such as filterload/getblocks/getdata etc.
 // Otherwise error will be returned
 func (h *HandlerBase) FilterMessage(msgType string) error {
-	if h.node.IsFromExtraNet() {
+	if h.node.IsExternal() {
 		// Only cased message types can go through
 		switch msgType {
 		case p2p.CmdVersion:
@@ -72,7 +72,7 @@ func (h *HandlerBase) FilterMessage(msgType string) error {
 		case p2p.CmdTx:
 		case p2p.CmdMemPool:
 		default:
-			return fmt.Errorf("unsupported messsage type [%s] from extra node", msgType)
+			return fmt.Errorf("unsupported messsage type [%s] from external node", msgType)
 		}
 	}
 	return nil
