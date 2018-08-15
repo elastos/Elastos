@@ -28,6 +28,9 @@ type IChainStore interface {
 	PersistMainchainTx(mainchainTxHash Uint256)
 	GetMainchainTx(mainchainTxHash Uint256) (byte, error)
 
+	PersistRegisterIdentificationTx(idKey []byte, txHash Uint256)
+	GetRegisterIdentificationTx(idKey []byte) ([]byte, error)
+
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 

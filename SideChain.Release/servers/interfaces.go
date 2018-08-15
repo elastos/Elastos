@@ -895,11 +895,6 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
-	if false {
-		w := new(bytes.Buffer)
-		txn.Serialize(w)
-		return ResponsePack(Success, BytesToHexString(w.Bytes()))
-	}
 	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
@@ -1003,6 +998,49 @@ func GetDestroyedTransactionsByHeight(param Params) map[string]interface{} {
 	}))
 }
 
+func GetIdentificationTxByIdAndPath(param Params) map[string]interface{} {
+	id, ok := param.String("id")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+	_, err := Uint168FromAddress(id)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	path, ok := param.String("path")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(id)
+	buf.WriteString(path)
+	contentBuf := new(bytes.Buffer)
+	txHashBytes, err := chain.DefaultLedger.Store.GetRegisterIdentificationTx(contentBuf.Bytes())
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	txHash, err := Uint256FromBytes(txHashBytes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	txn, height, err := chain.DefaultLedger.Store.GetTransaction(*txHash)
+	if err != nil {
+		return ResponsePack(UnknownTransaction, "")
+	}
+	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+	header, err := chain.DefaultLedger.Store.GetHeader(bHash)
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+
+	return ResponsePack(Success, GetTransactionInfo(header, txn))
+}
+
 func getPayload(pInfo PayloadInfo) (Payload, error) {
 
 	switch object := pInfo.(type) {
@@ -1070,6 +1108,26 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
 		obj.Proof = BytesToHexString(object.MerkleProof)
 		return obj
+	case *PayloadRegisterIdentification:
+		obj := new(RegisterIdentificationInfo)
+		obj.Id = object.ID
+		obj.Sign = string(object.Sign)
+		contents := []RegisterIdentificationContentInfo{}
+		for _, content := range object.Contents {
+			values := []RegisterIdentificationValueInfo{}
+			for _, value := range content.Values {
+				values = append(values, RegisterIdentificationValueInfo{
+					DataHash: ToReversedString(value.DataHash),
+					Proof:    value.Proof,
+				})
+			}
+
+			contents = append(contents, RegisterIdentificationContentInfo{
+				Path:   content.Path,
+				Values: values,
+			})
+		}
+		obj.Contents = contents
 	}
 	return nil
 }

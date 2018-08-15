@@ -47,6 +47,7 @@ func StartRPCServer() {
 	mainMux["getblockbyheight"] = GetBlockByHeight
 	mainMux["getdestroyedtransactions"] = GetDestroyedTransactionsByHeight
 	mainMux["getexistdeposittransactions"] = GetExistDepositTransactions
+	mainMux["getidentificationtxbyidandpath"] = GetIdentificationTxByIdAndPath
 
 	// aux interfaces
 	mainMux["help"] = AuxHelp

@@ -386,6 +386,24 @@ func (c *ChainStore) GetMainchainTx(mainchainTxHash Uint256) (byte, error) {
 	return data[0], nil
 }
 
+func (c *ChainStore) PersistRegisterIdentificationTx(idKey []byte, txHash Uint256) {
+	key := []byte{byte(IX_IDENTIFICATION)}
+	key = append(key, idKey...)
+
+	// PUT VALUE
+	c.BatchPut(key, txHash.Bytes())
+}
+
+func (c *ChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
+	key := []byte{byte(IX_IDENTIFICATION)}
+	data, err := c.Get(append(key, idKey...))
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func (c *ChainStore) GetTransaction(txId Uint256) (*core.Transaction, uint32, error) {
 	key := append([]byte{byte(DATA_Transaction)}, txId.Bytes()...)
 	value, err := c.Get(key)
