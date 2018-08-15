@@ -127,8 +127,8 @@ func (node *node) stopSyncing() {
 	LocalNode.SetSyncHeaders(false)
 	LocalNode.SetStartHash(EmptyHash)
 	LocalNode.SetStopHash(EmptyHash)
-	syncNode, err := node.FindSyncNode()
-	if err == nil {
+	syncNode := node.GetSyncNode()
+	if syncNode != nil {
 		syncNode.SetSyncHeaders(false)
 	}
 }
