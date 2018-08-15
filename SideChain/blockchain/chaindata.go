@@ -309,6 +309,15 @@ func (c *ChainStore) PersistTransactions(b *core.Block) error {
 			}
 			c.PersistMainchainTx(*hash)
 		}
+		if txn.TxType == core.RegisterIdentification {
+			regPayload := txn.Payload.(*core.PayloadRegisterIdentification)
+			for _, content := range regPayload.Contents {
+				buf := new(bytes.Buffer)
+				buf.WriteString(regPayload.ID)
+				buf.WriteString(content.Path)
+				c.PersistRegisterIdentificationTx(buf.Bytes(), txn.Hash())
+			}
+		}
 	}
 	return nil
 }
@@ -362,7 +371,6 @@ func (c *ChainStore) RollbackMainchainTx(mainchainTxHash Uint256) error {
 	c.BatchDelete(key)
 	return nil
 }
-
 
 func (c *ChainStore) PersistUnspend(b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
