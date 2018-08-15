@@ -90,7 +90,6 @@ type Noder interface {
 	AddRequestedBlock(hash common.Uint256)
 	DeleteRequestedBlock(hash common.Uint256)
 	GetRequestBlockList() map[common.Uint256]time.Time
-	FindSyncNode() (Noder, error)
 	AcqSyncBlkReqSem()
 	RelSyncBlkReqSem()
 	SetStartHash(hash common.Uint256)

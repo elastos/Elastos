@@ -282,7 +282,7 @@ func (node *node) WaitForSyncFinish() {
 		heights := node.GetNeighborHeights()
 		log.Trace("others height is ", heights)
 
-		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
+		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0 {
 			LocalNode.SetSyncHeaders(false)
 			break
 		}
@@ -387,11 +387,17 @@ func (node *node) SetSyncHeaders(b bool) {
 
 func (node *node) needSync() bool {
 	heights := node.GetNeighborHeights()
-	log.Info("nbr heigh-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
-	if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) {
-		return false
+	log.Info("nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) < 0
+}
+
+func CompareHeight(localHeight uint64, heights []uint64) int {
+	for _, height := range heights {
+		if localHeight < height {
+			return -1
+		}
 	}
-	return true
+	return 1
 }
 
 func (node *node) GetRequestBlockList() map[Uint256]time.Time {
@@ -428,16 +434,6 @@ func (node *node) DeleteRequestedBlock(hash Uint256) {
 	delete(node.RequestedBlockList, hash)
 }
 
-func (node *node) FindSyncNode() (protocol.Noder, error) {
-	noders := LocalNode.GetNeighborNodes()
-	for _, n := range noders {
-		if n.IsSyncHeaders() {
-			return n, nil
-		}
-	}
-	return nil, errors.New("Not in sync mode")
-}
-
 func (node *node) AcqSyncBlkReqSem() {
 	node.SyncBlkReqSem.acquire()
 }
@@ -460,13 +456,4 @@ func (node *node) SetStopHash(hash Uint256) {
 
 func (node *node) GetStopHash() Uint256 {
 	return node.StopHash
-}
-
-func CompareHeight(blockHeight uint64, heights []uint64) bool {
-	for _, height := range heights {
-		if blockHeight < height {
-			return false
-		}
-	}
-	return true
 }
