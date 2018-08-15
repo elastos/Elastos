@@ -16,3 +16,7 @@
 ### [Elastos Thoughts and Conclusions April - June 2018](https://medium.com/elastos/thoughts-and-conclusions-april-june-2018-516fb02685a4)
 ### [Elastos Weekly Updates - July 06, 2018](https://elanews.net/2018/07/06/elastos-weekly-updates%e2%80%8a-%e2%80%8a06-july-2018/)
 ### [Elastos Weekly Updates - July 13, 2018](https://elanews.net/2018/07/12/elastos-weekly-updates-13-july-2018/)
+### [Elastos Weekly Updates - July 20, 2018](https://elanews.net/2018/07/20/elastos-weekly-updates-20-july-2018/)
+### [Elastos Weekly Updates - July 27, 2018](https://elanews.net/2018/07/27/elastos-weekly-updates-27-july-2018/)
+### [Elastos Weekly Updates - August 03, 2018](https://elanews.net/2018/08/03/elastos-weekly-updates-3-august-2018/)
+### [Elastos Weekly Updates - August 10, 2018](https://elanews.net/2018/08/10/elastos-weekly-updates-10-august-2018/)
