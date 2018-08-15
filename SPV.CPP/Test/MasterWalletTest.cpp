@@ -729,16 +729,25 @@ TEST_CASE("Master wallet save and restore", "[Save&Restore]") {
 		REQUIRE(subWallet != nullptr);
 		REQUIRE(dynamic_cast<IdChainSubWallet *>(subWallet) != nullptr);
 
+		std::string newPassword = "newPayPassword";
+		masterWallet->ChangePassword(payPassword, newPassword);
+
+		REQUIRE_NOTHROW(masterWallet->Sign("MyMessage", newPassword));
+		REQUIRE_NOTHROW(subWallet->Sign("MyPassword", newPassword));
+
 		boost::filesystem::path localStore = "Data";
 		localStore /= "MasterWalletTest";
 		localStore /= "MasterWalletStore.json";
 		masterWallet->Save();
 		masterWallet.reset(new TestMasterWallet(localStore)); //save and reload in this line
+		REQUIRE_NOTHROW(masterWallet->Sign("MyMessage", newPassword));
 
 		std::vector<ISubWallet *> subwallets = masterWallet->GetAllSubWallets();
 		REQUIRE(subwallets.size() == 2);
 		REQUIRE(subwallets[0] != nullptr);
+		REQUIRE_NOTHROW(subwallets[0]->Sign("MyPassword", newPassword));
 		REQUIRE(subwallets[1] != nullptr);
+		REQUIRE_NOTHROW(subwallets[1]->Sign("MyPassword", newPassword));
 		for (int i = 0; i < 2; ++i) {
 			if (subwallets[i]->GetChainId() == "ELA")
 				REQUIRE(dynamic_cast<MainchainSubWallet *>(subwallets[i]) != nullptr);
