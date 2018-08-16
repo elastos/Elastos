@@ -1015,8 +1015,7 @@ func GetIdentificationTxByIdAndPath(param Params) map[string]interface{} {
 	buf := new(bytes.Buffer)
 	buf.WriteString(id)
 	buf.WriteString(path)
-	contentBuf := new(bytes.Buffer)
-	txHashBytes, err := chain.DefaultLedger.Store.GetRegisterIdentificationTx(contentBuf.Bytes())
+	txHashBytes, err := chain.DefaultLedger.Store.GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -1111,7 +1110,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadRegisterIdentification:
 		obj := new(RegisterIdentificationInfo)
 		obj.Id = object.ID
-		obj.Sign = string(object.Sign)
+		obj.Sign = BytesToHexString(object.Sign)
 		contents := []RegisterIdentificationContentInfo{}
 		for _, content := range object.Contents {
 			values := []RegisterIdentificationValueInfo{}
@@ -1128,6 +1127,7 @@ func getPayloadInfo(p Payload) PayloadInfo {
 			})
 		}
 		obj.Contents = contents
+		return obj
 	}
 	return nil
 }
