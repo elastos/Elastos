@@ -157,7 +157,7 @@ func GetNeighbors(param Params) map[string]interface{} {
 }
 
 func GetNodeState(param Params) map[string]interface{} {
-	nodes := ServerNode.GetNeighborNoder()
+	nodes := ServerNode.GetNeighborNodes()
 	neighbors := make([]Neighbor, 0, len(nodes))
 	for _, node := range nodes {
 		var state p2p.PeerState
@@ -168,7 +168,7 @@ func GetNodeState(param Params) map[string]interface{} {
 			Height:     node.Height(),
 			Services:   node.Services(),
 			Relay:      node.IsRelay(),
-			External:   node.IsFromExtraNet(),
+			External:   node.IsExternal(),
 			State:      state.String(),
 			NetAddress: node.NetAddress().String(),
 		})
