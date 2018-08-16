@@ -4,7 +4,6 @@
 #include <ela_carrier.h>
 #include <ela_session.h>
 #include <linkedhashtable.h>
-
 #define MODE_CLIENT     1
 #define MODE_SERVER     2
 

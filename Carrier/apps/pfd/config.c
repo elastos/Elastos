@@ -18,6 +18,7 @@
 #endif
 
 #include <ela_carrier.h>
+#include <ela_session.h>
 
 #include "config.h"
 

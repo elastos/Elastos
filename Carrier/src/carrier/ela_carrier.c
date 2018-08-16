@@ -25,11 +25,15 @@
 #include <string.h>
 #include <stdarg.h>
 #include <limits.h>
+#include <errno.h>
+#include <pthread.h>
+#include <time.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #ifdef __APPLE__
 #include <sys/syslimits.h>
 #endif
-#include <time.h>
-
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -39,12 +43,18 @@
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif
-#include <fcntl.h>
-#include <errno.h>
-#include <pthread.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#include <sys/stat.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+#ifdef HAVE_IO_H
+#include <io.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
 
 #include <rc_mem.h>
 #include <base58.h>
@@ -54,8 +64,8 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <posix_helper.h>
-#endif
 
+#endif
 
 #include "version.h"
 #include "ela_carrier.h"
@@ -784,7 +794,7 @@ static void free_persistence_data(persistence_data *data)
         free((void *)data->dht_savedata);
 }
 
-static int _mkdir(const char *path, mode_t mode)
+static int mkdir_internal(const char *path, mode_t mode)
 {
     struct stat st;
     int rc = 0;
@@ -816,14 +826,14 @@ static int mkdirs(const char *path, mode_t mode)
         if (sp != pp) {
             /* Neither root nor double slash in path */
             *sp = '\0';
-            rc = _mkdir(copypath, mode);
+            rc = mkdir_internal(copypath, mode);
             *sp = '/';
         }
         pp = sp + 1;
     }
 
     if (rc == 0)
-        rc = _mkdir(path, mode);
+        rc = mkdir_internal(path, mode);
 
     return rc;
 }
@@ -887,6 +897,12 @@ static void get_extra_savedata(ElaCarrier *w, void *data, size_t len)
 
     return;
 }
+
+#ifdef _MSC_VER
+// For Windows socket API not compatible with POSIX: size_t vs. int
+#pragma warning(push)
+#pragma warning(disable: 4267)
+#endif
 
 static int store_persistence_data(ElaCarrier *w)
 {
@@ -973,6 +989,10 @@ static int store_persistence_data(ElaCarrier *w)
 
     return 0;
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static void ela_destroy(void *argv)
 {

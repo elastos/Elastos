@@ -1,0 +1,24 @@
+diff -ru pthreads-w32/pthreads.2/Makefile pthreads-w32-mod/pthreads.2/Makefile
+--- pthreads-w32/pthreads.2/Makefile	2012-05-27 14:18:10.000000000 +0800
++++ pthreads-w32-mod/pthreads.2/Makefile	2018-07-30 14:57:07.000000000 +0800
+@@ -13,7 +13,7 @@
+ 
+ DEVROOT	= C:\pthreads
+ 
+-DLLDEST	= $(DEVROOT)\dll
++DLLDEST	= $(DEVROOT)\bin
+ LIBDEST	= $(DEVROOT)\lib
+ HDRDEST	= $(DEVROOT)\include
+ 
+diff -ru pthreads-w32/pthreads.2/pthread.h pthreads-w32-mod/pthreads.2/pthread.h
+--- pthreads-w32/pthreads.2/pthread.h	2012-05-27 14:18:10.000000000 +0800
++++ pthreads-w32-mod/pthreads.2/pthread.h	2018-07-30 15:10:10.000000000 +0800
+@@ -313,7 +313,7 @@
+ #endif
+ #endif
+ 
+-#if !defined(HAVE_STRUCT_TIMESPEC)
++#if !defined(HAVE_STRUCT_TIMESPEC) && (_MSC_VER < 1900)
+ #define HAVE_STRUCT_TIMESPEC
+ #if !defined(_TIMESPEC_DEFINED)
+ #define _TIMESPEC_DEFINED

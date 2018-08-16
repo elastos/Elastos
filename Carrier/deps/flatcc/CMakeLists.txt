@@ -36,5 +36,6 @@ ExternalProject_Add_Step(
 
     COMMAND cmake
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DINT_DIST_DIR=${CARRIER_INT_DIST_DIR}
         -P "${CMAKE_CURRENT_LIST_DIR}/flatcc_install.cmake"
 )

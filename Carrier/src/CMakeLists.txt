@@ -1,16 +1,14 @@
-add_definitions(-fPIC)
-add_definitions(-fvisibility=hidden)
 add_definitions(-DCARRIER_BUILD)
 
 set(ELACARRIER_DEPENDS
-     libcrystal
-     toxcore0
-     libsodium
-     flatcc)
+    libcrystal
+    toxcore0
+    libsodium
+    flatcc)
 
 set(ELASESSION_DEPENDS
-     libcrystal
-     pjsip)
+    libcrystal
+    pjsip)
 
 add_subdirectory(carrier)
 add_subdirectory(session)

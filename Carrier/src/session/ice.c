@@ -26,6 +26,10 @@
 #include <limits.h>
 #include <pthread.h>
 
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
 #ifdef __APPLE__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdocumentation"
@@ -67,7 +71,6 @@
 #define DEFAULT_KEEPALIVE_INTERVAL      30000 /* 30 seconds */
 #define DEFAULT_TIMEOUT_INTERVAL        120000 /* 120 seconds */
 
-#define MAX_HOST_CANDIDATES 4
 #define KA_INTERVAL         25
 
 enum {
@@ -319,7 +322,7 @@ int ice_worker_init(IceWorker *worker, IceTransportOptions *opts)
     /* -= Start initializing ICE stream transport config =- */
 
     /* Maximum number of host candidates */
-    worker->cfg.stun.max_host_cands = MAX_HOST_CANDIDATES;
+    worker->cfg.stun.max_host_cands = PJ_ICE_ST_MAX_CAND;
 
     /* Nomination strategy */
     worker->cfg.opt.aggressive = !worker->regular;

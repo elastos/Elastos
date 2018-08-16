@@ -15,7 +15,6 @@
 
 #include <ela_carrier.h>
 #include <ela_session.h>
-
 #include <vlog.h>
 #include <linkedhashtable.h>
 #include <rc_mem.h>

@@ -51,7 +51,7 @@ typedef struct BootstrapNodeBuf {
 typedef struct Preferences {
     char *data_location;
     bool udp_enabled;
-    size_t bootstraps_size;
+    int bootstraps_size;
     BootstrapNodeBuf *bootstraps;
 } Preferences;
 

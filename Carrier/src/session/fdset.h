@@ -31,7 +31,8 @@
 #include <sys/eventfd.h>
 #endif
 
-#include "socket.h"
+#include <socket.h>
+
 #include "udp_eventfd.h"
 
 #ifdef __cplusplus

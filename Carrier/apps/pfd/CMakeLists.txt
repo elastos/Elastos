@@ -27,6 +27,10 @@ set(SRC
     config.c
     pfd.c)
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    set(SYSTEM_LIBS pthread)
+endif()
+
 include_directories(
     ../../src/carrier
     ../../src/session
@@ -45,6 +49,11 @@ else()
     add_definitions(-DCRYSTAL_STATIC)
 endif()
 
+set(LIBS
+    elacarrier
+    elasession
+    crystal)
+
 if(WIN32)
     add_definitions(
         -DWIN32_LEAN_AND_MEAN
@@ -54,17 +63,13 @@ if(WIN32)
     # Force source code encoding to utf-8
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /utf-8")
     set(LIBS
-        elacarrier
-        elasession
-        crystal
+        ${LIBS}
         pthread
         libconfig.lib
         Shlwapi)
 else()
     set(LIBS
-        elacarrier
-        elasession
-        crystal
+        ${LIBS}
         config)
 endif()
 

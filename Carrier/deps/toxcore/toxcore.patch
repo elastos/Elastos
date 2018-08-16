@@ -1,7 +1,32 @@
 diff -ruN c-toxcore-0.1.10/CMakeLists.txt c-toxcore-0.1.10-mod/CMakeLists.txt
 --- c-toxcore-0.1.10/CMakeLists.txt	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/CMakeLists.txt	2018-07-28 16:58:07.000000000 +0800
-@@ -142,7 +142,7 @@
++++ c-toxcore-0.1.10-mod/CMakeLists.txt	2018-08-06 20:06:36.000000000 +0800
+@@ -1,5 +1,5 @@
+-cmake_minimum_required(VERSION 2.8.6)
+-cmake_policy(VERSION 2.8.6)
++cmake_minimum_required(VERSION 2.9)
++cmake_policy(VERSION 2.9)
+ project(toxcore)
+ 
+ set(CMAKE_MODULE_PATH ${toxcore_SOURCE_DIR}/cmake)
+@@ -47,7 +47,7 @@
+ 
+ set(CMAKE_MACOSX_RPATH ON)
+ 
+-if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
++if(NOT MSVC)
+   # Set standard version for compiler.
+   add_cflag("-std=c99")
+   add_cxxflag("-std=c++11")
+@@ -84,6 +84,7 @@
+     add_flag("-Wno-unused-macros")
+     add_flag("-Wno-unused-parameter")
+     add_flag("-Wno-vla")
++    add_flag("-Wno-cast-qual")
+ 
+     # Disable specific warning flags for C.
+     add_cflag("-Wno-assign-enum")
+@@ -142,7 +143,7 @@
  else()
    # Forbid undefined symbols in shared libraries. This is incompatible with
    # asan, so it's in the else branch here.
@@ -10,26 +35,76 @@ diff -ruN c-toxcore-0.1.10/CMakeLists.txt c-toxcore-0.1.10-mod/CMakeLists.txt
  endif()
 
  option(BUILD_TOXAV "Whether to build the tox AV library" ON)
-@@ -158,6 +158,18 @@
-   endif()
- endif()
+@@ -160,6 +161,50 @@
 
-+include_directories(${CMAKE_INSTALL_PREFIX}/include)
-+link_directories(${CMAKE_INSTALL_PREFIX}/lib)
-+add_definitions(-DCARRIER_BUILD)
-+add_flag("-Wno-cast-qual")
-+if("${LIBSODIUM_LIBRARIES}" STREQUAL "")
-+  set(LIBSODIUM_LIBRARIES "sodium")
-+endif()
-+if("${LIBCONFIG_FOUND}" STREQUAL "")
-+  set(LIBCONFIG_FOUND TRUE)
-+endif()
-+set(CHECK_FOUND FALSE)
-+
  ################################################################################
  #
++# Used for carrier build.
++#
++################################################################################
++
++include_directories(${CMAKE_INSTALL_PREFIX}/include)
++link_directories(${CMAKE_INSTALL_PREFIX}/lib)
++
++option(BUILD_CARRIER "Whether to build toxcore with segregated network" ON)
++
++if(BUILD_CARRIER)
++add_definitions(-DCARRIER_BUILD)
++    set(CHECK_FOUND FALSE)
++endif()
++
++if(MSVC)
++    add_definitions(
++        -DWIN32_LEAN_AND_MEAN
++        -D_CRT_SECURE_NO_WARNINGS
++        -D_CRT_NONSTDC_NO_WARNINGS)
++endif()
++
++find_library(LIBSODIUM_LIBRARIES
++    NAMES sodium libsodium
++    PATHS "${CMAKE_INSTALL_PREIFX}/lib")
++
++if(LIBSODIUM_LIBRARIES)
++    set(LIBSODIUM_FOUND TRUE)
++    add_definitions(-DSODIUM_STATIC)
++else()
++    message(FATAL_ERROR "Dependency library sodium not found")
++endif()
++
++find_library(LIBCONFIG_LIBRARIES
++    NAMES config libconfig
++    PATHS "${CMAKE_INSTALL_PREFIX}/lib")
++
++if(LIBCONFIG_LIBRARIES)
++    set(LIBCONFIG_FOUND TRUE)
++else()
++    message(FATAL_ERROR "Dependency library libconfig not found")
++endif()
++
++################################################################################
++#
  # :: Tox Core Library
-@@ -454,7 +466,7 @@
+ #
+ ################################################################################
+@@ -381,7 +426,7 @@
+ endif()
+ 
+ function(auto_test target)
+-  if(CHECK_FOUND AND NOT ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC" AND ARGV1 STREQUAL "MSVC_DONT_BUILD"))
++  if(CHECK_FOUND AND NOT (MSVC AND ARGV1 STREQUAL "MSVC_DONT_BUILD"))
+     add_c_executable(auto_${target}_test auto_tests/${target}_test.c)
+     target_link_modules(auto_${target}_test
+       toxcore
+@@ -449,12 +494,15 @@
+ endif()
+ 
+ option(BOOTSTRAP_DAEMON "Enable building of tox-bootstrapd" ON)
++if(MSVC)
++    set(BOOTSTRAP_DAEMON OFF)
++endif()
+ if(BOOTSTRAP_DAEMON)
+-  if(WIN32)
++  if(MSVC)
      message(FATAL_ERROR "Building tox-bootstrapd for Windows is not supported")
    endif()
    if(LIBCONFIG_FOUND)
@@ -38,18 +113,76 @@ diff -ruN c-toxcore-0.1.10/CMakeLists.txt c-toxcore-0.1.10-mod/CMakeLists.txt
        other/bootstrap_daemon/src/command_line_arguments.c
        other/bootstrap_daemon/src/command_line_arguments.h
        other/bootstrap_daemon/src/config.c
-@@ -471,7 +483,7 @@
+@@ -471,7 +519,6 @@
        other/bootstrap_node_packets.c
        other/bootstrap_node_packets.h)
      target_link_modules(tox-bootstrapd toxnetcrypto ${LIBCONFIG_LIBRARIES})
 -    install(TARGETS tox-bootstrapd RUNTIME DESTINATION bin)
-+    #install(TARGETS tox-bootstrapd RUNTIME DESTINATION bin)
    endif()
  endif()
 
+diff -ruN c-toxcore-0.1.10/cmake/Dependencies.cmake c-toxcore-0.1.10-mod/cmake/Dependencies.cmake
+--- c-toxcore-0.1.10/cmake/Dependencies.cmake	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/cmake/Dependencies.cmake	2018-08-04 08:34:27.000000000 +0800
+@@ -44,12 +44,12 @@
+ #
+ ###############################################################################
+ 
+-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
++if(MSVC)
+   # libsodium
+   # ---------
+   find_library(LIBSODIUM_LIBRARIES
+     NAMES sodium libsodium
+-    PATHS
++    PATHS "${CMAKE_INSTALL_PREFIX}/lib"
+       "libsodium/Win32/Release/v140/static"
+       "libsodium/x64/Release/v140/static"
+   )
+@@ -68,6 +68,7 @@
+   # We look for the check and compat (containing clock_gettime and other POSIX
+   # functions not present on Windows) libraries in Program Files, since that is
+   # the default location where cmake installs its packages.
++  if(FALSE) # skip to find libcheck
+   find_library(LIBCHECK_LIBRARIES
+     NAMES check libcheck
+     PATHS "$ENV{PROGRAMFILES}/check/lib"
+@@ -84,9 +85,11 @@
+   else()
+     message(FATAL_ERROR "check libraries not found")
+   endif()
++  endif()
+ 
+   # pthreads
+   # --------
++  if(FALSE) # skip to use win32 thread.
+   if(CMAKE_USE_WIN32_THREADS_INIT)
+     find_library(CMAKE_THREAD_LIBS_INIT
+       NAMES pthreadVC2
+@@ -102,4 +105,20 @@
+       message(FATAL_ERROR "libpthreads libraries not found")
+     endif()
+   endif()
++  endif()
++
++  if(CMAKE_USE_SLIM_PTHREAD_INIT)
++      find_library(SLIM_PTHREAD_LIBRARIES
++          NAMES pthread slim-pthread
++          PATHS "${CMAKE_INSTALL_PREFIX}/lib"
++      )
++
++      if(SLIM_PTHREAD_LIBRARIES)
++          set(CMAKE_THREAD_LIBS_INIT "pthread")
++          include_directories("${CMAKE_INSTALL_PREFIX}/include")
++          message("Use slim-pthread as pthreads library, Great!!!")
++      else()
++          message(FATAL_ERROR, "Library slim-pthread not found")
++      endif()
++  endif()
+ endif()
 diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/config.c c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.c
 --- c-toxcore-0.1.10/other/bootstrap_daemon/src/config.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.c	2018-08-04 08:27:30.000000000 +0800
 @@ -294,6 +294,123 @@
      return 1;
  }
@@ -348,7 +481,7 @@ diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/config.c c-toxcore-0.1.10-
 +#endif
 diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/config.h c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.h
 --- c-toxcore-0.1.10/other/bootstrap_daemon/src/config.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.h	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.h	2018-08-04 08:27:30.000000000 +0800
 @@ -49,4 +49,21 @@
   */
  int bootstrap_from_config(const char *cfg_file_path, DHT *dht, int enable_ipv6);
@@ -373,7 +506,7 @@ diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/config.h c-toxcore-0.1.10-
  #endif // CONFIG_H
 diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/global.h c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/global.h
 --- c-toxcore-0.1.10/other/bootstrap_daemon/src/global.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/global.h	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/global.h	2018-08-04 08:27:30.000000000 +0800
 @@ -25,8 +25,8 @@
  #ifndef GLOBAL_H
  #define GLOBAL_H
@@ -387,7 +520,7 @@ diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/global.h c-toxcore-0.1.10-
  #define MAX_ALLOWED_PORT 65535
 diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c
 --- c-toxcore-0.1.10/other/bootstrap_daemon/src/tox-bootstrapd.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c	2018-08-04 08:27:30.000000000 +0800
 @@ -27,6 +27,7 @@
  // system provided
  #include <sys/stat.h>
@@ -548,7 +681,7 @@ diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore
  }
 diff -ruN c-toxcore-0.1.10/toxcore/DHT.c c-toxcore-0.1.10-mod/toxcore/DHT.c
 --- c-toxcore-0.1.10/toxcore/DHT.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/DHT.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/DHT.c	2018-08-04 08:27:30.000000000 +0800
 @@ -1211,7 +1211,7 @@
      }
 
@@ -611,7 +744,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/DHT.c c-toxcore-0.1.10-mod/toxcore/DHT.c
      memcpy(data + 1, queried_client_id, CRYPTO_PUBLIC_KEY_SIZE);
 diff -ruN c-toxcore-0.1.10/toxcore/LAN_discovery.c c-toxcore-0.1.10-mod/toxcore/LAN_discovery.c
 --- c-toxcore-0.1.10/toxcore/LAN_discovery.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/LAN_discovery.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/LAN_discovery.c	2018-08-04 08:27:30.000000000 +0800
 @@ -364,7 +364,7 @@
 
  int send_LANdiscovery(uint16_t port, DHT *dht)
@@ -623,7 +756,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/LAN_discovery.c c-toxcore-0.1.10-mod/toxcore/
 
 diff -ruN c-toxcore-0.1.10/toxcore/Messenger.c c-toxcore-0.1.10-mod/toxcore/Messenger.c
 --- c-toxcore-0.1.10/toxcore/Messenger.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/Messenger.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/Messenger.c	2018-08-04 08:27:30.000000000 +0800
 @@ -3154,3 +3154,14 @@
 
      return ret;
@@ -641,7 +774,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/Messenger.c c-toxcore-0.1.10-mod/toxcore/Mess
 +
 diff -ruN c-toxcore-0.1.10/toxcore/Messenger.h c-toxcore-0.1.10-mod/toxcore/Messenger.h
 --- c-toxcore-0.1.10/toxcore/Messenger.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/Messenger.h	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/Messenger.h	2018-08-04 08:27:30.000000000 +0800
 @@ -774,4 +774,8 @@
   * of out_list will be truncated to list_size. */
  uint32_t copy_friendlist(const Messenger *m, uint32_t *out_list, uint32_t list_size);
@@ -653,7 +786,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/Messenger.h c-toxcore-0.1.10-mod/toxcore/Mess
  #endif
 diff -ruN c-toxcore-0.1.10/toxcore/TCP_client.c c-toxcore-0.1.10-mod/toxcore/TCP_client.c
 --- c-toxcore-0.1.10/toxcore/TCP_client.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/TCP_client.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_client.c	2018-08-04 08:27:30.000000000 +0800
 @@ -27,6 +27,10 @@
 
  #include "TCP_client.h"
@@ -724,7 +857,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/TCP_client.c c-toxcore-0.1.10-mod/toxcore/TCP
  }
 diff -ruN c-toxcore-0.1.10/toxcore/TCP_connection.c c-toxcore-0.1.10-mod/toxcore/TCP_connection.c
 --- c-toxcore-0.1.10/toxcore/TCP_connection.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/TCP_connection.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_connection.c	2018-08-04 08:27:30.000000000 +0800
 @@ -1489,3 +1489,58 @@
      free(tcp_c->connections);
      free(tcp_c);
@@ -786,7 +919,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/TCP_connection.c c-toxcore-0.1.10-mod/toxcore
 +
 diff -ruN c-toxcore-0.1.10/toxcore/TCP_connection.h c-toxcore-0.1.10-mod/toxcore/TCP_connection.h
 --- c-toxcore-0.1.10/toxcore/TCP_connection.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/TCP_connection.h	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_connection.h	2018-08-04 08:27:30.000000000 +0800
 @@ -219,5 +219,9 @@
  void do_tcp_connections(TCP_Connections *tcp_c, void *userdata);
  void kill_tcp_connections(TCP_Connections *tcp_c);
@@ -799,7 +932,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/TCP_connection.h c-toxcore-0.1.10-mod/toxcore
 
 diff -ruN c-toxcore-0.1.10/toxcore/TCP_server.c c-toxcore-0.1.10-mod/toxcore/TCP_server.c
 --- c-toxcore-0.1.10/toxcore/TCP_server.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/TCP_server.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_server.c	2018-08-06 19:58:50.000000000 +0800
 @@ -27,6 +27,13 @@
 
  #include "TCP_server.h"
@@ -821,7 +954,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/TCP_server.c c-toxcore-0.1.10-mod/toxcore/TCP
 -    if (count >= sizeof(uint16_t)) {
 +    if (count >= sizeof(uint16_t) + carrier_magic_size()) {
 +#if defined(CARRIER_BUILD)
-+		uint8_t magic[carrier_magic_size()];
++		uint8_t *magic = (uint8_t *)alloca(carrier_magic_size());
 +		int mlen = recv(sock, (char *)magic, carrier_magic_size(), MSG_NOSIGNAL);
 +
 +		if (mlen != carrier_magic_size()) {
@@ -896,7 +1029,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/TCP_server.c c-toxcore-0.1.10-mod/toxcore/TCP
  }
 diff -ruN c-toxcore-0.1.10/toxcore/logger.h c-toxcore-0.1.10-mod/toxcore/logger.h
 --- c-toxcore-0.1.10/toxcore/logger.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/logger.h	2018-07-28 14:26:30.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/logger.h	2018-08-04 08:27:30.000000000 +0800
 @@ -46,7 +46,7 @@
  /**
   * Creates a new logger with logging disabled (callback is NULL) by default.
@@ -908,7 +1041,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/logger.h c-toxcore-0.1.10-mod/toxcore/logger.
 
 diff -ruN c-toxcore-0.1.10/toxcore/net_crypto.c c-toxcore-0.1.10-mod/toxcore/net_crypto.c
 --- c-toxcore-0.1.10/toxcore/net_crypto.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/net_crypto.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/net_crypto.c	2018-08-04 08:27:30.000000000 +0800
 @@ -216,13 +216,13 @@
          return 1;
      }
@@ -989,7 +1122,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/net_crypto.c c-toxcore-0.1.10-mod/toxcore/net
 +
 diff -ruN c-toxcore-0.1.10/toxcore/net_crypto.h c-toxcore-0.1.10-mod/toxcore/net_crypto.h
 --- c-toxcore-0.1.10/toxcore/net_crypto.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/net_crypto.h	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/net_crypto.h	2018-08-04 08:27:30.000000000 +0800
 @@ -423,6 +423,8 @@
 
  void kill_net_crypto(Net_Crypto *c);
@@ -1002,7 +1135,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/net_crypto.h c-toxcore-0.1.10-mod/toxcore/net
  #endif
 diff -ruN c-toxcore-0.1.10/toxcore/network.c c-toxcore-0.1.10-mod/toxcore/network.c
 --- c-toxcore-0.1.10/toxcore/network.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/network.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/network.c	2018-08-04 08:27:30.000000000 +0800
 @@ -419,11 +419,12 @@
          return -1;
      }
@@ -1159,14 +1292,29 @@ diff -ruN c-toxcore-0.1.10/toxcore/network.c c-toxcore-0.1.10-mod/toxcore/networ
  }
 diff -ruN c-toxcore-0.1.10/toxcore/network.h c-toxcore-0.1.10-mod/toxcore/network.h
 --- c-toxcore-0.1.10/toxcore/network.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/network.h	2018-07-28 13:50:19.000000000 +0800
-@@ -39,6 +39,80 @@
- #include <string.h>
- #include <time.h>
++++ c-toxcore-0.1.10-mod/toxcore/network.h	2018-08-04 11:04:53.000000000 +0800
+@@ -50,8 +50,8 @@
+ // mingw32 headers happy, we include winsock2.h first.
+ #include <winsock2.h>
+ 
+-#include <windows.h>
+ #include <ws2tcpip.h>
++#include <windows.h>
 
+ #else // UNIX includes
+ 
+@@ -63,6 +63,85 @@
+ 
+ #endif
+ 
 +#if defined(CARRIER_BUILD)
++#if defined(_WIN32)
++#include <malloc.h>
++#define alloca _alloca
++#else
 +#include <alloca.h>
 +#include <arpa/inet.h>
++#endif
 +
 +static const uint32_t _w_magic = 0x69766567; //'ELAC';
 +
@@ -1238,12 +1386,12 @@ diff -ruN c-toxcore-0.1.10/toxcore/network.h c-toxcore-0.1.10-mod/toxcore/networ
 +#define CARRIER_SIZEOF_VLA(name)  SIZEOF_VLA(name)
 +#endif
 +
- #if defined(_WIN32) || defined(__WIN32__) || defined (WIN32) /* Put win32 includes here */
- #ifndef WINVER
- //Windows XP
+ struct in_addr;
+ struct in6_addr;
+ struct addrinfo;
 diff -ruN c-toxcore-0.1.10/toxcore/onion.c c-toxcore-0.1.10-mod/toxcore/onion.c
 --- c-toxcore-0.1.10/toxcore/onion.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/onion.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/onion.c	2018-08-04 08:27:30.000000000 +0800
 @@ -287,8 +287,8 @@
   */
  int send_onion_packet(Networking_Core *net, const Onion_Path *path, IP_Port dest, const uint8_t *data, uint16_t length)
@@ -1317,7 +1465,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/onion.c c-toxcore-0.1.10-mod/toxcore/onion.c
      memcpy(data + 1 + RETURN_1, packet + 1 + RETURN_2, length - (1 + RETURN_2));
 diff -ruN c-toxcore-0.1.10/toxcore/onion_announce.c c-toxcore-0.1.10-mod/toxcore/onion_announce.c
 --- c-toxcore-0.1.10/toxcore/onion_announce.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/onion_announce.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/onion_announce.c	2018-08-04 08:27:30.000000000 +0800
 @@ -149,8 +149,8 @@
          return -1;
      }
@@ -1342,7 +1490,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/onion_announce.c c-toxcore-0.1.10-mod/toxcore
          return -1;
 diff -ruN c-toxcore-0.1.10/toxcore/onion_client.c c-toxcore-0.1.10-mod/toxcore/onion_client.c
 --- c-toxcore-0.1.10/toxcore/onion_client.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/onion_client.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/onion_client.c	2018-08-04 08:27:30.000000000 +0800
 @@ -346,8 +346,8 @@
                                       const uint8_t *data, uint16_t length)
  {
@@ -1365,7 +1513,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/onion_client.c c-toxcore-0.1.10-mod/toxcore/o
 
 diff -ruN c-toxcore-0.1.10/toxcore/ping.c c-toxcore-0.1.10-mod/toxcore/ping.c
 --- c-toxcore-0.1.10/toxcore/ping.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/ping.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/ping.c	2018-08-04 08:27:30.000000000 +0800
 @@ -60,7 +60,7 @@
 
  int send_ping_request(PING *ping, IP_Port ipp, const uint8_t *public_key)
@@ -1402,7 +1550,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/ping.c c-toxcore-0.1.10-mod/toxcore/ping.c
  static int handle_ping_request(void *object, IP_Port source, const uint8_t *packet, uint16_t length, void *userdata)
 diff -ruN c-toxcore-0.1.10/toxcore/tox.c c-toxcore-0.1.10-mod/toxcore/tox.c
 --- c-toxcore-0.1.10/toxcore/tox.c	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/tox.c	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/tox.c	2018-08-04 08:27:30.000000000 +0800
 @@ -1549,3 +1549,23 @@
      SET_ERROR_PARAMETER(error, TOX_ERR_GET_PORT_NOT_BOUND);
      return 0;
@@ -1429,7 +1577,7 @@ diff -ruN c-toxcore-0.1.10/toxcore/tox.c c-toxcore-0.1.10-mod/toxcore/tox.c
 +
 diff -ruN c-toxcore-0.1.10/toxcore/tox.h c-toxcore-0.1.10-mod/toxcore/tox.h
 --- c-toxcore-0.1.10/toxcore/tox.h	2017-08-06 18:22:48.000000000 +0800
-+++ c-toxcore-0.1.10-mod/toxcore/tox.h	2018-07-28 13:50:19.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/tox.h	2018-08-04 08:27:30.000000000 +0800
 @@ -2940,6 +2940,18 @@
   */
  uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
@@ -1449,3 +1597,17 @@ diff -ruN c-toxcore-0.1.10/toxcore/tox.h c-toxcore-0.1.10-mod/toxcore/tox.h
  #ifdef __cplusplus
  }
  #endif
+diff -ruN c-toxcore-0.1.10/toxcore/util.c c-toxcore-0.1.10-mod/toxcore/util.c
+--- c-toxcore-0.1.10/toxcore/util.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/util.c	2018-08-04 08:43:01.000000000 +0800
+@@ -27,6 +27,10 @@
+ #include "config.h"
+ #endif
+ 
++#ifdef _WIN32
++#define _WINSOCKAPI_ //hack to exclude to include winsock.h
++#endif
++
+ #define _XOPEN_SOURCE 600
+ 
+ #include "util.h"

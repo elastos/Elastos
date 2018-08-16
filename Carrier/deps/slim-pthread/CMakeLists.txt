@@ -20,3 +20,14 @@ ExternalProject_Add(
         -DENABLE_TESTS=FALSE
         ${CMAKE_ARGS_INIT}
 )
+
+if(ENABLE_SHARED)
+    set(SHARED_LIBRARY_NAME
+        "${CARRIER_INT_DIST_DIR}/bin/pthread.dll")
+
+    file(RELATIVE_PATH SHARED_LIBRARY_NAME ${CMAKE_CURRENT_LIST_DIR}
+        ${SHARED_LIBRARY_NAME})
+
+    install(PROGRAMS ${SHARED_LIBRARY_NAME}
+        DESTINATION bin)
+endif()

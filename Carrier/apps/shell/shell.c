@@ -31,6 +31,7 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <sys/stat.h>
+#include <pthread.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -50,8 +51,8 @@
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
-#ifdef HAVE_WINSOCK_H
-#include <winsock.h>
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -67,7 +68,7 @@
 #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 #endif
 
-#include <pthread.h>
+#include <rc_mem.h>
 
 #include <ela_carrier.h>
 #include <ela_session.h>
@@ -1917,10 +1918,6 @@ int main(int argc, char *argv[])
         { NULL,             0,                  NULL, 0 }
     };
 
-    signal(SIGINT, signal_handler);
-    signal(SIGHUP, signal_handler);
-    signal(SIGTERM, signal_handler);
-    signal(SIGSEGV, signal_handler);
 #ifdef HAVE_SYS_RESOURCE_H
     sys_coredump_set(true);
 #endif
@@ -1955,6 +1952,14 @@ int main(int argc, char *argv[])
         DebugBreak();
 #endif
     }
+
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGSEGV, signal_handler);
+#if !defined(_WIN32) && !defined(_WIN64)
+    signal(SIGKILL, signal_handler);
+    signal(SIGHUP, signal_handler);
+#endif
 
     if (!*buffer) {
         realpath(argv[0], buffer);

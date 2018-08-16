@@ -35,9 +35,9 @@
 #include <malloc.h>
 #endif
 
-#include "ela_session.h"
-
 #include <vlog.h>
+
+#include "ela_session.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -24,6 +24,11 @@ if(HAVE_IO_H)
     add_definitions(-DHAVE_IO_H=1)
 endif()
 
+check_include_file(fcntl.h HAVE_FCNTL_H)
+if(HAVE_FCNTL_H)
+    add_definitions(-DHAVE_FCNTL_H=1)
+endif()
+
 check_include_file(direct.h HAVE_DIRECT_H)
 if(HAVE_DIRECT_H)
     add_definitions(-DHAVE_DIRECT_H=1)
@@ -37,6 +42,16 @@ endif()
 check_include_file(winsock2.h HAVE_WINSOCK2_H)
 if(HAVE_WINSOCK2_H)
     add_definitions(-DHAVE_WINSOCK2_H=1)
+endif()
+
+check_include_file(ws2tcpip.h HAVE_WS2TCPIP_H)
+if(HAVE_WS2TCPIP_H)
+    add_definitions(-DHAVE_WS2TCPIP_H=1)
+endif()
+
+check_include_file(sys/time.h HAVE_SYS_TIME_H)
+if(HAVE_SYS_TIME_H)
+    add_definitions(-DHAVE_SYS_TIME_H=1)
 endif()
 
 configure_file(
@@ -63,7 +78,7 @@ add_custom_target(elacp_generated_h
     DEPENDS elacp_generated.h)
 
 if(WIN32)
-    set(SYSTEM_LIBS Ws2_32)
+    set(SYSTEM_LIBS Ws2_32 Iphlpapi)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread m)
 endif()
@@ -97,8 +112,18 @@ set(LIBS
     toxmessenger
     toxnetwork
     toxnetcrypto
-    sodium
     flatccrt)
+
+if(WIN32)
+    set(LIBS
+        ${LIBS}
+        pthread
+        libsodium.lib)
+else()
+    set(LIBS
+        ${LIBS}
+        sodium)
+endif()
 
 add_definitions(-DCARRIER_BUILD)
 

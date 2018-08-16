@@ -25,8 +25,12 @@
 
 #include <stdint.h>
 #include <pthread.h>
+#include <time.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
 #endif
 
 #ifdef __APPLE__
