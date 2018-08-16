@@ -32,7 +32,6 @@ namespace Elastos {
 
 				UInt32SetLE(&msg[off], count);
 				off += sizeof(uint32_t);
-				peer_log(peer, "off = %zu", off);
 
 				for (i = 0; i < txCount && i < count; i++) {
 					UInt32SetLE(&msg[off], uint32_t(inv_tx));
@@ -40,7 +39,6 @@ namespace Elastos {
 					UInt256Set(&msg[off], txHashes[i]);
 					off += sizeof(UInt256);
 				}
-				peer_log(peer, "inv_tx off = %zu", off);
 
 				for (i = 0; i < blockCount && txCount + i < count; i++) {
 					UInt32SetLE(&msg[off], uint32_t(inv_filtered_block));
@@ -48,7 +46,7 @@ namespace Elastos {
 					UInt256Set(&msg[off], blockHashes[i]);
 					off += sizeof(UInt256);
 				}
-				peer_log(peer, "inv_filtered_block off = %zu", off);
+
 				((BRPeerContext *) peer)->sentGetdata = 1;
 				BRPeerSendMessage(peer, msg, off, MSG_GETDATA);
 			}
