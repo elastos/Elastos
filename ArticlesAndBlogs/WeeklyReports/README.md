@@ -20,3 +20,4 @@
 ### [Elastos Weekly Updates - July 27, 2018](https://elanews.net/2018/07/27/elastos-weekly-updates-27-july-2018/)
 ### [Elastos Weekly Updates - August 03, 2018](https://elanews.net/2018/08/03/elastos-weekly-updates-3-august-2018/)
 ### [Elastos Weekly Updates - August 10, 2018](https://elanews.net/2018/08/10/elastos-weekly-updates-10-august-2018/)
+### [Elastos Weekly Updates - August 17, 2018](http://elanews.net/2018/08/17/elastos-weekly-updates-17-august-2018/)
