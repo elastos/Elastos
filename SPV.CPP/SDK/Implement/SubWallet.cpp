@@ -18,7 +18,6 @@
 #include "Utils.h"
 #include "Log.h"
 #include "ErrorCode.h"
-#include "ElaPeerConfig.h"
 #include "ParamChecker.h"
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
@@ -45,10 +44,6 @@ namespace Elastos {
 			fs::path subWalletDbPath = _parent->_rootPath;
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
-
-			nlohmann::json peerConfig =
-					info.getWalletType() == Mainchain || info.getWalletType() == Normal ? ElaPeerConfig
-																						: readPeerConfig();
 
 			CMBlock encryptedKey;
 			UInt256 chainCode = UINT256_ZERO;
@@ -85,7 +80,7 @@ namespace Elastos {
 			}
 
 			_walletManager = WalletManagerPtr(
-					new WalletManager(masterPubKey, subWalletDbPath, peerConfig, _info.getEarliestPeerTime(),
+					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
 									  _info.getSingleAddress(), _info.getForkId(), pluginTypes, chainParams));
 
 			_walletManager->registerWalletListener(this);
@@ -528,55 +523,6 @@ namespace Elastos {
 		void SubWallet::StopP2P() {
 			if (_info.getEnableP2P())
 				_walletManager->stop();
-		}
-
-		nlohmann::json SubWallet::readPeerConfig() {
-			//fixme read from main chain(ela)
-			nlohmann::json idChainPeerConfig =
-					R"(
-						  {
-							"MagicNumber": 20180011,
-							"KnowingPeers":
-							[
-								{
-									"Address": "13.251.123.24",
-									"Port": 21608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "52.62.27.83",
-									"Port": 21608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "35.158.227.3",
-									"Port": 21608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "18.130.87.94",
-									"Port": 21608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "52.9.136.86",
-									"Port": 21608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								}
-							]
-						}
-					)"_json;
-			return idChainPeerConfig;
 		}
 
 		void SubWallet::fireDestroyWallet() {

@@ -2,9 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <Core/BRMerkleBlock.h>
 #include "BRTransaction.h"
 
-#include "PeerConfigReader.h"
 #include "WalletManager.h"
 #include "Utils.h"
 #include "Log.h"
@@ -25,31 +25,28 @@ namespace Elastos {
 				CoreWalletManager(proto._pluginTypes, proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
-				_forkId(proto._forkId),
-				_peerConfig(proto._peerConfig) {
+				_forkId(proto._forkId) {
 			init(proto._masterPubKey, proto._earliestPeerTime, proto._singleAddress);
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
-									 const nlohmann::json &peerConfig, uint32_t earliestPeerTime, bool singleAddress,
+									 uint32_t earliestPeerTime, bool singleAddress,
 									 int forkId, const PluginTypes &pluginTypes, const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_forkId(forkId),
-				_peerConfig(peerConfig) {
+				_forkId(forkId) {
 			init(masterPubKey, earliestPeerTime, singleAddress);
 		}
 
-		WalletManager::WalletManager(const boost::filesystem::path &dbPath, const nlohmann::json &peerConfig,
+		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
 									 uint32_t earliestPeerTime, int forkId, const PluginTypes &pluginTypes,
 									 const std::vector<std::string> &initialAddresses,
 									 const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_forkId(forkId),
-				_peerConfig(peerConfig) {
+				_forkId(forkId) {
 			init(earliestPeerTime, initialAddresses);
 		}
 
@@ -110,7 +107,6 @@ namespace Elastos {
 						loadPeers(),
 						createPeerManagerListener(),
 						_pluginTypes));
-				_peerManager->setFixedPeers(PeerConfigReader().readPeersFromJson(_peerConfig));
 			}
 
 			return _peerManager;
@@ -203,6 +199,13 @@ namespace Elastos {
 			for (size_t i = 0; i < blocks.size(); ++i) {
 				if (blocks[i]->getHeight() == 0)
 					continue;
+
+//				if (blocks.size() == 1)
+//					Log::getLogger()->info("checkpoint ====> [ {},  uint256(\"{}\"), {}, {} ],",
+//									   blocks[i]->getHeight(),
+//									   Utils::UInt256ToString(blocks[i]->getBlockHash(), true),
+//									   blocks[i]->getRawBlock()->timestamp,
+//									   blocks[i]->getRawBlock()->target);
 
 				ostream.setPosition(0);
 				blocks[i]->Serialize(ostream);
@@ -320,10 +323,7 @@ namespace Elastos {
 						PeerPtr(new Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
 			}
 
-			if (!peers.empty())
-				return peers;
-
-			return PeerConfigReader().readPeersFromJson(_peerConfig);
+			return peers;
 		}
 
 		int WalletManager::getForkId() const {

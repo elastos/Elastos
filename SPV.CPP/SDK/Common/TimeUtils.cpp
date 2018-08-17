@@ -4,6 +4,8 @@
 
 #include <time.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <SDK/Wrapper/ChainParams.h>
+#include <Core/BRChainParams.h>
 
 #include "TimeUtils.h"
 #include "Core/BRChainParams.h"
@@ -26,11 +28,12 @@ namespace Elastos {
 			return ss.str();
 		}
 
-		uint64_t TimeUtils::calculateBlockHeightByTime(uint64_t utcTime, const CoinConfig &coinConfig) {
-			if(coinConfig.CheckPoints.empty() || coinConfig.CheckPoints[0].getRaw()->timestamp > utcTime)
+		uint64_t TimeUtils::calculateBlockHeightByTime(uint64_t utcTime, const ChainParams &chainParam) {
+			size_t checkPointCount = chainParam.getRaw()->checkpointsCount;
+			if (checkPointCount == 0  || chainParam.getRaw()->checkpoints[checkPointCount - 1].timestamp > utcTime)
 				return 0;
-			uint64_t timespan = utcTime - coinConfig.CheckPoints[0].getRaw()->timestamp;
-			return timespan / coinConfig.TargetTimePerBlock;
+			uint64_t timespan = utcTime - chainParam.getRaw()->checkpoints[checkPointCount - 1].timestamp;
+			return timespan / chainParam.getTargetTimePerBlock();
 		}
 	}
 }

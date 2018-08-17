@@ -3,42 +3,16 @@
     "Type": "Mainchain",
     "CoinIndex": 0,
     "NetType": "TestNet",
-    "TargetTimeSpan": 86400,
-    "TargetTimePerBlock": 120,
-    "StandardPort": 21866,
-    "MagicNumber": 2018001,
-    "Services": 0,
     "MinFee": 10000,
     "BlockType": "ELA",
-    "GenesisAddress" : "",
-    "CheckPoints": [
-      {
-        "Height": 0,
-        "Hash": "6418be20291bc857c9a01e5ba205445b85a0593d47cc0b576d55a55e464f31b3",
-        "Timestamp": 1513936800,
-        "Target": 486801407
-      }
-    ]
+    "GenesisAddress" : ""
   },
   "IdChain": {
     "Type": "Idchain",
     "CoinIndex": 1,
     "NetType": "TestNet",
-    "TargetTimeSpan": 86400,
-    "TargetTimePerBlock": 120,
-    "StandardPort": 22608,
-    "MagicNumber": 20180011,
-    "Services": 0,
     "MinFee": 10000,
     "BlockType": "SideStandard",
-    "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ",
-    "CheckPoints": [
-      {
-        "Height": 0,
-        "Hash": "56be936978c261b2e649d58dbfaf3f23d4a868274f5522cd2adb4308a955c4a3",
-        "Timestamp": 1513936800,
-        "Target": 486801407
-      }
-    ]
+    "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ"
   }
 }

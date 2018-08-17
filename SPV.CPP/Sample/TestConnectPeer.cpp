@@ -170,7 +170,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 		}
 #endif
 
-#if 1
+#if 0
 		if (!hasRegisterId) {
 			registerId(masterWallet, sidechainWallet, payPassword);
 			hasRegisterId = true;

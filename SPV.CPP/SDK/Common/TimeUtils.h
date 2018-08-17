@@ -8,6 +8,7 @@
 #include <string>
 
 #include "KeyStore/CoinConfig.h"
+#include "ChainParams.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,7 +20,7 @@ namespace Elastos {
 
 			static std::string convertToString(const char* pszFormat, uint64_t utcTime);
 
-			static uint64_t calculateBlockHeightByTime(uint64_t utcTime, const CoinConfig &coinConfig);
+			static uint64_t calculateBlockHeightByTime(uint64_t utcTime, const ChainParams &chainParams);
 		};
 
 	}
