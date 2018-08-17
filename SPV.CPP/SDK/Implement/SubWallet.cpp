@@ -579,5 +579,12 @@ namespace Elastos {
 			return idChainPeerConfig;
 		}
 
+		void SubWallet::fireDestroyWallet() {
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [](ISubWalletCallback *callback) {
+							  callback->OnDestroyWallet();
+						  });
+		}
+
 	}
 }

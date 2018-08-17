@@ -163,6 +163,8 @@ namespace Elastos {
 													  const std::string &status,
 													  const nlohmann::json &desc,
 													  uint32_t confirms);
+
+			virtual void fireDestroyWallet();
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;
