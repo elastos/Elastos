@@ -8,6 +8,16 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
+// SPV service config
+type SPVServiceConfig struct {
+	Magic          uint32
+	Foundation     string
+	ClientId       uint64
+	Seeds          []string
+	MinOutbound    int
+	MaxConnections int
+}
+
 /*
 SPV service is the interface to interactive with the SPV (Simplified Payment Verification)
 service implementation running background, you can register specific accounts that you are
@@ -74,6 +84,6 @@ type TransactionListener interface {
 	Rollback(height uint32)
 }
 
-func NewSPVService(magic uint32, foundation string, clientId uint64, seeds []string, minOutbound, maxConnections int) (SPVService, error) {
-	return NewSPVServiceImpl(magic, foundation, clientId, seeds, minOutbound, maxConnections)
+func NewSPVService(config SPVServiceConfig) (SPVService, error) {
+	return NewSPVServiceImpl(config)
 }

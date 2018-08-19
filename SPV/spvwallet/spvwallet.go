@@ -10,7 +10,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 
+	"github.com/elastos/Elastos.ELA.SPV/net"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 )
@@ -40,14 +42,27 @@ func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
 	// Initialize txs cache
 	wallet.txIds = NewTxIdCache(MaxTxIdCached)
 
-	// Initialize P2P network client
-	client, err := sdk.GetSPVClient(config.Values().Magic, clientId, seeds, MaxConnections, MaxConnections)
-	if err != nil {
-		return nil, err
+	// Create server peer config
+	serverPeerConfig := net.ServerPeerConfig{
+		Magic:          config.Values().Magic,
+		Version:        p2p.EIP001Version,
+		PeerId:         clientId,
+		Port:           0,
+		Seeds:          seeds,
+		MinOutbound:    MaxConnections,
+		MaxConnections: MaxConnections,
 	}
 
 	// Initialize spv service
-	wallet.SPVService, err = sdk.GetSPVService(client, config.Values().Foundation, wallet.headerStore, wallet)
+	wallet.SPVService, err = sdk.GetSPVService(sdk.SPVServiceConfig{
+		Server:           net.NewServerPeer(serverPeerConfig),
+		Foundation:       config.Values().Foundation,
+		HeaderStore:      wallet.headerStore,
+		GetFilterData:    wallet.GetFilterData,
+		CommitTx:         wallet.CommitTx,
+		OnBlockCommitted: wallet.OnBlockCommitted,
+		OnRollback:       wallet.OnRollback,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +101,7 @@ func (wallet *SPVWallet) Stop() {
 	wallet.rpcServer.Close()
 }
 
-func (wallet *SPVWallet) GetData() ([]*common.Uint168, []*core.OutPoint) {
+func (wallet *SPVWallet) GetFilterData() ([]*common.Uint168, []*core.OutPoint) {
 	utxos, _ := wallet.dataStore.UTXOs().GetAll()
 	stxos, _ := wallet.dataStore.STXOs().GetAll()
 

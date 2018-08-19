@@ -1,22 +1,43 @@
 package net
 
 import (
+	"container/list"
 	"fmt"
+	"io"
 	"net"
-	"time"
-	"sync/atomic"
 	"strings"
+	"sync/atomic"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/rw"
 )
 
-type PeerHandler struct {
-	OnDisconnected func(peer *Peer)
-	MakeMessage    func(cmd string) (p2p.Message, error)
-	HandleMessage  func(peer *Peer, msg p2p.Message) error
+const (
+	// outputBufferSize is the number of elements the output channels use.
+	outputBufferSize = 50
+
+	// idleTimeout is the duration of inactivity before we time out a peer.
+	idleTimeout = 5 * time.Minute
+)
+
+// outMsg is used to house a message to be sent along with a channel to signal
+// when the message has been sent (or won't be sent due to things such as
+// shutdown)
+type outMsg struct {
+	msg      p2p.Message
+	doneChan chan<- struct{}
+}
+
+type PeerConfig struct {
+	ProtocolVersion uint32 // The P2P network protocol version
+	MakeTx          func() *msg.Tx
+	MakeBlock       func() *msg.Block
+	MakeMerkleBlock func() *msg.MerkleBlock
+	HandleMessage   func(peer *Peer, msg p2p.Message)
 }
 
 type Peer struct {
@@ -29,16 +50,21 @@ type Peer struct {
 	height     uint64
 	relay      uint8 // 1 for true 0 for false
 
-	state   int32
-	conn    net.Conn
-	handler PeerHandler
+	disconnect int32
+	conn       net.Conn
 
-	msgHelper *p2p.MsgHelper
+	rw            rw.MessageRW
+	handleMessage func(peer *Peer, msg p2p.Message)
+	outputQueue   chan outMsg
+	sendQueue     chan outMsg
+	sendDoneQueue chan struct{}
+	inQuit        chan struct{}
+	queueQuit     chan struct{}
+	outQuit       chan struct{}
+	quit          chan struct{}
 }
 
 func (p *Peer) String() string {
-	var state p2p.PeerState
-	state.SetState(uint(p.state))
 	return fmt.Sprint(
 		"ID:", p.id,
 		", Version:", p.version,
@@ -47,7 +73,6 @@ func (p *Peer) String() string {
 		", LastActive:", p.lastActive,
 		", Height:", p.height,
 		", Relay:", p.relay,
-		", State:", state.String(),
 		", Addr:", p.Addr().String())
 }
 
@@ -103,23 +128,6 @@ func (p *Peer) SetRelay(relay uint8) {
 	p.relay = relay
 }
 
-func (p *Peer) State() int32 {
-	return atomic.LoadInt32(&p.state)
-}
-
-func (p *Peer) SetState(state int32) {
-	atomic.StoreInt32(&p.state, state)
-}
-
-func (p *Peer) Disconnect() {
-	// Return if peer already disconnected
-	if p.State() == p2p.INACTIVITY {
-		return
-	}
-	p.SetState(p2p.INACTIVITY)
-	p.conn.Close()
-}
-
 func (p *Peer) SetInfo(msg *msg.Version) {
 	p.id = msg.Nonce
 	p.port = msg.Port
@@ -138,48 +146,259 @@ func (p *Peer) Height() uint64 {
 	return p.height
 }
 
-func (p *Peer) OnError(err error) {
-	switch err {
-	case p2p.ErrInvalidHeader,
-		p2p.ErrUnmatchedMagic,
-		p2p.ErrMsgSizeExceeded:
-		log.Error(err)
-		p.Disconnect()
-	case p2p.ErrDisconnected:
-		p.handler.OnDisconnected(p)
-	default:
-		log.Error(err, ", peer id is: ", p.ID())
-	}
+// Connected returns whether or not the peer is currently connected.
+//
+// This function is safe for concurrent access.
+func (p *Peer) Connected() bool {
+	return atomic.LoadInt32(&p.disconnect) == 0
 }
 
-func (p *Peer) OnMakeMessage(cmd string) (p2p.Message, error) {
-	if p.State() == p2p.INACTIVITY {
-		return nil, fmt.Errorf("-----> [%s] from INACTIVE peer [%d]", cmd, p.id)
-	}
-	p.lastActive = time.Now()
-	return p.handler.MakeMessage(cmd)
-}
-
-func (p *Peer) OnMessageDecoded(message p2p.Message) {
-	log.Debugf("-----> [%s] from peer [%d] STARTED", message.CMD(), p.id)
-	if err := p.handler.HandleMessage(p, message); err != nil {
-		log.Error(err)
-	}
-	log.Debugf("-----> [%s] from peer [%d] FINISHED", message.CMD(), p.id)
-}
-
-func (p *Peer) Start() {
-	p.msgHelper.Read()
-}
-
-func (p *Peer) Send(msg p2p.Message) {
-	if p.State() == p2p.INACTIVITY {
-		log.Errorf("-----> Push [%s] to INACTIVE peer [%d]", msg.CMD(), p.id)
+// Disconnect disconnects the peer by closing the connection.  Calling this
+// function when the peer is already disconnected or in the process of
+// disconnecting will have no effect.
+func (p *Peer) Disconnect() {
+	// Return if peer already disconnected
+	if atomic.AddInt32(&p.disconnect, 1) != 1 {
 		return
 	}
-	log.Debugf("-----> Push [%s] to peer [%d] STARTED", msg.CMD(), p.id)
-	p.msgHelper.Write(msg)
-	log.Debugf("-----> Push [%s] to peer [%d] FINISHED", msg.CMD(), p.id)
+
+	p.conn.Close()
+	close(p.quit)
+}
+
+func (p *Peer) QuitChan() chan struct{} {
+	return p.quit
+}
+
+// shouldHandleReadError returns whether or not the passed error, which is
+// expected to have come from reading from the remote peer in the inHandler,
+// should be logged and responded to with a reject message.
+func (p *Peer) shouldHandleReadError(err error) bool {
+	// No logging or reject message when the peer is being forcibly
+	// disconnected.
+	if atomic.LoadInt32(&p.disconnect) != 0 {
+		return false
+	}
+
+	// No logging or reject message when the remote peer has been
+	// disconnected.
+	if err == io.EOF {
+		return false
+	}
+	if opErr, ok := err.(*net.OpError); ok && !opErr.Temporary() {
+		return false
+	}
+
+	return true
+}
+
+func (p *Peer) inHandler() {
+	// The timer is stopped when a new message is received and reset after it
+	// is processed.
+	idleTimer := time.AfterFunc(idleTimeout, func() {
+		log.Warnf("Peer %s no answer for %s -- disconnecting", p, idleTimeout)
+		p.Disconnect()
+	})
+
+out:
+	for atomic.LoadInt32(&p.disconnect) == 0 {
+		// Read a message and stop the idle timer as soon as the read
+		// is done.  The timer is reset below for the next iteration if
+		// needed.
+		rmsg, err := p.readMessage()
+		idleTimer.Stop()
+		if err != nil {
+			// Only log the error and send reject message if the
+			// local peer is not forcibly disconnecting and the
+			// remote peer has not disconnected.
+			if p.shouldHandleReadError(err) {
+				errMsg := fmt.Sprintf("Can't read message from %s: %v", p, err)
+				if err != io.ErrUnexpectedEOF {
+					log.Errorf(errMsg)
+				}
+
+				// Push a reject message for the malformed message and wait for
+				// the message to be sent before disconnecting.
+				//
+				// NOTE: Ideally this would include the command in the header if
+				// at least that much of the message was valid, but that is not
+				// currently exposed by wire, so just used malformed for the
+				// command.
+				rejectMsg := msg.NewReject("malformed", msg.RejectMalformed, errMsg)
+				// Send the message and block until it has been sent before returning.
+				doneChan := make(chan struct{}, 1)
+				p.QueueMessage(rejectMsg, doneChan)
+				<-doneChan
+			}
+			break out
+		}
+		log.Debugf("-----> inHandler [%s] from [0x%x]", rmsg.CMD(), p.id)
+
+		// Handle each message.
+		p.handleMessage(p, rmsg)
+
+		// A message was received so reset the idle timer.
+		idleTimer.Reset(idleTimeout)
+	}
+
+	// Ensure the idle timer is stopped to avoid leaking the resource.
+	idleTimer.Stop()
+
+	// Ensure connection is closed.
+	p.Disconnect()
+
+	close(p.inQuit)
+}
+
+func (p *Peer) queueHandler() {
+	pendingMsgs := list.New()
+
+	// We keep the waiting flag so that we know if we have a message queued
+	// to the outHandler or not.  We could use the presence of a head of
+	// the list for this but then we have rather racy concerns about whether
+	// it has gotten it at cleanup time - and thus who sends on the
+	// message's done channel.  To avoid such confusion we keep a different
+	// flag and pendingMsgs only contains messages that we have not yet
+	// passed to outHandler.
+	waiting := false
+
+	// To avoid duplication below.
+	queuePacket := func(msg outMsg, list *list.List, waiting bool) bool {
+		if !waiting {
+			p.sendQueue <- msg
+		} else {
+			list.PushBack(msg)
+		}
+		// we are always waiting now.
+		return true
+	}
+out:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			waiting = queuePacket(msg, pendingMsgs, waiting)
+
+			// This channel is notified when a message has been sent across
+			// the network socket.
+		case <-p.sendDoneQueue:
+			// No longer waiting if there are no more messages
+			// in the pending messages queue.
+			next := pendingMsgs.Front()
+			if next == nil {
+				waiting = false
+				continue
+			}
+
+			// Notify the outHandler about the next item to
+			// asynchronously send.
+			val := pendingMsgs.Remove(next)
+			p.sendQueue <- val.(outMsg)
+
+		case <-p.quit:
+			break out
+		}
+	}
+
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us.
+	for e := pendingMsgs.Front(); e != nil; e = pendingMsgs.Front() {
+		val := pendingMsgs.Remove(e)
+		msg := val.(outMsg)
+		if msg.doneChan != nil {
+			msg.doneChan <- struct{}{}
+		}
+	}
+cleanup:
+	for {
+		select {
+		case msg := <-p.outputQueue:
+			if msg.doneChan != nil {
+				msg.doneChan <- struct{}{}
+			}
+		default:
+			break cleanup
+		}
+	}
+	close(p.queueQuit)
+	log.Tracef("Peer queue handler done for %s", p)
+}
+
+func (p *Peer) outHandler() {
+out:
+	for {
+		select {
+		case msg := <-p.sendQueue:
+			err := p.writeMessage(msg.msg)
+			if err != nil {
+				p.Disconnect()
+				if msg.doneChan != nil {
+					msg.doneChan <- struct{}{}
+				}
+				continue
+			}
+			log.Debugf("-----> outHandler [%s] to [0x%x]", msg.msg.CMD(), p.id)
+
+			if msg.doneChan != nil {
+				msg.doneChan <- struct{}{}
+			}
+			p.sendDoneQueue <- struct{}{}
+
+		case <-p.quit:
+			break out
+		}
+	}
+
+	<-p.queueQuit
+
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us. We have waited on queueQuit and thus we can be sure
+	// that we will not miss anything sent on sendQueue.
+cleanup:
+	for {
+		select {
+		case msg := <-p.sendQueue:
+			if msg.doneChan != nil {
+				msg.doneChan <- struct{}{}
+			}
+			// no need to send on sendDoneQueue since queueHandler
+			// has been waited on and already exited.
+		default:
+			break cleanup
+		}
+	}
+	close(p.outQuit)
+	log.Tracef("Peer output handler done for %s", p)
+}
+
+func (p *Peer) readMessage() (p2p.Message, error) {
+	return p.rw.ReadMessage(p.conn)
+}
+
+func (p *Peer) writeMessage(msg p2p.Message) error {
+	// Don't do anything if we're disconnecting.
+	if atomic.LoadInt32(&p.disconnect) != 0 {
+		return nil
+	}
+
+	return p.rw.WriteMessage(p.conn, msg)
+}
+
+func (p *Peer) QueueMessage(msg p2p.Message, doneChan chan<- struct{}) {
+	if atomic.LoadInt32(&p.disconnect) != 0 {
+		if doneChan != nil {
+			go func() {
+				doneChan <- struct{}{}
+			}()
+		}
+		return
+	}
+	p.outputQueue <- outMsg{msg: msg, doneChan: doneChan}
+}
+
+func (p *Peer) start() {
+	go p.inHandler()
+	go p.queueHandler()
+	go p.outHandler()
 }
 
 func (p *Peer) NewVersionMsg() *msg.Version {
@@ -194,16 +413,38 @@ func (p *Peer) NewVersionMsg() *msg.Version {
 	return version
 }
 
-func (p *Peer) SetPeerHandler(handler PeerHandler) {
-	p.handler = handler
+func (p *Peer) SetConfig(config PeerConfig) {
+	rwConfig := rw.MessageConfig{
+		ProtocolVersion: config.ProtocolVersion,
+		MakeTx:          config.MakeTx,
+		MakeBlock:       config.MakeBlock,
+		MakeMerkleBlock: config.MakeMerkleBlock,
+	}
+	p.rw.SetConfig(rwConfig)
+
+	// Upgrade peer message handler
+	previousHandler := p.handleMessage
+	p.handleMessage = func(peer *Peer, msg p2p.Message) {
+		previousHandler(peer, msg)
+		config.HandleMessage(peer, msg)
+	}
 }
 
-func NewPeer(magic, maxMsgSize uint32, conn net.Conn) *Peer {
-	peer := new(Peer)
-	peer.conn = conn
-	copy(peer.ip16[:], getIp(conn))
-	peer.msgHelper = p2p.NewMsgHelper(magic, maxMsgSize, conn, peer)
-	return peer
+func NewPeer(magic uint32, conn net.Conn) *Peer {
+	p := Peer{
+		conn:          conn,
+		rw:            rw.GetMesssageRW(magic),
+		outputQueue:   make(chan outMsg, outputBufferSize),
+		sendQueue:     make(chan outMsg, 1),   // nonblocking sync
+		sendDoneQueue: make(chan struct{}, 1), // nonblocking sync
+		inQuit:        make(chan struct{}),
+		queueQuit:     make(chan struct{}),
+		outQuit:       make(chan struct{}),
+		quit:          make(chan struct{}),
+	}
+
+	copy(p.ip16[:], getIp(conn))
+	return &p
 }
 
 func getIp(conn net.Conn) []byte {

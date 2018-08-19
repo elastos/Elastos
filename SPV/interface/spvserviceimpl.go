@@ -13,7 +13,9 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/store"
 
+	"github.com/elastos/Elastos.ELA.SPV/net"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
@@ -27,7 +29,7 @@ type SPVServiceImpl struct {
 	listeners map[common.Uint256]TransactionListener
 }
 
-func NewSPVServiceImpl(magic uint32, foundation string, clientId uint64, seeds []string, minOutbound, maxConnections int) (*SPVServiceImpl, error) {
+func NewSPVServiceImpl(config SPVServiceConfig) (*SPVServiceImpl, error) {
 	var err error
 	service := new(SPVServiceImpl)
 	service.headers, err = db.NewHeaderStore()
@@ -45,12 +47,27 @@ func NewSPVServiceImpl(magic uint32, foundation string, clientId uint64, seeds [
 		return nil, err
 	}
 
-	spvClient, err := sdk.GetSPVClient(magic, clientId, seeds, minOutbound, maxConnections)
-	if err != nil {
-		return nil, err
+	serverPeerConfig := net.ServerPeerConfig{
+		Magic:          config.Magic,
+		Version:        p2p.EIP001Version,
+		PeerId:         config.ClientId,
+		Port:           0,
+		Seeds:          config.Seeds,
+		MinOutbound:    config.MinOutbound,
+		MaxConnections: config.MaxConnections,
 	}
 
-	service.SPVService, err = sdk.GetSPVService(spvClient, foundation, service.headers, service)
+	serviceConfig := sdk.SPVServiceConfig{
+		Server:           net.NewServerPeer(serverPeerConfig),
+		Foundation:       config.Foundation,
+		HeaderStore:      service.headers,
+		GetFilterData:    service.GetFilterData,
+		CommitTx:         service.CommitTx,
+		OnBlockCommitted: service.OnBlockCommitted,
+		OnRollback:       service.OnRollback,
+	}
+
+	service.SPVService, err = sdk.GetSPVService(serviceConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +141,7 @@ func (service *SPVServiceImpl) HeaderStore() store.HeaderStore {
 	return service.headers
 }
 
-func (service *SPVServiceImpl) GetData() ([]*common.Uint168, []*core.OutPoint) {
+func (service *SPVServiceImpl) GetFilterData() ([]*common.Uint168, []*core.OutPoint) {
 	ops, err := service.dataStore.Outpoints().GetAll()
 	if err != nil {
 		log.Error("[SPV_SERVICE] GetData error ", err)

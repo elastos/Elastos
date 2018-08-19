@@ -103,7 +103,16 @@ func TestNewSPVService(t *testing.T) {
 	var err error
 	rand.Read(id)
 	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-	spv, err = NewSPVService(config.Values().Magic, config.Values().Foundation, clientId, config.Values().SeedList, 8, 100)
+
+	config := SPVServiceConfig{
+		ClientId:clientId,
+		Magic: config.Values().Magic,
+		Foundation:config.Values().Foundation,
+		Seeds: config.Values().SeedList,
+		MinOutbound: 8,
+		MaxConnections: 100,
+	}
+	spv, err = NewSPVService(config)
 	if err != nil {
 		t.Error("NewSPVService error %s", err.Error())
 	}
