@@ -18,7 +18,6 @@
 #include "Utils.h"
 #include "Log.h"
 #include "ErrorCode.h"
-#include "ElaPeerConfig.h"
 #include "ParamChecker.h"
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
@@ -45,10 +44,6 @@ namespace Elastos {
 			fs::path subWalletDbPath = _parent->_rootPath;
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
-
-			nlohmann::json peerConfig =
-					info.getWalletType() == Mainchain || info.getWalletType() == Normal ? ElaPeerConfig
-																						: readPeerConfig();
 
 			CMBlock encryptedKey;
 			UInt256 chainCode = UINT256_ZERO;
@@ -85,7 +80,7 @@ namespace Elastos {
 			}
 
 			_walletManager = WalletManagerPtr(
-					new WalletManager(masterPubKey, subWalletDbPath, peerConfig, _info.getEarliestPeerTime(),
+					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
 									  _info.getSingleAddress(), _info.getForkId(), pluginTypes, chainParams));
 
 			_walletManager->registerWalletListener(this);
@@ -161,7 +156,8 @@ namespace Elastos {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			assert(wallet != nullptr);
 
-			Log::getLogger()->info("GetAllTransaction: start = {}, count = {}, addressOrTxid = {}", start, count, addressOrTxid);
+			Log::getLogger()->info("GetAllTransaction: start = {}, count = {}, addressOrTxid = {}", start, count,
+								   addressOrTxid);
 
 			size_t fullTxCount = array_count(wallet->transactions);
 			size_t pageCount = count;
@@ -259,8 +255,9 @@ namespace Elastos {
 
 			fireTransactionStatusChanged(txHash, SubWalletCallback::convertToString(SubWalletCallback::Added),
 										 transaction->toJson(), 0);
-			Log::getLogger()->info("Tx callback (onTxAdded) finished. Details: txHash={}, tx height = {}, confirm count={}.",
-						 txHash, transaction->getBlockHeight(), 0);
+			Log::getLogger()->info(
+					"Tx callback (onTxAdded) finished. Details: txHash={}, tx height = {}, confirm count={}.",
+					txHash, transaction->getBlockHeight(), 0);
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
@@ -475,8 +472,10 @@ namespace Elastos {
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
-				Log::getLogger()->info("Transaction height increased: txHash = {}, confirms = {}, tx height = {}, last block height = {}",
-							 it->first, blockHeight - it->second->getBlockHeight() + 1, it->second->getBlockHeight(), blockHeight);
+				Log::getLogger()->info(
+						"Transaction height increased: txHash = {}, confirms = {}, tx height = {}, last block height = {}",
+						it->first, blockHeight - it->second->getBlockHeight() + 1, it->second->getBlockHeight(),
+						blockHeight);
 
 				if (it->second->getBlockHeight() == TX_UNCONFIRMED)
 					continue;
@@ -511,53 +510,26 @@ namespace Elastos {
 						  });
 		}
 
-		nlohmann::json SubWallet::readPeerConfig() {
-			//fixme read from main chain(ela)
-			nlohmann::json idChainPeerConfig =
-					R"(
-						  {
-							"MagicNumber": 201806271,
-							"KnowingPeers":
-							[
-								{
-									"Address": "18.208.17.78",
-									"Port": 22608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "18.208.238.27",
-									"Port": 22608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "18.208.78.1",
-									"Port": 22608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "18.208.99.72",
-									"Port": 22608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								},
-								{
-									"Address": "34.193.157.94",
-									"Port": 22608,
-									"Timestamp": 0,
-									"Services": 1,
-									"Flags": 0
-								}
-							]
-						}
-					)"_json;
-			return idChainPeerConfig;
+		void SubWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
+			CMBlock key = Utils::decrypt(Utils::decodeHex(_info.getEncryptedKey()), oldPassword);
+			_info.setEncryptedKey(Utils::encodeHex(Utils::encrypt(key, newPassword)));
+		}
+
+		void SubWallet::StartP2P() {
+			if (_info.getEnableP2P())
+				_walletManager->start();
+		}
+
+		void SubWallet::StopP2P() {
+			if (_info.getEnableP2P())
+				_walletManager->stop();
+		}
+
+		void SubWallet::fireDestroyWallet() {
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [](ISubWalletCallback *callback) {
+							  callback->OnDestroyWallet();
+						  });
 		}
 
 	}

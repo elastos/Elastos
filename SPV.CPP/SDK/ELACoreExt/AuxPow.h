@@ -57,21 +57,21 @@ namespace Elastos {
 			AuxPow &operator=(const AuxPow &auxPow);
 
 		private:
-			void serializeBtcTransaction(ByteStream &ostream) const;
+			void serializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const;
 
-			void deserializeBtcTransaction(ByteStream &istream);
+			bool deserializeBtcTransaction(ByteStream &istream, BRTransaction *tx);
 
-			void serializeBtcTxIn(ByteStream &ostream, const BRTxInput &input) const;
+			void serializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const;
 
-			void deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx);
+			bool deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx);
 
-			void serializeBtcTxOut(ByteStream &ostream, const BRTxOutput &output) const;
+			void serializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const;
 
-			void deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx);
+			bool deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx);
 
-			void serializeBtcBlockHeader(ByteStream &ostream) const;
+			void serializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const;
 
-			void deserializeBtcBlockHeader(ByteStream &istream);
+			bool deserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b);
 
 			nlohmann::json transactionToJson() const;
 
@@ -90,12 +90,12 @@ namespace Elastos {
 			void merkleBlockFromJson(nlohmann::json jsonData);
 		private:
 			std::vector<UInt256> _auxMerkleBranch;
+			uint32_t             _auxMerkleIndex;
+			BRTransaction       *_parCoinBaseTx;
 			std::vector<UInt256> _parCoinBaseMerkle;
-			uint32_t _auxMerkleIndex;
-			BRTransaction *_btcTransaction;
-			uint32_t _parMerkleIndex;
-			BRMerkleBlock *_parBlockHeader;
-			UInt256 _parentHash;
+			uint32_t             _parMerkleIndex;
+			BRMerkleBlock       *_parBlockHeader;
+			UInt256              _parentHash;
 		};
 
 	}

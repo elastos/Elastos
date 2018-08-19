@@ -103,6 +103,13 @@ namespace Elastos {
 			path /= GetId();
 			if (boost::filesystem::exists(path))
 				boost::filesystem::remove_all(path);
+
+			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet != nullptr) {
+					subWallet->fireDestroyWallet();
+				}
+			}
 		}
 
 		void MasterWallet::Save() {
@@ -157,6 +164,7 @@ namespace Elastos {
 			info.setIndex(coinConfig.Index);
 			info.setMinFee(coinConfig.MinFee);
 			info.setGenesisAddress(coinConfig.GenesisAddress);
+			info.setEnableP2P(coinConfig.EnableP2P);
 
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);
@@ -329,7 +337,7 @@ namespace Elastos {
 			_localStore.SetEncryptedKey(Utils::encrypt(masterPrivKey, payPassword));
 
 			Key key = deriveKey(payPassword);
-			if(key.getPrivKey().empty())
+			if (key.getPrivKey().empty())
 				throw std::logic_error("Invalid key");
 			Key compressedKey(key.getRaw()->secret, true);
 			_localStore.SetMasterPubKey(MasterPubKey(compressedKey.getPubkey(), masterChainCode));
@@ -488,12 +496,12 @@ namespace Elastos {
 
 		void MasterWallet::startPeerManager(SubWallet *wallet) {
 			if (_p2pEnable)
-				wallet->_walletManager->start();
+				wallet->StartP2P();
 		}
 
 		void MasterWallet::stopPeerManager(SubWallet *wallet) {
 			if (_p2pEnable)
-				wallet->_walletManager->stop();
+				wallet->StopP2P();
 		}
 
 		bool MasterWallet::IsAddressValid(const std::string &address) {
@@ -518,6 +526,12 @@ namespace Elastos {
 			_localStore.SetEncryptedKey(Utils::encrypt(key, newPassword));
 			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, newPassword));
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
+
+			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
+				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
+				if (subWallet == nullptr) continue;
+				subWallet->ChangePassword(oldPassword, newPassword);
+			}
 		}
 
 		void MasterWallet::tryInitCoinConfig() {

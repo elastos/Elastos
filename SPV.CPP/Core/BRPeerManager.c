@@ -43,7 +43,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-#define PROTOCOL_TIMEOUT      20.0
+#define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
@@ -660,7 +660,6 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
         for (size_t i = 1; manager->params->dnsSeeds && manager->params->dnsSeeds[i]; i++) {
             info = calloc(1, sizeof(BRFindPeersInfo));
             assert(info != NULL);
-			memset(info, 0, sizeof(*info));
             info->manager = manager;
             info->hostname = manager->params->dnsSeeds[i];
             info->services = services;
@@ -693,13 +692,11 @@ static void _peerConnected(void *info)
     BRPeer *peer = ((BRPeerCallbackInfo *)info)->peer;
     peer_log(peer, "peerConnected");
 
-
     BRPeerManager *manager = ((BRPeerCallbackInfo *)info)->manager;
     BRPeerCallbackInfo *peerInfo;
     time_t now = time(NULL);
 
     pthread_mutex_lock(&manager->lock);
-
 
     if (peer->timestamp > now + 2*60*60 || peer->timestamp < now - 2*60*60) peer->timestamp = now; // sanity check
 
@@ -802,7 +799,7 @@ static void _peerDisconnected(void *info, int error)
     else if (error) { // timeout or some non-protocol related network error
         for (size_t i = array_count(manager->peers); i > 0; i--) {
             if (BRPeerEq(&manager->peers[i - 1], peer))
-            	array_rm(manager->peers, i - 1);
+                array_rm(manager->peers, i - 1);
         }
 
         manager->connectFailureCount++;
@@ -818,7 +815,7 @@ static void _peerDisconnected(void *info, int error)
 
         for (size_t j = array_count(peerList->peers); j > 0; j--) {
             if (BRPeerEq(&peerList->peers[j - 1], peer))
-            	array_rm(peerList->peers, j - 1);
+                array_rm(peerList->peers, j - 1);
         }
     }
 
@@ -835,9 +832,9 @@ static void _peerDisconnected(void *info, int error)
         array_clear(manager->peers);
         txError = ENOTCONN; // trigger any pending tx publish callbacks
         willSave = 1;
-        peer_log(peer, "_peerDisconnected  array_clear sync failed");
+        peer_log(peer, "sync failed");
     } else if (manager->connectFailureCount < MAX_CONNECT_FAILURES) {
-            willReconnect = 1;
+        willReconnect = 1;
     }
 
     if (txError) {
@@ -852,20 +849,13 @@ static void _peerDisconnected(void *info, int error)
 
     for (size_t i = array_count(manager->connectedPeers); i > 0; i--) {
         if (manager->connectedPeers[i - 1] != peer)
-        	continue;
+            continue;
         array_rm(manager->connectedPeers, i - 1);
-		peer_log(peer, "_peerDisconnected array_rm connectedPeers sync failed");
         break;
     }
 
     BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
-
-    if (!manager->isShutDown && array_count(manager->connectedPeers) <= 0 && array_count(manager->peers) <= 0) {
-        _peer_log("No connected peers left, going to find peers and do reconnect again, shutdown = %d\n", manager->isShutDown);
-        sleep(15);
-        willReconnect = 1;
-    }
 
     for (size_t i = 0; i < txCount; i++) {
         pubTx[i].callback(pubTx[i].info, txError);
@@ -873,8 +863,10 @@ static void _peerDisconnected(void *info, int error)
 
     if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect)
-            BRPeerManagerConnect(manager); // try connecting to another peer
+    if (willReconnect) {
+        sleep(30);
+        BRPeerManagerConnect(manager);
+    }
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 
@@ -1215,6 +1207,7 @@ static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
 
             BRSetAdd(manager->orphans, block); // BUG: limit total orphans to avoid memory exhaustion attack
             manager->lastOrphan = block;
+            BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT); // reschedule sync timeout
         }
     }
     else if (! _BRPeerManagerVerifyBlock(manager, block, prev, peer)) { // block is invalid

@@ -45,6 +45,11 @@ namespace Elastos {
 			 * Callback method fired when block end synchronizing with a peer. This callback could be used to show progress.
 			 */
 			virtual void OnBlockSyncStopped() = 0;
+
+			/**
+			 * Callback method fired when subwallet was destroyed.
+			 */
+			virtual void OnDestroyWallet() = 0;
 		};
 
 	}

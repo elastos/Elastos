@@ -29,6 +29,12 @@ namespace Elastos {
 
 			const WalletManagerPtr &GetWalletManager() const;
 
+			void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
+
+			void StartP2P();
+
+			void StopP2P();
+
 		public: //implement ISubWallet
 			virtual std::string GetChainId() const;
 
@@ -145,8 +151,6 @@ namespace Elastos {
 
 			void recover(int limitGap);
 
-			nlohmann::json readPeerConfig();
-
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);
 
 			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
@@ -157,6 +161,8 @@ namespace Elastos {
 													  const std::string &status,
 													  const nlohmann::json &desc,
 													  uint32_t confirms);
+
+			virtual void fireDestroyWallet();
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;

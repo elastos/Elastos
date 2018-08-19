@@ -44,19 +44,13 @@ namespace Elastos {
 				config.ChainId = it.key();
 				config.Type = convertToSubWalletType(it.value()["Type"].get<std::string>());
 				config.Index = it.value()["CoinIndex"].get<uint32_t>();
-				config.TargetTimeSpan = it.value()["TargetTimeSpan"].get<uint32_t>();
-				config.TargetTimePerBlock = it.value()["TargetTimePerBlock"].get<uint32_t>();
-				config.StandardPort = it.value()["StandardPort"].get<uint16_t>();
-				config.MagicNumber = it.value()["MagicNumber"].get<uint32_t>();
-				config.Services = it.value()["Services"].get<uint32_t>();
 				config.MinFee = it.value()["MinFee"].get<uint64_t>();
 				config.BlockType = it.value()["BlockType"].get<std::string>();
 				config.NetType = it.value()["NetType"].get<std::string>();
 				config.GenesisAddress = it.value()["GenesisAddress"].get<std::string>();
-				std::vector<nlohmann::json> checkPoints = it.value()["CheckPoints"];
-				for (int k = 0; k < checkPoints.size(); ++k) {
-					config.CheckPoints.push_back(checkPoints[k]);
-				}
+				config.EnableP2P = true;
+				if (it.value().find("EnableP2P") != it.value().end())
+					config.EnableP2P = it.value()["EnableP2P"].get<bool>();
 				_configMap[config.ChainId] = config;
 			}
 

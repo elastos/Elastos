@@ -39,13 +39,13 @@ namespace Elastos {
 			virtual BRChainParams *getRaw() const;
 
 			uint32_t getMagicNumber() const;
+			uint32_t getTargetTimeSpan() const;
+			uint32_t getTargetTimePerBlock() const;
 
 		private:
 			void tryInit(const CoinConfig &coinConfig);
 
 		private:
-
-			std::vector<BRCheckPoint> _checkPoints;
 
 			boost::shared_ptr<ELAChainParams> _chainParams;
 		};

@@ -32,18 +32,17 @@ TEST_CASE("TimeUtils convertToString test", "[convertToString]") {
 
 TEST_CASE("TimeUtils calculateBlockHeightByTime test", "[calculateBlockHeightByTime]") {
 	CoinConfig coinConfig;
-	coinConfig.TargetTimePerBlock = 120;
-	BRCheckPoint checkPoint;
-	checkPoint.timestamp = 1532609546;
-	coinConfig.CheckPoints.push_back(CheckPoint(checkPoint));
+	coinConfig.NetType = "TestNet";
+	coinConfig.Type = Mainchain;
+	ChainParams chainParams(coinConfig);
 
 	SECTION("Calculat ELA publish height") {
-		REQUIRE(TimeUtils::calculateBlockHeightByTime(1532609546, coinConfig) == 0);
+		REQUIRE(TimeUtils::calculateBlockHeightByTime(1532629387, chainParams) == 0);
 	}
 	SECTION("Calculate earlear time than genesis check point") {
-		REQUIRE(TimeUtils::calculateBlockHeightByTime(0, coinConfig) == 0);
+		REQUIRE(TimeUtils::calculateBlockHeightByTime(0, chainParams) == 0);
 	}
 	SECTION("Calculate normal time") {
-		REQUIRE(TimeUtils::calculateBlockHeightByTime(1532922904, coinConfig) == 2611);
+		REQUIRE(TimeUtils::calculateBlockHeightByTime(1532629387 + 100 * 120, chainParams) == 100);
 	}
 }

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <Core/BRTransaction.h>
 #include <Core/BRMerkleBlock.h>
+#include <SDK/Common/Log.h>
 
 #include "BRMerkleBlock.h"
 #include "BRAddress.h"
@@ -16,7 +17,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		AuxPow::AuxPow() {
-			_btcTransaction = BRTransactionNew();
+			_parCoinBaseTx = BRTransactionNew();
 			_parBlockHeader = BRMerkleBlockNew(nullptr);
 			_auxMerkleIndex = 0;
 			_parMerkleIndex = 0;
@@ -24,235 +25,249 @@ namespace Elastos {
 		}
 
 		AuxPow::~AuxPow() {
-			if (_btcTransaction != nullptr)
-				BRTransactionFree(_btcTransaction);
+			if (_parCoinBaseTx != nullptr)
+				BRTransactionFree(_parCoinBaseTx);
 			if (_parBlockHeader)
 				BRMerkleBlockFree(nullptr, _parBlockHeader);
 		}
 
 		void AuxPow::Serialize(ByteStream &ostream) const {
-			serializeBtcTransaction(ostream);
+			serializeBtcTransaction(ostream, _parCoinBaseTx);
 
-			uint8_t parentHashData[256 / 8];
-			UInt256Set(parentHashData, _parentHash);
-			ostream.putBytes(parentHashData, 256 / 8);
+			ostream.writeBytes(_parentHash.u8, sizeof(UInt256));
 
-			uint8_t auxMerkleIndexData[32 / 8];
-			UInt32SetLE(auxMerkleIndexData, _auxMerkleIndex);
-			ostream.putBytes(auxMerkleIndexData, 32 / 8);
-
-			ostream.putVarUint(_auxMerkleBranch.size());
-			uint8_t auxMerkleBranchData[256 / 8];
-			for (uint64_t i = 0; i < _auxMerkleBranch.size(); ++i) {
-				UInt256Set(auxMerkleBranchData, _auxMerkleBranch[i]);
-				ostream.putBytes(auxMerkleBranchData, 256 / 8);
-			}
-
-			uint8_t parMerkleIndexData[32 / 8];
-			UInt32SetLE(parMerkleIndexData, _parMerkleIndex);
-			ostream.putBytes(parMerkleIndexData, 32 / 8);
-
-			ostream.putVarUint(_parCoinBaseMerkle.size());
-			uint8_t parCoinBaseMerkleData[256 / 8];
+			ostream.writeVarUint(uint64_t(_parCoinBaseMerkle.size()));
 			for (uint64_t i = 0; i < _parCoinBaseMerkle.size(); ++i) {
-				UInt256Set(parCoinBaseMerkleData, _parCoinBaseMerkle[i]);
-				ostream.putBytes(parCoinBaseMerkleData, 256 / 8);
+				ostream.writeBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256));
 			}
 
-			serializeBtcBlockHeader(ostream);
+			ostream.writeUint32(_parMerkleIndex);
+
+			ostream.writeVarUint(uint64_t(_auxMerkleBranch.size()));
+			for (uint64_t i = 0; i < _auxMerkleBranch.size(); ++i) {
+				ostream.writeBytes(_auxMerkleBranch[i].u8, sizeof(UInt256));
+			}
+
+			ostream.writeUint32(_auxMerkleIndex);
+
+			serializeBtcBlockHeader(ostream, _parBlockHeader);
 		}
 
 		bool AuxPow::Deserialize(ByteStream &istream) {
-			deserializeBtcTransaction(istream);
+			if (!deserializeBtcTransaction(istream, _parCoinBaseTx)) {
+				Log::getLogger()->error("deserialize AuxPow btc tx error");
+				return false;
+			}
 
-			uint8_t parentHashData[256 / 8];
-			istream.getBytes(parentHashData, 256 / 8);
-			UInt256Get(&_parentHash, parentHashData);
+			if (!istream.readBytes(_parentHash.u8, sizeof(UInt256))) {
+				Log::getLogger()->error("deserialize AuxPow parentHash error");
+				return false;
+			}
 
-			uint8_t auxMerkleIndexData[32 / 8];
-			istream.getBytes(auxMerkleIndexData, 32 / 8);
-			_auxMerkleIndex = UInt32GetLE(auxMerkleIndexData);
+			uint64_t parCoinBaseMerkleCount = 0;
+			if (!istream.readVarUint(parCoinBaseMerkleCount)) {
+				Log::getLogger()->error("deserialize AuxPow parCoinBaseMerkle size error");
+				return false;
+			}
 
-			uint64_t auxMerkleBranchCount = istream.getVarUint();
+			_parCoinBaseMerkle.resize(parCoinBaseMerkleCount);
+			for (uint64_t i = 0; i < parCoinBaseMerkleCount; ++i) {
+				if (!istream.readBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256))) {
+					Log::getLogger()->error("deserialize AuxPow parCoinBaseMerkle[{}] error", i);
+					return false;
+				}
+			}
+
+			if (!istream.readUint32(_parMerkleIndex)) {
+				Log::getLogger()->error("deserialize AuxPow parMerkleIndex error");
+				return false;
+			}
+
+			uint64_t auxMerkleBranchCount = 0;
+			if (!istream.readVarUint(auxMerkleBranchCount)) {
+				Log::getLogger()->error("deserialize AuxPow auxMerkleBranchCount error");
+				return false;
+			}
 
 			_auxMerkleBranch.resize(auxMerkleBranchCount);
-			uint8_t auxMerkleBranchData[256 / 8];
 			for (uint64_t i = 0; i < auxMerkleBranchCount; ++i) {
-				istream.getBytes(auxMerkleBranchData, 256 / 8);
-				UInt256Get(&_auxMerkleBranch[i], auxMerkleBranchData);
+				if (!istream.readBytes(_auxMerkleBranch[i].u8, sizeof(UInt256))) {
+					Log::getLogger()->error("deserialize AuxPow auxMerkleBranch error");
+					return false;
+				}
 			}
 
-			uint8_t parMerkleIndexData[32 / 8];
-			istream.getBytes(parMerkleIndexData, 32 / 8);
-			_parMerkleIndex = UInt32GetLE(parMerkleIndexData);
-
-			uint64_t parCoinBaseMerkleCount = istream.getVarUint();
-			_parCoinBaseMerkle.resize(parCoinBaseMerkleCount);
-			uint8_t parCoinBaseMerkleData[256 / 8];
-			for (uint64_t i = 0; i < parCoinBaseMerkleCount; ++i) {
-				istream.getBytes(parCoinBaseMerkleData, 256 / 8);
-				UInt256Get(&_parCoinBaseMerkle[i], parCoinBaseMerkleData);
+			if (!istream.readUint32(_auxMerkleIndex)) {
+				Log::getLogger()->error("deserialize AuxPow auxMerkleIndex error");
+				return false;
 			}
 
-			deserializeBtcBlockHeader(istream);
+			if (!deserializeBtcBlockHeader(istream, _parBlockHeader)) {
+				Log::getLogger()->error("deserialize AuxPow btc block header error");
+				return false;
+			}
 
 			return true;
 		}
 
-		void AuxPow::serializeBtcTransaction(ByteStream &ostream) const {
-			uint8_t versionData[32 / 8];
-			UInt32SetLE(versionData, _btcTransaction->version);
-			ostream.putBytes(versionData, 32 / 8);
+		void AuxPow::serializeBtcTransaction(ByteStream &ostream, const BRTransaction *tx) const {
+			ostream.writeUint32(tx->version);
 
-			ostream.putVarUint(uint64_t(_btcTransaction->inCount));
-			for (uint64_t i = 0; i < _btcTransaction->inCount; ++i) {
-				serializeBtcTxIn(ostream, _btcTransaction->inputs[i]);
+			ostream.writeVarUint(uint64_t(tx->inCount));
+			for (uint64_t i = 0; i < tx->inCount; ++i) {
+				serializeBtcTxIn(ostream, &tx->inputs[i]);
 			}
 
-			ostream.putVarUint(uint64_t(_btcTransaction->outCount));
-			for (uint64_t i = 0; i < _btcTransaction->outCount; ++i) {
-				serializeBtcTxOut(ostream, _btcTransaction->outputs[i]);
+			ostream.writeVarUint(uint64_t(tx->outCount));
+			for (uint64_t i = 0; i < tx->outCount; ++i) {
+				serializeBtcTxOut(ostream, &tx->outputs[i]);
 			}
 
-			uint8_t lockTimeData[32 / 8];
-			UInt32SetLE(lockTimeData, _btcTransaction->lockTime);
-			ostream.putBytes(lockTimeData, 32 / 8);
+			ostream.writeUint32(tx->lockTime);
 		}
 
-		void AuxPow::deserializeBtcTransaction(ByteStream &istream) {
-			uint8_t versionData[32 / 8];
-			istream.getBytes(versionData, 32 / 8);
-			_btcTransaction->version = UInt32GetLE(versionData);
+		bool AuxPow::deserializeBtcTransaction(ByteStream &istream, BRTransaction *tx) {
+			if (!istream.readUint32(tx->version)) {
+				Log::getLogger()->error("deserialize version error");
+				return false;
+			}
 
-			size_t inCount = istream.getVarUint();
+			uint64_t inCount = 0;
+			if (!istream.readVarUint(inCount)) {
+				Log::getLogger()->error("deserialize inCount error");
+				return false;
+			}
 			for (uint64_t i = 0; i < inCount; ++i) {
-				deserializeBtcTxIn(istream, _btcTransaction);
+				if (!deserializeBtcTxIn(istream, tx)) {
+					Log::getLogger()->error("deserialize input[{}] error", i);
+					return false;
+				}
 			}
 
-			size_t outCount = istream.getVarUint();
+			uint64_t outCount = 0;
+			if (!istream.readVarUint(outCount)) {
+				Log::getLogger()->error("deserialize outCount error");
+				return false;
+			}
 			for (uint64_t i = 0; i < outCount; ++i) {
-				deserializeBtcTxOut(istream, _btcTransaction);
+				if (!deserializeBtcTxOut(istream, tx)) {
+					Log::getLogger()->error("deserialize output[{}] error", i);
+					return false;
+				}
 			}
 
-			uint8_t lockTimeData[32 / 8];
-			istream.getBytes(lockTimeData, 32 / 8);
-			_btcTransaction->lockTime = UInt32GetLE(lockTimeData);
+			if (!istream.readUint32(tx->lockTime)) {
+				Log::getLogger()->error("deserialize lockTime error");
+				return false;
+			}
+
+			return true;
 		}
 
-		void AuxPow::serializeBtcTxIn(ByteStream &ostream, const BRTxInput &input) const {
-			uint8_t hashData[256 / 8];
-			UInt256Set(hashData, input.txHash);
-			ostream.putBytes(hashData, 256 / 8);
-
-			uint8_t indexData[32 / 8];
-			UInt32SetLE(indexData, input.index);
-			ostream.putBytes(indexData, 32 / 8);
-
-			ostream.putVarUint(input.sigLen);
-			ostream.putBytes(input.signature, input.sigLen);
-
-			uint8_t sequenceData[32 / 8];
-			UInt32SetLE(sequenceData, input.sequence);
-			ostream.putBytes(sequenceData, 32 / 8);
+		void AuxPow::serializeBtcTxIn(ByteStream &ostream, const BRTxInput *in) const {
+			ostream.writeBytes(in->txHash.u8, sizeof(UInt256));
+			ostream.writeUint32(in->index);
+			ostream.writeVarBytes(in->signature, in->sigLen);
+			ostream.writeUint32(in->sequence);
 		}
 
-		void AuxPow::deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx) {
+		bool AuxPow::deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx) {
 			UInt256 txHash;
-			istream.getBytes(txHash.u8, sizeof(txHash.u8));
+			if (!istream.readBytes(txHash.u8, sizeof(UInt256))) {
+				Log::getLogger()->error("deserialize txHash error");
+				return false;
+			}
 
-			uint8_t indexData[32 / 8];
-			istream.getBytes(indexData, 32 / 8);
-			uint32_t index = UInt32GetLE(indexData);
+			uint32_t index = 0;
+			if (!istream.readUint32(index)) {
+				Log::getLogger()->error("deserialize index error");
+				return false;
+			}
 
-			size_t sigLen = (size_t) istream.getVarUint();
+			CMBlock signature;
+			if (!istream.readVarBytes(signature)) {
+				Log::getLogger()->error("deserialize signature error");
+				return false;
+			}
 
-			uint8_t signature[sigLen];
-			istream.getBytes(signature, sigLen);
-
-			uint8_t sequenceData[32 / 8];
-			istream.getBytes(sequenceData, 32 / 8);
-			uint32_t sequence = UInt32GetLE(sequenceData);
+			uint32_t sequence = 0;
+			if (!istream.readUint32(sequence)) {
+				Log::getLogger()->error("deserialize sequence error");
+				return false;
+			}
 
 			BRTransactionAddInput(tx, txHash, index, 0, nullptr, 0,
-								  sigLen > 0 ? signature : nullptr, sigLen, sequence);
+								  signature.GetSize() > 0 ? (uint8_t *)signature : nullptr, signature.GetSize(), sequence);
+			return true;
 		}
 
-		void AuxPow::serializeBtcTxOut(ByteStream &ostream, const BRTxOutput &output) const {
-			uint8_t amountData[64 / 8];
-			UInt64SetLE(amountData, output.amount);
-			ostream.putBytes(amountData, 64 / 8);
-
-			ostream.putVarUint(output.scriptLen);
-			ostream.putBytes(output.script, output.scriptLen);
+		void AuxPow::serializeBtcTxOut(ByteStream &ostream, const BRTxOutput *out) const {
+			ostream.writeUint64(out->amount);
+			ostream.writeVarBytes(out->script, out->scriptLen);
 		}
 
-		void AuxPow::deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx) {
-			uint8_t amountData[64 / 8];
-			istream.getBytes(amountData, 64 / 8);
-			uint64_t amount = UInt64GetLE(amountData);
+		bool AuxPow::deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx) {
+			uint64_t amount = 0;
+			if (!istream.readUint64(amount)) {
+				Log::getLogger()->error("deserialize amount error");
+				return false;
+			}
 
-			size_t scriptLen = istream.getVarUint();
-			uint8_t script[scriptLen];
-			istream.getBytes(script, scriptLen);
+			CMBlock script;
+			if (!istream.readVarBytes(script)) {
+				Log::getLogger()->error("deserialize script error");
+				return false;
+			}
 
-			BRTransactionAddOutput(tx, amount, scriptLen > 0 ? script : nullptr, scriptLen);
+			BRTransactionAddOutput(tx, amount, script.GetSize() > 0 ? (uint8_t *)script : nullptr, script.GetSize());
+			return true;
 		}
 
-		void AuxPow::serializeBtcBlockHeader(ByteStream &ostream) const {
-			uint8_t versionData[32 / 8];
-			UInt32SetLE(versionData, _parBlockHeader->version);
-			ostream.putBytes(versionData, 32 / 8);
-
-			uint8_t prevBlockData[256 / 8];
-			UInt256Set(prevBlockData, _parBlockHeader->prevBlock);
-			ostream.putBytes(prevBlockData, 256 / 8);
-
-			uint8_t merkleRootData[256 / 8];
-			UInt256Set(merkleRootData, _parBlockHeader->merkleRoot);
-			ostream.putBytes(merkleRootData, 256 / 8);
-
-			uint8_t timeStampData[32 / 8];
-			UInt32SetLE(timeStampData, _parBlockHeader->timestamp);
-			ostream.putBytes(timeStampData, 32 / 8);
-
-			uint8_t bitsData[32 / 8];
-			UInt32SetLE(bitsData, _parBlockHeader->target);
-			ostream.putBytes(bitsData, 32 / 8);
-
-			uint8_t nonceData[32 / 8];
-			UInt32SetLE(nonceData, _parBlockHeader->nonce);
-			ostream.putBytes(nonceData, 32 / 8);
+		void AuxPow::serializeBtcBlockHeader(ByteStream &ostream, const BRMerkleBlock *b) const {
+			ostream.writeUint32(b->version);
+			ostream.writeBytes(b->prevBlock.u8, sizeof(UInt256));
+			ostream.writeBytes(b->merkleRoot.u8, sizeof(UInt256));
+			ostream.writeUint32(b->timestamp);
+			ostream.writeUint32(b->target);
+			ostream.writeUint32(b->nonce);
 		}
 
-		void AuxPow::deserializeBtcBlockHeader(ByteStream &istream) {
-			uint8_t versionData[32 / 8];
-			istream.getBytes(versionData, 32 / 8);
-			_parBlockHeader->version = UInt32GetLE(versionData);
+		bool AuxPow::deserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b) {
+			if (!istream.readUint32(b->version)) {
+				Log::getLogger()->error("deserialize version error");
+				return false;
+			}
 
-			uint8_t prevBlockData[256 / 8];
-			istream.getBytes(prevBlockData, 256 / 8);
-			UInt256Get(&_parBlockHeader->prevBlock, prevBlockData);
+			if (!istream.readBytes(b->prevBlock.u8, sizeof(UInt256))) {
+				Log::getLogger()->error("deserialize prevBlock error");
+				return false;
+			}
 
-			uint8_t merkleRootData[256 / 8];
-			istream.getBytes(merkleRootData, 256 / 8);
-			UInt256Get(&_parBlockHeader->merkleRoot, merkleRootData);
+			if (!istream.readBytes(b->merkleRoot.u8, sizeof(UInt256))) {
+				Log::getLogger()->error("deserialize merkleRoot error");
+				return false;
+			}
 
-			uint8_t timeStampData[32 / 8];
-			istream.getBytes(timeStampData, 32 / 8);
-			_parBlockHeader->timestamp = UInt32GetLE(timeStampData);
+			if (!istream.readUint32(b->timestamp)) {
+				Log::getLogger()->error("deserialize timestamp error");
+				return false;
+			}
 
-			uint8_t bitsData[32 / 8];
-			istream.getBytes(bitsData, 32 / 8);
-			_parBlockHeader->target = UInt32GetLE(bitsData);
+			if (!istream.readUint32(b->target)) {
+				Log::getLogger()->error("deserialize target error");
+				return false;
+			}
 
-			uint8_t nonceData[32 / 8];
-			istream.getBytes(nonceData, 32 / 8);
-			_parBlockHeader->nonce = UInt32GetLE(nonceData);
+			if (!istream.readUint32(b->nonce)) {
+				Log::getLogger()->error("deserialize nonce error");
+				return false;
+			}
+			return true;
 		}
 
 		UInt256 AuxPow::getParBlockHeaderHash() const {
 			ByteStream stream;
-			serializeBtcBlockHeader(stream);
+			serializeBtcBlockHeader(stream, _parBlockHeader);
 			UInt256 hash = UINT256_ZERO;
 			CMBlock buf = stream.getBuffer();
 			BRSHA256_2(&hash, buf, buf.GetSize());
@@ -263,16 +278,16 @@ namespace Elastos {
 			_auxMerkleBranch = auxPow._auxMerkleBranch;
 			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
 			_auxMerkleIndex = auxPow._auxMerkleIndex;
-			_btcTransaction = BRTransactionCopy(auxPow._btcTransaction);
+			_parCoinBaseTx = BRTransactionCopy(auxPow._parCoinBaseTx);
 			_parMerkleIndex = auxPow._parMerkleIndex;
 			_parBlockHeader = BRMerkleBlockCopy(auxPow._parBlockHeader);
 			UInt256Set(&_parentHash, auxPow._parentHash);
 		}
 
 		void AuxPow::setBTCTransaction(BRTransaction *transaction) {
-			if (_btcTransaction != nullptr)
-				BRTransactionFree(_btcTransaction);
-			_btcTransaction = transaction;
+			if (_parCoinBaseTx != nullptr)
+				BRTransactionFree(_parCoinBaseTx);
+			_parCoinBaseTx = transaction;
 		}
 
 		void AuxPow::setParBlockHeader(BRMerkleBlock *block) {
@@ -285,7 +300,7 @@ namespace Elastos {
 			_auxMerkleBranch = auxPow._auxMerkleBranch;
 			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
 			_auxMerkleIndex = auxPow._auxMerkleIndex;
-			setBTCTransaction(BRTransactionCopy(auxPow._btcTransaction));
+			setBTCTransaction(BRTransactionCopy(auxPow._parCoinBaseTx));
 			_parMerkleIndex = auxPow._parMerkleIndex;
 			setParBlockHeader(BRMerkleBlockCopy(auxPow._parBlockHeader));
 			UInt256Set(&_parentHash, auxPow._parentHash);
@@ -293,7 +308,7 @@ namespace Elastos {
 		}
 
 		BRTransaction *AuxPow::getBTCTransaction() const {
-			return _btcTransaction;
+			return _parCoinBaseTx;
 		}
 
 		BRMerkleBlock *AuxPow::getParBlockHeader() const {
@@ -329,24 +344,24 @@ namespace Elastos {
 		nlohmann::json AuxPow::transactionToJson() const {
 			nlohmann::json jsonData;
 
-			jsonData["TxHash"] = Utils::UInt256ToString(_btcTransaction->txHash);
-			jsonData["Version"] = _btcTransaction->version;
+			jsonData["TxHash"] = Utils::UInt256ToString(_parCoinBaseTx->txHash);
+			jsonData["Version"] = _parCoinBaseTx->version;
 
-			std::vector<nlohmann::json> inputs(_btcTransaction->inCount);
-			for (size_t i = 0; i < _btcTransaction->inCount; ++i) {
-				inputs[i] = txInputsToJson(_btcTransaction->inputs[i]);;
+			std::vector<nlohmann::json> inputs(_parCoinBaseTx->inCount);
+			for (size_t i = 0; i < _parCoinBaseTx->inCount; ++i) {
+				inputs[i] = txInputsToJson(_parCoinBaseTx->inputs[i]);;
 			}
 			jsonData["Inputs"] = inputs;
 
-			std::vector<nlohmann::json> outputs(_btcTransaction->outCount);
-			for (size_t i = 0; i < _btcTransaction->outCount; ++i) {
-				outputs[i] = txOutputsToJson(_btcTransaction->outputs[i]);
+			std::vector<nlohmann::json> outputs(_parCoinBaseTx->outCount);
+			for (size_t i = 0; i < _parCoinBaseTx->outCount; ++i) {
+				outputs[i] = txOutputsToJson(_parCoinBaseTx->outputs[i]);
 			}
 			jsonData["Outputs"] = outputs;
 
-			jsonData["LockTime"] = _btcTransaction->lockTime;
-			jsonData["BlockHeight"] = _btcTransaction->blockHeight;
-			jsonData["Timestamp"] = _btcTransaction->timestamp;
+			jsonData["LockTime"] = _parCoinBaseTx->lockTime;
+			jsonData["BlockHeight"] = _parCoinBaseTx->blockHeight;
+			jsonData["Timestamp"] = _parCoinBaseTx->timestamp;
 
 			return jsonData;
 		}
@@ -420,8 +435,8 @@ namespace Elastos {
 		}
 
 		void AuxPow::transactionFromJson(const nlohmann::json &jsonData) {
-			_btcTransaction->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
-			_btcTransaction->version = jsonData["Version"].get<uint32_t>();
+			_parCoinBaseTx->txHash = Utils::UInt256FromString(jsonData["TxHash"].get<std::string>());
+			_parCoinBaseTx->version = jsonData["Version"].get<uint32_t>();
 
 			std::vector<nlohmann::json> inputs = jsonData["Inputs"];
 			for (size_t i = 0; i < inputs.size(); ++i) {
@@ -433,9 +448,9 @@ namespace Elastos {
 				txOutputsFromJson(outputs[i]);
 			}
 
-			_btcTransaction->lockTime = jsonData["LockTime"].get<uint32_t>();
-			_btcTransaction->blockHeight = jsonData["BlockHeight"].get<uint32_t>();
-			_btcTransaction->timestamp = jsonData["Timestamp"].get<uint32_t>();
+			_parCoinBaseTx->lockTime = jsonData["LockTime"].get<uint32_t>();
+			_parCoinBaseTx->blockHeight = jsonData["BlockHeight"].get<uint32_t>();
+			_parCoinBaseTx->timestamp = jsonData["Timestamp"].get<uint32_t>();
 		}
 
 		void AuxPow::merkleBlockFromJson(nlohmann::json jsonData) {
@@ -476,7 +491,7 @@ namespace Elastos {
 			CMBlock signature = Utils::decodeHex(input["Signature"].get<std::string>());
 			uint32_t sequence = input["Sequence"].get<uint32_t>();
 
-			BRTransactionAddInput(_btcTransaction, hash, index, amount,
+			BRTransactionAddInput(_parCoinBaseTx, hash, index, amount,
 								  script, script.GetSize(),
 								  signature, signature.GetSize(),
 								  sequence);
@@ -485,7 +500,7 @@ namespace Elastos {
 		void AuxPow::txOutputsFromJson(const nlohmann::json &output) {
 			uint64_t amount = output["Amount"].get<uint64_t>();
 			CMBlock script = Utils::decodeHex(output["Script"].get<std::string>());
-			BRTransactionAddOutput(_btcTransaction, amount, script, script.GetSize());
+			BRTransactionAddOutput(_parCoinBaseTx, amount, script, script.GetSize());
 		}
 
 		void AuxPow::setAuxMerkleBranch(const std::vector<UInt256> &hashes) {

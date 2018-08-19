@@ -57,11 +57,8 @@ public:
 
 ChainParams createChainParams() {
 	CoinConfig coinConfig;
-	coinConfig.TargetTimeSpan = 86400;
-	coinConfig.TargetTimePerBlock = 120;
-	coinConfig.StandardPort = 20866;
-	coinConfig.MagicNumber = 7630401;
-	coinConfig.Services = 0;
+	coinConfig.Type = Mainchain;
+	coinConfig.NetType = "TestNet";
 	return ChainParams(coinConfig);
 }
 

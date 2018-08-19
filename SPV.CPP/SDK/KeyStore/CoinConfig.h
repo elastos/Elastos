@@ -22,15 +22,10 @@ namespace Elastos {
 			SubWalletType Type;
 			std::string NetType;
 			uint32_t Index;
-			uint32_t TargetTimeSpan;
-			uint32_t TargetTimePerBlock;
-			uint16_t StandardPort;
-			uint32_t MagicNumber;
-			uint32_t Services;
 			uint64_t MinFee;
 			std::string GenesisAddress;
 			std::string BlockType;
-			std::vector<CheckPoint> CheckPoints;
+			bool EnableP2P;
 		};
 
 		/**

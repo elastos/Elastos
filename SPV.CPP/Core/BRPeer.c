@@ -239,8 +239,7 @@ static void *_peerThreadRoutine(void *arg)
 
                 gettimeofday(&tv, NULL);
                 time = tv.tv_sec + (double)tv.tv_usec/1000000;
-				//todo consider timeout later
-                //if (! error && time >= ctx->disconnectTime) error = ETIMEDOUT;
+                if (! error && time >= ctx->disconnectTime) error = ETIMEDOUT;
 
                 if (! error && time >= ctx->mempoolTime) {
                     peer_log(peer, "done waiting for mempool response");
@@ -274,7 +273,7 @@ static void *_peerThreadRoutine(void *arg)
                     error = EPROTO;
                 }
                 else {
-                    peer_dbg(peer, "start read head: port %d", (int)peer->port);
+//                    peer_dbg(peer, "start read head: port %d", (int)peer->port);
                     if (msgLen > payloadLen) payload = realloc(payload, (payloadLen = msgLen));
                     assert(payload != NULL);
                     len = 0;
@@ -600,13 +599,12 @@ void BRPeerSendMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const ch
             if (n >= 0) msgLen += n;
             if (n < 0 && errno != EWOULDBLOCK) error = errno;
             gettimeofday(&tv, NULL);
-            //todo consider timeout later
-			//if (! error && tv.tv_sec + (double)tv.tv_usec/1000000 >= ctx->disconnectTime) error = ETIMEDOUT;
+			if (! error && tv.tv_sec + (double)tv.tv_usec/1000000 >= ctx->disconnectTime) error = ETIMEDOUT;
             socket = ctx->socket;
         }
 
         if (error) {
-            peer_log(peer, "%s", strerror(error));
+            peer_log(peer, "ERROR: sending %s message %s", type, strerror(error));
             BRPeerDisconnect(peer);
         }
     }
