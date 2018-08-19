@@ -148,7 +148,7 @@ namespace Elastos {
 			std::vector<nlohmann::json> contents = j["Contents"];
 			_contents.clear();
 			for (int i = 0; i < contents.size(); ++i) {
-				
+
 				SignContent content;
 				content.Path = contents[i]["Path"].get<std::string>();
 
@@ -159,7 +159,7 @@ namespace Elastos {
 					value.Proof = values[k]["Proof"].get<std::string>();
 					content.Values.push_back(value);
 				}
-				
+
 				_contents.push_back(content);
 			}
 		}

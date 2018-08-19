@@ -60,7 +60,7 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 
 		PayloadRegisterIdentification payload;
 		payload.setId(ID);
-		
+
 		PayloadRegisterIdentification::SignContent content;
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
@@ -78,12 +78,12 @@ TEST_CASE("PayloadRegisterIdentification fromJson test", "[fromJson&toJson]") {
 		payload.addContent(content2);
 
 		nlohmann::json j = payload.toJson();
-		
+
 		PayloadRegisterIdentification payload2;
 		payload2.fromJson(j);
 
 		REQUIRE(payload.getId() == payload2.getId());
-		
+
 		REQUIRE(payload.getPath(0) == payload2.getPath(0));
 		REQUIRE(payload.getProof(0, 0) == payload2.getProof(0, 0));
 		REQUIRE(UInt256Eq(&payload.getDataHash(0, 0), &payload2.getDataHash(0, 0)));
@@ -100,7 +100,7 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 
 		PayloadRegisterIdentification payload;
 		payload.setId(ID);
-		
+
 		PayloadRegisterIdentification::SignContent content;
 		content.Path = Content1_Path1;
 		PayloadRegisterIdentification::ValueItem item;
@@ -120,12 +120,12 @@ TEST_CASE("PayloadRegisterIdentification serialize and deserialize test", "[Seri
 		ByteStream stream;
 		payload.Serialize(stream);
 
-		stream.setPosition(0);	
+		stream.setPosition(0);
 		PayloadRegisterIdentification payload2;
 		payload2.Deserialize(stream);
 
 		REQUIRE(payload.getId() == payload2.getId());
-		
+
 		REQUIRE(payload.getPath(0) == payload2.getPath(0));
 		REQUIRE(payload.getProof(0, 0) == payload2.getProof(0, 0));
 		REQUIRE(UInt256Eq(&payload.getDataHash(0, 0), &payload2.getDataHash(0, 0)));
