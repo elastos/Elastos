@@ -178,7 +178,7 @@ func (sp *ServerPeer) handshake(peer *Peer, inbound bool, doneChan chan struct{}
 	doneChan <- struct{}{}
 
 	// Update peer's message config
-	peer.handleMessage = sp.baseMessageHandler()
+	peer.SetPeerConfig(sp.basePeerConfig())
 
 	// Start peer
 	peer.start()
@@ -237,17 +237,18 @@ func (sp *ServerPeer) keepConnections() {
 	}
 }
 
-func (sp *ServerPeer) baseMessageHandler() func(peer *Peer, message p2p.Message) {
-	return func(peer *Peer, message p2p.Message) {
-		switch m := message.(type) {
-		case *msg.VerAck:
+func (sp *ServerPeer) basePeerConfig() PeerConfig {
+	return PeerConfig{
+		OnVerAck: func(peer *Peer) {
 			// Notify peer establish
 			sp.config.OnPeerEstablish(peer)
+		},
 
-		case *msg.GetAddr:
+		OnGetAddr: func(peer *Peer) {
 			peer.QueueMessage(msg.NewAddr(sp.am.RandGetAddresses()), nil)
+		},
 
-		case *msg.Addr:
+		OnAddr: func(peer *Peer, m *msg.Addr) {
 			for _, addr := range m.AddrList {
 				// Skip local peer
 				if addr.ID == sp.ID() {
@@ -264,7 +265,7 @@ func (sp *ServerPeer) baseMessageHandler() func(peer *Peer, message p2p.Message)
 				// Save to address list
 				sp.am.AddOrUpdateAddress(&addr)
 			}
-		}
+		},
 	}
 }
 

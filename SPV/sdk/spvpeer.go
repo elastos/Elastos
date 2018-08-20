@@ -10,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/rw"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -86,11 +87,8 @@ func (d *downloadBlock) finished() bool {
 }
 
 type SPVPeerConfig struct {
-	// OnPing is invoked when peer receives a ping message.
-	OnPing func(*SPVPeer, *msg.Ping)
-
-	// OnPong is invoked when peer receives a pong message.
-	OnPong func(*SPVPeer, *msg.Pong)
+	// LocalHeight is invoked when peer queue a ping or pong message
+	LocalHeight func() uint32
 
 	// After send a blocks request message, this inventory message
 	// will return with a bunch of block hashes, then you can use them
@@ -141,34 +139,43 @@ func NewSPVPeer(peer *net.Peer, config SPVPeerConfig) *SPVPeer {
 		stallControl: make(chan p2p.Message, 1),
 	}
 
-	peerConfig := net.PeerConfig{
+	msgConfig := rw.MessageConfig{
 		ProtocolVersion: p2p.EIP001Version,
 		MakeTx:          func() *msg.Tx { return msg.NewTx(new(core.Transaction)) },
 		MakeBlock:       func() *msg.Block { return msg.NewBlock(new(core.Block)) },
 		MakeMerkleBlock: func() *msg.MerkleBlock { return msg.NewMerkleBlock(new(core.Header)) },
+	}
+
+	spvPeer.SetMessageConfig(msgConfig)
+
+	peerConfig := net.PeerConfig{
+		PingNonce: config.LocalHeight,
+
+		PongNonce: config.LocalHeight,
+
+		OnPing: func(peer *net.Peer, ping *msg.Ping) {
+			peer.SetHeight(ping.Nonce)
+		},
+
+		OnPong: func(peer *net.Peer, pong *msg.Pong) {
+			peer.SetHeight(pong.Nonce)
+		},
 
 		HandleMessage: func(peer *net.Peer, message p2p.Message) {
+			// Notify stall control
+			spvPeer.stallControl <- message
+
 			switch m := message.(type) {
-			case *msg.Ping:
-				config.OnPing(spvPeer, m)
-
-			case *msg.Pong:
-				config.OnPong(spvPeer, m)
-
 			case *msg.Inventory:
-				spvPeer.stallControl <- m
 				config.OnInventory(spvPeer, m)
 
 			case *msg.MerkleBlock:
-				spvPeer.stallControl <- m
 				config.OnMerkleBlock(spvPeer, m)
 
 			case *msg.Tx:
-				spvPeer.stallControl <- m
 				config.OnTx(spvPeer, m)
 
 			case *msg.NotFound:
-				spvPeer.stallControl <- m
 				config.OnNotFound(spvPeer, m)
 
 			case *msg.Reject:
@@ -177,7 +184,7 @@ func NewSPVPeer(peer *net.Peer, config SPVPeerConfig) *SPVPeer {
 		},
 	}
 
-	spvPeer.SetConfig(peerConfig)
+	spvPeer.SetPeerConfig(peerConfig)
 
 	go spvPeer.stallHandler()
 

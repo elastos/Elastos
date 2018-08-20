@@ -15,8 +15,7 @@ import (
 )
 
 const (
-	HeartbeatInterval = time.Second * 30
-	SendTxTimeout     = time.Second * 10
+	SendTxTimeout = time.Second * 10
 )
 
 // The SPV service implementation
@@ -73,8 +72,7 @@ func (s *SPVServiceImpl) OnHandshake(v *msg.Version) error {
 func (s *SPVServiceImpl) OnPeerEstablish(peer *net.Peer) {
 	// Create spv peer config
 	config := SPVPeerConfig{
-		OnPing:        s.OnPing,
-		OnPong:        s.OnPong,
+		LocalHeight:   s.LocalHeight,
 		OnInventory:   s.OnInventory,
 		OnMerkleBlock: s.OnMerkleBlock,
 		OnTx:          s.OnTx,
@@ -88,39 +86,10 @@ func (s *SPVServiceImpl) OnPeerEstablish(peer *net.Peer) {
 	doneChan := make(chan struct{})
 	peer.QueueMessage(s.BloomFilter(), doneChan)
 	<-doneChan
-
-	// Start heartbeat
-	go s.heartBeat(peer)
 }
 
-func (s *SPVServiceImpl) heartBeat(peer *net.Peer) {
-	ticker := time.NewTicker(HeartbeatInterval)
-	defer ticker.Stop()
-	for range ticker.C {
-		// Check if peer already disconnected
-		if !peer.Connected() {
-			return
-		}
-
-		// Disconnect peer if keep alive timeout
-		if time.Now().After(peer.LastActive().Add(HeartbeatInterval * 3)) {
-			peer.Disconnect()
-			return
-		}
-
-		// Send ping message to peer
-		peer.QueueMessage(msg.NewPing(uint32(s.chain.Height())), nil)
-	}
-}
-
-func (s *SPVServiceImpl) OnPing(peer *SPVPeer, p *msg.Ping) {
-	peer.SetHeight(p.Nonce)
-	// Return pong message to peer
-	peer.QueueMessage(msg.NewPong(uint32(s.chain.Height())), nil)
-}
-
-func (s *SPVServiceImpl) OnPong(peer *SPVPeer, p *msg.Pong) {
-	peer.SetHeight(p.Nonce)
+func (s *SPVServiceImpl) LocalHeight() uint32 {
+	return uint32(s.ServerPeer.Height())
 }
 
 func (s *SPVServiceImpl) Start() {
@@ -399,5 +368,6 @@ func (s *SPVServiceImpl) commitBlock(peer *SPVPeer) {
 		<-doneChan
 	}
 
+	s.ServerPeer.SetHeight(uint64(newHeight))
 	s.config.OnBlockCommitted(block.MerkleBlock, block.txs)
 }

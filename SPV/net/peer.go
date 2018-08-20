@@ -21,7 +21,11 @@ const (
 	outputBufferSize = 50
 
 	// idleTimeout is the duration of inactivity before we time out a peer.
-	idleTimeout = 5 * time.Minute
+	idleTimeout = 2 * time.Minute
+
+	// pingInterval is the interval of time to wait in between sending ping
+	// messages.
+	pingInterval = 30 * time.Second
 )
 
 // outMsg is used to house a message to be sent along with a channel to signal
@@ -33,11 +37,14 @@ type outMsg struct {
 }
 
 type PeerConfig struct {
-	ProtocolVersion uint32 // The P2P network protocol version
-	MakeTx          func() *msg.Tx
-	MakeBlock       func() *msg.Block
-	MakeMerkleBlock func() *msg.MerkleBlock
-	HandleMessage   func(peer *Peer, msg p2p.Message)
+	PingNonce     func() uint32
+	PongNonce     func() uint32
+	OnVerAck      func(peer *Peer)
+	OnGetAddr     func(peer *Peer)
+	OnAddr        func(peer *Peer, addr *msg.Addr)
+	OnPing        func(peer *Peer, ping *msg.Ping)
+	OnPong        func(peer *Peer, pong *msg.Pong)
+	HandleMessage func(peer *Peer, msg p2p.Message)
 }
 
 type Peer struct {
@@ -54,7 +61,7 @@ type Peer struct {
 	conn       net.Conn
 
 	rw            rw.MessageRW
-	handleMessage func(peer *Peer, msg p2p.Message)
+	config        PeerConfig
 	outputQueue   chan outMsg
 	sendQueue     chan outMsg
 	sendDoneQueue chan struct{}
@@ -235,7 +242,41 @@ out:
 		log.Debugf("-----> inHandler [%s] from [0x%x]", rmsg.CMD(), p.id)
 
 		// Handle each message.
-		p.handleMessage(p, rmsg)
+		switch m := rmsg.(type) {
+		case *msg.VerAck:
+			if p.config.OnVerAck != nil {
+				p.config.OnVerAck(p)
+			}
+
+		case *msg.GetAddr:
+			if p.config.OnGetAddr != nil {
+				p.config.OnGetAddr(p)
+			}
+
+		case *msg.Addr:
+			if p.config.OnAddr != nil {
+				p.config.OnAddr(p, m)
+			}
+
+		case *msg.Ping:
+			if p.config.PongNonce != nil {
+				p.QueueMessage(msg.NewPong(p.config.PongNonce()), nil)
+			}
+
+			if p.config.OnPing != nil {
+				p.config.OnPing(p, m)
+			}
+
+		case *msg.Pong:
+			if p.config.OnPong != nil {
+				p.config.OnPong(p, m)
+			}
+
+		default:
+			if p.config.HandleMessage != nil {
+				p.config.HandleMessage(p, rmsg)
+			}
+		}
 
 		// A message was received so reset the idle timer.
 		idleTimer.Reset(idleTimeout)
@@ -370,6 +411,23 @@ cleanup:
 	log.Tracef("Peer output handler done for %s", p)
 }
 
+// pingHandler periodically pings the peer.  It must be run as a goroutine.
+func (p *Peer) pingHandler() {
+	pingTicker := time.NewTicker(pingInterval)
+	defer pingTicker.Stop()
+
+out:
+	for {
+		select {
+		case <-pingTicker.C:
+			p.QueueMessage(msg.NewPing(p.config.PingNonce()), nil)
+
+		case <-p.quit:
+			break out
+		}
+	}
+}
+
 func (p *Peer) readMessage() (p2p.Message, error) {
 	return p.rw.ReadMessage(p.conn)
 }
@@ -399,6 +457,7 @@ func (p *Peer) start() {
 	go p.inHandler()
 	go p.queueHandler()
 	go p.outHandler()
+	go p.pingHandler()
 }
 
 func (p *Peer) NewVersionMsg() *msg.Version {
@@ -413,21 +472,56 @@ func (p *Peer) NewVersionMsg() *msg.Version {
 	return version
 }
 
-func (p *Peer) SetConfig(config PeerConfig) {
-	rwConfig := rw.MessageConfig{
-		ProtocolVersion: config.ProtocolVersion,
-		MakeTx:          config.MakeTx,
-		MakeBlock:       config.MakeBlock,
-		MakeMerkleBlock: config.MakeMerkleBlock,
+func (p *Peer) SetPeerConfig(config PeerConfig) {
+	// Set PingNonce method
+	if config.PingNonce != nil {
+		p.config.PingNonce = config.PingNonce
 	}
-	p.rw.SetConfig(rwConfig)
 
-	// Upgrade peer message handler
-	previousHandler := p.handleMessage
-	p.handleMessage = func(peer *Peer, msg p2p.Message) {
-		previousHandler(peer, msg)
-		config.HandleMessage(peer, msg)
+	// Set OnVerAck method
+	if config.OnVerAck != nil {
+		p.config.OnVerAck = config.OnVerAck
 	}
+
+	// Set OnGetAddr method
+	if config.OnGetAddr != nil {
+		p.config.OnGetAddr = config.OnGetAddr
+	}
+
+	// Set OnGetAddr method
+	if config.OnAddr != nil {
+		p.config.OnAddr = config.OnAddr
+	}
+
+	// Set OnPing method
+	if config.OnPing != nil {
+		p.config.OnPing = config.OnPing
+	}
+
+	// Set OnPong method
+	if config.OnPong != nil {
+		p.config.OnPong = config.OnPong
+	}
+
+	if config.HandleMessage != nil {
+		if p.config.HandleMessage == nil {
+			// Set message handler
+			p.config.HandleMessage = config.HandleMessage
+
+		} else {
+			// Upgrade peer message handler
+			previousHandler := p.config.HandleMessage
+			p.config.HandleMessage = func(peer *Peer, msg p2p.Message) {
+				previousHandler(peer, msg)
+				config.HandleMessage(peer, msg)
+			}
+		}
+	}
+}
+
+func (p *Peer) SetMessageConfig(config rw.MessageConfig) {
+	// Set rw config
+	p.rw.SetConfig(config)
 }
 
 func NewPeer(magic uint32, conn net.Conn) *Peer {
