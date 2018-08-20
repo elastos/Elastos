@@ -1,13 +1,12 @@
 package node
 
 import (
-	"math/rand"
 	"sync"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
-	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
@@ -157,12 +156,9 @@ func (al *KnownAddressList) AddKnownAddress(na p2p.NetAddress) {
 	al.Lock()
 	defer al.Unlock()
 
-	log.Debugf("AddKnownAddress %s", na.String())
-
 	ka := new(KnownAddress)
 	ka.SaveAddr(na)
 	if al.AddressExisted(ka.GetID()) {
-		log.Debug("It is a existed addr\n")
 		al.UpdateAddress(ka.GetID(), na)
 	} else {
 		al.List[ka.GetID()] = ka
@@ -195,57 +191,23 @@ func (al *KnownAddressList) init() {
 	al.List = make(map[uint64]*KnownAddress)
 }
 
-func isInNbrList(id uint64, nbrAddrs []p2p.NetAddress) bool {
-	for _, na := range nbrAddrs {
-		if id == na.ID {
-			return true
-		}
-	}
-	return false
-}
-
-func (al *KnownAddressList) RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.NetAddress {
+func (al *KnownAddressList) RandGetAddresses() []p2p.NetAddress {
 	al.RLock()
 	defer al.RUnlock()
-	var keys []uint64
-	for k := range al.List {
-		isInNbr := isInNbrList(k, nbrAddrs)
-		isBad := al.List[k].isBad()
-		if isInNbr == false && isBad == false {
-			keys = append(keys, k)
-		}
-	}
 
-	addrLen := len(keys)
-	addrs := []p2p.NetAddress{}
-	if MaxOutBoundCount-len(nbrAddrs) > addrLen {
-		for _, v := range keys {
-			ka, ok := al.List[v]
-			if !ok {
-				continue
-			}
-			ka.increaseAttempts()
-			ka.updateLastAttempt()
-			addrs = append(addrs, ka.srcAddr)
+	neighbors := LocalNode.GetNeighbourCount()
+	addrs := make([]p2p.NetAddress, 0, MaxOutBoundCount)
+	for id, addr := range al.List {
+		if LocalNode.IsNeighborNode(id) || addr.isBad() {
+			continue
 		}
-	} else {
-		order := rand.Perm(addrLen)
-		var count int
-		count = MaxOutBoundCount - len(nbrAddrs)
-		for i := 0; i < count; i++ {
-			for j, v := range keys {
-				if j == order[j] {
-					ka, ok := al.List[v]
-					if !ok {
-						continue
-					}
-					ka.increaseAttempts()
-					ka.updateLastAttempt()
-					addrs = append(addrs, ka.srcAddr)
-					keys = append(keys[:j], keys[j+1:]...)
-					break
-				}
-			}
+
+		addr.increaseAttempts()
+		addr.updateLastAttempt()
+		addrs = append(addrs, addr.srcAddr)
+
+		if len(addrs) >= MaxOutBoundCount-int(neighbors) {
+			break
 		}
 	}
 
@@ -255,26 +217,13 @@ func (al *KnownAddressList) RandGetAddresses(nbrAddrs []p2p.NetAddress) []p2p.Ne
 func (al *KnownAddressList) RandSelectAddresses() []p2p.NetAddress {
 	al.RLock()
 	defer al.RUnlock()
-	var keys []uint64
-	addrs := []p2p.NetAddress{}
-	for k := range al.List {
-		keys = append(keys, k)
-	}
-	addrLen := len(keys)
 
-	var count int
-	if MaxOutBoundCount > addrLen {
-		count = addrLen
-	} else {
-		count = MaxOutBoundCount
-	}
-	for i, v := range keys {
-		if i < count {
-			ka, ok := al.List[v]
-			if !ok {
-				continue
-			}
-			addrs = append(addrs, ka.srcAddr)
+	addrs := make([]p2p.NetAddress, 0, MaxOutBoundCount)
+	for _, ka := range al.List {
+		addrs = append(addrs, ka.srcAddr)
+
+		if len(addrs) >= MaxOutBoundCount {
+			break
 		}
 	}
 
