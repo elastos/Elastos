@@ -33,33 +33,33 @@ func NewEvent() *Event {
 }
 
 //  adds a new subscriber to Event.
-func (e *Event) Subscribe(eventtype EventType, eventfunc EventFunc) Subscriber {
+func (e *Event) Subscribe(eventType EventType, eventFunc EventFunc) Subscriber {
 	e.m.Lock()
 	defer e.m.Unlock()
 
 	sub := make(chan interface{})
-	_, ok := e.subscribers[eventtype]
+	_, ok := e.subscribers[eventType]
 	if !ok {
-		e.subscribers[eventtype] = make(map[Subscriber]EventFunc)
+		e.subscribers[eventType] = make(map[Subscriber]EventFunc)
 	}
-	e.subscribers[eventtype][sub] = eventfunc
+	e.subscribers[eventType][sub] = eventFunc
 
 	return sub
 }
 
 //Notify subscribers that Subscribe specified event
-func (e *Event) Notify(eventtype EventType, value interface{}) (err error) {
+func (e *Event) Notify(eventType EventType, value interface{}) (err error) {
 	e.m.RLock()
 	defer e.m.RUnlock()
 
-	subs, ok := e.subscribers[eventtype]
+	subs, ok := e.subscribers[eventType]
 	if !ok {
 		err = errors.New("No event type.")
 		return
 	}
 
 	for _, event := range subs {
-		go func(eventfunc EventFunc, value interface{}) { eventfunc(value) }(event, value)
+		go func(eventFunc EventFunc, value interface{}) { eventFunc(value) }(event, value)
 	}
 	return
 }

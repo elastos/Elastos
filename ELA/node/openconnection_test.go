@@ -13,9 +13,9 @@ import (
 )
 
 /*
-This test is for the p2p connections come from the extra net.
+This test is for the p2p connections come from external net.
 There are several rules in open connections:
-1. will be marked as from extra net
+1. will be marked as from external net
 2. can not send addr message
 3. can not send inventory type block message
 4. can not send block message
@@ -32,51 +32,51 @@ func TestOpenConnectionInit(t *testing.T) {
 func TestV0Messages(t *testing.T) {
 	handler := newTestHandlerV0(t, config.Parameters.NodeOpenPort)
 
-	// check if the node is marked as extra node
-	assert.Equal(t, true, handler.that.IsFromExtraNet())
+	// check if the node is marked as external node
+	assert.Equal(t, true, handler.that.IsExternal())
 
 	// addr message should be rejected
 	err := handler.Write(newMessage(p2p.CmdAddr))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [addr] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [addr] from external node")
 
 	// inventory message type block should be rejected
 	err = handler.Write(v0.NewInv([]*common.Uint256{&common.EmptyHash}))
-	assert.EqualError(t, err, "receive inv message from extra node")
+	assert.EqualError(t, err, "receive inv message from external node")
 
 	// block message should be rejected
 	err = handler.Write(newMessage(p2p.CmdBlock))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [block] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [block] from external node")
 
 	// notfound message should be rejected
 	err = handler.Write(newMessage(p2p.CmdNotFound))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [notfound] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [notfound] from external node")
 }
 
 func TestEIP001Messages(t *testing.T) {
 	handler := newTestHandlerEIP001(t, config.Parameters.NodeOpenPort)
 
-	// check if the node is marked as extra node
-	assert.Equal(t, true, handler.that.IsFromExtraNet())
+	// check if the node is marked as external node
+	assert.Equal(t, true, handler.that.IsExternal())
 
 	// addr message should be rejected
 	err := handler.Write(newMessage(p2p.CmdAddr))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [addr] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [addr] from external node")
 
 	// inventory message type block should be rejected
 	inv := msg.NewInventory()
 	inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, &common.EmptyHash))
 	err = handler.Write(inv)
-	assert.EqualError(t, err, "receive InvTypeBlock from extra node")
+	assert.EqualError(t, err, "receive InvTypeBlock from external node")
 
 	// block message should be rejected
 	err = handler.Write(newMessage(p2p.CmdBlock))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [block] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [block] from external node")
 
 	// notfound message should be rejected
 	err = handler.Write(newMessage(p2p.CmdNotFound))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [notfound] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [notfound] from external node")
 
 	// reject message should be rejected
 	err = handler.Write(newMessage(p2p.CmdReject))
-	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [reject] from extra node")
+	assert.EqualError(t, err, "[MsgHelper] make message failed unsupported messsage type [reject] from external node")
 }

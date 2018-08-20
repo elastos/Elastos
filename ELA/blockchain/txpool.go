@@ -51,7 +51,6 @@ func (pool *TxPool) AppendToTxnPool(txn *Transaction) ErrCode {
 		log.Warn("[TxPool CheckTransactionContext] failed", txn.Hash().String())
 		return errCode
 	}
-
 	//verify transaction by pool with lock
 	if errCode := pool.verifyTransactionWithTxnPool(txn); errCode != Success {
 		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
