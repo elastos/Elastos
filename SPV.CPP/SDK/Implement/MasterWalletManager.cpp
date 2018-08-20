@@ -184,7 +184,7 @@ namespace Elastos {
 		void MasterWalletManager::initMasterWallets() {
 			path rootPath = _rootPath;
 
-			Log::getLogger()->critical("libspvsdk.so version {}", SPVSDK_VERSION_MESSAGE);
+			Log::getLogger()->critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 			directory_iterator it{rootPath};
 			while (it != directory_iterator{}) {

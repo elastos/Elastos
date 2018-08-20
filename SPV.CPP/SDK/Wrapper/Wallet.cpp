@@ -90,8 +90,8 @@ namespace Elastos {
 				}
 			}
 
-			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+			wallet->Raw.WalletUnusedAddrs((BRWallet *) wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
 			wallet->Raw.WalletUpdateBalance((BRWallet *) wallet);
 			wallet->TxRemarkMap = ELAWallet::TransactionRemarkMap();
 			wallet->ListeningAddrs = std::vector<std::string>();
@@ -100,8 +100,12 @@ namespace Elastos {
 															 transactions[0])) { // verify transactions match master pubKey
 				ELAWalletFree(wallet);
 				wallet = NULL;
-				Log::getLogger()->error("txCount = {}, wallet do not contain these tx", txCount);
-				throw std::logic_error("wallet do not contain tx in database");
+				std::stringstream ess;
+				ess << "txCount = " << txCount
+					<< ", wallet do not contain tx[0] = "
+					<< Utils::UInt256ToString(transactions[0]->txHash);
+				Log::getLogger()->error(ess.str());
+				throw std::logic_error(ess.str());
 			}
 
 			return wallet;
@@ -891,7 +895,7 @@ namespace Elastos {
 				ELATransaction *t = (ELATransaction *) BRSetGet(wallet->allTx, &txn->raw.inputs[i].txHash);
 				uint32_t n = txn->raw.inputs[i].index;
 
-				if (t && n < outCount && BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address)) r = 1;
+				if (t && n < t->outputs.size() && BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address)) r = 1;
 			}
 
 			//for listening addresses
