@@ -100,6 +100,8 @@ namespace Elastos {
 															 transactions[0])) { // verify transactions match master pubKey
 				ELAWalletFree(wallet);
 				wallet = NULL;
+				Log::getLogger()->error("txCount = {}, wallet do not contain these tx", txCount);
+				throw std::logic_error("wallet do not contain tx in database");
 			}
 
 			return wallet;
@@ -163,6 +165,13 @@ namespace Elastos {
 								   BalanceAfterTx);
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
+
+			Log::getLogger()->info("_wallet = {:p}, listener = {:p}", (void*)_wallet, (void*)listener.get());
+			if (_wallet == nullptr) {
+				Log::getLogger()->error("_wallet = nullptr");
+				throw std::logic_error("_wallet is null");
+			}
+
 
 			BRWalletSetCallbacks((BRWallet *) _wallet, &_listener,
 								 balanceChanged,
