@@ -22,13 +22,19 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
 #include <limits.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #include <rc_mem.h>
 #include <vlog.h>
 #include <time_util.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 #include "flex_buffer.h"
 #include "session.h"
@@ -143,9 +149,9 @@ static void reliable_handler_adjust_clock(ReliableHandler *handler)
         if (timeout != handler->last_clock_timeout) {
             handler->last_clock_timeout = timeout;
             if (handler->clock) {
-                reliable_handler_schedule_timer(handler, timeout);
+                reliable_handler_schedule_timer(handler, (unsigned long)timeout);
             } else {
-                long interval = timeout - (get_monotonic_time() / 1000);
+                long interval = (long)(timeout - (get_monotonic_time() / 1000));
                 if (interval < 0 || interval > INT_MAX)
                     interval = INT_MAX;
 
@@ -183,7 +189,9 @@ static void pseudo_tcp_socket_readable(PseudoTcpSocket *sock, void *user_data)
 {
     ReliableHandler *handler = (ReliableHandler *)user_data;
     ElaStream *s = handler->base.stream;
-    FlexBuffer *buf = flex_buffer(FLEX_BUFFER_MAX_LEN, FLEX_PADDING_LEN);
+    FlexBuffer *buf;
+
+    flex_buffer_alloca(buf, FLEX_BUFFER_MAX_LEN, FLEX_PADDING_LEN);
 
     vlogT("Stream: %d pseudo Tcp socket readable.", s->id);
 
@@ -197,7 +205,7 @@ static void pseudo_tcp_socket_readable(PseudoTcpSocket *sock, void *user_data)
         reliable_handler_lock(handler);
 
         flex_buffer_reset(buf, FLEX_PADDING_LEN);
-        
+
         /* FIXME: Why copy into a temporary buffer here? Why can’t the I/O
          * callbacks be emitted directly from the pseudo-TCP receive buffer? */
         len = pseudo_tcp_socket_recv(sock, flex_buffer_mutable_ptr(buf),
@@ -280,7 +288,7 @@ static PseudoTcpWriteResult pseudo_tcp_socket_write_packet(PseudoTcpSocket *sock
         ssize_t rc;
         FlexBuffer *buf;
 
-        buf = flex_buffer_from(FLEX_PADDING_LEN, buffer, len);
+        flex_buffer_from(buf, FLEX_PADDING_LEN, buffer, len);
         rc = handler->next->write(handler->next, buf);
         if (rc > 0 || rc == ELA_GENERAL_ERROR(ELAERR_BUSY)) {
             return WR_SUCCESS; //TODO:

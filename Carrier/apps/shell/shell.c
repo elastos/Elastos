@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 #include <ctype.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -32,20 +31,44 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_PROCESS_H
+#include <process.h>
+#endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#include <curses.h>
+#endif
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+
+// Undefine Windows defined MOUSE_MOVED for PDCurses
+#undef MOUSE_MOVED
+#endif
+#include <curses.h>
 
 #ifdef __linux__
 #define __USE_GNU
-
-#include <pthread.h>
-
 #define PTHREAD_RECURSIVE_MUTEX_INITIALIZER PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-#else
-#include <pthread.h>
 #endif
 
+#include <rc_mem.h>
+#include <pthread.h>
 #include <ela_carrier.h>
 #include <ela_session.h>
 
@@ -136,6 +159,7 @@ static void get_layout(int win, int *w, int *h, int *x, int *y)
     }
 }
 
+#ifdef HAVE_SIGACTION
 static void handle_winch(int sig)
 {
     int w, h, x, y;
@@ -194,6 +218,7 @@ static void handle_winch(int sig)
     wrefresh(cmd_win_border);
     wrefresh(cmd_win);
 }
+#endif
 
 static void init_screen(void)
 {
@@ -245,10 +270,12 @@ static void init_screen(void)
     waddstr(cmd_win, "# ");
     wrefresh(cmd_win);
 
+#ifdef HAVE_SIGACTION
     struct sigaction sa;
     memset(&sa, 0, sizeof(struct sigaction));
     sa.sa_handler = handle_winch;
     sigaction(SIGWINCH, &sa, NULL);
+#endif
 }
 
 static void cleanup_screen(void)
@@ -538,7 +565,7 @@ static void self_info(ElaCarrier *w, int argc, char *argv[])
 static void self_nospam(ElaCarrier *w, int argc, char *argv[])
 {
     uint32_t nospam;
-    
+
     if (argc == 1) {
         ela_get_self_nospam(w, &nospam);
         output("Self nospam: %lu.\n", nospam);
@@ -920,7 +947,7 @@ static void stream_bulk_receive(ElaCarrier *w, int argc, char *argv[])
         int duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                              (end.tv_usec - start.tv_usec)) / 1000;
         duration = (duration == 0)  ? 1 : duration;
-        float speed = ((session_ctx.bytes / duration) * 1000) / 1024;
+        float speed = (float)((session_ctx.bytes / duration) * 1000) / 1024;
 
         output("\nFinish! Total %" PRIu64 " bytes in %d.%03d seconds. %.2f KB/s\n",
                session_ctx.bytes,
@@ -1278,7 +1305,7 @@ static void *bulk_write_thread(void *arg)
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000;
     duration = (duration == 0) ? 1 : duration;
-    speed = (((args->packet_size * args->packet_count) / duration) * 1000) / 1024;
+    speed = (float)(((args->packet_size * args->packet_count) / duration) * 1000) / 1024;
 
     output("\nFinish! Total %" PRIu64 " bytes in %d.%03d seconds. %.2f KB/s\n",
            (uint64_t)(args->packet_size * args->packet_count),
@@ -1848,6 +1875,7 @@ static void usage(void)
     printf("\n");
 }
 
+#ifdef HAVE_SYS_RESOURCE_H
 #include <sys/resource.h>
 
 int sys_coredump_set(bool enable)
@@ -1859,6 +1887,7 @@ int sys_coredump_set(bool enable)
 
     return setrlimit(RLIMIT_CORE, &rlim);
 }
+#endif
 
 void signal_handler(int signum)
 {
@@ -1888,12 +1917,9 @@ int main(int argc, char *argv[])
         { NULL,             0,                  NULL, 0 }
     };
 
-    signal(SIGINT, signal_handler);
-    signal(SIGHUP, signal_handler);
-    signal(SIGTERM, signal_handler);
-    signal(SIGSEGV, signal_handler);
-
+#ifdef HAVE_SYS_RESOURCE_H
     sys_coredump_set(true);
+#endif
 
     memset(&opts, 0, sizeof(opts));
 
@@ -1918,9 +1944,21 @@ int main(int argc, char *argv[])
 
     if (wait_for_attach) {
         printf("Wait for debugger attaching, process id is: %d.\n", getpid());
+#ifndef _MSC_VER
         printf("After debugger attached, press any key to continue......");
         getchar();
+#else
+        DebugBreak();
+#endif
     }
+
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGSEGV, signal_handler);
+#if !defined(_WIN32) && !defined(_WIN64)
+    signal(SIGKILL, signal_handler);
+    signal(SIGHUP, signal_handler);
+#endif
 
     if (!*buffer) {
         realpath(argv[0], buffer);

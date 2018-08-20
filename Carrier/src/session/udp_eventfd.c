@@ -46,7 +46,7 @@ SOCKET eventfd(EventFD *efd, int count, int flag)
 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(0);
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    inet_pton(addr.sin_family, "127.0.0.1", &addr.sin_addr);
 
     int rc = bind(efd->rfd, (struct sockaddr*)&addr, sizeof(addr));
     if (rc < 0) {
@@ -71,8 +71,8 @@ int eventfd_write(EventFD *efd, eventfd_t value)
     if (!efd)
         return -1;
 
-    ssize_t rc = sendto(efd->wfd, &value, sizeof(value), 0,
-                   (struct sockaddr*)&efd->addr, efd->addr_len);
+    ssize_t rc = sendto(efd->wfd, (char *)&value, sizeof(value), 0,
+                        (struct sockaddr*)&efd->addr, efd->addr_len);
 
     return (int)rc;
 }
@@ -82,7 +82,8 @@ int eventfd_read(EventFD *efd, eventfd_t *value)
     if (!efd || !value)
         return -1;
 
-    ssize_t rc = recvfrom(efd->rfd, value, sizeof(eventfd_t), 0, NULL, NULL);
+    ssize_t rc = recvfrom(efd->rfd, (char *)value, sizeof(eventfd_t), 0,
+                          NULL, NULL);
 
     return (int)rc;
 }

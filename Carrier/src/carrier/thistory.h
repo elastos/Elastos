@@ -33,7 +33,7 @@
 #define ELA_MAX_EXTENSION_NAME_LEN      31
 
 typedef struct HistoryItem {
-    HashEntry he;
+    hash_entry_t he;
     char key[ELA_MAX_ID_LEN + ELA_MAX_EXTENSION_NAME_LEN + 4];
     int64_t tid;
     void *user_data;
@@ -55,14 +55,14 @@ int hid_compare(const void *key1, size_t len1, const void *key2, size_t len2)
 }
 
 static inline
-Hashtable *transaction_history_create(int capacity)
+hashtable_t *transaction_history_create(int capacity)
 {
     return hashtable_create(capacity, 1, NULL, hid_compare);
 }
 
 /* Invite request history from other users */
 static inline
-void tansaction_history_put_invite(Hashtable *thistory,
+void tansaction_history_put_invite(hashtable_t *thistory,
                                    const char *userid, int64_t tid)
 {
     HistoryItem *item;
@@ -82,7 +82,7 @@ void tansaction_history_put_invite(Hashtable *thistory,
 }
 
 static inline
-int64_t transaction_history_get_invite(Hashtable *thistory, const char *userid)
+int64_t transaction_history_get_invite(hashtable_t *thistory, const char *userid)
 {
     int64_t val = 0;
     HistoryItem *item;
@@ -101,7 +101,7 @@ int64_t transaction_history_get_invite(Hashtable *thistory, const char *userid)
 }
 
 static inline
-void transaction_history_remove_invite(Hashtable *thistory, const char *userid)
+void transaction_history_remove_invite(hashtable_t *thistory, const char *userid)
 {
     char key[ELA_MAX_ID_LEN  + ELA_MAX_EXTENSION_NAME_LEN + 4];
 

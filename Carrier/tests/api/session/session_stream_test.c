@@ -22,17 +22,34 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <unistd.h>
 #include <inttypes.h>
-#include <alloca.h>
-#include <CUnit/Basic.h>
-#include <sys/time.h>
 #include <pthread.h>
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#include <CUnit/Basic.h>
+#include <vlog.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 #include "test_assert.h"
 
@@ -65,8 +82,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -101,8 +117,8 @@ static void session_request_complete_callback(ElaSession *ws, int status,
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    test_log_debug("Session complete, status: %d, reason: %s\n", status,
-                   reason ? reason : "null");
+    vlogD("Session complete, status: %d, reason: %s", status,
+          reason ? reason : "null");
 
     sctxt->request_complete_status = status;
 
@@ -146,8 +162,7 @@ static StreamContextExtra stream_extra = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    test_log_debug("Stream [%d] received data [%.*s]\n", stream, (int)len,
-                    (char*)data);
+    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -158,8 +173,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     sc->state = state;
     sc->state_bits |= (1 << state);
 
-    test_log_debug("Stream [%d] state changed to: %s\n", stream,
-                   stream_state_name(state));
+    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(sc->cond);
 }
@@ -221,9 +235,9 @@ static void *bulk_write_routine(void *arg)
     packet = (char *)alloca(extra->packet_size);
     memset(packet, 'D', extra->packet_size);
 
-    test_log_debug("Begin sending data...\n");
-    test_log_debug("stream %d send: total %d packets and %d bytes per packet.\n",
-                    stream_ctxt->stream_id, extra->packet_count, extra->packet_size);
+    vlogD("Begin sending data...");
+    vlogD("stream %d send: total %d packets and %d bytes per packet.",
+          stream_ctxt->stream_id, extra->packet_count, extra->packet_size);
 
     gettimeofday(&start, NULL);
     for (i = 0; i < extra->packet_count; i++) {
@@ -240,7 +254,7 @@ static void *bulk_write_routine(void *arg)
                     continue;
                 }
                 else {
-                    test_log_error("Write data failed (0x%x)\n", ela_get_error());
+                    vlogE("Write data failed (0x%x)", ela_get_error());
                     return NULL;
                 }
             }
@@ -249,18 +263,18 @@ static void *bulk_write_routine(void *arg)
         } while (sent < total);
 
         if (i % 1000 == 0)
-            test_log_debug(".");
+            vlogD(".");
     }
     gettimeofday(&end, NULL);
 
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
-    speed = (((extra->packet_size * extra->packet_count) / duration) * 1000) / 1024;
+    speed = (((float)(extra->packet_size * extra->packet_count) / duration) * 1000) / 1024;
 
-    test_log_debug("\nFinished writing\n");
-    test_log_debug("Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s\n",
-                    (uint64_t)(extra->packet_size * extra->packet_count),
-                    (int)(duration / 1000), (int)(duration % 1000), speed);
+    vlogD("Finished writing");
+    vlogD("Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
+          (uint64_t)(extra->packet_size * extra->packet_count),
+          (int)(duration / 1000), (int)(duration % 1000), speed);
 
     extra->return_val = 0;
     return NULL;
@@ -293,7 +307,7 @@ static int do_bulk_write(TestContext *context)
 
     rc = pthread_create(&thread, NULL, bulk_write_routine, context);
     if (rc != 0) {
-        test_log_error("create thread failed.\n");
+        vlogE("create thread failed.");
         return -1;
     }
 

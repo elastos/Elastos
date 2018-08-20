@@ -24,13 +24,13 @@
 #include <string.h>
 #include <errno.h>
 #include <pthread.h>
-#ifdef __linux__
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
 #include <vlog.h>
+#include <socket.h>
 
-#include "socket.h"
 #include "fdset.h"
 
 int fdset_init(FdSet *fdset)

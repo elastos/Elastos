@@ -49,8 +49,8 @@ ssize_t crypto_handler_write(StreamHandler *handler, FlexBuffer *buf)
     assert(buf);
     assert(flex_buffer_offset(buf) >= ZERO_BYTES);
 
-    cipher_buf = flex_buffer(flex_buffer_size(buf) + FLEX_PADDING_LEN,
-                             FLEX_PADDING_LEN - ZERO_BYTES);
+    flex_buffer_alloca(cipher_buf, flex_buffer_size(buf) + FLEX_PADDING_LEN,
+                       FLEX_PADDING_LEN - ZERO_BYTES);
 
     flex_buffer_backward_offset(buf, ZERO_BYTES);
 
@@ -92,8 +92,8 @@ void crypto_handler_on_rx_data(StreamHandler *handler, FlexBuffer *buf)
     assert(buf);
     assert(flex_buffer_offset(buf) >= (ZERO_BYTES - MAC_BYTES));
 
-    plain_buf = flex_buffer(flex_buffer_size(buf) + FLEX_PADDING_LEN,
-                            FLEX_PADDING_LEN - (ZERO_BYTES - MAC_BYTES));
+    flex_buffer_alloca(plain_buf, flex_buffer_size(buf) + FLEX_PADDING_LEN,
+                       FLEX_PADDING_LEN - (ZERO_BYTES - MAC_BYTES));
 
     flex_buffer_backward_offset(buf, ZERO_BYTES - MAC_BYTES);
 

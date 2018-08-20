@@ -2,12 +2,23 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <assert.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_DIRECT_H
+#include <direct.h>
+#endif
 
 #include <libconfig.h>
 #include <rc_mem.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
+
 #include <ela_carrier.h>
+#include <ela_session.h>
 
 #include "config.h"
 
@@ -95,15 +106,23 @@ static void bootstrap_destructor(void *p)
         free((void*)node->public_key);
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+#define PATH_SEP        "\\"
+#define HOME_ENV        "USERPROFILE"
+#else
+#define PATH_SEP        "/"
+#define HOME_ENV        "HOME"
+#endif
+
 static void qualified_path(const char *path, const char *ref, char *qualified)
 {
-    if (*path == '/') {
+    if (*path == PATH_SEP[0] || path[1] == ':') {
         strcpy(qualified, path);
     } else if (*path == '~') {
-        sprintf(qualified, "%s%s", getenv("HOME"), path+1);
+        sprintf(qualified, "%s%s", getenv(HOME_ENV), path+1);
     } else {
         if (ref) {
-            const char *p = strrchr(ref, '/');
+            const char *p = strrchr(ref, PATH_SEP[0]);
             if (!p) p = ref;
 
             if (p - ref > 0)
@@ -115,7 +134,7 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
         }
 
         if (*qualified)
-            strcat(qualified, "/");
+            strcat(qualified, PATH_SEP);
 
         strcat(qualified, path);
     }

@@ -22,17 +22,35 @@
 
 #include <stdlib.h>
 #include <assert.h>
-#include <unistd.h>
 #include <inttypes.h>
-#include <alloca.h>
-#include <CUnit/Basic.h>
-#include <sys/time.h>
+#include <time.h>
 #include <pthread.h>
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
+#include <CUnit/Basic.h>
+#include <vlog.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 #include "test_assert.h"
 
@@ -67,8 +85,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -103,8 +120,8 @@ static void session_request_complete_callback(ElaSession *ws, int status,
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    test_log_debug("Session complete, status: %d, reason: %s\n", status,
-                   reason ? reason : "null");
+    vlogD("Session complete, status: %d, reason: %s", status,
+          reason ? reason : "null");
 
     sctxt->request_complete_status = status;
 
@@ -163,8 +180,7 @@ static StreamContextExtra stream_extra = {
 static void stream_on_data(ElaSession *ws, int stream,
                            const void *data, size_t len, void *context)
 {
-    test_log_debug("Stream [%d] received data [%.*s]\n", stream, (int)len,
-                    (char*)data);
+    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -175,8 +191,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= (1 << state);
 
-    test_log_debug("Stream [%d] state changed to: %s\n", stream,
-                   stream_state_name(state));
+    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
@@ -184,7 +199,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
 static bool on_channel_open(ElaSession *ws, int stream, int channel,
                             const char *cookie, void *context)
 {
-    test_log_debug("Stream request open new channel %d.\n", channel);
+    vlogD("Stream request open new channel %d.", channel);
     return true;
 }
 
@@ -193,7 +208,7 @@ void on_channel_opened(ElaSession *ws, int stream, int channel, void *context)
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    test_log_debug("Channel %d opened.\n", channel);
+    vlogD("Channel %d opened.", channel);
 
     //TODO:
     extra->channel_error_state[channel - 1] = 0;
@@ -214,8 +229,7 @@ static void on_channel_close(ElaSession *ws, int stream, int channel,
         "Error"
     };
 
-    test_log_debug("Channel %d closeing with %s.\n", channel,
-                    state_name[reason]);
+    vlogD("Channel %d closeing with %s.", channel, state_name[reason]);
 
     // TODO:
     if (reason == CloseReason_Error || reason == CloseReason_Timeout)
@@ -229,8 +243,8 @@ static bool on_channel_data(ElaSession *ws, int stream, int channel,
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    test_log_debug("stream [%d] channel [%d] received data [%.*s]\n",
-                    stream, channel, (int)len, (char*)data);
+    vlogD("stream [%d] channel [%d] received data [%.*s]",
+          stream, channel, (int)len, (char*)data);
 
     cond_signal(extra->channel_cond);
     return true;
@@ -241,7 +255,7 @@ static void on_channel_pending(ElaSession *ws, int stream, int channel,
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    test_log_debug("stream [%d] channel [%d] pend data.\n", stream, channel);
+    vlogD("stream [%d] channel [%d] pend data.", stream, channel);
 
     cond_signal(extra->channel_cond);
 }
@@ -251,7 +265,7 @@ static void on_channel_resume(ElaSession *ws, int stream, int channel,
 {
     StreamContextExtra *extra = ((StreamContext *)context)->extra;
 
-    test_log_debug("stream [%d] channel [%d] resume data.\n", stream, channel);
+    vlogD("stream [%d] channel [%d] resume data.", stream, channel);
 
     cond_signal(extra->channel_cond);
 }
@@ -325,8 +339,8 @@ static int write_channel_data(ElaSession *session, int stream, int channel,
                 usleep(100);
                 continue;
             } else {
-                test_log_error("Write channel data failed (0x%x)\n",
-                               ela_get_error());
+                vlogE("Write channel data failed (0x%x)",
+                      ela_get_error());
                 return -1;
             }
         } else {
@@ -359,10 +373,10 @@ static void *bulk_channel_write_routine(void *arg)
     packet = (char *)alloca(pkt_sz);
     memset(packet, 'D', pkt_sz);
 
-    test_log_debug("Begin sending data...\n");
-    test_log_debug("Stream %d channel %d send %d packets in total and %d bytes "
-                   "per packet.\n", ctxt->stream->stream_id,
-                   extra->channel_id[0], pkt_count, pkt_sz);
+    vlogD("Begin sending data...");
+    vlogD("Stream %d channel %d send %d packets in total and %d bytes "
+          "per packet.", ctxt->stream->stream_id,
+          extra->channel_id[0], pkt_count, pkt_sz);
 
     gettimeofday(&start, NULL);
     for (i = 0; i < pkt_count; i++) {
@@ -374,17 +388,17 @@ static void *bulk_channel_write_routine(void *arg)
             return NULL;
 
         if (i % 1000 == 0)
-            test_log_debug(".");
+            vlogD(".");
     }
     gettimeofday(&end, NULL);
 
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
-    speed = (((pkt_sz * pkt_count) / duration) * 1000) / 1024;
+    speed = (((float)(pkt_sz * pkt_count) / duration) * 1000) / 1024;
 
-    test_log_debug("\nFinish! Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s\n",
-                   (uint64_t)(pkt_sz * pkt_count),
-                   (int)(duration / 1000), (int)(duration % 1000), speed);
+    vlogD("Finish! Total %"PRIu64" bytes in %d.%d seconds. %.2f KB/s",
+          (uint64_t)(pkt_sz * pkt_count),
+          (int)(duration / 1000), (int)(duration % 1000), speed);
 
     extra->return_val = 0;
     return NULL;
@@ -404,7 +418,7 @@ static int do_bulk_channel_write(TestContext *context)
 
     rc = pthread_create(&thread, NULL, bulk_channel_write_routine, context);
     if (rc != 0) {
-        test_log_error("create thread failed.\n");
+        vlogE("create thread failed.");
         return -1;
     }
 
@@ -431,7 +445,7 @@ static void *bulk_multiple_channels_write_routine(void *arg)
         extra->channel_id[i] = ela_stream_open_channel(ctxt->session->session,
                                             ctxt->stream->stream_id, "cookie");
         if (extra->channel_id[i] < 0) {
-            test_log_error("Open new channel %d failed.\n", i + 1);
+            vlogE("Open new channel %d failed.", i + 1);
             //reclaim opened channels
             for (i = 0; i < extra->channel_count; i++)
                 ela_stream_close_channel(ctxt->session->session,
@@ -439,8 +453,7 @@ static void *bulk_multiple_channels_write_routine(void *arg)
             extra->channel_count = 0;
             return NULL;
         } else {
-            test_log_debug("Open channel [%d] succeeded (id:%d)\n", i,
-                           extra->channel_id[i]);
+            vlogD("Open channel [%d] succeeded (id:%d)", i, extra->channel_id[i]);
             cond_wait(extra->channel_cond);
         }
     }
@@ -452,8 +465,8 @@ static void *bulk_multiple_channels_write_routine(void *arg)
     packet = (char *)alloca(pkt_sz);
     memset(packet, 'D', pkt_sz);
 
-    test_log_debug("Open new 128 channels successfully.\n");
-    test_log_debug("Begin to write data.....\n");
+    vlogD("Open new 128 channels successfully.");
+    vlogD("Begin to write data.....");
 
     gettimeofday(&start, NULL);
 
@@ -492,8 +505,8 @@ static void *bulk_multiple_channels_write_routine(void *arg)
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000 + 1;
 
-    test_log_debug("\nFinish! Total 128 channel write data bytes in %d.%d seconds.\n",
-                   (int)(duration / 1000), (int)(duration % 1000));
+    vlogD("Finish! Total 128 channel write data bytes in %d.%d seconds.",
+          (int)(duration / 1000), (int)(duration % 1000));
 
     for (i = 0; i < MAX_CHANNEL_COUNT; i++) {
         ela_stream_close_channel(ctxt->session->session, ctxt->stream->stream_id,
@@ -519,7 +532,7 @@ static int do_bulk_multiple_channels_write(TestContext *context)
     int rc = pthread_create(&thread, NULL, bulk_multiple_channels_write_routine,
                             context);
     if (rc != 0) {
-        test_log_error("create thread failed.\n");
+        vlogE("create thread failed.");
         return -1;
     }
 
@@ -536,10 +549,10 @@ static int bulk_write_channel_internal(TestContext *context)
     char result[32];
 
     /*send command 'copen'*/
-    rc = robot_ctrl("cready2open confirm\n");
+    rc = write_cmd("cready2open confirm\n");
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "cready2open") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -553,20 +566,20 @@ static int bulk_write_channel_internal(TestContext *context)
     TEST_ASSERT_TRUE(extra->channel_error_state[0] == 0);
 
     /*pend*/
-    rc = robot_ctrl("cpend\n");
+    rc = write_cmd("cpend\n");
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "cpend") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
 
     cond_wait(extra->channel_cond);
 
-    rc = robot_ctrl("cresume\n");
+    rc = write_cmd("cresume\n");
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "cresume") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -577,10 +590,10 @@ static int bulk_write_channel_internal(TestContext *context)
     TEST_ASSERT_TRUE(rc == 0);
 
     if (rc < 0)
-        test_log_error("stream channel write failed.\n");
+        vlogE("stream channel write failed.");
 
     rc = ela_stream_close_channel(context->session->session,
-                            context->stream->stream_id, extra->channel_id[0]);
+                                  context->stream->stream_id, extra->channel_id[0]);
     extra->channel_id[0] = -1;
     TEST_ASSERT_TRUE(rc == 0);
 
@@ -603,9 +616,9 @@ static int bulk_write_multiple_channels_internal(TestContext *context)
     char result[32];
 
     /*send command 'copen'*/
-    rc = robot_ctrl("cready2open confirm\n");
+    rc = write_cmd("cready2open confirm\n");
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc > 0);
     TEST_ASSERT_TRUE(strcmp(cmd, "cready2open") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);

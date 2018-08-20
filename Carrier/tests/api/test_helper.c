@@ -23,16 +23,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <unistd.h>
 #include <time.h>
 #include <limits.h>
 #include <pthread.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
 
 #include <CUnit/Basic.h>
+#include <vlog.h>
+
 #include "ela_carrier.h"
 #include "ela_session.h"
+
+#include "config.h"
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 #include "test_assert.h"
 
@@ -66,15 +74,15 @@ void carrier_connection_status_cb(ElaCarrier *w, ElaConnectionStatus status,
 
     switch (status) {
         case ElaConnectionStatus_Connected:
-            test_log_info("Connected to carrier network.\n");
+            vlogI("Connected to Carrier network.");
             break;
 
         case ElaConnectionStatus_Disconnected:
-            test_log_info("Disconnect from carrier network.\n");
+            vlogI("Disconnect from Carrier network.");
             break;
 
         default:
-            test_log_error("Error!!! Got unknown connection status %d.\n", status);
+            vlogE("Error!!! Got unknown connection status %d.", status);
     }
 
     if (cbs && cbs->connection_status)
@@ -85,7 +93,7 @@ static void carrier_ready_cb(ElaCarrier *w, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
 
-    test_log_info("Carrier is ready.\n");
+    vlogI("Carrier is ready.");
 
     if (cbs && cbs->ready)
         cbs->ready(w, context);
@@ -217,7 +225,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
 
     opts.bootstraps = (BootstrapNode *)calloc(1, sizeof(BootstrapNode) * opts.bootstraps_size);
     if (!opts.bootstraps) {
-        test_log_error("Error: out of memory.");
+        vlogE("Error: out of memory.");
         return -1;
     }
 
@@ -235,7 +243,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
     free(opts.bootstraps);
 
     if (!wctxt->carrier) {
-        test_log_error("Error: carrier new error (0x%x)\n", ela_get_error());
+        vlogE("Error: Carrier new error (0x%x)", ela_get_error());
         return -1;
     }
 
@@ -278,7 +286,7 @@ int add_friend_anyway(TestContext *context, const char *userid,
 
     rc = ela_add_friend(wctxt->carrier, address, "auto-reply");
     if (rc < 0) {
-        test_log_error("Error: attempt to add friend error.\n");
+        vlogE("Error: attempt to add friend error.");
         return rc;
     }
 
@@ -287,6 +295,13 @@ int add_friend_anyway(TestContext *context, const char *userid,
 
     // wait for friend_connection (online) callback invoked.
     cond_wait(wctxt->cond);
+
+    // wait until robot being notified us connected.
+    char buf[2][32];
+    rc = read_ack("%32s %32s", buf[0], buf[1]);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
 
     return 0;
 }
@@ -307,9 +322,14 @@ int remove_friend_anyway(TestContext *context, const char *userid)
 
     rc = ela_remove_friend(wctxt->carrier, userid);
     if (rc < 0) {
-        test_log_error("Error: remove friend error (%x)\n", ela_get_error());
+        vlogE("Error: remove friend error (%x)", ela_get_error());
         return rc;
     }
+
+    ElaUserInfo info;
+
+    ela_get_self_info(wctxt->carrier, &info);
+    write_cmd("fremove %s\n", info.userid);
 
     // wait for friend_connection (online -> offline) callback invoked.
     cond_wait(wctxt->cond);
@@ -317,17 +337,24 @@ int remove_friend_anyway(TestContext *context, const char *userid)
     // wait for friend_removed callback invoked.
     cond_wait(wctxt->cond);
 
+    // wait for completion of robot "fremove" command.
+    char buf[2][32];
+    rc = read_ack("%32s %32s", buf[0], buf[1]);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fremove");
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
+
     return 0;
 }
 
 int robot_sinit(void)
 {
-    return robot_ctrl("sinit\n");
+    return write_cmd("sinit\n");
 }
 
 void robot_sfree(void)
 {
-    robot_ctrl("sfree\n");
+    write_cmd("sfree %s\n");
 }
 
 const char *stream_state_name(ElaStreamState state)
@@ -369,8 +396,11 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    vlogI("<%s> LINE: %d >>>", __FUNCTION__, __LINE__);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
+    vlogI("<%s> LINE: %d >>>cmd:%s, result:%s", __FUNCTION__, __LINE__, cmd,
+          result);
     TEST_ASSERT_TRUE(strcmp(cmd, "sinit") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
 
@@ -393,19 +423,19 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_transport_ready);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_transport_ready));
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "srequest") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "received") == 0);
 
-    rc = robot_ctrl("sreply confirm %d %d\n", stream_type, stream_options);
+    rc = write_cmd("sreply confirm %d %d\n", stream_type, stream_options);
     TEST_ASSERT_TRUE(rc > 0);
 
     cond_wait(sctxt->request_complete_cond);
     TEST_ASSERT_TRUE(sctxt->request_received == 0);
     TEST_ASSERT_TRUE(sctxt->request_complete_status == 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sreply") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -415,7 +445,7 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     if (stream_ctxt->state != ElaStreamState_connecting &&
         stream_ctxt->state != ElaStreamState_connected) {
         // if error, consume ctrl acknowlege from robot.
-        wait_robot_ack("%32s %32s", cmd, result);
+        read_ack("%32s %32s", cmd, result);
     }
 
     // Stream 'connecting' state is a transient state.
@@ -423,7 +453,7 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
                      stream_ctxt->state == ElaStreamState_connected);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_connecting));
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sconnect") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);

@@ -25,13 +25,19 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <alloca.h>
 #include <assert.h>
 #include <sys/types.h>
 
-#include "ela_session.h"
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
 
 #include <vlog.h>
+
+#include "ela_session.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,22 +82,16 @@ typedef struct FlexBuffer {
     char *buffer;
 } FlexBuffer;
 
-#define flex_buffer(__capacity, __offset) \
-({ \
-    FlexBuffer *__buf; \
+#define flex_buffer_alloca(__buf, __capacity, __offset) \
     do { \
         __buf = (FlexBuffer *)alloca(sizeof(FlexBuffer) + (__capacity)); \
         __buf->capacity = (__capacity); \
         __buf->offset = (__offset); \
         __buf->size = 0; \
         __buf->buffer = (char *)(__buf + 1); \
-    } while (0); \
-    __buf; \
-})
+    } while (0)
 
-#define flex_buffer_from(__offset, __src, __len) \
-({ \
-    FlexBuffer *__buf; \
+#define flex_buffer_from(__buf, __offset, __src, __len) \
     do { \
         size_t __capacity = (__len) + (__offset); \
         __buf = (FlexBuffer *)alloca(sizeof(FlexBuffer) + __capacity); \
@@ -100,9 +100,7 @@ typedef struct FlexBuffer {
         __buf->size = (__len); \
         __buf->buffer = (char *)(__buf + 1); \
         memcpy(__buf->buffer + (__offset), (__src), (__len)); \
-    } while (0); \
-    __buf; \
-})
+    } while (0)
 
 static inline
 FlexBuffer *flex_buffer_init(FlexBuffer *buf, const void *buffer,
@@ -184,7 +182,7 @@ size_t flex_buffer_backward_offset(FlexBuffer *buf, size_t bytes)
     bytes = buf->offset >= bytes ? bytes : buf->offset;
     buf->offset -= bytes;
     buf->size += bytes;
-    
+
     return bytes;
 }
 

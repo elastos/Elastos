@@ -24,16 +24,31 @@
 #define __TRANSPORT_ICE_H__
 
 #include <stdint.h>
-#include <sys/time.h>
 #include <pthread.h>
+#include <time.h>
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
 
 #ifdef __APPLE__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdocumentation"
 #endif
 
+#if defined(_WIN32) || defined(_WIN64)
+// Hack for pjsip
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 #include <pjlib.h>
 #include <pjnath.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#endif
 
 #ifdef __APPLE__
 #pragma GCC diagnostic pop
@@ -101,7 +116,7 @@ typedef struct IceHandler {
     pj_ice_strans       *st;
 
     int                 stopping;
-        
+
     struct {
         char            ufrag[80];
         char            pwd[80];

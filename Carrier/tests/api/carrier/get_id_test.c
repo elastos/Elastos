@@ -21,11 +21,14 @@
  */
 
 #include <stdlib.h>
+
 #include <CUnit/Basic.h>
+#include <vlog.h>
 
 #include "ela_carrier.h"
+
+#include "config.h"
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 
 static void ready_cb(ElaCarrier *w, void *context)

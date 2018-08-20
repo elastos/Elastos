@@ -27,9 +27,15 @@
 #include <linkedhashtable.h>
 #include "multiplex_handler.h"
 
+// Turn off warning for int -> ptr and ptr -> int convert
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4311 4312)
+#endif
 
 static inline
 uint32_t channels_hash_code(const void *key, size_t len)
@@ -38,20 +44,21 @@ uint32_t channels_hash_code(const void *key, size_t len)
 }
 
 static inline
-int channels_key_compare(const void *key1, size_t len1, const void *key2, size_t len2)
+int channels_key_compare(const void *key1, size_t len1,
+                         const void *key2, size_t len2)
 {
     return (uint32_t)key1 != (uint32_t)key2;
 }
 
 static inline
-Hashtable *channels_create(int capacity)
+hashtable_t *channels_create(int capacity)
 {
     return hashtable_create(capacity, 1,
                             channels_hash_code, channels_key_compare);
 }
 
 static inline
-void channels_put(Hashtable *htab, Channel *ch)
+void channels_put(hashtable_t *htab, Channel *ch)
 {
     ch->he.data = ch;
     ch->he.key = (void *)ch->id;
@@ -61,62 +68,66 @@ void channels_put(Hashtable *htab, Channel *ch)
 }
 
 static inline
-Channel *channels_get(Hashtable *htab, int channel_id)
+Channel *channels_get(hashtable_t *htab, int channel_id)
 {
     return (Channel *)hashtable_get(htab, (void *)channel_id, sizeof(channel_id));
 }
 
 static inline
-int channels_exist(Hashtable *htab, int channel_id)
+int channels_exist(hashtable_t *htab, int channel_id)
 {
     return hashtable_exist(htab, (void *)channel_id, sizeof(channel_id));
 }
 
 static inline
-int channels_is_empty(Hashtable *htab)
+int channels_is_empty(hashtable_t *htab)
 {
     return hashtable_is_empty(htab);
 }
 
 static inline
-void channels_remove(Hashtable *htab, int channel_id)
+void channels_remove(hashtable_t *htab, int channel_id)
 {
     deref(hashtable_remove(htab, (void *)channel_id, sizeof(channel_id)));
 }
 
 static inline
-void channels_clear(Hashtable *htab)
+void channels_clear(hashtable_t *htab)
 {
-    return hashtable_clear(htab);
+    hashtable_clear(htab);
 }
 
 static inline
-HashtableIterator *channels_iterate(Hashtable *htab,
-                                    HashtableIterator *iterator)
+hashtable_iterator_t *channels_iterate(hashtable_t *htab,
+                                       hashtable_iterator_t *iterator)
 {
     return hashtable_iterate(htab, iterator);
 }
 
 // return 1 on success, 0 end of iterator, -1 on modified conflict or error.
 static inline
-int channels_iterator_next(HashtableIterator *iterator, Channel **ch)
+int channels_iterator_next(hashtable_iterator_t *iterator, Channel **ch)
 {
     return hashtable_iterator_next(iterator, NULL, NULL, (void **)ch);
 }
 
 static inline
-int channels_iterator_has_next(HashtableIterator *iterator)
+int channels_iterator_has_next(hashtable_iterator_t *iterator)
 {
     return hashtable_iterator_has_next(iterator);
 }
 
 // return 1 on success, 0 nothing removed, -1 on modified conflict or error.
 static inline
-int channels_iterator_remove(HashtableIterator *iterator)
+int channels_iterator_remove(hashtable_iterator_t *iterator)
 {
     return hashtable_iterator_remove(iterator);
 }
 
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #endif /* __CHANNELS_H__ */

@@ -26,7 +26,25 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
+
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+#ifdef HAVE_WS2TCPIP_H
+#include <ws2tcpip.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
 
 #if defined(__APPLE__)
 #pragma GCC diagnostic push
@@ -432,7 +450,7 @@ void log_cb(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
     buf = (char *)alloca(len);
 
     sprintf(buf, "<%s>:%s\n", func, message);
-    vlog(_level, buf);
+    vlog(_level, "%s", buf);
 }
 
 int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht)
@@ -816,7 +834,7 @@ int dht_friend_message(DHT *dht, uint32_t friend_number, const uint8_t *data,
     tox_friend_send_message(tox, friend_number, TOX_MESSAGE_TYPE_NORMAL,
                             data, length, &error);
     if (error != TOX_ERR_FRIEND_SEND_MESSAGE_OK) {
-        vlogW("DHT: send friend message to %lu error (%d).", friend_number,
+        vlogW("DHT: send friend message to %u error (%d).", friend_number,
               error);
         return __dht_friend_send_msg_error(error);
     }
@@ -846,24 +864,23 @@ int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,
 {
     Tox *tox = dht->tox;
     int rc;
-    uint8_t ip[4];
     struct in_addr in_addr;
-    char *addr;
+    char addr_buf[45];
+    const char *addr;
 
-    rc = tox_self_get_random_tcp_relay(tox, ip, public_key);
+    rc = tox_self_get_random_tcp_relay(tox, (uint8_t *)&in_addr, public_key);
     if (rc < 0) {
         vlogE("DHT: get random_tcp relay error or no tcp relay connected");
         return rc;
     }
 
-    in_addr.s_addr = *((uint32_t *)ip);
-    addr = inet_ntoa(in_addr);
+    addr = inet_ntop(AF_INET, &in_addr,
+        addr_buf, sizeof(addr_buf));
 
-    if (strlen(addr) >= buflen)
+    if (!addr || strlen(addr) >= buflen)
         return -1;
 
     strcpy(tcp_relay, addr);
 
     return 0;
 }
-

@@ -38,6 +38,26 @@
 extern "C" {
 #endif
 
+#if defined(CARRIER_STATIC)
+#define CARRIER_API
+#elif defined(CARRIER_DYNAMIC)
+  #ifdef CARRIER_BUILD
+    #if defined(_WIN32) || defined(_WIN64)
+      #define CARRIER_API        __declspec(dllexport)
+    #else
+      #define CARRIER_API        __attribute__((visibility("default")))
+    #endif
+  #else
+    #if defined(_WIN32) || defined(_WIN64)
+      #define CARRIER_API        __declspec(dllimport)
+    #else
+      #define CARRIER_API        __attribute__((visibility("default")))
+    #endif
+  #endif
+#else
+#define CARRIER_API
+#endif
+
 #define ELA_MAX_IP_STRING_LEN   45
 
 #define ELA_MAX_USER_DATA_LEN   2048

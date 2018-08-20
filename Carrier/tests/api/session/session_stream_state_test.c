@@ -21,13 +21,14 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
+
 #include <CUnit/Basic.h>
+#include <vlog.h>
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 #include "test_assert.h"
 
@@ -60,8 +61,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -96,8 +96,8 @@ static void session_request_complete_callback(ElaSession *ws, int status,
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    test_log_debug("Session complete, status: %d, reason: %s\n", status,
-                   reason ? reason : "null");
+    vlogD("Session complete, status: %d, reason: %s", status,
+          reason ? reason : "null");
 
     sctxt->request_complete_status = status;
 
@@ -129,8 +129,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    test_log_debug("Stream [%d] received data [%.*s]\n", stream, (int)len,
-                    (char*)data);
+    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -141,8 +140,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= (1 << state);
 
-    test_log_debug("Stream [%d] state changed to: %s\n", stream,
-                    stream_state_name(state));
+    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
@@ -231,7 +229,7 @@ void test_stream_state_scheme(int stream_options, TestContext *context,
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sinit") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -261,20 +259,20 @@ void test_stream_state_scheme(int stream_options, TestContext *context,
     rc = check_state_cb(context, ElaStreamState_transport_ready);
     TEST_ASSERT_TRUE(rc == 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "srequest") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "received") == 0);
 
-    rc = robot_ctrl("sreply confirm %d %d\n", ElaStreamType_text,
-                    stream_options);
+    rc = write_cmd("sreply confirm %d %d\n", ElaStreamType_text,
+                   stream_options);
     TEST_ASSERT_TRUE(rc > 0);
 
     cond_wait(sctxt->request_complete_cond);
     TEST_ASSERT_TRUE(sctxt->request_received == 0);
     TEST_ASSERT_TRUE(sctxt->request_complete_status == 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sreply") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -284,7 +282,7 @@ void test_stream_state_scheme(int stream_options, TestContext *context,
     if (stream_ctxt->state != ElaStreamState_connecting &&
         stream_ctxt->state != ElaStreamState_connected) {
         // if error, consume ctrl acknowlege from robot.
-        wait_robot_ack("%32s %32s", cmd, result);
+        read_ack("%32s %32s", cmd, result);
     }
 
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_connecting ||
@@ -297,7 +295,7 @@ void test_stream_state_scheme(int stream_options, TestContext *context,
     TEST_ASSERT_TRUE(cur_state == ElaStreamState_connecting ||
                      cur_state == ElaStreamState_connected);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "sconnect") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -335,8 +333,8 @@ cleanup:
 static inline
 void test_stream_state(int stream_options)
 {
-    return test_stream_state_scheme(stream_options, &test_context,
-                                    check_stream_state);
+    test_stream_state_scheme(stream_options, &test_context,
+                             check_stream_state);
 }
 
 static void test_normal_stream_state(void)

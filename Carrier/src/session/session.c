@@ -19,7 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -29,6 +28,7 @@
 #include <rc_mem.h>
 #include <time_util.h>
 #include <linkedlist.h>
+#include <socket.h>
 #include <vlog.h>
 
 #include "ela_session.h"
@@ -36,7 +36,6 @@
 #include "portforwarding.h"
 #include "services.h"
 #include "session.h"
-#include "socket.h"
 #include "stream_handler.h"
 #include "multiplex_handler.h"
 #include "flex_buffer.h"
@@ -83,7 +82,7 @@ static void extension_destroy(void *p)
     if (ext->transport)
         remove_transport(ext->transport);
 
-    ids_heap_destroy((IdsHeap *)&ext->stream_ids);
+    ids_heap_destroy((ids_heap_t *)&ext->stream_ids);
 
     vlogD("Session: Extension destroyed.");
 }
@@ -144,7 +143,7 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
     ext->context = context;
     ext->create_transport = ice_transport_create;
 
-    rc = ids_heap_init((IdsHeap *)&ext->stream_ids, MAX_STREAM_ID);
+    rc = ids_heap_init((ids_heap_t *)&ext->stream_ids, MAX_STREAM_ID);
     if (rc < 0) {
         deref(ext);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
@@ -168,7 +167,7 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
 
 static void remove_transport(ElaTransport *transport)
 {
-    ListIterator it;
+    list_iterator_t it;
 
     if (!transport)
         return;
@@ -358,7 +357,7 @@ void *ela_session_get_userdata(ElaSession *ws)
 
 static void session_internal_close(ElaSession *ws)
 {
-    ListIterator it;
+    list_iterator_t it;
     assert(ws);
 
 restop:
@@ -420,7 +419,7 @@ int ela_session_request(ElaSession *ws,
 {
     ElaCarrier *w;
     int rc = 0;
-    ListIterator iterator;
+    list_iterator_t iterator;
     char sdp[SDP_MAX_LEN];
     char *ext_to;
 
@@ -525,7 +524,7 @@ int ela_session_reply_request(ElaSession *ws,
     crypto_random_nonce(ws->credential);
 
     if (status == 0) {
-        ListIterator iterator;
+        list_iterator_t iterator;
 
         if (list_size(ws->streams) == 0) {
             ela_set_error(ELA_GENERAL_ERROR(ELAERR_WRONG_STATE));
@@ -585,7 +584,7 @@ reprepare:
 int ela_session_start(ElaSession *ws, const char *sdp, size_t len)
 {
     int rc;
-    ListIterator iterator;
+    list_iterator_t iterator;
 
     if (!ws || !sdp || !len) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
@@ -668,7 +667,7 @@ void stream_base_destroy(void *p)
         deref(s->pipeline.next);
 
     if (s->id > 0)
-        ids_heap_free((IdsHeap *)&stream_get_extension(s)->stream_ids, s->id);
+        ids_heap_free((ids_heap_t *)&stream_get_extension(s)->stream_ids, s->id);
 
     vlogD("Session: Stream %d destroyed", s->id);
 }
@@ -722,7 +721,7 @@ int ela_session_add_stream(ElaSession *ws, ElaStreamType type,
 
     s->session = ws;
 
-    s->id = ids_heap_alloc((IdsHeap *)&session_get_extension(ws)->stream_ids);
+    s->id = ids_heap_alloc((ids_heap_t *)&session_get_extension(ws)->stream_ids);
     if (s->id <= 0) {
         vlogE("Session: Too many streams!");
         deref(s);
@@ -820,7 +819,7 @@ int ela_session_add_stream(ElaSession *ws, ElaStreamType type,
 static ElaStream *get_stream(ElaSession *ws, int stream)
 {
     ElaStream *s;
-    ListIterator iterator;
+    list_iterator_t iterator;
     int rc;
 
     assert(ws);
@@ -901,7 +900,7 @@ ssize_t ela_stream_write(ElaSession *ws, int stream,
         return -1;
     }
 
-    buf = flex_buffer_from(FLEX_PADDING_LEN, data, len);
+    flex_buffer_from(buf, FLEX_PADDING_LEN, data, len);
     sent = s->pipeline.write(&s->pipeline, buf);
     if (sent < 0)
         ela_set_error((int)sent);
@@ -1073,8 +1072,9 @@ ssize_t ela_stream_write_channel(ElaSession *ws, int stream,
     if (!s->mux)
         written = (ssize_t)ELA_GENERAL_ERROR(ELAERR_WRONG_STATE);
     else {
-        FlexBuffer *buf = flex_buffer_from(FLEX_PADDING_LEN, data, len);
+        FlexBuffer *buf;
 
+        flex_buffer_from(buf, FLEX_PADDING_LEN, data, len);
         written = s->mux->channel.write(s->mux, channel, buf);
     }
 

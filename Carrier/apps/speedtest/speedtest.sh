@@ -1,9 +1,17 @@
-#/bin/sh
+#!/bin/bash
+
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+SCRIPT_DIRNAME="$(basename "${SCRIPT_PATH}")"
+
+# Running in installation or dist directory
+LDPATH="$(dirname "${SCRIPT_PATH}")/lib"
+
+if [ ! -e ${SCRIPT_PATH}/elashell ]; then
+    echo "Error: elaspeedtest program not available."
+    exit 1
+fi
 
 HOST="$(uname -s)"
-ARCH="$(uname -m)"
-
-BUILD=debug
 
 case "${HOST}" in
     "Darwin")
@@ -17,13 +25,6 @@ case "${HOST}" in
         exit 1;;
 esac
 
-export ${DSO_ENV}=${PWD}/../../build/_dist/${HOST}-${ARCH}/${BUILD}/lib
+export ${DSO_ENV}=${LDPATH}
 
-RUN_DIR=${PWD}
-
-if [ ! -e ${RUN_DIR}/speedtest ]; then
-    echo "Error: speedtest not available."
-    exit 1
-fi
-
-cd ${RUN_DIR} && ./speedtest -c ${RUN_DIR}/speedtest.conf $*
+cd ${SCRIPT_PATH} && ./elaspeedtest -c ${SCRIPT_PATH}/elaspeedtest.conf $*

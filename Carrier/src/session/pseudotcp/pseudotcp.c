@@ -72,8 +72,11 @@
 #  include <arpa/inet.h>
 #endif
 
-#include "pseudotcp.h"
+#if defined(_WIN32) || defined(_WIN64)
+#pragma warning(disable: 4244 4267)
+#endif
 
+#include "pseudotcp.h"
 
 #include "glist.h"
 #include "gqueue.h"

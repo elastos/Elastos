@@ -98,8 +98,8 @@ typedef struct MultiplexHandler {
 
     ChannelCallbacks callbacks[ChannelType_MAX];
 
-    Hashtable *channels;
-    IdsHeapDecl(channel_ids, MAX_CHANNEL_ID);
+    hashtable_t *channels;
+    IDS_HEAP(channel_ids, MAX_CHANNEL_ID);
 
     PortForwardingWorker *worker;
 
@@ -133,7 +133,7 @@ struct Channel {
 
     int timeout;
 
-    HashEntry he;
+    hash_entry_t he;
 };
 
 typedef struct TcpChannel {

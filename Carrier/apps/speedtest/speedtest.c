@@ -25,7 +25,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <strings.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <ctype.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -34,8 +36,12 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#endif
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -138,7 +144,7 @@ static int setup_pipe(PROCESS_MODE mode)
 
         setbuf(stdout, NULL);
     }
-    
+
     return 0;
 }
 
@@ -172,7 +178,7 @@ static int generate_checksum(char **argv, char *buf, int size)
             return -1;
 
         status = setup_pipe(PARENT_MODE);
-        if (status < 0) 
+        if (status < 0)
             return -1;
 
         fp = fdopen(g_fd[0], "r");
@@ -598,7 +604,7 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
         session_request((ElaCarrier*)context);
     } else if (g_mode == PASSIVE_MODE) {
         char *reply_arg[3] = {NULL, NULL, NULL};
-        
+
         reply_arg[0] = g_peer_id;
         reply_arg[1] = (char*)"confirm";
         reply_arg[2] = (char*)"ok";
@@ -647,7 +653,7 @@ static void stream_on_state_changed(ElaSession *ws, int stream,
 
         }
     } else {
-        
+
     }
 }
 
@@ -998,7 +1004,7 @@ static void friend_request_callback(ElaCarrier *w, const char *userid,
 
     output("Friend request from user[%s] with HELLO: %s.\n",
            *info->name ? info->name : userid, hello);
-    
+
     arg[0] = (char*)userid;
     friend_accept(w, 1, arg);
 }
@@ -1017,7 +1023,7 @@ static void message_callback(ElaCarrier *w, const char *from,
         int ret = 0;
 
         output("Got md5 checksum from peer:%s\n", msg);
-        
+
         ret = generate_checksum(arg, buf, sizeof(buf));
         if (ret < 0)
             output("active end generated checksum unsuccessfully.");
@@ -1131,7 +1137,7 @@ int main(int argc, char *argv[])
         case 'c':
             strcpy(buffer, optarg);
             break;
-        
+
         case 'f':
             strcpy(g_transferred_file, optarg);
             break;

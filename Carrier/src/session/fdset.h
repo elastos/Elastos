@@ -24,12 +24,15 @@
 #define __FDSET_H__
 
 #include <pthread.h>
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
-#ifdef __linux__
+#endif
+#ifdef HAVE_SYS_EVENTFD_H
 #include <sys/eventfd.h>
 #endif
 
-#include "socket.h"
+#include <socket.h>
+
 #include "udp_eventfd.h"
 
 #ifdef __cplusplus

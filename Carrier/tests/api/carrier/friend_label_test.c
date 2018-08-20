@@ -22,10 +22,11 @@
 
 #include <stdlib.h>
 #include <CUnit/Basic.h>
+#include <vlog.h>
 
 #include "ela_carrier.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 
 static inline void wakeup(void* context)
@@ -56,8 +57,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {

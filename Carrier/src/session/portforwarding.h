@@ -23,7 +23,7 @@
 #ifndef __PORTFORWARDING_H__
 #define __PORTFORWARDING_H__
 
-#ifdef __linux__
+#ifdef HAVE_SYS_EVENTFD_H
 #include <sys/eventfd.h>
 #else
 #include "udp_eventfd.h"
@@ -44,7 +44,7 @@ typedef struct Service {
     int protocol;
     const char *host;
     const char *port;
-    HashEntry he;
+    hash_entry_t he;
     char data[1];
 } Service;
 
@@ -59,8 +59,8 @@ struct PortForwardingWorker {
     pthread_t thread;
     int running;
 
-    Hashtable *portforwardings;
-    IdsHeapDecl(pf_ids, MAX_PORTFORWARDING_ID);
+    hashtable_t *portforwardings;
+    IDS_HEAP(pf_ids, MAX_PORTFORWARDING_ID);
 
     int  (*start)(PortForwardingWorker *worker);
     void (*stop) (PortForwardingWorker *worker);
@@ -76,7 +76,7 @@ typedef struct PortForwarding {
     int protocol;
     SOCKET sock;
 
-    HashEntry he;
+    hash_entry_t he;
 
     char service[1];
 } PortForwarding;

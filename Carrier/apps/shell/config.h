@@ -24,7 +24,6 @@
 #define __SHELL_CONFIG_H__
 
 #include <stdbool.h>
-#include <rc_mem.h>
 
 #include <ela_carrier.h>
 

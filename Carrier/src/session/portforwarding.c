@@ -20,24 +20,28 @@
  * SOFTWARE.
  */
 
-#include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 
-#ifdef __linux__
+#ifdef HAVE_SYS_EVENTFD_H
 #include <sys/eventfd.h>
 #else
 #include "udp_eventfd.h"
 #endif
 
 #include <rc_mem.h>
+#include <socket.h>
 #include <vlog.h>
 
 #include "ela_session.h"
 #include "session.h"
 #include "fdset.h"
-#include "socket.h"
 #include "services.h"
 #include "channels.h"
 #include "multiplex_handler.h"
@@ -50,7 +54,7 @@ bool tcp_portforwarding_channel_open(Channel *ch, const char *cookie,
 {
     MultiplexHandler *handler = (MultiplexHandler *)context;
     ElaStream *s = handler->base.stream;
-    Hashtable *services;
+    hashtable_t *services;
     Service *svc;
     SOCKET sock;
 
@@ -143,6 +147,12 @@ void tcp_portforwarding_channel_close(Channel *ch, CloseReason reason,
     socket_close(tch->sock);
 }
 
+#ifdef _MSC_VER
+// For Windows socket API not compatible with POSIX: size_t vs. int
+#pragma warning(push)
+#pragma warning(disable: 4267)
+#endif
+
 static
 bool tcp_portforwarding_channel_data(Channel *ch, FlexBuffer *buf, void *context)
 {
@@ -181,6 +191,10 @@ bool tcp_portforwarding_channel_data(Channel *ch, FlexBuffer *buf, void *context
 
     return true;
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static
 void tcp_portforwarding_channel_pending(Channel *ch, void *context)
@@ -225,7 +239,7 @@ void handle_tcp_portforwarding_channel(TcpChannel *ch, void *context)
     FlexBuffer *buf;
     ssize_t bytes;
 
-    buf = flex_buffer(FLEX_BUFFER_MAX_LEN, FLEX_PADDING_LEN);
+    flex_buffer_alloca(buf, FLEX_BUFFER_MAX_LEN, FLEX_PADDING_LEN);
     bytes = recv(ch->sock, flex_buffer_mutable_ptr(buf),
                  ELA_MAX_USER_DATA_LEN, 0);
     if (bytes <= 0) {
@@ -268,7 +282,7 @@ static void *worker_routine(void *arg)
     fd_set rfds;
     int nfds;
     struct timeval timeout;
-    HashtableIterator it;
+    hashtable_iterator_t it;
     int rc;
 
     MultiplexHandler *handler = (MultiplexHandler *)arg;
@@ -444,7 +458,7 @@ int portforwarding_open(PortForwardingWorker *worker, const char *service,
         }
     }
 
-    id = ids_heap_alloc((IdsHeap *)&worker->pf_ids);
+    id = ids_heap_alloc((ids_heap_t *)&worker->pf_ids);
     if (id < 0) {
         deref(pf);
         vlogE("Stream: %d multiplexer handler has too many portforwardings!",
@@ -479,8 +493,8 @@ void portforwarding_close(PortForwardingWorker *worker, int pfid)
         socket_close(pf->sock);
         pf->sock = INVALID_SOCKET;
 
-        ids_heap_free((IdsHeap *)&worker->pf_ids, pfid);
-        
+        ids_heap_free((ids_heap_t *)&worker->pf_ids, pfid);
+
         deref(pf);
     }
 }
@@ -494,7 +508,7 @@ void portforwarding_worker_destroy(void *p)
     if (wk->portforwardings)
         deref(wk->portforwardings);
 
-    ids_heap_destroy((IdsHeap *)&wk->pf_ids);
+    ids_heap_destroy((ids_heap_t *)&wk->pf_ids);
     fdset_destroy(&wk->fdset);
 
     vlogD("Stream: %d portforwarding worker destroyed.",
@@ -530,7 +544,7 @@ int portforwarding_worker_create(MultiplexHandler *handler,
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
     }
 
-    rc = ids_heap_init((IdsHeap *)&wk->pf_ids, MAX_PORTFORWARDING_ID);
+    rc = ids_heap_init((ids_heap_t *)&wk->pf_ids, MAX_PORTFORWARDING_ID);
     if (rc < 0) {
         deref(wk);
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);

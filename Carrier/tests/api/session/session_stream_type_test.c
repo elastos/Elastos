@@ -21,13 +21,14 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
+
 #include <CUnit/Basic.h>
+#include <vlog.h>
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 #include "test_assert.h"
 
@@ -60,8 +61,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -96,8 +96,8 @@ static void session_request_complete_callback(ElaSession *ws, int status,
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    test_log_debug("Session complete, status: %d, reason: %s\n", status,
-                   reason ? reason : "null");
+    vlogD("Session complete, status: %d, reason: %s", status,
+          reason ? reason : "null");
 
     sctxt->request_complete_status = status;
 
@@ -129,8 +129,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    test_log_debug("Stream [%d] received data [%.*s]\n", stream, (int)len,
-                    (char*)data);
+    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -141,8 +140,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= (1 << state);
 
-    test_log_debug("Stream [%d] state changed to: %s\n", stream,
-                   stream_state_name(state));
+    vlogD("Stream [%d] state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
