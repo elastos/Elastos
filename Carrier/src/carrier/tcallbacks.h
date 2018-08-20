@@ -59,25 +59,25 @@ int cid_compare(const void *key1, size_t len1, const void *key2, size_t len2)
 
     if (tid1 < tid2)
         return -1;
-    
+
     return 0;
 }
 
 static inline
-Hashtable *transacted_callbacks_create(int capacity)
+hashtable_t *transacted_callbacks_create(int capacity)
 {
     return hashtable_create(capacity, 1, cid_hash_code, cid_compare);
 }
 
 static inline
-int transacted_callbacks_exist(Hashtable *callbacks, int64_t tid)
+int transacted_callbacks_exist(hashtable_t *callbacks, int64_t tid)
 {
     assert(callbacks);
     return hashtable_exist(callbacks, &tid, sizeof(tid));
 }
 
 static inline
-void transacted_callbacks_put(Hashtable *callbacks,
+void transacted_callbacks_put(hashtable_t *callbacks,
                               TransactedCallback *callback)
 {
     assert(callbacks && callback);
@@ -88,21 +88,21 @@ void transacted_callbacks_put(Hashtable *callbacks,
 }
 
 static inline
-TransactedCallback *transacted_callbacks_get(Hashtable *callbacks, int64_t tid)
+TransactedCallback *transacted_callbacks_get(hashtable_t *callbacks, int64_t tid)
 {
     assert(callbacks);
     return (TransactedCallback *)hashtable_get(callbacks, &tid, sizeof(tid));
 }
 
 static inline
-void transacted_callbacks_remove(Hashtable *callbacks, int64_t tid)
+void transacted_callbacks_remove(hashtable_t *callbacks, int64_t tid)
 {
     assert(callbacks);
     deref(hashtable_remove(callbacks, &tid, sizeof(tid)));
 }
 
 static inline
-void transacted_callbacks_clear(Hashtable *callbacks)
+void transacted_callbacks_clear(hashtable_t *callbacks)
 {
     assert(callbacks);
     hashtable_clear(callbacks);

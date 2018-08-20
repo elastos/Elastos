@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <assert.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 #include <libconfig.h>
 #include <rc_mem.h>

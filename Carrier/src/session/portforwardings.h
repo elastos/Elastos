@@ -27,9 +27,15 @@
 #include <linkedhashtable.h>
 #include "portforwarding.h"
 
+// Turn off warning for int -> ptr and ptr -> int convert
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
 #pragma GCC diagnostic ignored "-Wint-to-pointer-cast"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4311 4312)
+#endif
 
 static inline
 uint32_t portforwardings_hash_code(const void *key, size_t len)
@@ -45,14 +51,14 @@ int portforwardings_key_compare(const void *key1, size_t len1,
 }
 
 static inline
-Hashtable *portforwardings_create(int capacity)
+hashtable_t *portforwardings_create(int capacity)
 {
     return hashtable_create(capacity, 1, portforwardings_hash_code,
                             portforwardings_key_compare);
 }
 
 static inline
-void portforwardings_put(Hashtable *htab, PortForwarding *pf)
+void portforwardings_put(hashtable_t *htab, PortForwarding *pf)
 {
     pf->he.data = pf;
     pf->he.key = (void *)pf->id;
@@ -62,62 +68,67 @@ void portforwardings_put(Hashtable *htab, PortForwarding *pf)
 }
 
 static inline
-PortForwarding *portforwardings_get(Hashtable *htab, int pfid)
+PortForwarding *portforwardings_get(hashtable_t *htab, int pfid)
 {
     return (PortForwarding *)hashtable_get(htab, (void *)pfid, sizeof(pfid));
 }
 
 static inline
-int portforwardings_exist(Hashtable *htab, int pfid)
+int portforwardings_exist(hashtable_t *htab, int pfid)
 {
     return hashtable_exist(htab, (void *)pfid, sizeof(pfid));
 }
 
 static inline
-int portforwardings_is_empty(Hashtable *htab)
+int portforwardings_is_empty(hashtable_t *htab)
 {
     return hashtable_is_empty(htab);
 }
 
 static inline
-PortForwarding *portforwardings_remove(Hashtable *htab, int pfid)
+PortForwarding *portforwardings_remove(hashtable_t *htab, int pfid)
 {
     return hashtable_remove(htab, (void *)pfid, sizeof(pfid));
 }
 
 static inline
-void portforwardings_clear(Hashtable *htab)
+void portforwardings_clear(hashtable_t *htab)
 {
-    return hashtable_clear(htab);
+    hashtable_clear(htab);
 }
 
 static inline
-HashtableIterator *portforwardings_iterate(Hashtable *htab,
-                                    HashtableIterator *iterator)
+hashtable_iterator_t *portforwardings_iterate(hashtable_t *htab,
+                                              hashtable_iterator_t *iterator)
 {
     return hashtable_iterate(htab, iterator);
 }
 
 // return 1 on success, 0 end of iterator, -1 on modified conflict or error.
 static inline
-int portforwardings_iterator_next(HashtableIterator *iterator, PortForwarding **pf)
+int portforwardings_iterator_next(hashtable_iterator_t *iterator,
+                                  PortForwarding **pf)
 {
     return hashtable_iterator_next(iterator, NULL, NULL, (void **)pf);
 }
 
 static inline
-int portforwardings_iterator_has_next(HashtableIterator *iterator)
+int portforwardings_iterator_has_next(hashtable_iterator_t *iterator)
 {
     return hashtable_iterator_has_next(iterator);
 }
 
 // return 1 on success, 0 nothing removed, -1 on modified conflict or error.
 static inline
-int portforwardings_iterator_remove(HashtableIterator *iterator)
+int portforwardings_iterator_remove(hashtable_iterator_t *iterator)
 {
     return hashtable_iterator_remove(iterator);
 }
 
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 #endif /* __PORTFORWARDINGS_H__ */

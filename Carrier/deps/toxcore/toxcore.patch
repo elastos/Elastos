@@ -1,0 +1,1451 @@
+diff -ruN c-toxcore-0.1.10/CMakeLists.txt c-toxcore-0.1.10-mod/CMakeLists.txt
+--- c-toxcore-0.1.10/CMakeLists.txt	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/CMakeLists.txt	2018-07-28 16:58:07.000000000 +0800
+@@ -142,7 +142,7 @@
+ else()
+   # Forbid undefined symbols in shared libraries. This is incompatible with
+   # asan, so it's in the else branch here.
+-  add_dllflag("-Wl,-z,defs")
++  #add_dllflag("-Wl,-z,defs")
+ endif()
+
+ option(BUILD_TOXAV "Whether to build the tox AV library" ON)
+@@ -158,6 +158,18 @@
+   endif()
+ endif()
+
++include_directories(${CMAKE_INSTALL_PREFIX}/include)
++link_directories(${CMAKE_INSTALL_PREFIX}/lib)
++add_definitions(-DCARRIER_BUILD)
++add_flag("-Wno-cast-qual")
++if("${LIBSODIUM_LIBRARIES}" STREQUAL "")
++  set(LIBSODIUM_LIBRARIES "sodium")
++endif()
++if("${LIBCONFIG_FOUND}" STREQUAL "")
++  set(LIBCONFIG_FOUND TRUE)
++endif()
++set(CHECK_FOUND FALSE)
++
+ ################################################################################
+ #
+ # :: Tox Core Library
+@@ -454,7 +466,7 @@
+     message(FATAL_ERROR "Building tox-bootstrapd for Windows is not supported")
+   endif()
+   if(LIBCONFIG_FOUND)
+-    add_c_executable(tox-bootstrapd
++    add_module(tox-bootstrapd
+       other/bootstrap_daemon/src/command_line_arguments.c
+       other/bootstrap_daemon/src/command_line_arguments.h
+       other/bootstrap_daemon/src/config.c
+@@ -471,7 +483,7 @@
+       other/bootstrap_node_packets.c
+       other/bootstrap_node_packets.h)
+     target_link_modules(tox-bootstrapd toxnetcrypto ${LIBCONFIG_LIBRARIES})
+-    install(TARGETS tox-bootstrapd RUNTIME DESTINATION bin)
++    #install(TARGETS tox-bootstrapd RUNTIME DESTINATION bin)
+   endif()
+ endif()
+
+diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/config.c c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.c
+--- c-toxcore-0.1.10/other/bootstrap_daemon/src/config.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.c	2018-07-28 13:50:19.000000000 +0800
+@@ -294,6 +294,123 @@
+     return 1;
+ }
+
++#ifdef CARRIER_BUILD
++int get_turn_config(const char *cfg_file_path, int *port, char **realm,
++                    char **pid_file_path, char **userdb, int *verbose)
++{
++    config_t cfg;
++
++    const char *NAME_TURN                 = "turn";
++
++    const char *NAME_PORT                 = "port";
++    const char *NAME_REALM                = "realm";
++    const char *NAME_PID_FILE_PATH        = "pid_file_path";
++    const char *NAME_USER_DB              = "userdb";
++    const char *NAME_VERBOSE              = "verbose";
++
++    config_init(&cfg);
++
++    // Read the file. If there is an error, report it and exit.
++    if (config_read_file(&cfg, cfg_file_path) == CONFIG_FALSE) {
++        log_write(LOG_LEVEL_ERROR, "%s:%d - %s\n", config_error_file(&cfg), config_error_line(&cfg), config_error_text(&cfg));
++        config_destroy(&cfg);
++        return 0;
++    }
++
++    config_setting_t *turn_cfg = config_lookup(&cfg, NAME_TURN);
++
++    if (turn_cfg == NULL) {
++        log_write(LOG_LEVEL_WARNING, "No '%s' setting in the configuration file. Skipping bootstrapping.\n",
++                  NAME_TURN);
++        config_destroy(&cfg);
++        return 1;
++    }
++
++    // Get port
++    if (config_setting_lookup_int(turn_cfg, NAME_PORT, port) == CONFIG_FALSE) {
++        log_write(LOG_LEVEL_WARNING, "No TURN '%s' setting in turn config file.\n", NAME_PORT);
++        *port = 0;
++    }
++
++    // Get realm
++    const char *tmp_realm;
++
++    if (config_setting_lookup_string(turn_cfg, NAME_REALM, &tmp_realm) == CONFIG_FALSE) {
++        log_write(LOG_LEVEL_WARNING, "No TURN '%s' setting in configuration file.\n", NAME_REALM);
++        tmp_realm = NULL;
++    }
++
++    if (tmp_realm) {
++        *realm = (char *)malloc(strlen(tmp_realm) + 1);
++        strcpy(*realm, tmp_realm);
++    } else {
++        *realm = NULL;
++    }
++
++    // Get PID file location
++    const char *tmp_pid_file;
++
++    if (config_setting_lookup_string(turn_cfg, NAME_PID_FILE_PATH, &tmp_pid_file) == CONFIG_FALSE) {
++        log_write(LOG_LEVEL_WARNING, "No TURN '%s' setting in configuration file.\n", NAME_PID_FILE_PATH);
++        tmp_pid_file = NULL;
++    }
++
++    if (tmp_pid_file) {
++        *pid_file_path = (char *)malloc(strlen(tmp_pid_file) + 1);
++        strcpy(*pid_file_path, tmp_pid_file);
++    } else {
++        *pid_file_path = NULL;
++    }
++
++    // Get user db location
++    const char *tmp_userdb;
++
++    if (config_setting_lookup_string(turn_cfg, NAME_USER_DB, &tmp_userdb) == CONFIG_FALSE) {
++        log_write(LOG_LEVEL_WARNING, "No TURN '%s' setting in configuration file.\n", NAME_USER_DB);
++        tmp_userdb = NULL;
++    }
++
++    if (tmp_userdb) {
++        *userdb = (char *)malloc(strlen(tmp_userdb) + 1);
++        strcpy(*userdb, tmp_userdb);
++    } else {
++        *userdb = NULL;
++    }
++
++    if (config_setting_lookup_bool(turn_cfg, NAME_VERBOSE, verbose) == CONFIG_FALSE) {
++         *verbose = 0;
++    }
++
++    config_destroy(&cfg);
++
++    log_write(LOG_LEVEL_INFO, "Successfully read TURN config:\n");
++    if (*port)
++        log_write(LOG_LEVEL_INFO, "'%s': %d\n", NAME_PORT,                 *port);
++    if (*realm)
++        log_write(LOG_LEVEL_INFO, "'%s': %s\n", NAME_REALM,                *realm);
++    if (*pid_file_path)
++        log_write(LOG_LEVEL_INFO, "'%s': %s\n", NAME_PID_FILE_PATH,        *pid_file_path);
++    if (*userdb)
++        log_write(LOG_LEVEL_INFO, "'%s': %s\n", NAME_USER_DB,              *userdb);
++    if (*verbose)
++        log_write(LOG_LEVEL_INFO, "'%s': %d\n", NAME_VERBOSE,              *verbose);
++
++    return 1;
++}
++
++static uint8_t *base58_string_to_bin(const char *base58_string)
++{
++    uint8_t *ret = (uint8_t *)malloc(64);
++    ssize_t len = 64;
++
++    len = base58_decode(base58_string, strlen(base58_string), ret, 64);
++    if (len != 32) {
++        return NULL;
++    }
++
++    return ret;
++}
++#else
+ /**
+  *
+  * Converts a hex string with even number of characters into binary.
+@@ -321,6 +438,7 @@
+
+     return ret;
+ }
++#endif
+
+ int bootstrap_from_config(const char *cfg_file_path, DHT *dht, int enable_ipv6)
+ {
+@@ -391,12 +509,14 @@
+             goto next;
+         }
+
++#ifndef CARRIER_BUILD
+         // Process settings
+         if (strlen(bs_public_key) != CRYPTO_PUBLIC_KEY_SIZE * 2) {
+             log_write(LOG_LEVEL_WARNING, "Bootstrap node #%d: Invalid '%s': %s. Skipping the node.\n", i, NAME_PUBLIC_KEY,
+                       bs_public_key);
+             goto next;
+         }
++#endif
+
+         if (bs_port < MIN_ALLOWED_PORT || bs_port > MAX_ALLOWED_PORT) {
+             log_write(LOG_LEVEL_WARNING, "Bootstrap node #%d: Invalid '%s': %d, should be in [%d, %d]. Skipping the node.\n", i,
+@@ -405,7 +525,11 @@
+             goto next;
+         }
+
++#ifdef CARRIER_BUILD
++        bs_public_key_bin = base58_string_to_bin(bs_public_key);
++#else
+         bs_public_key_bin = hex_string_to_bin(bs_public_key);
++#endif
+         address_resolved = DHT_bootstrap_from_address(dht, bs_address, enable_ipv6, net_htons(bs_port),
+                            bs_public_key_bin);
+         free(bs_public_key_bin);
+@@ -429,3 +553,136 @@
+
+     return 1;
+ }
++
++#ifdef CARRIER_BUILD
++#include <stdint.h>
++
++static const char b58digits_ordered[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
++static const int8_t b58digits_map[] = {
++    -1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
++    -1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
++    -1,-1,-1,-1,-1,-1,-1,-1, -1,-1,-1,-1,-1,-1,-1,-1,
++    -1, 0, 1, 2, 3, 4, 5, 6,  7, 8,-1,-1,-1,-1,-1,-1,
++    -1, 9,10,11,12,13,14,15, 16,-1,17,18,19,20,21,-1,
++    22,23,24,25,26,27,28,29, 30,31,32,-1,-1,-1,-1,-1,
++    -1,33,34,35,36,37,38,39, 40,41,42,43,-1,44,45,46,
++    47,48,49,50,51,52,53,54, 55,56,57,-1,-1,-1,-1,-1,
++};
++
++char *base58_encode(const void *data, size_t len, char *text, size_t *textlen)
++{
++    const uint8_t *bin = data;
++    int carry;
++    ssize_t i, j, high, zcount = 0;
++    size_t size;
++
++    while (zcount < len && !bin[zcount])
++        ++zcount;
++
++    size = (len - zcount) * 138 / 100 + 1;
++    uint8_t *buf = (uint8_t *)alloca(size * sizeof(uint8_t));
++    memset(buf, 0, size);
++
++    for (i = zcount, high = size - 1; i < len; ++i, high = j) {
++        for (carry = bin[i], j = size - 1; (j > high) || carry; --j) {
++            carry += 256 * buf[j];
++            buf[j] = carry % 58;
++            carry /= 58;
++        }
++    }
++
++    for (j = 0; j < size && !buf[j]; ++j);
++
++    if (*textlen <= zcount + size - j) {
++        *textlen = zcount + size - j + 1;
++        return NULL;
++    }
++
++    if (zcount)
++        memset(text, '1', zcount);
++    for (i = zcount; j < size; ++i, ++j)
++        text[i] = b58digits_ordered[buf[j]];
++    text[i] = '\0';
++    *textlen = i + 1;
++
++    return text;
++}
++
++ssize_t base58_decode(const char *text, size_t textlen, void *data, size_t datalen)
++{
++    size_t tmp = datalen;
++    size_t *binszp = &tmp;
++    size_t binsz = *binszp;
++    const unsigned char *textu = (void*)text;
++    unsigned char *binu = data;
++    size_t outisz = (binsz + 3) / 4;
++    uint32_t *outi = (uint32_t *)alloca(outisz * sizeof(uint32_t));
++    uint64_t t;
++    uint32_t c;
++    size_t i, j;
++    uint8_t bytesleft = binsz % 4;
++    uint32_t zeromask = bytesleft ? (0xffffffff << (bytesleft * 8)) : 0;
++    unsigned zerocount = 0;
++
++    if (!textlen)
++        textlen = strlen(text);
++
++    memset(outi, 0, outisz * sizeof(*outi));
++
++    // Leading zeros, just count
++    for (i = 0; i < textlen && textu[i] == '1'; ++i)
++        ++zerocount;
++
++    for ( ; i < textlen; ++i) {
++        if (textu[i] & 0x80)
++            // High-bit set on invalid digit
++            return -1;
++        if (b58digits_map[textu[i]] == -1)
++            // Invalid base58 digit
++            return -1;
++        c = (unsigned)b58digits_map[textu[i]];
++        for (j = outisz; j--; ) {
++            t = ((uint64_t)outi[j]) * 58 + c;
++            c = (t & 0x3f00000000) >> 32;
++            outi[j] = t & 0xffffffff;
++        }
++        if (c)
++            // Output number too big (carry to the next int32)
++            return -1;
++        if (outi[0] & zeromask)
++            // Output number too big (last int32 filled too far)
++            return -1;
++    }
++
++    j = 0;
++    switch (bytesleft) {
++    case 3:
++        *(binu++) = (outi[0] &   0xff0000) >> 16;
++    case 2:
++        *(binu++) = (outi[0] &     0xff00) >>  8;
++    case 1:
++        *(binu++) = (outi[0] &       0xff);
++        ++j;
++    default:
++        break;
++    }
++
++    for (; j < outisz; ++j) {
++        *(binu++) = (outi[j] >> 0x18) & 0xff;
++        *(binu++) = (outi[j] >> 0x10) & 0xff;
++        *(binu++) = (outi[j] >>    8) & 0xff;
++        *(binu++) = (outi[j] >>    0) & 0xff;
++    }
++
++    // Count canonical base58 byte count
++    binu = data;
++    for (i = 0; i < binsz; ++i) {
++        if (binu[i])
++            break;
++        --*binszp;
++    }
++    *binszp += zerocount;
++
++    return *binszp;
++}
++#endif
+diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/config.h c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.h
+--- c-toxcore-0.1.10/other/bootstrap_daemon/src/config.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/config.h	2018-07-28 13:50:19.000000000 +0800
+@@ -49,4 +49,21 @@
+  */
+ int bootstrap_from_config(const char *cfg_file_path, DHT *dht, int enable_ipv6);
+
++#ifdef CARRIER_BUILD
++/*
++ * Get TURN server config options from the config file.
++ *
++ * @return 1 on success, some or no bootstrap nodes were added
++ *         0 on failure, a error accured while parsing config file.
++ */
++int get_turn_config(const char *cfg_file_path, int *port, char **realm,
++                    char **pid_file_path, char **userdb, int *verbose);
++
++
++char *base58_encode(const void *data, size_t len, char *text, size_t *textlen);
++
++ssize_t base58_decode(const char *text, size_t textlen, void *data, size_t datalen);
++
++#endif
++
+ #endif // CONFIG_H
+diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/global.h c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/global.h
+--- c-toxcore-0.1.10/other/bootstrap_daemon/src/global.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/global.h	2018-07-28 13:50:19.000000000 +0800
+@@ -25,8 +25,8 @@
+ #ifndef GLOBAL_H
+ #define GLOBAL_H
+
+-#define DAEMON_NAME "tox-bootstrapd"
+-#define DAEMON_VERSION_NUMBER 2016010100UL // yyyymmmddvv format: yyyy year, mm month, dd day, vv version change count for that day
++#define DAEMON_NAME "carrier-bootstrapd"
++#define DAEMON_VERSION_NUMBER 2018010100UL // yyyymmmddvv format: yyyy year, mm month, dd day, vv version change count for that day
+
+ #define MIN_ALLOWED_PORT 1
+ #define MAX_ALLOWED_PORT 65535
+diff -ruN c-toxcore-0.1.10/other/bootstrap_daemon/src/tox-bootstrapd.c c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c
+--- c-toxcore-0.1.10/other/bootstrap_daemon/src/tox-bootstrapd.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/other/bootstrap_daemon/src/tox-bootstrapd.c	2018-07-28 13:50:19.000000000 +0800
+@@ -27,6 +27,7 @@
+ // system provided
+ #include <sys/stat.h>
+ #include <unistd.h>
++#include <limits.h>
+
+ // C
+ #include <stdio.h>
+@@ -101,9 +102,20 @@
+
+ // Prints public key
+
+-static void print_public_key(const uint8_t *public_key)
++static void print_public_key(const uint8_t *public_key, const char *public_key_file_path)
+ {
+     char buffer[2 * CRYPTO_PUBLIC_KEY_SIZE + 1];
++    FILE *key_file = NULL;
++
++    if (public_key_file_path) {
++        key_file = fopen(public_key_file_path, "w+");
++        if (key_file == NULL) {
++            log_write(LOG_LEVEL_ERROR, "Couldn't open the Public Key file for writing: %s. Exiting.\n", public_key_file_path);
++            exit(1);
++        }
++    }
++
++ #ifndef CARRIER_BUILD
+     int index = 0;
+
+     size_t i;
+@@ -111,6 +123,15 @@
+     for (i = 0; i < CRYPTO_PUBLIC_KEY_SIZE; i++) {
+         index += sprintf(buffer + index, "%02hhX", public_key[i]);
+     }
++#else
++    size_t len = sizeof(buffer);
++    base58_encode(public_key, CRYPTO_PUBLIC_KEY_SIZE, buffer, &len);
++#endif
++
++    if (key_file != NULL) {
++        fprintf(key_file, "%s\n", buffer);
++        fclose(key_file);
++    }
+
+     log_write(LOG_LEVEL_INFO, "Public Key: %s\n", buffer);
+ }
+@@ -129,7 +150,7 @@
+     }
+
+     // Open the PID file for writing
+-    pid_file = fopen(pid_file_path, "a+");
++    pid_file = fopen(pid_file_path, "w+");
+
+     if (pid_file == NULL) {
+         log_write(LOG_LEVEL_ERROR, "Couldn't open the PID file for writing: %s. Exiting.\n", pid_file_path);
+@@ -159,7 +180,7 @@
+         exit(1);
+     }
+
+-
++#if 0
+     // Change the current working directory
+     if ((chdir("/")) < 0) {
+         log_write(LOG_LEVEL_ERROR, "Couldn't change working directory to '/'. Exiting.\n");
+@@ -172,9 +193,19 @@
+         close(STDIN_FILENO);
+         close(STDERR_FILENO);
+     }
++#endif
+ }
+
++#ifndef CARRIER_BUILD
+ int main(int argc, char *argv[])
++#else
++#include <signal.h>
++
++pid_t start_turn_server(int port, const char *realm, const char *pid_file,
++                        const char *userdb, int verbose, uint8_t *secret_key);
++
++int tox_bootstrap_main(int argc, char *argv[])
++#endif
+ {
+     umask(077);
+     char *cfg_file_path;
+@@ -193,6 +224,8 @@
+     log_write(LOG_LEVEL_INFO, "Running \"%s\" version %lu.\n", DAEMON_NAME, DAEMON_VERSION_NUMBER);
+
+     char *pid_file_path, *keys_file_path;
++    char public_key_file_path[PATH_MAX];
++    char *p;
+     int port;
+     int enable_ipv6;
+     int enable_ipv4_fallback;
+@@ -278,6 +311,15 @@
+         return 1;
+     }
+
++    strcpy(public_key_file_path, keys_file_path);
++    p = strrchr(public_key_file_path, '/');
++    if (p)
++        p++;
++    else
++        p = public_key_file_path;
++    strcpy(p, "public-key");
++    log_write(LOG_LEVEL_INFO, "Public key file: %s.\n", public_key_file_path);
++
+     free(keys_file_path);
+
+     TCP_Server *tcp_server = NULL;
+@@ -308,7 +350,7 @@
+         return 1;
+     }
+
+-    print_public_key(dht->self_public_key);
++    print_public_key(dht->self_public_key, public_key_file_path);
+
+     uint64_t last_LANdiscovery = 0;
+     const uint16_t net_htons_port = net_htons(port);
+@@ -320,6 +362,29 @@
+         log_write(LOG_LEVEL_INFO, "Initialized LAN discovery successfully.\n");
+     }
+
++#ifdef CARRIER_BUILD
++    pid_t turn_pid = 0;
++
++    {
++        int turn_port = 0;
++        char *turn_realm = NULL;
++        char *turn_pid_file = NULL;
++        char *turn_userdb = NULL;
++        int turn_verbose = 0;
++
++        if (get_turn_config(cfg_file_path, &turn_port, &turn_realm, &turn_pid_file, &turn_userdb, &turn_verbose)) {
++            log_write(LOG_LEVEL_INFO, "TURN config read successfully\n");
++        } else {
++            log_write(LOG_LEVEL_ERROR, "Couldn't read config file: %s. Exiting.\n", cfg_file_path);
++            return 1;
++        }
++
++        turn_pid = start_turn_server(turn_port, turn_realm, turn_pid_file, turn_userdb, turn_verbose, dht->self_secret_key);
++        if (turn_pid < 0)
++            return 1;
++    }
++#endif
++
+     while (1) {
+         do_DHT(dht);
+
+@@ -341,4 +406,9 @@
+
+         SLEEP_MILLISECONDS(30);
+     }
++
++#ifdef CARRIER_BUILD
++    if (turn_pid > 0)
++        kill(turn_pid, SIGTERM);
++#endif
+ }
+diff -ruN c-toxcore-0.1.10/toxcore/DHT.c c-toxcore-0.1.10-mod/toxcore/DHT.c
+--- c-toxcore-0.1.10/toxcore/DHT.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/DHT.c	2018-07-28 13:50:19.000000000 +0800
+@@ -1211,7 +1211,7 @@
+     }
+
+     uint8_t plain[CRYPTO_PUBLIC_KEY_SIZE + sizeof(ping_id)];
+-    uint8_t data[1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + sizeof(plain) + CRYPTO_MAC_SIZE];
++    CARRIER_VLA(uint8_t, data, 1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + sizeof(plain) + CRYPTO_MAC_SIZE);
+
+     memcpy(plain, client_id, CRYPTO_PUBLIC_KEY_SIZE);
+     memcpy(plain + CRYPTO_PUBLIC_KEY_SIZE, &ping_id, sizeof(ping_id));
+@@ -1222,7 +1222,7 @@
+     int len = DHT_create_packet(dht->self_public_key, shared_key, NET_PACKET_GET_NODES,
+                                 plain, sizeof(plain), data);
+
+-    if (len != sizeof(data)) {
++    if (len != CARRIER_SIZEOF_VLA(data)) {
+         return -1;
+     }
+
+@@ -1263,12 +1263,12 @@
+     memcpy(plain + 1 + nodes_length, sendback_data, length);
+
+     const uint32_t crypto_size = 1 + CRYPTO_PUBLIC_KEY_SIZE + CRYPTO_NONCE_SIZE + CRYPTO_MAC_SIZE;
+-    VLA(uint8_t, data, 1 + nodes_length + length + crypto_size);
++    CARRIER_VLA(uint8_t, data, 1 + nodes_length + length + crypto_size);
+
+     int len = DHT_create_packet(dht->self_public_key, shared_encryption_key, NET_PACKET_SEND_NODES_IPV6,
+                                 plain, 1 + nodes_length + length, data);
+
+-    if (len != SIZEOF_VLA(data)) {
++    if (len != CARRIER_SIZEOF_VLA(data)) {
+         return -1;
+     }
+
+@@ -1950,7 +1950,7 @@
+ static int send_NATping(DHT *dht, const uint8_t *public_key, uint64_t ping_id, uint8_t type)
+ {
+     uint8_t data[sizeof(uint64_t) + 1];
+-    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
++    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
+
+     int num = 0;
+
+@@ -2182,7 +2182,7 @@
+         return -1;
+     }
+
+-    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
++    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
+     uint8_t data[HARDREQ_DATA_SIZE] = {0};
+     data[0] = type;
+     memcpy(data + 1, contents, length);
+@@ -2214,7 +2214,7 @@
+         return -1;
+     }
+
+-    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
++    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
+     VLA(uint8_t, data, 1 + CRYPTO_PUBLIC_KEY_SIZE + nodes_data_length);
+     data[0] = CHECK_TYPE_GETNODE_RES;
+     memcpy(data + 1, queried_client_id, CRYPTO_PUBLIC_KEY_SIZE);
+diff -ruN c-toxcore-0.1.10/toxcore/LAN_discovery.c c-toxcore-0.1.10-mod/toxcore/LAN_discovery.c
+--- c-toxcore-0.1.10/toxcore/LAN_discovery.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/LAN_discovery.c	2018-07-28 13:50:19.000000000 +0800
+@@ -364,7 +364,7 @@
+
+ int send_LANdiscovery(uint16_t port, DHT *dht)
+ {
+-    uint8_t data[CRYPTO_PUBLIC_KEY_SIZE + 1];
++    CARRIER_VLA(uint8_t, data, CRYPTO_PUBLIC_KEY_SIZE + 1);
+     data[0] = NET_PACKET_LAN_DISCOVERY;
+     id_copy(data + 1, dht->self_public_key);
+
+diff -ruN c-toxcore-0.1.10/toxcore/Messenger.c c-toxcore-0.1.10-mod/toxcore/Messenger.c
+--- c-toxcore-0.1.10/toxcore/Messenger.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/Messenger.c	2018-07-28 13:50:19.000000000 +0800
+@@ -3154,3 +3154,14 @@
+
+     return ret;
+ }
++
++#if defined(CARRIER_BUILD)
++int messenger_get_random_tcp_relay_addr(const Messenger *m, IP_Port *ip_port, uint8_t *public_key)
++{
++    if (!m || !ip_port)
++        return -1;
++
++    return crypto_get_random_tcp_relay_addr(m->net_crypto, ip_port, public_key);
++}
++#endif
++
+diff -ruN c-toxcore-0.1.10/toxcore/Messenger.h c-toxcore-0.1.10-mod/toxcore/Messenger.h
+--- c-toxcore-0.1.10/toxcore/Messenger.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/Messenger.h	2018-07-28 13:50:19.000000000 +0800
+@@ -774,4 +774,8 @@
+  * of out_list will be truncated to list_size. */
+ uint32_t copy_friendlist(const Messenger *m, uint32_t *out_list, uint32_t list_size);
+
++#if defined(CARRIER_BUILD)
++int messenger_get_random_tcp_relay_addr(const Messenger *m, IP_Port *ip_port, uint8_t *public_key);
++#endif
++
+ #endif
+diff -ruN c-toxcore-0.1.10/toxcore/TCP_client.c c-toxcore-0.1.10-mod/toxcore/TCP_client.c
+--- c-toxcore-0.1.10/toxcore/TCP_client.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_client.c	2018-07-28 13:50:19.000000000 +0800
+@@ -27,6 +27,10 @@
+
+ #include "TCP_client.h"
+
++#if defined(CARRIER_BUILD)
++#include "network.h"
++#endif
++
+ #include "util.h"
+
+ #if !defined(_WIN32) && !defined(__WIN32__) && !defined (WIN32)
+@@ -365,18 +369,19 @@
+         }
+     }
+
+-    VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
++    CARRIER_VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
+
+     uint16_t c_length = net_htons(length + CRYPTO_MAC_SIZE);
+     memcpy(packet, &c_length, sizeof(uint16_t));
+     int len = encrypt_data_symmetric(con->shared_key, con->sent_nonce, data, length, packet + sizeof(uint16_t));
+
+-    if ((unsigned int)len != (SIZEOF_VLA(packet) - sizeof(uint16_t))) {
++    if ((unsigned int)len != (CARRIER_SIZEOF_VLA(packet) - sizeof(uint16_t))) {
+         return -1;
+     }
+
++    carrier_magic_set(packet);
+     if (priority) {
+-        len = sendpriority ? send(con->sock, (const char *)packet, SIZEOF_VLA(packet), MSG_NOSIGNAL) : 0;
++        len = sendpriority ? send(con->sock, (const char *)carrier_rewind(packet), carrier_rewind_sizeof(packet), MSG_NOSIGNAL) : 0;
+
+         if (len <= 0) {
+             len = 0;
+@@ -384,14 +389,14 @@
+
+         increment_nonce(con->sent_nonce);
+
+-        if ((unsigned int)len == SIZEOF_VLA(packet)) {
++        if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
+             return 1;
+         }
+
+-        return client_add_priority(con, packet, SIZEOF_VLA(packet), len);
++        return client_add_priority(con, carrier_rewind(packet), carrier_rewind_sizeof(packet), len);
+     }
+
+-    len = send(con->sock, (const char *)packet, SIZEOF_VLA(packet), MSG_NOSIGNAL);
++    len = send(con->sock, (const char *)carrier_rewind(packet), carrier_rewind_sizeof(packet), MSG_NOSIGNAL);
+
+     if (len <= 0) {
+         return 0;
+@@ -399,12 +404,12 @@
+
+     increment_nonce(con->sent_nonce);
+
+-    if ((unsigned int)len == SIZEOF_VLA(packet)) {
++    if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
+         return 1;
+     }
+
+-    memcpy(con->last_packet, packet, SIZEOF_VLA(packet));
+-    con->last_packet_length = SIZEOF_VLA(packet);
++    memcpy(con->last_packet, carrier_rewind(packet), carrier_rewind_sizeof(packet));
++    con->last_packet_length = carrier_rewind_sizeof(packet);
+     con->last_packet_sent = len;
+     return 1;
+ }
+diff -ruN c-toxcore-0.1.10/toxcore/TCP_connection.c c-toxcore-0.1.10-mod/toxcore/TCP_connection.c
+--- c-toxcore-0.1.10/toxcore/TCP_connection.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_connection.c	2018-07-28 13:50:19.000000000 +0800
+@@ -1489,3 +1489,58 @@
+     free(tcp_c->connections);
+     free(tcp_c);
+ }
++
++#if defined(CARRIER_BUILD)
++int get_random_tcp_relay_addr(TCP_Connections *tcp_c, IP_Port *ip_port, uint8_t *public_key)
++{
++    int i, r = rand();
++    int nconnections = 0;
++    int nsleeps = 0;
++    int index;
++
++    if (!tcp_c || !ip_port)
++        return -1;
++
++    for (i = 0; i < tcp_c->tcp_connections_length; i++) {
++        if (tcp_c->tcp_connections[i].status == TCP_CONN_CONNECTED)
++            ++nconnections;
++        else if (tcp_c->tcp_connections[i].status == TCP_CONN_SLEEPING)
++            ++nsleeps;
++    }
++
++    if (nconnections == 0 && nsleeps == 0)
++        return -2;
++
++    if (nconnections > 0) {
++        index = (tcp_c->tcp_connections_length + r) % nconnections;
++
++        for (i = 0; i < tcp_c->tcp_connections_length; i++) {
++            if (tcp_c->tcp_connections[i].status == TCP_CONN_CONNECTED) {
++                if (index == 0) {
++                    memcpy(public_key, tcp_c->tcp_connections[i].connection->public_key, CRYPTO_PUBLIC_KEY_SIZE);
++                    *ip_port = tcp_c->tcp_connections[i].connection->ip_port;
++                    return 0;
++                }
++                --index;
++            }
++        }
++    }
++
++    if (nsleeps > 0) {
++        index = (tcp_c->tcp_connections_length + r) % nsleeps;
++        for (i = 0; i < tcp_c->tcp_connections_length; i++) {
++            if (tcp_c->tcp_connections[i].status == TCP_CONN_SLEEPING) {
++                if (index == 0) {
++                    memcpy(public_key, tcp_c->tcp_connections[i].relay_pk, CRYPTO_PUBLIC_KEY_SIZE);
++                    *ip_port = tcp_c->tcp_connections[i].ip_port;
++                    return 0;
++                }
++                --index;
++            }
++        }
++    }
++
++    return -3;
++}
++#endif
++
+diff -ruN c-toxcore-0.1.10/toxcore/TCP_connection.h c-toxcore-0.1.10-mod/toxcore/TCP_connection.h
+--- c-toxcore-0.1.10/toxcore/TCP_connection.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_connection.h	2018-07-28 13:50:19.000000000 +0800
+@@ -219,5 +219,9 @@
+ void do_tcp_connections(TCP_Connections *tcp_c, void *userdata);
+ void kill_tcp_connections(TCP_Connections *tcp_c);
+
++#if defined(CARRIER_BUILD)
++int get_random_tcp_relay_addr(TCP_Connections *tcp_c, IP_Port *ip_port, uint8_t *public_key);
++#endif
++
+ #endif
+
+diff -ruN c-toxcore-0.1.10/toxcore/TCP_server.c c-toxcore-0.1.10-mod/toxcore/TCP_server.c
+--- c-toxcore-0.1.10/toxcore/TCP_server.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/TCP_server.c	2018-07-28 13:50:19.000000000 +0800
+@@ -27,6 +27,13 @@
+
+ #include "TCP_server.h"
+
++#if defined(CARRIER_BUILD)
++#include "network.h"
++#if defined(__ANDROID__)
++#define fprintf(...)
++#endif
++#endif
++
+ #include "util.h"
+
+ #if !defined(_WIN32) && !defined(__WIN32__) && !defined (WIN32)
+@@ -229,7 +236,21 @@
+ {
+     unsigned int count = TCP_socket_data_recv_buffer(sock);
+
+-    if (count >= sizeof(uint16_t)) {
++    if (count >= sizeof(uint16_t) + carrier_magic_size()) {
++#if defined(CARRIER_BUILD)
++		uint8_t magic[carrier_magic_size()];
++		int mlen = recv(sock, (char *)magic, carrier_magic_size(), MSG_NOSIGNAL);
++
++		if (mlen != carrier_magic_size()) {
++			fprintf(stderr, "FAIL recv magic length\n");
++			return 0;
++		}
++
++		if (!carrier_magic_check_unrewind(magic)) {
++			fprintf(stderr, "FAIL invalid magic\n");
++			return 0;
++		}
++#endif
+         uint16_t length;
+         int len = recv(sock, (char *)&length, sizeof(uint16_t), MSG_NOSIGNAL);
+
+@@ -431,18 +452,19 @@
+         }
+     }
+
+-    VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
++    CARRIER_VLA(uint8_t, packet, sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
+
+     uint16_t c_length = net_htons(length + CRYPTO_MAC_SIZE);
+     memcpy(packet, &c_length, sizeof(uint16_t));
+     int len = encrypt_data_symmetric(con->shared_key, con->sent_nonce, data, length, packet + sizeof(uint16_t));
+
+-    if ((unsigned int)len != (SIZEOF_VLA(packet) - sizeof(uint16_t))) {
++    if ((unsigned int)len != (CARRIER_SIZEOF_VLA(packet) - sizeof(uint16_t))) {
+         return -1;
+     }
+
++    carrier_magic_set(packet);
+     if (priority) {
+-        len = sendpriority ? send(con->sock, (const char *)packet, SIZEOF_VLA(packet), MSG_NOSIGNAL) : 0;
++        len = sendpriority ? send(con->sock, (const char *)carrier_rewind(packet), carrier_rewind_sizeof(packet), MSG_NOSIGNAL) : 0;
+
+         if (len <= 0) {
+             len = 0;
+@@ -450,14 +472,14 @@
+
+         increment_nonce(con->sent_nonce);
+
+-        if ((unsigned int)len == SIZEOF_VLA(packet)) {
++        if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
+             return 1;
+         }
+
+-        return add_priority(con, packet, SIZEOF_VLA(packet), len);
++        return add_priority(con, packet, carrier_rewind_sizeof(packet), len);
+     }
+
+-    len = send(con->sock, (const char *)packet, SIZEOF_VLA(packet), MSG_NOSIGNAL);
++    len = send(con->sock, (const char *)carrier_rewind(packet), carrier_rewind_sizeof(packet), MSG_NOSIGNAL);
+
+     if (len <= 0) {
+         return 0;
+@@ -465,12 +487,12 @@
+
+     increment_nonce(con->sent_nonce);
+
+-    if ((unsigned int)len == SIZEOF_VLA(packet)) {
++    if ((unsigned int)len == carrier_rewind_sizeof(packet)) {
+         return 1;
+     }
+
+-    memcpy(con->last_packet, packet, SIZEOF_VLA(packet));
+-    con->last_packet_length = SIZEOF_VLA(packet);
++    memcpy(con->last_packet, carrier_rewind(packet), carrier_rewind_sizeof(packet));
++    con->last_packet_length = carrier_rewind_sizeof(packet);
+     con->last_packet_sent = len;
+     return 1;
+ }
+diff -ruN c-toxcore-0.1.10/toxcore/logger.h c-toxcore-0.1.10-mod/toxcore/logger.h
+--- c-toxcore-0.1.10/toxcore/logger.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/logger.h	2018-07-28 14:26:30.000000000 +0800
+@@ -46,7 +46,7 @@
+ /**
+  * Creates a new logger with logging disabled (callback is NULL) by default.
+  */
+-Logger *logger_new();
++Logger *logger_new(void);
+
+ void logger_kill(Logger *log);
+
+diff -ruN c-toxcore-0.1.10/toxcore/net_crypto.c c-toxcore-0.1.10-mod/toxcore/net_crypto.c
+--- c-toxcore-0.1.10/toxcore/net_crypto.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/net_crypto.c	2018-07-28 13:50:19.000000000 +0800
+@@ -216,13 +216,13 @@
+         return 1;
+     }
+
+-    uint8_t data[COOKIE_RESPONSE_LENGTH];
++    CARRIER_VLA(uint8_t, data, COOKIE_RESPONSE_LENGTH);
+
+-    if (create_cookie_response(c, data, request_plain, shared_key, dht_public_key) != sizeof(data)) {
++    if (create_cookie_response(c, data, request_plain, shared_key, dht_public_key) != CARRIER_SIZEOF_VLA(data)) {
+         return 1;
+     }
+
+-    if ((uint32_t)sendpacket(c->dht->net, source, data, sizeof(data)) != sizeof(data)) {
++    if ((uint32_t)sendpacket(c->dht->net, source, data, CARRIER_SIZEOF_VLA(data)) != CARRIER_SIZEOF_VLA(data)) {
+         return 1;
+     }
+
+@@ -903,12 +903,12 @@
+     }
+
+     pthread_mutex_lock(&conn->mutex);
+-    VLA(uint8_t, packet, 1 + sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
++    CARRIER_VLA(uint8_t, packet, 1 + sizeof(uint16_t) + length + CRYPTO_MAC_SIZE);
+     packet[0] = NET_PACKET_CRYPTO_DATA;
+     memcpy(packet + 1, conn->sent_nonce + (CRYPTO_NONCE_SIZE - sizeof(uint16_t)), sizeof(uint16_t));
+     int len = encrypt_data_symmetric(conn->shared_key, conn->sent_nonce, data, length, packet + 1 + sizeof(uint16_t));
+
+-    if (len + 1 + sizeof(uint16_t) != SIZEOF_VLA(packet)) {
++    if (len + 1 + sizeof(uint16_t) != CARRIER_SIZEOF_VLA(packet)) {
+         pthread_mutex_unlock(&conn->mutex);
+         return -1;
+     }
+@@ -916,7 +916,7 @@
+     increment_nonce(conn->sent_nonce);
+     pthread_mutex_unlock(&conn->mutex);
+
+-    return send_packet_to(c, crypt_connection_id, packet, SIZEOF_VLA(packet));
++    return send_packet_to(c, crypt_connection_id, packet, CARRIER_SIZEOF_VLA(packet));
+ }
+
+ /* Creates and sends a data packet with buffer_start and num to the peer using the fastest route.
+@@ -1233,6 +1233,12 @@
+ static int send_temp_packet(Net_Crypto *c, int crypt_connection_id)
+ {
+     Crypto_Connection *conn = get_crypto_connection(c, crypt_connection_id);
++#if defined(CARRIER_BUILD)
++    CARRIER_VLA(uint8_t, packet, conn->temp_packet_length);
++    memcpy(packet, conn->temp_packet, conn->temp_packet_length);
++#else
++    uint8_t *packet = conn->temp_packet;
++#endif
+
+     if (conn == 0) {
+         return -1;
+@@ -1242,7 +1248,7 @@
+         return -1;
+     }
+
+-    if (send_packet_to(c, crypt_connection_id, conn->temp_packet, conn->temp_packet_length) != 0) {
++    if (send_packet_to(c, crypt_connection_id, packet, conn->temp_packet_length) != 0) {
+         return -1;
+     }
+
+@@ -2906,3 +2912,14 @@
+     crypto_memzero(c, sizeof(Net_Crypto));
+     free(c);
+ }
++
++#if defined(CARRIER_BUILD)
++int crypto_get_random_tcp_relay_addr(Net_Crypto *c, IP_Port *ip_port, uint8_t *public_key)
++{
++    if (!c || !ip_port)
++        return -1;
++
++    return get_random_tcp_relay_addr(c->tcp_c, ip_port, public_key);
++}
++#endif
++
+diff -ruN c-toxcore-0.1.10/toxcore/net_crypto.h c-toxcore-0.1.10-mod/toxcore/net_crypto.h
+--- c-toxcore-0.1.10/toxcore/net_crypto.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/net_crypto.h	2018-07-28 13:50:19.000000000 +0800
+@@ -423,6 +423,8 @@
+
+ void kill_net_crypto(Net_Crypto *c);
+
+-
++#if defined(CARRIER_BUILD)
++int crypto_get_random_tcp_relay_addr(Net_Crypto *c, IP_Port *ip_Port, uint8_t *public_key);
++#endif
+
+ #endif
+diff -ruN c-toxcore-0.1.10/toxcore/network.c c-toxcore-0.1.10-mod/toxcore/network.c
+--- c-toxcore-0.1.10/toxcore/network.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/network.c	2018-07-28 13:50:19.000000000 +0800
+@@ -419,11 +419,12 @@
+         return -1;
+     }
+
+-    int res = sendto(net->sock, (const char *) data, length, 0, (struct sockaddr *)&addr, addrsize);
++    carrier_magic_set(data);
++    int res = sendto(net->sock, (const char *)carrier_rewind(data), carrier_rewind_size(length), 0, (struct sockaddr *)&addr, addrsize);
+
+     loglogdata(net->log, "O=>", data, length, ip_port, res);
+
+-    return res;
++    return res > 0 ? (res - carrier_magic_size()) : res;
+ }
+
+ /* Function to receive data
+@@ -441,7 +442,7 @@
+     socklen_t addrlen = sizeof(addr);
+ #endif
+     *length = 0;
+-    int fail_or_len = recvfrom(sock, (char *) data, MAX_UDP_PACKET_SIZE, 0, (struct sockaddr *)&addr, &addrlen);
++    int fail_or_len = recvfrom(sock, (char *) carrier_rewind(data), carrier_rewind_size(MAX_UDP_PACKET_SIZE), 0, (struct sockaddr *)&addr, &addrlen);
+
+     if (fail_or_len < 0) {
+
+@@ -451,6 +452,19 @@
+
+         return -1; /* Nothing received. */
+     }
++#if defined(CARRIER_BUILD)
++	fail_or_len -= carrier_magic_size();
++	if (fail_or_len < 0) {
++		LOGGER_ERROR(log, "Too short data receving from socket.");
++		return -1;
++	}
++	if (!carrier_magic_check(data)) {
++		//LOGGER_ERROR(log, "Received DHT message with invalid magic, dropped.");
++		return -1;
++	} else {
++		//LOGGER_DEBUG(log, "Recevied valid DHT message, congradulations!!!!");
++	}
++#endif
+
+     *length = (uint32_t)fail_or_len;
+
+@@ -485,6 +499,91 @@
+     net->packethandlers[byte].object = object;
+ }
+
++#if defined(CARRIER_BUILD)
++static const char* packet_name(uint8_t type)
++{
++    const char *str;
++
++    switch (type) {
++    case NET_PACKET_PING_REQUEST:
++        str = "ping_request";
++        break;
++    case NET_PACKET_PING_RESPONSE:
++        str = "ping_response";
++        break;
++    case NET_PACKET_GET_NODES:
++        str = "get_nodes";
++        break;
++    case NET_PACKET_SEND_NODES_IPV6:
++        str = "send_nodes_ipv6";
++        break;
++    case NET_PACKET_COOKIE_REQUEST:
++        str = "cookie_request";
++        break;
++    case NET_PACKET_COOKIE_RESPONSE:
++        str = "cookie_response";
++        break;
++    case NET_PACKET_CRYPTO_HS:
++        str = "crypto_hs";
++        break;
++    case NET_PACKET_CRYPTO_DATA:
++        str = "crypto_data";
++        break;
++    case NET_PACKET_CRYPTO:
++        str = "crypto";
++        break;
++    case NET_PACKET_LAN_DISCOVERY:
++        str = "lan_discovery";
++        break;
++    case  NET_PACKET_ONION_SEND_INITIAL:
++        str = "onion_send_init";
++        break;
++    case  NET_PACKET_ONION_SEND_1:
++        str = "onion_send_1";
++        break;
++    case NET_PACKET_ONION_SEND_2:
++        str = "onion_send_2";
++        break;
++    case NET_PACKET_ANNOUNCE_REQUEST:
++        str = "announce_request";
++        break;
++    case NET_PACKET_ANNOUNCE_RESPONSE:
++        str = "announce_response";
++        break;
++    case NET_PACKET_ONION_DATA_REQUEST:
++        str = "onion_data_request";
++        break;
++    case NET_PACKET_ONION_DATA_RESPONSE:
++        str = "onion_data_response";
++        break;
++    case NET_PACKET_ONION_RECV_3:
++        str = "onion_recv_3";
++        break;
++    case NET_PACKET_ONION_RECV_2:
++        str = "onion_recv_2";
++        break;
++    case NET_PACKET_ONION_RECV_1:
++        str = "onion_recv_1";
++        break;
++    case BOOTSTRAP_INFO_PACKET_ID:
++        str = "bootstrap_info_packet_id";
++        break;
++    default:
++        str = "N/A";
++        break;
++    }
++    return str;
++}
++#else
++static const char* packet_name(uint8_t type)
++{
++    static uint8_t str[32];
++
++    sprintf(str, "[%0x]", type);
++    return str;
++}
++#endif
++
+ void networking_poll(Networking_Core *net, void *userdata)
+ {
+     if (net->family == 0) { /* Socket not initialized */
+@@ -494,7 +593,7 @@
+     unix_time_update();
+
+     IP_Port ip_port;
+-    uint8_t data[MAX_UDP_PACKET_SIZE];
++    CARRIER_VLA(uint8_t, data, MAX_UDP_PACKET_SIZE);
+     uint32_t length;
+
+     while (receivepacket(net->log, net->sock, &ip_port, data, &length) != -1) {
+@@ -507,6 +606,8 @@
+             continue;
+         }
+
++        LOGGER_TRACE(net->log, "received packet [0x%x](%s)", data[0], packet_name(data[0]));
++
+         net->packethandlers[data[0]].function(net->packethandlers[data[0]].object, ip_port, data, length, userdata);
+     }
+ }
+diff -ruN c-toxcore-0.1.10/toxcore/network.h c-toxcore-0.1.10-mod/toxcore/network.h
+--- c-toxcore-0.1.10/toxcore/network.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/network.h	2018-07-28 13:50:19.000000000 +0800
+@@ -39,6 +39,80 @@
+ #include <string.h>
+ #include <time.h>
+
++#if defined(CARRIER_BUILD)
++#include <alloca.h>
++#include <arpa/inet.h>
++
++static const uint32_t _w_magic = 0x69766567; //'ELAC';
++
++static inline
++size_t carrier_magic_size(void)
++{
++    return sizeof(_w_magic);
++}
++static inline
++void carrier_magic_set(const uint8_t *addr)
++{
++    uint8_t *const rewind = (uint8_t *)addr - carrier_magic_size();
++    *(uint32_t *)rewind = htonl(_w_magic);
++}
++static inline
++int carrier_magic_check(const uint8_t *addr)
++{
++    uint8_t *const rewind = (uint8_t *)addr - carrier_magic_size();
++    return ntohl(*(uint32_t *)rewind) == _w_magic;
++}
++static inline
++int carrier_magic_check_unrewind(const uint8_t *addr)
++{
++    return ntohl(*(uint32_t *)addr) == _w_magic;
++}
++static inline
++const uint8_t *carrier_rewind(const uint8_t *addr)
++{
++    return addr - carrier_magic_size();
++}
++static inline
++size_t carrier_rewind_size(size_t len)
++{
++    return len + carrier_magic_size();
++}
++
++#define carrier_rewind_sizeof(p)  carrier_rewind_size(CARRIER_SIZEOF_VLA(p))
++
++#define CARRIER_VLA(type, name, size)                                   \
++    const size_t name##_size = (size) * sizeof(type) + carrier_magic_size(); \
++    type *const name##_i = (type *)alloca(name##_size); \
++    type *const name = (type *)((uint8_t *)name##_i + carrier_magic_size())
++#define CARRIER_SIZEOF_VLA(name)        (name##_size - carrier_magic_size())
++#else
++static inline
++size_t carrier_magic_size(void)
++{
++	return 0;
++}
++static inline
++void carrier_magic_set(const uint8_t *addr)
++{
++    (void)addr;
++}
++static inline
++const uint8_t *carrier_rewind(const uint8_t *addr)
++{
++    return addr;
++}
++static inline
++size_t carrier_rewind_size(size_t len)
++{
++    return len;
++}
++
++#define carrier_rewind_sizeof(p) SIZEOF_VLA(p)
++
++#define CARRIER_VLA(type, name, size) VLA(type, name, size)
++#define CARRIER_SIZEOF_VLA(name)  SIZEOF_VLA(name)
++#endif
++
+ #if defined(_WIN32) || defined(__WIN32__) || defined (WIN32) /* Put win32 includes here */
+ #ifndef WINVER
+ //Windows XP
+diff -ruN c-toxcore-0.1.10/toxcore/onion.c c-toxcore-0.1.10-mod/toxcore/onion.c
+--- c-toxcore-0.1.10/toxcore/onion.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/onion.c	2018-07-28 13:50:19.000000000 +0800
+@@ -287,8 +287,8 @@
+  */
+ int send_onion_packet(Networking_Core *net, const Onion_Path *path, IP_Port dest, const uint8_t *data, uint16_t length)
+ {
+-    uint8_t packet[ONION_MAX_PACKET_SIZE];
+-    int len = create_onion_packet(packet, sizeof(packet), path, dest, data, length);
++    CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
++    int len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest, data, length);
+
+     if (len == -1) {
+         return -1;
+@@ -313,12 +313,12 @@
+         return -1;
+     }
+
+-    VLA(uint8_t, packet, 1 + RETURN_3 + length);
++    CARRIER_VLA(uint8_t, packet, 1 + RETURN_3 + length);
+     packet[0] = NET_PACKET_ONION_RECV_3;
+     memcpy(packet + 1, ret, RETURN_3);
+     memcpy(packet + 1 + RETURN_3, data, length);
+
+-    if ((uint32_t)sendpacket(net, dest, packet, SIZEOF_VLA(packet)) != SIZEOF_VLA(packet)) {
++    if ((uint32_t)sendpacket(net, dest, packet, CARRIER_SIZEOF_VLA(packet)) != CARRIER_SIZEOF_VLA(packet)) {
+         return -1;
+     }
+
+@@ -371,7 +371,7 @@
+     uint8_t ip_port[SIZE_IPPORT];
+     ipport_pack(ip_port, &source);
+
+-    uint8_t data[ONION_MAX_PACKET_SIZE];
++    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
+     data[0] = NET_PACKET_ONION_SEND_1;
+     memcpy(data + 1, nonce, CRYPTO_NONCE_SIZE);
+     memcpy(data + 1 + CRYPTO_NONCE_SIZE, plain + SIZE_IPPORT, len - SIZE_IPPORT);
+@@ -424,7 +424,7 @@
+         return 1;
+     }
+
+-    uint8_t data[ONION_MAX_PACKET_SIZE];
++    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
+     data[0] = NET_PACKET_ONION_SEND_2;
+     memcpy(data + 1, packet + 1, CRYPTO_NONCE_SIZE);
+     memcpy(data + 1 + CRYPTO_NONCE_SIZE, plain + SIZE_IPPORT, len - SIZE_IPPORT);
+@@ -480,7 +480,7 @@
+         return 1;
+     }
+
+-    uint8_t data[ONION_MAX_PACKET_SIZE];
++    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
+     memcpy(data, plain + SIZE_IPPORT, len - SIZE_IPPORT);
+     uint16_t data_len = (len - SIZE_IPPORT);
+     uint8_t *ret_part = data + (len - SIZE_IPPORT);
+@@ -533,7 +533,7 @@
+         return 1;
+     }
+
+-    uint8_t data[ONION_MAX_PACKET_SIZE];
++    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
+     data[0] = NET_PACKET_ONION_RECV_2;
+     memcpy(data + 1, plain + SIZE_IPPORT, RETURN_2);
+     memcpy(data + 1 + RETURN_2, packet + 1 + RETURN_3, length - (1 + RETURN_3));
+@@ -574,7 +574,7 @@
+         return 1;
+     }
+
+-    uint8_t data[ONION_MAX_PACKET_SIZE];
++    CARRIER_VLA(uint8_t, data, ONION_MAX_PACKET_SIZE);
+     data[0] = NET_PACKET_ONION_RECV_1;
+     memcpy(data + 1, plain + SIZE_IPPORT, RETURN_1);
+     memcpy(data + 1 + RETURN_1, packet + 1 + RETURN_2, length - (1 + RETURN_2));
+diff -ruN c-toxcore-0.1.10/toxcore/onion_announce.c c-toxcore-0.1.10-mod/toxcore/onion_announce.c
+--- c-toxcore-0.1.10/toxcore/onion_announce.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/onion_announce.c	2018-07-28 13:50:19.000000000 +0800
+@@ -149,8 +149,8 @@
+         return -1;
+     }
+
+-    uint8_t packet[ONION_MAX_PACKET_SIZE];
+-    len = create_onion_packet(packet, sizeof(packet), path, dest.ip_port, request, sizeof(request));
++    CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
++    len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest.ip_port, request, sizeof(request));
+
+     if (len == -1) {
+         return -1;
+@@ -187,8 +187,8 @@
+         return -1;
+     }
+
+-    uint8_t packet[ONION_MAX_PACKET_SIZE];
+-    len = create_onion_packet(packet, sizeof(packet), path, dest, request, len);
++    CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
++    len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest, request, len);
+
+     if (len == -1) {
+         return -1;
+diff -ruN c-toxcore-0.1.10/toxcore/onion_client.c c-toxcore-0.1.10-mod/toxcore/onion_client.c
+--- c-toxcore-0.1.10/toxcore/onion_client.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/onion_client.c	2018-07-28 13:50:19.000000000 +0800
+@@ -346,8 +346,8 @@
+                                      const uint8_t *data, uint16_t length)
+ {
+     if (path->ip_port1.ip.family == AF_INET || path->ip_port1.ip.family == AF_INET6) {
+-        uint8_t packet[ONION_MAX_PACKET_SIZE];
+-        int len = create_onion_packet(packet, sizeof(packet), path, dest, data, length);
++        CARRIER_VLA(uint8_t, packet, ONION_MAX_PACKET_SIZE);
++        int len = create_onion_packet(packet, CARRIER_SIZEOF_VLA(packet), path, dest, data, length);
+
+         if (len == -1) {
+             return -1;
+@@ -1010,7 +1010,7 @@
+         return -1;
+     }
+
+-    uint8_t packet[MAX_CRYPTO_REQUEST_SIZE];
++    CARRIER_VLA(uint8_t, packet, MAX_CRYPTO_REQUEST_SIZE);
+     len = create_request(onion_c->dht->self_public_key, onion_c->dht->self_secret_key, packet,
+                          onion_c->friends_list[friend_num].dht_public_key, temp, SIZEOF_VLA(temp), CRYPTO_PACKET_DHTPK);
+
+diff -ruN c-toxcore-0.1.10/toxcore/ping.c c-toxcore-0.1.10-mod/toxcore/ping.c
+--- c-toxcore-0.1.10/toxcore/ping.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/ping.c	2018-07-28 13:50:19.000000000 +0800
+@@ -60,7 +60,7 @@
+
+ int send_ping_request(PING *ping, IP_Port ipp, const uint8_t *public_key)
+ {
+-    uint8_t   pk[DHT_PING_SIZE];
++    CARRIER_VLA(uint8_t, pk, DHT_PING_SIZE);
+     int       rc;
+     uint64_t  ping_id;
+
+@@ -100,13 +100,13 @@
+         return 1;
+     }
+
+-    return sendpacket(ping->dht->net, ipp, pk, sizeof(pk));
++    return sendpacket(ping->dht->net, ipp, pk, CARRIER_SIZEOF_VLA(pk));
+ }
+
+ static int send_ping_response(PING *ping, IP_Port ipp, const uint8_t *public_key, uint64_t ping_id,
+                               uint8_t *shared_encryption_key)
+ {
+-    uint8_t   pk[DHT_PING_SIZE];
++    CARRIER_VLA(uint8_t, pk, DHT_PING_SIZE);
+     int       rc;
+
+     if (id_equal(public_key, ping->dht->self_public_key)) {
+@@ -131,7 +131,7 @@
+         return 1;
+     }
+
+-    return sendpacket(ping->dht->net, ipp, pk, sizeof(pk));
++    return sendpacket(ping->dht->net, ipp, pk, CARRIER_SIZEOF_VLA(pk));
+ }
+
+ static int handle_ping_request(void *object, IP_Port source, const uint8_t *packet, uint16_t length, void *userdata)
+diff -ruN c-toxcore-0.1.10/toxcore/tox.c c-toxcore-0.1.10-mod/toxcore/tox.c
+--- c-toxcore-0.1.10/toxcore/tox.c	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/tox.c	2018-07-28 13:50:19.000000000 +0800
+@@ -1549,3 +1549,23 @@
+     SET_ERROR_PARAMETER(error, TOX_ERR_GET_PORT_NOT_BOUND);
+     return 0;
+ }
++
++#if defined(CARRIER_BUILD)
++int tox_self_get_random_tcp_relay(const Tox *tox, uint8_t *ip, uint8_t *public_key)
++{
++    const Messenger *m = tox;
++    IP_Port ip_port;
++    int rc;
++
++    if (!ip)
++        return -1;
++
++    rc = messenger_get_random_tcp_relay_addr(m, &ip_port, public_key);
++    if (rc < 0)
++        return -1;
++
++    memcpy(ip, &ip_port.ip.ip4, sizeof(uint32_t));
++    return 0;
++}
++#endif
++
+diff -ruN c-toxcore-0.1.10/toxcore/tox.h c-toxcore-0.1.10-mod/toxcore/tox.h
+--- c-toxcore-0.1.10/toxcore/tox.h	2017-08-06 18:22:48.000000000 +0800
++++ c-toxcore-0.1.10-mod/toxcore/tox.h	2018-07-28 13:50:19.000000000 +0800
+@@ -2940,6 +2940,18 @@
+  */
+ uint16_t tox_self_get_tcp_port(const Tox *tox, TOX_ERR_GET_PORT *error);
+
++#if defined(CARRIER_BUILD)
++/* Return a random TCP relay address for use as address of turn server.
++ *
++ * As to be sure, application need to call this function more than or
++ * at least 5 times on failure.
++ *
++ * return 0 on success with valid ip address pointed by 'ip';
++ * return -1 on failure.
++ */
++int tox_self_get_random_tcp_relay(const Tox *tox, uint8_t *ip, uint8_t *public_key);
++#endif
++
+ #ifdef __cplusplus
+ }
+ #endif

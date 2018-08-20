@@ -138,7 +138,7 @@ static void session_request_complete_callback(ElaSession *ws, int status,
         rc = ela_session_start(ws, sdp, len);
         CU_ASSERT_TRUE(rc == 0);
     }
-    
+
     cond_signal(sctxt->request_complete_cond);
 }
 
@@ -218,7 +218,7 @@ static TestContext test_context = {
     .carrier = &carrier_context,
     .session = &session_context,
     .stream  = &stream_context,
-    
+
     .context_reset = test_context_reset,
 };
 

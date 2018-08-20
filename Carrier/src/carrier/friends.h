@@ -30,7 +30,7 @@
 #include "ela_carrier.h"
 
 typedef struct FriendInfo {
-    HashEntry he;
+    hash_entry_t he;
 
     uint32_t friend_number;
     ElaFriendInfo info;
@@ -46,13 +46,13 @@ int friendid_compare(const void *key1, size_t len1, const void *key2, size_t len
 }
 
 static inline
-Hashtable *friends_create(void)
+hashtable_t *friends_create(void)
 {
     return hashtable_create(32, 1, NULL, friendid_compare);
 }
 
 static inline
-int friends_exist(Hashtable *friends, uint32_t friend_number)
+int friends_exist(hashtable_t *friends, uint32_t friend_number)
 {
     assert(friends);
     assert(friend_number != UINT32_MAX);
@@ -61,7 +61,7 @@ int friends_exist(Hashtable *friends, uint32_t friend_number)
 }
 
 static inline
-void friends_put(Hashtable *friends, FriendInfo *fi)
+void friends_put(hashtable_t *friends, FriendInfo *fi)
 {
     assert(friends);
     assert(fi);
@@ -74,7 +74,7 @@ void friends_put(Hashtable *friends, FriendInfo *fi)
 }
 
 static inline
-FriendInfo *friends_get(Hashtable *friends, uint32_t friend_number)
+FriendInfo *friends_get(hashtable_t *friends, uint32_t friend_number)
 {
     assert(friends);
     assert(friend_number != UINT32_MAX);
@@ -83,7 +83,7 @@ FriendInfo *friends_get(Hashtable *friends, uint32_t friend_number)
 }
 
 static inline
-FriendInfo *friends_remove(Hashtable *friends, uint32_t friend_number)
+FriendInfo *friends_remove(hashtable_t *friends, uint32_t friend_number)
 {
     assert(friends);
     assert(friend_number != UINT32_MAX);
@@ -92,29 +92,29 @@ FriendInfo *friends_remove(Hashtable *friends, uint32_t friend_number)
 }
 
 static inline
-void friends_clear(Hashtable *friends)
+void friends_clear(hashtable_t *friends)
 {
     assert(friends);
     hashtable_clear(friends);
 }
 
 static inline
-HashtableIterator *friends_iterate(Hashtable *friends,
-                                   HashtableIterator *iterator)
+hashtable_iterator_t *friends_iterate(hashtable_t *friends,
+                                      hashtable_iterator_t *iterator)
 {
     assert(friends && iterator);
     return hashtable_iterate(friends, iterator);
 }
 
 static inline
-int friends_iterator_next(HashtableIterator *iterator, FriendInfo **info)
+int friends_iterator_next(hashtable_iterator_t *iterator, FriendInfo **info)
 {
     assert(iterator && info);
     return hashtable_iterator_next(iterator, NULL, NULL, (void **)info);
 }
 
 static inline
-int friends_iterator_has_next(HashtableIterator *iterator)
+int friends_iterator_has_next(hashtable_iterator_t *iterator)
 {
     assert(iterator);
     return hashtable_iterator_has_next(iterator);

@@ -1,9 +1,19 @@
-#/bin/sh
+#!/bin/bash
+
+DATA_DIR=~/.elashell
+
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+SCRIPT_DIRNAME="$(basename "${SCRIPT_PATH}")"
+
+# Running in installation or dist directory
+LDPATH="$(dirname "${SCRIPT_PATH}")/lib"
+
+if [ ! -e ${SCRIPT_PATH}/elashell ]; then
+    echo "Error: elashell program not available."
+    exit 1
+fi
 
 HOST="$(uname -s)"
-ARCH="$(uname -m)"
-
-BUILD=debug
 
 case "${HOST}" in
     "Darwin")
@@ -17,14 +27,6 @@ case "${HOST}" in
         exit 1;;
 esac
 
-export ${DSO_ENV}=${PWD}/../../build/_dist/${HOST}-${ARCH}/${BUILD}/lib
+export ${DSO_ENV}=${LDPATH}
 
-RUN_DIR=${PWD}
-
-if [ ! -e ${RUN_DIR}/elashell ]; then
-    echo "Error: elashell not available."
-    exit 1
-fi
-
-cd ${RUN_DIR} && ./elashell -c ${RUN_DIR}/elashell.conf $*
-
+cd ${SCRIPT_PATH} && ./elashell $*

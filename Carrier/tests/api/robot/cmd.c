@@ -132,7 +132,7 @@ static SessionContext session_context = {
     .request_complete_cb = session_request_complete_callback,
     .request_complete_status = -1,
     .request_complete_cond = NULL,
-    
+
     .session = NULL,
     .extra = &session_extra
 };
@@ -339,11 +339,13 @@ static void fremove(TestContext *context, int argc, char *argv[])
     CHK_ARGS(argc == 2);
 
     rc = ela_remove_friend(w, argv[1]);
-    if (rc < 0)
+    if (rc < 0) {
         robot_log_error("Remove friend %s error (0x%x)\n", argv[1],
                         ela_get_error());
-    else
+        robot_ack("fremove failed\n");
+    } else {
         robot_log_debug("Remove friend %s success\n", argv[1]);
+    }
 }
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,

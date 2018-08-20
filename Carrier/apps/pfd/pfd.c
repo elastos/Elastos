@@ -3,11 +3,15 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <getopt.h>
-#include <unistd.h>
 #include <assert.h>
 #include <pthread.h>
 
-#include <sys/resource.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_PROCESS_H
+#include <process.h>
+#endif
 
 #include <ela_carrier.h>
 #include <ela_session.h>
@@ -16,6 +20,11 @@
 #include <linkedhashtable.h>
 #include <rc_mem.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <builtins.h>
+#include <posix_helper.h>
+#endif
+
 #include "config.h"
 
 static PFConfig *config;
@@ -23,11 +32,11 @@ static PFConfig *config;
 static ElaCarrier *carrier;
 
 typedef struct SessionEntry {
-    HashEntry he;
+    hash_entry_t he;
     ElaSession *session;
 } SessionEntry;
 
-Hashtable *sessions;
+hashtable_t *sessions;
 
 // Client only
 static ElaSession *cli_session;
@@ -262,7 +271,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
                 vlogI("Session request to portforwarding server success.");
             }
         } else if (state == ElaStreamState_connected) {
-            HashtableIterator it;
+            hashtable_iterator_t it;
 
             hashtable_iterate(config->services, &it);
             while (hashtable_iterator_has_next(&it)) {
@@ -421,7 +430,7 @@ static void setup_portforwardings(void)
 
 static void shutdown(void)
 {
-    Hashtable *ss = sessions;
+    hashtable_t *ss = sessions;
 
     sessions = NULL;
     if (ss)
@@ -444,6 +453,9 @@ static void signal_handler(int signum)
     shutdown();
 }
 
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+
 int sys_coredump_set(bool enable)
 {
     const struct rlimit rlim = {
@@ -453,16 +465,26 @@ int sys_coredump_set(bool enable)
 
     return setrlimit(RLIMIT_CORE, &rlim);
 }
+#endif
 
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4311)
+#endif
 
 static uint32_t session_hash_code(const void *key, size_t len)
 {
     return (uint32_t)key;
 }
 
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
 
 static int session_hash_compare(const void *key1, size_t len1,
                                 const void *key2, size_t len2)
@@ -486,12 +508,16 @@ int main(int argc, char *argv[])
     int idx;
     int i;
 
+#ifdef HAVE_SYS_RESOURCE_H
     sys_coredump_set(true);
+#endif
 
     signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+#if !defined(_WIN32) && !defined(_WIN64)
     // Uncatchable: signal(SIGKILL, signal_handler);
     signal(SIGHUP, signal_handler);
-    signal(SIGTERM, signal_handler);
+#endif
 
     struct option options[] = {
         { "config",         required_argument,  NULL, 'c' },

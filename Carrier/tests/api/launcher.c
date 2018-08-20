@@ -219,7 +219,7 @@ static void close_log_files(void)
 {
     if (run_log_file) {
         fclose(run_log_file);
-        run_log_file = NULL;        
+        run_log_file = NULL;
     }
 
     if (test_log_file) {
@@ -676,7 +676,7 @@ static void signal_handler(int signum)
 {
     if (test_pid > 0)
         kill(test_pid, SIGKILL);
-    
+
     if (robot_pid > 0)
         kill(robot_pid, SIGKILL);
 
@@ -758,7 +758,7 @@ int main(int argc, char *argv[])
         }
 
         rc = test_main(argc, argv);
-        
+
         robot_ctrl("kill\n");
         test_log_info("Test runner terminated.\n");
         close_pipes();

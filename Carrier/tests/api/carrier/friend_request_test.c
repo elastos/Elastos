@@ -156,13 +156,12 @@ static void test_add_friend(void)
     rc = ela_add_friend(wctxt->carrier, robotaddr, "hello");
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
-#if 0 // Remote robot may already be friend of test peer.
+    // wait until robot having received "fadd” request.
     char buf[2][32];
     rc = wait_robot_ack("%32s %32s", buf[0], buf[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "hello");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "hello");
-#endif
 
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     rc = robot_ctrl("faccept %s\n", userid);
@@ -270,6 +269,10 @@ int friend_request_test_suite_init(void)
     if (rc < 0) {
         CU_FAIL("Error: test suite initialize error");
         return -1;
+    }
+    if (ela_is_friend(test_context.carrier->carrier, robotid)) {
+        // wait for robot online.
+        cond_wait(test_context.carrier->cond);
     }
 
     return 0;

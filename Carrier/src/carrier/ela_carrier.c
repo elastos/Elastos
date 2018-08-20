@@ -25,9 +25,21 @@
 #include <string.h>
 #include <stdarg.h>
 #include <limits.h>
+#ifdef __APPLE__
+#include <sys/syslimits.h>
+#endif
 #include <time.h>
-#include <fcntl.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#include <fcntl.h>
 #include <errno.h>
 #include <pthread.h>
 #include <sys/time.h>
@@ -40,6 +52,12 @@
 #include <crypto.h>
 #include <linkedlist.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
+
+
+#include "version.h"
 #include "ela_carrier.h"
 #include "ela_carrier_impl.h"
 #include "ela_turnserver.h"
@@ -812,7 +830,7 @@ static int mkdirs(const char *path, mode_t mode)
 
 static size_t get_extra_savedata_size(ElaCarrier *w)
 {
-    HashtableIterator it;
+    hashtable_iterator_t it;
     size_t total_len = 0;
 
     assert(w);
@@ -836,7 +854,7 @@ static size_t get_extra_savedata_size(ElaCarrier *w)
 
 static void get_extra_savedata(ElaCarrier *w, void *data, size_t len)
 {
-    HashtableIterator it;
+    hashtable_iterator_t it;
     uint8_t *pos = (uint8_t *)data;
 
     assert(w);
@@ -1170,7 +1188,7 @@ static void notify_idle(ElaCarrier *w)
 
 static void notify_friends(ElaCarrier *w)
 {
-    HashtableIterator it;
+    hashtable_iterator_t it;
 
     friends_iterate(w->friends, &it);
     while(friends_iterator_has_next(&it)) {
@@ -1240,14 +1258,14 @@ void notify_friend_description_cb(uint32_t friend_number, const uint8_t *desc,
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %lu, friend description message "
+        vlogE("Carrier: Unknown friend number %u, friend description message "
               "dropped.", friend_number);
         return;
     }
 
     if (length == 0) {
         vlogW("Carrier: Empty description message from friend "
-              "number %lu, dropped.", friend_number);
+              "number %u, dropped.", friend_number);
         deref(fi);
         return;
     }
@@ -1288,7 +1306,7 @@ void notify_friend_connection_cb(uint32_t friend_number, bool connected,
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %lu, connection status message "
+        vlogE("Carrier: Unknown friend number %u, connection status message "
               "dropped (%s).", friend_number, connected ? "true":"false");
         return;
     }
@@ -1328,7 +1346,7 @@ void notify_friend_status_cb(uint32_t friend_number, int status,
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number (%lu), friend presence message "
+        vlogE("Carrier: Unknown friend number (%u), friend presence message "
               "dropped.", friend_number);
         return;
     }
@@ -1471,8 +1489,8 @@ static void do_friend_event(ElaCarrier *w, FriendEvent *event)
 
 static void do_friend_events(ElaCarrier *w)
 {
-    List *events = w->friend_events;
-    ListIterator it;
+    list_t *events = w->friend_events;
+    list_iterator_t it;
 
 redo_events:
     list_iterate(events, &it);
@@ -1510,7 +1528,7 @@ void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %lu, friend message dropped.",
+        vlogE("Carrier: Unknown friend number %u, friend message dropped.",
               friend_number);
         return;
     }
@@ -1546,7 +1564,7 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %lu, invite request dropped.",
+        vlogE("Carrier: Unknown friend number %u, invite request dropped.",
               friend_number);
         return;
     }
@@ -1599,7 +1617,7 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 
     fi = friends_get(w->friends, friend_number);
     if (!fi) {
-        vlogE("Carrier: Unknown friend number %lu, invite response dropped.",
+        vlogE("Carrier: Unknown friend number %u, invite response dropped.",
               friend_number);
         return;
     }
@@ -1966,7 +1984,7 @@ bool ela_is_ready(ElaCarrier *w)
 int ela_get_friends(ElaCarrier *w,
                     ElaFriendsIterateCallback *callback, void *context)
 {
-    HashtableIterator it;
+    hashtable_iterator_t it;
 
     if (!w || !callback) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));

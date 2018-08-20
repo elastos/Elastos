@@ -1,0 +1,116 @@
+diff -ru libsodium-1.0.11/libsodium.vcxproj libsodium-1.0.11-mod/libsodium.vcxproj
+--- libsodium-1.0.11/libsodium.vcxproj	2016-05-29 22:48:02.000000000 +0800
++++ libsodium-1.0.11-mod/libsodium.vcxproj	2018-06-03 21:33:55.000000000 +0800
+@@ -1,4 +1,4 @@
+-﻿<?xml version="1.0" encoding="utf-8"?>
++<?xml version="1.0" encoding="utf-8"?>
+ <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ItemGroup Label="ProjectConfigurations">
+     <ProjectConfiguration Include="DebugDLL|Win32">
+@@ -45,56 +45,56 @@
+     <UseDebugLibraries>true</UseDebugLibraries>
+     <CharacterSet>MultiByte</CharacterSet>
+     <WholeProgramOptimization>false</WholeProgramOptimization>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|Win32'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <UseDebugLibraries>true</UseDebugLibraries>
+     <CharacterSet>MultiByte</CharacterSet>
+     <WholeProgramOptimization>false</WholeProgramOptimization>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <UseDebugLibraries>true</UseDebugLibraries>
+     <CharacterSet>MultiByte</CharacterSet>
+     <WholeProgramOptimization>false</WholeProgramOptimization>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugDLL|x64'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <UseDebugLibraries>true</UseDebugLibraries>
+     <CharacterSet>MultiByte</CharacterSet>
+     <WholeProgramOptimization>false</WholeProgramOptimization>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <UseDebugLibraries>false</UseDebugLibraries>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
+     <CharacterSet>MultiByte</CharacterSet>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|Win32'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <UseDebugLibraries>false</UseDebugLibraries>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
+     <CharacterSet>MultiByte</CharacterSet>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+     <ConfigurationType>StaticLibrary</ConfigurationType>
+     <UseDebugLibraries>false</UseDebugLibraries>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
+     <CharacterSet>MultiByte</CharacterSet>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseDLL|x64'" Label="Configuration">
+     <ConfigurationType>DynamicLibrary</ConfigurationType>
+     <UseDebugLibraries>false</UseDebugLibraries>
+     <WholeProgramOptimization>true</WholeProgramOptimization>
+     <CharacterSet>MultiByte</CharacterSet>
+-    <PlatformToolset>v140</PlatformToolset>
++    <PlatformToolset>v141</PlatformToolset>
+   </PropertyGroup>
+   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+   <ImportGroup Label="ExtensionSettings">
+diff -ru libsodium-1.0.11/msvc-scripts/sodium.props libsodium-1.0.11-mod/msvc-scripts/sodium.props
+--- libsodium-1.0.11/msvc-scripts/sodium.props	2016-05-29 22:48:02.000000000 +0800
++++ libsodium-1.0.11-mod/msvc-scripts/sodium.props	2018-06-03 21:32:46.000000000 +0800
+@@ -1,8 +1,15 @@
+-﻿<?xml version="1.0" encoding="utf-8"?>
++<?xml version="1.0" encoding="utf-8"?>
+ <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <ImportGroup Label="PropertySheets" />
+-  <PropertyGroup Label="UserMacros" />
++  <PropertyGroup Label="UserMacros">
++    <InstallDir>dist</InstallDir>
++  </PropertyGroup>
+   <PropertyGroup />
++  <ItemGroup>
++    <BuildMacro Include="InstallDir">
++      <Value>$(InstallDir)</Value>
++    </BuildMacro>
++  </ItemGroup>
+   <ItemDefinitionGroup>
+     <ClCompile>
+       <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)src\libsodium\include\sodium;$(SolutionDir)src\libsodium\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+@@ -23,6 +30,20 @@
+     <PostBuildEvent>
+       <Message>Run the test suite</Message>
+     </PostBuildEvent>
++    <CustomBuildStep>
++      <Command>if not exist $(InstallDir)\include\sodium mkdir $(InstallDir)\include\sodium
++if not exist $(InstallDir)\lib mkdir $(InstallDir)\lib
++
++copy src\libsodium\include\sodium.h "$(InstallDir)\include" /y
++copy src\libsodium\include\sodium\*.h "$(InstallDir)\include\sodium" /y
++copy "$(OutDir)$(TargetName)$(TargetExt)" $(InstallDir)\lib</Command>
++    </CustomBuildStep>
++    <CustomBuildStep>
++      <Message>Performing Install Step</Message>
++    </CustomBuildStep>
++    <CustomBuildStep>
++      <Outputs>$(InstallDir)</Outputs>
++    </CustomBuildStep>
+   </ItemDefinitionGroup>
+   <ItemGroup />
+ </Project>

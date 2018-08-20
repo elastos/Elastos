@@ -87,14 +87,14 @@ struct SessionExtension {
 
     ElaTransport            *transport;
 
-    IdsHeapDecl(stream_ids, MAX_STREAM_ID);
+    IDS_HEAP(stream_ids, MAX_STREAM_ID);
 
     int (*create_transport)(ElaTransport **transport);
 };
 
 struct ElaTransport {
     SessionExtension        *ext;
-    List                    *workers;
+    list_t                  *workers;
 
     int (*create_worker)   (ElaTransport *transport, IceTransportOptions *opts,
                             TransportWorker **worker);
@@ -104,7 +104,7 @@ struct ElaTransport {
 struct TransportWorker {
     int                     id;
 
-    ListEntry               le;
+    list_entry_t            le;
 
     void (*stop)           (TransportWorker *worker);
     int  (*create_timer)   (TransportWorker *worker, int id, unsigned long interval,
@@ -126,7 +126,7 @@ typedef struct ElaSession {
     void                    *context;
 
     void                    *userdata;
-    List                    *streams;
+    list_t                  *streams;
 
     uint8_t                 public_key[PUBLIC_KEY_BYTES];
     uint8_t                 secret_key[SECRET_KEY_BYTES];
@@ -135,7 +135,7 @@ typedef struct ElaSession {
 
     uint8_t                 nonce[NONCE_BYTES];
     uint8_t                 credential[NONCE_BYTES];
-    
+
     struct {
         int enabled;
         uint8_t key[SYMMETRIC_KEY_BYTES];
@@ -143,7 +143,7 @@ typedef struct ElaSession {
 
     struct {
         int enabled;
-        Hashtable *services;
+        hashtable_t *services;
     } portforwarding;
 
     int  (*init)            (ElaSession *session);
@@ -158,8 +158,8 @@ typedef struct Multiplexer  Multiplexer;
 struct ElaStream {
     StreamHandler           pipeline;
     Multiplexer             *mux;
-    
-    ListEntry               le;
+
+    list_entry_t            le;
     int                     id;
     ElaSession              *session;
     ElaStreamType           type;

@@ -61,7 +61,7 @@ typedef enum FriendEventType {
 } FriendEventType;
 
 typedef struct FriendEvent {
-    ListEntry le;
+    list_entry_t le;
     FriendEventType type;
     ElaFriendInfo fi;
 } FriendEvent;
@@ -87,11 +87,11 @@ struct ElaCarrier {
 
     DHTCallbacks dht_callbacks;
 
-    List *friend_events; // for friend_added/removed.
-    Hashtable *friends;
+    list_t *friend_events; // for friend_added/removed.
+    hashtable_t *friends;
 
-    Hashtable *tcallbacks;
-    Hashtable *thistory;
+    hashtable_t *tcallbacks;
+    hashtable_t *thistory;
 
     pthread_t main_thread;
 
@@ -116,7 +116,7 @@ typedef struct FriendLabelItem {
 } FriendLabelItem;
 
 typedef struct TransactedCallback {
-    HashEntry he;
+    hash_entry_t he;
     int64_t tid;
     void *callback_func;
     void *callback_context;

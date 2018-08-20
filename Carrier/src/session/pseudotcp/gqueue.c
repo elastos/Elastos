@@ -22,9 +22,10 @@
  * MT safe
  */
 
-#ifdef __APPLE__
-#pragma GCC diagnostic push
+#if defined(__APPLE__)
 #pragma GCC diagnostic ignored "-Wdocumentation"
+#elif defined(_MSC_VER)
+#pragma warning(disable: 4018)
 #endif
 
 /**
@@ -1075,6 +1076,3 @@ g_queue_insert_sorted (GQueue           *queue,
   g_queue_insert_before (queue, list, data);
 }
 
-#ifdef __APPLE__
-#pragma GCC diagnostic pop
-#endif

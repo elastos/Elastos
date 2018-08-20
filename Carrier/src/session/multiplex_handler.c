@@ -23,12 +23,20 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdarg.h>
-#include <sys/time.h>
-#include <arpa/inet.h>
 #include <assert.h>
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
 
 #include <rc_mem.h>
 #include <vlog.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 #include "ela_session.h"
 #include "session.h"
@@ -54,7 +62,7 @@ typedef struct ProtocolBuffer {
 
 #pragma pack(pop)
 
-#define IDS_HEAP(channel_ids) ((IdsHeap *)&channel_ids)
+#define IDS(channel_ids) ((ids_heap_t *)&channel_ids)
 
 #define HANDLER(mux) ((MultiplexHandler *)((char *)mux - sizeof(StreamHandler)))
 
@@ -267,7 +275,7 @@ int multiplex_handler_send_packet(MultiplexHandler *handler,
     assert(handler->base.next);
 
     if (!buf)
-        buf = flex_buffer(FLEX_PADDING_LEN, FLEX_PADDING_LEN);
+        flex_buffer_alloca(buf, FLEX_PADDING_LEN, FLEX_PADDING_LEN);
 
     len = flex_buffer_size(buf);
     flex_buffer_backward_offset(buf, sizeof(ProtocolBuffer));
@@ -348,7 +356,7 @@ static void channel_destroy(void *p)
     Channel *ch = (Channel *)p;
 
     if (ch->id && ch->mux)
-        ids_heap_free(IDS_HEAP(ch->mux->channel_ids), ch->id);
+        ids_heap_free(IDS(ch->mux->channel_ids), ch->id);
 }
 
 /* For dgram mode underlying transport */
@@ -427,7 +435,7 @@ void multiplex_handler_notify_packet(MultiplexHandler *handler, FlexBuffer *buf)
             return;
         }
 
-        cid = ids_heap_alloc((IdsHeap *)&handler->channel_ids);
+        cid = ids_heap_alloc((ids_heap_t *)&handler->channel_ids);
         if (cid < 0) {
             vlogE("Stream: %d multiplex handler has too many channels.",
                   handler->base.stream->id);
@@ -615,7 +623,7 @@ void multiplex_handler_notify_data(MultiplexHandler *handler, FlexBuffer *buf)
 static void multiplex_handler_close_channels(MultiplexHandler *handler,
                                              CloseReason reason)
 {
-    HashtableIterator it;
+    hashtable_iterator_t it;
 
 reclose:
     channels_iterate(handler->channels, &it);
@@ -669,7 +677,7 @@ int multiplex_handler_open_channel(Multiplexer *mux, ChannelType type,
     if (!ch)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
 
-    cid = ids_heap_alloc((IdsHeap *)&handler->channel_ids);
+    cid = ids_heap_alloc((ids_heap_t *)&handler->channel_ids);
     if (cid < 0) {
         vlogE("Stream: %d multiplex handler has too many channels.",
               handler->base.stream->id);
@@ -698,7 +706,7 @@ int multiplex_handler_open_channel(Multiplexer *mux, ChannelType type,
     channels_put(handler->channels, ch);
 
     if (cookie)
-        buf = flex_buffer_from(FLEX_PADDING_LEN, cookie, strlen(cookie) + 1);
+        flex_buffer_from(buf, FLEX_PADDING_LEN, cookie, strlen(cookie) + 1);
     else
         buf = NULL;
 
@@ -858,7 +866,7 @@ static bool multiplex_handler_checkpoint(void *user_data)
     MultiplexHandler *handler = (MultiplexHandler *)user_data;
     Channel *ch;
 
-    HashtableIterator it;
+    hashtable_iterator_t it;
     struct timeval now;
     int interval;
     int rc;
@@ -1010,7 +1018,7 @@ void multiplex_handler_destroy(void *p)
     if (handler->channels)
         deref(handler->channels);
 
-    ids_heap_destroy(IDS_HEAP(handler->channel_ids));
+    ids_heap_destroy(IDS(handler->channel_ids));
 
     if (handler->base.next)
         deref(handler->base.next);
@@ -1060,7 +1068,7 @@ int multiplex_handler_create(ElaStream *s, MultiplexHandler **handler)
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);
     }
 
-    rc = ids_heap_init(IDS_HEAP(_handler->channel_ids), MAX_CHANNEL_ID);
+    rc = ids_heap_init(IDS(_handler->channel_ids), MAX_CHANNEL_ID);
     if (rc != 0) {
         deref(handler);
         return ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY);

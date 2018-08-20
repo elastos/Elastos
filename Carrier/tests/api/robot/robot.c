@@ -36,6 +36,8 @@
 #include "tests.h"
 #include "test_helper.h"
 
+static bool fadd_ack = false;
+
 static void print_user_info(const ElaUserInfo* info)
 {
     robot_log_debug("       userid: %s\n", info->userid);
@@ -82,7 +84,7 @@ static void ready_cb(ElaCarrier *w, void *context)
 
     ela_get_userid(w, robotid, sizeof(robotid));
     ela_get_address(w, address, sizeof(address));
-    
+
     robot_log_info("Robot is ready\n");
     robot_ack("ready %s %s\n", robotid, address);
 }
@@ -125,6 +127,13 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 {
     robot_log_debug("Friend %s's connection status changed -> %s\n",
                     friendid, connection_str(status));
+
+    if (fadd_ack) {
+        // notify api_tests about their connection status change on robot side.
+        robot_ack("fadd %s\n", status == ElaConnectionStatus_Connected ?
+                               "succeeded" : "failed");
+        fadd_ack = false;
+    }
 }
 
 static void friend_info_cb(ElaCarrier *w, const char *friendid,
@@ -157,18 +166,20 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 
     if (strcmp(hello, "auto-reply") == 0) {
         int rc;
+        fadd_ack = true;
         rc = ela_accept_friend(w, userid);
         if (rc < 0) {
             robot_log_error("Accept friend request from %s error (0x%x)\n",
                             userid, ela_get_error());
+            fadd_ack = false;
+            robot_ack("fadd failed\n");
+            robot_log_debug("fadd failed\n");
         } else {
             robot_log_debug("Accept friend request from %s success\n", userid);
         }
 
     } else {
-#if 0
         robot_ack("hello %s\n", hello);
-#endif
     }
 }
 
@@ -183,9 +194,7 @@ static void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
 static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context)
 {
     robot_log_info("Friend %s is removed\n", friendid);
-#if 0
-    robot_ack("fremove success\n");
-#endif
+    robot_ack("fremove succeeded\n");
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from,

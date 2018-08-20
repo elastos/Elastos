@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <time.h>
 #include <limits.h>
 #include <pthread.h>
 
@@ -30,10 +31,19 @@
 #pragma GCC diagnostic ignored "-Wdocumentation"
 #endif
 
+#if defined(_WIN32) || defined(_WIN64)
+// Hack for pjsip
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 #include <pjlib.h>
 #include <pjlib-util.h>
 #include <pjnath.h>
 #include <pjmedia.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#endif
 
 #ifdef __APPLE__
 #pragma GCC diagnostic pop
@@ -44,6 +54,10 @@
 #include <time_util.h>
 #include <base58.h>
 #include <vlog.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 #include "flex_buffer.h"
 #include "ela_session.h"
@@ -532,7 +546,7 @@ void ice_timer_callback(pj_timer_heap_t *timer_heap, struct pj_timer_entry *entr
 
     if (rc)
         ice_worker_schedule_timer(&timer->worker->base, timer,
-                           (get_monotonic_time() / 1000) + timer->interval);
+                (unsigned long)(get_monotonic_time() / 1000) + timer->interval);
 }
 
 static
@@ -559,7 +573,7 @@ int ice_worker_create_timer(TransportWorker *base, int id, unsigned long interva
     timer->user_data = user_data;
 
     ice_worker_schedule_timer(base, timer,
-                        (get_monotonic_time() / 1000) + timer->interval);
+            (unsigned long)(get_monotonic_time() / 1000) + timer->interval);
     *tmr = timer;
     return 0;
 }
@@ -801,9 +815,10 @@ static void stream_on_rx_data(pj_ice_strans *ice_st, unsigned comp, void *data,
         gettimeofday(&stream->remote_timestamp, NULL);
     } else {
         // Copy to user data to FlexBuffer with 128 bytes prefixed space
-        FlexBuffer *buf = flex_buffer_from(FLEX_PADDING_LEN,
-                            (const void *)packet->data, (size_t)packet->len);
+        FlexBuffer *buf;
 
+        flex_buffer_from(buf, FLEX_PADDING_LEN,
+                        (const void *)packet->data, (size_t)packet->len);
         vlogT("Stream: %d ICE component %d received %d bytes data from %s.",
               stream->base.id, comp, (int)size,
               pj_sockaddr_print(src_addr, addr, sizeof(addr), 3));
@@ -1086,7 +1101,7 @@ int ice_handler_write_packet(IceHandler *handler, int comp, IcePacket *packet)
     }
 
     gettimeofday(&stream->local_timestamp, NULL);
-    
+
     return 0;
 }
 
@@ -1110,7 +1125,7 @@ ssize_t ice_handler_write(StreamHandler *base, FlexBuffer *buf)
     packet = (IcePacket *)flex_buffer_mutable_ptr(buf);
     packet->version = 0;
     packet->pkttype = PKT_DATA;
-    packet->len = len;
+    packet->len = (uint16_t)len;
 
     rc = ice_handler_write_packet(handler, 1, packet);
     if (rc != 0) {
@@ -1240,7 +1255,7 @@ static int ice_session_apply_remote_sdp(ElaSession *base,
     pj_str_t pwd = { NULL, 0 };
     pj_str_t nonce = { NULL, 0 };
     pj_status_t status;
-    ListIterator iterator;
+    list_iterator_t iterator;
     int media_index;
     int i;
     int rc;
@@ -1273,7 +1288,7 @@ static int ice_session_apply_remote_sdp(ElaSession *base,
         return ELA_GENERAL_ERROR(ELAERR_INVALID_SDP);
     }
 
-    for (i = 0; i < p_sdp->attr_count; i++) {
+    for (i = 0; i < (int)p_sdp->attr_count; i++) {
         if (pj_strcmp2(&p_sdp->attr[i]->name, "ice-ufrag") == 0)
             ufrag = p_sdp->attr[i]->value;
         else if (pj_strcmp2(&p_sdp->attr[i]->name, "ice-pwd") == 0)
@@ -1303,7 +1318,7 @@ rescan:
 
         handler = (IceHandler *)stream->handler;
 
-        if (media_index >= p_sdp->media_count) {
+        if (media_index >= (int)p_sdp->media_count) {
             stream->base.deactivate = 1;
             vlogD("Session: ICE stream %d deactivated.", stream->base.id);
             deref(stream);
@@ -1347,7 +1362,7 @@ rescan:
             continue;
         }
 
-        for (i = 0; i < media->attr_count; i++) {
+        for (i = 0; i < (int)media->attr_count; i++) {
             if (pj_strcmp2(&media->attr[i]->name, "candidate") == 0) {
                 int comp_id, prio, port, rport;
                 int cnt;
@@ -1403,7 +1418,7 @@ rescan:
                     pj_sockaddr_init(af, &cand->rel_addr, &str_rpaddr, (pj_uint16_t)rport);
                 }
 
-                if (comp_id > handler->remote.comp_cnt) {
+                if (comp_id > (int)handler->remote.comp_cnt) {
                     handler->remote.comp_cnt = comp_id;
                 }
 
@@ -1447,7 +1462,7 @@ static int ice_session_encode_local_sdp(ElaSession *base,
     pjmedia_sdp_attr ufrag_attr;
     pjmedia_sdp_attr pwd_attr;
     pjmedia_sdp_attr nonce_attr;
-    ListIterator iterator;
+    list_iterator_t iterator;
     int index = 0;
     int rc;
     int ops = 0;
@@ -1587,7 +1602,7 @@ rescan:
         pj_strdup2_with_null(pool, &conn->addr, str_addr);
         media->conn = conn;
 
-        for (i = 0; i < ncomps; i++) {
+        for (i = 0; i < (int)ncomps; i++) {
             int j;
             unsigned cand_cnt = PJ_ARRAY_SIZE(cand);
             pj_ice_sess_cand *candidate;
@@ -1602,7 +1617,7 @@ rescan:
                 return ELA_ICE_ERROR(status);
             }
 
-            for (j = 0, candidate = cand; j < cand_cnt; j++, candidate++) {
+            for (j = 0, candidate = cand; j < (int)cand_cnt; j++, candidate++) {
                 char buf[128];
 
                 if (candidate->type == PJ_ICE_CAND_TYPE_HOST) {

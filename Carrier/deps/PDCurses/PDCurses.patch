@@ -1,0 +1,29 @@
+diff -ru PDCurses-3.6/curses.h PDCurses-3.6-mod/curses.h
+--- PDCurses-3.6/curses.h	2018-02-13 21:46:44.000000000 +0800
++++ PDCurses-3.6-mod/curses.h	2018-07-13 16:50:51.000000000 +0800
+@@ -41,6 +41,7 @@
+ #include <stdarg.h>
+ #include <stddef.h>
+ #include <stdio.h>             /* Required by X/Open usage below */
++#include <stdbool.h>
+ 
+ #ifdef PDC_WIDE
+ # include <wchar.h>
+@@ -49,7 +50,7 @@
+ #if defined(__cplusplus) || defined(__cplusplus__) || defined(__CPLUSPLUS)
+ extern "C"
+ {
+-# define bool _bool
++//# define bool _bool
+ #endif
+ 
+ /*----------------------------------------------------------------------
+@@ -80,7 +81,7 @@
+  *
+  */
+ 
+-typedef unsigned char bool;    /* PDCurses Boolean type */
++//typedef unsigned char bool;    /* PDCurses Boolean type */
+ 
+ #ifdef CHTYPE_LONG
+ # if _LP64

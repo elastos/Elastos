@@ -197,13 +197,13 @@ void load_config(const char *config_file)
 
         config_setting_t *bs = config_setting_get_elem(bootstraps, i);
 
-        rc = config_setting_lookup_string(bs, "ipv4", &stropt);
+        rc = config_setting_lookup_string(bs, "ipv4", (const char **)&stropt);
         if (rc && *stropt)
             node->ipv4 = (const char *)strdup(stropt);
         else
             node->ipv4 = NULL;
 
-        rc = config_setting_lookup_string(bs, "ipv6", &stropt);
+        rc = config_setting_lookup_string(bs, "ipv6", (const char **)&stropt);
         if (rc && *stropt)
             node->ipv6 = (const char *)strdup(stropt);
         else
@@ -216,7 +216,7 @@ void load_config(const char *config_file)
         } else
             node->port = NULL;
 
-        rc = config_setting_lookup_string(bs, "public_key", &stropt);
+        rc = config_setting_lookup_string(bs, "public_key", (const char **)&stropt);
         if (rc && *stropt)
             node->public_key = (const char *)strdup(stropt);
         else

@@ -288,6 +288,13 @@ int add_friend_anyway(TestContext *context, const char *userid,
     // wait for friend_connection (online) callback invoked.
     cond_wait(wctxt->cond);
 
+    // wait until robot being notified us connected.
+    char buf[2][32];
+    rc = wait_robot_ack("%32s %32s", buf[0], buf[1]);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
+
     return 0;
 }
 
@@ -311,11 +318,23 @@ int remove_friend_anyway(TestContext *context, const char *userid)
         return rc;
     }
 
+    ElaUserInfo info;
+
+    ela_get_self_info(wctxt->carrier, &info);
+    robot_ctrl("fremove %s\n", info.userid);
+
     // wait for friend_connection (online -> offline) callback invoked.
     cond_wait(wctxt->cond);
 
     // wait for friend_removed callback invoked.
     cond_wait(wctxt->cond);
+
+    // wait for completion of robot "fremove" command.
+    char buf[2][32];
+    rc = wait_robot_ack("%32s %32s", buf[0], buf[1]);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fremove");
+    CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
 
     return 0;
 }
