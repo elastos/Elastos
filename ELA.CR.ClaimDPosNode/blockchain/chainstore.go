@@ -351,16 +351,12 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 }
 
 func (c *ChainStore) GetAsset(hash Uint256) (*Asset, error) {
-	log.Debugf("GetAsset Hash: %s", hash.String())
-
 	asset := new(Asset)
 	prefix := []byte{byte(ST_Info)}
 	data, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("GetAsset Data: %s", data)
-
 	err = asset.Deserialize(bytes.NewReader(data))
 	if err != nil {
 		return nil, err

@@ -64,7 +64,7 @@ func CheckTransactionSanity(version uint32, txn *Transaction) ErrCode {
 func CheckTransactionContext(txn *Transaction) ErrCode {
 	// check if duplicated with transaction in ledger
 	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
-		log.Warn("[CheckTransactionContext] duplicate transaction check faild.")
+		log.Warn("[CheckTransactionContext] duplicate transaction check failed.")
 		return ErrTransactionDuplicate
 	}
 
@@ -103,45 +103,63 @@ func CheckTransactionContext(txn *Transaction) ErrCode {
 		return ErrDoubleSpend
 	}
 
-	if err := CheckTransactionUTXOLock(txn); err != nil {
+	references, err := DefaultLedger.Store.GetTxReference(txn)
+	if err != nil {
+		log.Warn("[CheckTransactionContext] get transaction reference failed")
+		return ErrUnknownReferedTx
+	}
+
+	if err := CheckTransactionUTXOLock(txn, references); err != nil {
 		log.Warn("[CheckTransactionUTXOLock],", err)
 		return ErrUTXOLocked
 	}
 
-	if err := CheckTransactionBalance(txn); err != nil {
-		log.Warn("[CheckTransactionBalance],", err)
+	if err := CheckTransactionFee(txn, references); err != nil {
+		log.Warn("[CheckTransactionFee],", err)
 		return ErrTransactionBalance
 	}
-
-	if err := CheckTransactionSignature(txn); err != nil {
+	if err := CheckDestructionAddress(references); err != nil {
+		log.Warn("[CheckDestructionAddress], ", err)
+		return ErrInvalidInput
+	}
+	if err := CheckTransactionSignature(txn, references); err != nil {
 		log.Warn("[CheckTransactionSignature],", err)
 		return ErrTransactionSignature
 	}
-	// check referenced Output value
+
+	if err := CheckTransactionCoinbaseOutputLock(txn); err != nil {
+		log.Warn("[CheckTransactionCoinbaseLock]", err)
+		return ErrIneffectiveCoinbase
+	}
+	return Success
+}
+
+func CheckDestructionAddress(references map[*Input]*Output) error {
+	for _, output := range references {
+		// this uint168 code
+		// is the program hash of the Elastos foundation destruction address ELANULLXXXXXXXXXXXXXXXXXXXXXYvs3rr
+		// we allow no output from destruction address.
+		// So add a check here in case someone crack the private key of this address.
+		if output.ProgramHash == Uint168([21]uint8{33, 32, 254, 229, 215, 235, 62, 92, 125, 49, 151, 254, 207, 108, 13, 227, 15, 136, 154, 206, 247}) {
+			return errors.New("cannot use utxo in the Elastos foundation destruction address")
+		}
+	}
+	return nil
+}
+
+func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID
-		referTxnOutIndex := input.Previous.Index
-		referTxn, _, err := DefaultLedger.Store.GetTransaction(referHash)
-		if err != nil {
-			log.Warn("Referenced transaction can not be found", BytesToHexString(referHash.Bytes()))
-			return ErrUnknownReferedTx
-		}
-		referTxnOut := referTxn.Outputs[referTxnOutIndex]
-		if referTxnOut.Value < 0 {
-			log.Warn("Value of referenced transaction output is invalid")
-			return ErrInvalidReferedTx
-		}
-		// coinbase transaction only can be spent after got CoinbaseLockTime times confirmations
+		referTxn, _, _ := DefaultLedger.Store.GetTransaction(referHash)
 		if referTxn.IsCoinBaseTx() {
 			lockHeight := referTxn.LockTime
 			currentHeight := DefaultLedger.Store.GetHeight()
 			if currentHeight-lockHeight < config.Parameters.ChainParam.CoinbaseLockTime {
-				return ErrIneffectiveCoinbase
+				return errors.New("cannot unlock coinbase transaction output")
 			}
 		}
 	}
-
-	return Success
+	return nil
 }
 
 //validate the transaction of duplicate UTXO input
@@ -163,14 +181,15 @@ func CheckTransactionInput(txn *Transaction) error {
 	if len(txn.Inputs) <= 0 {
 		return errors.New("transaction has no inputs")
 	}
-	for i, utxoin := range txn.Inputs {
-		if utxoin.Previous.TxID.IsEqual(EmptyHash) && (utxoin.Previous.Index == math.MaxUint16) {
+	existingTxInputs := make(map[string]struct{})
+	for _, input := range txn.Inputs {
+		if input.Previous.TxID.IsEqual(EmptyHash) && (input.Previous.Index == math.MaxUint16) {
 			return errors.New("invalid transaction input")
 		}
-		for j := 0; j < i; j++ {
-			if utxoin.Previous.IsEqual(txn.Inputs[j].Previous) {
-				return errors.New("duplicated transaction inputs")
-			}
+		if _, exists := existingTxInputs[input.ReferKey()]; exists {
+			return errors.New("duplicated transaction inputs")
+		} else {
+			existingTxInputs[input.ReferKey()] = struct{}{}
 		}
 	}
 
@@ -178,6 +197,10 @@ func CheckTransactionInput(txn *Transaction) error {
 }
 
 func CheckTransactionOutput(version uint32, txn *Transaction) error {
+	if len(txn.Outputs) > math.MaxUint16 {
+		return errors.New("output count should not be greater than 65535(MaxUint16)")
+	}
+
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("coinbase output is not enough, at least 2")
@@ -204,18 +227,22 @@ func CheckTransactionOutput(version uint32, txn *Transaction) error {
 	if len(txn.Outputs) < 1 {
 		return errors.New("transaction has no outputs")
 	}
-
 	// check if output address is valid
-	if version&CheckTxOut == CheckTxOut {
-		for _, output := range txn.Outputs {
-			if output.AssetID != DefaultLedger.Blockchain.AssetID {
-				return errors.New("asset ID in output is invalid")
-			}
+	for _, output := range txn.Outputs {
+		if output.AssetID != DefaultLedger.Blockchain.AssetID {
+			return errors.New("asset ID in output is invalid")
+		}
 
+		// output value must >= 0
+		if output.Value < Fixed64(0) {
+			return errors.New("Invalide transaction UTXO output.")
+		}
+		if version&CheckTxOut == CheckTxOut {
 			if !CheckOutputProgramHash(output.ProgramHash) {
 				return errors.New("output address is invalid")
 			}
 		}
+
 	}
 
 	return nil
@@ -233,16 +260,9 @@ func CheckOutputProgramHash(programHash Uint168) bool {
 	return false
 }
 
-func CheckTransactionUTXOLock(txn *Transaction) error {
+func CheckTransactionUTXOLock(txn *Transaction, references map[*Input]*Output) error {
 	if txn.IsCoinBaseTx() {
 		return nil
-	}
-	if len(txn.Inputs) <= 0 {
-		return errors.New("Transaction has no inputs")
-	}
-	references, err := DefaultLedger.Store.GetTxReference(txn)
-	if err != nil {
-		return fmt.Errorf("GetReference failed: %s", err)
 	}
 	for input, output := range references {
 
@@ -293,22 +313,17 @@ func CheckAssetPrecision(txn *Transaction) error {
 	return nil
 }
 
-func CheckTransactionBalance(tx *Transaction) error {
-	// output value must >= 0
+func CheckTransactionFee(tx *Transaction, references map[*Input]*Output) error {
+	var outputValue Fixed64
+	var inputValue Fixed64
 	for _, output := range tx.Outputs {
-		if output.Value < Fixed64(0) {
-			return errors.New("Invalide transaction UTXO output.")
-		}
+		outputValue += output.Value
 	}
-
-	results, err := GetTxFeeMap(tx)
-	if err != nil {
-		return err
+	for _, reference := range references {
+		inputValue += reference.Value
 	}
-	for _, v := range results {
-		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			return fmt.Errorf("Transaction fee not enough")
-		}
+	if inputValue < Fixed64(config.Parameters.PowConfiguration.MinTxFee)+outputValue {
+		return fmt.Errorf("transaction fee not enough")
 	}
 	return nil
 }
@@ -345,8 +360,20 @@ func CheckAttributeProgram(tx *Transaction) error {
 	return nil
 }
 
-func CheckTransactionSignature(txn *Transaction) error {
-	return VerifySignature(txn)
+func CheckTransactionSignature(tx *Transaction, references map[*Input]*Output) error {
+	hashes, err := GetTxProgramHashes(tx, references)
+	if err != nil {
+		return err
+	}
+
+	buf := new(bytes.Buffer)
+	tx.SerializeUnsigned(buf)
+
+	// Sort first
+	SortProgramHashes(hashes)
+	SortPrograms(tx.Programs)
+
+	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
 }
 
 func checkAmountPrecise(amount Fixed64, precision byte) bool {
@@ -427,7 +454,10 @@ func CheckSideChainPowConsensus(txn *Transaction, arbitrator []byte) error {
 }
 
 func CheckWithdrawFromSideChainTransaction(txn *Transaction) error {
-	witPayload := txn.Payload.(*PayloadWithdrawFromSideChain)
+	witPayload, ok := txn.Payload.(*PayloadWithdrawFromSideChain)
+	if !ok {
+		return errors.New("Invalid withdraw from side chain payload type")
+	}
 	for _, hash := range witPayload.SideChainTransactionHashes {
 		if exist := DefaultLedger.Store.IsSidechainTxHashDuplicate(hash); exist {
 			return errors.New("Duplicate side chain transaction hash in paylod")
@@ -450,7 +480,7 @@ func CheckWithdrawFromSideChainTransaction(txn *Transaction) error {
 func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 	payloadObj, ok := txn.Payload.(*PayloadTransferCrossChainAsset)
 	if !ok {
-		return errors.New("Invalid transaction payload type")
+		return errors.New("Invalid transfer cross chain asset payload type")
 	}
 	if len(payloadObj.CrossChainAddresses) == 0 ||
 		len(payloadObj.CrossChainAddresses) > len(txn.Outputs) ||
@@ -462,7 +492,7 @@ func CheckTransferCrossChainAssetTransaction(txn *Transaction) error {
 	//check cross chain output index in payload
 	outputIndexMap := make(map[uint64]struct{})
 	for _, outputIndex := range payloadObj.OutputIndexes {
-		if _, exist := outputIndexMap[outputIndex]; exist {
+		if _, exist := outputIndexMap[outputIndex]; exist || int(outputIndex) >= len(txn.Outputs) {
 			return errors.New("Invalid transaction payload cross chain index")
 		}
 		outputIndexMap[outputIndex] = struct{}{}

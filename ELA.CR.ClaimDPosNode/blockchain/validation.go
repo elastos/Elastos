@@ -14,24 +14,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
-func VerifySignature(tx *Transaction) error {
-	hashes, err := GetTxProgramHashes(tx)
-	if err != nil {
-		return err
-	}
-
-	buf := new(bytes.Buffer)
-	tx.SerializeUnsigned(buf)
-
-	// Sort first
-	common.SortProgramHashes(hashes)
-	if err := SortPrograms(tx.Programs); err != nil {
-		return err
-	}
-
-	return RunPrograms(buf.Bytes(), hashes, tx.Programs)
-}
-
 func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) error {
 	if len(hashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
@@ -75,17 +57,13 @@ func RunPrograms(data []byte, hashes []common.Uint168, programs []*Program) erro
 	return nil
 }
 
-func GetTxProgramHashes(tx *Transaction) ([]common.Uint168, error) {
+func GetTxProgramHashes(tx *Transaction, references map[*Input]*Output) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
 	hashes := make([]common.Uint168, 0)
 	uniqueHashes := make([]common.Uint168, 0)
 	// add inputUTXO's transaction
-	references, err := DefaultLedger.Store.GetTxReference(tx)
-	if err != nil {
-		return nil, errors.New("[Transaction], GetProgramHashes failed.")
-	}
 	for _, output := range references {
 		programHash := output.ProgramHash
 		hashes = append(hashes, programHash)

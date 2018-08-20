@@ -18,7 +18,6 @@ type LevelDB struct {
 const BITSPERKEY = 10
 
 func NewLevelDB(file string) (*LevelDB, error) {
-
 	// default Options
 	o := opt.Options{
 		NoSync: false,
@@ -26,7 +25,6 @@ func NewLevelDB(file string) (*LevelDB, error) {
 	}
 
 	db, err := leveldb.OpenFile(file, &o)
-
 	if _, corrupted := err.(*errors.ErrCorrupted); corrupted {
 		db, err = leveldb.RecoverFile(file, nil)
 	}
@@ -41,39 +39,39 @@ func NewLevelDB(file string) (*LevelDB, error) {
 	}, nil
 }
 
-func (self *LevelDB) Put(key []byte, value []byte) error {
-	return self.db.Put(key, value, nil)
+func (ldb *LevelDB) Put(key []byte, value []byte) error {
+	return ldb.db.Put(key, value, nil)
 }
 
-func (self *LevelDB) Get(key []byte) ([]byte, error) {
-	return self.db.Get(key, nil)
+func (ldb *LevelDB) Get(key []byte) ([]byte, error) {
+	return ldb.db.Get(key, nil)
 }
 
-func (self *LevelDB) Delete(key []byte) error {
-	return self.db.Delete(key, nil)
+func (ldb *LevelDB) Delete(key []byte) error {
+	return ldb.db.Delete(key, nil)
 }
 
-func (self *LevelDB) NewBatch() {
-	self.batch = new(leveldb.Batch)
+func (ldb *LevelDB) NewBatch() {
+	ldb.batch = new(leveldb.Batch)
 }
 
-func (self *LevelDB) BatchPut(key []byte, value []byte) {
-	self.batch.Put(key, value)
+func (ldb *LevelDB) BatchPut(key []byte, value []byte) {
+	ldb.batch.Put(key, value)
 }
 
-func (self *LevelDB) BatchDelete(key []byte) {
-	self.batch.Delete(key)
+func (ldb *LevelDB) BatchDelete(key []byte) {
+	ldb.batch.Delete(key)
 }
 
-func (self *LevelDB) BatchCommit() error {
-	return self.db.Write(self.batch, nil)
+func (ldb *LevelDB) BatchCommit() error {
+	return ldb.db.Write(ldb.batch, nil)
 }
 
-func (self *LevelDB) Close() error {
-	return self.db.Close()
+func (ldb *LevelDB) Close() error {
+	return ldb.db.Close()
 }
 
-func (self *LevelDB) NewIterator(prefix []byte) IIterator {
-	iter := self.db.NewIterator(util.BytesPrefix(prefix), nil)
+func (ldb *LevelDB) NewIterator(prefix []byte) IIterator {
+	iter := ldb.db.NewIterator(util.BytesPrefix(prefix), nil)
 	return &Iterator{iter: iter}
 }

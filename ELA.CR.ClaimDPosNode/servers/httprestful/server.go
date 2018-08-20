@@ -19,6 +19,7 @@ import (
 
 const (
 	Api_Getconnectioncount  = "/api/v1/node/connectioncount"
+	Api_GetNodeState        = "/api/v1/node/state"
 	Api_GetblockTxsByHeight = "/api/v1/block/transactions/height/:height"
 	Api_Getblockbyheight    = "/api/v1/block/details/height/:height"
 	Api_Getblockbyhash      = "/api/v1/block/details/hash/:hash"
@@ -98,6 +99,7 @@ func (rt *restServer) initializeMethod() {
 
 	getMethodMap := map[string]Action{
 		Api_Getconnectioncount:  {name: "getconnectioncount", handler: servers.GetConnectionCount},
+		Api_GetNodeState:        {name: "getnodestate", handler: servers.GetNodeState},
 		Api_GetblockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.GetTransactionsByHeight},
 		Api_Getblockbyheight:    {name: "getblockbyheight", handler: servers.GetBlockByHeight},
 		Api_Getblockbyhash:      {name: "getblockbyhash", handler: servers.GetBlockByHash},
@@ -149,6 +151,8 @@ func (rt *restServer) getPath(url string) string {
 func (rt *restServer) getParams(r *http.Request, url string, req map[string]interface{}) map[string]interface{} {
 	switch url {
 	case Api_Getconnectioncount:
+
+	case Api_GetNodeState:
 
 	case Api_GetblockTxsByHeight:
 		req["height"] = getParam(r, "height")

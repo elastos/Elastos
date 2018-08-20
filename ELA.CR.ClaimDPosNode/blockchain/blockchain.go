@@ -13,7 +13,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA/config"
 	. "github.com/elastos/Elastos.ELA/core"
-	. "github.com/elastos/Elastos.ELA/errors"
 	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 
@@ -795,11 +794,10 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *Block) error {
 // (best) chain.
 func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 
-	for _, txVerify := range block.Transactions {
-		if errCode := CheckTransactionContext(txVerify); errCode != Success {
-			fmt.Println("CheckTransactionContext failed when verify block", errCode)
-			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verify block"))
-		}
+	err := CheckBlockContext(block)
+	if err != nil {
+		log.Errorf("PowCheckBlockSanity error %s", err.Error())
+		return err
 	}
 
 	// Make sure it's extending the end of the best chain.
@@ -810,7 +808,7 @@ func (bc *Blockchain) ConnectBlock(node *BlockNode, block *Block) error {
 	}
 
 	// Insert the block into the database which houses the main chain.
-	err := DefaultLedger.Store.SaveBlock(block)
+	err = DefaultLedger.Store.SaveBlock(block)
 	if err != nil {
 		return err
 	}
