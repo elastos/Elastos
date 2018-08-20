@@ -199,9 +199,7 @@ func (s *SPVServiceImpl) OnInventory(peer *SPVPeer, m *msg.Inventory) error {
 	}
 
 	if len(getData.InvList) > 0 {
-		doneChan := make(chan struct{})
-		peer.QueueMessage(getData, doneChan)
-		<-doneChan
+		peer.QueueMessage(getData)
 	}
 	return nil
 }
@@ -251,9 +249,7 @@ func (s *SPVServiceImpl) OnTx(peer *SPVPeer, msg *msg.Tx) error {
 		_, err := s.config.CommitTx(tx, 0)
 		if err == nil {
 			// Update bloom filter
-			doneChan := make(chan struct{})
-			peer.QueueMessage(s.BloomFilter(), doneChan)
-			<-doneChan
+			peer.SendMessage(s.BloomFilter())
 		}
 		return err
 	}
@@ -363,9 +359,7 @@ func (s *SPVServiceImpl) commitBlock(peer *SPVPeer) {
 		peer.ResetFalsePositives()
 
 		// Update bloom filter
-		doneChan := make(chan struct{})
-		peer.QueueMessage(s.BloomFilter(), doneChan)
-		<-doneChan
+		peer.SendMessage(s.BloomFilter())
 	}
 
 	s.ServerPeer.SetHeight(uint64(newHeight))

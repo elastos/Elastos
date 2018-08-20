@@ -271,7 +271,19 @@ func (p *SPVPeer) StallMessage(message p2p.Message) {
 	p.stallControl <- message
 }
 
-func (p *SPVPeer) QueueMessage(message p2p.Message, doneChan chan struct{}) {
+// Add message to output queue and wait until message sent
+func (p *SPVPeer) SendMessage(message p2p.Message) {
+	doneChan := make(chan struct{})
+	p.queueMessage(message, doneChan)
+	<-doneChan
+}
+
+// Add a message into output queue
+func (p *SPVPeer) QueueMessage(message p2p.Message) {
+	p.queueMessage(message, nil)
+}
+
+func (p *SPVPeer) queueMessage(message p2p.Message, doneChan chan struct{}) {
 	switch message.(type) {
 	case *msg.GetBlocks, *msg.GetData:
 		p.stallControl <- message

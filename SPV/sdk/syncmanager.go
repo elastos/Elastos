@@ -127,10 +127,8 @@ func (s *SyncManager) needSync() (*SPVPeer, bool) {
 	return bestPeer, bestPeer.Height() > uint64(s.config.LocalHeight())
 }
 
-func (s *SyncManager) getBlocks() {
-	doneChan := make(chan struct{})
-	s.syncPeer.QueueMessage(s.config.GetBlocks(), doneChan)
-	<-doneChan
+func (s *SyncManager) GetBlocks() {
+	s.syncPeer.QueueMessage(s.config.GetBlocks())
 }
 
 func (s *SyncManager) AddNeighborPeer(peer *SPVPeer) {
@@ -161,7 +159,7 @@ func (s *SyncManager) StartSyncing() {
 		s.syncPeer = bestPeer
 
 		// Send getblocks to sync peer
-		s.getBlocks()
+		s.GetBlocks()
 
 	} else {
 		// Return if not in syncing
@@ -177,7 +175,7 @@ func (s *SyncManager) StartSyncing() {
 
 func (s *SyncManager) ContinueSync() {
 	if s.syncPeer != nil && len(s.syncPeer.blockQueue) == 0 {
-		s.getBlocks()
+		s.GetBlocks()
 	}
 }
 
