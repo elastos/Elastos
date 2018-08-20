@@ -41,7 +41,7 @@ endif()
 
 check_include_file(sys/select.h HAVE_SYS_SELECT_H)
 if(HAVE_SYS_SELECT_H)
-    add_definitions(-DHAVE_SYS_SELECT_H)
+    add_definitions(-DHAVE_SYS_SELECT_H=1)
 endif()
 
 check_include_file(arpa/inet.h HAVE_ARPA_INET_H)
@@ -109,6 +109,8 @@ else()
         pj)
 endif()
 
+add_definitions(-DCARRIER_BUILD)
+
 add_custom_target(ela-session)
 
 if(ENABLE_STATIC)
@@ -147,5 +149,7 @@ if(ENABLE_SHARED)
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")
 endif()
+
+add_subdirectory(pseudotcp)
 
 install(FILES ${HEADERS} DESTINATION "include")

@@ -23,11 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <CUnit/Basic.h>
+#include <vlog.h>
 
 #include "ela_carrier.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 
 struct CarrierContextExtra {
@@ -74,8 +76,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -154,7 +155,7 @@ static void test_friend_invite_confirm(void)
 
     char in[32] = {0};
     char in2[32] = {0};
-    rc = wait_robot_ack("%32s %32s", in, in2);
+    rc = read_ack("%32s %32s", in, in2);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL(in, "data");
     CU_ASSERT_STRING_EQUAL(in2, hello);
@@ -162,7 +163,7 @@ static void test_friend_invite_confirm(void)
     (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     sprintf(to, "%s", userid);
     const char* invite_rsp_data = "invitation-confirmed";
-    rc = robot_ctrl("freplyinvite %s confirm %s\n", to, invite_rsp_data);
+    rc = write_cmd("freplyinvite %s confirm %s\n", to, invite_rsp_data);
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.
@@ -200,7 +201,7 @@ static void test_friend_invite_reject(void)
 
     char in[32] = {0};
     char in2[32] = {0};
-    rc = wait_robot_ack("%32s %32s", in, in2);
+    rc = read_ack("%32s %32s", in, in2);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL(in, "data");
     CU_ASSERT_STRING_EQUAL(in2, hello);
@@ -209,7 +210,7 @@ static void test_friend_invite_reject(void)
     sprintf(to, "%s", userid);
 
     const char* reason = "unknown-error";
-    rc = robot_ctrl("freplyinvite %s refuse %s\n", to, reason);
+    rc = write_cmd("freplyinvite %s refuse %s\n", to, reason);
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.

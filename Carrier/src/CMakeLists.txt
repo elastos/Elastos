@@ -1,5 +1,3 @@
-add_definitions(-DCARRIER_BUILD)
-
 set(ELACARRIER_DEPENDS
     libcrystal
     toxcore0

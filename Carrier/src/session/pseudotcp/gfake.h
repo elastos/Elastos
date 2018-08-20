@@ -75,7 +75,7 @@
 #define gpointer        void *
 #define gconstpointer   const void *
 
-#define G_GUINT64_FORMAT "lu"
+#define G_GUINT64_FORMAT "llu"
 
 #define G_GSIZE_FORMAT "zu"
 #define G_GSSIZE_FORMAT "zi"

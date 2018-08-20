@@ -23,11 +23,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <CUnit/Basic.h>
+#include <vlog.h>
 
 #include "ela_carrier.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 
 struct CarrierContextExtra {
@@ -70,8 +72,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot connection status changed -> %s", connection_str(status));
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from, const void *msg, size_t len,
@@ -141,7 +142,7 @@ static void test_send_message_to_friend(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     char in[64];
-    rc = wait_robot_ack("%64s", in);
+    rc = read_ack("%64s", in);
     CU_ASSERT_EQUAL(rc, 1);
     CU_ASSERT_STRING_EQUAL(in, out);
 }
@@ -162,7 +163,7 @@ static void test_send_message_from_friend(void)
     ela_get_userid(wctxt->carrier, userid, sizeof(userid));
     const char* msg = "message-test";
 
-    rc = robot_ctrl("fmsg %s %s\n", userid, msg);
+    rc = write_cmd("fmsg %s %s\n", userid, msg);
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for message from robot.

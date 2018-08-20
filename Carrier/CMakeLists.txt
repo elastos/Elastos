@@ -38,7 +38,7 @@ if(ENABLE_APPS)
     add_subdirectory(apps)
 endif()
 
-if(ENABLE_TESTS AND NOT WIN32)
+if(ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 

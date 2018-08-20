@@ -25,8 +25,13 @@
 
 #include <limits.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
+
 #include "ela_carrier.h"
 
+#define CARRIER_MAX_SERVER_URI_LEN 127
 typedef struct TestConfig {
     int shuffle;
     int log2file;
@@ -37,6 +42,8 @@ typedef struct TestConfig {
     } tests;
 
     struct {
+        char host[CARRIER_MAX_SERVER_URI_LEN + 1];
+        char port[32];
         int loglevel;
     } robot;
 

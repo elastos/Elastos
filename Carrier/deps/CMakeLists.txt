@@ -29,7 +29,7 @@ add_submodule(toxcore0
     DEPENDS platform-specific libsodium libconfig)
 if(WIN32)
 #    add_dependencies(libcrystal slim-pthread)
-#    add_dependencies(toxcore0 slim-pthread)
     add_dependencies(libcrystal pthreads-w32)
+#    add_dependencies(toxcore0 slim-pthread)
     add_dependencies(toxcore0 pthreads-w32)
 endif()

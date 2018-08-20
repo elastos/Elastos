@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Elastos Foundation
+ * Copyright (c) 2017-2018 iwhisper.io
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,47 +20,43 @@
  * SOFTWARE.
  */
 
-#ifndef __TESTS_H__
-#define __TESTS_H__
+#ifndef __SPOPEN_H__
+#define __SPOPEN_H__
 
-#include <stdarg.h>
+#include <stdio.h>
 
-#include "config.h"
+#include <crystal_config.h>
 
-extern char robotid[ELA_MAX_ID_LEN + 1];
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern char robotaddr[ELA_MAX_ADDRESS_LEN + 1];
+struct _subprocess;
+typedef struct _subprocess *subprocess_t;
 
-void wait_for_debugger_attach(void);
+//CRYSTAL_API
+subprocess_t spopen(const char *command, const char *mode);
 
-int sys_coredump_set(bool enable);
+//CRYSTAL_API
+int spclose(subprocess_t subprocess);
 
-int robot_log_debug(const char *format, ...);
+//CRYSTAL_API
+FILE *spstdin(subprocess_t subprocess);
 
-int robot_log_info(const char *format, ...);
+//CRYSTAL_API
+FILE *spstdout(subprocess_t subprocess);
 
-int robot_log_error(const char *format, ...);
+//CRYSTAL_API
+FILE *spstderr(subprocess_t subprocess);
 
-int test_log_vprintf(int level, const char *format, va_list ap);
+//CRYSTAL_API
+int spid(subprocess_t subprocess);
 
-int test_log_debug(const char *format, ...);
+//CRYSTAL_API
+int spkill(subprocess_t subprocess);
 
-int robot_log_vinfo(const char *format, va_list ap);
+#ifdef __cplusplus
+}
+#endif
 
-int test_log_info(const char *format, ...);
-
-int test_log_error(const char *format, ...);
-
-int robot_ctrl(const char *cmd, ...);
-
-void robot_ctrl_nonblock(void);
-
-int robot_ctrl_getchar(void);
-
-int wait_robot_ctrl(const char *format, ...);
-
-int robot_ack(const char *what, ...);
-
-int wait_robot_ack(const char *format, ...);
-
-#endif /* __TESTS_H__ */
+#endif /* __SPOPEN_H__ */

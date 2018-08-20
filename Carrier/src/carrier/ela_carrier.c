@@ -2039,7 +2039,7 @@ int ela_get_friend_info(ElaCarrier *w, const char *friendid,
     FriendInfo *fi;
     int rc;
 
-    if (!w || !friendid || !info) {
+    if (!w || !friendid || !*friendid || !info) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -2071,7 +2071,7 @@ int ela_set_friend_label(ElaCarrier *w,
     FriendInfo *fi;
     int rc;
 
-    if (!w || !friendid) {
+    if (!w || !friendid || !*friendid) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }

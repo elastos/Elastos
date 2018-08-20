@@ -29,13 +29,16 @@ extern "C" {
 
 #include "ela_carrier.h"
 #include "ela_session.h"
-#include "../cond.h"
-#include "test_helper.h"
+#include "test_context.h"
 
 #define MAX_CHANNEL_COUNT   256
 
-char* read_cmd(void);
-void  do_cmd(TestContext*, char*);
+int start_cmd_listener(const char *host, const char *port);
+void stop_cmd_listener(void);
+char *read_cmd(void);
+void do_cmd(TestContext*, char*);
+
+int write_ack(const char *what, ...);
 
 extern CarrierContext carrier_context;
 extern TestContext test_context;

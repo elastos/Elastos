@@ -23,6 +23,7 @@
 #ifndef __API_TESTS_COND_H__
 #define __API_TESTS_COND_H__
 
+#include <time.h>
 #include <errno.h>
 #include <pthread.h>
 

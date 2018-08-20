@@ -19,13 +19,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#include <libconfig.h>
+#endif
+#ifdef HAVE_DIRECT_H
+#include <direct.h>
+#endif
 
-#include "rc_mem.h"
+#include <libconfig.h>
+#include <rc_mem.h>
+
 #include "config.h"
 
 TestConfig global_config;
@@ -66,15 +72,23 @@ static int get_int(config_t *cfg, const char *name, int default_value)
     return rc ? intopt : default_value;
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+#define PATH_SEP        "\\"
+#define HOME_ENV        "USERPROFILE"
+#else
+#define PATH_SEP        "/"
+#define HOME_ENV        "HOME"
+#endif
+
 static void qualified_path(const char *path, const char *ref, char *qualified)
 {
-    if (*path == '/') {
+    if (*path == PATH_SEP[0] || path[1] == ':') {
         strcpy(qualified, path);
     } else if (*path == '~') {
-        sprintf(qualified, "%s%s", getenv("HOME"), path+1);
+        sprintf(qualified, "%s%s", getenv(HOME_ENV), path+1);
     } else {
         if (ref) {
-            const char *p = strrchr(ref, '/');
+            const char *p = strrchr(ref, PATH_SEP[0]);
             if (!p) p = ref;
 
             if (p - ref > 0)
@@ -86,7 +100,7 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
         }
 
         if (*qualified)
-            strcat(qualified, "/");
+            strcat(qualified, PATH_SEP);
 
         strcat(qualified, path);
     }
@@ -157,6 +171,8 @@ void load_config(const char *config_file)
 
     global_config.tests.loglevel = (int)get_int(&cfg, "tests.loglevel", 4);
     global_config.robot.loglevel = (int)get_int(&cfg, "robot.loglevel", 4);
+    get_str(&cfg, "robot.host", NULL, global_config.robot.host, sizeof(global_config.robot.host));
+    sprintf(global_config.robot.port, "%d", get_int(&cfg, "robot.port", 7237));
 
     bootstraps = config_lookup(&cfg, "bootstraps");
     if (!bootstraps) {

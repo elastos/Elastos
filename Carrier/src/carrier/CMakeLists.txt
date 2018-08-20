@@ -24,11 +24,6 @@ if(HAVE_IO_H)
     add_definitions(-DHAVE_IO_H=1)
 endif()
 
-check_include_file(fcntl.h HAVE_FCNTL_H)
-if(HAVE_FCNTL_H)
-    add_definitions(-DHAVE_FCNTL_H=1)
-endif()
-
 check_include_file(direct.h HAVE_DIRECT_H)
 if(HAVE_DIRECT_H)
     add_definitions(-DHAVE_DIRECT_H=1)

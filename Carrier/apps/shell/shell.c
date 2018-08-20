@@ -31,7 +31,6 @@
 #include <limits.h>
 #include <inttypes.h>
 #include <sys/stat.h>
-#include <pthread.h>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -69,7 +68,7 @@
 #endif
 
 #include <rc_mem.h>
-
+#include <pthread.h>
 #include <ela_carrier.h>
 #include <ela_session.h>
 
@@ -948,7 +947,7 @@ static void stream_bulk_receive(ElaCarrier *w, int argc, char *argv[])
         int duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                              (end.tv_usec - start.tv_usec)) / 1000;
         duration = (duration == 0)  ? 1 : duration;
-        float speed = ((session_ctx.bytes / duration) * 1000) / 1024;
+        float speed = (float)((session_ctx.bytes / duration) * 1000) / 1024;
 
         output("\nFinish! Total %" PRIu64 " bytes in %d.%03d seconds. %.2f KB/s\n",
                session_ctx.bytes,
@@ -1306,7 +1305,7 @@ static void *bulk_write_thread(void *arg)
     duration = (int)((end.tv_sec - start.tv_sec) * 1000000 +
                      (end.tv_usec - start.tv_usec)) / 1000;
     duration = (duration == 0) ? 1 : duration;
-    speed = (((args->packet_size * args->packet_count) / duration) * 1000) / 1024;
+    speed = (float)(((args->packet_size * args->packet_count) / duration) * 1000) / 1024;
 
     output("\nFinish! Total %" PRIu64 " bytes in %d.%03d seconds. %.2f KB/s\n",
            (uint64_t)(args->packet_size * args->packet_count),

@@ -21,8 +21,10 @@
  */
 
 #include <stdlib.h>
-#include <ela_carrier.h>
+
 #include <CUnit/Basic.h>
+
+#include <ela_carrier.h>
 
 static void test_id_valid(void)
 {

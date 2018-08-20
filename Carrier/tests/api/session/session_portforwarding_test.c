@@ -21,24 +21,33 @@
  */
 
 #include <stdlib.h>
-#include <unistd.h>
 #include <assert.h>
 #include <inttypes.h>
-#include <alloca.h>
-#include <arpa/inet.h>
-#include <CUnit/Basic.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <netdb.h>
 #include <pthread.h>
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#include <CUnit/Basic.h>
+#include <vlog.h>
+#include <socket.h>
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 #include "ela_carrier.h"
 #include "ela_session.h"
+
 #include "cond.h"
-#include "tests.h"
 #include "test_helper.h"
 #include "test_assert.h"
 
@@ -71,8 +80,7 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
     wakeup(context);
     wctxt->robot_online = (status == ElaConnectionStatus_Connected);
 
-    test_log_debug("Robot connection status changed -> %s\n",
-                    connection_str(status));
+    vlogD("Robot node connection status changed -> %s", connection_str(status));
 }
 
 static ElaCallbacks callbacks = {
@@ -108,8 +116,8 @@ void session_request_complete_callback(ElaSession *ws, int status,
 {
     SessionContext *sctxt = (SessionContext *)context;
 
-    test_log_debug("Session request complete, status:%d, reason: %s\n", status,
-                   reason ? reason : "null");
+    vlogD("Session request complete, status:%d, reason: %s", status,
+          reason ? reason : "null");
 
     sctxt->request_complete_status = status;
 
@@ -141,8 +149,7 @@ static SessionContext session_context = {
 static void stream_on_data(ElaSession *ws, int stream, const void *data,
                            size_t len, void *context)
 {
-    test_log_debug("Stream [%d] received data [%.*s]\n", stream, (int)len,
-                   (char*)data);
+    vlogD("Stream [%d] received data [%.*s]", stream, (int)len, (char*)data);
 }
 
 static void stream_state_changed(ElaSession *ws, int stream,
@@ -153,8 +160,7 @@ static void stream_state_changed(ElaSession *ws, int stream,
     stream_ctxt->state = state;
     stream_ctxt->state_bits |= 1 << state;
 
-    test_log_debug("stream %d state changed to: %s\n", stream,
-                   stream_state_name(state));
+    vlogD("stream %d state changed to: %s", stream, stream_state_name(state));
 
     cond_signal(stream_ctxt->cond);
 }
@@ -215,9 +221,15 @@ static TestContext test_context = {
     .context_reset = test_context_reset
 };
 
-static int tcp_socket_create(const char *host, const char *port)
+#ifdef _MSC_VER
+// For Windows socket API not compatible with POSIX: size_t vs. int
+#pragma warning(push)
+#pragma warning(disable: 4267)
+#endif
+
+static SOCKET tcp_socket_create(const char *host, const char *port)
 {
-    int sockfd = -1;;
+    SOCKET sockfd = -1;
     struct addrinfo hints;
     struct addrinfo *ai;
     struct addrinfo *p;
@@ -244,7 +256,7 @@ static int tcp_socket_create(const char *host, const char *port)
         int set = 1;
         setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (void*)&set, sizeof(set));
         if (bind(sockfd, p->ai_addr, p->ai_addrlen) != 0) {
-            close(sockfd);
+            socket_close(sockfd);
             sockfd = -1;
             continue;
         }
@@ -256,9 +268,9 @@ static int tcp_socket_create(const char *host, const char *port)
     return sockfd;
 }
 
-static int tcp_socket_connect(const char *host, const char *port)
+static SOCKET tcp_socket_connect(const char *host, const char *port)
 {
-    int sockfd = -1;
+    SOCKET sockfd = -1;
     struct addrinfo hints;
     struct addrinfo *ai;
     struct addrinfo *p;
@@ -280,8 +292,8 @@ static int tcp_socket_connect(const char *host, const char *port)
         }
 
         if (p->ai_socktype == SOCK_STREAM) {
-            if (connect(sockfd, p->ai_addr, p->ai_addrlen) != 0) {
-                close(sockfd);
+            if (connect(sockfd, p->ai_addr  , p->ai_addrlen) != 0) {
+                socket_close(sockfd);
                 sockfd = -1;
                 continue;
             }
@@ -294,7 +306,11 @@ static int tcp_socket_connect(const char *host, const char *port)
     return sockfd;
 }
 
-static int tcp_socket_close(int sockfd)
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+static int tcp_socket_close(SOCKET sockfd)
 {
 #if !defined(_WIN32) && !defined(_WIN64)
     return close(sockfd);
@@ -313,7 +329,7 @@ typedef struct PortforwardingContext {
 static void *client_thread_entry(void *argv)
 {
     PortForwardingContxt *ctxt = (PortForwardingContxt *)argv;
-    int sockfd;
+    SOCKET sockfd;
     ssize_t rc;
     int i;
     char data[1024];
@@ -324,13 +340,13 @@ static void *client_thread_entry(void *argv)
 
     sockfd = tcp_socket_connect("127.0.0.1", ctxt->port);
     if (sockfd < 0) {
-        test_log_error("client connect to 127.0.0.1:%s failed\n", ctxt->port);
+        vlogE("client connect to 127.0.0.1:%s failed", ctxt->port);
         return NULL;
     }
 
     usleep(500);
 
-    test_log_info("client begin to send data:");
+    vlogI("client begin to send data:");
 
     for (i = 0; i < ctxt->sent_count; i++) {
         int left = sizeof(data);
@@ -339,20 +355,20 @@ static void *client_thread_entry(void *argv)
         while(left > 0) {
             rc = send(sockfd, pos, left, 0);
             if (rc < 0) {
-                test_log_error("client send data error (%d)\n", errno);
+                vlogE("client send data error (%d)", errno);
                 tcp_socket_close(sockfd);
                 return NULL;
             }
 
-            left -= rc;
+            left -= (int)rc;
             pos += rc;
         }
 
-        test_log_debug(".");
+        vlogD(".");
     }
 
-    test_log_info("finished sending %d Kbytes data\n", ctxt->sent_count);
-    test_log_info("client send data in success\n");
+    vlogI("finished sending %d Kbytes data", ctxt->sent_count);
+    vlogI("client send data in success");
 
     tcp_socket_close(sockfd);
     ctxt->return_val = 0;
@@ -363,8 +379,8 @@ static void *client_thread_entry(void *argv)
 static void *server_thread_entry(void *argv)
 {
     PortForwardingContxt *ctxt = (PortForwardingContxt *)argv;
-    int sockfd;
-    int data_sockfd;
+    SOCKET sockfd;
+    SOCKET data_sockfd;
     int rc;
     char data[1025];
 
@@ -372,14 +388,14 @@ static void *server_thread_entry(void *argv)
 
     sockfd = tcp_socket_create("127.0.0.1", ctxt->port);
     if (sockfd < 0) {
-        test_log_error("server create on 127.0.0.1:%s failed (sockfd:%d) (%d)\n",
-                        ctxt->port, sockfd, errno);
+        vlogE("server create on 127.0.0.1:%s failed (sockfd:%d) (%d)",
+              ctxt->port, sockfd, errno);
         return NULL;
     }
 
     rc = listen(sockfd, 1);
     if (rc < 0) {
-        test_log_error("server listen failed (%d)\n", errno);
+        vlogE("server listen failed (%d)", errno);
         tcp_socket_close(sockfd);
         return NULL;
     }
@@ -388,11 +404,11 @@ static void *server_thread_entry(void *argv)
     tcp_socket_close((sockfd));
 
     if (data_sockfd < 0) {
-        test_log_error("server accept new socket failed.\n");
+        vlogE("server accept new socket failed.");
         return NULL;
     }
 
-    test_log_info("server begin to receive data:");
+    vlogI("server begin to receive data:");
 
     do {
         memset(data, 0, sizeof(data));
@@ -400,17 +416,17 @@ static void *server_thread_entry(void *argv)
         rc = (int)recv(data_sockfd, data, sizeof(data) - 1, 0);
         if (rc > 0) {
             ctxt->recv_count += rc;
-            test_log_debug("%s", data);
+            vlogD("%s", data);
         }
 
     } while (rc > 0);
 
     if (rc == 0) {
         ctxt->recv_count /= 1024;
-        test_log_info("finished receiving %d Kbytes data, closed by remote peer.\n",
-                      ctxt->recv_count);
+        vlogI("finished receiving %d Kbytes data, closed by remote peer.",
+              ctxt->recv_count);
     } else if (rc < 0)
-        test_log_error("receiving error(%d)\n", errno);
+        vlogE("receiving error(%d)", errno);
     else
         assert(0);
 
@@ -435,7 +451,7 @@ int forwarding_data(const char *service_port, const char *shadow_service_port)
 
     rc = pthread_create(&server_thread, NULL, &server_thread_entry, &server_ctxt);
     if (rc != 0) {
-        test_log_error("create server thread failed (%d)\n", rc);
+        vlogE("create server thread failed (%d)", rc);
         return -1;
     }
 
@@ -446,7 +462,7 @@ int forwarding_data(const char *service_port, const char *shadow_service_port)
 
     rc = pthread_create(&client_thread, NULL, &client_thread_entry, &client_ctxt);
     if (rc != 0) {
-        test_log_error("create client thread failed (%d)\n", rc);
+        vlogE("create client thread failed (%d)", rc);
         return -1;
     }
 
@@ -454,17 +470,17 @@ int forwarding_data(const char *service_port, const char *shadow_service_port)
     pthread_join(server_thread, NULL);
 
     if (client_ctxt.return_val == -1) {
-        test_log_error("client thread running failed\n");
+        vlogE("client thread running failed");
         return -1;
     }
 
     if (server_ctxt.return_val == -1) {
-        test_log_error("server thread running failed\n");
+        vlogE("server thread running failed");
         return -1;
     }
 
     if (client_ctxt.sent_count != server_ctxt.recv_count) {
-        test_log_error("the number of sent bytes not match with recv bytes\n.");
+        vlogE("the number of sent bytes not match with recv bytes.");
         return -1;
     }
 
@@ -479,10 +495,10 @@ static int do_portforwarding_internal(TestContext *context)
     char result[32];
     int pfid = -1;
 
-    rc = robot_ctrl("spfsvcadd %s tcp  127.0.0.1 %s\n", extra->service, extra->port);
+    rc = write_cmd("spfsvcadd %s tcp  127.0.0.1 %s\n", extra->service, extra->port);
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "spfsvcadd") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -493,9 +509,9 @@ static int do_portforwarding_internal(TestContext *context)
                             extra->shadow_port);
 
     if (pfid > 0) {
-        test_log_debug("Open portforwarding successfully\n");
+        vlogD("Open portforwarding successfully");
     } else {
-        test_log_error("Open portforwarding failed (0x%x)\n", pfid);
+        vlogE("Open portforwarding failed (0x%x)", pfid);
     }
 
     TEST_ASSERT_TRUE(pfid > 0);
@@ -507,7 +523,7 @@ static int do_portforwarding_internal(TestContext *context)
                                               context->stream->stream_id, pfid);
     TEST_ASSERT_TRUE(rc == 0);
 
-    robot_ctrl("spfsvcremove %s\n", extra->service);
+    write_cmd("spfsvcremove %s\n", extra->service);
 
     return 0;
 
@@ -516,7 +532,7 @@ cleanup:
         ela_stream_close_port_forwarding(context->session->session,
                                              context->stream->stream_id, pfid);
 
-    robot_ctrl("spfsvcremove %s\n", extra->service);
+    write_cmd("spfsvcremove %s\n", extra->service);
     return -1;
 }
 
@@ -532,10 +548,10 @@ static int do_reversed_portforwarding_internal(TestContext *context)
                                      extra->port);
     TEST_ASSERT_TRUE(rc == 0);
 
-    rc = robot_ctrl("spfopen %s tcp 127.0.0.1 %s\n", extra->service, extra->shadow_port);
+    rc = write_cmd("spfopen %s tcp 127.0.0.1 %s\n", extra->service, extra->shadow_port);
     TEST_ASSERT_TRUE(rc > 0);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "spfopen") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
@@ -543,10 +559,10 @@ static int do_reversed_portforwarding_internal(TestContext *context)
     rc = forwarding_data(extra->port, extra->shadow_port);
     TEST_ASSERT_TRUE(rc == 0);
 
-    rc = robot_ctrl("spfclose\n");
+    rc = write_cmd("spfclose\n");
     TEST_ASSERT_TRUE(rc > 2);
 
-    rc = wait_robot_ack("%32s %32s", cmd, result);
+    rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc = 2);
     TEST_ASSERT_TRUE(strcmp(cmd, "spfclose") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
