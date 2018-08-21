@@ -2,7 +2,7 @@
 
 if [ $# != 0 ]; then
     echo "Error: Invalid command syntax."
-    echo "Usage: api-tests.sh"
+    echo "Usage: elatests.sh"
     echo ""
     exit 1
 fi

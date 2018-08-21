@@ -24,7 +24,7 @@ On ubuntu/Debian Linux, besides from to make compilation for host itself, we als
 
 In case that all dependency projects of Carrier, either use **configure** or **cmake** to generate Makefiles, so certain auxilary utilitiy packages must be required on host before any compilation.
 
-For your convinience, run the following commands directly to install the prerequisite utilities:
+Run the following commands directly to install the prerequisite utilities:
 
 ```shell
 $ sudo apt-get update
@@ -37,7 +37,7 @@ Once you have souce tree, to make compilation for the target to run on host Linu
 
 ```shell
 $ cd YOUR-SOURCE-ROOT/build
-$ mdir linux
+$ mkdir linux
 $ cd linux
 $ cmake ../..
 $ make
@@ -63,7 +63,7 @@ Once having android NDK installed, run the following commands to build android d
 
 ```
 $ cd YOUR-SOURCE-ROOT/build
-$ mdkir android
+$ mkdir android
 $ cd android
 $ cmake -DANDROID_ABI=arm64-v8a -DANDROID_NDK_HOME=YOUR-ANDROID-NDK-HOME -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../..
 $ make
