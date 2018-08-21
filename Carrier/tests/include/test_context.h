@@ -64,6 +64,7 @@ typedef struct CarrierContext {
     Condition *cond;
     pthread_t thread;
     bool robot_online;
+    bool fadd_in_progress; // exclusive on robot
 
     CarrierContextExtra *extra;
 } CarrierContext;

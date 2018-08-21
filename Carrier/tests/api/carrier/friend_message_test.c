@@ -235,6 +235,11 @@ int friend_message_test_suite_init(void)
         return -1;
     }
 
+    if (ela_is_friend(test_context.carrier->carrier, robotid)) {
+        // wait for robot online.
+        cond_wait(test_context.carrier->cond);
+    }
+
     return 0;
 }
 

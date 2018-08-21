@@ -354,7 +354,7 @@ int robot_sinit(void)
 
 void robot_sfree(void)
 {
-    write_cmd("sfree %s\n");
+    write_cmd("sfree\n");
 }
 
 const char *stream_state_name(ElaStreamState state)

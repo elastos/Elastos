@@ -288,11 +288,17 @@ static void fadd(TestContext *context, int argc, char *argv[])
     if (ela_is_friend(w, argv[1]))
         ela_remove_friend(w, argv[1]);
 
+    context->carrier->fadd_in_progress = true;
     rc = ela_add_friend(w, argv[2], argv[3]);
     if (rc < 0) {
         vlogE("Add user %s to be friend error (0x%x)", argv[2], ela_get_error());
-    } else
+        if (context->carrier->fadd_in_progress) {
+            context->carrier->fadd_in_progress = false;
+            write_ack("fadd failed\n");
+        }
+    } else {
         vlogD("Add user %s to be friend success", argv[2]);
+    }
 }
 
 /*
@@ -304,15 +310,21 @@ static void faccept(TestContext *context, int argc, char *argv[])
     int rc;
 
     CHK_ARGS(argc == 2);
+    context->carrier->fadd_in_progress = true;
     rc = ela_accept_friend(w, argv[1]);
     if (rc < 0) {
         if (ela_get_error() == ELA_GENERAL_ERROR(ELAERR_ALREADY_EXIST))
             vlogD("User %s already is friend.", argv[1]);
         else
             vlogE("Accept friend request from user %s error (0x%x)",
-                            argv[1], ela_get_error());
-    } else
+                  argv[1], ela_get_error());
+        if (context->carrier->fadd_in_progress) {
+            context->carrier->fadd_in_progress = false;
+            write_ack("fadd failed\n");
+        }
+    } else {
         vlogD("Accept friend request from user %s success", argv[1]);
+    }
 }
 
 /*

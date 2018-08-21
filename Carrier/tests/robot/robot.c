@@ -44,8 +44,6 @@
 #include "config.h"
 #include "cmd.h"
 
-static bool fadd_ack = false;
-
 static void print_user_info(const ElaUserInfo* info)
 {
     vlogD("       userid: %s", info->userid);
@@ -129,14 +127,15 @@ bool friend_list_cb(ElaCarrier* w, const ElaFriendInfo *info, void *context)
 static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                                  ElaConnectionStatus status, void *context)
 {
+    TestContext *ctx = (TestContext *)context;
     vlogD("Friend %s's connection status changed -> %s",
           friendid, connection_str(status));
 
-    if (fadd_ack) {
+    if (ctx->carrier->fadd_in_progress) {
+        ctx->carrier->fadd_in_progress = false;
         // notify api_tests about their connection status change on robot side.
         write_ack("fadd %s\n", status == ElaConnectionStatus_Connected ?
                                "succeeded" : "failed");
-        fadd_ack = false;
     }
 }
 
@@ -164,19 +163,22 @@ static void friend_presence_cb(ElaCarrier *w, const char *friendid,
 static void friend_request_cb(ElaCarrier *w, const char *userid,
                 const ElaUserInfo *info, const char *hello, void *context)
 {
+    TestContext *ctx = (TestContext *)context;
+
     vlogD("Received friend request from user %s", userid);
     print_user_info(info);
     vlogD("  hello: %s", hello);
 
     if (strcmp(hello, "auto-reply") == 0) {
         int rc;
-        fadd_ack = true;
+        ctx->carrier->fadd_in_progress = true;
         rc = ela_accept_friend(w, userid);
         if (rc < 0) {
             vlogE("Accept friend request from %s error (0x%x)",
                             userid, ela_get_error());
-            fadd_ack = false;
-            write_ack("fadd failed\n");
+            if (ctx->carrier->fadd_in_progress) {
+                write_ack("fadd failed\n");
+            }
             vlogD("fadd failed");
         } else {
             vlogD("Accept friend request from %s success", userid);
@@ -193,7 +195,6 @@ static void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
     vlogI("New friend %s added", info->user_info.userid);
     print_friend_info(info, 0);
     vlogI("\n");
-    write_ack("fadd succeeded\n");
 }
 
 static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context)
