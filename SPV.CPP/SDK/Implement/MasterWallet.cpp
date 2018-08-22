@@ -249,6 +249,8 @@ namespace Elastos {
 				throw std::logic_error("Import key error.");
 
 			initFromKeyStore(keyStore, payPassword, phrasePassword);
+
+			Save();
 			return true;
 		}
 
@@ -260,6 +262,8 @@ namespace Elastos {
 
 			bool result = initFromPhrase(mnemonic, phrasePassword, payPassword);
 			CreateSubWallet("ELA", payPassword, false); //we create ela sub wallet by default
+
+			Save();
 			return result;
 		}
 
@@ -459,7 +463,9 @@ namespace Elastos {
 
 		std::string
 		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
-			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index);
+			std::string r = _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index);
+			Save();
+			return r;
 		}
 
 		nlohmann::json
