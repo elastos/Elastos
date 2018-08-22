@@ -190,11 +190,14 @@ namespace Elastos {
 
 			void tryInitCoinConfig();
 
+			void setImportFromMnemonic();
+
 		protected:
 			WalletMap _createdWallets;
 
 			MasterWalletStore _localStore;
 			boost::shared_ptr<Mnemonic> _mnemonic;
+			bool _isImportFromMnemonic;
 
 			std::string _id;
 			std::string _rootPath;

@@ -201,9 +201,9 @@ namespace Elastos {
 					continue;
 
 //				if (blocks.size() == 1)
-//					Log::getLogger()->info("checkpoint ====> [ {},  uint256(\"{}\"), {}, {} ],",
+//					peer_log(getPeerManager()->getRaw()->downloadPeer, "checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
 //									   blocks[i]->getHeight(),
-//									   Utils::UInt256ToString(blocks[i]->getBlockHash(), true),
+//									   Utils::UInt256ToString(blocks[i]->getBlockHash(), true).c_str(),
 //									   blocks[i]->getRawBlock()->timestamp,
 //									   blocks[i]->getRawBlock()->target);
 

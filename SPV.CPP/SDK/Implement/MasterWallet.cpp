@@ -37,7 +37,8 @@ namespace Elastos {
 								   const std::string &rootPath,
 								   bool p2pEnable) :
 				_rootPath(rootPath),
-				_p2pEnable(p2pEnable) {
+				_p2pEnable(p2pEnable),
+				_isImportFromMnemonic(false) {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
@@ -54,7 +55,8 @@ namespace Elastos {
 								   const std::string &rootPath) :
 				_id(id),
 				_rootPath(rootPath),
-				_p2pEnable(p2pEnable) {
+				_p2pEnable(p2pEnable),
+				_isImportFromMnemonic(false) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
@@ -76,7 +78,8 @@ namespace Elastos {
 								   bool p2pEnable) :
 				_id(id),
 				_rootPath(rootPath),
-				_p2pEnable(p2pEnable) {
+				_p2pEnable(p2pEnable),
+				_isImportFromMnemonic(false) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(backupPassword, "Backup");
@@ -156,7 +159,13 @@ namespace Elastos {
 			}
 
 			CoinInfo info;
-			info.setEaliestPeerTime(0);
+			if (_isImportFromMnemonic) {
+				info.setEaliestPeerTime(1513936800);
+			} else {
+				info.setEaliestPeerTime(0);
+			}
+
+			Log::getLogger()->info("import from mnemonic is {}, ealiest peer time = {}", _isImportFromMnemonic, info.getEarliestPeerTime());
 
 			tryInitCoinConfig();
 			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
@@ -261,7 +270,7 @@ namespace Elastos {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			bool result = initFromPhrase(mnemonic, phrasePassword, payPassword);
-			CreateSubWallet("ELA", payPassword, false); //we create ela sub wallet by default
+//			CreateSubWallet("ELA", payPassword, false); //we create ela sub wallet by default
 
 			Save();
 			return result;
@@ -610,6 +619,10 @@ namespace Elastos {
 							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
 							  keyStore.json().addCoinInfo(subWallet->_info);
 						  });
+		}
+
+		void MasterWallet::setImportFromMnemonic() {
+			_isImportFromMnemonic = true;
 		}
 
 	}
