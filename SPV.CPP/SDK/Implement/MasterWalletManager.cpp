@@ -151,6 +151,7 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  language, _p2pEnable, _rootPath);
+			masterWallet->setImportFromMnemonic();
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
