@@ -301,6 +301,23 @@ func (c *ChainStore) PersistTransactions(b *core.Block) error {
 				return err
 			}
 		}
+		if txn.TxType == core.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+			hash, err := rechargePayload.GetMainchainTxHash()
+			if err != nil {
+				return err
+			}
+			c.PersistMainchainTx(*hash)
+		}
+		if txn.TxType == core.RegisterIdentification {
+			regPayload := txn.Payload.(*core.PayloadRegisterIdentification)
+			for _, content := range regPayload.Contents {
+				buf := new(bytes.Buffer)
+				buf.WriteString(regPayload.ID)
+				buf.WriteString(content.Path)
+				c.PersistRegisterIdentificationTx(buf.Bytes(), txn.Hash())
+			}
+		}
 	}
 	return nil
 }
@@ -314,6 +331,14 @@ func (c *ChainStore) RollbackTransactions(b *core.Block) error {
 			if err := c.RollbackAsset(txn.Hash()); err != nil {
 				return err
 			}
+		}
+		if txn.TxType == core.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+			hash, err := rechargePayload.GetMainchainTxHash()
+			if err != nil {
+				return err
+			}
+			c.RollbackMainchainTx(*hash)
 		}
 	}
 
@@ -336,6 +361,14 @@ func (c *ChainStore) RollbackAsset(assetId Uint256) error {
 	key.WriteByte(byte(ST_Info))
 	assetId.Serialize(key)
 	c.BatchDelete(key.Bytes())
+	return nil
+}
+
+func (c *ChainStore) RollbackMainchainTx(mainchainTxHash Uint256) error {
+	key := []byte{byte(IX_MainChain_Tx)}
+	key = append(key, mainchainTxHash.Bytes()...)
+
+	c.BatchDelete(key)
 	return nil
 }
 

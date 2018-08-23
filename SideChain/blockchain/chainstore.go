@@ -14,6 +14,9 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const ValueNone = 0
+const ValueExist = 1
+
 const TaskChanCap = 4
 
 var (
@@ -239,6 +242,16 @@ func (c *ChainStore) IsDoubleSpend(txn *core.Transaction) bool {
 	return false
 }
 
+func (c *ChainStore) IsMainchainTxHashDuplicate(mainchainTxHash Uint256) bool {
+	prefix := []byte{byte(IX_MainChain_Tx)}
+	_, err := c.Get(append(prefix, mainchainTxHash.Bytes()...))
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
+
 func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 	queryKey := bytes.NewBuffer(nil)
 	queryKey.WriteByte(byte(DATA_BlockHash))
@@ -353,6 +366,42 @@ func (c *ChainStore) GetAsset(hash Uint256) (*core.Asset, error) {
 	asset.Deserialize(bytes.NewReader(data))
 
 	return asset, nil
+}
+
+func (c *ChainStore) PersistMainchainTx(mainchainTxHash Uint256) {
+	key := []byte{byte(IX_MainChain_Tx)}
+	key = append(key, mainchainTxHash.Bytes()...)
+
+	// PUT VALUE
+	c.BatchPut(key, []byte{byte(ValueExist)})
+}
+
+func (c *ChainStore) GetMainchainTx(mainchainTxHash Uint256) (byte, error) {
+	key := []byte{byte(IX_MainChain_Tx)}
+	data, err := c.Get(append(key, mainchainTxHash.Bytes()...))
+	if err != nil {
+		return ValueNone, err
+	}
+
+	return data[0], nil
+}
+
+func (c *ChainStore) PersistRegisterIdentificationTx(idKey []byte, txHash Uint256) {
+	key := []byte{byte(IX_IDENTIFICATION)}
+	key = append(key, idKey...)
+
+	// PUT VALUE
+	c.BatchPut(key, txHash.Bytes())
+}
+
+func (c *ChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
+	key := []byte{byte(IX_IDENTIFICATION)}
+	data, err := c.Get(append(key, idKey...))
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*core.Transaction, uint32, error) {
@@ -616,7 +665,6 @@ func (c *ChainStore) IsBlockInStore(hash Uint256) bool {
 	log.Debug("Get block key: ", BytesToHexString(append(prefix, hash.Bytes()...)))
 	blockData, err := c.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
-		log.Error("Get block in store failed: ", err)
 		return false
 	}
 

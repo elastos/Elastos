@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	FoundationAddress   = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	DefaultMultiCoreNum = 4
 )
 
@@ -38,9 +37,9 @@ func init() {
 		coreNum = DefaultMultiCoreNum
 	}
 
-	address, err := common.Uint168FromAddress(FoundationAddress)
+	address, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
 	if err != nil {
-		log.Error(err.Error())
+		log.Info("Please set correct foundation address in config file")
 		os.Exit(-1)
 	}
 	blockchain.FoundationAddress = *address
@@ -61,6 +60,7 @@ func main() {
 	//var blockChain *ledger.Blockchain
 	var err error
 	var noder protocol.Noder
+	log.Info("Node version: ", config.Version)
 	log.Info("1. BlockChain init")
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
@@ -76,7 +76,10 @@ func main() {
 	}
 
 	log.Info("2. SPV module init")
-	spv.SpvInit()
+	if err := spv.SpvInit(); err != nil {
+		log.Fatal(err, "SPV module initialize failed")
+		goto ERROR
+	}
 
 	log.Info("3. Start the P2P networks")
 	noder = node.InitLocalNode()

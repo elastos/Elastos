@@ -20,6 +20,13 @@ const (
 
 func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Header
+
+	// A block's main chain block header must contain in spv module
+	//mainChainBlockHash := header.SideAuxPow.MainBlockHeader.Hash()
+	//if err := spv.VerifyElaHeader(&mainChainBlockHash); err != nil {
+	//	return err
+	//}
+
 	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
@@ -89,6 +96,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	txIds := make([]Uint256, 0, len(transactions))
 	existingTxIds := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
+	existingMainTxs := make(map[Uint256]struct{})
 	for _, txn := range transactions {
 		txId := txn.Hash()
 		// Check for duplicate transactions.
@@ -109,6 +117,19 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 				return errors.New("[PowCheckBlockSanity] block contains duplicate UTXO")
 			}
 			existingTxInputs[referKey] = struct{}{}
+		}
+
+		if txn.IsRechargeToSideChainTx() {
+			rechargePayload := txn.Payload.(*PayloadRechargeToSideChain)
+			// Check for duplicate mainchain tx in a block
+			hash, err := rechargePayload.GetMainchainTxHash()
+			if err != nil {
+				return err
+			}
+			if _, exists := existingMainTxs[*hash]; exists {
+				return errors.New("[PowCheckBlockSanity] block contains duplicate mainchain Tx")
+			}
+			existingMainTxs[*hash] = struct{}{}
 		}
 
 		// Append transaction to list

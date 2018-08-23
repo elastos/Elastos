@@ -40,12 +40,12 @@ type msgBlock struct {
 }
 
 type PowService struct {
-	PayToAddr     string
-	MsgBlock      msgBlock
-	Mutex         sync.Mutex
-	started       bool
-	manualMining  bool
-	localNode     protocol.Noder
+	PayToAddr    string
+	MsgBlock     msgBlock
+	Mutex        sync.Mutex
+	started      bool
+	manualMining bool
+	localNode    protocol.Noder
 
 	blockPersistCompletedSubscriber events.Subscriber
 	RollbackTransactionSubscriber   events.Subscriber
@@ -55,13 +55,13 @@ type PowService struct {
 }
 
 func (pow *PowService) GetTransactionCount() int {
-	transactionsPool := pow.localNode.GetTxnPool(true)
+	transactionsPool := pow.localNode.GetTxsInPool()
 	return len(transactionsPool)
 }
 
 func (pow *PowService) CollectTransactions(MsgBlock *core.Block) int {
 	txs := 0
-	transactionsPool := pow.localNode.GetTxnPool(true)
+	transactionsPool := pow.localNode.GetTxsInPool()
 
 	for _, tx := range transactionsPool {
 		log.Trace(tx)
@@ -113,19 +113,11 @@ func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*c
 	return txn, nil
 }
 
-type txSorter []*core.Transaction
+type byFeeDesc []*core.Transaction
 
-func (s txSorter) Len() int {
-	return len(s)
-}
-
-func (s txSorter) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s txSorter) Less(i, j int) bool {
-	return s[i].FeePerKB < s[j].FeePerKB
-}
+func (s byFeeDesc) Len() int           { return len(s) }
+func (s byFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s byFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
 func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
@@ -150,22 +142,23 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	}
 
 	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
-	calcTxsSize := coinBaseTx.GetSize()
-	calcTxsAmount := 1
+	totalTxsSize := coinBaseTx.GetSize()
+	txCount := 1
 	totalFee := common.Fixed64(0)
-	var txPool txSorter
-	txPool = make([]*core.Transaction, 0)
-	transactionsPool := pow.localNode.GetTxnPool(false)
-	for _, v := range transactionsPool {
-		txPool = append(txPool, v)
+	var txsByFeeDesc byFeeDesc
+	txsInPool := pow.localNode.GetTxsInPool()
+	txsByFeeDesc = make([]*core.Transaction, 0, len(txsInPool))
+	for _, v := range txsInPool {
+		txsByFeeDesc = append(txsByFeeDesc, v)
 	}
-	sort.Sort(sort.Reverse(txPool))
+	sort.Sort(txsByFeeDesc)
 
-	for _, tx := range txPool {
-		if (tx.GetSize() + calcTxsSize) > config.Parameters.MaxBlockSize {
+	for _, tx := range txsByFeeDesc {
+		totalTxsSize = totalTxsSize + tx.GetSize()
+		if totalTxsSize > config.Parameters.MaxBlockSize {
 			break
 		}
-		if calcTxsAmount >= config.Parameters.MaxTxInBlock {
+		if txCount >= config.Parameters.MaxTxInBlock {
 			break
 		}
 
@@ -178,9 +171,8 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 			continue
 		}
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
-		calcTxsSize = calcTxsSize + tx.GetSize()
-		calcTxsAmount++
 		totalFee += fee
+		txCount++
 	}
 
 	reward := totalFee
@@ -233,7 +225,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
-					continue
+					return nil, err
 				}
 				//TODO if co-mining condition
 				if isOrphan || !inMainChain {
@@ -347,11 +339,11 @@ func (pow *PowService) BlockPersistCompleted(v interface{}) {
 
 func NewPowService(localNode protocol.Noder) *PowService {
 	pow := &PowService{
-		PayToAddr:     config.Parameters.PowConfiguration.PayToAddr,
-		started:       false,
-		manualMining:  false,
-		MsgBlock:      msgBlock{BlockData: make(map[string]*core.Block)},
-		localNode:     localNode,
+		PayToAddr:    config.Parameters.PowConfiguration.PayToAddr,
+		started:      false,
+		manualMining: false,
+		MsgBlock:     msgBlock{BlockData: make(map[string]*core.Block)},
+		localNode:    localNode,
 	}
 
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
