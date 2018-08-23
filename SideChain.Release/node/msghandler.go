@@ -138,8 +138,7 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 		return fmt.Errorf("The node handshake with itself")
 	}
 
-	s := node.State()
-	if s != p2p.INIT && s != p2p.HAND {
+	if node.State() != p2p.INIT && node.State() != p2p.HAND {
 		log.Warn("Unknown status to receive version")
 		return fmt.Errorf("Unknown status to receive version")
 	}
@@ -168,10 +167,10 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 	LocalNode.AddAddressToKnownAddress(addr)
 
 	var message p2p.Message
-	if s == p2p.INIT {
+	if node.State() == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
 		message = NewVersion(LocalNode)
-	} else if s == p2p.HAND {
+	} else if node.State() == p2p.HAND {
 		node.SetState(p2p.HANDSHAKED)
 		message = new(msg.VerAck)
 	}
@@ -182,25 +181,26 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 
 func (h *MsgHandlerV1) onVerAck(verAck *msg.VerAck) error {
 	node := h.node
-	s := node.State()
-	if s != p2p.HANDSHAKE && s != p2p.HANDSHAKED {
+	if node.State() != p2p.HANDSHAKE && node.State() != p2p.HANDSHAKED {
 		log.Warn("unknown status to received verack")
 		return fmt.Errorf("unknown status to received verack")
 	}
 
-	node.SetState(p2p.ESTABLISH)
-
-	if s == p2p.HANDSHAKE {
+	if node.State() == p2p.HANDSHAKE {
 		node.Send(verAck)
 	}
 
+	node.SetState(p2p.ESTABLISH)
+	go node.Heartbeat()
+
 	if LocalNode.NeedMoreAddresses() {
-		node.ReqNeighborList()
+		node.Send(new(msg.Addr))
 	}
 	addr := node.Addr()
 	port := node.Port()
 	nodeAddr := addr + ":" + strconv.Itoa(int(port))
-	LocalNode.RemoveAddrInConnectingList(nodeAddr)
+	LocalNode.RemoveFromHandshakeQueue(node)
+	LocalNode.RemoveFromConnectingList(nodeAddr)
 	return nil
 }
 
@@ -331,7 +331,7 @@ func (h *MsgHandlerV1) onInventory(inv *msg.Inventory) error {
 				SendGetBlocks(node, locator, common.EmptyHash)
 			}
 		case msg.InvTypeTx:
-			if _, ok := node.GetTxnPool(false)[hash]; !ok {
+			if _, ok := LocalNode.GetTxInPool(hash); !ok {
 				getData.AddInvVect(iv)
 			}
 		default:
@@ -339,7 +339,9 @@ func (h *MsgHandlerV1) onInventory(inv *msg.Inventory) error {
 		}
 	}
 
-	node.Send(getData)
+	if len(getData.InvList) > 0 {
+		node.Send(getData)
+	}
 	return nil
 }
 
@@ -369,7 +371,7 @@ func (h *MsgHandlerV1) onGetData(getData *msg.GetData) error {
 			}
 
 		case msg.InvTypeTx:
-			tx, ok := node.GetTxnPool(false)[iv.Hash]
+			tx, ok := LocalNode.GetTxInPool(iv.Hash)
 			if !ok {
 				notFound.AddInvVect(iv)
 				continue
@@ -422,6 +424,8 @@ func (h *MsgHandlerV1) onBlock(msgBlock *msg.Block) error {
 		return nil
 	}
 
+	// Update sync timer
+	LocalNode.syncTimer.update()
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
@@ -495,7 +499,7 @@ func (h *MsgHandlerV1) onMemPool(*msg.MemPool) error {
 		return fmt.Errorf("peer %d sent mempool request with spen service disabled", h.node.ID())
 	}
 
-	txMemPool := LocalNode.GetTxnPool(false)
+	txMemPool := LocalNode.GetTxsInPool()
 	inv := msg.NewInventory()
 
 	for _, tx := range txMemPool {
@@ -540,8 +544,6 @@ func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop comm
 		return
 	}
 
-	LocalNode.SetSyncHeaders(true)
-	node.SetSyncHeaders(true)
 	LocalNode.SetStartHash(*locator[0])
 	LocalNode.SetStopHash(hashStop)
 	node.Send(msg.NewGetBlocks(locator, hashStop))

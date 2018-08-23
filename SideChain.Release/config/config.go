@@ -12,12 +12,11 @@ import (
 
 const (
 	DefaultConfigFilename = "./config.json"
-	MINGENBLOCKTIME       = 2
-	DefaultGenBlockTime   = 6
 )
 
 var (
 	Parameters configParams
+	Version    string
 	mainNet    = &ChainParams{
 		Name:               "MainNet",
 		PowLimit:           new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 255), big.NewInt(1)),
@@ -66,40 +65,42 @@ type PowConfiguration struct {
 }
 
 type Configuration struct {
-	Magic               uint32           `json:"Magic"`
-	SpvMagic            uint32           `json:"SpvMagic"`
-	Version             int              `json:"Version"`
-	SeedList            []string         `json:"SeedList"`
-	SpvSeedList         []string         `json:"SpvSeedList"`
-	SpvMinOutbound      int              `json:"SpvMinOutbound"`
-	SpvMaxConnections   int              `json:"SpvMaxConnections"`
-	SpvPrintLevel       uint8            `json:"SpvPrintLevel"`
-	ExchangeRate        float32          `json:"ExchangeRate"`
-	MinCrossChainTxFee  int              `json:"MinCrossChainTxFee"`
-	HttpRestPort        int              `json:"HttpRestPort"`
-	RestCertPath        string           `json:"RestCertPath"`
-	RestKeyPath         string           `json:"RestKeyPath"`
-	HttpInfoPort        uint16           `json:"HttpInfoPort"`
-	HttpInfoStart       bool             `json:"HttpInfoStart"`
-	OpenService         bool             `json:"OpenService"`
-	HttpWsPort          int              `json:"HttpWsPort"`
-	WsHeartbeatInterval time.Duration    `json:"WsHeartbeatInterval"`
-	HttpJsonPort        int              `json:"HttpJsonPort"`
-	OauthServerUrl      string           `json:"OauthServerUrl"`
-	NoticeServerUrl     string           `json:"NoticeServerUrl"`
-	NodePort            uint16           `json:"NodePort"`
-	WebSocketPort       int              `json:"WebSocketPort"`
-	PrintLevel          int              `json:"PrintLevel"`
-	IsTLS               bool             `json:"IsTLS"`
-	CertPath            string           `json:"CertPath"`
-	KeyPath             string           `json:"KeyPath"`
-	CAPath              string           `json:"CAPath"`
-	MultiCoreNum        uint             `json:"MultiCoreNum"`
-	MaxLogsSize         int64            `json:"MaxLogsSize"`
-	MaxPerLogSize       int64            `json:"MaxPerLogSize"`
-	MaxTxInBlock        int              `json:"MaxTransactionInBlock"`
-	MaxBlockSize        int              `json:"MaxBlockSize"`
-	PowConfiguration    PowConfiguration `json:"PowConfiguration"`
+	Magic                      uint32           `json:"Magic"`
+	SpvMagic                   uint32           `json:"SpvMagic"`
+	Version                    int              `json:"Version"`
+	SeedList                   []string         `json:"SeedList"`
+	SpvSeedList                []string         `json:"SpvSeedList"`
+	SpvMinOutbound             int              `json:"SpvMinOutbound"`
+	SpvMaxConnections          int              `json:"SpvMaxConnections"`
+	SpvPrintLevel              int              `json:"SpvPrintLevel"`
+	ExchangeRate               float64          `json:"ExchangeRate"`
+	MinCrossChainTxFee         int              `json:"MinCrossChainTxFee"`
+	HttpRestPort               int              `json:"HttpRestPort"`
+	RestCertPath               string           `json:"RestCertPath"`
+	RestKeyPath                string           `json:"RestKeyPath"`
+	HttpInfoPort               uint16           `json:"HttpInfoPort"`
+	HttpInfoStart              bool             `json:"HttpInfoStart"`
+	OpenService                bool             `json:"OpenService"`
+	HttpWsPort                 int              `json:"HttpWsPort"`
+	WsHeartbeatInterval        time.Duration    `json:"WsHeartbeatInterval"`
+	HttpJsonPort               int              `json:"HttpJsonPort"`
+	OauthServerUrl             string           `json:"OauthServerUrl"`
+	NoticeServerUrl            string           `json:"NoticeServerUrl"`
+	NodePort                   uint16           `json:"NodePort"`
+	WebSocketPort              int              `json:"WebSocketPort"`
+	PrintLevel                 int              `json:"PrintLevel"`
+	IsTLS                      bool             `json:"IsTLS"`
+	CertPath                   string           `json:"CertPath"`
+	KeyPath                    string           `json:"KeyPath"`
+	CAPath                     string           `json:"CAPath"`
+	MultiCoreNum               uint             `json:"MultiCoreNum"`
+	MaxLogsSize                int64            `json:"MaxLogsSize"`
+	MaxPerLogSize              int64            `json:"MaxPerLogSize"`
+	MaxTxInBlock               int              `json:"MaxTransactionInBlock"`
+	MaxBlockSize               int              `json:"MaxBlockSize"`
+	PowConfiguration           PowConfiguration `json:"PowConfiguration"`
+	FoundationAddress          string           `json:"FoundationAddress"`
+	MainChainFoundationAddress string           `json:"MainChainFoundationAddress"`
 }
 
 type ConfigFile struct {

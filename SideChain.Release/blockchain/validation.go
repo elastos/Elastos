@@ -1,16 +1,14 @@
 package blockchain
 
 import (
-	"bytes"
 	"errors"
+	"fmt"
 	"sort"
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
@@ -40,12 +38,17 @@ func VerifySignature(tx *core.Transaction) error {
 
 	// Sort first
 	SortProgramHashes(hashes)
-	SortPrograms(tx.Programs)
+	if err := SortPrograms(tx.Programs); err != nil {
+		return err
+	}
 
 	return RunPrograms(tx, hashes, tx.Programs)
 }
 
 func RunPrograms(tx *core.Transaction, hashes []Uint168, programs []*core.Program) error {
+	if tx == nil {
+		return errors.New("invalid data content nil transaction")
+	}
 	if len(hashes) != len(programs) {
 		return errors.New("The number of data hashes is different with number of programs.")
 	}
@@ -118,47 +121,14 @@ func GetTxProgramHashes(tx *core.Transaction) ([]Uint168, error) {
 	return uniqueHashes, nil
 }
 
-func checkCrossChainTransaction(txn *core.Transaction) error {
-	if !txn.IsRechargeToSideChainTx() {
-		return nil
-	}
-
-	depositPayload, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
-	if !ok {
-		return errors.New("Invalid payload type.")
-	}
-
-	if mainchain.DbCache == nil {
-		dbCache, err := mainchain.OpenDataStore()
-		if err != nil {
-			errors.New("Open data store failed")
+func SortPrograms(programs []*core.Program) (err error) {
+	defer func() {
+		if code := recover(); code != nil {
+			err = fmt.Errorf("invalid program code %x", code)
 		}
-		mainchain.DbCache = dbCache
-	}
-
-	mainChainTransaction := new(core.Transaction)
-	reader := bytes.NewReader(depositPayload.MainChainTransaction)
-	if err := mainChainTransaction.Deserialize(reader); err != nil {
-		return errors.New("PayloadRechargeToSideChain mainChainTransaction deserialize failed")
-	}
-
-	ok, err := mainchain.DbCache.HasMainChainTx(mainChainTransaction.Hash().String())
-	if err != nil {
-		return err
-	}
-	if ok {
-		log.Error("Reduplicate withdraw transaction, transaction hash:", mainChainTransaction.Hash().String())
-		return errors.New("Reduplicate withdraw transaction")
-	}
-	err = mainchain.DbCache.AddMainChainTx(mainChainTransaction.Hash().String())
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func SortPrograms(programs []*core.Program) {
+	}()
 	sort.Sort(byHash(programs))
+	return err
 }
 
 type byHash []*core.Program
@@ -166,7 +136,13 @@ type byHash []*core.Program
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byHash) Less(i, j int) bool {
-	hashi, _ := crypto.ToProgramHash(p[i].Code)
-	hashj, _ := crypto.ToProgramHash(p[j].Code)
+	hashi, err := crypto.ToProgramHash(p[i].Code)
+	if err != nil {
+		panic(p[i].Code)
+	}
+	hashj, err := crypto.ToProgramHash(p[j].Code)
+	if err != nil {
+		panic(p[j].Code)
+	}
 	return hashi.Compare(*hashj) < 0
 }

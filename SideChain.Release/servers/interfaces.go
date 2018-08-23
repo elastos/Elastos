@@ -13,7 +13,6 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
-	"github.com/elastos/Elastos.ELA.SideChain/mainchain"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
@@ -283,13 +282,13 @@ func SetLogLevel(param Params) map[string]interface{} {
 	return ResponsePack(Success, fmt.Sprint("log level has been set to ", level))
 }
 
-func SubmitAuxBlock(param Params) map[string]interface{} {
+func SubmitSideAuxBlock(param Params) map[string]interface{} {
 	blockHash, ok := param.String("blockhash")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
 	if _, ok := LocalPow.MsgBlock.BlockData[blockHash]; !ok {
-		log.Trace("[json-rpc:SubmitAuxBlock] receive invalid block hash value:", blockHash)
+		log.Trace("[json-rpc:SubmitSideAuxBlock] receive invalid block hash value:", blockHash)
 		return ResponsePack(InvalidParams, "")
 	}
 
@@ -302,14 +301,19 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	err := LocalPow.MsgBlock.BlockData[blockHash].Header.SideAuxPow.Deserialize(bytes.NewReader(buf))
 	if err != nil {
 		log.Trace(err)
-		return ResponsePack(InternalError, "[json-rpc:SubmitAuxBlock] deserialize side aux pow failed")
+		return ResponsePack(InternalError, "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
-	_, _, err = chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
+	inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "")
 	}
+
+	if isOrphan || !inMainChain {
+		return ResponsePack(InternalError, "")
+	}
+	LocalPow.BroadcastBlock(LocalPow.MsgBlock.BlockData[blockHash])
 
 	LocalPow.MsgBlock.Mutex.Lock()
 	for key := range LocalPow.MsgBlock.BlockData {
@@ -319,7 +323,7 @@ func SubmitAuxBlock(param Params) map[string]interface{} {
 	log.Trace("AddBlock called finished and LocalPow.MsgBlock.BlockData has been deleted completely")
 
 	log.Info(sideAuxPow, blockHash)
-	return ResponsePack(Success, "")
+	return ResponsePack(Success, blockHash)
 }
 
 func GenerateAuxBlock(addr string) (*Block, string, bool) {
@@ -431,7 +435,7 @@ func GetInfo(param Params) map[string]interface{} {
 func AuxHelp(param Params) map[string]interface{} {
 
 	//TODO  and description for this rpc-interface
-	return ResponsePack(Success, "createauxblock==submitauxblock")
+	return ResponsePack(Success, "createauxblock==submitsideauxblock")
 }
 
 func ToggleMining(param Params) map[string]interface{} {
@@ -453,6 +457,9 @@ func ToggleMining(param Params) map[string]interface{} {
 }
 
 func DiscreteMining(param Params) map[string]interface{} {
+	if LocalPow == nil {
+		return ResponsePack(PowServiceNotStarted, "")
+	}
 	count, ok := param.Uint("count")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
@@ -478,7 +485,7 @@ func GetConnectionCount(param Params) map[string]interface{} {
 
 func GetTransactionPool(param Params) map[string]interface{} {
 	txs := make([]*TransactionInfo, 0)
-	for _, t := range NodeForServers.GetTxnPool(false) {
+	for _, t := range NodeForServers.GetTxsInPool() {
 		txs = append(txs, GetTransactionInfo(nil, t))
 	}
 	return ResponsePack(Success, txs)
@@ -636,7 +643,7 @@ func GetBestBlockHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	return ResponsePack(Success, BytesToHexString(hash.Bytes()))
+	return ResponsePack(Success, ToReversedString(hash))
 }
 
 func GetBlockCount(param Params) map[string]interface{} {
@@ -888,11 +895,6 @@ func GetTransactionByHash(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
-	if false {
-		w := new(bytes.Buffer)
-		txn.Serialize(w)
-		return ResponsePack(Success, BytesToHexString(w.Bytes()))
-	}
 	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
@@ -916,21 +918,26 @@ func GetExistDepositTransactions(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	var reversedTxHashes []string
-	err = json.Unmarshal(txsBytes, &reversedTxHashes)
+	var txHashes []string
+	err = json.Unmarshal(txsBytes, &txHashes)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	if mainchain.DbCache == nil {
-		return ResponsePack(Success, "")
-	}
-
 	var resultTxHashes []string
-	for _, reversedTxHash := range reversedTxHashes {
-		txHashBytes, _ := FromReversedString(reversedTxHash)
-		if ok, _ := mainchain.DbCache.HasMainChainTx(BytesToHexString(txHashBytes)); ok {
-			resultTxHashes = append(resultTxHashes, reversedTxHash)
+	for _, txHash := range txHashes {
+		txHashBytes, err := HexStringToBytes(txHash)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		hash, err := Uint256FromBytes(txHashBytes)
+		if err != nil {
+			return ResponsePack(InvalidParams, "")
+		}
+		inStore := chain.DefaultLedger.Store.IsMainchainTxHashDuplicate(*hash)
+		inTxPool := NodeForServers.IsDuplicateMainchainTx(*hash)
+		if inTxPool || inStore {
+			resultTxHashes = append(resultTxHashes, txHash)
 		}
 	}
 
@@ -939,12 +946,12 @@ func GetExistDepositTransactions(param Params) map[string]interface{} {
 
 func GetBlockTransactionsDetail(block *Block, filter func(*Transaction) bool) interface{} {
 	var trans []*TransactionInfo
-	for i := 0; i < len(block.Transactions); i++ {
-		if filter(block.Transactions[i]) {
+	for _, tx := range block.Transactions {
+		if !filter(tx) {
 			continue
 		}
 
-		trans = append(trans, GetTransactionInfo(&block.Header, block.Transactions[i]))
+		trans = append(trans, GetTransactionInfo(&block.Header, tx))
 	}
 	hash := block.Hash()
 	type BlockTransactions struct {
@@ -978,13 +985,59 @@ func GetDestroyedTransactionsByHeight(param Params) map[string]interface{} {
 
 	destroyHash := Uint168{}
 	return ResponsePack(Success, GetBlockTransactionsDetail(block, func(tran *Transaction) bool {
+		_, ok := tran.Payload.(*PayloadTransferCrossChainAsset)
+		if !ok {
+			return false
+		}
 		for _, output := range tran.Outputs {
 			if output.ProgramHash == destroyHash {
-				return false
+				return true
 			}
 		}
-		return true
+		return false
 	}))
+}
+
+func GetIdentificationTxByIdAndPath(param Params) map[string]interface{} {
+	id, ok := param.String("id")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+	_, err := Uint168FromAddress(id)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	path, ok := param.String("path")
+	if !ok {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	buf := new(bytes.Buffer)
+	buf.WriteString(id)
+	buf.WriteString(path)
+	txHashBytes, err := chain.DefaultLedger.Store.GetRegisterIdentificationTx(buf.Bytes())
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+	txHash, err := Uint256FromBytes(txHashBytes)
+	if err != nil {
+		return ResponsePack(InvalidParams, "")
+	}
+
+	txn, height, err := chain.DefaultLedger.Store.GetTransaction(*txHash)
+	if err != nil {
+		return ResponsePack(UnknownTransaction, "")
+	}
+	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+	header, err := chain.DefaultLedger.Store.GetHeader(bHash)
+	if err != nil {
+		return ResponsePack(UnknownBlock, "")
+	}
+
+	return ResponsePack(Success, GetTransactionInfo(header, txn))
 }
 
 func getPayload(pInfo PayloadInfo) (Payload, error) {
@@ -1053,6 +1106,27 @@ func getPayloadInfo(p Payload) PayloadInfo {
 		obj := new(RechargeToSideChainInfo)
 		obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
 		obj.Proof = BytesToHexString(object.MerkleProof)
+		return obj
+	case *PayloadRegisterIdentification:
+		obj := new(RegisterIdentificationInfo)
+		obj.Id = object.ID
+		obj.Sign = BytesToHexString(object.Sign)
+		contents := []RegisterIdentificationContentInfo{}
+		for _, content := range object.Contents {
+			values := []RegisterIdentificationValueInfo{}
+			for _, value := range content.Values {
+				values = append(values, RegisterIdentificationValueInfo{
+					DataHash: ToReversedString(value.DataHash),
+					Proof:    value.Proof,
+				})
+			}
+
+			contents = append(contents, RegisterIdentificationContentInfo{
+				Path:   content.Path,
+				Values: values,
+			})
+		}
+		obj.Contents = contents
 		return obj
 	}
 	return nil

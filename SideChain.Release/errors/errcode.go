@@ -14,15 +14,19 @@ const (
 	ErrTransactionPayload   ErrCode = 45009
 	ErrDoubleSpend          ErrCode = 45010
 	ErrTxHashDuplicate      ErrCode = 45011
+	ErrSidechainTxDuplicate ErrCode = 45012
+	ErrMainchainTxDuplicate ErrCode = 45013
 	ErrXmitFail             ErrCode = 45014
 	ErrTransactionSize      ErrCode = 45015
 	ErrUnknownReferedTxn    ErrCode = 45016
 	ErrInvalidReferedTxn    ErrCode = 45017
 	ErrIneffectiveCoinbase  ErrCode = 45018
 	ErrUTXOLocked           ErrCode = 45019
+	ErrRechargeToSideChain  ErrCode = 45020
+
 	SessionExpired          ErrCode = 41001
 	IllegalDataFormat       ErrCode = 41003
-	OauthTimeout            ErrCode = 41004
+	PowServiceNotStarted    ErrCode = 41004
 	InvalidMethod           ErrCode = 42001
 	InvalidParams           ErrCode = 42002
 	InvalidToken            ErrCode = 42003
@@ -39,7 +43,7 @@ var ErrMap = map[ErrCode]string{
 	Success:                 "Success",
 	SessionExpired:          "Session expired",
 	IllegalDataFormat:       "Illegal Dataformat",
-	OauthTimeout:            "Connect to oauth timeout",
+	PowServiceNotStarted:    "pow service not started",
 	InvalidMethod:           "Invalid method",
 	InvalidParams:           "Invalid Params",
 	InvalidToken:            "Verify token error",
@@ -49,6 +53,7 @@ var ErrMap = map[ErrCode]string{
 	UnknownAsset:            "Unknown asset",
 	UnknownBlock:            "Unknown Block",
 	InternalError:           "Internal error",
+	ErrUTXOLocked:           "Error utxo locked",
 	ErrInvalidInput:         "INTERNAL ERROR, ErrInvalidInput",
 	ErrInvalidOutput:        "INTERNAL ERROR, ErrInvalidOutput",
 	ErrAssetPrecision:       "INTERNAL ERROR, ErrAssetPrecision",
