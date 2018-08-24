@@ -83,7 +83,7 @@ func listenNodePort() {
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
 		node.Read()
-		LocalNode.AddToHandshakeQueue(node)
+		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
 	}
 }
 
@@ -144,31 +144,46 @@ func parseIPaddr(s string) (string, error) {
 	return s[:i], nil
 }
 
-func (node *node) Connect(nodeAddr string) error {
-	log.Debug()
+func resolveTCPAddr(addr string) (string, error) {
+	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
+	if err != nil {
+		log.Debugf("Can not resolve address %s", addr)
+		return addr, err
+	}
 
-	if node.IsAddrInNbrList(nodeAddr) {
+	return tcpAddr.String(), nil
+}
+
+func (node *node) Connect(addr string) error {
+	// Resolve tcpAddr address first
+	tcpAddr, err := resolveTCPAddr(addr)
+	if err != nil {
+		return err
+	}
+	log.Debugf("Addr %s, resolved tcpAddr %s", addr, tcpAddr)
+
+	if node.IsNeighborAddr(tcpAddr) {
+		log.Debugf("addr %s in neighbor list, cancel", addr)
 		return nil
 	}
-	if !node.AddToConnectingList(nodeAddr) {
-		return errors.New("node exist in connecting list, cancel")
+	if !node.AddToConnectingList(tcpAddr) {
+		log.Debugf("addr %s in connecting list, cancel", addr)
+		return nil
 	}
 
-	isTls := Parameters.IsTLS
 	var conn net.Conn
-	var err error
 
-	if isTls {
-		conn, err = TLSDial(nodeAddr)
+	if Parameters.IsTLS {
+		conn, err = TLSDial(addr)
 		if err != nil {
-			node.RemoveFromConnectingList(nodeAddr)
+			node.RemoveFromConnectingList(tcpAddr)
 			log.Error("TLS connect failed:", err)
 			return err
 		}
 	} else {
-		conn, err = NonTLSDial(nodeAddr)
+		conn, err = NonTLSDial(tcpAddr)
 		if err != nil {
-			node.RemoveFromConnectingList(nodeAddr)
+			node.RemoveFromConnectingList(tcpAddr)
 			log.Error("non TLS connect failed:", err)
 			return err
 		}
@@ -184,7 +199,7 @@ func (node *node) Connect(nodeAddr string) error {
 	n.SetState(p2p.HAND)
 	n.Send(NewVersion(node))
 
-	node.AddToHandshakeQueue(n)
+	node.AddToHandshakeQueue(tcpAddr, n)
 	return nil
 }
 
@@ -231,9 +246,10 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 
 func (node *node) Send(msg p2p.Message) {
 	if node.State() == p2p.INACTIVITY {
+		log.Errorf("-----> Push [%s] to INACTIVE peer [0x%x]", msg.CMD(), node.ID())
 		return
 	}
-
+	log.Debugf("-----> Push [%s] to peer [0x%x] STARTED", msg.CMD(), node.ID())
 	node.MsgHelper.Write(msg)
-	node.UpdateLastActive()
+	log.Debugf("-----> Push [%s] to peer [0x%x] FINISHED", msg.CMD(), node.ID())
 }

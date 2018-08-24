@@ -62,11 +62,13 @@ func (pow *PowService) CollectTransactions(MsgBlock *Block) int {
 	return txs
 }
 
-func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, addr string) (*Transaction, error) {
-	minerProgramHash, err := common.Uint168FromAddress(addr)
+func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, minerAddr string) (*Transaction, error) {
+	minerProgramHash, err := common.Uint168FromAddress(minerAddr)
 	if err != nil {
 		return nil, err
 	}
+	// TODO: calculate the current delegate by votes
+	delegateProgramHash := FoundationAddress
 
 	pd := &PayloadCoinBase{
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
@@ -93,6 +95,11 @@ func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, addr string) (*T
 			Value:       0,
 			ProgramHash: *minerProgramHash,
 		},
+		{
+			AssetID:     DefaultLedger.Blockchain.AssetID,
+			Value:       0,
+			ProgramHash: delegateProgramHash,
+		},
 	}
 
 	nonce := make([]byte, 8)
@@ -109,9 +116,9 @@ func (s byFeeDesc) Len() int           { return len(s) }
 func (s byFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s byFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
-func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
+func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
-	coinBaseTx, err := pow.CreateCoinbaseTx(nextBlockHeight, addr)
+	coinBaseTx, err := pow.CreateCoinbaseTx(nextBlockHeight, minerAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -168,11 +175,15 @@ func (pow *PowService) GenerateBlock(addr string) (*Block, error) {
 		txCount++
 	}
 
-	blockReward := GetBlockRewardAmount(nextBlockHeight)
+	blockReward := RewardAmountPerBlock
 	totalReward := totalTxFee + blockReward
+
+	// PoW miners and DPoS are each equally allocated 35%. The remaining 30% goes to the Cyber Republic fund
 	rewardFoundation := common.Fixed64(float64(totalReward) * 0.3)
+	rewardMiner := common.Fixed64(float64(totalReward) * 0.35)
 	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
-	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(totalReward) - rewardFoundation
+	msgBlock.Transactions[0].Outputs[1].Value = rewardMiner
+	msgBlock.Transactions[0].Outputs[2].Value = common.Fixed64(totalReward) - rewardFoundation - rewardMiner
 
 	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
 	for _, tx := range msgBlock.Transactions {

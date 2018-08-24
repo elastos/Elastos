@@ -73,17 +73,34 @@ type BlockInfo struct {
 	AuxPow            string        `json:"auxpow"`
 }
 
-type NodeInfo struct {
-	State    uint   // NodeForServers status
-	Port     uint16 // The nodes's port
-	ID       uint64 // The nodes's id
-	Time     int64
-	Version  uint32 // The network protocol the NodeForServers used
-	Services uint64 // The services the NodeForServers supplied
-	Relay    bool   // The relay capability of the NodeForServers (merge into capbility flag)
-	Height   uint64 // The NodeForServers latest block height
-	TxnCnt   uint64 // The transactions be transmit by this NodeForServers
-	RxTxnCnt uint64 // The transaction received by this NodeForServers
+type NodeState struct {
+	Compile     string // The compile version of this server node
+	ID          uint64 // The nodes's id
+	HexID       string // The nodes's id in hex format
+	Height      uint64 // The ServerNode latest block height
+	Version     uint32 // The network protocol the ServerNode used
+	Services    uint64 // The services the local node supplied
+	Relay       bool   // The relay capability of the ServerNode (merge into capbility flag)
+	TxnCnt      uint64 // The transactions be transmit by
+	RxTxnCnt    uint64 // The transaction received by this ServerNode
+	Port        uint16 // The nodes's port
+	PRCPort     uint16 // The RPC service prot
+	RestPort    uint16 // The RESTful service port
+	WSPort      uint16 // The webservcie port
+	OpenPort    uint16 // The open service port
+	OpenService bool   // If open service is enabled
+	Neighbors   []Neighbor
+}
+
+type Neighbor struct {
+	ID         uint64 // The neighbor ID
+	HexID      string // The neighbor ID in hex format
+	Height     uint64 // The neighbor height
+	Services   uint64 // The services the neighbor node supplied
+	Relay      bool   // If this neighbor relay block and transactions
+	External   bool   // If this neighbor is an external node
+	State      string // The state of this neighbor node
+	NetAddress string // The tcp address of this neighbor node
 }
 
 type ArbitratorGroupInfo struct {
