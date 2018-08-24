@@ -31,8 +31,8 @@ $ brew install go@1.9
 In this instruction we use ~/dev/src/github.com/elastos as our working directory. If you clone the source code to a different directory, please make sure you change other environment variables accordingly (not recommended). 
 
 ```shell
-$ mkdir ~/dev/bin
-$ mkdir ~/dev/src/github.com/elastos/
+$ mkdir -p ~/dev/bin
+$ mkdir -p ~/dev/src/github.com/elastos/
 ```
 
 ### Set correct environment variables
@@ -76,7 +76,7 @@ $ git clone https://github.com/elastos/Elastos.ELA.git
 If clone works successfully, you should see folder structure like $GOPATH/src/github.com/elastos/Elastos.ELA/Makefile
 ### Glide install
 
-cd $GOPATH/src/github.com/elastos/Elastos.ELA and Run `glide update && glide install` to install depandencies.
+cd $GOPATH/src/github.com/elastos/Elastos.ELA and Run `glide update && glide install` to install dependencies.
 
 ### Make
 
@@ -120,8 +120,8 @@ $ sudo apt-get install -y golang-1.9-go
 In this instruction we use ~/dev/src/github.com/elastos/ as our working directory. If you clone the source code to a different directory, please make sure you change other environment variables accordingly (not recommended). 
 
 ```shell
-$ mkdir ~/dev/bin
-$ mkdir ~/dev/src/github.com/elastos
+$ mkdir -p ~/dev/bin
+$ mkdir -p ~/dev/src/github.com/elastos
 ```
 
 ### Set correct environment variables
@@ -166,7 +166,7 @@ $ git clone https://github.com/elastos/Elastos.ELA.git
 If clone works successfully, you should see folder structure like $GOPATH/src/github.com/elastos/Elastos.ELA/Makefile
 ### Glide install
 
-cd $GOPATH/src/github.com/elastos/Elastos.ELA and Run `glide update && glide install` to install depandencies.
+cd $GOPATH/src/github.com/elastos/Elastos.ELA and Run `glide update && glide install` to install dependencies.
 
 ### Make
 

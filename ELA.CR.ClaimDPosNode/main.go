@@ -79,7 +79,7 @@ func main() {
 	log.Info("2. Start the P2P networks")
 	noder = node.InitLocalNode()
 
-	servers.NodeForServers = noder
+	servers.ServerNode = noder
 
 	log.Info("3. --Start the RPC service")
 	go httpjsonrpc.StartRPCServer()
