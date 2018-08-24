@@ -423,7 +423,7 @@ parameters:
 
 | name | type | description |
 | ---- | ---- | ----------- |
-| addresses | arrry[string] | addresses | 
+| addresses | array[string] | addresses |
 
 result:
 please see below
@@ -526,7 +526,7 @@ results:
 | ---- | ---- | ----------- |
 | Time | integer | current time in unix nano format |
 | Services | integer | node service type. 4 is spv service and 0 is no spv service |
-| IP | arrry[integer] | ip in 16-byte representation |
+| IP | array[integer] | ip in 16-byte representation |
 | Port | integer | p2p network port |
 | ID | integer | node's id | 
 
@@ -564,17 +564,35 @@ results:
 
 | name | type | description |
 | ---- | ---- | ----------- |
-| Time | integer | current time in unix nano format |
-| State | integer | node's state | 
+| Compile | string | node's compile version |
+| ID | integer | node's id |
+| HexID | string | node's id in hex format |
+| Height | integer | current height |
 | Version | integer | node's version in config.json |
 | Services | integer | node service type. 4 is spv service and 0 is no spv service |
-| IP | arrry[integer] | ip in 16-byte representation |
 | Relay | bool | whether node will relay transaction or not |
 | TxnCnt | integer | transactions transmitted by this node |
 | RxTxnCnt | integer | The transaction received by this node |
-| Height | integer | current height |
 | Port | integer | p2p network port |
-| ID | integer | node's id | 
+| RPCPort | integer | json-RPC service port |
+| RestPort | integer | RESTful service port |
+| WSPort | integer | webservice port |
+| OpenPort | integer | open service port |
+| OpenService | bool | if opens service enabled |
+| Neighbors | array[neighbor] | neighbor nodes information |
+
+neighbor:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| ID | integer | neighbor's id |
+| HexID | string | neighbor's id in hex format |
+| Height | integer | neighbor current height |
+| Services | integer | neighbor service type. 4 is spv service and 0 is no spv service |
+| Relay | bool | whether neighbor will relay transaction or not |
+| External | bool | whether neighbor is from external network |
+| State | string | neighbor state in string format |
+| NetAddress | string | neighbor tcp address |
 
 argument sample:
 ```json
@@ -589,16 +607,33 @@ argument sample:
     "error": null,
     "jsonrpc": "2.0",
     "result": {
-        "State": 0,
-        "Port": 20338,
-        "ID": 16645880157291893421,
-        "Time": 1524198859097844000,
-        "Version": 1,
+        "Compile": "v0.1.1-50-gcd97",
+        "ID": 10544939963783245780,
+        "HexID": "0x925727070f1eefd4",
+        "Height": 168748,
+        "Version": 0,
         "Services": 4,
         "Relay": true,
-        "Height": 0,
         "TxnCnt": 0,
-        "RxTxnCnt": 0
+        "RxTxnCnt": 0,
+        "Port": 20338,
+        "PRCPort": 20336,
+        "RestPort": 20334,
+        "WSPort": 20335,
+        "OpenPort": 20866,
+        "OpenService": true,
+        "Neighbors": [
+            {
+                "ID": 8978226977158442839,
+                "HexID": "0x7c9911ddf65baf57",
+                "Height": 168748,
+                "Services": 4,
+                "Relay": true,
+                "External": false,
+                "State": "ESTABLISH",
+                "NetAddress": "13.229.160.170:20866"
+            }
+        ]
     }
 }
 ```

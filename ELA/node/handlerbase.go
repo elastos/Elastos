@@ -3,7 +3,6 @@ package node
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
@@ -36,8 +35,7 @@ func (h *HandlerBase) OnError(err error) {
 		log.Error(err)
 		h.node.CloseConn()
 	case p2p.ErrDisconnected:
-		log.Error("[MsgHandler] connection disconnected")
-		LocalNode.GetEvent("disconnect").Notify(events.EventNodeDisconnect, h.node)
+		LocalNode.Events().Notify(events.EventNodeDisconnect, h.node.ID())
 	default:
 		log.Error(err)
 	}
@@ -47,6 +45,11 @@ func (h *HandlerBase) OnError(err error) {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error) {
+	// Nothing to do if node already disconnected
+	if h.node.State() == p2p.INACTIVITY {
+		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
+	}
+
 	switch cmd {
 	case p2p.CmdVersion:
 		message = new(msg.Version)
@@ -66,9 +69,11 @@ func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error)
 // After message has been successful decoded, this method
 // will be called to pass the decoded message instance
 func (h *HandlerBase) OnMessageDecoded(message p2p.Message) {
+	log.Debugf("-----> [%s] from peer [0x%x] STARTED", message.CMD(), h.node.ID())
 	if err := h.HandleMessage(message); err != nil {
-		log.Errorf("Handle message error %s", err.Error())
+		log.Error("Handle message error: " + err.Error())
 	}
+	log.Debugf("-----> [%s] from peer [0x%x] FINISHED", message.CMD(), h.node.ID())
 }
 
 func (h *HandlerBase) HandleMessage(message p2p.Message) error {
@@ -113,7 +118,6 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 	node.UpdateInfo(time.Now(), version.Version, version.Services,
 		version.Port, version.Nonce, version.Relay, version.Height)
-	LocalNode.AddNeighborNode(node)
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
@@ -122,25 +126,12 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 		node.UpdateMsgHelper(NewHandlerEIP001(node))
 	}
 
-	// Do not add extra node address into known addresses, for this can
-	// stop inner node from creating an outbound connection to extra node.
-	if !node.IsFromExtraNet() {
-		ip, _ := node.Addr16()
-		addr := p2p.NetAddress{
-			Time:     node.GetTime(),
-			Services: version.Services,
-			IP:       ip,
-			Port:     version.Port,
-			ID:       version.Nonce,
-		}
-		LocalNode.AddKnownAddress(addr)
-	}
-
 	var message p2p.Message
 	if node.State() == p2p.INIT {
 		node.SetState(p2p.HANDSHAKE)
 		version := NewVersion(LocalNode)
-		if node.IsFromExtraNet() {
+		// External node connect with open port
+		if node.IsExternal() {
 			version.Port = config.Parameters.NodeOpenPort
 		} else {
 			version.Port = config.Parameters.NodePort
@@ -167,23 +158,35 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	}
 
 	node.SetState(p2p.ESTABLISH)
-	go node.Heartbeat()
 
+	// Finish handshake
+	LocalNode.RemoveFromHandshakeQueue(node)
+	LocalNode.RemoveFromConnectingList(node.NetAddress().String())
+
+	// Add node to neighbor list
+	LocalNode.AddNeighborNode(node)
+
+	// Do not add external node address into known addresses, for this can
+	// stop internal node from creating an outbound connection to it.
+	if !node.IsExternal() {
+		LocalNode.AddKnownAddress(node.NetAddress())
+	}
+
+	// Request more neighbor addresses
 	if LocalNode.NeedMoreAddresses() {
 		node.RequireNeighbourList()
 	}
-	addr := node.Addr()
-	port := node.Port()
-	nodeAddr := addr + ":" + strconv.Itoa(int(port))
-	LocalNode.RemoveFromHandshakeQueue(node)
-	LocalNode.RemoveFromConnectingList(nodeAddr)
+
+	// Start heartbeat
+	go node.Heartbeat()
+
 	return nil
 }
 
 func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 	var addrs []p2p.NetAddress
 	// Only send addresses that enabled SPV service
-	if h.node.IsFromExtraNet() {
+	if h.node.IsExternal() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
 			if addr.Services&protocol.OpenService == protocol.OpenService {
 				addr.Port = config.Parameters.NodeOpenPort
@@ -200,11 +203,10 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 
 func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
 	for _, addr := range msgAddr.AddrList {
-		log.Debugf("The ip address is %s id is 0x%x", addr.String(), addr.ID)
-
 		if addr.ID == LocalNode.ID() {
 			continue
 		}
+
 		if LocalNode.NodeEstablished(addr.ID) {
 			continue
 		}

@@ -59,17 +59,11 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	}
 
 	transactions := block.Transactions
-	var rewardInCoinbase = Fixed64(0)
-	var totalTxFee = Fixed64(0)
 	for index, tx := range transactions {
 		// The first transaction in a block must be a coinbase.
 		if index == 0 {
 			if !tx.IsCoinBaseTx() {
 				return errors.New("[PowCheckBlockSanity] first transaction in block is not a coinbase")
-			}
-			// Calculate reward in coinbase
-			for _, output := range tx.Outputs {
-				rewardInCoinbase += output.Value
 			}
 			continue
 		}
@@ -78,14 +72,6 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		if tx.IsCoinBaseTx() {
 			return errors.New("[PowCheckBlockSanity] block contains second coinbase")
 		}
-
-		// Calculate transaction fee
-		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
-	}
-
-	// Reward in coinbase must match inflation 4% per year
-	if rewardInCoinbase-totalTxFee != GetBlockRewardAmount(block.Height) {
-		return errors.New("[PowCheckBlockSanity] reward amount in coinbase not correct")
 	}
 
 	// Check transaction outputs after a update checkpoint.
@@ -146,6 +132,33 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	return nil
 }
 
+func CheckBlockContext(block *Block) error {
+	var rewardInCoinbase = Fixed64(0)
+	var totalTxFee = Fixed64(0)
+
+	for index, tx := range block.Transactions {
+		if errCode := CheckTransactionContext(tx); errCode != Success {
+			return errors.New("CheckTransactionContext failed when verify block")
+		}
+
+		if index == 0 {
+			// Calculate reward in coinbase
+			for _, output := range tx.Outputs {
+				rewardInCoinbase += output.Value
+			}
+			continue
+		}
+		// Calculate transaction fee
+		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+	}
+
+	// Reward in coinbase must match inflation 4% per year
+	if rewardInCoinbase-totalTxFee != RewardAmountPerBlock {
+		return errors.New("reward amount in coinbase not correct")
+	}
+	return nil
+}
+
 func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
@@ -172,13 +185,8 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 		return errors.New("block timestamp is not after expected")
 	}
 
-	// The height of this block is one more than the referenced
-	// previous block.
-	blockHeight := prevNode.Height + 1
-
-	// Ensure all transactions in the block are finalized.
-	for _, txn := range block.Transactions[1:] {
-		if !IsFinalizedTransaction(txn, blockHeight) {
+	for _, tx := range block.Transactions[1:] {
+		if !IsFinalizedTransaction(tx, block.Height) {
 			return errors.New("block contains unfinalized transaction")
 		}
 	}
