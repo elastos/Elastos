@@ -633,7 +633,7 @@ static void sreply(TestContext *context, int argc, char *argv[])
         return;
     }
     else {
-        printf("Unknown sub command.\n");
+        vlogE("Unknown sub command");
         write_ack("sreply failed\n");
         return;
     }

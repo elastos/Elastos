@@ -137,13 +137,3 @@ if(NOT WIN32)
     install(PROGRAMS elatests.sh
         DESTINATION "bin")
 endif()
-
-if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    configure_file(
-        fix.sh.in
-        fix.sh
-        "@ONLY")
-
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/fix.sh
-        DESTINATION "bin")
-endif()

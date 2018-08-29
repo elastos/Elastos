@@ -396,11 +396,8 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
 
-    vlogI("<%s> LINE: %d >>>", __FUNCTION__, __LINE__);
     rc = read_ack("%32s %32s", cmd, result);
     TEST_ASSERT_TRUE(rc == 2);
-    vlogI("<%s> LINE: %d >>>cmd:%s, result:%s", __FUNCTION__, __LINE__, cmd,
-          result);
     TEST_ASSERT_TRUE(strcmp(cmd, "sinit") == 0);
     TEST_ASSERT_TRUE(strcmp(result, "success") == 0);
 

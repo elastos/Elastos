@@ -58,9 +58,19 @@ else()
     set(PATCH_EXE "patch")
 endif()
 
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+if(APPLE)
+    set(CMAKE_INSTALL_RPATH "@execuable_path/Frameworks;@loader_path/../lib")
+else()
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif()
 set(CMAKE_MACOSX_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR TRUE)
+set(CMAKE_INSTALL_NAME_DIR "@rpath")
+
+set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG "-Wl,-rpath,")
+set(CMAKE_SHARED_LIBRARY_RUNTIME_C_FLAG_SEP ":")
 
 ##Only suport for windows.
 if(WIN32)

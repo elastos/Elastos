@@ -96,7 +96,6 @@ void self_info_cb(ElaCarrier *w, const ElaUserInfo *info, void *context)
 {
     vlogD("Received current user information:");
     print_user_info(info);
-    vlogD("\n");
 }
 
 static
@@ -111,7 +110,6 @@ bool friend_list_cb(ElaCarrier* w, const ElaFriendInfo *info, void *context)
             grouped = true;
         }
         print_friend_info(info, idx);
-        vlogD("\n");
         idx++;
 
     } else {
@@ -144,7 +142,6 @@ static void friend_info_cb(ElaCarrier *w, const char *friendid,
 {
     vlogD("Friend %s's information changed ->", friendid);
     print_friend_info(info, 0);
-    vlogD("\n");
 }
 
 static const char *presence_name[] = {
@@ -194,7 +191,6 @@ static void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
 {
     vlogI("New friend %s added", info->user_info.userid);
     print_friend_info(info, 0);
-    vlogI("\n");
 }
 
 static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context)
@@ -208,7 +204,6 @@ static void friend_message_cb(ElaCarrier *w, const char *from,
 {
     vlogD("Received message from %s", from);
     vlogD(" msg: %s", (const char *)msg);
-    vlogD("\n");
 
     write_ack("%s\n", msg);
 }
