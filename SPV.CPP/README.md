@@ -85,6 +85,6 @@ Patches are welcome. Please submit pull requests against the `dev` branch.
 ## More
 
 Learn more about this repository please refer to the following links:
-- [interfaces definition](https://github.com/elastos/Elastos.ELA.SPV.Cpp/tree/dev/Interface)
+- [interfaces document](https://raindust.github.io/Elastos.ELA.SPV.Cpp.Document/)
 - [wiki](https://github.com/elastos/Elastos.ELA.SPV.Cpp/wiki)
 
