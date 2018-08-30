@@ -22,7 +22,6 @@
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
 #include "Transaction/TransactionCompleter.h"
-#include "TimeUtils.h"
 
 namespace fs = boost::filesystem;
 
@@ -123,7 +122,7 @@ namespace Elastos {
 			uint32_t end = std::min(start + count, (uint32_t) addresses.size());
 			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
 			nlohmann::json j;
-			j["Addresses"] = addresses;
+			j["Addresses"] = results;
 			return j;
 		}
 
@@ -443,7 +442,7 @@ namespace Elastos {
 		void SubWallet::syncStarted() {
 			_syncStartHeight = _walletManager->getPeerManager()->getSyncStartHeight();
 			if (_info.getEarliestPeerTime() == 0) {
-				_info.setEaliestPeerTime(TimeUtils::getCurrentTime());
+				_info.setEaliestPeerTime(time(nullptr));
 			}
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),
