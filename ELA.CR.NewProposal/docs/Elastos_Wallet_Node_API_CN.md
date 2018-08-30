@@ -15,7 +15,7 @@
     }
     ```
 
-* `/api/v1/node/statet` : 获取当前节点状态
+* `/api/v1/node/state` : 获取当前节点状态
 
    示例：
 
