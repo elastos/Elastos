@@ -120,5 +120,12 @@ namespace Elastos {
 		ElaNewWalletJson &KeyStore::json() {
 			return _walletJson;
 		}
+
+		bool KeyStore::isOld() {
+			if (_walletJson.getCoinInfoList().empty()) {
+				return true;
+			}
+			return false;
+		}
 	}
 }

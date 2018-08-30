@@ -198,6 +198,7 @@ namespace Elastos {
 			MasterWalletStore _localStore;
 			boost::shared_ptr<Mnemonic> _mnemonic;
 			bool _isImportFromMnemonic;
+			bool _isOldKeyStore;
 
 			std::string _id;
 			std::string _rootPath;

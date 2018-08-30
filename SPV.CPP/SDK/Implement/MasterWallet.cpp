@@ -38,7 +38,8 @@ namespace Elastos {
 								   bool p2pEnable) :
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false) {
+				_isImportFromMnemonic(false),
+				_isOldKeyStore(false) {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
@@ -56,7 +57,8 @@ namespace Elastos {
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false) {
+				_isImportFromMnemonic(false),
+				_isOldKeyStore(false) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
@@ -79,7 +81,8 @@ namespace Elastos {
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false) {
+				_isImportFromMnemonic(false),
+				_isOldKeyStore(false) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(backupPassword, "Backup");
@@ -159,7 +162,7 @@ namespace Elastos {
 			}
 
 			CoinInfo info;
-			if (_isImportFromMnemonic) {
+			if (_isImportFromMnemonic || _isOldKeyStore) {
 				info.setEaliestPeerTime(1513936800);
 			} else {
 				info.setEaliestPeerTime(0);
@@ -256,6 +259,11 @@ namespace Elastos {
 			KeyStore keyStore;
 			if (!keyStore.open(keystoreContent, backupPassword))
 				throw std::logic_error("Import key error.");
+
+			if (keyStore.isOld()) {
+				Log::getLogger()->info("import from old keystore");
+				_isOldKeyStore = true;
+			}
 
 			initFromKeyStore(keyStore, payPassword, phrasePassword);
 

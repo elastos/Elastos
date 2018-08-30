@@ -26,6 +26,8 @@ namespace Elastos {
 
 			bool save(nlohmann::json &json, const std::string &password);
 
+			bool isOld();
+
 			const ElaNewWalletJson &json() const;
 
 			ElaNewWalletJson &json();

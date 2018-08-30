@@ -128,7 +128,7 @@ namespace Elastos {
 				std::vector<nlohmann::json> values;
 				for (int k = 0; k < _contents[i].Values.size(); ++k) {
 					nlohmann::json value;
-					value["DataHash"] = Utils::UInt256ToString(_contents[i].Values[k].DataHash);
+					value["DataHash"] = Utils::UInt256ToString(_contents[i].Values[k].DataHash, true);
 					value["Proof"] = _contents[i].Values[k].Proof;
 					values.push_back(value);
 				}
@@ -155,7 +155,7 @@ namespace Elastos {
 				std::vector<nlohmann::json> values = contents[i]["Values"];
 				for (int k = 0; k < values.size(); ++k) {
 					ValueItem value;
-					value.DataHash = Utils::UInt256FromString(values[k]["DataHash"].get<std::string>());
+					value.DataHash = Utils::UInt256FromString(values[k]["DataHash"].get<std::string>(), true);
 					value.Proof = values[k]["Proof"].get<std::string>();
 					content.Values.push_back(value);
 				}
