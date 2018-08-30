@@ -7,6 +7,7 @@
 #include <iostream>
 #include <catch.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/filesystem.hpp>
 #include <Core/BRTransaction.h>
 
 #include "BRTransaction.h"
@@ -47,27 +48,6 @@ MasterPubKeyPtr createDummyPublicKey() {
 
 	MasterPubKeyPtr masterPubKey(new MasterPubKey(*key.getRaw(), chainCode));
 	return masterPubKey;
-}
-
-MasterPrivKey createDummyPrivateKey(const std::string &password) {
-	UInt512 seed;
-	std::string phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	BRBIP39DeriveKey(seed.u8, phrase.c_str(), "");
-
-	UInt256 chainCode = UINT256_ZERO;
-	Key key;
-	key.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 3, 44, 0, 0);
-
-	char rawKey[BRKeyPrivKey(key.getRaw(), nullptr, 0)];
-	BRKeyPrivKey(key.getRaw(), rawKey, sizeof(rawKey));
-
-	CMBlock ret(sizeof(rawKey));
-	memcpy(ret, &rawKey, sizeof(rawKey));
-
-	MasterPrivKey masterPrivKey;
-	masterPrivKey.SetEncryptedKey(Utils::encrypt(ret, password));
-	masterPrivKey.SetChainCode(chainCode);
-	return masterPrivKey;
 }
 
 boost::filesystem::path tryInitDatabasePath() {

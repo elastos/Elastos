@@ -42,12 +42,5 @@ namespace Elastos {
 			return _merkleBlocks[blockType]->CreateMerkleBlock(manageRaw);
 		}
 
-		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, BRMerkleBlock *block, bool manageRaw) {
-			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
-				return nullptr;
-
-			return _merkleBlocks[blockType]->CreateFromRaw(block, manageRaw);
-		}
-
 	}
 }

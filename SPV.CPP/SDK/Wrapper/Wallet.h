@@ -21,8 +21,6 @@
 #include "MasterPubKey.h"
 #include "SDK/Transaction/TransactionOutput.h"
 #include "WrapperList.h"
-#include "MasterPrivKey.h"
-#include "AddressCache.h"
 
 namespace Elastos {
 	namespace ElaWallet {
