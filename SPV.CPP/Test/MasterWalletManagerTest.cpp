@@ -197,7 +197,7 @@ TEST_CASE("GetAllMasterWallets", "[MasterWalletManager]") {
 
 		REQUIRE(loMasterWalletVec.size() == 1);
 
-		REQUIRE(masterWallet->GetAllSubWallets().size() == 1);
+		REQUIRE(masterWallet->GetAllSubWallets().size() == 0);
 
 		REQUIRE_NOTHROW(masterWalletManager->DestroyWallet(masterWalletId));
 	}
