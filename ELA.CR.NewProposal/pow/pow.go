@@ -26,40 +26,50 @@ var TaskCh chan bool
 
 const (
 	maxNonce       = ^uint32(0) // 2^32 - 1
-	maxExtraNonce  = ^uint64(0) // 2^64 - 1
-	hpsUpdateSecs  = 10
 	hashUpdateSecs = 15
 )
 
-type msgBlock struct {
-	BlockData map[string]*Block
-	Mutex     sync.Mutex
+type auxBlockPool struct {
+	mapNewBlock map[common.Uint256]*Block
+	mutex       sync.RWMutex
+}
+
+func (auxpool *auxBlockPool) AppendBlock(block *Block) {
+	auxpool.mutex.Lock()
+	defer auxpool.mutex.Unlock()
+
+	auxpool.mapNewBlock[block.Hash()] = block
+}
+
+func (auxpool *auxBlockPool) ClearBlock() {
+	auxpool.mutex.Lock()
+	defer auxpool.mutex.Unlock()
+
+	for key := range auxpool.mapNewBlock {
+		delete(auxpool.mapNewBlock, key)
+	}
+}
+
+func (auxpool *auxBlockPool) GetBlock(hash common.Uint256) (*Block, bool) {
+	auxpool.mutex.RLock()
+	defer auxpool.mutex.RUnlock()
+
+	block, ok := auxpool.mapNewBlock[hash]
+	return block, ok
 }
 
 type PowService struct {
 	PayToAddr      string
-	MsgBlock       msgBlock
-	Mutex          sync.Mutex
 	Started        bool
 	discreteMining bool
+	AuxBlockPool   auxBlockPool
+	Mutex          sync.Mutex
 
 	blockPersistCompletedSubscriber events.Subscriber
 	RollbackTransactionSubscriber   events.Subscriber
 
 	wg   sync.WaitGroup
 	quit chan struct{}
-}
-
-func (pow *PowService) CollectTransactions(MsgBlock *Block) int {
-	txs := 0
-	transactionsPool := node.LocalNode.GetTransactionPool(true)
-
-	for _, tx := range transactionsPool {
-		log.Trace(tx)
-		MsgBlock.Transactions = append(MsgBlock.Transactions, tx)
-		txs++
-	}
-	return txs
 }
 
 func (pow *PowService) CreateCoinbaseTx(nextBlockHeight uint32, minerAddr string) (*Transaction, error) {
@@ -343,7 +353,7 @@ func NewPowService() *PowService {
 		PayToAddr:      config.Parameters.PowConfiguration.PayToAddr,
 		Started:        false,
 		discreteMining: false,
-		MsgBlock:       msgBlock{BlockData: make(map[string]*Block)},
+		AuxBlockPool:   auxBlockPool{mapNewBlock: make(map[common.Uint256]*Block)},
 	}
 
 	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
