@@ -69,6 +69,7 @@ else()
         "--disable-silk"
         "--disable-opus"
         "--disable-libyuv"
+        "ac_cv_lib_uuid_uuid_generate=no"
         ${CONFIGURE_ARGS_INIT}
         ${ARGS_HOST_REDEF})
 

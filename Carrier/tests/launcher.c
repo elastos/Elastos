@@ -267,7 +267,8 @@ int launcher_main(int argc, char *argv[])
 
     init_screen();
 
-    for (int i = 0; i < argc; i++) {
+    int i;
+    for (i = 0; i < argc; i++) {
         strcat(cmdbase, argv[i]);
         strcat(cmdbase, " ");
     }
@@ -294,7 +295,7 @@ int launcher_main(int argc, char *argv[])
     dump(&dumper[0], spstdout(tests), tests_out_win);
     dump(&dumper[1], spstderr(tests), tests_log_win);
 
-    for (int i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++)
         pthread_join(dumper[i], NULL);
 
     spclose(tests);

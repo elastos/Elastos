@@ -1,0 +1,13 @@
+diff -ruN libcrystal-master/src/CMakeLists.txt libcrystal-master-mod/src/CMakeLists.txt
+--- libcrystal-master/src/CMakeLists.txt	2018-08-29 14:41:41.000000000 +0800
++++ libcrystal-master-mod/src/CMakeLists.txt	2018-08-29 21:15:35.000000000 +0800
+@@ -118,6 +118,9 @@
+ 
+ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+     set(SYSTEM_LIBS pthread m)
++    if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm")
++        list(APPEND SYSTEM_LIBS rt)
++    endif()
+ elseif(WIN32)
+     set(SYSTEM_LIBS Ws2_32 Winmm pthread)
+ endif()
