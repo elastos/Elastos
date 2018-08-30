@@ -82,6 +82,8 @@ public:
 			SubWalletType subWalletType,
 			int coinTypeIndex,
 			uint64_t feePerKb = 0) {
+
+		tryInitCoinConfig();
 		CoinInfo info;
 		info.setEaliestPeerTime(0);
 		info.setWalletType(subWalletType);
@@ -369,8 +371,7 @@ TEST_CASE("Master wallet DestroyWallet method test", "[DestroyWallet]") {
 
 		masterWallet->DestroyWallet(subWallet);
 		std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
-		REQUIRE(subWallets.size() == 1);
-		masterWallet->DestroyWallet(subWallets[0]);
+		REQUIRE(subWallets.size() == 0);
 		try {
 			masterWallet->DestroyWallet(subWallet);
 		}
@@ -466,6 +467,7 @@ TEST_CASE("Master wallet ChangePassword method test", "[ChangePassword]") {
         REQUIRE_NOTHROW(masterWallet->ChangePassword(payPassword, newPayPassword));
 	}
 	SECTION("Change password should be effective for sub wallets") {
+		masterWallet->CreateSubWallet("ELA", payPassword, false);
 		std::string newPayPassword = "newPayPassword";
 
 		REQUIRE_NOTHROW(masterWallet->GetAllSubWallets()[0]->Sign("MyMessage", payPassword));
@@ -656,7 +658,7 @@ TEST_CASE("Master wallet GetAllSubWallets method test", "[GetAllSubWallets]") {
 		std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
 		boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet(mnemonic, phrasePassword, payPassword));
 
-		REQUIRE(masterWallet->GetAllSubWallets().size() == 1);
+		REQUIRE(masterWallet->GetAllSubWallets().size() == 0);
 
 		std::string masterWalletId = masterWallet->GetId();
 
