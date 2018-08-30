@@ -200,12 +200,19 @@ namespace Elastos {
 				if (blocks[i]->getHeight() == 0)
 					continue;
 
-//				if (blocks.size() == 1)
-//					peer_log(getPeerManager()->getRaw()->downloadPeer, "checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
-//									   blocks[i]->getHeight(),
-//									   Utils::UInt256ToString(blocks[i]->getBlockHash(), true).c_str(),
-//									   blocks[i]->getRawBlock()->timestamp,
-//									   blocks[i]->getRawBlock()->target);
+#ifndef NDEBUG
+				if (blocks.size() == 1) {
+					time_t now = time(NULL);
+					char tbuf[20];
+					strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", localtime(&now));
+					peer_dbg(getPeerManager()->getRaw()->downloadPeer, "%s: checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
+									   tbuf,
+									   blocks[i]->getHeight(),
+									   Utils::UInt256ToString(blocks[i]->getBlockHash(), true).c_str(),
+									   blocks[i]->getRawBlock()->timestamp,
+									   blocks[i]->getRawBlock()->target);
+				}
+#endif
 
 				ostream.setPosition(0);
 				blocks[i]->Serialize(ostream);
