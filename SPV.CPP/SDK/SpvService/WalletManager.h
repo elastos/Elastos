@@ -18,7 +18,6 @@
 #include "KeyStore/KeyStore.h"
 #include "SDK/Transaction/Transaction.h"
 #include "CMemBlock.h"
-#include "MasterPrivKey.h"
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -21,8 +21,6 @@ namespace Elastos {
 
 			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, bool manageRaw);
 
-			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, BRMerkleBlock *block, bool manageRaw);
-
 			void AddMerkleBlockProto(IMerkleBlock *merkleBlock);
 
 			void RemoveMerkleBlockProto(IMerkleBlock *merkleBlock);
