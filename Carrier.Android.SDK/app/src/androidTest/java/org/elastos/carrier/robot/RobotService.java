@@ -70,7 +70,7 @@ public class RobotService extends Service {
 			try {
 
 				if (hello.equals("auto-accepted")) {
-					carrierInst.AcceptFriend(userId);
+					carrierInst.acceptFriend(userId);
 				} else {
 					Message msg = Message.obtain(null, RobotService.MSG_REQ_FRIEND_ARRIVAL);
 					Bundle data = new Bundle();
