@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "Interface/IMerkleBlock.h"
+#include "Interface/IHDPath.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -25,12 +26,21 @@ namespace Elastos {
 
 			void RemoveMerkleBlockProto(IMerkleBlock *merkleBlock);
 
+			IHDPath *CreateHDPath(const std::string &pathType);
+
+			void AddHDPathProto(IHDPath *hdPath);
+
+			void RemoveHDPathProto(IHDPath *hdPath);
+
 		private:
 
 			Registry();
 
 			typedef std::map<std::string, MerkleBlockPtr> MerkleBlockMap;
 			MerkleBlockMap _merkleBlocks;
+
+			typedef std::map<std::string, HDPathPtr> HDPathMap;
+			HDPathMap _hdPaths;
 		};
 
 		template<class T>
@@ -55,10 +65,35 @@ namespace Elastos {
 			T *_block;
 		};
 
+		template <class T>
+		class RegisterHDPathProxy {
+		public:
+			RegisterHDPathProxy() {
+				if (Registry::Instance()) {
+					_hdPath = new T;
+					Registry::Instance()->AddHDPathProto(_hdPath);
+				}
+			}
+
+			~RegisterHDPathProxy() {
+				if (Registry::Instance()) {
+					Registry::Instance()->RemoveHDPathProto(_hdPath);
+				}
+			}
+
+			T *get() { return _hdPath;}
+
+		private:
+			T *_hdPath;
+		};
+
 #define REGISTER_MERKLEBLOCKPLUGIN(classname) \
     static Elastos::ElaWallet::RegisterMerkleBlockProxy<classname> g_proxy_##classname;
 
 	}
+
+#define REGISTER_HDPATHPLUGIN(classname) \
+	static Elastos::ElaWallet::RegisterHDPathProxy<classname> g_proxy_##classname;
 }
 
 #endif //__ELASTOS_SDK_REGISTRY_H__
