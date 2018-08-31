@@ -301,8 +301,8 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 		Height:            ServerNode.Height(),
 		CoinBaseValue:     currentAuxBlock.Transactions[0].Outputs[1].Value,
 		Bits:              fmt.Sprintf("%x", currentAuxBlock.Header.Bits),
-		Hash:              BytesToHexString(currentAuxBlock.Hash().Bytes()),
-		PreviousBlockHash: BytesToHexString(chain.DefaultLedger.Blockchain.CurrentBlockHash().Bytes()),
+		Hash:              currentAuxBlock.Hash().String(),
+		PreviousBlockHash: chain.DefaultLedger.Blockchain.CurrentBlockHash().String(),
 	}
 	return ResponsePack(Success, &SendToAux)
 }
