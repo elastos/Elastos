@@ -14,7 +14,15 @@ You need to build carrier android ndk distributions from the Carrier native repo
 https://github.com/elastos/Elastos.NET.Carrier.Native.SDK
 ```
 
-Finished building android ndk for Carrier, you would have native output library **libcarrier-native.a** to each CPU arch, currently supported for **armv7l**, **arm64**, **x86**, **x86-64**.
+Finished building android ndk for Carrier, you would have the following native shared libraries:
+
+```
+libcrystal.so
+libelacarrier.so
+libelasession.so
+```
+
+to each CPU architecture, currently supported for **armv7l**, **arm64**, **x86**, **x86-64** respectively.
 
 ### 2.Import Carrier NDK
 
@@ -26,19 +34,25 @@ app/native-dist
        |--ela_carrier.h
        |--ela_session.h
    |--libs
-       |--armeabi
-          |--libcarrier-native.a
        |--armeabi-v7a
-          |--libcarrier-native.a
+          |--libcrystal.so
+          |--libelacarrier.so
+          |--libelasession.so
        |--arm64-v8a
-          |--libcarrier-native.a
+          |--libcrystal.so
+          |--libelacarrier.so
+          |--libelasession.so
        |--x86
-          |--libcarrier-native.a
+          |--libcrystal.so
+          |--libelacarrier.so
+          |--libelasession.so
        |--x86-64
-          |--libcarrier-native.a
+          |--libcrystal.so
+          |--libelacarrier.so
+          |--libelasession.so
 ```
 
-The headers under subdirectory **"include"** are public header files exported from Carrier native. And **"libcarrier-native.a"** is just a static library dist to each CPU arch from Carrier native.
+The headers under subdirectory **"include"** are public header files exported from Carrier native. And shared libraries under **libs** to each CPU arch are built from Carrier native.
 
 ### 3. Build Carrier SDK
 
