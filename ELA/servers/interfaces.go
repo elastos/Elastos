@@ -261,6 +261,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 
 		if preChainHeight != ServerNode.Height() {
 			// Clear old blocks since they're obsolete now.
+			currentAuxBlock = nil
 			LocalPow.AuxBlockPool.ClearBlock()
 		}
 
@@ -284,7 +285,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 	// But for that to happen, we must already have created a currentAuxBlock in a previous call,
 	// as preChainHeight is initialised only when currentAuxBlock is.
 	if currentAuxBlock == nil {
-		return ResponsePack(InternalError, "no cached block now")
+		return ResponsePack(InternalError, "no block cached")
 	}
 
 	type AuxBlock struct {
