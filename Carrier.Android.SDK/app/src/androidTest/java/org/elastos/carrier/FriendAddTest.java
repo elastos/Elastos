@@ -47,10 +47,12 @@ public class FriendAddTest {
 		String from;
 		ConnectionStatus friendStatus;
 
+		@Override
 		public void onReady(Carrier carrier) {
 			synch.wakeup();
 		}
 
+		@Override
 		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
 			Log.i(TAG, "friendid:" + friendId + "connection changed to: " + status);
 			from = friendId;

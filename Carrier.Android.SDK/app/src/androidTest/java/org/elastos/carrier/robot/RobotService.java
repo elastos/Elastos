@@ -62,10 +62,12 @@ public class RobotService extends Service {
 	class TestHandler extends AbstractCarrierHandler {
 		private Synchronizer synch = new Synchronizer();
 
+		@Override
 		public void onReady(Carrier carrier) {
 			synch.wakeup();
 		}
 
+		@Override
 		public void onFriendRequest(Carrier carrier, String userId, UserInfo info, String hello) {
 			try {
 
@@ -85,12 +87,13 @@ public class RobotService extends Service {
 			}
 		}
 
-		public void onFriendMessage(Carrier carrier, String from, String message) {
+		@Override
+		public void onFriendMessage(Carrier carrier, String from, byte[] message) {
 			try {
 				Message msg = Message.obtain(null, RobotService.MSG_MESSAGE_ARRIVAL);
 				Bundle data = new Bundle();
 				data.putString("from", from);
-				data.putString("message", message);
+				data.putString("message", new String(message));
 				msg.setData(data);
 
 				proxyMsger.send(msg);
@@ -99,6 +102,7 @@ public class RobotService extends Service {
 			}
 		}
 
+		@Override
 		public void onFriendInviteRequest(Carrier carrier, String from, String data) {
 			try {
 				carrierInst.replyFriendInvite(from, 0, null, data);

@@ -35,6 +35,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		carrier		Carrier node instance
 	 */
+	@Override
 	public void onIdle(Carrier carrier) {}
 
 	/**
@@ -45,6 +46,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		status 		Current connection status. @see ConnectionStatus
 	 */
+	@Override
 	public void onConnection(Carrier carrier, ConnectionStatus status) {}
 
 	/**
@@ -56,6 +58,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		carrier 	Carrier node instance
 	 */
+	@Override
 	public void onReady(Carrier carrier) {}
 
 	/**
@@ -66,6 +69,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		info 	The updated user information
 	 */
+	@Override
 	public void onSelfInfoChanged(Carrier carrier, UserInfo info) {}
 
 	/**
@@ -76,6 +80,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		friends 	The friends list.
 	 */
+	@Override
 	public void onFriends(Carrier carrier, List<FriendInfo> friends) {}
 
 	/**
@@ -88,6 +93,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		status	    The connection status of friend. @see ConnectionStatus
 	 */
+	@Override
 	public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {}
 
 	/**
@@ -100,6 +106,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		info		The update friend information
 	 */
+	@Override
 	public void onFriendInfoChanged(Carrier carrier, String friendId, FriendInfo info) {}
 
 	/**
@@ -112,6 +119,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		presence	The presence status of the friend
 	 */
+	@Override
 	public void onFriendPresence(Carrier carrier, String friendId, PresenceStatus presence) {}
 
 	/**
@@ -126,6 +134,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		hello      	The PIN for target user, or any application defined content
 	 */
+	@Override
 	public void onFriendRequest(Carrier carrier, String userId, UserInfo info, String hello) {}
 
 	/**
@@ -136,6 +145,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		info	The added friend's information
 	 */
+	@Override
 	public void onFriendAdded(Carrier carrier, FriendInfo info) {}
 
 	/**
@@ -146,6 +156,7 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		friendId   	The friend's user id
 	 */
+	@Override
 	public void onFriendRemoved(Carrier carrier, String friendId) {}
 
 	/**
@@ -158,7 +169,8 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		message   	The message content
 	 */
-	public void onFriendMessage(Carrier carrier, String from, String message) {}
+	@Override
+	public void onFriendMessage(Carrier carrier, String from, byte[] message) {}
 
 	/**
 	 * The callback function to process the friend invite request.
@@ -170,5 +182,6 @@ public abstract class AbstractCarrierHandler implements CarrierHandler {
 	 * @param
 	 * 		data       	The application defined data sent from friend
 	 */
+	@Override
 	public void onFriendInviteRequest(Carrier carrier, String from, String data) {}
 }

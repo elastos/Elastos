@@ -43,10 +43,12 @@ public class FriendMessageTest {
 		String msgBody;
 		ConnectionStatus friendStatus;
 
+		@Override
 		public void onReady(Carrier carrier) {
 			synch.wakeup();
 		}
 
+        @Override
 		public void onFriendConnection(Carrier carrier, String friendId, ConnectionStatus status) {
 			from = friendId;
 			friendStatus = status;
@@ -54,10 +56,11 @@ public class FriendMessageTest {
 				synch.wakeup();
 		}
 
-		public void onFriendMessage(Carrier whisper, String friendId, String message) {
-			msgBody = message;
+        @Override
+		public void onFriendMessage(Carrier whisper, String friendId, byte[] message) {
+			msgBody = new String(message);
 			from = friendId;
-			Log.i(TAG, "Get a message (" + message + ") from (" + friendId + ")");
+			Log.i(TAG, "Get a message (" + new String(message) + ") from (" + friendId + ")");
 			synch.wakeup();
 		}
 	}
@@ -89,8 +92,6 @@ public class FriendMessageTest {
 			carrierInst.start(1000);
 			handler.synch.await();
 		} catch (ElastosException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

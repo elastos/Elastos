@@ -386,16 +386,17 @@ void cbOnFriendMessage(ElaCarrier* carrier, const char* friendId, const void* me
         logE("New Java String object error");
         return;
     }
-    jmessage = (*hc->env)->NewStringUTF(hc->env, (const char *)message);
+    jmessage = (*hc->env)->NewByteArray(hc->env, length);
     if (!jmessage) {
-        logE("New Java String object error");
+        logE("New Java byte array error");
         (*hc->env)->DeleteLocalRef(hc->env, jfriendId);
         return;
     }
+    (*hc->env)->SetByteArrayRegion(hc->env, jmessage, 0, length, (jbyte *)message);
 
     if (!callVoidMethod(hc->env, hc->clazz, hc->callbacks,
                         "onFriendMessage",
-                        "("_W("Carrier;")_J("String;")_J("String;)V"),
+                        "("_W("Carrier;")_J("String;[B)V"),
                         hc->carrier, jfriendId, jmessage)) {
         logE("Call Carrier.Callbacks.onFriendMessage error");
     }

@@ -30,6 +30,7 @@ public class UserLoginTest {
 	static class TestHandler extends AbstractCarrierHandler {
 		Synchronizer synch = new Synchronizer();
 
+		@Override
 		public void onReady(Carrier carrier) {
 			synch.wakeup();
 		}
@@ -47,8 +48,6 @@ public class UserLoginTest {
 			carrierInst.start(1000);
 			handler.synch.await();
 		} catch (ElastosException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

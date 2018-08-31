@@ -24,6 +24,7 @@ package org.elastos.carrier;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.List;
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ import org.elastos.carrier.exceptions.ElastosException;
  * The class representing Carrier node instance.
  */
 public class Carrier {
+	private Charset UTF8 = Charset.forName("UTF-8");
+
 	/**
 	 * Max Carrier ID length.
 	 */
@@ -112,7 +115,7 @@ public class Carrier {
 			carrier.handler.onFriendRemoved(carrier, friendId);
 		}
 
-		void onFriendMessage(Carrier carrier, String from, String message) {
+		void onFriendMessage(Carrier carrier, String from, byte[] message) {
 			carrier.handler.onFriendMessage(carrier, from, message);
 		}
 
@@ -259,7 +262,7 @@ public class Carrier {
 	private native boolean accept_friend(String userId);
 	private native boolean remove_friend(String userId);
 
-	private native boolean send_message(String to, String message);
+	private native boolean send_message(String to, byte[] message);
 	private native boolean friend_invite(String to, String data,
 										 FriendInviteResponseHandler handler);
 	private native boolean reply_friend_invite(String from, int status, String reason,
@@ -785,7 +788,7 @@ public class Carrier {
 	 * The message length may not exceed MAX_APP_MESSAGE_LEN, and message itself
 	 * should be text-formatted. Larger messages must be split by application
 	 * and sent as separate messages. Other nodes can reassemble the fragments.
-     *
+	 *
 	 * @param
 	 * 		to 			The target id
 	 * @param
@@ -800,10 +803,34 @@ public class Carrier {
 				message == null || message.length() == 0)
 			throw new IllegalArgumentException();
 
+		sendFriendMessage(to, message.getBytes(UTF8));
+	}
+
+	/**
+	 * Send a message to a friend.
+	 *
+	 * The message length may not exceed MAX_APP_MESSAGE_LEN, and message itself
+	 * should be text-formatted. Larger messages must be split by application
+	 * and sent as separate messages. Other nodes can reassemble the fragments.
+     *
+	 * @param
+	 * 		to 			The target id
+	 * @param
+	 * 		message		The message content defined by application
+	 *
+	 * @throws
+	 * 		IllegalArgumentException
+	 * 		ElastosException
+	 */
+	public void sendFriendMessage(String to, byte[] message) throws ElastosException {
+		if (to == null || to.length() == 0 ||
+				message == null || message.length == 0)
+			throw new IllegalArgumentException();
+
 		if (!send_message(to, message))
 			throw new ElastosException(get_error_code());
 
-		Log.d(TAG, "Send message [" + message + "] to friend " + to);
+		Log.d(TAG, "Send " + message.length + " bytes message to friend " + to);
 	}
 
 	/**

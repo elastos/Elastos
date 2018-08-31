@@ -22,6 +22,8 @@
 
 package org.elastos.carrier.session;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import org.elastos.carrier.Log;
 import org.elastos.carrier.exceptions.ElastosException;
 
@@ -59,6 +61,80 @@ public class Stream {
     private native boolean close_port_forwarding(int streamId, int portForwarding);
 
     private static native int get_error_code();
+
+    private class ChannelOutputStream extends OutputStream {
+        private Stream stream;
+        private int channel;
+
+        ChannelOutputStream(Stream stream, int channel) {
+            this.stream = stream;
+            this.channel = channel;
+        }
+
+        ChannelOutputStream(Stream stream) {
+            this(stream, -1);
+        }
+
+        @Override
+        public void write(int i) throws IOException {
+            try {
+                if (channel < 0) {
+                    stream.writeData((byte) i);
+                } else {
+                    stream.writeData(channel, (byte) i);
+                }
+            } catch (ElastosException e) {
+                throw new IOException(e);
+            }
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            try {
+                if (channel < 0) {
+                    stream.writeData(b);
+                } else {
+                    stream.writeData(channel, b);
+                }
+            } catch (ElastosException e) {
+                throw new IOException(e);
+            }
+        }
+
+        @Override
+        public void write(byte[] b, int offset, int len) throws IOException {
+            try {
+                if (channel < 0) {
+                    stream.writeData(b, offset, len);
+                } else {
+                    stream.writeData(channel, b, offset, len);
+                }
+            } catch (ElastosException e) {
+                throw new IOException(e);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (stream == null)
+                return;
+
+            try {
+                if (channel > 0) {
+                    stream.closeChannel(channel);
+
+                    this.stream = null;
+                    this.channel = -1;
+                }
+            } catch (ElastosException e) {
+                throw new IOException(e);
+            }
+        }
+    }
 
     private Stream(StreamType type) {
         streamId = 0;
@@ -165,6 +241,17 @@ public class Stream {
         _data[0] = data;
 
         return writeData(_data);
+    }
+
+    public OutputStream getOutputStream() {
+        return new ChannelOutputStream(this, -1);
+    }
+
+    public OutputStream getOutputStream(int channel) {
+        if (channel <= 0)
+            throw new IllegalArgumentException();
+
+        return new ChannelOutputStream(this, channel);
     }
 
     /**
@@ -339,7 +426,7 @@ public class Stream {
      * @throws
      *      ElastosException
      */
-    public int openPortFowarding(String service, PortForwardingProtocol protocol,
+    public int openPortForwarding(String service, PortForwardingProtocol protocol,
                                  String host, String port) throws ElastosException {
 
         if (service == null || service.length() == 0)

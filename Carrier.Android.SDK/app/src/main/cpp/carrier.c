@@ -530,10 +530,11 @@ jboolean removeFriend(JNIEnv* env, jobject thiz, jstring jfriendId)
 }
 
 static
-jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jstring jmsg)
+jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jbyteArray jmsg)
 {
     const char *to;
-    const char *msg;
+    jbyte *msg;
+    jsize len;
     int rc;
 
     assert(jto);
@@ -545,16 +546,13 @@ jboolean sendMessage(JNIEnv* env, jobject thiz, jstring jto, jstring jmsg)
         return JNI_FALSE;
     }
 
-    msg = (*env)->GetStringUTFChars(env, jmsg, NULL);
-    if (!msg) {
-        (*env)->ReleaseStringUTFChars(env, jto, to);
-        setErrorCode(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return JNI_FALSE;
-    }
+    msg = (*env)->GetByteArrayElements(env, jmsg, NULL);
+    len = (*env)->GetArrayLength(env, jmsg);
+    assert(msg);
+    assert(len);
 
-    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, strlen(msg) + 1);
+    rc = ela_send_friend_message(getCarrier(env, thiz), to, msg, len);
     (*env)->ReleaseStringUTFChars(env, jto, to);
-    (*env)->ReleaseStringUTFChars(env, jmsg, msg);
 
     if (rc < 0) {
         logE("Call ela_send_friend_message API error");
@@ -741,7 +739,7 @@ static JNINativeMethod gMethods[] = {
         {"add_friend",         "("_J("String;")_J("String;)Z"),    (void *) addFriend          },
         {"accept_friend",      "("_J("String;)Z"),                 (void *) acceptFriend       },
         {"remove_friend",      "("_J("String;)Z"),                 (void *) removeFriend       },
-        {"send_message",       "("_J("String;")_J("String;)Z"),    (void *) sendMessage        },
+        {"send_message",       "("_J("String;[B)Z"),               (void *) sendMessage        },
         {"friend_invite",      "("_J("String;")_J("String;")_W("FriendInviteResponseHandler;)Z"), \
                                                                    (void*)inviteFriend         },
         {"reply_friend_invite","("_J("String;I")_J("String;")_J("String;)Z"),\

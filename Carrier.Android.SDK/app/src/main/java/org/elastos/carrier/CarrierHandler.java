@@ -157,7 +157,7 @@ public interface CarrierHandler {
 	 * @param
 	 * 		message   	The message content
 	 */
-	void onFriendMessage(Carrier carrier, String from, String message);
+	void onFriendMessage(Carrier carrier, String from, byte[] message);
 
 	/**
 	 * The callback function to process the friend invite request.

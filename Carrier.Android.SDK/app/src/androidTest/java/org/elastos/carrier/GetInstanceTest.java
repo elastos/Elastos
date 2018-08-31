@@ -27,6 +27,7 @@ public class GetInstanceTest extends AbstractCarrierHandler {
 	class TestHandler extends AbstractCarrierHandler {
 		Synchronizer synch = new Synchronizer();
 
+		@Override
 		public void onReady(Carrier carrier) {
 			synch.wakeup();
 		}
