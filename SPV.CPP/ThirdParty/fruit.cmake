@@ -12,7 +12,7 @@ include_directories("${BOOST_DIR}")
 add_subdirectory(fruit EXCLUDE_FROM_ALL)
 add_dependencies(fruit ${Boost_LIBRARIES})
 
-set(FRUIT_INC_DIRS
+set(ThirdParty_FRUIT_INC_DIRS
 	${CMAKE_CURRENT_BINARY_DIR}/fruit/include
 	${CMAKE_CURRENT_SOURCE_DIR}/fruit/include
 	CACHE INTERNAL "fruit include directories")

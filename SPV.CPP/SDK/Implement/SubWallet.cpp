@@ -22,6 +22,7 @@
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
 #include "Transaction/TransactionCompleter.h"
+#include "SDK/Plugin/HD/HDPath.h"
 
 namespace fs = boost::filesystem;
 
@@ -302,9 +303,8 @@ namespace Elastos {
 			ParamChecker::checkNullPointer(key);
 
 			UInt512 seed = _parent->deriveSeed(payPassword);
-			Key wrapperKey;
-			wrapperKey.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 5, 1 | BIP32_HARD, 0,
-										 44, _info.getIndex(), 0);
+			Key wrapperKey = Registry::Instance()->CreateHDPath("Normal")->
+					CalculateSubWalletMasterKey(seed, _info.getIndex(), chainCode);
 			UInt256Set(&key->secret, wrapperKey.getSecret());
 			key->compressed = wrapperKey.getCompressed();
 			CMBlock pubKey = wrapperKey.getPubkey();
