@@ -729,6 +729,89 @@ result sample:
     "error": null
 }
 ```
+
+#### createauxblock
+
+description: generate an auxiliary block  
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| paytoaddress | string | miner's address | 
+
+named arguments sample:
+```json
+{
+	"method":"createauxblock",
+	"params":{"paytoaddress":"Ef4UcaHwvFrFzzsyVf5YH4JBWgYgUqfTAB"}
+}
+```
+index arguments sample:
+```json
+{
+	"method": "createauxblock",
+	"params": ["Ef4UcaHwvFrFzzsyVf5YH4JBWgYgUqfTAB"]
+}
+```
+
+result sample:
+```json
+{
+    "error": null,
+    "id": null,
+    "jsonrpc": "2.0",
+    "result": {
+        "chainid": 1224,
+        "height": 152789,
+        "coinbasevalue": 175799086,
+        "bits": "1d36c855",
+        "hash": "e28a262b38316fddefb0b5c753f7cc0022afe94e95f881576ad6b8f33f4e49fe",
+        "previousblockhash": "f297d03791f4cf2c6ef093b02a77465ea876b040b7772e56b8e140f3bff73871"
+    }
+}
+```
+
+#### submitauxblock
+
+description: submit the solved auxpow of an auxiliary block   
+parameters:
+
+| name | type | description |
+| ---- | ---- | ----------- |
+| blockhash | string | the auxiliary block hash |
+| auxpow | string | the solved auxpow of this auxiliary block |  
+
+named arguments sample:
+```json
+{
+	"method":"submitauxblock",
+	"params":{
+	  "blockhash": "7926398947f332fe534b15c628ff0cd9dc6f7d3ea59c74801dc758ac65428e64",
+	  "auxpow": "02000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4b0313ee0904a880495b742f4254432e434f4d2ffabe6d6d9581ba0156314f1e92fd03430c6e4428a32bb3f1b9dc627102498e5cfbf26261020000004204cb9a010f32a00601000000000000ffffffff0200000000000000001976a914c0174e89bd93eacd1d5a1af4ba1802d412afc08688ac0000000000000000266a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf90000000014acac4ee8fdd8ca7e0b587b35fce8c996c70aefdf24c333038bdba7af531266000000000001ccc205f0e1cb435f50cc2f63edd53186b414fcb22b719da8c59eab066cf30bdb0000000000000020d1061d1e456cae488c063838b64c4911ce256549afadfc6a4736643359141b01551e4d94f9e8b6b03eec92bb6de1e478a0e913e5f733f5884857a7c2b965f53ca880495bffff7f20a880495b"
+	}
+}
+```
+index arguments sample:
+```json
+{
+	"method":"submitauxblock",
+	"params":[
+	  "7926398947f332fe534b15c628ff0cd9dc6f7d3ea59c74801dc758ac65428e64",
+	  "02000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4b0313ee0904a880495b742f4254432e434f4d2ffabe6d6d9581ba0156314f1e92fd03430c6e4428a32bb3f1b9dc627102498e5cfbf26261020000004204cb9a010f32a00601000000000000ffffffff0200000000000000001976a914c0174e89bd93eacd1d5a1af4ba1802d412afc08688ac0000000000000000266a24aa21a9ede2f61c3f71d1defd3fa999dfa36953755c690689799962b48bebd836974e8cf90000000014acac4ee8fdd8ca7e0b587b35fce8c996c70aefdf24c333038bdba7af531266000000000001ccc205f0e1cb435f50cc2f63edd53186b414fcb22b719da8c59eab066cf30bdb0000000000000020d1061d1e456cae488c063838b64c4911ce256549afadfc6a4736643359141b01551e4d94f9e8b6b03eec92bb6de1e478a0e913e5f733f5884857a7c2b965f53ca880495bffff7f20a880495b"
+	]
+}
+```
+
+result sample:
+```json
+{
+  "error": null,
+  "id": null,
+  "jsonrpc": "2.0",
+  "result": true
+}
+```
+
 #### getinfo
 
 description: return node information.  
