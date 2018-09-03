@@ -91,7 +91,7 @@ static CarrierContext carrier_context = {
     .extra = NULL
 };
 
-static void session_request_complete_callback(ElaSession *ws, int status,
+static void session_request_complete_callback(ElaSession *ws, const char *bundle, int status,
                 const char *reason, const char *sdp, size_t len, void *context)
 {
     SessionContext *sctxt = (SessionContext *)context;
@@ -249,7 +249,7 @@ void test_stream_state_scheme(int stream_options, TestContext *context,
     rc = check_state_cb(context, ElaStreamState_initialized);
     TEST_ASSERT_TRUE(rc == 0);
 
-    rc = ela_session_request(sctxt->session, sctxt->request_complete_cb, sctxt);
+    rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, sctxt);
     TEST_ASSERT_TRUE(rc == 0);
 
     cond_wait(stream_ctxt->cond);

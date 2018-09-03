@@ -67,6 +67,7 @@ typedef struct FriendEvent {
 } FriendEvent;
 
 struct ElaCarrier {
+    pthread_mutex_t ext_mutex;
     void *session;  // reserved for session.
 
     DHT dht;

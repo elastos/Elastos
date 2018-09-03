@@ -63,7 +63,7 @@ static SessionContextExtra session_extra = {
     .test_peer_id = {0}
 };
 
-static void session_request_callback(ElaCarrier *w, const char *from,
+static void session_request_callback(ElaCarrier *w, const char *from, const char *bundle,
                                      const char *sdp, size_t len, void *context)
 {
     SessionContextExtra *extra = ((SessionContext *)context)->extra;
@@ -77,7 +77,7 @@ static void session_request_callback(ElaCarrier *w, const char *from,
     write_ack("srequest received\n");
 }
 
-static void session_request_complete_callback(ElaSession *ws, int status,
+static void session_request_complete_callback(ElaSession *ws, const char *bundle, int status,
                 const char *reason, const char *sdp, size_t len, void *context)
 {
     SessionContext *sctxt = ((TestContext *)context)->session;
@@ -517,7 +517,7 @@ static void srequest(TestContext *context, int argc, char *argv[])
         goto cleanup;
     }
 
-    rc = ela_session_request(sctxt->session, sctxt->request_complete_cb, context);
+    rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, context);
     if (rc < 0) {
         vlogE("Session request failed: 0x%x", ela_get_error());
         goto cleanup;
@@ -582,7 +582,7 @@ static void sreply(TestContext *context, int argc, char *argv[])
             goto cleanup;
         }
 
-        rc = ela_session_reply_request(sctxt->session, 0, NULL);
+        rc = ela_session_reply_request(sctxt->session, NULL, 0, NULL);
         if (rc < 0) {
             vlogE("Confirm session reqeust failed: 0x%x", ela_get_error());
             goto cleanup;
@@ -622,7 +622,7 @@ static void sreply(TestContext *context, int argc, char *argv[])
         return;
     }
     else if (strcmp(argv[1], "refuse") == 0) {
-        rc = ela_session_reply_request(sctxt->session, 1, "testing");
+        rc = ela_session_reply_request(sctxt->session, NULL, 1, "testing");
         if (rc < 0) {
             vlogE("Refuse session request failed: 0x%x", ela_get_error());
             goto cleanup;
@@ -646,7 +646,7 @@ cleanup:
     }
 
     if (need_sreply_ack && sctxt->session)
-        ela_session_reply_request(sctxt->session, 2, "Error");
+        ela_session_reply_request(sctxt->session, NULL, 2, "Error");
 
     if (sctxt->session) {
         ela_session_close(sctxt->session);

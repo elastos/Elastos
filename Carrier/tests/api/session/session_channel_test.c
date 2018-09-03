@@ -115,7 +115,7 @@ static CarrierContext carrier_context = {
     .extra = NULL
 };
 
-static void session_request_complete_callback(ElaSession *ws, int status,
+static void session_request_complete_callback(ElaSession *ws, const char *bundle, int status,
                 const char *reason, const char *sdp, size_t len, void *context)
 {
     SessionContext *sctxt = (SessionContext *)context;

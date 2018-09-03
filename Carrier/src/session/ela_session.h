@@ -62,6 +62,8 @@ extern "C" {
 
 #define ELA_MAX_USER_DATA_LEN   2048
 
+#define ELA_MAX_BUNDLE_LEN      128
+
 typedef struct ElaSession ElaSession;
 
 /**
@@ -228,6 +230,8 @@ bool ela_session_jni_onload(void *vm, void *reserved);
  * @param
  *      from        [in] The id from who send the message.
  * @param
+ *      bundle      [in] The bundle of this session.
+ * @param
  *      sdp         [in] The remote users SDP. End the null terminal.
  *                       Reference: https://tools.ietf.org/html/rfc4566
  * @param
@@ -236,7 +240,7 @@ bool ela_session_jni_onload(void *vm, void *reserved);
  *      context     [in] The application defined context data.
  */
 typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
-        const char *sdp, size_t len, void *context);
+        const char *bundle, const char *sdp, size_t len, void *context);
 
 /**
  * \~English
@@ -275,6 +279,31 @@ int ela_session_init(ElaCarrier *carrier,
  */
 CARRIER_API
 void ela_session_cleanup(ElaCarrier *carrier);
+
+/**
+ * \~English
+ * Set session request callback.
+ *
+ * @param
+ *      carrier     [in] A handle to the carrier node instance.
+ * @param
+ *      bundle_prefix
+ *                  [in] The prefix of bundle.
+ * @param
+ *      callback
+ *                  [in] The callback function to process this request.
+ * @param
+ *      context
+ *                  [in] The application defined context data.
+ *
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_session_set_callback(ElaCarrier *carrier, const char *bundle_prefix,
+        ElaSessionRequestCallback *callback, void *context);
 
 /**
  * \~English
@@ -360,6 +389,8 @@ void *ela_session_get_userdata(ElaSession *session);
  * @param
  *      session     [in] A handle to the ElaSession.
  * @param
+ *      bundle      [in] The bundle of this session.
+ * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
  * @param
@@ -372,8 +403,9 @@ void *ela_session_get_userdata(ElaSession *session);
  * @param
  *      context     [in] The application defined context data.
  */
-typedef void ElaSessionRequestCompleteCallback(ElaSession *session, int status,
-        const char *reason, const char *sdp, size_t len, void *context);
+typedef void ElaSessionRequestCompleteCallback(ElaSession *session,
+        const char *bundle, int status, const char *reason,
+        const char *sdp, size_t len, void *context);
 
 /**
  * \~English
@@ -381,6 +413,8 @@ typedef void ElaSessionRequestCompleteCallback(ElaSession *session, int status,
  *
  * @param
  *      session     [in] A handle to the ElaSession.
+ * @param
+ *      bundle      [in] The bundle of this session.
  * @param
  *      callback    [in] A pointer to ElaSessionRequestCompleteCallback
  *                       function to receive the session response.
@@ -393,7 +427,7 @@ typedef void ElaSessionRequestCompleteCallback(ElaSession *session, int status,
  *      retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_request(ElaSession *session,
+int ela_session_request(ElaSession *session, const char *bundle,
         ElaSessionRequestCompleteCallback *callback, void *context);
 
 /**
@@ -404,6 +438,8 @@ int ela_session_request(ElaSession *session,
  *
  * @param
  *      session     [in] A handle to the ElaSession.
+ * @param
+ *      bundle      [in] The bundle of this session.
  * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
@@ -417,8 +453,8 @@ int ela_session_request(ElaSession *session,
  *      retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_reply_request(ElaSession *session, int status,
-        const char* reason);
+int ela_session_reply_request(ElaSession *session, const char *bundle,
+        int status, const char* reason);
 
 /**
  * \~English

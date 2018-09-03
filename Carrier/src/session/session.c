@@ -56,10 +56,15 @@ bool ela_session_jni_onload(void *vm, void *reserved)
 }
 #endif
 
-static void friend_invite(ElaCarrier *w, const char *from, const char *sdp,
-                          size_t len, void *context)
+static void friend_invite(ElaCarrier *w, const char *from,
+                          const char *data, size_t len, void *context)
 {
     SessionExtension *ext;
+    ElaSessionRequestCallback *callback = NULL;
+    void *callback_context = NULL;
+    list_iterator_t it;
+    const char *bundle;
+    const char *sdp;
 
     ext = (SessionExtension *)context;
     if (!ext) {
@@ -67,10 +72,54 @@ static void friend_invite(ElaCarrier *w, const char *from, const char *sdp,
         return;
     }
 
-    vlogD("Session: Session request from %s with SDP %.*s", from, (int)len, sdp);
+    bundle = data;
+    sdp = data + strlen(bundle) + 1;
 
-    if (ext->request_callback)
-        ext->request_callback(w, from, sdp, len, ext->context);
+    // bundle\x0sdp\x0\x0
+    assert(data[len-1] == 0);
+    assert(strlen(bundle) + strlen(sdp) + 3 == len);
+
+    vlogD("Session: Session request from %s with bundle: %s, SDP: %s", from, bundle, sdp);
+
+    pthread_rwlock_rdlock(&ext->callbacks_lock);
+
+    if (!*bundle) {
+        // No bundle, use global callback handle
+        callback = ext->default_callback;
+        callback_context = ext->default_context;
+        --len;
+    } else {
+        list_iterate(ext->callbacks, &it);
+        while(list_iterator_has_next(&it)) {
+            struct BundledRequestCallback *brc;
+            int rc;
+
+            rc = list_iterator_next(&it, (void **)&brc);
+            assert(rc == 1);
+
+            if (strncmp(brc->prefix, bundle, strlen(brc->prefix)) == 0) {
+                callback = brc->callback;
+                callback_context = brc->context;
+
+                deref(brc);
+                break;
+            }
+
+            deref(brc);
+        }
+
+        if (!callback) {
+            // Failback to global callback handle
+            callback = ext->default_callback;
+            callback_context = ext->default_context;
+        }
+        len -= strlen(bundle) + 2;
+    }
+
+    pthread_rwlock_unlock(&ext->callbacks_lock);
+
+    if (callback)
+        callback(w, from, bundle, sdp, len, callback_context);
 }
 
 static void remove_transport(ElaTransport *);
@@ -79,12 +128,23 @@ static void extension_destroy(void *p)
 {
     SessionExtension *ext = (SessionExtension *)p;
 
-    if (ext->transport)
+    ext->carrier->extension = NULL;
+
+    if (ext->transport) {
         remove_transport(ext->transport);
+        ext->transport = NULL;
+    }
+
+    if (ext->callbacks) {
+        deref(ext->callbacks);
+        ext->callbacks = NULL;
+    }
+
+    pthread_rwlock_destroy(&ext->callbacks_lock);
 
     ids_heap_destroy((ids_heap_t *)&ext->stream_ids);
 
-    vlogD("Session: Extension destroyed.");
+    vlogD("Session: Extension destroyed & cleanuped.");
 }
 
 static int add_transport(SessionExtension *ext)
@@ -123,14 +183,19 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
         return -1;
     }
 
+    pthread_mutex_lock(&w->ext_mutex);
     if (w->extension) {
-        vlogD("Session: Session already initialized");
+        ref(w->extension);
+        pthread_mutex_unlock(&w->ext_mutex);
+        vlogD("Session: Session initialized already, ref counter(%d).",
+              nrefs(w->extension));
         return 0;
     }
 
     ext = (SessionExtension *)rc_zalloc(sizeof(SessionExtension),
                                            extension_destroy);
     if (!ext) {
+        pthread_mutex_unlock(&w->ext_mutex);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return -1;
     }
@@ -139,13 +204,30 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
     ext->friend_invite_cb = friend_invite;
     ext->friend_invite_context = ext;
 
-    ext->request_callback = callback;
-    ext->context = context;
+    ext->default_callback = callback;
+    ext->default_context = context;
     ext->create_transport = ice_transport_create;
+
+    rc = pthread_rwlock_init(&ext->callbacks_lock, NULL);
+    if (rc != 0) {
+        deref(ext);
+        pthread_mutex_unlock(&w->ext_mutex);
+        ela_set_error(ELA_SYS_ERROR(rc));
+        return -1;
+    }
+
+    ext->callbacks = list_create(0, NULL);
+    if (!ext->callbacks) {
+        deref(ext);
+        pthread_mutex_unlock(&w->ext_mutex);
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return -1;
+    }
 
     rc = ids_heap_init((ids_heap_t *)&ext->stream_ids, MAX_STREAM_ID);
     if (rc < 0) {
         deref(ext);
+        pthread_mutex_unlock(&w->ext_mutex);
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
         return -1;
     }
@@ -153,16 +235,101 @@ int ela_session_init(ElaCarrier *w, ElaSessionRequestCallback *callback, void *c
     rc = add_transport(ext);
     if (rc < 0) {
         deref(ext);
+        pthread_mutex_unlock(&w->ext_mutex);
         ela_set_error(rc);
         return -1;
     }
 
     w->extension = ext;
+    pthread_mutex_unlock(&w->ext_mutex);
 
     vlogD("Session: Initialize session extension %s.",
           rc == 0 ? "success" : "failed");
 
     return rc;
+}
+
+int ela_session_set_callback(ElaCarrier *w, const char *bundle_prefix,
+        ElaSessionRequestCallback *callback, void *context)
+{
+    SessionExtension *ext;
+    struct BundledRequestCallback *brc;
+    list_iterator_t it;
+
+    if (!w || (bundle_prefix && strlen(bundle_prefix) > ELA_MAX_BUNDLE_LEN)) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    ext = w->extension;
+    if (!ext) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
+        return -1;
+    }
+
+    if (!bundle_prefix || !*bundle_prefix) {
+        pthread_rwlock_wrlock(&ext->callbacks_lock);
+        ext->default_callback = callback;
+        ext->default_context = callback ? context : NULL;
+        pthread_rwlock_unlock(&ext->callbacks_lock);
+        return 0;
+    }
+
+
+    pthread_rwlock_wrlock(&ext->callbacks_lock);
+
+    int idx = 0;
+    list_iterate(ext->callbacks, &it);
+    while(list_iterator_has_next(&it)) {
+        size_t brc_prefix_len, bundle_prefix_len;
+        int rc;
+
+        rc = list_iterator_next(&it, (void **)&brc);
+        assert(rc == 1);
+
+        brc_prefix_len = strlen(brc->prefix);
+        bundle_prefix_len = strlen(bundle_prefix);
+
+        if (brc_prefix_len == bundle_prefix_len) {
+            if (strcmp(brc->prefix, bundle_prefix) == 0) {
+                if (callback) {
+                    brc->callback = callback;
+                    brc->context = context;
+                } else {
+                    list_iterator_remove(&it);
+                }
+
+                deref(brc);
+                pthread_rwlock_unlock(&ext->callbacks_lock);
+                return 0;
+            }
+        } else if (brc_prefix_len < bundle_prefix_len) {
+            deref(brc);
+            break;
+        }
+
+        idx++;
+        deref(brc);
+    }
+
+    brc = (struct BundledRequestCallback *)rc_zalloc(
+        sizeof(struct BundledRequestCallback) + strlen(bundle_prefix) + 1, NULL);
+    if (!brc) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        pthread_rwlock_unlock(&ext->callbacks_lock);
+        return -1;
+    }
+
+    brc->callback = callback;
+    brc->context = context;
+    strcpy(brc->prefix, bundle_prefix);
+
+    brc->le.data = brc;
+    list_insert(ext->callbacks, idx, &brc->le);
+
+    pthread_rwlock_unlock(&ext->callbacks_lock);
+
+    return 0;
 }
 
 static void remove_transport(ElaTransport *transport)
@@ -196,22 +363,21 @@ restop_workers:
 
 void ela_session_cleanup(ElaCarrier *w)
 {
-    SessionExtension *ext;
+    if (!w)
+        return;
 
-    if (!w || !w->extension)
-         return;
-
-    ext = w->extension;
-    w->extension = NULL;
-
-    if (ext->transport) {
-        remove_transport(ext->transport);
-        ext->transport = NULL;
+    pthread_mutex_lock(&w->ext_mutex);
+    if (!w->extension) {
+        pthread_mutex_unlock(&w->ext_mutex);
+        return;
     }
 
-    deref(ext);
+    if (nrefs(w->extension) > 1) {
+        vlogD("Session: session cleanup, ref counter(%d).", nrefs(w->extension));
+    }
 
-    vlogD("Session: Extension cleanuped.");
+    deref(w->extension);
+    pthread_mutex_unlock(&w->ext_mutex);
 }
 
 void transport_base_destroy(void *p)
@@ -405,25 +571,38 @@ void ela_session_close(ElaSession *ws)
 
 static void friend_invite_response(ElaCarrier *w, const char *from,
                                    int status, const char *reason,
-                                   const void *sdp, size_t len, void *context)
+                                   const void *data, size_t len, void *context)
 {
     ElaSession *ws = (ElaSession*)context;
+    const char *bundle;
+    const char *sdp;
 
+    bundle = (const char *)data;
+    sdp = (const char *)data + strlen(bundle) + 1;
+
+    // bundle\x0sdp\x0\x0
+    assert(((const char *)data)[len-1] == 0);
+    assert(strlen(bundle) + strlen(sdp) + 3 == len);
+
+    vlogD("Session: Session response from %s with bundle: %s, SDP: %s", from, bundle, sdp);
+    len -= strlen(bundle) + 2;
     if (ws->complete_callback) {
-        ws->complete_callback(ws, status, reason, (const char *)sdp, len, ws->context);
+        ws->complete_callback(ws, bundle, status, reason, (const char *)sdp, len, ws->context);
     }
 }
 
-int ela_session_request(ElaSession *ws,
+int ela_session_request(ElaSession *ws, const char *bundle,
         ElaSessionRequestCompleteCallback *callback, void *context)
 {
     ElaCarrier *w;
     int rc = 0;
     list_iterator_t iterator;
-    char sdp[SDP_MAX_LEN];
+    char data[ELA_MAX_BUNDLE_LEN + SDP_MAX_LEN + 3];
+    size_t data_len;
+    char *sdp;
     char *ext_to;
 
-    if (!ws || !callback) {
+    if (!ws || !callback || (bundle && strlen(bundle) > ELA_MAX_BUNDLE_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -467,14 +646,25 @@ reprepare:
         }
     }
 
-    rc = ws->encode_local_sdp(ws, sdp, sizeof(sdp));
+    if (bundle) {
+        data_len = strlen(bundle) + 1;
+        strcpy(data, bundle);
+    } else {
+        data_len = 1;
+        data[0] = 0;
+    }
+    sdp = data + data_len;
+
+    rc = ws->encode_local_sdp(ws, sdp, SDP_MAX_LEN);
     if (rc < 0) {
         vlogE("Session: Encode local SDP failed(0x%x).", rc);
         ela_set_error(rc);
         return -1;
     }
-    // IMPORTANT: add terminal null
+    // IMPORTANT: bundle\x0sdp\x0\x0
     sdp[rc] = 0;
+    sdp[rc+1] = 0;
+    data_len += (rc + 2);
 
     vlogD("Session: Encode local SDP success[%s].", sdp);
 
@@ -486,7 +676,7 @@ reprepare:
     strcat(ext_to, ":");
     strcat(ext_to, extension_name);
 
-    rc = ela_invite_friend(w, ext_to, sdp, rc + 1,
+    rc = ela_invite_friend(w, ext_to, data, data_len,
                            friend_invite_response, (void *)ws);
 
     vlogD("Session: Session request to %s %s.", ws->to,
@@ -495,17 +685,18 @@ reprepare:
     return rc;
 }
 
-int ela_session_reply_request(ElaSession *ws,
+int ela_session_reply_request(ElaSession *ws, const char *bundle,
                               int status, const char* reason)
 {
     ElaCarrier *w;
     int rc = 0;
-    char sdp[SDP_MAX_LEN];
-    char *local_sdp = NULL;
-    size_t sdp_len = 0;
+    char data[ELA_MAX_BUNDLE_LEN + SDP_MAX_LEN + 3];
+    size_t data_len;
+    char *sdp;
     char *ext_to;
 
-    if (!ws || (status != 0 && !reason)) {
+    if (!ws || (status != 0 && !reason)  ||
+            (bundle && strlen(bundle) > ELA_MAX_BUNDLE_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -522,6 +713,15 @@ int ela_session_reply_request(ElaSession *ws,
     crypto_create_keypair(ws->public_key, ws->secret_key);
     crypto_random_nonce(ws->nonce);
     crypto_random_nonce(ws->credential);
+
+    if (bundle) {
+        data_len = strlen(bundle) + 1;
+        strcpy(data, bundle);
+    } else {
+        data_len = 1;
+        data[0] = 0;
+    }
+    sdp = data + data_len;
 
     if (status == 0) {
         list_iterator_t iterator;
@@ -552,19 +752,18 @@ reprepare:
             }
         }
 
-        rc = ws->encode_local_sdp(ws, sdp, sizeof(sdp));
+        rc = ws->encode_local_sdp(ws, sdp, SDP_MAX_LEN);
         if (rc < 0) {
             vlogE("Session: Encode local SDP failed(0x%x).", rc);
             ela_set_error(rc);
             return -1;
         }
-        // IMPORTANT: add terminal null
+        // IMPORTANT: bundle\x0sdp\x0\x0
         sdp[rc] = 0;
+        sdp[rc + 1] = 0;
+        data_len += (rc + 2);
 
         vlogD("Session: Encode local SDP success[%s].", sdp);
-
-        local_sdp = sdp;
-        sdp_len = rc + 1;
     }
 
     ext_to = (char *)alloca(ELA_MAX_ID_LEN + strlen(extension_name) + 2);
@@ -573,7 +772,7 @@ reprepare:
     strcat(ext_to, extension_name);
 
     rc = ela_reply_friend_invite(w, ext_to, status, reason,
-                                 local_sdp, sdp_len);
+                                 data, data_len);
 
     vlogD("Session: Session reply to %s %s.", ws->to,
           rc == 0 ? "success" : "failed");

@@ -413,7 +413,7 @@ void test_stream_scheme(ElaStreamType stream_type, int stream_options,
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_initialized);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_initialized));
 
-    rc = ela_session_request(sctxt->session, sctxt->request_complete_cb, sctxt);
+    rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, sctxt);
     TEST_ASSERT_TRUE(rc == 0);
 
     cond_wait(stream_ctxt->cond);

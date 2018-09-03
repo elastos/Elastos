@@ -105,7 +105,7 @@ static SessionContextExtra session_extra = {
     .robot_peer_id = {0}
 };
 
-static void session_request_callback(ElaCarrier *w, const char *from,
+static void session_request_callback(ElaCarrier *w, const char *from, const char *bundle,
                                     const char *sdp, size_t len, void *context)
 {
     SessionContext *sctxt = (SessionContext *)context;
@@ -122,7 +122,7 @@ static void session_request_callback(ElaCarrier *w, const char *from,
     cond_signal(sctxt->request_cond);
 }
 
-static void session_request_complete_callback(ElaSession *ws, int status,
+static void session_request_complete_callback(ElaSession *ws, const char *bundle, int status,
                 const char *reason, const char *sdp, size_t len, void *context)
 {
     SessionContext *sctxt = (SessionContext *)context;
@@ -276,7 +276,7 @@ static void test_stream_reply_scheme(ElaStreamType stream_type,
     TEST_ASSERT_TRUE(stream_ctxt->state == ElaStreamState_initialized);
     TEST_ASSERT_TRUE(stream_ctxt->state_bits & (1 << ElaStreamState_initialized));
 
-    rc = ela_session_reply_request(sctxt->session, 0, NULL);
+    rc = ela_session_reply_request(sctxt->session, NULL, 0, NULL);
     TEST_ASSERT_TRUE(rc == 0);
 
     cond_wait(stream_ctxt->cond);
