@@ -93,6 +93,7 @@ namespace Elastos {
 			j["PublicKey"] = p._publicKey;
 			j["MinFee"] = p._minFee;
 			j["EnableP2P"] = p._enableP2P;
+			j["ReconnectSeconds"] = p._reconnectSeconds;
 		}
 
 		void from_json(const nlohmann::json &j, CoinInfo &p) {
@@ -106,6 +107,7 @@ namespace Elastos {
 			p._chainCode = j["ChainCode"].get<std::string>();
 			p._publicKey = j["PublicKey"].get<std::string>();
 			p._minFee = j["MinFee"].get<uint64_t>();
+			p._reconnectSeconds = j["ReconnectSeconds"].get<uint32_t>();
 			if (j.find("EnableP2P") != j.end())
 				p._enableP2P = j["EnableP2P"].get<bool>();
 		}
@@ -172,6 +174,14 @@ namespace Elastos {
 
 		void CoinInfo::setEnableP2P(bool enable) {
 			_enableP2P = enable;
+		}
+
+		uint32_t CoinInfo::getReconnectSeconds() const {
+			return _reconnectSeconds;
+		}
+
+		void CoinInfo::setReconnectSeconds(uint32_t reconnectSeconds) {
+			_reconnectSeconds = reconnectSeconds;
 		}
 
 	}

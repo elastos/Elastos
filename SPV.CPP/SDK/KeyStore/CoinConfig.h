@@ -25,6 +25,7 @@ namespace Elastos {
 			uint64_t MinFee;
 			std::string GenesisAddress;
 			std::string BlockType;
+			uint32_t ReconnectSeconds;
 			bool EnableP2P;
 		};
 

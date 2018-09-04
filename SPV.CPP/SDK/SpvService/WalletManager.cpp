@@ -2,7 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <Core/BRMerkleBlock.h>
+#include <boost/thread.hpp>
+
+#include "BRMerkleBlock.h"
 #include "BRTransaction.h"
 
 #include "WalletManager.h"
@@ -25,27 +27,34 @@ namespace Elastos {
 				CoreWalletManager(proto._pluginTypes, proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
+				_reconnectSeconds(proto._reconnectSeconds),
+				_reconnectTimer(nullptr),
 				_forkId(proto._forkId) {
 			init(proto._masterPubKey, proto._earliestPeerTime, proto._singleAddress);
 		}
 
 		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, bool singleAddress,
+									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, bool singleAddress,
 									 int forkId, const PluginTypes &pluginTypes, const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
+				_reconnectSeconds(reconnectSeconds),
+				_reconnectTimer(nullptr),
 				_forkId(forkId) {
 			init(masterPubKey, earliestPeerTime, singleAddress);
 		}
 
 		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, int forkId, const PluginTypes &pluginTypes,
+									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, int forkId,
+									 const PluginTypes &pluginTypes,
 									 const std::vector<std::string> &initialAddresses,
 									 const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
+				_reconnectSeconds(reconnectSeconds),
+				_reconnectTimer(nullptr),
 				_forkId(forkId) {
 			init(earliestPeerTime, initialAddresses);
 		}
@@ -88,6 +97,11 @@ namespace Elastos {
 			transaction->Serialize(byteStream);
 			Log::getLogger()->info("Sending transaction, json info: {}, hex String: {}",
 				sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
+
+			if (_peerManager->getConnectStatus() == Peer::Disconnected ||
+				_peerManager->getConnectStatus() == Peer::Unknown) {
+				_peerManager->connect();
+			}
 
 			getPeerManager()->publishTransaction(transaction);
 			getWallet()->RegisterRemark(transaction);
@@ -271,6 +285,12 @@ namespace Elastos {
 
 		void WalletManager::blockHeightIncreased(uint32_t blockHeight) {
 
+			if (_peerManager->getEstimatedBlockHeight() == blockHeight) {
+
+				_peerManager->disconnect();
+				startReconnect();
+			}
+
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [blockHeight](PeerManager::Listener *listener) {
 							  listener->blockHeightIncreased(blockHeight);
@@ -358,6 +378,27 @@ namespace Elastos {
 
 		void WalletManager::registerPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
+		}
+
+		void WalletManager::startReconnect() {
+			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
+					_reconnectService, boost::posix_time::seconds(_reconnectSeconds)));
+			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this));
+			if (_reconnectService.stopped()) {
+				_reconnectService.run();
+			}
+		}
+
+		void WalletManager::resetReconnect() {
+			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
+			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this));
+		}
+
+		void WalletManager::asyncConnect() {
+			if (_peerManager->getConnectStatus() == Peer::Disconnected ||
+				_peerManager->getConnectStatus() == Peer::Unknown) {
+				_peerManager->connect();
+			}
 		}
 
 	}

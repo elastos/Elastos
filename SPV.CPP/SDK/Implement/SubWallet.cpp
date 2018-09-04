@@ -81,7 +81,8 @@ namespace Elastos {
 
 			_walletManager = WalletManagerPtr(
 					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
-									  _info.getSingleAddress(), _info.getForkId(), pluginTypes, chainParams));
+									  _info.getReconnectSeconds(), _info.getSingleAddress(), _info.getForkId(),
+									  pluginTypes, chainParams));
 
 			_walletManager->registerWalletListener(this);
 			_walletManager->registerPeerManagerListener(this);

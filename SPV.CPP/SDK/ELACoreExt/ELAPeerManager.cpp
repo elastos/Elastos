@@ -31,7 +31,6 @@ namespace Elastos {
 			assert(peers != NULL || peersCount == 0);
 			memset(manager, 0, sizeof(*manager));
 
-			manager->Raw.isShutDown = 0;
 			manager->Plugins = plugins;
 			manager->Raw.peerMessages = peerMessages;
 			manager->Raw.params = params;

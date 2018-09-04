@@ -31,6 +31,7 @@ namespace Elastos {
 			WalletManager(const MasterPubKeyPtr &masterPubKey,
 						  const boost::filesystem::path &dbPath,
 						  uint32_t earliestPeerTime,
+						  uint32_t reconnectSeconds,
 						  bool singleAddress,
 						  int forkId,
 						  const PluginTypes &pluginTypes,
@@ -38,6 +39,7 @@ namespace Elastos {
 
 			WalletManager(const boost::filesystem::path &dbPath,
 						  uint32_t earliestPeerTime,
+						  uint32_t reconnectSeconds,
 						  int forkId,
 						  const PluginTypes &pluginTypes,
 						  const std::vector<std::string> &initialAddresses,
@@ -112,10 +114,20 @@ namespace Elastos {
 
 			virtual const WalletListenerPtr &createWalletListener();
 
+			void startReconnect();
+
+			void resetReconnect();
+
+			void asyncConnect();
+
 		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
 			int _forkId;
+
+			uint32_t _reconnectSeconds;
+			boost::asio::io_service _reconnectService;
+			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
 
 			std::vector<Wallet::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;

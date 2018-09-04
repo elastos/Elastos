@@ -14,11 +14,9 @@
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/objects.h>
-#include <Core/BRKey.h>
 
 #include "BRBIP39WordsEn.h"
 #include "BRCrypto.h"
-#include "BRKey.h"
 #include "BTCKey.h"
 #include "BTCBase58.h"
 #include "WalletTool.h"
