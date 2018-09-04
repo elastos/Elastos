@@ -27,6 +27,10 @@ namespace Elastos {
 
 			void setEaliestPeerTime(uint32_t time);
 
+			uint32_t getReconnectSeconds() const;
+
+			void setReconnectSeconds(uint32_t reconnectSeconds);
+
 			int getIndex() const;
 
 			void setIndex(int index);
@@ -84,6 +88,7 @@ namespace Elastos {
 		private:
 			std::string _chainId;
 			uint32_t _earliestPeerTime;
+			uint32_t _reconnectSeconds;
 			int _forkId;
 			int _index;
 			int _usedMaxAddressIndex;

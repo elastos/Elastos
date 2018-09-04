@@ -177,6 +177,7 @@ namespace Elastos {
 			info.setMinFee(coinConfig.MinFee);
 			info.setGenesisAddress(coinConfig.GenesisAddress);
 			info.setEnableP2P(coinConfig.EnableP2P);
+			info.setReconnectSeconds(coinConfig.ReconnectSeconds);
 
 			info.setSingleAddress(singleAddress);
 			info.setUsedMaxAddressIndex(0);

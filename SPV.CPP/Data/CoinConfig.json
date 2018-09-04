@@ -4,6 +4,7 @@
     "CoinIndex": 0,
     "NetType": "TestNet",
     "MinFee": 10000,
+    "ReconnectSeconds": 300,
     "BlockType": "ELA",
     "GenesisAddress" : ""
   },
@@ -12,6 +13,7 @@
     "CoinIndex": 1,
     "NetType": "TestNet",
     "MinFee": 10000,
+    "ReconnectSeconds": 300,
     "BlockType": "SideStandard",
     "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ"
   }
