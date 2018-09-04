@@ -746,7 +746,7 @@ named arguments sample:
 	"params":{"paytoaddress":"Ef4UcaHwvFrFzzsyVf5YH4JBWgYgUqfTAB"}
 }
 ```
-index arguments sample:
+positional arguments sample:
 ```json
 {
 	"method": "createauxblock",
@@ -791,7 +791,7 @@ named arguments sample:
 	}
 }
 ```
-index arguments sample:
+positional arguments sample:
 ```json
 {
 	"method":"submitauxblock",
