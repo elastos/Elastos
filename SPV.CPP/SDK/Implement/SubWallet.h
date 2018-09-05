@@ -29,8 +29,6 @@ namespace Elastos {
 
 			const WalletManagerPtr &GetWalletManager() const;
 
-			void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
-
 			void StartP2P();
 
 			void StopP2P();
@@ -136,8 +134,6 @@ namespace Elastos {
 					  MasterWallet *parent);
 
 			Key deriveKey(const std::string &payPassword);
-
-			void deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 

@@ -67,7 +67,14 @@ void BRBIP32PrivKey(BRKey *key, const void *seed, size_t seedLen, uint32_t chain
 // sets the private key for path m/0H/chain/index to each element in keys
 void BRBIP32PrivKeyList(BRKey keys[], size_t keysCount, const void *seed, size_t seedLen, uint32_t chain,
                         const uint32_t indexes[]);
-    
+
+void BRBIP44PrivKeyList(BRKey keys[], size_t keysCount, const void *seed, size_t seedLen, uint32_t coinIndex, uint32_t chain,
+						const uint32_t indexes[]);
+
+size_t BRBIP32PubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, int depth, ...);
+
+size_t BRBIP32vPubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, int depth, va_list vlist);
+
 // sets the private key for the specified path to key
 // depth is the number of arguments used to specify the path
 void BRBIP32PrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth, ...);
@@ -96,6 +103,13 @@ void BRBIP32APIAuthKey(BRKey *key, const void *seed, size_t seedLen);
 
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md
 void BRBIP32BitIDKey(BRKey *key, const void *seed, size_t seedLen, uint32_t index, const char *uri);
+
+void getPubKeyFromPrivKey(void *brecPoint, const UInt256 *k);
+
+size_t ECDSA65Sign_sha256(const void *privKey, size_t privKeyLen, const UInt256 *md, void *signedData, size_t signedDataSize);
+
+int ECDSA65Verify_sha256(const void *pubKey, size_t pubKeyLen, const UInt256 *md, const void *signedData,
+						 size_t signedDataLen);
 
 #ifdef __cplusplus
 }

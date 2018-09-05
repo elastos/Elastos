@@ -30,6 +30,7 @@ namespace Elastos {
 			typedef std::map<std::string, std::string> TransactionRemarkMap;
 			TransactionRemarkMap TxRemarkMap;
 			std::vector<std::string> ListeningAddrs;
+			uint32_t CoinIndex;
 		};
 
 		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount, BRMasterPubKey mpk,
@@ -82,7 +83,7 @@ namespace Elastos {
 
 			Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 				   const MasterPubKeyPtr &masterPubKey,
-				   const boost::shared_ptr<Listener> &listener);
+				   const boost::shared_ptr<Listener> &listener, uint32_t coinIndex);
 
 			virtual ~Wallet();
 

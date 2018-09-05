@@ -5,6 +5,7 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 #include <Core/BRKey.h>
+#include <Core/BRBIP32Sequence.h>
 
 #include "BRBase58.h"
 #include "BRBIP39Mnemonic.h"
@@ -310,13 +311,6 @@ namespace Elastos {
 			return true;
 		}
 
-		bool MasterWallet::initFromEntropy(const UInt128 &entropy, const std::string &phrasePassword,
-										   const std::string &payPassword) {
-
-			std::string phrase = MasterPubKey::generatePaperKey(entropy, _mnemonic->words());
-			return initFromPhrase(phrase, phrasePassword, payPassword);
-		}
-
 		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
 										  const std::string &payPassword) {
 			CMemBlock<char> phraseData;
@@ -350,22 +344,25 @@ namespace Elastos {
 			//init master public key and private key
 			UInt512 seed = deriveSeed(payPassword);
 
-			CMBlock cbTmp;
-			cbTmp.SetMemFixed(seed.u8, sizeof(seed));
-			CMBlock masterPrivKey;
-			UInt256 masterChainCode;
-			Key::getAuthPrivKeyAndChainCode(cbTmp, masterPrivKey, masterChainCode);
+			BRKey masterKey;
+			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
 
-			_localStore.SetEncryptedKey(Utils::encrypt(masterPrivKey, payPassword));
+			CMBlock cbTmp(sizeof(UInt256));
+			memcpy(cbTmp, &masterKey.secret, sizeof(UInt256));
+			_localStore.SetEncryptedKey(Utils::encrypt(cbTmp, payPassword));
 
-			Key key = deriveKey(payPassword);
-			if (key.getPrivKey().empty())
-				throw std::logic_error("Invalid key");
-			Key compressedKey(key.getRaw()->secret, true);
-			_localStore.SetMasterPubKey(MasterPubKey(compressedKey.getPubkey(), masterChainCode));
+			_localStore.SetIDMasterPubKey(MasterPubKey(BRBIP32MasterPubKey(&seed, sizeof(seed))));
+			MasterPubKey masterPubKey;
+			getPubKeyFromPrivKey(masterPubKey.getRaw()->pubKey, (UInt256 *)&seed.u8[0]);
+			masterPubKey.getRaw()->chainCode = *(UInt256 *)&seed.u8[32];
+			_localStore.SetMasterPubKey(masterPubKey);
 
-			CMBlock data = key.getPubkey();
-			_localStore.SetPublicKey(Utils::encodeHex(data));
+			var_clean(&seed);
+			var_clean(&masterKey.secret, &masterPubKey.getRaw()->chainCode);
+
+			Key key(masterKey);
+			key.setPublicKey();
+			_localStore.SetPublicKey(Utils::encodeHex(key.getPubkey()));
 
 			return true;
 		}
@@ -402,16 +399,6 @@ namespace Elastos {
 			return key;
 		}
 
-		void MasterWallet::initPublicKey(const std::string &payPassword) {
-			Key key = deriveKey(payPassword);
-			//todo throw exception here
-			if (key.getPrivKey() == "") {
-				return;
-			}
-			CMBlock data = key.getPubkey();
-			_localStore.SetPublicKey(Utils::encodeHex(data));
-		}
-
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
 
 			ParamChecker::checkNotEmpty(message);
@@ -437,24 +424,17 @@ namespace Elastos {
 
 		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
 			UInt512 result;
-			CMBlock entropyData = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
-			if (entropyData.GetSize() == 0)
+			std::string mnemonic = Utils::convertToString(
+					Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword));
+			if (mnemonic.empty())
 				ErrorCode::StandardLogicError(ErrorCode::PasswordError, "Invalid password.");
-
-			CMemBlock<char> mnemonic(entropyData.GetSize() + 1);
-			mnemonic.Zero();
-			memcpy(mnemonic, entropyData, entropyData.GetSize());
 
 			std::string phrasePassword = _localStore.GetEncrptedPhrasePassword().GetSize() == 0
 										 ? ""
 										 : Utils::convertToString(
 							Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), payPassword));
 
-			std::string prikey_base58 = WalletTool::getDeriveKey_base58(mnemonic, phrasePassword);
-			CMBlock prikey = BTCBase58::DecodeBase58(prikey_base58);
-			assert(prikey.GetSize() == sizeof(result));
-			memcpy(&result, prikey, prikey.GetSize());
-
+			BRBIP39DeriveKey(&result, mnemonic.c_str(), phrasePassword.c_str());
 			return result;
 		}
 
@@ -550,12 +530,6 @@ namespace Elastos {
 			_localStore.SetEncryptedKey(Utils::encrypt(key, newPassword));
 			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, newPassword));
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
-
-			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				if (subWallet == nullptr) continue;
-				subWallet->ChangePassword(oldPassword, newPassword);
-			}
 		}
 
 		void MasterWallet::tryInitCoinConfig() {

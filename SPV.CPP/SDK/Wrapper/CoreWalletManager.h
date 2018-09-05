@@ -26,12 +26,14 @@ namespace Elastos {
 
 			virtual ~CoreWalletManager();
 
-			void init(const MasterPubKeyPtr &masterPubKey,
+			void init(const MasterPubKey &masterPubKey,
 					  uint32_t earliestPeerTime,
-					  bool singleAddress);
+					  bool singleAddress,
+					  uint32_t coinIndex);
 
 			void init(uint32_t earliestPeerTime,
-					  const std::vector<std::string> &initialAddresses);
+					  const std::vector<std::string> &initialAddresses,
+					  uint32_t coinIndex);
 
 			const WalletPtr &getWallet();
 
@@ -94,11 +96,6 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		protected:
-			static bool SHOW_CALLBACK;
-			static bool SHOW_CALLBACK_DETAIL;
-
-			static bool SHOW_CALLBACK_DETAIL_TX_STATUS;
-			static bool SHOW_CALLBACK_DETAIL_TX_IO;
 
 			MasterPubKeyPtr _masterPubKey;
 
@@ -106,6 +103,7 @@ namespace Elastos {
 
 			ChainParams _chainParams;
 			bool _singleAddress;
+			uint32_t _coinIndex;
 
 			uint32_t _earliestPeerTime;
 

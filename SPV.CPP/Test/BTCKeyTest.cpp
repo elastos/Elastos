@@ -11,7 +11,6 @@
 #include <Core/BRBIP32Sequence.h>
 #include <Core/BRCrypto.h>
 
-#include "BTCKey.h"
 #include "BigIntFormat.h"
 #include "WalletTool.h"
 #include "SDK/KeyStore/Mnemonic.h"

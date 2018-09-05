@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <SDK/Common/ParamChecker.h>
-#include <SDK/Common/BTCKey.h>
 
 #include "Utils.h"
 #include "IdAgentImpl.h"
@@ -63,12 +62,10 @@ namespace Elastos {
 				return existedId;
 			}
 
-			CMBlock mbChildPubKey =
-					BTCKey::getDerivePubKey(_parentWallet->_localStore.GetMasterPubKey().getPubKey(),
-											purpose,
-											index,
-											_parentWallet->_localStore.GetMasterPubKey().getChainCode(),
-											NID_X9_62_prime256v1);
+			CMBlock publicKey = _parentWallet->_localStore.GetIDMasterPubKey().getPubKey();
+			CMBlock mbChildPubKey = BRBIP32PubKey(publicKey, publicKey.GetSize(),
+												  *_parentWallet->_localStore.GetIDMasterPubKey().getRaw(), purpose,
+												  index);
 
 			Key key;
 			key.setPubKey(mbChildPubKey);
@@ -103,10 +100,9 @@ namespace Elastos {
 			IdItem item = _info.Ids[id];
 
 			UInt512 seed = _parentWallet->deriveSeed(password);
-			UInt256 chainCode;
-			KeyPtr keyPtr(new Key());
-			keyPtr->deriveKeyAndChain(chainCode, &seed, sizeof(seed), 4, 1 | BIP32_HARD, 0, item.Purpose, item.Index);
-			return keyPtr;
+			BRKey key;
+			BRBIP32PrivKey(&key, &seed, sizeof(seed), item.Purpose, item.Index);
+			return KeyPtr(new Key(key));
 		}
 
 		bool IdAgentImpl::findIdByPath(const IdItem &item, std::string &id) {

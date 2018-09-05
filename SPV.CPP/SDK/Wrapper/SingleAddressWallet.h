@@ -14,7 +14,8 @@ namespace Elastos {
 		public:
 			SingleAddressWallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 								const MasterPubKeyPtr &masterPubKey,
-								const boost::shared_ptr<Listener> &listener);
+								const boost::shared_ptr<Listener> &listener,
+								uint32_t coinIndex);
 
 			virtual ~SingleAddressWallet();
 

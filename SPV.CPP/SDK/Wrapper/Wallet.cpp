@@ -140,12 +140,12 @@ namespace Elastos {
 		}
 
 		void ELAWalletRegisterRemark(ELAWallet *wallet, const std::string &txHash,
-												   const std::string &remark) {
+									 const std::string &remark) {
 			wallet->TxRemarkMap[txHash] = remark;
 		}
 
 		void ELAWalletLoadRemarks(ELAWallet *wallet,
-												const SharedWrapperList<Transaction, BRTransaction *> &transaction) {
+								  const SharedWrapperList<Transaction, BRTransaction *> &transaction) {
 			for (int i = 0; i < transaction.size(); ++i) {
 				wallet->TxRemarkMap[Utils::UInt256ToString(transaction[i]->getHash())] =
 						((ELATransaction *) transaction[i]->getRaw())->Remark;
@@ -159,7 +159,8 @@ namespace Elastos {
 
 		Wallet::Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 					   const MasterPubKeyPtr &masterPubKey,
-					   const boost::shared_ptr<Listener> &listener) {
+					   const boost::shared_ptr<Listener> &listener,
+					   uint32_t coinIndex) {
 
 			_wallet = ELAWalletNew(transactions.getRawPointerArray().data(), transactions.size(),
 								   *masterPubKey->getRaw(),
@@ -167,10 +168,11 @@ namespace Elastos {
 								   WalletContainsTx, WalletAddUsedAddrs, WalletCreateTxForOutputs,
 								   WalletMaxOutputAmount, WalletFeeForTx, TransactionIsSigned, KeyToAddress,
 								   BalanceAfterTx);
+			_wallet->CoinIndex = coinIndex;
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
-			Log::getLogger()->info("_wallet = {:p}, listener = {:p}", (void*)_wallet, (void*)listener.get());
+			Log::getLogger()->info("_wallet = {:p}, listener = {:p}", (void *) _wallet, (void *) listener.get());
 			if (_wallet == nullptr) {
 				Log::getLogger()->error("_wallet = nullptr");
 				throw std::logic_error("_wallet is null");
@@ -214,7 +216,7 @@ namespace Elastos {
 		void Wallet::RegisterRemark(const TransactionPtr &transaction) {
 			ELAWalletRegisterRemark(_wallet,
 									Utils::UInt256ToString(transaction->getHash()),
-									((ELATransaction *)transaction->getRaw())->Remark);
+									((ELATransaction *) transaction->getRaw())->Remark);
 		}
 
 		std::string Wallet::GetRemark(const std::string &txHash) {
@@ -465,7 +467,7 @@ namespace Elastos {
 				Address address(addr.s);
 
 				TransactionOutput *output = new TransactionOutput(balance - (amount + feeAmount), script,
-						address.getSignType());
+																  address.getSignType());
 
 				transaction->outputs.push_back(output);
 			}
@@ -511,11 +513,13 @@ namespace Elastos {
 				result = TransactionPtr(new Transaction(tx));
 				result->setRemark(remark);
 
-				result->addAttribute(new Attribute(Attribute::Nonce, Utils::convertToMemBlock(std::to_string(std::rand()))));
-				if(!memo.empty())
+				result->addAttribute(
+						new Attribute(Attribute::Nonce, Utils::convertToMemBlock(std::to_string(std::rand()))));
+				if (!memo.empty())
 					result->addAttribute(new Attribute(Attribute::Memo, Utils::convertToMemBlock(memo)));
-				if(tx->type == ELATransaction::TransferCrossChainAsset)
-					result->addAttribute(new Attribute(Attribute::Confirmations, Utils::convertToMemBlock(std::to_string(1))));
+				if (tx->type == ELATransaction::TransferCrossChainAsset)
+					result->addAttribute(
+							new Attribute(Attribute::Confirmations, Utils::convertToMemBlock(std::to_string(1))));
 			}
 
 			return result;
@@ -665,7 +669,7 @@ namespace Elastos {
 
 		std::string Wallet::getTransactionAddressOutputs(const TransactionPtr &transaction) {
 
-			const std::vector<TransactionOutput*> &outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			for (size_t i = 0; i < outputs.size(); i++) {
 
 				std::string address = outputs[i]->getAddress();
@@ -895,11 +899,12 @@ namespace Elastos {
 				ELATransaction *t = (ELATransaction *) BRSetGet(wallet->allTx, &txn->raw.inputs[i].txHash);
 				uint32_t n = txn->raw.inputs[i].index;
 
-				if (t && n < t->outputs.size() && BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address)) r = 1;
+				if (t && n < t->outputs.size() && BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address))
+					r = 1;
 			}
 
 			//for listening addresses
-			ELAWallet *elaWallet = (ELAWallet *)wallet;
+			ELAWallet *elaWallet = (ELAWallet *) wallet;
 			for (size_t i = 0; i < outCount; ++i) {
 				if (std::find(elaWallet->ListeningAddrs.begin(), elaWallet->ListeningAddrs.end(),
 							  txn->outputs[i]->getRaw()->address) != elaWallet->ListeningAddrs.end())
@@ -992,6 +997,7 @@ namespace Elastos {
 			BRAddress *addrChain, emptyAddress = BR_ADDRESS_NONE;
 			size_t i, j = 0, count, startCount;
 			uint32_t chain = (internal) ? SEQUENCE_INTERNAL_CHAIN : SEQUENCE_EXTERNAL_CHAIN;
+			uint32_t coinIndex = ((ELAWallet *) wallet)->CoinIndex;
 
 			assert(wallet != NULL);
 			assert(gapLimit > 0);
@@ -1006,8 +1012,9 @@ namespace Elastos {
 				Key key;
 				BRAddress address = BR_ADDRESS_NONE;
 
-				uint8_t pubKey[MasterPubKey::BIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
-				size_t len = MasterPubKey::BIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
+				uint8_t pubKey[BRBIP32PubKeyPath(NULL, 0, wallet->masterPubKey, 5, 44, coinIndex, 0, chain, count)];
+				size_t len = BRBIP32PubKeyPath(pubKey, sizeof(pubKey), wallet->masterPubKey, 5, 44, coinIndex, 0, chain,
+											   count);
 
 				CMBlock publicKey(len);
 				memcpy(publicKey, pubKey, len);
@@ -1060,7 +1067,7 @@ namespace Elastos {
 			balance = wallet->balance;
 
 			for (size_t i = array_count(wallet->transactions); tx && i > 0; i--) {
-				if (! BRTransactionEq(tx, wallet->transactions[i - 1])) continue;
+				if (!BRTransactionEq(tx, wallet->transactions[i - 1])) continue;
 
 				balance = wallet->balanceHist[i - 1];
 				break;

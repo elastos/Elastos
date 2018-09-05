@@ -148,10 +148,6 @@ namespace Elastos {
 			bool exportMnemonic(const std::string &payPassword,
 								std::string &mnemonic);
 
-			bool initFromEntropy(const UInt128 &entropy,
-								 const std::string &phrasePassword,
-								 const std::string &payPassword);
-
 			bool initFromPhrase(const std::string &phrase,
 								const std::string &phrasePassword,
 								const std::string &payPassword);
@@ -173,8 +169,6 @@ namespace Elastos {
 			Key deriveKey(const std::string &payPassword);
 
 			UInt512 deriveSeed(const std::string &payPassword);
-
-			void initPublicKey(const std::string &payPassword);
 
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
 											  const ChainParams &chainParams,

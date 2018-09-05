@@ -22,7 +22,6 @@
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
 #include "Transaction/TransactionCompleter.h"
-#include "SDK/Plugin/HD/HDPath.h"
 
 namespace fs = boost::filesystem;
 
@@ -45,44 +44,11 @@ namespace Elastos {
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
-			CMBlock encryptedKey;
-			UInt256 chainCode = UINT256_ZERO;
-			MasterPubKeyPtr masterPubKey = nullptr;
-			if (!payPassword.empty()) {
-				BRKey key;
-				deriveKeyAndChain(&key, chainCode, payPassword);
-
-				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
-				BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-
-				CMBlock ret(sizeof(rawKey));
-				memcpy(ret, &rawKey, sizeof(rawKey));
-				encryptedKey = Utils::encrypt(ret, payPassword);
-
-				Key wrapperKey(key.secret, key.compressed);
-				CMBlock pubKey = wrapperKey.getPubkey();
-
-				_info.setEncryptedKey(Utils::encodeHex(encryptedKey));
-				_info.setChainCode(Utils::UInt256ToString(chainCode));
-				_info.setPublicKey(Utils::encodeHex(pubKey));
-
-				masterPubKey.reset(new MasterPubKey(key, chainCode));
-
-			} else {
-				ParamChecker::checkNotEmpty(_info.getEncryptedKey(), false);
-				ParamChecker::checkNotEmpty(_info.getPublicKey(), false);
-				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
-
-				chainCode = Utils::UInt256FromString(_info.getChainCode());
-				CMBlock pubKey = Utils::decodeHex(_info.getPublicKey());
-
-				masterPubKey.reset(new MasterPubKey(pubKey, Utils::UInt256FromString(_info.getChainCode())));
-			}
-
 			_walletManager = WalletManagerPtr(
-					new WalletManager(masterPubKey, subWalletDbPath, _info.getEarliestPeerTime(),
-									  _info.getReconnectSeconds(), _info.getSingleAddress(), _info.getForkId(),
-									  pluginTypes, chainParams));
+					new WalletManager(_parent->_localStore.GetMasterPubKey(), subWalletDbPath,
+									  _info.getEarliestPeerTime(), _info.getReconnectSeconds(),
+									  _info.getSingleAddress(), _info.getIndex(), _info.getForkId(), pluginTypes,
+									  chainParams));
 
 			_walletManager->registerWalletListener(this);
 			_walletManager->registerPeerManagerListener(this);
@@ -268,7 +234,9 @@ namespace Elastos {
 			}
 
 			Log::getLogger()->info("Tx callback (onTxUpdated): Tx hash={}", hash);
-			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight - _confirmingTxs[hash]->getBlockHeight() + 1 : 0;
+			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
+																					   _confirmingTxs[hash]->getBlockHeight() +
+																					   1 : 0;
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
 										 _confirmingTxs[hash]->toJson(), confirm);
 			Log::getLogger()->info("Tx callback (onTxUpdated) finished. Details: txHash={}, confirm count={}.",
@@ -287,29 +255,11 @@ namespace Elastos {
 		}
 
 		Key SubWallet::deriveKey(const std::string &payPassword) {
-			CMBlock raw = Utils::decodeHex(_info.getEncryptedKey());
-			CMBlock keyData = Utils::decrypt(raw, payPassword);
-			if (keyData.GetSize() == 0)
-				ErrorCode::StandardLogicError(ErrorCode::PasswordError, "Invalid password.");
-
-			Key key;
-			char stmp[keyData.GetSize()];
-			memcpy(stmp, keyData, keyData.GetSize());
-			std::string secret(stmp, keyData.GetSize());
-			key.setPrivKey(secret);
-			return key;
-		}
-
-		void SubWallet::deriveKeyAndChain(BRKey *key, UInt256 &chainCode, const std::string &payPassword) {
-			ParamChecker::checkNullPointer(key);
-
 			UInt512 seed = _parent->deriveSeed(payPassword);
-			Key wrapperKey = Registry::Instance()->CreateHDPath("Normal")->
-					CalculateSubWalletMasterKey(seed, _info.getIndex(), chainCode);
-			UInt256Set(&key->secret, wrapperKey.getSecret());
-			key->compressed = wrapperKey.getCompressed();
-			CMBlock pubKey = wrapperKey.getPubkey();
-			memcpy(key->pubKey, pubKey, pubKey.GetSize());
+			Key key;
+			BRBIP32PrivKeyPath(key.getRaw(), &seed, sizeof(seed), 3, 44 | BIP32_HARD, _info.getIndex() | BIP32_HARD,
+							   0 | BIP32_HARD);
+			return key;
 		}
 
 		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
@@ -317,9 +267,6 @@ namespace Elastos {
 			Log::getLogger()->info("SubWallet signTransaction method begin.");
 
 			ParamChecker::checkNullPointer(transaction.get());
-			BRKey masterKey;
-			UInt256 chainCode = UINT256_ZERO;
-			deriveKeyAndChain(&masterKey, chainCode, payPassword);
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			ParamChecker::checkNullPointer(wallet);
 			Log::getLogger()->info("SubWallet signTransaction derive key down.");
@@ -350,11 +297,15 @@ namespace Elastos {
 			pthread_mutex_unlock(&wallet->lock);
 			Log::getLogger()->info("SubWallet signTransaction end get indices.");
 
+			UInt512 seed = _parent->deriveSeed(payPassword);
+
 			BRKey keys[internalCount + externalCount];
-			Key::calculatePrivateKeyList(keys, internalCount, &masterKey.secret, &chainCode,
-										 SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			Key::calculatePrivateKeyList(&keys[internalCount], externalCount, &masterKey.secret, &chainCode,
-										 SEQUENCE_EXTERNAL_CHAIN, externalIdx);
+			BRBIP44PrivKeyList(keys, internalCount, &seed, sizeof(seed), _info.getIndex(),
+							   SEQUENCE_INTERNAL_CHAIN, internalIdx);
+			BRBIP44PrivKeyList(&keys[internalCount], externalCount, &seed, sizeof(seed), _info.getIndex(),
+							   SEQUENCE_EXTERNAL_CHAIN, externalIdx);
+			memset(&seed, 0, sizeof(seed));
+
 			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
 
 			if (tx) {
@@ -472,7 +423,8 @@ namespace Elastos {
 
 		void SubWallet::blockHeightIncreased(uint32_t blockHeight) {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
-				uint32_t confirms = blockHeight > it->second->getBlockHeight() ? blockHeight - it->second->getBlockHeight() + 1 : 0;
+				uint32_t confirms =
+						blockHeight > it->second->getBlockHeight() ? blockHeight - it->second->getBlockHeight() + 1 : 0;
 				Log::getLogger()->info(
 						"Transaction height increased: txHash = {}, confirms = {}, tx height = {}, last block height = {}",
 						it->first, confirms, it->second->getBlockHeight(),
@@ -509,11 +461,6 @@ namespace Elastos {
 						  [&reversedId, &status, &desc, confirms](ISubWalletCallback *callback) {
 							  callback->OnTransactionStatusChanged(reversedId, status, desc, confirms);
 						  });
-		}
-
-		void SubWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			CMBlock key = Utils::decrypt(Utils::decodeHex(_info.getEncryptedKey()), oldPassword);
-			_info.setEncryptedKey(Utils::encodeHex(Utils::encrypt(key, newPassword)));
 		}
 
 		void SubWallet::StartP2P() {
