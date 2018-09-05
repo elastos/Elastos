@@ -44,6 +44,8 @@ namespace Elastos {
 
 			bool setPubKey(const CMBlock pubKey);
 
+			void setPublicKey();
+
 			bool getCompressed() const;
 
 			std::string getPrivKey() const;
@@ -70,7 +72,7 @@ namespace Elastos {
 
 			std::string keyToRedeemScript(int signType) const;
 
-			void deriveKeyAndChain(UInt256 &chainCode, const void *seed, size_t seedLen, int depth, ...);
+			void deriveKeyAndChain(const void *seed, size_t seedLen, int depth, ...);
 
 			const UInt160 hashTo160();
 
@@ -79,25 +81,9 @@ namespace Elastos {
 		public:
 			static CMBlock getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass = "");
 
-			static CMBlock getAuthPrivKeyForAPI(const CMBlock &seed);
-
-			static void getAuthPrivKeyAndChainCode(const CMBlock &seed, CMBlock &key, UInt256 &chainCode);
-
-			static std::string getAuthPublicKeyForAPI(const CMBlock &privKey);
-
-			static CMBlock getPublicKeyByKey(const Key &key);
-
-			static std::string decryptBip38Key(const std::string &privKey, const std::string &pass);
-
 			static bool isValidBitcoinPrivateKey(const std::string &key);
 
-			static bool isValidBitcoinBIP38Key(const std::string &key);
-
 			static UInt256 encodeSHA256(const std::string &message);
-
-			static void
-			calculatePrivateKeyList(BRKey keys[], size_t keysCount, UInt256 *secret, UInt256 *chainCode,
-			                        uint32_t chain, const uint32_t indexes[]);
 
 			static bool verifyByPublicKey(const std::string &publicKey, const std::string &message,
 										  const std::string &signature);
@@ -107,11 +93,7 @@ namespace Elastos {
 
 			static const UInt256 getSystemAssetId();
 
-			static CMBlock getPubKeyFromPrivKey(const CMBlock &privKey,
-			                                               int nid = NID_X9_62_prime256v1);
-
 		private:
-			void setPublicKey();
 
 		private:
 			boost::shared_ptr<BRKey> _key;

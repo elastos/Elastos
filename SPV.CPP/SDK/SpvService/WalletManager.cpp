@@ -30,23 +30,25 @@ namespace Elastos {
 				_reconnectSeconds(proto._reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(proto._forkId) {
-			init(proto._masterPubKey, proto._earliestPeerTime, proto._singleAddress);
+			init(*proto._masterPubKey, proto._earliestPeerTime, proto._singleAddress, proto._coinIndex);
 		}
 
-		WalletManager::WalletManager(const MasterPubKeyPtr &masterPubKey, const boost::filesystem::path &dbPath,
+		WalletManager::WalletManager(const MasterPubKey &masterPubKey, const boost::filesystem::path &dbPath,
 									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, bool singleAddress,
-									 int forkId, const PluginTypes &pluginTypes, const ChainParams &chainParams) :
+									 uint32_t coinIndex, int forkId, const PluginTypes &pluginTypes,
+									 const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_reconnectSeconds(reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(forkId) {
-			init(masterPubKey, earliestPeerTime, singleAddress);
+			init(masterPubKey, earliestPeerTime, singleAddress, coinIndex);
 		}
 
 		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, int forkId,
+									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, uint32_t coinIndex,
+									 int forkId,
 									 const PluginTypes &pluginTypes,
 									 const std::vector<std::string> &initialAddresses,
 									 const ChainParams &chainParams) :
@@ -56,7 +58,7 @@ namespace Elastos {
 				_reconnectSeconds(reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(forkId) {
-			init(earliestPeerTime, initialAddresses);
+			init(earliestPeerTime, initialAddresses, coinIndex);
 		}
 
 		WalletManager::~WalletManager() {

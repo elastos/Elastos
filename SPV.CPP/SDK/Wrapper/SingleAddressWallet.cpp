@@ -14,13 +14,15 @@ namespace Elastos {
 
 		SingleAddressWallet::SingleAddressWallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 												 const MasterPubKeyPtr &masterPubKey,
-												 const boost::shared_ptr<Wallet::Listener> &listener) {
+												 const boost::shared_ptr<Wallet::Listener> &listener,
+												 uint32_t coinIndex) {
 
 			ParamChecker::checkNullPointer(listener.get());
 			_listener = boost::weak_ptr<Listener>(listener);
 
 			_wallet = createSingleWallet(transactions.getRawPointerArray().data(),
 										 transactions.size(), *masterPubKey->getRaw());
+			_wallet->CoinIndex = coinIndex;
 			ParamChecker::checkNullPointer(_wallet, false);
 
 			BRWalletSetCallbacks((BRWallet *) _wallet, &_listener,
@@ -118,13 +120,15 @@ namespace Elastos {
 															int internal) {
 			pthread_mutex_unlock(&wallet->lock);
 			size_t count = array_count(wallet->externalChain);
+			uint32_t coinIndex = ((ELAWallet *) wallet)->CoinIndex;
+
 			if (count == 0) {
 
 				uint32_t chain = SEQUENCE_EXTERNAL_CHAIN;
 				BRAddress address = BR_ADDRESS_NONE;
 
-				uint8_t pubKey[MasterPubKey::BIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
-				size_t len = MasterPubKey::BIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
+				uint8_t pubKey[BRBIP32PubKeyPath(NULL, 0, wallet->masterPubKey, 5, 44, coinIndex, 0, chain, count)];
+				size_t len = BRBIP32PubKeyPath(NULL, 0, wallet->masterPubKey, 5, 44, coinIndex, 0, chain, count);
 				Key key;
 				CMBlock publicKey;
 				publicKey.SetMemFixed(pubKey, len);

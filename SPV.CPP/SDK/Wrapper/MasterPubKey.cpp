@@ -8,7 +8,6 @@
 #include "BRBIP39Mnemonic.h"
 #include "BRBIP32Sequence.h"
 #include "MasterPubKey.h"
-#include "BTCKey.h"
 #include "Utils.h"
 
 namespace Elastos {
@@ -123,25 +122,9 @@ namespace Elastos {
 			_masterPubKey->fingerPrint = wrapperKey.hashTo160().u32[0];
 		}
 
-		size_t MasterPubKey::BIP32PubKey(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, uint32_t chain,
-		                                 uint32_t index) {
-			UInt256 chainCode = mpk.chainCode;
-			BRMasterPubKey zeroPubKey = BR_MASTER_PUBKEY_NONE;
-			assert(memcmp(&mpk, &zeroPubKey, sizeof(mpk)) != 0);
-
-			if (pubKey && sizeof(BRECPoint) <= pubKeyLen) {
-
-				CMBlock publicKey;
-				publicKey.SetMemFixed(mpk.pubKey, sizeof(mpk.pubKey));
-
-				CMBlock mbChildPubKey = BTCKey::getDerivePubKey(publicKey, chain, index, chainCode, NID_X9_62_prime256v1);
-
-				memcpy(pubKey, mbChildPubKey, mbChildPubKey.GetSize());
-
-				var_clean(&chainCode);
-			}
-
-			return (! pubKey || sizeof(BRECPoint) <= pubKeyLen) ? sizeof(BRECPoint) : 0;
+		MasterPubKey::MasterPubKey(const BRMasterPubKey &pubKey) {
+			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
+			*_masterPubKey = pubKey;
 		}
 
 	}

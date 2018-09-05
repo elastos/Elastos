@@ -58,6 +58,10 @@ namespace Elastos {
 
 			void SetMasterPubKey(const MasterPubKey &masterPubKey);
 
+			const MasterPubKey &GetIDMasterPubKey() const;
+
+			void SetIDMasterPubKey(const MasterPubKey &masterPubKey);
+
 		private:
 			JSON_SM_LS(MasterWalletStore);
 			JSON_SM_RS(MasterWalletStore);
@@ -70,6 +74,7 @@ namespace Elastos {
 			CMBlock _encryptedPhrasePass;
 			std::string _publicKey;
 			MasterPubKey _masterPubKey;
+			MasterPubKey _masterIDPubKey;
 			std::string _language;
 			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;

@@ -88,9 +88,6 @@ namespace Elastos {
 			j["UsedMaxAddressIndex"] = p._usedMaxAddressIndex;
 			j["SingleAddress"] = p._singleAddress;
 			j["WalletType"] = int(p.getWalletType());
-			j["EncryptedKey"] = p._encryptedKey;
-			j["ChainCode"] = p._chainCode;
-			j["PublicKey"] = p._publicKey;
 			j["MinFee"] = p._minFee;
 			j["EnableP2P"] = p._enableP2P;
 			j["ReconnectSeconds"] = p._reconnectSeconds;
@@ -103,9 +100,6 @@ namespace Elastos {
 			p._usedMaxAddressIndex = j["UsedMaxAddressIndex"].get<int>();
 			p._singleAddress = j["SingleAddress"].get<bool>();
 			p._walletType = (SubWalletType) j["WalletType"].get<int>();
-			p._encryptedKey = j["EncryptedKey"].get<std::string>();
-			p._chainCode = j["ChainCode"].get<std::string>();
-			p._publicKey = j["PublicKey"].get<std::string>();
 			p._minFee = j["MinFee"].get<uint64_t>();
 			p._reconnectSeconds = j["ReconnectSeconds"].get<uint32_t>();
 			if (j.find("EnableP2P") != j.end())
@@ -126,30 +120,6 @@ namespace Elastos {
 
 		void CoinInfo::setWalletType(SubWalletType type) {
 			_walletType = type;
-		}
-
-		const std::string &CoinInfo::getEncryptedKey() const {
-			return _encryptedKey;
-		}
-
-		void CoinInfo::setEncryptedKey(const std::string &key) {
-			_encryptedKey = key;
-		}
-
-		const std::string &CoinInfo::getChainCode() const {
-			return _chainCode;
-		}
-
-		void CoinInfo::setChainCode(const std::string &code) {
-			_chainCode = code;
-		}
-
-		const std::string &CoinInfo::getPublicKey() const {
-			return _publicKey;
-		}
-
-		void CoinInfo::setPublicKey(const std::string &pubKey) {
-			_publicKey = pubKey;
 		}
 
 		uint64_t CoinInfo::getMinFee() const {

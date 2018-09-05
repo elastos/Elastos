@@ -28,11 +28,12 @@ namespace Elastos {
 
 			WalletManager(const WalletManager &proto);
 
-			WalletManager(const MasterPubKeyPtr &masterPubKey,
+			WalletManager(const MasterPubKey &masterPubKey,
 						  const boost::filesystem::path &dbPath,
 						  uint32_t earliestPeerTime,
 						  uint32_t reconnectSeconds,
 						  bool singleAddress,
+						  uint32_t coinIndex,
 						  int forkId,
 						  const PluginTypes &pluginTypes,
 						  const ChainParams &chainParams);
@@ -40,6 +41,7 @@ namespace Elastos {
 			WalletManager(const boost::filesystem::path &dbPath,
 						  uint32_t earliestPeerTime,
 						  uint32_t reconnectSeconds,
+						  uint32_t coinIndex,
 						  int forkId,
 						  const PluginTypes &pluginTypes,
 						  const std::vector<std::string> &initialAddresses,

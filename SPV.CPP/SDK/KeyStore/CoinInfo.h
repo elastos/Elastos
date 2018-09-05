@@ -55,18 +55,6 @@ namespace Elastos {
 
 			void setWalletType(SubWalletType type);
 
-			const std::string &getEncryptedKey() const;
-
-			void setEncryptedKey(const std::string &key);
-
-			const std::string &getChainCode() const;
-
-			void setChainCode(const std::string &code);
-
-			const std::string &getPublicKey() const;
-
-			void setPublicKey(const std::string &pubKey);
-
 			uint64_t getMinFee() const;
 
 			void setMinFee(uint64_t fee);
@@ -97,9 +85,6 @@ namespace Elastos {
 			uint64_t _minFee;
 			uint64_t _feePerKb;
 			SubWalletType _walletType;
-			std::string _publicKey;
-			std::string _encryptedKey;
-			std::string _chainCode;
 			std::string _genesisAddress;
 		};
 

@@ -42,20 +42,5 @@ namespace Elastos {
 			return _merkleBlocks[blockType]->CreateMerkleBlock(manageRaw);
 		}
 
-		IHDPath *Registry::CreateHDPath(const std::string &pathType) {
-			if (_hdPaths.find(pathType) == _hdPaths.end())
-				return nullptr;
-
-			return _hdPaths[pathType]->CreateHDPath();
-		}
-
-		void Registry::AddHDPathProto(IHDPath *hdPath) {
-			_hdPaths[hdPath->GetHDPathType()] = HDPathPtr(hdPath);
-		}
-
-		void Registry::RemoveHDPathProto(IHDPath *hdPath) {
-			_hdPaths.erase(hdPath->GetHDPathType());
-		}
-
 	}
 }
