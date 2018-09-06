@@ -511,5 +511,9 @@ namespace Elastos {
 						  });
 		}
 
+		std::string SubWallet::GetPublicKey() const {
+			return _info.getPublicKey();
+		}
+
 	}
 }

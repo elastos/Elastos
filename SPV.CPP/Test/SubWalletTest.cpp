@@ -249,3 +249,24 @@ TEST_CASE("Sub wallet send transaction", "SubWallet") {
 
 	}
 }
+
+TEST_CASE("Sub wallet check sign", "[CheckSign]") {
+	std::string phrasePassword = "phrasePassword";
+	std::string payPassword = "payPassword";
+	boost::scoped_ptr<TestMasterWallet> masterWallet(new TestMasterWallet());
+	std::string message = "mymessage";
+	ISubWallet *subWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
+	std::string signedData = subWallet->Sign(message, payPassword);
+
+	SECTION("Normal check sign") {
+		nlohmann::json j = subWallet->CheckSign(subWallet->GetPublicKey(), message, signedData);
+		REQUIRE(j["Result"].get<bool>());
+	}
+	SECTION("Check sign with wrong message") {
+		nlohmann::json j = subWallet->CheckSign(subWallet->GetPublicKey(), "wrongMessage", signedData);
+		REQUIRE_FALSE(j["Result"].get<bool>());
+	}
+	SECTION("Check sign with wrong signed data") {
+		REQUIRE_THROWS_AS(subWallet->CheckSign(subWallet->GetPublicKey(), message, "wrangData"), std::logic_error);
+	}
+}

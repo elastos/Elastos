@@ -168,9 +168,15 @@ namespace Elastos {
 			 * @return the result wrapper by a json.
 			 */
 			virtual nlohmann::json CheckSign(
-					const std::string &address,
+					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
+
+			/**
+			 * Get root public key of current sub wallet.
+			 * @return root public key with hex string format.
+			 */
+			virtual std::string GetPublicKey() const = 0;
 		};
 
 	}
