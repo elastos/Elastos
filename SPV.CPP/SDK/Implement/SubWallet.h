@@ -19,6 +19,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class MasterWallet;
+
 		class Transaction;
 
 		class SubWallet : public virtual ISubWallet, public Wallet::Listener, public PeerManager::Listener {
@@ -84,13 +85,15 @@ namespace Elastos {
 					const std::string &payPassword);
 
 			virtual nlohmann::json CheckSign(
-					const std::string &address,
+					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);
 
 			virtual uint64_t CalculateTransactionFee(
 					const nlohmann::json &rawTransaction,
 					uint64_t feePerKb);
+
+			virtual std::string GetPublicKey() const;
 
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged(uint64_t balance);
@@ -111,13 +114,13 @@ namespace Elastos {
 			virtual void txStatusUpdate() {}
 
 			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *>& blocks);
+			virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer*>& peers) {}
+			virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {}
 
 			// func networkIsReachable() -> Bool}
-			virtual bool networkIsReachable() {return false;}
+			virtual bool networkIsReachable() { return false; }
 
 			// Called on publishTransaction
 			virtual void txPublished(const std::string &error) {}
@@ -138,12 +141,12 @@ namespace Elastos {
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
 			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
-														const std::string &payPassword);
+														   const std::string &payPassword);
 
 			virtual void publishTransaction(const TransactionPtr &transaction);
 
 			void signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
-			                     const std::string &payPassword);
+								 const std::string &payPassword);
 
 			void recover(int limitGap);
 
@@ -159,6 +162,7 @@ namespace Elastos {
 													  uint32_t confirms);
 
 			virtual void fireDestroyWallet();
+
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;
