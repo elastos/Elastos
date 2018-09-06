@@ -357,7 +357,12 @@ namespace Elastos {
 			key.setPublicKey();
 			_localStore.SetPublicKey(Utils::encodeHex(key.getPubkey()));
 
-			_localStore.SetIDMasterPubKey(MasterPubKey(BRBIP32MasterPubKey(&seed, sizeof(seed))));
+			//init id chain derived master public key
+			BRKey idMasterKey;
+			UInt256 idChainCode;
+			BRBIP32PrivKeyPath(&idMasterKey, &idChainCode, &seed, sizeof(seed), 1, 0 | BIP32_HARD);
+			Key wrapperKey(idMasterKey.secret, idMasterKey.compressed);
+			_localStore.SetIDMasterPubKey(MasterPubKey(wrapperKey.getPubkey(), idChainCode));
 
 			var_clean(&seed);
 			var_clean(&masterKey.secret);

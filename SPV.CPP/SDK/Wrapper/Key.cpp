@@ -63,11 +63,6 @@ namespace Elastos {
 			}
 		}
 
-		Key::Key(const CMBlock &seed, uint32_t chain, uint32_t index) {
-			_key = boost::shared_ptr<BRKey>(new BRKey);
-			BRBIP32PrivKey(_key.get(), seed, seed.GetSize(), chain, index);
-		}
-
 		std::string Key::toString() const {
 			return Utils::UInt256ToString(_key->secret);
 		}
@@ -157,9 +152,10 @@ namespace Elastos {
 		}
 
 		CMBlock Key::compactSign(const CMBlock &data) const {
+
 			CMBlock signedData;
 			signedData.Resize(65);
-			ECDSA65Sign_sha256(&_key->secret, sizeof(_key->secret), (const UInt256 *) &data, signedData, signedData.GetSize());
+			ECDSA65Sign_sha256(&_key->secret, sizeof(_key->secret), (const UInt256 *) &data[0], signedData, signedData.GetSize());
 			return signedData;
 		}
 
@@ -269,7 +265,7 @@ namespace Elastos {
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 									const CMBlock &signature) {
 			CMBlock pubKey = Utils::decodeHex(publicKey);
-			return ECDSA65Verify_sha256(pubKey, pubKey.GetSize(), &messageDigest, signature, signature.GetSize()) != 0;
+			return ECDSA65Verify_sha256((uint8_t *)(void *)pubKey, pubKey.GetSize(), &messageDigest, signature, signature.GetSize()) != 0;
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {
