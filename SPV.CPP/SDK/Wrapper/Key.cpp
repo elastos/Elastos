@@ -35,7 +35,8 @@ namespace Elastos {
 		}
 
 		Key::Key(const BRKey &brkey) {
-			_key = boost::shared_ptr<BRKey>(new BRKey(brkey));
+			_key = boost::shared_ptr<BRKey>(new BRKey());
+			*_key = brkey;
 		}
 
 		Key::Key(const std::string &privKey) {
@@ -230,14 +231,6 @@ namespace Elastos {
 			UInt256 md;
 			BRSHA256((void *) &md, (void *) message.c_str(), strlen(message.c_str()));
 			return md;
-		}
-
-		void Key::deriveKeyAndChain(const void *seed, size_t seedLen, int depth, ...) {
-			va_list ap;
-			va_start(ap, depth);
-
-			BRBIP32vPrivKeyPath(getRaw(), seed, seedLen, depth, ap);
-			va_end(ap);
 		}
 
 		const UInt160 Key::hashTo160() {

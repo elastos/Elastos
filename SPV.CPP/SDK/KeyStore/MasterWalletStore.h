@@ -54,10 +54,6 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfo> &infoList);
 
-			const MasterPubKey &GetMasterPubKey() const;
-
-			void SetMasterPubKey(const MasterPubKey &masterPubKey);
-
 			const MasterPubKey &GetIDMasterPubKey() const;
 
 			void SetIDMasterPubKey(const MasterPubKey &masterPubKey);
@@ -73,7 +69,6 @@ namespace Elastos {
 			CMBlock _encryptedMnemonic;
 			CMBlock _encryptedPhrasePass;
 			std::string _publicKey;
-			MasterPubKey _masterPubKey;
 			MasterPubKey _masterIDPubKey;
 			std::string _language;
 			IdAgentInfo _idAgentInfo;

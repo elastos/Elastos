@@ -37,19 +37,6 @@ public:
 	}
 };
 
-MasterPubKeyPtr createDummyPublicKey() {
-	UInt512 seed;
-	std::string phrase = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	BRBIP39DeriveKey(seed.u8, phrase.c_str(), "");
-
-	UInt256 chainCode = UINT256_ZERO;
-	Key key;
-	key.deriveKeyAndChain(chainCode, &seed, sizeof(seed), 3, 44, 0, 0);
-
-	MasterPubKeyPtr masterPubKey(new MasterPubKey(*key.getRaw(), chainCode));
-	return masterPubKey;
-}
-
 boost::filesystem::path tryInitDatabasePath() {
 	boost::filesystem::path databasePath = "Data";
 	databasePath /= "SingleAddressWallet";

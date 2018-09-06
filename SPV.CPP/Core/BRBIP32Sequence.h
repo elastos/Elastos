@@ -77,11 +77,11 @@ size_t BRBIP32vPubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk,
 
 // sets the private key for the specified path to key
 // depth is the number of arguments used to specify the path
-void BRBIP32PrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth, ...);
+void BRBIP32PrivKeyPath(BRKey *key, UInt256 *chainCode, const void *seed, size_t seedLen, int depth, ...);
 
 // sets the private key for the path specified by vlist to key
 // depth is the number of arguments in vlist
-void BRBIP32vPrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth, va_list vlist);
+void BRBIP32vPrivKeyPath(BRKey *key, UInt256 *chainCode, const void *seed, size_t seedLen, int depth, va_list vlist);
 
 // writes the base58check encoded serialized master private key (xprv) to str
 // returns number of bytes written including NULL terminator, or strLen needed if str is NULL

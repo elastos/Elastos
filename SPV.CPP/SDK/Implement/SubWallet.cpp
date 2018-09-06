@@ -44,8 +44,41 @@ namespace Elastos {
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
+			CMBlock encryptedKey;
+			UInt256 chainCode = UINT256_ZERO;
+			MasterPubKey masterPubKey;
+			if (!payPassword.empty()) {
+				UInt512 seed = _parent->deriveSeed(payPassword);
+				BRKey key;
+				BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD, 0 | BIP32_HARD, 0 | BIP32_HARD);
+
+				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
+				BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
+
+				CMBlock ret(sizeof(rawKey));
+				memcpy(ret, &rawKey, sizeof(rawKey));
+				encryptedKey = Utils::encrypt(ret, payPassword);
+
+				Key wrapperKey(key.secret, key.compressed);
+				CMBlock pubKey = wrapperKey.getPubkey();
+
+				_info.setChainCode(Utils::UInt256ToString(chainCode));
+				_info.setPublicKey(Utils::encodeHex(pubKey));
+
+				masterPubKey = MasterPubKey(key, chainCode);
+
+			} else {
+				ParamChecker::checkNotEmpty(_info.getPublicKey(), false);
+				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
+
+				chainCode = Utils::UInt256FromString(_info.getChainCode());
+				CMBlock pubKey = Utils::decodeHex(_info.getPublicKey());
+
+				masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(_info.getChainCode()));
+			}
+
 			_walletManager = WalletManagerPtr(
-					new WalletManager(_parent->_localStore.GetMasterPubKey(), subWalletDbPath,
+					new WalletManager(masterPubKey, subWalletDbPath,
 									  _info.getEarliestPeerTime(), _info.getReconnectSeconds(),
 									  _info.getSingleAddress(), _info.getIndex(), _info.getForkId(), pluginTypes,
 									  chainParams));
@@ -257,7 +290,8 @@ namespace Elastos {
 		Key SubWallet::deriveKey(const std::string &payPassword) {
 			UInt512 seed = _parent->deriveSeed(payPassword);
 			Key key;
-			BRBIP32PrivKeyPath(key.getRaw(), &seed, sizeof(seed), 3, 44 | BIP32_HARD, _info.getIndex() | BIP32_HARD,
+			UInt256 chainCode;
+			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD, _info.getIndex() | BIP32_HARD,
 							   0 | BIP32_HARD);
 			return key;
 		}
