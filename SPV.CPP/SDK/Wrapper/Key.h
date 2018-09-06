@@ -72,8 +72,6 @@ namespace Elastos {
 
 			std::string keyToRedeemScript(int signType) const;
 
-			void deriveKeyAndChain(const void *seed, size_t seedLen, int depth, ...);
-
 			const UInt160 hashTo160();
 
 			const UInt168 hashTo168();

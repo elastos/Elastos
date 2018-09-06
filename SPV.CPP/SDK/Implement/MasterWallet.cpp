@@ -9,6 +9,7 @@
 
 #include "BRBase58.h"
 #include "BRBIP39Mnemonic.h"
+#include "BRCrypto.h"
 
 #include "Utils.h"
 #include "MasterPubKey.h"
@@ -28,6 +29,7 @@
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
+#define BIP32_SEED_KEY "Bitcoin seed"
 
 namespace fs = boost::filesystem;
 
@@ -351,18 +353,14 @@ namespace Elastos {
 			memcpy(cbTmp, &masterKey.secret, sizeof(UInt256));
 			_localStore.SetEncryptedKey(Utils::encrypt(cbTmp, payPassword));
 
-			_localStore.SetIDMasterPubKey(MasterPubKey(BRBIP32MasterPubKey(&seed, sizeof(seed))));
-			MasterPubKey masterPubKey;
-			getPubKeyFromPrivKey(masterPubKey.getRaw()->pubKey, (UInt256 *)&seed.u8[0]);
-			masterPubKey.getRaw()->chainCode = *(UInt256 *)&seed.u8[32];
-			_localStore.SetMasterPubKey(masterPubKey);
-
-			var_clean(&seed);
-			var_clean(&masterKey.secret, &masterPubKey.getRaw()->chainCode);
-
 			Key key(masterKey);
 			key.setPublicKey();
 			_localStore.SetPublicKey(Utils::encodeHex(key.getPubkey()));
+
+			_localStore.SetIDMasterPubKey(MasterPubKey(BRBIP32MasterPubKey(&seed, sizeof(seed))));
+
+			var_clean(&seed);
+			var_clean(&masterKey.secret);
 
 			return true;
 		}

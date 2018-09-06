@@ -1012,9 +1012,8 @@ namespace Elastos {
 				Key key;
 				BRAddress address = BR_ADDRESS_NONE;
 
-				uint8_t pubKey[BRBIP32PubKeyPath(NULL, 0, wallet->masterPubKey, 5, 44, coinIndex, 0, chain, count)];
-				size_t len = BRBIP32PubKeyPath(pubKey, sizeof(pubKey), wallet->masterPubKey, 5, 44, coinIndex, 0, chain,
-											   count);
+				uint8_t pubKey[BRBIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
+				size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
 
 				CMBlock publicKey(len);
 				memcpy(publicKey, pubKey, len);
@@ -1034,7 +1033,7 @@ namespace Elastos {
 					addrs[j] = addrChain[i + j];
 				}
 			}
-
+ 
 			// was addrChain moved to a new memory location?
 			if (addrChain == (internal ? wallet->internalChain : wallet->externalChain)) {
 				for (i = startCount; i < count; i++) {

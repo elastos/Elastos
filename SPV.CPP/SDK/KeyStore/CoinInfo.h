@@ -67,6 +67,14 @@ namespace Elastos {
 
 			void setEnableP2P(bool enable);
 
+			const std::string &getChainCode() const;
+
+			void setChainCode(const std::string &code);
+
+			const std::string &getPublicKey() const;
+
+			void setPublicKey(const std::string &pubKey);
+
 		private:
 			JSON_SM_LS(CoinInfo);
 			JSON_SM_RS(CoinInfo);
@@ -85,6 +93,8 @@ namespace Elastos {
 			uint64_t _minFee;
 			uint64_t _feePerKb;
 			SubWalletType _walletType;
+			std::string _publicKey;
+			std::string _chainCode;
 			std::string _genesisAddress;
 		};
 

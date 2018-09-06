@@ -244,7 +244,7 @@ _ECPointAdd(const EC_GROUP *group, EC_POINT *point, const unsigned char vchTweak
 
 static void _TweakPublic(BRECPoint *K, const unsigned char vchTweak[32], int nid) {
 	EC_KEY *key = EC_KEY_new_by_curve_name(nid);
-	if (key == NULL) {
+	if (key != NULL) {
 		BIGNUM *pubKey = BN_bin2bn((const unsigned char *) (uint8_t *) K->p, sizeof(K->p),
 								   NULL);
 		if (NULL != pubKey) {
@@ -386,18 +386,23 @@ void BRBIP32PrivKeyList(BRKey keys[], size_t keysCount, const void *seed, size_t
 
 void BRBIP44PrivKeyList(BRKey keys[], size_t keysCount, const void *seed, size_t seedLen, uint32_t coinIndex,
 						uint32_t chain, const uint32_t indexes[]) {
+	UInt256 chainCode;
 	for (size_t i = 0; i < keysCount; i++) {
-		BRBIP32PrivKeyPath(&keys[i], seed, seedLen, 5, 44 | BIP32_HARD, coinIndex | BIP32_HARD, 0 | BIP32_HARD,
+		BRBIP32PrivKeyPath(&keys[i], &chainCode, seed, seedLen, 5, 44 | BIP32_HARD, coinIndex | BIP32_HARD, 0 | BIP32_HARD,
 						   chain, indexes[i]);
 	}
+	var_clean(&chainCode);
 }
 
 size_t BRBIP32PubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, int depth, ...) {
+	size_t len;
 	va_list ap;
 
 	va_start(ap, depth);
-	BRBIP32vPubKeyPath(pubKey, pubKeyLen, mpk, depth, ap);
+	len = BRBIP32vPubKeyPath(pubKey, pubKeyLen, mpk, depth, ap);
 	va_end(ap);
+
+	return len;
 }
 
 size_t BRBIP32vPubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk, int depth, va_list vlist) {
@@ -419,19 +424,19 @@ size_t BRBIP32vPubKeyPath(uint8_t *pubKey, size_t pubKeyLen, BRMasterPubKey mpk,
 
 // sets the private key for the specified path to key
 // depth is the number of arguments used to specify the path
-void BRBIP32PrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth, ...) {
+void BRBIP32PrivKeyPath(BRKey *key, UInt256 *chainCode, const void *seed, size_t seedLen, int depth, ...) {
 	va_list ap;
 
 	va_start(ap, depth);
-	BRBIP32vPrivKeyPath(key, seed, seedLen, depth, ap);
+	BRBIP32vPrivKeyPath(key, chainCode, seed, seedLen, depth, ap);
 	va_end(ap);
 }
 
 // sets the private key for the path specified by vlist to key
 // depth is the number of arguments in vlist
-void BRBIP32vPrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth, va_list vlist) {
+void BRBIP32vPrivKeyPath(BRKey *key, UInt256 *chainCode, const void *seed, size_t seedLen, int depth, va_list vlist) {
 	UInt512 I;
-	UInt256 secret, chainCode;
+	UInt256 secret;
 
 	assert(key != NULL);
 	assert(seed != NULL || seedLen == 0);
@@ -440,15 +445,15 @@ void BRBIP32vPrivKeyPath(BRKey *key, const void *seed, size_t seedLen, int depth
 	if (key && (seed || seedLen == 0)) {
 		BRHMAC(&I, BRSHA512, sizeof(UInt512), BIP32_SEED_KEY, strlen(BIP32_SEED_KEY), seed, seedLen);
 		secret = *(UInt256 *) &I;
-		chainCode = *(UInt256 *) &I.u8[sizeof(UInt256)];
+		*chainCode = *(UInt256 *) &I.u8[sizeof(UInt256)];
 		var_clean(&I);
 
 		for (int i = 0; i < depth; i++) {
-			_CKDpriv(&secret, &chainCode, va_arg(vlist, uint32_t));
+			_CKDpriv(&secret, chainCode, va_arg(vlist, uint32_t));
 		}
 
 		BRKeySetSecret(key, &secret, 1);
-		var_clean(&secret, &chainCode);
+		var_clean(&secret);
 	}
 }
 
@@ -481,7 +486,8 @@ BRMasterPubKey BRBIP32ParseMasterPubKey(const char *str) {
 
 // key used for authenticated API calls, i.e. bitauth: https://github.com/bitpay/bitauth - path m/1H/0
 void BRBIP32APIAuthKey(BRKey *key, const void *seed, size_t seedLen) {
-	BRBIP32PrivKeyPath(key, seed, seedLen, 2, 1 | BIP32_HARD, 0);
+	UInt256 chainCode;
+	BRBIP32PrivKeyPath(key, &chainCode, seed, seedLen, 2, 1 | BIP32_HARD, 0);
 }
 
 // key used for BitID: https://github.com/bitid/bitid/blob/master/BIP_draft.md

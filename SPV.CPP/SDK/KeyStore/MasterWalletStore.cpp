@@ -102,8 +102,6 @@ namespace Elastos {
 			j["PhrasePasword"] = Utils::encodeHex(p.GetEncrptedPhrasePassword());
 			j["Language"] = p.GetLanguage();
 			j["PublicKey"] = p.GetPublicKey();
-			j["ChainCode"] = Utils::UInt256ToString(p.GetMasterPubKey().getChainCode());
-			j["MasterKeyPubKey"] = Utils::encodeHex(p.GetMasterPubKey().getPubKey());
 			j["IDChainCode"] = Utils::UInt256ToString(p.GetIDMasterPubKey().getChainCode());
 			j["IDMasterKeyPubKey"] = Utils::encodeHex(p.GetIDMasterPubKey().getPubKey());
 			j["IdAgent"] = p.GetIdAgentInfo();
@@ -120,11 +118,8 @@ namespace Elastos {
 			p.SetEncryptedPhrasePassword(Utils::decodeHex(j["PhrasePasword"].get<std::string>()));
 			p.SetLanguage(j["Language"].get<std::string>());
 			p.SetPublicKey(j["PublicKey"].get<std::string>());
-			UInt256 chainCode = Utils::UInt256FromString(j["ChainCode"].get<std::string>());
-			CMBlock pubKey = Utils::decodeHex(j["MasterKeyPubKey"].get<std::string>());
-			p.SetMasterPubKey(MasterPubKey(pubKey, chainCode));
-			chainCode = Utils::UInt256FromString(j["IDChainCode"].get<std::string>());
-			pubKey = Utils::decodeHex(j["IDMasterKeyPubKey"].get<std::string>());
+			UInt256 chainCode = Utils::UInt256FromString(j["IDChainCode"].get<std::string>());
+			CMBlock pubKey = Utils::decodeHex(j["IDMasterKeyPubKey"].get<std::string>());
 			p.SetIDMasterPubKey(MasterPubKey(pubKey, chainCode));
 			p.SetIdAgentInfo(j["IdAgent"]);
 
@@ -142,14 +137,6 @@ namespace Elastos {
 
 		void MasterWalletStore::SetLanguage(const std::string &language) {
 			_language = language;
-		}
-
-		const MasterPubKey &MasterWalletStore::GetMasterPubKey() const {
-			return _masterPubKey;
-		}
-
-		void MasterWalletStore::SetMasterPubKey(const MasterPubKey &masterPubKey) {
-			_masterPubKey = masterPubKey;
 		}
 
 		const MasterPubKey &MasterWalletStore::GetIDMasterPubKey() const {
