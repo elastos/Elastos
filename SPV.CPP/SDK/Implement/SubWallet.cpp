@@ -50,22 +50,19 @@ namespace Elastos {
 			if (!payPassword.empty()) {
 				UInt512 seed = _parent->deriveSeed(payPassword);
 				BRKey key;
-				BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD, 0 | BIP32_HARD, 0 | BIP32_HARD);
+				BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
+								   _info.getIndex() | BIP32_HARD, 0 | BIP32_HARD);
 
 				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
 				BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
 
-				CMBlock ret(sizeof(rawKey));
-				memcpy(ret, &rawKey, sizeof(rawKey));
-				encryptedKey = Utils::encrypt(ret, payPassword);
-
 				Key wrapperKey(key.secret, key.compressed);
 				CMBlock pubKey = wrapperKey.getPubkey();
 
+				masterPubKey = MasterPubKey(key, chainCode);
+
 				_info.setChainCode(Utils::UInt256ToString(chainCode));
 				_info.setPublicKey(Utils::encodeHex(pubKey));
-
-				masterPubKey = MasterPubKey(key, chainCode);
 
 			} else {
 				ParamChecker::checkNotEmpty(_info.getPublicKey(), false);

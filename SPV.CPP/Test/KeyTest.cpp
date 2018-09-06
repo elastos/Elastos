@@ -74,20 +74,6 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(false == key1.getCompressed());
 	}
 
-	SECTION("Contructor width seed") {
-		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		CMBlock seedByte;
-		seedByte.SetMemFixed(seed.u8, sizeof(seed.u8));
-		Key key(seedByte, 0, 97);
-		REQUIRE(key.getRaw() != nullptr);
-		REQUIRE(key.getPrivKey().empty() == false);
-
-		UInt256 hash = key.getSecret();
-		UInt256 target = uint256("1de5823636a0033939ed2ca1e776f9b20b6caaad957580851462c0039b94c95f");
-		int res = UInt256Eq(&hash, &target);
-		REQUIRE(res == 1);
-	}
-
 	SECTION("Key setPrivKey test") {
 		Key key1;
 		key1.setPrivKey("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRy");
@@ -110,6 +96,7 @@ TEST_CASE("Key test", "[Key]") {
 		CMBlock md;
 		md.SetMemFixed(hash.u8, sizeof(hash));
 		CMBlock compactData = key.compactSign(md);
+		std::string dataHex = Utils::encodeHex(compactData);
 		REQUIRE(compactData.GetSize() == 65);
 
 		bool ret = key.verify(hash, compactData);
@@ -135,57 +122,6 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(r == 0);
 	}
 
-	SECTION("Key getSeedFromPhrase, getAuthPrivKeyForAPI, getAuthPublicKeyForAPI test") {
-		uint8_t s[] = "bless bird birth blind blossom boil bonus entry equal error fence fetch";
-		CMBlock phrase;
-		phrase.SetMemFixed(s, sizeof(s));
-
-		CMBlock seedByte = Key::getSeedFromPhrase(phrase);
-		REQUIRE(seedByte.GetSize() > 0);
-		REQUIRE(seedByte != false);
-
-		CMBlock privateByte = Key::getAuthPrivKeyForAPI(seedByte);
-		REQUIRE(privateByte.GetSize() > 0);
-		REQUIRE(privateByte != false);
-
-		std::string pubKeyStr = Key::getAuthPublicKeyForAPI(privateByte);
-		REQUIRE(pubKeyStr.empty() == false);
-	}
-
-	SECTION("Key isValidBitcoinPrivateKey test") {
-		bool res = Key::isValidBitcoinPrivateKey("S6c56bnXQiBjk9mqSYE7ykVQ7NzrRz");
-		REQUIRE(res == false);
-
-		UInt128 entropy = Utils::generateRandomSeed();
-		CMBlock seedByte;
-		seedByte.SetMemFixed(entropy.u8, sizeof(entropy));
-		CMBlock privKey = Key::getAuthPrivKeyForAPI(seedByte);
-
-		std::string secretKey = (char *)(void *)privKey;
-		res = Key::isValidBitcoinPrivateKey(secretKey);
-		REQUIRE(res == true);
-	}
-
-	SECTION("keyToAddress test") {
-		Key key;
-		UInt128 entropy = Utils::generateRandomSeed();
-
-		CMBlock seedByte;
-		seedByte.SetMemFixed(entropy.u8, sizeof(entropy));
-		CMBlock privKey = Key::getAuthPrivKeyForAPI(seedByte);
-
-		char data[privKey.GetSize()];
-		memcpy(data, privKey, privKey.GetSize());
-		std::string ret(data, privKey.GetSize());
-
-		key.setPrivKey(ret);
-
-		std::string addr = key.keyToAddress(ELA_IDCHAIN);
-		REQUIRE(addr.substr(0,1) == "i");
-
-		addr = key.keyToAddress(ELA_STANDARD);
-		REQUIRE(addr.substr(0,1) == "E");
-	}
 }
 
 #ifdef PRESSURE_TEST

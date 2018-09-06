@@ -220,7 +220,7 @@ namespace Elastos {
 			.Raw = {
 				IdChainRegNetDNSSeeds,
 				22608,        // standardPort
-				201806271,    // magicNumber
+				201809031,    // magicNumber
 				0,            // services
 				nullptr,
 				IdChainRegNetCheckpoints,

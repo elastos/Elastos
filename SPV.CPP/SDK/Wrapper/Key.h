@@ -32,8 +32,6 @@ namespace Elastos {
 
 			Key(const UInt256 &secret, bool compressed);
 
-			Key(const CMBlock &seed, uint32_t chain, uint32_t index);
-
 			virtual std::string toString() const;
 
 			virtual BRKey *getRaw() const;
