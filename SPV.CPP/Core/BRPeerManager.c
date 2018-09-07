@@ -863,10 +863,7 @@ static void _peerDisconnected(void *info, int error)
 
     if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect) {
-        sleep(30);
-        BRPeerManagerConnect(manager);
-    }
+    if (willReconnect) BRPeerManagerConnect(manager);
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 

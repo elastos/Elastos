@@ -383,6 +383,7 @@ namespace Elastos {
 		}
 
 		void WalletManager::startReconnect() {
+			Log::getLogger()->info("reconnect {}s later...", _reconnectSeconds);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(_reconnectSeconds)));
 			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this));
@@ -398,6 +399,7 @@ namespace Elastos {
 		void WalletManager::asyncConnect() {
 			if (_peerManager->getConnectStatus() == Peer::Disconnected ||
 				_peerManager->getConnectStatus() == Peer::Unknown) {
+				Log::getLogger()->info("asyncConnect...");
 				_peerManager->connect();
 			}
 		}

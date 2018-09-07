@@ -33,8 +33,8 @@
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
 #define BIP32_XPUB     "\x04\x88\xB2\x1E"
 
-static int _TweakSecret(unsigned char vchSecretOut[32], const unsigned char vchSecretIn[32],
-						const unsigned char vchTweak[32], int nid) {
+static int _TweakSecret(UInt256 *secretOut, const UInt256 *secretIn,
+						const UInt256 *tweak, int nid) {
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_start(ctx);
 	BIGNUM *bnSecret = BN_CTX_get(ctx);
@@ -43,17 +43,17 @@ static int _TweakSecret(unsigned char vchSecretOut[32], const unsigned char vchS
 	EC_GROUP *group = EC_GROUP_new_by_curve_name(nid);
 	EC_GROUP_get_order(group, bnOrder,
 					   ctx); // what a grossly inefficient way to get the (constant) group order...
-	BN_bin2bn(vchTweak, 32, bnTweak);
+	BN_bin2bn(tweak->u8, sizeof(*tweak), bnTweak);
 	if (BN_cmp(bnTweak, bnOrder) >= 0)
 		return -1; // extremely unlikely
-	BN_bin2bn(vchSecretIn, 32, bnSecret);
+	BN_bin2bn(secretIn->u8, sizeof(*secretIn), bnSecret);
 	BN_add(bnSecret, bnSecret, bnTweak);
 	BN_nnmod(bnSecret, bnSecret, bnOrder, ctx);
 	if (BN_is_zero(bnSecret))
 		return -1; // ridiculously unlikely
 	int nBits = BN_num_bits(bnSecret);
-	memset(vchSecretOut, 0, 32);
-	BN_bn2bin(bnSecret, &vchSecretOut[32 - (nBits + 7) / 8]);
+	memset(secretOut, 0, sizeof(*secretOut));
+	BN_bn2bin(bnSecret, &secretOut->u8[sizeof(*secretOut) - (nBits + 7) / 8]);
 	EC_GROUP_free(group);
 	BN_CTX_end(ctx);
 	BN_CTX_free(ctx);
@@ -210,7 +210,7 @@ static void _CKDpriv(UInt256 *k, UInt256 *c, uint32_t i) {
 }
 
 static int
-_ECPointAdd(const EC_GROUP *group, EC_POINT *point, const unsigned char vchTweak[32], void *out, size_t outLen) {
+_ECPointAdd(const EC_GROUP *group, EC_POINT *point, const UInt256 *tweak, void *out, size_t outLen) {
 	BN_CTX *ctx = BN_CTX_new();
 	BN_CTX_start(ctx);
 	BIGNUM *bnTweak = BN_CTX_get(ctx);
@@ -218,7 +218,7 @@ _ECPointAdd(const EC_GROUP *group, EC_POINT *point, const unsigned char vchTweak
 	BIGNUM *bnOne = BN_CTX_get(ctx);
 	EC_GROUP_get_order(group, bnOrder,
 					   ctx); // what a grossly inefficient way to get the (constant) group order...
-	BN_bin2bn(vchTweak, 32, bnTweak);
+	BN_bin2bn(tweak->u8, sizeof(*tweak), bnTweak);
 	if (BN_cmp(bnTweak, bnOrder) >= 0)
 		return -1; // extremely unlikely
 	BN_one(bnOne);
@@ -242,7 +242,7 @@ _ECPointAdd(const EC_GROUP *group, EC_POINT *point, const unsigned char vchTweak
 	return 0;
 }
 
-static void _TweakPublic(BRECPoint *K, const unsigned char vchTweak[32], int nid) {
+static void _TweakPublic(BRECPoint *K, const UInt256 *tweak, int nid) {
 	EC_KEY *key = EC_KEY_new_by_curve_name(nid);
 	if (key != NULL) {
 		BIGNUM *pubKey = BN_bin2bn((const unsigned char *) (uint8_t *) K->p, sizeof(K->p),
@@ -255,7 +255,7 @@ static void _TweakPublic(BRECPoint *K, const unsigned char vchTweak[32], int nid
 					if (1 == EC_KEY_check_key(key)) {
 						uint8_t mbDeriveKey[33];
 
-						if (0 == _ECPointAdd(curve, ec_p, vchTweak, mbDeriveKey, sizeof(mbDeriveKey))) {
+						if (0 == _ECPointAdd(curve, ec_p, tweak, mbDeriveKey, sizeof(mbDeriveKey))) {
 							memcpy(K->p, mbDeriveKey, 33);
 						}
 					}
@@ -505,7 +505,8 @@ void BRBIP32BitIDKey(BRKey *key, const void *seed, size_t seedLen, uint32_t inde
 		UInt32SetLE(data, index);
 		memcpy(&data[sizeof(index)], uri, uriLen);
 		BRSHA256(&hash, data, sizeof(data));
-		BRBIP32PrivKeyPath(key, seed, seedLen, 5, 13 | BIP32_HARD, UInt32GetLE(&hash.u32[0]) | BIP32_HARD,
+		UInt256 chainCode;
+		BRBIP32PrivKeyPath(key, &chainCode, seed, seedLen, 5, 13 | BIP32_HARD, UInt32GetLE(&hash.u32[0]) | BIP32_HARD,
 						   UInt32GetLE(&hash.u32[1]) | BIP32_HARD, UInt32GetLE(&hash.u32[2]) | BIP32_HARD,
 						   UInt32GetLE(&hash.u32[3]) | BIP32_HARD); // path m/13H/aH/bH/cH/dH
 	}
