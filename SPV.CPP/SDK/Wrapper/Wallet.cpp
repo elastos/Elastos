@@ -1033,7 +1033,7 @@ namespace Elastos {
 					addrs[j] = addrChain[i + j];
 				}
 			}
- 
+
 			// was addrChain moved to a new memory location?
 			if (addrChain == (internal ? wallet->internalChain : wallet->externalChain)) {
 				for (i = startCount; i < count; i++) {

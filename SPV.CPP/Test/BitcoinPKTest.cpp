@@ -19,12 +19,7 @@ TEST_CASE("bitcoin keystore with special phrase and no passphrase", "[bitcoin te
 
 	CMemBlock<char> phrase;
 	phrase.SetMemFixed(pPhrase, strlen(pPhrase) + 1);
-#ifdef MNEMONIC_SOURCE_H
-	bool isValid = WalletTool::PhraseIsValid(phrase, "english");
-#else
 	Mnemonic _mnemonic("english", "Data");
-	bool isValid = WalletTool::PhraseIsValid(phrase, _mnemonic.words());
-#endif
 
 	std::string prikey_encode_base58 = WalletTool::getDeriveKey_base58(phrase, "");
 
@@ -94,16 +89,6 @@ TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase",
 
 	CMBlock seed = WalletTool::GenerateSeed128();
 	CMemBlock<char> phrase;
-#ifdef MNEMONIC_SOURCE_H
-	phrase = WalletTool::GeneratePhraseFromSeed(seed, "french");
-
-	bool bValid = WalletTool::PhraseIsValid(phrase, "french");
-	REQUIRE(true == bValid);
-	std::string str_phrase = (const char *) phrase;
-
-	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, "french");
-	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
-#else
 	Mnemonic _mnemonic("french", "Data");
 	phrase = WalletTool::GeneratePhraseFromSeed(seed, _mnemonic.words());
 
@@ -113,7 +98,6 @@ TEST_CASE("bitcoin keystore in french with generating phrase and no passphrase",
 
 	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
-#endif
 
 	std::string prikey = WalletTool::getDeriveKey_base58(phrase, "");
 
@@ -124,16 +108,6 @@ TEST_CASE("bitcoin keystore in japanese with generating phrase and no passphrase
 
 	CMBlock seed = WalletTool::GenerateSeed128();
 	CMemBlock<char> phrase;
-#ifdef MNEMONIC_SOURCE_H
-	phrase = WalletTool::GeneratePhraseFromSeed(seed, "japanese");
-
-	bool bValid = WalletTool::PhraseIsValid(phrase, "japanese");
-	REQUIRE(true == bValid);
-	std::string str_phrase = (const char *) phrase;
-
-	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, "japanese");
-	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
-#else
 	Mnemonic _mnemonic("japanese", "Data");
 	phrase = WalletTool::GeneratePhraseFromSeed(seed, _mnemonic.words());
 
@@ -143,7 +117,6 @@ TEST_CASE("bitcoin keystore in japanese with generating phrase and no passphrase
 
 	CMBlock seed_re = WalletTool::getSeedFromPhrase(phrase, _mnemonic.words());
 	REQUIRE(0 == memcmp(seed_re, seed, seed.GetSize()));
-#endif
 
 	std::string prikey = WalletTool::getDeriveKey_base58(phrase, "");
 

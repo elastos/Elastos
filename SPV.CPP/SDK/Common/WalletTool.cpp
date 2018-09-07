@@ -12,20 +12,6 @@
 #include "BRCrypto.h"
 #include "BRBIP39Mnemonic.h"
 
-#ifdef MNEMONIC_SOURCE_H
-
-#include "BRBIP39WordsEn.h"
-#include "Data/brBIP39WordsChinese.h"
-#include "Data/brBIP39WordsFrench.h"
-#include "Data/brBIP39WordsItalian.h"
-#include "Data/brBIP39WordsJapanese.h"
-#include "Data/brBIP39WordsSpanish.h"
-
-#endif
-
-
-#define MAX_BUFFER 1024 * 6
-
 namespace Elastos {
 	namespace ElaWallet {
 		CMemBlock<char>
@@ -130,56 +116,6 @@ namespace Elastos {
 			return out;
 		}
 
-#ifdef MNEMONIC_SOURCE_H
-
-		CMemBlock<char>
-		WalletTool::GeneratePhraseFromSeed(const CMBlock &seed, const std::string &language) {
-			CMemBlock<char> out;
-			if (true == seed) {
-				const char **wordList = language == "english" ? BRBIP39WordsEn :
-										language == "chinese" ? brBIP39WordsCh :
-										language == "french" ? brBIP39WordsFrench :
-										language == "italian" ? brBIP39WordsItalian :
-										language == "japanese" ? brBIP39WordsJapanese :
-										language == "spanish" ? brBIP39WordsSpanish : nullptr;
-				size_t phraselen = BRBIP39Encode(nullptr, 0, wordList, seed, seed.GetSize());
-				out.Resize(phraselen);
-				phraselen = BRBIP39Encode(out, phraselen, wordList, seed, seed.GetSize());
-			}
-			return out;
-		}
-
-		bool WalletTool::PhraseIsValid(const CMemBlock<char> &phrase, const std::string &language) {
-			bool out = false;
-			if (true == phrase) {
-				const char **wordList = language == "english" ? BRBIP39WordsEn :
-										language == "chinese" ? brBIP39WordsCh :
-										language == "french" ? brBIP39WordsFrench :
-										language == "italian" ? brBIP39WordsItalian :
-										language == "japanese" ? brBIP39WordsJapanese :
-										language == "spanish" ? brBIP39WordsSpanish : nullptr;
-				out = 1 == BRBIP39PhraseIsValid(wordList, phrase) ? true : false;
-			}
-			return out;
-		}
-
-		CMBlock WalletTool::getSeedFromPhrase(const CMemBlock<char> &phrase, const std::string &language) {
-			CMBlock out;
-			if (true == phrase) {
-				const char **wordList = language == "english" ? BRBIP39WordsEn :
-										language == "chinese" ? brBIP39WordsCh :
-										language == "french" ? brBIP39WordsFrench :
-										language == "italian" ? brBIP39WordsItalian :
-										language == "japanese" ? brBIP39WordsJapanese :
-										language == "spanish" ? brBIP39WordsSpanish : nullptr;
-				size_t datalen = BRBIP39Decode(nullptr, 0, wordList, phrase);
-				out.Resize(datalen);
-				datalen = BRBIP39Decode(out, datalen, wordList, phrase);
-			}
-			return out;
-		}
-
-#else
 		CMemBlock<char>
 		WalletTool::GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList) {
 			CMemBlock<char> out;
@@ -224,8 +160,6 @@ namespace Elastos {
 			}
 			return out;
 		}
-
-#endif
 
 		std::string WalletTool::getDeriveKey_base58(const CMemBlock<char> &phrase, const std::string &passphrase) {
 			uint8_t prikey[64] = {0};
