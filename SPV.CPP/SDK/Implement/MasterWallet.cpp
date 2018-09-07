@@ -321,23 +321,14 @@ namespace Elastos {
 			if (!_localStore.GetLanguage().empty() && _localStore.GetLanguage() != originLanguage) {
 				resetMnemonic(_localStore.GetLanguage());
 			}
-#ifdef MNEMONIC_SOURCE_H
-			if (!WalletTool::PhraseIsValid(phraseData, language)) {
-				if (!WalletTool::PhraseIsValid(phraseData, "chinese")) {
-					Log::error("Phrase is unvalid.");
-					return false;
-				} else {
-					_localStore.json().setMnemonicLanguage("chinese");
-				}
-			}
-#else
+
 			if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
 				resetMnemonic("chinese");
 				if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
 					throw std::logic_error("Import key error.");
 				}
 			}
-#endif
+
 			CMBlock cbPhrase0 = Utils::convertToMemBlock(phrase);
 			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbPhrase0, payPassword));
 			CMBlock phrasePass = Utils::convertToMemBlock(phrasePassword);

@@ -107,18 +107,6 @@ namespace Elastos {
 			return privKey;
 		}
 
-		CMBlock Key::getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass) {
-			UInt512 key;
-			const char *charPhrase = (char *) (void *) phrase;
-			const char *charPhrasePass = phrasePass == "" ? nullptr : phrasePass.c_str();
-			BRBIP39DeriveKey(key.u8, charPhrase, charPhrasePass);
-
-			CMBlock ret(sizeof(UInt512));
-			memcpy(ret, key.u8, sizeof(UInt512));
-
-			return ret;
-		}
-
 		bool Key::setPrivKey(const std::string &privKey) {
 			bool ret = BRKeySetPrivKey(_key.get(), privKey.c_str()) != 0;
 			if (ret) {
@@ -217,10 +205,6 @@ namespace Elastos {
 			std::string pubKey = (const char *) mbcPubKey;
 
 			return Key::verifyByPublicKey(pubKey, messageDigest, signature);
-		}
-
-		bool Key::isValidBitcoinPrivateKey(const std::string &key) {
-			return BRPrivKeyIsValid(key.c_str()) == 1;
 		}
 
 		UInt256 Key::encodeSHA256(const std::string &message) {

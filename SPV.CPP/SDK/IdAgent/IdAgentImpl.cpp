@@ -104,6 +104,7 @@ namespace Elastos {
 			UInt512 seed = _parentWallet->deriveSeed(password);
 			BRKey key;
 			BRBIP32PrivKey(&key, &seed.u8[0], sizeof(seed), item.Purpose, item.Index);
+			var_clean(&seed);
 			return KeyPtr(new Key(key));
 		}
 

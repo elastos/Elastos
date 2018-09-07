@@ -75,10 +75,6 @@ namespace Elastos {
 			const UInt168 hashTo168();
 
 		public:
-			static CMBlock getSeedFromPhrase(const CMBlock &phrase, const std::string &phrasePass = "");
-
-			static bool isValidBitcoinPrivateKey(const std::string &key);
-
 			static UInt256 encodeSHA256(const std::string &message);
 
 			static bool verifyByPublicKey(const std::string &publicKey, const std::string &message,

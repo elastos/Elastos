@@ -52,6 +52,7 @@ namespace Elastos {
 				BRKey key;
 				BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
 								   _info.getIndex() | BIP32_HARD, 0 | BIP32_HARD);
+				var_clean(&seed);
 
 				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
 				BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
@@ -290,6 +291,7 @@ namespace Elastos {
 			UInt256 chainCode;
 			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD, _info.getIndex() | BIP32_HARD,
 							   0 | BIP32_HARD);
+			var_clean(&seed);
 			return key;
 		}
 
@@ -335,7 +337,7 @@ namespace Elastos {
 							   SEQUENCE_INTERNAL_CHAIN, internalIdx);
 			BRBIP44PrivKeyList(&keys[internalCount], externalCount, &seed, sizeof(seed), _info.getIndex(),
 							   SEQUENCE_EXTERNAL_CHAIN, externalIdx);
-			memset(&seed, 0, sizeof(seed));
+			var_clean(&seed);
 
 			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
 
