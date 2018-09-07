@@ -278,6 +278,18 @@ namespace Elastos {
 			}
 		}
 
+		void WrappedExceptionPeerManagerListener::syncIsInactive() {
+			try {
+				_listener->syncIsInactive();
+			}
+			catch (std::exception ex) {
+				Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
+			}
+			catch (...) {
+				Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error.");
+			}
+		}
+
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
 				Executor *executor,
@@ -396,6 +408,20 @@ namespace Elastos {
 			_executor->execute(Runnable([this, blockHeight]() -> void {
 				try {
 					_listener->blockHeightIncreased(blockHeight);
+				}
+				catch (std::exception ex) {
+					Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
+				}
+				catch (...) {
+					Log::error("Peer manager callback (blockHeightIncreased) error.");
+				}
+			}));
+		}
+
+		void WrappedExecutorPeerManagerListener::syncIsInactive() {
+			_executor->execute(Runnable([this]() -> void {
+				try {
+					_listener->syncIsInactive();
 				}
 				catch (std::exception ex) {
 					Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());

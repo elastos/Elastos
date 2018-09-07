@@ -405,6 +405,7 @@ void BRPeerSetCallbacks(BRPeer *peer, void *info,
                         void (*hasTx)(void *info, UInt256 txHash),
                         void (*rejectedTx)(void *info, UInt256 txHash, uint8_t code),
                         void (*relayedBlock)(void *info, BRMerkleBlock *block),
+                        void (*relayedPingMsg)(void *info),
                         void (*notfound)(void *info, const UInt256 txHashes[], size_t txCount,
                                          const UInt256 blockHashes[], size_t blockCount),
                         void (*setFeePerKb)(void *info, uint64_t feePerKb),
@@ -422,6 +423,7 @@ void BRPeerSetCallbacks(BRPeer *peer, void *info,
     ctx->hasTx = hasTx;
     ctx->rejectedTx = rejectedTx;
     ctx->relayedBlock = relayedBlock;
+    ctx->relayedPingMsg = relayedPingMsg;
     ctx->notfound = notfound;
     ctx->setFeePerKb = setFeePerKb;
     ctx->requestedTx = requestedTx;

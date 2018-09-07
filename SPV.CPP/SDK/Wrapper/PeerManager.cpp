@@ -113,6 +113,13 @@ namespace Elastos {
 					listener->lock()->blockHeightIncreased(height);
 				}
 			}
+
+			static void syncIsInactive(void *info) {
+				WeakListener *listener = (WeakListener *) info;
+				if (!listener->expired()) {
+					listener->lock()->syncIsInactive();
+				}
+			}
 		}
 
 		PeerManager::Listener::Listener(const Elastos::ElaWallet::PluginTypes &pluginTypes) :
@@ -165,6 +172,7 @@ namespace Elastos {
 									  networkIsReachable,
 									  threadCleanup,
 									  blockHeightIncreased,
+									  syncIsInactive,
 									  verifyDifficultyWrapper,
 									  loadBloomFilter);
 		}

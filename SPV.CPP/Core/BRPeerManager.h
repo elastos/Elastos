@@ -85,6 +85,8 @@ typedef struct BRPeerManagerStruct {
 
 	void (*blockHeightIncreased)(void *info, uint32_t height);
 
+	void (*syncIsInactivate)(void *info);
+
 	int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
 
 	void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer);
@@ -130,6 +132,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
 							   int (*networkIsReachable)(void *info),
 							   void (*threadCleanup)(void *info),
 							   void (*blockHeightIncreased)(void *info, uint32_t height),
+							   void (*syncIsInactive)(void *info),
 							   int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet),
 							   void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer));
 

@@ -1123,6 +1123,12 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
     return r;
 }
 
+static void _peerRelayedPingMsg(void *info)
+{
+	BRPeerManager *manager = ((BRPeerCallbackInfo *)info)->manager;
+	manager->syncIsInactivate(manager->info);
+}
+
 static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
 {
     BRPeer *peer = ((BRPeerCallbackInfo *)info)->peer;
@@ -1535,6 +1541,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
                                int (*networkIsReachable)(void *info),
                                void (*threadCleanup)(void *info),
                                void (*blockHeightIncreased)(void *info, uint32_t height),
+                               void (*syncIsInactive)(void *info),
                                int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet),
                                void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer))
 {
@@ -1547,6 +1554,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
     manager->savePeers = savePeers;
     manager->networkIsReachable = networkIsReachable;
     manager->blockHeightIncreased = blockHeightIncreased;
+    manager->syncIsInactivate = syncIsInactive;
     manager->threadCleanup = (threadCleanup) ? threadCleanup : _dummyThreadCleanup;
     manager->verifyDifficulty = verifyDifficulty;
     manager->loadBloomFilter = loadBloomFilter;
@@ -1639,8 +1647,9 @@ void BRPeerManagerConnect(BRPeerManager *manager)
                 array_rm(peers, i);
                 array_add(manager->connectedPeers, info->peer);
                 BRPeerSetCallbacks(info->peer, info, _peerConnected, _peerDisconnected, _peerRelayedPeers,
-                                   _peerRelayedTx, _peerHasTx, _peerRejectedTx, _peerRelayedBlock, _peerDataNotfound,
-                                   _peerSetFeePerKb, _peerRequestedTx, _peerNetworkIsReachable, _peerThreadCleanup);
+                                   _peerRelayedTx, _peerHasTx, _peerRejectedTx, _peerRelayedBlock, _peerRelayedPingMsg,
+								   _peerDataNotfound, _peerSetFeePerKb, _peerRequestedTx, _peerNetworkIsReachable,
+								   _peerThreadCleanup);
                 BRPeerSetEarliestKeyTime(info->peer, manager->earliestKeyTime);
                 BRPeerConnect(info->peer);
             }
