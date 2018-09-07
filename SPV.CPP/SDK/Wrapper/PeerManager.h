@@ -58,6 +58,8 @@ namespace Elastos {
 
 				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
 
+				virtual void syncIsInactive() = 0;
+
 				const PluginTypes &getPluginTypes() const { return _pluginTypes;}
 
 			protected:

@@ -103,6 +103,8 @@ namespace Elastos {
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
+			virtual void syncIsInactive();
+
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
 

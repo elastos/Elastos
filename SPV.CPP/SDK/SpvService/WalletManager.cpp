@@ -98,7 +98,7 @@ namespace Elastos {
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
 			Log::getLogger()->info("Sending transaction, json info: {}, hex String: {}",
-				sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
+								   sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
 
 			if (_peerManager->getConnectStatus() == Peer::Disconnected ||
 				_peerManager->getConnectStatus() == Peer::Unknown) {
@@ -113,7 +113,7 @@ namespace Elastos {
 			//todo implement recover logic
 		}
 
-		const PeerManagerPtr& WalletManager::getPeerManager() {
+		const PeerManagerPtr &WalletManager::getPeerManager() {
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						_chainParams,
@@ -221,12 +221,13 @@ namespace Elastos {
 					time_t now = time(NULL);
 					char tbuf[20];
 					strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", localtime(&now));
-					peer_dbg(getPeerManager()->getRaw()->downloadPeer, "%s: checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
-									   tbuf,
-									   blocks[i]->getHeight(),
-									   Utils::UInt256ToString(blocks[i]->getBlockHash(), true).c_str(),
-									   blocks[i]->getRawBlock()->timestamp,
-									   blocks[i]->getRawBlock()->target);
+					peer_dbg(getPeerManager()->getRaw()->downloadPeer,
+							 "%s: checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
+							 tbuf,
+							 blocks[i]->getHeight(),
+							 Utils::UInt256ToString(blocks[i]->getBlockHash(), true).c_str(),
+							 blocks[i]->getRawBlock()->timestamp,
+							 blocks[i]->getRawBlock()->target);
 				}
 #endif
 
@@ -287,16 +288,15 @@ namespace Elastos {
 
 		void WalletManager::blockHeightIncreased(uint32_t blockHeight) {
 
-			if (_peerManager->getEstimatedBlockHeight() == blockHeight) {
-
-				_peerManager->disconnect();
-				startReconnect();
-			}
-
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [blockHeight](PeerManager::Listener *listener) {
 							  listener->blockHeightIncreased(blockHeight);
 						  });
+		}
+
+		void WalletManager::syncIsInactive() {
+			_peerManager->disconnect();
+			startReconnect();
 		}
 
 		// override protected methods
@@ -386,9 +386,8 @@ namespace Elastos {
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(_reconnectSeconds)));
 			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this));
-			if (_reconnectService.stopped()) {
-				_reconnectService.run();
-			}
+			_reconnectService.restart();
+			_reconnectService.run_one();
 		}
 
 		void WalletManager::resetReconnect() {
