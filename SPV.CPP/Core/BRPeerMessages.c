@@ -770,7 +770,7 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 
 		BRPeerContext *ctx = (BRPeerContext *)peer;
 		if (ctx->sentVerack && ctx->gotVerack && ctx->sentFilter && ctx->sentMempool && ctx->sentGetaddr) {
-			if (ctx->manager->lastBlock->height = *(uint64_t *)msg) {
+			if (ctx->manager->lastBlock->height >= *(uint64_t *)msg) {
 				ctx->relayedPingMsg(ctx->info);
 			}
 		}
