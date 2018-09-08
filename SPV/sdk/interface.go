@@ -1,44 +1,75 @@
 package sdk
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/store"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
-
-	"github.com/elastos/Elastos.ELA.SPV/net"
+	"github.com/elastos/Elastos.ELA.SPV/database"
+	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 /*
-SPV service is a high level implementation with all SPV logic implemented.
-SPV service is extend from SPV client and implement BlockChain and block synchronize on it.
-With SPV service, you just need to implement your own HeaderStore and SPVServiceConfig, and let other stuff go.
+IService is an implementation for SPV features.
 */
-type SPVService interface {
+type IService interface {
 	// Start SPV service
 	Start()
 
 	// Stop SPV service
 	Stop()
 
-	// IsSyncing returns the current state of the service, to indicate that the service
-	// is in syncing mode or waiting mode.
-	IsSyncing() bool
+	// IsCurrent returns whether or not the SPV service believes it is synced with
+	// the connected peers.
+	IsCurrent() bool
+
+	// UpdateFilter is a trigger to make SPV service refresh the current
+	// transaction filer(in our implementation the bloom filter) and broadcast the
+	// new filter to connected peers.  This will invoke the GetFilterData() method
+	// in Config.
+	UpdateFilter()
 
 	// SendTransaction broadcast a transaction message to the peer to peer network.
-	SendTransaction(ela.Transaction) (*common.Uint256, error)
+	SendTransaction(core.Transaction) error
 }
 
-type SPVServiceConfig struct {
-	// The server access into blockchain peer to peer network
-	Server server.IServer
+// StateNotifier exposes methods to notify status changes of transactions and blocks.
+type StateNotifier interface {
+	// TransactionAccepted will be invoked after a transaction sent by
+	// SendTransaction() method has been accepted.  Notice: this method needs at
+	// lest two connected peers to work.
+	TransactionAccepted(tx *util.Tx)
+
+	// TransactionRejected will be invoked if a transaction sent by SendTransaction()
+	// method has been rejected.
+	TransactionRejected(tx *util.Tx)
+
+	// TransactionConfirmed will be invoked after a transaction sent by
+	// SendTransaction() method has been packed into a block.
+	TransactionConfirmed(tx *util.Tx)
+
+	// BlockCommitted will be invoked when a block and transactions within it are
+	// successfully committed into database.
+	BlockCommitted(block *util.Block)
+}
+
+// Config is the configuration settings to the SPV service.
+type Config struct {
+	// The magic number to indicate which network to access.
+	Magic uint32
+
+	// The seed peers addresses in [host:port] or [ip:port] format.
+	SeedList []string
+
+	// The max peer connections.
+	MaxPeers int
+
+	// The min candidate peers count to start syncing progress.
+	MinPeersForSync int
 
 	// Foundation address of the current access blockhain network
 	Foundation string
 
 	// The database to store all block headers
-	HeaderStore store.HeaderStore
+	ChainStore database.ChainStore
 
 	// GetFilterData() returns two arguments.
 	// First arguments are all addresses stored in your data store.
@@ -48,34 +79,19 @@ type SPVServiceConfig struct {
 	// reference of an transaction output. If an address ever received an transaction output,
 	// there will be the outpoint reference to it. Any time you want to spend the balance of an
 	// address, you must provide the reference of the balance which is an outpoint in the transaction input.
-	GetFilterData func() ([]*common.Uint168, []*ela.OutPoint)
+	GetFilterData func() ([]*common.Uint168, []*core.OutPoint)
 
-	// When interested transactions received, this method will call back them.
-	// The height is the block height where this transaction has been packed.
-	// Returns if the transaction is a match, for there will be transactions that
-	// are not interested go through this method. If a transaction is not a match
-	// return false as a false positive mark. If anything goes wrong, return error.
-	// Notice: this method will be callback when commit block
-	CommitTx func(tx *ela.Transaction, height uint32) (bool, error)
-
-	// This method will be callback after a block and transactions with it are
-	// successfully committed into database.
-	OnBlockCommitted func(*msg.MerkleBlock, []*ela.Transaction)
-
-	// When the blockchain meet a reorganization, data should be rollback to the fork point.
-	// The Rollback method will callback the current rollback height, for example OnChainRollback(100)
-	// means data on height 100 has been deleted, current chain height will be 99. You should rollback
-	// stored data including UTXOs STXOs Txs etc. according to the given height.
-	// If anything goes wrong, return an error.
-	OnRollback func(height uint32) error
+	// StateNotifier is an optional config, if you don't want to receive state changes of transactions
+	// or blocks, just keep it blank.
+	StateNotifier StateNotifier
 }
 
 /*
-Get a SPV service instance.
+NewService returns a new SPV service instance.
 there are two implementations you need to do, DataStore and GetBloomFilter() method.
 DataStore is an interface including all methods you need to implement placed in db/datastore.go.
 Also an sample APP spvwallet is contain in this project placed in spvwallet folder.
 */
-func GetSPVService(config SPVServiceConfig) (SPVService, error) {
-	return NewSPVServiceImpl(config)
+func NewService(config *Config) (IService, error) {
+	return NewSPVService(config)
 }

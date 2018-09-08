@@ -1,335 +1,482 @@
 package sdk
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/blockchain"
 	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/net"
+	spvpeer "github.com/elastos/Elastos.ELA.SPV/peer"
+	"github.com/elastos/Elastos.ELA.SPV/sync"
+	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
-	SendTxTimeout = time.Second * 10
+	TxExpireTime          = time.Hour * 24
+	TxRebroadcastDuration = time.Minute * 15
 )
 
+type sendTxMsg struct {
+	tx     *core.Transaction
+	expire time.Time
+}
+
+type txInvMsg struct {
+	iv *msg.InvVect
+}
+
+type txRejectMsg struct {
+	iv *msg.InvVect
+}
+
+type blockMsg struct {
+	block *util.Block
+}
+
 // The SPV service implementation
-type SPVServiceImpl struct {
-	*net.ServerPeer
-	syncManager *SyncManager
-	chain       *BlockChain
-	pendingTx   common.Uint256
-	txAccept    chan *common.Uint256
-	txReject    chan *msg.Reject
-	config      SPVServiceConfig
+type service struct {
+	server.IServer
+	cfg         Config
+	syncManager *sync.SyncManager
+
+	newPeerQueue  chan *peer.Peer
+	donePeerQueue chan *peer.Peer
+	txQueue       chan interface{}
+	quit          chan struct{}
 }
 
 // Create a instance of SPV service implementation.
-func NewSPVServiceImpl(config SPVServiceConfig) (*SPVServiceImpl, error) {
+func NewSPVService(cfg *Config) (*service, error) {
 	// Initialize blockchain
-	chain, err := NewBlockchain(config.Foundation, config.HeaderStore)
+	chain, err := blockchain.New(cfg.Foundation, cfg.ChainStore)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create SPV service instance
-	service := &SPVServiceImpl{
-		ServerPeer: config.Server,
-		chain:      chain,
-		config:     config,
+	service := &service{
+		cfg:           *cfg,
+		newPeerQueue:  make(chan *peer.Peer),
+		donePeerQueue: make(chan *peer.Peer),
+		txQueue:       make(chan interface{}, 3),
+		quit:          make(chan struct{}),
 	}
 
-	// Create sync manager config
-	syncConfig := SyncManageConfig{
-		LocalHeight: chain.BestHeight,
-		GetBlocks:   service.GetBlocks,
+	var maxPeers int
+	var minPeersForSync int
+	if cfg.MaxPeers > 0 {
+		maxPeers = cfg.MaxPeers
+	}
+	if cfg.MinPeersForSync > 0 {
+		minPeersForSync = cfg.MinPeersForSync
+	}
+	if cfg.MinPeersForSync > cfg.MaxPeers {
+		minPeersForSync = cfg.MaxPeers
 	}
 
-	service.syncManager = NewSyncManager(syncConfig)
+	// Create sync manager instance.
+	syncCfg := sync.NewDefaultConfig(chain, service.updateFilter)
+	syncCfg.MaxPeers = maxPeers
+	syncCfg.MinPeersForSync = minPeersForSync
+	syncManager, err := sync.New(syncCfg)
+	if err != nil {
+		return nil, err
+	}
+	service.syncManager = syncManager
 
-	// Set manage config
-	service.SetConfig(net.PeerManageConfig{
-		OnHandshake:     service.OnHandshake,
-		OnPeerEstablish: service.OnPeerEstablish,
-	})
+	// Initiate P2P server configuration
+	serverCfg := server.NewDefaultConfig(
+		cfg.Magic,
+		cfg.SeedList,
+		nil,
+		service.newPeer,
+		service.donePeer,
+		service.makeEmptyMessage,
+		func() uint64 { return uint64(chain.BestHeight()) },
+	)
+	serverCfg.MaxPeers = maxPeers
+
+	// Create P2P server.
+	server, err := server.NewServer(serverCfg)
+	if err != nil {
+		return nil, err
+	}
+	service.IServer = server
 
 	return service, nil
 }
 
-func (s *SPVServiceImpl) OnHandshake(v *msg.Version) error {
-	if v.Services/OpenService&1 == 0 {
-		return errors.New("SPV service not enabled on connected peer")
+func (s *service) start() {
+	go s.peersHandler()
+	go s.txHandler()
+}
+
+func (s *service) updateFilter() *bloom.Filter {
+	return BuildBloomFilter(s.cfg.GetFilterData())
+}
+
+func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
+	var message p2p.Message
+	switch cmd {
+	case p2p.CmdVersion:
+		message = new(msg.Version)
+
+	case p2p.CmdVerAck:
+		message = new(msg.VerAck)
+
+	case p2p.CmdGetAddr:
+		message = new(msg.GetAddr)
+
+	case p2p.CmdAddr:
+		message = new(msg.Addr)
+
+	case p2p.CmdInv:
+		message = new(msg.Inv)
+
+	case p2p.CmdGetData:
+		message = new(msg.GetData)
+
+	case p2p.CmdNotFound:
+		message = new(msg.NotFound)
+
+	case p2p.CmdTx:
+		message = msg.NewTx(new(core.Transaction))
+
+	case p2p.CmdPing:
+		message = new(msg.Ping)
+
+	case p2p.CmdPong:
+		message = new(msg.Pong)
+
+	case p2p.CmdMerkleBlock:
+		message = msg.NewMerkleBlock(new(core.Header))
+
+	case p2p.CmdReject:
+		message = new(msg.Reject)
+
+	default:
+		return nil, fmt.Errorf("unhandled command [%s]", cmd)
+	}
+	return message, nil
+}
+
+func (s *service) newPeer(peer *peer.Peer) {
+	s.newPeerQueue <- peer
+}
+
+func (s *service) donePeer(peer *peer.Peer) {
+	s.donePeerQueue <- peer
+}
+
+// peersHandler handles new peers and done peers from P2P server.
+// When comes new peer, create a spv peer warpper for it
+func (s *service) peersHandler() {
+	peers := make(map[*peer.Peer]*spvpeer.Peer)
+
+out:
+	for {
+		select {
+		case p := <-s.newPeerQueue:
+			// Create spv peer warpper for the new peer.
+			sp := spvpeer.NewPeer(p,
+				&spvpeer.Config{
+					OnInv:      s.onInv,
+					OnTx:       s.onTx,
+					OnBlock:    s.onBlock,
+					OnNotFound: s.onNotFound,
+					OnReject:   s.onReject,
+				})
+
+			peers[p] = sp
+			s.syncManager.NewPeer(sp)
+
+		case p := <-s.donePeerQueue:
+			sp, ok := peers[p]
+			if !ok {
+				log.Errorf("unknown done peer %v", p)
+				continue
+			}
+
+			s.syncManager.DonePeer(sp)
+
+		case <-s.quit:
+			break out
+		}
 	}
 
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us.
+cleanup:
+	for {
+		select {
+		case <-s.newPeerQueue:
+		case <-s.donePeerQueue:
+		default:
+			break cleanup
+		}
+	}
+	log.Trace("Service peers handler done")
+}
+
+// txHandler handles transaction messages like send transaction, transaction inv
+// transaction reject etc.
+func (s *service) txHandler() {
+	var unconfirmed = make(map[common.Uint256]sendTxMsg)
+	var accepted = make(map[common.Uint256]struct{})
+	var rejected = make(map[common.Uint256]struct{})
+
+	retryTicker := time.NewTicker(TxRebroadcastDuration)
+	defer retryTicker.Stop()
+
+out:
+	for {
+		select {
+		case tmsg := <-s.txQueue:
+			switch tmsg := tmsg.(type) {
+			case sendTxMsg:
+				txId := tmsg.tx.Hash()
+				tmsg.expire = time.Now().Add(TxExpireTime)
+				unconfirmed[txId] = tmsg
+				delete(accepted, txId)
+				delete(rejected, txId)
+
+				// Broadcast unconfirmed transaction
+				s.IServer.BroadcastMessage(msg.NewTx(tmsg.tx))
+
+			case txInvMsg:
+				// When a transaction was accepted and add to the txMemPool, a
+				// txInv message will be received through message relay, but it
+				// only works when there are more than 2 peers connected.
+				txId := tmsg.iv.Hash
+
+				// The transaction has been marked as accepted.
+				if _, ok := accepted[txId]; ok {
+					continue
+				}
+
+				// The txInv is an unconfirmed transaction.
+				if txMsg, ok := unconfirmed[txId]; ok {
+					delete(unconfirmed, txId)
+					accepted[txId] = struct{}{}
+
+					// Use a new goroutine do the invoke to prevent blocking.
+					go func(tx *core.Transaction) {
+						if s.cfg.StateNotifier != nil {
+							s.cfg.StateNotifier.TransactionAccepted(
+								&util.Tx{
+									Transaction: tx,
+									Height:      0,
+								})
+						}
+					}(txMsg.tx)
+				}
+
+			case txRejectMsg:
+				// If some of the peers are bad actors, transaction can be both
+				// accepted and rejected.  For we can not say who are bad actors
+				// and who are not, so just pick the first response and notify
+				// the transaction state change.
+				txId := tmsg.iv.Hash
+
+				// The transaction has been marked as rejected.
+				if _, ok := rejected[txId]; ok {
+					continue
+				}
+
+				// The txInv is an unconfirmed transaction.
+				if txMsg, ok := unconfirmed[txId]; ok {
+					rejected[txId] = struct{}{}
+					delete(unconfirmed, txId)
+
+					// Use a new goroutine do the invoke to prevent blocking.
+					go func(tx *core.Transaction) {
+						if s.cfg.StateNotifier != nil {
+							s.cfg.StateNotifier.TransactionRejected(
+								&util.Tx{
+									Transaction: tx,
+									Height:      0,
+								})
+						}
+					}(txMsg.tx)
+				}
+
+			case blockMsg:
+				// Loop through all packed transactions, see if match to any
+				// sent transactions.
+				confirmedTxs := make(map[util.Tx]struct{})
+				for _, tx := range tmsg.block.Transactions {
+					txId := tx.Hash()
+					tx.Height = tmsg.block.Height
+
+					if _, ok := unconfirmed[txId]; ok {
+						confirmedTxs[*tx] = struct{}{}
+						continue
+					}
+
+					if _, ok := accepted[txId]; ok {
+						confirmedTxs[*tx] = struct{}{}
+						continue
+					}
+
+					if _, ok := rejected[txId]; ok {
+						confirmedTxs[*tx] = struct{}{}
+					}
+				}
+
+				for tx := range confirmedTxs {
+					txId := tx.Hash()
+					delete(unconfirmed, txId)
+					delete(accepted, txId)
+					delete(rejected, txId)
+
+					// Use a new goroutine do the invoke to prevent blocking.
+					go func(tx *util.Tx) {
+						if s.cfg.StateNotifier != nil {
+							s.cfg.StateNotifier.TransactionConfirmed(tx)
+						}
+					}(&tx)
+				}
+			}
+		case <-retryTicker.C:
+			// Rebroadcast unconfirmed transactions.
+			now := time.Now()
+			for id, tx := range unconfirmed {
+				// Delete expired transaction.
+				if tx.expire.Before(now) {
+					delete(unconfirmed, id)
+					continue
+				}
+
+				// Broadcast unconfirmed transaction
+				s.IServer.BroadcastMessage(msg.NewTx(tx.tx))
+			}
+
+		case <-s.quit:
+			break out
+		}
+	}
+
+	// Drain any wait channels before we go away so we don't leave something
+	// waiting for us.
+cleanup:
+	for {
+		select {
+		case <-s.txQueue:
+		default:
+			break cleanup
+		}
+	}
+	log.Trace("Service transaction handler done")
+}
+
+func (s *service) SendTransaction(tx core.Transaction) error {
+	peersCount := s.IServer.ConnectedCount()
+	if peersCount < int32(s.cfg.MinPeersForSync) {
+		return fmt.Errorf("connected peers %d not enough for sending transactions", peersCount)
+	}
+
+	if !s.IsCurrent() {
+		return fmt.Errorf("spv service did not sync to current")
+	}
+
+	s.txQueue <- sendTxMsg{tx: &tx}
 	return nil
 }
 
-func (s *SPVServiceImpl) OnPeerEstablish(peer *net.Peer) {
-	// Create spv peer config
-	config := SPVPeerConfig{
-		LocalHeight:   s.LocalHeight,
-		OnInventory:   s.OnInventory,
-		OnMerkleBlock: s.OnMerkleBlock,
-		OnTx:          s.OnTx,
-		OnNotFound:    s.OnNotFound,
-		OnReject:      s.OnReject,
+func (s *service) onInv(sp *spvpeer.Peer, inv *msg.Inv) {
+	// If service already synced to current, it most likely to receive a relayed
+	// block or transaction inv, not a huge invList with block hashes.
+	if s.IsCurrent() {
+		for _, iv := range inv.InvList {
+			switch iv.Type {
+			case msg.InvTypeTx:
+				s.txQueue <- txInvMsg{iv: iv}
+			}
+		}
 	}
-
-	s.syncManager.AddNeighborPeer(NewSPVPeer(peer, config))
-
-	// Load bloom filter
-	doneChan := make(chan struct{})
-	peer.QueueMessage(s.BloomFilter(), doneChan)
-	<-doneChan
+	s.syncManager.QueueInv(inv, sp)
 }
 
-func (s *SPVServiceImpl) LocalHeight() uint32 {
-	return uint32(s.ServerPeer.Height())
+func (s *service) onBlock(sp *spvpeer.Peer, block *util.Block) {
+	done := make(chan struct{})
+	s.syncManager.QueueBlock(block, sp, done)
+
+	// Use a new goroutine to prevent blocking.
+	go func() {
+		select {
+		case <-done:
+			s.txQueue <- blockMsg{block: block}
+			if s.cfg.StateNotifier != nil {
+				s.cfg.StateNotifier.BlockCommitted(block)
+			}
+		case <-sp.Quit():
+			return
+		}
+	}()
 }
 
-func (s *SPVServiceImpl) Start() {
-	s.ServerPeer.Start()
-	s.syncManager.start()
+func (s *service) onTx(sp *spvpeer.Peer, tx *core.Transaction) {
+	done := make(chan struct{})
+	s.syncManager.QueueTx(tx, sp, done)
+	<-done
+}
+
+func (s *service) onNotFound(sp *spvpeer.Peer, notFound *msg.NotFound) {
+	// Every thing we requested was came from this connected peer, so
+	// no reason it said I have some data you don't have and when you
+	// come to get it, it say oh I didn't have it.
+	log.Warnf("Peer %s is sending us notFound -- disconnecting", sp)
+	sp.Disconnect()
+}
+
+func (s *service) onReject(sp *spvpeer.Peer, reject *msg.Reject) {
+	if reject.Cmd == p2p.CmdTx {
+		s.txQueue <- txInvMsg{iv: &msg.InvVect{Type: msg.InvTypeTx, Hash: reject.Hash}}
+	}
+	log.Warnf("reject message from peer %v: Code: %s, Hash %s, Reason: %s",
+		sp, reject.Code.String(), reject.Hash.String(), reject.Reason)
+}
+
+func (s *service) IsCurrent() bool {
+	return s.syncManager.IsCurrent()
+}
+
+func (s *service) UpdateFilter() {
+	// Update bloom filter
+	filter := s.updateFilter()
+
+	// Broadcast filterload message to connected peers.
+	s.IServer.BroadcastMessage(filter.GetFilterLoadMsg())
+}
+
+func (s *service) Start() {
+	s.start()
+	s.syncManager.Start()
+	s.IServer.Start()
 	log.Info("SPV service started...")
 }
 
-func (s *SPVServiceImpl) Stop() {
-	s.chain.Close()
+func (s *service) Stop() {
+	err := s.IServer.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = s.syncManager.Stop()
+	if err != nil {
+		log.Error(err)
+	}
+
+	s.cfg.ChainStore.Close()
+
+	close(s.quit)
 	log.Info("SPV service stopped...")
-}
-
-func (s *SPVServiceImpl) ChainState() ChainState {
-	return s.chain.state
-}
-
-func (s *SPVServiceImpl) ReloadFilter() {
-	log.Debug()
-	s.Broadcast(BuildBloomFilter(s.config.GetFilterData()).GetFilterLoadMsg())
-}
-
-func (s *SPVServiceImpl) SendTransaction(tx core.Transaction) (*common.Uint256, error) {
-	log.Debug()
-
-	if s.GetNeighborCount() == 0 {
-		return nil, fmt.Errorf("method not available, no peers connected")
-	}
-
-	s.txAccept = make(chan *common.Uint256, 1)
-	s.txReject = make(chan *msg.Reject, 1)
-
-	finish := func() {
-		close(s.txAccept)
-		close(s.txReject)
-		s.txAccept = nil
-		s.txReject = nil
-	}
-	// Set transaction in pending
-	s.pendingTx = tx.Hash()
-	// Broadcast transaction to neighbor peers
-	s.Broadcast(msg.NewTx(&tx))
-	// Query neighbors mempool see if transaction was successfully added to mempool
-	s.Broadcast(new(msg.MemPool))
-
-	// Wait for result
-	timer := time.NewTimer(SendTxTimeout)
-	select {
-	case <-timer.C:
-		finish()
-		return nil, fmt.Errorf("Send transaction timeout")
-	case <-s.txAccept:
-		timer.Stop()
-		finish()
-		// commit unconfirmed transaction to db
-		_, err := s.config.CommitTx(&tx, 0)
-		return &s.pendingTx, err
-	case msg := <-s.txReject:
-		timer.Stop()
-		finish()
-		return nil, fmt.Errorf("Transaction rejected Code: %s, Reason: %s", msg.Code.String(), msg.Reason)
-	}
-}
-
-func (s *SPVServiceImpl) GetBlocks() *msg.GetBlocks {
-	// Get blocks returns a inventory message which contains block hashes
-	locator := s.chain.GetBlockLocatorHashes()
-	return msg.NewGetBlocks(locator, common.EmptyHash)
-}
-
-func (s *SPVServiceImpl) BloomFilter() *msg.FilterLoad {
-	bloomFilter := BuildBloomFilter(s.config.GetFilterData())
-	return bloomFilter.GetFilterLoadMsg()
-}
-
-func (s *SPVServiceImpl) OnInventory(peer *SPVPeer, m *msg.Inventory) error {
-	getData := msg.NewGetData()
-
-	for _, inv := range m.InvList {
-		switch inv.Type {
-		case msg.InvTypeBlock:
-			// Filter duplicated block
-			if s.chain.IsKnownHeader(&inv.Hash) {
-				continue
-			}
-
-			// Kind of lame to send separate getData messages but this allows us
-			// to take advantage of the timeout on the upper layer. Otherwise we
-			// need separate timeout handling.
-			inv.Type = msg.InvTypeFilteredBlock
-			getData.AddInvVect(inv)
-			if s.syncManager.IsSyncPeer(peer) {
-				peer.blockQueue <- inv.Hash
-			}
-
-		case msg.InvTypeTx:
-			if s.txAccept != nil && s.pendingTx.IsEqual(inv.Hash) {
-				s.txAccept <- nil
-				continue
-			}
-			getData.AddInvVect(inv)
-			peer.EnqueueTx(inv.Hash)
-
-		default:
-			continue
-		}
-	}
-
-	if len(getData.InvList) > 0 {
-		peer.QueueMessage(getData)
-	}
-	return nil
-}
-
-func (s *SPVServiceImpl) OnMerkleBlock(peer *SPVPeer, mBlock *msg.MerkleBlock) error {
-	blockHash := mBlock.Header.(*core.Header).Hash()
-
-	// Merkleblock from sync peer
-	if s.syncManager.IsSyncPeer(peer) {
-		queueHash := <-peer.blockQueue
-		if !blockHash.IsEqual(queueHash) {
-			peer.Disconnect()
-			return fmt.Errorf("peer %d is sending us blocks out of order", peer.ID())
-		}
-	}
-
-	txIds, err := bloom.CheckMerkleBlock(*mBlock)
-	if err != nil {
-		return fmt.Errorf("invalid merkleblock received %s", err.Error())
-	}
-
-	dBlock := peer.EnqueueBlock(mBlock, txIds)
-	if dBlock != nil {
-		s.commitBlock(peer, dBlock)
-
-		// Try continue sync progress
-		s.syncManager.ContinueSync()
-
-	}
-
-	return nil
-}
-
-func (s *SPVServiceImpl) OnTx(peer *SPVPeer, msg *msg.Tx) error {
-	tx := msg.Transaction.(*core.Transaction)
-
-	obj, ok := peer.DequeueTx(tx)
-	if ok {
-		switch obj := obj.(type) {
-		case *block:
-			// commit block
-			s.commitBlock(peer, obj)
-
-			// Try continue sync progress
-			s.syncManager.ContinueSync()
-
-		case *core.Transaction:
-			// commit unconfirmed transaction
-			_, err := s.config.CommitTx(tx, 0)
-			if err == nil {
-				// Update bloom filter
-				peer.SendMessage(s.BloomFilter())
-			}
-
-			return err
-		}
-	}
-
-	return fmt.Errorf("Transaction not found in download queue %s", tx.Hash().String())
-}
-
-func (s *SPVServiceImpl) OnNotFound(peer *SPVPeer, notFound *msg.NotFound) error {
-	for _, iv := range notFound.InvList {
-		log.Warnf("Data not found type %s, hash %s", iv.Type.String(), iv.Hash.String())
-	}
-	return nil
-}
-
-func (s *SPVServiceImpl) OnReject(peer *SPVPeer, msg *msg.Reject) error {
-	if s.pendingTx.IsEqual(msg.Hash); s.txReject != nil {
-		s.txReject <- msg
-		return nil
-	}
-	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
-		peer.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
-}
-
-func (s *SPVServiceImpl) commitBlock(peer *SPVPeer, block *block) {
-	header := block.Header.(*core.Header)
-	newTip, reorgFrom, err := s.chain.CommitHeader(*header)
-	if err != nil {
-		log.Errorf("Commit header failed %s", err.Error())
-		return
-	}
-	if !newTip {
-		return
-	}
-
-	newHeight := s.chain.BestHeight()
-	if reorgFrom > 0 {
-		for i := reorgFrom; i > newHeight; i-- {
-			if err = s.config.OnRollback(i); err != nil {
-				log.Errorf("Rollback transaction at height %d failed %s", i, err.Error())
-				return
-			}
-		}
-
-		if !s.chain.IsSyncing() {
-			s.syncManager.StartSync()
-			return
-		}
-	}
-
-	for _, tx := range block.txs {
-		// Increase received transaction count
-		peer.receivedTxs++
-
-		falsePositive, err := s.config.CommitTx(tx, header.Height)
-		if err != nil {
-			log.Errorf("Commit transaction %s failed %s", tx.Hash().String(), err.Error())
-			return
-		}
-
-		// Increase false positive count
-		if falsePositive {
-			peer.fPositives++
-		}
-	}
-
-	// Refresh bloom filter if false positives meet target rate
-	if peer.GetFalsePositiveRate() > FalsePositiveRate {
-		// Reset false positives
-		peer.ResetFalsePositives()
-
-		// Update bloom filter
-		peer.SendMessage(s.BloomFilter())
-	}
-
-	s.ServerPeer.SetHeight(uint64(newHeight))
-
-	// Notify block committed
-	go s.config.OnBlockCommitted(block.MerkleBlock, block.txs)
 }
