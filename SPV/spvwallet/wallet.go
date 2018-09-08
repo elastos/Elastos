@@ -1,391 +1,307 @@
 package spvwallet
 
 import (
-	"bytes"
-	"errors"
-	"math"
-	"math/rand"
-	"strconv"
+	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/db"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-var SystemAssetId = getSystemAssetId()
+const (
+	MaxUnconfirmedTime = time.Minute * 30
+	MaxTxIdCached      = 1000
+	MaxPeers           = 12
+	MinPeersForSync    = 2
+)
 
-type Transfer struct {
-	Address string
-	Value   *common.Fixed64
-}
+func Init(clientId uint64, seeds []string) (*SPVWallet, error) {
+	wallet := new(SPVWallet)
 
-var wallet Wallet // Single instance of wallet
-
-type Wallet interface {
-	Database
-
-	VerifyPassword(password []byte) error
-	ChangePassword(oldPassword, newPassword []byte) error
-
-	NewSubAccount(password []byte) (*common.Uint168, error)
-	AddMultiSignAccount(M uint, publicKey ...*crypto.PublicKey) (*common.Uint168, error)
-
-	CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*core.Transaction, error)
-	CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*core.Transaction, error)
-	CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, output ...*Transfer) (*core.Transaction, error)
-	CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, output ...*Transfer) (*core.Transaction, error)
-	Sign(password []byte, transaction *core.Transaction) (*core.Transaction, error)
-	SendTransaction(txn *core.Transaction) error
-}
-
-type WalletImpl struct {
-	Database
-	Keystore
-}
-
-func Create(password []byte) (Wallet, error) {
-	keyStore, err := CreateKeystore(password)
+	// Initialize headers db
+	headers, err := db.NewHeadersDB()
 	if err != nil {
-		log.Error("Wallet create keystore failed:", err)
 		return nil, err
 	}
 
-	database, err := GetDatabase()
+	// Initialize wallet database
+	wallet.dataStore, err = db.NewSQLiteDB()
 	if err != nil {
-		log.Error("Wallet create database failed:", err)
 		return nil, err
 	}
 
-	mainAccount := keyStore.GetAccountByIndex(0)
-	database.AddAddress(mainAccount.ProgramHash(), mainAccount.RedeemScript(), TypeMaster)
+	// Initiate ChainStore
+	wallet.chainStore = database.NewDefaultChainDB(headers, wallet)
 
-	wallet = &WalletImpl{
-		Database: database,
-		Keystore: keyStore,
+	// Initialize txs cache
+	wallet.txIds = NewTxIdCache(MaxTxIdCached)
+
+	// Initialize spv service
+	wallet.IService, err = sdk.NewService(
+		&sdk.Config{
+			Magic:           config.Values().Magic,
+			SeedList:        config.Values().SeedList,
+			MaxPeers:        MaxPeers,
+			MinPeersForSync: MinPeersForSync,
+			Foundation:      config.Values().Foundation,
+			ChainStore:      wallet.chainStore,
+			GetFilterData:   wallet.GetFilterData,
+		})
+	if err != nil {
+		return nil, err
 	}
+
+	// Initialize RPC server
+	server := rpc.InitServer()
+	server.NotifyNewAddress = wallet.NotifyNewAddress
+	server.SendTransaction = wallet.IService.SendTransaction
+	wallet.rpcServer = server
+
 	return wallet, nil
 }
 
-func Open() (Wallet, error) {
-	if wallet == nil {
-		database, err := GetDatabase()
-		if err != nil {
-			log.Error("Wallet open database failed:", err)
-			return nil, err
-		}
-
-		wallet = &WalletImpl{
-			Database: database,
-		}
-	}
-	return wallet, nil
+type DataListener interface {
+	OnNewBlock(block *msg.MerkleBlock, txs []*core.Transaction)
+	OnRollback(height uint32)
 }
 
-func (wallet *WalletImpl) VerifyPassword(password []byte) error {
-	keyStore, err := OpenKeystore(password)
-	if err != nil {
-		return err
-	}
-	wallet.Keystore = keyStore
-	return nil
+type SPVWallet struct {
+	sdk.IService
+	rpcServer  *rpc.Server
+	chainStore database.ChainStore
+	dataStore  db.DataStore
+	txIds      *TxIdCache
+	filter     *sdk.AddrFilter
 }
 
-func (wallet *WalletImpl) NewSubAccount(password []byte) (*common.Uint168, error) {
-	err := wallet.VerifyPassword(password)
-	if err != nil {
-		return nil, err
-	}
-
-	account := wallet.Keystore.NewAccount()
-	err = wallet.AddAddress(account.ProgramHash(), account.RedeemScript(), TypeSub)
-	if err != nil {
-		return nil, err
-	}
-
-	// Notify SPV service to reload bloom filter with the new address
-	rpc.GetClient().NotifyNewAddress(account.ProgramHash().Bytes())
-
-	return account.ProgramHash(), nil
+func (wallet *SPVWallet) Start() {
+	wallet.IService.Start()
+	wallet.rpcServer.Start()
 }
 
-func (wallet *WalletImpl) AddMultiSignAccount(M uint, publicKeys ...*crypto.PublicKey) (*common.Uint168, error) {
-	redeemScript, err := crypto.CreateMultiSignRedeemScript(M, publicKeys)
-	if err != nil {
-		return nil, errors.New("[Wallet], CreateStandardRedeemScript failed")
-	}
-
-	programHash, err := crypto.ToProgramHash(redeemScript)
-	if err != nil {
-		return nil, errors.New("[Wallet], CreateMultiSignAddress failed")
-	}
-
-	err = wallet.AddAddress(programHash, redeemScript, TypeMulti)
-	if err != nil {
-		return nil, err
-	}
-
-	// Notify SPV service to reload bloom filter with the new address
-	rpc.GetClient().NotifyNewAddress(programHash.Bytes())
-
-	return programHash, nil
+func (wallet *SPVWallet) Stop() {
+	wallet.IService.Stop()
+	wallet.rpcServer.Close()
 }
 
-func (wallet *WalletImpl) CreateTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64) (*core.Transaction, error) {
-	return wallet.CreateLockedTransaction(fromAddress, toAddress, amount, fee, uint32(0))
-}
+func (wallet *SPVWallet) GetFilterData() ([]*common.Uint168, []*core.OutPoint) {
+	utxos, _ := wallet.dataStore.UTXOs().GetAll()
+	stxos, _ := wallet.dataStore.STXOs().GetAll()
 
-func (wallet *WalletImpl) CreateLockedTransaction(fromAddress, toAddress string, amount, fee *common.Fixed64, lockedUntil uint32) (*core.Transaction, error) {
-	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, lockedUntil, &Transfer{toAddress, amount})
-}
-
-func (wallet *WalletImpl) CreateMultiOutputTransaction(fromAddress string, fee *common.Fixed64, outputs ...*Transfer) (*core.Transaction, error) {
-	return wallet.CreateLockedMultiOutputTransaction(fromAddress, fee, uint32(0), outputs...)
-}
-
-func (wallet *WalletImpl) CreateLockedMultiOutputTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
-	return wallet.createTransaction(fromAddress, fee, lockedUntil, outputs...)
-}
-
-func (wallet *WalletImpl) createTransaction(fromAddress string, fee *common.Fixed64, lockedUntil uint32, outputs ...*Transfer) (*core.Transaction, error) {
-	// Check if output is valid
-	if outputs == nil || len(outputs) == 0 {
-		return nil, errors.New("[Wallet], Invalid transaction target")
-	}
-
-	// Check if from address is valid
-	spender, err := common.Uint168FromAddress(fromAddress)
-	if err != nil {
-		return nil, errors.New("[Wallet], Invalid spender address")
-	}
-	// Create transaction outputs
-	var totalOutputValue = common.Fixed64(0) // The total value will be spend
-	var txOutputs []*core.Output             // The outputs in transaction
-	totalOutputValue += *fee                 // Add transaction fee
-
-	for _, output := range outputs {
-		receiver, err := common.Uint168FromAddress(output.Address)
-		if err != nil {
-			return nil, errors.New("[Wallet], Invalid receiver address")
-		}
-		txOutput := &core.Output{
-			AssetID:     SystemAssetId,
-			ProgramHash: *receiver,
-			Value:       *output.Value,
-			OutputLock:  lockedUntil,
-		}
-		totalOutputValue += *output.Value
-		txOutputs = append(txOutputs, txOutput)
-	}
-	// Get spender's UTXOs
-	utxos, err := wallet.GetAddressUTXOs(spender)
-	if err != nil {
-		return nil, errors.New("[Wallet], Get spender's UTXOs failed")
-	}
-	availableUTXOs := wallet.removeLockedUTXOs(utxos) // Remove locked UTXOs
-	availableUTXOs = SortUTXOs(availableUTXOs)        // Sort available UTXOs by value ASC
-
-	// Create transaction inputs
-	var txInputs []*core.Input // The inputs in transaction
-	for _, utxo := range availableUTXOs {
-		txInputs = append(txInputs, InputFromUTXO(utxo))
-		if utxo.Value < totalOutputValue {
-			totalOutputValue -= utxo.Value
-		} else if utxo.Value == totalOutputValue {
-			totalOutputValue = 0
-			break
-		} else if utxo.Value > totalOutputValue {
-			change := &core.Output{
-				AssetID:     SystemAssetId,
-				Value:       utxo.Value - totalOutputValue,
-				OutputLock:  uint32(0),
-				ProgramHash: *spender,
-			}
-			txOutputs = append(txOutputs, change)
-			totalOutputValue = 0
-			break
-		}
-	}
-	if totalOutputValue > 0 {
-		return nil, errors.New("[Wallet], Available token is not enough")
-	}
-
-	addr, err := wallet.GetAddress(spender)
-	if err != nil {
-		return nil, errors.New("[Wallet], Get spenders redeem script failed")
-	}
-
-	return wallet.newTransaction(addr.Script(), txInputs, txOutputs), nil
-}
-
-func (wallet *WalletImpl) Sign(password []byte, txn *core.Transaction) (*core.Transaction, error) {
-	// Verify password
-	err := wallet.VerifyPassword(password)
-	if err != nil {
-		return nil, err
-	}
-	// Get sign type
-	signType, err := crypto.GetScriptType(txn.Programs[0].Code)
-	if err != nil {
-		return nil, err
-	}
-	// Look up transaction type
-	if signType == common.STANDARD {
-
-		// Sign single transaction
-		txn, err = wallet.signStandardTransaction(txn)
-		if err != nil {
-			return nil, err
-		}
-
-	} else if signType == common.MULTISIG {
-
-		// Sign multi sign transaction
-		txn, err = wallet.signMultiSigTransaction(txn)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return txn, nil
-}
-
-func (wallet *WalletImpl) signStandardTransaction(txn *core.Transaction) (*core.Transaction, error) {
-	code := txn.Programs[0].Code
-	// Get signer
-	programHash, err := crypto.GetSigner(code)
-	// Check if current user is a valid signer
-	account := wallet.Keystore.GetAccountByProgramHash(programHash)
-	if account == nil {
-		return nil, errors.New("[Wallet], Invalid signer")
-	}
-	// Sign transaction
-	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
-	signature, err := account.Sign(buf.Bytes())
-	if err != nil {
-		return nil, err
-	}
-	// Add signature
-	buf = new(bytes.Buffer)
-	buf.WriteByte(byte(len(signature)))
-	buf.Write(signature)
-	// Set program
-	var program = &core.Program{code, buf.Bytes()}
-	txn.Programs = []*core.Program{program}
-
-	return txn, nil
-}
-
-func (wallet *WalletImpl) signMultiSigTransaction(txn *core.Transaction) (*core.Transaction, error) {
-	code := txn.Programs[0].Code
-	param := txn.Programs[0].Parameter
-	// Check if current user is a valid signer
-	var signerIndex = -1
-	programHashes, err := crypto.GetSigners(code)
-	if err != nil {
-		return nil, err
-	}
-	var account *sdk.Account
-	for i, programHash := range programHashes {
-		account = wallet.Keystore.GetAccountByProgramHash(programHash)
-		if account != nil {
-			signerIndex = i
-			break
-		}
-	}
-	if signerIndex == -1 {
-		return nil, errors.New("[Wallet], Invalid multi sign signer")
-	}
-	// Sign transaction
-	buf := new(bytes.Buffer)
-	txn.SerializeUnsigned(buf)
-	signedTx, err := account.Sign(buf.Bytes())
-	if err != nil {
-		return nil, err
-	}
-	// Append signature
-	txn.Programs[0].Parameter, err = crypto.AppendSignature(signerIndex, signedTx, buf.Bytes(), code, param)
-	if err != nil {
-		return nil, err
-	}
-
-	return txn, nil
-}
-
-func (wallet *WalletImpl) SendTransaction(txn *core.Transaction) error {
-	// Send transaction through P2P network
-	return rpc.GetClient().SendTransaction(txn)
-}
-
-func getSystemAssetId() common.Uint256 {
-	systemToken := &core.Transaction{
-		TxType:         core.RegisterAsset,
-		PayloadVersion: 0,
-		Payload: &core.PayloadRegisterAsset{
-			Asset: core.Asset{
-				Name:      "ELA",
-				Precision: 0x08,
-				AssetType: 0x00,
-			},
-			Amount:     0 * 100000000,
-			Controller: common.Uint168{},
-		},
-		Attributes: []*core.Attribute{},
-		Inputs:     []*core.Input{},
-		Outputs:    []*core.Output{},
-		Programs:   []*core.Program{},
-	}
-	return systemToken.Hash()
-}
-
-func (wallet *WalletImpl) removeLockedUTXOs(utxos []*UTXO) []*UTXO {
-	var availableUTXOs []*UTXO
-	var currentHeight = wallet.ChainHeight()
+	outpoints := make([]*core.OutPoint, 0, len(utxos)+len(stxos))
 	for _, utxo := range utxos {
-		if utxo.AtHeight == 0 { // remove unconfirmed UTOXs
+		outpoints = append(outpoints, &utxo.Op)
+	}
+	for _, stxo := range stxos {
+		outpoints = append(outpoints, &stxo.Op)
+	}
+
+	return wallet.getAddrFilter().GetAddrs(), outpoints
+}
+
+func (wallet *SPVWallet) isFalsePositive(tx *core.Transaction) (bool, error) {
+
+	hits := 0
+	// Save UTXOs
+	for index, output := range tx.Outputs {
+		// Filter address
+		if wallet.getAddrFilter().ContainAddr(output.ProgramHash) {
+			var lockTime uint32
+			if tx.TxType == core.CoinBase {
+				lockTime = height + 100
+			}
+			utxo := ToUTXO(txId, height, index, output.Value, lockTime)
+			err := wallet.dataStore.UTXOs().Put(&output.ProgramHash, utxo)
+			if err != nil {
+				return false, err
+			}
+			hits++
+		}
+	}
+
+	// Put spent UTXOs to STXOs
+	for _, input := range tx.Inputs {
+		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
+		err := wallet.dataStore.STXOs().FromUTXO(&input.Previous, &txId, height)
+		if err == nil {
+			hits++
+		}
+	}
+
+	// If no hits, no need to save transaction
+	if hits == 0 {
+		return true, nil
+	}
+}
+
+// Commit a transaction return if this is a false positive and error
+func (wallet *SPVWallet) CommitTx(tx *core.Transaction, height uint32) (bool, error) {
+	txId := tx.Hash()
+
+	sh, ok := wallet.txIds.Get(txId)
+	if ok && (sh > 0 || (sh == 0 && height == 0)) {
+		return false, nil
+	}
+
+	// Do not check double spends when syncing
+	if wallet.IsCurrent() {
+		dubs, err := wallet.checkDoubleSpends(tx)
+		if err != nil {
+			return false, nil
+		}
+		if len(dubs) > 0 {
+			if height == 0 {
+				return false, nil
+			} else {
+				// Rollback any double spend transactions
+				for _, dub := range dubs {
+					if err := wallet.dataStore.RollbackTx(dub); err != nil {
+						return false, nil
+					}
+				}
+			}
+		}
+	}
+
+	hits := 0
+	// Save UTXOs
+	for index, output := range tx.Outputs {
+		// Filter address
+		if wallet.getAddrFilter().ContainAddr(output.ProgramHash) {
+			var lockTime uint32
+			if tx.TxType == core.CoinBase {
+				lockTime = height + 100
+			}
+			utxo := ToUTXO(txId, height, index, output.Value, lockTime)
+			err := wallet.dataStore.UTXOs().Put(&output.ProgramHash, utxo)
+			if err != nil {
+				return false, err
+			}
+			hits++
+		}
+	}
+
+	// Put spent UTXOs to STXOs
+	for _, input := range tx.Inputs {
+		// Try to move UTXO to STXO, if a UTXO in database was spent, it will be moved to STXO
+		err := wallet.dataStore.STXOs().FromUTXO(&input.Previous, &txId, height)
+		if err == nil {
+			hits++
+		}
+	}
+
+	// If no hits, no need to save transaction
+	if hits == 0 {
+		return true, nil
+	}
+
+	// Save transaction
+	err := wallet.dataStore.Txs().Put(db.NewTx(*tx, height))
+	if err != nil {
+		return false, err
+	}
+
+	wallet.txIds.Add(txId, height)
+
+	return false, nil
+}
+
+func (wallet *SPVWallet) OnBlockCommitted(block *msg.MerkleBlock, txs []*core.Transaction) {
+	wallet.dataStore.Chain().PutHeight(block.Header.(*core.Header).Height)
+
+	// Check unconfirmed transaction timeout
+	if wallet.IsCurrent() {
+		// Get all unconfirmed transactions
+		txs, err := wallet.dataStore.Txs().GetAllFrom(0)
+		if err != nil {
+			log.Debugf("Get unconfirmed transactions failed, error %s", err.Error())
+			return
+		}
+		now := time.Now()
+		for _, tx := range txs {
+			if now.After(tx.Timestamp.Add(MaxUnconfirmedTime)) {
+				err = wallet.dataStore.RollbackTx(&tx.TxId)
+				if err != nil {
+					log.Errorf("Rollback timeout transaction %s failed, error %s", tx.TxId.String(), err.Error())
+				}
+			}
+		}
+	}
+}
+
+// Rollback chain data on the given height
+func (wallet *SPVWallet) OnRollback(height uint32) error {
+	return wallet.dataStore.Rollback(height)
+}
+
+func ToUTXO(txId common.Uint256, height uint32, index int, value common.Fixed64, lockTime uint32) *db.UTXO {
+	utxo := new(db.UTXO)
+	utxo.Op = *core.NewOutPoint(txId, uint16(index))
+	utxo.Value = value
+	utxo.LockTime = lockTime
+	utxo.AtHeight = height
+	return utxo
+}
+
+func (wallet *SPVWallet) NotifyNewAddress(hash []byte) {
+	// Reload address filter to include new address
+	wallet.loadAddrFilter()
+	// Broadcast filterload message to connected peers
+	wallet.UpdateFilter()
+}
+
+func (wallet *SPVWallet) getAddrFilter() *sdk.AddrFilter {
+	if wallet.filter == nil {
+		wallet.loadAddrFilter()
+	}
+	return wallet.filter
+}
+
+func (wallet *SPVWallet) loadAddrFilter() *sdk.AddrFilter {
+	addrs, _ := wallet.dataStore.Addrs().GetAll()
+	wallet.filter = sdk.NewAddrFilter(nil)
+	for _, addr := range addrs {
+		wallet.filter.AddAddr(addr.Hash())
+	}
+	return wallet.filter
+}
+
+// checkDoubleSpends takes a transaction and compares it with
+// all transactions in the db.  It returns a slice of all txIds in the db
+// which are double spent by the received tx.
+func (wallet *SPVWallet) checkDoubleSpends(tx *core.Transaction) ([]*common.Uint256, error) {
+	var dubs []*common.Uint256
+	txId := tx.Hash()
+	txs, err := wallet.dataStore.Txs().GetAll()
+	if err != nil {
+		return nil, err
+	}
+	for _, compTx := range txs {
+		// Skip coinbase transaction
+		if compTx.Data.IsCoinBaseTx() {
 			continue
 		}
-		if utxo.LockTime > 0 {
-			if utxo.LockTime > currentHeight {
-				continue
-			}
-			utxo.LockTime = math.MaxUint32 - 1
+		// Skip duplicate transaction
+		compTxId := compTx.Data.Hash()
+		if compTxId.IsEqual(txId) {
+			continue
 		}
-		availableUTXOs = append(availableUTXOs, utxo)
+		for _, txIn := range tx.Inputs {
+			for _, compIn := range compTx.Data.Inputs {
+				if txIn.Previous.IsEqual(compIn.Previous) {
+					// Found double spend
+					dubs = append(dubs, &compTxId)
+					break // back to txIn loop
+				}
+			}
+		}
 	}
-	return availableUTXOs
-}
-
-func InputFromUTXO(utxo *UTXO) *core.Input {
-	input := new(core.Input)
-	input.Previous.TxID = utxo.Op.TxID
-	input.Previous.Index = utxo.Op.Index
-	input.Sequence = utxo.LockTime
-	return input
-}
-
-func (wallet *WalletImpl) newTransaction(redeemScript []byte, inputs []*core.Input, outputs []*core.Output) *core.Transaction {
-	// Create payload
-	txPayload := &core.PayloadTransferAsset{}
-	// Create attributes
-	txAttr := core.NewAttribute(core.Nonce, []byte(strconv.FormatInt(rand.Int63(), 10)))
-	attributes := make([]*core.Attribute, 0)
-	attributes = append(attributes, &txAttr)
-	// Create program
-	var program = &core.Program{redeemScript, nil}
-	// Create transaction
-	return &core.Transaction{
-		TxType:     core.TransferAsset,
-		Payload:    txPayload,
-		Attributes: attributes,
-		Inputs:     inputs,
-		Outputs:    outputs,
-		Programs:   []*core.Program{program},
-		LockTime:   wallet.ChainHeight(),
-	}
+	return dubs, nil
 }
