@@ -1,7 +1,8 @@
-package database
+package util
 
 import (
 	"bytes"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"math/big"
 
 	"github.com/elastos/Elastos.ELA/core"
@@ -12,6 +13,11 @@ type Header struct {
 	// The origin header of the block
 	*core.Header
 
+	// MerkleProof for transactions packed in this block
+	NumTxs uint32
+	Hashes []*common.Uint256
+	Flags  []byte
+
 	// The total work from the genesis block to this
 	// current block
 	TotalWork *big.Int
@@ -20,6 +26,26 @@ type Header struct {
 func (sh *Header) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err := sh.Header.Serialize(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	err = common.WriteUint32(buf, sh.NumTxs)
+	if err != nil {
+		return nil, err
+	}
+
+	err = common.WriteVarUint(buf, uint64(len(sh.Hashes)))
+	if err != nil {
+		return nil, err
+	}
+
+	err = common.WriteElement(buf, sh.Hashes)
+	if err != nil {
+		return nil, err
+	}
+
+	err = common.WriteVarBytes(buf, sh.Flags)
 	if err != nil {
 		return nil, err
 	}
@@ -34,6 +60,27 @@ func (sh *Header) Serialize() ([]byte, error) {
 func (sh *Header) Deserialize(b []byte) error {
 	r := bytes.NewReader(b)
 	err := sh.Header.Deserialize(r)
+	if err != nil {
+		return err
+	}
+
+	sh.NumTxs, err = common.ReadUint32(r)
+	if err != nil {
+		return err
+	}
+
+	count, err := common.ReadVarUint(r, 0)
+	if err != nil {
+		return err
+	}
+
+	sh.Hashes = make([]*common.Uint256, count)
+	err = common.ReadElement(r, &sh.Hashes)
+	if err != nil {
+		return err
+	}
+
+	sh.Flags, err = common.ReadVarBytes(r)
 	if err != nil {
 		return err
 	}
