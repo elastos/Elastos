@@ -42,6 +42,7 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_isImportFromMnemonic(false),
+				_localStore(rootPath),
 				_isOldKeyStore(false) {
 
 			_localStore.Load(localStore);
@@ -61,6 +62,7 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_isImportFromMnemonic(false),
+				_localStore(rootPath),
 				_isOldKeyStore(false) {
 
 			ParamChecker::checkNotEmpty(id);
@@ -68,7 +70,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			resetMnemonic(language);
+			_localStore.Account().resetMnemonic(language);
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 			importFromMnemonic(mnemonic, phrasePassword, payPassword);
@@ -85,6 +87,7 @@ namespace Elastos {
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
 				_isImportFromMnemonic(false),
+				_localStore(rootPath),
 				_isOldKeyStore(false) {
 
 			ParamChecker::checkNotEmpty(id);
@@ -160,7 +163,7 @@ namespace Elastos {
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
-				deriveKey(payPassword);
+				_localStore.Account().deriveKey(payPassword);
 				return _createdWallets[chainID];
 			}
 
@@ -171,7 +174,8 @@ namespace Elastos {
 				info.setEaliestPeerTime(0);
 			}
 
-			Log::getLogger()->info("import from mnemonic is {}, ealiest peer time = {}", _isImportFromMnemonic, info.getEarliestPeerTime());
+			Log::getLogger()->info("import from mnemonic is {}, ealiest peer time = {}", _isImportFromMnemonic,
+								   info.getEarliestPeerTime());
 
 			tryInitCoinConfig();
 			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
@@ -251,7 +255,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() {
-			return _localStore.GetPublicKey();
+			return _localStore.Account().GetPublicKey();
 		}
 
 		bool MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
@@ -281,8 +285,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			bool result = initFromPhrase(mnemonic, phrasePassword, payPassword);
-//			CreateSubWallet("ELA", payPassword, false); //we create ela sub wallet by default
+			bool result = _localStore.Account().initFromPhrase(mnemonic, phrasePassword, payPassword);
 
 			Save();
 			return result;
@@ -302,7 +305,7 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
-			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
+			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.Account().GetEncryptedMnemonic(), payPassword);
 			if (false == cb_Mnemonic) {
 				return false;
 			}
@@ -313,57 +316,9 @@ namespace Elastos {
 			return true;
 		}
 
-		bool MasterWallet::initFromPhrase(const std::string &phrase, const std::string &phrasePassword,
-										  const std::string &payPassword) {
-			CMemBlock<char> phraseData;
-			phraseData.SetMemFixed(phrase.c_str(), phrase.size() + 1);
-			std::string originLanguage = _mnemonic->getLanguage();
-			if (!_localStore.GetLanguage().empty() && _localStore.GetLanguage() != originLanguage) {
-				resetMnemonic(_localStore.GetLanguage());
-			}
-
-			if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
-				resetMnemonic("chinese");
-				if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
-					throw std::logic_error("Import key error.");
-				}
-			}
-
-			CMBlock cbPhrase0 = Utils::convertToMemBlock(phrase);
-			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbPhrase0, payPassword));
-			CMBlock phrasePass = Utils::convertToMemBlock(phrasePassword);
-			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, payPassword));
-
-			//init master public key and private key
-			UInt512 seed = deriveSeed(payPassword);
-
-			BRKey masterKey;
-			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
-
-			CMBlock cbTmp(sizeof(UInt256));
-			memcpy(cbTmp, &masterKey.secret, sizeof(UInt256));
-			_localStore.SetEncryptedKey(Utils::encrypt(cbTmp, payPassword));
-
-			Key key(masterKey);
-			key.setPublicKey();
-			_localStore.SetPublicKey(Utils::encodeHex(key.getPubkey()));
-
-			//init id chain derived master public key
-			BRKey idMasterKey;
-			UInt256 idChainCode;
-			BRBIP32PrivKeyPath(&idMasterKey, &idChainCode, &seed, sizeof(seed), 1, 0 | BIP32_HARD);
-			Key wrapperKey(idMasterKey.secret, idMasterKey.compressed);
-			_localStore.SetIDMasterPubKey(MasterPubKey(wrapperKey.getPubkey(), idChainCode));
-
-			var_clean(&seed);
-			var_clean(&masterKey.secret);
-
-			return true;
-		}
-
 		void MasterWallet::initFromLocalStore(const MasterWalletStore &localStore) {
 			tryInitCoinConfig();
-			resetMnemonic(localStore.GetLanguage());
+			_localStore.Account().resetMnemonic(localStore.Account().GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
 			initSubWallets(localStore.GetSubWalletInfoList(), "");
 		}
@@ -381,24 +336,13 @@ namespace Elastos {
 			}
 		}
 
-		Key MasterWallet::deriveKey(const std::string &payPassword) {
-			CMBlock keyData = Utils::decrypt(_localStore.GetEncrpytedKey(), payPassword);
-			ParamChecker::checkDataNotEmpty(keyData);
-
-			Key key;
-			UInt256 secret;
-			memcpy(secret.u8, keyData, keyData.GetSize());
-			key.setSecret(secret, true);
-
-			return key;
-		}
 
 		std::string MasterWallet::Sign(const std::string &message, const std::string &payPassword) {
 
 			ParamChecker::checkNotEmpty(message);
 			ParamChecker::checkPassword(payPassword);
 
-			Key key = deriveKey(payPassword);
+			Key key = _localStore.Account().deriveKey(payPassword);
 			return key.compactSign(message);
 		}
 
@@ -416,22 +360,6 @@ namespace Elastos {
 			return Address::isValidIdAddress(id);
 		}
 
-		UInt512 MasterWallet::deriveSeed(const std::string &payPassword) {
-			UInt512 result;
-			std::string mnemonic = Utils::convertToString(
-					Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword));
-			if (mnemonic.empty())
-				ErrorCode::StandardLogicError(ErrorCode::PasswordError, "Invalid password.");
-
-			std::string phrasePassword = _localStore.GetEncrptedPhrasePassword().GetSize() == 0
-										 ? ""
-										 : Utils::convertToString(
-							Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), payPassword));
-
-			BRBIP39DeriveKey(&result, mnemonic.c_str(), phrasePassword.c_str());
-			return result;
-		}
-
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const ChainParams &chainParams,
 														const std::string &payPassword, const PluginTypes &pluginTypes,
 														MasterWallet *parent) {
@@ -446,11 +374,6 @@ namespace Elastos {
 				default:
 					return new SubWallet(info, chainParams, payPassword, pluginTypes, parent);
 			}
-		}
-
-		void MasterWallet::resetMnemonic(const std::string &language) {
-			_localStore.SetLanguage(language);
-			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, _rootPath));
 		}
 
 		std::string
@@ -511,21 +434,6 @@ namespace Elastos {
 			return _coinConfigReader.GetAllChainId();
 		}
 
-		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			ParamChecker::checkPassword(oldPassword, "Old");
-			ParamChecker::checkPassword(newPassword, "New");
-
-			CMBlock key = Utils::decrypt(_localStore.GetEncrpytedKey(), oldPassword);
-			ParamChecker::checkDataNotEmpty(key, false);
-			CMBlock phrasePass = Utils::decrypt(_localStore.GetEncrptedPhrasePassword(), oldPassword);
-			CMBlock mnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), oldPassword);
-			ParamChecker::checkDataNotEmpty(mnemonic, false);
-
-			_localStore.SetEncryptedKey(Utils::encrypt(key, newPassword));
-			_localStore.SetEncryptedPhrasePassword(Utils::encrypt(phrasePass, newPassword));
-			_localStore.SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
-		}
-
 		void MasterWallet::tryInitCoinConfig() {
 			if (!_coinConfigReader.IsInitialized()) {
 				boost::filesystem::path configPath = _rootPath;
@@ -567,19 +475,20 @@ namespace Elastos {
 			std::string mnemonic = keyStore.json().getMnemonic();
 			CMBlock cbMnemonic;
 			cbMnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
-			resetMnemonic(keyStore.json().getMnemonicLanguage());
-			_localStore.SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
+			_localStore.Account().resetMnemonic(keyStore.json().getMnemonicLanguage());
+			_localStore.Account().SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
 
-			if (!initFromPhrase(mnemonic, phrasePass, payPassword))
+			if (!_localStore.Account().initFromPhrase(mnemonic, phrasePass, payPassword))
 				throw std::logic_error("Initialize from phrase error.");
 
 			initSubWallets(keyStore.json().getCoinInfoList(), payPassword);
 		}
 
 		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
-			keyStore.json().setEncryptedPhrasePassword(Utils::encodeHex(_localStore.GetEncrptedPhrasePassword()));
+			keyStore.json().setEncryptedPhrasePassword(
+					Utils::encodeHex(_localStore.Account().GetEncrptedPhrasePassword()));
 
-			CMBlock cbMnemonic = Utils::decrypt(_localStore.GetEncryptedMnemonic(), payPassword);
+			CMBlock cbMnemonic = Utils::decrypt(_localStore.Account().GetEncryptedMnemonic(), payPassword);
 			if (false == cbMnemonic) {
 				throw std::logic_error("Wrong password.");
 			}
@@ -600,6 +509,10 @@ namespace Elastos {
 
 		void MasterWallet::setImportFromMnemonic() {
 			_isImportFromMnemonic = true;
+		}
+
+		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
+_localStore.Account().ChangePassword(oldPassword, newPassword);
 		}
 
 	}

@@ -7,6 +7,7 @@ set(
 	${CMAKE_CURRENT_SOURCE_DIR}/Implement
 	${CMAKE_CURRENT_SOURCE_DIR}/SpvService
 	${CMAKE_CURRENT_SOURCE_DIR}/Wrapper
+	${CMAKE_CURRENT_SOURCE_DIR}/Account
 	${CMAKE_CURRENT_SOURCE_DIR}
 	CACHE INTERNAL "spv core include directories"
 )
