@@ -46,7 +46,7 @@ func New(foundation string, db database.ChainStore) (*BlockChain, error) {
 			return nil, errors.New("parse foundation address failed")
 		}
 		genesisHeader := GenesisHeader(foundationAddress)
-		storeHeader := &util.Header{Header: genesisHeader, TotalWork: new(big.Int)}
+		storeHeader := &util.Header{Header: *genesisHeader, TotalWork: new(big.Int)}
 		chain.db.Headers().Put(storeHeader, true)
 	}
 
@@ -54,7 +54,7 @@ func New(foundation string, db database.ChainStore) (*BlockChain, error) {
 }
 
 func (b *BlockChain) CommitTx(tx *core.Transaction) (bool, error) {
-	return b.db.StoreTx(&util.Tx{Transaction: tx, Height: 0})
+	return b.db.StoreTx(&util.Tx{Transaction: *tx, Height: 0})
 }
 
 func (b *BlockChain) CommitBlock(block *util.Block) (newTip, reorg bool, newHeight, fps uint32, err error) {
@@ -62,7 +62,7 @@ func (b *BlockChain) CommitBlock(block *util.Block) (newTip, reorg bool, newHeig
 	defer b.lock.Unlock()
 	newTip = false
 	reorg = false
-	var header = block.Header
+	var header = &block.Header
 	var commonAncestor *util.Header
 	// Fetch our current best header from the db
 	bestHeader, err := b.db.Headers().GetBest()
@@ -77,7 +77,7 @@ func (b *BlockChain) CommitBlock(block *util.Block) (newTip, reorg bool, newHeig
 	if block.Previous.IsEqual(tipHash) {
 		parentHeader = bestHeader
 	} else {
-		parentHeader, err = b.db.Headers().GetPrevious(block.Header)
+		parentHeader, err = b.db.Headers().GetPrevious(header)
 		if err != nil {
 			return false, false, 0, 0, OrphanBlockError
 		}
