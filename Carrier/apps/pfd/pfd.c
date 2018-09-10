@@ -626,9 +626,17 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    rc = ela_session_init(carrier, session_request_callback, NULL);
+    rc = ela_session_init(carrier);
     if (rc < 0) {
         fprintf(stderr, "Can not initialize Carrier session extension (%08X).",
+                ela_get_error());
+        shutdown();
+        return -1;
+    }
+
+    rc = ela_session_set_callback(carrier, NULL, session_request_callback, NULL);
+    if (rc < 0) {
+        fprintf(stderr, "Can not set callbacks (%08X).",
                 ela_get_error());
         shutdown();
         return -1;

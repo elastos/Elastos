@@ -251,19 +251,13 @@ typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
  *
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      callback    [in] A pointer to the application-defined function of type
- *                       ElaSessionRequestCallback.
- * @param
- *      context     [in] The application defined context data.
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_init(ElaCarrier *carrier,
-                ElaSessionRequestCallback *callback, void *context);
+int ela_session_init(ElaCarrier *carrier);
 
 /**
  * \~English

@@ -130,7 +130,7 @@ void new_session_with_friend(TestContext *context)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    rc = ela_session_init(wctxt->carrier, NULL, NULL);
+    rc = ela_session_init(wctxt->carrier);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     sctxt->session = ela_session_new(wctxt->carrier, robotid);
@@ -163,7 +163,7 @@ void new_session_with_stranger(TestContext *context)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    rc = ela_session_init(wctxt->carrier, NULL, NULL);
+    rc = ela_session_init(wctxt->carrier);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
     sctxt->session = ela_session_new(wctxt->carrier, robotid);

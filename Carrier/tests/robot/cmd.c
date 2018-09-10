@@ -98,6 +98,11 @@ static void session_request_complete_callback(ElaSession *ws, const char *bundle
         goto cleanup;
     }
 
+    if (bundle && bundle[0]) {
+        vlogD("Request complete callback invoked with bundle %s", bundle);
+        write_ack("bundle %s\n", bundle);
+    }
+
     rc = ela_session_start(ws, sdp, len);
     if (rc < 0) {
         vlogE("Start session for robot failed (0x%x)", ela_get_error());
@@ -474,12 +479,13 @@ static void sinit(TestContext *context, int argc, char *argv[])
 
     robot_context_reset(context);
 
-    rc = ela_session_init(w, sctxt->request_cb, sctxt);
+    rc = ela_session_init(w);
     if (rc < 0) {
         vlogE("session init failed: 0x%x", ela_get_error());
         write_ack("sinit failed\n");
         return;
     } else {
+        ela_session_set_callback(w, NULL, sctxt->request_cb, sctxt);
         vlogD("session init success.");
         sctxt->extra->init_flag = 1;
         write_ack("sinit success\n");
@@ -493,9 +499,10 @@ static void srequest(TestContext *context, int argc, char *argv[])
 {
     SessionContext *sctxt = context->session;
     StreamContext *stream_ctxt = context->stream;
+    const char *bundle;
     int rc;
 
-    CHK_ARGS(argc == 3);
+    CHK_ARGS(argc == 3 || argc == 4);
 
     sctxt->session = ela_session_new(context->carrier->carrier, argv[1]);
     if (!sctxt->session) {
@@ -517,7 +524,12 @@ static void srequest(TestContext *context, int argc, char *argv[])
         goto cleanup;
     }
 
-    rc = ela_session_request(sctxt->session, NULL, sctxt->request_complete_cb, context);
+    if (argc == 4)
+        bundle = argv[3];
+    else
+        bundle = NULL;
+
+    rc = ela_session_request(sctxt->session, bundle, sctxt->request_complete_cb, context);
     if (rc < 0) {
         vlogE("Session request failed: 0x%x", ela_get_error());
         goto cleanup;

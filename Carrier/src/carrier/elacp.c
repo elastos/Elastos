@@ -779,7 +779,9 @@ uint8_t *elacp_encode(ElaCP *cp, size_t *encoded_len)
         if (pktirsp->status) {
             str = flatcc_builder_create_string_str(&builder, pktirsp->reason);
             elacp_invitersp_reason_add(&builder, str);
-        } else {
+        }
+
+        if (pktirsp->data) {
             vec = flatbuffers_uint8_vec_create(&builder, pktirsp->data, pktirsp->len);
             elacp_invitersp_data_add(&builder, vec);
         }
@@ -913,7 +915,8 @@ ElaCP *elacp_decode(const uint8_t *data, size_t len)
         pktirsp->status = elacp_invitersp_status(tblirsp);
         if (pktirsp->status)
             pktirsp->reason = elacp_invitersp_reason(tblirsp);
-        else {
+
+        if (elacp_invitersp_data_is_present(tblirsp)) {
             pktirsp->data = vec = elacp_invitersp_data(tblirsp);
             pktirsp->len = flatbuffers_uint8_vec_len(vec);
         }

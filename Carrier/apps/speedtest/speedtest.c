@@ -661,11 +661,12 @@ static void session_init(ElaCarrier *w)
 {
     int rc;
 
-    rc = ela_session_init(w, session_request_callback, w);
+    rc = ela_session_init(w);
     if (rc < 0) {
         output("Session initialized unsuccessfully.\n");
     }
     else {
+        ela_session_set_callback(w, NULL, session_request_callback, w);
         output("Session initialized successfully.\n");
     }
 }

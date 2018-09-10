@@ -2596,7 +2596,8 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to,
     elacp_set_status(cp, status);
     if (status)
         elacp_set_reason(cp, reason);
-    elacp_set_raw_data(cp, data, len);
+    if (data)
+        elacp_set_raw_data(cp, data, len);
 
     _data = elacp_encode(cp, &_data_len);
     elacp_free(cp);

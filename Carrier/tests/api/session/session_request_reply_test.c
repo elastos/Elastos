@@ -239,8 +239,11 @@ static void test_stream_reply_scheme(ElaStreamType stream_type,
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    rc = ela_session_init(wctxt->carrier, sctxt->request_cb, sctxt);
+    rc = ela_session_init(wctxt->carrier);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    rc = ela_session_set_callback(wctxt->carrier, NULL, sctxt->request_cb, sctxt);
+    TEST_ASSERT_TRUE(rc == 0);
 
     rc = robot_sinit();
     TEST_ASSERT_TRUE(rc > 0);
