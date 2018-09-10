@@ -11,7 +11,7 @@ import (
 // Header is a data structure stored in database.
 type Header struct {
 	// The origin header of the block
-	*core.Header
+	core.Header
 
 	// MerkleProof for transactions packed in this block
 	NumTxs uint32
