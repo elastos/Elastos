@@ -62,11 +62,10 @@ namespace Elastos {
 				return existedId;
 			}
 
-			CMBlock publicKey = _parentWallet->_localStore.GetIDMasterPubKey().getPubKey();
-			uint8_t pubKey[BRBIP32PubKey(NULL, 0, *_parentWallet->_localStore.GetIDMasterPubKey().getRaw(),
+			const MasterPubKey &publicKey = _parentWallet->_localStore.Account().GetIDMasterPubKey();
+			uint8_t pubKey[BRBIP32PubKey(NULL, 0, *publicKey.getRaw(),
 										 purpose, index)];
-			size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), *_parentWallet->_localStore.GetIDMasterPubKey().getRaw(),
-						  purpose, index);
+			size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), *publicKey.getRaw(), purpose, index);
 
 			BRKey rawKey;
 			BRKeySetPubKey(&rawKey, pubKey, len);
@@ -101,7 +100,7 @@ namespace Elastos {
 			}
 			IdItem item = _info.Ids[id];
 
-			UInt512 seed = _parentWallet->deriveSeed(password);
+			UInt512 seed = _parentWallet->_localStore.Account().deriveSeed(password);
 			BRKey key;
 			BRBIP32PrivKey(&key, &seed.u8[0], sizeof(seed), item.Purpose, item.Index);
 			var_clean(&seed);

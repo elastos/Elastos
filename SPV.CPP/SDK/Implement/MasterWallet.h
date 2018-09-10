@@ -102,8 +102,6 @@ namespace Elastos {
 
 			friend class MasterWalletManager;
 
-			friend class WalletFactoryInner;
-
 			friend class IdAgentImpl;
 
 			friend class SubWallet;
@@ -148,10 +146,6 @@ namespace Elastos {
 			bool exportMnemonic(const std::string &payPassword,
 								std::string &mnemonic);
 
-			bool initFromPhrase(const std::string &phrase,
-								const std::string &phrasePassword,
-								const std::string &payPassword);
-
 			void initFromLocalStore(const MasterWalletStore &localStore);
 
 			void initFromKeyStore(const KeyStore &keyStore,
@@ -166,17 +160,12 @@ namespace Elastos {
 
 			void restoreLocalStore();
 
-			Key deriveKey(const std::string &payPassword);
-
-			UInt512 deriveSeed(const std::string &payPassword);
-
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
 											  const ChainParams &chainParams,
 											  const std::string &payPassword,
 											  const PluginTypes &pluginTypes,
 											  MasterWallet *parent);
 
-			void resetMnemonic(const std::string &language);
 
 			virtual void startPeerManager(SubWallet *wallet);
 
@@ -190,7 +179,7 @@ namespace Elastos {
 			WalletMap _createdWallets;
 
 			MasterWalletStore _localStore;
-			boost::shared_ptr<Mnemonic> _mnemonic;
+
 			bool _isImportFromMnemonic;
 			bool _isOldKeyStore;
 

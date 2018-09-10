@@ -8,9 +8,8 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
-#include "CMemBlock.h"
+#include "Account/StandardAccount.h"
 #include "CoinInfo.h"
-#include "MasterPubKey.h"
 #include "IdAgent/IdAgentImpl.h"
 
 namespace Elastos {
@@ -18,33 +17,13 @@ namespace Elastos {
 
 		class MasterWalletStore {
 		public:
-			MasterWalletStore();
+			MasterWalletStore(const std::string &rootPath);
 
 			~MasterWalletStore();
 
 			void Load(const boost::filesystem::path &path);
 
 			void Save(const boost::filesystem::path &path);
-
-			const CMBlock &GetEncrpytedKey() const;
-
-			void SetEncryptedKey(const CMBlock &data);
-
-			const CMBlock &GetEncryptedMnemonic() const;
-
-			void SetEncryptedMnemonic(const CMBlock &data);
-
-			const CMBlock &GetEncrptedPhrasePassword() const;
-
-			void SetEncryptedPhrasePassword(const CMBlock &data);
-
-			const std::string &GetPublicKey() const;
-
-			void SetPublicKey(const std::string &pubKey);
-
-			const std::string &GetLanguage() const;
-
-			void SetLanguage(const std::string &language);
 
 			const IdAgentInfo &GetIdAgentInfo() const;
 
@@ -54,9 +33,9 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfo> &infoList);
 
-			const MasterPubKey &GetIDMasterPubKey() const;
+			const StandardAccount &Account() const;
 
-			void SetIDMasterPubKey(const MasterPubKey &masterPubKey);
+			StandardAccount &Account();
 
 		private:
 			JSON_SM_LS(MasterWalletStore);
@@ -65,12 +44,8 @@ namespace Elastos {
 			FROM_JSON(MasterWalletStore);
 
 		private:
-			CMBlock _encryptedKey;
-			CMBlock _encryptedMnemonic;
-			CMBlock _encryptedPhrasePass;
-			std::string _publicKey;
-			MasterPubKey _masterIDPubKey;
-			std::string _language;
+
+			StandardAccount _standardAccount;
 			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;
 		};
