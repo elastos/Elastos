@@ -17,7 +17,7 @@ func (h *headersOnlyChainDB) Headers() Headers {
 // StoreBlock save a block into database, returns how many
 // false positive transactions are and error.
 func (h *headersOnlyChainDB) StoreBlock(block *util.Block, newTip bool) (fps uint32, err error) {
-	return fps, h.db.Put(block.Header, newTip)
+	return fps, h.db.Put(&block.Header, newTip)
 }
 
 // StoreTx save a transaction into database, and return

@@ -16,7 +16,7 @@ func (d *defaultChainDB) Headers() Headers {
 // StoreBlock save a block into database, returns how many
 // false positive transactions are and error.
 func (d *defaultChainDB) StoreBlock(block *util.Block, newTip bool) (fps uint32, err error) {
-	err = d.h.Put(block.Header, newTip)
+	err = d.h.Put(&block.Header, newTip)
 	if err != nil {
 		return 0, err
 	}
