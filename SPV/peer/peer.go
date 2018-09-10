@@ -61,6 +61,11 @@ type outMsg struct {
 	doneChan chan<- struct{}
 }
 
+// stallClearMsg is used to clear current stalled messages.  This is useful when
+// we are synced to current but a getblocks message is stalled, we need to cancel
+// it.
+type stallClearMsg struct{}
+
 type Peer struct {
 	*peer.Peer
 	cfg Config
@@ -69,8 +74,8 @@ type Peer struct {
 	prevGetBlocksBegin *common.Uint256
 	prevGetBlocksStop  *common.Uint256
 
-	stallControl chan p2p.Message
-	blockQueue   chan p2p.Message
+	stallControl chan interface{}
+	blockQueue   chan interface{}
 	outputQueue  chan outMsg
 	queueQuit    chan struct{}
 }
@@ -79,14 +84,15 @@ func NewPeer(peer *peer.Peer, cfg *Config) *Peer {
 	p := Peer{
 		Peer:         peer,
 		cfg:          *cfg,
-		stallControl: make(chan p2p.Message, 1),
-		blockQueue:   make(chan p2p.Message, 1),
+		stallControl: make(chan interface{}, 1),
+		blockQueue:   make(chan interface{}, 1),
 		outputQueue:  make(chan outMsg, outputBufferSize),
 		queueQuit:    make(chan struct{}),
 	}
 	peer.AddMessageFunc(p.handleMessage)
 
 	go p.stallHandler()
+	go p.queueHandler()
 	go p.blockHandler()
 
 	go func() {
@@ -98,29 +104,34 @@ func NewPeer(peer *peer.Peer, cfg *Config) *Peer {
 	return &p
 }
 
-func (p *Peer) sendMessage(msg outMsg) {
-	p.stallControl <- msg.msg
-	p.SendMessage(msg.msg, msg.doneChan)
+func (p *Peer) sendMessage(out outMsg) {
+	switch out.msg.(type) {
+	case *msg.GetBlocks, *msg.GetData:
+		p.stallControl <- out.msg
+	}
+	p.SendMessage(out.msg, out.doneChan)
 }
 
 func (p *Peer) handleMessage(peer *peer.Peer, message p2p.Message) {
-	// Notify stall control
-	p.stallControl <- message
-
 	switch m := message.(type) {
 	case *msg.Inv:
+		p.stallControl <- message
 		p.cfg.OnInv(p, m)
 
 	case *msg.MerkleBlock:
+		p.stallControl <- message
 		p.blockQueue <- m
 
 	case *msg.Tx:
+		p.stallControl <- message
 		p.blockQueue <- m
 
 	case *msg.NotFound:
+		p.stallControl <- message
 		p.cfg.OnNotFound(p, m)
 
 	case *msg.Reject:
+		p.stallControl <- message
 		p.cfg.OnReject(p, m)
 	}
 }
@@ -147,7 +158,7 @@ out:
 			// update last active time
 			lastActive = time.Now()
 
-			switch message := ctrMsg.(type) {
+			switch m := ctrMsg.(type) {
 			case *msg.GetBlocks:
 				// Add expected response
 				pendingResponses[p2p.CmdInv] = struct{}{}
@@ -158,21 +169,25 @@ out:
 
 			case *msg.GetData:
 				// Add expected responses
-				for _, iv := range message.InvList {
+				for _, iv := range m.InvList {
 					pendingResponses[iv.Hash.String()] = struct{}{}
 				}
 
 			case *msg.MerkleBlock:
 				// Remove received merkleblock from expected response map.
-				delete(pendingResponses, message.Header.(*core.Header).Hash().String())
+				delete(pendingResponses, m.Header.(*core.Header).Hash().String())
 
 			case *msg.Tx:
 				// Remove received transaction from expected response map.
-				delete(pendingResponses, message.Serializable.(*core.Transaction).Hash().String())
+				delete(pendingResponses, m.Serializable.(*core.Transaction).Hash().String())
 
 			case *msg.NotFound:
 				// NotFound should not received from sync peer
 				p.Disconnect()
+
+			case stallClearMsg:
+				// Clear pending responses.
+				pendingResponses = make(map[string]struct{})
 			}
 
 		case <-stallTicker.C:
@@ -234,7 +249,7 @@ func (p *Peer) blockHandler() {
 	notifyBlock := func() {
 		// Notify OnBlock.
 		p.cfg.OnBlock(p, &util.Block{
-			Header:       header,
+			Header:       *header,
 			Transactions: txs,
 		})
 
@@ -267,19 +282,19 @@ out:
 					continue
 				}
 
+				// Set current downloading block
+				header = &util.Header{
+					Header: *m.Header.(*core.Header),
+					NumTxs: m.Transactions,
+					Hashes: m.Hashes,
+					Flags:  m.Flags,
+				}
+
 				// No transaction included in this block, so just notify block
 				// downloading completed.
 				if len(txIds) == 0 {
 					notifyBlock()
 					continue
-				}
-
-				// Set current downloading block
-				header = &util.Header{
-					Header: m.Header.(*core.Header),
-					NumTxs: m.Transactions,
-					Hashes: m.Hashes,
-					Flags:  m.Flags,
 				}
 
 				// Save pending transactions to cache.
@@ -311,7 +326,7 @@ out:
 
 				// Save downloaded transaction to cache.
 				txs = append(txs, &util.Tx{
-					Transaction: tx,
+					Transaction: *tx,
 					Height:      header.Height,
 				})
 
@@ -455,6 +470,10 @@ func (p *Peer) PushGetBlocksMsg(locator []*common.Uint256, stopHash *common.Uint
 	p.prevGetBlocksStop = stopHash
 	p.prevGetBlocksMtx.Unlock()
 	return nil
+}
+
+func (p *Peer) StallClear() {
+	p.stallControl <- stallClearMsg{}
 }
 
 func (p *Peer) QueueMessage(msg p2p.Message, doneChan chan<- struct{}) {
