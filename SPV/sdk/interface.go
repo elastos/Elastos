@@ -59,6 +59,9 @@ type Config struct {
 	// The seed peers addresses in [host:port] or [ip:port] format.
 	SeedList []string
 
+	// The default port for public peers to provide service.
+	DefaultPort uint16
+
 	// The max peer connections.
 	MaxPeers int
 

@@ -94,6 +94,7 @@ func NewSPVService(cfg *Config) (*service, error) {
 	// Initiate P2P server configuration
 	serverCfg := server.NewDefaultConfig(
 		cfg.Magic,
+		cfg.DefaultPort,
 		cfg.SeedList,
 		nil,
 		service.newPeer,
