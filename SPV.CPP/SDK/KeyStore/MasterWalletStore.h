@@ -8,7 +8,7 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
-#include "Account/StandardAccount.h"
+#include "SDK/Account/IAccount.h"
 #include "CoinInfo.h"
 #include "IdAgent/IdAgentImpl.h"
 
@@ -33,9 +33,7 @@ namespace Elastos {
 
 			void SetSubWalletInfoList(const std::vector<CoinInfo> &infoList);
 
-			const StandardAccount &Account() const;
-
-			StandardAccount &Account();
+			IAccount *Account() const;
 
 		private:
 			JSON_SM_LS(MasterWalletStore);
@@ -45,7 +43,7 @@ namespace Elastos {
 
 		private:
 
-			StandardAccount _standardAccount;
+			AccountPtr _account;
 			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;
 		};

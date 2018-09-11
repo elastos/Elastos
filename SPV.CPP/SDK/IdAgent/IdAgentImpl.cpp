@@ -9,6 +9,8 @@
 #include "IdAgentImpl.h"
 #include "MasterWallet.h"
 #include "Wrapper/Address.h"
+#include "SDK/Account/StandardAccount.h"
+#include "ErrorCode.h"
 
 using namespace nlohmann;
 
@@ -62,7 +64,11 @@ namespace Elastos {
 				return existedId;
 			}
 
-			const MasterPubKey &publicKey = _parentWallet->_localStore.Account().GetIDMasterPubKey();
+			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
+			if(standardAccount == nullptr) {
+				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "This account can not create id.");
+			}
+			const MasterPubKey &publicKey = standardAccount->GetIDMasterPubKey();
 			uint8_t pubKey[BRBIP32PubKey(NULL, 0, *publicKey.getRaw(),
 										 purpose, index)];
 			size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), *publicKey.getRaw(), purpose, index);
@@ -100,7 +106,11 @@ namespace Elastos {
 			}
 			IdItem item = _info.Ids[id];
 
-			UInt512 seed = _parentWallet->_localStore.Account().deriveSeed(password);
+			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
+			if(standardAccount == nullptr) {
+				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "This account can not create id.");
+			}
+			UInt512 seed = standardAccount->deriveSeed(password);
 			BRKey key;
 			BRBIP32PrivKey(&key, &seed.u8[0], sizeof(seed), item.Purpose, item.Index);
 			var_clean(&seed);

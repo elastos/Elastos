@@ -193,5 +193,15 @@ namespace Elastos {
 			SetEncryptedMnemonic(Utils::encrypt(mnemonic, newPassword));
 		}
 
+		nlohmann::json StandardAccount::ToJson() const {
+			nlohmann::json j;
+			to_json(j, *this);
+			return j;
+		}
+
+		void StandardAccount::FromJson(const nlohmann::json &j) {
+			from_json(j, *this);
+		}
+
 	}
 }

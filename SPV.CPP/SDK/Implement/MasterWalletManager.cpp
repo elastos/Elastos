@@ -71,6 +71,21 @@ namespace Elastos {
 			return masterWallet;
 		}
 
+		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletId,
+																		const std::string &payPassword,
+																		const nlohmann::json &coSigners,
+																		uint32_t requiredSignCount) {
+			return nullptr;
+		}
+
+		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletId,
+																		const std::string &privKey,
+																		const std::string &payPassword,
+																		const nlohmann::json &coSigners,
+																		uint32_t requiredSignCount) {
+			return nullptr;
+		}
+
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {
 			std::vector<IMasterWallet *> result;
 			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
@@ -89,29 +104,32 @@ namespace Elastos {
 
 			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
 			if (saveMaster) {
-				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Begin save ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Begin save ({}).", masterWalletId);
 				masterWalletInner->Save();
-				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] End save ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] End save ({}).", masterWalletId);
 			} else {
-				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Begin clear local ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Begin clear local ({}).",
+							 masterWalletId);
 				masterWalletInner->ClearLocal();
-				SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] End clear local ({}).", masterWalletId);
+				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] End clear local ({}).",
+							 masterWalletId);
 			}
 
-			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Begin destroy sub wallets ({}).",
-								   masterWalletId);
+			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Begin destroy sub wallets ({}).",
+						 masterWalletId);
 			std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 			for (int i = 0; i < subWallets.size(); ++i) {
 				masterWallet->DestroyWallet(subWallets[i]);
 			}
-			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] End destroy sub wallets of ({}).",
-								   masterWalletId);
+			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] End destroy sub wallets of ({}).",
+						 masterWalletId);
 
-			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Removing master wallet from map ({}).",
-								   masterWalletId);
+			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Removing master wallet from map ({}).",
+						 masterWalletId);
 			_masterWalletMap.erase(masterWalletId);
 
-			SPDLOG_DEBUG(Log::getLogger(),"[MasterWalletManager::removeWallet] Deleting master wallet ({}).", masterWalletId);
+			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Deleting master wallet ({}).",
+						 masterWalletId);
 			delete masterWallet;
 		}
 
@@ -207,7 +225,8 @@ namespace Elastos {
 
 			if (_masterWalletMap.size() == 0) {
 				std::stringstream ess;
-				ess << "init master wallets size = " << _masterWalletMap.size() << " error: " << MASTER_WALLET_STORE_FILE << " not found";
+				ess << "init master wallets size = " << _masterWalletMap.size() << " error: "
+					<< MASTER_WALLET_STORE_FILE << " not found";
 				Log::getLogger()->error(ess.str());
 //				throw std::logic_error(ess.str());
 			}

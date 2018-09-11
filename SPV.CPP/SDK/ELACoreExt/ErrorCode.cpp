@@ -10,6 +10,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		std::string ErrorCode::PasswordError = "[Password]";
+		std::string ErrorCode::WrongAccountType = "[WrongAccountType]";
 
 		void ErrorCode::StandardLogicError(const std::string &errorCode, const std::string &extraMsg) {
 			std::stringstream ss;

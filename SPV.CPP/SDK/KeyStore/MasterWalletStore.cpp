@@ -7,12 +7,13 @@
 #include "MasterWalletStore.h"
 #include "ParamChecker.h"
 #include "Utils.h"
+#include "SDK/Account/StandardAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		MasterWalletStore::MasterWalletStore(const std::string &rootPath) : _standardAccount(rootPath) {
-
+		MasterWalletStore::MasterWalletStore(const std::string &rootPath) {
+			_account = AccountPtr(new StandardAccount(rootPath));
 		}
 
 		MasterWalletStore::~MasterWalletStore() {
@@ -65,7 +66,7 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const MasterWalletStore &p) {
-			j["Account"] = p.Account();
+			j["Account"] = p.Account()->ToJson();
 			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
 			for (size_t i = 0; i < p.GetSubWalletInfoList().size(); i++) {
@@ -75,7 +76,7 @@ namespace Elastos {
 		}
 
 		void from_json(const nlohmann::json &j, MasterWalletStore &p) {
-			from_json(j["Account"], p.Account());
+			p.Account()->FromJson(j["Account"]);
 			p.SetIdAgentInfo(j["IdAgent"]);
 
 			std::vector<CoinInfo> coinInfoList;
@@ -86,12 +87,9 @@ namespace Elastos {
 			p.SetSubWalletInfoList(coinInfoList);
 		}
 
-		const StandardAccount &MasterWalletStore::Account() const {
-			return _standardAccount;
+		IAccount *MasterWalletStore::Account() const {
+			return _account.get();
 		}
 
-		StandardAccount &MasterWalletStore::Account() {
-			return _standardAccount;
-		}
 	}
 }

@@ -70,7 +70,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			_localStore.Account().resetMnemonic(language);
+			_localStore.Account()->resetMnemonic(language);
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 			importFromMnemonic(mnemonic, phrasePassword, payPassword);
@@ -163,7 +163,7 @@ namespace Elastos {
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
-				_localStore.Account().deriveKey(payPassword);
+				_localStore.Account()->deriveKey(payPassword);
 				return _createdWallets[chainID];
 			}
 
@@ -255,7 +255,7 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GetPublicKey() {
-			return _localStore.Account().GetPublicKey();
+			return _localStore.Account()->GetPublicKey();
 		}
 
 		bool MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
@@ -285,7 +285,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			bool result = _localStore.Account().initFromPhrase(mnemonic, phrasePassword, payPassword);
+			bool result = _localStore.Account()->initFromPhrase(mnemonic, phrasePassword, payPassword);
 
 			Save();
 			return result;
@@ -305,7 +305,7 @@ namespace Elastos {
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
 
-			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.Account().GetEncryptedMnemonic(), payPassword);
+			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.Account()->GetEncryptedMnemonic(), payPassword);
 			if (false == cb_Mnemonic) {
 				return false;
 			}
@@ -318,7 +318,7 @@ namespace Elastos {
 
 		void MasterWallet::initFromLocalStore(const MasterWalletStore &localStore) {
 			tryInitCoinConfig();
-			_localStore.Account().resetMnemonic(localStore.Account().GetLanguage());
+			_localStore.Account()->resetMnemonic(localStore.Account()->GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
 			initSubWallets(localStore.GetSubWalletInfoList(), "");
 		}
@@ -342,7 +342,7 @@ namespace Elastos {
 			ParamChecker::checkNotEmpty(message);
 			ParamChecker::checkPassword(payPassword);
 
-			Key key = _localStore.Account().deriveKey(payPassword);
+			Key key = _localStore.Account()->deriveKey(payPassword);
 			return key.compactSign(message);
 		}
 
@@ -475,10 +475,10 @@ namespace Elastos {
 			std::string mnemonic = keyStore.json().getMnemonic();
 			CMBlock cbMnemonic;
 			cbMnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
-			_localStore.Account().resetMnemonic(keyStore.json().getMnemonicLanguage());
-			_localStore.Account().SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
+			_localStore.Account()->resetMnemonic(keyStore.json().getMnemonicLanguage());
+			_localStore.Account()->SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
 
-			if (!_localStore.Account().initFromPhrase(mnemonic, phrasePass, payPassword))
+			if (!_localStore.Account()->initFromPhrase(mnemonic, phrasePass, payPassword))
 				throw std::logic_error("Initialize from phrase error.");
 
 			initSubWallets(keyStore.json().getCoinInfoList(), payPassword);
@@ -486,9 +486,9 @@ namespace Elastos {
 
 		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
 			keyStore.json().setEncryptedPhrasePassword(
-					Utils::encodeHex(_localStore.Account().GetEncrptedPhrasePassword()));
+					Utils::encodeHex(_localStore.Account()->GetEncrptedPhrasePassword()));
 
-			CMBlock cbMnemonic = Utils::decrypt(_localStore.Account().GetEncryptedMnemonic(), payPassword);
+			CMBlock cbMnemonic = Utils::decrypt(_localStore.Account()->GetEncryptedMnemonic(), payPassword);
 			if (false == cbMnemonic) {
 				throw std::logic_error("Wrong password.");
 			}
@@ -512,7 +512,7 @@ namespace Elastos {
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-_localStore.Account().ChangePassword(oldPassword, newPassword);
+			_localStore.Account()->ChangePassword(oldPassword, newPassword);
 		}
 
 	}

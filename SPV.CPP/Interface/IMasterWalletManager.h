@@ -12,12 +12,12 @@ namespace Elastos {
 
 		class IMasterWalletManager {
 		public:
-			/**
+		   /**
 			 * Virtual destructor
 			 */
 			virtual ~IMasterWalletManager() noexcept {}
 
-			/**
+		   /**
 			 * Generate a mnemonic by random 128 entropy. We support English, Chinese, French, Italian, Japanese, and
 			 * 	Spanish 6 types of mnemonic currently.
 			 * @param language specify mnemonic language.
@@ -40,6 +40,36 @@ namespace Elastos {
 					const std::string &phrasePassword,
 					const std::string &payPassword,
 					const std::string &language = "english") = 0;
+
+			/**
+			  * Create a multi-sign master wallet by mnemonic phrase password and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
+			  * @param masterWalletId is the unique identification of a master wallet object.
+			  * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			  * @param coSigners is an array of signers' public key
+			  * @param requiredSignCount specify minimum count to accomplish related transactions.
+			  * @return If success will return a pointer of master wallet interface.
+			  */
+			virtual IMasterWallet *CreateMultiSignMasterWallet(
+					const std::string &masterWalletId,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount) = 0;
+
+			/**
+			  * Create a multi-sign master wallet by mnemonic phrase password and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
+			  * @param masterWalletId is the unique identification of a master wallet object.
+			  * @param privKey private key to do the sign job of related multi-sign accounts.
+			  * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			  * @param coSigners is an array of signers' public key
+			  * @param requiredSignCount specify minimum count to accomplish related transactions.
+			  * @return If success will return a pointer of master wallet interface.
+			  */
+			virtual IMasterWallet *CreateMultiSignMasterWallet(
+					const std::string &masterWalletId,
+					const std::string &privKey,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount) = 0;
 
 			/**
 			 * Get manager existing master wallets.
