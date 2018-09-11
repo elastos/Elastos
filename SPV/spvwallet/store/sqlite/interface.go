@@ -1,7 +1,7 @@
-package store
+package sqlite
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/util"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
@@ -18,16 +18,18 @@ type DataStore interface {
 	Close() error
 }
 
-type Batch interface {
-	Rollback() error
-	Commit() error
-}
-
 type DataBatch interface {
+	batch
 	Addrs() AddrsBatch
 	Txs() TxsBatch
 	UTXOs() UTXOsBatch
 	STXOs() STXOsBatch
+	RollbackHeight(height uint32) error
+}
+
+type batch interface {
+	Rollback() error
+	Commit() error
 }
 
 type State interface {
@@ -43,17 +45,20 @@ type Addrs interface {
 	Put(hash *common.Uint168, script []byte, addrType int) error
 
 	// get a address from database
-	Get(hash *common.Uint168) (*util.Addr, error)
+	Get(hash *common.Uint168) (*sutil.Addr, error)
 
 	// get all addresss from database
-	GetAll() ([]*util.Addr, error)
+	GetAll() ([]*sutil.Addr, error)
 
 	// delete a address from database
 	Del(hash *common.Uint168) error
+
+	// Batch return a AddrsBatch
+	Batch() AddrsBatch
 }
 
 type AddrsBatch interface {
-	Batch
+	batch
 
 	// put a address to database
 	Put(hash *common.Uint168, script []byte, addrType int) error
@@ -64,53 +69,59 @@ type AddrsBatch interface {
 
 type Txs interface {
 	// Put a new transaction to database
-	Put(txn *util.Tx) error
+	Put(txn *sutil.Tx) error
 
 	// Fetch a raw tx and it's metadata given a hash
-	Get(txId *common.Uint256) (*util.Tx, error)
+	Get(txId *common.Uint256) (*sutil.Tx, error)
 
 	// Fetch all transactions from database
-	GetAll() ([]*util.Tx, error)
+	GetAll() ([]*sutil.Tx, error)
+
+	// Fetch all unconfirmed transactions.
+	GetAllUnconfirmed()([]*sutil.Tx, error)
 
 	// Delete a transaction from the db
 	Del(txId *common.Uint256) error
+
+	// Batch return a TxsBatch
+	Batch() TxsBatch
 }
 
 type TxsBatch interface {
-	Batch
+	batch
 
 	// Put a new transaction to database
-	Put(txn *util.Tx) error
+	Put(txn *sutil.Tx) error
 
 	// Delete a transaction from the db
 	Del(txId *common.Uint256) error
-
-	// Delete transactions on the given height.
-	DelAll(height uint32) error
 }
 
 type UTXOs interface {
 	// put a utxo to database
-	Put(hash *common.Uint168, utxo *util.UTXO) error
+	Put(utxo *sutil.UTXO) error
 
 	// get a utxo from database
-	Get(op *core.OutPoint) (*util.UTXO, error)
+	Get(op *core.OutPoint) (*sutil.UTXO, error)
 
 	// get utxos of the given address hash from database
-	GetAddrAll(hash *common.Uint168) ([]*util.UTXO, error)
+	GetAddrAll(hash *common.Uint168) ([]*sutil.UTXO, error)
 
 	// Get all UTXOs in database
-	GetAll() ([]*util.UTXO, error)
+	GetAll() ([]*sutil.UTXO, error)
 
 	// delete a utxo from database
 	Del(outPoint *core.OutPoint) error
+
+	// Batch return a UTXOsBatch.
+	Batch() UTXOsBatch
 }
 
 type UTXOsBatch interface {
-	Batch
+	batch
 
 	// put a utxo to database
-	Put(hash *common.Uint168, utxo *util.UTXO) error
+	Put(utxo *sutil.UTXO) error
 
 	// delete a utxo from database
 	Del(outPoint *core.OutPoint) error
@@ -118,26 +129,29 @@ type UTXOsBatch interface {
 
 type STXOs interface {
 	// Put save a STXO into database
-	Put(stxo *util.STXO) error
+	Put(stxo *sutil.STXO) error
 
 	// get a stxo from database
-	Get(op *core.OutPoint) (*util.STXO, error)
+	Get(op *core.OutPoint) (*sutil.STXO, error)
 
 	// get stxos of the given address hash from database
-	GetAddrAll(hash *common.Uint168) ([]*util.STXO, error)
+	GetAddrAll(hash *common.Uint168) ([]*sutil.STXO, error)
 
 	// Get all STXOs in database
-	GetAll() ([]*util.STXO, error)
+	GetAll() ([]*sutil.STXO, error)
 
 	// delete a stxo from database
 	Del(outPoint *core.OutPoint) error
+
+	// Batch return a STXOsBatch.
+	Batch() STXOsBatch
 }
 
 type STXOsBatch interface {
-	Batch
+	batch
 
 	// Put save a STXO into database
-	Put(stxo *util.STXO) error
+	Put(stxo *sutil.STXO) error
 
 	// delete a stxo from database
 	Del(outPoint *core.OutPoint) error

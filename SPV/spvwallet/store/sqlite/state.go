@@ -1,4 +1,4 @@
-package db
+package sqlite
 
 import (
 	"database/sql"
@@ -14,25 +14,28 @@ const (
 	HeightKey = "Height"
 )
 
-type StateDB struct {
+// Ensure state implement State interface.
+var _ State = (*state)(nil)
+
+type state struct {
 	*sync.RWMutex
 	*sql.DB
 }
 
-func NewStateDB(db *sql.DB, lock *sync.RWMutex) (*StateDB, error) {
+func NewState(db *sql.DB, lock *sync.RWMutex) (*state, error) {
 	_, err := db.Exec(CreateStateDB)
 	if err != nil {
 		return nil, err
 	}
-	return &StateDB{RWMutex: lock, DB: db}, nil
+	return &state{RWMutex: lock, DB: db}, nil
 }
 
 // get state height
-func (db *StateDB) GetHeight() uint32 {
-	db.RLock()
-	defer db.RUnlock()
+func (s *state) GetHeight() uint32 {
+	s.RLock()
+	defer s.RUnlock()
 
-	row := db.QueryRow("SELECT Value FROM State WHERE Key=?", HeightKey)
+	row := s.QueryRow("SELECT Value FROM State WHERE Key=?", HeightKey)
 
 	var height uint32
 	err := row.Scan(&height)
@@ -44,9 +47,9 @@ func (db *StateDB) GetHeight() uint32 {
 }
 
 // save state height
-func (db *StateDB) PutHeight(height uint32) {
-	db.Lock()
-	defer db.Unlock()
+func (s *state) PutHeight(height uint32) {
+	s.Lock()
+	defer s.Unlock()
 
-	db.Exec("INSERT OR REPLACE INTO State(Key, Value) VALUES(?,?)", HeightKey, height)
+	s.Exec("INSERT OR REPLACE INTO State(Key, Value) VALUES(?,?)", HeightKey, height)
 }

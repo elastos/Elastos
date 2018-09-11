@@ -2,9 +2,8 @@ package sqlite
 
 import (
 	"database/sql"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/util"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 	"sync"
-	"fmt"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
@@ -17,120 +16,109 @@ const CreateSTXOsDB = `CREATE TABLE IF NOT EXISTS STXOs(
 				AtHeight INTEGER NOT NULL,
 				SpendHash BLOB NOT NULL,
 				SpendHeight INTEGER NOT NULL,
-				ScriptHash BLOB NOT NULL
+				Address BLOB NOT NULL
 			);`
 
-type STXOs struct {
+// Ensure stxos implement STXOs interface.
+var _ STXOs = (*stxos)(nil)
+
+type stxos struct {
 	*sync.RWMutex
 	*sql.DB
 }
 
-func NewSTXOs(db *sql.DB, lock *sync.RWMutex) (*STXOs, error) {
+func NewSTXOs(db *sql.DB, lock *sync.RWMutex) (*stxos, error) {
 	_, err := db.Exec(CreateSTXOsDB)
 	if err != nil {
 		return nil, err
 	}
-	return &STXOs{RWMutex: lock, DB: db}, nil
+	return &stxos{RWMutex: lock, DB: db}, nil
 }
 
-// Move a UTXO to STXO
-func (db *STXOs) FromUTXO(outPoint *core.OutPoint, spendTxId *common.Uint256, spendHeight uint32) error {
-	db.Lock()
-	defer db.Unlock()
+// Put save a UTXO into database
+func (s *stxos) Put(stxo *sutil.STXO) error {
+	s.Lock()
+	defer s.Unlock()
 
-	tx, err := db.Begin()
+	valueBytes, err := stxo.Value.Bytes()
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
-
-	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, ScriptHash, SpendHash, SpendHeight)
-			SELECT UTXOs.OutPoint, UTXOs.Value, UTXOs.LockTime, UTXOs.AtHeight, UTXOs.ScriptHash, ?, ? FROM UTXOs
-			WHERE OutPoint=?`
-	result, err := tx.Exec(sql, spendTxId.Bytes(), spendHeight, outPoint.Bytes())
-	if err != nil {
-		return err
-	}
-
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return nil
-	}
-
-	if rows == 0 {
-		return fmt.Errorf("no rows effected")
-	}
-
-	_, err = tx.Exec("DELETE FROM UTXOs WHERE OutPoint=?", outPoint.Bytes())
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit()
+	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight, Address)
+			VALUES(?,?,?,?,?,?,?)`
+	_, err = s.Exec(sql, stxo.Op.Bytes(), valueBytes, stxo.LockTime, stxo.AtHeight,
+		stxo.SpendTxId.Bytes(), stxo.SpendHeight, stxo.Address.Bytes())
+	return err
 }
 
 // get a stxo from database
-func (db *STXOs) Get(outPoint *core.OutPoint) (*util.STXO, error) {
-	db.RLock()
-	defer db.RUnlock()
+func (s *stxos) Get(outPoint *core.OutPoint) (*sutil.STXO, error) {
+	s.RLock()
+	defer s.RUnlock()
 
-	sql := `SELECT Value, LockTime, AtHeight, SpendHash, SpendHeight FROM STXOs WHERE OutPoint=?`
-	row := db.QueryRow(sql, outPoint.Bytes())
+	sql := `SELECT Value, LockTime, AtHeight, SpendHash, SpendHeight, Address FROM STXOs WHERE OutPoint=?`
+	row := s.QueryRow(sql, outPoint.Bytes())
 	var valueBytes []byte
 	var lockTime uint32
 	var atHeight uint32
 	var spendHashBytes []byte
 	var spendHeight uint32
-	err := row.Scan(&valueBytes, &lockTime, &atHeight, &spendHashBytes, &spendHeight)
+	var addressBytes []byte
+	err := row.Scan(&valueBytes, &lockTime, &atHeight, &spendHashBytes, &spendHeight, &addressBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	var value *common.Fixed64
-	value, err = common.Fixed64FromBytes(valueBytes)
+	value, err := common.Fixed64FromBytes(valueBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	var utxo = util.UTXO{Op: *outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight}
+	address, err := common.Uint168FromBytes(addressBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	var utxo = sutil.UTXO{Op: *outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight, Address: *address}
 	spendHash, err := common.Uint256FromBytes(spendHashBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	return &util.STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight}, nil
+	return &sutil.STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight}, nil
 }
 
 // get stxos of the given script hash from database
-func (db *STXOs) GetAddrAll(hash *common.Uint168) ([]*util.STXO, error) {
-	db.RLock()
-	defer db.RUnlock()
+func (s *stxos) GetAddrAll(hash *common.Uint168) ([]*sutil.STXO, error) {
+	s.RLock()
+	defer s.RUnlock()
 
-	sql := "SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight FROM STXOs WHERE ScriptHash=?"
-	rows, err := db.Query(sql, hash.Bytes())
+	sql := "SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight, Address FROM STXOs WHERE Address=?"
+	rows, err := s.Query(sql, hash.Bytes())
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	return db.getSTXOs(rows)
+	return s.getSTXOs(rows)
 }
 
-func (db *STXOs) GetAll() ([]*util.STXO, error) {
-	db.RLock()
-	defer db.RUnlock()
+func (s *stxos) GetAll() ([]*sutil.STXO, error) {
+	s.RLock()
+	defer s.RUnlock()
 
-	rows, err := db.Query("SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight FROM STXOs")
+	sql := "SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight, Address FROM STXOs"
+	rows, err := s.Query(sql)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	return db.getSTXOs(rows)
+	return s.getSTXOs(rows)
 }
 
-func (db *STXOs) getSTXOs(rows *sql.Rows) ([]*util.STXO, error) {
-	var stxos []*util.STXO
+func (s *stxos) getSTXOs(rows *sql.Rows) ([]*sutil.STXO, error) {
+	var stxos []*sutil.STXO
 	for rows.Next() {
 		var opBytes []byte
 		var valueBytes []byte
@@ -138,7 +126,8 @@ func (db *STXOs) getSTXOs(rows *sql.Rows) ([]*util.STXO, error) {
 		var atHeight uint32
 		var spendHashBytes []byte
 		var spendHeight uint32
-		err := rows.Scan(&opBytes, &valueBytes, &lockTime, &atHeight, &spendHashBytes, &spendHeight)
+		var addressBytes []byte
+		err := rows.Scan(&opBytes, &valueBytes, &lockTime, &atHeight, &spendHashBytes, &spendHeight, &addressBytes)
 		if err != nil {
 			return stxos, err
 		}
@@ -147,32 +136,46 @@ func (db *STXOs) getSTXOs(rows *sql.Rows) ([]*util.STXO, error) {
 		if err != nil {
 			return stxos, err
 		}
-		var value *common.Fixed64
-		value, err = common.Fixed64FromBytes(valueBytes)
+		value, err := common.Fixed64FromBytes(valueBytes)
 		if err != nil {
 			return stxos, err
 		}
-		var utxo = util.UTXO{Op: *outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight}
+		address, err := common.Uint168FromBytes(addressBytes)
+		if err != nil {
+			return stxos, err
+		}
+		var utxo = sutil.UTXO{Op: *outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight, Address: *address}
 		spendHash, err := common.Uint256FromBytes(spendHashBytes)
 		if err != nil {
 			return stxos, err
 		}
 
-		stxos = append(stxos, &util.STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight})
+		stxos = append(stxos, &sutil.STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight})
 	}
 
 	return stxos, nil
 }
 
 // delete a stxo from database
-func (db *STXOs) Delete(outPoint *core.OutPoint) error {
-	db.Lock()
-	defer db.Unlock()
+func (s *stxos) Del(outPoint *core.OutPoint) error {
+	s.Lock()
+	defer s.Unlock()
 
-	_, err := db.Exec("DELETE FROM STXOs WHERE OutPoint=?", outPoint.Bytes())
+	_, err := s.Exec("DELETE FROM STXOs WHERE OutPoint=?", outPoint.Bytes())
+	return err
+}
+
+func (s *stxos) Batch() STXOsBatch {
+	s.Lock()
+	defer s.Unlock()
+
+	tx, err := s.DB.Begin()
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	return nil
+	return &stxosBatch{
+		RWMutex: s.RWMutex,
+		Tx:      tx,
+	}
 }
