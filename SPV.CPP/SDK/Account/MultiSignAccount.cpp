@@ -8,8 +8,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		MultiSignAccount::MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners) :
+		MultiSignAccount::MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners,
+										   uint32_t requiredSignCount) :
 				_me(me),
+				_requiredSignCount(requiredSignCount),
 				_coSigners(coSigners) {
 		}
 

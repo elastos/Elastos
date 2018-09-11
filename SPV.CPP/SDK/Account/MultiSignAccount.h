@@ -15,7 +15,7 @@ namespace Elastos {
 
 		class MultiSignAccount : public IAccount {
 		public:
-			MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners);
+			MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners, uint32_t requiredSignCount);
 
 			virtual Key DeriveKey(const std::string &payPassword);
 
@@ -48,6 +48,7 @@ namespace Elastos {
 		private:
 			IAccount *_me;
 			std::vector<std::string> _coSigners;
+			uint32_t _requiredSignCount;
 		};
 
 	}

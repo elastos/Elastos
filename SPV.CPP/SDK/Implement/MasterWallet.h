@@ -25,8 +25,11 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class CoinInfo;
+
 		class ChainParams;
+
 		class SubWallet;
+
 		class KeyStore;
 
 		class MasterWallet : public IMasterWallet, public IIdAgent {
@@ -131,6 +134,23 @@ namespace Elastos {
 					const std::string &rootPath,
 					bool p2pEnable);
 
+			MasterWallet(
+					const std::string &id,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount,
+					const std::string &rootPath,
+					bool p2pEnable);
+
+			MasterWallet(
+					const std::string &id,
+					const std::string &privKey,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount,
+					const std::string &rootPath,
+					bool p2pEnable);
+
 			void importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
 									const std::string &payPassword,
@@ -142,7 +162,7 @@ namespace Elastos {
 									const std::string &payPassword);
 
 			nlohmann::json exportKeyStore(const std::string &backupPassword,
-								const std::string &payPassword);
+										  const std::string &payPassword);
 
 			bool exportMnemonic(const std::string &payPassword,
 								std::string &mnemonic);
@@ -152,6 +172,12 @@ namespace Elastos {
 			void initFromKeyStore(const KeyStore &keyStore,
 								  const std::string &payPassword,
 								  const std::string &phrasePassword);
+
+			void initFromMultiSigners(
+					const std::string &privKey,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount);
 
 			void initSubWallets(const std::vector<CoinInfo> &coinInfoList, const std::string &payPassword);
 

@@ -17,7 +17,7 @@ namespace Elastos {
 		public:
 			MultiSignAccounts(IAccount *innerAccount);
 
-			void AddAccount(const std::vector<std::string> &coSigners);
+			void AddAccount(const std::vector<std::string> &coSigners, uint32_t requiredSignCount);
 
 			void RemoveAccount(const std::string &address);
 

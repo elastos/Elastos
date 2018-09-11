@@ -14,8 +14,8 @@ namespace Elastos {
 
 		}
 
-		void MultiSignAccounts::AddAccount(const std::vector<std::string> &coSigners) {
-			MultiSignAccount *account = new MultiSignAccount(_innerAccount.get(), coSigners);
+		void MultiSignAccounts::AddAccount(const std::vector<std::string> &coSigners, uint32_t requiredSignCount) {
+			MultiSignAccount *account = new MultiSignAccount(_innerAccount.get(), coSigners, requiredSignCount);
 			if (_accounts.find(account->GetAddress()) == _accounts.end()) {
 				_accounts[account->GetAddress()] = MultiSignAccoutPtr(account);
 			}

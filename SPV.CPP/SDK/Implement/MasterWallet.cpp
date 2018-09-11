@@ -98,7 +98,44 @@ namespace Elastos {
 			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
 		}
 
+		MasterWallet::MasterWallet(const std::string &id, const std::string &payPassword,
+								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
+								   const std::string &rootPath, bool p2pEnable) :
+				_id(id),
+				_rootPath(rootPath),
+				_p2pEnable(p2pEnable),
+				_isImportFromMnemonic(false),
+				_localStore(rootPath),
+				_isOldKeyStore(false),
+				_idAgentImpl(nullptr) {
+			ParamChecker::checkNotEmpty(id);
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkNotEmpty(rootPath);
+			ParamChecker::checkJsonArrayCountGreaterEqualThan(coSigners, requiredSignCount);
+
+			initFromMultiSigners("", payPassword, coSigners, requiredSignCount);
+		}
+
+		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
+								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
+								   const std::string &rootPath, bool p2pEnable) :
+				_id(id),
+				_rootPath(rootPath),
+				_p2pEnable(p2pEnable),
+				_isImportFromMnemonic(false),
+				_localStore(rootPath),
+				_isOldKeyStore(false),
+				_idAgentImpl(nullptr) {
+			ParamChecker::checkNotEmpty(id);
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkNotEmpty(rootPath);
+			ParamChecker::checkJsonArrayCountGreaterEqualThan(coSigners, requiredSignCount);
+
+			initFromMultiSigners(privKey, payPassword, coSigners, requiredSignCount);
+		}
+
 		MasterWallet::~MasterWallet() {
+
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
@@ -504,6 +541,14 @@ namespace Elastos {
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
 			_localStore.Account()->ChangePassword(oldPassword, newPassword);
+		}
+
+		void MasterWallet::initFromMultiSigners(const std::string &privKey, const std::string &payPassword,
+												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
+			if (privKey.empty())
+				_localStore.Reset(coSigners, payPassword, requiredSignCount);
+			else
+				_localStore.Reset(privKey, coSigners, payPassword, requiredSignCount);
 		}
 
 	}
