@@ -15,6 +15,7 @@ namespace Elastos {
 			static void StandardLogicError(const std::string &errorCode, const std::string &extraMsg);
 
 			static std::string PasswordError;
+			static std::string WrongAccountType;
 		};
 
 	}

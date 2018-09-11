@@ -48,7 +48,7 @@ namespace Elastos {
 			UInt256 chainCode = UINT256_ZERO;
 			MasterPubKey masterPubKey;
 			if (!payPassword.empty()) {
-				UInt512 seed = _parent->_localStore.Account().deriveSeed(payPassword);
+				UInt512 seed = _parent->_localStore.Account()->deriveSeed(payPassword);
 				BRKey key;
 				BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
 								   _info.getIndex() | BIP32_HARD, 0 | BIP32_HARD);
@@ -69,7 +69,6 @@ namespace Elastos {
 				ParamChecker::checkNotEmpty(_info.getPublicKey(), false);
 				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
 
-				chainCode = Utils::UInt256FromString(_info.getChainCode());
 				CMBlock pubKey = Utils::decodeHex(_info.getPublicKey());
 
 				masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(_info.getChainCode()));
@@ -286,7 +285,7 @@ namespace Elastos {
 		}
 
 		Key SubWallet::deriveKey(const std::string &payPassword) {
-			UInt512 seed = _parent->_localStore.Account().deriveSeed(payPassword);
+			UInt512 seed = _parent->_localStore.Account()->deriveSeed(payPassword);
 			Key key;
 			UInt256 chainCode;
 			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD, _info.getIndex() | BIP32_HARD,
@@ -330,7 +329,7 @@ namespace Elastos {
 			pthread_mutex_unlock(&wallet->lock);
 			Log::getLogger()->info("SubWallet signTransaction end get indices.");
 
-			UInt512 seed = _parent->_localStore.Account().deriveSeed(payPassword);
+			UInt512 seed = _parent->_localStore.Account()->deriveSeed(payPassword);
 
 			BRKey keys[internalCount + externalCount];
 			BRBIP44PrivKeyList(keys, internalCount, &seed, sizeof(seed), _info.getIndex(),

@@ -7,6 +7,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "IAccount.h"
 #include "SDK/KeyStore/Mnemonic.h"
 #include "SDK/Common/CMemBlock.h"
 #include "SDK/Wrapper/MasterPubKey.h"
@@ -15,47 +16,51 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class StandardAccount {
+		class StandardAccount : public IAccount {
 		public:
 			StandardAccount(const std::string &rootPath);
 
-			bool initFromPhrase(const std::string &phrase,
+			virtual bool initFromPhrase(const std::string &phrase,
 								const std::string &phrasePassword,
 								const std::string &payPassword);
 
-			void resetMnemonic(const std::string &language);
+			virtual void resetMnemonic(const std::string &language);
 
-			Key deriveKey(const std::string &payPassword);
+			virtual Key deriveKey(const std::string &payPassword);
 
-			UInt512 deriveSeed(const std::string &payPassword);
+			virtual UInt512 deriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
+			virtual nlohmann::json ToJson() const;
+
+			virtual void FromJson(const nlohmann::json &j);
+
 		public: //properties
 
-			const CMBlock &GetEncrpytedKey() const;
+			virtual const CMBlock &GetEncrpytedKey() const;
 
-			void SetEncryptedKey(const CMBlock &data);
+			virtual void SetEncryptedKey(const CMBlock &data);
 
-			const CMBlock &GetEncryptedMnemonic() const;
+			virtual const CMBlock &GetEncryptedMnemonic() const;
 
-			void SetEncryptedMnemonic(const CMBlock &data);
+			virtual void SetEncryptedMnemonic(const CMBlock &data);
 
-			const CMBlock &GetEncrptedPhrasePassword() const;
+			virtual const CMBlock &GetEncrptedPhrasePassword() const;
 
-			void SetEncryptedPhrasePassword(const CMBlock &data);
+			virtual void SetEncryptedPhrasePassword(const CMBlock &data);
 
-			const std::string &GetPublicKey() const;
+			virtual const std::string &GetPublicKey() const;
 
-			void SetPublicKey(const std::string &pubKey);
+			virtual void SetPublicKey(const std::string &pubKey);
 
-			const std::string &GetLanguage() const;
+			virtual const std::string &GetLanguage() const;
 
-			void SetLanguage(const std::string &language);
+			virtual void SetLanguage(const std::string &language);
 
-			const MasterPubKey &GetIDMasterPubKey() const;
+			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			void SetIDMasterPubKey(const MasterPubKey &masterPubKey);
+			virtual void SetIDMasterPubKey(const MasterPubKey &masterPubKey);
 
 		private:
 			JSON_SM_LS(StandardAccount);

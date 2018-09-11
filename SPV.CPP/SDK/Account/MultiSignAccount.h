@@ -13,13 +13,20 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class MultiSignAccount {
+		class MultiSignAccount : public IAccount {
 		public:
 			MultiSignAccount(StandardAccount *standard, const std::vector<std::string> &coSigners);
 
+			std::string GetAddress();
+
+			void AppendSign();
+
+		private:
+			void SortSigners();
+
 		private:
 			StandardAccount *_standard;
-			std::vector<std::string> _publicKeys;
+			std::vector<std::string> _coSigners;
 		};
 
 	}
