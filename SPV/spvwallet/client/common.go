@@ -1,4 +1,4 @@
-package cli
+package client
 
 import (
 	"bufio"
@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/util"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/howeyc/gopass"
@@ -114,7 +114,7 @@ func SelectAccount(wallet Wallet) (string, error) {
 	return addrs[index].String(), nil
 }
 
-func ShowAccounts(addrs []*util.Addr, newAddr *common.Uint168, wallet Wallet) error {
+func ShowAccounts(addrs []*sutil.Addr, newAddr *common.Uint168, wallet Wallet) error {
 	// print header
 	fmt.Printf("%5s %34s %-20s%22s %6s\n", "INDEX", "ADDRESS", "BALANCE", "(LOCKED)", "TYPE")
 	fmt.Println("-----", strings.Repeat("-", 34), strings.Repeat("-", 42), "------")

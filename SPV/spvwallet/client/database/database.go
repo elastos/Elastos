@@ -3,20 +3,20 @@ package database
 import (
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/store"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/store/headers"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/store/sqlite"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/util"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type Database interface {
 	AddAddress(address *common.Uint168, script []byte, addrType int) error
-	GetAddress(address *common.Uint168) (*util.Addr, error)
-	GetAddrs() ([]*util.Addr, error)
+	GetAddress(address *common.Uint168) (*sutil.Addr, error)
+	GetAddrs() ([]*sutil.Addr, error)
 	DeleteAddress(address *common.Uint168) error
-	GetAddressUTXOs(address *common.Uint168) ([]*util.UTXO, error)
-	GetAddressSTXOs(address *common.Uint168) ([]*util.STXO, error)
+	GetAddressUTXOs(address *common.Uint168) ([]*sutil.UTXO, error)
+	GetAddressSTXOs(address *common.Uint168) ([]*sutil.STXO, error)
 	BestHeight() uint32
 	Clear() error
 }
@@ -35,7 +35,7 @@ func New() (Database, error) {
 
 type database struct {
 	lock  *sync.RWMutex
-	store store.DataStore
+	store sqlite.DataStore
 }
 
 func (d *database) AddAddress(address *common.Uint168, script []byte, addrType int) error {
@@ -45,14 +45,14 @@ func (d *database) AddAddress(address *common.Uint168, script []byte, addrType i
 	return d.store.Addrs().Put(address, script, addrType)
 }
 
-func (d *database) GetAddress(address *common.Uint168) (*util.Addr, error) {
+func (d *database) GetAddress(address *common.Uint168) (*sutil.Addr, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
 	return d.store.Addrs().Get(address)
 }
 
-func (d *database) GetAddrs() ([]*util.Addr, error) {
+func (d *database) GetAddrs() ([]*sutil.Addr, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
@@ -63,17 +63,17 @@ func (d *database) DeleteAddress(address *common.Uint168) error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
-	return d.store.Addrs().Delete(address)
+	return d.store.Addrs().Del(address)
 }
 
-func (d *database) GetAddressUTXOs(address *common.Uint168) ([]*util.UTXO, error) {
+func (d *database) GetAddressUTXOs(address *common.Uint168) ([]*sutil.UTXO, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
 	return d.store.UTXOs().GetAddrAll(address)
 }
 
-func (d *database) GetAddressSTXOs(address *common.Uint168) ([]*util.STXO, error) {
+func (d *database) GetAddressSTXOs(address *common.Uint168) ([]*sutil.STXO, error) {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
@@ -84,14 +84,14 @@ func (d *database) BestHeight() uint32 {
 	d.lock.RLock()
 	defer d.lock.RUnlock()
 
-	return d.store.Chain().GetHeight()
+	return d.store.State().GetHeight()
 }
 
 func (d *database) Clear() error {
 	d.lock.Lock()
 	defer d.lock.Unlock()
 
-	headers, err := database.NewHeadersDB()
+	headers, err := headers.New()
 	if err != nil {
 		return err
 	}

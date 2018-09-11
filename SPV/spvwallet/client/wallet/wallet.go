@@ -3,8 +3,7 @@ package wallet
 import (
 	"fmt"
 
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet"
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client"
 
 	"github.com/urfave/cli"
 )
@@ -13,32 +12,32 @@ func createWallet(context *cli.Context) {
 	password := []byte(context.String("password"))
 
 	var err error
-	password, err = GetPassword(password, true)
+	password, err = client.GetPassword(password, true)
 	if err != nil {
 		fmt.Println("--GET PASSWORD FAILED--")
 		return
 	}
 
-	err = Create(password)
+	err = client.Create(password)
 	if err != nil {
-		fmt.Println("--CREAT WALLET FAILED--")
+		fmt.Println("--CREATE WALLET FAILED--")
 		return
 	}
 
-	ShowAccountInfo(password)
+	client.ShowAccountInfo(password)
 }
 
 func changePassword(context *cli.Context) {
 	password := []byte(context.String("password"))
 
 	// Verify old password
-	oldPassword, err := GetPassword(password, false)
+	oldPassword, err := client.GetPassword(password, false)
 	if err != nil {
 		fmt.Println("--GET PASSWORD FAILED--")
 		return
 	}
 
-	wallet, err := Open()
+	wallet, err := client.Open()
 	if err != nil {
 		fmt.Println("--OPEN WALLET FAILED--")
 		return
@@ -52,14 +51,14 @@ func changePassword(context *cli.Context) {
 
 	// Input new password
 	fmt.Println("--PLEASE INPUT NEW PASSWORD--")
-	newPassword, err := GetPassword(nil, true)
+	newPassword, err := client.GetPassword(nil, true)
 	if err != nil {
-		fmt.Println("--GET NEW PASSWROD FAILED--")
+		fmt.Println("--GET NEW PASSWORD FAILED--")
 		return
 	}
 
 	if err := wallet.ChangePassword(oldPassword, newPassword); err != nil {
-		fmt.Println("--CHANGED WALLET PASSWROD FAILED--")
+		fmt.Println("--CHANGED WALLET PASSWORD FAILED--")
 		return
 	}
 
@@ -70,13 +69,13 @@ func resetDatabase(context *cli.Context) {
 	password := []byte(context.String("password"))
 
 	// Verify old password
-	oldPassword, err := GetPassword(password, false)
+	oldPassword, err := client.GetPassword(password, false)
 	if err != nil {
 		fmt.Println("--GET PASSWORD FAILED--")
 		return
 	}
 
-	wallet, err := Open()
+	wallet, err := client.Open()
 	if err != nil {
 		fmt.Println("--OPEN WALLET FAILED--")
 		return
@@ -101,7 +100,7 @@ func NewCreateCommand() cli.Command {
 	return cli.Command{
 		Name:   "create",
 		Usage:  "create wallet",
-		Flags:  append(CommonFlags),
+		Flags:  append(client.CommonFlags),
 		Action: createWallet,
 		OnUsageError: func(c *cli.Context, err error, subCommand bool) error {
 			return cli.NewExitError(err, 1)
@@ -113,7 +112,7 @@ func NewChangePasswordCommand() cli.Command {
 	return cli.Command{
 		Name:   "changepassword",
 		Usage:  "change wallet password",
-		Flags:  append(CommonFlags),
+		Flags:  append(client.CommonFlags),
 		Action: changePassword,
 		OnUsageError: func(c *cli.Context, err error, subCommand bool) error {
 			return cli.NewExitError(err, 1)
@@ -125,7 +124,7 @@ func NewResetCommand() cli.Command {
 	return cli.Command{
 		Name:   "reset",
 		Usage:  "reset wallet database including transactions, utxos and stxos",
-		Flags:  append(CommonFlags),
+		Flags:  append(client.CommonFlags),
 		Action: resetDatabase,
 		OnUsageError: func(c *cli.Context, err error, subCommand bool) error {
 			return cli.NewExitError(err, 1)

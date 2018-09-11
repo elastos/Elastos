@@ -1,4 +1,4 @@
-package cli
+package client
 
 import (
 	"bytes"
@@ -7,11 +7,10 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/database"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/database"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/util"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -50,25 +49,22 @@ type wallet struct {
 func Create(password []byte) error {
 	keyStore, err := CreateKeystore(password)
 	if err != nil {
-		log.Error("Wallet create keystore failed:", err)
 		return err
 	}
 
 	database, err := database.New()
 	if err != nil {
-		log.Error("Wallet create database failed:", err)
 		return err
 	}
 
 	mainAccount := keyStore.GetAccountByIndex(0)
 	return database.AddAddress(mainAccount.ProgramHash(),
-		mainAccount.RedeemScript(), util.TypeMaster)
+		mainAccount.RedeemScript(), sutil.TypeMaster)
 }
 
 func Open() (Wallet, error) {
 	database, err := database.New()
 	if err != nil {
-		log.Error("Wallet open database failed:", err)
 		return nil, err
 	}
 
@@ -93,7 +89,7 @@ func (wallet *wallet) NewSubAccount(password []byte) (*common.Uint168, error) {
 	}
 
 	account := wallet.Keystore.NewAccount()
-	err = wallet.AddAddress(account.ProgramHash(), account.RedeemScript(), util.TypeSub)
+	err = wallet.AddAddress(account.ProgramHash(), account.RedeemScript(), sutil.TypeSub)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +111,7 @@ func (wallet *wallet) AddMultiSignAccount(M uint, publicKeys ...*crypto.PublicKe
 		return nil, errors.New("[Wallet], CreateMultiSignAddress failed")
 	}
 
-	err = wallet.AddAddress(programHash, redeemScript, util.TypeMulti)
+	err = wallet.AddAddress(programHash, redeemScript, sutil.TypeMulti)
 	if err != nil {
 		return nil, err
 	}
@@ -177,8 +173,8 @@ func (wallet *wallet) createTransaction(fromAddress string, fee *common.Fixed64,
 	if err != nil {
 		return nil, errors.New("[Wallet], Get spender's UTXOs failed")
 	}
-	availableUTXOs := wallet.removeLockedUTXOs(utxos) // Remove locked UTXOs
-	availableUTXOs = util.SortUTXOs(availableUTXOs)   // Sort available UTXOs by value ASC
+	availableUTXOs := wallet.removeLockedUTXOs(utxos)  // Remove locked UTXOs
+	availableUTXOs = sutil.SortByValue(availableUTXOs) // Sort available UTXOs by value ASC
 
 	// Create transaction inputs
 	var txInputs []*core.Input // The inputs in transaction
@@ -334,8 +330,8 @@ func getSystemAssetId() common.Uint256 {
 	return systemToken.Hash()
 }
 
-func (wallet *wallet) removeLockedUTXOs(utxos []*util.UTXO) []*util.UTXO {
-	var availableUTXOs []*util.UTXO
+func (wallet *wallet) removeLockedUTXOs(utxos []*sutil.UTXO) []*sutil.UTXO {
+	var availableUTXOs []*sutil.UTXO
 	var currentHeight = wallet.BestHeight()
 	for _, utxo := range utxos {
 		if utxo.AtHeight == 0 { // remove unconfirmed UTOXs
@@ -352,7 +348,7 @@ func (wallet *wallet) removeLockedUTXOs(utxos []*util.UTXO) []*util.UTXO {
 	return availableUTXOs
 }
 
-func InputFromUTXO(utxo *util.UTXO) *core.Input {
+func InputFromUTXO(utxo *sutil.UTXO) *core.Input {
 	input := new(core.Input)
 	input.Previous.TxID = utxo.Op.TxID
 	input.Previous.Index = utxo.Op.Index

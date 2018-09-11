@@ -1,4 +1,4 @@
-package spvwallet
+package client
 
 import (
 	"encoding/json"

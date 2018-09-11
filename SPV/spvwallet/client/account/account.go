@@ -7,8 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 
@@ -19,19 +18,18 @@ const (
 	MinMultiSignKeys = 3
 )
 
-func listBalanceInfo(wallet Wallet) error {
+func listBalanceInfo(wallet client.Wallet) error {
 	addrs, err := wallet.GetAddrs()
 	if err != nil {
-		log.Error("Get addresses error:", err)
 		return errors.New("get wallet addresses failed")
 	}
 
-	return ShowAccounts(addrs, nil, wallet)
+	return client.ShowAccounts(addrs, nil, wallet)
 }
 
-func newSubAccount(password []byte, wallet Wallet) error {
+func newSubAccount(password []byte, wallet client.Wallet) error {
 	var err error
-	password, err = GetPassword(password, false)
+	password, err = client.GetPassword(password, false)
 	if err != nil {
 		return err
 	}
@@ -43,14 +41,13 @@ func newSubAccount(password []byte, wallet Wallet) error {
 
 	addrs, err := wallet.GetAddrs()
 	if err != nil {
-		log.Error("Get addresses error:", err)
 		return errors.New("get wallet addresses failed")
 	}
 
-	return ShowAccounts(addrs, programHash, wallet)
+	return client.ShowAccounts(addrs, programHash, wallet)
 }
 
-func addMultiSignAccount(context *cli.Context, wallet Wallet, content string) error {
+func addMultiSignAccount(context *cli.Context, wallet client.Wallet, content string) error {
 	// Get address content from file or cli input
 	publicKeys, err := getPublicKeys(content)
 	if err != nil {
@@ -77,11 +74,10 @@ func addMultiSignAccount(context *cli.Context, wallet Wallet, content string) er
 
 	addrs, err := wallet.GetAddrs()
 	if err != nil {
-		log.Error("Get addresses error:", err)
 		return errors.New("get wallet addresses failed")
 	}
 
-	return ShowAccounts(addrs, programHash, wallet)
+	return client.ShowAccounts(addrs, programHash, wallet)
 }
 
 func getPublicKeys(content string) ([]*crypto.PublicKey, error) {
@@ -141,7 +137,7 @@ func accountAction(context *cli.Context) {
 	}
 	pass := context.String("password")
 
-	wallet, err := Open()
+	wallet, err := client.Open()
 	if err != nil {
 		fmt.Println("error: open wallet failed,", err)
 		os.Exit(2)
@@ -149,7 +145,7 @@ func accountAction(context *cli.Context) {
 
 	// list accounts
 	if context.Bool("list") {
-		if err := ShowAccountInfo([]byte(pass)); err != nil {
+		if err := client.ShowAccountInfo([]byte(pass)); err != nil {
 			fmt.Println("error: list accounts info failed,", err)
 			cli.ShowCommandHelpAndExit(context, "list", 3)
 		}
@@ -191,7 +187,7 @@ func NewCommand() cli.Command {
 		Usage:       "account [command] [args]",
 		Description: "commands to create new sub account or multisig account and show accounts balances",
 		ArgsUsage:   "[args]",
-		Flags: append(CommonFlags,
+		Flags: append(client.CommonFlags,
 			cli.BoolFlag{
 				Name:  "list, l",
 				Usage: "list all accounts, including address, public key and type",

@@ -1,4 +1,4 @@
-package spvwallet
+package client
 
 import (
 	"crypto/rand"
@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sync"
 
-	. "github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
@@ -19,11 +19,11 @@ const (
 type Keystore interface {
 	ChangePassword(old, new []byte) error
 
-	MainAccount() *Account
-	NewAccount() *Account
-	GetAccounts() []*Account
-	GetAccountByIndex(index int) *Account
-	GetAccountByProgramHash(programHash *common.Uint168) *Account
+	MainAccount() *sdk.Account
+	NewAccount() *sdk.Account
+	GetAccounts() []*sdk.Account
+	GetAccountByIndex(index int) *sdk.Account
+	GetAccountByProgramHash(programHash *common.Uint168) *sdk.Account
 
 	Json() (string, error)
 	FromJson(json string, password string) error
@@ -36,7 +36,7 @@ type KeystoreImpl struct {
 
 	masterKey []byte
 
-	accounts []*Account
+	accounts []*sdk.Account
 }
 
 func CreateKeystore(password []byte) (Keystore, error) {
@@ -130,7 +130,7 @@ func (store *KeystoreImpl) initKeystore(keystoreFile *KeystoreFile, password []b
 
 func (store *KeystoreImpl) initAccounts(masterKey, privateKey []byte, publicKey *crypto.PublicKey) error {
 	// initiate main account
-	mainAccount, err := NewAccount(privateKey, publicKey)
+	mainAccount, err := sdk.NewAccount(privateKey, publicKey)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (store *KeystoreImpl) initAccounts(masterKey, privateKey []byte, publicKey 
 		if err != nil {
 			return err
 		}
-		childAccount, err := NewAccount(privateKey, publicKey)
+		childAccount, err := sdk.NewAccount(privateKey, publicKey)
 		if err != nil {
 			return err
 		}
@@ -218,11 +218,11 @@ func (store *KeystoreImpl) ChangePassword(oldPassword, newPassword []byte) error
 	return nil
 }
 
-func (store *KeystoreImpl) MainAccount() *Account {
+func (store *KeystoreImpl) MainAccount() *sdk.Account {
 	return store.GetAccountByIndex(0)
 }
 
-func (store *KeystoreImpl) NewAccount() *Account {
+func (store *KeystoreImpl) NewAccount() *sdk.Account {
 	// create sub account
 	privateKey, publicKey, err := crypto.GenerateSubKeyPair(
 		store.SubAccountsCount+1, store.masterKey, store.accounts[0].PrivateKey())
@@ -230,7 +230,7 @@ func (store *KeystoreImpl) NewAccount() *Account {
 		panic(fmt.Sprint("New sub account failed,", err))
 	}
 
-	account, err := NewAccount(privateKey, publicKey)
+	account, err := sdk.NewAccount(privateKey, publicKey)
 	if err != nil {
 		panic(fmt.Sprint("New sub account failed,", err))
 	}
@@ -246,18 +246,18 @@ func (store *KeystoreImpl) NewAccount() *Account {
 	return account
 }
 
-func (store *KeystoreImpl) GetAccounts() []*Account {
+func (store *KeystoreImpl) GetAccounts() []*sdk.Account {
 	return store.accounts
 }
 
-func (store *KeystoreImpl) GetAccountByIndex(index int) *Account {
+func (store *KeystoreImpl) GetAccountByIndex(index int) *sdk.Account {
 	if index < 0 || index > len(store.accounts)-1 {
 		return nil
 	}
 	return store.accounts[index]
 }
 
-func (store *KeystoreImpl) GetAccountByProgramHash(programHash *common.Uint168) *Account {
+func (store *KeystoreImpl) GetAccountByProgramHash(programHash *common.Uint168) *sdk.Account {
 	if programHash == nil {
 		return nil
 	}

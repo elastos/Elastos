@@ -10,8 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
-	. "github.com/elastos/Elastos.ELA.SPV/spvwallet/cli"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -19,7 +18,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func CreateTransaction(c *cli.Context, wallet Wallet) error {
+func CreateTransaction(c *cli.Context, wallet client.Wallet) error {
 	txn, err := createTransaction(c, wallet)
 	if err != nil {
 		return err
@@ -27,7 +26,7 @@ func CreateTransaction(c *cli.Context, wallet Wallet) error {
 	return output(txn)
 }
 
-func createTransaction(c *cli.Context, wallet Wallet) (*core.Transaction, error) {
+func createTransaction(c *cli.Context, wallet client.Wallet) (*core.Transaction, error) {
 	feeStr := c.String("fee")
 	if feeStr == "" {
 		return nil, errors.New("use --fee to specify transfer fee")
@@ -40,7 +39,7 @@ func createTransaction(c *cli.Context, wallet Wallet) (*core.Transaction, error)
 
 	from := c.String("from")
 	if from == "" {
-		from, err = SelectAccount(wallet)
+		from, err = client.SelectAccount(wallet)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +91,7 @@ func createTransaction(c *cli.Context, wallet Wallet) (*core.Transaction, error)
 	return txn, nil
 }
 
-func createMultiOutputTransaction(c *cli.Context, wallet Wallet, path, from string, fee *common.Fixed64) (*core.Transaction, error) {
+func createMultiOutputTransaction(c *cli.Context, wallet client.Wallet, path, from string, fee *common.Fixed64) (*core.Transaction, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, errors.New("invalid multi output file path")
 	}
@@ -102,7 +101,7 @@ func createMultiOutputTransaction(c *cli.Context, wallet Wallet, path, from stri
 	}
 
 	scanner := bufio.NewScanner(file)
-	var multiOutput []*Transfer
+	var multiOutput []*client.Transfer
 	for scanner.Scan() {
 		columns := strings.Split(scanner.Text(), ",")
 		if len(columns) < 2 {
@@ -114,8 +113,7 @@ func createMultiOutputTransaction(c *cli.Context, wallet Wallet, path, from stri
 			return nil, errors.New("invalid multi output transaction amount: " + amountStr)
 		}
 		address := strings.TrimSpace(columns[0])
-		multiOutput = append(multiOutput, &Transfer{address, amount})
-		log.Trace("Multi output address:", address, ", amount:", amountStr)
+		multiOutput = append(multiOutput, &client.Transfer{address, amount})
 	}
 
 	lockStr := c.String("lock")
@@ -139,7 +137,7 @@ func createMultiOutputTransaction(c *cli.Context, wallet Wallet, path, from stri
 	return txn, nil
 }
 
-func SignTransaction(password []byte, context *cli.Context, wallet Wallet) error {
+func SignTransaction(password []byte, context *cli.Context, wallet client.Wallet) error {
 	txn, err := getTransaction(context)
 	if err != nil {
 		return err
@@ -153,13 +151,13 @@ func SignTransaction(password []byte, context *cli.Context, wallet Wallet) error
 	return output(txn)
 }
 
-func signTransaction(password []byte, wallet Wallet, txn *core.Transaction) (*core.Transaction, error) {
+func signTransaction(password []byte, wallet client.Wallet, txn *core.Transaction) (*core.Transaction, error) {
 	haveSign, needSign, err := crypto.GetSignStatus(txn.Programs[0].Code, txn.Programs[0].Parameter)
 	if haveSign == needSign {
 		return nil, errors.New("transaction was fully signed, no need more sign")
 	}
 
-	password, err = GetPassword(password, false)
+	password, err = client.GetPassword(password, false)
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +165,7 @@ func signTransaction(password []byte, wallet Wallet, txn *core.Transaction) (*co
 	return wallet.Sign(password, txn)
 }
 
-func SendTransaction(password []byte, context *cli.Context, wallet Wallet) error {
+func SendTransaction(password []byte, context *cli.Context, wallet client.Wallet) error {
 	content, err := getContent(context)
 
 	var txn *core.Transaction
@@ -300,7 +298,7 @@ func transactionAction(context *cli.Context) {
 	}
 	pass := context.String("password")
 
-	wallet, err := Open()
+	wallet, err := client.Open()
 	if err != nil {
 		fmt.Println("error: open wallet failed,", err)
 		os.Exit(2)
@@ -339,7 +337,7 @@ func NewCommand() cli.Command {
 		Usage:       "use [--create, --sign, --send], to create, sign or send a transaction",
 		Description: "create, sign or send transaction",
 		ArgsUsage:   "[args]",
-		Flags: append(CommonFlags,
+		Flags: append(client.CommonFlags,
 			cli.BoolFlag{
 				Name: "create",
 				Usage: "use [--from] --to --amount --fee [--lock], or [--from] --file --fee [--lock]\n" +
