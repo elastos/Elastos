@@ -15,12 +15,13 @@ var config *Config // The single instance of config
 
 type Config struct {
 	Magic         uint32
+	SeedList      []string
+	DefaultPort   uint16 // default port for public peers to provide services.
 	PrintLevel    int
 	MaxLogsSize   int64
 	MaxPerLogSize int64
 	RPCPort       uint16
 	Foundation    string
-	SeedList      []string
 }
 
 func (config *Config) readConfigFile() error {
