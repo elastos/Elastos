@@ -100,8 +100,8 @@ namespace Elastos {
 			Log::getLogger()->info("Sending transaction, json info: {}, hex String: {}",
 								   sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
 
-			if (_peerManager->getConnectStatus() == Peer::Disconnected ||
-				_peerManager->getConnectStatus() == Peer::Unknown) {
+			_reconnectTimer->cancel();
+			if (_peerManager->getConnectStatus() != Peer::Connected) {
 				_peerManager->connect();
 			}
 
@@ -295,8 +295,10 @@ namespace Elastos {
 		}
 
 		void WalletManager::syncIsInactive() {
-			_peerManager->disconnect();
-			startReconnect();
+			if (_peerManager->getConnectStatus() == Peer::Connected) {
+				_peerManager->disconnect();
+				startReconnect();
+			}
 		}
 
 		// override protected methods
@@ -386,21 +388,30 @@ namespace Elastos {
 			Log::getLogger()->info("reconnect {}s later...", _reconnectSeconds);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(_reconnectSeconds)));
-			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this));
+			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
 			_reconnectService.restart();
 			_reconnectService.run_one();
 		}
 
 		void WalletManager::resetReconnect() {
 			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
-			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this));
+			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
 		}
 
-		void WalletManager::asyncConnect() {
-			if (_peerManager->getConnectStatus() == Peer::Disconnected ||
-				_peerManager->getConnectStatus() == Peer::Unknown) {
-				Log::getLogger()->info("asyncConnect...");
-				_peerManager->connect();
+		void WalletManager::asyncConnect(const boost::system::error_code& error) {
+			if (error.value() == 0) {
+				if (_peerManager->getConnectStatus() != Peer::Connected) {
+					Log::getLogger()->info("async connecting...");
+					_peerManager->connect();
+				}
+			} else {
+				Log::getLogger()->warn("asyncConnect err: {}", error.message());
+			}
+
+			if (_peerManager->getRaw()->reconnectTaskCount > 0) {
+				pthread_mutex_lock(&_peerManager->getRaw()->lock);
+				_peerManager->getRaw()->reconnectTaskCount = 0;
+				pthread_mutex_unlock(&_peerManager->getRaw()->lock);
 			}
 		}
 

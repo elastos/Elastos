@@ -123,7 +123,7 @@ namespace Elastos {
 		}
 
 		bool CoreWalletManager::networkIsReachable() {
-			return false;
+			return true;
 		}
 
 		void CoreWalletManager::txPublished(const std::string &error) {
@@ -251,7 +251,7 @@ namespace Elastos {
 				Log::getLogger()->error("Peer manager callback (networkIsReachable) error.");
 			}
 
-			return false;
+			return true;
 		}
 
 		void WrappedExceptionPeerManagerListener::txPublished(const std::string &error) {
@@ -374,10 +374,10 @@ namespace Elastos {
 
 		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
 
-			bool result;
-			_executor->execute(Runnable([this, result]() -> void {
+			bool result = true;
+			_executor->execute(Runnable([this, &result]() -> void {
 				try {
-					_listener->networkIsReachable();
+					result = _listener->networkIsReachable();
 				}
 				catch (std::exception ex) {
 					Log::getLogger()->error("Peer manager callback (networkIsReachable) error: {}", ex.what());

@@ -42,6 +42,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
@@ -591,13 +592,15 @@ static UInt128 *_addressLookup(const char *hostname)
 		memset(addrList, 0, sizeof(*addrList));
 
         for (p = servinfo; p != NULL; p = p->ai_next) {
-            if (p->ai_family == AF_INET) {
-                addrList[i].u16[5] = 0xffff;
-                addrList[i].u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
-                i++;
-            }
-            else if (p->ai_family == AF_INET6) {
-                addrList[i++] = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+            if (p->ai_socktype == SOCK_STREAM) {
+                if (p->ai_family == AF_INET) {
+                    addrList[i].u16[5] = 0xffff;
+                    addrList[i].u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                    i++;
+                }
+                else if (p->ai_family == AF_INET6) {
+                    addrList[i++] = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                }
             }
         }
 
@@ -657,18 +660,8 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
         manager->peers[0].timestamp = now;
     }
     else {
-        for (size_t i = 1; manager->params->dnsSeeds && manager->params->dnsSeeds[i]; i++) {
-            info = calloc(1, sizeof(BRFindPeersInfo));
-            assert(info != NULL);
-            info->manager = manager;
-            info->hostname = manager->params->dnsSeeds[i];
-            info->services = services;
-            if (pthread_attr_init(&attr) == 0 && pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED) == 0 &&
-                pthread_create(&thread, &attr, _findPeersThreadRoutine, info) == 0) manager->dnsThreadCount++;
-        }
-
-        if (manager->params->dnsSeeds) {
-            for (addr = addrList = _addressLookup(manager->params->dnsSeeds[0]); addr && ! UInt128IsZero(addr); addr++) {
+        for (size_t i = 0; manager->params->dnsSeeds && manager->params->dnsSeeds[i]; i++) {
+            for (addr = addrList = _addressLookup(manager->params->dnsSeeds[i]); addr && ! UInt128IsZero(addr); addr++) {
                 array_add(manager->peers, ((BRPeer) { *addr, manager->params->standardPort, services, now, 0 }));
             }
         }
@@ -683,6 +676,17 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
             pthread_mutex_lock(&manager->lock);
         } while (manager->dnsThreadCount > 0 && array_count(manager->peers) < PEER_MAX_CONNECTIONS);
 
+        _peer_log("peer manager found %zu peers\n", array_count(manager->peers));
+        for (size_t i = 0; i < array_count(manager->peers); i++) {
+            char host[INET6_ADDRSTRLEN] = {0};
+            BRPeer *peer = &manager->peers[i];
+            if ((peer->address.u64[0] == 0 && peer->address.u16[4] == 0 && peer->address.u16[5] == 0xffff))
+                inet_ntop(AF_INET, &peer->address.u32[3], host, sizeof(host));
+            else
+                inet_ntop(AF_INET6, &peer->address, host, sizeof(host));
+            _peer_log("manager->peers[%zu] = %s\n", i, host);
+        }
+
         qsort(manager->peers, array_count(manager->peers), sizeof(*manager->peers), _peerTimestampCompare);
     }
 }
@@ -690,14 +694,11 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
 static void _peerConnected(void *info)
 {
     BRPeer *peer = ((BRPeerCallbackInfo *)info)->peer;
-    peer_log(peer, "peerConnected");
-
     BRPeerManager *manager = ((BRPeerCallbackInfo *)info)->manager;
     BRPeerCallbackInfo *peerInfo;
     time_t now = time(NULL);
 
     pthread_mutex_lock(&manager->lock);
-
     if (peer->timestamp > now + 2*60*60 || peer->timestamp < now - 2*60*60) peer->timestamp = now; // sanity check
 
     // TODO: XXX does this work with 0.11 pruned nodes?
@@ -863,7 +864,10 @@ static void _peerDisconnected(void *info, int error)
 
     if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect) BRPeerManagerConnect(manager);
+    if (willReconnect && array_count(manager->connectedPeers) == 0) {
+        peer_log(peer, "willReconnect...");
+        BRPeerManagerConnect(manager);
+    }
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 
@@ -1852,7 +1856,7 @@ void BRPeerManagerPublishTx(BRPeerManager *manager, BRTransaction *tx, void *inf
         if (connectFailureCount >= MAX_CONNECT_FAILURES ||
             (manager->networkIsReachable && ! manager->networkIsReachable(manager->info))) {
             if (callback) callback(info, ENOTCONN); // not connected to bitcoin network
-            tx = NULL;
+//            tx = NULL; // add tx to publish tx list anyway
         }
         else pthread_mutex_lock(&manager->lock);
     }

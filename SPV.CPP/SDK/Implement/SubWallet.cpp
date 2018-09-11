@@ -440,7 +440,7 @@ namespace Elastos {
 			_syncStartHeight = 0;
 
 			if (!error.empty()) {
-				Log::error(error);
+				Log::getLogger()->error("syncStopped with error: {}", error);
 			}
 
 			std::for_each(_callbacks.begin(), _callbacks.end(),

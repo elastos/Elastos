@@ -150,18 +150,5 @@ namespace Elastos {
 			}
 		}
 
-		void InventoryMessage::sendTransaction(BRPeer *peer, const UInt256 &txHash) {
-			BRPeerContext *ctx = (BRPeerContext *) peer;
-			BRPeerManager *manager = ctx->manager;
-
-			BRPublishedTx pubTx = {nullptr, nullptr, nullptr};
-			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
-				if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &txHash)) {
-					manager->peerMessages->BRPeerSendTxMessage(peer, manager->publishedTx[i - 1].tx);
-					break;
-				}
-			}
-		}
-
 	}
 }

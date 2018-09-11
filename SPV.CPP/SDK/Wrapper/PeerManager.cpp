@@ -80,7 +80,7 @@ namespace Elastos {
 			static int networkIsReachable(void *info) {
 
 				WeakListener *listener = (WeakListener *) info;
-				int result = 0;
+				int result = 1;
 				if (!listener->expired()) {
 
 					result = listener->lock()->networkIsReachable();
@@ -191,8 +191,7 @@ namespace Elastos {
 		}
 
 		Peer::ConnectStatus PeerManager::getConnectStatus() const {
-			//todo complete me
-			return Peer::Unknown;
+			return Peer::ConnectStatus(BRPeerManagerConnectStatus((BRPeerManager *) _manager));
 		}
 
 		void PeerManager::connect() {

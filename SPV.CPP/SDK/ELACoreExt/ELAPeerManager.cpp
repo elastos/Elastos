@@ -45,6 +45,7 @@ namespace Elastos {
 			manager->Raw.blocks = BRSetNew(BRMerkleBlockHash, BRMerkleBlockEq, blocksCount);
 			manager->Raw.orphans = BRSetNew(_BRPrevBlockHash, _BRPrevBlockEq, blocksCount); // orphans are indexed by prevBlock
 			manager->Raw.checkpoints = BRSetNew(_BRBlockHeightHash, _BRBlockHeightEq, 100); // checkpoints are indexed by height
+			manager->Raw.reconnectTaskCount = 0;
 
 			time_t now = time(nullptr);
 			for (size_t i = 0; i < manager->Raw.params->checkpointsCount; i++) {

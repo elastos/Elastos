@@ -122,7 +122,7 @@ namespace Elastos {
 
 			void resetReconnect();
 
-			void asyncConnect();
+			void asyncConnect(const boost::system::error_code& error);
 
 		private:
 			DatabaseManager _databaseManager;
