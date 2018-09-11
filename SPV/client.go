@@ -3,24 +3,14 @@ package main
 import (
 	"os"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/account"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/cli/wallet"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/account"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/transaction"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/wallet"
 
 	"github.com/urfave/cli"
 )
 
 var Version string
-
-func init() {
-	log.Init(
-		config.Values().PrintLevel,
-		config.Values().MaxPerLogSize,
-		config.Values().MaxLogsSize,
-	)
-}
 
 func main() {
 	app := cli.NewApp()
