@@ -1,4 +1,4 @@
-package util
+package sutil
 
 import "github.com/elastos/Elastos.ELA.Utility/common"
 

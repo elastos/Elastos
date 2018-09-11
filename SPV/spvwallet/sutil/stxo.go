@@ -1,4 +1,4 @@
-package util
+package sutil
 
 import (
 	"fmt"
@@ -27,6 +27,7 @@ func (stxo *STXO) String() string {
 		"SendHeight:", stxo.SpendHeight, ",",
 		"SpendTxId:", stxo.SpendTxId.String(), "}")
 }
+
 func (stxo *STXO) IsEqual(alt *STXO) bool {
 	if alt == nil {
 		return stxo == nil
@@ -45,4 +46,12 @@ func (stxo *STXO) IsEqual(alt *STXO) bool {
 	}
 
 	return true
+}
+
+func NewSTXO(utxo *UTXO, spendHeight uint32, spendTxId common.Uint256) *STXO {
+	return &STXO{
+		UTXO:        *utxo,
+		SpendHeight: spendHeight,
+		SpendTxId:   spendTxId,
+	}
 }

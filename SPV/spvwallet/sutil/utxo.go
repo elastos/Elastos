@@ -1,11 +1,11 @@
-package util
+package sutil
 
 import (
 	"fmt"
 	"sort"
 
-	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type UTXO struct {
@@ -20,6 +20,9 @@ type UTXO struct {
 
 	// Block height where this tx was confirmed, 0 for unconfirmed
 	AtHeight uint32
+
+	// Address where this UTXO belongs to.
+	Address common.Uint168
 }
 
 func (utxo *UTXO) String() string {
@@ -53,14 +56,29 @@ func (utxo *UTXO) IsEqual(alt *UTXO) bool {
 		return false
 	}
 
+	if !utxo.Address.IsEqual(alt.Address) {
+		return false
+	}
+
 	return true
 }
 
-type SortableUTXOs []*UTXO
+func NewUTXO(txId common.Uint256, height uint32, index int,
+	value common.Fixed64, lockTime uint32, address common.Uint168) *UTXO {
+	utxo := new(UTXO)
+	utxo.Op = *core.NewOutPoint(txId, uint16(index))
+	utxo.Value = value
+	utxo.LockTime = lockTime
+	utxo.AtHeight = height
+	utxo.Address = address
+	return utxo
+}
 
-func (utxos SortableUTXOs) Len() int      { return len(utxos) }
-func (utxos SortableUTXOs) Swap(i, j int) { utxos[i], utxos[j] = utxos[j], utxos[i] }
-func (utxos SortableUTXOs) Less(i, j int) bool {
+type SortByValueASC []*UTXO
+
+func (utxos SortByValueASC) Len() int      { return len(utxos) }
+func (utxos SortByValueASC) Swap(i, j int) { utxos[i], utxos[j] = utxos[j], utxos[i] }
+func (utxos SortByValueASC) Less(i, j int) bool {
 	if utxos[i].Value > utxos[j].Value {
 		return false
 	} else {
@@ -68,8 +86,8 @@ func (utxos SortableUTXOs) Less(i, j int) bool {
 	}
 }
 
-func SortUTXOs(utxos []*UTXO) []*UTXO {
-	sortableUTXOs := SortableUTXOs(utxos)
+func SortByValue(utxos []*UTXO) []*UTXO {
+	sortableUTXOs := SortByValueASC(utxos)
 	sort.Sort(sortableUTXOs)
 	return sortableUTXOs
 }
