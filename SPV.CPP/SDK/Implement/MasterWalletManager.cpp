@@ -2,7 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/function.hpp>
 #include <boost/filesystem.hpp>
 
 #include "MasterWalletManager.h"
@@ -75,7 +74,15 @@ namespace Elastos {
 																		const std::string &payPassword,
 																		const nlohmann::json &coSigners,
 																		uint32_t requiredSignCount) {
-			return nullptr;
+			ParamChecker::checkNotEmpty(masterWalletId);
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
+				return _masterWalletMap[masterWalletId];
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, payPassword, coSigners, requiredSignCount,
+														   _rootPath, _p2pEnable);
+			_masterWalletMap[masterWalletId] = masterWallet;
+
+			return masterWallet;
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletId,
@@ -83,7 +90,15 @@ namespace Elastos {
 																		const std::string &payPassword,
 																		const nlohmann::json &coSigners,
 																		uint32_t requiredSignCount) {
-			return nullptr;
+			ParamChecker::checkNotEmpty(masterWalletId);
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
+				return _masterWalletMap[masterWalletId];
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKey, payPassword, coSigners,
+					requiredSignCount, _rootPath, _p2pEnable);
+			_masterWalletMap[masterWalletId] = masterWallet;
+
+			return masterWallet;
 		}
 
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {

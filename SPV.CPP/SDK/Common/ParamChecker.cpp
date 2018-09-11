@@ -32,7 +32,8 @@ namespace Elastos {
 			}
 		}
 
-		void ParamChecker::checkPasswordWithNullLegal(const std::string &password, const std::string &passName, bool isParam) {
+		void ParamChecker::checkPasswordWithNullLegal(const std::string &password, const std::string &passName,
+													  bool isParam) {
 			if (password.empty())
 				return;
 			checkPassword(password, passName, isParam);
@@ -56,7 +57,7 @@ namespace Elastos {
 			}
 		}
 
-		void ParamChecker::checkJsonArrayNotEmpty(nlohmann::json jsonData, bool isParam) {
+		void ParamChecker::checkJsonArrayNotEmpty(const nlohmann::json &jsonData, bool isParam) {
 			if (!jsonData.is_array() || jsonData.size() <= 0) {
 				if (isParam)
 					throw std::invalid_argument("Json should not be empty.");
@@ -78,6 +79,16 @@ namespace Elastos {
 		void ParamChecker::checkLangWordsCnt(const uint32_t cnt) {
 			if (cnt != BIP39_WORDLIST_COUNT)
 				throw std::invalid_argument("Language words count invalid.");
+		}
+
+		void ParamChecker::checkJsonArrayCountGreaterEqualThan(const nlohmann::json &jsonArray, size_t checkCount,
+															   bool isParam) {
+			if (!jsonArray.is_array() || jsonArray.size() < checkCount) {
+				if (isParam)
+					throw std::invalid_argument("Json array should greater than check count.");
+				else
+					throw std::logic_error("Json array should greater than check count.");
+			}
 		}
 	}
 }
