@@ -1037,6 +1037,185 @@ void on_channel_resume(ElaSession *ws, int stream, int channel, void *context)
     output("Channel %d:%d resumed.\n", stream, channel);
 }
 
+static void group_new(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+    char groupid[ELA_MAX_ID_LEN + 1];
+
+    if (argc != 1) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    rc = ela_new_group(w, groupid, sizeof(groupid));
+    if (rc < 0) {
+        output("Create group failed.\n");
+    } else {
+        output("Create group[%s] successfully.\n", groupid);
+    }
+}
+
+static void group_delete(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+
+    if (argc != 2) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    rc = ela_delete_group(w, argv[1]);
+    if (rc < 0) {
+        output("Exit group[%s] failed.\n", argv[1]);
+    } else {
+        output("Exit group[%s] successfully.\n", argv[1]);
+    }
+}
+
+static void group_invite(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+
+    if (argc != 3) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    rc = ela_group_invite(w, argv[1], argv[2]);
+    if (rc < 0) {
+        output("Invite friend[%s] into group[%s] failed.\n", argv[2], argv[1]);
+    } else {
+        output("Invite friend[%s] into group[%s] successfully.\n", argv[2], argv[1]);
+    }
+}
+
+static void group_join(ElaCarrier *w, int argc, char *argv[])
+{
+    char groupid[ELA_MAX_ID_LEN + 1];
+    size_t cookie_len;
+    uint8_t *cookie;
+    size_t i;
+    int rc;
+
+    if (argc != 3) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    cookie_len = strlen(argv[2]) >> 1;
+    cookie = (uint8_t *)alloca(cookie_len);
+
+    for (i = 0; i < cookie_len; i++) {
+        sscanf(argv[2] + (i << 1), "%2hhX", cookie + i);
+    }
+
+    rc = ela_group_join(w, argv[1], cookie, cookie_len, groupid, sizeof(groupid));
+    if (rc < 0) {
+        output("Join in group failed.\n");
+    } else {
+        output("Join in group[%s] successfully.\n", groupid);
+    }
+}
+
+static void group_send_message(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+
+    if (argc != 3) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    rc = ela_group_send_message(w, argv[1], argv[2], strlen(argv[2]));
+    if (rc < 0) {
+        output("Send group[%s] message failed.\n", argv[1]);
+    } else {
+        output("Send group[%s] message successfully.\n", argv[1]);
+    }
+}
+
+static void group_set_title(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+
+    if (argc != 2 && argc != 3) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    if (argc == 2) {
+        char title[ELA_MAX_GROUP_TITLE_LEN + 1];
+
+        rc = ela_group_get_title(w, argv[1], title, sizeof(title));
+        if (rc < 0) {
+            output("Get group[%s] title failed.\n", argv[1]);
+        } else {
+            output("Group[%s] title is [%s].\n", argv[1], title);
+        }
+    } else {
+        rc = ela_group_set_title(w, argv[1], argv[2]);
+        if (rc < 0) {
+            output("Set group[%s] title failed.\n", argv[1]);
+        } else {
+            output("Set group title successfully.\n", argv[1]);
+        }
+    }
+}
+
+static bool print_group_peer_info(const ElaGroupPeer *peer, void *context)
+{
+    int *peer_number = (int *)context;
+
+    if (!peer) {
+        return false;
+    }
+
+    output("%d. %s[%s]\n", (*peer_number)++, peer->name, peer->userid);
+    return true;
+}
+
+static void group_list_peers(ElaCarrier *w, int argc, char *argv[])
+{
+    int peer_number = 0;
+    int rc;
+
+    if (argc != 2) {
+        output("Invalid command syntax.\n");
+        return;
+    }
+
+    output("Group[%s] peers:\n", argv[1]);
+    rc = ela_group_get_peers(w, argv[1], print_group_peer_info,
+                             (void *)&peer_number);
+    if (rc < 0) {
+        output("List group peers failed.\n");
+    }
+}
+
+static bool print_group_id(const char *groupid, void *context)
+{
+    int *group_number = (int *)context;
+
+    if (!groupid) {
+        return false;
+    }
+
+    output("%d. %s\n", (*group_number)++, groupid);
+    return true;
+}
+
+static void group_list(ElaCarrier *w, int argc, char *argv[])
+{
+    int rc;
+    int group_number = 0;
+
+    output("Group IDs:\n");
+    rc = ela_get_groups(w, print_group_id, (void *)&group_number);
+    if (rc < 0) {
+        output("List groups failed.\n");
+    }
+}
+
 static void session_init(ElaCarrier *w, int argc, char *argv[])
 {
     int rc;
@@ -1583,6 +1762,15 @@ struct command {
     { "invite",     invite,                 "invite userid data" },
     { "ireply",     reply_invite,           "ireply userid [confirm message | refuse reason]" },
 
+    { "gnew",       group_new,              "gnew" },
+    { "gexit",      group_delete,           "gexit groupid" },
+    { "ginvite",    group_invite,           "ginvite groupid userid" },
+    { "gjoin",      group_join,             "gjoin userid cookie" },
+    { "gmsg",       group_send_message,     "gmsg groupid message" },
+    { "gtitle",     group_set_title,        "gtitle groupid [title]" },
+    { "gpeers",     group_list_peers,       "gpeers groupid" },
+    { "glist",      group_list,             "glist" },
+
     { "sinit",      session_init,           "sinit" },
     { "snew",       session_new,            "snew userid" },
     { "sadd",       stream_add,             "sadd [plain] [reliable] [multiplexing] [portforwarding]"},
@@ -1620,7 +1808,7 @@ static void help(ElaCarrier *w, int argc, char *argv[])
 
         for (p = commands; p->cmd; p++) {
             cmd_len = strlen(p->cmd);
-            if (len + cmd_len + 1 > OUTPUT_COLS - 2) {
+            if (len + cmd_len + 1 > (size_t)OUTPUT_COLS - 2) {
                 output("  %s\n", line);
                 strcpy(line, p->cmd);
                 strcat(line, " ");
@@ -1865,6 +2053,69 @@ static void invite_request_callback(ElaCarrier *w, const char *from,
     output("  ireply %s refuse [reason]\n", from);
 }
 
+static void sprint_group_invite_cookie_string(const void *cookie, size_t len,
+        char *cookie_str)
+{
+    size_t i;
+
+    for (i = 0; i < len; i++, cookie_str += 2) {
+        sprintf(cookie_str, "%02hhX", ((uint8_t *)cookie)[i]);
+    }
+}
+
+static void group_invite_request_callback(ElaCarrier *w, const char *from,
+                                          const void *cookie, size_t len,
+                                          void *context)
+{
+    char *cookie_str;
+
+    cookie_str = alloca((len << 1) + 1);
+
+    sprint_group_invite_cookie_string(cookie, len, cookie_str);
+    output("Group invite request from[%s] with cookie[%s].\n", from, cookie_str);
+    output("Input [gjoin %s %s] to join in.\n", from, cookie_str);
+}
+
+static void group_connected_callback(ElaCarrier *carrier, const char *groupid,
+                                     void *context)
+{
+    output("Group[%s] has connected\n", groupid);
+}
+
+static void group_message_callback(ElaCarrier *carrier, const char *groupid,
+                                   const char *from, const void *message,
+                                   size_t length, void *context)
+{
+    output("Group[%s] message from peer[%s]: %.*s\n", groupid, from,
+           (int)length, (const char *)message);
+}
+
+static void group_title_callback(ElaCarrier *carrier, const char *groupid,
+                                 const char *from, const char *title,
+                                 void *context)
+{
+    output("Group[%s] title changed to [%s] by peer[%s]\n",
+           groupid, title, from);
+}
+
+static void group_peer_name_callback(ElaCarrier *carrier, const char *groupid,
+                                     const char *peerid, const char *peer_name,
+                                     void *context)
+{
+    output("Group[%s] peer[%s]'s name changed to %s\n", groupid,
+           peerid, peer_name);
+}
+
+void group_peer_list_changed_callback(ElaCarrier *carrier, const char *groupid,
+                                      void *context)
+{
+    int peer_number = 0;
+
+    output("Group[%s] peer list changed to:\n", groupid);
+    (void)ela_group_get_peers(carrier, groupid, print_group_peer_info,
+                              (void *)&peer_number);
+}
+
 static void usage(void)
 {
     printf("Elastos shell, an interactive console client application.\n");
@@ -1964,7 +2215,7 @@ int main(int argc, char *argv[])
 #endif
 
     if (!*buffer) {
-        realpath(argv[0], buffer);
+        (void)realpath(argv[0], buffer);
         strcat(buffer, ".conf");
     }
 
@@ -2011,6 +2262,12 @@ int main(int argc, char *argv[])
     callbacks.friend_removed = friend_removed_callback;
     callbacks.friend_message = message_callback;
     callbacks.friend_invite = invite_request_callback;
+    callbacks.group_invite = group_invite_request_callback;
+    callbacks.group_callbacks.group_connected = group_connected_callback;
+    callbacks.group_callbacks.group_message = group_message_callback;
+    callbacks.group_callbacks.group_title = group_title_callback;
+    callbacks.group_callbacks.peer_name = group_peer_name_callback;
+    callbacks.group_callbacks.peer_list_changed = group_peer_list_changed_callback;
 
     w = ela_new(&opts, &callbacks, NULL);
     deref(cfg);

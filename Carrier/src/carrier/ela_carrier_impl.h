@@ -84,6 +84,7 @@ struct ElaCarrier {
     bool is_ready;
 
     ElaCallbacks callbacks;
+    ElaGroupCallbacks group_callbacks;
     void *context;
 
     DHTCallbacks dht_callbacks;

@@ -130,6 +130,12 @@ extern "C" {
 
 /**
  * \~English
+ * Carrier group title max length.
+ */
+#define ELA_MAX_GROUP_TITLE_LEN         127
+
+/**
+ * \~English
  * ElaCarrier representing carrier node singleton instance.
  */
 typedef struct ElaCarrier ElaCarrier;
@@ -403,6 +409,121 @@ typedef struct ElaFriendInfo {
 
 /**
  * \~English
+ * A structure representing the Carrier group peer information.
+ *
+ * Include the basic peer information.
+ */
+typedef struct ElaGroupPeer {
+    /**
+     * \~English
+     * Peer's name.
+     */
+    char name[ELA_MAX_USER_NAME_LEN + 1];
+
+    /**
+     * \~English
+     * Peer's userid.
+     */
+    char userid[ELA_MAX_ID_LEN + 1];
+} ElaGroupPeer;
+
+/**
+ * \~English
+ * Carrier group callbacks, include all global group callbacks for Carrier.
+ */
+typedef struct ElaGroupCallbacks {
+    /**
+     * \~English
+     * An application-defined function that process event to be connected to
+     * group.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The target group connected.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    void (*group_connected)(ElaCarrier *carrier, const char *groupid, void *context);
+
+    /**
+     * \~English
+     * An application-defined function that process the group messages.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The group that received message.
+     * @param
+     *      from        [in] The user id who send the message.
+     * @param
+     *      message     [in] The message content.
+     * @param
+     *      length      [in] The message length in bytes.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    void (*group_message)(ElaCarrier *carrier, const char *groupid,
+                          const char *from, const void *message, size_t length,
+                          void *context);
+
+    /**
+     * \~English
+     * An application-defined function that process the group title change
+     * event.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The group id of its title changed.
+     * @param
+     *      from        [in] The peer Id who changed title name.
+     * @param
+     *      title       [in] The updated title name.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    void (*group_title)(ElaCarrier *carrier, const char *groupid,
+                        const char *from, const char *title, void *context);
+
+    /**
+     * \~English
+     * An application-defined function that process the group peer's name
+     * change event.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The target group.
+     * @param
+     *      peerid      [in] The peer Id who changed its name.
+     * @param
+     *      peer_name   [in] The updated peer name.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    void (*peer_name)(ElaCarrier *carrier, const char *groupid,
+                      const char *peerid, const char *peer_name,
+                      void *context);
+
+    /**
+     * \~English
+     * An application-defined function that process the group list change
+     * event.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      groupid     [in] The target group that changed it's peer list.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    void (*peer_list_changed)(ElaCarrier *carrier, const char *groupid,
+                              void *context);
+} ElaGroupCallbacks;
+
+/**
+ * \~English
  * Carrier callbacks, include all global callbacks for Carrier.
  */
 typedef struct ElaCallbacks {
@@ -614,6 +735,29 @@ typedef struct ElaCallbacks {
     void (*friend_invite)(ElaCarrier *carrier, const char *from,
                           const void *data, size_t len, void *context);
 
+    /**
+     * \~English
+     * An application-defined function that process the group invite request.
+     *
+     * @param
+     *      carrier     [in] A handle to the Carrier node instance.
+     * @param
+     *      from        [in] The user id from who send the invite request.
+     * @param
+     *      cookie      [in] The application defined cookie send from friend.
+     * @param
+     *      len         [in] The data length in bytes.
+     * @param
+     *      context     [in] The application defined context data.
+     */
+    void (*group_invite)(ElaCarrier *w, const char *from,
+                         const void *cookie, size_t len, void *context);
+
+    /**
+     * \~English
+     * Group related callbacks.
+     */
+    ElaGroupCallbacks group_callbacks;
 } ElaCallbacks;
 
 /**
@@ -689,6 +833,8 @@ char *ela_get_id_by_address(const char *address, char *userid, size_t len);
  * @param
  *      callbacks   [in] The Application defined callback functions.
  * @param
+ *      group_callbacks   [in] The Application defined group callback functions.
+ * @param
  *      context     [in] The application defined context data.
  *
  * @return
@@ -697,8 +843,8 @@ char *ela_get_id_by_address(const char *address, char *userid, size_t len);
  *      retrieved by calling ela_get_error().
  */
 CARRIER_API
-ElaCarrier *ela_new(const ElaOptions *options,
-                    ElaCallbacks *callbacks, void *context);
+ElaCarrier *ela_new(const ElaOptions *options, ElaCallbacks *callbacks,
+                    void *context);
 
 /**
  * \~English
@@ -1104,10 +1250,9 @@ int ela_remove_friend(ElaCarrier *carrier, const char *userid);
  * \~English
  * Send a message to a friend.
  *
- * The message length may not exceed ELA_MAX_APP_MESSAGE_LEN, and message
- * itself should be text-formatted. Larger messages must be split by application
- * and sent as separate messages. Other carrier nodes can reassemble the
- * fragments.
+ * The message length may not exceed ELA_MAX_APP_MESSAGE_LEN. Larger messages
+ * must be split by application and sent as separate fragments. Other carrier
+ * nodes can reassemble the fragments.
  *
  * Message may not be empty or NULL.
  * @param
@@ -1220,6 +1365,261 @@ CARRIER_API
 int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
                             int status, const char *reason,
                             const void *data, size_t len);
+
+/******************************************************************************
+ * Group lifecycle and messaging.
+ *****************************************************************************/
+/**
+ * \~English
+ * Create a new group
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [out] The buffer to receive a created group Id.
+ * @param
+ *      length      [in] The buffer length to receive the group Id.
+ *
+ * @return
+ *      0 if creating group in success, Otherwise, return -1, and a specific
+ *      error code can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_new_group(ElaCarrier *carrier, char *groupid, size_t length);
+
+/**
+ * \~English
+ * Delete a group
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The Id of group to delete.
+ * @param
+ *      length      [in] The buffer length to store group Id.
+ *
+ * @return
+ *      0 if deleting group in success, Otherwise, return -1, and a specific
+ *      error code can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_delete_group(ElaCarrier *carrier, const char *groupid);
+
+/**
+ * \~English
+ * Invite a specified friend into group.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The Id of group into which we invite friend.
+ * @param
+ *      friendId    [in] The invited friendId.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_invite(ElaCarrier *w, const char *groupid, const char *friendId);
+
+/**
+ * \~English
+ * Join a specified group with cookie invited from remote friend.
+ *
+ * This function should be called only if application received a group
+ * invitation from remote friend.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      friendId    [in] The friend who send a group invitation.
+ * @param
+ *      cookie      [in] The cookie information to join group.
+ * @param
+ *      cookie_len  [in] The buffer length to cookie.
+ * @param
+ *      groupId     [out] The buffer to receive group id.
+ * @param
+ *      group_len   [in] The buffer length to receive group Id.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_join(ElaCarrier *w, const char *friendid, const void *cookie,
+                   size_t cookie_len, char *groupId, size_t group_len);
+
+/**
+ * \~English
+ * Send a message to a group.
+ *
+ * The message length may not exceed ELA_MAX_APP_MESSAGE_LEN. Larger messages
+ * must be split by application and sent as separate fragments. Other carrier
+ * nodes can reassemble the fragments.
+ *
+ * Message may not be empty or NULL.
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group to send message.
+ * @param
+ *      message     [in] The message content defined by application.
+ * @param
+ *      len         [in] The message length in bytes.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_send_message(ElaCarrier *w, const char *groupid,
+                           const void *message, size_t length);
+
+/**
+ * \~English
+ * Get group title.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      title       [in, out] The buffer to store group title.
+ * @param
+ *      length      [in] The length of buffer pointed by @title.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_get_title(ElaCarrier *w, const char *groupid, char *title,
+                        size_t length);
+
+/**
+ * \~English
+ * Set group title.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      title       [in] The title name to set(should be no
+ *                       longer than ELA_MAX_GROUP_TITLE_LEN).
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred, and a specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_set_title(ElaCarrier *w, const char *groupid, const char *title);
+
+/**
+ * \~English
+ * An application-defined function that iterate the each peers list item
+ * of a specified group.
+ *
+ * ElaGroupPeersIterateCallback is the callback function type.
+ *
+ * @param
+ *      peer        [in] A pointer to ElaGroupPeer structure that
+ *                       representing a group peer(NULL indicates
+ *                       iteration finished).
+ * @param
+ *      context     [in] The application defined context data.
+ *
+ * @return
+ *      Return true to continue iterate next group peer, false to stop
+ *      iteration.
+ */
+typedef bool ElaGroupPeersIterateCallback(const ElaGroupPeer *peer,
+                                          void *context);
+/**
+ * \~English
+ * Get group peer list. For each peer will call the application defined
+ * iterate callback.
+ *
+ * @param
+ *      carrier     [in] a handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      callback    [in] a pointer to ElaGroupPeersIterateCallback function.
+ * @param
+ *      context     [in] the application defined context data.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_get_peers(ElaCarrier *w, const char *groupid,
+                        ElaGroupPeersIterateCallback *callback,
+                        void *context);
+
+/**
+ * \~English
+ * Get group peer information.
+ *
+ * @param
+ *      carrier     [in] A handle to the Carrier node instance.
+ * @param
+ *      groupid     [in] The target group.
+ * @param
+ *      peerId      [in] The target peerId to get it's information.
+ * @param
+ *      peer        [in] The ElaGroupPeer pointer to receive the peer
+ *                       information.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_group_get_peer(ElaCarrier *w, const char *groupid,
+                       const char *peerId, ElaGroupPeer *peer);
+
+/**
+ * \~English
+ * An application-defined function that iterate the each group.
+ *
+ * ElaIterateGroupCallback is the callback function type.
+ *
+ * @param
+ *      groupid     [in] A pointer to iterating group Id(NULL
+ *                       indicates iteration finished).
+ * @param
+ *      context     [in] The application defined context data.
+ *
+ * @return
+ *      Return true to continue iterate next group peer, false to stop
+ *      iteration.
+ */
+typedef bool ElaIterateGroupCallback(const char *groupid, void *context);
+
+/**
+ * \~English
+ * Get group list. For each group will call the application defined
+ * iterate callback.
+ *
+ * @param
+ *      carrier     [in] a handle to the Carrier node instance.
+ * @param
+ *      callback    [in] a pointer to ElaIterateGroupCallback function.
+ * @param
+ *      context     [in] the application defined context data.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_get_groups(ElaCarrier *w, ElaIterateGroupCallback *callback,
+                   void *context);
+
 /******************************************************************************
  * Error handling
  *****************************************************************************/

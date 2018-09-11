@@ -345,6 +345,222 @@ static inline int __dht_friend_delete_error(TOX_ERR_FRIEND_DELETE code)
     return rc;
 }
 
+static inline int __dht_group_number_by_public_key_error(TOX_ERR_CONFERENCE_BY_ID code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_BY_ID_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_BY_ID_NULL:
+            rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+            break;
+
+        case TOX_ERR_CONFERENCE_BY_ID_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_new_error(TOX_ERR_CONFERENCE_NEW code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_NEW_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_NEW_INIT:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_delete_error(TOX_ERR_CONFERENCE_DELETE code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_DELETE_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_DELETE_CONFERENCE_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_invite_error(TOX_ERR_CONFERENCE_INVITE code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_INVITE_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_INVITE_CONFERENCE_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_INVITE_FAIL_SEND:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE); //TODO: error.
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_join_error(TOX_ERR_CONFERENCE_JOIN code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_JOIN_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_JOIN_INVALID_LENGTH:
+            rc = ELA_DHT_ERROR(ELAERR_TOO_LONG);
+            break;
+
+        case TOX_ERR_CONFERENCE_JOIN_WRONG_TYPE:
+            rc = ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+            break;
+
+        case TOX_ERR_CONFERENCE_JOIN_FRIEND_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_JOIN_DUPLICATE:
+            rc = ELA_DHT_ERROR(ELAERR_ALREADY_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_JOIN_INIT_FAIL:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE);
+            break;
+
+        case TOX_ERR_CONFERENCE_JOIN_FAIL_SEND:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_send_message_error(TOX_ERR_CONFERENCE_SEND_MESSAGE code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_SEND_MESSAGE_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_SEND_MESSAGE_CONFERENCE_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_SEND_MESSAGE_TOO_LONG:
+            rc = ELA_DHT_ERROR(ELAERR_TOO_LONG);
+            break;
+
+        case TOX_ERR_CONFERENCE_SEND_MESSAGE_NO_CONNECTION:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_SEND_MESSAGE_FAIL_SEND:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_title_error(TOX_ERR_CONFERENCE_TITLE code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_TITLE_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_TITLE_CONFERENCE_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_TITLE_INVALID_LENGTH:
+            rc = ELA_DHT_ERROR(ELAERR_TOO_LONG);
+            break;
+
+        case TOX_ERR_CONFERENCE_TITLE_FAIL_SEND:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
+static inline int __dht_group_peer_query_error(TOX_ERR_CONFERENCE_PEER_QUERY code)
+{
+    int rc;
+
+    switch (code) {
+        case TOX_ERR_CONFERENCE_PEER_QUERY_OK:
+            rc = ELASUCCESS;
+            break;
+
+        case TOX_ERR_CONFERENCE_PEER_QUERY_CONFERENCE_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_PEER_QUERY_PEER_NOT_FOUND:
+            rc = ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+            break;
+
+        case TOX_ERR_CONFERENCE_PEER_QUERY_NO_CONNECTION:
+            rc = ELA_DHT_ERROR(ELAERR_WRONG_STATE);
+            break;
+
+        default:
+            rc = ELA_DHT_ERROR(ELAERR_UNKNOWN);
+    }
+
+    return rc;
+}
+
 static bool is_connected(TOX_CONNECTION connection)
 {
     bool is_connected;
@@ -420,6 +636,78 @@ void notify_friend_message_cb(Tox *tox, uint32_t friend_number,
 }
 
 static
+void notify_conference_invite_cb(Tox *tox, uint32_t friend_number,
+                                 TOX_CONFERENCE_TYPE type,
+                                 const uint8_t *cookie,
+                                 size_t length, void *context)
+{
+
+    DHTCallbacks *cbs = (DHTCallbacks *)context;
+
+    if (type != TOX_CONFERENCE_TYPE_TEXT)
+        return;
+
+    cbs->notify_group_invite(friend_number, cookie, length, cbs->context);
+}
+
+static
+void notify_conference_connected_cb(Tox *tox,
+                                    uint32_t conference_number,
+                                    void *context)
+{
+    DHTCallbacks *cbs = (DHTCallbacks *)context;
+
+    cbs->notify_group_connected(conference_number, cbs->context);
+}
+
+static
+void notify_conference_message_cb(Tox *tox, uint32_t conference_number,
+                                  uint32_t peer_number, TOX_MESSAGE_TYPE type,
+                                  const uint8_t *message, size_t length,
+                                  void *context)
+{
+    DHTCallbacks *cbs = (DHTCallbacks *)context;
+
+    if (type != TOX_MESSAGE_TYPE_NORMAL) {
+        return;
+    }
+
+    cbs->notify_group_message(conference_number, peer_number,
+                              message, length, cbs->context);
+}
+
+static
+void notify_conference_title_cb(Tox *tox, uint32_t conference_number,
+                                uint32_t peer_number, const uint8_t *title,
+                                size_t length, void *context)
+{
+    DHTCallbacks *cbs = (DHTCallbacks *)context;
+
+    cbs->notify_group_title(conference_number, peer_number,
+                            (const char *)title, cbs->context);
+}
+
+static
+void notify_conference_peer_name_cb(Tox *tox, uint32_t conference_number,
+                                    uint32_t peer_number, const uint8_t *name,
+                                    size_t length, void *context)
+{
+    DHTCallbacks *cbs = (DHTCallbacks *)context;
+
+    cbs->notify_group_peer_name(conference_number, peer_number,
+                                (const char *)name, cbs->context);
+}
+
+static
+void notify_conference_peer_list_changed_cb(Tox *tox,
+                                            uint32_t conference_number,
+                                            void *context)
+{
+    DHTCallbacks *cbs = (DHTCallbacks *)context;
+
+    cbs->notify_group_peer_list_changed(conference_number, cbs->context);
+}
+
 void log_cb(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line,
             const char *func, const char *message, void *user_data)
 {
@@ -489,6 +777,12 @@ int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht)
     tox_callback_friend_status(tox, notify_friend_status_cb);
     tox_callback_friend_request(tox, notify_friend_request_cb);
     tox_callback_friend_message(tox, notify_friend_message_cb);
+    tox_callback_conference_invite(tox, notify_conference_invite_cb);
+    tox_callback_conference_connected(tox, notify_conference_connected_cb);
+    tox_callback_conference_message(tox, notify_conference_message_cb);
+    tox_callback_conference_title(tox, notify_conference_title_cb);
+    tox_callback_conference_peer_name(tox, notify_conference_peer_name_cb);
+    tox_callback_conference_peer_list_changed(tox, notify_conference_peer_list_changed_cb);
 
     dht->tox = tox;
 
@@ -632,7 +926,7 @@ int dht_get_friends(DHT *dht, FriendsIterateCallback cb, void *context)
     Tox *tox = dht->tox;
     size_t list_sz;
     uint32_t *friend_list;
-    int i;
+    size_t i;
     uint8_t desc[TOX_MAX_STATUS_MESSAGE_LENGTH];
     uint8_t public_key[TOX_PUBLIC_KEY_SIZE];
 
@@ -723,7 +1017,7 @@ void dht_iterate(DHT *dht, void *context)
     tox_iterate(tox, context);
 }
 
-int dht_self_set_name(DHT *dht, uint8_t *name, size_t length)
+int dht_self_set_name(DHT *dht, const char *name)
 {
     Tox *tox = dht->tox;
     TOX_ERR_SET_INFO error;
@@ -732,7 +1026,8 @@ int dht_self_set_name(DHT *dht, uint8_t *name, size_t length)
     assert(tox);
     assert(name);
 
-    success = tox_self_set_name(tox, name, length, &error);
+    success = tox_self_set_name(tox, (const uint8_t *)name,
+                                strlen(name) + 1, &error);
     if (!success) {
         vlogE("DHT: set self name error (%d).", error);
         return __dht_set_info_error(error);
@@ -882,5 +1177,259 @@ int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,
 
     strcpy(tcp_relay, addr);
 
+    return 0;
+}
+
+int dht_group_get_public_key(DHT *dht, uint32_t group_number,
+                             uint8_t *public_key)
+{
+    bool success;
+
+    assert(dht);
+    assert(public_key);
+
+    success = tox_conference_get_id(dht->tox, group_number, public_key);
+    if (!success) {
+        vlogE("DHT: get group public key error.");
+        return ELA_DHT_ERROR(ELAERR_NOT_EXIST);
+    }
+
+    return 0;
+}
+
+int dht_group_number_by_public_key(DHT *dht, const uint8_t *public_key,
+                                   uint32_t *group_number)
+{
+    TOX_ERR_CONFERENCE_BY_ID error;
+
+    assert(dht);
+    assert(public_key);
+    assert(group_number);
+
+    *group_number = tox_conference_by_id(dht->tox, public_key, &error);
+    if (error != TOX_ERR_CONFERENCE_BY_ID_OK) {
+        vlogE("DHT: get group number by public key error (%d).", error);
+        return __dht_group_number_by_public_key_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_new(DHT *dht, uint32_t *group_number)
+{
+    TOX_ERR_CONFERENCE_NEW error;
+
+    *group_number = tox_conference_new(dht->tox, &error);
+    if (error != TOX_ERR_CONFERENCE_NEW_OK) {
+        vlogE("DHT: create group error (%d).", error);
+        return __dht_group_new_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_delete(DHT *dht, uint32_t group_number)
+{
+    TOX_ERR_CONFERENCE_DELETE error;
+    bool rc;
+
+    assert(dht);
+    assert(group_number != UINT32_MAX);
+
+    rc = tox_conference_delete(dht->tox, group_number, &error);
+    if (!rc) {
+        vlogW("DHT: Delete group %lu error (%d)", group_number, error);
+        return __dht_group_delete_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_invite(DHT *dht, uint32_t group_number, uint32_t friend_number)
+{
+    TOX_ERR_CONFERENCE_INVITE error;
+
+    assert(dht);
+
+    tox_conference_invite(dht->tox, friend_number, group_number, &error);
+    if (error != TOX_ERR_CONFERENCE_INVITE_OK) {
+        vlogE("DHT: Invite friend %lu into group %lu error (%d)",
+              friend_number, group_number, error);
+        return __dht_group_invite_error(error);
+    }
+
+    return  0;
+}
+
+int dht_group_join(DHT *dht, uint32_t friend_number, const uint8_t *cookie,
+                   size_t length, uint32_t *group_number)
+{
+    TOX_ERR_CONFERENCE_JOIN error;
+
+    assert(dht);
+    assert(friend_number != UINT32_MAX);
+    assert(cookie);
+    assert(group_number);
+
+    *group_number = tox_conference_join(dht->tox, friend_number, cookie, length,
+                                        &error);
+    if (error != TOX_ERR_CONFERENCE_JOIN_OK) {
+        vlogE("DHT: Friend %lu join group error (%d)", friend_number, error);
+        return __dht_group_join_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_send_message(DHT *dht, uint32_t group_number,
+                           const uint8_t *msg, size_t length)
+{
+    TOX_ERR_CONFERENCE_SEND_MESSAGE error;
+
+    assert(dht);
+    assert(msg);
+    assert(length);
+
+    tox_conference_send_message(dht->tox, group_number,
+                TOX_MESSAGE_TYPE_NORMAL, msg, length, &error);
+    if (error != TOX_ERR_CONFERENCE_SEND_MESSAGE_OK) {
+        vlogE("DHT: Send a message to group %lu error (%d).",
+              group_number, error);
+        return __dht_group_send_message_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_get_title(DHT *dht, uint32_t group_number, char *title,
+                        size_t length)
+{
+    TOX_ERR_CONFERENCE_TITLE error;
+    size_t len;
+
+    assert(dht);
+    assert(title);
+
+    len = tox_conference_get_title_size(dht->tox, group_number, &error);
+    if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
+        vlogE("DHT: Get title size of group %lu error (%d)", group_number,
+              error);
+        return __dht_group_title_error(error);
+    }
+
+    if (len > length)
+        return ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+
+    tox_conference_get_title(dht->tox, group_number, (uint8_t *)title, &error);
+    if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
+        vlogE("DHT: Get title of group %lu error (%d)", group_number, error);
+        return __dht_group_title_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title)
+{
+    TOX_ERR_CONFERENCE_TITLE error;
+
+    assert(dht);
+    assert(title);
+
+    tox_conference_set_title(dht->tox, group_number, (const uint8_t *)title,
+                             strlen(title) + 1, &error);
+    if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
+        vlogE("DHT: Get title of group %lu error (%d)", group_number, error);
+        return __dht_group_title_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count)
+{
+    TOX_ERR_CONFERENCE_PEER_QUERY error;
+
+    assert(dht);
+    assert(group_number != UINT32_MAX);
+    assert(peer_count);
+
+    *peer_count = tox_conference_peer_count(dht->tox, group_number, &error);
+    if (error != TOX_ERR_CONFERENCE_TITLE_OK) {
+        vlogE("DHT: Get peer count of group %lu error (%d)", group_number,
+              error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_number,
+                            char *name, size_t length)
+{
+    TOX_ERR_CONFERENCE_PEER_QUERY error;
+    size_t len;
+
+    assert(dht);
+    assert(group_number !=  UINT32_MAX);
+    assert(peer_number != UINT32_MAX);
+    assert(name);
+
+    len = tox_conference_peer_get_name_size(dht->tox, group_number, peer_number,
+                                            &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get peer %lu name size of group %lu error (%d)", peer_number,
+              group_number, error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    if (len > length)
+        return ELA_DHT_ERROR(ELAERR_INVALID_ARGS);
+
+    tox_conference_peer_get_name(dht->tox, group_number, peer_number,
+                                 (uint8_t *)name, &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get peer %lu name of group %lu error (%d)", group_number,
+              error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    return 0;
+}
+
+int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
+                                  uint32_t peer_number, uint8_t *public_key)
+{
+    TOX_ERR_CONFERENCE_PEER_QUERY error;
+
+    assert(dht);
+    assert(group_number !=  UINT32_MAX);
+    assert(peer_number != UINT32_MAX);
+    assert(public_key);
+
+    tox_conference_peer_get_public_key(dht->tox, group_number, peer_number,
+                                       public_key, &error);
+    if (error != TOX_ERR_CONFERENCE_PEER_QUERY_OK) {
+        vlogE("DHT: Get peer %lu public key from group %lu error (%d)",
+              group_number, peer_number, error);
+        return __dht_group_peer_query_error(error);
+    }
+
+    return 0;
+}
+
+uint32_t dht_get_group_count(DHT *dht)
+{
+    assert(dht);
+
+    return tox_conference_get_chatlist_size(dht->tox);
+}
+
+int dht_get_group_list(DHT *dht, uint32_t *group_number_list)
+{
+    assert(dht);
+    assert(group_number_list);
+
+    tox_conference_get_chatlist(dht->tox, group_number_list);
     return 0;
 }

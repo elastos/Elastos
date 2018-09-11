@@ -25,6 +25,7 @@
 
 #define DHT_PUBLIC_KEY_SIZE     32U
 #define DHT_ADDRESS_SIZE        (32U + sizeof(uint32_t) + sizeof(uint16_t))
+#define DHT_GROUP_ID_SIZE       4U
 
 typedef struct DHT DHT;
 
@@ -69,7 +70,7 @@ int dht_iteration_idle(DHT *dht);
 
 void dht_iterate(DHT *dht, void *context);
 
-int dht_self_set_name(DHT *dht, uint8_t *name, size_t length);
+int dht_self_set_name(DHT *dht, const char *name);
 
 int dht_self_set_desc(DHT *dht, uint8_t *status_msg, size_t length);
 
@@ -80,10 +81,8 @@ int dht_get_friend_number(DHT *dht, const uint8_t *public_key,
 int dht_friend_add(DHT *dht, const uint8_t *address, const uint8_t *msg,
                    size_t length, uint32_t *friend_number);
 
-
 int dht_friend_add_norequest(DHT *dht, const uint8_t *public_key,
                              uint32_t *friend_number);
-
 
 int dht_friend_message(DHT *dht, uint32_t friend_number,
                        const uint8_t *data, size_t length);
@@ -92,5 +91,39 @@ int dht_friend_delete(DHT *dht, uint32_t friend_number);
 
 int dht_get_random_tcp_relay(DHT *dht, char *tcp_relay, size_t buflen,
                              uint8_t *public_key);
+
+int dht_group_get_public_key(DHT *dht, uint32_t group_number,
+                             uint8_t *public_key);
+
+int dht_group_number_by_public_key(DHT *dht, const uint8_t *public_key,
+                                   uint32_t *group_number);
+
+int dht_group_new(DHT *dht, uint32_t *grou_number);
+
+int dht_group_delete(DHT *dht, uint32_t group_number);
+
+int dht_group_invite(DHT *dht, uint32_t group_number, uint32_t friend_number);
+
+int dht_group_join(DHT *dht, uint32_t friend_number, const uint8_t *cookie,
+                   size_t length, uint32_t *group_number);
+
+int dht_group_send_message(DHT *dht, uint32_t group_number,
+                           const uint8_t *msg, size_t length);
+
+int dht_group_get_title(DHT *dht, uint32_t group_number, char *title, size_t length);
+
+int dht_group_set_title(DHT *dht, uint32_t group_number, const char *title);
+
+int dht_group_get_peer_name(DHT *dht, uint32_t group_number, uint32_t peer_number,
+                            char *name, size_t length);
+
+int dht_group_get_peer_public_key(DHT *dht, uint32_t group_number,
+                                  uint32_t peer_number, uint8_t *public_key);
+
+int dht_group_peer_count(DHT *dht, uint32_t group_number, uint32_t *peer_count);
+
+uint32_t dht_get_group_count(DHT *dht);
+
+int dht_get_group_list(DHT *dht, uint32_t *group_number_list);
 
 #endif // __DHT_WRAPPER_H__

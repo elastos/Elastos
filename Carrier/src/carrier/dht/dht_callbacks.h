@@ -48,6 +48,22 @@ struct DHTCallbacks {
 
     void (*notify_friend_message)(uint32_t friend_number, const uint8_t *message,
                                   size_t length, void *context);
+
+    void (*notify_group_invite)(uint32_t fnum, const uint8_t *cookie,
+                                size_t len, void *context);
+
+    void (*notify_group_connected)(uint32_t gnum, void *context);
+
+    void (*notify_group_message)(uint32_t gnum, uint32_t pnum,
+                                 const uint8_t *msg, size_t len, void *context);
+
+    void (*notify_group_title)(uint32_t gnum, uint32_t pnum,
+                               const char *title, void *context);
+
+    void (*notify_group_peer_name)(uint32_t gnum, uint32_t pnum,
+                                   const char *name, void *context);
+
+    void (*notify_group_peer_list_changed)(uint32_t gnum, void *context);
 };
 
 typedef struct DHTCallbacks DHTCallbacks;

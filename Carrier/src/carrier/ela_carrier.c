@@ -501,7 +501,7 @@ static int convert_old_dhtdata(const char *data_location)
 
             uint8_t *rptr = pos;
             uint8_t *wptr = pos;
-            int i;
+            uint32_t i;
 
             for (i = 0; i < val; i++) {
                 uint32_t id = *(uint32_t *)rptr;
@@ -1020,13 +1020,13 @@ static void ela_destroy(void *argv)
     dht_kill(&w->dht);
 }
 
-ElaCarrier *ela_new(const ElaOptions *opts,
-                 ElaCallbacks *callbacks, void *context)
+ElaCarrier *ela_new(const ElaOptions *opts, ElaCallbacks *callbacks,
+                    void *context)
 {
     ElaCarrier *w;
     persistence_data data;
     int rc;
-    int i;
+    size_t i;
 
     if (!opts) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
@@ -1504,7 +1504,8 @@ static void do_friend_event(ElaCarrier *w, FriendEvent *event)
         if (event->fi.status == ElaConnectionStatus_Connected) {
             if (w->callbacks.friend_connection)
                 w->callbacks.friend_connection(w, event->fi.user_info.userid,
-                                ElaConnectionStatus_Disconnected, w->context);
+                                               ElaConnectionStatus_Disconnected,
+                                               w->context);
         }
 
         if (w->callbacks.friend_removed)
@@ -1756,6 +1757,207 @@ void notify_friend_message_cb(uint32_t friend_number, const uint8_t *message,
     elacp_free(cp);
 }
 
+static
+void notify_group_invite_cb(uint32_t fnum, const uint8_t *cookie,
+                            size_t len, void *user_data)
+{
+    FriendInfo *fi;
+    ElaCarrier *w = (ElaCarrier *)user_data;
+
+    fi = friends_get(w->friends, fnum);
+    if (!fi) {
+        return;
+    }
+
+    if (w->callbacks.group_invite) {
+        char uid[ELA_MAX_ID_LEN + 1];
+
+        strcpy(uid, fi->info.user_info.userid);
+        w->callbacks.group_invite(w, uid, (const char *)cookie, len, w->context);
+    }
+
+    deref(fi);
+}
+
+static
+int get_groupid_by_number(ElaCarrier *w, uint32_t group_number,
+                          char *groupid_buf, size_t length)
+{
+    uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+    size_t textlen = length;
+    char *groupid;
+    int rc;
+
+    rc = dht_group_get_public_key(&w->dht, group_number, public_key);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    groupid = base58_encode(public_key, sizeof(public_key), groupid_buf,
+                            &textlen);
+    if (!groupid) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_BUFFER_TOO_SMALL));
+        return -1;
+    }
+
+    return 0;
+}
+
+static
+int get_peerid_by_number(ElaCarrier *w, uint32_t group_number,
+                         uint32_t peer_number, char *peerid_buf, size_t length)
+{
+    uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+    size_t textlen = length;
+    char *peerid;
+    int rc;
+
+    rc = dht_group_get_peer_public_key(&w->dht, group_number, peer_number,
+                                       public_key);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    peerid = base58_encode(public_key, sizeof(public_key), peerid_buf,
+                            &textlen);
+    if (!peerid) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_BUFFER_TOO_SMALL));
+        return -1;
+    }
+
+    return 0;
+}
+
+static
+void notify_group_connected_cb(uint32_t group_number, void *user_data)
+{
+    ElaCarrier *w = (ElaCarrier *)user_data;
+    char groupid[ELA_MAX_ID_LEN + 1];
+    int rc;
+
+    rc = get_groupid_by_number(w, group_number, groupid, sizeof(groupid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown group number %u, group connection dropped.",
+              group_number);
+        return;
+    }
+
+    if (w->callbacks.group_callbacks.group_connected)
+        w->callbacks.group_callbacks.group_connected(w, groupid, w->context);
+}
+
+static
+void notify_group_message_cb(uint32_t group_number, uint32_t peer_number,
+                             const uint8_t *msg, size_t len, void *user_data)
+{
+    ElaCarrier *w = (ElaCarrier *)user_data;
+    char groupid[ELA_MAX_ID_LEN + 1];
+    char peerid[ELA_MAX_ID_LEN + 1];
+    int rc;
+
+    rc = get_groupid_by_number(w, group_number, groupid, sizeof(groupid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown group number %u, group message dropped.",
+              group_number);
+        return;
+    }
+
+    rc = get_peerid_by_number(w, group_number, peer_number, peerid,
+                              sizeof(peerid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown peer number %u, group message dropped.",
+              peer_number);
+        return;
+    }
+
+    if (w->callbacks.group_callbacks.group_message)
+        w->callbacks.group_callbacks.group_message(w, groupid, peerid,
+                                                  msg, len, w->context);
+}
+
+static
+void notify_group_title_cb(uint32_t group_number, uint32_t peer_number,
+                           const char *title, void *user_data)
+{
+    ElaCarrier *w = (ElaCarrier *)user_data;
+    char groupid[ELA_MAX_ID_LEN + 1];
+    char peerid[ELA_MAX_ID_LEN + 1];
+    int rc;
+
+    if (peer_number == UINT32_MAX) {
+        vlogI("Carrier: Do not notify newly joined peer about the group name.");
+        return;
+    }
+
+    rc = get_groupid_by_number(w, group_number, groupid, sizeof(groupid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown group number %u, group titile change event "
+              "dropped.", group_number);
+        return;
+    }
+
+    rc = get_peerid_by_number(w, group_number, peer_number, peerid,
+                              sizeof(peerid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown peer number %u, group titile change event "
+              "dropped.", peer_number);
+        return;
+    }
+
+    if (w->callbacks.group_callbacks.group_title)
+        w->callbacks.group_callbacks.group_title(w, groupid, peerid,
+                                                title, w->context);
+}
+
+static
+void notify_group_peer_name_cb(uint32_t group_number, uint32_t peer_number,
+                               const char *name, void *user_data)
+{
+    ElaCarrier *w = (ElaCarrier *)user_data;
+    char groupid[ELA_MAX_ID_LEN + 1];
+    char peerid[ELA_MAX_ID_LEN + 1];
+    int rc;
+
+    rc = get_groupid_by_number(w, group_number, groupid, sizeof(groupid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown group number %u, group titile change event "
+              "dropped.", group_number);
+        return;
+    }
+
+    rc = get_peerid_by_number(w, group_number, peer_number, peerid,
+                              sizeof(peerid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown peer number %u, group titile change event "
+              "dropped.", peer_number);
+        return;
+    }
+
+    if (w->callbacks.group_callbacks.peer_name)
+        w->callbacks.group_callbacks.peer_name(w, groupid, peerid,
+                                              name, w->context);
+}
+
+static
+void notify_group_peer_list_changed_cb(uint32_t group_number, void *user_data)
+{
+    ElaCarrier *w = (ElaCarrier *)user_data;
+    char groupid[ELA_MAX_ID_LEN + 1];
+    int rc;
+
+    rc = get_groupid_by_number(w, group_number, groupid, sizeof(groupid));
+    if (rc < 0) {
+        vlogE("Carrier: Unknown group number %u, group titile change event "
+              "dropped.", group_number);
+        return;
+    }
+
+    if (w->callbacks.group_callbacks.peer_list_changed)
+        w->callbacks.group_callbacks.peer_list_changed(w, groupid, w->context);
+}
+
 static void connect_to_bootstraps(ElaCarrier *w)
 {
     int i;
@@ -1800,6 +2002,12 @@ int ela_run(ElaCarrier *w, int interval)
     w->dht_callbacks.notify_friend_status = notify_friend_status_cb;
     w->dht_callbacks.notify_friend_request = notify_friend_request_cb;
     w->dht_callbacks.notify_friend_message = notify_friend_message_cb;
+    w->dht_callbacks.notify_group_invite = notify_group_invite_cb;
+    w->dht_callbacks.notify_group_connected = notify_group_connected_cb;
+    w->dht_callbacks.notify_group_message = notify_group_message_cb;
+    w->dht_callbacks.notify_group_title = notify_group_title_cb;
+    w->dht_callbacks.notify_group_peer_name = notify_group_peer_name_cb;
+    w->dht_callbacks.notify_group_peer_list_changed = notify_group_peer_list_changed_cb;
     w->dht_callbacks.context = w;
 
     notify_friends(w);
@@ -1957,6 +2165,15 @@ int ela_set_self_info(ElaCarrier *w, const ElaUserInfo *info)
     }
 
     if (did_changed) {
+        if (strcmp(info->name, w->me.name)) {
+            int rc = dht_self_set_name(&w->dht, info->name);
+            if (rc) {
+                elacp_free(cp);
+                ela_set_error(rc);
+                return -1;
+            }
+        }
+
         elacp_set_has_avatar(cp, !!info->has_avatar);
         elacp_set_name(cp, info->name);
         elacp_set_descr(cp, info->description);
@@ -2744,3 +2961,455 @@ redo_get_tcp_relay:
 
     return 0;
 }
+
+int ela_new_group(ElaCarrier *w, char *groupid, size_t length)
+{
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !groupid || length <= ELA_MAX_ID_LEN) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = dht_group_new(&w->dht, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = get_groupid_by_number(w, group_number, groupid, length);
+    if (rc < 0) {
+        dht_group_delete(&w->dht, group_number);
+        ela_set_error(rc);
+        return -1;
+    }
+
+    vlogD("Carrier: Group %s created.", groupid);
+
+    return 0;
+}
+
+static
+int get_group_number(ElaCarrier *w, const char *groupid, uint32_t *group_number)
+{
+    uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+    ssize_t len;
+    int rc;
+
+    assert(w);
+    assert(groupid);
+    assert(group_number);
+
+    len = base58_decode(groupid, strlen(groupid), public_key, sizeof(public_key));
+    if (len != DHT_PUBLIC_KEY_SIZE) {
+        vlogE("Carrier: groupid %s not base58 encoded.", groupid);
+        return ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS);
+    }
+
+    rc = dht_group_number_by_public_key(&w->dht, public_key, group_number);
+    if (rc < 0)
+        return ELA_GENERAL_ERROR(ELAERR_NOT_EXIST);
+
+    return rc;
+}
+
+int ela_delete_group(ElaCarrier *w, const char *groupid)
+{
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !groupid || !*groupid) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = dht_group_delete(&w->dht, group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    vlogD("Carrier: Group %s deleted", groupid);
+
+    return 0;
+}
+
+int ela_group_invite(ElaCarrier *w, const char *groupid, const char *friendid)
+{
+    uint32_t friend_number;
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !groupid || !*groupid || !friendid || !*friendid) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = get_friend_number(w, friendid, &friend_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = dht_group_invite(&w->dht, group_number, friend_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    vlogD("Carrier: Invite friend %s into group %s success", friendid,
+          groupid);
+
+    return 0;
+}
+
+int ela_group_join(ElaCarrier *w, const char *friendid, const void *cookie,
+                   size_t cookie_len, char *groupid, size_t length)
+{
+    uint32_t friend_number;
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !friendid || !*friendid || !cookie || !cookie_len ||
+        !groupid || length <= ELA_MAX_ID_LEN) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_friend_number(w, friendid, &friend_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = dht_group_join(&w->dht, friend_number, (const uint8_t *)cookie,
+                        cookie_len, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = get_groupid_by_number(w, group_number, groupid, length);
+    if (rc < 0) {
+        dht_group_delete(&w->dht, group_number);
+        ela_set_error(rc);
+        return -1;
+    }
+
+    vlogD("Carrier: Friend %s joined group %s success", friendid, groupid);
+
+    return 0;
+}
+
+int ela_group_send_message(ElaCarrier *w, const char *groupid, const void *msg,
+                           size_t length)
+{
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !groupid || !*groupid || !msg || !length) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return  -1;
+    }
+
+    rc = dht_group_send_message(&w->dht, group_number, msg, length);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    return 0;
+}
+
+int ela_group_get_title(ElaCarrier *w, const char *groupid, char *title,
+                        size_t length)
+{
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !groupid || !*groupid || !title || !length) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return  -1;
+    }
+
+    rc = dht_group_get_title(&w->dht, group_number, title, length);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    return 0;
+}
+
+int ela_group_set_title(ElaCarrier *w, const char *groupid, const char *title)
+{
+    uint32_t group_number;
+    int rc;
+
+    if (!w || !groupid || !*groupid || !title || !*title) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = dht_group_set_title(&w->dht, group_number, title);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    return 0;
+}
+
+int ela_group_get_peers(ElaCarrier *w, const char *groupid,
+                        ElaGroupPeersIterateCallback *callback,
+                        void *context)
+{
+    uint32_t group_number;
+    uint32_t peer_count;
+    uint32_t i;
+    int rc;
+
+    if (!w || !groupid || !*groupid || !callback) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = dht_group_peer_count(&w->dht, group_number, &peer_count);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    for (i = 0; i < peer_count; i++) {
+        uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+        ElaGroupPeer peer;
+        size_t text_sz = sizeof(peer.userid);
+        char *peerid;
+
+        rc = dht_group_get_peer_name(&w->dht, group_number, i, peer.name,
+                                     sizeof(peer.name));
+        if (rc < 0) {
+            vlogW("Carrier: Get peer %lu name from group:%lu error.",
+                  i, group_number);
+            continue;
+        }
+
+        rc = dht_group_get_peer_public_key(&w->dht, group_number, i, public_key);
+        if (rc < 0) {
+            vlogW("Carrier: Get peer %lu public key from group %lu error.",
+                  i, group_number);
+            continue;
+        }
+
+        peerid = base58_encode(public_key, sizeof(public_key), peer.userid,
+                               &text_sz);
+        if (!peerid) {
+            vlogW("Carrier: Convert public key to userid error");
+            continue;
+        }
+
+        if (!callback(&peer, context))
+            return 0;
+    }
+
+    callback(NULL, context);
+    return 0;
+}
+
+int ela_group_get_peer(ElaCarrier *w, const char *groupid,
+                       const char *peerid, ElaGroupPeer *peer)
+{
+    uint8_t peerpk[DHT_PUBLIC_KEY_SIZE];
+    uint32_t group_number;
+    uint32_t peer_count;
+    uint32_t i;
+    int rc;
+
+    if (!w || !groupid || !*groupid || !peerid || !*peerid || !peer) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    rc = get_group_number(w, groupid, &group_number);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    rc = dht_group_peer_count(&w->dht, group_number, &peer_count);
+    if (rc < 0) {
+        ela_set_error(rc);
+        return -1;
+    }
+
+    if (!is_valid_key(peerid)) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    rc = (int)base58_decode(peerid, sizeof(peerid) + 1, peerpk, sizeof(peerpk));
+    if (rc < 0) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_BUFFER_TOO_SMALL));
+        return -1;
+    }
+
+    for (i = 0; i < peer_count; i++) {
+        uint8_t public_key[DHT_PUBLIC_KEY_SIZE];
+
+        rc = dht_group_get_peer_public_key(&w->dht, group_number, i, public_key);
+        if (rc < 0) {
+            vlogW("Carrier: Get peer %lu name from group:%lu error.",
+                  i, group_number);
+            continue;
+        }
+
+        if (memcmp(peerpk, public_key, sizeof(peerpk)) == 0)
+            break;
+    }
+
+    if (i == peer_count) {
+        vlogE("Carrier: Can not find peer (%s) in group (%lu)", peerid,
+              group_number);
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    rc = dht_group_get_peer_name(&w->dht, group_number, i, peer->name,
+                                 sizeof(peer->name));
+    if (rc < 0) {
+        vlogE("Carrier: Get peer %lu name from group:%lu error.", i,
+              group_number);
+        ela_set_error(rc);
+        return -1;
+    }
+
+    strcpy(peer->userid, peerid);
+
+    return 0;
+}
+
+int ela_get_groups(ElaCarrier *w, ElaIterateGroupCallback *callback,
+                   void *context)
+{
+    uint32_t group_count;
+    uint32_t *group_number_list;
+    uint32_t i;
+
+    if (!w || !callback) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!w->is_ready) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_READY));
+        return -1;
+    }
+
+    group_count = dht_get_group_count(&w->dht);
+    if (!group_count) {
+        callback(NULL, context);
+        return 0;
+    }
+
+    group_number_list = (uint32_t *)alloca(sizeof(uint32_t) * group_count);
+    dht_get_group_list(&w->dht, group_number_list);
+
+    for (i = 0; i < group_count; i++) {
+        char groupid[ELA_MAX_ID_LEN + 1];
+        int rc;
+
+        rc = get_groupid_by_number(w, group_number_list[i], groupid,
+                                   sizeof(groupid));
+        if (rc < 0)
+            continue;
+
+        if (!callback(groupid, context))
+            return 0;
+    }
+
+    callback(NULL, context);
+    return 0;
+}
+
