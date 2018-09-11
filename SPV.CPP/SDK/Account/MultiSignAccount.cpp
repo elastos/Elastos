@@ -68,15 +68,16 @@ namespace Elastos {
 
 		}
 
-		std::string MultiSignAccount::GetAddress() {
-			//todo complete me
-			return std::string();
-		}
-
 		void MultiSignAccount::checkSigners() const {
 			if (_me == nullptr)
 				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType,
 											  "Readonly account do not support this operation.");
+		}
+
+		std::string MultiSignAccount::GetAddress() {
+			SortSigners();
+			//todo complete me
+			return std::string();
 		}
 	}
 }

@@ -11,6 +11,7 @@ namespace Elastos {
 
 		std::string ErrorCode::PasswordError = "[Password]";
 		std::string ErrorCode::WrongAccountType = "[WrongAccountType]";
+		std::string ErrorCode::NoCurrentMultiSinAccount = "[NoCurrentMultiSinAccount]";
 
 		void ErrorCode::StandardLogicError(const std::string &errorCode, const std::string &extraMsg) {
 			std::stringstream ss;

@@ -60,5 +60,10 @@ namespace Elastos {
 			ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "Simple account do not support this operation.");
 			return MasterPubKey();
 		}
+
+		std::string SimpleAccount::GetAddress() {
+			//todo complete me
+			return std::string();
+		}
 	}
 }

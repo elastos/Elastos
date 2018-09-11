@@ -26,8 +26,8 @@
 #include "BRCrypto.h"
 #include <string.h>
 #include <assert.h>
-#include <cmake-build-debug/ThirdParty/openssl/install/include/openssl/ec.h>
-#include <cmake-build-debug/ThirdParty/openssl/install/include/openssl/obj_mac.h>
+#include <openssl/ec.h>
+#include <openssl/obj_mac.h>
 
 #define BIP32_SEED_KEY "Bitcoin seed"
 #define BIP32_XPRV     "\x04\x88\xAD\xE4"
