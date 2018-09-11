@@ -70,10 +70,8 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			_localStore.Account()->resetMnemonic(language);
-
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			importFromMnemonic(mnemonic, phrasePassword, payPassword);
+			importFromMnemonic(mnemonic, language, phrasePassword, payPassword);
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -163,7 +161,7 @@ namespace Elastos {
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
-				_localStore.Account()->deriveKey(payPassword);
+				_localStore.Account()->DeriveKey(payPassword);
 				return _createdWallets[chainID];
 			}
 
@@ -258,7 +256,7 @@ namespace Elastos {
 			return _localStore.Account()->GetPublicKey();
 		}
 
-		bool MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
+		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
 											  const std::string &payPassword, const std::string &phrasePassword) {
 			ParamChecker::checkPassword(backupPassword, "Backup");
 			ParamChecker::checkPassword(payPassword, "Pay");
@@ -276,19 +274,19 @@ namespace Elastos {
 			initFromKeyStore(keyStore, payPassword, phrasePassword);
 
 			Save();
-			return true;
 		}
 
-		bool MasterWallet::importFromMnemonic(const std::string &mnemonic, const std::string &phrasePassword,
+		void MasterWallet::importFromMnemonic(const std::string &mnemonic,
+											  const std::string &languange,
+											  const std::string &phrasePassword,
 											  const std::string &payPassword) {
 			ParamChecker::checkNotEmpty(mnemonic);
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			bool result = _localStore.Account()->initFromPhrase(mnemonic, phrasePassword, payPassword);
+			_localStore.Reset(mnemonic, languange, phrasePassword, payPassword);
 
 			Save();
-			return result;
 		}
 
 		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword) {
@@ -318,7 +316,6 @@ namespace Elastos {
 
 		void MasterWallet::initFromLocalStore(const MasterWalletStore &localStore) {
 			tryInitCoinConfig();
-			_localStore.Account()->resetMnemonic(localStore.Account()->GetLanguage());
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, localStore.GetIdAgentInfo()));
 			initSubWallets(localStore.GetSubWalletInfoList(), "");
 		}
@@ -342,7 +339,7 @@ namespace Elastos {
 			ParamChecker::checkNotEmpty(message);
 			ParamChecker::checkPassword(payPassword);
 
-			Key key = _localStore.Account()->deriveKey(payPassword);
+			Key key = _localStore.Account()->DeriveKey(payPassword);
 			return key.compactSign(message);
 		}
 
@@ -473,20 +470,14 @@ namespace Elastos {
 			phrasePass = phrasePassword != "" ? phrasePassword : phrasePass;
 
 			std::string mnemonic = keyStore.json().getMnemonic();
-			CMBlock cbMnemonic;
-			cbMnemonic.SetMemFixed((const uint8_t *) mnemonic.c_str(), mnemonic.size());
-			_localStore.Account()->resetMnemonic(keyStore.json().getMnemonicLanguage());
-			_localStore.Account()->SetEncryptedMnemonic(Utils::encrypt(cbMnemonic, payPassword));
-
-			if (!_localStore.Account()->initFromPhrase(mnemonic, phrasePass, payPassword))
-				throw std::logic_error("Initialize from phrase error.");
+			_localStore.Reset(mnemonic, keyStore.json().getMnemonicLanguage(), phrasePass, payPassword);
 
 			initSubWallets(keyStore.json().getCoinInfoList(), payPassword);
 		}
 
 		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
 			keyStore.json().setEncryptedPhrasePassword(
-					Utils::encodeHex(_localStore.Account()->GetEncrptedPhrasePassword()));
+					Utils::encodeHex(_localStore.Account()->GetEncryptedPhrasePassword()));
 
 			CMBlock cbMnemonic = Utils::decrypt(_localStore.Account()->GetEncryptedMnemonic(), payPassword);
 			if (false == cbMnemonic) {

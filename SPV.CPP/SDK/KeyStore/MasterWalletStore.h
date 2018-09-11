@@ -35,14 +35,23 @@ namespace Elastos {
 
 			IAccount *Account() const;
 
+			void Reset(const std::string &phrase,
+					   const std::string &language,
+					   const std::string &phrasePassword,
+					   const std::string &payPassword);
+
 		private:
 			JSON_SM_LS(MasterWalletStore);
+
 			JSON_SM_RS(MasterWalletStore);
+
 			TO_JSON(MasterWalletStore);
+
 			FROM_JSON(MasterWalletStore);
 
 		private:
 
+			std::string _rootPath;
 			AccountPtr _account;
 			IdAgentInfo _idAgentInfo;
 			std::vector<CoinInfo> _subWalletsInfoList;

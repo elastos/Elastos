@@ -18,17 +18,15 @@ namespace Elastos {
 
 		class StandardAccount : public IAccount {
 		public:
-			StandardAccount(const std::string &rootPath);
+			StandardAccount(const std::string &rootPath,
+							const std::string &phrase,
+							const std::string &language,
+							const std::string &phrasePassword,
+							const std::string &payPassword);
 
-			virtual bool initFromPhrase(const std::string &phrase,
-								const std::string &phrasePassword,
-								const std::string &payPassword);
+			virtual Key DeriveKey(const std::string &payPassword);
 
-			virtual void resetMnemonic(const std::string &language);
-
-			virtual Key deriveKey(const std::string &payPassword);
-
-			virtual UInt512 deriveSeed(const std::string &payPassword);
+			virtual UInt512 DeriveSeed(const std::string &payPassword);
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
@@ -38,29 +36,19 @@ namespace Elastos {
 
 		public: //properties
 
-			virtual const CMBlock &GetEncrpytedKey() const;
-
-			virtual void SetEncryptedKey(const CMBlock &data);
+			virtual const CMBlock &GetEncryptedKey() const;
 
 			virtual const CMBlock &GetEncryptedMnemonic() const;
 
-			virtual void SetEncryptedMnemonic(const CMBlock &data);
-
-			virtual const CMBlock &GetEncrptedPhrasePassword() const;
-
-			virtual void SetEncryptedPhrasePassword(const CMBlock &data);
+			virtual const CMBlock &GetEncryptedPhrasePassword() const;
 
 			virtual const std::string &GetPublicKey() const;
 
-			virtual void SetPublicKey(const std::string &pubKey);
-
-			virtual const std::string &GetLanguage() const;
-
-			virtual void SetLanguage(const std::string &language);
-
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			virtual void SetIDMasterPubKey(const MasterPubKey &masterPubKey);
+			const std::string &GetLanguage() const;
+
+			void SetLanguage(const std::string &language);
 
 		private:
 			JSON_SM_LS(StandardAccount);
@@ -70,6 +58,8 @@ namespace Elastos {
 			TO_JSON(StandardAccount);
 
 			FROM_JSON(StandardAccount);
+
+			void resetMnemonic(const std::string &language);
 
 		private:
 			CMBlock _encryptedKey;

@@ -8,12 +8,12 @@
 #include "ParamChecker.h"
 #include "Utils.h"
 #include "SDK/Account/StandardAccount.h"
+#include "SDK/Account/MultiSignAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		MasterWalletStore::MasterWalletStore(const std::string &rootPath) {
-			_account = AccountPtr(new StandardAccount(rootPath));
+		MasterWalletStore::MasterWalletStore(const std::string &rootPath) : _rootPath(rootPath) {
 		}
 
 		MasterWalletStore::~MasterWalletStore() {
@@ -89,6 +89,11 @@ namespace Elastos {
 
 		IAccount *MasterWalletStore::Account() const {
 			return _account.get();
+		}
+
+		void MasterWalletStore::Reset(const std::string &phrase, const std::string &language,
+									  const std::string &phrasePassword, const std::string &payPassword) {
+			_account = AccountPtr(new StandardAccount(_rootPath, phrase, language, phrasePassword, payPassword));
 		}
 
 	}

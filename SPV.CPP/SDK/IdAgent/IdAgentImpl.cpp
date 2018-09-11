@@ -110,7 +110,7 @@ namespace Elastos {
 			if(standardAccount == nullptr) {
 				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "This account can not create id.");
 			}
-			UInt512 seed = standardAccount->deriveSeed(password);
+			UInt512 seed = standardAccount->DeriveSeed(password);
 			BRKey key;
 			BRBIP32PrivKey(&key, &seed.u8[0], sizeof(seed), item.Purpose, item.Index);
 			var_clean(&seed);

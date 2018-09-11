@@ -2,20 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_MULTISIGNACCOUNT_H__
-#define __ELASTOS_SDK_MULTISIGNACCOUNT_H__
-
-#include <vector>
+#ifndef __ELASTOS_SDK_SIMPLEACCOUNT_H__
+#define __ELASTOS_SDK_SIMPLEACCOUNT_H__
 
 #include "IAccount.h"
-#include "StandardAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class MultiSignAccount : public IAccount {
+		class SimpleAccount : public IAccount {
 		public:
-			MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners);
+			SimpleAccount(const std::string &privKey, const std::string &payPassword);
 
 			virtual Key DeriveKey(const std::string &payPassword);
 
@@ -39,18 +36,13 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			std::string GetAddress();
-
 		private:
-			void SortSigners();
 
-			void checkSigners() const;
-		private:
-			IAccount *_me;
-			std::vector<std::string> _coSigners;
+			std::string _publicKey;
+			CMBlock _encryptedKey;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_MULTISIGNACCOUNT_H__
+#endif //__ELASTOS_SDK_SIMPLEACCOUNT_H__

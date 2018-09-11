@@ -131,12 +131,13 @@ namespace Elastos {
 					const std::string &rootPath,
 					bool p2pEnable);
 
-			bool importFromKeyStore(const nlohmann::json &keystoreContent,
+			void importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
 									const std::string &payPassword,
 									const std::string &phrasePassword);
 
-			bool importFromMnemonic(const std::string &mnemonic,
+			void importFromMnemonic(const std::string &mnemonic,
+									const std::string &language,
 									const std::string &phrasePassword,
 									const std::string &payPassword);
 
