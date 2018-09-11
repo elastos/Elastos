@@ -1,7 +1,6 @@
 package sync
 
 import (
-	"sync"
 	"sync/atomic"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
@@ -15,12 +14,20 @@ import (
 )
 
 const (
+	// minPendingRequests is the minimum number of block hashes in request
+	// queue.
+	minPendingRequests = msg.MaxInvPerMsg
+
+	// minInFlightBlocks is the minimum number of blocks that should be
+	// in the request queue before requesting more.
+	minInFlightBlocks = 10
+
 	// maxBadBlockRate is the maximum bad blocks rate of received blocks.
 	maxBadBlockRate float64 = 0.001
 
 	// maxFalsePositiveRate is the maximum false positive rate of received
 	// transactions.
-	maxFalsePositiveRate float64 = 0.001
+	maxFalsePositiveRate float64 = 0.0001
 
 	// maxRequestedBlocks is the maximum number of requested block
 	// hashes to store in memory.
@@ -119,7 +126,6 @@ type SyncManager struct {
 	shutdown int32
 	cfg      Config
 	msgChan  chan interface{}
-	wg       sync.WaitGroup
 	quit     chan struct{}
 
 	// These fields should only be accessed from the blockHandler thread
@@ -215,6 +221,9 @@ func (sm *SyncManager) syncWith(p *peer.Peer) {
 // isSyncCandidate returns whether or not the peer is a candidate to consider
 // syncing from.
 func (sm *SyncManager) isSyncCandidate(peer *peer.Peer) bool {
+	// Just return true.
+	return true
+
 	services := peer.Services()
 	// Candidate if all checks passed.
 	return services&p2p.SFNodeNetwork == p2p.SFNodeNetwork &&
@@ -236,6 +245,7 @@ func (sm *SyncManager) getSyncCandidates() []*peer.Peer {
 // updateBloomFilter update the bloom filter and send it to the given peer.
 func (sm *SyncManager) updateBloomFilter(p *peer.Peer) {
 	msg := sm.cfg.UpdateFilter().GetFilterLoadMsg()
+	log.Debugf("Update bloom filter %v, %d, %d", msg.Filter, msg.Tweak, msg.HashFuncs)
 	doneChan := make(chan struct{})
 	p.QueueMessage(msg, doneChan)
 
@@ -273,6 +283,8 @@ func (sm *SyncManager) handleNewPeerMsg(peer *peer.Peer) {
 		requestedTxns:   make(map[common.Uint256]struct{}),
 		requestedBlocks: make(map[common.Uint256]struct{}),
 	}
+
+	sm.updateBloomFilter(peer)
 
 	// Start syncing by choosing the best candidate if needed.
 	if isSyncCandidate && sm.syncPeer == nil {
@@ -354,7 +366,6 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 			sm.updateBloomFilter(peer)
 		}
 	}
-
 }
 
 // handleBlockMsg handles block messages from all peers.  Blocks are requested
@@ -429,7 +440,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	// Check false positive rate.
 	state.falsePositives += fps
 	if state.falsePosRate() > maxFalsePositiveRate {
-
+		sm.updateBloomFilter(peer)
 	}
 
 	// We can exit here if the block is already known
@@ -453,21 +464,19 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 
 	// If we're current now, nothing more to do.
 	if sm.current() {
+		// When we are current, the last getblocks message we sent will get
+		// stalled, so we cancel it to prevent peer from stall disconnection.
+		peer.StallClear()
 		peer.UpdateHeight(newHeight)
 		return
 	}
 
-	// If we're not current and we've downloaded everything we've requested send another getblocks message.
-	// Otherwise we'll request the next block in the queue.
-	if len(state.requestQueue) == 0 {
-		locator := sm.cfg.Chain.LatestBlockLocator()
-		peer.PushGetBlocksMsg(locator, &zeroHash)
-		log.Debug("Request queue at zero. Pushing new locator.")
-		return
+	// Request more blocks if in flight blocks is getting short. This can make
+	// syncing progress a little bit faster then request more blocks after the
+	// last requested block received.
+	if len(state.requestedBlocks) < minInFlightBlocks {
+		sm.requestQueuedInv(peer, state)
 	}
-
-	// We have pending requests, so push a new getdata message.
-	sm.pushGetDataMsg(peer, state)
 }
 
 // haveInventory returns whether or not the inventory represented by the passed
@@ -505,7 +514,16 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 		return
 	}
 
+	// Attempt to find the final block in the inventory list.  There may
+	// not be one.
+	var lastBlock *msg.InvVect
 	invVects := imsg.inv.InvList
+	for i := len(invVects) - 1; i >= 0; i-- {
+		if invVects[i].Type == msg.InvTypeBlock {
+			lastBlock = invVects[i]
+			break
+		}
+	}
 
 	// Ignore invs from peers that aren't the sync if we are not current.
 	// Helps prevent fetching a mass of orphans.
@@ -518,7 +536,6 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 		// Ignore unsupported inventory types.
 		switch iv.Type {
 		case msg.InvTypeBlock:
-			iv.Type = msg.InvTypeFilteredBlock
 		case msg.InvTypeTx:
 		default:
 			continue
@@ -532,10 +549,19 @@ func (sm *SyncManager) handleInvMsg(imsg *invMsg) {
 		}
 	}
 
-	sm.pushGetDataMsg(peer, state)
+	// Check if we are in syncing mode and the request queue is not long enough.
+	if !sm.current() && len(state.requestQueue) < minPendingRequests {
+		if lastBlock != nil {
+			locator := []*common.Uint256{&lastBlock.Hash}
+			peer.PushGetBlocksMsg(locator, &zeroHash)
+		}
+	}
+
+	// If there are any queued inventory, just request them.
+	sm.requestQueuedInv(peer, state)
 }
 
-func (sm *SyncManager) pushGetDataMsg(peer *peer.Peer, state *peerSyncState) {
+func (sm *SyncManager) requestQueuedInv(peer *peer.Peer, state *peerSyncState) {
 	// Request as much as possible at once.  Anything that won't fit into
 	// the request will be requested on the next inv message.
 	numRequested := 0
@@ -547,7 +573,7 @@ func (sm *SyncManager) pushGetDataMsg(peer *peer.Peer, state *peerSyncState) {
 		requestQueue = requestQueue[1:]
 
 		switch iv.Type {
-		case msg.InvTypeFilteredBlock:
+		case msg.InvTypeBlock:
 			// Request the block if there is not already a pending
 			// request.
 			if _, exists := sm.requestedBlocks[iv.Hash]; !exists {
@@ -555,6 +581,7 @@ func (sm *SyncManager) pushGetDataMsg(peer *peer.Peer, state *peerSyncState) {
 				sm.limitMap(sm.requestedBlocks, maxRequestedBlocks)
 				state.requestedBlocks[iv.Hash] = struct{}{}
 
+				iv.Type = msg.InvTypeFilteredBlock
 				gdmsg.AddInvVect(iv)
 				numRequested++
 			}
@@ -578,6 +605,7 @@ func (sm *SyncManager) pushGetDataMsg(peer *peer.Peer, state *peerSyncState) {
 	}
 	state.requestQueue = requestQueue
 	if len(gdmsg.InvList) > 0 {
+		log.Debugf("QueueMessage getdata size %d", len(gdmsg.InvList))
 		peer.QueueMessage(gdmsg, nil)
 	}
 }
@@ -653,7 +681,14 @@ out:
 		}
 	}
 
-	sm.wg.Done()
+cleanup:
+	for {
+		select {
+		case <-sm.msgChan:
+		default:
+			break cleanup
+		}
+	}
 	log.Trace("Block handler done")
 }
 
@@ -721,7 +756,6 @@ func (sm *SyncManager) Start() {
 	}
 
 	log.Trace("Starting sync manager")
-	sm.wg.Add(1)
 	go sm.blockHandler()
 }
 
@@ -736,7 +770,6 @@ func (sm *SyncManager) Stop() error {
 
 	log.Infof("Sync manager shutting down")
 	close(sm.quit)
-	sm.wg.Wait()
 	return nil
 }
 
