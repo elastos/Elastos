@@ -2,17 +2,30 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_SIMPLEACCOUNT_H__
-#define __ELASTOS_SDK_SIMPLEACCOUNT_H__
+#ifndef __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
+#define __ELASTOS_SDK_MULTISIGNACCOUNTS_H__
 
-#include "IAccount.h"
+#include <vector>
+#include <map>
+
+#include "MultiSignAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class SimpleAccount : public IAccount {
+		class MultiSignAccounts : public IAccount {
 		public:
-			SimpleAccount(const std::string &privKey, const std::string &payPassword);
+			MultiSignAccounts(IAccount *innerAccount);
+
+			void AddAccount(const std::vector<std::string> &coSigners);
+
+			void RemoveAccount(const std::string &address);
+
+			void Begin(const std::string &address);
+
+			void End();
+
+			MultiSignAccount *FindAccount(const std::string &address);
 
 			virtual Key DeriveKey(const std::string &payPassword);
 
@@ -39,12 +52,17 @@ namespace Elastos {
 			virtual std::string GetAddress();
 
 		private:
+			void checkCurrentAccount() const;
 
-			std::string _publicKey;
-			CMBlock _encryptedKey;
+		private:
+			typedef boost::shared_ptr<MultiSignAccount> MultiSignAccoutPtr;
+			typedef std::map<std::string, MultiSignAccoutPtr> AccountMap;
+			AccountMap _accounts;
+			MultiSignAccoutPtr _currentAccount;
+			AccountPtr _innerAccount;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_SIMPLEACCOUNT_H__
+#endif //__ELASTOS_SDK_MULTISIGNACCOUNTS_H__

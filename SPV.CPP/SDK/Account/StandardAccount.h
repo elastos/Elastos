@@ -46,9 +46,9 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			const std::string &GetLanguage() const;
+			virtual std::string GetAddress();
 
-			void SetLanguage(const std::string &language);
+			const std::string &GetLanguage() const;
 
 		private:
 			JSON_SM_LS(StandardAccount);

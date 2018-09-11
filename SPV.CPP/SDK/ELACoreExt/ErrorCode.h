@@ -16,6 +16,7 @@ namespace Elastos {
 
 			static std::string PasswordError;
 			static std::string WrongAccountType;
+			static std::string NoCurrentMultiSinAccount;
 		};
 
 	}

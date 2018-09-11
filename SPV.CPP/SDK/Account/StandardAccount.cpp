@@ -84,12 +84,13 @@ namespace Elastos {
 			return _language;
 		}
 
-		void StandardAccount::SetLanguage(const std::string &language) {
-			_language = language;
-		}
-
 		const MasterPubKey &StandardAccount::GetIDMasterPubKey() const {
 			return _masterIDPubKey;
+		}
+
+		std::string StandardAccount::GetAddress() {
+			//todo complete me
+			return "";
 		}
 
 		nlohmann::json &operator<<(nlohmann::json &j, const StandardAccount &p) {
@@ -126,7 +127,7 @@ namespace Elastos {
 		}
 
 		void StandardAccount::resetMnemonic(const std::string &language) {
-			SetLanguage(language);
+			_language = language;
 			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, _rootPath));
 		}
 

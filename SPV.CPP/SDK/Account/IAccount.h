@@ -40,6 +40,8 @@ namespace Elastos {
 			virtual const std::string &GetPublicKey() const = 0;
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const = 0;
+
+			virtual std::string GetAddress() = 0;
 		};
 
 		typedef boost::shared_ptr<IAccount> AccountPtr;

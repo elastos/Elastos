@@ -39,7 +39,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			std::string GetAddress();
+			virtual std::string GetAddress();
 
 		private:
 			void SortSigners();
