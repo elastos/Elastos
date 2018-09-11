@@ -34,9 +34,9 @@ func (server *Server) sendTransaction(req Req) Resp {
 	if err != nil {
 		return FunctionError("Deserialize transaction failed")
 	}
-	txId, err := server.SendTransaction(tx)
+	err = server.SendTransaction(tx)
 	if err != nil {
 		return FunctionError(err.Error())
 	}
-	return Success(txId.String())
+	return Success(tx.Hash().String())
 }

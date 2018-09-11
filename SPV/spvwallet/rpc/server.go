@@ -7,9 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -28,7 +25,7 @@ type Server struct {
 	http.Server
 	methods          map[string]func(Req) Resp
 	NotifyNewAddress func([]byte)
-	SendTransaction  func(core.Transaction) (*common.Uint256, error)
+	SendTransaction  func(core.Transaction) error
 }
 
 func (server *Server) Start() {
