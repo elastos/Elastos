@@ -1,6 +1,6 @@
 package util
 
-// Block represent a block that stored into
+// Block represent a block that stored in the
 // blockchain database.
 type Block struct {
 	// header of this block.
