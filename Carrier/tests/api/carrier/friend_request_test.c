@@ -173,7 +173,7 @@ static void test_add_friend(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for friend_added() callback to be invoked.
-    cond_wait(wctxt->cond);
+    cond_trywait(wctxt->cond, 60000);
     CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
     // wait for friend connection (online) callback to be invoked.
     cond_wait(wctxt->cond);
@@ -207,7 +207,7 @@ static void test_accept_friend(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for friend_request callback invoked;
-    cond_wait(wctxt->cond);
+    cond_trywait(wctxt->cond, 60000);
     CU_ASSERT_PTR_NOT_NULL_FATAL(extra->from);
     CU_ASSERT_PTR_NOT_NULL_FATAL(extra->hello);
 

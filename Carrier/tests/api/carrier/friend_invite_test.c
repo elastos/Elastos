@@ -167,7 +167,7 @@ static void test_friend_invite_confirm(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.
-    cond_wait(wctxt->cond);
+    cond_trywait(wctxt->cond, 60000);
 
     CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
     CU_ASSERT_EQUAL(extra->status, 0);
@@ -214,7 +214,7 @@ static void test_friend_invite_reject(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.
-    cond_wait(wctxt->cond);
+    cond_trywait(wctxt->cond, 60000);
 
     CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
     CU_ASSERT(extra->status != 0);

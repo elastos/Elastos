@@ -1,5 +1,7 @@
-Elastos Carrier Native SDK [![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg?branch=master)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)
+Elastos Carrier Native SDK
 ==========================
+[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg?branch=master)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)
+[![CircleCI](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK.svg?style=svg)](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK)
 
 ## Summary
 
@@ -133,7 +135,7 @@ Once having source tree on macOS, run the same commands as addressed on Linux fo
 
 Elastos Carrier cmake system also supports to build cross-compilation for android platform on macOS with android NDK toolchains of same requirement of minimum API level **21**.
 
-As to cross-comiplation in practice, refer to the commands as described on Linux for the chapter of **cross-compilation for android platform**. Be aware again, no extra special commands is required on macOS other than on Linux. 
+As to cross-comiplation in practice, refer to the commands as described on Linux for the chapter of **cross-compilation for android platform**. Be aware again, no extra special commands is required on macOS other than on Linux.
 
 #### 5. Cross-compilation for iOS Platform
 
@@ -190,7 +192,7 @@ You are also recommended to run api-level test suites to check whether Carrier A
 ```
 $ cd YOUR-INSTALL-PATH/bin
 $ ./elatests.sh
-``` 
+```
 
 ## Build API Docs
 

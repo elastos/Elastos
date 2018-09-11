@@ -1,12 +1,5 @@
 #!/bin/bash
 
-if [ $# != 0 ]; then
-    echo "Error: Invalid command syntax."
-    echo "Usage: elatests.sh"
-    echo ""
-    exit 1
-fi
-
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd -P )"
 SCRIPT_DIRNAME="$(basename "${SCRIPT_PATH}")"
 

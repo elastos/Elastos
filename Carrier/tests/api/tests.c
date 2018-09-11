@@ -161,7 +161,7 @@ int test_main(int argc, char *argv[])
     int i, j;
     CU_pSuite pSuite;
     CU_TestInfo *ti;
-    int suites_cnt, cases_cnt;
+    int suites_cnt, cases_cnt, fail_cnt;
     int suites_order[64];
     int cases_order[64];
     char ack[128];
@@ -225,6 +225,11 @@ int test_main(int argc, char *argv[])
 
     CU_basic_run_tests();
 
+    fail_cnt = CU_get_number_of_failures();
+    if (fail_cnt > 0) {
+        vlogE("Failure Case: %d\n", fail_cnt);
+    }
+
     CU_cleanup_registry();
     disconnect_robot();
 
@@ -237,5 +242,5 @@ int test_main(int argc, char *argv[])
     fflush(stdout);
     fflush(stderr);
 
-    return 0;
+    return fail_cnt;
 }

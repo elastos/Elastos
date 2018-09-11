@@ -167,7 +167,7 @@ static void test_send_message_from_friend(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for message from robot.
-    cond_wait(wctxt->cond);
+    cond_trywait(wctxt->cond, 60000);
 
     CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
     CU_ASSERT_STRING_EQUAL(extra->msg, msg);
