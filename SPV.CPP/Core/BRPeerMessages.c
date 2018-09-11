@@ -17,9 +17,17 @@ static void _BRPeerDidConnect(BRPeer *peer)
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 
 	if (ctx->status == BRPeerStatusConnecting && ctx->sentVerack && ctx->gotVerack) {
+		BRPeerManager *manager = ctx->manager;
 		peer_log(peer, "handshake completed");
 		ctx->disconnectTime = DBL_MAX;
 		ctx->status = BRPeerStatusConnected;
+
+		for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+			if (manager->publishedTx[i - 1].callback != NULL) continue;
+			peer_log(peer, "recover tx[%s] to known tx hashes of peer", u256hex(manager->publishedTxHashes[i - 1]));
+			BRPeerAddKnownTxHashes(peer, &manager->publishedTxHashes[i - 1], 1);
+		}
+
 		peer_log(peer, "connected with lastblock: %"PRIu32, ctx->lastblock);
 		if (ctx->connected) ctx->connected(ctx->info);
 	}
@@ -769,9 +777,30 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		BRPeerSendMessage(peer, msg, msgLen, MSG_PONG);
 
 		BRPeerContext *ctx = (BRPeerContext *)peer;
-		if (ctx->sentVerack && ctx->gotVerack && ctx->sentFilter && ctx->sentMempool && ctx->sentGetaddr) {
-			if (ctx->manager->lastBlock->height >= *(uint64_t *)msg) {
-				ctx->relayedPingMsg(ctx->info);
+
+		if (ctx->sentVerack && ctx->gotVerack && ctx->sentFilter && ctx->sentMempool) {
+			BRPeerManager *manager = ctx->manager;
+			int haveTxPending = 0;
+
+			pthread_mutex_lock(&manager->lock);
+			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+				if (manager->publishedTx[i - 1].callback != NULL) {
+					peer_log(peer, "publish pending tx hash = %s", u256hex(manager->publishedTxHashes[i - 1]));
+					haveTxPending++;
+				}
+			}
+			pthread_mutex_unlock(&manager->lock);
+
+			if (manager->lastBlock->height >= *(uint64_t *)msg && !haveTxPending) {
+				pthread_mutex_lock(&manager->lock);
+				if (manager->reconnectTaskCount == 0) {
+					manager->reconnectTaskCount++;
+					pthread_mutex_unlock(&manager->lock);
+
+					ctx->relayedPingMsg(ctx->info);
+				} else {
+					pthread_mutex_unlock(&manager->lock);
+				}
 			}
 		}
 	}
@@ -826,7 +855,6 @@ int BRPeerAcceptPongMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 void BRPeerSendMempool(BRPeer *peer, const UInt256 knownTxHashes[], size_t knownTxCount, void *info,
 					   void (*completionCallback)(void *info, int success)) {
 
-	peer_log(peer, "send mempool");
 	BRPeerContext *ctx = (BRPeerContext *) peer;
 	struct timeval tv;
 	int sentMempool = ctx->sentMempool;
