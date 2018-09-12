@@ -39,5 +39,5 @@ type Account interface {
 }
 
 func NewKeystore() Keystore {
-	return &KeystoreImpl{}
+	return &keystore{}
 }

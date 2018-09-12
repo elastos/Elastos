@@ -1,25 +1,29 @@
 package _interface
 
 import (
-	"bytes"
-	"crypto/rand"
-	"encoding/binary"
 	"fmt"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/blockchain"
+	spvpeer "github.com/elastos/Elastos.ELA.SPV/peer"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
+	"github.com/elastos/Elastos.ELA.SPV/sync"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	. "github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
-var spv SPVService
+var service SPVService
 
 type TxListener struct {
 	address string
-	txType  TransactionType
+	txType  core.TransactionType
 	flags   uint64
 }
 
@@ -27,7 +31,7 @@ func (l *TxListener) Address() string {
 	return l.address
 }
 
-func (l *TxListener) Type() TransactionType {
+func (l *TxListener) Type() core.TransactionType {
 	return l.txType
 }
 
@@ -35,14 +39,14 @@ func (l *TxListener) Flags() uint64 {
 	return l.flags
 }
 
-func (l *TxListener) Notify(id common.Uint256, proof MerkleProof, tx Transaction) {
+func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
 	fmt.Printf("Receive notify ID: %s, Type: %s\n", id.String(), tx.TxType.Name())
-	err := spv.VerifyTransaction(proof, tx)
+	err := service.VerifyTransaction(proof, tx)
 	if err != nil {
 		fmt.Println("Verify transaction error:", err)
 	}
 	// Submit transaction receipt
-	spv.SubmitTransactionReceipt(id, tx.Hash())
+	service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
 func (l *TxListener) Rollback(height uint32) {}
@@ -51,14 +55,14 @@ func TestGetListenerKey(t *testing.T) {
 	var key1, key2 common.Uint256
 	listener := &TxListener{
 		address: "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
-		txType:  CoinBase,
+		txType:  core.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	}
 
 	key1 = getListenerKey(listener)
 	key2 = getListenerKey(&TxListener{
 		address: "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
-		txType:  CoinBase,
+		txType:  core.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	})
 	if !key1.IsEqual(key2) {
@@ -77,7 +81,7 @@ func TestGetListenerKey(t *testing.T) {
 
 	// same address, flags different type
 	key1 = getListenerKey(listener)
-	listener.txType = TransferAsset
+	listener.txType = core.TransferAsset
 	key2 = getListenerKey(listener)
 	if key1.IsEqual(key2) {
 		t.Errorf("listeners with different type got same key %s", key1.String())
@@ -96,45 +100,49 @@ func TestGetListenerKey(t *testing.T) {
 }
 
 func TestNewSPVService(t *testing.T) {
-	log.Init(0, 5, 20)
+	addrmgr.UseLogger(elalog.Stdout)
+	connmgr.UseLogger(elalog.Stdout)
+	sdk.UseLogger(elalog.Stdout)
+	//rpc.UseLogger(logger)
+	//peer.UseLogger(elalog.Stdout)
+	spvpeer.UseLogger(elalog.Stdout)
+	server.UseLogger(elalog.Stdout)
+	blockchain.UseLogger(elalog.Stdout)
+	sync.UseLogger(elalog.Stdout)
+	UseLogger(elalog.Stdout)
 
-	var id = make([]byte, 8)
-	var clientId uint64
-	var err error
-	rand.Read(id)
-	binary.Read(bytes.NewReader(id), binary.LittleEndian, clientId)
-
-	config := SPVServiceConfig{
-		ClientId:clientId,
-		Magic: config.Values().Magic,
-		Foundation:config.Values().Foundation,
-		Seeds: config.Values().SeedList,
-		MinOutbound: 8,
+	config := &Config{
+		Magic:          config.Values().Magic,
+		Foundation:     config.Values().Foundation,
+		SeedList:       config.Values().SeedList,
+		DefaultPort:    config.Values().DefaultPort,
+		MinOutbound:    8,
 		MaxConnections: 100,
 	}
-	spv, err = NewSPVService(config)
+
+	service, err := NewSPVService(config)
 	if err != nil {
 		t.Error("NewSPVService error %s", err.Error())
 	}
 
 	confirmedListener := &TxListener{
 		address: "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
-		txType:  CoinBase,
+		txType:  core.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	}
 
 	unconfirmedListener := &TxListener{
 		address: "Ef2bDPwcUKguteJutJQCmjX2wgHVfkJ2Wq",
-		txType:  TransferAsset,
+		txType:  core.TransferAsset,
 		flags:   0,
 	}
 
 	// Set on transaction confirmed callback
-	spv.RegisterTransactionListener(confirmedListener)
-	spv.RegisterTransactionListener(unconfirmedListener)
+	service.RegisterTransactionListener(confirmedListener)
+	service.RegisterTransactionListener(unconfirmedListener)
 
 	// Start spv service
-	err = spv.Start()
+	err = service.Start()
 	if err != nil {
 		t.Error("Start SPV service error: ", err)
 	}
