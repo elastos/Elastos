@@ -104,6 +104,7 @@ type peerSyncState struct {
 	requestedBlocks map[common.Uint256]struct{}
 	receivedBlocks  uint32
 	badBlocks       uint32
+	filterUpdating  bool
 	receivedTxs     uint32
 	falsePositives  uint32
 }
@@ -244,25 +245,35 @@ func (sm *SyncManager) getSyncCandidates() []*peer.Peer {
 
 // updateBloomFilter update the bloom filter and send it to the given peer.
 func (sm *SyncManager) updateBloomFilter(p *peer.Peer) {
-	msg := sm.cfg.UpdateFilter().GetFilterLoadMsg()
-	log.Debugf("Update bloom filter %v, %d, %d", msg.Filter, msg.Tweak, msg.HashFuncs)
-	doneChan := make(chan struct{})
-	p.QueueMessage(msg, doneChan)
+	state, ok := sm.peerStates[p]
+	if !ok {
+		log.Warnf("Update bloom filter for unknown peer %s", p)
+		return
+	}
 
-	go func(p *peer.Peer) {
+	if state.filterUpdating {
+		return
+	}
+	state.filterUpdating = true
+
+	go func(state *peerSyncState) {
+
+		msg := sm.cfg.UpdateFilter().GetFilterLoadMsg()
+		log.Debugf("Update bloom filter %v, %d, %d", msg.Filter, msg.Tweak, msg.HashFuncs)
+		done := make(chan struct{})
+		p.QueueMessage(msg, done)
+
 		select {
-		case <-doneChan:
+		case <-done:
 			// Reset false positive state.
-			state, ok := sm.peerStates[p]
-			if ok {
-				state.receivedTxs = 0
-				state.falsePositives = 0
-			}
+			state.filterUpdating = false
+			state.receivedTxs = 0
+			state.falsePositives = 0
 
 		case <-p.Quit():
-			return
+			break
 		}
-	}(p)
+	}(state)
 }
 
 // handleNewPeerMsg deals with new peers that have signalled they may
@@ -487,8 +498,6 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 func (sm *SyncManager) haveInventory(invVect *msg.InvVect) bool {
 	switch invVect.Type {
 	case msg.InvTypeBlock:
-		fallthrough
-	case msg.InvTypeFilteredBlock:
 		// Ask chain if the block is known to it in any form (main
 		// chain, side chain, or orphan).
 		return sm.cfg.Chain.HaveBlock(&invVect.Hash)
