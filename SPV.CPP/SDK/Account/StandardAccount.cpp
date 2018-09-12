@@ -172,6 +172,10 @@ namespace Elastos {
 			_encryptedKey = Utils::encrypt(key, newPassword);
 			_encryptedPhrasePass = Utils::encrypt(phrasePass, newPassword);
 			_encryptedMnemonic = Utils::encrypt(mnemonic, newPassword);
+
+			memset(key, 0, key.GetSize());
+			memset(phrasePass, 0, phrasePass.GetSize());
+			memset(mnemonic, 0, mnemonic.GetSize());
 		}
 
 		nlohmann::json StandardAccount::ToJson() const {

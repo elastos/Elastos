@@ -42,9 +42,18 @@ namespace Elastos {
 			virtual std::string GetAddress();
 
 		private:
-			void SortSigners();
+			JSON_SM_LS(MultiSignAccount);
+
+			JSON_SM_RS(MultiSignAccount);
+
+			TO_JSON(MultiSignAccount);
+
+			FROM_JSON(MultiSignAccount);
+
+			bool Compare(const std::string &a, const std::string &b);
 
 			void checkSigners() const;
+
 		private:
 			IAccount *_me;
 			std::vector<std::string> _coSigners;
