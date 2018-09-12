@@ -11,5 +11,9 @@ namespace Elastos {
 				SingleSubAccount(account) {
 
 		}
+
+		void MultiSignSubAccount::AppendSign(const TransactionPtr &transaction, const std::string &payPassword) {
+			//todo complete me
+		}
 	}
 }

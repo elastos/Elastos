@@ -168,8 +168,6 @@ namespace Elastos {
 
 		boost::shared_ptr<Transaction>
 		SubWallet::createTransaction(TxParam *param) const {
-			//todo consider the situation of from address and fee not null
-			//todo initialize asset id if null
 			TransactionPtr ptr = _walletManager->getWallet()->
 					createTransaction(param->getFromAddress(), std::max(param->getFee(), _info.getMinFee()),
 									  param->getAmount(), param->getToAddress(), param->getRemark(),
@@ -266,17 +264,34 @@ namespace Elastos {
 			_walletManager->recover(limitGap);
 		}
 
-		std::string SubWallet::CreateMultiSignAddress(const nlohmann::json &multiPublicKeyJson, uint32_t totalSignNum,
-													  uint32_t requiredSignNum) {
-			//todo complete me
-			return "";
-		}
-
 		nlohmann::json SubWallet::CreateMultiSignTransaction(const std::string &fromAddress,
 															 const std::string &toAddress, uint64_t amount,
 															 const std::string &memo) {
-			//todo complete me
-			return nlohmann::json();
+			return CreateTransaction(fromAddress, toAddress, amount, memo, "");
+		}
+
+		nlohmann::json SubWallet::AppendSignToTransaction(const nlohmann::json &rawTransaction,
+														  const std::string &payPassword) {
+			TransactionPtr transaction(new Transaction());
+			transaction->fromJson(rawTransaction);
+			_walletManager->getWallet()->appendSign(transaction, payPassword);
+			return transaction->toJson();
+		}
+
+		nlohmann::json SubWallet::PublishMultiSignTransaction(const nlohmann::json &rawTransaction, uint64_t fee) {
+
+			TransactionPtr transaction(new Transaction());
+			transaction->fromJson(rawTransaction);
+
+			verifyRawTransaction(transaction);
+			completeTransaction(transaction, fee);
+
+			publishTransaction(transaction);
+
+			nlohmann::json j;
+			j["TxHash"] = Utils::UInt256ToString(transaction->getHash(), true);
+			j["Fee"] = transaction->getStandardFee();
+			return j;
 		}
 
 		nlohmann::json
@@ -424,6 +439,10 @@ namespace Elastos {
 
 		std::string SubWallet::GetPublicKey() const {
 			return _info.getPublicKey();
+		}
+
+		nlohmann::json SubWallet::GetBasicInfo() const {
+			return nlohmann::json();
 		}
 
 	}

@@ -38,6 +38,8 @@ namespace Elastos {
 		public: //implement ISubWallet
 			virtual std::string GetChainId() const;
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual nlohmann::json GetBalanceInfo();
 
 			virtual uint64_t GetBalance();
@@ -60,16 +62,19 @@ namespace Elastos {
 					const std::string &memo,
 					const std::string &remark);
 
-			virtual std::string CreateMultiSignAddress(
-					const nlohmann::json &multiPublicKeyJson,
-					uint32_t totalSignNum,
-					uint32_t requiredSignNum);
-
 			virtual nlohmann::json CreateMultiSignTransaction(
 					const std::string &fromAddress,
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo);
+
+			virtual nlohmann::json AppendSignToTransaction(
+					const nlohmann::json &rawTransaction,
+					const std::string &payPassword);
+
+			virtual nlohmann::json PublishMultiSignTransaction(
+					const nlohmann::json &rawTransaction,
+					uint64_t fee);
 
 			virtual nlohmann::json SendRawTransaction(
 					const nlohmann::json &transactionJson,

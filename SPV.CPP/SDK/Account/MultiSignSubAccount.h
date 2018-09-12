@@ -13,6 +13,8 @@ namespace Elastos {
 		class MultiSignSubAccount : public SingleSubAccount {
 		public:
 			MultiSignSubAccount(IAccount *account);
+
+			void AppendSign(const TransactionPtr &transaction, const std::string &payPassword);
 		};
 
 	}

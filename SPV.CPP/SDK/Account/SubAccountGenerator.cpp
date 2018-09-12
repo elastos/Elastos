@@ -7,6 +7,8 @@
 #include "SubAccountGenerator.h"
 #include "HDSubAccount.h"
 #include "SingleSubAccount.h"
+#include "MultiSignAccount.h"
+#include "MultiSignSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,16 +22,21 @@ namespace Elastos {
 		}
 
 		ISubAccount *SubAccountGenerator::Generate() {
-			if (_coinInfo.getSingleAddress()) {
-				return new SingleSubAccount(_parentAccount);
+			MultiSignAccount *multiSignAccount = dynamic_cast<MultiSignAccount *>(_parentAccount);
+
+			if (multiSignAccount != nullptr) {
+				return new MultiSignSubAccount(_parentAccount);
 			} else {
-				if (_payPassword.empty()) {
-					return GenerateFromCoinInfo(_parentAccount, _coinInfo);
+				if (_coinInfo.getSingleAddress()) {
+					return new SingleSubAccount(_parentAccount);
 				} else {
-					return GenerateFromHDPath(_parentAccount, _coinInfo.getIndex(), _payPassword);
+					if (_payPassword.empty()) {
+						return GenerateFromCoinInfo(_parentAccount, _coinInfo);
+					} else {
+						return GenerateFromHDPath(_parentAccount, _coinInfo.getIndex(), _payPassword);
+					}
 				}
 			}
-			return nullptr;
 		}
 
 		void SubAccountGenerator::SetCoinInfo(const CoinInfo &coinInfo) {

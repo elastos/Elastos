@@ -551,5 +551,10 @@ namespace Elastos {
 				_localStore.Reset(privKey, coSigners, payPassword, requiredSignCount);
 		}
 
+		nlohmann::json MasterWallet::GetBasicInfo() const {
+			//todo complete me
+			return nlohmann::json();
+		}
+
 	}
 }
