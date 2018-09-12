@@ -23,6 +23,8 @@ namespace Elastos {
 			 */
 			virtual std::string GetId() const = 0;
 
+			virtual nlohmann::json GetBasicInfo() const = 0;
+
 			/**
 			 * Get wallet existing sub wallets.
 			 * @return existing sub wallets by array.

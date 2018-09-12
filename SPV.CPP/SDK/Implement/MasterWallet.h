@@ -46,6 +46,8 @@ namespace Elastos {
 
 			virtual std::string GetId() const;
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual std::vector<ISubWallet *> GetAllSubWallets() const;
 
 			virtual ISubWallet *CreateSubWallet(

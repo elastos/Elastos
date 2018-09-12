@@ -27,6 +27,8 @@ namespace Elastos {
 			 */
 			virtual std::string GetChainId() const = 0;
 
+			virtual nlohmann::json GetBasicInfo() const = 0;
+
 			/**
 			 * Get balances of all addresses in json format.
 			 * @return balances of all addresses in json format.
@@ -91,18 +93,6 @@ namespace Elastos {
 					const std::string &remark) = 0;
 
 			/**
-			 * Create a multi-sign address used to create multi-sign transaction.
-			 * @param multiPublicKeyJson is a list of public keys in json format.
-			 * @param totalSignNum specify total sign number (n).
-			 * @param requiredSignNum specify required sign number (m).
-			 * @return multi-sign address.
-			 */
-			virtual std::string CreateMultiSignAddress(
-					const nlohmann::json &multiPublicKeyJson,
-					uint32_t totalSignNum,
-					uint32_t requiredSignNum) = 0;
-
-			/**
 			 * Create a multi-sign transaction and return the content of transaction in json format.
 			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
 			 * @param toAddress specify which address we want to send.
@@ -115,6 +105,14 @@ namespace Elastos {
 					const std::string &toAddress,
 					uint64_t amount,
 					const std::string &memo) = 0;
+
+			virtual nlohmann::json AppendSignToTransaction(
+					const nlohmann::json &rawTransaction,
+					const std::string &payPassword) = 0;
+
+			virtual nlohmann::json PublishMultiSignTransaction(
+					const nlohmann::json &rawTransaction,
+					uint64_t fee) = 0;
 
 			/**
 			 * Calculate transaction fee by content of transaction.

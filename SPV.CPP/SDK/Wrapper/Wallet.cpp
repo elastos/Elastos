@@ -23,6 +23,8 @@
 #include "Utils.h"
 #include "ELACoreExt/ELATransaction.h"
 #include "ELATxOutput.h"
+#include "ErrorCode.h"
+#include "Account/MultiSignSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -1036,6 +1038,13 @@ namespace Elastos {
 			if (!transaction->sign(keyList, forkId)) {
 				throw std::logic_error("Transaction Sign error!");
 			}
+		}
+
+		void Wallet::appendSign(const TransactionPtr &transaction, const std::string &payPassword) {
+			MultiSignSubAccount *multiSignSubAccount = dynamic_cast<MultiSignSubAccount *>(_subAccount.get());
+			if (multiSignSubAccount == nullptr)
+				ErrorCode::StandardLogicError(ErrorCode::WrongSubAccountType, "Current account do not support multi-sign.");
+			multiSignSubAccount->AppendSign(transaction, payPassword);
 		}
 
 	}
