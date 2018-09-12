@@ -66,7 +66,7 @@ func (t *PayloadWithdrawFromSideChain) Deserialize(r io.Reader, version byte) er
 		var hash common.Uint256
 		err := hash.Deserialize(r)
 		if err != nil {
-			return errors.New("[WithdrawFromSideChain], SideChainTransactionHashes deserialize failed.")
+			return errors.New("[PayloadWithdrawFromSideChain], SideChainTransactionHashe deserialize failed.")
 		}
 		t.SideChainTransactionHashes = append(t.SideChainTransactionHashes, hash)
 	}

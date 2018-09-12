@@ -1,9 +1,11 @@
 package bloom
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 type MerkleProof struct {
@@ -32,11 +34,15 @@ func (p *MerkleProof) Deserialize(r io.Reader) error {
 		&p.Transactions,
 	)
 
-	hashes, err := common.ReadUint32(r)
+	count, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
+	if count > msg.MaxTxPerBlock {
+		return fmt.Errorf("MerkleProof.Deserialize too many transaction"+
+			" hashes for message [count %v, max %v]", count, msg.MaxTxPerBlock)
+	}
 
-	p.Hashes = make([]*common.Uint256, hashes)
+	p.Hashes = make([]*common.Uint256, count)
 	return common.ReadElements(r, &p.Hashes, &p.Flags)
 }
