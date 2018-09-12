@@ -22,6 +22,7 @@
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
 #include "Transaction/TransactionCompleter.h"
+#include "Account/SubAccountGenerator.h"
 
 namespace fs = boost::filesystem;
 
@@ -44,40 +45,21 @@ namespace Elastos {
 			subWalletDbPath /= parent->GetId();
 			subWalletDbPath /= info.getChainId() + DB_FILE_EXTENSION;
 
-			CMBlock encryptedKey;
-			UInt256 chainCode = UINT256_ZERO;
-			MasterPubKey masterPubKey;
-			if (!payPassword.empty()) {
-				UInt512 seed = _parent->_localStore.Account()->DeriveSeed(payPassword);
-				BRKey key;
-				BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
-								   _info.getIndex() | BIP32_HARD, 0 | BIP32_HARD);
-				var_clean(&seed);
+			{
+				SubAccountGenerator generator;
+				generator.SetCoinInfo(_info);
+				generator.SetParentAccount(_parent->_localStore.Account());
+				generator.SetPayPassword(payPassword);
+				_subAccount = SubAccountPtr(generator.Generate());
 
-				char rawKey[BRKeyPrivKey(&key, nullptr, 0)];
-				BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-
-				Key wrapperKey(key.secret, key.compressed);
-				CMBlock pubKey = wrapperKey.getPubkey();
-
-				masterPubKey = MasterPubKey(key, chainCode);
-
-				_info.setChainCode(Utils::UInt256ToString(chainCode));
-				_info.setPublicKey(Utils::encodeHex(pubKey));
-
-			} else {
-				ParamChecker::checkNotEmpty(_info.getPublicKey(), false);
-				ParamChecker::checkNotEmpty(_info.getChainCode(), false);
-
-				CMBlock pubKey = Utils::decodeHex(_info.getPublicKey());
-
-				masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(_info.getChainCode()));
+				_info.setChainCode(Utils::UInt256ToString(generator.GetResultChainCode()));
+				_info.setPublicKey(Utils::encodeHex(generator.GetResultPublicKey()));
 			}
 
 			_walletManager = WalletManagerPtr(
-					new WalletManager(masterPubKey, subWalletDbPath,
+					new WalletManager(_subAccount, subWalletDbPath,
 									  _info.getEarliestPeerTime(), _info.getReconnectSeconds(),
-									  _info.getSingleAddress(), _info.getIndex(), _info.getForkId(), pluginTypes,
+									  _info.getForkId(), pluginTypes,
 									  chainParams));
 
 			_walletManager->registerWalletListener(this);
@@ -206,7 +188,7 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														  const std::string &payPassword) {
-			signTransaction(transaction, _info.getForkId(), payPassword);
+			_walletManager->getWallet()->signTransaction(transaction, _info.getForkId(), payPassword);
 			transaction->removeDuplicatePrograms();
 			publishTransaction(transaction);
 
@@ -222,7 +204,7 @@ namespace Elastos {
 
 		std::string SubWallet::Sign(const std::string &message, const std::string &payPassword) {
 
-			Key key = deriveKey(payPassword);
+			Key key = _subAccount->DeriveMainAccountKey(payPassword);
 			return key.compactSign(message);
 		}
 
@@ -282,78 +264,6 @@ namespace Elastos {
 
 		void SubWallet::recover(int limitGap) {
 			_walletManager->recover(limitGap);
-		}
-
-		Key SubWallet::deriveKey(const std::string &payPassword) {
-			UInt512 seed = _parent->_localStore.Account()->DeriveSeed(payPassword);
-			Key key;
-			UInt256 chainCode;
-			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD, _info.getIndex() | BIP32_HARD,
-							   0 | BIP32_HARD);
-			var_clean(&seed);
-			return key;
-		}
-
-		void SubWallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
-										const std::string &payPassword) {
-			Log::getLogger()->info("SubWallet signTransaction method begin.");
-
-			ParamChecker::checkNullPointer(transaction.get());
-			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-			ParamChecker::checkNullPointer(wallet);
-			Log::getLogger()->info("SubWallet signTransaction derive key down.");
-
-			BRTransaction *tx = transaction->getRaw();
-			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
-			size_t i, internalCount = 0, externalCount = 0;
-
-
-			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
-			pthread_mutex_lock(&wallet->lock);
-			for (i = 0; i < tx->inCount; i++) {
-				if (wallet->internalChain) {
-					for (j = (uint32_t) array_count(wallet->internalChain); j > 0; j--) {
-						if (BRAddressEq(tx->inputs[i].address, &wallet->internalChain[j - 1])) {
-							internalIdx[internalCount++] = j - 1;
-						}
-					}
-				}
-
-				for (j = (uint32_t) array_count(wallet->externalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &wallet->externalChain[j - 1])) {
-						externalIdx[externalCount++] = j - 1;
-					}
-
-				}
-			}
-			pthread_mutex_unlock(&wallet->lock);
-			Log::getLogger()->info("SubWallet signTransaction end get indices.");
-
-			UInt512 seed = _parent->_localStore.Account()->DeriveSeed(payPassword);
-
-			BRKey keys[internalCount + externalCount];
-			BRBIP44PrivKeyList(keys, internalCount, &seed, sizeof(seed), _info.getIndex(),
-							   SEQUENCE_INTERNAL_CHAIN, internalIdx);
-			BRBIP44PrivKeyList(&keys[internalCount], externalCount, &seed, sizeof(seed), _info.getIndex(),
-							   SEQUENCE_EXTERNAL_CHAIN, externalIdx);
-			var_clean(&seed);
-
-			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
-
-			if (tx) {
-				Log::getLogger()->info("SubWallet signTransaction begin sign method.");
-				WrapperList<Key, BRKey> keyList;
-				for (i = 0; i < internalCount + externalCount; ++i) {
-					Key key(keys[i].secret, keys[i].compressed);
-					keyList.push_back(key);
-				}
-				if (!transaction->sign(keyList, forkId)) {
-					throw std::logic_error("Transaction Sign error!");
-				}
-				Log::getLogger()->info("SubWallet signTransaction end sign method.");
-			}
-
-			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);
 		}
 
 		std::string SubWallet::CreateMultiSignAddress(const nlohmann::json &multiPublicKeyJson, uint32_t totalSignNum,

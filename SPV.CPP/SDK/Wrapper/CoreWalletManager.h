@@ -13,6 +13,7 @@
 #include "ChainParams.h"
 #include "MasterPubKey.h"
 #include "Plugin/PluginTypes.h"
+#include "Account/ISubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -26,14 +27,7 @@ namespace Elastos {
 
 			virtual ~CoreWalletManager();
 
-			void init(const MasterPubKey &masterPubKey,
-					  uint32_t earliestPeerTime,
-					  bool singleAddress,
-					  uint32_t coinIndex);
-
-			void init(uint32_t earliestPeerTime,
-					  const std::vector<std::string> &initialAddresses,
-					  uint32_t coinIndex);
+			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime);
 
 			const WalletPtr &getWallet();
 
@@ -98,15 +92,10 @@ namespace Elastos {
 			virtual const WalletListenerPtr &createWalletListener();
 
 		protected:
-
-			MasterPubKeyPtr _masterPubKey;
+			SubAccountPtr _subAccount;
 
 			PluginTypes _pluginTypes;
-
 			ChainParams _chainParams;
-			bool _singleAddress;
-			uint32_t _coinIndex;
-
 			uint32_t _earliestPeerTime;
 
 			WalletPtr _wallet; // Optional<BRCoreWallet>

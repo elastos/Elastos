@@ -5,9 +5,8 @@
 #include <sstream>
 
 #include "Common/Log.h"
-#include "SingleAddressWallet.h"
 #include "CoreWalletManager.h"
-#include "AddressRegisteringWallet.h"
+#include "Account/SingleSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -18,8 +17,7 @@ namespace Elastos {
 				_walletListener(nullptr),
 				_peerManager(nullptr),
 				_peerManagerListener(nullptr),
-				_masterPubKey(nullptr),
-				_singleAddress(false),
+				_subAccount(nullptr),
 				_pluginTypes(pluginTypes),
 				_chainParams(chainParams) {
 		}
@@ -28,31 +26,14 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::init(const MasterPubKey &masterPubKey,
-									 uint32_t earliestPeerTime,
-									 bool singleAddress,
-									 uint32_t coinIndex) {
-			_masterPubKey = MasterPubKeyPtr(new MasterPubKey);
-			*_masterPubKey = masterPubKey;
+		void CoreWalletManager::init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime) {
+			_subAccount = subAccount;
 			_earliestPeerTime = earliestPeerTime;
-			_singleAddress = singleAddress;
-			_coinIndex = coinIndex;
-		}
-
-		void CoreWalletManager::init(uint32_t earliestPeerTime,
-									 const std::vector<std::string> &initialAddresses,
-									 uint32_t coinIndex) {
-			_earliestPeerTime = earliestPeerTime;
-			_wallet = WalletPtr(new AddressRegisteringWallet(createWalletListener(), initialAddresses));
-			_coinIndex = coinIndex;
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(!_singleAddress
-									? new Wallet(loadTransactions(), _masterPubKey, createWalletListener(), _coinIndex)
-									: new SingleAddressWallet(loadTransactions(), _masterPubKey,
-															  createWalletListener(), _coinIndex));
+				_wallet = WalletPtr(new Wallet(loadTransactions(), _subAccount, createWalletListener()));
 			}
 			return _wallet;
 		}
@@ -75,7 +56,6 @@ namespace Elastos {
 		std::string CoreWalletManager::toString() const {
 			std::stringstream ss;
 			ss << "BRCoreWalletManager {" <<
-			   "\n  masterPubKey      : " << _masterPubKey->toString() <<
 			   "\n  chainParams       : " << _chainParams.toString() <<
 			   "\n  earliest peer time: " << _earliestPeerTime <<
 			   "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress() : "") <<
