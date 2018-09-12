@@ -3,6 +3,9 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <SDK/ELACoreExt/ErrorCode.h>
+#include <SDK/Common/Utils.h>
+#include <boost/bind.hpp>
+#include <SDK/Wrapper/ByteStream.h>
 #include "MultiSignAccount.h"
 
 namespace Elastos {
@@ -31,13 +34,13 @@ namespace Elastos {
 		}
 
 		nlohmann::json MultiSignAccount::ToJson() const {
-			//todo complete me
-			return nlohmann::json();
+			nlohmann::json j;
+			to_json(j, *this);
+			return j;
 		}
 
 		void MultiSignAccount::FromJson(const nlohmann::json &j) {
-			//todo complete me
-
+			from_json(j, *this);
 		}
 
 		const CMBlock &MultiSignAccount::GetEncryptedKey() const {
@@ -65,9 +68,10 @@ namespace Elastos {
 			return _me->GetIDMasterPubKey();
 		}
 
-		void MultiSignAccount::SortSigners() {
-			//todo complete me
-
+		bool MultiSignAccount::Compare(const std::string &a, const std::string &b) {
+			CMBlock cbA = Utils::decodeHex(a);
+			CMBlock cbB = Utils::decodeHex(b);
+			return memcmp(cbA, cbB, cbA.GetSize()) >= 0;
 		}
 
 		void MultiSignAccount::checkSigners() const {
@@ -77,9 +81,44 @@ namespace Elastos {
 		}
 
 		std::string MultiSignAccount::GetAddress() {
-			SortSigners();
-			//todo complete me
-			return std::string();
+			ByteStream stream;
+
+			// public keys -> multi sign redeem script
+			std::vector<std::string> sortedSigners = _coSigners;
+			sortedSigners.push_back(_me->GetPublicKey());
+
+			std::sort(sortedSigners.begin(), sortedSigners.end(), boost::bind(&MultiSignAccount::Compare, this, _1, _2));
+
+			stream.writeUint8(uint8_t(OP_1 + _requiredSignCount - 1));
+			for (size_t i = 0; i < sortedSigners.size(); i++) {
+				CMBlock pubKey = Utils::decodeHex(sortedSigners[i]);
+				stream.writeUint8(uint8_t(pubKey.GetSize()));
+				stream.writeBytes(pubKey, pubKey.GetSize());
+			}
+
+			stream.writeUint8(uint8_t(OP_1 + sortedSigners.size() - 1));
+			stream.writeUint8(ELA_MULTISIG);
+
+			CMBlock redeemScript = stream.getBuffer();
+
+			// redeem script -> program hash
+			UInt168 programHash = Utils::codeToProgramHash(redeemScript);
+
+			// program hash -> address
+			return Utils::UInt168ToAddress(programHash);
 		}
+
+		void to_json(nlohmann::json &j, const MultiSignAccount &p) {
+			j["Account"] = p._me->ToJson();
+			j["CoSigners"] = p._coSigners;
+			j["RequiredSignCount"] = p._requiredSignCount;
+		}
+
+		void from_json(const nlohmann::json &j, MultiSignAccount &p) {
+			p._me->FromJson(j["Account"]);
+			p._coSigners = j["CoSigners"].get<std::vector<std::string>>();
+			p._requiredSignCount = j["RequiredSignCount"].get<uint32_t>();
+		}
+
 	}
 }

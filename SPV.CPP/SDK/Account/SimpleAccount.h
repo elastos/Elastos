@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_SIMPLEACCOUNT_H__
 
 #include "IAccount.h"
+#include "SDK/Common/Mstream.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -37,6 +38,15 @@ namespace Elastos {
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
 			virtual std::string GetAddress();
+
+		private:
+			JSON_SM_LS(SimpleAccount);
+
+			JSON_SM_RS(SimpleAccount);
+
+			TO_JSON(SimpleAccount);
+
+			FROM_JSON(SimpleAccount);
 
 		private:
 
