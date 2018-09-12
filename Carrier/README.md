@@ -215,7 +215,8 @@ $ sudo pip install breathe
 Run the command under the directory where runs your building commands:
 
 ```shell
-$ make docs
+$ cmake -DENABLE_DOCS=ON ../..
+$ make
 ```
 
 Then, you will find new directory **docs** generated, which contains all APIs documentations with **html** format.
