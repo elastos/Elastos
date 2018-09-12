@@ -3,32 +3,40 @@ package main
 import (
 	"os"
 	"os/signal"
-	"encoding/binary"
 
+	"github.com/elastos/Elastos.ELA.SPV/blockchain"
+	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/peer"
+	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
-	"github.com/elastos/Elastos.ELA.SPV/log"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/store"
+	"github.com/elastos/Elastos.ELA.SPV/sync"
 )
 
+const LogPath = "./Logs-spv/"
+
 func main() {
-	// Initiate log
-	log.Init(
+	// Initiate logger
+	logger := log.NewLogger(LogPath,
 		config.Values().PrintLevel,
 		config.Values().MaxPerLogSize,
 		config.Values().MaxLogsSize,
 	)
 
-	file, err := spvwallet.OpenKeystoreFile()
-	if err != nil {
-		log.Error("Keystore.dat file not found, please create your wallet using ela-wallet first")
-		os.Exit(0)
-	}
+	sdk.UseLogger(logger)
+	rpc.UseLogger(logger)
+	peer.UseLogger(logger)
+	blockchain.UseLogger(logger)
+	store.UseLogger(logger)
+	sync.UseLogger(logger)
+	spvwallet.UseLogger(logger)
 
 	// Initiate SPV service
-	iv, _ := file.GetIV()
-	wallet, err := spvwallet.Init(binary.LittleEndian.Uint64(iv), config.Values().SeedList)
+	wallet, err := spvwallet.New()
 	if err != nil {
-		log.Error("Initiate SPV service failed,", err)
+		logger.Error("Initiate SPV service failed,", err)
 		os.Exit(0)
 	}
 
@@ -38,7 +46,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			log.Trace("SPVWallet shutting down...")
+			logger.Trace("Wallet shutting down...")
 			wallet.Stop()
 			stop <- 1
 		}
