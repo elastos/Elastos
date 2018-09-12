@@ -222,7 +222,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 	log.Tracef("Pow generating %d blocks", n)
 	i := uint32(0)
-	blockHashes := make([]*common.Uint256, n)
+	blockHashes := make([]*common.Uint256, 0)
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 
@@ -248,7 +248,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 				}
 				pow.BroadcastBlock(msgBlock)
 				h := msgBlock.Hash()
-				blockHashes[i] = &h
+				blockHashes = append(blockHashes, &h)
 				i++
 				if i == n {
 					pow.Mutex.Lock()
