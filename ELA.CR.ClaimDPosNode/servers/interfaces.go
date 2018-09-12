@@ -372,15 +372,16 @@ func DiscreteMining(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	ret := make([]string, count)
+	ret := make([]string, 0)
 
 	blockHashes, err := LocalPow.DiscreteMining(uint32(count))
 	if err != nil {
 		return ResponsePack(Error, err)
 	}
 
-	for i, hash := range blockHashes {
-		ret[i] = ToReversedString(*hash)
+	for _, hash := range blockHashes {
+		retStr := ToReversedString(*hash)
+		ret = append(ret, retStr)
 	}
 
 	return ResponsePack(Success, ret)
