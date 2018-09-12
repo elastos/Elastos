@@ -56,6 +56,21 @@ bool ela_session_jni_onload(void *vm, void *reserved)
 }
 #endif
 
+static int ice_strerror(int errcode, char *buf, size_t len)
+{
+    assert(buf);
+    assert(len);
+
+    pj_strerror(errcode, buf, len);
+    return 0;
+}
+
+int ela_session_register_strerror()
+{
+    ela_register_strerror(ELAF_ICE, ice_strerror);
+    return 0;
+}
+
 static void friend_invite(ElaCarrier *w, const char *from,
                           const char *data, size_t len, void *context)
 {
@@ -241,6 +256,8 @@ int ela_session_init(ElaCarrier *w)
 
     w->extension = ext;
     pthread_mutex_unlock(&w->ext_mutex);
+
+    ela_register_strerror(ELAF_ICE, ice_strerror);
 
     vlogD("Session: Initialize session extension %s.",
           rc == 0 ? "success" : "failed");

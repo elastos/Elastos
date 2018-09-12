@@ -14,6 +14,10 @@ add_submodule(elapfd
     DIRECTORY pfd
     DEPENDS ${DEPEND_MODULES})
 
+add_submodule(elaerr
+    DIRECTORY errstr
+    DEPENDS ${DEPEND_MODULES})
+
 if (NOT WIN32)
     add_submodule(elaspeedtest
         DIRECTORY speedtest

@@ -126,4 +126,9 @@ typedef struct TransactedCallback {
 CARRIER_API
 void ela_set_error(int error);
 
+typedef int (*strerror_t)(int errnum, char *, size_t);
+
+CARRIER_API
+int ela_register_strerror(int facility, strerror_t strerr);
+
 #endif /* __ELA_CARRIER_IMPL_H__ */

@@ -248,6 +248,8 @@ TransportWorker *session_get_worker(ElaSession *session)
 
 void ela_set_error(int error);
 
+int ela_register_strerror(int facility, int (*strerr)(int, char *, size_t));
+
 #ifdef __cplusplus
 }
 #endif
