@@ -172,14 +172,14 @@ func (tx *BtcTx) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	tx.TxIn = make([]*BtcTxIn, count)
+	tx.TxIn = make([]*BtcTxIn, 0)
 	for i := uint64(0); i < count; i++ {
-		ti := BtcTxIn{}
-		err = BtcReadTxIn(r, &ti)
+		var txIn BtcTxIn
+		err = BtcReadTxIn(r, &txIn)
 		if err != nil {
 			return err
 		}
-		tx.TxIn[i] = &ti
+		tx.TxIn = append(tx.TxIn, &txIn)
 	}
 
 	count, err = ReadVarUint(r, 0)
@@ -187,14 +187,14 @@ func (tx *BtcTx) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	tx.TxOut = make([]*BtcTxOut, count)
+	tx.TxOut = make([]*BtcTxOut, 0)
 	for i := uint64(0); i < count; i++ {
-		to := BtcTxOut{}
-		err = BtcReadTxOut(r, &to)
+		var txOut BtcTxOut
+		err = BtcReadTxOut(r, &txOut)
 		if err != nil {
 			return err
 		}
-		tx.TxOut[i] = &to
+		tx.TxOut = append(tx.TxOut, &txOut)
 	}
 
 	_, err = io.ReadFull(r, buf[:])
