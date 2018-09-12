@@ -31,9 +31,9 @@ namespace Elastos {
 
 			void setReconnectSeconds(uint32_t reconnectSeconds);
 
-			int getIndex() const;
+			uint32_t getIndex() const;
 
-			void setIndex(int index);
+			void setIndex(uint32_t index);
 
 			int getUsedMaxAddressIndex() const;
 
@@ -86,7 +86,7 @@ namespace Elastos {
 			uint32_t _earliestPeerTime;
 			uint32_t _reconnectSeconds;
 			int _forkId;
-			int _index;
+			uint32_t _index;
 			int _usedMaxAddressIndex;
 			bool _singleAddress;
 			bool _enableP2P;

@@ -37,11 +37,11 @@ namespace Elastos {
 			_earliestPeerTime = time;
 		}
 
-		int CoinInfo::getIndex() const {
+		uint32_t CoinInfo::getIndex() const {
 			return _index;
 		}
 
-		void CoinInfo::setIndex(int index) {
+		void CoinInfo::setIndex(uint32_t index) {
 			_index = index;
 		}
 

@@ -10,7 +10,6 @@
 #include "WalletManager.h"
 #include "Utils.h"
 #include "Log.h"
-#include "SingleAddressWallet.h"
 #include "ELACoreExt/ELATxOutput.h"
 #include "Plugin/Registry.h"
 #include "Plugin/Block/MerkleBlock.h"
@@ -30,35 +29,19 @@ namespace Elastos {
 				_reconnectSeconds(proto._reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(proto._forkId) {
-			init(*proto._masterPubKey, proto._earliestPeerTime, proto._singleAddress, proto._coinIndex);
+			init(proto._subAccount, proto._earliestPeerTime);
 		}
 
-		WalletManager::WalletManager(const MasterPubKey &masterPubKey, const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, bool singleAddress,
-									 uint32_t coinIndex, int forkId, const PluginTypes &pluginTypes,
-									 const ChainParams &chainParams) :
+		WalletManager::WalletManager(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
+									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, int forkId,
+									 const PluginTypes &pluginTypes, const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
 				_reconnectSeconds(reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(forkId) {
-			init(masterPubKey, earliestPeerTime, singleAddress, coinIndex);
-		}
-
-		WalletManager::WalletManager(const boost::filesystem::path &dbPath,
-									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, uint32_t coinIndex,
-									 int forkId,
-									 const PluginTypes &pluginTypes,
-									 const std::vector<std::string> &initialAddresses,
-									 const ChainParams &chainParams) :
-				CoreWalletManager(pluginTypes, chainParams),
-				_executor(BACKGROUND_THREAD_COUNT),
-				_databaseManager(dbPath),
-				_reconnectSeconds(reconnectSeconds),
-				_reconnectTimer(nullptr),
-				_forkId(forkId) {
-			init(earliestPeerTime, initialAddresses, coinIndex);
+			init(subAccount, earliestPeerTime);
 		}
 
 		WalletManager::~WalletManager() {
@@ -388,17 +371,19 @@ namespace Elastos {
 			Log::getLogger()->info("reconnect {}s later...", _reconnectSeconds);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(_reconnectSeconds)));
-			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
+			_reconnectTimer->async_wait(
+					boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
 			_reconnectService.restart();
 			_reconnectService.run_one();
 		}
 
 		void WalletManager::resetReconnect() {
 			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
-			_reconnectTimer->async_wait(boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
+			_reconnectTimer->async_wait(
+					boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
 		}
 
-		void WalletManager::asyncConnect(const boost::system::error_code& error) {
+		void WalletManager::asyncConnect(const boost::system::error_code &error) {
 			if (error.value() == 0) {
 				if (_peerManager->getConnectStatus() != Peer::Connected) {
 					Log::getLogger()->info("async connecting...");

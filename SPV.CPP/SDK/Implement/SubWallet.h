@@ -14,6 +14,7 @@
 #include "KeyStore/CoinInfo.h"
 #include "ChainParams.h"
 #include "WalletManager.h"
+#include "Account/ISubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -138,17 +139,12 @@ namespace Elastos {
 					  const PluginTypes &pluginTypes,
 					  MasterWallet *parent);
 
-			Key deriveKey(const std::string &payPassword);
-
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
 			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
 														   const std::string &payPassword);
 
 			virtual void publishTransaction(const TransactionPtr &transaction);
-
-			void signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
-								 const std::string &payPassword);
 
 			void recover(int limitGap);
 
@@ -170,6 +166,7 @@ namespace Elastos {
 			std::vector<ISubWalletCallback *> _callbacks;
 			MasterWallet *_parent;
 			CoinInfo _info;
+			SubAccountPtr _subAccount;
 
 			typedef std::map<std::string, TransactionPtr> TransactionMap;
 			TransactionMap _confirmingTxs;
