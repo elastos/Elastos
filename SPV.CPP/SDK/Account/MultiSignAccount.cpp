@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <set>
+
 #include <SDK/ELACoreExt/ErrorCode.h>
 #include <SDK/Common/Utils.h>
 #include <boost/bind.hpp>
@@ -92,9 +94,14 @@ namespace Elastos {
 		}
 
 		CMBlock MultiSignAccount::GenerateRedeemScript() const {
-			std::vector<std::string> sortedSigners = _coSigners;
+			std::set<std::string> uniqueSigners(_coSigners.begin(), _coSigners.end());
 			if (_me != nullptr)
-				sortedSigners.push_back(_me->GetPublicKey());
+				uniqueSigners.insert(_me->GetPublicKey());
+
+			if (uniqueSigners.size() < _requiredSignCount)
+				ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Required sign count greater than signers.");
+
+			std::vector<std::string> sortedSigners(uniqueSigners.begin(), uniqueSigners.end());
 
 			std::sort(sortedSigners.begin(), sortedSigners.end(),
 					  boost::bind(&MultiSignAccount::Compare, this, _1, _2));
