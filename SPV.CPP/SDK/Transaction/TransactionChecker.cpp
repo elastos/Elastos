@@ -102,7 +102,7 @@ namespace Elastos {
 			const std::vector<Program *> &programs = transaction->getPrograms();
 			size_t size = programs.size();
 			for (size_t i = 0; i < size; ++i) {
-				if (!programs[i]->isValid()) {
+				if (!programs[i]->isValid(transaction)) {
 					return false;
 				}
 			}

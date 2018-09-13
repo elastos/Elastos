@@ -101,6 +101,9 @@ namespace Elastos {
 			if (uniqueSigners.size() < _requiredSignCount)
 				ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Required sign count greater than signers.");
 
+			if (uniqueSigners.size() > sizeof(uint8_t) - OP_1)
+				ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Signers should less than 205.");
+
 			std::vector<std::string> sortedSigners(uniqueSigners.begin(), uniqueSigners.end());
 
 			std::sort(sortedSigners.begin(), sortedSigners.end(),

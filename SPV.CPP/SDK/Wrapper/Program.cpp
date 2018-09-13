@@ -3,10 +3,15 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 
+#include <Core/BRAddress.h>
 #include "BRInt.h"
 
 #include "Program.h"
 #include "Utils.h"
+#include "ErrorCode.h"
+#include "Transaction/Transaction.h"
+
+#define SignatureScriptLength 65
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -33,7 +38,7 @@ namespace Elastos {
 		Program::~Program() {
 		}
 
-		bool Program::isValid() {
+		bool Program::isValid(const TransactionPtr &transaction) {
 			if (!_parameter || _parameter.GetSize() <= 0) {
 				return false;
 			}
@@ -41,15 +46,66 @@ namespace Elastos {
 			if (!_code || _code.GetSize() <= 0) {
 				return false;
 			}
+
+			//multi-sign check
+			if (_code[_code.GetSize() - 1] == ELA_MULTISIG) {
+				uint8_t m, n;
+				std::vector<std::string> signers;
+				ParseMultiSignRedeemScript(m, n, signers);
+
+				if (_parameter.GetSize() % SignatureScriptLength != 0)
+					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
+												  "Invalid multi sign signatures, length not match");
+				if (_parameter.GetSize() / SignatureScriptLength < m)
+					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
+												  "Invalid signatures, not enough signatures");
+				if (_parameter.GetSize() / SignatureScriptLength > n)
+					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
+												  "Invalid signatures, too many signatures");
+
+				CMBlock hashData = transaction->GetShaData();
+				UInt256 md;
+				BRSHA256(&md, hashData, hashData.GetSize());
+
+				for (int i = 0; i < _parameter.GetSize(); i += SignatureScriptLength) {
+					bool verified = false;
+					CMBlock signature(SignatureScriptLength);
+					memcpy(signature, &_parameter[i], SignatureScriptLength);
+
+					for (std::vector<std::string>::iterator signerIt = signers.begin();
+						 signerIt != signers.end(); ++signerIt) {
+
+						verified |= Key::verifyByPublicKey(*signerIt, md, signature);
+						if (verified) break;
+					}
+
+					if (!verified)
+						ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Not matched signers.");
+				}
+			}
+
 			return true;
+		}
+
+		bool Program::ParseMultiSignRedeemScript(uint8_t &m, uint8_t &n, std::vector<std::string> &signers) {
+			m = _code[0] - OP_1 + 1;
+			n = _code[_code.GetSize() - 2] - OP_1 + 1;
+
+			signers.clear();
+			for (int i = 1; i < _code.GetSize() - 2;) {
+				uint8_t size = _code[i];
+				signers.push_back(Utils::encodeHex(&_code[i + 1], size));
+				i += size + 1;
+			}
+
+			return false;
 		}
 
 		const CMBlock &Program::getCode() {
 			return _code;
 		}
 
-		const CMBlock &Program::getParameter()
-		{
+		const CMBlock &Program::getParameter() {
 			return _parameter;
 		}
 

@@ -34,20 +34,11 @@ namespace Elastos {
 			stream.putBytes(elaTransaction->programs[0]->getParameter(),
 							elaTransaction->programs[0]->getParameter().GetSize());
 
-			CMBlock shaData = GetShaData(transaction);
+			CMBlock shaData = transaction->GetShaData();
 			CMBlock signData = DeriveMainAccountKey(payPassword).compactSign(shaData);
 			stream.putBytes(signData, signData.GetSize());
 
 			elaTransaction->programs[0]->setParameter(stream.getBuffer());
-		}
-
-		CMBlock MultiSignSubAccount::GetShaData(const TransactionPtr &transaction) const {
-			ByteStream ostream;
-			transaction->serializeUnsigned(ostream);
-			CMBlock data = ostream.getBuffer();
-			CMBlock shaData(sizeof(UInt256));
-			BRSHA256(shaData, data, data.GetSize());
-			return shaData;
 		}
 
 		nlohmann::json MultiSignSubAccount::GetBasicInfo() const {

@@ -21,6 +21,7 @@
 #include "ELATransaction.h"
 #include "ELATxOutput.h"
 #include "Utils.h"
+#include "Transaction/Transaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -218,7 +219,9 @@ namespace Elastos {
 					return false;
 				}
 				for (size_t i = 0; i < len; ++i) {
-					if (!tx->programs[i]->isValid()) {
+
+					TransactionPtr transaction(new Transaction((ELATransaction *)tx, false));
+					if (!tx->programs[i]->isValid(transaction)) {
 						return false;
 					}
 				}
