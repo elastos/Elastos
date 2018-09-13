@@ -74,7 +74,7 @@ $ make dist
 ```
 where option **ANDROID_ABI** should be one of the target architectures listed below:
 
-* armeab-v7a
+* armeabi-v7a
 * arm64-v8a
 * x86
 * x86_64
