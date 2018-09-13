@@ -64,31 +64,39 @@ namespace Elastos {
 			return key;
 		}
 
+		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
+										   const std::string &payPassword) {
+			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(wallet, payPassword, transaction);
+			if (!transaction->sign(keyList, 0)) {
+				throw std::logic_error("Transaction Sign error!");
+			}
+		}
+
 		WrapperList<Key, BRKey>
-		HDSubAccount::DeriveAccountAvailableKeys(ELAWallet *_wallet, const std::string &payPassword,
+		HDSubAccount::DeriveAccountAvailableKeys(ELAWallet *wallet, const std::string &payPassword,
 												 const TransactionPtr &transaction) {
 			BRTransaction *tx = transaction->getRaw();
 			uint32_t j, internalIdx[tx->inCount], externalIdx[tx->inCount];
 			size_t i, internalCount = 0, externalCount = 0;
 
 			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
-			pthread_mutex_lock(&_wallet->Raw.lock);
+			pthread_mutex_lock(&wallet->Raw.lock);
 			for (i = 0; i < tx->inCount; i++) {
-				if (_wallet->Raw.internalChain) {
-					for (j = (uint32_t) array_count(_wallet->Raw.internalChain); j > 0; j--) {
-						if (BRAddressEq(tx->inputs[i].address, &_wallet->Raw.internalChain[j - 1])) {
+				if (wallet->Raw.internalChain) {
+					for (j = (uint32_t) array_count(wallet->Raw.internalChain); j > 0; j--) {
+						if (BRAddressEq(tx->inputs[i].address, &wallet->Raw.internalChain[j - 1])) {
 							internalIdx[internalCount++] = j - 1;
 						}
 					}
 				}
 
-				for (j = (uint32_t) array_count(_wallet->Raw.externalChain); j > 0; j--) {
-					if (BRAddressEq(tx->inputs[i].address, &_wallet->Raw.externalChain[j - 1])) {
+				for (j = (uint32_t) array_count(wallet->Raw.externalChain); j > 0; j--) {
+					if (BRAddressEq(tx->inputs[i].address, &wallet->Raw.externalChain[j - 1])) {
 						externalIdx[externalCount++] = j - 1;
 					}
 				}
 			}
-			pthread_mutex_unlock(&_wallet->Raw.lock);
+			pthread_mutex_unlock(&wallet->Raw.lock);
 			Log::getLogger()->info("SubWallet signTransaction end get indices.");
 
 			UInt512 seed = _parentAccount->DeriveSeed(payPassword);

@@ -174,12 +174,14 @@ namespace Elastos {
 			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet, uint32_t blockHeight);
 
 			void removeDuplicatePrograms();
+
+			void serializeUnsigned(ByteStream &ostream) const;
+
 		private:
+
 			void reinit();
 
 			IPayload *newPayload(ELATransaction::Type type);
-
-			void serializeUnsigned(ByteStream &ostream) const;
 
 			bool transactionSign(int forkId, const WrapperList<Key, BRKey> keys);
 

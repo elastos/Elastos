@@ -68,7 +68,7 @@ namespace Elastos {
 			return _me->GetIDMasterPubKey();
 		}
 
-		bool MultiSignAccount::Compare(const std::string &a, const std::string &b) {
+		bool MultiSignAccount::Compare(const std::string &a, const std::string &b) const {
 			CMBlock cbA = Utils::decodeHex(a);
 			CMBlock cbB = Utils::decodeHex(b);
 			return memcmp(cbA, cbB, cbA.GetSize()) >= 0;
@@ -81,14 +81,25 @@ namespace Elastos {
 		}
 
 		std::string MultiSignAccount::GetAddress() {
-			ByteStream stream;
+			if (_address.empty()) {
+				// redeem script -> program hash
+				UInt168 programHash = Utils::codeToProgramHash(GenerateRedeemScript());
 
-			// public keys -> multi sign redeem script
+				// program hash -> address
+				_address = Utils::UInt168ToAddress(programHash);
+			}
+			return _address;
+		}
+
+		CMBlock MultiSignAccount::GenerateRedeemScript() const {
 			std::vector<std::string> sortedSigners = _coSigners;
-			sortedSigners.push_back(_me->GetPublicKey());
+			if (_me != nullptr)
+				sortedSigners.push_back(_me->GetPublicKey());
 
-			std::sort(sortedSigners.begin(), sortedSigners.end(), boost::bind(&MultiSignAccount::Compare, this, _1, _2));
+			std::sort(sortedSigners.begin(), sortedSigners.end(),
+					  boost::bind(&MultiSignAccount::Compare, this, _1, _2));
 
+			ByteStream stream;
 			stream.writeUint8(uint8_t(OP_1 + _requiredSignCount - 1));
 			for (size_t i = 0; i < sortedSigners.size(); i++) {
 				CMBlock pubKey = Utils::decodeHex(sortedSigners[i]);
@@ -99,13 +110,7 @@ namespace Elastos {
 			stream.writeUint8(uint8_t(OP_1 + sortedSigners.size() - 1));
 			stream.writeUint8(ELA_MULTISIG);
 
-			CMBlock redeemScript = stream.getBuffer();
-
-			// redeem script -> program hash
-			UInt168 programHash = Utils::codeToProgramHash(redeemScript);
-
-			// program hash -> address
-			return Utils::UInt168ToAddress(programHash);
+			return stream.getBuffer();
 		}
 
 		void to_json(nlohmann::json &j, const MultiSignAccount &p) {

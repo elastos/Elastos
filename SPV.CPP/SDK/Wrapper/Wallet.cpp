@@ -487,6 +487,7 @@ namespace Elastos {
 
 			ELATransaction *tx = (ELATransaction *) CreateTxForOutputs((BRWallet *) _wallet, outputs, 1, fee,
 																	   fromAddress, AddressFilter);
+
 			TransactionPtr result = nullptr;
 			if (tx != nullptr) {
 				result = TransactionPtr(new Transaction(tx));
@@ -1028,23 +1029,9 @@ namespace Elastos {
 
 		void Wallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
 									 const std::string &payPassword) {
-			Log::getLogger()->info("SubWallet signTransaction method begin.");
 
 			ParamChecker::checkNullPointer(transaction.get());
-			Log::getLogger()->info("SubWallet signTransaction derive key down.");
-
-			WrapperList<Key, BRKey> keyList = _subAccount->DeriveAccountAvailableKeys(_wallet, payPassword,
-																					  transaction);
-			if (!transaction->sign(keyList, forkId)) {
-				throw std::logic_error("Transaction Sign error!");
-			}
-		}
-
-		void Wallet::appendSign(const TransactionPtr &transaction, const std::string &payPassword) {
-			MultiSignSubAccount *multiSignSubAccount = dynamic_cast<MultiSignSubAccount *>(_subAccount.get());
-			if (multiSignSubAccount == nullptr)
-				ErrorCode::StandardLogicError(ErrorCode::WrongSubAccountType, "Current account do not support multi-sign.");
-			multiSignSubAccount->AppendSign(transaction, payPassword);
+			_subAccount->SignTransaction(transaction, _wallet, payPassword);
 		}
 
 	}
