@@ -26,6 +26,13 @@
 #include <time.h>
 #include <errno.h>
 #include <pthread.h>
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <posix_helper.h>
+#endif
 
 typedef struct Condition {
     pthread_mutex_t mutex;
