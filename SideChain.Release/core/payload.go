@@ -7,6 +7,8 @@ import (
 
 //Payload define the func for loading the payload data
 //base on payload type which have different struture
+var PayloadCreater *PayloadBase
+
 type Payload interface {
 	//  Get payload data
 	Data(version byte) []byte
@@ -17,7 +19,20 @@ type Payload interface {
 	Deserialize(r io.Reader, version byte) error
 }
 
-func GetPayload(txType TransactionType) (Payload, error) {
+type PayloadBase struct {
+	GetPayload func(txType TransactionType) (Payload, error)
+}
+
+func InitPayloadCreater() {
+	PayloadCreater = &PayloadBase{}
+	PayloadCreater.Init()
+}
+
+func (pb *PayloadBase) Init() {
+	pb.GetPayload = pb.GetPayloadImpl
+}
+
+func (pb *PayloadBase) GetPayloadImpl(txType TransactionType) (Payload, error) {
 	var p Payload
 	switch txType {
 	case CoinBase:
@@ -32,8 +47,6 @@ func GetPayload(txType TransactionType) (Payload, error) {
 		p = new(PayloadRechargeToSideChain)
 	case TransferCrossChainAsset:
 		p = new(PayloadTransferCrossChainAsset)
-	case RegisterIdentification:
-		p = new(PayloadRegisterIdentification)
 	default:
 		return nil, errors.New("[Transaction], invalid transaction type.")
 	}

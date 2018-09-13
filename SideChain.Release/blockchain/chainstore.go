@@ -48,9 +48,25 @@ type ChainStore struct {
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
+
+	PersistTrimmedBlock  func(b *core.Block) error
+	RollbackTrimmedBlock func(b *core.Block) error
+	PersistBlockHash     func(b *core.Block) error
+	RollbackBlockHash    func(b *core.Block) error
+	PersistCurrentBlock  func(b *core.Block) error
+	RollbackCurrentBlock func(b *core.Block) error
+	PersistUnspendUTXOs  func(b *core.Block) error
+	RollbackUnspendUTXOs func(b *core.Block) error
+	PersistTransactions  func(b *core.Block) error
+	RollbackTransactions func(b *core.Block) error
+	RollbackTransaction  func(txn *core.Transaction) error
+	RollbackAsset        func(assetId Uint256) error
+	RollbackMainchainTx  func(mainchainTxHash Uint256) error
+	PersistUnspend       func(b *core.Block) error
+	RollbackUnspend      func(b *core.Block) error
 }
 
-func NewChainStore() (IChainStore, error) {
+func NewChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
 	st, err := NewLevelDB("Chain")
 	if err != nil {
@@ -67,10 +83,30 @@ func NewChainStore() (IChainStore, error) {
 		taskCh:             make(chan persistTask, TaskChanCap),
 		quit:               make(chan chan bool, 1),
 	}
-
-	go store.loop()
-
+	store.Init()
 	return store, nil
+}
+
+func StartChainStoreLoop(store *ChainStore) {
+	go store.Loop()
+}
+
+func (c *ChainStore) Init() {
+	c.PersistTrimmedBlock = c.PersistTrimmedBlockImpl
+	c.RollbackTrimmedBlock = c.RollbackTrimmedBlockImpl
+	c.PersistBlockHash = c.PersistBlockHashImpl
+	c.RollbackBlockHash = c.RollbackBlockHashImpl
+	c.PersistCurrentBlock = c.PersistCurrentBlockImpl
+	c.RollbackCurrentBlock = c.RollbackCurrentBlockImpl
+	c.PersistUnspendUTXOs = c.PersistUnspendUTXOsImpl
+	c.RollbackUnspendUTXOs = c.RollbackUnspendUTXOsImpl
+	c.PersistTransactions = c.PersistTransactionsImpl
+	c.RollbackTransactions = c.RollbackTransactionsImpl
+	c.RollbackTransaction = c.RollbackTransactionImpl
+	c.RollbackAsset = c.RollbackAssetImpl
+	c.RollbackMainchainTx = c.RollbackMainchainTxImpl
+	c.PersistUnspend = c.PersistUnspendImpl
+	c.RollbackUnspend = c.RollbackUnspendImpl
 }
 
 func (c *ChainStore) Close() {
@@ -81,7 +117,7 @@ func (c *ChainStore) Close() {
 	c.IStore.Close()
 }
 
-func (c *ChainStore) loop() {
+func (c *ChainStore) Loop() {
 	for {
 		select {
 		case t := <-c.taskCh:
@@ -384,24 +420,6 @@ func (c *ChainStore) GetMainchainTx(mainchainTxHash Uint256) (byte, error) {
 	}
 
 	return data[0], nil
-}
-
-func (c *ChainStore) PersistRegisterIdentificationTx(idKey []byte, txHash Uint256) {
-	key := []byte{byte(IX_IDENTIFICATION)}
-	key = append(key, idKey...)
-
-	// PUT VALUE
-	c.BatchPut(key, txHash.Bytes())
-}
-
-func (c *ChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
-	key := []byte{byte(IX_IDENTIFICATION)}
-	data, err := c.Get(append(key, idKey...))
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
 }
 
 func (c *ChainStore) GetTransaction(txId Uint256) (*core.Transaction, uint32, error) {

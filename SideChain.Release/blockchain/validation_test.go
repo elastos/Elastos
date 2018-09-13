@@ -283,7 +283,7 @@ func TestRunPrograms(t *testing.T) {
 		programs[math.Intn(num)].Code = nil
 	}
 	err = RunPrograms(tx, hashes, programs)
-	assert.EqualError(t, err,"[ToProgramHash] failed, empty program code")
+	assert.EqualError(t, err, "[ToProgramHash] failed, empty program code")
 
 	// With random no parameter
 	init()

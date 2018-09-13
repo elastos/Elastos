@@ -1,26 +1,26 @@
 package httpwebsocket
 
 import (
-	"net"
-	"sync"
-	"time"
 	"bytes"
-	"strconv"
 	"context"
-	"net/http"
 	"crypto/tls"
 	"encoding/json"
 	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	. "github.com/elastos/Elastos.ELA.SideChain/config"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/events"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	. "github.com/elastos/Elastos.ELA.SideChain/servers"
+	"net"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/pborman/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/pborman/uuid"
 )
 
 var instance *WebSocketServer
@@ -86,14 +86,14 @@ func (server *WebSocketServer) Start() {
 
 func (server *WebSocketServer) initializeMethods() {
 	server.ActionMap = map[string]Handler{
-		"getconnectioncount": GetConnectionCount,
-		"getblockbyheight":   GetBlockByHeight,
-		"getblockbyhash":     GetBlockByHash,
-		"getblockheight":     GetBlockHeight,
-		"gettransaction":     GetTransactionByHash,
-		"getasset":           GetAssetByHash,
-		"getunspendoutput":   GetUnspendOutput,
-		"sendrawtransaction": SendRawTransaction,
+		"getconnectioncount": HttpServers.GetConnectionCount,
+		"getblockbyheight":   HttpServers.GetBlockByHeight,
+		"getblockbyhash":     HttpServers.GetBlockByHash,
+		"getblockheight":     HttpServers.GetBlockHeight,
+		"gettransaction":     HttpServers.GetTransactionByHash,
+		"getasset":           HttpServers.GetAssetByHash,
+		"getunspendoutput":   HttpServers.GetUnspendOutput,
+		"sendrawtransaction": HttpServers.SendRawTransaction,
 		"heartbeat":          server.hearBeat,
 		"getsessioncount":    server.getSessionCount,
 	}
@@ -265,7 +265,7 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 	switch action {
 	case "sendblock":
 		if block, ok := v.(*Block); ok {
-			result = GetBlockInfo(block, true)
+			result = HttpServers.GetBlockInfo(block, true)
 		}
 	case "sendrawblock":
 		if block, ok := v.(*Block); ok {
@@ -275,11 +275,11 @@ func (server *WebSocketServer) PushResult(action string, v interface{}) {
 		}
 	case "sendblocktransactions":
 		if block, ok := v.(*Block); ok {
-			result = GetBlockTransactions(block)
+			result = HttpServers.GetBlockTransactions(block)
 		}
 	case "sendnewtransaction":
 		if tx, ok := v.(*Transaction); ok {
-			result = GetTransactionInfo(nil, tx)
+			result = HttpServers.GetTransactionInfo(nil, tx)
 		}
 	default:
 		log.Error("httpwebsocket/server.go in pushresult function: unknown action")

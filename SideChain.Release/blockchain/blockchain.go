@@ -792,7 +792,7 @@ func (bc *Blockchain) DisconnectBlock(node *BlockNode, block *core.Block) error 
 func (bc *Blockchain) ConnectBlock(node *BlockNode, block *core.Block) error {
 
 	for _, txVerify := range block.Transactions {
-		if errCode := CheckTransactionContext(txVerify); errCode != Success {
+		if errCode := TransactionValidator.CheckTransactionContext(txVerify); errCode != Success {
 			fmt.Println("CheckTransactionContext failed when verifiy block", errCode)
 			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verifiy block"))
 		}
@@ -866,7 +866,7 @@ func (bc *Blockchain) maybeAcceptBlock(block *core.Block) (bool, error) {
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	err = PowCheckBlockContext(block, prevNode, DefaultLedger)
+	err = BlockValidator.PowCheckBlockContext(block, prevNode, DefaultLedger)
 	if err != nil {
 		log.Error("PowCheckBlockContext error!", err)
 		return false, err
@@ -1030,7 +1030,7 @@ func (bc *Blockchain) ProcessBlock(block *core.Block, timeSource MedianTimeSourc
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = PowCheckBlockSanity(block, PowLimit, bc.TimeSource)
-	err = PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
+	err = BlockValidator.PowCheckBlockSanity(block, config.Parameters.ChainParam.PowLimit, bc.TimeSource)
 
 	if err != nil {
 		log.Error("PowCheckBlockSanity error!", err)

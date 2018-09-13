@@ -116,10 +116,13 @@ func InitLocalNode() Noder {
 	LocalNode.handshakeQueue.init()
 	LocalNode.syncTimer = newSyncTimer(LocalNode.stopSyncing)
 	LocalNode.initConnection()
-	go LocalNode.updateConnection()
-	go LocalNode.updateNodeInfo()
 
 	return LocalNode
+}
+
+func UpdateLocalNode() {
+	go LocalNode.updateConnection()
+	go LocalNode.updateNodeInfo()
 }
 
 func (node *node) DumpInfo() {

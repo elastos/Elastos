@@ -18,7 +18,62 @@ const (
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
 
-func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
+var BlockValidator *BlockValidateBase
+
+type BlockValidateBase struct {
+	PowCheckBlockSanity        func(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error
+	PowCheckHeader             func(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error
+	PowCheckTransactionsCount  func(block *Block) error
+	PowCheckBlockSize          func(block *Block) error
+	PowCheckTransactionsFee    func(block *Block) error
+	PowCheckTransactionsMerkle func(block *Block) error
+	PowCheckBlockContext       func(block *Block, prevNode *BlockNode, ledger *Ledger) error
+	CheckProofOfWork           func(header *Header, powLimit *big.Int) error
+	IsFinalizedTransaction     func(msgTx *Transaction, blockHeight uint32) bool
+}
+
+func InitBlockValidator() {
+	BlockValidator = &BlockValidateBase{}
+	BlockValidator.Init()
+}
+
+func (v *BlockValidateBase) Init() {
+	v.PowCheckBlockSanity = v.PowCheckBlockSanityImpl
+	v.PowCheckHeader = v.PowCheckHeaderImpl
+	v.PowCheckTransactionsCount = v.PowCheckTransactionsCountImpl
+	v.PowCheckBlockSize = v.PowCheckBlockSizeImpl
+	v.PowCheckTransactionsFee = v.PowCheckTransactionsFeeImpl
+	v.PowCheckTransactionsMerkle = v.PowCheckTransactionsMerkleImpl
+	v.PowCheckBlockContext = v.PowCheckBlockContextImpl
+	v.CheckProofOfWork = v.CheckProofOfWorkImpl
+	v.IsFinalizedTransaction = v.IsFinalizedTransactionImpl
+}
+
+func (v *BlockValidateBase) PowCheckBlockSanityImpl(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
+
+	if err := v.PowCheckHeader(block, powLimit, timeSource); err != nil {
+		return errors.New("[PowCheckBlockSanity] error:" + err.Error())
+	}
+
+	if err := v.PowCheckTransactionsCount(block); err != nil {
+		return errors.New("[PowCheckBlockSanity] error:" + err.Error())
+	}
+
+	if err := v.PowCheckBlockSize(block); err != nil {
+		return errors.New("[PowCheckBlockSanity] error:" + err.Error())
+	}
+
+	if err := v.PowCheckTransactionsFee(block); err != nil {
+		return errors.New("[PowCheckBlockSanity] error:" + err.Error())
+	}
+
+	if err := v.PowCheckTransactionsMerkle(block); err != nil {
+		return errors.New("[PowCheckBlockSanity] error:" + err.Error())
+	}
+	return nil
+}
+
+func (v *BlockValidateBase) PowCheckHeaderImpl(block *Block, powLimit *big.Int, timeSource MedianTimeSource) error {
 	header := block.Header
 
 	// A block's main chain block header must contain in spv module
@@ -30,7 +85,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed")
 	}
-	if CheckProofOfWork(&header, powLimit) != nil {
+	if v.CheckProofOfWork(&header, powLimit) != nil {
 		return errors.New("[PowCheckBlockSanity] block check proof is failed.")
 	}
 
@@ -46,6 +101,10 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		return errors.New("[PowCheckBlockSanity] block timestamp of is too far in the future")
 	}
 
+	return nil
+}
+
+func (v *BlockValidateBase) PowCheckTransactionsCountImpl(block *Block) error {
 	// A block must have at least one transaction.
 	numTx := len(block.Transactions)
 	if numTx == 0 {
@@ -57,12 +116,20 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		return errors.New("[PowCheckBlockSanity]  block contains too many transactions")
 	}
 
+	return nil
+}
+
+func (v *BlockValidateBase) PowCheckBlockSizeImpl(block *Block) error {
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
 	if blockSize > config.Parameters.MaxBlockSize {
 		return errors.New("[PowCheckBlockSanity] serialized block is too big")
 	}
 
+	return nil
+}
+
+func (v *BlockValidateBase) PowCheckTransactionsFeeImpl(block *Block) error {
 	transactions := block.Transactions
 	var rewardInCoinbase = Fixed64(0)
 	var totalTxFee = Fixed64(0)
@@ -85,7 +152,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 
 		// Calculate transaction fee
-		totalTxFee += GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		totalTxFee += TxFeeHelper.GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
 	}
 
 	// Reward in coinbase must match total transaction fee
@@ -93,11 +160,15 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		return errors.New("[PowCheckBlockSanity] reward amount in coinbase not correct")
 	}
 
-	txIds := make([]Uint256, 0, len(transactions))
+	return nil
+}
+
+func (v *BlockValidateBase) PowCheckTransactionsMerkleImpl(block *Block) error {
+	txIds := make([]Uint256, 0, len(block.Transactions))
 	existingTxIds := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
 	existingMainTxs := make(map[Uint256]struct{})
-	for _, txn := range transactions {
+	for _, txn := range block.Transactions {
 		txId := txn.Hash()
 		// Check for duplicate transactions.
 		if _, exists := existingTxIds[txId]; exists {
@@ -106,7 +177,7 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		existingTxIds[txId] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := CheckTransactionSanity(txn); errCode != Success {
+		if errCode := TransactionValidator.CheckTransactionSanity(txn); errCode != Success {
 			return errors.New("CheckTransactionSanity failed when verifiy block")
 		}
 
@@ -139,14 +210,14 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 	if err != nil {
 		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
 	}
-	if !header.MerkleRoot.IsEqual(calcTransactionsRoot) {
+	if !block.Header.MerkleRoot.IsEqual(calcTransactionsRoot) {
 		return errors.New("[PowCheckBlockSanity] block merkle root is invalid")
 	}
 
 	return nil
 }
 
-func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) error {
+func (v *BlockValidateBase) PowCheckBlockContextImpl(block *Block, prevNode *BlockNode, ledger *Ledger) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
 		return nil
@@ -178,7 +249,7 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 
 	// Ensure all transactions in the block are finalized.
 	for _, txn := range block.Transactions[1:] {
-		if !IsFinalizedTransaction(txn, blockHeight) {
+		if !v.IsFinalizedTransaction(txn, blockHeight) {
 			return errors.New("block contains unfinalized transaction")
 		}
 	}
@@ -186,7 +257,7 @@ func PowCheckBlockContext(block *Block, prevNode *BlockNode, ledger *Ledger) err
 	return nil
 }
 
-func CheckProofOfWork(header *Header, powLimit *big.Int) error {
+func (v *BlockValidateBase) CheckProofOfWorkImpl(header *Header, powLimit *big.Int) error {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {
@@ -209,7 +280,7 @@ func CheckProofOfWork(header *Header, powLimit *big.Int) error {
 	return nil
 }
 
-func IsFinalizedTransaction(msgTx *Transaction, blockHeight uint32) bool {
+func (v *BlockValidateBase) IsFinalizedTransactionImpl(msgTx *Transaction, blockHeight uint32) bool {
 	// Lock time of zero means the transaction is finalized.
 	lockTime := msgTx.LockTime
 	if lockTime == 0 {
