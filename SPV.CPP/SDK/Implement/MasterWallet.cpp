@@ -129,7 +129,7 @@ namespace Elastos {
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkNotEmpty(rootPath);
-			ParamChecker::checkJsonArrayCountGreaterEqualThan(coSigners, requiredSignCount);
+			ParamChecker::checkJsonArrayCountGreaterEqualThan(coSigners, requiredSignCount - 1);
 
 			initFromMultiSigners(privKey, payPassword, coSigners, requiredSignCount);
 		}

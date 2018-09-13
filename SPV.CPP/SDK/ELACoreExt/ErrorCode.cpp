@@ -14,6 +14,7 @@ namespace Elastos {
 		std::string ErrorCode::WrongSubAccountType = "[WrongSubAccountType]";
 		std::string ErrorCode::NoCurrentMultiSinAccount = "[NoCurrentMultiSinAccount]";
 		std::string ErrorCode::TransactionContentError = "TransactionContentError";
+		std::string ErrorCode::MultiSignError = "MultiSignError";
 
 		void ErrorCode::StandardLogicError(const std::string &errorCode, const std::string &extraMsg) {
 			std::stringstream ss;
