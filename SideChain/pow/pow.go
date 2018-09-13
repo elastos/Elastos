@@ -162,11 +162,11 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 			break
 		}
 
-		if !IsFinalizedTransaction(tx, nextBlockHeight) {
+		if !BlockValidator.IsFinalizedTransaction(tx, nextBlockHeight) {
 			continue
 		}
 
-		fee := GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		fee := TxFeeHelper.GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
 		if fee != tx.Fee {
 			continue
 		}

@@ -79,63 +79,6 @@ func TestChainStore_PersisMainchainTx(t *testing.T) {
 	}
 }
 
-func TestChainStore_PersistRegisterIdentificationTx(t *testing.T) {
-	if testChainStore == nil {
-		t.Error("Chainstore init failed")
-	}
-
-	txHash1 := common.Uint256{1, 1, 1}
-	txHash2 := common.Uint256{2, 2, 2}
-
-	buf := new(bytes.Buffer)
-	buf.WriteString("id")
-	buf.WriteString("path")
-
-	// 1. The register identification Tx should not exist in DB.
-	_, err := testChainStore.GetRegisterIdentificationTx(buf.Bytes())
-	if err == nil {
-		t.Error("Found the register identification Tx which should not exist in DB")
-	}
-
-	// 2. Run PersistRegisterIdentificationTx
-	testChainStore.PersistRegisterIdentificationTx(buf.Bytes(), txHash1)
-
-	// Need batch commit here because PersistRegisterIdentificationTx use BatchPut
-	testChainStore.BatchCommit()
-
-	// 3. Verify PersistRegisterIdentificationTx
-	txHashBytes, err := testChainStore.GetRegisterIdentificationTx(buf.Bytes())
-	if err != nil {
-		t.Error("Not found the register Tx")
-	}
-	txHash3, err := common.Uint256FromBytes(txHashBytes)
-	if err != nil {
-		t.Error("Invalid tx hash")
-	}
-	if !txHash3.IsEqual(txHash1) {
-		t.Error("Register Tx matched wrong value")
-	}
-
-	// 4. Run PersistRegisterIdentificationTx again
-	testChainStore.PersistRegisterIdentificationTx(buf.Bytes(), txHash2)
-
-	// Need batch commit here because PersistRegisterIdentificationTx use BatchPut
-	testChainStore.BatchCommit()
-
-	// 5. Verify PersistRegisterIdentificationTx again
-	txHashBytes, err = testChainStore.GetRegisterIdentificationTx(buf.Bytes())
-	if err != nil {
-		t.Error("Not found the register Tx")
-	}
-	txHash4, err := common.Uint256FromBytes(txHashBytes)
-	if err != nil {
-		t.Error("Invalid tx hash")
-	}
-	if !txHash4.IsEqual(txHash2) {
-		t.Error("Register Tx matched wrong value")
-	}
-}
-
 func TestChainStore_RollbackMainchainTx(t *testing.T) {
 	if testChainStore == nil {
 		t.Error("Chainstore init failed")
