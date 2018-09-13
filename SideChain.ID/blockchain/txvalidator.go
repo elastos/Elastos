@@ -25,7 +25,7 @@ func CheckTransactionPayload(txn *ucore.Transaction) error {
 		if pld.Asset.Precision < ucore.MinPrecision || pld.Asset.Precision > ucore.MaxPrecision {
 			return errors.New("Invalide asset Precision.")
 		}
-		if !blockchain.TransactionValidator.CheckAmountPrecise(pld.Amount, pld.Asset.Precision) {
+		if !blockchain.TransactionValidator.CheckAmountPrecise(pld.Amount, pld.Asset.Precision, ucore.MaxPrecision) {
 			return errors.New("Invalide asset value,out of precise.")
 		}
 	case *ucore.PayloadTransferAsset:
