@@ -12,4 +12,4 @@ Elacoin is the digital currency solution within Elastos eco system.
 
 ## Run
 
-- run ./node to run the node program.
+- run ./side to run the node program.

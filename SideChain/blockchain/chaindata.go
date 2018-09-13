@@ -12,7 +12,7 @@ import (
 
 // key: DATA_Header || block hash
 // value: sysfee(8bytes) || trimmed block
-func (c *ChainStore) PersistTrimmedBlock(b *core.Block) error {
+func (c *ChainStore) PersistTrimmedBlockImpl(b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
 
@@ -33,7 +33,7 @@ func (c *ChainStore) PersistTrimmedBlock(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackTrimmedBlock(b *core.Block) error {
+func (c *ChainStore) RollbackTrimmedBlockImpl(b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
 	hash := b.Hash()
@@ -46,7 +46,7 @@ func (c *ChainStore) RollbackTrimmedBlock(b *core.Block) error {
 
 // key: DATA_BlockHash || height
 // value: block hash
-func (c *ChainStore) PersistBlockHash(b *core.Block) error {
+func (c *ChainStore) PersistBlockHashImpl(b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -62,7 +62,7 @@ func (c *ChainStore) PersistBlockHash(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackBlockHash(b *core.Block) error {
+func (c *ChainStore) RollbackBlockHashImpl(b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -74,7 +74,7 @@ func (c *ChainStore) RollbackBlockHash(b *core.Block) error {
 
 // key: SYS_CurrentBlock
 // value: current block hash || height
-func (c *ChainStore) PersistCurrentBlock(b *core.Block) error {
+func (c *ChainStore) PersistCurrentBlockImpl(b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
@@ -90,7 +90,7 @@ func (c *ChainStore) PersistCurrentBlock(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackCurrentBlock(b *core.Block) error {
+func (c *ChainStore) RollbackCurrentBlockImpl(b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
@@ -106,7 +106,7 @@ func (c *ChainStore) RollbackCurrentBlock(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistUnspendUTXOs(b *core.Block) error {
+func (c *ChainStore) PersistUnspendUTXOsImpl(b *core.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	curHeight := b.Header.Height
 
@@ -204,7 +204,7 @@ func (c *ChainStore) PersistUnspendUTXOs(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackUnspendUTXOs(b *core.Block) error {
+func (c *ChainStore) RollbackUnspendUTXOsImpl(b *core.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	height := b.Header.Height
 	for _, txn := range b.Transactions {
@@ -290,7 +290,7 @@ func (c *ChainStore) RollbackUnspendUTXOs(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistTransactions(b *core.Block) error {
+func (c *ChainStore) PersistTransactionsImpl(b *core.Block) error {
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
 			return err
@@ -309,20 +309,11 @@ func (c *ChainStore) PersistTransactions(b *core.Block) error {
 			}
 			c.PersistMainchainTx(*hash)
 		}
-		if txn.TxType == core.RegisterIdentification {
-			regPayload := txn.Payload.(*core.PayloadRegisterIdentification)
-			for _, content := range regPayload.Contents {
-				buf := new(bytes.Buffer)
-				buf.WriteString(regPayload.ID)
-				buf.WriteString(content.Path)
-				c.PersistRegisterIdentificationTx(buf.Bytes(), txn.Hash())
-			}
-		}
 	}
 	return nil
 }
 
-func (c *ChainStore) RollbackTransactions(b *core.Block) error {
+func (c *ChainStore) RollbackTransactionsImpl(b *core.Block) error {
 	for _, txn := range b.Transactions {
 		if err := c.RollbackTransaction(txn); err != nil {
 			return err
@@ -345,7 +336,7 @@ func (c *ChainStore) RollbackTransactions(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackTransaction(txn *core.Transaction) error {
+func (c *ChainStore) RollbackTransactionImpl(txn *core.Transaction) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Transaction))
 	hash := txn.Hash()
@@ -356,7 +347,7 @@ func (c *ChainStore) RollbackTransaction(txn *core.Transaction) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackAsset(assetId Uint256) error {
+func (c *ChainStore) RollbackAssetImpl(assetId Uint256) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(ST_Info))
 	assetId.Serialize(key)
@@ -364,7 +355,7 @@ func (c *ChainStore) RollbackAsset(assetId Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackMainchainTx(mainchainTxHash Uint256) error {
+func (c *ChainStore) RollbackMainchainTxImpl(mainchainTxHash Uint256) error {
 	key := []byte{byte(IX_MainChain_Tx)}
 	key = append(key, mainchainTxHash.Bytes()...)
 
@@ -372,7 +363,7 @@ func (c *ChainStore) RollbackMainchainTx(mainchainTxHash Uint256) error {
 	return nil
 }
 
-func (c *ChainStore) PersistUnspend(b *core.Block) error {
+func (c *ChainStore) PersistUnspendImpl(b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
@@ -425,7 +416,7 @@ func (c *ChainStore) PersistUnspend(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackUnspend(b *core.Block) error {
+func (c *ChainStore) RollbackUnspendImpl(b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {

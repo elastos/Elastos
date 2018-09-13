@@ -6,6 +6,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.SideChain/node"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
@@ -57,16 +58,25 @@ func startConsensus(noder protocol.Noder) {
 }
 
 func main() {
+
 	//var blockChain *ledger.Blockchain
 	var err error
 	var noder protocol.Noder
 	log.Info("Node version: ", config.Version)
+
+	core.InitPayloadCreater()
+	core.InitTransactionHelper()
+	blockchain.InitTxFeeHelper()
+	blockchain.InitBlockValidator()
+	blockchain.InitTransactionValidtor()
+
 	log.Info("1. BlockChain init")
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
 		goto ERROR
 	}
+	blockchain.StartChainStoreLoop(chainStore)
 	defer chainStore.Close()
 
 	err = blockchain.Init(chainStore)
@@ -83,12 +93,15 @@ func main() {
 
 	log.Info("3. Start the P2P networks")
 	noder = node.InitLocalNode()
+	node.UpdateLocalNode()
 	noder.WaitForSyncFinish()
 
 	servers.NodeForServers = noder
 	startConsensus(noder)
 
 	log.Info("4. --Start the RPC service")
+	servers.InitHttpServers()
+	httpjsonrpc.InitRpcServer()
 	go httpjsonrpc.StartRPCServer()
 	go httprestful.StartServer()
 	go httpwebsocket.StartServer()

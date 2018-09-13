@@ -13,7 +13,7 @@ import (
 )
 
 //an instance of the multiplexer
-var mainMux map[string]func(Params) map[string]interface{}
+var MainMux map[string]func(Params) map[string]interface{}
 
 const (
 	// JSON-RPC protocol error codes.
@@ -25,38 +25,39 @@ const (
 	//-32000 to -32099	Server error, waiting for defining
 )
 
-func StartRPCServer() {
-	mainMux = make(map[string]func(Params) map[string]interface{})
+func InitRpcServer() {
+	MainMux = make(map[string]func(Params) map[string]interface{})
 
 	http.HandleFunc("/", Handle)
 
-	mainMux["setloglevel"] = SetLogLevel
-	mainMux["getinfo"] = GetInfo
-	mainMux["getblock"] = GetBlockByHash
-	mainMux["getcurrentheight"] = GetBlockHeight
-	mainMux["getblockhash"] = GetBlockHash
-	mainMux["getconnectioncount"] = GetConnectionCount
-	mainMux["getrawmempool"] = GetTransactionPool
-	mainMux["getrawtransaction"] = GetRawTransaction
-	mainMux["getneighbors"] = GetNeighbors
-	mainMux["getnodestate"] = GetNodeState
-	mainMux["sendtransactioninfo"] = SendTransactionInfo
-	mainMux["sendrawtransaction"] = SendRawTransaction
-	mainMux["getbestblockhash"] = GetBestBlockHash
-	mainMux["getblockcount"] = GetBlockCount
-	mainMux["getblockbyheight"] = GetBlockByHeight
-	mainMux["getdestroyedtransactions"] = GetDestroyedTransactionsByHeight
-	mainMux["getexistdeposittransactions"] = GetExistDepositTransactions
-	mainMux["getidentificationtxbyidandpath"] = GetIdentificationTxByIdAndPath
+	MainMux["setloglevel"] = HttpServers.SetLogLevel
+	MainMux["getinfo"] = HttpServers.GetInfo
+	MainMux["getblock"] = HttpServers.GetBlockByHash
+	MainMux["getcurrentheight"] = HttpServers.GetBlockHeight
+	MainMux["getblockhash"] = HttpServers.GetBlockHash
+	MainMux["getconnectioncount"] = HttpServers.GetConnectionCount
+	MainMux["getrawmempool"] = HttpServers.GetTransactionPool
+	MainMux["getrawtransaction"] = HttpServers.GetRawTransaction
+	MainMux["getneighbors"] = HttpServers.GetNeighbors
+	MainMux["getnodestate"] = HttpServers.GetNodeState
+	MainMux["sendtransactioninfo"] = HttpServers.SendTransactionInfo
+	MainMux["sendrawtransaction"] = HttpServers.SendRawTransaction
+	MainMux["getbestblockhash"] = HttpServers.GetBestBlockHash
+	MainMux["getblockcount"] = HttpServers.GetBlockCount
+	MainMux["getblockbyheight"] = HttpServers.GetBlockByHeight
+	MainMux["getdestroyedtransactions"] = HttpServers.GetDestroyedTransactionsByHeight
+	MainMux["getexistdeposittransactions"] = HttpServers.GetExistDepositTransactions
 
 	// aux interfaces
-	mainMux["help"] = AuxHelp
-	mainMux["submitsideauxblock"] = SubmitSideAuxBlock
-	mainMux["createauxblock"] = CreateAuxBlock
+	MainMux["help"] = HttpServers.AuxHelp
+	MainMux["submitsideauxblock"] = HttpServers.SubmitSideAuxBlock
+	MainMux["createauxblock"] = HttpServers.CreateAuxBlock
 	// mining interfaces
-	mainMux["togglemining"] = ToggleMining
-	mainMux["discretemining"] = DiscreteMining
+	MainMux["togglemining"] = HttpServers.ToggleMining
+	MainMux["discretemining"] = HttpServers.DiscreteMining
+}
 
+func StartRPCServer() {
 	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err.Error())
@@ -93,7 +94,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 		RPCError(w, http.StatusBadRequest, InvalidRequest, "need a method!")
 		return
 	}
-	method, ok := mainMux[requestMethod]
+	method, ok := MainMux[requestMethod]
 	if !ok {
 		RPCError(w, http.StatusNotFound, MethodNotFound, "method "+requestMethod+" not found")
 		return
