@@ -21,7 +21,6 @@ namespace Elastos {
 			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
 
 		private:
-			CMBlock GetShaData(const TransactionPtr &transaction) const;
 
 		private:
 			MultiSignAccount *_multiSignAccount;

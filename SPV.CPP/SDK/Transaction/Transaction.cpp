@@ -759,5 +759,14 @@ namespace Elastos {
 			uint32_t confirmCount = blockHeight >= getBlockHeight() ? blockHeight - getBlockHeight() + 1 : 0;
 			return confirmCount <= 6 ? "Pending" : "Confirmed";
 		}
+
+		CMBlock Transaction::GetShaData() const {
+			ByteStream ostream;
+			serializeUnsigned(ostream);
+			CMBlock data = ostream.getBuffer();
+			CMBlock shaData(sizeof(UInt256));
+			BRSHA256(shaData, data, data.GetSize());
+			return shaData;
+		}
 	}
 }

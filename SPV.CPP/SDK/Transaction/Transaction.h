@@ -177,6 +177,8 @@ namespace Elastos {
 
 			void serializeUnsigned(ByteStream &ostream) const;
 
+			CMBlock GetShaData() const;
+
 		private:
 
 			void reinit();
