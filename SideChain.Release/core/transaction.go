@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -25,37 +23,7 @@ const (
 	RechargeToSideChain     TransactionType = 0x06
 	WithdrawFromSideChain   TransactionType = 0x07
 	TransferCrossChainAsset TransactionType = 0x08
-	RegisterIdentification  TransactionType = 0x09
-)
 
-func (self TransactionType) Name() string {
-	switch self {
-	case CoinBase:
-		return "CoinBase"
-	case RegisterAsset:
-		return "RegisterAsset"
-	case TransferAsset:
-		return "TransferAsset"
-	case Record:
-		return "Record"
-	case Deploy:
-		return "Deploy"
-	case SideChainPow:
-		return "SideChainPow"
-	case RechargeToSideChain:
-		return "RechargeToSideChain"
-	case WithdrawFromSideChain:
-		return "WithdrawFromSideChain"
-	case TransferCrossChainAsset:
-		return "TransferCrossChainAsset"
-	case RegisterIdentification:
-		return "RegisterIdentification"
-	default:
-		return "Unknown"
-	}
-}
-
-const (
 	InvalidTransactionSize = -1
 )
 
@@ -78,7 +46,7 @@ func (tx *Transaction) String() string {
 	hash := tx.Hash()
 	return fmt.Sprint("Transaction: {\n\t",
 		"Hash: ", hash.String(), "\n\t",
-		"TxType: ", tx.TxType.Name(), "\n\t",
+		"TxType: ", TransactionHelper.Name(tx.TxType), "\n\t",
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
 		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
 		"Attributes: ", tx.Attributes, "\n\t",
@@ -195,7 +163,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	tx.Payload, err = GetPayload(tx.TxType)
+	tx.Payload, err = PayloadCreater.GetPayload(tx.TxType)
 	if err != nil {
 		return err
 	}
@@ -295,10 +263,6 @@ func (tx *Transaction) IsTransferCrossChainAssetTx() bool {
 	return tx.TxType == TransferCrossChainAsset
 }
 
-func (tx *Transaction) IsRegisterIdentificationTx() bool {
-	return tx.TxType == RegisterIdentification
-}
-
 func NewTrimmedTx(hash Uint256) *Transaction {
 	tx := new(Transaction)
 	tx.hash, _ = Uint256FromBytes(hash[:])
@@ -310,16 +274,4 @@ func (tx *Transaction) GetData() []byte {
 	buf := new(bytes.Buffer)
 	tx.SerializeUnsigned(buf)
 	return buf.Bytes()
-}
-
-func (tx *Transaction) GetDataContainer(programHash *Uint168) interfaces.IDataContainer {
-	switch tx.TxType {
-	case RegisterIdentification:
-		for _, output := range tx.Outputs {
-			if programHash.IsEqual(output.ProgramHash) {
-				return tx.Payload.(*PayloadRegisterIdentification)
-			}
-		}
-	}
-	return tx
 }

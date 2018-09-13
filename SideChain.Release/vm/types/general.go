@@ -1,8 +1,8 @@
 package types
 
 import (
-	"math/big"
 	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
+	"math/big"
 )
 
 type GeneralInterface struct {

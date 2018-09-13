@@ -479,7 +479,7 @@ func (h *MsgHandlerV1) onTx(msgTx *msg.Tx) error {
 	}
 
 	LocalNode.Relay(node, tx)
-	log.Infof("Relay Transaction type %s hash %s", tx.TxType.Name(), tx.Hash().String())
+	log.Infof("Relay Transaction type %s hash %s", chain.TxFeeHelper.Name(tx.TxType), tx.Hash().String())
 	LocalNode.IncRxTxnCnt()
 
 	return nil
