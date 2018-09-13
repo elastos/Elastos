@@ -19,6 +19,8 @@ namespace Elastos {
 
 			CMBlock GenerateRedeemScript() const;
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual Key DeriveKey(const std::string &payPassword);
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword);

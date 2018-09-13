@@ -14,6 +14,8 @@ namespace Elastos {
 		public:
 			SingleSubAccount(IAccount *account);
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet);
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);

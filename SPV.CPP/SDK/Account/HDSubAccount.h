@@ -15,6 +15,8 @@ namespace Elastos {
 		public:
 			HDSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex);
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet);
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);

@@ -31,6 +31,8 @@ namespace Elastos {
 							 const PluginTypes &pluginTypes,
 							 MasterWallet *parent);
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
 
 			virtual void verifyRawTransaction(const TransactionPtr &transaction);

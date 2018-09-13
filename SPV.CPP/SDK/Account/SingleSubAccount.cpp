@@ -40,6 +40,12 @@ namespace Elastos {
 				throw std::logic_error("Transaction Sign error!");
 			}
 		}
+
+		nlohmann::json SingleSubAccount::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Single Account";
+			return j;
+		}
 	}
 }
 

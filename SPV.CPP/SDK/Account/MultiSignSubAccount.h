@@ -15,6 +15,8 @@ namespace Elastos {
 		public:
 			MultiSignSubAccount(IAccount *account);
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual void
 			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
 

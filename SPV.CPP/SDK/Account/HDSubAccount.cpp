@@ -125,5 +125,14 @@ namespace Elastos {
 			return keyList;
 		}
 
+		nlohmann::json HDSubAccount::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "HD Account";
+			nlohmann::json details;
+			details["CoinIndex"] = _coinIndex;
+			j["Details"] = details;
+			return j;
+		}
+
 	}
 }

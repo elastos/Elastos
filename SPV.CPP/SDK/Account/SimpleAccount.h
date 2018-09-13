@@ -15,6 +15,8 @@ namespace Elastos {
 		public:
 			SimpleAccount(const std::string &privKey, const std::string &payPassword);
 
+			virtual nlohmann::json GetBasicInfo() const;
+
 			virtual Key DeriveKey(const std::string &payPassword);
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword);

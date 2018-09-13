@@ -68,7 +68,7 @@ namespace Elastos {
 					uint64_t amount,
 					const std::string &memo);
 
-			virtual nlohmann::json AppendSignToTransaction(
+			virtual nlohmann::json AppendSignToMultiSignTransaction(
 					const nlohmann::json &rawTransaction,
 					const std::string &payPassword);
 

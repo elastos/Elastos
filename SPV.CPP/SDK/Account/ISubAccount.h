@@ -20,6 +20,8 @@ namespace Elastos {
 		public:
 			virtual ~ISubAccount() {}
 
+			virtual nlohmann::json GetBasicInfo() const = 0;
+
 			virtual IAccount *GetParent() = 0;
 
 			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet) = 0;

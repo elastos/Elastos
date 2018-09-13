@@ -50,5 +50,11 @@ namespace Elastos {
 			return shaData;
 		}
 
+		nlohmann::json MultiSignSubAccount::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Multi-Sign Account";
+			return j;
+		}
+
 	}
 }

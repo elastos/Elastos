@@ -27,6 +27,30 @@ namespace Elastos {
 			 */
 			virtual std::string GetChainId() const = 0;
 
+			/**
+			 * Here is a example of hd account wallet basic info:
+			 * {
+			 * 	"Type": "Normal" //Type can be Normal, Mainchain, Sidechain and Idchain
+			 * 	"Account":
+			 * 		{
+			 * 			"Type": "HD Account"
+			 * 			"Details":
+			 * 				{
+			 * 					"CoinIndex": 1
+			 * 				}
+			 * 		}
+			 * }
+			 *
+			 * and an example of multi-sign account wallet basic info:
+			 * {
+			 * 	"Type": "Mainchain" //Type can be Normal, Mainchain, Sidechain and Idchain
+			 * 	"Account":
+			 * 		{
+			 * 			"Type": "Multi-Sign Account"
+			 * 		}
+			 * }
+			 * @return basic information of current master wallet.
+			 */
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
 			/**
@@ -106,10 +130,22 @@ namespace Elastos {
 					uint64_t amount,
 					const std::string &memo) = 0;
 
-			virtual nlohmann::json AppendSignToTransaction(
+			/**
+			 * Append sign to a multi-sign transaction and return the content of transaction in json format.
+			 * @param rawTransaction content of transaction in json format.
+			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success return the content of transaction in json format.
+			 */
+			virtual nlohmann::json AppendSignToMultiSignTransaction(
 					const nlohmann::json &rawTransaction,
 					const std::string &payPassword) = 0;
 
+			/**
+			 * Send multi-sign transaction by p2p network.
+			 * @param rawTransaction content of transaction in json format.
+			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
+			 * @return Sent result in json format.
+			 */
 			virtual nlohmann::json PublishMultiSignTransaction(
 					const nlohmann::json &rawTransaction,
 					uint64_t fee) = 0;
