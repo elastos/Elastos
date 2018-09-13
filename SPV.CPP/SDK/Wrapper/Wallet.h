@@ -142,8 +142,6 @@ namespace Elastos {
 							  const std::string &toAddress, const std::string &remark,
 							  const std::string &memo);
 
-			void appendSign(const TransactionPtr &transaction, const std::string &payPassword);
-
 			bool containsTransaction(const TransactionPtr &transaction);
 
 			bool inputFromWallet(const BRTxInput *in);

@@ -19,9 +19,13 @@ namespace Elastos {
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);
 
-			virtual WrapperList<Key, BRKey>
-			DeriveAccountAvailableKeys(ELAWallet *wallet, const std::string &payPassword,
-									   const TransactionPtr &transaction);
+			virtual void
+			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
+
+		private:
+
+			WrapperList<Key, BRKey> DeriveAccountAvailableKeys(ELAWallet *wallet, const std::string &payPassword,
+															   const TransactionPtr &transaction);
 
 		private:
 			MasterPubKey _masterPubKey;

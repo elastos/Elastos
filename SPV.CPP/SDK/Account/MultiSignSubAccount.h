@@ -5,6 +5,7 @@
 #ifndef __ELSTOS_SDK_MULTISIGNSUBACCOUNT_H__
 #define __ELSTOS_SDK_MULTISIGNSUBACCOUNT_H__
 
+#include "MultiSignAccount.h"
 #include "SingleSubAccount.h"
 
 namespace Elastos {
@@ -14,7 +15,14 @@ namespace Elastos {
 		public:
 			MultiSignSubAccount(IAccount *account);
 
-			void AppendSign(const TransactionPtr &transaction, const std::string &payPassword);
+			virtual void
+			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
+
+		private:
+			CMBlock GetShaData(const TransactionPtr &transaction) const;
+
+		private:
+			MultiSignAccount *_multiSignAccount;
 		};
 
 	}

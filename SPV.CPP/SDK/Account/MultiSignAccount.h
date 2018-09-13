@@ -17,6 +17,8 @@ namespace Elastos {
 		public:
 			MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners, uint32_t requiredSignCount);
 
+			CMBlock GenerateRedeemScript() const;
+
 			virtual Key DeriveKey(const std::string &payPassword);
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword);
@@ -50,7 +52,7 @@ namespace Elastos {
 
 			FROM_JSON(MultiSignAccount);
 
-			bool Compare(const std::string &a, const std::string &b);
+			bool Compare(const std::string &a, const std::string &b) const;
 
 			void checkSigners() const;
 
@@ -58,6 +60,7 @@ namespace Elastos {
 			IAccount *_me;
 			std::vector<std::string> _coSigners;
 			uint32_t _requiredSignCount;
+			std::string _address;
 		};
 
 	}

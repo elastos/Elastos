@@ -263,7 +263,6 @@ namespace Elastos {
 					*_chainParams = MainChainRegNetParams;
 				} else if (coinConfig.NetType == "MainNet") {
 					*_chainParams = MainChainMainNetParams;
-					throw std::logic_error("Unsupport NetType=MainNet in CoinConfig");
 				} else {
 					Log::getLogger()->error("Invalid NetType = {} in CoinConfig", coinConfig.NetType);
 					throw std::logic_error("Invalid NetType in CoinConfig");
@@ -275,7 +274,6 @@ namespace Elastos {
 					*_chainParams = IdChainRegNetParams;
 				} else if (coinConfig.NetType == "MainNet") {
 					*_chainParams = IdChainMainNetParams;
-					throw std::logic_error("Unsupport NetType=MainNet in CoinConfig");
 				} else {
 					Log::getLogger()->error("Invalid NetType = {} in CoinConfig", coinConfig.NetType);
 					throw std::logic_error("Invalid NetType in CoinConfig");

@@ -26,9 +26,8 @@ namespace Elastos {
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword) = 0;
 
-			virtual WrapperList<Key, BRKey>
-			DeriveAccountAvailableKeys(ELAWallet *wallet, const std::string &payPassword,
-									   const TransactionPtr &transaction) = 0;
+			virtual void
+			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword) = 0;
 		};
 
 		typedef boost::shared_ptr<ISubAccount> SubAccountPtr;

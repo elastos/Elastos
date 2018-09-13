@@ -26,12 +26,19 @@ namespace Elastos {
 		}
 
 		WrapperList<Key, BRKey>
-		SingleSubAccount::DeriveAccountAvailableKeys(Elastos::ElaWallet::ELAWallet *wallet,
-													 const std::string &payPassword,
+		SingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
 													 const Elastos::ElaWallet::TransactionPtr &transaction) {
 			WrapperList<Key, BRKey> result;
 			result.push_back(_parentAccount->DeriveKey(payPassword));
 			return result;
+		}
+
+		void SingleSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
+											   const std::string &payPassword) {
+			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, transaction);
+			if (!transaction->sign(keyList, 0)) {
+				throw std::logic_error("Transaction Sign error!");
+			}
 		}
 	}
 }
