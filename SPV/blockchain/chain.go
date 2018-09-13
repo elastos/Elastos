@@ -209,8 +209,8 @@ func (b *BlockChain) getCommonAncestor(bestHeader, prevTip *util.Header) (*util.
 //
 // This function is safe for concurrent access.
 func (b *BlockChain) HaveBlock(hash *common.Uint256) bool {
-	header, err := b.db.Headers().Get(hash)
-	return err != nil && header != nil
+	header, _ := b.db.Headers().Get(hash)
+	return header != nil
 }
 
 // LatestBlockLocator returns a block locator for current last block,
