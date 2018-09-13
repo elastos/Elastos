@@ -270,8 +270,8 @@ namespace Elastos {
 			return CreateTransaction(fromAddress, toAddress, amount, memo, "");
 		}
 
-		nlohmann::json SubWallet::AppendSignToTransaction(const nlohmann::json &rawTransaction,
-														  const std::string &payPassword) {
+		nlohmann::json SubWallet::AppendSignToMultiSignTransaction(const nlohmann::json &rawTransaction,
+																   const std::string &payPassword) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(rawTransaction);
 			_walletManager->getWallet()->signTransaction(transaction, _info.getForkId(), payPassword);
@@ -442,7 +442,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {
-			return nlohmann::json();
+			nlohmann::json j;
+			j["Type"] = "Normal";
+			j["Account"] = _subAccount->GetBasicInfo();
+			return j;
 		}
 
 	}

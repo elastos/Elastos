@@ -109,5 +109,12 @@ namespace Elastos {
 			} else
 				return SubWallet::completeTransaction(transaction, actualFee);
 		}
+
+		nlohmann::json MainchainSubWallet::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Mainchain";
+			j["Account"] = _subAccount->GetBasicInfo();
+			return j;
+		}
 	}
 }

@@ -125,5 +125,18 @@ namespace Elastos {
 			p._requiredSignCount = j["RequiredSignCount"].get<uint32_t>();
 		}
 
+		nlohmann::json MultiSignAccount::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Multi-Sign";
+			nlohmann::json details;
+			std::vector<std::string> signers = _coSigners;
+			if(_me != nullptr)
+				signers.push_back(_me->GetPublicKey());
+			details["Signers"] = signers;
+			details["RequiredSignCount"] = _requiredSignCount;
+			j["Details"] = details;
+			return j;
+		}
+
 	}
 }

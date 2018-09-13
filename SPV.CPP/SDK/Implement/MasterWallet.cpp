@@ -552,8 +552,9 @@ namespace Elastos {
 		}
 
 		nlohmann::json MasterWallet::GetBasicInfo() const {
-			//todo complete me
-			return nlohmann::json();
+			nlohmann::json j;
+			j["Account"] = _localStore.Account()->GetBasicInfo();
+			return j;
 		}
 
 	}

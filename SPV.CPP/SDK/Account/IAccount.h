@@ -19,6 +19,8 @@ namespace Elastos {
 		public:
 			virtual ~IAccount() {}
 
+			virtual nlohmann::json GetBasicInfo() const = 0;
+
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword) = 0;
 
 			virtual UInt512 DeriveSeed(const std::string &payPassword) = 0;

@@ -188,5 +188,11 @@ namespace Elastos {
 			from_json(j, *this);
 		}
 
+		nlohmann::json StandardAccount::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Standard";
+			return j;
+		}
+
 	}
 }

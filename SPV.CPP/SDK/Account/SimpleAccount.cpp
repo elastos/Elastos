@@ -103,5 +103,11 @@ namespace Elastos {
 			p._publicKey = j["PublicKey"].get<std::string>();
 		}
 
+		nlohmann::json SimpleAccount::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Simple";
+			return j;
+		}
+
 	}
 }

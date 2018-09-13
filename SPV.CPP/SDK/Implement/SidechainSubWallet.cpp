@@ -109,5 +109,12 @@ namespace Elastos {
 			} else
 				return SubWallet::completeTransaction(transaction, actualFee);
 		}
+
+		nlohmann::json SidechainSubWallet::GetBasicInfo() const {
+			nlohmann::json j;
+			j["Type"] = "Sidechain";
+			j["Account"] = _subAccount->GetBasicInfo();
+			return j;
+		}
 	}
 }
