@@ -1,6 +1,8 @@
 package sdk
 
 import (
+	"github.com/elastos/Elastos.ELA.SPV/fprate"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
@@ -9,7 +11,7 @@ import (
 // Create a new bloom filter instance
 // elements are how many elements will be added to this filter.
 func NewBloomFilter(elements uint32) *bloom.Filter {
-	return bloom.NewFilter(elements, 0, 0.00003)
+	return bloom.NewFilter(elements, 0, fprate.ReducedFalsePositiveRate)
 }
 
 // Build a bloom filter by giving the interested addresses and outpoints

@@ -412,18 +412,13 @@ func (s *service) onBlock(sp *spvpeer.Peer, block *util.Block) {
 	done := make(chan struct{})
 	s.syncManager.QueueBlock(block, sp, done)
 
-	// Use a new goroutine to prevent blocking.
-	go func() {
-		select {
-		case <-done:
-			s.txQueue <- &blockMsg{block: block}
-			if s.cfg.StateNotifier != nil {
-				s.cfg.StateNotifier.BlockCommitted(block)
-			}
-		case <-sp.Quit():
-			return
+	select {
+	case <-done:
+		s.txQueue <- &blockMsg{block: block}
+		if s.cfg.StateNotifier != nil {
+			s.cfg.StateNotifier.BlockCommitted(block)
 		}
-	}()
+	}
 }
 
 func (s *service) onTx(sp *spvpeer.Peer, tx *core.Transaction) {

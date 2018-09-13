@@ -4,6 +4,7 @@ import (
 	"sync/atomic"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
+	"github.com/elastos/Elastos.ELA.SPV/fprate"
 	"github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
@@ -24,10 +25,6 @@ const (
 
 	// maxBadBlockRate is the maximum bad blocks rate of received blocks.
 	maxBadBlockRate float64 = 0.001
-
-	// maxFalsePositiveRate is the maximum false positive rate of received
-	// transactions.
-	maxFalsePositiveRate float64 = 0.0001
 
 	// maxRequestedBlocks is the maximum number of requested block
 	// hashes to store in memory.
@@ -104,17 +101,11 @@ type peerSyncState struct {
 	requestedBlocks map[common.Uint256]struct{}
 	receivedBlocks  uint32
 	badBlocks       uint32
-	filterUpdating  bool
-	receivedTxs     uint32
-	falsePositives  uint32
+	fpRate          *fprate.FpRate
 }
 
 func (s *peerSyncState) badBlockRate() float64 {
 	return float64(s.badBlocks) / float64(s.receivedBlocks)
-}
-
-func (s *peerSyncState) falsePosRate() float64 {
-	return float64(s.falsePositives) / float64(s.receivedTxs)
 }
 
 // SyncManager is used to communicate block related messages with peers. The
@@ -208,6 +199,9 @@ func (sm *SyncManager) startSync() {
 }
 
 func (sm *SyncManager) syncWith(p *peer.Peer) {
+	// Update bloom filter first, before start requesting blocks.
+	sm.updateBloomFilter(p)
+
 	// Clear the requestedBlocks if the sync peer changes, otherwise we
 	// may ignore blocks we need that the last sync peer failed to send.
 	sm.requestedBlocks = make(map[common.Uint256]struct{})
@@ -245,35 +239,9 @@ func (sm *SyncManager) getSyncCandidates() []*peer.Peer {
 
 // updateBloomFilter update the bloom filter and send it to the given peer.
 func (sm *SyncManager) updateBloomFilter(p *peer.Peer) {
-	state, ok := sm.peerStates[p]
-	if !ok {
-		log.Warnf("Update bloom filter for unknown peer %s", p)
-		return
-	}
-
-	if state.filterUpdating {
-		return
-	}
-	state.filterUpdating = true
-
-	go func(state *peerSyncState) {
-
-		msg := sm.cfg.UpdateFilter().GetFilterLoadMsg()
-		log.Debugf("Update bloom filter %v, %d, %d", msg.Filter, msg.Tweak, msg.HashFuncs)
-		done := make(chan struct{})
-		p.QueueMessage(msg, done)
-
-		select {
-		case <-done:
-			// Reset false positive state.
-			state.filterUpdating = false
-			state.receivedTxs = 0
-			state.falsePositives = 0
-
-		case <-p.Quit():
-			break
-		}
-	}(state)
+	msg := sm.cfg.UpdateFilter().GetFilterLoadMsg()
+	log.Debugf("Update bloom filter %v, %d, %d", msg.Filter, msg.Tweak, msg.HashFuncs)
+	p.QueueMessage(msg, nil)
 }
 
 // handleNewPeerMsg deals with new peers that have signalled they may
@@ -293,9 +261,8 @@ func (sm *SyncManager) handleNewPeerMsg(peer *peer.Peer) {
 		syncCandidate:   isSyncCandidate,
 		requestedTxns:   make(map[common.Uint256]struct{}),
 		requestedBlocks: make(map[common.Uint256]struct{}),
+		fpRate:          fprate.NewFpRate(),
 	}
-
-	sm.updateBloomFilter(peer)
 
 	// Start syncing by choosing the best candidate if needed.
 	if isSyncCandidate && sm.syncPeer == nil {
@@ -372,10 +339,6 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 
 	if fp {
 		log.Debugf("Tx %s from Peer%d is a false positive.", txHash.String(), peer.ID())
-		state.falsePositives++
-		if state.falsePosRate() > maxFalsePositiveRate {
-			sm.updateBloomFilter(peer)
-		}
 	}
 }
 
@@ -398,8 +361,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 
 	// If we didn't ask for this block then the peer is misbehaving.
 	block := bmsg.block
-	header := block.Header
-	blockHash := header.Hash()
+	blockHash := block.Hash()
 	if _, exists = state.requestedBlocks[blockHash]; !exists {
 		peer.Disconnect()
 		return
@@ -448,16 +410,23 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 		return
 	}
 
-	// Check false positive rate.
-	state.falsePositives += fps
-	if state.falsePosRate() > maxFalsePositiveRate {
-		sm.updateBloomFilter(peer)
-	}
-
 	// We can exit here if the block is already known
 	if !newBlock {
 		log.Debugf("Received duplicate block %s", blockHash.String())
 		return
+	}
+
+	// Check false positive rate.
+	fpRate := state.fpRate.Update(block, fps)
+	if fpRate > fprate.DefaultFalsePositiveRate*10 {
+		log.Warnf("bloom filter false positive rate %f too high," +
+			" disconnecting...", fpRate)
+		peer.Disconnect()
+		return
+	}
+	if newHeight+500 < peer.Height() && fpRate > fprate.ReducedFalsePositiveRate*10 {
+		sm.updateBloomFilter(peer)
+		state.fpRate.Reset()
 	}
 
 	log.Infof("Received block %s at height %d", blockHash.String(), newHeight)

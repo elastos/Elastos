@@ -113,6 +113,11 @@ func (p *Peer) sendMessage(out outMsg) {
 }
 
 func (p *Peer) handleMessage(peer *peer.Peer, message p2p.Message) {
+	// Return if peer already disconnected.
+	if !p.Connected() {
+		return
+	}
+
 	switch m := message.(type) {
 	case *msg.Inv:
 		p.stallControl <- message
@@ -247,6 +252,11 @@ func (p *Peer) blockHandler() {
 
 	// NotifyOnBlock message and clear cached data.
 	notifyBlock := func() {
+		// Return if peer already disconnected.
+		if !p.Connected() {
+			return
+		}
+
 		// Notify OnBlock.
 		p.cfg.OnBlock(p, &util.Block{
 			Header:       *header,
