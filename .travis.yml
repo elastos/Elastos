@@ -28,10 +28,14 @@ matrix:
     sudo: true
     install:
       - sudo apt-get update
-      - sudo apt-get install doxygen python-sphinx graphviz
+      # if sphinx is 1.8.0，python version required 2.7.9 or newer
+      - sudo apt-get install python3.4
+      - sudo ln -s -f /usr/bin/python3.4 /usr/bin/python
+      - sudo apt-get install doxygen  graphviz
       - curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
       - sudo python /tmp/get-pip.py
       - sudo pip install breathe
+      - sudo pip install -U sphinx
     script:
       - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV && cmake -DENABLE_DOCS=ON ../..
       - make && sudo make install && sudo make dist
