@@ -56,8 +56,8 @@ namespace Elastos {
 							new SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
 					for (size_t i = 0; i < blockCount; ++i) {
 						MerkleBlockPtr wrappedBlock(
-								Registry::Instance()->CloneMerkleBlock(listener->getPluginTypes().BlockType, blocks[i],
-																		true));
+								Registry::Instance()->CreateMerkleBlock(listener->getPluginTypes().BlockType, true,
+																		blocks[i]));
 						coreBlocks->push_back(wrappedBlock);
 					}
 					listener->saveBlocks(replace, *coreBlocks);
@@ -372,12 +372,12 @@ namespace Elastos {
 			manager->fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
 			size_t addrsCount = manager->wallet->WalletAllAddrs(manager->wallet, NULL, 0);
-			BRAddress *addrs = (BRAddress *)malloc(addrsCount*sizeof(*addrs));
+			BRAddress *addrs = (BRAddress *) malloc(addrsCount * sizeof(*addrs));
 			size_t utxosCount = BRWalletUTXOs(manager->wallet, NULL, 0);
-			BRUTXO *utxos = (BRUTXO *)malloc(utxosCount*sizeof(*utxos));
+			BRUTXO *utxos = (BRUTXO *) malloc(utxosCount * sizeof(*utxos));
 			uint32_t blockHeight = (manager->lastBlock->height > 100) ? manager->lastBlock->height - 100 : 0;
 			size_t txCount = BRWalletTxUnconfirmedBefore(manager->wallet, NULL, 0, blockHeight);
-			BRTransaction **transactions = (BRTransaction **)malloc(txCount*sizeof(*transactions));
+			BRTransaction **transactions = (BRTransaction **) malloc(txCount * sizeof(*transactions));
 			BRBloomFilter *filter;
 
 			assert(addrs != NULL);
@@ -386,7 +386,8 @@ namespace Elastos {
 			addrsCount = manager->wallet->WalletAllAddrs(manager->wallet, addrs, addrsCount);
 			utxosCount = BRWalletUTXOs(manager->wallet, utxos, utxosCount);
 			txCount = BRWalletTxUnconfirmedBefore(manager->wallet, transactions, txCount, blockHeight);
-			filter = BRBloomFilterNew(manager->fpRate, addrsCount + utxosCount + txCount + 100, (uint32_t)BRPeerHash(peer),
+			filter = BRBloomFilterNew(manager->fpRate, addrsCount + utxosCount + txCount + 100,
+									  (uint32_t) BRPeerHash(peer),
 									  BLOOM_UPDATE_ALL); // BUG: XXX txCount not the same as number of spent wallet outputs
 
 			for (size_t i = 0; i < addrsCount; i++) { // add addresses to watch for tx receiveing money to the wallet
@@ -394,20 +395,20 @@ namespace Elastos {
 
 				BRAddressHash168(&hash, addrs[i].s);
 
-				if (! UInt168IsZero(&hash) && ! BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
+				if (!UInt168IsZero(&hash) && !BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
 					BRBloomFilterInsertData(filter, hash.u8, sizeof(hash));
 				}
 			}
 
 			free(addrs);
 
-			ELAWallet *elaWallet = (ELAWallet *)manager->wallet;
+			ELAWallet *elaWallet = (ELAWallet *) manager->wallet;
 			for (size_t i = 0; i < elaWallet->ListeningAddrs.size(); ++i) {
 				UInt168 hash = UINT168_ZERO;
 
 				BRAddressHash168(&hash, elaWallet->ListeningAddrs[i].c_str());
 
-				if (! UInt168IsZero(&hash) && ! BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
+				if (!UInt168IsZero(&hash) && !BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
 					BRBloomFilterInsertData(filter, hash.u8, sizeof(hash));
 				}
 			}
@@ -417,7 +418,7 @@ namespace Elastos {
 
 				UInt256Set(o, utxos[i].hash);
 				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
-				if (! BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o, sizeof(o));
+				if (!BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o, sizeof(o));
 			}
 
 			free(utxos);
@@ -432,7 +433,8 @@ namespace Elastos {
 						BRWalletContainsAddress(manager->wallet, tx->outputs[input->index].address)) {
 						UInt256Set(o, input->txHash);
 						UInt32SetLE(&o[sizeof(UInt256)], input->index);
-						if (! BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o,sizeof(o));
+						if (!BRBloomFilterContainsData(filter, o, sizeof(o)))
+							BRBloomFilterInsertData(filter, o, sizeof(o));
 					}
 				}
 			}

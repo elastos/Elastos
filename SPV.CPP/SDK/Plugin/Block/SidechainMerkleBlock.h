@@ -5,6 +5,8 @@
 #ifndef __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 #define __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 
+#include <fruit/fruit.h>
+
 #include "IdMerkleBlock.h"
 #include "Plugin/Interface/IMerkleBlock.h"
 
@@ -17,6 +19,8 @@ namespace Elastos {
 		public:
 			SidechainMerkleBlock();
 
+			SidechainMerkleBlock(bool manageRaw);
+
 			SidechainMerkleBlock(IdMerkleBlock *merkleBlock, bool manageRaw);
 
 			virtual ~SidechainMerkleBlock();
@@ -24,12 +28,6 @@ namespace Elastos {
 			virtual std::string toString() const;
 
 			virtual BRMerkleBlock *getRaw() const;
-
-			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
-
-			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
-
-			virtual IMerkleBlock *Clone(const BRMerkleBlock *block, bool manageRaw) const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -42,8 +40,6 @@ namespace Elastos {
 			virtual BRMerkleBlock *getRawBlock() const;
 
 			virtual void deleteRawBlock();
-
-			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
 
 			virtual UInt256 getBlockHash() const;
 
@@ -60,6 +56,11 @@ namespace Elastos {
 			bool _manageRaw;
 		};
 
+		fruit::Component<IdMerkleBlock> GetIdMerkleBlockComponent(IdMerkleBlock *block);
+
+		fruit::Component<IMerkleBlock> GetSidechainMerkleBlockComponent(bool manage);
+
+		fruit::Component<IMerkleBlock> GetSidechainMerkleBlockComponentWithParams(IdMerkleBlock *block, bool manage);
 	}
 }
 
