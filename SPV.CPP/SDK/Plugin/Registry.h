@@ -7,57 +7,26 @@
 
 #include <map>
 #include <memory>
+#include <fruit/fruit.h>
+#include <boost/noncopyable.hpp>
 
 #include "Interface/IMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Registry {
+	class Registry : public boost::noncopyable {
 		public:
 			static Registry *Instance(bool erase = false);
 
-			IMerkleBlock *CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw);
-
-			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, bool manageRaw);
-
-			void AddMerkleBlockProto(IMerkleBlock *merkleBlock);
-
-			void RemoveMerkleBlockProto(IMerkleBlock *merkleBlock);
+			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, bool manageRaw, const BRMerkleBlock *block = nullptr);
 
 		private:
-
 			Registry();
 
-			typedef std::map<std::string, MerkleBlockPtr> MerkleBlockMap;
-			MerkleBlockMap _merkleBlocks;
 		};
 
-		template<class T>
-		class RegisterMerkleBlockProxy {
-		public:
-			RegisterMerkleBlockProxy() {
-				if (Registry::Instance()) {
-					_block = new T;
-					Registry::Instance()->AddMerkleBlockProto(_block);
-				}
-			}
-
-			~RegisterMerkleBlockProxy() {
-				if (Registry::Instance()) {
-					Registry::Instance()->RemoveMerkleBlockProto(_block);
-				}
-			}
-
-			T *get() { return _block; }
-
-		private:
-			T *_block;
-		};
-
-#define REGISTER_MERKLEBLOCKPLUGIN(classname) \
-    static Elastos::ElaWallet::RegisterMerkleBlockProxy<classname> g_proxy_##classname;
-
+		fruit::Component<bool> GetManageRawComponent(bool manage);
 	}
 
 }
