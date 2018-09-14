@@ -37,18 +37,19 @@ typedef struct FriendInfo {
 } FriendInfo;
 
 static
-int friendid_compare(const void *key1, size_t len1, const void *key2, size_t len2)
+int friend_number_compare(const void *key1, size_t len1,
+                          const void *key2, size_t len2)
 {
     assert(key1 && sizeof(uint32_t) == len1);
     assert(key2 && sizeof(uint32_t) == len2);
 
-    return strcmp(key1, key2);
+    return memcmp(key1, key2, sizeof(uint32_t));
 }
 
 static inline
 hashtable_t *friends_create(void)
 {
-    return hashtable_create(32, 1, NULL, friendid_compare);
+    return hashtable_create(32, 1, NULL, friend_number_compare);
 }
 
 static inline
