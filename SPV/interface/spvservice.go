@@ -152,40 +152,6 @@ func (s *spvservice) Batch() database.TxBatch {
 	}
 }
 
-// CommitTx save a transaction into database, and return
-// if it is a false positive and error.
-func (s *spvservice) CommitTx(tx *util.Tx) (bool, error) {
-	hits := make(map[common.Uint168]struct{})
-	for index, output := range tx.Outputs {
-		if s.db.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
-			outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
-			if err := s.db.Ops().Put(outpoint, output.ProgramHash); err != nil {
-				return false, err
-			}
-			hits[output.ProgramHash] = struct{}{}
-		}
-	}
-
-	for _, input := range tx.Inputs {
-		if addr := s.db.Ops().IsExist(&input.Previous); addr != nil {
-			hits[*addr] = struct{}{}
-		}
-	}
-
-	if len(hits) == 0 {
-		return true, nil
-	}
-
-	for _, listener := range s.listeners {
-		hash, _ := common.Uint168FromAddress(listener.Address())
-		if _, ok := hits[*hash]; ok {
-			s.queueMessageByListener(listener, &tx.Transaction, tx.Height)
-		}
-	}
-
-	return false, s.db.Txs().Put(util.NewTx(tx.Transaction, tx.Height))
-}
-
 // HaveTx returns if the transaction already saved in database
 // by it's id.
 func (s *spvservice) HaveTx(txId *common.Uint256) (bool, error) {
@@ -208,14 +174,17 @@ func (s *spvservice) RemoveTxs(height uint32) (int, error) {
 	return 0, batch.Commit()
 }
 
+// TransactionAnnounce will be invoked when received a new announced transaction.
+func (s *spvservice) TransactionAnnounce(tx *core.Transaction) {}
+
 // TransactionAccepted will be invoked after a transaction sent by
 // SendTransaction() method has been accepted.  Notice: this method needs at
 // lest two connected peers to work.
-func (s *spvservice) TransactionAccepted(tx *util.Tx) {}
+func (s *spvservice) TransactionAccepted(tx *core.Transaction) {}
 
 // TransactionRejected will be invoked if a transaction sent by SendTransaction()
 // method has been rejected.
-func (s *spvservice) TransactionRejected(tx *util.Tx) {}
+func (s *spvservice) TransactionRejected(tx *core.Transaction) {}
 
 // TransactionConfirmed will be invoked after a transaction sent by
 // SendTransaction() method has been packed into a block.
@@ -371,38 +340,56 @@ func getConfirmations(tx core.Transaction) uint32 {
 }
 
 type txBatch struct {
-	db       store.DataStore
-	batch    store.DataBatch
-	heights  []uint32
-	rollback func(height uint32)
+	db        store.DataStore
+	batch     store.DataBatch
+	heights   []uint32
+	rollback  func(height uint32)
+	listeners map[common.Uint256]TransactionListener
 }
 
-// AddTx add a store transaction operation into batch, and return
+// PutTx add a store transaction operation into batch, and return
 // if it is a false positive and error.
-func (b *txBatch) AddTx(tx *util.Tx) (bool, error) {
-	hits := 0
+func (b *txBatch) PutTx(tx *util.Tx) (bool, error) {
+	hits := make(map[common.Uint168]struct{})
 	ops := make(map[*core.OutPoint]common.Uint168)
 	for index, output := range tx.Outputs {
 		if b.db.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
 			outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
 			ops[outpoint] = output.ProgramHash
-			hits++
+			hits[output.ProgramHash] = struct{}{}
 		}
 	}
 
 	for _, input := range tx.Inputs {
 		if addr := b.db.Ops().IsExist(&input.Previous); addr != nil {
-			hits++
+			hits[*addr] = struct{}{}
 		}
 	}
 
-	if hits == 0 {
+	if len(hits) == 0 {
 		return true, nil
 	}
 
 	for op, addr := range ops {
 		if err := b.batch.Ops().Put(op, addr); err != nil {
 			return false, err
+		}
+	}
+
+	for _, listener := range b.listeners {
+		hash, _ := common.Uint168FromAddress(listener.Address())
+		if _, ok := hits[*hash]; ok {
+			// skip transactions that not match the require type
+			if listener.Type() != tx.TxType {
+				continue
+			}
+
+			// queue message
+			b.batch.Que().Put(&store.QueItem{
+				NotifyId: getListenerKey(listener),
+				TxId:     tx.Hash(),
+				Height:   tx.Height,
+			})
 		}
 	}
 

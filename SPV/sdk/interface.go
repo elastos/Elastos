@@ -33,14 +33,17 @@ type IService interface {
 
 // StateNotifier exposes methods to notify status changes of transactions and blocks.
 type StateNotifier interface {
+	// TransactionAnnounce will be invoked when received a new announced transaction.
+	TransactionAnnounce(tx *core.Transaction)
+
 	// TransactionAccepted will be invoked after a transaction sent by
 	// SendTransaction() method has been accepted.  Notice: this method needs at
 	// lest two connected peers to work.
-	TransactionAccepted(tx *util.Tx)
+	TransactionAccepted(tx *core.Transaction)
 
 	// TransactionRejected will be invoked if a transaction sent by SendTransaction()
 	// method has been rejected.
-	TransactionRejected(tx *util.Tx)
+	TransactionRejected(tx *core.Transaction)
 
 	// TransactionConfirmed will be invoked after a transaction sent by
 	// SendTransaction() method has been packed into a block.

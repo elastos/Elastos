@@ -54,53 +54,6 @@ func (w *Wallet) Batch() database.TxBatch {
 	}
 }
 
-// CommitTx save a transaction into database, and return
-// if it is a false positive and error.
-func (w *Wallet) CommitTx(tx *util.Tx) (bool, error) {
-	// In this SPV implementation, CommitTx only invoked on new transactions
-	// that are unconfirmed, we just check if this transaction is a false
-	// positive and store it into database. NOTICE: at this moment, we didn't
-	// change UTXOs and STXOs.
-	txId := tx.Hash()
-
-	// We already have this transaction.
-	ok := w.txIds.Get(txId)
-	if ok {
-		return false, nil
-	}
-
-	hits := 0
-	// Check if any UTXOs of this wallet are used.
-	for _, input := range tx.Inputs {
-		stxo, _ := w.db.UTXOs().Get(&input.Previous)
-		if stxo != nil {
-			hits++
-		}
-	}
-
-	// Check if there are any output to this wallet address.
-	for _, output := range tx.Outputs {
-		if w.getAddrFilter().ContainAddr(output.ProgramHash) {
-			hits++
-		}
-	}
-
-	// If no hits, no need to save transaction
-	if hits == 0 {
-		return true, nil
-	}
-
-	// Save transaction as unconfirmed.
-	err := w.db.Txs().Put(sutil.NewTx(tx.Transaction, 0))
-	if err != nil {
-		return false, err
-	}
-
-	w.txIds.Add(txId)
-
-	return false, nil
-}
-
 // HaveTx returns if the transaction already saved in database
 // by it's id.
 func (w *Wallet) HaveTx(txId *common.Uint256) (bool, error) {
@@ -177,16 +130,28 @@ func (w *Wallet) loadAddrFilter() *sdk.AddrFilter {
 	return w.filter
 }
 
+// TransactionAnnounce will be invoked when received a new announced transaction.
+func (w *Wallet) TransactionAnnounce(tx *core.Transaction) {
+	// TODO
+	// Save transaction as unconfirmed.
+	err := w.db.Txs().Put(sutil.NewTx(*tx, 0))
+	if err != nil {
+		return
+	}
+
+	w.txIds.Add(tx.Hash())
+}
+
 // TransactionAccepted will be invoked after a transaction sent by
 // SendTransaction() method has been accepted.  Notice: this method needs at
 // lest two connected peers to work.
-func (w *Wallet) TransactionAccepted(tx *util.Tx) {
+func (w *Wallet) TransactionAccepted(tx *core.Transaction) {
 	// TODO
 }
 
 // TransactionRejected will be invoked if a transaction sent by SendTransaction()
 // method has been rejected.
-func (w *Wallet) TransactionRejected(tx *util.Tx) {
+func (w *Wallet) TransactionRejected(tx *core.Transaction) {
 	// TODO
 
 }
@@ -201,21 +166,23 @@ func (w *Wallet) TransactionConfirmed(tx *util.Tx) {
 // BlockCommitted will be invoked when a block and transactions within it are
 // successfully committed into database.
 func (w *Wallet) BlockCommitted(block *util.Block) {
-	if w.IsCurrent() {
-		w.db.State().PutHeight(block.Height)
-		// Get all unconfirmed transactions
-		txs, err := w.db.Txs().GetAllUnconfirmed()
-		if err != nil {
-			log.Debugf("Get unconfirmed transactions failed, error %s", err.Error())
-			return
-		}
-		now := time.Now()
-		for _, tx := range txs {
-			if now.After(tx.Timestamp.Add(MaxUnconfirmedTime)) {
-				err = w.db.Txs().Del(&tx.TxId)
-				if err != nil {
-					log.Errorf("Delete timeout transaction %s failed, error %s", tx.TxId.String(), err.Error())
-				}
+	if !w.IsCurrent() {
+		return
+	}
+
+	w.db.State().PutHeight(block.Height)
+	// Get all unconfirmed transactions
+	txs, err := w.db.Txs().GetAllUnconfirmed()
+	if err != nil {
+		log.Debugf("Get unconfirmed transactions failed, error %s", err.Error())
+		return
+	}
+	now := time.Now()
+	for _, tx := range txs {
+		if now.After(tx.Timestamp.Add(MaxUnconfirmedTime)) {
+			err = w.db.Txs().Del(&tx.TxId)
+			if err != nil {
+				log.Errorf("Delete timeout transaction %s failed, error %s", tx.TxId.String(), err.Error())
 			}
 		}
 	}
@@ -228,10 +195,10 @@ type txBatch struct {
 	filter *sdk.AddrFilter
 }
 
-// AddTx add a store transaction operation into batch, and return
+// PutTx add a store transaction operation into batch, and return
 // if it is a false positive and error.
-func (b *txBatch) AddTx(tx *util.Tx) (bool, error) {
-	// This AddTx in batch used by the ChainStore when storing a block.
+func (b *txBatch) PutTx(tx *util.Tx) (bool, error) {
+	// This PutTx in batch is used by the ChainStore when storing a block.
 	// That means this transaction has been confirmed, so we need to remove
 	// it from unconfirmed list. And also, double spend transactions should
 	// been removed from unconfirmed list as well.

@@ -14,10 +14,6 @@ type TxsDB interface {
 	// of transactions within a block.
 	Batch() TxBatch
 
-	// CommitTx save a transaction into database, and return
-	// if it is a false positive and error.
-	CommitTx(tx *util.Tx) (bool, error)
-
 	// HaveTx returns if the transaction already saved in database
 	// by it's id.
 	HaveTx(txId *common.Uint256) (bool, error)
@@ -31,9 +27,9 @@ type TxsDB interface {
 }
 
 type TxBatch interface {
-	// AddTx add a store transaction operation into batch, and return
+	// PutTx add a store transaction operation into batch, and return
 	// if it is a false positive and error.
-	AddTx(tx *util.Tx) (bool, error)
+	PutTx(tx *util.Tx) (bool, error)
 
 	// DelTx add a delete transaction operation into batch.
 	DelTx(txId *common.Uint256) error

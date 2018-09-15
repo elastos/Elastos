@@ -12,13 +12,9 @@ type ChainStore interface {
 	// all blockchain headers.
 	Headers() Headers
 
-	// StoreBlock save a block into database, returns how many
+	// CommitBlock save a block into database, returns how many
 	// false positive transactions are and error.
-	StoreBlock(block *util.Block, newTip bool) (fps uint32, err error)
-
-	// StoreTx save a transaction into database, and return
-	// if it is a false positive and error.
-	StoreTx(tx *util.Tx) (bool, error)
+	CommitBlock(block *util.Block, newTip bool) (fps uint32, err error)
 
 	// Rollback delete all transactions after the reorg point,
 	// it is used when blockchain reorganized.

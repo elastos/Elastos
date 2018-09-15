@@ -2,7 +2,9 @@ package sync
 
 import (
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
+
 	"github.com/elastos/Elastos.ELA/bloom"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -17,7 +19,8 @@ type Config struct {
 	MinPeersForSync int
 	MaxPeers        int
 
-	UpdateFilter func() *bloom.Filter
+	UpdateFilter        func() *bloom.Filter
+	TransactionAnnounce func(tx *core.Transaction)
 }
 
 func NewDefaultConfig(chain *blockchain.BlockChain,

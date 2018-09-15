@@ -13,9 +13,9 @@ func (d *defaultChainDB) Headers() Headers {
 	return d.h
 }
 
-// StoreBlock save a block into database, returns how many
+// CommitBlock save a block into database, returns how many
 // false positive transactions are and error.
-func (d *defaultChainDB) StoreBlock(block *util.Block, newTip bool) (fps uint32, err error) {
+func (d *defaultChainDB) CommitBlock(block *util.Block, newTip bool) (fps uint32, err error) {
 	err = d.h.Put(&block.Header, newTip)
 	if err != nil {
 		return 0, err
@@ -28,7 +28,7 @@ func (d *defaultChainDB) StoreBlock(block *util.Block, newTip bool) (fps uint32,
 
 	batch := d.t.Batch()
 	for _, tx := range block.Transactions {
-		fp, err := batch.AddTx(tx)
+		fp, err := batch.PutTx(util.NewTx(*tx, block.Height))
 		if err != nil {
 			return 0, batch.Rollback()
 		}
@@ -38,12 +38,6 @@ func (d *defaultChainDB) StoreBlock(block *util.Block, newTip bool) (fps uint32,
 	}
 
 	return fps, batch.Commit()
-}
-
-// StoreTx save a transaction into database, and return
-// if it is a false positive and error.
-func (d *defaultChainDB) StoreTx(tx *util.Tx) (bool, error) {
-	return d.t.CommitTx(tx)
 }
 
 // RollbackTo delete all transactions after the reorg point,

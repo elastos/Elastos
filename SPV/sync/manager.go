@@ -332,13 +332,8 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 	delete(state.requestedTxns, txHash)
 	delete(sm.requestedTxns, txHash)
 
-	fp, err := sm.cfg.Chain.CommitTx(tmsg.tx)
-	if err != nil {
-		log.Errorf("commit transaction error %v", err)
-	}
-
-	if fp {
-		log.Debugf("Tx %s from Peer%d is a false positive.", txHash.String(), peer.ID())
+	if sm.cfg.TransactionAnnounce != nil {
+		sm.cfg.TransactionAnnounce(tmsg.tx)
 	}
 }
 
@@ -419,7 +414,7 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 	// Check false positive rate.
 	fpRate := state.fpRate.Update(block, fps)
 	if fpRate > fprate.DefaultFalsePositiveRate*10 {
-		log.Warnf("bloom filter false positive rate %f too high," +
+		log.Warnf("bloom filter false positive rate %f too high,"+
 			" disconnecting...", fpRate)
 		peer.Disconnect()
 		return

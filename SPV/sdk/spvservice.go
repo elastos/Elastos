@@ -85,6 +85,9 @@ func NewSPVService(cfg *Config) (*service, error) {
 	syncCfg := sync.NewDefaultConfig(chain, service.updateFilter)
 	syncCfg.MaxPeers = maxPeers
 	syncCfg.MinPeersForSync = minPeersForSync
+	if cfg.StateNotifier != nil {
+		syncCfg.TransactionAnnounce = cfg.StateNotifier.TransactionAnnounce
+	}
 	syncManager, err := sync.New(syncCfg)
 	if err != nil {
 		return nil, err
@@ -274,11 +277,7 @@ out:
 					// Use a new goroutine do the invoke to prevent blocking.
 					go func(tx *core.Transaction) {
 						if s.cfg.StateNotifier != nil {
-							s.cfg.StateNotifier.TransactionAccepted(
-								&util.Tx{
-									Transaction: *tx,
-									Height:      0,
-								})
+							s.cfg.StateNotifier.TransactionAccepted(tx)
 						}
 					}(txMsg.tx)
 				}
@@ -303,11 +302,7 @@ out:
 					// Use a new goroutine do the invoke to prevent blocking.
 					go func(tx *core.Transaction) {
 						if s.cfg.StateNotifier != nil {
-							s.cfg.StateNotifier.TransactionRejected(
-								&util.Tx{
-									Transaction: *tx,
-									Height:      0,
-								})
+							s.cfg.StateNotifier.TransactionRejected(tx)
 						}
 					}(txMsg.tx)
 				}
@@ -315,10 +310,9 @@ out:
 			case *blockMsg:
 				// Loop through all packed transactions, see if match to any
 				// sent transactions.
-				confirmedTxs := make(map[common.Uint256]*util.Tx)
+				confirmedTxs := make(map[common.Uint256]*core.Transaction)
 				for _, tx := range tmsg.block.Transactions {
 					txId := tx.Hash()
-					tx.Height = tmsg.block.Height
 
 					if _, ok := unconfirmed[txId]; ok {
 						confirmedTxs[txId] = tx
@@ -345,7 +339,7 @@ out:
 						if s.cfg.StateNotifier != nil {
 							s.cfg.StateNotifier.TransactionConfirmed(tx)
 						}
-					}(tx)
+					}(util.NewTx(*tx, tmsg.block.Height))
 				}
 			}
 		case <-retryTicker.C:

@@ -1,5 +1,7 @@
 package util
 
+import "github.com/elastos/Elastos.ELA/core"
+
 // Block represent a block that stored in the
 // blockchain database.
 type Block struct {
@@ -7,5 +9,5 @@ type Block struct {
 	Header
 
 	// Transactions of this block.
-	Transactions []*Tx
+	Transactions []*core.Transaction
 }

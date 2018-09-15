@@ -248,7 +248,7 @@ func (p *Peer) blockHandler() {
 	// Data caches for the downloading block.
 	var header *util.Header
 	var pendingTxs map[common.Uint256]struct{}
-	var txs []*util.Tx
+	var txs []*core.Transaction
 
 	// NotifyOnBlock message and clear cached data.
 	notifyBlock := func() {
@@ -314,7 +314,7 @@ out:
 				}
 
 				// Initiate transactions cache.
-				txs = make([]*util.Tx, 0, len(pendingTxs))
+				txs = make([]*core.Transaction, 0, len(pendingTxs))
 
 			case *msg.Tx:
 				// Not in block downloading mode, just notify new transaction.
@@ -335,10 +335,7 @@ out:
 				}
 
 				// Save downloaded transaction to cache.
-				txs = append(txs, &util.Tx{
-					Transaction: *tx,
-					Height:      header.Height,
-				})
+				txs = append(txs, tx)
 
 				// Remove transaction from pending list.
 				delete(pendingTxs, txId)

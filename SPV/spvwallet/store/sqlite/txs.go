@@ -81,7 +81,6 @@ func (t *txs) GetAll() ([]*sutil.Tx, error) {
 
 // Fetch all unconfirmed transactions from database
 func (t *txs) GetAllUnconfirmed() ([]*sutil.Tx, error) {
-	// TODO implement memcache to get better performance.
 	return t.GetAllFrom(0)
 }
 

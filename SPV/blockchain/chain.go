@@ -2,11 +2,11 @@ package blockchain
 
 import (
 	"errors"
-	"github.com/elastos/Elastos.ELA.SPV/database"
-	"github.com/elastos/Elastos.ELA.SPV/util"
-	"github.com/elastos/Elastos.ELA/core"
 	"math/big"
 	"sync"
+
+	"github.com/elastos/Elastos.ELA.SPV/database"
+	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -51,10 +51,6 @@ func New(foundation string, db database.ChainStore) (*BlockChain, error) {
 	}
 
 	return chain, nil
-}
-
-func (b *BlockChain) CommitTx(tx *core.Transaction) (bool, error) {
-	return b.db.StoreTx(&util.Tx{Transaction: *tx, Height: 0})
 }
 
 func (b *BlockChain) CommitBlock(block *util.Block) (newTip, reorg bool, newHeight, fps uint32, err error) {
@@ -109,7 +105,7 @@ func (b *BlockChain) CommitBlock(block *util.Block) (newTip, reorg bool, newHeig
 	newHeight = parentHeader.Height + 1
 	header.Height = newHeight
 	header.TotalWork = cumulativeWork
-	fps, err = b.db.StoreBlock(block, newTip)
+	fps, err = b.db.CommitBlock(block, newTip)
 	if err != nil {
 		return newTip, reorg, 0, 0, err
 	}

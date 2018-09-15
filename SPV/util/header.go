@@ -2,9 +2,9 @@ package util
 
 import (
 	"bytes"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"math/big"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
