@@ -6,7 +6,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -14,10 +13,8 @@ import (
 var TxFeeHelper *TxFeeHelperBase
 
 type TxFeeHelperBase struct {
-	Name             func(txType core.TransactionType) string
-	GetDataContainer func(programHash *Uint168, tx *core.Transaction) interfaces.IDataContainer
-	GetTxFee         func(tx *core.Transaction, assetId Uint256) Fixed64
-	GetTxFeeMap      func(tx *core.Transaction) (map[Uint256]Fixed64, error)
+	GetTxFee    func(tx *core.Transaction, assetId Uint256) Fixed64
+	GetTxFeeMap func(tx *core.Transaction) (map[Uint256]Fixed64, error)
 }
 
 func InitTxFeeHelper() {

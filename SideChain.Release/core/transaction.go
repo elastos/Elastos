@@ -113,7 +113,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 		return errors.New("Transaction item Outputs length serialization failed.")
 	}
 	for _, output := range tx.Outputs {
-		if err := output.Serialize(w); err != nil {
+		if err := OutputHelper.Serialize(output, w); err != nil {
 			return err
 		}
 	}
@@ -211,7 +211,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	if Len > uint64(0) {
 		for i := uint64(0); i < Len; i++ {
 			output := new(Output)
-			err = output.Deserialize(r)
+			err = OutputHelper.Deserialize(output, r)
 			if err != nil {
 				return err
 			}

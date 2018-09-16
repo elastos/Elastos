@@ -32,25 +32,44 @@ const (
 	OpenService = 1 << 2
 )
 
+type Semaphore chan struct{}
+
+func MakeSemaphore(n int) Semaphore {
+	return make(chan struct{}, n)
+}
+
+func (s Semaphore) Acquire() { s <- struct{}{} }
+func (s Semaphore) Release() { <-s }
+
 type Noder interface {
 	Version() uint32
+	SetVersion(uint32)
 	ID() uint64
 	Services() uint64
+	SetServices(uint64)
 	Addr() string
+	SetAddr(string)
 	Addr16() ([16]byte, error)
 	Port() uint16
+	SetPort(uint16)
+	LinkPort() uint16
+	SetLinkPort(uint16)
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
-	SetState(state uint)
 	State() uint
+	SetState(state uint)
 	IsRelay() bool
+	SetRelay(bool)
 	Heartbeat()
 	DelNbrNode(id uint64) (Noder, bool)
 	AddNbrNode(Noder)
 	Height() uint64
+	SetHeight(uint64)
 	GetConn() net.Conn
+	SetConn(net.Conn)
 	CloseConn()
 	GetConnectionCnt() uint
+	GetTxInPool(txId common.Uint256) (*core.Transaction, bool)
 	GetTxsInPool() map[common.Uint256]*core.Transaction
 	AppendToTxnPool(*core.Transaction) errors.ErrCode
 	IsDuplicateMainchainTx(mainchainTxHash common.Uint256) bool
@@ -70,7 +89,31 @@ type Noder interface {
 	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
 	GetTxnCnt() uint64
+	SetTxnCnt(uint64)
 	GetRxTxnCnt() uint64
+	SetRxTxnCnt(uint64)
+	GetSyncBlkReqSem() Semaphore
+	SetSyncBlkReqSem(syncBlkReqSem Semaphore)
+	GetSyncHdrReqSem() Semaphore
+	SetSyncHdrReqSem(syncHdrReqSem Semaphore)
+
+	NbrNodesInit()
+	KnownAddressListInit()
+	TxPoolInit()
+	EventQueueInit()
+	IdCacheInit()
+	CachedHashesInit()
+	NodeDisconnectSubscriberInit()
+	RequestedBlockListInit()
+	HandshakeQueueInit()
+	SyncTimerInit()
+	InitConnection()
+	UpdateConnection()
+	UpdateNodeInfo()
+	UpdateSyncTimer()
+	AddToHandshakeQueue(node Noder)
+	RemoveFromHandshakeQueue(node Noder)
+	RemoveFromConnectingList(addr string)
 
 	GetNeighborHeights() []uint64
 	WaitForSyncFinish()
@@ -82,7 +125,6 @@ type Noder interface {
 	GetNbrNodeCnt() uint32
 	UpdateLastActive()
 	GetLastActiveTime() time.Time
-	SetHeight(height uint64)
 	IsAddrInNbrList(addr string) bool
 	GetAddressCnt() uint64
 	AddAddressToKnownAddress(na p2p.NetAddress)

@@ -9,11 +9,11 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
-// The neigbor node list
+// The neigbor Node list
 type nbrNodes struct {
 	sync.RWMutex
 	// Todo using the Pool structure
-	List map[uint64]*node
+	List map[uint64]*Node
 }
 
 func (nm *nbrNodes) NodeExisted(uid uint64) bool {
@@ -26,11 +26,11 @@ func (nm *nbrNodes) AddNbrNode(n Noder) {
 	defer nm.Unlock()
 
 	if nm.NodeExisted(n.ID()) {
-		fmt.Printf("Insert a existed node\n")
+		fmt.Printf("Insert a existed Node\n")
 	} else {
-		node, err := n.(*node)
+		node, err := n.(*Node)
 		if err == false {
-			fmt.Println("Convert the noder error when add node")
+			fmt.Println("Convert the noder error when add Node")
 			return
 		}
 		nm.List[n.ID()] = node
@@ -63,7 +63,7 @@ func (nm *nbrNodes) GetConnectionCnt() uint {
 }
 
 func (nm *nbrNodes) init() {
-	nm.List = make(map[uint64]*node)
+	nm.List = make(map[uint64]*Node)
 }
 
 func (nm *nbrNodes) NodeEstablished(id uint64) bool {
@@ -82,7 +82,7 @@ func (nm *nbrNodes) NodeEstablished(id uint64) bool {
 	return true
 }
 
-func (node *node) GetNeighborAddrs() []p2p.NetAddress {
+func (node *Node) GetNeighborAddrs() []p2p.NetAddress {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
@@ -103,7 +103,7 @@ func (node *node) GetNeighborAddrs() []p2p.NetAddress {
 	return addrs
 }
 
-func (node *node) GetNeighborHeights() []uint64 {
+func (node *Node) GetNeighborHeights() []uint64 {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
@@ -116,7 +116,7 @@ func (node *node) GetNeighborHeights() []uint64 {
 	return heights
 }
 
-func (node *node) GetNeighborNoder() []Noder {
+func (node *Node) GetNeighborNoder() []Noder {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 
@@ -130,7 +130,7 @@ func (node *node) GetNeighborNoder() []Noder {
 	return nodes
 }
 
-func (node *node) GetNbrNodeCnt() uint32 {
+func (node *Node) GetNbrNodeCnt() uint32 {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	var count uint32
@@ -142,7 +142,7 @@ func (node *node) GetNbrNodeCnt() uint32 {
 	return count
 }
 
-func (node *node) RandGetANbr() Noder {
+func (node *Node) RandGetANbr() Noder {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 	for _, n := range node.nbrNodes.List {
@@ -153,7 +153,7 @@ func (node *node) RandGetANbr() Noder {
 	return nil
 }
 
-func (node *node) IsNeighborNoder(n Noder) bool {
+func (node *Node) IsNeighborNoder(n Noder) bool {
 	node.nbrNodes.RLock()
 	defer node.nbrNodes.RUnlock()
 

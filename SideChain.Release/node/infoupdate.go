@@ -59,9 +59,9 @@ func (t *syncTimer) stop() {
 	}
 }
 
-func (node *node) hasSyncPeer() (bool, Noder) {
-	LocalNode.nbrNodes.RLock()
-	defer LocalNode.nbrNodes.RUnlock()
+func (node *Node) hasSyncPeer() (bool, Noder) {
+	node.nbrNodes.RLock()
+	defer node.nbrNodes.RUnlock()
 	noders := LocalNode.GetNeighborNoder()
 	for _, n := range noders {
 		if n.IsSyncHeaders() == true {
@@ -71,7 +71,7 @@ func (node *node) hasSyncPeer() (bool, Noder) {
 	return false, nil
 }
 
-func (node *node) SyncBlocks() {
+func (node *Node) SyncBlocks() {
 	needSync := node.needSync()
 	log.Info("needSync: ", needSync)
 	log.Trace("BlockHeight = ", chain.DefaultLedger.Blockchain.BlockHeight)
@@ -79,11 +79,11 @@ func (node *node) SyncBlocks() {
 	bc := chain.DefaultLedger.Blockchain
 	log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 	if needSync {
-		if LocalNode.IsSyncHeaders() {
+		if node.IsSyncHeaders() {
 			return
 		}
-		LocalNode.ResetRequestedBlock()
-		hasSyncPeer, syncNode := LocalNode.hasSyncPeer()
+		node.ResetRequestedBlock()
+		hasSyncPeer, syncNode := node.hasSyncPeer()
 		if hasSyncPeer == false {
 			syncNode = node.GetBestHeightNoder()
 		}
@@ -91,19 +91,19 @@ func (node *node) SyncBlocks() {
 		locator := chain.DefaultLedger.Blockchain.BlockLocatorFromHash(&hash)
 
 		SendGetBlocks(syncNode, locator, common.EmptyHash)
-		LocalNode.SetSyncHeaders(true)
+		node.SetSyncHeaders(true)
 		syncNode.SetSyncHeaders(true)
 		// Start sync timer
-		LocalNode.syncTimer.start()
+		node.syncTimer.start()
 	} else {
-		LocalNode.stopSyncing()
+		node.stopSyncing()
 	}
 }
 
-func (node *node) stopSyncing() {
+func (node *Node) stopSyncing() {
 	// Stop sync timer
-	LocalNode.syncTimer.stop()
-	LocalNode.SetSyncHeaders(false)
+	node.syncTimer.stop()
+	node.SetSyncHeaders(false)
 	syncNode, err := node.FindSyncNode()
 	if err == nil {
 		syncNode.SetSyncHeaders(false)
@@ -112,16 +112,16 @@ func (node *node) stopSyncing() {
 	}
 }
 
-func (node *node) Heartbeat() {
+func (node *Node) Heartbeat() {
 	ticker := time.NewTicker(time.Second * HeartbeatDuration)
 	defer ticker.Stop()
 	for range ticker.C {
-		// quit when node disconnected
+		// quit when Node disconnected
 		if !LocalNode.IsNeighborNoder(node) {
 			goto QUIT
 		}
 
-		// quit when node keep alive timeout
+		// quit when Node keep alive timeout
 		if time.Now().After(node.lastActive.Add(time.Second * KeepAliveTimeout)) {
 			log.Warn("keepalive timeout!!!")
 			node.SetState(p2p.INACTIVITY)
@@ -129,13 +129,13 @@ func (node *node) Heartbeat() {
 			goto QUIT
 		}
 
-		// send ping message to node
+		// send ping message to Node
 		go node.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
 	}
 QUIT:
 }
 
-func (node *node) ConnectSeeds() {
+func (node *Node) ConnectSeeds() {
 	if node.nbrNodes.GetConnectionCnt() < MinConnectionCount {
 		seedNodes := config.Parameters.SeedList
 		for _, nodeAddr := range seedNodes {
@@ -164,7 +164,7 @@ func (node *node) ConnectSeeds() {
 	}
 }
 
-func (node *node) ConnectNode() {
+func (node *Node) ConnectNode() {
 	cntcount := node.nbrNodes.GetConnectionCnt()
 	if cntcount < MaxOutBoundCount {
 		addrs := node.RandGetAddresses(node.GetNeighborAddrs())
@@ -174,7 +174,7 @@ func (node *node) ConnectNode() {
 	}
 }
 
-func getNodeAddr(n *node) p2p.NetAddress {
+func getNodeAddr(n *Node) p2p.NetAddress {
 	var addr p2p.NetAddress
 	addr.IP, _ = n.Addr16()
 	addr.Time = n.GetTime()
@@ -184,7 +184,7 @@ func getNodeAddr(n *node) p2p.NetAddress {
 	return addr
 }
 
-func (node *node) updateNodeInfo() {
+func (node *Node) UpdateNodeInfo() {
 	ticker := time.NewTicker(time.Second * HeartbeatDuration)
 	for {
 		select {
@@ -194,7 +194,7 @@ func (node *node) updateNodeInfo() {
 	}
 }
 
-func (node *node) CheckConnCnt() {
+func (node *Node) CheckConnCnt() {
 	//compare if connect count is larger than DefaultMaxPeers, disconnect one of the connection
 	if node.nbrNodes.GetConnectionCnt() > DefaultMaxPeers {
 		disconnNode := node.RandGetANbr()
@@ -202,7 +202,7 @@ func (node *node) CheckConnCnt() {
 	}
 }
 
-func (node *node) updateConnection() {
+func (node *Node) UpdateConnection() {
 	t := time.NewTicker(time.Second * HeartbeatDuration)
 	for {
 		select {
