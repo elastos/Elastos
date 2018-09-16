@@ -6,7 +6,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
-	"bytes"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -31,7 +30,7 @@ func newTestChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 
-	go store.loop()
+	go store.Loop()
 	store.NewBatch()
 
 	return store, nil
