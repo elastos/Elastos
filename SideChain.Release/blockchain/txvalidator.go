@@ -33,7 +33,7 @@ type TransactionValidateBase struct {
 	CheckTransactionBalance                 func(txn *core.Transaction) error
 	CheckAttributeProgram                   func(tx *core.Transaction) error
 	CheckTransactionSignature               func(txn *core.Transaction) error
-	CheckAmountPrecise                      func(amount Fixed64, precision byte, maxPrecision byte) bool
+	CheckAmountPrecise                      func(amount Fixed64, precision byte, assetPrecision byte) bool
 	CheckTransactionPayload                 func(txn *core.Transaction) error
 	CheckRechargeToSideChainTransaction     func(txn *core.Transaction) error
 	CheckTransferCrossChainAssetTransaction func(txn *core.Transaction) error
@@ -468,8 +468,8 @@ func (v *TransactionValidateBase) CheckTransactionSignatureImpl(txn *core.Transa
 	return RunPrograms(txn, hashes, txn.Programs)
 }
 
-func (v *TransactionValidateBase) CheckAmountPreciseImpl(amount Fixed64, precision byte, maxPrecision byte) bool {
-	return amount.IntValue()%int64(math.Pow(10, float64(maxPrecision-precision))) == 0
+func (v *TransactionValidateBase) CheckAmountPreciseImpl(amount Fixed64, precision byte, assetPrecision byte) bool {
+	return amount.IntValue()%int64(math.Pow10(int(assetPrecision-precision))) == 0
 }
 
 func (v *TransactionValidateBase) CheckTransactionPayloadImpl(txn *core.Transaction) error {
