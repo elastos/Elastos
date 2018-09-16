@@ -21,6 +21,7 @@ type InputInfo struct {
 
 type OutputInfo struct {
 	Value      string `json:"value"`
+	TokenValue string `json:"tokenvalue"`
 	Index      uint32 `json:"n"`
 	Address    string `json:"address"`
 	AssetID    string `json:"assetid"`

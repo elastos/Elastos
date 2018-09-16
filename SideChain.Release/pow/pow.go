@@ -34,44 +34,180 @@ var (
 	TargetTimePerBlock = int64(config.Parameters.ChainParam.TargetTimePerBlock / time.Second)
 )
 
-type msgBlock struct {
+type messageBlock struct {
 	BlockData map[string]*core.Block
 	Mutex     sync.Mutex
 }
 
+type IPowService interface {
+	GetPayToAddr() string
+	SetPayToAddr(string)
+	GetMsgBlock() messageBlock
+	SetMsgBlock(messageBlock)
+	LockMsgBlock()
+	UnLockMsgBlock()
+
+	GetTransactionCount() int
+	CollectTransactions(msgBlock *core.Block) int
+	CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error)
+	GenerateBlock(addr string) (*core.Block, error)
+	GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *core.Transaction)
+	DiscreteMining(n uint32) ([]*common.Uint256, error)
+	SolveBlock(msgBlock *core.Block, ticker *time.Ticker) bool
+	BroadcastBlock(msgBlock *core.Block) error
+	Start()
+	Halt()
+	RollbackTransaction(v interface{})
+	BlockPersistCompleted(v interface{})
+	CpuMining()
+}
+
+type PowServiceFunctionList struct {
+	GetTransactionCount       func() int
+	CollectTransactions       func(msgBlock *core.Block) int
+	CreateCoinBaseTx          func(nextBlockHeight uint32, addr string) (*core.Transaction, error)
+	GenerateBlock             func(addr string) (*core.Block, error)
+	GenerateBlockTransactions func(msgBlock *core.Block, coinBaseTx *core.Transaction)
+	DiscreteMining            func(n uint32) ([]*common.Uint256, error)
+	SolveBlock                func(msgBlock *core.Block, ticker *time.Ticker) bool
+	BroadcastBlock            func(msgBlock *core.Block) error
+	Start                     func()
+	Halt                      func()
+	RollbackTransaction       func(v interface{})
+	BlockPersistCompleted     func(v interface{})
+	CpuMining                 func()
+}
+
 type PowService struct {
 	PayToAddr    string
-	MsgBlock     msgBlock
+	MsgBlock     messageBlock
 	Mutex        sync.Mutex
 	started      bool
 	manualMining bool
-	localNode    protocol.Noder
+	LocalNode    protocol.Noder
 
 	blockPersistCompletedSubscriber events.Subscriber
 	RollbackTransactionSubscriber   events.Subscriber
 
 	wg   sync.WaitGroup
 	quit chan struct{}
+
+	Functions PowServiceFunctionList
 }
 
+func (pow *PowService) GetPayToAddr() string {
+	return pow.PayToAddr
+}
+func (pow *PowService) SetPayToAddr(payToAddr string) {
+	pow.PayToAddr = payToAddr
+}
+func (pow *PowService) GetMsgBlock() messageBlock {
+	return pow.MsgBlock
+}
+func (pow *PowService) SetMsgBlock(msgBlock messageBlock) {
+	pow.MsgBlock = msgBlock
+}
+func (pow *PowService) LockMsgBlock() {
+	pow.MsgBlock.Mutex.Lock()
+}
+func (pow *PowService) UnLockMsgBlock() {
+	pow.MsgBlock.Mutex.Unlock()
+}
 func (pow *PowService) GetTransactionCount() int {
-	transactionsPool := pow.localNode.GetTxsInPool()
+	return pow.Functions.GetTransactionCount()
+}
+func (pow *PowService) CollectTransactions(msgBlock *core.Block) int {
+	return pow.Functions.CollectTransactions(msgBlock)
+}
+func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
+	return pow.Functions.CreateCoinBaseTx(nextBlockHeight, addr)
+}
+func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
+	return pow.Functions.GenerateBlock(addr)
+}
+func (pow *PowService) GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *core.Transaction) {
+	pow.Functions.GenerateBlockTransactions(msgBlock, coinBaseTx)
+}
+func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
+	return pow.Functions.DiscreteMining(n)
+}
+func (pow *PowService) SolveBlock(msgBlock *core.Block, ticker *time.Ticker) bool {
+	return pow.Functions.SolveBlock(msgBlock, ticker)
+}
+func (pow *PowService) BroadcastBlock(msgBlock *core.Block) error {
+	return pow.Functions.BroadcastBlock(msgBlock)
+}
+func (pow *PowService) Start() {
+	pow.Functions.GetTransactionCount()
+}
+func (pow *PowService) Halt() {
+	pow.Functions.GetTransactionCount()
+}
+func (pow *PowService) RollbackTransaction(v interface{}) {
+	pow.Functions.GetTransactionCount()
+
+}
+func (pow *PowService) BlockPersistCompleted(v interface{}) {
+	pow.Functions.GetTransactionCount()
+}
+func (pow *PowService) CpuMining() {
+	pow.Functions.GetTransactionCount()
+}
+
+func NewPowService(localNode protocol.Noder) *PowService {
+	pow := &PowService{
+		PayToAddr:    config.Parameters.PowConfiguration.PayToAddr,
+		started:      false,
+		manualMining: false,
+		MsgBlock:     messageBlock{BlockData: make(map[string]*core.Block)},
+		LocalNode:    localNode,
+	}
+	pow.Init()
+	pow.InitPowServiceSubscriber()
+
+	log.Trace("pow Service Init succeed")
+	return pow
+}
+
+func (pow *PowService) Init() {
+	pow.Functions.GetTransactionCount = pow.GetTransactionCountImpl
+	pow.Functions.CollectTransactions = pow.CollectTransactionsImpl
+	pow.Functions.CreateCoinBaseTx = pow.CreateCoinBaseTxImpl
+	pow.Functions.GenerateBlock = pow.GenerateBlockImpl
+	pow.Functions.GenerateBlockTransactions = pow.GenerateBlockTransactionsImpl
+	pow.Functions.DiscreteMining = pow.DiscreteMiningImpl
+	pow.Functions.SolveBlock = pow.SolveBlockImpl
+	pow.Functions.BroadcastBlock = pow.BroadcastBlockImpl
+	pow.Functions.Start = pow.StartImpl
+	pow.Functions.Halt = pow.HaltImpl
+	pow.Functions.RollbackTransaction = pow.RollbackTransactionImpl
+	pow.Functions.BlockPersistCompleted = pow.BlockPersistCompletedImpl
+	pow.Functions.CpuMining = pow.CpuMiningImpl
+}
+
+func (pow *PowService) InitPowServiceSubscriber() {
+	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
+	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
+}
+
+func (pow *PowService) GetTransactionCountImpl() int {
+	transactionsPool := pow.LocalNode.GetTxsInPool()
 	return len(transactionsPool)
 }
 
-func (pow *PowService) CollectTransactions(MsgBlock *core.Block) int {
+func (pow *PowService) CollectTransactionsImpl(msgBlock *core.Block) int {
 	txs := 0
-	transactionsPool := pow.localNode.GetTxsInPool()
+	transactionsPool := pow.LocalNode.GetTxsInPool()
 
 	for _, tx := range transactionsPool {
 		log.Trace(tx)
-		MsgBlock.Transactions = append(MsgBlock.Transactions, tx)
+		msgBlock.Transactions = append(msgBlock.Transactions, tx)
 		txs++
 	}
 	return txs
 }
 
-func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
+func (pow *PowService) CreateCoinBaseTxImpl(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
 	minerProgramHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return nil, err
@@ -113,13 +249,13 @@ func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*c
 	return txn, nil
 }
 
-type byFeeDesc []*core.Transaction
+type ByFeeDesc []*core.Transaction
 
-func (s byFeeDesc) Len() int           { return len(s) }
-func (s byFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s byFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
+func (s ByFeeDesc) Len() int           { return len(s) }
+func (s ByFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s ByFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
-func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
+func (pow *PowService) GenerateBlockImpl(addr string) (*core.Block, error) {
 	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
 	coinBaseTx, err := pow.CreateCoinBaseTx(nextBlockHeight, addr)
 	if err != nil {
@@ -142,11 +278,29 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	}
 
 	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
+
+	pow.GenerateBlockTransactions(msgBlock, coinBaseTx)
+
+	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
+	for _, tx := range msgBlock.Transactions {
+		txHash = append(txHash, tx.Hash())
+	}
+	txRoot, _ := crypto.ComputeRoot(txHash)
+	msgBlock.Header.MerkleRoot = txRoot
+
+	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(DefaultLedger.Blockchain.BestChain, time.Now())
+	log.Info("difficulty: ", msgBlock.Header.Bits)
+
+	return msgBlock, err
+}
+
+func (pow *PowService) GenerateBlockTransactionsImpl(msgBlock *core.Block, coinBaseTx *core.Transaction) {
+	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
 	totalTxsSize := coinBaseTx.GetSize()
 	txCount := 1
 	totalFee := common.Fixed64(0)
-	var txsByFeeDesc byFeeDesc
-	txsInPool := pow.localNode.GetTxsInPool()
+	var txsByFeeDesc ByFeeDesc
+	txsInPool := pow.LocalNode.GetTxsInPool()
 	txsByFeeDesc = make([]*core.Transaction, 0, len(txsInPool))
 	for _, v := range txsInPool {
 		txsByFeeDesc = append(txsByFeeDesc, v)
@@ -179,21 +333,9 @@ func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
 	rewardFoundation := common.Fixed64(float64(reward) * 0.3)
 	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
 	msgBlock.Transactions[0].Outputs[1].Value = common.Fixed64(reward) - rewardFoundation
-
-	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
-	for _, tx := range msgBlock.Transactions {
-		txHash = append(txHash, tx.Hash())
-	}
-	txRoot, _ := crypto.ComputeRoot(txHash)
-	msgBlock.Header.MerkleRoot = txRoot
-
-	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(DefaultLedger.Blockchain.BestChain, time.Now())
-	log.Info("difficulty: ", msgBlock.Header.Bits)
-
-	return msgBlock, err
 }
 
-func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
+func (pow *PowService) DiscreteMiningImpl(n uint32) ([]*common.Uint256, error) {
 	pow.Mutex.Lock()
 
 	if pow.started || pow.manualMining {
@@ -247,23 +389,23 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	}
 }
 
-func (pow *PowService) SolveBlock(MsgBlock *core.Block, ticker *time.Ticker) bool {
+func (pow *PowService) SolveBlockImpl(msgBlock *core.Block, ticker *time.Ticker) bool {
 	genesisHash, err := DefaultLedger.Store.GetBlockHash(0)
 	if err != nil {
 		return false
 	}
 	// fake a mainchain blockheader
-	sideAuxPow := aux.GenerateSideAuxPow(MsgBlock.Hash(), genesisHash)
-	header := MsgBlock.Header
+	sideAuxPow := aux.GenerateSideAuxPow(msgBlock.Hash(), genesisHash)
+	header := msgBlock.Header
 	targetDifficulty := CompactToBig(header.Bits)
 
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if !MsgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
+			if !msgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
 				return false
 			}
-			//UpdateBlockTime(msgBlock, m.server.blockManager)
+			//UpdateBlockTime(messageBlock, m.server.blockManager)
 
 		default:
 			// Non-blocking select to fall through
@@ -272,7 +414,7 @@ func (pow *PowService) SolveBlock(MsgBlock *core.Block, ticker *time.Ticker) boo
 		sideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Nonce = i
 		hash := sideAuxPow.MainBlockHeader.AuxPow.ParBlockHeader.Hash() // solve parBlockHeader hash
 		if HashToBig(&hash).Cmp(targetDifficulty) <= 0 {
-			MsgBlock.Header.SideAuxPow = *sideAuxPow
+			msgBlock.Header.SideAuxPow = *sideAuxPow
 			return true
 		}
 	}
@@ -280,25 +422,25 @@ func (pow *PowService) SolveBlock(MsgBlock *core.Block, ticker *time.Ticker) boo
 	return false
 }
 
-func (pow *PowService) BroadcastBlock(MsgBlock *core.Block) error {
-	return pow.localNode.Relay(nil, MsgBlock)
+func (pow *PowService) BroadcastBlockImpl(msgBlock *core.Block) error {
+	return pow.LocalNode.Relay(nil, msgBlock)
 }
 
-func (pow *PowService) Start() {
+func (pow *PowService) StartImpl() {
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
 	if pow.started || pow.manualMining {
-		log.Trace("cpuMining is already started")
+		log.Trace("CpuMining is already started")
 	}
 
 	pow.quit = make(chan struct{})
 	pow.wg.Add(1)
 	pow.started = true
 
-	go pow.cpuMining()
+	go pow.CpuMining()
 }
 
-func (pow *PowService) Halt() {
+func (pow *PowService) HaltImpl() {
 	log.Info("POW Stop")
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
@@ -312,12 +454,12 @@ func (pow *PowService) Halt() {
 	pow.started = false
 }
 
-func (pow *PowService) RollbackTransaction(v interface{}) {
+func (pow *PowService) RollbackTransactionImpl(v interface{}) {
 	if block, ok := v.(*core.Block); ok {
 		for _, tx := range block.Transactions[1:] {
-			err := pow.localNode.MaybeAcceptTransaction(tx)
+			err := pow.LocalNode.MaybeAcceptTransaction(tx)
 			if err == nil {
-				pow.localNode.RemoveTransaction(tx)
+				pow.LocalNode.RemoveTransaction(tx)
 			} else {
 				log.Error(err)
 			}
@@ -325,35 +467,19 @@ func (pow *PowService) RollbackTransaction(v interface{}) {
 	}
 }
 
-func (pow *PowService) BlockPersistCompleted(v interface{}) {
+func (pow *PowService) BlockPersistCompletedImpl(v interface{}) {
 	log.Debug()
 	if block, ok := v.(*core.Block); ok {
 		log.Infof("persist block: %x", block.Hash())
-		err := pow.localNode.CleanSubmittedTransactions(block)
+		err := pow.LocalNode.CleanSubmittedTransactions(block)
 		if err != nil {
 			log.Warn(err)
 		}
-		pow.localNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
+		pow.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
 	}
 }
 
-func NewPowService(localNode protocol.Noder) *PowService {
-	pow := &PowService{
-		PayToAddr:    config.Parameters.PowConfiguration.PayToAddr,
-		started:      false,
-		manualMining: false,
-		MsgBlock:     msgBlock{BlockData: make(map[string]*core.Block)},
-		localNode:    localNode,
-	}
-
-	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
-	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
-
-	log.Trace("pow Service Init succeed")
-	return pow
-}
-
-func (pow *PowService) cpuMining() {
+func (pow *PowService) CpuMiningImpl() {
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 

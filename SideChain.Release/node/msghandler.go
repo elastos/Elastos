@@ -23,6 +23,10 @@ type MsgHandlerV1 struct {
 	continueHash *common.Uint256
 }
 
+func NewMsgHandlerV1(noder protocol.Noder) *MsgHandlerV1 {
+	return &MsgHandlerV1{node: noder}
+}
+
 // When something wrong on read or decode message
 // this method will callback the error
 func (h *MsgHandlerV1) OnError(err error) {
@@ -44,7 +48,7 @@ func (h *MsgHandlerV1) OnError(err error) {
 // called to create the message instance with the CMD
 // which is the message type of the received message
 func (h *MsgHandlerV1) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-	// Update node last active time
+	// Update Node last active time
 	h.node.UpdateLastActive()
 
 	switch cmd {
@@ -131,11 +135,11 @@ func (h *MsgHandlerV1) OnMessageDecoded(message p2p.Message) {
 func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 	node := h.node
 
-	// Exclude the node itself
+	// Exclude the Node itself
 	if version.Nonce == LocalNode.ID() {
-		log.Warn("The node handshake with itself")
+		log.Warn("The Node handshake with itself")
 		node.CloseConn()
-		return fmt.Errorf("The node handshake with itself")
+		return fmt.Errorf("The Node handshake with itself")
 	}
 
 	if node.State() != p2p.INIT && node.State() != p2p.HAND {
@@ -143,11 +147,11 @@ func (h *MsgHandlerV1) onVersion(version *msg.Version) error {
 		return fmt.Errorf("Unknown status to receive version")
 	}
 
-	// Obsolete node
+	// Obsolete Node
 	n, ret := LocalNode.DelNbrNode(version.Nonce)
 	if ret == true {
 		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
-		// Close the connection and release the node soure
+		// Close the connection and release the Node soure
 		n.SetState(p2p.INACTIVITY)
 		n.CloseConn()
 	}
@@ -225,7 +229,7 @@ func (h *MsgHandlerV1) onAddrs(addrs *msg.Addr) error {
 			continue
 		}
 
-		//save the node address in address list
+		//save the Node address in address list
 		LocalNode.AddAddressToKnownAddress(addr)
 	}
 	return nil
@@ -425,7 +429,7 @@ func (h *MsgHandlerV1) onBlock(msgBlock *msg.Block) error {
 	}
 
 	// Update sync timer
-	LocalNode.syncTimer.update()
+	LocalNode.UpdateSyncTimer()
 	chain.DefaultLedger.Store.RemoveHeaderListElement(hash)
 	LocalNode.DeleteRequestedBlock(hash)
 
@@ -479,7 +483,7 @@ func (h *MsgHandlerV1) onTx(msgTx *msg.Tx) error {
 	}
 
 	LocalNode.Relay(node, tx)
-	log.Infof("Relay Transaction type %s hash %s", chain.TxFeeHelper.Name(tx.TxType), tx.Hash().String())
+	log.Infof("Relay Transaction type %s hash %s", core.TransactionHelper.Name(tx.TxType), tx.Hash().String())
 	LocalNode.IncRxTxnCnt()
 
 	return nil

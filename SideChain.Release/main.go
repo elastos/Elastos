@@ -66,6 +66,7 @@ func main() {
 
 	core.InitPayloadCreater()
 	core.InitTransactionHelper()
+	core.InitOutputHelper()
 	blockchain.InitTxFeeHelper()
 	blockchain.InitBlockValidator()
 	blockchain.InitTransactionValidtor()
