@@ -19,12 +19,12 @@ import (
 )
 
 type link struct {
-	addr         string   // The address of the node
-	conn         net.Conn // Connect socket with the peer node
-	port         uint16   // The server port of the node
-	httpInfoPort uint16   // The node information server port of the node
+	addr         string   // The address of the Node
+	conn         net.Conn // Connect socket with the peer Node
+	port         uint16   // The server port of the Node
+	httpInfoPort uint16   // The Node information server port of the Node
 	activeLock   sync.RWMutex
-	lastActive   time.Time // The latest time the node activity
+	lastActive   time.Time // The latest time the Node activity
 	handshakeQueue
 	*MsgHelper
 }
@@ -33,23 +33,23 @@ func (link *link) CloseConn() {
 	link.conn.Close()
 }
 
-func (node *node) UpdateLastActive() {
+func (node *Node) UpdateLastActive() {
 	node.activeLock.Lock()
 	defer node.activeLock.Unlock()
 	node.lastActive = time.Now()
 }
 
-func (node *node) GetLastActiveTime() time.Time {
+func (node *Node) GetLastActiveTime() time.Time {
 	node.activeLock.RLock()
 	defer node.activeLock.RUnlock()
 	return node.lastActive
 }
 
-func (node *node) initConnection() {
+func (node *Node) InitConnection() {
 	go node.listenNodePort()
 }
 
-func (node *node) listenNodePort() {
+func (node *Node) listenNodePort() {
 	var err error
 	var listener net.Listener
 
@@ -70,7 +70,7 @@ func (node *node) listenNodePort() {
 	node.listenConnections(listener)
 }
 
-func (n *node) listenConnections(listener net.Listener) {
+func (n *Node) listenConnections(listener net.Listener) {
 	defer listener.Close()
 
 	for {
@@ -79,7 +79,7 @@ func (n *node) listenConnections(listener net.Listener) {
 			log.Error("Error accepting", err.Error())
 			continue
 		}
-		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
+		log.Infof("Remote Node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		node := NewNode(Parameters.Magic, conn)
 		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
@@ -146,14 +146,14 @@ func parseIPaddr(s string) (string, error) {
 	return s[:i], nil
 }
 
-func (node *node) Connect(nodeAddr string) error {
+func (node *Node) Connect(nodeAddr string) error {
 	log.Debug()
 
 	if node.IsAddrInNbrList(nodeAddr) == true {
 		return nil
 	}
 	if added := node.AddToConnectionList(nodeAddr); added == false {
-		return errors.New("node exist in connecting list, cancel")
+		return errors.New("Node exist in connecting list, cancel")
 	}
 
 	isTls := Parameters.IsTLS
@@ -178,7 +178,7 @@ func (node *node) Connect(nodeAddr string) error {
 	n := NewNode(Parameters.Magic, conn)
 	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
 
-	log.Infof("Local node %s connect with %s with %s",
+	log.Infof("Local Node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network())
 	n.Read()
@@ -231,7 +231,7 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	return conn, nil
 }
 
-func (node *node) Send(msg Message) {
+func (node *Node) Send(msg Message) {
 	if node.State() == INACTIVITY {
 		return
 	}

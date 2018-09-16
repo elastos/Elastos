@@ -46,8 +46,8 @@ func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 		return errCode
 	}
 	//verify transaction by pool with lock
-	if errCode := pool.verifyTransactionWithTxnPool(txn); errCode != Success {
-		log.Warn("[TxPool verifyTransactionWithTxnPool] failed", txn.Hash())
+	if errCode := pool.VerifyTransactionWithTxnPool(txn); errCode != Success {
+		log.Warn("[TxPool VerifyTransactionWithTxnPool] failed", txn.Hash())
 		return errCode
 	}
 
@@ -56,7 +56,7 @@ func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 	txn.Serialize(buf)
 	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	//add the transaction to process scope
-	pool.addToTxList(txn)
+	pool.AddToTxList(txn)
 	return Success
 }
 
@@ -97,7 +97,7 @@ func (pool *TxPool) GetTransaction(hash Uint256) *core.Transaction {
 }
 
 //verify transaction with txnpool
-func (pool *TxPool) verifyTransactionWithTxnPool(txn *core.Transaction) ErrCode {
+func (pool *TxPool) VerifyTransactionWithTxnPool(txn *core.Transaction) ErrCode {
 	if txn.IsRechargeToSideChainTx() {
 		// check if the recharge transaction includes duplicate mainchain tx in pool
 		if err := pool.verifyDuplicateMainchainTx(txn); err != nil {
@@ -238,7 +238,7 @@ func (pool *TxPool) cleanMainchainTx(txs []*core.Transaction) {
 	}
 }
 
-func (pool *TxPool) addToTxList(txn *core.Transaction) bool {
+func (pool *TxPool) AddToTxList(txn *core.Transaction) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	txnHash := txn.Hash()
