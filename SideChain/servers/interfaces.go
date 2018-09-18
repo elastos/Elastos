@@ -27,7 +27,7 @@ const (
 var HttpServers *HttpServersBase
 
 var NodeForServers Noder
-var LocalPow pow.IPowService
+var LocalPow *pow.PowService
 var PreChainHeight uint64
 var PreTime int64
 var PreTransactionCount int
@@ -380,7 +380,7 @@ func (s *HttpServersBase) SubmitSideAuxBlockImpl(param Params) map[string]interf
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	if _, ok := LocalPow.GetMsgBlock().BlockData[blockHash]; !ok {
+	if _, ok := LocalPow.MsgBlock.BlockData[blockHash]; !ok {
 		log.Trace("[json-rpc:SubmitSideAuxBlock] receive invalid block hash value:", blockHash)
 		return ResponsePack(InvalidParams, "")
 	}
@@ -391,13 +391,13 @@ func (s *HttpServersBase) SubmitSideAuxBlockImpl(param Params) map[string]interf
 	}
 
 	buf, _ := HexStringToBytes(sideAuxPow)
-	err := LocalPow.GetMsgBlock().BlockData[blockHash].Header.SideAuxPow.Deserialize(bytes.NewReader(buf))
+	err := LocalPow.MsgBlock.BlockData[blockHash].Header.SideAuxPow.Deserialize(bytes.NewReader(buf))
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
-	inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.GetMsgBlock().BlockData[blockHash])
+	inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "")
@@ -406,13 +406,13 @@ func (s *HttpServersBase) SubmitSideAuxBlockImpl(param Params) map[string]interf
 	if isOrphan || !inMainChain {
 		return ResponsePack(InternalError, "")
 	}
-	LocalPow.BroadcastBlock(LocalPow.GetMsgBlock().BlockData[blockHash])
+	LocalPow.BroadcastBlock(LocalPow.MsgBlock.BlockData[blockHash])
 
-	LocalPow.LockMsgBlock()
-	for key := range LocalPow.GetMsgBlock().BlockData {
-		delete(LocalPow.GetMsgBlock().BlockData, key)
+	LocalPow.MsgBlock.Mutex.Lock()
+	for key := range LocalPow.MsgBlock.BlockData {
+		delete(LocalPow.MsgBlock.BlockData, key)
 	}
-	LocalPow.UnLockMsgBlock()
+	LocalPow.MsgBlock.Mutex.Unlock()
 	log.Trace("AddBlock called finished and LocalPow.MsgBlock.BlockData has been deleted completely")
 
 	log.Info(sideAuxPow, blockHash)
@@ -442,9 +442,9 @@ func (s *HttpServersBase) GenerateAuxBlockImpl(addr string) (*Block, string, boo
 		curHash := msgBlock.Hash()
 		curHashStr := BytesToHexString(curHash.Bytes())
 
-		LocalPow.LockMsgBlock()
-		LocalPow.GetMsgBlock().BlockData[curHashStr] = msgBlock
-		LocalPow.UnLockMsgBlock()
+		LocalPow.MsgBlock.Mutex.Lock()
+		LocalPow.MsgBlock.BlockData[curHashStr] = msgBlock
+		LocalPow.MsgBlock.Mutex.Unlock()
 
 		PreChainHeight = NodeForServers.Height()
 		PreTime = time.Now().Unix()
@@ -474,7 +474,7 @@ func (s *HttpServersBase) CreateAuxBlockImpl(param Params) map[string]interface{
 		PreviousBlockHash string `json:"previousblockhash"`
 	}
 
-	LocalPow.SetPayToAddr(addr)
+	LocalPow.PayToAddr = addr
 
 	genesisHash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(0))
 	if err != nil {

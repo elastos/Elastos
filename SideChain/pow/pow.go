@@ -39,45 +39,6 @@ type messageBlock struct {
 	Mutex     sync.Mutex
 }
 
-type IPowService interface {
-	GetPayToAddr() string
-	SetPayToAddr(string)
-	GetMsgBlock() messageBlock
-	SetMsgBlock(messageBlock)
-	LockMsgBlock()
-	UnLockMsgBlock()
-
-	GetTransactionCount() int
-	CollectTransactions(msgBlock *core.Block) int
-	CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error)
-	GenerateBlock(addr string) (*core.Block, error)
-	GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *core.Transaction)
-	DiscreteMining(n uint32) ([]*common.Uint256, error)
-	SolveBlock(msgBlock *core.Block, ticker *time.Ticker) bool
-	BroadcastBlock(msgBlock *core.Block) error
-	Start()
-	Halt()
-	RollbackTransaction(v interface{})
-	BlockPersistCompleted(v interface{})
-	CpuMining()
-}
-
-type PowServiceFunctionList struct {
-	GetTransactionCount       func() int
-	CollectTransactions       func(msgBlock *core.Block) int
-	CreateCoinBaseTx          func(nextBlockHeight uint32, addr string) (*core.Transaction, error)
-	GenerateBlock             func(addr string) (*core.Block, error)
-	GenerateBlockTransactions func(msgBlock *core.Block, coinBaseTx *core.Transaction)
-	DiscreteMining            func(n uint32) ([]*common.Uint256, error)
-	SolveBlock                func(msgBlock *core.Block, ticker *time.Ticker) bool
-	BroadcastBlock            func(msgBlock *core.Block) error
-	Start                     func()
-	Halt                      func()
-	RollbackTransaction       func(v interface{})
-	BlockPersistCompleted     func(v interface{})
-	CpuMining                 func()
-}
-
 type PowService struct {
 	PayToAddr    string
 	MsgBlock     messageBlock
@@ -92,66 +53,19 @@ type PowService struct {
 	wg   sync.WaitGroup
 	quit chan struct{}
 
-	Functions PowServiceFunctionList
-}
-
-func (pow *PowService) GetPayToAddr() string {
-	return pow.PayToAddr
-}
-func (pow *PowService) SetPayToAddr(payToAddr string) {
-	pow.PayToAddr = payToAddr
-}
-func (pow *PowService) GetMsgBlock() messageBlock {
-	return pow.MsgBlock
-}
-func (pow *PowService) SetMsgBlock(msgBlock messageBlock) {
-	pow.MsgBlock = msgBlock
-}
-func (pow *PowService) LockMsgBlock() {
-	pow.MsgBlock.Mutex.Lock()
-}
-func (pow *PowService) UnLockMsgBlock() {
-	pow.MsgBlock.Mutex.Unlock()
-}
-func (pow *PowService) GetTransactionCount() int {
-	return pow.Functions.GetTransactionCount()
-}
-func (pow *PowService) CollectTransactions(msgBlock *core.Block) int {
-	return pow.Functions.CollectTransactions(msgBlock)
-}
-func (pow *PowService) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
-	return pow.Functions.CreateCoinBaseTx(nextBlockHeight, addr)
-}
-func (pow *PowService) GenerateBlock(addr string) (*core.Block, error) {
-	return pow.Functions.GenerateBlock(addr)
-}
-func (pow *PowService) GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *core.Transaction) {
-	pow.Functions.GenerateBlockTransactions(msgBlock, coinBaseTx)
-}
-func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
-	return pow.Functions.DiscreteMining(n)
-}
-func (pow *PowService) SolveBlock(msgBlock *core.Block, ticker *time.Ticker) bool {
-	return pow.Functions.SolveBlock(msgBlock, ticker)
-}
-func (pow *PowService) BroadcastBlock(msgBlock *core.Block) error {
-	return pow.Functions.BroadcastBlock(msgBlock)
-}
-func (pow *PowService) Start() {
-	pow.Functions.GetTransactionCount()
-}
-func (pow *PowService) Halt() {
-	pow.Functions.GetTransactionCount()
-}
-func (pow *PowService) RollbackTransaction(v interface{}) {
-	pow.Functions.GetTransactionCount()
-
-}
-func (pow *PowService) BlockPersistCompleted(v interface{}) {
-	pow.Functions.GetTransactionCount()
-}
-func (pow *PowService) CpuMining() {
-	pow.Functions.GetTransactionCount()
+	GetTransactionCount       func() int
+	CollectTransactions       func(msgBlock *core.Block) int
+	CreateCoinBaseTx          func(nextBlockHeight uint32, addr string) (*core.Transaction, error)
+	GenerateBlock             func(addr string) (*core.Block, error)
+	GenerateBlockTransactions func(msgBlock *core.Block, coinBaseTx *core.Transaction)
+	DiscreteMining            func(n uint32) ([]*common.Uint256, error)
+	SolveBlock                func(msgBlock *core.Block, ticker *time.Ticker) bool
+	BroadcastBlock            func(msgBlock *core.Block) error
+	Start                     func()
+	Halt                      func()
+	RollbackTransaction       func(v interface{})
+	BlockPersistCompleted     func(v interface{})
+	CpuMining                 func()
 }
 
 func NewPowService(localNode protocol.Noder) *PowService {
@@ -170,19 +84,19 @@ func NewPowService(localNode protocol.Noder) *PowService {
 }
 
 func (pow *PowService) Init() {
-	pow.Functions.GetTransactionCount = pow.GetTransactionCountImpl
-	pow.Functions.CollectTransactions = pow.CollectTransactionsImpl
-	pow.Functions.CreateCoinBaseTx = pow.CreateCoinBaseTxImpl
-	pow.Functions.GenerateBlock = pow.GenerateBlockImpl
-	pow.Functions.GenerateBlockTransactions = pow.GenerateBlockTransactionsImpl
-	pow.Functions.DiscreteMining = pow.DiscreteMiningImpl
-	pow.Functions.SolveBlock = pow.SolveBlockImpl
-	pow.Functions.BroadcastBlock = pow.BroadcastBlockImpl
-	pow.Functions.Start = pow.StartImpl
-	pow.Functions.Halt = pow.HaltImpl
-	pow.Functions.RollbackTransaction = pow.RollbackTransactionImpl
-	pow.Functions.BlockPersistCompleted = pow.BlockPersistCompletedImpl
-	pow.Functions.CpuMining = pow.CpuMiningImpl
+	pow.GetTransactionCount = pow.GetTransactionCountImpl
+	pow.CollectTransactions = pow.CollectTransactionsImpl
+	pow.CreateCoinBaseTx = pow.CreateCoinBaseTxImpl
+	pow.GenerateBlock = pow.GenerateBlockImpl
+	pow.GenerateBlockTransactions = pow.GenerateBlockTransactionsImpl
+	pow.DiscreteMining = pow.DiscreteMiningImpl
+	pow.SolveBlock = pow.SolveBlockImpl
+	pow.BroadcastBlock = pow.BroadcastBlockImpl
+	pow.Start = pow.StartImpl
+	pow.Halt = pow.HaltImpl
+	pow.RollbackTransaction = pow.RollbackTransactionImpl
+	pow.BlockPersistCompleted = pow.BlockPersistCompletedImpl
+	pow.CpuMining = pow.CpuMiningImpl
 }
 
 func (pow *PowService) InitPowServiceSubscriber() {

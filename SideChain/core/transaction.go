@@ -275,3 +275,9 @@ func (tx *Transaction) GetData() []byte {
 	tx.SerializeUnsigned(buf)
 	return buf.Bytes()
 }
+
+func init() {
+	InitPayloadCreater()
+	InitTransactionHelper()
+	InitOutputHelper()
+}

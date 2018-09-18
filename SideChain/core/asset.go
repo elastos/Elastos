@@ -101,3 +101,24 @@ func (a *Asset) Hash() common.Uint256 {
 	a.Serialize(buf)
 	return common.Sha256D(buf.Bytes())
 }
+
+func GetSystemAssetId() common.Uint256 {
+	systemToken := &Transaction{
+		TxType:         RegisterAsset,
+		PayloadVersion: 0,
+		Payload: &PayloadRegisterAsset{
+			Asset: Asset{
+				Name:      "ELA",
+				Precision: 0x08,
+				AssetType: 0x00,
+			},
+			Amount:     0 * 100000000,
+			Controller: common.Uint168{},
+		},
+		Attributes: []*Attribute{},
+		Inputs:     []*Input{},
+		Outputs:    []*Output{},
+		Programs:   []*Program{},
+	}
+	return systemToken.Hash()
+}
