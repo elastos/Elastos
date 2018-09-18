@@ -5,13 +5,13 @@
 #ifndef __ELASTOS_SDK_MERKLEBLOCK_H__
 #define __ELASTOS_SDK_MERKLEBLOCK_H__
 
-#include <fruit/fruit.h>
 #include <boost/shared_ptr.hpp>
 #include <nlohmann/json.hpp>
 
 #include "Wrapper.h"
 #include "CMemBlock.h"
 #include "Plugin/Interface/IMerkleBlock.h"
+#include "Plugin/Registry.h"
 #include "ELACoreExt/AuxPow.h"
 #include "ELACoreExt/ELAMerkleBlock.h"
 
@@ -25,8 +25,6 @@ namespace Elastos {
 		public:
 			MerkleBlock();
 
-			MerkleBlock(bool manageRaw);
-
 			MerkleBlock(ELAMerkleBlock *merkleBlock, bool manageRaw);
 
 			MerkleBlock(const ELAMerkleBlock &merkleBlock);
@@ -35,7 +33,14 @@ namespace Elastos {
 
 			virtual std::string toString() const;
 
+			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
+
+			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
+			virtual IMerkleBlock *Clone(const BRMerkleBlock *block, bool manageRaw) const;
+
 			virtual BRMerkleBlock *getRaw() const;
+
+			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -69,6 +74,8 @@ namespace Elastos {
 
 			const AuxPow &getAuxPow() const;
 
+			bool containsTransactionHash(UInt256 hash) const;
+
 			virtual BRMerkleBlock *getRawBlock() const;
 
 			virtual void deleteRawBlock();
@@ -84,11 +91,6 @@ namespace Elastos {
 			bool _manageRaw;
 		};
 
-		fruit::Component<ELAMerkleBlock> GetELAMerkleBlockComponent(ELAMerkleBlock *block);
-
-		fruit::Component<IMerkleBlock> GetMerkleBlockComponent(bool manage);
-
-		fruit::Component<IMerkleBlock> GetMerkleBlockComponentWithParams(ELAMerkleBlock *block, bool manage);
 	}
 }
 

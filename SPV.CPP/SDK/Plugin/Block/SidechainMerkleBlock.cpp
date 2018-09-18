@@ -9,24 +9,20 @@
 #include "Utils.h"
 #include "MerkleBlock.h"
 #include "SidechainMerkleBlock.h"
-#include "Plugin/Registry.h"
 
 #define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty target
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		SidechainMerkleBlock::SidechainMerkleBlock() : _manageRaw(true) {
-			_merkleBlock = IdMerkleBlockNew();
-		}
-
-		SidechainMerkleBlock::SidechainMerkleBlock(bool manageRaw) : _manageRaw(manageRaw) {
+		SidechainMerkleBlock::SidechainMerkleBlock() :
+			_manageRaw(true) {
 			_merkleBlock = IdMerkleBlockNew();
 		}
 
 		SidechainMerkleBlock::SidechainMerkleBlock(IdMerkleBlock *merkleBlock, bool manageRaw) :
-				_merkleBlock(merkleBlock),
-				_manageRaw(manageRaw) {
+			_merkleBlock(merkleBlock),
+			_manageRaw(manageRaw) {
 		}
 
 		SidechainMerkleBlock::~SidechainMerkleBlock() {
@@ -40,7 +36,19 @@ namespace Elastos {
 		}
 
 		BRMerkleBlock *SidechainMerkleBlock::getRaw() const {
-			return (BRMerkleBlock *) _merkleBlock;
+			return (BRMerkleBlock *)_merkleBlock;
+		}
+
+		IMerkleBlock *SidechainMerkleBlock::CreateMerkleBlock(bool manageRaw) {
+			return new SidechainMerkleBlock(IdMerkleBlockNew(), manageRaw);
+		}
+
+		IMerkleBlock *SidechainMerkleBlock::CreateFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			return new SidechainMerkleBlock((IdMerkleBlock *)block, manageRaw);
+		}
+
+		IMerkleBlock *SidechainMerkleBlock::Clone(const BRMerkleBlock *block, bool manageRaw) const {
+			return new SidechainMerkleBlock(IdMerkleBlockCopy((const IdMerkleBlock *)block), manageRaw);
 		}
 
 		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {
@@ -53,7 +61,7 @@ namespace Elastos {
 
 			ostream.writeUint32(_merkleBlock->raw.totalTx);
 
-			ostream.writeUint32((uint32_t) _merkleBlock->raw.hashesCount);
+			ostream.writeUint32((uint32_t)_merkleBlock->raw.hashesCount);
 			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
 				ostream.writeBytes(_merkleBlock->raw.hashes[i].u8, sizeof(_merkleBlock->raw.hashes[i].u8));
 			}
@@ -212,6 +220,14 @@ namespace Elastos {
 			_merkleBlock = nullptr;
 		}
 
+		void SidechainMerkleBlock::initFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			if (_merkleBlock) {
+				IdMerkleBlockFree((IdMerkleBlock *)block);
+			}
+			_merkleBlock = (IdMerkleBlock *)block;
+			_manageRaw = manageRaw;
+		}
+
 		UInt256 SidechainMerkleBlock::getBlockHash() const {
 			UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_merkleBlock->raw.blockHash, &zero)) {
@@ -239,12 +255,11 @@ namespace Elastos {
 			static const uint32_t maxsize = MAX_PROOF_OF_WORK >> 24, maxtarget = MAX_PROOF_OF_WORK & 0x00ffffff;
 			const uint32_t size = _merkleBlock->raw.target >> 24, target = _merkleBlock->raw.target & 0x00ffffff;
 			size_t hashIdx = 0, flagIdx = 0;
-			UInt256 merkleRoot = MerkleBlock::MerkleBlockRootR(&hashIdx, &flagIdx, 0,
-															   _merkleBlock->raw), t = UINT256_ZERO;
+			UInt256 merkleRoot = MerkleBlock::MerkleBlockRootR(&hashIdx, &flagIdx, 0, _merkleBlock->raw), t = UINT256_ZERO;
 			int r = 1;
 
 			// check if merkle root is correct
-			if (_merkleBlock->raw.totalTx > 0 && !UInt256Eq(&(merkleRoot), &(_merkleBlock->raw.merkleRoot))) r = 0;
+			if (_merkleBlock->raw.totalTx > 0 && ! UInt256Eq(&(merkleRoot), &(_merkleBlock->raw.merkleRoot))) r = 0;
 
 			// check if timestamp is too far in future
 			if (_merkleBlock->raw.timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
@@ -253,7 +268,7 @@ namespace Elastos {
 			if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;
 
 			if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
-			else UInt32SetLE(t.u8, target >> (3 - size) * 8);
+			else UInt32SetLE(t.u8, target >> (3 - size)*8);
 
 			//todo verify block hash
 //			UInt256 auxBlockHash = _merkleBlock->auxPow.getParBlockHeaderHash();
@@ -269,23 +284,7 @@ namespace Elastos {
 			return "SideStandard";
 		}
 
-		fruit::Component<IdMerkleBlock> GetIdMerkleBlockComponent(IdMerkleBlock *block) {
-			return fruit::createComponent().bindInstance(*block);
-		}
+		REGISTER_MERKLEBLOCKPLUGIN(SidechainMerkleBlock);
 
-		fruit::Component<IMerkleBlock> GetSidechainMerkleBlockComponent(bool manage) {
-			return fruit::createComponent()
-					.install(GetManageRawComponent, manage)
-					.registerConstructor<SidechainMerkleBlock(bool)>()
-					.bind<IMerkleBlock, SidechainMerkleBlock>();
-		}
-
-		fruit::Component<IMerkleBlock> GetSidechainMerkleBlockComponentWithParams(IdMerkleBlock *block, bool manage) {
-			return fruit::createComponent()
-					.install(GetIdMerkleBlockComponent, block)
-					.install(GetManageRawComponent, manage)
-					.registerConstructor<SidechainMerkleBlock(IdMerkleBlock *, bool)>()
-					.bind<IMerkleBlock, SidechainMerkleBlock>();
-		}
 	}
 }
