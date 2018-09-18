@@ -142,7 +142,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	IMasterWallet *masterWallet = importWithKeystore(walletFactory, payPassword);
 #endif
 
-//	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
+	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
 	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
 
 //	std::cout << "side chain wallet addrs: " << sidechainWallet->GetAllAddress(0, INT_MAX) << std::endl;
@@ -171,12 +171,12 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 		}
 #endif
 
-#if 0
+//#if 0
 		if (!hasRegisterId) {
 			registerId(masterWallet, sidechainWallet, payPassword);
 			hasRegisterId = true;
 		}
-#endif
+//#endif
 
 #if 0
 		if (!hasTransfer) {

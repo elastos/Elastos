@@ -10,6 +10,7 @@
 #include "SDK/Account/StandardAccount.h"
 #include "SDK/Account/MultiSignAccount.h"
 #include "SDK/Account/SimpleAccount.h"
+#include "AccountFactory.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -68,6 +69,7 @@ namespace Elastos {
 
 		void to_json(nlohmann::json &j, const MasterWalletStore &p) {
 			j["Account"] = p.Account()->ToJson();
+			j["AccountType"] = p.Account()->GetType();
 			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
 			for (size_t i = 0; i < p.GetSubWalletInfoList().size(); i++) {
@@ -77,7 +79,7 @@ namespace Elastos {
 		}
 
 		void from_json(const nlohmann::json &j, MasterWalletStore &p) {
-			p.Account()->FromJson(j["Account"]);
+			p._account = AccountPtr(AccountFactory::CreateFromJson(p._rootPath, j));
 			p.SetIdAgentInfo(j["IdAgent"]);
 
 			std::vector<CoinInfo> coinInfoList;

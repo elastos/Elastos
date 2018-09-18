@@ -27,6 +27,8 @@ namespace Elastos {
 
 			virtual Key DeriveKey(const std::string &payPassword) = 0;
 
+			virtual std::string GetType() = 0;
+
 			virtual nlohmann::json ToJson() const = 0;
 
 			virtual void FromJson(const nlohmann::json &j) = 0;

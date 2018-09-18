@@ -30,20 +30,20 @@ namespace Elastos {
 
 			typedef fruit::Injector<IMerkleBlock> MerkleBlockInj;
 			typedef boost::shared_ptr<MerkleBlockInj> MerkleBlockInjPtr;
-			 MerkleBlockInjPtr injector;
+			MerkleBlockInjPtr injector;
 			if (blockType == "ELA") {
 				if (block == nullptr)
 					injector = boost::make_shared<MerkleBlockInj>(GetMerkleBlockComponent, manageRaw);
 				else
 					injector = boost::make_shared<MerkleBlockInj>(
-							GetMerkleBlockComponentWithParams, (ELAMerkleBlock *)block, manageRaw);
+							GetMerkleBlockComponentWithParams, (ELAMerkleBlock *) block, manageRaw);
 
 			} else if (blockType == "SideStandard") {
 				if (block == nullptr)
 					injector = boost::make_shared<MerkleBlockInj>(GetSidechainMerkleBlockComponent, manageRaw);
 				else
 					injector = boost::make_shared<MerkleBlockInj>(
-							GetSidechainMerkleBlockComponentWithParams, (IdMerkleBlock *)block, manageRaw);
+							GetSidechainMerkleBlockComponentWithParams, (IdMerkleBlock *) block, manageRaw);
 			}
 
 			return injector->get<IMerkleBlock *>();

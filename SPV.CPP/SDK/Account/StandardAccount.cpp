@@ -22,10 +22,7 @@ namespace Elastos {
 
 			CMemBlock<char> phraseData;
 			phraseData.SetMemFixed(phrase.c_str(), phrase.size() + 1);
-			std::string originLanguage = _mnemonic->getLanguage();
-			if (!_language.empty() && _language != originLanguage) {
-				resetMnemonic(_language);
-			}
+			resetMnemonic(_language);
 
 			if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
 				resetMnemonic("chinese");
@@ -62,6 +59,11 @@ namespace Elastos {
 
 			var_clean(&seed);
 			var_clean(&masterKey.secret);
+		}
+
+		StandardAccount::StandardAccount(const std::string &rootPath) :
+				_rootPath(rootPath) {
+
 		}
 
 		const CMBlock &StandardAccount::GetEncryptedPhrasePassword() const {
@@ -192,6 +194,10 @@ namespace Elastos {
 			nlohmann::json j;
 			j["Type"] = "Standard";
 			return j;
+		}
+
+		std::string StandardAccount::GetType() {
+			return "Standard";
 		}
 
 	}
