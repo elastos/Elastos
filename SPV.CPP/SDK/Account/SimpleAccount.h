@@ -23,6 +23,8 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
+			virtual std::string GetType();
+
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &j);
@@ -42,6 +44,10 @@ namespace Elastos {
 			virtual std::string GetAddress();
 
 		private:
+			friend class AccountFactory;
+
+			SimpleAccount();
+
 			JSON_SM_LS(SimpleAccount);
 
 			JSON_SM_RS(SimpleAccount);

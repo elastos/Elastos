@@ -9,6 +9,7 @@
 #include <boost/bind.hpp>
 #include <SDK/Wrapper/ByteStream.h>
 #include "MultiSignAccount.h"
+#include "AccountFactory.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -18,6 +19,10 @@ namespace Elastos {
 				_me(me),
 				_requiredSignCount(requiredSignCount),
 				_coSigners(coSigners) {
+		}
+
+		MultiSignAccount::MultiSignAccount(const std::string &rootPath) : _rootPath(rootPath) {
+
 		}
 
 		Key MultiSignAccount::DeriveKey(const std::string &payPassword) {
@@ -125,12 +130,13 @@ namespace Elastos {
 
 		void to_json(nlohmann::json &j, const MultiSignAccount &p) {
 			j["Account"] = p._me->ToJson();
+			j["AccountType"] = p._me->GetType();
 			j["CoSigners"] = p._coSigners;
 			j["RequiredSignCount"] = p._requiredSignCount;
 		}
 
 		void from_json(const nlohmann::json &j, MultiSignAccount &p) {
-			p._me->FromJson(j["Account"]);
+			p._me = AccountFactory::CreateFromJson(p._rootPath, j);
 			p._coSigners = j["CoSigners"].get<std::vector<std::string>>();
 			p._requiredSignCount = j["RequiredSignCount"].get<uint32_t>();
 		}
@@ -146,6 +152,10 @@ namespace Elastos {
 			details["RequiredSignCount"] = _requiredSignCount;
 			j["Details"] = details;
 			return j;
+		}
+
+		std::string MultiSignAccount::GetType() {
+			return "MultiSign";
 		}
 
 	}

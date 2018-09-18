@@ -24,6 +24,10 @@ namespace Elastos {
 			var_clean(&secret);
 		}
 
+		SimpleAccount::SimpleAccount() {
+
+		}
+
 		Key SimpleAccount::DeriveKey(const std::string &payPassword) {
 			CMBlock keyData = Utils::decrypt(GetEncryptedKey(), payPassword);
 			ParamChecker::checkDataNotEmpty(keyData);
@@ -107,6 +111,10 @@ namespace Elastos {
 			nlohmann::json j;
 			j["Type"] = "Simple";
 			return j;
+		}
+
+		std::string SimpleAccount::GetType() {
+			return "Simple";
 		}
 
 	}
