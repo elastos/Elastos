@@ -1,8 +1,6 @@
 package spvwallet
 
 import (
-	"time"
-
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
@@ -17,10 +15,8 @@ import (
 )
 
 const (
-	MaxUnconfirmedTime = time.Minute * 30
-	MaxTxIdCached      = 1000
-	MaxPeers           = 12
-	MinPeersForSync    = 2
+	MaxPeers        = 12
+	MinPeersForSync = 2
 )
 
 type Wallet struct {
@@ -28,7 +24,6 @@ type Wallet struct {
 	rpcServer  *rpc.Server
 	chainStore database.ChainStore
 	db         sqlite.DataStore
-	txIds      *TxIdCache
 	filter     *sdk.AddrFilter
 }
 
@@ -49,7 +44,6 @@ func (w *Wallet) Batch() database.TxBatch {
 	return &txBatch{
 		db:     w.db,
 		batch:  w.db.Batch(),
-		ids:    w.txIds,
 		filter: w.getAddrFilter(),
 	}
 }
@@ -133,13 +127,6 @@ func (w *Wallet) loadAddrFilter() *sdk.AddrFilter {
 // TransactionAnnounce will be invoked when received a new announced transaction.
 func (w *Wallet) TransactionAnnounce(tx *core.Transaction) {
 	// TODO
-	// Save transaction as unconfirmed.
-	err := w.db.Txs().Put(sutil.NewTx(*tx, 0))
-	if err != nil {
-		return
-	}
-
-	w.txIds.Add(tx.Hash())
 }
 
 // TransactionAccepted will be invoked after a transaction sent by
@@ -153,14 +140,12 @@ func (w *Wallet) TransactionAccepted(tx *core.Transaction) {
 // method has been rejected.
 func (w *Wallet) TransactionRejected(tx *core.Transaction) {
 	// TODO
-
 }
 
 // TransactionConfirmed will be invoked after a transaction sent by
 // SendTransaction() method has been packed into a block.
 func (w *Wallet) TransactionConfirmed(tx *util.Tx) {
 	// TODO
-
 }
 
 // BlockCommitted will be invoked when a block and transactions within it are
@@ -171,56 +156,22 @@ func (w *Wallet) BlockCommitted(block *util.Block) {
 	}
 
 	w.db.State().PutHeight(block.Height)
-	// Get all unconfirmed transactions
-	txs, err := w.db.Txs().GetAllUnconfirmed()
-	if err != nil {
-		log.Debugf("Get unconfirmed transactions failed, error %s", err.Error())
-		return
-	}
-	now := time.Now()
-	for _, tx := range txs {
-		if now.After(tx.Timestamp.Add(MaxUnconfirmedTime)) {
-			err = w.db.Txs().Del(&tx.TxId)
-			if err != nil {
-				log.Errorf("Delete timeout transaction %s failed, error %s", tx.TxId.String(), err.Error())
-			}
-		}
-	}
+	// TODO
 }
 
 type txBatch struct {
 	db     sqlite.DataStore
 	batch  sqlite.DataBatch
-	ids    *TxIdCache
 	filter *sdk.AddrFilter
 }
 
 // PutTx add a store transaction operation into batch, and return
 // if it is a false positive and error.
 func (b *txBatch) PutTx(tx *util.Tx) (bool, error) {
-	// This PutTx in batch is used by the ChainStore when storing a block.
-	// That means this transaction has been confirmed, so we need to remove
-	// it from unconfirmed list. And also, double spend transactions should
-	// been removed from unconfirmed list as well.
 	txId := tx.Hash()
 	height := tx.Height
-	dubs, err := b.checkDoubleSpends(tx)
-	if err != nil {
-		return false, nil
-	}
-	// Delete any double spend transactions
-	if len(dubs) > 0 {
-		batch := b.db.Txs().Batch()
-		for _, dub := range dubs {
-			if err := batch.Del(dub); err != nil {
-				batch.Rollback()
-				return false, nil
-			}
-		}
-		batch.Commit()
-	}
-
 	hits := 0
+
 	// Check if any UTXOs within this wallet have been spent.
 	for _, input := range tx.Inputs {
 		// Move UTXO to STXO
@@ -260,12 +211,10 @@ func (b *txBatch) PutTx(tx *util.Tx) (bool, error) {
 	}
 
 	// Save transaction
-	err = b.batch.Txs().Put(sutil.NewTx(tx.Transaction, height))
+	err := b.batch.Txs().Put(sutil.NewTx(tx.Transaction, height))
 	if err != nil {
 		return false, err
 	}
-
-	b.ids.Add(txId)
 
 	return false, nil
 }
@@ -293,43 +242,6 @@ func (b *txBatch) Commit() error {
 	return b.batch.Commit()
 }
 
-// checkDoubleSpends takes a transaction and compares it with all unconfirmed
-// transactions in the db.  It returns a slice of txIds in the db  which are
-// double spent by the received tx.
-func (b *txBatch) checkDoubleSpends(tx *util.Tx) ([]*common.Uint256, error) {
-	txId := tx.Hash()
-	txs, err := b.db.Txs().GetAllUnconfirmed()
-	if err != nil {
-		return nil, err
-	}
-
-	inputs := make(map[string]*common.Uint256)
-	for _, compTx := range txs {
-		// Skip coinbase transaction
-		if compTx.Data.IsCoinBaseTx() {
-			continue
-		}
-
-		// Skip duplicate transaction
-		compTxId := compTx.Data.Hash()
-		if compTxId.IsEqual(txId) {
-			continue
-		}
-
-		for _, in := range compTx.Data.Inputs {
-			inputs[in.ReferKey()] = &compTxId
-		}
-	}
-
-	var dubs []*common.Uint256
-	for _, in := range tx.Inputs {
-		if tx, ok := inputs[in.ReferKey()]; ok {
-			dubs = append(dubs, tx)
-		}
-	}
-	return dubs, nil
-}
-
 func New() (*Wallet, error) {
 	wallet := new(Wallet)
 
@@ -347,9 +259,6 @@ func New() (*Wallet, error) {
 
 	// Initiate ChainStore
 	wallet.chainStore = database.NewDefaultChainDB(headers, wallet)
-
-	// Initialize txs cache
-	wallet.txIds = NewTxIdCache(MaxTxIdCached)
 
 	// Initialize spv service
 	wallet.IService, err = sdk.NewService(
