@@ -50,6 +50,9 @@ type service struct {
 	donePeers chan *peer.Peer
 	txQueue   chan interface{}
 	quit      chan struct{}
+	// The following chans are used to sync blockmanager and server.
+	txProcessed    chan struct{}
+	blockProcessed chan struct{}
 }
 
 // Create a instance of SPV service implementation.
@@ -67,6 +70,8 @@ func NewSPVService(cfg *Config) (*service, error) {
 		donePeers: make(chan *peer.Peer, cfg.MaxPeers),
 		txQueue:   make(chan interface{}, 3),
 		quit:      make(chan struct{}),
+		txProcessed:    make(chan struct{}, 1),
+		blockProcessed: make(chan struct{}, 1),
 	}
 
 	var maxPeers int
@@ -403,11 +408,10 @@ func (s *service) onInv(sp *spvpeer.Peer, inv *msg.Inv) {
 }
 
 func (s *service) onBlock(sp *spvpeer.Peer, block *util.Block) {
-	done := make(chan struct{})
-	s.syncManager.QueueBlock(block, sp, done)
+	s.syncManager.QueueBlock(block, sp, s.blockProcessed)
 
 	select {
-	case <-done:
+	case <-s.blockProcessed:
 		s.txQueue <- &blockMsg{block: block}
 		if s.cfg.StateNotifier != nil {
 			s.cfg.StateNotifier.BlockCommitted(block)
@@ -415,10 +419,9 @@ func (s *service) onBlock(sp *spvpeer.Peer, block *util.Block) {
 	}
 }
 
-func (s *service) onTx(sp *spvpeer.Peer, tx *core.Transaction) {
-	done := make(chan struct{})
-	s.syncManager.QueueTx(tx, sp, done)
-	<-done
+func (s *service) onTx(sp *spvpeer.Peer, msgTx *core.Transaction) {
+	s.syncManager.QueueTx(msgTx, sp, s.txProcessed)
+	<-s.txProcessed
 }
 
 func (s *service) onNotFound(sp *spvpeer.Peer, notFound *msg.NotFound) {
