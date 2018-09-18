@@ -10,7 +10,6 @@
 #include "Utils.h"
 
 #include "MerkleBlock.h"
-#include "Plugin/Registry.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,7 +19,8 @@ namespace Elastos {
 
 #define MAX_PROOF_OF_WORK 0xff7fffff    // highest value for difficulty target
 
-				inline static int _ceil_log2(int x) {
+				inline static int _ceil_log2(int x)
+				{
 					int r = (x & (x - 1)) ? 1 : 0;
 
 					while ((x >>= 1) != 0) r++;
@@ -29,21 +29,18 @@ namespace Elastos {
 			}
 		}
 
-		MerkleBlock::MerkleBlock() : _manageRaw(true) {
-			_merkleBlock = ELAMerkleBlockNew();
-		}
-
-		MerkleBlock::MerkleBlock(bool manageRaw) : _manageRaw(manageRaw) {
+		MerkleBlock::MerkleBlock() :
+			_manageRaw(true) {
 			_merkleBlock = ELAMerkleBlockNew();
 		}
 
 		MerkleBlock::MerkleBlock(ELAMerkleBlock *merkleBlock, bool manageRaw) :
-				_manageRaw(manageRaw),
-				_merkleBlock(merkleBlock) {
+			_manageRaw(manageRaw),
+			_merkleBlock(merkleBlock) {
 		}
 
 		MerkleBlock::MerkleBlock(const ELAMerkleBlock &merkleBlock) :
-				_manageRaw(true) {
+			_manageRaw(true) {
 			_merkleBlock = ELAMerkleBlockCopy(&merkleBlock);
 		}
 
@@ -59,6 +56,26 @@ namespace Elastos {
 
 		BRMerkleBlock *MerkleBlock::getRaw() const {
 			return (BRMerkleBlock *) _merkleBlock;
+		}
+
+		void MerkleBlock::initFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			if (_merkleBlock) {
+				ELAMerkleBlockFree((ELAMerkleBlock *)block);
+			}
+			_merkleBlock = (ELAMerkleBlock *)block;
+			_manageRaw = manageRaw;
+		}
+
+		IMerkleBlock *MerkleBlock::CreateMerkleBlock(bool manageRaw) {
+			return new MerkleBlock(ELAMerkleBlockNew(), manageRaw);
+		}
+
+		IMerkleBlock *MerkleBlock::CreateFromRaw(BRMerkleBlock *block, bool manageRaw) {
+			return new MerkleBlock((ELAMerkleBlock *)block, manageRaw);
+		}
+
+		IMerkleBlock* MerkleBlock::Clone(const BRMerkleBlock *block, bool manageRaw) const {
+			return new MerkleBlock(ELAMerkleBlockCopy((const ELAMerkleBlock *)block), manageRaw);
 		}
 
 		UInt256 MerkleBlock::getBlockHash() const {
@@ -119,7 +136,7 @@ namespace Elastos {
 			int r = 1;
 
 			// check if merkle root is correct
-			if (_merkleBlock->raw.totalTx > 0 && !UInt256Eq(&(merkleRoot), &(_merkleBlock->raw.merkleRoot))) r = 0;
+			if (_merkleBlock->raw.totalTx > 0 && ! UInt256Eq(&(merkleRoot), &(_merkleBlock->raw.merkleRoot))) r = 0;
 
 			// check if timestamp is too far in future
 			if (_merkleBlock->raw.timestamp > currentTime + BLOCK_MAX_TIME_DRIFT) r = 0;
@@ -128,7 +145,7 @@ namespace Elastos {
 			if (target == 0 || target & 0x00800000 || size > maxsize || (size == maxsize && target > maxtarget)) r = 0;
 
 			if (size > 3) UInt32SetLE(&t.u8[size - 3], target);
-			else UInt32SetLE(t.u8, target >> (3 - size) * 8);
+			else UInt32SetLE(t.u8, target >> (3 - size)*8);
 
 			UInt256 auxBlockHash = _merkleBlock->auxPow.getParBlockHeaderHash();
 			for (int i = sizeof(t) - 1; r && i >= 0; i--) { // check proof-of-work
@@ -137,6 +154,10 @@ namespace Elastos {
 			}
 
 			return r;
+		}
+
+		bool MerkleBlock::containsTransactionHash(UInt256 hash) const {
+			return BRMerkleBlockContainsTxHash(&_merkleBlock->raw, hash) != 0;
 		}
 
 		void MerkleBlock::Serialize(ByteStream &ostream) const {
@@ -148,7 +169,7 @@ namespace Elastos {
 
 			ostream.writeUint32(_merkleBlock->raw.totalTx);
 
-			ostream.writeUint32((uint32_t) _merkleBlock->raw.hashesCount);
+			ostream.writeUint32((uint32_t)_merkleBlock->raw.hashesCount);
 			for (size_t i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
 				ostream.writeBytes(_merkleBlock->raw.hashes[i].u8, sizeof(UInt256));
 			}
@@ -238,20 +259,21 @@ namespace Elastos {
 			uint8_t flag;
 			UInt256 hashes[2], md = UINT256_ZERO;
 
-			if (*flagIdx / 8 < raw.flagsLen && *hashIdx < raw.hashesCount) {
-				flag = (raw.flags[*flagIdx / 8] & (1 << (*flagIdx % 8)));
+			if (*flagIdx/8 < raw.flagsLen && *hashIdx < raw.hashesCount) {
+				flag = (raw.flags[*flagIdx/8] & (1 << (*flagIdx % 8)));
 				(*flagIdx)++;
 
 				if (flag && depth != _ceil_log2(raw.totalTx)) {
 					hashes[0] = MerkleBlockRootR(hashIdx, flagIdx, depth + 1, raw); // left branch
 					hashes[1] = MerkleBlockRootR(hashIdx, flagIdx, depth + 1, raw); // right branch
 
-					if (!UInt256IsZero(&hashes[0]) && !UInt256Eq(&(hashes[0]), &(hashes[1]))) {
-						if (UInt256IsZero(&hashes[1]))
-							hashes[1] = hashes[0]; // if right branch is missing, dup left branch
+					if (! UInt256IsZero(&hashes[0]) && ! UInt256Eq(&(hashes[0]), &(hashes[1]))) {
+						if (UInt256IsZero(&hashes[1])) hashes[1] = hashes[0]; // if right branch is missing, dup left branch
 						BRSHA256_2(&md, hashes, sizeof(hashes));
-					} else *hashIdx = SIZE_MAX; // defend against (CVE-2012-2459)
-				} else md = raw.hashes[(*hashIdx)++]; // leaf
+					}
+					else *hashIdx = SIZE_MAX; // defend against (CVE-2012-2459)
+				}
+				else md = raw.hashes[(*hashIdx)++]; // leaf
 			}
 
 			return md;
@@ -313,7 +335,7 @@ namespace Elastos {
 			std::vector<std::string> hashes = j["Hashes"].get<std::vector<std::string>>();
 			_merkleBlock->raw.hashesCount = hashes.size();
 			_merkleBlock->raw.hashes = (_merkleBlock->raw.hashesCount > 0) ?
-									   (UInt256 *) malloc(sizeof(UInt256) * _merkleBlock->raw.hashesCount) : nullptr;
+				(UInt256 *) malloc(sizeof(UInt256) * _merkleBlock->raw.hashesCount) : nullptr;
 
 			for (int i = 0; i < _merkleBlock->raw.hashesCount; ++i) {
 				UInt256 hash = Utils::UInt256FromString(hashes[i]);
@@ -328,7 +350,7 @@ namespace Elastos {
 			std::vector<uint8_t> flags = j["Flags"].get<std::vector<uint8_t>>();
 			_merkleBlock->raw.flagsLen = flags.size();
 			_merkleBlock->raw.flags = (_merkleBlock->raw.flagsLen > 0) ?
-									  (uint8_t *) malloc(_merkleBlock->raw.flagsLen) : nullptr;
+				(uint8_t *) malloc(_merkleBlock->raw.flagsLen) : nullptr;
 			for (int i = 0; i < _merkleBlock->raw.flagsLen; ++i) {
 				_merkleBlock->raw.flags[i] = flags[i];
 			}
@@ -350,23 +372,7 @@ namespace Elastos {
 			_merkleBlock = nullptr;
 		}
 
-		fruit::Component<ELAMerkleBlock> GetELAMerkleBlockComponent(ELAMerkleBlock *block) {
-			return fruit::createComponent().bindInstance(*block);
-		}
+		REGISTER_MERKLEBLOCKPLUGIN(MerkleBlock);
 
-		fruit::Component<IMerkleBlock> GetMerkleBlockComponent(bool manage) {
-			return fruit::createComponent()
-					.install(GetManageRawComponent, manage)
-					.registerConstructor<MerkleBlock(bool)>()
-					.bind<IMerkleBlock, MerkleBlock>();
-		}
-
-		fruit::Component<IMerkleBlock> GetMerkleBlockComponentWithParams(ELAMerkleBlock *block, bool manage) {
-			return fruit::createComponent()
-					.install(GetELAMerkleBlockComponent, block)
-					.install(GetManageRawComponent, manage)
-					.registerConstructor<MerkleBlock(ELAMerkleBlock *, bool)>()
-					.bind<IMerkleBlock, MerkleBlock>();
-		}
 	}
 }

@@ -2,12 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-
 #include "Registry.h"
-#include "Block/MerkleBlock.h"
-#include "Block/SidechainMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -25,32 +20,26 @@ namespace Elastos {
 			return instance.get();
 		}
 
-		IMerkleBlock *
-		Registry::CreateMerkleBlock(const std::string &blockType, bool manageRaw, const BRMerkleBlock *block) {
-
-			typedef fruit::Injector<IMerkleBlock> MerkleBlockInj;
-			typedef boost::shared_ptr<MerkleBlockInj> MerkleBlockInjPtr;
-			MerkleBlockInjPtr injector;
-			if (blockType == "ELA") {
-				if (block == nullptr)
-					injector = boost::make_shared<MerkleBlockInj>(GetMerkleBlockComponent, manageRaw);
-				else
-					injector = boost::make_shared<MerkleBlockInj>(
-							GetMerkleBlockComponentWithParams, (ELAMerkleBlock *) block, manageRaw);
-
-			} else if (blockType == "SideStandard") {
-				if (block == nullptr)
-					injector = boost::make_shared<MerkleBlockInj>(GetSidechainMerkleBlockComponent, manageRaw);
-				else
-					injector = boost::make_shared<MerkleBlockInj>(
-							GetSidechainMerkleBlockComponentWithParams, (IdMerkleBlock *) block, manageRaw);
-			}
-
-			return injector->get<IMerkleBlock *>();
+		void Registry::AddMerkleBlockProto(IMerkleBlock *merkleBlock) {
+			_merkleBlocks[merkleBlock->getBlockType()] = MerkleBlockPtr(merkleBlock);
 		}
 
-		fruit::Component<bool> GetManageRawComponent(bool manage) {
-			return fruit::createComponent().bindInstance(manage);
+		void Registry::RemoveMerkleBlockProto(IMerkleBlock *merkleBlock) {
+			_merkleBlocks.erase(merkleBlock->getBlockType());
+		}
+
+		IMerkleBlock *Registry::CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw) {
+			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
+				return nullptr;
+
+			return _merkleBlocks[blockType]->Clone(block, manageRaw);
+		}
+
+		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, bool manageRaw) {
+			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
+				return nullptr;
+
+			return _merkleBlocks[blockType]->CreateMerkleBlock(manageRaw);
 		}
 
 	}
