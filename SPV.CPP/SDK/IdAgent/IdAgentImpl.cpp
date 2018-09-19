@@ -112,7 +112,8 @@ namespace Elastos {
 			}
 			UInt512 seed = standardAccount->DeriveSeed(password);
 			BRKey key;
-			BRBIP32PrivKey(&key, &seed.u8[0], sizeof(seed), item.Purpose, item.Index);
+			UInt256 chainCode;
+			BRBIP32PrivKeyPath(&key, &chainCode, &seed.u8[0], sizeof(seed), 3, 0 | BIP32_HARD, item.Purpose, item.Index);
 			var_clean(&seed);
 			return KeyPtr(new Key(key));
 		}
