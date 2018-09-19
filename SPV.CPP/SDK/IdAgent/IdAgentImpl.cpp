@@ -130,6 +130,7 @@ namespace Elastos {
 
 		std::string IdAgentImpl::GenerateRedeemScript(const std::string &id, const std::string &password) {
 			KeyPtr key = generateKey(id, password);
+			key->setPublicKey();
 			return key->keyToRedeemScript(ELA_IDCHAIN);
 		}
 
