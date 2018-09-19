@@ -456,14 +456,14 @@ func (s *HttpServersBase) GenerateAuxBlockImpl(addr string) (*Block, string, boo
 }
 
 func (s *HttpServersBase) CreateAuxBlockImpl(param Params) map[string]interface{} {
-	msgBlock, curHashStr, _ := s.GenerateAuxBlock(config.Parameters.PowConfiguration.PayToAddr)
-	if nil == msgBlock {
-		return ResponsePack(UnknownBlock, "")
-	}
-
 	addr, ok := param.String("paytoaddress")
 	if !ok {
-		return ResponsePack(InvalidParams, "")
+		addr = config.Parameters.PowConfiguration.PayToAddr
+	}
+
+	msgBlock, curHashStr, _ := s.GenerateAuxBlock(addr)
+	if nil == msgBlock {
+		return ResponsePack(UnknownBlock, "")
 	}
 
 	type SideAuxBlock struct {
