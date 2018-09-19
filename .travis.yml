@@ -3,48 +3,28 @@ language: c
 matrix:
   include:
   - os: osx
-    env: BUILD_ENV=darwin_x64_debug
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV && cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Debug
+    if: NOT tag IS present
 
   - os: osx
-    sudo: true
-    env: BUILD_ENV=ios_arm64_debug
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV
-      - cmake -DIOS_PLATFORM=iphoneos -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=darwin_x64 BUILD_TYPE=Release
+    if: tag IS present
 
   - os: osx
-    sudo: true
-    env: BUILD_ENV=ios_x64_debug
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV
-      - cmake -DIOS_PLATFORM=iphonesimulator -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Debug
+    if: NOT tag IS present
 
-  - env: BUILD_ENV=linux_x64_debug
-    sudo: true
-    install:
-      - sudo apt-get update
-      # if sphinx is 1.8.0，python version required 2.7.9 or newer
-      - sudo apt-get install python3.4
-      - sudo ln -s -f /usr/bin/python3.4 /usr/bin/python
-      - sudo apt-get install doxygen  graphviz
-      - curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py
-      - sudo python /tmp/get-pip.py
-      - sudo pip install breathe
-      - sudo pip install -U sphinx
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV && cmake -DENABLE_DOCS=ON ../..
-      - make && sudo make install && sudo make dist
+  - os: osx
+    env: BUILD_ENV=ios_arm64 PLATFORM=iphoneos BUILD_TYPE=Release
+    if: tag IS present
 
-  - env: BUILD_ENV=linux_x64_release
-    sudo: true
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV && cmake -DCMAKE_BUILD_TYPE=Release ../..
-      - make && sudo make install && sudo make dist
+  - os: osx
+    env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Debug
+    if: NOT tag IS present
+
+  - os: osx
+    env: BUILD_ENV=ios_x64 PLATFORM=iphonesimulator BUILD_TYPE=Release
+    if: tag IS present
 
   - language: android
     sudo: true
@@ -54,17 +34,8 @@ matrix:
         - platform-tools
         - build-tools-23.0.2
         - android-21
-    env: BUILD_ENV=android_armv7a_debug
-    install:
-      - echo y | sdkmanager 'ndk-bundle'
-      - export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle
-      - cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
-      - tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz
-      - export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV
-      - cmake -DANDROID_ABI=armeabi-v7a -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=android_armv7a ANDROID_ABI=armeabi-v7a BUILD_TYPE=Debug
+    if: NOT tag IS present
 
   - language: android
     sudo: true
@@ -74,17 +45,8 @@ matrix:
         - platform-tools
         - build-tools-23.0.2
         - android-21
-    env: BUILD_ENV=android_arm64_debug
-    install:
-      - echo y | sdkmanager 'ndk-bundle'
-      - export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle
-      - cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
-      - tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz
-      - export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV
-      - cmake -DANDROID_ABI=arm64-v8a -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=android_armv7a ANDROID_ABI=armeabi-v7a BUILD_TYPE=Release
+    if: tag IS present
 
   - language: android
     sudo: true
@@ -94,17 +56,8 @@ matrix:
         - platform-tools
         - build-tools-23.0.2
         - android-21
-    env: BUILD_ENV=android_x86_debug
-    install:
-      - echo y | sdkmanager 'ndk-bundle'
-      - export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle
-      - cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
-      - tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz
-      - export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV
-      - cmake -DANDROID_ABI=x86 -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=android_arm64 ANDROID_ABI=arm64-v8a BUILD_TYPE=Debug
+    if: NOT tag IS present
 
   - language: android
     sudo: true
@@ -114,29 +67,132 @@ matrix:
         - platform-tools
         - build-tools-23.0.2
         - android-21
-    env: BUILD_ENV=android_x86_64_debug
-    install:
-      - echo y | sdkmanager 'ndk-bundle'
-      - export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle
-      - cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
-      - tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz
-      - export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV && cd $BUILD_ENV
-      - cmake -DANDROID_ABI=x86_64 -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=android_arm64 ANDROID_ABI=arm64-v8a BUILD_TYPE=Release
+    if: tag IS present
+
+  - language: android
+    sudo: true
+    android:
+      components:
+        - tools
+        - platform-tools
+        - build-tools-23.0.2
+        - android-21
+    env: BUILD_ENV=android_x86 ANDROID_ABI=x86 BUILD_TYPE=Debug
+    if: NOT tag IS present
+
+  - language: android
+    sudo: true
+    android:
+      components:
+        - tools
+        - platform-tools
+        - build-tools-23.0.2
+        - android-21
+    env: BUILD_ENV=android_x86 ANDROID_ABI=x86 BUILD_TYPE=Release
+    if: tag IS present
+
+  - language: android
+    sudo: true
+    android:
+      components:
+        - tools
+        - platform-tools
+        - build-tools-23.0.2
+        - android-21
+    env: BUILD_ENV=android_x86_64 ANDROID_ABI=x86_64 BUILD_TYPE=Debug
+    if: NOT tag IS present
+
+  - language: android
+    sudo: true
+    android:
+      components:
+        - tools
+        - platform-tools
+        - build-tools-23.0.2
+        - android-21
+    env: BUILD_ENV=android_x86_64 ANDROID_ABI=x86_64 BUILD_TYPE=Release
+    if: tag IS present
 
   - sudo: true
-    env: BUILD_ENV=raspberrypi_debug
-    install:
-      - cd /tmp
-      - git clone https://github.com/raspberrypi/tools.git raspberrypitools
-      - export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools
-      - cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz
-      - tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz
-      - export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH
-    script:
-      - cd $TRAVIS_BUILD_DIR/build && mkdir rpi && cd rpi
-      - cmake -DCMAKE_TOOLCHAIN_FILE=../../cmake/RPiToolchain.cmake ../..
-      - make && make install && make dist
+    env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Debug
+    if: NOT tag IS present
 
+  - sudo: true
+    env: BUILD_ENV=raspberrypi RASPBERRRIPI=TRUE BUILD_TYPE=Release
+    if: tag IS present
+
+  - env: BUILD_ENV=linux_x64 ENABLE_DOCS=ON BUILD_TYPE=Debug
+    sudo: true
+    if: NOT tag IS present
+
+  - env: BUILD_ENV=linux_x64 BUILD_TYPE=Release
+    sudo: true
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      if [[ "$ENABLE_DOCS" != "" ]]; then
+        sudo apt-get update;
+        sudo apt-get install python3.4;
+        sudo ln -s -f /usr/bin/python3.4 /usr/bin/python;
+        sudo apt-get install doxygen  graphviz;
+        curl -L -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py;
+        sudo python /tmp/get-pip.py;
+        sudo pip install breathe;
+        sudo pip install -U sphinx;
+      fi
+
+      if [[ "$ANDROID_ABI" == "" ]]; then
+        if [[ "$RASPBERRRIPI" != "" ]]; then
+          cd /tmp && git clone https://github.com/raspberrypi/tools.git raspberrypitools;
+          export RPI_TOOLCHAIN_HOME=/tmp/raspberrypitools;
+          cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+          tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
+          export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+        fi
+      else
+        echo y | sdkmanager 'ndk-bundle';
+        export ANDROID_NDK_HOME=/usr/local/android-sdk/ndk-bundle;
+        cd /tmp && wget https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz;
+        tar -xzvf cmake-3.11.4-Linux-x86_64.tar.gz;
+        export PATH=/tmp/cmake-3.11.4-Linux-x86_64/bin:$PATH;
+      fi
+    fi
+
+script:
+  - cd $TRAVIS_BUILD_DIR/build && mkdir $BUILD_ENV_$BUILD_TYPE && cd $BUILD_ENV_$BUILD_TYPE
+
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      export OUTPUT_TYPE=so;
+      if [[ "$ANDROID_ABI" == "" ]]; then
+        if [[ "$RASPBERRRIPI" == "" ]]; then
+          cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_DOCS=$ENABLE_DOCS ../.. ;
+        else
+          cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/RPiToolchain.cmake ../.. ;
+        fi
+      else
+        cmake -DANDROID_ABI=$ANDROID_ABI -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=../../cmake/AndroidToolchain.cmake ../.. ;
+      fi
+    else
+      export OUTPUT_TYPE=dylib;
+      if [[ "$PLATFORM" == "" ]]; then
+        cmake -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER ../.. ;
+      else
+        cmake -DIOS_PLATFORM=$PLATFORM -DCMAKE_INSTALL_PREFIX=dist -DCMAKE_BUILD_TYPE=BUILD_VER -DCMAKE_TOOLCHAIN_FILE=../../cmake/iOSToolchain.cmake ../.. ;
+      fi
+    fi
+
+  - make && make install && make dist
+  - cd dist && tar -czf $TRAVIS_TAG-$BUILD_ENV-$(date +'%Y%m%d').tar.gz include lib/*.$OUTPUT_TYPE && ls -l
+
+deploy:
+  provider: releases
+  api_key: $GIT_TOKEN
+  file_glob: true
+  file: $TRAVIS_TAG-$BUILD_ENV*.tar.gz
+  skip_cleanup: true
+  on:
+    tags: true
+    # branches:
+    #   only:
+    #     - master
