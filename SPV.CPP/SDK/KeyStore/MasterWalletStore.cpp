@@ -99,8 +99,7 @@ namespace Elastos {
 			_account = AccountPtr(new StandardAccount(_rootPath, phrase, language, phrasePassword, payPassword));
 		}
 
-		void MasterWalletStore::Reset(const nlohmann::json &coSigners, const std::string &payPassword,
-									  uint32_t requiredSignCount) {
+		void MasterWalletStore::Reset(const nlohmann::json &coSigners, uint32_t requiredSignCount) {
 			_account = AccountPtr(new MultiSignAccount(nullptr, coSigners, requiredSignCount));
 		}
 

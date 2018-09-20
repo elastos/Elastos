@@ -71,14 +71,13 @@ namespace Elastos {
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletId,
-																		const std::string &payPassword,
 																		const nlohmann::json &coSigners,
 																		uint32_t requiredSignCount) {
 			ParamChecker::checkNotEmpty(masterWalletId);
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, payPassword, coSigners, requiredSignCount,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSigners, requiredSignCount,
 														   _rootPath, _p2pEnable);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
