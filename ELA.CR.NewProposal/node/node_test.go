@@ -63,8 +63,8 @@ func newTestNode(t *testing.T, port uint16) ( protocol.Noder, protocol.Noder) {
 	LocalNode.handshakeQueue.capChan <- that
 	LocalNode.RemoveFromHandshakeQueue(that)
 
-	this.SetState(p2p.ESTABLISH)
-	that.SetState(p2p.ESTABLISH)
+	this.SetState(protocol.ESTABLISHED)
+	that.SetState(protocol.ESTABLISHED)
 
 	return this, that
 }

@@ -40,7 +40,7 @@ func (ns *neighbours) IsNeighborAddr(addr string) bool {
 	ns.Lock()
 	defer ns.Unlock()
 	for _, n := range ns.List {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED {
 			if n.NetAddress().String() == addr {
 				return true
 			}
@@ -54,7 +54,7 @@ func (ns *neighbours) GetConnectionCount() (internal uint, total uint) {
 	defer ns.Unlock()
 	for _, node := range ns.List {
 		// Skip unestablished nodes
-		if node.State() != p2p.ESTABLISH {
+		if node.State() != protocol.ESTABLISHED {
 			continue
 		}
 
@@ -79,7 +79,7 @@ func (ns *neighbours) NodeEstablished(id uint64) bool {
 		return false
 	}
 
-	if node.State() != p2p.ESTABLISH {
+	if node.State() != protocol.ESTABLISHED {
 		return false
 	}
 
@@ -92,7 +92,7 @@ func (ns *neighbours) GetNeighbourAddresses() []p2p.NetAddress {
 
 	var addrs []p2p.NetAddress
 	for _, n := range ns.List {
-		if n.State() != p2p.ESTABLISH {
+		if n.State() != protocol.ESTABLISHED {
 			continue
 		}
 		addrs = append(addrs, n.NetAddress())
@@ -106,7 +106,7 @@ func (ns *neighbours) GetNeighborHeights() []uint64 {
 
 	heights := make([]uint64, 0, len(neighbors))
 	for _, n := range neighbors {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED {
 			height := n.Height()
 			heights = append(heights, height)
 		}
@@ -121,7 +121,7 @@ func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
 
 	nodes := make([]protocol.Noder, 0, len(ns.List))
 	for _, n := range ns.List {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED {
 			node := n
 			nodes = append(nodes, node)
 		}
@@ -142,7 +142,7 @@ func (ns *neighbours) GetANeighbourRandomly() protocol.Noder {
 	ns.Lock()
 	defer ns.Unlock()
 	for _, n := range ns.List {
-		if n.State() == p2p.ESTABLISH {
+		if n.State() == protocol.ESTABLISHED {
 			return n
 		}
 	}
@@ -174,7 +174,7 @@ func (ns *neighbours) GetBestNode() protocol.Noder {
 	var best protocol.Noder
 	for _, nbr := range ns.List {
 		// Do not let external node become sync node
-		if nbr.State() != p2p.ESTABLISH || nbr.IsExternal() {
+		if nbr.State() != protocol.ESTABLISHED || nbr.IsExternal() {
 			continue
 		}
 

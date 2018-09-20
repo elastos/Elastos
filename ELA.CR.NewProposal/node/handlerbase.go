@@ -46,7 +46,7 @@ func (h *HandlerBase) OnError(err error) {
 // which is the message type of the received message
 func (h *HandlerBase) OnMakeMessage(cmd string) (message p2p.Message, err error) {
 	// Nothing to do if node already disconnected
-	if h.node.State() == p2p.INACTIVITY {
+	if h.node.State() == protocol.INACTIVITY {
 		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
 	}
 
@@ -102,7 +102,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 		return errors.New("The node handshake with itself")
 	}
 
-	if node.State() != p2p.INIT && node.State() != p2p.HAND {
+	if node.State() != protocol.INIT && node.State() != protocol.HAND {
 		log.Warn("unknown status to receive version")
 		return errors.New("unknown status to receive version")
 	}
@@ -112,7 +112,7 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 	if ret == true {
 		log.Info(fmt.Sprintf("Node reconnect 0x%x", version.Nonce))
 		// Close the connection and release the node soure
-		n.SetState(p2p.INACTIVITY)
+		n.SetState(protocol.INACTIVITY)
 		n.CloseConn()
 	}
 
@@ -127,8 +127,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 	}
 
 	var message p2p.Message
-	if node.State() == p2p.INIT {
-		node.SetState(p2p.HANDSHAKE)
+	if node.State() == protocol.INIT {
+		node.SetState(protocol.HANDSHAKE)
 		version := NewVersion(LocalNode)
 		// External node connect with open port
 		if node.IsExternal() {
@@ -137,8 +137,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 			version.Port = config.Parameters.NodePort
 		}
 		message = version
-	} else if node.State() == p2p.HAND {
-		node.SetState(p2p.HANDSHAKED)
+	} else if node.State() == protocol.HAND {
+		node.SetState(protocol.HANDSHAKED)
 		message = new(msg.VerAck)
 	}
 	node.Send(message)
@@ -148,16 +148,16 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 
 func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 	node := h.node
-	if node.State() != p2p.HANDSHAKE && node.State() != p2p.HANDSHAKED {
+	if node.State() != protocol.HANDSHAKE && node.State() != protocol.HANDSHAKED {
 		log.Warn("unknown status to received verack")
 		return errors.New("unknown status to received verack")
 	}
 
-	if node.State() == p2p.HANDSHAKE {
+	if node.State() == protocol.HANDSHAKE {
 		node.Send(verAck)
 	}
 
-	node.SetState(p2p.ESTABLISH)
+	node.SetState(protocol.ESTABLISHED)
 
 	// Finish handshake
 	LocalNode.RemoveFromHandshakeQueue(node)
@@ -222,20 +222,15 @@ func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
 }
 
 func NewVersion(node protocol.Noder) *msg.Version {
-	msg := new(msg.Version)
-	msg.Version = node.Version()
-	msg.Services = node.Services()
-	msg.TimeStamp = uint32(time.Now().UTC().UnixNano())
-	msg.Port = node.Port()
-	msg.Nonce = node.ID()
-	msg.Height = uint64(chain.DefaultLedger.GetLocalBlockChainHeight())
-	if node.IsRelay() {
-		msg.Relay = 1
-	} else {
-		msg.Relay = 0
+	return &msg.Version{
+		Version:   node.Version(),
+		Services:  node.Services(),
+		TimeStamp: uint32(time.Now().Unix()),
+		Port:      node.Port(),
+		Nonce:     node.ID(),
+		Height:    uint64(chain.DefaultLedger.GetLocalBlockChainHeight()),
+		Relay:     node.IsRelay(),
 	}
-
-	return msg
 }
 
 func SendGetBlocks(node protocol.Noder, locator []*common.Uint256, hashStop common.Uint256) {
