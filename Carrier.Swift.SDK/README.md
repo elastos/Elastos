@@ -21,7 +21,7 @@ The output static libraries would be listed under **"_dist/lipo"** directory in 
 
 ### 2.Import Carrier NDK
 
-The directory **"NativeDistributions"** to import native libraries and headers should have following directory structure:
+The directory **"NativeDistributions"** to import native shared libraries and headers should have following directory structure:
 
 ```
 NativeDistributions
@@ -31,17 +31,11 @@ NativeDistributions
        |--CCarrier.swift
        |--CSession.swift
    |--libs
-       |--libelacarrier.a
-       |--libelacommon.a	
-       |--libelasession.a	
-       |--libflatccrt.a	
-       |--libpj.a		
-       |--libpjlib-util.a	
-       |--libpjmedia.a	
-       |--libpjnath.a	
-       |--libsodium.a	
-       |--libtoxcore.a
+       |--libcrystal.dylib
+       |--libelacarrier.dylib
+       |--libelasession.dylib
 ```
+
 The headers under subdirectory **"include"** are public header files from Carrier native.
 
 ### 3. Build Carrier SDK

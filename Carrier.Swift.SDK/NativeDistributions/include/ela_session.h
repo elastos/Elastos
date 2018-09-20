@@ -38,9 +38,31 @@
 extern "C" {
 #endif
 
+#if defined(CARRIER_STATIC)
+#define CARRIER_API
+#elif defined(CARRIER_DYNAMIC)
+  #ifdef CARRIER_BUILD
+    #if defined(_WIN32) || defined(_WIN64)
+      #define CARRIER_API        __declspec(dllexport)
+    #else
+      #define CARRIER_API        __attribute__((visibility("default")))
+    #endif
+  #else
+    #if defined(_WIN32) || defined(_WIN64)
+      #define CARRIER_API        __declspec(dllimport)
+    #else
+      #define CARRIER_API        __attribute__((visibility("default")))
+    #endif
+  #endif
+#else
+#define CARRIER_API
+#endif
+
 #define ELA_MAX_IP_STRING_LEN   45
 
 #define ELA_MAX_USER_DATA_LEN   2048
+
+#define ELA_MAX_BUNDLE_LEN      128
 
 typedef struct ElaSession ElaSession;
 
@@ -80,30 +102,106 @@ typedef enum ElaStreamType {
     ElaStreamType_message
 } ElaStreamType;
 
+/**
+ * \~English
+ * Stream address type.
+ */
 typedef enum ElaCandidateType {
+    /**
+     * \~English
+     * The address is host local address.
+     */
     ElaCandidateType_Host,
+    /**
+     * \~English
+     * The address is server reflexive address.
+     */
     ElaCandidateType_ServerReflexive,
+    /**
+     * \~English
+     * The address is peer reflexive address.
+     */
     ElaCandidateType_PeerReflexive,
+    /**
+     * \~English
+     * The address is relayed address.
+     */
     ElaCandidateType_Relayed,
 } ElaCandidateType;
 
+/**
+ * \~English
+ * Peers network topology type.
+ */
 typedef enum ElaNetworkTopology {
+    /**
+     * \~English
+     * The stream peers is in LAN, using direct connection.
+     */
     ElaNetworkTopology_LAN,
+    /**
+     * \~English
+     * The stream peers behind NAT, using P2P direct connection.
+     */
     ElaNetworkTopology_P2P,
+    /**
+     * \~English
+     * The stream peers behind NAT, using relayed connection.
+     */
     ElaNetworkTopology_RELAYED,
 } ElaNetworkTopology;
 
+/**
+ * \~English
+ * Carrier stream address information.
+ */
 typedef struct ElaAddressInfo {
+    /**
+     * \~English
+     * The candidate address type.
+     */
     ElaCandidateType type;
+    /**
+     * \~English
+     * The IP/host of the address.
+     */
     char addr[ELA_MAX_IP_STRING_LEN + 1];
+    /**
+     * \~English
+     * The port of the address.
+     */
     int port;
+    /**
+     * \~English
+     * The IP/host of the related address.
+     */
     char related_addr[ELA_MAX_IP_STRING_LEN + 1];
+    /**
+     * \~English
+     * The port of the related address.
+     */
     int related_port;
 } ElaAddressInfo;
 
+/**
+ * \~English
+ * Carrier stream transport information.
+ */
 typedef struct ElaTransportInfo {
+    /**
+     * \~English
+     * The network topology type: LAN, P2P or relayed.
+     */
     ElaNetworkTopology topology;
+    /**
+     * \~English
+     * The local address information.
+     */
     ElaAddressInfo local;
+    /**
+     * \~English
+     * The remote address information.
+     */
     ElaAddressInfo remote;
 } ElaTransportInfo;
 
@@ -132,6 +230,8 @@ bool ela_session_jni_onload(void *vm, void *reserved);
  * @param
  *      from        [in] The id from who send the message.
  * @param
+ *      bundle      [in] The bundle of this session.
+ * @param
  *      sdp         [in] The remote users SDP. End the null terminal.
  *                       Reference: https://tools.ietf.org/html/rfc4566
  * @param
@@ -140,7 +240,7 @@ bool ela_session_jni_onload(void *vm, void *reserved);
  *      context     [in] The application defined context data.
  */
 typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
-        const char *sdp, size_t len, void *context);
+        const char *bundle, const char *sdp, size_t len, void *context);
 
 /**
  * \~English
@@ -151,19 +251,13 @@ typedef void ElaSessionRequestCallback(ElaCarrier *carrier, const char *from,
  *
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      callback    [in] A pointer to the application-defined function of type
- *                       ElaSessionRequestCallback.
- * @param
- *      context     [in] The application defined context data.
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_init(ElaCarrier *carrier, 
-                ElaSessionRequestCallback *callback, void *context);
+int ela_session_init(ElaCarrier *carrier);
 
 /**
  * \~English
@@ -179,6 +273,31 @@ int ela_session_init(ElaCarrier *carrier,
  */
 CARRIER_API
 void ela_session_cleanup(ElaCarrier *carrier);
+
+/**
+ * \~English
+ * Set session request callback.
+ *
+ * @param
+ *      carrier     [in] A handle to the carrier node instance.
+ * @param
+ *      bundle_prefix
+ *                  [in] The prefix of bundle.
+ * @param
+ *      callback
+ *                  [in] The callback function to process this request.
+ * @param
+ *      context
+ *                  [in] The application defined context data.
+ *
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_session_set_callback(ElaCarrier *carrier, const char *bundle_prefix,
+        ElaSessionRequestCallback *callback, void *context);
 
 /**
  * \~English
@@ -212,7 +331,7 @@ void ela_session_close(ElaSession *session);
 
 /**
  * \~English
- * Get the remote peer id of the session.
+ * Get the remote peer's address of the session.
  *
  * @param
  *      session     [in] A handle to the carrier session.
@@ -264,6 +383,8 @@ void *ela_session_get_userdata(ElaSession *session);
  * @param
  *      session     [in] A handle to the ElaSession.
  * @param
+ *      bundle      [in] The bundle of this session.
+ * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
  * @param
@@ -276,8 +397,9 @@ void *ela_session_get_userdata(ElaSession *session);
  * @param
  *      context     [in] The application defined context data.
  */
-typedef void ElaSessionRequestCompleteCallback(ElaSession *session, int status,
-        const char *reason, const char *sdp, size_t len, void *context);
+typedef void ElaSessionRequestCompleteCallback(ElaSession *session,
+        const char *bundle, int status, const char *reason,
+        const char *sdp, size_t len, void *context);
 
 /**
  * \~English
@@ -285,6 +407,8 @@ typedef void ElaSessionRequestCompleteCallback(ElaSession *session, int status,
  *
  * @param
  *      session     [in] A handle to the ElaSession.
+ * @param
+ *      bundle      [in] The bundle of this session.
  * @param
  *      callback    [in] A pointer to ElaSessionRequestCompleteCallback
  *                       function to receive the session response.
@@ -297,7 +421,7 @@ typedef void ElaSessionRequestCompleteCallback(ElaSession *session, int status,
  *      retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_request(ElaSession *session,
+int ela_session_request(ElaSession *session, const char *bundle,
         ElaSessionRequestCompleteCallback *callback, void *context);
 
 /**
@@ -308,6 +432,8 @@ int ela_session_request(ElaSession *session,
  *
  * @param
  *      session     [in] A handle to the ElaSession.
+ * @param
+ *      bundle      [in] The bundle of this session.
  * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
@@ -321,8 +447,8 @@ int ela_session_request(ElaSession *session,
  *      retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_session_reply_request(ElaSession *session, int status,
-        const char* reason);
+int ela_session_reply_request(ElaSession *session, const char *bundle,
+        int status, const char* reason);
 
 /**
  * \~English

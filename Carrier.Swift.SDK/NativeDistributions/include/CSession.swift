@@ -139,6 +139,8 @@ internal struct CTransportInfo {
  * @param
  *      from        [in] The id(userid@nodeid) from who send the message.
  * @param
+ *      bundle      [in] The bundle of this session.
+ * @param
  *      sdp         [in] The remote users SDP. End the null terminal.
  *                       Reference: https://tools.ietf.org/html/rfc4566
  * @param
@@ -147,7 +149,8 @@ internal struct CTransportInfo {
  *      context     [in] The application defined context data.
  */
 internal typealias CSessionRequestCallback = @convention(c)
-    (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
+    (OpaquePointer?, UnsafePointer<Int8>?, UnsafePointer<Int8>?,
+    UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
 
 /**
  * \~English
@@ -158,22 +161,13 @@ internal typealias CSessionRequestCallback = @convention(c)
  *
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
- * @param
- *      options     [in] A pointer to a valid ElaSessionOptions structure.
- * @param
- *      callback    [in] A pointer to the application-defined function of type
- *                       ElaSessionRequestCallback.
- * @param
- *      context     [in] The application defined context data.
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
 @_silgen_name("ela_session_init")
-internal func ela_session_init(_ carrier: OpaquePointer!,
-                               _ callback: CSessionRequestCallback!,
-                               _ context: UnsafeMutableRawPointer!) -> Int32
+internal func ela_session_init(_ carrier: OpaquePointer!) -> Int32
 
 /**
  * \~English
@@ -189,6 +183,33 @@ internal func ela_session_init(_ carrier: OpaquePointer!,
  */
 @_silgen_name("ela_session_cleanup")
 internal func ela_session_cleanup(_ carrier: OpaquePointer!)
+
+/**
+ * \~English
+ * Set session request callback.
+ *
+ * @param
+ *      carrier     [in] A handle to the carrier node instance.
+ * @param
+ *      bundle_prefix
+ *                  [in] The prefix of bundle.
+ * @param
+ *      callback
+ *                  [in] The callback function to process this request.
+ * @param
+ *      context
+ *                  [in] The application defined context data.
+ *
+ * @return
+ *      If no error occurs, return 0.
+ *      Otherwise, return -1, and a specific error code can be
+ *      retrieved by calling ela_get_error().
+ */
+ @_silgen_name("ela_session_set_callback")
+ internal func ela_session_set_callback(_ carrier: OpaquePointer!,
+                                        _ bundle_prefix: UnsafePointer<Int8>?,
+                                        _ callback: CSessionRequestCallback!,
+                                        _ context: UnsafeMutableRawPointer!) -> Int32
 
 /**
  * \~English
@@ -277,6 +298,8 @@ internal func ela_session_get_userdata(_ session: OpaquePointer!) -> UnsafeMutab
  * @param
  *      session     [in] A handle to the ElaSession.
  * @param
+ *      bundle      [in] The bundle of this session.
+ * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
  * @param
@@ -290,7 +313,8 @@ internal func ela_session_get_userdata(_ session: OpaquePointer!) -> UnsafeMutab
  *      context     [in] The application defined context data.
  */
 internal typealias CSessionRequestCompleteCallback = @convention(c)
-    (OpaquePointer?, Int32, UnsafePointer<Int8>?, UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
+    (OpaquePointer?, UnsafePointer<Int8>?, Int32, UnsafePointer<Int8>?,
+    UnsafePointer<Int8>?, Int, UnsafeMutableRawPointer?) -> Swift.Void
 
 /**
  * \~English
@@ -298,6 +322,8 @@ internal typealias CSessionRequestCompleteCallback = @convention(c)
  *
  * @param
  *      session     [in] A handle to the ElaSession.
+ * @param
+ *      bundle      [in] The bundle of this session.
  * @param
  *      callback    [in] A pointer to ElaSessionRequestCompleteCallback
  *                       function to receive the session response.
@@ -311,6 +337,7 @@ internal typealias CSessionRequestCompleteCallback = @convention(c)
  */
 @_silgen_name("ela_session_request")
 internal func ela_session_request(_ session: OpaquePointer!,
+                                  _ bundle: UnsafePointer<Int8>?,
                                   _ callback: CSessionRequestCompleteCallback!,
                                   _ context: UnsafeMutableRawPointer!) -> Int32
 
@@ -322,6 +349,8 @@ internal func ela_session_request(_ session: OpaquePointer!,
  *
  * @param
  *      session     [in] A handle to the ElaSession.
+ * @param
+ *      bundle      [in] The bundle of this session.
  * @param
  *      status      [in] The status code of the response.
  *                       0 is success, otherwise is error.
@@ -336,6 +365,7 @@ internal func ela_session_request(_ session: OpaquePointer!,
  */
 @_silgen_name("ela_session_reply_request")
 internal func ela_session_reply_request(_ session: OpaquePointer!,
+                                        _ bundle: UnsafePointer<Int8>?,
                                         _ status: Int32,
                                         _ reason: UnsafePointer<Int8>!) -> Int32
 

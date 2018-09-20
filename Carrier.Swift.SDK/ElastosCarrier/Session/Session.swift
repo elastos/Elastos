@@ -208,7 +208,7 @@ public class CarrierSession: NSObject {
     public func sendInviteRequest(handler: @escaping CarrierSessionRequestCompleteHandler) throws {
 
         let cb: CSessionRequestCompleteCallback = {
-                (_, cstatus, creason, csdp, clen, cctxt) in
+                (_, _, cstatus, creason, csdp, clen, cctxt) in
 
                 let wctxt = Unmanaged<AnyObject>.fromOpaque(cctxt!)
                     .takeRetainedValue() as! [AnyObject?]
@@ -234,7 +234,7 @@ public class CarrierSession: NSObject {
         let wcontext : [AnyObject?] = [self, handler as AnyObject]
         let manager = Unmanaged.passRetained(wcontext as AnyObject);
         let cctxt = manager.toOpaque()
-        let result = ela_session_request(csession, cb, cctxt)
+        let result = ela_session_request(csession, nil, cb, cctxt)
 
         guard result >= 0 else {
             manager.release()
@@ -284,7 +284,7 @@ public class CarrierSession: NSObject {
             }
         }
 
-        let result = ela_session_reply_request(csession, Int32(status), creason)
+        let result = ela_session_reply_request(csession, nil, Int32(status), creason)
         guard result >= 0 else {
             let errno = getErrorCode()
             Log.e(TAG(), "Reply session invite request error: 0x%X", errno)

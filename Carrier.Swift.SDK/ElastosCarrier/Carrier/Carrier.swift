@@ -581,7 +581,7 @@ public class Carrier: NSObject {
     ///
     /// - Parameters:
     ///   - target: The target id
-    ///   - msg: The message content defined by application
+    ///   - msg: The message content defined by application in string type.
     ///
     /// - Throws: CarrierError
     public func sendFriendMessage(to target: String, withMessage msg: String) throws {
@@ -599,6 +599,34 @@ public class Carrier: NSObject {
         }
 
         Log.d(Carrier.TAG, "Sended message: \(msg) to \(target).")
+    }
+
+    /// Send a message to the specified friend.
+    ///
+    /// The message length may not exceed `MAX_APP_MESSAGE_LEN`, and message
+    /// itself should be text-formatted. Larger messages must be splitted by
+    /// application and sent as separate messages. Other nodes can reassemble
+    /// the fragments.
+    ///
+    /// - Parameters:
+    ///   - target: The target id
+    ///   - msg: The message content defined by application in Data type.
+    ///
+    /// - Throws: CarrierError
+    public func sendFriendMessage(to target: String, withData data: Data) throws {
+        let result = target.withCString { (cto) in
+            return data.withUnsafeBytes{ (cdata) -> Int32 in
+                return ela_send_friend_message(ccarrier, cto, cdata, data.count)
+            }
+        }
+
+        guard result >= 0 else {
+            let errno: Int = getErrorCode()
+            Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
+            throw CarrierError.InternalError(errno: errno)
+        }
+
+        Log.d(Carrier.TAG, "Sended message: \(data) to \(target).")
     }
 
     /// Send invite request to the specified friend

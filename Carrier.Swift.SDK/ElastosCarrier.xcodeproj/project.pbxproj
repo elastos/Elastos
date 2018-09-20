@@ -7,17 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A353E79720932FE400398BDC /* libelacarrier.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498432005BE7600420421 /* libelacarrier.a */; };
-		A353E79820932FE400398BDC /* libelacommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983A2005BE7600420421 /* libelacommon.a */; };
-		A353E79920932FE400398BDC /* libelasession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498392005BE7600420421 /* libelasession.a */; };
-		A353E79B20932FE400398BDC /* libflatccrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983E2005BE7600420421 /* libflatccrt.a */; };
-		A353E79C20932FE400398BDC /* libpj.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983D2005BE7600420421 /* libpj.a */; };
-		A353E79D20932FE400398BDC /* libpjlib-util.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983B2005BE7600420421 /* libpjlib-util.a */; };
-		A353E79E20932FE400398BDC /* libpjmedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983F2005BE7600420421 /* libpjmedia.a */; };
-		A353E79F20932FE400398BDC /* libpjnath.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498412005BE7600420421 /* libpjnath.a */; };
-		A353E7A020932FE400398BDC /* libsodium.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B4983C2005BE7600420421 /* libsodium.a */; };
-		A353E7A120932FE400398BDC /* libtoxcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B498422005BE7600420421 /* libtoxcore.a */; };
 		A360378020161AAF001A666E /* BootstrapNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A360377F20161AAF001A666E /* BootstrapNode.swift */; };
+		A38A7CC4214B6A9D0010D5EB /* libelasession.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */; };
+		A38A7CC5214B6A9D0010D5EB /* libelacarrier.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */; };
+		A38A7CC6214B6A9D0010D5EB /* libcrystal.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = A38A7CC3214B6A9D0010D5EB /* libcrystal.dylib */; };
 		A3B497C12003736300420421 /* ElastosCarrier.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A3B497B72003736200420421 /* ElastosCarrier.framework */; };
 		A3B497C62003736300420421 /* ElastosCarrierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3B497C52003736300420421 /* ElastosCarrierTests.swift */; };
 		A3B497C82003736300420421 /* ElastosCarrier.h in Headers */ = {isa = PBXBuildFile; fileRef = A3B497BA2003736300420421 /* ElastosCarrier.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -63,6 +56,9 @@
 
 /* Begin PBXFileReference section */
 		A360377F20161AAF001A666E /* BootstrapNode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BootstrapNode.swift; path = Carrier/BootstrapNode.swift; sourceTree = "<group>"; };
+		A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelasession.dylib; path = NativeDistributions/libs/libelasession.dylib; sourceTree = "<group>"; };
+		A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libelacarrier.dylib; path = NativeDistributions/libs/libelacarrier.dylib; sourceTree = "<group>"; };
+		A38A7CC3214B6A9D0010D5EB /* libcrystal.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrystal.dylib; path = NativeDistributions/libs/libcrystal.dylib; sourceTree = "<group>"; };
 		A3B497B72003736200420421 /* ElastosCarrier.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ElastosCarrier.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3B497BA2003736300420421 /* ElastosCarrier.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ElastosCarrier.h; sourceTree = "<group>"; };
 		A3B497BB2003736300420421 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -115,16 +111,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A353E79720932FE400398BDC /* libelacarrier.a in Frameworks */,
-				A353E79820932FE400398BDC /* libelacommon.a in Frameworks */,
-				A353E79920932FE400398BDC /* libelasession.a in Frameworks */,
-				A353E79B20932FE400398BDC /* libflatccrt.a in Frameworks */,
-				A353E79C20932FE400398BDC /* libpj.a in Frameworks */,
-				A353E79D20932FE400398BDC /* libpjlib-util.a in Frameworks */,
-				A353E79E20932FE400398BDC /* libpjmedia.a in Frameworks */,
-				A353E79F20932FE400398BDC /* libpjnath.a in Frameworks */,
-				A353E7A020932FE400398BDC /* libsodium.a in Frameworks */,
-				A353E7A120932FE400398BDC /* libtoxcore.a in Frameworks */,
+				A38A7CC4214B6A9D0010D5EB /* libelasession.dylib in Frameworks */,
+				A38A7CC5214B6A9D0010D5EB /* libelacarrier.dylib in Frameworks */,
+				A38A7CC6214B6A9D0010D5EB /* libcrystal.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -139,6 +128,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A38A7CC0214B6A9D0010D5EB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A38A7CC3214B6A9D0010D5EB /* libcrystal.dylib */,
+				A38A7CC2214B6A9D0010D5EB /* libelacarrier.dylib */,
+				A38A7CC1214B6A9D0010D5EB /* libelasession.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		A3B497AD2003736200420421 = {
 			isa = PBXGroup;
 			children = (
@@ -146,6 +145,7 @@
 				A3B497B92003736300420421 /* ElastosCarrier */,
 				A3B497C42003736300420421 /* ElastosCarrierTests */,
 				A3B497B82003736200420421 /* Products */,
+				A38A7CC0214B6A9D0010D5EB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -490,6 +490,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -545,6 +546,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -575,7 +577,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "arm64 x86_64";
+				VALID_ARCHS = arm64;
 			};
 			name = Debug;
 		};
@@ -603,7 +605,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				VALID_ARCHS = "arm64 x86_64";
+				VALID_ARCHS = arm64;
 			};
 			name = Release;
 		};

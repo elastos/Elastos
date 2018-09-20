@@ -173,7 +173,7 @@ public protocol CarrierDelegate {
     @objc(carrier:didReceiveFriendMessage:withMessage:)optional
     func didReceiveFriendMessage(_ carrier: Carrier,
                                  _ from: String,
-                                 _ message: String)
+                                 _ message: Data)
 
     /// Tell the delegate that an friend invite request has been received.
     ///
