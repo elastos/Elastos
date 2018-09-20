@@ -7,6 +7,7 @@
 #include <Core/BRCrypto.h>
 #include <algorithm>
 #include <iterator>
+#include <Core/BRBase58.h>
 
 #include "assert.h"
 #include "Utils.h"
@@ -293,6 +294,30 @@ namespace Elastos {
 			ret.SetMem(data, dataLen);
 
 			return ret;
+		}
+
+		std::string Utils::extendedKeyDecode(const std::string &keyIn, CMBlock keyOut) {
+			std::string keyType = "unknow";
+
+			size_t len = BRBase58CheckDecode(nullptr, 0, keyIn.c_str());
+			if (len == 78) {
+				uint8_t data[len];
+				BRBase58CheckDecode(data, len, keyIn.c_str());
+				uint32_t verBytes = UInt32GetBE(data);
+				if (0x0488B21E == verBytes || 0x043587CF == verBytes) {
+					keyType = "xpub";
+					keyOut.Resize(33);
+					memcpy(keyOut, &data[len - 33], 33);
+				} else if (0x0488ADE4 == verBytes || 0x04358394 == verBytes) {
+					keyType = "xprv";
+					keyOut.Resize(32);
+					memcpy(keyOut, &data[len - 32], 32);
+				} else {
+					return keyType;
+				}
+			}
+
+			return keyType;
 		}
 	}
 }

@@ -930,8 +930,10 @@ namespace Elastos {
 		size_t Wallet::WalletUnusedAddrs(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit, int internal) {
 			ELAWallet *elaWallet = (ELAWallet *) wallet;
 			if (elaWallet->IsSingleAddress) {
-				memset(addrs[0].s, 0, sizeof(addrs[0].s));
-				strncpy(addrs[0].s, elaWallet->SingleAddress.c_str(), sizeof(addrs[0].s) - 1);
+				if (addrs != NULL) {
+					memset(addrs[0].s, 0, sizeof(addrs[0].s));
+					strncpy(addrs[0].s, elaWallet->SingleAddress.c_str(), sizeof(addrs[0].s) - 1);
+				}
 				return 1;
 			}
 
@@ -1019,9 +1021,10 @@ namespace Elastos {
 		size_t Wallet::WalletAllAddrs(BRWallet *wallet, BRAddress *addrs, size_t addrsCount) {
 			ELAWallet *elaWallet = (ELAWallet *) wallet;
 			if (elaWallet->IsSingleAddress) {
-				assert(addrsCount > 0);
-				memset(addrs[0].s, 0, sizeof(addrs[0].s));
-				strncpy(addrs[0].s, elaWallet->SingleAddress.c_str(), sizeof(addrs[0].s) - 1);
+				if (addrs != NULL && addrsCount > 0) {
+					memset(addrs[0].s, 0, sizeof(addrs[0].s));
+					strncpy(addrs[0].s, elaWallet->SingleAddress.c_str(), sizeof(addrs[0].s) - 1);
+				}
 				return 1;
 			}
 			return BRWalletAllAddrs(wallet, addrs, addrsCount);
