@@ -39,7 +39,8 @@ func (a *PayloadRecord) Deserialize(r io.Reader, version byte) error {
 	if err != nil {
 		return errors.New("[RecordDetail], RecordType deserialize failed.")
 	}
-	a.RecordData, err = common.ReadVarBytes(r)
+	a.RecordData, err = common.ReadVarBytes(r, MaxPayloadDataSize,
+		"payload record data")
 	if err != nil {
 		return errors.New("[RecordDetail], RecordData deserialize failed.")
 	}
