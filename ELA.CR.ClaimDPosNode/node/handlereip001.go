@@ -117,7 +117,7 @@ func (h *HandlerEIP001) onFilterLoad(msg *msg.FilterLoad) error {
 
 func (h *HandlerEIP001) onPing(ping *msg.Ping) error {
 	h.node.SetHeight(ping.Nonce)
-	h.node.Send(msg.NewPong(chain.DefaultLedger.Blockchain.BestChain.Height))
+	h.node.Send(msg.NewPong(uint64(chain.DefaultLedger.Blockchain.BestChain.Height)))
 	return nil
 }
 
@@ -290,7 +290,7 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 
 func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 	node := h.node
-	block := msgBlock.Block.(*core.Block)
+	block := msgBlock.Serializable.(*core.Block)
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
@@ -331,7 +331,7 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 
 func (h *HandlerEIP001) onTx(msgTx *msg.Tx) error {
 	node := h.node
-	tx := msgTx.Transaction.(*core.Transaction)
+	tx := msgTx.Serializable.(*core.Transaction)
 
 	if !LocalNode.IsNeighborNode(node.ID()) {
 		return fmt.Errorf("received transaction message from unknown peer")
