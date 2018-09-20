@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <boost/filesystem.hpp>
+#include <SDK/Common/Utils.h>
 
 #include "MasterWalletManager.h"
 #include "Log.h"
@@ -77,7 +78,22 @@ namespace Elastos {
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSigners, requiredSignCount,
+			std::vector<std::string> coSignersString = coSigners;
+
+			for (int i = 0; i < coSignersString.size(); i++) {
+				if (coSignersString[i].find("xpub") != -1) {
+					CMBlock key;
+					if ("xpub" == Utils::extendedKeyDecode(coSignersString[i], key)) {
+						coSignersString[i] = Utils::encodeHex(key);
+					} else {
+						throw std::logic_error("Decode xpub error");
+					}
+				}
+			}
+
+			nlohmann::json coSignersHexString = coSignersString;
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSignersHexString, requiredSignCount,
 														   _rootPath, _p2pEnable);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
@@ -93,7 +109,22 @@ namespace Elastos {
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKey, payPassword, coSigners,
+			std::vector<std::string> coSignersString = coSigners;
+
+			for (int i = 0; i < coSignersString.size(); i++) {
+				if (coSignersString[i].find("xpub") != -1) {
+					CMBlock key;
+					if ("xpub" == Utils::extendedKeyDecode(coSignersString[i], key)) {
+						coSignersString[i] = Utils::encodeHex(key);
+					} else {
+						throw std::logic_error("Decode xpub error");
+					}
+				}
+			}
+
+			nlohmann::json coSignersHexString = coSignersString;
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKey, payPassword, coSignersHexString,
 					requiredSignCount, _rootPath, _p2pEnable);
 			_masterWalletMap[masterWalletId] = masterWallet;
 

@@ -21,6 +21,8 @@ namespace Elastos {
 				result = new SimpleAccount();
 			} else if (accountType == "MultiSign") {
 				result = new MultiSignAccount(rootPath);
+			} else {
+				throw std::logic_error("Invalid account type");
 			}
 
 			result->FromJson(j["Account"]);

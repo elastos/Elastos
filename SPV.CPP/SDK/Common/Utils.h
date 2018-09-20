@@ -95,6 +95,8 @@ namespace Elastos {
 			static UInt168 codeToProgramHash(const std::string &redeemScript);
 
 			static UInt168 codeToProgramHash(const CMBlock &redeemScript);
+
+			static std::string extendedKeyDecode(const std::string &keyIn, CMBlock keyOut);
 		};
 	}
 }

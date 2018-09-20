@@ -138,11 +138,14 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 
 #if 0
 	IMasterWallet *masterWallet = importWithMnemonic(walletFactory, payPassword);
-#else
-	IMasterWallet *masterWallet = importWithKeystore(walletFactory, payPassword);
+//#else
+//	IMasterWallet *masterWallet = importWithKeystore(walletFactory, payPassword);
 #endif
 
-	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
+	nlohmann::json coSigners = nlohmann::json::parse("[\"xpub6DXoyYMMVE2snF2A51DfVrKikRqMbMmw6JQbS5wSHVVPj7SrBR3QHXeqjGU5rb1TA3hNE7SoJhdRGpRLJg2ntRiKJiRs37jnD2kPxScTzZB\", \"xpub6DBsmXRSKmrkVEZ5kd25mq4mwGxSWr66QY9MajeSH5nSj2hHWVDYKgT1MMHehfMhVqsqwtmqs13qgzJC7SwWUKGmwJDESXM62QUaNCTJ4vP\"]");
+	IMasterWallet *masterWallet = walletFactory->CreateMultiSignMasterWallet("MultiSign", coSigners, 2);
+
+//	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
 	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
 
 //	std::cout << "side chain wallet addrs: " << sidechainWallet->GetAllAddress(0, INT_MAX) << std::endl;
@@ -171,12 +174,12 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 		}
 #endif
 
-//#if 0
+#if 0
 		if (!hasRegisterId) {
 			registerId(masterWallet, sidechainWallet, payPassword);
 			hasRegisterId = true;
 		}
-//#endif
+#endif
 
 #if 0
 		if (!hasTransfer) {

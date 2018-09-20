@@ -478,7 +478,8 @@ namespace Elastos {
 		}
 
 		void MasterWallet::restoreLocalStore() {
-			_localStore.SetIdAgentInfo(_idAgentImpl->GetIdAgentInfo());
+			if (_idAgentImpl != nullptr)
+				_localStore.SetIdAgentInfo(_idAgentImpl->GetIdAgentInfo());
 
 			std::vector<CoinInfo> coinInfos;
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
