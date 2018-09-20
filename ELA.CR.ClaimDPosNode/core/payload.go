@@ -5,13 +5,17 @@ import (
 	"io"
 )
 
-//Payload define the func for loading the payload data
-//base on payload type which have different struture
+const (
+	// MaxPayloadDataSize is the maximum allowed length of payload data.
+	MaxPayloadDataSize = 1024 * 1024 // 1MB
+)
+
+// Payload define the func for loading the payload data
+// base on payload type which have different structure
 type Payload interface {
-	//  Get payload data
+	// Get payload data
 	Data(version byte) []byte
 
-	//Serialize payload data
 	Serialize(w io.Writer, version byte) error
 
 	Deserialize(r io.Reader, version byte) error
