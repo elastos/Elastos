@@ -181,8 +181,7 @@ typedef struct FacilityDesc {
     strerror_t errstring;
 } FacilityDesc;
 
-static
-const FacilityDesc facility_codes[] = {
+static FacilityDesc facility_codes[] = {
     { "[General] ",         general_error },    //ELAF_GENERAL
     { "[System] ",          system_error },     //ELAF_SYS
     { "Reserved facility",  NULL },             //ELAF_RESERVED1
