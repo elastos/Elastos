@@ -142,7 +142,7 @@ public class FriendMessageTest {
 			String hello = "test send friend message";
 			carrierInst.sendFriendMessage(robotId, hello);
 		} catch (ElastosException e) {
-			assertEquals(e.getErrorCode(), 0x8100000b);
+			assertEquals(e.getErrorCode(), 0x8100000A);
 			Log.i(TAG, "errcode: " +  e.getErrorCode());
 			assertTrue(true);
 		}

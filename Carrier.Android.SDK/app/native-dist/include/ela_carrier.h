@@ -122,6 +122,12 @@ extern "C" {
  */
 #define ELA_MAX_APP_MESSAGE_LEN         1024
 
+/**
+ * \~English
+ * Carrier error description max length.
+ */
+#define ELA_MAX_ERROR_DESCRIPTION_LEN   256
+
 typedef struct ElaCarrier ElaCarrier;
 
 /******************************************************************************
@@ -1219,7 +1225,7 @@ int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
 // Facility code
 #define ELAF_GENERAL                                0x01
 #define ELAF_SYS                                    0x02
-#define ELAF_HTTP                                   0x03
+#define ELAF_RESERVED1                              0x03
 #define ELAF_RESERVED2                              0x04
 #define ELAF_ICE                                    0x05
 #define ELAF_DHT                                    0x06
@@ -1268,183 +1274,165 @@ int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
 
 /**
  * \~English
- * Server failed.
- */
-#define ELAERR_SERVER_FAILED                        0x08
-
-/**
- * \~English
  * Carrier ran already.
  */
-#define ELAERR_ALREADY_RUN                          0x09
+#define ELAERR_ALREADY_RUN                          0x08
 
 /**
  * \~English
  * Carrier not ready.
  */
-#define ELAERR_NOT_READY                            0x0A
+#define ELAERR_NOT_READY                            0x09
 
 /**
  * \~English
  * The requested entity does not exist.
  */
-#define ELAERR_NOT_EXIST                            0x0B
+#define ELAERR_NOT_EXIST                            0x0A
 
 /**
  * \~English
  * The entity exists already.
  */
-#define ELAERR_ALREADY_EXIST                        0x0C
+#define ELAERR_ALREADY_EXIST                        0x0B
 
 /**
  * \~English
  * There are no matched requests.
  */
-#define ELAERR_NO_MATCHED_REQUEST                   0x0D
+#define ELAERR_NO_MATCHED_REQUEST                   0x0C
 
 /**
  * \~English
  * User ID is invalid.
  */
-#define ELAERR_INVALID_USERID                       0x0E
+#define ELAERR_INVALID_USERID                       0x0D
 
 /**
  * \~English
  * Node ID is invalid.
  */
-#define ELAERR_INVALID_NODEID                       0x0F
-
-/**
- * \~English
- * APP ID is invalid.
- */
-#define ELAERR_INVALID_APPID                        0x10
-
-/**
- * \~English
- * Descriptor is invalid.
- */
-#define ELAERR_INVALID_DESCRIPTOR                   0x11
+#define ELAERR_INVALID_NODEID                       0x0E
 
 /**
  * \~English
  * Failed because wrong state.
  */
-#define ELAERR_WRONG_STATE                          0x12
+#define ELAERR_WRONG_STATE                          0x0F
 
 /**
  * \~English
  * Stream busy.
  */
-#define ELAERR_BUSY                                 0x13
+#define ELAERR_BUSY                                 0x10
 
 /**
  * \~English
  * Language binding error.
  */
-#define ELAERR_LANGUAGE_BINDING                     0x14
+#define ELAERR_LANGUAGE_BINDING                     0x11
 
 /**
  * \~English
  * Encryption failed.
  */
-#define ELAERR_ENCRYPT                              0x15
+#define ELAERR_ENCRYPT                              0x12
 
 /**
  * \~English
  * The content size of SDP is too long.
  */
-#define ELAERR_SDP_TOO_LONG                         0x16
+#define ELAERR_SDP_TOO_LONG                         0x13
 
 /**
  * \~English
  * Bad SDP information format.
  */
-#define ELAERR_INVALID_SDP                          0x17
+#define ELAERR_INVALID_SDP                          0x14
 
 /**
  * \~English
  * Not implemented yet.
  */
-#define ELAERR_NOT_IMPLEMENTED                      0x18
+#define ELAERR_NOT_IMPLEMENTED                      0x15
 
 /**
  * \~English
  * Limits are exceeded.
  */
-#define ELAERR_LIMIT_EXCEEDED                       0x19
+#define ELAERR_LIMIT_EXCEEDED                       0x16
 
 /**
  * \~English
  * Allocate port unsuccessfully.
  */
-#define ELAERR_PORT_ALLOC                           0x1A
+#define ELAERR_PORT_ALLOC                           0x17
 
 /**
  * \~English
  * Invalid proxy type.
  */
-#define ELAERR_BAD_PROXY_TYPE                       0x1B
+#define ELAERR_BAD_PROXY_TYPE                       0x18
 
 /**
  * \~English
  * Invalid proxy host.
  */
-#define ELAERR_BAD_PROXY_HOST                       0x1C
+#define ELAERR_BAD_PROXY_HOST                       0x19
 
 /**
  * \~English
  * Invalid proxy port.
  */
-#define ELAERR_BAD_PROXY_PORT                       0x1D
+#define ELAERR_BAD_PROXY_PORT                       0x1A
 
 /**
  * \~English
  * Proxy is not available.
  */
-#define ELAERR_PROXY_NOT_AVAILABLE                  0x1E
+#define ELAERR_PROXY_NOT_AVAILABLE                  0x1B
 
 /**
  * \~English
  * Persistent data is encrypted, load failed.
  */
-#define ELAERR_ENCRYPTED_PERSISTENT_DATA            0x1F
+#define ELAERR_ENCRYPTED_PERSISTENT_DATA            0x1C
 
 /**
  * \~English
  * Invalid bootstrap host.
  */
-#define ELAERR_BAD_BOOTSTRAP_HOST                   0x20
+#define ELAERR_BAD_BOOTSTRAP_HOST                   0x1D
 
 /**
  * \~English
  * Invalid bootstrap port.
  */
-#define ELAERR_BAD_BOOTSTRAP_PORT                   0x21
+#define ELAERR_BAD_BOOTSTRAP_PORT                   0x1E
 
 /**
  * \~English
  * Data is too long.
  */
-#define ELAERR_TOO_LONG                             0x22
+#define ELAERR_TOO_LONG                             0x1F
 
 /**
  * \~English
  * Could not friend yourself.
  */
-#define ELAERR_ADD_SELF                             0x23
+#define ELAERR_ADD_SELF                             0x20
 
 /**
  * \~English
  * Invalid address.
  */
-#define ELAERR_BAD_ADDRESS                          0x24
+#define ELAERR_BAD_ADDRESS                          0x21
 
 /**
  * \~English
  * Friend is offline.
  */
-#define ELAERR_FRIEND_OFFLINE                       0x25
+#define ELAERR_FRIEND_OFFLINE                       0x22
 
 /**
  * \~English
@@ -1457,7 +1445,6 @@ int ela_reply_friend_invite(ElaCarrier *carrier, const char *to,
 
 #define ELA_GENERAL_ERROR(code)       ELA_MK_ERROR(ELAF_GENERAL, code)
 #define ELA_SYS_ERROR(code)           ELA_MK_ERROR(ELAF_SYS, code)
-#define ELA_HTTP_ERROR(code)          ELA_MK_ERROR(ELAF_HTTP, code)
 #define ELA_ICE_ERROR(code)           ELA_MK_ERROR(ELAF_ICE, code)
 #define ELA_DHT_ERROR(code)           ELA_MK_ERROR(ELAF_DHT, code)
 
@@ -1479,6 +1466,13 @@ int ela_get_error(void);
  */
 CARRIER_API
 void ela_clear_error(void);
+
+/**
+ * \~English
+ * Get string description to error code.
+ */
+CARRIER_API
+char *ela_get_strerror(int errnum, char *buf, size_t len);
 
 #ifdef __cplusplus
 }

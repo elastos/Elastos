@@ -94,8 +94,8 @@ void callbackCtxtCleanup(CallbackContext* cc, JNIEnv* env)
 }
 
 static
-void onSessionRequestCompleteCb(ElaSession* session, int status, const char* reason,
-                                const char* sdp, size_t len, void* context)
+void onSessionRequestCompleteCb(ElaSession* session, const char *bundle, int status,
+                                const char* reason, const char* sdp, size_t len, void* context)
 {
     CallbackContext* cc = (CallbackContext*)context;
     int needDetach = 0;
@@ -161,7 +161,7 @@ jboolean sessionRequest(JNIEnv* env, jobject thiz, jobject jhandler)
         return JNI_FALSE;
     }
 
-    rc = ela_session_request(getSession(env, thiz), onSessionRequestCompleteCb, cc);
+    rc = ela_session_request(getSession(env, thiz), NULL, onSessionRequestCompleteCb, cc);
     if (rc < 0) {
         logE("Call ela_session_request API error");
         setErrorCode(ela_get_error());
@@ -188,7 +188,7 @@ jboolean sessionReplyRequest(JNIEnv* env, jobject thiz, jint jstatus, jstring jr
         }
     }
 
-    rc = ela_session_reply_request(getSession(env, thiz), jstatus, reason);
+    rc = ela_session_reply_request(getSession(env, thiz), NULL, jstatus, reason);
     if (reason)
         (*env)->ReleaseStringUTFChars(env, jreason, reason);
 

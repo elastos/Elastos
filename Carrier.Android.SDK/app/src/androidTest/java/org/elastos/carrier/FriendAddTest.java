@@ -168,7 +168,7 @@ public class FriendAddTest {
 		try {
 			carrierInst.addFriend(robotAddress, "hello");
 		} catch (ElastosException e) {
-			assertEquals(e.getErrorCode(), 0x8100000c);
+			assertEquals(e.getErrorCode(), 0x8100000B);
 			assertTrue(true);
 		}
 	}

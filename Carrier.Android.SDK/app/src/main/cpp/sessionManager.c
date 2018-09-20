@@ -42,8 +42,8 @@ typedef struct CallbackContext {
 static CallbackContext callbackContext;
 
 static
-void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char* sdp,
-                              size_t len, void* context)
+void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char *bundle,
+                              const char* sdp, size_t len, void* context)
 {
     CallbackContext* cc = (CallbackContext*)context;
     int needDetach = 0;
@@ -53,6 +53,7 @@ void onSessionRequestCallback(ElaCarrier* carrier, const char* from, const char*
 
     assert(carrier);
     assert(from);
+    assert(!bundle);
     assert(sdp);
 
     (void)carrier;
@@ -144,12 +145,14 @@ static
 jboolean sessionMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jhandler)
 {
     CallbackContext *hc = NULL;
+    ElaCarrier *carrier = NULL;
     int rc;
 
     assert(jcarrier);
 
     (void)clazz;
 
+    carrier = getCarrier(env, jcarrier);
     memset(&callbackContext, 0, sizeof(callbackContext));
 
 
@@ -161,9 +164,17 @@ jboolean sessionMgrInit(JNIEnv* env, jclass clazz, jobject jcarrier, jobject jha
         }
     }
 
-    rc = ela_session_init(getCarrier(env, jcarrier), onSessionRequestCallback, hc);
+    rc = ela_session_init(carrier);
     if (rc < 0) {
         logE("Call ela_session_init API error");
+        setErrorCode(ela_get_error());
+        return JNI_FALSE;
+    }
+
+    rc = ela_session_set_callback(carrier, NULL, onSessionRequestCallback, hc);
+    if (rc < 0) {
+        ela_session_cleanup(carrier);
+        logE("Call ela_session_set_callback API error");
         setErrorCode(ela_get_error());
         return JNI_FALSE;
     }
