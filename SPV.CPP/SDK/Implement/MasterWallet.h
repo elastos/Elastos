@@ -138,7 +138,6 @@ namespace Elastos {
 
 			MasterWallet(
 					const std::string &id,
-					const std::string &payPassword,
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					const std::string &rootPath,

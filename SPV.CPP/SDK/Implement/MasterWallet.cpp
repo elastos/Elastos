@@ -98,7 +98,7 @@ namespace Elastos {
 			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
 		}
 
-		MasterWallet::MasterWallet(const std::string &id, const std::string &payPassword,
+		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
 								   const std::string &rootPath, bool p2pEnable) :
 				_id(id),
@@ -109,11 +109,10 @@ namespace Elastos {
 				_isOldKeyStore(false),
 				_idAgentImpl(nullptr) {
 			ParamChecker::checkNotEmpty(id);
-			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkNotEmpty(rootPath);
 			ParamChecker::checkJsonArrayCountGreaterEqualThan(coSigners, requiredSignCount);
 
-			initFromMultiSigners("", payPassword, coSigners, requiredSignCount);
+			initFromMultiSigners("", "", coSigners, requiredSignCount);
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
@@ -546,7 +545,7 @@ namespace Elastos {
 		void MasterWallet::initFromMultiSigners(const std::string &privKey, const std::string &payPassword,
 												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
 			if (privKey.empty())
-				_localStore.Reset(coSigners, payPassword, requiredSignCount);
+				_localStore.Reset(coSigners, requiredSignCount);
 			else
 				_localStore.Reset(privKey, coSigners, payPassword, requiredSignCount);
 		}

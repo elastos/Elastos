@@ -41,7 +41,6 @@ namespace Elastos {
 					   const std::string &payPassword);
 
 			void Reset(const nlohmann::json &coSigners,
-					   const std::string &payPassword,
 					   uint32_t requiredSignCount);
 
 			void Reset(const std::string &privKey,
