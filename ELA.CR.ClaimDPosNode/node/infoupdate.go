@@ -191,12 +191,11 @@ func (node *node) ConnectNodes() {
 	}
 }
 
-func (node *node) NetAddress() p2p.NetAddress {
-	var addr p2p.NetAddress
-	addr.IP, _ = node.Addr16()
-	addr.Time = node.GetTime()
-	addr.Services = node.Services()
-	addr.Port = node.Port()
-	addr.ID = node.ID()
-	return addr
+func (node *node) NetAddress() *p2p.NetAddress {
+	return &p2p.NetAddress{
+		IP:        node.IP(),
+		Timestamp: time.Now(),
+		Services:  p2p.ServiceFlag(node.Services()),
+		Port:      node.Port(),
+	}
 }
