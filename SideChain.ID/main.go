@@ -5,7 +5,7 @@ import (
 	"runtime"
 
 	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
+	ic "github.com/elastos/Elastos.ELA.SideChain.ID/core"
 	sv "github.com/elastos/Elastos.ELA.SideChain.ID/servers"
 	rpc "github.com/elastos/Elastos.ELA.SideChain.ID/servers/httpjsonrpc"
 
@@ -22,6 +22,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
 )
 
 const (
@@ -66,8 +67,11 @@ func main() {
 	var noder protocol.Noder
 	log.Info("Node version: ", config.Version)
 
-	core.InitPayloadCreater()
-	core.InitTransactionHelper()
+	ic.InitPayloadCreater()
+	core.InitOutputHelper()
+	ic.InitTransactionHelper()
+	blockchain.InitTxFeeHelper()
+	blockchain.InitBlockValidator()
 	bc.InitTransactionValidtor()
 
 	log.Info("1. BlockChain init")
@@ -92,6 +96,7 @@ func main() {
 
 	log.Info("3. Start the P2P networks")
 	noder = node.InitLocalNode()
+	node.UpdateLocalNode()
 	noder.WaitForSyncFinish()
 
 	servers.NodeForServers = noder

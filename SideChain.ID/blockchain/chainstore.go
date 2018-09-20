@@ -31,10 +31,10 @@ func NewChainStore() (blockchain.IChainStore, error) {
 }
 
 func (c *IDChainStore) Init() {
-	c.PersistTransactions = c.IPersistTransactions
+	c.PersistTransactions = c.PersistTransactionsImpl
 }
 
-func (c *IDChainStore) IPersistTransactions(b *ucore.Block) error {
+func (c *IDChainStore) PersistTransactionsImpl(b *ucore.Block) error {
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
 			return err

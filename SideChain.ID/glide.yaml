@@ -1,14 +1,12 @@
-package: github.com/elastos/Elastos.ELA.SideChain
+package: github.com/elastos/Elastos.ELA.SideChain.ID
 import:
 - package: github.com/golang/crypto
 - package: github.com/golang/sys
 - package: github.com/AlexpanXX/fsnotify
-- package: github.com/elastos/Elastos.ELA.SPV
-  version: dev
 - package: github.com/elastos/Elastos.ELA.Utility
   version: dev
-- package: github.com/elastos/Elastos.ELA
-  version: release_v0.2.0
+- package: github.com/elastos/Elastos.ELA.SideChain
+  version: dev
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 - package: github.com/pborman/uuid
