@@ -38,7 +38,7 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	p2p.PeerState               // node state
+	state protocol.State           // node state
 	id            uint64        // The nodes's id
 	version       uint32        // The network protocol the node used
 	services      uint64        // The services the node supplied
@@ -164,31 +164,35 @@ func (node *node) RemoveFromConnectingList(addr string) {
 }
 
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
-	port uint16, nonce uint64, relay uint8, height uint64) {
+	port uint16, nonce uint64, relay bool, height uint64) {
 
 	node.lastActive = t
 	node.id = nonce
 	node.version = version
 	node.services = services
 	node.port = port
-	if relay == 0 {
-		node.relay = false
-	} else {
-		node.relay = true
-	}
+	node.relay = relay
 	node.height = uint64(height)
 }
 
 func (node *node) NodeDisconnect(v interface{}) {
 	if n, ok := node.DelNeighborNode(v.(uint64)); ok {
 		log.Debugf("Node [0x%x] disconnected", n.ID())
-		n.SetState(p2p.INACTIVITY)
+		n.SetState(protocol.INACTIVITY)
 		n.GetConn().Close()
 	}
 }
 
 func rmNode(node *node) {
 	log.Debug(fmt.Sprintf("Remove unused/deuplicate node: 0x%0x", node.id))
+}
+
+func (node *node) State() protocol.State {
+	return node.state
+}
+
+func (node *node) SetState(state protocol.State) {
+	node.state = state
 }
 
 func (node *node) ID() uint64 {

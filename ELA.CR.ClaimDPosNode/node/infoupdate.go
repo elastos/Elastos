@@ -138,14 +138,14 @@ func (node *node) Heartbeat() {
 	defer ticker.Stop()
 	for range ticker.C {
 		// quit when node disconnected
-		if node.State() == p2p.INACTIVITY {
+		if node.State() == INACTIVITY {
 			goto QUIT
 		}
 
 		// quit when node keep alive timeout
 		if time.Now().After(node.lastActive.Add(time.Second * KeepAliveTimeout)) {
 			log.Warn("keepalive timeout!!!")
-			node.SetState(p2p.INACTIVITY)
+			node.SetState(INACTIVITY)
 			node.CloseConn()
 			goto QUIT
 		}

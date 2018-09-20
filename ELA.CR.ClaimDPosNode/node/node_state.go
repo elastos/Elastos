@@ -104,7 +104,7 @@ func dumpNeighborLine(index int, n *node) string {
 		n.Services(),
 		n.IsRelay(),
 		n.IsExternal(),
-		n.PeerState.String(),
+		n.State().String(),
 		n.NetAddress().String(),
 	)
 }
