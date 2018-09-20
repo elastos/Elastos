@@ -70,6 +70,9 @@ namespace Elastos {
 			CMBlock pubKey = Utils::decodeHex(coinInfo.getPublicKey());
 			MasterPubKey masterPubKey = MasterPubKey(pubKey, Utils::UInt256FromString(coinInfo.getChainCode()));
 
+			_resultChainCode = Utils::UInt256FromString(coinInfo.getChainCode());
+			_resultPubKey = Utils::decodeHex(coinInfo.getPublicKey());
+
 			return new HDSubAccount(masterPubKey, account, _coinInfo.getIndex());
 		}
 
