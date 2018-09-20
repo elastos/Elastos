@@ -38,21 +38,22 @@ func (s Semaphore) release() { <-s }
 
 type node struct {
 	//sync.RWMutex	//The Lock not be used as expected to use function channel instead of lock
-	state protocol.State           // node state
-	id            uint64        // The nodes's id
-	version       uint32        // The network protocol the node used
-	services      uint64        // The services the node supplied
-	relay         bool          // The relay capability of the node (merge into capbility flag)
-	height        uint64        // The node latest block height
-	external      bool          // Indicate if this is an external node
-	txnCnt        uint64        // The transactions be transmit by this node
-	rxTxnCnt      uint64        // The transaction received by this node
-	link                        // The link status and infomation
-	neighbours                  // The neighbor node connect with currently node except itself
-	events        *events.Event // The event queue to notice notice other modules
-	chain.TxPool                // Unconfirmed transaction pool
-	idCache                     // The buffer to store the id of the items which already be processed
-	filter        *bloom.Filter // The bloom filter of a spv node
+	state     protocol.State   // node state
+	timestamp time.Time        // The timestamp of node
+	id        uint64           // The nodes's id
+	version   uint32           // The network protocol the node used
+	services  uint64           // The services the node supplied
+	relay     bool             // The relay capability of the node (merge into capbility flag)
+	height    uint64           // The node latest block height
+	external  bool             // Indicate if this is an external node
+	txnCnt    uint64           // The transactions be transmit by this node
+	rxTxnCnt     uint64        // The transaction received by this node
+	link                       // The link status and infomation
+	neighbours                 // The neighbor node connect with currently node except itself
+	events       *events.Event // The event queue to notice notice other modules
+	chain.TxPool               // Unconfirmed transaction pool
+	idCache                    // The buffer to store the id of the items which already be processed
+	filter       *bloom.Filter // The bloom filter of a spv node
 	/*
 	 * |--|--|--|--|--|--|isSyncFailed|isSyncHeaders|
 	 */
@@ -166,7 +167,7 @@ func (node *node) RemoveFromConnectingList(addr string) {
 func (node *node) UpdateInfo(t time.Time, version uint32, services uint64,
 	port uint16, nonce uint64, relay bool, height uint64) {
 
-	node.lastActive = t
+	node.timestamp = t
 	node.id = nonce
 	node.version = version
 	node.services = services
@@ -193,6 +194,10 @@ func (node *node) State() protocol.State {
 
 func (node *node) SetState(state protocol.State) {
 	node.state = state
+}
+
+func (node *node) TimeStamp() time.Time {
+	return node.timestamp
 }
 
 func (node *node) ID() uint64 {
@@ -255,21 +260,8 @@ func (node *node) Addr() string {
 	return node.addr
 }
 
-func (node *node) Addr16() ([16]byte, error) {
-	var result [16]byte
-	ip := net.ParseIP(node.addr).To16()
-	if ip == nil {
-		log.Error("Parse IP address error\n")
-		return result, errors.New("Parse IP address error")
-	}
-
-	copy(result[:], ip[:16])
-	return result, nil
-}
-
-func (node *node) GetTime() int64 {
-	t := time.Now()
-	return t.UnixNano()
+func (node *node) IP() net.IP {
+	return net.ParseIP(node.addr)
 }
 
 func (node *node) Events() *events.Event {

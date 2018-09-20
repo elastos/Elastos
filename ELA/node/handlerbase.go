@@ -116,8 +116,8 @@ func (h *HandlerBase) onVersion(version *msg.Version) error {
 		n.CloseConn()
 	}
 
-	node.UpdateInfo(time.Now(), version.Version, version.Services,
-		version.Port, version.Nonce, version.Relay, version.Height)
+	node.UpdateInfo(time.Unix(int64(version.TimeStamp), 0), version.Version,
+		version.Services, version.Port, version.Nonce, version.Relay, version.Height)
 
 	// Update message handler according to the protocol version
 	if version.Version < p2p.EIP001Version {
@@ -184,7 +184,7 @@ func (h *HandlerBase) onVerAck(verAck *msg.VerAck) error {
 }
 
 func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
-	var addrs []p2p.NetAddress
+	var addrs []*p2p.NetAddress
 	// Only send addresses that enabled SPV service
 	if h.node.IsExternal() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
@@ -203,14 +203,6 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) error {
 
 func (h *HandlerBase) onAddr(msgAddr *msg.Addr) error {
 	for _, addr := range msgAddr.AddrList {
-		if addr.ID == LocalNode.ID() {
-			continue
-		}
-
-		if LocalNode.NodeEstablished(addr.ID) {
-			continue
-		}
-
 		if addr.Port == 0 {
 			continue
 		}
