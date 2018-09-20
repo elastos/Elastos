@@ -17,7 +17,6 @@ import (
 	. "github.com/elastos/Elastos.ELA/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
 )
 
 const (
@@ -162,8 +161,6 @@ func GetNodeState(param Params) map[string]interface{} {
 	nodes := ServerNode.GetNeighborNodes()
 	neighbors := make([]Neighbor, 0, len(nodes))
 	for _, node := range nodes {
-		var state p2p.PeerState
-		state.SetState(node.State())
 		neighbors = append(neighbors, Neighbor{
 			ID:         node.ID(),
 			HexID:      fmt.Sprintf("0x%x", node.ID()),
@@ -171,7 +168,7 @@ func GetNodeState(param Params) map[string]interface{} {
 			Services:   node.Services(),
 			Relay:      node.IsRelay(),
 			External:   node.IsExternal(),
-			State:      state.String(),
+			State:      node.State().String(),
 			NetAddress: node.NetAddress().String(),
 		})
 	}

@@ -196,7 +196,7 @@ func (node *node) Connect(addr string) error {
 		conn.RemoteAddr().Network())
 	n.Read()
 
-	n.SetState(p2p.HAND)
+	n.SetState(HAND)
 	n.Send(NewVersion(node))
 
 	node.AddToHandshakeQueue(tcpAddr, n)
@@ -245,7 +245,7 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 }
 
 func (node *node) Send(msg p2p.Message) {
-	if node.State() == p2p.INACTIVITY {
+	if node.State() == INACTIVITY {
 		log.Errorf("-----> Push [%s] to INACTIVE peer [0x%x]", msg.CMD(), node.ID())
 		return
 	}

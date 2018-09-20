@@ -1,12 +1,14 @@
 package protocol
 
 import (
+	"fmt"
 	"net"
 	"time"
 
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/errors"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -30,6 +32,34 @@ const (
 	OpenService = 1 << 2
 )
 
+type State uint8
+
+const (
+	INIT State = iota
+	HAND
+	HANDSHAKE
+	HANDSHAKED
+	ESTABLISHED
+	INACTIVITY
+)
+
+var States = map[State]string{
+	INIT:        "INIT",
+	HAND:        "HAND",
+	HANDSHAKE:   "HANDSHAKE",
+	HANDSHAKED:  "HANDSHAKED",
+	ESTABLISHED: "ESTABLISHED",
+	INACTIVITY:  "INACTIVITY",
+}
+
+func (s State) String() string {
+	state, ok := States[s]
+	if ok {
+		return state
+	}
+	return fmt.Sprintf("STATE%d", s)
+}
+
 type Noder interface {
 	Version() uint32
 	ID() uint64
@@ -41,8 +71,8 @@ type Noder interface {
 	IsExternal() bool
 	HttpInfoPort() int
 	SetHttpInfoPort(uint16)
-	SetState(state uint)
-	State() uint
+	SetState(state State)
+	State() State
 	IsRelay() bool
 	Heartbeat()
 	AddNeighborNode(Noder)
@@ -59,7 +89,7 @@ type Noder interface {
 	ExistedID(id common.Uint256) bool
 	RequireNeighbourList()
 	UpdateInfo(t time.Time, version uint32, services uint64,
-		port uint16, nonce uint64, relay uint8, height uint64)
+		port uint16, nonce uint64, relay bool, height uint64)
 	UpdateMsgHelper(handler p2p.MsgHandler)
 	ConnectNodes()
 	Connect(nodeAddr string) error
