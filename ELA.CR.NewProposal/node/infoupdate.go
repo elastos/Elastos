@@ -151,7 +151,7 @@ func (node *node) Heartbeat() {
 		}
 
 		// send ping message to node
-		node.Send(msg.NewPing(chain.DefaultLedger.Store.GetHeight()))
+		node.Send(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
 	}
 QUIT:
 }
