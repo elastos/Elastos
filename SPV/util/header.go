@@ -2,9 +2,11 @@ package util
 
 import (
 	"bytes"
+	"fmt"
 	"math/big"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -23,48 +25,49 @@ type Header struct {
 	TotalWork *big.Int
 }
 
-func (sh *Header) Serialize() ([]byte, error) {
+func (h *Header) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := sh.Header.Serialize(buf)
+	err := h.Header.Serialize(buf)
 	if err != nil {
 		return nil, err
 	}
 
-	err = common.WriteUint32(buf, sh.NumTxs)
+	err = common.WriteUint32(buf, h.NumTxs)
 	if err != nil {
 		return nil, err
 	}
 
-	err = common.WriteVarUint(buf, uint64(len(sh.Hashes)))
+	err = common.WriteVarUint(buf, uint64(len(h.Hashes)))
 	if err != nil {
 		return nil, err
 	}
 
-	err = common.WriteElement(buf, sh.Hashes)
+	for _, hash := range h.Hashes {
+		if err := hash.Serialize(buf); err != nil {
+			return nil, err
+		}
+	}
+
+	err = common.WriteVarBytes(buf, h.Flags)
 	if err != nil {
 		return nil, err
 	}
 
-	err = common.WriteVarBytes(buf, sh.Flags)
-	if err != nil {
-		return nil, err
-	}
-
-	biBytes := sh.TotalWork.Bytes()
+	biBytes := h.TotalWork.Bytes()
 	pad := make([]byte, 32-len(biBytes))
 	serializedBI := append(pad, biBytes...)
 	buf.Write(serializedBI)
 	return buf.Bytes(), nil
 }
 
-func (sh *Header) Deserialize(b []byte) error {
+func (h *Header) Deserialize(b []byte) error {
 	r := bytes.NewReader(b)
-	err := sh.Header.Deserialize(r)
+	err := h.Header.Deserialize(r)
 	if err != nil {
 		return err
 	}
 
-	sh.NumTxs, err = common.ReadUint32(r)
+	h.NumTxs, err = common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
@@ -73,14 +76,24 @@ func (sh *Header) Deserialize(b []byte) error {
 	if err != nil {
 		return err
 	}
-
-	sh.Hashes = make([]*common.Uint256, count)
-	err = common.ReadElement(r, &sh.Hashes)
-	if err != nil {
-		return err
+	if count > msg.MaxTxPerBlock {
+		str := fmt.Sprintf("too many transactions to fit into a block "+
+			"[count %d, max %d]", count, msg.MaxTxPerBlock)
+		return common.FuncError("Header.Deserialize", str)
 	}
 
-	sh.Flags, err = common.ReadVarBytes(r)
+	hashes := make([]common.Uint256, count)
+	h.Hashes = make([]*common.Uint256, 0, count)
+	for i := uint64(0); i < count; i++ {
+		hash := &hashes[i]
+		if err := hash.Deserialize(r); err != nil {
+			return err
+		}
+		h.Hashes = append(h.Hashes, hash)
+	}
+
+	h.Flags, err = common.ReadVarBytes(r, msg.MaxTxPerBlock,
+		"header merkle proof flags")
 	if err != nil {
 		return err
 	}
@@ -90,8 +103,8 @@ func (sh *Header) Deserialize(b []byte) error {
 	if err != nil {
 		return err
 	}
-	sh.TotalWork = new(big.Int)
-	sh.TotalWork.SetBytes(biBytes)
+	h.TotalWork = new(big.Int)
+	h.TotalWork.SetBytes(biBytes)
 
 	return nil
 }
