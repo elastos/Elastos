@@ -86,11 +86,11 @@ func (ns *neighbours) NodeEstablished(id uint64) bool {
 	return true
 }
 
-func (ns *neighbours) GetNeighbourAddresses() []p2p.NetAddress {
+func (ns *neighbours) GetNeighbourAddresses() []*p2p.NetAddress {
 	ns.Lock()
 	defer ns.Unlock()
 
-	var addrs []p2p.NetAddress
+	var addrs []*p2p.NetAddress
 	for _, n := range ns.List {
 		if n.State() != protocol.ESTABLISHED {
 			continue

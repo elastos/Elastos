@@ -65,8 +65,8 @@ type Noder interface {
 	ID() uint64
 	Services() uint64
 	Addr() string
-	Addr16() ([16]byte, error)
-	NetAddress() p2p.NetAddress
+	IP() net.IP
+	NetAddress() *p2p.NetAddress
 	Port() uint16
 	IsExternal() bool
 	HttpInfoPort() int
@@ -96,7 +96,6 @@ type Noder interface {
 	LoadFilter(filter *msg.FilterLoad)
 	BloomFilter() *bloom.Filter
 	Send(msg p2p.Message)
-	GetTime() int64
 	NodeEstablished(uid uint64) bool
 	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
@@ -104,7 +103,7 @@ type Noder interface {
 	GetRxTxnCnt() uint64
 
 	GetNeighborNodes() []Noder
-	GetNeighbourAddresses() []p2p.NetAddress
+	GetNeighbourAddresses() []*p2p.NetAddress
 
 	WaitForSyncFinish()
 	CleanSubmittedTransactions(block *core.Block) error
