@@ -185,18 +185,6 @@ namespace Elastos {
 			return ptr;
 		}
 
-		nlohmann::json SubWallet::sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
-														  const std::string &payPassword) {
-			_walletManager->getWallet()->signTransaction(transaction, _info.getForkId(), payPassword);
-			transaction->removeDuplicatePrograms();
-			publishTransaction(transaction);
-
-			nlohmann::json j;
-			j["TxHash"] = Utils::UInt256ToString(transaction->getHash(), true);
-			j["Fee"] = transaction->getStandardFee();
-			return j;
-		}
-
 		void SubWallet::publishTransaction(const TransactionPtr &transaction) {
 			_walletManager->publishTransaction(transaction);
 		}
@@ -271,22 +259,20 @@ namespace Elastos {
 			return CreateTransaction(fromAddress, toAddress, amount, memo, "");
 		}
 
-		nlohmann::json SubWallet::AppendSignToMultiSignTransaction(const nlohmann::json &rawTransaction,
+		nlohmann::json SubWallet::SignTransaction(const nlohmann::json &rawTransaction,
 																   const std::string &payPassword) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(rawTransaction);
 			_walletManager->getWallet()->signTransaction(transaction, _info.getForkId(), payPassword);
+			transaction->removeDuplicatePrograms();
 			return transaction->toJson();
 		}
 
-		nlohmann::json SubWallet::PublishMultiSignTransaction(const nlohmann::json &rawTransaction, uint64_t fee) {
-
+		nlohmann::json SubWallet::PublishTransaction(const nlohmann::json &rawTransaction) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(rawTransaction);
 
 			verifyRawTransaction(transaction);
-			completeTransaction(transaction, fee);
-
 			publishTransaction(transaction);
 
 			nlohmann::json j;
@@ -296,15 +282,12 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		SubWallet::SendRawTransaction(const nlohmann::json &transactionJson, uint64_t fee,
-									  const std::string &payPassword) {
+		SubWallet::UpdateTransactionFee(const nlohmann::json &transactionJson, uint64_t fee) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(transactionJson);
 
-			verifyRawTransaction(transaction);
 			completeTransaction(transaction, fee);
-
-			return sendTransactionInternal(transaction, payPassword);
+			return transaction->toJson();
 		}
 
 		void SubWallet::verifyRawTransaction(const TransactionPtr &transaction) {

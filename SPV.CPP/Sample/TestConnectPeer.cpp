@@ -42,7 +42,9 @@ static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *bl
 void TestConnectPeer::transfer(ISubWallet *subWallet, const std::string &payPassword, uint64_t amount, const std::string &to) {
 	nlohmann::json tx =  subWallet->CreateTransaction("", to, amount, "memo", "remark");
 	Log::getLogger()->debug("transfer tx = {}", tx.dump());
-	nlohmann::json result = subWallet->SendRawTransaction(tx, 10000, payPassword);
+	tx = subWallet->UpdateTransactionFee(tx, 10000);
+	tx = subWallet->SignTransaction(tx, payPassword);
+	nlohmann::json result = subWallet->PublishTransaction(tx);
 	Log::getLogger()->debug("send tx result = {}", result.dump());
 }
 
@@ -64,7 +66,9 @@ void TestConnectPeer::deposit(ISubWallet *subWallet, uint64_t amount, const std:
 
 	Log::getLogger()->debug("deposit tx = {}", tx.dump());
 
-	nlohmann::json result = mainchainSubWallet->SendRawTransaction(tx, 10000, payPassword);
+	tx = subWallet->UpdateTransactionFee(tx, 10000);
+	tx = subWallet->SignTransaction(tx, payPassword);
+	nlohmann::json result = mainchainSubWallet->PublishTransaction(tx);
 
 	Log::getLogger()->debug("send deposit tx result = {}", result.dump());
 }
@@ -90,7 +94,9 @@ void TestConnectPeer::withdraw(ISubWallet *subWallet, uint64_t amount, const std
 
 	Log::getLogger()->debug("withdraw tx = {}", tx.dump());
 
-	nlohmann::json result = sidechainSubWallet->SendRawTransaction(tx, 10000, payPassword);
+	tx = subWallet->UpdateTransactionFee(tx, 10000);
+	tx = subWallet->SignTransaction(tx, payPassword);
+	nlohmann::json result = sidechainSubWallet->PublishTransaction(tx);
 
 	Log::getLogger()->debug("withdraw result = {}", result.dump());
 }
@@ -114,7 +120,9 @@ void TestConnectPeer::registerId(IMasterWallet *imasterWallet, ISubWallet *subWa
 
 	Log::getLogger()->debug("register id tx = {}", tx.dump());
 
-	nlohmann::json result = idchainSubWallet->SendRawTransaction(tx, 10000, payPassword);
+	tx = subWallet->UpdateTransactionFee(tx, 10000);
+	tx = subWallet->SignTransaction(tx, payPassword);
+	nlohmann::json result = idchainSubWallet->PublishTransaction(tx);
 
 	Log::getLogger()->debug("register id result = {}", result.dump());
 }
