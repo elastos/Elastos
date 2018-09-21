@@ -2,8 +2,6 @@ package spv
 
 import (
 	"bytes"
-	"crypto/rand"
-	"encoding/binary"
 	"errors"
 	"os"
 
@@ -12,38 +10,49 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
-	spvlog "github.com/elastos/Elastos.ELA.SPV/log"
+	logger "github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/bloom"
-	. "github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-var spvService spv.SPVService
+const SPVLogPath = "./logs-spv/"
+
+var service spv.SPVService
 
 func SpvInit() error {
 	var err error
-	spvlog.Init(config.Parameters.SpvPrintLevel, 20, 1024)
+	var params = config.Parameters
+	logger := logger.NewLogger(SPVLogPath, params.SpvPrintLevel,
+		10, 1024)
 
-	var id = make([]byte, 8)
-	var clientId uint64
-	rand.Read(id)
-	binary.Read(bytes.NewReader(id), binary.LittleEndian, &clientId)
+	spv.UseLogger(logger)
 
-	spvService, err = spv.NewSPVService(config.Parameters.SpvMagic, config.Parameters.MainChainFoundationAddress, clientId,
-		config.Parameters.SpvSeedList, config.Parameters.SpvMinOutbound, config.Parameters.SpvMaxConnections)
+	config := &spv.Config{
+		Magic:          params.SpvMagic,
+		Foundation:     params.MainChainFoundationAddress,
+		SeedList:       params.SeedList,
+		DefaultPort:    params.MainChainDefaultPort,
+		MinOutbound:    params.SpvMinOutbound,
+		MaxConnections: params.SpvMaxConnections,
+		OnRollback:     nil, // Not implemented yet
+	}
+
+	service, err = spv.NewSPVService(config)
 	if err != nil {
 		return err
 	}
 
 	//register an invalid address to prevent bloom filter from sending all data
-	err = spvService.RegisterTransactionListener(&SpvListener{ListenAddress: "XagqqFetxiDb9wbartKDrXgnqLagy5yY1z"})
+	err = service.RegisterTransactionListener(&SpvListener{
+		ListenAddress: "XagqqFetxiDb9wbartKDrXgnqLagy5yY1z",
+	})
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		if err := spvService.Start(); err != nil {
+		if err := service.Start(); err != nil {
 			log.Info("Spv service start failed ：", err)
 		}
 		log.Info("Spv service stoped")
@@ -53,7 +62,7 @@ func SpvInit() error {
 }
 
 func VerifyTransaction(tx *core.Transaction) error {
-	proof := new(MerkleProof)
+	proof := new(bloom.MerkleProof)
 	mainChainTransaction := new(ela.Transaction)
 
 	payloadObj, ok := tx.Payload.(*core.PayloadRechargeToSideChain)
@@ -70,7 +79,7 @@ func VerifyTransaction(tx *core.Transaction) error {
 		return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
 	}
 
-	if err := spvService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
+	if err := service.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
 		return errors.New("SPV module verify transaction failed.")
 	}
 
@@ -78,8 +87,8 @@ func VerifyTransaction(tx *core.Transaction) error {
 }
 
 func VerifyElaHeader(hash *common.Uint256) error {
-	blockChain := spvService.HeaderStore()
-	_, err := blockChain.GetHeader(hash)
+	blockChain := service.HeaderStore()
+	_, err := blockChain.Get(hash)
 	if err != nil {
 		return errors.New("Verify ela header failed.")
 	}
@@ -103,10 +112,7 @@ func (l *SpvListener) Flags() uint64 {
 	return spv.FlagNotifyInSyncing
 }
 
-func (l *SpvListener) Rollback(height uint32) {
-}
-
 func (l *SpvListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx ela.Transaction) {
 	// Submit transaction receipt
-	defer spvService.SubmitTransactionReceipt(id, tx.Hash())
+	defer service.SubmitTransactionReceipt(id, tx.Hash())
 }
