@@ -21,8 +21,6 @@ namespace Elastos {
 			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
 
 		private:
-
-		private:
 			MultiSignAccount *_multiSignAccount;
 		};
 

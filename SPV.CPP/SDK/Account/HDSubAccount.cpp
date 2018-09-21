@@ -134,5 +134,9 @@ namespace Elastos {
 			return j;
 		}
 
+		std::string HDSubAccount::GetMainAccountPublicKey() const {
+			return Utils::encodeHex(_masterPubKey.getPubKey());
+		}
+
 	}
 }

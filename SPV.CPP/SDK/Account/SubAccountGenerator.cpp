@@ -13,7 +13,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		SubAccountGenerator::SubAccountGenerator() {
+		SubAccountGenerator::SubAccountGenerator() :
+				_resultChainCode(UINT256_ZERO) {
 
 		}
 
