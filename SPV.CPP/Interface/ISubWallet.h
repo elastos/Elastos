@@ -131,26 +131,6 @@ namespace Elastos {
 					const std::string &memo) = 0;
 
 			/**
-			 * Append sign to a multi-sign transaction and return the content of transaction in json format.
-			 * @param rawTransaction content of transaction in json format.
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
-			 * @return If success return the content of transaction in json format.
-			 */
-			virtual nlohmann::json AppendSignToMultiSignTransaction(
-					const nlohmann::json &rawTransaction,
-					const std::string &payPassword) = 0;
-
-			/**
-			 * Send multi-sign transaction by p2p network.
-			 * @param rawTransaction content of transaction in json format.
-			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
-			 * @return Sent result in json format.
-			 */
-			virtual nlohmann::json PublishMultiSignTransaction(
-					const nlohmann::json &rawTransaction,
-					uint64_t fee) = 0;
-
-			/**
 			 * Calculate transaction fee by content of transaction.
 			 * @param rawTransaction content of transaction in json format.
 			 * @param feePerKb specify the factor to calculate fee (transaction size * feePerKb).
@@ -161,16 +141,33 @@ namespace Elastos {
 					uint64_t feePerKb) = 0;
 
 			/**
-			 * Send raw transaction by p2p network.
+			 * Update a transaction by change fee
 			 * @param transactionJson content of transaction in json format.
 			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
-			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
 			 * @return Sent result in json format.
 			 */
-			virtual nlohmann::json SendRawTransaction(
+			virtual nlohmann::json UpdateTransactionFee(
 					const nlohmann::json &transactionJson,
-					uint64_t fee,
+					uint64_t fee) = 0;
+
+			/**
+			 * Sign a transaction or append sign to a multi-sign transaction and return the content of transaction in json format.
+			 * @param rawTransaction content of transaction in json format.
+			 * @param payPassword use to decrypt the root private key temporarily. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @return If success return the content of transaction in json format.
+			 */
+			virtual nlohmann::json SignTransaction(
+					const nlohmann::json &rawTransaction,
 					const std::string &payPassword) = 0;
+
+			/**
+			 * Send a transaction by p2p network.
+			 * @param rawTransaction content of transaction in json format.
+			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).
+			 * @return Sent result in json format.
+			 */
+			virtual nlohmann::json PublishTransaction(
+					const nlohmann::json &rawTransaction) = 0;
 
 			/**
 			 * Get all qualified transactions sorted by descent (newest first).

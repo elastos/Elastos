@@ -68,18 +68,20 @@ namespace Elastos {
 					uint64_t amount,
 					const std::string &memo);
 
-			virtual nlohmann::json AppendSignToMultiSignTransaction(
+			virtual uint64_t CalculateTransactionFee(
 					const nlohmann::json &rawTransaction,
-					const std::string &payPassword);
+					uint64_t feePerKb);
 
-			virtual nlohmann::json PublishMultiSignTransaction(
-					const nlohmann::json &rawTransaction,
+			virtual nlohmann::json UpdateTransactionFee(
+					const nlohmann::json &transactionJson,
 					uint64_t fee);
 
-			virtual nlohmann::json SendRawTransaction(
-					const nlohmann::json &transactionJson,
-					uint64_t fee,
+			virtual nlohmann::json SignTransaction(
+					const nlohmann::json &rawTransaction,
 					const std::string &payPassword);
+
+			virtual nlohmann::json PublishTransaction(
+					const nlohmann::json &rawTransaction);
 
 			virtual nlohmann::json GetAllTransaction(
 					uint32_t start,
@@ -94,10 +96,6 @@ namespace Elastos {
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature);
-
-			virtual uint64_t CalculateTransactionFee(
-					const nlohmann::json &rawTransaction,
-					uint64_t feePerKb);
 
 			virtual std::string GetPublicKey() const;
 
@@ -145,9 +143,6 @@ namespace Elastos {
 					  MasterWallet *parent);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;
-
-			virtual nlohmann::json sendTransactionInternal(const boost::shared_ptr<Transaction> &transaction,
-														   const std::string &payPassword);
 
 			virtual void publishTransaction(const TransactionPtr &transaction);
 
