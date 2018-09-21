@@ -197,7 +197,6 @@ namespace Elastos {
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
 			if (_createdWallets.find(chainID) != _createdWallets.end()) {
-				_localStore.Account()->DeriveKey(payPassword);
 				return _createdWallets[chainID];
 			}
 

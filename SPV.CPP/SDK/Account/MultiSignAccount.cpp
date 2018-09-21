@@ -129,14 +129,16 @@ namespace Elastos {
 		}
 
 		void to_json(nlohmann::json &j, const MultiSignAccount &p) {
-			j["Account"] = p._me->ToJson();
-			j["AccountType"] = p._me->GetType();
+			if (p._me != nullptr) {
+				j["InnerAccount"] = p._me->ToJson();
+				j["InnerAccountType"] = p._me->GetType();
+			}
 			j["CoSigners"] = p._coSigners;
 			j["RequiredSignCount"] = p._requiredSignCount;
 		}
 
 		void from_json(const nlohmann::json &j, MultiSignAccount &p) {
-			p._me = AccountFactory::CreateFromJson(p._rootPath, j);
+			p._me = AccountFactory::CreateFromJson(p._rootPath, j, "InnerAccount", "InnerAccountType");
 			p._coSigners = j["CoSigners"].get<std::vector<std::string>>();
 			p._requiredSignCount = j["RequiredSignCount"].get<uint32_t>();
 		}

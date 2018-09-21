@@ -14,7 +14,8 @@ namespace Elastos {
 
 		class AccountFactory {
 		public:
-			static IAccount *CreateFromJson(const std::string &rootPath, const nlohmann::json &j);
+			static IAccount *CreateFromJson(const std::string &rootPath, const nlohmann::json &j,
+				const std::string &accountName = "Account", const std::string &accountTypeName = "AccountType");
 		};
 
 	}

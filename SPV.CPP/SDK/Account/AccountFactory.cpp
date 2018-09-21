@@ -10,11 +10,14 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		IAccount *AccountFactory::CreateFromJson(const std::string &rootPath, const nlohmann::json &j) {
-
-			std::string accountType = j["AccountType"].get<std::string>();
+		IAccount *AccountFactory::CreateFromJson(const std::string &rootPath, const nlohmann::json &j,
+												 const std::string &accountName, const std::string &accountTypeName) {
 
 			IAccount *result = nullptr;
+			if (j.find(accountName) == j.end())
+				return result;
+
+			std::string accountType = j[accountTypeName].get<std::string>();
 			if (accountType == "Standard") {
 				result = new StandardAccount(rootPath);
 			} else if (accountType == "Simple") {
@@ -25,7 +28,7 @@ namespace Elastos {
 				throw std::logic_error("Invalid account type");
 			}
 
-			result->FromJson(j["Account"]);
+			result->FromJson(j[accountName]);
 			return result;
 		}
 	}
