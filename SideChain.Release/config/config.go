@@ -100,6 +100,7 @@ type Configuration struct {
 	MaxBlockSize               int              `json:"MaxBlockSize"`
 	PowConfiguration           PowConfiguration `json:"PowConfiguration"`
 	FoundationAddress          string           `json:"FoundationAddress"`
+	MainChainDefaultPort       uint16           `json:"MainChainDefaultPort"`
 	MainChainFoundationAddress string           `json:"MainChainFoundationAddress"`
 }
 
