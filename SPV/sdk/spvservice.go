@@ -178,14 +178,14 @@ func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 	return message, nil
 }
 
-func (s *service) newPeer(peer *peer.Peer) {
+func (s *service) newPeer(peer server.IPeer) {
 	log.Debugf("server new peer %v", peer)
-	s.newPeers <- peer
+	s.newPeers <- peer.ToPeer()
 }
 
-func (s *service) donePeer(peer *peer.Peer) {
+func (s *service) donePeer(peer server.IPeer) {
 	log.Debugf("server done peer %v", peer)
-	s.donePeers <- peer
+	s.donePeers <- peer.ToPeer()
 }
 
 // peerHandler handles new peers and done peers from P2P server.
