@@ -26,6 +26,8 @@ namespace Elastos {
 
 			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet) = 0;
 
+			virtual std::string GetMainAccountPublicKey() const = 0;
+
 			virtual Key DeriveMainAccountKey(const std::string &payPassword) = 0;
 
 			virtual void

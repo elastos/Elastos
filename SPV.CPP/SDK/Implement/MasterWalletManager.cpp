@@ -124,7 +124,17 @@ namespace Elastos {
 
 			nlohmann::json coSignersHexString = coSignersString;
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKey, payPassword, coSignersHexString,
+			std::string privKeyHexString = privKey;
+			if (privKey.find("xprv") != -1) {
+				CMBlock key;
+				if ("xprv" == Utils::extendedKeyDecode(privKey, key)) {
+					privKeyHexString = Utils::encodeHex(key);
+				} else {
+					throw std::logic_error("Decode xprv error");
+				}
+			}
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKeyHexString, payPassword, coSignersHexString,
 					requiredSignCount, _rootPath, _p2pEnable);
 			_masterWalletMap[masterWalletId] = masterWallet;
 

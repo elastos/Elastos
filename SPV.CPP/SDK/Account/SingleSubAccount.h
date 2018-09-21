@@ -20,6 +20,8 @@ namespace Elastos {
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);
 
+			virtual std::string GetMainAccountPublicKey() const;
+
 			virtual void
 			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
 

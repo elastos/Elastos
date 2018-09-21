@@ -53,7 +53,8 @@ namespace Elastos {
 				_subAccount = SubAccountPtr(generator.Generate());
 
 				_info.setChainCode(Utils::UInt256ToString(generator.GetResultChainCode()));
-				_info.setPublicKey(Utils::encodeHex(generator.GetResultPublicKey()));
+				if (generator.GetResultPublicKey().GetSize() == 0)
+					_info.setPublicKey(Utils::encodeHex(generator.GetResultPublicKey()));
 			}
 
 			_walletManager = WalletManagerPtr(
@@ -438,7 +439,7 @@ namespace Elastos {
 		}
 
 		std::string SubWallet::GetPublicKey() const {
-			return _info.getPublicKey();
+			return _subAccount->GetMainAccountPublicKey();
 		}
 
 		nlohmann::json SubWallet::GetBasicInfo() const {
