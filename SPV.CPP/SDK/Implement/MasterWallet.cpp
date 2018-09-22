@@ -133,6 +133,26 @@ namespace Elastos {
 			initFromMultiSigners(privKey, payPassword, coSigners, requiredSignCount);
 		}
 
+		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
+								   const std::string &phrasePassword, const std::string &payPassword,
+								   const std::string &language, const nlohmann::json &coSigners,
+								   uint32_t requiredSignCount, bool p2pEnable, const std::string &rootPath) :
+				_id(id),
+				_rootPath(rootPath),
+				_p2pEnable(p2pEnable),
+				_isImportFromMnemonic(false),
+				_localStore(rootPath),
+				_isOldKeyStore(false) {
+			ParamChecker::checkNotEmpty(id);
+			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
+			ParamChecker::checkNotEmpty(language);
+			ParamChecker::checkNotEmpty(rootPath);
+			ParamChecker::checkJsonArrayCountGreaterEqualThan(coSigners, requiredSignCount - 1);
+
+			initFromMultiSigners(mnemonic, phrasePassword, language, payPassword, coSigners, requiredSignCount);
+		}
+
 		MasterWallet::~MasterWallet() {
 
 		}
@@ -554,6 +574,12 @@ namespace Elastos {
 			nlohmann::json j;
 			j["Account"] = _localStore.Account()->GetBasicInfo();
 			return j;
+		}
+
+		void MasterWallet::initFromMultiSigners(const std::string &mnemonic, const std::string &phrasePassword,
+												const std::string &language, const std::string &payPassword,
+												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
+			_localStore.Reset(mnemonic, language, phrasePassword, coSigners, payPassword, requiredSignCount);
 		}
 
 	}

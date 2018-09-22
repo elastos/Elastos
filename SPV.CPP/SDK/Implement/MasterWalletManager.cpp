@@ -94,7 +94,7 @@ namespace Elastos {
 			nlohmann::json coSignersHexString = coSignersString;
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSignersHexString, requiredSignCount,
-														   _rootPath, _p2pEnable);
+														  _rootPath, _p2pEnable);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -134,8 +134,43 @@ namespace Elastos {
 				}
 			}
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKeyHexString, payPassword, coSignersHexString,
-					requiredSignCount, _rootPath, _p2pEnable);
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKeyHexString, payPassword,
+														  coSignersHexString,
+														  requiredSignCount, _rootPath, _p2pEnable);
+			_masterWalletMap[masterWalletId] = masterWallet;
+
+			return masterWallet;
+		}
+
+		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletId,
+																		const std::string &mnemonic,
+																		const std::string &phrasePassword,
+																		const std::string &payPassword,
+																		const nlohmann::json &coSigners,
+																		uint32_t requiredSignCount,
+																		const std::string &language) {
+			ParamChecker::checkNotEmpty(masterWalletId);
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
+				return _masterWalletMap[masterWalletId];
+
+			std::vector<std::string> coSignersString = coSigners;
+
+			for (int i = 0; i < coSignersString.size(); i++) {
+				if (coSignersString[i].find("xpub") != -1) {
+					CMBlock key;
+					if ("xpub" == Utils::extendedKeyDecode(coSignersString[i], key)) {
+						coSignersString[i] = Utils::encodeHex(key);
+					} else {
+						throw std::logic_error("Decode xpub error");
+					}
+				}
+			}
+
+			nlohmann::json coSignersHexString = coSignersString;
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
+														  language, coSignersHexString, requiredSignCount, _p2pEnable,
+														  _rootPath);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;

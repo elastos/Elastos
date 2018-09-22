@@ -69,6 +69,15 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount) = 0;
 
+			virtual IMasterWallet *CreateMultiSignMasterWallet(
+					const std::string &masterWalletId,
+					const std::string &mnemonic,
+					const std::string &phrasePassword,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount,
+					const std::string &language = "english") = 0;
+
 			/**
 			 * Get manager existing master wallets.
 			 * @return existing master wallet array.

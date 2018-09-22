@@ -139,6 +139,25 @@ IMasterWallet *TestConnectPeer::importWithMnemonic(boost::shared_ptr<MasterWalle
 	return walletFactory->ImportWalletWithMnemonic("ELA", mnemonic, "", payPassword, "english");
 }
 
+IMasterWallet* TestConnectPeer::createMultiSignWalletFromMnemonic(boost::shared_ptr<MasterWalletManager> walletFactory,
+																  const std::string &payPassword) {
+	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+	nlohmann::json coSigners = nlohmann::json::parse("[\"xpub6DXoyYMMVE2snF2A51DfVrKikRqMbMmw6JQbS5wSHVVPj7SrBR3QHXeqjGU5rb1TA3hNE7SoJhdRGpRLJg2ntRiKJiRs37jnD2kPxScTzZB\", \"xpub6DBsmXRSKmrkVEZ5kd25mq4mwGxSWr66QY9MajeSH5nSj2hHWVDYKgT1MMHehfMhVqsqwtmqs13qgzJC7SwWUKGmwJDESXM62QUaNCTJ4vP\"]");
+	return walletFactory->CreateMultiSignMasterWallet("MultiSign", mnemonic, "", payPassword, coSigners, 2);
+}
+
+IMasterWallet* TestConnectPeer::createReadOnlyMultiSignWallet(boost::shared_ptr<MasterWalletManager> walletFactory) {
+	nlohmann::json coSigners = nlohmann::json::parse("[\"xpub6DXoyYMMVE2snF2A51DfVrKikRqMbMmw6JQbS5wSHVVPj7SrBR3QHXeqjGU5rb1TA3hNE7SoJhdRGpRLJg2ntRiKJiRs37jnD2kPxScTzZB\", \"xpub6DBsmXRSKmrkVEZ5kd25mq4mwGxSWr66QY9MajeSH5nSj2hHWVDYKgT1MMHehfMhVqsqwtmqs13qgzJC7SwWUKGmwJDESXM62QUaNCTJ4vP\"]");
+	return walletFactory->CreateMultiSignMasterWallet("MultiSign", coSigners, 2);
+}
+
+IMasterWallet* TestConnectPeer::createMultiSignWalletFromPrivKey(boost::shared_ptr<MasterWalletManager> walletFactory,
+																 const std::string &payPassword) {
+	nlohmann::json coSigners = nlohmann::json::parse("[\"xpub6DXoyYMMVE2snF2A51DfVrKikRqMbMmw6JQbS5wSHVVPj7SrBR3QHXeqjGU5rb1TA3hNE7SoJhdRGpRLJg2ntRiKJiRs37jnD2kPxScTzZB\", \"xpub6DBsmXRSKmrkVEZ5kd25mq4mwGxSWr66QY9MajeSH5nSj2hHWVDYKgT1MMHehfMhVqsqwtmqs13qgzJC7SwWUKGmwJDESXM62QUaNCTJ4vP\"]");
+	std::string privKey = "22ed0921b131b8097abb434e3ffc582f887b96e23f239c6253841221b97fe212";
+	return walletFactory->CreateMultiSignMasterWallet("MultiSign", privKey, payPassword, coSigners, 2);
+}
+
 void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 
 	std::string payPassword = "s12345678";
@@ -150,8 +169,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 //	IMasterWallet *masterWallet = importWithKeystore(walletFactory, payPassword);
 #endif
 
-	nlohmann::json coSigners = nlohmann::json::parse("[\"xpub6DXoyYMMVE2snF2A51DfVrKikRqMbMmw6JQbS5wSHVVPj7SrBR3QHXeqjGU5rb1TA3hNE7SoJhdRGpRLJg2ntRiKJiRs37jnD2kPxScTzZB\", \"xpub6DBsmXRSKmrkVEZ5kd25mq4mwGxSWr66QY9MajeSH5nSj2hHWVDYKgT1MMHehfMhVqsqwtmqs13qgzJC7SwWUKGmwJDESXM62QUaNCTJ4vP\"]");
-	IMasterWallet *masterWallet = walletFactory->CreateMultiSignMasterWallet("MultiSign", coSigners, 2);
+	IMasterWallet *masterWallet = createMultiSignWalletFromMnemonic(walletFactory, payPassword);
 
 //	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
 	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);

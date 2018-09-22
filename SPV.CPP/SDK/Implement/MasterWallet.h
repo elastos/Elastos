@@ -152,6 +152,17 @@ namespace Elastos {
 					const std::string &rootPath,
 					bool p2pEnable);
 
+			MasterWallet(
+					const std::string &id,
+					const std::string &mnemonic,
+					const std::string &phrasePassword,
+					const std::string &payPassword,
+					const std::string &language,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount,
+					bool p2pEnable,
+					const std::string &rootPath);
+
 			void importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
 									const std::string &payPassword,
@@ -176,6 +187,14 @@ namespace Elastos {
 
 			void initFromMultiSigners(
 					const std::string &privKey,
+					const std::string &payPassword,
+					const nlohmann::json &coSigners,
+					uint32_t requiredSignCount);
+
+			void initFromMultiSigners(
+					const std::string &mnemonic,
+					const std::string &phrasePassword,
+					const std::string &language,
 					const std::string &payPassword,
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount);
