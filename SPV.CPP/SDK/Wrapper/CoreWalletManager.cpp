@@ -355,9 +355,9 @@ namespace Elastos {
 		bool WrappedExecutorPeerManagerListener::networkIsReachable() {
 
 			bool result = true;
-			_executor->execute(Runnable([this, &result]() -> void {
+			_executor->execute(Runnable([this, result]() -> void {
 				try {
-					result = _listener->networkIsReachable();
+					_listener->networkIsReachable();
 				}
 				catch (std::exception ex) {
 					Log::getLogger()->error("Peer manager callback (networkIsReachable) error: {}", ex.what());

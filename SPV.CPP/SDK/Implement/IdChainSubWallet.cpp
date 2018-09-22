@@ -38,6 +38,7 @@ namespace Elastos {
 
 			std::vector<std::string> addrs(bufferIds.begin(), bufferIds.end());
 			_walletManager->getWallet()->initListeningAddresses(addrs);
+			_parent->Save();
 		}
 
 		IdChainSubWallet::~IdChainSubWallet() {

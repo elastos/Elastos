@@ -30,6 +30,7 @@
 #include "BRPeerMessages.h"
 #include "BRMerkleBlock.h"
 #include "BRPeer.h"
+#include "BRChainParams.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <inttypes.h>
@@ -586,10 +587,9 @@ static UInt128 *_addressLookup(const char *hostname)
     size_t count = 0, i = 0;
 
     if (getaddrinfo(hostname, NULL, NULL, &servinfo) == 0) {
-        for (p = servinfo; p != NULL; p = p->ai_next) count++;
+        for (p = servinfo; p != NULL; p = p->ai_next) if (p->ai_socktype == SOCK_STREAM) count++;
         if (count > 0) addrList = calloc(count + 1, sizeof(*addrList));
         assert(addrList != NULL || count == 0);
-		memset(addrList, 0, sizeof(*addrList));
 
         for (p = servinfo; p != NULL; p = p->ai_next) {
             if (p->ai_socktype == SOCK_STREAM) {
@@ -660,13 +660,13 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
         manager->peers[0].timestamp = now;
     }
     else {
-        for (size_t i = 0; manager->params->dnsSeeds && manager->params->dnsSeeds[i]; i++) {
-            for (addr = addrList = _addressLookup(manager->params->dnsSeeds[i]); addr && ! UInt128IsZero(addr); addr++) {
-                array_add(manager->peers, ((BRPeer) { *addr, manager->params->standardPort, services, now, 0 }));
-            }
-        }
+		for (size_t i = 0; manager->params->dnsSeeds && manager->params->dnsSeeds[i]; i++) {
+			for (addr = addrList = _addressLookup(manager->params->dnsSeeds[i]); addr && !UInt128IsZero(addr); addr++) {
+				array_add(manager->peers, ((BRPeer) {*addr, manager->params->standardPort, services, now, 0}));
+			}
+			if (addrList) free(addrList);
+		}
 
-        if (addrList) free(addrList);
         ts.tv_sec = 0;
         ts.tv_nsec = 1;
 
@@ -675,6 +675,8 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
             nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
             pthread_mutex_lock(&manager->lock);
         } while (manager->dnsThreadCount > 0 && array_count(manager->peers) < PEER_MAX_CONNECTIONS);
+
+        qsort(manager->peers, array_count(manager->peers), sizeof(*manager->peers), _peerTimestampCompare);
 
         _peer_log("peer manager found %zu peers\n", array_count(manager->peers));
         for (size_t i = 0; i < array_count(manager->peers); i++) {
@@ -686,8 +688,6 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
                 inet_ntop(AF_INET6, &peer->address, host, sizeof(host));
             _peer_log("manager->peers[%zu] = %s\n", i, host);
         }
-
-        qsort(manager->peers, array_count(manager->peers), sizeof(*manager->peers), _peerTimestampCompare);
     }
 }
 
@@ -1660,7 +1660,7 @@ void BRPeerManagerConnect(BRPeerManager *manager)
     }
 
     if (array_count(manager->connectedPeers) == 0) {
-        peer_log(&BR_PEER_NONE, "sync failed");
+        _peer_log("sync failed");
         _BRPeerManagerSyncStopped(manager);
         pthread_mutex_unlock(&manager->lock);
         if (manager->syncStopped) manager->syncStopped(manager->info, ENETUNREACH);

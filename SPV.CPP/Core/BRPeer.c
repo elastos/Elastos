@@ -460,7 +460,7 @@ void BRPeerConnect(BRPeer *peer)
     if (ctx->status == BRPeerStatusDisconnected || ctx->waitingForNetwork) {
         ctx->status = BRPeerStatusConnecting;
 
-        if (ctx->networkIsReachable && ! ctx->networkIsReachable(ctx->info) && 0) { // delay until network is reachable
+        if (0 && ctx->networkIsReachable && ! ctx->networkIsReachable(ctx->info)) { // delay until network is reachable
             if (! ctx->waitingForNetwork) peer_log(peer, "waiting for network reachability");
             ctx->waitingForNetwork = 1;
         }

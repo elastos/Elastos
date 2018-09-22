@@ -313,13 +313,7 @@ namespace Elastos {
 				++it;
 			}
 
-			if (_masterWalletMap.size() == 0) {
-				std::stringstream ess;
-				ess << "init master wallets size = " << _masterWalletMap.size() << " error: "
-					<< MASTER_WALLET_STORE_FILE << " not found";
-				Log::getLogger()->error(ess.str());
-//				throw std::logic_error(ess.str());
-			}
+			Log::getLogger()->info("{} master wallets were created", _masterWalletMap.size());
 		}
 
 	}

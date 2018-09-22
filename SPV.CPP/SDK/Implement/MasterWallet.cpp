@@ -386,6 +386,7 @@ namespace Elastos {
 				startPeerManager(subWalletImpl);
 				_createdWallets[subWallet->GetChainId()] = subWallet;
 			}
+			Save();
 		}
 
 
@@ -430,9 +431,7 @@ namespace Elastos {
 
 		std::string
 		MasterWallet::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
-			std::string r = _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index);
-			Save();
-			return r;
+			return _idAgentImpl->DeriveIdAndKeyForPurpose(purpose, index);
 		}
 
 		nlohmann::json
@@ -504,6 +503,7 @@ namespace Elastos {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
 				if (subWallet == nullptr) continue;
+				Log::getLogger()->info("Going to save configuration of subwallet '{}'", subWallet->GetChainId());
 				coinInfos.push_back(subWallet->_info);
 			}
 			_localStore.SetSubWalletInfoList(coinInfos);
