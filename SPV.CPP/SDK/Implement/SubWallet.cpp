@@ -53,7 +53,7 @@ namespace Elastos {
 				_subAccount = SubAccountPtr(generator.Generate());
 
 				_info.setChainCode(Utils::UInt256ToString(generator.GetResultChainCode()));
-				if (generator.GetResultPublicKey().GetSize() == 0)
+				if (generator.GetResultPublicKey().GetSize() > 0)
 					_info.setPublicKey(Utils::encodeHex(generator.GetResultPublicKey()));
 			}
 

@@ -48,6 +48,13 @@ namespace Elastos {
 					   const std::string &payPassword,
 					   uint32_t requiredSignCount);
 
+			void Reset(const std::string &phrase,
+					   const std::string &language,
+					   const std::string &phrasePassword,
+					   const nlohmann::json &coSigners,
+					   const std::string &payPassword,
+					   uint32_t requiredSignCount);
+
 		private:
 			JSON_SM_LS(MasterWalletStore);
 

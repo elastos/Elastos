@@ -21,6 +21,11 @@ public:
 
 	static IMasterWallet *importWithKeystore(boost::shared_ptr<MasterWalletManager> walletFactory, const std::string &payPassword);
 	static IMasterWallet *importWithMnemonic(boost::shared_ptr<MasterWalletManager> walletFactory, const std::string &payPassword);
+	static IMasterWallet *createReadOnlyMultiSignWallet(boost::shared_ptr<MasterWalletManager> walletFactory);
+	static IMasterWallet *createMultiSignWalletFromMnemonic(boost::shared_ptr<MasterWalletManager> walletFactory,
+															const std::string &payPassword);
+	static IMasterWallet *createMultiSignWalletFromPrivKey(boost::shared_ptr<MasterWalletManager> walletFactory,
+															const std::string &payPassword);
 
 	static void transfer(ISubWallet *subWallet, const std::string &payPassword, uint64_t amount, const std::string &to);
 	static void deposit(ISubWallet *mainchainSubWallet, uint64_t amount, const std::string &sidechainAddress, const std::string &payPassword);
