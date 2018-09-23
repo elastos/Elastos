@@ -170,12 +170,6 @@ namespace Elastos {
 			if (boost::filesystem::exists(path))
 				boost::filesystem::remove_all(path);
 
-			for (WalletMap::const_iterator it = _createdWallets.cbegin(); it != _createdWallets.cend(); ++it) {
-				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
-				if (subWallet != nullptr) {
-					subWallet->fireDestroyWallet();
-				}
-			}
 		}
 
 		void MasterWallet::Save() {
