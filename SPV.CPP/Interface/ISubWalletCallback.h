@@ -46,10 +46,6 @@ namespace Elastos {
 			 */
 			virtual void OnBlockSyncStopped() = 0;
 
-			/**
-			 * Callback method fired when subwallet was destroyed.
-			 */
-			virtual void OnDestroyWallet() = 0;
 		};
 
 	}

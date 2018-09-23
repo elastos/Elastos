@@ -414,13 +414,6 @@ namespace Elastos {
 				_walletManager->stop();
 		}
 
-		void SubWallet::fireDestroyWallet() {
-			std::for_each(_callbacks.begin(), _callbacks.end(),
-						  [](ISubWalletCallback *callback) {
-							  callback->OnDestroyWallet();
-						  });
-		}
-
 		std::string SubWallet::GetPublicKey() const {
 			return _subAccount->GetMainAccountPublicKey();
 		}
