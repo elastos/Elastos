@@ -27,6 +27,12 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		struct ELAWallet {
+
+			ELAWallet() {
+				memset(&Raw, 0, sizeof(Raw));
+				IsSingleAddress = false;
+			}
+
 			BRWallet Raw;
 			typedef std::map<std::string, std::string> TransactionRemarkMap;
 			TransactionRemarkMap TxRemarkMap;

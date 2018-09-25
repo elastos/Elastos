@@ -49,9 +49,8 @@ namespace Elastos {
 			BRTransaction *tx;
 
 			assert(transactions != NULL || txCount == 0);
-			wallet = (ELAWallet *) calloc(1, sizeof(*wallet));
+			wallet = new ELAWallet();
 			assert(wallet != NULL);
-			memset(wallet, 0, sizeof(*wallet));
 			array_new(wallet->Raw.utxos, 100);
 			array_new(wallet->Raw.transactions, txCount + 100);
 			wallet->Raw.feePerKb = DEFAULT_FEE_PER_KB;
@@ -109,7 +108,7 @@ namespace Elastos {
 			pthread_mutex_unlock(&wallet->Raw.lock);
 			pthread_mutex_destroy(&wallet->Raw.lock);
 
-			free(wallet);
+			delete wallet;
 		}
 
 		std::string ELAWalletGetRemark(ELAWallet *wallet, const std::string &txHash) {
@@ -647,6 +646,9 @@ namespace Elastos {
 		}
 
 		bool Wallet::containsAddress(const std::string &address) {
+			if (_wallet->IsSingleAddress) {
+				return _wallet->SingleAddress == address;
+			}
 
 			return BRWalletContainsAddress((BRWallet *) _wallet, address.c_str()) != 0;
 		}
@@ -788,11 +790,19 @@ namespace Elastos {
 				// NOTE: balance/UTXOs will then need to be recalculated when last block changes
 				for (j = 0; tx->raw.blockHeight != TX_UNCONFIRMED && j < tx->outputs.size(); j++) {
 					if (tx->outputs[j]->getRaw()->address[0] != '\0') {
-						BRSetAdd(wallet->usedAddrs, tx->outputs[j]->getRaw()->address);
+						if (((ELAWallet *)wallet)->IsSingleAddress) {
+							ELAWallet *elaWallet = (ELAWallet *)wallet;
+							if (elaWallet->SingleAddress == std::string(tx->outputs[j]->getRaw()->address)) {
+								array_add(wallet->utxos, ((BRUTXO) {tx->raw.txHash, (uint32_t) j}));
+								balance += tx->outputs[j]->getAmount();
+							}
+						} else {
+							BRSetAdd(wallet->usedAddrs, tx->outputs[j]->getRaw()->address);
 
-						if (BRSetContains(wallet->allAddrs, tx->outputs[j]->getRaw()->address)) {
-							array_add(wallet->utxos, ((BRUTXO) {tx->raw.txHash, (uint32_t) j}));
-							balance += tx->outputs[j]->getAmount();
+							if (BRSetContains(wallet->allAddrs, tx->outputs[j]->getRaw()->address)) {
+								array_add(wallet->utxos, ((BRUTXO) {tx->raw.txHash, (uint32_t) j}));
+								balance += tx->outputs[j]->getAmount();
+							}
 						}
 					}
 				}
@@ -818,6 +828,7 @@ namespace Elastos {
 		int Wallet::WalletContainsTx(BRWallet *wallet, const BRTransaction *tx) {
 			int r = 0;
 
+			ELAWallet *elaWallet = (ELAWallet *) wallet;
 			const ELATransaction *txn = (const ELATransaction *) tx;
 
 			if (!txn)
@@ -826,19 +837,37 @@ namespace Elastos {
 			size_t outCount = txn->outputs.size();
 
 			for (size_t i = 0; !r && i < outCount; i++) {
-				if (BRSetContains(wallet->allAddrs, txn->outputs[i]->getRaw()->address)) r = 1;
+				if (elaWallet->IsSingleAddress) {
+					if (elaWallet->SingleAddress == std::string(txn->outputs[i]->getRaw()->address)) {
+						r = 1;
+					}
+				} else {
+					if (BRSetContains(wallet->allAddrs, txn->outputs[i]->getRaw()->address)) {
+						r = 1;
+					}
+				}
 			}
 
 			for (size_t i = 0; !r && i < txn->raw.inCount; i++) {
 				ELATransaction *t = (ELATransaction *) BRSetGet(wallet->allTx, &txn->raw.inputs[i].txHash);
 				uint32_t n = txn->raw.inputs[i].index;
 
-				if (t && n < t->outputs.size() && BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address))
-					r = 1;
+				if (t == nullptr || n >= t->outputs.size()) {
+					continue;
+				}
+
+				if (elaWallet->IsSingleAddress) {
+					if (elaWallet->SingleAddress == std::string()) {
+						r = 1;
+					}
+				} else {
+					if (BRSetContains(wallet->allAddrs, t->outputs[n]->getRaw()->address)) {
+						r = 1;
+					}
+				}
 			}
 
 			//for listening addresses
-			ELAWallet *elaWallet = (ELAWallet *) wallet;
 			for (size_t i = 0; i < outCount; ++i) {
 				if (std::find(elaWallet->ListeningAddrs.begin(), elaWallet->ListeningAddrs.end(),
 							  txn->outputs[i]->getRaw()->address) != elaWallet->ListeningAddrs.end())
