@@ -117,5 +117,9 @@ namespace Elastos {
 			return "Simple";
 		}
 
+		bool SimpleAccount::IsReadOnly() const {
+			return false;
+		}
+
 	}
 }

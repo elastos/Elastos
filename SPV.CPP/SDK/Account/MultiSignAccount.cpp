@@ -172,5 +172,9 @@ namespace Elastos {
 			return _requiredSignCount;
 		}
 
+		bool MultiSignAccount::IsReadOnly() const {
+			return _me == nullptr;
+		}
+
 	}
 }

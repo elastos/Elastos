@@ -15,7 +15,7 @@ namespace Elastos {
 		}
 
 		BackgroundExecutor::~BackgroundExecutor() {
-			stopThread();
+//			stopThread();
 		}
 
 		void BackgroundExecutor::execute(const Runnable &runnable) {

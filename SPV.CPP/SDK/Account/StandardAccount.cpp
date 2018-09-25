@@ -200,5 +200,9 @@ namespace Elastos {
 			return "Standard";
 		}
 
+		bool StandardAccount::IsReadOnly() const {
+			return false;
+		}
+
 	}
 }
