@@ -14,13 +14,10 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-const ValueNone = 0
-const ValueExist = 1
-
-const TaskChanCap = 4
-
-var (
-	ErrDBNotFound = errors.New("leveldb: not found")
+const (
+	ValueNone   = 0
+	ValueExist  = 1
+	TaskChanCap = 4
 )
 
 type persistTask interface{}
@@ -84,11 +81,10 @@ func NewChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 	store.Init()
-	return store, nil
-}
 
-func StartChainStoreLoop(store *ChainStore) {
-	go store.Loop()
+	go store.taskHandler()
+
+	return store, nil
 }
 
 func (c *ChainStore) Init() {
@@ -117,7 +113,7 @@ func (c *ChainStore) Close() {
 	c.IStore.Close()
 }
 
-func (c *ChainStore) Loop() {
+func (c *ChainStore) taskHandler() {
 	for {
 		select {
 		case t := <-c.taskCh:
@@ -195,7 +191,6 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 	if !c.IsBlockInStore(hash) {
 		return 0, errors.New("genesis block is not consistent with the chain")
 	}
-	DefaultLedger.Blockchain.GenesisHash = hash
 
 	// Get Current Block
 	currentBlockPrefix := []byte{byte(SYS_CurrentBlock)}
@@ -204,43 +199,13 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 		return 0, err
 	}
 
-	r := bytes.NewReader(data)
-	var blockHash Uint256
-	blockHash.Deserialize(r)
-	c.currentBlockHeight, err = ReadUint32(r)
-	endHeight := c.currentBlockHeight
-
-	startHeight := uint32(0)
-	if endHeight > MinMemoryNodes {
-		startHeight = endHeight - MinMemoryNodes
-	}
-
-	for start := startHeight; start <= endHeight; start++ {
-		hash, err := c.GetBlockHash(start)
-		if err != nil {
-			return 0, err
-		}
-		header, err := c.GetHeader(hash)
-		if err != nil {
-			return 0, err
-		}
-		node, err := DefaultLedger.Blockchain.LoadBlockNode(header, &hash)
-		if err != nil {
-			return 0, err
-		}
-
-		// This node is now the end of the best chain.
-		DefaultLedger.Blockchain.BestChain = node
-
-	}
-
-	return c.currentBlockHeight, nil
-
+	c.currentBlockHeight, err = ReadUint32(bytes.NewReader(data))
+	return c.currentBlockHeight, err
 }
 
-func (c *ChainStore) IsTxHashDuplicate(txhash Uint256) bool {
+func (c *ChainStore) IsDuplicateTx(txId Uint256) bool {
 	prefix := []byte{byte(DATA_Transaction)}
-	_, err_get := c.Get(append(prefix, txhash.Bytes()...))
+	_, err_get := c.Get(append(prefix, txId.Bytes()...))
 	if err_get != nil {
 		return false
 	} else {
@@ -278,7 +243,7 @@ func (c *ChainStore) IsDoubleSpend(txn *core.Transaction) bool {
 	return false
 }
 
-func (c *ChainStore) IsMainchainTxHashDuplicate(mainchainTxHash Uint256) bool {
+func (c *ChainStore) IsDuplicateMainchainTx(mainchainTxHash Uint256) bool {
 	prefix := []byte{byte(IX_MainChain_Tx)}
 	_, err := c.Get(append(prefix, mainchainTxHash.Bytes()...))
 	if err != nil {
@@ -533,12 +498,11 @@ func (c *ChainStore) rollback(b *core.Block) error {
 	c.RollbackCurrentBlock(b)
 	c.BatchCommit()
 
-	DefaultLedger.Blockchain.UpdateBestHeight(b.Header.Height - 1)
 	c.mu.Lock()
 	c.currentBlockHeight = b.Header.Height - 1
 	c.mu.Unlock()
 
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventRollbackTransaction, b)
+	DefaultChain.BCEvents.Notify(events.EventRollbackTransaction, b)
 
 	return nil
 }
@@ -617,12 +581,11 @@ func (c *ChainStore) persistBlock(block *core.Block) {
 		return
 	}
 
-	DefaultLedger.Blockchain.UpdateBestHeight(block.Header.Height)
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
 
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
+	DefaultChain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
 }
 
 func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*core.Output, error) {
@@ -658,16 +621,6 @@ func (c *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func (c *ChainStore) RemoveHeaderListElement(hash Uint256) {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
-		n := e.Value.(core.Header)
-		h := n.Hash()
-		if h.IsEqual(hash) {
-			c.headerIdx.Remove(e)
-		}
-	}
 }
 
 func (c *ChainStore) GetHeight() uint32 {
@@ -744,7 +697,7 @@ func (c *ChainStore) GetUnspentElementFromProgramHash(programHash Uint168, asset
 	return unspents, nil
 }
 
-func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
+func (c *ChainStore) GetAssetUnspents(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
 	unspents := make([]*UTXO, 0)
 
 	key := []byte{byte(IX_Unspent_UTXO)}
@@ -770,10 +723,9 @@ func (c *ChainStore) GetUnspentFromProgramHash(programHash Uint168, assetid Uint
 	}
 
 	return unspents, nil
-
 }
 
-func (c *ChainStore) GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error) {
+func (c *ChainStore) GetUnspents(programHash Uint168) (map[Uint256][]*UTXO, error) {
 	uxtoUnspents := make(map[Uint256][]*UTXO)
 
 	prefix := []byte{byte(IX_Unspent_UTXO)}

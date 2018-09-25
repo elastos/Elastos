@@ -51,8 +51,8 @@ func StartServer() {
 	}
 	instance.Start()
 
-	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
-	chain.DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
+	chain.DefaultChain.BCEvents.Subscribe(events.EventBlockPersistCompleted, SendBlock2WSclient)
+	chain.DefaultChain.BCEvents.Subscribe(events.EventNewTransactionPutInPool, SendTransaction2WSclient)
 }
 
 func (server *WebSocketServer) Start() {

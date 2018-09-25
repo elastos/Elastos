@@ -27,7 +27,7 @@ type BlockValidateBase struct {
 	PowCheckBlockSize          func(block *Block) error
 	PowCheckTransactionsFee    func(block *Block) error
 	PowCheckTransactionsMerkle func(block *Block) error
-	PowCheckBlockContext       func(block *Block, prevNode *BlockNode, ledger *Ledger) error
+	PowCheckBlockContext       func(block *Block, prevNode *BlockNode) error
 	CheckProofOfWork           func(header *Header, powLimit *big.Int) error
 	IsFinalizedTransaction     func(msgTx *Transaction, blockHeight uint32) bool
 }
@@ -152,7 +152,7 @@ func (v *BlockValidateBase) PowCheckTransactionsFeeImpl(block *Block) error {
 		}
 
 		// Calculate transaction fee
-		totalTxFee += TxFeeHelper.GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		totalTxFee += TxFeeHelper.GetTxFee(tx, DefaultChain.AssetID)
 	}
 
 	// Reward in coinbase must match total transaction fee
@@ -217,7 +217,7 @@ func (v *BlockValidateBase) PowCheckTransactionsMerkleImpl(block *Block) error {
 	return nil
 }
 
-func (v *BlockValidateBase) PowCheckBlockContextImpl(block *Block, prevNode *BlockNode, ledger *Ledger) error {
+func (v *BlockValidateBase) PowCheckBlockContextImpl(block *Block, prevNode *BlockNode) error {
 	// The genesis block is valid by definition.
 	if prevNode == nil {
 		return nil

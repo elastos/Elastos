@@ -30,7 +30,7 @@ func newTestChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 
-	go store.Loop()
+	go store.taskHandler()
 	store.NewBatch()
 
 	return store, nil
@@ -135,7 +135,7 @@ func TestChainStore_IsMainchainTxHashDuplicate(t *testing.T) {
 	}
 
 	// 4. Run IsMainchainTxHashDuplicate
-	isDuplicate := testChainStore.IsMainchainTxHashDuplicate(mainchainTxHash)
+	isDuplicate := testChainStore.IsDuplicateMainchainTx(mainchainTxHash)
 	if !isDuplicate {
 		t.Error("Mainchain Tx hash should be checked to be duplicated")
 	}

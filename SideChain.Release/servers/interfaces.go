@@ -176,7 +176,7 @@ func (s *HttpServersBase) GetTransactionInfoImpl(header *Header, tx *Transaction
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = chain.DefaultLedger.Blockchain.GetBestHeight() - header.Height + 1
+		confirmations = chain.DefaultChain.GetBestHeight() - header.Height + 1
 		blockHash = ToReversedString(header.Hash())
 		time = header.Timestamp
 		blockTime = header.Timestamp
@@ -320,15 +320,15 @@ func (s *HttpServersBase) GetRawTransactionImpl(param Params) map[string]interfa
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
-	tx, height, err := chain.DefaultLedger.Store.GetTransaction(hash)
+	tx, height, err := chain.DefaultChain.GetTransaction(hash)
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
-	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	bHash, err := chain.DefaultChain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
-	header, err := chain.DefaultLedger.Store.GetHeader(bHash)
+	header, err := chain.DefaultChain.GetHeader(bHash)
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
@@ -397,7 +397,7 @@ func (s *HttpServersBase) SubmitSideAuxBlockImpl(param Params) map[string]interf
 		return ResponsePack(InternalError, "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
-	inMainChain, isOrphan, err := chain.DefaultLedger.Blockchain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
+	inMainChain, isOrphan, err := chain.DefaultChain.AddBlock(LocalPow.MsgBlock.BlockData[blockHash])
 	if err != nil {
 		log.Trace(err)
 		return ResponsePack(InternalError, "")
@@ -476,18 +476,18 @@ func (s *HttpServersBase) CreateAuxBlockImpl(param Params) map[string]interface{
 
 	LocalPow.PayToAddr = addr
 
-	genesisHash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(0))
+	genesisHash, err := chain.DefaultChain.GetBlockHash(uint32(0))
 	if err != nil {
 		return ResponsePack(Error, "Get genesis hash failed")
 	}
 	genesisHashStr := BytesToHexString(genesisHash.Bytes())
 
-	preHash := chain.DefaultLedger.Blockchain.CurrentBlockHash()
+	preHash := chain.DefaultChain.CurrentBlockHash()
 	preHashStr := BytesToHexString(preHash.Bytes())
 
 	SendToAux := SideAuxBlock{
 		GenesisHash:       genesisHashStr,
-		Height:            chain.DefaultLedger.Store.GetHeight(),
+		Height:            chain.DefaultChain.GetBestHeight(),
 		Bits:              fmt.Sprintf("%x", msgBlock.Bits), //difficulty
 		Hash:              curHashStr,
 		PreviousBlockHash: preHashStr,
@@ -599,16 +599,16 @@ func (s *HttpServersBase) GetBlockInfoImpl(block *Block, verbose bool) BlockInfo
 	binary.BigEndian.PutUint32(versionBytes[:], block.Header.Version)
 
 	var chainWork [4]byte
-	binary.BigEndian.PutUint32(chainWork[:], chain.DefaultLedger.Blockchain.GetBestHeight()-block.Header.Height)
+	binary.BigEndian.PutUint32(chainWork[:], chain.DefaultChain.GetBestHeight()-block.Header.Height)
 
-	nextBlockHash, _ := chain.DefaultLedger.Store.GetBlockHash(block.Header.Height + 1)
+	nextBlockHash, _ := chain.DefaultChain.GetBlockHash(block.Header.Height + 1)
 
 	auxPow := new(bytes.Buffer)
 	block.Header.SideAuxPow.Serialize(auxPow)
 
 	return BlockInfo{
 		Hash:              ToReversedString(block.Hash()),
-		Confirmations:     chain.DefaultLedger.Blockchain.GetBestHeight() - block.Header.Height + 1,
+		Confirmations:     chain.DefaultChain.GetBestHeight() - block.Header.Height + 1,
 		StrippedSize:      uint32(block.GetSize()),
 		Size:              uint32(block.GetSize()),
 		Weight:            uint32(block.GetSize() * 4),
@@ -630,7 +630,7 @@ func (s *HttpServersBase) GetBlockInfoImpl(block *Block, verbose bool) BlockInfo
 }
 
 func (s *HttpServersBase) GetBlockImpl(hash Uint256, format uint32) (interface{}, ErrCode) {
-	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	block, err := chain.DefaultChain.GetBlockWithHash(hash)
 	if err != nil {
 		return "", UnknownBlock
 	}
@@ -723,7 +723,7 @@ func (s *HttpServersBase) SendRawTransactionImpl(param Params) map[string]interf
 }
 
 func (s *HttpServersBase) GetBlockHeightImpl(param Params) map[string]interface{} {
-	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight)
+	return ResponsePack(Success, chain.DefaultChain.GetBestHeight())
 }
 
 func (s *HttpServersBase) GetBestBlockHashImpl(param Params) map[string]interface{} {
@@ -732,7 +732,7 @@ func (s *HttpServersBase) GetBestBlockHashImpl(param Params) map[string]interfac
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	hash, err := chain.DefaultChain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -740,7 +740,7 @@ func (s *HttpServersBase) GetBestBlockHashImpl(param Params) map[string]interfac
 }
 
 func (s *HttpServersBase) GetBlockCountImpl(param Params) map[string]interface{} {
-	return ResponsePack(Success, chain.DefaultLedger.Blockchain.BlockHeight+1)
+	return ResponsePack(Success, chain.DefaultChain.GetBestHeight()+1)
 }
 
 func (s *HttpServersBase) GetBlockHashImpl(param Params) map[string]interface{} {
@@ -749,7 +749,7 @@ func (s *HttpServersBase) GetBlockHashImpl(param Params) map[string]interface{} 
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	hash, err := chain.DefaultChain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -780,12 +780,12 @@ func (s *HttpServersBase) GetTransactionsByHeightImpl(param Params) map[string]i
 		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
 	}
 
-	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := chain.DefaultChain.GetBlockHash(uint32(height))
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 
 	}
-	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	block, err := chain.DefaultChain.GetBlockWithHash(hash)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -798,7 +798,7 @@ func (s *HttpServersBase) GetBlockByHeightImpl(param Params) map[string]interfac
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := chain.DefaultChain.GetBlockHash(uint32(height))
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -823,7 +823,7 @@ func (s *HttpServersBase) GetAssetByHashImpl(param Params) map[string]interface{
 	if err != nil {
 		return ResponsePack(InvalidAsset, "")
 	}
-	asset, err := chain.DefaultLedger.Store.GetAsset(hash)
+	asset, err := chain.DefaultChain.GetAsset(hash)
 	if err != nil {
 		return ResponsePack(UnknownAsset, "")
 	}
@@ -845,7 +845,7 @@ func (s *HttpServersBase) GetBalanceByAddrImpl(param Params) map[string]interfac
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	unspends, err := chain.DefaultChain.GetUnspents(*programHash)
 	var balance Fixed64 = 0
 	for _, u := range unspends {
 		for _, v := range u {
@@ -879,7 +879,7 @@ func (s *HttpServersBase) GetBalanceByAssetImpl(param Params) map[string]interfa
 		return ResponsePack(InvalidParams, "")
 	}
 
-	unspents, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	unspents, err := chain.DefaultChain.GetUnspents(*programHash)
 	var balance Fixed64 = 0
 	for k, u := range unspents {
 		for _, v := range u {
@@ -912,10 +912,10 @@ func (s *HttpServersBase) GetUnspendsImpl(param Params) map[string]interface{} {
 		Utxo      []UTXOUnspentInfo
 	}
 	var results []Result
-	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
+	unspends, err := chain.DefaultChain.GetUnspents(*programHash)
 
 	for k, u := range unspends {
-		asset, err := chain.DefaultLedger.Store.GetAsset(k)
+		asset, err := chain.DefaultChain.GetAsset(k)
 		if err != nil {
 			return ResponsePack(InternalError, "")
 		}
@@ -955,7 +955,7 @@ func (s *HttpServersBase) GetUnspendOutputImpl(param Params) map[string]interfac
 		Index uint32
 		Value string
 	}
-	infos, err := chain.DefaultLedger.Store.GetUnspentFromProgramHash(*programHash, assetHash)
+	infos, err := chain.DefaultChain.GetAssetUnspents(*programHash, assetHash)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 
@@ -984,15 +984,15 @@ func (s *HttpServersBase) GetTransactionByHashImpl(param Params) map[string]inte
 	if err != nil {
 		return ResponsePack(InvalidTransaction, "")
 	}
-	txn, height, err := chain.DefaultLedger.Store.GetTransaction(hash)
+	txn, height, err := chain.DefaultChain.GetTransaction(hash)
 	if err != nil {
 		return ResponsePack(UnknownTransaction, "")
 	}
-	bHash, err := chain.DefaultLedger.Store.GetBlockHash(height)
+	bHash, err := chain.DefaultChain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
-	header, err := chain.DefaultLedger.Store.GetHeader(bHash)
+	header, err := chain.DefaultChain.GetHeader(bHash)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -1027,7 +1027,7 @@ func (s *HttpServersBase) GetExistDepositTransactionsImpl(param Params) map[stri
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
 		}
-		inStore := chain.DefaultLedger.Store.IsMainchainTxHashDuplicate(*hash)
+		inStore := chain.DefaultChain.IsDuplicateMainchainTx(*hash)
 		inTxPool := NodeForServers.IsDuplicateMainchainTx(*hash)
 		if inTxPool || inStore {
 			resultTxHashes = append(resultTxHashes, txHash)
@@ -1066,12 +1066,12 @@ func (s *HttpServersBase) GetDestroyedTransactionsByHeightImpl(param Params) map
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
-	hash, err := chain.DefaultLedger.Store.GetBlockHash(uint32(height))
+	hash, err := chain.DefaultChain.GetBlockHash(uint32(height))
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 
 	}
-	block, err := chain.DefaultLedger.Store.GetBlock(hash)
+	block, err := chain.DefaultChain.GetBlockWithHash(hash)
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}

@@ -51,7 +51,7 @@ func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 		return errCode
 	}
 
-	txn.Fee = TxFeeHelper.GetTxFee(txn, DefaultLedger.Blockchain.AssetID)
+	txn.Fee = TxFeeHelper.GetTxFee(txn, DefaultChain.AssetID)
 	buf := new(bytes.Buffer)
 	txn.Serialize(buf)
 	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
@@ -120,7 +120,7 @@ func (pool *TxPool) removeTransaction(txn *core.Transaction) {
 	//1.remove from txnList
 	pool.delFromTxList(txn.Hash())
 	//2.remove from UTXO list map
-	result, err := DefaultLedger.Store.GetTxReference(txn)
+	result, err := DefaultChain.GetTxReference(txn)
 	if err != nil {
 		log.Info(fmt.Sprintf("Transaction =%x not Exist in Pool when delete.", txn.Hash()))
 		return
@@ -132,7 +132,7 @@ func (pool *TxPool) removeTransaction(txn *core.Transaction) {
 
 //check and add to utxo list pool
 func (pool *TxPool) verifyDoubleSpend(txn *core.Transaction) error {
-	reference, err := DefaultLedger.Store.GetTxReference(txn)
+	reference, err := DefaultChain.GetTxReference(txn)
 	if err != nil {
 		return err
 	}
@@ -185,7 +185,7 @@ func (pool *TxPool) verifyDuplicateMainchainTx(txn *core.Transaction) error {
 //clean txnpool utxo map
 func (pool *TxPool) cleanUTXOList(txs []*core.Transaction) {
 	for _, txn := range txs {
-		inputUtxos, _ := DefaultLedger.Store.GetTxReference(txn)
+		inputUtxos, _ := DefaultChain.GetTxReference(txn)
 		for Utxoinput, _ := range inputUtxos {
 			pool.delInputUTXOList(Utxoinput)
 		}
@@ -246,7 +246,7 @@ func (pool *TxPool) AddToTxList(txn *core.Transaction) bool {
 		return false
 	}
 	pool.txnList[txnHash] = txn
-	DefaultLedger.Blockchain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
+	DefaultChain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
 	return true
 }
 

@@ -100,8 +100,8 @@ func (pow *PowService) Init() {
 }
 
 func (pow *PowService) InitPowServiceSubscriber() {
-	pow.blockPersistCompletedSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
-	pow.RollbackTransactionSubscriber = DefaultLedger.Blockchain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
+	pow.blockPersistCompletedSubscriber = DefaultChain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
+	pow.RollbackTransactionSubscriber = DefaultChain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
 }
 
 func (pow *PowService) GetTransactionCountImpl() int {
@@ -131,7 +131,7 @@ func (pow *PowService) CreateCoinBaseTxImpl(nextBlockHeight uint32, addr string)
 		CoinbaseData: []byte(config.Parameters.PowConfiguration.MinerInfo),
 	}
 
-	txn := NewCoinBaseTransaction(pd, DefaultLedger.Blockchain.GetBestHeight()+1)
+	txn := NewCoinBaseTransaction(pd, DefaultChain.GetBestHeight()+1)
 	txn.Inputs = []*core.Input{
 		{
 			Previous: core.OutPoint{
@@ -143,12 +143,12 @@ func (pow *PowService) CreateCoinBaseTxImpl(nextBlockHeight uint32, addr string)
 	}
 	txn.Outputs = []*core.Output{
 		{
-			AssetID:     DefaultLedger.Blockchain.AssetID,
+			AssetID:     DefaultChain.AssetID,
 			Value:       0,
 			ProgramHash: FoundationAddress,
 		},
 		{
-			AssetID:     DefaultLedger.Blockchain.AssetID,
+			AssetID:     DefaultChain.AssetID,
 			Value:       0,
 			ProgramHash: *minerProgramHash,
 		},
@@ -170,7 +170,7 @@ func (s ByFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s ByFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
 func (pow *PowService) GenerateBlockImpl(addr string) (*core.Block, error) {
-	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
+	nextBlockHeight := DefaultChain.GetBestHeight() + 1
 	coinBaseTx, err := pow.CreateCoinBaseTx(nextBlockHeight, addr)
 	if err != nil {
 		return nil, err
@@ -178,9 +178,9 @@ func (pow *PowService) GenerateBlockImpl(addr string) (*core.Block, error) {
 
 	header := core.Header{
 		Version:    0,
-		Previous:   *DefaultLedger.Blockchain.BestChain.Hash,
+		Previous:   *DefaultChain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
-		Timestamp:  uint32(DefaultLedger.Blockchain.MedianAdjustedTime().Unix()),
+		Timestamp:  uint32(DefaultChain.MedianAdjustedTime().Unix()),
 		Bits:       config.Parameters.ChainParam.PowLimitBits,
 		Height:     nextBlockHeight,
 		Nonce:      0,
@@ -202,14 +202,14 @@ func (pow *PowService) GenerateBlockImpl(addr string) (*core.Block, error) {
 	txRoot, _ := crypto.ComputeRoot(txHash)
 	msgBlock.Header.MerkleRoot = txRoot
 
-	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(DefaultLedger.Blockchain.BestChain, time.Now())
+	msgBlock.Header.Bits, err = CalcNextRequiredDifficulty(DefaultChain.BestChain, time.Now())
 	log.Info("difficulty: ", msgBlock.Header.Bits)
 
 	return msgBlock, err
 }
 
 func (pow *PowService) GenerateBlockTransactionsImpl(msgBlock *core.Block, coinBaseTx *core.Transaction) {
-	nextBlockHeight := DefaultLedger.Blockchain.GetBestHeight() + 1
+	nextBlockHeight := DefaultChain.GetBestHeight() + 1
 	totalTxsSize := coinBaseTx.GetSize()
 	txCount := 1
 	totalFee := common.Fixed64(0)
@@ -234,7 +234,7 @@ func (pow *PowService) GenerateBlockTransactionsImpl(msgBlock *core.Block, coinB
 			continue
 		}
 
-		fee := TxFeeHelper.GetTxFee(tx, DefaultLedger.Blockchain.AssetID)
+		fee := TxFeeHelper.GetTxFee(tx, DefaultChain.AssetID)
 		if fee != tx.Fee {
 			continue
 		}
@@ -277,8 +277,8 @@ func (pow *PowService) DiscreteMiningImpl(n uint32) ([]*common.Uint256, error) {
 		}
 
 		if pow.SolveBlock(msgBlock, ticker) {
-			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
+			if msgBlock.Header.Height == DefaultChain.GetBestHeight()+1 {
+				inMainChain, isOrphan, err := DefaultChain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
 					return nil, err
@@ -304,7 +304,7 @@ func (pow *PowService) DiscreteMiningImpl(n uint32) ([]*common.Uint256, error) {
 }
 
 func (pow *PowService) SolveBlockImpl(msgBlock *core.Block, ticker *time.Ticker) bool {
-	genesisHash, err := DefaultLedger.Store.GetBlockHash(0)
+	genesisHash, err := DefaultChain.GetBlockHash(0)
 	if err != nil {
 		return false
 	}
@@ -316,7 +316,7 @@ func (pow *PowService) SolveBlockImpl(msgBlock *core.Block, ticker *time.Ticker)
 	for i := uint32(0); i <= maxNonce; i++ {
 		select {
 		case <-ticker.C:
-			if !msgBlock.Header.Previous.IsEqual(*DefaultLedger.Blockchain.BestChain.Hash) {
+			if !msgBlock.Header.Previous.IsEqual(*DefaultChain.BestChain.Hash) {
 				return false
 			}
 			//UpdateBlockTime(messageBlock, m.server.blockManager)
@@ -389,7 +389,7 @@ func (pow *PowService) BlockPersistCompletedImpl(v interface{}) {
 		if err != nil {
 			log.Warn(err)
 		}
-		pow.LocalNode.SetHeight(uint64(DefaultLedger.Blockchain.GetBestHeight()))
+		pow.LocalNode.SetHeight(uint64(DefaultChain.GetBestHeight()))
 	}
 }
 
@@ -417,8 +417,8 @@ out:
 		//begin to mine the block with POW
 		if pow.SolveBlock(msgBlock, ticker) {
 			//send the valid block to p2p networkd
-			if msgBlock.Header.Height == DefaultLedger.Blockchain.GetBestHeight()+1 {
-				inMainChain, isOrphan, err := DefaultLedger.Blockchain.AddBlock(msgBlock)
+			if msgBlock.Header.Height == DefaultChain.GetBestHeight()+1 {
+				inMainChain, isOrphan, err := DefaultChain.AddBlock(msgBlock)
 				if err != nil {
 					log.Trace(err)
 					continue

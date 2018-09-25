@@ -58,9 +58,6 @@ func startConsensus(noder protocol.Noder) {
 }
 
 func main() {
-
-	//var blockChain *ledger.Blockchain
-	var err error
 	var noder protocol.Noder
 	log.Info("Node version: ", config.Version)
 
@@ -75,21 +72,28 @@ func main() {
 	chainStore, err := blockchain.NewChainStore()
 	if err != nil {
 		log.Fatal("open LedgerStore err:", err)
-		goto ERROR
+		os.Exit(1)
 	}
-	blockchain.StartChainStoreLoop(chainStore)
 	defer chainStore.Close()
 
-	err = blockchain.Init(chainStore)
+	chainCfg := blockchain.Config{
+		ChainStore:chainStore,
+		PowLimit:config.Parameters.ChainParam.PowLimit,
+		MaxOrphanBlocks: config.Parameters.ChainParam.MaxOrphanBlocks,
+		MinMemoryNodes:config.Parameters.ChainParam.MinMemoryNodes,
+	}
+
+	chain, err := blockchain.New(&chainCfg)
 	if err != nil {
 		log.Fatal(err, "BlockChain initialize failed")
-		goto ERROR
+		os.Exit(1)
 	}
+	blockchain.DefaultChain = chain
 
 	log.Info("2. SPV module init")
 	if err := spv.SpvInit(); err != nil {
 		log.Fatal(err, "SPV module initialize failed")
-		goto ERROR
+		os.Exit(1)
 	}
 
 	log.Info("3. Start the P2P networks")
@@ -110,6 +114,4 @@ func main() {
 		go httpnodeinfo.StartServer()
 	}
 	select {}
-ERROR:
-	os.Exit(1)
 }

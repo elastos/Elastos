@@ -137,15 +137,15 @@ func TestCheckTransactionOutput(t *testing.T) {
 	// coinbase
 	tx := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress},
 	}
 	err := CheckTransactionOutput(tx)
 	assert.NoError(t, err)
 
 	// outputs < 2
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress},
 	}
 	err = CheckTransactionOutput(tx)
 	assert.EqualError(t, err, "coinbase output is not enough, at least 2")
@@ -166,8 +166,8 @@ func TestCheckTransactionOutput(t *testing.T) {
 	minerReward := totalReward - foundationReward
 	t.Logf("Miner reward amount %s", minerReward.String())
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
 	}
 	err = CheckTransactionOutput(tx)
 	assert.NoError(t, err)
@@ -178,8 +178,8 @@ func TestCheckTransactionOutput(t *testing.T) {
 	minerReward = totalReward - foundationReward
 	t.Logf("Miner reward amount %s", minerReward.String())
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
+		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
 	}
 	err = CheckTransactionOutput(tx)
 	assert.EqualError(t, err, "Reward to foundation in coinbase < 30%")
@@ -187,7 +187,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	// normal transaction
 	tx = buildTx()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = DefaultChain.AssetID
 		output.ProgramHash = common.Uint168{}
 	}
 	err = CheckTransactionOutput(tx)
@@ -210,7 +210,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	// invalid program hash
 	tx.Outputs = randomOutputs()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = DefaultChain.AssetID
 		address := common.Uint168{}
 		address[0] = 0x23
 		output.ProgramHash = address
@@ -225,7 +225,7 @@ func TestCheckAssetPrecision(t *testing.T) {
 	// normal transaction
 	tx := buildTx()
 	for _, output := range tx.Outputs {
-		output.AssetID = DefaultLedger.Blockchain.AssetID
+		output.AssetID = DefaultChain.AssetID
 		output.ProgramHash = common.Uint168{}
 	}
 	err := CheckAssetPrecision(tx)
@@ -253,9 +253,9 @@ func TestCheckAssetPrecision(t *testing.T) {
 			Amount: 0 * 100000000,
 		},
 	}
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.PersistAsset(register.Hash(), asset)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
+	DefaultChain.(*ChainStore).NewBatch()
+	DefaultChain.PersistAsset(register.Hash(), asset)
+	DefaultChain.(*ChainStore).BatchCommit()
 
 	// valid precision
 	for _, output := range tx.Outputs {
@@ -405,11 +405,11 @@ func TestCheckTransactionBalance(t *testing.T) {
 	// deposit 100 ELA to foundation account
 	deposit := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
 	deposit.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(100 * ELA)},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(100 * ELA)},
 	}
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).PersistTransaction(deposit, 0)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
+	DefaultChain.(*ChainStore).NewBatch()
+	DefaultChain.(*ChainStore).PersistTransaction(deposit, 0)
+	DefaultChain.(*ChainStore).BatchCommit()
 
 	// invalid output value
 	tx = NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
@@ -417,8 +417,8 @@ func TestCheckTransactionBalance(t *testing.T) {
 		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
 	}
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
+		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
 	}
 	err = CheckTransactionBalance(tx)
 	assert.EqualError(t, err, "Invalide transaction UTXO output.")
@@ -426,20 +426,20 @@ func TestCheckTransactionBalance(t *testing.T) {
 	// invalid transaction fee
 	config.Parameters.PowConfiguration.MinTxFee = int(1 * ELA)
 	tx.Outputs = []*core.Output{
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
-		{AssetID: DefaultLedger.Blockchain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(70 * ELA)},
+		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
+		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(70 * ELA)},
 	}
 	err = CheckTransactionBalance(tx)
 	assert.EqualError(t, err, "Transaction fee not enough")
 
 	// rollback deposit above
-	DefaultLedger.Store.(*ChainStore).NewBatch()
-	DefaultLedger.Store.(*ChainStore).RollbackTransaction(deposit)
-	DefaultLedger.Store.(*ChainStore).BatchCommit()
+	DefaultChain.(*ChainStore).NewBatch()
+	DefaultChain.(*ChainStore).RollbackTransaction(deposit)
+	DefaultChain.(*ChainStore).BatchCommit()
 
 	t.Log("[TestCheckTransactionBalance] PASSED")
 }
 
 func TestTxValidatorDone(t *testing.T) {
-	DefaultLedger.Store.Close()
+	DefaultChain.Close()
 }

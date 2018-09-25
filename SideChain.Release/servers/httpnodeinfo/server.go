@@ -45,7 +45,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageInfo := &Info{
-		BlockHeight:  chain.DefaultLedger.Blockchain.BlockHeight,
+		BlockHeight:  chain.DefaultChain.BlockHeight,
 		NeighborCnt:  len(ngbrNoders),
 		Neighbors:    ngbrNodersInfo,
 		HttpRestPort: config.Parameters.HttpRestPort,
