@@ -13,13 +13,20 @@
 #include "Base64.h"
 #include "CMemBlock.h"
 #include "AES_256_CCM.h"
+#include "StandardAccount.h"
+#include "SimpleAccount.h"
+#include "MultiSignAccount.h"
+#include "ErrorCode.h"
+#include "Utils.h"
 
 #define WALLET_DATA_MAX_SIZE 10000
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		KeyStore::KeyStore() {
+		KeyStore::KeyStore(const std::string &rootPath) :
+				_rootPath(rootPath),
+				_walletJson(rootPath) {
 			OpenSSL_add_all_algorithms();
 		}
 
@@ -78,6 +85,7 @@ namespace Elastos {
 		}
 
 		bool KeyStore::save(nlohmann::json &json, const std::string &password) {
+
 			std::string str_ss;
 			nlohmann::json walletJson;
 			walletJson << _walletJson;
@@ -126,6 +134,79 @@ namespace Elastos {
 				return true;
 			}
 			return false;
+		}
+
+		IAccount *
+		KeyStore::createAccountFromJson(const std::string &phrasePassword, const std::string &payPassword) const {
+			if (_walletJson.getType() == "Standard")
+				return new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
+										   phrasePassword, payPassword);
+			else if (_walletJson.getType() == "Simple")
+				return new SimpleAccount(_walletJson.getPrivateKey(), payPassword);
+			else if (_walletJson.getType() == "MultiSign") {
+
+				if (!_walletJson.getMnemonic().empty() && !_walletJson.getLanguage().empty()) {
+					return new MultiSignAccount(
+							new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
+												phrasePassword, payPassword), _walletJson.getCoSigners(),
+							_walletJson.getRequiredSignCount());
+				} else if (!_walletJson.getPrivateKey().empty()) {
+					return new MultiSignAccount(new SimpleAccount(_walletJson.getPrivateKey(), payPassword),
+												_walletJson.getCoSigners(), _walletJson.getRequiredSignCount());
+				} else {
+					return new MultiSignAccount(nullptr, _walletJson.getCoSigners(),
+												_walletJson.getRequiredSignCount());
+				}
+			}
+
+			return nullptr;
+		}
+
+		void KeyStore::initJsonFromAccount(IAccount *account, const std::string &payPassword) {
+			if (account == nullptr)
+				ErrorCode::StandardLogicError(ErrorCode::KeyStoreError, "Account pointer can not be null");
+			_walletJson.setType(account->GetType());
+
+			initAccountByType(account, payPassword);
+		}
+
+		void KeyStore::initStandardAccount(IAccount *account, const std::string &payPassword) {
+			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(account);
+			if (standardAccount == nullptr) return;
+
+			CMBlock mnemonicData = Utils::decrypt(standardAccount->GetEncryptedMnemonic(), payPassword);
+			_walletJson.setMnemonic(Utils::convertToString(mnemonicData));
+			_walletJson.setLanguage(standardAccount->GetLanguage());
+		}
+
+		void KeyStore::initSimpleAccount(IAccount *account, const std::string &payPassword) {
+			SimpleAccount *simpleAccount = dynamic_cast<SimpleAccount *>(account);
+			if (simpleAccount == nullptr) return;
+
+			CMBlock privKey = Utils::decrypt(simpleAccount->GetEncryptedKey(), payPassword);
+			_walletJson.setPrivateKey(Utils::encodeHex(privKey));
+		}
+
+		void KeyStore::initMultiSignAccount(IAccount *account, const std::string &payPassword) {
+			MultiSignAccount *multiSignAccount = dynamic_cast<MultiSignAccount *>(account);
+			if (multiSignAccount == nullptr) return;
+
+			_walletJson.setCoSigners(multiSignAccount->GetCoSigners());
+			_walletJson.setRequiredSignCount(multiSignAccount->GetRequiredSignCount());
+
+			if (multiSignAccount->GetInnerAccount() != nullptr)
+				initAccountByType(multiSignAccount->GetInnerAccount(), payPassword);
+		}
+
+		void KeyStore::initAccountByType(IAccount *account, const std::string &payPassword) {
+
+			if (account->GetType() == "MultiSign") {
+				initMultiSignAccount(account, payPassword);
+			} else if (account->GetType() == "Simple") {
+				initSimpleAccount(account, payPassword);
+			} else if (account->GetType() == "Standard") {
+				initStandardAccount(account, payPassword);
+			}
 		}
 	}
 }

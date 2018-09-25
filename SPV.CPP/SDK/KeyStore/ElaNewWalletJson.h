@@ -16,23 +16,35 @@ namespace Elastos {
 		class ElaNewWalletJson :
 				public ElaWebWalletJson {
 		public:
-			ElaNewWalletJson();
+			ElaNewWalletJson(const std::string &rootPath);
 
 			~ElaNewWalletJson();
-
-			const std::string &getMnemonicLanguage() const;
-
-			void setMnemonicLanguage(const std::string &language);
-
-			const std::string &getEncryptedPhrasePassword() const;
-
-			void setEncryptedPhrasePassword(const std::string &password);
 
 			void addCoinInfo(const CoinInfo &info);
 
 			void clearCoinInfo();
 
 			const std::vector<CoinInfo> &getCoinInfoList() const;
+
+			const std::string &getType() const;
+
+			void setType(const std::string &type);
+
+			const std::string &getLanguage() const;
+
+			void setLanguage(const std::string &language);
+
+			const std::vector<std::string> &getCoSigners() const;
+
+			void setCoSigners(const std::vector<std::string> &coSigners);
+
+			uint32_t getRequiredSignCount() const;
+
+			void setRequiredSignCount(uint32_t count);
+
+			const std::string &getPrivateKey() const;
+
+			void setPrivateKey(const std::string &key);
 
 		private:
 			JSON_SM_LS(ElaNewWalletJson);
@@ -41,9 +53,13 @@ namespace Elastos {
 			FROM_JSON(ElaNewWalletJson);
 
 		private:
-			std::string _mnemonicLanguage;
-			std::string _encryptedPhrasePassword;
+			std::string _rootPath;
 			std::vector<CoinInfo> _coinInfoList;
+			std::string _type;
+			std::string _language;
+			std::vector<std::string> _coSigners;
+			uint32_t _requiredSignCount;
+			std::string _privateKey;
 		};
 	}
 }

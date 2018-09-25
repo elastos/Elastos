@@ -94,6 +94,10 @@ namespace Elastos {
 			return _account.get();
 		}
 
+		void MasterWalletStore::Reset(Elastos::ElaWallet::IAccount *account) {
+			_account = AccountPtr(account);
+		}
+
 		void MasterWalletStore::Reset(const std::string &phrase, const std::string &language,
 									  const std::string &phrasePassword, const std::string &payPassword) {
 			_account = AccountPtr(new StandardAccount(_rootPath, phrase, language, phrasePassword, payPassword));

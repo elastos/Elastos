@@ -311,7 +311,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			KeyStore keyStore;
+			KeyStore keyStore(_rootPath);
 			if (!keyStore.open(keystoreContent, backupPassword))
 				throw std::logic_error("Import key error.");
 
@@ -339,7 +339,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword) {
-			KeyStore keyStore;
+			KeyStore keyStore(_rootPath);
 			restoreKeyStore(keyStore, payPassword);
 
 			nlohmann::json result;
@@ -507,38 +507,13 @@ namespace Elastos {
 											const std::string &phrasePassword) {
 			tryInitCoinConfig();
 
-			CMBlock phrasePassRaw0 = Utils::convertToMemBlock(
-					keyStore.json().getEncryptedPhrasePassword());
-			std::string phrasePass = "";
-			if (true == phrasePassRaw0) {
-				CMBlock phrasePassRaw1(phrasePassRaw0.GetSize() + 1);
-				phrasePassRaw1.Zero();
-				memcpy(phrasePassRaw1, phrasePassRaw0, phrasePassRaw0.GetSize());
-				CMBlock phrasePassRaw = Utils::decrypt(phrasePassRaw1, payPassword);
-				phrasePass = Utils::convertToString(phrasePassRaw);
-			}
-			phrasePass = phrasePassword != "" ? phrasePassword : phrasePass;
-
-			std::string mnemonic = keyStore.json().getMnemonic();
-			_localStore.Reset(mnemonic, keyStore.json().getMnemonicLanguage(), phrasePass, payPassword);
-
+			IAccount *account = keyStore.createAccountFromJson(phrasePassword, payPassword);
+			_localStore.Reset(account);
 			initSubWallets(keyStore.json().getCoinInfoList(), payPassword);
 		}
 
 		void MasterWallet::restoreKeyStore(KeyStore &keyStore, const std::string &payPassword) {
-			keyStore.json().setEncryptedPhrasePassword(
-					Utils::encodeHex(_localStore.Account()->GetEncryptedPhrasePassword()));
-
-			CMBlock cbMnemonic = Utils::decrypt(_localStore.Account()->GetEncryptedMnemonic(), payPassword);
-			if (false == cbMnemonic) {
-				throw std::logic_error("Wrong password.");
-			}
-
-			CMemBlock<char> charMnemonic(cbMnemonic.GetSize() + 1);
-			charMnemonic.Zero();
-			memcpy(charMnemonic, cbMnemonic, cbMnemonic.GetSize());
-			if (keyStore.json().getMnemonic().empty())
-				keyStore.json().setMnemonic((const char *) charMnemonic);
+			keyStore.initJsonFromAccount(_localStore.Account(), payPassword);
 
 			keyStore.json().clearCoinInfo();
 			std::for_each(_createdWallets.begin(), _createdWallets.end(),
