@@ -8,7 +8,7 @@ import (
 
 // IChainStore provides func with store package.
 type IChainStore interface {
-	InitWithGenesisBlock(genesisblock *core.Block) (uint32, error)
+	InitWithGenesisBlock(genesisBlock *core.Block) (uint32, error)
 
 	SaveBlock(b *core.Block) error
 	GetBlock(hash Uint256) (*core.Block, error)
@@ -31,16 +31,14 @@ type IChainStore interface {
 	GetCurrentBlockHash() Uint256
 	GetHeight() uint32
 
-	RemoveHeaderListElement(hash Uint256)
-
-	GetUnspent(txid Uint256, index uint16) (*core.Output, error)
-	ContainsUnspent(txid Uint256, index uint16) (bool, error)
-	GetUnspentFromProgramHash(programHash Uint168, assetid Uint256) ([]*UTXO, error)
-	GetUnspentsFromProgramHash(programHash Uint168) (map[Uint256][]*UTXO, error)
+	GetUnspent(txId Uint256, index uint16) (*core.Output, error)
+	ContainsUnspent(txId Uint256, index uint16) (bool, error)
+	GetAssetUnspents(programHash Uint168, assetid Uint256) ([]*UTXO, error)
+	GetUnspents(programHash Uint168) (map[Uint256][]*UTXO, error)
 	GetAssets() map[Uint256]*core.Asset
 
-	IsTxHashDuplicate(txhash Uint256) bool
-	IsMainchainTxHashDuplicate(mainchainTxHash Uint256) bool
+	IsDuplicateTx(txId Uint256) bool
+	IsDuplicateMainchainTx(txId Uint256) bool
 	IsBlockInStore(hash Uint256) bool
 	Close()
 }

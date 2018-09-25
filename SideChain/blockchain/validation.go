@@ -60,7 +60,7 @@ func GetTxProgramHashes(tx *core.Transaction) ([]Uint168, error) {
 	hashes := make([]Uint168, 0)
 	uniqueHashes := make([]Uint168, 0)
 	// add inputUTXO's transaction
-	references, err := DefaultLedger.Store.GetTxReference(tx)
+	references, err := DefaultChain.GetTxReference(tx)
 	if err != nil {
 		return nil, errors.New("[Transaction], GetProgramHashes failed.")
 	}

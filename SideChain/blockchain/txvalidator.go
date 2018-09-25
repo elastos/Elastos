@@ -157,7 +157,7 @@ func (v *TransactionValidateBase) CheckTransactionContextImpl(txn *core.Transact
 
 func (v *TransactionValidateBase) CheckTxHashDuplicateImpl(txn *core.Transaction) (bool, ErrCode) {
 	// check if duplicated with transaction in ledger
-	if exist := DefaultLedger.Store.IsTxHashDuplicate(txn.Hash()); exist {
+	if exist := DefaultChain.IsDuplicateTx(txn.Hash()); exist {
 		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
 		return false, ErrTxHashDuplicate
 	}
@@ -202,7 +202,7 @@ func (v *TransactionValidateBase) CheckTransferCrossChainAssetTxImpl(txn *core.T
 
 func (v *TransactionValidateBase) CheckDoubleSpendImpl(txn *core.Transaction) (bool, ErrCode) {
 	// check double spent transaction
-	if DefaultLedger.IsDoubleSpend(txn) {
+	if DefaultChain.IsDoubleSpend(txn) {
 		log.Info("[CheckTransactionContext] IsDoubleSpend check faild.")
 		return false, ErrDoubleSpend
 	}
@@ -230,7 +230,7 @@ func (v *TransactionValidateBase) CheckReferencedOutputImpl(txn *core.Transactio
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID
 		referTxnOutIndex := input.Previous.Index
-		referTxn, _, err := DefaultLedger.Store.GetTransaction(referHash)
+		referTxn, _, err := DefaultChain.GetTransaction(referHash)
 		if err != nil {
 			log.Warn("Referenced transaction can not be found", BytesToHexString(referHash.Bytes()))
 			return false, ErrUnknownReferedTxn
@@ -243,7 +243,7 @@ func (v *TransactionValidateBase) CheckReferencedOutputImpl(txn *core.Transactio
 		// coinbase transaction only can be spent after got SpendCoinbaseSpan times confirmations
 		if referTxn.IsCoinBaseTx() {
 			lockHeight := referTxn.LockTime
-			currentHeight := DefaultLedger.Store.GetHeight()
+			currentHeight := DefaultChain.GetBestHeight()
 			if currentHeight-lockHeight < config.Parameters.ChainParam.SpendCoinbaseSpan {
 				return false, ErrIneffectiveCoinbase
 			}
@@ -298,7 +298,7 @@ func (v *TransactionValidateBase) CheckTransactionOutputImpl(txn *core.Transacti
 		var totalReward = Fixed64(0)
 		var foundationReward = Fixed64(0)
 		for _, output := range txn.Outputs {
-			if output.AssetID != DefaultLedger.Blockchain.AssetID {
+			if output.AssetID != DefaultChain.AssetID {
 				return errors.New("asset ID in coinbase is invalid")
 			}
 			totalReward += output.Value
@@ -319,7 +319,7 @@ func (v *TransactionValidateBase) CheckTransactionOutputImpl(txn *core.Transacti
 
 	// check if output address is valid
 	for _, output := range txn.Outputs {
-		if output.AssetID != DefaultLedger.Blockchain.AssetID {
+		if output.AssetID != DefaultChain.AssetID {
 			return errors.New("asset ID in output is invalid")
 		}
 
@@ -351,7 +351,7 @@ func (v *TransactionValidateBase) CheckTransactionUTXOLockImpl(txn *core.Transac
 	if len(txn.Inputs) <= 0 {
 		return errors.New("Transaction has no inputs")
 	}
-	references, err := DefaultLedger.Store.GetTxReference(txn)
+	references, err := DefaultChain.GetTxReference(txn)
 	if err != nil {
 		return fmt.Errorf("GetReference failed: %s", err)
 	}
@@ -390,7 +390,7 @@ func (v *TransactionValidateBase) CheckAssetPrecisionImpl(txn *core.Transaction)
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
 	}
 	for k, outputs := range assetOutputs {
-		asset, err := DefaultLedger.GetAsset(k)
+		asset, err := DefaultChain.GetAsset(k)
 		if err != nil {
 			return errors.New("The asset not exist in local blockchain.")
 		}
@@ -515,7 +515,7 @@ func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *c
 	}
 
 	mainchainTxhash := mainChainTransaction.Hash()
-	if exist := DefaultLedger.Store.IsMainchainTxHashDuplicate(mainchainTxhash); exist {
+	if exist := DefaultChain.IsMainchainTxHashDuplicate(mainchainTxhash); exist {
 		return errors.New("Duplicate mainchain transaction hash in paylod")
 	}
 
@@ -524,7 +524,7 @@ func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *c
 		return errors.New("Invalid payload ela.PayloadTransferCrossChainAsset")
 	}
 
-	genesisHash, _ := DefaultLedger.Store.GetBlockHash(uint32(0))
+	genesisHash, _ := DefaultChain.GetBlockHash(uint32(0))
 	genesisProgramHash, err := common.GetGenesisProgramHash(genesisHash)
 	if err != nil {
 		return errors.New("Genesis block bytes to program hash failed")
@@ -631,7 +631,7 @@ func (v *TransactionValidateBase) CheckTransferCrossChainAssetTransactionImpl(tx
 
 	//check transaction fee
 	var totalInput Fixed64
-	reference, err := DefaultLedger.Store.GetTxReference(txn)
+	reference, err := DefaultChain.GetTxReference(txn)
 	if err != nil {
 		return errors.New("Invalid transaction inputs")
 	}

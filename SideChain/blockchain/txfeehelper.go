@@ -71,7 +71,7 @@ func (t *TxFeeHelperBase) GetTxFeeMapImpl(tx *core.Transaction) (map[Uint256]Fix
 		return feeMap, nil
 	}
 
-	reference, err := DefaultLedger.Store.GetTxReference(tx)
+	reference, err := DefaultChain.GetTxReference(tx)
 	if err != nil {
 		return nil, err
 	}
