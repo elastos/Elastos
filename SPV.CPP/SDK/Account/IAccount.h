@@ -33,6 +33,8 @@ namespace Elastos {
 
 			virtual void FromJson(const nlohmann::json &j) = 0;
 
+			virtual bool IsReadOnly() const = 0;
+
 		public: //properties
 
 			virtual const CMBlock &GetEncryptedKey() const = 0;

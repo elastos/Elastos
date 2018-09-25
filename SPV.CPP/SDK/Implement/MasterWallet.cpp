@@ -206,7 +206,8 @@ namespace Elastos {
 			if (chainID.size() > 128)
 				throw std::invalid_argument("Chain id should less than 128.");
 
-			ParamChecker::checkPassword(payPassword, "Pay");
+			if (!_localStore.Account()->IsReadOnly())
+				ParamChecker::checkPassword(payPassword, "Pay");
 
 			//todo limit coinTypeIndex and feePerKb if needed in future
 
