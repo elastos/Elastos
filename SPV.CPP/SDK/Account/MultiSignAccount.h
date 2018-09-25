@@ -19,6 +19,12 @@ namespace Elastos {
 
 			CMBlock GenerateRedeemScript() const;
 
+			IAccount *GetInnerAccount() const;
+
+			const std::vector<std::string> &GetCoSigners() const;
+
+			uint32_t GetRequiredSignCount() const;
+
 			virtual nlohmann::json GetBasicInfo() const;
 
 			virtual Key DeriveKey(const std::string &payPassword);
@@ -65,7 +71,7 @@ namespace Elastos {
 			void checkSigners() const;
 
 		private:
-			IAccount *_me;
+			AccountPtr _me;
 			std::vector<std::string> _coSigners;
 			uint32_t _requiredSignCount;
 			std::string _address;

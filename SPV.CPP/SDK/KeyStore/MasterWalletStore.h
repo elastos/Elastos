@@ -35,6 +35,8 @@ namespace Elastos {
 
 			IAccount *Account() const;
 
+			void Reset(IAccount *account);
+
 			void Reset(const std::string &phrase,
 					   const std::string &language,
 					   const std::string &phrasePassword,

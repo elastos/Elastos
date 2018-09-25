@@ -20,6 +20,7 @@ namespace Elastos {
 			static std::string NoCurrentMultiSinAccount;
 			static std::string TransactionContentError;
 			static std::string MultiSignError;
+			static std::string KeyStoreError;
 		};
 
 	}

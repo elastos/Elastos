@@ -8,13 +8,14 @@
 #include <boost/filesystem.hpp>
 
 #include "ElaNewWalletJson.h"
+#include "IAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class KeyStore {
 		public:
-			KeyStore();
+			KeyStore(const std::string &rootPath);
 
 			~KeyStore();
 
@@ -32,8 +33,22 @@ namespace Elastos {
 
 			ElaNewWalletJson &json();
 
+			IAccount *createAccountFromJson(const std::string &phrasePassword, const std::string &payPassword) const;
+
+			void initJsonFromAccount(IAccount *account, const std::string &payPassword);
+
+		private:
+			void initAccountByType(IAccount *account, const std::string &payPassword);
+
+			void initStandardAccount(IAccount *account, const std::string &payPassword);
+
+			void initSimpleAccount(IAccount *account, const std::string &payPassword);
+
+			void initMultiSignAccount(IAccount *account, const std::string &payPassword);
+
 		private:
 
+			std::string _rootPath;
 			ElaNewWalletJson _walletJson;
 		};
 	}
