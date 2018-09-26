@@ -60,7 +60,7 @@ namespace Elastos {
 			/**
 			 * Create a sub wallet by specifying wallet type.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception. Note that if out master wallet account is readonly, pay password can be empty.
 			 * @param singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
 			 * @return If success will return a pointer of sub wallet interface.

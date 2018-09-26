@@ -82,6 +82,17 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount);
 
+			/**
+			 * Create a multi-sign master wallet by private key and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
+			 * @param masterWalletId is the unique identification of a master wallet object.
+			 * @param mnemonic use to generate seed which deriving the master private key and chain code.
+			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param coSigners is an array of signers' public key.
+			 * @param requiredSignCount specify minimum count to accomplish related transactions.
+			 * @param language specify language of mnemonic, value of language should correspond to the language of \p mnemonic.
+			 * @return If success will return a pointer of master wallet interface.
+			 */
 			virtual IMasterWallet *CreateMultiSignMasterWallet(
 					const std::string &masterWalletId,
 					const std::string &mnemonic,
