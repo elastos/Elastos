@@ -20,6 +20,8 @@ namespace Elastos {
 			virtual void
 			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
 
+			std::vector<std::string> GetTransactionSignedSigners(const TransactionPtr &transaction);
+
 		private:
 			MultiSignAccount *_multiSignAccount;
 		};

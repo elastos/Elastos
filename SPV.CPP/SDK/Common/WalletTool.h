@@ -23,8 +23,6 @@ namespace Elastos {
 
 			static CMBlock GenerateSeed128();
 
-			static CMBlock GenerateSeed256();
-
 			static std::string GenerateEntropySource(const CMBlock &seed);
 
 			static std::string getDeriveKeyFromEntropySource_base58(const std::string &seed);

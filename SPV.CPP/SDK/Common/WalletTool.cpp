@@ -59,10 +59,6 @@ namespace Elastos {
 			return GetRandom(128);
 		}
 
-		CMBlock WalletTool::GenerateSeed256() {
-			return GetRandom(256);
-		}
-
 		std::string WalletTool::GenerateEntropySource(const CMBlock &seed) {
 			std::string out = "";
 			if (true == seed) {
