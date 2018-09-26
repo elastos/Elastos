@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"container/list"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -24,12 +24,12 @@ type persistTask interface{}
 
 type rollbackBlockTask struct {
 	blockHash Uint256
-	reply     chan bool
+	reply     chan error
 }
 
 type persistBlockTask struct {
 	block *core.Block
-	reply chan bool
+	reply chan error
 }
 
 type ChainStore struct {
@@ -46,21 +46,21 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	PersistTrimmedBlock  func(b *core.Block) error
-	RollbackTrimmedBlock func(b *core.Block) error
-	PersistBlockHash     func(b *core.Block) error
-	RollbackBlockHash    func(b *core.Block) error
-	PersistCurrentBlock  func(b *core.Block) error
-	RollbackCurrentBlock func(b *core.Block) error
-	PersistUnspendUTXOs  func(b *core.Block) error
-	RollbackUnspendUTXOs func(b *core.Block) error
-	PersistTransactions  func(b *core.Block) error
-	RollbackTransactions func(b *core.Block) error
-	RollbackTransaction  func(txn *core.Transaction) error
-	RollbackAsset        func(assetId Uint256) error
-	RollbackMainchainTx  func(mainchainTxHash Uint256) error
-	PersistUnspend       func(b *core.Block) error
-	RollbackUnspend      func(b *core.Block) error
+	PersistTrimmedBlock  func(batch IBatch, b *core.Block) error
+	RollbackTrimmedBlock func(batch IBatch, b *core.Block) error
+	PersistBlockHash     func(batch IBatch, b *core.Block) error
+	RollbackBlockHash    func(batch IBatch, b *core.Block) error
+	PersistCurrentBlock  func(batch IBatch, b *core.Block) error
+	RollbackCurrentBlock func(batch IBatch, b *core.Block) error
+	PersistUnspendUTXOs  func(batch IBatch, b *core.Block) error
+	RollbackUnspendUTXOs func(batch IBatch, b *core.Block) error
+	PersistTransactions  func(batch IBatch, b *core.Block) error
+	RollbackTransactions func(batch IBatch, b *core.Block) error
+	RollbackTransaction  func(batch IBatch, txn *core.Transaction) error
+	RollbackAsset        func(batch IBatch, assetId Uint256) error
+	RollbackMainchainTx  func(batch IBatch, mainchainTxHash Uint256) error
+	PersistUnspend       func(batch IBatch, b *core.Block) error
+	RollbackUnspend      func(batch IBatch, b *core.Block) error
 }
 
 func NewChainStore() (*ChainStore, error) {
@@ -120,13 +120,11 @@ func (c *ChainStore) taskHandler() {
 			now := time.Now()
 			switch task := t.(type) {
 			case *persistBlockTask:
-				c.handlePersistBlockTask(task.block)
-				task.reply <- true
+				task.reply <- c.handlePersistBlockTask(task.block)
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block exetime: %g num transactions:%d", tcall, len(task.block.Transactions))
 			case *rollbackBlockTask:
-				c.handleRollbackBlockTask(task.blockHash)
-				task.reply <- true
+				task.reply <- c.handleRollbackBlockTask(task.blockHash)
 				tcall := float64(time.Now().Sub(now)) / float64(time.Second)
 				log.Debugf("handle block rollback exetime: %g", tcall)
 			}
@@ -161,20 +159,20 @@ func (c *ChainStore) InitWithGenesisBlock(genesisBlock *core.Block) (uint32, err
 
 	if version[0] == 0x00 {
 		// batch delete old data
-		c.NewBatch()
+		batch := c.NewBatch()
 		iter := c.NewIterator(nil)
 		for iter.Next() {
-			c.BatchDelete(iter.Key())
+			batch.Delete(iter.Key())
 		}
 		iter.Release()
 
-		err := c.BatchCommit()
+		err := batch.Commit()
 		if err != nil {
 			return 0, err
 		}
 
 		// persist genesis block
-		err = c.persist(genesisBlock)
+		err = c.persistBlock(genesisBlock)
 		if err != nil {
 			return 0, err
 		}
@@ -298,12 +296,9 @@ func (c *ChainStore) GetCurrentBlockHash() Uint256 {
 }
 
 func (c *ChainStore) RollbackBlock(blockHash Uint256) error {
-
-	reply := make(chan bool)
+	reply := make(chan error)
 	c.taskCh <- &rollbackBlockTask{blockHash: blockHash, reply: reply}
-	<-reply
-
-	return nil
+	return <-reply
 }
 
 func (c *ChainStore) GetHeader(hash Uint256) (*core.Header, error) {
@@ -332,7 +327,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*core.Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetId Uint256, asset core.Asset) error {
+func (c *ChainStore) PersistAsset(batch IBatch, assetId Uint256, asset core.Asset) error {
 	w := bytes.NewBuffer(nil)
 
 	asset.Serialize(w)
@@ -346,10 +341,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset core.Asset) error {
 
 	log.Debugf("asset key: %x", assetKey)
 
-	// PUT VALUE
-	c.BatchPut(assetKey.Bytes(), w.Bytes())
-
-	return nil
+	return batch.Put(assetKey.Bytes(), w.Bytes())
 }
 
 func (c *ChainStore) GetAsset(hash Uint256) (*core.Asset, error) {
@@ -369,12 +361,12 @@ func (c *ChainStore) GetAsset(hash Uint256) (*core.Asset, error) {
 	return asset, nil
 }
 
-func (c *ChainStore) PersistMainchainTx(mainchainTxHash Uint256) {
+func (c *ChainStore) PersistMainchainTx(batch IBatch, mainchainTxHash Uint256) {
 	key := []byte{byte(IX_MainChain_Tx)}
 	key = append(key, mainchainTxHash.Bytes()...)
 
 	// PUT VALUE
-	c.BatchPut(key, []byte{byte(ValueExist)})
+	batch.Put(key, []byte{byte(ValueExist)})
 }
 
 func (c *ChainStore) GetMainchainTx(mainchainTxHash Uint256) (byte, error) {
@@ -429,7 +421,7 @@ func (c *ChainStore) GetTxReference(tx *core.Transaction) (map[*core.Input]*core
 	return reference, nil
 }
 
-func (c *ChainStore) PersistTransaction(tx *core.Transaction, height uint32) error {
+func (c *ChainStore) PersistTransaction(batch IBatch, tx *core.Transaction, height uint32) error {
 	// generate key with DATA_Transaction prefix
 	key := new(bytes.Buffer)
 	// add transaction header prefix.
@@ -449,10 +441,7 @@ func (c *ChainStore) PersistTransaction(tx *core.Transaction, height uint32) err
 	}
 	log.Debugf("transaction tx data: %x", value)
 
-	// put value
-	c.BatchPut(key.Bytes(), value.Bytes())
-
-	return nil
+	return batch.Put(key.Bytes(), value.Bytes())
 }
 
 func (c *ChainStore) GetBlock(hash Uint256) (*core.Block, error) {
@@ -488,48 +477,6 @@ func (c *ChainStore) GetBlock(hash Uint256) (*core.Block, error) {
 	return b, nil
 }
 
-func (c *ChainStore) rollback(b *core.Block) error {
-	c.NewBatch()
-	c.RollbackTrimmedBlock(b)
-	c.RollbackBlockHash(b)
-	c.RollbackTransactions(b)
-	c.RollbackUnspendUTXOs(b)
-	c.RollbackUnspend(b)
-	c.RollbackCurrentBlock(b)
-	c.BatchCommit()
-
-	c.mu.Lock()
-	c.currentBlockHeight = b.Header.Height - 1
-	c.mu.Unlock()
-
-	DefaultChain.BCEvents.Notify(events.EventRollbackTransaction, b)
-
-	return nil
-}
-
-func (c *ChainStore) persist(b *core.Block) error {
-	c.NewBatch()
-	if err := c.PersistTrimmedBlock(b); err != nil {
-		return err
-	}
-	if err := c.PersistBlockHash(b); err != nil {
-		return err
-	}
-	if err := c.PersistTransactions(b); err != nil {
-		return err
-	}
-	if err := c.PersistUnspendUTXOs(b); err != nil {
-		return err
-	}
-	if err := c.PersistUnspend(b); err != nil {
-		return err
-	}
-	if err := c.PersistCurrentBlock(b); err != nil {
-		return err
-	}
-	return c.BatchCommit()
-}
-
 // can only be invoked by backend write goroutine
 func (c *ChainStore) addHeader(header *core.Header) {
 
@@ -549,43 +496,89 @@ func (c *ChainStore) addHeader(header *core.Header) {
 func (c *ChainStore) SaveBlock(b *core.Block) error {
 	log.Debug("SaveBlock()")
 
-	reply := make(chan bool)
+	reply := make(chan error)
 	c.taskCh <- &persistBlockTask{block: b, reply: reply}
-	<-reply
-
-	return nil
+	return <-reply
 }
 
-func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) {
-	block, err := c.GetBlock(blockHash)
-	if err != nil {
-		log.Errorf("block %x can't be found", BytesToHexString(blockHash.Bytes()))
-		return
-	}
-	c.rollback(block)
-}
-
-func (c *ChainStore) handlePersistBlockTask(b *core.Block) {
-	if b.Header.Height <= c.currentBlockHeight {
-		return
+func (c *ChainStore) handlePersistBlockTask(block *core.Block) error {
+	if block.Header.Height <= c.currentBlockHeight {
+		return nil
 	}
 
-	c.persistBlock(b)
-	c.clearCache(b)
-}
-
-func (c *ChainStore) persistBlock(block *core.Block) {
-	err := c.persist(block)
-	if err != nil {
-		log.Fatal("[persistBlocks]: error to persist block:", err.Error())
-		return
+	if err := c.persistBlock(block); err != nil {
+		return fmt.Errorf("persist block %s error %s", block.Hash().String(), err)
 	}
 
 	c.mu.Lock()
 	c.currentBlockHeight = block.Header.Height
 	c.mu.Unlock()
 
-	DefaultChain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
+	c.clearCache(block)
+	return nil
+}
+
+func (c *ChainStore) persistBlock(b *core.Block) error {
+	batch := c.NewBatch()
+	if err := c.PersistTrimmedBlock(batch, b); err != nil {
+		return err
+	}
+	if err := c.PersistBlockHash(batch, b); err != nil {
+		return err
+	}
+	if err := c.PersistTransactions(batch, b); err != nil {
+		return err
+	}
+	if err := c.PersistUnspendUTXOs(batch, b); err != nil {
+		return err
+	}
+	if err := c.PersistUnspend(batch, b); err != nil {
+		return err
+	}
+	if err := c.PersistCurrentBlock(batch, b); err != nil {
+		return err
+	}
+	return batch.Commit()
+}
+
+func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) error {
+	block, err := c.GetBlock(blockHash)
+	if err != nil {
+		return fmt.Errorf("block %s can't be found", blockHash.String())
+	}
+
+	if err := c.rollbackBlock(block); err != nil {
+		return fmt.Errorf("rollback block %s error %s", blockHash.String(), err)
+	}
+
+	c.mu.Lock()
+	c.currentBlockHeight = block.Header.Height - 1
+	c.mu.Unlock()
+
+	return nil
+}
+
+func (c *ChainStore) rollbackBlock(b *core.Block) error {
+	batch := c.NewBatch()
+	if err := c.RollbackTrimmedBlock(batch, b); err != nil {
+		return err
+	}
+	if err := c.RollbackBlockHash(batch, b); err != nil {
+		return err
+	}
+	if err := c.RollbackTransactions(batch, b); err != nil {
+		return err
+	}
+	if err := c.RollbackUnspendUTXOs(batch, b); err != nil {
+		return err
+	}
+	if err := c.RollbackUnspend(batch, b); err != nil {
+		return err
+	}
+	if err := c.RollbackCurrentBlock(batch, b); err != nil {
+		return err
+	}
+	return batch.Commit()
 }
 
 func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*core.Output, error) {
@@ -764,7 +757,7 @@ func (c *ChainStore) GetUnspents(programHash Uint168) (map[Uint256][]*UTXO, erro
 	return uxtoUnspents, nil
 }
 
-func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid Uint256, height uint32, unspents []*UTXO) error {
+func (c *ChainStore) PersistUnspentWithProgramHash(batch IBatch, programHash Uint168, assetid Uint256, height uint32, unspents []*UTXO) error {
 	prefix := []byte{byte(IX_Unspent_UTXO)}
 	prefix = append(prefix, programHash.Bytes()...)
 	prefix = append(prefix, assetid.Bytes()...)
@@ -774,7 +767,7 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	}
 
 	if len(unspents) == 0 {
-		c.BatchDelete(key.Bytes())
+		batch.Delete(key.Bytes())
 		return nil
 	}
 
@@ -786,7 +779,7 @@ func (c *ChainStore) PersistUnspentWithProgramHash(programHash Uint168, assetid 
 	}
 
 	// BATCH PUT VALUE
-	c.BatchPut(key.Bytes(), w.Bytes())
+	batch.Put(key.Bytes(), w.Bytes())
 
 	return nil
 }

@@ -22,10 +22,8 @@ type IChainStore interface {
 	GetTransaction(txId Uint256) (*core.Transaction, uint32, error)
 	GetTxReference(tx *core.Transaction) (map[*core.Input]*core.Output, error)
 
-	PersistAsset(assetid Uint256, asset core.Asset) error
 	GetAsset(hash Uint256) (*core.Asset, error)
 
-	PersistMainchainTx(mainchainTxHash Uint256)
 	GetMainchainTx(mainchainTxHash Uint256) (byte, error)
 
 	GetCurrentBlockHash() Uint256

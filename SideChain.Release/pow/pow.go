@@ -47,9 +47,6 @@ type PowService struct {
 	manualMining bool
 	LocalNode    protocol.Noder
 
-	blockPersistCompletedSubscriber events.Subscriber
-	RollbackTransactionSubscriber   events.Subscriber
-
 	wg   sync.WaitGroup
 	quit chan struct{}
 
@@ -100,8 +97,16 @@ func (pow *PowService) Init() {
 }
 
 func (pow *PowService) InitPowServiceSubscriber() {
-	pow.blockPersistCompletedSubscriber = DefaultChain.BCEvents.Subscribe(events.EventBlockPersistCompleted, pow.BlockPersistCompleted)
-	pow.RollbackTransactionSubscriber = DefaultChain.BCEvents.Subscribe(events.EventRollbackTransaction, pow.RollbackTransaction)
+	events.Subscribe(func(event *events.Event) {
+		switch event.Type {
+		case events.ETBlockConnected:
+			pow.BlockPersistCompleted(event.Data)
+
+		case events.ETBlockDisconnected:
+			pow.RollbackTransaction(event.Data)
+
+		}
+	})
 }
 
 func (pow *PowService) GetTransactionCountImpl() int {

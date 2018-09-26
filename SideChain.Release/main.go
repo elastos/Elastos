@@ -15,7 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
-	"github.com/elastos/Elastos.ELA.SideChain/servers/httpwebsocket"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -109,7 +108,6 @@ func main() {
 	httpjsonrpc.InitRpcServer()
 	go httpjsonrpc.StartRPCServer()
 	go httprestful.StartServer()
-	go httpwebsocket.StartServer()
 	if config.Parameters.HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}

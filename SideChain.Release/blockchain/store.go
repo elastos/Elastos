@@ -11,14 +11,18 @@ type IIterator interface {
 	Release()
 }
 
+type IBatch interface {
+	Put(key []byte, value []byte) error
+	Delete(key []byte) error
+	Commit() error
+	Rollback() error
+}
+
 type IStore interface {
 	Put(key []byte, value []byte) error
 	Get(key []byte) ([]byte, error)
 	Delete(key []byte) error
-	NewBatch()
-	BatchPut(key []byte, value []byte)
-	BatchDelete(key []byte)
-	BatchCommit() error
-	Close() error
+	NewBatch() IBatch
 	NewIterator(prefix []byte) IIterator
+	Close() error
 }
