@@ -98,24 +98,24 @@ func (rt *restServer) Start() {
 func (rt *restServer) initializeMethod() {
 
 	getMethodMap := map[string]Action{
-		Api_Getconnectioncount:  {name: "getconnectioncount", handler: servers.HttpServers.GetConnectionCount},
-		Api_GetblockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.HttpServers.GetTransactionsByHeight},
-		Api_Getblockbyheight:    {name: "getblockbyheight", handler: servers.HttpServers.GetBlockByHeight},
-		Api_Getblockbyhash:      {name: "getblockbyhash", handler: servers.HttpServers.GetBlockByHash},
-		Api_Getblockheight:      {name: "getblockheight", handler: servers.HttpServers.GetBlockHeight},
-		Api_Getblockhash:        {name: "getblockhash", handler: servers.HttpServers.GetBlockHash},
-		Api_GetTransactionPool:  {name: "gettransactionpool", handler: servers.HttpServers.GetTransactionPool},
-		Api_Gettransaction:      {name: "gettransaction", handler: servers.HttpServers.GetTransactionByHash},
-		Api_Getasset:            {name: "getasset", handler: servers.HttpServers.GetAssetByHash},
-		Api_GetUTXObyAddr:       {name: "getutxobyaddr", handler: servers.HttpServers.GetUnspends},
-		Api_GetUTXObyAsset:      {name: "getutxobyasset", handler: servers.HttpServers.GetUnspendOutput},
-		Api_GetBalanceByAddr:    {name: "getbalancebyaddr", handler: servers.HttpServers.GetBalanceByAddr},
-		Api_GetBalancebyAsset:   {name: "getbalancebyasset", handler: servers.HttpServers.GetBalanceByAsset},
+		Api_Getconnectioncount:  {name: "getconnectioncount", handler: servers.HttpServers.Functions[servers.GetConnectionCount]},
+		Api_GetblockTxsByHeight: {name: "getblocktransactionsbyheight", handler: servers.HttpServers.Functions[servers.GetTransactionsByHeight]},
+		Api_Getblockbyheight:    {name: "getblockbyheight", handler: servers.HttpServers.Functions[servers.GetBlockByHeight]},
+		Api_Getblockbyhash:      {name: "getblockbyhash", handler: servers.HttpServers.Functions[servers.GetBlockByHash]},
+		Api_Getblockheight:      {name: "getblockheight", handler: servers.HttpServers.Functions[servers.GetBlockHeight]},
+		Api_Getblockhash:        {name: "getblockhash", handler: servers.HttpServers.Functions[servers.GetBlockHash]},
+		Api_GetTransactionPool:  {name: "gettransactionpool", handler: servers.HttpServers.Functions[servers.GetTransactionPool]},
+		Api_Gettransaction:      {name: "gettransaction", handler: servers.HttpServers.Functions[servers.GetTransactionByHash]},
+		Api_Getasset:            {name: "getasset", handler: servers.HttpServers.Functions[servers.GetAssetByHash]},
+		Api_GetUTXObyAddr:       {name: "getutxobyaddr", handler: servers.HttpServers.Functions[servers.GetUnspends]},
+		Api_GetUTXObyAsset:      {name: "getutxobyasset", handler: servers.HttpServers.Functions[servers.GetUnspendOutput]},
+		Api_GetBalanceByAddr:    {name: "getbalancebyaddr", handler: servers.HttpServers.Functions[servers.GetBalanceByAddr]},
+		Api_GetBalancebyAsset:   {name: "getbalancebyasset", handler: servers.HttpServers.Functions[servers.GetBalanceByAsset]},
 		Api_Restart:             {name: "restart", handler: rt.Restart},
 	}
 
 	postMethodMap := map[string]Action{
-		Api_SendRawTransaction: {name: "sendrawtransaction", handler: servers.HttpServers.SendRawTransaction},
+		Api_SendRawTransaction: {name: "sendrawtransaction", handler: servers.HttpServers.Functions[servers.SendRawTransaction]},
 	}
 	rt.postMap = postMethodMap
 	rt.getMap = getMethodMap

@@ -20,6 +20,36 @@ import (
 )
 
 const (
+	GetRawTransaction                = "getrawtransaction"
+	GetNeighbors                     = "getneighbors"
+	GetNodeState                     = "getnodestate"
+	SetLogLevel                      = "setloglevel"
+	SubmitSideAuxBlock               = "submitsideauxblock"
+	CreateAuxBlock                   = "createauxblock"
+	GetInfo                          = "getinfo"
+	AuxHelp                          = "auxhelp"
+	ToggleMining                     = "togglemining"
+	DiscreteMining                   = "discretemining"
+	GetConnectionCount               = "getconnectioncount"
+	GetTransactionPool               = "gettransactionpool"
+	GetBlockByHash                   = "getblockbyhash"
+	SendTransactionInfo              = "sendtransactioninfo"
+	SendRawTransaction               = "sendrawtransaction"
+	GetBlockHeight                   = "getblockheight"
+	GetBestBlockHash                 = "getbestblockhash"
+	GetBlockCount                    = "getblockcount"
+	GetBlockHash                     = "getblockhash"
+	GetTransactionsByHeight          = "gettransactionsbyheight"
+	GetBlockByHeight                 = "getblockbyheight"
+	GetAssetByHash                   = "getassetbyhash"
+	GetBalanceByAddr                 = "getbalancebyaddr"
+	GetBalanceByAsset                = "getbalancebyasset"
+	GetUnspends                      = "getunspends"
+	GetUnspendOutput                 = "getunspendoutput"
+	GetTransactionByHash             = "gettransactionbyhash"
+	GetExistDepositTransactions      = "getexistdeposittransactions"
+	GetDestroyedTransactionsByHeight = "getdestroyedtransactionsbyheight"
+
 	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 5
 	DESTROY_ADDRESS                     = "0000000000000000000000000000000000"
 )
@@ -32,95 +62,71 @@ var PreChainHeight uint64
 var PreTime int64
 var PreTransactionCount int
 
+type HttpServersFunctionsName string
+
 type HttpServersBase struct {
-	GetTransactionInfo               func(header *Header, tx *Transaction) *TransactionInfo
-	GetTransaction                   func(txInfo *TransactionInfo) (*Transaction, error)
-	GetRawTransaction                func(param Params) map[string]interface{}
-	GetNeighbors                     func(param Params) map[string]interface{}
-	GetNodeState                     func(param Params) map[string]interface{}
-	SetLogLevel                      func(param Params) map[string]interface{}
-	SubmitSideAuxBlock               func(param Params) map[string]interface{}
-	GenerateAuxBlock                 func(addr string) (*Block, string, bool)
-	CreateAuxBlock                   func(param Params) map[string]interface{}
-	GetInfo                          func(param Params) map[string]interface{}
-	AuxHelp                          func(param Params) map[string]interface{}
-	ToggleMining                     func(param Params) map[string]interface{}
-	DiscreteMining                   func(param Params) map[string]interface{}
-	GetConnectionCount               func(param Params) map[string]interface{}
-	GetTransactionPool               func(param Params) map[string]interface{}
-	GetBlockInfo                     func(block *Block, verbose bool) BlockInfo
-	GetBlock                         func(hash Uint256, format uint32) (interface{}, ErrCode)
-	GetBlockByHash                   func(param Params) map[string]interface{}
-	SendTransactionInfo              func(param Params) map[string]interface{}
-	SendRawTransaction               func(param Params) map[string]interface{}
-	GetBlockHeight                   func(param Params) map[string]interface{}
-	GetBestBlockHash                 func(param Params) map[string]interface{}
-	GetBlockCount                    func(param Params) map[string]interface{}
-	GetBlockHash                     func(param Params) map[string]interface{}
-	GetBlockTransactions             func(block *Block) interface{}
-	GetTransactionsByHeight          func(param Params) map[string]interface{}
-	GetBlockByHeight                 func(param Params) map[string]interface{}
-	GetAssetByHash                   func(param Params) map[string]interface{}
-	GetBalanceByAddr                 func(param Params) map[string]interface{}
-	GetBalanceByAsset                func(param Params) map[string]interface{}
-	GetUnspends                      func(param Params) map[string]interface{}
-	GetUnspendOutput                 func(param Params) map[string]interface{}
-	GetTransactionByHash             func(param Params) map[string]interface{}
-	GetExistDepositTransactions      func(param Params) map[string]interface{}
-	GetBlockTransactionsDetail       func(block *Block, filter func(*Transaction) bool) interface{}
-	GetDestroyedTransactionsByHeight func(param Params) map[string]interface{}
-	GetPayload                       func(pInfo PayloadInfo) (Payload, error)
-	GetPayloadInfo                   func(p Payload) PayloadInfo
-	GetTransactionInfoFromBytes      func(txInfoBytes []byte) (*TransactionInfo, error)
-	VerifyAndSendTx                  func(txn *Transaction) ErrCode
+	Functions map[HttpServersFunctionsName]func(param Params) map[string]interface{}
+
+	GetTransactionInfo          func(header *Header, tx *Transaction) *TransactionInfo
+	GetTransaction              func(txInfo *TransactionInfo) (*Transaction, error)
+	GenerateAuxBlock            func(addr string) (*Block, string, bool)
+	GetBlockInfo                func(block *Block, verbose bool) BlockInfo
+	GetBlock                    func(hash Uint256, format uint32) (interface{}, ErrCode)
+	GetBlockTransactionsDetail  func(block *Block, filter func(*Transaction) bool) interface{}
+	GetBlockTransactions        func(block *Block) interface{}
+	GetPayload                  func(pInfo PayloadInfo) (Payload, error)
+	GetPayloadInfo              func(p Payload) PayloadInfo
+	GetTransactionInfoFromBytes func(txInfoBytes []byte) (*TransactionInfo, error)
+	VerifyAndSendTx             func(txn *Transaction) ErrCode
 }
 
 func InitHttpServers() {
 	HttpServers = &HttpServersBase{}
-	HttpServers.Init()
+	HttpServers.Functions[GetRawTransaction] = HttpServers.GetRawTransactionImpl
+	HttpServers.Functions[GetNeighbors] = HttpServers.GetNeighborsImpl
+	HttpServers.Functions[GetNodeState] = HttpServers.GetNodeStateImpl
+	HttpServers.Functions[SetLogLevel] = HttpServers.SetLogLevelImpl
+	HttpServers.Functions[SubmitSideAuxBlock] = HttpServers.SubmitSideAuxBlockImpl
+	HttpServers.Functions[CreateAuxBlock] = HttpServers.CreateAuxBlockImpl
+	HttpServers.Functions[GetInfo] = HttpServers.GetInfoImpl
+	HttpServers.Functions[AuxHelp] = HttpServers.AuxHelpImpl
+	HttpServers.Functions[ToggleMining] = HttpServers.ToggleMiningImpl
+	HttpServers.Functions[DiscreteMining] = HttpServers.DiscreteMiningImpl
+	HttpServers.Functions[GetConnectionCount] = HttpServers.GetConnectionCountImpl
+	HttpServers.Functions[GetTransactionPool] = HttpServers.GetTransactionPoolImpl
+	HttpServers.Functions[GetBlockByHash] = HttpServers.GetBlockByHashImpl
+	HttpServers.Functions[SendTransactionInfo] = HttpServers.SendTransactionInfoImpl
+	HttpServers.Functions[SendRawTransaction] = HttpServers.SendRawTransactionImpl
+	HttpServers.Functions[GetBlockHeight] = HttpServers.GetBlockHeightImpl
+	HttpServers.Functions[GetBestBlockHash] = HttpServers.GetBestBlockHashImpl
+	HttpServers.Functions[GetBlockCount] = HttpServers.GetBlockCountImpl
+	HttpServers.Functions[GetBlockHash] = HttpServers.GetBlockHashImpl
+	HttpServers.Functions[GetTransactionsByHeight] = HttpServers.GetTransactionsByHeightImpl
+	HttpServers.Functions[GetBlockByHeight] = HttpServers.GetBlockByHeightImpl
+	HttpServers.Functions[GetAssetByHash] = HttpServers.GetAssetByHashImpl
+	HttpServers.Functions[GetBalanceByAddr] = HttpServers.GetBalanceByAddrImpl
+	HttpServers.Functions[GetBalanceByAsset] = HttpServers.GetBalanceByAssetImpl
+	HttpServers.Functions[GetUnspends] = HttpServers.GetUnspendsImpl
+	HttpServers.Functions[GetUnspendOutput] = HttpServers.GetUnspendOutputImpl
+	HttpServers.Functions[GetTransactionByHash] = HttpServers.GetTransactionByHashImpl
+	HttpServers.Functions[GetExistDepositTransactions] = HttpServers.GetExistDepositTransactionsImpl
+	HttpServers.Functions[GetDestroyedTransactionsByHeight] = HttpServers.GetDestroyedTransactionsByHeightImpl
+
+	HttpServers.GetTransactionInfo = HttpServers.GetTransactionInfoImpl
+	HttpServers.GetTransaction = HttpServers.GetTransactionImpl
+	HttpServers.GenerateAuxBlock = HttpServers.GenerateAuxBlockImpl
+	HttpServers.GetBlockInfo = HttpServers.GetBlockInfoImpl
+	HttpServers.GetBlock = HttpServers.GetBlockImpl
+	HttpServers.GetBlockTransactions = HttpServers.GetBlockTransactionsImpl
+	HttpServers.GetBlockTransactionsDetail = HttpServers.GetBlockTransactionsDetailImpl
+	HttpServers.GetPayload = HttpServers.GetPayloadImpl
+	HttpServers.GetPayloadInfo = HttpServers.GetPayloadInfoImpl
+	HttpServers.GetTransactionInfoFromBytes = HttpServers.GetTransactionInfoFromBytesImpl
+	HttpServers.VerifyAndSendTx = HttpServers.VerifyAndSendTxImpl
 }
 
-func (s *HttpServersBase) Init() {
-	s.GetTransactionInfo = s.GetTransactionInfoImpl
-	s.GetTransaction = s.GetTransactionImpl
-	s.GetRawTransaction = s.GetRawTransactionImpl
-	s.GetNeighbors = s.GetNeighborsImpl
-	s.GetNodeState = s.GetNodeStateImpl
-	s.SetLogLevel = s.SetLogLevelImpl
-	s.SubmitSideAuxBlock = s.SubmitSideAuxBlockImpl
-	s.GenerateAuxBlock = s.GenerateAuxBlockImpl
-	s.CreateAuxBlock = s.CreateAuxBlockImpl
-	s.GetInfo = s.GetInfoImpl
-	s.AuxHelp = s.AuxHelpImpl
-	s.ToggleMining = s.ToggleMiningImpl
-	s.DiscreteMining = s.DiscreteMiningImpl
-	s.GetConnectionCount = s.GetConnectionCountImpl
-	s.GetTransactionPool = s.GetTransactionPoolImpl
-	s.GetBlockInfo = s.GetBlockInfoImpl
-	s.GetBlock = s.GetBlockImpl
-	s.GetBlockByHash = s.GetBlockByHashImpl
-	s.SendTransactionInfo = s.SendTransactionInfoImpl
-	s.SendRawTransaction = s.SendRawTransactionImpl
-	s.GetBlockHeight = s.GetBlockHeightImpl
-	s.GetBestBlockHash = s.GetBestBlockHashImpl
-	s.GetBlockCount = s.GetBlockCountImpl
-	s.GetBlockHash = s.GetBlockHashImpl
-	s.GetBlockTransactions = s.GetBlockTransactionsImpl
-	s.GetTransactionsByHeight = s.GetTransactionsByHeightImpl
-	s.GetBlockByHeight = s.GetBlockByHeightImpl
-	s.GetAssetByHash = s.GetAssetByHashImpl
-	s.GetBalanceByAddr = s.GetBalanceByAddrImpl
-	s.GetBalanceByAsset = s.GetBalanceByAssetImpl
-	s.GetUnspends = s.GetUnspendsImpl
-	s.GetUnspendOutput = s.GetUnspendOutputImpl
-	s.GetTransactionByHash = s.GetTransactionByHashImpl
-	s.GetExistDepositTransactions = s.GetExistDepositTransactionsImpl
-	s.GetBlockTransactionsDetail = s.GetBlockTransactionsDetailImpl
-	s.GetDestroyedTransactionsByHeight = s.GetDestroyedTransactionsByHeightImpl
-	s.GetPayload = s.GetPayloadImpl
-	s.GetPayloadInfo = s.GetPayloadInfoImpl
-	s.GetTransactionInfoFromBytes = s.GetTransactionInfoFromBytesImpl
-	s.VerifyAndSendTx = s.VerifyAndSendTxImpl
+func (s *HttpServersBase) RegisterFunctions(funcName HttpServersFunctionsName, function func(param Params) map[string]interface{}) {
+	s.Functions[funcName] = function
 }
 
 func ToReversedString(hash Uint256) string {

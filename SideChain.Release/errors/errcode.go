@@ -23,19 +23,20 @@ const (
 	ErrIneffectiveCoinbase  ErrCode = 45018
 	ErrUTXOLocked           ErrCode = 45019
 	ErrRechargeToSideChain  ErrCode = 45020
+	ErrCrossChain           ErrCode = 45021
 
-	SessionExpired          ErrCode = 41001
-	IllegalDataFormat       ErrCode = 41003
-	PowServiceNotStarted    ErrCode = 41004
-	InvalidMethod           ErrCode = 42001
-	InvalidParams           ErrCode = 42002
-	InvalidToken            ErrCode = 42003
-	InvalidTransaction      ErrCode = 43001
-	InvalidAsset            ErrCode = 43002
-	UnknownTransaction      ErrCode = 44001
-	UnknownAsset            ErrCode = 44002
-	UnknownBlock            ErrCode = 44003
-	InternalError           ErrCode = 45002
+	SessionExpired       ErrCode = 41001
+	IllegalDataFormat    ErrCode = 41003
+	PowServiceNotStarted ErrCode = 41004
+	InvalidMethod        ErrCode = 42001
+	InvalidParams        ErrCode = 42002
+	InvalidToken         ErrCode = 42003
+	InvalidTransaction   ErrCode = 43001
+	InvalidAsset         ErrCode = 43002
+	UnknownTransaction   ErrCode = 44001
+	UnknownAsset         ErrCode = 44002
+	UnknownBlock         ErrCode = 44003
+	InternalError        ErrCode = 45002
 )
 
 var ErrMap = map[ErrCode]string{
@@ -63,11 +64,15 @@ var ErrMap = map[ErrCode]string{
 	ErrTransactionPayload:   "INTERNAL ERROR, ErrTransactionPayload",
 	ErrDoubleSpend:          "INTERNAL ERROR, ErrDoubleSpend",
 	ErrTxHashDuplicate:      "INTERNAL ERROR, ErrTxHashDuplicate",
+	ErrSidechainTxDuplicate: "INTERNAL ERROR, ErrSidechainTxDuplicate",
+	ErrMainchainTxDuplicate: "INTERNAL ERROR, ErrMainchainTxDuplicate",
 	ErrXmitFail:             "INTERNAL ERROR, ErrXmitFail",
 	ErrTransactionSize:      "INTERNAL ERROR, ErrTransactionSize",
 	ErrUnknownReferedTxn:    "INTERNAL ERROR, ErrUnknownReferedTxn",
 	ErrInvalidReferedTxn:    "INTERNAL ERROR, ErrInvalidReferedTxn",
 	ErrIneffectiveCoinbase:  "INTERNAL ERROR, ErrIneffectiveCoinbase",
+	ErrRechargeToSideChain:  "INTERNAL ERROR, ErrRechargeToSideChain",
+	ErrCrossChain:           "INTERNAL ERROR, ErrCrossChain",
 }
 
 func (code ErrCode) Message() string {
