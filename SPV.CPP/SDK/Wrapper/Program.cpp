@@ -51,7 +51,7 @@ namespace Elastos {
 			if (_code[_code.GetSize() - 1] == ELA_MULTISIG) {
 				uint8_t m, n;
 				std::vector<std::string> signers;
-				ParseMultiSignRedeemScript(m, n, signers);
+				ParseMultiSignRedeemScript(_code, m, n, signers);
 
 				if (_parameter.GetSize() % SignatureScriptLength != 0)
 					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
@@ -72,9 +72,10 @@ namespace Elastos {
 					CMBlock signature(SignatureScriptLength);
 					memcpy(signature, &_parameter[i], SignatureScriptLength);
 
-					for (int i = 0; i < signers.size(); i++) {
+					for (std::vector<std::string>::iterator signerIt = signers.begin();
+						 signerIt != signers.end(); ++signerIt) {
 
-						verified |= Key::verifyByPublicKey(signers[i], md, signature);
+						verified |= Key::verifyByPublicKey(*signerIt, md, signature);
 						if (verified) break;
 					}
 
@@ -86,14 +87,15 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Program::ParseMultiSignRedeemScript(uint8_t &m, uint8_t &n, std::vector<std::string> &signers) {
-			m = _code[0] - OP_1 + 1;
-			n = _code[_code.GetSize() - 2] - OP_1 + 1;
+		bool Program::ParseMultiSignRedeemScript(const CMBlock &code, uint8_t &m, uint8_t &n,
+												 std::vector<std::string> &signers) {
+			m = code[0] - OP_1 + 1;
+			n = code[code.GetSize() - 2] - OP_1 + 1;
 
 			signers.clear();
-			for (int i = 1; i < _code.GetSize() - 2;) {
-				uint8_t size = _code[i];
-				signers.push_back(Utils::encodeHex(&_code[i + 1], size));
+			for (int i = 1; i < code.GetSize() - 2;) {
+				uint8_t size = code[i];
+				signers.push_back(Utils::encodeHex(&code[i + 1], size));
 				i += size + 1;
 			}
 

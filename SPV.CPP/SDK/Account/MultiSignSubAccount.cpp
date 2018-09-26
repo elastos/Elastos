@@ -4,6 +4,9 @@
 
 #include "MultiSignSubAccount.h"
 #include "ErrorCode.h"
+#include "Program.h"
+
+#define SignatureScriptLength 65
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -53,9 +56,40 @@ namespace Elastos {
 		}
 
 		std::vector<std::string> MultiSignSubAccount::GetTransactionSignedSigners(const TransactionPtr &transaction) {
-			std::vector<std::string> result;
 
-			return result;
+			for (std::vector<Program *>::const_iterator programIt = transaction->getPrograms().cbegin();
+				 programIt != transaction->getPrograms().cend(); ++programIt) {
+
+				const CMBlock &code = (*programIt)->getCode();
+				const CMBlock &parameter = (*programIt)->getParameter();
+				if (code[code.GetSize() - 1] == ELA_MULTISIG) {
+					std::vector<std::string> result;
+
+					uint8_t m, n;
+					std::vector<std::string> signers;
+					Program::ParseMultiSignRedeemScript(code, m, n, signers);
+
+					CMBlock hashData = transaction->GetShaData();
+					UInt256 md;
+					memcpy(md.u8, hashData, sizeof(UInt256));
+
+					for (int i = 0; i < parameter.GetSize(); i += SignatureScriptLength) {
+						CMBlock signature(SignatureScriptLength);
+						memcpy(signature, &parameter[i], SignatureScriptLength);
+
+						for (std::vector<std::string>::iterator signerIt = signers.begin();
+							 signerIt != signers.end(); ++signerIt) {
+
+							if (Key::verifyByPublicKey(*signerIt, md, signature))
+								result.push_back(*signerIt);
+						}
+					}
+
+					return result;
+				}
+			}
+
+			return std::vector<std::string>();
 		}
 
 	}

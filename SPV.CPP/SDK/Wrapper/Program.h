@@ -16,7 +16,7 @@ namespace Elastos {
 		class Transaction;
 
 		class Program :
-			public ELAMessageSerializable {
+				public ELAMessageSerializable {
 		public:
 			Program();
 
@@ -44,8 +44,8 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
-		private:
-			bool ParseMultiSignRedeemScript(uint8_t &m, uint8_t &n, std::vector<std::string> &signers);
+			static bool ParseMultiSignRedeemScript(const CMBlock &code, uint8_t &m, uint8_t &n,
+												   std::vector<std::string> &signers);
 
 		private:
 			CMBlock _code;
