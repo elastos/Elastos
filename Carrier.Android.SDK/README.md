@@ -1,5 +1,8 @@
 Elastos Carrier Android SDK
 ===========================
+
+[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Android.SDK.svg?branch=master)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Android.SDK)
+
 ## Summary
 
 Elastos Carrier Android SDK is java api wrapper for Elastos Native Carrier, where Carrier is a decentralized peer to peer communication framework.
@@ -84,4 +87,4 @@ We welcome contributions to the Elastos Carrier Android Project (or Native Proje
 
 ## License
 
-Elastos Carrier Android Project source code files are made available under the MIT License, located in the LICENSE file. 
+Elastos Carrier Android Project source code files are made available under the MIT License, located in the LICENSE file.

@@ -1,0 +1,52 @@
+language: android
+
+matrix:
+  include:
+  - language: android
+    android:
+      components:
+        - tools
+        - platform-tools
+        - build-tools-26.0.1
+        - android-21
+        - sys-img-armeabi-v7a-android-21
+    env: ANDROID_ABI=armeabi-v7a API_LEVEL=android-21
+
+  - language: android
+    sudo: true
+    android:
+      components:
+        - tools
+        - platform-tools
+        - build-tools-26.0.1
+        - android-24
+        - sys-img-arm64-v8a-android-24
+    env: ANDROID_ABI=arm64-v8a API_LEVEL=android-24
+
+install:
+  - echo y | sdkmanager 'cmake;3.6.4111459'
+  - cd /tmp
+  - wget https://dl.google.com/android/repository/android-ndk-r16b-linux-x86_64.zip
+  - unzip -q android-ndk-r16b-linux-x86_64.zip
+  - export ANDROID_NDK_HOME=/tmp/android-ndk-r16b
+  # - curl `curl https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/releases/latest  | grep -e "https[a-zA-Z0-9:.<>()_\/\-]*" -o`  | grep -e "/elastos.*android.*gz" -o >packages.txt
+  - curl https://github.com/elastos/Elastos.NET.Carrier.Native.SDK/releases/tag/internal-test | grep -e "/elastos.*android.*gz" -o >packages.txt
+  - sed -i 's/^/https:\/\/github.com/g' packages.txt
+  - wget -i packages.txt
+  - cd $TRAVIS_BUILD_DIR/app/native-dist/libs && mkdir x86 && mkdir x86_64 && mkdir arm64-v8a && mkdir armeabi-v7a
+  - tar -zxvf /tmp/*-android_x86-*.tar.gz -C x86/ lib --strip-components 1
+  - tar -zxvf /tmp/*-android_x86_64-*.tar.gz -C x86_64/ lib --strip-components 1
+  - tar -zxvf /tmp/*-android_arm64-*.tar.gz -C arm64-v8a/ lib --strip-components 1
+  - tar -zxvf /tmp/*-android_armv7a-*.tar.gz -C armeabi-v7a/ lib --strip-components 1
+  - cd $TRAVIS_BUILD_DIR
+
+before_script:
+  - echo no | android create avd --force -n test -t $API_LEVEL --abi $ANDROID_ABI
+  - emulator -avd test -no-skin -no-window &
+  - android-wait-for-emulator
+
+script:
+  - touch ~/.android/repositories.cfg
+  - gradle init
+  - gradle wrapper
+  - gradle lint && gradle assembleRelease && gradle connectedAndroidTest
