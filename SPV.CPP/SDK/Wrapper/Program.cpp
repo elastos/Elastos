@@ -65,17 +65,16 @@ namespace Elastos {
 
 				CMBlock hashData = transaction->GetShaData();
 				UInt256 md;
-				BRSHA256(&md, hashData, hashData.GetSize());
+				memcpy(md.u8, hashData, sizeof(UInt256));
 
 				for (int i = 0; i < _parameter.GetSize(); i += SignatureScriptLength) {
 					bool verified = false;
 					CMBlock signature(SignatureScriptLength);
 					memcpy(signature, &_parameter[i], SignatureScriptLength);
 
-					for (std::vector<std::string>::iterator signerIt = signers.begin();
-						 signerIt != signers.end(); ++signerIt) {
+					for (int i = 0; i < signers.size(); i++) {
 
-						verified |= Key::verifyByPublicKey(*signerIt, md, signature);
+						verified |= Key::verifyByPublicKey(signers[i], md, signature);
 						if (verified) break;
 					}
 
