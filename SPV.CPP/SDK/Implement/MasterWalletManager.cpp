@@ -290,6 +290,30 @@ namespace Elastos {
 			return mnemonic;
 		}
 
+		std::string MasterWalletManager::ConvertToHexString(const nlohmann::json &tx) {
+			Transaction txn;
+
+			txn.fromJson(tx);
+
+			ByteStream stream;
+			txn.Serialize(stream);
+
+			return Utils::encodeHex(stream.getBuffer());
+		}
+
+		nlohmann::json MasterWalletManager::ConvertFromHexString(const std::string &raw) {
+			Transaction txn;
+
+			CMBlock rawHex = Utils::decodeHex(raw);
+
+			ByteStream stream;
+			stream.writeBytes(rawHex, rawHex.GetSize());
+			stream.setPosition(0);
+			txn.Deserialize(stream);
+
+			return txn.toJson();
+		}
+
 		void MasterWalletManager::initMasterWallets() {
 			path rootPath = _rootPath;
 

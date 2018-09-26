@@ -83,8 +83,9 @@ namespace Elastos {
 			Log::getLogger()->info("Sending transaction, json info: {}, hex String: {}",
 								   sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
 
-			_reconnectTimer->cancel();
 			if (_peerManager->getConnectStatus() != Peer::Connected) {
+				if (_reconnectTimer != nullptr)
+					_reconnectTimer->cancel();
 				_peerManager->connect();
 			}
 
