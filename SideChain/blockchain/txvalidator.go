@@ -2,8 +2,6 @@ package blockchain
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"math"
 
 	"github.com/elastos/Elastos.ELA.SideChain/common"
@@ -19,213 +17,84 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-var TransactionValidator *TransactionValidateBase
+const (
+	CheckTransactionSize    = "checktransactionsize"
+	CheckTransactionInput   = "checktransactioninput"
+	CheckTransactionOutput  = "checktransactionoutput"
+	CheckAssetPrecision     = "checkassetprecision"
+	CheckAttributeProgram   = "checkattributeprogram"
+	CheckTransactionPayload = "checktransactionpayload"
 
-type TransactionValidateBase struct {
-	CheckTransactionSanity                  func(txn *core.Transaction) ErrCode
-	CheckTransactionContext                 func(txn *core.Transaction) ErrCode
-	CheckTransactionInput                   func(txn *core.Transaction) error
-	CheckTransactionOutput                  func(txn *core.Transaction) error
-	CheckOutputProgramHash                  func(programHash Uint168) bool
-	CheckTransactionUTXOLock                func(txn *core.Transaction) error
-	CheckTransactionSize                    func(txn *core.Transaction) error
-	CheckAssetPrecision                     func(txn *core.Transaction) error
-	CheckTransactionBalance                 func(txn *core.Transaction) error
-	CheckAttributeProgram                   func(tx *core.Transaction) error
-	CheckTransactionSignature               func(txn *core.Transaction) error
-	CheckAmountPrecise                      func(amount Fixed64, precision byte, assetPrecision byte) bool
-	CheckTransactionPayload                 func(txn *core.Transaction) error
-	CheckRechargeToSideChainTransaction     func(txn *core.Transaction) error
-	CheckTransferCrossChainAssetTransaction func(txn *core.Transaction) error
-	CheckTxHashDuplicate                    func(txn *core.Transaction) (bool, ErrCode)
-	CheckCoinBaseTx                         func(txn *core.Transaction) (bool, ErrCode)
-	CheckSignature                          func(txn *core.Transaction) (bool, ErrCode)
-	CheckRechargeToSideChainTx              func(txn *core.Transaction) (bool, ErrCode)
-	CheckTransferCrossChainAssetTx          func(txn *core.Transaction) (bool, ErrCode)
-	CheckDoubleSpend                        func(txn *core.Transaction) (bool, ErrCode)
-	CheckUTXOLock                           func(txn *core.Transaction) (bool, ErrCode)
-	CheckBalance                            func(txn *core.Transaction) (bool, ErrCode)
-	CheckReferencedOutput                   func(txn *core.Transaction) (bool, ErrCode)
+	CheckTransactionDuplicate               = "checkTransactionDuplicate"
+	CheckTransactionCoinBase                = "checktransactioncoinbase"
+	CheckTransactionDoubleSpend             = "checktransactiondoublespend"
+	CheckTransactionSignature               = "checktransactionsignature"
+	CheckRechargeToSideChainTransaction     = "checkrechargetosidechaintransaction"
+	CheckTransferCrossChainAssetTransaction = "checktransfercrosschainassettransaction"
+	CheckTransactionUTXOLock                = "checktransactionutxolock"
+	CheckTransactionBalance                 = "checktransactionbalance"
+	CheckReferencedOutput                   = "checkreferencedoutput"
+)
+
+var TransactionValidator *TransactionValidate
+
+type TransactionValidateFunctionName string
+
+type TransactionValidate struct {
+	CheckSanityFunctions  map[TransactionValidateFunctionName]func(txn *core.Transaction) ErrCode
+	CheckContextFunctions map[TransactionValidateFunctionName]func(txn *core.Transaction) (bool, ErrCode)
 }
 
 func InitTransactionValidtor() {
-	TransactionValidator = &TransactionValidateBase{}
-	TransactionValidator.Init()
+	TransactionValidator = &TransactionValidate{}
+	TransactionValidator.RegisterSanityFunctions(CheckTransactionSize, TransactionValidator.checkTransactionSize)
+	TransactionValidator.RegisterSanityFunctions(CheckTransactionInput, TransactionValidator.checkTransactionInput)
+	TransactionValidator.RegisterSanityFunctions(CheckTransactionOutput, TransactionValidator.checkTransactionOutput)
+	TransactionValidator.RegisterSanityFunctions(CheckAssetPrecision, TransactionValidator.checkAssetPrecision)
+	TransactionValidator.RegisterSanityFunctions(CheckAttributeProgram, TransactionValidator.checkAttributeProgram)
+	TransactionValidator.RegisterSanityFunctions(CheckTransactionPayload, TransactionValidator.checkTransactionPayload)
+
+	TransactionValidator.RegisterContextFunctions(CheckTransactionDuplicate, TransactionValidator.checkTransactionDuplicate)
+	TransactionValidator.RegisterContextFunctions(CheckTransactionCoinBase, TransactionValidator.checkTransactionCoinBase)
+	TransactionValidator.RegisterContextFunctions(CheckTransactionDoubleSpend, TransactionValidator.checkTransactionDoubleSpend)
+	TransactionValidator.RegisterContextFunctions(CheckTransactionSignature, TransactionValidator.checkTransactionSignature)
+	TransactionValidator.RegisterContextFunctions(CheckRechargeToSideChainTransaction, TransactionValidator.checkRechargeToSideChainTransaction)
+	TransactionValidator.RegisterContextFunctions(CheckTransferCrossChainAssetTransaction, TransactionValidator.checkTransferCrossChainAssetTransaction)
+	TransactionValidator.RegisterContextFunctions(CheckTransactionUTXOLock, TransactionValidator.checkTransactionUTXOLock)
+	TransactionValidator.RegisterContextFunctions(CheckTransactionBalance, TransactionValidator.checkTransactionBalance)
+	TransactionValidator.RegisterContextFunctions(CheckReferencedOutput, TransactionValidator.checkReferencedOutput)
 }
 
-func (v *TransactionValidateBase) Init() {
-	v.CheckTransactionSanity = v.CheckTransactionSanityImpl
-	v.CheckTransactionContext = v.CheckTransactionContextImpl
-	v.CheckTransactionInput = v.CheckTransactionInputImpl
-	v.CheckTransactionOutput = v.CheckTransactionOutputImpl
-	v.CheckOutputProgramHash = v.CheckOutputProgramHashImpl
-	v.CheckTransactionUTXOLock = v.CheckTransactionUTXOLockImpl
-	v.CheckTransactionSize = v.CheckTransactionSizeImpl
-	v.CheckAssetPrecision = v.CheckAssetPrecisionImpl
-	v.CheckTransactionBalance = v.CheckTransactionBalanceImpl
-	v.CheckAttributeProgram = v.CheckAttributeProgramImpl
-	v.CheckTransactionSignature = v.CheckTransactionSignatureImpl
-	v.CheckAmountPrecise = v.CheckAmountPreciseImpl
-	v.CheckTransactionPayload = v.CheckTransactionPayloadImpl
-	v.CheckRechargeToSideChainTransaction = v.CheckRechargeToSideChainTransactionImpl
-	v.CheckTransferCrossChainAssetTransaction = v.CheckTransferCrossChainAssetTransactionImpl
-	v.CheckTxHashDuplicate = v.CheckTxHashDuplicateImpl
-	v.CheckCoinBaseTx = v.CheckCoinBaseTxImpl
-	v.CheckSignature = v.CheckSignatureImpl
-	v.CheckRechargeToSideChainTx = v.CheckRechargeToSideChainTxImpl
-	v.CheckTransferCrossChainAssetTx = v.CheckTransferCrossChainAssetTxImpl
-	v.CheckDoubleSpend = v.CheckDoubleSpendImpl
-	v.CheckUTXOLock = v.CheckUTXOLockImpl
-	v.CheckBalance = v.CheckBalanceImpl
-	v.CheckReferencedOutput = v.CheckReferencedOutputImpl
+func (txv *TransactionValidate) RegisterSanityFunctions(funcName TransactionValidateFunctionName, function func(txn *core.Transaction) ErrCode) {
+	txv.CheckSanityFunctions[funcName] = function
+}
 
+func (txv *TransactionValidate) RegisterContextFunctions(funcName TransactionValidateFunctionName, function func(txn *core.Transaction) (bool, ErrCode)) {
+	txv.CheckContextFunctions[funcName] = function
 }
 
 // CheckTransactionSanity verifys received single transaction
-func (v *TransactionValidateBase) CheckTransactionSanityImpl(txn *core.Transaction) ErrCode {
-
-	if err := v.CheckTransactionSize(txn); err != nil {
-		log.Warn("[CheckTransactionSize],", err)
-		return ErrTransactionSize
+func (txv *TransactionValidate) CheckTransactionSanity(txn *core.Transaction) ErrCode {
+	for _, checkFunc := range txv.CheckSanityFunctions {
+		if errcode := checkFunc(txn); errcode != Success {
+			return errcode
+		}
 	}
-
-	if err := v.CheckTransactionInput(txn); err != nil {
-		log.Warn("[CheckTransactionInput],", err)
-		return ErrInvalidInput
-	}
-
-	if err := v.CheckTransactionOutput(txn); err != nil {
-		log.Warn("[CheckTransactionOutput],", err)
-		return ErrInvalidOutput
-	}
-
-	if err := v.CheckAssetPrecision(txn); err != nil {
-		log.Warn("[CheckAssetPrecesion],", err)
-		return ErrAssetPrecision
-	}
-
-	if err := v.CheckAttributeProgram(txn); err != nil {
-		log.Warn("[CheckAttributeProgram],", err)
-		return ErrAttributeProgram
-	}
-
-	if err := v.CheckTransactionPayload(txn); err != nil {
-		log.Warn("[CheckTransactionPayload],", err)
-		return ErrTransactionPayload
-	}
-
-	// check iterms above for Coinbase transaction
-	if txn.IsCoinBaseTx() {
-		return Success
-	}
-
 	return Success
 }
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
-func (v *TransactionValidateBase) CheckTransactionContextImpl(txn *core.Transaction) ErrCode {
-	if ok, errcode := v.CheckTxHashDuplicate(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckCoinBaseTx(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckSignature(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckRechargeToSideChainTx(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckTransferCrossChainAssetTx(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckDoubleSpend(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckUTXOLock(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckBalance(txn); !ok {
-		return errcode
-	}
-	if ok, errcode := v.CheckReferencedOutput(txn); !ok {
-		return errcode
+func (txv *TransactionValidate) CheckTransactionContext(txn *core.Transaction) ErrCode {
+	for _, checkFunc := range txv.CheckContextFunctions {
+		if ok, errcode := checkFunc(txn); !ok {
+			return errcode
+		}
 	}
 
 	return Success
 }
 
-func (v *TransactionValidateBase) CheckTxHashDuplicateImpl(txn *core.Transaction) (bool, ErrCode) {
-	// check if duplicated with transaction in ledger
-	if exist := DefaultChain.IsDuplicateTx(txn.Hash()); exist {
-		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
-		return false, ErrTxHashDuplicate
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckCoinBaseTxImpl(txn *core.Transaction) (bool, ErrCode) {
-	if txn.IsCoinBaseTx() {
-		return false, Success
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckSignatureImpl(txn *core.Transaction) (bool, ErrCode) {
-	if err := v.CheckTransactionSignature(txn); err != nil {
-		log.Warn("[CheckTransactionSignature],", err)
-		return false, ErrTransactionSignature
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckRechargeToSideChainTxImpl(txn *core.Transaction) (bool, ErrCode) {
-	if txn.IsRechargeToSideChainTx() {
-		if err := v.CheckRechargeToSideChainTransaction(txn); err != nil {
-			log.Warn("[CheckRechargeToSideChainTransaction],", err)
-			return false, ErrRechargeToSideChain
-		}
-		return false, Success
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckTransferCrossChainAssetTxImpl(txn *core.Transaction) (bool, ErrCode) {
-	if txn.IsTransferCrossChainAssetTx() {
-		if err := v.CheckTransferCrossChainAssetTransaction(txn); err != nil {
-			log.Warn("[CheckTransferCrossChainAssetTransaction],", err)
-			return false, ErrInvalidOutput
-		}
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckDoubleSpendImpl(txn *core.Transaction) (bool, ErrCode) {
-	// check double spent transaction
-	if DefaultChain.IsDoubleSpend(txn) {
-		log.Info("[CheckTransactionContext] IsDoubleSpend check faild.")
-		return false, ErrDoubleSpend
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckUTXOLockImpl(txn *core.Transaction) (bool, ErrCode) {
-	if err := v.CheckTransactionUTXOLock(txn); err != nil {
-		log.Warn("[CheckTransactionUTXOLock],", err)
-		return false, ErrUTXOLocked
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckBalanceImpl(txn *core.Transaction) (bool, ErrCode) {
-	if err := v.CheckTransactionBalance(txn); err != nil {
-		log.Warn("[CheckTransactionBalance],", err)
-		return false, ErrTransactionBalance
-	}
-	return true, Success
-}
-
-func (v *TransactionValidateBase) CheckReferencedOutputImpl(txn *core.Transaction) (bool, ErrCode) {
+func (txv *TransactionValidate) checkReferencedOutput(txn *core.Transaction) (bool, ErrCode) {
 	// check referenced Output value
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID
@@ -253,53 +122,60 @@ func (v *TransactionValidateBase) CheckReferencedOutputImpl(txn *core.Transactio
 }
 
 //validate the transaction of duplicate UTXO input
-func (v *TransactionValidateBase) CheckTransactionInputImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionInput(txn *core.Transaction) ErrCode {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Inputs) != 1 {
-			return errors.New("coinbase must has only one input")
+			log.Warn("[checkTransactionInput] coinbase must has only one input")
+			return ErrInvalidInput
 		}
 		coinbaseInputHash := txn.Inputs[0].Previous.TxID
 		coinbaseInputIndex := txn.Inputs[0].Previous.Index
 		//TODO :check sequence
 		if !coinbaseInputHash.IsEqual(EmptyHash) || coinbaseInputIndex != math.MaxUint16 {
-			return errors.New("invalid coinbase input")
+			log.Warn("[checkTransactionInput] invalid coinbase input")
+			return ErrInvalidInput
 		}
 
-		return nil
+		return Success
 	}
 
 	if txn.IsRechargeToSideChainTx() {
-		return nil
+		return Success
 	}
 
 	if len(txn.Inputs) <= 0 {
-		return errors.New("transaction has no inputs")
+		log.Warn("[checkTransactionInput] transaction has no inputs")
+		return ErrInvalidInput
 	}
 	for i, utxoin := range txn.Inputs {
 		if utxoin.Previous.TxID.IsEqual(EmptyHash) && (utxoin.Previous.Index == math.MaxUint16) {
-			return errors.New("invalid transaction input")
+			log.Warn("[checkTransactionInput] invalid transaction input")
+			return ErrInvalidInput
 		}
 		for j := 0; j < i; j++ {
 			if utxoin.Previous.IsEqual(txn.Inputs[j].Previous) {
-				return errors.New("duplicated transaction inputs")
+				log.Warn("[checkTransactionInput] duplicated transaction inputs")
+				return ErrInvalidInput
 			}
 		}
 	}
 
-	return nil
+	return Success
 }
 
-func (v *TransactionValidateBase) CheckTransactionOutputImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionOutput(txn *core.Transaction) ErrCode {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
-			return errors.New("coinbase output is not enough, at least 2")
+			log.Warn("[checkTransactionOutput] coinbase output is not enough, at least 2")
+			return ErrInvalidOutput
 		}
 
 		var totalReward = Fixed64(0)
 		var foundationReward = Fixed64(0)
 		for _, output := range txn.Outputs {
 			if output.AssetID != DefaultChain.AssetID {
-				return errors.New("asset ID in coinbase is invalid")
+				log.Warn("[checkTransactionOutput] asset ID in coinbase is invalid")
+				return ErrInvalidOutput
 			}
 			totalReward += output.Value
 			if output.ProgramHash.IsEqual(FoundationAddress) {
@@ -307,31 +183,35 @@ func (v *TransactionValidateBase) CheckTransactionOutputImpl(txn *core.Transacti
 			}
 		}
 		if Fixed64(foundationReward) < Fixed64(float64(totalReward)*0.3) {
-			return errors.New("Reward to foundation in coinbase < 30%")
+			log.Warn("[checkTransactionOutput] Reward to foundation in coinbase < 30%")
+			return ErrInvalidOutput
 		}
 
-		return nil
+		return Success
 	}
 
 	if len(txn.Outputs) < 1 {
-		return errors.New("transaction has no outputs")
+		log.Warn("[checkTransactionOutput] transaction has no outputs")
+		return ErrInvalidOutput
 	}
 
 	// check if output address is valid
 	for _, output := range txn.Outputs {
 		if output.AssetID != DefaultChain.AssetID {
-			return errors.New("asset ID in output is invalid")
+			log.Warn("[checkTransactionOutput] asset ID in output is invalid")
+			return ErrInvalidOutput
 		}
 
-		if !v.CheckOutputProgramHash(output.ProgramHash) {
-			return errors.New("output address is invalid")
+		if !txv.CheckOutputProgramHashImpl(output.ProgramHash) {
+			log.Warn("[checkTransactionOutput] output address is invalid")
+			return ErrInvalidOutput
 		}
 	}
 
-	return nil
+	return Success
 }
 
-func (v *TransactionValidateBase) CheckOutputProgramHashImpl(programHash Uint168) bool {
+func (txv *TransactionValidate) CheckOutputProgramHashImpl(programHash Uint168) bool {
 	var empty = Uint168{}
 	prefix := programHash[0]
 	if prefix == PrefixStandard ||
@@ -344,16 +224,18 @@ func (v *TransactionValidateBase) CheckOutputProgramHashImpl(programHash Uint168
 	return false
 }
 
-func (v *TransactionValidateBase) CheckTransactionUTXOLockImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionUTXOLock(txn *core.Transaction) (bool, ErrCode) {
 	if txn.IsCoinBaseTx() {
-		return nil
+		return true, Success
 	}
 	if len(txn.Inputs) <= 0 {
-		return errors.New("Transaction has no inputs")
+		log.Warn("[checkTransactionUTXOLock] Transaction has no inputs")
+		return false, ErrUTXOLocked
 	}
 	references, err := DefaultChain.GetTxReference(txn)
 	if err != nil {
-		return fmt.Errorf("GetReference failed: %s", err)
+		log.Warn("[checkTransactionUTXOLock] GetReference failed: %s", err)
+		return false, ErrUTXOLocked
 	}
 	for input, output := range references {
 
@@ -362,27 +244,30 @@ func (v *TransactionValidateBase) CheckTransactionUTXOLockImpl(txn *core.Transac
 			continue
 		}
 		if input.Sequence != math.MaxUint32-1 {
-			return errors.New("Invalid input sequence")
+			log.Warn("[checkTransactionUTXOLock] Invalid input sequence")
+			return false, ErrUTXOLocked
 		}
 		if txn.LockTime < output.OutputLock {
-			return errors.New("UTXO output locked")
+			log.Warn("[checkTransactionUTXOLock] UTXO output locked")
+			return false, ErrUTXOLocked
 		}
 	}
-	return nil
+	return true, Success
 }
 
-func (v *TransactionValidateBase) CheckTransactionSizeImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionSize(txn *core.Transaction) ErrCode {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
-		return fmt.Errorf("Invalid transaction size: %d bytes", size)
+		log.Warn("[checkTransactionSize] Invalid transaction size: %d bytes", size)
+		return ErrTransactionSize
 	}
 
-	return nil
+	return Success
 }
 
-func (v *TransactionValidateBase) CheckAssetPrecisionImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkAssetPrecision(txn *core.Transaction) ErrCode {
 	if len(txn.Outputs) == 0 {
-		return nil
+		return Success
 	}
 	assetOutputs := make(map[Uint256][]*core.Output, len(txn.Outputs))
 
@@ -392,94 +277,133 @@ func (v *TransactionValidateBase) CheckAssetPrecisionImpl(txn *core.Transaction)
 	for k, outputs := range assetOutputs {
 		asset, err := DefaultChain.GetAsset(k)
 		if err != nil {
-			return errors.New("The asset not exist in local blockchain.")
+			log.Warn("[checkAssetPrecision] The asset not exist in local blockchain.")
+			return ErrAssetPrecision
 		}
 		precision := asset.Precision
 		for _, output := range outputs {
-			if !v.CheckAmountPrecise(output.Value, precision, core.MaxPrecision) {
-				return errors.New("The precision of asset is incorrect.")
+			if !txv.CheckAmountPreciseImpl(output.Value, precision, core.MaxPrecision) {
+				log.Warn("[checkAssetPrecision] The precision of asset is incorrect.")
+				return ErrAssetPrecision
 			}
 		}
 	}
-	return nil
+	return Success
 }
 
-func (v *TransactionValidateBase) CheckTransactionBalanceImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionBalance(txn *core.Transaction) (bool, ErrCode) {
 	for _, v := range txn.Outputs {
 		if v.Value < Fixed64(0) {
-			return errors.New("Invalide transaction UTXO output.")
+			log.Warn("[checkTransactionBalance] Invalide transaction UTXO output.")
+			return false, ErrTransactionBalance
 		}
 	}
 	results, err := TxFeeHelper.GetTxFeeMap(txn)
 	if err != nil {
-		return err
+		return false, ErrTransactionBalance
 	}
 	for _, v := range results {
 		if v < Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
-			return fmt.Errorf("Transaction fee not enough")
+			log.Warn("[checkTransactionBalance] Transaction fee not enough")
+			return false, ErrTransactionBalance
 		}
 	}
-	return nil
+	return true, Success
 }
 
-func (v *TransactionValidateBase) CheckAttributeProgramImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkAttributeProgram(txn *core.Transaction) ErrCode {
 	// Check attributes
 	for _, attr := range txn.Attributes {
 		if !core.IsValidAttributeType(attr.Usage) {
-			return fmt.Errorf("invalid attribute usage %v", attr.Usage)
+			log.Warn("[checkAttributeProgram] invalid attribute usage %txv", attr.Usage)
+			return ErrAttributeProgram
 		}
 	}
 
 	// Check programs
 	for _, program := range txn.Programs {
 		if program.Code == nil {
-			return fmt.Errorf("invalid program code nil")
+			log.Warn("[checkAttributeProgram] invalid program code nil")
+			return ErrAttributeProgram
 		}
 		if program.Parameter == nil {
-			return fmt.Errorf("invalid program parameter nil")
+			log.Warn("[checkAttributeProgram] invalid program parameter nil")
+			return ErrAttributeProgram
 		}
 		_, err := crypto.ToProgramHash(program.Code)
 		if err != nil {
-			return fmt.Errorf("invalid program code %x", program.Code)
+			log.Warn("[checkAttributeProgram] invalid program code %x", program.Code)
+			return ErrAttributeProgram
 		}
 	}
-	return nil
+	return Success
 }
 
-func (v *TransactionValidateBase) CheckTransactionSignatureImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionDuplicate(txn *core.Transaction) (bool, ErrCode) {
+	// check if duplicated with transaction in ledger
+	if exist := DefaultChain.IsDuplicateTx(txn.Hash()); exist {
+		log.Info("[CheckTransactionContext] duplicate transaction check faild.")
+		return false, ErrTxHashDuplicate
+	}
+	return true, Success
+}
+
+func (txv *TransactionValidate) checkTransactionCoinBase(txn *core.Transaction) (bool, ErrCode) {
+	if txn.IsCoinBaseTx() {
+		return false, Success
+	}
+	return true, Success
+}
+
+func (txv *TransactionValidate) checkTransactionDoubleSpend(txn *core.Transaction) (bool, ErrCode) {
+	// check double spent transaction
+	if DefaultChain.IsDoubleSpend(txn) {
+		log.Warn("[CheckTransactionContext] IsDoubleSpend check faild.")
+		return false, ErrDoubleSpend
+	}
+	return true, Success
+}
+
+func (txv *TransactionValidate) checkTransactionSignature(txn *core.Transaction) (bool, ErrCode) {
 	if txn.IsRechargeToSideChainTx() {
 		if err := spv.VerifyTransaction(txn); err != nil {
-			return err
+			return false, ErrTransactionSignature
 		}
-		return nil
+		return true, Success
 	}
 
 	hashes, err := GetTxProgramHashes(txn)
 	if err != nil {
-		return err
+		return false, ErrTransactionSignature
 	}
 
 	// Sort first
 	SortProgramHashes(hashes)
 	if err := SortPrograms(txn.Programs); err != nil {
-		return err
+		return false, ErrTransactionSignature
 	}
 
-	return RunPrograms(txn, hashes, txn.Programs)
+	if err := RunPrograms(txn, hashes, txn.Programs); err != nil {
+		return false, ErrTransactionSignature
+	}
+
+	return true, Success
 }
 
-func (v *TransactionValidateBase) CheckAmountPreciseImpl(amount Fixed64, precision byte, assetPrecision byte) bool {
+func (txv *TransactionValidate) CheckAmountPreciseImpl(amount Fixed64, precision byte, assetPrecision byte) bool {
 	return amount.IntValue()%int64(math.Pow10(int(assetPrecision-precision))) == 0
 }
 
-func (v *TransactionValidateBase) CheckTransactionPayloadImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransactionPayload(txn *core.Transaction) ErrCode {
 	switch pld := txn.Payload.(type) {
 	case *core.PayloadRegisterAsset:
 		if pld.Asset.Precision < core.MinPrecision || pld.Asset.Precision > core.MaxPrecision {
-			return errors.New("Invalide asset Precision.")
+			log.Warn("[checkTransactionPayload] Invalide asset Precision.")
+			return ErrTransactionPayload
 		}
-		if !v.CheckAmountPrecise(pld.Amount, pld.Asset.Precision, core.MaxPrecision) {
-			return errors.New("Invalide asset value,out of precise.")
+		if !txv.CheckAmountPreciseImpl(pld.Amount, pld.Asset.Precision, core.MaxPrecision) {
+			log.Warn("[checkTransactionPayload] Invalide asset value,out of precise.")
+			return ErrTransactionPayload
 		}
 	case *core.PayloadTransferAsset:
 	case *core.PayloadRecord:
@@ -487,47 +411,59 @@ func (v *TransactionValidateBase) CheckTransactionPayloadImpl(txn *core.Transact
 	case *core.PayloadRechargeToSideChain:
 	case *core.PayloadTransferCrossChainAsset:
 	default:
-		return errors.New("[txValidator],invalidate transaction payload type.")
+		log.Warn("[checkTransactionPayload] Invalide transaction payload type.")
+		return ErrTransactionPayload
 	}
-	return nil
+	return Success
 }
 
-func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkRechargeToSideChainTransaction(txn *core.Transaction) (bool, ErrCode) {
+	if !txn.IsRechargeToSideChainTx() {
+		return true, Success
+	}
+
 	proof := new(MerkleProof)
 	mainChainTransaction := new(ela.Transaction)
 
 	payloadRecharge, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
 	if !ok {
-		return errors.New("Invalid recharge to side chain payload type")
+		log.Warn("[checkRechargeToSideChainTransaction] Invalid recharge to side chain payload type")
+		return false, ErrRechargeToSideChain
 	}
 
 	if config.Parameters.ExchangeRate <= 0 {
-		return errors.New("Invalid config exchange rate")
+		log.Warn("[checkRechargeToSideChainTransaction] Invalid config exchange rate")
+		return false, ErrRechargeToSideChain
 	}
 
 	reader := bytes.NewReader(payloadRecharge.MerkleProof)
 	if err := proof.Deserialize(reader); err != nil {
-		return errors.New("RechargeToSideChain payload deserialize failed")
+		log.Warn("[checkRechargeToSideChainTransaction] RechargeToSideChain payload deserialize failed")
+		return false, ErrRechargeToSideChain
 	}
 	reader = bytes.NewReader(payloadRecharge.MainChainTransaction)
 	if err := mainChainTransaction.Deserialize(reader); err != nil {
-		return errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
+		log.Warn("[checkRechargeToSideChainTransaction] RechargeToSideChain mainChainTransaction deserialize failed")
+		return false, ErrRechargeToSideChain
 	}
 
 	mainchainTxhash := mainChainTransaction.Hash()
-	if exist := DefaultChain.IsMainchainTxHashDuplicate(mainchainTxhash); exist {
-		return errors.New("Duplicate mainchain transaction hash in paylod")
+	if DefaultChain.IsDuplicateMainchainTx(mainchainTxhash) {
+		log.Warn("[checkRechargeToSideChainTransaction] Duplicate mainchain transaction hash in paylod")
+		return false, ErrRechargeToSideChain
 	}
 
 	payloadObj, ok := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
 	if !ok {
-		return errors.New("Invalid payload ela.PayloadTransferCrossChainAsset")
+		log.Warn("[checkRechargeToSideChainTransaction] Invalid payload ela.PayloadTransferCrossChainAsset")
+		return false, ErrRechargeToSideChain
 	}
 
 	genesisHash, _ := DefaultChain.GetBlockHash(uint32(0))
 	genesisProgramHash, err := common.GetGenesisProgramHash(genesisHash)
 	if err != nil {
-		return errors.New("Genesis block bytes to program hash failed")
+		log.Warn("[checkRechargeToSideChainTransaction] Genesis block bytes to program hash failed")
+		return false, ErrRechargeToSideChain
 	}
 
 	//check output fee and rate
@@ -536,7 +472,8 @@ func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *c
 		if mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].ProgramHash.IsEqual(*genesisProgramHash) {
 			if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] >
 				mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
-				return errors.New("Invalid transaction cross chain amount")
+				log.Warn("[checkRechargeToSideChainTransaction] Invalid transaction cross chain amount")
+				return false, ErrRechargeToSideChain
 			}
 
 			crossChainAmount := Fixed64(float64(payloadObj.CrossChainAmounts[i]) * config.Parameters.ExchangeRate)
@@ -544,7 +481,8 @@ func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *c
 
 			programHash, err := Uint168FromAddress(payloadObj.CrossChainAddresses[i])
 			if err != nil {
-				return errors.New("Invalid transaction payload cross chain address")
+				log.Warn("[checkRechargeToSideChainTransaction] Invalid transaction payload cross chain address")
+				return false, ErrRechargeToSideChain
 			}
 			isContained := false
 			for _, output := range txn.Outputs {
@@ -554,7 +492,8 @@ func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *c
 				}
 			}
 			if !isContained {
-				return errors.New("Invalid transaction outputs")
+				log.Warn("[checkRechargeToSideChainTransaction] Invalid transaction outputs")
+				return false, ErrRechargeToSideChain
 			}
 		}
 	}
@@ -562,35 +501,44 @@ func (v *TransactionValidateBase) CheckRechargeToSideChainTransactionImpl(txn *c
 	var targetOutputTotalAmount Fixed64
 	for _, output := range txn.Outputs {
 		if output.Value < 0 {
-			return errors.New("Invalid transaction output value")
+			log.Warn("[checkRechargeToSideChainTransaction] Invalid transaction output value")
+			return false, ErrRechargeToSideChain
 		}
 		targetOutputTotalAmount += output.Value
 	}
 
 	if targetOutputTotalAmount != oriOutputTotalAmount {
-		return errors.New("Output and fee verify failed")
+		log.Warn("[checkRechargeToSideChainTransaction] Output and fee verify failed")
+		return false, ErrRechargeToSideChain
 	}
 
-	return nil
+	return false, Success
 }
 
-func (v *TransactionValidateBase) CheckTransferCrossChainAssetTransactionImpl(txn *core.Transaction) error {
+func (txv *TransactionValidate) checkTransferCrossChainAssetTransaction(txn *core.Transaction) (bool, ErrCode) {
+	if !txn.IsTransferCrossChainAssetTx() {
+		return true, Success
+	}
+
 	payloadObj, ok := txn.Payload.(*core.PayloadTransferCrossChainAsset)
 	if !ok {
-		return errors.New("Invalid transfer cross chain asset payload type")
+		log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transfer cross chain asset payload type")
+		return false, ErrCrossChain
 	}
 	if len(payloadObj.CrossChainAddresses) == 0 ||
 		len(payloadObj.CrossChainAddresses) > len(txn.Outputs) ||
 		len(payloadObj.CrossChainAddresses) != len(payloadObj.CrossChainAmounts) ||
 		len(payloadObj.CrossChainAmounts) != len(payloadObj.OutputIndexes) {
-		return errors.New("Invalid transaction payload content")
+		log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction payload content")
+		return false, ErrCrossChain
 	}
 
 	//check cross chain output index in payload
 	outputIndexMap := make(map[uint64]struct{})
 	for _, outputIndex := range payloadObj.OutputIndexes {
 		if _, exist := outputIndexMap[outputIndex]; exist || int(outputIndex) >= len(txn.Outputs) {
-			return errors.New("Invalid transaction payload cross chain index")
+			log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction payload cross chain index")
+			return false, ErrCrossChain
 		}
 		outputIndexMap[outputIndex] = struct{}{}
 	}
@@ -603,29 +551,35 @@ func (v *TransactionValidateBase) CheckTransferCrossChainAssetTransactionImpl(tx
 		}
 	}
 	if len(payloadObj.CrossChainAddresses) != crossChainCount {
-		return errors.New("Invalid transaction cross chain counts")
+		log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain counts")
+		return false, ErrCrossChain
 	}
 	for _, address := range payloadObj.CrossChainAddresses {
 		if address == "" {
-			return errors.New("Invalid transaction cross chain address")
+			log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
+			return false, ErrCrossChain
 		}
 		programHash, err := Uint168FromAddress(address)
 		if err != nil {
-			return errors.New("Invalid transaction cross chain address")
+			log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
+			return false, ErrCrossChain
 		}
 		if !bytes.Equal(programHash[0:1], []byte{PrefixStandard}) && !bytes.Equal(programHash[0:1], []byte{PrefixMultisig}) {
-			return errors.New("Invalid transaction cross chain address")
+			log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction cross chain address")
+			return false, ErrCrossChain
 		}
 	}
 
 	//check cross chain amount in payload
 	for i := 0; i < len(payloadObj.OutputIndexes); i++ {
 		if !txn.Outputs[payloadObj.OutputIndexes[i]].ProgramHash.IsEqual(Uint168{}) {
-			return errors.New("Invalid transaction output program hash")
+			log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction output program hash")
+			return false, ErrCrossChain
 		}
 		if txn.Outputs[payloadObj.OutputIndexes[i]].Value < 0 || payloadObj.CrossChainAmounts[i] < 0 ||
 			payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-Fixed64(config.Parameters.MinCrossChainTxFee) {
-			return errors.New("Invalid transaction outputs")
+			log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction outputs")
+			return false, ErrCrossChain
 		}
 	}
 
@@ -633,7 +587,8 @@ func (v *TransactionValidateBase) CheckTransferCrossChainAssetTransactionImpl(tx
 	var totalInput Fixed64
 	reference, err := DefaultChain.GetTxReference(txn)
 	if err != nil {
-		return errors.New("Invalid transaction inputs")
+		log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction inputs")
+		return false, ErrCrossChain
 	}
 	for _, v := range reference {
 		totalInput += v.Value
@@ -645,8 +600,9 @@ func (v *TransactionValidateBase) CheckTransferCrossChainAssetTransactionImpl(tx
 	}
 
 	if totalInput-totalOutput < Fixed64(config.Parameters.MinCrossChainTxFee) {
-		return errors.New("Invalid transaction fee")
+		log.Warn("[checkTransferCrossChainAssetTransaction] Invalid transaction fee")
+		return false, ErrCrossChain
 	}
 
-	return nil
+	return true, Success
 }

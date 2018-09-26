@@ -30,31 +30,31 @@ func InitRpcServer() {
 
 	http.HandleFunc("/", Handle)
 
-	MainMux["setloglevel"] = HttpServers.SetLogLevel
-	MainMux["getinfo"] = HttpServers.GetInfo
-	MainMux["getblock"] = HttpServers.GetBlockByHash
-	MainMux["getcurrentheight"] = HttpServers.GetBlockHeight
-	MainMux["getblockhash"] = HttpServers.GetBlockHash
-	MainMux["getconnectioncount"] = HttpServers.GetConnectionCount
-	MainMux["getrawmempool"] = HttpServers.GetTransactionPool
-	MainMux["getrawtransaction"] = HttpServers.GetRawTransaction
-	MainMux["getneighbors"] = HttpServers.GetNeighbors
-	MainMux["getnodestate"] = HttpServers.GetNodeState
-	MainMux["sendtransactioninfo"] = HttpServers.SendTransactionInfo
-	MainMux["sendrawtransaction"] = HttpServers.SendRawTransaction
-	MainMux["getbestblockhash"] = HttpServers.GetBestBlockHash
-	MainMux["getblockcount"] = HttpServers.GetBlockCount
-	MainMux["getblockbyheight"] = HttpServers.GetBlockByHeight
-	MainMux["getdestroyedtransactions"] = HttpServers.GetDestroyedTransactionsByHeight
-	MainMux["getexistdeposittransactions"] = HttpServers.GetExistDepositTransactions
+	MainMux["setloglevel"] = HttpServers.Functions[SetLogLevel]
+	MainMux["getinfo"] = HttpServers.Functions[GetInfo]
+	MainMux["getblock"] = HttpServers.Functions[GetBlockByHash]
+	MainMux["getcurrentheight"] = HttpServers.Functions[GetBlockHeight]
+	MainMux["getblockhash"] = HttpServers.Functions[GetBlockHash]
+	MainMux["getconnectioncount"] = HttpServers.Functions[GetConnectionCount]
+	MainMux["getrawmempool"] = HttpServers.Functions[GetTransactionPool]
+	MainMux["getrawtransaction"] = HttpServers.Functions[GetRawTransaction]
+	MainMux["getneighbors"] = HttpServers.Functions[GetNeighbors]
+	MainMux["getnodestate"] = HttpServers.Functions[GetNodeState]
+	MainMux["sendtransactioninfo"] = HttpServers.Functions[SendTransactionInfo]
+	MainMux["sendrawtransaction"] = HttpServers.Functions[SendRawTransaction]
+	MainMux["getbestblockhash"] = HttpServers.Functions[GetBestBlockHash]
+	MainMux["getblockcount"] = HttpServers.Functions[GetBlockCount]
+	MainMux["getblockbyheight"] = HttpServers.Functions[GetBlockByHeight]
+	MainMux["getdestroyedtransactions"] = HttpServers.Functions[GetDestroyedTransactionsByHeight]
+	MainMux["getexistdeposittransactions"] = HttpServers.Functions[GetExistDepositTransactions]
 
 	// aux interfaces
-	MainMux["help"] = HttpServers.AuxHelp
-	MainMux["submitsideauxblock"] = HttpServers.SubmitSideAuxBlock
-	MainMux["createauxblock"] = HttpServers.CreateAuxBlock
+	MainMux["help"] = HttpServers.Functions[AuxHelp]
+	MainMux["submitsideauxblock"] = HttpServers.Functions[SubmitSideAuxBlock]
+	MainMux["createauxblock"] = HttpServers.Functions[CreateAuxBlock]
 	// mining interfaces
-	MainMux["togglemining"] = HttpServers.ToggleMining
-	MainMux["discretemining"] = HttpServers.DiscreteMining
+	MainMux["togglemining"] = HttpServers.Functions[ToggleMining]
+	MainMux["discretemining"] = HttpServers.Functions[DiscreteMining]
 }
 
 func StartRPCServer() {

@@ -15,6 +15,19 @@ import (
 )
 
 const (
+	PersistTrimmedBlock  = "persisttrimmedblock"
+	RollbackTrimmedBlock = "rollbacktrimmedblock"
+	PersistBlockHash     = "persistblockhash"
+	RollbackBlockHash    = "rollbackblockhash"
+	PersistCurrentBlock  = "persistcurrentblock"
+	RollbackCurrentBlock = "rollbackcurrentblock"
+	PersistUnspendUTXOs  = "persistunspendutxos"
+	RollbackUnspendUTXOs = "rollbackunspendutxos"
+	PersistTransactions  = "persisttransactions"
+	RollbackTransactions = "rollbacktransactions"
+	PersistUnspend       = "persistunspend"
+	RollbackUnspend      = "rollbackunspend"
+
 	ValueNone   = 0
 	ValueExist  = 1
 	TaskChanCap = 4
@@ -32,6 +45,8 @@ type persistBlockTask struct {
 	reply chan error
 }
 
+type ChainStoreFunctionName string
+
 type ChainStore struct {
 	IStore
 
@@ -46,21 +61,8 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	PersistTrimmedBlock  func(batch IBatch, b *core.Block) error
-	RollbackTrimmedBlock func(batch IBatch, b *core.Block) error
-	PersistBlockHash     func(batch IBatch, b *core.Block) error
-	RollbackBlockHash    func(batch IBatch, b *core.Block) error
-	PersistCurrentBlock  func(batch IBatch, b *core.Block) error
-	RollbackCurrentBlock func(batch IBatch, b *core.Block) error
-	PersistUnspendUTXOs  func(batch IBatch, b *core.Block) error
-	RollbackUnspendUTXOs func(batch IBatch, b *core.Block) error
-	PersistTransactions  func(batch IBatch, b *core.Block) error
-	RollbackTransactions func(batch IBatch, b *core.Block) error
-	RollbackTransaction  func(batch IBatch, txn *core.Transaction) error
-	RollbackAsset        func(batch IBatch, assetId Uint256) error
-	RollbackMainchainTx  func(batch IBatch, mainchainTxHash Uint256) error
-	PersistUnspend       func(batch IBatch, b *core.Block) error
-	RollbackUnspend      func(batch IBatch, b *core.Block) error
+	PersistFunctions  map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
+	RollbackFunctions map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
 }
 
 func NewChainStore() (*ChainStore, error) {
@@ -88,21 +90,27 @@ func NewChainStore() (*ChainStore, error) {
 }
 
 func (c *ChainStore) Init() {
-	c.PersistTrimmedBlock = c.PersistTrimmedBlockImpl
-	c.RollbackTrimmedBlock = c.RollbackTrimmedBlockImpl
-	c.PersistBlockHash = c.PersistBlockHashImpl
-	c.RollbackBlockHash = c.RollbackBlockHashImpl
-	c.PersistCurrentBlock = c.PersistCurrentBlockImpl
-	c.RollbackCurrentBlock = c.RollbackCurrentBlockImpl
-	c.PersistUnspendUTXOs = c.PersistUnspendUTXOsImpl
-	c.RollbackUnspendUTXOs = c.RollbackUnspendUTXOsImpl
-	c.PersistTransactions = c.PersistTransactionsImpl
-	c.RollbackTransactions = c.RollbackTransactionsImpl
-	c.RollbackTransaction = c.RollbackTransactionImpl
-	c.RollbackAsset = c.RollbackAssetImpl
-	c.RollbackMainchainTx = c.RollbackMainchainTxImpl
-	c.PersistUnspend = c.PersistUnspendImpl
-	c.RollbackUnspend = c.RollbackUnspendImpl
+	c.RegisterFunctions(true, PersistTrimmedBlock, c.persistTrimmedBlock)
+	c.RegisterFunctions(true, PersistBlockHash, c.persistBlockHash)
+	c.RegisterFunctions(true, PersistCurrentBlock, c.persistCurrentBlock)
+	c.RegisterFunctions(true, PersistUnspendUTXOs, c.persistUnspendUTXOs)
+	c.RegisterFunctions(true, PersistTransactions, c.persistTransactions)
+	c.RegisterFunctions(true, PersistUnspend, c.persistUnspend)
+
+	c.RegisterFunctions(false, RollbackTrimmedBlock, c.rollbackTrimmedBlock)
+	c.RegisterFunctions(false, RollbackBlockHash, c.rollbackBlockHash)
+	c.RegisterFunctions(false, RollbackCurrentBlock, c.rollbackCurrentBlock)
+	c.RegisterFunctions(false, RollbackUnspendUTXOs, c.rollbackUnspendUTXOs)
+	c.RegisterFunctions(false, RollbackTransactions, c.rollbackTransactions)
+	c.RegisterFunctions(false, RollbackUnspend, c.rollbackUnspend)
+}
+
+func (c *ChainStore) RegisterFunctions(isPersist bool, funcName ChainStoreFunctionName, function func(batch IBatch, b *core.Block) error) {
+	if isPersist {
+		c.PersistFunctions[funcName] = function
+	} else {
+		c.RollbackFunctions[funcName] = function
+	}
 }
 
 func (c *ChainStore) Close() {
@@ -520,23 +528,10 @@ func (c *ChainStore) handlePersistBlockTask(block *core.Block) error {
 
 func (c *ChainStore) persistBlock(b *core.Block) error {
 	batch := c.NewBatch()
-	if err := c.PersistTrimmedBlock(batch, b); err != nil {
-		return err
-	}
-	if err := c.PersistBlockHash(batch, b); err != nil {
-		return err
-	}
-	if err := c.PersistTransactions(batch, b); err != nil {
-		return err
-	}
-	if err := c.PersistUnspendUTXOs(batch, b); err != nil {
-		return err
-	}
-	if err := c.PersistUnspend(batch, b); err != nil {
-		return err
-	}
-	if err := c.PersistCurrentBlock(batch, b); err != nil {
-		return err
+	for _, persistFunc := range c.PersistFunctions {
+		if err := persistFunc(batch, b); err != nil {
+			return err
+		}
 	}
 	return batch.Commit()
 }
@@ -560,23 +555,8 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) error {
 
 func (c *ChainStore) rollbackBlock(b *core.Block) error {
 	batch := c.NewBatch()
-	if err := c.RollbackTrimmedBlock(batch, b); err != nil {
-		return err
-	}
-	if err := c.RollbackBlockHash(batch, b); err != nil {
-		return err
-	}
-	if err := c.RollbackTransactions(batch, b); err != nil {
-		return err
-	}
-	if err := c.RollbackUnspendUTXOs(batch, b); err != nil {
-		return err
-	}
-	if err := c.RollbackUnspend(batch, b); err != nil {
-		return err
-	}
-	if err := c.RollbackCurrentBlock(batch, b); err != nil {
-		return err
+	for _, rollbackFunc := range c.RollbackFunctions {
+		rollbackFunc(batch, b)
 	}
 	return batch.Commit()
 }
