@@ -36,33 +36,33 @@ var (
 )
 
 type Config struct {
-	ChainStore       IChainStore
-	PowLimit         *big.Int
-	MaxOrphanBlocks  int
-	MinMemoryNodes   uint32
+	ChainStore      IChainStore
+	PowLimit        *big.Int
+	MaxOrphanBlocks int
+	MinMemoryNodes  uint32
 }
 
 type Blockchain struct {
-	db               IChainStore
-	maxOrphanBlocks  int
-	minMemoryNodes   uint32
-	powLimit         *big.Int
-	GenesisHash      Uint256
-	BestChain        *BlockNode
-	Root             *BlockNode
-	Index            map[Uint256]*BlockNode
-	IndexLock        sync.RWMutex
-	DepNodes         map[Uint256][]*BlockNode
-	Orphans          map[Uint256]*OrphanBlock
-	PrevOrphans      map[Uint256][]*OrphanBlock
-	OldestOrphan     *OrphanBlock
-	BlockCache       map[Uint256]*core.Block
-	TimeSource       MedianTimeSource
-	MedianTimePast   time.Time
-	OrphanLock       sync.RWMutex
-	BCEvents         *events.Event
-	mutex            sync.RWMutex
-	AssetID          Uint256
+	db              IChainStore
+	maxOrphanBlocks int
+	minMemoryNodes  uint32
+	powLimit        *big.Int
+	GenesisHash     Uint256
+	BestChain       *BlockNode
+	Root            *BlockNode
+	Index           map[Uint256]*BlockNode
+	IndexLock       sync.RWMutex
+	DepNodes        map[Uint256][]*BlockNode
+	Orphans         map[Uint256]*OrphanBlock
+	PrevOrphans     map[Uint256][]*OrphanBlock
+	OldestOrphan    *OrphanBlock
+	BlockCache      map[Uint256]*core.Block
+	TimeSource      MedianTimeSource
+	MedianTimePast  time.Time
+	OrphanLock      sync.RWMutex
+	BCEvents        *events.Event
+	mutex           sync.RWMutex
+	AssetID         Uint256
 }
 
 func New(cfg *Config) (*Blockchain, error) {
@@ -78,22 +78,20 @@ func New(cfg *Config) (*Blockchain, error) {
 	}
 
 	chain := Blockchain{
-		db:               cfg.ChainStore,
-		maxOrphanBlocks:  defaultMaxOrphanBlocks,
-		minMemoryNodes:   defaultMinMemoryNodes,
-		powLimit:         cfg.PowLimit,
-		GenesisHash:      genesisBlock.Hash(),
-		Root:             nil,
-		BestChain:        nil,
-		Index:            make(map[Uint256]*BlockNode),
-		DepNodes:         make(map[Uint256][]*BlockNode),
-		OldestOrphan:     nil,
-		Orphans:          make(map[Uint256]*OrphanBlock),
-		PrevOrphans:      make(map[Uint256][]*OrphanBlock),
-		BlockCache:       make(map[Uint256]*core.Block),
-		TimeSource:       NewMedianTime(),
-
-		BCEvents: events.NewEvent(),
+		db:              cfg.ChainStore,
+		maxOrphanBlocks: defaultMaxOrphanBlocks,
+		minMemoryNodes:  defaultMinMemoryNodes,
+		powLimit:        cfg.PowLimit,
+		GenesisHash:     genesisBlock.Hash(),
+		Root:            nil,
+		BestChain:       nil,
+		Index:           make(map[Uint256]*BlockNode),
+		DepNodes:        make(map[Uint256][]*BlockNode),
+		OldestOrphan:    nil,
+		Orphans:         make(map[Uint256]*OrphanBlock),
+		PrevOrphans:     make(map[Uint256][]*OrphanBlock),
+		BlockCache:      make(map[Uint256]*core.Block),
+		TimeSource:      NewMedianTime(),
 		AssetID:  assetId,
 	}
 
@@ -288,8 +286,7 @@ func (b *Blockchain) AddBlock(block *core.Block) (bool, bool, error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
-	noflags := uint32(0)
-	inMainChain, isOrphan, err := b.ProcessBlock(block, b.TimeSource, noflags)
+	inMainChain, isOrphan, err := b.ProcessBlock(block)
 	if err != nil {
 		return false, false, err
 	}
@@ -738,7 +735,7 @@ func (b *Blockchain) GetPrevNodeFromNode(node *BlockNode) (*BlockNode, error) {
 // returned list of block nodes) in order to reorganize the chain such that the
 // passed node is the new end of the main chain.  The lists will be empty if the
 // passed node is not on a side chain.
-func (b *Blockchain) GetReorganizeNodes(node *BlockNode) (*list.List, *list.List) {
+func (b *Blockchain) getReorganizeNodes(node *BlockNode) (*list.List, *list.List) {
 	// Nothing to detach or attach if there is no node.
 	attachNodes := list.New()
 	detachNodes := list.New()
@@ -784,7 +781,7 @@ func (b *Blockchain) GetReorganizeNodes(node *BlockNode) (*list.List, *list.List
 // disconnected must be in reverse order (think of popping them off
 // the end of the chain) and nodes the are being attached must be in forwards
 // order (think pushing them onto the end of the chain).
-func (b *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error {
+func (b *Blockchain) reorganizeChain(detachNodes, attachNodes *list.List) error {
 	// Ensure all of the needed side chain blocks are in the cache.
 	for e := attachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
@@ -794,28 +791,6 @@ func (b *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error 
 		}
 	}
 
-	// Perform several checks to verify each block that needs to be attached
-	// to the main chain can be connected without violating any rules and
-	// without actually connecting the block.
-	//
-	// NOTE: bitcoind does these checks directly when it connects a block.
-	// The downside to that approach is that if any of these checks fail
-	// after disconnecting some blocks or attaching others, all of the
-	// operations have to be rolled back to get the chain back into the
-	// state it was before the rule violation (or other failure).  There are
-	// at least a couple of ways accomplish that rollback, but both involve
-	// tweaking the chain.  This approach catches these issues before ever
-	// modifying the chain.
-	//TODO add checkConnectBlock
-	//for e := attachNodes.Front(); e != nil; e = e.Next() {
-	//	n := e.Value.(*BlockNode)
-	//	block := s.BlockCache[*n.Hash]
-	//	err := s.checkConnectBlock(n, block)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-
 	// Disconnect blocks from the main chain.
 	for e := detachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
@@ -823,7 +798,7 @@ func (b *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error 
 		if err != nil {
 			return err
 		}
-		err = b.DisconnectBlock(n, block)
+		err = b.disconnectBlock(n, block)
 		if err != nil {
 			return err
 		}
@@ -833,32 +808,19 @@ func (b *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error 
 	for e := attachNodes.Front(); e != nil; e = e.Next() {
 		n := e.Value.(*BlockNode)
 		block := b.BlockCache[*n.Hash]
-		err := b.ConnectBlock(n, block)
+		err := b.connectBlock(n, block)
 		if err != nil {
 			return err
 		}
 		delete(b.BlockCache, *n.Hash)
 	}
 
-	// Log the point where the chain forked.
-	//firstAttachNode := attachNodes.Front().Value.(*BlockNode)
-	//forkNode, err := b.GetPrevNodeFromNode(firstAttachNode)
-	//if err == nil {
-	//	log.Tracef("REORGANIZE: Chain forks at %v", forkNode.Hash)
-	//}
-
-	//// Log the old and new best chain heads.
-	//firstDetachNode := detachNodes.Front().Value.(*BlockNode)
-	//lastAttachNode := attachNodes.Back().Value.(*BlockNode)
-	//log.Tracef("REORGANIZE: Old best chain head was %v", firstDetachNode.Hash)
-	//log.Tracef("REORGANIZE: New best chain head is %v", lastAttachNode.Hash)
-
 	return nil
 }
 
 //// disconnectBlock handles disconnecting the passed node/block from the end of
 //// the main (best) chain.
-func (b *Blockchain) DisconnectBlock(node *BlockNode, block *core.Block) error {
+func (b *Blockchain) disconnectBlock(node *BlockNode, block *core.Block) error {
 	// Make sure the node being disconnected is the end of the best chain.
 	if b.BestChain == nil || !node.Hash.IsEqual(*b.BestChain.Hash) {
 		return fmt.Errorf("disconnectBlock must be called with the " +
@@ -887,15 +849,14 @@ func (b *Blockchain) DisconnectBlock(node *BlockNode, block *core.Block) error {
 	// Notify the caller that the block was disconnected from the main
 	// chain.  The caller would typically want to react with actions such as
 	// updating wallets.
-	//TODO
-	//b.sendNotification(NTBlockDisconnected, block)
+	events.Notify(events.ETBlockDisconnected, block)
 
 	return nil
 }
 
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
-func (b *Blockchain) ConnectBlock(node *BlockNode, block *core.Block) error {
+func (b *Blockchain) connectBlock(node *BlockNode, block *core.Block) error {
 
 	for _, txVerify := range block.Transactions {
 		if errCode := TransactionValidator.CheckTransactionContext(txVerify); errCode != Success {
@@ -931,10 +892,17 @@ func (b *Blockchain) ConnectBlock(node *BlockNode, block *core.Block) error {
 	// Notify the caller that the block was connected to the main chain.
 	// The caller would typically want to react with actions such as
 	// updating wallets.
-	//TODO
-	//b.sendNotification(NTBlockConnected, block)
+	events.Notify(events.ETBlockConnected, block)
 
 	return nil
+}
+
+func (b *Blockchain) HaveBlock(hash *Uint256) (bool, error) {
+	exists, err := b.BlockExists(hash)
+	if err != nil {
+		return false, err
+	}
+	return exists || b.IsKnownOrphan(hash), nil
 }
 
 func (b *Blockchain) BlockExists(hash *Uint256) (bool, error) {
@@ -949,7 +917,6 @@ func (b *Blockchain) BlockExists(hash *Uint256) (bool, error) {
 }
 
 func (b *Blockchain) maybeAcceptBlock(block *core.Block) (bool, error) {
-
 	// Get a block node for the block previous to this one.  Will be nil
 	// if this is the genesis block.
 	prevNode, err := b.GetPrevNodeFromBlock(block)
@@ -997,20 +964,20 @@ func (b *Blockchain) maybeAcceptBlock(block *core.Block) (bool, error) {
 	// Connect the passed block to the chain while respecting proper chain
 	// selection according to the chain with the most proof of work.  This
 	// also handles validation of the transaction scripts.
-	inMainChain, err := b.ConnectBestChain(newNode, block)
+	inMainChain, err := b.connectBestChain(newNode, block)
 	if err != nil {
 		return false, err
 	}
 
-	//// Notify the caller that the new block was accepted into the block
-	//// chain.  The caller would typically want to react by relaying the
-	//// inventory to other peers.
-	////b.sendNotification(NTBlockAccepted, block)
+	// Notify the caller that the new block was accepted into the block
+	// chain.  The caller would typically want to react by relaying the
+	// inventory to other peers.
+	events.Notify(events.ETBlockAccepted, block)
 
 	return inMainChain, nil
 }
 
-func (b *Blockchain) ConnectBestChain(node *BlockNode, block *core.Block) (bool, error) {
+func (b *Blockchain) connectBestChain(node *BlockNode, block *core.Block) (bool, error) {
 	// We haven't selected a best chain yet or we are extending the main
 	// (best) chain with a new block.  This is the most common case.
 
@@ -1026,7 +993,7 @@ func (b *Blockchain) ConnectBestChain(node *BlockNode, block *core.Block) (bool,
 		//}
 
 		// Connect the block to the main chain.
-		err := b.ConnectBlock(node, block)
+		err := b.connectBlock(node, block)
 		if err != nil {
 			return false, err
 		}
@@ -1085,20 +1052,11 @@ func (b *Blockchain) ConnectBestChain(node *BlockNode, block *core.Block) (bool,
 	// blocks that form the (now) old fork from the main chain, and attach
 	// the blocks that form the new chain to the main chain starting at the
 	// common ancenstor (the point where the chain forked).
-	detachNodes, attachNodes := b.GetReorganizeNodes(node)
-	//for e := detachNodes.Front(); e != nil; e = e.Next() {
-	//	n := e.Value.(*BlockNode)
-	//	fmt.Println("detach", n.Hash)
-	//}
-
-	//for e := attachNodes.Front(); e != nil; e = e.Next() {
-	//	n := e.Value.(*BlockNode)
-	//	fmt.Println("attach", n.Hash)
-	//}
+	detachNodes, attachNodes := b.getReorganizeNodes(node)
 
 	// Reorganize the chain.
 	log.Infof("REORGANIZE: Block %v is causing a reorganize.", node.Hash)
-	err := b.ReorganizeChain(detachNodes, attachNodes)
+	err := b.reorganizeChain(detachNodes, attachNodes)
 	if err != nil {
 		return false, err
 	}
@@ -1110,7 +1068,7 @@ func (b *Blockchain) ConnectBestChain(node *BlockNode, block *core.Block) (bool,
 //1. inMainChain
 //2. isOphan
 //3. error
-func (b *Blockchain) ProcessBlock(block *core.Block, timeSource MedianTimeSource, flags uint32) (bool, bool, error) {
+func (b *Blockchain) ProcessBlock(block *core.Block) (bool, bool, error) {
 	blockHash := block.Hash()
 	log.Tracef("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
@@ -1228,17 +1186,20 @@ func (b *Blockchain) LatestBlockLocator() ([]*Uint256, error) {
 	// The best chain is set, so use its hash.
 	return b.blockLocatorFromHash(b.BestChain.Hash), nil
 }
+
 func (b *Blockchain) AddNodeToIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 
 	b.Index[*node.Hash] = node
 }
+
 func (b *Blockchain) RemoveNodeFromIndex(node *BlockNode) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()
 	delete(b.Index, *node.Hash)
 }
+
 func (b *Blockchain) LookupNodeInIndex(hash *Uint256) (*BlockNode, bool) {
 	b.IndexLock.Lock()
 	defer b.IndexLock.Unlock()

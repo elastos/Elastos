@@ -12,7 +12,7 @@ import (
 
 // key: DATA_Header || block hash
 // value: sysfee(8bytes) || trimmed block
-func (c *ChainStore) PersistTrimmedBlockImpl(b *core.Block) error {
+func (c *ChainStore) PersistTrimmedBlockImpl(batch IBatch, b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
 
@@ -29,24 +29,24 @@ func (c *ChainStore) PersistTrimmedBlockImpl(b *core.Block) error {
 	if err := b.Trim(value); err != nil {
 		return err
 	}
-	c.BatchPut(key.Bytes(), value.Bytes())
+	batch.Put(key.Bytes(), value.Bytes())
 	return nil
 }
 
-func (c *ChainStore) RollbackTrimmedBlockImpl(b *core.Block) error {
+func (c *ChainStore) RollbackTrimmedBlockImpl(batch IBatch, b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
 	hash := b.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	c.BatchDelete(key.Bytes())
+	batch.Delete(key.Bytes())
 	return nil
 }
 
 // key: DATA_BlockHash || height
 // value: block hash
-func (c *ChainStore) PersistBlockHashImpl(b *core.Block) error {
+func (c *ChainStore) PersistBlockHashImpl(batch IBatch, b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -58,23 +58,23 @@ func (c *ChainStore) PersistBlockHashImpl(b *core.Block) error {
 	if err := hash.Serialize(value); err != nil {
 		return err
 	}
-	c.BatchPut(key.Bytes(), value.Bytes())
+	batch.Put(key.Bytes(), value.Bytes())
 	return nil
 }
 
-func (c *ChainStore) RollbackBlockHashImpl(b *core.Block) error {
+func (c *ChainStore) RollbackBlockHashImpl(batch IBatch, b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
 		return err
 	}
-	c.BatchDelete(key.Bytes())
+	batch.Delete(key.Bytes())
 	return nil
 }
 
 // key: SYS_CurrentBlock
 // value: current block hash || height
-func (c *ChainStore) PersistCurrentBlockImpl(b *core.Block) error {
+func (c *ChainStore) PersistCurrentBlockImpl(batch IBatch, b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
@@ -86,11 +86,11 @@ func (c *ChainStore) PersistCurrentBlockImpl(b *core.Block) error {
 	if err := WriteUint32(value, b.Header.Height); err != nil {
 		return err
 	}
-	c.BatchPut(key.Bytes(), value.Bytes())
+	batch.Put(key.Bytes(), value.Bytes())
 	return nil
 }
 
-func (c *ChainStore) RollbackCurrentBlockImpl(b *core.Block) error {
+func (c *ChainStore) RollbackCurrentBlockImpl(batch IBatch, b *core.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
@@ -102,11 +102,11 @@ func (c *ChainStore) RollbackCurrentBlockImpl(b *core.Block) error {
 	if err := WriteUint32(value, b.Header.Height-1); err != nil {
 		return err
 	}
-	c.BatchPut(key.Bytes(), value.Bytes())
+	batch.Put(key.Bytes(), value.Bytes())
 	return nil
 }
 
-func (c *ChainStore) PersistUnspendUTXOsImpl(b *core.Block) error {
+func (c *ChainStore) PersistUnspendUTXOsImpl(batch IBatch, b *core.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	curHeight := b.Header.Height
 
@@ -192,7 +192,7 @@ func (c *ChainStore) PersistUnspendUTXOsImpl(b *core.Block) error {
 	for programHash, programHash_value := range unspendUTXOs {
 		for assetId, unspents := range programHash_value {
 			for height, unspent := range unspents {
-				err := c.PersistUnspentWithProgramHash(programHash, assetId, height, unspent)
+				err := c.PersistUnspentWithProgramHash(batch, programHash, assetId, height, unspent)
 				if err != nil {
 					return err
 				}
@@ -204,7 +204,7 @@ func (c *ChainStore) PersistUnspendUTXOsImpl(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) RollbackUnspendUTXOsImpl(b *core.Block) error {
+func (c *ChainStore) RollbackUnspendUTXOsImpl(batch IBatch, b *core.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	height := b.Header.Height
 	for _, txn := range b.Transactions {
@@ -278,7 +278,7 @@ func (c *ChainStore) RollbackUnspendUTXOsImpl(b *core.Block) error {
 	for programHash, programHash_value := range unspendUTXOs {
 		for assetId, unspents := range programHash_value {
 			for height, unspent := range unspents {
-				err := c.PersistUnspentWithProgramHash(programHash, assetId, height, unspent)
+				err := c.PersistUnspentWithProgramHash(batch, programHash, assetId, height, unspent)
 				if err != nil {
 					return err
 				}
@@ -290,14 +290,14 @@ func (c *ChainStore) RollbackUnspendUTXOsImpl(b *core.Block) error {
 	return nil
 }
 
-func (c *ChainStore) PersistTransactionsImpl(b *core.Block) error {
+func (c *ChainStore) PersistTransactionsImpl(batch IBatch, b *core.Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
+		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
 		}
 		if txn.TxType == core.RegisterAsset {
 			regPayload := txn.Payload.(*core.PayloadRegisterAsset)
-			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
+			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
@@ -307,19 +307,19 @@ func (c *ChainStore) PersistTransactionsImpl(b *core.Block) error {
 			if err != nil {
 				return err
 			}
-			c.PersistMainchainTx(*hash)
+			c.PersistMainchainTx(batch, *hash)
 		}
 	}
 	return nil
 }
 
-func (c *ChainStore) RollbackTransactionsImpl(b *core.Block) error {
+func (c *ChainStore) RollbackTransactionsImpl(batch IBatch, b *core.Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.RollbackTransaction(txn); err != nil {
+		if err := c.RollbackTransaction(batch, txn); err != nil {
 			return err
 		}
 		if txn.TxType == core.RegisterAsset {
-			if err := c.RollbackAsset(txn.Hash()); err != nil {
+			if err := c.RollbackAsset(batch, txn.Hash()); err != nil {
 				return err
 			}
 		}
@@ -329,41 +329,41 @@ func (c *ChainStore) RollbackTransactionsImpl(b *core.Block) error {
 			if err != nil {
 				return err
 			}
-			c.RollbackMainchainTx(*hash)
+			c.RollbackMainchainTx(batch, *hash)
 		}
 	}
 
 	return nil
 }
 
-func (c *ChainStore) RollbackTransactionImpl(txn *core.Transaction) error {
+func (c *ChainStore) RollbackTransactionImpl(batch IBatch, txn *core.Transaction) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Transaction))
 	hash := txn.Hash()
 	if err := hash.Serialize(key); err != nil {
 		return err
 	}
-	c.BatchDelete(key.Bytes())
+	batch.Delete(key.Bytes())
 	return nil
 }
 
-func (c *ChainStore) RollbackAssetImpl(assetId Uint256) error {
+func (c *ChainStore) RollbackAssetImpl(batch IBatch, assetId Uint256) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(ST_Info))
 	assetId.Serialize(key)
-	c.BatchDelete(key.Bytes())
+	batch.Delete(key.Bytes())
 	return nil
 }
 
-func (c *ChainStore) RollbackMainchainTxImpl(mainchainTxHash Uint256) error {
+func (c *ChainStore) RollbackMainchainTxImpl(batch IBatch, mainchainTxHash Uint256) error {
 	key := []byte{byte(IX_MainChain_Tx)}
 	key = append(key, mainchainTxHash.Bytes()...)
 
-	c.BatchDelete(key)
+	batch.Delete(key)
 	return nil
 }
 
-func (c *ChainStore) PersistUnspendImpl(b *core.Block) error {
+func (c *ChainStore) PersistUnspendImpl(batch IBatch, b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
@@ -406,17 +406,17 @@ func (c *ChainStore) PersistUnspendImpl(b *core.Block) error {
 		txhash.Serialize(key)
 
 		if len(value) == 0 {
-			c.BatchDelete(key.Bytes())
+			batch.Delete(key.Bytes())
 		} else {
 			unspentArray := ToByteArray(value)
-			c.BatchPut(key.Bytes(), unspentArray)
+			batch.Put(key.Bytes(), unspentArray)
 		}
 	}
 
 	return nil
 }
 
-func (c *ChainStore) RollbackUnspendImpl(b *core.Block) error {
+func (c *ChainStore) RollbackUnspendImpl(batch IBatch, b *core.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
@@ -425,7 +425,7 @@ func (c *ChainStore) RollbackUnspendImpl(b *core.Block) error {
 		}
 		// remove all utxos created by this transaction
 		txnHash := txn.Hash()
-		c.BatchDelete(append(unspentPrefix, txnHash.Bytes()...))
+		batch.Delete(append(unspentPrefix, txnHash.Bytes()...))
 		if !txn.IsCoinBaseTx() {
 
 			for _, input := range txn.Inputs {
@@ -452,10 +452,10 @@ func (c *ChainStore) RollbackUnspendImpl(b *core.Block) error {
 		txhash.Serialize(key)
 
 		if len(value) == 0 {
-			c.BatchDelete(key.Bytes())
+			batch.Delete(key.Bytes())
 		} else {
 			unspentArray := ToByteArray(value)
-			c.BatchPut(key.Bytes(), unspentArray)
+			batch.Put(key.Bytes(), unspentArray)
 		}
 	}
 

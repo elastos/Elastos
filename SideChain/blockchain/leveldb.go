@@ -8,17 +8,18 @@ import (
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
-type LevelDB struct {
-	db    *leveldb.DB // LevelDB instance
-	batch *leveldb.Batch
-}
-
 // used to compute the size of bloom filter bits array .
 // too small will lead to high false positive rate.
 const BITSPERKEY = 10
 
-func NewLevelDB(file string) (*LevelDB, error) {
+// Ensure LevelDB implements IStore interface.
+var _ IStore = (*LevelDB)(nil)
 
+type LevelDB struct {
+	db *leveldb.DB // LevelDB instance
+}
+
+func NewLevelDB(file string) (*LevelDB, error) {
 	// default Options
 	o := opt.Options{
 		NoSync: false,
@@ -36,8 +37,7 @@ func NewLevelDB(file string) (*LevelDB, error) {
 	}
 
 	return &LevelDB{
-		db:    db,
-		batch: nil,
+		db: db,
 	}, nil
 }
 
@@ -53,27 +53,42 @@ func (db *LevelDB) Delete(key []byte) error {
 	return db.db.Delete(key, nil)
 }
 
-func (db *LevelDB) NewBatch() {
-	db.batch = new(leveldb.Batch)
+func (db *LevelDB) NewBatch() IBatch {
+	return &batch{
+		db:    db.db,
+		batch: new(leveldb.Batch),
+	}
 }
 
-func (db *LevelDB) BatchPut(key []byte, value []byte) {
-	db.batch.Put(key, value)
-}
-
-func (db *LevelDB) BatchDelete(key []byte) {
-	db.batch.Delete(key)
-}
-
-func (db *LevelDB) BatchCommit() error {
-	return db.db.Write(db.batch, nil)
+func (db *LevelDB) NewIterator(prefix []byte) IIterator {
+	iter := db.db.NewIterator(util.BytesPrefix(prefix), nil)
+	return &Iterator{iter: iter}
 }
 
 func (db *LevelDB) Close() error {
 	return db.db.Close()
 }
 
-func (db *LevelDB) NewIterator(prefix []byte) IIterator {
-	iter := db.db.NewIterator(util.BytesPrefix(prefix), nil)
-	return &Iterator{iter: iter}
+type batch struct {
+	db    *leveldb.DB // LevelDB instance
+	batch *leveldb.Batch
+}
+
+func (b *batch) Put(key []byte, value []byte) error {
+	b.batch.Put(key, value)
+	return nil
+}
+
+func (b *batch) Delete(key []byte) error {
+	b.batch.Delete(key)
+	return nil
+}
+
+func (b *batch) Commit() error {
+	return b.db.Write(b.batch, nil)
+}
+
+func (b *batch) Rollback() error {
+	b.batch.Reset()
+	return nil
 }

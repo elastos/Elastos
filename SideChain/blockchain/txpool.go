@@ -8,7 +8,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
-	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -35,7 +34,7 @@ func (pool *TxPool) Init() {
 
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
-func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
+func (pool *TxPool) AppendToTxPool(txn *core.Transaction) ErrCode {
 	//verify transaction with Concurrency
 	if errCode := TransactionValidator.CheckTransactionSanity(txn); errCode != Success {
 		log.Info("Transaction verification failed", txn.Hash())
@@ -56,7 +55,7 @@ func (pool *TxPool) AppendToTxnPool(txn *core.Transaction) ErrCode {
 	txn.Serialize(buf)
 	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	//add the transaction to process scope
-	pool.AddToTxList(txn)
+	pool.addToTxList(txn)
 	return Success
 }
 
@@ -238,7 +237,7 @@ func (pool *TxPool) cleanMainchainTx(txs []*core.Transaction) {
 	}
 }
 
-func (pool *TxPool) AddToTxList(txn *core.Transaction) bool {
+func (pool *TxPool) addToTxList(txn *core.Transaction) bool {
 	pool.Lock()
 	defer pool.Unlock()
 	txnHash := txn.Hash()
@@ -246,7 +245,6 @@ func (pool *TxPool) AddToTxList(txn *core.Transaction) bool {
 		return false
 	}
 	pool.txnList[txnHash] = txn
-	DefaultChain.BCEvents.Notify(events.EventNewTransactionPutInPool, txn)
 	return true
 }
 
@@ -344,7 +342,7 @@ func (pool *TxPool) MaybeAcceptTransaction(txn *core.Transaction) error {
 		return fmt.Errorf("transaction is an individual coinbase")
 	}
 
-	if errCode := pool.AppendToTxnPool(txn); errCode != Success {
+	if errCode := pool.AppendToTxPool(txn); errCode != Success {
 		return fmt.Errorf("VerifyTxs failed when AppendToTxnPool")
 	}
 
