@@ -106,7 +106,8 @@ else()
         pjmedia
         pjnath
         pjlib-util
-        pj)
+        pj
+        srtp)
 endif()
 
 add_definitions(-DCARRIER_BUILD)

@@ -30,6 +30,7 @@
 #include <linkedlist.h>
 #include <socket.h>
 #include <vlog.h>
+#include <pjmedia.h>
 
 #include "ela_session.h"
 #include "ela_turnserver.h"
@@ -65,8 +66,31 @@ static int ice_strerror(int errcode, char *buf, size_t len)
     return 0;
 }
 
+/*
+ * this function should be exclusive to ela_session_init() API.
+ */
 int ela_session_register_strerror()
 {
+    /* Init PJLIB-UTIL */
+    pj_status_t status;
+
+    status = pjlib_util_init();
+    if (status != PJ_SUCCESS) {
+        return -1;
+    }
+
+    /* Init PJNATH */
+    status = pjnath_init();
+    if (status != PJ_SUCCESS) {
+        return -1;
+    }
+
+    status = pj_register_strerror(PJMEDIA_ERRNO_START, PJ_ERRNO_SPACE_SIZE,
+                                  &pjmedia_strerror);
+    if (status != PJ_SUCCESS) {
+        return -1;
+    }
+
     ela_register_strerror(ELAF_ICE, ice_strerror);
     return 0;
 }

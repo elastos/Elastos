@@ -122,12 +122,6 @@ extern "C" {
  */
 #define ELA_MAX_APP_MESSAGE_LEN         1024
 
-/**
- * \~English
- * Carrier error description max length.
- */
-#define ELA_MAX_ERROR_DESCRIPTION_LEN   256
-
 typedef struct ElaCarrier ElaCarrier;
 
 /******************************************************************************
