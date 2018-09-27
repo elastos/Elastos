@@ -59,13 +59,13 @@ func (pool *TxPool) AppendToTxPool(txn *core.Transaction) ErrCode {
 	return Success
 }
 
-// GetTxInPool returns a transaction in transaction pool by the given
-// transaction id. If no transaction match the transaction id, return nil, false
-func (pool *TxPool) GetTxInPool(txId Uint256) (*core.Transaction, bool) {
+// HaveTransaction returns if a transaction is in transaction pool by the given
+// transaction id. If no transaction match the transaction id, return false
+func (pool *TxPool) HaveTransaction(txId Uint256) bool {
 	pool.RLock()
 	defer pool.RUnlock()
-	tx, ok := pool.txnList[txId]
-	return tx, ok
+	_, ok := pool.txnList[txId]
+	return ok
 }
 
 // GetTxsInPool returns a copy of the transactions in transaction pool,
