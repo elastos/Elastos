@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
@@ -31,8 +32,6 @@ type persistBlockTask struct {
 	reply chan error
 }
 
-type ChainStoreFunctionName string
-
 type ChainStore struct {
 	IStore
 
@@ -47,8 +46,8 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	persistFunctions  []func(batch IBatch, b *core.Block) error
-	rollbackFunctions []func(batch IBatch, b *core.Block) error
+	persistFunctions  map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
+	rollbackFunctions map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
 }
 
 func NewChainStore() (*ChainStore, error) {
@@ -74,26 +73,26 @@ func NewChainStore() (*ChainStore, error) {
 }
 
 func (c *ChainStore) Init() {
-	c.RegisterFunctions(true, c.persistTrimmedBlock)
-	c.RegisterFunctions(true, c.persistBlockHash)
-	c.RegisterFunctions(true, c.persistCurrentBlock)
-	c.RegisterFunctions(true, c.persistUnspendUTXOs)
-	c.RegisterFunctions(true, c.persistTransactions)
-	c.RegisterFunctions(true, c.persistUnspend)
+	c.RegisterFunctions(true, ChainStoreFunctionNames.PersistTrimmedBlock, c.persistTrimmedBlock)
+	c.RegisterFunctions(true, ChainStoreFunctionNames.PersistBlockHash, c.persistBlockHash)
+	c.RegisterFunctions(true, ChainStoreFunctionNames.PersistCurrentBlock, c.persistCurrentBlock)
+	c.RegisterFunctions(true, ChainStoreFunctionNames.PersistCurrentBlock, c.persistCurrentBlock)
+	c.RegisterFunctions(true, ChainStoreFunctionNames.PersistTransactions, c.persistTransactions)
+	c.RegisterFunctions(true, ChainStoreFunctionNames.PersistUnspend, c.persistUnspend)
 
-	c.RegisterFunctions(false, c.rollbackTrimmedBlock)
-	c.RegisterFunctions(false, c.rollbackBlockHash)
-	c.RegisterFunctions(false, c.rollbackCurrentBlock)
-	c.RegisterFunctions(false, c.rollbackUnspendUTXOs)
-	c.RegisterFunctions(false, c.rollbackTransactions)
-	c.RegisterFunctions(false, c.rollbackUnspend)
+	c.RegisterFunctions(false, ChainStoreFunctionNames.RollbackTrimmedBlock, c.rollbackTrimmedBlock)
+	c.RegisterFunctions(false, ChainStoreFunctionNames.RollbackBlockHash, c.rollbackBlockHash)
+	c.RegisterFunctions(false, ChainStoreFunctionNames.RollbackCurrentBlock, c.rollbackCurrentBlock)
+	c.RegisterFunctions(false, ChainStoreFunctionNames.RollbackUnspendUTXOs, c.rollbackUnspendUTXOs)
+	c.RegisterFunctions(false, ChainStoreFunctionNames.RollbackTransactions, c.rollbackTransactions)
+	c.RegisterFunctions(false, ChainStoreFunctionNames.RollbackUnspend, c.rollbackUnspend)
 }
 
-func (c *ChainStore) RegisterFunctions(isPersist bool, function func(batch IBatch, b *core.Block) error) {
+func (c *ChainStore) RegisterFunctions(isPersist bool, name ChainStoreFunctionName, function func(batch IBatch, b *core.Block) error) {
 	if isPersist {
-		c.persistFunctions = append(c.persistFunctions, function)
+		c.persistFunctions[name] = function
 	} else {
-		c.rollbackFunctions = append(c.rollbackFunctions, function)
+		c.rollbackFunctions[name] = function
 	}
 }
 

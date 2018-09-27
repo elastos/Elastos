@@ -18,11 +18,9 @@ import (
 
 var TransactionValidator *TransactionValidate
 
-type TransactionValidateFunctionName string
-
 type TransactionValidate struct {
-	checkSanityFunctions  []func(txn *core.Transaction) ErrCode
-	checkContextFunctions []func(txn *core.Transaction) (bool, ErrCode)
+	checkSanityFunctions  map[common.TxValidateFunctionName]func(txn *core.Transaction) ErrCode
+	checkContextFunctions map[common.TxValidateFunctionName]func(txn *core.Transaction) (bool, ErrCode)
 }
 
 func InitTransactionValidtor() {
@@ -31,31 +29,30 @@ func InitTransactionValidtor() {
 }
 
 func (txv *TransactionValidate) Init() {
-	txv.RegisterSanityFunctions(txv.checkTransactionSize)
-	txv.RegisterSanityFunctions(txv.checkTransactionInput)
-	txv.RegisterSanityFunctions(txv.checkTransactionOutput)
-	txv.RegisterSanityFunctions(txv.checkAssetPrecision)
-	txv.RegisterSanityFunctions(txv.checkAttributeProgram)
-	txv.RegisterSanityFunctions(txv.checkTransactionPayload)
+	txv.RegisterSanityFunctions(common.TxValidateFunctionNames.CheckTransactionSize, txv.checkTransactionSize)
+	txv.RegisterSanityFunctions(common.TxValidateFunctionNames.CheckTransactionInput, txv.checkTransactionInput)
+	txv.RegisterSanityFunctions(common.TxValidateFunctionNames.CheckTransactionOutput, txv.checkTransactionOutput)
+	txv.RegisterSanityFunctions(common.TxValidateFunctionNames.CheckAssetPrecision, txv.checkAssetPrecision)
+	txv.RegisterSanityFunctions(common.TxValidateFunctionNames.CheckAttributeProgram, txv.checkAttributeProgram)
+	txv.RegisterSanityFunctions(common.TxValidateFunctionNames.CheckTransactionPayload, txv.checkTransactionPayload)
 
-	txv.RegisterContextFunctions(txv.checkTransactionDuplicate)
-	txv.RegisterContextFunctions(txv.checkTransactionCoinBase)
-	txv.RegisterContextFunctions(txv.checkTransactionDoubleSpend)
-	txv.RegisterContextFunctions(txv.checkTransactionSignature)
-	txv.RegisterContextFunctions(txv.checkRechargeToSideChainTransaction)
-	txv.RegisterContextFunctions(txv.checkTransferCrossChainAssetTransaction)
-	txv.RegisterContextFunctions(txv.checkTransactionUTXOLock)
-	txv.RegisterContextFunctions(txv.checkTransactionBalance)
-	txv.RegisterContextFunctions(txv.checkReferencedOutput)
-
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransactionDuplicate, txv.checkTransactionDuplicate)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransactionCoinBase, txv.checkTransactionCoinBase)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransactionDoubleSpend, txv.checkTransactionDoubleSpend)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransactionSignature, txv.checkTransactionSignature)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckRechargeToSideChainTransaction, txv.checkRechargeToSideChainTransaction)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransferCrossChainAssetTransaction, txv.checkTransferCrossChainAssetTransaction)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransactionUTXOLock, txv.checkTransactionUTXOLock)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckTransactionBalance, txv.checkTransactionBalance)
+	txv.RegisterContextFunctions(common.TxValidateFunctionNames.CheckReferencedOutput, txv.checkReferencedOutput)
 }
 
-func (txv *TransactionValidate) RegisterSanityFunctions(function func(txn *core.Transaction) ErrCode) {
-	txv.checkSanityFunctions = append(txv.checkSanityFunctions, function)
+func (txv *TransactionValidate) RegisterSanityFunctions(name common.TxValidateFunctionName, function func(txn *core.Transaction) ErrCode) {
+	txv.checkSanityFunctions[name] = function
 }
 
-func (txv *TransactionValidate) RegisterContextFunctions(function func(txn *core.Transaction) (bool, ErrCode)) {
-	txv.checkContextFunctions = append(txv.checkContextFunctions, function)
+func (txv *TransactionValidate) RegisterContextFunctions(name common.TxValidateFunctionName, function func(txn *core.Transaction) (bool, ErrCode)) {
+	txv.checkContextFunctions[name] = function
 }
 
 // CheckTransactionSanity verifys received single transaction
