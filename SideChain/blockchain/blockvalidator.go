@@ -17,20 +17,13 @@ import (
 type BlockValidateFunctionName string
 
 const (
-	PowCheckHeader             = "powcheckheader"
-	PowCheckTransactionsCount  = "powchecktransactionscount"
-	PowCheckBlockSize          = "powcheckblocksize"
-	PowCheckTransactionsFee    = "powchecktransactionsfee"
-	PowCheckTransactionsMerkle = "powchecktransactionsmerkle"
-
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
 
 var BlockValidator *BlockValidate
 
 type BlockValidate struct {
-	checkFunctions       map[BlockValidateFunctionName]func(params ...interface{}) error
-	checkSanityFunctions map[BlockValidateFunctionName]func(params ...interface{}) error
+	checkSanityFunctions []func(params ...interface{}) error
 }
 
 func InitBlockValidator() {
@@ -39,19 +32,16 @@ func InitBlockValidator() {
 }
 
 func (v *BlockValidate) Init() {
-	v.RegisterFunctions(true, PowCheckHeader, v.powCheckHeader)
-	v.RegisterFunctions(true, PowCheckTransactionsCount, v.powCheckTransactionsCount)
-	v.RegisterFunctions(true, PowCheckBlockSize, v.powCheckBlockSize)
-	v.RegisterFunctions(true, PowCheckTransactionsFee, v.powCheckTransactionsFee)
-	v.RegisterFunctions(true, PowCheckTransactionsMerkle, v.powCheckTransactionsMerkle)
+	v.checkSanityFunctions = make([]func(params ...interface{}) error, 0)
+	v.RegisterFunctions(v.powCheckHeader)
+	v.RegisterFunctions(v.powCheckTransactionsCount)
+	v.RegisterFunctions(v.powCheckBlockSize)
+	v.RegisterFunctions(v.powCheckTransactionsFee)
+	v.RegisterFunctions(v.powCheckTransactionsMerkle)
 }
 
-func (v *BlockValidate) RegisterFunctions(isSanity bool, validateName BlockValidateFunctionName, function func(params ...interface{}) error) {
-	if isSanity {
-		v.checkSanityFunctions[validateName] = function
-	} else {
-		v.checkFunctions[validateName] = function
-	}
+func (v *BlockValidate) RegisterFunctions(function func(params ...interface{}) error) {
+	v.checkSanityFunctions = append(v.checkSanityFunctions, function)
 }
 
 func (v *BlockValidate) PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {

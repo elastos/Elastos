@@ -17,32 +17,13 @@ import (
 	ela "github.com/elastos/Elastos.ELA/core"
 )
 
-const (
-	CheckTransactionSize    = "checktransactionsize"
-	CheckTransactionInput   = "checktransactioninput"
-	CheckTransactionOutput  = "checktransactionoutput"
-	CheckAssetPrecision     = "checkassetprecision"
-	CheckAttributeProgram   = "checkattributeprogram"
-	CheckTransactionPayload = "checktransactionpayload"
-
-	CheckTransactionDuplicate               = "checkTransactionDuplicate"
-	CheckTransactionCoinBase                = "checktransactioncoinbase"
-	CheckTransactionDoubleSpend             = "checktransactiondoublespend"
-	CheckTransactionSignature               = "checktransactionsignature"
-	CheckRechargeToSideChainTransaction     = "checkrechargetosidechaintransaction"
-	CheckTransferCrossChainAssetTransaction = "checktransfercrosschainassettransaction"
-	CheckTransactionUTXOLock                = "checktransactionutxolock"
-	CheckTransactionBalance                 = "checktransactionbalance"
-	CheckReferencedOutput                   = "checkreferencedoutput"
-)
-
 var TransactionValidator *TransactionValidate
 
 type TransactionValidateFunctionName string
 
 type TransactionValidate struct {
-	checkSanityFunctions  map[TransactionValidateFunctionName]func(txn *core.Transaction) ErrCode
-	checkContextFunctions map[TransactionValidateFunctionName]func(txn *core.Transaction) (bool, ErrCode)
+	checkSanityFunctions  []func(txn *core.Transaction) ErrCode
+	checkContextFunctions []func(txn *core.Transaction) (bool, ErrCode)
 }
 
 func InitTransactionValidtor() {
@@ -51,31 +32,31 @@ func InitTransactionValidtor() {
 }
 
 func (txv *TransactionValidate) Init() {
-	txv.RegisterSanityFunctions(CheckTransactionSize, txv.checkTransactionSize)
-	txv.RegisterSanityFunctions(CheckTransactionInput, txv.checkTransactionInput)
-	txv.RegisterSanityFunctions(CheckTransactionOutput, txv.checkTransactionOutput)
-	txv.RegisterSanityFunctions(CheckAssetPrecision, txv.checkAssetPrecision)
-	txv.RegisterSanityFunctions(CheckAttributeProgram, txv.checkAttributeProgram)
-	txv.RegisterSanityFunctions(CheckTransactionPayload, txv.checkTransactionPayload)
+	txv.RegisterSanityFunctions(txv.checkTransactionSize)
+	txv.RegisterSanityFunctions(txv.checkTransactionInput)
+	txv.RegisterSanityFunctions(txv.checkTransactionOutput)
+	txv.RegisterSanityFunctions(txv.checkAssetPrecision)
+	txv.RegisterSanityFunctions(txv.checkAttributeProgram)
+	txv.RegisterSanityFunctions(txv.checkTransactionPayload)
 
-	txv.RegisterContextFunctions(CheckTransactionDuplicate, txv.checkTransactionDuplicate)
-	txv.RegisterContextFunctions(CheckTransactionCoinBase, txv.checkTransactionCoinBase)
-	txv.RegisterContextFunctions(CheckTransactionDoubleSpend, txv.checkTransactionDoubleSpend)
-	txv.RegisterContextFunctions(CheckTransactionSignature, txv.checkTransactionSignature)
-	txv.RegisterContextFunctions(CheckRechargeToSideChainTransaction, txv.checkRechargeToSideChainTransaction)
-	txv.RegisterContextFunctions(CheckTransferCrossChainAssetTransaction, txv.checkTransferCrossChainAssetTransaction)
-	txv.RegisterContextFunctions(CheckTransactionUTXOLock, txv.checkTransactionUTXOLock)
-	txv.RegisterContextFunctions(CheckTransactionBalance, txv.checkTransactionBalance)
-	txv.RegisterContextFunctions(CheckReferencedOutput, txv.checkReferencedOutput)
+	txv.RegisterContextFunctions(txv.checkTransactionDuplicate)
+	txv.RegisterContextFunctions(txv.checkTransactionCoinBase)
+	txv.RegisterContextFunctions(txv.checkTransactionDoubleSpend)
+	txv.RegisterContextFunctions(txv.checkTransactionSignature)
+	txv.RegisterContextFunctions(txv.checkRechargeToSideChainTransaction)
+	txv.RegisterContextFunctions(txv.checkTransferCrossChainAssetTransaction)
+	txv.RegisterContextFunctions(txv.checkTransactionUTXOLock)
+	txv.RegisterContextFunctions(txv.checkTransactionBalance)
+	txv.RegisterContextFunctions(txv.checkReferencedOutput)
 
 }
 
-func (txv *TransactionValidate) RegisterSanityFunctions(funcName TransactionValidateFunctionName, function func(txn *core.Transaction) ErrCode) {
-	txv.checkSanityFunctions[funcName] = function
+func (txv *TransactionValidate) RegisterSanityFunctions(function func(txn *core.Transaction) ErrCode) {
+	txv.checkSanityFunctions = append(txv.checkSanityFunctions, function)
 }
 
-func (txv *TransactionValidate) RegisterContextFunctions(funcName TransactionValidateFunctionName, function func(txn *core.Transaction) (bool, ErrCode)) {
-	txv.checkContextFunctions[funcName] = function
+func (txv *TransactionValidate) RegisterContextFunctions(function func(txn *core.Transaction) (bool, ErrCode)) {
+	txv.checkContextFunctions = append(txv.checkContextFunctions, function)
 }
 
 // CheckTransactionSanity verifys received single transaction
