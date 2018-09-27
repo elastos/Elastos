@@ -61,8 +61,8 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	PersistFunctions  map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
-	RollbackFunctions map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
+	persistFunctions  map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
+	rollbackFunctions map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
 }
 
 func NewChainStore() (*ChainStore, error) {
@@ -83,8 +83,6 @@ func NewChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 	store.Init()
-
-	go store.taskHandler()
 
 	return store, nil
 }
@@ -107,9 +105,9 @@ func (c *ChainStore) Init() {
 
 func (c *ChainStore) RegisterFunctions(isPersist bool, funcName ChainStoreFunctionName, function func(batch IBatch, b *core.Block) error) {
 	if isPersist {
-		c.PersistFunctions[funcName] = function
+		c.persistFunctions[funcName] = function
 	} else {
-		c.RollbackFunctions[funcName] = function
+		c.rollbackFunctions[funcName] = function
 	}
 }
 
@@ -121,7 +119,7 @@ func (c *ChainStore) Close() {
 	c.IStore.Close()
 }
 
-func (c *ChainStore) taskHandler() {
+func (c *ChainStore) TaskHandler() {
 	for {
 		select {
 		case t := <-c.taskCh:
@@ -528,7 +526,7 @@ func (c *ChainStore) handlePersistBlockTask(block *core.Block) error {
 
 func (c *ChainStore) persistBlock(b *core.Block) error {
 	batch := c.NewBatch()
-	for _, persistFunc := range c.PersistFunctions {
+	for _, persistFunc := range c.persistFunctions {
 		if err := persistFunc(batch, b); err != nil {
 			return err
 		}
@@ -555,7 +553,7 @@ func (c *ChainStore) handleRollbackBlockTask(blockHash Uint256) error {
 
 func (c *ChainStore) rollbackBlock(b *core.Block) error {
 	batch := c.NewBatch()
-	for _, rollbackFunc := range c.RollbackFunctions {
+	for _, rollbackFunc := range c.rollbackFunctions {
 		rollbackFunc(batch, b)
 	}
 	return batch.Commit()

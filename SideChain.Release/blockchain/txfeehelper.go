@@ -21,13 +21,12 @@ func InitTxFeeHelper() {
 	TxFeeHelper = &TxFeeHelperBase{}
 	TxFeeHelper.Init()
 }
-
 func (t *TxFeeHelperBase) Init() {
-	t.GetTxFee = t.GetTxFeeImpl
-	t.GetTxFeeMap = t.GetTxFeeMapImpl
+	t.GetTxFee = t.getTxFee
+	t.GetTxFeeMap = t.getTxFeeMap
 }
 
-func (t *TxFeeHelperBase) GetTxFeeImpl(tx *core.Transaction, assetId Uint256) Fixed64 {
+func (t *TxFeeHelperBase) getTxFee(tx *core.Transaction, assetId Uint256) Fixed64 {
 	feeMap, err := t.GetTxFeeMap(tx)
 	if err != nil {
 		return 0
@@ -36,7 +35,7 @@ func (t *TxFeeHelperBase) GetTxFeeImpl(tx *core.Transaction, assetId Uint256) Fi
 	return feeMap[assetId]
 }
 
-func (t *TxFeeHelperBase) GetTxFeeMapImpl(tx *core.Transaction) (map[Uint256]Fixed64, error) {
+func (t *TxFeeHelperBase) getTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {

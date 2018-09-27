@@ -73,13 +73,14 @@ func main() {
 		log.Fatal("open LedgerStore err:", err)
 		os.Exit(1)
 	}
+	go chainStore.TaskHandler()
 	defer chainStore.Close()
 
 	chainCfg := blockchain.Config{
-		ChainStore:chainStore,
-		PowLimit:config.Parameters.ChainParam.PowLimit,
+		ChainStore:      chainStore,
+		PowLimit:        config.Parameters.ChainParam.PowLimit,
 		MaxOrphanBlocks: config.Parameters.ChainParam.MaxOrphanBlocks,
-		MinMemoryNodes:config.Parameters.ChainParam.MinMemoryNodes,
+		MinMemoryNodes:  config.Parameters.ChainParam.MinMemoryNodes,
 	}
 
 	chain, err := blockchain.New(&chainCfg)

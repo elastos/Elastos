@@ -19,11 +19,11 @@ func InitOutputHelper() {
 }
 
 func (h *OutputHelperBase) Init() {
-	h.Serialize = OutputHelper.SerializeImpl
-	h.Deserialize = OutputHelper.DeserializeImpl
+	h.Serialize = h.serialize
+	h.Deserialize = h.deserialize
 }
 
-func (h *OutputHelperBase) SerializeImpl(output *Output, w io.Writer) error {
+func (h *OutputHelperBase) serialize(output *Output, w io.Writer) error {
 	err := output.AssetID.Serialize(w)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (h *OutputHelperBase) SerializeImpl(output *Output, w io.Writer) error {
 	return nil
 }
 
-func (h *OutputHelperBase) DeserializeImpl(output *Output, r io.Reader) error {
+func (h *OutputHelperBase) deserialize(output *Output, r io.Reader) error {
 	err := output.AssetID.Deserialize(r)
 	if err != nil {
 		return err

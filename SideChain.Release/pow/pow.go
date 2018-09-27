@@ -235,7 +235,7 @@ func (pow *PowService) GenerateBlockTransactionsImpl(msgBlock *core.Block, coinB
 			break
 		}
 
-		if err := BlockValidator.CheckFunctions[CheckFinalizedTransaction](&BlockValidateParameter{MsgTx: tx, BlockHeight: nextBlockHeight}); err != nil {
+		if err := BlockValidator.CheckFinalizedTransaction(tx, nextBlockHeight); err != nil {
 			continue
 		}
 

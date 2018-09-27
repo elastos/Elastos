@@ -11,20 +11,17 @@ import (
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"math/big"
 )
 
 type BlockValidateFunctionName string
 
 const (
-	PowCheckBlockSanity        = "powcheckblocksanity"
 	PowCheckHeader             = "powcheckheader"
 	PowCheckTransactionsCount  = "powchecktransactionscount"
 	PowCheckBlockSize          = "powcheckblocksize"
 	PowCheckTransactionsFee    = "powchecktransactionsfee"
 	PowCheckTransactionsMerkle = "powchecktransactionsmerkle"
-	PowCheckBlockContext       = "powcheckblockcontext"
-	CheckProofOfWork           = "checkproofofwork"
-	CheckFinalizedTransaction  = "isfinalizedtransaction"
 
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
@@ -32,37 +29,109 @@ const (
 var BlockValidator *BlockValidate
 
 type BlockValidate struct {
-	CheckFunctions       map[BlockValidateFunctionName]func(params ...interface{}) error
-	CheckSanityFunctions map[BlockValidateFunctionName]func(params ...interface{}) error
+	checkFunctions       map[BlockValidateFunctionName]func(params ...interface{}) error
+	checkSanityFunctions map[BlockValidateFunctionName]func(params ...interface{}) error
 }
 
 func InitBlockValidator() {
 	BlockValidator = &BlockValidate{}
-	BlockValidator.RegisterFunctions(true, PowCheckHeader, BlockValidator.powCheckHeader)
-	BlockValidator.RegisterFunctions(true, PowCheckTransactionsCount, BlockValidator.powCheckTransactionsCount)
-	BlockValidator.RegisterFunctions(true, PowCheckBlockSize, BlockValidator.powCheckBlockSize)
-	BlockValidator.RegisterFunctions(true, PowCheckTransactionsFee, BlockValidator.powCheckTransactionsFee)
-	BlockValidator.RegisterFunctions(true, PowCheckTransactionsMerkle, BlockValidator.powCheckTransactionsMerkle)
+	BlockValidator.Init()
+}
 
-	BlockValidator.RegisterFunctions(false, PowCheckBlockSanity, BlockValidator.powCheckBlockSanity)
-	BlockValidator.RegisterFunctions(false, PowCheckBlockContext, BlockValidator.powCheckBlockContext)
-	BlockValidator.RegisterFunctions(false, CheckProofOfWork, BlockValidator.checkProofOfWork)
-	BlockValidator.RegisterFunctions(false, CheckFinalizedTransaction, BlockValidator.checkFinalizedTransaction)
+func (v *BlockValidate) Init() {
+	v.RegisterFunctions(true, PowCheckHeader, v.powCheckHeader)
+	v.RegisterFunctions(true, PowCheckTransactionsCount, v.powCheckTransactionsCount)
+	v.RegisterFunctions(true, PowCheckBlockSize, v.powCheckBlockSize)
+	v.RegisterFunctions(true, PowCheckTransactionsFee, v.powCheckTransactionsFee)
+	v.RegisterFunctions(true, PowCheckTransactionsMerkle, v.powCheckTransactionsMerkle)
 }
 
 func (v *BlockValidate) RegisterFunctions(isSanity bool, validateName BlockValidateFunctionName, function func(params ...interface{}) error) {
 	if isSanity {
-		v.CheckSanityFunctions[validateName] = function
+		v.checkSanityFunctions[validateName] = function
 	} else {
-		v.CheckFunctions[validateName] = function
+		v.checkFunctions[validateName] = function
 	}
 }
 
-//block *Block, powLimit *big.Int, timeSource MedianTimeSource
-func (v *BlockValidate) powCheckBlockSanity(params ...interface{}) error {
-	for _, checkFunc := range v.CheckSanityFunctions {
-		if err := checkFunc(params); err != nil {
+func (v *BlockValidate) PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
+	defer func() {
+		if p := recover(); p != nil {
+			str, ok := p.(string)
+			if ok {
+				err = errors.New("[PowCheckBlockSanity] block validate invalid parameter:" + str)
+			} else {
+				err = errors.New("[PowCheckBlockSanity] block validate panic")
+			}
+		}
+	}()
+
+	for _, checkFunc := range v.checkSanityFunctions {
+		if err := checkFunc(block, powLimit, timeSource); err != nil {
 			return errors.New("[powCheckBlockSanity] error:" + err.Error())
+		}
+	}
+	return nil
+}
+
+func (v *BlockValidate) PowCheckBlockContext(block *Block, prevNode *BlockNode) (err error) {
+	header := block.Header
+
+	// The genesis block is valid by definition.
+	if prevNode == nil {
+		return nil
+	}
+
+	expectedDifficulty, err := CalcNextRequiredDifficulty(prevNode, time.Unix(int64(header.Timestamp), 0))
+	if err != nil {
+		return err
+	}
+
+	if header.Bits != expectedDifficulty {
+		return errors.New("[powCheckBlockContext] block difficulty is not the expected")
+	}
+
+	// Ensure the timestamp for the block header is after the
+	// median time of the last several blocks (medianTimeBlocks).
+	medianTime := CalcPastMedianTime(prevNode)
+	tempTime := time.Unix(int64(header.Timestamp), 0)
+
+	if !tempTime.After(medianTime) {
+		return errors.New("[powCheckBlockContext] block timestamp is not after expected")
+	}
+
+	// The height of this block is one more than the referenced
+	// previous block.
+	blockHeight := prevNode.Height + 1
+
+	// Ensure all transactions in the block are finalized.
+	for _, txn := range block.Transactions[1:] {
+		if err := v.CheckFinalizedTransaction(txn, blockHeight); err != nil {
+			return errors.New("[powCheckBlockContext] block contains unfinalized transaction")
+		}
+	}
+
+	return nil
+}
+
+func (v *BlockValidate) CheckFinalizedTransaction(msgTx *Transaction, blockHeight uint32) (err error) {
+	// Lock time of zero means the transaction is finalized.
+	lockTime := msgTx.LockTime
+	if lockTime == 0 {
+		return nil
+	}
+
+	//FIXME only height
+	if lockTime < blockHeight {
+		return nil
+	}
+
+	// At this point, the transaction's lock time hasn't occurred yet, but
+	// the transaction might still be finalized if the sequence number
+	// for all transaction inputs is maxed out.
+	for _, txIn := range msgTx.Inputs {
+		if txIn.Sequence != math.MaxUint16 {
+			return errors.New("[checkFinalizedTransaction] lock time check failed")
 		}
 	}
 	return nil
@@ -70,17 +139,6 @@ func (v *BlockValidate) powCheckBlockSanity(params ...interface{}) error {
 
 //block *Block, powLimit *big.Int, timeSource MedianTimeSource
 func (v *BlockValidate) powCheckHeader(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[powCheckHeader] invalid parameter:" + str)
-			} else {
-				err = errors.New("[powCheckHeader]  panic")
-			}
-		}
-	}()
-
 	block := AssertBlock(params[0])
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
@@ -95,7 +153,7 @@ func (v *BlockValidate) powCheckHeader(params ...interface{}) (err error) {
 	if !header.SideAuxPow.SideAuxPowCheck(header.Hash()) {
 		return errors.New("[powCheckHeader] block check proof is failed")
 	}
-	if v.CheckFunctions[CheckProofOfWork](header, powLimit) != nil {
+	if v.checkProofOfWork(&header, powLimit) != nil {
 		return errors.New("[powCheckHeader] block check proof is failed.")
 	}
 
@@ -116,17 +174,6 @@ func (v *BlockValidate) powCheckHeader(params ...interface{}) (err error) {
 
 //block *Block
 func (v *BlockValidate) powCheckTransactionsCount(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[powCheckTransactionsCount] invalid parameter:" + str)
-			} else {
-				err = errors.New("[powCheckTransactionsCount]  panic")
-			}
-		}
-	}()
-
 	block := AssertBlock(params[0])
 
 	// A block must have at least one transaction.
@@ -145,17 +192,6 @@ func (v *BlockValidate) powCheckTransactionsCount(params ...interface{}) (err er
 
 //block *Block
 func (v *BlockValidate) powCheckBlockSize(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[powCheckBlockSize] invalid parameter:" + str)
-			} else {
-				err = errors.New("[powCheckBlockSize]  panic")
-			}
-		}
-	}()
-
 	block := AssertBlock(params[0])
 
 	// A block must not exceed the maximum allowed block payload when serialized.
@@ -169,17 +205,6 @@ func (v *BlockValidate) powCheckBlockSize(params ...interface{}) (err error) {
 
 //block *Block
 func (v *BlockValidate) powCheckTransactionsFee(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[powCheckTransactionsFee] invalid parameter:" + str)
-			} else {
-				err = errors.New("[powCheckTransactionsFee]  panic")
-			}
-		}
-	}()
-
 	block := AssertBlock(params[0])
 
 	transactions := block.Transactions
@@ -217,17 +242,6 @@ func (v *BlockValidate) powCheckTransactionsFee(params ...interface{}) (err erro
 
 //block *Block
 func (v *BlockValidate) powCheckTransactionsMerkle(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[powCheckTransactionsMerkle] invalid parameter:" + str)
-			} else {
-				err = errors.New("[powCheckTransactionsMerkle]  panic")
-			}
-		}
-	}()
-
 	block := AssertBlock(params[0])
 
 	txIds := make([]Uint256, 0, len(block.Transactions))
@@ -283,76 +297,7 @@ func (v *BlockValidate) powCheckTransactionsMerkle(params ...interface{}) (err e
 	return nil
 }
 
-//block *Block, prevNode *BlockNode
-func (v *BlockValidate) powCheckBlockContext(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[powCheckBlockContext] invalid parameter:" + str)
-			} else {
-				err = errors.New("[powCheckBlockContext]  panic")
-			}
-		}
-	}()
-
-	block := AssertBlock(params[0])
-	prevNode := AssertBlockNode(params[1])
-	header := block.Header
-
-	// The genesis block is valid by definition.
-	if prevNode == nil {
-		return nil
-	}
-
-	expectedDifficulty, err := CalcNextRequiredDifficulty(prevNode, time.Unix(int64(header.Timestamp), 0))
-	if err != nil {
-		return err
-	}
-
-	if header.Bits != expectedDifficulty {
-		return errors.New("[powCheckBlockContext] block difficulty is not the expected")
-	}
-
-	// Ensure the timestamp for the block header is after the
-	// median time of the last several blocks (medianTimeBlocks).
-	medianTime := CalcPastMedianTime(prevNode)
-	tempTime := time.Unix(int64(header.Timestamp), 0)
-
-	if !tempTime.After(medianTime) {
-		return errors.New("[powCheckBlockContext] block timestamp is not after expected")
-	}
-
-	// The height of this block is one more than the referenced
-	// previous block.
-	blockHeight := prevNode.Height + 1
-
-	// Ensure all transactions in the block are finalized.
-	for _, txn := range block.Transactions[1:] {
-		if err := v.CheckFunctions[CheckFinalizedTransaction](txn, blockHeight); err != nil {
-			return errors.New("[powCheckBlockContext] block contains unfinalized transaction")
-		}
-	}
-
-	return nil
-}
-
-//header *Header, powLimit *big.Int
-func (v *BlockValidate) checkProofOfWork(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[checkProofOfWork] invalid parameter:" + str)
-			} else {
-				err = errors.New("[checkProofOfWork]  panic")
-			}
-		}
-	}()
-
-	header := AssertHeader(params[0])
-	powLimit := AssertBigInt(params[1])
-
+func (v *BlockValidate) checkProofOfWork(header *Header, powLimit *big.Int) (err error) {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {
@@ -372,43 +317,5 @@ func (v *BlockValidate) checkProofOfWork(params ...interface{}) (err error) {
 		return errors.New("[checkProofOfWork], block target difficulty is higher than expected difficulty.")
 	}
 
-	return nil
-}
-
-//msgTx *Transaction, blockHeight uint32
-func (v *BlockValidate) checkFinalizedTransaction(params ...interface{}) (err error) {
-	defer func() {
-		if p := recover(); p != nil {
-			str, ok := p.(string)
-			if ok {
-				err = errors.New("[checkFinalizedTransaction] invalid parameter:" + str)
-			} else {
-				err = errors.New("[checkFinalizedTransaction]  panic")
-			}
-		}
-	}()
-
-	msgTx := AssertTransaction(params[0])
-	blockHeight := AssertBlockHeight(params[1])
-
-	// Lock time of zero means the transaction is finalized.
-	lockTime := msgTx.LockTime
-	if lockTime == 0 {
-		return nil
-	}
-
-	//FIXME only height
-	if lockTime < blockHeight {
-		return nil
-	}
-
-	// At this point, the transaction's lock time hasn't occurred yet, but
-	// the transaction might still be finalized if the sequence number
-	// for all transaction inputs is maxed out.
-	for _, txIn := range msgTx.Inputs {
-		if txIn.Sequence != math.MaxUint16 {
-			return errors.New("[checkFinalizedTransaction] lock time check failed")
-		}
-	}
 	return nil
 }
