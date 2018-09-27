@@ -15,19 +15,6 @@ import (
 )
 
 const (
-	PersistTrimmedBlock  = "persisttrimmedblock"
-	RollbackTrimmedBlock = "rollbacktrimmedblock"
-	PersistBlockHash     = "persistblockhash"
-	RollbackBlockHash    = "rollbackblockhash"
-	PersistCurrentBlock  = "persistcurrentblock"
-	RollbackCurrentBlock = "rollbackcurrentblock"
-	PersistUnspendUTXOs  = "persistunspendutxos"
-	RollbackUnspendUTXOs = "rollbackunspendutxos"
-	PersistTransactions  = "persisttransactions"
-	RollbackTransactions = "rollbacktransactions"
-	PersistUnspend       = "persistunspend"
-	RollbackUnspend      = "rollbackunspend"
-
 	ValueNone   = 0
 	ValueExist  = 1
 	TaskChanCap = 4
@@ -61,8 +48,8 @@ type ChainStore struct {
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
 
-	persistFunctions  map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
-	rollbackFunctions map[ChainStoreFunctionName]func(batch IBatch, b *core.Block) error
+	persistFunctions  []func(batch IBatch, b *core.Block) error
+	rollbackFunctions []func(batch IBatch, b *core.Block) error
 }
 
 func NewChainStore() (*ChainStore, error) {
@@ -88,26 +75,26 @@ func NewChainStore() (*ChainStore, error) {
 }
 
 func (c *ChainStore) Init() {
-	c.RegisterFunctions(true, PersistTrimmedBlock, c.persistTrimmedBlock)
-	c.RegisterFunctions(true, PersistBlockHash, c.persistBlockHash)
-	c.RegisterFunctions(true, PersistCurrentBlock, c.persistCurrentBlock)
-	c.RegisterFunctions(true, PersistUnspendUTXOs, c.persistUnspendUTXOs)
-	c.RegisterFunctions(true, PersistTransactions, c.persistTransactions)
-	c.RegisterFunctions(true, PersistUnspend, c.persistUnspend)
+	c.RegisterFunctions(true, c.persistTrimmedBlock)
+	c.RegisterFunctions(true, c.persistBlockHash)
+	c.RegisterFunctions(true, c.persistCurrentBlock)
+	c.RegisterFunctions(true, c.persistUnspendUTXOs)
+	c.RegisterFunctions(true, c.persistTransactions)
+	c.RegisterFunctions(true, c.persistUnspend)
 
-	c.RegisterFunctions(false, RollbackTrimmedBlock, c.rollbackTrimmedBlock)
-	c.RegisterFunctions(false, RollbackBlockHash, c.rollbackBlockHash)
-	c.RegisterFunctions(false, RollbackCurrentBlock, c.rollbackCurrentBlock)
-	c.RegisterFunctions(false, RollbackUnspendUTXOs, c.rollbackUnspendUTXOs)
-	c.RegisterFunctions(false, RollbackTransactions, c.rollbackTransactions)
-	c.RegisterFunctions(false, RollbackUnspend, c.rollbackUnspend)
+	c.RegisterFunctions(false, c.rollbackTrimmedBlock)
+	c.RegisterFunctions(false, c.rollbackBlockHash)
+	c.RegisterFunctions(false, c.rollbackCurrentBlock)
+	c.RegisterFunctions(false, c.rollbackUnspendUTXOs)
+	c.RegisterFunctions(false, c.rollbackTransactions)
+	c.RegisterFunctions(false, c.rollbackUnspend)
 }
 
-func (c *ChainStore) RegisterFunctions(isPersist bool, funcName ChainStoreFunctionName, function func(batch IBatch, b *core.Block) error) {
+func (c *ChainStore) RegisterFunctions(isPersist bool, function func(batch IBatch, b *core.Block) error) {
 	if isPersist {
-		c.persistFunctions[funcName] = function
+		c.persistFunctions = append(c.persistFunctions, function)
 	} else {
-		c.rollbackFunctions[funcName] = function
+		c.rollbackFunctions = append(c.rollbackFunctions, function)
 	}
 }
 
