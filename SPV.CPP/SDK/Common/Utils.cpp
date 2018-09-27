@@ -301,6 +301,8 @@ namespace Elastos {
 		std::string Utils::extendedKeyDecode(const std::string &keyIn, CMBlock keyOut) {
 			std::string keyType = "unknow";
 
+			throw std::logic_error("Unsupport 'xpub' or 'xprv' key for now");
+
 			size_t len = BRBase58CheckDecode(nullptr, 0, keyIn.c_str());
 			if (len == 78) {
 				uint8_t data[len];

@@ -150,6 +150,7 @@ namespace Elastos {
 			std::vector<std::string> signers = _coSigners;
 			if(_me != nullptr)
 				signers.push_back(_me->GetPublicKey());
+			j["Readonly"] = _me == nullptr;
 			details["Signers"] = signers;
 			details["RequiredSignCount"] = _requiredSignCount;
 			j["Details"] = details;

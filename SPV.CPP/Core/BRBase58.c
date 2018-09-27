@@ -62,7 +62,7 @@ size_t BRBase58Encode(char *str, size_t strLen, const uint8_t *data, size_t data
     len = (zcount + sizeof(buf) - i) + 1;
 
     if (str && len <= strLen) {
-//        while (zcount-- > 0) *(str++) = chars[0]; bitcoin address string is 1 begin ,ela is not
+        while (zcount-- > 0) *(str++) = chars[0];
         while (i < sizeof(buf)) *(str++) = chars[buf[i++]];
         *str = '\0';
     }
