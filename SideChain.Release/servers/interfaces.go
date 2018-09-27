@@ -17,39 +17,25 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/protocol"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
-	"net/rpc"
 )
 
 const (
-	GetRawTransaction                = "getrawtransaction"
-	GetNeighbors                     = "getneighbors"
-	GetNodeState                     = "getnodestate"
-	SetLogLevel                      = "setloglevel"
-	SubmitSideAuxBlock               = "submitsideauxblock"
-	CreateAuxBlock                   = "createauxblock"
-	GetInfo                          = "getinfo"
-	AuxHelp                          = "auxhelp"
-	ToggleMining                     = "togglemining"
-	DiscreteMining                   = "discretemining"
-	GetConnectionCount               = "getconnectioncount"
-	GetTransactionPool               = "gettransactionpool"
-	GetBlockByHash                   = "getblockbyhash"
-	SendTransactionInfo              = "sendtransactioninfo"
-	SendRawTransaction               = "sendrawtransaction"
-	GetBlockHeight                   = "getblockheight"
-	GetBestBlockHash                 = "getbestblockhash"
-	GetBlockCount                    = "getblockcount"
-	GetBlockHash                     = "getblockhash"
-	GetTransactionsByHeight          = "gettransactionsbyheight"
-	GetBlockByHeight                 = "getblockbyheight"
-	GetAssetByHash                   = "getassetbyhash"
-	GetBalanceByAddr                 = "getbalancebyaddr"
-	GetBalanceByAsset                = "getbalancebyasset"
-	GetUnspends                      = "getunspends"
-	GetUnspendOutput                 = "getunspendoutput"
-	GetTransactionByHash             = "gettransactionbyhash"
-	GetExistDepositTransactions      = "getexistdeposittransactions"
-	GetDestroyedTransactionsByHeight = "getdestroyedtransactionsbyheight"
+	Api_Getconnectioncount  = "/api/v1/node/connectioncount"
+	Api_GetblockTxsByHeight = "/api/v1/block/transactions/height/:height"
+	Api_Getblockbyheight    = "/api/v1/block/details/height/:height"
+	Api_Getblockbyhash      = "/api/v1/block/details/hash/:hash"
+	Api_Getblockheight      = "/api/v1/block/height"
+	Api_Getblockhash        = "/api/v1/block/hash/:height"
+	Api_GetTotalIssued      = "/api/v1/totalissued/:assetid"
+	Api_Gettransaction      = "/api/v1/transaction/:hash"
+	Api_Getasset            = "/api/v1/asset/:hash"
+	Api_GetBalanceByAddr    = "/api/v1/asset/balances/:addr"
+	Api_GetBalancebyAsset   = "/api/v1/asset/balance/:addr/:assetid"
+	Api_GetUTXObyAsset      = "/api/v1/asset/utxo/:addr/:assetid"
+	Api_GetUTXObyAddr       = "/api/v1/asset/utxos/:addr"
+	Api_SendRawTransaction  = "/api/v1/transaction"
+	Api_GetTransactionPool  = "/api/v1/transactionpool"
+	Api_Restart             = "/api/v1/restart"
 
 	AUXBLOCK_GENERATED_INTERVAL_SECONDS = 5
 	DESTROY_ADDRESS                     = "0000000000000000000000000000000000"
@@ -63,22 +49,26 @@ var PreChainHeight uint64
 var PreTime int64
 var PreTransactionCount int
 
-type HttpServersFunctionsName string
+type Action struct {
+	Name    string
+	Handler func(Params) map[string]interface{}
+}
 
 type HttpServersBase struct {
-	Functions map[HttpServersFunctionsName]func(param Params) map[string]interface{}
+	RpcFunctions         []Action
+	RestFulGetFunctions  map[string]Action
+	RestFulPostFunctions map[string]Action
 
-	GetTransactionInfo          func(header *Header, tx *Transaction) *TransactionInfo
-	GetTransaction              func(txInfo *TransactionInfo) (*Transaction, error)
-	GenerateAuxBlock            func(addr string) (*Block, string, bool)
-	GetBlockInfo                func(block *Block, verbose bool) BlockInfo
-	GetBlock                    func(hash Uint256, format uint32) (interface{}, ErrCode)
-	GetBlockTransactionsDetail  func(block *Block, filter func(*Transaction) bool) interface{}
-	GetBlockTransactions        func(block *Block) interface{}
-	GetPayload                  func(pInfo PayloadInfo) (Payload, error)
-	GetPayloadInfo              func(p Payload) PayloadInfo
-	GetTransactionInfoFromBytes func(txInfoBytes []byte) (*TransactionInfo, error)
-	VerifyAndSendTx             func(txn *Transaction) ErrCode
+	getTransactionInfo          func(header *Header, tx *Transaction) *TransactionInfo
+	getTransaction              func(txInfo *TransactionInfo) (*Transaction, error)
+	generateAuxBlock            func(addr string) (*Block, string, bool)
+	getBlockInfo                func(block *Block, verbose bool) BlockInfo
+	getBlock                    func(hash Uint256, format uint32) (interface{}, ErrCode)
+	getBlockTransactionsDetail  func(block *Block, filter func(*Transaction) bool) interface{}
+	getBlockTransactions        func(block *Block) interface{}
+	getPayload                  func(pInfo PayloadInfo) (Payload, error)
+	getPayloadInfo              func(p Payload) PayloadInfo
+	getTransactionInfoFromBytes func(txInfoBytes []byte) (*TransactionInfo, error)
 }
 
 func InitHttpServers() {
@@ -87,51 +77,71 @@ func InitHttpServers() {
 }
 
 func (s *HttpServersBase) Init() {
-	s.RegisterFunctions(GetRawTransaction, s.getRawTransaction)
-	s.RegisterFunctions(GetNeighbors, s.getNeighbors)
-	s.RegisterFunctions(GetNodeState, s.getNodeState)
-	s.RegisterFunctions(SetLogLevel, s.setLogLevel)
-	s.RegisterFunctions(SubmitSideAuxBlock, s.submitSideAuxBlock)
-	s.RegisterFunctions(CreateAuxBlock, s.createAuxBlock)
-	s.RegisterFunctions(GetInfo, s.getInfo)
-	s.RegisterFunctions(AuxHelp, s.auxHelp)
-	s.RegisterFunctions(ToggleMining, s.toggleMining)
-	s.RegisterFunctions(DiscreteMining, s.discreteMining)
-	s.RegisterFunctions(GetConnectionCount, s.getConnectionCount)
-	s.RegisterFunctions(GetTransactionPool, s.getTransactionPool)
-	s.RegisterFunctions(GetBlockByHash, s.getBlockByHash)
-	s.RegisterFunctions(SendTransactionInfo, s.sendTransactionInfo)
-	s.RegisterFunctions(SendRawTransaction, s.sendRawTransaction)
-	s.RegisterFunctions(GetBlockHeight, s.getBlockHeight)
-	s.RegisterFunctions(GetBestBlockHash, s.getBestBlockHash)
-	s.RegisterFunctions(GetBlockCount, s.getBlockCount)
-	s.RegisterFunctions(GetBlockHash, s.getBlockHash)
-	s.RegisterFunctions(GetTransactionsByHeight, s.getTransactionsByHeight)
-	s.RegisterFunctions(GetBlockByHeight, s.getBlockByHeight)
-	s.RegisterFunctions(GetAssetByHash, s.getAssetByHash)
-	s.RegisterFunctions(GetBalanceByAddr, s.getBalanceByAddr)
-	s.RegisterFunctions(GetBalanceByAsset, s.getBalanceByAsset)
-	s.RegisterFunctions(GetUnspends, s.getUnspends)
-	s.RegisterFunctions(GetUnspendOutput, s.getUnspendOutput)
-	s.RegisterFunctions(GetTransactionByHash, s.getTransactionByHash)
-	s.RegisterFunctions(GetExistDepositTransactions, s.getExistDepositTransactions)
-	s.RegisterFunctions(GetDestroyedTransactionsByHeight, s.getDestroyedTransactionsByHeight)
+	s.RpcFunctions = make([]Action, 0)
+	s.RestFulGetFunctions = make(map[string]Action, 0)
+	s.RestFulPostFunctions = make(map[string]Action, 0)
 
-	s.GetTransactionInfo = s.getTransactionInfo
-	s.GetTransaction = s.getTransaction
-	s.GenerateAuxBlock = s.generateAuxBlock
-	s.GetBlockInfo = s.getBlockInfo
-	s.GetBlock = s.getBlock
-	s.GetBlockTransactions = s.getBlockTransactions
-	s.GetBlockTransactionsDetail = s.getBlockTransactionsDetail
-	s.GetPayload = s.getPayload
-	s.GetPayloadInfo = s.getPayloadInfo
-	s.GetTransactionInfoFromBytes = s.getTransactionInfoFromBytes
-	s.VerifyAndSendTx = s.verifyAndSendTx
+	s.RegisterRpcFunctions("setloglevel", s.setLogLevel)
+	s.RegisterRpcFunctions("getinfo", s.getInfo)
+	s.RegisterRpcFunctions("getblock", s.getBlockByHash)
+	s.RegisterRpcFunctions("getcurrentheight", s.getBlockHeight)
+	s.RegisterRpcFunctions("getblockhash", s.getBlockHash)
+	s.RegisterRpcFunctions("getconnectioncount", s.getConnectionCount)
+	s.RegisterRpcFunctions("getrawmempool", s.getTransactionPool)
+	s.RegisterRpcFunctions("getrawtransaction", s.getRawTransaction)
+	s.RegisterRpcFunctions("getneighbors", s.getNeighbors)
+	s.RegisterRpcFunctions("getnodestate", s.getNodeState)
+	s.RegisterRpcFunctions("sendtransactioninfo", s.sendTransactionInfo)
+	s.RegisterRpcFunctions("sendrawtransaction", s.sendRawTransaction)
+	s.RegisterRpcFunctions("getbestblockhash", s.getBestBlockHash)
+	s.RegisterRpcFunctions("getblockcount", s.getBlockCount)
+	s.RegisterRpcFunctions("getblockbyheight", s.getBlockByHeight)
+	s.RegisterRpcFunctions("getdestroyedtransactions", s.getDestroyedTransactionsByHeight)
+	s.RegisterRpcFunctions("getexistdeposittransactions", s.getExistDepositTransactions)
+	s.RegisterRpcFunctions("help", s.auxHelp)
+	s.RegisterRpcFunctions("submitsideauxblock", s.submitSideAuxBlock)
+	s.RegisterRpcFunctions("createauxblock", s.createAuxBlock)
+	s.RegisterRpcFunctions("togglemining", s.toggleMining)
+	s.RegisterRpcFunctions("discretemining", s.discreteMining)
+
+	s.RegisterRestfulGetFunctions("getconnectioncount", Api_Getconnectioncount, s.getConnectionCount)
+	s.RegisterRestfulGetFunctions("getblocktransactionsbyheight", Api_GetblockTxsByHeight, s.getTransactionsByHeight)
+	s.RegisterRestfulGetFunctions("getblockbyheight", Api_Getblockbyheight, s.getBlockByHeight)
+	s.RegisterRestfulGetFunctions("getblockbyhash", Api_Getblockbyhash, s.getBlockByHash)
+	s.RegisterRestfulGetFunctions("getblockheight", Api_Getblockheight, s.getBlockHeight)
+	s.RegisterRestfulGetFunctions("getblockhash", Api_Getblockhash, s.getBlockHash)
+	s.RegisterRestfulGetFunctions("gettransactionpool", Api_GetTransactionPool, s.getTransactionPool)
+	s.RegisterRestfulGetFunctions("gettransaction", Api_Gettransaction, s.getTransactionByHash)
+	s.RegisterRestfulGetFunctions("getasset", Api_Getasset, s.getAssetByHash)
+	s.RegisterRestfulGetFunctions("getutxobyaddr", Api_GetUTXObyAddr, s.getUnspends)
+	s.RegisterRestfulGetFunctions("getutxobyasset", Api_GetUTXObyAsset, s.getUnspendOutput)
+	s.RegisterRestfulGetFunctions("getbalancebyaddr", Api_GetBalanceByAddr, s.getBalanceByAddr)
+	s.RegisterRestfulGetFunctions("getbalancebyasset", Api_GetBalancebyAsset, s.getBalanceByAsset)
+
+	s.RegisterRestfulPostFunctions("sendrawtransaction", Api_SendRawTransaction, s.sendRawTransaction)
+
+	s.getBlockInfo = s.getBlockInfoImpl
+	s.getBlock = s.getBlockImpl
+	s.getBlockTransactions = s.getBlockTransactionsImpl
+	s.getBlockTransactionsDetail = s.getBlockTransactionsDetailImpl
+	s.getTransactionInfoFromBytes = s.getTransactionInfoFromBytesImpl
+	s.getTransactionInfo = s.getTransactionInfoImpl
+	s.getTransaction = s.getTransactionImpl
+	s.getPayload = s.getPayloadImpl
+	s.getPayloadInfo = s.getPayloadInfoImpl
+	s.generateAuxBlock = s.generateAuxBlockImpl
 }
 
-func (s *HttpServersBase) RegisterFunctions(funcName HttpServersFunctionsName, function func(param Params) map[string]interface{}) {
-	s.Functions[funcName] = function
+func (s *HttpServersBase) RegisterRpcFunctions(funcName string, function func(param Params) map[string]interface{}) {
+	s.RpcFunctions = append(s.RpcFunctions, Action{Name: funcName, Handler: function})
+}
+
+func (s *HttpServersBase) RegisterRestfulGetFunctions(funcName string, apiPath string, function func(param Params) map[string]interface{}) {
+	s.RestFulGetFunctions[apiPath] = Action{Name: funcName, Handler: function}
+}
+
+func (s *HttpServersBase) RegisterRestfulPostFunctions(funcName string, apiPath string, function func(param Params) map[string]interface{}) {
+	s.RestFulPostFunctions[apiPath] = Action{Name: funcName, Handler: function}
 }
 
 func ToReversedString(hash Uint256) string {
@@ -143,7 +153,7 @@ func FromReversedString(reversed string) ([]byte, error) {
 	return BytesReverse(bytes), err
 }
 
-func (s *HttpServersBase) getTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
+func (s *HttpServersBase) getTransactionInfoImpl(header *Header, tx *Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = ToReversedString(v.Previous.TxID)
@@ -208,14 +218,14 @@ func (s *HttpServersBase) getTransactionInfo(header *Header, tx *Transaction) *T
 		BlockTime:      blockTime,
 		TxType:         tx.TxType,
 		PayloadVersion: tx.PayloadVersion,
-		Payload:        s.GetPayloadInfo(tx.Payload),
+		Payload:        s.getPayloadInfo(tx.Payload),
 		Attributes:     attributes,
 		Programs:       programs,
 	}
 }
 
-func (s *HttpServersBase) getTransaction(txInfo *TransactionInfo) (*Transaction, error) {
-	txPaload, err := s.GetPayload(txInfo.Payload)
+func (s *HttpServersBase) getTransactionImpl(txInfo *TransactionInfo) (*Transaction, error) {
+	txPaload, err := s.getPayload(txInfo.Payload)
 	if err != nil {
 		return nil, err
 	}
@@ -346,7 +356,7 @@ func (s *HttpServersBase) getRawTransaction(param Params) map[string]interface{}
 
 	verbose, ok := param.Bool("verbose")
 	if verbose {
-		return ResponsePack(Success, s.GetTransactionInfo(header, tx))
+		return ResponsePack(Success, s.getTransactionInfo(header, tx))
 	} else {
 		buf := new(bytes.Buffer)
 		tx.Serialize(buf)
@@ -430,7 +440,7 @@ func (s *HttpServersBase) submitSideAuxBlock(param Params) map[string]interface{
 	return ResponsePack(Success, blockHash)
 }
 
-func (s *HttpServersBase) generateAuxBlock(addr string) (*Block, string, bool) {
+func (s *HttpServersBase) generateAuxBlockImpl(addr string) (*Block, string, bool) {
 	msgBlock := &Block{}
 	if NodeForServers.Height() == 0 || PreChainHeight != NodeForServers.Height() ||
 		time.Now().Unix()-PreTime > AUXBLOCK_GENERATED_INTERVAL_SECONDS {
@@ -472,7 +482,7 @@ func (s *HttpServersBase) createAuxBlock(param Params) map[string]interface{} {
 		addr = config.Parameters.PowConfiguration.PayToAddr
 	}
 
-	msgBlock, curHashStr, _ := s.GenerateAuxBlock(addr)
+	msgBlock, curHashStr, _ := s.generateAuxBlock(addr)
 	if nil == msgBlock {
 		return ResponsePack(UnknownBlock, "")
 	}
@@ -590,16 +600,16 @@ func (s *HttpServersBase) getConnectionCount(param Params) map[string]interface{
 func (s *HttpServersBase) getTransactionPool(param Params) map[string]interface{} {
 	txs := make([]*TransactionInfo, 0)
 	for _, t := range NodeForServers.GetTxsInPool() {
-		txs = append(txs, s.GetTransactionInfo(nil, t))
+		txs = append(txs, s.getTransactionInfo(nil, t))
 	}
 	return ResponsePack(Success, txs)
 }
 
-func (s *HttpServersBase) getBlockInfo(block *Block, verbose bool) BlockInfo {
+func (s *HttpServersBase) getBlockInfoImpl(block *Block, verbose bool) BlockInfo {
 	var txs []interface{}
 	if verbose {
 		for _, tx := range block.Transactions {
-			txs = append(txs, s.GetTransactionInfo(&block.Header, tx))
+			txs = append(txs, s.getTransactionInfo(&block.Header, tx))
 		}
 	} else {
 		for _, tx := range block.Transactions {
@@ -640,7 +650,7 @@ func (s *HttpServersBase) getBlockInfo(block *Block, verbose bool) BlockInfo {
 	}
 }
 
-func (s *HttpServersBase) getBlock(hash Uint256, format uint32) (interface{}, ErrCode) {
+func (s *HttpServersBase) getBlockImpl(hash Uint256, format uint32) (interface{}, ErrCode) {
 	block, err := chain.DefaultChain.GetBlockWithHash(hash)
 	if err != nil {
 		return "", UnknownBlock
@@ -651,9 +661,9 @@ func (s *HttpServersBase) getBlock(hash Uint256, format uint32) (interface{}, Er
 		block.Serialize(w)
 		return BytesToHexString(w.Bytes()), Success
 	case 2:
-		return s.GetBlockInfo(block, true), Success
+		return s.getBlockInfo(block, true), Success
 	}
-	return s.GetBlockInfo(block, false), Success
+	return s.getBlockInfo(block, false), Success
 }
 
 func (s *HttpServersBase) getBlockByHash(param Params) map[string]interface{} {
@@ -676,7 +686,7 @@ func (s *HttpServersBase) getBlockByHash(param Params) map[string]interface{} {
 		verbosity = 1
 	}
 
-	result, error := s.GetBlock(hash, verbosity)
+	result, error := s.getBlock(hash, verbosity)
 
 	return ResponsePack(error, result)
 }
@@ -693,19 +703,19 @@ func (s *HttpServersBase) sendTransactionInfo(param Params) map[string]interface
 		return ResponsePack(InvalidParams, "")
 	}
 
-	txInfo, err := s.GetTransactionInfoFromBytes(infoBytes)
+	txInfo, err := s.getTransactionInfoFromBytes(infoBytes)
 
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	txn, err := s.GetTransaction(txInfo)
+	txn, err := s.getTransaction(txInfo)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
 	var hash Uint256
 	hash = txn.Hash()
-	if errCode := s.VerifyAndSendTx(txn); errCode != Success {
+	if errCode := s.verifyAndSendTx(txn); errCode != Success {
 		return ResponsePack(errCode, "")
 	}
 	return ResponsePack(Success, hash.String())
@@ -726,7 +736,7 @@ func (s *HttpServersBase) sendRawTransaction(param Params) map[string]interface{
 		return ResponsePack(InvalidTransaction, "transaction deserialize error")
 	}
 
-	if errCode := s.VerifyAndSendTx(&txn); errCode != Success {
+	if errCode := s.verifyAndSendTx(&txn); errCode != Success {
 		return ResponsePack(errCode, errCode.Message())
 	}
 
@@ -767,7 +777,7 @@ func (s *HttpServersBase) getBlockHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, ToReversedString(hash))
 }
 
-func (s *HttpServersBase) getBlockTransactions(block *Block) interface{} {
+func (s *HttpServersBase) getBlockTransactionsImpl(block *Block) interface{} {
 	trans := make([]string, len(block.Transactions))
 	for i := 0; i < len(block.Transactions); i++ {
 		trans[i] = ToReversedString(block.Transactions[i].Hash())
@@ -800,7 +810,7 @@ func (s *HttpServersBase) getTransactionsByHeight(param Params) map[string]inter
 	if err != nil {
 		return ResponsePack(UnknownBlock, "")
 	}
-	return ResponsePack(Success, s.GetBlockTransactions(block))
+	return ResponsePack(Success, s.getBlockTransactions(block))
 }
 
 func (s *HttpServersBase) getBlockByHeight(param Params) map[string]interface{} {
@@ -814,7 +824,7 @@ func (s *HttpServersBase) getBlockByHeight(param Params) map[string]interface{} 
 		return ResponsePack(UnknownBlock, "")
 	}
 
-	result, errCode := s.GetBlock(hash, 2)
+	result, errCode := s.getBlock(hash, 2)
 
 	return ResponsePack(errCode, result)
 }
@@ -1008,7 +1018,7 @@ func (s *HttpServersBase) getTransactionByHash(param Params) map[string]interfac
 		return ResponsePack(UnknownBlock, "")
 	}
 
-	return ResponsePack(Success, s.GetTransactionInfo(header, txn))
+	return ResponsePack(Success, s.getTransactionInfo(header, txn))
 }
 
 func (s *HttpServersBase) getExistDepositTransactions(param Params) map[string]interface{} {
@@ -1048,14 +1058,14 @@ func (s *HttpServersBase) getExistDepositTransactions(param Params) map[string]i
 	return ResponsePack(Success, resultTxHashes)
 }
 
-func (s *HttpServersBase) getBlockTransactionsDetail(block *Block, filter func(*Transaction) bool) interface{} {
+func (s *HttpServersBase) getBlockTransactionsDetailImpl(block *Block, filter func(*Transaction) bool) interface{} {
 	var trans []*TransactionInfo
 	for _, tx := range block.Transactions {
 		if !filter(tx) {
 			continue
 		}
 
-		trans = append(trans, s.GetTransactionInfo(&block.Header, tx))
+		trans = append(trans, s.getTransactionInfo(&block.Header, tx))
 	}
 	hash := block.Hash()
 	type BlockTransactions struct {
@@ -1088,7 +1098,7 @@ func (s *HttpServersBase) getDestroyedTransactionsByHeight(param Params) map[str
 	}
 
 	destroyHash := Uint168{}
-	return ResponsePack(Success, s.GetBlockTransactionsDetail(block, func(tran *Transaction) bool {
+	return ResponsePack(Success, s.getBlockTransactionsDetail(block, func(tran *Transaction) bool {
 		_, ok := tran.Payload.(*PayloadTransferCrossChainAsset)
 		if !ok {
 			return false
@@ -1102,7 +1112,7 @@ func (s *HttpServersBase) getDestroyedTransactionsByHeight(param Params) map[str
 	}))
 }
 
-func (s *HttpServersBase) getPayload(pInfo PayloadInfo) (Payload, error) {
+func (s *HttpServersBase) getPayloadImpl(pInfo PayloadInfo) (Payload, error) {
 
 	switch object := pInfo.(type) {
 	case *RegisterAssetInfo:
@@ -1144,7 +1154,7 @@ func (s *HttpServersBase) getPayload(pInfo PayloadInfo) (Payload, error) {
 	return nil, errors.New("Invalid payload type.")
 }
 
-func (s *HttpServersBase) getPayloadInfo(p Payload) PayloadInfo {
+func (s *HttpServersBase) getPayloadInfoImpl(p Payload) PayloadInfo {
 	switch object := p.(type) {
 	case *PayloadCoinBase:
 		obj := new(CoinbaseInfo)
@@ -1185,7 +1195,7 @@ func Unmarshal(result interface{}, target interface{}) error {
 	return nil
 }
 
-func (s *HttpServersBase) getTransactionInfoFromBytes(txInfoBytes []byte) (*TransactionInfo, error) {
+func (s *HttpServersBase) getTransactionInfoFromBytesImpl(txInfoBytes []byte) (*TransactionInfo, error) {
 	var txInfo TransactionInfo
 	err := json.Unmarshal(txInfoBytes, &txInfo)
 	if err != nil {
@@ -1205,7 +1215,7 @@ func (s *HttpServersBase) getTransactionInfoFromBytes(txInfoBytes []byte) (*Tran
 	case TransferCrossChainAsset:
 		assetInfo = &TransferCrossChainAssetInfo{}
 	default:
-		return nil, errors.New("GetBlockTransactions: Unknown payload type")
+		return nil, errors.New("getBlockTransactions: Unknown payload type")
 	}
 	err = Unmarshal(&txInfo.Payload, assetInfo)
 	if err == nil {
