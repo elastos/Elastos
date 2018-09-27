@@ -138,7 +138,7 @@ namespace Elastos {
 
 		IAccount *
 		KeyStore::createAccountFromJson(const std::string &phrasePassword, const std::string &payPassword) const {
-			if (_walletJson.getType() == "Standard")
+			if (_walletJson.getType() == "Standard" || _walletJson.getType().empty())
 				return new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
 										   phrasePassword, payPassword);
 			else if (_walletJson.getType() == "Simple")

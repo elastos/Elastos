@@ -57,7 +57,7 @@ namespace Elastos {
 			p._coinInfoList = j.find("CoinInfoList") != j.end() ? j["CoinInfoList"].get<std::vector<CoinInfo>>()
 																: std::vector<CoinInfo>();
 			p._type = j.find("Type") != j.end() ? j["Type"].get<std::string>() : "";
-			p._language = j.find("Language") != j.end() ? j["Language"].get<std::string>() : "";
+			p._language = j.find("Language") != j.end() ? j["Language"].get<std::string>() : "english";
 			p._coSigners = j.find("CoSigners") != j.end() ? j["CoSigners"].get<std::vector<std::string>>()
 														  : std::vector<std::string>();
 			p._requiredSignCount = j.find("RequiredSignCount") != j.end() ? j["RequiredSignCount"].get<uint32_t>() : 0;
