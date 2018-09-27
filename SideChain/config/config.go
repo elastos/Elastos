@@ -80,7 +80,7 @@ type Configuration struct {
 	RestKeyPath                string           `json:"RestKeyPath"`
 	HttpInfoPort               uint16           `json:"HttpInfoPort"`
 	HttpInfoStart              bool             `json:"HttpInfoStart"`
-	OpenService                bool             `json:"OpenService"`
+	PeerBloomFilters                bool             `json:"PeerBloomFilters"`
 	HttpWsPort                 int              `json:"HttpWsPort"`
 	WsHeartbeatInterval        time.Duration    `json:"WsHeartbeatInterval"`
 	HttpJsonPort               int              `json:"HttpJsonPort"`

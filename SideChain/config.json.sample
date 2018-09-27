@@ -23,7 +23,7 @@
     "NoticeServerUrl": "",
     "OauthServerUrl": "",
     "NodePort": 20338,
-    "OpenService": true,
+    "PeerBloomFilters": true,
     "PrintLevel": 0,
     "MaxLogsSize": 5000,
     "MaxPerLogSize": 20,
