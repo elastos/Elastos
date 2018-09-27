@@ -3,9 +3,9 @@ package core
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -57,20 +57,17 @@ func (b *Block) Deserialize(r io.Reader) error {
 
 func (b *Block) Trim(w io.Writer) error {
 	if err := b.Header.Serialize(w); err != nil {
-		log.Error("Trim block serialize header failed:", err)
-		return err
+		return fmt.Errorf("Trim block serialize header failed:", err)
 	}
 
 	if err := common.WriteUint32(w, uint32(len(b.Transactions))); err != nil {
-		log.Error("Trim block write txs len failed:", err)
-		return errors.New("Block item Transactions length serialization failed.")
+		return fmt.Errorf("Trim block write txs len failed:", err)
 	}
 
 	for _, transaction := range b.Transactions {
 		hash := transaction.Hash()
 		if err := hash.Serialize(w); err != nil {
-			log.Error("Trim block serialize tx hash failed:", err)
-			return err
+			return fmt.Errorf("Trim block serialize tx hash failed:", err)
 		}
 	}
 
