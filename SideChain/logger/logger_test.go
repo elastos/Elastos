@@ -1,4 +1,4 @@
-package log
+package logger
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewLogger(t *testing.T) {
-	logger := NewLogger(0, 5, 20)
+	logger := NewLogger("./log-test",0, 5, 20)
 	start := time.Now()
 	for {
 		logger.Info("Print info log")
