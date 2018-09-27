@@ -7,10 +7,9 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
+	"github.com/elastos/Elastos.ELA.SideChain/logger"
 
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
-	logger "github.com/elastos/Elastos.ELA.SPV/log"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/bloom"
 	ela "github.com/elastos/Elastos.ELA/core"
@@ -53,9 +52,9 @@ func SpvInit() error {
 
 	go func() {
 		if err := service.Start(); err != nil {
-			log.Info("Spv service start failed ：", err)
+			logger.Info("Spv service start failed ：", err)
 		}
-		log.Info("Spv service stoped")
+		logger.Info("Spv service stoped")
 		os.Exit(-1)
 	}()
 	return nil
