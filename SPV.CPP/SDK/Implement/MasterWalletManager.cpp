@@ -179,7 +179,7 @@ namespace Elastos {
 		std::vector<IMasterWallet *> MasterWalletManager::GetAllMasterWallets() const {
 			std::vector<IMasterWallet *> result;
 			for (MasterWalletMap::const_iterator it = _masterWalletMap.cbegin(); it != _masterWalletMap.cend(); ++it) {
-				result.push_back(it->second);
+				result.push_back(GetWallet(it->first));
 			}
 			return result;
 		};
@@ -331,8 +331,7 @@ namespace Elastos {
 				std::string masterWalletId = temp.filename().string();
 				temp /= MASTER_WALLET_STORE_FILE;
 				if (exists(temp)) {
-					MasterWallet *masterWallet = new MasterWallet(temp, _rootPath, _p2pEnable);
-					_masterWalletMap[masterWalletId] = masterWallet;
+					_masterWalletMap[masterWalletId] = nullptr;
 				}
 				++it;
 			}
@@ -340,5 +339,27 @@ namespace Elastos {
 			Log::getLogger()->info("{} master wallets were created", _masterWalletMap.size());
 		}
 
+		std::vector<std::string> MasterWalletManager::GetAllMasterWalletIds() const {
+			std::vector<std::string> result;
+			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
+						  [&result](const MasterWalletMap::value_type &item) {
+							  result.push_back(item.first);
+						  });
+			return result;
+		}
+
+		IMasterWallet *MasterWalletManager::GetWallet(const std::string &masterWalletId) const {
+			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.cend() &&
+				_masterWalletMap[masterWalletId] != nullptr)
+				return _masterWalletMap[masterWalletId];
+
+			path masterWalletStoreFile = _rootPath;
+			masterWalletStoreFile /= masterWalletId;
+			masterWalletStoreFile /= MASTER_WALLET_STORE_FILE;
+
+			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable);
+			_masterWalletMap[masterWalletId] = masterWallet;
+			return masterWallet;
+		}
 	}
 }
