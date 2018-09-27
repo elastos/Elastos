@@ -65,7 +65,8 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, _p2pEnable, _rootPath);
+														  language, _p2pEnable, _rootPath, CreateNormal);
+
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -94,7 +95,7 @@ namespace Elastos {
 			nlohmann::json coSignersHexString = coSignersString;
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSignersHexString, requiredSignCount,
-														  _rootPath, _p2pEnable);
+														  _rootPath, _p2pEnable, CreateMultiSign);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -136,7 +137,8 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKeyHexString, payPassword,
 														  coSignersHexString,
-														  requiredSignCount, _rootPath, _p2pEnable);
+														  requiredSignCount, _rootPath, _p2pEnable,
+														  CreateMultiSign);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -170,7 +172,7 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  language, coSignersHexString, requiredSignCount, _p2pEnable,
-														  _rootPath);
+														  _rootPath, CreateMultiSign);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -242,7 +244,7 @@ namespace Elastos {
 
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
-														  payPassword, phrasePassword, _rootPath, _p2pEnable);
+														  payPassword, phrasePassword, _rootPath, _p2pEnable, ImportFromKeyStore);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -258,8 +260,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, _p2pEnable, _rootPath);
-			masterWallet->setImportFromMnemonic();
+														  language, _p2pEnable, _rootPath, ImportFromMnemonic);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -357,7 +358,7 @@ namespace Elastos {
 			masterWalletStoreFile /= masterWalletId;
 			masterWalletStoreFile /= MASTER_WALLET_STORE_FILE;
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable);
+			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable, ImportFromLocalStore);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}

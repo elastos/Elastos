@@ -35,6 +35,10 @@ namespace Elastos {
 			return _transactionDataStore.deleteAllTransactions(iso);
 		}
 
+		size_t DatabaseManager::getAllTransactionsCount(const std::string &iso) const {
+			return _transactionDataStore.getAllTransactionsCount(iso);
+		}
+
 		std::vector<TransactionEntity> DatabaseManager::getAllTransactions(const std::string &iso) const {
 			return _transactionDataStore.getAllTransactions(iso);
 		}

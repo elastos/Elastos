@@ -228,6 +228,11 @@ namespace Elastos {
 		}
 
 		void SubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+			if (_walletManager->getAllTransactionsCount() == 1) {
+				_info.setEaliestPeerTime(timeStamp);
+				_parent->Save();
+			}
+
 			Log::getLogger()->info("Tx callback (onTxUpdated)");
 			if (_confirmingTxs.find(hash) == _confirmingTxs.end()) {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
