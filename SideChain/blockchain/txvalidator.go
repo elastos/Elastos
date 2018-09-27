@@ -76,7 +76,6 @@ func (txv *TransactionValidate) CheckTransactionContext(txn *core.Transaction) E
 			return errcode
 		}
 	}
-
 	return Success
 }
 

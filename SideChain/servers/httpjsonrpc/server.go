@@ -27,34 +27,10 @@ const (
 
 func InitRpcServer() {
 	MainMux = make(map[string]func(Params) map[string]interface{})
-
 	http.HandleFunc("/", Handle)
-
-	MainMux["setloglevel"] = HttpServers.Functions[SetLogLevel]
-	MainMux["getinfo"] = HttpServers.Functions[GetInfo]
-	MainMux["getblock"] = HttpServers.Functions[GetBlockByHash]
-	MainMux["getcurrentheight"] = HttpServers.Functions[GetBlockHeight]
-	MainMux["getblockhash"] = HttpServers.Functions[GetBlockHash]
-	MainMux["getconnectioncount"] = HttpServers.Functions[GetConnectionCount]
-	MainMux["getrawmempool"] = HttpServers.Functions[GetTransactionPool]
-	MainMux["getrawtransaction"] = HttpServers.Functions[GetRawTransaction]
-	MainMux["getneighbors"] = HttpServers.Functions[GetNeighbors]
-	MainMux["getnodestate"] = HttpServers.Functions[GetNodeState]
-	MainMux["sendtransactioninfo"] = HttpServers.Functions[SendTransactionInfo]
-	MainMux["sendrawtransaction"] = HttpServers.Functions[SendRawTransaction]
-	MainMux["getbestblockhash"] = HttpServers.Functions[GetBestBlockHash]
-	MainMux["getblockcount"] = HttpServers.Functions[GetBlockCount]
-	MainMux["getblockbyheight"] = HttpServers.Functions[GetBlockByHeight]
-	MainMux["getdestroyedtransactions"] = HttpServers.Functions[GetDestroyedTransactionsByHeight]
-	MainMux["getexistdeposittransactions"] = HttpServers.Functions[GetExistDepositTransactions]
-
-	// aux interfaces
-	MainMux["help"] = HttpServers.Functions[AuxHelp]
-	MainMux["submitsideauxblock"] = HttpServers.Functions[SubmitSideAuxBlock]
-	MainMux["createauxblock"] = HttpServers.Functions[CreateAuxBlock]
-	// mining interfaces
-	MainMux["togglemining"] = HttpServers.Functions[ToggleMining]
-	MainMux["discretemining"] = HttpServers.Functions[DiscreteMining]
+	for _, action := range HttpServers.RpcFunctions {
+		MainMux[action.Name] = action.Handler
+	}
 }
 
 func StartRPCServer() {
