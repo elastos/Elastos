@@ -80,6 +80,9 @@ namespace Elastos {
 					const nlohmann::json &rawTransaction,
 					const std::string &payPassword);
 
+			virtual nlohmann::json GetTransactionSignedSigners(
+					const nlohmann::json &rawTransaction);
+
 			virtual nlohmann::json PublishTransaction(
 					const nlohmann::json &rawTransaction);
 

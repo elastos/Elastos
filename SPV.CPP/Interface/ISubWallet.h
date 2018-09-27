@@ -161,6 +161,20 @@ namespace Elastos {
 					const std::string &payPassword) = 0;
 
 			/**
+			 * Get signers already signed specified transaction.
+			 * @param rawTransaction a multi-sign transaction to find signed signers.
+			 * @return Signed signers in json format. An example of result will be displayed as follows:
+			 * {
+			 * 	[
+			 * 		"03b73a64f50c142c1f08710e04b928553508c3028e045dfdfdc5489434df13275e",
+			 * 		"02f925e82f4482a9aa853a35203ab8965439c9db6aee8ef1783d2e1a491c28a482"
+			 * 	]
+			 * }
+			 */
+			virtual nlohmann::json GetTransactionSignedSigners(
+					const nlohmann::json &rawTransaction) = 0;
+
+			/**
 			 * Send a transaction by p2p network.
 			 * @param rawTransaction content of transaction in json format.
 			 * @param fee specify fee for miners, fee must greater or equal than 1000 (sela).

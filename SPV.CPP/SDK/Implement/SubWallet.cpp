@@ -22,6 +22,7 @@
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
 #include "Transaction/TransactionCompleter.h"
+#include "Account/MultiSignSubAccount.h"
 #include "Account/SubAccountGenerator.h"
 
 namespace fs = boost::filesystem;
@@ -423,6 +424,17 @@ namespace Elastos {
 			j["Type"] = "Normal";
 			j["Account"] = _subAccount->GetBasicInfo();
 			return j;
+		}
+
+		nlohmann::json SubWallet::GetTransactionSignedSigners(const nlohmann::json &rawTransaction) {
+			nlohmann::json result;
+			MultiSignSubAccount *subAccount = dynamic_cast<MultiSignSubAccount *>(_subAccount.get());
+			if (subAccount != nullptr) {
+				TransactionPtr transaction(new Transaction);
+				transaction->fromJson(rawTransaction);
+				result["Signers"] = subAccount->GetTransactionSignedSigners(transaction);
+			}
+			return result;
 		}
 
 	}
