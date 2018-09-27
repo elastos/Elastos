@@ -18,11 +18,11 @@ func InitTransactionHelper() {
 }
 
 func (t *TransactionHelperBase) Init() {
-	t.Name = t.IName
-	t.GetDataContainer = t.IGetDataContainer
+	t.Name = t.name
+	t.GetDataContainer = t.getDataContainer
 }
 
-func (t *TransactionHelperBase) IName(txType TransactionType) string {
+func (t *TransactionHelperBase) name(txType TransactionType) string {
 	switch txType {
 	case CoinBase:
 		return "CoinBase"
@@ -47,6 +47,6 @@ func (t *TransactionHelperBase) IName(txType TransactionType) string {
 	}
 }
 
-func (t *TransactionHelperBase) IGetDataContainer(programHash *common.Uint168, tx *Transaction) interfaces.IDataContainer {
+func (t *TransactionHelperBase) getDataContainer(programHash *common.Uint168, tx *Transaction) interfaces.IDataContainer {
 	return tx
 }

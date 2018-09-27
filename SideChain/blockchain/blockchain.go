@@ -937,7 +937,7 @@ func (b *BlockChain) maybeAcceptBlock(block *core.Block) (bool, error) {
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	err = BlockValidator.CheckFunctions[PowCheckBlockContext](&BlockValidateParameter{Block: block, PrevNode: prevNode})
+	err = BlockValidator.PowCheckBlockContext(block, prevNode)
 	if err != nil {
 		log.Error("powCheckBlockContext error!", err)
 		return false, err
@@ -1092,7 +1092,7 @@ func (b *BlockChain) ProcessBlock(block *core.Block) (bool, bool, error) {
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = powCheckBlockSanity(block, PowLimit, b.TimeSource)
-	err = BlockValidator.CheckFunctions[PowCheckBlockSanity](&BlockValidateParameter{Block: block, PowLimit: b.powLimit, TimeSource: b.TimeSource})
+	err = BlockValidator.PowCheckBlockSanity(block, b.powLimit, b.TimeSource)
 
 	if err != nil {
 		log.Error("powCheckBlockSanity error!", err)

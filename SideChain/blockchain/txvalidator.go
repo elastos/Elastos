@@ -41,41 +41,46 @@ var TransactionValidator *TransactionValidate
 type TransactionValidateFunctionName string
 
 type TransactionValidate struct {
-	CheckSanityFunctions  map[TransactionValidateFunctionName]func(txn *core.Transaction) ErrCode
-	CheckContextFunctions map[TransactionValidateFunctionName]func(txn *core.Transaction) (bool, ErrCode)
+	checkSanityFunctions  map[TransactionValidateFunctionName]func(txn *core.Transaction) ErrCode
+	checkContextFunctions map[TransactionValidateFunctionName]func(txn *core.Transaction) (bool, ErrCode)
 }
 
 func InitTransactionValidtor() {
 	TransactionValidator = &TransactionValidate{}
-	TransactionValidator.RegisterSanityFunctions(CheckTransactionSize, TransactionValidator.checkTransactionSize)
-	TransactionValidator.RegisterSanityFunctions(CheckTransactionInput, TransactionValidator.checkTransactionInput)
-	TransactionValidator.RegisterSanityFunctions(CheckTransactionOutput, TransactionValidator.checkTransactionOutput)
-	TransactionValidator.RegisterSanityFunctions(CheckAssetPrecision, TransactionValidator.checkAssetPrecision)
-	TransactionValidator.RegisterSanityFunctions(CheckAttributeProgram, TransactionValidator.checkAttributeProgram)
-	TransactionValidator.RegisterSanityFunctions(CheckTransactionPayload, TransactionValidator.checkTransactionPayload)
+	TransactionValidator.Init()
+}
 
-	TransactionValidator.RegisterContextFunctions(CheckTransactionDuplicate, TransactionValidator.checkTransactionDuplicate)
-	TransactionValidator.RegisterContextFunctions(CheckTransactionCoinBase, TransactionValidator.checkTransactionCoinBase)
-	TransactionValidator.RegisterContextFunctions(CheckTransactionDoubleSpend, TransactionValidator.checkTransactionDoubleSpend)
-	TransactionValidator.RegisterContextFunctions(CheckTransactionSignature, TransactionValidator.checkTransactionSignature)
-	TransactionValidator.RegisterContextFunctions(CheckRechargeToSideChainTransaction, TransactionValidator.checkRechargeToSideChainTransaction)
-	TransactionValidator.RegisterContextFunctions(CheckTransferCrossChainAssetTransaction, TransactionValidator.checkTransferCrossChainAssetTransaction)
-	TransactionValidator.RegisterContextFunctions(CheckTransactionUTXOLock, TransactionValidator.checkTransactionUTXOLock)
-	TransactionValidator.RegisterContextFunctions(CheckTransactionBalance, TransactionValidator.checkTransactionBalance)
-	TransactionValidator.RegisterContextFunctions(CheckReferencedOutput, TransactionValidator.checkReferencedOutput)
+func (txv *TransactionValidate) Init() {
+	txv.RegisterSanityFunctions(CheckTransactionSize, txv.checkTransactionSize)
+	txv.RegisterSanityFunctions(CheckTransactionInput, txv.checkTransactionInput)
+	txv.RegisterSanityFunctions(CheckTransactionOutput, txv.checkTransactionOutput)
+	txv.RegisterSanityFunctions(CheckAssetPrecision, txv.checkAssetPrecision)
+	txv.RegisterSanityFunctions(CheckAttributeProgram, txv.checkAttributeProgram)
+	txv.RegisterSanityFunctions(CheckTransactionPayload, txv.checkTransactionPayload)
+
+	txv.RegisterContextFunctions(CheckTransactionDuplicate, txv.checkTransactionDuplicate)
+	txv.RegisterContextFunctions(CheckTransactionCoinBase, txv.checkTransactionCoinBase)
+	txv.RegisterContextFunctions(CheckTransactionDoubleSpend, txv.checkTransactionDoubleSpend)
+	txv.RegisterContextFunctions(CheckTransactionSignature, txv.checkTransactionSignature)
+	txv.RegisterContextFunctions(CheckRechargeToSideChainTransaction, txv.checkRechargeToSideChainTransaction)
+	txv.RegisterContextFunctions(CheckTransferCrossChainAssetTransaction, txv.checkTransferCrossChainAssetTransaction)
+	txv.RegisterContextFunctions(CheckTransactionUTXOLock, txv.checkTransactionUTXOLock)
+	txv.RegisterContextFunctions(CheckTransactionBalance, txv.checkTransactionBalance)
+	txv.RegisterContextFunctions(CheckReferencedOutput, txv.checkReferencedOutput)
+
 }
 
 func (txv *TransactionValidate) RegisterSanityFunctions(funcName TransactionValidateFunctionName, function func(txn *core.Transaction) ErrCode) {
-	txv.CheckSanityFunctions[funcName] = function
+	txv.checkSanityFunctions[funcName] = function
 }
 
 func (txv *TransactionValidate) RegisterContextFunctions(funcName TransactionValidateFunctionName, function func(txn *core.Transaction) (bool, ErrCode)) {
-	txv.CheckContextFunctions[funcName] = function
+	txv.checkContextFunctions[funcName] = function
 }
 
 // CheckTransactionSanity verifys received single transaction
 func (txv *TransactionValidate) CheckTransactionSanity(txn *core.Transaction) ErrCode {
-	for _, checkFunc := range txv.CheckSanityFunctions {
+	for _, checkFunc := range txv.checkSanityFunctions {
 		if errcode := checkFunc(txn); errcode != Success {
 			return errcode
 		}
@@ -85,7 +90,7 @@ func (txv *TransactionValidate) CheckTransactionSanity(txn *core.Transaction) Er
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
 func (txv *TransactionValidate) CheckTransactionContext(txn *core.Transaction) ErrCode {
-	for _, checkFunc := range txv.CheckContextFunctions {
+	for _, checkFunc := range txv.checkContextFunctions {
 		if ok, errcode := checkFunc(txn); !ok {
 			return errcode
 		}
@@ -202,7 +207,7 @@ func (txv *TransactionValidate) checkTransactionOutput(txn *core.Transaction) Er
 			return ErrInvalidOutput
 		}
 
-		if !txv.CheckOutputProgramHashImpl(output.ProgramHash) {
+		if !txv.checkOutputProgramHash(output.ProgramHash) {
 			log.Warn("[checkTransactionOutput] output address is invalid")
 			return ErrInvalidOutput
 		}
@@ -211,13 +216,12 @@ func (txv *TransactionValidate) checkTransactionOutput(txn *core.Transaction) Er
 	return Success
 }
 
-func (txv *TransactionValidate) CheckOutputProgramHashImpl(programHash Uint168) bool {
+func (txv *TransactionValidate) checkOutputProgramHash(programHash Uint168) bool {
 	var empty = Uint168{}
 	prefix := programHash[0]
 	if prefix == PrefixStandard ||
 		prefix == PrefixMultisig ||
 		prefix == PrefixCrossChain ||
-		prefix == PrefixRegisterId ||
 		programHash == empty {
 		return true
 	}
@@ -282,7 +286,7 @@ func (txv *TransactionValidate) checkAssetPrecision(txn *core.Transaction) ErrCo
 		}
 		precision := asset.Precision
 		for _, output := range outputs {
-			if !txv.CheckAmountPreciseImpl(output.Value, precision, core.MaxPrecision) {
+			if !txv.checkAmountPrecise(output.Value, precision, core.MaxPrecision) {
 				log.Warn("[checkAssetPrecision] The precision of asset is incorrect.")
 				return ErrAssetPrecision
 			}
@@ -390,7 +394,7 @@ func (txv *TransactionValidate) checkTransactionSignature(txn *core.Transaction)
 	return true, Success
 }
 
-func (txv *TransactionValidate) CheckAmountPreciseImpl(amount Fixed64, precision byte, assetPrecision byte) bool {
+func (txv *TransactionValidate) checkAmountPrecise(amount Fixed64, precision byte, assetPrecision byte) bool {
 	return amount.IntValue()%int64(math.Pow10(int(assetPrecision-precision))) == 0
 }
 
@@ -401,7 +405,7 @@ func (txv *TransactionValidate) checkTransactionPayload(txn *core.Transaction) E
 			log.Warn("[checkTransactionPayload] Invalide asset Precision.")
 			return ErrTransactionPayload
 		}
-		if !txv.CheckAmountPreciseImpl(pld.Amount, pld.Asset.Precision, core.MaxPrecision) {
+		if !txv.checkAmountPrecise(pld.Amount, pld.Asset.Precision, core.MaxPrecision) {
 			log.Warn("[checkTransactionPayload] Invalide asset value,out of precise.")
 			return ErrTransactionPayload
 		}
