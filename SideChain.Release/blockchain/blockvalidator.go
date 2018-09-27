@@ -3,18 +3,17 @@ package blockchain
 import (
 	"errors"
 	"math"
+	"math/big"
 	"time"
 
+	. "github.com/elastos/Elastos.ELA.SideChain/common"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	. "github.com/elastos/Elastos.ELA.SideChain/core"
 	. "github.com/elastos/Elastos.ELA.SideChain/errors"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	"math/big"
 )
-
-type BlockValidateFunctionName string
 
 const (
 	MaxTimeOffsetSeconds = 2 * 60 * 60
@@ -23,7 +22,7 @@ const (
 var BlockValidator *BlockValidate
 
 type BlockValidate struct {
-	checkSanityFunctions []func(params ...interface{}) error
+	checkSanityFunctions map[BlockValidateFunctionName]func(params ...interface{}) error
 }
 
 func InitBlockValidator() {
@@ -32,16 +31,16 @@ func InitBlockValidator() {
 }
 
 func (v *BlockValidate) Init() {
-	v.checkSanityFunctions = make([]func(params ...interface{}) error, 0)
-	v.RegisterFunctions(v.powCheckHeader)
-	v.RegisterFunctions(v.powCheckTransactionsCount)
-	v.RegisterFunctions(v.powCheckBlockSize)
-	v.RegisterFunctions(v.powCheckTransactionsFee)
-	v.RegisterFunctions(v.powCheckTransactionsMerkle)
+	v.checkSanityFunctions = make(map[BlockValidateFunctionName]func(params ...interface{}) error, 0)
+	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckHeader, v.powCheckHeader)
+	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckTransactionsCount, v.powCheckTransactionsCount)
+	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckBlockSize, v.powCheckBlockSize)
+	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckTransactionsFee, v.powCheckTransactionsFee)
+	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckTransactionsMerkle, v.powCheckTransactionsMerkle)
 }
 
-func (v *BlockValidate) RegisterFunctions(function func(params ...interface{}) error) {
-	v.checkSanityFunctions = append(v.checkSanityFunctions, function)
+func (v *BlockValidate) RegisterFunctions(name BlockValidateFunctionName, function func(params ...interface{}) error) {
+	v.checkSanityFunctions[name] = function
 }
 
 func (v *BlockValidate) PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
