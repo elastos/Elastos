@@ -9,7 +9,6 @@
 
 #include "SDK/KeyStore/Mnemonic.h"
 #include "WalletTool.h"
-#include "BTCBase58.h"
 
 using namespace Elastos::ElaWallet;
 

@@ -8,11 +8,11 @@
 #include <algorithm>
 #include <iterator>
 #include <Core/BRBase58.h>
+#include <Core/BRAddress.h>
 
 #include "assert.h"
 #include "Utils.h"
 #include "AES_256_CCM.h"
-#include "BTCBase58.h"
 #include "Base64.h"
 #include "BRAddress.h"
 #include "Log.h"
@@ -236,7 +236,9 @@ namespace Elastos {
 			memcpy(data, u.u8, uSize);
 			memcpy(data + uSize, hash.u8, 4);
 
-			return BTCBase58::EncodeBase58(data, dataLen);
+			BRAddress result;
+			BRBase58Encode(result.s, sizeof(result.s), data, dataLen);
+			return result.s;
 		}
 
 		bool Utils::UInt168FromAddress(UInt168 &u, const std::string &address) {
