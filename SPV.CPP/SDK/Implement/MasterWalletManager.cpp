@@ -4,6 +4,7 @@
 
 #include <boost/filesystem.hpp>
 #include <SDK/Common/Utils.h>
+#include <Core/BRBase58.h>
 
 #include "MasterWalletManager.h"
 #include "Log.h"
@@ -299,13 +300,26 @@ namespace Elastos {
 			ByteStream stream;
 			txn.Serialize(stream);
 
-			return Utils::encodeHex(stream.getBuffer());
+			CMBlock hex = stream.getBuffer();
+			size_t len = BRBase58CheckEncode(NULL, 0, hex, hex.GetSize());
+			char str[len + 1];
+
+			BRBase58CheckEncode(str, sizeof(str), hex, hex.GetSize());
+
+			return std::string(str);
 		}
 
 		nlohmann::json MasterWalletManager::ConvertFromHexString(const std::string &raw) {
 			Transaction txn;
 
-			CMBlock rawHex = Utils::decodeHex(raw);
+			size_t len = BRBase58CheckDecode(NULL, 0, raw.c_str());
+			if (len == 0) {
+				throw std::logic_error("Decode tx from base58 error");
+			}
+
+			CMBlock rawHex;
+			rawHex.Resize(len);
+			BRBase58CheckDecode(rawHex, rawHex.GetSize(), raw.c_str());
 
 			ByteStream stream;
 			stream.writeBytes(rawHex, rawHex.GetSize());
