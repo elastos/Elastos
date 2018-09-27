@@ -136,18 +136,6 @@ func (s *service) updateFilter() *bloom.Filter {
 func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 	var message p2p.Message
 	switch cmd {
-	case p2p.CmdVersion:
-		message = new(msg.Version)
-
-	case p2p.CmdVerAck:
-		message = new(msg.VerAck)
-
-	case p2p.CmdGetAddr:
-		message = new(msg.GetAddr)
-
-	case p2p.CmdAddr:
-		message = new(msg.Addr)
-
 	case p2p.CmdInv:
 		message = new(msg.Inv)
 
@@ -159,12 +147,6 @@ func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 
 	case p2p.CmdTx:
 		message = msg.NewTx(new(core.Transaction))
-
-	case p2p.CmdPing:
-		message = new(msg.Ping)
-
-	case p2p.CmdPong:
-		message = new(msg.Pong)
 
 	case p2p.CmdMerkleBlock:
 		message = msg.NewMerkleBlock(new(core.Header))
