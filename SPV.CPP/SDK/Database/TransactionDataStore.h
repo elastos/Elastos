@@ -50,6 +50,7 @@ namespace Elastos {
 
 			bool putTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
 			bool deleteAllTransactions(const std::string &iso);
+			size_t getAllTransactionsCount(const std::string &iso) const;
 			std::vector<TransactionEntity> getAllTransactions(const std::string &iso) const;
 			bool updateTransaction(const std::string &iso, const TransactionEntity &transactionEntity);
 			bool deleteTxByHash(const std::string &iso, const std::string &hash);

@@ -32,6 +32,15 @@ namespace Elastos {
 
 		class KeyStore;
 
+		typedef enum {
+			CreateNormal,          // Select newest check point
+			CreateMultiSign,       // Select oldest check point
+			ImportFromMnemonic,    // Select oldest check point
+			ImportFromLocalStore,  // Select check point from local store
+			ImportFromKeyStore,    // Select check point from key store
+			ImportFromOldKeyStore, // Select oldest check point
+		} MasterWalletInitFrom;
+
 		class MasterWallet : public IMasterWallet, public IIdAgent {
 		public:
 			virtual ~MasterWallet();
@@ -116,7 +125,8 @@ namespace Elastos {
 			MasterWallet(
 					const boost::filesystem::path &localStore,
 					const std::string &rootPath,
-					bool p2pEnable);
+					bool p2pEnable,
+					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
@@ -125,7 +135,8 @@ namespace Elastos {
 					const std::string &payPassword,
 					const std::string &language,
 					bool p2pEnable,
-					const std::string &rootPath);
+					const std::string &rootPath,
+					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
@@ -134,14 +145,16 @@ namespace Elastos {
 					const std::string &payPassword,
 					const std::string &phrasePassword,
 					const std::string &rootPath,
-					bool p2pEnable);
+					bool p2pEnable,
+					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					const std::string &rootPath,
-					bool p2pEnable);
+					bool p2pEnable,
+					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
@@ -150,7 +163,8 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					const std::string &rootPath,
-					bool p2pEnable);
+					bool p2pEnable,
+					MasterWalletInitFrom from);
 
 			MasterWallet(
 					const std::string &id,
@@ -161,7 +175,8 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					bool p2pEnable,
-					const std::string &rootPath);
+					const std::string &rootPath,
+					MasterWalletInitFrom from);
 
 			void importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
@@ -220,15 +235,14 @@ namespace Elastos {
 
 			void tryInitCoinConfig();
 
-			void setImportFromMnemonic();
+			void initFrom(MasterWalletInitFrom from);
 
 		protected:
 			WalletMap _createdWallets;
 
 			MasterWalletStore _localStore;
 
-			bool _isImportFromMnemonic;
-			bool _isOldKeyStore;
+			MasterWalletInitFrom _initFrom;
 
 			std::string _id;
 			std::string _rootPath;

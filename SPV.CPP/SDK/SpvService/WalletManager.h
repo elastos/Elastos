@@ -45,6 +45,8 @@ namespace Elastos {
 			SharedWrapperList<Transaction, BRTransaction *> getTransactions(
 					const boost::function<bool(const TransactionPtr &)> filter) const;
 
+			size_t getAllTransactionsCount();
+
 			void registerWalletListener(Wallet::Listener *listener);
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);

@@ -285,6 +285,10 @@ namespace Elastos {
 			}
 		}
 
+		size_t WalletManager::getAllTransactionsCount() {
+			return _databaseManager.getAllTransactionsCount(ISO);
+		}
+
 		// override protected methods
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::loadTransactions() {
 			SharedWrapperList<Transaction, BRTransaction *> txs;

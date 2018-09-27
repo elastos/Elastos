@@ -122,6 +122,33 @@ namespace Elastos {
 			});
 		}
 
+		size_t TransactionDataStore::getAllTransactionsCount(const std::string &iso) const {
+			size_t count = 0;
+
+			doTransaction([&iso, &count, this]() {
+				std::stringstream ss;
+
+				ss << "SELECT " <<
+				   " COUNT("   << TX_COLUMN_ID  << ") AS nums " <<
+				   " FROM "    << TX_TABLE_NAME << ";";
+
+				sqlite3_stmt *stmt;
+				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
+					std::stringstream ess;
+					ess << "prepare sql " << ss.str() << " fail";
+					throw std::logic_error(ess.str());
+				}
+
+				while (SQLITE_ROW == _sqlite->step(stmt)) {
+					count = (uint32_t)_sqlite->columnInt(stmt, 0);
+				}
+
+				_sqlite->finalize(stmt);
+			});
+
+			return count;
+		}
+
 		std::vector<TransactionEntity> TransactionDataStore::getAllTransactions(const std::string &iso) const {
 			std::vector<TransactionEntity> transactions;
 

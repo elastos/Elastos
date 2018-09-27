@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 #include <Core/BRKey.h>
 #include <Core/BRBIP32Sequence.h>
+#include <Core/BRChainParams.h>
 
 #include "BRBase58.h"
 #include "BRBIP39Mnemonic.h"
@@ -37,12 +38,12 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const boost::filesystem::path &localStore,
 								   const std::string &rootPath,
-								   bool p2pEnable) :
+								   bool p2pEnable,
+								   MasterWalletInitFrom from) :
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false),
-				_localStore(rootPath),
-				_isOldKeyStore(false) {
+				_initFrom(from),
+				_localStore(rootPath) {
 
 			_localStore.Load(localStore);
 			_id = localStore.parent_path().filename().string();
@@ -56,13 +57,13 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::string &language,
 								   bool p2pEnable,
-								   const std::string &rootPath) :
+								   const std::string &rootPath,
+								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false),
-				_localStore(rootPath),
-				_isOldKeyStore(false) {
+				_initFrom(from),
+				_localStore(rootPath) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(language);
@@ -79,13 +80,13 @@ namespace Elastos {
 								   const std::string &payPassword,
 								   const std::string &phrasePassword,
 								   const std::string &rootPath,
-								   bool p2pEnable) :
+								   bool p2pEnable,
+								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false),
-				_localStore(rootPath),
-				_isOldKeyStore(false) {
+				_initFrom(from),
+				_localStore(rootPath) {
 
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(backupPassword, "Backup");
@@ -99,13 +100,14 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id,
 								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
-								   const std::string &rootPath, bool p2pEnable) :
+								   const std::string &rootPath,
+								   bool p2pEnable,
+								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false),
+				_initFrom(from),
 				_localStore(rootPath),
-				_isOldKeyStore(false),
 				_idAgentImpl(nullptr) {
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkNotEmpty(rootPath);
@@ -116,13 +118,12 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
 								   const nlohmann::json &coSigners, uint32_t requiredSignCount,
-								   const std::string &rootPath, bool p2pEnable) :
+								   const std::string &rootPath, bool p2pEnable, MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false),
+				_initFrom(from),
 				_localStore(rootPath),
-				_isOldKeyStore(false),
 				_idAgentImpl(nullptr) {
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(payPassword, "Pay");
@@ -135,13 +136,13 @@ namespace Elastos {
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
 								   const std::string &phrasePassword, const std::string &payPassword,
 								   const std::string &language, const nlohmann::json &coSigners,
-								   uint32_t requiredSignCount, bool p2pEnable, const std::string &rootPath) :
+								   uint32_t requiredSignCount, bool p2pEnable, const std::string &rootPath,
+								   MasterWalletInitFrom from) :
 				_id(id),
 				_rootPath(rootPath),
 				_p2pEnable(p2pEnable),
-				_isImportFromMnemonic(false),
-				_localStore(rootPath),
-				_isOldKeyStore(false) {
+				_initFrom(from),
+				_localStore(rootPath) {
 			ParamChecker::checkNotEmpty(id);
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
@@ -215,14 +216,7 @@ namespace Elastos {
 			}
 
 			CoinInfo info;
-			if (_isImportFromMnemonic || _isOldKeyStore) {
-				info.setEaliestPeerTime(1513936800);
-			} else {
-				info.setEaliestPeerTime(0);
-			}
 
-			Log::getLogger()->info("import from mnemonic is {}, ealiest peer time = {}", _isImportFromMnemonic,
-								   info.getEarliestPeerTime());
 
 			tryInitCoinConfig();
 			CoinConfig coinConfig = _coinConfigReader.FindConfig(chainID);
@@ -237,6 +231,7 @@ namespace Elastos {
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
+
 			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams(coinConfig), payPassword,
 														  PluginTypes(coinConfig), this);
 			_createdWallets[chainID] = subWallet;
@@ -317,7 +312,7 @@ namespace Elastos {
 
 			if (keyStore.isOld()) {
 				Log::getLogger()->info("import from old keystore");
-				_isOldKeyStore = true;
+				_initFrom = ImportFromOldKeyStore;
 			}
 
 			initFromKeyStore(keyStore, payPassword, phrasePassword);
@@ -410,16 +405,39 @@ namespace Elastos {
 		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const ChainParams &chainParams,
 														const std::string &payPassword, const PluginTypes &pluginTypes,
 														MasterWallet *parent) {
-			switch (info.getWalletType()) {
+
+			CoinInfo fixedInfo = info;
+
+			BRChainParams *rawParams = chainParams.getRaw();
+			time_t timeStamp = rawParams->checkpoints[0].timestamp;
+			size_t checkPointsCount = rawParams->checkpointsCount;
+
+			if (_initFrom == CreateNormal) {
+				timeStamp = rawParams->checkpoints[checkPointsCount - 1].timestamp;
+				fixedInfo.setEaliestPeerTime(timeStamp);
+			} else if (_initFrom == CreateMultiSign || _initFrom == ImportFromMnemonic || _initFrom == ImportFromOldKeyStore) {
+				timeStamp = rawParams->checkpoints[0].timestamp;
+				fixedInfo.setEaliestPeerTime(timeStamp);
+			} else if (_initFrom == ImportFromKeyStore || _initFrom == ImportFromLocalStore) {
+				fixedInfo.setEaliestPeerTime(info.getEarliestPeerTime());
+			} else {
+				timeStamp = rawParams->checkpoints[0].timestamp;
+				fixedInfo.setEaliestPeerTime(timeStamp);
+			}
+
+			Log::getLogger()->info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
+								   fixedInfo.getEarliestPeerTime());
+
+			switch (fixedInfo.getWalletType()) {
 				case Mainchain:
-					return new MainchainSubWallet(info, chainParams, payPassword, pluginTypes, parent);
+					return new MainchainSubWallet(fixedInfo, chainParams, payPassword, pluginTypes, parent);
 				case Sidechain:
-					return new SidechainSubWallet(info, chainParams, payPassword, pluginTypes, parent);
+					return new SidechainSubWallet(fixedInfo, chainParams, payPassword, pluginTypes, parent);
 				case Idchain:
-					return new IdChainSubWallet(info, chainParams, payPassword, pluginTypes, parent);
+					return new IdChainSubWallet(fixedInfo, chainParams, payPassword, pluginTypes, parent);
 				case Normal:
 				default:
-					return new SubWallet(info, chainParams, payPassword, pluginTypes, parent);
+					return new SubWallet(fixedInfo, chainParams, payPassword, pluginTypes, parent);
 			}
 		}
 
@@ -523,8 +541,8 @@ namespace Elastos {
 						  });
 		}
 
-		void MasterWallet::setImportFromMnemonic() {
-			_isImportFromMnemonic = true;
+		void MasterWallet::initFrom(MasterWalletInitFrom from) {
+			_initFrom = from;
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
