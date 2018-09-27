@@ -12,17 +12,17 @@ namespace Elastos {
 
 		class IMasterWalletManager {
 		public:
-		   /**
-			 * Virtual destructor
-			 */
+			/**
+			  * Virtual destructor
+			  */
 			virtual ~IMasterWalletManager() noexcept {}
 
-		   /**
-			 * Generate a mnemonic by random 128 entropy. We support English, Chinese, French, Italian, Japanese, and
-			 * 	Spanish 6 types of mnemonic currently.
-			 * @param language specify mnemonic language.
-			 * @return a random mnemonic.
-			 */
+			/**
+			  * Generate a mnemonic by random 128 entropy. We support English, Chinese, French, Italian, Japanese, and
+			  * 	Spanish 6 types of mnemonic currently.
+			  * @param language specify mnemonic language.
+			  * @return a random mnemonic.
+			  */
 			virtual std::string GenerateMnemonic(const std::string &language) = 0;
 
 			/**
@@ -94,6 +94,20 @@ namespace Elastos {
 			 * @return existing master wallet array.
 			 */
 			virtual std::vector<IMasterWallet *> GetAllMasterWallets() const = 0;
+
+			/**
+			 * Get manager available master wallet ids.
+			 * @return available ids array.
+			 */
+			virtual std::vector<std::string> GetAllMasterWalletIds() const = 0;
+
+			/**
+			 * Get a master wallet object by id.
+			 * @param masterWalletId master wallet id.
+			 * @return master wallet object.
+			 */
+			virtual IMasterWallet *GetWallet(
+					const std::string &masterWalletId) const = 0;
 
 			/**
 			 * Destroy a master wallet.

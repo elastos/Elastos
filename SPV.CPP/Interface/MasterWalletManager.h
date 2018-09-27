@@ -110,6 +110,20 @@ namespace Elastos {
 			virtual std::vector<IMasterWallet *> GetAllMasterWallets() const;
 
 			/**
+			 * Get manager available master wallet ids.
+			 * @return available ids array.
+			 */
+			virtual std::vector<std::string> GetAllMasterWalletIds() const;
+
+			/**
+			 * Get a master wallet object by id.
+			 * @param masterWalletId master wallet id.
+			 * @return master wallet object.
+			 */
+			virtual IMasterWallet *GetWallet(
+					const std::string &masterWalletId) const;
+
+			/**
 			 * Destroy a master wallet.
 			 * @param masterWallet A pointer of master wallet interface create or imported by wallet factory object.
 			 */
@@ -186,7 +200,7 @@ namespace Elastos {
 		protected:
 			std::string _rootPath;
 			bool _p2pEnable;
-			MasterWalletMap _masterWalletMap;
+			mutable MasterWalletMap _masterWalletMap;
 		};
 	}
 }
