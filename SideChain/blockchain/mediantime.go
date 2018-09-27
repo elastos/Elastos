@@ -1,11 +1,6 @@
-// Copyright (c) 2013-2014 The btcsuite developers
-// Use of this source code is governed by an ISC
-// license that can be found in the LICENSE file.
-
 package blockchain
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 	"math"
 	"sort"
 	"sync"
