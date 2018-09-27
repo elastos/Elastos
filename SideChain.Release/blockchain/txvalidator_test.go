@@ -9,7 +9,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +17,6 @@ import (
 var ELA = int64(math.Pow(10, 8))
 
 func TestTxValidatorInit(t *testing.T) {
-	log.Init(
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
 	foundation, err := common.Uint168FromAddress("8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta")
 	if !assert.NoError(t, err) {
 		t.FailNow()
