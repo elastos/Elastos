@@ -1,4 +1,4 @@
-package log
+package logger
 
 import (
 	"bytes"
@@ -20,11 +20,12 @@ import (
 )
 
 const (
-	Blue   = "0;34"
-	Red    = "0;31"
-	Green  = "0;32"
-	Yellow = "0;33"
-	Cyan   = "0;36"
+	White  = "1;00"
+	Blue   = "1;34"
+	Red    = "1;31"
+	Green  = "1;32"
+	Yellow = "1;33"
+	Cyan   = "1;36"
 	Pink   = "1;35"
 )
 
@@ -33,29 +34,27 @@ func Color(code, msg string) string {
 }
 
 const (
-	debugLog    = iota
-	infoLog
+	infoLog = iota
 	warnLog
 	errorLog
 	fatalLog
 	traceLog
+	debugLog
 	maxLevelLog
 )
 
 var (
 	levels = map[int]string{
-		debugLog: Color(Green, "[DEBUG]"),
-		infoLog:  Color(Green, "[INFO ]"),
-		warnLog:  Color(Yellow, "[WARN ]"),
+		infoLog:  Color(White, "[INFO]"),
+		warnLog:  Color(Yellow, "[WARN]"),
 		errorLog: Color(Red, "[ERROR]"),
-		fatalLog: Color(Red, "[FATAL]"),
-		traceLog: Color(Pink, "[TRACE]"),
+		fatalLog: Color(Pink, "[FATAL]"),
+		traceLog: Color(Cyan, "[TRACE]"),
+		debugLog: Color(Green, "[DEBUG]"),
 	}
-	Stdout = os.Stdout
 )
 
 const (
-	OutputPath           = "./Logs/" // The log files output path
 	namePrefix           = "LEVEL"
 	callDepth            = 2
 	KB_SIZE              = int64(1024)
@@ -74,8 +73,6 @@ func GetGID() uint64 {
 	return n
 }
 
-var Log *Logger
-
 func LevelName(level int) string {
 	if name, ok := levels[level]; ok {
 		return name
@@ -84,15 +81,20 @@ func LevelName(level int) string {
 }
 
 type Logger struct {
+	path        string
 	level       int   // The log print level
 	maxLogsSize int64 // The max logs total size
 
 	// Current log file and printer
-	printLock     *sync.Mutex
+	mutex         sync.Mutex
 	maxPerLogSize int64
 	file          *os.File
 	logger        *log.Logger
 	watcher       *fsnotify.Watcher
+}
+
+func (l *Logger) Level() string {
+	return LevelName(l.level)
 }
 
 func (l *Logger) init() {
@@ -124,7 +126,7 @@ func (l *Logger) prune() {
 	// load the file list under logs output path
 	// so we can delete the oldest log file when
 	// the MaxLogsSize limit reached.
-	fileList, err := ioutil.ReadDir(OutputPath)
+	fileList, err := ioutil.ReadDir(l.path)
 	if err != nil {
 		fmt.Println("read logs path failed,", err)
 	}
@@ -139,7 +141,7 @@ func (l *Logger) prune() {
 		// Get the oldest log file
 		file := fileList[0]
 		// Remove it
-		os.Remove(OutputPath + file.Name())
+		os.Remove(l.path + file.Name())
 		fileList = fileList[1:]
 		// Update logs size
 		totalSize -= file.Size()
@@ -152,7 +154,7 @@ func (l *Logger) newLogFile() {
 
 	// create new log file
 	var err error
-	l.file, err = newLogFile(OutputPath)
+	l.file, err = newLogFile(l.path)
 	if err != nil {
 		fmt.Print("create log file failed,", err.Error())
 		os.Exit(-1)
@@ -169,7 +171,7 @@ func (l *Logger) newLogFile() {
 	l.logger = log.New(io.MultiWriter(os.Stdout, l.file), "", log.Ldate|log.Lmicroseconds)
 
 	// watch log file change
-	l.watcher.Add(OutputPath + info.Name())
+	l.watcher.Add(l.path + info.Name())
 }
 
 func (l *Logger) handleFileEvents(event fsnotify.Event) {
@@ -177,22 +179,22 @@ func (l *Logger) handleFileEvents(event fsnotify.Event) {
 	case fsnotify.Write:
 		info, _ := l.file.Stat()
 		if info.Size() >= l.maxPerLogSize {
-			l.printLock.Lock()
+			l.mutex.Lock()
 			// close previous log file
 			l.file.Close()
 			// unwatch it
-			l.watcher.Remove(OutputPath + info.Name())
+			l.watcher.Remove(l.path + info.Name())
 			// create a new log file
 			l.newLogFile()
-			l.printLock.Unlock()
+			l.mutex.Unlock()
 		}
 	}
 }
 
-func NewLogger(level int, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
+func NewLogger(path string, level int, maxPerLogSizeMb, maxLogsSizeMb int64) *Logger {
 	logger := new(Logger)
+	logger.path = path
 	logger.level = level
-	logger.printLock = new(sync.Mutex)
 
 	if maxPerLogSizeMb != 0 {
 		logger.maxPerLogSize = maxPerLogSizeMb * MB_SIZE
@@ -232,31 +234,15 @@ func newLogFile(path string) (*os.File, error) {
 	return file, nil
 }
 
-func Init(level int, maxPerLogSizeMb, maxLogsSizeMb int64) {
-	Log = NewLogger(level, maxPerLogSizeMb, maxLogsSizeMb)
-}
-
 func SortLogFiles(files []os.FileInfo) {
 	sort.Sort(byTime(files))
 }
 
 type byTime []os.FileInfo
 
-// Len is the number of elements in the collection.
-func (f byTime) Len() int {
-	return len(f)
-}
-
-// Less reports whether the element with
-// index i should sort before the element with index j.
-func (f byTime) Less(i, j int) bool {
-	return f[i].Name() < f[j].Name()
-}
-
-// Swap swaps the elements with indexes i and j.
-func (f byTime) Swap(i, j int) {
-	f[i], f[j] = f[j], f[i]
-}
+func (f byTime) Len() int           { return len(f) }
+func (f byTime) Less(i, j int) bool { return f[i].Name() < f[j].Name() }
+func (f byTime) Swap(i, j int)      { f[i], f[j] = f[j], f[i] }
 
 func (l *Logger) SetPrintLevel(level int) error {
 	if level > maxLevelLog || level < 0 {
@@ -268,9 +254,9 @@ func (l *Logger) SetPrintLevel(level int) error {
 }
 
 func (l *Logger) Output(level int, a ...interface{}) error {
-	l.printLock.Lock()
-	defer l.printLock.Unlock()
-	if level >= l.level {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	if l.level >= level {
 		gidStr := strconv.FormatUint(GetGID(), 10)
 		a = append([]interface{}{LevelName(level), "GID", gidStr + ","}, a...)
 		return l.logger.Output(callDepth, fmt.Sprintln(a...))
@@ -279,9 +265,9 @@ func (l *Logger) Output(level int, a ...interface{}) error {
 }
 
 func (l *Logger) Outputf(level int, format string, v ...interface{}) error {
-	l.printLock.Lock()
-	defer l.printLock.Unlock()
-	if level >= l.level {
+	l.mutex.Lock()
+	defer l.mutex.Unlock()
+	if l.level >= level {
 		v = append([]interface{}{LevelName(level), "GID", GetGID()}, v...)
 		return l.logger.Output(callDepth, fmt.Sprintf("%s %s %d, "+format+"\n", v...))
 	}
@@ -289,19 +275,75 @@ func (l *Logger) Outputf(level int, format string, v ...interface{}) error {
 }
 
 func (l *Logger) Trace(a ...interface{}) {
+	if l.level < traceLog {
+		return
+	}
+
+	pc := make([]uintptr, 10)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	file, line := f.FileLine(pc[0])
+	fileName := filepath.Base(file)
+
+	nameFull := f.Name()
+	nameEnd := filepath.Ext(nameFull)
+	funcName := strings.TrimPrefix(nameEnd, ".")
+
+	a = append([]interface{}{funcName + "()", fileName + ":" + strconv.Itoa(line)}, a...)
+
 	l.Output(traceLog, a...)
 }
 
 func (l *Logger) Tracef(format string, a ...interface{}) {
-	l.Outputf(traceLog, format, a...)
+	if l.level < traceLog {
+		return
+	}
+
+	pc := make([]uintptr, 10)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	file, line := f.FileLine(pc[0])
+	fileName := filepath.Base(file)
+
+	nameFull := f.Name()
+	nameEnd := filepath.Ext(nameFull)
+	funcName := strings.TrimPrefix(nameEnd, ".")
+
+	a = append([]interface{}{funcName, fileName, line}, a...)
+
+	l.Outputf(traceLog, "%s() %s:%d "+format, a...)
 }
 
 func (l *Logger) Debug(a ...interface{}) {
+	if l.level < debugLog {
+		return
+	}
+
+	pc := make([]uintptr, 10)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	file, line := f.FileLine(pc[0])
+	fileName := filepath.Base(file)
+
+	a = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, a...)
+
 	l.Output(debugLog, a...)
 }
 
 func (l *Logger) Debugf(format string, a ...interface{}) {
-	l.Outputf(debugLog, format, a...)
+	if l.level < debugLog {
+		return
+	}
+
+	pc := make([]uintptr, 10)
+	runtime.Callers(2, pc)
+	f := runtime.FuncForPC(pc[0])
+	file, line := f.FileLine(pc[0])
+	fileName := filepath.Base(file)
+
+	a = append([]interface{}{f.Name(), fileName, line}, a...)
+
+	l.Outputf(debugLog, "%s %s:%d "+format, a...)
 }
 
 func (l *Logger) Info(a ...interface{}) {
@@ -334,108 +376,4 @@ func (l *Logger) Fatal(a ...interface{}) {
 
 func (l *Logger) Fatalf(format string, a ...interface{}) {
 	l.Outputf(fatalLog, format, a...)
-}
-
-func Trace(a ...interface{}) {
-	if traceLog < Log.level {
-		return
-	}
-
-	pc := make([]uintptr, 10)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	file, line := f.FileLine(pc[0])
-	fileName := filepath.Base(file)
-
-	nameFull := f.Name()
-	nameEnd := filepath.Ext(nameFull)
-	funcName := strings.TrimPrefix(nameEnd, ".")
-
-	a = append([]interface{}{funcName + "()", fileName + ":" + strconv.Itoa(line)}, a...)
-
-	Log.Trace(a...)
-}
-
-func Tracef(format string, a ...interface{}) {
-	if traceLog < Log.level {
-		return
-	}
-
-	pc := make([]uintptr, 10)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	file, line := f.FileLine(pc[0])
-	fileName := filepath.Base(file)
-
-	nameFull := f.Name()
-	nameEnd := filepath.Ext(nameFull)
-	funcName := strings.TrimPrefix(nameEnd, ".")
-
-	a = append([]interface{}{funcName, fileName, line}, a...)
-
-	Log.Tracef("%s() %s:%d "+format, a...)
-}
-
-func Debug(a ...interface{}) {
-	if debugLog < Log.level {
-		return
-	}
-
-	pc := make([]uintptr, 10)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	file, line := f.FileLine(pc[0])
-	fileName := filepath.Base(file)
-
-	a = append([]interface{}{f.Name(), fileName + ":" + strconv.Itoa(line)}, a...)
-
-	Log.Debug(a...)
-}
-
-func Debugf(format string, a ...interface{}) {
-	if debugLog < Log.level {
-		return
-	}
-
-	pc := make([]uintptr, 10)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-	file, line := f.FileLine(pc[0])
-	fileName := filepath.Base(file)
-
-	a = append([]interface{}{f.Name(), fileName, line}, a...)
-
-	Log.Debugf("%s %s:%d "+format, a...)
-}
-
-func Info(a ...interface{}) {
-	Log.Info(a...)
-}
-
-func Warn(a ...interface{}) {
-	Log.Warn(a...)
-}
-
-func Error(a ...interface{}) {
-	Log.Error(a...)
-}
-
-func Fatal(a ...interface{}) {
-	Log.Fatal(a...)
-}
-
-func Infof(format string, a ...interface{}) {
-	Log.Infof(format, a...)
-}
-
-func Warnf(format string, a ...interface{}) {
-	Log.Warnf(format, a...)
-}
-
-func Errorf(format string, a ...interface{}) {
-	Log.Errorf(format, a...)
-}
-
-func Fatalf(format string, a ...interface{}) {
-	Log.Fatalf(format, a...)
 }
