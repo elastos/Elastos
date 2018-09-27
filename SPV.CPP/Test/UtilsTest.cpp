@@ -176,17 +176,6 @@ TEST_CASE ("enctrypt/decrept content without nothing and password with "" ", "[a
 	}
 }
 
-TEST_CASE("uint256 string", "[Utils]") {
-	CMBlock mbRand = WalletTool::GenerateSeed256();
-	UInt256 u256 = {0};
-	UInt256Get(&u256, (const void *) mbRand);
-
-	std::string strUI256 = Utils::UInt256ToString(u256);
-	UInt256 u256Recov = Utils::UInt256FromString(strUI256);
-
-	REQUIRE(1 == UInt256Eq(&u256Recov, &u256));
-}
-
 TEST_CASE("uint168 string", "[Utils]") {
 	CMBlock mbRand(21);
 	for (size_t i = 0; i < 21; i++) {
@@ -210,18 +199,6 @@ TEST_CASE("uint128 string", "[Utils]") {
 	UInt128 u128Recov = Utils::UInt128FromString(strUI128);
 
 	REQUIRE(1 == UInt128Eq(&u128Recov, &u128));
-}
-
-TEST_CASE("mem string", "[Utils]") {
-	CMBlock block;
-	CMBlock mbRand256 = WalletTool::GenerateSeed256();
-	block.SetMemFixed(mbRand256, (uint64_t) mbRand256.GetSize());
-
-	std::string strRand256 = Utils::convertToString(block);
-	CMBlock mbRand256recov = Utils::convertToMemBlock(strRand256);
-
-	REQUIRE(block.GetSize() == mbRand256recov.GetSize());
-	REQUIRE(0 == memcmp(mbRand256recov, block, block.GetSize()));
 }
 
 TEST_CASE("AddressToUInt168 and UInt168ToAddress Test", "[Utils]") {

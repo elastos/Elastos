@@ -23,7 +23,6 @@
 #include "ParamChecker.h"
 #include "BigIntFormat.h"
 #include "WalletTool.h"
-#include "BTCBase58.h"
 #include "ErrorCode.h"
 #include "Payload/PayloadRegisterIdentification.h"
 
