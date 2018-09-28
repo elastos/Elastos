@@ -6,6 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -27,7 +28,7 @@ type server struct {
 	p2pserver.IServer
 	syncManager *netsync.SyncManager
 	chain       *blockchain.BlockChain
-	txMemPool   *blockchain.TxPool
+	txMemPool   *mempool.TxPool
 
 	newPeers  chan p2pserver.IPeer
 	donePeers chan p2pserver.IPeer
@@ -661,7 +662,7 @@ func (s *server) Stop() error {
 // newServer returns a new btcd server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func newServer(chain *blockchain.BlockChain, txPool *blockchain.TxPool) (*server, error) {
+func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
 	params := config.Parameters
 	services := p2p.SFNodeNetwork
 	if params.PeerBloomFilters {

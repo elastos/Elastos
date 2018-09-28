@@ -2,16 +2,14 @@ package blockchain
 
 import (
 	"errors"
-	"math"
 	"math/big"
 	"time"
 
-	. "github.com/elastos/Elastos.ELA.SideChain/common"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	. "github.com/elastos/Elastos.ELA.SideChain/core"
-	. "github.com/elastos/Elastos.ELA.SideChain/errors"
+	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 )
 
@@ -19,31 +17,33 @@ const (
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
 
-var BlockValidator *BlockValidate
-
-type BlockValidate struct {
-	checkSanityFunctions map[BlockValidateFunctionName]func(params ...interface{}) error
+type Validator struct {
+	assetId              common.Uint256
+	txValidator          *mempool.Validator
+	txFeeHelper          *mempool.FeeHelper
+	checkSanityFunctions map[ValidateFuncName]func(params ...interface{}) error
 }
 
-func InitBlockValidator() {
-	BlockValidator = &BlockValidate{}
-	BlockValidator.Init()
+func NewValidator(cfg *Config) *Validator {
+	v := &Validator{
+		assetId:              cfg.AssetId,
+		txValidator:          cfg.TxValidator,
+		txFeeHelper:          cfg.TxFeeHelper,
+		checkSanityFunctions: make(map[ValidateFuncName]func(params ...interface{}) error, 0),
+	}
+	v.RegisterFunc(ValidateFuncNames.PowCheckHeader, v.checkHeader)
+	v.RegisterFunc(ValidateFuncNames.PowCheckTransactionsCount, v.checkTransactionsCount)
+	v.RegisterFunc(ValidateFuncNames.PowCheckBlockSize, v.checkBlockSize)
+	v.RegisterFunc(ValidateFuncNames.PowCheckTransactionsFee, v.checkTransactionsFee)
+	v.RegisterFunc(ValidateFuncNames.PowCheckTransactionsMerkle, v.checkTransactionsMerkle)
+	return v
 }
 
-func (v *BlockValidate) Init() {
-	v.checkSanityFunctions = make(map[BlockValidateFunctionName]func(params ...interface{}) error, 0)
-	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckHeader, v.powCheckHeader)
-	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckTransactionsCount, v.powCheckTransactionsCount)
-	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckBlockSize, v.powCheckBlockSize)
-	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckTransactionsFee, v.powCheckTransactionsFee)
-	v.RegisterFunctions(BlockValidateFunctionNames.PowCheckTransactionsMerkle, v.powCheckTransactionsMerkle)
-}
-
-func (v *BlockValidate) RegisterFunctions(name BlockValidateFunctionName, function func(params ...interface{}) error) {
+func (v *Validator) RegisterFunc(name ValidateFuncName, function func(params ...interface{}) error) {
 	v.checkSanityFunctions[name] = function
 }
 
-func (v *BlockValidate) PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
+func (v *Validator) CheckBlockSanity(block *core.Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			str, ok := p.(string)
@@ -63,7 +63,7 @@ func (v *BlockValidate) PowCheckBlockSanity(block *Block, powLimit *big.Int, tim
 	return nil
 }
 
-func (v *BlockValidate) PowCheckBlockContext(block *Block, prevNode *BlockNode) (err error) {
+func (v *Validator) CheckBlockContext(block *core.Block, prevNode *BlockNode) (err error) {
 	header := block.Header
 
 	// The genesis block is valid by definition.
@@ -95,7 +95,7 @@ func (v *BlockValidate) PowCheckBlockContext(block *Block, prevNode *BlockNode) 
 
 	// Ensure all transactions in the block are finalized.
 	for _, txn := range block.Transactions[1:] {
-		if err := v.CheckFinalizedTransaction(txn, blockHeight); err != nil {
+		if err := mempool.CheckTransactionFinalize(txn, blockHeight); err != nil {
 			return errors.New("[powCheckBlockContext] block contains unfinalized transaction")
 		}
 	}
@@ -103,31 +103,8 @@ func (v *BlockValidate) PowCheckBlockContext(block *Block, prevNode *BlockNode) 
 	return nil
 }
 
-func (v *BlockValidate) CheckFinalizedTransaction(msgTx *Transaction, blockHeight uint32) (err error) {
-	// Lock time of zero means the transaction is finalized.
-	lockTime := msgTx.LockTime
-	if lockTime == 0 {
-		return nil
-	}
-
-	//FIXME only height
-	if lockTime < blockHeight {
-		return nil
-	}
-
-	// At this point, the transaction's lock time hasn't occurred yet, but
-	// the transaction might still be finalized if the sequence number
-	// for all transaction inputs is maxed out.
-	for _, txIn := range msgTx.Inputs {
-		if txIn.Sequence != math.MaxUint16 {
-			return errors.New("[checkFinalizedTransaction] lock time check failed")
-		}
-	}
-	return nil
-}
-
 //block *Block, powLimit *big.Int, timeSource MedianTimeSource
-func (v *BlockValidate) powCheckHeader(params ...interface{}) (err error) {
+func (v *Validator) checkHeader(params ...interface{}) (err error) {
 	block := AssertBlock(params[0])
 	powLimit := AssertBigInt(params[1])
 	timeSource := AssertMedianTimeSource(params[2])
@@ -162,7 +139,7 @@ func (v *BlockValidate) powCheckHeader(params ...interface{}) (err error) {
 }
 
 //block *Block
-func (v *BlockValidate) powCheckTransactionsCount(params ...interface{}) (err error) {
+func (v *Validator) checkTransactionsCount(params ...interface{}) (err error) {
 	block := AssertBlock(params[0])
 
 	// A block must have at least one transaction.
@@ -180,7 +157,7 @@ func (v *BlockValidate) powCheckTransactionsCount(params ...interface{}) (err er
 }
 
 //block *Block
-func (v *BlockValidate) powCheckBlockSize(params ...interface{}) (err error) {
+func (v *Validator) checkBlockSize(params ...interface{}) (err error) {
 	block := AssertBlock(params[0])
 
 	// A block must not exceed the maximum allowed block payload when serialized.
@@ -193,12 +170,12 @@ func (v *BlockValidate) powCheckBlockSize(params ...interface{}) (err error) {
 }
 
 //block *Block
-func (v *BlockValidate) powCheckTransactionsFee(params ...interface{}) (err error) {
+func (v *Validator) checkTransactionsFee(params ...interface{}) (err error) {
 	block := AssertBlock(params[0])
 
 	transactions := block.Transactions
-	var rewardInCoinbase = Fixed64(0)
-	var totalTxFee = Fixed64(0)
+	var rewardInCoinbase = common.Fixed64(0)
+	var totalTxFee = common.Fixed64(0)
 	for index, tx := range transactions {
 		// The first transaction in a block must be a coinbase.
 		if index == 0 {
@@ -218,7 +195,7 @@ func (v *BlockValidate) powCheckTransactionsFee(params ...interface{}) (err erro
 		}
 
 		// Calculate transaction fee
-		totalTxFee += TxFeeHelper.GetTxFee(tx, DefaultChain.AssetID)
+		totalTxFee += v.txFeeHelper.GetTxFee(tx, v.assetId)
 	}
 
 	// Reward in coinbase must match total transaction fee
@@ -230,13 +207,13 @@ func (v *BlockValidate) powCheckTransactionsFee(params ...interface{}) (err erro
 }
 
 //block *Block
-func (v *BlockValidate) powCheckTransactionsMerkle(params ...interface{}) (err error) {
+func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 	block := AssertBlock(params[0])
 
-	txIds := make([]Uint256, 0, len(block.Transactions))
-	existingTxIds := make(map[Uint256]struct{})
+	txIds := make([]common.Uint256, 0, len(block.Transactions))
+	existingTxIds := make(map[common.Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
-	existingMainTxs := make(map[Uint256]struct{})
+	existingMainTxs := make(map[common.Uint256]struct{})
 	for _, txn := range block.Transactions {
 		txId := txn.Hash()
 		// Check for duplicate transactions.
@@ -246,7 +223,11 @@ func (v *BlockValidate) powCheckTransactionsMerkle(params ...interface{}) (err e
 		existingTxIds[txId] = struct{}{}
 
 		// Check for transaction sanity
-		if errCode := TransactionValidator.CheckTransactionSanity(txn); errCode != Success {
+		if err := v.txValidator.CheckTransactionSanity(txn); err != nil {
+			if e, ok := err.(*mempool.RuleError); ok {
+				log.Infof("rule error for transaction sanity check, "+
+					"error %s, desc %s", e.ErrorCode, e.Description)
+			}
 			return errors.New("[powCheckTransactionsMerkle] failed when verifiy block")
 		}
 
@@ -260,7 +241,7 @@ func (v *BlockValidate) powCheckTransactionsMerkle(params ...interface{}) (err e
 		}
 
 		if txn.IsRechargeToSideChainTx() {
-			rechargePayload := txn.Payload.(*PayloadRechargeToSideChain)
+			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
 			// Check for duplicate mainchain tx in a block
 			hash, err := rechargePayload.GetMainchainTxHash()
 			if err != nil {
@@ -286,7 +267,7 @@ func (v *BlockValidate) powCheckTransactionsMerkle(params ...interface{}) (err e
 	return nil
 }
 
-func (v *BlockValidate) checkProofOfWork(header *Header, powLimit *big.Int) (err error) {
+func (v *Validator) checkProofOfWork(header *core.Header, powLimit *big.Int) (err error) {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {

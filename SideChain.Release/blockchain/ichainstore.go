@@ -8,8 +8,6 @@ import (
 
 // IChainStore provides func with store package.
 type IChainStore interface {
-	InitWithGenesisBlock(genesisBlock *core.Block) (uint32, error)
-
 	SaveBlock(b *core.Block) error
 	GetBlock(hash Uint256) (*core.Block, error)
 	GetBlockHash(height uint32) (Uint256, error)

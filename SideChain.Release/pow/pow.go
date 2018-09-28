@@ -13,6 +13,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -33,6 +34,7 @@ type messageBlock struct {
 }
 
 type Config struct {
+	Foundation    common.Uint168
 	MinerAddr     string
 	MinerInfo     string
 	LimitBits     uint32
@@ -40,10 +42,12 @@ type Config struct {
 	MaxTxPerBlock int
 	Server        server.IServer
 	Chain         *blockchain.BlockChain
-	TxMemPool     *blockchain.TxPool
+	TxMemPool     *mempool.TxPool
+	TxFeeHelper   *mempool.FeeHelper
 }
 
 type Service struct {
+	foundation    common.Uint168
 	minerAddr     string
 	minerInfo     string
 	limitBits     uint32
@@ -51,7 +55,8 @@ type Service struct {
 	maxTxPerBlock int
 	server        server.IServer
 	chain         *blockchain.BlockChain
-	txMemPool     *blockchain.TxPool
+	txMemPool     *mempool.TxPool
+	txFeeHelper   *mempool.FeeHelper
 	MsgBlock      messageBlock
 	Mutex         sync.Mutex
 	started       bool
@@ -71,6 +76,7 @@ func NewService(cfg *Config) *Service {
 		server:        cfg.Server,
 		chain:         cfg.Chain,
 		txMemPool:     cfg.TxMemPool,
+		txFeeHelper:   cfg.TxFeeHelper,
 		started:       false,
 		manualMining:  false,
 		MsgBlock:      messageBlock{BlockData: make(map[string]*core.Block)},
@@ -131,7 +137,7 @@ func (pow *Service) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core
 		{
 			AssetID:     pow.chain.AssetID,
 			Value:       0,
-			ProgramHash: blockchain.FoundationAddress,
+			ProgramHash: pow.foundation,
 		},
 		{
 			AssetID:     pow.chain.AssetID,
@@ -216,11 +222,11 @@ func (pow *Service) GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *
 			break
 		}
 
-		if err := blockchain.BlockValidator.CheckFinalizedTransaction(tx, nextBlockHeight); err != nil {
+		if err := mempool.CheckTransactionFinalize(tx, nextBlockHeight); err != nil {
 			continue
 		}
 
-		fee := blockchain.TxFeeHelper.GetTxFee(tx, pow.chain.AssetID)
+		fee := pow.txFeeHelper.GetTxFee(tx, pow.chain.AssetID)
 		if fee != tx.Fee {
 			continue
 		}
