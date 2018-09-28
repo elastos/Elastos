@@ -1,4 +1,6 @@
 
+#include(secp256k1.cmake)
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/bcash SPVCORE_BCASH_SOURCE_FILES)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/ SPVCORE_SOURCE_FILES)
 
