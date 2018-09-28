@@ -15,7 +15,7 @@ const (
 	IX_Unspent_UTXO   DataEntryPrefix = 0x91
 	IX_SideChain_Tx   DataEntryPrefix = 0x92
 	IX_MainChain_Tx   DataEntryPrefix = 0x93
-	IX_IDENTIFICATION DataEntryPrefix = 0x94
+	IX_Identification DataEntryPrefix = 0x94
 
 	// ASSET
 	ST_Info DataEntryPrefix = 0xc0

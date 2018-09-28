@@ -21,23 +21,26 @@ import (
 
 var zeroHash = common.Uint256{}
 
+type TxValidateAction struct {
+	Name    FuncName
+	Handler func(txn *core.Transaction) error
+}
+
 type Validator struct {
 	assetId               common.Uint256
 	foundation            common.Uint168
 	db                    blockchain.IChainStore
 	txFeeHelper           *FeeHelper
-	checkSanityFunctions  map[FuncName]func(txn *core.Transaction) error
-	checkContextFunctions map[FuncName]func(txn *core.Transaction) error
+	checkSanityFunctions  []*TxValidateAction
+	checkContextFunctions []*TxValidateAction
 }
 
 func NewValidator(cfg *Config) *Validator {
 	v := &Validator{
-		assetId:               cfg.AssetId,
-		foundation:            cfg.FoundationAddress,
-		db:                    cfg.ChainStore,
-		txFeeHelper:           cfg.FeeHelper,
-		checkSanityFunctions:  make(map[FuncName]func(txn *core.Transaction) error),
-		checkContextFunctions: make(map[FuncName]func(txn *core.Transaction) error),
+		assetId:     cfg.AssetId,
+		foundation:  cfg.FoundationAddress,
+		db:          cfg.ChainStore,
+		txFeeHelper: cfg.FeeHelper,
 	}
 
 	v.RegisterSanityFunc(FuncNames.CheckTransactionSize, v.checkTransactionSize)
@@ -60,17 +63,29 @@ func NewValidator(cfg *Config) *Validator {
 }
 
 func (v *Validator) RegisterSanityFunc(name FuncName, function func(txn *core.Transaction) error) {
-	v.checkSanityFunctions[name] = function
+	for _, action := range v.checkSanityFunctions {
+		if action.Name == name {
+			action.Handler = function
+			return
+		}
+	}
+	v.checkSanityFunctions = append(v.checkSanityFunctions, &TxValidateAction{Name: name, Handler: function})
 }
 
 func (v *Validator) RegisterContextFunc(name FuncName, function func(txn *core.Transaction) error) {
-	v.checkContextFunctions[name] = function
+	for _, action := range v.checkContextFunctions {
+		if action.Name == name {
+			action.Handler = function
+			return
+		}
+	}
+	v.checkContextFunctions = append(v.checkContextFunctions, &TxValidateAction{Name: name, Handler: function})
 }
 
 // CheckTransactionSanity verifys received single transaction
 func (v *Validator) CheckTransactionSanity(txn *core.Transaction) error {
 	for _, checkFunc := range v.checkSanityFunctions {
-		if err := checkFunc(txn); err != nil {
+		if err := checkFunc.Handler(txn); err != nil {
 			return err
 		}
 	}
@@ -80,7 +95,7 @@ func (v *Validator) CheckTransactionSanity(txn *core.Transaction) error {
 // CheckTransactionContext verifys a transaction with history transaction in ledger
 func (v *Validator) CheckTransactionContext(txn *core.Transaction) error {
 	for _, checkFunc := range v.checkContextFunctions {
-		if err := checkFunc(txn); err != nil {
+		if err := checkFunc.Handler(txn); err != nil {
 			return err
 		}
 	}
@@ -364,18 +379,18 @@ func (v *Validator) checkTransactionSignature(txn *core.Transaction) error {
 		return nil
 	}
 
-	hashes, err := v.txProgramHashes(txn)
+	hashes, err := v.TxProgramHashes(txn)
 	if err != nil {
 		return ruleError(ErrTransactionSignature, err.Error())
 	}
 
 	// Sort first
 	common.SortProgramHashes(hashes)
-	if err := sortPrograms(txn.Programs); err != nil {
+	if err := SortPrograms(txn.Programs); err != nil {
 		return ruleError(ErrTransactionSignature, err.Error())
 	}
 
-	if err := runPrograms(txn, hashes, txn.Programs); err != nil {
+	if err := RunPrograms(txn, hashes, txn.Programs); err != nil {
 		return ruleError(ErrTransactionSignature, err.Error())
 	}
 
@@ -616,7 +631,7 @@ func genesisProgramHash(genesisHash common.Uint256) (*common.Uint168, error) {
 	return crypto.ToProgramHash(buf.Bytes())
 }
 
-func (v *Validator) txProgramHashes(tx *core.Transaction) ([]common.Uint168, error) {
+func (v *Validator) TxProgramHashes(tx *core.Transaction) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
@@ -652,7 +667,7 @@ func (v *Validator) txProgramHashes(tx *core.Transaction) ([]common.Uint168, err
 	return uniqueHashes, nil
 }
 
-func runPrograms(tx *core.Transaction, hashes []common.Uint168, programs []*core.Program) error {
+func RunPrograms(tx *core.Transaction, hashes []common.Uint168, programs []*core.Program) error {
 	if tx == nil {
 		return errors.New("invalid data content nil transaction")
 	}
@@ -693,7 +708,7 @@ func runPrograms(tx *core.Transaction, hashes []common.Uint168, programs []*core
 	return nil
 }
 
-func sortPrograms(programs []*core.Program) (err error) {
+func SortPrograms(programs []*core.Program) (err error) {
 	defer func() {
 		if code := recover(); code != nil {
 			err = fmt.Errorf("invalid program code %x", code)

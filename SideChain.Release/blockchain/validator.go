@@ -17,15 +17,19 @@ const (
 	MaxTimeOffsetSeconds = 2 * 60 * 60
 )
 
+type BlockValidateAction struct {
+	Name    ValidateFuncName
+	Handler func(params ...interface{}) error
+}
+
 type Validator struct {
 	cfg                  *Config
-	checkSanityFunctions map[ValidateFuncName]func(params ...interface{}) error
+	checkSanityFunctions []*BlockValidateAction
 }
 
 func NewValidator(cfg *Config) *Validator {
 	v := &Validator{
-		cfg:                  cfg,
-		checkSanityFunctions: make(map[ValidateFuncName]func(params ...interface{}) error, 0),
+		cfg: cfg,
 	}
 	v.RegisterFunc(ValidateFuncNames.CheckHeader, v.checkHeader)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsCount, v.checkTransactionsCount)
@@ -36,7 +40,13 @@ func NewValidator(cfg *Config) *Validator {
 }
 
 func (v *Validator) RegisterFunc(name ValidateFuncName, function func(params ...interface{}) error) {
-	v.checkSanityFunctions[name] = function
+	for _, action := range v.checkSanityFunctions {
+		if action.Name == name {
+			action.Handler = function
+			return
+		}
+	}
+	v.checkSanityFunctions = append(v.checkSanityFunctions, &BlockValidateAction{Name: name, Handler: function})
 }
 
 func (v *Validator) CheckBlockSanity(block *core.Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
@@ -52,7 +62,7 @@ func (v *Validator) CheckBlockSanity(block *core.Block, powLimit *big.Int, timeS
 	}()
 
 	for _, checkFunc := range v.checkSanityFunctions {
-		if err := checkFunc(block, powLimit, timeSource); err != nil {
+		if err := checkFunc.Handler(block, powLimit, timeSource); err != nil {
 			return errors.New("[powCheckBlockSanity] error:" + err.Error())
 		}
 	}
