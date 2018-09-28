@@ -30,7 +30,7 @@ func newTestChainStore() (*ChainStore, error) {
 		quit:               make(chan chan bool, 1),
 	}
 
-	go store.taskHandler()
+	go store.TaskHandler()
 	store.NewBatch()
 
 	return store, nil

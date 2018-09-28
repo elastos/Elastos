@@ -53,11 +53,11 @@ type HttpService struct {
 
 func NewHttpService(cfg *Config) *HttpService {
 	s := &HttpService{
-		logger:               cfg.Logger,
-		server:               cfg.Server,
-		chain:                cfg.Chain,
-		txMemPool:            cfg.TxMemPool,
-		pow:                  cfg.PowService,
+		logger:    cfg.Logger,
+		server:    cfg.Server,
+		chain:     cfg.Chain,
+		txMemPool: cfg.TxMemPool,
+		pow:       cfg.PowService,
 	}
 	return s
 }
