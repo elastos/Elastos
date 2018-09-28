@@ -4,10 +4,13 @@
 
 #include <set>
 
+#include "secp256k1.h"
 #include <SDK/ELACoreExt/ErrorCode.h>
 #include <SDK/Common/Utils.h>
 #include <boost/bind.hpp>
 #include <SDK/Wrapper/ByteStream.h>
+#include <BigIntegerLibrary.hh>
+#include <SDK/Common/Log.h>
 #include "MultiSignAccount.h"
 #include "AccountFactory.h"
 
@@ -76,9 +79,21 @@ namespace Elastos {
 		}
 
 		bool MultiSignAccount::Compare(const std::string &a, const std::string &b) const {
+			secp256k1_pubkey pk;
+
 			CMBlock cbA = Utils::decodeHex(a);
+			if (0 == BRKeyPubKeyDecode(&pk, cbA, cbA.GetSize())) {
+				throw std::logic_error("Public key decode error");
+			}
+			BigInteger bigIntA = dataToBigInteger(pk.data, sizeof(pk.data) / 2, BigInteger::Sign::positive);
+
 			CMBlock cbB = Utils::decodeHex(b);
-			return memcmp(cbA, cbB, cbA.GetSize()) >= 0;
+			if (0 == BRKeyPubKeyDecode(&pk, cbB, cbB.GetSize())) {
+				throw std::logic_error("Public key decode error");
+			}
+			BigInteger bigIntB = dataToBigInteger(pk.data, sizeof(pk.data) / 2, BigInteger::Sign::positive);
+
+			return bigIntA <= bigIntB;
 		}
 
 		void MultiSignAccount::checkSigners() const {

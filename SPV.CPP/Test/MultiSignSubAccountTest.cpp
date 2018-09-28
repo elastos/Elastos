@@ -51,3 +51,19 @@ TEST_CASE("SignTransaction test", "[SignTransaction]") {
 
 	REQUIRE(transaction->getPrograms()[0]->isValid(transaction));
 }
+
+TEST_CASE("MultiSign account test", "[Readonly account test]") {
+	SECTION("Address generate test") {
+
+		std::vector<std::string> coSigners;
+
+		coSigners.push_back("032f4540e915134f38ba24cdc08621ad7f5b8b62db36843ae8fa9422c047a04be8");
+		coSigners.push_back("02e63efab72413b320a341b054d5d6ce5f1565a3b466aa4925de69d152027cce20");
+		coSigners.push_back("02f212915764714d1a7cc85100d924f4657e7797da269ea2eb4968146e57ca364c");
+		coSigners.push_back("02f3346a807786c4d040c7f7df75b2f4b64cc6f9f95aaf0bed79099fb1c48fdb3f");
+
+		MultiSignAccount *account = new MultiSignAccount(nullptr, coSigners, 3);
+
+		REQUIRE("8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3" == account->GetAddress());
+	}
+}
