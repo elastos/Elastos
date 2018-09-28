@@ -123,7 +123,7 @@ type SyncManager struct {
 	started      int32
 	shutdown     int32
 	chain        *blockchain.BlockChain
-	txMemPool    *blockchain.TxPool
+	txMemPool    *mempool.TxPool
 	msgChan      chan interface{}
 	wg           sync.WaitGroup
 	quit         chan struct{}

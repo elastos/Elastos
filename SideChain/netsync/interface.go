@@ -16,7 +16,7 @@ type PeerNotifier interface {
 type Config struct {
 	PeerNotifier PeerNotifier
 	Chain        *blockchain.BlockChain
-	TxMemPool    *blockchain.TxPool
+	TxMemPool    *mempool.TxPool
 
 	MaxPeers           int
 }

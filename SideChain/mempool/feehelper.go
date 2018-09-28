@@ -1,33 +1,26 @@
-package blockchain
+package mempool
 
 import (
 	"bytes"
 	"errors"
 
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-var TxFeeHelper *TxFeeHelperBase
-
-type TxFeeHelperBase struct {
-	GetTxFee    func(tx *core.Transaction, assetId Uint256) Fixed64
-	GetTxFeeMap func(tx *core.Transaction) (map[Uint256]Fixed64, error)
+type FeeHelper struct {
+	db blockchain.IChainStore
 }
 
-func InitTxFeeHelper() {
-	TxFeeHelper = &TxFeeHelperBase{}
-	TxFeeHelper.Init()
-}
-func (t *TxFeeHelperBase) Init() {
-	t.GetTxFee = t.getTxFee
-	t.GetTxFeeMap = t.getTxFeeMap
+func NewFeeHelper(db blockchain.IChainStore) *FeeHelper {
+	return &FeeHelper{db: db}
 }
 
-func (t *TxFeeHelperBase) getTxFee(tx *core.Transaction, assetId Uint256) Fixed64 {
-	feeMap, err := t.GetTxFeeMap(tx)
+func (h *FeeHelper) GetTxFee(tx *core.Transaction, assetId Uint256) Fixed64 {
+	feeMap, err := h.GetTxFeeMap(tx)
 	if err != nil {
 		return 0
 	}
@@ -35,7 +28,7 @@ func (t *TxFeeHelperBase) getTxFee(tx *core.Transaction, assetId Uint256) Fixed6
 	return feeMap[assetId]
 }
 
-func (t *TxFeeHelperBase) getTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
+func (h *FeeHelper) GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
 	feeMap := make(map[Uint256]Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {
@@ -70,7 +63,7 @@ func (t *TxFeeHelperBase) getTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64
 		return feeMap, nil
 	}
 
-	reference, err := DefaultChain.GetTxReference(tx)
+	reference, err := h.db.GetTxReference(tx)
 	if err != nil {
 		return nil, err
 	}
