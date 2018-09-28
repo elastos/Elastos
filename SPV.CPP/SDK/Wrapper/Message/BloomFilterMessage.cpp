@@ -6,6 +6,7 @@
 #include <BRBloomFilter.h>
 #include "BRBloomFilter.h"
 
+#include "Peer.h"
 #include "BloomFilter.h"
 #include "BloomFilterMessage.h"
 #include "ByteStream.h"
@@ -16,32 +17,38 @@ namespace Elastos {
 		namespace {
 
 			BRBloomFilter *BRBloomFilterCopy(BRBloomFilter *filter) {
-				BRBloomFilter *result = (BRBloomFilter *)calloc(1, sizeof(*filter));
+				BRBloomFilter *result = (BRBloomFilter *) calloc(1, sizeof(*filter));
 				result->length = filter->length;
 				result->tweak = filter->tweak;
 				result->hashFuncs = filter->hashFuncs;
 				result->flags = filter->flags;
 				result->elemCount = filter->elemCount;
-				result->filter = (uint8_t *)malloc(filter->length);
+				result->filter = (uint8_t *) malloc(filter->length);
 				memcpy(result->filter, filter->filter, filter->length);
 				return result;
 			}
 		}
 
-		int BloomFilterMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			return 0;
+		BloomFilterMessage::BloomFilterMessage(const MessagePeerPtr &peer) :
+			Message(peer) {
+
 		}
 
-		void BloomFilterMessage::Send(BRPeer *peer, void *serializable) {
+		bool BloomFilterMessage::Accept(const std::string &msg) {
+			return false;
+		}
 
-			BRBloomFilter *filter = static_cast<BRBloomFilter *>(serializable);
-			BloomFilter wrappedFilter = BloomFilter(BRBloomFilterCopy(filter));
+		void BloomFilterMessage::Send(const SendMessageParameter &param) {
+			const BloomFilterParameter &bloomFilterParameter = static_cast<const BloomFilterParameter &>(param);
 			ByteStream byteStream;
-			wrappedFilter.Serialize(byteStream);
-			((BRPeerContext *)peer)->sentFilter = 1;
-			((BRPeerContext *)peer)->sentMempool = 0;
-			CMBlock buf = byteStream.getBuffer();
-			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_FILTERLOAD);
+			bloomFilterParameter.Filter->Serialize(byteStream);
+			_peer->setSentFilter(true);
+			_peer->setSentMempool(false);
+			_peer->SendMessage(byteStream.getBuffer(), MSG_FILTERADD);
+		}
+
+		std::string BloomFilterMessage::Type() const {
+			return MSG_FILTERLOAD;
 		}
 	}
 }

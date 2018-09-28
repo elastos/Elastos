@@ -7,57 +7,54 @@
 
 #include <map>
 #include <memory>
+#include <fruit/fruit.h>
+#include <boost/noncopyable.hpp>
 
-#include "Interface/IMerkleBlock.h"
+#include "Interface/IPlugin.h"
+#include "ELAPlugin.h"
+#include "IDPlugin.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Registry {
+		class IPluginHub {
+		public:
+			virtual ~IPluginHub() {}
+
+			virtual MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType) = 0;
+		};
+
+		class PluginHub : public IPluginHub {
+		public:
+			INJECT(PluginHub(
+					ANNOTATED(ELAPluginTag, fruit::Provider<IPlugin>) elaPlugin,
+					ANNOTATED(IDPluginTag, fruit::Provider<IPlugin>) idPlugin)) :
+				_elaPlugin(elaPlugin),
+				_idPlugin(idPlugin) {
+			}
+
+			virtual MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType);
+
+		private:
+			fruit::Provider<IPlugin> _elaPlugin;
+			fruit::Provider<IPlugin> _idPlugin;
+		};
+
+		fruit::Component<IPluginHub> getPluginHubComponent();
+
+
+		class Registry : public boost::noncopyable {
 		public:
 			static Registry *Instance(bool erase = false);
 
-			IMerkleBlock *CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw);
-
-			IMerkleBlock *CreateMerkleBlock(const std::string &blockType, bool manageRaw);
-
-			void AddMerkleBlockProto(IMerkleBlock *merkleBlock);
-
-			void RemoveMerkleBlockProto(IMerkleBlock *merkleBlock);
+			MerkleBlockPtr CreateMerkleBlock(const std::string &blockType);
 
 		private:
-
 			Registry();
 
-			typedef std::map<std::string, MerkleBlockPtr> MerkleBlockMap;
-			MerkleBlockMap _merkleBlocks;
+			fruit::Injector<IPluginHub> _pluginHubInjector;
+			IPluginHub *_pluginHub;
 		};
-
-		template<class T>
-		class RegisterMerkleBlockProxy {
-		public:
-			RegisterMerkleBlockProxy() {
-				if (Registry::Instance()) {
-					_block = new T;
-					Registry::Instance()->AddMerkleBlockProto(_block);
-				}
-			}
-
-			~RegisterMerkleBlockProxy() {
-				if (Registry::Instance()) {
-					Registry::Instance()->RemoveMerkleBlockProto(_block);
-				}
-			}
-
-			T *get() { return _block; }
-
-		private:
-			T *_block;
-		};
-
-#define REGISTER_MERKLEBLOCKPLUGIN(classname) \
-    static Elastos::ElaWallet::RegisterMerkleBlockProxy<classname> g_proxy_##classname;
-
 	}
 
 }

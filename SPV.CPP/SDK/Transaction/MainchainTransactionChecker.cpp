@@ -21,8 +21,8 @@ namespace Elastos {
 
 		void MainchainTransactionChecker::Check() {
 			ParamChecker::checkCondition(
-				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset &&
-				_transaction->getTransactionType() != ELATransaction::TransferAsset,
+				_transaction->getTransactionType() != Transaction::TransferCrossChainAsset &&
+				_transaction->getTransactionType() != Transaction::TransferAsset,
 				Error::Transaction, "Main chain sub wallet tx type error");
 
 			TransactionChecker::Check();
@@ -31,12 +31,12 @@ namespace Elastos {
 		bool MainchainTransactionChecker::checkTransactionPayload(const TransactionPtr &transaction) {
 			bool isValid = TransactionChecker::checkTransactionPayload(transaction);
 
-			if (isValid && transaction->getTransactionType() == ELATransaction::Type::TransferCrossChainAsset) {
+			if (isValid && transaction->getTransactionType() == Transaction::Type::TransferCrossChainAsset) {
 				const PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
 					static_cast<const PayloadTransferCrossChainAsset *>(transaction->getPayload());
 
 				std::vector<uint64_t> outputIndex = payloadTransferCrossChainAsset->getOutputIndex();
-				const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
+				const std::vector<TransactionOutput> &outputs = transaction->getOutputs();
 				for (size_t i = 0; i < outputIndex.size(); ++i) {
 					if (outputIndex[i] > outputs.size() - 1) {
 						isValid = false;

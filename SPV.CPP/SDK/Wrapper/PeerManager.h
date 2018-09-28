@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 #include <boost/weak_ptr.hpp>
-
-#include "BRPeerManager.h"
+#include <boost/thread/mutex.hpp>
 
 #include "Peer.h"
 #include "ChainParams.h"
@@ -17,16 +16,18 @@
 #include "SharedWrapperList.h"
 #include "WrapperList.h"
 #include "CMemBlock.h"
-#include "ELACoreExt/ELAPeerManager.h"
+#include "PublishedTransaction.h"
+#include "TransactionPeerList.h"
 #include "Plugin/PluginTypes.h"
 #include "Plugin/Interface/IMerkleBlock.h"
 #include "Plugin/Block/MerkleBlock.h"
 
+#define PEER_MAX_CONNECTIONS 3
+
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PeerManager :
-				public Wrapper<BRPeerManager> {
+		class PeerManager {
 		public:
 
 			class Listener {
@@ -45,10 +46,10 @@ namespace Elastos {
 				virtual void txStatusUpdate() = 0;
 
 				// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
-				virtual void saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) = 0;
+				virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) = 0;
 
 				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-				virtual void savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) = 0;
+				virtual void savePeers(bool replace, const std::vector<PeerPtr> &peers) = 0;
 
 				// func networkIsReachable() -> Bool}
 				virtual bool networkIsReachable() = 0;
@@ -60,7 +61,7 @@ namespace Elastos {
 
 				virtual void syncIsInactive(uint32_t time) = 0;
 
-				const PluginTypes &getPluginTypes() const { return _pluginTypes;}
+				const PluginTypes &getPluginTypes() const { return _pluginTypes; }
 
 			protected:
 				PluginTypes _pluginTypes;
@@ -71,16 +72,12 @@ namespace Elastos {
 						const WalletPtr &wallet,
 						uint32_t earliestKeyTime,
 						uint32_t reconnectSeconds,
-						const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
-						const SharedWrapperList<Peer, BRPeer *> &peers,
+						const std::vector<MerkleBlockPtr> &blocks,
+						const std::vector<PeerPtr> &peers,
 						const boost::shared_ptr<Listener> &listener,
 						const PluginTypes &plugins);
 
 			~PeerManager();
-
-			virtual std::string toString() const;
-
-			virtual BRPeerManager *getRaw() const;
 
 			/**
 			* Connect to bitcoin peer-to-peer network (also call this whenever networkIsReachable()
@@ -108,7 +105,9 @@ namespace Elastos {
 
 			Peer::ConnectStatus getConnectStatus() const;
 
-			void setFixedPeers(const SharedWrapperList<Peer, BRPeer *> &peers);
+			void setFixedPeer(UInt128 address, uint16_t port);
+
+			void setFixedPeers(const std::vector<PeerPtr> &peers);
 
 			bool useFixedPeer(const std::string &node, int port);
 
@@ -122,28 +121,72 @@ namespace Elastos {
 
 			uint64_t getRelayCount(const UInt256 &txHash) const;
 
+			void asyncConnect(const boost::system::error_code &error);
+
 		private:
-			void createGenesisBlock() const;
+			void syncStarted();
 
-			static int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block,
-											   const BRSet *blockSet);
+			void syncStopped(int error);
 
-			static int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
-										uint32_t targetTimePerBlock, const std::string &netType);
+			void txStatusUpdate();
 
-			static int
+			void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
+
+			void savePeers(bool replace, const std::vector<PeerPtr> &peers);
+
+			int networkIsReachable();
+
+			void txPublished(int error);
+
+			void threadCleanup();
+
+			void blockHeightIncreased(uint32_t height);
+
+			void syncIsInactive();
+
+			int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
+
+			int verifyDifficulty(const BRMerkleBlock *block, const BRSet *blockSet, uint32_t targetTimeSpan,
+								 uint32_t targetTimePerBlock, const std::string &netType);
+
+			int
 			verifyDifficultyInner(const BRMerkleBlock *block, const BRMerkleBlock *previous, uint32_t transitionTime,
 								  uint32_t targetTimeSpan, uint32_t targetTimePerBlock, const std::string &netType);
 
-			static void loadBloomFilter(BRPeerManager *manager, BRPeer *peer);
+			void loadBloomFilter(BRPeer *peer);
+
+			void findPeers();
+
+			void sortPeers();
+
+			void syncStopped();
+
+			void addTxToPublishList(const TransactionPtr &tx, void (*callback)(void *, int));
 
 		private:
-			ELAPeerManager *_manager;
+			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, reconnectTaskCount;
+			std::vector<PeerPtr> _peers;
+			std::vector<PeerPtr> _connectedPeers;
+			std::vector<PeerPtr> _fiexedPeers;
+			PeerPtr downloadPeer, fixedPeer;
+			std::string downloadPeerName;
+			uint32_t _earliestKeyTime, _reconnectSeconds, syncStartHeight, filterUpdateHeight, estimatedHeight;
+			BRBloomFilter *bloomFilter;
+			double fpRate, averageTxPerBlock;
+			BlockSet _blocks;
+			std::set<MerkleBlockPtr> _orphans;
+			BlockSet _checkpoints;
+			MerkleBlockPtr lastBlock, lastOrphan;
+			std::vector<TransactionPeerList> txRelays, txRequests;
+			std::vector<PublishedTransaction> publishedTx;
+			std::vector<UInt256> publishedTxHashes;
 
 			PluginTypes _pluginTypes;
 			WalletPtr _wallet;
 			ChainParams _chainParams;
 			boost::weak_ptr<Listener> _listener;
+
+			mutable boost::mutex lock;
 		};
 
 		typedef boost::shared_ptr<PeerManager> PeerManagerPtr;

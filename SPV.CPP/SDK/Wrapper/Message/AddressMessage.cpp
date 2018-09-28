@@ -2,86 +2,96 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+<<<<<<< HEAD
 #include <arpa/inet.h>
 #include <Core/BRPeer.h>
 #include "BRPeer.h"
 #include "BRPeerMessages.h"
 #include "BRPeerManager.h"
 #include "BRArray.h"
+=======
+#include <SDK/Common/Log.h>
+>>>>>>> Refactor.
 
+#include "BRArray.h"
+#include "Peer.h"
 #include "AddressMessage.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-		AddressMessage::AddressMessage() {
+		AddressMessage::AddressMessage(const MessagePeerPtr &peer) :
+				Message(peer) {
 
 		}
 
-		int AddressMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			BRPeerContext *ctx = (BRPeerContext *)peer;
+		bool AddressMessage::Accept(const std::string &msg) {
+			Log::traceWithTime("AddressMessage.Accept");
 
 			size_t off = 0;
 			size_t count = UInt64GetLE(&msg[off]);
 			off += sizeof(uint64_t);
 
-			int r = 1;
-			if (off == 0 || off + count*30 > msgLen) {
-				peer_log(peer, "malformed addr message, length is %zu, should be %zu for %zu address(es)", msgLen,
-						 BRVarIntSize(count) + 30*count, count);
-				r = 0;
-			}
-			else if (count > 1000) {
-				peer_log(peer, "dropping addr message, %zu is too many addresses, max is 1000", count);
-			}
-			else if (ctx->sentGetaddr) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
-				BRPeer peers[count], p;
-				size_t peersCount = 0;
+			bool r = true;
+			if (off == 0 || off + count * 30 > msg.size()) {
+				_peer->Log("malformed addr message, length is {}, should be {} for {} address(es)", msg.length(),
+						   BRVarIntSize(count) + 30*count, count);
+				r = false;
+			} else if (count > 1000) {
+				_peer->Log("dropping addr message, {} is too many addresses, max is 1000", count);
+			} else if (_peer->sentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
+				std::vector<PeerPtr> peers;
+				peers.reserve(count);
+
 				time_t now = time(NULL);
 
-				peer_log(peer, "got addr with %zu address(es)", count);
+				_peer->Log("got addr with {} address(es)", count);
 
 				for (size_t i = 0; i < count; i++) {
-					p.timestamp = UInt64GetLE(&msg[off]);
+					uint64_t timestamp = UInt64GetLE(&msg[off]);
 					off += sizeof(uint64_t);
-					p.services = UInt64GetLE(&msg[off]);
+					uint64_t services = UInt64GetLE(&msg[off]);
 					off += sizeof(uint64_t);
-					UInt128Get(&p.address, &msg[off]);
+					UInt128 address;
+					UInt128Get(&address, &msg[off]);
 					off += sizeof(UInt128);
-					p.port = UInt16GetLE(&msg[off]);
+					uint16_t port = UInt16GetLE(&msg[off]);
 					off += sizeof(uint16_t);
+					uint64_t id = UInt64GetLE(&msg[off]);
+					off += sizeof(uint64_t);
+					PeerPtr p(new Peer(address, port, timestamp, services));
 
 					char host[INET6_ADDRSTRLEN] = {0};
-					if ((p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))
-						inet_ntop(AF_INET, &p.address.u32[3], host, sizeof(host));
+					if (p->isIPv4())
+						inet_ntop(AF_INET, &p->getAddress().u32[3], host, sizeof(host));
 					else
-						inet_ntop(AF_INET6, &p.address, host, sizeof(host));
+						inet_ntop(AF_INET6, &p->getAddress().u8[0], host, sizeof(host));
+					_peer->Log("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
+							 i, host, p->getTimestamp(), p->getPort(), p->getServices());
 
-					peer_dbg(peer, "peers[%zu] = %s, timestamp = %llu, port = %d, services = %llu",
-							 i, host, p.timestamp, p.port, p.services);
-
-					if (! (p.services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
-					if (! (p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))
+					if (!(p->getServices() & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
+					if (!(p->getAddress().u64[0] == 0 && p->getAddress().u16[4] == 0 && p->getAddress().u16[5] == 0xffff))
 						continue; // ignore IPv6 for now
-					if (p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff &&
-						p.address.u8[12] == 127 && p.address.u8[13] == 0 &&
-						p.address.u8[14] == 0 && p.address.u8[15] == 1) {
-						peer_log(peer, "drop peers[%zu]", i);
+					if (p->isIPv4() &&
+						p->getAddress().u8[12] == 127 && p->getAddress().u8[13] == 0 &&
+						p->getAddress().u8[14] == 0 && p->getAddress().u8[15] == 1) {
+						_peer->Log("drop peers[{}]", i);
 						continue;
 					}
 
 					// if address time is more than 10 min in the future or unknown, set to 5 days old
-					if (p.timestamp > now + 10*60 || p.timestamp == 0) p.timestamp = now - 5*24*60*60;
-					p.timestamp -= 2*60*60; // subtract two hours
-					peers[peersCount++] = p; // add it to the list
+					if (p->getTimestamp() > now + 10 * 60 || p->getTimestamp() == 0) p->setTimestamp(uint64_t(now - 5 * 24 * 60 * 60));
+					p->setTimestamp(p->getTimestamp() - 2 * 60 * 60); // subtract two hours
+
+					peers.push_back(p);
 				}
 
-				if (peersCount > 0 && ctx->relayedPeers) ctx->relayedPeers(ctx->info, peers, peersCount);
+				if (peers.size() > 0) FireRelayedPeers(peers, peers.size());
 			}
 
 			return r;
 		}
 
-		void AddressMessage::Send(BRPeer *peer) {
+		void AddressMessage::Send(const SendMessageParameter &param) {
 			uint8_t msg[BRVarIntSize(0)];
 			size_t msgLen = BRVarIntSet(msg, sizeof(msg), 0);
 
@@ -89,6 +99,9 @@ namespace Elastos {
 //			BRPeerSendMessage(peer, msg, msgLen, MSG_ADDR);
 		}
 
+		std::string AddressMessage::Type() const {
+			return std::string();
+		}
 
 	}
 }

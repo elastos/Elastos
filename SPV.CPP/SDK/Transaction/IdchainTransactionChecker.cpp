@@ -19,9 +19,9 @@ namespace Elastos {
 
 		void IdchainTransactionChecker::Check() {
 			ParamChecker::checkCondition(
-				_transaction->getTransactionType() != ELATransaction::RegisterIdentification &&
-				_transaction->getTransactionType() != ELATransaction::TransferAsset &&
-				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset,
+				_transaction->getTransactionType() != Transaction::RegisterIdentification &&
+				_transaction->getTransactionType() != Transaction::TransferAsset &&
+				_transaction->getTransactionType() != Transaction::TransferCrossChainAsset,
 				Error::Transaction, "Main chain sub wallet tx type error");
 			TransactionChecker::Check();
 		}
@@ -29,7 +29,7 @@ namespace Elastos {
 		bool IdchainTransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
 			SidechainTransactionChecker::checkTransactionOutput(transaction);
 
-			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput> &outputs = transaction->getOutputs();
 			size_t size = outputs.size();
 			if (size < 1) {
 				return false;
@@ -38,12 +38,12 @@ namespace Elastos {
 			std::vector<std::string> addresses = _wallet->getAllAddresses();
 
 			for (size_t i = 0; i < size; ++i) {
-				TransactionOutput *output = outputs[i];
-				if (output->getAddress().empty()) {
+				const TransactionOutput &output = outputs[i];
+				if (output.getAddress().empty()) {
 					return false;
 				}
-				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) == addresses.end()) {
-					if (output->getAmount() != 0) {
+				if (std::find(addresses.begin(), addresses.end(), output.getAddress()) == addresses.end()) {
+					if (output.getAmount() != 0) {
 						return false;
 					}
 				}

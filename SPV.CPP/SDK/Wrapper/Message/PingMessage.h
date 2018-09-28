@@ -5,13 +5,13 @@
 #ifndef __ELASTOS_SDK_PINGMESSAGE_H__
 #define __ELASTOS_SDK_PINGMESSAGE_H__
 
-#include "IMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class PingMessage :
-			public IMessage {
+			public Message {
 		public:
 			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 

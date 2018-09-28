@@ -18,14 +18,22 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const;
 
-			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet);
-
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);
 
 			virtual std::string GetMainAccountPublicKey() const;
 
-			virtual void
-			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
+			virtual void SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+										 const std::string &payPassword);
+
+			virtual bool IsSingleAddress() const;
+
+			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
+
+			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const;
+
+			virtual bool ContainsAddress(const Address &address) const;
+
+			virtual bool IsAddressUsed(const Address &address) const;
 
 		protected:
 			virtual WrapperList<Key, BRKey>

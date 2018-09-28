@@ -38,7 +38,7 @@ namespace Elastos {
 
 			const CMBlock &GetData() const;
 
-			bool isValid();
+			bool isValid() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 

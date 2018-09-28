@@ -9,7 +9,7 @@
 #define TEST_ASCII_BEGIN 48
 
 #include "AuxPow.h"
-#include "ELAMerkleBlock.h"
+#include "Plugin/Block/MerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -196,50 +196,49 @@ namespace Elastos {
 			}
 		}
 
-		static ELAMerkleBlock *createELAMerkleBlock() {
-			ELAMerkleBlock *block = ELAMerkleBlockNew();
+		static void setMerkleBlockValues(MerkleBlock *block) {
+			block->setHeight((uint32_t) rand());
+			block->setTimestamp((uint32_t) rand());
+			block->setVersion((uint32_t) rand());
 
-			block->raw.height = (uint32_t)rand();
-			block->raw.timestamp = (uint32_t)rand();
-			block->raw.version = (uint32_t)rand();
-
-			block->raw.flagsLen = 10;
-			block->raw.flags = (uint8_t *)malloc(block->raw.flagsLen);
-			for (size_t i = 0; i < block->raw.flagsLen; ++i) {
-				block->raw.flags[i] = (uint8_t)rand();
+			std::vector<uint8_t> flags;
+			for (size_t i = 0; i < 10; ++i) {
+				flags.push_back((uint8_t) rand());
 			}
-
-			block->raw.hashesCount = 10;
-			block->raw.hashes = (UInt256 *) malloc(sizeof(UInt256) * block->raw.hashesCount);
-			for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-				block->raw.hashes[i] = getRandUInt256();
-			}
-			block->raw.merkleRoot = getRandUInt256();
-			block->raw.nonce = (uint32_t)rand();
-			block->raw.prevBlock = getRandUInt256();
-			block->raw.target = (uint32_t)rand();
-			block->raw.totalTx = (uint32_t)rand();
 
 			std::vector<UInt256> hashes;
 			for (size_t i = 0; i < 10; ++i) {
 				hashes.push_back(getRandUInt256());
 			}
-			block->auxPow.setAuxMerkleBranch(hashes);
+
+			block->setRootBlockHash(getRandUInt256());
+			block->setNonce((uint32_t) rand());
+			block->setPrevBlockHash(getRandUInt256());
+			block->setTarget((uint32_t) rand());
+			block->setTransactionCount((uint32_t) rand());
+
+			AuxPow auxPow;
+			hashes.clear();
+			for (size_t i = 0; i < 10; ++i) {
+				hashes.push_back(getRandUInt256());
+			}
+			auxPow.setAuxMerkleBranch(hashes);
 
 			hashes.clear();
 			for (size_t i = 0; i < 10; ++i) {
 				hashes.push_back(getRandUInt256());
 			}
-			block->auxPow.setCoinBaseMerkle(hashes);
-			block->auxPow.setAuxMerkleIndex(rand());
+			auxPow.setCoinBaseMerkle(hashes);
+			auxPow.setAuxMerkleIndex(rand());
 
 			BRTransaction *tx = BRTransactionNew();
 			tx->txHash = getRandUInt256();
-			tx->version = (uint32_t)rand();
+			tx->version = (uint32_t) rand();
 			for (size_t i = 0; i < 10; ++i) {
 				CMBlock script = getRandCMBlock(25);
 				CMBlock signature = getRandCMBlock(35);
-				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t)rand(), (uint64_t)rand(), script, script.GetSize(), signature, signature.GetSize(), (uint32_t)rand());
+				BRTransactionAddInput(tx, getRandUInt256(), (uint32_t) rand(), (uint64_t) rand(), script,
+									  script.GetSize(), signature, signature.GetSize(), (uint32_t) rand());
 			}
 			for (size_t i = 0; i < 10; ++i) {
 				CMBlock script = getRandCMBlock(25);
@@ -248,34 +247,31 @@ namespace Elastos {
 			tx->lockTime = rand();
 			tx->blockHeight = rand();
 			tx->timestamp = rand();
-			block->auxPow.setBTCTransaction(tx);
-
-			return block;
+			auxPow.setBTCTransaction(tx);
+			block->setAuxPow(auxPow);
 		}
 
-		static void verifyELAMerkleBlock(ELAMerkleBlock *newBlock, ELAMerkleBlock *block) {
+		static void verifyELAMerkleBlock(const MerkleBlock &newBlock, const MerkleBlock &block) {
 
-			REQUIRE(0 == memcmp(&newBlock->raw.blockHash, &block->raw.blockHash, sizeof(UInt256)));
-			REQUIRE(newBlock->raw.height == block->raw.height);
-			REQUIRE(newBlock->raw.timestamp == block->raw.timestamp);
-			REQUIRE(newBlock->raw.version == block->raw.version);
-			REQUIRE(newBlock->raw.flagsLen == block->raw.flagsLen);
-			for (size_t i = 0; i < block->raw.flagsLen; ++i) {
-				REQUIRE(newBlock->raw.flags[i] == block->raw.flags[i]);
+			REQUIRE(UInt256Eq(&newBlock.getHash(), &block.getHash()));
+			REQUIRE(newBlock.getHeight() == block.getHeight());
+			REQUIRE(newBlock.getTimestamp() == block.getTimestamp());
+			REQUIRE(newBlock.getVersion() == block.getVersion());
+			REQUIRE(newBlock.getFlags().size() == block.getFlags().size());
+			for (size_t i = 0; i < block.getFlags().size(); ++i) {
+				REQUIRE(newBlock.getFlags()[i] == block.getFlags()[i]);
 			}
-			REQUIRE(newBlock->raw.hashesCount == block->raw.hashesCount);
-			for (size_t i = 0; i < block->raw.hashesCount; ++i) {
-				REQUIRE(0 == memcmp(&newBlock->raw.hashes[i], &block->raw.hashes[i], sizeof(UInt256)));
+			REQUIRE(newBlock.getHashes().size() == block.getHashes().size());
+			for (size_t i = 0; i < block.getHashes().size(); ++i) {
+				REQUIRE(UInt256Eq(&newBlock.getHashes()[i], &block.getHashes()[i]));
 			}
-			REQUIRE(0 == memcmp(&newBlock->raw.hashes[1], &block->raw.hashes[1], sizeof(UInt256)));
-			REQUIRE(0 == memcmp(&newBlock->raw.hashes[2], &block->raw.hashes[2], sizeof(UInt256)));
-			REQUIRE(0 == memcmp(&newBlock->raw.merkleRoot, &block->raw.merkleRoot, sizeof(UInt256)));
-			REQUIRE(newBlock->raw.nonce == block->raw.nonce);
-			REQUIRE(0 == memcmp(&newBlock->raw.prevBlock, &block->raw.prevBlock, sizeof(UInt256)));
-			REQUIRE(newBlock->raw.target == block->raw.target);
-			REQUIRE(newBlock->raw.totalTx == block->raw.totalTx);
+			REQUIRE(UInt256Eq(&newBlock.getRootBlockHash(), &block.getRootBlockHash()));
+			REQUIRE(newBlock.getNonce() == block.getNonce());
+			REQUIRE(UInt256Eq(&newBlock.getPrevBlockHash(), &block.getPrevBlockHash()));
+			REQUIRE(newBlock.getTarget() == block.getTarget());
+			REQUIRE(newBlock.getTransactionCount() == block.getTransactionCount());
 
-			verrifyAuxPowEqual(newBlock->auxPow, block->auxPow, false);
+			verrifyAuxPowEqual(newBlock.getAuxPow(), block.getAuxPow(), false);
 		}
 
 	}

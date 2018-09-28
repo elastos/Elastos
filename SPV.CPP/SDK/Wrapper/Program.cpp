@@ -38,7 +38,7 @@ namespace Elastos {
 		Program::~Program() {
 		}
 
-		bool Program::isValid(const TransactionPtr &transaction) {
+		bool Program::isValid(const Transaction *transaction) const {
 			if (!_parameter || _parameter.GetSize() <= 0) {
 				return false;
 			}
@@ -98,11 +98,11 @@ namespace Elastos {
 			return false;
 		}
 
-		const CMBlock &Program::getCode() {
+		const CMBlock &Program::getCode() const {
 			return _code;
 		}
 
-		const CMBlock &Program::getParameter() {
+		const CMBlock &Program::getParameter() const {
 			return _parameter;
 		}
 

@@ -31,6 +31,11 @@ int UInt256Eq(const UInt256* a, const UInt256* b)
 	return (a->u64[0] == b->u64[0] && a->u64[1] == b->u64[1] && a->u64[2] == b->u64[2] && a->u64[3] == b->u64[3]);
 }
 
+int UInt256LessThan(const UInt256* a, const UInt256* b) {
+	//fixme less than
+	return 0;
+}
+
 int UInt512Eq(const UInt512* a, const UInt512* b)
 {
 	return (a->u64[0] == b->u64[0] && a->u64[1] == b->u64[1] && a->u64[2] == b->u64[2] && a->u64[3] == b->u64[3] &&

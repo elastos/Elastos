@@ -5,15 +5,15 @@
 #ifndef __ELASTOS_SDK_VERSIONMESSAGE_H_
 #define __ELASTOS_SDK_VERSIONMESSAGE_H_
 
-#include "IMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class VersionMessage :
-			public IMessage {
+			public Message {
 		public:
-			VersionMessage();
+			VersionMessage(const MessagePeerPtr &peer);
 
 			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 

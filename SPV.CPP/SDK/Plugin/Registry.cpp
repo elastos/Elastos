@@ -2,13 +2,28 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
 #include "Registry.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		Registry::Registry() {
+		MerkleBlockPtr PluginHub::CreateMerkleBlock(const std::string &pluginType) {
+			if (pluginType == "ELA")
+				return _elaPlugin.get()->CreateBlock();
+			else if (pluginType == "SideStandard")
+				return _idPlugin.get()->CreateBlock();
 
+			return nullptr;
+		}
+
+		fruit::Component<IPluginHub> getPluginHubComponent() {
+			return fruit::createComponent()
+					.bind<IPluginHub, PluginHub>()
+					.install(getELAPluginComponent)
+					.install(getIDPluginComponent);
 		}
 
 		Registry *Registry::Instance(bool erase) {
@@ -20,26 +35,13 @@ namespace Elastos {
 			return instance.get();
 		}
 
-		void Registry::AddMerkleBlockProto(IMerkleBlock *merkleBlock) {
-			_merkleBlocks[merkleBlock->getBlockType()] = MerkleBlockPtr(merkleBlock);
+		MerkleBlockPtr Registry::CreateMerkleBlock(const std::string &blockType) {
+			return _pluginHub->CreateMerkleBlock(blockType);
 		}
 
-		void Registry::RemoveMerkleBlockProto(IMerkleBlock *merkleBlock) {
-			_merkleBlocks.erase(merkleBlock->getBlockType());
-		}
-
-		IMerkleBlock *Registry::CloneMerkleBlock(const std::string &blockType, const BRMerkleBlock *block, bool manageRaw) {
-			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
-				return nullptr;
-
-			return _merkleBlocks[blockType]->Clone(block, manageRaw);
-		}
-
-		IMerkleBlock *Registry::CreateMerkleBlock(const std::string &blockType, bool manageRaw) {
-			if(_merkleBlocks.find(blockType) == _merkleBlocks.end())
-				return nullptr;
-
-			return _merkleBlocks[blockType]->CreateMerkleBlock(manageRaw);
+		Registry::Registry() :
+				_pluginHubInjector(getPluginHubComponent) {
+			_pluginHub = _pluginHubInjector.get<IPluginHub *>();
 		}
 
 	}

@@ -8,7 +8,6 @@
 #include "JniSmartPointerWrapper.h"
 #include "ChainParams.h"
 #include "WalletManager.h"
-#include "ELATransaction.h"
 #include "com_elastos_spvcore_WalletManager.h"
 
 using namespace Elastos::ElaWallet;

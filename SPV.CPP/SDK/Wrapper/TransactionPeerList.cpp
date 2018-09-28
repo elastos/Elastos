@@ -2,20 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "BRPeerMessages.h"
-
-#include "IMessage.h"
+#include "TransactionPeerList.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		IMessage::IMessage() {
-
+		const UInt256 &TransactionPeerList::GetTransactionHash() const {
+			return _txHash;
 		}
 
-		IMessage::~IMessage() {
-
+		const std::vector<PeerPtr> &TransactionPeerList::GetPeers() const {
+			return _peers;
 		}
-
 	}
 }

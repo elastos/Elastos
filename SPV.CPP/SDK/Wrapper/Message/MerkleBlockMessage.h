@@ -5,13 +5,13 @@
 #ifndef __ELASTOS_SDK_MERKLEBLOCKMESSAGE_H__
 #define __ELASTOS_SDK_MERKLEBLOCKMESSAGE_H__
 
-#include "IWrapperMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class MerkleBlockMessage :
-			public IWrapperMessage {
+			public Message {
 		public:
 			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 

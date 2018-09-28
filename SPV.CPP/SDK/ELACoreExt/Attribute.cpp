@@ -37,7 +37,7 @@ namespace Elastos {
 			return _data;
 		}
 
-		bool Attribute::isValid() {
+		bool Attribute::isValid() const {
 			return (_usage == Attribute::Usage::Description ||
 					_usage == Attribute::Usage::DescriptionUrl ||
 					_usage == Attribute::Usage::Memo ||

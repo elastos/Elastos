@@ -5,15 +5,15 @@
 #ifndef __ELASTOS_SDK_INVENTORYMESSAGE_H_
 #define __ELASTOS_SDK_INVENTORYMESSAGE_H_
 
-#include "IMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class InventoryMessage :
-			public IMessage {
+			public Message {
 		public:
-			InventoryMessage();
+			InventoryMessage(const MessagePeerPtr &peer);
 
 			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 

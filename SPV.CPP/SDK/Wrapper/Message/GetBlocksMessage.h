@@ -5,19 +5,28 @@
 #ifndef __ELASTOS_SDK_GETBLOCKSMESSAGE_H__
 #define __ELASTOS_SDK_GETBLOCKSMESSAGE_H__
 
-#include "IMessage.h"
+#include <Core/BRPeer.h>
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		struct GetBlocksParameter : public SendMessageParameter {
+			std::vector<UInt256> locators;
+			UInt256 hashStop;
+		};
+
 		class GetBlocksMessage :
-				public IMessage {
+				public Message {
 		public:
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+			explicit GetBlocksMessage(const MessagePeerPtr &peer);
 
-			virtual void Send(BRPeer *peer);
+			virtual bool Accept(const std::string &msg);
 
-			void SendGetBlocks(BRPeer *peer, const UInt256 locators[], size_t locatorsCount, UInt256 hashStop);
+			virtual void Send(const SendMessageParameter &param);
+
+			virtual std::string Type() const;
+
 		};
 
 	}

@@ -5,6 +5,7 @@
 #ifndef __ELASTOS_SDK_BLOOMFILTER_H__
 #define __ELASTOS_SDK_BLOOMFILTER_H__
 
+#include <cmake-build-debug/ThirdParty/boost/install/include/boost/exception/detail/shared_ptr.hpp>
 #include "BRBloomFilter.h"
 
 #include "Wrapper.h"
@@ -13,6 +14,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		//fixme [refactor] remove BRBloomFilter from BloomFilter class
 		class BloomFilter :
 			Wrapper<BRBloomFilter>,
 			ELAMessageSerializable {
@@ -38,6 +40,8 @@ namespace Elastos {
 		private:
 			BRBloomFilter *_bloomFilter;
 		};
+
+		typedef boost::shared_ptr<BloomFilter> BloomFilterPtr;
 
 	}
 }

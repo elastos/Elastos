@@ -12,6 +12,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		PongMessage::PongMessage(const Elastos::ElaWallet::MessagePeerPtr &peer) :
+			Message(peer) {
+		}
+
 		int PongMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 			BRPeerContext *ctx = (BRPeerContext *)peer;
 			struct timeval tv;

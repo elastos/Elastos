@@ -7,33 +7,47 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "BRMerkleBlock.h"
-
-#include "IClonable.h"
+#include "BRInt.h"
 #include "ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IMerkleBlock : public ELAMessageSerializable, public IClonable<IMerkleBlock> {
+		class IMerkleBlock : public ELAMessageSerializable {
 		public:
 			virtual ~IMerkleBlock() {}
-
-			virtual BRMerkleBlock *getRawBlock() const = 0;
-
-			virtual void deleteRawBlock() = 0;
-
-			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw) = 0;
-
-			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;
-
-			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw) = 0;
-
-			virtual UInt256 getBlockHash() const = 0;
 
 			virtual uint32_t getHeight() const = 0;
 
 			virtual void setHeight(uint32_t height) = 0;
+
+			virtual uint32_t getTimestamp() const = 0;
+
+			virtual void setTimestamp(uint32_t timestamp) = 0;
+
+			virtual uint32_t getTarget() const = 0;
+
+			virtual void setTarget(uint32_t target) = 0;
+
+			virtual const UInt256 &getPrevBlockHash() const = 0;
+
+			virtual void setPrevBlockHash(const UInt256 &hash) = 0;
+
+			virtual const UInt256 &getRootBlockHash() const = 0;
+
+			virtual void setRootBlockHash(const UInt256 &hash) = 0;
+
+			virtual uint32_t getNonce() const = 0;
+
+			virtual void setNonce(uint32_t nonce) = 0;
+
+			virtual uint32_t getTransactionCount() const = 0;
+
+			virtual void setTransactionCount(uint32_t count) = 0;
+
+			virtual const UInt256 &getHash() const = 0;
+
+			virtual void setHash(const UInt256 &hash) = 0;
 
 			virtual bool isValid(uint32_t currentTime) const = 0;
 

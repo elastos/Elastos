@@ -14,7 +14,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		VersionMessage::VersionMessage() {
+		VersionMessage::VersionMessage(const MessagePeerPtr &peer) :
+			Message(peer) {
 
 		}
 

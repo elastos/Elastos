@@ -6,15 +6,18 @@
 #define __ELASTOS_SDK_ISUBACCOUNT_H__
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/mutex.hpp>
 
 #include "IAccount.h"
 #include "Key.h"
+#include "Address.h"
 #include "Transaction/Transaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		struct ELAWallet;
+		class Lockable;
+		class Wallet;
 
 		class ISubAccount {
 		public:
@@ -22,16 +25,30 @@ namespace Elastos {
 
 			virtual nlohmann::json GetBasicInfo() const = 0;
 
-			virtual IAccount *GetParent() = 0;
+			virtual bool IsSingleAddress() const = 0;
 
-			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet) = 0;
+			virtual IAccount *GetParent() const = 0;
+
+			virtual void InitAccount(const std::vector<TransactionPtr> &transactions, Lockable *lock) = 0;
 
 			virtual std::string GetMainAccountPublicKey() const = 0;
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword) = 0;
 
-			virtual void
-			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword) = 0;
+			virtual void SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+										 const std::string &payPassword) = 0;
+
+			virtual void AddUsedAddrs(const TransactionPtr &tx) = 0;
+
+			virtual std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal) = 0;
+
+			virtual std::vector<Address> GetAllAddresses(size_t addrsCount) const = 0;
+
+			virtual bool ContainsAddress(const Address &address) const = 0;
+
+			virtual bool IsAddressUsed(const Address &address) const = 0;
+
+			virtual void ClearUsedAddresses() = 0;
 		};
 
 		typedef boost::shared_ptr<ISubAccount> SubAccountPtr;

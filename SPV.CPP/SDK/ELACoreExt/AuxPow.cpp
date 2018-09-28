@@ -275,13 +275,7 @@ namespace Elastos {
 		}
 
 		AuxPow::AuxPow(const AuxPow &auxPow) {
-			_auxMerkleBranch = auxPow._auxMerkleBranch;
-			_parCoinBaseMerkle = auxPow._parCoinBaseMerkle;
-			_auxMerkleIndex = auxPow._auxMerkleIndex;
-			_parCoinBaseTx = BRTransactionCopy(auxPow._parCoinBaseTx);
-			_parMerkleIndex = auxPow._parMerkleIndex;
-			_parBlockHeader = BRMerkleBlockCopy(auxPow._parBlockHeader);
-			UInt256Set(&_parentHash, auxPow._parentHash);
+			operator=(auxPow);
 		}
 
 		void AuxPow::setBTCTransaction(BRTransaction *transaction) {

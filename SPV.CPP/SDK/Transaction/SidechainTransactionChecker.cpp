@@ -21,8 +21,8 @@ namespace Elastos {
 		void SidechainTransactionChecker::Check() {
 
 			ParamChecker::checkCondition(
-				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset &&
-				_transaction->getTransactionType() != ELATransaction::TransferAsset,
+				_transaction->getTransactionType() != Transaction::TransferCrossChainAsset &&
+				_transaction->getTransactionType() != Transaction::TransferAsset,
 				Error::Transaction, "Side chain sub wallet tx type error");
 			TransactionChecker::Check();
 		}

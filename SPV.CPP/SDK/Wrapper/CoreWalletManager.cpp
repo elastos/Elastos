@@ -55,18 +55,6 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		std::string CoreWalletManager::toString() const {
-			std::stringstream ss;
-			ss << "BRCoreWalletManager {" <<
-			   "\n  chainParams       : " << _chainParams.toString() <<
-			   "\n  earliest peer time: " << _earliestPeerTime <<
-			   "\n  wallet rcv addr   : " << (_wallet != nullptr ? _wallet->getReceiveAddress() : "") <<
-			   "\n  peerManager status: "
-			   << (_peerManager != nullptr ? Peer::Status::toString(_peerManager->getConnectStatus()) : "") <<
-			   '}';
-			return ss.str();
-		}
-
 		void CoreWalletManager::balanceChanged(uint64_t balance) {
 
 		}
@@ -96,11 +84,11 @@ namespace Elastos {
 		}
 
 		void
-		CoreWalletManager::saveBlocks(bool replace, const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+		CoreWalletManager::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 
 		}
 
-		void CoreWalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
+		void CoreWalletManager::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
 
 		}
 
@@ -193,9 +181,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::saveBlocks(
-				bool replace,
-				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+		void WrappedExceptionPeerManagerListener::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 
 			try {
 				_listener->saveBlocks(replace, blocks);
@@ -209,7 +195,7 @@ namespace Elastos {
 		}
 
 		void
-		WrappedExceptionPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
+		WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
 
 			try {
 				_listener->savePeers(replace, peers);
@@ -325,9 +311,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::saveBlocks(
-				bool replace,
-				const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks) {
+		void WrappedExecutorPeerManagerListener::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 			_executor->execute(Runnable([this, replace, &blocks]() -> void {
 				try {
 					_listener->saveBlocks(replace, blocks);
@@ -342,7 +326,7 @@ namespace Elastos {
 		}
 
 		void
-		WrappedExecutorPeerManagerListener::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
+		WrappedExecutorPeerManagerListener::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
 			_executor->execute(Runnable([this, replace, &peers]() -> void {
 				try {
 					_listener->savePeers(replace, peers);

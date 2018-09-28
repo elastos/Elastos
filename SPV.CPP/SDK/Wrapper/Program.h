@@ -26,11 +26,11 @@ namespace Elastos {
 
 			~Program();
 
-			bool isValid(const boost::shared_ptr<Transaction> &transaction);
+			bool isValid(const Transaction *transaction) const;
 
-			const CMBlock &getCode();
+			const CMBlock &getCode() const;
 
-			const CMBlock &getParameter();
+			const CMBlock &getParameter() const;
 
 			void setCode(const CMBlock &code);
 

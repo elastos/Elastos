@@ -7,11 +7,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "BRTransaction.h"
-#include "SDK/ELACoreExt/ELATxOutput.h"
-#include "Wrapper.h"
+#include "BRInt.h"
 #include "CMemBlock.h"
-#include "SDK/Plugin/Interface/ELAMessageSerializable.h"
+#include "Plugin/Interface/ELAMessageSerializable.h"
 
 #define TX_RECHARGE_OUTPUT_SIZE 65
 
@@ -19,25 +17,18 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class TransactionOutput :
-				public Wrapper<BRTxOutput>,
 				public ELAMessageSerializable {
 
 		public:
-
 			TransactionOutput();
-
-			explicit TransactionOutput(ELATxOutput *output);
 
 			TransactionOutput(const TransactionOutput &output);
 
-			TransactionOutput(const std::string &toAddress, uint64_t amount,
-							  const UInt256 &assetID, uint32_t outputLock);
+			TransactionOutput(uint64_t amount, const std::string &toAddress);
+
+			TransactionOutput(uint64_t amount, const UInt168 &programHash);
 
 			~TransactionOutput();
-
-			virtual std::string toString() const;
-
-			virtual BRTxOutput *getRaw() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -47,17 +38,9 @@ namespace Elastos {
 
 			std::string getAddress() const;
 
-			void setAddress(const std::string &address);
-
-			void setAddressSignType(int signType);
-
-			int getAddressSignType() const;
-
 			uint64_t getAmount() const;
 
 			void setAmount(uint64_t amount);
-
-			CMBlock getScript() const;
 
 			const UInt256 &getAssetId() const;
 
@@ -75,8 +58,13 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+			size_t GetSize() const;
+
 		private:
-			ELATxOutput *_output;
+			uint64_t _amount;
+			UInt256 _assetId;
+			uint32_t _outputLock;
+			UInt168 _programHash;
 		};
 
 		typedef boost::shared_ptr<TransactionOutput> TransactionOutputPtr;

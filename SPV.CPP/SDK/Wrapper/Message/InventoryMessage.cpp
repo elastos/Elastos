@@ -19,7 +19,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		InventoryMessage::InventoryMessage() {
+		InventoryMessage::InventoryMessage(const MessagePeerPtr &peer) :
+			Message(peer) {
 
 		}
 

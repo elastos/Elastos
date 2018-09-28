@@ -5,17 +5,27 @@
 #ifndef __ELASTOS_SDK_BLOOMFILTERMESSAGE_H__
 #define __ELASTOS_SDK_BLOOMFILTERMESSAGE_H__
 
-#include "IWrapperMessage.h"
+#include "Message.h"
+#include "BloomFilter.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class BloomFilterMessage :
-			public IWrapperMessage {
-		public:
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+		struct BloomFilterParameter : public SendMessageParameter {
+			BloomFilterPtr Filter;
+		};
 
-			virtual void Send(BRPeer *peer, void *serializable);
+		class BloomFilterMessage :
+			public Message {
+		public:
+			BloomFilterMessage(const MessagePeerPtr &peer);
+
+			virtual bool Accept(const std::string &msg);
+
+			virtual void Send(const SendMessageParameter &param);
+
+			virtual std::string Type() const;
+
 		};
 
 	}

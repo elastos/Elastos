@@ -5,31 +5,20 @@
 #ifndef __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 #define __ELASTOS_SDK_SIDECHAINMERKLEBLOCK_H__
 
-#include "IdMerkleBlock.h"
-#include "Plugin/Interface/IMerkleBlock.h"
+#include <fruit/fruit.h>
+
+#include "MerkleBlockBase.h"
+#include "IdAuxPow.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class SidechainMerkleBlock :
-				public Wrapper<BRMerkleBlock>,
-				public IMerkleBlock {
+				public MerkleBlockBase {
 		public:
 			SidechainMerkleBlock();
 
-			SidechainMerkleBlock(IdMerkleBlock *merkleBlock, bool manageRaw);
-
 			virtual ~SidechainMerkleBlock();
-
-			virtual std::string toString() const;
-
-			virtual BRMerkleBlock *getRaw() const;
-
-			virtual IMerkleBlock *CreateMerkleBlock(bool manageRaw);
-
-			virtual IMerkleBlock *CreateFromRaw(BRMerkleBlock *block, bool manageRaw);
-
-			virtual IMerkleBlock *Clone(const BRMerkleBlock *block, bool manageRaw) const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -39,26 +28,29 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &);
 
-			virtual BRMerkleBlock *getRawBlock() const;
-
-			virtual void deleteRawBlock();
-
-			virtual void initFromRaw(BRMerkleBlock *block, bool manageRaw);
-
-			virtual UInt256 getBlockHash() const;
-
-			virtual uint32_t getHeight() const;
-
-			virtual void setHeight(uint32_t height);
+			virtual const UInt256 &getHash() const;
 
 			virtual bool isValid(uint32_t currentTime) const;
 
 			virtual std::string getBlockType() const;
 
 		private:
-			IdMerkleBlock *_merkleBlock;
-			bool _manageRaw;
+			IdAuxPow idAuxPow;
 		};
+
+		class ISidechainMerkleBlockFactory {
+		public:
+			virtual MerkleBlockPtr createBlock() = 0;
+		};
+
+		class SidechainMerkleBlockFactory : public ISidechainMerkleBlockFactory {
+		public:
+			INJECT(SidechainMerkleBlockFactory()) = default;
+
+			virtual MerkleBlockPtr createBlock();
+		};
+
+		fruit::Component<ISidechainMerkleBlockFactory> getSidechainMerkleBlockFactoryComponent();
 
 	}
 }

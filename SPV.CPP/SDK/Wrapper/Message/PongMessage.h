@@ -5,14 +5,16 @@
 #ifndef __ELASTOS_SDK_PONGMESSAGE_H__
 #define __ELASTOS_SDK_PONGMESSAGE_H__
 
-#include "IMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class PongMessage :
-			public IMessage {
+			public Message {
 		public:
+			PongMessage(const MessagePeerPtr &peer);
+
 			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
 			virtual void Send(BRPeer *peer);

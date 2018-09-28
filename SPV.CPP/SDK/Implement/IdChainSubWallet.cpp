@@ -6,9 +6,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <SDK/Common/ParamChecker.h>
 
-#include "ELACoreExt/ELATxOutput.h"
 #include "ELACoreExt/Payload/PayloadRegisterIdentification.h"
-#include "ELACoreExt/ELATransaction.h"
 
 #include "Utils.h"
 #include "MasterWallet.h"
@@ -62,8 +60,8 @@ namespace Elastos {
 			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload());
 			payloadIdChain->fromJson(payloadJson);
 
-			Program *newProgram = new Program();
-			newProgram->fromJson(programJson);
+			Program newProgram;
+			newProgram.fromJson(programJson);
 			transaction->addProgram(newProgram);
 
 			return transaction->toJson();
@@ -80,11 +78,11 @@ namespace Elastos {
 						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
 										  param->getToAddress(), param->getRemark(), param->getMemo());
 				if (!ptr) return nullptr;
-				ptr->setTransactionType(ELATransaction::RegisterIdentification);
+				ptr->setTransactionType(Transaction::RegisterIdentification);
 
-				const std::vector<TransactionOutput *> &outList = ptr->getOutputs();
+				const std::vector<TransactionOutput> &outList = ptr->getOutputs();
 				for (size_t i = 0; i < outList.size(); ++i) {
-					((ELATxOutput *) outList[i]->getRaw())->assetId = param->getAssetId();
+					const_cast<TransactionOutput &>(outList[i]).setAssetId(param->getAssetId());
 				}
 
 				return ptr;
@@ -94,7 +92,7 @@ namespace Elastos {
 		}
 
 		void IdChainSubWallet::verifyRawTransaction(const TransactionPtr &transaction) {
-			if (transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction->getTransactionType() == Transaction::RegisterIdentification) {
 				IdchainTransactionChecker checker(transaction, _walletManager->getWallet());
 				checker.Check();
 			} else
@@ -102,7 +100,7 @@ namespace Elastos {
 		}
 
 		TransactionPtr IdChainSubWallet::completeTransaction(const TransactionPtr &transaction, uint64_t actualFee) {
-			if (transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction->getTransactionType() == Transaction::RegisterIdentification) {
 				IdchainTransactionCompleter completer(transaction, _walletManager->getWallet());
 				return completer.Complete(actualFee);
 			}
@@ -110,7 +108,7 @@ namespace Elastos {
 		}
 
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
-			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->getTransactionType() == Transaction::RegisterIdentification) {
 				std::string txHash = Utils::UInt256ToString(transaction->getHash());
 				Log::getLogger()->debug("ID onTxAdded: hash={}", txHash);
 
@@ -132,8 +130,7 @@ namespace Elastos {
 		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
-			if (transaction != nullptr &&
-				transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->getTransactionType() == Transaction::RegisterIdentification) {
 
 				uint32_t confirm = blockHeight >= transaction->getBlockHeight() ? blockHeight -
 					transaction->getBlockHeight() + 1 : 0;
@@ -141,7 +138,7 @@ namespace Elastos {
 				Log::getLogger()->debug("ID onTxUpdated: hash = {}, confirm = {}", hash, confirm);
 				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&reversedId, confirm, timeStamp, &transaction, this](ISubWalletCallback *callback) {
+							  [&reversedId, &confirm, &transaction, this](ISubWalletCallback *callback) {
 
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 										  transaction->getPayload());
@@ -156,8 +153,9 @@ namespace Elastos {
 		void IdChainSubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
-			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->getTransactionType() == Transaction::RegisterIdentification) {
 				Log::getLogger()->debug("ID onTxDeleted");
+
 				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
 							  [&reversedId, notifyUser, recommendRescan, &transaction, this](

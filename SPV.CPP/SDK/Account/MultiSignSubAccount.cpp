@@ -18,22 +18,22 @@ namespace Elastos {
 										 "Multi-sign sub account do not allow account that are not multi-sign type.");
 		}
 
-		void MultiSignSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
-												  const std::string &payPassword) {
-			ELATransaction *elaTransaction = (ELATransaction *) transaction->getRaw();
-			if (elaTransaction->programs.empty()) {
-				Program *program = new Program;
-				program->setCode(_multiSignAccount->GenerateRedeemScript());
-				elaTransaction->programs.push_back(program);
+		void
+		MultiSignSubAccount::SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+											 const std::string &payPassword) {
+			if (transaction->getPrograms().empty()) {
+				Program program;
+				program.setCode(_multiSignAccount->GenerateRedeemScript());
+				transaction->addProgram(program);
 			}
 
-			ParamChecker::checkCondition(elaTransaction->programs.size() != 1, Error::Transaction,
+			ParamChecker::checkCondition(transaction->getPrograms().size() != 1, Error::Transaction,
 											  "Multi-sign program should be unique.");
 
 			ByteStream stream;
-			if (elaTransaction->programs[0]->getParameter().GetSize() > 0) {
-				stream.putBytes(elaTransaction->programs[0]->getParameter(),
-								elaTransaction->programs[0]->getParameter().GetSize());
+			Program &program = transaction->getPrograms()[0];
+			if (program.getParameter().GetSize() > 0) {
+				stream.putBytes(program.getParameter(), program.getParameter().GetSize());
 			}
 
 			CMBlock shaData = transaction->GetShaData();
@@ -43,7 +43,7 @@ namespace Elastos {
 			memcpy(buff, signData, signData.GetSize());
 			stream.putBytes(buff, 65);
 
-			elaTransaction->programs[0]->setParameter(stream.getBuffer());
+			program.setParameter(stream.getBuffer());
 		}
 
 		nlohmann::json MultiSignSubAccount::GetBasicInfo() const {
@@ -54,11 +54,11 @@ namespace Elastos {
 
 		std::vector<std::string> MultiSignSubAccount::GetTransactionSignedSigners(const TransactionPtr &transaction) {
 
-			for (std::vector<Program *>::const_iterator programIt = transaction->getPrograms().cbegin();
+			for (std::vector<Program>::const_iterator programIt = transaction->getPrograms().cbegin();
 				 programIt != transaction->getPrograms().cend(); ++programIt) {
 
-				const CMBlock &code = (*programIt)->getCode();
-				const CMBlock &parameter = (*programIt)->getParameter();
+				const CMBlock &code = programIt->getCode();
+				const CMBlock &parameter = programIt->getParameter();
 				if (code[code.GetSize() - 1] == ELA_MULTISIG) {
 					std::vector<std::string> result;
 

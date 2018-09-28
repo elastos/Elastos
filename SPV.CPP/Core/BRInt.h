@@ -83,6 +83,8 @@ int UInt168Eq(const UInt168* a, const UInt168* b);
 
 int UInt256Eq(const UInt256* a, const UInt256* b);
 
+int UInt256LessThan(const UInt256* a, const UInt256* b);
+
 int UInt512Eq(const UInt512* a, const UInt512* b);
 
 int UInt128IsZero(const UInt128* u);

@@ -2,17 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "IWrapperMessage.h"
+#include "PublishedTransaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		IWrapperMessage::IWrapperMessage() {
-
+		PublishedTransaction::PublishedTransaction() {
 		}
 
-		IWrapperMessage::~IWrapperMessage() {
-
+		bool PublishedTransaction::HasCallback() const {
+			return !_callback.empty();
 		}
 	}
 }
+

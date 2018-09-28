@@ -2,21 +2,22 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_ICLONABLE_H__
-#define __ELASTOS_SDK_ICLONABLE_H__
+#ifndef __ELASTOS_SDK_IPLUGIN_H__
+#define __ELASTOS_SDK_IPLUGIN_H__
+
+#include "IMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		template <class T>
-		class IClonable {
+		class IPlugin {
 		public:
-			virtual ~IClonable() {}
+			virtual ~IPlugin() {}
 
-			virtual T *Clone(const BRMerkleBlock *block, bool manageRaw) const = 0;
+			virtual MerkleBlockPtr CreateBlock() = 0;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_ICLONABLE_H__
+#endif //__ELASTOS_SDK_IPLUGIN_H__

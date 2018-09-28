@@ -5,19 +5,21 @@
 #ifndef __ELASTOS_SDK_ADDRESSMESSAGE_H_
 #define __ELASTOS_SDK_ADDRESSMESSAGE_H_
 
-#include "IMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class AddressMessage :
-			public IMessage {
+				public Message {
 		public:
-			AddressMessage();
+			AddressMessage(const MessagePeerPtr &peer);
 
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+			virtual bool Accept(const std::string &msg);
 
-			virtual void Send(BRPeer *peer);
+			virtual void Send(const SendMessageParameter &param);
+
+			virtual std::string Type() const;
 
 		};
 

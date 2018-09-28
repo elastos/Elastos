@@ -18,7 +18,7 @@ namespace Elastos {
 			virtual nlohmann::json GetBasicInfo() const;
 
 			virtual void
-			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
+			SignTransaction(const TransactionPtr &transaction, Wallet *wallet, const std::string &payPassword);
 
 			std::vector<std::string> GetTransactionSignedSigners(const TransactionPtr &transaction);
 

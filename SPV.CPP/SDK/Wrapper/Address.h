@@ -8,23 +8,23 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-#include "BRAddress.h"
 #include "BRInt.h"
 #include "Wrapper.h"
 #include "CMemBlock.h"
-#include "ELATransaction.h"
+#include "Transaction/Transaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Address :
-				public Wrapper<BRAddress> {
+		class Address {
 		public:
 			Address();
 
-			Address(std::string address);
+			Address(const std::string &address);
 
-			Address(const BRAddress &addr);
+			Address &operator= (const std::string &address);
+
+			bool operator== (const std::string &address) const;
 
 			bool isValid();
 
@@ -32,11 +32,11 @@ namespace Elastos {
 
 			int getSignType() const;
 
-			virtual std::string toString() const;
-
-			virtual BRAddress *getRaw() const;
-
 			std::string stringify() const;
+
+			bool operator< (const Address &address) const;
+
+			bool IsEqual(const Address &address) const;
 
 		public:
 			static boost::shared_ptr<Address> createAddress(const std::string &address);
@@ -51,10 +51,12 @@ namespace Elastos {
 
 			static bool isValidIdAddress(const std::string &address);
 
-			static bool isValidProgramHash(const UInt168 &u168, const ELATransaction::Type &type);
+			static bool isValidProgramHash(const UInt168 &u168, const Transaction::Type &type);
+
+			static Address None;
 
 		private:
-			boost::shared_ptr<BRAddress> _address;
+			char _s[75];
 		};
 
 		typedef boost::shared_ptr<Address> AddressPtr;

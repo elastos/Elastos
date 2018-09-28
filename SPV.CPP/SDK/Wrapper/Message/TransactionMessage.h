@@ -5,15 +5,15 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONMESSAGE_H__
 #define __ELASTOS_SDK_TRANSACTIONMESSAGE_H__
 
-#include "IWrapperMessage.h"
+#include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		class TransactionMessage :
-				public IWrapperMessage {
+				public Message {
 		public:
-			TransactionMessage();
+			TransactionMessage(const MessagePeerPtr &peer);
 
 			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 
