@@ -28,6 +28,7 @@
 #include "BRInt.h"
 #include <stddef.h>
 #include <inttypes.h>
+#include <secp256k1.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +75,8 @@ int BRKeySetSecret(BRKey *key, const UInt256 *secret, int compressed);
 // assigns privKey to key and returns true on success
 // privKey must be wallet import format (WIF), mini private key format, or hex string
 int BRKeySetPrivKey(BRKey *key, const char *privKey);
+
+int BRKeyPubKeyDecode(secp256k1_pubkey *pk, const uint8_t *pubKey, size_t pkLen);
 
 // assigns DER encoded pubKey to key and returns true on success
 int BRKeySetPubKey(BRKey *key, const uint8_t *pubKey, size_t pkLen);
