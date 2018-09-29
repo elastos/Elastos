@@ -39,11 +39,13 @@ func (t *PayloadRechargeToSideChain) Serialize(w io.Writer, version byte) error 
 
 func (t *PayloadRechargeToSideChain) Deserialize(r io.Reader, version byte) error {
 	var err error
-	if t.MerkleProof, err = common.ReadVarBytes(r); err != nil {
+	if t.MerkleProof, err = common.ReadVarBytes(r, MaxPayloadDataSize,
+		"PayloadRechargeToSideChain MerkleProof"); err != nil {
 		return errors.New("[PayloadRechargeToSideChain], MerkleProof deserialize failed.")
 	}
 
-	if t.MainChainTransaction, err = common.ReadVarBytes(r); err != nil {
+	if t.MainChainTransaction, err = common.ReadVarBytes(r, MaxPayloadDataSize,
+		"PayloadRechargeToSideChain MainChainTransaction"); err != nil {
 		return errors.New("[PayloadRechargeToSideChain], DepositTransaction deserialize failed.")
 	}
 	return nil
