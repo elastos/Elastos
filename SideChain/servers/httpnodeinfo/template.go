@@ -41,7 +41,7 @@ const page = `
 	<table class="font" width="100%">
 	<tr><td colspan="1" width="25%">NodeID:</td><td width="25%">{{.NodeId}}</td></tr>
 	<tr><td width="25%">NodePort:</td><td width="25%">{{.NodePort}}</td></tr>
-	<tr><td width="25%">HttpRestPort:</td><td width="25%">{{.HttpRestPort}}</td><td width="25%">HttpWsPort:</td><td width="25%">{{.HttpWsPort}}</td></tr>
+	<tr><td width="25%">HttpRestPort:</td><td width="25%">{{.HttpRestPort}}</td></tr>
 	<tr><td width="25%">HttpJsonPort:</td><td width="25%">{{.HttpJsonPort}}</td></tr>
 	</table>
 </td>

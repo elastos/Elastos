@@ -75,19 +75,17 @@ type Configuration struct {
 	SpvPrintLevel              int              `json:"SpvPrintLevel"`
 	ExchangeRate               float64          `json:"ExchangeRate"`
 	MinCrossChainTxFee         int              `json:"MinCrossChainTxFee"`
-	HttpRestPort               int              `json:"HttpRestPort"`
 	RestCertPath               string           `json:"RestCertPath"`
 	RestKeyPath                string           `json:"RestKeyPath"`
-	HttpInfoPort               uint16           `json:"HttpInfoPort"`
 	HttpInfoStart              bool             `json:"HttpInfoStart"`
-	PeerBloomFilters                bool             `json:"PeerBloomFilters"`
-	HttpWsPort                 int              `json:"HttpWsPort"`
+	PeerBloomFilters           bool             `json:"PeerBloomFilters"`
+	HttpRestPort               uint16           `json:"HttpRestPort"`
+	HttpInfoPort               uint16           `json:"HttpInfoPort"`
+	HttpJsonPort               uint16           `json:"HttpJsonPort"`
 	WsHeartbeatInterval        time.Duration    `json:"WsHeartbeatInterval"`
-	HttpJsonPort               int              `json:"HttpJsonPort"`
 	OauthServerUrl             string           `json:"OauthServerUrl"`
 	NoticeServerUrl            string           `json:"NoticeServerUrl"`
 	NodePort                   uint16           `json:"NodePort"`
-	WebSocketPort              int              `json:"WebSocketPort"`
 	PrintLevel                 int              `json:"PrintLevel"`
 	IsTLS                      bool             `json:"IsTLS"`
 	CertPath                   string           `json:"CertPath"`

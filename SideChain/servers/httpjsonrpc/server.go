@@ -2,18 +2,12 @@ package httpjsonrpc
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
-	. "github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/errors"
-	"github.com/elastos/Elastos.ELA.SideChain/log"
-	. "github.com/elastos/Elastos.ELA.SideChain/servers"
+	"github.com/elastos/Elastos.ELA.SideChain/servers"
 )
-
-//an instance of the multiplexer
-var MainMux map[string]func(Params) map[string]interface{}
 
 const (
 	// JSON-RPC protocol error codes.
@@ -25,16 +19,50 @@ const (
 	//-32000 to -32099	Server error, waiting for defining
 )
 
-func InitRpcServer() {
-	MainMux = make(map[string]func(Params) map[string]interface{})
-	http.HandleFunc("/", Handle)
-	for _, action := range HttpServers.RpcFunctions {
-		MainMux[action.Name] = action.Handler
+type rpcserver struct {
+	port    uint16
+	service *servers.HttpService
+	mux     map[string]func(servers.Params) map[string]interface{}
+}
+
+func New(port uint16, service *servers.HttpService) *rpcserver {
+	return &rpcserver{
+		port:    port,
+		service: service,
+		mux:     make(map[string]func(servers.Params) map[string]interface{}),
 	}
 }
 
-func StartRPCServer() {
-	err := http.ListenAndServe(":"+strconv.Itoa(Parameters.HttpJsonPort), nil)
+func (s *rpcserver) RegisterAction(name string, action func(servers.Params) map[string]interface{}) {
+	s.mux[name] = action
+}
+
+func (s *rpcserver) Start() {
+	s.RegisterAction("setloglevel", s.service.SetLogLevel)
+	s.RegisterAction("getinfo", s.service.GetInfo)
+	s.RegisterAction("getblock", s.service.GetBlockByHash)
+	s.RegisterAction("getcurrentheight", s.service.GetBlockHeight)
+	s.RegisterAction("getblockhash", s.service.GetBlockHash)
+	s.RegisterAction("getconnectioncount", s.service.GetConnectionCount)
+	s.RegisterAction("getrawmempool", s.service.GetTransactionPool)
+	s.RegisterAction("getrawtransaction", s.service.GetRawTransaction)
+	s.RegisterAction("getneighbors", s.service.GetNeighbors)
+	s.RegisterAction("getnodestate", s.service.GetNodeState)
+	s.RegisterAction("sendtransactioninfo", s.service.SendTransactionInfo)
+	s.RegisterAction("sendrawtransaction", s.service.SendRawTransaction)
+	s.RegisterAction("getbestblockhash", s.service.GetBestBlockHash)
+	s.RegisterAction("getblockcount", s.service.GetBlockCount)
+	s.RegisterAction("getblockbyheight", s.service.GetBlockByHeight)
+	s.RegisterAction("getdestroyedtransactions", s.service.GetDestroyedTransactionsByHeight)
+	s.RegisterAction("getexistdeposittransactions", s.service.GetExistDepositTransactions)
+	s.RegisterAction("help", s.service.AuxHelp)
+	s.RegisterAction("submitsideauxblock", s.service.SubmitSideAuxBlock)
+	s.RegisterAction("createauxblock", s.service.CreateAuxBlock)
+	s.RegisterAction("togglemining", s.service.ToggleMining)
+	s.RegisterAction("discretemining", s.service.DiscreteMining)
+
+	http.HandleFunc("/", s.handle)
+	err := http.ListenAndServe(fmt.Sprint(":", s.port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err.Error())
 	}
@@ -42,7 +70,7 @@ func StartRPCServer() {
 
 //this is the funciton that should be called in order to answer an rpc call
 //should be registered like "http.AddMethod("/", httpjsonrpc.Handle)"
-func Handle(w http.ResponseWriter, r *http.Request) {
+func (s *rpcserver) handle(w http.ResponseWriter, r *http.Request) {
 	//JSON RPC commands should be POSTs
 	if r.Method != "POST" {
 		log.Warn("HTTP JSON RPC Handle - Method!=\"POST\"")
@@ -61,18 +89,18 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	error := json.Unmarshal(body, &request)
 	if error != nil {
 		log.Error("HTTP JSON RPC Handle - json.Unmarshal: ", error)
-		RPCError(w, http.StatusBadRequest, ParseError, "rpc json parse error:"+error.Error())
+		responseError(w, http.StatusBadRequest, ParseError, "rpc json parse error:"+error.Error())
 		return
 	}
 	//get the corresponding function
 	requestMethod, ok := request["method"].(string)
 	if !ok {
-		RPCError(w, http.StatusBadRequest, InvalidRequest, "need a method!")
+		responseError(w, http.StatusBadRequest, InvalidRequest, "need a method!")
 		return
 	}
-	method, ok := MainMux[requestMethod]
+	method, ok := s.mux[requestMethod]
 	if !ok {
-		RPCError(w, http.StatusNotFound, MethodNotFound, "method "+requestMethod+" not found")
+		responseError(w, http.StatusNotFound, MethodNotFound, "method "+requestMethod+" not found")
 		return
 	}
 
@@ -81,21 +109,21 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	// positional parameters: { "requestParams":[1, 2, 3....] }
 	// named parameters: { "requestParams":{ "a":1, "b":2, "c":3 } }
 	//Here we support both of them, because bitcion does so.
-	var params Params
+	var params servers.Params
 	switch requestParams := requestParams.(type) {
 	case nil:
 	case []interface{}:
 		params = convertParams(requestMethod, requestParams)
 	case map[string]interface{}:
-		params = Params(requestParams)
+		params = servers.Params(requestParams)
 	default:
-		RPCError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
+		responseError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
 		return
 	}
 
 	response := method(params)
 	var data []byte
-	if response["Error"] != errors.ErrCode(0) {
+	if response["Error"] != servers.ErrorCode(0) {
 		data, _ = json.Marshal(map[string]interface{}{
 			"jsonrpc": "2.0",
 			"error": map[string]interface{}{
@@ -116,7 +144,7 @@ func Handle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, message string) {
+func responseError(w http.ResponseWriter, httpStatus int, code servers.ErrorCode, message string) {
 	w.WriteHeader(httpStatus)
 	data, _ := json.Marshal(map[string]interface{}{
 		"jsonrpc": "2.0",
@@ -129,27 +157,27 @@ func RPCError(w http.ResponseWriter, httpStatus int, code errors.ErrCode, messag
 	w.Write(data)
 }
 
-func convertParams(method string, params []interface{}) Params {
+func convertParams(method string, params []interface{}) servers.Params {
 	switch method {
 	case "createauxblock":
-		return FromArray(params, "paytoaddress")
+		return servers.FromArray(params, "paytoaddress")
 	case "submitsideauxblock":
-		return FromArray(params, "blockhash", "auxpow")
+		return servers.FromArray(params, "blockhash", "auxpow")
 	case "getblockhash":
-		return FromArray(params, "index")
+		return servers.FromArray(params, "index")
 	case "getblock":
-		return FromArray(params, "hash", "format")
+		return servers.FromArray(params, "hash", "format")
 	case "setloglevel":
-		return FromArray(params, "level")
+		return servers.FromArray(params, "level")
 	case "getrawtransaction":
-		return FromArray(params, "hash", "decoded")
+		return servers.FromArray(params, "hash", "decoded")
 	case "getarbitratorgroupbyheight":
-		return FromArray(params, "height")
+		return servers.FromArray(params, "height")
 	case "togglemining":
-		return FromArray(params, "mine")
+		return servers.FromArray(params, "mine")
 	case "discretemining":
-		return FromArray(params, "count")
+		return servers.FromArray(params, "count")
 	default:
-		return Params{}
+		return servers.Params{}
 	}
 }
