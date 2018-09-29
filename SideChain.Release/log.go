@@ -1,20 +1,15 @@
 package main
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/logger"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
+	"github.com/elastos/Elastos.ELA.SideChain/peer"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
-
-	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	p2pserver "github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
 const LogPath = "./logs/"
@@ -30,9 +25,9 @@ var (
 		config.Parameters.MaxLogsSize,
 	)
 
-	admrlog = elalog.Logger("ADMR")
-	cmgrlog = elalog.Logger("CMGR")
-	bcdblog = elalog.Logger("BCDB")
+	//admrlog = elalog.Logger("ADMR")
+	//cmgrlog = elalog.Logger("CMGR")
+	//bcdblog = elalog.Logger("BCDB")
 	txmplog = elalog.Logger("TXMP")
 	synclog = elalog.Logger("SYNC")
 	peerlog = elalog.Logger("PEER")
@@ -47,13 +42,12 @@ var (
 
 // The default amount of logging is none.
 func init() {
-	addrmgr.UseLogger(admrlog)
-	connmgr.UseLogger(cmgrlog)
-	blockchain.UseLogger(bcdblog)
+	//addrmgr.UseLogger(admrlog)
+	//connmgr.UseLogger(cmgrlog)
+	//blockchain.UseLogger(bcdblog)
 	mempool.UseLogger(txmplog)
 	netsync.UseLogger(synclog)
 	peer.UseLogger(peerlog)
-	p2pserver.UseLogger(srvrlog)
 	pow.UseLogger(minrlog)
 	servers.UseLogger(httplog)
 	httpjsonrpc.UseLogger(rpcslog)

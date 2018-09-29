@@ -11,7 +11,6 @@ import (
 
 	aux "github.com/elastos/Elastos.ELA.SideChain/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -81,17 +80,6 @@ func NewService(cfg *Config) *Service {
 		manualMining:  false,
 		MsgBlock:      messageBlock{BlockData: make(map[string]*types.Block)},
 	}
-
-	events.Subscribe(func(event *events.Event) {
-		switch event.Type {
-		case events.ETBlockConnected:
-			pow.BlockPersistCompleted(event.Data)
-
-		case events.ETBlockDisconnected:
-			pow.RollbackTransaction(event.Data)
-
-		}
-	})
 
 	return &pow
 }
@@ -362,30 +350,6 @@ func (pow *Service) Halt() {
 	close(pow.quit)
 	pow.wg.Wait()
 	pow.started = false
-}
-
-func (pow *Service) RollbackTransaction(v interface{}) {
-	if block, ok := v.(*types.Block); ok {
-		for _, tx := range block.Transactions[1:] {
-			err := pow.txMemPool.MaybeAcceptTransaction(tx)
-			if err == nil {
-				pow.txMemPool.RemoveTransaction(tx)
-			} else {
-				log.Error(err)
-			}
-		}
-	}
-}
-
-func (pow *Service) BlockPersistCompleted(v interface{}) {
-	log.Debug()
-	if block, ok := v.(*types.Block); ok {
-		log.Infof("persist block: %x", block.Hash())
-		err := pow.txMemPool.CleanSubmittedTransactions(block)
-		if err != nil {
-			log.Warn(err)
-		}
-	}
 }
 
 func (pow *Service) CpuMining() {
