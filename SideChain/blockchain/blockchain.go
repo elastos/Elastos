@@ -413,13 +413,10 @@ func (b *BlockChain) AddOrphanBlock(block *types.Block) {
 
 func (b *BlockChain) IsKnownOrphan(hash *Uint256) bool {
 	b.OrphanLock.RLock()
-	defer b.OrphanLock.RUnlock()
+	_, ok := b.Orphans[*hash]
+	b.OrphanLock.RUnlock()
 
-	if _, exists := b.Orphans[*hash]; exists {
-		return true
-	}
-
-	return false
+	return ok
 }
 
 func (b *BlockChain) GetOrphanRoot(hash *Uint256) *Uint256 {
@@ -429,8 +426,8 @@ func (b *BlockChain) GetOrphanRoot(hash *Uint256) *Uint256 {
 	orphanRoot := hash
 	prevHash := hash
 	for {
-		orphan, exists := b.Orphans[*prevHash]
-		if !exists {
+		orphan, ok := b.Orphans[*prevHash]
+		if !ok {
 			break
 		}
 		orphanRoot = prevHash
