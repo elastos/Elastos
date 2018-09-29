@@ -12,8 +12,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
-	"github.com/elastos/Elastos.ELA.SideChain/mempool"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	ela "github.com/elastos/Elastos.ELA/core"
@@ -37,8 +35,9 @@ type Config struct {
 	PowLimit          *big.Int
 	MaxOrphanBlocks   int
 	MinMemoryNodes    uint32
-	TxValidator       *mempool.Validator
-	TxFeeHelper       *mempool.FeeHelper
+	CheckTxSanity     func(*core.Transaction) error
+	CheckTxContext     func(*core.Transaction) error
+	GetTxFee          func(tx *core.Transaction, assetId Uint256) Fixed64
 }
 
 type BlockChain struct {
@@ -46,8 +45,7 @@ type BlockChain struct {
 	maxOrphanBlocks int
 	minMemoryNodes  uint32
 	powLimit        *big.Int
-	txValidator     *mempool.Validator
-	blockValidator  *Validator
+	validator       *Validator
 	GenesisHash     Uint256
 	BestChain       *BlockNode
 	Root            *BlockNode
@@ -77,8 +75,7 @@ func New(cfg *Config) (*BlockChain, error) {
 		maxOrphanBlocks: defaultMaxOrphanBlocks,
 		minMemoryNodes:  defaultMinMemoryNodes,
 		powLimit:        cfg.PowLimit,
-		txValidator:     cfg.TxValidator,
-		blockValidator:  NewValidator(cfg),
+		validator:       NewValidator(cfg),
 		GenesisHash:     genesisHash,
 		Root:            nil,
 		BestChain:       nil,
@@ -854,16 +851,6 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *core.Block) error {
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
 func (b *BlockChain) connectBlock(node *BlockNode, block *core.Block) error {
-	for _, txVerify := range block.Transactions {
-		if err := b.txValidator.CheckTransactionContext(txVerify); err != nil {
-			if e, ok := err.(*mempool.RuleError); ok {
-				log.Infof("rule error for transaction context check, "+
-					"error %s, desc %s", e.ErrorCode, e.Description)
-			}
-			return errors.New(fmt.Sprintf("CheckTransactionContext failed when verifiy block"))
-		}
-	}
-
 	// Make sure it's extending the end of the best chain.
 	prevHash := &block.Header.Previous
 	if b.BestChain != nil && !prevHash.IsEqual(*b.BestChain.Hash) {
@@ -937,7 +924,7 @@ func (b *BlockChain) maybeAcceptBlock(block *core.Block) (bool, error) {
 
 	// The block must pass all of the validation rules which depend on the
 	// position of the block within the block chain.
-	err = b.blockValidator.CheckBlockContext(block, prevNode)
+	err = b.validator.CheckBlockContext(block, prevNode)
 	if err != nil {
 		log.Error("powCheckBlockContext error!", err)
 		return false, err
@@ -1092,7 +1079,7 @@ func (b *BlockChain) ProcessBlock(block *core.Block) (bool, bool, error) {
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = powCheckBlockSanity(block, PowLimit, b.TimeSource)
-	err = b.blockValidator.CheckBlockSanity(block, b.powLimit, b.TimeSource)
+	err = b.validator.CheckBlockSanity(block, b.powLimit, b.TimeSource)
 
 	if err != nil {
 		log.Error("powCheckBlockSanity error!", err)

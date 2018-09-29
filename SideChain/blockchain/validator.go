@@ -2,12 +2,12 @@ package blockchain
 
 import (
 	"errors"
+	"math"
 	"math/big"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -18,24 +18,20 @@ const (
 )
 
 type Validator struct {
-	assetId              common.Uint256
-	txValidator          *mempool.Validator
-	txFeeHelper          *mempool.FeeHelper
+	cfg                  *Config
 	checkSanityFunctions map[ValidateFuncName]func(params ...interface{}) error
 }
 
 func NewValidator(cfg *Config) *Validator {
 	v := &Validator{
-		assetId:              cfg.AssetId,
-		txValidator:          cfg.TxValidator,
-		txFeeHelper:          cfg.TxFeeHelper,
+		cfg:                  cfg,
 		checkSanityFunctions: make(map[ValidateFuncName]func(params ...interface{}) error, 0),
 	}
-	v.RegisterFunc(ValidateFuncNames.PowCheckHeader, v.checkHeader)
-	v.RegisterFunc(ValidateFuncNames.PowCheckTransactionsCount, v.checkTransactionsCount)
-	v.RegisterFunc(ValidateFuncNames.PowCheckBlockSize, v.checkBlockSize)
-	v.RegisterFunc(ValidateFuncNames.PowCheckTransactionsFee, v.checkTransactionsFee)
-	v.RegisterFunc(ValidateFuncNames.PowCheckTransactionsMerkle, v.checkTransactionsMerkle)
+	v.RegisterFunc(ValidateFuncNames.CheckHeader, v.checkHeader)
+	v.RegisterFunc(ValidateFuncNames.CheckTransactionsCount, v.checkTransactionsCount)
+	v.RegisterFunc(ValidateFuncNames.CheckBlockSize, v.checkBlockSize)
+	v.RegisterFunc(ValidateFuncNames.CheckTransactionsFee, v.checkTransactionsFee)
+	v.RegisterFunc(ValidateFuncNames.CheckTransactionsMerkle, v.checkTransactionsMerkle)
 	return v
 }
 
@@ -95,7 +91,7 @@ func (v *Validator) CheckBlockContext(block *core.Block, prevNode *BlockNode) (e
 
 	// Ensure all transactions in the block are finalized.
 	for _, txn := range block.Transactions[1:] {
-		if err := mempool.CheckTransactionFinalize(txn, blockHeight); err != nil {
+		if err := CheckTransactionFinalize(txn, blockHeight); err != nil {
 			return errors.New("[powCheckBlockContext] block contains unfinalized transaction")
 		}
 	}
@@ -195,7 +191,7 @@ func (v *Validator) checkTransactionsFee(params ...interface{}) (err error) {
 		}
 
 		// Calculate transaction fee
-		totalTxFee += v.txFeeHelper.GetTxFee(tx, v.assetId)
+		totalTxFee += v.cfg.GetTxFee(tx, v.cfg.AssetId)
 	}
 
 	// Reward in coinbase must match total transaction fee
@@ -218,24 +214,20 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 		txId := txn.Hash()
 		// Check for duplicate transactions.
 		if _, exists := existingTxIds[txId]; exists {
-			return errors.New("[powCheckTransactionsMerkle] block contains duplicate transaction")
+			return errors.New("[CheckTransactionsMerkle] block contains duplicate transaction")
 		}
 		existingTxIds[txId] = struct{}{}
 
 		// Check for transaction sanity
-		if err := v.txValidator.CheckTransactionSanity(txn); err != nil {
-			if e, ok := err.(*mempool.RuleError); ok {
-				log.Infof("rule error for transaction sanity check, "+
-					"error %s, desc %s", e.ErrorCode, e.Description)
-			}
-			return errors.New("[powCheckTransactionsMerkle] failed when verifiy block")
+		if err := v.cfg.CheckTxSanity(txn); err != nil {
+			return errors.New("[CheckTransactionsMerkle] failed when verifiy block")
 		}
 
 		// Check for duplicate UTXO inputs in a block
 		for _, input := range txn.Inputs {
 			referKey := input.ReferKey()
 			if _, exists := existingTxInputs[referKey]; exists {
-				return errors.New("[powCheckTransactionsMerkle] block contains duplicate UTXO")
+				return errors.New("[CheckTransactionsMerkle] block contains duplicate UTXO")
 			}
 			existingTxInputs[referKey] = struct{}{}
 		}
@@ -248,7 +240,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 				return err
 			}
 			if _, exists := existingMainTxs[*hash]; exists {
-				return errors.New("[powCheckTransactionsMerkle] block contains duplicate mainchain Tx")
+				return errors.New("[CheckTransactionsMerkle] block contains duplicate mainchain Tx")
 			}
 			existingMainTxs[*hash] = struct{}{}
 		}
@@ -258,10 +250,10 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 	}
 	calcTransactionsRoot, err := crypto.ComputeRoot(txIds)
 	if err != nil {
-		return errors.New("[powCheckTransactionsMerkle] merkleTree compute failed")
+		return errors.New("[CheckTransactionsMerkle] merkleTree compute failed")
 	}
 	if !block.Header.MerkleRoot.IsEqual(calcTransactionsRoot) {
-		return errors.New("[powCheckTransactionsMerkle] block merkle root is invalid")
+		return errors.New("[CheckTransactionsMerkle] block merkle root is invalid")
 	}
 
 	return nil
@@ -287,5 +279,28 @@ func (v *Validator) checkProofOfWork(header *core.Header, powLimit *big.Int) (er
 		return errors.New("[checkProofOfWork], block target difficulty is higher than expected difficulty.")
 	}
 
+	return nil
+}
+
+func CheckTransactionFinalize(tx *core.Transaction, blockHeight uint32) error {
+	// Lock time of zero means the transaction is finalized.
+	lockTime := tx.LockTime
+	if lockTime == 0 {
+		return nil
+	}
+
+	//FIXME only height
+	if lockTime < blockHeight {
+		return nil
+	}
+
+	// At this point, the transaction's lock time hasn't occurred yet, but
+	// the transaction might still be finalized if the sequence number
+	// for all transaction inputs is maxed out.
+	for _, txIn := range tx.Inputs {
+		if txIn.Sequence != math.MaxUint16 {
+			return errors.New("[checkFinalizedTransaction] lock time check failed")
+		}
+	}
 	return nil
 }

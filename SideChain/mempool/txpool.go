@@ -4,17 +4,27 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+type GetReference func(*core.Transaction) (map[*core.Input]*core.Output, error)
+
+type Config struct {
+	FoundationAddress Uint168
+	AssetId           Uint256
+	ExchangeRage      float64
+	ChainStore        blockchain.IChainStore
+	Validator         *Validator
+	FeeHelper         *FeeHelper
+}
+
 type TxPool struct {
 	assetId   Uint256
-	db        blockchain.IChainStore
 	validator *Validator
 	feeHelper *FeeHelper
 	sync.RWMutex
@@ -24,12 +34,11 @@ type TxPool struct {
 	mainchainTxList map[Uint256]*core.Transaction // mainchain tx pool
 }
 
-func New(cfg *blockchain.Config) *TxPool {
+func New(cfg *Config) *TxPool {
 	p := TxPool{
 		assetId:         cfg.AssetId,
-		db:              cfg.ChainStore,
-		validator:       cfg.TxValidator,
-		feeHelper:       cfg.TxFeeHelper,
+		validator:       cfg.Validator,
+		feeHelper:       cfg.FeeHelper,
 		txCount:         0,
 		inputUTXOList:   make(map[string]*core.Transaction),
 		txnList:         make(map[Uint256]*core.Transaction),
@@ -126,22 +135,19 @@ func (p *TxPool) removeTransaction(tx *core.Transaction) {
 }
 
 //check and add to utxo list pool
-func (p *TxPool) verifyDoubleSpend(txn *core.Transaction) error {
-	reference, err := p.db.GetTxReference(txn)
-	if err != nil {
-		return err
-	}
-	inputs := []*core.Input{}
-	for k := range reference {
-		if txn := p.getInputUTXOList(k); txn != nil {
+func (p *TxPool) verifyDoubleSpend(tx *core.Transaction) error {
+	inputs := make([]*core.Input, 0, len(tx.Inputs))
+	for _, input := range tx.Inputs {
+		if txn := p.getInputUTXOList(input); txn != nil {
 			return errors.New(fmt.Sprintf("double spent UTXO inputs detected, "+
 				"transaction hash: %x, input: %s, index: %d",
-				txn.Hash(), k.Previous.TxID, k.Previous.Index))
+				txn.Hash(), input.Previous.TxID, input.Previous.Index))
 		}
-		inputs = append(inputs, k)
+		inputs = append(inputs, input)
 	}
+
 	for _, v := range inputs {
-		p.addInputUTXOList(txn, v)
+		p.addInputUTXOList(tx, v)
 	}
 
 	return nil
@@ -179,10 +185,9 @@ func (p *TxPool) verifyDuplicateMainchainTx(txn *core.Transaction) error {
 
 //clean txnpool utxo map
 func (p *TxPool) cleanUTXOList(txs []*core.Transaction) {
-	for _, txn := range txs {
-		inputUtxos, _ := p.db.GetTxReference(txn)
-		for Utxoinput, _ := range inputUtxos {
-			p.delInputUTXOList(Utxoinput)
+	for _, tx := range txs {
+		for _, input := range tx.Inputs {
+			p.delInputUTXOList(input)
 		}
 	}
 }
@@ -339,6 +344,10 @@ func (p *TxPool) MaybeAcceptTransaction(txn *core.Transaction) error {
 	}
 
 	if err := p.AppendToTxPool(txn); err != nil {
+		if e, ok := err.(*RuleError); ok {
+			log.Infof("rule error when adding transaction pool, "+
+				"error %s, desc %s", e.ErrorCode, e.Description)
+		}
 		return fmt.Errorf("VerifyTxs failed when AppendToTxnPool")
 	}
 

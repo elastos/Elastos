@@ -30,12 +30,12 @@ type Validator struct {
 	checkContextFunctions map[FuncName]func(txn *core.Transaction) error
 }
 
-func NewValidator(cfg *blockchain.Config) *Validator {
+func NewValidator(cfg *Config) *Validator {
 	v := &Validator{
 		assetId:               cfg.AssetId,
 		foundation:            cfg.FoundationAddress,
 		db:                    cfg.ChainStore,
-		txFeeHelper:           cfg.TxFeeHelper,
+		txFeeHelper:           cfg.FeeHelper,
 		checkSanityFunctions:  make(map[FuncName]func(txn *core.Transaction) error),
 		checkContextFunctions: make(map[FuncName]func(txn *core.Transaction) error),
 	}
@@ -231,7 +231,6 @@ func (v *Validator) checkTransactionUTXOLock(txn *core.Transaction) error {
 		return ruleError(ErrUTXOLocked, str)
 	}
 	for input, output := range references {
-
 		if output.OutputLock == 0 {
 			//check next utxo
 			continue
@@ -718,27 +717,4 @@ func (p byHash) Less(i, j int) bool {
 		panic(p[j].Code)
 	}
 	return hashi.Compare(*hashj) < 0
-}
-
-func CheckTransactionFinalize(tx *core.Transaction, blockHeight uint32) error {
-	// Lock time of zero means the transaction is finalized.
-	lockTime := tx.LockTime
-	if lockTime == 0 {
-		return nil
-	}
-
-	//FIXME only height
-	if lockTime < blockHeight {
-		return nil
-	}
-
-	// At this point, the transaction's lock time hasn't occurred yet, but
-	// the transaction might still be finalized if the sequence number
-	// for all transaction inputs is maxed out.
-	for _, txIn := range tx.Inputs {
-		if txIn.Sequence != math.MaxUint16 {
-			return errors.New("[checkFinalizedTransaction] lock time check failed")
-		}
-	}
-	return nil
 }

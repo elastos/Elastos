@@ -96,6 +96,10 @@ func NewService(cfg *Config) *Service {
 	return &pow
 }
 
+func (pow *Service) SetMinerAddr(minerAddr string) {
+	pow.minerAddr = minerAddr
+}
+
 func (pow *Service) GetTransactionCount() int {
 	transactionsPool := pow.txMemPool.GetTxsInPool()
 	return len(transactionsPool)
@@ -222,7 +226,7 @@ func (pow *Service) GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *
 			break
 		}
 
-		if err := mempool.CheckTransactionFinalize(tx, nextBlockHeight); err != nil {
+		if err := blockchain.CheckTransactionFinalize(tx, nextBlockHeight); err != nil {
 			continue
 		}
 

@@ -4,22 +4,24 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 
-	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type FeeHelper struct {
-	db blockchain.IChainStore
+	exchangeRate float64
+	getReference GetReference
 }
 
-func NewFeeHelper(db blockchain.IChainStore) *FeeHelper {
-	return &FeeHelper{db: db}
+func NewFeeHelper(cfg *Config) *FeeHelper {
+	return &FeeHelper{
+		getReference: cfg.ChainStore.GetTxReference,
+		exchangeRate: cfg.ExchangeRage,
+	}
 }
 
-func (h *FeeHelper) GetTxFee(tx *core.Transaction, assetId Uint256) Fixed64 {
+func (h *FeeHelper) GetTxFee(tx *core.Transaction, assetId common.Uint256) common.Fixed64 {
 	feeMap, err := h.GetTxFeeMap(tx)
 	if err != nil {
 		return 0
@@ -28,8 +30,8 @@ func (h *FeeHelper) GetTxFee(tx *core.Transaction, assetId Uint256) Fixed64 {
 	return feeMap[assetId]
 }
 
-func (h *FeeHelper) GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, error) {
-	feeMap := make(map[Uint256]Fixed64)
+func (h *FeeHelper) GetTxFeeMap(tx *core.Transaction) (map[common.Uint256]common.Fixed64, error) {
+	feeMap := make(map[common.Uint256]common.Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {
 		depositPayload := tx.Payload.(*core.PayloadRechargeToSideChain)
@@ -52,9 +54,9 @@ func (h *FeeHelper) GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, erro
 
 					amount, ok := feeMap[v.AssetID]
 					if ok {
-						feeMap[v.AssetID] = amount + Fixed64(float64(mcAmount)*config.Parameters.ExchangeRate) - v.Value
+						feeMap[v.AssetID] = amount + common.Fixed64(float64(mcAmount)*h.exchangeRate) - v.Value
 					} else {
-						feeMap[v.AssetID] = Fixed64(float64(mcAmount)*config.Parameters.ExchangeRate) - v.Value
+						feeMap[v.AssetID] = common.Fixed64(float64(mcAmount)*h.exchangeRate) - v.Value
 					}
 				}
 			}
@@ -63,13 +65,13 @@ func (h *FeeHelper) GetTxFeeMap(tx *core.Transaction) (map[Uint256]Fixed64, erro
 		return feeMap, nil
 	}
 
-	reference, err := h.db.GetTxReference(tx)
+	reference, err := h.getReference(tx)
 	if err != nil {
 		return nil, err
 	}
 
-	var inputs = make(map[Uint256]Fixed64)
-	var outputs = make(map[Uint256]Fixed64)
+	var inputs = make(map[common.Uint256]common.Fixed64)
+	var outputs = make(map[common.Uint256]common.Fixed64)
 	for _, v := range reference {
 		amout, ok := inputs[v.AssetID]
 		if ok {
