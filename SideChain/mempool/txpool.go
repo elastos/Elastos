@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SideChain/core"
@@ -19,6 +20,7 @@ type Config struct {
 	AssetId           Uint256
 	ExchangeRage      float64
 	ChainStore        blockchain.IChainStore
+	SpvService        *spv.Service
 	Validator         *Validator
 	FeeHelper         *FeeHelper
 }

@@ -37,6 +37,7 @@ var (
 	synclog = elalog.Logger("SYNC")
 	peerlog = elalog.Logger("PEER")
 	minrlog = elalog.Logger("MINR")
+	spvslog = elalog.Logger("SPVS")
 	srvrlog = elalog.Logger("SRVR")
 	httplog = elalog.Logger("HTTP")
 	rpcslog = elalog.Logger("RPCS")
