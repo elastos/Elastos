@@ -1,4 +1,4 @@
-package core
+package types
 
 import (
 	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"

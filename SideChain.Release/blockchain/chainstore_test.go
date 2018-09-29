@@ -4,7 +4,7 @@ import (
 	"container/list"
 	"testing"
 
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -22,7 +22,7 @@ func newTestChainStore() (*ChainStore, error) {
 	store := &ChainStore{
 		IStore:             st,
 		headerIndex:        map[uint32]common.Uint256{},
-		headerCache:        map[common.Uint256]*core.Header{},
+		headerCache:        map[common.Uint256]*types.Header{},
 		headerIdx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,

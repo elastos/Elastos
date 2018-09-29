@@ -11,10 +11,10 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/logger"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -71,7 +71,7 @@ func FromReversedString(reversed string) ([]byte, error) {
 	return common.BytesReverse(bytes), err
 }
 
-func (s *HttpService) getTransactionInfo(header *core.Header, tx *core.Transaction) *TransactionInfo {
+func (s *HttpService) getTransactionInfo(header *types.Header, tx *types.Transaction) *TransactionInfo {
 	inputs := make([]InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = ToReversedString(v.Previous.TxID)
@@ -142,16 +142,16 @@ func (s *HttpService) getTransactionInfo(header *core.Header, tx *core.Transacti
 	}
 }
 
-func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction, error) {
+func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*types.Transaction, error) {
 	txPaload, err := s.getPayload(txInfo.Payload)
 	if err != nil {
 		return nil, err
 	}
 
-	var txAttribute []*core.Attribute
+	var txAttribute []*types.Attribute
 	for _, att := range txInfo.Attributes {
 		var attData []byte
-		if att.Usage == core.Nonce {
+		if att.Usage == types.Nonce {
 			attData = []byte(att.Data)
 		} else {
 			attData, err = common.HexStringToBytes(att.Data)
@@ -159,14 +159,14 @@ func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction
 				return nil, err
 			}
 		}
-		txAttr := &core.Attribute{
+		txAttr := &types.Attribute{
 			Usage: att.Usage,
 			Data:  attData,
 		}
 		txAttribute = append(txAttribute, txAttr)
 	}
 
-	var txUTXOTxInput []*core.Input
+	var txUTXOTxInput []*types.Input
 	for _, input := range txInfo.Inputs {
 		txID, err := FromReversedString(input.TxID)
 		if err != nil {
@@ -176,8 +176,8 @@ func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction
 		if err != nil {
 			return nil, err
 		}
-		utxoInput := &core.Input{
-			Previous: core.OutPoint{
+		utxoInput := &types.Input{
+			Previous: types.OutPoint{
 				TxID:  *referID,
 				Index: input.VOut,
 			},
@@ -186,7 +186,7 @@ func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction
 		txUTXOTxInput = append(txUTXOTxInput, utxoInput)
 	}
 
-	var txOutputs []*core.Output
+	var txOutputs []*types.Output
 	for _, output := range txInfo.Outputs {
 		assetIdBytes, err := FromReversedString(output.AssetID)
 		if err != nil {
@@ -204,7 +204,7 @@ func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction
 		if err != nil {
 			return nil, err
 		}
-		output := &core.Output{
+		output := &types.Output{
 			AssetID:     *assetId,
 			Value:       *value,
 			OutputLock:  output.OutputLock,
@@ -213,7 +213,7 @@ func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction
 		txOutputs = append(txOutputs, output)
 	}
 
-	var txPrograms []*core.Program
+	var txPrograms []*types.Program
 	for _, pgrm := range txInfo.Programs {
 		code, err := common.HexStringToBytes(pgrm.Code)
 		if err != nil {
@@ -223,14 +223,14 @@ func (s *HttpService) getTransaction(txInfo *TransactionInfo) (*core.Transaction
 		if err != nil {
 			return nil, err
 		}
-		txProgram := &core.Program{
+		txProgram := &types.Program{
 			Code:      code,
 			Parameter: parameter,
 		}
 		txPrograms = append(txPrograms, txProgram)
 	}
 
-	txTransaction := &core.Transaction{
+	txTransaction := &types.Transaction{
 		TxType:         txInfo.TxType,
 		PayloadVersion: txInfo.PayloadVersion,
 		Payload:        txPaload,
@@ -355,8 +355,8 @@ func (s *HttpService) SubmitSideAuxBlock(param Params) map[string]interface{} {
 	return ResponsePack(Success, blockHash)
 }
 
-func (s *HttpService) generateAuxBlock(addr string) (*core.Block, string, bool) {
-	msgBlock := &core.Block{}
+func (s *HttpService) generateAuxBlock(addr string) (*types.Block, string, bool) {
+	msgBlock := &types.Block{}
 	if s.chain.GetBestHeight() == 0 || s.preChainHeight != s.chain.GetBestHeight() ||
 		time.Now().Unix()-s.preTime > AuxBlockGenerateInterval {
 		if s.preChainHeight != s.chain.GetBestHeight() {
@@ -517,7 +517,7 @@ func (s *HttpService) GetTransactionPool(param Params) map[string]interface{} {
 	return ResponsePack(Success, txs)
 }
 
-func (s *HttpService) getBlockInfo(block *core.Block, verbose bool) BlockInfo {
+func (s *HttpService) getBlockInfo(block *types.Block, verbose bool) BlockInfo {
 	var txs []interface{}
 	if verbose {
 		for _, tx := range block.Transactions {
@@ -643,7 +643,7 @@ func (s *HttpService) SendRawTransaction(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "hex string to bytes error")
 	}
-	var txn core.Transaction
+	var txn types.Transaction
 	if err := txn.Deserialize(bytes.NewReader(bys)); err != nil {
 		return ResponsePack(InvalidTransaction, "transaction deserialize error")
 	}
@@ -689,7 +689,7 @@ func (s *HttpService) GetBlockHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, ToReversedString(hash))
 }
 
-func (s *HttpService) getBlockTransactions(block *core.Block) interface{} {
+func (s *HttpService) getBlockTransactions(block *types.Block) interface{} {
 	trans := make([]string, len(block.Transactions))
 	for i := 0; i < len(block.Transactions); i++ {
 		trans[i] = ToReversedString(block.Transactions[i].Hash())
@@ -970,7 +970,7 @@ func (s *HttpService) GetExistDepositTransactions(param Params) map[string]inter
 	return ResponsePack(Success, resultTxHashes)
 }
 
-func (s *HttpService) getBlockTransactionsDetail(block *core.Block, filter func(*core.Transaction) bool) interface{} {
+func (s *HttpService) getBlockTransactionsDetail(block *types.Block, filter func(*types.Transaction) bool) interface{} {
 	var trans []*TransactionInfo
 	for _, tx := range block.Transactions {
 		if !filter(tx) {
@@ -1010,8 +1010,8 @@ func (s *HttpService) GetDestroyedTransactionsByHeight(param Params) map[string]
 	}
 
 	destroyHash := common.Uint168{}
-	return ResponsePack(Success, s.getBlockTransactionsDetail(block, func(tran *core.Transaction) bool {
-		_, ok := tran.Payload.(*core.PayloadTransferCrossChainAsset)
+	return ResponsePack(Success, s.getBlockTransactionsDetail(block, func(tran *types.Transaction) bool {
+		_, ok := tran.Payload.(*types.PayloadTransferCrossChainAsset)
 		if !ok {
 			return false
 		}
@@ -1024,11 +1024,11 @@ func (s *HttpService) GetDestroyedTransactionsByHeight(param Params) map[string]
 	}))
 }
 
-func (s *HttpService) getPayload(pInfo PayloadInfo) (core.Payload, error) {
+func (s *HttpService) getPayload(pInfo PayloadInfo) (types.Payload, error) {
 
 	switch object := pInfo.(type) {
 	case *RegisterAssetInfo:
-		obj := new(core.PayloadRegisterAsset)
+		obj := new(types.PayloadRegisterAsset)
 		obj.Asset = object.Asset
 		amount, err := common.StringToFixed64(object.Amount)
 		if err != nil {
@@ -1043,7 +1043,7 @@ func (s *HttpService) getPayload(pInfo PayloadInfo) (core.Payload, error) {
 		obj.Controller = *controller
 		return obj, nil
 	case *RechargeToSideChainInfo:
-		obj := new(core.PayloadRechargeToSideChain)
+		obj := new(types.PayloadRechargeToSideChain)
 		proofBytes, err := common.HexStringToBytes(object.Proof)
 		if err != nil {
 			return nil, err
@@ -1056,7 +1056,7 @@ func (s *HttpService) getPayload(pInfo PayloadInfo) (core.Payload, error) {
 		obj.MainChainTransaction = transactionBytes
 		return obj, nil
 	case *TransferCrossChainAssetInfo:
-		obj := new(core.PayloadTransferCrossChainAsset)
+		obj := new(types.PayloadTransferCrossChainAsset)
 		obj.CrossChainAddresses = object.CrossChainAddresses
 		obj.OutputIndexes = object.OutputIndexes
 		obj.CrossChainAmounts = object.CrossChainAmounts
@@ -1066,27 +1066,27 @@ func (s *HttpService) getPayload(pInfo PayloadInfo) (core.Payload, error) {
 	return nil, errors.New("Invalid payload type.")
 }
 
-func (s *HttpService) getPayloadInfo(p core.Payload) PayloadInfo {
+func (s *HttpService) getPayloadInfo(p types.Payload) PayloadInfo {
 	switch object := p.(type) {
-	case *core.PayloadCoinBase:
+	case *types.PayloadCoinBase:
 		obj := new(CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *core.PayloadRegisterAsset:
+	case *types.PayloadRegisterAsset:
 		obj := new(RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = common.BytesToHexString(common.BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *core.PayloadTransferCrossChainAsset:
+	case *types.PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
 		obj.CrossChainAddresses = object.CrossChainAddresses
 		obj.OutputIndexes = object.OutputIndexes
 		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
-	case *core.PayloadTransferAsset:
-	case *core.PayloadRecord:
-	case *core.PayloadRechargeToSideChain:
+	case *types.PayloadTransferAsset:
+	case *types.PayloadRecord:
+	case *types.PayloadRechargeToSideChain:
 		obj := new(RechargeToSideChainInfo)
 		obj.MainChainTransaction = common.BytesToHexString(object.MainChainTransaction)
 		obj.Proof = common.BytesToHexString(object.MerkleProof)
@@ -1116,15 +1116,15 @@ func (s *HttpService) getTransactionInfoFromBytes(txInfoBytes []byte) (*Transact
 
 	var assetInfo PayloadInfo
 	switch txInfo.TxType {
-	case core.CoinBase:
+	case types.CoinBase:
 		assetInfo = &CoinbaseInfo{}
-	case core.RegisterAsset:
+	case types.RegisterAsset:
 		assetInfo = &RegisterAssetInfo{}
-	case core.SideChainPow:
+	case types.SideChainPow:
 		assetInfo = &SideChainPowInfo{}
-	case core.RechargeToSideChain:
+	case types.RechargeToSideChain:
 		assetInfo = &RechargeToSideChainInfo{}
-	case core.TransferCrossChainAsset:
+	case types.TransferCrossChainAsset:
 		assetInfo = &TransferCrossChainAssetInfo{}
 	default:
 		return nil, errors.New("getBlockTransactions: Unknown payload type")
@@ -1137,7 +1137,7 @@ func (s *HttpService) getTransactionInfoFromBytes(txInfoBytes []byte) (*Transact
 	return &txInfo, nil
 }
 
-func (s *HttpService) verifyAndSendTx(tx *core.Transaction) error {
+func (s *HttpService) verifyAndSendTx(tx *types.Transaction) error {
 	// if transaction is verified unsucessfully then will not put it into transaction pool
 	if err := s.txMemPool.AppendToTxPool(tx); err != nil {
 		if e, ok := err.(*RuleError); ok {

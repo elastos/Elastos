@@ -3,14 +3,15 @@ package spv
 import (
 	"bytes"
 	"errors"
+
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA/bloom"
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type Service struct {
@@ -48,11 +49,11 @@ func NewService(logger elalog.Logger) (*Service, error) {
 	return &Service{service}, nil
 }
 
-func (s *Service) VerifyTransaction(tx *core.Transaction) error {
+func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	proof := new(bloom.MerkleProof)
-	mainChainTransaction := new(ela.Transaction)
+	mainChainTransaction := new(core.Transaction)
 
-	payloadObj, ok := tx.Payload.(*core.PayloadRechargeToSideChain)
+	payloadObj, ok := tx.Payload.(*types.PayloadRechargeToSideChain)
 	if !ok {
 		return errors.New("Invalid payload core.PayloadRechargeToSideChain")
 	}
@@ -92,15 +93,15 @@ func (l *listener) Address() string {
 	return l.address
 }
 
-func (l *listener) Type() ela.TransactionType {
-	return ela.RechargeToSideChain
+func (l *listener) Type() core.TransactionType {
+	return core.RechargeToSideChain
 }
 
 func (l *listener) Flags() uint64 {
 	return spv.FlagNotifyInSyncing
 }
 
-func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx ela.Transaction) {
+func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
 	// Submit transaction receipt
 	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }

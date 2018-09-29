@@ -3,12 +3,12 @@ package blockchain
 import (
 	"math/big"
 
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 )
 
-func AssertBlock(value interface{}) *core.Block {
+func AssertBlock(value interface{}) *types.Block {
 	switch block := value.(type) {
-	case *core.Block:
+	case *types.Block:
 		return block
 	default:
 		panic("parameter is not block")
@@ -42,18 +42,18 @@ func AssertBlockNode(value interface{}) *BlockNode {
 	}
 }
 
-func AssertHeader(value interface{}) *core.Header {
+func AssertHeader(value interface{}) *types.Header {
 	switch header := value.(type) {
-	case *core.Header:
+	case *types.Header:
 		return header
 	default:
 		panic("parameter is not Header")
 	}
 }
 
-func AssertTransaction(value interface{}) *core.Transaction {
+func AssertTransaction(value interface{}) *types.Transaction {
 	switch tx := value.(type) {
-	case *core.Transaction:
+	case *types.Transaction:
 		return tx
 	default:
 		panic("parameter is not Transaction")

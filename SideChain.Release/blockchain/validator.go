@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -49,7 +49,7 @@ func (v *Validator) RegisterFunc(name ValidateFuncName, function func(params ...
 	v.checkSanityFunctions = append(v.checkSanityFunctions, &BlockValidateAction{Name: name, Handler: function})
 }
 
-func (v *Validator) CheckBlockSanity(block *core.Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
+func (v *Validator) CheckBlockSanity(block *types.Block, powLimit *big.Int, timeSource MedianTimeSource) (err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			str, ok := p.(string)
@@ -69,7 +69,7 @@ func (v *Validator) CheckBlockSanity(block *core.Block, powLimit *big.Int, timeS
 	return nil
 }
 
-func (v *Validator) CheckBlockContext(block *core.Block, prevNode *BlockNode) (err error) {
+func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (err error) {
 	header := block.Header
 
 	// The genesis block is valid by definition.
@@ -243,7 +243,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 		}
 
 		if txn.IsRechargeToSideChainTx() {
-			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			// Check for duplicate mainchain tx in a block
 			hash, err := rechargePayload.GetMainchainTxHash()
 			if err != nil {
@@ -269,7 +269,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 	return nil
 }
 
-func (v *Validator) checkProofOfWork(header *core.Header, powLimit *big.Int) (err error) {
+func (v *Validator) checkProofOfWork(header *types.Header, powLimit *big.Int) (err error) {
 	// The target difficulty must be larger than zero.
 	target := CompactToBig(header.Bits)
 	if target.Sign() <= 0 {
@@ -292,7 +292,7 @@ func (v *Validator) checkProofOfWork(header *core.Header, powLimit *big.Int) (er
 	return nil
 }
 
-func CheckTransactionFinalize(tx *core.Transaction, blockHeight uint32) error {
+func CheckTransactionFinalize(tx *types.Transaction, blockHeight uint32) error {
 	// Lock time of zero means the transaction is finalized.
 	lockTime := tx.LockTime
 	if lockTime == 0 {
