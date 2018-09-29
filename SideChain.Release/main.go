@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"os"
 	"runtime"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/logger"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
@@ -24,14 +24,6 @@ const (
 )
 
 func init() {
-	logger := logger.NewLogger(
-		"./logs/",
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	UseLogger(logger)
-
 	var coreNum int
 	if config.Parameters.MultiCoreNum > DefaultMultiCoreNum {
 		coreNum = int(config.Parameters.MultiCoreNum)
@@ -44,6 +36,14 @@ func init() {
 }
 
 func main() {
+	logger := logger.NewLogger(
+		"./logs/",
+		config.Parameters.PrintLevel,
+		config.Parameters.MaxPerLogSize,
+		config.Parameters.MaxLogsSize,
+	)
+	UseLogger(logger)
+
 	log.Info("Node version: ", config.Version)
 
 	core.InitPayloadCreater()
@@ -81,11 +81,21 @@ func main() {
 		MinMemoryNodes:    params.ChainParam.MinMemoryNodes,
 	}
 
-	txFeeHelper := mempool.NewFeeHelper(chainStore)
-	chainCfg.TxFeeHelper = txFeeHelper
+	mempoolCfg := mempool.Config{
+		FoundationAddress: *foundation,
+		AssetId:           genesisBlock.Transactions[0].Hash(),
+		ExchangeRage:      params.ExchangeRate,
+		ChainStore:        chainStore,
+	}
 
-	txValidator := mempool.NewValidator(&chainCfg)
-	chainCfg.TxValidator = txValidator
+	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
+	mempoolCfg.FeeHelper = txFeeHelper
+	chainCfg.GetTxFee = txFeeHelper.GetTxFee
+
+	txValidator := mempool.NewValidator(&mempoolCfg)
+	mempoolCfg.Validator = txValidator
+	chainCfg.CheckTxSanity = txValidator.CheckTransactionSanity
+	chainCfg.CheckTxContext = txValidator.CheckTransactionContext
 
 	chain, err := blockchain.New(&chainCfg)
 	if err != nil {
@@ -99,7 +109,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	txPool := mempool.New(&chainCfg)
+	txPool := mempool.New(&mempoolCfg)
 
 	log.Info("3. Start the P2P networks")
 	server, err := newServer(chain, txPool)
@@ -124,19 +134,32 @@ func main() {
 		TxFeeHelper:   txFeeHelper,
 	}
 
-	pow := pow.NewService(&powCfg)
+	powService := pow.NewService(&powCfg)
 	if params.PowConfiguration.AutoMining {
 		log.Info("Start POW Services")
-		go pow.Start()
+		go powService.Start()
 	}
 
 	log.Info("5. --Start the RPC service")
-	servers.NewHttpServers()
-	httpjsonrpc.InitRpcServer()
-	go httpjsonrpc.StartRPCServer()
-	go httprestful.StartServer()
+	service := servers.NewHttpService(&servers.Config{
+		Logger:     logger,
+		Server:     server,
+		Chain:      chain,
+		TxMemPool:  txPool,
+		PowService: powService,
+	})
+
+	go httpjsonrpc.New(params.HttpJsonPort, service).Start()
+	go httprestful.New(params.HttpRestPort, service,
+		params.RestCertPath, params.RestKeyPath).Start()
 	if params.HttpInfoStart {
-		go httpnodeinfo.StartServer()
+		go httpnodeinfo.New(&httpnodeinfo.Config{
+			NodePort:     params.NodePort,
+			HttpJsonPort: params.HttpJsonPort,
+			HttpRestPort: params.HttpRestPort,
+			DB:           chainStore,
+			Server:       server,
+		}).Start()
 	}
 	select {}
 }

@@ -5,15 +5,15 @@ type StoreFuncName string
 
 var (
 	ValidateFuncNames = blockValidateFuncs{
-		PowCheckBlockSanity:        "powcheckblocksanity",
-		PowCheckHeader:             "powcheckheader",
-		PowCheckTransactionsCount:  "powchecktransactionscount",
-		PowCheckBlockSize:          "powcheckblocksize",
-		PowCheckTransactionsFee:    "powchecktransactionsfee",
-		PowCheckTransactionsMerkle: "powchecktransactionsmerkle",
-		PowCheckBlockContext:       "powcheckblockcontext",
-		CheckProofOfWork:           "checkproofofwork",
-		CheckFinalizedTransaction:  "checkfinalizedtransaction",
+		PowCheckBlockSanity:       "checkblocksanity",
+		CheckHeader:               "checkheader",
+		CheckTransactionsCount:    "checktransactionscount",
+		CheckBlockSize:            "checkblocksize",
+		CheckTransactionsFee:      "checktransactionsfee",
+		CheckTransactionsMerkle:   "checktransactionsmerkle",
+		PowCheckBlockContext:      "checkblockcontext",
+		CheckProofOfWork:          "checkproofofwork",
+		CheckFinalizedTransaction: "checkfinalizedtransaction",
 	}
 
 	StoreFuncNames = storeFuncs{
@@ -33,15 +33,15 @@ var (
 )
 
 type blockValidateFuncs struct {
-	PowCheckBlockSanity        ValidateFuncName
-	PowCheckHeader             ValidateFuncName
-	PowCheckTransactionsCount  ValidateFuncName
-	PowCheckBlockSize          ValidateFuncName
-	PowCheckTransactionsFee    ValidateFuncName
-	PowCheckTransactionsMerkle ValidateFuncName
-	PowCheckBlockContext       ValidateFuncName
-	CheckProofOfWork           ValidateFuncName
-	CheckFinalizedTransaction  ValidateFuncName
+	PowCheckBlockSanity       ValidateFuncName
+	CheckHeader               ValidateFuncName
+	CheckTransactionsCount    ValidateFuncName
+	CheckBlockSize            ValidateFuncName
+	CheckTransactionsFee      ValidateFuncName
+	CheckTransactionsMerkle   ValidateFuncName
+	PowCheckBlockContext      ValidateFuncName
+	CheckProofOfWork          ValidateFuncName
+	CheckFinalizedTransaction ValidateFuncName
 }
 
 type storeFuncs struct {
