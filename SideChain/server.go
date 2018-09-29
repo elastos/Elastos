@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
@@ -9,6 +10,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -72,7 +74,7 @@ func (sp *serverPeer) OnMemPool(_ *peer.Peer, _ *msg.MemPool) {
 	// Only allow mempool requests if the server has bloom filtering
 	// enabled.
 	if sp.server.services&p2p.SFNodeBloom != p2p.SFNodeBloom {
-		log.Debugf("peer %v sent mempool request with bloom "+
+		srvrlog.Debugf("peer %v sent mempool request with bloom "+
 			"filtering disabled -- disconnecting", sp)
 		sp.Disconnect()
 		return
@@ -172,7 +174,7 @@ func (sp *serverPeer) OnInv(_ *peer.Peer, msg *msg.Inv) {
 // OnNotFound is invoked when a peer receives an notfounc message.
 // A peer should not response a notfound message so we just disconnect it.
 func (sp *serverPeer) OnNotFound(_ *peer.Peer, msg *msg.NotFound) {
-	log.Debugf("%s sent us notfound message --  disconnecting", sp)
+	srvrlog.Debugf("%s sent us notfound message --  disconnecting", sp)
 	sp.AddBanScore(100, 0, msg.CMD())
 	sp.Disconnect()
 }
@@ -218,7 +220,7 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 		case msg.InvTypeFilteredBlock:
 			err = sp.server.pushMerkleBlockMsg(sp, &iv.Hash, c, waitChan)
 		default:
-			log.Warnf("Unknown type in inventory request %d", iv.Type)
+			srvrlog.Warnf("Unknown type in inventory request %d", iv.Type)
 			continue
 		}
 		if err != nil {
@@ -297,7 +299,7 @@ func (sp *serverPeer) enforceNodeBloomFlag(cmd string) bool {
 	if sp.server.services&p2p.SFNodeBloom != p2p.SFNodeBloom {
 		// Disconnect the peer regardless of protocol version or banning
 		// state.
-		log.Debugf("%s sent an unsupported %s request -- "+
+		srvrlog.Debugf("%s sent an unsupported %s request -- "+
 			"disconnecting", sp, cmd)
 		sp.AddBanScore(100, 0, cmd)
 		sp.Disconnect()
@@ -319,7 +321,7 @@ func (sp *serverPeer) OnFilterAdd(_ *peer.Peer, msg *msg.FilterAdd) {
 	}
 
 	if !sp.filter.IsLoaded() {
-		log.Debugf("%s sent a filteradd request with no filter "+
+		srvrlog.Debugf("%s sent a filteradd request with no filter "+
 			"loaded -- disconnecting", sp)
 		sp.Disconnect()
 		return
@@ -340,7 +342,7 @@ func (sp *serverPeer) OnFilterClear(_ *peer.Peer, msg *msg.FilterClear) {
 	}
 
 	if !sp.filter.IsLoaded() {
-		log.Debugf("%s sent a filterclear request with no "+
+		srvrlog.Debugf("%s sent a filterclear request with no "+
 			"filter loaded -- disconnecting", sp)
 		sp.Disconnect()
 		return
@@ -368,7 +370,7 @@ func (sp *serverPeer) OnFilterLoad(_ *peer.Peer, msg *msg.FilterLoad) {
 
 // OnReject is invoked when a peer receives a reject message.
 func (sp *serverPeer) OnReject(_ *peer.Peer, msg *msg.Reject) {
-	log.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
+	srvrlog.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
 		sp, msg.Code.String(), msg.Hash.String(), msg.Reason)
 }
 
@@ -383,7 +385,7 @@ func (s *server) pushTxMsg(sp *serverPeer, hash *common.Uint256, doneChan chan<-
 	tx := s.txMemPool.GetTransaction(*hash)
 	if tx == nil {
 		err := fmt.Errorf("unable to fetch tx %v from transaction pool", hash)
-		log.Trace(err.Error())
+		srvrlog.Trace(err.Error())
 
 		if doneChan != nil {
 			doneChan <- struct{}{}
@@ -409,7 +411,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	// Fetch the block from the database.
 	block, err := s.chain.GetBlockByHash(*hash)
 	if err != nil {
-		log.Tracef("Unable to fetch requested block hash %v: %v",
+		srvrlog.Tracef("Unable to fetch requested block hash %v: %v",
 			hash, err)
 
 		if doneChan != nil {
@@ -467,7 +469,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 	// Fetch the block from the database.
 	blk, err := s.chain.GetBlockByHash(*hash)
 	if err != nil {
-		log.Tracef("Unable to fetch requested block hash %v: %v",
+		srvrlog.Tracef("Unable to fetch requested block hash %v: %v",
 			hash, err)
 
 		if doneChan != nil {
@@ -526,7 +528,7 @@ func (s *server) handleRelayInvMsg(peers map[p2pserver.IPeer]*serverPeer, rmsg r
 
 			tx, ok := rmsg.data.(*core.Transaction)
 			if !ok {
-				log.Warnf("Underlying data for tx inv "+
+				srvrlog.Warnf("Underlying data for tx inv "+
 					"relay is not a *core.Transaction: %T",
 					rmsg.data)
 				return
@@ -559,7 +561,7 @@ func (s *server) peerHandler() {
 	// in this handler.
 	s.syncManager.Start()
 
-	log.Tracef("Starting peer handler")
+	srvrlog.Tracef("Starting peer handler")
 
 	peers := make(map[p2pserver.IPeer]*serverPeer)
 
@@ -590,7 +592,7 @@ out:
 		case p := <-s.donePeers:
 			sp, ok := peers[p]
 			if !ok {
-				log.Errorf("unknown done peer %v", p)
+				srvrlog.Errorf("unknown done peer %v", p)
 				continue
 			}
 
@@ -620,7 +622,7 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer handler done")
+	srvrlog.Tracef("Peer handler done")
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
@@ -641,7 +643,7 @@ func (s *server) RelayInventory(invVect *msg.InvVect, data interface{}) {
 
 // Start begins accepting connections from peers.
 func (s *server) Start() {
-	log.Trace("Starting server")
+	srvrlog.Trace("Starting server")
 
 	s.IServer.Start()
 
@@ -651,7 +653,7 @@ func (s *server) Start() {
 // Stop gracefully shuts down the server by stopping and disconnecting all
 // peers and the main listener.
 func (s *server) Stop() error {
-	log.Warnf("Server shutting down")
+	srvrlog.Warnf("Server shutting down")
 
 	s.IServer.Stop()
 	// Signal the remaining goroutines to quit.

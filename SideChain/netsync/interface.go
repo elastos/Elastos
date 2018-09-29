@@ -2,6 +2,8 @@ package netsync
 
 import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
+
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
@@ -18,6 +20,5 @@ type Config struct {
 	Chain        *blockchain.BlockChain
 	TxMemPool    *mempool.TxPool
 
-	MaxPeers           int
+	MaxPeers int
 }
-

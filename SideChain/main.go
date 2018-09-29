@@ -7,7 +7,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/logger"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
@@ -31,20 +30,12 @@ func init() {
 		coreNum = DefaultMultiCoreNum
 	}
 
-	log.Debug("The Core number is ", coreNum)
+	eladlog.Debug("The Core number is ", coreNum)
 	runtime.GOMAXPROCS(coreNum)
 }
 
 func main() {
-	logger := logger.NewLogger(
-		"./logs/",
-		config.Parameters.PrintLevel,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	UseLogger(logger)
-
-	log.Info("Node version: ", config.Version)
+	eladlog.Info("Node version: ", config.Version)
 
 	core.InitPayloadCreater()
 	core.InitTransactionHelper()
@@ -54,20 +45,20 @@ func main() {
 
 	foundation, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
 	if err != nil {
-		log.Info("Please set correct foundation address in config file")
+		eladlog.Info("Please set correct foundation address in config file")
 		os.Exit(-1)
 	}
 
-	log.Info("1. BlockChain init")
+	eladlog.Info("1. BlockChain init")
 	genesisBlock, err := blockchain.GenesisBlock()
 	if err != nil {
-		log.Fatalf("Get genesis block failed, error %s", err)
+		eladlog.Fatalf("Get genesis block failed, error %s", err)
 		os.Exit(1)
 	}
 
 	chainStore, err := blockchain.NewChainStore(genesisBlock)
 	if err != nil {
-		log.Fatalf("open chain store failed, %s", err)
+		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
 	}
 	defer chainStore.Close()
@@ -99,27 +90,27 @@ func main() {
 
 	chain, err := blockchain.New(&chainCfg)
 	if err != nil {
-		log.Fatalf("BlockChain initialize failed, %s", err)
+		eladlog.Fatalf("BlockChain initialize failed, %s", err)
 		os.Exit(1)
 	}
 
-	log.Info("2. SPV module init")
+	eladlog.Info("2. SPV module init")
 	if err := spv.SpvInit(); err != nil {
-		log.Fatalf("SPV module initialize failed, %s", err)
+		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
 	}
 
 	txPool := mempool.New(&mempoolCfg)
 
-	log.Info("3. Start the P2P networks")
+	eladlog.Info("3. Start the P2P networks")
 	server, err := newServer(chain, txPool)
 	if err != nil {
-		log.Fatalf("initialize P2P networks failed, %s", err)
+		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
 	}
 	server.Start()
 
-	log.Info("4. --Initialize pow service")
+	eladlog.Info("4. --Initialize pow service")
 	powParam := params.PowConfiguration
 	powCfg := pow.Config{
 		Foundation:    *foundation,
@@ -136,13 +127,13 @@ func main() {
 
 	powService := pow.NewService(&powCfg)
 	if params.PowConfiguration.AutoMining {
-		log.Info("Start POW Services")
+		eladlog.Info("Start POW Services")
 		go powService.Start()
 	}
 
-	log.Info("5. --Start the RPC service")
+	eladlog.Info("5. --Start the RPC service")
 	service := servers.NewHttpService(&servers.Config{
-		Logger:     logger,
+		Logger:     elalog,
 		Server:     server,
 		Chain:      chain,
 		TxMemPool:  txPool,

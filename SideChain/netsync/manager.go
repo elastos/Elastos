@@ -7,8 +7,8 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -313,14 +313,14 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 
 	// Process the transaction to include validation, insertion in the
 	// memory pool, orphan handling, etc.
-	errCode := sm.txMemPool.AppendToTxPool(tmsg.tx)
-	if errCode != errors.Success {
+	err := sm.txMemPool.AppendToTxPool(tmsg.tx)
+	if err != nil {
 		// Do not request this transaction again until a new block
 		// has been processed.
 		sm.rejectedTxns[txHash] = struct{}{}
 		sm.limitMap(sm.rejectedTxns, maxRejectedTxns)
 
-		peer.PushRejectMsg(p2p.CmdTx, msg.RejectInvalid, errCode.Message(),
+		peer.PushRejectMsg(p2p.CmdTx, msg.RejectInvalid, err.Error(),
 			&txHash, false)
 		return
 	}
