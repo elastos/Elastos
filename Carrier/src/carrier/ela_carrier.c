@@ -1767,7 +1767,7 @@ static void connect_to_bootstraps(ElaCarrier *w)
         int rc;
 
         base58_encode(bi->public_key, DHT_PUBLIC_KEY_SIZE, id, &id_len);
-        rc = dht_bootstrap(&w->dht, bi->ipv4, bi->ipv6, bi->port, bi->public_key);
+        rc = _dht_bootstrap(&w->dht, bi->ipv4, bi->ipv6, bi->port, bi->public_key);
         if (rc < 0) {
             vlogW("Carrier: Try to connect to bootstrap "
                   "[ipv4:%s, ipv6:%s, port:%d, public_key:%s] error.",

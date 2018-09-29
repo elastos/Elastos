@@ -44,7 +44,7 @@ int dht_new(const uint8_t *savedata, size_t datalen, bool udp_enabled, DHT *dht)
 
 void dht_kill(DHT *dht);
 
-int dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
+int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
                   const uint8_t *address);
 
 void dht_self_set_nospam(DHT *dht, uint32_t nospam);

@@ -508,7 +508,7 @@ void dht_kill(DHT *dht)
 /*
  * The length of array address must be at least DHT_PUBLIC_KEY_SIZE.
  */
-int dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
+int _dht_bootstrap(DHT *dht, const char *ipv4, const char *ipv6, int port,
                   const uint8_t *address)
 {
     Tox *tox = dht->tox;

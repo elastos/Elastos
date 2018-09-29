@@ -101,13 +101,6 @@ endif()
 set(LIBS
     crystal
     toxcore
-    toxdht
-    toxcrypto
-    toxfriends
-    toxgroup
-    toxmessenger
-    toxnetwork
-    toxnetcrypto
     flatccrt)
 
 if(WIN32)

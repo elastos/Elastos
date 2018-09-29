@@ -12,9 +12,9 @@ ExternalProject_Add(
     toxcore0
 
     PREFIX ${CARRIER_DEPS_BUILD_PREFIX}
-    URL "https://github.com/TokTok/c-toxcore/releases/download/v0.1.10/c-toxcore-0.1.10.tar.gz"
-    URL_HASH SHA256=4e9a2881dd0ea8e65a35fc9621644ccf500c1797a2d37983b0057ed3be971299
-    DOWNLOAD_NAME "c-toxcore-0.1.10.tar.gz"
+    URL "https://github.com/TokTok/c-toxcore/archive/v0.2.7.tar.gz"
+    URL_HASH SHA256=bef6dbb06d921af58c6a2d7629e6f8eeafa1e541d379e4ff2ccb4ff5d3499cd1
+    DOWNLOAD_NAME "c-toxcore-0.2.7.tar.gz"
     DOWNLOAD_DIR ${CARRIER_DEPS_TARBALL_DIR}
     DOWNLOAD_NO_PROGRESS 1
 
