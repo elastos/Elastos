@@ -9,8 +9,8 @@ build/
 .idea/
 .log
 .DS_Store
-/Logs/*
-/SPVLogs/*
+/logs/*
+/logs-spv/*
 /Chain/*
 /Chain_UnitTest/*
 /glide.lock
