@@ -1,19 +1,20 @@
 package main
 
 import (
-	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"os"
 	"runtime"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -36,9 +37,9 @@ func init() {
 func main() {
 	eladlog.Info("Node version: ", config.Version)
 
-	core.InitPayloadCreater()
-	core.InitTransactionHelper()
-	core.InitOutputHelper()
+	types.InitPayloadCreater()
+	types.InitTransactionHelper()
+	types.InitOutputHelper()
 
 	params := config.Parameters
 

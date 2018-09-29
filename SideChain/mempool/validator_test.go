@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/stretchr/testify/assert"
@@ -82,7 +82,7 @@ func TestCheckOutputProgramHash(t *testing.T) {
 
 func TestCheckTransactionInput(t *testing.T) {
 	// coinbase transaction
-	tx := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
+	tx := NewCoinBaseTransaction(new(types.PayloadCoinBase), 0)
 	tx.Inputs[0].Previous.Index = math.MaxUint16
 	err := CheckTransactionInput(tx)
 	assert.NoError(t, err)
@@ -99,7 +99,7 @@ func TestCheckTransactionInput(t *testing.T) {
 	assert.EqualError(t, err, "invalid coinbase input")
 
 	// multiple coinbase inputs
-	tx.Inputs = append(tx.Inputs, &core.Input{})
+	tx.Inputs = append(tx.Inputs, &types.Input{})
 	err = CheckTransactionInput(tx)
 	assert.EqualError(t, err, "coinbase must has only one input")
 
@@ -114,7 +114,7 @@ func TestCheckTransactionInput(t *testing.T) {
 	assert.EqualError(t, err, "transaction has no inputs")
 
 	// normal transaction with coinbase input
-	tx.Inputs = append(tx.Inputs, &core.Input{Previous: *core.NewOutPoint(common.EmptyHash, math.MaxUint16)})
+	tx.Inputs = append(tx.Inputs, &types.Input{Previous: *types.NewOutPoint(common.EmptyHash, math.MaxUint16)})
 	err = CheckTransactionInput(tx)
 	assert.EqualError(t, err, "invalid transaction input")
 
@@ -129,8 +129,8 @@ func TestCheckTransactionInput(t *testing.T) {
 
 func TestCheckTransactionOutput(t *testing.T) {
 	// coinbase
-	tx := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
-	tx.Outputs = []*core.Output{
+	tx := NewCoinBaseTransaction(new(types.PayloadCoinBase), 0)
+	tx.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress},
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress},
 	}
@@ -138,14 +138,14 @@ func TestCheckTransactionOutput(t *testing.T) {
 	assert.NoError(t, err)
 
 	// outputs < 2
-	tx.Outputs = []*core.Output{
+	tx.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress},
 	}
 	err = CheckTransactionOutput(tx)
 	assert.EqualError(t, err, "coinbase output is not enough, at least 2")
 
 	// invalid asset id
-	tx.Outputs = []*core.Output{
+	tx.Outputs = []*types.Output{
 		{AssetID: common.EmptyHash, ProgramHash: FoundationAddress},
 		{AssetID: common.EmptyHash, ProgramHash: FoundationAddress},
 	}
@@ -159,7 +159,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	t.Logf("Foundation reward amount %s", foundationReward.String())
 	minerReward := totalReward - foundationReward
 	t.Logf("Miner reward amount %s", minerReward.String())
-	tx.Outputs = []*core.Output{
+	tx.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
 		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
 	}
@@ -171,7 +171,7 @@ func TestCheckTransactionOutput(t *testing.T) {
 	t.Logf("Foundation reward amount %s", foundationReward.String())
 	minerReward = totalReward - foundationReward
 	t.Logf("Miner reward amount %s", minerReward.String())
-	tx.Outputs = []*core.Output{
+	tx.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: foundationReward},
 		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: minerReward},
 	}
@@ -234,15 +234,15 @@ func TestCheckAssetPrecision(t *testing.T) {
 	assert.EqualError(t, err, "The asset not exist in local blockchain.")
 
 	// register asset
-	asset := core.Asset{
+	asset := types.Asset{
 		Name:      "TEST",
 		Precision: 0x04,
 		AssetType: 0x00,
 	}
-	register := &core.Transaction{
-		TxType:         core.RegisterAsset,
+	register := &types.Transaction{
+		TxType:         types.RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &core.PayloadRegisterAsset{
+		Payload: &types.PayloadRegisterAsset{
 			Asset:  asset,
 			Amount: 0 * 100000000,
 		},
@@ -286,47 +286,47 @@ func TestCheckAmountPrecision(t *testing.T) {
 func TestCheckAttributeProgram(t *testing.T) {
 	// valid attributes
 	tx := buildTx()
-	usages := []core.AttributeUsage{
-		core.Nonce,
-		core.Script,
-		core.Description,
-		core.DescriptionUrl,
-		core.Memo,
+	usages := []types.AttributeUsage{
+		types.Nonce,
+		types.Script,
+		types.Description,
+		types.DescriptionUrl,
+		types.Memo,
 	}
 	for _, usage := range usages {
-		attr := core.NewAttribute(usage, nil)
+		attr := types.NewAttribute(usage, nil)
 		tx.Attributes = append(tx.Attributes, &attr)
 	}
 	err := CheckAttributeProgram(tx)
 	assert.EqualError(t, err, "no programs found in transaction")
 
 	// invalid attributes
-	getInvalidUsage := func() core.AttributeUsage {
+	getInvalidUsage := func() types.AttributeUsage {
 		var usage = make([]byte, 1)
 	NEXT:
 		rand.Read(usage)
 		for _, u := range usages {
-			if u == core.AttributeUsage(usage[0]) {
+			if u == types.AttributeUsage(usage[0]) {
 				goto NEXT
 			}
 		}
-		return core.AttributeUsage(usage[0])
+		return types.AttributeUsage(usage[0])
 	}
 	for i := 0; i < 10; i++ {
-		attr := core.NewAttribute(getInvalidUsage(), nil)
-		tx.Attributes = []*core.Attribute{&attr}
+		attr := types.NewAttribute(getInvalidUsage(), nil)
+		tx.Attributes = []*types.Attribute{&attr}
 		err := CheckAttributeProgram(tx)
 		assert.EqualError(t, err, fmt.Sprintf("invalid attribute usage %v", attr.Usage))
 	}
 	tx.Attributes = nil
 
 	// empty programs
-	tx.Programs = []*core.Program{}
+	tx.Programs = []*types.Program{}
 	err = CheckAttributeProgram(tx)
 	assert.EqualError(t, err, "no programs found in transaction")
 
 	// nil program code
-	program := &core.Program{}
+	program := &types.Program{}
 	tx.Programs = append(tx.Programs, program)
 	err = CheckAttributeProgram(tx)
 	assert.EqualError(t, err, "invalid program code nil")
@@ -334,8 +334,8 @@ func TestCheckAttributeProgram(t *testing.T) {
 	// nil program parameter
 	var code = make([]byte, 21)
 	rand.Read(code)
-	program = &core.Program{Code: code}
-	tx.Programs = []*core.Program{program}
+	program = &types.Program{Code: code}
+	tx.Programs = []*types.Program{program}
 	err = CheckAttributeProgram(tx)
 	assert.EqualError(t, err, "invalid program parameter nil")
 
@@ -351,8 +351,8 @@ func TestCheckAttributeProgram(t *testing.T) {
 		return code
 	}
 	for i := 0; i < 10; i++ {
-		program = &core.Program{Code: getInvalidCode(), Parameter: make([]byte, 1)}
-		tx.Programs = []*core.Program{program}
+		program = &types.Program{Code: getInvalidCode(), Parameter: make([]byte, 1)}
+		tx.Programs = []*types.Program{program}
 		err = CheckAttributeProgram(tx)
 		assert.EqualError(t, err, fmt.Sprintf("invalid program code %x", program.Code))
 	}
@@ -362,12 +362,12 @@ func TestCheckAttributeProgram(t *testing.T) {
 
 func TestCheckTransactionPayload(t *testing.T) {
 	// normal
-	tx := new(core.Transaction)
-	payload := &core.PayloadRegisterAsset{
-		Asset: core.Asset{
+	tx := new(types.Transaction)
+	payload := &types.PayloadRegisterAsset{
+		Asset: types.Asset{
 			Name:      "ELA",
 			Precision: 0x08,
-			AssetType: core.Token,
+			AssetType: types.Token,
 		},
 		Amount: 3300 * 10000 * 10000000,
 	}
@@ -391,14 +391,14 @@ func TestCheckTransactionPayload(t *testing.T) {
 
 func TestCheckTransactionBalance(t *testing.T) {
 	// WithdrawFromSideChain will pass check in any condition
-	tx := new(core.Transaction)
-	tx.TxType = core.WithdrawFromSideChain
+	tx := new(types.Transaction)
+	tx.TxType = types.WithdrawFromSideChain
 	err := CheckTransactionBalance(tx)
 	assert.NoError(t, err)
 
 	// deposit 100 ELA to foundation account
-	deposit := NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
-	deposit.Outputs = []*core.Output{
+	deposit := NewCoinBaseTransaction(new(types.PayloadCoinBase), 0)
+	deposit.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(100 * ELA)},
 	}
 	DefaultChain.(*ChainStore).NewBatch()
@@ -406,11 +406,11 @@ func TestCheckTransactionBalance(t *testing.T) {
 	DefaultChain.(*ChainStore).BatchCommit()
 
 	// invalid output value
-	tx = NewCoinBaseTransaction(new(core.PayloadCoinBase), 0)
-	tx.Inputs = []*core.Input{
-		{Previous: *core.NewOutPoint(deposit.Hash(), 0)},
+	tx = NewCoinBaseTransaction(new(types.PayloadCoinBase), 0)
+	tx.Inputs = []*types.Input{
+		{Previous: *types.NewOutPoint(deposit.Hash(), 0)},
 	}
-	tx.Outputs = []*core.Output{
+	tx.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(-20 * ELA)},
 		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(-60 * ELA)},
 	}
@@ -419,7 +419,7 @@ func TestCheckTransactionBalance(t *testing.T) {
 
 	// invalid transaction fee
 	config.Parameters.PowConfiguration.MinTxFee = int(1 * ELA)
-	tx.Outputs = []*core.Output{
+	tx.Outputs = []*types.Output{
 		{AssetID: DefaultChain.AssetID, ProgramHash: FoundationAddress, Value: common.Fixed64(30 * ELA)},
 		{AssetID: DefaultChain.AssetID, ProgramHash: common.Uint168{}, Value: common.Fixed64(70 * ELA)},
 	}

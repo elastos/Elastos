@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 // key: DATA_Header || block hash
 // value: sysfee(8bytes) || trimmed block
-func (s *ChainStore) persistTrimmedBlock(batch IBatch, b *core.Block) error {
+func (s *ChainStore) persistTrimmedBlock(batch IBatch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
 
@@ -33,7 +33,7 @@ func (s *ChainStore) persistTrimmedBlock(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) rollbackTrimmedBlock(batch IBatch, b *core.Block) error {
+func (s *ChainStore) rollbackTrimmedBlock(batch IBatch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Header))
 	hash := b.Hash()
@@ -46,7 +46,7 @@ func (s *ChainStore) rollbackTrimmedBlock(batch IBatch, b *core.Block) error {
 
 // key: DATA_BlockHash || height
 // value: block hash
-func (s *ChainStore) persistBlockHash(batch IBatch, b *core.Block) error {
+func (s *ChainStore) persistBlockHash(batch IBatch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -62,7 +62,7 @@ func (s *ChainStore) persistBlockHash(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) rollbackBlockHash(batch IBatch, b *core.Block) error {
+func (s *ChainStore) rollbackBlockHash(batch IBatch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_BlockHash))
 	if err := WriteUint32(key, b.Header.Height); err != nil {
@@ -74,7 +74,7 @@ func (s *ChainStore) rollbackBlockHash(batch IBatch, b *core.Block) error {
 
 // key: SYS_CurrentBlock
 // value: current block hash || height
-func (s *ChainStore) persistCurrentBlock(batch IBatch, b *core.Block) error {
+func (s *ChainStore) persistCurrentBlock(batch IBatch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
@@ -90,7 +90,7 @@ func (s *ChainStore) persistCurrentBlock(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) rollbackCurrentBlock(batch IBatch, b *core.Block) error {
+func (s *ChainStore) rollbackCurrentBlock(batch IBatch, b *types.Block) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(SYS_CurrentBlock))
 
@@ -106,12 +106,12 @@ func (s *ChainStore) rollbackCurrentBlock(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) persistUnspendUTXOs(batch IBatch, b *core.Block) error {
+func (s *ChainStore) persistUnspendUTXOs(batch IBatch, b *types.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	curHeight := b.Header.Height
 
 	for _, txn := range b.Transactions {
-		if txn.TxType == core.RegisterAsset {
+		if txn.TxType == types.RegisterAsset {
 			continue
 		}
 
@@ -204,11 +204,11 @@ func (s *ChainStore) persistUnspendUTXOs(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) rollbackUnspendUTXOs(batch IBatch, b *core.Block) error {
+func (s *ChainStore) rollbackUnspendUTXOs(batch IBatch, b *types.Block) error {
 	unspendUTXOs := make(map[Uint168]map[Uint256]map[uint32][]*UTXO)
 	height := b.Header.Height
 	for _, txn := range b.Transactions {
-		if txn.TxType == core.RegisterAsset {
+		if txn.TxType == types.RegisterAsset {
 			continue
 		}
 		for index, output := range txn.Outputs {
@@ -290,19 +290,19 @@ func (s *ChainStore) rollbackUnspendUTXOs(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) persistTransactions(batch IBatch, b *core.Block) error {
+func (s *ChainStore) persistTransactions(batch IBatch, b *types.Block) error {
 	for _, txn := range b.Transactions {
 		if err := s.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == core.RegisterAsset {
-			regPayload := txn.Payload.(*core.PayloadRegisterAsset)
+		if txn.TxType == types.RegisterAsset {
+			regPayload := txn.Payload.(*types.PayloadRegisterAsset)
 			if err := s.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
-		if txn.TxType == core.RechargeToSideChain {
-			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+		if txn.TxType == types.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			hash, err := rechargePayload.GetMainchainTxHash()
 			if err != nil {
 				return err
@@ -313,18 +313,18 @@ func (s *ChainStore) persistTransactions(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) rollbackTransactions(batch IBatch, b *core.Block) error {
+func (s *ChainStore) rollbackTransactions(batch IBatch, b *types.Block) error {
 	for _, txn := range b.Transactions {
 		if err := s.RollbackTransaction(batch, txn); err != nil {
 			return err
 		}
-		if txn.TxType == core.RegisterAsset {
+		if txn.TxType == types.RegisterAsset {
 			if err := s.RollbackAsset(batch, txn.Hash()); err != nil {
 				return err
 			}
 		}
-		if txn.TxType == core.RechargeToSideChain {
-			rechargePayload := txn.Payload.(*core.PayloadRechargeToSideChain)
+		if txn.TxType == types.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			hash, err := rechargePayload.GetMainchainTxHash()
 			if err != nil {
 				return err
@@ -336,7 +336,7 @@ func (s *ChainStore) rollbackTransactions(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) RollbackTransaction(batch IBatch, txn *core.Transaction) error {
+func (s *ChainStore) RollbackTransaction(batch IBatch, txn *types.Transaction) error {
 	key := new(bytes.Buffer)
 	key.WriteByte(byte(DATA_Transaction))
 	hash := txn.Hash()
@@ -363,11 +363,11 @@ func (s *ChainStore) RollbackMainchainTx(batch IBatch, mainchainTxHash Uint256) 
 	return nil
 }
 
-func (s *ChainStore) persistUnspend(batch IBatch, b *core.Block) error {
+func (s *ChainStore) persistUnspend(batch IBatch, b *types.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
-		if txn.TxType == core.RegisterAsset {
+		if txn.TxType == types.RegisterAsset {
 			continue
 		}
 		txnHash := txn.Hash()
@@ -416,11 +416,11 @@ func (s *ChainStore) persistUnspend(batch IBatch, b *core.Block) error {
 	return nil
 }
 
-func (s *ChainStore) rollbackUnspend(batch IBatch, b *core.Block) error {
+func (s *ChainStore) rollbackUnspend(batch IBatch, b *types.Block) error {
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	unspents := make(map[Uint256][]uint16)
 	for _, txn := range b.Transactions {
-		if txn.TxType == core.RegisterAsset {
+		if txn.TxType == types.RegisterAsset {
 			continue
 		}
 		// remove all utxos created by this transaction

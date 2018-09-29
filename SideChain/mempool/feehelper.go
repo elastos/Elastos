@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 
-	"github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -21,7 +21,7 @@ func NewFeeHelper(cfg *Config) *FeeHelper {
 	}
 }
 
-func (h *FeeHelper) GetTxFee(tx *core.Transaction, assetId common.Uint256) common.Fixed64 {
+func (h *FeeHelper) GetTxFee(tx *types.Transaction, assetId common.Uint256) common.Fixed64 {
 	feeMap, err := h.GetTxFeeMap(tx)
 	if err != nil {
 		return 0
@@ -30,18 +30,18 @@ func (h *FeeHelper) GetTxFee(tx *core.Transaction, assetId common.Uint256) commo
 	return feeMap[assetId]
 }
 
-func (h *FeeHelper) GetTxFeeMap(tx *core.Transaction) (map[common.Uint256]common.Fixed64, error) {
+func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]common.Fixed64, error) {
 	feeMap := make(map[common.Uint256]common.Fixed64)
 
 	if tx.IsRechargeToSideChainTx() {
-		depositPayload := tx.Payload.(*core.PayloadRechargeToSideChain)
-		mainChainTransaction := new(core.Transaction)
+		depositPayload := tx.Payload.(*types.PayloadRechargeToSideChain)
+		mainChainTransaction := new(types.Transaction)
 		reader := bytes.NewReader(depositPayload.MainChainTransaction)
 		if err := mainChainTransaction.Deserialize(reader); err != nil {
 			return nil, errors.New("GetTxFeeMap mainChainTransaction deserialize failed")
 		}
 
-		crossChainPayload := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
+		crossChainPayload := mainChainTransaction.Payload.(*types.PayloadTransferCrossChainAsset)
 
 		for _, v := range tx.Outputs {
 			for i := 0; i < len(crossChainPayload.CrossChainAddresses); i++ {

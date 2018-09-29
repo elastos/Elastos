@@ -6,15 +6,15 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	p2pserver "github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	p2psvr "github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
 // relayMsg packages an inventory vector along with the newly discovered
@@ -27,13 +27,13 @@ type relayMsg struct {
 // server provides a server for handling communications to and from
 // peers.
 type server struct {
-	p2pserver.IServer
+	p2psvr.IServer
 	syncManager *netsync.SyncManager
 	chain       *blockchain.BlockChain
 	txMemPool   *mempool.TxPool
 
-	newPeers  chan p2pserver.IPeer
-	donePeers chan p2pserver.IPeer
+	newPeers  chan p2psvr.IPeer
+	donePeers chan p2psvr.IPeer
 	relayInv  chan relayMsg
 	quit      chan struct{}
 	services  p2p.ServiceFlag
@@ -122,7 +122,7 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 	// Add the transaction to the known inventory for the peer.
 	// Convert the raw MsgTx to a btcutil.Tx which provides some convenience
 	// methods and things such as hash caching.
-	tx := msgTx.Serializable.(*core.Transaction)
+	tx := msgTx.Serializable.(*types.Transaction)
 	txId := tx.Hash()
 	iv := msg.NewInvVect(msg.InvTypeTx, &txId)
 	sp.AddKnownInventory(iv)
@@ -139,7 +139,7 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 // OnBlock is invoked when a peer receives a block message.  It
 // blocks until the block has been fully processed.
 func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
-	block := msgBlock.Serializable.(*core.Block)
+	block := msgBlock.Serializable.(*types.Block)
 
 	// Add the block to the known inventory for the peer.
 	blockHash := block.Hash()
@@ -513,7 +513,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 
 // handleRelayInvMsg deals with relaying inventory to peers that are not already
 // known to have it.  It is invoked from the peerHandler goroutine.
-func (s *server) handleRelayInvMsg(peers map[p2pserver.IPeer]*serverPeer, rmsg relayMsg) {
+func (s *server) handleRelayInvMsg(peers map[p2psvr.IPeer]*serverPeer, rmsg relayMsg) {
 	for _, sp := range peers {
 		if !sp.Connected() {
 			continue
@@ -526,7 +526,7 @@ func (s *server) handleRelayInvMsg(peers map[p2pserver.IPeer]*serverPeer, rmsg r
 				continue
 			}
 
-			tx, ok := rmsg.data.(*core.Transaction)
+			tx, ok := rmsg.data.(*types.Transaction)
 			if !ok {
 				srvrlog.Warnf("Underlying data for tx inv "+
 					"relay is not a *core.Transaction: %T",
@@ -563,7 +563,7 @@ func (s *server) peerHandler() {
 
 	srvrlog.Tracef("Starting peer handler")
 
-	peers := make(map[p2pserver.IPeer]*serverPeer)
+	peers := make(map[p2psvr.IPeer]*serverPeer)
 
 out:
 	for {
@@ -626,12 +626,12 @@ cleanup:
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
-func (s *server) NewPeer(p p2pserver.IPeer) {
+func (s *server) NewPeer(p p2psvr.IPeer) {
 	s.newPeers <- p
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
-func (s *server) DonePeer(p p2pserver.IPeer) {
+func (s *server) DonePeer(p p2psvr.IPeer) {
 	s.donePeers <- p
 }
 
@@ -671,7 +671,7 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 		services |= p2p.SFNodeBloom
 	}
 
-	p2pServerCfg := p2pserver.NewDefaultConfig(
+	p2pServerCfg := p2psvr.NewDefaultConfig(
 		params.Magic,
 		params.NodePort,
 		params.SeedList,
@@ -683,8 +683,8 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 	s := server{
 		chain:     chain,
 		txMemPool: txPool,
-		newPeers:  make(chan p2pserver.IPeer, p2pServerCfg.MaxPeers),
-		donePeers: make(chan p2pserver.IPeer, p2pServerCfg.MaxPeers),
+		newPeers:  make(chan p2psvr.IPeer, p2pServerCfg.MaxPeers),
+		donePeers: make(chan p2psvr.IPeer, p2pServerCfg.MaxPeers),
 		relayInv:  make(chan relayMsg, p2pServerCfg.MaxPeers),
 		quit:      make(chan struct{}),
 		services:  services,
@@ -692,7 +692,7 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 	p2pServerCfg.OnNewPeer = s.NewPeer
 	p2pServerCfg.OnDonePeer = s.DonePeer
 
-	p2pServer, err := p2pserver.NewServer(p2pServerCfg)
+	p2pServer, err := p2psvr.NewServer(p2pServerCfg)
 	if err != nil {
 		return nil, err
 	}
@@ -715,10 +715,10 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = &msg.MemPool{}
 
 	case p2p.CmdTx:
-		message = msg.NewTx(&core.Transaction{})
+		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&core.Block{})
+		message = msg.NewBlock(&types.Block{})
 
 	case p2p.CmdInv:
 		message = &msg.Inventory{}

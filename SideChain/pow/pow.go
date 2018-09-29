@@ -11,9 +11,9 @@ import (
 
 	aux "github.com/elastos/Elastos.ELA.SideChain/auxpow"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
@@ -29,7 +29,7 @@ const (
 )
 
 type messageBlock struct {
-	BlockData map[string]*core.Block
+	BlockData map[string]*types.Block
 	Mutex     sync.Mutex
 }
 
@@ -79,7 +79,7 @@ func NewService(cfg *Config) *Service {
 		txFeeHelper:   cfg.TxFeeHelper,
 		started:       false,
 		manualMining:  false,
-		MsgBlock:      messageBlock{BlockData: make(map[string]*core.Block)},
+		MsgBlock:      messageBlock{BlockData: make(map[string]*types.Block)},
 	}
 
 	events.Subscribe(func(event *events.Event) {
@@ -105,7 +105,7 @@ func (pow *Service) GetTransactionCount() int {
 	return len(transactionsPool)
 }
 
-func (pow *Service) CollectTransactions(msgBlock *core.Block) int {
+func (pow *Service) CollectTransactions(msgBlock *types.Block) int {
 	txs := 0
 	transactionsPool := pow.txMemPool.GetTxsInPool()
 
@@ -117,27 +117,27 @@ func (pow *Service) CollectTransactions(msgBlock *core.Block) int {
 	return txs
 }
 
-func (pow *Service) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core.Transaction, error) {
+func (pow *Service) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*types.Transaction, error) {
 	minerProgramHash, err := common.Uint168FromAddress(addr)
 	if err != nil {
 		return nil, err
 	}
 
-	pd := &core.PayloadCoinBase{
+	pd := &types.PayloadCoinBase{
 		CoinbaseData: []byte(pow.minerInfo),
 	}
 
 	txn := blockchain.NewCoinBaseTransaction(pd, pow.chain.GetBestHeight()+1)
-	txn.Inputs = []*core.Input{
+	txn.Inputs = []*types.Input{
 		{
-			Previous: core.OutPoint{
+			Previous: types.OutPoint{
 				TxID:  common.EmptyHash,
 				Index: math.MaxUint16,
 			},
 			Sequence: math.MaxUint32,
 		},
 	}
-	txn.Outputs = []*core.Output{
+	txn.Outputs = []*types.Output{
 		{
 			AssetID:     pow.chain.AssetID,
 			Value:       0,
@@ -152,27 +152,27 @@ func (pow *Service) CreateCoinBaseTx(nextBlockHeight uint32, addr string) (*core
 
 	nonce := make([]byte, 8)
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
-	txAttr := core.NewAttribute(core.Nonce, nonce)
+	txAttr := types.NewAttribute(types.Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
 	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }
 
-type ByFeeDesc []*core.Transaction
+type ByFeeDesc []*types.Transaction
 
 func (s ByFeeDesc) Len() int           { return len(s) }
 func (s ByFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s ByFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
-func (pow *Service) GenerateBlock(addr string) (*core.Block, error) {
+func (pow *Service) GenerateBlock(addr string) (*types.Block, error) {
 	nextBlockHeight := pow.chain.GetBestHeight() + 1
 	coinBaseTx, err := pow.CreateCoinBaseTx(nextBlockHeight, addr)
 	if err != nil {
 		return nil, err
 	}
 
-	header := core.Header{
+	header := types.Header{
 		Version:    0,
 		Previous:   *pow.chain.BestChain.Hash,
 		MerkleRoot: common.EmptyHash,
@@ -182,9 +182,9 @@ func (pow *Service) GenerateBlock(addr string) (*core.Block, error) {
 		Nonce:      0,
 	}
 
-	msgBlock := &core.Block{
+	msgBlock := &types.Block{
 		Header:       header,
-		Transactions: []*core.Transaction{},
+		Transactions: []*types.Transaction{},
 	}
 
 	msgBlock.Transactions = append(msgBlock.Transactions, coinBaseTx)
@@ -204,14 +204,14 @@ func (pow *Service) GenerateBlock(addr string) (*core.Block, error) {
 	return msgBlock, err
 }
 
-func (pow *Service) GenerateBlockTransactions(msgBlock *core.Block, coinBaseTx *core.Transaction) {
+func (pow *Service) GenerateBlockTransactions(msgBlock *types.Block, coinBaseTx *types.Transaction) {
 	nextBlockHeight := pow.chain.GetBestHeight() + 1
 	totalTxsSize := coinBaseTx.GetSize()
 	txCount := 1
 	totalFee := common.Fixed64(0)
 	var txsByFeeDesc ByFeeDesc
 	txsInPool := pow.txMemPool.GetTxsInPool()
-	txsByFeeDesc = make([]*core.Transaction, 0, len(txsInPool))
+	txsByFeeDesc = make([]*types.Transaction, 0, len(txsInPool))
 	for _, v := range txsInPool {
 		txsByFeeDesc = append(txsByFeeDesc, v)
 	}
@@ -299,7 +299,7 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	}
 }
 
-func (pow *Service) SolveBlock(msgBlock *core.Block, ticker *time.Ticker) bool {
+func (pow *Service) SolveBlock(msgBlock *types.Block, ticker *time.Ticker) bool {
 	genesisHash, err := pow.chain.GetBlockHash(0)
 	if err != nil {
 		return false
@@ -332,7 +332,7 @@ func (pow *Service) SolveBlock(msgBlock *core.Block, ticker *time.Ticker) bool {
 	return false
 }
 
-func (pow *Service) BroadcastBlock(block *core.Block) {
+func (pow *Service) BroadcastBlock(block *types.Block) {
 	pow.server.BroadcastMessage(msg.NewBlock(block))
 }
 
@@ -365,7 +365,7 @@ func (pow *Service) Halt() {
 }
 
 func (pow *Service) RollbackTransaction(v interface{}) {
-	if block, ok := v.(*core.Block); ok {
+	if block, ok := v.(*types.Block); ok {
 		for _, tx := range block.Transactions[1:] {
 			err := pow.txMemPool.MaybeAcceptTransaction(tx)
 			if err == nil {
@@ -379,7 +379,7 @@ func (pow *Service) RollbackTransaction(v interface{}) {
 
 func (pow *Service) BlockPersistCompleted(v interface{}) {
 	log.Debug()
-	if block, ok := v.(*core.Block); ok {
+	if block, ok := v.(*types.Block); ok {
 		log.Infof("persist block: %x", block.Hash())
 		err := pow.txMemPool.CleanSubmittedTransactions(block)
 		if err != nil {

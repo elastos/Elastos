@@ -9,21 +9,21 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/vm"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA/bloom"
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 var zeroHash = common.Uint256{}
 
 type TxValidateAction struct {
 	Name    FuncName
-	Handler func(txn *core.Transaction) error
+	Handler func(txn *types.Transaction) error
 }
 
 type Validator struct {
@@ -64,7 +64,7 @@ func NewValidator(cfg *Config) *Validator {
 	return v
 }
 
-func (v *Validator) RegisterSanityFunc(name FuncName, function func(txn *core.Transaction) error) {
+func (v *Validator) RegisterSanityFunc(name FuncName, function func(txn *types.Transaction) error) {
 	for _, action := range v.checkSanityFunctions {
 		if action.Name == name {
 			action.Handler = function
@@ -74,7 +74,7 @@ func (v *Validator) RegisterSanityFunc(name FuncName, function func(txn *core.Tr
 	v.checkSanityFunctions = append(v.checkSanityFunctions, &TxValidateAction{Name: name, Handler: function})
 }
 
-func (v *Validator) RegisterContextFunc(name FuncName, function func(txn *core.Transaction) error) {
+func (v *Validator) RegisterContextFunc(name FuncName, function func(txn *types.Transaction) error) {
 	for _, action := range v.checkContextFunctions {
 		if action.Name == name {
 			action.Handler = function
@@ -85,7 +85,7 @@ func (v *Validator) RegisterContextFunc(name FuncName, function func(txn *core.T
 }
 
 // CheckTransactionSanity verifys received single transaction
-func (v *Validator) CheckTransactionSanity(txn *core.Transaction) error {
+func (v *Validator) CheckTransactionSanity(txn *types.Transaction) error {
 	for _, checkFunc := range v.checkSanityFunctions {
 		if err := checkFunc.Handler(txn); err != nil {
 			return err
@@ -95,7 +95,7 @@ func (v *Validator) CheckTransactionSanity(txn *core.Transaction) error {
 }
 
 // CheckTransactionContext verifys a transaction with history transaction in ledger
-func (v *Validator) CheckTransactionContext(txn *core.Transaction) error {
+func (v *Validator) CheckTransactionContext(txn *types.Transaction) error {
 	for _, checkFunc := range v.checkContextFunctions {
 		if err := checkFunc.Handler(txn); err != nil {
 			return err
@@ -104,7 +104,7 @@ func (v *Validator) CheckTransactionContext(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkReferencedOutput(txn *core.Transaction) error {
+func (v *Validator) checkReferencedOutput(txn *types.Transaction) error {
 	// check referenced Output value
 	for _, input := range txn.Inputs {
 		referHash := input.Previous.TxID
@@ -133,7 +133,7 @@ func (v *Validator) checkReferencedOutput(txn *core.Transaction) error {
 }
 
 //validate the transaction of duplicate UTXO input
-func (v *Validator) checkTransactionInput(txn *core.Transaction) error {
+func (v *Validator) checkTransactionInput(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Inputs) != 1 {
 			str := fmt.Sprint("[checkTransactionInput] coinbase must has only one input")
@@ -174,7 +174,7 @@ func (v *Validator) checkTransactionInput(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionOutput(txn *core.Transaction) error {
+func (v *Validator) checkTransactionOutput(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			str := fmt.Sprint("[checkTransactionOutput] coinbase output is not enough, at least 2")
@@ -234,7 +234,7 @@ func (v *Validator) checkOutputProgramHash(programHash common.Uint168) bool {
 	return false
 }
 
-func (v *Validator) checkTransactionUTXOLock(txn *core.Transaction) error {
+func (v *Validator) checkTransactionUTXOLock(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		return nil
 	}
@@ -264,7 +264,7 @@ func (v *Validator) checkTransactionUTXOLock(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionSize(txn *core.Transaction) error {
+func (v *Validator) checkTransactionSize(txn *types.Transaction) error {
 	size := txn.GetSize()
 	if size <= 0 || size > config.Parameters.MaxBlockSize {
 		str := fmt.Sprintf("[checkTransactionSize] Invalid transaction size: %d bytes", size)
@@ -274,11 +274,11 @@ func (v *Validator) checkTransactionSize(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkAssetPrecision(txn *core.Transaction) error {
+func (v *Validator) checkAssetPrecision(txn *types.Transaction) error {
 	if len(txn.Outputs) == 0 {
 		return nil
 	}
-	assetOutputs := make(map[common.Uint256][]*core.Output, len(txn.Outputs))
+	assetOutputs := make(map[common.Uint256][]*types.Output, len(txn.Outputs))
 
 	for _, v := range txn.Outputs {
 		assetOutputs[v.AssetID] = append(assetOutputs[v.AssetID], v)
@@ -291,7 +291,7 @@ func (v *Validator) checkAssetPrecision(txn *core.Transaction) error {
 		}
 		precision := asset.Precision
 		for _, output := range outputs {
-			if !v.checkAmountPrecise(output.Value, precision, core.MaxPrecision) {
+			if !v.checkAmountPrecise(output.Value, precision, types.MaxPrecision) {
 				str := fmt.Sprint("[checkAssetPrecision] The precision of asset is incorrect.")
 				return ruleError(ErrAssetPrecision, str)
 			}
@@ -300,7 +300,7 @@ func (v *Validator) checkAssetPrecision(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionBalance(txn *core.Transaction) error {
+func (v *Validator) checkTransactionBalance(txn *types.Transaction) error {
 	for _, v := range txn.Outputs {
 		if v.Value < common.Fixed64(0) {
 			str := fmt.Sprint("[checkTransactionBalance] Invalide transaction UTXO output.")
@@ -320,10 +320,10 @@ func (v *Validator) checkTransactionBalance(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkAttributeProgram(txn *core.Transaction) error {
+func (v *Validator) checkAttributeProgram(txn *types.Transaction) error {
 	// Check attributes
 	for _, attr := range txn.Attributes {
-		if !core.IsValidAttributeType(attr.Usage) {
+		if !types.IsValidAttributeType(attr.Usage) {
 			str := fmt.Sprintf("[checkAttributeProgram] invalid attribute usage %s", attr.Usage.Name())
 			return ruleError(ErrAttributeProgram, str)
 		}
@@ -348,7 +348,7 @@ func (v *Validator) checkAttributeProgram(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionDuplicate(txn *core.Transaction) error {
+func (v *Validator) checkTransactionDuplicate(txn *types.Transaction) error {
 	// check if duplicated with transaction in ledger
 	if exist := v.db.IsDuplicateTx(txn.Hash()); exist {
 		str := fmt.Sprint("[CheckTransactionContext] duplicate transaction check faild.")
@@ -357,14 +357,14 @@ func (v *Validator) checkTransactionDuplicate(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionCoinBase(txn *core.Transaction) error {
+func (v *Validator) checkTransactionCoinBase(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		return ErrBreak
 	}
 	return nil
 }
 
-func (v *Validator) checkTransactionDoubleSpend(txn *core.Transaction) error {
+func (v *Validator) checkTransactionDoubleSpend(txn *types.Transaction) error {
 	// check double spent transaction
 	if v.db.IsDoubleSpend(txn) {
 		str := fmt.Sprint("[CheckTransactionContext] IsDoubleSpend check faild.")
@@ -373,7 +373,7 @@ func (v *Validator) checkTransactionDoubleSpend(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkTransactionSignature(txn *core.Transaction) error {
+func (v *Validator) checkTransactionSignature(txn *types.Transaction) error {
 	if txn.IsRechargeToSideChainTx() {
 		if err := v.spvService.VerifyTransaction(txn); err != nil {
 			return ruleError(ErrTransactionSignature, err.Error())
@@ -403,22 +403,22 @@ func (v *Validator) checkAmountPrecise(amount common.Fixed64, precision byte, as
 	return amount.IntValue()%int64(math.Pow10(int(assetPrecision-precision))) == 0
 }
 
-func (v *Validator) checkTransactionPayload(txn *core.Transaction) error {
+func (v *Validator) checkTransactionPayload(txn *types.Transaction) error {
 	switch pld := txn.Payload.(type) {
-	case *core.PayloadRegisterAsset:
-		if pld.Asset.Precision < core.MinPrecision || pld.Asset.Precision > core.MaxPrecision {
+	case *types.PayloadRegisterAsset:
+		if pld.Asset.Precision < types.MinPrecision || pld.Asset.Precision > types.MaxPrecision {
 			str := fmt.Sprint("[checkTransactionPayload] Invalide asset Precision.")
 			return ruleError(ErrTransactionPayload, str)
 		}
-		if !v.checkAmountPrecise(pld.Amount, pld.Asset.Precision, core.MaxPrecision) {
+		if !v.checkAmountPrecise(pld.Amount, pld.Asset.Precision, types.MaxPrecision) {
 			str := fmt.Sprint("[checkTransactionPayload] Invalide asset value,out of precise.")
 			return ruleError(ErrTransactionPayload, str)
 		}
-	case *core.PayloadTransferAsset:
-	case *core.PayloadRecord:
-	case *core.PayloadCoinBase:
-	case *core.PayloadRechargeToSideChain:
-	case *core.PayloadTransferCrossChainAsset:
+	case *types.PayloadTransferAsset:
+	case *types.PayloadRecord:
+	case *types.PayloadCoinBase:
+	case *types.PayloadRechargeToSideChain:
+	case *types.PayloadTransferCrossChainAsset:
 	default:
 		str := fmt.Sprint("[checkTransactionPayload] Invalide transaction payload type.")
 		return ruleError(ErrTransactionPayload, str)
@@ -426,15 +426,15 @@ func (v *Validator) checkTransactionPayload(txn *core.Transaction) error {
 	return nil
 }
 
-func (v *Validator) checkRechargeToSideChainTransaction(txn *core.Transaction) error {
+func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) error {
 	if !txn.IsRechargeToSideChainTx() {
 		return nil
 	}
 
 	proof := new(bloom.MerkleProof)
-	mainChainTransaction := new(ela.Transaction)
+	mainChainTransaction := new(core.Transaction)
 
-	payloadRecharge, ok := txn.Payload.(*core.PayloadRechargeToSideChain)
+	payloadRecharge, ok := txn.Payload.(*types.PayloadRechargeToSideChain)
 	if !ok {
 		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid recharge to side chain payload type")
 		return ruleError(ErrRechargeToSideChain, str)
@@ -462,9 +462,9 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *core.Transaction) e
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
-	payloadObj, ok := mainChainTransaction.Payload.(*ela.PayloadTransferCrossChainAsset)
+	payloadObj, ok := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
 	if !ok {
-		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid payload ela.PayloadTransferCrossChainAsset")
+		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid payload core.PayloadTransferCrossChainAsset")
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
@@ -524,12 +524,12 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *core.Transaction) e
 	return ErrBreak
 }
 
-func (v *Validator) checkTransferCrossChainAssetTransaction(txn *core.Transaction) error {
+func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transaction) error {
 	if !txn.IsTransferCrossChainAssetTx() {
 		return nil
 	}
 
-	payloadObj, ok := txn.Payload.(*core.PayloadTransferCrossChainAsset)
+	payloadObj, ok := txn.Payload.(*types.PayloadTransferCrossChainAsset)
 	if !ok {
 		str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transfer cross chain asset payload type")
 		return ruleError(ErrCrossChain, str)
@@ -633,7 +633,7 @@ func genesisProgramHash(genesisHash common.Uint256) (*common.Uint168, error) {
 	return crypto.ToProgramHash(buf.Bytes())
 }
 
-func (v *Validator) TxProgramHashes(tx *core.Transaction) ([]common.Uint168, error) {
+func (v *Validator) TxProgramHashes(tx *types.Transaction) ([]common.Uint168, error) {
 	if tx == nil {
 		return nil, errors.New("[Transaction],GetProgramHashes transaction is nil.")
 	}
@@ -649,7 +649,7 @@ func (v *Validator) TxProgramHashes(tx *core.Transaction) ([]common.Uint168, err
 		hashes = append(hashes, programHash)
 	}
 	for _, attribute := range tx.Attributes {
-		if attribute.Usage == core.Script {
+		if attribute.Usage == types.Script {
 			dataHash, err := common.Uint168FromBytes(attribute.Data)
 			if err != nil {
 				return nil, errors.New("[Transaction], GetProgramHashes err.")
@@ -669,7 +669,7 @@ func (v *Validator) TxProgramHashes(tx *core.Transaction) ([]common.Uint168, err
 	return uniqueHashes, nil
 }
 
-func RunPrograms(tx *core.Transaction, hashes []common.Uint168, programs []*core.Program) error {
+func RunPrograms(tx *types.Transaction, hashes []common.Uint168, programs []*types.Program) error {
 	if tx == nil {
 		return errors.New("invalid data content nil transaction")
 	}
@@ -687,7 +687,7 @@ func RunPrograms(tx *core.Transaction, hashes []common.Uint168, programs []*core
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 		//execute program on VM
-		se := vm.NewExecutionEngine(core.TransactionHelper.GetDataContainer(programHash, tx),
+		se := vm.NewExecutionEngine(types.TransactionHelper.GetDataContainer(programHash, tx),
 			new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
 		se.LoadScript(programs[i].Code, false)
 		se.LoadScript(programs[i].Parameter, true)
@@ -710,7 +710,7 @@ func RunPrograms(tx *core.Transaction, hashes []common.Uint168, programs []*core
 	return nil
 }
 
-func SortPrograms(programs []*core.Program) (err error) {
+func SortPrograms(programs []*types.Program) (err error) {
 	defer func() {
 		if code := recover(); code != nil {
 			err = fmt.Errorf("invalid program code %x", code)
@@ -720,7 +720,7 @@ func SortPrograms(programs []*core.Program) (err error) {
 	return err
 }
 
-type byHash []*core.Program
+type byHash []*types.Program
 
 func (p byHash) Len() int      { return len(p) }
 func (p byHash) Swap(i, j int) { p[i], p[j] = p[j], p[i] }

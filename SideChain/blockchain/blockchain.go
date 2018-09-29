@@ -10,11 +10,12 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
-	ela "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -35,9 +36,9 @@ type Config struct {
 	PowLimit          *big.Int
 	MaxOrphanBlocks   int
 	MinMemoryNodes    uint32
-	CheckTxSanity     func(*core.Transaction) error
-	CheckTxContext     func(*core.Transaction) error
-	GetTxFee          func(tx *core.Transaction, assetId Uint256) Fixed64
+	CheckTxSanity     func(*types.Transaction) error
+	CheckTxContext    func(*types.Transaction) error
+	GetTxFee          func(tx *types.Transaction, assetId Uint256) Fixed64
 }
 
 type BlockChain struct {
@@ -55,7 +56,7 @@ type BlockChain struct {
 	Orphans         map[Uint256]*OrphanBlock
 	PrevOrphans     map[Uint256][]*OrphanBlock
 	OldestOrphan    *OrphanBlock
-	BlockCache      map[Uint256]*core.Block
+	BlockCache      map[Uint256]*types.Block
 	TimeSource      MedianTimeSource
 	MedianTimePast  time.Time
 	OrphanLock      sync.RWMutex
@@ -84,7 +85,7 @@ func New(cfg *Config) (*BlockChain, error) {
 		OldestOrphan:    nil,
 		Orphans:         make(map[Uint256]*OrphanBlock),
 		PrevOrphans:     make(map[Uint256][]*OrphanBlock),
-		BlockCache:      make(map[Uint256]*core.Block),
+		BlockCache:      make(map[Uint256]*types.Block),
 		TimeSource:      NewMedianTime(),
 		AssetID:         cfg.AssetId,
 	}
@@ -123,13 +124,13 @@ func New(cfg *Config) (*BlockChain, error) {
 	return &chain, nil
 }
 
-func GenesisBlock() (*core.Block, error) {
+func GenesisBlock() (*types.Block, error) {
 	// ELA coin
-	elaCoin := core.Transaction{
-		TxType:         core.RegisterAsset,
+	elaCoin := types.Transaction{
+		TxType:         types.RegisterAsset,
 		PayloadVersion: 0,
-		Payload: &core.PayloadRegisterAsset{
-			Asset: core.Asset{
+		Payload: &types.PayloadRegisterAsset{
+			Asset: types.Asset{
 				Name:      "ELA",
 				Precision: 0x08,
 				AssetType: 0x00,
@@ -137,34 +138,34 @@ func GenesisBlock() (*core.Block, error) {
 			Amount:     0 * 100000000,
 			Controller: Uint168{},
 		},
-		Attributes: []*core.Attribute{},
-		Inputs:     []*core.Input{},
-		Outputs:    []*core.Output{},
-		Programs:   []*core.Program{},
+		Attributes: []*types.Attribute{},
+		Inputs:     []*types.Input{},
+		Outputs:    []*types.Output{},
+		Programs:   []*types.Program{},
 	}
 
 	// header
-	header := core.Header{
-		Version:    core.BlockVersion,
+	header := types.Header{
+		Version:    types.BlockVersion,
 		Previous:   EmptyHash,
 		MerkleRoot: EmptyHash,
 		Timestamp:  uint32(time.Unix(time.Date(2018, time.June, 30, 12, 0, 0, 0, time.UTC).Unix(), 0).Unix()),
 		Bits:       0x1d03ffff,
-		Nonce:      core.GenesisNonce,
+		Nonce:      types.GenesisNonce,
 		Height:     uint32(0),
 		SideAuxPow: auxpow.SideAuxPow{
-			SideAuxBlockTx: ela.Transaction{
-				TxType:         ela.SideChainPow,
-				PayloadVersion: ela.SideChainPowPayloadVersion,
-				Payload:        new(ela.PayloadSideChainPow),
+			SideAuxBlockTx: core.Transaction{
+				TxType:         core.SideChainPow,
+				PayloadVersion: core.SideChainPowPayloadVersion,
+				Payload:        new(core.PayloadSideChainPow),
 			},
 		},
 	}
 
 	//block
-	block := &core.Block{
+	block := &types.Block{
 		Header:       header,
-		Transactions: []*core.Transaction{&elaCoin},
+		Transactions: []*types.Transaction{&elaCoin},
 	}
 	hashes := make([]Uint256, 0, len(block.Transactions))
 	for _, tx := range block.Transactions {
@@ -179,23 +180,23 @@ func GenesisBlock() (*core.Block, error) {
 	return block, nil
 }
 
-func NewCoinBaseTransaction(coinBasePayload *core.PayloadCoinBase, currentHeight uint32) *core.Transaction {
-	return &core.Transaction{
-		TxType:         core.CoinBase,
-		PayloadVersion: core.PayloadCoinBaseVersion,
+func NewCoinBaseTransaction(coinBasePayload *types.PayloadCoinBase, currentHeight uint32) *types.Transaction {
+	return &types.Transaction{
+		TxType:         types.CoinBase,
+		PayloadVersion: types.PayloadCoinBaseVersion,
 		Payload:        coinBasePayload,
-		Inputs: []*core.Input{
+		Inputs: []*types.Input{
 			{
-				Previous: core.OutPoint{
+				Previous: types.OutPoint{
 					TxID:  EmptyHash,
 					Index: 0x0000,
 				},
 				Sequence: 0x00000000,
 			},
 		},
-		Attributes: []*core.Attribute{},
+		Attributes: []*types.Attribute{},
 		LockTime:   currentHeight,
-		Programs:   []*core.Program{},
+		Programs:   []*types.Program{},
 	}
 }
 
@@ -206,12 +207,12 @@ func (b *BlockChain) GetBestHeight() uint32 {
 }
 
 //check weather the transaction contains the doubleSpend.
-func (b *BlockChain) IsDoubleSpend(tx *core.Transaction) bool {
+func (b *BlockChain) IsDoubleSpend(tx *types.Transaction) bool {
 	return b.db.IsDoubleSpend(tx)
 }
 
 //Get the Asset from store.
-func (b *BlockChain) GetAsset(assetId Uint256) (*core.Asset, error) {
+func (b *BlockChain) GetAsset(assetId Uint256) (*types.Asset, error) {
 	asset, err := b.db.GetAsset(assetId)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetAsset failed with assetId =" + assetId.String())
@@ -225,7 +226,7 @@ func (b *BlockChain) GetBlockHash(height uint32) (Uint256, error) {
 }
 
 //Get Block With Height.
-func (b *BlockChain) GetBlockWithHeight(height uint32) (*core.Block, error) {
+func (b *BlockChain) GetBlockWithHeight(height uint32) (*types.Block, error) {
 	temp, err := b.db.GetBlockHash(height)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with height=" + string(height))
@@ -238,7 +239,7 @@ func (b *BlockChain) GetBlockWithHeight(height uint32) (*core.Block, error) {
 }
 
 //Get block with block hash.
-func (b *BlockChain) GetBlockByHash(hash Uint256) (*core.Block, error) {
+func (b *BlockChain) GetBlockByHash(hash Uint256) (*types.Block, error) {
 	bk, err := b.db.GetBlock(hash)
 	if err != nil {
 		return nil, errors.New("[Ledger],GetBlockWithHeight failed with hash=" + hash.String())
@@ -260,11 +261,11 @@ func (b *BlockChain) IsDuplicateMainchainTx(txId Uint256) bool {
 }
 
 //Get transaction with hash.
-func (b *BlockChain) GetTransaction(hash Uint256) (*core.Transaction, uint32, error) {
+func (b *BlockChain) GetTransaction(hash Uint256) (*types.Transaction, uint32, error) {
 	return b.db.GetTransaction(hash)
 }
 
-func (b *BlockChain) GetTxReference(tx *core.Transaction) (map[*core.Input]*core.Output, error) {
+func (b *BlockChain) GetTxReference(tx *types.Transaction) (map[*types.Input]*types.Output, error) {
 	return b.db.GetTxReference(tx)
 }
 
@@ -276,7 +277,7 @@ func (b *BlockChain) GetUnspents(programHash Uint168) (map[Uint256][]*UTXO, erro
 	return b.db.GetUnspents(programHash)
 }
 
-func (b *BlockChain) AddBlock(block *core.Block) (bool, bool, error) {
+func (b *BlockChain) AddBlock(block *types.Block) (bool, bool, error) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
 
@@ -288,7 +289,7 @@ func (b *BlockChain) AddBlock(block *core.Block) (bool, bool, error) {
 	return inMainChain, isOrphan, nil
 }
 
-func (b *BlockChain) GetHeader(hash Uint256) (*core.Header, error) {
+func (b *BlockChain) GetHeader(hash Uint256) (*types.Header, error) {
 	header, err := b.db.GetHeader(hash)
 	if err != nil {
 		return nil, errors.New("[BlockChain], GetHeader failed.")
@@ -310,7 +311,7 @@ func (b *BlockChain) CurrentBlockHash() Uint256 {
 }
 
 type OrphanBlock struct {
-	Block      *core.Block
+	Block      *types.Block
 	Expiration time.Time
 }
 
@@ -369,7 +370,7 @@ func (b *BlockChain) RemoveOrphanBlock(orphan *OrphanBlock) {
 	}
 }
 
-func (b *BlockChain) AddOrphanBlock(block *core.Block) {
+func (b *BlockChain) AddOrphanBlock(block *types.Block) {
 	for _, oBlock := range b.Orphans {
 		if time.Now().After(oBlock.Expiration) {
 			b.RemoveOrphanBlock(oBlock)
@@ -452,7 +453,7 @@ type BlockNode struct {
 	Children    []*BlockNode
 }
 
-func NewBlockNode(header *core.Header, hash *Uint256) *BlockNode {
+func NewBlockNode(header *types.Header, hash *Uint256) *BlockNode {
 	var previous, current Uint256
 	copy(previous[:], header.Previous[:])
 	copy(current[:], hash[:])
@@ -532,7 +533,7 @@ func RemoveChildNode(children []*BlockNode, node *BlockNode) []*BlockNode {
 
 }
 
-func (b *BlockChain) LoadBlockNode(blockHeader *core.Header, hash *Uint256) (*BlockNode, error) {
+func (b *BlockChain) LoadBlockNode(blockHeader *types.Header, hash *Uint256) (*BlockNode, error) {
 
 	// Create the new block node for the block and set the work.
 	node := NewBlockNode(blockHeader, hash)
@@ -668,7 +669,7 @@ func (b *BlockChain) RemoveBlockNode(node *BlockNode) error {
 // block chain, it simply returns it.  Otherwise, it loads the previous block
 // from the block database, creates a new block node from it, and returns it.
 // The returned node will be nil if the genesis block is passed.
-func (b *BlockChain) GetPrevNodeFromBlock(block *core.Block) (*BlockNode, error) {
+func (b *BlockChain) GetPrevNodeFromBlock(block *types.Block) (*BlockNode, error) {
 	// Genesis block.
 	prevHash := block.Header.Previous
 	if prevHash.IsEqual(EmptyHash) {
@@ -814,7 +815,7 @@ func (b *BlockChain) reorganizeChain(detachNodes, attachNodes *list.List) error 
 
 //// disconnectBlock handles disconnecting the passed node/block from the end of
 //// the main (best) chain.
-func (b *BlockChain) disconnectBlock(node *BlockNode, block *core.Block) error {
+func (b *BlockChain) disconnectBlock(node *BlockNode, block *types.Block) error {
 	// Make sure the node being disconnected is the end of the best chain.
 	if b.BestChain == nil || !node.Hash.IsEqual(*b.BestChain.Hash) {
 		return fmt.Errorf("disconnectBlock must be called with the " +
@@ -850,7 +851,7 @@ func (b *BlockChain) disconnectBlock(node *BlockNode, block *core.Block) error {
 
 // connectBlock handles connecting the passed node/block to the end of the main
 // (best) chain.
-func (b *BlockChain) connectBlock(node *BlockNode, block *core.Block) error {
+func (b *BlockChain) connectBlock(node *BlockNode, block *types.Block) error {
 	// Make sure it's extending the end of the best chain.
 	prevHash := &block.Header.Previous
 	if b.BestChain != nil && !prevHash.IsEqual(*b.BestChain.Hash) {
@@ -902,7 +903,7 @@ func (b *BlockChain) BlockExists(hash *Uint256) (bool, error) {
 	return b.BlockInLedger(*hash), nil
 }
 
-func (b *BlockChain) maybeAcceptBlock(block *core.Block) (bool, error) {
+func (b *BlockChain) maybeAcceptBlock(block *types.Block) (bool, error) {
 	// Get a block node for the block previous to this one.  Will be nil
 	// if this is the genesis block.
 	prevNode, err := b.GetPrevNodeFromBlock(block)
@@ -963,7 +964,7 @@ func (b *BlockChain) maybeAcceptBlock(block *core.Block) (bool, error) {
 	return inMainChain, nil
 }
 
-func (b *BlockChain) connectBestChain(node *BlockNode, block *core.Block) (bool, error) {
+func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool, error) {
 	// We haven't selected a best chain yet or we are extending the main
 	// (best) chain with a new block.  This is the most common case.
 
@@ -1054,7 +1055,7 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *core.Block) (bool,
 //1. inMainChain
 //2. isOphan
 //3. error
-func (b *BlockChain) ProcessBlock(block *core.Block) (bool, bool, error) {
+func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 	blockHash := block.Hash()
 	log.Tracef("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
