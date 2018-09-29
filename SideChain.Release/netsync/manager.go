@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
+	"github.com/elastos/Elastos.ELA.SideChain/pact"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -203,6 +204,12 @@ func (sm *SyncManager) startSync() {
 // isSyncCandidate returns whether or not the peer is a candidate to consider
 // syncing from.
 func (sm *SyncManager) isSyncCandidate(peer *peer.Peer) bool {
+	// The peer is release_0.0.1 version and provide open service.
+	if peer.ProtocolVersion() == pact.Release001Version &&
+		peer.Services()&pact.OpenService == pact.OpenService {
+		return true
+	}
+
 	// The peer is not a candidate for sync if it's not a full node.
 	if peer.Services()&p2p.SFNodeNetwork != p2p.SFNodeNetwork {
 		return false

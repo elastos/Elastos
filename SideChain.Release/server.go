@@ -671,7 +671,7 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 		services |= p2p.SFNodeBloom
 	}
 
-	p2pServerCfg := p2psvr.NewDefaultConfig(
+	cfg := p2psvr.NewDefaultConfig(
 		params.Magic,
 		params.NodePort,
 		params.SeedList,
@@ -683,16 +683,18 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 	s := server{
 		chain:     chain,
 		txMemPool: txPool,
-		newPeers:  make(chan p2psvr.IPeer, p2pServerCfg.MaxPeers),
-		donePeers: make(chan p2psvr.IPeer, p2pServerCfg.MaxPeers),
-		relayInv:  make(chan relayMsg, p2pServerCfg.MaxPeers),
+		newPeers:  make(chan p2psvr.IPeer, cfg.MaxPeers),
+		donePeers: make(chan p2psvr.IPeer, cfg.MaxPeers),
+		relayInv:  make(chan relayMsg, cfg.MaxPeers),
 		quit:      make(chan struct{}),
 		services:  services,
 	}
-	p2pServerCfg.OnNewPeer = s.NewPeer
-	p2pServerCfg.OnDonePeer = s.DonePeer
+	cfg.OnNewPeer = s.NewPeer
+	cfg.OnDonePeer = s.DonePeer
 
-	p2pServer, err := p2psvr.NewServer(p2pServerCfg)
+	srvrlog.Infof("listen addrs %v", cfg.ListenAddrs)
+
+	p2pServer, err := p2psvr.NewServer(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -702,7 +704,7 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 		PeerNotifier: &s,
 		Chain:        s.chain,
 		TxMemPool:    s.txMemPool,
-		MaxPeers:     p2pServerCfg.MaxPeers,
+		MaxPeers:     cfg.MaxPeers,
 	})
 
 	return &s, nil
