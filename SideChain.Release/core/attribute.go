@@ -80,7 +80,8 @@ func (a *Attribute) Deserialize(r io.Reader) error {
 	if !IsValidAttributeType(a.Usage) {
 		return errors.New("[Attribute error] Unsupported attribute Description.")
 	}
-	a.Data, err = ReadVarBytes(r)
+	a.Data, err = ReadVarBytes(r, MaxVarStringLength,
+		"attribute data")
 	if err != nil {
 		return errors.New("Transaction attribute Data deserialization error.")
 	}
