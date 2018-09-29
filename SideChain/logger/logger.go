@@ -260,12 +260,14 @@ func (l *Log) SetPrintLevel(level int) error {
 
 func (l *Log) Logger(name string) *logger {
 	name = name + " "
-	return &logger{
+	logger := &logger{
 		level:  l.level,
 		name:   name,
 		mutex:  l.mutex,
 		logger: log.New(io.MultiWriter(os.Stdout, l.file), name, log.Ldate|log.Lmicroseconds),
 	}
+	l.loggers = append(l.loggers, logger)
+	return logger
 }
 
 type logger struct {
