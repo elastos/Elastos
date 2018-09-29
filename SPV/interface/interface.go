@@ -61,7 +61,10 @@ type SPVService interface {
 	HeaderStore() database.Headers
 
 	// Start the SPV service
-	Start() error
+	Start()
+
+	// Stop the SPV service
+	Stop()
 
 	// ClearData delete all data stores data including HeaderStore and DataStore.
 	ClearData() error

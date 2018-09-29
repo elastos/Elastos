@@ -5,8 +5,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"os"
-	"os/signal"
 
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/interface/store"
@@ -227,27 +225,6 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 			header.Height-item.Height,
 		)
 	}
-}
-
-func (s *spvservice) Start() error {
-	// Handle interrupt signal
-	quit := make(chan struct{})
-	signals := make(chan os.Signal, 1)
-	signal.Notify(signals, os.Interrupt)
-	go func() {
-		for range signals {
-			log.Trace("SPV service shutting down...")
-			s.IService.Stop()
-			quit <- struct{}{}
-		}
-	}()
-
-	// Start SPV service
-	s.IService.Start()
-
-	<-quit
-
-	return nil
 }
 
 func (s *spvservice) ClearData() error {
