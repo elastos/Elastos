@@ -6,22 +6,29 @@ import (
 	"net/http"
 	"strconv"
 
-	chain "github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/servers"
+
+	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
+type Config struct {
+	HttpRestPort uint16
+	HttpJsonPort uint16
+	NodePort     uint16
+	DB           blockchain.IChainStore
+	Server       server.IServer
+}
+
 type Info struct {
-	NodeVersion   string
-	BlockHeight   uint32
-	NeighborCnt   int
-	Neighbors     []NgbNodeInfo
-	HttpRestPort  int
-	HttpWsPort    int
-	HttpJsonPort  int
-	HttpLocalPort int
-	NodePort      uint16
-	NodeId        string
+	NodeVersion  string
+	BlockHeight  uint32
+	NeighborCnt  int
+	Neighbors    []NgbNodeInfo
+	HttpRestPort uint16
+	HttpJsonPort uint16
+	NodePort     uint16
+	NodeId       string
 }
 
 type NgbNodeInfo struct {
@@ -29,30 +36,35 @@ type NgbNodeInfo struct {
 	NbrAddr string
 }
 
-var node = servers.NodeForServers
-
 var templates = template.Must(template.New("info").Parse(page))
 
-func viewHandler(w http.ResponseWriter, r *http.Request) {
-	var ngbrNodersInfo []NgbNodeInfo
-	ngbrNoders := node.GetNeighborNoder()
+type infoserver struct {
+	nodePort  uint16
+	jsonPort  uint16
+	resetPort uint16
+	db        blockchain.IChainStore
+	server    server.IServer
+}
 
-	for i := 0; i < len(ngbrNoders); i++ {
-		ngbrNodersInfo = append(ngbrNodersInfo, NgbNodeInfo{
-			NgbId:   fmt.Sprintf("0x%x", ngbrNoders[i].ID()),
-			NbrAddr: ngbrNoders[i].Addr() + ":" + strconv.Itoa(ngbrNoders[i].HttpInfoPort()),
+func (s *infoserver) view(w http.ResponseWriter, r *http.Request) {
+	var nodeInfos []NgbNodeInfo
+	peers := s.server.ConnectedPeers()
+
+	for _, node := range peers {
+		nodeInfos = append(nodeInfos, NgbNodeInfo{
+			NgbId:   fmt.Sprintf("0x%x", node.ToPeer().ID()),
+			NbrAddr: node.ToPeer().String(),
 		})
 	}
 
 	pageInfo := &Info{
-		BlockHeight:  chain.DefaultChain.GetBestHeight(),
-		NeighborCnt:  len(ngbrNoders),
-		Neighbors:    ngbrNodersInfo,
-		HttpRestPort: config.Parameters.HttpRestPort,
-		HttpWsPort:   config.Parameters.HttpWsPort,
-		HttpJsonPort: config.Parameters.HttpJsonPort,
-		NodePort:     config.Parameters.NodePort,
-		NodeId:       fmt.Sprintf("0x%x", node.ID()),
+		BlockHeight:  s.db.GetHeight(),
+		NeighborCnt:  len(peers),
+		Neighbors:    nodeInfos,
+		HttpRestPort: s.resetPort,
+		HttpJsonPort: s.jsonPort,
+		NodePort:     s.nodePort,
+		NodeId:       fmt.Sprintf("0x%x", 0),
 	}
 
 	err := templates.ExecuteTemplate(w, "info", pageInfo)
@@ -61,7 +73,17 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func StartServer() {
-	http.HandleFunc("/info", viewHandler)
+func (s *infoserver) Start() {
+	http.HandleFunc("/info", s.view)
 	http.ListenAndServe(":"+strconv.Itoa(int(config.Parameters.HttpInfoPort)), nil)
+}
+
+func New(cfg *Config) *infoserver {
+	return &infoserver{
+		nodePort:  cfg.NodePort,
+		jsonPort:  cfg.HttpJsonPort,
+		resetPort: cfg.HttpRestPort,
+		db:        cfg.DB,
+		server:    cfg.Server,
+	}
 }

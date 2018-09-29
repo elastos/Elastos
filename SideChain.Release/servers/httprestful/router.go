@@ -8,30 +8,31 @@ import (
 	"strings"
 )
 
-//https://github.com/emostafa/garson
-type Params map[string]string
+const RouteParams = "route_params"
 
-type Route struct {
+type params map[string]string
+
+type route struct {
 	Method           string
 	Path             *regexp.Regexp
 	RegisteredParams []string
 	Handler          http.HandlerFunc
 }
+
 type Router struct {
-	Routes []*Route
+	Routes []*route
 }
 
 var paramsRegexp = regexp.MustCompile(`:(\w+)`)
 
-func (r *Router) Try(path string, method string) (http.HandlerFunc, Params, error) {
-
+func (r *Router) serve(path string, method string) (http.HandlerFunc, params, error) {
 	for _, route := range r.Routes {
 		if route.Method == method {
 			match := route.Path.MatchString(path)
 			if match == false {
 				continue
 			}
-			params := Params{}
+			params := params{}
 			// check if this route has registered params, and then parse them
 			if len(route.RegisteredParams) > 0 {
 				params = parseParams(route, path)
@@ -40,13 +41,11 @@ func (r *Router) Try(path string, method string) (http.HandlerFunc, Params, erro
 
 		}
 	}
-	return nil, Params{}, errors.New("Route not found")
-
+	return nil, params{}, errors.New("route not found")
 }
 
 func (r *Router) add(method string, path string, handler http.HandlerFunc) {
-
-	route := &Route{}
+	route := &route{}
 	route.Method = method
 	path = "^" + path + "$"
 	route.Handler = handler
@@ -98,20 +97,18 @@ func (r *Router) Options(path string, handler http.HandlerFunc) {
 }
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, params, err := r.Try(req.URL.Path, req.Method)
+	handler, params, err := r.serve(req.URL.Path, req.Method)
 	if err != nil {
 		http.NotFound(w, req)
 		return
 	}
-	ctx := context.WithValue(req.Context(), "route_params", params)
+	ctx := context.WithValue(req.Context(), RouteParams, params)
 	handler(w, req.WithContext(ctx))
-
 }
 
-func parseParams(route *Route, path string) Params {
-
+func parseParams(route *route, path string) params {
 	matches := route.Path.FindAllStringSubmatch(path, -1)
-	params := Params{}
+	params := params{}
 	matchedParams := matches[0][1:]
 
 	for k, v := range matchedParams {
@@ -122,7 +119,7 @@ func parseParams(route *Route, path string) Params {
 
 func getParam(r *http.Request, key string) string {
 	ctx := r.Context()
-	params := ctx.Value("route_params").(Params)
+	params := ctx.Value(RouteParams).(params)
 	val, _ := params[key]
 	return val
 }
