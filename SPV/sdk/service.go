@@ -56,7 +56,7 @@ type service struct {
 }
 
 // Create a instance of SPV service implementation.
-func NewSPVService(cfg *Config) (*service, error) {
+func newService(cfg *Config) (*service, error) {
 	// Initialize blockchain
 	chain, err := blockchain.New(cfg.Foundation, cfg.ChainStore)
 	if err != nil {

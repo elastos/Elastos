@@ -3,6 +3,7 @@ package sdk
 import (
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/util"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 )
@@ -99,5 +100,5 @@ DataStore is an interface including all methods you need to implement placed in 
 Also an sample APP spvwallet is contain in this project placed in spvwallet folder.
 */
 func NewService(config *Config) (IService, error) {
-	return NewSPVService(config)
+	return newService(config)
 }
