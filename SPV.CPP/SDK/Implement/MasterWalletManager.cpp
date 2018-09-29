@@ -292,7 +292,7 @@ namespace Elastos {
 			return mnemonic;
 		}
 
-		std::string MasterWalletManager::ConvertToHexString(const nlohmann::json &tx) {
+		nlohmann::json MasterWalletManager::EncodeTransactionToString(const nlohmann::json &tx) {
 			Transaction txn;
 
 			txn.fromJson(tx);
@@ -302,24 +302,36 @@ namespace Elastos {
 
 			CMBlock hex = stream.getBuffer();
 			size_t len = BRBase58CheckEncode(NULL, 0, hex, hex.GetSize());
-			char str[len + 1];
+			char buf[len + 1];
 
-			BRBase58CheckEncode(str, sizeof(str), hex, hex.GetSize());
+			BRBase58CheckEncode(buf, sizeof(buf), hex, hex.GetSize());
 
-			return std::string(str);
+			nlohmann::json result;
+
+			result["Algorithm"] = "base58";
+			result["Data"] = std::string(buf);
+
+			return result;
 		}
 
-		nlohmann::json MasterWalletManager::ConvertFromHexString(const std::string &raw) {
+		nlohmann::json MasterWalletManager::DecodeTransactionFromString(const nlohmann::json &cipher) {
 			Transaction txn;
 
-			size_t len = BRBase58CheckDecode(NULL, 0, raw.c_str());
-			if (len == 0) {
-				throw std::logic_error("Decode tx from base58 error");
-			}
+			std::string algorithm = cipher["Algorithm"].get<std::string>();
+			std::string data = cipher["Data"].get<std::string>();
 
 			CMBlock rawHex;
-			rawHex.Resize(len);
-			BRBase58CheckDecode(rawHex, rawHex.GetSize(), raw.c_str());
+			if (algorithm == "base58") {
+				size_t len = BRBase58CheckDecode(NULL, 0, data.c_str());
+				if (len == 0) {
+					throw std::logic_error("Decode tx from base58 error");
+				}
+
+				rawHex.Resize(len);
+				BRBase58CheckDecode(rawHex, rawHex.GetSize(), data.c_str());
+			} else {
+				throw std::logic_error("Unsupport algorithm when decode tx");
+			}
 
 			ByteStream stream;
 			stream.writeBytes(rawHex, rawHex.GetSize());
