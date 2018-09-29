@@ -13,11 +13,11 @@ func IsRegisterIdentificationTx(tx *ucore.Transaction) bool {
 func InitTransactionHelper() {
 	ucore.TransactionHelper = &ucore.TransactionHelperBase{}
 	ucore.TransactionHelper.Init()
-	ucore.TransactionHelper.Name = Name
-	ucore.TransactionHelper.GetDataContainer = GetDataContainer
+	ucore.TransactionHelper.Name = name
+	ucore.TransactionHelper.GetDataContainer = getDataContainer
 }
 
-func Name(txType ucore.TransactionType) string {
+func name(txType ucore.TransactionType) string {
 	switch txType {
 	case ucore.CoinBase:
 		return "CoinBase"
@@ -44,7 +44,7 @@ func Name(txType ucore.TransactionType) string {
 	}
 }
 
-func GetDataContainer(programHash *common.Uint168, tx *ucore.Transaction) interfaces.IDataContainer {
+func getDataContainer(programHash *common.Uint168, tx *ucore.Transaction) interfaces.IDataContainer {
 	switch tx.TxType {
 	case RegisterIdentification:
 		for _, output := range tx.Outputs {

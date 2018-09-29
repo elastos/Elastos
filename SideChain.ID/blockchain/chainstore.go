@@ -14,8 +14,8 @@ type IDChainStore struct {
 	blockchain.ChainStore
 }
 
-func NewChainStore() (blockchain.IChainStore, error) {
-	chainStore, err := blockchain.NewChainStore()
+func NewChainStore(genesisBlock *ucore.Block) (blockchain.IChainStore, error) {
+	chainStore, err := blockchain.NewChainStore(genesisBlock)
 	if err != nil {
 		return nil, err
 	}
@@ -23,25 +23,22 @@ func NewChainStore() (blockchain.IChainStore, error) {
 	store := &IDChainStore{
 		ChainStore: *chainStore,
 	}
-	store.Init()
 
-	go store.Loop()
+	store.RegisterFunctions(true, blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
+
+	go store.TaskHandler()
 
 	return store, nil
 }
 
-func (c *IDChainStore) Init() {
-	c.PersistTransactions = c.PersistTransactionsImpl
-}
-
-func (c *IDChainStore) PersistTransactionsImpl(b *ucore.Block) error {
+func (c *IDChainStore) persistTransactions(batch blockchain.IBatch, b *ucore.Block) error {
 	for _, txn := range b.Transactions {
-		if err := c.PersistTransaction(txn, b.Header.Height); err != nil {
+		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
 		}
 		if txn.TxType == ucore.RegisterAsset {
 			regPayload := txn.Payload.(*ucore.PayloadRegisterAsset)
-			if err := c.PersistAsset(txn.Hash(), regPayload.Asset); err != nil {
+			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
@@ -51,7 +48,7 @@ func (c *IDChainStore) PersistTransactionsImpl(b *ucore.Block) error {
 			if err != nil {
 				return err
 			}
-			c.PersistMainchainTx(*hash)
+			c.PersistMainchainTx(batch, *hash)
 		}
 		if txn.TxType == core.RegisterIdentification {
 			regPayload := txn.Payload.(*core.PayloadRegisterIdentification)
@@ -59,23 +56,23 @@ func (c *IDChainStore) PersistTransactionsImpl(b *ucore.Block) error {
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)
 				buf.WriteString(content.Path)
-				c.PersistRegisterIdentificationTx(buf.Bytes(), txn.Hash())
+				c.PersistRegisterIdentificationTx(batch, buf.Bytes(), txn.Hash())
 			}
 		}
 	}
 	return nil
 }
 
-func (c *IDChainStore) PersistRegisterIdentificationTx(idKey []byte, txHash Uint256) {
-	key := []byte{byte(blockchain.IX_IDENTIFICATION)}
+func (c *IDChainStore) PersistRegisterIdentificationTx(batch blockchain.IBatch, idKey []byte, txHash Uint256) {
+	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 
 	// PUT VALUE
-	c.BatchPut(key, txHash.Bytes())
+	batch.Put(key, txHash.Bytes())
 }
 
 func (c *IDChainStore) GetRegisterIdentificationTx(idKey []byte) ([]byte, error) {
-	key := []byte{byte(blockchain.IX_IDENTIFICATION)}
+	key := []byte{byte(blockchain.IX_Identification)}
 	data, err := c.Get(append(key, idKey...))
 	if err != nil {
 		return nil, err

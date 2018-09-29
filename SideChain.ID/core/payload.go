@@ -6,13 +6,12 @@ import (
 	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
 )
 
-func InitPayloadCreater() {
-	ucore.PayloadCreater = &ucore.PayloadBase{}
-	ucore.PayloadCreater.Init()
-	ucore.PayloadCreater.GetPayload = GetPayload
+func InitPayloadHelper() {
+	ucore.PayloadHelper = &ucore.PayloadBase{}
+	ucore.PayloadHelper.GetPayload = getPayload
 }
 
-func GetPayload(txType ucore.TransactionType) (ucore.Payload, error) {
+func getPayload(txType ucore.TransactionType) (ucore.Payload, error) {
 	var p ucore.Payload
 	switch txType {
 	case ucore.CoinBase:

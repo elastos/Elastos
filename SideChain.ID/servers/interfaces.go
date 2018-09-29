@@ -10,61 +10,138 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
-	uerr "github.com/elastos/Elastos.ELA.SideChain/errors"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-func InitHttpServers() {
-	servers.HttpServers = &servers.HttpServersBase{}
-	servers.HttpServers.Init()
-	servers.HttpServers.GetPayloadInfo = GetPayloadInfo
-	servers.HttpServers.GetTransactionInfoFromBytes = GetTransactionInfoFromBytes
+type HttpServiceExtend struct {
+	*servers.HttpService
+	chain  blockchain.IChainStore
 }
 
-func GetIdentificationTxByIdAndPath(param servers.Params) map[string]interface{} {
+func NewHttpService(cfg *servers.Config, chain blockchain.IChainStore) *HttpServiceExtend {
+	server := &HttpServiceExtend{
+		HttpService: servers.NewHttpService(cfg),
+		chain: chain,
+	}
+	server.GetTransactionInfo = server.getTransactionInfoImpl
+	return server
+}
+
+func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param servers.Params) map[string]interface{} {
 	id, ok := param.String("id")
 	if !ok {
-		return servers.ResponsePack(uerr.InvalidParams, "id is null")
+		return servers.ResponsePack(servers.InvalidParams, "id is null")
 	}
 	_, err := Uint168FromAddress(id)
 	if err != nil {
-		return servers.ResponsePack(uerr.InvalidParams, "invalid id")
+		return servers.ResponsePack(servers.InvalidParams, "invalid id")
 	}
 	path, ok := param.String("path")
 	if !ok {
-		return servers.ResponsePack(uerr.InvalidParams, "path is null")
+		return servers.ResponsePack(servers.InvalidParams, "path is null")
 	}
 
 	buf := new(bytes.Buffer)
 	buf.WriteString(id)
 	buf.WriteString(path)
-	txHashBytes, err := blockchain.DefaultLedger.Store.(*bc.IDChainStore).GetRegisterIdentificationTx(buf.Bytes())
+	txHashBytes, err := s.chain.(*bc.IDChainStore).GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
-		return servers.ResponsePack(uerr.UnknownTransaction, "get identification transaction failed")
+		return servers.ResponsePack(servers.UnknownTransaction, "get identification transaction failed")
 	}
 	txHash, err := Uint256FromBytes(txHashBytes)
 	if err != nil {
-		return servers.ResponsePack(uerr.InvalidTransaction, "invalid transaction hash")
+		return servers.ResponsePack(servers.InvalidTransaction, "invalid transaction hash")
 	}
 
-	txn, height, err := blockchain.DefaultLedger.Store.GetTransaction(*txHash)
+	txn, height, err := s.chain.GetTransaction(*txHash)
 	if err != nil {
-		return servers.ResponsePack(uerr.UnknownTransaction, "get transaction failed")
+		return servers.ResponsePack(servers.UnknownTransaction, "get transaction failed")
 	}
-	bHash, err := blockchain.DefaultLedger.Store.GetBlockHash(height)
+	bHash, err := s.chain.GetBlockHash(height)
 	if err != nil {
-		return servers.ResponsePack(uerr.UnknownBlock, "get block failed")
+		return servers.ResponsePack(servers.UnknownBlock, "get block failed")
 	}
-	header, err := blockchain.DefaultLedger.Store.GetHeader(bHash)
+	header, err := s.chain.GetHeader(bHash)
 	if err != nil {
-		return servers.ResponsePack(uerr.UnknownBlock, "get header failed")
+		return servers.ResponsePack(servers.UnknownBlock, "get header failed")
 	}
 
-	return servers.ResponsePack(uerr.Success, servers.HttpServers.GetTransactionInfo(header, txn))
+	return servers.ResponsePack(servers.Success, s.GetTransactionInfo(header, txn))
 }
 
-func GetPayloadInfo(p ucore.Payload) servers.PayloadInfo {
+func (s *HttpServiceExtend) getTransactionInfoImpl(header *ucore.Header, tx *ucore.Transaction) *servers.TransactionInfo {
+	inputs := make([]servers.InputInfo, len(tx.Inputs))
+	for i, v := range tx.Inputs {
+		inputs[i].TxID = servers.ToReversedString(v.Previous.TxID)
+		inputs[i].VOut = v.Previous.Index
+		inputs[i].Sequence = v.Sequence
+	}
+
+	outputs := make([]servers.OutputInfo, len(tx.Outputs))
+	for i, v := range tx.Outputs {
+		outputs[i].Value = v.Value.String()
+		outputs[i].Index = uint32(i)
+		var address string
+		destroyHash := Uint168{}
+		if v.ProgramHash == destroyHash {
+			address = servers.DestroyAddress
+		} else {
+			address, _ = v.ProgramHash.ToAddress()
+		}
+		outputs[i].Address = address
+		outputs[i].AssetID = servers.ToReversedString(v.AssetID)
+		outputs[i].OutputLock = v.OutputLock
+	}
+
+	attributes := make([]servers.AttributeInfo, len(tx.Attributes))
+	for i, v := range tx.Attributes {
+		attributes[i].Usage = v.Usage
+		attributes[i].Data = BytesToHexString(v.Data)
+	}
+
+	programs := make([]servers.ProgramInfo, len(tx.Programs))
+	for i, v := range tx.Programs {
+		programs[i].Code = BytesToHexString(v.Code)
+		programs[i].Parameter = BytesToHexString(v.Parameter)
+	}
+
+	var txHash = tx.Hash()
+	var txHashStr = servers.ToReversedString(txHash)
+	var size = uint32(tx.GetSize())
+	var blockHash string
+	var confirmations uint32
+	var time uint32
+	var blockTime uint32
+	if header != nil {
+		confirmations = s.chain.GetHeight() - header.Height + 1
+		blockHash = servers.ToReversedString(header.Hash())
+		time = header.Timestamp
+		blockTime = header.Timestamp
+	}
+
+	return &servers.TransactionInfo{
+		TxId:           txHashStr,
+		Hash:           txHashStr,
+		Size:           size,
+		VSize:          size,
+		Version:        0x00,
+		LockTime:       tx.LockTime,
+		Inputs:         inputs,
+		Outputs:        outputs,
+		BlockHash:      blockHash,
+		Confirmations:  confirmations,
+		Time:           time,
+		BlockTime:      blockTime,
+		TxType:         tx.TxType,
+		PayloadVersion: tx.PayloadVersion,
+		Payload:        s.getPayloadInfo(tx.Payload),
+		Attributes:     attributes,
+		Programs:       programs,
+	}
+}
+
+func (s *HttpServiceExtend) getPayloadInfo(p ucore.Payload) servers.PayloadInfo {
 	switch object := p.(type) {
 	case *ucore.PayloadCoinBase:
 		obj := new(servers.CoinbaseInfo)
@@ -114,7 +191,7 @@ func GetPayloadInfo(p ucore.Payload) servers.PayloadInfo {
 	return nil
 }
 
-func GetTransactionInfoFromBytes(txInfoBytes []byte) (*servers.TransactionInfo, error) {
+func (s *HttpServiceExtend) GetTransactionInfoFromBytes(txInfoBytes []byte) (*servers.TransactionInfo, error) {
 	var txInfo servers.TransactionInfo
 	err := json.Unmarshal(txInfoBytes, &txInfo)
 	if err != nil {

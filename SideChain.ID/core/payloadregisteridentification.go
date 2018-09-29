@@ -28,27 +28,27 @@ type PayloadRegisterIdentification struct {
 	Contents []RegisterIdentificationContent
 }
 
-func (a *PayloadRegisterIdentification) Data(version byte) []byte {
+func (p *PayloadRegisterIdentification) Data(version byte) []byte {
 	buf := new(bytes.Buffer)
-	a.Serialize(buf, RegisterIdentificationVersion)
+	p.Serialize(buf, RegisterIdentificationVersion)
 	return buf.Bytes()
 }
 
-func (a *PayloadRegisterIdentification) Serialize(w io.Writer, version byte) error {
+func (p *PayloadRegisterIdentification) Serialize(w io.Writer, version byte) error {
 
-	if err := common.WriteVarString(w, a.ID); err != nil {
+	if err := common.WriteVarString(w, p.ID); err != nil {
 		return errors.New("[RegisterIdentification], ID serialize failed.")
 	}
 
-	if err := common.WriteElement(w, a.Sign); err != nil {
+	if err := common.WriteElement(w, p.Sign); err != nil {
 		return errors.New("[RegisterIdentification], Sign serialize failed.")
 	}
 
-	if err := common.WriteVarUint(w, uint64(len(a.Contents))); err != nil {
+	if err := common.WriteVarUint(w, uint64(len(p.Contents))); err != nil {
 		return errors.New("[RegisterIdentification], Content size serialize failed.")
 	}
 
-	for _, content := range a.Contents {
+	for _, content := range p.Contents {
 		if err := content.Serialize(w, version); err != nil {
 			return err
 		}
@@ -57,15 +57,15 @@ func (a *PayloadRegisterIdentification) Serialize(w io.Writer, version byte) err
 	return nil
 }
 
-func (a *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) error {
+func (p *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) error {
 
 	var err error
-	a.ID, err = common.ReadVarString(r)
+	p.ID, err = common.ReadVarString(r)
 	if err != nil {
 		return errors.New("[RegisterIdentification], ID deserialize failed.")
 	}
 
-	if err := common.ReadElement(r, &a.Sign); err != nil {
+	if err := common.ReadElement(r, &p.Sign); err != nil {
 		return errors.New("[RegisterIdentification], Sign deserialize failed.")
 	}
 
@@ -74,20 +74,20 @@ func (a *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) e
 		return errors.New("[RegisterIdentification], Content size deserialize failed.")
 	}
 
-	a.Contents = make([]RegisterIdentificationContent, size)
+	p.Contents = make([]RegisterIdentificationContent, size)
 	for i := uint64(0); i < size; i++ {
 		content := RegisterIdentificationContent{}
 		if err := content.Deserialize(r, version); err != nil {
 			return err
 		}
-		a.Contents[i] = content
+		p.Contents[i] = content
 	}
 
 	return nil
 }
 
-func (a *PayloadRegisterIdentification) GetData() []byte {
-	return a.Data(RegisterIdentificationVersion)
+func (p *PayloadRegisterIdentification) GetData() []byte {
+	return p.Data(RegisterIdentificationVersion)
 }
 
 func (a *RegisterIdentificationContent) Serialize(w io.Writer, version byte) error {
