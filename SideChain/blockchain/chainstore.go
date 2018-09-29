@@ -199,7 +199,7 @@ func (s *ChainStore) initWithGenesisBlock(genesisBlock *core.Block) error {
 
 	// Get Current Block
 	currentBlockPrefix := []byte{byte(SYS_CurrentBlock)}
-	data, err := s.Get(currentBlockPrefix)
+	data, err := s.Get(append(currentBlockPrefix, hash.Bytes()...))
 	if err != nil {
 		return err
 	}
