@@ -741,7 +741,6 @@ namespace Elastos {
 			}
 
 			rawTxJson["Summary"] = summary;
-			Log::getLogger()->info("transaction summary = {}", summary.dump());
 		}
 
 		std::string Transaction::getConfirmInfo(uint32_t blockHeight) {
