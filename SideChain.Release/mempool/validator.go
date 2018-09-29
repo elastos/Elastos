@@ -31,6 +31,7 @@ type Validator struct {
 	foundation            common.Uint168
 	db                    blockchain.IChainStore
 	txFeeHelper           *FeeHelper
+	spvService            *spv.Service
 	checkSanityFunctions  []*TxValidateAction
 	checkContextFunctions []*TxValidateAction
 }
@@ -41,6 +42,7 @@ func NewValidator(cfg *Config) *Validator {
 		foundation:  cfg.FoundationAddress,
 		db:          cfg.ChainStore,
 		txFeeHelper: cfg.FeeHelper,
+		spvService:  cfg.SpvService,
 	}
 
 	v.RegisterSanityFunc(FuncNames.CheckTransactionSize, v.checkTransactionSize)
@@ -373,7 +375,7 @@ func (v *Validator) checkTransactionDoubleSpend(txn *core.Transaction) error {
 
 func (v *Validator) checkTransactionSignature(txn *core.Transaction) error {
 	if txn.IsRechargeToSideChainTx() {
-		if err := spv.VerifyTransaction(txn); err != nil {
+		if err := v.spvService.VerifyTransaction(txn); err != nil {
 			return ruleError(ErrTransactionSignature, err.Error())
 		}
 		return nil

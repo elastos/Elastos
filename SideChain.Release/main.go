@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"os"
 	"runtime"
 
@@ -13,8 +14,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
-	"github.com/elastos/Elastos.ELA.SideChain/spv"
-
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -83,6 +82,15 @@ func main() {
 	mempoolCfg.FeeHelper = txFeeHelper
 	chainCfg.GetTxFee = txFeeHelper.GetTxFee
 
+	eladlog.Info("2. SPV module init")
+	spvService, err := spv.NewService(spvslog)
+	if err != nil {
+		eladlog.Fatalf("SPV module initialize failed, %s", err)
+		os.Exit(1)
+	}
+	spvService.Start()
+	mempoolCfg.SpvService = spvService
+
 	txValidator := mempool.NewValidator(&mempoolCfg)
 	mempoolCfg.Validator = txValidator
 	chainCfg.CheckTxSanity = txValidator.CheckTransactionSanity
@@ -91,12 +99,6 @@ func main() {
 	chain, err := blockchain.New(&chainCfg)
 	if err != nil {
 		eladlog.Fatalf("BlockChain initialize failed, %s", err)
-		os.Exit(1)
-	}
-
-	eladlog.Info("2. SPV module init")
-	if err := spv.SpvInit(); err != nil {
-		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
 	}
 
