@@ -28,7 +28,7 @@ const (
 )
 
 type Config struct {
-	Logger     *logger.Logger
+	Logger     *logger.Log
 	Server     server.IServer
 	Chain      *blockchain.BlockChain
 	TxMemPool  *mempool.TxPool
@@ -38,7 +38,7 @@ type Config struct {
 type Handler func(Params) map[string]interface{}
 
 type HttpService struct {
-	logger    *logger.Logger
+	logger    *logger.Log
 	server    server.IServer
 	chain     *blockchain.BlockChain
 	txMemPool *mempool.TxPool

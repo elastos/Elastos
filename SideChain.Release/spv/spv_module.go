@@ -22,10 +22,11 @@ var service spv.SPVService
 func SpvInit() error {
 	var err error
 	var params = config.Parameters
-	logger := logger.NewLogger(SPVLogPath, params.SpvPrintLevel,
+	logger := logger.NewLog(SPVLogPath, params.SpvPrintLevel,
 		10, 1024)
 
-	spv.UseLogger(logger)
+	log := logger.Logger("SPVL")
+	spv.UseLogger(log)
 
 	config := &spv.Config{
 		Magic:          params.SpvMagic,
@@ -52,9 +53,9 @@ func SpvInit() error {
 
 	go func() {
 		if err := service.Start(); err != nil {
-			logger.Info("Spv service start failed ：", err)
+			log.Info("Spv service start failed ：", err)
 		}
-		logger.Info("Spv service stoped")
+		log.Info("Spv service stoped")
 		os.Exit(-1)
 	}()
 	return nil
