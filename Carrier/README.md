@@ -1,6 +1,6 @@
 Elastos Carrier Native SDK
 ==========================
-[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg?branch=master)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)
+[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)
 [![CircleCI](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK.svg?style=svg)](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK)
 
 ## Summary
