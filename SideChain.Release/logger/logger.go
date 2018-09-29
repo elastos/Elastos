@@ -112,60 +112,61 @@ func (l *Log) prune() {
 	for _, f := range fileList {
 		totalSize += f.Size()
 	}
+
+	// delete log files form the oldest.
 	for totalSize >= l.maxLogsSize {
+
 		// Get the oldest log file
-		file := fileList[0]
+		oldest := fileList[0]
+
 		// Remove it
-		os.Remove(l.path + file.Name())
+		os.Remove(l.path + oldest.Name())
 		fileList = fileList[1:]
+
 		// Update logs size
-		totalSize -= file.Size()
+		totalSize -= oldest.Size()
 	}
 }
 
-func (l *Log) newLogFile() {
-	// prune before create a new log file
-	l.prune()
+func (l *Log) watchLogFile() {
 
-	// create new log file
-	var err error
-	l.file, err = newLogFile(l.path)
-	if err != nil {
-		fmt.Print("create log file failed,", err.Error())
-		os.Exit(-1)
+	if info, _ := l.file.Stat(); info.Size() >= l.maxPerLogSize {
+
+		// prune before create a new log file
+		l.prune()
+
+		// create new log file
+		file, err := newLogFile(l.path)
+		if err != nil {
+			fmt.Print("create log file failed,", err.Error())
+			os.Exit(-1)
+		}
+
+		// update loggers output file
+		l.mutex.Lock()
+		writer := io.MultiWriter(os.Stdout, file)
+		for _, logger := range l.loggers {
+			logger.logger = log.New(writer, logger.name, log.Ldate|log.Lmicroseconds)
+		}
+		l.mutex.Unlock()
+
+		// close previous log file
+		l.file.Close()
+
+		// unwatch it
+		l.watcher.Remove(l.path + info.Name())
+
+		// set new log file
+		l.file = file
 	}
-
-	// get file stat
-	info, err := l.file.Stat()
-	if err != nil {
-		fmt.Print("get log file stat failed,", err.Error())
-		os.Exit(-1)
-	}
-
-	// setup new printer
-	writer := io.MultiWriter(os.Stdout, l.file)
-	for _, logger := range l.loggers {
-		logger.logger = log.New(writer, logger.name, log.Ldate|log.Lmicroseconds)
-	}
-
-	// watch log file change
-	l.watcher.Add(l.path + info.Name())
 }
 
 func (l *Log) handleFileEvents(event fsnotify.Event) {
 	switch event.Op {
 	case fsnotify.Write:
-		info, _ := l.file.Stat()
-		if info.Size() >= l.maxPerLogSize {
-			l.mutex.Lock()
-			// close previous log file
-			l.file.Close()
-			// unwatch it
-			l.watcher.Remove(l.path + info.Name())
-			// create a new log file
-			l.newLogFile()
-			l.mutex.Unlock()
-		}
+
+		// watch log file state
+		l.watchLogFile()
 	}
 }
 
@@ -197,6 +198,7 @@ func NewLog(path string, level int, maxPerLogSizeMb, maxLogsSizeMb int64) *Log {
 		fmt.Println("create log file watcher failed,", err)
 		os.Exit(-1)
 	}
+
 	go func() {
 		for {
 			select {
@@ -209,7 +211,24 @@ func NewLog(path string, level int, maxPerLogSizeMb, maxLogsSizeMb int64) *Log {
 	}()
 
 	// create new log file
-	l.newLogFile()
+	l.file, err = newLogFile(l.path)
+	if err != nil {
+		fmt.Print("create log file failed,", err.Error())
+		os.Exit(-1)
+	}
+
+	// get file stat
+	info, err := l.file.Stat()
+	if err != nil {
+		fmt.Print("get log file stat failed,", err.Error())
+		os.Exit(-1)
+	}
+
+	// watch log file change
+	l.watcher.Add(l.path + info.Name())
+
+	// prune log files folder
+	l.prune()
 
 	return &l
 }
