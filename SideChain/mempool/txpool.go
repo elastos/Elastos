@@ -197,20 +197,17 @@ func (p *TxPool) cleanUTXOList(txs []*types.Transaction) {
 // clean the trasaction Pool with committed transactions.
 func (p *TxPool) cleanTransactionList(txns []*types.Transaction) error {
 	cleaned := 0
-	txnsNum := len(txns)
 	for _, txn := range txns {
 		if txn.TxType == types.CoinBase {
-			txnsNum = txnsNum - 1
 			continue
 		}
 		if p.delFromTxList(txn.Hash()) {
 			cleaned++
 		}
 	}
-	if txnsNum != cleaned {
-		log.Info(fmt.Sprintf("The Transactions num Unmatched. Expect %d, got %d .\n", txnsNum, cleaned))
-	}
-	log.Debug(fmt.Sprintf("[cleanTransactionList],transaction %d Requested, %d cleaned, Remains %d in TxPool", txnsNum, cleaned, p.GetTransactionCount()))
+
+	log.Debugf("[cleanTransactionList] %d cleaned,  Remains %d in TxPool",
+		cleaned, p.GetTransactionCount())
 	return nil
 }
 

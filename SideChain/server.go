@@ -723,7 +723,7 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = msg.NewBlock(&types.Block{})
 
 	case p2p.CmdInv:
-		message = &msg.Inventory{}
+		message = &msg.Inv{}
 
 	case p2p.CmdNotFound:
 		message = &msg.NotFound{}
