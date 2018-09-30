@@ -659,7 +659,11 @@ func (s *HttpService) GetBlockHeight(param Params) map[string]interface{} {
 	return ResponsePack(Success, s.chain.GetBestHeight())
 }
 
-func (s *HttpService) GetBestBlockHash(param Params) map[string]interface{} {
+func (s *HttpService) GetBlockCount(param Params) map[string]interface{} {
+	return ResponsePack(Success, s.chain.GetBestHeight()+1)
+}
+
+func (s *HttpService) GetBlockHash(param Params) map[string]interface{} {
 	height, ok := param.Uint("height")
 	if !ok {
 		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
@@ -672,16 +676,8 @@ func (s *HttpService) GetBestBlockHash(param Params) map[string]interface{} {
 	return ResponsePack(Success, ToReversedString(hash))
 }
 
-func (s *HttpService) GetBlockCount(param Params) map[string]interface{} {
-	return ResponsePack(Success, s.chain.GetBestHeight()+1)
-}
-
-func (s *HttpService) GetBlockHash(param Params) map[string]interface{} {
-	height, ok := param.Uint("height")
-	if !ok {
-		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
-	}
-
+func (s *HttpService) GetBestBlockHash(param Params) map[string]interface{} {
+	height := s.chain.GetBestHeight()
 	hash, err := s.chain.GetBlockHash(height)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")

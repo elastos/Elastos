@@ -36,7 +36,7 @@ type restserver struct {
 	port     uint16
 	certFile string
 	keyFile  string
-	router   *Router
+	router   router
 	server   *http.Server
 }
 
@@ -45,7 +45,6 @@ func New(port uint16, service *servers.HttpService, certFile, keyFile string) *r
 		port:     port,
 		certFile: certFile,
 		keyFile:  keyFile,
-		router:   &Router{},
 	}
 
 	s.RegisterAction("GET", ApiGetConnectionCount, service.GetConnectionCount)
@@ -68,32 +67,21 @@ func New(port uint16, service *servers.HttpService, certFile, keyFile string) *r
 	return &s
 }
 
-func (s *restserver) Start() {
-	if s.port == 0 {
-		log.Fatal("Not configure HttpRestPort port ")
-	}
+func (s *restserver) write(w http.ResponseWriter, data []byte) {
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("content-type", "application/json;charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write(data)
+}
 
-	var err error
-	var listener net.Listener
-
-	if s.port%1000 == servers.TlsPort {
-		var err error
-		listener, err = s.initTlsListen()
-		if err != nil {
-			log.Error("Https Cert: ", err.Error())
-		}
-	} else {
-		var err error
-		listener, err = net.Listen("tcp", fmt.Sprint(":", s.port))
-		if err != nil {
-			log.Fatal("net.Listen: ", err.Error())
-		}
-	}
-	s.server = &http.Server{Handler: s.router}
-	err = s.server.Serve(listener)
+func (s *restserver) response(w http.ResponseWriter, resp map[string]interface{}) {
+	resp["Desc"] = resp["Error"].(servers.ErrorCode).String()
+	data, err := json.Marshal(resp)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err.Error())
+		log.Fatal("HTTP Handle - json.Marshal: %v", err)
+		return
 	}
+	s.write(w, data)
 }
 
 func (s *restserver) RegisterAction(method, path string, handler servers.Handler, params ...string) {
@@ -143,21 +131,42 @@ func (s *restserver) RegisterAction(method, path string, handler servers.Handler
 	}
 }
 
-func (s *restserver) write(w http.ResponseWriter, data []byte) {
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("content-type", "application/json;charset=utf-8")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Write(data)
-}
-
-func (s *restserver) response(w http.ResponseWriter, resp map[string]interface{}) {
-	resp["Desc"] = resp["Error"].(servers.ErrorCode).String()
-	data, err := json.Marshal(resp)
+func (s *restserver) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	handler, params, err := s.router.serve(req.URL.Path, req.Method)
 	if err != nil {
-		log.Fatal("HTTP Handle - json.Marshal: %v", err)
+		http.NotFound(w, req)
 		return
 	}
-	s.write(w, data)
+	ctx := context.WithValue(req.Context(), RouteParams, params)
+	handler(w, req.WithContext(ctx))
+}
+
+func (s *restserver) Start() {
+	if s.port == 0 {
+		log.Fatal("Not configure HttpRestPort port ")
+	}
+
+	var err error
+	var listener net.Listener
+
+	if s.port%1000 == servers.TlsPort {
+		var err error
+		listener, err = s.initTlsListen()
+		if err != nil {
+			log.Error("Https Cert: ", err.Error())
+		}
+	} else {
+		var err error
+		listener, err = net.Listen("tcp", fmt.Sprint(":", s.port))
+		if err != nil {
+			log.Fatal("net.Listen: ", err.Error())
+		}
+	}
+	s.server = &http.Server{Handler: s}
+	err = s.server.Serve(listener)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err.Error())
+	}
 }
 
 func (s *restserver) Stop() {
