@@ -1,7 +1,6 @@
 package httprestful
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"regexp"
@@ -19,13 +18,13 @@ type route struct {
 	Handler          http.HandlerFunc
 }
 
-type Router struct {
+type router struct {
 	Routes []*route
 }
 
 var paramsRegexp = regexp.MustCompile(`:(\w+)`)
 
-func (r *Router) serve(path string, method string) (http.HandlerFunc, params, error) {
+func (r *router) serve(path string, method string) (http.HandlerFunc, params, error) {
 	for _, route := range r.Routes {
 		if route.Method == method {
 			match := route.Path.MatchString(path)
@@ -44,7 +43,7 @@ func (r *Router) serve(path string, method string) (http.HandlerFunc, params, er
 	return nil, params{}, errors.New("route not found")
 }
 
-func (r *Router) add(method string, path string, handler http.HandlerFunc) {
+func (r *router) add(method string, path string, handler http.HandlerFunc) {
 	route := &route{}
 	route.Method = method
 	path = "^" + path + "$"
@@ -68,49 +67,39 @@ func (r *Router) add(method string, path string, handler http.HandlerFunc) {
 	r.Routes = append(r.Routes, route)
 }
 
-func (r *Router) Connect(path string, handler http.HandlerFunc) {
+func (r *router) Connect(path string, handler http.HandlerFunc) {
 	r.add("CONNECT", path, handler)
 }
 
-func (r *Router) Get(path string, handler http.HandlerFunc) {
+func (r *router) Get(path string, handler http.HandlerFunc) {
 	r.add("GET", path, handler)
 }
 
-func (r *Router) Post(path string, handler http.HandlerFunc) {
+func (r *router) Post(path string, handler http.HandlerFunc) {
 	r.add("POST", path, handler)
 }
 
-func (r *Router) Put(path string, handler http.HandlerFunc) {
+func (r *router) Put(path string, handler http.HandlerFunc) {
 	r.add("PUT", path, handler)
 }
 
-func (r *Router) Delete(path string, handler http.HandlerFunc) {
+func (r *router) Delete(path string, handler http.HandlerFunc) {
 	r.add("DELETE", path, handler)
 }
 
-func (r *Router) Head(path string, handler http.HandlerFunc) {
+func (r *router) Head(path string, handler http.HandlerFunc) {
 	r.add("HEAD", path, handler)
 }
 
-func (r *Router) Options(path string, handler http.HandlerFunc) {
+func (r *router) Options(path string, handler http.HandlerFunc) {
 	r.add("OPTIONS", path, handler)
-}
-
-func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	handler, params, err := r.serve(req.URL.Path, req.Method)
-	if err != nil {
-		http.NotFound(w, req)
-		return
-	}
-	ctx := context.WithValue(req.Context(), RouteParams, params)
-	handler(w, req.WithContext(ctx))
 }
 
 func parseParams(route *route, path string) params {
 	matches := route.Path.FindAllStringSubmatch(path, -1)
-	params := params{}
 	matchedParams := matches[0][1:]
 
+	params := params{}
 	for k, v := range matchedParams {
 		params[route.RegisteredParams[k]] = v
 	}
