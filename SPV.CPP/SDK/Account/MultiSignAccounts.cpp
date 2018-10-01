@@ -2,15 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "MultiSignAccounts.h"
-#include "ErrorCode.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		MultiSignAccounts::MultiSignAccounts(IAccount *innerAccount) :
-				_currentAccount(nullptr),
-				_innerAccount(innerAccount) {
+			_currentAccount(nullptr),
+			_innerAccount(innerAccount) {
 
 		}
 
@@ -92,8 +92,8 @@ namespace Elastos {
 		}
 
 		void MultiSignAccounts::checkCurrentAccount() const {
-			if (_currentAccount == nullptr)
-				ErrorCode::StandardLogicError(ErrorCode::NoCurrentMultiSinAccount, "Do not have current account.");
+			ParamChecker::checkCondition(_currentAccount == nullptr, Error::NoCurrentMultiSinAccount,
+										 "Do not have current account");
 		}
 
 		std::string MultiSignAccounts::GetAddress() {

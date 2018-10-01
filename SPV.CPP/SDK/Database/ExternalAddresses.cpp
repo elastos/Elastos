@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "ExternalAddresses.h"
 
 namespace Elastos {
@@ -22,7 +23,7 @@ namespace Elastos {
 		}
 
 		bool ExternalAddresses::putAddress(uint32_t startIndex, const std::string &address) {
-			return doTransaction([startIndex, &address, this](){
+			return doTransaction([startIndex, &address, this]() {
 				this->putAddressInternal(startIndex, address);
 			});
 		}
@@ -39,16 +40,13 @@ namespace Elastos {
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << EA_TABLE_NAME << " (" <<
-			   EA_COLUMN_ID      << "," <<
-			   EA_ADDRESS        <<
+			   EA_COLUMN_ID << "," <<
+			   EA_ADDRESS <<
 			   ") VALUES (?, ?);";
 
 			sqlite3_stmt *stmt;
-			if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-				std::stringstream ess;
-				ess << "prepare sql " << ss.str() << " fail";
-				throw std::logic_error(ess.str());
-			}
+			ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+										 "Prepare sql " + ss.str());
 
 			_sqlite->bindInt(stmt, 1, startIndex);
 			_sqlite->bindText(stmt, 2, address, nullptr);
@@ -60,16 +58,13 @@ namespace Elastos {
 		}
 
 		bool ExternalAddresses::clearAddresses() {
-			return doTransaction([this](){
+			return doTransaction([this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << EA_TABLE_NAME << ";";
 
-				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
-					std::stringstream ess;
-					ess << "exec sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+											 "exec sql " + ss.str());
 			});
 		}
 
@@ -80,17 +75,14 @@ namespace Elastos {
 				std::string addr;
 				std::stringstream ss;
 				ss << "SELECT " <<
-				   EA_ADDRESS   <<
-				   " FROM "     << EA_TABLE_NAME <<
-				   " WHERE "    << EA_COLUMN_ID << " >= " << startIndex <<
-				   " AND "      << EA_COLUMN_ID << " < "  << startIndex + count << ";";
+				   EA_ADDRESS <<
+				   " FROM " << EA_TABLE_NAME <<
+				   " WHERE " << EA_COLUMN_ID << " >= " << startIndex <<
+				   " AND " << EA_COLUMN_ID << " < " << startIndex + count << ";";
 
 				sqlite3_stmt *stmt;
-				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-					std::stringstream ess;
-					ess << "prepare sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+							 "Prepare sql " + ss.str());
 
 				while (SQLITE_ROW == _sqlite->step(stmt)) {
 					addr = _sqlite->columnText(stmt, 0);
@@ -109,19 +101,16 @@ namespace Elastos {
 			doTransaction([startIndex, &results, this]() {
 				std::stringstream ss;
 				ss << "SELECT " <<
-					" COUNT("   << EA_ADDRESS    << ") AS nums " <<
-					" FROM "    << EA_TABLE_NAME <<
-					" WHERE "   << EA_COLUMN_ID  << " >= " << startIndex << ";";
+				   " COUNT(" << EA_ADDRESS << ") AS nums " <<
+				   " FROM " << EA_TABLE_NAME <<
+				   " WHERE " << EA_COLUMN_ID << " >= " << startIndex << ";";
 
 				sqlite3_stmt *stmt;
-				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-					std::stringstream ess;
-					ess << "prepare sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + ss.str());
 
 				while (SQLITE_ROW == _sqlite->step(stmt)) {
-					results = (uint32_t)_sqlite->columnInt(stmt, 0);
+					results = (uint32_t) _sqlite->columnInt(stmt, 0);
 				}
 
 				_sqlite->finalize(stmt);

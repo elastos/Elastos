@@ -5,12 +5,12 @@
 #include <set>
 
 #include "secp256k1.h"
-#include <SDK/ELACoreExt/ErrorCode.h>
 #include <SDK/Common/Utils.h>
 #include <boost/bind.hpp>
 #include <SDK/Wrapper/ByteStream.h>
 #include <BigIntegerLibrary.hh>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
 #include "MultiSignAccount.h"
 #include "AccountFactory.h"
 
@@ -19,9 +19,9 @@ namespace Elastos {
 
 		MultiSignAccount::MultiSignAccount(IAccount *me, const std::vector<std::string> &coSigners,
 										   uint32_t requiredSignCount) :
-				_me(me),
-				_requiredSignCount(requiredSignCount),
-				_coSigners(coSigners) {
+			_me(me),
+			_requiredSignCount(requiredSignCount),
+			_coSigners(coSigners) {
 		}
 
 		MultiSignAccount::MultiSignAccount(const std::string &rootPath) : _rootPath(rootPath) {
@@ -97,9 +97,8 @@ namespace Elastos {
 		}
 
 		void MultiSignAccount::checkSigners() const {
-			if (_me == nullptr)
-				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType,
-											  "Readonly account do not support this operation.");
+			ParamChecker::checkCondition(_me == nullptr, Error::WrongAccountType,
+										 "Readonly account do not support this operation.");
 		}
 
 		std::string MultiSignAccount::GetAddress() {
@@ -118,11 +117,11 @@ namespace Elastos {
 			if (_me != nullptr)
 				uniqueSigners.insert(_me->GetPublicKey());
 
-			if (uniqueSigners.size() < _requiredSignCount)
-				ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Required sign count greater than signers.");
+			ParamChecker::checkCondition(uniqueSigners.size() < _requiredSignCount, Error::MultiSignersCount,
+										 "Required sign count greater than signers");
 
-			if (uniqueSigners.size() > sizeof(uint8_t) - OP_1)
-				ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Signers should less than 205.");
+			ParamChecker::checkCondition(uniqueSigners.size() > sizeof(uint8_t) - OP_1, Error::MultiSignersCount,
+										 "Signers should less than 205.");
 
 			std::vector<std::string> sortedSigners(uniqueSigners.begin(), uniqueSigners.end());
 
@@ -163,7 +162,7 @@ namespace Elastos {
 			j["Type"] = "Multi-Sign";
 			nlohmann::json details;
 			std::vector<std::string> signers = _coSigners;
-			if(_me != nullptr)
+			if (_me != nullptr)
 				signers.push_back(_me->GetPublicKey());
 			j["Readonly"] = _me == nullptr;
 			details["Signers"] = signers;

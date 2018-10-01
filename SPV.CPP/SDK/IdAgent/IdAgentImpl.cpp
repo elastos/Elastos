@@ -10,7 +10,6 @@
 #include "MasterWallet.h"
 #include "Wrapper/Address.h"
 #include "SDK/Account/StandardAccount.h"
-#include "ErrorCode.h"
 
 using namespace nlohmann;
 
@@ -43,8 +42,8 @@ namespace Elastos {
 		}
 
 		IdAgentImpl::IdAgentImpl(MasterWallet *parentWallet, const IdAgentInfo &info) :
-				_parentWallet(parentWallet),
-				_info(info) {
+			_parentWallet(parentWallet),
+			_info(info) {
 
 		}
 
@@ -55,8 +54,7 @@ namespace Elastos {
 		std::string
 		IdAgentImpl::DeriveIdAndKeyForPurpose(uint32_t purpose, uint32_t index) {
 
-			if (purpose == 44)
-				throw std::invalid_argument("Can not use reserved purpose.");
+			ParamChecker::checkCondition(purpose == 44, Error::DerivePurpose, "Can not use reserved purpose");
 
 			IdItem item(purpose, index);
 			std::string existedId;
@@ -65,9 +63,9 @@ namespace Elastos {
 			}
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			if(standardAccount == nullptr) {
-				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "This account can not create id.");
-			}
+			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
+										 "This account can not create ID");
+
 			const MasterPubKey &publicKey = standardAccount->GetIDMasterPubKey();
 			uint8_t pubKey[BRBIP32PubKey(NULL, 0, *publicKey.getRaw(),
 										 purpose, index)];
@@ -101,19 +99,18 @@ namespace Elastos {
 		}
 
 		KeyPtr IdAgentImpl::generateKey(const std::string &id, const std::string &password) {
-			if (_info.Ids.find(id) == _info.Ids.end()) {
-				throw std::logic_error("Unknown id.");
-			}
+			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknown ID " + id);
 			IdItem item = _info.Ids[id];
 
 			StandardAccount *standardAccount = dynamic_cast<StandardAccount *>(_parentWallet->_localStore.Account());
-			if(standardAccount == nullptr) {
-				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "This account can not create id.");
-			}
+			ParamChecker::checkCondition(standardAccount == nullptr, Error::WrongAccountType,
+										 "This account can not create ID");
+
 			UInt512 seed = standardAccount->DeriveSeed(password);
 			BRKey key;
 			UInt256 chainCode;
-			BRBIP32PrivKeyPath(&key, &chainCode, &seed.u8[0], sizeof(seed), 3, 0 | BIP32_HARD, item.Purpose, item.Index);
+			BRBIP32PrivKeyPath(&key, &chainCode, &seed.u8[0], sizeof(seed), 3, 0 | BIP32_HARD, item.Purpose,
+							   item.Index);
 			var_clean(&seed);
 			return KeyPtr(new Key(key));
 		}
@@ -139,9 +136,7 @@ namespace Elastos {
 		}
 
 		std::string IdAgentImpl::GetPublicKey(const std::string &id) {
-			if (_info.Ids.find(id) == _info.Ids.end()) {
-				throw std::logic_error("Unknown id.");
-			}
+			ParamChecker::checkCondition(_info.Ids.find(id) == _info.Ids.end(), Error::IDNotFound, "Unknow ID " + id);
 			return _info.Ids[id].PublicKey;
 		}
 

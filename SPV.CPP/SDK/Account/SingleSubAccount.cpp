@@ -4,7 +4,6 @@
 
 #include <SDK/Wrapper/Wallet.h>
 #include "SingleSubAccount.h"
-#include "ErrorCode.h"
 
 namespace Elastos {
 	namespace ElaWallet {

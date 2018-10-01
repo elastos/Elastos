@@ -20,15 +20,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		MasterWalletManager::MasterWalletManager(const std::string &rootPath) :
-				_rootPath(rootPath),
-				_p2pEnable(true) {
+			_rootPath(rootPath),
+			_p2pEnable(true) {
 			initMasterWallets();
 		}
 
 		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath) :
-				_masterWalletMap(walletMap),
-				_rootPath(rootPath),
-				_p2pEnable(true) {
+			_masterWalletMap(walletMap),
+			_rootPath(rootPath),
+			_p2pEnable(true) {
 		}
 
 		MasterWalletManager::~MasterWalletManager() {
@@ -55,13 +55,13 @@ namespace Elastos {
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(
-				const std::string &masterWalletId,
-				const std::string &mnemonic,
-				const std::string &phrasePassword,
-				const std::string &payPassword,
-				const std::string &language) {
+			const std::string &masterWalletId,
+			const std::string &mnemonic,
+			const std::string &phrasePassword,
+			const std::string &payPassword,
+			const std::string &language) {
 
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
@@ -76,26 +76,14 @@ namespace Elastos {
 		IMasterWallet *MasterWalletManager::CreateMultiSignMasterWallet(const std::string &masterWalletId,
 																		const nlohmann::json &coSigners,
 																		uint32_t requiredSignCount) {
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
+
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			std::vector<std::string> coSignersString = coSigners;
+			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount, "Signers");
 
-			for (int i = 0; i < coSignersString.size(); i++) {
-				if (coSignersString[i].find("xpub") != -1) {
-					CMBlock key;
-					if ("xpub" == Utils::extendedKeyDecode(coSignersString[i], key)) {
-						coSignersString[i] = Utils::encodeHex(key);
-					} else {
-						throw std::logic_error("Decode xpub error");
-					}
-				}
-			}
-
-			nlohmann::json coSignersHexString = coSignersString;
-
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSignersHexString, requiredSignCount,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSigners, requiredSignCount,
 														  _rootPath, _p2pEnable, CreateMultiSign);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
@@ -107,37 +95,15 @@ namespace Elastos {
 																		const std::string &payPassword,
 																		const nlohmann::json &coSigners,
 																		uint32_t requiredSignCount) {
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
+
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			std::vector<std::string> coSignersString = coSigners;
+			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount - 1, "Signers");
+			ParamChecker::checkPrivateKey(privKey);
 
-			for (int i = 0; i < coSignersString.size(); i++) {
-				if (coSignersString[i].find("xpub") != -1) {
-					CMBlock key;
-					if ("xpub" == Utils::extendedKeyDecode(coSignersString[i], key)) {
-						coSignersString[i] = Utils::encodeHex(key);
-					} else {
-						throw std::logic_error("Decode xpub error");
-					}
-				}
-			}
-
-			nlohmann::json coSignersHexString = coSignersString;
-
-			std::string privKeyHexString = privKey;
-			if (privKey.find("xprv") != -1) {
-				CMBlock key;
-				if ("xprv" == Utils::extendedKeyDecode(privKey, key)) {
-					privKeyHexString = Utils::encodeHex(key);
-				} else {
-					throw std::logic_error("Decode xprv error");
-				}
-			}
-
-			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKeyHexString, payPassword,
-														  coSignersHexString,
+			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKey, payPassword, coSigners,
 														  requiredSignCount, _rootPath, _p2pEnable,
 														  CreateMultiSign);
 			_masterWalletMap[masterWalletId] = masterWallet;
@@ -152,28 +118,17 @@ namespace Elastos {
 																		const nlohmann::json &coSigners,
 																		uint32_t requiredSignCount,
 																		const std::string &language) {
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
+
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
-			std::vector<std::string> coSignersString = coSigners;
-
-			for (int i = 0; i < coSignersString.size(); i++) {
-				if (coSignersString[i].find("xpub") != -1) {
-					CMBlock key;
-					if ("xpub" == Utils::extendedKeyDecode(coSignersString[i], key)) {
-						coSignersString[i] = Utils::encodeHex(key);
-					} else {
-						throw std::logic_error("Decode xpub error");
-					}
-				}
-			}
-
-			nlohmann::json coSignersHexString = coSignersString;
+			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount - 1, "Signers");
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, coSignersHexString, requiredSignCount, _p2pEnable,
+														  language, coSigners, requiredSignCount, _p2pEnable,
 														  _rootPath, CreateMultiSign);
+
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -188,7 +143,7 @@ namespace Elastos {
 		};
 
 		void MasterWalletManager::removeWallet(const std::string &masterWalletId, bool saveMaster) {
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
 
 			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
 				return;
@@ -238,14 +193,15 @@ namespace Elastos {
 													  const std::string &phrasePassword) {
 			ParamChecker::checkPassword(backupPassword, "Backup");
 			ParamChecker::checkPassword(payPassword, "Pay");
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
 
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
-														  payPassword, phrasePassword, _rootPath, _p2pEnable, ImportFromKeyStore);
+														  payPassword, phrasePassword, _rootPath, _p2pEnable,
+														  ImportFromKeyStore);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -256,7 +212,8 @@ namespace Elastos {
 													  const std::string &language) {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 			ParamChecker::checkPassword(payPassword, "Pay");
-			ParamChecker::checkNotEmpty(masterWalletId);
+			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
+
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
 				return _masterWalletMap[masterWalletId];
 
@@ -280,15 +237,14 @@ namespace Elastos {
 		std::string
 		MasterWalletManager::ExportWalletWithMnemonic(IMasterWallet *masterWallet, const std::string &payPassword) {
 
-			ParamChecker::checkNullPointer(masterWallet);
+			ParamChecker::checkCondition(masterWallet == nullptr, Error::InvalidArgument, "Master wallet is null");
 			ParamChecker::checkPassword(payPassword, "Pay");
 
 			MasterWallet *wallet = static_cast<MasterWallet *>(masterWallet);
 
 			std::string mnemonic;
-			if (!wallet->exportMnemonic(payPassword, mnemonic)) {
-				throw std::logic_error("Password is wrong.");
-			}
+			ParamChecker::checkCondition(!wallet->exportMnemonic(payPassword, mnemonic), Error::WrongPasswd,
+										 "Wrong pay password");
 			return mnemonic;
 		}
 
@@ -323,14 +279,14 @@ namespace Elastos {
 			CMBlock rawHex;
 			if (algorithm == "base58") {
 				size_t len = BRBase58CheckDecode(NULL, 0, data.c_str());
-				if (len == 0) {
-					throw std::logic_error("Decode tx from base58 error");
-				}
+				ParamChecker::checkCondition(len == 0, Error::Transaction,
+											 "Decode tx from base58 error");
 
 				rawHex.Resize(len);
 				BRBase58CheckDecode(rawHex, rawHex.GetSize(), data.c_str());
 			} else {
-				throw std::logic_error("Unsupport algorithm when decode tx");
+				ParamChecker::checkCondition(true, Error::Transaction,
+											 "Decode tx with unknown algorithm");
 			}
 
 			ByteStream stream;
@@ -345,6 +301,8 @@ namespace Elastos {
 			path rootPath = _rootPath;
 
 			Log::getLogger()->critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
+
+			ParamChecker::checkPathExists(rootPath);
 
 			directory_iterator it{rootPath};
 			while (it != directory_iterator{}) {
@@ -363,7 +321,8 @@ namespace Elastos {
 				++it;
 			}
 
-			Log::getLogger()->info("{} master wallets were created", _masterWalletMap.size());
+			if (_masterWalletMap.size() > 0)
+				Log::getLogger()->info("{} master wallets were loaded from local store", _masterWalletMap.size());
 		}
 
 		std::vector<std::string> MasterWalletManager::GetAllMasterWalletIds() const {
@@ -384,7 +343,8 @@ namespace Elastos {
 			masterWalletStoreFile /= masterWalletId;
 			masterWalletStoreFile /= MASTER_WALLET_STORE_FILE;
 
-			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable, ImportFromLocalStore);
+			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable,
+														  ImportFromLocalStore);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}

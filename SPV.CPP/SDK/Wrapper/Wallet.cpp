@@ -23,7 +23,6 @@
 #include "Utils.h"
 #include "ELACoreExt/ELATransaction.h"
 #include "ELATxOutput.h"
-#include "ErrorCode.h"
 #include "Account/MultiSignSubAccount.h"
 
 namespace Elastos {
@@ -126,7 +125,7 @@ namespace Elastos {
 								  const SharedWrapperList<Transaction, BRTransaction *> &transaction) {
 			for (int i = 0; i < transaction.size(); ++i) {
 				wallet->TxRemarkMap[Utils::UInt256ToString(transaction[i]->getHash())] =
-						((ELATransaction *) transaction[i]->getRaw())->Remark;
+					((ELATransaction *) transaction[i]->getRaw())->Remark;
 			}
 		}
 
@@ -138,7 +137,7 @@ namespace Elastos {
 		Wallet::Wallet(const SharedWrapperList<Transaction, BRTransaction *> &transactions,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Listener> &listener) :
-				_subAccount(subAccount) {
+			_subAccount(subAccount) {
 
 			_wallet = ELAWalletNew(transactions.getRawPointerArray().data(), transactions.size(),
 								   WalletUnusedAddrs, WalletAllAddrs, setApplyFreeTx, WalletUpdateBalance,
@@ -151,11 +150,7 @@ namespace Elastos {
 			_listener = boost::weak_ptr<Listener>(listener);
 
 			Log::getLogger()->info("_wallet = {:p}, listener = {:p}", (void *) _wallet, (void *) listener.get());
-			if (_wallet == nullptr) {
-				Log::getLogger()->error("_wallet = nullptr");
-				throw std::logic_error("_wallet is null");
-			}
-
+			ParamChecker::checkCondition(_wallet == nullptr, Error::Wallet, "Create new wallet");
 
 			BRWalletSetCallbacks((BRWallet *) _wallet, &_listener,
 								 balanceChanged,
@@ -337,7 +332,7 @@ namespace Elastos {
 			BRAddress addr = BR_ADDRESS_NONE;
 
 			assert(wallet != NULL);
-			assert(outputs != NULL && outCount > 0);
+			ParamChecker::checkCondition(outputs == NULL || outCount == 0, Error::CreateTransaction, "Invalid outputs");
 
 			for (i = 0; outputs && i < outCount; i++) {
 				assert(outputs[i].script != NULL && outputs[i].scriptLen > 0);
@@ -434,10 +429,9 @@ namespace Elastos {
 			if (transaction && (outCount < 1 || balance < amount + feeAmount)) { // no outputs/insufficient funds
 				delete transaction;
 				transaction = nullptr;
-				if (balance < amount + feeAmount)
-					throw std::logic_error("Available token is not enough");
-				else if (outCount < 1)
-					throw std::logic_error("Output count is not enough");
+				ParamChecker::checkCondition(balance < amount + feeAmount, Error::CreateTransaction,
+											 "Available token is not enough");
+				ParamChecker::checkCondition(outCount < 1, Error::CreateTransaction, "Output count is not enough");
 			} else if (transaction && balance - (amount + feeAmount) > minAmount) { // add change output
 				wallet->WalletUnusedAddrs(wallet, &addr, 1, 1);
 				CMBlock script(BRAddressScriptPubKey(nullptr, 0, addr.s));
@@ -462,17 +456,11 @@ namespace Elastos {
 								  const std::string &toAddress, const std::string &remark,
 								  const std::string &memo) {
 			UInt168 u168Address = UINT168_ZERO;
-			if (!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress)) {
-				std::ostringstream oss;
-				oss << "Invalid spender address: " << fromAddress;
-				throw std::logic_error(oss.str());
-			}
+			ParamChecker::checkCondition(!fromAddress.empty() && !Utils::UInt168FromAddress(u168Address, fromAddress),
+										 Error::CreateTransaction, "Invalid spender address " + fromAddress);
 
-			if (!Utils::UInt168FromAddress(u168Address, toAddress)) {
-				std::ostringstream oss;
-				oss << "Invalid receiver address: " << toAddress;
-				throw std::logic_error(oss.str());
-			}
+			ParamChecker::checkCondition(!Utils::UInt168FromAddress(u168Address, toAddress), Error::CreateTransaction,
+										 "Invalid receiver address " + toAddress);
 
 			TransactionOutputPtr output = TransactionOutputPtr(new TransactionOutput());
 			output->setProgramHash(u168Address);
@@ -493,12 +481,12 @@ namespace Elastos {
 				result->setRemark(remark);
 
 				result->addAttribute(
-						new Attribute(Attribute::Nonce, Utils::convertToMemBlock(std::to_string(std::rand()))));
+					new Attribute(Attribute::Nonce, Utils::convertToMemBlock(std::to_string(std::rand()))));
 				if (!memo.empty())
 					result->addAttribute(new Attribute(Attribute::Memo, Utils::convertToMemBlock(memo)));
 				if (tx->type == ELATransaction::TransferCrossChainAsset)
 					result->addAttribute(
-							new Attribute(Attribute::Confirmations, Utils::convertToMemBlock(std::to_string(1))));
+						new Attribute(Attribute::Confirmations, Utils::convertToMemBlock(std::to_string(1))));
 			}
 
 			return result;
@@ -531,7 +519,7 @@ namespace Elastos {
 		}
 
 		void Wallet::updateTransactions(
-				const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight, uint32_t timestamp) {
+			const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight, uint32_t timestamp) {
 			BRWalletUpdateTransactions((BRWallet *) _wallet, transactionsHashes.data(),
 									   transactionsHashes.size(), blockHeight, timestamp);
 		}
@@ -790,8 +778,8 @@ namespace Elastos {
 				// NOTE: balance/UTXOs will then need to be recalculated when last block changes
 				for (j = 0; tx->raw.blockHeight != TX_UNCONFIRMED && j < tx->outputs.size(); j++) {
 					if (tx->outputs[j]->getRaw()->address[0] != '\0') {
-						if (((ELAWallet *)wallet)->IsSingleAddress) {
-							ELAWallet *elaWallet = (ELAWallet *)wallet;
+						if (((ELAWallet *) wallet)->IsSingleAddress) {
+							ELAWallet *elaWallet = (ELAWallet *) wallet;
 							if (elaWallet->SingleAddress == std::string(tx->outputs[j]->getRaw()->address)) {
 								array_add(wallet->utxos, ((BRUTXO) {tx->raw.txHash, (uint32_t) j}));
 								balance += tx->outputs[j]->getAmount();
@@ -983,13 +971,11 @@ namespace Elastos {
 				Key key;
 				BRAddress address = BR_ADDRESS_NONE;
 
-				uint8_t pubKey[BRBIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count)];
-				size_t len = BRBIP32PubKey(pubKey, sizeof(pubKey), wallet->masterPubKey, chain, count);
+				size_t len = BRBIP32PubKey(NULL, 0, wallet->masterPubKey, chain, count);
+				CMBlock pubKey(len);
+				BRBIP32PubKey(pubKey, pubKey.GetSize(), wallet->masterPubKey, chain, count);
 
-				CMBlock publicKey(len);
-				memcpy(publicKey, pubKey, len);
-
-				if (!key.setPubKey(publicKey)) break;
+				if (!key.setPubKey(pubKey)) break;
 				if (!wallet->KeyToAddress(key.getRaw(), address.s, sizeof(BRAddress)) ||
 					BRAddressEq(&address, &emptyAddress))
 					break;
@@ -1061,8 +1047,7 @@ namespace Elastos {
 
 		void Wallet::signTransaction(const boost::shared_ptr<Transaction> &transaction, int forkId,
 									 const std::string &payPassword) {
-
-			ParamChecker::checkNullPointer(transaction.get());
+			ParamChecker::checkCondition(transaction.get() == nullptr, Error::InvalidArgument, "Sign null tx");
 			_subAccount->SignTransaction(transaction, _wallet, payPassword);
 		}
 
