@@ -16,6 +16,7 @@
 #include "Base64.h"
 #include "BRAddress.h"
 #include "Log.h"
+#include "ParamChecker.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -108,8 +109,11 @@ namespace Elastos {
 		}
 
 		void Utils::decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen) {
-			if (2 * targetLen < sourceLen || 0 != sourceLen % 2) {
-				Log::getLogger()->error("decodeHex error: targetLen={}, sourceLen={}", targetLen, sourceLen);
+			ParamChecker::checkCondition(0 != sourceLen % 2, Error::HexString,
+										 "Decode hex string fail: length is not even");
+
+			if (2 * targetLen < sourceLen) {
+				Log::getLogger()->error("decodeHex error: target buf size {} not enough", targetLen);
 				return;
 			}
 
@@ -119,8 +123,8 @@ namespace Elastos {
 		}
 
 		size_t Utils::decodeHexLength(size_t stringLen) {
-			if (0 != stringLen % 2)
-				throw std::logic_error("Invalid string length.");
+			ParamChecker::checkCondition(0 != stringLen % 2, Error::HexString,
+										 "Decode hex string fail: length is not even");
 			return stringLen / 2;
 		}
 
@@ -257,8 +261,9 @@ namespace Elastos {
 			} else if (signType == ELA_DESTROY) {
 				return ELA_DESTROY_ADDRESS;
 			} else {
-				throw std::logic_error("error signType.");
+				ParamChecker::checkCondition(true, Error::SignType, "Unknown sign type");
 			}
+			return 0;
 		}
 
 		UInt168 Utils::codeToProgramHash(const std::string &redeemScript) {
@@ -298,30 +303,5 @@ namespace Elastos {
 			return ret;
 		}
 
-		std::string Utils::extendedKeyDecode(const std::string &keyIn, CMBlock keyOut) {
-			std::string keyType = "unknow";
-
-			throw std::logic_error("Unsupport 'xpub' or 'xprv' key for now");
-
-			size_t len = BRBase58CheckDecode(nullptr, 0, keyIn.c_str());
-			if (len == 78) {
-				uint8_t data[len];
-				BRBase58CheckDecode(data, len, keyIn.c_str());
-				uint32_t verBytes = UInt32GetBE(data);
-				if (0x0488B21E == verBytes || 0x043587CF == verBytes) {
-					keyType = "xpub";
-					keyOut.Resize(33);
-					memcpy(keyOut, &data[len - 33], 33);
-				} else if (0x0488ADE4 == verBytes || 0x04358394 == verBytes) {
-					keyType = "xprv";
-					keyOut.Resize(32);
-					memcpy(keyOut, &data[len - 32], 32);
-				} else {
-					return keyType;
-				}
-			}
-
-			return keyType;
-		}
 	}
 }

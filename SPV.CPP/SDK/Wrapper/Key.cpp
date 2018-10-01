@@ -80,15 +80,13 @@ namespace Elastos {
 			privKey.SetMemFixed((uint8_t *) &_key->secret, sizeof(_key->secret));
 			CMBlock result;
 			result.Resize(33);
-			getPubKeyFromPrivKey(result, (UInt256 *)(uint8_t *) privKey);
+			getPubKeyFromPrivKey(result, (UInt256 *) (uint8_t *) privKey);
 			return result;
 		}
 
 		bool Key::setPubKey(const CMBlock pubKey) {
-			CMBlock publicKey;
-			publicKey.SetMemFixed(pubKey, pubKey.GetSize());
-			ParamChecker::checkDataNotEmpty(publicKey, true);
-			assert(publicKey.GetSize() == 33 || publicKey.GetSize() == 65);
+			ParamChecker::checkCondition(pubKey.GetSize() != 33 && pubKey.GetSize() != 65, Error::PubKeyLength,
+										 "Invaid public key length");
 
 			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
 			_key->compressed = (pubKey.GetSize() <= 33);
@@ -125,15 +123,14 @@ namespace Elastos {
 
 		void Key::setPublicKey() {
 			UInt256 secret = getSecret();
-			if (UInt256IsZero(&secret)) {
-				throw std::logic_error("secret is zero, can't generate publicKey!");
-			}
+			ParamChecker::checkCondition(0 != UInt256IsZero(&secret), Error::Key,
+										 "Secret is zero, can't generate publicKey");
 			CMBlock secretData;
 			secretData.SetMemFixed(secret.u8, sizeof(secret));
 
 			CMBlock pubKey;
 			pubKey.Resize(33);
-			getPubKeyFromPrivKey(pubKey, (UInt256 *)(uint8_t *)secretData);
+			getPubKeyFromPrivKey(pubKey, (UInt256 *) (uint8_t *) secretData);
 
 			memset(_key->pubKey, 0, sizeof(_key->pubKey));
 			memcpy(_key->pubKey, pubKey, pubKey.GetSize());
@@ -143,7 +140,8 @@ namespace Elastos {
 
 			CMBlock signedData;
 			signedData.Resize(65);
-			ECDSA65Sign_sha256(&_key->secret, sizeof(_key->secret), (const UInt256 *) &data[0], signedData, signedData.GetSize());
+			ECDSA65Sign_sha256(&_key->secret, sizeof(_key->secret), (const UInt256 *) &data[0], signedData,
+							   signedData.GetSize());
 			return signedData;
 		}
 
@@ -249,7 +247,8 @@ namespace Elastos {
 		bool Key::verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 									const CMBlock &signature) {
 			CMBlock pubKey = Utils::decodeHex(publicKey);
-			return ECDSA65Verify_sha256((uint8_t *)(void *)pubKey, pubKey.GetSize(), &messageDigest, signature, signature.GetSize()) != 0;
+			return ECDSA65Verify_sha256((uint8_t *) (void *) pubKey, pubKey.GetSize(), &messageDigest, signature,
+										signature.GetSize()) != 0;
 		}
 
 		std::string Key::keyToRedeemScript(int signType) const {

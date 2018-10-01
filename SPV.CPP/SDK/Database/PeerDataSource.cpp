@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/ParamChecker.h>
 
 #include "CMemBlock.h"
 #include "PeerDataSource.h"
@@ -42,16 +43,15 @@ namespace Elastos {
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << PEER_TABLE_NAME << " (" <<
-			   PEER_ADDRESS   << "," <<
-			   PEER_PORT      << "," <<
+			   PEER_ADDRESS << "," <<
+			   PEER_PORT << "," <<
 			   PEER_TIMESTAMP << "," <<
-			   PEER_ISO       <<
+			   PEER_ISO <<
 			   ") VALUES (?, ?, ?, ?);";
 
 			sqlite3_stmt *stmt;
-			if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-				throw std::logic_error("put peer prepare error");
-			}
+			ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+										 "Prepare sql " + ss.str());
 
 			CMBlock addr;
 			addr.SetMemFixed(&peerEntity.address.u8[0], sizeof(peerEntity.address.u8));
@@ -59,7 +59,7 @@ namespace Elastos {
 			_sqlite->bindBlob(stmt, 1, addr, nullptr);
 #else
 			std::string str = Utils::encodeHex(addr);
-			addr.SetMemFixed((const uint8_t *)str.c_str(), str.length() + 1);
+			addr.SetMemFixed((const uint8_t *) str.c_str(), str.length() + 1);
 			_sqlite->bindBlob(stmt, 1, addr, nullptr);
 #endif
 			_sqlite->bindInt(stmt, 2, peerEntity.port);
@@ -81,11 +81,8 @@ namespace Elastos {
 				   " WHERE " << PEER_COLUMN_ID << " = " << peerEntity.id <<
 				   " AND " << PEER_ISO << " = '" << iso << "';";
 
-				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
-					std::stringstream ess;
-					ess << "exec sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+											 "Exec sql " + ss.str());
 			});
 		}
 
@@ -96,11 +93,8 @@ namespace Elastos {
 				ss << "DELETE FROM " << PEER_TABLE_NAME <<
 				   " WHERE " << PEER_ISO << " = '" << iso << "';";
 
-				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
-					std::stringstream ess;
-					ess << "exec sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+											 "Exec sql " + ss.str());
 			});
 		}
 
@@ -113,31 +107,28 @@ namespace Elastos {
 
 				ss << "SELECT " <<
 				   PEER_COLUMN_ID << ", " <<
-				   PEER_ADDRESS   << ", " <<
-				   PEER_PORT      << ", " <<
+				   PEER_ADDRESS << ", " <<
+				   PEER_PORT << ", " <<
 				   PEER_TIMESTAMP <<
 				   " FROM " << PEER_TABLE_NAME <<
 				   " WHERE " << PEER_ISO << " = '" << iso << "';";
 
 				sqlite3_stmt *stmt;
-				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-					std::stringstream ess;
-					ess << "prepare sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + ss.str());
 
 				while (SQLITE_ROW == _sqlite->step(stmt)) {
 					// id
 					peer.id = _sqlite->columnInt(stmt, 0);
 
 					// address
-					const uint8_t *paddr = (const uint8_t *)_sqlite->columnBlob(stmt, 1);
+					const uint8_t *paddr = (const uint8_t *) _sqlite->columnBlob(stmt, 1);
 					size_t len = _sqlite->columnBytes(stmt, 1);
 #ifdef NDEBUG
 					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
 					memcpy(peer.address.u8, paddr, len);
 #else
-					std::string str((const char *)paddr);
+					std::string str((const char *) paddr);
 					CMBlock addr = Utils::decodeHex(str);
 					len = len <= sizeof(peer.address) ? len : sizeof(peer.address);
 					memcpy(peer.address.u8, addr, len);

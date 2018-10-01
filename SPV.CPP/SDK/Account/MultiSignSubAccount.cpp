@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "MultiSignSubAccount.h"
-#include "ErrorCode.h"
 #include "Program.h"
 
 #define SignatureScriptLength 65
@@ -14,10 +14,8 @@ namespace Elastos {
 		MultiSignSubAccount::MultiSignSubAccount(IAccount *account) :
 				SingleSubAccount(account) {
 			_multiSignAccount = dynamic_cast<MultiSignAccount *>(account);
-			if (_multiSignAccount == nullptr) {
-				ErrorCode::StandardLogicError(ErrorCode::WrongAccountType,
-											  "Multi-sign sub account do not allow account that are not multi-sign type.");
-			}
+			ParamChecker::checkCondition(_multiSignAccount == nullptr, Error::WrongAccountType,
+										 "Multi-sign sub account do not allow account that are not multi-sign type.");
 		}
 
 		void MultiSignSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
@@ -29,8 +27,7 @@ namespace Elastos {
 				elaTransaction->programs.push_back(program);
 			}
 
-			if (elaTransaction->programs.size() != 1)
-				ErrorCode::StandardLogicError(ErrorCode::TransactionContentError,
+			ParamChecker::checkCondition(elaTransaction->programs.size() != 1, Error::Transaction,
 											  "Multi-sign program should be unique.");
 
 			ByteStream stream;

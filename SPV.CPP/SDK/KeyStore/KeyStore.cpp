@@ -6,6 +6,7 @@
 #include <sstream>
 #include <nlohmann/json.hpp>
 #include <openssl/evp.h>
+#include <SDK/Common/ParamChecker.h>
 
 #include "Log.h"
 #include "KeyStore.h"
@@ -16,7 +17,6 @@
 #include "StandardAccount.h"
 #include "SimpleAccount.h"
 #include "MultiSignAccount.h"
-#include "ErrorCode.h"
 #include "Utils.h"
 
 #define WALLET_DATA_MAX_SIZE 10000
@@ -25,8 +25,8 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		KeyStore::KeyStore(const std::string &rootPath) :
-				_rootPath(rootPath),
-				_walletJson(rootPath) {
+			_rootPath(rootPath),
+			_walletJson(rootPath) {
 			OpenSSL_add_all_algorithms();
 		}
 
@@ -147,9 +147,9 @@ namespace Elastos {
 
 				if (!_walletJson.getMnemonic().empty() && !_walletJson.getLanguage().empty()) {
 					return new MultiSignAccount(
-							new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
-												phrasePassword, payPassword), _walletJson.getCoSigners(),
-							_walletJson.getRequiredSignCount());
+						new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
+											phrasePassword, payPassword), _walletJson.getCoSigners(),
+						_walletJson.getRequiredSignCount());
 				} else if (!_walletJson.getPrivateKey().empty()) {
 					return new MultiSignAccount(new SimpleAccount(_walletJson.getPrivateKey(), payPassword),
 												_walletJson.getCoSigners(), _walletJson.getRequiredSignCount());
@@ -163,8 +163,7 @@ namespace Elastos {
 		}
 
 		void KeyStore::initJsonFromAccount(IAccount *account, const std::string &payPassword) {
-			if (account == nullptr)
-				ErrorCode::StandardLogicError(ErrorCode::KeyStoreError, "Account pointer can not be null");
+			ParamChecker::checkCondition(account == nullptr, Error::KeyStore, "Account pointer can not be null");
 			_walletJson.setType(account->GetType());
 
 			initAccountByType(account, payPassword);

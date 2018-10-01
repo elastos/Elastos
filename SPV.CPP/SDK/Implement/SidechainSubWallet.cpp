@@ -19,7 +19,7 @@ namespace Elastos {
 		SidechainSubWallet::SidechainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
 											   const std::string &payPassword, const PluginTypes &pluginTypes,
 											   MasterWallet *parent) :
-				SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
+			SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
 
 		}
 
@@ -38,18 +38,18 @@ namespace Elastos {
 			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount,
 																			 _info.getMinFee(), memo, remark));
 
-			ParamChecker::checkJsonArrayNotEmpty(mainchainAccounts);
-			ParamChecker::checkJsonArrayNotEmpty(mainchainAmounts);
-			ParamChecker::checkJsonArrayNotEmpty(mainchainIndexs);
+			ParamChecker::checkJsonArray(mainchainAccounts, 1, "Main chain accounts");
+			ParamChecker::checkJsonArray(mainchainAmounts, 1, "Main chain amounts");
+			ParamChecker::checkJsonArray(mainchainIndexs, 1, "Main chain indexs");
 
 			std::vector<std::string> accounts = mainchainAccounts.get<std::vector<std::string>>();
 			std::vector<uint64_t> amounts = mainchainAmounts.get<std::vector<uint64_t>>();
 			std::vector<uint64_t> indexs = mainchainIndexs.get<std::vector<uint64_t>>();
-			assert(accounts.size() == amounts.size());
-			assert(accounts.size() == indexs.size());
+
+			ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() == indexs.size(),
+										 Error::WithdrawParam, "Invalid withdraw parameters of main chain");
 
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(txParam.get());
-			assert(withdrawTxParam != nullptr);
 			withdrawTxParam->setMainchainDatas(accounts, indexs, amounts);
 
 			//todo read main chain address from config
@@ -57,9 +57,7 @@ namespace Elastos {
 			withdrawTxParam->setMainchainAddress(mainchainAddress);
 
 			TransactionPtr transaction = createTransaction(txParam.get());
-			if (transaction == nullptr) {
-				throw std::logic_error("Create transaction error.");
-			}
+			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create withdraw tx");
 			return transaction->toJson();
 		}
 
@@ -72,8 +70,8 @@ namespace Elastos {
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(param);
 			if (withdrawTxParam != nullptr) {
 				TransactionPtr ptr = _walletManager->getWallet()->
-						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-										  param->getToAddress(), param->getRemark(), param->getMemo());
+					createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+									  param->getToAddress(), param->getRemark(), param->getMemo());
 				if (!ptr) return nullptr;
 
 				ptr->setTransactionType(ELATransaction::TransferCrossChainAsset);
@@ -85,7 +83,7 @@ namespace Elastos {
 							  });
 
 				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-						static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
+					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
 				payloadTransferCrossChainAsset->setCrossChainData(withdrawTxParam->getCrossChainAddress(),
 																  withdrawTxParam->getCrossChainOutputIndexs(),
 																  withdrawTxParam->getCrosschainAmouts());

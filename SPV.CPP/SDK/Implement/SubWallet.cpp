@@ -17,7 +17,6 @@
 #include "SubWalletCallback.h"
 #include "Utils.h"
 #include "Log.h"
-#include "ErrorCode.h"
 #include "ParamChecker.h"
 #include "Transaction/TransactionOutput.h"
 #include "Transaction/TransactionChecker.h"
@@ -128,8 +127,8 @@ namespace Elastos {
 			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Normal, fromAddress, toAddress, amount,
 																			 _info.getMinFee(), memo, remark));
 			TransactionPtr transaction = createTransaction(txParam.get());
-			if (!transaction)
-				throw std::logic_error("create transaction error.");
+			ParamChecker::checkCondition(!transaction, Error::CreateTransaction,
+										 "create transaction error.");
 			return transaction->toJson();
 		}
 

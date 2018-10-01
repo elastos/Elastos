@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <fstream>
+#include <SDK/Common/ParamChecker.h>
 
 #include "CoinConfig.h"
 
@@ -59,16 +60,14 @@ namespace Elastos {
 		}
 
 		const CoinConfig &CoinConfigReader::FindConfig(const std::string &chainId) {
-			if (_configMap.find(chainId) == _configMap.end()) {
-				//todo instead of throw, we return default config for testing.
-				return _configMap["ELA"];
-			}
+			ParamChecker::checkCondition(_configMap.find(chainId) == _configMap.end(), Error::IDNotFound,
+										 "Chain id " + chainId + " not found");
 			return _configMap[chainId];
 		}
 
 		std::vector<std::string> CoinConfigReader::GetAllChainId() const {
 			std::vector<std::string> result;
-			std::for_each(_configMap.begin(), _configMap.end(), [&result](const CoinConfigMap::value_type &item){
+			std::for_each(_configMap.begin(), _configMap.end(), [&result](const CoinConfigMap::value_type &item) {
 				result.push_back(item.first);
 			});
 			return result;

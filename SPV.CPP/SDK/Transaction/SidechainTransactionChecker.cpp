@@ -2,13 +2,15 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "SidechainTransactionChecker.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		SidechainTransactionChecker::SidechainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet)
-				: TransactionChecker(transaction, wallet) {
+		SidechainTransactionChecker::SidechainTransactionChecker(const TransactionPtr &transaction,
+																 const WalletPtr &wallet)
+			: TransactionChecker(transaction, wallet) {
 
 		}
 
@@ -18,10 +20,10 @@ namespace Elastos {
 
 		void SidechainTransactionChecker::Check() {
 
-			if (_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset &&
-				_transaction->getTransactionType() != ELATransaction::TransferAsset) {
-				throw std::logic_error("SidechainSubWallet transaction type error");
-			}
+			ParamChecker::checkCondition(
+				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset &&
+				_transaction->getTransactionType() != ELATransaction::TransferAsset,
+				Error::Transaction, "Side chain sub wallet tx type error");
 			TransactionChecker::Check();
 		}
 	}
