@@ -187,11 +187,12 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 	std::string payPassword = "s12345678";
 	boost::shared_ptr<MasterWalletManager> walletManager(new MasterWalletManager("Data"));
 
-//	IMasterWallet *masterWallet = importWithMnemonic(walletManager, payPassword);
-	IMasterWallet *masterWallet = importWithKeystore(walletManager, payPassword);
+	IMasterWallet *masterWallet = importWithMnemonic(walletManager, payPassword);
+//	IMasterWallet *masterWallet = importWithKeystore(walletManager, payPassword);
 //	IMasterWallet *masterWallet = createMultiSignWalletFromMnemonic(walletManager, payPassword);
 //	IMasterWallet *masterWallet = createMultiSignWalletFromPrivKey(walletManager, payPassword);
 //	IMasterWallet *masterWallet = createReadOnlyMultiSignWallet(walletManager);
+
 
 	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
 	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
@@ -229,7 +230,7 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 		}
 #endif
 
-#if 1
+#if 0
 		if (!hasTransfer && mainchainWallet->GetBalance() > 5000000) {
 			transfer(mainchainWallet, payPassword, 5000000, "8KYS81a6tdFPKUVTVKBKA7V44YT1uodciu");
 			hasTransfer = true;

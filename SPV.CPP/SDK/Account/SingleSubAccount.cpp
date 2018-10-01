@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <SDK/Wrapper/Wallet.h>
+#include <SDK/Common/ParamChecker.h>
 #include "SingleSubAccount.h"
 
 namespace Elastos {
@@ -39,9 +40,8 @@ namespace Elastos {
 		void SingleSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
 											   const std::string &payPassword) {
 			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, transaction);
-			if (!transaction->sign(keyList, 0)) {
-				throw std::logic_error("Transaction Sign error!");
-			}
+			ParamChecker::checkCondition(!transaction->sign(keyList, 0), Error::Sign,
+										 "Transaction Sign error!");
 		}
 
 		nlohmann::json SingleSubAccount::GetBasicInfo() const {
