@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/ParamChecker.h>
 #include "TransactionCompleter.h"
 
 namespace Elastos {
@@ -41,9 +42,8 @@ namespace Elastos {
 		void TransactionCompleter::completedTransactionAssetID(const TransactionPtr &transaction) {
 			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			size_t size = outputs.size();
-			if (size < 1) {
-				throw std::logic_error("completedTransactionAssetID transaction has't outputs");
-			}
+			ParamChecker::checkCondition(size < 1, Error::Transaction,
+										 "Tx complete asset ID without output");
 
 			UInt256 zero = UINT256_ZERO;
 			UInt256 assetID = Key::getSystemAssetId();

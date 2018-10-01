@@ -2,13 +2,14 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "IdchainTransactionChecker.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		IdchainTransactionChecker::IdchainTransactionChecker(const TransactionPtr &transaction, const WalletPtr &wallet)
-				: SidechainTransactionChecker(transaction, wallet) {
+			: SidechainTransactionChecker(transaction, wallet) {
 
 		}
 
@@ -17,18 +18,18 @@ namespace Elastos {
 		}
 
 		void IdchainTransactionChecker::Check() {
-			if (_transaction->getTransactionType() != ELATransaction::RegisterIdentification &&
+			ParamChecker::checkCondition(
+				_transaction->getTransactionType() != ELATransaction::RegisterIdentification &&
 				_transaction->getTransactionType() != ELATransaction::TransferAsset &&
-				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset) {
-				throw std::logic_error("MainchainSubWallet transaction type error");
-			}
+				_transaction->getTransactionType() != ELATransaction::TransferCrossChainAsset,
+				Error::Transaction, "Main chain sub wallet tx type error");
 			TransactionChecker::Check();
 		}
 
 		bool IdchainTransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
 			SidechainTransactionChecker::checkTransactionOutput(transaction);
 
-			const std::vector<TransactionOutput*> &outputs = transaction->getOutputs();
+			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
 			size_t size = outputs.size();
 			if (size < 1) {
 				return false;

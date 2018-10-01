@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "Log.h"
 #include "Address.h"
 #include "TransactionChecker.h"
@@ -19,21 +20,17 @@ namespace Elastos {
 		}
 
 		void TransactionChecker::Check() {
-			if (!checkTransactionOutput(_transaction)) {
-				throw std::logic_error("checkTransactionOutput error.");
-			}
+			ParamChecker::checkCondition(!checkTransactionOutput(_transaction), Error::Transaction,
+										 "Transaction output error");
 
-			if (!checkTransactionAttribute(_transaction)) {
-				throw std::logic_error("checkTransactionAttribute error.");
-			}
+			ParamChecker::checkCondition(!checkTransactionAttribute(_transaction), Error::Transaction,
+										 "Transaction attribute error");
 
-			if (!checkTransactionProgram(_transaction)) {
-				throw std::logic_error("checkTransactionProgram error.");
-			}
+			ParamChecker::checkCondition(!checkTransactionProgram(_transaction), Error::Transaction,
+										 "Transaction program error");
 
-			if (!checkTransactionPayload(_transaction)) {
-				throw std::logic_error("checkTransactionPayload error.");
-			}
+			ParamChecker::checkCondition(!checkTransactionPayload(_transaction), Error::Transaction,
+										 "Transaction payload error");
 		}
 
 		bool TransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
@@ -57,7 +54,7 @@ namespace Elastos {
 					return false;
 				}
 				if (output->getAddress() == toAddress) {
-					toAddressCount ++;
+					toAddressCount++;
 				}
 				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) != addresses.end()) {
 //					if (hasChange) //should have only one change output per tx

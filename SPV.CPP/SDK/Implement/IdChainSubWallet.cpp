@@ -4,6 +4,7 @@
 
 #include <set>
 #include <boost/scoped_ptr.hpp>
+#include <SDK/Common/ParamChecker.h>
 
 #include "ELACoreExt/ELATxOutput.h"
 #include "ELACoreExt/Payload/PayloadRegisterIdentification.h"
@@ -54,9 +55,8 @@ namespace Elastos {
 																			 _info.getMinFee(), memo, remark));
 
 			TransactionPtr transaction = createTransaction(txParam.get());
-			if (transaction == nullptr) {
-				throw std::logic_error("Create transaction error.");
-			}
+			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create ID tx");
+
 			PayloadRegisterIdentification *payloadIdChain = static_cast<PayloadRegisterIdentification *>(transaction->getPayload());
 			payloadIdChain->fromJson(payloadJson);
 

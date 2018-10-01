@@ -6,6 +6,7 @@
 #include <BRMerkleBlock.h>
 #include <Core/BRChainParams.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
 
 #include "ChainParams.h"
 #include "BRBCashParams.h"
@@ -42,9 +43,9 @@ namespace Elastos {
 		const ELAChainParams MainChainMainNetParams = {
 			.Raw = {
 				MainChainMainNetDNSSeeds,
-				20866,		// standardPort
-				2017001,	// magicNumber
-				0,			// services
+				20866,        // standardPort
+				2017001,    // magicNumber
+				0,            // services
 				nullptr,
 				MainChainMainNetCheckpoints,
 				sizeof(MainChainMainNetCheckpoints) / sizeof(*MainChainMainNetCheckpoints)
@@ -74,9 +75,9 @@ namespace Elastos {
 		const ELAChainParams IdChainMainNetParams = {
 			.Raw = {
 				IdChainMainNetDNSSeeds,
-				20608,		// standardPort
-				2017002,	// magicNumber
-				0,			// services
+				20608,        // standardPort
+				2017002,    // magicNumber
+				0,            // services
 				nullptr,
 				IdChainMainNetCheckpoints,
 				sizeof(IdChainMainNetCheckpoints) / sizeof(*IdChainMainNetCheckpoints)
@@ -116,9 +117,9 @@ namespace Elastos {
 		const ELAChainParams MainChainTestNetParams = {
 			.Raw = {
 				MainChainTestNetDNSSeeds,
-				21866,		// standardPort
-				2018001,	// magicNumber
-				0,			// services
+				21866,        // standardPort
+				2018001,    // magicNumber
+				0,            // services
 				nullptr,
 				MainChainTestNetCheckpoints,
 				sizeof(MainChainTestNetCheckpoints) / sizeof(*MainChainTestNetCheckpoints)
@@ -154,9 +155,9 @@ namespace Elastos {
 		const ELAChainParams IdChainTestNetParams = {
 			.Raw = {
 				IdChainTestNetDNSSeeds,
-				21608,		// standardPort
-				20180011,	// magicNumber
-				0,			// services
+				21608,        // standardPort
+				20180011,    // magicNumber
+				0,            // services
 				nullptr,
 				IdChainTestNetCheckpoints,
 				sizeof(IdChainTestNetCheckpoints) / sizeof(*IdChainTestNetCheckpoints)
@@ -234,7 +235,7 @@ namespace Elastos {
 
 		ChainParams::ChainParams(const ChainParams &chainParams) {
 			_chainParams = boost::shared_ptr<ELAChainParams>(
-					new ELAChainParams(*(ELAChainParams *) chainParams.getRaw()));
+				new ELAChainParams(*(ELAChainParams *) chainParams.getRaw()));
 		}
 
 		ChainParams::ChainParams(const CoinConfig &coinConfig) {
@@ -264,8 +265,8 @@ namespace Elastos {
 				} else if (coinConfig.NetType == "MainNet") {
 					*_chainParams = MainChainMainNetParams;
 				} else {
-					Log::getLogger()->error("Invalid NetType = {} in CoinConfig", coinConfig.NetType);
-					throw std::logic_error("Invalid NetType in CoinConfig");
+					ParamChecker::checkCondition(true, Error::WrongNetType,
+												 "Invalid net type " + coinConfig.NetType + " in coin config");
 				}
 			} else if (coinConfig.Type == Idchain) {
 				if (coinConfig.NetType == "TestNet") {
@@ -275,15 +276,12 @@ namespace Elastos {
 				} else if (coinConfig.NetType == "MainNet") {
 					*_chainParams = IdChainMainNetParams;
 				} else {
-					Log::getLogger()->error("Invalid NetType = {} in CoinConfig", coinConfig.NetType);
-					throw std::logic_error("Invalid NetType in CoinConfig");
+					ParamChecker::checkCondition(true, Error::WrongNetType,
+												 "Invalid net type " + coinConfig.NetType + " in coin config");
 				}
-			} else if (coinConfig.Type == Sidechain) {
-				// TODO support anthor side chain later
-				throw std::logic_error("Unsupport Type=Sidechain in CoinConfig");
 			} else {
-				Log::getLogger()->error("Invalid Type = {} in CoinConfig", coinConfig.Type);
-				throw std::logic_error("Invalid Type in CoinConfig");
+				ParamChecker::checkCondition(true, Error::InvalidCoinType,
+											 "Unsupport coin type in coin config");
 			}
 		}
 

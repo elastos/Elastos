@@ -5,7 +5,6 @@
 #include "SDK/Common/Utils.h"
 #include "SDK/Common/WalletTool.h"
 #include "Core/BRBIP39Mnemonic.h"
-#include "SDK/ELACoreExt/ErrorCode.h"
 #include "SDK/Common/ParamChecker.h"
 #include "StandardAccount.h"
 
@@ -135,10 +134,11 @@ namespace Elastos {
 
 		UInt512 StandardAccount::DeriveSeed(const std::string &payPassword) {
 			UInt512 result;
+
 			std::string mnemonic = Utils::convertToString(
 					Utils::decrypt(GetEncryptedMnemonic(), payPassword));
-			if (mnemonic.empty())
-				ErrorCode::StandardLogicError(ErrorCode::PasswordError, "Invalid password.");
+
+			ParamChecker::checkDecryptedData(mnemonic);
 
 			std::string phrasePassword = GetEncryptedPhrasePassword().GetSize() == 0
 										 ? ""
@@ -151,7 +151,7 @@ namespace Elastos {
 
 		Key StandardAccount::DeriveKey(const std::string &payPassword) {
 			CMBlock keyData = Utils::decrypt(GetEncryptedKey(), payPassword);
-			ParamChecker::checkDataNotEmpty(keyData);
+			ParamChecker::checkDecryptedData(keyData);
 
 			Key key;
 			UInt256 secret;
@@ -162,14 +162,14 @@ namespace Elastos {
 		}
 
 		void StandardAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			ParamChecker::checkPassword(oldPassword, "Old");
 			ParamChecker::checkPassword(newPassword, "New");
 
 			CMBlock key = Utils::decrypt(GetEncryptedKey(), oldPassword);
-			ParamChecker::checkDataNotEmpty(key, false);
+			ParamChecker::checkDecryptedData(key);
 			CMBlock phrasePass = Utils::decrypt(GetEncryptedPhrasePassword(), oldPassword);
+			ParamChecker::checkDecryptedData(phrasePass);
 			CMBlock mnemonic = Utils::decrypt(GetEncryptedMnemonic(), oldPassword);
-			ParamChecker::checkDataNotEmpty(mnemonic, false);
+			ParamChecker::checkDecryptedData(mnemonic);
 
 			_encryptedKey = Utils::encrypt(key, newPassword);
 			_encryptedPhrasePass = Utils::encrypt(phrasePass, newPassword);

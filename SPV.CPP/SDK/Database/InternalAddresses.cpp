@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/ParamChecker.h>
 #include "InternalAddresses.h"
 
 namespace Elastos {
@@ -22,13 +23,13 @@ namespace Elastos {
 		}
 
 		bool InternalAddresses::putAddress(uint32_t startIndex, const std::string &address) {
-			return doTransaction([startIndex, &address, this](){
+			return doTransaction([startIndex, &address, this]() {
 				this->putAddressInternal(startIndex, address);
 			});
 		}
 
 		bool InternalAddresses::putAddresses(uint32_t startIndex, const std::vector<std::string> &addresses) {
-			return doTransaction([startIndex, &addresses, this](){
+			return doTransaction([startIndex, &addresses, this]() {
 				for (size_t i = 0; i < addresses.size(); ++i) {
 					this->putAddressInternal(startIndex + i, addresses[i]);
 				}
@@ -39,16 +40,13 @@ namespace Elastos {
 			std::stringstream ss;
 
 			ss << "INSERT INTO " << IA_TABLE_NAME << " (" <<
-				IA_COLUMN_ID     << "," <<
-				IA_ADDRESS       <<
+			   IA_COLUMN_ID << "," <<
+			   IA_ADDRESS <<
 			   ") VALUES (?, ?);";
 
 			sqlite3_stmt *stmt;
-			if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-				std::stringstream ess;
-				ess << "prepare sql " << ss.str() << " fail";
-				throw std::logic_error(ess.str());
-			}
+			ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+										 "Prepare sql " + ss.str());
 
 			_sqlite->bindInt(stmt, 1, startIndex);
 			_sqlite->bindText(stmt, 2, address, nullptr);
@@ -60,16 +58,13 @@ namespace Elastos {
 		}
 
 		bool InternalAddresses::clearAddresses() {
-			return doTransaction([this](){
+			return doTransaction([this]() {
 				std::stringstream ss;
 
 				ss << "DELETE FROM " << IA_TABLE_NAME << ";";
 
-				if (!_sqlite->exec(ss.str(), nullptr, nullptr)) {
-					std::stringstream ess;
-					ess << "exec sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->exec(ss.str(), nullptr, nullptr), Error::SqliteError,
+											 "Exec sql " + ss.str());
 			});
 		}
 
@@ -80,17 +75,14 @@ namespace Elastos {
 				std::string addr;
 				std::stringstream ss;
 				ss << "SELECT " <<
-					IA_ADDRESS  <<
-				   " FROM "     << IA_TABLE_NAME <<
-				   " WHERE "    << IA_COLUMN_ID  << " >= " << startIndex <<
-				   " AND "      << IA_COLUMN_ID  << " < "  << startIndex + count << ";";
+				   IA_ADDRESS <<
+				   " FROM " << IA_TABLE_NAME <<
+				   " WHERE " << IA_COLUMN_ID << " >= " << startIndex <<
+				   " AND " << IA_COLUMN_ID << " < " << startIndex + count << ";";
 
 				sqlite3_stmt *stmt;
-				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-					std::stringstream ess;
-					ess << "prepare sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + ss.str());
 
 				while (SQLITE_ROW == _sqlite->step(stmt)) {
 					addr = _sqlite->columnText(stmt, 0);
@@ -109,19 +101,16 @@ namespace Elastos {
 			doTransaction([startIndex, &results, this]() {
 				std::stringstream ss;
 				ss << "SELECT " <<
-					" COUNT("   << IA_ADDRESS    << ") AS nums " <<
-					" FROM "    << IA_TABLE_NAME <<
-					" WHERE "   << IA_COLUMN_ID  << " >= " << startIndex << ";";
+				   " COUNT(" << IA_ADDRESS << ") AS nums " <<
+				   " FROM " << IA_TABLE_NAME <<
+				   " WHERE " << IA_COLUMN_ID << " >= " << startIndex << ";";
 
 				sqlite3_stmt *stmt;
-				if (!_sqlite->prepare(ss.str(), &stmt, nullptr)) {
-					std::stringstream ess;
-					ess << "prepare sql " << ss.str() << " fail";
-					throw std::logic_error(ess.str());
-				}
+				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + ss.str());
 
 				while (SQLITE_ROW == _sqlite->step(stmt)) {
-					results = (uint32_t)_sqlite->columnInt(stmt, 0);
+					results = (uint32_t) _sqlite->columnInt(stmt, 0);
 				}
 
 				_sqlite->finalize(stmt);

@@ -4,6 +4,7 @@
 
 #include <BRAddress.h>
 #include <Core/BRAddress.h>
+#include <SDK/Common/ParamChecker.h>
 
 #include "BRBase58.h"
 #include "BRBech32.h"
@@ -42,9 +43,8 @@ namespace Elastos {
 			BRAddress address = {'\0'};
 			size_t scriptLen = script.GetSize(), addrSize = sizeof(address.s);
 
-			if (! script || scriptLen == 0 || scriptLen > MAX_SCRIPT_LENGTH) {
-				throw std::logic_error("fromScriptPubKey params error");
-			}
+			ParamChecker::checkCondition(scriptLen == 0 || scriptLen > MAX_SCRIPT_LENGTH, Error::InvalidArgument,
+										 "Address from script");
 
 			char a[91];
 			uint8_t data[21];
@@ -98,9 +98,8 @@ namespace Elastos {
 		boost::shared_ptr<Address> Address::fromScriptSignature(CMBlock script) {
 			BRAddress address = {'\0'};
 			size_t scriptLen = script.GetSize(), addrLen = sizeof(address.s);
-			if (! script || scriptLen == 0 || scriptLen > MAX_SCRIPT_LENGTH) {
-				throw std::logic_error("fromScriptSignature params error");
-			}
+			ParamChecker::checkCondition(scriptLen == 0 || scriptLen > MAX_SCRIPT_LENGTH, Error::InvalidArgument,
+				"Address from script");
 
 			uint8_t data[21];
 			const uint8_t *d = NULL, *elems[BRScriptElements(NULL, 0, script, scriptLen)];
@@ -167,9 +166,11 @@ namespace Elastos {
 					return ELA_IDCHAIN;
 				} else if(data[0] == ELA_DESTROY_ADDRESS) {
 					return ELA_DESTROY;
+				} else {
+					ParamChecker::checkCondition(true, Error::Address, "Unknown address type");
 				}
 		    } else {
-			    throw std::logic_error("error address!");
+				ParamChecker::checkCondition(true, Error::Address, "Invalid address");
 		    }
 		    return -1;
 		}

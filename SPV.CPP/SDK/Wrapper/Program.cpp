@@ -4,11 +4,11 @@
 
 
 #include <Core/BRAddress.h>
+#include <SDK/Common/ParamChecker.h>
 #include "BRInt.h"
 
 #include "Program.h"
 #include "Utils.h"
-#include "ErrorCode.h"
 #include "Transaction/Transaction.h"
 
 #define SignatureScriptLength 65
@@ -53,15 +53,12 @@ namespace Elastos {
 				std::vector<std::string> signers;
 				ParseMultiSignRedeemScript(_code, m, n, signers);
 
-				if (_parameter.GetSize() % SignatureScriptLength != 0)
-					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
-												  "Invalid multi sign signatures, length not match");
-				if (_parameter.GetSize() / SignatureScriptLength < m)
-					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
-												  "Invalid signatures, not enough signatures");
-				if (_parameter.GetSize() / SignatureScriptLength > n)
-					ErrorCode::StandardLogicError(ErrorCode::MultiSignError,
-												  "Invalid signatures, too many signatures");
+				ParamChecker::checkCondition(_parameter.GetSize() % SignatureScriptLength != 0,
+											 Error::MultiSign, "Invalid multi sign signatures, length not match");
+				ParamChecker::checkCondition(_parameter.GetSize() / SignatureScriptLength < m,
+											 Error::MultiSign, "Invalid signatures, not enough signatures");
+				ParamChecker::checkCondition(_parameter.GetSize() / SignatureScriptLength > n,
+											 Error::MultiSign, "Invalid signatures, too many signatures");
 
 				CMBlock hashData = transaction->GetShaData();
 				UInt256 md;
@@ -79,8 +76,7 @@ namespace Elastos {
 						if (verified) break;
 					}
 
-					if (!verified)
-						ErrorCode::StandardLogicError(ErrorCode::MultiSignError, "Not matched signers.");
+					ParamChecker::checkCondition(!verified, Error::MultiSign, "Not matched signers.");
 				}
 			}
 

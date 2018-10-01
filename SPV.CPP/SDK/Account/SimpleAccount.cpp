@@ -5,7 +5,6 @@
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
 #include "SimpleAccount.h"
-#include "ErrorCode.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -30,7 +29,7 @@ namespace Elastos {
 
 		Key SimpleAccount::DeriveKey(const std::string &payPassword) {
 			CMBlock keyData = Utils::decrypt(GetEncryptedKey(), payPassword);
-			ParamChecker::checkDataNotEmpty(keyData);
+			ParamChecker::checkDecryptedData(keyData);
 
 			Key key;
 			UInt256 secret;
@@ -44,16 +43,17 @@ namespace Elastos {
 		}
 
 		UInt512 SimpleAccount::DeriveSeed(const std::string &payPassword) {
-			ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "Simple account do not support this operation.");
+			ParamChecker::checkCondition(true, Error::WrongAccountType,
+										 "Simple account can not derive seed");
 			return UINT512_ZERO;
 		}
 
 		void SimpleAccount::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {
-			ParamChecker::checkPassword(oldPassword, "Old");
 			ParamChecker::checkPassword(newPassword, "New");
 
 			CMBlock key = Utils::decrypt(GetEncryptedKey(), oldPassword);
-			ParamChecker::checkDataNotEmpty(key, false);
+			ParamChecker::checkDecryptedData(key);
+
 			_encryptedKey = Utils::encrypt(key, newPassword);
 
 			memset(key, 0, key.GetSize());
@@ -74,12 +74,14 @@ namespace Elastos {
 		}
 
 		const CMBlock &SimpleAccount::GetEncryptedMnemonic() const {
-			ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "Simple account do not support this operation.");
+			ParamChecker::checkCondition(true, Error::WrongAccountType,
+										 "Simple account can not get mnemonic");
 			return CMBlock();
 		}
 
 		const CMBlock &SimpleAccount::GetEncryptedPhrasePassword() const {
-			ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "Simple account do not support this operation.");
+			ParamChecker::checkCondition(true, Error::WrongAccountType,
+										 "Simple account can not get phrase password");
 			return CMBlock();
 		}
 
@@ -88,7 +90,7 @@ namespace Elastos {
 		}
 
 		const MasterPubKey &SimpleAccount::GetIDMasterPubKey() const {
-			ErrorCode::StandardLogicError(ErrorCode::WrongAccountType, "Simple account do not support this operation.");
+			ParamChecker::checkCondition(true, Error::WrongAccountType, "Simple account can not get ID master pubkey");
 			return MasterPubKey();
 		}
 

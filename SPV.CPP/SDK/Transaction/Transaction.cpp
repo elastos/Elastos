@@ -6,6 +6,7 @@
 #include <BRTransaction.h>
 #include <SDK/Common/Log.h>
 #include <Core/BRTransaction.h>
+#include <SDK/Common/ParamChecker.h>
 
 #include "Transaction.h"
 #include "Payload/PayloadCoinBase.h"
@@ -230,9 +231,8 @@ namespace Elastos {
 			size_t i, j, keysCount = keys.size();
 			BRAddress addrs[keysCount], address;
 
-			if (keysCount <= 0) {
-				throw std::logic_error("transaction sign keysCount is 0.");
-			}
+			ParamChecker::checkCondition(keysCount <= 0, Error::Transaction,
+										 "Transaction sign key not found");
 			SPDLOG_DEBUG(Log::getLogger(), "Transaction transactionSign method begin, key counts = {}.", keysCount);
 
 			for (i = 0; i < keysCount; i++) {
@@ -394,10 +394,9 @@ namespace Elastos {
 
 			ostream.writeBytes(&_transaction->payloadVersion, 1);
 
-			if (_transaction->payload == nullptr) {
-				Log::getLogger()->error("payload should not be null, payload type = {}, version = {}", _transaction->type, _transaction->payloadVersion);
-				throw std::logic_error("payload should not be null");
-			}
+			ParamChecker::checkCondition(_transaction->payload == nullptr, Error::Transaction,
+										 "payload should not be null");
+
 			_transaction->payload->Serialize(ostream);
 
 			ostream.writeVarUint(_transaction->attributes.size());
@@ -741,6 +740,7 @@ namespace Elastos {
 			}
 
 			rawTxJson["Summary"] = summary;
+			SPDLOG_DEBUG(Log::getLogger(), "tx = {}.", summary.dump());
 		}
 
 		std::string Transaction::getConfirmInfo(uint32_t blockHeight) {
