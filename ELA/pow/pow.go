@@ -189,11 +189,12 @@ func (pow *PowService) GenerateBlock(minerAddr string) (*Block, error) {
 	totalReward := totalTxFee + blockReward
 
 	// PoW miners and DPoS are each equally allocated 35%. The remaining 30% goes to the Cyber Republic fund
-	rewardFoundation := common.Fixed64(float64(totalReward) * 0.3)
-	rewardMiner := common.Fixed64(float64(totalReward) * 0.35)
-	msgBlock.Transactions[0].Outputs[0].Value = rewardFoundation
-	msgBlock.Transactions[0].Outputs[1].Value = rewardMiner
-	msgBlock.Transactions[0].Outputs[2].Value = common.Fixed64(totalReward) - rewardFoundation - rewardMiner
+	rewardCyberRepublic := common.Fixed64(float64(totalReward) * 0.3)
+	rewardMergeMiner := common.Fixed64(float64(totalReward) * 0.35)
+	rewardDposArbiter := common.Fixed64(totalReward) - rewardCyberRepublic - rewardMergeMiner
+	msgBlock.Transactions[0].Outputs[0].Value = rewardCyberRepublic
+	msgBlock.Transactions[0].Outputs[1].Value = rewardMergeMiner
+	msgBlock.Transactions[0].Outputs[2].Value = rewardDposArbiter
 
 	txHash := make([]common.Uint256, 0, len(msgBlock.Transactions))
 	for _, tx := range msgBlock.Transactions {
