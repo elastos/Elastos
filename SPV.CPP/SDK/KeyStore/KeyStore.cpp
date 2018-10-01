@@ -183,6 +183,7 @@ namespace Elastos {
 			if (simpleAccount == nullptr) return;
 
 			CMBlock privKey = Utils::decrypt(simpleAccount->GetEncryptedKey(), payPassword);
+			ParamChecker::checkCondition(privKey.GetSize() == 0, Error::WrongPasswd, "Wrong password");
 			_walletJson.setPrivateKey(Utils::encodeHex(privKey));
 		}
 

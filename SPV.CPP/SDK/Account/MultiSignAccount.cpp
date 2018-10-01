@@ -82,15 +82,13 @@ namespace Elastos {
 			secp256k1_pubkey pk;
 
 			CMBlock cbA = Utils::decodeHex(a);
-			if (0 == BRKeyPubKeyDecode(&pk, cbA, cbA.GetSize())) {
-				throw std::logic_error("Public key decode error");
-			}
+			ParamChecker::checkCondition(0 == BRKeyPubKeyDecode(&pk, cbA, cbA.GetSize()), Error::PubKeyFormat,
+										 "Public key decode error");
 			BigInteger bigIntA = dataToBigInteger(pk.data, sizeof(pk.data) / 2, BigInteger::Sign::positive);
 
 			CMBlock cbB = Utils::decodeHex(b);
-			if (0 == BRKeyPubKeyDecode(&pk, cbB, cbB.GetSize())) {
-				throw std::logic_error("Public key decode error");
-			}
+			ParamChecker::checkCondition(0 == BRKeyPubKeyDecode(&pk, cbB, cbB.GetSize()), Error::PubKeyFormat,
+										 "Public key decode error");
 			BigInteger bigIntB = dataToBigInteger(pk.data, sizeof(pk.data) / 2, BigInteger::Sign::positive);
 
 			return bigIntA <= bigIntB;
