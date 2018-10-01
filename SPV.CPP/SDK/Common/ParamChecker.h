@@ -22,7 +22,7 @@ namespace Elastos {
 				IDNotFound,
 				CreateSubWalletError,
 				JsonArrayError,
-				MnemonicWordsCount,
+				Mnemonic,
 				PubKeyFormat,
 				PubKeyLength,
 				DepositParam,
@@ -46,6 +46,7 @@ namespace Elastos {
 				HexString,
 				SignType,
 				Address,
+				Sign,
 				Other,
 			} Code;
 		}

@@ -47,7 +47,7 @@ namespace Elastos {
 				loadLanguage(fileName);
 			}
 
-			ParamChecker::checkCondition(_words.size() != BIP39_WORDLIST_COUNT, Error::MnemonicWordsCount,
+			ParamChecker::checkCondition(_words.size() != BIP39_WORDLIST_COUNT, Error::Mnemonic,
 										 "Mnemonic words count error in " + language);
 		}
 

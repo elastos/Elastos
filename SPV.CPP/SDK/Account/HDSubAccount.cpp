@@ -5,6 +5,7 @@
 #include <SDK/Wrapper/Wallet.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/Log.h>
+#include <SDK/Common/ParamChecker.h>
 #include "HDSubAccount.h"
 
 namespace Elastos {
@@ -49,8 +50,7 @@ namespace Elastos {
 				ess << "txCount = " << txCount
 					<< ", wallet do not contain tx[0] = "
 					<< Utils::UInt256ToString(transactions[0]->txHash);
-				Log::getLogger()->error(ess.str());
-				throw std::logic_error(ess.str());
+				ParamChecker::checkCondition(true, Error::Wallet, ess.str());
 			}
 		}
 
@@ -67,9 +67,8 @@ namespace Elastos {
 		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet,
 										   const std::string &payPassword) {
 			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(wallet, payPassword, transaction);
-			if (!transaction->sign(keyList, 0)) {
-				throw std::logic_error("Transaction Sign error!");
-			}
+			ParamChecker::checkCondition(!transaction->sign(keyList, 0), Error::Sign,
+										 "Transaction Sign error!");
 		}
 
 		WrapperList<Key, BRKey>

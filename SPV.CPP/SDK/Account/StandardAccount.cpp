@@ -16,8 +16,8 @@ namespace Elastos {
 										 const std::string &language,
 										 const std::string &phrasePassword,
 										 const std::string &payPassword) :
-				_rootPath(rootPath),
-				_language(language) {
+			_rootPath(rootPath),
+			_language(language) {
 
 			CMemBlock<char> phraseData;
 			phraseData.SetMemFixed(phrase.c_str(), phrase.size() + 1);
@@ -25,9 +25,8 @@ namespace Elastos {
 
 			if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
 				resetMnemonic("chinese");
-				if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
-					throw std::logic_error("Import key error.");
-				}
+				ParamChecker::checkCondition(!WalletTool::PhraseIsValid(phraseData, _mnemonic->words()),
+											 Error::Mnemonic, "Invalid mnemonic words");
 			}
 
 			CMBlock cbPhrase0 = Utils::convertToMemBlock(phrase);
@@ -61,7 +60,7 @@ namespace Elastos {
 		}
 
 		StandardAccount::StandardAccount(const std::string &rootPath) :
-				_rootPath(rootPath) {
+			_rootPath(rootPath) {
 
 		}
 
@@ -136,14 +135,14 @@ namespace Elastos {
 			UInt512 result;
 
 			std::string mnemonic = Utils::convertToString(
-					Utils::decrypt(GetEncryptedMnemonic(), payPassword));
+				Utils::decrypt(GetEncryptedMnemonic(), payPassword));
 
 			ParamChecker::checkDecryptedData(mnemonic);
 
 			std::string phrasePassword = GetEncryptedPhrasePassword().GetSize() == 0
 										 ? ""
 										 : Utils::convertToString(
-							Utils::decrypt(GetEncryptedPhrasePassword(), payPassword));
+					Utils::decrypt(GetEncryptedPhrasePassword(), payPassword));
 
 			BRBIP39DeriveKey(&result, mnemonic.c_str(), phrasePassword.c_str());
 			return result;
