@@ -13,24 +13,8 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
 )
 
-const (
-	ApiGetConnectionCount  = "/api/v1/node/connectioncount"
-	ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height"
-	ApiGetBlockByHeight    = "/api/v1/block/details/height"
-	ApiGetBlockByHash      = "/api/v1/block/details/hash"
-	ApiGetBlockHeight      = "/api/v1/block/height"
-	ApiGetBlockHash        = "/api/v1/block/hash"
-	ApiGetTotalIssued      = "/api/v1/totalissued"
-	ApiGetTransaction      = "/api/v1/transaction"
-	ApiGetAsset            = "/api/v1/asset"
-	ApiGetBalanceByAddr    = "/api/v1/asset/balances"
-	ApiGetBalanceByAsset   = "/api/v1/asset/balance"
-	ApiGetUTXOByAsset      = "/api/v1/asset/utxo"
-	ApiGetUTXOByAddr       = "/api/v1/asset/utxos"
-	ApiSendRawTransaction  = "/api/v1/transaction"
-	ApiGetTransactionPool  = "/api/v1/transactionpool"
-	ApiRestart             = "/api/v1/restart"
-)
+// Ensure restserver implement Server interface.
+var _ Server = (*restserver)(nil)
 
 type restserver struct {
 	port     uint16
@@ -40,30 +24,12 @@ type restserver struct {
 	server   *http.Server
 }
 
-func New(port uint16, service *servers.HttpService, certFile, keyFile string) *restserver {
+func New(port uint16, certFile, keyFile string) *restserver {
 	s := restserver{
 		port:     port,
 		certFile: certFile,
 		keyFile:  keyFile,
 	}
-
-	s.RegisterAction("GET", ApiGetConnectionCount, service.GetConnectionCount)
-	s.RegisterAction("GET", ApiGetBlockTxsByHeight, service.GetTransactionsByHeight, "height")
-	s.RegisterAction("GET", ApiGetBlockByHeight, service.GetBlockByHeight, "height")
-	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "hash")
-	s.RegisterAction("GET", ApiGetBlockHeight, service.GetBlockHeight)
-	s.RegisterAction("GET", ApiGetBlockHash, service.GetBlockHash, "height")
-	s.RegisterAction("GET", ApiGetTransactionPool, service.GetTransactionPool)
-	s.RegisterAction("GET", ApiGetTransaction, service.GetTransactionByHash, "hash")
-	s.RegisterAction("GET", ApiGetAsset, service.GetAssetByHash, "hash")
-	s.RegisterAction("GET", ApiGetUTXOByAddr, service.GetUnspendsByAddr, "addr")
-	s.RegisterAction("GET", ApiGetUTXOByAsset, service.GetUnspendsByAsset, "addr", "asset")
-	s.RegisterAction("GET", ApiGetBalanceByAddr, service.GetBalanceByAddr, "addr")
-	s.RegisterAction("GET", ApiGetBalanceByAsset, service.GetBalanceByAsset, "addr", "asset")
-	s.RegisterAction("GET", ApiRestart, s.Restart)
-
-	s.RegisterAction("POST", ApiSendRawTransaction, service.SendRawTransaction)
-
 	return &s
 }
 
@@ -141,39 +107,35 @@ func (s *restserver) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	handler(w, req.WithContext(ctx))
 }
 
-func (s *restserver) Start() {
+func (s *restserver) Start() error {
 	if s.port == 0 {
-		log.Fatal("Not configure HttpRestPort port ")
+		return fmt.Errorf("port not configured")
 	}
 
 	var err error
 	var listener net.Listener
 
 	if s.port%1000 == servers.TlsPort {
-		var err error
 		listener, err = s.initTlsListen()
 		if err != nil {
-			log.Error("Https Cert: ", err.Error())
+			return err
 		}
 	} else {
-		var err error
 		listener, err = net.Listen("tcp", fmt.Sprint(":", s.port))
 		if err != nil {
-			log.Fatal("net.Listen: ", err.Error())
+			return err
 		}
 	}
 	s.server = &http.Server{Handler: s}
-	err = s.server.Serve(listener)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err.Error())
-	}
+	return s.server.Serve(listener)
 }
 
-func (s *restserver) Stop() {
+func (s *restserver) Stop() error {
 	if s.server != nil {
-		s.server.Shutdown(context.Background())
-		log.Error("Close restful ")
+		return s.server.Shutdown(context.Background())
 	}
+
+	return fmt.Errorf("server not started")
 }
 
 func (s *restserver) Restart(cmd servers.Params) map[string]interface{} {

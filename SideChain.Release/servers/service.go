@@ -704,9 +704,9 @@ func (s *HttpService) getBlockTransactions(block *types.Block) interface{} {
 }
 
 func (s *HttpService) GetTransactionsByHeight(param Params) map[string]interface{} {
-	height, ok := param.Uint("index")
+	height, ok := param.Uint("height")
 	if !ok {
-		return ResponsePack(InvalidParams, "index parameter should be a positive integer")
+		return ResponsePack(InvalidParams, "height parameter should be a positive integer")
 	}
 
 	hash, err := s.chain.GetBlockHash(uint32(height))

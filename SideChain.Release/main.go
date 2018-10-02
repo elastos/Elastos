@@ -134,7 +134,7 @@ func main() {
 		go powService.Start()
 	}
 
-	eladlog.Info("5. --Start the RPC service")
+	eladlog.Info("5. --Start the Http services")
 	service := servers.NewHttpService(&servers.Config{
 		Logger:     elalog,
 		Server:     server,
@@ -142,10 +142,10 @@ func main() {
 		TxMemPool:  txPool,
 		PowService: powService,
 	})
+	startHttpJsonRpc(params.HttpJsonPort, service)
+	startHttpRESTful(params.HttpRestPort, params.RestCertPath,
+		params.RestKeyPath, service)
 
-	go httpjsonrpc.New(params.HttpJsonPort, service).Start()
-	go httprestful.New(params.HttpRestPort, service,
-		params.RestCertPath, params.RestKeyPath).Start()
 	if params.HttpInfoStart {
 		go httpnodeinfo.New(&httpnodeinfo.Config{
 			NodePort:     params.NodePort,
@@ -156,4 +156,83 @@ func main() {
 		}).Start()
 	}
 	select {}
+}
+
+func startHttpJsonRpc(port uint16, service *servers.HttpService) {
+	s := httpjsonrpc.New(port)
+
+	s.RegisterAction("setloglevel", service.SetLogLevel)
+	s.RegisterAction("getinfo", service.GetInfo)
+	s.RegisterAction("getblock", service.GetBlockByHash)
+	s.RegisterAction("getcurrentheight", service.GetBlockHeight)
+	s.RegisterAction("getblockhash", service.GetBlockHash)
+	s.RegisterAction("getconnectioncount", service.GetConnectionCount)
+	s.RegisterAction("getrawmempool", service.GetTransactionPool)
+	s.RegisterAction("getrawtransaction", service.GetRawTransaction)
+	s.RegisterAction("getneighbors", service.GetNeighbors)
+	s.RegisterAction("getnodestate", service.GetNodeState)
+	s.RegisterAction("sendtransactioninfo", service.SendTransactionInfo)
+	s.RegisterAction("sendrawtransaction", service.SendRawTransaction)
+	s.RegisterAction("getbestblockhash", service.GetBestBlockHash)
+	s.RegisterAction("getblockcount", service.GetBlockCount)
+	s.RegisterAction("getblockbyheight", service.GetBlockByHeight)
+	s.RegisterAction("getdestroyedtransactions", service.GetDestroyedTransactionsByHeight)
+	s.RegisterAction("getexistdeposittransactions", service.GetExistDepositTransactions)
+	s.RegisterAction("help", service.AuxHelp)
+	s.RegisterAction("submitsideauxblock", service.SubmitSideAuxBlock)
+	s.RegisterAction("createauxblock", service.CreateAuxBlock)
+	s.RegisterAction("togglemining", service.ToggleMining)
+	s.RegisterAction("discretemining", service.DiscreteMining)
+
+	go func() {
+		if err := s.Start(); err != nil {
+			eladlog.Errorf("Start HttpJsonRpc service failed, %s", err.Error())
+		}
+	}()
+}
+
+func startHttpRESTful(port uint16, certFile, keyFile string, service *servers.HttpService) {
+	s := httprestful.New(port, certFile, keyFile)
+
+	const (
+		ApiGetConnectionCount  = "/api/v1/node/connectioncount"
+		ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height"
+		ApiGetBlockByHeight    = "/api/v1/block/details/height"
+		ApiGetBlockByHash      = "/api/v1/block/details/hash"
+		ApiGetBlockHeight      = "/api/v1/block/height"
+		ApiGetBlockHash        = "/api/v1/block/hash"
+		ApiGetTotalIssued      = "/api/v1/totalissued"
+		ApiGetTransaction      = "/api/v1/transaction"
+		ApiGetAsset            = "/api/v1/asset"
+		ApiGetBalanceByAddr    = "/api/v1/asset/balances"
+		ApiGetBalanceByAsset   = "/api/v1/asset/balance"
+		ApiGetUTXOByAsset      = "/api/v1/asset/utxo"
+		ApiGetUTXOByAddr       = "/api/v1/asset/utxos"
+		ApiSendRawTransaction  = "/api/v1/transaction"
+		ApiGetTransactionPool  = "/api/v1/transactionpool"
+		ApiRestart             = "/api/v1/restart"
+	)
+
+	s.RegisterAction("GET", ApiGetConnectionCount, service.GetConnectionCount)
+	s.RegisterAction("GET", ApiGetBlockTxsByHeight, service.GetTransactionsByHeight, "height")
+	s.RegisterAction("GET", ApiGetBlockByHeight, service.GetBlockByHeight, "height")
+	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "hash")
+	s.RegisterAction("GET", ApiGetBlockHeight, service.GetBlockHeight)
+	s.RegisterAction("GET", ApiGetBlockHash, service.GetBlockHash, "height")
+	s.RegisterAction("GET", ApiGetTransactionPool, service.GetTransactionPool)
+	s.RegisterAction("GET", ApiGetTransaction, service.GetTransactionByHash, "hash")
+	s.RegisterAction("GET", ApiGetAsset, service.GetAssetByHash, "hash")
+	s.RegisterAction("GET", ApiGetUTXOByAddr, service.GetUnspendsByAddr, "addr")
+	s.RegisterAction("GET", ApiGetUTXOByAsset, service.GetUnspendsByAsset, "addr", "assetid")
+	s.RegisterAction("GET", ApiGetBalanceByAddr, service.GetBalanceByAddr, "addr")
+	s.RegisterAction("GET", ApiGetBalanceByAsset, service.GetBalanceByAsset, "addr", "assetid")
+	s.RegisterAction("GET", ApiRestart, s.Restart)
+
+	s.RegisterAction("POST", ApiSendRawTransaction, service.SendRawTransaction)
+
+	go func() {
+		if err := s.Start(); err != nil {
+			eladlog.Errorf("Start HttpRESTful service failed, %s", err.Error())
+		}
+	}()
 }
