@@ -19,53 +19,34 @@ const (
 	//-32000 to -32099	Server error, waiting for defining
 )
 
+// Ensure rpcserver implement Server interface.
+var _ Server = (*rpcserver)(nil)
+
 type rpcserver struct {
+	server *http.Server
 	port    uint16
-	service *servers.HttpService
-	mux     map[string]func(servers.Params) map[string]interface{}
+	mux     map[string]servers.Handler
 }
 
-func New(port uint16, service *servers.HttpService) *rpcserver {
+func New(port uint16) *rpcserver {
 	return &rpcserver{
 		port:    port,
-		service: service,
-		mux:     make(map[string]func(servers.Params) map[string]interface{}),
+		mux:     make(map[string]servers.Handler),
 	}
 }
 
-func (s *rpcserver) RegisterAction(name string, action func(servers.Params) map[string]interface{}) {
-	s.mux[name] = action
+func (s *rpcserver) RegisterAction(name string, handler servers.Handler) {
+	s.mux[name] = handler
 }
 
-func (s *rpcserver) Start() {
-	s.RegisterAction("setloglevel", s.service.SetLogLevel)
-	s.RegisterAction("getinfo", s.service.GetInfo)
-	s.RegisterAction("getblock", s.service.GetBlockByHash)
-	s.RegisterAction("getcurrentheight", s.service.GetBlockHeight)
-	s.RegisterAction("getblockhash", s.service.GetBlockHash)
-	s.RegisterAction("getconnectioncount", s.service.GetConnectionCount)
-	s.RegisterAction("getrawmempool", s.service.GetTransactionPool)
-	s.RegisterAction("getrawtransaction", s.service.GetRawTransaction)
-	s.RegisterAction("getneighbors", s.service.GetNeighbors)
-	s.RegisterAction("getnodestate", s.service.GetNodeState)
-	s.RegisterAction("sendtransactioninfo", s.service.SendTransactionInfo)
-	s.RegisterAction("sendrawtransaction", s.service.SendRawTransaction)
-	s.RegisterAction("getbestblockhash", s.service.GetBestBlockHash)
-	s.RegisterAction("getblockcount", s.service.GetBlockCount)
-	s.RegisterAction("getblockbyheight", s.service.GetBlockByHeight)
-	s.RegisterAction("getdestroyedtransactions", s.service.GetDestroyedTransactionsByHeight)
-	s.RegisterAction("getexistdeposittransactions", s.service.GetExistDepositTransactions)
-	s.RegisterAction("help", s.service.AuxHelp)
-	s.RegisterAction("submitsideauxblock", s.service.SubmitSideAuxBlock)
-	s.RegisterAction("createauxblock", s.service.CreateAuxBlock)
-	s.RegisterAction("togglemining", s.service.ToggleMining)
-	s.RegisterAction("discretemining", s.service.DiscreteMining)
-
+func (s *rpcserver) Start() error {
 	http.HandleFunc("/", s.handle)
-	err := http.ListenAndServe(fmt.Sprint(":", s.port), nil)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err.Error())
-	}
+	s.server = &http.Server{Addr: fmt.Sprint(":", s.port)}
+	return s.server.ListenAndServe()
+}
+
+func (s *rpcserver) Stop() error {
+	return s.server.Close()
 }
 
 //this is the funciton that should be called in order to answer an rpc call
