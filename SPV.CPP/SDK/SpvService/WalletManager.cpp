@@ -53,7 +53,14 @@ namespace Elastos {
 		}
 
 		void WalletManager::stop() {
+			if (_reconnectTimer != nullptr) {
+				_reconnectTimer->cancel();
+				Log::getLogger()->info("Cancel the timer");
+			}
+
 			getPeerManager()->disconnect();
+			// Wait background executor to finish the work, in case of crash. Think about better solution later.
+			sleep(1);
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::getTransactions(

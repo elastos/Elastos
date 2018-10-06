@@ -290,13 +290,14 @@ namespace Elastos {
 				ParamChecker::checkCondition(true, Error::Wallet,
 											 "Specified sub wallet is not belong to current master wallet.");
 
+			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
+			assert(walletInner != nullptr);
+			stopPeerManager(walletInner);
+
 			_createdWallets.erase(std::find_if(_createdWallets.begin(), _createdWallets.end(),
 											   [wallet](const WalletMap::value_type &item) {
 												   return item.second == wallet;
 											   }));
-			SubWallet *walletInner = dynamic_cast<SubWallet *>(wallet);
-			assert(walletInner != nullptr);
-			stopPeerManager(walletInner);
 			delete walletInner;
 		}
 
