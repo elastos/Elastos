@@ -148,36 +148,35 @@ namespace Elastos {
 			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
 				return;
 
+			Log::getLogger()->info("Master wallet manager remove master wallet ({})", masterWalletId);
+
 			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWalletInner = static_cast<MasterWallet *>(masterWallet);
 			if (saveMaster) {
-				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Begin save ({}).", masterWalletId);
 				masterWalletInner->Save();
-				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] End save ({}).", masterWalletId);
+
+				Log::getLogger()->info("Destroying sub wallets.");
+				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+				for (int i = 0; i < subWallets.size(); ++i) {
+					masterWallet->DestroyWallet(subWallets[i]);
+				}
 			} else {
-				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Begin clear local ({}).",
-							 masterWalletId);
+				Log::getLogger()->info("Destroying sub wallets.");
+				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+				for (int i = 0; i < subWallets.size(); ++i) {
+					masterWallet->DestroyWallet(subWallets[i]);
+				}
+
+				Log::getLogger()->info("Clearing local.", masterWalletId);
 				masterWalletInner->ClearLocal();
-				SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] End clear local ({}).",
-							 masterWalletId);
 			}
 
-			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Begin destroy sub wallets ({}).",
-						 masterWalletId);
-			std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
-			for (int i = 0; i < subWallets.size(); ++i) {
-				masterWallet->DestroyWallet(subWallets[i]);
-			}
-			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] End destroy sub wallets of ({}).",
-						 masterWalletId);
 
-			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Removing master wallet from map ({}).",
-						 masterWalletId);
+			Log::getLogger()->info("Removing master wallet from map.");
 			_masterWalletMap.erase(masterWalletId);
 
-			SPDLOG_DEBUG(Log::getLogger(), "[MasterWalletManager::removeWallet] Deleting master wallet ({}).",
-						 masterWalletId);
+			Log::getLogger()->info("Deleting master wallet.");
 			delete masterWallet;
 		}
 
