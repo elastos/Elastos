@@ -2,7 +2,7 @@
   "ELA": {
     "Type": "Mainchain",
     "CoinIndex": 0,
-    "NetType": "TestNet",
+    "NetType": "MainNet",
     "MinFee": 10000,
     "ReconnectSeconds": 300,
     "BlockType": "ELA",
@@ -11,7 +11,7 @@
   "IdChain": {
     "Type": "Idchain",
     "CoinIndex": 1,
-    "NetType": "TestNet",
+    "NetType": "MainNet",
     "MinFee": 10000,
     "ReconnectSeconds": 300,
     "BlockType": "SideStandard",
