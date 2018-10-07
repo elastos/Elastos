@@ -3,29 +3,28 @@ package core
 import (
 	"errors"
 
-	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 )
 
 func InitPayloadHelper() {
-	ucore.PayloadHelper = &ucore.PayloadBase{}
-	ucore.PayloadHelper.GetPayload = getPayload
+	types.GetPayloadByType = getPayload
 }
 
-func getPayload(txType ucore.TransactionType) (ucore.Payload, error) {
-	var p ucore.Payload
+func getPayload(txType types.TransactionType) (types.Payload, error) {
+	var p types.Payload
 	switch txType {
-	case ucore.CoinBase:
-		p = new(ucore.PayloadCoinBase)
-	case ucore.RegisterAsset:
-		p = new(ucore.PayloadRegisterAsset)
-	case ucore.TransferAsset:
-		p = new(ucore.PayloadTransferAsset)
-	case ucore.Record:
-		p = new(ucore.PayloadRecord)
-	case ucore.RechargeToSideChain:
-		p = new(ucore.PayloadRechargeToSideChain)
-	case ucore.TransferCrossChainAsset:
-		p = new(ucore.PayloadTransferCrossChainAsset)
+	case types.CoinBase:
+		p = new(types.PayloadCoinBase)
+	case types.RegisterAsset:
+		p = new(types.PayloadRegisterAsset)
+	case types.TransferAsset:
+		p = new(types.PayloadTransferAsset)
+	case types.Record:
+		p = new(types.PayloadRecord)
+	case types.RechargeToSideChain:
+		p = new(types.PayloadRechargeToSideChain)
+	case types.TransferCrossChainAsset:
+		p = new(types.PayloadTransferCrossChainAsset)
 	case RegisterIdentification:
 		p = new(PayloadRegisterIdentification)
 	default:

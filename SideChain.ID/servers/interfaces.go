@@ -8,23 +8,24 @@ import (
 	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
 
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/servers"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type HttpServiceExtend struct {
 	*servers.HttpService
-	chain  blockchain.IChainStore
+
+	cfg   *servers.Config
+	store *bc.IDChainStore
 }
 
-func NewHttpService(cfg *servers.Config, chain blockchain.IChainStore) *HttpServiceExtend {
+func NewHttpService(cfg *servers.Config, store *bc.IDChainStore) *HttpServiceExtend {
 	server := &HttpServiceExtend{
 		HttpService: servers.NewHttpService(cfg),
-		chain: chain,
+		store:       store,
+		cfg:         cfg,
 	}
-	server.GetTransactionInfo = server.getTransactionInfoImpl
 	return server
 }
 
@@ -45,7 +46,7 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param servers.Params)
 	buf := new(bytes.Buffer)
 	buf.WriteString(id)
 	buf.WriteString(path)
-	txHashBytes, err := s.chain.(*bc.IDChainStore).GetRegisterIdentificationTx(buf.Bytes())
+	txHashBytes, err := s.store.GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
 		return servers.ResponsePack(servers.UnknownTransaction, "get identification transaction failed")
 	}
@@ -54,23 +55,55 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param servers.Params)
 		return servers.ResponsePack(servers.InvalidTransaction, "invalid transaction hash")
 	}
 
-	txn, height, err := s.chain.GetTransaction(*txHash)
+	txn, height, err := s.store.GetTransaction(*txHash)
 	if err != nil {
 		return servers.ResponsePack(servers.UnknownTransaction, "get transaction failed")
 	}
-	bHash, err := s.chain.GetBlockHash(height)
+	bHash, err := s.store.GetBlockHash(height)
 	if err != nil {
 		return servers.ResponsePack(servers.UnknownBlock, "get block failed")
 	}
-	header, err := s.chain.GetHeader(bHash)
+	header, err := s.store.GetHeader(bHash)
 	if err != nil {
 		return servers.ResponsePack(servers.UnknownBlock, "get header failed")
 	}
 
-	return servers.ResponsePack(servers.Success, s.GetTransactionInfo(header, txn))
+	return servers.ResponsePack(servers.Success, s.cfg.GetTransactionInfo(s.cfg, header, txn))
 }
 
-func (s *HttpServiceExtend) getTransactionInfoImpl(header *ucore.Header, tx *ucore.Transaction) *servers.TransactionInfo {
+func GetTransactionInfoFromBytes(txInfoBytes []byte) (*servers.TransactionInfo, error) {
+	var txInfo servers.TransactionInfo
+	err := json.Unmarshal(txInfoBytes, &txInfo)
+	if err != nil {
+		return nil, errors.New("InvalidParameter")
+	}
+
+	var assetInfo servers.PayloadInfo
+	switch txInfo.TxType {
+	case types.CoinBase:
+		assetInfo = &servers.CoinbaseInfo{}
+	case types.RegisterAsset:
+		assetInfo = &servers.RegisterAssetInfo{}
+	case types.SideChainPow:
+		assetInfo = &servers.SideChainPowInfo{}
+	case types.RechargeToSideChain:
+		assetInfo = &servers.RechargeToSideChainInfo{}
+	case types.TransferCrossChainAsset:
+		assetInfo = &servers.TransferCrossChainAssetInfo{}
+	case core.RegisterIdentification:
+		assetInfo = &RegisterIdentificationInfo{}
+	default:
+		return nil, errors.New("GetBlockTransactions: Unknown payload type")
+	}
+	err = servers.Unmarshal(&txInfo.Payload, assetInfo)
+	if err == nil {
+		txInfo.Payload = assetInfo
+	}
+
+	return &txInfo, nil
+}
+
+func GetTransactionInfo(cfg *servers.Config, header *types.Header, tx *types.Transaction) *servers.TransactionInfo {
 	inputs := make([]servers.InputInfo, len(tx.Inputs))
 	for i, v := range tx.Inputs {
 		inputs[i].TxID = servers.ToReversedString(v.Previous.TxID)
@@ -114,7 +147,7 @@ func (s *HttpServiceExtend) getTransactionInfoImpl(header *ucore.Header, tx *uco
 	var time uint32
 	var blockTime uint32
 	if header != nil {
-		confirmations = s.chain.GetHeight() - header.Height + 1
+		confirmations = cfg.Chain.GetBestHeight() - header.Height + 1
 		blockHash = servers.ToReversedString(header.Hash())
 		time = header.Timestamp
 		blockTime = header.Timestamp
@@ -135,33 +168,33 @@ func (s *HttpServiceExtend) getTransactionInfoImpl(header *ucore.Header, tx *uco
 		BlockTime:      blockTime,
 		TxType:         tx.TxType,
 		PayloadVersion: tx.PayloadVersion,
-		Payload:        s.getPayloadInfo(tx.Payload),
+		Payload:        cfg.GetPayloadInfo(tx.Payload),
 		Attributes:     attributes,
 		Programs:       programs,
 	}
 }
 
-func (s *HttpServiceExtend) getPayloadInfo(p ucore.Payload) servers.PayloadInfo {
+func GetPayloadInfo(p types.Payload) servers.PayloadInfo {
 	switch object := p.(type) {
-	case *ucore.PayloadCoinBase:
+	case *types.PayloadCoinBase:
 		obj := new(servers.CoinbaseInfo)
 		obj.CoinbaseData = string(object.CoinbaseData)
 		return obj
-	case *ucore.PayloadRegisterAsset:
+	case *types.PayloadRegisterAsset:
 		obj := new(servers.RegisterAssetInfo)
 		obj.Asset = object.Asset
 		obj.Amount = object.Amount.String()
 		obj.Controller = BytesToHexString(BytesReverse(object.Controller.Bytes()))
 		return obj
-	case *ucore.PayloadTransferCrossChainAsset:
+	case *types.PayloadTransferCrossChainAsset:
 		obj := new(servers.TransferCrossChainAssetInfo)
 		obj.CrossChainAddresses = object.CrossChainAddresses
 		obj.OutputIndexes = object.OutputIndexes
 		obj.CrossChainAmounts = object.CrossChainAmounts
 		return obj
-	case *ucore.PayloadTransferAsset:
-	case *ucore.PayloadRecord:
-	case *ucore.PayloadRechargeToSideChain:
+	case *types.PayloadTransferAsset:
+	case *types.PayloadRecord:
+	case *types.PayloadRechargeToSideChain:
 		obj := new(servers.RechargeToSideChainInfo)
 		obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
 		obj.Proof = BytesToHexString(object.MerkleProof)
@@ -189,36 +222,4 @@ func (s *HttpServiceExtend) getPayloadInfo(p ucore.Payload) servers.PayloadInfo 
 		return obj
 	}
 	return nil
-}
-
-func (s *HttpServiceExtend) GetTransactionInfoFromBytes(txInfoBytes []byte) (*servers.TransactionInfo, error) {
-	var txInfo servers.TransactionInfo
-	err := json.Unmarshal(txInfoBytes, &txInfo)
-	if err != nil {
-		return nil, errors.New("InvalidParameter")
-	}
-
-	var assetInfo servers.PayloadInfo
-	switch txInfo.TxType {
-	case ucore.CoinBase:
-		assetInfo = &servers.CoinbaseInfo{}
-	case ucore.RegisterAsset:
-		assetInfo = &servers.RegisterAssetInfo{}
-	case ucore.SideChainPow:
-		assetInfo = &servers.SideChainPowInfo{}
-	case ucore.RechargeToSideChain:
-		assetInfo = &servers.RechargeToSideChainInfo{}
-	case ucore.TransferCrossChainAsset:
-		assetInfo = &servers.TransferCrossChainAssetInfo{}
-	case core.RegisterIdentification:
-		assetInfo = &RegisterIdentificationInfo{}
-	default:
-		return nil, errors.New("GetBlockTransactions: Unknown payload type")
-	}
-	err = servers.Unmarshal(&txInfo.Payload, assetInfo)
-	if err == nil {
-		txInfo.Payload = assetInfo
-	}
-
-	return &txInfo, nil
 }
