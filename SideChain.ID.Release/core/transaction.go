@@ -1,41 +1,39 @@
 package core
 
 import (
-	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-func IsRegisterIdentificationTx(tx *ucore.Transaction) bool {
+func IsRegisterIdentificationTx(tx *types.Transaction) bool {
 	return tx.TxType == RegisterIdentification
 }
 
 func InitTransactionHelper() {
-	ucore.TransactionHelper = &ucore.TransactionHelperBase{}
-	ucore.TransactionHelper.Init()
-	ucore.TransactionHelper.Name = name
-	ucore.TransactionHelper.GetDataContainer = getDataContainer
+	types.Name = name
+	types.GetDataContainer = getDataContainer
 }
 
-func name(txType ucore.TransactionType) string {
+func name(txType types.TransactionType) string {
 	switch txType {
-	case ucore.CoinBase:
+	case types.CoinBase:
 		return "CoinBase"
-	case ucore.RegisterAsset:
+	case types.RegisterAsset:
 		return "RegisterAsset"
-	case ucore.TransferAsset:
+	case types.TransferAsset:
 		return "TransferAsset"
-	case ucore.Record:
+	case types.Record:
 		return "Record"
-	case ucore.Deploy:
+	case types.Deploy:
 		return "Deploy"
-	case ucore.SideChainPow:
+	case types.SideChainPow:
 		return "SideChainPow"
-	case ucore.RechargeToSideChain:
+	case types.RechargeToSideChain:
 		return "RechargeToSideChain"
-	case ucore.WithdrawFromSideChain:
+	case types.WithdrawFromSideChain:
 		return "WithdrawFromSideChain"
-	case ucore.TransferCrossChainAsset:
+	case types.TransferCrossChainAsset:
 		return "TransferCrossChainAsset"
 	case RegisterIdentification:
 		return "RegisterIdentification"
@@ -44,7 +42,7 @@ func name(txType ucore.TransactionType) string {
 	}
 }
 
-func getDataContainer(programHash *common.Uint168, tx *ucore.Transaction) interfaces.IDataContainer {
+func getDataContainer(programHash *common.Uint168, tx *types.Transaction) interfaces.IDataContainer {
 	switch tx.TxType {
 	case RegisterIdentification:
 		for _, output := range tx.Outputs {

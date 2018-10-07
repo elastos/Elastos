@@ -9,8 +9,8 @@ import (
 )
 
 const RegisterIdentification = 0x09
-
 const RegisterIdentificationVersion = 0x00
+const MaxSignDataSize = 1000
 
 type RegisterIdentificationValue struct {
 	DataHash common.Uint256
@@ -40,7 +40,7 @@ func (p *PayloadRegisterIdentification) Serialize(w io.Writer, version byte) err
 		return errors.New("[RegisterIdentification], ID serialize failed.")
 	}
 
-	if err := common.WriteElement(w, p.Sign); err != nil {
+	if err := common.WriteVarBytes(w, p.Sign); err != nil {
 		return errors.New("[RegisterIdentification], Sign serialize failed.")
 	}
 
@@ -65,9 +65,11 @@ func (p *PayloadRegisterIdentification) Deserialize(r io.Reader, version byte) e
 		return errors.New("[RegisterIdentification], ID deserialize failed.")
 	}
 
-	if err := common.ReadElement(r, &p.Sign); err != nil {
+	sign, err := common.ReadVarBytes(r, MaxSignDataSize, "RegisterIdentification sign")
+	if err != nil {
 		return errors.New("[RegisterIdentification], Sign deserialize failed.")
 	}
+	p.Sign = sign
 
 	size, err := common.ReadVarUint(r, 0)
 	if err != nil {
@@ -120,13 +122,13 @@ func (a *RegisterIdentificationContent) Deserialize(r io.Reader, version byte) e
 		return errors.New("[RegisterIdentificationContent], Values size deserialize failed.")
 	}
 
-	a.Values = make([]RegisterIdentificationValue, valueSize)
+	a.Values = make([]RegisterIdentificationValue, 0)
 	for j := uint64(0); j < valueSize; j++ {
 		value := RegisterIdentificationValue{}
 		if err := value.Deserialize(r, version); err != nil {
 			return err
 		}
-		a.Values[j] = value
+		a.Values = append(a.Values, value)
 	}
 
 	return nil

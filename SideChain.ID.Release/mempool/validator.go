@@ -1,15 +1,15 @@
 package mempool
 
 import (
-	"math"
 	"errors"
+	"math"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
 
-	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
-	"github.com/elastos/Elastos.ELA.SideChain/spv"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
+	"github.com/elastos/Elastos.ELA.SideChain/spv"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type validator struct {
@@ -17,12 +17,12 @@ type validator struct {
 
 	systemAssetID common.Uint256
 	foundation    common.Uint168
-	spvService 	  *spv.Service
+	spvService    *spv.Service
 }
 
-func NewValidator(cfg *mempool.Config) *mempool.Validator{
+func NewValidator(cfg *mempool.Config) *mempool.Validator {
 	var val validator
-	val.Validator =  mempool.NewValidator(cfg)
+	val.Validator = mempool.NewValidator(cfg)
 	val.systemAssetID = cfg.AssetId
 	val.foundation = cfg.FoundationAddress
 	val.spvService = cfg.SpvService
@@ -33,20 +33,20 @@ func NewValidator(cfg *mempool.Config) *mempool.Validator{
 	return val.Validator
 }
 
-func (v *validator) checkTransactionPayload(txn *ucore.Transaction) error {
+func (v *validator) checkTransactionPayload(txn *types.Transaction) error {
 	switch pld := txn.Payload.(type) {
-	case *ucore.PayloadRegisterAsset:
-		if pld.Asset.Precision < ucore.MinPrecision || pld.Asset.Precision > ucore.MaxPrecision {
+	case *types.PayloadRegisterAsset:
+		if pld.Asset.Precision < types.MinPrecision || pld.Asset.Precision > types.MaxPrecision {
 			return errors.New("[ID CheckTransactionPayload] Invalide asset Precision.")
 		}
-		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision, ucore.MaxPrecision) {
+		if !checkAmountPrecise(pld.Amount, pld.Asset.Precision, types.MaxPrecision) {
 			return errors.New("[ID CheckTransactionPayload] Invalide asset value,out of precise.")
 		}
-	case *ucore.PayloadTransferAsset:
-	case *ucore.PayloadRecord:
-	case *ucore.PayloadCoinBase:
-	case *ucore.PayloadRechargeToSideChain:
-	case *ucore.PayloadTransferCrossChainAsset:
+	case *types.PayloadTransferAsset:
+	case *types.PayloadRecord:
+	case *types.PayloadCoinBase:
+	case *types.PayloadRechargeToSideChain:
+	case *types.PayloadTransferCrossChainAsset:
 	case *core.PayloadRegisterIdentification:
 	default:
 		return errors.New("[ID CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
@@ -58,7 +58,7 @@ func checkAmountPrecise(amount common.Fixed64, precision byte, assetPrecision by
 	return amount.IntValue()%int64(math.Pow10(int(assetPrecision-precision))) == 0
 }
 
-func (v *validator) checkTransactionOutput(txn *ucore.Transaction) error {
+func (v *validator) checkTransactionOutput(txn *types.Transaction) error {
 	if txn.IsCoinBaseTx() {
 		if len(txn.Outputs) < 2 {
 			return errors.New("[checkTransactionOutput] coinbase output is not enough, at least 2")
@@ -89,7 +89,7 @@ func (v *validator) checkTransactionOutput(txn *ucore.Transaction) error {
 	// check if output address is valid
 	for _, output := range txn.Outputs {
 		if output.AssetID != v.systemAssetID {
-		return errors.New("[checkTransactionOutput] asset ID in output is invalid")
+			return errors.New("[checkTransactionOutput] asset ID in output is invalid")
 		}
 
 		if !checkOutputProgramHash(output.ProgramHash) {
@@ -113,7 +113,7 @@ func checkOutputProgramHash(programHash common.Uint168) bool {
 	return false
 }
 
-func (v *validator) checkTransactionSignature(txn *ucore.Transaction) error {
+func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 	if txn.IsRechargeToSideChainTx() {
 		if err := v.spvService.VerifyTransaction(txn); err != nil {
 			return errors.New("[ID checkTransactionSignature] Invalide recharge to side chain tx: " + err.Error())

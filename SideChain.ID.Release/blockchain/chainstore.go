@@ -6,44 +6,43 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	ucore "github.com/elastos/Elastos.ELA.SideChain/core"
+	"github.com/elastos/Elastos.ELA.SideChain/database"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type IDChainStore struct {
-	blockchain.ChainStore
+	*blockchain.ChainStore
 }
 
-func NewChainStore(genesisBlock *ucore.Block) (blockchain.IChainStore, error) {
+func NewChainStore(genesisBlock *types.Block) (*IDChainStore, error) {
 	chainStore, err := blockchain.NewChainStore(genesisBlock)
 	if err != nil {
 		return nil, err
 	}
 
 	store := &IDChainStore{
-		ChainStore: *chainStore,
+		ChainStore: chainStore,
 	}
 
 	store.RegisterFunctions(true, blockchain.StoreFuncNames.PersistTransactions, store.persistTransactions)
 
-	go store.TaskHandler()
-
 	return store, nil
 }
 
-func (c *IDChainStore) persistTransactions(batch blockchain.IBatch, b *ucore.Block) error {
+func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block) error {
 	for _, txn := range b.Transactions {
 		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
 		}
-		if txn.TxType == ucore.RegisterAsset {
-			regPayload := txn.Payload.(*ucore.PayloadRegisterAsset)
+		if txn.TxType == types.RegisterAsset {
+			regPayload := txn.Payload.(*types.PayloadRegisterAsset)
 			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
-		if txn.TxType == ucore.RechargeToSideChain {
-			rechargePayload := txn.Payload.(*ucore.PayloadRechargeToSideChain)
+		if txn.TxType == types.RechargeToSideChain {
+			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			hash, err := rechargePayload.GetMainchainTxHash()
 			if err != nil {
 				return err
@@ -63,7 +62,7 @@ func (c *IDChainStore) persistTransactions(batch blockchain.IBatch, b *ucore.Blo
 	return nil
 }
 
-func (c *IDChainStore) PersistRegisterIdentificationTx(batch blockchain.IBatch, idKey []byte, txHash Uint256) {
+func (c *IDChainStore) PersistRegisterIdentificationTx(batch database.Batch, idKey []byte, txHash Uint256) {
 	key := []byte{byte(blockchain.IX_Identification)}
 	key = append(key, idKey...)
 

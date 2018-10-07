@@ -6,15 +6,23 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/core"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
+	"github.com/elastos/Elastos.ELA.SideChain/pact"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
+	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	p2pserver "github.com/elastos/Elastos.ELA.Utility/p2p/server"
+	p2psvr "github.com/elastos/Elastos.ELA.Utility/p2p/server"
+)
+
+const (
+	// defaultServices describes the default services that are supported by
+	// the server.
+	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom |
+		pact.SFOpenService
 )
 
 // relayMsg packages an inventory vector along with the newly discovered
@@ -27,16 +35,16 @@ type relayMsg struct {
 // server provides a server for handling communications to and from
 // peers.
 type server struct {
-	p2pserver.IServer
+	p2psvr.IServer
 	syncManager *netsync.SyncManager
 	chain       *blockchain.BlockChain
 	txMemPool   *mempool.TxPool
 
-	newPeers  chan p2pserver.IPeer
-	donePeers chan p2pserver.IPeer
+	newPeers  chan p2psvr.IPeer
+	donePeers chan p2psvr.IPeer
 	relayInv  chan relayMsg
 	quit      chan struct{}
-	services  p2p.ServiceFlag
+	services  pact.ServiceFlag
 }
 
 // serverPeer extends the peer to maintain state shared by the server and
@@ -73,7 +81,7 @@ func newServerPeer(s *server) *serverPeer {
 func (sp *serverPeer) OnMemPool(_ *peer.Peer, _ *msg.MemPool) {
 	// Only allow mempool requests if the server has bloom filtering
 	// enabled.
-	if sp.server.services&p2p.SFNodeBloom != p2p.SFNodeBloom {
+	if sp.server.services&pact.SFNodeBloom != pact.SFNodeBloom {
 		srvrlog.Debugf("peer %v sent mempool request with bloom "+
 			"filtering disabled -- disconnecting", sp)
 		sp.Disconnect()
@@ -122,7 +130,7 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 	// Add the transaction to the known inventory for the peer.
 	// Convert the raw MsgTx to a btcutil.Tx which provides some convenience
 	// methods and things such as hash caching.
-	tx := msgTx.Serializable.(*core.Transaction)
+	tx := msgTx.Serializable.(*types.Transaction)
 	txId := tx.Hash()
 	iv := msg.NewInvVect(msg.InvTypeTx, &txId)
 	sp.AddKnownInventory(iv)
@@ -139,7 +147,7 @@ func (sp *serverPeer) OnTx(_ *peer.Peer, msgTx *msg.Tx) {
 // OnBlock is invoked when a peer receives a block message.  It
 // blocks until the block has been fully processed.
 func (sp *serverPeer) OnBlock(_ *peer.Peer, msgBlock *msg.Block) {
-	block := msgBlock.Serializable.(*core.Block)
+	block := msgBlock.Serializable.(*types.Block)
 
 	// Add the block to the known inventory for the peer.
 	blockHash := block.Hash()
@@ -296,7 +304,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 // version  that is high enough to observe the bloom filter service support bit,
 // it will be banned since it is intentionally violating the protocol.
 func (sp *serverPeer) enforceNodeBloomFlag(cmd string) bool {
-	if sp.server.services&p2p.SFNodeBloom != p2p.SFNodeBloom {
+	if sp.server.services&pact.SFNodeBloom != pact.SFNodeBloom {
 		// Disconnect the peer regardless of protocol version or banning
 		// state.
 		srvrlog.Debugf("%s sent an unsupported %s request -- "+
@@ -513,7 +521,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 
 // handleRelayInvMsg deals with relaying inventory to peers that are not already
 // known to have it.  It is invoked from the peerHandler goroutine.
-func (s *server) handleRelayInvMsg(peers map[p2pserver.IPeer]*serverPeer, rmsg relayMsg) {
+func (s *server) handleRelayInvMsg(peers map[p2psvr.IPeer]*serverPeer, rmsg relayMsg) {
 	for _, sp := range peers {
 		if !sp.Connected() {
 			continue
@@ -526,7 +534,7 @@ func (s *server) handleRelayInvMsg(peers map[p2pserver.IPeer]*serverPeer, rmsg r
 				continue
 			}
 
-			tx, ok := rmsg.data.(*core.Transaction)
+			tx, ok := rmsg.data.(*types.Transaction)
 			if !ok {
 				srvrlog.Warnf("Underlying data for tx inv "+
 					"relay is not a *core.Transaction: %T",
@@ -563,7 +571,7 @@ func (s *server) peerHandler() {
 
 	srvrlog.Tracef("Starting peer handler")
 
-	peers := make(map[p2pserver.IPeer]*serverPeer)
+	peers := make(map[p2psvr.IPeer]*serverPeer)
 
 out:
 	for {
@@ -626,12 +634,12 @@ cleanup:
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
-func (s *server) NewPeer(p p2pserver.IPeer) {
+func (s *server) NewPeer(p p2psvr.IPeer) {
 	s.newPeers <- p
 }
 
 // DonePeer removes a peer that has already been connected to the server by ip.
-func (s *server) DonePeer(p p2pserver.IPeer) {
+func (s *server) DonePeer(p p2psvr.IPeer) {
 	s.donePeers <- p
 }
 
@@ -666,13 +674,14 @@ func (s *server) Stop() error {
 // connections from peers.
 func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
 	params := config.Parameters
-	services := p2p.SFNodeNetwork
-	if params.PeerBloomFilters {
-		services |= p2p.SFNodeBloom
+	services := defaultServices
+	if !params.PeerBloomFilters {
+		services &^= pact.SFNodeBloom
 	}
 
-	p2pServerCfg := p2pserver.NewDefaultConfig(
+	cfg := p2psvr.NewDefaultConfig(
 		params.Magic,
+		uint64(services),
 		params.NodePort,
 		params.SeedList,
 		[]string{fmt.Sprint("127.0.0.1:", params.NodePort)},
@@ -683,16 +692,18 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 	s := server{
 		chain:     chain,
 		txMemPool: txPool,
-		newPeers:  make(chan p2pserver.IPeer, p2pServerCfg.MaxPeers),
-		donePeers: make(chan p2pserver.IPeer, p2pServerCfg.MaxPeers),
-		relayInv:  make(chan relayMsg, p2pServerCfg.MaxPeers),
+		newPeers:  make(chan p2psvr.IPeer, cfg.MaxPeers),
+		donePeers: make(chan p2psvr.IPeer, cfg.MaxPeers),
+		relayInv:  make(chan relayMsg, cfg.MaxPeers),
 		quit:      make(chan struct{}),
 		services:  services,
 	}
-	p2pServerCfg.OnNewPeer = s.NewPeer
-	p2pServerCfg.OnDonePeer = s.DonePeer
+	cfg.OnNewPeer = s.NewPeer
+	cfg.OnDonePeer = s.DonePeer
 
-	p2pServer, err := p2pserver.NewServer(p2pServerCfg)
+	srvrlog.Infof("listen addrs %v", cfg.ListenAddrs)
+
+	p2pServer, err := p2psvr.NewServer(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -702,7 +713,7 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 		PeerNotifier: &s,
 		Chain:        s.chain,
 		TxMemPool:    s.txMemPool,
-		MaxPeers:     p2pServerCfg.MaxPeers,
+		MaxPeers:     cfg.MaxPeers,
 	})
 
 	return &s, nil
@@ -715,13 +726,13 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = &msg.MemPool{}
 
 	case p2p.CmdTx:
-		message = msg.NewTx(&core.Transaction{})
+		message = msg.NewTx(&types.Transaction{})
 
 	case p2p.CmdBlock:
-		message = msg.NewBlock(&core.Block{})
+		message = msg.NewBlock(&types.Block{})
 
 	case p2p.CmdInv:
-		message = &msg.Inventory{}
+		message = &msg.Inv{}
 
 	case p2p.CmdNotFound:
 		message = &msg.NotFound{}
