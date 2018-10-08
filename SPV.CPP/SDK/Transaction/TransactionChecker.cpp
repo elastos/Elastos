@@ -36,26 +36,17 @@ namespace Elastos {
 		bool TransactionChecker::checkTransactionOutput(const TransactionPtr &transaction) {
 
 			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
-			size_t size = outputs.size();
-			if (size < 1) {
-				return false;
-			}
+			ParamChecker::checkCondition(outputs.size() < 1, Error::Transaction, "Tx without output");
 
 			bool hasChange = false;
 			bool hasOutput = false;
 			std::string toAddress = outputs[0]->getAddress();
-			int toAddressCount = 0;
 
 			std::vector<std::string> addresses = _wallet->getAllAddresses();
-			for (size_t i = 0; i < size; ++i) {
+			for (size_t i = 0; i < outputs.size(); ++i) {
 				TransactionOutput *output = outputs[i];
-				if (!Address::UInt168IsValid(output->getProgramHash())) {
-					Log::error("output's program hash is not valid");
-					return false;
-				}
-				if (output->getAddress() == toAddress) {
-					toAddressCount++;
-				}
+				ParamChecker::checkCondition(!Address::UInt168IsValid(output->getProgramHash()),
+											 Error::Transaction, "Tx output's program hash is not valid");
 				if (std::find(addresses.begin(), addresses.end(), output->getAddress()) != addresses.end()) {
 //					if (hasChange) //should have only one change output per tx
 //						return false;
@@ -69,10 +60,6 @@ namespace Elastos {
 //					}
 					hasOutput = true;
 				}
-			}
-
-			if (toAddressCount > 1) {
-				return false;
 			}
 
 			if (hasChange)
