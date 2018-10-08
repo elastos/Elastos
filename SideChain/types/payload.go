@@ -12,8 +12,6 @@ const (
 
 //Payload define the func for loading the payload data
 //base on payload type which have different struture
-var PayloadHelper *PayloadBase
-
 type Payload interface {
 	//  Get payload data
 	Data(version byte) []byte
@@ -24,20 +22,7 @@ type Payload interface {
 	Deserialize(r io.Reader, version byte) error
 }
 
-type PayloadBase struct {
-	GetPayload func(txType TransactionType) (Payload, error)
-}
-
-func InitPayloadCreater() {
-	PayloadHelper = &PayloadBase{}
-	PayloadHelper.Init()
-}
-
-func (pb *PayloadBase) Init() {
-	pb.GetPayload = pb.getPayload
-}
-
-func (pb *PayloadBase) getPayload(txType TransactionType) (Payload, error) {
+var GetPayloadByType = func(txType TransactionType) (Payload, error) {
 	var p Payload
 	switch txType {
 	case CoinBase:
