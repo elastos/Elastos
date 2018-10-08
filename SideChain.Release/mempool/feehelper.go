@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type FeeHelper struct {
@@ -36,7 +37,7 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 
 	if tx.IsRechargeToSideChainTx() {
 		depositPayload := tx.Payload.(*types.PayloadRechargeToSideChain)
-		mainChainTransaction := new(types.Transaction)
+		mainChainTransaction := new(core.Transaction)
 		reader := bytes.NewReader(depositPayload.MainChainTransaction)
 		if err := mainChainTransaction.Deserialize(reader); err != nil {
 			return nil, errors.New("GetTxFeeMap mainChainTransaction deserialize failed")

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/elastos/Elastos.ELA.SideChain/vm/interfaces"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
@@ -46,7 +47,7 @@ func (tx *Transaction) String() string {
 	hash := tx.Hash()
 	return fmt.Sprint("Transaction: {\n\t",
 		"Hash: ", hash.String(), "\n\t",
-		"TxType: ", TransactionHelper.Name(tx.TxType), "\n\t",
+		"TxType: ", Name(tx.TxType), "\n\t",
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
 		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
 		"Attributes: ", tx.Attributes, "\n\t",
@@ -113,7 +114,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 		return errors.New("Transaction item Outputs length serialization failed.")
 	}
 	for _, output := range tx.Outputs {
-		if err := OutputHelper.Serialize(output, w); err != nil {
+		if err := output.Serialize(w); err != nil {
 			return err
 		}
 	}
@@ -163,7 +164,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	tx.Payload, err = PayloadHelper.GetPayload(tx.TxType)
+	tx.Payload, err = GetPayloadByType(tx.TxType)
 	if err != nil {
 		return err
 	}
@@ -211,7 +212,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	if Len > uint64(0) {
 		for i := uint64(0); i < Len; i++ {
 			output := new(Output)
-			err = OutputHelper.Deserialize(output, r)
+			err = output.Deserialize(r)
 			if err != nil {
 				return err
 			}
@@ -276,8 +277,31 @@ func (tx *Transaction) GetData() []byte {
 	return buf.Bytes()
 }
 
-func init() {
-	InitPayloadCreater()
-	InitTransactionHelper()
-	InitOutputHelper()
+var Name = func(txType TransactionType) string {
+	switch txType {
+	case CoinBase:
+		return "CoinBase"
+	case RegisterAsset:
+		return "RegisterAsset"
+	case TransferAsset:
+		return "TransferAsset"
+	case Record:
+		return "Record"
+	case Deploy:
+		return "Deploy"
+	case SideChainPow:
+		return "SideChainPow"
+	case RechargeToSideChain:
+		return "RechargeToSideChain"
+	case WithdrawFromSideChain:
+		return "WithdrawFromSideChain"
+	case TransferCrossChainAsset:
+		return "TransferCrossChainAsset"
+	default:
+		return "Unknown"
+	}
+}
+
+var GetDataContainer = func(programHash *Uint168, tx *Transaction) interfaces.IDataContainer {
+	return tx
 }

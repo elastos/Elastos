@@ -13,7 +13,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
-	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 )
@@ -36,11 +35,6 @@ func init() {
 
 func main() {
 	eladlog.Info("Node version: ", config.Version)
-
-	types.InitPayloadCreater()
-	types.InitTransactionHelper()
-	types.InitOutputHelper()
-
 	params := config.Parameters
 
 	foundation, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
@@ -116,16 +110,19 @@ func main() {
 	eladlog.Info("4. --Initialize pow service")
 	powParam := params.PowConfiguration
 	powCfg := pow.Config{
-		Foundation:    *foundation,
-		MinerAddr:     powParam.PayToAddr,
-		MinerInfo:     powParam.MinerInfo,
-		LimitBits:     params.ChainParam.PowLimitBits,
-		MaxBlockSize:  params.MaxBlockSize,
-		MaxTxPerBlock: params.MaxTxInBlock,
-		Server:        server,
-		Chain:         chain,
-		TxMemPool:     txPool,
-		TxFeeHelper:   txFeeHelper,
+		Foundation:                *foundation,
+		MinerAddr:                 powParam.PayToAddr,
+		MinerInfo:                 powParam.MinerInfo,
+		LimitBits:                 params.ChainParam.PowLimitBits,
+		MaxBlockSize:              params.MaxBlockSize,
+		MaxTxPerBlock:             params.MaxTxInBlock,
+		Server:                    server,
+		Chain:                     chain,
+		TxMemPool:                 txPool,
+		TxFeeHelper:               txFeeHelper,
+		CreateCoinBaseTx:          pow.CreateCoinBaseTx,
+		GenerateBlock:             pow.GenerateBlock,
+		GenerateBlockTransactions: pow.GenerateBlockTransactions,
 	}
 
 	powService := pow.NewService(&powCfg)
@@ -136,11 +133,17 @@ func main() {
 
 	eladlog.Info("5. --Start the Http services")
 	service := servers.NewHttpService(&servers.Config{
-		Logger:     elalog,
-		Server:     server,
-		Chain:      chain,
-		TxMemPool:  txPool,
-		PowService: powService,
+		Logger:                      elalog,
+		Server:                      server,
+		Chain:                       chain,
+		TxMemPool:                   txPool,
+		PowService:                  powService,
+		GetBlockInfo:                servers.GetBlockInfo,
+		GetTransactionInfo:          servers.GetTransactionInfo,
+		GetTransactionInfoFromBytes: servers.GetTransactionInfoFromBytes,
+		GetTransaction:              servers.GetTransaction,
+		GetPayloadInfo:              servers.GetPayloadInfo,
+		GetPayload:                  servers.GetPayload,
 	})
 	startHttpJsonRpc(params.HttpJsonPort, service)
 	startHttpRESTful(params.HttpRestPort, params.RestCertPath,

@@ -687,7 +687,7 @@ func RunPrograms(tx *types.Transaction, hashes []common.Uint168, programs []*typ
 			return errors.New("The data hashes is different with corresponding program code.")
 		}
 		//execute program on VM
-		se := vm.NewExecutionEngine(types.TransactionHelper.GetDataContainer(programHash, tx),
+		se := vm.NewExecutionEngine(types.GetDataContainer(programHash, tx),
 			new(vm.CryptoECDsa), vm.MAXSTEPS, nil, nil)
 		se.LoadScript(programs[i].Code, false)
 		se.LoadScript(programs[i].Parameter, true)
