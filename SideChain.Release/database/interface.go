@@ -1,6 +1,6 @@
-package blockchain
+package database
 
-type IIterator interface {
+type Iterator interface {
 	Next() bool
 	Prev() bool
 	First() bool
@@ -11,18 +11,18 @@ type IIterator interface {
 	Release()
 }
 
-type IBatch interface {
+type Batch interface {
 	Put(key []byte, value []byte) error
 	Delete(key []byte) error
 	Commit() error
 	Rollback() error
 }
 
-type IStore interface {
+type Database interface {
 	Put(key []byte, value []byte) error
 	Get(key []byte) ([]byte, error)
 	Delete(key []byte) error
-	NewBatch() IBatch
-	NewIterator(prefix []byte) IIterator
+	NewBatch() Batch
+	NewIterator(prefix []byte) Iterator
 	Close() error
 }

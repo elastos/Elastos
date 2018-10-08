@@ -31,7 +31,7 @@ var (
 
 type Config struct {
 	FoundationAddress Uint168
-	ChainStore        IChainStore
+	ChainStore        *ChainStore
 	AssetId           Uint256
 	PowLimit          *big.Int
 	MaxOrphanBlocks   int
@@ -42,7 +42,7 @@ type Config struct {
 }
 
 type BlockChain struct {
-	db              IChainStore
+	db              *ChainStore
 	maxOrphanBlocks int
 	minMemoryNodes  uint32
 	powLimit        *big.Int
@@ -247,11 +247,6 @@ func (b *BlockChain) GetBlockByHash(hash Uint256) (*types.Block, error) {
 	return bk, nil
 }
 
-//BlockInLedger checks if the block existed in ledger
-func (b *BlockChain) BlockInLedger(hash Uint256) bool {
-	return b.db.IsBlockInStore(hash)
-}
-
 func (b *BlockChain) IsDuplicateTx(txId Uint256) bool {
 	return b.db.IsDuplicateTx(txId)
 }
@@ -269,11 +264,11 @@ func (b *BlockChain) GetTxReference(tx *types.Transaction) (map[*types.Input]*ty
 	return b.db.GetTxReference(tx)
 }
 
-func (b *BlockChain) GetAssetUnspents(programHash Uint168, assetid Uint256) ([]*UTXO, error) {
+func (b *BlockChain) GetAssetUnspents(programHash Uint168, assetid Uint256) ([]*types.UTXO, error) {
 	return b.db.GetAssetUnspents(programHash, assetid)
 }
 
-func (b *BlockChain) GetUnspents(programHash Uint168) (map[Uint256][]*UTXO, error) {
+func (b *BlockChain) GetUnspents(programHash Uint168) (map[Uint256][]*types.UTXO, error) {
 	return b.db.GetUnspents(programHash)
 }
 
@@ -897,7 +892,7 @@ func (b *BlockChain) BlockExists(hash *Uint256) (bool, error) {
 	}
 
 	// Check in database (rest of main chain not in memory).
-	return b.BlockInLedger(*hash), nil
+	return b.db.IsBlockInStore(hash), nil
 }
 
 func (b *BlockChain) maybeAcceptBlock(block *types.Block) (bool, error) {

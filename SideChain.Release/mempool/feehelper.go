@@ -3,6 +3,7 @@ package mempool
 import (
 	"bytes"
 	"errors"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -11,12 +12,12 @@ import (
 
 type FeeHelper struct {
 	exchangeRate float64
-	getReference GetReference
+	chainStore *blockchain.ChainStore
 }
 
 func NewFeeHelper(cfg *Config) *FeeHelper {
 	return &FeeHelper{
-		getReference: cfg.ChainStore.GetTxReference,
+		chainStore: cfg.ChainStore,
 		exchangeRate: cfg.ExchangeRage,
 	}
 }
@@ -65,7 +66,7 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 		return feeMap, nil
 	}
 
-	reference, err := h.getReference(tx)
+	reference, err := h.chainStore.GetTxReference(tx)
 	if err != nil {
 		return nil, err
 	}

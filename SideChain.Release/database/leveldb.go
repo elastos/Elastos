@@ -1,4 +1,4 @@
-package blockchain
+package database
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
@@ -12,8 +12,8 @@ import (
 // too small will lead to high false positive rate.
 const BITSPERKEY = 10
 
-// Ensure LevelDB implements IStore interface.
-var _ IStore = (*LevelDB)(nil)
+// Ensure LevelDB implements Database interface.
+var _ Database = (*LevelDB)(nil)
 
 type LevelDB struct {
 	db *leveldb.DB // LevelDB instance
@@ -41,32 +41,31 @@ func NewLevelDB(file string) (*LevelDB, error) {
 	}, nil
 }
 
-func (db *LevelDB) Put(key []byte, value []byte) error {
-	return db.db.Put(key, value, nil)
+func (l *LevelDB) Put(key []byte, value []byte) error {
+	return l.db.Put(key, value, nil)
 }
 
-func (db *LevelDB) Get(key []byte) ([]byte, error) {
-	return db.db.Get(key, nil)
+func (l *LevelDB) Get(key []byte) ([]byte, error) {
+	return l.db.Get(key, nil)
 }
 
-func (db *LevelDB) Delete(key []byte) error {
-	return db.db.Delete(key, nil)
+func (l *LevelDB) Delete(key []byte) error {
+	return l.db.Delete(key, nil)
 }
 
-func (db *LevelDB) NewBatch() IBatch {
+func (l *LevelDB) NewBatch() Batch {
 	return &batch{
-		db:    db.db,
+		db:    l.db,
 		batch: new(leveldb.Batch),
 	}
 }
 
-func (db *LevelDB) NewIterator(prefix []byte) IIterator {
-	iter := db.db.NewIterator(util.BytesPrefix(prefix), nil)
-	return &Iterator{iter: iter}
+func (l *LevelDB) NewIterator(prefix []byte) Iterator {
+	return l.db.NewIterator(util.BytesPrefix(prefix), nil)
 }
 
-func (db *LevelDB) Close() error {
-	return db.db.Close()
+func (l *LevelDB) Close() error {
+	return l.db.Close()
 }
 
 type batch struct {

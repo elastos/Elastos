@@ -74,9 +74,9 @@ func main() {
 
 	mempoolCfg := mempool.Config{
 		FoundationAddress: *foundation,
-		AssetId:           genesisBlock.Transactions[0].Hash(),
+		AssetId:           chainCfg.AssetId,
 		ExchangeRage:      params.ExchangeRate,
-		ChainStore:        chainStore,
+		ChainStore:        chainCfg.ChainStore,
 	}
 
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
@@ -151,7 +151,7 @@ func main() {
 			NodePort:     params.NodePort,
 			HttpJsonPort: params.HttpJsonPort,
 			HttpRestPort: params.HttpRestPort,
-			DB:           chainStore,
+			Chain:        chain,
 			Server:       server,
 		}).Start()
 	}

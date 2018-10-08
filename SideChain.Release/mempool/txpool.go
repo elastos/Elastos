@@ -4,22 +4,20 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-type GetReference func(*types.Transaction) (map[*types.Input]*types.Output, error)
-
 type Config struct {
 	FoundationAddress Uint168
 	AssetId           Uint256
 	ExchangeRage      float64
-	ChainStore        blockchain.IChainStore
+	ChainStore        *blockchain.ChainStore
 	SpvService        *spv.Service
 	Validator         *Validator
 	FeeHelper         *FeeHelper
@@ -51,25 +49,25 @@ func New(cfg *Config) *TxPool {
 
 //append transaction to txnpool when check ok.
 //1.check  2.check with ledger(db) 3.check with pool
-func (p *TxPool) AppendToTxPool(txn *types.Transaction) error {
+func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 	//verify transaction with Concurrency
-	if err := p.validator.CheckTransactionSanity(txn); err != nil {
+	if err := p.validator.CheckTransactionSanity(tx); err != nil {
 		return err
 	}
-	if err := p.validator.CheckTransactionContext(txn); err != nil {
+	if err := p.validator.CheckTransactionContext(tx); err != nil {
 		return err
 	}
 	//verify transaction by p with lock
-	if err := p.VerifyTransactionWithTxnPool(txn); err != nil {
+	if err := p.VerifyTransactionWithTxnPool(tx); err != nil {
 		return err
 	}
 
-	txn.Fee = p.feeHelper.GetTxFee(txn, p.assetId)
+	tx.Fee = p.feeHelper.GetTxFee(tx, p.assetId)
 	buf := new(bytes.Buffer)
-	txn.Serialize(buf)
-	txn.FeePerKB = txn.Fee * 1000 / Fixed64(len(buf.Bytes()))
+	tx.Serialize(buf)
+	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))
 	//add the transaction to process scope
-	p.addToTxList(txn)
+	p.addToTxList(tx)
 	return nil
 }
 

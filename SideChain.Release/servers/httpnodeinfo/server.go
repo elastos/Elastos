@@ -16,7 +16,7 @@ type Config struct {
 	HttpRestPort uint16
 	HttpJsonPort uint16
 	NodePort     uint16
-	DB           blockchain.IChainStore
+	Chain        *blockchain.BlockChain
 	Server       server.IServer
 }
 
@@ -42,7 +42,7 @@ type infoserver struct {
 	nodePort  uint16
 	jsonPort  uint16
 	resetPort uint16
-	db        blockchain.IChainStore
+	chain     *blockchain.BlockChain
 	server    server.IServer
 }
 
@@ -58,7 +58,7 @@ func (s *infoserver) view(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageInfo := &Info{
-		BlockHeight:  s.db.GetHeight(),
+		BlockHeight:  s.chain.GetBestHeight(),
 		NeighborCnt:  len(peers),
 		Neighbors:    nodeInfos,
 		HttpRestPort: s.resetPort,
@@ -83,7 +83,7 @@ func New(cfg *Config) *infoserver {
 		nodePort:  cfg.NodePort,
 		jsonPort:  cfg.HttpJsonPort,
 		resetPort: cfg.HttpRestPort,
-		db:        cfg.DB,
+		chain:     cfg.Chain,
 		server:    cfg.Server,
 	}
 }
