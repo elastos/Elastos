@@ -207,7 +207,10 @@ namespace Elastos {
 		}
 
 		void SubWallet::balanceChanged(uint64_t balance) {
-			Log::getLogger()->info("balanceChanged: balance={}", balance);
+			std::for_each(_callbacks.begin(), _callbacks.end(),
+						  [&balance](ISubWalletCallback *callback) {
+							  callback->OnBalanceChanged(balance);
+						  });
 		}
 
 		void SubWallet::onTxAdded(const TransactionPtr &transaction) {
