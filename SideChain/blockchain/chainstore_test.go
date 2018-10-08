@@ -14,13 +14,13 @@ var mainchainTxHash common.Uint256
 
 func newTestChainStore() (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
-	st, err := NewLevelDB("Chain_UnitTest")
+	levelDB, err := NewLevelDB("Chain_UnitTest")
 	if err != nil {
 		return nil, err
 	}
 
 	store := &ChainStore{
-		IStore:             st,
+		Database:           levelDB,
 		headerIndex:        map[uint32]common.Uint256{},
 		headerCache:        map[common.Uint256]*types.Header{},
 		headerIdx:          list.New(),

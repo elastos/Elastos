@@ -29,7 +29,7 @@ type TxValidateAction struct {
 type Validator struct {
 	assetId               common.Uint256
 	foundation            common.Uint168
-	db                    blockchain.IChainStore
+	db                    *blockchain.ChainStore
 	txFeeHelper           *FeeHelper
 	spvService            *spv.Service
 	checkSanityFunctions  []*TxValidateAction
