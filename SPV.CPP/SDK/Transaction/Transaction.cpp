@@ -656,8 +656,10 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::calculateFee(uint64_t feePerKb) {
-			uint64_t size = ELATransactionSize(_transaction);
-			return  ((size + 999) / 1000) * feePerKb;
+			ByteStream stream;
+			Serialize(stream);
+			uint64_t size = stream.getBuffer().GetSize();
+			return ((size + 999) / 1000) * feePerKb;
 		}
 
 		uint64_t Transaction::getTxFee(const boost::shared_ptr<Wallet> &wallet) {
