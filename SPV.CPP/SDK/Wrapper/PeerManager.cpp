@@ -223,9 +223,7 @@ namespace Elastos {
 		}
 
 		double PeerManager::getSyncProgress(uint32_t startHeight) {
-			double progress = BRPeerManagerSyncProgress((BRPeerManager *) _manager, startHeight);
-			long stripProgress = (long)(progress * 100);
-			return (double)stripProgress / 100.0;
+			return BRPeerManagerSyncProgress((BRPeerManager *) _manager, startHeight);
 		}
 
 		void PeerManager::setFixedPeers(const SharedWrapperList<Peer, BRPeer *> &peers) {

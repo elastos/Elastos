@@ -396,7 +396,7 @@ namespace Elastos {
 			std::for_each(_callbacks.begin(), _callbacks.end(),
 						  [blockHeight, this](ISubWalletCallback *callback) {
 							  callback->OnBlockHeightIncreased(
-									  blockHeight, _walletManager->getPeerManager()->getSyncProgress(_syncStartHeight));
+									  blockHeight, (int)(_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) * 100));
 						  });
 		}
 
