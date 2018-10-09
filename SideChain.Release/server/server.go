@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"fmt"
@@ -82,7 +82,7 @@ func (sp *serverPeer) OnMemPool(_ *peer.Peer, _ *msg.MemPool) {
 	// Only allow mempool requests if the server has bloom filtering
 	// enabled.
 	if sp.server.services&pact.SFNodeBloom != pact.SFNodeBloom {
-		srvrlog.Debugf("peer %v sent mempool request with bloom "+
+		log.Debugf("peer %v sent mempool request with bloom "+
 			"filtering disabled -- disconnecting", sp)
 		sp.Disconnect()
 		return
@@ -182,7 +182,7 @@ func (sp *serverPeer) OnInv(_ *peer.Peer, msg *msg.Inv) {
 // OnNotFound is invoked when a peer receives an notfounc message.
 // A peer should not response a notfound message so we just disconnect it.
 func (sp *serverPeer) OnNotFound(_ *peer.Peer, msg *msg.NotFound) {
-	srvrlog.Debugf("%s sent us notfound message --  disconnecting", sp)
+	log.Debugf("%s sent us notfound message --  disconnecting", sp)
 	sp.AddBanScore(100, 0, msg.CMD())
 	sp.Disconnect()
 }
@@ -228,7 +228,7 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 		case msg.InvTypeFilteredBlock:
 			err = sp.server.pushMerkleBlockMsg(sp, &iv.Hash, c, waitChan)
 		default:
-			srvrlog.Warnf("Unknown type in inventory request %d", iv.Type)
+			log.Warnf("Unknown type in inventory request %d", iv.Type)
 			continue
 		}
 		if err != nil {
@@ -307,7 +307,7 @@ func (sp *serverPeer) enforceNodeBloomFlag(cmd string) bool {
 	if sp.server.services&pact.SFNodeBloom != pact.SFNodeBloom {
 		// Disconnect the peer regardless of protocol version or banning
 		// state.
-		srvrlog.Debugf("%s sent an unsupported %s request -- "+
+		log.Debugf("%s sent an unsupported %s request -- "+
 			"disconnecting", sp, cmd)
 		sp.AddBanScore(100, 0, cmd)
 		sp.Disconnect()
@@ -329,7 +329,7 @@ func (sp *serverPeer) OnFilterAdd(_ *peer.Peer, msg *msg.FilterAdd) {
 	}
 
 	if !sp.filter.IsLoaded() {
-		srvrlog.Debugf("%s sent a filteradd request with no filter "+
+		log.Debugf("%s sent a filteradd request with no filter "+
 			"loaded -- disconnecting", sp)
 		sp.Disconnect()
 		return
@@ -350,7 +350,7 @@ func (sp *serverPeer) OnFilterClear(_ *peer.Peer, msg *msg.FilterClear) {
 	}
 
 	if !sp.filter.IsLoaded() {
-		srvrlog.Debugf("%s sent a filterclear request with no "+
+		log.Debugf("%s sent a filterclear request with no "+
 			"filter loaded -- disconnecting", sp)
 		sp.Disconnect()
 		return
@@ -378,7 +378,7 @@ func (sp *serverPeer) OnFilterLoad(_ *peer.Peer, msg *msg.FilterLoad) {
 
 // OnReject is invoked when a peer receives a reject message.
 func (sp *serverPeer) OnReject(_ *peer.Peer, msg *msg.Reject) {
-	srvrlog.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
+	log.Infof("%s sent a reject message Code: %s, Hash %s, Reason: %s",
 		sp, msg.Code.String(), msg.Hash.String(), msg.Reason)
 }
 
@@ -393,7 +393,7 @@ func (s *server) pushTxMsg(sp *serverPeer, hash *common.Uint256, doneChan chan<-
 	tx := s.txMemPool.GetTransaction(*hash)
 	if tx == nil {
 		err := fmt.Errorf("unable to fetch tx %v from transaction pool", hash)
-		srvrlog.Trace(err.Error())
+		log.Trace(err.Error())
 
 		if doneChan != nil {
 			doneChan <- struct{}{}
@@ -419,7 +419,7 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	// Fetch the block from the database.
 	block, err := s.chain.GetBlockByHash(*hash)
 	if err != nil {
-		srvrlog.Tracef("Unable to fetch requested block hash %v: %v",
+		log.Tracef("Unable to fetch requested block hash %v: %v",
 			hash, err)
 
 		if doneChan != nil {
@@ -477,7 +477,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 	// Fetch the block from the database.
 	blk, err := s.chain.GetBlockByHash(*hash)
 	if err != nil {
-		srvrlog.Tracef("Unable to fetch requested block hash %v: %v",
+		log.Tracef("Unable to fetch requested block hash %v: %v",
 			hash, err)
 
 		if doneChan != nil {
@@ -536,7 +536,7 @@ func (s *server) handleRelayInvMsg(peers map[p2psvr.IPeer]*serverPeer, rmsg rela
 
 			tx, ok := rmsg.data.(*types.Transaction)
 			if !ok {
-				srvrlog.Warnf("Underlying data for tx inv "+
+				log.Warnf("Underlying data for tx inv "+
 					"relay is not a *core.Transaction: %T",
 					rmsg.data)
 				return
@@ -569,7 +569,7 @@ func (s *server) peerHandler() {
 	// in this handler.
 	s.syncManager.Start()
 
-	srvrlog.Tracef("Starting peer handler")
+	log.Tracef("Starting peer handler")
 
 	peers := make(map[p2psvr.IPeer]*serverPeer)
 
@@ -600,7 +600,7 @@ out:
 		case p := <-s.donePeers:
 			sp, ok := peers[p]
 			if !ok {
-				srvrlog.Errorf("unknown done peer %v", p)
+				log.Errorf("unknown done peer %v", p)
 				continue
 			}
 
@@ -630,7 +630,7 @@ cleanup:
 			break cleanup
 		}
 	}
-	srvrlog.Tracef("Peer handler done")
+	log.Tracef("Peer handler done")
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
@@ -651,7 +651,7 @@ func (s *server) RelayInventory(invVect *msg.InvVect, data interface{}) {
 
 // Start begins accepting connections from peers.
 func (s *server) Start() {
-	srvrlog.Trace("Starting server")
+	log.Trace("Starting server")
 
 	s.IServer.Start()
 
@@ -661,7 +661,7 @@ func (s *server) Start() {
 // Stop gracefully shuts down the server by stopping and disconnecting all
 // peers and the main listener.
 func (s *server) Stop() error {
-	srvrlog.Warnf("Server shutting down")
+	log.Warnf("Server shutting down")
 
 	s.IServer.Stop()
 	// Signal the remaining goroutines to quit.
@@ -672,7 +672,7 @@ func (s *server) Stop() error {
 // newServer returns a new btcd server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
+func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
 	params := config.Parameters
 	services := defaultServices
 	if !params.PeerBloomFilters {
@@ -701,7 +701,7 @@ func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, e
 	cfg.OnNewPeer = s.NewPeer
 	cfg.OnDonePeer = s.DonePeer
 
-	srvrlog.Infof("listen addrs %v", cfg.ListenAddrs)
+	log.Infof("listen addrs %v", cfg.ListenAddrs)
 
 	p2pServer, err := p2psvr.NewServer(cfg)
 	if err != nil {
