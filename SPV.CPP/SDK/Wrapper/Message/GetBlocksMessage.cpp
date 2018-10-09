@@ -13,7 +13,7 @@ namespace Elastos {
 
 		}
 
-		bool GetBlocksMessage::Accept(const std::string &msg) {
+		bool GetBlocksMessage::Accept(const CMBlock &msg) {
 			return false;
 		}
 
@@ -36,7 +36,6 @@ namespace Elastos {
 			off += sizeof(UInt256);
 
 			if (getBlocksParameter.locators.size() > 0) {
-				//fixme [refactor]
 //				peer_dbg(peer, "calling getblocks with %zu locators: [%s,%s %s]",
 //						 locatorsCount,
 //						 Utils::UInt256ToString(locators[0]).c_str(),

@@ -24,27 +24,27 @@ namespace Elastos {
 
 		}
 
-		bool AddressMessage::Accept(const std::string &msg) {
-			Log::traceWithTime("AddressMessage.Accept");
+		bool AddressMessage::Accept(const CMBlock &msg) {
+			_peer->Pdebug("Accept address message");
 
 			size_t off = 0;
 			size_t count = UInt64GetLE(&msg[off]);
 			off += sizeof(uint64_t);
 
 			bool r = true;
-			if (off == 0 || off + count * 30 > msg.size()) {
-				_peer->Log("malformed addr message, length is {}, should be {} for {} address(es)", msg.length(),
+			if (off == 0 || off + count * 30 > msg.GetSize()) {
+				_peer->Perror("malformed addr message, length is {}, should be {} for {} address(es)", msg.GetSize(),
 						   BRVarIntSize(count) + 30*count, count);
 				r = false;
 			} else if (count > 1000) {
-				_peer->Log("dropping addr message, {} is too many addresses, max is 1000", count);
+				_peer->Perror("dropping addr message, {} is too many addresses, max is 1000", count);
 			} else if (_peer->sentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
 				std::vector<PeerPtr> peers;
 				peers.reserve(count);
 
 				time_t now = time(NULL);
 
-				_peer->Log("got addr with {} address(es)", count);
+				_peer->Pinfo("got addr with {} address(es)", count);
 
 				for (size_t i = 0; i < count; i++) {
 					uint64_t timestamp = UInt64GetLE(&msg[off]);
@@ -92,15 +92,16 @@ namespace Elastos {
 		}
 
 		void AddressMessage::Send(const SendMessageParameter &param) {
-			uint8_t msg[BRVarIntSize(0)];
-			size_t msgLen = BRVarIntSet(msg, sizeof(msg), 0);
+			CMBlock msg;
+			msg.Resize(BRVarIntSize(0));
+			BRVarIntSet(msg, msg.GetSize(), 0);
 
 			//TODO: send peer addresses we know about
-//			BRPeerSendMessage(peer, msg, msgLen, MSG_ADDR);
+//			SendMessage(msg, Type());
 		}
 
 		std::string AddressMessage::Type() const {
-			return std::string();
+			return MSG_ADDR;
 		}
 
 	}

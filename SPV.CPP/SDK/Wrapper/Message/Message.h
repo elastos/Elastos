@@ -27,7 +27,7 @@ namespace Elastos {
 
 			virtual ~Message();
 
-			virtual bool Accept(const std::string &msg) = 0;
+			virtual bool Accept(const CMBlock &msg) = 0;
 
 			virtual void Send(const SendMessageParameter &param) = 0;
 
@@ -62,7 +62,7 @@ namespace Elastos {
 
 			void FireThreadCleanup();
 
-			void SendMessage(const std::string &msg, const std::string &type);
+			void SendMessage(const CMBlock &msg, const std::string &type);
 
 		protected:
 			MessagePeerPtr _peer;

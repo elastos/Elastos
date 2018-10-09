@@ -15,7 +15,7 @@ namespace Elastos {
 		public:
 			AddressMessage(const MessagePeerPtr &peer);
 
-			virtual bool Accept(const std::string &msg);
+			virtual bool Accept(const CMBlock &msg);
 
 			virtual void Send(const SendMessageParameter &param);
 

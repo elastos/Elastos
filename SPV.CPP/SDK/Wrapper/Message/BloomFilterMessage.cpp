@@ -14,27 +14,12 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		namespace {
-
-			BRBloomFilter *BRBloomFilterCopy(BRBloomFilter *filter) {
-				BRBloomFilter *result = (BRBloomFilter *) calloc(1, sizeof(*filter));
-				result->length = filter->length;
-				result->tweak = filter->tweak;
-				result->hashFuncs = filter->hashFuncs;
-				result->flags = filter->flags;
-				result->elemCount = filter->elemCount;
-				result->filter = (uint8_t *) malloc(filter->length);
-				memcpy(result->filter, filter->filter, filter->length);
-				return result;
-			}
-		}
-
 		BloomFilterMessage::BloomFilterMessage(const MessagePeerPtr &peer) :
 			Message(peer) {
 
 		}
 
-		bool BloomFilterMessage::Accept(const std::string &msg) {
+		bool BloomFilterMessage::Accept(const CMBlock &msg) {
 			return false;
 		}
 
@@ -44,7 +29,7 @@ namespace Elastos {
 			bloomFilterParameter.Filter->Serialize(byteStream);
 			_peer->setSentFilter(true);
 			_peer->setSentMempool(false);
-			_peer->SendMessage(byteStream.getBuffer(), MSG_FILTERADD);
+			SendMessage(byteStream.getBuffer(), Type());
 		}
 
 		std::string BloomFilterMessage::Type() const {

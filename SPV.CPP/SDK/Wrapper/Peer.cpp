@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <boost/thread.hpp>
 #include <CMemBlock.h>
+#include <SDK/Common/Utils.h>
 
 #include "Peer.h"
 
@@ -122,10 +123,10 @@ namespace Elastos {
 				_status = Peer::Connecting;
 
 				if (0 && networkIsReachable()) { // delay until network is reachable
-					if (!_waitingForNetwork) Log::traceWithTime("waiting for network reachability");
+					if (!_waitingForNetwork) Pinfo("waiting for network reachability");
 					_waitingForNetwork = 1;
 				} else {
-					Log::traceWithTime("connecting");
+					Pinfo("connecting");
 					_waitingForNetwork = 0;
 					gettimeofday(&tv, NULL);
 					_disconnectTime = tv.tv_sec + (double) tv.tv_usec / 1000000 + CONNECT_TIMEOUT;
@@ -155,7 +156,7 @@ namespace Elastos {
 			if (socket >= 0) {
 				_socket = -1;
 				if (shutdown(socket, SHUT_RDWR) < 0) {
-					Log("peer shutdown error: {}", std::string(strerror(errno)));
+					Perror("peer shutdown error: {}", FormatError(errno));
 				}
 				close(socket);
 			}
@@ -164,9 +165,8 @@ namespace Elastos {
 		// sends a bitcoin protocol message to peer
 		void Peer::SendMessage(const CMBlock &message, const std::string &type) {
 			if (message.GetSize() > MAX_MSG_LENGTH) {
-				Log("failed to send {}, length {} is too long", type, message.GetSize());
+				Perror("failed to send {}, length {} is too long", type, message.GetSize());
 			} else {
-//				BRPeerContext *ctx = (BRPeerContext *)peer;
 				uint8_t buf[HEADER_LENGTH + message.GetSize()], hash[32];
 				size_t off = 0;
 				ssize_t n = 0;
@@ -183,7 +183,7 @@ namespace Elastos {
 				memcpy(&buf[off], hash, sizeof(uint32_t));
 				off += sizeof(uint32_t);
 				memcpy(&buf[off], message, message.GetSize());
-				Log("sending {}", type);
+				Pinfo("sending {}", type);
 
 				size_t msgLen = 0;
 				socket = _socket;
@@ -199,7 +199,7 @@ namespace Elastos {
 				}
 
 				if (error) {
-					Log("ERROR: sending {} message {}", type, std::string(strerror(error)));
+					Perror("ERROR: sending {} message {}", type, FormatError(error));
 					Disconnect();
 				}
 			}
@@ -257,7 +257,7 @@ namespace Elastos {
 
 		bool Peer::networkIsReachable() const {
 			//fixme [refactor]
-			return false;
+			return true;
 		}
 
 		bool Peer::isIPv4() const {
@@ -272,9 +272,8 @@ namespace Elastos {
 				struct timeval tv;
 				double time = 0, msgTimeout;
 				uint8_t header[HEADER_LENGTH];
-				std::string payload;
-				payload.resize(0x1000);
-				size_t len = 0, payloadLen = 0x1000;
+				CMBlock payload;
+				size_t len = 0;
 				ssize_t n = 0;
 
 				gettimeofday(&tv, NULL);
@@ -303,7 +302,7 @@ namespace Elastos {
 						if (!error && time >= _disconnectTime) error = ETIMEDOUT;
 
 						if (!error && time >= _mempoolTime) {
-							Log::traceWithTime("done waiting for mempool response");
+							Pinfo("done waiting for mempool response");
 							//fixme [refactor]
 //							manager->peerMessages->BRPeerSendPingMessage(peer, mempoolInfo,
 //																			   mempoolCallback);
@@ -321,9 +320,9 @@ namespace Elastos {
 
 					if (error) {
 						//fixme [refactor]
-//						Log::traceWithTime(peer, "read socket error: %s", strerror(error));
+						Perror("read socket error: {}", FormatError(error));
 					} else if (header[15] != 0) { // verify header type field is NULL terminated
-						Log::traceWithTime("malformed message header: type not NULL terminated");
+						Perror("malformed message header: type not NULL terminated");
 						error = EPROTO;
 					} else if (len == HEADER_LENGTH) {
 						std::string type = (const char *) (&header[4]);
@@ -332,22 +331,17 @@ namespace Elastos {
 						UInt256 hash;
 
 						if (msgLen > MAX_MSG_LENGTH) { // check message length
-							//fixme [refactor]
-//							peer_log(peer, "error reading %s, message length %"PRIu32" is too long", type, msgLen);
+							Perror("error reading {}, message length {} is too long", type, msgLen);
 							error = EPROTO;
 						} else {
-//                    peer_dbg(peer, "start read head: port %d", (int)port);
-							if (msgLen > payloadLen) {
-								payloadLen = msgLen;
-								payload.resize(payloadLen);
-							}
+							Pdebug("start read head: len = {}", msgLen);
+							payload.Resize(size_t(msgLen));
 							len = 0;
 							socket = _socket;
 							msgTimeout = time + MESSAGE_TIMEOUT;
 
 							while (socket >= 0 && !error && len < msgLen) {
 								n = read(socket, &payload[len], msgLen - len);
-								//peer_log(peer, "read socket n %ld", n);
 								if (n > 0) len += n;
 								if (n == 0)
 									error = ECONNRESET;
@@ -368,17 +362,14 @@ namespace Elastos {
 							}
 
 							if (error) {
-								//fixme [refactor]
-//								peer_log(peer, "read socket error: %s", strerror(error));
+								Perror("read socket error: {}", FormatError(error));
 							} else if (len == msgLen) {
-								BRSHA256_2(&hash, payload.data(), msgLen);
+								BRSHA256_2(&hash, payload, msgLen);
 
 								if (UInt32GetLE(&hash) != checksum) { // verify checksum
-									//fixme [refactor]
-//									peer_log(peer,
-//											 "error reading %s, invalid checksum %x, expected %x, payload length:%"PRIu32
-//													 ", SHA256_2:%s", type, UInt32GetLE(&hash), checksum, msgLen,
-//											 u256hex(hash));
+									Perror("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},"
+										   " SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
+											 Utils::UInt256ToString(hash));
 									error = EPROTO;
 								} else if (!acceptMessage(payload, type)) error = EPROTO;
 							}
@@ -391,7 +382,7 @@ namespace Elastos {
 			_socket = -1;
 			_status = Peer::Disconnected;
 			if (socket >= 0) close(socket);
-			Log::traceWithTime("disconnected");
+			Pinfo("disconnected");
 
 			//fixme [refactor]
 //			while (array_count(pongCallback) > 0) {
@@ -423,20 +414,19 @@ namespace Elastos {
 			//fixme [refactor]
 		}
 
-		bool Peer::acceptMessage(const std::string &msg, const std::string &type) {
+		bool Peer::acceptMessage(const CMBlock &msg, const std::string &type) {
 			bool r = false;
 
 			if (_currentBlock != nullptr && MSG_TX == type) { // if we receive a non-tx message, merkleblock is done
-				//fixme [refactor]
-//        peer_log(peer, "incomplete merkleblock %s, expected %zu more tx, got %s", u256hex(_currentBlock->blockHash),
-//                 array_count(_currentBlockTxHashes), type);
+				Perror("incomplete merkleblock {}, expected {} more tx, got {}",
+						 Utils::UInt256ToString(_currentBlock->getHash()),
+						 _currentBlockTxHashes.size(), type);
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();
 				r = 0;
 			} else if (_messages.find(type) != _messages.end())
 				r = _messages[type]->Accept(msg);
-			//fixme [refactor]
-//    else peer_log(peer, "dropping %s, length %zu, not implemented", type, msgLen);
+			else Perror("dropping {}, length {}, not implemented", type, msg.GetSize());
 
 			return r;
 		}
@@ -495,6 +485,10 @@ namespace Elastos {
 
 		void Peer::setSentGetblocks(bool sent) {
 			_sentGetblocks = sent;
+		}
+
+		std::string Peer::FormatError(int errnum) {
+			return std::string(strerror(errnum));
 		}
 
 		int Peer::openSocket(int domain, double timeout, int *error) {
@@ -559,12 +553,11 @@ namespace Elastos {
 					return openSocket(PF_INET, timeout, error); // fallback to IPv4
 				} else if (err) r = 0;
 
-				if (r) Log::traceWithTime("socket connected");
+				if (r) Pinfo("socket connected");
 				fcntl(_socket, F_SETFL, arg); // restore socket non-blocking status
 			}
 
-			//fixme [refactor]
-//			if (!r && err) peer_log(peer, "connect error: %s", strerror(err));
+			if (!r && err) Perror("connect error: {}", FormatError(err));
 			if (error && err) *error = err;
 			return r;
 		}

@@ -53,11 +53,6 @@ namespace Elastos {
 				_consoleLog->critical(msg);
 			}
 
-			template <class T>
-			static void traceWithTime(const T &msg) {
-				//fixme [refactor]
-			}
-
 			template<typename... Args>
 			static void log(spdlog::level::level_enum lvl, const char *msg){
 				_consoleLog->log(lvl, msg);

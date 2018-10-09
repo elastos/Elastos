@@ -86,8 +86,8 @@ namespace Elastos {
 				_peer->_listener->OnThreadCleanup();
 		}
 
-		void Message::SendMessage(const std::string &msg, const std::string &type) {
-			//fixme [refactor] move implement from BRPeerSendMessage
+		void Message::SendMessage(const CMBlock &msg, const std::string &type) {
+			_peer->SendMessage(msg, type);
 		}
 	}
 }

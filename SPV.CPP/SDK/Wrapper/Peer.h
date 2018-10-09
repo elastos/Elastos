@@ -106,18 +106,6 @@ namespace Elastos {
 
 			Peer &operator=(const Peer &peer);
 
-			template<typename Arg1, typename... Args>
-			inline void Log(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
-				std::string peerFmt = "{}:{} ";
-				peerFmt += fmt;
-				Log::getLogger()->info(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
-			}
-
-			template<typename T>
-			inline void Log(const T &msg) {
-				Log::getLogger()->info("{}:{} {}", getHost(), getPort(), msg);
-			}
-
 			void RegisterListner(Listener *listener);
 
 			void UnRegisterListener();
@@ -198,12 +186,86 @@ namespace Elastos {
 
 			bool isIPv4() const;
 
+			std::string FormatError(int errnum);
+
+			template<typename Arg1, typename... Args>
+			inline void Ptrace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				std::string peerFmt = "{}:{} ";
+				peerFmt += fmt;
+				Log::getLogger()->trace(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+			}
+
+			template<typename Arg1, typename... Args>
+			inline void Pdebug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				std::string peerFmt = "{}:{} ";
+				peerFmt += fmt;
+				Log::getLogger()->debug(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+			}
+
+			template<typename Arg1, typename... Args>
+			inline void Pinfo(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				std::string peerFmt = "{}:{} ";
+				peerFmt += fmt;
+				Log::getLogger()->info(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+			}
+
+			template<typename Arg1, typename... Args>
+			inline void Pwarn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				std::string peerFmt = "{}:{} ";
+				peerFmt += fmt;
+				Log::getLogger()->warn(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+			}
+
+			template<typename Arg1, typename... Args>
+			inline void Perror(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				std::string peerFmt = "{}:{} ";
+				peerFmt += fmt;
+				Log::getLogger()->error(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+			}
+
+			template<typename Arg1, typename... Args>
+			inline void Pcritical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
+				std::string peerFmt = "{}:{} ";
+				peerFmt += fmt;
+				Log::getLogger()->critical(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+			}
+
+			template<typename T>
+			inline void Ptrace(const T &msg) {
+				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+			}
+
+			template<typename T>
+			inline void Pdebug(const T &msg) {
+				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+			}
+
+			template<typename T>
+			inline void Pinfo(const T &msg) {
+				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+			}
+
+			template<typename T>
+			inline void Pwarn(const T &msg) {
+				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+			}
+
+			template<typename T>
+			inline void Perror(const T &msg) {
+				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+			}
+
+			template<typename T>
+			inline void Pcritical(const T &msg) {
+				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+			}
+
 		private:
 			void initDefaultMessages();
 
 			bool networkIsReachable() const;
 
-			bool acceptMessage(const std::string &msg, const std::string &type);
+			bool acceptMessage(const CMBlock &msg, const std::string &type);
 
 			int openSocket(int domain, double timeout, int *error);
 
