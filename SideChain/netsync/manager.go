@@ -206,12 +206,12 @@ func (sm *SyncManager) startSync() {
 func (sm *SyncManager) isSyncCandidate(peer *peer.Peer) bool {
 	// The peer is release_0.0.1 version and provide open service.
 	if peer.ProtocolVersion() == pact.Release001Version &&
-		peer.Services()&pact.OpenService == pact.OpenService {
+		peer.Services()&pact.SFOpenService == pact.SFOpenService {
 		return true
 	}
 
 	// The peer is not a candidate for sync if it's not a full node.
-	if peer.Services()&p2p.SFNodeNetwork != p2p.SFNodeNetwork {
+	if peer.Services()&pact.SFNodeNetwork != pact.SFNodeNetwork {
 		return false
 	}
 

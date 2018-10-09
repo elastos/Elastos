@@ -8,6 +8,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
+	"github.com/elastos/Elastos.ELA.SideChain/pact"
 	"github.com/elastos/Elastos.ELA.SideChain/peer"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -15,6 +16,13 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	p2psvr "github.com/elastos/Elastos.ELA.Utility/p2p/server"
+)
+
+const (
+	// defaultServices describes the default services that are supported by
+	// the server.
+	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom |
+		pact.SFOpenService
 )
 
 // relayMsg packages an inventory vector along with the newly discovered
@@ -36,7 +44,7 @@ type server struct {
 	donePeers chan p2psvr.IPeer
 	relayInv  chan relayMsg
 	quit      chan struct{}
-	services  p2p.ServiceFlag
+	services  pact.ServiceFlag
 }
 
 // serverPeer extends the peer to maintain state shared by the server and
@@ -73,7 +81,7 @@ func newServerPeer(s *server) *serverPeer {
 func (sp *serverPeer) OnMemPool(_ *peer.Peer, _ *msg.MemPool) {
 	// Only allow mempool requests if the server has bloom filtering
 	// enabled.
-	if sp.server.services&p2p.SFNodeBloom != p2p.SFNodeBloom {
+	if sp.server.services&pact.SFNodeBloom != pact.SFNodeBloom {
 		srvrlog.Debugf("peer %v sent mempool request with bloom "+
 			"filtering disabled -- disconnecting", sp)
 		sp.Disconnect()
@@ -296,7 +304,7 @@ func (sp *serverPeer) OnGetBlocks(_ *peer.Peer, m *msg.GetBlocks) {
 // version  that is high enough to observe the bloom filter service support bit,
 // it will be banned since it is intentionally violating the protocol.
 func (sp *serverPeer) enforceNodeBloomFlag(cmd string) bool {
-	if sp.server.services&p2p.SFNodeBloom != p2p.SFNodeBloom {
+	if sp.server.services&pact.SFNodeBloom != pact.SFNodeBloom {
 		// Disconnect the peer regardless of protocol version or banning
 		// state.
 		srvrlog.Debugf("%s sent an unsupported %s request -- "+
@@ -666,13 +674,14 @@ func (s *server) Stop() error {
 // connections from peers.
 func newServer(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
 	params := config.Parameters
-	services := p2p.SFNodeNetwork
-	if params.PeerBloomFilters {
-		services |= p2p.SFNodeBloom
+	services := defaultServices
+	if !params.PeerBloomFilters {
+		services &^= pact.SFNodeBloom
 	}
 
 	cfg := p2psvr.NewDefaultConfig(
 		params.Magic,
+		uint64(services),
 		params.NodePort,
 		params.SeedList,
 		[]string{fmt.Sprint("127.0.0.1:", params.NodePort)},

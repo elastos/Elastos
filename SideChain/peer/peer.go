@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SideChain/pact"
+
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
@@ -134,6 +136,13 @@ type Peer struct {
 	outputQueue   chan outMsg
 	outputInvChan chan *msg.InvVect
 	queueQuit     chan struct{}
+}
+
+// Services returns the services flag of the remote peer.
+//
+// This function is safe for concurrent access.
+func (p *Peer) Services() pact.ServiceFlag {
+	return pact.ServiceFlag(p.Peer.Services())
 }
 
 // setDisableRelayTx toggles relaying of transactions for the given peer.
