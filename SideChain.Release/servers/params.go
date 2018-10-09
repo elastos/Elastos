@@ -6,9 +6,17 @@ import (
 
 type Params map[string]interface{}
 
+func min(a int, b int) int {
+	if a > b {
+		return b
+	}
+	return a
+}
+
 func FromArray(array []interface{}, fileds ...string) Params {
 	params := make(Params)
-	for i := 0; i < len(array); i++ {
+	count := min(len(array), len(fileds))
+	for i := 0; i < count; i++ {
 		params[fileds[i]] = array[i]
 	}
 	return params

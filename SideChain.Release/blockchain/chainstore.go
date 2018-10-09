@@ -114,7 +114,7 @@ func NewChainStore(genesisBlock *types.Block) (*ChainStore, error) {
 	s.RegisterFunctions(false, StoreFuncNames.RollbackTransactions, s.rollbackTransactions)
 	s.RegisterFunctions(false, StoreFuncNames.RollbackUnspend, s.rollbackUnspend)
 
-	go s.TaskHandler()
+	go s.taskHandler()
 
 	s.initWithGenesisBlock(genesisBlock)
 
@@ -149,7 +149,7 @@ func (s *ChainStore) Close() {
 	s.Database.Close()
 }
 
-func (s *ChainStore) TaskHandler() {
+func (s *ChainStore) taskHandler() {
 	for {
 		select {
 		case t := <-s.taskCh:

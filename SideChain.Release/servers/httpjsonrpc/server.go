@@ -158,6 +158,8 @@ func convertParams(method string, params []interface{}) servers.Params {
 		return servers.FromArray(params, "mine")
 	case "discretemining":
 		return servers.FromArray(params, "count")
+	case "sendrawtransaction":
+		return servers.FromArray(params, "data")
 	default:
 		return servers.Params{}
 	}
