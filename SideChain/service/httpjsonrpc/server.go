@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/elastos/Elastos.ELA.SideChain/servers"
+	"github.com/elastos/Elastos.ELA.SideChain/service"
 )
 
 const (
@@ -26,18 +26,18 @@ type rpcserver struct {
 	server    *http.Server
 	port      uint16
 	paramsMap map[string][]string
-	mux       map[string]servers.Handler
+	mux       map[string]service.Handler
 }
 
 func New(port uint16) *rpcserver {
 	return &rpcserver{
 		port: port,
 		paramsMap: make(map[string][]string),
-		mux:  make(map[string]servers.Handler),
+		mux:  make(map[string]service.Handler),
 	}
 }
 
-func (s *rpcserver) RegisterAction(name string, handler servers.Handler, params ...string) {
+func (s *rpcserver) RegisterAction(name string, handler service.Handler, params ...string) {
 	s.mux[name] = handler
 	s.paramsMap[name] = params
 }
@@ -93,13 +93,13 @@ func (s *rpcserver) handle(w http.ResponseWriter, r *http.Request) {
 	// positional parameters: { "requestParams":[1, 2, 3....] }
 	// named parameters: { "requestParams":{ "a":1, "b":2, "c":3 } }
 	//Here we support both of them, because bitcion does so.
-	var params servers.Params
+	var params service.Params
 	switch requestParams := requestParams.(type) {
 	case nil:
 	case []interface{}:
 		params = s.parseParams(requestMethod, requestParams)
 	case map[string]interface{}:
-		params = servers.Params(requestParams)
+		params = service.Params(requestParams)
 	default:
 		responseError(w, http.StatusBadRequest, InvalidRequest, "params format error, must be an array or a map")
 		return
@@ -107,7 +107,7 @@ func (s *rpcserver) handle(w http.ResponseWriter, r *http.Request) {
 
 	response := method(params)
 	var data []byte
-	if response["Error"] != servers.ErrorCode(0) {
+	if response["Error"] != service.ErrorCode(0) {
 		data, _ = json.Marshal(map[string]interface{}{
 			"jsonrpc": "2.0",
 			"error": map[string]interface{}{
@@ -128,7 +128,7 @@ func (s *rpcserver) handle(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func responseError(w http.ResponseWriter, httpStatus int, code servers.ErrorCode, message string) {
+func responseError(w http.ResponseWriter, httpStatus int, code service.ErrorCode, message string) {
 	w.WriteHeader(httpStatus)
 	data, _ := json.Marshal(map[string]interface{}{
 		"jsonrpc": "2.0",
@@ -141,8 +141,8 @@ func responseError(w http.ResponseWriter, httpStatus int, code servers.ErrorCode
 	w.Write(data)
 }
 
-func (s *rpcserver) parseParams(method string, array []interface{}) servers.Params {
-	var params = make(servers.Params)
+func (s *rpcserver) parseParams(method string, array []interface{}) service.Params {
+	var params = make(service.Params)
 	var fields = s.paramsMap[method]
 	count := min(len(array), len(fields))
 	for i := 0; i < count; i++ {

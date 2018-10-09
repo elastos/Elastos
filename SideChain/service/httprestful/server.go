@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/elastos/Elastos.ELA.SideChain/servers"
+	"github.com/elastos/Elastos.ELA.SideChain/service"
 )
 
 // Ensure restserver implement Server interface.
@@ -41,7 +41,7 @@ func (s *restserver) write(w http.ResponseWriter, data []byte) {
 }
 
 func (s *restserver) response(w http.ResponseWriter, resp map[string]interface{}) {
-	resp["Desc"] = resp["Error"].(servers.ErrorCode).String()
+	resp["Desc"] = resp["Error"].(service.ErrorCode).String()
 	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Fatal("HTTP Handle - json.Marshal: %v", err)
@@ -50,7 +50,7 @@ func (s *restserver) response(w http.ResponseWriter, resp map[string]interface{}
 	s.write(w, data)
 }
 
-func (s *restserver) RegisterAction(method, path string, handler servers.Handler, params ...string) {
+func (s *restserver) RegisterAction(method, path string, handler service.Handler, params ...string) {
 	// register action to router
 	switch strings.ToUpper(method) {
 	case "GET":
@@ -85,7 +85,7 @@ func (s *restserver) RegisterAction(method, path string, handler servers.Handler
 			if err := json.Unmarshal(body, &req); err == nil {
 				resp = handler(req)
 			} else {
-				resp = servers.ResponsePack(servers.IllegalDataFormat, "")
+				resp = service.ResponsePack(service.IllegalDataFormat, "")
 			}
 
 			s.response(w, resp)
@@ -115,7 +115,7 @@ func (s *restserver) Start() error {
 	var err error
 	var listener net.Listener
 
-	if s.port%1000 == servers.TlsPort {
+	if s.port%1000 == service.TlsPort {
 		listener, err = s.initTlsListen()
 		if err != nil {
 			return err
@@ -138,13 +138,13 @@ func (s *restserver) Stop() error {
 	return fmt.Errorf("server not started")
 }
 
-func (s *restserver) Restart(cmd servers.Params) map[string]interface{} {
+func (s *restserver) Restart(cmd service.Params) map[string]interface{} {
 	go func() {
 		s.Stop()
 		s.Start()
 	}()
 
-	return servers.ResponsePack(servers.Success, "")
+	return service.ResponsePack(service.Success, "")
 }
 
 func (s *restserver) initTlsListen() (net.Listener, error) {

@@ -8,10 +8,11 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
-	"github.com/elastos/Elastos.ELA.SideChain/servers"
-	"github.com/elastos/Elastos.ELA.SideChain/servers/httpjsonrpc"
-	"github.com/elastos/Elastos.ELA.SideChain/servers/httpnodeinfo"
-	"github.com/elastos/Elastos.ELA.SideChain/servers/httprestful"
+	"github.com/elastos/Elastos.ELA.SideChain/server"
+	"github.com/elastos/Elastos.ELA.SideChain/service"
+	"github.com/elastos/Elastos.ELA.SideChain/service/httpjsonrpc"
+	"github.com/elastos/Elastos.ELA.SideChain/service/httpnodeinfo"
+	"github.com/elastos/Elastos.ELA.SideChain/service/httprestful"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -100,7 +101,7 @@ func main() {
 	txPool := mempool.New(&mempoolCfg)
 
 	eladlog.Info("3. Start the P2P networks")
-	server, err := newServer(chain, txPool)
+	server, err := server.New(chain, txPool)
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
@@ -132,18 +133,18 @@ func main() {
 	}
 
 	eladlog.Info("5. --Start the Http services")
-	service := servers.NewHttpService(&servers.Config{
+	service := service.NewHttpService(&service.Config{
 		Logger:                      elalog,
 		Server:                      server,
 		Chain:                       chain,
 		TxMemPool:                   txPool,
 		PowService:                  powService,
-		GetBlockInfo:                servers.GetBlockInfo,
-		GetTransactionInfo:          servers.GetTransactionInfo,
-		GetTransactionInfoFromBytes: servers.GetTransactionInfoFromBytes,
-		GetTransaction:              servers.GetTransaction,
-		GetPayloadInfo:              servers.GetPayloadInfo,
-		GetPayload:                  servers.GetPayload,
+		GetBlockInfo:                service.GetBlockInfo,
+		GetTransactionInfo:          service.GetTransactionInfo,
+		GetTransactionInfoFromBytes: service.GetTransactionInfoFromBytes,
+		GetTransaction:              service.GetTransaction,
+		GetPayloadInfo:              service.GetPayloadInfo,
+		GetPayload:                  service.GetPayload,
 	})
 	startHttpJsonRpc(params.HttpJsonPort, service)
 	startHttpRESTful(params.HttpRestPort, params.RestCertPath,
@@ -161,7 +162,7 @@ func main() {
 	select {}
 }
 
-func startHttpJsonRpc(port uint16, service *servers.HttpService) {
+func startHttpJsonRpc(port uint16, service *service.HttpService) {
 	s := httpjsonrpc.New(port)
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
@@ -194,7 +195,7 @@ func startHttpJsonRpc(port uint16, service *servers.HttpService) {
 	}()
 }
 
-func startHttpRESTful(port uint16, certFile, keyFile string, service *servers.HttpService) {
+func startHttpRESTful(port uint16, certFile, keyFile string, service *service.HttpService) {
 	s := httprestful.New(port, certFile, keyFile)
 
 	const (
