@@ -421,7 +421,7 @@ cleanup:
 }
 
 func (p *Peer) sendMessage(msg outMsg) {
-	p.SendMessage(msg.msg, nil)
+	p.SendMessage(msg.msg, msg.doneChan)
 	p.stallControl <- stallControlMsg{sccSendMessage, msg.msg}
 }
 

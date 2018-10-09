@@ -215,7 +215,7 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 		// If this will be the last message we send.
 		if i == length-1 && len(notFound.InvList) == 0 {
 			c = doneChan
-		} else if (i+1)%3 == 0 {
+		} else if (i+1)%5 == 0 {
 			// Buffered so as to not make the send goroutine block.
 			c = make(chan struct{}, 1)
 		}
@@ -239,7 +239,7 @@ func (sp *serverPeer) OnGetData(_ *peer.Peer, getData *msg.GetData) {
 			// being no outstanding not found inventory, consume
 			// it here because there is now not found inventory
 			// that will use the channel momentarily.
-			if i == len(getData.InvList)-1 && c != nil {
+			if i == length-1 && c != nil {
 				<-c
 			}
 		}

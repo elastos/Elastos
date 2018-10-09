@@ -400,9 +400,6 @@ func (sm *SyncManager) handleBlockMsg(bmsg *blockMsg) {
 			peer.PushGetBlocksMsg(locator, orphanRoot)
 		}
 	} else {
-		// Update the block height for this peer.
-		peer.UpdateHeight(sm.chain.GetBestHeight())
-
 		// Clear the rejected transactions.
 		sm.rejectedTxns = make(map[common.Uint256]struct{})
 	}
