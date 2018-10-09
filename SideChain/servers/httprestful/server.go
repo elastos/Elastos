@@ -51,15 +51,15 @@ func (s *restserver) response(w http.ResponseWriter, resp map[string]interface{}
 }
 
 func (s *restserver) RegisterAction(method, path string, handler servers.Handler, params ...string) {
-	// build full path first
-	path = strings.TrimRight(path, "/")
-	for _, param := range params {
-		path += "/:" + param
-	}
-
 	// register action to router
 	switch strings.ToUpper(method) {
 	case "GET":
+		// build full path first
+		path = strings.TrimRight(path, "/")
+		for _, param := range params {
+			path += "/:" + param
+		}
+
 		s.router.Get(path, func(w http.ResponseWriter, r *http.Request) {
 
 			var req = make(map[string]interface{})
