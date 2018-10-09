@@ -1,6 +1,7 @@
 package pow
 
 import (
+	"encoding/binary"
 	"errors"
 	"math"
 	"math/rand"
@@ -13,7 +14,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"encoding/binary"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"

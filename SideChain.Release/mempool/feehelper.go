@@ -13,12 +13,12 @@ import (
 
 type FeeHelper struct {
 	exchangeRate float64
-	chainStore *blockchain.ChainStore
+	chainStore   *blockchain.ChainStore
 }
 
 func NewFeeHelper(cfg *Config) *FeeHelper {
 	return &FeeHelper{
-		chainStore: cfg.ChainStore,
+		chainStore:   cfg.ChainStore,
 		exchangeRate: cfg.ExchangeRage,
 	}
 }
@@ -43,7 +43,7 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 			return nil, errors.New("GetTxFeeMap mainChainTransaction deserialize failed")
 		}
 
-		crossChainPayload := mainChainTransaction.Payload.(*types.PayloadTransferCrossChainAsset)
+		crossChainPayload := mainChainTransaction.Payload.(*core.PayloadTransferCrossChainAsset)
 
 		for _, v := range tx.Outputs {
 			for i := 0; i < len(crossChainPayload.CrossChainAddresses); i++ {
