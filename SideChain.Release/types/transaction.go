@@ -164,7 +164,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 		return err
 	}
 
-	tx.Payload, err = GetPayloadByType(tx.TxType)
+	tx.Payload, err = GetPayloadByTxType(tx.TxType)
 	if err != nil {
 		return err
 	}

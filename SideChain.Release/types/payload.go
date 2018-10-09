@@ -22,7 +22,7 @@ type Payload interface {
 	Deserialize(r io.Reader, version byte) error
 }
 
-var GetPayloadByType = func(txType TransactionType) (Payload, error) {
+var GetPayloadByTxType = func(txType TransactionType) (Payload, error) {
 	var p Payload
 	switch txType {
 	case CoinBase:
