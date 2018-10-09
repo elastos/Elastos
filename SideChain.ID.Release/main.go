@@ -5,7 +5,6 @@ import (
 	"runtime"
 
 	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
-	ic "github.com/elastos/Elastos.ELA.SideChain.ID/core"
 	mp "github.com/elastos/Elastos.ELA.SideChain.ID/mempool"
 	sv "github.com/elastos/Elastos.ELA.SideChain.ID/servers"
 
@@ -39,12 +38,7 @@ func init() {
 
 func main() {
 	eladlog.Info("Node version: ", config.Version)
-
-	ic.InitPayloadHelper()
-	ic.InitTransactionHelper()
-
 	params := config.Parameters
-
 	foundation, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
 	if err != nil {
 		eladlog.Info("Please set correct foundation address in config file")

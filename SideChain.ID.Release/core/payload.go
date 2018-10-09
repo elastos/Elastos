@@ -6,11 +6,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 )
 
-func InitPayloadHelper() {
-	types.GetPayloadByType = getPayload
-}
-
-func getPayload(txType types.TransactionType) (types.Payload, error) {
+func getPayloadByTxType(txType types.TransactionType) (types.Payload, error) {
 	var p types.Payload
 	switch txType {
 	case types.CoinBase:
