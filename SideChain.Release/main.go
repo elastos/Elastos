@@ -161,28 +161,28 @@ func main() {
 func startHttpJsonRpc(port uint16, service *servers.HttpService) {
 	s := httpjsonrpc.New(port)
 
-	s.RegisterAction("setloglevel", service.SetLogLevel)
+	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
 	s.RegisterAction("getinfo", service.GetInfo)
-	s.RegisterAction("getblock", service.GetBlockByHash)
+	s.RegisterAction("getblock", service.GetBlockByHash, "hash", "verbosity")
 	s.RegisterAction("getcurrentheight", service.GetBlockHeight)
-	s.RegisterAction("getblockhash", service.GetBlockHash)
+	s.RegisterAction("getblockhash", service.GetBlockHash, "height")
 	s.RegisterAction("getconnectioncount", service.GetConnectionCount)
 	s.RegisterAction("getrawmempool", service.GetTransactionPool)
-	s.RegisterAction("getrawtransaction", service.GetRawTransaction)
+	s.RegisterAction("getrawtransaction", service.GetRawTransaction, "txid", "verbose")
 	s.RegisterAction("getneighbors", service.GetNeighbors)
 	s.RegisterAction("getnodestate", service.GetNodeState)
 	s.RegisterAction("sendtransactioninfo", service.SendTransactionInfo)
-	s.RegisterAction("sendrawtransaction", service.SendRawTransaction)
+	s.RegisterAction("sendrawtransaction", service.SendRawTransaction, "data")
 	s.RegisterAction("getbestblockhash", service.GetBestBlockHash)
 	s.RegisterAction("getblockcount", service.GetBlockCount)
 	s.RegisterAction("getblockbyheight", service.GetBlockByHeight)
 	s.RegisterAction("getdestroyedtransactions", service.GetDestroyedTransactionsByHeight)
 	s.RegisterAction("getexistdeposittransactions", service.GetExistDepositTransactions)
 	s.RegisterAction("help", service.AuxHelp)
-	s.RegisterAction("submitsideauxblock", service.SubmitSideAuxBlock)
-	s.RegisterAction("createauxblock", service.CreateAuxBlock)
-	s.RegisterAction("togglemining", service.ToggleMining)
-	s.RegisterAction("discretemining", service.DiscreteMining)
+	s.RegisterAction("submitsideauxblock", service.SubmitSideAuxBlock, "blockhash", "auxpow")
+	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
+	s.RegisterAction("togglemining", service.ToggleMining, "mining")
+	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 
 	go func() {
 		if err := s.Start(); err != nil {
@@ -216,7 +216,7 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *servers.Ht
 	s.RegisterAction("GET", ApiGetConnectionCount, service.GetConnectionCount)
 	s.RegisterAction("GET", ApiGetBlockTxsByHeight, service.GetTransactionsByHeight, "height")
 	s.RegisterAction("GET", ApiGetBlockByHeight, service.GetBlockByHeight, "height")
-	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "hash")
+	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "hash", "verbosity")
 	s.RegisterAction("GET", ApiGetBlockHeight, service.GetBlockHeight)
 	s.RegisterAction("GET", ApiGetBlockHash, service.GetBlockHash, "height")
 	s.RegisterAction("GET", ApiGetTransactionPool, service.GetTransactionPool)
@@ -228,7 +228,7 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *servers.Ht
 	s.RegisterAction("GET", ApiGetBalanceByAsset, service.GetBalanceByAsset, "addr", "assetid")
 	s.RegisterAction("GET", ApiRestart, s.Restart)
 
-	s.RegisterAction("POST", ApiSendRawTransaction, service.SendRawTransaction)
+	s.RegisterAction("POST", ApiSendRawTransaction, service.SendRawTransaction, "data")
 
 	go func() {
 		if err := s.Start(); err != nil {

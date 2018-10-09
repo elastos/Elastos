@@ -23,20 +23,23 @@ const (
 var _ Server = (*rpcserver)(nil)
 
 type rpcserver struct {
-	server *http.Server
-	port    uint16
-	mux     map[string]servers.Handler
+	server    *http.Server
+	port      uint16
+	paramsMap map[string][]string
+	mux       map[string]servers.Handler
 }
 
 func New(port uint16) *rpcserver {
 	return &rpcserver{
-		port:    port,
-		mux:     make(map[string]servers.Handler),
+		port: port,
+		paramsMap: make(map[string][]string),
+		mux:  make(map[string]servers.Handler),
 	}
 }
 
-func (s *rpcserver) RegisterAction(name string, handler servers.Handler) {
+func (s *rpcserver) RegisterAction(name string, handler servers.Handler, params ...string) {
 	s.mux[name] = handler
+	s.paramsMap[name] = params
 }
 
 func (s *rpcserver) Start() error {
@@ -94,7 +97,7 @@ func (s *rpcserver) handle(w http.ResponseWriter, r *http.Request) {
 	switch requestParams := requestParams.(type) {
 	case nil:
 	case []interface{}:
-		params = convertParams(requestMethod, requestParams)
+		params = s.parseParams(requestMethod, requestParams)
 	case map[string]interface{}:
 		params = servers.Params(requestParams)
 	default:
@@ -138,29 +141,19 @@ func responseError(w http.ResponseWriter, httpStatus int, code servers.ErrorCode
 	w.Write(data)
 }
 
-func convertParams(method string, params []interface{}) servers.Params {
-	switch method {
-	case "createauxblock":
-		return servers.FromArray(params, "paytoaddress")
-	case "submitsideauxblock":
-		return servers.FromArray(params, "blockhash", "auxpow")
-	case "getblockhash":
-		return servers.FromArray(params, "index")
-	case "getblock":
-		return servers.FromArray(params, "hash", "format")
-	case "setloglevel":
-		return servers.FromArray(params, "level")
-	case "getrawtransaction":
-		return servers.FromArray(params, "hash", "decoded")
-	case "getarbitratorgroupbyheight":
-		return servers.FromArray(params, "height")
-	case "togglemining":
-		return servers.FromArray(params, "mine")
-	case "discretemining":
-		return servers.FromArray(params, "count")
-	case "sendrawtransaction":
-		return servers.FromArray(params, "data")
-	default:
-		return servers.Params{}
+func (s *rpcserver) parseParams(method string, array []interface{}) servers.Params {
+	var params = make(servers.Params)
+	var fields = s.paramsMap[method]
+	count := min(len(array), len(fields))
+	for i := 0; i < count; i++ {
+		params[fields[i]] = array[i]
 	}
+	return params
+}
+
+func min(a int, b int) int {
+	if a > b {
+		return b
+	}
+	return a
 }
