@@ -102,6 +102,7 @@ func newService(cfg *Config) (*service, error) {
 	// Initiate P2P server configuration
 	serverCfg := server.NewDefaultConfig(
 		cfg.Magic,
+		OpenService,
 		cfg.DefaultPort,
 		cfg.SeedList,
 		nil,

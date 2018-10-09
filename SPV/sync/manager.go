@@ -9,7 +9,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 )
@@ -216,13 +215,14 @@ func (sm *SyncManager) syncWith(p *peer.Peer) {
 // isSyncCandidate returns whether or not the peer is a candidate to consider
 // syncing from.
 func (sm *SyncManager) isSyncCandidate(peer *peer.Peer) bool {
+	// TODO implement this when main chain refactor completed.
+	//services := peer.Services()
+	//// Candidate if all checks passed.
+	//return services&p2p.SFNodeNetwork == p2p.SFNodeNetwork &&
+	//	services&p2p.SFNodeBloom == p2p.SFNodeBloom
+
 	// Just return true.
 	return true
-
-	services := peer.Services()
-	// Candidate if all checks passed.
-	return services&p2p.SFNodeNetwork == p2p.SFNodeNetwork &&
-		services&p2p.SFNodeBloom == p2p.SFNodeBloom
 }
 
 // getSyncCandidates returns the peers that are sync candidate.
