@@ -397,7 +397,7 @@ namespace Elastos {
 			//fixme [refactor]
 //			if (mempoolCallback) mempoolCallback(mempoolInfo, 0);
 //			mempoolCallback = NULL;
-			if (_listener) _listener->OnDisconnected(error);
+			if (_listener) _listener->OnDisconnected(this, error);
 			//fixme [refactor]
 //		pthread_cleanup_pop(1)
 		}

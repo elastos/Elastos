@@ -775,6 +775,707 @@ namespace Elastos {
 				}
 			}
 		}
+
+		void PeerManager::OnConnected(Peer *peer) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			BRPeerCallbackInfo *peerInfo;
+//			time_t now = time(NULL);
+//
+//			pthread_mutex_lock(&manager->lock);
+//			if (peer->timestamp > now + 2 * 60 * 60 || peer->timestamp < now - 2 * 60 * 60)
+//				peer->timestamp = now; // sanity check
+//
+//			// TODO: XXX does this work with 0.11 pruned nodes?
+//			if ((peer->services & manager->params->services) != manager->params->services) {
+//				peer_log(peer, "unsupported node type");
+//				BRPeerDisconnect(peer);
+//			} else if ((peer->services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
+//				peer_log(peer, "peer->services: %llu != SERVICES_NODE_NETWORK", peer->services);
+//				peer_log(peer, "node doesn't carry full blocks");
+//				BRPeerDisconnect(peer);
+//			} else if (BRPeerLastBlock(peer) + 10 < manager->lastBlock->height) {
+//				peer_log(peer, "peer->lastBlock: %d != manager->lastBlock->height: %d", BRPeerLastBlock(peer),
+//						 manager->lastBlock->height);
+//				peer_log(peer, "node isn't synced");
+//				BRPeerDisconnect(peer);
+//			} else if (BRPeerVersion(peer) >= 70011 && (peer->services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
+//				peer_log(peer, "node doesn't support SPV mode");
+//				BRPeerDisconnect(peer);
+//			} else if (manager->downloadPeer && // check if we should stick with the existing download peer
+//					   (BRPeerLastBlock(manager->downloadPeer) >= BRPeerLastBlock(peer) ||
+//						manager->lastBlock->height >= BRPeerLastBlock(peer))) {
+//				if (manager->lastBlock->height >=
+//					BRPeerLastBlock(peer)) { // only load bloom filter if we're done syncing
+//					manager->connectFailureCount = 0; // also reset connect failure count if we're already synced
+//					manager->loadBloomFilter(manager, peer);
+//					_BRPeerManagerPublishPendingTx(manager, peer);
+//					peerInfo = calloc(1, sizeof(*peerInfo));
+//					assert(peerInfo != NULL);
+//					peerInfo->peer = peer;
+//					peerInfo->manager = manager;
+//					manager->peerMessages->BRPeerSendPingMessage(peer, peerInfo, _loadBloomFilterDone);
+//				}
+//			} else { // select the peer with the lowest ping time to download the chain from if we're behind
+//				// BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if
+//				// two peers agree on lastblock, use one of those two instead
+//				for (size_t i = array_count(manager->connectedPeers); i > 0; i--) {
+//					BRPeer *p = manager->connectedPeers[i - 1];
+//
+//					if (BRPeerConnectStatus(p) != BRPeerStatusConnected) continue;
+//					if ((BRPeerPingTime(p) < BRPeerPingTime(peer) && BRPeerLastBlock(p) >= BRPeerLastBlock(peer)) ||
+//						BRPeerLastBlock(p) > BRPeerLastBlock(peer))
+//						peer = p;
+//				}
+//
+//				if (manager->downloadPeer) {
+//					peer_log(peer, "selecting new download peer with higher reported lastblock");
+//					BRPeerDisconnect(manager->downloadPeer);
+//				}
+//
+//				manager->downloadPeer = peer;
+//				manager->isConnected = 1;
+//				manager->estimatedHeight = BRPeerLastBlock(peer);
+//				manager->loadBloomFilter(manager, peer);
+//				BRPeerSetCurrentBlockHeight(peer, manager->lastBlock->height);
+//				_BRPeerManagerPublishPendingTx(manager, peer);
+//
+//				if (manager->lastBlock->height < BRPeerLastBlock(peer)) { // start blockchain sync
+//					UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
+//					size_t count = _BRPeerManagerBlockLocators(manager, locators, sizeof(locators) / sizeof(*locators));
+//
+//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT); // schedule sync timeout
+//
+//					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
+//					// we do not reset connect failure count yet incase this request times out
+//					if (manager->lastBlock->timestamp + 7 * 24 * 60 * 60 >= manager->earliestKeyTime) {
+//						manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, count, UINT256_ZERO);
+//					} else manager->peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
+//				} else { // we're already synced
+//					manager->connectFailureCount = 0; // reset connect failure count
+//					_BRPeerManagerLoadMempools(manager);
+//				}
+//			}
+//
+//			manager->wallet->WalletUpdateBalance(manager->wallet);
+//
+//			pthread_mutex_unlock(&manager->lock);
+		}
+
+		void PeerManager::OnDisconnected(Peer *peer, int error) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			BRTxPeerList *peerList;
+//			int willSave = 0, willReconnect = 0, txError = 0;
+//			size_t txCount = 0;
+//
+//			//free(info);
+//			pthread_mutex_lock(&manager->lock);
+//
+//			BRPublishedTx pubTx[array_count(manager->publishedTx)];
+//
+//			if (error == EPROTO) { // if it's protocol error, the peer isn't following standard policy
+//				_BRPeerManagerPeerMisbehavin(manager, peer);
+//			} else if (error) { // timeout or some non-protocol related network error
+//				for (size_t i = array_count(manager->peers); i > 0; i--) {
+//					if (BRPeerEq(&manager->peers[i - 1], peer))
+//						array_rm(manager->peers, i - 1);
+//				}
+//
+//				manager->connectFailureCount++;
+//
+//				// if it's a timeout and there's pending tx publish callbacks, the tx publish timed out
+//				// BUG: XXX what if it's a connect timeout and not a publish timeout?
+//				if (error == ETIMEDOUT && (peer != manager->downloadPeer || manager->syncStartHeight == 0 ||
+//										   array_count(manager->connectedPeers) == 1))
+//					txError = ETIMEDOUT;
+//			}
+//
+//			for (size_t i = array_count(manager->txRelays); i > 0; i--) {
+//				peerList = &manager->txRelays[i - 1];
+//
+//				for (size_t j = array_count(peerList->peers); j > 0; j--) {
+//					if (BRPeerEq(&peerList->peers[j - 1], peer))
+//						array_rm(peerList->peers, j - 1);
+//				}
+//			}
+//
+//			if (peer == manager->downloadPeer) { // download peer disconnected
+//				manager->isConnected = 0;
+//				manager->downloadPeer = NULL;
+//				if (manager->connectFailureCount > MAX_CONNECT_FAILURES)
+//					manager->connectFailureCount = MAX_CONNECT_FAILURES;
+//			}
+//
+//			if (!manager->isConnected && manager->connectFailureCount == MAX_CONNECT_FAILURES) {
+//				_BRPeerManagerSyncStopped(manager);
+//
+//				// clear out stored peers so we get a fresh list from DNS on next connect attempt
+//				array_clear(manager->peers);
+//				txError = ENOTCONN; // trigger any pending tx publish callbacks
+//				willSave = 1;
+//				peer_log(peer, "sync failed");
+//			} else if (manager->connectFailureCount < MAX_CONNECT_FAILURES) {
+//				willReconnect = 1;
+//			}
+//
+//			if (txError) {
+//				for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+//					if (manager->publishedTx[i - 1].callback == NULL) continue;
+//					peer_log(peer, "transaction canceled: %s", strerror(txError));
+//					pubTx[txCount++] = manager->publishedTx[i - 1];
+//					manager->publishedTx[i - 1].callback = NULL;
+//					manager->publishedTx[i - 1].info = NULL;
+//				}
+//			}
+//
+//			for (size_t i = array_count(manager->connectedPeers); i > 0; i--) {
+//				if (manager->connectedPeers[i - 1] != peer)
+//					continue;
+//				array_rm(manager->connectedPeers, i - 1);
+//				break;
+//			}
+//
+//			BRPeerFree(peer);
+//			pthread_mutex_unlock(&manager->lock);
+//
+//			for (size_t i = 0; i < txCount; i++) {
+//				pubTx[i].callback(pubTx[i].info, txError);
+//			}
+//
+//			if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
+//			if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
+//			if (willReconnect && array_count(manager->connectedPeers) == 0) {
+//				peer_log(peer, "willReconnect...");
+//				BRPeerManagerConnect(manager);
+//			}
+//			if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
+		}
+
+		void PeerManager::OnRelayedPeers(Peer *peer, const std::vector<PeerPtr> &peers, size_t peersCount) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			time_t now = time(NULL);
+//
+//			pthread_mutex_lock(&manager->lock);
+//			peer_log(peer, "relayed %zu peer(s)", peersCount);
+//
+//			array_add_array(manager->peers, peers, peersCount);
+//			qsort(manager->peers, array_count(manager->peers), sizeof(*manager->peers), _peerTimestampCompare);
+//
+//			// limit total to 2500 peers
+//			if (array_count(manager->peers) > 2500) array_set_count(manager->peers, 2500);
+//			peersCount = array_count(manager->peers);
+//
+//			// remove peers more than 3 hours old, or until there are only 1000 left
+//			while (peersCount > 1000 && manager->peers[peersCount - 1].timestamp + 3 * 60 * 60 < now) peersCount--;
+//			array_set_count(manager->peers, peersCount);
+//
+//			BRPeer save[peersCount];
+//
+//			for (size_t i = 0; i < peersCount; i++) save[i] = manager->peers[i];
+//			pthread_mutex_unlock(&manager->lock);
+//
+//			// peer relaying is complete when we receive <1000
+//			if (peersCount > 1 && peersCount < 1000 &&
+//				manager->savePeers)
+//				manager->savePeers(manager->info, 1, save, peersCount);
+		}
+
+		void PeerManager::OnRelayedTx(Peer *peer, const TransactionPtr &tx) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			void *txInfo = NULL;
+//			void (*txCallback)(void *, int) = NULL;
+//			int isWalletTx = 0, hasPendingCallbacks = 0;
+//			size_t relayCount = 0;
+//
+//			pthread_mutex_lock(&manager->lock);
+//			peer_log(peer, "relayed tx: %s", u256hex(tx->txHash));
+//
+//			for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
+//				if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &(tx->txHash))) {
+//					txInfo = manager->publishedTx[i - 1].info;
+//					txCallback = manager->publishedTx[i - 1].callback;
+//					manager->publishedTx[i - 1].info = NULL;
+//					manager->publishedTx[i - 1].callback = NULL;
+//					relayCount = _BRTxPeerListAddPeer(&manager->txRelays, tx->txHash, peer);
+//				} else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
+//			}
+//
+//			// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
+//			if (!hasPendingCallbacks && (manager->syncStartHeight == 0 || peer != manager->downloadPeer)) {
+//				BRPeerScheduleDisconnect(peer, -1); // cancel publish tx timeout
+//			}
+//
+//			if (manager->syncStartHeight == 0 || BRWalletContainsTransaction(manager->wallet, tx)) {
+//				isWalletTx = BRWalletRegisterTransaction(manager->wallet, tx);
+//				if (isWalletTx) tx = BRWalletTransactionForHash(manager->wallet, tx->txHash);
+//			} else {
+//				BRTransactionFree(tx);
+//				tx = NULL;
+//			}
+//
+//			if (tx && isWalletTx) {
+//				// reschedule sync timeout
+//				if (manager->syncStartHeight > 0 && peer == manager->downloadPeer) {
+//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT);
+//				}
+//
+//				if (BRWalletAmountSentByTx(manager->wallet, tx) > 0 &&
+//					BRWalletTransactionIsValid(manager->wallet, tx)) {
+//					_BRPeerManagerAddTxToPublishList(manager, tx, NULL, NULL); // add valid send tx to mempool
+//				}
+//
+//				// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+//				// (we only need to track this after syncing is complete)
+//				if (manager->syncStartHeight == 0)
+//					relayCount = _BRTxPeerListAddPeer(&manager->txRelays, tx->txHash, peer);
+//
+//				_BRTxPeerListRemovePeer(manager->txRequests, tx->txHash, peer);
+//
+//				if (manager->bloomFilter != NULL) { // check if bloom filter is already being updated
+//					BRAddress addrs[SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL];
+//					UInt168 hash;
+//
+//					// the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+//					// unused addresses are still matched by the bloom filter
+//					manager->wallet->WalletUnusedAddrs(manager->wallet, addrs, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+//					manager->wallet->WalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL,
+//													   SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+//
+//					for (size_t i = 0; i < SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL; i++) {
+//						if (!BRAddressHash168(&hash, addrs[i].s) ||
+//							BRBloomFilterContainsData(manager->bloomFilter, hash.u8, sizeof(hash)))
+//							continue;
+//						if (manager->bloomFilter) BRBloomFilterFree(manager->bloomFilter);
+//						manager->bloomFilter = NULL; // reset bloom filter so it's recreated with new wallet addresses
+//						_BRPeerManagerUpdateFilter(manager);
+//						break;
+//					}
+//				}
+//			}
+//
+//			// set timestamp when tx is verified
+//			if (tx && relayCount >= manager->maxConnectCount && tx->blockHeight == TX_UNCONFIRMED &&
+//				tx->timestamp == 0) {
+//				BRWalletUpdateTransactions(manager->wallet, &tx->txHash, 1, TX_UNCONFIRMED, (uint32_t) time(NULL));
+//			}
+//
+//			pthread_mutex_unlock(&manager->lock);
+//			if (txCallback) txCallback(txInfo, 0);
+		}
+
+		void PeerManager::OnHasTx(Peer *peer, const UInt256 &txHash) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			BRTransaction *tx;
+//			BRPublishedTx pubTx = {NULL, NULL, NULL};
+//			int isWalletTx = 0, hasPendingCallbacks = 0;
+//			size_t relayCount = 0;
+//
+//			pthread_mutex_lock(&manager->lock);
+//			tx = BRWalletTransactionForHash(manager->wallet, txHash);
+//			peer_log(peer, "has tx: %s", u256hex(txHash));
+//
+//			for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
+//				if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &txHash)) {
+//					pubTx = manager->publishedTx[i - 1];
+//					if (!tx) tx = pubTx.tx;
+//					manager->publishedTx[i - 1].callback = NULL;
+//					manager->publishedTx[i - 1].info = NULL;
+//					relayCount = _BRTxPeerListAddPeer(&manager->txRelays, txHash, peer);
+//				} else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
+//			}
+//
+//			// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
+//			if (!hasPendingCallbacks && (manager->syncStartHeight == 0 || peer != manager->downloadPeer)) {
+//				BRPeerScheduleDisconnect(peer, -1); // cancel publish tx timeout
+//			}
+//
+//			if (tx) {
+//				isWalletTx = BRWalletRegisterTransaction(manager->wallet, tx);
+//				if (isWalletTx) tx = BRWalletTransactionForHash(manager->wallet, tx->txHash);
+//
+//				// reschedule sync timeout
+//				if (manager->syncStartHeight > 0 && peer == manager->downloadPeer && isWalletTx) {
+//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT);
+//				}
+//
+//				// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+//				// (we only need to track this after syncing is complete)
+//				if (manager->syncStartHeight == 0) relayCount = _BRTxPeerListAddPeer(&manager->txRelays, txHash, peer);
+//
+//				// set timestamp when tx is verified
+//				if (relayCount >= manager->maxConnectCount && tx && tx->blockHeight == TX_UNCONFIRMED &&
+//					tx->timestamp == 0) {
+//					BRWalletUpdateTransactions(manager->wallet, &txHash, 1, TX_UNCONFIRMED, (uint32_t) time(NULL));
+//				}
+//
+//				_BRTxPeerListRemovePeer(manager->txRequests, txHash, peer);
+//			}
+//
+//			pthread_mutex_unlock(&manager->lock);
+//			if (pubTx.callback) pubTx.callback(pubTx.info, 0);
+		}
+
+		void PeerManager::OnRejectedTx(Peer *peer, const UInt256 &txHash, uint8_t code) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			BRTransaction *tx, *t;
+//
+//			pthread_mutex_lock(&manager->lock);
+//			peer_log(peer, "rejected tx: %s", u256hex(txHash));
+//			tx = BRWalletTransactionForHash(manager->wallet, txHash);
+//			_BRTxPeerListRemovePeer(manager->txRequests, txHash, peer);
+//
+//			if (tx) {
+//				if (_BRTxPeerListRemovePeer(manager->txRelays, txHash, peer) && tx->blockHeight == TX_UNCONFIRMED) {
+//					// set timestamp 0 to mark tx as unverified
+//					BRWalletUpdateTransactions(manager->wallet, &txHash, 1, TX_UNCONFIRMED, 0);
+//				}
+//
+//				// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
+//				if (code != REJECT_SPENT && BRWalletAmountSentByTx(manager->wallet, tx) > 0) {
+//					for (size_t i = 0;
+//						 i < tx->inCount; i++) { // check that all inputs are confirmed before dropping peer
+//						t = BRWalletTransactionForHash(manager->wallet, tx->inputs[i].txHash);
+//						if (!t || t->blockHeight != TX_UNCONFIRMED) continue;
+//						tx = NULL;
+//						break;
+//					}
+//
+//					if (tx) _BRPeerManagerPeerMisbehavin(manager, peer);
+//				}
+//			}
+//
+//			pthread_mutex_unlock(&manager->lock);
+//			if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
+		}
+
+		void PeerManager::OnRelayedBlock(Peer *peer, const MerkleBlockPtr &block) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			size_t txCount = BRMerkleBlockTxHashes(block, NULL, 0);
+//			UInt256 _txHashes[(sizeof(UInt256) * txCount <= 0x1000) ? txCount : 0],
+//					*txHashes = (sizeof(UInt256) * txCount <= 0x1000) ? _txHashes : malloc(txCount * sizeof(*txHashes));
+//			size_t i, j, fpCount = 0, saveCount = 0;
+//			BRMerkleBlock orphan, *b, *b2, *prev, *next = NULL;
+//			uint32_t txTime = 0;
+//
+//			assert(txHashes != NULL);
+//			txCount = BRMerkleBlockTxHashes(block, txHashes, txCount);
+//			pthread_mutex_lock(&manager->lock);
+//			prev = BRSetGet(manager->blocks, &block->prevBlock);
+//
+//			if (prev) {
+//				txTime = block->timestamp / 2 + prev->timestamp / 2;
+//				block->height = prev->height + 1;
+//			}
+//
+//			// track the observed bloom filter false positive rate using a low pass filter to smooth out variance
+//			if (peer == manager->downloadPeer && block->totalTx > 0) {
+//				for (i = 0; i < txCount; i++) { // wallet tx are not false-positives
+//					if (!BRWalletTransactionForHash(manager->wallet, txHashes[i])) fpCount++;
+//				}
+//
+//				// moving average number of tx-per-block
+//				manager->averageTxPerBlock = manager->averageTxPerBlock * 0.999 + block->totalTx * 0.001;
+//
+//				// 1% low pass filter, also weights each block by total transactions, compared to the avarage
+//				manager->fpRate = manager->fpRate * (1.0 - 0.01 * block->totalTx / manager->averageTxPerBlock) +
+//								  0.01 * fpCount / manager->averageTxPerBlock;
+//
+//				// false positive rate sanity check
+//				if (BRPeerConnectStatus(peer) == BRPeerStatusConnected &&
+//					manager->fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE * 10.0) {
+//					peer_log(peer,
+//							 "bloom filter false positive rate %f too high after %"PRIu32" blocks, disconnecting...",
+//							 manager->fpRate, manager->lastBlock->height + 1 - manager->filterUpdateHeight);
+////            BRPeerDisconnect(peer);
+//				} else if (manager->lastBlock->height + 500 < BRPeerLastBlock(peer) &&
+//						   manager->fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
+//					_BRPeerManagerUpdateFilter(manager); // rebuild bloom filter when it starts to degrade
+//				}
+//			}
+//
+//			// ignore block headers that are newer than one week before earliestKeyTime (it's a header if it has 0 totalTx)
+//			if (block->totalTx == 0 && block->timestamp + 7 * 24 * 60 * 60 > manager->earliestKeyTime + 2 * 60 * 60) {
+//				manager->peerMessages->MerkleBlockFree(manager, block);
+//				block = NULL;
+//			} else if (manager->bloomFilter ==
+//					   NULL) { // ingore potentially incomplete blocks when a filter update is pending
+//				manager->peerMessages->MerkleBlockFree(manager, block);
+//				block = NULL;
+//
+//				if (peer == manager->downloadPeer && manager->lastBlock->height < manager->estimatedHeight) {
+//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT); // reschedule sync timeout
+//					manager->connectFailureCount = 0; // reset failure count once we know our initial request didn't timeout
+//				}
+//			} else if (!prev) { // block is an orphan
+//				peer_log(peer, "relayed orphan block %s, previous %s, last block is %s, height %"PRIu32,
+//						 u256hex(block->blockHash), u256hex(block->prevBlock), u256hex(manager->lastBlock->blockHash),
+//						 manager->lastBlock->height);
+//
+//				if (block->timestamp + 7 * 24 * 60 * 60 < time(NULL)) { // ignore orphans older than one week ago
+//					manager->peerMessages->MerkleBlockFree(manager, block);
+//					block = NULL;
+//				} else {
+//					// call getblocks, unless we already did with the previous block, or we're still syncing
+//					if (manager->lastBlock->height >= BRPeerLastBlock(peer) &&
+//						(!manager->lastOrphan || !UInt256Eq(&manager->lastOrphan->blockHash, &block->prevBlock))) {
+//						UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
+//						size_t locatorsCount = _BRPeerManagerBlockLocators(manager, locators,
+//																		   sizeof(locators) / sizeof(*locators));
+//
+//						peer_log(peer, "calling getblocks");
+//						manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, locatorsCount, UINT256_ZERO);
+//					}
+//
+//					BRSetAdd(manager->orphans, block); // BUG: limit total orphans to avoid memory exhaustion attack
+//					manager->lastOrphan = block;
+//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT); // reschedule sync timeout
+//				}
+//			} else if (!_BRPeerManagerVerifyBlock(manager, block, prev, peer)) { // block is invalid
+//				peer_log(peer, "relayed invalid block");
+//				manager->peerMessages->MerkleBlockFree(manager, block);
+//				block = NULL;
+//				_BRPeerManagerPeerMisbehavin(manager, peer);
+//			} else if (UInt256Eq(&block->prevBlock, &manager->lastBlock->blockHash)) { // new block extends main chain
+//				if ((block->height % 500) == 0 || txCount > 0 || block->height >= BRPeerLastBlock(peer)) {
+//					peer_log(peer, "adding block #%"PRIu32", false positive rate: %f", block->height, manager->fpRate);
+//				}
+//
+//				BRSetAdd(manager->blocks, block);
+//				manager->lastBlock = block;
+//				if (manager->blockHeightIncreased) manager->blockHeightIncreased(manager->info, block->height);
+//
+//				if (txCount > 0) BRWalletUpdateTransactions(manager->wallet, txHashes, txCount, block->height, txTime);
+//				if (manager->downloadPeer) BRPeerSetCurrentBlockHeight(manager->downloadPeer, block->height);
+//
+//				if (block->height < manager->estimatedHeight && peer == manager->downloadPeer) {
+//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT); // reschedule sync timeout
+//					manager->connectFailureCount = 0; // reset failure count once we know our initial request didn't timeout
+//				}
+//
+//				if ((block->height % BLOCK_DIFFICULTY_INTERVAL) == 0)
+//					saveCount = 1; // save transition block immediately
+//
+//				if (block->height == manager->estimatedHeight) { // chain download is complete
+//					saveCount = (block->height % BLOCK_DIFFICULTY_INTERVAL) + BLOCK_DIFFICULTY_INTERVAL + 1;
+//					_BRPeerManagerLoadMempools(manager);
+//				}
+//			} else if (BRSetContains(manager->blocks, block)) { // we already have the block (or at least the header)
+//				if ((block->height % 500) == 0 || txCount > 0 || block->height >= BRPeerLastBlock(peer)) {
+//					peer_log(peer, "relayed existing block #%"PRIu32, block->height);
+//				}
+//
+//				b = manager->lastBlock;
+//				while (b && b->height > block->height)
+//					b = BRSetGet(manager->blocks, &b->prevBlock); // is block in main chain?
+//
+//				if (BRMerkleBlockEq(b, block)) { // if it's not on a fork, set block heights for its transactions
+//					if (txCount > 0)
+//						BRWalletUpdateTransactions(manager->wallet, txHashes, txCount, block->height, txTime);
+//					if (block->height == manager->lastBlock->height) manager->lastBlock = block;
+//				}
+//
+//				b = BRSetAdd(manager->blocks, block);
+//
+//				if (b != block) {
+//					if (BRSetGet(manager->orphans, b) == b) BRSetRemove(manager->orphans, b);
+//					if (manager->lastOrphan == b) manager->lastOrphan = NULL;
+//					manager->peerMessages->MerkleBlockFree(manager, b);
+//				}
+//			} else if (manager->lastBlock->height < BRPeerLastBlock(peer) &&
+//					   block->height > manager->lastBlock->height + 1) { // special case, new block mined durring rescan
+//				peer_log(peer, "marking new block #%"PRIu32" as orphan until rescan completes", block->height);
+//				BRSetAdd(manager->orphans, block); // mark as orphan til we're caught up
+//				manager->lastOrphan = block;
+//			} else if (block->height <=
+//					   manager->params->checkpoints[manager->params->checkpointsCount - 1].height) { // old fork
+//				peer_log(peer, "ignoring block on fork older than most recent checkpoint, block #%"PRIu32", hash: %s",
+//						 block->height, u256hex(block->blockHash));
+//				manager->peerMessages->MerkleBlockFree(manager, block);
+//				block = NULL;
+//			} else { // new block is on a fork
+//				peer_log(peer, "chain fork reached height %"PRIu32, block->height);
+//				BRSetAdd(manager->blocks, block);
+//
+//				if (block->height > manager->lastBlock->height) { // check if fork is now longer than main chain
+//					b = block;
+//					b2 = manager->lastBlock;
+//
+//					while (b && b2 && !BRMerkleBlockEq(b, b2)) { // walk back to where the fork joins the main chain
+//						b = BRSetGet(manager->blocks, &b->prevBlock);
+//						if (b && b->height < b2->height) b2 = BRSetGet(manager->blocks, &b2->prevBlock);
+//					}
+//
+//					peer_log(peer, "reorganizing chain from height %"PRIu32", new height is %"PRIu32, b->height,
+//							 block->height);
+//
+//					BRWalletSetTxUnconfirmedAfter(manager->wallet,
+//												  b->height); // mark tx after the join point as unconfirmed
+//
+//					b = block;
+//
+//					while (b && b2 && b->height > b2->height) { // set transaction heights for new main chain
+//						size_t count = BRMerkleBlockTxHashes(b, NULL, 0);
+//						uint32_t height = b->height, timestamp = b->timestamp;
+//
+//						if (count > txCount) {
+//							txHashes = (txHashes != _txHashes) ? realloc(txHashes, count * sizeof(*txHashes)) :
+//									   malloc(count * sizeof(*txHashes));
+//							assert(txHashes != NULL);
+//							txCount = count;
+//						}
+//
+//						count = BRMerkleBlockTxHashes(b, txHashes, count);
+//						b = BRSetGet(manager->blocks, &b->prevBlock);
+//						if (b) timestamp = timestamp / 2 + b->timestamp / 2;
+//						if (count > 0) BRWalletUpdateTransactions(manager->wallet, txHashes, count, height, timestamp);
+//					}
+//
+//					manager->lastBlock = block;
+//					if (manager->blockHeightIncreased) {
+//						for (int k = 1; k <= block->height - b2->height; ++k) {
+//							manager->blockHeightIncreased(manager->info, b2->height + k);
+//						}
+//					}
+//
+//					if (block->height == manager->estimatedHeight) { // chain download is complete
+//						saveCount = (block->height % BLOCK_DIFFICULTY_INTERVAL) + BLOCK_DIFFICULTY_INTERVAL + 1;
+//						_BRPeerManagerLoadMempools(manager);
+//					}
+//				}
+//			}
+//
+//			if (txHashes != _txHashes) free(txHashes);
+//
+//			if (block && block->height != BLOCK_UNKNOWN_HEIGHT) {
+//				if (block->height > manager->estimatedHeight) manager->estimatedHeight = block->height;
+//
+//				// check if the next block was received as an orphan
+//				orphan.prevBlock = block->blockHash;
+//				next = BRSetRemove(manager->orphans, &orphan);
+//			}
+//
+//			BRMerkleBlock *saveBlocks[saveCount];
+//
+//			for (i = 0, b = block; b && i < saveCount; i++) {
+//				assert(b->height != BLOCK_UNKNOWN_HEIGHT); // verify all blocks to be saved are in the chain
+//				saveBlocks[i] = b;
+//				b = BRSetGet(manager->blocks, &b->prevBlock);
+//			}
+//
+//			// make sure the set of blocks to be saved starts at a difficulty interval
+//			j = (i > 0) ? saveBlocks[i - 1]->height % BLOCK_DIFFICULTY_INTERVAL : 0;
+//			if (j > 0) i -= (i > BLOCK_DIFFICULTY_INTERVAL - j) ? BLOCK_DIFFICULTY_INTERVAL - j : i;
+//			assert(i == 0 || (saveBlocks[i - 1]->height % BLOCK_DIFFICULTY_INTERVAL) == 0);
+//			pthread_mutex_unlock(&manager->lock);
+//			if (i > 0 && manager->saveBlocks) manager->saveBlocks(manager->info, (i > 1 ? 1 : 0), saveBlocks, i);
+//
+//			if (block && block->height != BLOCK_UNKNOWN_HEIGHT && block->height >= BRPeerLastBlock(peer) &&
+//				manager->txStatusUpdate) {
+//				manager->txStatusUpdate(manager->info); // notify that transaction confirmations may have changed
+//			}
+//
+//			if (next) _peerRelayedBlock(info, next);
+		}
+
+		void PeerManager::OnRelayedPingMsg(Peer *peer) {
+			//fixme [refactor]
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			manager->syncIsInactivate(manager->info);
+		}
+
+		void PeerManager::OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//
+//			pthread_mutex_lock(&manager->lock);
+//
+//			for (size_t i = 0; i < txCount; i++) {
+//				_BRTxPeerListRemovePeer(manager->txRelays, txHashes[i], peer);
+//				_BRTxPeerListRemovePeer(manager->txRequests, txHashes[i], peer);
+//			}
+//
+//			pthread_mutex_unlock(&manager->lock);
+		}
+
+		void PeerManager::OnSetFeePerKb(Peer *peer, uint64_t feePerKb) {
+			//fixme [refactor]
+//			BRPeer *p, *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
+//
+//			pthread_mutex_lock(&manager->lock);
+//
+//			for (size_t i = array_count(manager->connectedPeers); i > 0; i--) { // find second highest fee rate
+//				p = manager->connectedPeers[i - 1];
+//				if (BRPeerConnectStatus(p) != BRPeerStatusConnected) continue;
+//				if (BRPeerFeePerKb(p) > maxFeePerKb) secondFeePerKb = maxFeePerKb, maxFeePerKb = BRPeerFeePerKb(p);
+//			}
+//
+//			if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
+//				secondFeePerKb * 3 / 2 > BRWalletFeePerKb(manager->wallet)) {
+//				peer_log(peer, "increasing feePerKb to %"
+//						PRIu64
+//						" based on feefilter messages from peers", secondFeePerKb * 3 / 2);
+//				BRWalletSetFeePerKb(manager->wallet, secondFeePerKb * 3 / 2);
+//			}
+//
+//			pthread_mutex_unlock(&manager->lock);
+		}
+
+		const TransactionPtr &PeerManager::OnRequestedTx(Peer *peer, const UInt256 &txHash) {
+			//fixme [refactor]
+//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//			BRPublishedTx pubTx = {NULL, NULL, NULL};
+//			int hasPendingCallbacks = 0, error = 0;
+//
+//			pthread_mutex_lock(&manager->lock);
+//
+//			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
+//				if (UInt256Eq(&manager->publishedTxHashes[i - 1], &txHash)) {
+//					pubTx = manager->publishedTx[i - 1];
+//					manager->publishedTx[i - 1].callback = NULL;
+//					manager->publishedTx[i - 1].info = NULL;
+//				} else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
+//			}
+//
+//			// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
+//			if (!hasPendingCallbacks && (manager->syncStartHeight == 0 || peer != manager->downloadPeer)) {
+//				BRPeerScheduleDisconnect(peer, -1); // cancel publish tx timeout
+//			}
+//
+//			_BRTxPeerListAddPeer(&manager->txRelays, txHash, peer);
+//			if (pubTx.tx) BRWalletRegisterTransaction(manager->wallet, pubTx.tx);
+//			if (pubTx.tx && !BRWalletTransactionIsValid(manager->wallet, pubTx.tx)) error = EINVAL;
+//			pthread_mutex_unlock(&manager->lock);
+//			if (pubTx.callback) pubTx.callback(pubTx.info, error);
+//			return pubTx.tx;
+		}
+
+		bool PeerManager::OnNetworkIsReachable(Peer *peer) {
+			//fixme [refactor]
+//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
+//
+//			return (manager->networkIsReachable) ? manager->networkIsReachable(manager->info) : 1;
+		}
+
+		void PeerManager::OnThreadCleanup(Peer *peer) {
+		}
+
 	}
 
 }

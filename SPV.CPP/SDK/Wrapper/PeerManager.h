@@ -27,7 +27,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PeerManager {
+		class PeerManager : public Peer::Listener {
 		public:
 
 			class Listener {
@@ -122,6 +122,33 @@ namespace Elastos {
 			uint64_t getRelayCount(const UInt256 &txHash) const;
 
 			void asyncConnect(const boost::system::error_code &error);
+
+		public:
+			virtual void OnConnected(Peer *peer);
+
+			virtual void OnDisconnected(Peer *peer, int error);
+
+			virtual void OnRelayedPeers(Peer *peer, const std::vector<PeerPtr> &peers, size_t peersCount);
+
+			virtual void OnRelayedTx(Peer *peer, const TransactionPtr &tx);
+
+			virtual void OnHasTx(Peer *peer, const UInt256 &txHash);
+
+			virtual void OnRejectedTx(Peer *peer, const UInt256 &txHash, uint8_t code);
+
+			virtual void OnRelayedBlock(Peer *peer, const MerkleBlockPtr &block);
+
+			virtual void OnRelayedPingMsg(Peer *peer);
+
+			virtual void OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes);
+
+			virtual void OnSetFeePerKb(Peer *peer, uint64_t feePerKb);
+
+			virtual const TransactionPtr &OnRequestedTx(Peer *peer, const UInt256 &txHash);
+
+			virtual bool OnNetworkIsReachable(Peer *peer);
+
+			virtual void OnThreadCleanup(Peer *peer);
 
 		private:
 			void syncStarted();

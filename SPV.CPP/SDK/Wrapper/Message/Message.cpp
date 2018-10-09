@@ -21,69 +21,69 @@ namespace Elastos {
 
 		void Message::FireConnected() {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnConnected();
+				_peer->_listener->OnConnected(_peer.get());
 		}
 
 		void Message::FireDisconnected(int error) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnDisconnected(error);
+				_peer->_listener->OnDisconnected(_peer.get(), error);
 		}
 
 		void Message::FireRelayedPeers(const std::vector<MessagePeerPtr> &peers, size_t peersCount) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRelayedPeers(peers, peersCount);
+				_peer->_listener->OnRelayedPeers(_peer.get(), peers, peersCount);
 		}
 
 		void Message::FireRelayedTx(const TransactionPtr &tx) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRelayedTx(tx);
+				_peer->_listener->OnRelayedTx(_peer.get(), tx);
 		}
 
 		void Message::FireHasTx(const UInt256 &txHash) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnHasTx(txHash);
+				_peer->_listener->OnHasTx(_peer.get(), txHash);
 		}
 
 		void Message::FireRejectedTx(const UInt256 &txHash, uint8_t code) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRejectedTx(txHash, code);
+				_peer->_listener->OnRejectedTx(_peer.get(), txHash, code);
 		}
 
 		void Message::FireRelayedBlock(const MerkleBlockPtr &block) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRelayedBlock(block);
+				_peer->_listener->OnRelayedBlock(_peer.get(), block);
 		}
 
 		void Message::FireRelayedPingMsg() {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnRelayedPingMsg();
+				_peer->_listener->OnRelayedPingMsg(_peer.get());
 		}
 
 		void Message::FireNotfound(const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnNotfound(txHashes, blockHashes);
+				_peer->_listener->OnNotfound(_peer.get(), txHashes, blockHashes);
 		}
 
 		void Message::FireSetFeePerKb(uint64_t feePerKb) {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnSetFeePerKb(feePerKb);
+				_peer->_listener->OnSetFeePerKb(_peer.get(), feePerKb);
 		}
 
 		const TransactionPtr &Message::FireRequestedTx(const UInt256 &txHash) {
 			if (_peer->_listener != nullptr)
-				return _peer->_listener->OnRequestedTx(txHash);
+				return _peer->_listener->OnRequestedTx(_peer.get(), txHash);
 			return nullptr;
 		}
 
 		bool Message::FireNetworkIsReachable() {
 			if (_peer->_listener != nullptr)
-				return _peer->_listener->OnNetworkIsReachable();
+				return _peer->_listener->OnNetworkIsReachable(_peer.get());
 			return false;
 		}
 
 		void Message::FireThreadCleanup() {
 			if (_peer->_listener != nullptr)
-				_peer->_listener->OnThreadCleanup();
+				_peer->_listener->OnThreadCleanup(_peer.get());
 		}
 
 		void Message::SendMessage(const CMBlock &msg, const std::string &type) {

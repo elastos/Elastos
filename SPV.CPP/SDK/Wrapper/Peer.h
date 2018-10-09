@@ -66,31 +66,31 @@ namespace Elastos {
 
 			class Listener {
 			public:
-				void OnConnected() {}
+				virtual void OnConnected(Peer *peer) {}
 
-				void OnDisconnected(int error) {}
+				virtual void OnDisconnected(Peer *peer, int error) {}
 
-				void OnRelayedPeers(const std::vector<boost::shared_ptr<Peer>> &peers, size_t peersCount) {}
+				virtual void OnRelayedPeers(Peer *peer, const std::vector<boost::shared_ptr<Peer>> &peers, size_t peersCount) {}
 
-				void OnRelayedTx(const TransactionPtr &tx) {}
+				virtual void OnRelayedTx(Peer *peer, const TransactionPtr &tx) {}
 
-				void OnHasTx(const UInt256 &txHash) {}
+				virtual void OnHasTx(Peer *peer, const UInt256 &txHash) {}
 
-				void OnRejectedTx(const UInt256 &txHash, uint8_t code) {}
+				virtual void OnRejectedTx(Peer *peer, const UInt256 &txHash, uint8_t code) {}
 
-				void OnRelayedBlock(const MerkleBlockPtr &block) {}
+				virtual void OnRelayedBlock(Peer *peer, const MerkleBlockPtr &block) {}
 
-				void OnRelayedPingMsg() {}
+				virtual void OnRelayedPingMsg(Peer *peer) {}
 
-				void OnNotfound(const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {}
+				virtual void OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {}
 
-				void OnSetFeePerKb(uint64_t feePerKb) {}
+				virtual void OnSetFeePerKb(Peer *peer, uint64_t feePerKb) {}
 
-				const TransactionPtr &OnRequestedTx(const UInt256 &txHash) { return nullptr;}
+				virtual const TransactionPtr &OnRequestedTx(Peer *peer, const UInt256 &txHash) { return nullptr;}
 
-				bool OnNetworkIsReachable() { return false;}
+				virtual bool OnNetworkIsReachable(Peer *peer) { return false;}
 
-				void OnThreadCleanup() {}
+				virtual void OnThreadCleanup(Peer *peer) {}
 			};
 
 		public:
