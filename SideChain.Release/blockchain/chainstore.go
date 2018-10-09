@@ -614,7 +614,6 @@ func (s *ChainStore) GetHeight() uint32 {
 func (s *ChainStore) IsBlockInStore(hash *Uint256) bool {
 	var b = new(types.Block)
 	prefix := []byte{byte(DATA_Header)}
-	log.Debug("Get block key: ", BytesToHexString(append(prefix, hash.Bytes()...)))
 	blockData, err := s.Get(append(prefix, hash.Bytes()...))
 	if err != nil {
 		return false
