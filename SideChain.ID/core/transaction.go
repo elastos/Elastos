@@ -10,11 +10,6 @@ func IsRegisterIdentificationTx(tx *types.Transaction) bool {
 	return tx.TxType == RegisterIdentification
 }
 
-func InitTransactionHelper() {
-	types.Name = name
-	types.GetDataContainer = getDataContainer
-}
-
 func name(txType types.TransactionType) string {
 	switch txType {
 	case types.CoinBase:
@@ -52,4 +47,10 @@ func getDataContainer(programHash *common.Uint168, tx *types.Transaction) interf
 		}
 	}
 	return tx
+}
+
+func init() {
+	types.Name = name
+	types.GetDataContainer = getDataContainer
+	types.GetPayloadByTxType = getPayloadByTxType
 }
