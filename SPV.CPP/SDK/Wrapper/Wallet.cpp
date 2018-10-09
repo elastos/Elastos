@@ -401,44 +401,44 @@ namespace Elastos {
 //		}
 
 		bool Wallet::registerTransaction(const TransactionPtr &transaction) {
-			//fixme [refactor] comlete me
-			return false;
-//			int wasAdded = 0, r = 1;
-//
-//			assert(tx != NULL && wallet->TransactionIsSigned(tx));
-//
-//			if (tx && wallet->TransactionIsSigned(tx)) {
-//				pthread_mutex_lock(&wallet->lock);
-//
-//				if (!BRSetContains(wallet->_allTx, tx)) {
-//					if (wallet->WalletContainsTx(wallet, tx)) {
-//						// TODO: verify signatures when possible
-//						// TODO: handle tx replacement with input sequence numbers
-//						//       (for now, replacements appear invalid until confirmation)
-//						BRSetAdd(wallet->_allTx, tx);
-//						_BRWalletInsertTx(wallet, tx);
-//						wallet->WalletUpdateBalance(wallet);
-//						wasAdded = 1;
-//					} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
-//						// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
-//						if (tx->_blockHeight == TX_UNCONFIRMED) BRSetAdd(wallet->_allTx, tx);
-//						r = 0;
-//						// BUG: XXX memory leak if tx is not added to wallet->_allTx, and we can't just free it
-//					}
-//				}
-//
-//				pthread_mutex_unlock(&wallet->lock);
-//			} else r = 0;
-//
-//			if (wasAdded) {
-//				// when a wallet address is used in a transaction, generate a new address to replace it
-//				wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-//				wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-//				if (wallet->balanceChanged) wallet->balanceChanged(wallet->callbackInfo, wallet->balance);
-//				if (wallet->txAdded) wallet->txAdded(wallet->callbackInfo, tx);
-//			}
-//
-//			return r;
+			bool wasAdded = false, r = true;
+
+			assert(transaction != nullptr && transaction->isSigned());
+
+			if (transaction != nullptr && transaction->isSigned()) {
+
+				{
+					boost::mutex::scoped_lock scopedLock(lock);
+					if (!_allTx.Contains(transaction)) {
+						if (WalletContainsTx(transaction)) {
+							// TODO: verify signatures when possible
+							// TODO: handle tx replacement with input sequence numbers
+							//       (for now, replacements appear invalid until confirmation)
+							_allTx.Insert(transaction);
+							_transactions.push_back(transaction);
+							sortTransations();
+							WalletUpdateBalance();
+							wasAdded = true;
+						} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
+							// BUG: limit total non-wallet unconfirmed tx to avoid memory exhaustion attack
+							if (transaction->getBlockHeight() == TX_UNCONFIRMED) _allTx.Insert(transaction);
+							r = false;
+							// BUG: XXX memory leak if tx is not added to wallet->_allTx, and we can't just free it
+						}
+					}
+				}
+
+			} else r = false;
+
+			if (wasAdded) {
+				// when a wallet address is used in a transaction, generate a new address to replace it
+				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+				_subAccount->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+				balanceChanged(_balance);
+				txAdded(transaction);
+			}
+
+			return r;
 		}
 
 		void Wallet::removeTransaction(const UInt256 &transactionHash) {
@@ -599,7 +599,8 @@ namespace Elastos {
 				for (size_t i = 0; !r && i < transaction->getInputs().size(); i++) {
 					if (transaction->getInputs()[i].getSequence() < UINT32_MAX - 1) r = 1; // check for replace-by-fee
 					if (transaction->getInputs()[i].getSequence() < UINT32_MAX &&
-						transaction->getLockTime() < TX_MAX_LOCK_HEIGHT && transaction->getLockTime() > _blockHeight + 1)
+						transaction->getLockTime() < TX_MAX_LOCK_HEIGHT &&
+						transaction->getLockTime() > _blockHeight + 1)
 						r = 1; // future lockTime
 					if (transaction->getInputs()[i].getSequence() < UINT32_MAX && transaction->getLockTime() > now)
 						r = 1; // future lockTime
@@ -998,8 +999,10 @@ namespace Elastos {
 		}
 
 		void Wallet::sortTransations() {
-			//fixme [refator] sort keeping _transactions sorted by date, oldest first (insertion sort), see _BRWalletTxCompare
-//			std::sort(_transactions.begin(), _transactions.end(), )
+			std::sort(_transactions.begin(), _transactions.end(),
+					  [](const TransactionPtr &first, const TransactionPtr &second) {
+						  return first->getTimestamp() < second->getTimestamp();
+					  });
 		}
 
 		uint64_t Wallet::AmountSentByTx(const TransactionPtr &tx) {

@@ -349,15 +349,13 @@ namespace Elastos {
 		}
 
 		uint32_t PeerManager::getLastBlockTimestamp() const {
-			//fixme [refactor]
-//			uint32_t timestamp;
-//
+			uint32_t timestamp;
+
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
-//			timestamp = lastBlock->timestamp;
+				timestamp = lastBlock->getTimestamp();
 			}
-//			return timestamp;
-			return 0;
+			return timestamp;
 		}
 
 		double PeerManager::getSyncProgress(uint32_t startHeight) {
