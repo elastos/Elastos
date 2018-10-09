@@ -1,6 +1,6 @@
 diff -ruN CUnit-2.1-3/CUnit/Headers/CUnit.h CUnit-2.1-3-mod/CUnit/Headers/CUnit.h
 --- CUnit-2.1-3/CUnit/Headers/CUnit.h	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/CUnit/Headers/CUnit.h	2018-06-22 18:57:07.000000000 +0800
++++ CUnit-2.1-3-mod/CUnit/Headers/CUnit.h	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,383 @@
 +/*
 + *  CUnit - A Unit testing framework library for C.
@@ -385,9 +385,105 @@ diff -ruN CUnit-2.1-3/CUnit/Headers/CUnit.h CUnit-2.1-3-mod/CUnit/Headers/CUnit.
 +#endif  /*  CUNIT_CUNIT_H_SEEN  */
 +
 +/** @} */
+diff -ruN CUnit-2.1-3/CUnit/Sources/Framework/TestRun.c CUnit-2.1-3-mod/CUnit/Sources/Framework/TestRun.c
+--- CUnit-2.1-3/CUnit/Sources/Framework/TestRun.c	2014-04-24 08:54:45.000000000 +0800
++++ CUnit-2.1-3-mod/CUnit/Sources/Framework/TestRun.c	2018-10-08 14:40:03.000000000 +0800
+@@ -129,6 +129,9 @@
+ /** Pointer to the function to be called if a suite cleanup function returns an error. */
+ static CU_SuiteCleanupFailureMessageHandler f_pSuiteCleanupFailureMessageHandler = NULL;
+ 
++/** Number of the retry count if test fail. */
++static unsigned int f_pTestFailRetryCount = 0;
++
+ /*=================================================================
+  * Private function forward declarations
+  *=================================================================*/
+@@ -219,6 +222,12 @@
+ }
+ 
+ /*------------------------------------------------------------------------*/
++void CU_set_test_retry_count(unsigned int count)
++{
++  f_pTestFailRetryCount = count;
++}
++
++/*------------------------------------------------------------------------*/
+ CU_SuiteStartMessageHandler CU_get_suite_start_handler(void)
+ {
+   return f_pSuiteStartMessageHandler;
+@@ -977,35 +986,47 @@
+     (*f_pTestStartMessageHandler)(f_pCurTest, f_pCurSuite);
+   }
+ 
+-  /* run test if it is active */
+-  if (CU_FALSE != pTest->fActive) {
++  unsigned int loop = 0, needRetry = 0;
++  do {
++    /* run test if it is active */
++    if (CU_FALSE != pTest->fActive) {
+ 
+-    if (NULL != f_pCurSuite->pSetUpFunc) {
+-      (*f_pCurSuite->pSetUpFunc)();
+-    }
++      if (NULL != f_pCurSuite->pSetUpFunc) {
++        (*f_pCurSuite->pSetUpFunc)();
++      }
+ 
+-    /* set jmp_buf and run test */
+-    pTest->pJumpBuf = &buf;
+-    if (0 == setjmp(buf)) {
+-      if (NULL != pTest->pTestFunc) {
+-        (*pTest->pTestFunc)();
++      /* set jmp_buf and run test */
++      pTest->pJumpBuf = &buf;
++      if (0 == setjmp(buf)) {
++        if (NULL != pTest->pTestFunc) {
++          (*pTest->pTestFunc)();
++        }
++      }
++
++      if (NULL != f_pCurSuite->pTearDownFunc) {
++         (*f_pCurSuite->pTearDownFunc)();
+       }
+-    }
+ 
+-    if (NULL != f_pCurSuite->pTearDownFunc) {
+-       (*f_pCurSuite->pTearDownFunc)();
++      pRunSummary->nTestsRun++;
++    }
++    else {
++      f_run_summary.nTestsInactive++;
++      if (CU_FALSE != f_failure_on_inactive) {
++        add_failure(&f_failure_list, &f_run_summary, CUF_TestInactive,
++                    0, _("Test inactive"), _("CUnit System"), f_pCurSuite, f_pCurTest);
++      }
++      result = CUE_TEST_INACTIVE;
+     }
+ 
+-    pRunSummary->nTestsRun++;
+-  }
+-  else {
+-    f_run_summary.nTestsInactive++;
+-    if (CU_FALSE != f_failure_on_inactive) {
+-      add_failure(&f_failure_list, &f_run_summary, CUF_TestInactive,
+-                  0, _("Test inactive"), _("CUnit System"), f_pCurSuite, f_pCurTest);
++    if ((pRunSummary->nFailureRecords > nStartFailures) && (++loop <= f_pTestFailRetryCount)) {
++      nStartFailures = pRunSummary->nFailureRecords;
++      needRetry = 1;
++      fprintf(stderr, "run_single_test fail, try again. %d\n", loop);
+     }
+-    result = CUE_TEST_INACTIVE;
+-  }
++    else {
++      needRetry = 0;
++    }
++  } while (needRetry);
+ 
+   /* if additional failures have occurred... */
+   if (pRunSummary->nFailureRecords > nStartFailures) {
 diff -ruN CUnit-2.1-3/VC15/AutomatedTest.vcxproj CUnit-2.1-3-mod/VC15/AutomatedTest.vcxproj
 --- CUnit-2.1-3/VC15/AutomatedTest.vcxproj	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/AutomatedTest.vcxproj	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/AutomatedTest.vcxproj	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,482 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -874,7 +970,7 @@ diff -ruN CUnit-2.1-3/VC15/AutomatedTest.vcxproj CUnit-2.1-3-mod/VC15/AutomatedT
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/AutomatedTest.vcxproj.filters CUnit-2.1-3-mod/VC15/AutomatedTest.vcxproj.filters
 --- CUnit-2.1-3/VC15/AutomatedTest.vcxproj.filters	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/AutomatedTest.vcxproj.filters	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/AutomatedTest.vcxproj.filters	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,30 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -909,7 +1005,7 @@ diff -ruN CUnit-2.1-3/VC15/AutomatedTest.vcxproj.filters CUnit-2.1-3-mod/VC15/Au
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/BasicTest.vcxproj CUnit-2.1-3-mod/VC15/BasicTest.vcxproj
 --- CUnit-2.1-3/VC15/BasicTest.vcxproj	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/BasicTest.vcxproj	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/BasicTest.vcxproj	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,482 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -1396,7 +1492,7 @@ diff -ruN CUnit-2.1-3/VC15/BasicTest.vcxproj CUnit-2.1-3-mod/VC15/BasicTest.vcxp
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/BasicTest.vcxproj.filters CUnit-2.1-3-mod/VC15/BasicTest.vcxproj.filters
 --- CUnit-2.1-3/VC15/BasicTest.vcxproj.filters	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/BasicTest.vcxproj.filters	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/BasicTest.vcxproj.filters	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,30 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -1431,7 +1527,7 @@ diff -ruN CUnit-2.1-3/VC15/BasicTest.vcxproj.filters CUnit-2.1-3-mod/VC15/BasicT
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/CUnit.sln CUnit-2.1-3-mod/VC15/CUnit.sln
 --- CUnit-2.1-3/VC15/CUnit.sln	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/CUnit.sln	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/CUnit.sln	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,136 @@
 +Microsoft Visual Studio Solution File, Format Version 12.00
 +# Visual Studio 15
@@ -1571,7 +1667,7 @@ diff -ruN CUnit-2.1-3/VC15/CUnit.sln CUnit-2.1-3-mod/VC15/CUnit.sln
 +EndGlobal
 diff -ruN CUnit-2.1-3/VC15/ConsoleTest.vcxproj CUnit-2.1-3-mod/VC15/ConsoleTest.vcxproj
 --- CUnit-2.1-3/VC15/ConsoleTest.vcxproj	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/ConsoleTest.vcxproj	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/ConsoleTest.vcxproj	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,492 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -2068,7 +2164,7 @@ diff -ruN CUnit-2.1-3/VC15/ConsoleTest.vcxproj CUnit-2.1-3-mod/VC15/ConsoleTest.
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/ConsoleTest.vcxproj.filters CUnit-2.1-3-mod/VC15/ConsoleTest.vcxproj.filters
 --- CUnit-2.1-3/VC15/ConsoleTest.vcxproj.filters	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/ConsoleTest.vcxproj.filters	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/ConsoleTest.vcxproj.filters	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,30 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -2103,7 +2199,7 @@ diff -ruN CUnit-2.1-3/VC15/ConsoleTest.vcxproj.filters CUnit-2.1-3-mod/VC15/Cons
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/PropertySheet.props CUnit-2.1-3-mod/VC15/PropertySheet.props
 --- CUnit-2.1-3/VC15/PropertySheet.props	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/PropertySheet.props	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/PropertySheet.props	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,14 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -2122,14 +2218,14 @@ diff -ruN CUnit-2.1-3/VC15/PropertySheet.props CUnit-2.1-3-mod/VC15/PropertyShee
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/Readme.txt CUnit-2.1-3-mod/VC15/Readme.txt
 --- CUnit-2.1-3/VC15/Readme.txt	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/Readme.txt	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/Readme.txt	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,2 @@
 +Visual Studio 2017 solution and Visual C++ 15 project files 
 +to build the CUnit library, example programs, and test program.
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/libcunit.vcxproj CUnit-2.1-3-mod/VC15/libcunit.vcxproj
 --- CUnit-2.1-3/VC15/libcunit.vcxproj	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/libcunit.vcxproj	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/libcunit.vcxproj	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,1065 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -3199,7 +3295,7 @@ diff -ruN CUnit-2.1-3/VC15/libcunit.vcxproj CUnit-2.1-3-mod/VC15/libcunit.vcxpro
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/libcunit.vcxproj.filters CUnit-2.1-3-mod/VC15/libcunit.vcxproj.filters
 --- CUnit-2.1-3/VC15/libcunit.vcxproj.filters	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/libcunit.vcxproj.filters	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/libcunit.vcxproj.filters	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,184 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -3388,7 +3484,7 @@ diff -ruN CUnit-2.1-3/VC15/libcunit.vcxproj.filters CUnit-2.1-3-mod/VC15/libcuni
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/test_cunit.vcxproj CUnit-2.1-3-mod/VC15/test_cunit.vcxproj
 --- CUnit-2.1-3/VC15/test_cunit.vcxproj	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/test_cunit.vcxproj	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/test_cunit.vcxproj	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,516 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -3909,7 +4005,7 @@ diff -ruN CUnit-2.1-3/VC15/test_cunit.vcxproj CUnit-2.1-3-mod/VC15/test_cunit.vc
 \ No newline at end of file
 diff -ruN CUnit-2.1-3/VC15/test_cunit.vcxproj.filters CUnit-2.1-3-mod/VC15/test_cunit.vcxproj.filters
 --- CUnit-2.1-3/VC15/test_cunit.vcxproj.filters	1970-01-01 08:00:00.000000000 +0800
-+++ CUnit-2.1-3-mod/VC15/test_cunit.vcxproj.filters	2018-06-22 18:51:56.000000000 +0800
++++ CUnit-2.1-3-mod/VC15/test_cunit.vcxproj.filters	2018-10-08 14:58:43.000000000 +0800
 @@ -0,0 +1,65 @@
 +﻿<?xml version="1.0" encoding="utf-8"?>
 +<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -3977,3 +4073,14 @@ diff -ruN CUnit-2.1-3/VC15/test_cunit.vcxproj.filters CUnit-2.1-3-mod/VC15/test_
 +  </ItemGroup>
 +</Project>
 \ No newline at end of file
+diff -ruN CUnit-2.1-3/libcunit_dll.def CUnit-2.1-3-mod/libcunit_dll.def
+--- CUnit-2.1-3/libcunit_dll.def	2014-04-24 08:54:45.000000000 +0800
++++ CUnit-2.1-3-mod/libcunit_dll.def	2018-10-08 14:40:03.000000000 +0800
+@@ -81,6 +81,7 @@
+ CU_set_test_func
+ CU_set_test_name
+ CU_set_test_start_handler
++CU_set_test_retry_count
+ CU_translate_special_characters
+ CU_trim
+ CU_trim_left

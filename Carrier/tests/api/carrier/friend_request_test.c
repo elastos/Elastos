@@ -207,32 +207,35 @@ static void test_accept_friend(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for friend_request callback invoked;
-    cond_trywait(wctxt->cond, 60000);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(extra->from);
-    CU_ASSERT_PTR_NOT_NULL_FATAL(extra->hello);
+    bool bRet = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(bRet);
+    if (bRet) {
+        CU_ASSERT_PTR_NOT_NULL_FATAL(extra->from);
+        CU_ASSERT_PTR_NOT_NULL_FATAL(extra->hello);
 
-    CU_ASSERT_STRING_EQUAL_FATAL(extra->from, robotid);
-    CU_ASSERT_STRING_EQUAL_FATAL(extra->from, extra->info.userid);
-    CU_ASSERT_STRING_EQUAL_FATAL(extra->hello, hello);
-    //TODO: test robot user info;
+        CU_ASSERT_STRING_EQUAL_FATAL(extra->from, robotid);
+        CU_ASSERT_STRING_EQUAL_FATAL(extra->from, extra->info.userid);
+        CU_ASSERT_STRING_EQUAL_FATAL(extra->hello, hello);
+        //TODO: test robot user info;
 
-    rc = ela_accept_friend(wctxt->carrier, robotid);
-    CU_ASSERT_EQUAL_FATAL(rc, 0);
+        rc = ela_accept_friend(wctxt->carrier, robotid);
+        CU_ASSERT_EQUAL_FATAL(rc, 0);
 
-    // wait for friend added callback invoked;
-    cond_wait(wctxt->cond);
-    CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
+        // wait for friend added callback invoked;
+        cond_wait(wctxt->cond);
+        CU_ASSERT_TRUE(ela_is_friend(wctxt->carrier, robotid));
 
-    // wait for friend connection (online) callback invoked.
-    cond_wait(wctxt->cond);
-    CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
+        // wait for friend connection (online) callback invoked.
+        cond_wait(wctxt->cond);
+        CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
 
-    char result[32];
-    char buf[32];
-    rc = read_ack("%32s %32s", buf, result);
-    CU_ASSERT_EQUAL(rc, 2);
-    CU_ASSERT_STRING_EQUAL(buf, "fadd");
-    CU_ASSERT_STRING_EQUAL(result, "succeeded");
+        char result[32];
+        char buf[32];
+        rc = read_ack("%32s %32s", buf, result);
+        CU_ASSERT_EQUAL(rc, 2);
+        CU_ASSERT_STRING_EQUAL(buf, "fadd");
+        CU_ASSERT_STRING_EQUAL(result, "succeeded");
+    }
 }
 
 static void test_add_friend_be_friend(void)

@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <getopt.h>
 #include <time.h>
 #include <assert.h>
 #include <errno.h>
@@ -158,6 +159,7 @@ char robotaddr[ELA_MAX_ADDRESS_LEN + 1];
 
 int test_main(int argc, char *argv[])
 {
+    int opt, idx, retryCount = 0;
     int i, j;
     CU_pSuite pSuite;
     CU_TestInfo *ti;
@@ -165,6 +167,15 @@ int test_main(int argc, char *argv[])
     int suites_order[64];
     int cases_order[64];
     char ack[128];
+
+    optind = 1;
+    while ((opt = getopt(argc, argv, "r:c:-:")) != -1) {
+        switch (opt) {
+        case 'r':
+            retryCount = atoi(optarg);
+            break;
+        }
+    }
 
     if (connect_robot(global_config.robot.host, global_config.robot.port) < 0)
         return -1;
@@ -211,6 +222,7 @@ int test_main(int argc, char *argv[])
     }
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
+    CU_set_test_retry_count(retryCount);
 
     read_ack("%32s %45s %52s", ack, robotid, robotaddr);
     if (strcmp(ack, "ready") != 0) {
@@ -225,7 +237,7 @@ int test_main(int argc, char *argv[])
 
     CU_basic_run_tests();
 
-    fail_cnt = CU_get_number_of_failures();
+    fail_cnt = CU_get_number_of_tests_failed();
     if (fail_cnt > 0) {
         vlogE("Failure Case: %d\n", fail_cnt);
     }

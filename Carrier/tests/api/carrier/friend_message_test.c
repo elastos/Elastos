@@ -167,15 +167,17 @@ static void test_send_message_from_friend(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for message from robot.
-    cond_trywait(wctxt->cond, 60000);
+    bool bRet = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(bRet);
+    if (bRet) {
+        CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
+        CU_ASSERT_STRING_EQUAL(extra->msg, msg);
+        CU_ASSERT_EQUAL(strlen(extra->msg), strlen(msg));
+        CU_ASSERT_EQUAL(extra->len, strlen(msg) + 1);
 
-    CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
-    CU_ASSERT_STRING_EQUAL(extra->msg, msg);
-    CU_ASSERT_EQUAL(strlen(extra->msg), strlen(msg));
-    CU_ASSERT_EQUAL(extra->len, strlen(msg) + 1);
-
-    FREE_ANYWAY(extra->from);
-    FREE_ANYWAY(extra->msg);
+        FREE_ANYWAY(extra->from);
+        FREE_ANYWAY(extra->msg);
+    }
 }
 
 static void test_send_message_to_stranger(void)

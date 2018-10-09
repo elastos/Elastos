@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    while ((opt = getopt_long(argc, argv, "c:h?", options, &idx)) != -1) {
+    while ((opt = getopt_long(argc, argv, "c:h:r:?", options, &idx)) != -1) {
         switch (opt) {
         case 1:
         case 2:

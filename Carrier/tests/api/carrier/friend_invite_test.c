@@ -167,17 +167,19 @@ static void test_friend_invite_confirm(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.
-    cond_trywait(wctxt->cond, 60000);
+    bool bRet = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(bRet);
+    if (bRet) {
+        CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
+        CU_ASSERT_EQUAL(extra->status, 0);
+        CU_ASSERT_PTR_NULL(extra->reason);
+        CU_ASSERT_STRING_EQUAL(extra->data, invite_rsp_data);
+        CU_ASSERT_EQUAL(strlen(extra->data), strlen(invite_rsp_data));
+        CU_ASSERT_EQUAL(extra->len, strlen(invite_rsp_data) + 1);
 
-    CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
-    CU_ASSERT_EQUAL(extra->status, 0);
-    CU_ASSERT_PTR_NULL(extra->reason);
-    CU_ASSERT_STRING_EQUAL(extra->data, invite_rsp_data);
-    CU_ASSERT_EQUAL(strlen(extra->data), strlen(invite_rsp_data));
-    CU_ASSERT_EQUAL(extra->len, strlen(invite_rsp_data) + 1);
-
-    FREE_ANYWAY(extra->from);
-    FREE_ANYWAY(extra->data);
+        FREE_ANYWAY(extra->from);
+        FREE_ANYWAY(extra->data);
+    }
 }
 
 static void test_friend_invite_reject(void)
@@ -214,15 +216,17 @@ static void test_friend_invite_reject(void)
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.
-    cond_trywait(wctxt->cond, 60000);
+    bool bRet = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(bRet);
+    if (bRet) {
+        CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
+        CU_ASSERT(extra->status != 0);
+        CU_ASSERT_STRING_EQUAL(extra->reason, reason);
+        CU_ASSERT_PTR_NULL(extra->data);
 
-    CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
-    CU_ASSERT(extra->status != 0);
-    CU_ASSERT_STRING_EQUAL(extra->reason, reason);
-    CU_ASSERT_PTR_NULL(extra->data);
-
-    FREE_ANYWAY(extra->from);
-    FREE_ANYWAY(extra->reason);
+        FREE_ANYWAY(extra->from);
+        FREE_ANYWAY(extra->reason);
+    }
 }
 
 static void test_friend_invite_stranger(void)
