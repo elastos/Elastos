@@ -174,6 +174,7 @@ namespace Elastos {
 			if (standardAccount == nullptr) return;
 
 			CMBlock mnemonicData = Utils::decrypt(standardAccount->GetEncryptedMnemonic(), payPassword);
+			ParamChecker::checkDecryptedData(mnemonicData);
 			_walletJson.setMnemonic(Utils::convertToString(mnemonicData));
 			_walletJson.setLanguage(standardAccount->GetLanguage());
 		}
@@ -183,7 +184,7 @@ namespace Elastos {
 			if (simpleAccount == nullptr) return;
 
 			CMBlock privKey = Utils::decrypt(simpleAccount->GetEncryptedKey(), payPassword);
-			ParamChecker::checkCondition(privKey.GetSize() == 0, Error::WrongPasswd, "Wrong password");
+			ParamChecker::checkDecryptedData(privKey);
 			_walletJson.setPrivateKey(Utils::encodeHex(privKey));
 		}
 
