@@ -362,7 +362,7 @@ func (s *HttpService) getBlock(hash common.Uint256, format uint32) (interface{},
 }
 
 func (s *HttpService) GetBlockByHash(param Params) map[string]interface{} {
-	str, ok := param.String("hash")
+	str, ok := param.String("blockhash")
 	if !ok {
 		return ResponsePack(InvalidParams, "block hash not found")
 	}

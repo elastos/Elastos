@@ -104,6 +104,7 @@ func NewChainStore(genesisBlock *types.Block) (*ChainStore, error) {
 	s.RegisterFunctions(true, StoreFuncNames.PersistTrimmedBlock, s.persistTrimmedBlock)
 	s.RegisterFunctions(true, StoreFuncNames.PersistBlockHash, s.persistBlockHash)
 	s.RegisterFunctions(true, StoreFuncNames.PersistCurrentBlock, s.persistCurrentBlock)
+	s.RegisterFunctions(true, StoreFuncNames.PersistUnspendUTXOs, s.persistUnspendUTXOs)
 	s.RegisterFunctions(true, StoreFuncNames.PersistTransactions, s.persistTransactions)
 	s.RegisterFunctions(true, StoreFuncNames.PersistUnspend, s.persistUnspend)
 
