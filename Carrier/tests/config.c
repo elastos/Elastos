@@ -166,7 +166,7 @@ void load_config(const char *config_file)
     global_config.shuffle = (int)get_int(&cfg, "shuffle", 1);
     global_config.log2file = (int)get_int(&cfg, "log2file", 0);
 
-    get_str(&cfg, "datadir", "~/.wtests", path, sizeof(path));
+    get_str(&cfg, "datadir", "~/.elatests", path, sizeof(path));
     qualified_path(path, config_file, global_config.data_location);
 
     global_config.tests.loglevel = (int)get_int(&cfg, "tests.loglevel", 4);

@@ -114,7 +114,7 @@ static void usage(void)
 {
     printf("Carrier API unit tests.\n");
     printf("\n");
-    printf("Usage: wtests [--cases | --robot] -c CONFIG\n");
+    printf("Usage: elatests [--cases | --robot] -c CONFIG\n");
     printf("\n");
 }
 

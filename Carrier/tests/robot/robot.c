@@ -33,6 +33,7 @@
 #ifdef HAVE_WINSOCK2_H
 #include <winsock2.h>
 #endif
+#include <pthread.h>
 
 #include <vlog.h>
 
@@ -64,13 +65,6 @@ void print_friend_info(const ElaFriendInfo* info, int order)
     print_user_info(&info->user_info);
     vlogD("        label: %s", info->label);
     vlogD("     presence: %s", info->presence);
-}
-
-static void idle_cb(ElaCarrier *w, void *context)
-{
-    char *cmd = read_cmd();
-    if (cmd)
-        do_cmd(context, cmd);
 }
 
 static void connection_status_cb(ElaCarrier *w, ElaConnectionStatus status,
@@ -218,7 +212,7 @@ static void friend_invite_cb(ElaCarrier *w, const char *from,
 }
 
 static ElaCallbacks callbacks = {
-    .idle            = idle_cb,
+    .idle            = NULL,
     .connection_status = connection_status_cb,
     .ready           = ready_cb,
     .self_info       = self_info_cb,
@@ -245,11 +239,29 @@ static void log_print(const char *format, va_list args)
     vprintf(format, args);
 }
 
+static void* carrier_run_entry(void *arg)
+{
+    ElaCarrier *w = (ElaCarrier *)arg;
+    int rc;
+
+    rc = ela_run(w, 10);
+    if (rc != 0) {
+        printf("Error: start carrier loop error %d.\n", ela_get_error());
+        ela_kill(w);
+    }
+
+    return NULL;
+}
+
 int robot_main(int argc, char *argv[])
 {
     ElaCarrier *w;
     int rc;
     char datadir[PATH_MAX];
+
+    int i;
+    pthread_t tid;
+    char *cmd;
 
     ElaOptions opts = {
         .udp_enabled     = true,
@@ -257,7 +269,6 @@ int robot_main(int argc, char *argv[])
         .bootstraps_size = global_config.bootstraps_size,
         .persistent_location = datadir
     };
-    int i;
 
     sprintf(datadir, "%s/robot", global_config.data_location);
 
@@ -290,14 +301,17 @@ int robot_main(int argc, char *argv[])
     }
 
     carrier_context.carrier = w;
-    rc = ela_run(w, 10);
+    pthread_create(&tid, 0, &carrier_run_entry, w);
+
+    do {
+        cmd = read_cmd();
+        do_cmd(&test_context, cmd);
+    } while (strcmp(cmd, "kill"));
+
+    pthread_join(tid, NULL);
     carrier_context.carrier = NULL;
+
     stop_cmd_listener();
-    if (rc != 0) {
-        vlogE("Carrier run error (0x%x)", ela_get_error());
-        ela_kill(w);
-        return -1;
-    }
 
     vlogI("Carrier exit");
 

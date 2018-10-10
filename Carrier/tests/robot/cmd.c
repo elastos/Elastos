@@ -596,7 +596,7 @@ static void sreply(TestContext *context, int argc, char *argv[])
 
         rc = ela_session_reply_request(sctxt->session, NULL, 0, NULL);
         if (rc < 0) {
-            vlogE("Confirm session reqeust failed: 0x%x", ela_get_error());
+            vlogE("Confirm session reply request failed: 0x%x", ela_get_error());
             goto cleanup;
         }
 
@@ -985,28 +985,26 @@ char* read_cmd(void)
 {
     int nfds;
     fd_set rfds;
-    struct timeval timeout;
     char *cmd;
 
     cmd = get_cmd_from_buffer();
     if (cmd)
         return cmd;
 
+read_cmd:
     FD_ZERO(&rfds);
     FD_SET(cmd_sock, &rfds);
 
-    timerclear(&timeout);
-    timeout.tv_sec = 0;
-    timeout.tv_usec = 1000;
-
-    nfds = select(FD_SETSIZE, &rfds, NULL, NULL, &timeout);
+    nfds = select(FD_SETSIZE, &rfds, NULL, NULL, NULL);
     if (nfds < 0) {
         vlogE("Read command error. Emit a kill command to shutdown robot.");
         return "kill";
     } else if (nfds == 0) {
-        return NULL;
+        goto read_cmd;
     } else {
-        ssize_t rc = recv(cmd_sock, cmd_buffer + cmd_len, sizeof(cmd_buffer) - cmd_len, 0);
+        ssize_t
+
+        rc = recv(cmd_sock, cmd_buffer + cmd_len, sizeof(cmd_buffer) - cmd_len, 0);
         if (rc < 0) {
             vlogE("Read command error. Emit a kill command to shutdown robot.");
             return "kill";
@@ -1017,7 +1015,11 @@ char* read_cmd(void)
 
         cmd_len += (int)rc;
 
-        return get_cmd_from_buffer();
+        cmd = get_cmd_from_buffer();
+        if (!cmd)
+            goto read_cmd;
+        else
+            return cmd;
     }
 }
 
