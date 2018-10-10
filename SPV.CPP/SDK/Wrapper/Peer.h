@@ -5,13 +5,16 @@
 #ifndef __ELASTOS_SDK_PEER_H__
 #define __ELASTOS_SDK_PEER_H__
 
+#include <deque>
 #include <boost/shared_ptr.hpp>
+#include <boost/function.hpp>
 #include <SDK/Common/Log.h>
 
 #include "BRPeerMessages.h"
 
 #include "Wrapper.h"
 #include "CMemBlock.h"
+#include "PeerCallbackInfo.h"
 #include "Message/Message.h"
 #include "Transaction/ElementSet.h"
 
@@ -93,12 +96,14 @@ namespace Elastos {
 				virtual void OnThreadCleanup(Peer *peer) {}
 			};
 
+			typedef boost::function<void(int)> PeerCallback;
+
 		public:
-			Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp);
+			Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp);
 
-			Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services);
+			Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services);
 
-			Peer(uint32_t magicNumber);
+			Peer(PeerManager *manager, uint32_t magicNumber);
 
 			Peer(const Peer &peer);
 
@@ -212,6 +217,26 @@ namespace Elastos {
 
 			bool isIPv4() const;
 
+			double getStartTime() const;
+
+			void setStartTime(double time);
+
+			double getPintTime() const;
+
+			void setPingTime(double time);
+
+			void addPongCallbackInfo(const PeerCallbackInfo &callbackInfo);
+
+			void addPongCallback(const PeerCallback &callback);
+
+			PeerCallbackInfo popPongCallbackInfo();
+
+			PeerCallback popPongCallback();
+
+			const std::deque<PeerCallback> &getPongCallbacks() const;
+
+			PeerManager *getPeerManager() const;
+
 			std::string FormatError(int errnum);
 
 			template<typename Arg1, typename... Args>
@@ -318,9 +343,12 @@ namespace Elastos {
 			TransactionSet _knownTxHashSet;
 			volatile int _socket;
 
+			std::deque<PeerCallbackInfo> _pongInfoList;
+			std::deque<PeerCallback> _pongCallbackList;
+
 			typedef boost::shared_ptr<Message> MessagePtr;
 			std::map<std::string, MessagePtr> _messages;
-			boost::shared_ptr<PeerManager> _manager;
+			PeerManager *_manager;
 			Listener *_listener;
 		};
 

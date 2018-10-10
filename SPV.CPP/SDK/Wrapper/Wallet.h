@@ -13,6 +13,7 @@
 
 #include "BRInt.h"
 
+#include "Lockable.h"
 #include "Wrapper.h"
 #include "SDK/Transaction/Transaction.h"
 #include "SDK/Transaction/ElementSet.h"
@@ -27,16 +28,6 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		class Lockable {
-		public:
-			void Lock() const { lock.lock(); }
-
-			void Unlock() const { lock.unlock(); }
-
-		protected:
-			mutable boost::mutex lock;
-		};
 
 		class Wallet : public Lockable {
 

@@ -15,9 +15,10 @@ namespace Elastos {
 		public:
 			PongMessage(const MessagePeerPtr &peer);
 
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+			virtual bool Accept(const CMBlock &msg);
 
-			virtual void Send(BRPeer *peer);
+			virtual void Send(const SendMessageParameter &param);
+
 		};
 
 	}

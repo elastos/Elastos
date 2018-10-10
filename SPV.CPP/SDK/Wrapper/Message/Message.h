@@ -19,6 +19,7 @@ namespace Elastos {
 		typedef boost::shared_ptr<Peer> MessagePeerPtr;
 
 		struct SendMessageParameter {
+			virtual ~SendMessageParameter() {}
 		};
 
 		class Message {

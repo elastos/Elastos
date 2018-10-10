@@ -10,6 +10,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/thread/mutex.hpp>
 
+#include "Lockable.h"
 #include "Peer.h"
 #include "ChainParams.h"
 #include "Wallet.h"
@@ -27,7 +28,9 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PeerManager : public Peer::Listener {
+		class PeerManager :
+				public Lockable,
+				public Peer::Listener {
 		public:
 
 			class Listener {
@@ -119,9 +122,19 @@ namespace Elastos {
 
 			void publishTransaction(const TransactionPtr &transaction);
 
+			void publishTransaction(const TransactionPtr &transaction, const boost::function<void (int)> &callback);
+
 			uint64_t getRelayCount(const UInt256 &txHash) const;
 
 			void asyncConnect(const boost::system::error_code &error);
+
+			const std::vector<PublishedTransaction> getPublishedTransaction() const;
+
+			const std::vector<UInt256> getPublishedTransactionHashes() const;
+
+			int reconnectTaskCount() const;
+
+			int &reconnectTaskCount();
 
 		public:
 			virtual void OnConnected(Peer *peer);
@@ -188,10 +201,12 @@ namespace Elastos {
 
 			void syncStopped();
 
-			void addTxToPublishList(const TransactionPtr &tx, void (*callback)(void *, int));
+			void addTxToPublishList(const TransactionPtr &tx, const boost::function<void (int)> &callback);
+
+			void publishPendingTx(const PeerPtr &peer);
 
 		private:
-			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, reconnectTaskCount;
+			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;
 			std::vector<PeerPtr> _peers;
 			std::vector<PeerPtr> _connectedPeers;
 			std::vector<PeerPtr> _fiexedPeers;
@@ -212,8 +227,6 @@ namespace Elastos {
 			WalletPtr _wallet;
 			ChainParams _chainParams;
 			boost::weak_ptr<Listener> _listener;
-
-			mutable boost::mutex lock;
 		};
 
 		typedef boost::shared_ptr<PeerManager> PeerManagerPtr;

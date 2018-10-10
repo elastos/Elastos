@@ -8,54 +8,52 @@
 
 #include "PongMessage.h"
 #include "Log.h"
+#include "Peer.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		PongMessage::PongMessage(const Elastos::ElaWallet::MessagePeerPtr &peer) :
-			Message(peer) {
+		PongMessage::PongMessage(const MessagePeerPtr &peer) :
+				Message(peer) {
 		}
 
-		int PongMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			BRPeerContext *ctx = (BRPeerContext *)peer;
+		bool PongMessage::Accept(const CMBlock &msg) {
 			struct timeval tv;
 			double pingTime;
-			int r = 1;
+			bool r = true;
 
-			if (sizeof(uint64_t) > msgLen) {
-				peer_log(peer, "malformed pong message, length is %zu, should be %zu", msgLen, sizeof(uint64_t));
-				r = 0;
-			} else if (array_count(ctx->pongCallback) == 0) {
-				peer_log(peer, "got unexpected pong");
-				r = 0;
+			if (sizeof(uint64_t) > msg.GetSize()) {
+				_peer->Pwarn("malformed pong message, length is {}, should be {}", msg.GetSize(), sizeof(uint64_t));
+				r = false;
+			} else if (_peer->getPongCallbacks().empty()) {
+				_peer->Pwarn("got unexpected pong");
+				r = false;
 			} else {
-				if (ctx->startTime > 1) {
+				if (_peer->getStartTime() > 1) {
 					gettimeofday(&tv, nullptr);
-					pingTime = tv.tv_sec + (double)tv.tv_usec/1000000 - ctx->startTime;
+					pingTime = tv.tv_sec + (double) tv.tv_usec / 1000000 - _peer->getStartTime();
 
 					// 50% low pass filter on current ping time
-					ctx->pingTime = ctx->pingTime*0.5 + pingTime*0.5;
-					ctx->startTime = 0;
-					peer_log(peer, "got pong in %fs", pingTime);
+					_peer->setPingTime(_peer->getPingTime() * 0.5 + pingTime * 0.5);
+					_peer->setStartTime(0);
+					_peer->Pinfo("got pong in {}", pingTime);
 				} else {
-					peer_log(peer, "got pong");
+					_peer->Pinfo("got pong");
 				}
 
-				if (array_count(ctx->pongCallback) > 0) {
-					void (*pongCallback)(void *, int) = ctx->pongCallback[0];
-					void *pongInfo = ctx->pongInfo[0];
-
-					array_rm(ctx->pongCallback, 0);
-					array_rm(ctx->pongInfo, 0);
-					if (pongCallback) pongCallback(pongInfo, 1);
+				if (_peer->getPongCallbacks().size() > 0) {
+					PeerCallbackInfo info = _peer->popPongCallbackInfo();
+					Peer::PeerCallback callback = _peer->popPongCallback();
+					if (!callback.empty()) callback(1);
 				}
 			}
 
 			return r;
 		}
 
-		void PongMessage::Send(BRPeer *peer) {
+		void PongMessage::Send(const SendMessageParameter &param) {
 
 		}
+
 	}
 }

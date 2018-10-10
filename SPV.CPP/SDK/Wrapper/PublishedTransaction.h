@@ -14,9 +14,13 @@ namespace Elastos {
 
 		class PublishedTransaction {
 		public:
-			PublishedTransaction();
+			PublishedTransaction(const TransactionPtr &tx);
+
+			PublishedTransaction(const TransactionPtr &tx, const boost::function<void (int)> &callback);
 
 			bool HasCallback() const;
+
+			const TransactionPtr &GetTransaction() const;
 
 		private:
 			TransactionPtr _tx;

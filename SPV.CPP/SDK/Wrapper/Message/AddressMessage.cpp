@@ -58,7 +58,7 @@ namespace Elastos {
 					off += sizeof(uint16_t);
 					uint64_t id = UInt64GetLE(&msg[off]);
 					off += sizeof(uint64_t);
-					PeerPtr p(new Peer(address, port, timestamp, services));
+					PeerPtr p(new Peer(_peer->getPeerManager(), address, port, timestamp, services));
 
 					char host[INET6_ADDRSTRLEN] = {0};
 					if (p->isIPv4())

@@ -376,7 +376,7 @@ namespace Elastos {
 
 			for (size_t i = 0; i < peersEntity.size(); ++i) {
 				peers.push_back(
-						PeerPtr(new Peer(peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
+						PeerPtr(new Peer(_peerManager.get(), peersEntity[i].address, peersEntity[i].port, peersEntity[i].timeStamp)));
 			}
 
 			return peers;

@@ -17,8 +17,9 @@ namespace Elastos {
 
 		const uint32_t DEFAULT_MAGICNUMBER = uint32_t(0);
 
-		Peer::Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp) :
+		Peer::Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp) :
 				_status(Unknown),
+				_manager(manager),
 				_magicNumber(DEFAULT_MAGICNUMBER) {
 			_info.address = addr;
 			_info.port = port;
@@ -29,19 +30,21 @@ namespace Elastos {
 			initDefaultMessages();
 		}
 
-		Peer::Peer(uint32_t magicNumber) :
+		Peer::Peer(PeerManager *manager, uint32_t magicNumber) :
 				_status(Unknown),
 				_magicNumber(magicNumber),
 				_pingTime(DBL_MAX),
 				_mempoolTime(DBL_MAX),
 				_disconnectTime(DBL_MAX),
+				_manager(manager),
 				_socket(-1) {
 
 			initDefaultMessages();
 		}
 
-		Peer::Peer(const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services) :
+		Peer::Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services) :
 				_status(Unknown),
+				_manager(manager),
 				_magicNumber(DEFAULT_MAGICNUMBER) {
 
 			_info.address = addr;
@@ -179,9 +182,9 @@ namespace Elastos {
 
 				UInt32SetLE(&buf[off], _magicNumber);
 				off += sizeof(uint32_t);
-				strncpy((char *)&buf[off], type.c_str(), 12);
+				strncpy((char *) &buf[off], type.c_str(), 12);
 				off += 12;
-				UInt32SetLE(&buf[off], (uint32_t)message.GetSize());
+				UInt32SetLE(&buf[off], (uint32_t) message.GetSize());
 				off += sizeof(uint32_t);
 				BRSHA256_2(hash, message, message.GetSize());
 				memcpy(&buf[off], hash, sizeof(uint32_t));
@@ -193,12 +196,12 @@ namespace Elastos {
 				socket = _socket;
 				if (socket < 0) error = ENOTCONN;
 
-				while (socket >= 0 && ! error && msgLen < sizeof(buf)) {
+				while (socket >= 0 && !error && msgLen < sizeof(buf)) {
 					n = send(socket, &buf[msgLen], sizeof(buf) - msgLen, MSG_NOSIGNAL);
 					if (n >= 0) msgLen += n;
 					if (n < 0 && errno != EWOULDBLOCK) error = errno;
 					gettimeofday(&tv, NULL);
-					if (! error && tv.tv_sec + (double)tv.tv_usec/1000000 >= _disconnectTime) error = ETIMEDOUT;
+					if (!error && tv.tv_sec + (double) tv.tv_usec / 1000000 >= _disconnectTime) error = ETIMEDOUT;
 					socket = _socket;
 				}
 
@@ -260,7 +263,7 @@ namespace Elastos {
 		bool Peer::IsEqual(const Peer *otherPeer) const {
 			return (this == otherPeer ||
 					(UInt128Eq(&_info.address, &otherPeer->_info.address) &&
-					_info.port == otherPeer->_info.port));
+					 _info.port == otherPeer->_info.port));
 		}
 
 		bool Peer::networkIsReachable() const {
@@ -377,7 +380,7 @@ namespace Elastos {
 								if (UInt32GetLE(&hash) != checksum) { // verify checksum
 									Perror("reading {}, invalid checksum {:x}, expected {:x}, payload length:{},"
 										   " SHA256_2: {}", type, UInt32GetLE(&hash), checksum, msgLen,
-											 Utils::UInt256ToString(hash));
+										   Utils::UInt256ToString(hash));
 									error = EPROTO;
 								} else if (!acceptMessage(payload, type)) error = EPROTO;
 							}
@@ -427,8 +430,8 @@ namespace Elastos {
 
 			if (_currentBlock != nullptr && MSG_TX == type) { // if we receive a non-tx message, merkleblock is done
 				Perror("incomplete merkleblock {}, expected {} more tx, got {}",
-						 Utils::UInt256ToString(_currentBlock->getHash()),
-						 _currentBlockTxHashes.size(), type);
+					   Utils::UInt256ToString(_currentBlock->getHash()),
+					   _currentBlockTxHashes.size(), type);
 				_currentBlockTxHashes.clear();
 				_currentBlock.reset();
 				r = 0;
@@ -620,6 +623,50 @@ namespace Elastos {
 				return;
 			}
 			_messages[msgType]->Send(parameter);
+		}
+
+		double Peer::getStartTime() const {
+			return _startTime;
+		}
+
+		void Peer::setStartTime(double time) {
+			_startTime = time;
+		}
+
+		void Peer::addPongCallbackInfo(const PeerCallbackInfo &callbackInfo) {
+			_pongInfoList.push_back(callbackInfo);
+		}
+
+		void Peer::addPongCallback(const PeerCallback &callback) {
+			_pongCallbackList.push_back(callback);
+		}
+
+		PeerManager *Peer::getPeerManager() const {
+			return _manager;
+		}
+
+		const std::deque<Peer::PeerCallback> &Peer::getPongCallbacks() const {
+			return _pongCallbackList;
+		}
+
+		double Peer::getPintTime() const {
+			return _pingTime;
+		}
+
+		void Peer::setPingTime(double time) {
+			_pingTime = time;
+		}
+
+		PeerCallbackInfo Peer::popPongCallbackInfo() {
+			PeerCallbackInfo result = _pongInfoList.front();
+			_pongInfoList.pop_front();
+			return result;
+		}
+
+		Peer::PeerCallback Peer::popPongCallback() {
+			PeerCallback callback = _pongCallbackList.front();
+			_pongCallbackList.pop_front();
+			return callback;
 		}
 
 	}

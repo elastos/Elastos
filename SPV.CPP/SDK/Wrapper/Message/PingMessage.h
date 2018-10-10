@@ -5,19 +5,27 @@
 #ifndef __ELASTOS_SDK_PINGMESSAGE_H__
 #define __ELASTOS_SDK_PINGMESSAGE_H__
 
+#include <boost/function.hpp>
+
 #include "Message.h"
+#include "PeerCallbackInfo.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
+		struct PingParameter : public SendMessageParameter {
+			PeerCallbackInfo callbackInfo;
+			boost::function<void (int)> callback;
+		};
+
 		class PingMessage :
 			public Message {
 		public:
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+			explicit PingMessage(const MessagePeerPtr &peer);
 
-			virtual void Send(BRPeer *peer);
+			virtual bool Accept(const CMBlock &msg);
 
-			void sendPing(BRPeer *peer, void *info, void (*pongCallback)(void *info, int success));
+			virtual void Send(const SendMessageParameter &param);
 		};
 
 	}

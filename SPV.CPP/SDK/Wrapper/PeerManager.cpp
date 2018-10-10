@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <Core/BRChainParams.h>
 #include <Core/BRPeer.h>
+#include <SDK/Wrapper/Message/PingMessage.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -15,6 +16,7 @@
 #include "arith_uint256.h"
 #include "Plugin/Registry.h"
 #include "Plugin/Block/MerkleBlock.h"
+#include "PeerCallbackInfo.h"
 
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
@@ -27,21 +29,6 @@
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		namespace {
-			typedef struct {
-				PeerManager *manager;
-				const char *hostname;
-				uint64_t services;
-			} BRFindPeersInfo;
-
-			typedef struct {
-				BRPeer *peer;
-				PeerManager *manager;
-				UInt256 hash;
-			} BRPeerCallbackInfo;
-
-		}
 
 		void PeerManager::syncStarted() {
 			if (!_listener.expired()) {
@@ -124,7 +111,7 @@ namespace Elastos {
 				_earliestKeyTime(earliestKeyTime),
 				averageTxPerBlock(1400),
 				maxConnectCount(PEER_MAX_CONNECTIONS),
-				reconnectTaskCount(0),
+				_reconnectTaskCount(0),
 				_chainParams(params) {
 
 			assert(listener != nullptr);
@@ -230,7 +217,6 @@ namespace Elastos {
 
 				while (!peers.empty() && _connectedPeers.size() < maxConnectCount) {
 					size_t i = BRRand((uint32_t) peers.size()); // index of random peer
-					BRPeerCallbackInfo *info;
 
 					i = i * i / peers.size(); // bias random peer selection toward peers with more recent timestamp
 
@@ -441,14 +427,17 @@ namespace Elastos {
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &tx) {
+		}
+
+		void PeerManager::publishTransaction(const TransactionPtr &tx,
+											 const boost::function<void(int)> &callback) {
 
 			assert(tx != NULL && tx->isSigned());
 			if (tx) lock.lock();
 
 			if (tx && !tx->isSigned()) {
 				lock.unlock();
-				//fixme [refactor]
-//				if (callback) callback(info, EINVAL); // transaction not signed
+				if (callback) callback(EINVAL); // transaction not signed
 			} else if (tx && !isConnected) {
 				int connectFailureCount = connectFailureCount;
 
@@ -456,9 +445,7 @@ namespace Elastos {
 
 				if (connectFailureCount >= MAX_CONNECT_FAILURES ||
 					(!networkIsReachable())) {
-					//fixme [refactor]
-//					if (callback) callback(info, ENOTCONN); // not connected to bitcoin network
-//            tx = NULL; // add tx to publish tx list anyway
+					if (callback) callback(ENOTCONN); // not connected to bitcoin network
 				} else lock.lock();
 			}
 
@@ -466,8 +453,7 @@ namespace Elastos {
 				size_t i, count = 0;
 
 				tx->setTimestamp((uint32_t) time(NULL)); // set timestamp to publish time
-				//fixme [refactor]
-//				addTxToPublishList(tx, callback);
+				addTxToPublishList(tx, callback);
 
 				for (i = _connectedPeers.size(); i > 0; i--) {
 					if (_connectedPeers[i - 1]->getConnectStatusValue() == Peer::Connected) count++;
@@ -475,21 +461,21 @@ namespace Elastos {
 
 				for (i = _connectedPeers.size(); i > 0; i--) {
 					//fixme [refactor]
-//					BRPeer *peer = connectedPeers[i - 1];
-//					BRPeerCallbackInfo *peerInfo;
-//
-//					if (BRPeerConnectStatus(peer) != BRPeerStatusConnected) continue;
-//
-//					// instead of publishing to all peers, leave out downloadPeer to see if tx propogates/gets relayed back
-//					// TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
-//					if (peer != downloadPeer || count == 1) {
-//						_BRPeerManagerPublishPendingTx(manager, peer);
-//						peerInfo = calloc(1, sizeof(*peerInfo));
-//						assert(peerInfo != NULL);
-//						peerInfo->peer = peer;
-//						peerInfo->manager = manager;
-//						peerMessages->BRPeerSendPingMessage(peer, peerInfo, _publishTxInvDone);
-//					}
+					const PeerPtr &peer = _connectedPeers[i - 1];
+
+					if (peer->getConnectStatusValue() != Peer::Connected) continue;
+
+					// instead of publishing to all peers, leave out downloadPeer to see if tx propogates/gets relayed back
+					// TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
+					if (peer != downloadPeer || count == 1) {
+						publishPendingTx(peer);
+
+						PingParameter pingParameter;
+						pingParameter.callbackInfo.peer = peer;
+						pingParameter.callbackInfo.manager = this;
+						pingParameter.callback = callback;
+						peer->SendMessage(MSG_PING, pingParameter);
+					}
 				}
 
 				lock.unlock();
@@ -684,7 +670,6 @@ namespace Elastos {
 			pthread_t thread;
 			pthread_attr_t attr;
 			UInt128 *addr, *addrList = NULL;
-			BRFindPeersInfo *info;
 
 			//fixme [refactor]
 //			size_t peersCount = fiexedPeers == NULL ? 0 : array_count(fiexedPeers);
@@ -744,22 +729,20 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::addTxToPublishList(const TransactionPtr &tx, void (*callback)(void *, int)) {
-			//fixme [refactor]
-//			if (tx && tx->getBlockHeight() == TX_UNCONFIRMED) {
-//				for (size_t i = array_count(publishedTx); i > 0; i--) {
-//					if (BRTransactionEq(publishedTx[i - 1].tx, tx)) return;
-//				}
-//
-//				array_add(publishedTx, ((BRPublishedTx) {tx, info, callback}));
-//				array_add(publishedTxHashes, tx->txHash);
-//
-//				for (size_t i = 0; i < tx->inCount; i++) {
-//					_BRPeerManagerAddTxToPublishList(manager,
-//													 BRWalletTransactionForHash(wallet, tx->inputs[i].txHash),
-//													 NULL, NULL);
-//				}
-//			}
+		void PeerManager::addTxToPublishList(const TransactionPtr &tx, const boost::function<void(int)> &callback) {
+			if (tx && tx->getBlockHeight() == TX_UNCONFIRMED) {
+				for (size_t i = publishedTx.size(); i > 0; i--) {
+					if (publishedTx[i - 1].GetTransaction()->IsEqual(tx.get())) return;
+				}
+
+				publishedTx.emplace_back(tx, callback);
+				publishedTxHashes.push_back(tx->getHash());
+
+				for (size_t i = 0; i < tx->getInputs().size(); i++) {
+					addTxToPublishList(_wallet->transactionForHash(tx->getInputs()[i].getTransctionHash()),
+									   boost::function<void(int)>());
+				}
+			}
 		}
 
 		void PeerManager::asyncConnect(const boost::system::error_code &error) {
@@ -772,10 +755,10 @@ namespace Elastos {
 				Log::getLogger()->warn("asyncConnect err: {}", error.message());
 			}
 
-			if (reconnectTaskCount > 0) {
+			if (_reconnectTaskCount > 0) {
 				{
 					boost::mutex::scoped_lock scoped_lock(lock);
-					reconnectTaskCount = 0;
+					_reconnectTaskCount = 0;
 				}
 			}
 		}
@@ -1474,6 +1457,33 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnThreadCleanup(Peer *peer) {
+		}
+
+		void PeerManager::publishPendingTx(const PeerPtr &peer) {
+			for (size_t i = publishedTx.size(); i > 0; i--) {
+				if (!publishedTx[i - 1].HasCallback()) continue;
+				peer->scheduleDisconnect(PROTOCOL_TIMEOUT);  // schedule publish timeout
+				break;
+			}
+
+			//fixme [refactor]
+//			BRPeerSendInv(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes));
+		}
+
+		const std::vector<PublishedTransaction> PeerManager::getPublishedTransaction() const {
+			return publishedTx;
+		}
+
+		const std::vector<UInt256> PeerManager::getPublishedTransactionHashes() const {
+			return publishedTxHashes;
+		}
+
+		int PeerManager::reconnectTaskCount() const {
+			return _reconnectTaskCount;
+		}
+
+		int &PeerManager::reconnectTaskCount() {
+			return _reconnectTaskCount;
 		}
 
 	}
