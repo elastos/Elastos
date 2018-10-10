@@ -167,7 +167,7 @@ func startHttpJsonRpc(port uint16, service *service.HttpService) {
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
 	s.RegisterAction("getinfo", service.GetInfo)
-	s.RegisterAction("getblock", service.GetBlockByHash, "hash", "verbosity")
+	s.RegisterAction("getblock", service.GetBlockByHash, "blockhash", "verbosity")
 	s.RegisterAction("getcurrentheight", service.GetBlockHeight)
 	s.RegisterAction("getblockhash", service.GetBlockHash, "height")
 	s.RegisterAction("getconnectioncount", service.GetConnectionCount)
@@ -220,7 +220,7 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *service.Ht
 	s.RegisterAction("GET", ApiGetConnectionCount, service.GetConnectionCount)
 	s.RegisterAction("GET", ApiGetBlockTxsByHeight, service.GetTransactionsByHeight, "height")
 	s.RegisterAction("GET", ApiGetBlockByHeight, service.GetBlockByHeight, "height")
-	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "hash", "verbosity")
+	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "blockhash", "verbosity")
 	s.RegisterAction("GET", ApiGetBlockHeight, service.GetBlockHeight)
 	s.RegisterAction("GET", ApiGetBlockHash, service.GetBlockHash, "height")
 	s.RegisterAction("GET", ApiGetTransactionPool, service.GetTransactionPool)
