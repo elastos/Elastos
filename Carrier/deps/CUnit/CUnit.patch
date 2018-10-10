@@ -385,6 +385,18 @@ diff -ruN CUnit-2.1-3/CUnit/Headers/CUnit.h CUnit-2.1-3-mod/CUnit/Headers/CUnit.
 +#endif  /*  CUNIT_CUNIT_H_SEEN  */
 +
 +/** @} */
+diff -ruN CUnit-2.1-3/CUnit/Headers/TestRun.h CUnit-2.1-3-mod/CUnit/Headers/TestRun.h
+--- CUnit-2.1-3/CUnit/Headers/TestRun.h	2018-10-10 10:49:28.000000000 +0800
++++ CUnit-2.1-3-mod/CUnit/Headers/TestRun.h	2018-10-10 10:50:18.000000000 +0800
+@@ -186,6 +186,8 @@
+ /**< Sets the message handler to call when a suite initialization function returns an error. */
+ CU_EXPORT void CU_set_suite_cleanup_failure_handler(CU_SuiteCleanupFailureMessageHandler pSuiteCleanupFailureMessage);
+ /**< Sets the message handler to call when a suite cleanup function returns an error. */
++CU_EXPORT void CU_set_test_retry_count(unsigned int count);
++/**< Sets the Number of retry times if test is failed. */
+ 
+ CU_EXPORT CU_SuiteStartMessageHandler          CU_get_suite_start_handler(void);
+ /**< Retrieves the message handler called before each suite is run. */
 diff -ruN CUnit-2.1-3/CUnit/Sources/Framework/TestRun.c CUnit-2.1-3-mod/CUnit/Sources/Framework/TestRun.c
 --- CUnit-2.1-3/CUnit/Sources/Framework/TestRun.c	2014-04-24 08:54:45.000000000 +0800
 +++ CUnit-2.1-3-mod/CUnit/Sources/Framework/TestRun.c	2018-10-08 14:40:03.000000000 +0800
