@@ -16,8 +16,7 @@ namespace Elastos {
 			UInt256 hashStop;
 		};
 
-		class GetBlocksMessage :
-				public Message {
+		class GetBlocksMessage : public Message {
 		public:
 			explicit GetBlocksMessage(const MessagePeerPtr &peer);
 

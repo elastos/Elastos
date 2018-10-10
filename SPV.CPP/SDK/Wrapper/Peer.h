@@ -130,7 +130,9 @@ namespace Elastos {
 
 			void setEarliestKeyTime(uint32_t earliestKeyTime);
 
-			void setCurrentBlockHeight(uint32_t currentBlockHeight);
+			uint32_t GetCurrentBlockHeight() const;
+
+			void SetCurrentBlockHeight(uint32_t currentBlockHeight);
 
 			ConnectStatus getConnectStatusValue() const;
 
@@ -142,7 +144,9 @@ namespace Elastos {
 
 			void scheduleDisconnect(double time);
 
-			void setNeedsFilterUpdate(bool needsFilterUpdate);
+			bool NeedsFilterUpdate() const;
+
+			void SetNeedsFilterUpdate(bool needsFilterUpdate);
 
 			const std::string &getHost() const;
 
@@ -158,33 +162,53 @@ namespace Elastos {
 
 			bool IsEqual(const Peer *peer) const;
 
-			bool sentVerack();
+			bool SentVerack();
 
-			void setSentVerack(bool sent);
+			void SetSentVerack(bool sent);
 
-			bool gotVerack();
+			bool GotVerack();
 
-			void setGotVerack(bool got);
+			void SetGotVerack(bool got);
 
-			bool sentGetaddr();
+			bool SentGetaddr();
 
-			void setSentGetaddr(bool sent);
+			void SetSentGetaddr(bool sent);
 
-			bool sentFilter();
+			bool SentFilter();
 
-			void setSentFilter(bool sent);
+			void SetSentFilter(bool sent);
 
-			bool sentGetdata();
+			bool SentGetdata();
 
-			void setSentGetdata(bool sent);
+			void SetSentGetdata(bool sent);
 
-			bool sentMempool();
+			bool SentMempool();
 
-			void setSentMempool(bool sent);
+			void SetSentMempool(bool sent);
 
-			bool sentGetblocks();
+			bool SentGetblocks();
 
-			void setSentGetblocks(bool sent);
+			void SetSentGetblocks(bool sent);
+
+			const std::vector<UInt256> &GetCurrentBlockTxHashes() const;
+
+			void AddCurrentBlockTxHash(const UInt256 &hash);
+
+			const std::vector<UInt256> &GetKnownBlockHashes() const;
+
+			void KnownBlockHashesRemoveRange(size_t index, size_t len);
+
+			void AddKnownBlockHash(const UInt256 &hash);
+
+			const std::vector<UInt256> &GetKnownTxHashes() const;
+
+			void AddKnownTxHash(const UInt256 &hash);
+
+			const UInt256 &GetLastBlockHash() const;
+
+			void SetLastBlockHash(const UInt256 &hash);
+
+//			const TransactionSet &GetKnownTxHashSet() const;
 
 			bool isIPv4() const;
 
@@ -281,7 +305,7 @@ namespace Elastos {
 			mutable std::string _host;
 			ConnectStatus _status;
 			int _waitingForNetwork;
-			volatile int _needsFilterUpdate;
+			volatile bool _needsFilterUpdate;
 			uint64_t _nonce, _feePerKb;
 			std::string _useragent;
 			uint32_t _version, _lastblock, _earliestKeyTime, _currentBlockHeight;

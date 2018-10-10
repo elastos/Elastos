@@ -215,7 +215,7 @@ namespace Elastos {
 		}
 
 		void MerkleBlockBase::serializeAfterAux(ByteStream &ostream) const {
-			ostream.put(1);    //correspond to serialization of node, should add one byte here
+			ostream.writeUint8(1);    //correspond to serialization of node, should add one byte here
 
 			ostream.writeUint32(_totalTx);
 
@@ -228,7 +228,7 @@ namespace Elastos {
 		}
 
 		bool MerkleBlockBase::deserializeAfterAux(ByteStream &istream) {
-			istream.get();    //correspond to serialization of node, should get one byte here
+			istream.drop(1);    //correspond to serialization of node, should get one byte here
 
 			if (!istream.readUint32(_totalTx))
 				return false;

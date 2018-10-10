@@ -106,7 +106,11 @@ namespace Elastos {
 			_earliestKeyTime = earliestKeyTime;
 		}
 
-		void Peer::setCurrentBlockHeight(uint32_t currentBlockHeight) {
+		uint32_t Peer::GetCurrentBlockHeight() const {
+			return _currentBlockHeight;
+		}
+
+		void Peer::SetCurrentBlockHeight(uint32_t currentBlockHeight) {
 			_currentBlockHeight = currentBlockHeight;
 		}
 
@@ -212,7 +216,11 @@ namespace Elastos {
 			_disconnectTime = (seconds < 0) ? DBL_MAX : tv.tv_sec + (double) tv.tv_usec / 1000000 + seconds;
 		}
 
-		void Peer::setNeedsFilterUpdate(bool needsFilterUpdate) {
+		bool Peer::NeedsFilterUpdate() const {
+			return _needsFilterUpdate;
+		}
+
+		void Peer::SetNeedsFilterUpdate(bool needsFilterUpdate) {
 			_needsFilterUpdate = needsFilterUpdate;
 		}
 
@@ -431,61 +439,105 @@ namespace Elastos {
 			return r;
 		}
 
-		bool Peer::sentVerack() {
+		bool Peer::SentVerack() {
 			return _sentVerack;
 		}
 
-		void Peer::setSentVerack(bool sent) {
+		void Peer::SetSentVerack(bool sent) {
 			_sentVerack = sent;
 		}
 
-		bool Peer::gotVerack() {
+		bool Peer::GotVerack() {
 			return _gotVerack;
 		}
 
-		void Peer::setGotVerack(bool got) {
+		void Peer::SetGotVerack(bool got) {
 			_gotVerack = got;
 		}
 
-		bool Peer::sentGetaddr() {
+		bool Peer::SentGetaddr() {
 			return _sentGetaddr;
 		}
 
-		void Peer::setSentGetaddr(bool sent) {
+		void Peer::SetSentGetaddr(bool sent) {
 			_sentGetaddr = sent;
 		}
 
-		bool Peer::sentFilter() {
+		bool Peer::SentFilter() {
 			return _sentFilter;
 		}
 
-		void Peer::setSentFilter(bool sent) {
+		void Peer::SetSentFilter(bool sent) {
 			_sentFilter = sent;
 		}
 
-		bool Peer::sentGetdata() {
+		bool Peer::SentGetdata() {
 			return _sentGetdata;
 		}
 
-		void Peer::setSentGetdata(bool sent) {
+		void Peer::SetSentGetdata(bool sent) {
 			_sentGetdata = sent;
 		}
 
-		bool Peer::sentMempool() {
+		bool Peer::SentMempool() {
 			return _sentMempool;
 		}
 
-		void Peer::setSentMempool(bool sent) {
+		void Peer::SetSentMempool(bool sent) {
 			_sentMempool = sent;
 		}
 
-		bool Peer::sentGetblocks() {
+		bool Peer::SentGetblocks() {
 			return _sentGetblocks;
 		}
 
-		void Peer::setSentGetblocks(bool sent) {
+		void Peer::SetSentGetblocks(bool sent) {
 			_sentGetblocks = sent;
 		}
+
+		const std::vector<UInt256>& Peer::GetCurrentBlockTxHashes() const {
+			return _currentBlockTxHashes;
+		}
+
+		void Peer::AddCurrentBlockTxHash(const UInt256 &hash) {
+			_currentBlockTxHashes.push_back(hash);
+		}
+
+		const std::vector<UInt256>& Peer::GetKnownBlockHashes() const {
+			return _knownBlockHashes;
+		}
+
+		void Peer::KnownBlockHashesRemoveRange(size_t index, size_t len) {
+			for (int i = int(len - 1); i >= index; --i) {
+				_knownBlockHashes.erase(_knownBlockHashes.begin() + i);
+			}
+		}
+
+		void Peer::AddKnownBlockHash(const UInt256 &hash) {
+			_knownBlockHashes.push_back(hash);
+		}
+
+
+
+		const std::vector<UInt256>& Peer::GetKnownTxHashes() const {
+			return _knownTxHashes;
+		}
+
+		void Peer::AddKnownTxHash(const UInt256 &hash) {
+			_knownTxHashes.push_back(hash);
+		}
+
+		const UInt256 &Peer::GetLastBlockHash() const {
+			return _lastBlockHash;
+		}
+
+		void Peer::SetLastBlockHash(const UInt256 &hash) {
+			_lastBlockHash = hash;
+		}
+
+//		const TransactionSet& Peer::GetKnownTxHashSet() const {
+//			return _knownTxHashSet;
+//		}
 
 		std::string Peer::FormatError(int errnum) {
 			return std::string(strerror(errnum));

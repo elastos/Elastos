@@ -25,7 +25,7 @@ namespace Elastos {
 		void SidechainMerkleBlock::Serialize(ByteStream &ostream) const {
 			MerkleBlockBase::serializeNoAux(ostream);
 			idAuxPow.Serialize(ostream);
-			ostream.put(1);
+			ostream.writeUint8(1);
 			MerkleBlockBase::serializeAfterAux(ostream);
 		}
 
@@ -33,7 +33,7 @@ namespace Elastos {
 			if (!MerkleBlockBase::deserializeNoAux(istream) || !idAuxPow.Deserialize(istream))
 				return false;
 
-			istream.get();
+			istream.drop(1);
 			if (!MerkleBlockBase::deserializeAfterAux(istream))
 				return false;
 

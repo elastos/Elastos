@@ -10,16 +10,19 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class InventoryMessage :
-			public Message {
+		struct InventoryParameter : SendMessageParameter {
+			std::vector<UInt256> txHashes;
+		};
+
+		class InventoryMessage : public Message {
 		public:
 			InventoryMessage(const MessagePeerPtr &peer);
 
-			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
+			virtual bool Accept(const CMBlock &msg);
 
-			virtual void Send(BRPeer *peer);
+			virtual void Send(const SendMessageParameter &param);
 
-			void Send(BRPeer *peer, const UInt256 txHashes[], size_t txCount);
+			virtual	std::string Type() const;
 		};
 
 	}

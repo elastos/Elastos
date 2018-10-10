@@ -38,7 +38,7 @@ namespace Elastos {
 //				peer_log(peer, "malformed tx message with length: %zu", msgLen);
 //				r = 0;
 //				ELATransactionFree(tx);
-//			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
+//			} else if (!ctx->SentFilter && !ctx->SentGetdata) {
 //				peer_log(peer, "got tx message before loading filter");
 //				r = 0;
 //				ELATransactionFree(tx);

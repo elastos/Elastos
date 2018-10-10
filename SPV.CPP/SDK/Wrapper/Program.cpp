@@ -5,6 +5,7 @@
 
 #include <Core/BRAddress.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/Common/Log.h>
 #include "BRInt.h"
 
 #include "Program.h"
@@ -115,19 +116,20 @@ namespace Elastos {
 		}
 
 		void Program::Serialize(ByteStream &ostream) const {
-			ostream.putVarUint(_parameter.GetSize());
-			ostream.putBytes(_parameter, _parameter.GetSize());
-
-			ostream.putVarUint(_code.GetSize());
-			ostream.putBytes(_code, _code.GetSize());
+			ostream.writeVarBytes(_parameter);
+			ostream.writeVarBytes(_code);
 		}
 
 		bool Program::Deserialize(ByteStream &istream) {
-			_parameter.Resize(size_t(istream.getVarUint()));
-			istream.getBytes(_parameter, _parameter.GetSize());
+			if (!istream.readVarBytes(_parameter)) {
+				Log::getLogger()->error("Program deserialize parameter fail");
+				return false;
+			}
 
-			_code.Resize(size_t(istream.getVarUint()));
-			istream.getBytes(_code, _code.GetSize());
+			if (!istream.readVarBytes(_code)) {
+				Log::getLogger()->error("Program deserialize code fail");
+				return false;
+			}
 
 			return true;
 		}

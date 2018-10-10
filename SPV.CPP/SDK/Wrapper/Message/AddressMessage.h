@@ -10,8 +10,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class AddressMessage :
-				public Message {
+		class AddressMessage : public Message {
 		public:
 			AddressMessage(const MessagePeerPtr &peer);
 

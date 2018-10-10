@@ -15,8 +15,7 @@ namespace Elastos {
 			BloomFilterPtr Filter;
 		};
 
-		class BloomFilterMessage :
-			public Message {
+		class BloomFilterMessage : public Message {
 		public:
 			BloomFilterMessage(const MessagePeerPtr &peer);
 

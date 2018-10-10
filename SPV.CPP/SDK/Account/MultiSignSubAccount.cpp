@@ -33,7 +33,7 @@ namespace Elastos {
 			ByteStream stream;
 			Program &program = transaction->getPrograms()[0];
 			if (program.getParameter().GetSize() > 0) {
-				stream.putBytes(program.getParameter(), program.getParameter().GetSize());
+				stream.writeBytes(program.getParameter(), program.getParameter().GetSize());
 			}
 
 			CMBlock shaData = transaction->GetShaData();
@@ -41,7 +41,7 @@ namespace Elastos {
 			uint8_t buff[65];
 			memset(buff, 0, 65);
 			memcpy(buff, signData, signData.GetSize());
-			stream.putBytes(buff, 65);
+			stream.writeBytes(buff, 65);
 
 			program.setParameter(stream.getBuffer());
 		}

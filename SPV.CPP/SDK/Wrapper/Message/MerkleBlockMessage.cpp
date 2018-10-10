@@ -48,7 +48,7 @@ namespace Elastos {
 //				block->deleteRawBlock();
 //				blockRaw = nullptr;
 //				r = 0;
-//			} else if (!ctx->sentFilter && !ctx->sentGetdata) {
+//			} else if (!ctx->SentFilter && !ctx->SentGetdata) {
 //				peer_log(peer, "error: got merkleblock message before loading a filter");
 //				block->deleteRawBlock();
 //				blockRaw = nullptr;

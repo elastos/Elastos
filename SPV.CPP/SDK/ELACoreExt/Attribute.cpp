@@ -47,22 +47,27 @@ namespace Elastos {
 		}
 
 		void Attribute::Serialize(ByteStream &ostream) const {
-			ostream.put(_usage);
-
-			ostream.putVarUint(_data.GetSize());
-			ostream.putBytes(_data, _data.GetSize());
+			ostream.writeUint8(_usage);
+			ostream.writeVarBytes(_data);
 		}
 
 		bool Attribute::Deserialize(ByteStream &istream) {
-			if (!istream.readBytes(&_usage, 1))
+			if (!istream.readBytes(&_usage, 1)) {
+				Log::error("Attribute deserialize usage fail");
 				return false;
+			}
 
 //			if (!isValid()) {
 //				Log::getLogger()->error("invalid attribute usage: {}", (uint8_t)_usage);
 //				return false;
 //			}
 
-			return istream.readVarBytes(_data);
+			if (!istream.readVarBytes(_data)) {
+				Log::error("Attribute deserialize data fail");
+				return false;
+			}
+
+			return true;
 		}
 
 		nlohmann::json Attribute::toJson() const {

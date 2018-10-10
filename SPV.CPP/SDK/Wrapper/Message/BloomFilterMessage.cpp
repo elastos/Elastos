@@ -27,8 +27,8 @@ namespace Elastos {
 			const BloomFilterParameter &bloomFilterParameter = static_cast<const BloomFilterParameter &>(param);
 			ByteStream byteStream;
 			bloomFilterParameter.Filter->Serialize(byteStream);
-			_peer->setSentFilter(true);
-			_peer->setSentMempool(false);
+			_peer->SetSentFilter(true);
+			_peer->SetSentMempool(false);
 			SendMessage(byteStream.getBuffer(), Type());
 		}
 

@@ -260,11 +260,11 @@ namespace Elastos {
 
 			ByteStream buff(size + 2);
 
-			buff.put((uint8_t) size);
+			buff.writeUint8((uint8_t) size);
 
-			buff.putBytes(_key->pubKey, size);
+			buff.writeBytes(_key->pubKey, size);
 
-			buff.put((uint8_t) signType);
+			buff.writeUint8((uint8_t) signType);
 
 			CMBlock script = buff.getBuffer();
 			return Utils::encodeHex(script, script.GetSize());

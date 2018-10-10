@@ -8,6 +8,7 @@
 #include <SDK/Transaction/Transaction.h>
 #include "BRArray.h"
 #include "BRPeerMessages.h"
+#include "Peer.h"
 
 #include "GetDataMessage.h"
 #include "Log.h"
@@ -16,111 +17,108 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		GetDataMessage::GetDataMessage(const Elastos::ElaWallet::MessagePeerPtr &peer) : Message(peer) {
 
-		void GetDataMessage::SendGetData(BRPeer *peer, const UInt256 *txHashes,
-		                                 size_t txCount, const UInt256 *blockHashes, size_t blockCount) {
-			size_t i, off = 0;
-			uint32_t count = uint32_t(txCount + blockCount);
-
-			if (count > 1000) {
-				Log::getLogger()->warn("{}:{} couldn't send getdata, {} is too many items, max is {}", BRPeerHost(peer), peer->port, count, 1000);
-				count = 1000;
-			}
-
-			if (count > 0) {
-				size_t msgLen = sizeof(uint32_t) + count * (sizeof(uint32_t) + sizeof(UInt256));
-				uint8_t msg[msgLen];
-
-				UInt32SetLE(&msg[off], count);
-				off += sizeof(uint32_t);
-
-				for (i = 0; i < txCount && i < count; i++) {
-					UInt32SetLE(&msg[off], uint32_t(inv_tx));
-					off += sizeof(uint32_t);
-					UInt256Set(&msg[off], txHashes[i]);
-					off += sizeof(UInt256);
-				}
-
-				for (i = 0; i < blockCount && txCount + i < count; i++) {
-					UInt32SetLE(&msg[off], uint32_t(inv_filtered_block));
-					off += sizeof(uint32_t);
-					UInt256Set(&msg[off], blockHashes[i]);
-					off += sizeof(UInt256);
-				}
-
-				((BRPeerContext *) peer)->sentGetdata = 1;
-				BRPeerSendMessage(peer, msg, off, MSG_GETDATA);
-			}
 		}
 
-		int GetDataMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
+		bool GetDataMessage::Accept(const CMBlock &msg) {
 
-			BRPeerContext *ctx = (BRPeerContext *) peer;
-			size_t off = 0, count = -1;
-			int r = 1;
+			size_t off = 0;
+			uint32_t count = 0;
 
 			count = UInt32GetLE(&msg[off]);
-			off += sizeof(uint32_t);
+			off += sizeof(count);
 
-			if (off == 0 || off + 36 * count > msgLen) {
-				peer_log(peer, "malformed getdata message, length is %zu, should %zu for %zu item(s)", msgLen,
-				         BRVarIntSize(count) + 36 * count, count);
-				r = 0;
+			if (off == 0 || off + 36 * count > msg.GetSize()) {
+				_peer->Perror("malformed getdata message, length is {}, should {} for {} item(s)",
+							  msg.GetSize(), sizeof(count) + 36 * count, count);
+				return false;
 			} else if (count > MAX_GETDATA_HASHES) {
-				peer_log(peer, "dropping getdata message, %zu is too many items, max is %d", count, MAX_GETDATA_HASHES);
+				_peer->Perror("dropping getdata message, {} is too many items, max is {}",
+							  count, MAX_GETDATA_HASHES);
+				return false;
 			} else {
 				struct inv_item {
 					uint8_t item[36];
-				} *notfound = NULL;
-				BRTransaction *tx = NULL;
+				};
 
-				peer_log(peer, "got getdata with %zu item(s)", count);
+				std::vector<inv_item> notfound;
+
+				TransactionPtr tx;
+
+				_peer->Pinfo("got getdata with {} item(s)", count);
 				for (size_t i = 0; i < count; i++) {
 					inv_type type = (inv_type) UInt32GetLE(&msg[off]);
 					UInt256 hash;
 					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
 					switch (type) {
 						case inv_tx:
-						{
-							if (ctx->requestedTx) tx = ctx->requestedTx(ctx->info, hash);
+							tx = FireRequestedTx(hash);
 
-							TransactionPtr txn(new Transaction((ELATransaction *) tx, false));
-							if (tx && txn->getSize() < TX_MAX_SIZE) {
-								ctx->manager->peerMessages->BRPeerSendTxMessage(peer, tx);
+							if (tx != nullptr && tx->getSize() < TX_MAX_SIZE) {
+								// fixme [refactor]
+//								ctx->manager->peerMessages->BRPeerSendTxMessage(peer, tx);
 								break;
 							}
-						}
 
 							// fall through
 						default:
-							peer_log(peer, "not found with type = %d, hash = %s", type, Utils::UInt256ToString(hash, true).c_str());
-							if (!notfound) array_new(notfound, 1);
-							array_add(notfound, *(struct inv_item *) &msg[off]);
+							_peer->Pinfo("not found with type = {}, hash = {}", type, Utils::UInt256ToString(hash, true));
+							notfound.push_back(*(struct inv_item *) &msg[off]);
 							break;
 					}
 
 					off += 36;
 				}
-				if (notfound) {
-					size_t bufLen = BRVarIntSize(array_count(notfound)) + 36 * array_count(notfound), o = 0;
-					uint8_t *buf = (uint8_t *) malloc(bufLen);
+				if (notfound.size() > 0) {
+					ByteStream stream;
 
-					assert(buf != NULL);
-					UInt32SetLE(&buf[o], array_count(notfound));
-					o += sizeof(uint32_t);
-					memcpy(&buf[o], notfound, 36 * array_count(notfound));
-					o += 36 * array_count(notfound);
-					array_free(notfound);
+					stream.writeUint32(uint32_t(notfound.size()));
+					for (size_t i = 0; i < notfound.size(); ++i) {
+						stream.writeBytes(notfound[i].item, sizeof(inv_item));
+					}
 
-					BRPeerSendMessage(peer, buf, o, MSG_NOTFOUND);
-					free(buf);
+					SendMessage(stream.getBuffer(), MSG_NOTFOUND);
 				}
 			}
-			return r;
+			return true;
 		}
 
-		void GetDataMessage::Send(BRPeer *peer) {
+		void GetDataMessage::Send(const SendMessageParameter &param) {
+			const GetDataParameter &getDataParameter = static_cast<const GetDataParameter &>(param);
 
+			size_t i;
+			size_t txCount = getDataParameter.txHashes.size();
+			size_t blockCount = getDataParameter.blockHashes.size();
+			uint32_t count = uint32_t(txCount + blockCount);
+
+			if (count > 1000) {
+				_peer->Pwarn("couldn't send getdata, {} is too many items, max is {}", count, 1000);
+				count = 1000;
+			}
+
+			if (count > 0) {
+				ByteStream stream;
+				stream.writeUint32(count);
+
+				for (i = 0; i < txCount && i < count; i++) {
+					stream.writeUint32(uint32_t(inv_tx));
+					stream.writeBytes(&getDataParameter.txHashes[i], sizeof(UInt256));
+				}
+
+				for (i = 0; i < blockCount && txCount + i < count; i++) {
+					stream.writeUint32(uint32_t(inv_filtered_block));
+					stream.writeBytes(&getDataParameter.blockHashes[i], sizeof(UInt256));
+				}
+
+				_peer->SetSentGetdata(true);
+				SendMessage(stream.getBuffer(), Type());
+			}
 		}
+
+		std::string GetDataMessage::Type() const {
+			return MSG_GETDATA;
+		}
+
 	}
 }

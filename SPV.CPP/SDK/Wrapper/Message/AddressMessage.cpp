@@ -38,7 +38,7 @@ namespace Elastos {
 				r = false;
 			} else if (count > 1000) {
 				_peer->Perror("dropping addr message, {} is too many addresses, max is 1000", count);
-			} else if (_peer->sentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
+			} else if (_peer->SentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
 				std::vector<PeerPtr> peers;
 				peers.reserve(count);
 

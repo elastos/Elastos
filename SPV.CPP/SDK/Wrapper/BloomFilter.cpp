@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <Core/BRBloomFilter.h>
+#include <SDK/Common/Log.h>
 #include "BRBloomFilter.h"
 #include "BRInt.h"
 #include "BRAddress.h"
@@ -36,38 +37,39 @@ namespace Elastos {
 		}
 
 		void BloomFilter::Serialize(ByteStream &ostream) const {
-			size_t len = BRVarIntSize(_bloomFilter->length);
-			uint8_t lengthData[len];
-			BRVarIntSet(lengthData, len, _bloomFilter->length);
-			ostream.putBytes(lengthData, len);
-
-			ostream.putBytes(_bloomFilter->filter, _bloomFilter->length);
-
-			uint8_t hashFunctionsData[32 / 8];
-			UInt32SetLE(hashFunctionsData, _bloomFilter->hashFuncs);
-			ostream.putBytes(hashFunctionsData, 32 / 8);
-
-			uint8_t tweakData[32 / 8];
-			UInt32SetLE(tweakData, _bloomFilter->tweak);
-			ostream.putBytes(tweakData, 32 / 8);
+			ostream.writeVarBytes(_bloomFilter->filter, _bloomFilter->length);
+			ostream.writeUint32(_bloomFilter->hashFuncs);
+			ostream.writeUint32(_bloomFilter->tweak);
 		}
 
 		//todo add max size check of BLOOM_MAX_FILTER_LENGTH
 		bool BloomFilter::Deserialize(ByteStream &istream) {
-			uint8_t lengthData[64 / 8];
-			istream.getBytes(lengthData, 64 / 8);
-			_bloomFilter->length = UInt64GetLE(lengthData);
+			CMBlock filter;
 
+			if (!istream.readVarBytes(filter)) {
+				Log::error("Bloom filter deserialize filter fail");
+				return false;
+			}
+
+			_bloomFilter->length = filter.GetSize();
 			_bloomFilter->filter = (uint8_t *)malloc(_bloomFilter->length);
-			istream.getBytes(_bloomFilter->filter, _bloomFilter->length);
+			memcpy(_bloomFilter->filter, filter, _bloomFilter->length);
 
-			uint8_t hashFunctionsData[32 / 8];
-			istream.getBytes(hashFunctionsData, 32 / 8);
-			_bloomFilter->hashFuncs = UInt32GetLE(hashFunctionsData);
+			if (!istream.readUint32(_bloomFilter->hashFuncs)) {
+				Log::error("Bloom filter deserialize hash funcs fail");
+				free(_bloomFilter->filter);
+				_bloomFilter->filter = NULL;
+				_bloomFilter->length = 0;
+				return false;
+			}
 
-			uint8_t tweakData[32 / 8];
-			istream.getBytes(tweakData, 32 / 8);
-			_bloomFilter->tweak = UInt32GetLE(tweakData);
+			if (!istream.readUint32(_bloomFilter->tweak)) {
+				Log::error("Bloom filter deserialize tweak fail");
+				free(_bloomFilter->filter);
+				_bloomFilter->filter = NULL;
+				_bloomFilter->length = 0;
+				return false;
+			}
 
 			return true;
 		}

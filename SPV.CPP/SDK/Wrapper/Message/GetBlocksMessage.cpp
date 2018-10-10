@@ -5,6 +5,7 @@
 #include "GetBlocksMessage.h"
 #include "Log.h"
 #include "Utils.h"
+#include "Peer.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,28 +21,25 @@ namespace Elastos {
 		void GetBlocksMessage::Send(const SendMessageParameter &param) {
 			const GetBlocksParameter &getBlocksParameter = static_cast<const GetBlocksParameter &>(param);
 
-			size_t i, off = 0;
-			size_t msgLen = sizeof(uint32_t) + sizeof(UInt256) * getBlocksParameter.locators.size() + sizeof(getBlocksParameter.hashStop);
-			uint8_t msg[msgLen];
+			size_t i, locatorsCount;
+			ByteStream msg;
 
-			UInt32SetLE(&msg[off], uint32_t(getBlocksParameter.locators.size()));
-			off += sizeof(uint32_t);
+			locatorsCount = getBlocksParameter.locators.size();
+			msg.writeUint32(uint32_t(locatorsCount));
 
-			for (i = 0; i < getBlocksParameter.locators.size(); i++) {
-				UInt256Set(&msg[off], getBlocksParameter.locators[i]);
-				off += sizeof(UInt256);
+			for (i = 0; i < locatorsCount; i++) {
+				msg.writeBytes(&getBlocksParameter.locators[i], sizeof(UInt256));
 			}
 
-			UInt256Set(&msg[off], getBlocksParameter.hashStop);
-			off += sizeof(UInt256);
+			msg.writeBytes(&getBlocksParameter.hashStop, sizeof(UInt256));
 
-			if (getBlocksParameter.locators.size() > 0) {
-//				peer_dbg(peer, "calling getblocks with %zu locators: [%s,%s %s]",
-//						 locatorsCount,
-//						 Utils::UInt256ToString(locators[0]).c_str(),
-//						 (locatorsCount > 2 ? " ...," : ""),
-//						 (locatorsCount > 1 ? Utils::UInt256ToString(locators[locatorsCount - 1]).c_str() : ""));
-//				BRPeerSendMessage(peer, msg, off, MSG_GETBLOCKS);
+			if (locatorsCount > 0) {
+				_peer->Pdebug("calling getblocks with {} locators: [{},{} {}]",
+						 locatorsCount,
+						 Utils::UInt256ToString(getBlocksParameter.locators[0]),
+						 (locatorsCount > 2 ? " ...," : ""),
+						 (locatorsCount > 1 ? Utils::UInt256ToString(getBlocksParameter.locators[locatorsCount - 1]) : ""));
+				SendMessage(msg.getBuffer(), Type());
 			}
 		}
 
