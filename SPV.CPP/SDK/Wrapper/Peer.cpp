@@ -278,7 +278,7 @@ namespace Elastos {
 
 				gettimeofday(&tv, NULL);
 				_startTime = tv.tv_sec + (double) tv.tv_usec / 1000000;
-				_messages[MSG_VERSION]->Send(Message::DefaultParam);
+				SendMessage(MSG_VERSION, Message::DefaultParam);
 
 				while (_socket >= 0 && !error) {
 					len = 0;
@@ -560,6 +560,14 @@ namespace Elastos {
 			if (!r && err) Perror("connect error: {}", FormatError(err));
 			if (error && err) *error = err;
 			return r;
+		}
+
+		void Peer::SendMessage(const std::string &msgType, const SendMessageParameter &parameter) {
+			if (_messages.find(msgType) == _messages.end()) {
+				Pwarn("Sending unknown type message, message type: {}", msgType);
+				return;
+			}
+			_messages[msgType]->Send(parameter);
 		}
 
 	}

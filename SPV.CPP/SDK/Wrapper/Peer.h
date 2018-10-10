@@ -110,6 +110,8 @@ namespace Elastos {
 
 			void UnRegisterListener();
 
+			void SendMessage(const std::string &msgType, const SendMessageParameter &parameter);
+
 			UInt128 getAddress() const;
 
 			void setAddress(const UInt128 &addr);

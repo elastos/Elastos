@@ -21,6 +21,10 @@
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
 
+#define DEFAULT_FEE_PER_KB ((5000ULL*1000 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
+#define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
+#define MAX_FEE_PER_KB     ((1000100ULL*1000 + 190)/191) // slightly higher than a 10000bit fee on a 191byte tx
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -1391,12 +1395,11 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnRelayedPingMsg(Peer *peer) {
-			//fixme [refactor]
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			manager->syncIsInactivate(manager->info);
+			syncIsInactive();
 		}
 
-		void PeerManager::OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {
+		void PeerManager::OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes,
+									 const std::vector<UInt256> &blockHashes) {
 			//fixme [refactor]
 //			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
@@ -1412,28 +1415,25 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnSetFeePerKb(Peer *peer, uint64_t feePerKb) {
-			//fixme [refactor]
-//			BRPeer *p, *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
-//
-//			pthread_mutex_lock(&manager->lock);
-//
-//			for (size_t i = array_count(manager->connectedPeers); i > 0; i--) { // find second highest fee rate
-//				p = manager->connectedPeers[i - 1];
-//				if (BRPeerConnectStatus(p) != BRPeerStatusConnected) continue;
-//				if (BRPeerFeePerKb(p) > maxFeePerKb) secondFeePerKb = maxFeePerKb, maxFeePerKb = BRPeerFeePerKb(p);
-//			}
-//
-//			if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
-//				secondFeePerKb * 3 / 2 > BRWalletFeePerKb(manager->wallet)) {
-//				peer_log(peer, "increasing feePerKb to %"
-//						PRIu64
-//						" based on feefilter messages from peers", secondFeePerKb * 3 / 2);
-//				BRWalletSetFeePerKb(manager->wallet, secondFeePerKb * 3 / 2);
-//			}
-//
-//			pthread_mutex_unlock(&manager->lock);
+			uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				for (size_t i = _connectedPeers.size(); i > 0; i--) { // find second highest fee rate
+					const PeerPtr &p = _connectedPeers[i - 1];
+					if (p->getConnectStatusValue() != Peer::Connected) continue;
+					if (p->getFeePerKb() > maxFeePerKb) secondFeePerKb = maxFeePerKb, maxFeePerKb = p->getFeePerKb();
+				}
+
+				if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
+					secondFeePerKb * 3 / 2 > _wallet->getFeePerKb()) {
+					//fixme [refacotr]
+//					peer_log(peer, "increasing feePerKb to %"
+//							PRIu64
+//							" based on feefilter messages from peers", secondFeePerKb * 3 / 2);
+					_wallet->setFeePerKb(secondFeePerKb * 3 / 2);
+				}
+			}
 		}
 
 		const TransactionPtr &PeerManager::OnRequestedTx(Peer *peer, const UInt256 &txHash) {
