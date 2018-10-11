@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	DefaultConfigFilename = "./config.json"
+	DefaultConfigFilename  = "./config.json"
+	defaultMinPeersForSync = 3
 )
 
 var (
@@ -72,6 +73,7 @@ type Configuration struct {
 	SpvSeedList                []string         `json:"SpvSeedList"`
 	SpvMinOutbound             int              `json:"SpvMinOutbound"`
 	SpvMaxConnections          int              `json:"SpvMaxConnections"`
+	MinPeersForSync            int              `json:"MinPeersForSync"`
 	SpvPrintLevel              int              `json:"SpvPrintLevel"`
 	ExchangeRate               float64          `json:"ExchangeRate"`
 	MinCrossChainTxFee         int              `json:"MinCrossChainTxFee"`
@@ -128,7 +130,9 @@ func init() {
 	// Remove the UTF-8 Byte Order Mark
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 
-	config := Configuration{}
+	config := Configuration{
+		MinPeersForSync: defaultMinPeersForSync,
+	}
 	e = json.Unmarshal(file, &config)
 	if e != nil {
 		log.Fatalf("Unmarshal json file erro %v", e)
