@@ -23,13 +23,14 @@ func NewService(logger elalog.Logger) (*Service, error) {
 
 	params := config.Parameters
 	cfg := &spv.Config{
-		Magic:          params.SpvMagic,
-		Foundation:     params.MainChainFoundationAddress,
-		SeedList:       params.SpvSeedList,
-		DefaultPort:    params.MainChainDefaultPort,
-		MinOutbound:    params.SpvMinOutbound,
-		MaxConnections: params.SpvMaxConnections,
-		OnRollback:     nil, // Not implemented yet
+		Magic:           params.SpvMagic,
+		Foundation:      params.MainChainFoundationAddress,
+		SeedList:        params.SpvSeedList,
+		DefaultPort:     params.MainChainDefaultPort,
+		MinPeersForSync: params.MinPeersForSync,
+		MinOutbound:     params.SpvMinOutbound,
+		MaxConnections:  params.SpvMaxConnections,
+		OnRollback:      nil, // Not implemented yet
 	}
 
 	service, err := spv.NewSPVService(cfg)
@@ -68,7 +69,7 @@ func (s *Service) VerifyTransaction(tx *types.Transaction) error {
 	}
 
 	if err := s.SPVService.VerifyTransaction(*proof, *mainChainTransaction); err != nil {
-		return errors.New("SPV module verify transaction failed.")
+		return errors.New("SPV module verify transaction failed." + err.Error())
 	}
 
 	return nil

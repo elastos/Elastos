@@ -88,6 +88,9 @@ func (v *Validator) RegisterContextFunc(name FuncName, function func(txn *types.
 func (v *Validator) CheckTransactionSanity(txn *types.Transaction) error {
 	for _, checkFunc := range v.checkSanityFunctions {
 		if err := checkFunc.Handler(txn); err != nil {
+			if err == ErrBreak {
+				return nil
+			}
 			return err
 		}
 	}
@@ -98,6 +101,9 @@ func (v *Validator) CheckTransactionSanity(txn *types.Transaction) error {
 func (v *Validator) CheckTransactionContext(txn *types.Transaction) error {
 	for _, checkFunc := range v.checkContextFunctions {
 		if err := checkFunc.Handler(txn); err != nil {
+			if err == ErrBreak {
+				return nil
+			}
 			return err
 		}
 	}

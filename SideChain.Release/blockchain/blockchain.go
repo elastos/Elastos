@@ -1073,7 +1073,6 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = powCheckBlockSanity(block, PowLimit, b.TimeSource)
 	err = b.validator.CheckBlockSanity(block, b.powLimit, b.TimeSource)
-
 	if err != nil {
 		log.Error("powCheckBlockSanity error!", err)
 		return false, false, err
