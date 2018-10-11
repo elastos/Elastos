@@ -16,8 +16,8 @@ namespace Elastos {
 										 const std::string &language,
 										 const std::string &phrasePassword,
 										 const std::string &payPassword) :
-			_rootPath(rootPath),
-			_language(language) {
+				_rootPath(rootPath),
+				_language(language) {
 
 			CMemBlock<char> phraseData;
 			phraseData.SetMemFixed(phrase.c_str(), phrase.size() + 1);
@@ -60,7 +60,7 @@ namespace Elastos {
 		}
 
 		StandardAccount::StandardAccount(const std::string &rootPath) :
-			_rootPath(rootPath) {
+				_rootPath(rootPath) {
 
 		}
 
@@ -88,9 +88,10 @@ namespace Elastos {
 			return _masterIDPubKey;
 		}
 
-		std::string StandardAccount::GetAddress() {
-			//todo complete me
-			return "";
+		std::string StandardAccount::GetAddress() const {
+			Key key;
+			key.setPubKey(Utils::decodeHex(_publicKey));
+			return key.address();
 		}
 
 		nlohmann::json &operator<<(nlohmann::json &j, const StandardAccount &p) {
@@ -135,14 +136,14 @@ namespace Elastos {
 			UInt512 result;
 
 			std::string mnemonic = Utils::convertToString(
-				Utils::decrypt(GetEncryptedMnemonic(), payPassword));
+					Utils::decrypt(GetEncryptedMnemonic(), payPassword));
 
 			ParamChecker::checkDecryptedData(mnemonic);
 
 			std::string phrasePassword = GetEncryptedPhrasePassword().GetSize() == 0
 										 ? ""
 										 : Utils::convertToString(
-					Utils::decrypt(GetEncryptedPhrasePassword(), payPassword));
+							Utils::decrypt(GetEncryptedPhrasePassword(), payPassword));
 
 			BRBIP39DeriveKey(&result, mnemonic.c_str(), phrasePassword.c_str());
 			return result;
@@ -194,12 +195,19 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string StandardAccount::GetType() {
+		std::string StandardAccount::GetType() const {
 			return "Standard";
 		}
 
 		bool StandardAccount::IsReadOnly() const {
 			return false;
+		}
+
+		bool StandardAccount::IsEqual(const IAccount &account) const {
+			if (GetType() != account.GetType())
+				return false;
+
+			return GetPublicKey() == account.GetPublicKey();
 		}
 
 	}

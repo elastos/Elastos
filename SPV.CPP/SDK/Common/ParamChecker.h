@@ -20,6 +20,7 @@ namespace Elastos {
 				InvalidPasswd,
 				WrongPasswd,
 				IDNotFound,
+				CreateMasterWalletError,
 				CreateSubWalletError,
 				JsonArrayError,
 				Mnemonic,

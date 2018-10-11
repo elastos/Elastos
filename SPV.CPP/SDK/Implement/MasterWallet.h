@@ -49,6 +49,8 @@ namespace Elastos {
 
 			virtual void ClearLocal();
 
+			bool IsEqual(const MasterWallet &wallet) const;
+
 		public: //override from IMasterWallet
 
 			static std::string GenerateMnemonic(const std::string &language, const std::string &rootPath);

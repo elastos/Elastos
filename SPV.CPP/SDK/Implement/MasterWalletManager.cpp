@@ -20,15 +20,15 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		MasterWalletManager::MasterWalletManager(const std::string &rootPath) :
-			_rootPath(rootPath),
-			_p2pEnable(true) {
+				_rootPath(rootPath),
+				_p2pEnable(true) {
 			initMasterWallets();
 		}
 
 		MasterWalletManager::MasterWalletManager(const MasterWalletMap &walletMap, const std::string &rootPath) :
-			_masterWalletMap(walletMap),
-			_rootPath(rootPath),
-			_p2pEnable(true) {
+				_masterWalletMap(walletMap),
+				_rootPath(rootPath),
+				_p2pEnable(true) {
 		}
 
 		MasterWalletManager::~MasterWalletManager() {
@@ -55,11 +55,11 @@ namespace Elastos {
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(
-			const std::string &masterWalletId,
-			const std::string &mnemonic,
-			const std::string &phrasePassword,
-			const std::string &payPassword,
-			const std::string &language) {
+				const std::string &masterWalletId,
+				const std::string &mnemonic,
+				const std::string &phrasePassword,
+				const std::string &payPassword,
+				const std::string &language) {
 
 			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
 			if (_masterWalletMap.find(masterWalletId) != _masterWalletMap.end())
@@ -67,7 +67,7 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  language, _p2pEnable, _rootPath, CreateNormal);
-
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -85,6 +85,7 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, coSigners, requiredSignCount,
 														  _rootPath, _p2pEnable, CreateMultiSign);
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -106,6 +107,7 @@ namespace Elastos {
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, privKey, payPassword, coSigners,
 														  requiredSignCount, _rootPath, _p2pEnable,
 														  CreateMultiSign);
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -128,7 +130,7 @@ namespace Elastos {
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  language, coSigners, requiredSignCount, _p2pEnable,
 														  _rootPath, CreateMultiSign);
-
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
 			return masterWallet;
@@ -201,6 +203,7 @@ namespace Elastos {
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
 														  payPassword, phrasePassword, _rootPath, _p2pEnable,
 														  ImportFromKeyStore);
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -218,6 +221,7 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
 														  language, _p2pEnable, _rootPath, ImportFromMnemonic);
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
 		}
@@ -344,8 +348,21 @@ namespace Elastos {
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletStoreFile, _rootPath, _p2pEnable,
 														  ImportFromLocalStore);
+			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
+		}
+
+		void MasterWalletManager::checkRedundant(IMasterWallet *wallet) const {
+			MasterWallet *masterWallet = static_cast<MasterWallet *>(wallet);
+
+			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
+						  [masterWallet](const MasterWalletMap::value_type &item) {
+							  const MasterWallet *createdWallet = static_cast<const MasterWallet *>(item.second);
+							  ParamChecker::checkCondition(masterWallet->IsEqual(*createdWallet),
+														   Error::CreateMasterWalletError,
+														   "Master wallet already exist.");
+						  });
 		}
 	}
 }

@@ -572,5 +572,9 @@ namespace Elastos {
 			_localStore.Reset(mnemonic, language, phrasePassword, coSigners, payPassword, requiredSignCount);
 		}
 
+		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {
+			return _localStore.Account()->IsEqual(*wallet._localStore.Account());
+		}
+
 	}
 }

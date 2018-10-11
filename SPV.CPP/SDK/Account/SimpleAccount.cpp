@@ -94,9 +94,10 @@ namespace Elastos {
 			return MasterPubKey();
 		}
 
-		std::string SimpleAccount::GetAddress() {
-			//todo complete me
-			return std::string();
+		std::string SimpleAccount::GetAddress() const {
+			Key key;
+			key.setPubKey(Utils::decodeHex(_publicKey));
+			return key.address();
 		}
 
 		void to_json(nlohmann::json &j, const SimpleAccount &p) {
@@ -115,12 +116,19 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string SimpleAccount::GetType() {
+		std::string SimpleAccount::GetType() const {
 			return "Simple";
 		}
 
 		bool SimpleAccount::IsReadOnly() const {
 			return false;
+		}
+
+		bool SimpleAccount::IsEqual(const IAccount &account) const {
+			if (account.GetType() != GetType())
+				return false;
+
+			return account.GetPublicKey() == account.GetPublicKey();
 		}
 
 	}
