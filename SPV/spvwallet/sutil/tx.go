@@ -1,10 +1,11 @@
 package sutil
 
 import (
-	"time"
-	"github.com/elastos/Elastos.ELA/core"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"fmt"
+	"time"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type Tx struct {

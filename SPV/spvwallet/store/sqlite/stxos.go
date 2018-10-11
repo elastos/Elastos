@@ -2,8 +2,9 @@ package sqlite
 
 import (
 	"database/sql"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 	"sync"
+
+	"github.com/elastos/Elastos.ELA.SPV/spvwallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"

@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/gob"
-	"github.com/boltdb/bolt"
+	"sync"
+
 	"github.com/elastos/Elastos.ELA.SPV/util"
+
+	"github.com/boltdb/bolt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
-	"sync"
 )
 
 // Ensure dataBatch implement DataBatch interface.
@@ -69,7 +71,7 @@ func (b *dataBatch) DelAll(height uint32) error {
 		}
 	}
 
-	err =  b.boltTx.Bucket(BKTHeightTxs).Delete(key[:])
+	err = b.boltTx.Bucket(BKTHeightTxs).Delete(key[:])
 	if err != nil {
 		return err
 	}

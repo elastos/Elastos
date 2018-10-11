@@ -3,6 +3,7 @@ package _interface
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
 	spvpeer "github.com/elastos/Elastos.ELA.SPV/peer"
@@ -120,7 +121,7 @@ func TestNewSPVService(t *testing.T) {
 		MaxConnections: 100,
 	}
 
-	service, err := NewSPVService(config)
+	service, err := newSpvService(config)
 	if err != nil {
 		t.Error("NewSPVService error %s", err.Error())
 	}
@@ -142,8 +143,28 @@ func TestNewSPVService(t *testing.T) {
 	service.RegisterTransactionListener(unconfirmedListener)
 
 	// Start spv service
-	err = service.Start()
-	if err != nil {
-		t.Error("Start SPV service error: ", err)
+	service.Start()
+
+	syncTicker := time.NewTicker(time.Second * 10)
+	defer syncTicker.Stop()
+
+out:
+	for {
+		select {
+		case <-syncTicker.C:
+
+			if service.IService.IsCurrent() {
+				// Clear test data
+				err := service.ClearData()
+				if err != nil {
+					t.Errorf("service clear data error %s", err)
+				}
+
+				service.Stop()
+				t.Log("successful synchronized to current")
+
+				break out
+			}
+		}
 	}
 }

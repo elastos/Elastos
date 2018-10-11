@@ -27,7 +27,7 @@ type spvservice struct {
 	listeners map[common.Uint256]TransactionListener
 }
 
-func newService(cfg *Config) (*spvservice, error) {
+func newSpvService(cfg *Config) (*spvservice, error) {
 	headerStore, err := store.NewHeaderStore()
 	if err != nil {
 		return nil, err

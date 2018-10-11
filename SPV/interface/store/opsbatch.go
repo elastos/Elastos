@@ -1,9 +1,9 @@
 package store
 
 import (
-	"github.com/boltdb/bolt"
 	"sync"
 
+	"github.com/boltdb/bolt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/core"
 )

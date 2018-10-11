@@ -100,5 +100,5 @@ type TransactionListener interface {
 }
 
 func NewSPVService(config *Config) (SPVService, error) {
-	return newService(config)
+	return newSpvService(config)
 }
