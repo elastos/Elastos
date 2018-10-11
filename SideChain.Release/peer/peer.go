@@ -71,16 +71,19 @@ type Listeners struct {
 	// message.
 	OnGetBlocks func(p *Peer, msg *msg.GetBlocks)
 
-	// OnFilterAdd is invoked when a peer receives a filteradd bitcoin message.
+	// OnFilterAdd is invoked when a peer receives a filteradd message.
 	OnFilterAdd func(p *Peer, msg *msg.FilterAdd)
 
-	// OnFilterClear is invoked when a peer receives a filterclear bitcoin
+	// OnFilterClear is invoked when a peer receives a filterclear
 	// message.
 	OnFilterClear func(p *Peer, msg *msg.FilterClear)
 
-	// OnFilterLoad is invoked when a peer receives a filterload bitcoin
+	// OnFilterLoad is invoked when a peer receives a filterload
 	// message.
 	OnFilterLoad func(p *Peer, msg *msg.FilterLoad)
+
+	// OnTxFilter is invoked when a peer receives a txfilter message.
+	OnTxFilter func(p *Peer, msg *msg.TxFilter)
 
 	// OnReject is invoked when a peer receives a reject message.
 	OnReject func(p *Peer, msg *msg.Reject)
