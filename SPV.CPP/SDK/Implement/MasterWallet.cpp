@@ -71,7 +71,6 @@ namespace Elastos {
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 			importFromMnemonic(mnemonic, language, phrasePassword, payPassword);
-			Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -96,7 +95,6 @@ namespace Elastos {
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
-			Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -115,7 +113,6 @@ namespace Elastos {
 			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount, "Signers");
 
 			initFromMultiSigners("", "", coSigners, requiredSignCount);
-			Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &privKey, const std::string &payPassword,
@@ -134,7 +131,6 @@ namespace Elastos {
 			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount - 1, "Signers");
 
 			initFromMultiSigners(privKey, payPassword, coSigners, requiredSignCount);
-			Save();
 		}
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
@@ -155,7 +151,6 @@ namespace Elastos {
 			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount - 1, "Signers");
 
 			initFromMultiSigners(mnemonic, phrasePassword, language, payPassword, coSigners, requiredSignCount);
-			Save();
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -321,8 +316,6 @@ namespace Elastos {
 			}
 
 			initFromKeyStore(keyStore, payPassword, phrasePassword);
-
-			Save();
 		}
 
 		void MasterWallet::importFromMnemonic(const std::string &mnemonic,
@@ -334,8 +327,6 @@ namespace Elastos {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			_localStore.Reset(mnemonic, languange, phrasePassword, payPassword);
-
-			Save();
 		}
 
 		nlohmann::json MasterWallet::exportKeyStore(const std::string &backupPassword, const std::string &payPassword) {
