@@ -3,7 +3,7 @@ package blockchain
 import (
 	"bytes"
 
-	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
+	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/database"
@@ -35,12 +35,14 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 		if err := c.PersistTransaction(batch, txn, b.Header.Height); err != nil {
 			return err
 		}
+
 		if txn.TxType == types.RegisterAsset {
 			regPayload := txn.Payload.(*types.PayloadRegisterAsset)
 			if err := c.PersistAsset(batch, txn.Hash(), regPayload.Asset); err != nil {
 				return err
 			}
 		}
+
 		if txn.TxType == types.RechargeToSideChain {
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			hash, err := rechargePayload.GetMainchainTxHash()
@@ -49,8 +51,9 @@ func (c *IDChainStore) persistTransactions(batch database.Batch, b *types.Block)
 			}
 			c.PersistMainchainTx(batch, *hash)
 		}
-		if txn.TxType == core.RegisterIdentification {
-			regPayload := txn.Payload.(*core.PayloadRegisterIdentification)
+
+		if txn.TxType == id.RegisterIdentification {
+			regPayload := txn.Payload.(*id.PayloadRegisterIdentification)
 			for _, content := range regPayload.Contents {
 				buf := new(bytes.Buffer)
 				buf.WriteString(regPayload.ID)

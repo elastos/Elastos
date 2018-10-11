@@ -4,7 +4,7 @@ import (
 	"errors"
 	"math"
 
-	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
+	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
@@ -47,7 +47,7 @@ func (v *validator) checkTransactionPayload(txn *types.Transaction) error {
 	case *types.PayloadCoinBase:
 	case *types.PayloadRechargeToSideChain:
 	case *types.PayloadTransferCrossChainAsset:
-	case *core.PayloadRegisterIdentification:
+	case *id.PayloadRegisterIdentification:
 	default:
 		return errors.New("[ID CheckTransactionPayload] [txValidator],invalidate transaction payload type.")
 	}
@@ -127,7 +127,7 @@ func (v *validator) checkTransactionSignature(txn *types.Transaction) error {
 	}
 
 	// Add ID program hash to hashes
-	if core.IsRegisterIdentificationTx(txn) {
+	if id.IsRegisterIdentificationTx(txn) {
 		for _, output := range txn.Outputs {
 			if output.ProgramHash[0] == common.PrefixRegisterId {
 				hashes = append(hashes, output.ProgramHash)
