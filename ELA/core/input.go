@@ -17,7 +17,7 @@ type Input struct {
 }
 
 func (i *Input) Serialize(w io.Writer) error {
-	return WriteElements(w, i.Previous.TxID, i.Previous.Index, i.Sequence)
+	return WriteElements(w, &i.Previous.TxID, i.Previous.Index, i.Sequence)
 }
 
 func (i *Input) Deserialize(r io.Reader) error {

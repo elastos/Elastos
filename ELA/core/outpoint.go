@@ -23,7 +23,7 @@ func (op *OutPoint) IsEqual(o OutPoint) bool {
 }
 
 func (op *OutPoint) Serialize(w io.Writer) error {
-	return WriteElements(w, op.TxID, op.Index)
+	return WriteElements(w, &op.TxID, op.Index)
 }
 
 func (op *OutPoint) Deserialize(r io.Reader) error {

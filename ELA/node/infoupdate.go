@@ -195,7 +195,7 @@ func (node *node) NetAddress() *p2p.NetAddress {
 	return &p2p.NetAddress{
 		IP:        node.IP(),
 		Timestamp: time.Now(),
-		Services:  p2p.ServiceFlag(node.Services()),
+		Services:  node.Services(),
 		Port:      node.Port(),
 	}
 }
