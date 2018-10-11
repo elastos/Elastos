@@ -171,7 +171,7 @@ func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
 	s.RegisterAction("getinfo", service.GetInfo)
-	s.RegisterAction("getblock", service.GetBlockByHash, "hash", "verbosity")
+	s.RegisterAction("getblock", service.GetBlockByHash, "blockhash", "verbosity")
 	s.RegisterAction("getcurrentheight", service.GetBlockHeight)
 	s.RegisterAction("getblockhash", service.GetBlockHash, "height")
 	s.RegisterAction("getconnectioncount", service.GetConnectionCount)

@@ -11,13 +11,16 @@ func IsRegisterIdentificationTx(tx *types.Transaction) bool {
 }
 
 func init() {
+
+	txTypeStr := types.TxTypeStr
 	types.TxTypeStr = func(txType types.TxType) string {
 		if txType == RegisterIdentification {
 			return "RegisterIdentification"
 		}
-		return types.TxTypeStr(txType)
+		return txTypeStr(txType)
 	}
 
+	getDataContainer := types.GetDataContainer
 	types.GetDataContainer = func(programHash *common.Uint168, tx *types.Transaction) interfaces.IDataContainer {
 		if tx.TxType == RegisterIdentification {
 			for _, output := range tx.Outputs {
@@ -26,13 +29,14 @@ func init() {
 				}
 			}
 		}
-		return types.GetDataContainer(programHash, tx)
+		return getDataContainer(programHash, tx)
 	}
 
+	getPayloadByTxType := types.GetPayloadByTxType
 	types.GetPayloadByTxType = func(txType types.TxType) (types.Payload, error) {
 		if txType == RegisterIdentification {
 			return &PayloadRegisterIdentification{}, nil
 		}
-		return types.GetPayloadByTxType(txType)
+		return getPayloadByTxType(txType)
 	}
 }
