@@ -1274,7 +1274,7 @@ func (b *BlockChain) locateBlocks(startHash *Uint256, stopHash *Uint256, maxBloc
 	var count = uint32(0)
 	var startHeight uint32
 	var stopHeight uint32
-	curHeight := b.GetBestHeight()
+	curHeight := b.db.GetHeight()
 	if stopHash.IsEqual(EmptyHash) {
 		if startHash.IsEqual(EmptyHash) {
 			if curHeight > maxBlockHashes {
