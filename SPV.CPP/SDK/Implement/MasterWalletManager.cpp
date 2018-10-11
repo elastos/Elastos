@@ -356,13 +356,20 @@ namespace Elastos {
 		void MasterWalletManager::checkRedundant(IMasterWallet *wallet) const {
 			MasterWallet *masterWallet = static_cast<MasterWallet *>(wallet);
 
+			bool hasRedundant = false;
 			std::for_each(_masterWalletMap.begin(), _masterWalletMap.end(),
-						  [masterWallet](const MasterWalletMap::value_type &item) {
+						  [masterWallet, &hasRedundant](const MasterWalletMap::value_type &item) {
 							  const MasterWallet *createdWallet = static_cast<const MasterWallet *>(item.second);
-							  ParamChecker::checkCondition(masterWallet->IsEqual(*createdWallet),
-														   Error::CreateMasterWalletError,
-														   "Master wallet already exist.");
+							  hasRedundant = masterWallet->IsEqual(*createdWallet);
+
 						  });
+
+			if (hasRedundant) {
+				delete wallet;
+			}
+
+			ParamChecker::checkCondition(hasRedundant, Error::CreateMasterWalletError,
+				"Master wallet already exist.");
 		}
 	}
 }
