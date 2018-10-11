@@ -23,13 +23,15 @@ namespace Elastos {
 
 			virtual void ChangePassword(const std::string &oldPassword, const std::string &newPassword);
 
-			virtual std::string GetType();
+			virtual std::string GetType() const;
 
 			virtual nlohmann::json ToJson() const;
 
 			virtual void FromJson(const nlohmann::json &j);
 
 			virtual bool IsReadOnly() const;
+
+			virtual bool IsEqual(const IAccount &account) const;
 
 		public: //properties
 
@@ -43,7 +45,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const;
 
-			virtual std::string GetAddress();
+			virtual std::string GetAddress() const;
 
 		private:
 			friend class AccountFactory;

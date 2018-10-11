@@ -27,13 +27,15 @@ namespace Elastos {
 
 			virtual Key DeriveKey(const std::string &payPassword) = 0;
 
-			virtual std::string GetType() = 0;
+			virtual std::string GetType() const = 0;
 
 			virtual nlohmann::json ToJson() const = 0;
 
 			virtual void FromJson(const nlohmann::json &j) = 0;
 
 			virtual bool IsReadOnly() const = 0;
+
+			virtual bool IsEqual(const IAccount &account) const = 0;
 
 		public: //properties
 
@@ -47,7 +49,7 @@ namespace Elastos {
 
 			virtual const MasterPubKey &GetIDMasterPubKey() const = 0;
 
-			virtual std::string GetAddress() = 0;
+			virtual std::string GetAddress() const = 0;
 		};
 
 		typedef boost::shared_ptr<IAccount> AccountPtr;

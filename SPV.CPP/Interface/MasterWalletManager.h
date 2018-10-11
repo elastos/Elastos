@@ -197,6 +197,8 @@ namespace Elastos {
 
 			void removeWallet(const std::string &masterWalletId, bool saveMaster = true);
 
+			void checkRedundant(IMasterWallet *wallet) const;
+
 		protected:
 			std::string _rootPath;
 			bool _p2pEnable;

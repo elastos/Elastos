@@ -99,7 +99,7 @@ namespace Elastos {
 										 "Readonly account do not support this operation.");
 		}
 
-		std::string MultiSignAccount::GetAddress() {
+		std::string MultiSignAccount::GetAddress() const {
 			if (_address.empty()) {
 				// redeem script -> program hash
 				UInt168 programHash = Utils::codeToProgramHash(GenerateRedeemScript());
@@ -169,7 +169,7 @@ namespace Elastos {
 			return j;
 		}
 
-		std::string MultiSignAccount::GetType() {
+		std::string MultiSignAccount::GetType() const {
 			return "MultiSign";
 		}
 
@@ -187,6 +187,13 @@ namespace Elastos {
 
 		bool MultiSignAccount::IsReadOnly() const {
 			return _me == nullptr;
+		}
+
+		bool MultiSignAccount::IsEqual(const IAccount &account) const {
+			if (account.GetType() != GetType() || IsReadOnly() != account.IsReadOnly())
+				return false;
+
+			return account.GetAddress() == GetAddress();
 		}
 
 	}
