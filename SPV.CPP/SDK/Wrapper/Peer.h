@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/function.hpp>
 #include <SDK/Common/Log.h>
 
@@ -48,9 +49,11 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		class Peer;
 		class PeerManager;
+		typedef boost::shared_ptr<Peer> PeerPtr;
 
-		class Peer {
+		class Peer : public boost::enable_shared_from_this<Peer> {
 		public:
 			enum ConnectStatus {
 				Disconnected = 0,
@@ -69,31 +72,33 @@ namespace Elastos {
 
 			class Listener {
 			public:
-				virtual void OnConnected(Peer *peer) {}
+				virtual void OnConnected(const PeerPtr &peer) {}
 
-				virtual void OnDisconnected(Peer *peer, int error) {}
+				virtual void OnDisconnected(const PeerPtr &peer, int error) {}
 
-				virtual void OnRelayedPeers(Peer *peer, const std::vector<boost::shared_ptr<Peer>> &peers, size_t peersCount) {}
+				virtual void
+				OnRelayedPeers(const PeerPtr &peer, const std::vector<boost::shared_ptr<Peer>> &peers, size_t peersCount) {}
 
-				virtual void OnRelayedTx(Peer *peer, const TransactionPtr &tx) {}
+				virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx) {}
 
-				virtual void OnHasTx(Peer *peer, const UInt256 &txHash) {}
+				virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash) {}
 
-				virtual void OnRejectedTx(Peer *peer, const UInt256 &txHash, uint8_t code) {}
+				virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code) {}
 
-				virtual void OnRelayedBlock(Peer *peer, const MerkleBlockPtr &block) {}
+				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {}
 
-				virtual void OnRelayedPingMsg(Peer *peer) {}
+				virtual void OnRelayedPingMsg(const PeerPtr &peer) {}
 
-				virtual void OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {}
+				virtual void
+				OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {}
 
-				virtual void OnSetFeePerKb(Peer *peer, uint64_t feePerKb) {}
+				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) {}
 
-				virtual const TransactionPtr &OnRequestedTx(Peer *peer, const UInt256 &txHash) { return nullptr;}
+				virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) { return nullptr; }
 
-				virtual bool OnNetworkIsReachable(Peer *peer) { return false;}
+				virtual bool OnNetworkIsReachable(const PeerPtr &peer) { return false; }
 
-				virtual void OnThreadCleanup(Peer *peer) {}
+				virtual void OnThreadCleanup(const PeerPtr &peer) {}
 			};
 
 			typedef boost::function<void(int)> PeerCallback;
@@ -237,6 +242,10 @@ namespace Elastos {
 
 			PeerManager *getPeerManager() const;
 
+			uint8_t	GetFlags() const;
+
+			void SetFlags(uint8_t flags);
+
 			std::string FormatError(int errnum);
 
 			template<typename Arg1, typename... Args>
@@ -324,6 +333,7 @@ namespace Elastos {
 
 		private:
 			friend class Message;
+
 			PeerInfo _info;
 
 			uint32_t _magicNumber;
@@ -352,7 +362,6 @@ namespace Elastos {
 			Listener *_listener;
 		};
 
-		typedef boost::shared_ptr<Peer> PeerPtr;
 
 	}
 }

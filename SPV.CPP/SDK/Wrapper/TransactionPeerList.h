@@ -13,11 +13,15 @@ namespace Elastos {
 
 		class TransactionPeerList {
 		public:
-			TransactionPeerList();
+			TransactionPeerList(const UInt256 &txHash, const std::vector<PeerPtr> &peers);
 
 			const UInt256 &GetTransactionHash() const;
 
 			const std::vector<PeerPtr> &GetPeers() const;
+
+			void AddPeer(const PeerPtr &peer);
+
+			void RemovePeerAt(size_t index);
 
 		private:
 			UInt256 _txHash;

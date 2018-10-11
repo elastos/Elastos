@@ -7,8 +7,15 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		PublishedTransaction::PublishedTransaction() :
+				_tx(nullptr),
+				_callback(boost::function<void(int)>()) {
+
+		}
+
 		PublishedTransaction::PublishedTransaction(const TransactionPtr &tx) :
-				_tx(tx) {
+				_tx(tx),
+				_callback(boost::function<void(int)>()) {
 
 		}
 
@@ -24,6 +31,18 @@ namespace Elastos {
 
 		const TransactionPtr &PublishedTransaction::GetTransaction() const {
 			return _tx;
+		}
+
+		void PublishedTransaction::ResetCallback() {
+			_callback = boost::function<void(int)>();
+		}
+
+		void PublishedTransaction::FireCallback(int code) {
+			_callback(code);
+		}
+
+		const boost::function<void(int)> &PublishedTransaction::GetCallback() const {
+			return _callback;
 		}
 	}
 }

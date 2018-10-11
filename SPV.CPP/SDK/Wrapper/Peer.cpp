@@ -408,7 +408,7 @@ namespace Elastos {
 			//fixme [refactor]
 //			if (mempoolCallback) mempoolCallback(mempoolInfo, 0);
 //			mempoolCallback = NULL;
-			if (_listener) _listener->OnDisconnected(this, error);
+			if (_listener) _listener->OnDisconnected(shared_from_this(), error);
 			//fixme [refactor]
 //		pthread_cleanup_pop(1)
 		}
@@ -498,7 +498,7 @@ namespace Elastos {
 			_sentGetblocks = sent;
 		}
 
-		const std::vector<UInt256>& Peer::GetCurrentBlockTxHashes() const {
+		const std::vector<UInt256> &Peer::GetCurrentBlockTxHashes() const {
 			return _currentBlockTxHashes;
 		}
 
@@ -506,7 +506,7 @@ namespace Elastos {
 			_currentBlockTxHashes.push_back(hash);
 		}
 
-		const std::vector<UInt256>& Peer::GetKnownBlockHashes() const {
+		const std::vector<UInt256> &Peer::GetKnownBlockHashes() const {
 			return _knownBlockHashes;
 		}
 
@@ -521,8 +521,7 @@ namespace Elastos {
 		}
 
 
-
-		const std::vector<UInt256>& Peer::GetKnownTxHashes() const {
+		const std::vector<UInt256> &Peer::GetKnownTxHashes() const {
 			return _knownTxHashes;
 		}
 
@@ -667,6 +666,14 @@ namespace Elastos {
 			PeerCallback callback = _pongCallbackList.front();
 			_pongCallbackList.pop_front();
 			return callback;
+		}
+
+		uint8_t Peer::GetFlags() const {
+			return _info.flags;
+		}
+
+		void Peer::SetFlags(uint8_t flags) {
+			_info.flags = flags;
 		}
 
 	}

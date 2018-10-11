@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <netinet/in.h>
+#include <boost/bind.hpp>
 #include <arpa/inet.h>
 #include <Core/BRChainParams.h>
 #include <Core/BRPeer.h>
@@ -427,17 +428,18 @@ namespace Elastos {
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &tx) {
+			publishTransaction(tx, Peer::PeerCallback());
 		}
 
 		void PeerManager::publishTransaction(const TransactionPtr &tx,
-											 const boost::function<void(int)> &callback) {
+											 const Peer::PeerCallback &callback) {
 
 			assert(tx != NULL && tx->isSigned());
 			if (tx) lock.lock();
 
 			if (tx && !tx->isSigned()) {
 				lock.unlock();
-				if (callback) callback(EINVAL); // transaction not signed
+				if (!callback.empty()) callback(EINVAL); // transaction not signed
 			} else if (tx && !isConnected) {
 				int connectFailureCount = connectFailureCount;
 
@@ -445,7 +447,7 @@ namespace Elastos {
 
 				if (connectFailureCount >= MAX_CONNECT_FAILURES ||
 					(!networkIsReachable())) {
-					if (callback) callback(ENOTCONN); // not connected to bitcoin network
+					if (!callback.empty()) callback(ENOTCONN); // not connected to bitcoin network
 				} else lock.lock();
 			}
 
@@ -460,7 +462,6 @@ namespace Elastos {
 				}
 
 				for (i = _connectedPeers.size(); i > 0; i--) {
-					//fixme [refactor]
 					const PeerPtr &peer = _connectedPeers[i - 1];
 
 					if (peer->getConnectStatusValue() != Peer::Connected) continue;
@@ -568,7 +569,7 @@ namespace Elastos {
 			return r;
 		}
 
-		void PeerManager::loadBloomFilter(BRPeer *peer) {
+		void PeerManager::loadBloomFilter(const PeerPtr &peer) {
 			//fixme [refactor]
 //			// every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used
 //			// for one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a
@@ -659,8 +660,10 @@ namespace Elastos {
 		}
 
 		void PeerManager::sortPeers() {
-//fixme [refactor]
 			// comparator for sorting peers by timestamp, most recent first
+			std::sort(_peers.begin(), _peers.end(), [](const PeerPtr &first, const PeerPtr &second) {
+				return first->getTimestamp() > second->getTimestamp();
+			});
 		}
 
 		void PeerManager::findPeers() {
@@ -729,7 +732,7 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::addTxToPublishList(const TransactionPtr &tx, const boost::function<void(int)> &callback) {
+		void PeerManager::addTxToPublishList(const TransactionPtr &tx, const Peer::PeerCallback &callback) {
 			if (tx && tx->getBlockHeight() == TX_UNCONFIRMED) {
 				for (size_t i = publishedTx.size(); i > 0; i--) {
 					if (publishedTx[i - 1].GetTransaction()->IsEqual(tx.get())) return;
@@ -763,7 +766,7 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::OnConnected(Peer *peer) {
+		void PeerManager::OnConnected(const PeerPtr &peer) {
 			//fixme [refactor]
 //			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
@@ -850,7 +853,7 @@ namespace Elastos {
 //			pthread_mutex_unlock(&manager->lock);
 		}
 
-		void PeerManager::OnDisconnected(Peer *peer, int error) {
+		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
 			//fixme [refactor]
 //			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
@@ -941,7 +944,7 @@ namespace Elastos {
 //			if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 		}
 
-		void PeerManager::OnRelayedPeers(Peer *peer, const std::vector<PeerPtr> &peers, size_t peersCount) {
+		void PeerManager::OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerPtr> &peers, size_t peersCount) {
 			//fixme [refactor]
 //			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
@@ -972,181 +975,173 @@ namespace Elastos {
 //				manager->savePeers(manager->info, 1, save, peersCount);
 		}
 
-		void PeerManager::OnRelayedTx(Peer *peer, const TransactionPtr &tx) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			void *txInfo = NULL;
-//			void (*txCallback)(void *, int) = NULL;
-//			int isWalletTx = 0, hasPendingCallbacks = 0;
-//			size_t relayCount = 0;
+		void PeerManager::OnRelayedTx(const PeerPtr &peer, const TransactionPtr &transaction) {
+			int isWalletTx = 0, hasPendingCallbacks = 0;
+			size_t relayCount = 0;
+			TransactionPtr tx = transaction;
+			Peer::PeerCallback txCallback;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				peer->Pinfo("relayed tx: %s", Utils::UInt256ToString(tx->getHash()));
+
+				for (size_t i = publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
+					if (UInt256Eq(&publishedTxHashes[i - 1], &tx->getHash())) {
+						txCallback = publishedTx[i - 1].GetCallback();
+						publishedTx[i - 1].ResetCallback();
+						relayCount = addPeerToList(peer, tx->getHash(), txRelays);
+					} else if (publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
+				}
+
+				// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
+				if (!hasPendingCallbacks && (syncStartHeight == 0 || peer != downloadPeer)) {
+					peer->scheduleDisconnect(-1); // cancel publish tx timeout
+				}
+
+				if (syncStartHeight == 0 || _wallet->containsTransaction(tx)) {
+					isWalletTx = _wallet->registerTransaction(tx);
+					if (isWalletTx) tx = _wallet->transactionForHash(tx->getHash());
+				} else {
+					tx = nullptr;
+				}
+
+				if (tx && isWalletTx) {
+					// reschedule sync timeout
+					if (syncStartHeight > 0 && peer == downloadPeer) {
+						peer->scheduleDisconnect(PROTOCOL_TIMEOUT);
+					}
+
+					if (_wallet->getTransactionAmountSent(tx) > 0 &&
+						_wallet->transactionIsValid(tx)) {
+						addTxToPublishList(tx, Peer::PeerCallback());  // add valid send tx to mempool
+					}
+
+					// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+					// (we only need to track this after syncing is complete)
+					if (syncStartHeight == 0)
+						relayCount = addPeerToList(peer, tx->getHash(), txRelays);
+
+					removePeerFromList(peer, tx->getHash(), txRequests);
+
+					//fixme [refactor]
+//					if (bloomFilter != nullptr) { // check if bloom filter is already being updated
+//						BRAddress addrs[SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL];
+//						UInt168 hash;
 //
-//			pthread_mutex_lock(&manager->lock);
-//			peer_log(peer, "relayed tx: %s", u256hex(tx->txHash));
+//						// the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+//						// unused addresses are still matched by the bloom filter
+//						_wallet->nusedAddrs(manager->wallet, addrs, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+//						_wallet->WalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL,
+//												   SEQUENCE_GAP_LIMIT_INTERNAL, 1);
 //
-//			for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
-//				if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &(tx->txHash))) {
-//					txInfo = manager->publishedTx[i - 1].info;
-//					txCallback = manager->publishedTx[i - 1].callback;
-//					manager->publishedTx[i - 1].info = NULL;
-//					manager->publishedTx[i - 1].callback = NULL;
-//					relayCount = _BRTxPeerListAddPeer(&manager->txRelays, tx->txHash, peer);
-//				} else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
-//			}
-//
-//			// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
-//			if (!hasPendingCallbacks && (manager->syncStartHeight == 0 || peer != manager->downloadPeer)) {
-//				BRPeerScheduleDisconnect(peer, -1); // cancel publish tx timeout
-//			}
-//
-//			if (manager->syncStartHeight == 0 || BRWalletContainsTransaction(manager->wallet, tx)) {
-//				isWalletTx = BRWalletRegisterTransaction(manager->wallet, tx);
-//				if (isWalletTx) tx = BRWalletTransactionForHash(manager->wallet, tx->txHash);
-//			} else {
-//				BRTransactionFree(tx);
-//				tx = NULL;
-//			}
-//
-//			if (tx && isWalletTx) {
-//				// reschedule sync timeout
-//				if (manager->syncStartHeight > 0 && peer == manager->downloadPeer) {
-//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT);
-//				}
-//
-//				if (BRWalletAmountSentByTx(manager->wallet, tx) > 0 &&
-//					BRWalletTransactionIsValid(manager->wallet, tx)) {
-//					_BRPeerManagerAddTxToPublishList(manager, tx, NULL, NULL); // add valid send tx to mempool
-//				}
-//
-//				// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-//				// (we only need to track this after syncing is complete)
-//				if (manager->syncStartHeight == 0)
-//					relayCount = _BRTxPeerListAddPeer(&manager->txRelays, tx->txHash, peer);
-//
-//				_BRTxPeerListRemovePeer(manager->txRequests, tx->txHash, peer);
-//
-//				if (manager->bloomFilter != NULL) { // check if bloom filter is already being updated
-//					BRAddress addrs[SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL];
-//					UInt168 hash;
-//
-//					// the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
-//					// unused addresses are still matched by the bloom filter
-//					manager->wallet->WalletUnusedAddrs(manager->wallet, addrs, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-//					manager->wallet->WalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL,
-//													   SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-//
-//					for (size_t i = 0; i < SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL; i++) {
-//						if (!BRAddressHash168(&hash, addrs[i].s) ||
-//							BRBloomFilterContainsData(manager->bloomFilter, hash.u8, sizeof(hash)))
-//							continue;
-//						if (manager->bloomFilter) BRBloomFilterFree(manager->bloomFilter);
-//						manager->bloomFilter = NULL; // reset bloom filter so it's recreated with new wallet addresses
-//						_BRPeerManagerUpdateFilter(manager);
-//						break;
+//						for (size_t i = 0; i < SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL; i++) {
+//							if (!BRAddressHash168(&hash, addrs[i].s) ||
+//								BRBloomFilterContainsData(bloomFilter, hash.u8, sizeof(hash)))
+//								continue;
+//							if (bloomFilter) BRBloomFilterFree(bloomFilter);
+//							bloomFilter = nullptr; // reset bloom filter so it's recreated with new wallet addresses
+//							updateBloomFilter();
+//							break;
+//						}
 //					}
-//				}
-//			}
-//
-//			// set timestamp when tx is verified
-//			if (tx && relayCount >= manager->maxConnectCount && tx->blockHeight == TX_UNCONFIRMED &&
-//				tx->timestamp == 0) {
-//				BRWalletUpdateTransactions(manager->wallet, &tx->txHash, 1, TX_UNCONFIRMED, (uint32_t) time(NULL));
-//			}
-//
-//			pthread_mutex_unlock(&manager->lock);
-//			if (txCallback) txCallback(txInfo, 0);
+				}
+
+				// set timestamp when tx is verified
+				if (tx && relayCount >= maxConnectCount && tx->getBlockHeight() == TX_UNCONFIRMED &&
+					tx->getTimestamp() == 0) {
+					_wallet->updateTransactions({tx->getHash()}, TX_UNCONFIRMED, (uint32_t) time(NULL));
+				}
+			}
+
+			if (!txCallback.empty()) txCallback(0);
 		}
 
-		void PeerManager::OnHasTx(Peer *peer, const UInt256 &txHash) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			BRTransaction *tx;
-//			BRPublishedTx pubTx = {NULL, NULL, NULL};
-//			int isWalletTx = 0, hasPendingCallbacks = 0;
-//			size_t relayCount = 0;
-//
-//			pthread_mutex_lock(&manager->lock);
-//			tx = BRWalletTransactionForHash(manager->wallet, txHash);
-//			peer_log(peer, "has tx: %s", u256hex(txHash));
-//
-//			for (size_t i = array_count(manager->publishedTx); i > 0; i--) { // see if tx is in list of published tx
-//				if (UInt256Eq(&(manager->publishedTxHashes[i - 1]), &txHash)) {
-//					pubTx = manager->publishedTx[i - 1];
-//					if (!tx) tx = pubTx.tx;
-//					manager->publishedTx[i - 1].callback = NULL;
-//					manager->publishedTx[i - 1].info = NULL;
-//					relayCount = _BRTxPeerListAddPeer(&manager->txRelays, txHash, peer);
-//				} else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
-//			}
-//
-//			// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
-//			if (!hasPendingCallbacks && (manager->syncStartHeight == 0 || peer != manager->downloadPeer)) {
-//				BRPeerScheduleDisconnect(peer, -1); // cancel publish tx timeout
-//			}
-//
-//			if (tx) {
-//				isWalletTx = BRWalletRegisterTransaction(manager->wallet, tx);
-//				if (isWalletTx) tx = BRWalletTransactionForHash(manager->wallet, tx->txHash);
-//
-//				// reschedule sync timeout
-//				if (manager->syncStartHeight > 0 && peer == manager->downloadPeer && isWalletTx) {
-//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT);
-//				}
-//
-//				// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
-//				// (we only need to track this after syncing is complete)
-//				if (manager->syncStartHeight == 0) relayCount = _BRTxPeerListAddPeer(&manager->txRelays, txHash, peer);
-//
-//				// set timestamp when tx is verified
-//				if (relayCount >= manager->maxConnectCount && tx && tx->blockHeight == TX_UNCONFIRMED &&
-//					tx->timestamp == 0) {
-//					BRWalletUpdateTransactions(manager->wallet, &txHash, 1, TX_UNCONFIRMED, (uint32_t) time(NULL));
-//				}
-//
-//				_BRTxPeerListRemovePeer(manager->txRequests, txHash, peer);
-//			}
-//
-//			pthread_mutex_unlock(&manager->lock);
-//			if (pubTx.callback) pubTx.callback(pubTx.info, 0);
+		void PeerManager::OnHasTx(const PeerPtr &peer, const UInt256 &txHash) {
+			int isWalletTx = 0, hasPendingCallbacks = 0;
+			size_t relayCount = 0;
+			PublishedTransaction pubTx;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				TransactionPtr tx = _wallet->transactionForHash(txHash);
+				peer->Pinfo("has tx: {}", Utils::UInt256ToString(txHash));
+
+				for (size_t i = publishedTx.size(); i > 0; i--) { // see if tx is in list of published tx
+					if (UInt256Eq(&(publishedTxHashes[i - 1]), &txHash)) {
+						if (!tx) tx = publishedTx[i - 1].GetTransaction();
+						pubTx = publishedTx[i - 1];
+						pubTx.ResetCallback();
+						relayCount = addPeerToList(peer, txHash, txRelays);
+					} else if (publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
+				}
+
+				// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
+				if (!hasPendingCallbacks && (syncStartHeight == 0 || peer != downloadPeer)) {
+					peer->scheduleDisconnect(-1);  // cancel publish tx timeout
+				}
+
+				if (tx) {
+					isWalletTx = _wallet->registerTransaction(tx);
+					if (isWalletTx) tx = _wallet->transactionForHash(tx->getHash());
+
+					// reschedule sync timeout
+					if (syncStartHeight > 0 && peer == downloadPeer && isWalletTx) {
+						peer->scheduleDisconnect(PROTOCOL_TIMEOUT);
+					}
+
+					// keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
+					// (we only need to track this after syncing is complete)
+					if (syncStartHeight == 0)
+						relayCount = addPeerToList(peer, txHash, txRelays);
+
+					// set timestamp when tx is verified
+					if (relayCount >= maxConnectCount && tx && tx->getBlockHeight() == TX_UNCONFIRMED &&
+						tx->getTimestamp() == 0) {
+						std::vector<UInt256> hashes = {txHash};
+						_wallet->updateTransactions(hashes, TX_UNCONFIRMED, (uint32_t) time(NULL));
+					}
+
+					removePeerFromList(peer, txHash, txRequests);
+				}
+			}
+
+			if (pubTx.HasCallback()) pubTx.FireCallback(0);
 		}
 
-		void PeerManager::OnRejectedTx(Peer *peer, const UInt256 &txHash, uint8_t code) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			BRTransaction *tx, *t;
-//
-//			pthread_mutex_lock(&manager->lock);
-//			peer_log(peer, "rejected tx: %s", u256hex(txHash));
-//			tx = BRWalletTransactionForHash(manager->wallet, txHash);
-//			_BRTxPeerListRemovePeer(manager->txRequests, txHash, peer);
-//
-//			if (tx) {
-//				if (_BRTxPeerListRemovePeer(manager->txRelays, txHash, peer) && tx->blockHeight == TX_UNCONFIRMED) {
-//					// set timestamp 0 to mark tx as unverified
-//					BRWalletUpdateTransactions(manager->wallet, &txHash, 1, TX_UNCONFIRMED, 0);
-//				}
-//
-//				// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
-//				if (code != REJECT_SPENT && BRWalletAmountSentByTx(manager->wallet, tx) > 0) {
-//					for (size_t i = 0;
-//						 i < tx->inCount; i++) { // check that all inputs are confirmed before dropping peer
-//						t = BRWalletTransactionForHash(manager->wallet, tx->inputs[i].txHash);
-//						if (!t || t->blockHeight != TX_UNCONFIRMED) continue;
-//						tx = NULL;
-//						break;
-//					}
-//
-//					if (tx) _BRPeerManagerPeerMisbehavin(manager, peer);
-//				}
-//			}
-//
-//			pthread_mutex_unlock(&manager->lock);
-//			if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
+		void PeerManager::OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code) {
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				peer->Pinfo("rejected tx: {}", Utils::UInt256ToString(txHash));
+				TransactionPtr tx = _wallet->transactionForHash(txHash);
+				removePeerFromList(peer, txHash, txRequests);
+
+				if (tx) {
+					if (removePeerFromList(peer, txHash, txRelays) && tx->getBlockHeight() == TX_UNCONFIRMED) {
+						// set timestamp 0 to mark tx as unverified
+						_wallet->updateTransactions({txHash}, TX_UNCONFIRMED, 0);
+					}
+
+					// if we get rejected for any reason other than double-spend, the peer is likely misconfigured
+					if (code != REJECT_SPENT && _wallet->getTransactionAmountSent(tx) > 0) {
+						for (size_t i = 0; i <
+										   tx->getInputs().size(); i++) { // check that all inputs are confirmed before dropping peer
+							const TransactionPtr &t = _wallet->transactionForHash(
+									tx->getInputs()[i].getTransctionHash());
+							if (!t || t->getBlockHeight() != TX_UNCONFIRMED) continue;
+							tx = nullptr;
+							break;
+						}
+
+						if (tx != nullptr) peerMisbehaving(peer);
+					}
+				}
+			}
+
+			txStatusUpdate();
 		}
 
-		void PeerManager::OnRelayedBlock(Peer *peer, const MerkleBlockPtr &block) {
+		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
 			//fixme [refactor]
 //			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
@@ -1163,7 +1158,7 @@ namespace Elastos {
 //			prev = BRSetGet(manager->blocks, &block->prevBlock);
 //
 //			if (prev) {
-//				txTime = block->timestamp / 2 + prev->timestamp / 2;
+//				txTime = block->timestamp;
 //				block->height = prev->height + 1;
 //			}
 //
@@ -1377,27 +1372,20 @@ namespace Elastos {
 //			if (next) _peerRelayedBlock(info, next);
 		}
 
-		void PeerManager::OnRelayedPingMsg(Peer *peer) {
+		void PeerManager::OnRelayedPingMsg(const PeerPtr &peer) {
 			syncIsInactive();
 		}
 
-		void PeerManager::OnNotfound(Peer *peer, const std::vector<UInt256> &txHashes,
+		void PeerManager::OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
 									 const std::vector<UInt256> &blockHashes) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//
-//			pthread_mutex_lock(&manager->lock);
-//
-//			for (size_t i = 0; i < txCount; i++) {
-//				_BRTxPeerListRemovePeer(manager->txRelays, txHashes[i], peer);
-//				_BRTxPeerListRemovePeer(manager->txRequests, txHashes[i], peer);
-//			}
-//
-//			pthread_mutex_unlock(&manager->lock);
+			boost::mutex::scoped_lock scopedLock(lock);
+			for (size_t i = 0; i < txHashes.size(); i++) {
+				removePeerFromList(peer, txHashes[i], txRelays);
+				removePeerFromList(peer, txHashes[i], txRequests);
+			}
 		}
 
-		void PeerManager::OnSetFeePerKb(Peer *peer, uint64_t feePerKb) {
+		void PeerManager::OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) {
 			uint64_t maxFeePerKb = 0, secondFeePerKb = 0;
 
 			{
@@ -1410,53 +1398,49 @@ namespace Elastos {
 
 				if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
 					secondFeePerKb * 3 / 2 > _wallet->getFeePerKb()) {
-					//fixme [refacotr]
-//					peer_log(peer, "increasing feePerKb to %"
-//							PRIu64
-//							" based on feefilter messages from peers", secondFeePerKb * 3 / 2);
+					peer->Pinfo("increasing feePerKb to {} based on feefilter messages from peers",
+								secondFeePerKb * 3 / 2);
 					_wallet->setFeePerKb(secondFeePerKb * 3 / 2);
 				}
 			}
 		}
 
-		const TransactionPtr &PeerManager::OnRequestedTx(Peer *peer, const UInt256 &txHash) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			BRPublishedTx pubTx = {NULL, NULL, NULL};
-//			int hasPendingCallbacks = 0, error = 0;
-//
-//			pthread_mutex_lock(&manager->lock);
-//
-//			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
-//				if (UInt256Eq(&manager->publishedTxHashes[i - 1], &txHash)) {
-//					pubTx = manager->publishedTx[i - 1];
-//					manager->publishedTx[i - 1].callback = NULL;
-//					manager->publishedTx[i - 1].info = NULL;
-//				} else if (manager->publishedTx[i - 1].callback != NULL) hasPendingCallbacks = 1;
-//			}
-//
-//			// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
-//			if (!hasPendingCallbacks && (manager->syncStartHeight == 0 || peer != manager->downloadPeer)) {
-//				BRPeerScheduleDisconnect(peer, -1); // cancel publish tx timeout
-//			}
-//
-//			_BRTxPeerListAddPeer(&manager->txRelays, txHash, peer);
-//			if (pubTx.tx) BRWalletRegisterTransaction(manager->wallet, pubTx.tx);
-//			if (pubTx.tx && !BRWalletTransactionIsValid(manager->wallet, pubTx.tx)) error = EINVAL;
-//			pthread_mutex_unlock(&manager->lock);
-//			if (pubTx.callback) pubTx.callback(pubTx.info, error);
-//			return pubTx.tx;
+		const TransactionPtr &PeerManager::OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) {
+			int hasPendingCallbacks = 0, error = 0;
+			PublishedTransaction pubTx;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				for (size_t i = publishedTx.size(); i > 0; i--) {
+					if (UInt256Eq(&publishedTxHashes[i - 1], &txHash)) {
+						pubTx = publishedTx[i - 1];
+						publishedTx[i - 1].ResetCallback();
+					} else if (publishedTx[i - 1].HasCallback()) hasPendingCallbacks = 1;
+				}
+
+				// cancel tx publish timeout if no publish callbacks are pending, and syncing is done or this is not downloadPeer
+				if (!hasPendingCallbacks && (syncStartHeight == 0 || peer != downloadPeer)) {
+					peer->scheduleDisconnect(-1); // cancel publish tx timeout
+				}
+
+				addPeerToList(peer, txHash, txRelays);
+				if (pubTx.GetTransaction() != nullptr) _wallet->registerTransaction(pubTx.GetTransaction());
+				if (pubTx.GetTransaction() != nullptr && !_wallet->transactionIsValid(pubTx.GetTransaction()))
+					error = EINVAL;
+			}
+
+			if (pubTx.HasCallback()) pubTx.FireCallback(error);
+			return pubTx.GetTransaction();
 		}
 
-		bool PeerManager::OnNetworkIsReachable(Peer *peer) {
+		bool PeerManager::OnNetworkIsReachable(const PeerPtr &peer) {
 			//fixme [refactor]
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
 //
 //			return (manager->networkIsReachable) ? manager->networkIsReachable(manager->info) : 1;
 		}
 
-		void PeerManager::OnThreadCleanup(Peer *peer) {
+		void PeerManager::OnThreadCleanup(const PeerPtr &peer) {
 		}
 
 		void PeerManager::publishPendingTx(const PeerPtr &peer) {
@@ -1486,6 +1470,101 @@ namespace Elastos {
 			return _reconnectTaskCount;
 		}
 
-	}
+		size_t
+		PeerManager::addPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &list) {
+			for (size_t i = list.size(); i > 0; i--) {
+				if (!UInt256Eq(&list[i - 1].GetTransactionHash(), &txHash)) continue;
 
+				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
+					if (list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get()))
+						return list[i - 1].GetPeers().size();
+				}
+
+				list[i - 1].AddPeer(peer);
+				return list[i - 1].GetPeers().size();
+			}
+
+			list.push_back(TransactionPeerList(txHash, {peer}));
+			return 1;
+		}
+
+		bool PeerManager::removePeerFromList(const PeerPtr &peer, const UInt256 &txHash,
+											 std::vector<TransactionPeerList> &list) {
+			for (size_t i = list.size(); i > 0; i--) {
+				if (!UInt256Eq(&list[i - 1].GetTransactionHash(), &txHash)) continue;
+
+				for (size_t j = list[i - 1].GetPeers().size(); j > 0; j--) {
+					if (!list[i - 1].GetPeers()[j - 1]->IsEqual(peer.get())) continue;
+					list[i - 1].RemovePeerAt(j - 1);
+					return true;
+				}
+
+				break;
+			}
+
+			return false;
+		}
+
+		void PeerManager::peerMisbehaving(const PeerPtr &peer) {
+			for (size_t i = _peers.size(); i > 0; i--) {
+				if (_peers[i - 1]->IsEqual(peer.get()))
+					_peers.erase(_peers.begin() + i - 1);
+			}
+
+			if (++misbehavinCount >= 10) { // clear out stored peers so we get a fresh list from DNS for next connect
+				misbehavinCount = 0;
+				_peers.clear();
+			}
+
+			peer->Disconnect();
+		}
+
+		void PeerManager::updateBloomFilter() {
+
+			if (downloadPeer && (downloadPeer->GetFlags() & PEER_FLAG_NEEDSUPDATE) == 0) {
+				downloadPeer->SetNeedsFilterUpdate(true);
+				downloadPeer->SetFlags(downloadPeer->GetFlags() | PEER_FLAG_NEEDSUPDATE);
+				downloadPeer->Pinfo("filter update needed, waiting for pong");
+				// wait for pong so we're sure to include any tx already sent by the peer in the updated filter
+				PingParameter pingParameter;
+				pingParameter.callbackInfo.peer = downloadPeer;
+				pingParameter.callbackInfo.manager = this;
+				pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this, downloadPeer, _1);
+				downloadPeer->SendMessage(MSG_PING, pingParameter);
+			}
+		}
+
+		void PeerManager::updateFilterPingDone(const PeerPtr &peer, int success) {
+			if (success) {
+				boost::mutex::scoped_lock scopedLock(lock);
+				peer->Pinfo("updating filter with newly created wallet addresses");
+				if (bloomFilter) BRBloomFilterFree(bloomFilter);
+				bloomFilter = nullptr;
+
+				PingParameter pingParameter;
+				pingParameter.callbackInfo.manager = this;
+				if (lastBlock->getHeight() < estimatedHeight) { // if we're syncing, only update download peer
+					if (downloadPeer) {
+						loadBloomFilter(downloadPeer);
+						pingParameter.callbackInfo.peer = downloadPeer;
+						pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this, downloadPeer,
+															 _1);
+						downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
+					}
+				} else {
+					for (size_t i = _connectedPeers.size(); i > 0; i--) {
+						if (_connectedPeers[i - 1]->getConnectStatusValue() != Peer::Connected) continue;
+						pingParameter.callbackInfo.peer = _connectedPeers[i - 1];
+						pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this,
+															 _connectedPeers[i - 1],
+															 _1);
+						loadBloomFilter(peer);
+						downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
+					}
+				}
+			}
+
+		}
+
+	}
 }
