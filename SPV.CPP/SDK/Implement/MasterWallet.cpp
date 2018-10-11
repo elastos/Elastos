@@ -466,6 +466,9 @@ namespace Elastos {
 		}
 
 		std::vector<std::string> MasterWallet::GetAllIds() const {
+			if (_idAgentImpl == nullptr)
+				return std::vector<std::string>();
+
 			return _idAgentImpl->GetAllIds();
 		}
 

@@ -33,12 +33,16 @@ namespace Elastos {
 
 			uint32_t purpose = (uint32_t) info.getIndex();
 			std::set<std::string> bufferIds(registeredIds.begin(), registeredIds.end());
-			for (int i = 0; i < registeredIds.size() + ID_REGISTER_BUFFER_COUNT; ++i) {
-				bufferIds.insert(_parent->DeriveIdAndKeyForPurpose(purpose, i));
+
+			if (_subAccount->GetParent()->GetType() == "Standard") { //We only derive ids when accout type is "Standard"
+				for (int i = 0; i < registeredIds.size() + ID_REGISTER_BUFFER_COUNT; ++i) {
+					bufferIds.insert(_parent->DeriveIdAndKeyForPurpose(purpose, i));
+				}
 			}
 
 			std::vector<std::string> addrs(bufferIds.begin(), bufferIds.end());
 			_walletManager->getWallet()->initListeningAddresses(addrs);
+
 			_parent->Save();
 		}
 
