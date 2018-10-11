@@ -17,8 +17,6 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-const minPeersForSync = 3
-
 type spvservice struct {
 	sdk.IService
 	headers   store.HeaderStore
@@ -52,7 +50,7 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		SeedList:        cfg.SeedList,
 		DefaultPort:     cfg.DefaultPort,
 		MaxPeers:        cfg.MaxConnections,
-		MinPeersForSync: minPeersForSync,
+		MinPeersForSync: cfg.MinPeersForSync,
 		Foundation:      cfg.Foundation,
 		ChainStore:      chainStore,
 		GetFilterData:   service.GetFilterData,
