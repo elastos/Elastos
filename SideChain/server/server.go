@@ -1,11 +1,11 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
-
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
+	"github.com/elastos/Elastos.ELA.SideChain/filter"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
 	"github.com/elastos/Elastos.ELA.SideChain/pact"
@@ -55,7 +55,7 @@ type serverPeer struct {
 	server        *server
 	continueHash  *common.Uint256
 	isWhitelisted bool
-	filter        *bloom.Filter
+	filter        *filter.Filter
 	quit          chan struct{}
 	// The following chans are used to sync blockmanager and server.
 	txProcessed    chan struct{}
@@ -67,7 +67,7 @@ type serverPeer struct {
 func newServerPeer(s *server) *serverPeer {
 	return &serverPeer{
 		server:         s,
-		filter:         bloom.LoadFilter(nil),
+		filter:         filter.New(),
 		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
 		blockProcessed: make(chan struct{}, 1),
@@ -107,7 +107,7 @@ func (sp *serverPeer) OnMemPool(_ *peer.Peer, _ *msg.MemPool) {
 		// or only the transactions that match the filter when there is
 		// one.
 		txId := tx.Hash()
-		if !sp.filter.IsLoaded() || sp.filter.MatchTxAndUpdate(tx) {
+		if !sp.filter.IsLoaded() || sp.filter.Match(tx) {
 			iv := msg.NewInvVect(msg.InvTypeTx, &txId)
 			invMsg.AddInvVect(iv)
 			if len(invMsg.InvList)+1 > msg.MaxInvPerMsg {
@@ -321,10 +321,10 @@ func (sp *serverPeer) enforceNodeBloomFlag(cmd string) bool {
 // message and is used by remote peers to add data to an already loaded bloom
 // filter.  The peer will be disconnected if a filter is not loaded when this
 // message is received or the server is not configured to allow bloom filters.
-func (sp *serverPeer) OnFilterAdd(_ *peer.Peer, msg *msg.FilterAdd) {
+func (sp *serverPeer) OnFilterAdd(_ *peer.Peer, filterAdd *msg.FilterAdd) {
 	// Disconnect and/or ban depending on the node bloom services flag and
 	// negotiated protocol version.
-	if !sp.enforceNodeBloomFlag(msg.CMD()) {
+	if !sp.enforceNodeBloomFlag(filterAdd.CMD()) {
 		return
 	}
 
@@ -335,17 +335,26 @@ func (sp *serverPeer) OnFilterAdd(_ *peer.Peer, msg *msg.FilterAdd) {
 		return
 	}
 
-	sp.filter.Add(msg.Data)
+	err := sp.filter.Update(&msg.TxFilter{
+		Type: msg.TFBloom,
+		Op:   msg.OpFilterAdd,
+		Data: filterAdd.Data,
+	})
+	if err != nil {
+		log.Debugf("%s sent invalid filteradd request with error %s"+
+			" -- disconnecting", sp, err)
+		sp.Disconnect()
+	}
 }
 
 // OnFilterClear is invoked when a peer receives a filterclear
 // message and is used by remote peers to clear an already loaded bloom filter.
 // The peer will be disconnected if a filter is not loaded when this message is
 // received  or the server is not configured to allow bloom filters.
-func (sp *serverPeer) OnFilterClear(_ *peer.Peer, msg *msg.FilterClear) {
+func (sp *serverPeer) OnFilterClear(_ *peer.Peer, filterClear *msg.FilterClear) {
 	// Disconnect and/or ban depending on the node bloom services flag and
 	// negotiated protocol version.
-	if !sp.enforceNodeBloomFlag(msg.CMD()) {
+	if !sp.enforceNodeBloomFlag(filterClear.CMD()) {
 		return
 	}
 
@@ -356,7 +365,15 @@ func (sp *serverPeer) OnFilterClear(_ *peer.Peer, msg *msg.FilterClear) {
 		return
 	}
 
-	sp.filter.Unload()
+	err := sp.filter.Update(&msg.TxFilter{
+		Type: msg.TFBloom,
+		Op:   msg.OpFilterClear,
+	})
+	if err != nil {
+		log.Debugf("%s sent invalid filterclear request with error %s"+
+			" -- disconnecting", sp, err)
+		sp.Disconnect()
+	}
 }
 
 // OnFilterLoad is invoked when a peer receives a filterload
@@ -364,16 +381,74 @@ func (sp *serverPeer) OnFilterClear(_ *peer.Peer, msg *msg.FilterClear) {
 // delivering merkle blocks and associated transactions that match the filter.
 // The peer will be disconnected if the server is not configured to allow bloom
 // filters.
-func (sp *serverPeer) OnFilterLoad(_ *peer.Peer, msg *msg.FilterLoad) {
+func (sp *serverPeer) OnFilterLoad(_ *peer.Peer, filterLoad *msg.FilterLoad) {
 	// Disconnect and/or ban depending on the node bloom services flag and
 	// negotiated protocol version.
-	if !sp.enforceNodeBloomFlag(msg.CMD()) {
+	if !sp.enforceNodeBloomFlag(filterLoad.CMD()) {
 		return
 	}
 
 	sp.SetDisableRelayTx(false)
 
-	sp.filter.Reload(msg)
+	buf := new(bytes.Buffer)
+	filterLoad.Serialize(buf)
+	err := sp.filter.Update(&msg.TxFilter{
+		Type: msg.TFBloom,
+		Op:   msg.OpFilterAdd,
+		Data: buf.Bytes(),
+	})
+	if err != nil {
+		log.Debugf("%s sent invalid filterload request with error %s"+
+			" -- disconnecting", sp, err)
+		sp.Disconnect()
+	}
+}
+
+// enforceTxFilterFlag disconnects the peer if the server is not configured to
+// allow tx filters.  Additionally, if the peer has negotiated to a protocol
+// version  that is high enough to observe the bloom filter service support bit,
+// it will be banned since it is intentionally violating the protocol.
+func (sp *serverPeer) enforceTxFilterFlag(cmd string) bool {
+	if sp.server.services&pact.SFTxFiltering != pact.SFTxFiltering {
+		// Disconnect the peer regardless of protocol version or banning
+		// state.
+		log.Debugf("%s sent an unsupported %s request -- "+
+			"disconnecting", sp, cmd)
+		sp.AddBanScore(100, 0, cmd)
+		sp.Disconnect()
+		return false
+	}
+
+	return true
+}
+
+// OnTxFilter is invoked when a peer receives a txfilter message and it used to
+// load a transaction filter that should be used for delivering merkle blocks and
+// associated transactions that match the filter. The peer will be disconnected
+// if the server is not configured to allow transaction filtering.
+func (sp *serverPeer) OnTxFilter(_ *peer.Peer, tf *msg.TxFilter) {
+	// Disconnect and/or ban depending on the tx filter services flag and
+	// negotiated protocol version.
+	if !sp.enforceTxFilterFlag(tf.CMD()) {
+		return
+	}
+
+	err := sp.filter.Update(tf)
+	if err != nil {
+		log.Debugf("%s sent invalid txfilter request with error %s"+
+			" -- disconnecting", sp, err)
+		sp.Disconnect()
+		return
+	}
+
+	switch tf.Op {
+	case msg.OpFilterLoad:
+		sp.SetDisableRelayTx(false)
+
+	case msg.OpClearAll:
+		sp.SetDisableRelayTx(true)
+
+	}
 }
 
 // OnReject is invoked when a peer receives a reject message.
@@ -488,7 +563,7 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 
 	// Generate a merkle block by filtering the requested block according
 	// to the filter for the peer.
-	merkle, matchedTxIndices := bloom.NewMerkleBlock(blk, sp.filter)
+	merkle, matchedTxIndices := filter.NewMerkleBlock(blk, sp.filter)
 
 	// Once we have fetched data wait for any previous operation to finish.
 	if waitChan != nil {
@@ -544,10 +619,9 @@ func (s *server) handleRelayInvMsg(peers map[p2psvr.IPeer]*serverPeer, rmsg rela
 
 			// Don't relay the transaction if there is a bloom
 			// filter loaded and the transaction doesn't match it.
-			if sp.filter.IsLoaded() {
-				if !sp.filter.MatchTxAndUpdate(tx) {
-					continue
-				}
+			if sp.filter.IsLoaded() &&
+				!sp.filter.Match(tx) {
+				continue
 			}
 		}
 
@@ -590,6 +664,7 @@ out:
 				OnFilterAdd:   sp.OnFilterAdd,
 				OnFilterClear: sp.OnFilterClear,
 				OnFilterLoad:  sp.OnFilterLoad,
+				OnTxFilter:    sp.OnTxFilter,
 				OnReject:      sp.OnReject,
 			})
 
@@ -751,6 +826,9 @@ func makeEmptyMessage(cmd string) (p2p.Message, error) {
 
 	case p2p.CmdFilterLoad:
 		message = &msg.FilterLoad{}
+
+	case p2p.CmdTxFilter:
+		message = &msg.TxFilter{}
 
 	case p2p.CmdReject:
 		message = &msg.Reject{}

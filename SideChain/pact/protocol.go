@@ -9,6 +9,10 @@ import (
 const (
 	// The Release_0.0.1 version number of side chain
 	Release001Version = 1
+
+	// EBIP002Version is the protocol version which start support
+	// transaction filtering through txfilter message.
+	EBIP002Version uint32 = 10002
 )
 
 // ServiceFlag identifies services supported by a peer.
@@ -24,6 +28,10 @@ const (
 
 	// SFOpenService is a flag used to indicate a peer provide open service.
 	SFOpenService
+
+	// SFTxFiltering is a flag used to indicate a peer supports transaction
+	// filtering.
+	SFTxFiltering
 )
 
 // Map of service flags back to their constant names for pretty printing.
@@ -31,6 +39,7 @@ var sfStrings = map[ServiceFlag]string{
 	SFNodeNetwork: "SFNodeNetwork",
 	SFNodeBloom:   "SFNodeBloom",
 	SFOpenService: "SFOpenService",
+	SFTxFiltering: "SFTxFiltering",
 }
 
 // orderedSFStrings is an ordered list of service flags from highest to
@@ -38,6 +47,8 @@ var sfStrings = map[ServiceFlag]string{
 var orderedSFStrings = []ServiceFlag{
 	SFNodeNetwork,
 	SFNodeBloom,
+	SFOpenService,
+	SFTxFiltering,
 }
 
 // String returns the ServiceFlag in human-readable form.
