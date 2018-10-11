@@ -78,7 +78,7 @@ type Configuration struct {
 	RestCertPath               string           `json:"RestCertPath"`
 	RestKeyPath                string           `json:"RestKeyPath"`
 	HttpInfoStart              bool             `json:"HttpInfoStart"`
-	PeerBloomFilters           bool             `json:"PeerBloomFilters"`
+	DisableTxFilter            bool             `json:"DisableTxFilter"`
 	HttpRestPort               uint16           `json:"HttpRestPort"`
 	HttpInfoPort               uint16           `json:"HttpInfoPort"`
 	HttpJsonPort               uint16           `json:"HttpJsonPort"`
@@ -100,10 +100,6 @@ type Configuration struct {
 	FoundationAddress          string           `json:"FoundationAddress"`
 	MainChainDefaultPort       uint16           `json:"MainChainDefaultPort"`
 	MainChainFoundationAddress string           `json:"MainChainFoundationAddress"`
-}
-
-type ConfigFile struct {
-	ConfigFile Configuration `json:"Configuration"`
 }
 
 type ChainParams struct {
@@ -132,14 +128,14 @@ func init() {
 	// Remove the UTF-8 Byte Order Mark
 	file = bytes.TrimPrefix(file, []byte("\xef\xbb\xbf"))
 
-	config := ConfigFile{}
+	config := Configuration{}
 	e = json.Unmarshal(file, &config)
 	if e != nil {
 		log.Fatalf("Unmarshal json file erro %v", e)
 		os.Exit(1)
 	}
-	//	Parameters = &(config.ConfigFile)
-	Parameters.Configuration = &(config.ConfigFile)
+	//	Parameters = &(config.Configuration)
+	Parameters.Configuration = &config
 	if Parameters.PowConfiguration.ActiveNet == "MainNet" {
 		Parameters.ChainParam = mainNet
 	} else if Parameters.PowConfiguration.ActiveNet == "TestNet" {

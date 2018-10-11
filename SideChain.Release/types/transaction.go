@@ -12,24 +12,40 @@ import (
 
 //for different transaction types with different payload format
 //and transaction process methods
-type TransactionType byte
+type TxType byte
 
 const (
-	CoinBase                TransactionType = 0x00
-	RegisterAsset           TransactionType = 0x01
-	TransferAsset           TransactionType = 0x02
-	Record                  TransactionType = 0x03
-	Deploy                  TransactionType = 0x04
-	SideChainPow            TransactionType = 0x05
-	RechargeToSideChain     TransactionType = 0x06
-	WithdrawFromSideChain   TransactionType = 0x07
-	TransferCrossChainAsset TransactionType = 0x08
+	CoinBase                TxType = 0x00
+	RegisterAsset           TxType = 0x01
+	TransferAsset           TxType = 0x02
+	Record                  TxType = 0x03
+	Deploy                  TxType = 0x04
+	SideChainPow            TxType = 0x05
+	RechargeToSideChain     TxType = 0x06
+	WithdrawFromSideChain   TxType = 0x07
+	TransferCrossChainAsset TxType = 0x08
 
 	InvalidTransactionSize = -1
 )
 
+var ttStrings = map[TxType]string{
+	CoinBase:                "CoinBase",
+	RegisterAsset:           "RegisterAsset",
+	TransferAsset:           "TransferAsset",
+	Record:                  "Record",
+	Deploy:                  "Deploy",
+	SideChainPow:            "SideChainPow",
+	RechargeToSideChain:     "RechargeToSideChain",
+	WithdrawFromSideChain:   "WithdrawFromSideChain",
+	TransferCrossChainAsset: "TransferCrossChainAsset",
+}
+
+func (tt TxType) String() string {
+	return TxTypeStr(tt)
+}
+
 type Transaction struct {
-	TxType         TransactionType
+	TxType         TxType
 	PayloadVersion byte
 	Payload        Payload
 	Attributes     []*Attribute
@@ -47,7 +63,7 @@ func (tx *Transaction) String() string {
 	hash := tx.Hash()
 	return fmt.Sprint("Transaction: {\n\t",
 		"Hash: ", hash.String(), "\n\t",
-		"TxType: ", Name(tx.TxType), "\n\t",
+		"TxType: ", tx.TxType.String(), "\n\t",
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
 		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
 		"Attributes: ", tx.Attributes, "\n\t",
@@ -155,7 +171,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	tx.TxType = TransactionType(txType[0])
+	tx.TxType = TxType(txType[0])
 
 	var payloadVersion = make([]byte, 1)
 	_, err = r.Read(payloadVersion)
@@ -277,29 +293,12 @@ func (tx *Transaction) GetData() []byte {
 	return buf.Bytes()
 }
 
-var Name = func(txType TransactionType) string {
-	switch txType {
-	case CoinBase:
-		return "CoinBase"
-	case RegisterAsset:
-		return "RegisterAsset"
-	case TransferAsset:
-		return "TransferAsset"
-	case Record:
-		return "Record"
-	case Deploy:
-		return "Deploy"
-	case SideChainPow:
-		return "SideChainPow"
-	case RechargeToSideChain:
-		return "RechargeToSideChain"
-	case WithdrawFromSideChain:
-		return "WithdrawFromSideChain"
-	case TransferCrossChainAsset:
-		return "TransferCrossChainAsset"
-	default:
-		return "Unknown"
+var TxTypeStr = func(txType TxType) string {
+	s, ok := ttStrings[txType]
+	if ok {
+		return s
 	}
+	return fmt.Sprintf("TxType%d", txType)
 }
 
 var GetDataContainer = func(programHash *Uint168, tx *Transaction) interfaces.IDataContainer {

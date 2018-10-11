@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewLogger(t *testing.T) {
-	logger := NewLog("./log-test",0, 5, 20)
+	logger := NewLog("./log-test", 0, 5, 20)
 	start := time.Now()
 	for {
 		logger.Info("Print info log")

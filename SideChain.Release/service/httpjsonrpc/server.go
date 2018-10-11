@@ -31,9 +31,9 @@ type rpcserver struct {
 
 func New(port uint16) *rpcserver {
 	return &rpcserver{
-		port: port,
+		port:      port,
 		paramsMap: make(map[string][]string),
-		mux:  make(map[string]service.Handler),
+		mux:       make(map[string]service.Handler),
 	}
 }
 

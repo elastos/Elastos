@@ -675,7 +675,7 @@ func (s *server) Stop() error {
 func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
 	params := config.Parameters
 	services := defaultServices
-	if !params.PeerBloomFilters {
+	if params.DisableTxFilter {
 		services &^= pact.SFNodeBloom
 	}
 

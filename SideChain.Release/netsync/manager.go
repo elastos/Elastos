@@ -292,7 +292,7 @@ func (sm *SyncManager) handleTxMsg(tmsg *txMsg) {
 		return
 	}
 
-	// NOTE:  BitcoinJ, and possibly other wallets, don't follow the spec of
+	// NOTE: Possibly other wallets, don't follow the spec of
 	// sending an inventory message and allowing the remote peer to decide
 	// whether or not they want to request the transaction via a getdata
 	// message.  Unfortunately, the reference implementation permits
@@ -672,7 +672,7 @@ out:
 	log.Trace("Block handler done")
 }
 
-// handleBlockchainNotification handles notifications from blockchain.  It does
+// handleBlockchainEvents handles notifications from blockchain.  It does
 // things such as request orphan block parents and relay accepted blocks to
 // connected peers.
 func (sm *SyncManager) handleBlockchainEvents(event *events.Event) {

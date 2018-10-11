@@ -36,7 +36,7 @@ func (u AttributeUsage) Name() string {
 
 func IsValidAttributeType(usage AttributeUsage) bool {
 	switch usage {
-	case Nonce,Script,Description,DescriptionUrl,Memo:
+	case Nonce, Script, Description, DescriptionUrl, Memo:
 		return true
 	}
 	return false
