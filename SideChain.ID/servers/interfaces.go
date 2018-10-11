@@ -6,7 +6,7 @@ import (
 	"errors"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain.ID/core"
+	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
 
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
@@ -90,7 +90,7 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*service.TransactionInfo, 
 		assetInfo = &service.RechargeToSideChainInfo{}
 	case types.TransferCrossChainAsset:
 		assetInfo = &service.TransferCrossChainAssetInfo{}
-	case core.RegisterIdentification:
+	case id.RegisterIdentification:
 		assetInfo = &RegisterIdentificationInfo{}
 	default:
 		return nil, errors.New("GetBlockTransactions: Unknown payload type")
@@ -199,7 +199,7 @@ func GetPayloadInfo(p types.Payload) service.PayloadInfo {
 		obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
 		obj.Proof = BytesToHexString(object.MerkleProof)
 		return obj
-	case *core.PayloadRegisterIdentification:
+	case *id.PayloadRegisterIdentification:
 		obj := new(RegisterIdentificationInfo)
 		obj.Id = object.ID
 		obj.Sign = BytesToHexString(object.Sign)
