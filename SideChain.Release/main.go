@@ -79,7 +79,17 @@ func main() {
 	chainCfg.GetTxFee = txFeeHelper.GetTxFee
 
 	eladlog.Info("2. SPV module init")
-	spvService, err := spv.NewService(spvslog)
+	address, err := mempool.GetGenesisAddress(genesisBlock.Hash())
+	if err != nil {
+		eladlog.Fatalf("Genesis block hash to address failed, %s", err)
+		os.Exit(1)
+	}
+	serviceCfg := spv.Config{
+		Logger:        spvslog,
+		ListenAddress: address,
+		ChainStore:    chainCfg.ChainStore,
+	}
+	spvService, err := spv.NewService(&serviceCfg)
 	if err != nil {
 		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
@@ -181,6 +191,7 @@ func startHttpJsonRpc(port uint16, service *service.HttpService) {
 	s.RegisterAction("getblockbyheight", service.GetBlockByHeight)
 	s.RegisterAction("getdestroyedtransactions", service.GetDestroyedTransactionsByHeight)
 	s.RegisterAction("getexistdeposittransactions", service.GetExistDepositTransactions)
+	s.RegisterAction("gettransactioninfo", service.GetTransactionInfoByHash)
 	s.RegisterAction("help", service.AuxHelp)
 	s.RegisterAction("submitsideauxblock", service.SubmitSideAuxBlock, "blockhash", "auxpow")
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")

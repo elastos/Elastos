@@ -2,8 +2,6 @@ package service
 
 import (
 	. "github.com/elastos/Elastos.ELA.SideChain/types"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const TlsPort = 443
@@ -98,13 +96,21 @@ type SideChainPowInfo struct {
 	SignedData      string
 }
 
-type RechargeToSideChainInfo struct {
+type RechargeToSideChainInfoV0 struct {
 	Proof                string
 	MainChainTransaction string
 }
 
+type RechargeToSideChainInfoV1 struct {
+	MainChainTransactionHash string `json:"mainchaintxhash"`
+}
+
+type CrossChainAssetInfo struct {
+	CrossChainAddress string `json:"crosschainaddress"`
+	OutputIndex       uint64 `json:"outputindex"`
+	CrossChainAmount  string `json:"crosschainamount"`
+}
+
 type TransferCrossChainAssetInfo struct {
-	CrossChainAddresses []string
-	OutputIndexes       []uint64
-	CrossChainAmounts   []common.Fixed64
+	CrossChainAssets []CrossChainAssetInfo `json:"crosschainassets"`
 }
