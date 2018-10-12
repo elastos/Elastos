@@ -12,7 +12,7 @@ namespace Elastos {
 
 		class AddressMessage : public Message {
 		public:
-			AddressMessage(const MessagePeerPtr &peer);
+			explicit AddressMessage(const MessagePeerPtr &peer);
 
 			virtual bool Accept(const CMBlock &msg);
 

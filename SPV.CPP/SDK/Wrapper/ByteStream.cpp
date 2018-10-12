@@ -6,24 +6,28 @@ namespace Elastos {
 	namespace ElaWallet {
 
 
-		ByteStream::ByteStream(bool isBe)
-				: _pos(0), _count(0), _size(0), _buf(nullptr), _autorelease(true) ,_isBe(isBe) {
+		ByteStream::ByteStream()
+				: _pos(0), _count(0), _size(0), _buf(nullptr), _autorelease(true) {
 		}
 
-		ByteStream::ByteStream(uint64_t size, bool isBe)
-				: _pos(0), _count(0), _size(size), _buf(new uint8_t[size]), _autorelease(true) ,_isBe(isBe) {
+		ByteStream::ByteStream(uint64_t size)
+				: _pos(0), _count(0), _size(size), _buf(new uint8_t[size]), _autorelease(true) {
 			memset(_buf, 0, sizeof(uint8_t) * size);
 		}
 
-		ByteStream::ByteStream(uint8_t *buf, uint64_t size, bool autorelease, bool isBe)
-				: _pos(0), _count(size), _size(size), _buf(buf), _autorelease(autorelease) ,_isBe(isBe) {}
+		ByteStream::ByteStream(const void *buf, size_t size, bool autorelease)
+				: _pos(0), _count(size), _size(size), _buf((uint8_t *) buf), _autorelease(autorelease) {
+		}
+
+		ByteStream::ByteStream(const CMBlock &buf)
+				: _pos(0), _count(buf.GetSize()), _size(buf.GetSize()), _buf(buf), _autorelease(false) {
+		}
 
 		ByteStream::~ByteStream() {
 			if (_autorelease) {
 				delete[]_buf;
 				_buf = nullptr;
 			}
-
 		}
 
 		void ByteStream::ensureCapacity(uint64_t newsize) {
@@ -63,12 +67,6 @@ namespace Elastos {
 
 		uint64_t ByteStream::length() {
 			return _count;
-		}
-
-		uint64_t ByteStream::availableSize() {
-			uint64_t ret = _size - _count;
-
-			return ((int64_t)ret) < 0 ? 0 : ret;
 		}
 
 		CMBlock ByteStream::getBuffer() {

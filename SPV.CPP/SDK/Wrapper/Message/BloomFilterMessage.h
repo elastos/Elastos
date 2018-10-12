@@ -17,7 +17,7 @@ namespace Elastos {
 
 		class BloomFilterMessage : public Message {
 		public:
-			BloomFilterMessage(const MessagePeerPtr &peer);
+			explicit BloomFilterMessage(const MessagePeerPtr &peer);
 
 			virtual bool Accept(const CMBlock &msg);
 

@@ -24,7 +24,7 @@ namespace Elastos {
 		std::string Utils::UInt256ToString(const UInt256 &u256, bool reverse) {
 			std::stringstream ss;
 
-			if(!reverse) {
+			if (!reverse) {
 				for (int i = 0; i < sizeof(u256.u8); ++i) {
 					ss << (char) _hexc(u256.u8[i] >> 4) << (char) _hexc(u256.u8[i]);
 				}
@@ -45,7 +45,7 @@ namespace Elastos {
 				return result;
 			}
 
-			if(!reverse) {
+			if (!reverse) {
 				for (int i = 0; i < sizeof(result.u8); ++i) {
 					result.u8[i] = (_hexu((s)[2 * i]) << 4) | _hexu((s)[2 * i + 1]);
 				}
@@ -240,6 +240,12 @@ namespace Elastos {
 			memcpy(&uInt168.u8[1], &hash.u8[0], sizeof(hash.u8));
 			uInt168.u8[0] = addressType;
 			return uInt168;
+		}
+
+		bool Utils::UInt256SetContains(const std::set<UInt256> &set, const UInt256 &hash) {
+			return set.end() != std::find_if(set.begin(), set.end(),
+											 [&hash](const UInt256 &item) { return 0 != UInt256Eq(&hash, &item); });
+
 		}
 
 	}

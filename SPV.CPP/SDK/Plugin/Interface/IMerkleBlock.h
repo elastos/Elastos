@@ -52,6 +52,8 @@ namespace Elastos {
 			virtual bool isValid(uint32_t currentTime) const = 0;
 
 			virtual std::string getBlockType() const = 0;
+
+			virtual std::vector<UInt256> MerkleBlockTxHashes() const = 0;
 		};
 
 		typedef boost::shared_ptr<IMerkleBlock> MerkleBlockPtr;

@@ -16,7 +16,7 @@ namespace Elastos {
 
 		class InventoryMessage : public Message {
 		public:
-			InventoryMessage(const MessagePeerPtr &peer);
+			explicit InventoryMessage(const MessagePeerPtr &peer);
 
 			virtual bool Accept(const CMBlock &msg);
 

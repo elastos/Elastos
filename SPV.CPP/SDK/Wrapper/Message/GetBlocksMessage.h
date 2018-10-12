@@ -14,6 +14,10 @@ namespace Elastos {
 		struct GetBlocksParameter : public SendMessageParameter {
 			std::vector<UInt256> locators;
 			UInt256 hashStop;
+
+			GetBlocksParameter(const std::vector<UInt256> &locators, const UInt256 &hashStop) :
+				locators(locators), hashStop(hashStop)
+			{}
 		};
 
 		class GetBlocksMessage : public Message {

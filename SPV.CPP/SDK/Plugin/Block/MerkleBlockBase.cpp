@@ -255,6 +255,43 @@ namespace Elastos {
 			return true;
 		}
 
+		std::vector<UInt256> MerkleBlockBase::MerkleBlockTxHashes() const {
+			size_t hashIdx = 0, flagIdx = 0;
+
+			return merkleBlockTxHashesR(hashIdx, flagIdx, 0);
+		}
+
+		std::vector<UInt256> MerkleBlockBase::merkleBlockTxHashesR(size_t &hashIdx, size_t &flagIdx,
+																   int depth) const {
+			std::vector<UInt256> txHashes;
+			uint8_t flag;
+
+			if (flagIdx / 8 < _flags.size() && hashIdx < _hashes.size()) {
+				flag = (_flags[flagIdx / 8] & (1 << (flagIdx % 8)));
+				flagIdx++;
+
+				if (! flag || depth == ceilLog2(_totalTx)) {
+					if (flag) {
+						txHashes.push_back(_hashes[hashIdx]); // leaf
+					}
+
+					hashIdx++;
+				} else {
+					merkleBlockTxHashesR(hashIdx, flagIdx, depth + 1); // left branch
+					merkleBlockTxHashesR(hashIdx, flagIdx, depth + 1); // right branch
+				}
+			}
+
+			return txHashes;
+		}
+
+		int MerkleBlockBase::ceilLog2(int x) const {
+			int r = (x & (x - 1)) ? 1 : 0;
+
+			while ((x >>= 1) != 0) r++;
+			return r;
+		}
+
 		// recursively walks the merkle tree to calculate the merkle root
 		// NOTE: this merkle tree design has a security vulnerability (CVE-2012-2459), which can be defended against by
 		// considering the merkle root invalid if there are duplicate hashes in any rows with an even number of elements

@@ -5,7 +5,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <Core/BRMerkleBlock.h>
 
-#include "BRPeerManager.h"
+#include "PeerManager.h"
 #include "BRPeerMessages.h"
 #include "BRArray.h"
 #include "BRMerkleBlock.h"
@@ -23,65 +23,53 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		int MerkleBlockMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-			BRPeerContext *ctx = (BRPeerContext *) peer;
-			// msg is holding by payload pointer create by malloc, do not match delete[] in ByteStream
-			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
+		bool MerkleBlockMessage::Accept(const CMBlock &msg) {
+			ByteStream stream(msg);
 
-			ELAPeerManager *elaPeerManager = (ELAPeerManager *)ctx->manager;
+			PeerManager *manager = _peer->getPeerManager();
+			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginTypes().BlockType));
 
-			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(elaPeerManager->Plugins.BlockType));
+			if (block == nullptr) {
+				_peer->Perror("Create merkle block pointer with type {} fail", manager->GetPluginTypes().BlockType);
+				return false;
+			}
+
 			//fixme [refactor] replace raw block with Merkle block
-//			assert(block != nullptr);
-//			if (!block->Deserialize(stream)) {
-//				block->deleteRawBlock();
-//				peer_dbg(peer, "merkle block orignal data: %s", Utils::encodeHex(msg, msgLen).c_str());
-//				peer_log(peer, "error: %s merkle block deserialize fail", elaPeerManager->Plugins.BlockType.c_str());
-//				return 0;
-//			}
-//
-//			BRMerkleBlock *blockRaw = block->getRawBlock();
-//			int r = 1;
-//
-//			if (!block->isValid((uint32_t) time(nullptr))) {
-//				peer_log(peer, "error: invalid merkleblock: %s", Utils::UInt256ToString(block->getHash()).c_str());
-//				block->deleteRawBlock();
-//				blockRaw = nullptr;
-//				r = 0;
-//			} else if (!ctx->SentFilter && !ctx->SentGetdata) {
-//				peer_log(peer, "error: got merkleblock message before loading a filter");
-//				block->deleteRawBlock();
-//				blockRaw = nullptr;
-//				r = 0;
-//			} else {
-//				size_t count = BRMerkleBlockTxHashes(block->getRawBlock(), NULL, 0);
-//				UInt256 _hashes[(sizeof(UInt256) * count <= 0x1000) ? count : 0],
-//						*hashes = (sizeof(UInt256) * count <= 0x1000) ? _hashes : (UInt256 *) malloc(
-//						count * sizeof(*hashes));
-//				assert(hashes != nullptr);
-//				count = BRMerkleBlockTxHashes(block->getRawBlock(), hashes, count);
-//				for (size_t i = count; i > 0; i--) { // reverse order for more efficient removal as tx arrive
-//					if (BRSetContains(ctx->knownTxHashSet, &hashes[i - 1])) continue;
-//					array_add(ctx->currentBlockTxHashes, hashes[i - 1]);
-//				}
-//
-//				if (hashes != _hashes) free(hashes);
-//			}
-//
-//			if (blockRaw) {
-//				if (array_count(ctx->currentBlockTxHashes) > 0) { // wait til we get all tx messages before processing the block
-//					ctx->currentBlock = blockRaw;
-//				} else if (ctx->relayedBlock) {
-//					ctx->relayedBlock(ctx->info, blockRaw);
-//				} else {
-//					block->deleteRawBlock();
-//				}
-//			}
-//			return r;
-			return 0;
+			if (!block->Deserialize(stream)) {
+				_peer->Pdebug("Merkle block orignal data: {}", Utils::encodeHex(msg));
+				_peer->Perror("Merkle block deserialize with type {} fail", manager->GetPluginTypes().BlockType);
+				return false;
+			}
+
+			if (!block->isValid((uint32_t) time(nullptr))) {
+				_peer->Perror("Invalid merkleblock: {}", Utils::UInt256ToString(block->getHash()));
+				return false;
+			} else if (!_peer->SentFilter() && !_peer->SentGetdata()) {
+				_peer->Perror("Got merkleblock message before loading a filter");
+				return false;
+			} else {
+				std::vector<UInt256> txHashes = block->MerkleBlockTxHashes();
+
+				for (size_t i = txHashes.size(); i > 0; i--) { // reverse order for more efficient removal as tx arrive
+					if (Utils::UInt256SetContains(_peer->KnownTxHashSet(), txHashes[i - 1])) continue;
+					_peer->AddCurrentBlockTxHash(txHashes[i - 1]);
+				}
+			}
+
+			if (_peer->CurrentBlockTxHashes().size() > 0) { // wait til we get all tx messages before processing the block
+				_peer->SetCurrentBlock(block);
+			} else {
+				FireRelayedBlock(block);
+			}
+
+			return true;
 		}
 
-		void MerkleBlockMessage::Send(BRPeer *peer, void *serializable) {
+		void MerkleBlockMessage::Send(const SendMessageParameter &param) {
+		}
+
+		std::string MerkleBlockMessage::Type() const {
+			return MSG_MERKLEBLOCK;
 		}
 	}
 }

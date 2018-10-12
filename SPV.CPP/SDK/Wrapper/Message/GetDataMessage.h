@@ -13,6 +13,11 @@ namespace Elastos {
 		struct GetDataParameter : public SendMessageParameter {
 			std::vector<UInt256> txHashes;
 			std::vector<UInt256> blockHashes;
+
+			GetDataParameter(const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) :
+				txHashes(txHashes), blockHashes(blockHashes) {
+
+			}
 		};
 
 		class GetDataMessage : public Message {

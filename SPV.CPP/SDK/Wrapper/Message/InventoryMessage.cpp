@@ -6,13 +6,13 @@
 #include <BRPeerManager.h>
 
 #include "Peer.h"
-#include "BRPeerMessages.h"
-#include "BRPeerManager.h"
 #include "BRArray.h"
 
 #include "InventoryMessage.h"
 #include "Log.h"
 #include "Utils.h"
+#include "GetDataMessage.h"
+#include "GetBlocksMessage.h"
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
 
@@ -33,11 +33,11 @@ namespace Elastos {
 
 			if (off + count * 36 > msg.GetSize()) {
 				_peer->Perror("malformed inv message, length is {}, should be {} for {} item(s)", msg.GetSize(),
-					off + count * 36, count);
+							  off + count * 36, count);
 				return false;
 			} else if (count > MAX_GETDATA_HASHES) {
 				_peer->Perror("dropping inv message, {} is too many items, max is {}", count,
-									   MAX_GETDATA_HASHES);
+							  MAX_GETDATA_HASHES);
 				return false;
 			} else {
 				const uint8_t *transactions[count], *blocks[count];
@@ -65,7 +65,8 @@ namespace Elastos {
 					_peer->Perror("too many transactions, disconnecting");
 					return false;
 				} else if (_peer->GetCurrentBlockHeight() > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
-						   _peer->GetCurrentBlockHeight() + _peer->GetKnownBlockHashes().size() + blockCount < _peer->getLastBlock()) {
+						   _peer->GetCurrentBlockHeight() + _peer->GetKnownBlockHashes().size() + blockCount <
+						   _peer->getLastBlock()) {
 					_peer->Perror("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
 					return false;
 				} else {
@@ -73,8 +74,8 @@ namespace Elastos {
 					UInt256 blockHash;
 					if (blockCount > 0) {
 						UInt256Get(&blockHash, blocks[0]);
-						if (blockCount == 1 && UInt256Eq(&(_peer->GetLastBlockHash()), &blockHash)) blockCount = 0;
-						if (blockCount == 1) _peer->SetLastBlockHash(*(const UInt256 *)blocks[0]);
+						if (blockCount == 1 && UInt256Eq(&(_peer->LastBlockHash()), &blockHash)) blockCount = 0;
+						if (blockCount == 1) _peer->SetLastBlockHash(*(const UInt256 *) blocks[0]);
 					}
 
 					UInt256 hash;
@@ -84,9 +85,9 @@ namespace Elastos {
 					txHashes.reserve(txCount);
 
 					for (i = 0; i < blockCount; i++) {
-						blockHashes.push_back(*(UInt256 *)blocks[i]);
+						blockHashes.push_back(*(UInt256 *) blocks[i]);
 						// remember blockHashes in case we need to re-request them with an updated bloom filter
-						_peer->AddKnownBlockHash(*(const UInt256 *)blocks[i]);
+						_peer->AddKnownBlockHash(*(const UInt256 *) blocks[i]);
 					}
 
 					while (_peer->GetKnownBlockHashes().size() > MAX_GETDATA_HASHES) {
@@ -96,28 +97,30 @@ namespace Elastos {
 					if (_peer->NeedsFilterUpdate()) blockCount = 0;
 
 					for (i = 0; i < txCount; i++) {
-						hash = *(const UInt256 *)transactions[i];
+						hash = *(UInt256 *) transactions[i];
 
-						// fixme [refactor]
-//						if (_peer->GetKnownTxHashSet().Contains(hash)) {
-//							FireHasTx(hash);
-//						} else {
-//							txHashes.push_back(hash);
-//						}
+						if (Utils::UInt256SetContains(_peer->KnownTxHashSet(), hash)) {
+							FireHasTx(hash);
+						} else {
+							txHashes.push_back(hash);
+						}
 					}
 
 					_peer->Pinfo("got inv with txCount={}, blockCount={}", txHashes.size(), blockCount);
-					// fixme [refactor]
-//					BRPeerAddKnownTxHashes(peer, txHashes, txHashes.size());
-//					if (txHashes.size() > 0 || blockCount > 0)
-//						ctx->manager->peerMessages->BRPeerSendGetdataMessage(peer, txHashes, j, blockHashes, blockCount);
+					_peer->AddKnownTxHashes(txHashes);
+					if (txHashes.size() > 0 || blockCount > 0) {
+						GetDataParameter getDataParam(txHashes, blockHashes);
+						_peer->SendMessage(MSG_GETDATA, getDataParam);
+					}
 
 					// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
 					if (blockCount >= MAX_BLOCKS_COUNT) {
-						UInt256 locators[] = {blockHashes[blockCount - 1], blockHashes[0]};
+						std::vector<UInt256> locators;
+						locators.push_back(blockHashes[blockCount - 1]);
+						locators.push_back(blockHashes[0]);
 
-						// fixme [refactor]
-//						ctx->manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, 2, UINT256_ZERO);
+						GetBlocksParameter getBlocksParameter(locators, UINT256_ZERO);
+						_peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
 					}
 
 					// fixme [refactor]
@@ -137,11 +140,10 @@ namespace Elastos {
 			const InventoryParameter &invParam = static_cast<const InventoryParameter &>(param);
 
 			size_t txCount = invParam.txHashes.size();
-			size_t knownCount = _peer->GetKnownTxHashes().size();
+			size_t knownCount = _peer->KnownTxHashes().size();
 
-			// fixme [refactor]
-//			BRPeerAddKnownTxHashes(peer, txHashes, txCount);
-			txCount = _peer->GetKnownTxHashes().size() - knownCount;
+			_peer->AddKnownTxHashes(invParam.txHashes);
+			txCount = _peer->KnownTxHashes().size() - knownCount;
 
 			if (txCount > 0) {
 				size_t i;
@@ -150,7 +152,7 @@ namespace Elastos {
 				stream.writeUint32(uint32_t(txCount));
 				for (size_t i = 0; i < txCount; i++) {
 					stream.writeUint32(uint32_t(inv_tx));  // version
-					stream.writeBytes(&_peer->GetKnownTxHashes()[knownCount + i], sizeof(UInt256));
+					stream.writeBytes(&_peer->KnownTxHashes()[knownCount + i], sizeof(UInt256));
 				}
 
 				_peer->Pinfo("sending inv tx count={} type={}", txCount, inv_tx);

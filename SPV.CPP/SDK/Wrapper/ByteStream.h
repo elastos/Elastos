@@ -17,11 +17,13 @@ namespace Elastos {
 			};
 		public:
 
-			ByteStream(bool isBe = false);
+			ByteStream();
 
-			ByteStream(uint64_t size, bool isBe = false);
+			ByteStream(uint64_t size);
 
-			ByteStream(uint8_t *buf, uint64_t size, bool autorelease = true, bool isBe = false);
+			ByteStream(const void *buf, size_t size, bool autorelease = true);
+
+			ByteStream(const CMBlock &buf);
 
 			~ByteStream();
 
@@ -33,8 +35,6 @@ namespace Elastos {
 			uint64_t position();
 
 			uint64_t length();
-
-			uint64_t availableSize();
 
 			void drop(size_t bytes);
 
@@ -97,7 +97,6 @@ namespace Elastos {
 			uint64_t _size;
 			uint8_t *_buf;
 			bool _autorelease;
-			bool _isBe;
 		};
 
 	}

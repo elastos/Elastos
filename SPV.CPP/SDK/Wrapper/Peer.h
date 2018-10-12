@@ -190,7 +190,7 @@ namespace Elastos {
 
 			void SetSentGetblocks(bool sent);
 
-			const std::vector<UInt256> &GetCurrentBlockTxHashes() const;
+			const std::vector<UInt256> &CurrentBlockTxHashes() const;
 
 			void AddCurrentBlockTxHash(const UInt256 &hash);
 
@@ -200,15 +200,15 @@ namespace Elastos {
 
 			void AddKnownBlockHash(const UInt256 &hash);
 
-			const std::vector<UInt256> &GetKnownTxHashes() const;
+			const std::vector<UInt256> &KnownTxHashes() const;
 
-			void AddKnownTxHash(const UInt256 &hash);
-
-			const UInt256 &GetLastBlockHash() const;
+			const UInt256 &LastBlockHash() const;
 
 			void SetLastBlockHash(const UInt256 &hash);
 
-//			const TransactionSet &GetKnownTxHashSet() const;
+			const std::set<UInt256> &KnownTxHashSet() const;
+
+			void AddKnownTxHashes(const std::vector<UInt256> &txHashes);
 
 			bool isIPv4() const;
 
@@ -239,6 +239,8 @@ namespace Elastos {
 			const PeerInfo &GetPeerInfo() const;
 
 			void SetPeerInfo(const PeerInfo &info);
+
+			void SetCurrentBlock(const MerkleBlockPtr &block);
 
 			std::string FormatError(int errnum);
 
@@ -344,7 +346,7 @@ namespace Elastos {
 			UInt256 _lastBlockHash;
 			MerkleBlockPtr _currentBlock;
 			std::vector<UInt256> _currentBlockTxHashes, _knownBlockHashes, _knownTxHashes;
-			TransactionSet _knownTxHashSet;
+			std::set<UInt256> _knownTxHashSet;
 			volatile int _socket;
 
 			PeerCallback _mempoolCallback;

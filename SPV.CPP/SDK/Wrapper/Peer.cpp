@@ -451,7 +451,7 @@ namespace Elastos {
 			_sentGetblocks = sent;
 		}
 
-		const std::vector<UInt256> &Peer::GetCurrentBlockTxHashes() const {
+		const std::vector<UInt256> &Peer::CurrentBlockTxHashes() const {
 			return _currentBlockTxHashes;
 		}
 
@@ -474,15 +474,11 @@ namespace Elastos {
 		}
 
 
-		const std::vector<UInt256> &Peer::GetKnownTxHashes() const {
+		const std::vector<UInt256>& Peer::KnownTxHashes() const {
 			return _knownTxHashes;
 		}
 
-		void Peer::AddKnownTxHash(const UInt256 &hash) {
-			_knownTxHashes.push_back(hash);
-		}
-
-		const UInt256 &Peer::GetLastBlockHash() const {
+		const UInt256 &Peer::LastBlockHash() const {
 			return _lastBlockHash;
 		}
 
@@ -490,9 +486,19 @@ namespace Elastos {
 			_lastBlockHash = hash;
 		}
 
-//		const TransactionSet& Peer::GetKnownTxHashSet() const {
-//			return _knownTxHashSet;
-//		}
+		const std::set<UInt256> &Peer::KnownTxHashSet() const {
+			return _knownTxHashSet;
+		}
+
+		void Peer::AddKnownTxHashes(const std::vector<UInt256> &txHashes) {
+			for (size_t i = 0; i < txHashes.size(); i++) {
+				if (! Utils::UInt256SetContains(_knownTxHashSet, txHashes[i])) {
+					_knownTxHashes.push_back(txHashes[i]);
+					// fixme [refactor]
+//					_knownTxHashSet.insert(txHashes[i]);
+				}
+			}
+		}
 
 		std::string Peer::FormatError(int errnum) {
 			return std::string(strerror(errnum));
@@ -635,6 +641,10 @@ namespace Elastos {
 
 		void Peer::SetPeerInfo(const PeerInfo &info) {
 			_info = info;
+		}
+
+		void Peer::SetCurrentBlock(const MerkleBlockPtr &block) {
+			_currentBlock = block;
 		}
 
 	}
