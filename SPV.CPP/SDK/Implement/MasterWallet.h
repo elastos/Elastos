@@ -63,13 +63,11 @@ namespace Elastos {
 
 			virtual ISubWallet *CreateSubWallet(
 					const std::string &chainID,
-					const std::string &payPassword,
 					bool singleAddress,
 					uint64_t feePerKb = 0);
 
 			virtual ISubWallet *RecoverSubWallet(
 					const std::string &chainID,
-					const std::string &payPassword,
 					bool singleAddress,
 					uint32_t limitGap,
 					uint64_t feePerKb = 0);
@@ -213,7 +211,7 @@ namespace Elastos {
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount);
 
-			void initSubWallets(const std::vector<CoinInfo> &coinInfoList, const std::string &payPassword);
+			void initSubWallets(const std::vector<CoinInfo> &coinInfoList);
 
 			void restoreSubWallets(const std::vector<CoinInfo> &coinInfoList);
 
@@ -223,7 +221,6 @@ namespace Elastos {
 
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
 											  const ChainParams &chainParams,
-											  const std::string &payPassword,
 											  const PluginTypes &pluginTypes,
 											  MasterWallet *parent);
 
@@ -234,7 +231,7 @@ namespace Elastos {
 
 			void tryInitCoinConfig();
 
-			void initFrom(MasterWalletInitFrom from);
+			void initSubWalletsPubKeyMap(const std::string &payPassword);
 
 		protected:
 			WalletMap _createdWallets;
@@ -249,6 +246,9 @@ namespace Elastos {
 			CoinConfigReader _coinConfigReader;
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
+
+			typedef std::map<std::string, MasterPubKeyPtr> MasterPubKeyMap;
+			MasterPubKeyMap _subWalletsPubKeyMap;
 		};
 
 	}

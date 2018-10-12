@@ -45,6 +45,8 @@ namespace Elastos {
 
 			std::vector<std::string> GetAllChainId() const;
 
+			std::map<std::string, uint32_t> GetChainIdsAndIndices() const;
+
 			const CoinConfig &FindConfig(const std::string &chainId);
 
 		private:

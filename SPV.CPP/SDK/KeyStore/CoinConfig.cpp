@@ -72,5 +72,13 @@ namespace Elastos {
 			});
 			return result;
 		}
+
+		std::map<std::string, uint32_t> CoinConfigReader::GetChainIdsAndIndices() const {
+			std::map<std::string, uint32_t> result;
+			std::for_each(_configMap.begin(), _configMap.end(), [&result](const CoinConfigMap::value_type &item) {
+				result[item.first] = item.second.Index;
+			});
+			return result;
+		}
 	}
 }

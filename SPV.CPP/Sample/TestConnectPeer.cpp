@@ -194,8 +194,8 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 //	IMasterWallet *masterWallet = createReadOnlyMultiSignWallet(walletManager);
 
 
-	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", payPassword, false);
-	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", payPassword, false);
+	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", false);
+	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", false);
 
 	std::cout << "side chain wallet addrs: " << sidechainWallet->GetAllAddress(0, INT_MAX) << std::endl;
 	std::cout << "main chain wallet addrs: " << mainchainWallet->GetAllAddress(0, INT_MAX) << std::endl;
