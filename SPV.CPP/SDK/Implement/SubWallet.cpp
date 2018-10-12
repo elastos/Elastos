@@ -7,7 +7,6 @@
 #include <Core/BRTransaction.h>
 
 #include "BRTransaction.h"
-#include "BRWallet.h"
 #include "BRKey.h"
 #include "BRArray.h"
 

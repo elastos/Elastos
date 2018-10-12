@@ -2,20 +2,27 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRPeerMessages.h>
-#include <BRPeerManager.h>
-#include <Core/BRPeer.h>
-#include <SDK/Transaction/Transaction.h>
 #include "BRArray.h"
-#include "BRPeerMessages.h"
 #include "Peer.h"
 
 #include "GetDataMessage.h"
 #include "Log.h"
 #include "Utils.h"
 
+#define MAX_GETDATA_HASHES 50000
+#define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
+
 namespace Elastos {
 	namespace ElaWallet {
+
+		namespace {
+			enum inv_type{
+				inv_undefined = 0,
+				inv_tx = 1,
+				inv_block = 2,
+				inv_filtered_block = 3
+			};
+		}
 
 		GetDataMessage::GetDataMessage(const Elastos::ElaWallet::MessagePeerPtr &peer) : Message(peer) {
 

@@ -11,8 +11,6 @@
 #include <boost/function.hpp>
 #include <SDK/Common/Log.h>
 
-#include "BRPeerMessages.h"
-
 #include "Wrapper.h"
 #include "CMemBlock.h"
 #include "PeerCallbackInfo.h"
@@ -43,6 +41,12 @@
 #define MSG_REJECT      "reject"   // described in BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 #define MSG_FEEFILTER   "feefilter"// described in BIP133 https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
 
+#define REJECT_INVALID     0x10 // transaction is invalid for some reason (invalid signature, output value > input, etc)
+#define REJECT_SPENT       0x12 // an input is already spent
+#define REJECT_NONSTANDARD 0x40 // not mined/relayed because it is "non-standard" (type or version unknown by server)
+#define REJECT_DUST        0x41 // one or more output amounts are below the 'dust' threshold
+#define REJECT_LOWFEE      0x42 // transaction does not have enough fee/priority to be relayed or mined
+
 #ifndef MSG_NOSIGNAL   // linux based systems have a MSG_NOSIGNAL send flag, useful for supressing SIGPIPE signals
 #define MSG_NOSIGNAL 0 // set to 0 if undefined (BSD has the SO_NOSIGPIPE sockopt, and windows has no signals at all)
 #endif
@@ -67,36 +71,35 @@ namespace Elastos {
 
 			class Listener {
 			public:
-				virtual void OnConnected(const PeerPtr &peer) {}
+				virtual void OnConnected(const PeerPtr &peer) = 0;
 
-				virtual void OnDisconnected(const PeerPtr &peer, int error) {}
+				virtual void OnDisconnected(const PeerPtr &peer, int error) = 0;
 
 				virtual void
 				OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers,
-							   size_t peersCount) {}
+							   size_t peersCount) = 0;
 
-				virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx) {}
+				virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx) = 0;
 
-				virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash) {}
+				virtual void OnHasTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
 
-				virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code) {}
+				virtual void OnRejectedTx(const PeerPtr &peer, const UInt256 &txHash, uint8_t code) = 0;
 
-				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {}
+				virtual void OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) = 0;
 
-				virtual void OnRelayedPingMsg(const PeerPtr &peer) {}
+				virtual void OnRelayedPingMsg(const PeerPtr &peer) = 0;
 
 				virtual void
 				OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
-						   const std::vector<UInt256> &blockHashes) {}
+						   const std::vector<UInt256> &blockHashes) = 0;
 
-				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) {}
+				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) = 0;
 
-				virtual const TransactionPtr &
-				OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) { return nullptr; }
+				virtual const TransactionPtr & OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
 
-				virtual bool OnNetworkIsReachable(const PeerPtr &peer) { return false; }
+				virtual bool OnNetworkIsReachable(const PeerPtr &peer) = 0;
 
-				virtual void OnThreadCleanup(const PeerPtr &peer) {}
+				virtual void OnThreadCleanup(const PeerPtr &peer) = 0;
 			};
 
 			typedef boost::function<void(int)> PeerCallback;

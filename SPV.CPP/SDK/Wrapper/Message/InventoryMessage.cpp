@@ -2,8 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #include <float.h>
-#include <BRPeerMessages.h>
-#include <BRPeerManager.h>
 
 #include "Peer.h"
 #include "BRArray.h"
@@ -15,9 +13,19 @@
 #include "GetBlocksMessage.h"
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
+#define MAX_GETDATA_HASHES 50000
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		namespace {
+			typedef enum {
+				inv_undefined = 0,
+				inv_tx = 1,
+				inv_block = 2,
+				inv_filtered_block = 3
+			} inv_type;
+		}
 
 		InventoryMessage::InventoryMessage(const MessagePeerPtr &peer) :
 			Message(peer) {

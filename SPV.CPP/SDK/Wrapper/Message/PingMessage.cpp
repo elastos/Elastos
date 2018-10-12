@@ -3,14 +3,10 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <sys/time.h>
-#include <BRPeerMessages.h>
 #include <BRMerkleBlock.h>
 #include <SDK/Common/Utils.h>
 
 #include "BRArray.h"
-#include "BRPeerMessages.h"
-#include "BRPeerManager.h"
-#include "BRWallet.h"
 
 #include "Peer.h"
 #include "PingMessage.h"

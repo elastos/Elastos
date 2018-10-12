@@ -9,7 +9,6 @@
 #include <SDK/Common/Log.h>
 #include <Core/BRAddress.h>
 #include <Core/BRBIP32Sequence.h>
-#include <Core/BRWallet.h>
 #include <SDK/Common/ParamChecker.h>
 
 #include "BRAddress.h"

@@ -4,7 +4,6 @@
 
 #include <Core/BRTransaction.h>
 #include "BRArray.h"
-#include "BRPeerMessages.h"
 
 #include "Peer.h"
 #include "TransactionMessage.h"
@@ -20,11 +19,11 @@ namespace Elastos {
 
 		}
 
-		int TransactionMessage::Accept(
-				BRPeer *peer, const uint8_t *msg, size_t msgLen) {
+//		int TransactionMessage::Accept(
+//				BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 
 			//fixme [refactor] complete me
-			return 0;
+//			return 0;
 //			BRPeerContext *ctx = (BRPeerContext *) peer;
 //
 //			ByteStream stream(const_cast<uint8_t *>(msg), msgLen, false);
@@ -69,9 +68,9 @@ namespace Elastos {
 //			}
 //
 //			return r;
-		}
-
-		void TransactionMessage::Send(BRPeer *peer, void *serializable) {
+//		}
+//
+//		void TransactionMessage::Send(BRPeer *peer, void *serializable) {
 
 			//fixme [refactor] complete me
 //			ELATransaction *tx = (ELATransaction *)serializable;
@@ -81,6 +80,6 @@ namespace Elastos {
 //			CMBlock buf = stream.getBuffer();
 //			peer_log(peer, "Sending tx: tx hash = %s", Utils::UInt256ToString(tx->raw.txHash).c_str());
 //			BRPeerSendMessage(peer, buf, buf.GetSize(), MSG_TX);
-		}
+//		}
 	}
 }

@@ -5,7 +5,6 @@
 #ifndef __ELASTOS_SDK_GETBLOCKSMESSAGE_H__
 #define __ELASTOS_SDK_GETBLOCKSMESSAGE_H__
 
-#include <Core/BRPeer.h>
 #include "Message.h"
 
 namespace Elastos {

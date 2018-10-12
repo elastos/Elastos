@@ -6,7 +6,6 @@
 #include <boost/bind.hpp>
 #include <arpa/inet.h>
 #include <Core/BRChainParams.h>
-#include <Core/BRPeer.h>
 #include <SDK/Wrapper/Message/PingMessage.h>
 #include <netdb.h>
 #include <SDK/Wrapper/Message/GetBlocksMessage.h>
@@ -244,7 +243,7 @@ namespace Elastos {
 			}
 
 			if (_connectedPeers.empty()) {
-				_peer_log("sync failed");
+				Log::warn("sync failed");
 				syncStopped();
 				lock.unlock();
 				fireSyncStopped(ENETUNREACH);
@@ -698,7 +697,7 @@ namespace Elastos {
 						inet_ntop(AF_INET, &peer.Address.u32[3], host, sizeof(host));
 					else
 						inet_ntop(AF_INET6, &peer.Address, host, sizeof(host));
-					_peer_log("peers[%zu] = %s\n", i, host);
+					Log::getLogger()->info("peers[{}] = {}", i, host);
 				}
 			}
 		}

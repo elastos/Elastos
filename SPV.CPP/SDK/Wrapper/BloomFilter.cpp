@@ -2,10 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <Core/BRBloomFilter.h>
 #include <SDK/Common/Log.h>
 #include <cfloat>
-#include "BRBloomFilter.h"
 #include "BRInt.h"
 #include "BRAddress.h"
 

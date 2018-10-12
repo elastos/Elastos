@@ -9,7 +9,6 @@
 #include <SDK/Common/ParamChecker.h>
 
 #include "ChainParams.h"
-#include "BRBCashParams.h"
 
 namespace Elastos {
 	namespace ElaWallet {

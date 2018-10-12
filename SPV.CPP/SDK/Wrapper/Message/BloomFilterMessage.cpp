@@ -2,10 +2,6 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <BRPeerMessages.h>
-#include <BRBloomFilter.h>
-#include "BRBloomFilter.h"
-
 #include "Peer.h"
 #include "BloomFilter.h"
 #include "BloomFilterMessage.h"

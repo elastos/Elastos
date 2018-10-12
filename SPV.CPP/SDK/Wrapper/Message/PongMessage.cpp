@@ -4,7 +4,6 @@
 
 #include <BRArray.h>
 #include <sys/time.h>
-#include <BRPeerMessages.h>
 
 #include "PongMessage.h"
 #include "Log.h"

@@ -25,6 +25,10 @@
 #include "Account/ISubAccount.h"
 #include "Address.h"
 
+#define DEFAULT_FEE_PER_KB (TX_FEE_PER_KB*10)                  // 10 satoshis-per-byte
+#define MIN_FEE_PER_KB     TX_FEE_PER_KB                       // bitcoind 0.12 default min-relay fee
+#define MAX_FEE_PER_KB     ((TX_FEE_PER_KB*1000100 + 190)/191) // slightly higher than a 10,000bit fee on a 191byte tx
+
 namespace Elastos {
 	namespace ElaWallet {
 

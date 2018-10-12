@@ -6,7 +6,6 @@
 #include <Core/BRMerkleBlock.h>
 
 #include "PeerManager.h"
-#include "BRPeerMessages.h"
 #include "BRArray.h"
 #include "BRMerkleBlock.h"
 
@@ -15,7 +14,6 @@
 #include "Log.h"
 #include "Utils.h"
 #include "AuxPow.h"
-#include "ELACoreExt/ELAPeerManager.h"
 #include "ELACoreExt/ELAMerkleBlock.h"
 #include "Plugin/Registry.h"
 #include "SDK/Plugin/Block/MerkleBlock.h"
