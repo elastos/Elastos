@@ -137,10 +137,10 @@ namespace Elastos {
 		}
 
 		IAccount *
-		KeyStore::createAccountFromJson(const std::string &phrasePassword, const std::string &payPassword) const {
+		KeyStore::createAccountFromJson(const std::string &payPassword) const {
 			if (_walletJson.getType() == "Standard" || _walletJson.getType().empty())
 				return new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
-										   phrasePassword, payPassword);
+										   _walletJson.getPhrasePassword(), payPassword);
 			else if (_walletJson.getType() == "Simple")
 				return new SimpleAccount(_walletJson.getPrivateKey(), payPassword);
 			else if (_walletJson.getType() == "MultiSign") {
@@ -148,7 +148,7 @@ namespace Elastos {
 				if (!_walletJson.getMnemonic().empty() && !_walletJson.getLanguage().empty()) {
 					return new MultiSignAccount(
 						new StandardAccount(_rootPath, _walletJson.getMnemonic(), _walletJson.getLanguage(),
-											phrasePassword, payPassword), _walletJson.getCoSigners(),
+											_walletJson.getPhrasePassword(), payPassword), _walletJson.getCoSigners(),
 						_walletJson.getRequiredSignCount());
 				} else if (!_walletJson.getPrivateKey().empty()) {
 					return new MultiSignAccount(new SimpleAccount(_walletJson.getPrivateKey(), payPassword),
@@ -177,6 +177,8 @@ namespace Elastos {
 			ParamChecker::checkDecryptedData(mnemonicData);
 			_walletJson.setMnemonic(Utils::convertToString(mnemonicData));
 			_walletJson.setLanguage(standardAccount->GetLanguage());
+			CMBlock phrasePass = Utils::decrypt(standardAccount->GetEncryptedPhrasePassword(), payPassword);
+			_walletJson.setPhrasePassword(Utils::convertToString(phrasePass));
 		}
 
 		void KeyStore::initSimpleAccount(IAccount *account, const std::string &payPassword) {

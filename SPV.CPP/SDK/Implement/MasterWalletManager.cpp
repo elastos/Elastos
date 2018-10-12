@@ -190,8 +190,7 @@ namespace Elastos {
 		MasterWalletManager::ImportWalletWithKeystore(const std::string &masterWalletId,
 													  const nlohmann::json &keystoreContent,
 													  const std::string &backupPassword,
-													  const std::string &payPassword,
-													  const std::string &phrasePassword) {
+													  const std::string &payPassword) {
 			ParamChecker::checkPassword(backupPassword, "Backup");
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
@@ -201,7 +200,7 @@ namespace Elastos {
 
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, keystoreContent, backupPassword,
-														  payPassword, phrasePassword, _rootPath, _p2pEnable,
+														  payPassword, _rootPath, _p2pEnable,
 														  ImportFromKeyStore);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;

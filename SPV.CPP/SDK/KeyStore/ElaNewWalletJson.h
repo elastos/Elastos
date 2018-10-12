@@ -46,6 +46,10 @@ namespace Elastos {
 
 			void setPrivateKey(const std::string &key);
 
+			const std::string &getPhrasePassword() const;
+
+			void setPhrasePassword(const std::string &phrasePassword);
+
 		private:
 			JSON_SM_LS(ElaNewWalletJson);
 			JSON_SM_RS(ElaNewWalletJson);
@@ -60,6 +64,7 @@ namespace Elastos {
 			std::vector<std::string> _coSigners;
 			uint32_t _requiredSignCount;
 			std::string _privateKey;
+			std::string _phrasePassword;
 		};
 	}
 }
