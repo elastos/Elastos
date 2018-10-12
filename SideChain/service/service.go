@@ -37,7 +37,7 @@ type Config struct {
 	GetTransactionInfo          func(cfg *Config, header *types.Header, tx *types.Transaction) *TransactionInfo
 	GetTransactionInfoFromBytes func(txInfoBytes []byte) (*TransactionInfo, error)
 	GetTransaction              func(cfg *Config, txInfo *TransactionInfo) (*types.Transaction, error)
-	GetPayloadInfo              func(p types.Payload) PayloadInfo
+	GetPayloadInfo              func(p types.Payload, pVersion byte) PayloadInfo
 	GetPayload                  func(pInfo PayloadInfo) (types.Payload, error)
 }
 
@@ -385,20 +385,15 @@ func (s *HttpService) GetBlockByHash(param Params) map[string]interface{} {
 
 func (s *HttpService) SendTransactionInfo(param Params) map[string]interface{} {
 
-	infoStr, ok := param.String("Info")
+	infoStr, ok := param.String("info")
 	if !ok {
-		return ResponsePack(InvalidParams, "Info not found")
+		return ResponsePack(InvalidParams, "info not found")
 	}
 
-	infoBytes, err := common.HexStringToBytes(infoStr)
+	txInfo := new(TransactionInfo)
+	err := Unmarshal(infoStr, txInfo)
 	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	txInfo, err := s.cfg.GetTransactionInfoFromBytes(infoBytes)
-
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
+		return ResponsePack(InvalidParams, "info type error")
 	}
 
 	txn, err := s.cfg.GetTransaction(s.cfg, txInfo)
@@ -710,24 +705,13 @@ func (s *HttpService) GetTransactionByHash(param Params) map[string]interface{} 
 }
 
 func (s *HttpService) GetExistDepositTransactions(param Params) map[string]interface{} {
-	txsStr, ok := param.String("txs")
+	txs, ok := param.ArrayString("txs")
 	if !ok {
 		return ResponsePack(InvalidParams, "txs not found")
 	}
 
-	txsBytes, err := common.HexStringToBytes(txsStr)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
-	var txHashes []string
-	err = json.Unmarshal(txsBytes, &txHashes)
-	if err != nil {
-		return ResponsePack(InvalidParams, "")
-	}
-
 	var resultTxHashes []string
-	for _, txHash := range txHashes {
+	for _, txHash := range txs {
 		txHashBytes, err := common.HexStringToBytes(txHash)
 		if err != nil {
 			return ResponsePack(InvalidParams, "")
@@ -798,6 +782,35 @@ func (s *HttpService) GetDestroyedTransactionsByHeight(param Params) map[string]
 		}
 		return false
 	}))
+}
+
+func (s *HttpService) GetTransactionInfoByHash(param Params) map[string]interface{} {
+	str, ok := param.String("txid")
+	if !ok {
+		return ResponsePack(InvalidParams, "txid not found")
+	}
+	hex, err := FromReversedString(str)
+	if err != nil {
+		return ResponsePack(InvalidParams, "txid reverse failed")
+	}
+	var hash common.Uint256
+	err = hash.Deserialize(bytes.NewReader(hex))
+	if err != nil {
+		return ResponsePack(InvalidTransaction, "txid deserialize failed")
+	}
+	tx, height, err := s.cfg.Chain.GetTransaction(hash)
+	if err != nil {
+		return ResponsePack(UnknownTransaction, "get tx by txid failed")
+	}
+	bHash, err := s.cfg.Chain.GetBlockHash(height)
+	if err != nil {
+		return ResponsePack(UnknownTransaction, "get block by height failed")
+	}
+	header, err := s.cfg.Chain.GetHeader(bHash)
+	if err != nil {
+		return ResponsePack(UnknownTransaction, "get header by block hash failed")
+	}
+	return ResponsePack(Success, s.cfg.GetTransactionInfo(s.cfg, header, tx))
 }
 
 func Unmarshal(result interface{}, target interface{}) error {
@@ -942,7 +955,7 @@ func GetTransactionInfo(cfg *Config, header *types.Header, tx *types.Transaction
 		BlockTime:      blockTime,
 		TxType:         tx.TxType,
 		PayloadVersion: tx.PayloadVersion,
-		Payload:        cfg.GetPayloadInfo(tx.Payload),
+		Payload:        cfg.GetPayloadInfo(tx.Payload, tx.PayloadVersion),
 		Attributes:     attributes,
 		Programs:       programs,
 	}
@@ -964,7 +977,11 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*TransactionInfo, error) {
 	case types.SideChainPow:
 		assetInfo = &SideChainPowInfo{}
 	case types.RechargeToSideChain:
-		assetInfo = &RechargeToSideChainInfo{}
+		if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
+			assetInfo = &RechargeToSideChainInfoV0{}
+		} else if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
+			assetInfo = &RechargeToSideChainInfoV1{}
+		}
 	case types.TransferCrossChainAsset:
 		assetInfo = &TransferCrossChainAssetInfo{}
 	default:
@@ -1078,7 +1095,7 @@ func GetTransaction(cfg *Config, txInfo *TransactionInfo) (*types.Transaction, e
 	return txTransaction, nil
 }
 
-func GetPayloadInfo(p types.Payload) PayloadInfo {
+func GetPayloadInfo(p types.Payload, pVersion byte) PayloadInfo {
 	switch object := p.(type) {
 	case *types.PayloadCoinBase:
 		obj := new(CoinbaseInfo)
@@ -1092,17 +1109,29 @@ func GetPayloadInfo(p types.Payload) PayloadInfo {
 		return obj
 	case *types.PayloadTransferCrossChainAsset:
 		obj := new(TransferCrossChainAssetInfo)
-		obj.CrossChainAddresses = object.CrossChainAddresses
-		obj.OutputIndexes = object.OutputIndexes
-		obj.CrossChainAmounts = object.CrossChainAmounts
+		obj.CrossChainAssets = make([]CrossChainAssetInfo, 0)
+		for i := 0; i < len(object.CrossChainAddresses); i++ {
+			assetInfo := CrossChainAssetInfo{
+				CrossChainAddress: object.CrossChainAddresses[i],
+				OutputIndex:       object.OutputIndexes[i],
+				CrossChainAmount:  object.CrossChainAmounts[i].String(),
+			}
+			obj.CrossChainAssets = append(obj.CrossChainAssets, assetInfo)
+		}
 		return obj
 	case *types.PayloadTransferAsset:
 	case *types.PayloadRecord:
 	case *types.PayloadRechargeToSideChain:
-		obj := new(RechargeToSideChainInfo)
-		obj.MainChainTransaction = common.BytesToHexString(object.MainChainTransaction)
-		obj.Proof = common.BytesToHexString(object.MerkleProof)
-		return obj
+		if pVersion == types.RechargeToSideChainPayloadVersion0 {
+			obj := new(RechargeToSideChainInfoV0)
+			obj.MainChainTransaction = common.BytesToHexString(object.MainChainTransaction)
+			obj.Proof = common.BytesToHexString(object.MerkleProof)
+			return obj
+		} else if pVersion == types.RechargeToSideChainPayloadVersion1 {
+			obj := new(RechargeToSideChainInfoV1)
+			obj.MainChainTransactionHash = ToReversedString(object.MainChainTransactionHash)
+			return obj
+		}
 	}
 	return nil
 }
@@ -1124,7 +1153,7 @@ func GetPayload(pInfo PayloadInfo) (types.Payload, error) {
 		controller, err := common.Uint168FromBytes(common.BytesReverse(bytes))
 		obj.Controller = *controller
 		return obj, nil
-	case *RechargeToSideChainInfo:
+	case *RechargeToSideChainInfoV0:
 		obj := new(types.PayloadRechargeToSideChain)
 		proofBytes, err := common.HexStringToBytes(object.Proof)
 		if err != nil {
@@ -1137,11 +1166,32 @@ func GetPayload(pInfo PayloadInfo) (types.Payload, error) {
 		}
 		obj.MainChainTransaction = transactionBytes
 		return obj, nil
+	case *RechargeToSideChainInfoV1:
+		obj := new(types.PayloadRechargeToSideChain)
+		hashBytes, err := common.HexStringToBytes(object.MainChainTransactionHash)
+		if err != nil {
+			return nil, err
+		}
+		hash, err := common.Uint256FromBytes(common.BytesReverse(hashBytes))
+		if err != nil {
+			return nil, err
+		}
+		obj.MainChainTransactionHash = *hash
+		return obj, nil
 	case *TransferCrossChainAssetInfo:
 		obj := new(types.PayloadTransferCrossChainAsset)
-		obj.CrossChainAddresses = object.CrossChainAddresses
-		obj.OutputIndexes = object.OutputIndexes
-		obj.CrossChainAmounts = object.CrossChainAmounts
+		obj.CrossChainAddresses = make([]string, 0)
+		obj.OutputIndexes = make([]uint64, 0)
+		obj.CrossChainAmounts = make([]common.Fixed64, 0)
+		for _, assetInfo := range object.CrossChainAssets {
+			obj.CrossChainAddresses = append(obj.CrossChainAddresses, assetInfo.CrossChainAddress)
+			obj.OutputIndexes = append(obj.OutputIndexes, assetInfo.OutputIndex)
+			amount, err := common.StringToFixed64(assetInfo.CrossChainAmount)
+			if err != nil {
+				return nil, err
+			}
+			obj.CrossChainAmounts = append(obj.CrossChainAmounts, *amount)
+		}
 		return obj, nil
 	}
 

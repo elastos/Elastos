@@ -92,3 +92,24 @@ func (p Params) String(key string) (string, bool) {
 		return "", false
 	}
 }
+
+func (p Params) ArrayString(key string) ([]string, bool) {
+	value, ok := p[key]
+	if !ok {
+		return nil, false
+	}
+	switch v := value.(type) {
+	case []interface{}:
+		var arrayString []string
+		for _, param := range v {
+			paramString, ok := param.(string)
+			if !ok {
+				return nil, false
+			}
+			arrayString = append(arrayString, paramString)
+		}
+		return arrayString, true
+	default:
+		return nil, false
+	}
+}
