@@ -18,10 +18,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		MainchainSubWallet::MainchainSubWallet(const CoinInfo &info, const ChainParams &chainParams,
-											   const std::string &payPassword, const PluginTypes &pluginTypes,
+		MainchainSubWallet::MainchainSubWallet(const CoinInfo &info, const MasterPubKeyPtr &masterPubKey,
+											   const ChainParams &chainParams, const PluginTypes &pluginTypes,
 											   MasterWallet *parent) :
-			SubWallet(info, chainParams, payPassword, pluginTypes, parent) {
+				SubWallet(info, masterPubKey, chainParams, pluginTypes, parent) {
 
 		}
 
@@ -45,9 +45,9 @@ namespace Elastos {
 			ParamChecker::checkJsonArray(sidechainAmounts, 1, "Side chain amounts");
 			ParamChecker::checkJsonArray(sidechainIndices, 1, "Side chain indices");
 
-			std::vector<std::string> accounts = sidechainAccounts.get<std::vector<std::string>>();
-			std::vector<uint64_t> amounts = sidechainAmounts.get<std::vector<uint64_t>>();
-			std::vector<uint64_t> indexs = sidechainIndices.get<std::vector<uint64_t >>();
+			std::vector <std::string> accounts = sidechainAccounts.get < std::vector < std::string >> ();
+			std::vector <uint64_t> amounts = sidechainAmounts.get < std::vector < uint64_t >> ();
+			std::vector <uint64_t> indexs = sidechainIndices.get < std::vector < uint64_t >> ();
 
 			ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
 										 Error::DepositParam, "Invalid deposit parameters of side chain");
@@ -73,8 +73,8 @@ namespace Elastos {
 				ptr = SubWallet::createTransaction(param);
 			} else {
 				ptr = _walletManager->getWallet()->
-					createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-									  param->getToAddress(), param->getRemark(), param->getMemo());
+						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
+										  param->getToAddress(), param->getRemark(), param->getMemo());
 
 				if (!ptr) return nullptr;
 
@@ -86,7 +86,7 @@ namespace Elastos {
 							  });
 
 				PayloadTransferCrossChainAsset *payloadTransferCrossChainAsset =
-					static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
+						static_cast<PayloadTransferCrossChainAsset *>(ptr->getPayload());
 				payloadTransferCrossChainAsset->setCrossChainData(depositTxParam->getCrossChainAddress(),
 																  depositTxParam->getCrossChainOutputIndexs(),
 																  depositTxParam->getCrosschainAmouts());
