@@ -51,6 +51,7 @@ namespace Elastos {
 			j["CoSigners"] = p._coSigners;
 			j["RequiredSignCount"] = p._requiredSignCount;
 			j["PrivateKey"] = p._privateKey;
+			j["PhrasePassword"] = p._phrasePassword;
 		}
 
 		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
@@ -62,6 +63,7 @@ namespace Elastos {
 														  : std::vector<std::string>();
 			p._requiredSignCount = j.find("RequiredSignCount") != j.end() ? j["RequiredSignCount"].get<uint32_t>() : 0;
 			p._privateKey = j.find("PrivateKey") != j.end() ? j["PrivateKey"].get<std::string>() : "";
+			p._phrasePassword = j.find("PhrasePassword") != j.end() ? j["PhrasePassword"].get<std::string>() : "";
 		}
 
 		const std::string& ElaNewWalletJson::getType() const {
@@ -102,6 +104,14 @@ namespace Elastos {
 
 		void ElaNewWalletJson::setPrivateKey(const std::string &key) {
 			_privateKey = key;
+		}
+
+		const std::string &ElaNewWalletJson::getPhrasePassword() const {
+			return _phrasePassword;
+		}
+
+		void ElaNewWalletJson::setPhrasePassword(const std::string &phrasePassword) {
+			_phrasePassword = phrasePassword;
 		}
 
 	}

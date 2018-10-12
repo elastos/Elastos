@@ -77,7 +77,6 @@ namespace Elastos {
 								   const nlohmann::json &keystoreContent,
 								   const std::string &backupPassword,
 								   const std::string &payPassword,
-								   const std::string &phrasePassword,
 								   const std::string &rootPath,
 								   bool p2pEnable,
 								   MasterWalletInitFrom from) :
@@ -90,11 +89,10 @@ namespace Elastos {
 			ParamChecker::checkArgumentNotEmpty(id, "Master wallet id");
 			ParamChecker::checkPassword(backupPassword, "Backup");
 			ParamChecker::checkPassword(payPassword, "Pay");
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 			ParamChecker::checkArgumentNotEmpty(rootPath, "Root path");
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			importFromKeyStore(keystoreContent, backupPassword, payPassword, phrasePassword);
+			importFromKeyStore(keystoreContent, backupPassword, payPassword);
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -301,10 +299,9 @@ namespace Elastos {
 		}
 
 		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
-											  const std::string &payPassword, const std::string &phrasePassword) {
+											  const std::string &payPassword) {
 			ParamChecker::checkPassword(backupPassword, "Backup");
 			ParamChecker::checkPassword(payPassword, "Pay");
-			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			KeyStore keyStore(_rootPath);
 			ParamChecker::checkCondition(!keyStore.open(keystoreContent, backupPassword), Error::WrongPasswd,
@@ -315,7 +312,7 @@ namespace Elastos {
 				_initFrom = ImportFromOldKeyStore;
 			}
 
-			initFromKeyStore(keyStore, payPassword, phrasePassword);
+			initFromKeyStore(keyStore, payPassword);
 		}
 
 		void MasterWallet::importFromMnemonic(const std::string &mnemonic,
@@ -518,11 +515,10 @@ namespace Elastos {
 			_localStore.SetSubWalletInfoList(coinInfos);
 		}
 
-		void MasterWallet::initFromKeyStore(const KeyStore &keyStore, const std::string &payPassword,
-											const std::string &phrasePassword) {
+		void MasterWallet::initFromKeyStore(const KeyStore &keyStore, const std::string &payPassword) {
 			tryInitCoinConfig();
 
-			IAccount *account = keyStore.createAccountFromJson(phrasePassword, payPassword);
+			IAccount *account = keyStore.createAccountFromJson(payPassword);
 			_localStore.Reset(account);
 			initSubWallets(keyStore.json().getCoinInfoList(), payPassword);
 		}

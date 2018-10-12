@@ -145,7 +145,6 @@ namespace Elastos {
 					const nlohmann::json &keystoreContent,
 					const std::string &backupPassword,
 					const std::string &payPassword,
-					const std::string &phrasePassword,
 					const std::string &rootPath,
 					bool p2pEnable,
 					MasterWalletInitFrom from);
@@ -182,8 +181,7 @@ namespace Elastos {
 
 			void importFromKeyStore(const nlohmann::json &keystoreContent,
 									const std::string &backupPassword,
-									const std::string &payPassword,
-									const std::string &phrasePassword);
+									const std::string &payPassword);
 
 			void importFromMnemonic(const std::string &mnemonic,
 									const std::string &language,
@@ -199,8 +197,7 @@ namespace Elastos {
 			void initFromLocalStore(const MasterWalletStore &localStore);
 
 			void initFromKeyStore(const KeyStore &keyStore,
-								  const std::string &payPassword,
-								  const std::string &phrasePassword);
+								  const std::string &payPassword);
 
 			void initFromMultiSigners(
 					const std::string &privKey,
