@@ -143,8 +143,7 @@ namespace Elastos {
 					const std::string &masterWalletId,
 					const nlohmann::json &keystoreContent,
 					const std::string &backupPassword,
-					const std::string &payPassword,
-					const std::string &phrasePassword = "");
+					const std::string &payPassword);
 
 			/**
 			 * Import master wallet by mnemonic.

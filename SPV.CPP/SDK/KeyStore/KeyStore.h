@@ -33,7 +33,7 @@ namespace Elastos {
 
 			ElaNewWalletJson &json();
 
-			IAccount *createAccountFromJson(const std::string &phrasePassword, const std::string &payPassword) const;
+			IAccount *createAccountFromJson(const std::string &payPassword) const;
 
 			void initJsonFromAccount(IAccount *account, const std::string &payPassword);
 
