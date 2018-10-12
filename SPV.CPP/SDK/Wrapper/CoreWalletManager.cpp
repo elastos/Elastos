@@ -88,7 +88,7 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
+		void CoreWalletManager::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 		}
 
@@ -195,7 +195,7 @@ namespace Elastos {
 		}
 
 		void
-		WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
+		WrappedExceptionPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			try {
 				_listener->savePeers(replace, peers);
@@ -325,8 +325,7 @@ namespace Elastos {
 			}));
 		}
 
-		void
-		WrappedExecutorPeerManagerListener::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
+		void WrappedExecutorPeerManagerListener::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 			_executor->execute(Runnable([this, replace, &peers]() -> void {
 				try {
 					_listener->savePeers(replace, peers);

@@ -250,7 +250,7 @@ namespace Elastos {
 			delete &blocks;
 		}
 
-		void WalletManager::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
+		void WalletManager::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			if (replace) {
 				_databaseManager.deleteAllPeers(ISO);
@@ -259,9 +259,9 @@ namespace Elastos {
 			std::vector<PeerEntity> peerEntityList;
 			PeerEntity peerEntity;
 			for (size_t i = 0; i < peers.size(); ++i) {
-				peerEntity.address = peers[i]->getAddress();
-				peerEntity.port = peers[i]->getPort();
-				peerEntity.timeStamp = peers[i]->getTimestamp();
+				peerEntity.address = peers[i].Address;
+				peerEntity.port = peers[i].Port;
+				peerEntity.timeStamp = peers[i].Timestamp;
 				peerEntityList.push_back(peerEntity);
 			}
 			_databaseManager.putPeers(ISO, peerEntityList);

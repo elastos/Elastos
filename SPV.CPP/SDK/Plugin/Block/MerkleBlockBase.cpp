@@ -321,5 +321,9 @@ namespace Elastos {
 		void MerkleBlockBase::setHash(const UInt256 &hash) {
 			memcpy(_blockHash.u8, hash.u8, sizeof(_blockHash));
 		}
+
+		bool MerkleBlockBase::isEqual(const IMerkleBlock *block) const {
+			return (block == this || UInt256Eq(&getHash(), &block->getHash()));
+		}
 	}
 }

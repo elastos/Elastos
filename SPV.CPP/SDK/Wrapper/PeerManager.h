@@ -51,7 +51,7 @@ namespace Elastos {
 				virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) = 0;
 
 				// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-				virtual void savePeers(bool replace, const std::vector<PeerPtr> &peers) = 0;
+				virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers) = 0;
 
 				// func networkIsReachable() -> Bool}
 				virtual bool networkIsReachable() = 0;
@@ -173,7 +173,7 @@ namespace Elastos {
 
 			void fireSaveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			void fireSavePeers(bool replace, const std::vector<PeerPtr> &peers);
+			void fireSavePeers(bool replace, const std::vector<PeerInfo> &peers);
 
 			int fireNetworkIsReachable();
 
@@ -220,6 +220,10 @@ namespace Elastos {
 
 			std::vector<UInt128> addressLookup(const std::string &hostname);
 
+			bool verifyBlock(const MerkleBlockPtr &block, const MerkleBlockPtr &prev, const PeerPtr &peer);
+
+			std::vector<UInt256> getBlockLocators(size_t locatorsCount);
+
 		private:
 			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;
 
@@ -230,7 +234,7 @@ namespace Elastos {
 			std::vector<PeerPtr> _connectedPeers;
 			PeerPtr downloadPeer;
 
-			std::string downloadPeerName;
+			mutable std::string downloadPeerName;
 			uint32_t _earliestKeyTime, _reconnectSeconds, syncStartHeight, filterUpdateHeight, estimatedHeight;
 			BRBloomFilter *bloomFilter;
 			double fpRate, averageTxPerBlock;

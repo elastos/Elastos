@@ -60,7 +60,7 @@ namespace Elastos {
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
 			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
-			virtual void savePeers(bool replace, const std::vector<PeerPtr> &peers);
+			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
 			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
@@ -120,7 +120,7 @@ namespace Elastos {
 
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			virtual void savePeers(bool replace, const std::vector<PeerPtr> &peers);
+			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
 			virtual bool networkIsReachable();
 
@@ -150,7 +150,7 @@ namespace Elastos {
 
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			virtual void savePeers(bool replace, const std::vector<PeerPtr> &peers);
+			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
 			virtual bool networkIsReachable();
 

@@ -67,6 +67,8 @@ namespace Elastos {
 
 			virtual bool isValid(uint32_t currentTime) { return false;}
 
+			virtual bool isEqual(const IMerkleBlock *block) const;
+
 			virtual std::string getBlockType() const { return "";}
 
 			std::vector<UInt256> MerkleBlockTxHashes() const;
