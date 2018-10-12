@@ -8,6 +8,7 @@
 #include <Core/BRChainParams.h>
 #include <Core/BRPeer.h>
 #include <SDK/Wrapper/Message/PingMessage.h>
+#include <netdb.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -31,37 +32,37 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		void PeerManager::syncStarted() {
+		void PeerManager::fireSyncStarted() {
 			if (!_listener.expired()) {
 				_listener.lock()->syncStarted();
 			}
 		}
 
-		void PeerManager::syncStopped(int error) {
+		void PeerManager::fireSyncStopped(int error) {
 			if (!_listener.expired()) {
 				_listener.lock()->syncStopped(error == 0 ? "" : strerror(error));
 			}
 		}
 
-		void PeerManager::txStatusUpdate() {
+		void PeerManager::fireTxStatusUpdate() {
 			if (!_listener.expired()) {
 				_listener.lock()->txStatusUpdate();
 			}
 		}
 
-		void PeerManager::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
+		void PeerManager::fireSaveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 			if (!_listener.expired()) {
 				_listener.lock()->saveBlocks(replace, blocks);
 			}
 		}
 
-		void PeerManager::savePeers(bool replace, const std::vector<PeerPtr> &peers) {
+		void PeerManager::fireSavePeers(bool replace, const std::vector<PeerPtr> &peers) {
 			if (!_listener.expired()) {
 				_listener.lock()->savePeers(replace, peers);
 			}
 		}
 
-		int PeerManager::networkIsReachable() {
+		int PeerManager::fireNetworkIsReachable() {
 			int result = 1;
 			if (!_listener.expired()) {
 				result = _listener.lock()->networkIsReachable();
@@ -69,24 +70,24 @@ namespace Elastos {
 			return result;
 		}
 
-		void PeerManager::txPublished(int error) {
+		void PeerManager::fireTxPublished(int error) {
 			if (!_listener.expired()) {
 				_listener.lock()->txPublished(error == 0 ? "" : strerror(error));
 			}
 		}
 
-		void PeerManager::threadCleanup() {
+		void PeerManager::fireThreadCleanup() {
 			if (!_listener.expired()) {
 			}
 		}
 
-		void PeerManager::blockHeightIncreased(uint32_t height) {
+		void PeerManager::fireBlockHeightIncreased(uint32_t height) {
 			if (!_listener.expired()) {
 				_listener.lock()->blockHeightIncreased(height);
 			}
 		}
 
-		void PeerManager::syncIsInactive() {
+		void PeerManager::fireSyncIsInactive() {
 			if (!_listener.expired()) {
 				_listener.lock()->syncIsInactive();
 			}
@@ -101,7 +102,7 @@ namespace Elastos {
 								 uint32_t earliestKeyTime,
 								 uint32_t reconnectSeconds,
 								 const std::vector<MerkleBlockPtr> &blocks,
-								 const std::vector<PeerPtr> &peers,
+								 const std::vector<PeerInfo> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
 								 const PluginTypes &plugins) :
 				_wallet(wallet),
@@ -196,7 +197,7 @@ namespace Elastos {
 			if ((!downloadPeer || lastBlock->getHeight() < estimatedHeight) && syncStartHeight == 0) {
 				syncStartHeight = lastBlock->getHeight() + 1;
 				lock.unlock();
-				syncStarted();
+				fireSyncStarted();
 				lock.lock();
 			}
 
@@ -207,14 +208,14 @@ namespace Elastos {
 
 			if (_connectedPeers.size() < maxConnectCount) {
 				time_t now = time(NULL);
-				std::vector<PeerPtr> peers;
+				std::vector<PeerInfo> peers;
 
 				if (_peers.size() < maxConnectCount ||
-					_peers[maxConnectCount - 1]->getTimestamp() + 3 * 24 * 60 * 60 < now) {
+					_peers[maxConnectCount - 1].Timestamp + 3 * 24 * 60 * 60 < now) {
 					findPeers();
 				}
 
-				peers.insert(peers.end(), _peers.begin(), peers.end());
+				peers.insert(peers.end(), _peers.begin(), _peers.end());
 
 				while (!peers.empty() && _connectedPeers.size() < maxConnectCount) {
 					size_t i = BRRand((uint32_t) peers.size()); // index of random peer
@@ -222,29 +223,20 @@ namespace Elastos {
 					i = i * i / peers.size(); // bias random peer selection toward peers with more recent timestamp
 
 					for (size_t j = _connectedPeers.size(); i != SIZE_MAX && j > 0; j--) {
-						if (!peers[i]->IsEqual(_connectedPeers[j - 1].get())) continue;
+						if (peers[i] != _connectedPeers[j - 1]->GetPeerInfo()) continue;
 						peers.erase(peers.begin() + i);
 						i = SIZE_MAX;
 					}
 
-					//fixme [refactor]
-//					if (i != SIZE_MAX) {
-//						info = new BRPeerCallbackInfo;
-//						info->manager = this;
-//						info->peer = BRPeerNew(_chainParams.getRaw()->magicNumber);
-//						*info->peer = peers[i];
-//						((BRPeerContext *) info->peer)->manager = manager;
-//						array_rm(peers, i);
-//						array_add(connectedPeers, info->peer);
-//						BRPeerSetCallbacks(info->peer, info, _peerConnected, _peerDisconnected, _peerRelayedPeers,
-//										   _peerRelayedTx, _peerHasTx, _peerRejectedTx, _peerRelayedBlock,
-//										   _peerRelayedPingMsg,
-//										   _peerDataNotfound, _peerSetFeePerKb, _peerRequestedTx,
-//										   _peerNetworkIsReachable,
-//										   _peerThreadCleanup);
-//						BRPeerSetEarliestKeyTime(info->peer, earliestKeyTime);
-//						BRPeerConnect(info->peer);
-//					}
+					if (i != SIZE_MAX) {
+						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams.getRaw()->magicNumber));
+						newPeer->SetPeerInfo(peers[i]);
+						newPeer->setEarliestKeyTime(_earliestKeyTime);
+						peers.erase(peers.begin() + i);
+
+						_connectedPeers.push_back(newPeer);
+						newPeer->Connect();
+					}
 				}
 			}
 
@@ -252,7 +244,7 @@ namespace Elastos {
 				_peer_log("sync failed");
 				syncStopped();
 				lock.unlock();
-				syncStopped(ENETUNREACH);
+				fireSyncStopped(ENETUNREACH);
 			} else {
 				lock.unlock();
 			}
@@ -302,7 +294,7 @@ namespace Elastos {
 
 				if (downloadPeer) { // disconnect the current download peer so a new random one will be selected
 					for (size_t i = _peers.size(); i > 0; i--) {
-						if (_peers[i - 1]->IsEqual(downloadPeer.get()))
+						if (_peers[i - 1] == downloadPeer->GetPeerInfo())
 							_peers.erase(_peers.begin() + i - 1);
 					}
 
@@ -367,7 +359,7 @@ namespace Elastos {
 			return progress;
 		}
 
-		void PeerManager::setFixedPeers(const std::vector<PeerPtr> &peers) {
+		void PeerManager::setFixedPeers(const std::vector<PeerInfo> &peers) {
 			_fiexedPeers = peers;
 		}
 
@@ -446,7 +438,7 @@ namespace Elastos {
 				lock.unlock();
 
 				if (connectFailureCount >= MAX_CONNECT_FAILURES ||
-					(!networkIsReachable())) {
+					(!fireNetworkIsReachable())) {
 					if (!callback.empty()) callback(ENOTCONN); // not connected to bitcoin network
 				} else lock.lock();
 			}
@@ -661,8 +653,8 @@ namespace Elastos {
 
 		void PeerManager::sortPeers() {
 			// comparator for sorting peers by timestamp, most recent first
-			std::sort(_peers.begin(), _peers.end(), [](const PeerPtr &first, const PeerPtr &second) {
-				return first->getTimestamp() > second->getTimestamp();
+			std::sort(_peers.begin(), _peers.end(), [](const PeerInfo &first, const PeerInfo &second) {
+				return first.Timestamp > second.Timestamp;
 			});
 		}
 
@@ -672,51 +664,51 @@ namespace Elastos {
 			struct timespec ts;
 			pthread_t thread;
 			pthread_attr_t attr;
-			UInt128 *addr, *addrList = NULL;
 
-			//fixme [refactor]
-//			size_t peersCount = fiexedPeers == NULL ? 0 : array_count(fiexedPeers);
-//			if (peersCount > 0) {
-//				array_set_count(peers, peersCount);
-//				for (int i = 0; i < peersCount; ++i) {
-//					peers[i] = fiexedPeers[i];
-//					peers[i].timestamp = now;
-//				}
-//			} else if (!UInt128IsZero(&fixedPeer.address)) {
-//				array_set_count(peers, 1);
-//				peers[0] = fixedPeer;
-//				peers[0].services = services;
-//				peers[0].timestamp = now;
-//			} else {
-//				for (size_t i = 0; params->dnsSeeds && params->dnsSeeds[i]; i++) {
-//					for (addr = addrList = _addressLookup(params->dnsSeeds[i]);
-//						 addr && !UInt128IsZero(addr); addr++) {
+			_peers.clear();
+			size_t peersCount = _fiexedPeers.size();
+			if (peersCount > 0) {
+				for (int i = 0; i < peersCount; ++i) {
+					_peers.push_back(_fiexedPeers[i]);
+					_peers[i].Timestamp = now;
+				}
+			} else if (!UInt128IsZero(&fixedPeer.Address)) {
+				_peers.push_back(fixedPeer);
+				_peers[0].Services = services;
+				_peers[0].Timestamp = now;
+			} else {
+				//fixme [refactor]
+//				std::vector<UInt128> addr, addrList;
+//				for (size_t i = 0; _chainParams.getRaw()->dnsSeeds && _chainParams.getRaw()->dnsSeeds[i]; i++) {
+//					for (addr = addrList = addressLookup(_chainParams.getRaw()->dnsSeeds[i]);
+//						 !addr.empty() && !UInt128IsZero(addr); addr++) {
 //						array_add(peers, ((BRPeer) {*addr, params->standardPort, services, now, 0}));
 //					}
 //					if (addrList) free(addrList);
 //				}
-//
-//				ts.tv_sec = 0;
-//				ts.tv_nsec = 1;
-//
-//				do {
-//					pthread_mutex_unlock(&lock);
-//					nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
-//					pthread_mutex_lock(&lock);
-//				} while (dnsThreadCount > 0 && array_count(peers) < PEER_MAX_CONNECTIONS);
-//
-//				qsort(peers, array_count(peers), sizeof(*peers), _peerTimestampCompare);
-//
-//				_peer_log("peer manager found %zu peers\n", array_count(peers));
-//				for (size_t i = 0; i < array_count(peers); i++) {
-//					char host[INET6_ADDRSTRLEN] = {0};
-//					BRPeer *peer = &peers[i];
-//					if ((peer->address.u64[0] == 0 && peer->address.u16[4] == 0 && peer->address.u16[5] == 0xffff))
-//						inet_ntop(AF_INET, &peer->address.u32[3], host, sizeof(host));
-//					else
-//						inet_ntop(AF_INET6, &peer->address, host, sizeof(host));
-//					_peer_log("peers[%zu] = %s\n", i, host);
-//				}
+
+				ts.tv_sec = 0;
+				ts.tv_nsec = 1;
+
+				do {
+					boost::mutex::scoped_lock scopedLock(lock);
+					nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
+				} while (dnsThreadCount > 0 && _peers.size() < PEER_MAX_CONNECTIONS);
+
+				sortPeers();
+
+				Log::getLogger()->info("peer manager found {} peers\n", _peers.size());
+				for (size_t i = 0; i < _peers.size(); i++) {
+					char host[INET6_ADDRSTRLEN] = {0};
+					PeerInfo peer = _peers[i];
+					if ((peer.Address.u64[0] == 0 && peer.Address.u16[4] == 0 &&
+						 peer.Address.u16[5] == 0xffff))
+						inet_ntop(AF_INET, &peer.Address.u32[3], host, sizeof(host));
+					else
+						inet_ntop(AF_INET6, &peer.Address, host, sizeof(host));
+					_peer_log("peers[%zu] = %s\n", i, host);
+				}
+			}
 		}
 
 		void PeerManager::syncStopped() {
@@ -766,185 +758,176 @@ namespace Elastos {
 			}
 		}
 
-		void PeerManager::OnConnected(const PeerPtr &peer) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			BRPeerCallbackInfo *peerInfo;
-//			time_t now = time(NULL);
-//
-//			pthread_mutex_lock(&manager->lock);
-//			if (peer->timestamp > now + 2 * 60 * 60 || peer->timestamp < now - 2 * 60 * 60)
-//				peer->timestamp = now; // sanity check
-//
-//			// TODO: XXX does this work with 0.11 pruned nodes?
-//			if ((peer->services & manager->params->services) != manager->params->services) {
-//				peer_log(peer, "unsupported node type");
-//				BRPeerDisconnect(peer);
-//			} else if ((peer->services & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
-//				peer_log(peer, "peer->services: %llu != SERVICES_NODE_NETWORK", peer->services);
-//				peer_log(peer, "node doesn't carry full blocks");
-//				BRPeerDisconnect(peer);
-//			} else if (BRPeerLastBlock(peer) + 10 < manager->lastBlock->height) {
-//				peer_log(peer, "peer->lastBlock: %d != manager->lastBlock->height: %d", BRPeerLastBlock(peer),
-//						 manager->lastBlock->height);
-//				peer_log(peer, "node isn't synced");
-//				BRPeerDisconnect(peer);
-//			} else if (BRPeerVersion(peer) >= 70011 && (peer->services & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
-//				peer_log(peer, "node doesn't support SPV mode");
-//				BRPeerDisconnect(peer);
-//			} else if (manager->downloadPeer && // check if we should stick with the existing download peer
-//					   (BRPeerLastBlock(manager->downloadPeer) >= BRPeerLastBlock(peer) ||
-//						manager->lastBlock->height >= BRPeerLastBlock(peer))) {
-//				if (manager->lastBlock->height >=
-//					BRPeerLastBlock(peer)) { // only load bloom filter if we're done syncing
-//					manager->connectFailureCount = 0; // also reset connect failure count if we're already synced
-//					manager->loadBloomFilter(manager, peer);
-//					_BRPeerManagerPublishPendingTx(manager, peer);
-//					peerInfo = calloc(1, sizeof(*peerInfo));
-//					assert(peerInfo != NULL);
-//					peerInfo->peer = peer;
-//					peerInfo->manager = manager;
-//					manager->peerMessages->BRPeerSendPingMessage(peer, peerInfo, _loadBloomFilterDone);
-//				}
-//			} else { // select the peer with the lowest ping time to download the chain from if we're behind
-//				// BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if
-//				// two peers agree on lastblock, use one of those two instead
-//				for (size_t i = array_count(manager->connectedPeers); i > 0; i--) {
-//					BRPeer *p = manager->connectedPeers[i - 1];
-//
-//					if (BRPeerConnectStatus(p) != BRPeerStatusConnected) continue;
-//					if ((BRPeerPingTime(p) < BRPeerPingTime(peer) && BRPeerLastBlock(p) >= BRPeerLastBlock(peer)) ||
-//						BRPeerLastBlock(p) > BRPeerLastBlock(peer))
-//						peer = p;
-//				}
-//
-//				if (manager->downloadPeer) {
-//					peer_log(peer, "selecting new download peer with higher reported lastblock");
-//					BRPeerDisconnect(manager->downloadPeer);
-//				}
-//
-//				manager->downloadPeer = peer;
-//				manager->isConnected = 1;
-//				manager->estimatedHeight = BRPeerLastBlock(peer);
-//				manager->loadBloomFilter(manager, peer);
-//				BRPeerSetCurrentBlockHeight(peer, manager->lastBlock->height);
-//				_BRPeerManagerPublishPendingTx(manager, peer);
-//
-//				if (manager->lastBlock->height < BRPeerLastBlock(peer)) { // start blockchain sync
+		void PeerManager::OnConnected(const PeerPtr &peerPtr) {
+			time_t now = time(nullptr);
+
+			boost::mutex::scoped_lock scopedLock(lock);
+			PeerPtr peer = peerPtr;
+			if (peer->getTimestamp() > now + 2 * 60 * 60 || peer->getTimestamp() < now - 2 * 60 * 60)
+				peer->setTimestamp(now); // sanity check
+
+			// TODO: XXX does this work with 0.11 pruned nodes?
+			if ((peer->getServices() & _chainParams.getRaw()->services) != _chainParams.getRaw()->services) {
+				peer->Pwarn("unsupported node type");
+				peer->Disconnect();
+			} else if ((peer->getServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
+				peer->Pwarn("peer->services: {} != SERVICES_NODE_NETWORK", peer->getServices());
+				peer->Pwarn("node doesn't carry full blocks");
+				peer->Disconnect();
+			} else if (peer->getLastBlock() + 10 < lastBlock->getHeight()) {
+				peer->Pwarn("peer->lastBlock: {} !=  lastBlock->height: {}", peer->getLastBlock(),
+							lastBlock->getHeight());
+				peer->Pwarn("node isn't synced");
+				peer->Disconnect();
+			} else if (peer->getVersion() >= 70011 &&
+					   (peer->getServices() & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
+				peer->Pwarn("node doesn't support SPV mode");
+				peer->Disconnect();
+			} else if (downloadPeer && // check if we should stick with the existing download peer
+					   (downloadPeer->getLastBlock() >= peer->getLastBlock() ||
+						lastBlock->getHeight() >= peer->getLastBlock())) {
+				if (lastBlock->getHeight() >= peer->getLastBlock()) { // only load bloom filter if we're done syncing
+					connectFailureCount = 0; // also reset connect failure count if we're already synced
+					loadBloomFilter(peer);
+					publishPendingTx(peer);
+					PingParameter pingParameter;
+					pingParameter.callback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer, _1);
+					pingParameter.callbackInfo.peer = peer;
+					pingParameter.callbackInfo.manager = this;
+					peer->SendMessage(MSG_PING, pingParameter);
+				}
+			} else { // select the peer with the lowest ping time to download the chain from if we're behind
+				// BUG: XXX a malicious peer can report a higher lastblock to make us select them as the download peer, if
+				// two peers agree on lastblock, use one of those two instead
+				for (size_t i = _connectedPeers.size(); i > 0; i--) {
+					const PeerPtr &p = _connectedPeers[i - 1];
+
+					if (p->getConnectStatusValue() != Peer::Connected) continue;
+					if ((p->getPingTime() < peer->getPingTime() && p->getLastBlock() >= peer->getLastBlock()) ||
+						p->getLastBlock() > peer->getLastBlock())
+						peer = p;
+				}
+
+				if (downloadPeer) {
+					peer->Pinfo("selecting new download peer with higher reported lastblock");
+					downloadPeer->Disconnect();
+				}
+
+				downloadPeer = peer;
+				isConnected = 1;
+				estimatedHeight = peer->getLastBlock();
+				loadBloomFilter(peer);
+				peer->SetCurrentBlockHeight(lastBlock->getHeight());
+				publishPendingTx(peer);
+
+				if (lastBlock->getHeight() < peer->getLastBlock()) { // start blockchain sync
+
+					//fixme [refactor]
 //					UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
-//					size_t count = _BRPeerManagerBlockLocators(manager, locators, sizeof(locators) / sizeof(*locators));
+//					size_t count = _BRPeerManagerBlockLocators(manager, locators,
+//															   sizeof(locators) / sizeof(*locators));
 //
-//					BRPeerScheduleDisconnect(peer, PROTOCOL_TIMEOUT); // schedule sync timeout
+//					peer->scheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
 //
 //					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
 //					// we do not reset connect failure count yet incase this request times out
-//					if (manager->lastBlock->timestamp + 7 * 24 * 60 * 60 >= manager->earliestKeyTime) {
-//						manager->peerMessages->BRPeerSendGetblocksMessage(peer, locators, count, UINT256_ZERO);
-//					} else manager->peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
-//				} else { // we're already synced
-//					manager->connectFailureCount = 0; // reset connect failure count
+//					if (lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
+//						peerMessages->BRPeerSendGetblocksMessage(peer, locators, count, UINT256_ZERO);
+//					} else peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
+				} else { // we're already synced
+					connectFailureCount = 0; // reset connect failure count
+					//fixme [refactor]
 //					_BRPeerManagerLoadMempools(manager);
-//				}
-//			}
-//
-//			manager->wallet->WalletUpdateBalance(manager->wallet);
-//
-//			pthread_mutex_unlock(&manager->lock);
+				}
+			}
+
+			_wallet->UpdateBalance();
 		}
 
 		void PeerManager::OnDisconnected(const PeerPtr &peer, int error) {
-			//fixme [refactor]
-//			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//			BRTxPeerList *peerList;
-//			int willSave = 0, willReconnect = 0, txError = 0;
-//			size_t txCount = 0;
-//
-//			//free(info);
-//			pthread_mutex_lock(&manager->lock);
-//
-//			BRPublishedTx pubTx[array_count(manager->publishedTx)];
-//
-//			if (error == EPROTO) { // if it's protocol error, the peer isn't following standard policy
-//				_BRPeerManagerPeerMisbehavin(manager, peer);
-//			} else if (error) { // timeout or some non-protocol related network error
-//				for (size_t i = array_count(manager->peers); i > 0; i--) {
-//					if (BRPeerEq(&manager->peers[i - 1], peer))
-//						array_rm(manager->peers, i - 1);
-//				}
-//
-//				manager->connectFailureCount++;
-//
-//				// if it's a timeout and there's pending tx publish callbacks, the tx publish timed out
-//				// BUG: XXX what if it's a connect timeout and not a publish timeout?
-//				if (error == ETIMEDOUT && (peer != manager->downloadPeer || manager->syncStartHeight == 0 ||
-//										   array_count(manager->connectedPeers) == 1))
-//					txError = ETIMEDOUT;
-//			}
-//
-//			for (size_t i = array_count(manager->txRelays); i > 0; i--) {
-//				peerList = &manager->txRelays[i - 1];
-//
-//				for (size_t j = array_count(peerList->peers); j > 0; j--) {
-//					if (BRPeerEq(&peerList->peers[j - 1], peer))
-//						array_rm(peerList->peers, j - 1);
-//				}
-//			}
-//
-//			if (peer == manager->downloadPeer) { // download peer disconnected
-//				manager->isConnected = 0;
-//				manager->downloadPeer = NULL;
-//				if (manager->connectFailureCount > MAX_CONNECT_FAILURES)
-//					manager->connectFailureCount = MAX_CONNECT_FAILURES;
-//			}
-//
-//			if (!manager->isConnected && manager->connectFailureCount == MAX_CONNECT_FAILURES) {
-//				_BRPeerManagerSyncStopped(manager);
-//
-//				// clear out stored peers so we get a fresh list from DNS on next connect attempt
-//				array_clear(manager->peers);
-//				txError = ENOTCONN; // trigger any pending tx publish callbacks
-//				willSave = 1;
-//				peer_log(peer, "sync failed");
-//			} else if (manager->connectFailureCount < MAX_CONNECT_FAILURES) {
-//				willReconnect = 1;
-//			}
-//
-//			if (txError) {
-//				for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
-//					if (manager->publishedTx[i - 1].callback == NULL) continue;
-//					peer_log(peer, "transaction canceled: %s", strerror(txError));
-//					pubTx[txCount++] = manager->publishedTx[i - 1];
-//					manager->publishedTx[i - 1].callback = NULL;
-//					manager->publishedTx[i - 1].info = NULL;
-//				}
-//			}
-//
-//			for (size_t i = array_count(manager->connectedPeers); i > 0; i--) {
-//				if (manager->connectedPeers[i - 1] != peer)
-//					continue;
-//				array_rm(manager->connectedPeers, i - 1);
-//				break;
-//			}
-//
-//			BRPeerFree(peer);
-//			pthread_mutex_unlock(&manager->lock);
-//
-//			for (size_t i = 0; i < txCount; i++) {
-//				pubTx[i].callback(pubTx[i].info, txError);
-//			}
-//
-//			if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
-//			if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-//			if (willReconnect && array_count(manager->connectedPeers) == 0) {
-//				peer_log(peer, "willReconnect...");
-//				BRPeerManagerConnect(manager);
-//			}
-//			if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
+			int willSave = 0, willReconnect = 0, txError = 0;
+			TransactionPeerList *peerList;
+			std::vector<PublishedTransaction> pubTx;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+
+				if (error == EPROTO) { // if it's protocol error, the peer isn't following standard policy
+					peerMisbehaving(peer);
+				} else if (error) { // timeout or some non-protocol related network error
+					for (size_t i = _peers.size(); i > 0; i--) {
+						if (_peers[i - 1] == peer->GetPeerInfo())
+							_peers.erase(_peers.begin() + i - 1);
+					}
+
+					connectFailureCount++;
+
+					// if it's a timeout and there's pending tx publish callbacks, the tx publish timed out
+					// BUG: XXX what if it's a connect timeout and not a publish timeout?
+					if (error == ETIMEDOUT &&
+						(peer != downloadPeer || syncStartHeight == 0 || _connectedPeers.size() == 1))
+						txError = ETIMEDOUT;
+				}
+
+				for (size_t i = txRelays.size(); i > 0; i--) {
+					peerList = &txRelays[i - 1];
+
+					for (size_t j = peerList->GetPeers().size(); j > 0; j--) {
+						if (peerList->GetPeers()[j - 1]->IsEqual(peer.get()))
+							peerList->RemovePeerAt(j - 1);
+					}
+				}
+
+				if (peer == downloadPeer) { // download peer disconnected
+					isConnected = 0;
+					downloadPeer = NULL;
+					if (connectFailureCount > MAX_CONNECT_FAILURES)
+						connectFailureCount = MAX_CONNECT_FAILURES;
+				}
+
+				if (!isConnected && connectFailureCount == MAX_CONNECT_FAILURES) {
+					syncStopped();
+
+					// clear out stored peers so we get a fresh list from DNS on next connect attempt
+					_peers.clear();
+					txError = ENOTCONN; // trigger any pending tx publish callbacks
+					willSave = 1;
+					peer->Pwarn("sync failed");
+				} else if (connectFailureCount < MAX_CONNECT_FAILURES) {
+					willReconnect = 1;
+				}
+
+				if (txError) {
+					for (size_t i = publishedTx.size(); i > 0; i--) {
+						if (!publishedTx[i - 1].HasCallback()) continue;
+						peer->Perror("transaction canceled: {}", strerror(txError));
+						pubTx.push_back(publishedTx[i - 1]);
+						publishedTx[i - 1].ResetCallback();
+					}
+				}
+
+				for (size_t i = _connectedPeers.size(); i > 0; i--) {
+					if (_connectedPeers[i - 1] != peer)
+						continue;
+					_connectedPeers.erase(_connectedPeers.begin() + i - 1);
+					break;
+				}
+			}
+
+			for (size_t i = 0; i < pubTx.size(); i++) {
+				pubTx[i].FireCallback(txError);
+			}
+
+			if (willSave) fireSavePeers(true, {});
+			if (willSave) fireSyncStopped(error);
+			if (willReconnect && _connectedPeers.empty()) {
+				peer->Pinfo("willReconnect...");
+				connect();
+			}
+			fireTxStatusUpdate();
 		}
 
-		void PeerManager::OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerPtr> &peers, size_t peersCount) {
+		void PeerManager::OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers, size_t peersCount) {
 			//fixme [refactor]
 //			BRPeer *peer = ((BRPeerCallbackInfo *) info)->peer;
 //			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
@@ -1138,7 +1121,7 @@ namespace Elastos {
 				}
 			}
 
-			txStatusUpdate();
+			fireTxStatusUpdate();
 		}
 
 		void PeerManager::OnRelayedBlock(const PeerPtr &peer, const MerkleBlockPtr &block) {
@@ -1373,7 +1356,7 @@ namespace Elastos {
 		}
 
 		void PeerManager::OnRelayedPingMsg(const PeerPtr &peer) {
-			syncIsInactive();
+			fireSyncIsInactive();
 		}
 
 		void PeerManager::OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
@@ -1507,7 +1490,7 @@ namespace Elastos {
 
 		void PeerManager::peerMisbehaving(const PeerPtr &peer) {
 			for (size_t i = _peers.size(); i > 0; i--) {
-				if (_peers[i - 1]->IsEqual(peer.get()))
+				if (_peers[i - 1] == peer->GetPeerInfo())
 					_peers.erase(_peers.begin() + i - 1);
 			}
 
@@ -1535,35 +1518,79 @@ namespace Elastos {
 		}
 
 		void PeerManager::updateFilterPingDone(const PeerPtr &peer, int success) {
-			if (success) {
-				boost::mutex::scoped_lock scopedLock(lock);
-				peer->Pinfo("updating filter with newly created wallet addresses");
-				if (bloomFilter) BRBloomFilterFree(bloomFilter);
-				bloomFilter = nullptr;
+			if (!success) return;
 
-				PingParameter pingParameter;
-				pingParameter.callbackInfo.manager = this;
-				if (lastBlock->getHeight() < estimatedHeight) { // if we're syncing, only update download peer
-					if (downloadPeer) {
-						loadBloomFilter(downloadPeer);
-						pingParameter.callbackInfo.peer = downloadPeer;
-						pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this, downloadPeer,
-															 _1);
-						downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
-					}
-				} else {
-					for (size_t i = _connectedPeers.size(); i > 0; i--) {
-						if (_connectedPeers[i - 1]->getConnectStatusValue() != Peer::Connected) continue;
-						pingParameter.callbackInfo.peer = _connectedPeers[i - 1];
-						pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this,
-															 _connectedPeers[i - 1],
-															 _1);
-						loadBloomFilter(peer);
-						downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
-					}
+			boost::mutex::scoped_lock scopedLock(lock);
+			peer->Pinfo("updating filter with newly created wallet addresses");
+			if (bloomFilter) BRBloomFilterFree(bloomFilter);
+			bloomFilter = nullptr;
+
+			PingParameter pingParameter;
+			pingParameter.callbackInfo.manager = this;
+			if (lastBlock->getHeight() < estimatedHeight) { // if we're syncing, only update download peer
+				if (downloadPeer) {
+					loadBloomFilter(downloadPeer);
+					pingParameter.callbackInfo.peer = downloadPeer;
+					pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this, downloadPeer,
+														 _1);
+					downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
+				}
+			} else {
+				for (size_t i = _connectedPeers.size(); i > 0; i--) {
+					if (_connectedPeers[i - 1]->getConnectStatusValue() != Peer::Connected) continue;
+					pingParameter.callbackInfo.peer = _connectedPeers[i - 1];
+					pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this,
+														 _connectedPeers[i - 1],
+														 _1);
+					loadBloomFilter(peer);
+					downloadPeer->SendMessage(MSG_PING, pingParameter);// wait for pong so filter is loaded
 				}
 			}
+		}
 
+		void PeerManager::loadBloomFilterDone(const PeerPtr &peer, int success) {
+
+			lock.lock();
+			if (success) {
+				//fixme [refactor]
+//				BRPeerSendMempool(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
+//								  _mempoolDone);
+				lock.unlock();
+			} else {
+
+				if (peer == downloadPeer) {
+					peer->Pinfo("sync succeeded");
+					syncStopped();
+					lock.unlock();
+					fireSyncStopped(0);
+				} else lock.unlock();
+			}
+		}
+
+		std::vector<UInt128> PeerManager::addressLookup(const std::string &hostname) {
+			struct addrinfo *servinfo, *p;
+			std::vector<UInt128> addrList;
+			size_t count = 0, i = 0;
+
+			if (getaddrinfo(hostname.c_str(), NULL, NULL, &servinfo) == 0) {
+				for (p = servinfo; p != NULL; p = p->ai_next) count++;
+
+				for (p = servinfo; p != NULL; p = p->ai_next) {
+					addrList.push_back(UInt128());
+					if (p->ai_family == AF_INET) {
+						addrList[i].u16[5] = 0xffff;
+						addrList[i].u32[3] = ((struct sockaddr_in *) p->ai_addr)->sin_addr.s_addr;
+						i++;
+					} else if (p->ai_family == AF_INET6) {
+						addrList[i++] = *(UInt128 *) &((struct sockaddr_in6 *) p->ai_addr)->sin6_addr;
+					}
+				}
+
+				freeaddrinfo(servinfo);
+			}
+
+			addrList.shrink_to_fit();
+			return addrList;
 		}
 
 	}

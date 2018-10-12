@@ -16,6 +16,7 @@
 #include "Wrapper.h"
 #include "CMemBlock.h"
 #include "PeerCallbackInfo.h"
+#include "PeerInfo.h"
 #include "Message/Message.h"
 #include "Transaction/ElementSet.h"
 
@@ -50,7 +51,9 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		class Peer;
+
 		class PeerManager;
+
 		typedef boost::shared_ptr<Peer> PeerPtr;
 
 		class Peer : public boost::enable_shared_from_this<Peer> {
@@ -62,14 +65,6 @@ namespace Elastos {
 				Unknown = -2
 			};
 
-			struct PeerInfo {
-				UInt128 address; // IPv6 address of peer
-				uint16_t port; // port number for peer connection
-				uint64_t services; // bitcoin network services supported by peer
-				uint64_t timestamp; // timestamp reported by peer
-				uint8_t flags; // scratch variable
-			};
-
 			class Listener {
 			public:
 				virtual void OnConnected(const PeerPtr &peer) {}
@@ -77,7 +72,8 @@ namespace Elastos {
 				virtual void OnDisconnected(const PeerPtr &peer, int error) {}
 
 				virtual void
-				OnRelayedPeers(const PeerPtr &peer, const std::vector<boost::shared_ptr<Peer>> &peers, size_t peersCount) {}
+				OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers,
+							   size_t peersCount) {}
 
 				virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx) {}
 
@@ -90,11 +86,13 @@ namespace Elastos {
 				virtual void OnRelayedPingMsg(const PeerPtr &peer) {}
 
 				virtual void
-				OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes) {}
+				OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
+						   const std::vector<UInt256> &blockHashes) {}
 
 				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) {}
 
-				virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) { return nullptr; }
+				virtual const TransactionPtr &
+				OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) { return nullptr; }
 
 				virtual bool OnNetworkIsReachable(const PeerPtr &peer) { return false; }
 
@@ -104,17 +102,9 @@ namespace Elastos {
 			typedef boost::function<void(int)> PeerCallback;
 
 		public:
-			Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp);
-
-			Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services);
-
 			Peer(PeerManager *manager, uint32_t magicNumber);
 
-			Peer(const Peer &peer);
-
 			~Peer();
-
-			Peer &operator=(const Peer &peer);
 
 			void RegisterListner(Listener *listener);
 
@@ -122,7 +112,7 @@ namespace Elastos {
 
 			void SendMessage(const std::string &msgType, const SendMessageParameter &parameter);
 
-			UInt128 getAddress() const;
+			const UInt128 &getAddress() const;
 
 			void setAddress(const UInt128 &addr);
 
@@ -242,9 +232,13 @@ namespace Elastos {
 
 			PeerManager *getPeerManager() const;
 
-			uint8_t	GetFlags() const;
+			uint8_t GetFlags() const;
 
 			void SetFlags(uint8_t flags);
+
+			const PeerInfo &GetPeerInfo() const;
+
+			void SetPeerInfo(const PeerInfo &info);
 
 			std::string FormatError(int errnum);
 
@@ -353,6 +347,7 @@ namespace Elastos {
 			TransactionSet _knownTxHashSet;
 			volatile int _socket;
 
+			PeerCallback _mempoolCallback;
 			std::deque<PeerCallbackInfo> _pongInfoList;
 			std::deque<PeerCallback> _pongCallbackList;
 

@@ -2,16 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-<<<<<<< HEAD
 #include <arpa/inet.h>
-#include <Core/BRPeer.h>
-#include "BRPeer.h"
-#include "BRPeerMessages.h"
-#include "BRPeerManager.h"
-#include "BRArray.h"
-=======
 #include <SDK/Common/Log.h>
->>>>>>> Refactor.
 
 #include "BRArray.h"
 #include "Peer.h"
@@ -25,8 +17,6 @@ namespace Elastos {
 		}
 
 		bool AddressMessage::Accept(const CMBlock &msg) {
-			_peer->Pdebug("Accept address message");
-
 			size_t off = 0;
 			size_t count = UInt64GetLE(&msg[off]);
 			off += sizeof(uint64_t);
@@ -39,7 +29,7 @@ namespace Elastos {
 			} else if (count > 1000) {
 				_peer->Perror("dropping addr message, {} is too many addresses, max is 1000", count);
 			} else if (_peer->SentGetaddr()) { // simple anti-tarpitting tactic, don't accept unsolicited addresses
-				std::vector<PeerPtr> peers;
+				std::vector<PeerInfo> peers;
 				peers.reserve(count);
 
 				time_t now = time(NULL);
@@ -58,29 +48,29 @@ namespace Elastos {
 					off += sizeof(uint16_t);
 					uint64_t id = UInt64GetLE(&msg[off]);
 					off += sizeof(uint64_t);
-					PeerPtr p(new Peer(_peer->getPeerManager(), address, port, timestamp, services));
+					PeerInfo p(address, port, timestamp, services);
 
 					char host[INET6_ADDRSTRLEN] = {0};
 					if (p->isIPv4())
 						inet_ntop(AF_INET, &p->getAddress().u32[3], host, sizeof(host));
 					else
 						inet_ntop(AF_INET6, &p->getAddress().u8[0], host, sizeof(host));
-					_peer->Log("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
+					_peer->Pdebug("peers[{}] = {}, timestamp = {}, port = {}, services = {}",
 							 i, host, p->getTimestamp(), p->getPort(), p->getServices());
 
 					if (!(p->getServices() & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
-					if (!(p->getAddress().u64[0] == 0 && p->getAddress().u16[4] == 0 && p->getAddress().u16[5] == 0xffff))
+					if (!p->isIPv4())
 						continue; // ignore IPv6 for now
 					if (p->isIPv4() &&
 						p->getAddress().u8[12] == 127 && p->getAddress().u8[13] == 0 &&
 						p->getAddress().u8[14] == 0 && p->getAddress().u8[15] == 1) {
-						_peer->Log("drop peers[{}]", i);
+						_peer->Pwarn("drop peers[{}]", i);
 						continue;
 					}
 
 					// if address time is more than 10 min in the future or unknown, set to 5 days old
-					if (p->getTimestamp() > now + 10 * 60 || p->getTimestamp() == 0) p->setTimestamp(uint64_t(now - 5 * 24 * 60 * 60));
-					p->setTimestamp(p->getTimestamp() - 2 * 60 * 60); // subtract two hours
+					if (p.Timestamp > now + 10 * 60 || p.Timestamp == 0) p.Timestamp = uint64_t(now - 5 * 24 * 60 * 60);
+					p.Timestamp = p.Timestamp - 2 * 60 * 60; // subtract two hours
 
 					peers.push_back(p);
 				}

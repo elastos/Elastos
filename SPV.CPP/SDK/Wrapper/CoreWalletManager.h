@@ -73,11 +73,11 @@ namespace Elastos {
 			virtual void syncIsInactive(uint32_t time) {}
 
 		protected:
-			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
+			virtual std::vector<TransactionPtr> loadTransactions();
 
-			virtual SharedWrapperList<IMerkleBlock, BRMerkleBlock *> loadBlocks();
+			virtual std::vector<MerkleBlockPtr> loadBlocks();
 
-			virtual SharedWrapperList<Peer, BRPeer *> loadPeers();
+			virtual std::vector<PeerInfo> loadPeers();
 
 			virtual int getForkId() const;
 

@@ -104,19 +104,19 @@ namespace Elastos {
 
 		}
 
-		SharedWrapperList<Transaction, BRTransaction *> CoreWalletManager::loadTransactions() {
+		std::vector<TransactionPtr> CoreWalletManager::loadTransactions() {
 			//todo complete me
-			return SharedWrapperList<Transaction, BRTransaction *>();
+			return std::vector<TransactionPtr>();
 		}
 
-		SharedWrapperList<IMerkleBlock, BRMerkleBlock *> CoreWalletManager::loadBlocks() {
+		std::vector<MerkleBlockPtr> CoreWalletManager::loadBlocks() {
 			//todo complete me
-			return SharedWrapperList<IMerkleBlock, BRMerkleBlock *>();
+			return std::vector<MerkleBlockPtr>();
 		}
 
-		SharedWrapperList<Peer, BRPeer *> CoreWalletManager::loadPeers() {
+		std::vector<PeerInfo> CoreWalletManager::loadPeers() {
 			//todo complete me
-			return SharedWrapperList<Peer, BRPeer *>();
+			return std::vector<PeerInfo>();
 		}
 
 		int CoreWalletManager::getForkId() const {

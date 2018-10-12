@@ -19,7 +19,6 @@
 #include "SDK/Transaction/ElementSet.h"
 #include "SDK/Transaction/UTXOList.h"
 #include "Address.h"
-#include "SharedWrapperList.h"
 #include "MasterPubKey.h"
 #include "SDK/Transaction/TransactionOutput.h"
 #include "WrapperList.h"
@@ -167,6 +166,8 @@ namespace Elastos {
 
 			void signTransaction(const TransactionPtr &transaction, const std::string &payPassword);
 
+			void UpdateBalance();
+
 		protected:
 			Wallet();
 
@@ -179,8 +180,6 @@ namespace Elastos {
 			uint64_t WalletMaxOutputAmount();
 
 			uint64_t WalletFeeForTx(const TransactionPtr &tx);
-
-			void WalletUpdateBalance();
 
 			bool WalletContainsTx(const TransactionPtr &tx);
 

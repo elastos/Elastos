@@ -9,7 +9,6 @@
 
 #include "Wrapper.h"
 #include "CMemBlock.h"
-#include "SharedWrapperList.h"
 #include "TransactionOutput.h"
 #include "Key.h"
 #include "WrapperList.h"

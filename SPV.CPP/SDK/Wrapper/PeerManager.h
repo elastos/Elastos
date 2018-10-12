@@ -14,7 +14,6 @@
 #include "Peer.h"
 #include "ChainParams.h"
 #include "Wallet.h"
-#include "SharedWrapperList.h"
 #include "WrapperList.h"
 #include "CMemBlock.h"
 #include "PublishedTransaction.h"
@@ -76,7 +75,7 @@ namespace Elastos {
 						uint32_t earliestKeyTime,
 						uint32_t reconnectSeconds,
 						const std::vector<MerkleBlockPtr> &blocks,
-						const std::vector<PeerPtr> &peers,
+						const std::vector<PeerInfo> &peers,
 						const boost::shared_ptr<Listener> &listener,
 						const PluginTypes &plugins);
 
@@ -110,7 +109,7 @@ namespace Elastos {
 
 			void setFixedPeer(UInt128 address, uint16_t port);
 
-			void setFixedPeers(const std::vector<PeerPtr> &peers);
+			void setFixedPeers(const std::vector<PeerInfo> &peers);
 
 			bool useFixedPeer(const std::string &node, int port);
 
@@ -141,7 +140,7 @@ namespace Elastos {
 
 			virtual void OnDisconnected(const PeerPtr &peer, int error);
 
-			virtual void OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerPtr> &peers, size_t peersCount);
+			virtual void OnRelayedPeers(const PeerPtr &peer, const std::vector<PeerInfo> &peers, size_t peersCount);
 
 			virtual void OnRelayedTx(const PeerPtr &peer, const TransactionPtr &tx);
 
@@ -164,25 +163,25 @@ namespace Elastos {
 			virtual void OnThreadCleanup(const PeerPtr &peer);
 
 		private:
-			void syncStarted();
+			void fireSyncStarted();
 
-			void syncStopped(int error);
+			void fireSyncStopped(int error);
 
-			void txStatusUpdate();
+			void fireTxStatusUpdate();
 
-			void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
+			void fireSaveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			void savePeers(bool replace, const std::vector<PeerPtr> &peers);
+			void fireSavePeers(bool replace, const std::vector<PeerPtr> &peers);
 
-			int networkIsReachable();
+			int fireNetworkIsReachable();
 
-			void txPublished(int error);
+			void fireTxPublished(int error);
 
-			void threadCleanup();
+			void fireThreadCleanup();
 
-			void blockHeightIncreased(uint32_t height);
+			void fireBlockHeightIncreased(uint32_t height);
 
-			void syncIsInactive();
+			void fireSyncIsInactive();
 
 			int verifyDifficultyWrapper(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
 
@@ -215,12 +214,20 @@ namespace Elastos {
 
 			void updateFilterPingDone(const PeerPtr &peer, int success);
 
+			void loadBloomFilterDone(const PeerPtr &peer, int success);
+
+			std::vector<UInt128> addressLookup(const std::string &hostname);
+
 		private:
 			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;
-			std::vector<PeerPtr> _peers;
+
+			std::vector<PeerInfo> _peers;
+			std::vector<PeerInfo> _fiexedPeers;
+			PeerInfo fixedPeer;
+
 			std::vector<PeerPtr> _connectedPeers;
-			std::vector<PeerPtr> _fiexedPeers;
-			PeerPtr downloadPeer, fixedPeer;
+			PeerPtr downloadPeer;
+
 			std::string downloadPeerName;
 			uint32_t _earliestKeyTime, _reconnectSeconds, syncStartHeight, filterUpdateHeight, estimatedHeight;
 			BRBloomFilter *bloomFilter;

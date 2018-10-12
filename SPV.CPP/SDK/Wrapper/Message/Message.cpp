@@ -29,7 +29,7 @@ namespace Elastos {
 				_peer->_listener->OnDisconnected(_peer->shared_from_this(), error);
 		}
 
-		void Message::FireRelayedPeers(const std::vector<MessagePeerPtr> &peers, size_t peersCount) {
+		void Message::FireRelayedPeers(const std::vector<PeerInfo> &peers, size_t peersCount) {
 			if (_peer->_listener != nullptr)
 				_peer->_listener->OnRelayedPeers(_peer->shared_from_this(), peers, peersCount);
 		}

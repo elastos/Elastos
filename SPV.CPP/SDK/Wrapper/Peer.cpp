@@ -9,26 +9,13 @@
 #include <boost/thread.hpp>
 #include <CMemBlock.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Wrapper/Message/PingMessage.h>
 
 #include "Peer.h"
+#include "PeerManager.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		const uint32_t DEFAULT_MAGICNUMBER = uint32_t(0);
-
-		Peer::Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp) :
-				_status(Unknown),
-				_manager(manager),
-				_magicNumber(DEFAULT_MAGICNUMBER) {
-			_info.address = addr;
-			_info.port = port;
-			_info.timestamp = timestamp;
-			_info.services = SERVICES_NODE_NETWORK;
-			_info.flags = 0;
-
-			initDefaultMessages();
-		}
 
 		Peer::Peer(PeerManager *manager, uint32_t magicNumber) :
 				_status(Unknown),
@@ -40,69 +27,42 @@ namespace Elastos {
 				_socket(-1) {
 
 			initDefaultMessages();
-		}
-
-		Peer::Peer(PeerManager *manager, const UInt128 &addr, uint16_t port, uint64_t timestamp, uint64_t services) :
-				_status(Unknown),
-				_manager(manager),
-				_magicNumber(DEFAULT_MAGICNUMBER) {
-
-			_info.address = addr;
-			_info.port = port;
-			_info.timestamp = timestamp;
-			_info.services = services;
-			_info.flags = 0;
-
-			initDefaultMessages();
-		}
-
-		Peer::Peer(const Peer &peer) {
-			operator=(peer);
+			RegisterListner(_manager);
 		}
 
 		Peer::~Peer() {
 		}
 
-		Peer &Peer::operator=(const Peer &peer) {
-			_info.timestamp = peer._info.timestamp;
-			_info.address = peer._info.address;
-			_info.port = peer._info.port;
-			_info.flags = peer._info.flags;
-			_info.services = peer._info.services;
-
-			return *this;
-		}
-
-		UInt128 Peer::getAddress() const {
-			return _info.address;
+		const UInt128 &Peer::getAddress() const {
+			return _info.Address;
 		}
 
 		void Peer::setAddress(const UInt128 &addr) {
-			_info.address = addr;
+			_info.Address = addr;
 		}
 
 		uint16_t Peer::getPort() const {
-			return _info.port;
+			return _info.Port;
 		}
 
 		void Peer::setPort(uint16_t port) {
-			_info.port = port;
+			_info.Port = port;
 		}
 
 		uint64_t Peer::getTimestamp() const {
-			return _info.timestamp;
+			return _info.Timestamp;
 		}
 
 		void Peer::setTimestamp(uint64_t timestamp) {
-			_info.timestamp = timestamp;
+			_info.Timestamp = timestamp;
 		}
 
 		uint64_t Peer::getServices() const {
-			return _info.services;
+			return _info.Services;
 		}
 
 		void Peer::setServices(uint64_t services) {
-			_info.services = services;
+			_info.Services = services;
 		}
 
 		void Peer::setEarliestKeyTime(uint32_t earliestKeyTime) {
@@ -231,8 +191,8 @@ namespace Elastos {
 			if (_host.empty()) {
 				char temp[INET6_ADDRSTRLEN];
 				if (isIPv4()) {
-					inet_ntop(AF_INET, &_info.address.u32[3], temp, sizeof(temp));
-				} else inet_ntop(AF_INET6, &_info.address, temp, sizeof(temp));
+					inet_ntop(AF_INET, &_info.Address.u32[3], temp, sizeof(temp));
+				} else inet_ntop(AF_INET6, &_info.Address, temp, sizeof(temp));
 
 				_host = temp;
 			}
@@ -261,9 +221,7 @@ namespace Elastos {
 		}
 
 		bool Peer::IsEqual(const Peer *otherPeer) const {
-			return (this == otherPeer ||
-					(UInt128Eq(&_info.address, &otherPeer->_info.address) &&
-					 _info.port == otherPeer->_info.port));
+			return (this == otherPeer || _info == otherPeer->GetPeerInfo());
 		}
 
 		bool Peer::networkIsReachable() const {
@@ -272,7 +230,7 @@ namespace Elastos {
 		}
 
 		bool Peer::isIPv4() const {
-			return (_info.address.u64[0] == 0 && _info.address.u16[4] == 0 && _info.address.u16[5] == 0xffff);
+			return (_info.Address.u64[0] == 0 && _info.Address.u16[4] == 0 && _info.Address.u16[5] == 0xffff);
 		}
 
 		void Peer::peerThreadRoutine() {
@@ -314,10 +272,12 @@ namespace Elastos {
 
 						if (!error && time >= _mempoolTime) {
 							Pinfo("done waiting for mempool response");
-							//fixme [refactor]
-//							manager->peerMessages->BRPeerSendPingMessage(peer, mempoolInfo,
-//																			   mempoolCallback);
-//							mempoolCallback = NULL;
+							PingParameter pingParameter;
+							pingParameter.callbackInfo.manager = _manager;
+							pingParameter.callbackInfo.peer = shared_from_this();
+							pingParameter.callback = _mempoolCallback;
+							SendMessage(MSG_PING, pingParameter);
+							_mempoolCallback = PeerCallback();
 							_mempoolTime = DBL_MAX;
 						}
 
@@ -330,7 +290,6 @@ namespace Elastos {
 					}
 
 					if (error) {
-						//fixme [refactor]
 						Perror("read socket error: {}", FormatError(error));
 					} else if (header[15] != 0) { // verify header type field is NULL terminated
 						Perror("malformed message header: type not NULL terminated");
@@ -395,22 +354,16 @@ namespace Elastos {
 			if (socket >= 0) close(socket);
 			Pinfo("disconnected");
 
-			//fixme [refactor]
-//			while (array_count(pongCallback) > 0) {
-//				void (*pongCallback)(void *, int) = pongCallback[0];
-//				void *pongInfo = pongInfo[0];
-//
-//				array_rm(pongCallback, 0);
-//				array_rm(pongInfo, 0);
-//				if (pongCallback) pongCallback(pongInfo, 0);
-//			}
+			while (!_pongCallbackList.empty()) {
+				Peer::PeerCallback pongCallback = popPongCallback();
+				popPongCallbackInfo();
 
-			//fixme [refactor]
-//			if (mempoolCallback) mempoolCallback(mempoolInfo, 0);
-//			mempoolCallback = NULL;
+				if (pongCallback) pongCallback(0);
+			}
+
+			if (!_mempoolCallback.empty()) _mempoolCallback(0);
+			_mempoolCallback = PeerCallback();
 			if (_listener) _listener->OnDisconnected(shared_from_this(), error);
-			//fixme [refactor]
-//		pthread_cleanup_pop(1)
 		}
 
 		void Peer::RegisterListner(Peer::Listener *listener) {
@@ -577,13 +530,13 @@ namespace Elastos {
 
 				if (domain == PF_INET6) {
 					((struct sockaddr_in6 *) &addr)->sin6_family = AF_INET6;
-					((struct sockaddr_in6 *) &addr)->sin6_addr = *(struct in6_addr *) &_info.address;
-					((struct sockaddr_in6 *) &addr)->sin6_port = htons(_info.port);
+					((struct sockaddr_in6 *) &addr)->sin6_addr = *(struct in6_addr *) &_info.Address;
+					((struct sockaddr_in6 *) &addr)->sin6_port = htons(_info.Port);
 					addrLen = sizeof(struct sockaddr_in6);
 				} else {
 					((struct sockaddr_in *) &addr)->sin_family = AF_INET;
-					((struct sockaddr_in *) &addr)->sin_addr = *(struct in_addr *) &_info.address.u32[3];
-					((struct sockaddr_in *) &addr)->sin_port = htons(_info.port);
+					((struct sockaddr_in *) &addr)->sin_addr = *(struct in_addr *) &_info.Address.u32[3];
+					((struct sockaddr_in *) &addr)->sin_port = htons(_info.Port);
 					addrLen = sizeof(struct sockaddr_in);
 				}
 
@@ -669,11 +622,19 @@ namespace Elastos {
 		}
 
 		uint8_t Peer::GetFlags() const {
-			return _info.flags;
+			return _info.Flags;
 		}
 
 		void Peer::SetFlags(uint8_t flags) {
-			_info.flags = flags;
+			_info.Flags = flags;
+		}
+
+		const PeerInfo &Peer::GetPeerInfo() const {
+			return _info;
+		}
+
+		void Peer::SetPeerInfo(const PeerInfo &info) {
+			_info = info;
 		}
 
 	}

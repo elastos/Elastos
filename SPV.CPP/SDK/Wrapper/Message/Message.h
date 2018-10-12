@@ -8,6 +8,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 
+#include "PeerInfo.h"
 #include "Transaction/Transaction.h"
 #include "Plugin/Interface/IMerkleBlock.h"
 
@@ -41,7 +42,7 @@ namespace Elastos {
 
 			void FireDisconnected(int error);
 
-			void FireRelayedPeers(const std::vector<MessagePeerPtr> &peers, size_t peersCount);
+			void FireRelayedPeers(const std::vector<PeerInfo> &peers, size_t peersCount);
 
 			void FireRelayedTx(const TransactionPtr &tx);
 
