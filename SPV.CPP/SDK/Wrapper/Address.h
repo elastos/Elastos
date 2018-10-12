@@ -34,6 +34,8 @@ namespace Elastos {
 
 			std::string stringify() const;
 
+			const char *GetChar() const;
+
 			bool operator< (const Address &address) const;
 
 			bool IsEqual(const Address &address) const;

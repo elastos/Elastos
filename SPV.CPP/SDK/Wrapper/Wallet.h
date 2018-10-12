@@ -168,14 +168,24 @@ namespace Elastos {
 
 			void UpdateBalance();
 
+			std::vector<UTXO> getUTXOSafe();
+
+			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
+
+			const std::vector<std::string> &getListeningAddrs() const;
+
+			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
+
 		protected:
+
 			Wallet();
 
 			bool AddressFilter(const std::string &fromAddress, const std::string &filterAddress);
 
 			TransactionPtr CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
 											  const std::string &fromAddress,
-											  const boost::function<bool (const std::string &, const std::string &)> &filter);
+											  const boost::function<bool(const std::string &,
+																		 const std::string &)> &filter);
 
 			uint64_t WalletMaxOutputAmount();
 
@@ -194,8 +204,6 @@ namespace Elastos {
 			uint64_t BalanceAfterTx(const TransactionPtr &tx);
 
 			void sortTransations();
-
-			std::vector<UTXO> getUTXOSafe();
 
 			uint64_t AmountSentByTx(const TransactionPtr &tx);
 

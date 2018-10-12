@@ -21,6 +21,7 @@
 #include "Plugin/PluginTypes.h"
 #include "Plugin/Interface/IMerkleBlock.h"
 #include "Plugin/Block/MerkleBlock.h"
+#include "BloomFilter.h"
 
 #define PEER_MAX_CONNECTIONS 3
 
@@ -224,6 +225,8 @@ namespace Elastos {
 
 			std::vector<UInt256> getBlockLocators(size_t locatorsCount);
 
+			void loadMempools();
+
 		private:
 			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;
 
@@ -236,7 +239,7 @@ namespace Elastos {
 
 			mutable std::string downloadPeerName;
 			uint32_t _earliestKeyTime, _reconnectSeconds, syncStartHeight, filterUpdateHeight, estimatedHeight;
-			BRBloomFilter *bloomFilter;
+			BloomFilterPtr bloomFilter;
 			double fpRate, averageTxPerBlock;
 			BlockSet _blocks;
 			std::set<MerkleBlockPtr> _orphans;

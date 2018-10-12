@@ -5,29 +5,21 @@
 #ifndef __ELASTOS_SDK_BLOOMFILTER_H__
 #define __ELASTOS_SDK_BLOOMFILTER_H__
 
-#include <cmake-build-debug/ThirdParty/boost/install/include/boost/exception/detail/shared_ptr.hpp>
-#include "BRBloomFilter.h"
+#include <boost/shared_ptr.hpp>
 
+#include "CMemBlock.h"
 #include "Wrapper.h"
 #include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		//fixme [refactor] remove BRBloomFilter from BloomFilter class
 		class BloomFilter :
-			Wrapper<BRBloomFilter>,
-			ELAMessageSerializable {
+				ELAMessageSerializable {
 		public:
 			BloomFilter(double falsePositiveRate, size_t elemCount, uint32_t tweak, uint8_t flags);
 
-			BloomFilter(BRBloomFilter *filter);
-
 			~BloomFilter();
-
-			virtual std::string toString() const;
-
-			virtual BRBloomFilter *getRaw() const;
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -37,8 +29,18 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+			void insertData(const CMBlock &data);
+
+			bool ContainsData(const CMBlock &data);
+
+			uint32_t calculateHash(const CMBlock &data, uint32_t hashNum);
+
 		private:
-			BRBloomFilter *_bloomFilter;
+			CMBlock _filter;
+			uint32_t _hashFuncs;
+			size_t _elemCount;
+			uint32_t _tweak;
+			uint8_t _flags;
 		};
 
 		typedef boost::shared_ptr<BloomFilter> BloomFilterPtr;

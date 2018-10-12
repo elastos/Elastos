@@ -2,6 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <stddef.h>
+
 #include "PeerInfo.h"
 
 namespace Elastos {
@@ -49,11 +51,18 @@ namespace Elastos {
 
 		bool PeerInfo::operator==(const PeerInfo &info) const {
 			return (UInt128Eq(&Address, &info.Address) &&
-					 Port == info.Port);
+					Port == info.Port);
 		}
 
 		bool PeerInfo::operator!=(const PeerInfo &info) const {
 			return !operator==(info);
+		}
+
+		size_t PeerInfo::GetHash() const {
+			uint32_t address = Address.u32[3], port = Port;
+
+			// (((FNV_OFFSET xor address)*FNV_PRIME) xor port)*FNV_PRIME
+			return (size_t) ((((0x811C9dc5 ^ address) * 0x01000193) ^ port) * 0x01000193);
 		}
 	}
 }

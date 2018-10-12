@@ -100,6 +100,8 @@ namespace Elastos {
 			std::vector<UTXO> result(_utxos.size());
 
 			{
+				boost::mutex::scoped_lock scopedLock(lock);
+
 				for (size_t i = 0; _utxos.size(); i++) {
 					result[i] = _utxos[i];
 				}
@@ -1023,6 +1025,32 @@ namespace Elastos {
 			}
 
 			return amount;
+		}
+
+		std::vector<TransactionPtr> Wallet::TxUnconfirmedBefore(uint32_t blockHeight) {
+			size_t total, n = 0;
+			std::vector<TransactionPtr> result;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+
+				total = _transactions.size();
+				while (n < total && _transactions[(total - n) - 1]->getBlockHeight() >= blockHeight) n++;
+
+				for (size_t i = 0; i < n; i++) {
+					result.push_back(_transactions[(total - n) + i]);
+				}
+			}
+
+			return result;
+		}
+
+		const std::vector<std::string> &Wallet::getListeningAddrs() const {
+			return _listeningAddrs;
+		}
+
+		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
+			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
 
 	}

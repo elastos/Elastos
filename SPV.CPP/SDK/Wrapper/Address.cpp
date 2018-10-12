@@ -265,5 +265,9 @@ namespace Elastos {
 		bool Address::operator==(const std::string &address) const {
 			return IsEqual(address);
 		}
+
+		const char *Address::GetChar() const {
+			return _s;
+		}
 	}
 }

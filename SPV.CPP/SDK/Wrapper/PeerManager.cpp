@@ -9,6 +9,8 @@
 #include <Core/BRPeer.h>
 #include <SDK/Wrapper/Message/PingMessage.h>
 #include <netdb.h>
+#include <SDK/Wrapper/Message/GetBlocksMessage.h>
+#include <SDK/Wrapper/Message/BloomFilterMessage.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -19,6 +21,7 @@
 #include "Plugin/Registry.h"
 #include "Plugin/Block/MerkleBlock.h"
 #include "PeerCallbackInfo.h"
+#include "BloomFilter.h"
 
 #define PROTOCOL_TIMEOUT      30.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
@@ -566,93 +569,78 @@ namespace Elastos {
 		}
 
 		void PeerManager::loadBloomFilter(const PeerPtr &peer) {
-			//fixme [refactor]
-//			// every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used
-//			// for one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a
-//			// wallet transaction is encountered during the chain sync
-//			_wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
-//			_wallet->WalletUnusedAddrs(wallet, NULL, SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
-//
-//			BRSetApply(orphans, manager, peerMessages->ApplyFreeBlock);
-//			BRSetClear(orphans); // clear out orphans that may have been received on an old filter
-//			lastOrphan = NULL;
-//			filterUpdateHeight = lastBlock->height;
-//			fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
-//
-//			size_t addrsCount = wallet->WalletAllAddrs(wallet, NULL, 0);
-//			BRAddress *addrs = (BRAddress *) malloc(addrsCount * sizeof(*addrs));
-//			size_t utxosCount = BRWalletUTXOs(wallet, NULL, 0);
-//			BRUTXO *utxos = (BRUTXO *) malloc(utxosCount * sizeof(*utxos));
-//			uint32_t blockHeight = (lastBlock->height > 100) ? lastBlock->height - 100 : 0;
-//			size_t txCount = BRWalletTxUnconfirmedBefore(wallet, NULL, 0, blockHeight);
-//			BRTransaction **transactions = (BRTransaction **) malloc(txCount * sizeof(*transactions));
-//			BRBloomFilter *filter;
-//
-//			assert(addrs != NULL);
-//			assert(utxos != NULL);
-//			assert(transactions != NULL);
-//			addrsCount = wallet->WalletAllAddrs(wallet, addrs, addrsCount);
-//			utxosCount = BRWalletUTXOs(wallet, utxos, utxosCount);
-//			txCount = BRWalletTxUnconfirmedBefore(wallet, transactions, txCount, blockHeight);
-//			filter = BRBloomFilterNew(fpRate, addrsCount + utxosCount + txCount + 100,
-//									  (uint32_t) BRPeerHash(peer),
-//									  BLOOM_UPDATE_ALL); // BUG: XXX txCount not the same as number of spent wallet outputs
-//
-//			for (size_t i = 0; i < addrsCount; i++) { // add addresses to watch for tx receiveing money to the wallet
-//				UInt168 hash = UINT168_ZERO;
-//
-//				BRAddressHash168(&hash, addrs[i].s);
-//
-//				if (!UInt168IsZero(&hash) && !BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
-//					BRBloomFilterInsertData(filter, hash.u8, sizeof(hash));
-//				}
-//			}
-//
-//			free(addrs);
-//
-//			ELAWallet *elaWallet = (ELAWallet *) wallet;
-//			for (size_t i = 0; i < elaWallet->ListeningAddrs.size(); ++i) {
-//				UInt168 hash = UINT168_ZERO;
-//
-//				BRAddressHash168(&hash, elaWallet->ListeningAddrs[i].c_str());
-//
-//				if (!UInt168IsZero(&hash) && !BRBloomFilterContainsData(filter, hash.u8, sizeof(hash))) {
-//					BRBloomFilterInsertData(filter, hash.u8, sizeof(hash));
-//				}
-//			}
-//
-//			for (size_t i = 0; i < utxosCount; i++) { // add UTXOs to watch for tx sending money from the wallet
-//				uint8_t o[sizeof(UInt256) + sizeof(uint32_t)];
-//
-//				UInt256Set(o, utxos[i].hash);
-//				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
-//				if (!BRBloomFilterContainsData(filter, o, sizeof(o))) BRBloomFilterInsertData(filter, o, sizeof(o));
-//			}
-//
-//			free(utxos);
-//
-//			for (size_t i = 0; i < txCount; i++) { // also add TXOs spent within the last 100 blocks
-//				for (size_t j = 0; j < transactions[i]->inCount; j++) {
-//					BRTxInput *input = &transactions[i]->inputs[j];
-//					BRTransaction *tx = BRWalletTransactionForHash(wallet, input->txHash);
-//					uint8_t o[sizeof(UInt256) + sizeof(uint32_t)];
-//
-//					if (tx && input->index < tx->outCount &&
-//						BRWalletContainsAddress(wallet, tx->outputs[input->index].address)) {
-//						UInt256Set(o, input->txHash);
-//						UInt32SetLE(&o[sizeof(UInt256)], input->index);
-//						if (!BRBloomFilterContainsData(filter, o, sizeof(o)))
-//							BRBloomFilterInsertData(filter, o, sizeof(o));
-//					}
-//				}
-//			}
-//
-//			free(transactions);
-//			if (bloomFilter) BRBloomFilterFree(bloomFilter);
-//			bloomFilter = filter;
-//			// TODO: XXX if already synced, recursively add inputs of unconfirmed receives
-//
-//			peerMessages->BRPeerSendFilterloadMessage(peer, filter);
+			// every time a new wallet address is added, the bloom filter has to be rebuilt, and each address is only used
+			// for one transaction, so here we generate some spare addresses to avoid rebuilding the filter each time a
+			// wallet transaction is encountered during the chain sync
+			_wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL + 100, 0);
+			_wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL + 100, 1);
+
+			_orphans.clear(); // clear out orphans that may have been received on an old filter
+			lastOrphan = nullptr;
+			filterUpdateHeight = lastBlock->getHeight();
+			fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
+
+			std::vector<std::string> addrs = _wallet->getAllAddresses();
+			std::vector<UTXO> utxos = _wallet->getUTXOSafe();
+			uint32_t blockHeight = (lastBlock->getHeight() > 100) ? lastBlock->getHeight() - 100 : 0;
+
+			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
+			BloomFilterPtr filter = BloomFilterPtr(
+					new BloomFilter(fpRate, addrs.size() + utxos.size() + transactions.size() + 100,
+									(uint32_t) peer->GetPeerInfo().GetHash(),
+									BLOOM_UPDATE_ALL)); // BUG: XXX txCount not the same as number of spent wallet outputs
+
+			for (size_t i = 0; i < addrs.size(); i++) { // add addresses to watch for tx receiveing money to the wallet
+				UInt168 hash = UINT168_ZERO;
+				BRAddressHash168(&hash, addrs[i].c_str());
+				CMBlock hashData(sizeof(hash));
+				memcpy(hashData, hash.u8, sizeof(hash));
+
+				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
+					filter->insertData(hashData);
+				}
+			}
+
+			for (size_t i = 0; i < _wallet->getListeningAddrs().size(); ++i) {
+				UInt168 hash = UINT168_ZERO;
+				BRAddressHash168(&hash, _wallet->getListeningAddrs()[i].c_str());
+				CMBlock hashData(sizeof(hash));
+				memcpy(hashData, hash.u8, sizeof(hash));
+
+				if (!UInt168IsZero(&hash) && !filter->ContainsData(hashData)) {
+					filter->insertData(hashData);
+				}
+			}
+
+			for (size_t i = 0; i < utxos.size(); i++) { // add UTXOs to watch for tx sending money from the wallet
+				CMBlock o(sizeof(UInt256) + sizeof(uint32_t));
+
+				UInt256Set(o, utxos[i].hash);
+				UInt32SetLE(&o[sizeof(UInt256)], utxos[i].n);
+				if (!filter->ContainsData(o)) filter->insertData(o);
+			}
+
+			for (size_t i = 0; i < transactions.size(); i++) { // also add TXOs spent within the last 100 blocks
+				for (size_t j = 0; j < transactions[i]->getInputs().size(); j++) {
+					const TransactionInput &input = transactions[i]->getInputs()[j];
+					const TransactionPtr &tx = _wallet->transactionForHash(input.getTransctionHash());
+					CMBlock o(sizeof(UInt256) + sizeof(uint32_t));
+
+					if (tx && input.getIndex() < tx->getOutputs().size() &&
+						_wallet->containsAddress(tx->getOutputs()[input.getIndex()].getAddress())) {
+						UInt256Set(o, input.getTransctionHash());
+						UInt32SetLE(&o[sizeof(UInt256)], input.getIndex());
+						if (!filter->ContainsData(o))
+							filter->insertData(o);
+					}
+				}
+			}
+
+			bloomFilter = filter;
+			// TODO: XXX if already synced, recursively add inputs of unconfirmed receives
+			BloomFilterParameter bloomFilterParameter;
+			bloomFilterParameter.Filter = filter;
+			peer->SendMessage(MSG_FILTERLOAD, bloomFilterParameter);
 		}
 
 		void PeerManager::sortPeers() {
@@ -826,22 +814,17 @@ namespace Elastos {
 
 				if (lastBlock->getHeight() < peer->getLastBlock()) { // start blockchain sync
 
-					//fixme [refactor]
-//					UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
-//					size_t count = _BRPeerManagerBlockLocators(manager, locators,
-//															   sizeof(locators) / sizeof(*locators));
-//
-//					peer->scheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
-//
-//					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
-//					// we do not reset connect failure count yet incase this request times out
-//					if (lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
-//						peerMessages->BRPeerSendGetblocksMessage(peer, locators, count, UINT256_ZERO);
-//					} else peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
+					peer->scheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
+
+					// request just block headers up to a week before earliestKeyTime, and then merkleblocks after that
+					// we do not reset connect failure count yet incase this request times out
+					if (lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
+						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(getBlockLocators(0), UINT256_ZERO));
+					} //fixme [refactor]
+					// else peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
 				} else { // we're already synced
 					connectFailureCount = 0; // reset connect failure count
-					//fixme [refactor]
-//					_BRPeerManagerLoadMempools(manager);
+					loadMempools();
 				}
 			}
 
@@ -1003,27 +986,38 @@ namespace Elastos {
 
 					removePeerFromList(peer, tx->getHash(), txRequests);
 
-					//fixme [refactor]
-//					if (bloomFilter != nullptr) { // check if bloom filter is already being updated
-//						BRAddress addrs[SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL];
-//						UInt168 hash;
-//
-//						// the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
-//						// unused addresses are still matched by the bloom filter
-//						_wallet->nusedAddrs(manager->wallet, addrs, SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
-//						_wallet->WalletUnusedAddrs(manager->wallet, addrs + SEQUENCE_GAP_LIMIT_EXTERNAL,
-//												   SEQUENCE_GAP_LIMIT_INTERNAL, 1);
-//
-//						for (size_t i = 0; i < SEQUENCE_GAP_LIMIT_EXTERNAL + SEQUENCE_GAP_LIMIT_INTERNAL; i++) {
-//							if (!BRAddressHash168(&hash, addrs[i].s) ||
-//								BRBloomFilterContainsData(bloomFilter, hash.u8, sizeof(hash)))
-//								continue;
-//							if (bloomFilter) BRBloomFilterFree(bloomFilter);
-//							bloomFilter = nullptr; // reset bloom filter so it's recreated with new wallet addresses
-//							updateBloomFilter();
-//							break;
-//						}
-//					}
+					if (bloomFilter != nullptr) { // check if bloom filter is already being updated
+
+						// the transaction likely consumed one or more wallet addresses, so check that at least the next <gap limit>
+						// unused addresses are still matched by the bloom filter
+						std::vector<Address> externalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_EXTERNAL, 0);
+						std::vector<Address> internalAddrs = _wallet->UnusedAddresses(SEQUENCE_GAP_LIMIT_INTERNAL, 1);
+
+						UInt168 hash;
+						CMBlock hashData(sizeof(UInt168));
+						for (std::vector<Address>::iterator externalIt = externalAddrs.begin(), internalIt = internalAddrs.begin();
+							 externalIt != externalAddrs.end() || internalIt != internalAddrs.end();) {
+							if (BRAddressHash168(&hash, (*externalIt).GetChar())) {
+								memcpy(hashData, hash.u8, sizeof(UInt168));
+								if (!bloomFilter->ContainsData(hashData)) {
+									bloomFilter.reset();
+									updateBloomFilter();
+									break;
+								}
+							}
+
+							if (BRAddressHash168(&hash, (*internalIt).GetChar())) {
+								memcpy(hashData, hash.u8, sizeof(UInt168));
+								if (!bloomFilter->ContainsData(hashData)) {
+									bloomFilter.reset();
+									updateBloomFilter();
+									break;
+								}
+							}
+							if (externalIt != externalAddrs.end()) externalIt++;
+							if (internalIt != internalAddrs.end()) internalIt++;
+						}
+					}
 				}
 
 				// set timestamp when tx is verified
@@ -1180,17 +1174,15 @@ namespace Elastos {
 								Utils::UInt256ToString(lastBlock->getHash()),
 								lastBlock->getHeight());
 
-					if (block->getHeight() + 7 * 24 * 60 * 60 < time(nullptr)) { // ignore orphans older than one week ago
+					if (block->getHeight() + 7 * 24 * 60 * 60 <
+						time(nullptr)) { // ignore orphans older than one week ago
 					} else {
 						// call getblocks, unless we already did with the previous block, or we're still syncing
 						if (lastBlock->getHeight() >= peer->getLastBlock() &&
 							(!lastOrphan || !lastOrphan->isEqual(block.get()))) {
-							std::vector<UInt256> locators = getBlockLocators(0);
-
 							peer->Pinfo("calling getblocks");
-							//fixme [refactor]
-//							BRPeerSendGetblocksMessage(peer, locators, locatorsCount,
-//																	 UINT256_ZERO);
+							GetBlocksParameter getBlocksParameter(getBlockLocators(0), UINT256_ZERO);
+							peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
 						}
 
 						_orphans.insert(block); // BUG: limit total orphans to avoid memory exhaustion attack
@@ -1225,8 +1217,7 @@ namespace Elastos {
 
 					if (block->getHeight() == estimatedHeight) { // chain download is complete
 						saveCount = (block->getHeight() % BLOCK_DIFFICULTY_INTERVAL) + BLOCK_DIFFICULTY_INTERVAL + 1;
-						//fixme [refactor]
-//						_BRPeerManagerLoadMempools(manager);
+						loadMempools();
 					}
 				} else if (_blocks.Contains(block)) { // we already have the block (or at least the header)
 					if ((block->getHeight() % 500) == 0 || txHashes.size() > 0 ||
@@ -1305,8 +1296,7 @@ namespace Elastos {
 						if (block->getHeight() == estimatedHeight) { // chain download is complete
 							saveCount =
 									(block->getHeight() % BLOCK_DIFFICULTY_INTERVAL) + BLOCK_DIFFICULTY_INTERVAL + 1;
-							//fixme [refactor]
-//							_BRPeerManagerLoadMempools(manager);
+							loadMempools();
 						}
 					}
 				}
@@ -1519,7 +1509,6 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 			peer->Pinfo("updating filter with newly created wallet addresses");
-			if (bloomFilter) BRBloomFilterFree(bloomFilter);
 			bloomFilter = nullptr;
 
 			PingParameter pingParameter;
@@ -1663,6 +1652,27 @@ namespace Elastos {
 
 			if (i < locatorsCount) locators.push_back(_chainParams.getRaw()->checkpoints[0].hash);
 			return locators;
+		}
+
+		void PeerManager::loadMempools() {
+			// after syncing, load filters and get mempools from other peers
+			for (size_t i = _connectedPeers.size(); i > 0; i--) {
+				const PeerPtr &peer = _connectedPeers[i - 1];
+
+				if (peer->getConnectStatusValue() != Peer::Connected) continue;
+
+				if (peer != downloadPeer || fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 5.0) {
+					loadBloomFilter(peer);
+					publishPendingTx(peer);
+					PingParameter pingParameter;
+					pingParameter.callback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer, _1);
+					peer->SendMessage(MSG_PING, pingParameter);
+				}
+				//fixme [refactor]
+// 				else
+//					BRPeerSendMempool(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes), info,
+//									  _mempoolDone);
+			}
 		}
 
 	}
