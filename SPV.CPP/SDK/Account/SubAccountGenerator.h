@@ -23,7 +23,7 @@ namespace Elastos {
 
 			void SetParentAccount(IAccount *account);
 
-			void SetPayPassword(const std::string &password);
+			void SetMasterPubKey(const MasterPubKeyPtr &masterPubKey);
 
 			void Clean();
 
@@ -31,18 +31,21 @@ namespace Elastos {
 
 			const UInt256 &GetResultChainCode() const;
 
+			static MasterPubKeyPtr
+			GenerateMasterPubKey(IAccount *account, uint32_t coinIndex, const std::string &payPassword);
+
 		private:
 			ISubAccount *GenerateFromCoinInfo(IAccount *account, const CoinInfo &coinInfo);
 
-			ISubAccount *GenerateFromHDPath(IAccount *account, uint32_t coinIndex, const std::string &payPassword);
+			ISubAccount *GenerateFromHDPath(IAccount *account, uint32_t coinIndex);
 
 		private:
 			CoinInfo _coinInfo;
 			IAccount *_parentAccount;
-			std::string _payPassword;
 
 			CMBlock _resultPubKey;
 			UInt256 _resultChainCode;
+			MasterPubKeyPtr _masterPubKey;
 		};
 
 	}
