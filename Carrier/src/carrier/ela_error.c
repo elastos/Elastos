@@ -151,8 +151,11 @@ static int general_error(int errcode, char *buf, size_t len)
 static int system_error(int errcode, char *buf, size_t len)
 {
     int rc;
-
-    rc = strerror_r(errcode, buf, len);
+#if defined(_WIN32) || defined(_WIN64)
+    rc = strerror_s(buf, len, errcode);
+#else
+    rc = strerror_r(errcode, buf, len);        
+#endif
     if (rc < 0)
         return ELA_SYS_ERROR(ELAERR_INVALID_ARGS);
 

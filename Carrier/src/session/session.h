@@ -250,6 +250,9 @@ void ela_set_error(int error);
 
 int ela_register_strerror(int facility, int (*strerr)(int, char *, size_t));
 
+CARRIER_API
+int ela_session_register_strerror();
+
 #ifdef __cplusplus
 }
 #endif

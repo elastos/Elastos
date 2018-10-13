@@ -30,6 +30,10 @@
 #include <sys/time.h>
 #endif
 
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <posix_helper.h>
 #endif

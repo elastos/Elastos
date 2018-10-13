@@ -1,7 +1,8 @@
 Elastos Carrier Native SDK
 ==========================
-[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)
-[![CircleCI](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK.svg?style=svg)](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK)
+|Travis CI|Circle| AppVeyor|
+|:-:|:-:|:-:|
+|[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK.svg)](https://travis-ci.org/elastos/Elastos.NET.Carrier.Native.SDK)|[![CircleCI](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK.svg?style=svg)](https://circleci.com/gh/elastos/Elastos.NET.Carrier.Native.SDK)|[![Build status](https://ci.appveyor.com/api/projects/status/uqjjonmks6ujvi52?svg=true)](https://ci.appveyor.com/project/elastos/elastos-net-carrier-native-sdk)
 
 ## Summary
 
@@ -173,7 +174,7 @@ Once having source tree and settling with command console, run the following com
 $ cd YOUR-SOURCE-ROOT/build
 $ mkdir win
 $ cd win
-$ cmake -G "NMake Makefiles” -DCMAKE_INSTALL_PREFIX=outputs ..\..
+$ cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=outputs ..\..
 $ nmake
 $ nmake install
 $ nmake dist

@@ -98,7 +98,8 @@ if(WIN32)
         pjnath
         pjlib-util
         pjlib
-        pthread)
+        pthread
+        libsrtp.lib)
 else()
     add_definitions(-DPJ_AUTOCONF)
     set(LIBS

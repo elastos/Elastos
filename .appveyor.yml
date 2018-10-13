@@ -1,0 +1,14 @@
+
+image:
+  - Visual Studio 2017
+
+build_script:
+  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
+  - cmd: cd build && mkdir win && cd win
+  - cmd: cmake -G "NMake Makefiles" -DCMAKE_INSTALL_PREFIX=outputs ..\..
+  - cmd: nmake
+  - cmd: nmake install
+  - cmd: nmake dist
+
+test_script:
+  - echo TODO

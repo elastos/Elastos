@@ -101,7 +101,11 @@ int main(int argc, char *argv[])
     }
 
     str = argv[1];
-    if (strncasecmp(str, "0x", 2) == 0)
+#if defined(_WIN32) || defined(_WIN64)
+    if (strnicmp(str, "0x", 2) == 0)
+#else
+    if (strncasecmp(str, "0x", 2) == 0)  
+#endif
         base = 16;
     else
         base = 10;
