@@ -80,8 +80,10 @@ namespace Elastos {
 
 		void SubAccountGenerator::SetMasterPubKey(const MasterPubKeyPtr &masterPubKey) {
 			_masterPubKey = masterPubKey;
-			_resultPubKey = _masterPubKey->getPubKey();
-			_resultChainCode = _masterPubKey->getChainCode();
+			if (_masterPubKey != nullptr) {
+				_resultPubKey = _masterPubKey->getPubKey();
+				_resultChainCode = _masterPubKey->getChainCode();
+			}
 		}
 
 		MasterPubKeyPtr SubAccountGenerator::GenerateMasterPubKey(IAccount *account, uint32_t coinIndex,

@@ -32,8 +32,6 @@ namespace Elastos {
 
 			static UInt128 UInt128FromString(const std::string &str);
 
-			static UInt128 generateRandomSeed();
-
 			static inline uint8_t getRandomByte() {
 				std::random_device rd;
 				std::mt19937_64 gen(rd());
@@ -57,21 +55,9 @@ namespace Elastos {
 
 			static std::string encodeHex(const CMBlock &in);
 
-			static void encodeHex(char *target, size_t targetLen, const uint8_t *source, size_t sourceLen);
-
 			static std::string encodeHex(const uint8_t *hex, size_t hexLen);
 
-			static size_t encodeHexLength(size_t byteArrayLen);
-
-			static std::string encodeHexCreate(size_t *targetLen, uint8_t *source, size_t sourceLen);
-
 			static CMBlock decodeHex(const std::string &s);
-
-			static void decodeHex(uint8_t *target, size_t targetLen, const char *source, size_t sourceLen);
-
-			static size_t decodeHexLength(size_t stringLen);
-
-			static uint8_t *decodeHexCreate(size_t *targetLen, char *source, size_t sourceLen);
 
 			static std::string convertToString(const CMBlock &data) {
 				char p[data.GetSize()];
