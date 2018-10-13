@@ -727,7 +727,7 @@ namespace Elastos {
 
 				for (size_t i = 0; i < _transaction->outputs.size(); ++i) {
 					if (wallet->containsAddress(_transaction->outputs[i]->getAddress())) {
-						inputAmount = _transaction->outputs[i]->getAmount();
+						inputAmount += _transaction->outputs[i]->getAmount();
 						toAddress = _transaction->outputs[i]->getAddress();
 					}
 				}

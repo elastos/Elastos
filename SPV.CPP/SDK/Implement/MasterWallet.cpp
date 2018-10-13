@@ -307,6 +307,7 @@ namespace Elastos {
 			}
 
 			initFromKeyStore(keyStore, payPassword);
+			initSubWalletsPubKeyMap(payPassword);
 		}
 
 		void MasterWallet::importFromMnemonic(const std::string &mnemonic,

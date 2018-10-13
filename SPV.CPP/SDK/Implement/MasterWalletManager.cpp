@@ -367,7 +367,15 @@ namespace Elastos {
 						  });
 
 			if (hasRedundant) {
-				delete wallet;
+				Log::getLogger()->info("Destroying sub wallets.");
+				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
+				for (int i = 0; i < subWallets.size(); ++i) {
+					masterWallet->DestroyWallet(subWallets[i]);
+				}
+
+				Log::getLogger()->info("({}) Clearing local.", masterWallet->GetId());
+				masterWallet->ClearLocal();
+				delete masterWallet;
 			} else {
 				masterWallet->Save();
 			}
