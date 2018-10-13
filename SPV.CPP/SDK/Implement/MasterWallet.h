@@ -63,12 +63,10 @@ namespace Elastos {
 
 			virtual ISubWallet *CreateSubWallet(
 					const std::string &chainID,
-					bool singleAddress,
 					uint64_t feePerKb = 0);
 
 			virtual ISubWallet *RecoverSubWallet(
 					const std::string &chainID,
-					bool singleAddress,
 					uint32_t limitGap,
 					uint64_t feePerKb = 0);
 
@@ -134,6 +132,7 @@ namespace Elastos {
 					const std::string &phrasePassword,
 					const std::string &payPassword,
 					const std::string &language,
+					bool singleAddress,
 					bool p2pEnable,
 					const std::string &rootPath,
 					MasterWalletInitFrom from);

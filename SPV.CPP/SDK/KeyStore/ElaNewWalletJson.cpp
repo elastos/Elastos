@@ -52,6 +52,7 @@ namespace Elastos {
 			j["RequiredSignCount"] = p._requiredSignCount;
 			j["PrivateKey"] = p._privateKey;
 			j["PhrasePassword"] = p._phrasePassword;
+			j["IsSingleAddress"] = p._isSingleAddress;
 		}
 
 		void from_json(const nlohmann::json &j, ElaNewWalletJson &p) {
@@ -64,6 +65,7 @@ namespace Elastos {
 			p._requiredSignCount = j.find("RequiredSignCount") != j.end() ? j["RequiredSignCount"].get<uint32_t>() : 0;
 			p._privateKey = j.find("PrivateKey") != j.end() ? j["PrivateKey"].get<std::string>() : "";
 			p._phrasePassword = j.find("PhrasePassword") != j.end() ? j["PhrasePassword"].get<std::string>() : "";
+			p._isSingleAddress = j.find("IsSingleAddress") != j.end() ? j["IsSingleAddress"].get<bool>() : false;
 		}
 
 		const std::string& ElaNewWalletJson::getType() const {
@@ -112,6 +114,14 @@ namespace Elastos {
 
 		void ElaNewWalletJson::setPhrasePassword(const std::string &phrasePassword) {
 			_phrasePassword = phrasePassword;
+		}
+
+		void ElaNewWalletJson::setIsSingleAddress(bool value) {
+			_isSingleAddress = value;
+		}
+
+		bool ElaNewWalletJson::getIsSingleAddress() const {
+			return _isSingleAddress;
 		}
 
 	}

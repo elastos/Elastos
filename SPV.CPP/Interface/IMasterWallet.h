@@ -60,26 +60,22 @@ namespace Elastos {
 			/**
 			 * Create a sub wallet by specifying wallet type.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
 			 * @return If success will return a pointer of sub wallet interface.
 			 */
 			virtual ISubWallet *CreateSubWallet(
 					const std::string &chainID,
-					bool singleAddress,
 					uint64_t feePerKb = 0) = 0;
 
 			/**
 			 * Recover a sub wallet from scratch.
 			 * @param chainID unique identity of a sub wallet. Chain id should not be empty.
-			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param limitGap specify the max gap length for recover addresses and transactions.
 			 * @param feePerKb specify fee per kb to calculate fee by size of transaction. Fee per key default set to zero so that sub wallet will calculate by default "fee rate".
 			 * @return If success will return a pointer of sub wallet interface.
 			 */
 			virtual ISubWallet *RecoverSubWallet(
 					const std::string &chainID,
-					bool singleAddress,
 					uint32_t limitGap,
 					uint64_t feePerKb = 0) = 0;
 

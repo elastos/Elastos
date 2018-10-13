@@ -59,6 +59,7 @@ namespace Elastos {
 				const std::string &mnemonic,
 				const std::string &phrasePassword,
 				const std::string &payPassword,
+				bool singleAddress,
 				const std::string &language) {
 
 			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
@@ -66,7 +67,7 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, _p2pEnable, _rootPath, CreateNormal);
+														  language, singleAddress, _p2pEnable, _rootPath, CreateNormal);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 
@@ -210,7 +211,7 @@ namespace Elastos {
 		IMasterWallet *
 		MasterWalletManager::ImportWalletWithMnemonic(const std::string &masterWalletId, const std::string &mnemonic,
 													  const std::string &phrasePassword, const std::string &payPassword,
-													  const std::string &language) {
+													  bool singleAddress, const std::string &language) {
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkArgumentNotEmpty(masterWalletId, "Master wallet ID");
@@ -219,7 +220,8 @@ namespace Elastos {
 				return _masterWalletMap[masterWalletId];
 
 			MasterWallet *masterWallet = new MasterWallet(masterWalletId, mnemonic, phrasePassword, payPassword,
-														  language, _p2pEnable, _rootPath, ImportFromMnemonic);
+														  language, singleAddress, _p2pEnable, _rootPath,
+														  ImportFromMnemonic);
 			checkRedundant(masterWallet);
 			_masterWalletMap[masterWalletId] = masterWallet;
 			return masterWallet;
@@ -371,7 +373,7 @@ namespace Elastos {
 			}
 
 			ParamChecker::checkCondition(hasRedundant, Error::CreateMasterWalletError,
-				"Master wallet already exist.");
+										 "Master wallet already exist.");
 		}
 	}
 }
