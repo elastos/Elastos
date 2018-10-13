@@ -25,6 +25,10 @@ namespace Elastos {
 
 			void Save(const boost::filesystem::path &path);
 
+			bool IsSingleAddress() const;
+
+			bool &IsSingleAddress();
+
 			const IdAgentInfo &GetIdAgentInfo() const;
 
 			void SetIdAgentInfo(const IdAgentInfo &info);
@@ -68,6 +72,7 @@ namespace Elastos {
 
 		private:
 
+			bool _isSingleAddress;
 			std::string _rootPath;
 			AccountPtr _account;
 			IdAgentInfo _idAgentInfo;

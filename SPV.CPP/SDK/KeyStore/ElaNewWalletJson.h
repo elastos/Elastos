@@ -50,6 +50,10 @@ namespace Elastos {
 
 			void setPhrasePassword(const std::string &phrasePassword);
 
+			bool getIsSingleAddress() const;
+
+			void setIsSingleAddress(bool value);
+
 		private:
 			JSON_SM_LS(ElaNewWalletJson);
 			JSON_SM_RS(ElaNewWalletJson);
@@ -65,6 +69,7 @@ namespace Elastos {
 			uint32_t _requiredSignCount;
 			std::string _privateKey;
 			std::string _phrasePassword;
+			bool _isSingleAddress;
 		};
 	}
 }

@@ -44,6 +44,7 @@ namespace Elastos {
 			 * @param mnemonic use to generate seed which deriving the master private key and chain code.
 			 * @param phrasePassword combine with random seed to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param language specify language of mnemonic, value of language should correspond to the language of \p mnemonic.
 			 * @return If success will return a pointer of master wallet interface.
 			 */
@@ -52,6 +53,7 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
+					bool singleAddress,
 					const std::string &language = "english");
 
 			/**
@@ -151,6 +153,7 @@ namespace Elastos {
 			 * @param mnemonic for importing the master wallet.
 			 * @param phrasePassword combine with mnemonic to generate root key and chain code. Phrase password can be empty or between 8 and 128, otherwise will throw invalid argument exception.
 			 * @param payPassword use to encrypt important things(such as private key) in memory. Pay password should between 8 and 128, otherwise will throw invalid argument exception.
+			 * @param singleAddress singleAddress if true created wallet will have only one address inside, otherwise sub wallet will manager a chain of addresses for security.
 			 * @param language specify language of mnemonic. Language should not be empty, and exit corresponding language config file under the root path. The config begin with fixed prefix "mnemonic_" and end with ".txt" extension, for example mnemonic of Chinese config will be "mnemonic_chinese.txt".
 			 * @return If success will return a pointer of master wallet interface.
 			 */
@@ -159,6 +162,7 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
+					bool singleAddress,
 					const std::string &language = "english");
 
 			/**

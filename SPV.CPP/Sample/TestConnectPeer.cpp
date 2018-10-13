@@ -146,7 +146,7 @@ IMasterWallet *TestConnectPeer::importWithKeystore(boost::shared_ptr<MasterWalle
 IMasterWallet *TestConnectPeer::importWithMnemonic(boost::shared_ptr<MasterWalletManager> walletManager,
 												   const std::string &payPassword) {
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	walletManager->ImportWalletWithMnemonic("ELA", mnemonic, "", payPassword, "english");
+	walletManager->ImportWalletWithMnemonic("ELA", mnemonic, "", payPassword, false, "english");
 	return walletManager->GetWallet("ELA");
 }
 
@@ -194,8 +194,8 @@ void TestConnectPeer::runPeerConnectTest_WalletFactory() {
 //	IMasterWallet *masterWallet = createReadOnlyMultiSignWallet(walletManager);
 
 
-	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain", false);
-	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA", false);
+	ISubWallet *sidechainWallet = masterWallet->CreateSubWallet("IdChain");
+	ISubWallet *mainchainWallet = masterWallet->CreateSubWallet("ELA");
 
 	std::cout << "side chain wallet addrs: " << sidechainWallet->GetAllAddress(0, INT_MAX) << std::endl;
 	std::cout << "main chain wallet addrs: " << mainchainWallet->GetAllAddress(0, INT_MAX) << std::endl;
