@@ -56,6 +56,7 @@ namespace Elastos {
 								   const std::string &phrasePassword,
 								   const std::string &payPassword,
 								   const std::string &language,
+								   bool singleAddress,
 								   bool p2pEnable,
 								   const std::string &rootPath,
 								   MasterWalletInitFrom from) :
@@ -70,6 +71,7 @@ namespace Elastos {
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
+			_localStore.IsSingleAddress() = singleAddress;
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
 			importFromMnemonic(mnemonic, language, phrasePassword, payPassword);
 		}
@@ -197,7 +199,7 @@ namespace Elastos {
 		}
 
 		ISubWallet *
-		MasterWallet::CreateSubWallet(const std::string &chainID, bool singleAddress, uint64_t feePerKb) {
+		MasterWallet::CreateSubWallet(const std::string &chainID, uint64_t feePerKb) {
 
 			ParamChecker::checkArgumentNotEmpty(chainID, "Chain ID");
 			ParamChecker::checkCondition(chainID.size() > 128, Error::InvalidArgument, "Chain ID sould less than 128");
@@ -218,7 +220,7 @@ namespace Elastos {
 			info.setEnableP2P(coinConfig.EnableP2P);
 			info.setReconnectSeconds(coinConfig.ReconnectSeconds);
 
-			info.setSingleAddress(singleAddress);
+			info.setSingleAddress(_localStore.IsSingleAddress());
 			info.setUsedMaxAddressIndex(0);
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
@@ -231,8 +233,7 @@ namespace Elastos {
 		}
 
 		ISubWallet *
-		MasterWallet::RecoverSubWallet(const std::string &chainID, bool singleAddress,
-									   uint32_t limitGap, uint64_t feePerKb) {
+		MasterWallet::RecoverSubWallet(const std::string &chainID, uint32_t limitGap, uint64_t feePerKb) {
 
 			if (_createdWallets.find(chainID) != _createdWallets.end())
 				return _createdWallets[chainID];
@@ -241,7 +242,7 @@ namespace Elastos {
 										 "Limit gap should less than or equal " +
 										 std::to_string(SEQUENCE_GAP_LIMIT_EXTERNAL));
 
-			ISubWallet *subWallet = CreateSubWallet(chainID, singleAddress, feePerKb);
+			ISubWallet *subWallet = CreateSubWallet(chainID, feePerKb);
 			SubWallet *walletInner = dynamic_cast<SubWallet *>(subWallet);
 			assert(walletInner != nullptr);
 			walletInner->recover(limitGap);
@@ -413,7 +414,8 @@ namespace Elastos {
 			Log::getLogger()->info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
 								   fixedInfo.getEarliestPeerTime());
 
-			MasterPubKeyPtr masterPubKey = _subWalletsPubKeyMap.find(fixedInfo.getChainId()) != _subWalletsPubKeyMap.end()
+			MasterPubKeyPtr masterPubKey =
+					_subWalletsPubKeyMap.find(fixedInfo.getChainId()) != _subWalletsPubKeyMap.end()
 					? _subWalletsPubKeyMap[fixedInfo.getChainId()] : nullptr;
 			switch (fixedInfo.getWalletType()) {
 				case Mainchain:
@@ -502,10 +504,12 @@ namespace Elastos {
 			_subWalletsPubKeyMap.clear();
 			typedef std::map<std::string, uint32_t> IdIndexMap;
 			IdIndexMap idIndexMap = _coinConfigReader.GetChainIdsAndIndices();
-			std::for_each(idIndexMap.begin(), idIndexMap.end(), [this, &payPassword](const IdIndexMap::value_type &item){
-				_subWalletsPubKeyMap[item.first] = SubAccountGenerator::GenerateMasterPubKey(_localStore.Account(),
-						item.second, payPassword);
-			});
+			std::for_each(idIndexMap.begin(), idIndexMap.end(),
+						  [this, &payPassword](const IdIndexMap::value_type &item) {
+							  _subWalletsPubKeyMap[item.first] = SubAccountGenerator::GenerateMasterPubKey(
+									  _localStore.Account(),
+									  item.second, payPassword);
+						  });
 		}
 
 		void MasterWallet::restoreLocalStore() {
@@ -527,6 +531,7 @@ namespace Elastos {
 
 			IAccount *account = keyStore.createAccountFromJson(payPassword);
 			_localStore.Reset(account);
+			_localStore.IsSingleAddress() = keyStore.json().getIsSingleAddress();
 			initSubWallets(keyStore.json().getCoinInfoList());
 		}
 
@@ -539,6 +544,7 @@ namespace Elastos {
 							  SubWallet *subWallet = dynamic_cast<SubWallet *>(item.second);
 							  keyStore.json().addCoinInfo(subWallet->_info);
 						  });
+			keyStore.json().setIsSingleAddress(_localStore.IsSingleAddress());
 		}
 
 		void MasterWallet::ChangePassword(const std::string &oldPassword, const std::string &newPassword) {

@@ -70,6 +70,7 @@ namespace Elastos {
 		void to_json(nlohmann::json &j, const MasterWalletStore &p) {
 			j["Account"] = p.Account()->ToJson();
 			j["AccountType"] = p.Account()->GetType();
+			j["IsSingleAddress"] = p.IsSingleAddress();
 			j["IdAgent"] = p.GetIdAgentInfo();
 			std::vector<nlohmann::json> subWallets;
 			for (size_t i = 0; i < p.GetSubWalletInfoList().size(); i++) {
@@ -81,6 +82,7 @@ namespace Elastos {
 		void from_json(const nlohmann::json &j, MasterWalletStore &p) {
 			p._account = AccountPtr(AccountFactory::CreateFromJson(p._rootPath, j));
 			p.SetIdAgentInfo(j["IdAgent"]);
+			p.IsSingleAddress() = j["IsSingleAddress"].get<bool>();
 
 			std::vector<CoinInfo> coinInfoList;
 			std::vector<nlohmann::json> subWallets = j["SubWallets"];
@@ -119,6 +121,14 @@ namespace Elastos {
 			_account = AccountPtr(new MultiSignAccount(
 					new StandardAccount(_rootPath, phrase, language, phrasePassword, payPassword),
 					coSigners, requiredSignCount));
+		}
+
+		bool MasterWalletStore::IsSingleAddress() const {
+			return _isSingleAddress;
+		}
+
+		bool &MasterWalletStore::IsSingleAddress() {
+			return _isSingleAddress;
 		}
 	}
 }
