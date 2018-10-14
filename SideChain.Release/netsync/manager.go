@@ -347,7 +347,7 @@ func (sm *SyncManager) current() bool {
 
 	// No matter what chain thinks, if we are below the block we are syncing
 	// to we are not current.
-	if sm.chain.GetBestHeight() < sm.syncPeer.Height() {
+	if sm.chain.BestChain.Height < sm.syncPeer.Height() {
 		return false
 	}
 	return true
