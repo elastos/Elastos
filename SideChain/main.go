@@ -134,7 +134,6 @@ func main() {
 
 	eladlog.Info("5. --Start the Http services")
 	service := service.NewHttpService(&service.Config{
-		Logger:                      elalog,
 		Server:                      server,
 		Chain:                       chain,
 		TxMemPool:                   txPool,

@@ -2,6 +2,7 @@ package service
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,13 +11,12 @@ import (
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/logger"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"encoding/binary"
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
@@ -28,7 +28,6 @@ const (
 )
 
 type Config struct {
-	Logger     *logger.Log
 	Server     server.IServer
 	Chain      *blockchain.BlockChain
 	TxMemPool  *mempool.TxPool
@@ -133,9 +132,7 @@ func (s *HttpService) SetLogLevel(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "level must be an integer in 0-6")
 	}
 
-	if err := s.cfg.Logger.SetPrintLevel(int(level)); err != nil {
-		return ResponsePack(InvalidParams, err.Error())
-	}
+	log.SetLevel(elalog.Level(level))
 	return ResponsePack(Success, fmt.Sprint("log level has been set to ", level))
 }
 

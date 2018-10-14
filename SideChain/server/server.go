@@ -756,6 +756,7 @@ func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) 
 
 	cfg := p2psvr.NewDefaultConfig(
 		params.Magic,
+		pact.EBIP002Version,
 		uint64(services),
 		params.NodePort,
 		params.SeedList,
