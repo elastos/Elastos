@@ -692,11 +692,12 @@ namespace Elastos {
 			setRemark(remark);
 
 			nlohmann::json summary;
-			summary["TxHash"] = rawTxJson["TxHash"].get<std::string>();
+			summary["TxHash"] = Utils::UInt256ToString(getHash(), true);
 			summary["Status"] = getStatus(blockHeight);
 			summary["ConfirmStatus"] = getConfirmInfo(blockHeight);
 			summary["Remark"] = getRemark();
 			summary["Fee"] = getTxFee(wallet);
+			summary["Timestamp"] = getTimestamp();
 			nlohmann::json jOut;
 			nlohmann::json jIn;
 
@@ -742,7 +743,6 @@ namespace Elastos {
 			}
 
 			rawTxJson["Summary"] = summary;
-			SPDLOG_DEBUG(Log::getLogger(), "tx = {}.", summary.dump());
 		}
 
 		std::string Transaction::getConfirmInfo(uint32_t blockHeight) {

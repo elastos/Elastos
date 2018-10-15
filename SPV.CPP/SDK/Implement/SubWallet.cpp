@@ -99,11 +99,17 @@ namespace Elastos {
 
 		nlohmann::json SubWallet::GetAllAddress(uint32_t start,
 												uint32_t count) {
-			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
-			uint32_t end = std::min(start + count, (uint32_t) addresses.size());
-			std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
 			nlohmann::json j;
-			j["Addresses"] = results;
+			std::vector<std::string> addresses = _walletManager->getWallet()->getAllAddresses();
+			if (start >= addresses.size()) {
+				j["Addresses"] = {};
+				j["MaxCount"] = addresses.size();
+			} else {
+				uint32_t end = std::min(start + count, (uint32_t) addresses.size());
+				std::vector<std::string> results(addresses.begin() + start, addresses.begin() + end);
+				j["Addresses"] = results;
+				j["MaxCount"] = addresses.size();
+			}
 			return j;
 		}
 
@@ -135,11 +141,17 @@ namespace Elastos {
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
 			BRWallet *wallet = _walletManager->getWallet()->getRaw();
 			assert(wallet != nullptr);
-
-			Log::getLogger()->info("GetAllTransaction: start = {}, count = {}, addressOrTxid = {}", start, count,
-								   addressOrTxid);
+			nlohmann::json j;
 
 			size_t fullTxCount = array_count(wallet->transactions);
+
+			if (start >= fullTxCount) {
+				j["Transactions"] = {};
+				j["MaxCount"] = fullTxCount;
+				SPDLOG_DEBUG(Log::getLogger(), "{}", j.dump());
+				return j;
+			}
+
 			size_t pageCount = count;
 			pthread_mutex_lock(&wallet->lock);
 			if (fullTxCount < start + count)
@@ -157,13 +169,14 @@ namespace Elastos {
 			std::vector<nlohmann::json> jsonList(realCount);
 			for (size_t i = 0; i < realCount; ++i) {
 				TransactionPtr transactionPtr(new Transaction((ELATransaction *) transactions[i], false));
-				nlohmann::json txJson = transactionPtr->toJson();
+				nlohmann::json txJson;
 				transactionPtr->generateExtraTransactionInfo(txJson, _walletManager->getWallet(),
 															 _walletManager->getPeerManager()->getLastBlockHeight());
 				jsonList[i] = txJson;
 			}
-			nlohmann::json j;
 			j["Transactions"] = jsonList;
+			j["MaxCount"] = fullTxCount;
+			SPDLOG_DEBUG(Log::getLogger(), "{}", j.dump());
 			return j;
 		}
 
