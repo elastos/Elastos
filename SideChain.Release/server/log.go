@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	srvr "github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
 // log is a logger that is initialized with no output filters.  This
@@ -25,4 +26,7 @@ func DisableLog() {
 // using elalog.
 func UseLogger(logger elalog.Logger) {
 	log = logger
+
+	// set logger for parent class.
+	srvr.UseLogger(logger)
 }
