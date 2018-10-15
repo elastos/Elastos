@@ -16,8 +16,15 @@ type TxFilter interface {
 }
 
 type Filter struct {
-	mtx     sync.Mutex
-	filters map[msg.TxFilterType]TxFilter
+	mtx               sync.Mutex
+	registeredFilters map[msg.TxFilterType]func() TxFilter
+	filters           map[msg.TxFilterType]TxFilter
+}
+
+func (f *Filter) RegisterTxFilter(filterType msg.TxFilterType, newFilter func() TxFilter) {
+	f.mtx.Lock()
+	f.registeredFilters[filterType] = newFilter
+	f.mtx.Unlock()
 }
 
 func (f *Filter) update(filter *msg.TxFilter) error {
@@ -32,18 +39,12 @@ func (f *Filter) update(filter *msg.TxFilter) error {
 
 	switch filter.Op {
 	case msg.OpFilterLoad:
-		var tf TxFilter
-		switch filter.Type {
-		case msg.TFBloom:
-			tf = newBloomFilter()
-
-		case msg.TFTxType:
-			tf = newTxTypeFilter()
-
-		default:
+		newFilter, ok := f.registeredFilters[filter.Type]
+		if !ok {
 			return fmt.Errorf("unknown txfilter type %s", filter.Type)
 		}
 
+		tf := newFilter()
 		err := tf.Load(filter.Data)
 		if err != nil {
 			return err
@@ -102,6 +103,7 @@ func (f *Filter) Match(tx *types.Transaction) bool {
 
 func New() *Filter {
 	return &Filter{
-		filters: make(map[msg.TxFilterType]TxFilter),
+		registeredFilters: make(map[msg.TxFilterType]func() TxFilter),
+		filters:           make(map[msg.TxFilterType]TxFilter),
 	}
 }

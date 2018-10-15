@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/filter"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
@@ -65,6 +66,10 @@ type serverPeer struct {
 // newServerPeer returns a new serverPeer instance. The peer needs to be set by
 // the caller.
 func newServerPeer(s *server) *serverPeer {
+	f := filter.New()
+	f.RegisterTxFilter(msg.TFBloom, bloom.NewTxFilter)
+	f.RegisterTxFilter(msg.TFTxType, filter.NewTxTypeFilter)
+
 	return &serverPeer{
 		server:         s,
 		filter:         filter.New(),

@@ -10,9 +10,6 @@ const (
 	maxFilterTxTypes = 15
 )
 
-// Ensure bloomFilter implement TxFilter interface.
-var _ TxFilter = (*txTypeFilter)(nil)
-
 type txTypeFilter struct {
 	txTypes map[types.TxType]struct{}
 }
@@ -73,6 +70,6 @@ func (f *txTypeFilter) Match(tx *types.Transaction) bool {
 	return ok
 }
 
-func newTxTypeFilter() *txTypeFilter {
+func NewTxTypeFilter() TxFilter {
 	return &txTypeFilter{}
 }
