@@ -32,7 +32,6 @@ namespace Elastos {
 				return false;
 			}
 
-			//fixme [refactor] replace raw block with Merkle block
 			if (!block->Deserialize(stream)) {
 				_peer->Pdebug("Merkle block orignal data: {}", Utils::encodeHex(msg));
 				_peer->Perror("Merkle block deserialize with type {} fail", manager->GetPluginTypes().BlockType);

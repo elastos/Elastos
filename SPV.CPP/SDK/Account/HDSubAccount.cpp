@@ -36,15 +36,16 @@ namespace Elastos {
 			return key;
 		}
 
-		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+		void HDSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
 										   const std::string &payPassword) {
-			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, transaction);
+			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, wallet, transaction);
 			ParamChecker::checkCondition(!transaction->sign(keyList, 0), Error::Sign,
 										 "Transaction Sign error!");
 		}
 
 		WrapperList<Key, BRKey>
-		HDSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword, const TransactionPtr &transaction) {
+		HDSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword, const WalletPtr &wallet,
+												 const TransactionPtr &transaction) {
 			uint32_t j, internalIdx[transaction->getInputs().size()], externalIdx[transaction->getInputs().size()];
 			size_t i, internalCount = 0, externalCount = 0;
 
@@ -52,15 +53,17 @@ namespace Elastos {
 
 			_lock->Lock();
 			for (i = 0; i < transaction->getInputs().size(); i++) {
+				const TransactionInput &txInput = transaction->getInputs()[i];
+				const TransactionPtr &tx = wallet->transactionForHash(txInput.getTransctionHash());
+				Address inputAddr = tx->getOutputs()[txInput.getIndex()].getAddress();
+
 				for (j = (uint32_t) internalChain.size(); j > 0; j--) {
-					Address inputAddr; // = transaction->getInputs()[i].address;  fixme [refactor] get address by tx hash
 					if (inputAddr.IsEqual(internalChain[j - 1])) {
 						internalIdx[internalCount++] = j - 1;
 					}
 				}
 
 				for (j = (uint32_t) externalChain.size(); j > 0; j--) {
-					Address inputAddr; // = transaction->getInputs()[i].address;  fixme [refactor] get address by tx hash
 					if (inputAddr.IsEqual(externalChain[j - 1])) {
 						externalIdx[externalCount++] = j - 1;
 					}

@@ -10,6 +10,7 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "BRInt.h"
 
@@ -31,7 +32,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Wallet : public Lockable {
+		class Wallet : public Lockable, public boost::enable_shared_from_this<Wallet> {
 
 		public:
 			class Listener {
@@ -124,6 +125,8 @@ namespace Elastos {
 			 */
 			TransactionPtr transactionForHash(const UInt256 &transactionHash);
 
+			std::vector<TransactionPtr> getAllTransactions() const;
+
 			/**
 			 * Check if a transaction is valid - THIS METHOD WILL FATAL if the transaction is not signed.
 			 * You must call transaction.isSigned to avoid the FATAL.
@@ -173,8 +176,6 @@ namespace Elastos {
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
 		protected:
-
-			Wallet();
 
 			bool AddressFilter(const std::string &fromAddress, const std::string &filterAddress);
 

@@ -118,6 +118,8 @@ namespace Elastos {
 
 			std::string getDownloadPeerName() const;
 
+			const PeerPtr getDownloadPeer() const;
+
 			size_t getPeerCount() const;
 
 			void publishTransaction(const TransactionPtr &transaction);
@@ -241,6 +243,8 @@ namespace Elastos {
 			void mempoolDone(const PeerPtr &peer, int success);
 
 			void requestUnrelayedTxGetDataDone(const PeerPtr &peer, int success);
+
+			void publishTxInivDone(const PeerPtr &peer, int success);
 
 		private:
 			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;

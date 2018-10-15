@@ -135,40 +135,35 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetAllTransaction(uint32_t start, uint32_t count, const std::string &addressOrTxid) {
-			//fixme [refactor] complete me
-//			BRWallet *wallet = _walletManager->getWallet()->getRaw();
-//			assert(wallet != nullptr);
-//
-//			Log::getLogger()->info("GetAllTransaction: start = {}, count = {}, addressOrTxid = {}", start, count,
-//								   addressOrTxid);
-//
-//			size_t fullTxCount = array_count(wallet->transactions);
-//			size_t pageCount = count;
-//			pthread_mutex_lock(&wallet->lock);
-//			if (fullTxCount < start + count)
-//				pageCount = fullTxCount - start;
-//
-//			BRTransaction *transactions[pageCount];
-//			uint32_t realCount = 0;
-//			for (int i = fullTxCount - 1 - start; i >= 0 && realCount < pageCount; --i) {
-//				if (!filterByAddressOrTxId(wallet->transactions[i], addressOrTxid))
-//					continue;
-//				transactions[realCount++] = wallet->transactions[i];
-//			}
-//			pthread_mutex_unlock(&wallet->lock);
-//
-//			std::vector<nlohmann::json> jsonList(realCount);
-//			for (size_t i = 0; i < realCount; ++i) {
-//				TransactionPtr transactionPtr(new Transaction((ELATransaction *) transactions[i], false));
-//				nlohmann::json txJson = transactionPtr->toJson();
-//				transactionPtr->generateExtraTransactionInfo(txJson, _walletManager->getWallet(),
-//															 _walletManager->getPeerManager()->getLastBlockHeight());
-//				jsonList[i] = txJson;
-//			}
-//			nlohmann::json j;
-//			j["Transactions"] = jsonList;
-//			return j;
-			return nlohmann::json();
+			const WalletPtr &wallet = _walletManager->getWallet();
+			Log::getLogger()->info("GetAllTransaction: start = {}, count = {}, addressOrTxid = {}", start, count,
+								   addressOrTxid);
+
+			std::vector<TransactionPtr> allTxs = wallet->getAllTransactions();
+			size_t fullTxCount = allTxs.size();
+			size_t pageCount = count;
+
+			if (fullTxCount < start + count)
+				pageCount = fullTxCount - start;
+
+			std::vector<TransactionPtr> transactions(pageCount);
+			uint32_t realCount = 0;
+			for (int i = fullTxCount - 1 - start; i >= 0 && realCount < pageCount; --i) {
+				if (!filterByAddressOrTxId(allTxs[i], addressOrTxid))
+					continue;
+				transactions[realCount++] = allTxs[i];
+			}
+
+			std::vector<nlohmann::json> jsonList(realCount);
+			for (size_t i = 0; i < realCount; ++i) {
+				nlohmann::json txJson = transactions[i]->toJson();
+				transactions[i]->generateExtraTransactionInfo(txJson, _walletManager->getWallet(),
+															 _walletManager->getPeerManager()->getLastBlockHeight());
+				jsonList[i] = txJson;
+			}
+			nlohmann::json j;
+			j["Transactions"] = jsonList;
+			return j;
 		}
 
 		boost::shared_ptr<Transaction>
@@ -307,35 +302,31 @@ namespace Elastos {
 			return completer.Complete(actualFee);
 		}
 
-		bool SubWallet::filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid) {
-			//fixme [refactor] complete me
-//			ELATransaction *tx = (ELATransaction *) transaction;
-//
-//			if (addressOrTxid == "") {
-//				return true;
-//			}
-//
-//			for (size_t i = 0; i < tx->raw.inCount; ++i) {
-//				BRTxInput *input = &tx->raw.inputs[i];
-//				std::string addr(input->address);
-//				if (addr == addressOrTxid) {
-//					return true;
-//				}
-//			}
-//			for (size_t i = 0; i < tx->outputs.size(); ++i) {
-//				TransactionOutput *output = tx->outputs[i];
-//				if (output->getAddress() == addressOrTxid) {
-//					return true;
-//				}
-//			}
-//
-//			if (addressOrTxid.length() == sizeof(UInt256) * 2) {
-//				Transaction txn(tx, false);
-//				UInt256 Txid = Utils::UInt256FromString(addressOrTxid, true);
-//				if (UInt256Eq(&Txid, &tx->raw.txHash)) {
-//					return true;
-//				}
-//			}
+		bool SubWallet::filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid) {
+
+			if (addressOrTxid.empty()) {
+				return true;
+			}
+
+			const WalletPtr &wallet = _walletManager->getWallet();
+			for (size_t i = 0; i < transaction->getInputs().size(); ++i) {
+				const TransactionPtr &tx = wallet->transactionForHash(transaction->getInputs()[i].getTransctionHash());
+				if (tx->getOutputs()[transaction->getInputs()[i].getIndex()].getAddress() == addressOrTxid) {
+					return true;
+				}
+			}
+			for (size_t i = 0; i < transaction->getOutputs().size(); ++i) {
+				if (transaction->getOutputs()[i].getAddress() == addressOrTxid) {
+					return true;
+				}
+			}
+
+			if (addressOrTxid.length() == sizeof(UInt256) * 2) {
+				UInt256 Txid = Utils::UInt256FromString(addressOrTxid, true);
+				if (UInt256Eq(&Txid, &transaction->getHash())) {
+					return true;
+				}
+			}
 
 			return false;
 		}

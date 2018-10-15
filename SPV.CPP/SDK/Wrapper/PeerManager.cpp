@@ -414,6 +414,11 @@ namespace Elastos {
 			return downloadPeerName;
 		}
 
+		const PeerPtr PeerManager::getDownloadPeer() const {
+			boost::mutex::scoped_lock scopedLock(lock);
+			return downloadPeer;
+		}
+
 		size_t PeerManager::getPeerCount() const {
 			size_t count = 0;
 
@@ -471,7 +476,7 @@ namespace Elastos {
 						publishPendingTx(peer);
 
 						PingParameter pingParameter;
-						pingParameter.callback = callback;
+						pingParameter.callback = boost::bind(&PeerManager::publishTxInivDone, this, peer, _1);
 						peer->SendMessage(MSG_PING, pingParameter);
 					}
 				}
@@ -1659,11 +1664,11 @@ namespace Elastos {
 					PingParameter pingParameter;
 					pingParameter.callback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer, _1);
 					peer->SendMessage(MSG_PING, pingParameter);
-				}
- 				else {
+				} else {
 					MempoolParameter mempoolParameter;
 					mempoolParameter.KnownTxHashes = publishedTxHashes;
-					mempoolParameter.CompletionCallback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer, _1);
+					mempoolParameter.CompletionCallback = boost::bind(&PeerManager::loadBloomFilterDone, this, peer,
+																	  _1);
 					peer->SendMessage(MSG_MEMPOOL, mempoolParameter);
 				}
 			}
@@ -1784,6 +1789,11 @@ namespace Elastos {
 			}
 
 			return 0;
+		}
+
+		void PeerManager::publishTxInivDone(const PeerPtr &peer, int success) {
+			boost::mutex::scoped_lock scopedLock(lock);
+			requestUnrelayedTx(peer);
 		}
 
 	}

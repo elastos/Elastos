@@ -155,7 +155,7 @@ namespace Elastos {
 
 			virtual TransactionPtr completeTransaction(const TransactionPtr &transaction, uint64_t actualFee);
 
-			bool filterByAddressOrTxId(BRTransaction *transaction, const std::string &addressOrTxid);
+			bool filterByAddressOrTxId(const TransactionPtr &transaction, const std::string &addressOrTxid);
 
 			virtual void fireTransactionStatusChanged(const std::string &txid,
 													  const std::string &status,

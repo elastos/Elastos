@@ -240,11 +240,11 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, Wallet *wallet) {
+		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<Wallet> &wallet) {
 			return transactionSign(keys, wallet);
 		}
 
-		bool Transaction::transactionSign(const WrapperList<Key, BRKey> keys, Wallet *wallet) {
+		bool Transaction::transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<Wallet> &wallet) {
 			size_t i, j, keysCount = keys.size();
 			Address addrs[keysCount], address;
 

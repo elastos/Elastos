@@ -35,10 +35,6 @@ namespace Elastos {
 			}
 		}
 
-		Wallet::Wallet() {
-
-		}
-
 		Wallet::Wallet(const std::vector<TransactionPtr> &txArray,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Listener> &listener) :
@@ -951,7 +947,7 @@ namespace Elastos {
 		}
 
 		void Wallet::signTransaction(const TransactionPtr &transaction, const std::string &payPassword) {
-			_subAccount->SignTransaction(transaction, this, payPassword);
+			_subAccount->SignTransaction(transaction, shared_from_this(), payPassword);
 		}
 
 		void Wallet::sortTransations() {
@@ -1005,6 +1001,16 @@ namespace Elastos {
 
 		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
 			return _subAccount->UnusedAddresses(gapLimit, internal);
+		}
+
+		std::vector<TransactionPtr> Wallet::getAllTransactions() const {
+			std::vector<TransactionPtr> result;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				result = _transactions;
+			}
+			return result;
 		}
 
 	}

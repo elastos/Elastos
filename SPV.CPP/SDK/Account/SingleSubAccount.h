@@ -22,7 +22,7 @@ namespace Elastos {
 
 			virtual std::string GetMainAccountPublicKey() const;
 
-			virtual void SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<Wallet> &wallet,
 										 const std::string &payPassword);
 
 			virtual bool IsSingleAddress() const;

@@ -77,20 +77,18 @@ namespace Elastos {
 				const boost::function<bool(const TransactionPtr &)> filter) const {
 			std::vector<TransactionPtr> txs;
 
-			//fixme [refactor] complete me
-//			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
-//
-//			for (size_t i = 0; i < txsEntity.size(); ++i) {
-//				TransactionPtr transaction(new Transaction());
-//				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
-//				transaction->Deserialize(byteStream);
-//				BRTransaction *raw = transaction->getRaw();
-//				raw->blockHeight = txsEntity[i].blockHeight;
-//				raw->timestamp = txsEntity[i].timeStamp;
-//				if (filter(transaction)) {
-//					txs.push_back(transaction);
-//				}
-//			}
+			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
+
+			for (size_t i = 0; i < txsEntity.size(); ++i) {
+				TransactionPtr transaction(new Transaction());
+				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
+				transaction->Deserialize(byteStream);
+				transaction->setBlockHeight(txsEntity[i].blockHeight);
+				transaction->setTimestamp(txsEntity[i].timeStamp);
+				if (filter(transaction)) {
+					txs.push_back(transaction);
+				}
+			}
 			return txs;
 		}
 
@@ -224,14 +222,13 @@ namespace Elastos {
 					time_t now = time(NULL);
 					char tbuf[20];
 					strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", localtime(&now));
-					//fixme [refactor] replace with IMerkleBlock interface
-//					peer_dbg(getPeerManager()->getRaw()->downloadPeer,
-//							 "%s: checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
-//							 tbuf,
-//							 blocks[i]->getHeight(),
-//							 Utils::UInt256ToString(blocks[i]->getHash(), true).c_str(),
-//							 blocks[i]->getRawBlock()->timestamp,
-//							 blocks[i]->getRawBlock()->target);
+					getPeerManager()->getDownloadPeer()->Pinfo(
+							"{}: checkpoint ====> {},  uint256(\"{}\"), {}, {} ,",
+							tbuf,
+							blocks[i]->getHeight(),
+							Utils::UInt256ToString(blocks[i]->getHash(), true),
+							blocks[i]->getTimestamp(),
+							blocks[i]->getTarget());
 				}
 #endif
 
@@ -329,23 +326,20 @@ namespace Elastos {
 		std::vector<TransactionPtr> WalletManager::loadTransactions() {
 			std::vector<TransactionPtr> txs;
 
-			//fixme [refactor] complte me
-//			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
-//
-//			for (size_t i = 0; i < txsEntity.size(); ++i) {
-//				ELATransaction *tx = ELATransactionNew();
-//				TransactionPtr transaction(new Transaction(tx, false));
-//
-//				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
-//				transaction->Deserialize(byteStream);
-//				transaction->setRemark(txsEntity[i].remark);
-//
-//				BRTransaction *raw = transaction->getRaw();
-//				raw->blockHeight = txsEntity[i].blockHeight;
-//				raw->timestamp = txsEntity[i].timeStamp;
-//
-//				txs.push_back(transaction);
-//			}
+			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
+
+			for (size_t i = 0; i < txsEntity.size(); ++i) {
+				TransactionPtr transaction(new Transaction());
+
+				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
+				transaction->Deserialize(byteStream);
+				transaction->setRemark(txsEntity[i].remark);
+
+				transaction->setBlockHeight(txsEntity[i].blockHeight);
+				transaction->setTimestamp(txsEntity[i].timeStamp);
+
+				txs.push_back(transaction);
+			}
 
 			return txs;
 		}

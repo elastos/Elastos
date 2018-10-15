@@ -22,7 +22,7 @@ namespace Elastos {
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);
 
-			virtual void SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<Wallet> &wallet,
 										 const std::string &payPassword);
 
 			virtual std::string GetMainAccountPublicKey() const;
@@ -44,6 +44,7 @@ namespace Elastos {
 		private:
 
 			WrapperList<Key, BRKey> DeriveAccountAvailableKeys(const std::string &payPassword,
+															   const boost::shared_ptr<Wallet> &wallet,
 															   const TransactionPtr &transaction);
 
 		private:

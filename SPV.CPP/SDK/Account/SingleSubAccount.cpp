@@ -32,7 +32,7 @@ namespace Elastos {
 		}
 
 		void
-		SingleSubAccount::SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+		SingleSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
 										  const std::string &payPassword) {
 			WrapperList<Key, BRKey> keyList = DeriveAccountAvailableKeys(payPassword, transaction);
 			ParamChecker::checkCondition(!transaction->sign(keyList, wallet), Error::Sign,

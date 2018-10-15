@@ -19,7 +19,7 @@ namespace Elastos {
 		}
 
 		void
-		MultiSignSubAccount::SignTransaction(const TransactionPtr &transaction, Wallet *wallet,
+		MultiSignSubAccount::SignTransaction(const TransactionPtr &transaction, const WalletPtr &wallet,
 											 const std::string &payPassword) {
 			if (transaction->getPrograms().empty()) {
 				Program program;

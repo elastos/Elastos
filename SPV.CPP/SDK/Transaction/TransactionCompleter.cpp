@@ -70,17 +70,16 @@ namespace Elastos {
 		uint64_t TransactionCompleter::getInputsAmount(const TransactionPtr &transaction) const {
 			uint64_t amount = 0;
 
-			//fixme [refactor] complete me
-//			for (size_t i = 0; i < transaction->getRaw()->inCount; i++) {
-//				UInt256 hash = transaction->getRaw()->inputs[i].txHash;
-//				ELATransaction *t = (ELATransaction *) BRWalletTransactionForHash(_wallet->getRaw(), hash);
-//				uint32_t n = transaction->getRaw()->inputs[i].index;
-//
-//				if (t && n < t->outputs.size()) {
-//					amount += t->outputs[n]->getAmount();
-//				} else
-//					return UINT64_MAX;
-//			}
+			for (size_t i = 0; i < transaction->getInputs().size(); i++) {
+				UInt256 hash = transaction->getInputs()[i].getTransctionHash();
+				const TransactionPtr &t = _wallet->transactionForHash(hash);
+				uint32_t n = transaction->getInputs()[i].getIndex();
+
+				if (t && n < t->getOutputs().size()) {
+					amount += t->getOutputs()[n].getAmount();
+				} else
+					return UINT64_MAX;
+			}
 
 			return amount;
 		}
