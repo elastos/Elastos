@@ -180,7 +180,7 @@ add_library(${SPVSDK_OBJECT_TARGET} OBJECT
 	${SPVJNI_SOURCE_FILES}
 	${SPVCORE_SOURCE_FILES}
 )
-add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
+add_dependencies(${SPVSDK_OBJECT_TARGET} ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint)
 set_target_properties(${SPVSDK_OBJECT_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 set(SPVSDK_TARGET_LIST ${SPVSDK_SHARED_TARGET} ${SPVSDK_STATIC_TARGET})
@@ -196,7 +196,7 @@ foreach(SPVSDK_TARGET ${SPVSDK_TARGET_LIST})
 
 	set_target_properties(${SPVSDK_TARGET} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 	set_target_properties(${SPVSDK_TARGET} PROPERTIES OUTPUT_NAME "${SPVSDK_LIB_NAME}")
-	target_link_libraries(${SPVSDK_TARGET} dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint fruit)
+	target_link_libraries(${SPVSDK_TARGET} dl ${Boost_LIBRARIES} ${OpenSSL_LIBRARIES} sqlite bigint )
 	if(ANDROID)
 		target_link_libraries(${SPVSDK_TARGET} log atomic)
 	endif()
