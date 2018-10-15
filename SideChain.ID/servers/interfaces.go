@@ -87,7 +87,11 @@ func GetTransactionInfoFromBytes(txInfoBytes []byte) (*service.TransactionInfo, 
 	case types.SideChainPow:
 		assetInfo = &service.SideChainPowInfo{}
 	case types.RechargeToSideChain:
-		assetInfo = &service.RechargeToSideChainInfo{}
+		if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
+			assetInfo = &service.RechargeToSideChainInfoV0{}
+		} else if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
+			assetInfo = &service.RechargeToSideChainInfoV1{}
+		}
 	case types.TransferCrossChainAsset:
 		assetInfo = &service.TransferCrossChainAssetInfo{}
 	case id.RegisterIdentification:
@@ -168,13 +172,13 @@ func GetTransactionInfo(cfg *service.Config, header *types.Header, tx *types.Tra
 		BlockTime:      blockTime,
 		TxType:         tx.TxType,
 		PayloadVersion: tx.PayloadVersion,
-		Payload:        cfg.GetPayloadInfo(tx.Payload),
+		Payload:        cfg.GetPayloadInfo(tx.Payload, tx.PayloadVersion),
 		Attributes:     attributes,
 		Programs:       programs,
 	}
 }
 
-func GetPayloadInfo(p types.Payload) service.PayloadInfo {
+func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 	switch object := p.(type) {
 	case *types.PayloadCoinBase:
 		obj := new(service.CoinbaseInfo)
@@ -188,17 +192,29 @@ func GetPayloadInfo(p types.Payload) service.PayloadInfo {
 		return obj
 	case *types.PayloadTransferCrossChainAsset:
 		obj := new(service.TransferCrossChainAssetInfo)
-		obj.CrossChainAddresses = object.CrossChainAddresses
-		obj.OutputIndexes = object.OutputIndexes
-		obj.CrossChainAmounts = object.CrossChainAmounts
+		obj.CrossChainAssets = make([]service.CrossChainAssetInfo, 0)
+		for i := 0; i < len(object.CrossChainAddresses); i++ {
+			assetInfo := service.CrossChainAssetInfo{
+				CrossChainAddress: object.CrossChainAddresses[i],
+				OutputIndex:       object.OutputIndexes[i],
+				CrossChainAmount:  object.CrossChainAmounts[i].String(),
+			}
+			obj.CrossChainAssets = append(obj.CrossChainAssets, assetInfo)
+		}
 		return obj
 	case *types.PayloadTransferAsset:
 	case *types.PayloadRecord:
 	case *types.PayloadRechargeToSideChain:
-		obj := new(service.RechargeToSideChainInfo)
-		obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
-		obj.Proof = BytesToHexString(object.MerkleProof)
-		return obj
+		if pVersion == types.RechargeToSideChainPayloadVersion0 {
+			obj := new(service.RechargeToSideChainInfoV0)
+			obj.MainChainTransaction = BytesToHexString(object.MainChainTransaction)
+			obj.Proof = BytesToHexString(object.MerkleProof)
+			return obj
+		} else if pVersion == types.RechargeToSideChainPayloadVersion1 {
+			obj := new(service.RechargeToSideChainInfoV1)
+			obj.MainChainTransactionHash = service.ToReversedString(object.MainChainTransactionHash)
+			return obj
+		}
 	case *id.PayloadRegisterIdentification:
 		obj := new(RegisterIdentificationInfo)
 		obj.Id = object.ID
