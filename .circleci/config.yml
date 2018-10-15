@@ -24,6 +24,17 @@ jobs:
             cd dist/bin && export LD_LIBRARY_PATH=../lib
             ./elatests --robot -c ../etc/carrier/tests.conf &
             ./elatests --cases -c ../etc/carrier/tests.conf -r 3
+      - run:
+          name: Failed
+          command: |
+            cd build/${BUILD_ENV}/dist/bin
+            if [ -f core* ]; then
+              echo "--crash--"
+              sudo apt-get update
+              echo yes | sudo apt-get install gdb
+              echo bt | gdb ./elatests core*
+            fi
+          when: on_fail
 
 workflows:
   version: 2
