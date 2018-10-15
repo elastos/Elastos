@@ -23,7 +23,6 @@
 #include "SDK/Transaction/TransactionOutput.h"
 #include "WrapperList.h"
 #include "Account/ISubAccount.h"
-#include "Address.h"
 
 #define DEFAULT_FEE_PER_KB (TX_FEE_PER_KB*10)                  // 10 satoshis-per-byte
 #define MIN_FEE_PER_KB     TX_FEE_PER_KB                       // bitcoind 0.12 default min-relay fee
@@ -85,10 +84,6 @@ namespace Elastos {
 			// int BRWalletAddressIsUsed(BRWallet *wallet, const char *addr);
 			bool addressIsUsed(const std::string &address);
 
-//			std::vector<TransactionPtr> getTransactions() const;
-
-//			std::vector<TransactionPtr> getTransactionsConfirmedBefore(uint32_t blockHeight) const;
-
 			uint64_t getBalance() const;
 
 			uint64_t getTotalSent();
@@ -110,12 +105,9 @@ namespace Elastos {
 
 			bool containsTransaction(const TransactionPtr &transaction);
 
-//			bool inputFromWallet(const BRTxInput *in);
-
 			bool registerTransaction(const TransactionPtr &transaction);
 
 			void removeTransaction(const UInt256 &transactionHash);
-			//fixme [refactor]
 
 			void updateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight,
 									uint32_t timestamp);

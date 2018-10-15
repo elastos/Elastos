@@ -155,7 +155,8 @@ namespace Elastos {
 
 			virtual void OnRelayedPingMsg(const PeerPtr &peer);
 
-			virtual void OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes, const std::vector<UInt256> &blockHashes);
+			virtual void OnNotfound(const PeerPtr &peer, const std::vector<UInt256> &txHashes,
+									const std::vector<UInt256> &blockHashes);
 
 			virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb);
 
@@ -209,15 +210,13 @@ namespace Elastos {
 
 			void publishPendingTx(const PeerPtr &peer);
 
-			size_t addPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
+			size_t
+			addPeerToList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
 
-			bool removePeerFromList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
+			bool
+			removePeerFromList(const PeerPtr &peer, const UInt256 &txHash, std::vector<TransactionPeerList> &peerList);
 
 			void peerMisbehaving(const PeerPtr &peer);
-
-			void updateFilterPingDone(const PeerPtr &peer, int success);
-
-			void loadBloomFilterDone(const PeerPtr &peer, int success);
 
 			std::vector<UInt128> addressLookup(const std::string &hostname);
 
@@ -226,6 +225,22 @@ namespace Elastos {
 			std::vector<UInt256> getBlockLocators(size_t locatorsCount);
 
 			void loadMempools();
+
+
+			void requestUnrelayedTx(const PeerPtr &peer);
+
+			bool peerListHasPeer(const std::vector<TransactionPeerList> &peerList, const UInt256 &txhash,
+								 const PeerPtr &peer);
+
+			size_t PeerListCount(const std::vector<TransactionPeerList> &list, const UInt256 &txhash);
+
+			void loadBloomFilterDone(const PeerPtr &peer, int success);
+
+			void updateFilterPingDone(const PeerPtr &peer, int success);
+
+			void mempoolDone(const PeerPtr &peer, int success);
+
+			void requestUnrelayedTxGetDataDone(const PeerPtr &peer, int success);
 
 		private:
 			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;

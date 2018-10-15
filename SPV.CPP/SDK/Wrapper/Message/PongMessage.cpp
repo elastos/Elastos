@@ -41,7 +41,6 @@ namespace Elastos {
 				}
 
 				if (_peer->getPongCallbacks().size() > 0) {
-					PeerCallbackInfo info = _peer->popPongCallbackInfo();
 					Peer::PeerCallback callback = _peer->popPongCallback();
 					if (!callback.empty()) callback(1);
 				}

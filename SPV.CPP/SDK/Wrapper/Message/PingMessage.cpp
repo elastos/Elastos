@@ -70,9 +70,8 @@ namespace Elastos {
 			const PingParameter &pingParameter = dynamic_cast<const PingParameter &>(param);
 			_peer->setStartTime(tv.tv_sec + (double) tv.tv_usec / 1000000);
 
-			_peer->addPongCallbackInfo(pingParameter.callbackInfo);
 			_peer->addPongCallback(pingParameter.callback);
-			UInt64SetLE(msg, pingParameter.callbackInfo.manager->getLastBlockHeight());
+			UInt64SetLE(msg, _peer->getPeerManager()->getLastBlockHeight());
 
 			CMBlock msgBlock(sizeof(msg));
 			memcpy(msgBlock, msg, sizeof(msg));

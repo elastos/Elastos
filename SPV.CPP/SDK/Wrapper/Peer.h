@@ -13,10 +13,10 @@
 
 #include "Wrapper.h"
 #include "CMemBlock.h"
-#include "PeerCallbackInfo.h"
 #include "PeerInfo.h"
 #include "Message/Message.h"
 #include "Transaction/ElementSet.h"
+#include "UInt256ValueSet.h"
 
 #define MSG_VERSION     "version"
 #define MSG_VERACK      "verack"
@@ -95,7 +95,7 @@ namespace Elastos {
 
 				virtual void OnSetFeePerKb(const PeerPtr &peer, uint64_t feePerKb) = 0;
 
-				virtual const TransactionPtr & OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
+				virtual const TransactionPtr &OnRequestedTx(const PeerPtr &peer, const UInt256 &txHash) = 0;
 
 				virtual bool OnNetworkIsReachable(const PeerPtr &peer) = 0;
 
@@ -103,6 +103,12 @@ namespace Elastos {
 			};
 
 			typedef boost::function<void(int)> PeerCallback;
+
+			struct UInt256Compare {
+				bool operator()(const UInt256 *first, const UInt256 *second) const {
+					return UInt256LessThan(first, second) == 1;
+				}
+			};
 
 		public:
 			Peer(PeerManager *manager, uint32_t magicNumber);
@@ -209,7 +215,7 @@ namespace Elastos {
 
 			void SetLastBlockHash(const UInt256 &hash);
 
-			const std::set<UInt256> &KnownTxHashSet() const;
+			const UInt256ValueSet &KnownTxHashSet() const;
 
 			void AddKnownTxHashes(const std::vector<UInt256> &txHashes);
 
@@ -223,15 +229,19 @@ namespace Elastos {
 
 			void setPingTime(double time);
 
-			void addPongCallbackInfo(const PeerCallbackInfo &callbackInfo);
-
 			void addPongCallback(const PeerCallback &callback);
-
-			PeerCallbackInfo popPongCallbackInfo();
 
 			PeerCallback popPongCallback();
 
 			const std::deque<PeerCallback> &getPongCallbacks() const;
+
+			const PeerCallback &getMemPoolCallback() const;
+
+			void setMempoolCallback(const PeerCallback &callback);
+
+			void setMempoolTime(double time);
+
+			void resetMemPool();
 
 			PeerManager *getPeerManager() const;
 
@@ -349,11 +359,10 @@ namespace Elastos {
 			UInt256 _lastBlockHash;
 			MerkleBlockPtr _currentBlock;
 			std::vector<UInt256> _currentBlockTxHashes, _knownBlockHashes, _knownTxHashes;
-			std::set<UInt256> _knownTxHashSet;
+			UInt256ValueSet _knownTxHashSet;
 			volatile int _socket;
 
 			PeerCallback _mempoolCallback;
-			std::deque<PeerCallbackInfo> _pongInfoList;
 			std::deque<PeerCallback> _pongCallbackList;
 
 			typedef boost::shared_ptr<Message> MessagePtr;

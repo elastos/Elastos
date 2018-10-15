@@ -285,8 +285,6 @@ namespace Elastos {
 						if (!error && time >= _mempoolTime) {
 							Pinfo("done waiting for mempool response");
 							PingParameter pingParameter;
-							pingParameter.callbackInfo.manager = _manager;
-							pingParameter.callbackInfo.peer = shared_from_this();
 							pingParameter.callback = _mempoolCallback;
 							SendMessage(MSG_PING, pingParameter);
 							_mempoolCallback = PeerCallback();
@@ -368,8 +366,6 @@ namespace Elastos {
 
 			while (!_pongCallbackList.empty()) {
 				Peer::PeerCallback pongCallback = popPongCallback();
-				popPongCallbackInfo();
-
 				if (pongCallback) pongCallback(0);
 			}
 
@@ -498,16 +494,15 @@ namespace Elastos {
 			_lastBlockHash = hash;
 		}
 
-		const std::set<UInt256> &Peer::KnownTxHashSet() const {
+		const UInt256ValueSet &Peer::KnownTxHashSet() const {
 			return _knownTxHashSet;
 		}
 
 		void Peer::AddKnownTxHashes(const std::vector<UInt256> &txHashes) {
 			for (size_t i = 0; i < txHashes.size(); i++) {
-				if (! Utils::UInt256SetContains(_knownTxHashSet, txHashes[i])) {
+				if (! _knownTxHashSet.Contains(txHashes[i])) {
 					_knownTxHashes.push_back(txHashes[i]);
-					// fixme [refactor]
-//					_knownTxHashSet.insert(txHashes[i]);
+					_knownTxHashSet.Insert(txHashes[i]);
 				}
 			}
 		}
@@ -603,10 +598,6 @@ namespace Elastos {
 			_startTime = time;
 		}
 
-		void Peer::addPongCallbackInfo(const PeerCallbackInfo &callbackInfo) {
-			_pongInfoList.push_back(callbackInfo);
-		}
-
 		void Peer::addPongCallback(const PeerCallback &callback) {
 			_pongCallbackList.push_back(callback);
 		}
@@ -625,12 +616,6 @@ namespace Elastos {
 
 		void Peer::setPingTime(double time) {
 			_pingTime = time;
-		}
-
-		PeerCallbackInfo Peer::popPongCallbackInfo() {
-			PeerCallbackInfo result = _pongInfoList.front();
-			_pongInfoList.pop_front();
-			return result;
 		}
 
 		Peer::PeerCallback Peer::popPongCallback() {
@@ -657,6 +642,23 @@ namespace Elastos {
 
 		void Peer::SetCurrentBlock(const MerkleBlockPtr &block) {
 			_currentBlock = block;
+		}
+
+		const Peer::PeerCallback &Peer::getMemPoolCallback() const {
+			return _mempoolCallback;
+		}
+
+		void Peer::resetMemPool() {
+			_mempoolCallback = PeerCallback();
+			_mempoolTime = DBL_MAX;
+		}
+
+		void Peer::setMempoolCallback(const Peer::PeerCallback &callback) {
+			_mempoolCallback = callback;
+		}
+
+		void Peer::setMempoolTime(double time) {
+			_mempoolTime = time;
 		}
 
 	}

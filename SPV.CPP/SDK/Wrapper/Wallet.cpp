@@ -159,39 +159,6 @@ namespace Elastos {
 			return balance;
 		}
 
-//		std::vector<TransactionPtr> Wallet::getTransactions() const {
-//			size_t transactionCount = BRWalletTransactions((BRWallet *) _wallet, NULL, 0);
-//
-//			BRTransaction **_transactions = (BRTransaction **) calloc(transactionCount, sizeof(BRTransaction *));
-//			transactionCount = BRWalletTransactions((BRWallet *) _wallet, _transactions, transactionCount);
-//
-//			SharedWrapperList<Transaction, BRTransaction *> results(transactionCount);
-//			// TODO: Decide if copy is okay; if not, be sure to mark 'isRegistered = true'
-//			//   We should not copy; but we need to deal with wallet-initiated 'free'
-//			for (int index = 0; index < transactionCount; index++) {
-//				results.push_back(TransactionPtr(new Transaction(*(ELATransaction *) _transactions[index])));
-//			}
-//
-//			if (NULL != _transactions) free(_transactions);
-//			return results;
-//		}
-
-//		std::vector<TransactionPtr> Wallet::getTransactionsConfirmedBefore(uint32_t _blockHeight) const {
-//			size_t transactionCount = BRWalletTxUnconfirmedBefore((BRWallet *) _wallet, NULL, 0, _blockHeight);
-//
-//			BRTransaction **_transactions = (BRTransaction **) calloc(transactionCount, sizeof(BRTransaction *));
-//			transactionCount = BRWalletTxUnconfirmedBefore((BRWallet *) _wallet, _transactions, transactionCount,
-//														   _blockHeight);
-//
-//			SharedWrapperList<Transaction, BRTransaction *> results(transactionCount);
-//			for (int index = 0; index < transactionCount; index++) {
-//				results.push_back(TransactionPtr(new Transaction(*(ELATransaction *) _transactions[index])));
-//			}
-//
-//			if (NULL != _transactions) free(_transactions);
-//			return results;
-//		}
-
 		uint64_t Wallet::getBalance() const {
 			uint64_t result;
 			{
@@ -388,18 +355,6 @@ namespace Elastos {
 			}
 			return result;
 		}
-
-//		bool Wallet::inputFromWallet(const BRTxInput *in) {
-//			for (size_t i = 0; i < _transactions.size(); i++) {
-//				if (UInt256Eq(&in->txHash, &_transactions[i]->getHash())) {
-//					if (containsAddress(tx->outputs[in->index]->getAddress())) {
-//						return true;
-//					}
-//				}
-//			}
-//
-//			return false;
-//		}
 
 		bool Wallet::registerTransaction(const TransactionPtr &transaction) {
 			bool wasAdded = false, r = true;

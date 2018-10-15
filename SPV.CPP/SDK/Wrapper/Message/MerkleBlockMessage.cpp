@@ -49,7 +49,7 @@ namespace Elastos {
 				std::vector<UInt256> txHashes = block->MerkleBlockTxHashes();
 
 				for (size_t i = txHashes.size(); i > 0; i--) { // reverse order for more efficient removal as tx arrive
-					if (Utils::UInt256SetContains(_peer->KnownTxHashSet(), txHashes[i - 1])) continue;
+					if (_peer->KnownTxHashSet().Contains(txHashes[i - 1])) continue;
 					_peer->AddCurrentBlockTxHash(txHashes[i - 1]);
 				}
 			}

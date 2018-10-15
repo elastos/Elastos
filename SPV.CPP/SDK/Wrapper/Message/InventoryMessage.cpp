@@ -11,6 +11,7 @@
 #include "Utils.h"
 #include "GetDataMessage.h"
 #include "GetBlocksMessage.h"
+#include "PingMessage.h"
 
 #define MAX_BLOCKS_COUNT 100  //note max blocks count is 500 in btc while 100 in ela
 #define MAX_GETDATA_HASHES 50000
@@ -107,7 +108,7 @@ namespace Elastos {
 					for (i = 0; i < txCount; i++) {
 						hash = *(UInt256 *) transactions[i];
 
-						if (Utils::UInt256SetContains(_peer->KnownTxHashSet(), hash)) {
+						if (_peer->KnownTxHashSet().Contains(hash)) {
 							FireHasTx(hash);
 						} else {
 							txHashes.push_back(hash);
@@ -131,13 +132,13 @@ namespace Elastos {
 						_peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
 					}
 
-					// fixme [refactor]
-//					if (txCount > 0 && _peer->mempoolCallback) {
-//						_peer->Pinfo("got initial mempool response");
-//						ctx->manager->peerMessages->BRPeerSendPingMessage(peer, ctx->mempoolInfo, ctx->mempoolCallback);
-//						ctx->mempoolCallback = nullptr;
-//						ctx->mempoolTime = DBL_MAX;
-//					}
+					if (txCount > 0 && !_peer->getMemPoolCallback().empty()) {
+						_peer->Pinfo("got initial mempool response");
+						PingParameter pingParameter;
+						pingParameter.callback = _peer->getMemPoolCallback();
+						_peer->SendMessage(MSG_PING, pingParameter);
+						_peer->resetMemPool();
+					}
 				}
 			}
 

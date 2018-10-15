@@ -83,8 +83,7 @@ namespace Elastos {
 
 			static UInt168 codeToProgramHash(const CMBlock &redeemScript);
 
-			static bool UInt256SetContains(const std::set<UInt256> &UInt256Set, const UInt256 &item);
-
+			static bool UInt256SetContains(const std::set<UInt256> &set, const UInt256 &hash);
 		};
 	}
 }
