@@ -179,7 +179,7 @@ IMasterWallet *TestConnectPeer::createMultiSignWalletFromPrivKey(boost::shared_p
 		" \"03E5B45B44BB1E2406C55B7DD84B727FAD608BA7B7C11A9C5FFBFEE60E427BD1DA\"]");
 	std::string privKey = "C1BD9550387E49F2A2CB012C2B794DD2E4C4B3ABC614A0C485D848C2A9136A29";
 	walletManager->CreateMultiSignMasterWallet("MultiSign", privKey, payPassword, coSigners, 3);
-	return walletManager->GetWallet("MultiSIgn");
+	return walletManager->GetWallet("MultiSign");
 }
 
 void TestConnectPeer::runPeerConnectTest_WalletFactory() {
