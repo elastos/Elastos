@@ -147,7 +147,6 @@ func main() {
 
 	eladlog.Info("5. --Start the RPC service")
 	service := sv.NewHttpService(&service.Config{
-		Logger:                      elalog,
 		Server:                      server,
 		Chain:                       chain,
 		TxMemPool:                   txPool,

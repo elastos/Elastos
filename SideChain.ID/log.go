@@ -1,20 +1,23 @@
 package main
 
 import (
+	"io"
+	"os"
+
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
-	"github.com/elastos/Elastos.ELA.SideChain/logger"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/netsync"
+	"github.com/elastos/Elastos.ELA.SideChain/peer"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
+	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/service/httpjsonrpc"
 	"github.com/elastos/Elastos.ELA.SideChain/service/httprestful"
 
+	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
-	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	p2pserver "github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
 const LogPath = "./logs/"
@@ -23,26 +26,28 @@ const LogPath = "./logs/"
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
-	elalog = logger.NewLog(
+	fileWriter = elalog.NewFileWriter(
 		LogPath,
-		config.Parameters.PrintLevel,
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
 	)
+	level   = elalog.Level(config.Parameters.PrintLevel)
+	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
+		elalog.Llongfile)
 
-	admrlog = elalog.Logger("ADMR")
-	cmgrlog = elalog.Logger("CMGR")
-	bcdblog = elalog.Logger("BCDB")
-	txmplog = elalog.Logger("TXMP")
-	synclog = elalog.Logger("SYNC")
-	peerlog = elalog.Logger("PEER")
-	minrlog = elalog.Logger("MINR")
-	spvslog = elalog.Logger("SPVS")
-	srvrlog = elalog.Logger("SRVR")
-	httplog = elalog.Logger("HTTP")
-	rpcslog = elalog.Logger("RPCS")
-	restlog = elalog.Logger("REST")
-	eladlog = elalog.Logger("ELAD")
+	admrlog = backend.Logger("ADMR", level)
+	cmgrlog = backend.Logger("CMGR", level)
+	bcdblog = backend.Logger("BCDB", level)
+	txmplog = backend.Logger("TXMP", level)
+	synclog = backend.Logger("SYNC", level)
+	peerlog = backend.Logger("PEER", level)
+	minrlog = backend.Logger("MINR", level)
+	spvslog = backend.Logger("SPVS", level)
+	srvrlog = backend.Logger("SRVR", level)
+	httplog = backend.Logger("HTTP", level)
+	rpcslog = backend.Logger("RPCS", level)
+	restlog = backend.Logger("REST", level)
+	eladlog = backend.Logger("ELAD", level)
 )
 
 // The default amount of logging is none.
@@ -53,7 +58,7 @@ func init() {
 	mempool.UseLogger(txmplog)
 	netsync.UseLogger(synclog)
 	peer.UseLogger(peerlog)
-	p2pserver.UseLogger(srvrlog)
+	server.UseLogger(srvrlog)
 	pow.UseLogger(minrlog)
 	service.UseLogger(httplog)
 	httpjsonrpc.UseLogger(rpcslog)
