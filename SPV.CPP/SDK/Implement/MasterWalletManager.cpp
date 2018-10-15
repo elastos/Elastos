@@ -362,7 +362,8 @@ namespace Elastos {
 						  [masterWallet, &hasRedundant](const MasterWalletMap::value_type &item) {
 							  if (item.second != nullptr) {
 								  const MasterWallet *createdWallet = static_cast<const MasterWallet *>(item.second);
-								  hasRedundant = masterWallet->IsEqual(*createdWallet);
+								  if (!hasRedundant)
+									  hasRedundant = masterWallet->IsEqual(*createdWallet);
 							  }
 						  });
 

@@ -764,6 +764,8 @@ static int _BRPeerAcceptGetdataMessage(BRPeer *peer, const uint8_t *msg, size_t 
 	return r;
 }
 
+#define time_after(a,b)  ((long)(b) - (long)(a) < 0)
+
 int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 {
 	int r = 1;
@@ -777,9 +779,9 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		BRPeerSendMessage(peer, msg, msgLen, MSG_PONG);
 
 		BRPeerContext *ctx = (BRPeerContext *)peer;
+		BRPeerManager *manager = ctx->manager;
 
-		if (ctx->sentVerack && ctx->gotVerack && ctx->sentFilter && ctx->sentMempool) {
-			BRPeerManager *manager = ctx->manager;
+		if (time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
 			int haveTxPending = 0;
 
 			pthread_mutex_lock(&manager->lock);

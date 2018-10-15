@@ -377,12 +377,20 @@ namespace Elastos {
 					ELATransactionFree(transaction);
 					transaction = nullptr;
 
-					ParamChecker::checkCondition(true, Error::CreateTransaction, "Tx size larger than " + std::to_string(TX_MAX_SIZE));
-#if 0
 					// check for sufficient total funds before building a smaller transaction
 					if (wallet->balance < amount + (fee > 0 ? fee : _txFee(wallet->feePerKb, 10 +
 						array_count(wallet->utxos) * TX_INPUT_SIZE + (outCount + 1) * TX_OUTPUT_SIZE + cpfpSize)))
 						break;
+
+					if (balance > feeAmount + minAmount) {
+						double maxAmount = ((balance - feeAmount - minAmount) / 10000) / 10000.0;
+						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
+													 "Tx size too large, amount should less than " +
+													 std::to_string(maxAmount), balance - feeAmount - minAmount);
+					} else {
+						ParamChecker::checkCondition(true, Error::CreateTransaction, "Balance not enough");
+					}
+#if 0
 					pthread_mutex_unlock(&wallet->lock);
 
 					if (outputs[outCount - 1].amount > amount + feeAmount + minAmount - balance) {
@@ -402,8 +410,8 @@ namespace Elastos {
 
 					balance = amount = feeAmount = 0;
 					pthread_mutex_lock(&wallet->lock);
-					break;
 #endif
+					break;
 				}
 
 				balance += tx->outputs[o->n]->getAmount();

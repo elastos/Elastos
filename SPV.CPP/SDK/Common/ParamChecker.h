@@ -28,7 +28,9 @@ namespace Elastos {
 				PubKeyLength,
 				DepositParam,
 				WithdrawParam,
+				CreateTransactionExceedSize,
 				CreateTransaction,
+				Transaction,
 				PathNotExist,
 				PayloadRegisterID,
 				SqliteError,
@@ -36,7 +38,6 @@ namespace Elastos {
 				WrongAccountType,
 				WrongNetType,
 				InvalidCoinType,
-				Transaction,
 				NoCurrentMultiSinAccount,
 				MultiSignersCount,
 				MultiSign,
@@ -64,7 +65,12 @@ namespace Elastos {
 
 			static nlohmann::json mkErrorJson(Error::Code err, const std::string &msg);
 
+			static nlohmann::json mkErrorJson(Error::Code err, const std::string &msg, uint64_t data);
+
 			static void checkCondition(bool condition, Error::Code err, const std::string &msg,
+									   Exception::Type type = Exception::LogicError);
+
+			static void checkCondition(bool condition, Error::Code err, const std::string &msg, uint64_t data,
 									   Exception::Type type = Exception::LogicError);
 
 			static void checkPassword(const std::string &password, const std::string &msg);
