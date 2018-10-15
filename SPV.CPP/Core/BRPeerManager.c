@@ -750,6 +750,7 @@ static void _peerConnected(void *info)
             BRPeerDisconnect(manager->downloadPeer);
         }
 
+        manager->keepAliveTimestamp = time(NULL);
         manager->downloadPeer = peer;
         manager->isConnected = 1;
         manager->estimatedHeight = BRPeerLastBlock(peer);

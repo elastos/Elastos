@@ -19,10 +19,31 @@ namespace Elastos {
 			return j;
 		}
 
+		nlohmann::json ParamChecker::mkErrorJson(Error::Code err, const std::string &msg, uint64_t data) {
+			nlohmann::json j;
+			j["Code"] = err;
+			j["Message"] = msg;
+			j["Data"] = data;
+			return j;
+		}
+
 		void
 		ParamChecker::checkCondition(bool condition, Error::Code err, const std::string &msg, Exception::Type type) {
 			if (condition) {
 				nlohmann::json errJson = mkErrorJson(err, msg);
+
+				if (type == Exception::LogicError) {
+					throw std::logic_error(errJson.dump());
+				} else if (type == Exception::InvalidArgument) {
+					throw std::invalid_argument(errJson.dump());
+				}
+			}
+		}
+
+		void
+		ParamChecker::checkCondition(bool condition, Error::Code err, const std::string &msg, uint64_t data, Exception::Type type) {
+			if (condition) {
+				nlohmann::json errJson = mkErrorJson(err, msg, data);
 
 				if (type == Exception::LogicError) {
 					throw std::logic_error(errJson.dump());
