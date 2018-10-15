@@ -2,7 +2,6 @@ package: github.com/elastos/Elastos.ELA.SideChain.ID
 import:
 - package: github.com/golang/crypto
 - package: github.com/golang/sys
-- package: github.com/AlexpanXX/fsnotify
 - package: github.com/elastos/Elastos.ELA.Utility
   version: dev
 - package: github.com/elastos/Elastos.ELA.SideChain
