@@ -373,17 +373,15 @@ namespace Elastos {
 				memset(input->address, 0, sizeof(input->address));
 				strncpy(input->address, addr.c_str(), sizeof(input->address) - 1);
 
-				if (ELATransactionSize(transaction) + TX_OUTPUT_SIZE >
-					TX_MAX_SIZE) { // transaction size-in-bytes too large
-					delete transaction;
+				if (ELATransactionSize(transaction) + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
+					ELATransactionFree(transaction);
 					transaction = nullptr;
 
+					ParamChecker::checkCondition(true, Error::CreateTransaction, "Tx size larger than " + std::to_string(TX_MAX_SIZE));
+#if 0
 					// check for sufficient total funds before building a smaller transaction
-					if (wallet->balance < amount + fee > 0 ? fee : _txFee(wallet->feePerKb, 10 +
-																							array_count(wallet->utxos) *
-																							TX_INPUT_SIZE +
-																							(outCount + 1) *
-																							TX_OUTPUT_SIZE + cpfpSize))
+					if (wallet->balance < amount + (fee > 0 ? fee : _txFee(wallet->feePerKb, 10 +
+						array_count(wallet->utxos) * TX_INPUT_SIZE + (outCount + 1) * TX_OUTPUT_SIZE + cpfpSize)))
 						break;
 					pthread_mutex_unlock(&wallet->lock);
 
@@ -405,6 +403,7 @@ namespace Elastos {
 					balance = amount = feeAmount = 0;
 					pthread_mutex_lock(&wallet->lock);
 					break;
+#endif
 				}
 
 				balance += tx->outputs[o->n]->getAmount();
@@ -427,7 +426,7 @@ namespace Elastos {
 			pthread_mutex_unlock(&wallet->lock);
 
 			if (transaction && (outCount < 1 || balance < amount + feeAmount)) { // no outputs/insufficient funds
-				delete transaction;
+				ELATransactionFree(transaction);
 				transaction = nullptr;
 				ParamChecker::checkCondition(balance < amount + feeAmount, Error::CreateTransaction,
 											 "Available token is not enough");
