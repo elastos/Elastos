@@ -330,6 +330,7 @@ namespace Elastos {
 			size_t i, j, cpfpSize = 0;
 			BRUTXO *o;
 			BRAddress addr = BR_ADDRESS_NONE;
+			TransactionPtr txn(new Transaction(transaction, false));
 
 			assert(wallet != NULL);
 			ParamChecker::checkCondition(outputs == NULL || outCount == 0, Error::CreateTransaction, "Invalid outputs");
@@ -348,9 +349,7 @@ namespace Elastos {
 
 			minAmount = BRWalletMinOutputAmount(wallet);
 			pthread_mutex_lock(&wallet->lock);
-			feeAmount = fee > 0 ? fee : _txFee(wallet->feePerKb,
-											   ELATransactionSize(transaction) + TX_OUTPUT_SIZE);
-			transaction->fee = feeAmount;
+			feeAmount = txn->calculateFee(wallet->feePerKb);
 
 			// TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
 			// TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
@@ -373,20 +372,25 @@ namespace Elastos {
 				memset(input->address, 0, sizeof(input->address));
 				strncpy(input->address, addr.c_str(), sizeof(input->address) - 1);
 
-				if (ELATransactionSize(transaction) + TX_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
+				if (txn->getSize() + TX_RECHARGE_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
+					feeAmount = txn->calculateFee(wallet->feePerKb) + wallet->feePerKb;
 					ELATransactionFree(transaction);
 					transaction = nullptr;
 
 					// check for sufficient total funds before building a smaller transaction
-					if (wallet->balance < amount + (fee > 0 ? fee : _txFee(wallet->feePerKb, 10 +
-						array_count(wallet->utxos) * TX_INPUT_SIZE + (outCount + 1) * TX_OUTPUT_SIZE + cpfpSize)))
+					if (wallet->balance < amount + feeAmount) {
+						Log::getLogger()->error("Not enough sufficient total funds for building a smaller tx.");
 						break;
+					}
+
+					pthread_mutex_unlock(&wallet->lock);
 
 					if (balance > feeAmount + minAmount) {
 						double maxAmount = ((balance - feeAmount - minAmount) / 10000) / 10000.0;
 						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
 													 "Tx size too large, amount should less than " +
-													 std::to_string(maxAmount), balance - feeAmount - minAmount);
+													 std::to_string(maxAmount),
+													 balance - feeAmount - minAmount);
 					} else {
 						ParamChecker::checkCondition(true, Error::CreateTransaction, "Balance not enough");
 					}
@@ -422,8 +426,7 @@ namespace Elastos {
 //            ! _BRWalletTxIsSend(wallet, tx)) cpfpSize += BRTransactionSize(tx);
 
 				// fee amount after adding a change output
-				feeAmount = fee > 0 ? fee : _txFee(wallet->feePerKb,
-												   ELATransactionSize(transaction) + TX_OUTPUT_SIZE + cpfpSize);
+				feeAmount = txn->calculateFee(wallet->feePerKb);
 
 				// increase fee to round off remaining wallet balance to nearest 100 satoshi
 				if (wallet->balance > amount + feeAmount) feeAmount += (wallet->balance - (amount + feeAmount)) % 100;
@@ -449,6 +452,7 @@ namespace Elastos {
 																  address.getSignType());
 
 				transaction->outputs.push_back(output);
+				transaction->fee = feeAmount;
 			}
 
 			return (BRTransaction *) transaction;
