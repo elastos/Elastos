@@ -9,13 +9,14 @@
 #include "SingleSubAccount.h"
 #include "MultiSignAccount.h"
 #include "MultiSignSubAccount.h"
+#include "StandardSingleSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		SubAccountGenerator::SubAccountGenerator() :
-			_masterPubKey(nullptr),
-			_resultChainCode(UINT256_ZERO) {
+				_masterPubKey(nullptr),
+				_resultChainCode(UINT256_ZERO) {
 
 		}
 
@@ -30,13 +31,15 @@ namespace Elastos {
 				return new MultiSignSubAccount(_parentAccount);
 			} else {
 				if (_coinInfo.getSingleAddress()) {
-					return new SingleSubAccount(_parentAccount);
+					if (_masterPubKey == nullptr)
+						return new SingleSubAccount(_parentAccount);
+					else
+						return new StandardSingleSubAccount(*_masterPubKey, _parentAccount, _coinInfo.getIndex());
 				} else {
-					if (_masterPubKey == nullptr) {
+					if (_masterPubKey == nullptr)
 						return GenerateFromCoinInfo(_parentAccount, _coinInfo);
-					} else {
+					else
 						return GenerateFromHDPath(_parentAccount, _coinInfo.getIndex());
-					}
 				}
 			}
 		}

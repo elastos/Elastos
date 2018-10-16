@@ -8,6 +8,7 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		SubAccountBase::SubAccountBase(IAccount *account) :
+			_coinIndex(0),
 			_parentAccount(account) {
 
 		}
