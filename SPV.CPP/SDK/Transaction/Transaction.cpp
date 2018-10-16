@@ -204,7 +204,9 @@ namespace Elastos {
 		}
 
 		size_t Transaction::getSize() {
-			return ELATransactionSize(_transaction);
+			ByteStream stream;
+			Serialize(stream);
+			return stream.getBuffer().GetSize();
 		}
 
 		uint64_t Transaction::getStandardFee() {
@@ -243,7 +245,6 @@ namespace Elastos {
 				}
 			}
 
-			SPDLOG_DEBUG(Log::getLogger(),"Transaction transactionSign input sign begin.");
 			size_t size = _transaction->raw.inCount;
 			for (i = 0; i < size; i++) {
 				BRTxInput *input = &_transaction->raw.inputs[i];
@@ -269,7 +270,6 @@ namespace Elastos {
 					program = _transaction->programs[i];
 				}
 
-				SPDLOG_DEBUG(Log::getLogger(),"Transaction transactionSign begin sign the {} input.", i);
 				const uint8_t *elems[BRScriptElements(NULL, 0, program->getCode(), program->getCode().GetSize())];
 				size_t elemsCount = BRScriptElements(elems, sizeof(elems) / sizeof(*elems), program->getCode(),
 													 program->getCode().GetSize());
@@ -282,7 +282,6 @@ namespace Elastos {
 				serializeUnsigned(ostream);
 				CMBlock data = ostream.getBuffer();
 				if (elemsCount >= 2 && *elems[elemsCount - 2] == OP_EQUALVERIFY) { // pay-to-pubkey-hash
-					SPDLOG_DEBUG(Log::getLogger(),"Transaction transactionSign the {} input pay to pubkey hash.", i);
 
 					BRSHA256_2(&md, data, data.GetSize());
 					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
@@ -291,8 +290,6 @@ namespace Elastos {
 					scriptLen += BRScriptPushData(&script[scriptLen], sizeof(script) - scriptLen, pubKey, pkLen);
 					BRTxInputSetSignature(input, script, scriptLen);
 				} else { // pay-to-pubkey
-					SPDLOG_DEBUG(Log::getLogger(),"Transaction transactionSign the {} input pay to pubkey.", i);
-
 					BRSHA256_2(&md, data, data.GetSize());
 					sigLen = BRKeySign(keys[j].getRaw(), sig, sizeof(sig) - 1, md);
 					sig[sigLen++] = forkId | SIGHASH_ALL;
@@ -304,7 +301,6 @@ namespace Elastos {
 				BRSHA256(shaData, data, data.GetSize());
 				CMBlock signData = keys[j].compactSign(shaData);
 				program->setParameter(signData);
-				SPDLOG_DEBUG(Log::getLogger(),"Transaction transactionSign end sign the {} input.", i);
 			}
 
 			return isSigned();
@@ -656,10 +652,7 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::calculateFee(uint64_t feePerKb) {
-			ByteStream stream;
-			Serialize(stream);
-			uint64_t size = stream.getBuffer().GetSize();
-			return ((size + 999) / 1000) * feePerKb;
+			return ((getSize() + 999) / 1000) * feePerKb;
 		}
 
 		uint64_t Transaction::getTxFee(const boost::shared_ptr<Wallet> &wallet) {
