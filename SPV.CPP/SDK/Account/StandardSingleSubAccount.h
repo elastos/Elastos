@@ -2,30 +2,23 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_SINGLESUBACCOUNT_H__
-#define __ELASTOS_SDK_SINGLESUBACCOUNT_H__
+#ifndef __ELASTOS_SDK_STANDARDSINGLESUBACCOUNT_H__
+#define __ELASTOS_SDK_STANDARDSINGLESUBACCOUNT_H__
 
-#include "SubAccountBase.h"
+#include "SingleSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class SingleSubAccount : public SubAccountBase {
+		class StandardSingleSubAccount : public SingleSubAccount {
 		public:
-			SingleSubAccount(IAccount *account);
-
-			~SingleSubAccount();
-
-			virtual nlohmann::json GetBasicInfo() const;
+			StandardSingleSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex);
 
 			virtual void InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet);
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword);
 
 			virtual std::string GetMainAccountPublicKey() const;
-
-			virtual void
-			SignTransaction(const TransactionPtr &transaction, ELAWallet *wallet, const std::string &payPassword);
 
 		protected:
 			virtual WrapperList<Key, BRKey>
@@ -36,5 +29,4 @@ namespace Elastos {
 	}
 }
 
-
-#endif //__ELASTOS_SDK_SINGLESUBACCOUNT_H__
+#endif //__ELASTOS_SDK_STANDARDSINGLESUBACCOUNT_H__

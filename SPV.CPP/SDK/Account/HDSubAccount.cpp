@@ -12,9 +12,9 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		HDSubAccount::HDSubAccount(const MasterPubKey &masterPubKey, IAccount *account, uint32_t coinIndex) :
-				SubAccountBase(account),
-				_coinIndex(coinIndex),
-				_masterPubKey(masterPubKey) {
+				SubAccountBase(account) {
+				_coinIndex = coinIndex;
+				_masterPubKey = masterPubKey;
 		}
 
 		void HDSubAccount::InitWallet(BRTransaction *transactions[], size_t txCount, ELAWallet *wallet) {

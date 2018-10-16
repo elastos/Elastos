@@ -6,6 +6,7 @@
 #define SPVSDK_SUBACCOUNTBASE_H
 
 #include "ISubAccount.h"
+#include "MasterPubKey.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -18,6 +19,8 @@ namespace Elastos {
 
 		protected:
 			IAccount *_parentAccount;
+			MasterPubKey _masterPubKey;
+			uint32_t _coinIndex;
 		};
 
 	}
