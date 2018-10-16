@@ -73,37 +73,3 @@ TEST_CASE("MasterPubKey method test", "[MasterPubKey]") {
 		REQUIRE(std::string(pubkey1) != std::string(pubkey2));
 	}
 }
-
-TEST_CASE("MasterPubKey static method test", "[MasterPubKey]") {
-	SECTION("bip32BitIDKey method test") {
-		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-		CMBlock seedByte;
-		seedByte.SetMemFixed(seed.u8, sizeof(seed));
-
-		CMBlock byteData;
-		byteData = MasterPubKey::bip32BitIDKey(seedByte, 0, "https://www.elastos.org");
-		REQUIRE(byteData != false);
-		REQUIRE(byteData.GetSize() > 0);
-	}
-}
-
-TEST_CASE("Mnemonic test", "[MasterPubKey]") {
-	std::vector<std::string> words;
-	for (std::string str : BRBIP39WordsEn) {
-		words.push_back(str);
-	}
-
-	SECTION("Invalid mnemonic test") {
-		std::string s = "bless bird birth blind blossom boil bonus entry equal error fence fetch";
-		REQUIRE(!MasterPubKey::validateRecoveryPhrase(words, s));
-	}
-
-	SECTION("phrase validate method test") {
-
-		UInt128 seed = *(UInt128 *) "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
-
-		std::string paperKey = MasterPubKey::generatePaperKey(seed, words);
-		REQUIRE(paperKey.size() > 0 );
-		REQUIRE(MasterPubKey::validateRecoveryPhrase(words, paperKey));
-	}
-}

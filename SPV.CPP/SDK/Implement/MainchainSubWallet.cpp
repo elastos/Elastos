@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <boost/scoped_ptr.hpp>
+#include <SDK/ELACoreExt/Payload/Asset.h>
 
 #include "MainchainSubWallet.h"
 #include "KeyStore/CoinInfo.h"
@@ -38,7 +39,7 @@ namespace Elastos {
 																	const std::string &remark) {
 			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount,
 																			 _info.getMinFee(), memo, remark));
-			txParam->setAssetId(Key::getSystemAssetId());
+			txParam->setAssetId(Asset::GetELAAsset());
 
 			ParamChecker::checkJsonArray(sidechainAccounts, 1, "Side chain accounts");
 			ParamChecker::checkJsonArray(sidechainAmounts, 1, "Side chain amounts");

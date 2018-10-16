@@ -44,6 +44,7 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+		public:
 			static bool ParseMultiSignRedeemScript(const CMBlock &code, uint8_t &m, uint8_t &n,
 												   std::vector<std::string> &signers);
 

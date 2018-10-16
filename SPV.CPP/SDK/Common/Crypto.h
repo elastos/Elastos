@@ -15,22 +15,24 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class AES_256_CCM {
-			static bool _bInit;
+		class Crypto {
 		public:
-			static bool Init();
-
 			static bool GenerateSaltAndIV(CMemBlock<unsigned char> &salt, CMemBlock<unsigned char> &iv);
 
 			static CMBlock
-			encrypt(unsigned char *plainText, size_t szPlainText, unsigned char *password, size_t szPassword,
-					unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
-					unsigned char *aad = nullptr, size_t szAad = 0);
+			Encrypt_AES256CCM(unsigned char *plainText, size_t szPlainText, unsigned char *password, size_t szPassword,
+							  unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
+							  unsigned char *aad = nullptr, size_t szAad = 0);
 
 			static CMBlock
-			decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
-					unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
-					unsigned char *aad = nullptr, size_t szAad = 0);
+			Decrypt_AES256CCM(unsigned char *cipherText, size_t szCipherText, unsigned char *password,
+							  size_t szPassword,
+							  unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128 = false,
+							  unsigned char *aad = nullptr, size_t szAad = 0);
+
+		private:
+			static void Init();
+			static bool _bInit;
 		};
 	}
 }

@@ -5,10 +5,12 @@
 #ifndef __ELASTOS_SDK_SPVSDK_ASSET_H
 #define __ELASTOS_SDK_SPVSDK_ASSET_H
 
+#include "BRInt.h"
 #include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
 namespace Elastos {
 	namespace ElaWallet {
+
 		class Asset :
 				public ELAMessageSerializable {
 		public:
@@ -55,12 +57,17 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+		public:
+			static const UInt256 &GetELAAsset();
+
 		private:
 			std::string _name;
 			std::string _description;
 			uint8_t _precision;
 			AssetType _assetType;
 			AssetRecordType _recordType;
+
+			static UInt256 _elaAsset;
 		};
 	}
 }

@@ -13,7 +13,7 @@
 #include "SjclFile.h"
 #include "Base64.h"
 #include "CMemBlock.h"
-#include "AES_256_CCM.h"
+#include "Crypto.h"
 #include "StandardAccount.h"
 #include "SimpleAccount.h"
 #include "MultiSignAccount.h"
@@ -56,9 +56,11 @@ namespace Elastos {
 			std::vector<unsigned char> adata = Base64::toBits(sjclFile.getAdata());
 			uint32_t ks = sjclFile.getKs();
 			CMBlock plaintext;
-			plaintext = AES_256_CCM::decrypt(ct.data(), ct.size(), (unsigned char *) password.c_str(), password.size(),
-											 salt.data(), salt.size(), iv.data(), iv.size(), 128 == ks ? true : false,
-											 adata.data(), adata.size());
+			plaintext = Crypto::Decrypt_AES256CCM(ct.data(), ct.size(), (unsigned char *) password.c_str(),
+												  password.size(),
+												  salt.data(), salt.size(), iv.data(), iv.size(),
+												  128 == ks ? true : false,
+												  adata.data(), adata.size());
 			if (false == plaintext)
 				return false;
 
@@ -94,12 +96,13 @@ namespace Elastos {
 			str_ss = ss.str();
 
 			CMemBlock<unsigned char> salt, iv;
-			AES_256_CCM::GenerateSaltAndIV(salt, iv);
+			Crypto::GenerateSaltAndIV(salt, iv);
 			CMBlock ciphertext;
 			bool bAes128 = false;
-			ciphertext = AES_256_CCM::encrypt((unsigned char *) str_ss.c_str(), str_ss.size(),
-											  (unsigned char *) password.c_str(), password.size(), salt, salt.GetSize(),
-											  iv, iv.GetSize(), bAes128);
+			ciphertext = Crypto::Encrypt_AES256CCM((unsigned char *) str_ss.c_str(), str_ss.size(),
+												   (unsigned char *) password.c_str(), password.size(), salt,
+												   salt.GetSize(),
+												   iv, iv.GetSize(), bAes128);
 			if (false == ciphertext)
 				return false;
 			std::string salt_base64 = Base64::fromBits(salt, salt.GetSize());

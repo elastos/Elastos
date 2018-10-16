@@ -46,18 +46,9 @@ namespace Elastos {
 
 			const UInt256 &getChainCode() const;
 
-		public:
-			static CMBlock bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri);
-
-			static bool validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase);
-
-			static std::string generatePaperKey(const UInt128 &seed, const std::vector<std::string> &words);
-
 		private:
 			boost::shared_ptr<BRMasterPubKey> _masterPubKey;
 		};
-
-		typedef boost::shared_ptr<MasterPubKey> MasterPubKeyPtr;
 
 	}
 }

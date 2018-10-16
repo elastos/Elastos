@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <BRInt.h>
+#include <SDK/ELACoreExt/Payload/Asset.h>
 #include "Key.h"
 #include "TransactionCreationParams.h"
 
@@ -171,7 +172,7 @@ namespace Elastos {
 			result->setToAddress(toAddress);
 			result->setAmount(amount);
 			result->setFee(fee);
-			result->setAssetId(Key::getSystemAssetId());
+			result->setAssetId(Asset::GetELAAsset());
 			result->setRemark(remark);
 			result->setMemo(memo);
 			return result;

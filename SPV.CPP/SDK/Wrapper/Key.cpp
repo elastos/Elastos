@@ -205,12 +205,6 @@ namespace Elastos {
 			return Key::verifyByPublicKey(pubKey, messageDigest, signature);
 		}
 
-		UInt256 Key::encodeSHA256(const std::string &message) {
-			UInt256 md;
-			BRSHA256((void *) &md, (void *) message.c_str(), strlen(message.c_str()));
-			return md;
-		}
-
 		const UInt160 Key::hashTo160() {
 			UInt160 hash = UINT160_ZERO;
 			size_t len = getCompressed() ? 33 : 65;
@@ -270,10 +264,5 @@ namespace Elastos {
 			return Utils::encodeHex(script, script.GetSize());
 		}
 
-		const UInt256 Key::getSystemAssetId() {
-			Transaction elaCoin;
-			elaCoin.setTransactionType(Transaction::RegisterAsset);
-			return elaCoin.getHash();
-		}
 	}
 }

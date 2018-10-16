@@ -4,6 +4,7 @@
 
 #include <SDK/Common/Utils.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/ELACoreExt/Payload/Asset.h>
 #include "TransactionCompleter.h"
 
 namespace Elastos {
@@ -54,7 +55,7 @@ namespace Elastos {
 										 "Tx complete asset ID without output");
 
 			UInt256 zero = UINT256_ZERO;
-			UInt256 assetID = Key::getSystemAssetId();
+			UInt256 assetID = Asset::GetELAAsset();
 
 			for (size_t i = 0; i < transaction->getSize(); ++i) {
 				if (UInt256Eq(&transaction->getOutputs()[0].getAssetId(), &zero) == 1) {
@@ -91,7 +92,7 @@ namespace Elastos {
 		}
 
 		void TransactionCompleter::modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange) {
-			const std::vector<TransactionOutput> &outputs = transaction->getOutputs();
+			std::vector<TransactionOutput> &outputs = transaction->getOutputs();
 			if (actualChange > 0) {
 				if (outputs.size() >= 2) {
 					outputs[1].setAmount(actualChange);

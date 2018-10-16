@@ -83,26 +83,6 @@ TEST_CASE("Key test", "[Key]") {
 		REQUIRE(key1.getPrivKey() == key2.getPrivKey());
 	}
 
-	SECTION("Key encodeSHA256 ,compactSign and verify test") {
-		std::string str = "Everything should be made as simple as possible, but not simpler.";
-		UInt256 hash = Key::encodeSHA256(str);
-		UInt256 zero = UINT256_ZERO;
-		int res = UInt256Eq(&hash, &zero);
-		REQUIRE(res == 0);
-
-		UInt256 secret = uint256("0000000000000000000000000000000000000000000000000000000000000001");
-		Key key(secret, true);
-
-		CMBlock md;
-		md.SetMemFixed(hash.u8, sizeof(hash));
-		CMBlock compactData = key.compactSign(md);
-		std::string dataHex = Utils::encodeHex(compactData);
-		REQUIRE(compactData.GetSize() == 65);
-
-		bool ret = key.verify(hash, compactData);
-		REQUIRE(ret == true);
-	}
-
 	SECTION("Key encryptNative test") {
 		uint8_t bytes1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F";
 		CMBlock data;

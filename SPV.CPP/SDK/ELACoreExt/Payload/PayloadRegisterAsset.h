@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PAYLOADREGISTERASSET_H
-#define __ELASTOS_SDK_PAYLOADREGISTERASSET_H
+#ifndef __ELASTOS_SDK_PAYLOADREGISTERASSET_H__
+#define __ELASTOS_SDK_PAYLOADREGISTERASSET_H__
 
 #include "IPayload.h"
 #include "Asset.h"
@@ -11,6 +11,7 @@
 
 namespace Elastos {
 	namespace ElaWallet {
+
 		class PayloadRegisterAsset :
 				public IPayload {
 		public:
@@ -50,4 +51,4 @@ namespace Elastos {
 	}
 }
 
-#endif //__ELASTOS_SDK_PAYLOADREGISTERASSET_H
+#endif //__ELASTOS_SDK_PAYLOADREGISTERASSET_H__

@@ -6,6 +6,7 @@
 #include <cstring>
 #include <Core/BRTransaction.h>
 #include <SDK/Wrapper/Address.h>
+#include <SDK/ELACoreExt/Payload/Asset.h>
 
 #include "TransactionOutput.h"
 #include "Utils.h"
@@ -39,7 +40,7 @@ namespace Elastos {
 		TransactionOutput::TransactionOutput(uint64_t a, const UInt168 &programHash) :
 			_amount(a),
 			_outputLock(0) {
-			_assetId = Key::getSystemAssetId();
+			_assetId = Asset::GetELAAsset();
 			memcpy(_programHash.u8, programHash.u8, sizeof(_programHash.u8));
 		}
 

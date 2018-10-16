@@ -82,42 +82,6 @@ namespace Elastos {
 			return _masterPubKey->chainCode;
 		}
 
-		CMBlock MasterPubKey::bip32BitIDKey(const CMBlock &seed, int index, const std::string &uri) {
-			BRKey key;
-			BRBIP32BitIDKey(&key, seed, (size_t) seed.GetSize(), (uint32_t) index, uri.c_str());
-			size_t dataLen = BRKeyPrivKey(&key, nullptr, 0);
-			char rawKey[dataLen];
-			BRKeyPrivKey(&key, rawKey, sizeof(rawKey));
-			CMBlock resultKey(dataLen);
-			memcpy(resultKey, rawKey, dataLen);
-
-			return resultKey;
-		}
-
-		bool MasterPubKey::validateRecoveryPhrase(const std::vector<std::string> &words, const std::string &phrase) {
-			char *wordList[words.size()];
-			for (int i = 0; i < words.size(); i++) {
-				wordList[i] = const_cast<char *>(words[i].c_str());
-			}
-			return BRBIP39PhraseIsValid((const char **) wordList, phrase.c_str()) != 0;
-		}
-
-		std::string MasterPubKey::generatePaperKey(const UInt128 &seed, const std::vector<std::string> &words) {
-			assert(words.size() == 2048);
-			char *wordList[words.size()];
-			for (int i = 0; i < words.size(); i++) {
-				wordList[i] = const_cast<char *>(words[i].c_str());
-			}
-
-			size_t size = BRBIP39Encode(nullptr, 0, (const char **) wordList, seed.u8, sizeof(seed));
-			char result[size];
-			size = BRBIP39Encode(result, sizeof(result), (const char **) wordList, seed.u8, sizeof(seed));
-
-			char resultChar[size];
-			memcpy(resultChar, result, size);
-			return std::string(resultChar, size);
-		}
-
 		MasterPubKey::MasterPubKey(const CMBlock &pubKey, const UInt256 &chainCode) {
 			_masterPubKey = boost::shared_ptr<BRMasterPubKey>(new BRMasterPubKey);
 

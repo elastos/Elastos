@@ -10,6 +10,7 @@
 #include <Core/BRAddress.h>
 #include <Core/BRBIP32Sequence.h>
 #include <SDK/Common/ParamChecker.h>
+#include <SDK/ELACoreExt/Payload/Asset.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"

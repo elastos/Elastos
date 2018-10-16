@@ -12,7 +12,7 @@
 
 #include "assert.h"
 #include "Utils.h"
-#include "AES_256_CCM.h"
+#include "Crypto.h"
 #include "Base64.h"
 #include "BRAddress.h"
 #include "Log.h"
@@ -162,9 +162,9 @@ namespace Elastos {
 		CMBlock
 		Utils::encrypt(const CMBlock &data, const std::string &password, CMBlock &salt, CMBlock &iv, bool bAes128) {
 			CMBlock ret;
-			CMBlock enc = AES_256_CCM::encrypt(data, data.GetSize(),
-											   (unsigned char *) password.c_str(), password.size(), salt,
-											   salt.GetSize(), iv, iv.GetSize(), bAes128);
+			CMBlock enc = Crypto::Encrypt_AES256CCM(data, data.GetSize(),
+													(unsigned char *) password.c_str(), password.size(), salt,
+													salt.GetSize(), iv, iv.GetSize(), bAes128);
 			if (true == enc) {
 				std::string enc_bs64 = Base64::fromBits(enc, enc.GetSize());
 				ret.Resize(enc_bs64.size() + 1);
@@ -183,8 +183,8 @@ namespace Elastos {
 			}
 			std::string enc_str = (const char *) (void *) encryptedData;
 			std::vector<unsigned char> enc = Base64::toBits(enc_str);
-			ret = AES_256_CCM::decrypt(enc.data(), enc.size(), (unsigned char *) password.c_str(), password.size(),
-									   salt, salt.GetSize(), iv, iv.GetSize(), bAes128);
+			ret = Crypto::Decrypt_AES256CCM(enc.data(), enc.size(), (unsigned char *) password.c_str(), password.size(),
+											salt, salt.GetSize(), iv, iv.GetSize(), bAes128);
 			return ret;
 		}
 

@@ -4,12 +4,16 @@
 
 #include <cstring>
 #include <SDK/Common/Log.h>
+#include <SDK/Transaction/Transaction.h>
 
 #include "Asset.h"
 #include "BRInt.h"
 
 namespace Elastos {
 	namespace ElaWallet {
+
+		UInt256 Asset::_elaAsset = UINT256_ZERO;
+
 		Asset::Asset() :
 				_name(""),
 				_description(""),
@@ -118,6 +122,16 @@ namespace Elastos {
 			_precision = j["Precision"].get<uint8_t>();
 			_assetType = j["AssetType"].get<AssetType>();
 			_recordType = j["RecordType"].get<AssetRecordType>();
+		}
+
+		const UInt256 &Asset::GetELAAsset() {
+			static UInt256 zero = UINT256_ZERO;
+			if (UInt256Eq(&_elaAsset, &zero)) {
+				Transaction elaCoin;
+				elaCoin.setTransactionType(Transaction::RegisterAsset);
+				_elaAsset = elaCoin.getHash();
+			}
+			return _elaAsset;
 		}
 	}
 }

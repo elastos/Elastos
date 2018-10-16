@@ -75,15 +75,12 @@ namespace Elastos {
 			const UInt168 hashTo168();
 
 		public:
-			static UInt256 encodeSHA256(const std::string &message);
 
 			static bool verifyByPublicKey(const std::string &publicKey, const std::string &message,
 										  const std::string &signature);
 
 			static bool verifyByPublicKey(const std::string &publicKey, const UInt256 &messageDigest,
 			                              const CMBlock &signature);
-
-			static const UInt256 getSystemAssetId();
 
 		private:
 

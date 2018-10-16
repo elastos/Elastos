@@ -7,7 +7,7 @@
 #include <openssl/ssl.h>
 #include "Utils.h"
 
-#include "AES_256_CCM.h"
+#include "Crypto.h"
 
 
 static int PLAINTEXTMAXLENGTH = CIPHERTEXTMAXLENGTH;
@@ -143,9 +143,9 @@ namespace Elastos {
 			}
 		}
 
-		bool AES_256_CCM::_bInit = false;
+		bool Crypto::_bInit = false;
 
-		bool AES_256_CCM::Init() {
+		void Crypto::Init() {
 			if (false == _bInit) {
 #if OPENSSL_API_COMPAT < 0x10100000L
 				OpenSSL_add_all_algorithms();
@@ -154,11 +154,9 @@ namespace Elastos {
 #endif
 				_bInit = true;
 			}
-
-			return true;
 		}
 
-		bool AES_256_CCM::GenerateSaltAndIV(CMemBlock<unsigned char> &salt, CMemBlock<unsigned char> &iv) {
+		bool Crypto::GenerateSaltAndIV(CMemBlock<unsigned char> &salt, CMemBlock<unsigned char> &iv) {
 			static unsigned char _salt[] = {0x65, 0x15, 0x63, 0x6B, 0x82, 0xC5, 0xAC, 0x56};
 			static unsigned char _iv[] = {0x9F, 0x62, 0x54, 0x4C, 0x9D, 0x3F, 0xCA, 0xB2, 0xDD, 0x08, 0x33, 0xDF, 0x21,
 										  0xCA, 0x80, 0xCF};
@@ -176,9 +174,10 @@ namespace Elastos {
 		}
 
 		CMBlock
-		AES_256_CCM::encrypt(unsigned char *plainText, size_t szPlainText, unsigned char *password, size_t szPassword,
-							 unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
-							 unsigned char *aad, size_t szAad) {
+		Crypto::Encrypt_AES256CCM(unsigned char *plainText, size_t szPlainText, unsigned char *password,
+								  size_t szPassword,
+								  unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
+								  unsigned char *aad, size_t szAad) {
 			CMBlock _ret;
 
 			Init();
@@ -210,9 +209,10 @@ namespace Elastos {
 		}
 
 		CMBlock
-		AES_256_CCM::decrypt(unsigned char *cipherText, size_t szCipherText, unsigned char *password, size_t szPassword,
-							 unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
-							 unsigned char *aad, size_t szAad) {
+		Crypto::Decrypt_AES256CCM(unsigned char *cipherText, size_t szCipherText, unsigned char *password,
+								  size_t szPassword,
+								  unsigned char *salt, size_t szSalt, unsigned char *iv, size_t szIv, bool bAes128,
+								  unsigned char *aad, size_t szAad) {
 			CMBlock _ret;
 
 			if (nullptr == cipherText || 8 >= szCipherText) {
