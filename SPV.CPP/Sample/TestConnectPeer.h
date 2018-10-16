@@ -2,7 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include "ISubWallet.h"
 #include "IMasterWallet.h"
@@ -15,9 +15,7 @@ using namespace Elastos::ElaWallet;
 
 class TestConnectPeer {
 public:
-	static void runPeerConnectTest_WalletManager();
-
-	static void runPeerConnectTest_WalletFactory();
+	static void RunPeerConnectTest();
 
 	static IMasterWallet *importWithKeystore(boost::shared_ptr<MasterWalletManager> walletFactory, const std::string &payPassword);
 	static IMasterWallet *importWithMnemonic(boost::shared_ptr<MasterWalletManager> walletFactory, const std::string &payPassword);
