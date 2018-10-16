@@ -13,6 +13,8 @@
 #include "CMemBlock.h"
 #include "SDK/Plugin/Interface/ELAMessageSerializable.h"
 
+#define TX_RECHARGE_OUTPUT_SIZE 65
+
 namespace Elastos {
 	namespace ElaWallet {
 
@@ -39,6 +41,8 @@ namespace Elastos {
 			virtual void Serialize(ByteStream &ostream) const;
 
 			virtual bool Deserialize(ByteStream &istream);
+
+			size_t getSize() const;
 
 			std::string getAddress() const;
 
