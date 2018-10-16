@@ -6,7 +6,6 @@
 #define __ELASTOS_SDK_HDSUBACCOUNT_H__
 
 #include "SubAccountBase.h"
-#include "MasterPubKey.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -30,10 +29,6 @@ namespace Elastos {
 
 			WrapperList<Key, BRKey> DeriveAccountAvailableKeys(ELAWallet *wallet, const std::string &payPassword,
 															   const TransactionPtr &transaction);
-
-		private:
-			MasterPubKey _masterPubKey;
-			uint32_t _coinIndex;
 		};
 	}
 }
