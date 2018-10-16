@@ -10,6 +10,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		struct TransactionParameter : public SendMessageParameter {
+			TransactionPtr tx;
+		};
+
 		class TransactionMessage :
 				public Message {
 		public:

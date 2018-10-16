@@ -31,7 +31,6 @@
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
-#define MAX_GETDATA_HASHES 50000
 #define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
 #define PROTOCOL_VERSION   70013
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
@@ -497,13 +496,22 @@ namespace Elastos {
 			_currentBlockTxHashes.push_back(hash);
 		}
 
+		void Peer::CurrentBlockTxHashesRemove(const UInt256 &hash) {
+			for (size_t i = 0; i < _currentBlockTxHashes.size(); ++i) {
+				if (UInt256Eq(&hash, &_currentBlockTxHashes[i])) {
+					_currentBlockTxHashes.erase(_currentBlockTxHashes.begin() + i);
+					break;
+				}
+			}
+		}
+
 		const std::vector<UInt256> &Peer::GetKnownBlockHashes() const {
 			return _knownBlockHashes;
 		}
 
 		void Peer::KnownBlockHashesRemoveRange(size_t index, size_t len) {
-			for (int i = int(len - 1); i >= index; --i) {
-				_knownBlockHashes.erase(_knownBlockHashes.begin() + i);
+			for (size_t i = len; i > index; --i) {
+				_knownBlockHashes.erase(_knownBlockHashes.begin() + i - 1);
 			}
 		}
 
@@ -672,6 +680,10 @@ namespace Elastos {
 
 		void Peer::SetCurrentBlock(const MerkleBlockPtr &block) {
 			_currentBlock = block;
+		}
+
+		const MerkleBlockPtr &Peer::CurrentBlock() const {
+			return _currentBlock;
 		}
 
 		const Peer::PeerCallback &Peer::getMemPoolCallback() const {

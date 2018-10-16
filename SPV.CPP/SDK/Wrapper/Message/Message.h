@@ -35,10 +35,21 @@
 #define MSG_REJECT      "reject"   // described in BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
 #define MSG_FEEFILTER   "feefilter"// described in BIP133 https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
 
+#define MAX_GETDATA_HASHES 50000
+
 namespace Elastos {
 	namespace ElaWallet {
 
 		class Peer;
+
+		namespace {
+			typedef enum {
+				inv_undefined = 0,
+				inv_tx = 1,
+				inv_block = 2,
+				inv_filtered_block = 3
+			} inv_type;
+		}
 
 		typedef boost::shared_ptr<Peer> MessagePeerPtr;
 

@@ -8,21 +8,12 @@
 #include "GetDataMessage.h"
 #include "Log.h"
 #include "Utils.h"
+#include "TransactionMessage.h"
 
-#define MAX_GETDATA_HASHES 50000
 #define TX_MAX_SIZE          100000      // no tx can be larger than this size in bytes
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		namespace {
-			enum inv_type{
-				inv_undefined = 0,
-				inv_tx = 1,
-				inv_block = 2,
-				inv_filtered_block = 3
-			};
-		}
 
 		GetDataMessage::GetDataMessage(const Elastos::ElaWallet::MessagePeerPtr &peer) : Message(peer) {
 
@@ -63,8 +54,9 @@ namespace Elastos {
 							tx = FireRequestedTx(hash);
 
 							if (tx != nullptr && tx->getSize() < TX_MAX_SIZE) {
-								// fixme [refactor]
-//								ctx->manager->peerMessages->BRPeerSendTxMessage(peer, tx);
+								TransactionParameter txParam;
+								txParam.tx = tx;
+								_peer->SendMessage(MSG_TX, txParam);
 								break;
 							}
 

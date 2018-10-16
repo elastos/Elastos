@@ -181,6 +181,8 @@ namespace Elastos {
 
 			void AddCurrentBlockTxHash(const UInt256 &hash);
 
+			void CurrentBlockTxHashesRemove(const UInt256 &hash);
+
 			const std::vector<UInt256> &GetKnownBlockHashes() const;
 
 			void KnownBlockHashesRemoveRange(size_t index, size_t len);
@@ -232,6 +234,8 @@ namespace Elastos {
 			void SetPeerInfo(const PeerInfo &info);
 
 			void SetCurrentBlock(const MerkleBlockPtr &block);
+
+			const MerkleBlockPtr &CurrentBlock() const;
 
 			std::string FormatError(int errnum);
 

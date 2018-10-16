@@ -10,6 +10,8 @@
 #include "NotFoundMessage.h"
 #include "Log.h"
 #include "Utils.h"
+#include "Peer.h"
+
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -20,7 +22,45 @@ namespace Elastos {
 		}
 
 		bool NotFoundMessage::Accept(const CMBlock &msg) {
-			return false;
+			size_t off = 0, count = 0;
+
+			count = UInt32GetLE(&msg[off]);
+			off += sizeof(uint32_t);
+
+			if (off == 0 || off + 36*count > msg.GetSize()) {
+				_peer->Perror("Malformed notfound message, length is {}, should be {} for {} item(s)", msg.GetSize(),
+						 BRVarIntSize(count) + 36*count, count);
+				return false;
+			} else if (count > MAX_GETDATA_HASHES) {
+				_peer->Pwarn("Dropping notfound message, {} is too many items, max is {}", count, MAX_GETDATA_HASHES);
+				return true;
+			} else {
+				inv_type type;
+				UInt256 hash;
+				std::vector<UInt256> txHashes, blockHashes;
+
+				_peer->Pinfo("Got notfound with {} item(s)", count);
+
+				for (size_t i = 0; i < count; i++) {
+					type = (inv_type)UInt32GetLE(&msg[off]);
+					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
+
+					_peer->Pinfo("Not found type = {}, hash = {}", type, Utils::UInt256ToString(hash));
+
+					switch (type) {
+						case inv_tx: txHashes.push_back(hash); break;
+						case inv_filtered_block: // drop through
+						case inv_block: blockHashes.push_back(hash); break;
+						default: break;
+					}
+
+					off += 36;
+				}
+
+				FireNotfound(txHashes, blockHashes);
+			}
+
+			return true;
 		}
 
 		void NotFoundMessage::Send(const SendMessageParameter &param) {
@@ -31,59 +71,5 @@ namespace Elastos {
 			return MSG_NOTFOUND;
 		}
 
-		//fixme [refactor]
-//		int NotFoundMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-//			BRPeerContext *ctx = (BRPeerContext *)peer;
-//			size_t off = 0, count = 0;
-//			int r = 1;
-//
-//			count = UInt32GetLE(&msg[off]);
-//			off += sizeof(uint32_t);
-//
-//			if (off == 0 || off + 36*count > msgLen) {
-//				peer_log(peer, "malformed notfound message, length is %zu, should be %zu for %zu item(s)", msgLen,
-//						 BRVarIntSize(count) + 36*count, count);
-//				r = 0;
-//			}
-//			else if (count > MAX_GETDATA_HASHES) {
-//				peer_log(peer, "dropping notfound message, %zu is too many items, max is %d", count, MAX_GETDATA_HASHES);
-//			}
-//			else {
-//				inv_type type;
-//				UInt256 *txHashes, *blockHashes, hash;
-//
-//				peer_log(peer, "got notfound with %zu item(s)", count);
-//				array_new(txHashes, 1);
-//				array_new(blockHashes, 1);
-//
-//				for (size_t i = 0; i < count; i++) {
-//					type = (inv_type)UInt32GetLE(&msg[off]);
-//					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
-//
-//					peer_log(peer, "not found type = %d, hash = %s", type, Utils::UInt256ToString(hash).c_str());
-//
-//					switch (type) {
-//						case inv_tx: array_add(txHashes, hash); break;
-//						case inv_filtered_block: // drop through
-//						case inv_block: array_add(blockHashes, hash); break;
-//						default: break;
-//					}
-//
-//					off += 36;
-//				}
-//
-//				if (ctx->notfound) {
-//					ctx->notfound(ctx->info, txHashes, array_count(txHashes), blockHashes, array_count(blockHashes));
-//				}
-//
-//				array_free(txHashes);
-//				array_free(blockHashes);
-//			}
-//
-//			return r;
-//		}
-//
-//		void NotFoundMessage::Send(BRPeer *peer) {
-//		}
 	}
 }
