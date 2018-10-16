@@ -171,6 +171,8 @@ namespace Elastos {
 
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
+			void SetTxUnconfirmedAfter(uint32_t blockHeight);
+
 			const std::vector<std::string> &getListeningAddrs() const;
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);

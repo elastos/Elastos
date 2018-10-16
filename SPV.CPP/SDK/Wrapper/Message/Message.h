@@ -12,6 +12,29 @@
 #include "Transaction/Transaction.h"
 #include "Plugin/Interface/IMerkleBlock.h"
 
+#define MSG_VERSION     "version"
+#define MSG_VERACK      "verack"
+#define MSG_ADDR        "addr"
+#define MSG_INV         "inv"
+#define MSG_GETDATA     "getdata"
+#define MSG_NOTFOUND    "notfound"
+#define MSG_GETBLOCKS   "getblocks"
+#define MSG_GETHEADERS  "getheaders"
+#define MSG_TX          "tx"
+#define MSG_BLOCK       "block"
+#define MSG_HEADERS     "headers"
+#define MSG_GETADDR     "getaddr"
+#define MSG_MEMPOOL     "mempool"
+#define MSG_PING        "ping"
+#define MSG_PONG        "pong"
+#define MSG_FILTERLOAD  "filterload"
+#define MSG_FILTERADD   "filteradd"
+#define MSG_FILTERCLEAR "filterclear"
+#define MSG_MERKLEBLOCK "merkleblock"
+#define MSG_ALERT       "alert"
+#define MSG_REJECT      "reject"   // described in BIP61: https://github.com/bitcoin/bips/blob/master/bip-0061.mediawiki
+#define MSG_FEEFILTER   "feefilter"// described in BIP133 https://github.com/bitcoin/bips/blob/master/bip-0133.mediawiki
+
 namespace Elastos {
 	namespace ElaWallet {
 

@@ -19,6 +19,18 @@ namespace Elastos {
 
 		}
 
+		bool NotFoundMessage::Accept(const CMBlock &msg) {
+			return false;
+		}
+
+		void NotFoundMessage::Send(const SendMessageParameter &param) {
+
+		}
+
+		std::string NotFoundMessage::Type() const {
+			return MSG_NOTFOUND;
+		}
+
 		//fixme [refactor]
 //		int NotFoundMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 //			BRPeerContext *ctx = (BRPeerContext *)peer;

@@ -53,5 +53,9 @@ namespace Elastos {
 
 		}
 
+		std::string PongMessage::Type() const {
+			return MSG_PONG;
+		}
+
 	}
 }

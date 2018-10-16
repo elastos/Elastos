@@ -19,6 +19,12 @@ namespace Elastos {
 //			virtual int Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen);
 //
 //			virtual void Send(BRPeer *peer, void *serializable);
+			virtual bool Accept(const CMBlock &msg);
+
+			virtual void Send(const SendMessageParameter &param);
+
+			virtual std::string Type() const;
+
 		};
 
 	}

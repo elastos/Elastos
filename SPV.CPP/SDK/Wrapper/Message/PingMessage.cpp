@@ -77,5 +77,9 @@ namespace Elastos {
 			memcpy(msgBlock, msg, sizeof(msg));
 			_peer->SendMessage(msgBlock, MSG_PING);
 		}
+
+		std::string PingMessage::Type() const {
+			return MSG_PING;
+		}
 	}
 }

@@ -12,6 +12,8 @@
 #include <SDK/Wrapper/Message/BloomFilterMessage.h>
 #include <SDK/Wrapper/Message/MempoolMessage.h>
 #include <SDK/Wrapper/Message/GetDataMessage.h>
+#include <SDK/Wrapper/Message/InventoryMessage.h>
+#include <SDK/Wrapper/Message/GetHeadersMessage.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -65,8 +67,8 @@ namespace Elastos {
 			}
 		}
 
-		int PeerManager::fireNetworkIsReachable() {
-			int result = 1;
+		bool PeerManager::fireNetworkIsReachable() {
+			bool result = false;
 			if (!_listener.expired()) {
 				result = _listener.lock()->networkIsReachable();
 			}
@@ -672,15 +674,14 @@ namespace Elastos {
 				_peers[0].Services = services;
 				_peers[0].Timestamp = now;
 			} else {
-				//fixme [refactor]
-//				std::vector<UInt128> addr, addrList;
-//				for (size_t i = 0; _chainParams.getRaw()->dnsSeeds && _chainParams.getRaw()->dnsSeeds[i]; i++) {
-//					for (addr = addrList = addressLookup(_chainParams.getRaw()->dnsSeeds[i]);
-//						 !addr.empty() && !UInt128IsZero(addr); addr++) {
-//						array_add(peers, ((BRPeer) {*addr, params->standardPort, services, now, 0}));
-//					}
-//					if (addrList) free(addrList);
-//				}
+				std::vector<UInt128> addrList;
+				for (size_t i = 0; _chainParams.getRaw()->dnsSeeds && _chainParams.getRaw()->dnsSeeds[i]; i++) {
+					addrList = addressLookup(_chainParams.getRaw()->dnsSeeds[i]);
+					for (std::vector<UInt128>::iterator addr = addrList.begin();
+						 addr != addrList.end() && !UInt128IsZero(&(*addr)); addr++) {
+						_peers.push_back(PeerInfo(*addr, _chainParams.getRaw()->standardPort, services, now));
+					}
+				}
 
 				ts.tv_sec = 0;
 				ts.tv_nsec = 1;
@@ -821,8 +822,9 @@ namespace Elastos {
 					// we do not reset connect failure count yet incase this request times out
 					if (lastBlock->getTimestamp() + 7 * 24 * 60 * 60 >= _earliestKeyTime) {
 						peer->SendMessage(MSG_GETBLOCKS, GetBlocksParameter(getBlockLocators(0), UINT256_ZERO));
-					} //fixme [refactor]
-					// else peerMessages->BRPeerSendGetheadersMessage(peer, locators, count, UINT256_ZERO);
+					} else {
+						peer->SendMessage(MSG_GETHEADERS, GetHeadersParameter(getBlockLocators(0), UINT256_ZERO));
+					}
 				} else { // we're already synced
 					connectFailureCount = 0; // reset connect failure count
 					loadMempools();
@@ -1236,14 +1238,19 @@ namespace Elastos {
 						if (block->getHeight() == lastBlock->getHeight()) lastBlock = block;
 					}
 
-					//fixme [refactor]
-//					b = BRSetAdd(blocks, block);
-//
-//					if (b != block) {
-//						if (BRSetGet(orphans, b) == b) BRSetRemove(orphans, b);
-//						if (lastOrphan == b) lastOrphan = NULL;
-//						peerMessages->MerkleBlockFree(manager, b);
-//					}
+					b = _blocks.Get(block->getHash());
+					if (b != nullptr) _blocks.Remove(b);
+					_blocks.Insert(block);
+
+					if (b != nullptr && b != block) {
+						for(std::set<MerkleBlockPtr>::iterator it = _orphans.begin(); it != _orphans.end(); ++it) {
+							if ((*it)->isEqual(b.get()))	{
+								_orphans.erase(it);
+								break;
+							}
+						}
+						if (lastOrphan == b) lastOrphan = nullptr;
+					}
 				} else if (lastBlock->getHeight() < peer->getLastBlock() &&
 						   block->getHeight() >
 						   lastBlock->getHeight() + 1) { // special case, new block mined durring rescan
@@ -1271,10 +1278,7 @@ namespace Elastos {
 						peer->Pinfo("reorganizing chain from height {}, new height is {}", b->getHeight(),
 									block->getHeight());
 
-						//fixme [refactor]
-//						_wallet->
-//						BRWalletSetTxUnconfirmedAfter(wallet,
-//													  b->height); // mark tx after the join point as unconfirmed
+						_wallet->SetTxUnconfirmedAfter(b->getHeight());  // mark tx after the join point as unconfirmed
 
 						b = block;
 
@@ -1401,10 +1405,7 @@ namespace Elastos {
 		}
 
 		bool PeerManager::OnNetworkIsReachable(const PeerPtr &peer) {
-			//fixme [refactor]
-//			BRPeerManager *manager = ((BRPeerCallbackInfo *) info)->manager;
-//
-//			return (manager->networkIsReachable) ? manager->networkIsReachable(manager->info) : 1;
+			return fireNetworkIsReachable();
 		}
 
 		void PeerManager::OnThreadCleanup(const PeerPtr &peer) {
@@ -1417,8 +1418,9 @@ namespace Elastos {
 				break;
 			}
 
-			//fixme [refactor]
-//			BRPeerSendInv(peer, manager->publishedTxHashes, array_count(manager->publishedTxHashes));
+			InventoryParameter inventoryParameter;
+			inventoryParameter.txHashes = publishedTxHashes;
+			peer->SendMessage(MSG_INV, inventoryParameter);
 		}
 
 		const std::vector<PublishedTransaction> PeerManager::getPublishedTransaction() const {
@@ -1689,8 +1691,7 @@ namespace Elastos {
 					}
 
 					requestUnrelayedTx(peer);
-					//fixme [refactor]
-//					BRPeerSendGetaddr(peer); // request a list of other bitcoin peers
+					peer->SendMessage(MSG_GETADDR, Message::DefaultParam);
 				}
 
 				fireTxStatusUpdate();

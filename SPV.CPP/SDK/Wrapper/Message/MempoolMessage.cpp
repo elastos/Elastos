@@ -42,6 +42,10 @@ namespace Elastos {
 				if (mempoolParameter.CompletionCallback) mempoolParameter.CompletionCallback(0);
 			}
 		}
+
+		std::string MempoolMessage::Type() const {
+			return MSG_MEMPOOL;
+		}
 	}
 }
 

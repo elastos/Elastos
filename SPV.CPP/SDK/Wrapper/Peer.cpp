@@ -10,6 +10,21 @@
 #include <CMemBlock.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Wrapper/Message/PingMessage.h>
+#include <SDK/Wrapper/Message/VersionMessage.h>
+#include <SDK/Wrapper/Message/VerackMessage.h>
+#include <SDK/Wrapper/Message/AddressMessage.h>
+#include <SDK/Wrapper/Message/InventoryMessage.h>
+#include <SDK/Wrapper/Message/GetDataMessage.h>
+#include <SDK/Wrapper/Message/NotFoundMessage.h>
+#include <SDK/Wrapper/Message/GetBlocksMessage.h>
+#include <SDK/Wrapper/Message/GetHeadersMessage.h>
+#include <SDK/Wrapper/Message/TransactionMessage.h>
+#include <SDK/Wrapper/Message/MerkleBlockMessage.h>
+#include <SDK/Wrapper/Message/MempoolMessage.h>
+#include <SDK/Wrapper/Message/PongMessage.h>
+#include <SDK/Wrapper/Message/BloomFilterMessage.h>
+#include <SDK/Wrapper/Message/GetAddressMessage.h>
+#include <SDK/Wrapper/Message/HeadersMessage.h>
 
 #include "Peer.h"
 #include "PeerManager.h"
@@ -383,7 +398,22 @@ namespace Elastos {
 		}
 
 		void Peer::initDefaultMessages() {
-			//fixme [refactor]
+			initSingleMessage(new VersionMessage(shared_from_this()));
+			initSingleMessage(new VerackMessage(shared_from_this()));
+			initSingleMessage(new AddressMessage(shared_from_this()));
+			initSingleMessage(new InventoryMessage(shared_from_this()));
+			initSingleMessage(new GetDataMessage(shared_from_this()));
+			initSingleMessage(new NotFoundMessage(shared_from_this()));
+			initSingleMessage(new GetBlocksMessage(shared_from_this()));
+			initSingleMessage(new GetHeadersMessage(shared_from_this()));
+			initSingleMessage(new TransactionMessage(shared_from_this()));
+			initSingleMessage(new HeadersMessage(shared_from_this()));
+			initSingleMessage(new MempoolMessage(shared_from_this()));
+			initSingleMessage(new PingMessage(shared_from_this()));
+			initSingleMessage(new PongMessage(shared_from_this()));
+			initSingleMessage(new BloomFilterMessage(shared_from_this()));
+			initSingleMessage(new MerkleBlockMessage(shared_from_this()));
+			initSingleMessage(new GetAddressMessage(shared_from_this()));
 		}
 
 		bool Peer::acceptMessage(const CMBlock &msg, const std::string &type) {
@@ -659,6 +689,10 @@ namespace Elastos {
 
 		void Peer::setMempoolTime(double time) {
 			_mempoolTime = time;
+		}
+
+		void Peer::initSingleMessage(Message *message) {
+			_messages[message->Type()] = MessagePtr(message);
 		}
 
 	}

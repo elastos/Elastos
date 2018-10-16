@@ -19,6 +19,18 @@ namespace Elastos {
 
 		}
 
+		bool TransactionMessage::Accept(const CMBlock &msg) {
+			return false;
+		}
+
+		void TransactionMessage::Send(const SendMessageParameter &param) {
+
+		}
+
+		std::string TransactionMessage::Type() const {
+			return MSG_TX;
+		}
+
 //		int TransactionMessage::Accept(
 //				BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 

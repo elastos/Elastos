@@ -21,6 +21,10 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		MerkleBlockMessage::MerkleBlockMessage(const MessagePeerPtr &peer) : Message(peer) {
+
+		}
+
 		bool MerkleBlockMessage::Accept(const CMBlock &msg) {
 			ByteStream stream(msg);
 

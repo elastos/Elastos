@@ -1013,5 +1013,29 @@ namespace Elastos {
 			return result;
 		}
 
+		void Wallet::SetTxUnconfirmedAfter(uint32_t blockHeight) {
+			size_t i, j, count;
+			std::vector<UInt256> hashes;
+
+			{
+				boost::mutex::scoped_lock scopedLock(lock);
+				_blockHeight = blockHeight;
+				count = i = _transactions.size();
+				while (i > 0 && _transactions[i - 1]->getBlockHeight() > blockHeight) i--;
+				count -= i;
+
+
+				for (j = 0; j < count; j++) {
+					_transactions[i + j]->setBlockHeight(TX_UNCONFIRMED);
+					hashes.push_back(_transactions[i + j]->getHash());
+				}
+
+				if (count > 0) UpdateBalance();
+			}
+
+			if (count > 0)
+				txUpdated(hashes, TX_UNCONFIRMED, 0);
+		}
+
 	}
 }

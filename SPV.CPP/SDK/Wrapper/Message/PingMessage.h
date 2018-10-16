@@ -24,6 +24,8 @@ namespace Elastos {
 			virtual bool Accept(const CMBlock &msg);
 
 			virtual void Send(const SendMessageParameter &param);
+
+			virtual std::string Type() const;
 		};
 
 	}

@@ -2,18 +2,17 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_PONGMESSAGE_H__
-#define __ELASTOS_SDK_PONGMESSAGE_H__
+#ifndef __ELASTOS_SDK_GETADDRESSMESSAGE_H__
+#define __ELASTOS_SDK_GETADDRESSMESSAGE_H__
 
 #include "Message.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class PongMessage :
-				public Message {
+		class GetAddressMessage : public Message {
 		public:
-			PongMessage(const MessagePeerPtr &peer);
+			explicit GetAddressMessage(const MessagePeerPtr &peer);
 
 			virtual bool Accept(const CMBlock &msg);
 
@@ -25,4 +24,4 @@ namespace Elastos {
 	}
 }
 
-#endif //__ELASTOS_SDK_PONGMESSAGE_H__
+#endif //__ELASTOS_SDK_GETADDRESSMESSAGE_H__

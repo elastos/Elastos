@@ -25,6 +25,7 @@ namespace Elastos {
 
 			virtual void Send(const SendMessageParameter &param);
 
+			virtual std::string Type() const;
 		};
 
 	}

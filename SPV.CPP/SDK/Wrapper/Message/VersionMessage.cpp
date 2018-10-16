@@ -15,6 +15,18 @@ namespace Elastos {
 
 		}
 
+		bool VersionMessage::Accept(const CMBlock &msg) {
+			return false;
+		}
+
+		void VersionMessage::Send(const SendMessageParameter &param) {
+
+		}
+
+		std::string VersionMessage::Type() const {
+			return MSG_VERSION;
+		}
+
 		//fixme [refactor]
 //		int VersionMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
 //			peer_log(peer, "VersionMessage.Accept");
