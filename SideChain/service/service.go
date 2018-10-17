@@ -384,14 +384,18 @@ func (s *HttpService) GetBlockByHash(param Params) map[string]interface{} {
 }
 
 func (s *HttpService) SendTransactionInfo(param Params) map[string]interface{} {
-
-	infoStr, ok := param.String("info")
+	infoStr, ok := param["info"]
 	if !ok {
 		return ResponsePack(InvalidParams, "info not found")
 	}
 
 	txInfo := new(TransactionInfo)
-	err := Unmarshal(infoStr, txInfo)
+	if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
+		txInfo.Payload = new(RechargeToSideChainInfoV0)
+	} else if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
+		txInfo.Payload = new(RechargeToSideChainInfoV1)
+	}
+	err := Unmarshal(&infoStr, txInfo)
 	if err != nil {
 		return ResponsePack(InvalidParams, "info type error")
 	}
@@ -1047,7 +1051,8 @@ func GetTransaction(cfg *Config, txInfo *TransactionInfo) (*types.Transaction, e
 		}
 		assetId, err := common.Uint256FromBytes(assetIdBytes)
 		if err != nil {
-			return nil, err
+			asset := types.GetSystemAssetId()
+			assetId = &asset
 		}
 		value, err := common.StringToFixed64(output.Value)
 		if err != nil {
