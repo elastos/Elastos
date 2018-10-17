@@ -408,14 +408,14 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	if tx.TxType == RegisterAsset {
 		return nil, nil
 	}
-	transactionCache := make(map[Uint256][]*Output)
+	txOutputsCache := make(map[Uint256][]*Output)
 	//UTXO input /  Outputs
 	reference := make(map[*Input]*Output)
 	// Key index，v UTXOInput
 	for _, input := range tx.Inputs {
 		txID := input.Previous.TxID
 		index := input.Previous.Index
-		if outputs, ok := transactionCache[txID]; ok {
+		if outputs, ok := txOutputsCache[txID]; ok {
 			reference[input] = outputs[index]
 		} else {
 			transaction, _, err := c.GetTransaction(txID)
@@ -427,7 +427,7 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 				return nil, errors.New("GetTxReference failed, refIdx out of range.")
 			}
 			reference[input] = transaction.Outputs[index]
-			transactionCache[txID] = transaction.Outputs
+			txOutputsCache[txID] = transaction.Outputs
 		}
 	}
 	return reference, nil
