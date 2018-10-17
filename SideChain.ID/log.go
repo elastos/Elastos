@@ -35,8 +35,8 @@ var (
 	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
 		elalog.Llongfile)
 
-	admrlog = backend.Logger("ADMR", level)
-	cmgrlog = backend.Logger("CMGR", level)
+	admrlog = backend.Logger("ADMR", elalog.LevelOff)
+	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
 	bcdblog = backend.Logger("BCDB", level)
 	txmplog = backend.Logger("TXMP", level)
 	synclog = backend.Logger("SYNC", level)
