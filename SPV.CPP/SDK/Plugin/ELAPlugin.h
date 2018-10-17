@@ -9,11 +9,10 @@
 
 #include "Interface/IPlugin.h"
 #include "Block/MerkleBlock.h"
+#include "Plugin/Registry.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		struct ELAPluginTag {};
 
 		class ELAPlugin : public IPlugin {
 		public:
@@ -27,7 +26,7 @@ namespace Elastos {
 			IMerkleBlockFactory *_merkleBlockFactory;
 		};
 
-		fruit::Component<fruit::Annotated<ELAPluginTag, IPlugin>, ELAPlugin> getELAPluginComponent();
+		fruit::Component<> getELAPluginComponent();
 
 	}
 }

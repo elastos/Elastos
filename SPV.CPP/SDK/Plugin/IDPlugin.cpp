@@ -12,11 +12,13 @@ namespace Elastos {
 			return _merkleBlockFactory->createBlock();
 		}
 
-		fruit::Component<fruit::Annotated<IDPluginTag, IPlugin>, IDPlugin> getIDPluginComponent() {
+		fruit::Component<> getIDPluginComponent() {
 			return fruit::createComponent()
-					.bind<fruit::Annotated<IDPluginTag, IPlugin>, IDPlugin>()
+					.addMultibinding<IPlugin, IDPlugin>()
 					.install(getSidechainMerkleBlockFactoryComponent);
 		}
+
+		REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
 
 	}
 }

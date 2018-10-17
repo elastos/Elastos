@@ -581,7 +581,7 @@ namespace Elastos {
 		}
 
 		uint64_t Transaction::getTxFee(const boost::shared_ptr<Wallet> &wallet) {
-			uint64_t _fee = 0, inputAmount = 0, outputAmount = 0;
+			uint64_t fee = 0, inputAmount = 0, outputAmount = 0;
 
 			for (size_t i = 0; i < _inputs.size(); ++i) {
 				const TransactionPtr &tx = wallet->transactionForHash(_inputs[i].getTransctionHash());
@@ -594,9 +594,9 @@ namespace Elastos {
 			}
 
 			if (inputAmount >= outputAmount)
-				_fee = inputAmount - outputAmount;
+				fee = inputAmount - outputAmount;
 
-			return _fee;
+			return fee;
 		}
 
 		void

@@ -12,11 +12,12 @@ namespace Elastos {
 			return _merkleBlockFactory->createBlock();
 		}
 
-		fruit::Component<fruit::Annotated<ELAPluginTag, IPlugin>, ELAPlugin> getELAPluginComponent() {
+		fruit::Component<> getELAPluginComponent() {
 			return fruit::createComponent()
-					.bind<fruit::Annotated<ELAPluginTag, IPlugin>, ELAPlugin>()
+					.addMultibinding<IPlugin, ELAPlugin>()
 					.install(getMerkleBlockFactoryComponent);
 		};
 
+		REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
 	}
 }

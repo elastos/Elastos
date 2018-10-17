@@ -8,53 +8,56 @@
 #include <map>
 #include <memory>
 #include <fruit/fruit.h>
+#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
 #include "Interface/IPlugin.h"
-#include "ELAPlugin.h"
-#include "IDPlugin.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		class IPluginHub {
-		public:
-			virtual ~IPluginHub() {}
-
-			virtual MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType) = 0;
-		};
-
-		class PluginHub : public IPluginHub {
-		public:
-			INJECT(PluginHub(
-					ANNOTATED(ELAPluginTag, fruit::Provider<IPlugin>) elaPlugin,
-					ANNOTATED(IDPluginTag, fruit::Provider<IPlugin>) idPlugin)) :
-				_elaPlugin(elaPlugin),
-				_idPlugin(idPlugin) {
-			}
-
-			virtual MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType);
-
-		private:
-			fruit::Provider<IPlugin> _elaPlugin;
-			fruit::Provider<IPlugin> _idPlugin;
-		};
-
-		fruit::Component<IPluginHub> getPluginHubComponent();
-
-
 		class Registry : public boost::noncopyable {
 		public:
+			typedef boost::shared_ptr<fruit::Injector<>> PluginInjectorPtr;
+
 			static Registry *Instance(bool erase = false);
 
-			MerkleBlockPtr CreateMerkleBlock(const std::string &blockType);
+			void RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)());
+
+			void UnRegisterPlugin(const std::string &pluginType);
+
+			MerkleBlockPtr CreateMerkleBlock(const std::string &pluginType);
 
 		private:
 			Registry();
 
-			fruit::Injector<IPluginHub> _pluginHubInjector;
-			IPluginHub *_pluginHub;
+			std::map<std::string, PluginInjectorPtr> _pluginInjectors;
+			std::map<std::string, IPlugin *> _plugins;
 		};
+
+
+		class RegisterProxy {
+		public:
+			RegisterProxy(const std::string &pluginType, fruit::Component<> (*pluginFun)()) :
+					_pluginType(pluginType) {
+				if (Registry::Instance()) {
+					Registry::Instance()->RegisterPlugin(pluginType, pluginFun);
+				}
+			}
+
+			~RegisterProxy() {
+				if (Registry::Instance()) {
+					Registry::Instance()->UnRegisterPlugin(_pluginType);
+				}
+			}
+
+		private:
+			std::string _pluginType;
+		};
+
+#define REGISTER_MERKLEBLOCKPLUGIN(pluginKey, pluginComponentFunction) \
+        static RegisterProxy g_plugin_proxy_##pluginKey = RegisterProxy(#pluginKey, pluginComponentFunction);
+
 	}
 
 }

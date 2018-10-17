@@ -247,26 +247,26 @@ namespace Elastos {
 			void publishTxInivDone(const PeerPtr &peer, int success);
 
 		private:
-			int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, _reconnectTaskCount;
+			int _isConnected, _connectFailureCount, _misbehavinCount, _dnsThreadCount, _maxConnectCount, _reconnectTaskCount;
 
 			std::vector<PeerInfo> _peers;
 			std::vector<PeerInfo> _fiexedPeers;
-			PeerInfo fixedPeer;
+			PeerInfo _fixedPeer;
 
 			std::vector<PeerPtr> _connectedPeers;
-			PeerPtr downloadPeer;
+			PeerPtr _downloadPeer;
 
-			mutable std::string downloadPeerName;
-			uint32_t _earliestKeyTime, _reconnectSeconds, syncStartHeight, filterUpdateHeight, estimatedHeight;
-			BloomFilterPtr bloomFilter;
-			double fpRate, averageTxPerBlock;
+			mutable std::string _downloadPeerName;
+			uint32_t _earliestKeyTime, _reconnectSeconds, _syncStartHeight, _filterUpdateHeight, _estimatedHeight;
+			BloomFilterPtr _bloomFilter;
+			double _fpRate, _averageTxPerBlock;
 			BlockSet _blocks;
 			std::set<MerkleBlockPtr> _orphans;
 			BlockSet _checkpoints;
-			MerkleBlockPtr lastBlock, lastOrphan;
-			std::vector<TransactionPeerList> txRelays, txRequests;
-			std::vector<PublishedTransaction> publishedTx;
-			std::vector<UInt256> publishedTxHashes;
+			MerkleBlockPtr _lastBlock, _lastOrphan;
+			std::vector<TransactionPeerList> _txRelays, _txRequests;
+			std::vector<PublishedTransaction> _publishedTx;
+			std::vector<UInt256> _publishedTxHashes;
 
 			PluginTypes _pluginTypes;
 			WalletPtr _wallet;

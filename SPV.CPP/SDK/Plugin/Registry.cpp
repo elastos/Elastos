@@ -6,25 +6,11 @@
 #include <boost/make_shared.hpp>
 
 #include "Registry.h"
+#include "ELAPlugin.h"
+#include "IDPlugin.h"
 
 namespace Elastos {
 	namespace ElaWallet {
-
-		MerkleBlockPtr PluginHub::CreateMerkleBlock(const std::string &pluginType) {
-			if (pluginType == "ELA")
-				return _elaPlugin.get()->CreateBlock();
-			else if (pluginType == "SideStandard")
-				return _idPlugin.get()->CreateBlock();
-
-			return nullptr;
-		}
-
-		fruit::Component<IPluginHub> getPluginHubComponent() {
-			return fruit::createComponent()
-					.bind<IPluginHub, PluginHub>()
-					.install(getELAPluginComponent)
-					.install(getIDPluginComponent);
-		}
 
 		Registry *Registry::Instance(bool erase) {
 			static std::shared_ptr<Registry> instance(new Registry);
@@ -35,13 +21,28 @@ namespace Elastos {
 			return instance.get();
 		}
 
-		MerkleBlockPtr Registry::CreateMerkleBlock(const std::string &blockType) {
-			return _pluginHub->CreateMerkleBlock(blockType);
+		MerkleBlockPtr Registry::CreateMerkleBlock(const std::string &pluginType) {
+			if (_plugins.find(pluginType) == _plugins.end()) {
+				if (_pluginInjectors.find(pluginType) == _pluginInjectors.end())
+					return nullptr;
+
+				std::vector<IPlugin *> plugins = _pluginInjectors[pluginType]->getMultibindings<IPlugin>();
+				assert(!plugins.empty());
+				_plugins[pluginType] = *plugins.begin();
+			}
+			return _plugins[pluginType]->CreateBlock();
 		}
 
-		Registry::Registry() :
-				_pluginHubInjector(getPluginHubComponent) {
-			_pluginHub = _pluginHubInjector.get<IPluginHub *>();
+		Registry::Registry() {
+		}
+
+		void Registry::RegisterPlugin(const std::string &pluginType, fruit::Component<> (*pluginFun)()) {
+			_pluginInjectors[pluginType] = PluginInjectorPtr(new fruit::Injector<>(pluginFun));
+		}
+
+		void Registry::UnRegisterPlugin(const std::string &pluginType) {
+			if (_pluginInjectors.find(pluginType) != _pluginInjectors.end())
+				_pluginInjectors.erase(pluginType);
 		}
 
 	}
