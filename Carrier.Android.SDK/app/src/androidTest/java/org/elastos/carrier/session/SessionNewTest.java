@@ -12,9 +12,7 @@ import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.*;
 import org.elastos.carrier.robot.RobotProxy;
-import org.elastos.carrier.session.*;
-import org.elastos.carrier.exceptions.ElastosException;
-import org.elastos.carrier.common.TestOptions;
+import org.elastos.carrier.exceptions.CarrierException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -122,7 +120,7 @@ public class SessionNewTest {
             robotProxy.tellRobotInitSessionManager();
 			robotProxy.waitForSesionManagerInitialzed();
 
-        } catch (ElastosException e) {
+        } catch (CarrierException e) {
             Log.e(TAG, "error: " + e.getErrorCode());
             e.printStackTrace();
         }
@@ -146,7 +144,7 @@ public class SessionNewTest {
                 carrierInst.addFriend(robotAddress, "auto-accepted");
 
             handler.synch.await(); // for friend added.
-        } catch (ElastosException e) {
+        } catch (CarrierException e) {
             e.printStackTrace();
             assertTrue(false);
         }
@@ -206,7 +204,7 @@ public class SessionNewTest {
             session.removeStream(stream);
             session.close();
 
-        } catch (ElastosException e) {
+        } catch (CarrierException e) {
 			Log.e(TAG, "error: " + e.getErrorCode());
             e.printStackTrace();
 			assertTrue(false);

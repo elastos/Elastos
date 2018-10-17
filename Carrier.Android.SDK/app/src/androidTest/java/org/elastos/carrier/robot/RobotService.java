@@ -17,7 +17,7 @@ import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.AbstractCarrierHandler;
 import org.elastos.carrier.UserInfo;
 import org.elastos.carrier.Carrier;
-import org.elastos.carrier.exceptions.ElastosException;
+import org.elastos.carrier.exceptions.CarrierException;
 import org.elastos.carrier.session.AbstractStreamHandler;
 import org.elastos.carrier.session.Manager;
 import org.elastos.carrier.session.Session;
@@ -165,7 +165,7 @@ public class RobotService extends Service {
 			handler.synch.await();
 
 			Log.i(TAG, "Carrier instance of robot created");
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 		}
 	}
@@ -285,7 +285,7 @@ public class RobotService extends Service {
 					default:
 						break;
 				}
-			} catch (ElastosException e) {
+			} catch (CarrierException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -296,7 +296,7 @@ public class RobotService extends Service {
 		public void onStreamData(Stream stream, byte[] data) {
 			try {
 				stream.writeData(data);
-			} catch (ElastosException e) {
+			} catch (CarrierException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -310,7 +310,7 @@ public class RobotService extends Service {
 
 			TestStreamHandler streamHandler = new TestStreamHandler();
 			activeStream = activeSession.addStream(StreamType.Text, 0, streamHandler);
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();

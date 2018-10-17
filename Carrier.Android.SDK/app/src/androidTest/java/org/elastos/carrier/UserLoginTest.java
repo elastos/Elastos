@@ -4,6 +4,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 
+import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
-import org.elastos.carrier.exceptions.ElastosException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -47,7 +47,7 @@ public class UserLoginTest {
 			carrierInst = Carrier.getInstance();
 			carrierInst.start(1000);
 			handler.synch.await();
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 		}
 	}
@@ -65,7 +65,7 @@ public class UserLoginTest {
 	public void getNodeId() {
 		try {
 			assertEquals(carrierInst.getNodeId(), carrierInst.getUserId());
-		} catch (ElastosException e){
+		} catch (CarrierException e){
 			Log.e(TAG, "getNodeId error:" + e.getErrorCode());
 			assertTrue(false);
 		}
@@ -75,7 +75,7 @@ public class UserLoginTest {
 	public void getUserId() {
 		try {
 			assertEquals(carrierInst.getUserId(), carrierInst.getUserId());
-		} catch (ElastosException e){
+		} catch (CarrierException e){
 			Log.e(TAG, "getUserId error:" + e.getErrorCode());
 			assertTrue(false);
 		}
@@ -115,7 +115,7 @@ public class UserLoginTest {
 			assertEquals(info4.getGender(), info1.getGender());
 			assertEquals(info4.getPhone(), info1.getPhone());
 			assertEquals(info4.getRegion(), info1.getRegion());
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			Log.e(TAG, "testSelfInfo error: " + e.getErrorCode());
 			assertTrue(false);
 		} catch (Exception e) {

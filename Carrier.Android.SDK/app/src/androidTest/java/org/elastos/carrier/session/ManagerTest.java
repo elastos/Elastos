@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.util.Log;
 
+import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,8 +13,6 @@ import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.AbstractCarrierHandler;
 import org.elastos.carrier.Carrier;
-import org.elastos.carrier.exceptions.ElastosException;
-import org.elastos.carrier.common.TestOptions;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -48,7 +47,7 @@ public class ManagerTest {
             carrierInst.start(1000);
             handler.synch.await();
 
-        } catch (ElastosException e) {
+        } catch (CarrierException e) {
             e.printStackTrace();
         }
     }
@@ -68,7 +67,7 @@ public class ManagerTest {
             Manager sessionMgr = Manager.getInstance(carrierInst);
             assertNotNull(sessionMgr);
             sessionMgr.cleanup();
-        } catch (ElastosException e) {
+        } catch (CarrierException e) {
             e.printStackTrace();
             assertTrue(false);
         }
@@ -85,7 +84,7 @@ public class ManagerTest {
             });
             assertNotNull(sessionMgr);
             sessionMgr.cleanup();
-        } catch (ElastosException e) {
+        } catch (CarrierException e) {
             e.printStackTrace();
             assertTrue(false);
         }

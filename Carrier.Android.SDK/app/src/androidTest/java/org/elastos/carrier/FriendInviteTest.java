@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import org.elastos.carrier.robot.RobotProxy;
 import org.elastos.carrier.common.TestOptions;
 import org.elastos.carrier.common.Synchronizer;
-import org.elastos.carrier.exceptions.ElastosException;
+import org.elastos.carrier.exceptions.CarrierException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -98,7 +98,7 @@ public class FriendInviteTest {
 			carrierInst = Carrier.getInstance();
 			carrierInst.start(1000);
 			handler.synch.await();
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 		}
 	}
@@ -119,7 +119,7 @@ public class FriendInviteTest {
 				carrierInst.addFriend(robotAddress, "auto-accepted");
 
 			handler.synch.await(); // for friend added.
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 			assertTrue(false);
 		}
@@ -139,7 +139,7 @@ public class FriendInviteTest {
 			assertEquals(handler.from, robotId);
 			assertEquals(handler.status, 0);
 			assertEquals(handler.data, reqData);
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 			String error = String.format("error: 0x%x", e.getErrorCode());
 			Log.e(TAG, "error: " + error);

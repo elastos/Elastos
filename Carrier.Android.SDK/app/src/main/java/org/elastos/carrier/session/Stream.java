@@ -25,7 +25,7 @@ package org.elastos.carrier.session;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.elastos.carrier.Log;
-import org.elastos.carrier.exceptions.ElastosException;
+import org.elastos.carrier.exceptions.CarrierException;
 
 /**
  * The class representing Carrier stream.
@@ -83,7 +83,7 @@ public class Stream {
                 } else {
                     stream.writeData(channel, (byte) i);
                 }
-            } catch (ElastosException e) {
+            } catch (CarrierException e) {
                 throw new IOException(e);
             }
         }
@@ -96,7 +96,7 @@ public class Stream {
                 } else {
                     stream.writeData(channel, b);
                 }
-            } catch (ElastosException e) {
+            } catch (CarrierException e) {
                 throw new IOException(e);
             }
         }
@@ -109,7 +109,7 @@ public class Stream {
                 } else {
                     stream.writeData(channel, b, offset, len);
                 }
-            } catch (ElastosException e) {
+            } catch (CarrierException e) {
                 throw new IOException(e);
             }
         }
@@ -130,7 +130,7 @@ public class Stream {
                     this.stream = null;
                     this.channel = -1;
                 }
-            } catch (ElastosException e) {
+            } catch (CarrierException e) {
                 throw new IOException(e);
             }
         }
@@ -161,11 +161,11 @@ public class Stream {
      * @return
      *      The transport info of this stream.
      */
-    public TransportInfo getTransportInfo() throws ElastosException {
+    public TransportInfo getTransportInfo() throws CarrierException {
         TransportInfo info = new TransportInfo();
 
         if (!get_transport_info(streamId, info)) {
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
         }
 
         return info;
@@ -187,15 +187,15 @@ public class Stream {
      *      Bytes of data sent on success
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public int writeData(byte[] data, int offset, int len) throws ElastosException {
+    public int writeData(byte[] data, int offset, int len) throws CarrierException {
         if (data == null || data.length == 0 || offset < 0 || len <= 0 || (offset + len) > data.length)
             throw new IllegalArgumentException();
 
         int bytes = write_stream_data(streamId, data, offset, len);
         if (bytes < 0)
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
 
         return bytes;
     }
@@ -214,9 +214,9 @@ public class Stream {
      *      Bytes of data sent on success
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public int writeData(byte[] data) throws ElastosException {
+    public int writeData(byte[] data) throws CarrierException {
         return writeData(data, 0, data.length);
     }
 
@@ -234,9 +234,9 @@ public class Stream {
      *      Bytes of data sent on success
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public int writeData(byte data) throws ElastosException {
+    public int writeData(byte data) throws CarrierException {
         byte[] _data = new byte[1];
         _data[0] = data;
 
@@ -266,16 +266,16 @@ public class Stream {
      *      New channel ID
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public int openChannel(String cookie) throws ElastosException {
+    public int openChannel(String cookie) throws CarrierException {
 
         if (cookie == null || cookie.length() == 0)
             throw new IllegalArgumentException();
 
         int channel = open_channel(streamId, cookie);
         if (channel < 0)
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
 
         Log.d(TAG, String.format("Channel %d on stream %d created", channel, streamId));
 
@@ -291,15 +291,15 @@ public class Stream {
      *      channel     The channel ID to close
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public void closeChannel(int channel) throws ElastosException {
+    public void closeChannel(int channel) throws CarrierException {
         if (channel <= 0)
             throw new IllegalArgumentException();
 
         boolean result = close_channel(streamId, channel);
         if (!result)
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
 
         Log.d(TAG, String.format("Channel %d on stream %d closed", channel, streamId));
     }
@@ -319,13 +319,13 @@ public class Stream {
      * @return
      *      Bytes of data sent on success.
      */
-    public int writeData(int channel, byte[] data, int offset, int len) throws ElastosException {
+    public int writeData(int channel, byte[] data, int offset, int len) throws CarrierException {
         if (channel <= 0 || data == null || data.length == 0 || offset < 0 || len <= 0 || (offset + len) > data.length)
             throw new IllegalArgumentException();
 
         int result = write_channel_data(streamId, channel, data, offset, len);
         if (result < 0)
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
 
         return result;
     }
@@ -343,7 +343,7 @@ public class Stream {
      * @return
      *      Bytes of data sent on success.
      */
-    public int writeData(int channel, byte[] data) throws ElastosException {
+    public int writeData(int channel, byte[] data) throws CarrierException {
         return writeData(channel, data, 0, data.length);
     }
 
@@ -360,7 +360,7 @@ public class Stream {
      * @return
      *      Bytes of data sent on success.
      */
-    public int writeData(int channel, byte data) throws ElastosException {
+    public int writeData(int channel, byte data) throws CarrierException {
         byte[] _data= new byte[1];
         _data[0] = data;
 
@@ -376,14 +376,14 @@ public class Stream {
      *      channel     The channel ID
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public void pendChannel(int channel) throws ElastosException {
+    public void pendChannel(int channel) throws CarrierException {
         if (channel <= 0)
             throw new IllegalArgumentException();
 
         if (!pend_channel(streamId, channel))
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
     }
 
     /**
@@ -395,14 +395,14 @@ public class Stream {
      *      channel     The channel ID
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public void resumeChannel(int channel) throws ElastosException {
+    public void resumeChannel(int channel) throws CarrierException {
         if (channel <= 0)
             throw new IllegalArgumentException();
 
         if (!resume_channel(streamId, channel))
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
     }
 
     /**
@@ -424,17 +424,17 @@ public class Stream {
      *      Port forwarding ID
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
     public int openPortForwarding(String service, PortForwardingProtocol protocol,
-                                 String host, String port) throws ElastosException {
+                                 String host, String port) throws CarrierException {
 
         if (service == null || service.length() == 0)
             throw new IllegalArgumentException();
 
         int pfId = open_port_forwarding(streamId,  service, protocol, host, port);
         if (pfId < 0)
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
 
         Log.d(TAG, String.format("Port forwarding %d to service %s created, " +
                 "and currently listening on %s://%s:%s",
@@ -452,15 +452,15 @@ public class Stream {
      *      portForwarding  The portforwarding ID.
      *
      * @throws
-     *      ElastosException
+     *      CarrierException
      */
-    public void closePortForwarding(int portForwarding) throws ElastosException {
+    public void closePortForwarding(int portForwarding) throws CarrierException {
         if (portForwarding <= 0)
             throw new IllegalArgumentException();
 
         boolean result = close_port_forwarding(streamId, portForwarding);
         if (!result)
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
 
         Log.d(TAG, String.format("Port forwarding %d closed nicely", portForwarding));
     }

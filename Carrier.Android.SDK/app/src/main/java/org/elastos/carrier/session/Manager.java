@@ -24,7 +24,7 @@ package org.elastos.carrier.session;
 
 import org.elastos.carrier.Carrier;
 import org.elastos.carrier.Log;
-import org.elastos.carrier.exceptions.ElastosException;
+import org.elastos.carrier.exceptions.CarrierException;
 
 /**
  * The class representing Carrier session manager.
@@ -56,9 +56,9 @@ public class Manager {
      * 		A carrier session manager
      *
      * @throws
-     * 		ElastosException
+     * 		CarrierException
      */
-    public static Manager getInstance(Carrier carrier) throws ElastosException {
+    public static Manager getInstance(Carrier carrier) throws CarrierException {
 
         return getInstance(carrier, null);
     }
@@ -75,10 +75,10 @@ public class Manager {
      * 		A carrier session manager
      *
      * @throws
-     * 		ElastosException
+     * 		CarrierException
      */
     public static Manager getInstance(Carrier carrier, ManagerHandler handler)
-			throws ElastosException {
+			throws CarrierException {
 
         if (sessionMgr != null && sessionMgr.carrier != carrier) {
             sessionMgr.cleanup();
@@ -91,7 +91,7 @@ public class Manager {
             Log.d(TAG, "Attempt to create carrier session manager instance ...");
 
             if (!native_init(carrier, handler))
-                throw new ElastosException(get_error_code());
+                throw CarrierException.fromErrorCode(get_error_code());
 
             sessionMgr = new Manager(carrier);
 
@@ -147,9 +147,9 @@ public class Manager {
      *
      * @throws
      *      IllegalArgumentException
-     * 		ElastosException
+     * 		CarrierException
      */
-    public Session newSession(String to) throws ElastosException {
+    public Session newSession(String to) throws CarrierException {
 
         if (to == null)
             throw new IllegalArgumentException();
@@ -158,7 +158,7 @@ public class Manager {
 
         Session session = create_session(carrier, to);
         if (session == null) {
-            throw new ElastosException(get_error_code());
+            throw CarrierException.fromErrorCode(get_error_code());
         }
 
         Log.d(TAG, "Session to " + to +  " created");

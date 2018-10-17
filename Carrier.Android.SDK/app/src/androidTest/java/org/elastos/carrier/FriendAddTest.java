@@ -6,16 +6,15 @@ import android.util.Log;
 
 import android.content.Context;
 
+import org.elastos.carrier.exceptions.CarrierException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.elastos.carrier.robot.RobotProxy;
-import org.elastos.carrier.robot.RobotService;
 import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
-import org.elastos.carrier.exceptions.ElastosException;
 
 import java.util.List;
 
@@ -91,7 +90,7 @@ public class FriendAddTest {
 
 			Log.i(TAG, "carrier client is ready now");
 
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -114,7 +113,7 @@ public class FriendAddTest {
 				carrierInst.removeFriend(robotId);
 
 			robotProxy.tellRobotRemoveFriend(carrierInst.getUserId());
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 			assertTrue(false);
 		}
@@ -127,7 +126,7 @@ public class FriendAddTest {
 				handler.synch.await(); // for friend connected
 			}
 
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 			assertTrue(false);
 		}
@@ -155,7 +154,7 @@ public class FriendAddTest {
 			assertEquals(handler.from, robotId);
 			assertEquals(handler.friendStatus, ConnectionStatus.Connected);
 			assertEquals(carrierInst.isFriend(handler.from), true);
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.printStackTrace();
 			assertTrue(false);
 		}
@@ -167,7 +166,7 @@ public class FriendAddTest {
 
 		try {
 			carrierInst.addFriend(robotAddress, "hello");
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			assertEquals(e.getErrorCode(), 0x8100000B);
 			assertTrue(true);
 		}
@@ -180,7 +179,7 @@ public class FriendAddTest {
 
 		try {
 			friends = carrierInst.getFriends();
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			e.getErrorCode();
 			assertTrue(false);
 		}

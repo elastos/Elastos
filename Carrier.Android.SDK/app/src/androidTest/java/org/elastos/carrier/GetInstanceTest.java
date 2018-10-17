@@ -9,8 +9,7 @@ import org.junit.runner.RunWith;
 
 import org.elastos.carrier.common.Synchronizer;
 import org.elastos.carrier.common.TestOptions;
-import org.elastos.carrier.exceptions.ElastosException;
-import org.elastos.carrier.Carrier;
+import org.elastos.carrier.exceptions.CarrierException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -52,7 +51,7 @@ public class GetInstanceTest extends AbstractCarrierHandler {
 			carrier.kill();
 			assertEquals(null, Carrier.getInstance());
 
-		} catch (ElastosException e) {
+		} catch (CarrierException e) {
 			Log.e(TAG, "test error:" + e.getErrorCode());
 			assertTrue(false);
 		} catch (Exception e) {
