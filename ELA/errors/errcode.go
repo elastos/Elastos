@@ -17,8 +17,7 @@ const (
 	ErrSidechainTxDuplicate  ErrCode = 45012
 	ErrXmitFail              ErrCode = 45014
 	ErrTransactionSize       ErrCode = 45015
-	ErrUnknownReferedTx      ErrCode = 45016
-	ErrInvalidReferedTx      ErrCode = 45017
+	ErrUnknownReferredTx     ErrCode = 45016
 	ErrIneffectiveCoinbase   ErrCode = 45018
 	ErrUTXOLocked            ErrCode = 45019
 	ErrSideChainPowConsensus ErrCode = 45020
@@ -58,17 +57,16 @@ var ErrMap = map[ErrCode]string{
 	ErrInvalidOutput:         "INTERNAL ERROR, ErrInvalidOutput",
 	ErrAssetPrecision:        "INTERNAL ERROR, ErrAssetPrecision",
 	ErrTransactionBalance:    "INTERNAL ERROR, ErrTransactionBalance",
-	ErrAttributeProgram:      "INTERNAL ERROR, ErrAttributeProgram",
-	ErrTransactionSignature:  "INTERNAL ERROR, ErrTransactionSignature",
-	ErrTransactionPayload:    "INTERNAL ERROR, ErrTransactionPayload",
-	ErrDoubleSpend:           "INTERNAL ERROR, ErrDoubleSpend",
-	ErrTransactionDuplicate:  "INTERNAL ERROR, ErrTransactionDuplicate",
-	ErrSidechainTxDuplicate:  "INTERNAL ERROR, ErrSidechainTxDuplicate",
-	ErrXmitFail:              "INTERNAL ERROR, ErrXmitFail",
-	ErrTransactionSize:       "INTERNAL ERROR, ErrTransactionSize",
-	ErrUnknownReferedTx:      "INTERNAL ERROR, ErrUnknownReferedTx",
-	ErrInvalidReferedTx:      "INTERNAL ERROR, ErrInvalidReferedTx",
-	ErrIneffectiveCoinbase:   "INTERNAL ERROR, ErrIneffectiveCoinbase",
+	ErrAttributeProgram:     "INTERNAL ERROR, ErrAttributeProgram",
+	ErrTransactionSignature: "INTERNAL ERROR, ErrTransactionSignature",
+	ErrTransactionPayload:   "INTERNAL ERROR, ErrTransactionPayload",
+	ErrDoubleSpend:          "INTERNAL ERROR, ErrDoubleSpend",
+	ErrTransactionDuplicate: "INTERNAL ERROR, ErrTransactionDuplicate",
+	ErrSidechainTxDuplicate: "INTERNAL ERROR, ErrSidechainTxDuplicate",
+	ErrXmitFail:             "INTERNAL ERROR, ErrXmitFail",
+	ErrTransactionSize:      "INTERNAL ERROR, ErrTransactionSize",
+	ErrUnknownReferredTx:    "INTERNAL ERROR, ErrUnknownReferredTx",
+	ErrIneffectiveCoinbase:  "INTERNAL ERROR, ErrIneffectiveCoinbase",
 }
 
 func (code ErrCode) Message() string {
