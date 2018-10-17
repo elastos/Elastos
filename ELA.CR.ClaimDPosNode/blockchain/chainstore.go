@@ -408,19 +408,27 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 	if tx.TxType == RegisterAsset {
 		return nil, nil
 	}
+	transactionCache := make(map[Uint256][]*Output)
 	//UTXO input /  Outputs
 	reference := make(map[*Input]*Output)
 	// Key index，v UTXOInput
-	for _, utxo := range tx.Inputs {
-		transaction, _, err := c.GetTransaction(utxo.Previous.TxID)
-		if err != nil {
-			return nil, errors.New("GetTxReference failed, previous transaction not found")
+	for _, input := range tx.Inputs {
+		txID := input.Previous.TxID
+		index := input.Previous.Index
+		if outputs, ok := transactionCache[txID]; ok {
+			reference[input] = outputs[index]
+		} else {
+			transaction, _, err := c.GetTransaction(txID)
+
+			if err != nil {
+				return nil, errors.New("GetTxReference failed, previous transaction not found")
+			}
+			if int(index) >= len(transaction.Outputs) {
+				return nil, errors.New("GetTxReference failed, refIdx out of range.")
+			}
+			reference[input] = transaction.Outputs[index]
+			transactionCache[txID] = transaction.Outputs
 		}
-		index := utxo.Previous.Index
-		if int(index) >= len(transaction.Outputs) {
-			return nil, errors.New("GetTxReference failed, refIdx out of range.")
-		}
-		reference[utxo] = transaction.Outputs[index]
 	}
 	return reference, nil
 }
