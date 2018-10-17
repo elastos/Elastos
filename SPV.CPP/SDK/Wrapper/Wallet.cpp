@@ -28,6 +28,11 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		typedef struct UTXO {
+			BRUTXO o;
+			uint64_t amount;
+		} UTXO_t;
+
 		ELAWallet *ELAWalletNew(BRTransaction *transactions[], size_t txCount,
 								size_t (*WalletUnusedAddrs)(BRWallet *wallet, BRAddress addrs[], uint32_t gapLimit,
 															int internal),
@@ -129,6 +134,17 @@ namespace Elastos {
 			}
 		}
 
+		int UTXOCompareAscending(const void *o1, const void *o2) {
+			if (((const UTXO_t *)o1)->amount > ((const UTXO_t *)o2)->amount) return 1;
+			if (((const UTXO_t *)o1)->amount < ((const UTXO_t *)o2)->amount) return -1;
+			return 0;
+		}
+
+		int UTXOCompareDescending(const void *o1, const void *o2) {
+			if (((const UTXO_t *)o1)->amount < ((const UTXO_t *)o2)->amount) return 1;
+			if (((const UTXO_t *)o1)->amount > ((const UTXO_t *)o2)->amount) return -1;
+			return 0;
+		}
 
 		Wallet::Wallet() {
 
@@ -321,6 +337,49 @@ namespace Elastos {
 			return filterAddress == fromAddress;
 		}
 
+		void Wallet::SortUTXOForAmount(BRWallet *wallet, uint64_t amount) {
+			if (array_count(wallet->utxos) <= 1)
+				return;
+
+			UTXO_t *utxos;
+			BRUTXO *o;
+			ELATransaction *tx;
+			array_new(utxos, array_count(wallet->utxos));
+
+			for (size_t i = 0; i < array_count(wallet->utxos); ++i) {
+				o = &wallet->utxos[i];
+				tx = (ELATransaction *) BRSetGet(wallet->allTx, o);
+				if (!tx || o->n >= tx->outputs.size()) {
+					Log::getLogger()->error("Invalid utxo {} n={}", Utils::UInt256ToString(o->hash), o->n);
+					continue;
+				}
+
+				array_add(utxos, ((UTXO_t){*o, tx->outputs[o->n]->getAmount()}));
+			}
+
+			qsort(utxos, array_count(utxos), sizeof(*utxos), UTXOCompareAscending);
+
+			uint64_t Threshold = amount * 2 + wallet->feePerKb;
+			size_t ThresholdIndex = 0;
+			for (size_t i = 0; i < array_count(utxos); ++i) {
+				if (utxos[i].amount > Threshold) {
+					ThresholdIndex = i;
+					break;
+				}
+			}
+
+			if (ThresholdIndex > 0)
+				qsort(utxos, ThresholdIndex, sizeof(*utxos), UTXOCompareDescending);
+
+			array_set_count(wallet->utxos, 0);
+
+			for (size_t i = 0; i < array_count(utxos); ++i) {
+				array_add(wallet->utxos, utxos[i].o);
+			}
+
+			array_free(utxos);
+		}
+
 		BRTransaction *Wallet::CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 												  uint64_t fee, const std::string &fromAddress,
 												  bool(*filter)(const std::string &fromAddress,
@@ -351,6 +410,7 @@ namespace Elastos {
 			pthread_mutex_lock(&wallet->lock);
 			feeAmount = txn->calculateFee(wallet->feePerKb);
 
+			SortUTXOForAmount(wallet, amount);
 			// TODO: use up all UTXOs for all used addresses to avoid leaving funds in addresses whose public key is revealed
 			// TODO: avoid combining addresses in a single transaction when possible to reduce information leakage
 			// TODO: use up UTXOs received from any of the output scripts that this transaction sends funds to, to mitigate an

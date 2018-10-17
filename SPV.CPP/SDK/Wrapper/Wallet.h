@@ -244,6 +244,8 @@ namespace Elastos {
 
 			static bool AddressFilter(const std::string &fromAddress, const std::string &filterAddress);
 
+			static void SortUTXOForAmount(BRWallet *wallet, uint64_t amount);
+
 			static BRTransaction *CreateTxForOutputs(BRWallet *wallet, const BRTxOutput outputs[], size_t outCount,
 													 uint64_t fee, const std::string &fromAddress,
 													 bool(*filter)(const std::string &fromAddress,
