@@ -246,8 +246,6 @@ namespace Elastos {
 			boost::shared_ptr<IdAgentImpl> _idAgentImpl;
 			bool _p2pEnable;
 
-			typedef std::map<std::string, MasterPubKeyPtr> MasterPubKeyMap;
-			MasterPubKeyMap _subWalletsPubKeyMap;
 		};
 
 	}
