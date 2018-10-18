@@ -268,6 +268,10 @@ func (tx *Transaction) IsCoinBaseTx() bool {
 	return tx.TxType == CoinBase
 }
 
+func (tx *Transaction) IsRegisterAssetTx() bool {
+	return tx.TxType == RegisterAsset
+}
+
 func (tx *Transaction) IsSideChainPowTx() bool {
 	return tx.TxType == SideChainPow
 }
