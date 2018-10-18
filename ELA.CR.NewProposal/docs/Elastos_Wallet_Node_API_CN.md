@@ -264,7 +264,7 @@
         }
     }
     ```
-    
+
 * `/api/v1/transaction/<hash>` : 根据交易 `hash` 获取区块所有交易信息
 
     示例：
@@ -419,4 +419,20 @@
         "Error": 0,
         "Result": "2e8d51bdbba82af7a7ed334cb0fb60ad9a5da7e5170f9d2509023f3ed3cce1d0"
     }
+    ```
+
+    这个接口里面data参数值(签名后的交易数据)的生成可以使用两种方法：
+
+    ```bash
+    1. 使用 ela-cli 命令行工具，示例如下
+
+    ./ela-cli wallet -t create --from EdAEC51BmmzJFHUdMJ6bR5fZB4oo919E8n --amount 10 --fee 0.001 --to EZmpNht7UAHtpqVBMDfPRDtQCmAY6eYjgV
+
+    请使用实际的ELA Address替换示例中的 --from 和 --to 的参数值
+
+    ./ela-cli wallet -t sign --file to_be_signed.txn
+
+    这里需要输入你本地钱包的密码，这个命令返回的一长串十六进制的字符就是签名后的交易数据
+
+    1. 使用 https://github.com/elastos/Elastos.ELA.Utilities.Java 工具库提供的相关工具生成，具体参考仓库的文档
     ```
