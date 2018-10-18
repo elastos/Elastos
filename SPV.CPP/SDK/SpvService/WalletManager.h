@@ -58,38 +58,27 @@ namespace Elastos {
 			virtual const PeerManagerPtr &getPeerManager();
 
 		public:
-			// func balanceChanged(_ balance: UInt64)
 			virtual void balanceChanged(uint64_t balance);
 
-			// func txAdded(_ tx: BRTxRef)
 			virtual void onTxAdded(const TransactionPtr &tx);
 
-			// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
 			virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp);
 
-			// func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
-			virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan);
+			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
 
 		public:
-			// func syncStarted()
 			virtual void syncStarted();
 
-			// func syncStopped(_ error: BRPeerManagerError?)
 			virtual void syncStopped(const std::string &error);
 
-			// func txStatusUpdate()
 			virtual void txStatusUpdate();
 
-			// func saveBlocks(_ replace: Bool, _ blocks: [BRBlockRef?])
 			virtual void saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks);
 
-			// func savePeers(_ replace: Bool, _ peers: [BRPeer])
 			virtual void savePeers(bool replace, const std::vector<PeerInfo> &peers);
 
-			// func networkIsReachable() -> Bool
 			virtual bool networkIsReachable();
 
-			// Called on publishTransaction
 			virtual void txPublished(const std::string &error);
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);

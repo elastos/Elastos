@@ -37,17 +37,14 @@ namespace Elastos {
 		public:
 			class Listener {
 			public:
-				// func balanceChanged(_ balance: UInt64)
 				virtual void balanceChanged(uint64_t balance) = 0;
 
-				// func txAdded(_ tx: BRTxRef)
 				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
 
-				// func txUpdated(_ txHashes: [UInt256], blockHeight: UInt32, timestamp: UInt32)
 				virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) = 0;
 
-				// func txDeleted(_ txHash: UInt256, notifyUser: Bool, recommendRescan: Bool)
-				virtual void onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) = 0;
+				virtual void
+				onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) = 0;
 			};
 
 		public:
@@ -198,7 +195,7 @@ namespace Elastos {
 
 			void txUpdated(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
-			void txDeleted(const UInt256 &txHash, int notifyUser, int recommendRescan);
+			void txDeleted(const UInt256 &txHash, const UInt256 &assetID, int notifyUser, int recommendRescan);
 
 			uint64_t BalanceAfterTx(const TransactionPtr &tx);
 

@@ -442,10 +442,10 @@ namespace Elastos {
 		}
 
 		void WrappedExceptionWalletListener::onTxDeleted(
-				const std::string &hash, bool notifyUser, bool recommendRescan) {
+				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
 
 			try {
-				_listener->onTxDeleted(hash, notifyUser, recommendRescan);
+				_listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 			}
 			catch (std::exception ex) {
 				Log::getLogger()->error("Wallet callback (onTxDeleted) error: {}", ex.what());
@@ -506,10 +506,10 @@ namespace Elastos {
 		}
 
 		void WrappedExecutorWalletListener::onTxDeleted(
-				const std::string &hash, bool notifyUser, bool recommendRescan) {
-			_executor->execute(Runnable([this, hash, notifyUser, recommendRescan]() -> void {
+				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
+			_executor->execute(Runnable([this, &hash, &assetID, notifyUser, recommendRescan]() -> void {
 				try {
-					_listener->onTxDeleted(hash, notifyUser, recommendRescan);
+					_listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 				}
 				catch (std::exception ex) {
 					Log::getLogger()->error("Wallet callback (onTxDeleted) error: {}", ex.what());

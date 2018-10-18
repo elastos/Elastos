@@ -8,6 +8,7 @@
 #include "BRTransaction.h"
 
 #include "WalletManager.h"
+#include "Payload/PayloadRegisterAsset.h"
 #include "Utils.h"
 #include "Log.h"
 #include "Plugin/Registry.h"
@@ -152,6 +153,12 @@ namespace Elastos {
 									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
+			if (tx->getTransactionType() == Transaction::RegisterAsset) {
+				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
+				AssetEntity assetEntity(registerAsset->getAsset(), registerAsset->getAmount(), tx->getHash());
+				_databaseManager.PutAsset(ISO, assetEntity);
+			}
+
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&tx](Wallet::Listener *listener) {
 							  listener->onTxAdded(tx);
@@ -173,12 +180,15 @@ namespace Elastos {
 						  });
 		}
 
-		void WalletManager::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+		void WalletManager::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
+										bool recommendRescan) {
 			_databaseManager.deleteTxByHash(ISO, hash);
+			if (!assetID.empty())
+				_databaseManager.DeleteAsset(ISO, Utils::UInt256FromString(assetID));
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, notifyUser, recommendRescan](Wallet::Listener *listener) {
-							  listener->onTxDeleted(hash, notifyUser, recommendRescan);
+						  [&hash, &assetID, notifyUser, recommendRescan](Wallet::Listener *listener) {
+							  listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 						  });
 		}
 

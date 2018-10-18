@@ -12,6 +12,7 @@ namespace Elastos {
 			_sqlite(path),
 			_peerDataSource(&_sqlite),
 			_transactionDataStore(&_sqlite),
+			_assetDataStore(&_sqlite),
 			_merkleBlockDataSource(&_sqlite),
 			_externalAddresses(&_sqlite),
 			_internalAddresses(&_sqlite) {
@@ -50,7 +51,6 @@ namespace Elastos {
 		bool DatabaseManager::deleteTxByHash(const std::string &iso, const std::string &hash) {
 			return _transactionDataStore.deleteTxByHash(iso, hash);
 		}
-
 
 		bool DatabaseManager::putPeer(const std::string &iso, const PeerEntity &peerEntity) {
 			return _peerDataSource.putPeer(iso, peerEntity);
@@ -138,6 +138,30 @@ namespace Elastos {
 
 		uint32_t DatabaseManager::getExternalAvailableAddresses(uint32_t startIndex) {
 			return _externalAddresses.getAvailableAddresses(startIndex);
+		}
+
+		bool DatabaseManager::PutAsset(const std::string &iso, const AssetEntity &asset) {
+			return _assetDataStore.PutAsset(iso, asset);
+		}
+
+		bool DatabaseManager::PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets) {
+			return _assetDataStore.PutAssets(iso, assets);
+		}
+
+		bool DatabaseManager::DeleteAsset(const std::string &iso, const UInt256 &assetID) {
+			return _assetDataStore.DeleteAsset(iso, assetID);
+		}
+
+		bool DatabaseManager::DeleteAllAssets(const std::string &iso) {
+			return _assetDataStore.DeleteAllAssets(iso);
+		}
+
+		AssetEntity DatabaseManager::GetAssetDetails(uint32_t assetTableID) {
+			return _assetDataStore.GetAssetDetails(assetTableID);
+		}
+
+		std::vector<AssetEntity> DatabaseManager::GetAllMerkleBlocks(const std::string &iso) const {
+			return _assetDataStore.GetAllMerkleBlocks(iso);
 		}
 
 	}

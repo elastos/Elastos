@@ -101,8 +101,7 @@ namespace Elastos {
 		}
 
 		const UInt256 &Transaction::getHash() const {
-			UInt256 emptyHash = UINT256_ZERO;
-			if (UInt256Eq(&_txHash, &emptyHash)) {
+			if (UInt256IsZero(&_txHash)) {
 				ByteStream ostream;
 				serializeUnsigned(ostream);
 				CMBlock buff = ostream.getBuffer();
@@ -736,6 +735,13 @@ namespace Elastos {
 
 		bool Transaction::IsEqual(const Transaction *tx) const {
 			return (tx == this || UInt256Eq(&_txHash, &tx->getHash()));
+		}
+
+		UInt256 Transaction::GetAssetID() const {
+			UInt256 result = UINT256_ZERO;
+			if (!_outputs.empty())
+				result = _outputs.begin()->getAssetId();
+			return result;
 		}
 
 	}

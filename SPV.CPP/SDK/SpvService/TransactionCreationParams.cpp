@@ -172,7 +172,7 @@ namespace Elastos {
 			result->setToAddress(toAddress);
 			result->setAmount(amount);
 			result->setFee(fee);
-			result->setAssetId(Asset::GetELAAsset());
+			result->setAssetId(Asset::GetELAAssetID());
 			result->setRemark(remark);
 			result->setMemo(memo);
 			return result;

@@ -15,12 +15,12 @@ namespace Elastos {
 	namespace ElaWallet {
 
 		TransactionDataStore::TransactionDataStore(Sqlite *sqlite) :
-			TableBase(sqlite) {
+				TableBase(sqlite) {
 			initializeTable(TX_DATABASE_CREATE);
 		}
 
 		TransactionDataStore::TransactionDataStore(SqliteTransactionType type, Sqlite *sqlite) :
-			TableBase(type, sqlite) {
+				TableBase(type, sqlite) {
 			initializeTable(TX_DATABASE_CREATE);
 		}
 
@@ -39,6 +39,7 @@ namespace Elastos {
 					   TX_BLOCK_HEIGHT << " = ?, " <<
 					   TX_TIME_STAMP << " = ?, " <<
 					   TX_REMARK << " = ? " <<
+					   TX_ASSETID << " = ? " <<
 					   " WHERE " << TX_ISO << " = '" << iso << "'" <<
 					   " AND " << TX_COLUMN_ID << " = '" << transactionEntity.txHash << "';";
 
@@ -57,6 +58,7 @@ namespace Elastos {
 					_sqlite->bindInt(stmt, 2, transactionEntity.blockHeight);
 					_sqlite->bindInt(stmt, 3, transactionEntity.timeStamp);
 					_sqlite->bindText(stmt, 4, transactionEntity.remark, nullptr);
+					_sqlite->bindInt(stmt, 5, transactionEntity.assetTableId);
 
 					_sqlite->step(stmt);
 
@@ -73,8 +75,9 @@ namespace Elastos {
 				   TX_BLOCK_HEIGHT << "," <<
 				   TX_TIME_STAMP << "," <<
 				   TX_REMARK << "," <<
+				   TX_ASSETID << "," <<
 				   TX_ISO <<
-				   ") VALUES (?, ?, ?, ?, ?, ?);";
+				   ") VALUES (?, ?, ?, ?, ?, ?, ?);";
 
 				sqlite3_stmt *stmt;
 				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
@@ -92,7 +95,8 @@ namespace Elastos {
 				_sqlite->bindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->bindInt(stmt, 4, transactionEntity.timeStamp);
 				_sqlite->bindText(stmt, 5, transactionEntity.remark, nullptr);
-				_sqlite->bindText(stmt, 6, iso, nullptr);
+				_sqlite->bindInt(stmt, 6, transactionEntity.assetTableId);
+				_sqlite->bindText(stmt, 7, iso, nullptr);
 
 				_sqlite->step(stmt);
 
@@ -148,6 +152,7 @@ namespace Elastos {
 				   TX_BUFF << ", " <<
 				   TX_BLOCK_HEIGHT << ", " <<
 				   TX_TIME_STAMP << ", " <<
+				   TX_ASSETID << "," <<
 				   TX_REMARK <<
 				   " FROM " << TX_TABLE_NAME <<
 				   " WHERE " << TX_ISO << " = '" << iso << "';";
@@ -175,7 +180,8 @@ namespace Elastos {
 
 					tx.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 2);
 					tx.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 3);
-					tx.remark = _sqlite->columnText(stmt, 4);
+					tx.assetTableId = (uint32_t) _sqlite->columnInt(stmt, 4);
+					tx.remark = _sqlite->columnText(stmt, 5);
 
 					transactions.push_back(tx);
 				}
@@ -193,6 +199,7 @@ namespace Elastos {
 				ss << "UPDATE " << TX_TABLE_NAME << " SET " <<
 				   TX_BLOCK_HEIGHT << " = ?, " <<
 				   TX_TIME_STAMP << " = ? " <<
+				   TX_ASSETID << " = ? " <<
 				   " WHERE " << TX_ISO << " = '" << iso << "'" <<
 				   " AND " << TX_COLUMN_ID << " = '" << txEntity.txHash << "';";
 
@@ -202,6 +209,7 @@ namespace Elastos {
 
 				_sqlite->bindInt(stmt, 1, txEntity.blockHeight);
 				_sqlite->bindInt(stmt, 2, txEntity.timeStamp);
+				_sqlite->bindInt(stmt, 3, txEntity.assetTableId);
 
 				_sqlite->step(stmt);
 
@@ -233,6 +241,7 @@ namespace Elastos {
 				   TX_BUFF << ", " <<
 				   TX_BLOCK_HEIGHT << ", " <<
 				   TX_TIME_STAMP << ", " <<
+				   TX_ASSETID << ", " <<
 				   TX_REMARK <<
 				   " FROM " << TX_TABLE_NAME <<
 				   " WHERE " << TX_ISO << " = '" << iso << "'" <<
@@ -262,7 +271,8 @@ namespace Elastos {
 
 					txEntity.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 1);
 					txEntity.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 2);
-					txEntity.remark = _sqlite->columnText(stmt, 3);
+					txEntity.assetTableId = (uint32_t) _sqlite->columnInt(stmt, 3);
+					txEntity.remark = _sqlite->columnText(stmt, 4);
 				}
 			});
 

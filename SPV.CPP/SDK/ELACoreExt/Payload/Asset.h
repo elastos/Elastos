@@ -57,8 +57,12 @@ namespace Elastos {
 
 			virtual void fromJson(const nlohmann::json &jsonData);
 
+			virtual UInt256 &GetHash() const;
+
+			void SetHash(const UInt256 &hash);
+
 		public:
-			static const UInt256 &GetELAAsset();
+			static const UInt256 &GetELAAssetID();
 
 		private:
 			std::string _name;
@@ -66,6 +70,7 @@ namespace Elastos {
 			uint8_t _precision;
 			AssetType _assetType;
 			AssetRecordType _recordType;
+			mutable UInt256 _hash;
 
 			static UInt256 _elaAsset;
 		};

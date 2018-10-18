@@ -124,7 +124,7 @@ namespace Elastos {
 			_recordType = j["RecordType"].get<AssetRecordType>();
 		}
 
-		const UInt256 &Asset::GetELAAsset() {
+		const UInt256 &Asset::GetELAAssetID() {
 			static UInt256 zero = UINT256_ZERO;
 			if (UInt256Eq(&_elaAsset, &zero)) {
 				Transaction elaCoin;
@@ -133,5 +133,20 @@ namespace Elastos {
 			}
 			return _elaAsset;
 		}
+
+		UInt256 &Asset::GetHash() const {
+			if (UInt256IsZero(&_hash)) {
+				ByteStream ostream;
+				Serialize(ostream);
+				CMBlock buff = ostream.getBuffer();
+				BRSHA256_2(&_hash, buff, buff.GetSize());
+			}
+			return _hash;
+		}
+
+		void Asset::SetHash(const UInt256 &hash) {
+			_hash = hash;
+		}
+
 	}
 }

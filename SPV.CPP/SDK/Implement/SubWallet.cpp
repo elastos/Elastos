@@ -245,7 +245,7 @@ namespace Elastos {
 			}
 		}
 
-		void SubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+		void SubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
 			Log::getLogger()->debug("onTxDeleted: hash = {}", hash);
 			fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Deleted),
 										 nlohmann::json(), 0);

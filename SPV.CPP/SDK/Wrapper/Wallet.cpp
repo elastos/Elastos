@@ -11,6 +11,7 @@
 #include <Core/BRBIP32Sequence.h>
 #include <SDK/Common/ParamChecker.h>
 #include <SDK/ELACoreExt/Payload/Asset.h>
+#include <SDK/ELACoreExt/Payload/PayloadRegisterAsset.h>
 
 #include "BRAddress.h"
 #include "BRBIP39Mnemonic.h"
@@ -449,8 +450,14 @@ namespace Elastos {
 						}
 					}
 
+					UInt256 assetID = UINT256_ZERO;
+					if (tx->getTransactionType() == Transaction::RegisterAsset) {
+						PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
+						assetID = registerAsset->getAsset().GetHash();
+					}
+
 					balanceChanged(_balance);
-					txDeleted(transactionHash, notifyUser, recommendRescan);
+					txDeleted(transactionHash, assetID, notifyUser, recommendRescan);
 				}
 
 				array_free(hashes);
@@ -917,10 +924,11 @@ namespace Elastos {
 			}
 		}
 
-		void Wallet::txDeleted(const UInt256 &txHash, int notifyUser, int recommendRescan) {
+		void Wallet::txDeleted(const UInt256 &txHash, const UInt256 &assetID, int notifyUser, int recommendRescan) {
 			if (!_listener.expired()) {
-				_listener.lock()->onTxDeleted(Utils::UInt256ToString(txHash), static_cast<bool>(notifyUser),
-											  static_cast<bool>(recommendRescan));
+				_listener.lock()->onTxDeleted(Utils::UInt256ToString(txHash),
+											  UInt256IsZero(&assetID) ? "" : Utils::UInt256ToString(assetID),
+											  static_cast<bool>(notifyUser), static_cast<bool>(recommendRescan));
 			}
 		}
 

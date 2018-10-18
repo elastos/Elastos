@@ -150,7 +150,7 @@ namespace Elastos {
 			}
 		}
 
-		void IdChainSubWallet::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+		void IdChainSubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
 			if (transaction != nullptr && transaction->getTransactionType() == Transaction::RegisterIdentification) {
@@ -167,7 +167,7 @@ namespace Elastos {
 										  SubWalletCallback::Deleted), payload->toJson(), 0);
 							  });
 			} else {
-				SubWallet::onTxDeleted(hash, notifyUser, recommendRescan);
+				SubWallet::onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 			}
 		}
 

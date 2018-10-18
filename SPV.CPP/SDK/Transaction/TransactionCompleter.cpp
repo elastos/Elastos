@@ -55,7 +55,7 @@ namespace Elastos {
 										 "Tx complete asset ID without output");
 
 			UInt256 zero = UINT256_ZERO;
-			UInt256 assetID = Asset::GetELAAsset();
+			UInt256 assetID = Asset::GetELAAssetID();
 
 			for (size_t i = 0; i < transaction->getSize(); ++i) {
 				if (UInt256Eq(&transaction->getOutputs()[0].getAssetId(), &zero) == 1) {

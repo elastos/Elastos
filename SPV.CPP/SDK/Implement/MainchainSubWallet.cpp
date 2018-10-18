@@ -39,7 +39,7 @@ namespace Elastos {
 																	const std::string &remark) {
 			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Mainchain, fromAddress, toAddress, amount,
 																			 _info.getMinFee(), memo, remark));
-			txParam->setAssetId(Asset::GetELAAsset());
+			txParam->setAssetId(Asset::GetELAAssetID());
 
 			ParamChecker::checkJsonArray(sidechainAccounts, 1, "Side chain accounts");
 			ParamChecker::checkJsonArray(sidechainAmounts, 1, "Side chain amounts");

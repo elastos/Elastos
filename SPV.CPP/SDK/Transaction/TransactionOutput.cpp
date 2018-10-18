@@ -40,7 +40,7 @@ namespace Elastos {
 		TransactionOutput::TransactionOutput(uint64_t a, const UInt168 &programHash) :
 			_amount(a),
 			_outputLock(0) {
-			_assetId = Asset::GetELAAsset();
+			_assetId = Asset::GetELAAssetID();
 			memcpy(_programHash.u8, programHash.u8, sizeof(_programHash.u8));
 		}
 
