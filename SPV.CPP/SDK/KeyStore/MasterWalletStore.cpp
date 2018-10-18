@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <fstream>
+#include <SDK/Wrapper/ByteStream.h>
 
 #include "MasterWalletStore.h"
 #include "ParamChecker.h"
@@ -47,6 +48,14 @@ namespace Elastos {
 			_subWalletsInfoList = infoList;
 		}
 
+		const MasterPubKeyMap &MasterWalletStore::GetMasterPubKeyMap() const {
+			return _subWalletsPubKeyMap;
+		}
+
+		void MasterWalletStore::SetMasterPubKeyMap(const MasterPubKeyMap &map) {
+			_subWalletsPubKeyMap = map;
+		}
+
 		const IdAgentInfo &MasterWalletStore::GetIdAgentInfo() const {
 			return _idAgentInfo;
 		}
@@ -77,6 +86,16 @@ namespace Elastos {
 				subWallets.push_back(p.GetSubWalletInfoList()[i]);
 			}
 			j["SubWallets"] = subWallets;
+
+			nlohmann::json masterPubKey;
+			const MasterPubKeyMap &map = p.GetMasterPubKeyMap();
+			for (MasterPubKeyMap::const_iterator it = map.cbegin(); it != map.cend(); it++) {
+				ByteStream stream;
+				stream.setPosition(0);
+				it->second->Serialize(stream);
+				masterPubKey[it->first] = Utils::encodeHex(stream.getBuffer());
+			}
+			j["MasterPubKey"] = masterPubKey;
 		}
 
 		void from_json(const nlohmann::json &j, MasterWalletStore &p) {
@@ -90,6 +109,17 @@ namespace Elastos {
 				coinInfoList.push_back(subWallets[i]);
 			}
 			p.SetSubWalletInfoList(coinInfoList);
+
+			MasterPubKeyMap masterPubKeyMap;
+			nlohmann::json masterPubKeyJson = j["MasterPubKey"];
+			for (nlohmann::json::iterator it = masterPubKeyJson.begin(); it != masterPubKeyJson.end(); ++it) {
+				CMBlock value = Utils::decodeHex(it.value());
+				MasterPubKeyPtr masterPubKey = MasterPubKeyPtr(new MasterPubKey());
+				ByteStream stream(value, value.GetSize(), false);
+				masterPubKey->Deserialize(stream);
+				masterPubKeyMap[it.key()] = masterPubKey;
+			}
+			p.SetMasterPubKeyMap(masterPubKeyMap);
 		}
 
 		IAccount *MasterWalletStore::Account() const {
