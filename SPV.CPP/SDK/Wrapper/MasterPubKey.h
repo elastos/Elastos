@@ -10,7 +10,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "BRBIP32Sequence.h"
-
+#include "ByteStream.h"
 #include "Wrapper.h"
 #include "Key.h"
 #include "CMemBlock.h"
@@ -36,9 +36,9 @@ namespace Elastos {
 
 			virtual BRMasterPubKey *getRaw() const;
 
-			CMBlock serialize() const;
+			void Serialize(ByteStream &stream) const;
 
-			void deserialize(const CMBlock &data);
+			bool Deserialize(ByteStream &stream);
 
 			CMBlock getPubKey() const;
 

@@ -4,6 +4,7 @@
 
 #include <SDK/Wrapper/Wallet.h>
 #include <SDK/Common/Utils.h>
+#include <SDK/Common/Log.h>
 #include "StandardSingleSubAccount.h"
 
 namespace Elastos {
@@ -33,9 +34,9 @@ namespace Elastos {
 		void StandardSingleSubAccount::InitWallet(BRTransaction **transactions, size_t txCount, ELAWallet *wallet) {
 			wallet->IsSingleAddress = true;
 
-			size_t len = BRBIP32PubKey(NULL, 0, *_masterPubKey.getRaw(), 1, 0);
+			size_t len = BRBIP32PubKey(NULL, 0, *_masterPubKey.getRaw(), SEQUENCE_EXTERNAL_CHAIN, 0);
 			CMBlock pubKey(len);
-			BRBIP32PubKey(pubKey, pubKey.GetSize(), *_masterPubKey.getRaw(), 1, 0);
+			BRBIP32PubKey(pubKey, pubKey.GetSize(), *_masterPubKey.getRaw(), SEQUENCE_EXTERNAL_CHAIN, 0);
 			Key key;
 			key.setPubKey(pubKey);
 			wallet->SingleAddress = key.address();
@@ -50,7 +51,8 @@ namespace Elastos {
 			Key key;
 			UInt256 chainCode;
 			BRBIP32PrivKeyPath(key.getRaw(), &chainCode, &seed, sizeof(seed), 5, 44 | BIP32_HARD,
-							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD, 1, 0);
+							   _coinIndex | BIP32_HARD, 0 | BIP32_HARD, SEQUENCE_EXTERNAL_CHAIN, 0);
+			key.setPublicKey();
 			var_clean(&seed);
 			result.push_back(key);
 			return result;
