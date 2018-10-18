@@ -25,11 +25,12 @@ namespace Elastos {
 			{
 			}
 
-			TransactionEntity(CMBlock buff, uint32_t blockHeight, uint32_t timeStamp,
+			TransactionEntity(CMBlock buff, uint32_t blockHeight, uint32_t timeStamp, uint32_t assetTableID,
 							  const std::string &remark, const std::string &txHash) :
 				buff(buff),
 				blockHeight(blockHeight),
 				timeStamp(timeStamp),
+				assetTableID(assetTableID),
 				remark(remark),
 				txHash(txHash)
 			{
@@ -38,7 +39,7 @@ namespace Elastos {
 			CMBlock buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
-			uint32_t assetTableId;
+			uint32_t assetTableID;
 			std::string remark;
 			std::string txHash;
 		};

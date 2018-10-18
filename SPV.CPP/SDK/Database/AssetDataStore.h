@@ -13,11 +13,20 @@ namespace Elastos {
 
 		struct AssetEntity {
 			AssetEntity(const Asset &Asset, uint64_t amount, const UInt256 &txHash) :
+					TableID(UINT32_MAX),
 					Amount(amount),
 					TxHash(txHash),
 					Asset(Asset) {
 			}
 
+			AssetEntity(uint32_t tableID, const Asset &Asset, uint64_t amount, const UInt256 &txHash) :
+					TableID(tableID),
+					Amount(amount),
+					TxHash(txHash),
+					Asset(Asset) {
+			}
+
+			uint32_t TableID;
 			uint64_t Amount;
 			Asset Asset;
 			UInt256 TxHash;
@@ -41,7 +50,7 @@ namespace Elastos {
 
 			AssetEntity GetAssetDetails(uint32_t assetTableID);
 
-			std::vector<AssetEntity> GetAllMerkleBlocks(const std::string &iso) const;
+			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
 
 		};
 

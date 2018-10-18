@@ -51,7 +51,7 @@ namespace Elastos {
 			bool DeleteAsset(const std::string &iso, const UInt256 &assetID);
 			bool DeleteAllAssets(const std::string &iso);
 			AssetEntity GetAssetDetails(uint32_t assetTableID);
-			std::vector<AssetEntity> GetAllMerkleBlocks(const std::string &iso) const;
+			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
 
 
 			// InternalAddresses's database interface

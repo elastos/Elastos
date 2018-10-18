@@ -29,7 +29,7 @@ namespace Elastos {
 
 			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds);
 
-			const WalletPtr &getWallet();
+			virtual const WalletPtr &getWallet();
 
 			virtual const PeerManagerPtr &getPeerManager();
 

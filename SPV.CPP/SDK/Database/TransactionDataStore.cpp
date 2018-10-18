@@ -58,7 +58,7 @@ namespace Elastos {
 					_sqlite->bindInt(stmt, 2, transactionEntity.blockHeight);
 					_sqlite->bindInt(stmt, 3, transactionEntity.timeStamp);
 					_sqlite->bindText(stmt, 4, transactionEntity.remark, nullptr);
-					_sqlite->bindInt(stmt, 5, transactionEntity.assetTableId);
+					_sqlite->bindInt(stmt, 5, transactionEntity.assetTableID);
 
 					_sqlite->step(stmt);
 
@@ -95,7 +95,7 @@ namespace Elastos {
 				_sqlite->bindInt(stmt, 3, transactionEntity.blockHeight);
 				_sqlite->bindInt(stmt, 4, transactionEntity.timeStamp);
 				_sqlite->bindText(stmt, 5, transactionEntity.remark, nullptr);
-				_sqlite->bindInt(stmt, 6, transactionEntity.assetTableId);
+				_sqlite->bindInt(stmt, 6, transactionEntity.assetTableID);
 				_sqlite->bindText(stmt, 7, iso, nullptr);
 
 				_sqlite->step(stmt);
@@ -180,7 +180,7 @@ namespace Elastos {
 
 					tx.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 2);
 					tx.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 3);
-					tx.assetTableId = (uint32_t) _sqlite->columnInt(stmt, 4);
+					tx.assetTableID = (uint32_t) _sqlite->columnInt(stmt, 4);
 					tx.remark = _sqlite->columnText(stmt, 5);
 
 					transactions.push_back(tx);
@@ -209,7 +209,7 @@ namespace Elastos {
 
 				_sqlite->bindInt(stmt, 1, txEntity.blockHeight);
 				_sqlite->bindInt(stmt, 2, txEntity.timeStamp);
-				_sqlite->bindInt(stmt, 3, txEntity.assetTableId);
+				_sqlite->bindInt(stmt, 3, txEntity.assetTableID);
 
 				_sqlite->step(stmt);
 
@@ -271,7 +271,7 @@ namespace Elastos {
 
 					txEntity.blockHeight = (uint32_t) _sqlite->columnInt(stmt, 1);
 					txEntity.timeStamp = (uint32_t) _sqlite->columnInt(stmt, 2);
-					txEntity.assetTableId = (uint32_t) _sqlite->columnInt(stmt, 3);
+					txEntity.assetTableID = (uint32_t) _sqlite->columnInt(stmt, 3);
 					txEntity.remark = _sqlite->columnText(stmt, 4);
 				}
 			});

@@ -38,6 +38,7 @@ namespace Elastos {
 				_blockHeight(TX_UNCONFIRMED),
 				_payloadVersion(0),
 				_fee(0),
+				_assetTableID(UINT32_MAX),
 				_payload(nullptr),
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false) {
@@ -49,6 +50,7 @@ namespace Elastos {
 
 		Transaction &Transaction::operator=(const Transaction &orig) {
 			_isRegistered = orig._isRegistered;
+			_assetTableID = orig._assetTableID;
 
 			_type = orig._type;
 			_payloadVersion = orig._payloadVersion;
@@ -742,6 +744,14 @@ namespace Elastos {
 			if (!_outputs.empty())
 				result = _outputs.begin()->getAssetId();
 			return result;
+		}
+
+		uint32_t Transaction::GetAssetTableID() const {
+			return _assetTableID;
+		}
+
+		void Transaction::SetAssetTableID(uint32_t assetTableID) {
+			_assetTableID = assetTableID;
 		}
 
 	}

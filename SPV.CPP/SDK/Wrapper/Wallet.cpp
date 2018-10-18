@@ -46,17 +46,17 @@ namespace Elastos {
 			for (size_t i = 0; txArray.size(); i++) {
 				if (!txArray[i]->isSigned() || _allTx.Contains(txArray[i])) continue;
 				_allTx.Insert(txArray[i]);
-				_transactions.push_back(txArray[i]);
+				_transactions.Append(txArray[i]);
 			}
-			sortTransations();
+			_transactions.SortTransaction();
 
-			_subAccount->InitAccount(_transactions, this);
+			_subAccount->InitAccount(txArray, this);
 			UpdateBalance();
 
-			if (!_transactions.empty() &&
+			if (!_transactions.Empty() &&
 				!WalletContainsTx(_transactions[0])) { // verify _transactions match master pubKey
 				std::stringstream ess;
-				ess << "txCount = " << _transactions.size()
+				ess << "txCount = " << _transactions.GetSize()
 					<< ", wallet do not contain tx[0] = "
 					<< Utils::UInt256ToString(_transactions[0]->getHash());
 				Log::getLogger()->error(ess.str());
@@ -66,10 +66,9 @@ namespace Elastos {
 			assert(listener != nullptr);
 			_listener = boost::weak_ptr<Listener>(listener);
 
-			for (std::vector<TransactionPtr>::const_iterator it = _transactions.cbegin();
-				 it != _transactions.cend(); ++it) {
-				(*it)->isRegistered() = true;
-			}
+			_transactions.BatchSet([](const TransactionPtr &tx){
+				tx->isRegistered() = true;
+			});
 
 			for (int i = 0; i < txArray.size(); ++i) {
 				_txRemarkMap[Utils::UInt256ToString(txArray[i]->getHash())] = txArray[i]->getRemark();
@@ -369,8 +368,8 @@ namespace Elastos {
 							// TODO: handle tx replacement with input sequence numbers
 							//       (for now, replacements appear invalid until confirmation)
 							_allTx.Insert(transaction);
-							_transactions.push_back(transaction);
-							sortTransations();
+							_transactions.Append(transaction);
+							_transactions.SortTransaction();
 							UpdateBalance();
 							wasAdded = true;
 						} else { // keep track of unconfirmed non-wallet tx for invalid tx checks and child-pays-for-parent fees
@@ -407,7 +406,7 @@ namespace Elastos {
 			if (tx) {
 				array_new(hashes, 0);
 
-				for (size_t i = _transactions.size(); i > 0; i--) { // find depedent _transactions
+				for (size_t i = _transactions.GetSize(); i > 0; i--) { // find depedent _transactions
 					t = _transactions[i - 1];
 					if (t->getBlockHeight() < tx->getBlockHeight()) break;
 					if (tx->IsEqual(t.get())) continue;
@@ -428,9 +427,9 @@ namespace Elastos {
 
 					removeTransaction(transactionHash);
 				} else {
-					for (size_t i = _transactions.size(); i > 0; i--) {
+					for (size_t i = _transactions.GetSize(); i > 0; i--) {
 						if (!_transactions[i - 1]->IsEqual(tx.get())) continue;
-						_transactions.erase(_transactions.begin() + i - 1);
+						_transactions.RemoveAt(i - 1);
 						break;
 					}
 
@@ -490,7 +489,7 @@ namespace Elastos {
 //						_BRWalletInsertTx(wallet, tx);
 //						break;
 //					}
-						sortTransations();
+						_transactions.SortTransaction();
 
 						hashes[j++] = transactionsHashes[i];
 						if (_pendingTx.Contains(tx) || _invalidTx.Contains(tx)) needsUpdate = 1;
@@ -779,7 +778,7 @@ namespace Elastos {
 			_totalSent = 0;
 			_totalReceived = 0;
 
-			for (i = 0; i < _transactions.size(); i++) {
+			for (i = 0; i < _transactions.GetSize(); i++) {
 				const TransactionPtr &tx = _transactions[i];
 
 				// check if any inputs are invalid or already spent
@@ -858,7 +857,7 @@ namespace Elastos {
 				prevBalance = balance;
 			}
 
-			assert(_balanceHist.size() == _transactions.size());
+			assert(_balanceHist.size() == _transactions.GetSize());
 			_balance = balance;
 		}
 
@@ -944,7 +943,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scoped_lock(lock);
 				result = _balance;
 
-				for (size_t i = _transactions.size(); tx && i > 0; i--) {
+				for (size_t i = _transactions.GetSize(); tx && i > 0; i--) {
 					if (!tx->IsEqual(_transactions[i - 1].get())) continue;
 
 					result = _balanceHist[i - 1];
@@ -957,13 +956,6 @@ namespace Elastos {
 
 		void Wallet::signTransaction(const TransactionPtr &transaction, const std::string &payPassword) {
 			_subAccount->SignTransaction(transaction, shared_from_this(), payPassword);
-		}
-
-		void Wallet::sortTransations() {
-			std::sort(_transactions.begin(), _transactions.end(),
-					  [](const TransactionPtr &first, const TransactionPtr &second) {
-						  return first->getTimestamp() < second->getTimestamp();
-					  });
 		}
 
 		uint64_t Wallet::AmountSentByTx(const TransactionPtr &tx) {
@@ -993,7 +985,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 
-				total = _transactions.size();
+				total = _transactions.GetSize();
 				while (n < total && _transactions[(total - n) - 1]->getBlockHeight() >= blockHeight) n++;
 
 				for (size_t i = 0; i < n; i++) {
@@ -1017,7 +1009,7 @@ namespace Elastos {
 
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
-				result = _transactions;
+				result = _transactions.GetAllTransactions();
 			}
 			return result;
 		}
@@ -1029,7 +1021,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scopedLock(lock);
 				_blockHeight = blockHeight;
-				count = i = _transactions.size();
+				count = i = _transactions.GetSize();
 				while (i > 0 && _transactions[i - 1]->getBlockHeight() > blockHeight) i--;
 				count -= i;
 
@@ -1044,6 +1036,10 @@ namespace Elastos {
 
 			if (count > 0)
 				txUpdated(hashes, TX_UNCONFIRMED, 0);
+		}
+
+		void Wallet::UpdateAssets(const std::map<uint32_t, UInt256> &assetIDMap) {
+			_transactions.UpdateAssets(assetIDMap);
 		}
 
 	}

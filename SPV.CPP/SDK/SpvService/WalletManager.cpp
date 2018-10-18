@@ -11,6 +11,7 @@
 #include "Payload/PayloadRegisterAsset.h"
 #include "Utils.h"
 #include "Log.h"
+#include "Payload/Asset.h"
 #include "Plugin/Registry.h"
 #include "Plugin/Block/MerkleBlock.h"
 
@@ -74,25 +75,6 @@ namespace Elastos {
 			getPeerManager()->disconnect();
 		}
 
-		std::vector<TransactionPtr> WalletManager::getTransactions(
-				const boost::function<bool(const TransactionPtr &)> filter) const {
-			std::vector<TransactionPtr> txs;
-
-			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
-
-			for (size_t i = 0; i < txsEntity.size(); ++i) {
-				TransactionPtr transaction(new Transaction());
-				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
-				transaction->Deserialize(byteStream);
-				transaction->setBlockHeight(txsEntity[i].blockHeight);
-				transaction->setTimestamp(txsEntity[i].timeStamp);
-				if (filter(transaction)) {
-					txs.push_back(transaction);
-				}
-			}
-			return txs;
-		}
-
 		void WalletManager::publishTransaction(const TransactionPtr &transaction) {
 			nlohmann::json sendingTx = transaction->toJson();
 			ByteStream byteStream;
@@ -114,20 +96,11 @@ namespace Elastos {
 			//todo implement recover logic
 		}
 
-		const PeerManagerPtr &WalletManager::getPeerManager() {
-			if (_peerManager == nullptr) {
-				_peerManager = PeerManagerPtr(new PeerManager(
-						_chainParams,
-						getWallet(),
-						_earliestPeerTime,
-						_reconnectSeconds,
-						loadBlocks(),
-						loadPeers(),
-						createPeerManagerListener(),
-						_pluginTypes));
+		const WalletPtr& WalletManager::getWallet() {
+			if (_wallet == nullptr) {
+				UpdateAssets();
 			}
-
-			return _peerManager;
+			return CoreWalletManager::getWallet();
 		}
 
 		//override Wallet listener
@@ -149,14 +122,16 @@ namespace Elastos {
 			std::string remark = _wallet->GetRemark(hashStr);
 			tx->setRemark(remark);
 
-			TransactionEntity txEntity(data, tx->getBlockHeight(),
-									   tx->getTimestamp(), tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
+			TransactionEntity txEntity(data, tx->getBlockHeight(), tx->getTimestamp(), tx->GetAssetTableID(),
+									   tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			if (tx->getTransactionType() == Transaction::RegisterAsset) {
 				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
 				AssetEntity assetEntity(registerAsset->getAsset(), registerAsset->getAmount(), tx->getHash());
 				_databaseManager.PutAsset(ISO, assetEntity);
+
+				UpdateAssets();
 			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
@@ -183,8 +158,10 @@ namespace Elastos {
 		void WalletManager::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
 										bool recommendRescan) {
 			_databaseManager.deleteTxByHash(ISO, hash);
-			if (!assetID.empty())
+			if (!assetID.empty()) {
 				_databaseManager.DeleteAsset(ISO, Utils::UInt256FromString(assetID));
+				UpdateAssets();
+			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
 						  [&hash, &assetID, notifyUser, recommendRescan](Wallet::Listener *listener) {
@@ -344,7 +321,7 @@ namespace Elastos {
 				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
 				transaction->Deserialize(byteStream);
 				transaction->setRemark(txsEntity[i].remark);
-
+				transaction->SetAssetTableID(txsEntity[i].assetTableID);
 				transaction->setBlockHeight(txsEntity[i].blockHeight);
 				transaction->setTimestamp(txsEntity[i].timeStamp);
 
@@ -426,6 +403,16 @@ namespace Elastos {
 			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
 			_reconnectTimer->async_wait(
 					boost::bind(&PeerManager::asyncConnect, _peerManager.get(), boost::asio::placeholders::error));
+		}
+
+		void WalletManager::UpdateAssets() {
+			 std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
+			 std::map<uint32_t, UInt256> assetIDMap;
+			 std::for_each(assets.begin(), assets.end(), [&assetIDMap](const AssetEntity &entity){
+			 	assetIDMap[entity.TableID] = entity.Asset.GetHash();
+			 });
+
+			 _wallet->UpdateAssets(assetIDMap);
 		}
 
 	}

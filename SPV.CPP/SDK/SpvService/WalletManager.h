@@ -42,9 +42,6 @@ namespace Elastos {
 
 			void stop();
 
-			std::vector<TransactionPtr> getTransactions(
-					const boost::function<bool(const TransactionPtr &)> filter) const;
-
 			size_t getAllTransactionsCount();
 
 			void registerWalletListener(Wallet::Listener *listener);
@@ -55,7 +52,7 @@ namespace Elastos {
 
 			void recover(int limitGap);
 
-			virtual const PeerManagerPtr &getPeerManager();
+			virtual const WalletPtr &getWallet();
 
 		public:
 			virtual void balanceChanged(uint64_t balance);
@@ -101,6 +98,8 @@ namespace Elastos {
 			void startReconnect(uint32_t time);
 
 			void resetReconnect();
+
+			void UpdateAssets();
 
 		private:
 			DatabaseManager _databaseManager;

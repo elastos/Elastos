@@ -160,8 +160,8 @@ namespace Elastos {
 			return _assetDataStore.GetAssetDetails(assetTableID);
 		}
 
-		std::vector<AssetEntity> DatabaseManager::GetAllMerkleBlocks(const std::string &iso) const {
-			return _assetDataStore.GetAllMerkleBlocks(iso);
+		std::vector<AssetEntity> DatabaseManager::GetAllAssets(const std::string &iso) const {
+			return _assetDataStore.GetAllAssets(iso);
 		}
 
 	}

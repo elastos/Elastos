@@ -23,6 +23,7 @@
 #include "MasterPubKey.h"
 #include "SDK/Transaction/TransactionOutput.h"
 #include "WrapperList.h"
+#include "GroupedTransactions.h"
 #include "Account/ISubAccount.h"
 
 #define DEFAULT_FEE_PER_KB (TX_FEE_PER_KB*10)                  // 10 satoshis-per-byte
@@ -110,40 +111,16 @@ namespace Elastos {
 			void updateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t blockHeight,
 									uint32_t timestamp);
 
-			/**
-			 * Returns the BRCoreTransaction with the provided `transactionHash` if it exists; otherwise
-			 * NULL is returned.
-			 *
-			 * If BRCoreTransaction.JNI_COPIES_TRANSACTIONS is true, then the returned transaction is
-			 * a copy of the Core BRTransaction - TBD caution when passed back into Core
-			 *
-			 * @param transactionHash
-			 * @return
-			 */
 			TransactionPtr transactionForHash(const UInt256 &transactionHash);
 
 			std::vector<TransactionPtr> getAllTransactions() const;
 
-			/**
-			 * Check if a transaction is valid - THIS METHOD WILL FATAL if the transaction is not signed.
-			 * You must call transaction.isSigned to avoid the FATAL.
-		 	 *
-			 * @param transaction
-			 * @return
-			 */
 			bool transactionIsValid(const TransactionPtr &transaction);
 
 			bool transactionIsPending(const TransactionPtr &transaction);
 
 			bool transactionIsVerified(const TransactionPtr &transaction);
 
-			/**
-			 * Return the net amount received by this wallet.  If the amount is positive, then the balance
-			 * of this wallet increased; if the amount is negative, then the balance decreased.
-			 *
-			 * @param tx
-			 * @return
-			 */
 			uint64_t getTransactionAmount(const TransactionPtr &tx);
 
 			uint64_t getTransactionFee(const TransactionPtr &tx);
@@ -174,6 +151,8 @@ namespace Elastos {
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
+			void UpdateAssets(const std::map<uint32_t, UInt256> &assetIDMap);
+
 		protected:
 
 			bool AddressFilter(const std::string &fromAddress, const std::string &filterAddress);
@@ -199,15 +178,13 @@ namespace Elastos {
 
 			uint64_t BalanceAfterTx(const TransactionPtr &tx);
 
-			void sortTransations();
-
 			uint64_t AmountSentByTx(const TransactionPtr &tx);
 
 		protected:
 			uint64_t _balance, _totalSent, _totalReceived, _feePerKb;
 			uint32_t _blockHeight;
 			UTXOList _utxos;
-			std::vector<TransactionPtr> _transactions;
+			GroupedTransactions _transactions;
 			std::vector<uint64_t> _balanceHist;
 			TransactionSet _allTx, _invalidTx, _pendingTx;
 			UTXOList _spentOutputs;

@@ -22,11 +22,13 @@ namespace Elastos {
 		}
 
 		bool AssetDataStore::PutAsset(const std::string &iso, const AssetEntity &asset) {
+			//todo if table is empty add ELA asset first
 			//todo complete me
 			return false;
 		}
 
 		bool AssetDataStore::PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets) {
+			//todo if table is empty add ELA asset first
 			//todo complete me
 			return false;
 		}
@@ -46,7 +48,7 @@ namespace Elastos {
 			return AssetEntity(Asset(), 0, UINT256_ZERO);
 		}
 
-		std::vector<AssetEntity> AssetDataStore::GetAllMerkleBlocks(const std::string &iso) const {
+		std::vector<AssetEntity> AssetDataStore::GetAllAssets(const std::string &iso) const {
 			//todo complete me
 			return std::vector<AssetEntity>();
 		}

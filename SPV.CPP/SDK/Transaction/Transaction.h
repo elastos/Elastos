@@ -145,6 +145,10 @@ namespace Elastos {
 
 			void setFee(uint64_t fee);
 
+			uint32_t GetAssetTableID() const;
+
+			void SetAssetTableID(uint32_t assetTableID);
+
 			void removeDuplicatePrograms();
 
 			void serializeUnsigned(ByteStream &ostream) const;
@@ -172,11 +176,12 @@ namespace Elastos {
 		private:
 			bool _isRegistered;
 			mutable UInt256 _txHash;
+			uint32_t _assetTableID;
+
 			uint32_t _version;
 			uint32_t _lockTime;
 			uint32_t _blockHeight;
 			uint32_t _timestamp; // time interval since unix epoch
-
 			Type _type;
 			uint8_t _payloadVersion;
 			uint64_t _fee;
