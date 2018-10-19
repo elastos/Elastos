@@ -198,6 +198,13 @@ namespace Elastos {
 			_transaction->outputs.push_back(output);
 		}
 
+		void Transaction::removeChargeOutput() {
+			if (_transaction->outputs.size() > 1) {
+				delete _transaction->outputs[1];
+				_transaction->outputs.erase(_transaction->outputs.begin() + 1);
+			}
+		}
+
 		// shuffles order of tx outputs
 		void Transaction::shuffleOutputs() {
 			ELATransactionShuffleOutputs(_transaction);
@@ -676,6 +683,10 @@ namespace Elastos {
 				fee = inputAmount - outputAmount;
 
 			return fee;
+		}
+
+		void Transaction::setFee(uint64_t fee) {
+			_transaction->fee = fee;
 		}
 
 		void

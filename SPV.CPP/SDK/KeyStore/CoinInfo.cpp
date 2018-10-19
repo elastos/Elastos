@@ -89,6 +89,7 @@ namespace Elastos {
 			j["SingleAddress"] = p._singleAddress;
 			j["WalletType"] = int(p.getWalletType());
 			j["MinFee"] = p._minFee;
+			j["FeePerKB"] = p._feePerKb;
 			j["EnableP2P"] = p._enableP2P;
 			j["ReconnectSeconds"] = p._reconnectSeconds;
 			j["ChainCode"] = p._chainCode;
@@ -103,6 +104,7 @@ namespace Elastos {
 			p._singleAddress = j["SingleAddress"].get<bool>();
 			p._walletType = (SubWalletType) j["WalletType"].get<int>();
 			p._minFee = j["MinFee"].get<uint64_t>();
+			p._feePerKb = j["FeePerKB"].get<uint64_t>();
 			p._reconnectSeconds = j["ReconnectSeconds"].get<uint32_t>();
 			p._chainCode = j["ChainCode"].get<std::string>();
 			p._publicKey = j["PublicKey"].get<std::string>();

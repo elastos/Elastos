@@ -19,20 +19,30 @@ namespace Elastos {
 		}
 
 		TransactionPtr TransactionCompleter::Complete(uint64_t actualFee) {
+			TransactionPtr resultTx = _transaction;
+
 			std::string outAddr = _transaction->getOutputs()[0]->getAddress();
 			uint64_t inputAmount = getInputsAmount(_transaction);
 			uint64_t outputAmount = _transaction->getOutputs()[0]->getAmount();
-			uint64_t changeAmount = _transaction->getOutputs().size() > 1
+			uint64_t chargeAmount = _transaction->getOutputs().size() > 1
 									? _transaction->getOutputs()[1]->getAmount() : 0;
 
-			TransactionPtr resultTx = _transaction;
-			if (inputAmount > outputAmount && inputAmount - outputAmount - changeAmount >= actualFee) {
+			if (inputAmount - outputAmount - chargeAmount == actualFee) {
+				return resultTx;
+			}
+
+			if (inputAmount > outputAmount && inputAmount - outputAmount >= actualFee) {
 				modifyTransactionChange(resultTx, inputAmount - outputAmount - actualFee);
 			} else {
 				resultTx = recreateTransaction(actualFee, outputAmount, outAddr, resultTx->getRemark(),
 											   getMemo());
 			}
 
+			const std::vector<TransactionOutput *> &resultOutputs = resultTx->getOutputs();
+			inputAmount = getInputsAmount(resultTx);
+			outputAmount = resultOutputs[0]->getAmount();
+			chargeAmount = resultOutputs.size() > 1 ? resultOutputs[1]->getAmount() : 0;
+			resultTx->setFee(inputAmount - outputAmount - chargeAmount);
 			completedTransactionAssetID(resultTx);
 			completedTransactionPayload(resultTx);
 			resultTx->resetHash();
@@ -85,20 +95,23 @@ namespace Elastos {
 
 		void TransactionCompleter::modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange) {
 			const std::vector<TransactionOutput *> &outputs = transaction->getOutputs();
-			if (outputs.size() >= 2) {
-				outputs[1]->setAmount(actualChange);
-			} else if (outputs.size() == 1) {
-
-				std::string changeAddress = _wallet->getAllAddresses()[0];
-				TransactionOutput *output = new TransactionOutput;
-				output->setAddress(changeAddress);
-				output->setAmount(actualChange);
-				output->setAssetId(Key::getSystemAssetId());
-				output->setOutputLock(0);
-				UInt168 u168Address = UINT168_ZERO;
-				Utils::UInt168FromAddress(u168Address, changeAddress);
-				output->setProgramHash(u168Address);
-				transaction->addOutput(output);
+			if (actualChange > 0) {
+				if (outputs.size() >= 2) {
+					outputs[1]->setAmount(actualChange);
+				} else if (outputs.size() == 1) {
+					std::string changeAddress = _wallet->getAllAddresses()[0];
+					TransactionOutput *output = new TransactionOutput;
+					output->setAddress(changeAddress);
+					output->setAmount(actualChange);
+					output->setAssetId(Key::getSystemAssetId());
+					output->setOutputLock(0);
+					UInt168 u168Address = UINT168_ZERO;
+					Utils::UInt168FromAddress(u168Address, changeAddress);
+					output->setProgramHash(u168Address);
+					transaction->addOutput(output);
+				}
+			} else {
+				transaction->removeChargeOutput();
 			}
 		}
 

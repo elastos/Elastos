@@ -385,8 +385,8 @@ namespace Elastos {
 												  bool(*filter)(const std::string &fromAddress,
 																const std::string &addr)) {
 			ELATransaction *tx, *transaction = ELATransactionNew();
-			uint64_t feeAmount, amount = 0, balance = 0, minAmount;
-			size_t i, j, cpfpSize = 0;
+			uint64_t feeAmount, amount = 0, balance = 0;
+			size_t i, cpfpSize = 0;
 			BRUTXO *o;
 			BRAddress addr = BR_ADDRESS_NONE;
 			TransactionPtr txn(new Transaction(transaction, false));
@@ -406,7 +406,6 @@ namespace Elastos {
 				amount += outputs[i].amount;
 			}
 
-			minAmount = BRWalletMinOutputAmount(wallet);
 			pthread_mutex_lock(&wallet->lock);
 			feeAmount = txn->calculateFee(wallet->feePerKb);
 
@@ -433,6 +432,7 @@ namespace Elastos {
 				strncpy(input->address, addr.c_str(), sizeof(input->address) - 1);
 
 				if (txn->getSize() + TX_RECHARGE_OUTPUT_SIZE > TX_MAX_SIZE) { // transaction size-in-bytes too large
+					bool balanceEnough = true;
 					feeAmount = txn->calculateFee(wallet->feePerKb) + wallet->feePerKb;
 					ELATransactionFree(transaction);
 					transaction = nullptr;
@@ -440,41 +440,34 @@ namespace Elastos {
 					// check for sufficient total funds before building a smaller transaction
 					if (wallet->balance < amount + feeAmount) {
 						Log::getLogger()->error("Not enough sufficient total funds for building a smaller tx.");
-						break;
+						balanceEnough = false;
 					}
 
 					pthread_mutex_unlock(&wallet->lock);
 
-					if (balance > feeAmount + minAmount) {
-						double maxAmount = ((balance - feeAmount - minAmount) / 10000) / 10000.0;
+					ParamChecker::checkCondition(!balanceEnough, Error::CreateTransaction,
+												 "Available token is not enough");
+
+					uint64_t maxAmount = 0;
+					if (outputs[outCount - 1].amount > (amount + feeAmount - balance)) {
+						for (int j = 0; j < outCount - 1; ++j) {
+							maxAmount += outputs[j].amount;
+						}
+						maxAmount += outputs[outCount - 1].amount - (amount + feeAmount - balance);
 						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
 													 "Tx size too large, amount should less than " +
-													 std::to_string(maxAmount),
-													 balance - feeAmount - minAmount);
+													 std::to_string(maxAmount), maxAmount);
 					} else {
-						ParamChecker::checkCondition(true, Error::CreateTransaction, "Balance not enough");
-					}
-#if 0
-					pthread_mutex_unlock(&wallet->lock);
-
-					if (outputs[outCount - 1].amount > amount + feeAmount + minAmount - balance) {
-						BRTxOutput newOutputs[outCount];
-
-						for (j = 0; j < outCount; j++) {
-							newOutputs[j] = outputs[j];
+						for (int j = 0; j < outCount - 1; ++j) {
+							maxAmount += outputs[j].amount;
 						}
-
-						newOutputs[outCount - 1].amount -= amount + feeAmount - balance; // reduce last output amount
-						transaction = (ELATransaction *) CreateTxForOutputs(wallet, (BRTxOutput *) newOutputs, outCount,
-																			fee, fromAddress, filter);
-					} else {
-						transaction = (ELATransaction *) CreateTxForOutputs(wallet, outputs, outCount - 1, fee,
-																			fromAddress, filter); // remove last output
+						ParamChecker::checkCondition(true, Error::CreateTransactionExceedSize,
+													 "Tx size too large, amount should less than " +
+													 std::to_string(maxAmount), maxAmount);
 					}
 
 					balance = amount = feeAmount = 0;
 					pthread_mutex_lock(&wallet->lock);
-#endif
 					break;
 				}
 
@@ -489,12 +482,16 @@ namespace Elastos {
 				feeAmount = txn->calculateFee(wallet->feePerKb);
 
 				// increase fee to round off remaining wallet balance to nearest 100 satoshi
-				if (wallet->balance > amount + feeAmount) feeAmount += (wallet->balance - (amount + feeAmount)) % 100;
+				//if (wallet->balance > amount + feeAmount) feeAmount += (wallet->balance - (amount + feeAmount)) % 100;
 
-				if (balance == amount + feeAmount || balance >= amount + feeAmount + minAmount) break;
+				if (balance >= amount + feeAmount) break;
 			}
 
 			pthread_mutex_unlock(&wallet->lock);
+
+			if (transaction != nullptr) {
+				transaction->fee = feeAmount;
+			}
 
 			if (transaction && (outCount < 1 || balance < amount + feeAmount)) { // no outputs/insufficient funds
 				ELATransactionFree(transaction);
@@ -502,7 +499,7 @@ namespace Elastos {
 				ParamChecker::checkCondition(balance < amount + feeAmount, Error::CreateTransaction,
 											 "Available token is not enough");
 				ParamChecker::checkCondition(outCount < 1, Error::CreateTransaction, "Output count is not enough");
-			} else if (transaction && balance - (amount + feeAmount) > minAmount) { // add change output
+			} else if (transaction && balance - (amount + feeAmount) > 0) { // add change output
 				wallet->WalletUnusedAddrs(wallet, &addr, 1, 1);
 				CMBlock script(BRAddressScriptPubKey(nullptr, 0, addr.s));
 				BRAddressScriptPubKey(script, script.GetSize(), addr.s);
@@ -512,7 +509,6 @@ namespace Elastos {
 																  address.getSignType());
 
 				transaction->outputs.push_back(output);
-				transaction->fee = feeAmount;
 			}
 
 			return (BRTransaction *) transaction;
@@ -532,6 +528,8 @@ namespace Elastos {
 
 			ParamChecker::checkCondition(!Utils::UInt168FromAddress(u168Address, toAddress), Error::CreateTransaction,
 										 "Invalid receiver address " + toAddress);
+
+			ParamChecker::checkCondition(amount == 0, Error::CreateTransaction, "Output amount should larger than 0");
 
 			TransactionOutputPtr output = TransactionOutputPtr(new TransactionOutput());
 			output->setProgramHash(u168Address);

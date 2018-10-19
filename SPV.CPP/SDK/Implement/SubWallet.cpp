@@ -216,6 +216,7 @@ namespace Elastos {
 		uint64_t SubWallet::CalculateTransactionFee(const nlohmann::json &rawTransaction, uint64_t feePerKb) {
 			TransactionPtr transaction(new Transaction());
 			transaction->fromJson(rawTransaction);
+			_walletManager->getWallet()->setFeePerKb(feePerKb);
 			return std::max(transaction->calculateFee(feePerKb), _info.getMinFee());
 		}
 
@@ -420,6 +421,11 @@ namespace Elastos {
 						  [&reversedId, &status, &desc, confirms](ISubWalletCallback *callback) {
 							  callback->OnTransactionStatusChanged(reversedId, status, desc, confirms);
 						  });
+		}
+
+		const CoinInfo &SubWallet::getCoinInfo() {
+			_info.setFeePerKb(_walletManager->getWallet()->getFeePerKb());
+			return _info;
 		}
 
 		void SubWallet::StartP2P() {
