@@ -18,12 +18,12 @@
 #include "Wrapper.h"
 #include "SDK/Transaction/Transaction.h"
 #include "SDK/Transaction/ElementSet.h"
-#include "SDK/Transaction/UTXOList.h"
+#include "UTXOList.h"
 #include "Address.h"
 #include "MasterPubKey.h"
 #include "SDK/Transaction/TransactionOutput.h"
 #include "WrapperList.h"
-#include "GroupedTransactions.h"
+#include "GroupedAssetTransactions.h"
 #include "Account/ISubAccount.h"
 
 #define DEFAULT_FEE_PER_KB (TX_FEE_PER_KB*10)                  // 10 satoshis-per-byte
@@ -38,14 +38,15 @@ namespace Elastos {
 		public:
 			class Listener {
 			public:
-				virtual void balanceChanged(uint64_t balance) = 0;
+				virtual void balanceChanged() = 0;
 
 				virtual void onTxAdded(const TransactionPtr &transaction) = 0;
 
 				virtual void onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) = 0;
 
 				virtual void
-				onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) = 0;
+				onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
+							bool recommendRescan) = 0;
 			};
 
 		public:
@@ -60,13 +61,13 @@ namespace Elastos {
 
 			uint32_t getBlockHeight() const;
 
-			nlohmann::json GetBalanceInfo();
+			nlohmann::json GetBalanceInfo(const UInt256 &assetID);
 
 			void RegisterRemark(const TransactionPtr &transaction);
 
 			std::string GetRemark(const std::string &txHash);
 
-			uint64_t GetBalanceWithAddress(const std::string &address);
+			uint64_t GetBalanceWithAddress(const UInt256 &assetID, const std::string &address);
 
 			// returns the first unused external address
 			std::string getReceiveAddress() const;
@@ -83,15 +84,15 @@ namespace Elastos {
 			// int BRWalletAddressIsUsed(BRWallet *wallet, const char *addr);
 			bool addressIsUsed(const std::string &address);
 
-			uint64_t getBalance() const;
+			uint64_t getBalance(const UInt256 &assetID) const;
 
-			uint64_t getTotalSent();
+			uint64_t getTotalSent(const UInt256 &assetID) const;
 
-			uint64_t getTotalReceived();
+			uint64_t getTotalReceived(const UInt256 &assetID) const;
 
-			uint64_t getFeePerKb();
+			uint64_t getFeePerKb(const UInt256 &assetID) const;
 
-			void setFeePerKb(uint64_t fee);
+			void setFeePerKb(const UInt256 &assetID, uint64_t fee);
 
 			uint64_t getMaxFeePerKb();
 
@@ -99,7 +100,7 @@ namespace Elastos {
 
 			TransactionPtr
 			createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
-							  const std::string &toAddress, const std::string &remark,
+							  const std::string &toAddress, const UInt256 &assetID, const std::string &remark,
 							  const std::string &memo);
 
 			bool containsTransaction(const TransactionPtr &transaction);
@@ -131,17 +132,13 @@ namespace Elastos {
 
 			uint64_t getBalanceAfterTransaction(const TransactionPtr &transaction);
 
-			uint64_t getFeeForTransactionSize(size_t size);
-
-			uint64_t getMinOutputAmount();
-
-			uint64_t getMaxOutputAmount();
-
 			void signTransaction(const TransactionPtr &transaction, const std::string &payPassword);
 
 			void UpdateBalance();
 
-			std::vector<UTXO> getUTXOSafe();
+			std::vector<UTXO> getUTXOsSafe(const UInt256 &assetID);
+
+			std::vector<UTXO> getAllUTXOsSafe();
 
 			std::vector<TransactionPtr> TxUnconfirmedBefore(uint32_t blockHeight);
 
@@ -151,43 +148,29 @@ namespace Elastos {
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
-			void UpdateAssets(const std::map<uint32_t, UInt256> &assetIDMap);
+			void UpdateAssets(const UInt256ValueMap<uint32_t> &assetIDMap);
 
 		protected:
 
 			bool AddressFilter(const std::string &fromAddress, const std::string &filterAddress);
 
-			TransactionPtr CreateTxForOutputs(const std::vector<TransactionOutput> &outputs,
-											  const std::string &fromAddress,
-											  const boost::function<bool(const std::string &,
-																		 const std::string &)> &filter);
-
-			uint64_t WalletMaxOutputAmount();
-
 			uint64_t WalletFeeForTx(const TransactionPtr &tx);
 
-			bool WalletContainsTx(const TransactionPtr &tx);
-
-			void balanceChanged(uint64_t balance);
+			void balanceChanged();
 
 			void txAdded(const TransactionPtr &tx);
 
 			void txUpdated(const std::vector<UInt256> &txHashes, uint32_t blockHeight, uint32_t timestamp);
 
-			void txDeleted(const UInt256 &txHash, const UInt256 &assetID, int notifyUser, int recommendRescan);
+			void txDeleted(const std::vector<UInt256> &txHashes, const UInt256 &assetID, bool notifyUser,
+						   bool recommendRescan);
 
 			uint64_t BalanceAfterTx(const TransactionPtr &tx);
 
-			uint64_t AmountSentByTx(const TransactionPtr &tx);
 
 		protected:
-			uint64_t _balance, _totalSent, _totalReceived, _feePerKb;
 			uint32_t _blockHeight;
-			UTXOList _utxos;
-			GroupedTransactions _transactions;
-			std::vector<uint64_t> _balanceHist;
-			TransactionSet _allTx, _invalidTx, _pendingTx;
-			UTXOList _spentOutputs;
+			GroupedAssetTransactions _transactions;
 
 			typedef std::map<std::string, std::string> TransactionRemarkMap;
 			TransactionRemarkMap _txRemarkMap;

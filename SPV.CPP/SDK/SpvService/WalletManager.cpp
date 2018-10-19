@@ -96,7 +96,7 @@ namespace Elastos {
 			//todo implement recover logic
 		}
 
-		const WalletPtr& WalletManager::getWallet() {
+		const WalletPtr &WalletManager::getWallet() {
 			if (_wallet == nullptr) {
 				UpdateAssets();
 			}
@@ -104,10 +104,10 @@ namespace Elastos {
 		}
 
 		//override Wallet listener
-		void WalletManager::balanceChanged(uint64_t balance) {
+		void WalletManager::balanceChanged() {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [balance](Wallet::Listener *listener) {
-							  listener->balanceChanged(balance);
+						  [](Wallet::Listener *listener) {
+							  listener->balanceChanged();
 						  });
 		}
 
@@ -406,13 +406,23 @@ namespace Elastos {
 		}
 
 		void WalletManager::UpdateAssets() {
-			 std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
-			 std::map<uint32_t, UInt256> assetIDMap;
-			 std::for_each(assets.begin(), assets.end(), [&assetIDMap](const AssetEntity &entity){
-			 	assetIDMap[entity.TableID] = entity.Asset.GetHash();
-			 });
+			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
+			UInt256ValueMap<uint32_t> assetIDMap;
+			std::for_each(assets.begin(), assets.end(), [&assetIDMap](const AssetEntity &entity) {
+				assetIDMap.Insert(entity.Asset.GetHash(), entity.TableID);
+			});
 
-			 _wallet->UpdateAssets(assetIDMap);
+			_wallet->UpdateAssets(assetIDMap);
+		}
+
+		Asset WalletManager::FindAsset(const UInt256 &assetID) const {
+			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
+			for (std::vector<AssetEntity>::iterator it = assets.begin(); it != assets.end(); ++it) {
+				if (UInt256Eq(&it->Asset.GetHash(), &assetID))
+					return it->Asset;
+			}
+
+			return Asset();
 		}
 
 	}

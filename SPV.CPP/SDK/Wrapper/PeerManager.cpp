@@ -14,6 +14,7 @@
 #include <SDK/Wrapper/Message/GetDataMessage.h>
 #include <SDK/Wrapper/Message/InventoryMessage.h>
 #include <SDK/Wrapper/Message/GetHeadersMessage.h>
+#include <SDK/ELACoreExt/Payload/Asset.h>
 
 #include "PeerManager.h"
 #include "Utils.h"
@@ -586,7 +587,7 @@ namespace Elastos {
 			_fpRate = BLOOM_REDUCED_FALSEPOSITIVE_RATE;
 
 			std::vector<std::string> addrs = _wallet->getAllAddresses();
-			std::vector<UTXO> utxos = _wallet->getUTXOSafe();
+			std::vector<UTXO> utxos = _wallet->getAllUTXOsSafe();
 			uint32_t blockHeight = (_lastBlock->getHeight() > 100) ? _lastBlock->getHeight() - 100 : 0;
 
 			std::vector<TransactionPtr> transactions = _wallet->TxUnconfirmedBefore(blockHeight);
@@ -1368,10 +1369,10 @@ namespace Elastos {
 				}
 
 				if (secondFeePerKb * 3 / 2 > DEFAULT_FEE_PER_KB && secondFeePerKb * 3 / 2 <= MAX_FEE_PER_KB &&
-					secondFeePerKb * 3 / 2 > _wallet->getFeePerKb()) {
+					secondFeePerKb * 3 / 2 > _wallet->getFeePerKb(Asset::GetELAAssetID())) {
 					peer->Pinfo("increasing feePerKb to {} based on feefilter messages from peers",
 								secondFeePerKb * 3 / 2);
-					_wallet->setFeePerKb(secondFeePerKb * 3 / 2);
+					_wallet->setFeePerKb(Asset::GetELAAssetID(), secondFeePerKb * 3 / 2);
 				}
 			}
 		}

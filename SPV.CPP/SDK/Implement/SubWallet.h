@@ -44,12 +44,12 @@ namespace Elastos {
 
 			virtual uint64_t GetBalance();
 
+			virtual uint64_t GetBalanceWithAddress(const std::string &address);
+
 			virtual std::string CreateAddress();
 
 			virtual nlohmann::json GetAllAddress(uint32_t start,
 												 uint32_t count);
-
-			virtual uint64_t GetBalanceWithAddress(const std::string &address);
 
 			virtual void AddCallback(ISubWalletCallback *subCallback);
 
@@ -100,10 +100,17 @@ namespace Elastos {
 					const std::string &message,
 					const std::string &signature);
 
+			virtual nlohmann::json GetAssetDetails(
+					const std::string &assetID) const;
+
 			virtual std::string GetPublicKey() const;
 
+			virtual nlohmann::json GetAllAssets() const;
+
+			virtual nlohmann::json GetAllSupportedAssets() const;
+
 		protected: //implement Wallet::Listener
-			virtual void balanceChanged(uint64_t balance);
+			virtual void balanceChanged();
 
 			virtual void onTxAdded(const TransactionPtr &transaction);
 

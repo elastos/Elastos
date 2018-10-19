@@ -21,8 +21,8 @@ namespace Elastos {
 
 		protected:
 			virtual TransactionPtr
-			recreateTransaction(uint64_t fee, uint64_t amount, const std::string &toAddress,
-								const std::string &remark, const std::string &memo);
+			recreateTransaction(uint64_t fee, uint64_t amount, const std::string &toAddress, const std::string &remark,
+								const std::string &memo, const UInt256 &assetID);
 
 			virtual void modifyTransactionChange(const TransactionPtr &transaction, uint64_t actualChange);
 

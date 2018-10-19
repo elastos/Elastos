@@ -54,8 +54,10 @@ namespace Elastos {
 
 			virtual const WalletPtr &getWallet();
 
+			Asset FindAsset(const UInt256 &assetID) const;
+
 		public:
-			virtual void balanceChanged(uint64_t balance);
+			virtual void balanceChanged();
 
 			virtual void onTxAdded(const TransactionPtr &tx);
 

@@ -42,11 +42,17 @@ namespace Elastos {
 
 			void Clear();
 
+			const std::vector<UTXO> &GetUTXOs() const;
+
 			void AddByTxInput(const TransactionInput &input);
 
 			void AddUTXO(const UInt256 &hash, uint32_t index);
 
 			void RemoveAt(size_t index);
+
+			bool Compare(const UTXO &o1, const UTXO &o2) const;
+
+			void SortBaseOnOutputAmount(uint64_t totalOutputAmount, uint64_t feePerKB);
 
 		private:
 			std::vector<UTXO> _utxos;

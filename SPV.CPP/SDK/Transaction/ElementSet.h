@@ -17,7 +17,7 @@ namespace Elastos {
 		class ElementSet {
 		public:
 
-			const T &Get(const UInt256 &hash) const {
+			T Get(const UInt256 &hash) const {
 				if (!Contains(hash)) return nullptr;
 
 				typename std::set<T>::const_iterator it;

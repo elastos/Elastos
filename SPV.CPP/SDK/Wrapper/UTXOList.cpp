@@ -3,7 +3,8 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "UTXOList.h"
-#include "TransactionInput.h"
+#include "SDK/Transaction/TransactionInput.h"
+#include "ParamChecker.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -40,6 +41,33 @@ namespace Elastos {
 			if (index < _utxos.size())
 				_utxos.erase(_utxos.begin() + index);
 		}
+
+		bool UTXOList::Compare(const UTXO &o1, const UTXO &o2) const {
+			return o1.amount <= o2.amount;
+		}
+
+		void UTXOList::SortBaseOnOutputAmount(uint64_t totalOutputAmount, uint64_t feePerKB) {
+			uint64_t Threshold = totalOutputAmount * 2 + feePerKB;
+			size_t ThresholdIndex = 0;
+
+			std::sort(_utxos.begin(), _utxos.end(),
+					  boost::bind(&UTXOList::Compare, this, _1, _2));
+
+			for (size_t i = 0; i < _utxos.size(); ++i) {
+				if (_utxos[i].amount > Threshold) {
+					ThresholdIndex = i;
+					break;
+				}
+			}
+
+			if (ThresholdIndex > 0)
+				std::reverse(_utxos.begin(), _utxos.begin() + ThresholdIndex);
+		}
+
+		const std::vector<UTXO> &UTXOList::GetUTXOs() const {
+			return _utxos;
+		}
+
 	}
 }
 

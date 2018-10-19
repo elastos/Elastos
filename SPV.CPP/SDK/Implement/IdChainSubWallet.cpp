@@ -51,8 +51,9 @@ namespace Elastos {
 											  const nlohmann::json &programJson, const std::string &memo,
 											  const std::string &remark) {
 			std::string toAddress = payloadJson["Id"].get<std::string>();
-			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, 0,
-																			 _info.getMinFee(), memo, remark));
+			boost::scoped_ptr<TxParam> txParam(
+					TxParamFactory::createTxParam(Idchain, fromAddress, toAddress, 0, _info.getMinFee(), memo, remark,
+												  Asset::GetELAAssetID()));
 
 			TransactionPtr transaction = createTransaction(txParam.get());
 			ParamChecker::checkCondition(transaction == nullptr, Error::CreateTransaction, "Create ID tx");
@@ -74,9 +75,13 @@ namespace Elastos {
 			if (idTxParam != nullptr) {
 				//todo create transaction without to address
 
-				TransactionPtr ptr = _walletManager->getWallet()->
-						createTransaction(param->getFromAddress(), param->getFee(), param->getAmount(),
-										  param->getToAddress(), param->getRemark(), param->getMemo());
+				TransactionPtr ptr = _walletManager->getWallet()->createTransaction(param->getFromAddress(),
+																					param->getFee(),
+																					param->getAmount(),
+																					param->getToAddress(),
+																					param->getAssetId(),
+																					param->getRemark(),
+																					param->getMemo());
 				if (!ptr) return nullptr;
 				ptr->setTransactionType(Transaction::RegisterIdentification);
 
@@ -150,7 +155,8 @@ namespace Elastos {
 			}
 		}
 
-		void IdChainSubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
+		void IdChainSubWallet::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
+										   bool recommendRescan) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
 			if (transaction != nullptr && transaction->getTransactionType() == Transaction::RegisterIdentification) {

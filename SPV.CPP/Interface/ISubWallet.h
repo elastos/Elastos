@@ -66,6 +66,13 @@ namespace Elastos {
 			virtual uint64_t GetBalance() = 0;
 
 			/**
+			 * Get balance of only the specified address.
+			 * @param address is one of addresses created by current sub wallet.
+			 * @return balance of specified address.
+			 */
+			virtual uint64_t GetBalanceWithAddress(const std::string &address) = 0;
+
+			/**
 			 * Create a new address or return existing unused address. Note that if create the sub wallet by setting the singleAddress to true, will always return the single address.
 			 * @return a new address or existing unused address.
 			 */
@@ -80,13 +87,6 @@ namespace Elastos {
 			virtual nlohmann::json GetAllAddress(
 					uint32_t start,
 					uint32_t count) = 0;
-
-			/**
-			 * Get balance of only the specified address.
-			 * @param address is one of addresses created by current sub wallet.
-			 * @return balance of specified address.
-			 */
-			virtual uint64_t GetBalanceWithAddress(const std::string &address) = 0;
 
 			/**
 			 * Add a sub wallet callback object listened to current sub wallet.
@@ -216,6 +216,26 @@ namespace Elastos {
 					const std::string &publicKey,
 					const std::string &message,
 					const std::string &signature) = 0;
+
+			/**
+			 * Get an asset details by specified asset ID
+			 * @param assetID asset hex code from asset hash.
+			 * @return details about asset in json format.
+			 */
+			virtual nlohmann::json GetAssetDetails(
+					const std::string &assetID) const = 0;
+
+			/**
+			 * Get all enabled assets in json format. Note this is a sub set of supported assets.
+			 * @return assets list in json format
+			 */
+			virtual nlohmann::json GetAllAssets() const = 0;
+
+			/**
+			 * Get all supported assets in json format
+			 * @return assets list in json format
+			 */
+			virtual nlohmann::json GetAllSupportedAssets() const = 0;
 
 			/**
 			 * Get root public key of current sub wallet.

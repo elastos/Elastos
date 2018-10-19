@@ -32,7 +32,7 @@ int UInt256Eq(const UInt256* a, const UInt256* b)
 }
 
 int UInt256LessThan(const UInt256* a, const UInt256* b) {
-	//fixme less than
+	//fixme [refactor] less than
 	return 0;
 }
 

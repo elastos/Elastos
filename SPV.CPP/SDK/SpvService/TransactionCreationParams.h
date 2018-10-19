@@ -102,9 +102,9 @@ namespace Elastos {
 
 			const std::vector<uint64_t> &getCrosschainAmouts() const;
 
-			void setMainchainDatas(const std::vector<std::string> crossChainAddress,
-								   const std::vector<uint64_t> outputIndex,
-								   const std::vector<uint64_t> crossChainAmount);
+			void setMainchainDatas(const std::vector<std::string> &crossChainAddress,
+								   const std::vector<uint64_t> &outputIndex,
+								   const std::vector<uint64_t> &crossChainAmount);
 
 			virtual SubWalletType getType() const { return Sidechain; }
 
@@ -166,7 +166,8 @@ namespace Elastos {
 		public:
 			static TxParam *
 			createTxParam(SubWalletType type, const std::string &fromAddress, const std::string &toAddress,
-						  uint64_t amount, uint64_t fee, const std::string &memo, const std::string &remark);
+						  uint64_t amount, uint64_t fee, const std::string &memo, const std::string &remark,
+						  const UInt256 &assetID);
 		};
 	}
 }
