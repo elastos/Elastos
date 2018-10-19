@@ -189,6 +189,13 @@ func (s *spvservice) TransactionConfirmed(tx *util.Tx) {}
 // BlockCommitted will be invoked when a block and transactions within it are
 // successfully committed into database.
 func (s *spvservice) BlockCommitted(block *util.Block) {
+	log.Infof("Receive block %s height %d", block.Hash(), block.Height)
+	for _, tx := range block.Transactions {
+		for _, listener := range s.listeners {
+			s.queueMessageByListener(listener, tx, block.Height)
+		}
+	}
+
 	// Look up for queued transactions
 	items, err := s.db.Que().GetAll()
 	if err != nil {
@@ -220,7 +227,7 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 				Flags:        block.Flags,
 			},
 			storeTx.Transaction,
-			header.Height-item.Height,
+			block.Height-item.Height,
 		)
 	}
 }
