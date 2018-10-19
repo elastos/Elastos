@@ -390,11 +390,7 @@ func (s *HttpService) SendTransactionInfo(param Params) map[string]interface{} {
 	}
 
 	txInfo := new(TransactionInfo)
-	if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
-		txInfo.Payload = new(RechargeToSideChainInfoV0)
-	} else if txInfo.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
-		txInfo.Payload = new(RechargeToSideChainInfoV1)
-	}
+	txInfo.Payload = new(RechargeToSideChainInfoV1)
 	err := Unmarshal(&infoStr, txInfo)
 	if err != nil {
 		return ResponsePack(InvalidParams, "info type error")

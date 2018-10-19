@@ -245,7 +245,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 		if txn.IsRechargeToSideChainTx() {
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
 			// Check for duplicate mainchain tx in a block
-			hash, err := rechargePayload.GetMainchainTxHash()
+			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				return err
 			}

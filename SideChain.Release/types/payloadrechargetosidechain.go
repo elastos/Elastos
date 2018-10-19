@@ -74,13 +74,20 @@ func (t *PayloadRechargeToSideChain) Deserialize(r io.Reader, version byte) erro
 	return nil
 }
 
-func (t *PayloadRechargeToSideChain) GetMainchainTxHash() (*common.Uint256, error) {
-	mainchainTx := new(ela.Transaction)
-	reader := bytes.NewReader(t.MainChainTransaction)
-	if err := mainchainTx.Deserialize(reader); err != nil {
-		return nil, errors.New("RechargeToSideChain mainChainTransaction deserialize failed")
+func (t *PayloadRechargeToSideChain) GetMainchainTxHash(payloadVersion byte) (*common.Uint256, error) {
+	if payloadVersion == RechargeToSideChainPayloadVersion0 {
+		mainchainTx := new(ela.Transaction)
+		reader := bytes.NewReader(t.MainChainTransaction)
+		if err := mainchainTx.Deserialize(reader); err != nil {
+			return nil, errors.New("[GetMainchainTxHash] RechargeToSideChain mainChainTransaction deserialize failed")
+		}
+
+		hash := mainchainTx.Hash()
+		return &hash, nil
+	} else if payloadVersion == RechargeToSideChainPayloadVersion1 {
+		return &t.MainChainTransactionHash, nil
+	} else {
+		return nil, errors.New("[GetMainchainTxHash] Invalid payload version")
 	}
 
-	hash := mainchainTx.Hash()
-	return &hash, nil
 }

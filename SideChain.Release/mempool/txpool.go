@@ -169,7 +169,7 @@ func (p *TxPool) verifyDuplicateMainchainTx(txn *types.Transaction) error {
 		return errors.New("convert the payload of recharge tx failed")
 	}
 
-	hash, err := rechargePayload.GetMainchainTxHash()
+	hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 	if err != nil {
 		return err
 	}
@@ -214,7 +214,7 @@ func (p *TxPool) cleanMainchainTx(txs []*types.Transaction) {
 	for _, txn := range txs {
 		if txn.IsRechargeToSideChainTx() {
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
-			mainTxHash, err := rechargePayload.GetMainchainTxHash()
+			mainTxHash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				log.Error("get hash failed when clean mainchain tx:", txn.Hash())
 				continue
@@ -307,7 +307,7 @@ func (p *TxPool) addMainchainTx(txn *types.Transaction) {
 	p.Lock()
 	defer p.Unlock()
 	rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
-	hash, err := rechargePayload.GetMainchainTxHash()
+	hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 	if err != nil {
 		return
 	}
