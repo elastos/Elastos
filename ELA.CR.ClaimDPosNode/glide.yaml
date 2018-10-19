@@ -7,7 +7,7 @@ import:
   repo: https://github.com/golang/sys.git
   vcs: git
 - package: github.com/elastos/Elastos.ELA.Utility
-  version: ae8437071878463dc58514600b8d463103be58b7
+  version: release_v0.1.1
 - package: github.com/AlexpanXX/fsnotify
   version: 7824671dc7bf1d6925c956976fa0b80ac25dbe32
 - package: github.com/gorilla/websocket
