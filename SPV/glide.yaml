@@ -8,7 +8,9 @@ import:
 - package: github.com/boltdb/bolt
 - package: github.com/cevaris/ordered_map
 - package: github.com/elastos/Elastos.ELA.Utility
+  version: release_v0.1.1
 - package: github.com/elastos/Elastos.ELA
+  version: release_v0.2.1
   subpackages:
   - bloom
   - core
