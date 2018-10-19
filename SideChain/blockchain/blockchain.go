@@ -268,6 +268,10 @@ func (b *BlockChain) GetAssetUnspents(programHash Uint168, assetid Uint256) ([]*
 	return b.db.GetAssetUnspents(programHash, assetid)
 }
 
+func (b *BlockChain) GetAssets() map[Uint256]*types.Asset{
+	return b.db.GetAssets()
+}
+
 func (b *BlockChain) GetUnspents(programHash Uint168) (map[Uint256][]*types.UTXO, error) {
 	return b.db.GetUnspents(programHash)
 }

@@ -207,6 +207,7 @@ func startHttpJsonRpc(port uint16, service *service.HttpService) {
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
+	s.RegisterAction("getassetlist", service.GetAssetList)
 
 	go func() {
 		if err := s.Start(); err != nil {
