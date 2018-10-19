@@ -152,7 +152,6 @@ static void friend_invite(ElaCarrier *w, const char *from,
             // Failback to global callback handle
             callback = ext->default_callback;
             callback_context = ext->default_context;
-            bundle = NULL;
         }
         len -= strlen(bundle) + 2;
     }
