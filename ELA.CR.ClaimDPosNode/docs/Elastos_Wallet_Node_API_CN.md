@@ -434,5 +434,5 @@
 
     这里需要输入你本地钱包的密码，这个命令返回的一长串十六进制的字符就是签名后的交易数据
 
-    1. 使用 https://github.com/elastos/Elastos.ELA.Utilities.Java 工具库提供的相关工具生成，具体参考仓库的文档
+    2. 使用 https://github.com/elastos/Elastos.ELA.Utilities.Java 工具库提供的相关工具生成，具体参考仓库的文档
     ```
