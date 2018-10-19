@@ -137,8 +137,8 @@ type Peer struct {
 
 	stallControl  chan stallControlMsg
 	outputQueue   chan outMsg
+	sendDoneQueue chan struct{}
 	outputInvChan chan *msg.InvVect
-	queueQuit     chan struct{}
 }
 
 // Services returns the services flag of the remote peer.
@@ -465,7 +465,7 @@ out:
 
 			// This channel is notified when a message has been sent across
 			// the network socket.
-		case <-p.SendDoneQueue():
+		case <-p.sendDoneQueue:
 			// No longer waiting if there are no more messages
 			// in the pending messages queue.
 			next := pendingMsgs.Front()
@@ -561,7 +561,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	close(p.queueQuit)
 	log.Tracef("Peer queue handler done for %s", p)
 }
 
@@ -614,12 +613,6 @@ func (p *Peer) start() *Peer {
 	go p.stallHandler()
 	go p.queueHandler()
 
-	go func() {
-		// We have waited on queueQuit and thus we can be sure
-		// that we will not miss anything sent on sendQueue.
-		<-p.queueQuit
-		p.CleanupSendQueue()
-	}()
 	return p
 }
 
@@ -630,8 +623,8 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 		knownInventory: newMruInventoryMap(maxKnownInventory),
 		stallControl:   make(chan stallControlMsg, 1), // nonblocking sync
 		outputQueue:    make(chan outMsg, outputBufferSize),
+		sendDoneQueue:  make(chan struct{}, 1),
 		outputInvChan:  make(chan *msg.InvVect, outputBufferSize),
-		queueQuit:      make(chan struct{}),
 	}
 
 	p.AddMessageFunc(func(_ *peer.Peer, m p2p.Message) {
