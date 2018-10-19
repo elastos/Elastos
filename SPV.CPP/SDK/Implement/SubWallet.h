@@ -162,6 +162,8 @@ namespace Elastos {
 													  const nlohmann::json &desc,
 													  uint32_t confirms);
 
+			const CoinInfo &getCoinInfo();
+
 		protected:
 			WalletManagerPtr _walletManager;
 			std::vector<ISubWalletCallback *> _callbacks;

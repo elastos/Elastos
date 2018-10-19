@@ -59,6 +59,8 @@ namespace Elastos {
 
 			uint64_t getTxFee(const boost::shared_ptr<Wallet> &wallet);
 
+			void setFee(uint64_t fee);
+
 			bool isRegistered() const;
 
 			bool &isRegistered();
@@ -105,6 +107,8 @@ namespace Elastos {
 			void setTimestamp(uint32_t timestamp);
 
 			void addOutput(TransactionOutput *output);
+
+			void removeChargeOutput();
 
 			void shuffleOutputs();
 

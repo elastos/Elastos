@@ -524,7 +524,7 @@ namespace Elastos {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
 				if (subWallet == nullptr) continue;
 				Log::getLogger()->info("Going to save configuration of subwallet '{}'", subWallet->GetChainId());
-				coinInfos.push_back(subWallet->_info);
+				coinInfos.push_back(subWallet->getCoinInfo());
 			}
 			_localStore.SetSubWalletInfoList(coinInfos);
 		}
