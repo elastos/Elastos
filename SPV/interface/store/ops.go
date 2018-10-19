@@ -3,9 +3,10 @@ package store
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.SPV/util"
+
 	"github.com/boltdb/bolt"
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 var (
@@ -36,7 +37,7 @@ func NewOps(db *bolt.DB) (*ops, error) {
 	return store, nil
 }
 
-func (o *ops) Put(op *core.OutPoint, addr common.Uint168) (err error) {
+func (o *ops) Put(op *util.OutPoint, addr common.Uint168) (err error) {
 	o.Lock()
 	defer o.Unlock()
 	return o.Update(func(tx *bolt.Tx) error {
@@ -44,7 +45,7 @@ func (o *ops) Put(op *core.OutPoint, addr common.Uint168) (err error) {
 	})
 }
 
-func (o *ops) IsExist(op *core.OutPoint) (addr *common.Uint168) {
+func (o *ops) HaveOp(op *util.OutPoint) (addr *common.Uint168) {
 	o.RLock()
 	defer o.RUnlock()
 
@@ -59,13 +60,13 @@ func (o *ops) IsExist(op *core.OutPoint) (addr *common.Uint168) {
 	return addr
 }
 
-func (o *ops) GetAll() (ops []*core.OutPoint, err error) {
+func (o *ops) GetAll() (ops []*util.OutPoint, err error) {
 	o.RLock()
 	defer o.RUnlock()
 
 	err = o.View(func(tx *bolt.Tx) error {
 		return tx.Bucket(BKTOps).ForEach(func(k, v []byte) error {
-			op, err := core.OutPointFromBytes(k)
+			op, err := util.OutPointFromBytes(k)
 			if err != nil {
 				return err
 			}

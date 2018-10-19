@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
 	"github.com/elastos/Elastos.ELA.SPV/interface/store"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -26,7 +26,16 @@ type spvservice struct {
 }
 
 func newSpvService(cfg *Config) (*spvservice, error) {
-	headerStore, err := store.NewHeaderStore()
+	if cfg.Foundation == "" {
+		cfg.Foundation = "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+	}
+
+	foundation, err := common.Uint168FromAddress(cfg.Foundation)
+	if err != nil {
+		return nil, fmt.Errorf("Parse foundation address error %s", err)
+	}
+
+	headerStore, err := store.NewHeaderStore(newBlockHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +60,14 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		DefaultPort:     cfg.DefaultPort,
 		MaxPeers:        cfg.MaxConnections,
 		MinPeersForSync: cfg.MinPeersForSync,
-		Foundation:      cfg.Foundation,
+		GenesisHeader:   GenesisHeader(foundation),
 		ChainStore:      chainStore,
-		GetFilterData:   service.GetFilterData,
-		StateNotifier:   service,
+		NewTransaction: func() util.Transaction {
+			return &core.Transaction{}
+		},
+		NewBlockHeader: newBlockHeader,
+		GetFilterData:  service.GetFilterData,
+		StateNotifier:  service,
 	}
 
 	service.IService, err = sdk.NewService(serviceCfg)
@@ -92,7 +105,7 @@ func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transact
 
 	// Check if merkleroot is match
 	merkleBlock := msg.MerkleBlock{
-		Header:       &header.Header,
+		Header:       header.BlockHeader,
 		Transactions: proof.Transactions,
 		Hashes:       proof.Hashes,
 		Flags:        proof.Flags,
@@ -121,14 +134,14 @@ func (s *spvservice) VerifyTransaction(proof bloom.MerkleProof, tx core.Transact
 }
 
 func (s *spvservice) SendTransaction(tx core.Transaction) error {
-	return s.IService.SendTransaction(tx)
+	return s.IService.SendTransaction(&tx)
 }
 
 func (s *spvservice) HeaderStore() database.Headers {
 	return s.headers
 }
 
-func (s *spvservice) GetFilterData() ([]*common.Uint168, []*core.OutPoint) {
+func (s *spvservice) GetFilterData() ([]*common.Uint168, []*util.OutPoint) {
 	ops, err := s.db.Ops().GetAll()
 	if err != nil {
 		log.Error("[SPV_SERVICE] GetData error ", err)
@@ -171,16 +184,16 @@ func (s *spvservice) RemoveTxs(height uint32) (int, error) {
 }
 
 // TransactionAnnounce will be invoked when received a new announced transaction.
-func (s *spvservice) TransactionAnnounce(tx *core.Transaction) {}
+func (s *spvservice) TransactionAnnounce(tx util.Transaction) {}
 
 // TransactionAccepted will be invoked after a transaction sent by
 // SendTransaction() method has been accepted.  Notice: this method needs at
 // lest two connected peers to work.
-func (s *spvservice) TransactionAccepted(tx *core.Transaction) {}
+func (s *spvservice) TransactionAccepted(tx util.Transaction) {}
 
 // TransactionRejected will be invoked if a transaction sent by SendTransaction()
 // method has been rejected.
-func (s *spvservice) TransactionRejected(tx *core.Transaction) {}
+func (s *spvservice) TransactionRejected(tx util.Transaction) {}
 
 // TransactionConfirmed will be invoked after a transaction sent by
 // SendTransaction() method has been packed into a block.
@@ -192,7 +205,7 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 	log.Infof("Receive block %s height %d", block.Hash(), block.Height)
 	for _, tx := range block.Transactions {
 		for _, listener := range s.listeners {
-			s.queueMessageByListener(listener, tx, block.Height)
+			s.queueMessageByListener(listener, tx.(*core.Transaction), block.Height)
 		}
 	}
 
@@ -210,9 +223,15 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 		}
 
 		//	Get transaction from db
-		storeTx, err := s.db.Txs().Get(&item.TxId)
+		utx, err := s.db.Txs().Get(&item.TxId)
 		if err != nil {
 			log.Errorf("query transaction failed, txId %s", item.TxId.String())
+			continue
+		}
+
+		var tx core.Transaction
+		err = tx.Deserialize(bytes.NewReader(utx.RawData))
+		if err != nil {
 			continue
 		}
 
@@ -226,7 +245,7 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 				Hashes:       block.Hashes,
 				Flags:        block.Flags,
 			},
-			storeTx.Transaction,
+			tx,
 			block.Height-item.Height,
 		)
 	}
@@ -331,19 +350,22 @@ type txBatch struct {
 
 // PutTx add a store transaction operation into batch, and return
 // if it is a false positive and error.
-func (b *txBatch) PutTx(tx *util.Tx) (bool, error) {
+func (b *txBatch) PutTx(utx util.Transaction, height uint32) (bool, error) {
+	tx := utx.(*core.Transaction)
 	hits := make(map[common.Uint168]struct{})
-	ops := make(map[*core.OutPoint]common.Uint168)
+	ops := make(map[*util.OutPoint]common.Uint168)
 	for index, output := range tx.Outputs {
 		if b.db.Addrs().GetFilter().ContainAddr(output.ProgramHash) {
-			outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
+			outpoint := util.NewOutPoint(tx.Hash(), uint16(index))
 			ops[outpoint] = output.ProgramHash
 			hits[output.ProgramHash] = struct{}{}
 		}
 	}
 
 	for _, input := range tx.Inputs {
-		if addr := b.db.Ops().IsExist(&input.Previous); addr != nil {
+		op := input.Previous
+		addr := b.db.Ops().HaveOp(util.NewOutPoint(op.TxID, op.Index))
+		if addr != nil {
 			hits[*addr] = struct{}{}
 		}
 	}
@@ -370,23 +392,29 @@ func (b *txBatch) PutTx(tx *util.Tx) (bool, error) {
 			b.batch.Que().Put(&store.QueItem{
 				NotifyId: getListenerKey(listener),
 				TxId:     tx.Hash(),
-				Height:   tx.Height,
+				Height:   height,
 			})
 		}
 	}
 
-	return false, b.batch.Txs().Put(tx)
+	return false, b.batch.Txs().Put(util.NewTx(utx, height))
 }
 
 // DelTx add a delete transaction operation into batch.
 func (b *txBatch) DelTx(txId *common.Uint256) error {
-	tx, err := b.db.Txs().Get(txId)
+	utx, err := b.db.Txs().Get(txId)
+	if err != nil {
+		return err
+	}
+
+	var tx core.Transaction
+	err = tx.Deserialize(bytes.NewReader(utx.RawData))
 	if err != nil {
 		return err
 	}
 
 	for index := range tx.Outputs {
-		outpoint := core.NewOutPoint(tx.Hash(), uint16(index))
+		outpoint := util.NewOutPoint(utx.Hash, uint16(index))
 		b.batch.Ops().Del(outpoint)
 	}
 

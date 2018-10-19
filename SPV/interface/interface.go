@@ -1,10 +1,10 @@
 package _interface
 
 import (
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -20,7 +20,7 @@ type Config struct {
 	// The public seed peers addresses.
 	SeedList []string
 
-	// DefaultPort is the default port for public peers provide services.
+	// NodePort is the default port for public peers provide services.
 	DefaultPort uint16
 
 	// The min candidate peers count to start syncing progress.

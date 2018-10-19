@@ -7,13 +7,14 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 // Header is a data structure stored in database.
 type Header struct {
 	// The origin header of the block
-	core.Header
+	BlockHeader
+
+	Height uint32
 
 	// MerkleProof for transactions packed in this block
 	NumTxs uint32
@@ -27,7 +28,12 @@ type Header struct {
 
 func (h *Header) Serialize() ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := h.Header.Serialize(buf)
+	err := h.BlockHeader.Serialize(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	err = common.WriteUint32(buf, h.Height)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +68,12 @@ func (h *Header) Serialize() ([]byte, error) {
 
 func (h *Header) Deserialize(b []byte) error {
 	r := bytes.NewReader(b)
-	err := h.Header.Deserialize(r)
+	err := h.BlockHeader.Deserialize(r)
+	if err != nil {
+		return err
+	}
+
+	h.Height, err = common.ReadUint32(r)
 	if err != nil {
 		return err
 	}

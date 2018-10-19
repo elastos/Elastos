@@ -1,39 +1,76 @@
 package util
 
 import (
-	"encoding/binary"
+	"bytes"
 	"io"
+	"time"
 
-	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
 // Tx is a data structure used in database.
 type Tx struct {
-	// The origin transaction data.
-	core.Transaction
+	// The transaction hash.
+	Hash common.Uint256
 
 	// The block height that this transaction
 	// belongs to.
 	Height uint32
+
+	// The time the transaction was first seen
+	Timestamp time.Time
+
+	// Transaction
+	RawData []byte
 }
 
-func NewTx(tx core.Transaction, height uint32) *Tx {
+func NewTx(tx Transaction, height uint32) *Tx {
+	buf := new(bytes.Buffer)
+	tx.Serialize(buf)
 	return &Tx{
-		Transaction: tx,
-		Height:      height,
+		Hash:      tx.Hash(),
+		Height:    height,
+		Timestamp: time.Now(),
+		RawData:   buf.Bytes(),
 	}
 }
 
-func (t *Tx) Serialize(buf io.Writer) error {
-	if err := t.Transaction.Serialize(buf); err != nil {
+func (t *Tx) Serialize(w io.Writer) error {
+	if err := t.Hash.Serialize(w); err != nil {
 		return err
 	}
-	return binary.Write(buf, binary.LittleEndian, t.Height)
+
+	if err := common.WriteUint32(w, t.Height); err != nil {
+		return err
+	}
+
+	err := common.WriteUint64(w, uint64(t.Timestamp.Unix()))
+	if err != nil {
+		return err
+	}
+
+	return common.WriteVarBytes(w, t.RawData)
 }
 
-func (t *Tx) Deserialize(reader io.Reader) error {
-	if err := t.Transaction.Deserialize(reader); err != nil {
+func (t *Tx) Deserialize(r io.Reader) error {
+	if err := t.Hash.Deserialize(r); err != nil {
 		return err
 	}
-	return binary.Read(reader, binary.LittleEndian, &t.Height)
+
+	var err error
+	t.Height, err = common.ReadUint32(r)
+	if err != nil {
+		return err
+	}
+
+	timestamp, err := common.ReadUint64(r)
+	if err != nil {
+		return err
+	}
+	t.Timestamp = time.Unix(int64(timestamp), 0)
+
+	t.RawData, err = common.ReadVarBytes(r, msg.MaxBlockSize,
+		"Tx RawData")
+	return err
 }

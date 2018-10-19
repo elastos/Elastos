@@ -2,21 +2,23 @@ package _interface
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
-	spvpeer "github.com/elastos/Elastos.ELA.SPV/peer"
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	"github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
+	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
-	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
@@ -101,22 +103,41 @@ func TestGetListenerKey(t *testing.T) {
 }
 
 func TestNewSPVService(t *testing.T) {
-	addrmgr.UseLogger(elalog.Stdout)
-	connmgr.UseLogger(elalog.Stdout)
-	sdk.UseLogger(elalog.Stdout)
-	//rpc.UseLogger(logger)
-	//peer.UseLogger(elalog.Stdout)
-	spvpeer.UseLogger(elalog.Stdout)
-	server.UseLogger(elalog.Stdout)
-	blockchain.UseLogger(elalog.Stdout)
-	sync.UseLogger(elalog.Stdout)
-	UseLogger(elalog.Stdout)
+	backend := elalog.NewBackend(os.Stdout, elalog.Lshortfile)
+	admrlog := backend.Logger("ADMR", elalog.LevelOff)
+	cmgrlog := backend.Logger("CMGR", elalog.LevelOff)
+	bcdblog := backend.Logger("BCDB", elalog.LevelTrace)
+	synclog := backend.Logger("SYNC", elalog.LevelTrace)
+	peerlog := backend.Logger("PEER", elalog.LevelTrace)
+	spvslog := backend.Logger("SPVS", elalog.LevelTrace)
+	srvrlog := backend.Logger("SRVR", elalog.LevelTrace)
+	rpcslog := backend.Logger("RPCS", elalog.LevelTrace)
+
+	addrmgr.UseLogger(admrlog)
+	connmgr.UseLogger(cmgrlog)
+	blockchain.UseLogger(bcdblog)
+	sdk.UseLogger(spvslog)
+	jsonrpc.UseLogger(rpcslog)
+	peer.UseLogger(peerlog)
+	server.UseLogger(srvrlog)
+	store.UseLogger(bcdblog)
+	sync.UseLogger(synclog)
+
+	seedList := []string{
+		"node-regtest-201.elastos.org:22866",
+		"node-regtest-202.elastos.org:22866",
+		"node-regtest-203.elastos.org:22866",
+		"node-regtest-204.elastos.org:22866",
+		"node-regtest-205.elastos.org:22866",
+		"node-regtest-206.elastos.org:22866",
+		"node-regtest-207.elastos.org:22866",
+	}
 
 	config := &Config{
-		Magic:          config.Values().Magic,
-		Foundation:     config.Values().Foundation,
-		SeedList:       config.Values().SeedList,
-		DefaultPort:    config.Values().DefaultPort,
+		Magic:          20180627,
+		Foundation:     "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
+		SeedList:       seedList,
+		DefaultPort:    22866,
 		MinOutbound:    8,
 		MaxConnections: 100,
 	}

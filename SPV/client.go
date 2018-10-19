@@ -1,34 +1,38 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/account"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/transaction"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client/wallet"
+	"github.com/elastos/Elastos.ELA.SPV/wallet"
 
-	"github.com/urfave/cli"
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 var Version string
 
 func main() {
-	app := cli.NewApp()
-	app.Name = "ELASTOS SPV WALLET"
-	app.Version = Version
-	app.HelpName = "ELASTOS SPV WALLET HELP"
-	app.Usage = "command line user interface"
-	app.UsageText = "[global option] command [command options] [args]"
-	app.HideHelp = false
-	app.HideVersion = false
-	//commands
-	app.Commands = []cli.Command{
-		wallet.NewCreateCommand(),
-		wallet.NewChangePasswordCommand(),
-		wallet.NewResetCommand(),
-		account.NewCommand(),
-		transaction.NewCommand(),
-	}
+	url := fmt.Sprint("http://127.0.0.1:", config.JsonRpcPort, "/spvwallet/")
+	wallet.RunClient(Version, url, getSystemAssetId(), newBlockHeader)
+}
 
-	app.Run(os.Args)
+func getSystemAssetId() common.Uint256 {
+	systemToken := &core.Transaction{
+		TxType:         core.RegisterAsset,
+		PayloadVersion: 0,
+		Payload: &core.PayloadRegisterAsset{
+			Asset: core.Asset{
+				Name:      "ELA",
+				Precision: 0x08,
+				AssetType: 0x00,
+			},
+			Amount:     0 * 100000000,
+			Controller: common.Uint168{},
+		},
+		Attributes: []*core.Attribute{},
+		Inputs:     []*core.Input{},
+		Outputs:    []*core.Output{},
+		Programs:   []*core.Program{},
+	}
+	return systemToken.Hash()
 }

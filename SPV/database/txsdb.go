@@ -29,7 +29,7 @@ type TxsDB interface {
 type TxBatch interface {
 	// PutTx add a store transaction operation into batch, and return
 	// if it is a false positive and error.
-	PutTx(tx *util.Tx) (bool, error)
+	PutTx(tx util.Transaction, height uint32) (bool, error)
 
 	// DelTx add a delete transaction operation into batch.
 	DelTx(txId *common.Uint256) error

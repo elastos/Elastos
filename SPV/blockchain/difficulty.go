@@ -25,7 +25,7 @@ func CalcWork(bits uint32) *big.Int {
 
 func checkProofOfWork(header util.Header) bool {
 	// The target difficulty must be larger than zero.
-	target := CompactToBig(header.Bits)
+	target := CompactToBig(header.Bits())
 	if target.Sign() <= 0 {
 		return false
 	}
@@ -36,7 +36,7 @@ func checkProofOfWork(header util.Header) bool {
 	}
 
 	// The block hash must be less than the claimed target.
-	hash := header.AuxPow.ParBlockHeader.Hash()
+	hash := header.PowHash()
 	hashNum := HashToBig(&hash)
 	if hashNum.Cmp(target) > 0 {
 		return false

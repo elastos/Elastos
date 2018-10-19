@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
-	spvpeer "github.com/elastos/Elastos.ELA.SPV/peer"
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
+	speer "github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
@@ -14,8 +15,6 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
-	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -24,7 +23,7 @@ const (
 )
 
 type sendTxMsg struct {
-	tx     *core.Transaction
+	tx     util.Transaction
 	expire time.Time
 }
 
@@ -58,18 +57,18 @@ type service struct {
 // Create a instance of SPV service implementation.
 func newService(cfg *Config) (*service, error) {
 	// Initialize blockchain
-	chain, err := blockchain.New(cfg.Foundation, cfg.ChainStore)
+	chain, err := blockchain.New(cfg.GenesisHeader, cfg.ChainStore)
 	if err != nil {
 		return nil, err
 	}
 
 	// Create SPV service instance
 	service := &service{
-		cfg:       *cfg,
-		newPeers:  make(chan *peer.Peer, cfg.MaxPeers),
-		donePeers: make(chan *peer.Peer, cfg.MaxPeers),
-		txQueue:   make(chan interface{}, 3),
-		quit:      make(chan struct{}),
+		cfg:            *cfg,
+		newPeers:       make(chan *peer.Peer, cfg.MaxPeers),
+		donePeers:      make(chan *peer.Peer, cfg.MaxPeers),
+		txQueue:        make(chan interface{}, 3),
+		quit:           make(chan struct{}),
 		txProcessed:    make(chan struct{}, 1),
 		blockProcessed: make(chan struct{}, 1),
 	}
@@ -132,7 +131,7 @@ func (s *service) start() {
 }
 
 func (s *service) updateFilter() *bloom.Filter {
-	return BuildBloomFilter(s.cfg.GetFilterData())
+	return bloom.BuildBloomFilter(s.cfg.GetFilterData())
 }
 
 func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
@@ -148,10 +147,10 @@ func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {
 		message = new(msg.NotFound)
 
 	case p2p.CmdTx:
-		message = msg.NewTx(new(core.Transaction))
+		message = msg.NewTx(s.cfg.NewTransaction())
 
 	case p2p.CmdMerkleBlock:
-		message = msg.NewMerkleBlock(new(core.Header))
+		message = msg.NewMerkleBlock(s.cfg.NewBlockHeader())
 
 	case p2p.CmdReject:
 		message = new(msg.Reject)
@@ -175,15 +174,15 @@ func (s *service) donePeer(peer server.IPeer) {
 // peerHandler handles new peers and done peers from P2P server.
 // When comes new peer, create a spv peer warpper for it
 func (s *service) peerHandler() {
-	peers := make(map[*peer.Peer]*spvpeer.Peer)
+	peers := make(map[*peer.Peer]*speer.Peer)
 
 out:
 	for {
 		select {
 		case p := <-s.newPeers:
 			// Create spv peer warpper for the new peer.
-			sp := spvpeer.NewPeer(p,
-				&spvpeer.Config{
+			sp := speer.NewPeer(p,
+				&speer.Config{
 					OnInv:      s.onInv,
 					OnTx:       s.onTx,
 					OnBlock:    s.onBlock,
@@ -264,7 +263,7 @@ out:
 					accepted[txId] = struct{}{}
 
 					// Use a new goroutine do the invoke to prevent blocking.
-					go func(tx *core.Transaction) {
+					go func(tx util.Transaction) {
 						if s.cfg.StateNotifier != nil {
 							s.cfg.StateNotifier.TransactionAccepted(tx)
 						}
@@ -289,7 +288,7 @@ out:
 					delete(unconfirmed, txId)
 
 					// Use a new goroutine do the invoke to prevent blocking.
-					go func(tx *core.Transaction) {
+					go func(tx util.Transaction) {
 						if s.cfg.StateNotifier != nil {
 							s.cfg.StateNotifier.TransactionRejected(tx)
 						}
@@ -299,7 +298,7 @@ out:
 			case *blockMsg:
 				// Loop through all packed transactions, see if match to any
 				// sent transactions.
-				confirmedTxs := make(map[common.Uint256]*core.Transaction)
+				confirmedTxs := make(map[common.Uint256]util.Transaction)
 				for _, tx := range tmsg.block.Transactions {
 					txId := tx.Hash()
 
@@ -328,7 +327,7 @@ out:
 						if s.cfg.StateNotifier != nil {
 							s.cfg.StateNotifier.TransactionConfirmed(tx)
 						}
-					}(util.NewTx(*tx, tmsg.block.Height))
+					}(util.NewTx(tx, tmsg.block.Height))
 				}
 			}
 		case <-retryTicker.C:
@@ -363,7 +362,7 @@ cleanup:
 	log.Trace("Service transaction handler done")
 }
 
-func (s *service) SendTransaction(tx core.Transaction) error {
+func (s *service) SendTransaction(tx util.Transaction) error {
 	peersCount := s.IServer.ConnectedCount()
 	if peersCount < int32(s.cfg.MinPeersForSync) {
 		return fmt.Errorf("connected peers %d not enough for sending transactions", peersCount)
@@ -373,11 +372,11 @@ func (s *service) SendTransaction(tx core.Transaction) error {
 		return fmt.Errorf("spv service did not sync to current")
 	}
 
-	s.txQueue <- &sendTxMsg{tx: &tx}
+	s.txQueue <- &sendTxMsg{tx: tx}
 	return nil
 }
 
-func (s *service) onInv(sp *spvpeer.Peer, inv *msg.Inv) {
+func (s *service) onInv(sp *speer.Peer, inv *msg.Inv) {
 	// If service already synced to current, it most likely to receive a relayed
 	// block or transaction inv, not a huge invList with block hashes.
 	if s.IsCurrent() {
@@ -391,7 +390,7 @@ func (s *service) onInv(sp *spvpeer.Peer, inv *msg.Inv) {
 	s.syncManager.QueueInv(inv, sp)
 }
 
-func (s *service) onBlock(sp *spvpeer.Peer, block *util.Block) {
+func (s *service) onBlock(sp *speer.Peer, block *util.Block) {
 	s.syncManager.QueueBlock(block, sp, s.blockProcessed)
 
 	select {
@@ -403,12 +402,12 @@ func (s *service) onBlock(sp *spvpeer.Peer, block *util.Block) {
 	}
 }
 
-func (s *service) onTx(sp *spvpeer.Peer, msgTx *core.Transaction) {
+func (s *service) onTx(sp *speer.Peer, msgTx util.Transaction) {
 	s.syncManager.QueueTx(msgTx, sp, s.txProcessed)
 	<-s.txProcessed
 }
 
-func (s *service) onNotFound(sp *spvpeer.Peer, notFound *msg.NotFound) {
+func (s *service) onNotFound(sp *speer.Peer, notFound *msg.NotFound) {
 	// Every thing we requested was came from this connected peer, so
 	// no reason it said I have some data you don't have and when you
 	// come to get it, it say oh I didn't have it.
@@ -416,7 +415,7 @@ func (s *service) onNotFound(sp *spvpeer.Peer, notFound *msg.NotFound) {
 	sp.Disconnect()
 }
 
-func (s *service) onReject(sp *spvpeer.Peer, reject *msg.Reject) {
+func (s *service) onReject(sp *speer.Peer, reject *msg.Reject) {
 	if reject.Cmd == p2p.CmdTx {
 		s.txQueue <- &txRejectMsg{iv: &msg.InvVect{Type: msg.InvTypeTx, Hash: reject.Hash}}
 	}

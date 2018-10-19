@@ -55,7 +55,7 @@ func (t *txs) Put(txn *util.Tx) (err error) {
 			return err
 		}
 
-		if err = tx.Bucket(BKTTxs).Put(txn.Hash().Bytes(), buf.Bytes()); err != nil {
+		if err = tx.Bucket(BKTTxs).Put(txn.Hash.Bytes(), buf.Bytes()); err != nil {
 			return err
 		}
 
@@ -66,7 +66,7 @@ func (t *txs) Put(txn *util.Tx) (err error) {
 		var txMap = make(map[common.Uint256]uint32)
 		gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
 
-		txMap[txn.Hash()] = txn.Height
+		txMap[txn.Hash] = txn.Height
 
 		buf = new(bytes.Buffer)
 		if err = gob.NewEncoder(buf).Encode(txMap); err != nil {

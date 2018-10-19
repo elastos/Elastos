@@ -5,7 +5,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 /*
@@ -29,22 +28,22 @@ type IService interface {
 	UpdateFilter()
 
 	// SendTransaction broadcast a transaction message to the peer to peer network.
-	SendTransaction(core.Transaction) error
+	SendTransaction(util.Transaction) error
 }
 
 // StateNotifier exposes methods to notify status changes of transactions and blocks.
 type StateNotifier interface {
 	// TransactionAnnounce will be invoked when received a new announced transaction.
-	TransactionAnnounce(tx *core.Transaction)
+	TransactionAnnounce(tx util.Transaction)
 
 	// TransactionAccepted will be invoked after a transaction sent by
 	// SendTransaction() method has been accepted.  Notice: this method needs at
 	// lest two connected peers to work.
-	TransactionAccepted(tx *core.Transaction)
+	TransactionAccepted(tx util.Transaction)
 
 	// TransactionRejected will be invoked if a transaction sent by SendTransaction()
 	// method has been rejected.
-	TransactionRejected(tx *core.Transaction)
+	TransactionRejected(tx util.Transaction)
 
 	// TransactionConfirmed will be invoked after a transaction sent by
 	// SendTransaction() method has been packed into a block.
@@ -72,11 +71,17 @@ type Config struct {
 	// The min candidate peers count to start syncing progress.
 	MinPeersForSync int
 
-	// Foundation address of the current access blockhain network
-	Foundation string
+	// GenesisHeader is the
+	GenesisHeader util.BlockHeader
 
 	// The database to store all block headers
 	ChainStore database.ChainStore
+
+	// NewTransaction create a new transaction instance.
+	NewTransaction func() util.Transaction
+
+	// NewBlockHeader create a new block header instance.
+	NewBlockHeader func() util.BlockHeader
 
 	// GetFilterData() returns two arguments.
 	// First arguments are all addresses stored in your data store.
@@ -86,7 +91,7 @@ type Config struct {
 	// reference of an transaction output. If an address ever received an transaction output,
 	// there will be the outpoint reference to it. Any time you want to spend the balance of an
 	// address, you must provide the reference of the balance which is an outpoint in the transaction input.
-	GetFilterData func() ([]*common.Uint168, []*core.OutPoint)
+	GetFilterData func() ([]*common.Uint168, []*util.OutPoint)
 
 	// StateNotifier is an optional config, if you don't want to receive state changes of transactions
 	// or blocks, just keep it blank.

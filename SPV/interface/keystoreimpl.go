@@ -1,11 +1,11 @@
 package _interface
 
 import (
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/client"
+	"github.com/elastos/Elastos.ELA.SPV/wallet/client"
 )
 
 type keystore struct {
-	keystore client.Keystore
+	keystore *client.Keystore
 }
 
 // This method will open or create a keystore with the given password
@@ -51,6 +51,6 @@ func (impl *keystore) Json() (string, error) {
 }
 
 func (impl *keystore) FromJson(str string, password string) error {
-	impl.keystore = new(client.KeystoreImpl)
+	impl.keystore = new(client.Keystore)
 	return impl.keystore.FromJson(str, password)
 }

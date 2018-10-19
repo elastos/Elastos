@@ -7,13 +7,12 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
 	"github.com/elastos/Elastos.ELA.SPV/peer"
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/config"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/rpc"
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet/store"
 	"github.com/elastos/Elastos.ELA.SPV/sync"
+	"github.com/elastos/Elastos.ELA.SPV/wallet"
+	"github.com/elastos/Elastos.ELA.SPV/wallet/store"
 
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
@@ -27,10 +26,10 @@ const LogPath = "./logs-spv/"
 var (
 	fileWriter = elalog.NewFileWriter(
 		LogPath,
-		config.Values().MaxPerLogSize,
-		config.Values().MaxLogsSize,
+		config.MaxPerLogSize,
+		config.MaxLogsSize,
 	)
-	level   = elalog.Level(config.Values().PrintLevel)
+	level   = elalog.Level(config.PrintLevel)
 	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
 		elalog.Llongfile)
 
@@ -50,10 +49,10 @@ func init() {
 	connmgr.UseLogger(cmgrlog)
 	blockchain.UseLogger(bcdblog)
 	sdk.UseLogger(spvslog)
-	rpc.UseLogger(rpcslog)
+	jsonrpc.UseLogger(rpcslog)
 	peer.UseLogger(peerlog)
 	server.UseLogger(srvrlog)
 	store.UseLogger(bcdblog)
 	sync.UseLogger(synclog)
-	spvwallet.UseLogger(waltlog)
+	wallet.UseLogger(waltlog)
 }

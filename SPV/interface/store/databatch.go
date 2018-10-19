@@ -54,15 +54,21 @@ func (b *dataBatch) DelAll(height uint32) error {
 	txsBucket := b.boltTx.Bucket(BKTTxs)
 	opsBucket := b.boltTx.Bucket(BKTOps)
 	for txId := range txMap {
-		var txn util.Tx
+		var utx util.Tx
 		data := txsBucket.Get(txId.Bytes())
-		err := txn.Deserialize(bytes.NewReader(data))
+		err := utx.Deserialize(bytes.NewReader(data))
 		if err != nil {
 			return err
 		}
 
-		for index := range txn.Outputs {
-			outpoint := core.NewOutPoint(txn.Hash(), uint16(index)).Bytes()
+		var tx core.Transaction
+		err = tx.Deserialize(bytes.NewReader(utx.RawData))
+		if err != nil {
+			return err
+		}
+
+		for index := range tx.Outputs {
+			outpoint := core.NewOutPoint(utx.Hash, uint16(index)).Bytes()
 			opsBucket.Delete(outpoint)
 		}
 

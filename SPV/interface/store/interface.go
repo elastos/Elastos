@@ -6,7 +6,6 @@ import (
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 type HeaderStore interface {
@@ -64,16 +63,16 @@ type TxsBatch interface {
 
 type Ops interface {
 	database.DB
-	Put(*core.OutPoint, common.Uint168) error
-	IsExist(*core.OutPoint) *common.Uint168
-	GetAll() ([]*core.OutPoint, error)
+	Put(*util.OutPoint, common.Uint168) error
+	HaveOp(*util.OutPoint) *common.Uint168
+	GetAll() ([]*util.OutPoint, error)
 	Batch() OpsBatch
 }
 
 type OpsBatch interface {
 	batch
-	Put(*core.OutPoint, common.Uint168) error
-	Del(*core.OutPoint) error
+	Put(*util.OutPoint, common.Uint168) error
+	Del(*util.OutPoint) error
 }
 
 type Que interface {

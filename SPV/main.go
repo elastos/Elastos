@@ -3,13 +3,11 @@ package main
 import (
 	"os"
 	"os/signal"
-
-	"github.com/elastos/Elastos.ELA.SPV/spvwallet"
 )
 
 func main() {
 	// Initiate SPV service
-	wallet, err := spvwallet.New()
+	w, err := NewWallet()
 	if err != nil {
 		waltlog.Error("Initiate SPV service failed,", err)
 		os.Exit(0)
@@ -22,12 +20,12 @@ func main() {
 	go func() {
 		for range c {
 			waltlog.Trace("Wallet shutting down...")
-			wallet.Stop()
+			w.Stop()
 			stop <- 1
 		}
 	}()
 
-	wallet.Start()
+	w.Start()
 
 	<-stop
 }

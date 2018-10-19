@@ -31,7 +31,7 @@ func (b *txsBatch) Put(tx *util.Tx) error {
 		return err
 	}
 
-	err := b.Tx.Bucket(BKTTxs).Put(tx.Hash().Bytes(), buf.Bytes())
+	err := b.Tx.Bucket(BKTTxs).Put(tx.Hash.Bytes(), buf.Bytes())
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (b *txsBatch) Commit() error {
 			gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
 
 			for _, tx := range txs {
-				txMap[tx.Hash()] = height
+				txMap[tx.Hash] = height
 			}
 
 			var buf = new(bytes.Buffer)
@@ -130,7 +130,7 @@ func (b *txsBatch) Commit() error {
 			}
 
 			for _, tx := range txs {
-				delete(txMap, tx.Hash())
+				delete(txMap, tx.Hash)
 			}
 
 			var buf = new(bytes.Buffer)

@@ -28,7 +28,7 @@ func (d *defaultChainDB) CommitBlock(block *util.Block, newTip bool) (fps uint32
 
 	batch := d.t.Batch()
 	for _, tx := range block.Transactions {
-		fp, err := batch.PutTx(util.NewTx(*tx, block.Height))
+		fp, err := batch.PutTx(tx, block.Height)
 		if err != nil {
 			return 0, batch.Rollback()
 		}

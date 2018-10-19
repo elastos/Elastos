@@ -5,14 +5,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/util"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA/bloom"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -43,7 +42,7 @@ type Config struct {
 
 	// After sent a data request with invType TRANSACTION, a txn message will return through this method.
 	// these transactions are matched to the bloom filter you have sent with the filterload message.
-	OnTx func(*Peer, *core.Transaction)
+	OnTx func(*Peer, util.Transaction)
 
 	// If the BLOCK or TRANSACTION requested by the data request message can not be found,
 	// notfound message with requested data hash will return through this method.
@@ -74,33 +73,28 @@ type Peer struct {
 	prevGetBlocksBegin *common.Uint256
 	prevGetBlocksStop  *common.Uint256
 
-	stallControl chan interface{}
-	blockQueue   chan interface{}
-	outputQueue  chan outMsg
-	queueQuit    chan struct{}
+	stallControl  chan interface{}
+	blockQueue    chan interface{}
+	outputQueue   chan outMsg
+	sendDoneQueue chan struct{}
 }
 
 func NewPeer(peer *peer.Peer, cfg *Config) *Peer {
 	p := Peer{
-		Peer:         peer,
-		cfg:          *cfg,
-		stallControl: make(chan interface{}, 1),
-		blockQueue:   make(chan interface{}, 1),
-		outputQueue:  make(chan outMsg, outputBufferSize),
-		queueQuit:    make(chan struct{}),
+		Peer:          peer,
+		cfg:           *cfg,
+		stallControl:  make(chan interface{}, 1),
+		blockQueue:    make(chan interface{}, 1),
+		sendDoneQueue: make(chan struct{}, 1),
+		outputQueue:   make(chan outMsg, outputBufferSize),
 	}
 	peer.AddMessageFunc(p.handleMessage)
+	peer.OnSendDone(p.sendDoneQueue)
 
 	go p.stallHandler()
 	go p.queueHandler()
 	go p.blockHandler()
 
-	go func() {
-		// We have waited on queueQuit and thus we can be sure
-		// that we will not miss anything sent on sendQueue.
-		<-p.queueQuit
-		p.CleanupSendQueue()
-	}()
 	return &p
 }
 
@@ -180,11 +174,11 @@ out:
 
 			case *msg.MerkleBlock:
 				// Remove received merkleblock from expected response map.
-				delete(pendingResponses, m.Header.(*core.Header).Hash().String())
+				delete(pendingResponses, m.Header.(util.BlockHeader).Hash().String())
 
 			case *msg.Tx:
 				// Remove received transaction from expected response map.
-				delete(pendingResponses, m.Serializable.(*core.Transaction).Hash().String())
+				delete(pendingResponses, m.Serializable.(util.Transaction).Hash().String())
 
 			case *msg.NotFound:
 				// NotFound should not received from sync peer
@@ -248,7 +242,7 @@ func (p *Peer) blockHandler() {
 	// Data caches for the downloading block.
 	var header *util.Header
 	var pendingTxs map[common.Uint256]struct{}
-	var txs []*core.Transaction
+	var txs []util.Transaction
 
 	// NotifyOnBlock message and clear cached data.
 	notifyBlock := func() {
@@ -294,10 +288,10 @@ out:
 
 				// Set current downloading block
 				header = &util.Header{
-					Header: *m.Header.(*core.Header),
-					NumTxs: m.Transactions,
-					Hashes: m.Hashes,
-					Flags:  m.Flags,
+					BlockHeader: m.Header.(util.BlockHeader),
+					NumTxs:      m.Transactions,
+					Hashes:      m.Hashes,
+					Flags:       m.Flags,
 				}
 
 				// No transaction included in this block, so just notify block
@@ -314,11 +308,11 @@ out:
 				}
 
 				// Initiate transactions cache.
-				txs = make([]*core.Transaction, 0, len(pendingTxs))
+				txs = make([]util.Transaction, 0, len(pendingTxs))
 
 			case *msg.Tx:
 				// Not in block downloading mode, just notify new transaction.
-				tx := m.Serializable.(*core.Transaction)
+				tx := m.Serializable.(util.Transaction)
 				if header == nil {
 					p.cfg.OnTx(p, tx)
 					continue
@@ -398,7 +392,7 @@ out:
 
 			// This channel is notified when a message has been sent across
 			// the network socket.
-		case <-p.SendDoneQueue():
+		case <-p.sendDoneQueue:
 			// No longer waiting if there are no more messages
 			// in the pending messages queue.
 			next := pendingMsgs.Front()
@@ -437,7 +431,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	close(p.queueQuit)
 	log.Tracef("Peer queue handler done for %s", p)
 }
 

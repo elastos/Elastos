@@ -10,7 +10,6 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
-	"github.com/elastos/Elastos.ELA/core"
 )
 
 const (
@@ -65,7 +64,7 @@ type blockMsg struct {
 // txMsg packages a bitcoin tx message and the peer it came from together
 // so the block handler has access to that information.
 type txMsg struct {
-	tx    *core.Transaction
+	tx    util.Transaction
 	peer  *peer.Peer
 	reply chan struct{}
 }
@@ -177,16 +176,9 @@ func (sm *SyncManager) startSync() {
 			continue
 		}
 
-		// Pick the first available candidate.
-		if bestPeer == nil {
-			bestPeer = peer
-			continue
-		}
-
-		// Pick the highest available candidate.
-		if peer.Height() > bestPeer.Height() {
-			bestPeer = peer
-		}
+		// Just pick the first available candidate.
+		bestPeer = peer
+		break
 	}
 
 	// Start syncing from the best peer if one was selected.
@@ -677,7 +669,7 @@ func (sm *SyncManager) NewPeer(peer *peer.Peer) {
 // QueueTx adds the passed transaction message and peer to the block handling
 // queue. Responds to the done channel argument after the tx message is
 // processed.
-func (sm *SyncManager) QueueTx(tx *core.Transaction, peer *peer.Peer, done chan struct{}) {
+func (sm *SyncManager) QueueTx(tx util.Transaction, peer *peer.Peer, done chan struct{}) {
 	// Don't accept more transactions if we're shutting down.
 	if atomic.LoadInt32(&sm.shutdown) != 0 {
 		done <- struct{}{}
