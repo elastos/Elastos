@@ -24,7 +24,7 @@ func init() {
 	types.GetDataContainer = func(programHash *common.Uint168, tx *types.Transaction) interfaces.IDataContainer {
 		if tx.TxType == RegisterIdentification {
 			for _, output := range tx.Outputs {
-				if programHash.IsEqual(output.ProgramHash) {
+				if programHash[0] == common.PrefixRegisterId && programHash.IsEqual(output.ProgramHash) {
 					return tx.Payload.(*PayloadRegisterIdentification)
 				}
 			}
