@@ -437,9 +437,6 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		return nil
 	}
 
-	proof := new(bloom.MerkleProof)
-	mainChainTransaction := new(core.Transaction)
-
 	payloadRecharge, ok := txn.Payload.(*types.PayloadRechargeToSideChain)
 	if !ok {
 		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid recharge to side chain payload type")
@@ -451,14 +448,28 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
-	reader := bytes.NewReader(payloadRecharge.MerkleProof)
-	if err := proof.Deserialize(reader); err != nil {
-		str := fmt.Sprint("[checkRechargeToSideChainTransaction] RechargeToSideChain payload deserialize failed")
-		return ruleError(ErrRechargeToSideChain, str)
-	}
-	reader = bytes.NewReader(payloadRecharge.MainChainTransaction)
-	if err := mainChainTransaction.Deserialize(reader); err != nil {
-		str := fmt.Sprint("[checkRechargeToSideChainTransaction] RechargeToSideChain mainChainTransaction deserialize failed")
+	mainChainTransaction := new(core.Transaction)
+	if txn.PayloadVersion == types.RechargeToSideChainPayloadVersion0 {
+		proof := new(bloom.MerkleProof)
+		reader := bytes.NewReader(payloadRecharge.MerkleProof)
+		if err := proof.Deserialize(reader); err != nil {
+			str := fmt.Sprint("[checkRechargeToSideChainTransaction] RechargeToSideChain payload deserialize failed")
+			return ruleError(ErrRechargeToSideChain, str)
+		}
+		reader = bytes.NewReader(payloadRecharge.MainChainTransaction)
+		if err := mainChainTransaction.Deserialize(reader); err != nil {
+			str := fmt.Sprint("[checkRechargeToSideChainTransaction] RechargeToSideChain mainChainTransaction deserialize failed")
+			return ruleError(ErrRechargeToSideChain, str)
+		}
+	} else if txn.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
+		var err error
+		mainChainTransaction, err = v.db.GetSpvMainchainTx(payloadRecharge.MainChainTransactionHash)
+		if err != nil {
+			str := fmt.Sprint("[checkRechargeToSideChainTransaction] Get RechargeToSideChain transaction failed")
+			return ruleError(ErrRechargeToSideChain, str)
+		}
+	} else {
+		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid payload version")
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 

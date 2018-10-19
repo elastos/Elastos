@@ -1,16 +1,16 @@
 package spv
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
+	"bytes"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA/bloom"
@@ -53,6 +53,7 @@ func NewService(cfg *Config) (*Service, error) {
 	err = service.RegisterTransactionListener(&listener{
 		address: cfg.ListenAddress,
 		service: service,
+		db:      cfg.ChainStore,
 	})
 	if err != nil {
 		return nil, err
@@ -116,7 +117,7 @@ func (l *listener) Address() string {
 }
 
 func (l *listener) Type() core.TransactionType {
-	return core.RechargeToSideChain
+	return core.TransferCrossChainAsset
 }
 
 func (l *listener) Flags() uint64 {
@@ -127,14 +128,14 @@ func (l *listener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Tr
 	l.mux.Lock()
 	defer l.mux.Unlock()
 
-	mcTx, err := l.db.GetSpvMainchainTx(tx.Hash())
-	if err != nil {
-		fmt.Println("[Notify] tx already exist")
+	_, err := l.db.GetSpvMainchainTx(tx.Hash())
+	if err == nil {
 		return
 	}
+	fmt.Println("[Notify] persist tx:", tx.Hash())
 
 	batch := l.db.NewBatch()
-	l.db.PersistSpvMainchainTx(batch, mcTx)
+	l.db.PersistSpvMainchainTx(batch, &tx)
 	err = batch.Commit()
 	if err != nil {
 		fmt.Errorf("[Notify] persist spv main chain tx failed, err:", err.Error())

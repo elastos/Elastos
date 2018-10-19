@@ -304,7 +304,7 @@ func (s *ChainStore) persistTransactions(batch database.Batch, b *types.Block) e
 		}
 		if txn.TxType == types.RechargeToSideChain {
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
-			hash, err := rechargePayload.GetMainchainTxHash()
+			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				return err
 			}
@@ -349,7 +349,7 @@ func (s *ChainStore) rollbackTransactions(batch database.Batch, b *types.Block) 
 		}
 		if txn.TxType == types.RechargeToSideChain {
 			rechargePayload := txn.Payload.(*types.PayloadRechargeToSideChain)
-			hash, err := rechargePayload.GetMainchainTxHash()
+			hash, err := rechargePayload.GetMainchainTxHash(txn.PayloadVersion)
 			if err != nil {
 				return err
 			}
