@@ -2,6 +2,11 @@
 image:
   - Visual Studio 2017
 
+platform:
+  - x86
+  - x64
+  - Any CPU
+
 build_script:
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
   - cmd: cd build && mkdir win && cd win
