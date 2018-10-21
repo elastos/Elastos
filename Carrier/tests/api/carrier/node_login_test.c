@@ -54,7 +54,6 @@ static void test_node_login(void)
     ElaCarrier *carrier = test_context.carrier->carrier;
     char userid[ELA_MAX_ID_LEN + 1];
     char nodeid[ELA_MAX_ID_LEN + 1];
-    char login[ELA_MAX_ID_LEN + 1];
     char *p, *q;
 
     p = ela_get_userid(carrier, userid, sizeof(userid));

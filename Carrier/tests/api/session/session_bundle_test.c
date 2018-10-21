@@ -128,7 +128,6 @@ static void session_request_callback(ElaCarrier *w, const char *from,
 }
 
 static Condition DEFINE_COND(session_request_cond);
-static Condition DEFINE_COND(session_request_complete_cond);
 
 static SessionContext session_context = {
     .request_cb = session_request_callback,

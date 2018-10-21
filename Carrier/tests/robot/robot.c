@@ -234,11 +234,6 @@ CarrierContext carrier_context = {
     .extra = NULL
 };
 
-static void log_print(const char *format, va_list args)
-{
-    vprintf(format, args);
-}
-
 static void* carrier_run_entry(void *arg)
 {
     ElaCarrier *w = (ElaCarrier *)arg;
