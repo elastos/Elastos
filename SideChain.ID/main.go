@@ -1,12 +1,18 @@
 package main
 
 import (
+	"crypto/tls"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net"
 	"os"
 	"runtime"
+	"time"
 
 	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	mp "github.com/elastos/Elastos.ELA.SideChain.ID/mempool"
-	sv "github.com/elastos/Elastos.ELA.SideChain.ID/servers"
+	sv "github.com/elastos/Elastos.ELA.SideChain.ID/service"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/config"
@@ -14,24 +20,27 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
-	"github.com/elastos/Elastos.ELA.SideChain/service/httpjsonrpc"
 	"github.com/elastos/Elastos.ELA.SideChain/service/httpnodeinfo"
-	"github.com/elastos/Elastos.ELA.SideChain/service/httprestful"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA.Utility/http/restful"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
 )
 
 const (
-	DefaultMultiCoreNum = 4
+	defaultMultiCoreNum = 4
+
+	restfulTlsPort = 443
 )
 
 func init() {
 	var coreNum int
-	if config.Parameters.MultiCoreNum > DefaultMultiCoreNum {
+	if config.Parameters.MultiCoreNum > defaultMultiCoreNum {
 		coreNum = int(config.Parameters.MultiCoreNum)
 	} else {
-		coreNum = DefaultMultiCoreNum
+		coreNum = defaultMultiCoreNum
 	}
 
 	eladlog.Debug("The Core number is ", coreNum)
@@ -176,7 +185,7 @@ func main() {
 }
 
 func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
-	s := httpjsonrpc.New(port)
+	s := jsonrpc.NewServer(&jsonrpc.Config{ServePort: port})
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
 	s.RegisterAction("getinfo", service.GetInfo)
@@ -195,6 +204,7 @@ func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
 	s.RegisterAction("getblockbyheight", service.GetBlockByHeight)
 	s.RegisterAction("getdestroyedtransactions", service.GetDestroyedTransactionsByHeight)
 	s.RegisterAction("getexistdeposittransactions", service.GetExistDepositTransactions)
+	s.RegisterAction("gettransactioninfo", service.GetTransactionInfoByHash)
 	s.RegisterAction("help", service.AuxHelp)
 	s.RegisterAction("submitsideauxblock", service.SubmitSideAuxBlock, "blockhash", "auxpow")
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
@@ -210,47 +220,109 @@ func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
 }
 
 func startHttpRESTful(port uint16, certFile, keyFile string, service *service.HttpService) {
-	s := httprestful.New(port, certFile, keyFile)
+	var (
+		s = restful.NewServer(&restful.Config{
+			ServePort: port,
+			NetListen: func(port uint16) (net.Listener, error) {
+				var err error
+				var listener net.Listener
+
+				if port%1000 == restfulTlsPort {
+					// load cert
+					cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+					if err != nil {
+						restlog.Error("load keys fail", err)
+						return nil, err
+					}
+
+					tlsConfig := &tls.Config{
+						Certificates: []tls.Certificate{cert},
+					}
+
+					restlog.Infof("TLS listen port is %d", port)
+					listener, err = tls.Listen("tcp", fmt.Sprint(":", port), tlsConfig)
+					if err != nil {
+						restlog.Error(err)
+						return nil, err
+					}
+
+				} else {
+					listener, err = net.Listen("tcp", fmt.Sprint(":", port))
+
+				}
+
+				return listener, err
+			},
+		})
+
+		restartServer = func(params util.Params) (interface{}, error) {
+			if err := s.Stop(); err != nil {
+				str := fmt.Sprintf("Stop HttpRESTful server failed, %s", err.Error())
+				restlog.Error(str)
+				return nil, errors.New(str)
+			}
+
+			done := make(chan error)
+			go func() {
+				done <- s.Start()
+			}()
+
+			select {
+			case err := <-done:
+				return nil, fmt.Errorf("Start HttpRESTful server failed, %s", err.Error())
+			case <-time.After(time.Millisecond * 100):
+			}
+			return nil, nil
+		}
+
+		sendRawTransaction = func(data []byte) (interface{}, error) {
+			var params = util.Params{}
+			if err := json.Unmarshal(data, &params); err != nil {
+				return nil, err
+			}
+			return service.SendRawTransaction(params)
+		}
+	)
 
 	const (
 		ApiGetConnectionCount  = "/api/v1/node/connectioncount"
-		ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height"
-		ApiGetBlockByHeight    = "/api/v1/block/details/height"
-		ApiGetBlockByHash      = "/api/v1/block/details/hash"
+		ApiGetBlockTxsByHeight = "/api/v1/block/transactions/height/:height"
+		ApiGetBlockByHeight    = "/api/v1/block/details/height/:height"
+		ApiGetBlockByHash      = "/api/v1/block/details/hash/:blockhash/:verbosity"
 		ApiGetBlockHeight      = "/api/v1/block/height"
-		ApiGetBlockHash        = "/api/v1/block/hash"
+		ApiGetBlockHash        = "/api/v1/block/hash/:height"
 		ApiGetTotalIssued      = "/api/v1/totalissued"
-		ApiGetTransaction      = "/api/v1/transaction"
-		ApiGetAsset            = "/api/v1/asset"
-		ApiGetBalanceByAddr    = "/api/v1/asset/balances"
-		ApiGetBalanceByAsset   = "/api/v1/asset/balance"
-		ApiGetUTXOByAsset      = "/api/v1/asset/utxo"
-		ApiGetUTXOByAddr       = "/api/v1/asset/utxos"
+		ApiGetTransaction      = "/api/v1/transaction/:hash"
+		ApiGetAsset            = "/api/v1/asset/:hash"
+		ApiGetUTXOByAddr       = "/api/v1/asset/utxos/:addr"
+		ApiGetUTXOByAsset      = "/api/v1/asset/utxo/:addr/:assetid"
+		ApiGetBalanceByAddr    = "/api/v1/asset/balances/:addr"
+		ApiGetBalanceByAsset   = "/api/v1/asset/balance/:addr/:assetid"
 		ApiSendRawTransaction  = "/api/v1/transaction"
 		ApiGetTransactionPool  = "/api/v1/transactionpool"
 		ApiRestart             = "/api/v1/restart"
 	)
 
-	s.RegisterAction("GET", ApiGetConnectionCount, service.GetConnectionCount)
-	s.RegisterAction("GET", ApiGetBlockTxsByHeight, service.GetTransactionsByHeight, "height")
-	s.RegisterAction("GET", ApiGetBlockByHeight, service.GetBlockByHeight, "height")
-	s.RegisterAction("GET", ApiGetBlockByHash, service.GetBlockByHash, "hash")
-	s.RegisterAction("GET", ApiGetBlockHeight, service.GetBlockHeight)
-	s.RegisterAction("GET", ApiGetBlockHash, service.GetBlockHash, "height")
-	s.RegisterAction("GET", ApiGetTransactionPool, service.GetTransactionPool)
-	s.RegisterAction("GET", ApiGetTransaction, service.GetTransactionByHash, "hash")
-	s.RegisterAction("GET", ApiGetAsset, service.GetAssetByHash, "hash")
-	s.RegisterAction("GET", ApiGetUTXOByAddr, service.GetUnspendsByAddr, "addr")
-	s.RegisterAction("GET", ApiGetUTXOByAsset, service.GetUnspendsByAsset, "addr", "assetid")
-	s.RegisterAction("GET", ApiGetBalanceByAddr, service.GetBalanceByAddr, "addr")
-	s.RegisterAction("GET", ApiGetBalanceByAsset, service.GetBalanceByAsset, "addr", "assetid")
-	s.RegisterAction("GET", ApiRestart, s.Restart)
+	s.RegisterGetAction(ApiGetConnectionCount, service.GetConnectionCount)
+	s.RegisterGetAction(ApiGetBlockTxsByHeight, service.GetTransactionsByHeight)
+	s.RegisterGetAction(ApiGetBlockByHeight, service.GetBlockByHeight)
+	s.RegisterGetAction(ApiGetBlockByHash, service.GetBlockByHash)
+	s.RegisterGetAction(ApiGetBlockHeight, service.GetBlockHeight)
+	s.RegisterGetAction(ApiGetBlockHash, service.GetBlockHash)
+	s.RegisterGetAction(ApiGetTransactionPool, service.GetTransactionPool)
+	s.RegisterGetAction(ApiGetTransaction, service.GetTransactionByHash)
+	s.RegisterGetAction(ApiGetAsset, service.GetAssetByHash)
+	s.RegisterGetAction(ApiGetUTXOByAddr, service.GetUnspendsByAddr)
+	s.RegisterGetAction(ApiGetUTXOByAsset, service.GetUnspendsByAsset)
+	s.RegisterGetAction(ApiGetBalanceByAddr, service.GetBalanceByAddr)
+	s.RegisterGetAction(ApiGetBalanceByAsset, service.GetBalanceByAsset)
+	s.RegisterGetAction(ApiRestart, restartServer)
 
-	s.RegisterAction("POST", ApiSendRawTransaction, service.SendRawTransaction, "data")
+	s.RegisterPostAction(ApiSendRawTransaction, sendRawTransaction)
 
 	go func() {
 		if err := s.Start(); err != nil {
-			eladlog.Errorf("Start HttpRESTful service failed, %s", err.Error())
+			restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
 		}
 	}()
 }
