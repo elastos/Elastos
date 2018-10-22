@@ -57,7 +57,7 @@ func main() {
 	}
 
 	eladlog.Info("1. BlockChain init")
-	genesisBlock, err := blockchain.GenesisBlock()
+	genesisBlock, err := bc.GenesisBlock()
 	if err != nil {
 		eladlog.Fatalf("Get genesis block failed, error %s", err)
 		os.Exit(1)
