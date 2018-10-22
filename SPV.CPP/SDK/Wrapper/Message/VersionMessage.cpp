@@ -4,8 +4,12 @@
 
 #include <sys/time.h>
 #include <cfloat>
+#include <Core/BRTransaction.h>
 
 #include "VersionMessage.h"
+
+#define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
+#define PROTOCOL_VERSION   70013
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -16,66 +20,74 @@ namespace Elastos {
 		}
 
 		bool VersionMessage::Accept(const CMBlock &msg) {
-			return false;
+			ByteStream stream(msg);
+
+			uint32_t version = 0;
+			if (!stream.readUint32(version)) {
+				_peer->Perror("Malformed version message, parse version fail");
+				return false;
+			}
+			_peer->SetVersion(version);
+
+			uint64_t services = 0;
+			if (!stream.readUint64(services)) {
+				_peer->Perror("Malformed version message, parse services fail");
+				return false;
+			}
+			_peer->SetServices(services);
+
+			uint32_t timestamp = 0;
+			if (!stream.readUint32(timestamp)) {
+				_peer->Perror("Malformed version message, parse timestamp fail");
+				return false;
+			}
+			_peer->SetTimestamp(timestamp);
+
+			uint16_t port = 0;
+			if (!stream.readUint16(port)) {
+				_peer->Perror("Malformed version message, parse port fail");
+				return false;
+			}
+			_peer->SetPort(port);
+
+			uint64_t nonce = 0;
+			if (!stream.readUint64(nonce)) {
+				_peer->Perror("Malformed version message, parse nonce fail");
+				return false;
+			}
+			_peer->SetNonce(nonce);
+
+			uint64_t height = 0;
+			if (!stream.readUint64(height)) {
+				_peer->Perror("Malformed version message, parse height fail");
+				return false;
+			}
+			_peer->SetLastBlock(uint32_t(height));
+
+			_peer->Pinfo("Got version {}, services {}", _peer->GetVersion(), _peer->GetServices());
+			SendMessageParameter param;
+			_peer->SendMessage(MSG_VERACK, param);
+			return true;
 		}
 
 		void VersionMessage::Send(const SendMessageParameter &param) {
+			ByteStream stream;
 
+			stream.writeUint32(PROTOCOL_VERSION);
+			stream.writeUint64(ENABLED_SERVICES);
+			stream.writeUint32(uint32_t(time(nullptr)));
+			stream.writeUint16(_peer->GetPort());
+			_peer->SetNonce(((uint64_t)BRRand(0) << 32) | (uint64_t)BRRand(0));
+			stream.writeUint64(_peer->GetNonce());
+			stream.writeUint64(0);
+			stream.writeUint8(0);
+
+			SendMessage(stream.getBuffer(), Type());
 		}
 
 		std::string VersionMessage::Type() const {
 			return MSG_VERSION;
 		}
-
-		//fixme [refactor]
-//		int VersionMessage::Accept(BRPeer *peer, const uint8_t *msg, size_t msgLen) {
-//			peer_log(peer, "VersionMessage.Accept");
-//			BRPeerContext *ctx = (BRPeerContext *)peer;
-//			size_t off = 0;
-//			uint16_t fromPort = 0;
-//
-//			ctx->version = UInt32GetLE(&msg[off]);
-//			off += sizeof(uint32_t);
-//			peer->services = UInt64GetLE(&msg[off]);
-//			off += sizeof(uint64_t);
-//			peer->timestamp = UInt32GetLE(&msg[off]);
-//			off += sizeof(uint32_t);
-//			fromPort = UInt16GetLE(&msg[off]);
-//			off += sizeof(uint16_t);
-//			ctx->nonce = UInt64GetLE(&msg[off]);
-//			off += sizeof(uint64_t);
-//			ctx->lastblock = UInt64GetLE(&msg[off]);
-//			off += sizeof(uint64_t);
-//			peer_log(peer, "got version %" PRIu32 ", services %" PRIx64 "", ctx->version, peer->services);
-//
-//			BRPeerSendVerackMessage(peer);
-//			return 1;
-//		}
-//
-//		void VersionMessage::Send(BRPeer *peer) {
-//			peer_dbg(peer, "%s", "VersionMessage.Send");
-//			BRPeerContext *ctx = (BRPeerContext *)peer;
-//			size_t off = 0;
-//			uint8_t msg[35];
-//
-//			UInt32SetLE(&msg[off], PROTOCOL_VERSION); // version
-//			off += sizeof(uint32_t);
-//			UInt64SetLE(&msg[off], ENABLED_SERVICES); // services
-//			off += sizeof(uint64_t);
-//			UInt32SetLE(&msg[off], time(NULL)); // timestamp
-//			off += sizeof(uint32_t);
-//			UInt16SetLE(&msg[off], peer->port); // port of remote peer
-//			off += sizeof(uint16_t);
-//			ctx->nonce = ((uint64_t)BRRand(0) << 32) | (uint64_t)BRRand(0); // random nonce
-//			UInt64SetLE(&msg[off], ctx->nonce);
-//			off += sizeof(uint64_t);
-//			UInt64SetLE(&msg[off], 0); // last block received ---spv start height
-//			off += sizeof(uint64_t);
-//			msg[off++] = 0; // relay transactions (0 for SPV bloom filter mode)
-//			peer_log(peer, "%d", (int)peer->port);
-//
-//			BRPeerSendMessage(peer, msg, sizeof(msg), MSG_VERSION);
-//		}
 
 	}
 }

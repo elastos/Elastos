@@ -65,7 +65,7 @@ namespace Elastos {
 					return false;
 				} else if (_peer->GetCurrentBlockHeight() > 0 && blockCount > 2 && blockCount < MAX_BLOCKS_COUNT &&
 						   _peer->GetCurrentBlockHeight() + _peer->GetKnownBlockHashes().size() + blockCount <
-						   _peer->getLastBlock()) {
+						   _peer->GetLastBlock()) {
 					_peer->Perror("non-standard inv, {} is fewer block hash(es) than expected", blockCount);
 					return false;
 				} else {
@@ -114,12 +114,12 @@ namespace Elastos {
 
 					// to improve chain download performance, if we received 500 block hashes, request the next 500 block hashes
 					if (blockCount >= MAX_BLOCKS_COUNT) {
-						std::vector<UInt256> locators;
-						locators.push_back(blockHashes[blockCount - 1]);
-						locators.push_back(blockHashes[0]);
+						GetBlocksParameter param;
+						param.locators.push_back(blockHashes[blockCount - 1]);
+						param.locators.push_back(blockHashes[0]);
+						param.hashStop = UINT256_ZERO;
 
-						GetBlocksParameter getBlocksParameter(locators, UINT256_ZERO);
-						_peer->SendMessage(MSG_GETBLOCKS, getBlocksParameter);
+						_peer->SendMessage(MSG_GETBLOCKS, param);
 					}
 
 					if (txCount > 0 && !_peer->getMemPoolCallback().empty()) {

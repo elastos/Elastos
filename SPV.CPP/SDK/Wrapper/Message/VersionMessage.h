@@ -6,6 +6,7 @@
 #define __ELASTOS_SDK_VERSIONMESSAGE_H_
 
 #include "Message.h"
+#include "Peer.h"
 
 namespace Elastos {
 	namespace ElaWallet {

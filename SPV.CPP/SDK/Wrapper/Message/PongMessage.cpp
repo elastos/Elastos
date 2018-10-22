@@ -28,13 +28,13 @@ namespace Elastos {
 				_peer->Pwarn("got unexpected pong");
 				r = false;
 			} else {
-				if (_peer->getStartTime() > 1) {
+				if (_peer->GetStartTime() > 1) {
 					gettimeofday(&tv, nullptr);
-					pingTime = tv.tv_sec + (double) tv.tv_usec / 1000000 - _peer->getStartTime();
+					pingTime = tv.tv_sec + (double) tv.tv_usec / 1000000 - _peer->GetStartTime();
 
 					// 50% low pass filter on current ping time
-					_peer->setPingTime(_peer->getPingTime() * 0.5 + pingTime * 0.5);
-					_peer->setStartTime(0);
+					_peer->SetPingTime(_peer->GetPingTime() * 0.5 + pingTime * 0.5);
+					_peer->SetStartTime(0);
 					_peer->Pinfo("got pong in {}", pingTime);
 				} else {
 					_peer->Pinfo("got pong");

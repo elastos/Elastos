@@ -50,7 +50,7 @@ TEST_CASE( "Peer construct test", "[PeerConstruct]" ) {
 		REQUIRE(0 == peer.getPort());
 		REQUIRE(0 == peer.getTimestamp());
 		REQUIRE("189.211.12.239" == peer.getHost());
-		REQUIRE(Peer::Disconnected == peer.getConnectStatusValue());
+		REQUIRE(Peer::Disconnected == peer.GetConnectStatus());
 		REQUIRE(0 == peer.getVersion());
 		REQUIRE("" == peer.getUserAgent());
 

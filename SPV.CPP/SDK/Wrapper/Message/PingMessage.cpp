@@ -44,7 +44,7 @@ namespace Elastos {
 					}
 					manager->Unlock();
 
-					if (manager->getLastBlockHeight() >= *(uint64_t *)(uint8_t *)msg && !haveTxPending) {
+					if (manager->GetLastBlockHeight() >= *(uint64_t *)(uint8_t *)msg && !haveTxPending) {
 						manager->Lock();
 						if (manager->reconnectTaskCount() == 0) {
 							manager->reconnectTaskCount()++;
@@ -68,10 +68,10 @@ namespace Elastos {
 			gettimeofday(&tv, nullptr);
 
 			const PingParameter &pingParameter = dynamic_cast<const PingParameter &>(param);
-			_peer->setStartTime(tv.tv_sec + (double) tv.tv_usec / 1000000);
+			_peer->SetStartTime(tv.tv_sec + (double) tv.tv_usec / 1000000);
 
 			_peer->addPongCallback(pingParameter.callback);
-			UInt64SetLE(msg, _peer->getPeerManager()->getLastBlockHeight());
+			UInt64SetLE(msg, _peer->getPeerManager()->GetLastBlockHeight());
 
 			CMBlock msgBlock(sizeof(msg));
 			memcpy(msgBlock, msg, sizeof(msg));

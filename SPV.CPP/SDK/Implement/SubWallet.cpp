@@ -159,7 +159,7 @@ namespace Elastos {
 			for (size_t i = 0; i < realCount; ++i) {
 				nlohmann::json txJson = transactions[i]->toJson();
 				transactions[i]->generateExtraTransactionInfo(txJson, _walletManager->getWallet(),
-															  _walletManager->getPeerManager()->getLastBlockHeight());
+															  _walletManager->getPeerManager()->GetLastBlockHeight());
 				jsonList[i] = txJson;
 			}
 			nlohmann::json j;

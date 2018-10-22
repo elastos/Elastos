@@ -103,17 +103,23 @@ namespace Elastos {
 
 			void setAddress(const UInt128 &addr);
 
-			uint16_t getPort() const;
+			uint16_t GetPort() const;
 
-			void setPort(uint16_t port);
+			void SetPort(uint16_t port);
 
-			uint64_t getTimestamp() const;
+			uint64_t GetTimestamp() const;
 
-			void setTimestamp(uint64_t timestamp);
+			void SetTimestamp(uint64_t timestamp);
 
-			uint64_t getServices() const;
+			uint64_t GetServices() const;
 
-			void setServices(uint64_t services);
+			void SetServices(uint64_t services);
+
+			uint64_t GetNonce() const;
+
+			void SetNonce(uint64_t nonce);
+
+			uint32_t GetEarliestKeyTime() const;
 
 			void setEarliestKeyTime(uint32_t earliestKeyTime);
 
@@ -121,7 +127,9 @@ namespace Elastos {
 
 			void SetCurrentBlockHeight(uint32_t currentBlockHeight);
 
-			ConnectStatus getConnectStatusValue() const;
+			ConnectStatus GetConnectStatus() const;
+
+			void SetConnectStatus(ConnectStatus status);
 
 			void Connect();
 
@@ -137,15 +145,17 @@ namespace Elastos {
 
 			const std::string &getHost() const;
 
-			uint32_t getVersion() const;
+			uint32_t GetVersion() const;
+
+			void SetVersion(uint32_t version);
 
 			const std::string &getUserAgent() const;
 
-			uint32_t getLastBlock() const;
+			uint32_t GetLastBlock() const;
+
+			void SetLastBlock(uint32_t height);
 
 			uint64_t getFeePerKb() const;
-
-			double getPingTime() const;
 
 			bool IsEqual(const Peer *peer) const;
 
@@ -201,13 +211,17 @@ namespace Elastos {
 
 			bool isIPv4() const;
 
-			double getStartTime() const;
+			double GetStartTime() const;
 
-			void setStartTime(double time);
+			void SetStartTime(double time);
 
-			double getPintTime() const;
+			double GetPingTime() const;
 
-			void setPingTime(double time);
+			void SetPingTime(double time);
+
+			double GetDisconnectTime() const;
+
+			void SetDisconnectTime(double time);
 
 			void addPongCallback(const PeerCallback &callback);
 
@@ -243,72 +257,72 @@ namespace Elastos {
 			inline void Ptrace(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
-				Log::getLogger()->trace(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+				Log::getLogger()->trace(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void Pdebug(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
-				Log::getLogger()->debug(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+				Log::getLogger()->debug(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void Pinfo(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
-				Log::getLogger()->info(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+				Log::getLogger()->info(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void Pwarn(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
-				Log::getLogger()->warn(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+				Log::getLogger()->warn(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void Perror(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
-				Log::getLogger()->error(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+				Log::getLogger()->error(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename Arg1, typename... Args>
 			inline void Pcritical(const std::string &fmt, const Arg1 &arg1, const Args &... args) {
 				std::string peerFmt = "{}:{} ";
 				peerFmt += fmt;
-				Log::getLogger()->critical(peerFmt.c_str(), getHost(), getPort(), arg1, args...);
+				Log::getLogger()->critical(peerFmt.c_str(), getHost(), GetPort(), arg1, args...);
 			}
 
 			template<typename T>
 			inline void Ptrace(const T &msg) {
-				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+				Log::getLogger()->trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void Pdebug(const T &msg) {
-				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+				Log::getLogger()->trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void Pinfo(const T &msg) {
-				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+				Log::getLogger()->trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void Pwarn(const T &msg) {
-				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+				Log::getLogger()->trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void Perror(const T &msg) {
-				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+				Log::getLogger()->trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 			template<typename T>
 			inline void Pcritical(const T &msg) {
-				Log::getLogger()->trace("{}:{} {}", getHost(), getPort(), msg);
+				Log::getLogger()->trace("{}:{} {}", getHost(), GetPort(), msg);
 			}
 
 		private:

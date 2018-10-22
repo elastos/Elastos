@@ -100,9 +100,9 @@ namespace Elastos {
 
 			uint32_t getEstimatedBlockHeight() const;
 
-			uint32_t getLastBlockHeight() const;
+			uint32_t GetLastBlockHeight() const;
 
-			uint32_t getLastBlockTimestamp() const;
+			uint32_t GetLastBlockTimestamp() const;
 
 			double getSyncProgress(uint32_t startHeight);
 

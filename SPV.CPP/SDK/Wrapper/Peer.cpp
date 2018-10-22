@@ -31,8 +31,6 @@
 
 #define HEADER_LENGTH      24
 #define MAX_MSG_LENGTH     0x02000000
-#define ENABLED_SERVICES   0ULL  // we don't provide full blocks to remote nodes
-#define PROTOCOL_VERSION   70013
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
@@ -67,28 +65,40 @@ namespace Elastos {
 			_info.Address = addr;
 		}
 
-		uint16_t Peer::getPort() const {
+		uint16_t Peer::GetPort() const {
 			return _info.Port;
 		}
 
-		void Peer::setPort(uint16_t port) {
+		void Peer::SetPort(uint16_t port) {
 			_info.Port = port;
 		}
 
-		uint64_t Peer::getTimestamp() const {
+		uint64_t Peer::GetTimestamp() const {
 			return _info.Timestamp;
 		}
 
-		void Peer::setTimestamp(uint64_t timestamp) {
+		void Peer::SetTimestamp(uint64_t timestamp) {
 			_info.Timestamp = timestamp;
 		}
 
-		uint64_t Peer::getServices() const {
+		uint64_t Peer::GetServices() const {
 			return _info.Services;
 		}
 
-		void Peer::setServices(uint64_t services) {
+		void Peer::SetServices(uint64_t services) {
 			_info.Services = services;
+		}
+
+		uint64_t Peer::GetNonce() const {
+			return _nonce;
+		}
+
+		void Peer::SetNonce(uint64_t nonce) {
+			_nonce = nonce;
+		}
+
+		uint32_t Peer::GetEarliestKeyTime() const {
+			return _earliestKeyTime;
 		}
 
 		void Peer::setEarliestKeyTime(uint32_t earliestKeyTime) {
@@ -103,8 +113,12 @@ namespace Elastos {
 			_currentBlockHeight = currentBlockHeight;
 		}
 
-		Peer::ConnectStatus Peer::getConnectStatusValue() const {
+		Peer::ConnectStatus Peer::GetConnectStatus() const {
 			return _status;
+		}
+
+		void Peer::SetConnectStatus(ConnectStatus status) {
+			_status = status;
 		}
 
 		void Peer::Connect() {
@@ -226,24 +240,28 @@ namespace Elastos {
 			return _host;
 		}
 
-		uint32_t Peer::getVersion() const {
+		uint32_t Peer::GetVersion() const {
 			return _version;
+		}
+
+		void Peer::SetVersion(uint32_t version) {
+			_version = version;
 		}
 
 		const std::string &Peer::getUserAgent() const {
 			return _useragent;
 		}
 
-		uint32_t Peer::getLastBlock() const {
+		uint32_t Peer::GetLastBlock() const {
 			return _lastblock;
+		}
+
+		void Peer::SetLastBlock(uint32_t height) {
+			_lastblock = height;
 		}
 
 		uint64_t Peer::getFeePerKb() const {
 			return _feePerKb;
-		}
-
-		double Peer::getPingTime() const {
-			return _pingTime;
 		}
 
 		bool Peer::IsEqual(const Peer *otherPeer) const {
@@ -628,11 +646,11 @@ namespace Elastos {
 			_messages[msgType]->Send(parameter);
 		}
 
-		double Peer::getStartTime() const {
+		double Peer::GetStartTime() const {
 			return _startTime;
 		}
 
-		void Peer::setStartTime(double time) {
+		void Peer::SetStartTime(double time) {
 			_startTime = time;
 		}
 
@@ -648,12 +666,20 @@ namespace Elastos {
 			return _pongCallbackList;
 		}
 
-		double Peer::getPintTime() const {
+		double Peer::GetPingTime() const {
 			return _pingTime;
 		}
 
-		void Peer::setPingTime(double time) {
+		void Peer::SetPingTime(double time) {
 			_pingTime = time;
+		}
+
+		double Peer::GetDisconnectTime() const {
+			return _disconnectTime;
+		}
+
+		void Peer::SetDisconnectTime(double time) {
+			_disconnectTime = time;
 		}
 
 		Peer::PeerCallback Peer::popPongCallback() {

@@ -189,7 +189,7 @@ namespace Elastos {
 				if (_isConnected != 0) status = Peer::Connected;
 
 				for (size_t i = _connectedPeers.size(); i > 0 && status == Peer::Disconnected; i--) {
-					if (_connectedPeers[i - 1]->getConnectStatusValue() == Peer::Disconnected) continue;
+					if (_connectedPeers[i - 1]->GetConnectStatus() == Peer::Disconnected) continue;
 					status = Peer::Connecting;
 				}
 			}
@@ -208,7 +208,7 @@ namespace Elastos {
 			}
 
 			for (size_t i = _connectedPeers.size(); i > 0; i--) {
-				if (_connectedPeers[i]->getConnectStatusValue() == Peer::Connecting)
+				if (_connectedPeers[i]->GetConnectStatus() == Peer::Connecting)
 					_connectedPeers[i]->Connect();
 			}
 
@@ -327,7 +327,7 @@ namespace Elastos {
 			return height;
 		}
 
-		uint32_t PeerManager::getLastBlockHeight() const {
+		uint32_t PeerManager::GetLastBlockHeight() const {
 			uint32_t height;
 
 			{
@@ -337,7 +337,7 @@ namespace Elastos {
 			return height;
 		}
 
-		uint32_t PeerManager::getLastBlockTimestamp() const {
+		uint32_t PeerManager::GetLastBlockTimestamp() const {
 			uint32_t timestamp;
 
 			{
@@ -410,7 +410,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scoped_lock(lock);
 				if (_downloadPeer) {
 					std::stringstream ss;
-					ss << _downloadPeer->getHost() << ":" << _downloadPeer->getPort();
+					ss << _downloadPeer->getHost() << ":" << _downloadPeer->GetPort();
 					_downloadPeerName = ss.str();
 				} else _downloadPeerName = "";
 			}
@@ -428,7 +428,7 @@ namespace Elastos {
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				for (size_t i = _connectedPeers.size(); i > 0; i--) {
-					if (_connectedPeers[i - 1]->getConnectStatusValue() != Peer::Disconnected) count++;
+					if (_connectedPeers[i - 1]->GetConnectStatus() != Peer::Disconnected) count++;
 				}
 			}
 			return count;
@@ -465,13 +465,13 @@ namespace Elastos {
 				addTxToPublishList(tx, callback);
 
 				for (i = _connectedPeers.size(); i > 0; i--) {
-					if (_connectedPeers[i - 1]->getConnectStatusValue() == Peer::Connected) count++;
+					if (_connectedPeers[i - 1]->GetConnectStatus() == Peer::Connected) count++;
 				}
 
 				for (i = _connectedPeers.size(); i > 0; i--) {
 					const PeerPtr &peer = _connectedPeers[i - 1];
 
-					if (peer->getConnectStatusValue() != Peer::Connected) continue;
+					if (peer->GetConnectStatus() != Peer::Connected) continue;
 
 					// instead of publishing to all peers, leave out downloadPeer to see if tx propogates/gets relayed back
 					// TODO: XXX connect to a random peer with an empty or fake bloom filter just for publishing
@@ -760,30 +760,30 @@ namespace Elastos {
 
 			boost::mutex::scoped_lock scopedLock(lock);
 			PeerPtr peer = peerPtr;
-			if (peer->getTimestamp() > now + 2 * 60 * 60 || peer->getTimestamp() < now - 2 * 60 * 60)
-				peer->setTimestamp(now); // sanity check
+			if (peer->GetTimestamp() > now + 2 * 60 * 60 || peer->GetTimestamp() < now - 2 * 60 * 60)
+				peer->SetTimestamp(now); // sanity check
 
 			// TODO: XXX does this work with 0.11 pruned nodes?
-			if ((peer->getServices() & _chainParams.getRaw()->services) != _chainParams.getRaw()->services) {
+			if ((peer->GetServices() & _chainParams.getRaw()->services) != _chainParams.getRaw()->services) {
 				peer->Pwarn("unsupported node type");
 				peer->Disconnect();
-			} else if ((peer->getServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
-				peer->Pwarn("peer->services: {} != SERVICES_NODE_NETWORK", peer->getServices());
+			} else if ((peer->GetServices() & SERVICES_NODE_NETWORK) != SERVICES_NODE_NETWORK) {
+				peer->Pwarn("peer->services: {} != SERVICES_NODE_NETWORK", peer->GetServices());
 				peer->Pwarn("node doesn't carry full blocks");
 				peer->Disconnect();
-			} else if (peer->getLastBlock() + 10 < _lastBlock->getHeight()) {
-				peer->Pwarn("peer->lastBlock: {} !=  lastBlock->height: {}", peer->getLastBlock(),
+			} else if (peer->GetLastBlock() + 10 < _lastBlock->getHeight()) {
+				peer->Pwarn("peer->lastBlock: {} !=  lastBlock->height: {}", peer->GetLastBlock(),
 							_lastBlock->getHeight());
 				peer->Pwarn("node isn't synced");
 				peer->Disconnect();
-			} else if (peer->getVersion() >= 70011 &&
-					   (peer->getServices() & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
+			} else if (peer->GetVersion() >= 70011 &&
+					   (peer->GetServices() & SERVICES_NODE_BLOOM) != SERVICES_NODE_BLOOM) {
 				peer->Pwarn("node doesn't support SPV mode");
 				peer->Disconnect();
 			} else if (_downloadPeer && // check if we should stick with the existing download peer
-					   (_downloadPeer->getLastBlock() >= peer->getLastBlock() ||
-						_lastBlock->getHeight() >= peer->getLastBlock())) {
-				if (_lastBlock->getHeight() >= peer->getLastBlock()) { // only load bloom filter if we're done syncing
+					   (_downloadPeer->GetLastBlock() >= peer->GetLastBlock() ||
+						_lastBlock->getHeight() >= peer->GetLastBlock())) {
+				if (_lastBlock->getHeight() >= peer->GetLastBlock()) { // only load bloom filter if we're done syncing
 					_connectFailureCount = 0; // also reset connect failure count if we're already synced
 					loadBloomFilter(peer);
 					publishPendingTx(peer);
@@ -797,9 +797,9 @@ namespace Elastos {
 				for (size_t i = _connectedPeers.size(); i > 0; i--) {
 					const PeerPtr &p = _connectedPeers[i - 1];
 
-					if (p->getConnectStatusValue() != Peer::Connected) continue;
-					if ((p->getPingTime() < peer->getPingTime() && p->getLastBlock() >= peer->getLastBlock()) ||
-						p->getLastBlock() > peer->getLastBlock())
+					if (p->GetConnectStatus() != Peer::Connected) continue;
+					if ((p->GetPingTime() < peer->GetPingTime() && p->GetLastBlock() >= peer->GetLastBlock()) ||
+						p->GetLastBlock() > peer->GetLastBlock())
 						peer = p;
 				}
 
@@ -810,12 +810,12 @@ namespace Elastos {
 
 				_downloadPeer = peer;
 				_isConnected = 1;
-				_estimatedHeight = peer->getLastBlock();
+				_estimatedHeight = peer->GetLastBlock();
 				loadBloomFilter(peer);
 				peer->SetCurrentBlockHeight(_lastBlock->getHeight());
 				publishPendingTx(peer);
 
-				if (_lastBlock->getHeight() < peer->getLastBlock()) { // start blockchain sync
+				if (_lastBlock->getHeight() < peer->GetLastBlock()) { // start blockchain sync
 
 					peer->scheduleDisconnect(PROTOCOL_TIMEOUT); // schedule sync timeout
 
@@ -1149,13 +1149,13 @@ namespace Elastos {
 							 0.01 * fpCount / _averageTxPerBlock;
 
 					// false positive rate sanity check
-					if (peer->getConnectStatusValue() == Peer::Connected &&
+					if (peer->GetConnectStatus() == Peer::Connected &&
 						_fpRate > BLOOM_DEFAULT_FALSEPOSITIVE_RATE * 10.0) {
 						peer->Pwarn(
 								"bloom filter false positive rate {} too high after {} blocks, disconnecting...",
 								_fpRate, _lastBlock->getHeight() + 1 - _filterUpdateHeight);
 //						peer->Disconnect();
-					} else if (_lastBlock->getHeight() + 500 < peer->getLastBlock() &&
+					} else if (_lastBlock->getHeight() + 500 < peer->GetLastBlock() &&
 							   _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 10.0) {
 						updateBloomFilter(); // rebuild bloom filter when it starts to degrade
 					}
@@ -1182,7 +1182,7 @@ namespace Elastos {
 						time(nullptr)) { // ignore orphans older than one week ago
 					} else {
 						// call getblocks, unless we already did with the previous block, or we're still syncing
-						if (_lastBlock->getHeight() >= peer->getLastBlock() &&
+						if (_lastBlock->getHeight() >= peer->GetLastBlock() &&
 							(!_lastOrphan || !_lastOrphan->isEqual(block.get()))) {
 							peer->Pinfo("calling getblocks");
 							GetBlocksParameter getBlocksParameter(getBlockLocators(0), UINT256_ZERO);
@@ -1199,7 +1199,7 @@ namespace Elastos {
 				} else if (UInt256Eq(&block->getPrevBlockHash(),
 									 &_lastBlock->getHash())) { // new block extends main chain
 					if ((block->getHeight() % 500) == 0 || txHashes.size() > 0 ||
-						block->getHeight() >= peer->getLastBlock()) {
+						block->getHeight() >= peer->GetLastBlock()) {
 						peer->Pinfo("adding block #{}, false positive rate: {}", block->getHeight(), _fpRate);
 					}
 
@@ -1225,7 +1225,7 @@ namespace Elastos {
 					}
 				} else if (_blocks.Contains(block)) { // we already have the block (or at least the header)
 					if ((block->getHeight() % 500) == 0 || txHashes.size() > 0 ||
-						block->getHeight() >= peer->getLastBlock()) {
+						block->getHeight() >= peer->GetLastBlock()) {
 						peer->Pinfo("relayed existing block #{}", block->getHeight());
 					}
 
@@ -1252,7 +1252,7 @@ namespace Elastos {
 						}
 						if (_lastOrphan == b) _lastOrphan = nullptr;
 					}
-				} else if (_lastBlock->getHeight() < peer->getLastBlock() &&
+				} else if (_lastBlock->getHeight() < peer->GetLastBlock() &&
 						   block->getHeight() >
 						   _lastBlock->getHeight() + 1) { // special case, new block mined durring rescan
 					peer->Pinfo("marking new block #{} as orphan until rescan completes", block->getHeight());
@@ -1337,7 +1337,7 @@ namespace Elastos {
 
 			if (i > 0) fireSaveBlocks(i > 1, saveBlocks);
 
-			if (block && block->getHeight() != BLOCK_UNKNOWN_HEIGHT && block->getHeight() >= peer->getLastBlock()) {
+			if (block && block->getHeight() != BLOCK_UNKNOWN_HEIGHT && block->getHeight() >= peer->GetLastBlock()) {
 				fireTxStatusUpdate(); // notify that transaction confirmations may have changed
 			}
 
@@ -1364,7 +1364,7 @@ namespace Elastos {
 				boost::mutex::scoped_lock scopedLock(lock);
 				for (size_t i = _connectedPeers.size(); i > 0; i--) { // find second highest fee rate
 					const PeerPtr &p = _connectedPeers[i - 1];
-					if (p->getConnectStatusValue() != Peer::Connected) continue;
+					if (p->GetConnectStatus() != Peer::Connected) continue;
 					if (p->getFeePerKb() > maxFeePerKb) secondFeePerKb = maxFeePerKb, maxFeePerKb = p->getFeePerKb();
 				}
 
@@ -1523,7 +1523,7 @@ namespace Elastos {
 				}
 			} else {
 				for (size_t i = _connectedPeers.size(); i > 0; i--) {
-					if (_connectedPeers[i - 1]->getConnectStatusValue() != Peer::Connected) continue;
+					if (_connectedPeers[i - 1]->GetConnectStatus() != Peer::Connected) continue;
 					pingParameter.callback = boost::bind(&PeerManager::updateFilterPingDone, this,
 														 _connectedPeers[i - 1],
 														 _1);
@@ -1659,7 +1659,7 @@ namespace Elastos {
 			for (size_t i = _connectedPeers.size(); i > 0; i--) {
 				const PeerPtr &peer = _connectedPeers[i - 1];
 
-				if (peer->getConnectStatusValue() != Peer::Connected) continue;
+				if (peer->GetConnectStatus() != Peer::Connected) continue;
 
 				if (peer != _downloadPeer || _fpRate > BLOOM_REDUCED_FALSEPOSITIVE_RATE * 5.0) {
 					loadBloomFilter(peer);
@@ -1749,7 +1749,7 @@ namespace Elastos {
 
 			for (size_t i = _connectedPeers.size(); i > 0; i--) {
 				peer = _connectedPeers[i - 1];
-				if (peer->getConnectStatusValue() == Peer::Connected) count++;
+				if (peer->GetConnectStatus() == Peer::Connected) count++;
 				if ((peer->GetPeerInfo().Flags & PEER_FLAG_SYNCED) != 0) continue;
 				count = 0;
 				break;
