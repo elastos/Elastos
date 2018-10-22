@@ -197,7 +197,7 @@ static void test_friend_invite_reject(void)
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
     const char* hello = "hello";
-    rc = ela_invite_friend(wctxt->carrier, robotid, hello, strlen(hello),
+    rc = ela_invite_friend(wctxt->carrier, robotid, hello, strlen(hello) + 1,
                                friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
@@ -241,7 +241,7 @@ static void test_friend_invite_stranger(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    rc = ela_invite_friend(wctxt->carrier, robotid, hello, strlen(hello),
+    rc = ela_invite_friend(wctxt->carrier, robotid, hello, strlen(hello) + 1,
                                friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
@@ -255,7 +255,7 @@ static void test_friend_invite_self(void)
     int rc;
 
     (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
-    rc = ela_invite_friend(wctxt->carrier, userid, hello, strlen(hello),
+    rc = ela_invite_friend(wctxt->carrier, userid, hello, strlen(hello) + 1,
                                friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL(rc, -1);
     CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
