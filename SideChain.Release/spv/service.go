@@ -1,6 +1,7 @@
 package spv
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"sync"
@@ -9,11 +10,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
-	"bytes"
+	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	spv "github.com/elastos/Elastos.ELA.SPV/interface"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
-	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
