@@ -165,16 +165,9 @@ func (sm *SyncManager) startSync() {
 			continue
 		}
 
-		// Pick the first available candidate.
-		if bestPeer == nil {
-			bestPeer = peer
-		}
-
-		// Pick the highest peer as best peer, for it's most possible the
-		// best peer.
-		if peer.Height() > bestPeer.Height() {
-			bestPeer = peer
-		}
+		// Just pick the first available candidate.
+		bestPeer = peer
+		break
 	}
 
 	// Start syncing from the best peer if one was selected.
