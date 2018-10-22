@@ -4,8 +4,6 @@ import (
 	. "github.com/elastos/Elastos.ELA.SideChain/types"
 )
 
-const TlsPort = 443
-
 type AttributeInfo struct {
 	Usage AttributeUsage `json:"usage"`
 	Data  string         `json:"data"`

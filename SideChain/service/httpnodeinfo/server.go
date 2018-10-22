@@ -4,15 +4,14 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"strconv"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/config"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 )
 
 type Config struct {
+	ServePort    uint16
 	HttpRestPort uint16
 	HttpJsonPort uint16
 	NodePort     uint16
@@ -39,11 +38,9 @@ type NgbNodeInfo struct {
 var templates = template.Must(template.New("info").Parse(page))
 
 type infoserver struct {
-	nodePort  uint16
-	jsonPort  uint16
-	resetPort uint16
-	chain     *blockchain.BlockChain
-	server    server.IServer
+	cfg    Config
+	chain  *blockchain.BlockChain
+	server server.IServer
 }
 
 func (s *infoserver) view(w http.ResponseWriter, r *http.Request) {
@@ -61,9 +58,9 @@ func (s *infoserver) view(w http.ResponseWriter, r *http.Request) {
 		BlockHeight:  s.chain.GetBestHeight(),
 		NeighborCnt:  len(peers),
 		Neighbors:    nodeInfos,
-		HttpRestPort: s.resetPort,
-		HttpJsonPort: s.jsonPort,
-		NodePort:     s.nodePort,
+		HttpRestPort: s.cfg.HttpRestPort,
+		HttpJsonPort: s.cfg.HttpJsonPort,
+		NodePort:     s.cfg.NodePort,
 		NodeId:       fmt.Sprintf("0x%x", 0),
 	}
 
@@ -75,15 +72,13 @@ func (s *infoserver) view(w http.ResponseWriter, r *http.Request) {
 
 func (s *infoserver) Start() {
 	http.HandleFunc("/info", s.view)
-	http.ListenAndServe(":"+strconv.Itoa(int(config.Parameters.HttpInfoPort)), nil)
+	http.ListenAndServe(fmt.Sprint(":", s.cfg.ServePort), nil)
 }
 
 func New(cfg *Config) *infoserver {
 	return &infoserver{
-		nodePort:  cfg.NodePort,
-		jsonPort:  cfg.HttpJsonPort,
-		resetPort: cfg.HttpRestPort,
-		chain:     cfg.Chain,
-		server:    cfg.Server,
+		cfg:    *cfg,
+		chain:  cfg.Chain,
+		server: cfg.Server,
 	}
 }

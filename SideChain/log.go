@@ -12,10 +12,10 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
-	"github.com/elastos/Elastos.ELA.SideChain/service/httpjsonrpc"
-	"github.com/elastos/Elastos.ELA.SideChain/service/httprestful"
 
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
+	"github.com/elastos/Elastos.ELA.Utility/http/restful"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/addrmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 )
@@ -61,6 +61,6 @@ func init() {
 	server.UseLogger(srvrlog)
 	pow.UseLogger(minrlog)
 	service.UseLogger(httplog)
-	httpjsonrpc.UseLogger(rpcslog)
-	httprestful.UseLogger(restlog)
+	jsonrpc.UseLogger(rpcslog)
+	restful.UseLogger(restlog)
 }
