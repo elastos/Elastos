@@ -1,9 +1,11 @@
-package servers
+package service
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
@@ -29,18 +31,18 @@ func NewHttpService(cfg *service.Config, store *blockchain.IDChainStore) *HttpSe
 	return server
 }
 
-func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param service.Params) map[string]interface{} {
+func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (interface{}, error) {
 	id, ok := param.String("id")
 	if !ok {
-		return service.ResponsePack(service.InvalidParams, "id is null")
+		return fmt.Sprint(service.InvalidParams.String(), " id is null"), nil
 	}
 	_, err := Uint168FromAddress(id)
 	if err != nil {
-		return service.ResponsePack(service.InvalidParams, "invalid id")
+		return fmt.Sprint(service.InvalidParams.String(), " invalid id"), nil
 	}
 	path, ok := param.String("path")
 	if !ok {
-		return service.ResponsePack(service.InvalidParams, "path is null")
+		return fmt.Sprint(service.InvalidParams.String(), " path is null"), nil
 	}
 
 	buf := new(bytes.Buffer)
@@ -48,27 +50,27 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param service.Params)
 	buf.WriteString(path)
 	txHashBytes, err := s.store.GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
-		return service.ResponsePack(service.UnknownTransaction, "get identification transaction failed")
+		return fmt.Sprint(service.UnknownTransaction.String(), " get identification transaction failed"), nil
 	}
 	txHash, err := Uint256FromBytes(txHashBytes)
 	if err != nil {
-		return service.ResponsePack(service.InvalidTransaction, "invalid transaction hash")
+		return fmt.Sprint(service.InvalidTransaction.String(), " invalid transaction hash"), nil
 	}
 
 	txn, height, err := s.store.GetTransaction(*txHash)
 	if err != nil {
-		return service.ResponsePack(service.UnknownTransaction, "get transaction failed")
+		return fmt.Sprint(service.UnknownTransaction.String(), " get transaction failed"), nil
 	}
 	bHash, err := s.store.GetBlockHash(height)
 	if err != nil {
-		return service.ResponsePack(service.UnknownBlock, "get block failed")
+		return fmt.Sprint(service.UnknownBlock.String(), " get block failed"), nil
 	}
 	header, err := s.store.GetHeader(bHash)
 	if err != nil {
-		return service.ResponsePack(service.UnknownBlock, "get header failed")
+		return fmt.Sprint(service.UnknownBlock.String(), " get header failed"), nil
 	}
 
-	return service.ResponsePack(service.Success, s.cfg.GetTransactionInfo(s.cfg, header, txn))
+	return s.cfg.GetTransactionInfo(s.cfg, header, txn), nil
 }
 
 func GetTransactionInfoFromBytes(txInfoBytes []byte) (*service.TransactionInfo, error) {
