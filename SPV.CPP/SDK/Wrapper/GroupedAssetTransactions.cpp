@@ -783,6 +783,26 @@ namespace Elastos {
 			}
 		}
 
+		nlohmann::json GroupedAssetTransactions::GetAllSupportedAssets() const {
+			std::vector<std::string> result;
+			for (AssetIDMap::MapType::const_iterator it = _assetIDMap.CBegin(); it != _assetIDMap.CEnd(); ++it) {
+				result.push_back(Utils::UInt256ToString(it->first));
+			}
+			nlohmann::json j;
+			std::for_each(result.begin(), result.end(), [&j](const std::string &asset){
+				j.push_back(asset);
+			});
+			return j;
+		}
+
+		bool GroupedAssetTransactions::ContainsAsset(const std::string &assetID) {
+			return _assetIDMap.Contains(Utils::UInt256FromString(assetID));
+		}
+
+		bool GroupedAssetTransactions::ContainsAsset(const UInt256 &assetID) {
+			return _assetIDMap.Contains(assetID);
+		}
+
 	}
 }
 

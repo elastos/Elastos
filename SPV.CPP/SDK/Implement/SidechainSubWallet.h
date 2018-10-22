@@ -40,6 +40,12 @@ namespace Elastos {
 
 			virtual std::string GetGenesisAddress() const;
 
+			virtual nlohmann::json GetAllSupportedAssets() const;
+
+			virtual nlohmann::json GetAllVisibleAssets() const;
+
+			virtual void SetVisibleAssets(const nlohmann::json &assets);
+
 		protected:
 			friend class MasterWallet;
 

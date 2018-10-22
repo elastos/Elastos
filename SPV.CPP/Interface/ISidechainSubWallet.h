@@ -82,6 +82,25 @@ namespace Elastos {
 			 * @return genesis address of the side chain.
 			 */
 			virtual std::string GetGenesisAddress() const = 0;
+
+			/**
+			 * Get all visible assets in json format. Note this is a sub set of supported assets.
+			 * @return assets list in json format
+			 */
+			virtual nlohmann::json GetAllVisibleAssets() const = 0;
+
+			/**
+			 * Set visible assets by specify a json that contains a list of asset ID.
+			 * @param assets a json contains a list of asset ID
+			 */
+			virtual void SetVisibleAssets(const nlohmann::json &assets) = 0;
+
+			/**
+			 * Get all supported assets in json format
+			 * @return assets list in json format
+			 */
+			virtual nlohmann::json GetAllSupportedAssets() const = 0;
+
 		};
 
 	}

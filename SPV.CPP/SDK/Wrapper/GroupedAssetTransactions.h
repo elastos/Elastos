@@ -160,6 +160,12 @@ namespace Elastos {
 
 			void InitWithTransactions(const std::vector<TransactionPtr> &txArray);
 
+			nlohmann::json GetAllSupportedAssets() const;
+
+			bool ContainsAsset(const std::string &assetID);
+
+			bool ContainsAsset(const UInt256 &assetID);
+
 		private:
 			UInt256 GetUniqueAssetID(const std::vector<TransactionOutput> &outputs) const;
 

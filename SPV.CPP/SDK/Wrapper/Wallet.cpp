@@ -587,7 +587,7 @@ namespace Elastos {
 		}
 
 		void Wallet::SetTxUnconfirmedAfter(uint32_t blockHeight) {
-			size_t i, j, count;
+			size_t count;
 			std::vector<UInt256> hashes;
 
 			{
@@ -608,6 +608,14 @@ namespace Elastos {
 		void Wallet::UpdateAssets(const UInt256ValueMap<uint32_t> &assetIDMap) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_transactions.UpdateAssets(assetIDMap);
+		}
+
+		nlohmann::json Wallet::GetAllSupportedAssets() const {
+			return _transactions.GetAllSupportedAssets();
+		}
+
+		bool Wallet::ContainsAsset(const std::string &assetID) {
+			return _transactions.ContainsAsset(assetID);
 		}
 
 	}

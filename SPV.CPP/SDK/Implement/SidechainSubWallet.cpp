@@ -142,5 +142,23 @@ namespace Elastos {
 		uint64_t SidechainSubWallet::GetBalanceWithAddress(const std::string &assetID, const std::string &address) {
 			return _walletManager->getWallet()->GetBalanceWithAddress(Utils::UInt256FromString(assetID), address);
 		}
+
+		nlohmann::json SidechainSubWallet::GetAllSupportedAssets() const {
+			return _walletManager->getWallet()->GetAllSupportedAssets();
+		}
+
+		nlohmann::json SidechainSubWallet::GetAllVisibleAssets() const {
+			return _info.VisibleAssetsToJson();
+		}
+
+		void SidechainSubWallet::SetVisibleAssets(const nlohmann::json &assets) {
+			nlohmann::json existAssets;
+			std::for_each(assets.begin(), assets.end(), [&existAssets, this](const nlohmann::json &asset){
+				if (_walletManager->getWallet()->ContainsAsset(asset.get<std::string>()))
+					existAssets.push_back(asset);
+			});
+			_info.VisibleAssetsFromJson(existAssets);
+		}
+
 	}
 }

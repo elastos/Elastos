@@ -26,6 +26,8 @@ namespace Elastos {
 
 			bool Contains(const UInt256 &value) const;
 
+			void Remove(const UInt256 &value);
+
 		private:
 			std::set<UInt256, UInt256Compare> _set;
 		};
@@ -49,6 +51,14 @@ namespace Elastos {
 
 			typename MapType::iterator End() {
 				return _map.end();
+			}
+
+			typename MapType::const_iterator CBegin() const {
+				return _map.cbegin();
+			}
+
+			typename MapType::const_iterator CEnd() const {
+				return _map.cend();
 			}
 
 			const T &Get(const UInt256 &key) const {

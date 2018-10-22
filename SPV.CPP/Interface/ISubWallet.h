@@ -226,18 +226,6 @@ namespace Elastos {
 					const std::string &assetID) const = 0;
 
 			/**
-			 * Get all enabled assets in json format. Note this is a sub set of supported assets.
-			 * @return assets list in json format
-			 */
-			virtual nlohmann::json GetAllAssets() const = 0;
-
-			/**
-			 * Get all supported assets in json format
-			 * @return assets list in json format
-			 */
-			virtual nlohmann::json GetAllSupportedAssets() const = 0;
-
-			/**
 			 * Get root public key of current sub wallet.
 			 * @return root public key with hex string format.
 			 */

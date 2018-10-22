@@ -105,10 +105,6 @@ namespace Elastos {
 
 			virtual std::string GetPublicKey() const;
 
-			virtual nlohmann::json GetAllAssets() const;
-
-			virtual nlohmann::json GetAllSupportedAssets() const;
-
 		protected: //implement Wallet::Listener
 			virtual void balanceChanged();
 

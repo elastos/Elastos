@@ -16,6 +16,12 @@ namespace Elastos {
 			return _set.end() != std::find_if(_set.begin(), _set.end(),
 											  [&value](const UInt256 &item) { return 0 != UInt256Eq(&value, &item); });
 		}
+
+		void UInt256ValueSet::Remove(const UInt256 &value) {
+			_set.erase(std::find_if(_set.begin(), _set.end(),
+									[&value](const UInt256 &item) { return 0 != UInt256Eq(&value, &item); }),
+					   _set.end());
+		}
 	}
 }
 
