@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_SPVCLIENT_WALLET_H__
-#define __ELASTOS_SDK_SPVCLIENT_WALLET_H__
+#ifndef __ELASTOS_SDK_TRANSACTIONHUB_H__
+#define __ELASTOS_SDK_TRANSACTIONHUB_H__
 
 #include <map>
 #include <string>
@@ -33,7 +33,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Wallet : public Lockable, public boost::enable_shared_from_this<Wallet> {
+		class TransactionHub : public Lockable, public boost::enable_shared_from_this<TransactionHub> {
 
 		public:
 			class Listener {
@@ -51,11 +51,11 @@ namespace Elastos {
 
 		public:
 
-			Wallet(const std::vector<TransactionPtr> &transactions,
+			TransactionHub(const std::vector<TransactionPtr> &transactions,
 				   const SubAccountPtr &subAccount,
 				   const boost::shared_ptr<Listener> &listener);
 
-			virtual ~Wallet();
+			virtual ~TransactionHub();
 
 			void initListeningAddresses(const std::vector<std::string> &addrs);
 
@@ -184,9 +184,9 @@ namespace Elastos {
 			boost::weak_ptr<Listener> _listener;
 		};
 
-		typedef boost::shared_ptr<Wallet> WalletPtr;
+		typedef boost::shared_ptr<TransactionHub> WalletPtr;
 
 	}
 }
 
-#endif //__ELASTOS_SDK_SPVCLIENT_WALLET_H__
+#endif //__ELASTOS_SDK_TRANSACTIONHUB_H__

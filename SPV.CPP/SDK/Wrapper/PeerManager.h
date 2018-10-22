@@ -13,7 +13,7 @@
 #include "Lockable.h"
 #include "Peer.h"
 #include "ChainParams.h"
-#include "Wallet.h"
+#include "TransactionHub.h"
 #include "WrapperList.h"
 #include "CMemBlock.h"
 #include "PublishedTransaction.h"

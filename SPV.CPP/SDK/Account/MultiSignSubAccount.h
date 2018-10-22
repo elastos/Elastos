@@ -7,7 +7,7 @@
 
 #include "MultiSignAccount.h"
 #include "SingleSubAccount.h"
-#include "Wallet.h"
+#include "TransactionHub.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -19,7 +19,7 @@ namespace Elastos {
 			virtual nlohmann::json GetBasicInfo() const;
 
 			virtual void
-			SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<Wallet> &wallet,
+			SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<TransactionHub> &wallet,
 							const std::string &payPassword);
 
 			std::vector<std::string> GetTransactionSignedSigners(const TransactionPtr &transaction);

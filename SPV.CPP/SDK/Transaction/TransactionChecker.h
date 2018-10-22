@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_TRANSACTIONCHECKER_H__
 
 #include "Transaction.h"
-#include "Wallet.h"
+#include "TransactionHub.h"
 
 namespace Elastos {
 	namespace ElaWallet {

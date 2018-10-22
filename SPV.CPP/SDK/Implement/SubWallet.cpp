@@ -56,7 +56,7 @@ namespace Elastos {
 			}
 
 			_walletManager = WalletManagerPtr(
-					new WalletManager(_subAccount, subWalletDbPath,
+					new SpvService(_subAccount, subWalletDbPath,
 									  _info.getEarliestPeerTime(), _info.getReconnectSeconds(),
 									  _info.getForkId(), pluginTypes,
 									  chainParams));

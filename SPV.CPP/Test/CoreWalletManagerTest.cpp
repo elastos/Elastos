@@ -4,7 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "CoreWalletManager.h"
+#include "CoreSpvService.h"
 
 using namespace Elastos::ElaWallet;
 

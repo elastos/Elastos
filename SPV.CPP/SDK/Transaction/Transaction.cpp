@@ -22,7 +22,7 @@
 #include "BRCrypto.h"
 #include "Utils.h"
 #include "BRAddress.h"
-#include "Wallet.h"
+#include "TransactionHub.h"
 
 #define STANDARD_FEE_PER_KB 10000
 #define DEFAULT_PAYLOAD_TYPE  TransferAsset
@@ -241,11 +241,11 @@ namespace Elastos {
 			return true;
 		}
 
-		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<Wallet> &wallet) {
+		bool Transaction::sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<TransactionHub> &wallet) {
 			return transactionSign(keys, wallet);
 		}
 
-		bool Transaction::transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<Wallet> &wallet) {
+		bool Transaction::transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<TransactionHub> &wallet) {
 			size_t i, j, keysCount = keys.size();
 			Address addrs[keysCount], address;
 
@@ -581,7 +581,7 @@ namespace Elastos {
 			return ((getSize() + 999) / 1000) * feePerKb;
 		}
 
-		uint64_t Transaction::getTxFee(const boost::shared_ptr<Wallet> &wallet) {
+		uint64_t Transaction::getTxFee(const boost::shared_ptr<TransactionHub> &wallet) {
 			uint64_t fee = 0, inputAmount = 0, outputAmount = 0;
 
 			for (size_t i = 0; i < _inputs.size(); ++i) {

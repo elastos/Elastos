@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_WALLETMANAGER_H__
-#define __ELASTOS_SDK_WALLETMANAGER_H__
+#ifndef __ELASTOS_SDK_SPVSERVICE_H__
+#define __ELASTOS_SDK_SPVSERVICE_H__
 
 #include <vector>
 #include <boost/function.hpp>
@@ -12,7 +12,7 @@
 #include <nlohmann/json.hpp>
 
 #include "TransactionCreationParams.h"
-#include "CoreWalletManager.h"
+#include "CoreSpvService.h"
 #include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
 #include "KeyStore/KeyStore.h"
@@ -22,13 +22,13 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class WalletManager :
-				public CoreWalletManager {
+		class SpvService :
+				public CoreSpvService {
 		public:
 
-			WalletManager(const WalletManager &proto);
+			SpvService(const SpvService &proto);
 
-			WalletManager(const SubAccountPtr &subAccount,
+			SpvService(const SubAccountPtr &subAccount,
 						  const boost::filesystem::path &dbPath,
 						  uint32_t earliestPeerTime,
 						  uint32_t reconnectSeconds,
@@ -36,7 +36,7 @@ namespace Elastos {
 						  const PluginTypes &pluginTypes,
 						  const ChainParams &chainParams);
 
-			virtual ~WalletManager();
+			virtual ~SpvService();
 
 			void start();
 
@@ -44,7 +44,7 @@ namespace Elastos {
 
 			size_t getAllTransactionsCount();
 
-			void registerWalletListener(Wallet::Listener *listener);
+			void registerWalletListener(TransactionHub::Listener *listener);
 
 			void registerPeerManagerListener(PeerManager::Listener *listener);
 
@@ -112,11 +112,11 @@ namespace Elastos {
 			boost::asio::io_service _reconnectService;
 			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
 
-			std::vector<Wallet::Listener *> _walletListeners;
+			std::vector<TransactionHub::Listener *> _walletListeners;
 			std::vector<PeerManager::Listener *> _peerManagerListeners;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_WALLETMANAGER_H__
+#endif //__ELASTOS_SDK_SPVSERVICE_H__

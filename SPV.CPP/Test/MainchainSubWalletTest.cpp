@@ -10,7 +10,7 @@
 #include "nlohmann/json.hpp"
 
 #include "MasterWallet.h"
-#include "WalletManager.h"
+#include "SpvService.h"
 #include "MainchainSubWallet.h"
 
 #define BASIC_UINT 100000000
@@ -53,10 +53,10 @@ protected:
 	}
 };
 
-class TestWalletManager : public WalletManager {
+class TestWalletManager : public SpvService {
 public:
-	TestWalletManager(const WalletManager &parent) :
-			WalletManager(parent) {
+	TestWalletManager(const SpvService &parent) :
+			SpvService(parent) {
 	}
 
 protected:

@@ -2,12 +2,12 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef __ELASTOS_SDK_COREWALLETMANAGER_H__
-#define __ELASTOS_SDK_COREWALLETMANAGER_H__
+#ifndef __ELASTOS_SDK_CORESPVSERVICE_H__
+#define __ELASTOS_SDK_CORESPVSERVICE_H__
 
 #include <boost/thread.hpp>
 
-#include "Wallet.h"
+#include "TransactionHub.h"
 #include "Executor.h"
 #include "PeerManager.h"
 #include "ChainParams.h"
@@ -18,14 +18,14 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class CoreWalletManager :
-				public Wallet::Listener,
+		class CoreSpvService :
+				public TransactionHub::Listener,
 				public PeerManager::Listener {
 
 		public:
-			CoreWalletManager(const PluginTypes &pluginTypes, const ChainParams &chainParams);
+			CoreSpvService(const PluginTypes &pluginTypes, const ChainParams &chainParams);
 
-			virtual ~CoreWalletManager();
+			virtual ~CoreSpvService();
 
 			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds);
 
@@ -85,7 +85,7 @@ namespace Elastos {
 
 			virtual const PeerManagerListenerPtr &createPeerManagerListener();
 
-			typedef boost::shared_ptr<Wallet::Listener> WalletListenerPtr;
+			typedef boost::shared_ptr<TransactionHub::Listener> WalletListenerPtr;
 
 			virtual const WalletListenerPtr &createWalletListener();
 
@@ -166,11 +166,10 @@ namespace Elastos {
 			Executor *_reconnectExecutor;
 		};
 
-		// Exception Wrapped WalletListener
-		class WrappedExceptionWalletListener :
-				public Wallet::Listener {
+		class WrappedExceptionTransactionHubListener :
+				public TransactionHub::Listener {
 		public:
-			WrappedExceptionWalletListener(Wallet::Listener *listener);
+			WrappedExceptionTransactionHubListener(TransactionHub::Listener *listener);
 
 			virtual void balanceChanged();
 
@@ -181,14 +180,13 @@ namespace Elastos {
 			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
 
 		private:
-			Wallet::Listener *_listener;
+			TransactionHub::Listener *_listener;
 		};
 
-		// Executor Wrapped WalletListener
-		class WrappedExecutorWalletListener :
-				public Wallet::Listener {
+		class WrappedExecutorTransactionHubListener :
+				public TransactionHub::Listener {
 		public:
-			WrappedExecutorWalletListener(Wallet::Listener *listener, Executor *executor);
+			WrappedExecutorTransactionHubListener(TransactionHub::Listener *listener, Executor *executor);
 
 			virtual void balanceChanged();
 
@@ -199,11 +197,11 @@ namespace Elastos {
 			virtual void onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan);
 
 		private:
-			Wallet::Listener *_listener;
+			TransactionHub::Listener *_listener;
 			Executor *_executor;
 		};
 
 	}
 }
 
-#endif //__ELASTOS_SDK_COREWALLETMANAGER_H__
+#endif //__ELASTOS_SDK_CORESPVSERVICE_H__

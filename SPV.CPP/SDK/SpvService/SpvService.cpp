@@ -7,7 +7,7 @@
 #include "BRMerkleBlock.h"
 #include "BRTransaction.h"
 
-#include "WalletManager.h"
+#include "SpvService.h"
 #include "Payload/PayloadRegisterAsset.h"
 #include "Utils.h"
 #include "Log.h"
@@ -23,8 +23,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		WalletManager::WalletManager(const WalletManager &proto) :
-				CoreWalletManager(proto._pluginTypes, proto._chainParams),
+		SpvService::SpvService(const SpvService &proto) :
+				CoreSpvService(proto._pluginTypes, proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
@@ -33,10 +33,10 @@ namespace Elastos {
 			init(proto._subAccount, proto._earliestPeerTime, proto._reconnectSeconds);
 		}
 
-		WalletManager::WalletManager(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
+		SpvService::SpvService(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
 									 uint32_t earliestPeerTime, uint32_t reconnectSeconds, int forkId,
 									 const PluginTypes &pluginTypes, const ChainParams &chainParams) :
-				CoreWalletManager(pluginTypes, chainParams),
+				CoreSpvService(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
 				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
@@ -45,11 +45,11 @@ namespace Elastos {
 			init(subAccount, earliestPeerTime, reconnectSeconds);
 		}
 
-		WalletManager::~WalletManager() {
+		SpvService::~SpvService() {
 
 		}
 
-		void WalletManager::start() {
+		void SpvService::start() {
 			_reconnectExecutor.execute(Runnable([this]() -> void {
 				try {
 					getPeerManager()->connect();
@@ -63,7 +63,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WalletManager::stop() {
+		void SpvService::stop() {
 			if (_reconnectTimer != nullptr) {
 				_reconnectTimer->cancel();
 				_reconnectTimer = nullptr;
@@ -75,7 +75,7 @@ namespace Elastos {
 			getPeerManager()->disconnect();
 		}
 
-		void WalletManager::publishTransaction(const TransactionPtr &transaction) {
+		void SpvService::publishTransaction(const TransactionPtr &transaction) {
 			nlohmann::json sendingTx = transaction->toJson();
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
@@ -92,26 +92,26 @@ namespace Elastos {
 			getWallet()->RegisterRemark(transaction);
 		}
 
-		void WalletManager::recover(int limitGap) {
+		void SpvService::recover(int limitGap) {
 			//todo implement recover logic
 		}
 
-		const WalletPtr &WalletManager::getWallet() {
+		const WalletPtr &SpvService::getWallet() {
 			if (_wallet == nullptr) {
 				UpdateAssets();
 			}
-			return CoreWalletManager::getWallet();
+			return CoreSpvService::getWallet();
 		}
 
 		//override Wallet listener
-		void WalletManager::balanceChanged() {
+		void SpvService::balanceChanged() {
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [](Wallet::Listener *listener) {
+						  [](TransactionHub::Listener *listener) {
 							  listener->balanceChanged();
 						  });
 		}
 
-		void WalletManager::onTxAdded(const TransactionPtr &tx) {
+		void SpvService::onTxAdded(const TransactionPtr &tx) {
 			ByteStream stream;
 			tx->Serialize(stream);
 
@@ -135,12 +135,12 @@ namespace Elastos {
 			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&tx](Wallet::Listener *listener) {
+						  [&tx](TransactionHub::Listener *listener) {
 							  listener->onTxAdded(tx);
 						  });
 		}
 
-		void WalletManager::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void SpvService::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionEntity txEntity;
 
 			txEntity.buff.Clear();
@@ -150,12 +150,12 @@ namespace Elastos {
 			_databaseManager.updateTransaction(ISO, txEntity);
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, blockHeight, timeStamp](Wallet::Listener *listener) {
+						  [&hash, blockHeight, timeStamp](TransactionHub::Listener *listener) {
 							  listener->onTxUpdated(hash, blockHeight, timeStamp);
 						  });
 		}
 
-		void WalletManager::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
+		void SpvService::onTxDeleted(const std::string &hash, const std::string &assetID, bool notifyUser,
 										bool recommendRescan) {
 			_databaseManager.deleteTxByHash(ISO, hash);
 			if (!assetID.empty()) {
@@ -164,34 +164,34 @@ namespace Elastos {
 			}
 
 			std::for_each(_walletListeners.begin(), _walletListeners.end(),
-						  [&hash, &assetID, notifyUser, recommendRescan](Wallet::Listener *listener) {
+						  [&hash, &assetID, notifyUser, recommendRescan](TransactionHub::Listener *listener) {
 							  listener->onTxDeleted(hash, assetID, notifyUser, recommendRescan);
 						  });
 		}
 
 		//override PeerManager listener
-		void WalletManager::syncStarted() {
+		void SpvService::syncStarted() {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [](PeerManager::Listener *listener) {
 							  listener->syncStarted();
 						  });
 		}
 
-		void WalletManager::syncStopped(const std::string &error) {
+		void SpvService::syncStopped(const std::string &error) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [&error](PeerManager::Listener *listener) {
 							  listener->syncStopped(error);
 						  });
 		}
 
-		void WalletManager::txStatusUpdate() {
+		void SpvService::txStatusUpdate() {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [](PeerManager::Listener *listener) {
 							  listener->txStatusUpdate();
 						  });
 		}
 
-		void WalletManager::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
+		void SpvService::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 
 			if (replace) {
 				_databaseManager.deleteAllBlocks(ISO);
@@ -234,7 +234,7 @@ namespace Elastos {
 			delete &blocks;
 		}
 
-		void WalletManager::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
+		void SpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 			if (replace) {
 				_databaseManager.deleteAllPeers(ISO);
@@ -265,7 +265,7 @@ namespace Elastos {
 			}
 		}
 
-		bool WalletManager::networkIsReachable() {
+		bool SpvService::networkIsReachable() {
 
 			bool reachable = true;
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
@@ -275,14 +275,14 @@ namespace Elastos {
 			return reachable;
 		}
 
-		void WalletManager::txPublished(const std::string &error) {
+		void SpvService::txPublished(const std::string &error) {
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [&error](PeerManager::Listener *listener) {
 							  listener->txPublished(error);
 						  });
 		}
 
-		void WalletManager::blockHeightIncreased(uint32_t blockHeight) {
+		void SpvService::blockHeightIncreased(uint32_t blockHeight) {
 
 			std::for_each(_peerManagerListeners.begin(), _peerManagerListeners.end(),
 						  [blockHeight](PeerManager::Listener *listener) {
@@ -290,27 +290,27 @@ namespace Elastos {
 						  });
 		}
 
-		void WalletManager::syncIsInactive(uint32_t time) {
+		void SpvService::syncIsInactive() {
 			Log::getLogger()->info("time to disconnect");
-			pthread_mutex_lock(&getPeerManager()->getRaw()->lock);
-			getPeerManager()->getRaw()->reconnectTaskCount++;
-			pthread_mutex_unlock(&getPeerManager()->getRaw()->lock);
 
-			_executor.stopThread();
-			if (getPeerManager()->getConnectStatus() != Peer::Disconnected) {
-				getPeerManager()->disconnect();
+			_peerManager->lock();
+			_peerManager->reconnectTaskCount()++;
+			_peerManager->Unlock();
+
+			if (_peerManager->getConnectStatus() == Peer::Connected) {
+				_peerManager->disconnect();
 			}
 
 			_executor.initThread(BACKGROUND_THREAD_COUNT);
 			startReconnect(time);
 		}
 
-		size_t WalletManager::getAllTransactionsCount() {
+		size_t SpvService::getAllTransactionsCount() {
 			return _databaseManager.getAllTransactionsCount(ISO);
 		}
 
 		// override protected methods
-		std::vector<TransactionPtr> WalletManager::loadTransactions() {
+		std::vector<TransactionPtr> SpvService::loadTransactions() {
 			std::vector<TransactionPtr> txs;
 
 			std::vector<TransactionEntity> txsEntity = _databaseManager.getAllTransactions(ISO);
@@ -331,7 +331,7 @@ namespace Elastos {
 			return txs;
 		}
 
-		std::vector<MerkleBlockPtr> WalletManager::loadBlocks() {
+		std::vector<MerkleBlockPtr> SpvService::loadBlocks() {
 			std::vector<MerkleBlockPtr> blocks;
 
 			std::vector<MerkleBlockEntity> blocksEntity = _databaseManager.getAllMerkleBlocks(ISO);
@@ -350,7 +350,7 @@ namespace Elastos {
 			return blocks;
 		}
 
-		std::vector<PeerInfo> WalletManager::loadPeers() {
+		std::vector<PeerInfo> SpvService::loadPeers() {
 			std::vector<PeerInfo> peers;
 
 			std::vector<PeerEntity> peersEntity = _databaseManager.getAllPeers(ISO);
@@ -362,11 +362,11 @@ namespace Elastos {
 			return peers;
 		}
 
-		int WalletManager::getForkId() const {
+		int SpvService::getForkId() const {
 			return _forkId;
 		}
 
-		const CoreWalletManager::PeerManagerListenerPtr &WalletManager::createPeerManagerListener() {
+		const CoreSpvService::PeerManagerListenerPtr &SpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
 						new WrappedExecutorPeerManagerListener(this, &_executor, &_reconnectExecutor, _pluginTypes));
@@ -374,22 +374,22 @@ namespace Elastos {
 			return _peerManagerListener;
 		}
 
-		const CoreWalletManager::WalletListenerPtr &WalletManager::createWalletListener() {
+		const CoreSpvService::WalletListenerPtr &SpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
-				_walletListener = WalletListenerPtr(new WrappedExecutorWalletListener(this, &_executor));
+				_walletListener = WalletListenerPtr(new WrappedExecutorTransactionHubListener(this, &_executor));
 			}
 			return _walletListener;
 		}
 
-		void WalletManager::registerWalletListener(Wallet::Listener *listener) {
+		void SpvService::registerWalletListener(TransactionHub::Listener *listener) {
 			_walletListeners.push_back(listener);
 		}
 
-		void WalletManager::registerPeerManagerListener(PeerManager::Listener *listener) {
+		void SpvService::registerPeerManagerListener(PeerManager::Listener *listener) {
 			_peerManagerListeners.push_back(listener);
 		}
 
-		void WalletManager::startReconnect(uint32_t time) {
+		void SpvService::startReconnect(uint32_t time) {
 			Log::getLogger()->info("reconnect {}s later...", time);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(time)));
@@ -399,13 +399,13 @@ namespace Elastos {
 			_reconnectService.run_one();
 		}
 
-		void WalletManager::resetReconnect() {
+		void SpvService::resetReconnect() {
 			_reconnectTimer->expires_at(_reconnectTimer->expires_at() + boost::posix_time::seconds(_reconnectSeconds));
 			_reconnectTimer->async_wait(
 					boost::bind(&PeerManager::asyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 		}
 
-		void WalletManager::UpdateAssets() {
+		void SpvService::UpdateAssets() {
 			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
 			UInt256ValueMap<uint32_t> assetIDMap;
 			std::for_each(assets.begin(), assets.end(), [&assetIDMap](const AssetEntity &entity) {
@@ -415,7 +415,7 @@ namespace Elastos {
 			_wallet->UpdateAssets(assetIDMap);
 		}
 
-		Asset WalletManager::FindAsset(const UInt256 &assetID) const {
+		Asset SpvService::FindAsset(const UInt256 &assetID) const {
 			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
 			for (std::vector<AssetEntity>::iterator it = assets.begin(); it != assets.end(); ++it) {
 				if (UInt256Eq(&it->Asset.GetHash(), &assetID))

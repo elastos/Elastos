@@ -8,7 +8,7 @@
 #include <SDK/ELACoreExt/Payload/PayloadRegisterAsset.h>
 #include <SDK/Common/Log.h>
 #include "GroupedAssetTransactions.h"
-#include "Wallet.h"
+#include "TransactionHub.h"
 
 #define DEFAULT_FEE_PER_KB 10000
 

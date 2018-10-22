@@ -21,7 +21,7 @@
 namespace Elastos {
 	namespace ElaWallet {
 
-		class Wallet;
+		class TransactionHub;
 
 		class Transaction :
 				public ELAMessageSerializable {
@@ -54,7 +54,7 @@ namespace Elastos {
 
 			uint64_t calculateFee(uint64_t feePerKb);
 
-			uint64_t getTxFee(const boost::shared_ptr<Wallet> &wallet);
+			uint64_t getTxFee(const boost::shared_ptr<TransactionHub> &wallet);
 
 			bool isRegistered() const;
 
@@ -104,7 +104,7 @@ namespace Elastos {
 
 			bool isSigned() const;
 
-			bool sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<Wallet> &wallet);
+			bool sign(const WrapperList<Key, BRKey> &keys, const boost::shared_ptr<TransactionHub> &wallet);
 
 			UInt256 getReverseHash();
 
@@ -134,7 +134,7 @@ namespace Elastos {
 
 			void setRemark(const std::string &remark);
 
-			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<Wallet> &wallet,
+			void generateExtraTransactionInfo(nlohmann::json &rawTxJson, const boost::shared_ptr<TransactionHub> &wallet,
 											  uint32_t blockHeight);
 
 			uint8_t	getPayloadVersion() const;
@@ -167,7 +167,7 @@ namespace Elastos {
 
 			void reinit();
 
-			bool transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<Wallet> &wallet);
+			bool transactionSign(const WrapperList<Key, BRKey> keys, const boost::shared_ptr<TransactionHub> &wallet);
 
 			std::string getConfirmInfo(uint32_t lastBlockHeight);
 

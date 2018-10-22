@@ -18,14 +18,14 @@
 #include "BRArray.h"
 #include "BRTransaction.h"
 
-#include "Wallet.h"
+#include "TransactionHub.h"
 #include "Utils.h"
 #include "Account/MultiSignSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		Wallet::Wallet(const std::vector<TransactionPtr> &txArray,
+		TransactionHub::TransactionHub(const std::vector<TransactionPtr> &txArray,
 					   const SubAccountPtr &subAccount,
 					   const boost::shared_ptr<Listener> &listener) :
 				_subAccount(subAccount),
@@ -48,25 +48,25 @@ namespace Elastos {
 			}
 		}
 
-		Wallet::~Wallet() {
+		TransactionHub::~TransactionHub() {
 		}
 
-		void Wallet::initListeningAddresses(const std::vector<std::string> &addrs) {
+		void TransactionHub::initListeningAddresses(const std::vector<std::string> &addrs) {
 			_listeningAddrs = addrs;
 			_transactions.InitListeningAddresses(addrs);
 		}
 
-		void Wallet::RegisterRemark(const TransactionPtr &transaction) {
+		void TransactionHub::RegisterRemark(const TransactionPtr &transaction) {
 			_txRemarkMap[Utils::UInt256ToString(transaction->getHash())] = transaction->getRemark();
 		}
 
-		std::string Wallet::GetRemark(const std::string &txHash) {
+		std::string TransactionHub::GetRemark(const std::string &txHash) {
 			if (_txRemarkMap.find(txHash) != _txRemarkMap.end())
 				return "";
 			return _txRemarkMap[txHash];
 		}
 
-		std::vector<UTXO> Wallet::getUTXOsSafe(const UInt256 &assetID) {
+		std::vector<UTXO> TransactionHub::getUTXOsSafe(const UInt256 &assetID) {
 			std::vector<UTXO> result;
 
 			{
@@ -77,7 +77,7 @@ namespace Elastos {
 			return result;
 		}
 
-		std::vector<UTXO> Wallet::getAllUTXOsSafe() {
+		std::vector<UTXO> TransactionHub::getAllUTXOsSafe() {
 			std::vector<UTXO> result;
 
 			{
@@ -87,7 +87,7 @@ namespace Elastos {
 			return result;
 		}
 
-		nlohmann::json Wallet::GetBalanceInfo(const UInt256 &assetID) {
+		nlohmann::json TransactionHub::GetBalanceInfo(const UInt256 &assetID) {
 			std::vector<UTXO> _utxos = getUTXOsSafe(assetID);
 			nlohmann::json j;
 			std::map<std::string, uint64_t> addressesBalanceMap;
@@ -120,7 +120,7 @@ namespace Elastos {
 			return j;
 		}
 
-		uint64_t Wallet::GetBalanceWithAddress(const UInt256 &assetID, const std::string &address) {
+		uint64_t TransactionHub::GetBalanceWithAddress(const UInt256 &assetID, const std::string &address) {
 			std::vector<UTXO> utxos = getUTXOsSafe(assetID);
 			uint64_t balance = 0;
 			{
@@ -137,7 +137,7 @@ namespace Elastos {
 			return balance;
 		}
 
-		uint64_t Wallet::getBalance(const UInt256 &assetID) const {
+		uint64_t TransactionHub::getBalance(const UInt256 &assetID) const {
 			uint64_t result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -146,7 +146,7 @@ namespace Elastos {
 			return result;
 		}
 
-		uint64_t Wallet::getTotalSent(const UInt256 &assetID) const {
+		uint64_t TransactionHub::getTotalSent(const UInt256 &assetID) const {
 			uint64_t result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -155,7 +155,7 @@ namespace Elastos {
 			return result;
 		}
 
-		uint64_t Wallet::getTotalReceived(const UInt256 &assetID) const {
+		uint64_t TransactionHub::getTotalReceived(const UInt256 &assetID) const {
 			uint64_t result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -164,7 +164,7 @@ namespace Elastos {
 			return result;
 		}
 
-		uint64_t Wallet::getFeePerKb(const UInt256 &assetID) const {
+		uint64_t TransactionHub::getFeePerKb(const UInt256 &assetID) const {
 			uint64_t result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -173,27 +173,27 @@ namespace Elastos {
 			return result;
 		}
 
-		void Wallet::setFeePerKb(const UInt256 &assetID, uint64_t fee) {
+		void TransactionHub::setFeePerKb(const UInt256 &assetID, uint64_t fee) {
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
 				_transactions[assetID]->SetFeePerKb(fee);
 			}
 		}
 
-		uint64_t Wallet::getMaxFeePerKb() {
+		uint64_t TransactionHub::getMaxFeePerKb() {
 			return MAX_FEE_PER_KB;
 		}
 
-		uint64_t Wallet::getDefaultFeePerKb() {
+		uint64_t TransactionHub::getDefaultFeePerKb() {
 			return DEFAULT_FEE_PER_KB;
 		}
 
-		bool Wallet::AddressFilter(const std::string &fromAddress, const std::string &filterAddress) {
+		bool TransactionHub::AddressFilter(const std::string &fromAddress, const std::string &filterAddress) {
 			return filterAddress == fromAddress;
 		}
 
 		TransactionPtr
-		Wallet::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
+		TransactionHub::createTransaction(const std::string &fromAddress, uint64_t fee, uint64_t amount,
 								  const std::string &toAddress, const UInt256 &assetID, const std::string &remark,
 								  const std::string &memo) {
 			UInt168 u168Address = UINT168_ZERO;
@@ -207,7 +207,7 @@ namespace Elastos {
 
 			std::vector<TransactionOutput> outputs = {output};
 			TransactionPtr result = _transactions.CreateTxForOutputs(outputs, fromAddress,
-																	 boost::bind(&Wallet::AddressFilter, this, _1, _2));
+																	 boost::bind(&TransactionHub::AddressFilter, this, _1, _2));
 			if (result != nullptr) {
 				result->setRemark(remark);
 
@@ -223,7 +223,7 @@ namespace Elastos {
 			return result;
 		}
 
-		bool Wallet::containsTransaction(const TransactionPtr &transaction) {
+		bool TransactionHub::containsTransaction(const TransactionPtr &transaction) {
 			bool result = false;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -232,7 +232,7 @@ namespace Elastos {
 			return result;
 		}
 
-		bool Wallet::registerTransaction(const TransactionPtr &transaction) {
+		bool TransactionHub::registerTransaction(const TransactionPtr &transaction) {
 			bool wasAdded = false, r = true;
 
 			assert(transaction != nullptr && transaction->isSigned());
@@ -253,7 +253,7 @@ namespace Elastos {
 			return r;
 		}
 
-		void Wallet::removeTransaction(const UInt256 &transactionHash) {
+		void TransactionHub::removeTransaction(const UInt256 &transactionHash) {
 			bool notifyUser = false, recommendRescan = false;
 			UInt256 removedAssetID;
 			std::vector<UInt256> removedTransactions;
@@ -270,7 +270,7 @@ namespace Elastos {
 			txDeleted(removedTransactions, removedAssetID, notifyUser, recommendRescan);
 		}
 
-		void Wallet::updateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t height,
+		void TransactionHub::updateTransactions(const std::vector<UInt256> &transactionsHashes, uint32_t height,
 										uint32_t timestamp) {
 			std::vector<UInt256> hashes;
 			int needsUpdate = 0;
@@ -285,7 +285,7 @@ namespace Elastos {
 			if (needsUpdate) balanceChanged();
 		}
 
-		TransactionPtr Wallet::transactionForHash(const UInt256 &transactionHash) {
+		TransactionPtr TransactionHub::transactionForHash(const UInt256 &transactionHash) {
 			TransactionPtr tx;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -294,7 +294,7 @@ namespace Elastos {
 			return tx;
 		}
 
-		bool Wallet::transactionIsValid(const TransactionPtr &transaction) {
+		bool TransactionHub::transactionIsValid(const TransactionPtr &transaction) {
 			bool r = false;
 			if (transaction == nullptr || !transaction->isSigned()) return r;
 
@@ -311,7 +311,7 @@ namespace Elastos {
 			return r;
 		}
 
-		bool Wallet::transactionIsPending(const TransactionPtr &transaction) {
+		bool TransactionHub::transactionIsPending(const TransactionPtr &transaction) {
 			time_t now = time(NULL);
 			uint32_t height;
 			int r = 0;
@@ -350,7 +350,7 @@ namespace Elastos {
 			return r;
 		}
 
-		bool Wallet::transactionIsVerified(const TransactionPtr &transaction) {
+		bool TransactionHub::transactionIsVerified(const TransactionPtr &transaction) {
 			bool r = true;
 			assert(transaction != NULL && transaction->isSigned());
 
@@ -370,7 +370,7 @@ namespace Elastos {
 			return r;
 		}
 
-		uint64_t Wallet::getTransactionAmount(const TransactionPtr &tx) {
+		uint64_t TransactionHub::getTransactionAmount(const TransactionPtr &tx) {
 			uint64_t amountSent = getTransactionAmountSent(tx);
 			uint64_t amountReceived = getTransactionAmountReceived(tx);
 
@@ -379,11 +379,11 @@ namespace Elastos {
 				   : -1 * (amountSent - amountReceived + getTransactionFee(tx));
 		}
 
-		uint64_t Wallet::getTransactionFee(const TransactionPtr &tx) {
+		uint64_t TransactionHub::getTransactionFee(const TransactionPtr &tx) {
 			return WalletFeeForTx(tx);
 		}
 
-		uint64_t Wallet::getTransactionAmountSent(const TransactionPtr &tx) {
+		uint64_t TransactionHub::getTransactionAmountSent(const TransactionPtr &tx) {
 			uint64_t amount = 0;
 
 			assert(tx != NULL);
@@ -404,7 +404,7 @@ namespace Elastos {
 			return amount;
 		}
 
-		uint64_t Wallet::getTransactionAmountReceived(const TransactionPtr &tx) {
+		uint64_t TransactionHub::getTransactionAmountReceived(const TransactionPtr &tx) {
 			uint64_t amount = 0;
 
 			assert(tx != NULL);
@@ -420,16 +420,16 @@ namespace Elastos {
 			return amount;
 		}
 
-		uint64_t Wallet::getBalanceAfterTransaction(const TransactionPtr &transaction) {
+		uint64_t TransactionHub::getBalanceAfterTransaction(const TransactionPtr &transaction) {
 			return BalanceAfterTx(transaction);
 		}
 
-		std::string Wallet::getReceiveAddress() const {
+		std::string TransactionHub::getReceiveAddress() const {
 			std::vector<Address> addr = _subAccount->UnusedAddresses(1, 0);
 			return addr[0].stringify();
 		}
 
-		std::vector<std::string> Wallet::getAllAddresses() {
+		std::vector<std::string> TransactionHub::getAllAddresses() {
 
 			std::vector<Address> addrs = _subAccount->GetAllAddresses(INT64_MAX);
 
@@ -440,7 +440,7 @@ namespace Elastos {
 			return results;
 		}
 
-		bool Wallet::containsAddress(const std::string &address) {
+		bool TransactionHub::containsAddress(const std::string &address) {
 			bool result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -449,7 +449,7 @@ namespace Elastos {
 			return result;
 		}
 
-		bool Wallet::addressIsUsed(const std::string &address) {
+		bool TransactionHub::addressIsUsed(const std::string &address) {
 			bool result;
 			{
 				boost::mutex::scoped_lock scoped_lock(lock);
@@ -458,7 +458,7 @@ namespace Elastos {
 			return result;
 		}
 
-		uint64_t Wallet::WalletFeeForTx(const TransactionPtr &tx) {
+		uint64_t TransactionHub::WalletFeeForTx(const TransactionPtr &tx) {
 			uint64_t amount = 0;
 
 			assert(tx != nullptr);
@@ -486,26 +486,26 @@ namespace Elastos {
 			return amount;
 		}
 
-		void Wallet::UpdateBalance() {
+		void TransactionHub::UpdateBalance() {
 			_subAccount->ClearUsedAddresses();
 			_transactions.ForEach([this](const UInt256 &key, const AssetTransactionsPtr &value) {
 				value->UpdateBalance(_blockHeight);
 			});
 		}
 
-		void Wallet::balanceChanged() {
+		void TransactionHub::balanceChanged() {
 			if (!_listener.expired()) {
 				_listener.lock()->balanceChanged();
 			}
 		}
 
-		void Wallet::txAdded(const TransactionPtr &tx) {
+		void TransactionHub::txAdded(const TransactionPtr &tx) {
 			if (!_listener.expired()) {
 				_listener.lock()->onTxAdded(tx);
 			}
 		}
 
-		void Wallet::txUpdated(const std::vector<UInt256> &txHashes, uint32_t _blockHeight, uint32_t timestamp) {
+		void TransactionHub::txUpdated(const std::vector<UInt256> &txHashes, uint32_t _blockHeight, uint32_t timestamp) {
 			if (!_listener.expired()) {
 				// Invoke the callback for each of txHashes.
 				for (size_t i = 0; i < txHashes.size(); i++) {
@@ -514,7 +514,7 @@ namespace Elastos {
 			}
 		}
 
-		void Wallet::txDeleted(const std::vector<UInt256> &txHashes, const UInt256 &assetID, bool notifyUser,
+		void TransactionHub::txDeleted(const std::vector<UInt256> &txHashes, const UInt256 &assetID, bool notifyUser,
 							   bool recommendRescan) {
 			if (!_listener.expired()) {
 
@@ -526,11 +526,11 @@ namespace Elastos {
 			}
 		}
 
-		uint32_t Wallet::getBlockHeight() const {
+		uint32_t TransactionHub::getBlockHeight() const {
 			return _blockHeight;
 		}
 
-		uint64_t Wallet::BalanceAfterTx(const TransactionPtr &tx) {
+		uint64_t TransactionHub::BalanceAfterTx(const TransactionPtr &tx) {
 			uint64_t result;
 
 			assert(tx != NULL && tx->isSigned());
@@ -550,11 +550,11 @@ namespace Elastos {
 			return result;
 		}
 
-		void Wallet::signTransaction(const TransactionPtr &transaction, const std::string &payPassword) {
+		void TransactionHub::signTransaction(const TransactionPtr &transaction, const std::string &payPassword) {
 			_subAccount->SignTransaction(transaction, shared_from_this(), payPassword);
 		}
 
-		std::vector<TransactionPtr> Wallet::TxUnconfirmedBefore(uint32_t blockHeight) {
+		std::vector<TransactionPtr> TransactionHub::TxUnconfirmedBefore(uint32_t blockHeight) {
 			std::vector<TransactionPtr> result;
 
 			{
@@ -568,15 +568,15 @@ namespace Elastos {
 			return result;
 		}
 
-		const std::vector<std::string> &Wallet::getListeningAddrs() const {
+		const std::vector<std::string> &TransactionHub::getListeningAddrs() const {
 			return _listeningAddrs;
 		}
 
-		std::vector<Address> Wallet::UnusedAddresses(uint32_t gapLimit, bool internal) {
+		std::vector<Address> TransactionHub::UnusedAddresses(uint32_t gapLimit, bool internal) {
 			return _subAccount->UnusedAddresses(gapLimit, internal);
 		}
 
-		std::vector<TransactionPtr> Wallet::getAllTransactions() const {
+		std::vector<TransactionPtr> TransactionHub::getAllTransactions() const {
 			std::vector<TransactionPtr> result;
 
 			{
@@ -586,7 +586,7 @@ namespace Elastos {
 			return result;
 		}
 
-		void Wallet::SetTxUnconfirmedAfter(uint32_t blockHeight) {
+		void TransactionHub::SetTxUnconfirmedAfter(uint32_t blockHeight) {
 			size_t count;
 			std::vector<UInt256> hashes;
 
@@ -605,16 +605,16 @@ namespace Elastos {
 			}
 		}
 
-		void Wallet::UpdateAssets(const UInt256ValueMap<uint32_t> &assetIDMap) {
+		void TransactionHub::UpdateAssets(const UInt256ValueMap<uint32_t> &assetIDMap) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_transactions.UpdateAssets(assetIDMap);
 		}
 
-		nlohmann::json Wallet::GetAllSupportedAssets() const {
+		nlohmann::json TransactionHub::GetAllSupportedAssets() const {
 			return _transactions.GetAllSupportedAssets();
 		}
 
-		bool Wallet::ContainsAsset(const std::string &assetID) {
+		bool TransactionHub::ContainsAsset(const std::string &assetID) {
 			return _transactions.ContainsAsset(assetID);
 		}
 

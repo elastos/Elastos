@@ -13,7 +13,7 @@
 #include "Interface/ISubWalletCallback.h"
 #include "KeyStore/CoinInfo.h"
 #include "ChainParams.h"
-#include "WalletManager.h"
+#include "SpvService.h"
 #include "Account/ISubAccount.h"
 
 namespace Elastos {
@@ -23,9 +23,9 @@ namespace Elastos {
 
 		class Transaction;
 
-		class SubWallet : public virtual ISubWallet, public Wallet::Listener, public PeerManager::Listener {
+		class SubWallet : public virtual ISubWallet, public TransactionHub::Listener, public PeerManager::Listener {
 		public:
-			typedef boost::shared_ptr<WalletManager> WalletManagerPtr;
+			typedef boost::shared_ptr<SpvService> WalletManagerPtr;
 
 			virtual ~SubWallet();
 

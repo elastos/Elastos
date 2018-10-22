@@ -64,10 +64,10 @@ ChainParams createChainParams() {
 
 #define BASIC_UINT 100000000ULL
 
-class TestWalletManager : public WalletManager {
+class TestWalletManager : public SpvService {
 public:
-	TestWalletManager(const WalletManager &parent) :
-			WalletManager(parent) {
+	TestWalletManager(const SpvService &parent) :
+			SpvService(parent) {
 	}
 
 protected:

@@ -4,7 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "Wallet.h"
+#include "TransactionHub.h"
 
 using namespace Elastos::ElaWallet;
 

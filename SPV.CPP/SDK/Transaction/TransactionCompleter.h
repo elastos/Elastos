@@ -5,7 +5,7 @@
 #ifndef __ELASTOS_SDK_TRANSACTIONCOMPLETER_H__
 #define __ELASTOS_SDK_TRANSACTIONCOMPLETER_H__
 
-#include "Wallet.h"
+#include "TransactionHub.h"
 #include "Transaction.h"
 
 namespace Elastos {

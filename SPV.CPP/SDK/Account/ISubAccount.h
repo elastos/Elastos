@@ -35,7 +35,7 @@ namespace Elastos {
 
 			virtual Key DeriveMainAccountKey(const std::string &payPassword) = 0;
 
-			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<Wallet> &wallet,
+			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<TransactionHub> &wallet,
 										 const std::string &payPassword) = 0;
 
 			virtual void AddUsedAddrs(const TransactionPtr &tx) = 0;

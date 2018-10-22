@@ -5,13 +5,13 @@
 #include <sstream>
 
 #include "Common/Log.h"
-#include "CoreWalletManager.h"
+#include "CoreSpvService.h"
 #include "Account/SingleSubAccount.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
-		CoreWalletManager::CoreWalletManager(const PluginTypes &pluginTypes, const ChainParams &chainParams) :
+		CoreSpvService::CoreSpvService(const PluginTypes &pluginTypes, const ChainParams &chainParams) :
 				PeerManager::Listener(pluginTypes),
 				_wallet(nullptr),
 				_walletListener(nullptr),
@@ -22,24 +22,24 @@ namespace Elastos {
 				_chainParams(chainParams) {
 		}
 
-		CoreWalletManager::~CoreWalletManager() {
+		CoreSpvService::~CoreSpvService() {
 
 		}
 
-		void CoreWalletManager::init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds) {
+		void CoreSpvService::init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds) {
 			_subAccount = subAccount;
 			_earliestPeerTime = earliestPeerTime;
 			_reconnectSeconds = reconnectSeconds;
 		}
 
-		const WalletPtr &CoreWalletManager::getWallet() {
+		const WalletPtr &CoreSpvService::getWallet() {
 			if (_wallet == nullptr) {
-				_wallet = WalletPtr(new Wallet(loadTransactions(), _subAccount, createWalletListener()));
+				_wallet = WalletPtr(new TransactionHub(loadTransactions(), _subAccount, createWalletListener()));
 			}
 			return _wallet;
 		}
 
-		const PeerManagerPtr &CoreWalletManager::getPeerManager() {
+		const PeerManagerPtr &CoreSpvService::getPeerManager() {
 			if (_peerManager == nullptr) {
 				_peerManager = PeerManagerPtr(new PeerManager(
 						_chainParams,
@@ -55,76 +55,76 @@ namespace Elastos {
 			return _peerManager;
 		}
 
-		void CoreWalletManager::balanceChanged(uint64_t balance) {
+		void CoreSpvService::balanceChanged(uint64_t balance) {
 
 		}
 
-		void CoreWalletManager::onTxAdded(const TransactionPtr &transaction) {
+		void CoreSpvService::onTxAdded(const TransactionPtr &transaction) {
 
 		}
 
-		void CoreWalletManager::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
+		void CoreSpvService::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 
 		}
 
-		void CoreWalletManager::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
+		void CoreSpvService::onTxDeleted(const std::string &hash, bool notifyUser, bool recommendRescan) {
 
 		}
 
-		void CoreWalletManager::syncStarted() {
+		void CoreSpvService::syncStarted() {
 
 		}
 
-		void CoreWalletManager::syncStopped(const std::string &error) {
+		void CoreSpvService::syncStopped(const std::string &error) {
 
 		}
 
-		void CoreWalletManager::txStatusUpdate() {
+		void CoreSpvService::txStatusUpdate() {
 
 		}
 
 		void
-		CoreWalletManager::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
+		CoreSpvService::saveBlocks(bool replace, const std::vector<MerkleBlockPtr> &blocks) {
 
 		}
 
-		void CoreWalletManager::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
+		void CoreSpvService::savePeers(bool replace, const std::vector<PeerInfo> &peers) {
 
 		}
 
-		bool CoreWalletManager::networkIsReachable() {
+		bool CoreSpvService::networkIsReachable() {
 			return true;
 		}
 
-		void CoreWalletManager::txPublished(const std::string &error) {
+		void CoreSpvService::txPublished(const std::string &error) {
 
 		}
 
-		void CoreWalletManager::blockHeightIncreased(uint32_t blockHeight) {
+		void CoreSpvService::blockHeightIncreased(uint32_t blockHeight) {
 
 		}
 
-		std::vector<TransactionPtr> CoreWalletManager::loadTransactions() {
+		std::vector<TransactionPtr> CoreSpvService::loadTransactions() {
 			//todo complete me
 			return std::vector<TransactionPtr>();
 		}
 
-		std::vector<MerkleBlockPtr> CoreWalletManager::loadBlocks() {
+		std::vector<MerkleBlockPtr> CoreSpvService::loadBlocks() {
 			//todo complete me
 			return std::vector<MerkleBlockPtr>();
 		}
 
-		std::vector<PeerInfo> CoreWalletManager::loadPeers() {
+		std::vector<PeerInfo> CoreSpvService::loadPeers() {
 			//todo complete me
 			return std::vector<PeerInfo>();
 		}
 
-		int CoreWalletManager::getForkId() const {
+		int CoreSpvService::getForkId() const {
 			//todo complete me
 			return -1;
 		}
 
-		const CoreWalletManager::PeerManagerListenerPtr &CoreWalletManager::createPeerManagerListener() {
+		const CoreSpvService::PeerManagerListenerPtr &CoreSpvService::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
 						new WrappedExceptionPeerManagerListener(this, _pluginTypes));
@@ -132,9 +132,9 @@ namespace Elastos {
 			return _peerManagerListener;
 		}
 
-		const CoreWalletManager::WalletListenerPtr &CoreWalletManager::createWalletListener() {
+		const CoreSpvService::WalletListenerPtr &CoreSpvService::createWalletListener() {
 			if (_walletListener == nullptr) {
-				_walletListener = WalletListenerPtr(new WrappedExceptionWalletListener(this));
+				_walletListener = WalletListenerPtr(new WrappedExceptionTransactionHubListener(this));
 			}
 			return _walletListener;
 		}
@@ -399,11 +399,11 @@ namespace Elastos {
 			}));
 		}
 
-		WrappedExceptionWalletListener::WrappedExceptionWalletListener(Wallet::Listener *listener) :
+		WrappedExceptionTransactionHubListener::WrappedExceptionTransactionHubListener(TransactionHub::Listener *listener) :
 				_listener(listener) {
 		}
 
-		void WrappedExceptionWalletListener::balanceChanged() {
+		void WrappedExceptionTransactionHubListener::balanceChanged() {
 			try {
 				_listener->balanceChanged();
 			}
@@ -415,7 +415,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onTxAdded(const TransactionPtr &transaction) {
+		void WrappedExceptionTransactionHubListener::onTxAdded(const TransactionPtr &transaction) {
 			try {
 				return _listener->onTxAdded(transaction);
 			}
@@ -427,7 +427,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onTxUpdated(
+		void WrappedExceptionTransactionHubListener::onTxUpdated(
 				const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 
 			try {
@@ -441,7 +441,7 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionWalletListener::onTxDeleted(
+		void WrappedExceptionTransactionHubListener::onTxDeleted(
 				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
 
 			try {
@@ -455,14 +455,14 @@ namespace Elastos {
 			}
 		}
 
-		WrappedExecutorWalletListener::WrappedExecutorWalletListener(
-				Wallet::Listener *listener,
+		WrappedExecutorTransactionHubListener::WrappedExecutorTransactionHubListener(
+				TransactionHub::Listener *listener,
 				Executor *executor) :
 				_listener(listener),
 				_executor(executor) {
 		}
 
-		void WrappedExecutorWalletListener::balanceChanged() {
+		void WrappedExecutorTransactionHubListener::balanceChanged() {
 			_executor->execute(Runnable([this]() -> void {
 				try {
 					_listener->balanceChanged();
@@ -476,7 +476,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onTxAdded(const TransactionPtr &transaction) {
+		void WrappedExecutorTransactionHubListener::onTxAdded(const TransactionPtr &transaction) {
 			_executor->execute(Runnable([this, transaction]() -> void {
 				try {
 					_listener->onTxAdded(transaction);
@@ -490,7 +490,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onTxUpdated(
+		void WrappedExecutorTransactionHubListener::onTxUpdated(
 				const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			_executor->execute(Runnable([this, hash, blockHeight, timeStamp]() -> void {
 				try {
@@ -505,7 +505,7 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorWalletListener::onTxDeleted(
+		void WrappedExecutorTransactionHubListener::onTxDeleted(
 				const std::string &hash, const std::string &assetID, bool notifyUser, bool recommendRescan) {
 			_executor->execute(Runnable([this, &hash, &assetID, notifyUser, recommendRescan]() -> void {
 				try {
