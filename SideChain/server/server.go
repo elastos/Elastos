@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"fmt"
-
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"github.com/elastos/Elastos.ELA.SideChain/bloom"
 	"github.com/elastos/Elastos.ELA.SideChain/config"

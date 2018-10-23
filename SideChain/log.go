@@ -31,12 +31,12 @@ var (
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
 	)
-	level   = elalog.Level(config.Parameters.PrintLevel)
-	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
-		elalog.Llongfile)
+	logWriter = io.MultiWriter(os.Stdout, fileWriter)
+	level     = elalog.Level(config.Parameters.PrintLevel)
+	backend   = elalog.NewBackend(logWriter, elalog.Llongfile)
 
-	admrlog = backend.Logger("ADMR", elalog.LevelOff)
-	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
+	admrlog = backend.Logger("ADMR", level)
+	cmgrlog = backend.Logger("CMGR", level)
 	bcdblog = backend.Logger("BCDB", level)
 	txmplog = backend.Logger("TXMP", level)
 	synclog = backend.Logger("SYNC", level)

@@ -14,6 +14,7 @@
     "node-testnet-003.elastos.org:21866",
     "node-testnet-004.elastos.org:21866"
   ],
+  "PrintSyncState": true,
   "MainChainFoundationAddress": "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
   "FoundationAddress": "8NRxtbMKScEWzW8gmPDGUZ8LSzm688nkZZ",
   "PeerBloomFilters": true,
