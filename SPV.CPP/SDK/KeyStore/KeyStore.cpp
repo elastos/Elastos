@@ -13,7 +13,7 @@
 #include "SjclFile.h"
 #include "Base64.h"
 #include "CMemBlock.h"
-#include "Crypto.h"
+#include "SDK/Crypto/Crypto.h"
 #include "StandardAccount.h"
 #include "SimpleAccount.h"
 #include "MultiSignAccount.h"

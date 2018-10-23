@@ -3,8 +3,8 @@
 #include <climits>
 #include <iostream>
 #include <boost/scoped_ptr.hpp>
-#include <SDK/Transaction/Transaction.h>
-#include <SDK/ELACoreExt/Payload/PayloadRegisterIdentification.h>
+#include <Plugin/Transaction/Transaction.h>
+#include <Plugin/Transaction/Payload/PayloadRegisterIdentification.h>
 #include <SDK/Common/Utils.h>
 #include <SDK/Implement/MainchainSubWallet.h>
 #include <SDK/Implement/SidechainSubWallet.h>

@@ -10,7 +10,7 @@
 #include "IAccount.h"
 #include "SDK/KeyStore/Mnemonic.h"
 #include "SDK/Common/CMemBlock.h"
-#include "SDK/Wrapper/MasterPubKey.h"
+#include "SDK/Crypto/MasterPubKey.h"
 #include "SDK/Common/Mstream.h"
 
 namespace Elastos {

@@ -12,8 +12,8 @@
 #include "Wrapper.h"
 #include "CMemBlock.h"
 #include "Plugin/Block/MerkleBlockBase.h"
-#include "ELACoreExt/AuxPow.h"
-#include "ELACoreExt/ELAMerkleBlock.h"
+#include "AuxPow.h"
+#include "ELAMerkleBlock.h"
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -14,7 +14,7 @@
 #include "BRCrypto.h"
 
 #include "Utils.h"
-#include "MasterPubKey.h"
+#include "SDK/Crypto/MasterPubKey.h"
 #include "MasterWallet.h"
 #include "SubWallet.h"
 #include "IdChainSubWallet.h"
@@ -23,9 +23,7 @@
 #include "Log.h"
 #include "Config.h"
 #include "ParamChecker.h"
-#include "BigIntFormat.h"
-#include "WalletTool.h"
-#include "Payload/PayloadRegisterIdentification.h"
+#include "Plugin/Transaction/Payload/PayloadRegisterIdentification.h"
 
 #define MASTER_WALLET_STORE_FILE "MasterWalletStore.json"
 #define COIN_COINFIG_FILE "CoinConfig.json"
@@ -156,10 +154,9 @@ namespace Elastos {
 		}
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
-			CMemBlock<uint8_t> seed128 = WalletTool::GenerateSeed128();
+			CMemBlock seed128 = Utils::GenerateSeed128();
 			Mnemonic mnemonic(language, boost::filesystem::path(rootPath));
-			CMemBlock<char> phrase = WalletTool::GeneratePhraseFromSeed(seed128, mnemonic.words());
-			return (const char *) phrase;
+			return Utils::GeneratePhraseFromSeed(seed128, mnemonic.words());
 		}
 
 		void MasterWallet::ClearLocal() {

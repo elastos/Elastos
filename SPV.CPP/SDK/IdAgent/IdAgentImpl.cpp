@@ -8,7 +8,7 @@
 #include "Utils.h"
 #include "IdAgentImpl.h"
 #include "MasterWallet.h"
-#include "Wrapper/Address.h"
+#include "SDK/Base/Address.h"
 #include "SDK/Account/StandardAccount.h"
 
 using namespace nlohmann;

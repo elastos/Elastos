@@ -7,7 +7,7 @@
 #include <fstream>
 #include <catch.hpp>
 
-#include "Crypto.h"
+#include "SDK/Crypto/Crypto.h"
 
 using namespace Elastos::ElaWallet;
 

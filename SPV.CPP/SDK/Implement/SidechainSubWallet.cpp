@@ -8,10 +8,10 @@
 #include <SDK/Common/Utils.h>
 
 #include "SidechainSubWallet.h"
-#include "ELACoreExt/Payload/PayloadTransferCrossChainAsset.h"
+#include "Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h"
 #include "ParamChecker.h"
-#include "Transaction/SidechainTransactionChecker.h"
-#include "Transaction/SidechainTransactionCompleter.h"
+#include "Plugin/Transaction/Checker/SidechainTransactionChecker.h"
+#include "Plugin/Transaction/Completer/SidechainTransactionCompleter.h"
 
 namespace Elastos {
 	namespace ElaWallet {

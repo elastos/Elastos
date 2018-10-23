@@ -4,7 +4,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
-#include "PeerManager.h"
+#include "SDK/P2P/PeerManager.h"
 
 using namespace Elastos::ElaWallet;
 

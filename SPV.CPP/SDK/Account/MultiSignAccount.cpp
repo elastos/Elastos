@@ -7,7 +7,7 @@
 #include "secp256k1.h"
 #include <SDK/Common/Utils.h>
 #include <boost/bind.hpp>
-#include <SDK/Wrapper/ByteStream.h>
+#include <SDK/Common/ByteStream.h>
 #include <BigIntegerLibrary.hh>
 #include <SDK/Common/Log.h>
 #include <SDK/Common/ParamChecker.h>

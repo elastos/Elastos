@@ -9,10 +9,11 @@
 #include <iterator>
 #include <Core/BRBase58.h>
 #include <Core/BRAddress.h>
+#include <Core/BRBIP39Mnemonic.h>
 
 #include "assert.h"
 #include "Utils.h"
-#include "Crypto.h"
+#include "SDK/Crypto/Crypto.h"
 #include "Base64.h"
 #include "BRAddress.h"
 #include "Log.h"
@@ -242,11 +243,47 @@ namespace Elastos {
 			return uInt168;
 		}
 
-		bool Utils::UInt256SetContains(const std::set<UInt256> &set, const UInt256 &hash) {
-			return set.end() != std::find_if(set.begin(), set.end(),
-											 [&hash](const UInt256 &item) { return 0 != UInt256Eq(&hash, &item); });
-
+		CMBlock Utils::GetRandom(size_t bits) {
+			size_t bytes = 0 == bits % 8 ? bits / 8 : bits / 8 + 1;
+			CMBlock out(bytes);
+			for (size_t i = 0; i < bytes; i++) {
+				out[i] = Utils::getRandomByte();
+			}
+			return out;
 		}
 
+		CMBlock Utils::GenerateSeed128() {
+			return GetRandom(128);
+		}
+
+		std::string Utils::GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList) {
+			std::string mnemonic;
+			if (true == seed && 0 < WordList.size()) {
+				const char *wordList[WordList.size()];
+				memset(wordList, 0, sizeof(wordList));
+				for (size_t i = 0; i < WordList.size(); i++) {
+					wordList[i] = WordList[i].c_str();
+				}
+				size_t phraseLen = BRBIP39Encode(nullptr, 0, wordList, seed, seed.GetSize());
+				char phrase[phraseLen + 1] = {0};
+				BRBIP39Encode(phrase, phraseLen, wordList, seed, seed.GetSize());
+				mnemonic = std::string(phrase);
+			}
+
+			return mnemonic;
+		}
+
+		bool Utils::PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
+			bool out = false;
+			if (true == phrase && 0 < WordList.size()) {
+				const char *wordList[WordList.size()];
+				memset(wordList, 0, sizeof(wordList));
+				for (size_t i = 0; i < WordList.size(); i++) {
+					wordList[i] = WordList[i].c_str();
+				}
+				out = 1 == BRBIP39PhraseIsValid(wordList, phrase);
+			}
+			return out;
+		}
 	}
 }

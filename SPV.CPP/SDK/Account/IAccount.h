@@ -9,8 +9,8 @@
 #include <nlohmann/json.hpp>
 
 #include "BRInt.h"
-#include "Key.h"
-#include "MasterPubKey.h"
+#include "SDK/Crypto/Key.h"
+#include "SDK/Crypto/MasterPubKey.h"
 
 namespace Elastos {
 	namespace ElaWallet {

@@ -14,7 +14,7 @@
 
 #include "MasterWalletManager.h"
 #include "MasterWallet.h"
-#include "Address.h"
+#include "SDK/Base/Address.h"
 #include "SidechainSubWallet.h"
 
 using namespace Elastos::ElaWallet;

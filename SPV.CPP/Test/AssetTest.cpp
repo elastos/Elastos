@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
-#include "Payload/Asset.h"
+#include "SDK/Transaction/Asset.h"
 #include "TestHelper.h"
 
 using namespace Elastos::ElaWallet;

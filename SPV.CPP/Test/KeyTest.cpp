@@ -6,7 +6,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "Key.h"
+#include "SDK/Crypto/Key.h"
 #include "catch.hpp"
 #include "Log.h"
 #include "Utils.h"

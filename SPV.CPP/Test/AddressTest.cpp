@@ -14,7 +14,7 @@
 #include <Core/BRKey.h>
 
 #include "catch.hpp"
-#include "Address.h"
+#include "SDK/Base/Address.h"
 #include "SDK/Transaction/Transaction.h"
 
 using namespace Elastos::ElaWallet;

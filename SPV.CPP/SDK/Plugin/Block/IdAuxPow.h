@@ -11,7 +11,7 @@
 #include "BRTransaction.h"
 #include "BRMerkleBlock.h"
 
-#include "Transaction/Transaction.h"
+#include "Plugin/Transaction/Transaction.h"
 #include "Plugin/Interface/ELAMessageSerializable.h"
 #include "ELAMerkleBlock.h"
 

@@ -16,7 +16,7 @@
 #include "DatabaseManager.h"
 #include "BackgroundExecutor.h"
 #include "KeyStore/KeyStore.h"
-#include "SDK/Transaction/Transaction.h"
+#include "Plugin/Transaction/Transaction.h"
 #include "CMemBlock.h"
 
 namespace Elastos {

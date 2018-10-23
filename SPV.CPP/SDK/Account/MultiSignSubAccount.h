@@ -7,7 +7,7 @@
 
 #include "MultiSignAccount.h"
 #include "SingleSubAccount.h"
-#include "TransactionHub.h"
+#include "SDK/TransactionHub/TransactionHub.h"
 
 namespace Elastos {
 	namespace ElaWallet {

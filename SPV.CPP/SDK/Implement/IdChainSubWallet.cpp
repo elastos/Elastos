@@ -6,16 +6,15 @@
 #include <boost/scoped_ptr.hpp>
 #include <SDK/Common/ParamChecker.h>
 
-#include "ELACoreExt/Payload/PayloadRegisterIdentification.h"
-
 #include "Utils.h"
 #include "MasterWallet.h"
 #include "IdChainSubWallet.h"
 #include "Utils.h"
 #include "SubWalletCallback.h"
-#include "Common/Log.h"
-#include "Transaction/IdchainTransactionChecker.h"
-#include "Transaction/IdchainTransactionCompleter.h"
+#include "SDK/Common/Log.h"
+#include "SDK/Plugin/Transaction/Payload/PayloadRegisterIdentification.h"
+#include "SDK/Plugin/Transaction/Completer/IdchainTransactionCompleter.h"
+#include "SDK/Plugin/Transaction/Checker/IdchainTransactionChecker.h"
 
 #define ID_REGISTER_BUFFER_COUNT 100
 

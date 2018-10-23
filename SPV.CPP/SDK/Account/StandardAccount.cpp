@@ -3,7 +3,6 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "SDK/Common/Utils.h"
-#include "SDK/Common/WalletTool.h"
 #include "Core/BRBIP39Mnemonic.h"
 #include "SDK/Common/ParamChecker.h"
 #include "StandardAccount.h"

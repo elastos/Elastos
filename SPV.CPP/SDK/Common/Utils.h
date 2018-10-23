@@ -83,7 +83,15 @@ namespace Elastos {
 
 			static UInt168 codeToProgramHash(const CMBlock &redeemScript);
 
-			static bool UInt256SetContains(const std::set<UInt256> &set, const UInt256 &hash);
+			static CMBlock GenerateSeed128();
+
+			static std::string
+			GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList);
+
+			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
+
+		private:
+			static CMBlock GetRandom(size_t bits);
 		};
 	}
 }

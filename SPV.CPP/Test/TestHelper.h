@@ -8,7 +8,7 @@
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 #define TEST_ASCII_BEGIN 48
 
-#include "AuxPow.h"
+#include "SDK/Plugin/Block/AuxPow.h"
 #include "Plugin/Block/MerkleBlock.h"
 
 namespace Elastos {

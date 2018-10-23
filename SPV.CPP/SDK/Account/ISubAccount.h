@@ -9,9 +9,9 @@
 #include <boost/thread/mutex.hpp>
 
 #include "IAccount.h"
-#include "Key.h"
-#include "Address.h"
-#include "Transaction/Transaction.h"
+#include "SDK/Crypto/Key.h"
+#include "SDK/Base/Address.h"
+#include "Plugin/Transaction/Transaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {

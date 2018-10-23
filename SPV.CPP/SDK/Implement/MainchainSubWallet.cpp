@@ -5,15 +5,15 @@
 #include <vector>
 #include <map>
 #include <boost/scoped_ptr.hpp>
-#include <SDK/ELACoreExt/Payload/Asset.h>
 
 #include "MainchainSubWallet.h"
 #include "KeyStore/CoinInfo.h"
-#include "Payload/PayloadTransferCrossChainAsset.h"
 #include "Utils.h"
+#include "Plugin/Transaction/Asset.h"
 #include "ParamChecker.h"
-#include "Transaction/MainchainTransactionChecker.h"
-#include "Transaction/MainchainTransactionCompleter.h"
+#include "Plugin/Transaction/Checker/MainchainTransactionChecker.h"
+#include "Plugin/Transaction/Completer/MainchainTransactionCompleter.h"
+#include "Plugin/Transaction/Payload/PayloadTransferCrossChainAsset.h"
 
 namespace Elastos {
 	namespace ElaWallet {

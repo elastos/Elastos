@@ -9,7 +9,7 @@
 #include "catch.hpp"
 #include "SDK/Transaction/Transaction.h"
 #include "BRTransaction.h"
-#include "Address.h"
+#include "SDK/Base/Address.h"
 #include "Payload/PayloadCoinBase.h"
 #include "Utils.h"
 #include "Log.h"

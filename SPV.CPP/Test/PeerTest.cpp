@@ -7,7 +7,7 @@
 #include <BRPeer.h>
 
 #include "catch.hpp"
-#include "Peer.h"
+#include "SDK/P2P/Peer.h"
 
 using namespace Elastos::ElaWallet;
 

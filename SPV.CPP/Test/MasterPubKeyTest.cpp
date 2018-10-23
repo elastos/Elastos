@@ -8,7 +8,7 @@
 
 #include "BRBIP39WordsEn.h"
 #include "catch.hpp"
-#include "MasterPubKey.h"
+#include "SDK/Crypto/MasterPubKey.h"
 
 using namespace Elastos::ElaWallet;
 

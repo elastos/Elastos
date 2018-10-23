@@ -6,7 +6,7 @@
 #define __ELASTOS_SDK_ASSETDATASTORE_H__
 
 #include "TableBase.h"
-#include "ELACoreExt/Payload/Asset.h"
+#include "Plugin/Transaction/Asset.h"
 
 namespace Elastos {
 	namespace ElaWallet {

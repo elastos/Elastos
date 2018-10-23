@@ -8,10 +8,10 @@
 #include "BRTransaction.h"
 
 #include "SpvService.h"
-#include "Payload/PayloadRegisterAsset.h"
+#include "Plugin/Transaction/Payload/PayloadRegisterAsset.h"
 #include "Utils.h"
 #include "Log.h"
-#include "Payload/Asset.h"
+#include "Plugin/Transaction/Asset.h"
 #include "Plugin/Registry.h"
 #include "Plugin/Block/MerkleBlock.h"
 

@@ -16,9 +16,9 @@
 #include "Utils.h"
 #include "Log.h"
 #include "ParamChecker.h"
-#include "Transaction/TransactionOutput.h"
-#include "Transaction/TransactionChecker.h"
-#include "Transaction/TransactionCompleter.h"
+#include "Plugin/Transaction/TransactionOutput.h"
+#include "Plugin/Transaction/Checker/TransactionChecker.h"
+#include "Plugin/Transaction/Completer/TransactionCompleter.h"
 #include "Account/MultiSignSubAccount.h"
 #include "Account/SubAccountGenerator.h"
 
