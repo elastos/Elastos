@@ -627,6 +627,7 @@ func New(orgPeer server.IPeer, listeners *Listeners) *Peer {
 		outputInvChan:  make(chan *msg.InvVect, outputBufferSize),
 	}
 
+	p.OnSendDone(p.sendDoneQueue)
 	p.AddMessageFunc(func(_ *peer.Peer, m p2p.Message) {
 		p.stallControl <- stallControlMsg{sccReceiveMessage, m}
 
