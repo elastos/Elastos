@@ -112,3 +112,12 @@ type CrossChainAssetInfo struct {
 type TransferCrossChainAssetInfo struct {
 	CrossChainAssets []CrossChainAssetInfo `json:"crosschainassets"`
 }
+
+type AssetInfo struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Precision   int    `json:"precision"`
+	AssetType   int    `json:"assettype"`
+	RecordType  int    `jso:"recordtype"`
+}

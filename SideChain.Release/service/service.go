@@ -667,15 +667,6 @@ func (s *HttpService) GetUnspendsByAsset(param util.Params) (interface{}, error)
 func (s *HttpService) GetAssetList(params util.Params) (interface{} ,error) {
 	assets := s.cfg.Chain.GetAssets()
 
-	type AssetInfo struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Precision   int    `json:"precision"`
-		AssetType   int    `json:"assettype"`
-		RecordType  int    `jso:"recordtype"`
-	}
-
 	var assetInfo []AssetInfo
 	for hash, asset := range assets {
 		assetInfo = append(assetInfo, AssetInfo{
