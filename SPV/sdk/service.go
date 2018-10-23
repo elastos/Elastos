@@ -131,7 +131,19 @@ func (s *service) start() {
 }
 
 func (s *service) updateFilter() *bloom.Filter {
-	return bloom.BuildBloomFilter(s.cfg.GetFilterData())
+	addresses, outpoints := s.cfg.GetFilterData()
+	elements := uint32(len(addresses) + len(outpoints))
+
+	filter := bloom.NewFilter(elements, 0, 0)
+	for _, address := range addresses {
+		filter.Add(address.Bytes())
+	}
+
+	for _, op := range outpoints {
+		filter.Add(op.Bytes())
+	}
+
+	return filter
 }
 
 func (s *service) makeEmptyMessage(cmd string) (p2p.Message, error) {

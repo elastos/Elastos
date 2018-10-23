@@ -318,6 +318,10 @@ func NewWallet() (*spvwallet, error) {
 	return &w, nil
 }
 
+func newBlockHeader() util.BlockHeader {
+	return util.NewElaHeader(&core.Header{})
+}
+
 func newTransaction() util.Transaction {
 	return new(core.Transaction)
 }
@@ -395,5 +399,5 @@ func GenesisHeader() util.BlockHeader {
 	}
 	header.MerkleRoot, _ = crypto.ComputeRoot(hashes)
 
-	return &blockHeader{Header: &header}
+	return util.NewElaHeader(&header)
 }

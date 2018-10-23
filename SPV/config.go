@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SPV/util"
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/core"
 	"io/ioutil"
 	"os"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 const (
@@ -57,28 +56,4 @@ func loadConfig() *Config {
 	}
 
 	return &c
-}
-
-type blockHeader struct {
-	*core.Header
-}
-
-func (h *blockHeader) Previous() common.Uint256 {
-	return h.Header.Previous
-}
-
-func (h *blockHeader) Bits() uint32 {
-	return h.Header.Bits
-}
-
-func (h *blockHeader) MerkleRoot() common.Uint256 {
-	return h.Header.MerkleRoot
-}
-
-func (h *blockHeader) PowHash() common.Uint256 {
-	return h.AuxPow.ParBlockHeader.Hash()
-}
-
-func newBlockHeader() util.BlockHeader {
-	return &blockHeader{Header: &core.Header{}}
 }

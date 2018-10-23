@@ -10,28 +10,8 @@ import (
 	"github.com/elastos/Elastos.ELA/core"
 )
 
-type blockHeader struct {
-	*core.Header
-}
-
-func (h *blockHeader) Previous() common.Uint256 {
-	return h.Header.Previous
-}
-
-func (h *blockHeader) Bits() uint32 {
-	return h.Header.Bits
-}
-
-func (h *blockHeader) MerkleRoot() common.Uint256 {
-	return h.Header.MerkleRoot
-}
-
-func (h *blockHeader) PowHash() common.Uint256 {
-	return h.AuxPow.ParBlockHeader.Hash()
-}
-
 func newBlockHeader() util.BlockHeader {
-	return &blockHeader{Header: &core.Header{}}
+	return util.NewElaHeader(&core.Header{})
 }
 
 // GenesisHeader creates a specific genesis header by the given
@@ -107,5 +87,5 @@ func GenesisHeader(foundation *common.Uint168) util.BlockHeader {
 	}
 	header.MerkleRoot, _ = crypto.ComputeRoot(hashes)
 
-	return &blockHeader{Header: &header}
+	return util.NewElaHeader(&header)
 }
