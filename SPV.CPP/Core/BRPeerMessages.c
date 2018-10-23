@@ -422,6 +422,7 @@ int BRPeerAcceptGetAddrMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 void BRPeerSendGetAddrMessage(BRPeer *peer)
 {
 	((BRPeerContext *)peer)->sentGetaddr = 1;
+	((BRPeerContext *)peer)->manager->keepAliveTimestamp = time(NULL);
 	BRPeerSendMessage(peer, NULL, 0, MSG_GETADDR);
 }
 
@@ -781,7 +782,7 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		BRPeerContext *ctx = (BRPeerContext *)peer;
 		BRPeerManager *manager = ctx->manager;
 
-		if (time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
+		if (ctx->sentGetaddr && time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
 			int haveTxPending = 0;
 
 			pthread_mutex_lock(&manager->lock);
@@ -791,18 +792,12 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 					haveTxPending++;
 				}
 			}
-			pthread_mutex_unlock(&manager->lock);
 
 			if (manager->lastBlock->height >= *(uint64_t *)msg && !haveTxPending) {
-				pthread_mutex_lock(&manager->lock);
-				if (manager->reconnectTaskCount == 0) {
-					manager->reconnectTaskCount++;
-					pthread_mutex_unlock(&manager->lock);
-
-					ctx->relayedPingMsg(ctx->info);
-				} else {
-					pthread_mutex_unlock(&manager->lock);
-				}
+				pthread_mutex_unlock(&manager->lock);
+				ctx->relayedPingMsg(ctx->info);
+			} else {
+				pthread_mutex_unlock(&manager->lock);
 			}
 		}
 	}

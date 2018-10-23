@@ -750,7 +750,6 @@ static void _peerConnected(void *info)
             BRPeerDisconnect(manager->downloadPeer);
         }
 
-        manager->keepAliveTimestamp = time(NULL);
         manager->downloadPeer = peer;
         manager->isConnected = 1;
         manager->estimatedHeight = BRPeerLastBlock(peer);
@@ -856,6 +855,10 @@ static void _peerDisconnected(void *info, int error)
         break;
     }
 
+    // try very hard to keep at least one alive connected peer.
+    if (manager->reconnectTaskCount == 0 && (!manager->isConnected || array_count(manager->connectedPeers) == 0))
+        willReconnect = 1;
+
     BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
 
@@ -865,7 +868,7 @@ static void _peerDisconnected(void *info, int error)
 
     if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect && array_count(manager->connectedPeers) == 0) {
+    if (willReconnect) {
         peer_log(peer, "willReconnect...");
         BRPeerManagerConnect(manager);
     }
@@ -875,6 +878,7 @@ static void _peerDisconnected(void *info, int error)
 static void _peerRelayedPeers(void *info, const BRPeer peers[], size_t peersCount)
 {
     BRPeer *peer = ((BRPeerCallbackInfo *)info)->peer;
+    BRPeer *uniquePeer;
     BRPeerManager *manager = ((BRPeerCallbackInfo *)info)->manager;
     time_t now = time(NULL);
 
@@ -883,6 +887,25 @@ static void _peerRelayedPeers(void *info, const BRPeer peers[], size_t peersCoun
 
     array_add_array(manager->peers, peers, peersCount);
     qsort(manager->peers, array_count(manager->peers), sizeof(*manager->peers), _peerTimestampCompare);
+
+    array_new(uniquePeer, array_count(manager->peers));
+    int found = 0;
+    for (size_t i = 0; i < array_count(manager->peers); ++i) {
+        found = 0;
+        for (size_t j = 0; j < array_count(uniquePeer); ++j) {
+            if (UInt128Eq(&manager->peers[i].address, &uniquePeer[j].address)) {
+                found = 1;
+                break;
+            }
+        }
+
+        if (!found) {
+            array_add(uniquePeer, manager->peers[i]);
+        }
+    }
+
+    array_free(manager->peers);
+    manager->peers = uniquePeer;
 
     // limit total to 2500 peers
     if (array_count(manager->peers) > 2500) array_set_count(manager->peers, 2500);

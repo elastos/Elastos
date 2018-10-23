@@ -529,8 +529,6 @@ namespace Elastos {
 			ParamChecker::checkCondition(!Utils::UInt168FromAddress(u168Address, toAddress), Error::CreateTransaction,
 										 "Invalid receiver address " + toAddress);
 
-			ParamChecker::checkCondition(amount == 0, Error::CreateTransaction, "Output amount should larger than 0");
-
 			TransactionOutputPtr output = TransactionOutputPtr(new TransactionOutput());
 			output->setProgramHash(u168Address);
 			output->setAmount(amount);
@@ -914,7 +912,7 @@ namespace Elastos {
 				}
 
 				if (elaWallet->IsSingleAddress) {
-					if (elaWallet->SingleAddress == std::string()) {
+					if (elaWallet->SingleAddress == std::string(t->outputs[n]->getRaw()->address)) {
 						r = 1;
 					}
 				} else {
