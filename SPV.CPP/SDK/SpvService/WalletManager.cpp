@@ -287,6 +287,10 @@ namespace Elastos {
 
 		void WalletManager::syncIsInactive() {
 			if (_peerManager->getConnectStatus() == Peer::Connected) {
+				pthread_mutex_lock(&_peerManager->getRaw()->lock);
+				_peerManager->getRaw()->reconnectTaskCount++;
+				pthread_mutex_unlock(&_peerManager->getRaw()->lock);
+
 				_peerManager->disconnect();
 				startReconnect();
 			}
@@ -399,6 +403,13 @@ namespace Elastos {
 			if (error.value() == 0) {
 				if (_peerManager->getConnectStatus() != Peer::Connected) {
 					Log::getLogger()->info("async connecting...");
+					if (array_count(_peerManager->getRaw()->peers) == 0) {
+						SharedWrapperList<Peer, BRPeer *> peers = loadPeers();
+						Log::getLogger()->info("loading {} peers...", peers.size());
+						for (size_t i = 0; i < peers.size(); ++i) {
+							array_add(_peerManager->getRaw()->peers, *peers[i]->getRaw());
+						}
+					}
 					_peerManager->connect();
 				}
 			} else {
