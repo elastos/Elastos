@@ -1,6 +1,8 @@
 Elastos Carrier iOS Framework
 =============================
 
+[![Build Status](https://travis-ci.org/elastos/Elastos.NET.Carrier.iOS.SDK.svg?)](https://travis-ci.org/elastos/Elastos.NET.Carrier.iOS.SDK)
+
 ## Summary
 
 Elastos Carrier iOS Framework is swift API wrapper (and Objective-C APIs) for Elastos Native Carrier, where Carrier is a decentralized peer to peer communication framework.
