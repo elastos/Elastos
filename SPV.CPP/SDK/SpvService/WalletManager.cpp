@@ -87,8 +87,8 @@ namespace Elastos {
 			nlohmann::json sendingTx = transaction->toJson();
 			ByteStream byteStream;
 			transaction->Serialize(byteStream);
-			Log::getLogger()->info("Sending transaction, json info: {}, hex String: {}",
-								   sendingTx.dump(), Utils::encodeHex(byteStream.getBuffer()));
+			Log::getLogger()->debug("Sending transaction, json info: {}",
+								   sendingTx.dump());
 
 			if (_peerManager->getConnectStatus() != Peer::Connected) {
 				if (_reconnectTimer != nullptr)

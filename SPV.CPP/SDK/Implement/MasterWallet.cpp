@@ -560,11 +560,13 @@ namespace Elastos {
 				_localStore.Reset(coSigners, requiredSignCount);
 			else
 				_localStore.Reset(privKey, coSigners, payPassword, requiredSignCount);
+			_localStore.IsSingleAddress() = true;
 		}
 
 		nlohmann::json MasterWallet::GetBasicInfo() const {
 			nlohmann::json j;
 			j["Account"] = _localStore.Account()->GetBasicInfo();
+			j["Account"]["SingleAddress"] = _localStore.IsSingleAddress();
 			return j;
 		}
 

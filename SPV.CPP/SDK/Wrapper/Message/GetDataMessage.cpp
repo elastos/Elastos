@@ -5,6 +5,7 @@
 #include <BRPeerMessages.h>
 #include <BRPeerManager.h>
 #include <Core/BRPeer.h>
+#include <SDK/Transaction/Transaction.h>
 #include "BRArray.h"
 #include "BRPeerMessages.h"
 
@@ -80,15 +81,19 @@ namespace Elastos {
 					UInt256Get(&hash, &msg[off + sizeof(uint32_t)]);
 					switch (type) {
 						case inv_tx:
+						{
 							if (ctx->requestedTx) tx = ctx->requestedTx(ctx->info, hash);
 
-							if (tx && BRTransactionSize(tx) < TX_MAX_SIZE) {
+							TransactionPtr txn(new Transaction((ELATransaction *) tx, false));
+							if (tx && txn->getSize() < TX_MAX_SIZE) {
 								ctx->manager->peerMessages->BRPeerSendTxMessage(peer, tx);
 								break;
 							}
+						}
 
 							// fall through
 						default:
+							peer_log(peer, "not found with type = %d, hash = %s", type, Utils::UInt256ToString(hash, true).c_str());
 							if (!notfound) array_new(notfound, 1);
 							array_add(notfound, *(struct inv_item *) &msg[off]);
 							break;
