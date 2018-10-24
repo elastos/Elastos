@@ -134,7 +134,8 @@ namespace Elastos {
 		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
-			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
+			if (transaction != nullptr && transaction->getBlockHeight() != TX_UNCONFIRMED
+				&& transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				Log::getLogger()->info("onTxUpdated: hash={}", hash);
 
 				std::string reversedId(hash.rbegin(), hash.rend());

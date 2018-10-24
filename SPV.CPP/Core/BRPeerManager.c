@@ -45,7 +45,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define PROTOCOL_TIMEOUT      30.0
+#define PROTOCOL_TIMEOUT      50.0
 #define MAX_CONNECT_FAILURES  20 // notify user of network problems after this many connect failures in a row
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
@@ -582,11 +582,14 @@ static void _BRPeerManagerLoadMempools(BRPeerManager *manager)
 // returns a UINT128_ZERO terminated array of addresses for hostname that must be freed, or NULL if lookup failed
 static UInt128 *_addressLookup(const char *hostname)
 {
-    struct addrinfo *servinfo, *p;
+    struct addrinfo hints, *servinfo, *p;
     UInt128 *addrList = NULL;
     size_t count = 0, i = 0;
 
-    if (getaddrinfo(hostname, NULL, NULL, &servinfo) == 0) {
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = PF_UNSPEC;
+    if (getaddrinfo(hostname, NULL, &hints, &servinfo) == 0) {
         for (p = servinfo; p != NULL; p = p->ai_next) if (p->ai_socktype == SOCK_STREAM) count++;
         if (count > 0) addrList = calloc(count + 1, sizeof(*addrList));
         assert(addrList != NULL || count == 0);
