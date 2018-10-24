@@ -27,7 +27,7 @@ ExternalProject_Add(
         -DBUILD_TOXAV=OFF
         -DBUILD_AV_TEST=OFF
         -DBUILD_NTOX=OFF
-        -DDHT_BOOTSTRAP=ON
+        -DDHT_BOOTSTRAP=OFF
         -DBUILD_CARRIER=ON
         ${TOX_BOOTSTRAP_OPT}
         ${CMAKE_ARGS_INIT}
