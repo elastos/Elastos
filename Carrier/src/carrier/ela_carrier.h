@@ -122,6 +122,16 @@ extern "C" {
  */
 #define ELA_MAX_APP_MESSAGE_LEN         1024
 
+/**
+ * \~English
+ * System reserved reply reason.
+ */
+#define ELA_STATUS_TIMEOUT              1
+
+/**
+ * \~English
+ * ElaCarrier representing carrier node singleton instance.
+ */
 typedef struct ElaCarrier ElaCarrier;
 
 /******************************************************************************

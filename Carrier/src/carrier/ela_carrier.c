@@ -1542,6 +1542,52 @@ redo_events:
 }
 
 static
+void transacted_callback_expire(ElaCarrier *w, TransactedCallback *callback)
+{
+    char friendid[ELA_MAX_ID_LEN + 1];
+    ElaFriendInviteResponseCallback *callback_func;
+    FriendInfo *fi;
+
+    fi = friends_get(w->friends, callback->friend_number);
+    if (!fi)
+        return;
+
+    strcpy(friendid, fi->info.user_info.userid);
+    deref(fi);
+
+    callback_func = (ElaFriendInviteResponseCallback *)callback->callback_func;
+    assert(callback_func);
+
+    callback_func(w, friendid, ELA_STATUS_TIMEOUT, "timeout", NULL, 0,
+                  callback->callback_context);
+}
+
+static void do_transacted_callabcks_check(ElaCarrier *w)
+{
+    hashtable_iterator_t it;
+    struct timeval now;
+
+    gettimeofday(&now, NULL);
+
+    transacted_callbacks_iterate(w->tcallbacks, &it);
+    while(transacted_callbacks_iterator_has_next(&it)) {
+        TransactedCallback *tcb;
+        int rc;
+
+        rc = transacted_callbacks_iterator_next(&it, &tcb);
+        if (rc <= 0)
+            break;
+
+        if (timercmp(&now, &tcb->expire_time, >)) {
+            hashtable_iterator_remove(&it);
+            transacted_callback_expire(w, tcb);
+        }
+
+        deref(tcb);
+    }
+}
+
+static
 void handle_friend_message(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
 {
     FriendInfo *fi;
@@ -1780,11 +1826,10 @@ int ela_run(ElaCarrier *w, int interval)
         timeradd(&expire, &tmp, &expire);
 
         do_friend_events(w);
+        do_transacted_callabcks_check(w);
 
         if (idle_interval > 0)
             notify_idle(w);
-
-        // TODO: Check connection:.
 
         gettimeofday(&check, NULL);
 
@@ -2514,6 +2559,7 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
     }
 
     tcb->tid = tid;
+    tcb->friend_number = friend_number;
     tcb->callback_func = callback;
     tcb->callback_context = context;
 
@@ -2524,6 +2570,7 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
     free(_data);
 
     if (rc < 0) {
+        transacted_callbacks_remove(w->tcallbacks, tid);
         ela_set_error(rc);
         return -1;
     }

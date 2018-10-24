@@ -111,18 +111,6 @@ typedef struct SessionExtension {
     uint8_t                 reserved[1];
 } SessionExtension;
 
-typedef struct FriendLabelItem {
-    uint32_t friend_number;
-    char *label;
-} FriendLabelItem;
-
-typedef struct TransactedCallback {
-    hash_entry_t he;
-    int64_t tid;
-    void *callback_func;
-    void *callback_context;
-} TransactedCallback;
-
 CARRIER_API
 void ela_set_error(int error);
 
