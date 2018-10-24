@@ -515,18 +515,19 @@ size_t BRWalletAllAddrs(BRWallet *wallet, BRAddress addrs[], size_t addrsCount)
 
     assert(wallet != NULL);
     pthread_mutex_lock(&wallet->lock);
-    internalCount = (! addrs || array_count(wallet->internalChain) < addrsCount) ?
-                    array_count(wallet->internalChain) : addrsCount;
 
-    for (i = 0; addrs && i < internalCount; i++) {
-        addrs[i] = wallet->internalChain[i];
-    }
-
-    externalCount = (! addrs || array_count(wallet->externalChain) < addrsCount - internalCount) ?
-                    array_count(wallet->externalChain) : addrsCount - internalCount;
+    externalCount = (! addrs || array_count(wallet->externalChain) < addrsCount) ?
+                    array_count(wallet->externalChain) : addrsCount;
 
     for (i = 0; addrs && i < externalCount; i++) {
-        addrs[internalCount + i] = wallet->externalChain[i];
+        addrs[i] = wallet->externalChain[i];
+    }
+
+    internalCount = (! addrs || array_count(wallet->internalChain) < addrsCount - externalCount) ?
+                    array_count(wallet->internalChain) : addrsCount - externalCount;
+
+    for (i = 0; addrs && i < internalCount; i++) {
+        addrs[externalCount + i] = wallet->internalChain[i];
     }
 
     pthread_mutex_unlock(&wallet->lock);

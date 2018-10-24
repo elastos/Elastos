@@ -53,7 +53,7 @@
 #define MIN_PROTO_VERSION  70002 // peers earlier than this protocol version not supported (need v0.9 txFee relay rules)
 #define LOCAL_HOST         ((UInt128) { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff, 0xff, 0x7f, 0x00, 0x00, 0x01 })
 #define CONNECT_TIMEOUT    3.0
-#define MESSAGE_TIMEOUT    10.0
+#define MESSAGE_TIMEOUT    30.0
 
 #define PTHREAD_STACK_SIZE  (512 * 1024)
 
@@ -256,7 +256,7 @@ static void *_peerThreadRoutine(void *arg)
             }
 
             if (error) {
-                peer_log(peer, "read socket error: %s", strerror(error));
+                peer_log(peer, "read header length error: %s", strerror(error));
             }
             else if (header[15] != 0) { // verify header type field is NULL terminated
                 peer_log(peer, "malformed message header: type not NULL terminated");
@@ -303,7 +303,7 @@ static void *_peerThreadRoutine(void *arg)
                     }
 
                     if (error) {
-                        peer_log(peer, "read socket error: %s", strerror(error));
+                        peer_log(peer, "read message error: %s", strerror(error));
                     }
                     else if (len == msgLen) {
                         BRSHA256_2(&hash, payload, msgLen);

@@ -250,13 +250,14 @@ namespace Elastos {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
 			}
 
-			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
-																					   _confirmingTxs[hash]->getBlockHeight() +
-																					   1 : 0;
-			Log::getLogger()->info("onTxUpdated: hash = {}, confirm = {}", hash, confirm);
-			if (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) >= 1.0) {
-				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-											 _confirmingTxs[hash]->toJson(), confirm);
+			if (_confirmingTxs[hash]->getBlockHeight() != TX_UNCONFIRMED) {
+				uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
+					_confirmingTxs[hash]->getBlockHeight() + 1 : 0;
+				Log::getLogger()->info("onTxUpdated: hash = {}, confirm = {}", hash, confirm);
+				if (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) >= 1.0) {
+					fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
+												 _confirmingTxs[hash]->toJson(), confirm);
+				}
 			}
 		}
 
