@@ -19,10 +19,6 @@ namespace Elastos {
 			return _parentAccount->DeriveKey(payPassword);
 		}
 
-		std::string SingleSubAccount::GetMainAccountPublicKey() const {
-			return _parentAccount->GetPublicKey();
-		}
-
 		WrapperList<Key, BRKey>
 		SingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
 													 const Elastos::ElaWallet::TransactionPtr &transaction) {

@@ -37,5 +37,9 @@ namespace Elastos {
 
 		}
 
+		std::string SubAccountBase::GetMainAccountPublicKey() const {
+			return _parentAccount->GetPublicKey();
+		}
+
 	}
 }

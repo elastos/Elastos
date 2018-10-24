@@ -25,8 +25,6 @@ namespace Elastos {
 			virtual void SignTransaction(const TransactionPtr &transaction, const boost::shared_ptr<TransactionHub> &wallet,
 										 const std::string &payPassword);
 
-			virtual std::string GetMainAccountPublicKey() const;
-
 			virtual bool IsSingleAddress() const;
 
 			virtual void AddUsedAddrs(const TransactionPtr &tx);

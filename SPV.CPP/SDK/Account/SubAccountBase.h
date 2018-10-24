@@ -25,6 +25,8 @@ namespace Elastos {
 
 			Address KeyToAddress(const BRKey *key) const;
 
+			virtual std::string GetMainAccountPublicKey() const;
+
 		protected:
 			IAccount *_parentAccount;
 			MasterPubKey _masterPubKey;
