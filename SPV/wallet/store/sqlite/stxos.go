@@ -45,8 +45,8 @@ func (s *stxos) Put(stxo *sutil.STXO) error {
 	if err != nil {
 		return err
 	}
-	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight, Address)
-			VALUES(?,?,?,?,?,?,?)`
+	sql := `INSERT OR REPLACE INTO STXOs(OutPoint, Value, LockTime, AtHeight,
+			SpendHash, SpendHeight, Address) VALUES(?,?,?,?,?,?,?)`
 	_, err = s.Exec(sql, stxo.Op.Bytes(), valueBytes, stxo.LockTime, stxo.AtHeight,
 		stxo.SpendTxId.Bytes(), stxo.SpendHeight, stxo.Address.Bytes())
 	return err
@@ -94,7 +94,8 @@ func (s *stxos) GetAddrAll(hash *common.Uint168) ([]*sutil.STXO, error) {
 	s.RLock()
 	defer s.RUnlock()
 
-	sql := "SELECT OutPoint, Value, LockTime, AtHeight, SpendHash, SpendHeight, Address FROM STXOs WHERE Address=?"
+	sql := `SELECT OutPoint, Value, LockTime, AtHeight, SpendHash,
+			SpendHeight, Address FROM STXOs WHERE Address=?`
 	rows, err := s.Query(sql, hash.Bytes())
 	if err != nil {
 		return nil, err
@@ -128,7 +129,8 @@ func (s *stxos) getSTXOs(rows *sql.Rows) ([]*sutil.STXO, error) {
 		var spendHashBytes []byte
 		var spendHeight uint32
 		var addressBytes []byte
-		err := rows.Scan(&opBytes, &valueBytes, &lockTime, &atHeight, &spendHashBytes, &spendHeight, &addressBytes)
+		err := rows.Scan(&opBytes, &valueBytes, &lockTime, &atHeight,
+			&spendHashBytes, &spendHeight, &addressBytes)
 		if err != nil {
 			return stxos, err
 		}
@@ -145,13 +147,15 @@ func (s *stxos) getSTXOs(rows *sql.Rows) ([]*sutil.STXO, error) {
 		if err != nil {
 			return stxos, err
 		}
-		var utxo = sutil.UTXO{Op: outPoint, Value: *value, LockTime: lockTime, AtHeight: atHeight, Address: *address}
+		var utxo = sutil.UTXO{Op: outPoint, Value: *value, LockTime: lockTime,
+			AtHeight: atHeight, Address: *address}
 		spendHash, err := common.Uint256FromBytes(spendHashBytes)
 		if err != nil {
 			return stxos, err
 		}
 
-		stxos = append(stxos, &sutil.STXO{UTXO: utxo, SpendTxId: *spendHash, SpendHeight: spendHeight})
+		stxos = append(stxos, &sutil.STXO{UTXO: utxo, SpendTxId: *spendHash,
+			SpendHeight: spendHeight})
 	}
 
 	return stxos, nil

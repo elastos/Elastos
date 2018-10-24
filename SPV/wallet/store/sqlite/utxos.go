@@ -81,7 +81,7 @@ func (u *utxos) GetAddrAll(hash *common.Uint168) ([]*sutil.UTXO, error) {
 	defer u.RUnlock()
 
 	rows, err := u.Query(
-		"SELECT OutPoint, Value, LockTime, AtHeight, Address FROM UTXOs WHERE ScriptHash=?", hash.Bytes())
+		"SELECT OutPoint, Value, LockTime, AtHeight, Address FROM UTXOs WHERE Address=?", hash.Bytes())
 	if err != nil {
 		return nil, err
 	}
