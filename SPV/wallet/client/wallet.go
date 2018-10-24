@@ -4,26 +4,25 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
-	util2 "github.com/elastos/Elastos.ELA.SPV/util"
 	"math"
 	"math/rand"
 	"strconv"
 
 	"github.com/elastos/Elastos.ELA.SPV/sdk"
+	"github.com/elastos/Elastos.ELA.SPV/util"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/client/database"
 	"github.com/elastos/Elastos.ELA.SPV/wallet/sutil"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA/core"
 )
 
 var (
 	jsonRpcUrl string
 	sysAssetId common.Uint256
-	newHeader func() util2.BlockHeader
+	newHeader  func() util.BlockHeader
 )
 
 type Transfer struct {
@@ -36,7 +35,7 @@ type Wallet struct {
 	*Keystore
 }
 
-func Setup(rpcUrl string, assetId common.Uint256, newBlockHeader func() util2.BlockHeader) {
+func Setup(rpcUrl string, assetId common.Uint256, newBlockHeader func() util.BlockHeader) {
 	jsonRpcUrl = rpcUrl
 	sysAssetId = assetId
 	newHeader = newBlockHeader
@@ -91,7 +90,7 @@ func (wallet *Wallet) NewSubAccount(password []byte) (*common.Uint168, error) {
 	}
 
 	// Notify SPV service to reload bloom filter with the new address
-	jsonrpc.Call(jsonRpcUrl, util.Params{"addr": account.ProgramHash().String()})
+	jsonrpc.CallArray(jsonRpcUrl, "notifynewaddress", account.ProgramHash().String())
 
 	return account.ProgramHash(), nil
 }
@@ -113,7 +112,7 @@ func (wallet *Wallet) AddMultiSignAccount(M uint, publicKeys ...*crypto.PublicKe
 	}
 
 	// Notify SPV service to reload bloom filter with the new address
-	jsonrpc.Call(jsonRpcUrl, util.Params{"addr": programHash.String()})
+	jsonrpc.CallArray(jsonRpcUrl, "notifynewaddress", programHash.String())
 
 	return programHash, nil
 }
@@ -313,7 +312,7 @@ func (wallet *Wallet) SendTransaction(tx *core.Transaction) error {
 	}
 	rawData := hex.EncodeToString(buf.Bytes())
 
-	_, err := jsonrpc.Call(jsonRpcUrl, util.Params{"data":rawData})
+	_, err := jsonrpc.CallArray(jsonRpcUrl, "sendrawtransaction", rawData)
 	return err
 }
 

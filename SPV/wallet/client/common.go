@@ -125,7 +125,7 @@ func ShowAccounts(addrs []*sutil.Addr, newAddr *common.Uint168, wallet *Wallet) 
 		locked := common.Fixed64(0)
 		UTXOs, err := wallet.GetAddressUTXOs(addr.Hash())
 		if err != nil {
-			return errors.New("get " + addr.String() + " UTXOs failed")
+			return fmt.Errorf("get %s UTXOs failed, %s", addr, err)
 		}
 		for _, utxo := range UTXOs {
 			if utxo.LockTime >= currentHeight || utxo.AtHeight == 0 {

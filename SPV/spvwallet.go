@@ -15,6 +15,7 @@ import (
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/crypto"
+	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	httputil "github.com/elastos/Elastos.ELA.Utility/http/util"
 	"github.com/elastos/Elastos.ELA/core"
 )
@@ -240,15 +241,17 @@ func (b *txBatch) Commit() error {
 
 // Functions for RPC service.
 func (w *spvwallet) notifyNewAddress(params httputil.Params) (interface{}, error) {
-	data, ok := params.String("addr")
+	addrStr, ok := params.String("addr")
 	if !ok {
 		return nil, ErrInvalidParameter
 	}
 
-	_, err := hex.DecodeString(data)
+	address, err := common.Uint168FromAddress(addrStr)
 	if err != nil {
 		return nil, err
 	}
+
+	waltlog.Debugf("receive notifyNewAddress %s", address)
 
 	// Reload address filter to include new address
 	w.loadAddrFilter()
@@ -314,6 +317,14 @@ func NewWallet() (*spvwallet, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	s := jsonrpc.NewServer(&jsonrpc.Config{
+		Path:      "/spvwallet",
+		ServePort: config.JsonRpcPort,
+	})
+	s.RegisterAction("notifynewaddress", w.notifyNewAddress, "addr")
+	s.RegisterAction("sendrawtransaction", w.sendTransaction, "data")
+	go s.Start()
 
 	return &w, nil
 }
