@@ -84,7 +84,7 @@ type Configuration struct {
 	NoticeServerUrl     string           `json:"NoticeServerUrl"`
 	NodePort            uint16           `json:"NodePort"`
 	NodeOpenPort        uint16           `json:"NodeOpenPort"`
-	PrintLevel          int              `json:"PrintLevel"`
+	PrintLevel          uint8            `json:"PrintLevel"`
 	IsTLS               bool             `json:"IsTLS"`
 	CertPath            string           `json:"CertPath"`
 	KeyPath             string           `json:"KeyPath"`
