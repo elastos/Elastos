@@ -14,8 +14,8 @@ const (
 	DumpNodeStateInterval = time.Minute * 5
 	NodeTitleFormat       = "| %-5s | %-16s | %-8s | %-16s | %-5s | %5s | %5s | %5s | %5s | %13s |\n"
 	NodeLineFormat        = "| %-5d | %-16x | %-8d | %-16d | %-5t | %5d | %5d | %5d | %5d | %13s |\n"
-	NeighborTitleFormat   = "| %-5s | %-16s | %-8s | %-16s | %-5s | %-5s | %-10s | %24s |\n"
-	NeighborLineFormat    = "| %-5d | %-16x | %-8d | %-16d | %-5t | %-5t | %-10s | %24s |\n"
+	NeighborTitleFormat   = "| %-5s | %-16s | %-8s | %-16s | %-5s | %-5s | %-11s | %23s |\n"
+	NeighborLineFormat    = "| %-5d | %-16x | %-8d | %-16d | %-5t | %-5t | %-11s | %23s |\n"
 )
 
 func monitorNodeState() {
@@ -92,7 +92,7 @@ func neighborTitleLine() string {
 		"RELAY",
 		"EXTRA",
 		"STATUS",
-		"IP ADDRESS",
+		"NEIGHBOR ADDRESS",
 	)
 }
 
@@ -105,6 +105,6 @@ func dumpNeighborLine(index int, n *node) string {
 		n.IsRelay(),
 		n.IsExternal(),
 		n.State().String(),
-		n.NetAddress().String(),
+		n.Addr(),
 	)
 }

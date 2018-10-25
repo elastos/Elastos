@@ -1,8 +1,8 @@
 package node
 
 import (
-	"sync"
 	"sort"
+	"sync"
 
 	"github.com/elastos/Elastos.ELA/protocol"
 
@@ -128,7 +128,9 @@ func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
 	}
 
 	// Sort by node id before return
-	sort.Sort(nodeById(nodes))
+	sort.Slice(nodes, func(i, j int) bool {
+		return nodes[i].ID() < nodes[j].ID()
+	})
 
 	return nodes
 }
@@ -190,9 +192,3 @@ func (ns *neighbours) GetBestNode() protocol.Noder {
 
 	return best
 }
-
-type nodeById []protocol.Noder
-
-func (ns nodeById) Len() int           { return len(ns) }
-func (ns nodeById) Less(i, j int) bool { return ns[i].ID() < ns[j].ID() }
-func (ns nodeById) Swap(i, j int)      { ns[i], ns[j] = ns[j], ns[i] }

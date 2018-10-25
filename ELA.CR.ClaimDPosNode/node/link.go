@@ -5,10 +5,10 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
-	"strings"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	. "github.com/elastos/Elastos.ELA/config"
@@ -16,33 +16,39 @@ import (
 	. "github.com/elastos/Elastos.ELA/protocol"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+)
+
+const (
+	// idleTimeout is the duration of inactivity before we time out a peer.
+	idleTimeout = 5 * time.Minute
 )
 
 type link struct {
-	addr         string       // The address of the node
-	conn         net.Conn     // Connect socket with the peer node
-	port         uint16       // The server port of the node
-	httpInfoPort uint16       // The node information server port of the node
-	activeLock   sync.RWMutex // The read and write lock for active time
-	lastActive   time.Time    // The latest time the node activity
+	magic        uint32
+	inbound      bool
+	disconnect   int32
+	addr         string // The address of the node
+	ip           net.IP
+	conn         net.Conn // Connect socket with the peer node
+	port         uint16   // The server port of the node
+	httpInfoPort uint16   // The node information server port of the node
 	handshakeQueue
-	*p2p.MsgHelper
+	handler   Handler
+	sendQueue chan p2p.Message
+	quit      chan struct{}
 }
 
-func (link *link) CloseConn() {
-	link.conn.Close()
+func (node *node) String() string {
+	direction := "outbound"
+	if node.inbound {
+		direction = "inbound"
+	}
+	return fmt.Sprintf("%s (%s)", node.addr, direction)
 }
 
-func (node *node) UpdateLastActive() {
-	node.activeLock.Lock()
-	defer node.activeLock.Unlock()
-	node.lastActive = time.Now()
-}
-
-func (node *node) GetLastActiveTime() time.Time {
-	node.activeLock.RLock()
-	defer node.activeLock.RUnlock()
-	return node.lastActive
+func (node *node) UpdateHandler(handler Handler) {
+	node.handler = handler
 }
 
 func (node *node) initConnection() {
@@ -51,6 +57,12 @@ func (node *node) initConnection() {
 	if Parameters.OpenService {
 		go listenNodeOpenPort()
 	}
+}
+
+func (node *node) start() {
+	go node.inHandler()
+	go node.outHandler()
+	go node.pingHandler()
 }
 
 func listenNodePort() {
@@ -80,9 +92,7 @@ func listenNodePort() {
 		}
 		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
-		node := NewNode(Parameters.Magic, conn)
-		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
-		node.Read()
+		node := NewNode(conn, true)
 		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
 	}
 }
@@ -135,15 +145,6 @@ func initTlsListen() (net.Listener, error) {
 	return listener, nil
 }
 
-func parseIPaddr(s string) (string, error) {
-	i := strings.Index(s, ":")
-	if i < 0 {
-		log.Warn("Split IP address&port error")
-		return s, errors.New("Split IP address&port error")
-	}
-	return s[:i], nil
-}
-
 func resolveTCPAddr(addr string) (string, error) {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
@@ -188,16 +189,14 @@ func (node *node) Connect(addr string) error {
 			return err
 		}
 	}
-	n := NewNode(Parameters.Magic, conn)
-	n.addr, err = parseIPaddr(conn.RemoteAddr().String())
+	n := NewNode(conn, false)
 
 	log.Infof("Local node %s connect with %s with %s",
 		conn.LocalAddr().String(), conn.RemoteAddr().String(),
 		conn.RemoteAddr().Network())
-	n.Read()
 
 	n.SetState(HAND)
-	n.Send(NewVersion(node))
+	n.SendMessage(NewVersion(node))
 
 	node.AddToHandshakeQueue(tcpAddr, n)
 	return nil
@@ -205,7 +204,7 @@ func (node *node) Connect(addr string) error {
 
 func NonTLSDial(nodeAddr string) (net.Conn, error) {
 	log.Debug()
-	conn, err := net.DialTimeout("tcp", nodeAddr, time.Second*DialTimeout)
+	conn, err := net.DialTimeout("tcp", nodeAddr, dialTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -236,7 +235,7 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	}
 
 	var dialer net.Dialer
-	dialer.Timeout = time.Second * DialTimeout
+	dialer.Timeout = dialTimeout
 	conn, err := tls.DialWithDialer(&dialer, "tcp", nodeAddr, conf)
 	if err != nil {
 		return nil, err
@@ -244,12 +243,132 @@ func TLSDial(nodeAddr string) (net.Conn, error) {
 	return conn, nil
 }
 
-func (node *node) Send(msg p2p.Message) {
-	if node.State() == INACTIVITY {
-		log.Errorf("-----> Push [%s] to INACTIVE peer [0x%x]", msg.CMD(), node.ID())
+func (node *node) readMessage() (p2p.Message, error) {
+	return p2p.ReadMessage(node.conn, node.magic, node.handler.MakeEmptyMessage)
+}
+
+// shouldHandleReadError returns whether or not the passed error, which is
+// expected to have come from reading from the remote peer in the inHandler,
+// should be logged and responded to with a reject message.
+func (node *node) shouldHandleReadError(err error) bool {
+	// No logging or reject message when the peer is being forcibly
+	// disconnected.
+	if atomic.LoadInt32(&node.disconnect) != 0 {
+		return false
+	}
+
+	// No logging or reject message when the remote peer has been
+	// disconnected.
+	if err == io.EOF {
+		return false
+	}
+	if opErr, ok := err.(*net.OpError); ok && !opErr.Temporary() {
+		return false
+	}
+
+	return true
+}
+
+func (node *node) inHandler() {
+	// The timer is stopped when a new message is received and reset after it
+	// is processed.
+	idleTimer := time.AfterFunc(idleTimeout, func() {
+		log.Warnf("Peer %s no answer for %s -- disconnecting", node, idleTimeout)
+		node.Disconnect()
+	})
+out:
+	for atomic.LoadInt32(&node.disconnect) == 0 {
+		// Read a message and stop the idle timer as soon as the read
+		// is done.  The timer is reset below for the next iteration if
+		// needed.
+		rmsg, err := node.readMessage()
+		idleTimer.Stop()
+		if err != nil {
+			// Only log the error and send reject message if the
+			// local peer is not forcibly disconnecting and the
+			// remote peer has not disconnected.
+			if node.shouldHandleReadError(err) {
+				errMsg := fmt.Sprintf("Can't read message from %s: %v", node, err)
+				if err != io.ErrUnexpectedEOF {
+					log.Errorf(errMsg)
+				}
+
+				// Push a reject message for the malformed message and wait for
+				// the message to be sent before disconnecting.
+				//
+				// NOTE: Ideally this would include the command in the header if
+				// at least that much of the message was valid, but that is not
+				// currently exposed by wire, so just used malformed for the
+				// command.
+				reject := msg.NewReject("malformed", msg.RejectMalformed, errMsg)
+				node.SendMessage(reject)
+			}
+			break out
+		}
+
+		node.handler.HandleMessage(rmsg)
+
+		// A message was received so reset the idle timer.
+		idleTimer.Reset(idleTimeout)
+	}
+
+	// Ensure the idle timer is stopped to avoid leaking the resource.
+	idleTimer.Stop()
+
+	// Ensure connection is closed.
+	node.Disconnect()
+
+	log.Tracef("Peer input handler done for %s", node)
+}
+
+func (node *node) outHandler() {
+out:
+	for {
+		select {
+		case smsg := <-node.sendQueue:
+			err := p2p.WriteMessage(node.conn, node.magic, smsg)
+			if err != nil {
+				node.Disconnect()
+				continue
+			}
+
+		case <-node.quit:
+			break out
+		}
+	}
+
+	// Drain any wait channels before going away so there is nothing left
+	// waiting on this goroutine.
+cleanup:
+	for {
+		select {
+		case <-node.sendQueue:
+		default:
+			break cleanup
+		}
+	}
+	log.Tracef("Peer output handler done for %s", node)
+}
+
+func (node *node) SendMessage(msg p2p.Message) {
+	if atomic.LoadInt32(&node.disconnect) != 0 {
 		return
 	}
-	log.Debugf("-----> Push [%s] to peer [0x%x] STARTED", msg.CMD(), node.ID())
-	node.MsgHelper.Write(msg)
-	log.Debugf("-----> Push [%s] to peer [0x%x] FINISHED", msg.CMD(), node.ID())
+
+	node.sendQueue <- msg
+}
+
+func (node *node) Connected() bool {
+	return atomic.LoadInt32(&node.disconnect) == 0
+}
+
+func (node *node) Disconnect() {
+	if atomic.AddInt32(&node.disconnect, 1) != 1 {
+		return
+	}
+	node.SetState(INACTIVITY)
+
+	log.Tracef("Disconnecting %s", node)
+	node.conn.Close()
+	close(node.quit)
 }
