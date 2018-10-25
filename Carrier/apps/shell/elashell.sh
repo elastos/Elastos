@@ -4,6 +4,7 @@ DATA_DIR=~/.elashell
 
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 SCRIPT_DIRNAME="$(basename "${SCRIPT_PATH}")"
+CONFIG_FILE="$(dirname "${SCRIPT_PATH}")/etc/carrier/elashell.conf"
 
 # Running in installation or dist directory
 LDPATH="$(dirname "${SCRIPT_PATH}")/lib"
@@ -29,4 +30,4 @@ esac
 
 export ${DSO_ENV}=${LDPATH}
 
-cd ${SCRIPT_PATH} && ./elashell $*
+${SCRIPT_PATH}/elashell -c ${CONFIG_FILE} $*
