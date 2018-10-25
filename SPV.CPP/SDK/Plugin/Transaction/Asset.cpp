@@ -77,27 +77,27 @@ namespace Elastos {
 
 		bool Asset::Deserialize(ByteStream &istream) {
 			if (!istream.readVarString(_name)) {
-				Log::getLogger()->error("Asset payload deserialize name fail");
+				Log::error("Asset payload deserialize name fail");
 				return false;
 			}
 
 			if (!istream.readVarString(_description)) {
-				Log::getLogger()->error("Asset payload deserialize description fail");
+				Log::error("Asset payload deserialize description fail");
 				return false;
 			}
 
 			if (!istream.readBytes(&_precision, 1)) {
-				Log::getLogger()->error("Asset payload deserialize precision fail");
+				Log::error("Asset payload deserialize precision fail");
 				return false;
 			}
 
 			if (!istream.readBytes(&_assetType, 1)) {
-				Log::getLogger()->error("Asset payload deserialize asset type fail");
+				Log::error("Asset payload deserialize asset type fail");
 				return false;
 			}
 
 			if (!istream.readBytes(&_recordType, 1)) {
-				Log::getLogger()->error("Asset payload deserialize record type fail");
+				Log::error("Asset payload deserialize record type fail");
 				return false;
 			}
 

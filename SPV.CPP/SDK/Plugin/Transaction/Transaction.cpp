@@ -251,7 +251,7 @@ namespace Elastos {
 
 			ParamChecker::checkCondition(keysCount <= 0, Error::Transaction,
 										 "Transaction sign key not found");
-			SPDLOG_DEBUG(Log::getLogger(), "Transaction transactionSign method begin, key counts = {}.", keysCount);
+			LOG_DEBUG("tx sign with {} keys", keysCount);
 
 			for (i = 0; i < keysCount; i++) {
 				addrs[i] = Address::None;
@@ -400,7 +400,7 @@ namespace Elastos {
 			initPayloadFromType(_type);
 
 			if (_payload == nullptr) {
-				Log::getLogger()->error("new _payload with _type={} when deserialize error", _type);
+				Log::error("new _payload with _type={} when deserialize error", _type);
 				return false;
 			}
 			if (!_payload->Deserialize(istream))
@@ -413,7 +413,7 @@ namespace Elastos {
 			for (size_t i = 0; i < attributeLength; i++) {
 				Attribute attribute;
 				if (!attribute.Deserialize(istream)) {
-					Log::getLogger()->error("deserialize tx attribute[{}] error", i);
+					Log::error("deserialize tx attribute[{}] error", i);
 					return false;
 				}
 				_attributes.push_back(attribute);
@@ -421,14 +421,14 @@ namespace Elastos {
 
 			uint64_t inCount = 0;
 			if (!istream.readVarUint(inCount)) {
-				Log::getLogger()->error("deserialize tx inCount error");
+				Log::error("deserialize tx inCount error");
 				return false;
 			}
 
 			for (size_t i = 0; i < inCount; i++) {
 				TransactionInput input;
 				if (!input.Deserialize(istream)) {
-					Log::getLogger()->error("deserialize tx input [{}] error", i);
+					Log::error("deserialize tx input [{}] error", i);
 					return false;
 				}
 				_inputs.push_back(input);
@@ -436,34 +436,34 @@ namespace Elastos {
 
 			uint64_t outputLength = 0;
 			if (!istream.readVarUint(outputLength)) {
-				Log::getLogger()->error("deserialize tx output len error");
+				Log::error("deserialize tx output len error");
 				return false;
 			}
 
 			for (size_t i = 0; i < outputLength; i++) {
 				TransactionOutput output;
 				if (!output.Deserialize(istream)) {
-					Log::getLogger()->error("deserialize tx output[{}] error", i);
+					Log::error("deserialize tx output[{}] error", i);
 					return false;
 				}
 				_outputs.push_back(output);
 			}
 
 			if (!istream.readUint32(_lockTime)) {
-				Log::getLogger()->error("deserialize tx lock time error");
+				Log::error("deserialize tx lock time error");
 				return false;
 			}
 
 			uint64_t programLength = 0;
 			if (!istream.readVarUint(programLength)) {
-				Log::getLogger()->error("deserialize tx program length error");
+				Log::error("deserialize tx program length error");
 				return false;
 			}
 
 			for (size_t i = 0; i < programLength; i++) {
 				Program program;
 				if (!program.Deserialize(istream)) {
-					Log::getLogger()->error("deserialize program[{}] error", i);
+					Log::error("deserialize program[{}] error", i);
 					return false;
 				}
 				_programs.push_back(program);
@@ -546,7 +546,7 @@ namespace Elastos {
 			initPayloadFromType(_type);
 
 			if (_payload == nullptr) {
-				Log::getLogger()->error("_payload is nullptr when convert from json");
+				Log::error("_payload is nullptr when convert from json");
 			} else {
 				_payload->fromJson(jsonData["PayLoad"]);
 			}

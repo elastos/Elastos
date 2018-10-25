@@ -42,7 +42,7 @@ namespace Elastos {
 			UInt256 result = {0};
 
 			if (s.length() / 2 != sizeof(UInt256)) {
-				Log::getLogger()->error("UInt256 convert from string=\"{}\" error", s);
+				Log::error("UInt256 convert from string=\"{}\" error", s);
 				return result;
 			}
 
@@ -73,7 +73,7 @@ namespace Elastos {
 			UInt168 result = {0};
 
 			if (str.length() / 2 != sizeof(UInt168)) {
-				Log::getLogger()->error("UInt168 convert from string=\"{}\" error", str);
+				Log::error("UInt168 convert from string=\"{}\" error", str);
 				return result;
 			}
 
@@ -98,7 +98,7 @@ namespace Elastos {
 			UInt128 result = {0};
 
 			if (str.length() / 2 != sizeof(UInt128)) {
-				Log::getLogger()->error("UInt128 From String error: str=\"{}\" ", str);
+				Log::error("UInt128 From String error: str=\"{}\" ", str);
 				return result;
 			}
 

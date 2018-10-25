@@ -49,7 +49,7 @@ namespace Elastos {
 			uint32_t j, internalIdx[transaction->getInputs().size()], externalIdx[transaction->getInputs().size()];
 			size_t i, internalCount = 0, externalCount = 0;
 
-			Log::getLogger()->info("SubWallet signTransaction begin get indices.");
+			Log::info("SubWallet signTransaction begin get indices.");
 
 			_lock->Lock();
 			for (i = 0; i < transaction->getInputs().size(); i++) {
@@ -79,16 +79,16 @@ namespace Elastos {
 							   SEQUENCE_EXTERNAL_CHAIN, externalIdx);
 			var_clean(&seed);
 
-			Log::getLogger()->info("SubWallet signTransaction calculate private key list done.");
+			Log::info("SubWallet signTransaction calculate private key list done.");
 			WrapperList<Key, BRKey> keyList;
 			if (transaction) {
-				Log::getLogger()->info("SubWallet signTransaction begin sign method.");
+				Log::info("SubWallet signTransaction begin sign method.");
 				for (i = 0; i < internalCount + externalCount; ++i) {
 					Key key(keys[i].secret, keys[i].compressed);
 					keyList.push_back(key);
 				}
 
-				Log::getLogger()->info("SubWallet signTransaction end sign method.");
+				Log::info("SubWallet signTransaction end sign method.");
 			}
 
 			for (i = 0; i < internalCount + externalCount; i++) BRKeyClean(&keys[i]);

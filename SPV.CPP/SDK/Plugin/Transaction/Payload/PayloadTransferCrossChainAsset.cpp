@@ -73,7 +73,7 @@ namespace Elastos {
 
 		void PayloadTransferCrossChainAsset::Serialize(ByteStream &ostream) const {
 			if (_crossChainAddress.size() != _outputIndex.size() || _outputIndex.size() != _crossChainAmount.size()) {
-				Log::getLogger()->error("Invalid cross chain asset: len(crossChainAddress)={},"
+				Log::error("Invalid cross chain asset: len(crossChainAddress)={},"
 							" len(outputIndex)={}, len(crossChainAddress)={}", _crossChainAddress.size(),
 										_outputIndex.size(), _crossChainAmount.size());
 				return ;

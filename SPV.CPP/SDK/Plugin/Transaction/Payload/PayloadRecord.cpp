@@ -54,12 +54,12 @@ namespace Elastos {
 
 		bool PayloadRecord::Deserialize(ByteStream &istream) {
 			if (!istream.readVarString(_recordType)) {
-				Log::getLogger()->error("Payload record deserialize type fail");
+				Log::error("Payload record deserialize type fail");
 				return false;
 			}
 
 			if (!istream.readVarBytes(_recordData)) {
-				Log::getLogger()->error("Payload record deserialize data fail");
+				Log::error("Payload record deserialize data fail");
 				return false;
 			}
 

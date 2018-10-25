@@ -36,12 +36,12 @@ namespace Elastos {
 
 		bool PayloadIssueToken::Deserialize(ByteStream &istream) {
 			if (!istream.readVarBytes(_merkeProof)) {
-				Log::getLogger()->error("PayloadIssueToken deserialize merke proof error");
+				Log::error("PayloadIssueToken deserialize merke proof error");
 				return false;
 			}
 
 			if (!istream.readVarBytes(_mainChainTransaction)) {
-				Log::getLogger()->error("PayloadIssueToken deserialize main chain transaction error");
+				Log::error("PayloadIssueToken deserialize main chain transaction error");
 				return false;
 			}
 

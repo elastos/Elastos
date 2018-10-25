@@ -58,7 +58,7 @@ namespace Elastos {
 			}
 
 //			if (!isValid()) {
-//				Log::getLogger()->error("invalid attribute usage: {}", (uint8_t)_usage);
+//				Log::error("invalid attribute usage: {}", (uint8_t)_usage);
 //				return false;
 //			}
 

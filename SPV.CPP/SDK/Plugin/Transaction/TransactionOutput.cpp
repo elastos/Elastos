@@ -74,22 +74,22 @@ namespace Elastos {
 
 		bool TransactionOutput::Deserialize(ByteStream &istream) {
 			if (!istream.readBytes(_assetId.u8, sizeof(_assetId))) {
-				Log::getLogger()->error("deserialize output assetid error");
+				Log::error("deserialize output assetid error");
 				return false;
 			}
 
 			if (!istream.readUint64(_amount)) {
-				Log::getLogger()->error("deserialize output _amount error");
+				Log::error("deserialize output _amount error");
 				return false;
 			}
 
 			if (!istream.readUint32(_outputLock)) {
-				Log::getLogger()->error("deserialize output lock error");
+				Log::error("deserialize output lock error");
 				return false;
 			}
 
 			if (!istream.readBytes(_programHash.u8, sizeof(_programHash))) {
-				Log::getLogger()->error("deserialize output program hash error");
+				Log::error("deserialize output program hash error");
 				return false;
 			}
 

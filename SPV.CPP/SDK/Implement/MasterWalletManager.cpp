@@ -9,6 +9,9 @@
 #include <SDK/Plugin/Registry.h>
 #include <SDK/Plugin/Block/SidechainMerkleBlock.h>
 #include <SDK/Plugin/Block/MerkleBlock.h>
+#include <SDK/Common/ByteStream.h>
+#include <SDK/Plugin/ELAPlugin.h>
+#include <SDK/Plugin/IDPlugin.h>
 
 #include "MasterWalletManager.h"
 #include "Log.h"
@@ -187,7 +190,7 @@ namespace Elastos {
 			if (_masterWalletMap.find(masterWalletId) == _masterWalletMap.end())
 				return;
 
-			Log::getLogger()->info("Master wallet manager remove master wallet ({})", masterWalletId);
+			Log::info("Master wallet manager remove master wallet ({})", masterWalletId);
 
 			IMasterWallet *masterWallet = _masterWalletMap[masterWalletId];
 
@@ -195,27 +198,27 @@ namespace Elastos {
 			if (saveMaster) {
 				masterWalletInner->Save();
 
-				Log::getLogger()->info("Destroying sub wallets.");
+				Log::info("Destroying sub wallets.");
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 			} else {
-				Log::getLogger()->info("Destroying sub wallets.");
+				Log::info("Destroying sub wallets.");
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 
-				Log::getLogger()->info("Clearing local.", masterWalletId);
+				Log::info("Clearing local.", masterWalletId);
 				masterWalletInner->ClearLocal();
 			}
 
 
-			Log::getLogger()->info("Removing master wallet from map.");
+			Log::info("Removing master wallet from map.");
 			_masterWalletMap.erase(masterWalletId);
 
-			Log::getLogger()->info("Deleting master wallet.");
+			Log::info("Deleting master wallet.");
 			delete masterWallet;
 		}
 
@@ -340,12 +343,12 @@ namespace Elastos {
 			path rootPath = _rootPath;
 
 			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
-			Log::getLogger()->critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
+			Log::critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 #ifndef BUILD_SHARED_LIBS
-			Log::getLogger()->info("Registering plugin ...");
-			REGISTER_MERKLEBLOCKPLUGIN(MerkleBlock);
-			REGISTER_MERKLEBLOCKPLUGIN(SidechainMerkleBlock);
+			Log::info("Registering plugin ...");
+			REGISTER_MERKLEBLOCKPLUGIN(ELA, getELAPluginComponent);
+			REGISTER_MERKLEBLOCKPLUGIN(SideStandard, getIDPluginComponent);
 #endif
 
 			ParamChecker::checkPathExists(rootPath);
@@ -368,7 +371,7 @@ namespace Elastos {
 			}
 
 			if (_masterWalletMap.size() > 0)
-				Log::getLogger()->info("{} master wallets were loaded from local store", _masterWalletMap.size());
+				Log::info("{} master wallets were loaded from local store", _masterWalletMap.size());
 		}
 
 		std::vector<std::string> MasterWalletManager::GetAllMasterWalletIds() const {
@@ -410,13 +413,13 @@ namespace Elastos {
 						  });
 
 			if (hasRedundant) {
-				Log::getLogger()->info("Destroying sub wallets.");
+				Log::info("Destroying sub wallets.");
 				std::vector<ISubWallet *> subWallets = masterWallet->GetAllSubWallets();
 				for (int i = 0; i < subWallets.size(); ++i) {
 					masterWallet->DestroyWallet(subWallets[i]);
 				}
 
-				Log::getLogger()->info("({}) Clearing local.", masterWallet->GetId());
+				Log::info("({}) Clearing local.", masterWallet->GetId());
 				masterWallet->ClearLocal();
 				delete masterWallet;
 			}

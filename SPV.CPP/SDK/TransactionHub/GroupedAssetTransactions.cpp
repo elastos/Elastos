@@ -778,7 +778,7 @@ namespace Elastos {
 				std::stringstream ess;
 				ess << "Wallet do not contain tx = "
 					<< Utils::UInt256ToString(txArray[0]->getHash());
-				Log::getLogger()->error(ess.str());
+				Log::error(ess.str());
 				throw std::logic_error(ess.str());
 			}
 		}

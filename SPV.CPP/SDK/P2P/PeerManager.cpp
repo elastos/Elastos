@@ -694,7 +694,7 @@ namespace Elastos {
 
 				sortPeers();
 
-				Log::getLogger()->info("peer manager found {} peers\n", _peers.size());
+				Log::info("peer manager found {} peers\n", _peers.size());
 				for (size_t i = 0; i < _peers.size(); i++) {
 					char host[INET6_ADDRSTRLEN] = {0};
 					PeerInfo peer = _peers[i];
@@ -703,7 +703,7 @@ namespace Elastos {
 						inet_ntop(AF_INET, &peer.Address.u32[3], host, sizeof(host));
 					else
 						inet_ntop(AF_INET6, &peer.Address, host, sizeof(host));
-					Log::getLogger()->info("peers[{}] = {}", i, host);
+					Log::info("peers[{}] = {}", i, host);
 				}
 			}
 		}
@@ -740,11 +740,11 @@ namespace Elastos {
 		void PeerManager::asyncConnect(const boost::system::error_code &error) {
 			if (error.value() == 0) {
 				if (getConnectStatus() != Peer::Connected) {
-					Log::getLogger()->info("async connecting...");
+					Log::info("async connecting...");
 					connect();
 				}
 			} else {
-				Log::getLogger()->warn("asyncConnect err: {}", error.message());
+				Log::warn("asyncConnect err: {}", error.message());
 			}
 
 			if (_reconnectTaskCount > 0) {

@@ -42,11 +42,11 @@ static int BRMainNetVerifyDifficulty(const BRMerkleBlock *block, const BRSet *bl
 void TestConnectPeer::transfer(ISubWallet *subWallet, const std::string &payPassword, uint64_t amount,
 							   const std::string &to) {
 	nlohmann::json tx = subWallet->CreateTransaction("", to, amount, "memo", "remark");
-	Log::getLogger()->debug("transfer tx = {}", tx.dump());
+	Log::debug("transfer tx = {}", tx.dump());
 	tx = subWallet->UpdateTransactionFee(tx, 10000);
 	tx = subWallet->SignTransaction(tx, payPassword);
 	nlohmann::json result = subWallet->PublishTransaction(tx);
-	Log::getLogger()->debug("send tx result = {}", result.dump());
+	Log::debug("send tx result = {}", result.dump());
 }
 
 void TestConnectPeer::deposit(ISubWallet *subWallet, uint64_t amount, const std::string &sidechainAddress,
@@ -69,13 +69,13 @@ void TestConnectPeer::deposit(ISubWallet *subWallet, uint64_t amount, const std:
 																	 sidechainIndices, "deposit to side chain",
 																	 "deposit");
 
-	Log::getLogger()->debug("deposit tx = {}", tx.dump());
+	Log::debug("deposit tx = {}", tx.dump());
 
 	tx = subWallet->UpdateTransactionFee(tx, 10000);
 	tx = subWallet->SignTransaction(tx, payPassword);
 	nlohmann::json result = mainchainSubWallet->PublishTransaction(tx);
 
-	Log::getLogger()->debug("send deposit tx result = {}", result.dump());
+	Log::debug("send deposit tx result = {}", result.dump());
 }
 
 void TestConnectPeer::withdraw(ISubWallet *subWallet, uint64_t amount, const std::string &mainchainAddress,
@@ -96,13 +96,13 @@ void TestConnectPeer::withdraw(ISubWallet *subWallet, uint64_t amount, const std
 																	  mainchainAmounts,
 																	  mainchainIndexs, "memo", "remark");
 
-	Log::getLogger()->debug("withdraw tx = {}", tx.dump());
+	Log::debug("withdraw tx = {}", tx.dump());
 
 	tx = subWallet->UpdateTransactionFee(tx, 10000);
 	tx = subWallet->SignTransaction(tx, payPassword);
 	nlohmann::json result = sidechainSubWallet->PublishTransaction(tx);
 
-	Log::getLogger()->debug("withdraw result = {}", result.dump());
+	Log::debug("withdraw result = {}", result.dump());
 }
 
 void TestConnectPeer::registerId(IMasterWallet *imasterWallet, ISubWallet *subWallet, const std::string &payPassword) {
@@ -122,13 +122,13 @@ void TestConnectPeer::registerId(IMasterWallet *imasterWallet, ISubWallet *subWa
 	nlohmann::json tx = idchainSubWallet->CreateIdTransaction("",
 															  payload, program, "memo", "remark");
 
-	Log::getLogger()->debug("register id tx = {}", tx.dump());
+	Log::debug("register id tx = {}", tx.dump());
 
 	tx = subWallet->UpdateTransactionFee(tx, 10000);
 	tx = subWallet->SignTransaction(tx, payPassword);
 	nlohmann::json result = idchainSubWallet->PublishTransaction(tx);
 
-	Log::getLogger()->debug("register id result = {}", result.dump());
+	Log::debug("register id result = {}", result.dump());
 }
 
 IMasterWallet *TestConnectPeer::importWithKeystore(boost::shared_ptr<MasterWalletManager> walletManager,
@@ -202,9 +202,9 @@ void TestConnectPeer::RunPeerConnectTest() {
 
 	while (true) {
 		sidechainWallet->GetAllTransaction(0, 20, "");
-		SPDLOG_DEBUG(Log::getLogger(),"side chain balance = {}", sidechainWallet->GetBalance());
+		Log::debug("side chain balance = {}", sidechainWallet->GetBalance());
 		mainchainWallet->GetAllTransaction(0, 20, "");
-		SPDLOG_DEBUG(Log::getLogger(), "main chain balance = {}", mainchainWallet->GetBalance());
+		Log::debug("main chain balance = {}", mainchainWallet->GetBalance());
 
 #if 0
 		if (!hasDeposit) {

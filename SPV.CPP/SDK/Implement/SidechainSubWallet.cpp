@@ -134,7 +134,7 @@ namespace Elastos {
 		}
 
 		uint64_t SidechainSubWallet::GetBalance(const std::string &assetID) {
-			Log::getLogger()->info("chain = {}, balance = {}", _info.getChainId(),
+			Log::info("chain = {}, balance = {}", _info.getChainId(),
 								   _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID)));
 			return _walletManager->getWallet()->getBalance(Utils::UInt256FromString(assetID));
 		}

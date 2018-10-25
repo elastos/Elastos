@@ -35,7 +35,7 @@ namespace Elastos {
 			}
 			catch (std::exception ex) {
 				result = false;
-				Log::getLogger()->error("Data base error: ", ex.what());
+				Log::error("Data base error: ", ex.what());
 			}
 			catch (...) {
 				result = false;

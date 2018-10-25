@@ -122,12 +122,12 @@ namespace Elastos {
 
 		bool Program::Deserialize(ByteStream &istream) {
 			if (!istream.readVarBytes(_parameter)) {
-				Log::getLogger()->error("Program deserialize parameter fail");
+				Log::error("Program deserialize parameter fail");
 				return false;
 			}
 
 			if (!istream.readVarBytes(_code)) {
-				Log::getLogger()->error("Program deserialize code fail");
+				Log::error("Program deserialize code fail");
 				return false;
 			}
 

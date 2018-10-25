@@ -296,7 +296,7 @@ namespace Elastos {
 										 "Wrong backup password");
 
 			if (keyStore.isOld()) {
-				Log::getLogger()->info("Import from old keystore");
+				Log::info("Import from old keystore");
 				_initFrom = ImportFromOldKeyStore;
 			}
 
@@ -402,7 +402,7 @@ namespace Elastos {
 				fixedInfo.setEaliestPeerTime(timeStamp);
 			}
 
-			Log::getLogger()->info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
+			Log::info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
 								   fixedInfo.getEarliestPeerTime());
 
 			fixedInfo.setGenesisAddress(config.GenesisAddress);
@@ -514,7 +514,7 @@ namespace Elastos {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
 				if (subWallet == nullptr) continue;
-				Log::getLogger()->info("Going to save configuration of subwallet '{}'", subWallet->GetChainId());
+				Log::debug("Going to save configuration of subwallet '{}'", subWallet->GetChainId());
 				coinInfos.push_back(subWallet->getCoinInfo());
 			}
 			_localStore.SetSubWalletInfoList(coinInfos);

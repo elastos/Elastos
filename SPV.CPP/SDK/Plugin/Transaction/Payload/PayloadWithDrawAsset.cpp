@@ -86,7 +86,7 @@ namespace Elastos {
 			_sideChainTransactionHash.resize(len);
 			for (uint64_t i = 0; i < len; ++i) {
 				if (!istream.readBytes(_sideChainTransactionHash[i].u8, sizeof(UInt256))) {
-					Log::getLogger()->error("Payload with draw asset deserialize side chain tx hash[{}] fail", i);
+					Log::error("Payload with draw asset deserialize side chain tx hash[{}] fail", i);
 					return false;
 				}
 			}

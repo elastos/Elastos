@@ -62,19 +62,19 @@ namespace Elastos {
 
 		bool TransactionInput::Deserialize(ByteStream &istream) {
 			if (!istream.readBytes(_txHash.u8, sizeof(_txHash))) {
-				Log::getLogger()->error("deserialize tx's txHash error");
+				Log::error("deserialize tx's txHash error");
 				return false;
 			}
 
 			uint16_t index;
 			if (!istream.readUint16(index)) {
-				Log::getLogger()->error("deserialize tx index error");
+				Log::error("deserialize tx index error");
 				return false;
 			}
 			_index = index;
 
 			if (!istream.readUint32(_sequence)) {
-				Log::getLogger()->error("deserialize tx sequence error");
+				Log::error("deserialize tx sequence error");
 				return false;
 			}
 

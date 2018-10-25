@@ -55,55 +55,55 @@ namespace Elastos {
 
 		bool AuxPow::Deserialize(ByteStream &istream) {
 			if (!deserializeBtcTransaction(istream, _parCoinBaseTx)) {
-				Log::getLogger()->error("deserialize AuxPow btc tx error");
+				Log::error("deserialize AuxPow btc tx error");
 				return false;
 			}
 
 			if (!istream.readBytes(_parentHash.u8, sizeof(UInt256))) {
-				Log::getLogger()->error("deserialize AuxPow parentHash error");
+				Log::error("deserialize AuxPow parentHash error");
 				return false;
 			}
 
 			uint64_t parCoinBaseMerkleCount = 0;
 			if (!istream.readVarUint(parCoinBaseMerkleCount)) {
-				Log::getLogger()->error("deserialize AuxPow parCoinBaseMerkle size error");
+				Log::error("deserialize AuxPow parCoinBaseMerkle size error");
 				return false;
 			}
 
 			_parCoinBaseMerkle.resize(parCoinBaseMerkleCount);
 			for (uint64_t i = 0; i < parCoinBaseMerkleCount; ++i) {
 				if (!istream.readBytes(_parCoinBaseMerkle[i].u8, sizeof(UInt256))) {
-					Log::getLogger()->error("deserialize AuxPow parCoinBaseMerkle[{}] error", i);
+					Log::error("deserialize AuxPow parCoinBaseMerkle[{}] error", i);
 					return false;
 				}
 			}
 
 			if (!istream.readUint32(_parMerkleIndex)) {
-				Log::getLogger()->error("deserialize AuxPow parMerkleIndex error");
+				Log::error("deserialize AuxPow parMerkleIndex error");
 				return false;
 			}
 
 			uint64_t auxMerkleBranchCount = 0;
 			if (!istream.readVarUint(auxMerkleBranchCount)) {
-				Log::getLogger()->error("deserialize AuxPow auxMerkleBranchCount error");
+				Log::error("deserialize AuxPow auxMerkleBranchCount error");
 				return false;
 			}
 
 			_auxMerkleBranch.resize(auxMerkleBranchCount);
 			for (uint64_t i = 0; i < auxMerkleBranchCount; ++i) {
 				if (!istream.readBytes(_auxMerkleBranch[i].u8, sizeof(UInt256))) {
-					Log::getLogger()->error("deserialize AuxPow auxMerkleBranch error");
+					Log::error("deserialize AuxPow auxMerkleBranch error");
 					return false;
 				}
 			}
 
 			if (!istream.readUint32(_auxMerkleIndex)) {
-				Log::getLogger()->error("deserialize AuxPow auxMerkleIndex error");
+				Log::error("deserialize AuxPow auxMerkleIndex error");
 				return false;
 			}
 
 			if (!deserializeBtcBlockHeader(istream, _parBlockHeader)) {
-				Log::getLogger()->error("deserialize AuxPow btc block header error");
+				Log::error("deserialize AuxPow btc block header error");
 				return false;
 			}
 
@@ -128,36 +128,36 @@ namespace Elastos {
 
 		bool AuxPow::deserializeBtcTransaction(ByteStream &istream, BRTransaction *tx) {
 			if (!istream.readUint32(tx->version)) {
-				Log::getLogger()->error("deserialize version error");
+				Log::error("deserialize version error");
 				return false;
 			}
 
 			uint64_t inCount = 0;
 			if (!istream.readVarUint(inCount)) {
-				Log::getLogger()->error("deserialize inCount error");
+				Log::error("deserialize inCount error");
 				return false;
 			}
 			for (uint64_t i = 0; i < inCount; ++i) {
 				if (!deserializeBtcTxIn(istream, tx)) {
-					Log::getLogger()->error("deserialize input[{}] error", i);
+					Log::error("deserialize input[{}] error", i);
 					return false;
 				}
 			}
 
 			uint64_t outCount = 0;
 			if (!istream.readVarUint(outCount)) {
-				Log::getLogger()->error("deserialize outCount error");
+				Log::error("deserialize outCount error");
 				return false;
 			}
 			for (uint64_t i = 0; i < outCount; ++i) {
 				if (!deserializeBtcTxOut(istream, tx)) {
-					Log::getLogger()->error("deserialize output[{}] error", i);
+					Log::error("deserialize output[{}] error", i);
 					return false;
 				}
 			}
 
 			if (!istream.readUint32(tx->lockTime)) {
-				Log::getLogger()->error("deserialize lockTime error");
+				Log::error("deserialize lockTime error");
 				return false;
 			}
 
@@ -174,25 +174,25 @@ namespace Elastos {
 		bool AuxPow::deserializeBtcTxIn(ByteStream &istream, BRTransaction *tx) {
 			UInt256 txHash;
 			if (!istream.readBytes(txHash.u8, sizeof(UInt256))) {
-				Log::getLogger()->error("deserialize txHash error");
+				Log::error("deserialize txHash error");
 				return false;
 			}
 
 			uint32_t index = 0;
 			if (!istream.readUint32(index)) {
-				Log::getLogger()->error("deserialize index error");
+				Log::error("deserialize index error");
 				return false;
 			}
 
 			CMBlock signature;
 			if (!istream.readVarBytes(signature)) {
-				Log::getLogger()->error("deserialize signature error");
+				Log::error("deserialize signature error");
 				return false;
 			}
 
 			uint32_t sequence = 0;
 			if (!istream.readUint32(sequence)) {
-				Log::getLogger()->error("deserialize sequence error");
+				Log::error("deserialize sequence error");
 				return false;
 			}
 
@@ -209,13 +209,13 @@ namespace Elastos {
 		bool AuxPow::deserializeBtcTxOut(ByteStream &istream, BRTransaction *tx) {
 			uint64_t amount = 0;
 			if (!istream.readUint64(amount)) {
-				Log::getLogger()->error("deserialize amount error");
+				Log::error("deserialize amount error");
 				return false;
 			}
 
 			CMBlock script;
 			if (!istream.readVarBytes(script)) {
-				Log::getLogger()->error("deserialize script error");
+				Log::error("deserialize script error");
 				return false;
 			}
 
@@ -234,32 +234,32 @@ namespace Elastos {
 
 		bool AuxPow::deserializeBtcBlockHeader(ByteStream &istream, BRMerkleBlock *b) {
 			if (!istream.readUint32(b->version)) {
-				Log::getLogger()->error("deserialize version error");
+				Log::error("deserialize version error");
 				return false;
 			}
 
 			if (!istream.readBytes(b->prevBlock.u8, sizeof(UInt256))) {
-				Log::getLogger()->error("deserialize prevBlock error");
+				Log::error("deserialize prevBlock error");
 				return false;
 			}
 
 			if (!istream.readBytes(b->merkleRoot.u8, sizeof(UInt256))) {
-				Log::getLogger()->error("deserialize merkleRoot error");
+				Log::error("deserialize merkleRoot error");
 				return false;
 			}
 
 			if (!istream.readUint32(b->timestamp)) {
-				Log::getLogger()->error("deserialize timestamp error");
+				Log::error("deserialize timestamp error");
 				return false;
 			}
 
 			if (!istream.readUint32(b->target)) {
-				Log::getLogger()->error("deserialize target error");
+				Log::error("deserialize target error");
 				return false;
 			}
 
 			if (!istream.readUint32(b->nonce)) {
-				Log::getLogger()->error("deserialize nonce error");
+				Log::error("deserialize nonce error");
 				return false;
 			}
 			return true;

@@ -34,7 +34,7 @@ namespace Elastos {
 			int r = sqlite3_exec(_dataBasePtr, sql.c_str(), callBack, arg, &errmsg);
 			if (r != SQLITE_OK) {
 				if (errmsg) {
-					Log::getLogger()->error("sqlite exec \"{}\" error: {}", sql, errmsg);
+					Log::error("sqlite exec \"{}\" error: {}", sql, errmsg);
 					sqlite3_free(errmsg);
 				}
 				return false;
@@ -55,18 +55,18 @@ namespace Elastos {
 //			std::string typeStr;
 //
 //			if (true != beginTransaction(type)) {
-//				Log::getLogger()->error("sqlite beginTransaction error", typeStr);
+//				Log::error("sqlite beginTransaction error", typeStr);
 //				return false;
 //			}
 //
 //			if (true != exec(sql.c_str(), callBack, arg)) {
-//				Log::getLogger()->error("sqlite exec \"{}\"", sql);
+//				Log::error("sqlite exec \"{}\"", sql);
 //				endTransaction();
 //				return false;
 //			}
 //
 //			if (true != endTransaction()) {
-//				Log::getLogger()->error("sqlite endTransaction error");
+//				Log::error("sqlite endTransaction error");
 //				return false;
 //			}
 //
@@ -169,9 +169,8 @@ namespace Elastos {
 
 			boost::filesystem::path parentPath = path.parent_path();
 			if (!parentPath.empty() && !boost::filesystem::exists(parentPath)) {
-				SPDLOG_TRACE(Log::getLogger(), "directory \"{}\" do not exist", parentPath.string());
 				if (!boost::filesystem::create_directories(parentPath)) {
-					Log::getLogger()->error("create directory \"{}\" error", parentPath.string());
+					Log::error("create directory \"{}\" error", parentPath.string());
 					return false;
 				}
 			}

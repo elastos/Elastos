@@ -31,19 +31,6 @@ namespace Elastos {
 			return Utils::encodeHex(_masterPubKey.getPubKey());
 		}
 
-		void StandardSingleSubAccount::InitWallet(BRTransaction **transactions, size_t txCount, ELAWallet *wallet) {
-			wallet->IsSingleAddress = true;
-
-			size_t len = BRBIP32PubKey(NULL, 0, *_masterPubKey.getRaw(), SEQUENCE_EXTERNAL_CHAIN, 0);
-			CMBlock pubKey(len);
-			BRBIP32PubKey(pubKey, pubKey.GetSize(), *_masterPubKey.getRaw(), SEQUENCE_EXTERNAL_CHAIN, 0);
-			Key key;
-			key.setPubKey(pubKey);
-			wallet->SingleAddress = key.address();
-
-			wallet->Raw.WalletUpdateBalance((BRWallet *) wallet);
-		}
-
 		WrapperList<Key, BRKey> StandardSingleSubAccount::DeriveAccountAvailableKeys(const std::string &payPassword,
 																					 const TransactionPtr &transaction) {
 			WrapperList<Key, BRKey> result;
