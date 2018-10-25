@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
 
 	bc "github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
@@ -24,6 +26,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
@@ -31,6 +34,8 @@ import (
 
 const (
 	defaultMultiCoreNum = 4
+
+	printStateInterval = 10 * time.Second
 
 	restfulTlsPort = 443
 )
@@ -181,6 +186,11 @@ func main() {
 			Server:       server,
 		}).Start()
 	}
+
+	if params.PrintSyncState {
+		go printSyncState(idChainStore.ChainStore, server)
+	}
+
 	select {}
 }
 
@@ -325,4 +335,29 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *service.Ht
 			restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
 		}
 	}()
+}
+
+func printSyncState(db *blockchain.ChainStore, server server.Server) {
+	logger := elalog.NewBackend(logWriter).Logger("STAT",
+		elalog.LevelInfo)
+
+	ticker := time.NewTicker(printStateInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		var buf bytes.Buffer
+		buf.WriteString("-> ")
+		buf.WriteString(strconv.FormatUint(uint64(db.GetHeight()), 10))
+		peers := server.ConnectedPeers()
+		buf.WriteString(" [")
+		for i, p := range peers {
+			buf.WriteString(strconv.FormatUint(uint64(p.ToPeer().Height()), 10))
+			buf.WriteString(p.ToPeer().String())
+			if i != len(peers)-1 {
+				buf.WriteString(", ")
+			}
+		}
+		buf.WriteString("]")
+		logger.Info(buf.String())
+	}
 }

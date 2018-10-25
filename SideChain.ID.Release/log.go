@@ -31,9 +31,9 @@ var (
 		config.Parameters.MaxPerLogSize,
 		config.Parameters.MaxLogsSize,
 	)
-	level   = elalog.Level(config.Parameters.PrintLevel)
-	backend = elalog.NewBackend(io.MultiWriter(os.Stdout, fileWriter),
-		elalog.Llongfile)
+	logWriter = io.MultiWriter(os.Stdout, fileWriter)
+	level     = elalog.Level(config.Parameters.PrintLevel)
+	backend   = elalog.NewBackend(logWriter, elalog.Llongfile)
 
 	admrlog = backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
@@ -43,7 +43,7 @@ var (
 	peerlog = backend.Logger("PEER", level)
 	minrlog = backend.Logger("MINR", level)
 	spvslog = backend.Logger("SPVS", level)
-	srvrlog = backend.Logger("SRVR", elalog.LevelOff)
+	srvrlog = backend.Logger("SRVR", elalog.LevelInfo)
 	httplog = backend.Logger("HTTP", level)
 	rpcslog = backend.Logger("RPCS", level)
 	restlog = backend.Logger("REST", level)
