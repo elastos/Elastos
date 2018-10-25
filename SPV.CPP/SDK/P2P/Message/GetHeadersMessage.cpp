@@ -2,7 +2,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Utils.h>
 #include "GetHeadersMessage.h"
+#include "P2P/Peer.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -12,12 +14,29 @@ namespace Elastos {
 		}
 
 		bool GetHeadersMessage::Accept(const CMBlock &msg) {
-			//fixme [refactor]
+			_peer->Perror("dropping {} message", Type());
 			return false;
 		}
 
 		void GetHeadersMessage::Send(const SendMessageParameter &param) {
-			//fixme [refactor]
+			const GetHeadersParameter &getHeadersParameter = static_cast<const GetHeadersParameter &>(param);
+			size_t locatorsCount = getHeadersParameter.locators.size();
+			ByteStream msg;
+
+			msg.writeUint32(uint32_t(locatorsCount));
+			for (size_t i = 0; i < locatorsCount; ++i) {
+				msg.writeBytes(&getHeadersParameter.locators[i], sizeof(UInt256));
+			}
+			msg.writeBytes(&getHeadersParameter.hashStop, sizeof(UInt256));
+
+			if (locatorsCount > 0) {
+				_peer->Pdebug("calling getheaders with {} locators: [{},{} {}]",
+							  locatorsCount,
+							  Utils::UInt256ToString(getHeadersParameter.locators[0]),
+							  (locatorsCount > 2 ? " ...," : ""),
+							  (locatorsCount > 1 ? Utils::UInt256ToString(getHeadersParameter.locators[locatorsCount - 1]) : ""));
+				SendMessage(msg.getBuffer(), Type());
+			}
 		}
 
 		std::string GetHeadersMessage::Type() const {

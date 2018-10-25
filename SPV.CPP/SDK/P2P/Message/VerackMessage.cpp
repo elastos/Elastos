@@ -16,21 +16,21 @@ namespace Elastos {
 
 		bool VerackMessage::Accept(const CMBlock &msg) {
 			if (_peer->GotVerack()) {
-				_peer->Perror("Got unexcepted verack");
+				_peer->Perror("got unexcepted verack");
 			} else {
 				struct timeval tv;
 				gettimeofday(&tv, nullptr);
 				_peer->SetPingTime(tv.tv_sec + (double)tv.tv_usec / 1000000 - _peer->GetStartTime());
 				_peer->SetStartTime(0);
-				_peer->Pinfo("Got verack in {}", _peer->GetPingTime());
+				_peer->Pinfo("got verack in {}", _peer->GetPingTime());
 				_peer->SetGotVerack(true);
 
 				if (_peer->GetConnectStatus() == Peer::ConnectStatus::Connecting &&
 					_peer->SentVerack() && _peer->GotVerack()) {
-					_peer->Pinfo("Handshake completed");
+					_peer->Pinfo("handshake completed");
 					_peer->SetDisconnectTime(DBL_MAX);
 					_peer->SetConnectStatus(Peer::ConnectStatus::Connected);
-					_peer->Pinfo("Connected with last block height: {}", _peer->GetLastBlock());
+					_peer->Pinfo("connected with last block height: {}", _peer->GetLastBlock());
 					FireConnected();
 				}
 			}

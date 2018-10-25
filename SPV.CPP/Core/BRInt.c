@@ -1,6 +1,7 @@
 // Copyright (c) 2012-2018 The Elastos Open Source Project
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+#include <memory.h>
 #include "BRInt.h"
 
 int UInt128Eq(const UInt128* a, const UInt128* b)
@@ -32,8 +33,7 @@ int UInt256Eq(const UInt256* a, const UInt256* b)
 }
 
 int UInt256LessThan(const UInt256* a, const UInt256* b) {
-	//fixme [refactor] less than
-	return 0;
+	return memcmp(a, b, sizeof(UInt256)) < 0;
 }
 
 int UInt512Eq(const UInt512* a, const UInt512* b)

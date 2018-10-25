@@ -15,6 +15,7 @@ namespace Elastos {
 		}
 
 		bool GetBlocksMessage::Accept(const CMBlock &msg) {
+			_peer->Perror("dropping {} message", Type());
 			return false;
 		}
 

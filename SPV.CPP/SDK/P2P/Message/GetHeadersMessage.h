@@ -14,6 +14,7 @@ namespace Elastos {
 			std::vector<UInt256> locators;
 			UInt256 hashStop;
 
+			GetHeadersParameter() { memset(&hashStop, 0, sizeof(UInt256)); }
 			GetHeadersParameter(const std::vector<UInt256> &locators, const UInt256 &hashStop) :
 					locators(locators), hashStop(hashStop) {}
 		};

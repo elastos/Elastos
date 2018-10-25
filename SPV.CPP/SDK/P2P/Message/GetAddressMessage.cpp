@@ -6,6 +6,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "GetAddressMessage.h"
+#include "P2P/Peer.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -15,12 +16,14 @@ namespace Elastos {
 		}
 
 		bool GetAddressMessage::Accept(const CMBlock &msg) {
-			//fixme [refactor]
-			return false;
+			_peer->Pinfo("got getaddr");
+			_peer->SendMessage(MSG_ADDR, Message::DefaultParam);
+			return true;
 		}
 
 		void GetAddressMessage::Send(const SendMessageParameter &param) {
-			//fixme [refactor]
+			_peer->SetSentGetaddr(true);
+			SendMessage(CMBlock(), Type());
 		}
 
 		std::string GetAddressMessage::Type() const {

@@ -206,7 +206,7 @@ namespace Elastos {
 				}
 
 				if (error) {
-					Perror("ERROR: sending {} message {}", type, FormatError(error));
+					Perror("sending {} message {}", type, FormatError(error));
 					Disconnect();
 				}
 			}
@@ -640,7 +640,7 @@ namespace Elastos {
 
 		void Peer::SendMessage(const std::string &msgType, const SendMessageParameter &parameter) {
 			if (_messages.find(msgType) == _messages.end()) {
-				Pwarn("Sending unknown type message, message type: {}", msgType);
+				Pwarn("sending unknown type message, message type: {}", msgType);
 				return;
 			}
 			_messages[msgType]->Send(parameter);

@@ -14,7 +14,7 @@ namespace Elastos {
 		}
 
 		bool MempoolMessage::Accept(const CMBlock &msg) {
-			_peer->Pinfo("Drop mempool accept message, not implemented.");
+			_peer->Pinfo("drop {} message, not implemented.", Type());
 			return false;
 		}
 

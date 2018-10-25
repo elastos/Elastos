@@ -9,6 +9,7 @@
 #include "SDK/P2P/Peer.h"
 #include "GetBlocksMessage.h"
 #include "SDK/P2P/PeerManager.h"
+#include "GetHeadersMessage.h"
 
 #define BLOCK_MAX_TIME_DRIFT      (2*60*60) // the furthest in the future a block is allowed to be timestamped
 
@@ -57,8 +58,11 @@ namespace Elastos {
 						param.hashStop = UINT256_ZERO;
 						_peer->SendMessage(MSG_GETBLOCKS, param);
 					} else {
-						//fixme [refactor]
-//						BRPeerSendGetheaders(peer, locators, 2, UINT256_ZERO);
+						GetHeadersParameter param;
+						param.locators.push_back(locators[0]);
+						param.locators.push_back(locators[1]);
+						param.hashStop = UINT256_ZERO;
+						_peer->SendMessage(MSG_GETHEADERS, param);
 					}
 
 					for (size_t i = 0; r && i < count; i++) {
@@ -67,7 +71,7 @@ namespace Elastos {
 						ByteStream stream(&msg[off + 81 + i], 81, false);
 
 						if (!block->Deserialize(stream)) {
-							_peer->Perror("Merkle block deserialize");
+							_peer->Perror("merkle block deserialize");
 							return false;
 						}
 
