@@ -5,7 +5,6 @@ import (
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
-	"github.com/elastos/Elastos.ELA/events"
 	"github.com/elastos/Elastos.ELA/log"
 	. "github.com/elastos/Elastos.ELA/protocol"
 
@@ -24,7 +23,7 @@ type syncTimer struct {
 
 func newSyncTimer(onTimeout func()) *syncTimer {
 	return &syncTimer{
-		timeout:   time.Second * SyncBlockTimeout,
+		timeout:   syncBlockTimeout,
 		onTimeout: onTimeout,
 	}
 }
@@ -32,7 +31,7 @@ func newSyncTimer(onTimeout func()) *syncTimer {
 func (t *syncTimer) start() {
 	go func() {
 		t.quit = make(chan struct{}, 1)
-		ticker := time.NewTicker(time.Millisecond * 25)
+		ticker := time.NewTicker(time.Second)
 		defer ticker.Stop()
 		for {
 			select {
@@ -111,49 +110,45 @@ func (node *node) SyncBlocks() {
 					if time.Now().After(t.Add(time.Second * 3)) {
 						log.Infof("request block hash %x ", hash.Bytes())
 						LocalNode.AddRequestedBlock(hash)
-						syncNode.Send(v0.NewGetData(hash))
+						syncNode.SendMessage(v0.NewGetData(hash))
 					}
 				}
 			}
 		}
 	} else {
-		LocalNode.stopSyncing()
+		stopSyncing()
 	}
 }
 
-func (node *node) stopSyncing() {
+func stopSyncing() {
 	// Stop sync timer
 	LocalNode.syncTimer.stop()
 	LocalNode.SetSyncHeaders(false)
 	LocalNode.SetStartHash(EmptyHash)
 	LocalNode.SetStopHash(EmptyHash)
-	syncNode := node.GetSyncNode()
+	syncNode := LocalNode.GetSyncNode()
 	if syncNode != nil {
 		syncNode.SetSyncHeaders(false)
 	}
 }
 
-func (node *node) Heartbeat() {
-	ticker := time.NewTicker(time.Second * HeartbeatDuration)
-	defer ticker.Stop()
-	for range ticker.C {
-		// quit when node disconnected
-		if node.State() == INACTIVITY {
-			goto QUIT
+func (node *node) pingHandler() {
+	pingTicker := time.NewTicker(pingInterval)
+	defer pingTicker.Stop()
+
+out:
+	for {
+		select {
+		case <-pingTicker.C:
+
+			// send ping message to node
+			node.SendMessage(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
+
+		case <-node.quit:
+			break out
 		}
 
-		// quit when node keep alive timeout
-		if time.Now().After(node.lastActive.Add(time.Second * KeepAliveTimeout)) {
-			log.Warn("keepalive timeout!!!")
-			node.SetState(INACTIVITY)
-			node.CloseConn()
-			goto QUIT
-		}
-
-		// send ping message to node
-		node.Send(msg.NewPing(uint64(chain.DefaultLedger.Store.GetHeight())))
 	}
-QUIT:
 }
 
 func (node *node) RequireNeighbourList() {
@@ -162,7 +157,7 @@ func (node *node) RequireNeighbourList() {
 		return
 	}
 
-	node.Send(new(msg.GetAddr))
+	node.SendMessage(&msg.GetAddr{})
 }
 
 func (node *node) ConnectNodes() {
@@ -187,7 +182,7 @@ func (node *node) ConnectNodes() {
 	}
 
 	if total > DefaultMaxPeers {
-		node.Events().Notify(events.EventNodeDisconnect, node.GetANeighbourRandomly().ID())
+		DisconnectNode(node.GetANeighbourRandomly().ID())
 	}
 }
 

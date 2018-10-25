@@ -18,10 +18,6 @@ const (
 	ProtocolVersion    = 0
 	HandshakeTimeout   = 2
 	MinConnectionCount = 3
-	KeepAliveTimeout   = 30
-	DialTimeout        = 6
-	SyncBlockTimeout   = 10
-	HeartbeatDuration  = 6
 	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount   = 8
 	DefaultMaxPeers    = 125
@@ -32,7 +28,7 @@ const (
 	OpenService = 1 << 2
 )
 
-type State uint8
+type State int32
 
 const (
 	INIT State = iota
@@ -60,6 +56,12 @@ func (s State) String() string {
 	return fmt.Sprintf("STATE%d", s)
 }
 
+// Handler is the P2P message handler interface.
+type Handler interface {
+	MakeEmptyMessage(cmd string) (p2p.Message, error)
+	HandleMessage(message p2p.Message)
+}
+
 type Noder interface {
 	Version() uint32
 	ID() uint64
@@ -74,12 +76,12 @@ type Noder interface {
 	SetState(state State)
 	State() State
 	IsRelay() bool
-	Heartbeat()
 	AddNeighborNode(Noder)
 	DelNeighborNode(id uint64) (Noder, bool)
 	Height() uint64
 	GetConn() net.Conn
-	CloseConn()
+	Connected() bool
+	Disconnect()
 	AddToHandshakeQueue(addr string, node Noder)
 	RemoveFromHandshakeQueue(node Noder)
 	GetConnectionCount() (uint, uint)
@@ -90,12 +92,12 @@ type Noder interface {
 	RequireNeighbourList()
 	UpdateInfo(t time.Time, version uint32, services uint64,
 		port uint16, nonce uint64, relay bool, height uint64)
-	UpdateMsgHelper(handler p2p.MsgHandler)
+	UpdateHandler(handler Handler)
 	ConnectNodes()
 	Connect(nodeAddr string) error
 	LoadFilter(filter *msg.FilterLoad)
 	BloomFilter() *bloom.Filter
-	Send(msg p2p.Message)
+	SendMessage(msg p2p.Message)
 	NodeEstablished(uid uint64) bool
 	GetTransaction(hash common.Uint256) *core.Transaction
 	IncRxTxnCnt()
@@ -110,7 +112,6 @@ type Noder interface {
 	MaybeAcceptTransaction(txn *core.Transaction) error
 	RemoveTransaction(txn *core.Transaction)
 
-	UpdateLastActive()
 	SetHeight(height uint64)
 	Relay(Noder, interface{}) error
 	IsSyncHeaders() bool

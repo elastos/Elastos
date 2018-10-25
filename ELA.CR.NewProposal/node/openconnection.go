@@ -45,10 +45,8 @@ func listenNodeOpenPort() {
 		}
 		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
-		node := NewNode(config.Parameters.Magic, conn)
-		node.addr, err = parseIPaddr(conn.RemoteAddr().String())
+		node := NewNode(conn, true)
 		node.external = true
-		node.Read()
 		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
 	}
 }

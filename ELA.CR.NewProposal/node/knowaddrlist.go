@@ -139,7 +139,7 @@ func (al *KnownAddressList) AddKnownAddress(na *p2p.NetAddress) {
 
 	addr := na.String()
 
-	ka := new(KnownAddress)
+	ka := &KnownAddress{}
 	ka.SaveAddr(na)
 	if _, ok := al.List[addr]; ok {
 		al.UpdateAddress(na)
