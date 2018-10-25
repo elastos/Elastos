@@ -1,8 +1,6 @@
 package node
 
 import (
-	"fmt"
-
 	chain "github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/bloom"
 	"github.com/elastos/Elastos.ELA/core"
@@ -15,126 +13,109 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 )
 
+var _ protocol.Handler = (*HandlerEIP001)(nil)
+
 type HandlerEIP001 struct {
-	HandlerBase
+	base         HandlerBase
 	continueHash *common.Uint256
 }
 
 func NewHandlerEIP001(node protocol.Noder) *HandlerEIP001 {
-	return &HandlerEIP001{HandlerBase: HandlerBase{node: node}}
+	return &HandlerEIP001{base: HandlerBase{node: node}}
 }
 
 // After message header decoded, this method will be
 // called to create the message instance with the CMD
 // which is the message type of the received message
-func (h *HandlerEIP001) OnMakeMessage(cmd string) (message p2p.Message, err error) {
-	// Nothing to do if node already disconnected
-	if h.node.State() == protocol.INACTIVITY {
-		return message, fmt.Errorf("revice message from INACTIVE node [0x%x]", h.node.ID())
-	}
+func (h *HandlerEIP001) MakeEmptyMessage(cmd string) (message p2p.Message, err error) {
 	// Filter messages through open port message filter
-	if err = h.FilterMessage(cmd); err != nil {
+	if err = h.base.FilterMessage(cmd); err != nil {
 		return message, err
 	}
-	// Update node last active time
-	h.node.UpdateLastActive()
 
 	switch cmd {
-	case p2p.CmdPing:
-		message = new(msg.Ping)
-	case p2p.CmdPong:
-		message = new(msg.Pong)
 	case p2p.CmdFilterLoad:
-		message = new(msg.FilterLoad)
+		message = &msg.FilterLoad{}
+
 	case p2p.CmdGetBlocks:
-		message = new(msg.GetBlocks)
+		message = &msg.GetBlocks{}
+
 	case p2p.CmdInv:
-		message = new(msg.Inventory)
+		message = &msg.Inventory{}
+
 	case p2p.CmdGetData:
-		message = new(msg.GetData)
+		message = &msg.GetData{}
+
 	case p2p.CmdBlock:
-		message = msg.NewBlock(new(core.Block))
+		message = msg.NewBlock(&core.Block{})
+
 	case p2p.CmdTx:
-		message = msg.NewTx(new(core.Transaction))
+		message = msg.NewTx(&core.Transaction{})
+
 	case p2p.CmdNotFound:
-		message = new(msg.NotFound)
+		message = &msg.NotFound{}
+
 	case p2p.CmdMemPool:
-		message = new(msg.MemPool)
+		message = &msg.MemPool{}
+
 	case p2p.CmdReject:
-		message = new(msg.Reject)
+		message = &msg.Reject{}
+
 	default:
-		message, err = h.HandlerBase.OnMakeMessage(cmd)
+		message, err = h.base.MakeEmptyMessage(cmd)
 	}
 
 	return message, err
 }
 
-// After message has been successful decoded, this method
-// will be called to pass the decoded message instance
-func (h *HandlerEIP001) OnMessageDecoded(message p2p.Message) {
-	log.Debugf("-----> [%s] from peer [0x%x] STARTED", message.CMD(), h.node.ID())
-	if err := h.HandleMessage(message); err != nil {
-		log.Error("Handle message error: " + err.Error())
-	}
-	log.Debugf("-----> [%s] from peer [0x%x] FINISHED", message.CMD(), h.node.ID())
-}
-
-func (h *HandlerEIP001) HandleMessage(message p2p.Message) error {
-	var err error
+func (h *HandlerEIP001) HandleMessage(message p2p.Message) {
 	switch message := message.(type) {
-	case *msg.Ping:
-		err = h.onPing(message)
-	case *msg.Pong:
-		err = h.onPong(message)
 	case *msg.FilterLoad:
-		err = h.onFilterLoad(message)
+		h.onFilterLoad(message)
+
 	case *msg.GetBlocks:
-		err = h.onGetBlocks(message)
+		h.onGetBlocks(message)
+
 	case *msg.Inventory:
-		err = h.onInventory(message)
+		h.onInventory(message)
+
 	case *msg.GetData:
-		err = h.onGetData(message)
+		h.onGetData(message)
+
 	case *msg.Block:
-		err = h.onBlock(message)
+		h.onBlock(message)
+
 	case *msg.Tx:
-		err = h.onTx(message)
+		h.onTx(message)
+
 	case *msg.NotFound:
-		err = h.onNotFound(message)
+		h.onNotFound(message)
+
 	case *msg.MemPool:
-		err = h.onMemPool(message)
+		h.onMemPool(message)
+
 	case *msg.Reject:
-		err = h.onReject(message)
+		h.onReject(message)
+
 	default:
-		h.HandlerBase.OnMessageDecoded(message)
+		h.base.HandleMessage(message)
 	}
-	return err
 }
 
-func (h *HandlerEIP001) onFilterLoad(msg *msg.FilterLoad) error {
-	h.node.LoadFilter(msg)
-	return nil
+func (h *HandlerEIP001) onFilterLoad(msg *msg.FilterLoad) {
+	h.base.node.LoadFilter(msg)
 }
 
-func (h *HandlerEIP001) onPing(ping *msg.Ping) error {
-	h.node.SetHeight(ping.Nonce)
-	h.node.Send(msg.NewPong(uint64(chain.DefaultLedger.Blockchain.BestChain.Height)))
-	return nil
-}
-
-func (h *HandlerEIP001) onPong(pong *msg.Pong) error {
-	h.node.SetHeight(pong.Nonce)
-	return nil
-}
-
-func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) error {
-	node := h.node
+func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) {
+	node := h.base.node
 	LocalNode.AcqSyncBlkReqSem()
 	defer LocalNode.RelSyncBlkReqSem()
 
 	start := chain.DefaultLedger.Blockchain.LatestLocatorHash(req.Locator)
 	hashes, err := GetBlockHashes(*start, req.HashStop, p2p.MaxBlocksPerMsg)
 	if err != nil {
-		return err
+		log.Error(err)
+		return
 	}
 
 	inv := msg.NewInventory()
@@ -148,16 +129,14 @@ func (h *HandlerEIP001) onGetBlocks(req *msg.GetBlocks) error {
 			continueHash := inv.InvList[invListLen-1].Hash
 			h.continueHash = &continueHash
 		}
-		node.Send(inv)
+		node.SendMessage(inv)
 	}
-
-	return nil
 }
 
-func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
-	node := h.node
+func (h *HandlerEIP001) onInventory(inv *msg.Inventory) {
+	node := h.base.node
 	if LocalNode.IsSyncHeaders() && !node.IsSyncHeaders() {
-		return nil
+		return
 	}
 
 	// Attempt to find the final block in the inventory list.
@@ -177,8 +156,10 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 		switch iv.Type {
 		case msg.InvTypeBlock:
 			if node.IsExternal() {
-				return fmt.Errorf("receive InvTypeBlock from external node")
+				log.Debug("receive InvTypeBlock from external node")
+				return
 			}
+
 			haveInv := chain.DefaultLedger.BlockInLedger(hash) ||
 				chain.DefaultLedger.Blockchain.IsKnownOrphan(&hash) || LocalNode.IsRequestedBlock(hash)
 
@@ -215,12 +196,11 @@ func (h *HandlerEIP001) onInventory(inv *msg.Inventory) error {
 		}
 	}
 
-	node.Send(getData)
-	return nil
+	node.SendMessage(getData)
 }
 
-func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
-	node := h.node
+func (h *HandlerEIP001) onGetData(getData *msg.GetData) {
+	node := h.base.node
 	notFound := msg.NewNotFound()
 
 	for _, iv := range getData.InvList {
@@ -234,13 +214,13 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 			}
 			log.Debug("block height is ", block.Header.Height, " ,hash is ", iv.Hash.String())
 
-			node.Send(msg.NewBlock(block))
+			node.SendMessage(msg.NewBlock(block))
 
 			if h.continueHash != nil && h.continueHash.IsEqual(iv.Hash) {
 				best := chain.DefaultLedger.Blockchain.BestChain
 				inv := msg.NewInventory()
 				inv.AddInvVect(msg.NewInvVect(msg.InvTypeBlock, best.Hash))
-				node.Send(inv)
+				node.SendMessage(inv)
 				h.continueHash = nil
 			}
 
@@ -251,11 +231,11 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 				continue
 			}
 
-			node.Send(msg.NewTx(tx))
+			node.SendMessage(msg.NewTx(tx))
 
 		case msg.InvTypeFilteredBlock:
-			if !h.node.BloomFilter().IsLoaded() {
-				return nil
+			if !node.BloomFilter().IsLoaded() {
+				return
 			}
 
 			block, err := chain.DefaultLedger.Store.GetBlock(iv.Hash)
@@ -265,14 +245,14 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 				continue
 			}
 
-			merkle, matchedIndexes := bloom.NewMerkleBlock(block, h.node.BloomFilter())
+			merkle, matchedIndexes := bloom.NewMerkleBlock(block, node.BloomFilter())
 
 			// Send merkleblock
-			node.Send(merkle)
+			node.SendMessage(merkle)
 
 			// Send any matched transactions
 			for _, index := range matchedIndexes {
-				node.Send(msg.NewTx(block.Transactions[index]))
+				node.SendMessage(msg.NewTx(block.Transactions[index]))
 			}
 
 		default:
@@ -282,23 +262,24 @@ func (h *HandlerEIP001) onGetData(getData *msg.GetData) error {
 	}
 
 	if len(notFound.InvList) > 0 {
-		node.Send(notFound)
+		node.SendMessage(notFound)
 	}
-
-	return nil
 }
 
-func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
-	node := h.node
+func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) {
+	node := h.base.node
 	block := msgBlock.Serializable.(*core.Block)
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
-		return fmt.Errorf("receive block message from unknown peer")
+		log.Warn("receive block message from unknown peer")
+		node.Disconnect()
+		return
 	}
 
 	if chain.DefaultLedger.BlockInLedger(hash) {
-		return fmt.Errorf("receive duplicated block %s", hash.String())
+		log.Debugf("receive duplicated block %s", hash.String())
+		return
 	}
 
 	// Update sync timer
@@ -311,8 +292,9 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 		reject := msg.NewReject(msgBlock.CMD(), msg.RejectInvalid, err.Error())
 		reject.Hash = block.Hash()
 
-		node.Send(reject)
-		return fmt.Errorf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
+		node.SendMessage(reject)
+		log.Warnf("Block add failed: %s ,block hash %s ", err.Error(), hash.String())
+		return
 	}
 
 	if isOrphan {
@@ -325,75 +307,74 @@ func (h *HandlerEIP001) onBlock(msgBlock *msg.Block) error {
 		LocalNode.Relay(node, block)
 		log.Debug("Relay block")
 	}
-
-	return nil
 }
 
-func (h *HandlerEIP001) onTx(msgTx *msg.Tx) error {
-	node := h.node
+func (h *HandlerEIP001) onTx(msgTx *msg.Tx) {
+	node := h.base.node
 	tx := msgTx.Serializable.(*core.Transaction)
 
 	if !LocalNode.IsNeighborNode(node.ID()) {
-		return fmt.Errorf("received transaction message from unknown peer")
+		log.Warn("received transaction message from unknown peer")
+		node.Disconnect()
+		return
 	}
 
 	if LocalNode.IsSyncHeaders() {
-		return nil
+		return
 	}
 
 	if LocalNode.ExistedID(tx.Hash()) {
 		reject := msg.NewReject(msgTx.CMD(), msg.RejectDuplicate, "duplicate transaction")
 		reject.Hash = tx.Hash()
-		node.Send(reject)
-		return fmt.Errorf("[HandlerEIP001] Transaction already exsisted")
+		node.SendMessage(reject)
+		log.Debug("[HandlerEIP001] Transaction already exsisted")
+		return
 	}
 
 	if errCode := LocalNode.AppendToTxnPool(tx); errCode != errors.Success {
 		reject := msg.NewReject(msgTx.CMD(), msg.RejectInvalid, errCode.Message())
 		reject.Hash = tx.Hash()
-		node.Send(reject)
-		return fmt.Errorf("[HandlerEIP001] VerifyTransaction failed when AppendToTxnPool")
+		node.SendMessage(reject)
+		log.Debug("[HandlerEIP001] VerifyTransaction failed when AppendToTxnPool")
+		return
 	}
 
 	LocalNode.Relay(node, tx)
 	log.Infof("Relay Transaction type %s hash %s", tx.TxType.Name(), tx.Hash().String())
 	LocalNode.IncRxTxnCnt()
-
-	return nil
 }
 
-func (h *HandlerEIP001) onNotFound(inv *msg.NotFound) error {
+func (h *HandlerEIP001) onNotFound(inv *msg.NotFound) {
 	for _, iv := range inv.InvList {
 		log.Warnf("data not found type: %s hash: %s", iv.Type.String(), iv.Hash.String())
 	}
-	return nil
 }
 
-func (h *HandlerEIP001) onMemPool(*msg.MemPool) error {
+func (h *HandlerEIP001) onMemPool(*msg.MemPool) {
+	node := h.base.node
 	// Only allow mempool requests if server enabled SPV service
 	if LocalNode.Services()&protocol.OpenService != protocol.OpenService {
-		h.node.CloseConn()
-		return fmt.Errorf("peer %d sent mempool request with SPV service disabled", h.node.ID())
+		log.Debugf("peer %s sent mempool request with SPV service disabled", node)
+		node.Disconnect()
+		return
 	}
 
 	txMemPool := LocalNode.GetTransactionPool(false)
 	inv := msg.NewInventory()
 
 	for _, tx := range txMemPool {
-		if !h.node.BloomFilter().IsLoaded() || h.node.BloomFilter().MatchTxAndUpdate(tx) {
+		if !node.BloomFilter().IsLoaded() || node.BloomFilter().MatchTxAndUpdate(tx) {
 			txId := tx.Hash()
 			inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
 		}
 	}
 
 	if len(inv.InvList) > 0 {
-		h.node.Send(inv)
+		node.SendMessage(inv)
 	}
-
-	return nil
 }
 
-func (h *HandlerEIP001) onReject(msg *msg.Reject) error {
-	return fmt.Errorf("Received reject message from peer %d: Code: %s, Hash %s, Reason: %s",
-		h.node.ID(), msg.Code.String(), msg.Hash.String(), msg.Reason)
+func (h *HandlerEIP001) onReject(msg *msg.Reject) {
+	log.Debugf("Received reject message from peer %s: Code: %s, Hash %s, Reason: %s",
+		h.base.node, msg.Code.String(), msg.Hash.String(), msg.Reason)
 }
