@@ -98,7 +98,7 @@ namespace Elastos {
 		}
 
 		const WalletPtr &SpvService::getWallet() {
-			if (_wallet == nullptr) {
+			if (_wallet != nullptr) {
 				UpdateAssets();
 			}
 			return CoreSpvService::getWallet();
@@ -299,6 +299,7 @@ namespace Elastos {
 			_peerManager->Unlock();
 
 			if (_peerManager->getConnectStatus() == Peer::Connected) {
+				_peerManager->SetReconnectTaskCount(_peerManager->ReconnectTaskCount() + 1);
 				_peerManager->disconnect();
 			}
 
@@ -394,6 +395,9 @@ namespace Elastos {
 			Log::info("reconnect {}s later...", time);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
 					_reconnectService, boost::posix_time::seconds(time)));
+			if (0 == _peerManager->GetPeers().size()) {
+				_peerManager->SetPeers(loadPeers());
+			}
 			_reconnectTimer->async_wait(
 					boost::bind(&PeerManager::asyncConnect, _peerManager.get(), boost::asio::placeholders::error));
 			_reconnectService.restart();

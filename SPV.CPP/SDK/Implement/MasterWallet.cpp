@@ -409,8 +409,9 @@ namespace Elastos {
 			fixedInfo.setGenesisAddress(config.GenesisAddress);
 			MasterPubKeyMap subWalletsMasterPubKeyMap = _localStore.GetMasterPubKeyMap();
 			const MasterPubKeyPtr masterPubKey =
-				subWalletsMasterPubKeyMap.find(fixedInfo.getChainId()) != subWalletsMasterPubKeyMap.end()
-					? subWalletsMasterPubKeyMap[fixedInfo.getChainId()] : nullptr;
+				subWalletsMasterPubKeyMap.find(fixedInfo.getChainId()) != subWalletsMasterPubKeyMap.end() ?
+				subWalletsMasterPubKeyMap[fixedInfo.getChainId()] : nullptr;
+
 			switch (fixedInfo.getWalletType()) {
 				case Mainchain:
 					return new MainchainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);

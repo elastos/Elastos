@@ -206,6 +206,10 @@ namespace Elastos {
 			}
 		}
 
+		void Transaction::addInput(const TransactionInput &input) {
+			_inputs.push_back(input);
+		}
+
 		size_t Transaction::getSize() {
 			size_t size;
 			size = 8 + BRVarIntSize(_inputs.size()) + BRVarIntSize(_outputs.size());

@@ -14,6 +14,7 @@
 #include "Wrapper.h"
 #include "Key.h"
 #include "CMemBlock.h"
+#include "ByteStream.h"
 
 namespace Elastos {
 	namespace ElaWallet {

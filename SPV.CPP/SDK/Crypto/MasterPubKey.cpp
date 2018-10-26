@@ -4,6 +4,7 @@
 
 #include <cstring>
 #include <Core/BRBIP32Sequence.h>
+#include <SDK/Common/ByteStream.h>
 #include <SDK/Common/Log.h>
 
 #include "BRBIP39Mnemonic.h"
@@ -44,17 +45,17 @@ namespace Elastos {
 
 		bool MasterPubKey::Deserialize(ByteStream &stream) {
 			if (!stream.readUint32(_masterPubKey->fingerPrint)) {
-				Log::getLogger()->error("Master public key deserialize finger print fail");
+				Log::error("MasterPubKey deserialize fingerPrint fail");
 				return false;
 			}
 
 			if (!stream.readBytes(&_masterPubKey->chainCode, sizeof(_masterPubKey->chainCode))) {
-				Log::getLogger()->error("Master public key deserialize chain code fail");
+				Log::error("MasterPubKey deserialize chainCode fail");
 				return false;
 			}
 
 			if (!stream.readBytes(_masterPubKey->pubKey, sizeof(_masterPubKey->pubKey))) {
-				Log::getLogger()->error("Master public key deserialize pubkey fail");
+				Log::error("MasterPubKey deserialize pubkey fail");
 				return false;
 			}
 

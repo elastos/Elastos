@@ -91,6 +91,8 @@ namespace Elastos {
 		public:
 			Peer(PeerManager *manager, uint32_t magicNumber);
 
+			void initDefaultMessages();
+
 			~Peer();
 
 			void RegisterListner(Listener *listener);
@@ -326,7 +328,6 @@ namespace Elastos {
 			}
 
 		private:
-			void initDefaultMessages();
 
 			void initSingleMessage(Message *message);
 

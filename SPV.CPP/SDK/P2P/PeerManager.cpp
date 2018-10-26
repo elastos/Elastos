@@ -31,7 +31,7 @@
 #define PEER_FLAG_SYNCED      0x01
 #define PEER_FLAG_NEEDSUPDATE 0x02
 
-#define DEFAULT_FEE_PER_KB ((5000ULL*1000 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
+#define DEFAULT_FEE_PER_KB ((1000ULL*1000 + 99)/100) // bitcoind 0.11 min relay fee on 100bytes
 #define MIN_FEE_PER_KB     ((TX_FEE_PER_KB*1000 + 190)/191) // minimum relay fee on a 191byte tx
 #define MAX_FEE_PER_KB     ((1000100ULL*1000 + 190)/191) // slightly higher than a 10000bit fee on a 191byte tx
 
@@ -236,6 +236,7 @@ namespace Elastos {
 
 					if (i != SIZE_MAX) {
 						PeerPtr newPeer = PeerPtr(new Peer(this, _chainParams.getRaw()->magicNumber));
+						newPeer->initDefaultMessages();
 						newPeer->SetPeerInfo(peers[i]);
 						newPeer->setEarliestKeyTime(_earliestKeyTime);
 						peers.erase(peers.begin() + i);
@@ -345,6 +346,14 @@ namespace Elastos {
 				timestamp = _lastBlock->getTimestamp();
 			}
 			return timestamp;
+		}
+
+		time_t PeerManager::getKeepAliveTimestamp() const {
+			return _keepAliveTimestamp;
+		}
+
+		void PeerManager::SetKeepAliveTimestamp(time_t t) {
+			_keepAliveTimestamp = t;
 		}
 
 		double PeerManager::getSyncProgress(uint32_t startHeight) {
@@ -688,8 +697,9 @@ namespace Elastos {
 				ts.tv_nsec = 1;
 
 				do {
-					boost::mutex::scoped_lock scopedLock(lock);
+					Lock();
 					nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
+					Unlock();
 				} while (_dnsThreadCount > 0 && _peers.size() < PEER_MAX_CONNECTIONS);
 
 				sortPeers();
@@ -903,6 +913,10 @@ namespace Elastos {
 					_connectedPeers.erase(_connectedPeers.begin() + i - 1);
 					break;
 				}
+
+				if (_reconnectTaskCount == 0 && (!_isConnected || _connectedPeers.empty())) {
+					willReconnect = 1;
+				}
 			}
 
 			for (size_t i = 0; i < pubTx.size(); i++) {
@@ -911,7 +925,7 @@ namespace Elastos {
 
 			if (willSave) fireSavePeers(true, {});
 			if (willSave) fireSyncStopped(error);
-			if (willReconnect && _connectedPeers.empty()) {
+			if (willReconnect) {
 				peer->Pinfo("willReconnect...");
 				connect();
 			}
@@ -927,6 +941,23 @@ namespace Elastos {
 
 				_peers.insert(_peers.end(), peers.begin(), peers.end());
 				sortPeers();
+
+				std::vector<PeerInfo> uniquePeers;
+				bool found;
+				for (size_t i = 0; i < _peers.size(); ++i) {
+					found = false;
+					for (size_t ui = 0; ui < uniquePeers.size(); ++ui) {
+						if (UInt128Eq(&_peers[i].Address, &uniquePeers[ui].Address)) {
+							found = true;
+							break;
+						}
+					}
+
+					if (!found) {
+						uniquePeers.push_back(_peers[i]);
+					}
+				}
+				_peers = uniquePeers;
 
 				// limit total to 2500 peers
 				if (_peers.size() > 2500) _peers.resize(2500);
@@ -1432,12 +1463,13 @@ namespace Elastos {
 			return _publishedTxHashes;
 		}
 
-		int PeerManager::reconnectTaskCount() const {
+		int PeerManager::ReconnectTaskCount() const {
 			return _reconnectTaskCount;
 		}
 
-		int &PeerManager::reconnectTaskCount() {
-			return _reconnectTaskCount;
+		void PeerManager::SetReconnectTaskCount(int count) {
+			boost::mutex::scoped_lock scopedLock(lock);
+			_reconnectTaskCount;
 		}
 
 		size_t
@@ -1491,6 +1523,14 @@ namespace Elastos {
 
 		const PluginType &PeerManager::GetPluginType() const {
 			return _pluginType;
+		}
+
+		const std::vector<PeerInfo> &PeerManager::GetPeers() const {
+			return _peers;
+		}
+
+		void PeerManager::SetPeers(const std::vector<PeerInfo> &peers) {
+			_peers = peers;
 		}
 
 		void PeerManager::updateBloomFilter() {
@@ -1554,11 +1594,14 @@ namespace Elastos {
 		}
 
 		std::vector<UInt128> PeerManager::addressLookup(const std::string &hostname) {
-			struct addrinfo *servinfo, *p;
+			struct addrinfo hints, *servinfo, *p;
 			std::vector<UInt128> addrList;
 			size_t count = 0, i = 0;
 
-			if (getaddrinfo(hostname.c_str(), NULL, NULL, &servinfo) == 0) {
+			memset(&hints, 0, sizeof(hints));
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_family = PF_UNSPEC;
+			if (getaddrinfo(hostname.c_str(), NULL, &hints, &servinfo) == 0) {
 				for (p = servinfo; p != NULL; p = p->ai_next) count++;
 
 				for (p = servinfo; p != NULL; p = p->ai_next) {

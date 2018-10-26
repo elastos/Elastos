@@ -50,7 +50,7 @@ namespace Elastos {
 				_manager(manager),
 				_socket(-1) {
 
-			initDefaultMessages();
+//			initDefaultMessages();
 			RegisterListner(_manager);
 		}
 

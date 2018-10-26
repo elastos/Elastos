@@ -113,18 +113,21 @@ namespace Elastos {
 			size_t i, internalCount = 0, externalCount = 0;
 
 			_lock->Lock();
-			internalCount = internalChain.size() < addrsCount ? internalChain.size() : addrsCount;
+
+			externalCount = externalChain.size() < addrsCount?
+							externalChain.size() : addrsCount;
+
+			for (i = 0; i < externalCount; i++) {
+				result.push_back(externalChain[i]);
+			}
+
+			internalCount = internalChain.size() < addrsCount - externalCount ?
+							internalChain.size() : addrsCount - externalCount;
 
 			for (i = 0; i < internalCount; i++) {
 				result.push_back(internalChain[i]);
 			}
 
-			externalCount = externalChain.size() < addrsCount - internalCount
-							? externalChain.size() : addrsCount - internalCount;
-
-			for (i = 0; i < externalCount; i++) {
-				result.push_back(externalChain[i]);
-			}
 			_lock->Unlock();
 
 			return result;

@@ -7,6 +7,7 @@
 
 #include "GetAddressMessage.h"
 #include "P2P/Peer.h"
+#include "P2P/PeerManager.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -23,6 +24,7 @@ namespace Elastos {
 
 		void GetAddressMessage::Send(const SendMessageParameter &param) {
 			_peer->SetSentGetaddr(true);
+			_peer->getPeerManager()->SetKeepAliveTimestamp(time(nullptr));
 			SendMessage(CMBlock(), Type());
 		}
 

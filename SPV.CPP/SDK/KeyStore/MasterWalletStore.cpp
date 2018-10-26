@@ -3,7 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <fstream>
-#include <SDK/Wrapper/ByteStream.h>
+#include <SDK/Common/ByteStream.h>
 
 #include "MasterWalletStore.h"
 #include "ParamChecker.h"
@@ -115,7 +115,7 @@ namespace Elastos {
 			for (nlohmann::json::iterator it = masterPubKeyJson.begin(); it != masterPubKeyJson.end(); ++it) {
 				CMBlock value = Utils::decodeHex(it.value());
 				MasterPubKeyPtr masterPubKey = MasterPubKeyPtr(new MasterPubKey());
-				ByteStream stream(value, value.GetSize(), false);
+				ByteStream stream(value);
 				masterPubKey->Deserialize(stream);
 				masterPubKeyMap[it.key()] = masterPubKey;
 			}

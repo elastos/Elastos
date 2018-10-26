@@ -30,31 +30,26 @@ namespace Elastos {
 				_peer->Pinfo("got ping");
 				_peer->SendMessage(msg, MSG_PONG);
 
-				if (_peer->SentVerack() && _peer->GotVerack() && _peer->SentFilter() && _peer->SentMempool()) {
+				if (_peer->SentGetaddr() && time_after(time(nullptr), manager->getKeepAliveTimestamp() + 30)) {
 					PeerManager *manager = _peer->getPeerManager();
-					int haveTxPending = 0;
+					bool haveTxPending = false, needRelayPing = false;
 
 					manager->Lock();
 					for (size_t i = manager->getPublishedTransaction().size(); i > 0; i--) {
 						if (manager->getPublishedTransaction()[i - 1].HasCallback()) {
-							_peer->Pinfo("publish pending tx hash = {}",
+							_peer->Pinfo("publish pending tx hash = {}, do not disconnect",
 										 Utils::UInt256ToString(manager->getPublishedTransactionHashes()[i - 1]));
-							haveTxPending++;
+							haveTxPending = true;
 						}
+					}
+
+					if (manager->GetLastBlockHeight() >= *(uint64_t *)(uint8_t *)msg && !haveTxPending) {
+						needRelayPing = true;
 					}
 					manager->Unlock();
 
-					if (manager->GetLastBlockHeight() >= *(uint64_t *)(uint8_t *)msg && !haveTxPending) {
-						manager->Lock();
-						if (manager->reconnectTaskCount() == 0) {
-							manager->reconnectTaskCount()++;
-							manager->Unlock();
-
-							FireRelayedPingMsg();
-						} else {
-							manager->Unlock();
-						}
-					}
+					if (needRelayPing)
+						FireRelayedPingMsg();
 				}
 			}
 
