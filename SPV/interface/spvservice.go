@@ -137,6 +137,25 @@ func (s *spvservice) SendTransaction(tx core.Transaction) error {
 	return s.IService.SendTransaction(&tx)
 }
 
+func (s *spvservice) GetTransaction(txId *common.Uint256) (*core.Transaction, error) {
+	utx, err := s.db.Txs().Get(txId)
+	if err != nil {
+		return nil, err
+	}
+
+	var tx core.Transaction
+	err = tx.Deserialize(bytes.NewReader(utx.RawData))
+	if err != nil {
+		return nil, err
+	}
+
+	return &tx, nil
+}
+
+func (s *spvservice) GetTransactionIds(height uint32) ([]*common.Uint256, error) {
+	return s.db.Txs().GetIds(height)
+}
+
 func (s *spvservice) HeaderStore() database.Headers {
 	return s.headers
 }

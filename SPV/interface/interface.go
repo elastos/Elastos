@@ -60,6 +60,12 @@ type SPVService interface {
 	// Send a transaction to the P2P network
 	SendTransaction(core.Transaction) error
 
+	// GetTransaction query a transaction by it's hash.
+	GetTransaction(txId *common.Uint256) (*core.Transaction, error)
+
+	// GetTransactionIds query all transaction hashes on the given block height.
+	GetTransactionIds(height uint32) ([]*common.Uint256, error)
+
 	// Get headers database
 	HeaderStore() database.Headers
 
