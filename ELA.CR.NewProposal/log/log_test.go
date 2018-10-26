@@ -22,8 +22,6 @@ out:
 		case <-run:
 			logger.Info("Print info log")
 			logger.Infof("Print info log formatted")
-			logger.Trace("Print trace log")
-			logger.Tracef("Print trace log formatted")
 			logger.Warn("Print warn log")
 			logger.Warnf("Print warn log formatted")
 			logger.Error("Print error log")

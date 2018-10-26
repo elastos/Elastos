@@ -190,13 +190,13 @@ func (h *HandlerV0) onBlock(msgBlock *msg.Block) error {
 
 	hash := block.Hash()
 	if !LocalNode.IsNeighborNode(node.ID()) {
-		log.Trace("received block message from unknown peer")
+		log.Debug("received block message from unknown peer")
 		return fmt.Errorf("received block message from unknown peer")
 	}
 
 	if chain.DefaultLedger.BlockInLedger(hash) {
 		h.duplicateBlocks++
-		log.Trace("Receive ", h.duplicateBlocks, " duplicated block.")
+		log.Debug("Receive ", h.duplicateBlocks, " duplicated block.")
 		return fmt.Errorf("received duplicated block")
 	}
 

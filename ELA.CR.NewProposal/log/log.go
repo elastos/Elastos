@@ -9,18 +9,16 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
-	"strings"
 
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 )
 
 const (
-	Blue   = "1;34"
 	Red    = "1;31"
 	Green  = "1;32"
 	Yellow = "1;33"
-	Cyan   = "1;36"
 	Pink   = "1;35"
+	Cyan   = "1;36"
 )
 
 func Color(code, msg string) string {
@@ -28,8 +26,7 @@ func Color(code, msg string) string {
 }
 
 const (
-	traceLog uint8 = iota
-	debugLog
+	debugLog uint8 = iota
 	infoLog
 	warnLog
 	errorLog
@@ -38,13 +35,13 @@ const (
 )
 
 var (
-	levels = map[uint8]string{
-		debugLog: Color(Green, "[DBG]"),
-		infoLog:  Color(Pink, "[INF]"),
-		warnLog:  Color(Yellow, "[WRN]"),
-		errorLog: Color(Red, "[ERR]"),
-		fatalLog: Color(Red, "[FAT]"),
-		traceLog: Color(Blue, "[TRC]"),
+	levels = []string{
+		debugLog:   Color(Green, "[DBG]"),
+		infoLog:    Color(Pink, "[INF]"),
+		warnLog:    Color(Yellow, "[WRN]"),
+		errorLog:   Color(Red, "[ERR]"),
+		fatalLog:   Color(Red, "[FAT]"),
+		disableLog: "DISABLED",
 	}
 	Stdout = os.Stdout
 )
@@ -70,11 +67,11 @@ func GetGID() uint64 {
 
 var logger *Logger
 
-func LevelName(level uint8) string {
-	if name, ok := levels[level]; ok {
-		return name
+func levelName(level uint8) string {
+	if int(level) >= len(levels) {
+		return fmt.Sprintf("LEVEL%d", level)
 	}
-	return fmt.Sprintf("LEVEL%d", level)
+	return levels[int(level)]
 }
 
 type Logger struct {
@@ -113,68 +110,16 @@ func (l *Logger) SetPrintLevel(level uint8) {
 func (l *Logger) Output(level uint8, a ...interface{}) {
 	if l.level <= level {
 		gidStr := strconv.FormatUint(GetGID(), 10)
-		a = append([]interface{}{LevelName(level), "GID", gidStr + ","}, a...)
+		a = append([]interface{}{levelName(level), "GID", gidStr + ","}, a...)
 		l.logger.Output(calldepth, fmt.Sprintln(a...))
 	}
 }
 
 func (l *Logger) Outputf(level uint8, format string, v ...interface{}) {
 	if l.level <= level {
-		v = append([]interface{}{LevelName(level), "GID", GetGID()}, v...)
+		v = append([]interface{}{levelName(level), "GID", GetGID()}, v...)
 		l.logger.Output(calldepth, fmt.Sprintf("%s %s %d, "+format+"\n", v...))
 	}
-}
-
-func (l *Logger) Trace(a ...interface{}) {
-	if l.level > traceLog {
-		return
-	}
-
-	pc, file, line, ok := runtime.Caller(calldepth)
-	if !ok {
-		return
-	}
-
-	short := file
-	for i := len(file) - 1; i > 0; i-- {
-		if os.IsPathSeparator(file[i]) {
-			short = file[i+1:]
-			break
-		}
-	}
-	file = short
-
-	fn := runtime.FuncForPC(pc)
-	funcName := strings.TrimPrefix(filepath.Ext(fn.Name()), ".")
-	a = append([]interface{}{funcName + "()", filepath.Base(file) + ":" + strconv.Itoa(line)}, a...)
-
-	l.Output(traceLog, a...)
-}
-
-func (l *Logger) Tracef(format string, a ...interface{}) {
-	if l.level > traceLog {
-		return
-	}
-
-	pc, file, line, ok := runtime.Caller(calldepth)
-	if !ok {
-		return
-	}
-
-	short := file
-	for i := len(file) - 1; i > 0; i-- {
-		if os.IsPathSeparator(file[i]) {
-			short = file[i+1:]
-			break
-		}
-	}
-	file = short
-
-	fn := runtime.FuncForPC(pc)
-	funcName := strings.TrimPrefix(filepath.Ext(fn.Name()), ".")
-	a = append([]interface{}{funcName, filepath.Base(file), line}, a...)
-
-	l.Outputf(traceLog, format, a...)
 }
 
 func (l *Logger) Debug(a ...interface{}) {
@@ -241,14 +186,6 @@ func (l *Logger) Fatal(a ...interface{}) {
 
 func (l *Logger) Fatalf(format string, a ...interface{}) {
 	l.Outputf(fatalLog, format, a...)
-}
-
-func Trace(a ...interface{}) {
-	logger.Trace(a...)
-}
-
-func Tracef(format string, a ...interface{}) {
-	logger.Tracef("%s() %s:%d "+format, a...)
 }
 
 func Debug(a ...interface{}) {
