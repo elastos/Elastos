@@ -107,7 +107,7 @@ func (node *node) SyncBlocks() {
 				SendGetBlocks(syncNode, locator, EmptyHash)
 			} else {
 				for hash, t := range requests {
-					if time.Now().After(t.Add(time.Second * 3)) {
+					if time.Now().After(t.Add(syncBlockTimeout)) {
 						log.Infof("request block hash %x ", hash.Bytes())
 						LocalNode.AddRequestedBlock(hash)
 						syncNode.SendMessage(v0.NewGetData(hash))
@@ -147,7 +147,6 @@ out:
 		case <-node.quit:
 			break out
 		}
-
 	}
 }
 
