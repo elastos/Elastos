@@ -87,10 +87,9 @@ func listenNodePort() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Error("Error accepting", err)
-			return
+			log.Errorf("Can't accept connection: %v", err)
+			continue
 		}
-		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		node := NewNode(conn, true)
 		LocalNode.AddToHandshakeQueue(conn.RemoteAddr().String(), node)
@@ -189,12 +188,8 @@ func (node *node) Connect(addr string) error {
 			return err
 		}
 	}
+
 	n := NewNode(conn, false)
-
-	log.Infof("Local node %s connect with %s with %s",
-		conn.LocalAddr().String(), conn.RemoteAddr().String(),
-		conn.RemoteAddr().Network())
-
 	n.SetState(HAND)
 	n.SendMessage(NewVersion(node))
 
