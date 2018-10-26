@@ -40,10 +40,9 @@ func listenNodeOpenPort() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Error("Error accepting ", err.Error())
-			return
+			log.Errorf("Can't accept connection: %v", err)
+			continue
 		}
-		log.Infof("Remote node %v connect with %v", conn.RemoteAddr(), conn.LocalAddr())
 
 		node := NewNode(conn, true)
 		node.external = true

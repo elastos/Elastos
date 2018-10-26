@@ -108,6 +108,9 @@ func (cn *ConnectingNodes) del(addr string) {
 }
 
 func NewNode(conn net.Conn, inbound bool) *node {
+	log.Debugf("new connection %s <-> %s with %s",
+		conn.LocalAddr(), conn.RemoteAddr(), conn.RemoteAddr().Network())
+
 	addr := conn.RemoteAddr().String()
 	ip := addr
 	if i := strings.LastIndex(addr, ":"); i > 0 {
