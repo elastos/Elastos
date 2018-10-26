@@ -273,12 +273,12 @@ func (node *node) WaitForSyncFinish() {
 		return
 	}
 	for {
-		log.Trace("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
+		log.Debug("BlockHeight is ", chain.DefaultLedger.Blockchain.BlockHeight)
 		bc := chain.DefaultLedger.Blockchain
 		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 
 		heights := node.GetNeighborHeights()
-		log.Trace("others height is ", heights)
+		log.Debug("others height is ", heights)
 
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0 {
 			LocalNode.SetSyncHeaders(false)

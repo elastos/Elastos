@@ -807,7 +807,7 @@ func (c *ChainStore) GetAssets() map[Uint256]*Asset {
 		_, _ = ReadBytes(rk, 1)
 		var assetid Uint256
 		assetid.Deserialize(rk)
-		log.Tracef("[GetAssets] assetid: %x", assetid.Bytes())
+		log.Debugf("[GetAssets] assetid: %x", assetid.Bytes())
 
 		asset := new(Asset)
 		r := bytes.NewReader(iter.Value())
