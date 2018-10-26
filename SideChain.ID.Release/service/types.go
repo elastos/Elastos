@@ -3,6 +3,7 @@ package service
 type RegisterIdentificationValueInfo struct {
 	DataHash string
 	Proof    string
+	Info     string
 }
 
 type RegisterIdentificationContentInfo struct {

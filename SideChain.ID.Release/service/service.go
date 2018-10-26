@@ -228,6 +228,7 @@ func GetPayloadInfo(p types.Payload, pVersion byte) service.PayloadInfo {
 				values = append(values, RegisterIdentificationValueInfo{
 					DataHash: service.ToReversedString(value.DataHash),
 					Proof:    value.Proof,
+					Info:     value.Info,
 				})
 			}
 
