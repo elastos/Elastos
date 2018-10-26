@@ -18,6 +18,7 @@ namespace Elastos {
 			struct ValueItem {
 				UInt256 DataHash;
 				std::string Proof;
+				std::string Info;
 			};
 
 			struct SignContent {

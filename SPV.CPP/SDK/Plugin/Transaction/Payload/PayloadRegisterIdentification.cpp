@@ -59,6 +59,7 @@ namespace Elastos {
 				for (size_t j = 0; j < _contents[i].Values.size(); ++j) {
 					ostream.writeBytes(_contents[i].Values[j].DataHash.u8, sizeof(_contents[i].Values[j].DataHash));
 					ostream.writeVarString(_contents[i].Values[j].Proof);
+					ostream.writeVarString(_contents[i].Values[j].Info);
 				}
 			}
 		}
@@ -107,6 +108,11 @@ namespace Elastos {
 						Log::error("Payload register identification deserialize proof fail");
 						return false;
 					}
+
+					if (!istream.readVarString(value.Info)) {
+						Log::error("Payload register identification deserialize proof fail");
+						return false;
+					}
 					content.Values.push_back(value);
 				}
 
@@ -131,6 +137,7 @@ namespace Elastos {
 					nlohmann::json value;
 					value["DataHash"] = Utils::UInt256ToString(_contents[i].Values[k].DataHash, true);
 					value["Proof"] = _contents[i].Values[k].Proof;
+					value["Info"] = _contents[i].Values[k].Info;
 					values.push_back(value);
 				}
 				content["Values"] = values;
@@ -158,6 +165,8 @@ namespace Elastos {
 					ValueItem value;
 					value.DataHash = Utils::UInt256FromString(values[k]["DataHash"].get<std::string>(), true);
 					value.Proof = values[k]["Proof"].get<std::string>();
+					if (values[k].find("Info") != values[k].end())
+						value.Info = values[k]["Info"].get<std::string>();
 					content.Values.push_back(value);
 				}
 
