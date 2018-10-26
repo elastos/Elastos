@@ -318,7 +318,7 @@ out:
 	// Ensure connection is closed.
 	node.Disconnect()
 
-	log.Tracef("Peer input handler done for %s", node)
+	log.Debugf("Peer input handler done for %s", node)
 }
 
 func (node *node) outHandler() {
@@ -347,7 +347,7 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer output handler done for %s", node)
+	log.Debugf("Peer output handler done for %s", node)
 }
 
 func (node *node) SendMessage(msg p2p.Message) {
@@ -368,7 +368,7 @@ func (node *node) Disconnect() {
 	}
 	node.SetState(INACTIVITY)
 
-	log.Tracef("Disconnecting %s", node)
+	log.Debugf("Disconnecting %s", node)
 	node.conn.Close()
 	close(node.quit)
 }
