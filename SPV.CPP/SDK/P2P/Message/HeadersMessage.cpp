@@ -67,7 +67,7 @@ namespace Elastos {
 
 					for (size_t i = 0; r && i < count; i++) {
 						PeerManager *manager = _peer->getPeerManager();
-						MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginTypes().BlockType));
+						MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginType()));
 						ByteStream stream(&msg[off + 81 + i], 81, false);
 
 						if (!block->Deserialize(stream)) {

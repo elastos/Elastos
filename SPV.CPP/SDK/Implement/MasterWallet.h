@@ -8,7 +8,6 @@
 #include <map>
 #include <boost/shared_ptr.hpp>
 #include <boost/filesystem.hpp>
-#include <Plugin/Transaction/Transaction.h>
 #include <SDK/KeyStore/CoinConfig.h>
 
 #include "SDK/Crypto/MasterPubKey.h"
@@ -19,7 +18,8 @@
 #include "KeyStore/CoinInfo.h"
 #include "KeyStore/MasterWalletStore.h"
 #include "IdAgent/IdAgentImpl.h"
-#include "Plugin/PluginTypes.h"
+#include "Plugin/Registry.h"
+#include "Plugin/Transaction/Transaction.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -217,7 +217,6 @@ namespace Elastos {
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
 											  const CoinConfig &config,
 											  const ChainParams &chainParams,
-											  const PluginTypes &pluginTypes,
 											  MasterWallet *parent);
 
 

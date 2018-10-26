@@ -146,7 +146,7 @@ namespace Elastos {
 			SubWallet(const CoinInfo &info,
 					  const MasterPubKeyPtr &masterPubKey,
 					  const ChainParams &chainParams,
-					  const PluginTypes &pluginTypes,
+					  const PluginType &pluginTypes,
 					  MasterWallet *parent);
 
 			virtual boost::shared_ptr<Transaction> createTransaction(TxParam *param) const;

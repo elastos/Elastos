@@ -51,7 +51,7 @@ public:
 				  const std::string &payPassword,
 				  const ChainParams &chainParams,
 				  MasterWallet *parent) :
-			SubWallet(info, chainParams, payPassword, PluginTypes("ELA"), parent) {
+			SubWallet(info, chainParams, payPassword, PluginType("ELA"), parent) {
 	}
 };
 
@@ -125,7 +125,7 @@ public:
 							 const std::string &payPassword,
 							 const ChainParams &chainParams,
 							 MasterWallet *parent) :
-			SubWallet(info, chainParams, payPassword, PluginTypes("ELA"), parent) {
+			SubWallet(info, chainParams, payPassword, PluginType("ELA"), parent) {
 		_walletManager.reset(new TestWalletManager(*_walletManager));
 	}
 

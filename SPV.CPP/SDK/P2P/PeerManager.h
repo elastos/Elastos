@@ -18,9 +18,9 @@
 #include "CMemBlock.h"
 #include "PublishedTransaction.h"
 #include "TransactionPeerList.h"
-#include "Plugin/PluginTypes.h"
 #include "Plugin/Interface/IMerkleBlock.h"
 #include "Plugin/Block/MerkleBlock.h"
+#include "Plugin/Registry.h"
 #include "SDK/Base/BloomFilter.h"
 
 #define PEER_MAX_CONNECTIONS 3
@@ -35,7 +35,7 @@ namespace Elastos {
 
 			class Listener {
 			public:
-				Listener(const PluginTypes &pluginTypes);
+				Listener(const PluginType &pluginTypes);
 
 				virtual ~Listener() {}
 
@@ -64,10 +64,10 @@ namespace Elastos {
 
 				virtual void syncIsInactive(uint32_t time) = 0;
 
-				const PluginTypes &getPluginTypes() const { return _pluginTypes; }
+				const PluginType &getPluginTypes() const { return _pluginTypes; }
 
 			protected:
-				PluginTypes _pluginTypes;
+				PluginType _pluginTypes;
 			};
 
 		public:
@@ -78,7 +78,7 @@ namespace Elastos {
 						const std::vector<MerkleBlockPtr> &blocks,
 						const std::vector<PeerInfo> &peers,
 						const boost::shared_ptr<Listener> &listener,
-						const PluginTypes &plugins);
+						const PluginType &plugins);
 
 			~PeerManager();
 
@@ -138,7 +138,7 @@ namespace Elastos {
 
 			int &reconnectTaskCount();
 
-			const PluginTypes &GetPluginTypes() const;
+			const PluginType &GetPluginType() const;
 
 		public:
 			virtual void OnConnected(const PeerPtr &peer);
@@ -269,7 +269,7 @@ namespace Elastos {
 			std::vector<PublishedTransaction> _publishedTx;
 			std::vector<UInt256> _publishedTxHashes;
 
-			PluginTypes _pluginTypes;
+			PluginType _pluginType;
 			WalletPtr _wallet;
 			ChainParams _chainParams;
 			boost::weak_ptr<Listener> _listener;

@@ -33,7 +33,7 @@ namespace Elastos {
 						  uint32_t earliestPeerTime,
 						  uint32_t reconnectSeconds,
 						  int forkId,
-						  const PluginTypes &pluginTypes,
+						  const PluginType &pluginTypes,
 						  const ChainParams &chainParams);
 
 			virtual ~SpvService();

@@ -16,6 +16,8 @@
 namespace Elastos {
 	namespace ElaWallet {
 
+		typedef std::string PluginType;
+
 		class Registry : public boost::noncopyable {
 		public:
 			typedef boost::shared_ptr<fruit::Injector<>> PluginInjectorPtr;

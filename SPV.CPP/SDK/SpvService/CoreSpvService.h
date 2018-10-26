@@ -12,7 +12,6 @@
 #include "SDK/P2P/PeerManager.h"
 #include "ChainParams.h"
 #include "SDK/Crypto/MasterPubKey.h"
-#include "Plugin/PluginTypes.h"
 #include "Account/ISubAccount.h"
 
 namespace Elastos {
@@ -23,7 +22,7 @@ namespace Elastos {
 				public PeerManager::Listener {
 
 		public:
-			CoreSpvService(const PluginTypes &pluginTypes, const ChainParams &chainParams);
+			CoreSpvService(const PluginType &pluginTypes, const ChainParams &chainParams);
 
 			virtual ~CoreSpvService();
 
@@ -92,7 +91,7 @@ namespace Elastos {
 		protected:
 			SubAccountPtr _subAccount;
 
-			PluginTypes _pluginTypes;
+			PluginType _pluginTypes;
 			ChainParams _chainParams;
 			uint32_t _earliestPeerTime;
 			uint32_t _reconnectSeconds;
@@ -110,7 +109,7 @@ namespace Elastos {
 		class WrappedExceptionPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginTypes &pluginTypes);
+			WrappedExceptionPeerManagerListener(PeerManager::Listener *listener, const PluginType &pluginTypes);
 
 			virtual void syncStarted();
 
@@ -139,7 +138,9 @@ namespace Elastos {
 		class WrappedExecutorPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener, Executor *executor, Executor *reconnectExecutor,
+			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener,
+											   Executor *executor,
+											   Executor *reconnectExecutor,
 											   const PluginTypes &pluginTypes);
 
 			virtual void syncStarted();

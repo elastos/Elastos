@@ -8,6 +8,7 @@
 #include "Registry.h"
 #include "ELAPlugin.h"
 #include "IDPlugin.h"
+#include "TokenPlugin.h"
 
 namespace Elastos {
 	namespace ElaWallet {

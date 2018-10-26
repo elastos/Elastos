@@ -219,7 +219,7 @@ namespace Elastos {
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
 
-			SubWallet *subWallet = SubWalletFactoryMethod(info, coinConfig, ChainParams(coinConfig), PluginTypes(coinConfig), this);
+			SubWallet *subWallet = SubWalletFactoryMethod(info, coinConfig, ChainParams(coinConfig), this);
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
 			Save();
@@ -252,7 +252,7 @@ namespace Elastos {
 
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
 				_createdWallets[coinInfoList[i].getChainId()] =
-						SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig), PluginTypes(coinConfig), this);
+						SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig), this);
 			}
 		}
 
@@ -344,8 +344,8 @@ namespace Elastos {
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
-				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig),
-															   PluginTypes(coinConfig), this);
+				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], coinConfig,
+															   ChainParams(coinConfig), this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 				ParamChecker::checkCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
 											 "Recover sub wallet error");
@@ -379,13 +379,14 @@ namespace Elastos {
 			return Address::isValidIdAddress(id);
 		}
 
-		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const CoinConfig &config, const ChainParams &chainParams,
-														const PluginTypes &pluginTypes, MasterWallet *parent) {
+		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const CoinConfig &config,
+														const ChainParams &chainParams,
+														MasterWallet *parent) {
 
 			CoinInfo fixedInfo = info;
 
 			BRChainParams *rawParams = chainParams.getRaw();
-			time_t timeStamp = rawParams->checkpoints[0].timestamp;
+			time_t timeStamp;
 			size_t checkPointsCount = rawParams->checkpointsCount;
 
 			if (_initFrom == CreateNormal) {
@@ -412,14 +413,14 @@ namespace Elastos {
 					? subWalletsMasterPubKeyMap[fixedInfo.getChainId()] : nullptr;
 			switch (fixedInfo.getWalletType()) {
 				case Mainchain:
-					return new MainchainSubWallet(fixedInfo, masterPubKey, chainParams, pluginTypes, parent);
+					return new MainchainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
 				case Sidechain:
-					return new SidechainSubWallet(fixedInfo, masterPubKey, chainParams, pluginTypes, parent);
+					return new SidechainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
 				case Idchain:
-					return new IdChainSubWallet(fixedInfo, masterPubKey, chainParams, pluginTypes, parent);
+					return new IdChainSubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
 				case Normal:
 				default:
-					return new SubWallet(fixedInfo, masterPubKey, chainParams, pluginTypes, parent);
+					return new SubWallet(fixedInfo, masterPubKey, chainParams, config.PluginType, parent);
 			}
 		}
 
@@ -514,7 +515,7 @@ namespace Elastos {
 			for (WalletMap::iterator it = _createdWallets.begin(); it != _createdWallets.end(); ++it) {
 				SubWallet *subWallet = dynamic_cast<SubWallet *>(it->second);
 				if (subWallet == nullptr) continue;
-				Log::debug("Going to save configuration of subwallet '{}'", subWallet->GetChainId());
+				Log::debug("[{}] save config", subWallet->GetChainId());
 				coinInfos.push_back(subWallet->getCoinInfo());
 			}
 			_localStore.SetSubWalletInfoList(coinInfos);

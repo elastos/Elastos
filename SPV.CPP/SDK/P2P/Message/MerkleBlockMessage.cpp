@@ -29,16 +29,16 @@ namespace Elastos {
 			ByteStream stream(msg);
 
 			PeerManager *manager = _peer->getPeerManager();
-			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginTypes().BlockType));
+			MerkleBlockPtr block(Registry::Instance()->CreateMerkleBlock(manager->GetPluginType()));
 
 			if (block == nullptr) {
-				_peer->Perror("create merkle block pointer with type {} fail", manager->GetPluginTypes().BlockType);
+				_peer->Perror("create merkle block pointer with type {} fail", manager->GetPluginType());
 				return false;
 			}
 
 			if (!block->Deserialize(stream)) {
 				_peer->Pdebug("merkle block orignal data: {}", Utils::encodeHex(msg));
-				_peer->Perror("merkle block deserialize with type {} fail", manager->GetPluginTypes().BlockType);
+				_peer->Perror("merkle block deserialize with type {} fail", manager->GetPluginType());
 				return false;
 			}
 
