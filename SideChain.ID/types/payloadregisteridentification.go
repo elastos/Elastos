@@ -15,6 +15,7 @@ const MaxSignDataSize = 1000
 type RegisterIdentificationValue struct {
 	DataHash common.Uint256
 	Proof    string
+	Info     string
 }
 
 type RegisterIdentificationContent struct {
@@ -143,6 +144,10 @@ func (a *RegisterIdentificationValue) Serialize(w io.Writer, version byte) error
 		return errors.New("[RegisterIdentificationValue], Proof serialize failed.")
 	}
 
+	if err := common.WriteVarString(w, a.Info); err != nil {
+		return errors.New("[RegisterIdentificationValue], Info serialize failed.")
+	}
+
 	return nil
 }
 
@@ -156,6 +161,12 @@ func (a *RegisterIdentificationValue) Deserialize(r io.Reader, version byte) err
 		return errors.New("[RegisterIdentificationValue], Proof deserialize failed.")
 	}
 	a.Proof = proof
+
+	info, err := common.ReadVarString(r)
+	if err != nil {
+		return errors.New("[RegisterIdentificationValue], Info deserialize failed.")
+	}
+	a.Info = info
 
 	return nil
 }
