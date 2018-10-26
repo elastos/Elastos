@@ -241,7 +241,7 @@ func (b *Blockchain) ProcessOrphans(hash *Uint256) error {
 			b.RemoveOrphanBlock(orphan)
 			i--
 
-			//log.Trace("deal with orphan block %x", orphanHash.ToArrayReverse())
+			//log.Debug("deal with orphan block %x", orphanHash.ToArrayReverse())
 			_, err := b.maybeAcceptBlock(orphan.Block)
 			if err != nil {
 				return err
@@ -743,14 +743,14 @@ func (b *Blockchain) ReorganizeChain(detachNodes, attachNodes *list.List) error 
 	//firstAttachNode := attachNodes.Front().Value.(*BlockNode)
 	//forkNode, err := b.GetPrevNodeFromNode(firstAttachNode)
 	//if err == nil {
-	//	log.Tracef("REORGANIZE: Chain forks at %v", forkNode.Hash)
+	//	log.Debugf("REORGANIZE: Chain forks at %v", forkNode.Hash)
 	//}
 
 	//// Log the old and new best chain heads.
 	//firstDetachNode := detachNodes.Front().Value.(*BlockNode)
 	//lastAttachNode := attachNodes.Back().Value.(*BlockNode)
-	//log.Tracef("REORGANIZE: Old best chain head was %v", firstDetachNode.Hash)
-	//log.Tracef("REORGANIZE: New best chain head is %v", lastAttachNode.Hash)
+	//log.Debugf("REORGANIZE: Old best chain head was %v", firstDetachNode.Hash)
+	//log.Debugf("REORGANIZE: New best chain head is %v", lastAttachNode.Hash)
 
 	return nil
 }
@@ -1070,10 +1070,10 @@ func (b *Blockchain) ProcessBlock(block *Block) (bool, bool, error) {
 func (b *Blockchain) DumpState() {
 	log.Info("BestChain=", b.BestChain.Hash)
 	log.Info("ChainRoot=", b.Root.Hash)
-	//log.Trace("b.Index=", b.Index)
-	//log.Trace("b.DepNodes=", b.DepNodes)
+	//log.Debug("b.Index=", b.Index)
+	//log.Debug("b.DepNodes=", b.DepNodes)
 	//for _, nd := range b.Orphans {
-	//	log.Trace(nd)
+	//	log.Debug(nd)
 	//}
 	//	for _, nd := range b.Index {
 	//		DumpBlockNode(nd)
