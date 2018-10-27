@@ -765,7 +765,7 @@ func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) 
 		uint64(services),
 		params.NodePort,
 		params.SeedList,
-		[]string{fmt.Sprint("127.0.0.1:", params.NodePort)},
+		[]string{fmt.Sprint(":", params.NodePort)},
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(chain.GetBestHeight()) },
 	)
@@ -781,8 +781,6 @@ func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) 
 	}
 	cfg.OnNewPeer = s.NewPeer
 	cfg.OnDonePeer = s.DonePeer
-
-	log.Infof("listen addrs %v", cfg.ListenAddrs)
 
 	p2pServer, err := p2psvr.NewServer(cfg)
 	if err != nil {
