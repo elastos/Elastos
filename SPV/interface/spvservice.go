@@ -260,9 +260,9 @@ func (s *spvservice) BlockCommitted(block *util.Block) {
 			bloom.MerkleProof{
 				BlockHash:    header.Hash(),
 				Height:       header.Height,
-				Transactions: block.NumTxs,
-				Hashes:       block.Hashes,
-				Flags:        block.Flags,
+				Transactions: header.NumTxs,
+				Hashes:       header.Hashes,
+				Flags:        header.Flags,
 			},
 			tx,
 			block.Height-item.Height,

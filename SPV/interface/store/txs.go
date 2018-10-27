@@ -3,7 +3,6 @@ package store
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/gob"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
@@ -60,21 +59,27 @@ func (t *txs) Put(txn *util.Tx) (err error) {
 		}
 
 		var key [4]byte
-		binary.LittleEndian.PutUint32(key[:], txn.Height)
+		binary.BigEndian.PutUint32(key[:], txn.Height)
 		data := tx.Bucket(BKTHeightTxs).Get(key[:])
 
-		var txMap = make(map[common.Uint256]uint32)
-		gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
+		data = putTxId(data, &txn.Hash)
 
-		txMap[txn.Hash] = txn.Height
-
-		buf = new(bytes.Buffer)
-		if err = gob.NewEncoder(buf).Encode(txMap); err != nil {
-			return err
-		}
-
-		return tx.Bucket(BKTHeightTxs).Put(key[:], buf.Bytes())
+		return tx.Bucket(BKTHeightTxs).Put(key[:], data)
 	})
+}
+
+func putTxId(data []byte, txId *common.Uint256) []byte {
+	// Get tx count
+	var count uint16
+	if len(data) == 0 {
+		data = append(data, 0, 0)
+	} else {
+		count = binary.BigEndian.Uint16(data[0:2])
+	}
+
+	data = append(data, txId[:]...)
+	binary.BigEndian.PutUint16(data[0:2], count+1)
+	return data
 }
 
 func (t *txs) Get(hash *common.Uint256) (txn *util.Tx, err error) {
@@ -96,25 +101,34 @@ func (t *txs) GetIds(height uint32) (txIds []*common.Uint256, err error) {
 
 	err = t.View(func(tx *bolt.Tx) error {
 		var key [4]byte
-		binary.LittleEndian.PutUint32(key[:], height)
+		binary.BigEndian.PutUint32(key[:], height)
 		data := tx.Bucket(BKTHeightTxs).Get(key[:])
 
-		var txMap = make(map[common.Uint256]uint32)
-		err = gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
-		if err != nil {
-			return err
-		}
+		txIds = getTxIds(data)
 
-		txIds = make([]*common.Uint256, 0, len(txMap))
-		for hash := range txMap {
-			var txId common.Uint256
-			copy(txId[:], hash[:])
-			txIds = append(txIds, &txId)
-		}
 		return nil
 	})
 
 	return txIds, err
+}
+
+func getTxIds(data []byte) (txIds []*common.Uint256) {
+	// Get tx count
+	var count uint16
+	if len(data) == 0 {
+		return nil
+	} else {
+		count = binary.BigEndian.Uint16(data[0:2])
+	}
+
+	data = data[2:]
+	for i := uint16(0); i < count; i++ {
+		var txId common.Uint256
+		copy(txId[:], data[i*common.UINT256SIZE : (i+1)*common.UINT256SIZE])
+		txIds = append(txIds, &txId)
+	}
+
+	return txIds
 }
 
 func (t *txs) GetAll() (txs []*util.Tx, err error) {
@@ -149,23 +163,37 @@ func (t *txs) Del(txId *common.Uint256) (err error) {
 		}
 
 		var key [4]byte
-		binary.LittleEndian.PutUint32(key[:], txn.Height)
+		binary.BigEndian.PutUint32(key[:], txn.Height)
 		data = tx.Bucket(BKTHeightTxs).Get(key[:])
 
-		var txMap = make(map[common.Uint256]uint32)
-		err = gob.NewDecoder(bytes.NewReader(data)).Decode(&txMap)
-		if err != nil {
-			return err
-		}
-		delete(txMap, *txId)
+		data = delTxId(data, &txn.Hash)
 
-		var buf = new(bytes.Buffer)
-		if err = gob.NewEncoder(buf).Encode(txMap); err != nil {
-			return err
-		}
-
-		return tx.Bucket(BKTHeightTxs).Put(key[:], buf.Bytes())
+		return tx.Bucket(BKTHeightTxs).Put(key[:], data)
 	})
+}
+
+func delTxId(data []byte, hash *common.Uint256) []byte{
+	// Get tx count
+	var count uint16
+	if len(data) == 0 {
+		return nil
+	} else {
+		count = binary.BigEndian.Uint16(data[0:2])
+	}
+
+	data = data[2:]
+	for i := uint16(0); i < count; i++ {
+		var txId common.Uint256
+		copy(txId[:],data[i*common.UINT256SIZE : (i+1)*common.UINT256SIZE])
+		if txId.IsEqual(*hash) {
+			data = append(data[0:i*common.UINT256SIZE], data[(i+1)*common.UINT256SIZE:]...)
+			break
+		}
+	}
+	var buf [2]byte
+	binary.BigEndian.PutUint16(buf[:], count-1)
+
+	return append(buf[:], data...)
 }
 
 func (t *txs) Batch() TxsBatch {

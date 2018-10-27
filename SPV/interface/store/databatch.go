@@ -42,7 +42,7 @@ func (b *dataBatch) DelAll(height uint32) error {
 	defer b.mutex.Unlock()
 
 	var key [4]byte
-	binary.LittleEndian.PutUint32(key[:], height)
+	binary.BigEndian.PutUint32(key[:], height)
 	data := b.boltTx.Bucket(BKTHeightTxs).Get(key[:])
 
 	var txMap = make(map[common.Uint256]uint32)

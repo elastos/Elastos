@@ -65,7 +65,7 @@ func (b *txsBatch) DelAll(height uint32) error {
 	defer b.Unlock()
 
 	var key [4]byte
-	binary.LittleEndian.PutUint32(key[:], height)
+	binary.BigEndian.PutUint32(key[:], height)
 	data := b.Tx.Bucket(BKTHeightTxs).Get(key[:])
 
 	var txMap = make(map[common.Uint256]uint32)
@@ -95,7 +95,7 @@ func (b *txsBatch) Commit() error {
 		groups := groupByHeight(b.addTxs)
 		for height, txs := range groups {
 			var key [4]byte
-			binary.LittleEndian.PutUint32(key[:], height)
+			binary.BigEndian.PutUint32(key[:], height)
 			data := index.Get(key[:])
 
 			var txMap = make(map[common.Uint256]uint32)
@@ -120,7 +120,7 @@ func (b *txsBatch) Commit() error {
 		groups := groupByHeight(b.delTxs)
 		for height, txs := range groups {
 			var key [4]byte
-			binary.LittleEndian.PutUint32(key[:], height)
+			binary.BigEndian.PutUint32(key[:], height)
 			data := index.Get(key[:])
 
 			var txMap = make(map[common.Uint256]uint32)

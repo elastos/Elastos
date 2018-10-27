@@ -2,6 +2,7 @@ package _interface
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"testing"
 	"time"
@@ -20,11 +21,12 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/stretchr/testify/assert"
 )
 
-var service SPVService
-
 type TxListener struct {
+	t       *testing.T
+	service SPVService
 	address string
 	txType  core.TransactionType
 	flags   uint64
@@ -44,12 +46,32 @@ func (l *TxListener) Flags() uint64 {
 
 func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.Transaction) {
 	fmt.Printf("Receive notify ID: %s, Type: %s\n", id.String(), tx.TxType.Name())
-	err := service.VerifyTransaction(proof, tx)
-	if err != nil {
-		fmt.Println("Verify transaction error:", err)
+	err := l.service.VerifyTransaction(proof, tx)
+	if !assert.NoError(l.t, err) {
+		l.t.FailNow()
 	}
+
+
+	txIds, err := l.service.GetTransactionIds(proof.Height)
+	if !assert.NotNil(l.t, tx) {
+		l.t.FailNow()
+	}
+	if !assert.NoError(l.t, err) {
+		l.t.FailNow()
+	}
+
+	for _, txId := range txIds {
+		tx, err := l.service.GetTransaction(txId)
+		if !assert.NotNil(l.t, tx) {
+			l.t.FailNow()
+		}
+		if !assert.NoError(l.t, err) {
+			l.t.FailNow()
+		}
+	}
+
 	// Submit transaction receipt
-	service.SubmitTransactionReceipt(id, tx.Hash())
+	l.service.SubmitTransactionReceipt(id, tx.Hash())
 }
 
 func (l *TxListener) Rollback(height uint32) {}
@@ -148,13 +170,17 @@ func TestNewSPVService(t *testing.T) {
 	}
 
 	confirmedListener := &TxListener{
-		address: "ENTogr92671PKrMmtWo3RLiYXfBTXUe13Z",
+		t:       t,
+		service: service,
+		address: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
 		txType:  core.CoinBase,
 		flags:   FlagNotifyConfirmed | FlagNotifyInSyncing,
 	}
 
 	unconfirmedListener := &TxListener{
-		address: "Ef2bDPwcUKguteJutJQCmjX2wgHVfkJ2Wq",
+		t:       t,
+		service: service,
+		address: "8ZNizBf4KhhPjeJRGpox6rPcHE5Np6tFx3",
 		txType:  core.TransferAsset,
 		flags:   0,
 	}
@@ -173,6 +199,29 @@ out:
 	for {
 		select {
 		case <-syncTicker.C:
+
+			best, err := service.headers.GetBest()
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+
+			height := rand.Int31n(int32(best.Height))
+			t.Logf("GetTransactionIds from height %d", height)
+
+			txIds, err := service.GetTransactionIds(uint32(height))
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+
+			for _, txId := range txIds {
+				tx, err := service.GetTransaction(txId)
+				if !assert.NotNil(t, tx) {
+					t.FailNow()
+				}
+				if !assert.NoError(t, err) {
+					t.FailNow()
+				}
+			}
 
 			if service.IService.IsCurrent() {
 				// Clear test data
