@@ -60,7 +60,7 @@ typedef struct BRPeerManagerStruct {
 	time_t keepAliveTimestamp;
 	BRPeer *peers, *downloadPeer, fixedPeer, **connectedPeers, *fiexedPeers;
 	char downloadPeerName[INET6_ADDRSTRLEN + 6];
-	uint32_t earliestKeyTime, syncStartHeight, filterUpdateHeight, estimatedHeight;
+	uint32_t earliestKeyTime, reconnectSeconds, syncStartHeight, filterUpdateHeight, estimatedHeight;
 	BRBloomFilter *bloomFilter;
 	double fpRate, averageTxPerBlock;
 	BRSet *blocks, *orphans, *checkpoints;
@@ -86,7 +86,7 @@ typedef struct BRPeerManagerStruct {
 
 	void (*blockHeightIncreased)(void *info, uint32_t height);
 
-	void (*syncIsInactivate)(void *info);
+	void (*syncIsInactivate)(void *info, uint32_t time);
 
 	int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet);
 
@@ -133,7 +133,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
 							   int (*networkIsReachable)(void *info),
 							   void (*threadCleanup)(void *info),
 							   void (*blockHeightIncreased)(void *info, uint32_t height),
-							   void (*syncIsInactive)(void *info),
+							   void (*syncIsInactive)(void *info, uint32_t time),
 							   int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet),
 							   void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer));
 

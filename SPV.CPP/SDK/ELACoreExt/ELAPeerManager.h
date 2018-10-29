@@ -17,6 +17,7 @@ namespace Elastos {
 		};
 
 		ELAPeerManager *ELAPeerManagerNew(const BRChainParams *params, BRWallet *wallet, uint32_t earliestKeyTime,
+										  uint32_t reconnectSeconds,
 										  BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[],
 										  size_t peersCount, BRPeerMessages *peerMessages, const PluginTypes &plugins);
 

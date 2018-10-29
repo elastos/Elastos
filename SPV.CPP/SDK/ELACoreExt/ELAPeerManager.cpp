@@ -18,6 +18,7 @@ namespace Elastos {
 		}
 
 		ELAPeerManager *ELAPeerManagerNew(const BRChainParams *params, BRWallet *wallet, uint32_t earliestKeyTime,
+										  uint32_t reconnectSeconds,
 										  BRMerkleBlock *blocks[], size_t blocksCount, const BRPeer peers[],
 										  size_t peersCount, BRPeerMessages *peerMessages, const PluginTypes &plugins) {
 			ELAPeerManager *manager = (ELAPeerManager *)calloc(1, sizeof(*manager));
@@ -36,6 +37,7 @@ namespace Elastos {
 			manager->Raw.params = params;
 			manager->Raw.wallet = wallet;
 			manager->Raw.earliestKeyTime = earliestKeyTime;
+			manager->Raw.reconnectSeconds = reconnectSeconds;
 			manager->Raw.averageTxPerBlock = 1400;
 			manager->Raw.maxConnectCount = PEER_MAX_CONNECTIONS;
 			array_new(manager->Raw.peers, peersCount);

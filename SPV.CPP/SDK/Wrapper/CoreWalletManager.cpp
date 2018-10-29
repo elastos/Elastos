@@ -26,9 +26,10 @@ namespace Elastos {
 
 		}
 
-		void CoreWalletManager::init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime) {
+		void CoreWalletManager::init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds) {
 			_subAccount = subAccount;
 			_earliestPeerTime = earliestPeerTime;
+			_reconnectSeconds = reconnectSeconds;
 		}
 
 		const WalletPtr &CoreWalletManager::getWallet() {
@@ -44,6 +45,7 @@ namespace Elastos {
 						_chainParams,
 						getWallet(),
 						_earliestPeerTime,
+						_reconnectSeconds,
 						loadBlocks(),
 						loadPeers(),
 						createPeerManagerListener(),
@@ -258,9 +260,9 @@ namespace Elastos {
 			}
 		}
 
-		void WrappedExceptionPeerManagerListener::syncIsInactive() {
+		void WrappedExceptionPeerManagerListener::syncIsInactive(uint32_t time) {
 			try {
-				_listener->syncIsInactive();
+				_listener->syncIsInactive(time);
 			}
 			catch (std::exception ex) {
 				Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
@@ -273,10 +275,12 @@ namespace Elastos {
 		WrappedExecutorPeerManagerListener::WrappedExecutorPeerManagerListener(
 				PeerManager::Listener *listener,
 				Executor *executor,
+				Executor *reconnectExecutor,
 				const PluginTypes &pluginTypes) :
 				PeerManager::Listener(pluginTypes),
 				_listener(listener),
-				_executor(executor) {
+				_executor(executor),
+				_reconnectExecutor(reconnectExecutor) {
 		}
 
 		void WrappedExecutorPeerManagerListener::syncStarted() {
@@ -398,10 +402,10 @@ namespace Elastos {
 			}));
 		}
 
-		void WrappedExecutorPeerManagerListener::syncIsInactive() {
-			_executor->execute(Runnable([this]() -> void {
+		void WrappedExecutorPeerManagerListener::syncIsInactive(uint32_t time) {
+			_reconnectExecutor->execute(Runnable([this, time]() -> void {
 				try {
-					_listener->syncIsInactive();
+					_listener->syncIsInactive(time);
 				}
 				catch (std::exception ex) {
 					Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());

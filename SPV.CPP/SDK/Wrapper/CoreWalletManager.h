@@ -27,7 +27,7 @@ namespace Elastos {
 
 			virtual ~CoreWalletManager();
 
-			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime);
+			void init(const SubAccountPtr &subAccount, uint32_t earliestPeerTime, uint32_t reconnectSeconds);
 
 			const WalletPtr &getWallet();
 
@@ -72,7 +72,7 @@ namespace Elastos {
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
-			virtual void syncIsInactive() {}
+			virtual void syncIsInactive(uint32_t time) {}
 
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
@@ -97,6 +97,7 @@ namespace Elastos {
 			PluginTypes _pluginTypes;
 			ChainParams _chainParams;
 			uint32_t _earliestPeerTime;
+			uint32_t _reconnectSeconds;
 
 			WalletPtr _wallet; // Optional<BRCoreWallet>
 			WalletListenerPtr _walletListener;
@@ -129,7 +130,7 @@ namespace Elastos {
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
-			virtual void syncIsInactive();
+			virtual void syncIsInactive(uint32_t time);
 
 		private:
 			PeerManager::Listener *_listener;
@@ -140,7 +141,7 @@ namespace Elastos {
 		class WrappedExecutorPeerManagerListener :
 				public PeerManager::Listener {
 		public:
-			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener, Executor *executor,
+			WrappedExecutorPeerManagerListener(PeerManager::Listener *listener, Executor *executor, Executor *reconnectExecutor,
 											   const PluginTypes &pluginTypes);
 
 			virtual void syncStarted();
@@ -159,11 +160,12 @@ namespace Elastos {
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
-			virtual void syncIsInactive();
+			virtual void syncIsInactive(uint32_t time);
 
 		private:
 			PeerManager::Listener *_listener;
 			Executor *_executor;
+			Executor *_reconnectExecutor;
 		};
 
 		// Exception Wrapped WalletListener
