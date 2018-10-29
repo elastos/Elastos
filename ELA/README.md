@@ -209,4 +209,4 @@ In the above instruction, we use default configuration file `config.json` in the
 
 If you want to learn the API of Elastos.ELA, please refer to the following:
 
-- [Elastos_Wallet_Node_API](docs/Elastos_Wallet_Node_API_CN.md)
+- [Restful_API](docs/Restful_API.md)
