@@ -23,9 +23,6 @@ type Config struct {
 	// NodePort is the default port for public peers provide services.
 	DefaultPort uint16
 
-	// The min candidate peers count to start syncing progress.
-	MinPeersForSync int
-
 	// The minimum target outbound connections.
 	MinOutbound int
 

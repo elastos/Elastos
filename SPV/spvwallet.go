@@ -22,7 +22,6 @@ import (
 
 const (
 	MaxPeers        = 12
-	MinPeersForSync = 2
 )
 
 var ErrInvalidParameter = fmt.Errorf("invalide parameter")
@@ -306,7 +305,6 @@ func NewWallet() (*spvwallet, error) {
 			SeedList:        config.SeedList,
 			DefaultPort:     config.NodePort,
 			MaxPeers:        MaxPeers,
-			MinPeersForSync: MinPeersForSync,
 			GenesisHeader:   GenesisHeader(),
 			ChainStore:      chainStore,
 			NewTransaction:  newTransaction,

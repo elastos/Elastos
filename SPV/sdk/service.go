@@ -74,21 +74,13 @@ func newService(cfg *Config) (*service, error) {
 	}
 
 	var maxPeers int
-	var minPeersForSync int
 	if cfg.MaxPeers > 0 {
 		maxPeers = cfg.MaxPeers
-	}
-	if cfg.MinPeersForSync > 0 {
-		minPeersForSync = cfg.MinPeersForSync
-	}
-	if cfg.MinPeersForSync > cfg.MaxPeers {
-		minPeersForSync = cfg.MaxPeers
 	}
 
 	// Create sync manager instance.
 	syncCfg := sync.NewDefaultConfig(chain, service.updateFilter)
 	syncCfg.MaxPeers = maxPeers
-	syncCfg.MinPeersForSync = minPeersForSync
 	if cfg.StateNotifier != nil {
 		syncCfg.TransactionAnnounce = cfg.StateNotifier.TransactionAnnounce
 	}
@@ -375,11 +367,6 @@ cleanup:
 }
 
 func (s *service) SendTransaction(tx util.Transaction) error {
-	peersCount := s.IServer.ConnectedCount()
-	if peersCount < int32(s.cfg.MinPeersForSync) {
-		return fmt.Errorf("connected peers %d not enough for sending transactions", peersCount)
-	}
-
 	if !s.IsCurrent() {
 		return fmt.Errorf("spv service did not sync to current")
 	}

@@ -68,9 +68,6 @@ type Config struct {
 	// The max peer connections.
 	MaxPeers int
 
-	// The min candidate peers count to start syncing progress.
-	MinPeersForSync int
-
 	// GenesisHeader is the
 	GenesisHeader util.BlockHeader
 

@@ -7,15 +7,13 @@ import (
 )
 
 const (
-	DefaultMinPeersForSync = 3
-	DefaultMaxPeers        = 125
+	defaultMaxPeers = 125
 )
 
 // Config is a configuration struct used to initialize a new SyncManager.
 type Config struct {
 	Chain *blockchain.BlockChain
 
-	MinPeersForSync int
 	MaxPeers        int
 
 	UpdateFilter        func() *bloom.Filter
@@ -25,9 +23,8 @@ type Config struct {
 func NewDefaultConfig(chain *blockchain.BlockChain,
 	updateFilter func() *bloom.Filter) *Config {
 	return &Config{
-		Chain:           chain,
-		MinPeersForSync: DefaultMinPeersForSync,
-		MaxPeers:        DefaultMaxPeers,
-		UpdateFilter:    updateFilter,
+		Chain:        chain,
+		MaxPeers:     defaultMaxPeers,
+		UpdateFilter: updateFilter,
 	}
 }

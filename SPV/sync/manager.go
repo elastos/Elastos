@@ -148,11 +148,6 @@ func (sm *SyncManager) current() bool {
 // simply returns.  It also examines the candidates for any which are no longer
 // candidates and removes them as needed.
 func (sm *SyncManager) startSync() {
-	// Return if sync candidates less then MinPeersForSync.
-	if len(sm.getSyncCandidates()) < sm.cfg.MinPeersForSync {
-		return
-	}
-
 	// Return now if we're already syncing.
 	if sm.syncPeer != nil {
 		return

@@ -59,7 +59,6 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		SeedList:        cfg.SeedList,
 		DefaultPort:     cfg.DefaultPort,
 		MaxPeers:        cfg.MaxConnections,
-		MinPeersForSync: cfg.MinPeersForSync,
 		GenesisHeader:   GenesisHeader(foundation),
 		ChainStore:      chainStore,
 		NewTransaction: func() util.Transaction {
