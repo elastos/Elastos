@@ -38,7 +38,6 @@ func NewService(cfg *Config) (*Service, error) {
 		Foundation:      params.MainChainFoundationAddress,
 		SeedList:        params.SpvSeedList,
 		DefaultPort:     params.MainChainDefaultPort,
-		MinPeersForSync: params.MinPeersForSync,
 		MinOutbound:     params.SpvMinOutbound,
 		MaxConnections:  params.SpvMaxConnections,
 		OnRollback:      nil, // Not implemented yet
