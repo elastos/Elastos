@@ -25,11 +25,11 @@ namespace Elastos {
 		WalletManager::WalletManager(const WalletManager &proto) :
 				CoreWalletManager(proto._pluginTypes, proto._chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
+				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(proto._databaseManager.getPath()),
-				_reconnectSeconds(proto._reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(proto._forkId) {
-			init(proto._subAccount, proto._earliestPeerTime);
+			init(proto._subAccount, proto._earliestPeerTime, proto._reconnectSeconds);
 		}
 
 		WalletManager::WalletManager(const SubAccountPtr &subAccount, const boost::filesystem::path &dbPath,
@@ -37,15 +37,16 @@ namespace Elastos {
 									 const PluginTypes &pluginTypes, const ChainParams &chainParams) :
 				CoreWalletManager(pluginTypes, chainParams),
 				_executor(BACKGROUND_THREAD_COUNT),
+				_reconnectExecutor(BACKGROUND_THREAD_COUNT),
 				_databaseManager(dbPath),
-				_reconnectSeconds(reconnectSeconds),
 				_reconnectTimer(nullptr),
 				_forkId(forkId) {
-			init(subAccount, earliestPeerTime);
+			init(subAccount, earliestPeerTime, reconnectSeconds);
 		}
 
 		WalletManager::~WalletManager() {
-
+			if (_reconnectTimer != nullptr)
+				_reconnectTimer->cancel();
 		}
 
 		void WalletManager::start() {
@@ -110,6 +111,7 @@ namespace Elastos {
 						_chainParams,
 						getWallet(),
 						_earliestPeerTime,
+						_reconnectSeconds,
 						loadBlocks(),
 						loadPeers(),
 						createPeerManagerListener(),
@@ -285,15 +287,16 @@ namespace Elastos {
 						  });
 		}
 
-		void WalletManager::syncIsInactive() {
-			if (_peerManager->getConnectStatus() == Peer::Connected) {
-				pthread_mutex_lock(&_peerManager->getRaw()->lock);
-				_peerManager->getRaw()->reconnectTaskCount++;
-				pthread_mutex_unlock(&_peerManager->getRaw()->lock);
+		void WalletManager::syncIsInactive(uint32_t time) {
+			pthread_mutex_lock(&_peerManager->getRaw()->lock);
+			_peerManager->getRaw()->reconnectTaskCount++;
+			pthread_mutex_unlock(&_peerManager->getRaw()->lock);
 
+			if (_peerManager->getConnectStatus() != Peer::Disconnected) {
 				_peerManager->disconnect();
-				startReconnect();
 			}
+
+			startReconnect(time);
 		}
 
 		size_t WalletManager::getAllTransactionsCount() {
@@ -363,7 +366,7 @@ namespace Elastos {
 		const CoreWalletManager::PeerManagerListenerPtr &WalletManager::createPeerManagerListener() {
 			if (_peerManagerListener == nullptr) {
 				_peerManagerListener = PeerManagerListenerPtr(
-						new WrappedExecutorPeerManagerListener(this, &_executor, _pluginTypes));
+						new WrappedExecutorPeerManagerListener(this, &_executor, &_reconnectExecutor, _pluginTypes));
 			}
 			return _peerManagerListener;
 		}
@@ -383,10 +386,10 @@ namespace Elastos {
 			_peerManagerListeners.push_back(listener);
 		}
 
-		void WalletManager::startReconnect() {
-			Log::getLogger()->info("reconnect {}s later...", _reconnectSeconds);
+		void WalletManager::startReconnect(uint32_t time) {
+			Log::getLogger()->info("reconnect {}s later...", time);
 			_reconnectTimer = boost::shared_ptr<boost::asio::deadline_timer>(new boost::asio::deadline_timer(
-					_reconnectService, boost::posix_time::seconds(_reconnectSeconds)));
+					_reconnectService, boost::posix_time::seconds(time)));
 			_reconnectTimer->async_wait(
 					boost::bind(&WalletManager::asyncConnect, this, boost::asio::placeholders::error));
 			_reconnectService.restart();

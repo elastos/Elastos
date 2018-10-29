@@ -58,7 +58,7 @@ namespace Elastos {
 
 				virtual void blockHeightIncreased(uint32_t blockHeight) = 0;
 
-				virtual void syncIsInactive() = 0;
+				virtual void syncIsInactive(uint32_t time) = 0;
 
 				const PluginTypes &getPluginTypes() const { return _pluginTypes;}
 
@@ -70,6 +70,7 @@ namespace Elastos {
 			PeerManager(const ChainParams &params,
 						const WalletPtr &wallet,
 						uint32_t earliestKeyTime,
+						uint32_t reconnectSeconds,
 						const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
 						const SharedWrapperList<Peer, BRPeer *> &peers,
 						const boost::shared_ptr<Listener> &listener,

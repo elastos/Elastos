@@ -861,6 +861,8 @@ static void _peerDisconnected(void *info, int error)
     // try very hard to keep at least one alive connected peer.
     if (manager->reconnectTaskCount == 0 && (!manager->isConnected || array_count(manager->connectedPeers) == 0))
         willReconnect = 1;
+    else
+        willReconnect = 0;
 
     BRPeerFree(peer);
     pthread_mutex_unlock(&manager->lock);
@@ -869,11 +871,11 @@ static void _peerDisconnected(void *info, int error)
         pubTx[i].callback(pubTx[i].info, txError);
     }
 
-    if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
+    //if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
     if (willReconnect) {
-        peer_log(peer, "willReconnect...");
-        BRPeerManagerConnect(manager);
+        peer_log(peer, "reconnect 60s later");
+        if (manager->syncIsInactivate) manager->syncIsInactivate(manager->info, 60);
     }
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
@@ -1154,7 +1156,7 @@ static int _BRPeerManagerVerifyBlock(BRPeerManager *manager, BRMerkleBlock *bloc
 static void _peerRelayedPingMsg(void *info)
 {
 	BRPeerManager *manager = ((BRPeerCallbackInfo *)info)->manager;
-	manager->syncIsInactivate(manager->info);
+	manager->syncIsInactivate(manager->info, manager->reconnectSeconds);
 }
 
 static void _peerRelayedBlock(void *info, BRMerkleBlock *block)
@@ -1570,7 +1572,7 @@ void BRPeerManagerSetCallbacks(BRPeerManager *manager, void *info,
                                int (*networkIsReachable)(void *info),
                                void (*threadCleanup)(void *info),
                                void (*blockHeightIncreased)(void *info, uint32_t height),
-                               void (*syncIsInactive)(void *info),
+                               void (*syncIsInactive)(void *info, uint32_t time),
                                int (*verifyDifficulty)(const BRChainParams *params, const BRMerkleBlock *block, const BRSet *blockSet),
                                void (*loadBloomFilter)(BRPeerManager *manager, BRPeer *peer))
 {

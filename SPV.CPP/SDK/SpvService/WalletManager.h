@@ -94,7 +94,7 @@ namespace Elastos {
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
-			virtual void syncIsInactive();
+			virtual void syncIsInactive(uint32_t time);
 
 		protected:
 			virtual SharedWrapperList<Transaction, BRTransaction *> loadTransactions();
@@ -109,7 +109,7 @@ namespace Elastos {
 
 			virtual const WalletListenerPtr &createWalletListener();
 
-			void startReconnect();
+			void startReconnect(uint32_t time);
 
 			void resetReconnect();
 
@@ -118,9 +118,9 @@ namespace Elastos {
 		private:
 			DatabaseManager _databaseManager;
 			BackgroundExecutor _executor;
+			BackgroundExecutor _reconnectExecutor;
 			int _forkId;
 
-			uint32_t _reconnectSeconds;
 			boost::asio::io_service _reconnectService;
 			boost::shared_ptr<boost::asio::deadline_timer> _reconnectTimer;
 

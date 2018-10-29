@@ -776,16 +776,22 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		r = 0;
 	}
 	else {
-		peer_log(peer, "got ping");
-		BRPeerSendMessage(peer, msg, msgLen, MSG_PONG);
-
 		BRPeerContext *ctx = (BRPeerContext *)peer;
 		BRPeerManager *manager = ctx->manager;
+		uint8_t buf[sizeof(uint64_t)] = {0};
 
-		if (ctx->sentGetaddr && time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
+		peer_log(peer, "got ping");
+
+		pthread_mutex_lock(&manager->lock);
+		UInt64SetLE(buf, manager->lastBlock->height);
+		pthread_mutex_unlock(&manager->lock);
+
+		BRPeerSendMessage(peer, buf, sizeof(buf), MSG_PONG);
+
+		pthread_mutex_lock(&manager->lock);
+		if (manager->isConnected && ctx->sentGetaddr && time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
 			int haveTxPending = 0;
 
-			pthread_mutex_lock(&manager->lock);
 			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
 				if (manager->publishedTx[i - 1].callback != NULL) {
 					peer_log(peer, "publish pending tx hash = %s", u256hex(manager->publishedTxHashes[i - 1]));
@@ -796,10 +802,10 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 			if (manager->lastBlock->height >= *(uint64_t *)msg && !haveTxPending) {
 				pthread_mutex_unlock(&manager->lock);
 				ctx->relayedPingMsg(ctx->info);
-			} else {
-				pthread_mutex_unlock(&manager->lock);
+				pthread_mutex_lock(&manager->lock);
 			}
 		}
+		pthread_mutex_unlock(&manager->lock);
 	}
 
 	return r;
