@@ -1,4 +1,4 @@
-# The Node API Of Elastos Wallet
+# The Node API Of Elastos
 
 `ELA Node` 使用 `2*334` 端口提供如下接口服务：
 

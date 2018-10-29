@@ -62,7 +62,7 @@
 
 可参考API示例：
 
-* [Elastos_Wallet_Node_API](Elastos_Wallet_Node_API_CN.md)
+* [Restful_API](Restful_API_CN.md)
 
 ## ELA钱包服务
 
