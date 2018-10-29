@@ -114,10 +114,10 @@ namespace Elastos {
 				}
 			}
 
-			static void syncIsInactive(void *info) {
+			static void syncIsInactive(void *info, uint32_t time) {
 				WeakListener *listener = (WeakListener *) info;
 				if (!listener->expired()) {
-					listener->lock()->syncIsInactive();
+					listener->lock()->syncIsInactive(time);
 				}
 			}
 		}
@@ -129,6 +129,7 @@ namespace Elastos {
 		PeerManager::PeerManager(const ChainParams &params,
 								 const WalletPtr &wallet,
 								 uint32_t earliestKeyTime,
+								 uint32_t reconnectSeconds,
 								 const SharedWrapperList<IMerkleBlock, BRMerkleBlock *> &blocks,
 								 const SharedWrapperList<Peer, BRPeer *> &peers,
 								 const boost::shared_ptr<PeerManager::Listener> &listener,
@@ -155,6 +156,7 @@ namespace Elastos {
 					_chainParams.getRaw(),
 					wallet->getRaw(),
 					earliestKeyTime,
+					reconnectSeconds,
 					blockArray.data(),
 					blocks.size(),
 					peerArray,

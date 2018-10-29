@@ -134,7 +134,7 @@ namespace Elastos {
 
 			virtual void blockHeightIncreased(uint32_t blockHeight);
 
-			virtual void syncIsInactive() {}
+			virtual void syncIsInactive(uint32_t time) {}
 
 		protected:
 			friend class MasterWallet;

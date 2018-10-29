@@ -45,7 +45,6 @@ BRBloomFilter *BRBloomFilterNew(double falsePositiveRate, size_t elemCount, uint
     BRBloomFilter *filter = calloc(1, sizeof(*filter));
 
     assert(filter != NULL);
-	memset(filter, 0, sizeof(*filter));
 
     filter->length = (falsePositiveRate < DBL_EPSILON) ? BLOOM_MAX_FILTER_LENGTH :
                      (-1.0/(M_LN2*M_LN2))*elemCount*log(falsePositiveRate)/8.0;
@@ -54,7 +53,6 @@ BRBloomFilter *BRBloomFilterNew(double falsePositiveRate, size_t elemCount, uint
 
     filter->filter = calloc(filter->length, sizeof(*(filter->filter)));
     assert(filter->filter != NULL);
-	memset(filter->filter, 0, filter->length * sizeof(*filter->filter));
 
     filter->hashFuncs = ((filter->length*8.0)/elemCount)*M_LN2;
     if (filter->hashFuncs > BLOOM_MAX_HASH_FUNCS) filter->hashFuncs = BLOOM_MAX_HASH_FUNCS;
@@ -77,7 +75,6 @@ BRBloomFilter *BRBloomFilterParse(const uint8_t *buf, size_t bufLen)
     size_t off = 0, len = 0;
 
     assert(filter != NULL);
-	memset(filter, 0, sizeof(*filter));
 
     assert(buf != NULL || bufLen == 0);
 
