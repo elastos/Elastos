@@ -649,7 +649,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Trace("Block handler done")
 }
 
 // NewPeer informs the sync manager of a newly active peer.
@@ -715,7 +714,6 @@ func (sm *SyncManager) Start() {
 		return
 	}
 
-	log.Trace("Starting sync manager")
 	go sm.blockHandler()
 }
 

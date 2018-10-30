@@ -222,7 +222,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Trace("Service peers handler done")
 }
 
 // txHandler handles transaction messages like send transaction, transaction inv
@@ -363,7 +362,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Trace("Service transaction handler done")
 }
 
 func (s *service) SendTransaction(tx util.Transaction) error {

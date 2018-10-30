@@ -303,7 +303,7 @@ func NewWallet() (*spvwallet, error) {
 		&sdk.Config{
 			Magic:           config.Magic,
 			SeedList:        config.SeedList,
-			DefaultPort:     config.NodePort,
+			DefaultPort:     config.DefaultPort,
 			MaxPeers:        MaxPeers,
 			GenesisHeader:   GenesisHeader(),
 			ChainStore:      chainStore,

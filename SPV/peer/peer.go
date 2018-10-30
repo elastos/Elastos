@@ -232,7 +232,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer stall handler done for %v", p)
 }
 
 // blockHandler handles the downloading of merkleblock and the transactions
@@ -355,7 +354,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer block handler done for %v", p)
 }
 
 // queueHandler handles the queuing of outgoing data for the peer. This runs as
@@ -431,7 +429,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer queue handler done for %s", p)
 }
 
 // PushGetBlocksMsg sends a getblocks message for the provided block locator
@@ -454,7 +451,7 @@ func (p *Peer) PushGetBlocksMsg(locator []*common.Uint256, stopHash *common.Uint
 	p.prevGetBlocksMtx.Unlock()
 
 	if isDuplicate {
-		log.Tracef("Filtering duplicate [getblocks] with begin "+
+		log.Debugf("Filtering duplicate [getblocks] with begin "+
 			"hash %v, stop hash %v", beginHash, stopHash)
 		return nil
 	}

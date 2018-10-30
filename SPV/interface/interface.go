@@ -20,7 +20,7 @@ type Config struct {
 	// The public seed peers addresses.
 	SeedList []string
 
-	// NodePort is the default port for public peers provide services.
+	// DefaultPort is the default port for public peers provide services.
 	DefaultPort uint16
 
 	// The minimum target outbound connections.

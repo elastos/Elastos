@@ -19,7 +19,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			waltlog.Trace("Wallet shutting down...")
+			waltlog.Debug("Wallet shutting down...")
 			w.Stop()
 			stop <- 1
 		}
