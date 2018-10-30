@@ -188,7 +188,10 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 		addrs = LocalNode.RandSelectAddresses()
 	}
 
-	h.node.SendMessage(msg.NewAddr(addrs))
+
+	if len(addrs) > 0 {
+		h.node.SendMessage(msg.NewAddr(addrs))
+	}
 }
 
 func (h *HandlerBase) onAddr(msgAddr *msg.Addr) {
