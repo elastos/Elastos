@@ -26,8 +26,19 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#include <pthread.h>
+#endif
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+#ifdef HAVE_WINSOCK2_H
+#include <winsock2.h>
+#endif
 
 #include <rc_mem.h>
 #include <crypto.h>
@@ -41,6 +52,8 @@
 #include "filerequests.h"
 #include "filetransfer.h"
 
+#define TAG "Filetransfer: "
+
 const char *bundle_prefix = "filetransfer";
 
 static void cleanup_expired_filereqs(hashtable_t *filelreqs)
@@ -52,14 +65,9 @@ static
 void sessionreq_callback(ElaCarrier *w, const char *from, const char *bundle,
                          const char *sdp, size_t len, void *context)
 {
-    FileTransferExt *ext = w->extension;
+    FileTransferExt *ext = (FileTransferExt *)context;
     ElaFileTransferInfo *fti = NULL;
     FileRequest *fr;
-
-    if (!w->extension) {
-        assert(0);
-        return;
-    }
 
     if (!bundle && strncmp(bundle, bundle_prefix, strlen(bundle_prefix))) {
         assert(0);
@@ -67,7 +75,7 @@ void sessionreq_callback(ElaCarrier *w, const char *from, const char *bundle,
     }
 
     if (!ext->connect_callback) {
-        vlogE("Filetransfer: No specific callback to handle filetransfer connection "
+        vlogE(TAG "no specific callback to handle filetransfer connection "
               "request from %s with bundle %s, dropping.", from, bundle);
         return;
     }
@@ -77,16 +85,16 @@ void sessionreq_callback(ElaCarrier *w, const char *from, const char *bundle,
 
         fti = (ElaFileTransferInfo *)alloca(sizeof(*fti));
         rc = sscanf(bundle, "%*s:%255s:%45s:%llu", fti->filename, fti->fileid,
-                    &fti->size);
+                    _LLUP(&fti->size));
         if (rc != 3) {
-            vlogE("Filetransfer: Receiver received invalid filetransfer connection "
+            vlogE(TAG "receiver received invalid filetransfer connection "
                   "request from %s with bundle %s, dropping.", bundle, from);
             return;
         }
     }
 
-    vlogD("Filetransfer: Receiver received filetransfer connection request "
-          "from %s with bundle %s.", from, bundle);
+    vlogD(TAG "receiver received filetransfer connection request from %s "
+          "with bundle %s.", from, bundle);
 
     fr = (FileRequest *)rc_zalloc(sizeof(*fr) + len, NULL);
     if (!fr)
@@ -100,7 +108,8 @@ void sessionreq_callback(ElaCarrier *w, const char *from, const char *bundle,
     filereqs_put(ext->filereqs, fr);
     deref(fr);
 
-    ext->connect_callback(w, from, fti, ext->connect_context);
+    if (ext->connect_callback)
+        ext->connect_callback(w, from, fti, ext->connect_context);
 
     cleanup_expired_filereqs(ext->filereqs);
 }
@@ -114,11 +123,11 @@ void notify_state_changed(ElaFileTransfer *ft, FileTransferConnection state)
         return;
 
     if (ft->callbacks.state_changed)
-        ft->callbacks.state_changed(ft, state, ft->context);
+        ft->callbacks.state_changed(ft, state, ft->callbacks_context);
 }
 
 // To make all notification of all failed state happened within ICE thread.
-static inline void remove_stream_secure(ElaFileTransfer *ft, int error)
+static void remove_stream_secure(ElaFileTransfer *ft, int error)
 {
     int stream = ft->stream;
 
@@ -156,8 +165,8 @@ void sessionreq_complete_callback(ElaSession *session, const char *bundle,
         return;
 
     if (status != 0) {
-        vlogD("Filetransfer: Sender received filetransfer connection refusal "
-              "from %s.", ft->to);
+        vlogD(TAG "sender received filetransfer connection refusal from %s.",
+              ft->address);
         remove_stream_secure(ft, 0);
         return;
     }
@@ -167,21 +176,21 @@ void sessionreq_complete_callback(ElaSession *session, const char *bundle,
 
         rc = sscanf(bundle, "%*s:%45s", fileid);
         if (rc != 1) {
-            vlogE("Filetransfer: Sender received filetransfer connection acceptance "
-                  "from %s with invalid bundle %s, dropping.", ft->to, bundle);
+            vlogE(TAG "sender received filetransfer connection acceptance from "
+                  "%s with invalid bundle %s, dropping.", ft->address, bundle);
             remove_stream_secure(ft, 1);
             return;
         }
 
         if (strcmp(fileid, ft->files[0].fileid) != 0) {
-            vlogE("Filetransfer: Sender received filetransfer connection acceptance "
-                  "from %s with invalid fileid %s, dropping.", ft->to, fileid);
+            vlogE(TAG "sender received filetransfer connection acceptance from "
+                  "%s with invalid fileid %s, dropping.", ft->address, fileid);
             remove_stream_secure(ft, 1);
             return;
         }
 
-        vlogD("Filetransfer: Sender received filetransfer connection request "
-              "acceptance from %s with fileid %s.", ft->to, fileid);
+        vlogD(TAG "sender received filetransfer connection request acceptance "
+              "from %s with fileid %s.", ft->address, fileid);
     }
 
     assert(!ft->sdp);
@@ -189,18 +198,17 @@ void sessionreq_complete_callback(ElaSession *session, const char *bundle,
 
     rc = ela_session_start(ft->session, sdp, len);
     if (rc < 0) {
-        vlogE("Filetransfer: Sender starting filetransfer connect session to "
-              "%s error (0x%x).", ft->to, ela_get_error());
+        vlogE(TAG "sender starting filetransfer connect session to %s error (0x%x).",
+              ft->address, ela_get_error());
         remove_stream_secure(ft, 1);
         return;
     }
 
-    vlogD("Filetransfer: Sender started filetransfer connect session to %s "
-          "success.", ft->to);
+    vlogD(TAG "sender started filetransfer connect session to %s success.",
+          ft->address);
 }
 
-static
-void sender_state_changed(ElaFileTransfer *ft, ElaStreamState state)
+static void sender_state_changed(ElaFileTransfer *ft, ElaStreamState state)
 {
     char bundle[sizeof(ElaFileTransferInfo) + 64] = {0};
     FileTransferItem *item = &ft->files[0];
@@ -212,78 +220,77 @@ void sender_state_changed(ElaFileTransfer *ft, ElaStreamState state)
 
     switch(state) {
     case ElaStreamState_initialized:
-        vlogD("Filetransfer: Sender filetransfer connection state changed to "
-              "be internal internal stream_initalized, waiting...");
+        vlogD(TAG "sender filetransfer connection state changed to be "
+              "internal stream_initalized, waiting...");
         notify_state_changed(ft, FileTransferConnection_connecting);
 
         if (item->state == FileTransferState_standby)
             sprintf(bundle, "%s:%s:%s:%llu", bundle_prefix, item->filename,
-                    item->fileid, item->filesz);
+                    item->fileid, _LLUV(item->filesz));
         else
             strcpy(bundle, bundle_prefix);
 
         rc = ela_session_request(ft->session, bundle,
                                  sessionreq_complete_callback, ft);
         if (rc < 0) {
-            vlogE("Filetransfer: Sender sending filetransfer session request to "
-                  "%s error (0x%x).", ft->to, ela_get_error());
+            vlogE(TAG "sender sending filetransfer session request to "
+                  "%s error (0x%x).", ft->address, ela_get_error());
             notify_state_changed(ft, FileTransferConnection_failed);
             return;
         }
 
-        vlogD("Filetransfer: Sender sended filetransfer session request to %s "
-              "with bundle %s success.", ft->to, bundle);
+        vlogD(TAG "sender sended filetransfer session request to %s with "
+              "bundle %s success.", ft->address, bundle);
         break;
 
     case ElaStreamState_transport_ready:
         ft->ready_to_connect = true;
-        vlogD("Filetransfer: Sender filetransfer connection state changed to "
-              "be internal transport_ready, waiting...", ft->to);
+        vlogD(TAG "sender filetransfer connection state changed to be "
+              "internal transport_ready, waiting...", ft->address);
         break;
 
     case ElaStreamState_connecting:
         break;
 
     case ElaStreamState_connected:
-        vlogD("Filetransfer: Sender filetransfer connection state changed to "
-              "be connected, ready to carry filetransfering.", ft->to);
+        vlogD(TAG "sender filetransfer connection state changed to be "
+              "connected, ready to carry filetransfering.", ft->address);
         notify_state_changed(ft, FileTransferConnection_connected);
 
         if (item->state != FileTransferState_standby)
             return;
 
         sprintf(bundle, "%s:%s:%s:%llu", bundle_prefix, item->filename,
-                item->fileid, item->filesz);
+                item->fileid, _LLUV(item->filesz));
 
         item->channel = ela_stream_open_channel(ft->session, ft->stream, bundle);
         if (item->channel < 0) {
-            vlogE("Filetransfer: Sender openning filetransfer channel with "
-                  "bundle %s error (0x%x).", bundle, ela_get_error());
+            vlogE(TAG "sender openning filetransfer channel with bundle %s "
+                  "error (0x%x).", bundle, ela_get_error());
 
             filename_safe_free(item);
             item->state = FileTransferState_none;
             return;
         }
 
-        vlogD("Filetransfer: Sender opened filetransfer channel %d to transfer "
-              "[%s:%s:%llu].", item->channel, item->filename, item->fileid,
+        vlogD(TAG "sender opened filetransfer channel %d to transfer "
+              "[%s:%s:%lu].", item->channel, item->fileid, item->filename,
               item->filesz);
         break;
 
     case ElaStreamState_failed:
-        vlogD("FileTransfer: Sender establishing filetransfer connection to %s "
-              "failed.", ft->to);
+        vlogD(TAG "sender establishing filetransfer connection to %s failed.",
+              ft->address);
         notify_state_changed(ft, FileTransferConnection_failed);
         break;
 
     case ElaStreamState_closed:
         if (ft->error) {
-            vlogD("Filetransfer: Sender establishing filetransfer connection to "
-                  "%s failed.", ft->to);
-            notify_state_changed(ft, FileTransferConnection_closed);
+            vlogD(TAG, "sender establishing filetransfer connection to %s "
+                  "failed.", ft->address);
+            notify_state_changed(ft, FileTransferConnection_failed);
         } else {
-            vlogD("Filetransfer: Sender filetransfer connection to %s closed",
-                  ft->to);
+            vlogD(TAG "sender filetransfer connection to %s closed.", ft->address);
             notify_state_changed(ft, FileTransferConnection_closed);
         }
         break;
@@ -295,8 +302,7 @@ void sender_state_changed(ElaFileTransfer *ft, ElaStreamState state)
     }
 }
 
-static
-void receiver_state_changed(ElaFileTransfer *ft, ElaStreamState state)
+static void receiver_state_changed(ElaFileTransfer *ft, ElaStreamState state)
 {
     char bundle[ELA_MAX_FILE_ID_LEN + 33] = {0};
     FileTransferItem *item = &ft->files[0];
@@ -304,12 +310,12 @@ void receiver_state_changed(ElaFileTransfer *ft, ElaStreamState state)
 
     assert(ft->session);
     assert(ft->stream > 0);
-    assert(ft->sender_receiver == SENDER);
+    assert(ft->sender_receiver == RECEIVER);
 
     switch(state) {
     case ElaStreamState_initialized:
-        vlogD("Filetransfer: Receiver filetransfer connection state changed to "
-              "be internal stream_initalized, waiting...");
+        vlogD(TAG "receiver filetransfer connection state changed to be "
+              "internal stream_initalized, waiting...");
         notify_state_changed(ft, FileTransferConnection_connecting);
 
         if (item->state == FileTransferState_standby)
@@ -319,49 +325,49 @@ void receiver_state_changed(ElaFileTransfer *ft, ElaStreamState state)
 
         rc = ela_session_reply_request(ft->session, bundle, 0, NULL);
         if (rc < 0) {
-            vlogE("Filetransfer: Receiver sending filetransfer session reply to "
-                  "%s error (0x%x).", ft->to, ela_get_error());
+            vlogE(TAG "receiver sending filetransfer session reply to %s "
+                  "error (0x%x).", ft->address, ela_get_error());
             notify_state_changed(ft, FileTransferConnection_failed);
             return;
         }
 
-        vlogD("Filetransfer: Sender sended filetransfer session reply to %s "
-              "with bundle %s success.", ft->to, bundle);
+        vlogD(TAG "sender sended filetransfer session reply to %s with "
+              "bundle %s success.", ft->address, bundle);
         break;
 
     case ElaStreamState_transport_ready:
-        vlogD("Filetransfer: Receiver filetransfer connection state changed to "
-              "be internal transport_ready, waiting...", ft->to);
+        vlogD(TAG "receiver filetransfer connection state changed to be "
+              "internal transport_ready, waiting...");
 
         rc = ela_session_start(ft->session, ft->sdp, ft->sdp_len);
         if (rc < 0) {
-            vlogE("Filetransfer: Receiver starting filetransfer connection "
-                  "session to %s error (0x%x)", ft->to, ela_get_error());
+            vlogE(TAG "receiver starting filetransfer connection session "
+                  "to %s error (0x%x).", ft->address, ela_get_error());
             notify_state_changed(ft, FileTransferConnection_failed);
             return;
         }
-        vlogD("Filetransfer: Receiver started filetransfer connect session to "
-              "%s success.", ft->to);
+        vlogD(TAG "receiver started filetransfer session to %s success.",
+              ft->address);
         break;
 
     case ElaStreamState_connecting:
         break;
 
     case ElaStreamState_connected:
-        vlogD("Filetransfer: Receiver filetransfer connection state changed to "
-              "be connected, ready to carry filetransfering.", ft->to);
+        vlogD(TAG "receiver filetransfer connection state changed to be "
+              "connected, ready to carry filetransfering.", ft->address);
         notify_state_changed(ft, FileTransferConnection_connected);
         break;
 
     case ElaStreamState_failed:
-        vlogD("FileTransfer: Receiver establishing filetransfer connection to "
-              "%s failed.", ft->to);
+        vlogD(TAG "receiver establishing filetransfer connection to "
+              "%s failed.", ft->address);
         notify_state_changed(ft, FileTransferConnection_failed);
         break;
 
     case ElaStreamState_closed:
-        assert(!ft->error);
-        vlogD("Filetransfer: Sender filetransfer connection to %s closed", ft->to);
+        assert(!ft->error);  //TODO:
+        vlogD(TAG "receiver filetransfer connection to %s closed.", ft->address);
         notify_state_changed(ft, FileTransferConnection_closed);
         break;
 
@@ -376,23 +382,22 @@ static void stream_state_changed(ElaSession *session, int stream,
                                  ElaStreamState state, void *context)
 {
     ElaFileTransfer *ft = (ElaFileTransfer *)context;
+    void (*cbs[])(ElaFileTransfer *, ElaStreamState) = {
+        NULL,
+        sender_state_changed,
+        receiver_state_changed,
+        NULL
+    };
 
     assert(session == ft->session);
     assert(stream  == ft->stream);
 
-    switch(ft->sender_receiver) {
-    case SENDER:
-        sender_state_changed(ft, state);
-        break;
-
-    case RECEIVER:
-        receiver_state_changed(ft, state);
-        break;
-
-    default:
+    if (ft->sender_receiver != SENDER && ft->sender_receiver != RECEIVER) {
         assert(0);
-        break;
+        return;
     }
+
+    cbs[ft->sender_receiver](ft, state);
 }
 
 static bool stream_channel_open(ElaSession *ws, int stream, int channel,
@@ -403,7 +408,6 @@ static bool stream_channel_open(ElaSession *ws, int stream, int channel,
     FileTransferItem *item;
     char prefix[32];
     int rc;
-    bool res;
 
     assert(ft);
     assert(ft->session == ws);
@@ -411,49 +415,63 @@ static bool stream_channel_open(ElaSession *ws, int stream, int channel,
     assert(ft->state   == FileTransferConnection_connected);
 
     if (ft->sender_receiver != RECEIVER) {
-        vlogE("Filetransfer: Sender received unexpected channel %d open event "
-              "with cookie (%s), dropping.", channel, cookie ? cookie : "N/A");
+        vlogE(TAG "sender received unexpected channel %d open event with "
+              "cookie (%s), dropping.", channel, cookie ? cookie : "N/A");
         return false;
     }
 
     if (!cookie) {
-        vlogE("Filetransfer: Receiver received channel open event without cookie "
+        vlogE(TAG "receiver received channel open event without cookie "
               "bound, dropping.");
         return false;
     }
 
     rc = sscanf(cookie, "%31s:%255s:%45s:%llu", prefix, fti.filename,
-                fti.fileid, &fti.size);
-    if (rc != 4 || strcmp(prefix, bundle_prefix)) {
-        vlogE("Filetransfer: Receiver received channel open event with invalid "
-              "cookie  %s on new channel %d, dropping.", cookie, channel);
+                fti.fileid, _LLUP(&fti.size));
+    if (rc != 4 || strcmp(prefix, bundle_prefix) != 0) {
+        vlogE(TAG "receiver received channel open event with invalid cookie "
+              "%s on new channel %d, dropping.", cookie, channel);
         return false;
     }
 
-    vlogD("Filetransfer: Receiver received channe open event to transfer file "
+    vlogD(TAG "receiver received channe open event to transfer file "
           "[%s:%s:%llu] over new channel %s.", fti.filename, fti.fileid,
-          fti.size, channel);
+          _LLUV(fti.size), channel);
 
-    item = get_fileinfo_free(ft);
+    item = get_fileinfo_fileid(ft, fti.fileid);
     if (!item) {
-        vlogE("Filetransfer: No free slots avaiable to receive file transferring "
-              "over channel %d, dropping.", channel);
-        return false;
+        item = get_fileinfo_free(ft);
+        if (!item) {
+            vlogE(TAG "no free slots avaiable to receive file transferring "
+                  "over channel %d, dropping.", channel);
+            return false;
+        }
+
+        strcpy(item->fileid, fti.fileid);
+        item->filename = strdup(fti.filename);
+        item->filesz = fti.size;
+        item->channel = channel;
+        item->state = FileTransferState_standby;
+    } else {
+        if (item->state != FileTransferState_standby) {
+            vlogE(TAG "sender received pull request data over channel %s "
+                  "in wrong state %d, dropping.", channel, item->state);
+            return false;
+        }
     }
 
-    strcpy(item->fileid, fti.fileid);
-    item->filename = strdup(fti.filename);
-    item->filesz = fti.size;
-    item->channel = channel;
-    item->state = FileTransferState_standby;
+    if (ft->callbacks.file) {
+        bool res;
 
-    assert(ft->callbacks.file);
-    res = ft->callbacks.file(ft, fti.filename, fti.fileid, fti.size, ft->context);
-    if (!res) {
-        filename_safe_free(item);
-        item->state = FileTransferState_none;
+        res = ft->callbacks.file(ft, fti.filename, fti.fileid, fti.size,
+                                 ft->callbacks_context);
+        if (!res) {
+            filename_safe_free(item);
+            item->state = FileTransferState_none;
+            return false;
+        }
     }
-    return res;
+    return true;
 }
 
 static void stream_channel_close(ElaSession *ws, int stream, int channel,
@@ -469,18 +487,18 @@ static void stream_channel_close(ElaSession *ws, int stream, int channel,
 
     item = get_fileinfo_channel(ft, channel);
     if (!item) {
-        vlogE("Filetransfer: No free slots avaiable to handle closing over "
-              "channel %d, dropping.", channel);
+        vlogE(TAG "no free slots avaiable to handle closing over chanel %d, "
+              "dropping.", channel);
         return;
     }
 
-    vlogD("Filetransfer: Filetrasnfer channel %d to transfer %s closed with "
-          "reason: %d.", channel, item->fileid, reason);
+    vlogD(TAG "filetrasnfer channel %d to transfer %s closed with reason %d.",
+          channel, item->fileid, reason);
 
     //TODO: reason.
 
     if (ft->callbacks.cancel && ft->sender_receiver == SENDER)
-        ft->callbacks.cancel(ft, item->fileid, 1, ft->context); //TODO:
+        ft->callbacks.cancel(ft, item->fileid, 1, ft->callbacks_context); //TODO:
 
     item->state = FileTransferState_none;
     filename_safe_free(item);
@@ -492,63 +510,65 @@ static bool stream_channel_data(ElaSession *ws, int stream, int channel,
     ElaFileTransfer *ft = (ElaFileTransfer *)context;
     char fileid[ELA_MAX_FILE_ID_LEN + 1] = {0};
     FileTransferItem *item;
-    bool res;
+    uint64_t offset;
 
     assert(ft);
     assert(ft->session == ws);
     assert(ft->stream  == stream);
     assert(ft->state   == FileTransferConnection_connected);
 
-    //TODO: make amend for streamming.
     if (ft->sender_receiver == SENDER && len != sizeof(uint64_t)) {
-        vlogE("FileTransfer: Sender received invalid pull request data over "
-              "channe %d with datalen:%llu, dropping.",
-              channel, (uint64_t)len);
+        vlogE(TAG "sender received invalid pull request data over channel %d "
+              "with length:%z, dropping.", channel, len);
         return false;
     }
 
     item = get_fileinfo_channel(ft, channel);
     if (!item) {
-        vlogE("Filetransfer: No transfer file found to channel %d, dropping "
-              "this channel request data.", channel);
+        vlogE(TAG "no transfer file using channel %d found, dropping "
+              "channel request data.", channel);
         return false;
     }
+    strcpy(fileid, item->fileid);
 
     switch(ft->sender_receiver) {
     case SENDER:
         if (item->state != FileTransferState_standby) {
-            vlogE("Filetransfer: Sender received pull request data over channel "
-                  "%s in wrong state %d, dropping.", channel, item->state);
+            vlogE(TAG "sender received pull request data over channel %s "
+                  "in wrong state %d, dropping.", channel, item->state);
             return false;
         }
 
-        vlogT("Filetransfer: Sender received pull request data over channel with "
-              "requested offset: %llu.", channel, *(uint64_t *)data);
+        offset = (uint64_t)ntohll(*(uint64_t *)data);
+
+        vlogT(TAG "sender received pull request data over channel with "
+              "requested offset: %llu.", channel, offset);
 
         item->state = FileTransferState_transfering;
 
-        assert(ft->callbacks.pull);
-        strcpy(fileid, item->fileid);
-        ft->callbacks.pull(ft, fileid, *(uint64_t *)data, ft->context);
+        if (ft->callbacks.pull)
+            ft->callbacks.pull(ft, fileid, offset, ft->callbacks_context);
         break;
 
     case RECEIVER:
         if (item->state != FileTransferState_transfering) {
-            vlogE("Filetransfer: Receiver received file transfer data over channel "
-                  "%d in wrong state %d, dropping.", channel, item->state);
+            vlogE(TAG "receiver received file transfer data over channel %d "
+                  "in wrong state %d, dropping.", channel, item->state);
             return false;
         }
 
-        vlogV("Filetranfer: Receiver received filetransfer data over channel %d "
-              "with data length %llu of file: %s.", channel, len, item->fileid);
+        vlogV(TAG "receiver received filetransfer data over channel %d with "
+              "data length %z of file %s.", channel, len, item->fileid);
 
-        assert(ft->callbacks.data);
-        strcpy(fileid, item->fileid);
-        res = ft->callbacks.data(ft, fileid, data, len, ft->context);
-        if (res) { // Tell filetransfering is finished.
-            vlogD("Filetransfer: File transferring finished over channel %d, "
-                  "closing channel.", channel);
-            ela_stream_close_channel(ft->session, ft->stream, item->channel);
+        if (ft->callbacks.data) {
+            bool rc;
+
+            rc = ft->callbacks.data(ft, fileid, data, len, ft->callbacks_context);
+            if (rc) { // Tell filetransfering is finished.
+                vlogW(TAG "file transferring finished over channel %d, ",
+                       "closing channel.", channel);
+                ela_stream_close_channel(ft->session, ft->stream, item->channel);
+            }
         }
         break;
 
@@ -572,32 +592,31 @@ static void stream_channel_pending(ElaSession *ws, int stream, int channel,
     assert(ft->state   == FileTransferConnection_connected);
 
     if (ft->sender_receiver != SENDER) {
-        vlogE("Filetransfer: Receiver received unexpected filetransfer pending "
-              "event over channel %d, dropping.", channel);
+        vlogE(TAG "receiver received unexpected filetransfer pending event "
+              "over channel %d, dropping.", channel);
         return;
     }
 
     item = get_fileinfo_channel(ft, channel);
     if (!item) {
-        vlogE("Filetransfer: No transfer file found to channel %d, dropping "
-              "this channel pending event.", channel);
+        vlogE(TAG "no transfer fileinfo using channel %d found, dropping "
+              "channel pending event.", channel);
         return;
     }
 
     if (item->state != FileTransferState_transfering) {
-        vlogW("Filetransfer: Sender received filetransfer pending event over "
-              "channel %d in wrong state %d, dropping.", channel, item->state);
+        vlogW(TAG "sender received filetransfer pending event over channel %d "
+              "in wrong state %d, dropping.", channel, item->state);
         return;
     }
 
-    vlogD("Filetransfer: Sender received pending event to pause transfer %s "
-          "over channel %d.", item->fileid, item->channel);
+    vlogD(TAG "sender received pending event to pause transfer %s over "
+          "channel %d.", item->fileid, item->channel);
 
     if (ft->callbacks.pending) {
         char fileid[ELA_MAX_FILE_ID_LEN + 1] = {0};
-
         strcpy(fileid, item->fileid);
-        ft->callbacks.pending(ft, fileid, ft->context);
+        ft->callbacks.pending(ft, fileid, ft->callbacks_context);
     }
     item->state = FileTransferState_standby;
 }
@@ -614,32 +633,31 @@ static void stream_channel_resume(ElaSession *ws, int stream, int channel,
     assert(ft->state   == FileTransferConnection_connected);
 
     if (ft->sender_receiver != SENDER) {
-        vlogE("Filetransfer: Receiver received unexpected filetransfer resume "
-              "event over channel %d, dropping.", channel);
+        vlogE(TAG "receiver received unexpected filetransfer resume event "
+              "over channel %d, dropping.", channel);
         return;
     }
 
     item = get_fileinfo_channel(ft, channel);
     if (!item) {
-        vlogE("Filetransfer: No transfer file found to channel %d, dropping "
-              "this channel resume event.", channel);
+        vlogE(TAG "no transfer fileinfo using channel %d found, dropping "
+              "channel resume event.", channel);
         return;
     }
 
     if (item->state != FileTransferState_standby) {
-        vlogW("Filetransfer: Sender received filetransfer resume event over "
-              "channel %d in wrong state %d, dropping.", channel, item->state);
+        vlogW(TAG "sender received filetransfer resume event over channel %d "
+              "in wrong state %d, dropping.", channel, item->state);
         return;
     }
 
-    vlogD("Filetransfer: Sender received resume event to continue transfer "
-          "%s over channel %d.", item->fileid, item->channel);
+    vlogD(TAG "sender received resume event to continue transfer %s over "
+          "channel %d.", item->fileid, item->channel);
 
     if (ft->callbacks.resume) {
         char fileid[ELA_MAX_FILE_ID_LEN + 1]= {0};
-
         strcpy(fileid, item->fileid);
-        ft->callbacks.resume(ft, item->fileid, ft->context);
+        ft->callbacks.resume(ft, item->fileid, ft->callbacks_context);
     }
     item->state = FileTransferState_transfering;
 }
@@ -657,79 +675,78 @@ int ela_filetransfer_init(ElaCarrier *w,
                           void *context)
 {
     FileTransferExt *ext;
-    int rc;
 
     if (!w) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
 
-    rc = ela_session_init(w);
-    if (rc < 0)
+    if (ela_session_init(w) < 0)
         return -1;
 
     pthread_mutex_lock(&w->ext_mutex);
     if (w->extension) {
-        vlogD("Filetransfer: filetransfer initialized already.");
+        vlogD(TAG "filetransfer initialized already.");
         pthread_mutex_unlock(&w->ext_mutex);
         ela_session_cleanup(w);
         return 0;
     }
 
     ext = (FileTransferExt *)rc_zalloc(sizeof(*ext), filetransferext_destroy);
-    if (!ext) {
-        pthread_mutex_unlock(&w->ext_mutex);
-        ela_session_cleanup(w);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return -1;
-    }
+    if (!ext)
+        goto error_exit;
 
     ext->filereqs = filereqs_create(8);
-    if (!ext->filereqs) {
-        pthread_mutex_unlock(&w->ext_mutex);
-        ela_session_cleanup(w);
-        deref(ext);
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
-        return -1;
+    if (!ext->filereqs)
+        goto error_exit;
+
+    if (callback) {
+        ext->connect_callback = callback;
+        ext->connect_context = context;
     }
 
-    ext->connect_callback = *callback;
-    ext->connect_context = context;
-
-    ext->stream_callbacks.stream_data = NULL;
-    ext->stream_callbacks.state_changed = stream_state_changed;
-    ext->stream_callbacks.channel_open = stream_channel_open;
-    ext->stream_callbacks.channel_opened = NULL;
-    ext->stream_callbacks.channel_close = stream_channel_close;
-    ext->stream_callbacks.channel_data = stream_channel_data;
+    ext->stream_callbacks.state_changed   = stream_state_changed;
+    ext->stream_callbacks.channel_open    = stream_channel_open;
+    ext->stream_callbacks.channel_close   = stream_channel_close;
+    ext->stream_callbacks.channel_data    = stream_channel_data;
     ext->stream_callbacks.channel_pending = stream_channel_pending;
-    ext->stream_callbacks.channel_resume = stream_channel_resume;
+    ext->stream_callbacks.channel_resume  = stream_channel_resume;
 
     w->extension = ext;
     pthread_mutex_unlock(&w->ext_mutex);
 
-    ela_session_set_callback(w, bundle_prefix, sessionreq_callback, NULL);
+    ela_session_set_callback(w, bundle_prefix, sessionreq_callback, ext);
 
-    vlogD("Filetransfer: Initialize filetransfer extension success.");
+    vlogD(TAG "initialize filetransfer extension success.");
     return 0;
+
+error_exit:
+    pthread_mutex_unlock(&w->ext_mutex);
+    ela_session_cleanup(w);
+    deref(ext);
+    ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+    return -1;
 }
 
 void ela_filetransfer_cleanup(ElaCarrier *w)
 {
+    bool cleanup = false;
+
     if (!w)
         return;
 
-    pthread_mutex_lock(&w->ext_mutex);
-    if (!w->extension) {
-        pthread_mutex_unlock(&w->ext_mutex);
-        return;
-    }
+    ela_session_set_callback(w, bundle_prefix, NULL, NULL);
 
-    deref(w->extension);
+    pthread_mutex_lock(&w->ext_mutex);
+    if (w->extension) {
+        deref(w->extension);
+        w->extension = NULL;
+        cleanup = true;
+    }
     pthread_mutex_unlock(&w->ext_mutex);
 
-    ela_session_set_callback(w, bundle_prefix, NULL, NULL);
-    ela_session_cleanup(w);
+    if (cleanup)
+        ela_session_cleanup(w);
 }
 
 char *ela_filetransfer_fileid(char *fileid, size_t length)
@@ -751,7 +768,7 @@ static void filetransfer_destroy(void *p)
     ElaFileTransfer *ft = (ElaFileTransfer *)p;
     size_t i;
 
-    vlogD("Filetransfer: Filetransfer to %s destroyed.", ft->to);
+    vlogD(TAG "filetransfer instance to %s destroyed.", ft->address);
 
     for (i = 0; i < sizeof(ft->files); i++) {
         if (ft->files[i].filename)
@@ -788,7 +805,7 @@ ElaFileTransfer *ela_filetransfer_new(ElaCarrier *w, const char *address,
 
     ext = w->extension;
     if (!ext) {
-        vlogE("Filetransfer: Filetransfer has not been initialized yet.");
+        vlogE(TAG "filetransfer extension has not been initialized yet.");
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return NULL;
     }
@@ -815,22 +832,22 @@ ElaFileTransfer *ela_filetransfer_new(ElaCarrier *w, const char *address,
 
     ft->session = ela_session_new(w, address);
     if (!ft->session) {
-        vlogE("Filetransfer: Create filetransfer session to %s error",
+        vlogE(TAG "creating filetransfer session to %s error",
               address);
         deref(ft);
         return NULL;
     }
 
-    strcpy(ft->to, address);
+    strcpy(ft->address, address);
     ft->ext = ext;
     ft->stream = -1;
     ft->stream_callbacks = &ext->stream_callbacks;
 
     ft->callbacks = *callbacks;
-    ft->context = context;
+    ft->callbacks_context = context;
     ft->state = FileTransferConnection_initialized;
 
-    vlogD("Filetransfer: Filetransfer instance to %s created.", address);
+    vlogD(TAG "filetransfer instance to %s created.", address);
     return ft;
 }
 
@@ -842,21 +859,22 @@ void ela_filetransfer_close(ElaFileTransfer *ft)
     if (!ft)
         return;
 
-    fr = filereqs_remove(ft->ext->filereqs, ft->to);
+    fr = filereqs_remove(ft->ext->filereqs, ft->address);
     if (fr) {
-        assert(ft->stream == -1);
+        assert(ft->stream == -1); //TODO: ???
         deref(fr);
 
-        rc = ela_session_reply_request(ft->session, bundle_prefix, 1, "N/A");
+        rc = ela_session_reply_request(ft->session, bundle_prefix, 2,
+                                       "closed filetransfer");
         if (rc < 0)
-            vlogE("Filetransfer: Receiver refusing filetransfer connection "
-                  "request from %s error (0x%x).", ft->to, ela_get_error());
+            vlogE(TAG "receiver refusing filetransfer connection request "
+                  "from %s error (0x%x).", ft->address, ela_get_error());
         else
-            vlogD("Filetransfer: Receiver refused filetransfer connection "
-                  "request from %s.", ft->to);
+            vlogD(TAG "receiver refused filetransfer connection request "
+                  "from %s.", ft->address);
     }
 
-    vlogD("Filetransfer: Closing filetransfer instance to %s.", ft->to);
+    vlogD(TAG "closing filetransfer instance to %s.", ft->address);
 
     if (ft->stream > 0) {
         ela_session_remove_stream(ft->session, ft->stream);
@@ -871,7 +889,7 @@ void ela_filetransfer_close(ElaFileTransfer *ft)
     ft->state = FileTransferConnection_closed;
     deref(ft);
 
-    vlogD("Filetransfer: Filetransfer instance to %s closed.", ft->to);
+    vlogD(TAG "filetransfer instance to %s closed.", ft->address);
 }
 
 char *ela_filetransfer_get_fileid(ElaFileTransfer *ft, const char *filename,
@@ -941,12 +959,12 @@ int ela_filetransfer_connect(ElaFileTransfer *ft)
                                 ELA_STREAM_RELIABLE | ELA_STREAM_MULTIPLEXING,
                                 ft->stream_callbacks, ft);
     if (ft->stream < 0) {
-        vlogE("Filetransfer: Sender adding reliable/multiplexing stream "
-              "error (0x%x) when to begin connecting.", ela_get_error());
+        vlogE(TAG "sender adding reliable/multiplexing stream error (0x%x) "
+              "when begin connection.", ela_get_error());
         return -1;
     }
 
-    vlogT("Filetranfer: Sender added reliable/multipexing stream success.");
+    vlogD(TAG "sender added reliable/multipexing stream success.");
     return 0;
 }
 
@@ -960,17 +978,17 @@ int ela_filetransfer_accept_connect(ElaFileTransfer *ft)
     }
 
     if (ft->state != FileTransferConnection_initialized) {
-        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
-        return  -1;
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_WRONG_STATE));
+        return -1;
     }
 
     assert(ft->session);
     assert(ft->stream < 0);
 
-    fr = filereqs_remove(ft->ext->filereqs, ft->to);
+    fr = filereqs_remove(ft->ext->filereqs, ft->address);
     if (!fr) {
-        vlogE("Filetransfer: No filetransfer connection requests from %s "
-              "found.", ft->to);
+        vlogE(TAG "no filetransfer connection requests from %s found.",
+              ft->address);
 
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
         return -1;
@@ -991,17 +1009,16 @@ int ela_filetransfer_accept_connect(ElaFileTransfer *ft)
                             ELA_STREAM_RELIABLE | ELA_STREAM_MULTIPLEXING,
                             ft->stream_callbacks, ft);
     if (ft->stream < 0) {
-        vlogE("Filetransfer: Receiver adding reliable/multiplexing stream "
-              "error (0x%x) when to accept connect.", ela_get_error());
+        vlogE(TAG "receiver adding reliable/multiplexing stream error (0x%x) "
+              "when accept connection.", ela_get_error());
         return -1;
     }
 
-    vlogT("Filetranfer: Receiver add reliable/multipexing stream success");
+    vlogD(TAG "receiver add reliable/multipexing stream success");
     return 0;
 }
 
-int ela_filetransfer_add(ElaFileTransfer *ft,
-                         const ElaFileTransferInfo *fileinfo)
+int ela_filetransfer_add(ElaFileTransfer *ft, const ElaFileTransferInfo *fileinfo)
 {
     char cookie[sizeof(ElaFileTransferInfo) + 64] = { 0 };
     char fileid[ELA_MAX_FILE_ID_LEN + 1] = { 0 };
@@ -1050,23 +1067,28 @@ int ela_filetransfer_add(ElaFileTransfer *ft,
     item->filename = strdup(fileinfo->filename);
     item->filesz = fileinfo->size;
 
-    sprintf(cookie, "%s:%s:%s:%llu", bundle_prefix, fileinfo->filename, fileid,
-            item->filesz);
+    if (!item->filename) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_OUT_OF_MEMORY));
+        return -1;
+    }
+
+    sprintf(cookie, "%s:%s:%s:%llu", bundle_prefix, fileinfo->filename,
+            fileid, _LLUV(item->filesz));
 
     item->channel = ela_stream_open_channel(ft->session, ft->stream, cookie);
     if (item->channel < 0) {
-        vlogD("Filetransfer: Sender openning channel to transfer %s:%s error "
-              "(0x%x).", item->fileid, fileinfo->filename,
-              ela_get_error());
+        vlogD(TAG "sender openning channel to transfer %s:%s error (0x%x).",
+              item->fileid, fileinfo->filename, ela_get_error());
 
         filename_safe_free(item);
         return -1;
     }
 
     item->state = FileTransferState_standby;
-    vlogD("Filetransfer: Sender opened channel %d to transfer [%s:%s:%llu] "
-          "success.", item->channel, item->fileid, fileinfo->filename,
-          item->filesz);
+    vlogD(TAG "sender opened channel %d to transfer [%s:%s:%llu] succcess.",
+          item->channel, item->fileid, fileinfo->filename,
+          _LLUV(item->filesz));
+
     return 0;
 }
 
@@ -1075,6 +1097,7 @@ int ela_filetransfer_pull(ElaFileTransfer *ft, const char *fileid,
 {
     FileTransferItem *item;
     ssize_t rc;
+    uint64_t _offset;
 
     if (!ft || !fileid || !*fileid) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
@@ -1111,18 +1134,18 @@ int ela_filetransfer_pull(ElaFileTransfer *ft, const char *fileid,
     assert(ft->stream > 0);
     assert(item->channel > 0);
 
+    _offset = (uint64_t)htonll(offset);
     rc = ela_stream_write_channel(ft->session, ft->stream, item->channel,
-                                  &offset, sizeof(offset));
+                                  &_offset, sizeof(_offset));
     if (rc < 0) {
-        vlogD("Filetransfer: Receiver send pull request to transfer %s over "
-              "channel %d error (0x%x).", item->fileid, item->channel,
-              ela_get_error());
+        vlogD(TAG "receiver send pull request to transfer %s error (0x%x).",
+              item->fileid, ela_get_error());
         return -1;
     }
 
     item->state = FileTransferState_transfering;
-    vlogD("Filetransfer: Receiver send pull request to transfer [%s:%llu] over "
-          "channel %d success.", item->fileid, item->filesz, item->channel);
+    vlogD(TAG "receiver send pull request to transfer %s over channel %d "
+          "with offset %llu.", item->fileid, item->channel, _LLUV(offset));
     return 0;
 }
 
@@ -1170,13 +1193,13 @@ int ela_filetransfer_send(ElaFileTransfer *ft, const char *fileid,
     rc = ela_stream_write_channel(ft->session, ft->stream, item->channel,
                                   data, length);
     if (rc < 0) {
-        vlogE("Filetransfer: Sender sending file %s over channel %d error (0x%x).",
+        vlogE(TAG "sender sending file %s data over channel %d error (0x%x).",
               item->fileid, item->channel, ela_get_error());
         return -1;
     }
 
-    vlogV("Filetransfer: Sender send file %s data over channel %d with length "
-          "%z success.", item->fileid, item->channel, length);
+    vlogV(TAG "sender send file %s data over channel %d with length %z.",
+          item->fileid, item->channel, length);
     return 0;
 }
 
@@ -1215,8 +1238,8 @@ int ela_filetransfer_cancel(ElaFileTransfer *ft, const char *fileid)
     assert(item->channel > 0);
 
     ela_stream_close_channel(ft->session, ft->stream, item->channel);
-    vlogT("FileTransfer: Receiver canceled to transfer file %s over channel"
-          "%d.", item->fileid, item->channel);
+    vlogT(TAG "receiver canceled to transfer file %s over channel %d.",
+          item->fileid, item->channel);
     return 0;
 }
 
@@ -1257,14 +1280,13 @@ int ela_filetransfer_pend(ElaFileTransfer *ft, const char *fileid)
 
     rc = ela_stream_pend_channel(ft->session, ft->stream, item->channel);
     if (rc < 0) {
-        vlogE("Filetransfer: Receiver pending transfer file %s over channel "
-              "%d error (0x%x).", item->fileid, item->channel,
-              ela_get_error());
+        vlogE(TAG "receiver pending transfer file %s error (0x%x).",
+              item->fileid, item->channel, ela_get_error());
         return -1;
     }
 
     item->state = FileTransferState_standby;
-    vlogT("FileTransfer: Receiver pended to transfer file %s over channel %d.",
+    vlogT(TAG "receiver pended to transfer file %s over channel %d.",
           item->fileid, item->channel);
     return 0;
 }
@@ -1306,14 +1328,13 @@ int ela_filetransfer_resume(ElaFileTransfer *ft, const char *fileid)
 
     rc = ela_stream_resume_channel(ft->session, ft->stream, item->channel);
     if (rc < 0) {
-        vlogE("Filetransfer: Receiver resumming transfer file %s over channel"
-              "%d error (0x%x).", item->fileid, item->channel,
-              ela_get_error());
+        vlogE(TAG "receiver resumming transfer file %s error (0x%x).",
+              item->fileid, ela_get_error());
         return -1;
     }
 
     item->state = FileTransferState_transfering;
-    vlogT("FileTransfer: Receiver resumed to transfer file %s over channel %d.",
+    vlogT(TAG "receiver resumed to transfer file %s over channel %d.",
           item->fileid, item->channel);
     return 0;
 }

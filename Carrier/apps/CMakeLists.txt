@@ -14,6 +14,10 @@ add_submodule(elapfd
     DIRECTORY pfd
     DEPENDS ${DEPEND_MODULES})
 
+add_submodule(elafile
+    DIRECTORY file
+    DEPENDS ${DEPEND_MODULES}  ela-filetransfer)
+
 add_submodule(elaerr
     DIRECTORY errstr
     DEPENDS ${DEPEND_MODULES})

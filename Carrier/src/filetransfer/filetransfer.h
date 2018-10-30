@@ -54,6 +54,9 @@ extern "C" {
 #define SENDER                          1
 #define RECEIVER                        2
 
+#define _LLUV(val)                      ((unsigned long long)(val))
+#define _LLUP(addr)                     ((unsigned long long *)(addr))
+
 typedef struct FileTransferExt          FileTransferExt;
 typedef struct FileTransferItem         FileTransferItem;
 
@@ -94,7 +97,7 @@ struct FileTransferItem {
 struct ElaFileTransfer {
     FileTransferExt         *ext;
 
-    char                    to[ELA_MAX_EXTENSION_NAME_LEN + ELA_MAX_FILE_ID_LEN + 2];
+    char                    address[ELA_MAX_EXTENSION_NAME_LEN + ELA_MAX_ID_LEN + 2];
     FileTransferItem        files[ELA_MAX_TRANSFERFILE_COUNT];
 
     ElaSession              *session;
@@ -102,8 +105,8 @@ struct ElaFileTransfer {
     int                     error;
     int                     state;  //ElaFileTransferConnection.
 
-    ElaFileTransferCallbacks    callbacks;
-    void                    *context;
+    ElaFileTransferCallbacks   callbacks;
+    void                    *callbacks_context;
 
     char                    *sdp;
     size_t                  sdp_len;
