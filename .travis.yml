@@ -7,8 +7,15 @@ install:
   - cd $GOPATH/src/github.com/Masterminds/glide && git checkout e73500c735917e39a8b782e0632418ab70250341 && go install && cd -
   - export PATH=$PATH:$PWD/src/github.com/elastos/
   - glide install
-branches:
-  only:
-  - master
-  - dev
-  - /(release).{7}/
+deploy:
+  provider: releases
+  api_key: $GIT_TOKEN
+  file: ela
+  skip_cleanup: true
+  on:
+    tags: true
+    branches:
+      only:
+      - master
+      - dev
+      - /(release).{7}/
