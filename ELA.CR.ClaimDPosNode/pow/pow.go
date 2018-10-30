@@ -223,7 +223,7 @@ func (pow *PowService) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 
 	log.Debugf("Pow generating %d blocks", n)
 	i := uint32(0)
-	blockHashes := make([]*common.Uint256, n)
+	blockHashes := make([]*common.Uint256, 0)
 
 	for {
 		log.Debug("<================Discrete Mining==============>\n")
