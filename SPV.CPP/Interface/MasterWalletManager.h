@@ -53,8 +53,7 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					bool singleAddress,
-					const std::string &language = "english");
+					bool singleAddress);
 
 			/**
 			  * Create a multi-sign master wallet by mnemonic phrase password and related co-signers, or return existing master wallet if current master wallet manager has the master wallet id.
@@ -101,8 +100,7 @@ namespace Elastos {
 					const std::string &phrasePassword,
 					const std::string &payPassword,
 					const nlohmann::json &coSigners,
-					uint32_t requiredSignCount,
-					const std::string &language = "english");
+					uint32_t requiredSignCount);
 
 
 			/**
@@ -162,8 +160,7 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					bool singleAddress,
-					const std::string &language = "english");
+					bool singleAddress);
 
 			/**
 			 * Export key store content of the master wallet in json format.

@@ -13,21 +13,15 @@ namespace Elastos {
 
 		StandardAccount::StandardAccount(const std::string &rootPath,
 										 const std::string &phrase,
-										 const std::string &language,
 										 const std::string &phrasePassword,
 										 const std::string &payPassword) :
-				_rootPath(rootPath),
-				_language(language) {
+				_rootPath(rootPath) {
 
 			CMemBlock<char> phraseData;
 			phraseData.SetMemFixed(phrase.c_str(), phrase.size() + 1);
-			resetMnemonic(_language);
 
-			if (!WalletTool::PhraseIsValid(phraseData, _mnemonic->words())) {
-				resetMnemonic("chinese");
-				ParamChecker::checkCondition(!WalletTool::PhraseIsValid(phraseData, _mnemonic->words()),
-											 Error::Mnemonic, "Invalid mnemonic words");
-			}
+			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(boost::filesystem::path(_rootPath), phrase));
+			_language = _mnemonic->GetLanguage();
 
 			CMBlock cbPhrase0 = Utils::convertToMemBlock(phrase);
 			_encryptedMnemonic = Utils::encrypt(cbPhrase0, payPassword);
@@ -61,7 +55,7 @@ namespace Elastos {
 
 		StandardAccount::StandardAccount(const std::string &rootPath) :
 				_rootPath(rootPath) {
-
+			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(_rootPath));
 		}
 
 		const CMBlock &StandardAccount::GetEncryptedPhrasePassword() const {
@@ -120,16 +114,12 @@ namespace Elastos {
 			p._encryptedKey = Utils::decodeHex(j["Key"].get<std::string>());
 			p._encryptedMnemonic = Utils::decodeHex(j["Mnemonic"].get<std::string>());
 			p._encryptedPhrasePass = Utils::decodeHex(j["PhrasePassword"].get<std::string>());
-			p.resetMnemonic(j["Language"].get<std::string>());
+			p._language = j["Language"].get<std::string>();
 			p._publicKey = j["PublicKey"].get<std::string>();
 			UInt256 chainCode = Utils::UInt256FromString(j["IDChainCode"].get<std::string>());
 			CMBlock pubKey = Utils::decodeHex(j["IDMasterKeyPubKey"].get<std::string>());
 			p._masterIDPubKey = MasterPubKey(pubKey, chainCode);
-		}
-
-		void StandardAccount::resetMnemonic(const std::string &language) {
-			_language = language;
-			_mnemonic = boost::shared_ptr<Mnemonic>(new Mnemonic(language, _rootPath));
+			p._mnemonic->LoadLanguage(p._language);
 		}
 
 		UInt512 StandardAccount::DeriveSeed(const std::string &payPassword) {

@@ -131,7 +131,6 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					const std::string &language,
 					bool singleAddress,
 					bool p2pEnable,
 					const std::string &rootPath,
@@ -169,7 +168,6 @@ namespace Elastos {
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
 					const std::string &payPassword,
-					const std::string &language,
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount,
 					bool p2pEnable,
@@ -181,7 +179,6 @@ namespace Elastos {
 									const std::string &payPassword);
 
 			void importFromMnemonic(const std::string &mnemonic,
-									const std::string &language,
 									const std::string &phrasePassword,
 									const std::string &payPassword);
 
@@ -205,7 +202,6 @@ namespace Elastos {
 			void initFromMultiSigners(
 					const std::string &mnemonic,
 					const std::string &phrasePassword,
-					const std::string &language,
 					const std::string &payPassword,
 					const nlohmann::json &coSigners,
 					uint32_t requiredSignCount);

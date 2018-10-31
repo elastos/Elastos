@@ -55,7 +55,6 @@ namespace Elastos {
 								   const std::string &mnemonic,
 								   const std::string &phrasePassword,
 								   const std::string &payPassword,
-								   const std::string &language,
 								   bool singleAddress,
 								   bool p2pEnable,
 								   const std::string &rootPath,
@@ -67,13 +66,12 @@ namespace Elastos {
 				_localStore(rootPath) {
 
 			ParamChecker::checkArgumentNotEmpty(id, "Master wallet id");
-			ParamChecker::checkArgumentNotEmpty(language, "Language");
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
 			_localStore.IsSingleAddress() = singleAddress;
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
-			importFromMnemonic(mnemonic, language, phrasePassword, payPassword);
+			importFromMnemonic(mnemonic, phrasePassword, payPassword);
 		}
 
 		MasterWallet::MasterWallet(const std::string &id,
@@ -91,7 +89,7 @@ namespace Elastos {
 
 			ParamChecker::checkArgumentNotEmpty(id, "Master wallet id");
 			ParamChecker::checkPassword(backupPassword, "Backup");
-			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(payPassword, "Pay");
 			ParamChecker::checkArgumentNotEmpty(rootPath, "Root path");
 
 			_idAgentImpl = boost::shared_ptr<IdAgentImpl>(new IdAgentImpl(this, _localStore.GetIdAgentInfo()));
@@ -136,7 +134,7 @@ namespace Elastos {
 
 		MasterWallet::MasterWallet(const std::string &id, const std::string &mnemonic,
 								   const std::string &phrasePassword, const std::string &payPassword,
-								   const std::string &language, const nlohmann::json &coSigners,
+								   const nlohmann::json &coSigners,
 								   uint32_t requiredSignCount, bool p2pEnable, const std::string &rootPath,
 								   MasterWalletInitFrom from) :
 				_id(id),
@@ -147,11 +145,10 @@ namespace Elastos {
 			ParamChecker::checkArgumentNotEmpty(id, "Master wallet id");
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
-			ParamChecker::checkArgumentNotEmpty(language, "Language");
 			ParamChecker::checkArgumentNotEmpty(rootPath, "Root path");
 			ParamChecker::checkPubKeyJsonArray(coSigners, requiredSignCount - 1, "Signers");
 
-			initFromMultiSigners(mnemonic, phrasePassword, language, payPassword, coSigners, requiredSignCount);
+			initFromMultiSigners(mnemonic, phrasePassword, payPassword, coSigners, requiredSignCount);
 		}
 
 		MasterWallet::~MasterWallet() {
@@ -160,7 +157,7 @@ namespace Elastos {
 
 		std::string MasterWallet::GenerateMnemonic(const std::string &language, const std::string &rootPath) {
 			CMemBlock<uint8_t> seed128 = WalletTool::GenerateSeed128();
-			Mnemonic mnemonic(language, rootPath);
+			Mnemonic mnemonic(language, boost::filesystem::path(rootPath));
 			CMemBlock<char> phrase = WalletTool::GeneratePhraseFromSeed(seed128, mnemonic.words());
 			return (const char *) phrase;
 		}
@@ -295,7 +292,7 @@ namespace Elastos {
 		void MasterWallet::importFromKeyStore(const nlohmann::json &keystoreContent, const std::string &backupPassword,
 											  const std::string &payPassword) {
 			ParamChecker::checkPassword(backupPassword, "Backup");
-			ParamChecker::checkPassword(payPassword, "Pay");
+			ParamChecker::checkPasswordWithNullLegal(payPassword, "Pay");
 
 			KeyStore keyStore(_rootPath);
 			ParamChecker::checkCondition(!keyStore.open(keystoreContent, backupPassword), Error::WrongPasswd,
@@ -311,14 +308,13 @@ namespace Elastos {
 		}
 
 		void MasterWallet::importFromMnemonic(const std::string &mnemonic,
-											  const std::string &languange,
 											  const std::string &phrasePassword,
 											  const std::string &payPassword) {
 			ParamChecker::checkArgumentNotEmpty(mnemonic, "Mnemonic");
 			ParamChecker::checkPassword(payPassword, "Pay");
 			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
 
-			_localStore.Reset(mnemonic, languange, phrasePassword, payPassword);
+			_localStore.Reset(mnemonic, phrasePassword, payPassword);
 			initSubWalletsPubKeyMap(payPassword);
 		}
 
@@ -533,6 +529,10 @@ namespace Elastos {
 			tryInitCoinConfig();
 
 			IAccount *account = keyStore.createAccountFromJson(payPassword);
+			if (!account->IsReadOnly()) {
+				ParamChecker::checkPassword(payPassword, "Pay");
+			}
+
 			_localStore.Reset(account);
 			_localStore.IsSingleAddress() = keyStore.json().getIsSingleAddress();
 			initSubWallets(keyStore.json().getCoinInfoList());
@@ -571,9 +571,9 @@ namespace Elastos {
 		}
 
 		void MasterWallet::initFromMultiSigners(const std::string &mnemonic, const std::string &phrasePassword,
-												const std::string &language, const std::string &payPassword,
+												const std::string &payPassword,
 												const nlohmann::json &coSigners, uint32_t requiredSignCount) {
-			_localStore.Reset(mnemonic, language, phrasePassword, coSigners, payPassword, requiredSignCount);
+			_localStore.Reset(mnemonic, phrasePassword, coSigners, payPassword, requiredSignCount);
 		}
 
 		bool MasterWallet::IsEqual(const MasterWallet &wallet) const {
