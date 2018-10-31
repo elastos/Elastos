@@ -43,18 +43,5 @@ namespace Elastos {
 			return out;
 		}
 
-		bool WalletTool::PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList) {
-			bool out = false;
-			if (true == phrase && 0 < WordList.size()) {
-				const char *wordList[WordList.size()];
-				memset(wordList, 0, sizeof(wordList));
-				for (size_t i = 0; i < WordList.size(); i++) {
-					wordList[i] = WordList[i].c_str();
-				}
-				out = 1 == BRBIP39PhraseIsValid(wordList, phrase) ? true : false;
-			}
-			return out;
-		}
-		
 	}
 }

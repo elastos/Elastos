@@ -146,7 +146,7 @@ IMasterWallet *TestConnectPeer::importWithKeystore(boost::shared_ptr<MasterWalle
 IMasterWallet *TestConnectPeer::importWithMnemonic(boost::shared_ptr<MasterWalletManager> walletManager,
 												   const std::string &payPassword) {
 	std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-	walletManager->ImportWalletWithMnemonic("ELA", mnemonic, "", payPassword, false, "english");
+	walletManager->ImportWalletWithMnemonic("ELA", mnemonic, "", payPassword, false);
 	return walletManager->GetWallet("ELA");
 }
 

@@ -20,7 +20,6 @@ namespace Elastos {
 		public:
 			StandardAccount(const std::string &rootPath,
 							const std::string &phrase,
-							const std::string &language,
 							const std::string &phrasePassword,
 							const std::string &payPassword);
 
@@ -70,8 +69,6 @@ namespace Elastos {
 			TO_JSON(StandardAccount);
 
 			FROM_JSON(StandardAccount);
-
-			void resetMnemonic(const std::string &language);
 
 		private:
 			CMBlock _encryptedKey;
