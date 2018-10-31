@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
 
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -12,14 +13,14 @@ import (
 )
 
 type FeeHelper struct {
-	exchangeRate float64
+	chainParams *config.Params
 	chainStore   *blockchain.ChainStore
 }
 
 func NewFeeHelper(cfg *Config) *FeeHelper {
 	return &FeeHelper{
 		chainStore:   cfg.ChainStore,
-		exchangeRate: cfg.ExchangeRage,
+		chainParams: cfg.ChainParams,
 	}
 }
 
@@ -56,9 +57,11 @@ func (h *FeeHelper) GetTxFeeMap(tx *types.Transaction) (map[common.Uint256]commo
 
 					amount, ok := feeMap[v.AssetID]
 					if ok {
-						feeMap[v.AssetID] = amount + common.Fixed64(float64(mcAmount)*h.exchangeRate) - v.Value
+						feeMap[v.AssetID] = amount + common.Fixed64(
+							float64(mcAmount)*h.chainParams.ExchangeRate) - v.Value
 					} else {
-						feeMap[v.AssetID] = common.Fixed64(float64(mcAmount)*h.exchangeRate) - v.Value
+						feeMap[v.AssetID] = common.Fixed64(float64(
+							mcAmount)*h.chainParams.ExchangeRate) - v.Value
 					}
 				}
 			}

@@ -5,6 +5,7 @@ import (
 	"container/list"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -85,9 +86,9 @@ type ChainStore struct {
 	rollbackFunctions []*action
 }
 
-func NewChainStore(genesisBlock *types.Block) (*ChainStore, error) {
+func NewChainStore(path string, genesisBlock *types.Block) (*ChainStore, error) {
 	// TODO: read config file decide which db to use.
-	levelDB, err := database.NewLevelDB("Chain")
+	levelDB, err := database.NewLevelDB(filepath.Join(path, "Chain"))
 	if err != nil {
 		return nil, err
 	}
@@ -425,7 +426,7 @@ func (c *ChainStore) PersistSpvMainchainTx(batch database.Batch, tx *ela.Transac
 	return nil
 }
 
-func (c *ChainStore) GetSpvMainchainTx(txId Uint256) (*ela.Transaction, error) {
+func (c *ChainStore) GetSpvMainchainTx(txId *Uint256) (*ela.Transaction, error) {
 	key := append([]byte{byte(IX_SPV_MainChain_tx)}, txId.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {

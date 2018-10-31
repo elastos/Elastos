@@ -27,8 +27,7 @@ type TxValidateAction struct {
 }
 
 type Validator struct {
-	assetId               common.Uint256
-	foundation            common.Uint168
+	chainParams           *config.Params
 	db                    *blockchain.ChainStore
 	txFeeHelper           *FeeHelper
 	spvService            *spv.Service
@@ -38,8 +37,7 @@ type Validator struct {
 
 func NewValidator(cfg *Config) *Validator {
 	v := &Validator{
-		assetId:     cfg.AssetId,
-		foundation:  cfg.FoundationAddress,
+		chainParams: cfg.ChainParams,
 		db:          cfg.ChainStore,
 		txFeeHelper: cfg.FeeHelper,
 		spvService:  cfg.SpvService,
@@ -125,11 +123,11 @@ func (v *Validator) checkReferencedOutput(txn *types.Transaction) error {
 			str := fmt.Sprint("Value of referenced transaction output is invalid")
 			return ruleError(ErrInvalidReferedTx, str)
 		}
-		// coinbase transaction only can be spent after got SpendCoinbaseSpan times confirmations
+		// coinbase transaction only can be spent after got CoinBaseLockTime times confirmations
 		if referTxn.IsCoinBaseTx() {
 			lockHeight := referTxn.LockTime
 			currentHeight := v.db.GetHeight()
-			if currentHeight-lockHeight < config.Parameters.ChainParam.SpendCoinbaseSpan {
+			if currentHeight-lockHeight < v.chainParams.CoinbaseMaturity {
 				str := fmt.Sprintf("output is locked till %d, current %d", lockHeight, currentHeight)
 				return ruleError(ErrIneffectiveCoinbase, str)
 			}
@@ -190,12 +188,12 @@ func (v *Validator) checkTransactionOutput(txn *types.Transaction) error {
 		var totalReward = common.Fixed64(0)
 		var foundationReward = common.Fixed64(0)
 		for _, output := range txn.Outputs {
-			if output.AssetID != v.assetId {
+			if output.AssetID != v.chainParams.ElaAssetId {
 				str := fmt.Sprint("[checkTransactionOutput] asset ID in coinbase is invalid")
 				return ruleError(ErrInvalidOutput, str)
 			}
 			totalReward += output.Value
-			if output.ProgramHash.IsEqual(v.foundation) {
+			if output.ProgramHash.IsEqual(v.chainParams.Foundation) {
 				foundationReward += output.Value
 			}
 		}
@@ -214,7 +212,7 @@ func (v *Validator) checkTransactionOutput(txn *types.Transaction) error {
 
 	// check if output address is valid
 	for _, output := range txn.Outputs {
-		if output.AssetID != v.assetId {
+		if !output.AssetID.IsEqual(v.chainParams.ElaAssetId) {
 			str := fmt.Sprint("[checkTransactionOutput] asset ID in output is invalid")
 			return ruleError(ErrInvalidOutput, str)
 		}
@@ -229,14 +227,15 @@ func (v *Validator) checkTransactionOutput(txn *types.Transaction) error {
 }
 
 func (v *Validator) checkOutputProgramHash(programHash common.Uint168) bool {
-	var empty = common.Uint168{}
-	prefix := programHash[0]
-	if prefix == common.PrefixStandard ||
-		prefix == common.PrefixMultisig ||
-		prefix == common.PrefixCrossChain ||
-		programHash == empty {
+	if programHash.IsEqual(common.Uint168{}) {
 		return true
 	}
+
+	switch programHash[0] {
+	case common.PrefixStandard, common.PrefixMultisig, common.PrefixCrossChain:
+		return true
+	}
+
 	return false
 }
 
@@ -272,7 +271,7 @@ func (v *Validator) checkTransactionUTXOLock(txn *types.Transaction) error {
 
 func (v *Validator) checkTransactionSize(txn *types.Transaction) error {
 	size := txn.GetSize()
-	if size <= 0 || size > config.Parameters.MaxBlockSize {
+	if size <= 0 || size > types.MaxBlockSize {
 		str := fmt.Sprintf("[checkTransactionSize] Invalid transaction size: %d bytes", size)
 		return ruleError(ErrTransactionSize, str)
 	}
@@ -317,8 +316,8 @@ func (v *Validator) checkTransactionBalance(txn *types.Transaction) error {
 	if err != nil {
 		return ruleError(ErrTransactionBalance, err.Error())
 	}
-	for _, v := range results {
-		if v < common.Fixed64(config.Parameters.PowConfiguration.MinTxFee) {
+	for _, fee := range results {
+		if fee < common.Fixed64(v.chainParams.MinTransactionFee) {
 			str := fmt.Sprint("[checkTransactionBalance] Transaction fee not enough")
 			return ruleError(ErrTransactionBalance, str)
 		}
@@ -443,7 +442,7 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		return ruleError(ErrRechargeToSideChain, str)
 	}
 
-	if config.Parameters.ExchangeRate <= 0 {
+	if v.chainParams.ExchangeRate <= 0 {
 		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid config exchange rate")
 		return ruleError(ErrRechargeToSideChain, str)
 	}
@@ -463,7 +462,7 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 		}
 	} else if txn.PayloadVersion == types.RechargeToSideChainPayloadVersion1 {
 		var err error
-		mainChainTransaction, err = v.db.GetSpvMainchainTx(payloadRecharge.MainChainTransactionHash)
+		mainChainTransaction, err = v.db.GetSpvMainchainTx(&payloadRecharge.MainChainTransactionHash)
 		if err != nil {
 			str := fmt.Sprint("[checkRechargeToSideChainTransaction] Get RechargeToSideChain transaction failed")
 			return ruleError(ErrRechargeToSideChain, str)
@@ -486,7 +485,7 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 	}
 
 	genesisHash, _ := v.db.GetBlockHash(uint32(0))
-	genesisProgramHash, err := genesisProgramHash(genesisHash)
+	genesisProgramHash, err := GenesisToProgramHash(&genesisHash)
 	if err != nil {
 		str := fmt.Sprint("[checkRechargeToSideChainTransaction] Genesis block bytes to program hash failed")
 		return ruleError(ErrRechargeToSideChain, str)
@@ -497,12 +496,14 @@ func (v *Validator) checkRechargeToSideChainTransaction(txn *types.Transaction) 
 	for i := 0; i < len(payloadObj.CrossChainAddresses); i++ {
 		if mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].ProgramHash.IsEqual(*genesisProgramHash) {
 			if payloadObj.CrossChainAmounts[i] < 0 || payloadObj.CrossChainAmounts[i] >
-				mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].Value-common.Fixed64(config.Parameters.MinCrossChainTxFee) {
+				mainChainTransaction.Outputs[payloadObj.OutputIndexes[i]].Value-
+					common.Fixed64(v.chainParams.MinCrossChainTxFee) {
 				str := fmt.Sprint("[checkRechargeToSideChainTransaction] Invalid transaction cross chain amount")
 				return ruleError(ErrRechargeToSideChain, str)
 			}
 
-			crossChainAmount := common.Fixed64(float64(payloadObj.CrossChainAmounts[i]) * config.Parameters.ExchangeRate)
+			crossChainAmount := common.Fixed64(float64(payloadObj.CrossChainAmounts[i]) *
+				v.chainParams.ExchangeRate)
 			oriOutputTotalAmount += crossChainAmount
 
 			programHash, err := common.Uint168FromAddress(payloadObj.CrossChainAddresses[i])
@@ -603,7 +604,8 @@ func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transacti
 			return ruleError(ErrCrossChain, str)
 		}
 		if txn.Outputs[payloadObj.OutputIndexes[i]].Value < 0 || payloadObj.CrossChainAmounts[i] < 0 ||
-			payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-common.Fixed64(config.Parameters.MinCrossChainTxFee) {
+			payloadObj.CrossChainAmounts[i] > txn.Outputs[payloadObj.OutputIndexes[i]].Value-
+				common.Fixed64(v.chainParams.MinCrossChainTxFee) {
 			str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transaction outputs")
 			return ruleError(ErrCrossChain, str)
 		}
@@ -625,7 +627,7 @@ func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transacti
 		totalOutput += output.Value
 	}
 
-	if totalInput-totalOutput < common.Fixed64(config.Parameters.MinCrossChainTxFee) {
+	if totalInput-totalOutput < common.Fixed64(v.chainParams.MinCrossChainTxFee) {
 		str := fmt.Sprint("[checkTransferCrossChainAssetTransaction] Invalid transaction fee")
 		return ruleError(ErrCrossChain, str)
 	}
@@ -633,15 +635,7 @@ func (v *Validator) checkTransferCrossChainAssetTransaction(txn *types.Transacti
 	return nil
 }
 
-func GetGenesisAddress(genesisHash common.Uint256) (string, error) {
-	programHash, err := genesisProgramHash(genesisHash)
-	if err != nil {
-		return "", err
-	}
-	return programHash.ToAddress()
-}
-
-func genesisProgramHash(genesisHash common.Uint256) (*common.Uint168, error) {
+func GenesisToProgramHash(genesisHash *common.Uint256) (*common.Uint168, error) {
 	buf := new(bytes.Buffer)
 	buf.WriteByte(byte(len(genesisHash.Bytes())))
 	buf.Write(genesisHash.Bytes())
