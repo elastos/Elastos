@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"os"
+	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strconv"
 	"time"
 
@@ -17,15 +17,12 @@ import (
 	sv "github.com/elastos/Elastos.ELA.SideChain.ID/service"
 
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/server"
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/service/httpnodeinfo"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
-
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
@@ -33,49 +30,37 @@ import (
 )
 
 const (
-	defaultMultiCoreNum = 4
-
 	printStateInterval = 10 * time.Second
-
-	restfulTlsPort = 443
 )
 
 var (
-	Version   string
+	// Build version generated when build program.
+	Version string
+
+	// The go source code version at build.
 	GoVersion string
 )
 
-func init() {
-	var coreNum int
-	if config.Parameters.MultiCoreNum > defaultMultiCoreNum {
-		coreNum = int(config.Parameters.MultiCoreNum)
-	} else {
-		coreNum = defaultMultiCoreNum
-	}
-
-	eladlog.Debug("The Core number is ", coreNum)
-	runtime.GOMAXPROCS(coreNum)
-}
-
 func main() {
-	eladlog.Info("Node version: ", Version)
+	// Use all processor cores.
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	// Block and transaction processing can cause bursty allocations.  This
+	// limits the garbage collector from excessively overallocating during
+	// bursts.  This value was arrived at with the help of profiling live
+	// usage.
+	debug.SetGCPercent(10)
+
+	eladlog.Infof("Node version: %s", Version)
 	eladlog.Info(GoVersion)
 
-	params := config.Parameters
-	foundation, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
-	if err != nil {
-		eladlog.Info("Please set correct foundation address in config file")
+	if loadConfigErr != nil {
+		eladlog.Fatalf("load config file failed %s", loadConfigErr)
 		os.Exit(-1)
 	}
 
 	eladlog.Info("1. BlockChain init")
-	genesisBlock, err := bc.GenesisBlock()
-	if err != nil {
-		eladlog.Fatalf("Get genesis block failed, error %s", err)
-		os.Exit(1)
-	}
-
-	idChainStore, err := bc.NewChainStore(genesisBlock)
+	idChainStore, err := bc.NewChainStore(cfg.dataDir, activeNetParams.GenesisBlock)
 	if err != nil {
 		eladlog.Fatalf("open chain store failed, %s", err)
 		os.Exit(1)
@@ -83,34 +68,40 @@ func main() {
 	defer idChainStore.Close()
 
 	chainCfg := blockchain.Config{
-		FoundationAddress: *foundation,
-		ChainStore:        idChainStore.ChainStore,
-		AssetId:           genesisBlock.Transactions[0].Hash(),
-		PowLimit:          params.ChainParam.PowLimit,
-		MaxOrphanBlocks:   params.ChainParam.MaxOrphanBlocks,
-		MinMemoryNodes:    params.ChainParam.MinMemoryNodes,
+		ChainParams: activeNetParams,
+		ChainStore:  idChainStore.ChainStore,
 	}
 
 	mempoolCfg := mempool.Config{
-		FoundationAddress: *foundation,
-		AssetId:           genesisBlock.Transactions[0].Hash(),
-		ExchangeRage:      params.ExchangeRate,
-		ChainStore:        idChainStore.ChainStore,
+		ChainParams: activeNetParams,
+		ChainStore:  idChainStore.ChainStore,
 	}
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
 	mempoolCfg.FeeHelper = txFeeHelper
 	chainCfg.GetTxFee = txFeeHelper.GetTxFee
 
 	eladlog.Info("2. SPV module init")
-	address, err := mempool.GetGenesisAddress(genesisBlock.Hash())
+	genesisHash := activeNetParams.GenesisBlock.Hash()
+	programHash, err := mempool.GenesisToProgramHash(&genesisHash)
 	if err != nil {
-		eladlog.Fatalf("Genesis block hash to address failed, %s", err)
+		eladlog.Fatalf("Genesis block hash to programHash failed, %s", err)
 		os.Exit(1)
 	}
+
+	genesisAddress, err := programHash.ToAddress()
+	if err != nil {
+		eladlog.Fatalf("Genesis program hash to address failed, %s", err)
+		os.Exit(1)
+	}
+
 	serviceCfg := spv.Config{
-		Logger:        spvslog,
-		ListenAddress: address,
-		ChainStore:    chainCfg.ChainStore,
+		DataDir:        filepath.Join(cfg.dataDir, "data_spv"),
+		Magic:          activeNetParams.SpvParams.Magic,
+		DefaultPort:    activeNetParams.SpvParams.DefaultPort,
+		SeedList:       activeNetParams.SpvParams.SeedList,
+		Foundation:     activeNetParams.SpvParams.Foundation,
+		GenesisAddress: genesisAddress,
+		TxStore:        spv.NewTxStore(idChainStore.ChainStore),
 	}
 	spvService, err := spv.NewService(&serviceCfg)
 	if err != nil {
@@ -134,7 +125,7 @@ func main() {
 	txPool := mempool.New(&mempoolCfg)
 
 	eladlog.Info("3. Start the P2P networks")
-	server, err := server.New(chain, txPool)
+	server, err := server.New(chain, txPool, activeNetParams)
 	if err != nil {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
@@ -142,14 +133,10 @@ func main() {
 	server.Start()
 
 	eladlog.Info("4. --Initialize pow service")
-	powParam := params.PowConfiguration
 	powCfg := pow.Config{
-		Foundation:                *foundation,
-		MinerAddr:                 powParam.PayToAddr,
-		MinerInfo:                 powParam.MinerInfo,
-		LimitBits:                 params.ChainParam.PowLimitBits,
-		MaxBlockSize:              params.MaxBlockSize,
-		MaxTxPerBlock:             params.MaxTxInBlock,
+		ChainParams:               activeNetParams,
+		MinerAddr:                 cfg.MinerAddr,
+		MinerInfo:                 cfg.MinerInfo,
 		Server:                    server,
 		Chain:                     chain,
 		TxMemPool:                 txPool,
@@ -160,7 +147,7 @@ func main() {
 	}
 
 	powService := pow.NewService(&powCfg)
-	if params.PowConfiguration.AutoMining {
+	if cfg.Mining {
 		eladlog.Info("Start POW Services")
 		go powService.Start()
 	}
@@ -179,21 +166,20 @@ func main() {
 		GetPayload:                  service.GetPayload,
 	}, idChainStore)
 
-	startHttpJsonRpc(params.HttpJsonPort, service)
-	startHttpRESTful(params.HttpRestPort, params.RestCertPath,
-	params.RestKeyPath, service.HttpService)
+	startHttpJsonRpc(cfg.HttpJsonPort, service)
+	startHttpRESTful(cfg.HttpRestPort, service.HttpService)
 
-	if params.HttpInfoStart {
+	if cfg.HttpInfoStart {
 		go httpnodeinfo.New(&httpnodeinfo.Config{
-			NodePort:     params.NodePort,
-			HttpJsonPort: params.HttpJsonPort,
-			HttpRestPort: params.HttpRestPort,
+			NodePort:     cfg.DefaultPort,
+			HttpJsonPort: cfg.HttpJsonPort,
+			HttpRestPort: cfg.HttpRestPort,
 			Chain:        chain,
 			Server:       server,
 		}).Start()
 	}
 
-	if params.PrintSyncState {
+	if cfg.PrintSyncState {
 		go printSyncState(idChainStore.ChainStore, server)
 	}
 
@@ -204,7 +190,6 @@ func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
 	s := jsonrpc.NewServer(&jsonrpc.Config{ServePort: port})
 
 	s.RegisterAction("setloglevel", service.SetLogLevel, "level")
-	s.RegisterAction("getinfo", service.GetInfo)
 	s.RegisterAction("getblock", service.GetBlockByHash, "blockhash", "verbosity")
 	s.RegisterAction("getcurrentheight", service.GetBlockHeight)
 	s.RegisterAction("getblockhash", service.GetBlockHash, "height")
@@ -220,9 +205,8 @@ func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
 	s.RegisterAction("getblockbyheight", service.GetBlockByHeight, "height")
 	s.RegisterAction("getdestroyedtransactions", service.GetDestroyedTransactionsByHeight, "height")
 	s.RegisterAction("getexistdeposittransactions", service.GetExistDepositTransactions)
-	s.RegisterAction("gettransactioninfo", service.GetTransactionInfoByHash, "txid")
-	s.RegisterAction("help", service.AuxHelp)
-	s.RegisterAction("submitsideauxblock", service.SubmitSideAuxBlock, "blockhash", "auxpow")
+	s.RegisterAction("gettransactioninfo", service.GetTransactionInfoByHash)
+	s.RegisterAction("submitsideauxblock", service.SubmitAuxBlock, "blockhash", "auxpow")
 	s.RegisterAction("createauxblock", service.CreateAuxBlock, "paytoaddress")
 	s.RegisterAction("togglemining", service.ToggleMining, "mining")
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
@@ -235,41 +219,9 @@ func startHttpJsonRpc(port uint16, service *sv.HttpServiceExtend) {
 	}()
 }
 
-func startHttpRESTful(port uint16, certFile, keyFile string, service *service.HttpService) {
+func startHttpRESTful(port uint16, service *service.HttpService) {
 	var (
-		s = restful.NewServer(&restful.Config{
-			ServePort: port,
-			NetListen: func(port uint16) (net.Listener, error) {
-				var err error
-				var listener net.Listener
-
-				if port%1000 == restfulTlsPort {
-					// load cert
-					cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-					if err != nil {
-						restlog.Error("load keys fail", err)
-						return nil, err
-					}
-
-					tlsConfig := &tls.Config{
-						Certificates: []tls.Certificate{cert},
-					}
-
-					restlog.Infof("TLS listen port is %d", port)
-					listener, err = tls.Listen("tcp", fmt.Sprint(":", port), tlsConfig)
-					if err != nil {
-						restlog.Error(err)
-						return nil, err
-					}
-
-				} else {
-					listener, err = net.Listen("tcp", fmt.Sprint(":", port))
-
-				}
-
-				return listener, err
-			},
-		})
+		s = restful.NewServer(&restful.Config{ServePort: port})
 
 		restartServer = func(params util.Params) (interface{}, error) {
 			if err := s.Stop(); err != nil {
@@ -345,7 +297,7 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *service.Ht
 
 func printSyncState(db *blockchain.ChainStore, server server.Server) {
 	logger := elalog.NewBackend(logWriter).Logger("STAT",
-	elalog.LevelInfo)
+		elalog.LevelInfo)
 
 	ticker := time.NewTicker(printStateInterval)
 	defer ticker.Stop()

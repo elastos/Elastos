@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/elastos/Elastos.ELA.Utility/http/util"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
 	id "github.com/elastos/Elastos.ELA.SideChain.ID/types"
@@ -12,6 +11,7 @@ import (
 	"github.com/elastos/Elastos.ELA.SideChain/service"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/http/util"
 )
 
 type HttpServiceExtend struct {

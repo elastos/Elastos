@@ -1,0 +1,40 @@
+{
+  "ActiveNet": "MainNet",
+  "Magic": 2018001,
+  "DefaultPort": 20608,
+  "SeedList": [
+    "did-mainnet-001.elastos.org",
+    "did-mainnet-002.elastos.org",
+    "did-mainnet-003.elastos.org",
+    "did-mainnet-004.elastos.org",
+    "did-mainnet-005.elastos.org"
+  ],
+  "SpvConfig": {
+    "Magic": 2017001,
+    "SeedList": [
+      "node-mainnet-002.elastos.org",
+      "node-mainnet-003.elastos.org",
+      "node-mainnet-004.elastos.org",
+      "node-mainnet-006.elastos.org",
+      "node-mainnet-007.elastos.org",
+    ],
+    "DefaultPort": 20866,
+    "Foundation": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
+  },
+  "Foundation": "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta",
+  "MinTxFee": 100,
+  "ExchangeRate": 1,
+  "DisableTxFilters": false,
+  "MinCrossChainTxFee": 10000,
+  "Mining": false,
+  "MinerInfo": "DID",
+  "MinerAddr": "fill this with miner address",
+  "LogLevel": 1,
+  "MaxLogsFolderSize": 2000000000,
+  "MaxPerLogFileSize": 20000000,
+  "HttpInfoStart": true,
+  "HttpInfoPort": 30603,
+  "HttpRestPort": 30604,
+  "HttpJsonPort": 30606,
+  "PrintSyncState": false
+}
