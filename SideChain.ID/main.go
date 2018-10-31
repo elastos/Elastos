@@ -352,6 +352,7 @@ func printSyncState(db *blockchain.ChainStore, server server.Server) {
 		buf.WriteString(" [")
 		for i, p := range peers {
 			buf.WriteString(strconv.FormatUint(uint64(p.ToPeer().Height()), 10))
+			buf.WriteString(" ")
 			buf.WriteString(p.ToPeer().String())
 			if i != len(peers)-1 {
 				buf.WriteString(", ")
