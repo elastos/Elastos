@@ -19,7 +19,6 @@ namespace Elastos {
 			static CMemBlock<char>
 			GeneratePhraseFromSeed(const CMBlock &seed, const std::vector<std::string> &WordList);
 
-			static bool PhraseIsValid(const CMemBlock<char> &phrase, const std::vector<std::string> &WordList);
 		};
 	}
 }

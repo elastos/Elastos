@@ -130,9 +130,9 @@ namespace Elastos {
 			_account = AccountPtr(account);
 		}
 
-		void MasterWalletStore::Reset(const std::string &phrase, const std::string &language,
+		void MasterWalletStore::Reset(const std::string &phrase,
 									  const std::string &phrasePassword, const std::string &payPassword) {
-			_account = AccountPtr(new StandardAccount(_rootPath, phrase, language, phrasePassword, payPassword));
+			_account = AccountPtr(new StandardAccount(_rootPath, phrase, phrasePassword, payPassword));
 		}
 
 		void MasterWalletStore::Reset(const nlohmann::json &coSigners, uint32_t requiredSignCount) {
@@ -145,11 +145,11 @@ namespace Elastos {
 					new MultiSignAccount(new SimpleAccount(privKey, payPassword), coSigners, requiredSignCount));
 		}
 
-		void MasterWalletStore::Reset(const std::string &phrase, const std::string &language,
+		void MasterWalletStore::Reset(const std::string &phrase,
 									  const std::string &phrasePassword, const nlohmann::json &coSigners,
 									  const std::string &payPassword, uint32_t requiredSignCount) {
 			_account = AccountPtr(new MultiSignAccount(
-					new StandardAccount(_rootPath, phrase, language, phrasePassword, payPassword),
+					new StandardAccount(_rootPath, phrase, phrasePassword, payPassword),
 					coSigners, requiredSignCount));
 		}
 

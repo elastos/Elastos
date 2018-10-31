@@ -48,7 +48,6 @@ namespace Elastos {
 			void Reset(IAccount *account);
 
 			void Reset(const std::string &phrase,
-					   const std::string &language,
 					   const std::string &phrasePassword,
 					   const std::string &payPassword);
 
@@ -61,7 +60,6 @@ namespace Elastos {
 					   uint32_t requiredSignCount);
 
 			void Reset(const std::string &phrase,
-					   const std::string &language,
 					   const std::string &phrasePassword,
 					   const nlohmann::json &coSigners,
 					   const std::string &payPassword,
