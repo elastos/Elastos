@@ -18,7 +18,6 @@
   "FoundationAddress": "8NRxtbMKScEWzW8gmPDGUZ8LSzm688nkZZ",
   "PrintSyncState": true,
   "MainChainDefaultPort":10338,
-  "MinPeersForSync": 1,
   "SpvMinOutbound": 3,
   "SpvMaxConnections": 10,
   "ExchangeRate": 1.0,
