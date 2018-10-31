@@ -590,7 +590,7 @@ func (sm *SyncManager) limitMap(m map[common.Uint256]struct{}, limit int) {
 
 // blockHandler is the main handler for the sync manager.  It must be run as a
 // goroutine.  It processes block and inv messages in a separate goroutine
-// from the peer handlers so the block (MsgBlock) messages are handled by a
+// from the peer handlers so the block (msgBlock) messages are handled by a
 // single thread without needing to lock memory data structures.  This is
 // important because the sync manager controls which blocks are needed and how
 // the fetching should proceed.

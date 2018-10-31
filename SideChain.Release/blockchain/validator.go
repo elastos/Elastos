@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -23,13 +22,13 @@ type BlockValidateAction struct {
 }
 
 type Validator struct {
-	cfg                  *Config
+	chain                *BlockChain
 	checkSanityFunctions []*BlockValidateAction
 }
 
-func NewValidator(cfg *Config) *Validator {
+func NewValidator(chain *BlockChain) *Validator {
 	v := &Validator{
-		cfg: cfg,
+		chain: chain,
 	}
 	v.RegisterFunc(ValidateFuncNames.CheckHeader, v.checkHeader)
 	v.RegisterFunc(ValidateFuncNames.CheckTransactionsCount, v.checkTransactionsCount)
@@ -77,7 +76,8 @@ func (v *Validator) CheckBlockContext(block *types.Block, prevNode *BlockNode) (
 		return nil
 	}
 
-	expectedDifficulty, err := CalcNextRequiredDifficulty(prevNode, time.Unix(int64(header.Timestamp), 0))
+	expectedDifficulty, err := v.chain.CalcNextRequiredDifficulty(
+		prevNode, time.Unix(int64(header.Timestamp), 0))
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (v *Validator) checkTransactionsCount(params ...interface{}) (err error) {
 	}
 
 	// A block must not have more transactions than the max block payload.
-	if numTx > config.Parameters.MaxTxInBlock {
+	if numTx > types.MaxTxPerBlock {
 		return errors.New("[powCheckTransactionsCount]  block contains too many transactions")
 	}
 
@@ -168,7 +168,7 @@ func (v *Validator) checkBlockSize(params ...interface{}) (err error) {
 
 	// A block must not exceed the maximum allowed block payload when serialized.
 	blockSize := block.GetSize()
-	if blockSize > config.Parameters.MaxBlockSize {
+	if blockSize > types.MaxBlockSize {
 		return errors.New("[powCheckBlockSize] serialized block is too big")
 	}
 
@@ -201,7 +201,7 @@ func (v *Validator) checkTransactionsFee(params ...interface{}) (err error) {
 		}
 
 		// Calculate transaction fee
-		totalTxFee += v.cfg.GetTxFee(tx, v.cfg.AssetId)
+		totalTxFee += v.chain.cfg.GetTxFee(tx, v.chain.chainParams.ElaAssetId)
 	}
 
 	// Reward in coinbase must match total transaction fee
@@ -229,7 +229,7 @@ func (v *Validator) checkTransactionsMerkle(params ...interface{}) (err error) {
 		existingTxIds[txId] = struct{}{}
 
 		// Check for transaction sanity
-		if err := v.cfg.CheckTxSanity(txn); err != nil {
+		if err := v.chain.cfg.CheckTxSanity(txn); err != nil {
 			return errors.New("[CheckTransactionsMerkle] failed when verifiy block")
 		}
 

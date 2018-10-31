@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SideChain/auxpow"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/events"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -19,10 +20,10 @@ import (
 )
 
 const (
-	defaultMaxOrphanBlocks = 10000
-	defaultMinMemoryNodes  = 20160
-	maxBlockLocators       = 500
-	medianTimeBlocks       = 11
+	maxOrphanBlocks  = 10000
+	minMemoryNodes   = 20160
+	maxBlockLocators = 500
+	medianTimeBlocks = 11
 )
 
 var (
@@ -30,77 +31,77 @@ var (
 )
 
 type Config struct {
-	FoundationAddress Uint168
-	ChainStore        *ChainStore
-	AssetId           Uint256
-	PowLimit          *big.Int
-	MaxOrphanBlocks   int
-	MinMemoryNodes    uint32
-	CheckTxSanity     func(*types.Transaction) error
-	CheckTxContext    func(*types.Transaction) error
-	GetTxFee          func(tx *types.Transaction, assetId Uint256) Fixed64
+	ChainStore     *ChainStore
+	ChainParams    *config.Params
+	CheckTxSanity  func(*types.Transaction) error
+	CheckTxContext func(*types.Transaction) error
+	GetTxFee       func(tx *types.Transaction, assetId Uint256) Fixed64
 }
 
 type BlockChain struct {
-	db              *ChainStore
-	maxOrphanBlocks int
-	minMemoryNodes  uint32
-	powLimit        *big.Int
-	validator       *Validator
-	GenesisHash     Uint256
-	BestChain       *BlockNode
-	Root            *BlockNode
-	Index           map[Uint256]*BlockNode
-	IndexLock       sync.RWMutex
-	DepNodes        map[Uint256][]*BlockNode
-	Orphans         map[Uint256]*OrphanBlock
-	PrevOrphans     map[Uint256][]*OrphanBlock
-	OldestOrphan    *OrphanBlock
-	BlockCache      map[Uint256]*types.Block
-	TimeSource      MedianTimeSource
-	MedianTimePast  time.Time
-	OrphanLock      sync.RWMutex
-	mutex           sync.RWMutex
-	AssetID         Uint256
+	cfg         Config
+	chainParams *config.Params
+	db          *ChainStore
+	validator   *Validator
+	GenesisHash Uint256
+
+	// The following fields are calculated based upon the provided chain
+	// parameters.  They are also set when the instance is created and
+	// can't be changed afterwards, so there is no need to protect them with
+	// a separate mutex.
+	minRetargetTimespan int64  // target timespan / adjustment factor
+	maxRetargetTimespan int64  // target timespan * adjustment factor
+	blocksPerRetarget   uint32 // target timespan / target time per block
+
+	mutex          sync.RWMutex
+	BestChain      *BlockNode
+	Root           *BlockNode
+	Index          map[Uint256]*BlockNode
+	IndexLock      sync.RWMutex
+	DepNodes       map[Uint256][]*BlockNode
+	Orphans        map[Uint256]*OrphanBlock
+	PrevOrphans    map[Uint256][]*OrphanBlock
+	OldestOrphan   *OrphanBlock
+	BlockCache     map[Uint256]*types.Block
+	TimeSource     MedianTimeSource
+	MedianTimePast time.Time
+	OrphanLock     sync.RWMutex
 }
 
 func New(cfg *Config) (*BlockChain, error) {
-	db := cfg.ChainStore
-	genesisHash, err := db.GetBlockHash(0)
+	genesisHash, err := cfg.ChainStore.GetBlockHash(0)
 	if err != nil {
 		return nil, fmt.Errorf("query genesis block hash failed, error %s", err)
 	}
 
+	chainParams := cfg.ChainParams
+	targetTimespan := int64(chainParams.TargetTimespan / time.Second)
+	targetTimePerBlock := int64(chainParams.TargetTimePerBlock / time.Second)
+	adjustmentFactor := chainParams.AdjustmentFactor
 	chain := BlockChain{
-		db:              db,
-		maxOrphanBlocks: defaultMaxOrphanBlocks,
-		minMemoryNodes:  defaultMinMemoryNodes,
-		powLimit:        cfg.PowLimit,
-		validator:       NewValidator(cfg),
-		GenesisHash:     genesisHash,
-		Root:            nil,
-		BestChain:       nil,
-		Index:           make(map[Uint256]*BlockNode),
-		DepNodes:        make(map[Uint256][]*BlockNode),
-		OldestOrphan:    nil,
-		Orphans:         make(map[Uint256]*OrphanBlock),
-		PrevOrphans:     make(map[Uint256][]*OrphanBlock),
-		BlockCache:      make(map[Uint256]*types.Block),
-		TimeSource:      NewMedianTime(),
-		AssetID:         cfg.AssetId,
+		cfg:                 *cfg,
+		chainParams:         chainParams,
+		db:                  cfg.ChainStore,
+		GenesisHash:         genesisHash,
+		minRetargetTimespan: targetTimespan / adjustmentFactor,
+		maxRetargetTimespan: targetTimespan * adjustmentFactor,
+		blocksPerRetarget:   uint32(targetTimespan / targetTimePerBlock),
+		Root:                nil,
+		BestChain:           nil,
+		Index:               make(map[Uint256]*BlockNode),
+		DepNodes:            make(map[Uint256][]*BlockNode),
+		OldestOrphan:        nil,
+		Orphans:             make(map[Uint256]*OrphanBlock),
+		PrevOrphans:         make(map[Uint256][]*OrphanBlock),
+		BlockCache:          make(map[Uint256]*types.Block),
+		TimeSource:          NewMedianTime(),
 	}
+	chain.validator = NewValidator(&chain)
 
-	if cfg.MaxOrphanBlocks > 0 {
-		chain.maxOrphanBlocks = cfg.MaxOrphanBlocks
-	}
-	if cfg.MinMemoryNodes > 0 {
-		chain.minMemoryNodes = cfg.MinMemoryNodes
-	}
-
-	endHeight := db.GetHeight()
+	endHeight := cfg.ChainStore.GetHeight()
 	startHeight := uint32(0)
-	if endHeight > chain.minMemoryNodes {
-		startHeight = endHeight - chain.minMemoryNodes
+	if endHeight > minMemoryNodes {
+		startHeight = endHeight - minMemoryNodes
 	}
 
 	for start := startHeight; start <= endHeight; start++ {
@@ -268,7 +269,7 @@ func (b *BlockChain) GetAssetUnspents(programHash Uint168, assetid Uint256) ([]*
 	return b.db.GetAssetUnspents(programHash, assetid)
 }
 
-func (b *BlockChain) GetAssets() map[Uint256]*types.Asset{
+func (b *BlockChain) GetAssets() map[Uint256]*types.Asset {
 	return b.db.GetAssets()
 }
 
@@ -385,7 +386,7 @@ func (b *BlockChain) AddOrphanBlock(block *types.Block) {
 		}
 	}
 
-	if len(b.Orphans)+1 > b.maxOrphanBlocks {
+	if len(b.Orphans)+1 > maxOrphanBlocks {
 		b.RemoveOrphanBlock(b.OldestOrphan)
 		b.OldestOrphan = nil
 	}
@@ -596,7 +597,7 @@ func (b *BlockChain) PruneBlockNodes() error {
 	}
 
 	newRootNode := b.BestChain
-	for i := uint32(0); i < b.minMemoryNodes-1 && newRootNode != nil; i++ {
+	for i := uint32(0); i < minMemoryNodes-1 && newRootNode != nil; i++ {
 		newRootNode = newRootNode.Parent
 	}
 
@@ -1072,7 +1073,7 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = powCheckBlockSanity(block, PowLimit, b.TimeSource)
-	err = b.validator.CheckBlockSanity(block, b.powLimit, b.TimeSource)
+	err = b.validator.CheckBlockSanity(block, b.chainParams.PowLimit, b.TimeSource)
 	if err != nil {
 		log.Error("powCheckBlockSanity error!", err)
 		return false, false, err
@@ -1216,7 +1217,7 @@ func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 
 		h, err := b.db.GetBlockHash(uint32(blockHeight))
 		if err != nil {
-			log.Debugf("Lookup of known valid height failed %d", blockHeight)
+			log.Warnf("Lookup of known valid height failed %v", blockHeight)
 			continue
 		}
 

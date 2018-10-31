@@ -10,9 +10,18 @@ import (
 )
 
 const (
+	// BlockVersion is the version of block.
 	BlockVersion     uint32 = 0
+
+	// GenesisNonce is the nonce of genesis block.
 	GenesisNonce     uint32 = 3194347904
-	InvalidBlockSize int    = -1
+
+	// MaxBlockSize is the maximum size of a block.
+	MaxBlockSize = 8000000
+
+	// MaxTxPerBlock is the maximum transactions can be included in
+	// a block.
+	MaxTxPerBlock = 100000
 )
 
 type Block struct {
@@ -40,16 +49,30 @@ func (b *Block) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	//Transactions
-	len, err := common.ReadUint32(r)
+	txCount, err := common.ReadUint32(r)
 	if err != nil {
 		return err
 	}
 
-	for i := uint32(0); i < len; i++ {
-		transaction := new(Transaction)
-		transaction.Deserialize(r)
-		b.Transactions = append(b.Transactions, transaction)
+	// Prevent more transactions than could possibly fit into a block.
+	// It would be possible to cause memory exhaustion and panics without
+	// a sane upper bound on this count.
+	if txCount > MaxTxPerBlock {
+		str := fmt.Sprintf("too many transactions to fit into a block "+
+			"[count %d, max %d]", txCount, MaxTxPerBlock)
+		return common.FuncError("Inv.Deserialize", str)
+	}
+
+	// Deserialize each transaction while keeping track of its location
+	// within the byte stream.
+	transactions := make([]Transaction, txCount)
+	b.Transactions = make([]*Transaction, 0, txCount)
+	for i := uint32(0); i < txCount; i++ {
+		tx := &transactions[i]
+		if err := tx.Deserialize(r); err != nil {
+			return err
+		}
+		b.Transactions = append(b.Transactions, tx)
 	}
 
 	return nil
@@ -96,12 +119,12 @@ func (b *Block) FromTrimmedData(r io.Reader) error {
 }
 
 func (b *Block) GetSize() int {
-	var buffer bytes.Buffer
-	if err := b.Serialize(&buffer); err != nil {
-		return InvalidBlockSize
+	var buf bytes.Buffer
+	if err := b.Serialize(&buf); err != nil {
+		return -1
 	}
 
-	return buffer.Len()
+	return buf.Len()
 }
 
 func (b *Block) Hash() common.Uint256 {

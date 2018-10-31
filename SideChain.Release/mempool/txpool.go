@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
 	"sync"
 
+	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
+	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/spv"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
 
@@ -14,19 +15,17 @@ import (
 )
 
 type Config struct {
-	FoundationAddress Uint168
-	AssetId           Uint256
-	ExchangeRage      float64
-	ChainStore        *blockchain.ChainStore
-	SpvService        *spv.Service
-	Validator         *Validator
-	FeeHelper         *FeeHelper
+	ChainParams *config.Params
+	ChainStore  *blockchain.ChainStore
+	SpvService  *spv.Service
+	Validator   *Validator
+	FeeHelper   *FeeHelper
 }
 
 type TxPool struct {
-	assetId   Uint256
-	validator *Validator
-	feeHelper *FeeHelper
+	chainParams *config.Params
+	validator   *Validator
+	feeHelper   *FeeHelper
 	sync.RWMutex
 	txCount         uint64                         // count
 	txnList         map[Uint256]*types.Transaction // transaction which have been verifyed will put into this map
@@ -36,7 +35,7 @@ type TxPool struct {
 
 func New(cfg *Config) *TxPool {
 	p := TxPool{
-		assetId:         cfg.AssetId,
+		chainParams:     cfg.ChainParams,
 		validator:       cfg.Validator,
 		feeHelper:       cfg.FeeHelper,
 		txCount:         0,
@@ -62,7 +61,7 @@ func (p *TxPool) AppendToTxPool(tx *types.Transaction) error {
 		return err
 	}
 
-	tx.Fee = p.feeHelper.GetTxFee(tx, p.assetId)
+	tx.Fee = p.feeHelper.GetTxFee(tx, p.chainParams.ElaAssetId)
 	buf := new(bytes.Buffer)
 	tx.Serialize(buf)
 	tx.FeePerKB = tx.Fee * 1000 / Fixed64(len(buf.Bytes()))

@@ -6,11 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sync"
-	"time"
-
 	"github.com/elastos/Elastos.ELA.SideChain/blockchain"
-	"github.com/elastos/Elastos.ELA.SideChain/config"
 	"github.com/elastos/Elastos.ELA.SideChain/mempool"
 	"github.com/elastos/Elastos.ELA.SideChain/pow"
 	"github.com/elastos/Elastos.ELA.SideChain/types"
@@ -24,7 +20,6 @@ import (
 )
 
 const (
-	AuxBlockGenerateInterval = 5
 	DestroyAddress           = "0000000000000000000000000000000000"
 )
 
@@ -44,12 +39,6 @@ type Config struct {
 
 type HttpService struct {
 	cfg *Config
-
-	// This params are protected by prelock
-	preLock        sync.Mutex
-	preChainHeight uint32
-	preTime        int64
-	preTxCount     int
 }
 
 func NewHttpService(cfg *Config) *HttpService {
@@ -139,13 +128,9 @@ func (s *HttpService) SetLogLevel(param util.Params) (interface{}, error) {
 	return fmt.Sprint("log level has been set to ", level), nil
 }
 
-func (s *HttpService) SubmitSideAuxBlock(param util.Params) (interface{}, error) {
+func (s *HttpService) SubmitAuxBlock(param util.Params) (interface{}, error) {
 	blockHash, ok := param.String("blockhash")
 	if !ok {
-		return nil, newError(InvalidParams)
-	}
-	if _, ok := s.cfg.PowService.MsgBlock.BlockData[blockHash]; !ok {
-		log.Warn("[json-rpc:SubmitSideAuxBlock] receive invalid block hash value:", blockHash)
 		return nil, newError(InvalidParams)
 	}
 
@@ -154,78 +139,20 @@ func (s *HttpService) SubmitSideAuxBlock(param util.Params) (interface{}, error)
 		return nil, newError(InvalidParams)
 	}
 
-	buf, _ := common.HexStringToBytes(sideAuxPow)
-	err := s.cfg.PowService.MsgBlock.BlockData[blockHash].Header.SideAuxPow.Deserialize(bytes.NewReader(buf))
+	sideAuxData, _ := common.HexStringToBytes(sideAuxPow)
+	err := s.cfg.PowService.SubmitAuxBlock(blockHash, sideAuxData)
 	if err != nil {
 		log.Warn(err)
 		return nil, util.NewError(int(InvalidParams), "[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
-	inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(s.cfg.PowService.MsgBlock.BlockData[blockHash])
-	if err != nil {
-		log.Warn(err)
-		return nil, newError(InternalError)
-	}
-
-	if isOrphan || !inMainChain {
-		return nil, newError(InternalError)
-	}
-	s.cfg.PowService.BroadcastBlock(s.cfg.PowService.MsgBlock.BlockData[blockHash])
-
-	s.cfg.PowService.MsgBlock.Mutex.Lock()
-	for key := range s.cfg.PowService.MsgBlock.BlockData {
-		delete(s.cfg.PowService.MsgBlock.BlockData, key)
-	}
-	s.cfg.PowService.MsgBlock.Mutex.Unlock()
-	log.Debug("AddBlock called finished and s.pow.MsgBlock.BlockData has been deleted completely")
-
-	log.Info(sideAuxPow, blockHash)
-	return blockHash, nil
-}
-
-func (s *HttpService) generateAuxBlock(addr string) (*types.Block, string, bool) {
-	msgBlock := &types.Block{}
-	if s.cfg.Chain.GetBestHeight() == 0 || s.preChainHeight != s.cfg.Chain.GetBestHeight() ||
-		time.Now().Unix()-s.preTime > AuxBlockGenerateInterval {
-		if s.preChainHeight != s.cfg.Chain.GetBestHeight() {
-			s.preChainHeight = s.cfg.Chain.GetBestHeight()
-			s.preTime = time.Now().Unix()
-			s.preTxCount = s.cfg.PowService.GetTransactionCount()
-		}
-
-		currentTxsCount := s.cfg.PowService.CollectTransactions(msgBlock)
-		if 0 == currentTxsCount {
-			// return nil, "currentTxs is nil", false
-		}
-
-		msgBlock, err := s.cfg.PowService.Cfg.GenerateBlock(s.cfg.PowService.Cfg)
-		if nil != err {
-			return nil, "msgBlock generate err", false
-		}
-
-		curHash := msgBlock.Hash()
-		curHashStr := common.BytesToHexString(curHash.Bytes())
-
-		s.cfg.PowService.MsgBlock.Mutex.Lock()
-		s.cfg.PowService.MsgBlock.BlockData[curHashStr] = msgBlock
-		s.cfg.PowService.MsgBlock.Mutex.Unlock()
-
-		s.preChainHeight = s.cfg.Chain.GetBestHeight()
-		s.preTime = time.Now().Unix()
-		s.preTxCount = currentTxsCount // Don't Call GetTransactionCount()
-
-		return msgBlock, curHashStr, true
-	}
-	return nil, "", false
+	return  blockHash, nil
 }
 
 func (s *HttpService) CreateAuxBlock(param util.Params) (interface{}, error) {
-	addr, ok := param.String("paytoaddress")
-	if !ok {
-		addr = config.Parameters.PowConfiguration.PayToAddr
-	}
+	addr, _ := param.String("paytoaddress")
 
-	msgBlock, curHashStr, _ := s.generateAuxBlock(addr)
+	msgBlock, curHashStr, _ := s.cfg.PowService.GenerateAuxBlock(addr)
 	if nil == msgBlock {
 		return nil, newError(UnknownBlock)
 	}
@@ -237,8 +164,6 @@ func (s *HttpService) CreateAuxBlock(param util.Params) (interface{}, error) {
 		Hash              string `json:"hash"`
 		PreviousBlockHash string `json:"previousblockhash"`
 	}
-
-	s.cfg.PowService.SetMinerAddr(addr)
 
 	genesisHash, err := s.cfg.Chain.GetBlockHash(uint32(0))
 	if err != nil {
@@ -257,40 +182,6 @@ func (s *HttpService) CreateAuxBlock(param util.Params) (interface{}, error) {
 		PreviousBlockHash: preHashStr,
 	}
 	return SendToAux, nil
-}
-
-func (s *HttpService) GetInfo(param util.Params) (interface{}, error) {
-	RetVal := struct {
-		Version        int    `json:"version"`
-		Balance        int    `json:"balance"`
-		Blocks         uint32 `json:"blocks"`
-		Timeoffset     int    `json:"timeoffset"`
-		Connections    int32  `json:"connections"`
-		Testnet        bool   `json:"testnet"`
-		Keypoololdest  int    `json:"keypoololdest"`
-		Keypoolsize    int    `json:"keypoolsize"`
-		Unlocked_until int    `json:"unlocked_until"`
-		Paytxfee       int    `json:"paytxfee"`
-		Relayfee       int    `json:"relayfee"`
-		Errors         string `json:"errors"`
-	}{
-		Version:        config.Parameters.Version,
-		Balance:        0,
-		Blocks:         s.cfg.Chain.GetBestHeight(),
-		Timeoffset:     0,
-		Connections:    s.cfg.Server.ConnectedCount(),
-		Testnet:        config.Parameters.PowConfiguration.TestNet,
-		Keypoololdest:  0,
-		Keypoolsize:    0,
-		Unlocked_until: 0,
-		Paytxfee:       0,
-		Relayfee:       0,
-		Errors:         "Tobe written"}
-	return RetVal, nil
-}
-
-func (s *HttpService) AuxHelp(param util.Params) (interface{}, error) {
-	return "createauxblock==submitsideauxblock", nil
 }
 
 func (s *HttpService) ToggleMining(param util.Params) (interface{}, error) {
@@ -910,7 +801,7 @@ func GetBlockInfo(cfg *Config, block *types.Block, verbose bool) BlockInfo {
 		MedianTime:        block.Header.Timestamp,
 		Nonce:             block.Header.Nonce,
 		Bits:              block.Header.Bits,
-		Difficulty:        blockchain.CalcCurrentDifficulty(block.Header.Bits),
+		Difficulty:        cfg.Chain.CalcCurrentDifficulty(block.Header.Bits),
 		ChainWork:         common.BytesToHexString(chainWork[:]),
 		PreviousBlockHash: ToReversedString(block.Header.Previous),
 		NextBlockHash:     ToReversedString(nextBlockHash),

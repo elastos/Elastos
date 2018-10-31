@@ -737,10 +737,9 @@ func (s *server) Stop() error {
 // newServer returns a new btcd server configured to listen on addr for the
 // network type specified by chainParams.  Use start to begin accepting
 // connections from peers.
-func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) {
-	params := config.Parameters
+func New(chain *blockchain.BlockChain, txPool *mempool.TxPool, params *config.Params) (*server, error) {
 	services := defaultServices
-	if params.DisableTxFilter {
+	if params.DisableTxFilters {
 		services &^= pact.SFNodeBloom
 	}
 
@@ -748,9 +747,9 @@ func New(chain *blockchain.BlockChain, txPool *mempool.TxPool) (*server, error) 
 		params.Magic,
 		pact.EBIP002Version,
 		uint64(services),
-		params.NodePort,
+		params.DefaultPort,
 		params.SeedList,
-		[]string{fmt.Sprint(":", params.NodePort)},
+		[]string{fmt.Sprint(":", params.DefaultPort)},
 		nil, nil, makeEmptyMessage,
 		func() uint64 { return uint64(chain.GetBestHeight()) },
 	)
