@@ -85,7 +85,6 @@ func (pow *Service) CollectTransactions(msgBlock *types.Block) int {
 	transactionsPool := pow.Cfg.TxMemPool.GetTxsInPool()
 
 	for _, tx := range transactionsPool {
-		log.Trace(tx)
 		msgBlock.Transactions = append(msgBlock.Transactions, tx)
 		txs++
 	}
@@ -110,18 +109,18 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 	pow.manualMining = true
 	pow.Mutex.Unlock()
 
-	log.Tracef("Pow generating %d blocks", n)
+	log.Infof("Pow generating %d blocks", n)
 	i := uint32(0)
 	blockHashes := make([]*common.Uint256, n)
 	ticker := time.NewTicker(time.Second * hashUpdateSecs)
 	defer ticker.Stop()
 
 	for {
-		log.Trace("<================Discrete Mining==============>\n")
+		log.Info("<================Discrete Mining==============>\n")
 
 		msgBlock, err := pow.Cfg.GenerateBlock(pow.Cfg)
 		if err != nil {
-			log.Trace("generage block err", err)
+			log.Error("generate block err", err)
 			continue
 		}
 
@@ -129,7 +128,6 @@ func (pow *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 			if msgBlock.Header.Height == pow.Cfg.Chain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := pow.Cfg.Chain.AddBlock(msgBlock)
 				if err != nil {
-					log.Trace(err)
 					return nil, err
 				}
 				//TODO if co-mining condition
@@ -193,7 +191,8 @@ func (pow *Service) Start() {
 	pow.Mutex.Lock()
 	defer pow.Mutex.Unlock()
 	if pow.started || pow.manualMining {
-		log.Trace("CpuMining is already started")
+		log.Warn("Mining is already started")
+		return
 	}
 
 	pow.quit = make(chan struct{})
@@ -229,12 +228,12 @@ out:
 		default:
 			// Non-blocking select to fall through
 		}
-		log.Trace("<================POW Mining==============>\n")
+		log.Info("<================POW Mining==============>\n")
 		//time.Sleep(15 * time.Second)
 
 		msgBlock, err := pow.Cfg.GenerateBlock(pow.Cfg)
 		if err != nil {
-			log.Trace("generage block err", err)
+			log.Error("generate block err", err)
 			continue
 		}
 
@@ -244,7 +243,6 @@ out:
 			if msgBlock.Header.Height == pow.Cfg.Chain.GetBestHeight()+1 {
 				inMainChain, isOrphan, err := pow.Cfg.Chain.AddBlock(msgBlock)
 				if err != nil {
-					log.Trace(err)
 					continue
 				}
 				//TODO if co-mining condition
@@ -297,7 +295,6 @@ func CreateCoinBaseTx(cfg *Config, nextBlockHeight uint32, addr string) (*types.
 	binary.BigEndian.PutUint64(nonce, rand.Uint64())
 	txAttr := types.NewAttribute(types.Nonce, nonce)
 	txn.Attributes = append(txn.Attributes, &txAttr)
-	// log.Trace("txAttr", txAttr)
 
 	return txn, nil
 }

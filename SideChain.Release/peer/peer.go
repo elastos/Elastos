@@ -195,7 +195,7 @@ func (p *Peer) PushGetBlocksMsg(locator []*common.Uint256, stopHash *common.Uint
 	p.prevGetBlocksMtx.Unlock()
 
 	if isDuplicate {
-		log.Tracef("Filtering duplicate [getblocks] with begin "+
+		log.Debugf("Filtering duplicate [getblocks] with begin "+
 			"hash %v, stop hash %v", beginHash, stopHash)
 		return nil
 	}
@@ -420,7 +420,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer stall handler done for %s", p)
 }
 
 func (p *Peer) sendMessage(msg outMsg) {
@@ -561,7 +560,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer queue handler done for %s", p)
 }
 
 // QueueMessage adds the passed message to the peer send queue.
@@ -606,8 +604,6 @@ func (p *Peer) QueueInventory(invVect *msg.InvVect) {
 
 // start begins processing input and output messages.
 func (p *Peer) start() *Peer {
-	log.Tracef("Starting peer %s", p)
-
 	// The protocol has been negotiated successfully so start processing input
 	// and output messages.
 	go p.stallHandler()

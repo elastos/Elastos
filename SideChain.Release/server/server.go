@@ -472,13 +472,10 @@ func (s *server) pushTxMsg(sp *serverPeer, hash *common.Uint256, doneChan chan<-
 	// to fetch a missing transaction results in the same behavior.
 	tx := s.txMemPool.GetTransaction(*hash)
 	if tx == nil {
-		err := fmt.Errorf("unable to fetch tx %v from transaction pool", hash)
-		log.Trace(err.Error())
-
 		if doneChan != nil {
 			doneChan <- struct{}{}
 		}
-		return err
+		return fmt.Errorf("unable to fetch tx %v from transaction pool", hash)
 	}
 
 	// Once we have fetched data wait for any previous operation to finish.
@@ -499,9 +496,6 @@ func (s *server) pushBlockMsg(sp *serverPeer, hash *common.Uint256, doneChan cha
 	// Fetch the block from the database.
 	block, err := s.chain.GetBlockByHash(*hash)
 	if err != nil {
-		log.Tracef("Unable to fetch requested block hash %v: %v",
-			hash, err)
-
 		if doneChan != nil {
 			doneChan <- struct{}{}
 		}
@@ -557,9 +551,6 @@ func (s *server) pushMerkleBlockMsg(sp *serverPeer, hash *common.Uint256,
 	// Fetch the block from the database.
 	blk, err := s.chain.GetBlockByHash(*hash)
 	if err != nil {
-		log.Tracef("Unable to fetch requested block hash %v: %v",
-			hash, err)
-
 		if doneChan != nil {
 			doneChan <- struct{}{}
 		}
@@ -648,8 +639,6 @@ func (s *server) peerHandler() {
 	// in this handler.
 	s.syncManager.Start()
 
-	log.Tracef("Starting peer handler")
-
 	peers := make(map[p2psvr.IPeer]*serverPeer)
 
 out:
@@ -710,7 +699,6 @@ cleanup:
 			break cleanup
 		}
 	}
-	log.Tracef("Peer handler done")
 }
 
 // NewPeer adds a new peer that has already been connected to the server.
@@ -731,8 +719,6 @@ func (s *server) RelayInventory(invVect *msg.InvVect, data interface{}) {
 
 // Start begins accepting connections from peers.
 func (s *server) Start() {
-	log.Trace("Starting server")
-
 	s.IServer.Start()
 
 	go s.peerHandler()
