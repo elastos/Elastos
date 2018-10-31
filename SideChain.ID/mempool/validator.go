@@ -23,8 +23,8 @@ type validator struct {
 func NewValidator(cfg *mempool.Config) *mempool.Validator {
 	var val validator
 	val.Validator = mempool.NewValidator(cfg)
-	val.systemAssetID = cfg.AssetId
-	val.foundation = cfg.FoundationAddress
+	val.systemAssetID = cfg.ChainParams.ElaAssetId
+	val.foundation = cfg.ChainParams.Foundation
 	val.spvService = cfg.SpvService
 
 	val.RegisterSanityFunc(mempool.FuncNames.CheckTransactionOutput, val.checkTransactionOutput)
