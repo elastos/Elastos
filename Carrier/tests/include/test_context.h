@@ -62,9 +62,19 @@ typedef struct CarrierContext {
     ElaCarrier *carrier;
     Condition *ready_cond;
     Condition *cond;
+    Condition *friend_status_cond;
     pthread_t thread;
-    bool robot_online;
-    bool fadd_in_progress; // exclusive on robot
+    /**
+     * the sufficient and necessary condition of friend_status being "online" is:
+     * 1. we are connected to carrier network
+     * 2. peer is a friend of ours
+     * 3. we received peer online notification
+     */
+    enum {
+       OFFLINE,
+       ONLINE,
+       FAILED
+    } friend_status;
 
     CarrierContextExtra *extra;
 } CarrierContext;

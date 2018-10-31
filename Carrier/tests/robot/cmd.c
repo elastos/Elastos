@@ -286,50 +286,55 @@ static void wready(TestContext *context, int argc, char *argv[])
 static void fadd(TestContext *context, int argc, char *argv[])
 {
     ElaCarrier *w = context->carrier->carrier;
+    CarrierContext *wctx = context->carrier;
     int rc;
 
     CHK_ARGS(argc == 4);
 
-    if (ela_is_friend(w, argv[1]))
-        ela_remove_friend(w, argv[1]);
-
-    context->carrier->fadd_in_progress = true;
-    rc = ela_add_friend(w, argv[2], argv[3]);
-    if (rc < 0) {
-        vlogE("Add user %s to be friend error (0x%x)", argv[2], ela_get_error());
-        if (context->carrier->fadd_in_progress) {
-            context->carrier->fadd_in_progress = false;
+    if (!ela_is_friend(w, argv[1])) {
+        rc = ela_add_friend(w, argv[2], argv[3]);
+        if (rc < 0) {
+            vlogE("Add user %s to be friend error (0x%x)", argv[2], ela_get_error());
             write_ack("fadd failed\n");
+            return;
+        } else {
+            vlogD("Add user %s to be friend success", argv[2]);
+            // wait for friend_added callback invoked.
+            cond_wait(wctx->cond);
         }
-    } else {
-        vlogD("Add user %s to be friend success", argv[2]);
     }
+
+    // wait until elatests online.
+    while (wctx->friend_status != ONLINE) {
+        cond_wait(wctx->friend_status_cond);
+    }
+    write_ack("fadd succeeded\n");
 }
 
 /*
  * command format: faccept userid entrusted expire
  */
-static void faccept(TestContext *context, int argc, char *argv[])
+void faccept(TestContext *context, int argc, char *argv[])
 {
     ElaCarrier *w = context->carrier->carrier;
+    CarrierContext *wctx = context->carrier;
     int rc;
 
     CHK_ARGS(argc == 2);
-    context->carrier->fadd_in_progress = true;
     rc = ela_accept_friend(w, argv[1]);
     if (rc < 0) {
-        if (ela_get_error() == ELA_GENERAL_ERROR(ELAERR_ALREADY_EXIST))
-            vlogD("User %s already is friend.", argv[1]);
-        else
-            vlogE("Accept friend request from user %s error (0x%x)",
-                  argv[1], ela_get_error());
-        if (context->carrier->fadd_in_progress) {
-            context->carrier->fadd_in_progress = false;
-            write_ack("fadd failed\n");
-        }
+        vlogE("Accept friend request from user %s error (0x%x)",
+              argv[1], ela_get_error());
+        write_ack("fadd failed\n");
+        return;
     } else {
         vlogD("Accept friend request from user %s success", argv[1]);
     }
+
+    while (wctx->friend_status != ONLINE) {
+        cond_wait(wctx->friend_status_cond);
+    }
+    write_ack("fadd succeeded\n");
 }
 
 /*
@@ -356,17 +361,34 @@ static void fmsg(TestContext *context, int argc, char *argv[])
 static void fremove(TestContext *context, int argc, char *argv[])
 {
     ElaCarrier *w = context->carrier->carrier;
+    CarrierContext *wctx = context->carrier;
     int rc;
 
     CHK_ARGS(argc == 2);
+
+    if (!ela_is_friend(w, argv[1])) {
+        write_ack("fremove succeeded\n");
+        return;
+    }
 
     rc = ela_remove_friend(w, argv[1]);
     if (rc < 0) {
         vlogE("Remove friend %s error (0x%x)", argv[1], ela_get_error());
         write_ack("fremove failed\n");
-    } else {
-        vlogD("Remove friend %s success", argv[1]);
+        return;
     }
+
+    vlogD("Remove friend %s success", argv[1]);
+
+    // wait for friend_removed callback invoked.
+    cond_wait(wctx->cond);
+
+    // wait until elatest offline.
+    while (wctx->friend_status != OFFLINE) {
+        cond_wait(wctx->friend_status_cond);
+    }
+
+    write_ack("fremove succeeded\n");
 }
 
 static void invite_response_callback(ElaCarrier *w, const char *friendid,

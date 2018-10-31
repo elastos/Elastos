@@ -151,6 +151,19 @@ static void carrier_friend_request_cb(ElaCarrier *w, const char *userid,
                                       const char *hello, void *context)
 {
     ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+    CarrierContext *wctx = (CarrierContext*)context;
+    int rc;
+
+    if (!strcmp(hello, "auto-reply")) {
+        rc = ela_accept_friend(w, userid);
+        if (rc < 0) {
+            vlogE("Accept friend request from %s error (0x%x)",
+                  userid, ela_get_error());
+            wctx->friend_status = FAILED;
+            cond_signal(wctx->friend_status_cond);
+        }
+        return;
+    }
 
     if (cbs && cbs->friend_request)
         cbs->friend_request(w, userid, info, hello, context);
@@ -278,23 +291,26 @@ int add_friend_anyway(TestContext *context, const char *userid,
     CarrierContext *wctxt = context->carrier;
     int rc;
 
-    if (ela_is_friend(wctxt->carrier, userid)) {
-        while(!wctxt->robot_online)
-            usleep(500);
-        return 0;
+    if (!ela_is_friend(wctxt->carrier, userid)) {
+        rc = ela_add_friend(wctxt->carrier, address, "auto-reply");
+        if (rc < 0) {
+            vlogE("Error: attempt to add friend error.");
+            return rc;
+        }
+
+        // wait for friend_added callback invoked.
+        cond_wait(wctxt->cond);
+    } else {
+        char userid[ELA_MAX_ID_LEN + 1];
+        char useraddr[ELA_MAX_ADDRESS_LEN + 1];
+        const char *hello = "auto-reply";
+
+        (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
+        (void)ela_get_address(wctxt->carrier, useraddr, sizeof(useraddr));
+
+        rc = write_cmd("fadd %s %s %s\n", userid, useraddr, hello);
+        CU_ASSERT_FATAL(rc > 0);
     }
-
-    rc = ela_add_friend(wctxt->carrier, address, "auto-reply");
-    if (rc < 0) {
-        vlogE("Error: attempt to add friend error.");
-        return rc;
-    }
-
-    // wait for friend_added callback invoked.
-    cond_wait(wctxt->cond);
-
-    // wait for friend_connection (online) callback invoked.
-    cond_wait(wctxt->cond);
 
     // wait until robot being notified us connected.
     char buf[2][32];
@@ -303,6 +319,12 @@ int add_friend_anyway(TestContext *context, const char *userid,
     CU_ASSERT_STRING_EQUAL_FATAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL_FATAL(buf[1], "succeeded");
 
+    // wait for friend_connection (online) callback invoked.
+    while (wctxt->friend_status != ONLINE) {
+        CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
+        cond_wait(wctxt->friend_status_cond);
+    }
+
     return 0;
 }
 
@@ -310,32 +332,28 @@ int remove_friend_anyway(TestContext *context, const char *userid)
 {
     CarrierContext *wctxt = context->carrier;
     int rc;
+    char me[ELA_MAX_ID_LEN + 1];
 
-    if (!ela_is_friend(wctxt->carrier, userid)) {
-        while (wctxt->robot_online)
-            usleep(500);
-        return 0;
-    } else {
-        while (!wctxt->robot_online)
-            usleep(500);
+    if (ela_is_friend(wctxt->carrier, userid)) {
+        rc = ela_remove_friend(wctxt->carrier, userid);
+        if (rc < 0) {
+            vlogE("Error: remove friend error (%x)", ela_get_error());
+            return rc;
+        }
+
+        // wait until robot offline.
+        while (wctxt->friend_status != OFFLINE) {
+            CU_ASSERT_FATAL(wctxt->friend_status != FAILED);
+            cond_wait(wctxt->friend_status_cond);
+        }
+
+        // wait for friend_removed callback invoked.
+        cond_wait(wctxt->cond);
     }
 
-    rc = ela_remove_friend(wctxt->carrier, userid);
-    if (rc < 0) {
-        vlogE("Error: remove friend error (%x)", ela_get_error());
-        return rc;
-    }
 
-    ElaUserInfo info;
-
-    ela_get_self_info(wctxt->carrier, &info);
-    write_cmd("fremove %s\n", info.userid);
-
-    // wait for friend_connection (online -> offline) callback invoked.
-    cond_wait(wctxt->cond);
-
-    // wait for friend_removed callback invoked.
-    cond_wait(wctxt->cond);
+    (void)ela_get_userid(wctxt->carrier, me, sizeof(me));
+    write_cmd("fremove %s\n", me);
 
     // wait for completion of robot "fremove" command.
     char buf[2][32];

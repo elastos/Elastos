@@ -37,6 +37,7 @@ int start_cmd_listener(const char *host, const char *port);
 void stop_cmd_listener(void);
 char *read_cmd(void);
 void do_cmd(TestContext*, char*);
+void faccept(TestContext *context, int argc, char *argv[]);
 
 int write_ack(const char *what, ...);
 

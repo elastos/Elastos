@@ -54,8 +54,9 @@ static void friend_connection_cb(ElaCarrier *w, const char *friendid,
 {
     CarrierContext *wctxt = (CarrierContext *)context;
 
-    wakeup(context);
-    wctxt->robot_online = (status == ElaConnectionStatus_Connected);
+    wctxt->friend_status = (status == ElaConnectionStatus_Connected) ?
+                         ONLINE : OFFLINE;
+    cond_signal(wctxt->friend_status_cond);
 
     vlogD("Robot connection status changed -> %s", connection_str(status));
 }
@@ -78,12 +79,14 @@ static ElaCallbacks callbacks = {
 
 static Condition DEFINE_COND(ready_cond);
 static Condition DEFINE_COND(cond);
+static Condition DEFINE_COND(friend_status_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
     .carrier = NULL,
     .ready_cond = &ready_cond,
     .cond = &cond,
+    .friend_status_cond = &friend_status_cond,
     .extra = NULL
 };
 

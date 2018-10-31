@@ -45,6 +45,10 @@
 #include "config.h"
 #include "cmd.h"
 
+struct CarrierContextExtra {
+    char userid[ELA_MAX_ID_LEN + 1];
+};
+
 static void print_user_info(const ElaUserInfo* info)
 {
     vlogD("       userid: %s", info->userid);
@@ -119,16 +123,14 @@ bool friend_list_cb(ElaCarrier* w, const ElaFriendInfo *info, void *context)
 static void friend_connection_cb(ElaCarrier *w, const char *friendid,
                                  ElaConnectionStatus status, void *context)
 {
-    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ((TestContext *)context)->carrier;
+
     vlogD("Friend %s's connection status changed -> %s",
           friendid, connection_str(status));
 
-    if (ctx->carrier->fadd_in_progress) {
-        ctx->carrier->fadd_in_progress = false;
-        // notify api_tests about their connection status change on robot side.
-        write_ack("fadd %s\n", status == ElaConnectionStatus_Connected ?
-                               "succeeded" : "failed");
-    }
+    wctx->friend_status = (status == ElaConnectionStatus_Connected) ?
+                        ONLINE : OFFLINE;
+    cond_signal(wctx->friend_status_cond);
 }
 
 static void friend_info_cb(ElaCarrier *w, const char *friendid,
@@ -151,30 +153,36 @@ static void friend_presence_cb(ElaCarrier *w, const char *friendid,
           presence_name[status]);
 }
 
+static void* ela_accept_friend_entry(void *arg)
+{
+    TestContext *ctx = (TestContext *)arg;
+    CarrierContext *wctx = ctx->carrier;
+    int rc;
+    char *argv[] = {"faccept", wctx->extra->userid};
+
+    faccept(ctx, 2, argv);
+
+    return NULL;
+}
+
 static void friend_request_cb(ElaCarrier *w, const char *userid,
                 const ElaUserInfo *info, const char *hello, void *context)
 {
     TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
 
     vlogD("Received friend request from user %s", userid);
     print_user_info(info);
     vlogD("  hello: %s", hello);
 
-    if (strcmp(hello, "auto-reply") == 0) {
+    if (!strcmp(hello, "auto-reply")) {
+        pthread_t tid;
         int rc;
-        ctx->carrier->fadd_in_progress = true;
-        rc = ela_accept_friend(w, userid);
-        if (rc < 0) {
-            vlogE("Accept friend request from %s error (0x%x)",
-                            userid, ela_get_error());
-            if (ctx->carrier->fadd_in_progress) {
-                write_ack("fadd failed\n");
-            }
-            vlogD("fadd failed");
-        } else {
-            vlogD("Accept friend request from %s success", userid);
-        }
 
+        strcpy(wctx->extra->userid, userid);
+
+        pthread_create(&tid, 0, &ela_accept_friend_entry, ctx);
+        pthread_detach(tid);
     } else {
         write_ack("hello %s\n", hello);
     }
@@ -183,14 +191,19 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 static void friend_added_cb(ElaCarrier *w, const ElaFriendInfo *info,
                             void *context)
 {
+    CarrierContext *wctx = ((TestContext *)context)->carrier;
+
     vlogI("New friend %s added", info->user_info.userid);
     print_friend_info(info, 0);
+    cond_signal(wctx->cond);
 }
 
 static void friend_removed_cb(ElaCarrier* w, const char* friendid, void *context)
 {
+    CarrierContext *wctx = ((TestContext *)context)->carrier;
+
     vlogI("Friend %s is removed", friendid);
-    write_ack("fremove succeeded\n");
+    cond_signal(wctx->cond);
 }
 
 static void friend_message_cb(ElaCarrier *w, const char *from,
@@ -227,11 +240,17 @@ static ElaCallbacks callbacks = {
     .friend_invite   = friend_invite_cb
 };
 
+static Condition DEFINE_COND(friend_status_cond);
+static Condition DEFINE_COND(cond);
+
+static CarrierContextExtra extra;
+
 CarrierContext carrier_context = {
     .cbs = &callbacks,
     .carrier = NULL,
-    .cond = NULL,
-    .extra = NULL
+    .cond = &cond,
+    .friend_status_cond = &friend_status_cond,
+    .extra = &extra
 };
 
 static void* carrier_run_entry(void *arg)

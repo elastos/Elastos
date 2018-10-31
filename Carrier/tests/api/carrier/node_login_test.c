@@ -34,12 +34,14 @@ static ElaCallbacks callbacks = {
 };
 
 static Condition DEFINE_COND(ready_cond);
+static Condition DEFINE_COND(friend_status_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
     .carrier = NULL,
     .ready_cond = &ready_cond,
     .cond = NULL,
+    .friend_status_cond = &friend_status_cond,
     .extra = NULL
 };
 
