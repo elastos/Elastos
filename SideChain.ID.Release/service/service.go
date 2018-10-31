@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/blockchain"
@@ -34,15 +33,15 @@ func NewHttpService(cfg *service.Config, store *blockchain.IDChainStore) *HttpSe
 func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (interface{}, error) {
 	id, ok := param.String("id")
 	if !ok {
-		return fmt.Sprint(service.InvalidParams.String(), " id is null"), nil
+		return nil, util.NewError(int(service.InvalidParams), "id is null")
 	}
 	_, err := Uint168FromAddress(id)
 	if err != nil {
-		return fmt.Sprint(service.InvalidParams.String(), " invalid id"), nil
+		return nil, util.NewError(int(service.InvalidParams), "invalid id")
 	}
 	path, ok := param.String("path")
 	if !ok {
-		return fmt.Sprint(service.InvalidParams.String(), " path is null"), nil
+		return nil, util.NewError(int(service.InvalidParams), "path is null")
 	}
 
 	buf := new(bytes.Buffer)
@@ -50,24 +49,24 @@ func (s *HttpServiceExtend) GetIdentificationTxByIdAndPath(param util.Params) (i
 	buf.WriteString(path)
 	txHashBytes, err := s.store.GetRegisterIdentificationTx(buf.Bytes())
 	if err != nil {
-		return fmt.Sprint(service.UnknownTransaction.String(), " get identification transaction failed"), nil
+		return nil, util.NewError(int(service.UnknownTransaction), "get identification transaction failed")
 	}
 	txHash, err := Uint256FromBytes(txHashBytes)
 	if err != nil {
-		return fmt.Sprint(service.InvalidTransaction.String(), " invalid transaction hash"), nil
+		return nil, util.NewError(int(service.InvalidTransaction), "invalid transaction hash")
 	}
 
 	txn, height, err := s.store.GetTransaction(*txHash)
 	if err != nil {
-		return fmt.Sprint(service.UnknownTransaction.String(), " get transaction failed"), nil
+		return nil, util.NewError(int(service.UnknownTransaction), "get transaction failed")
 	}
 	bHash, err := s.store.GetBlockHash(height)
 	if err != nil {
-		return fmt.Sprint(service.UnknownBlock.String(), " get block failed"), nil
+		return nil, util.NewError(int(service.UnknownBlock), "get block failed")
 	}
 	header, err := s.store.GetHeader(bHash)
 	if err != nil {
-		return fmt.Sprint(service.UnknownBlock.String(), " get header failed"), nil
+		return nil, util.NewError(int(service.UnknownBlock), "get header failed")
 	}
 
 	return s.cfg.GetTransactionInfo(s.cfg, header, txn), nil
