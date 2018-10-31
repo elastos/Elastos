@@ -662,7 +662,6 @@ out:
 	}
 
 	sm.wg.Done()
-	log.Trace("Block handler done")
 }
 
 // handleBlockchainEvents handles notifications from blockchain.  It does
@@ -788,7 +787,6 @@ func (sm *SyncManager) Start() {
 		return
 	}
 
-	log.Trace("Starting sync manager")
 	sm.wg.Add(1)
 	go sm.blockHandler()
 }

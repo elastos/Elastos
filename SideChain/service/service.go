@@ -141,7 +141,7 @@ func (s *HttpService) SubmitSideAuxBlock(param util.Params) (interface{}, error)
 		return nil, fmt.Errorf(InvalidParams.String())
 	}
 	if _, ok := s.cfg.PowService.MsgBlock.BlockData[blockHash]; !ok {
-		log.Trace("[json-rpc:SubmitSideAuxBlock] receive invalid block hash value:", blockHash)
+		log.Warn("[json-rpc:SubmitSideAuxBlock] receive invalid block hash value:", blockHash)
 		return nil, fmt.Errorf(InvalidParams.String())
 	}
 
@@ -153,13 +153,13 @@ func (s *HttpService) SubmitSideAuxBlock(param util.Params) (interface{}, error)
 	buf, _ := common.HexStringToBytes(sideAuxPow)
 	err := s.cfg.PowService.MsgBlock.BlockData[blockHash].Header.SideAuxPow.Deserialize(bytes.NewReader(buf))
 	if err != nil {
-		log.Trace(err)
+		log.Warn(err)
 		return nil, fmt.Errorf("[json-rpc:SubmitSideAuxBlock] deserialize side aux pow failed")
 	}
 
 	inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(s.cfg.PowService.MsgBlock.BlockData[blockHash])
 	if err != nil {
-		log.Trace(err)
+		log.Warn(err)
 		return nil, fmt.Errorf(InternalError.String())
 	}
 
@@ -173,7 +173,7 @@ func (s *HttpService) SubmitSideAuxBlock(param util.Params) (interface{}, error)
 		delete(s.cfg.PowService.MsgBlock.BlockData, key)
 	}
 	s.cfg.PowService.MsgBlock.Mutex.Unlock()
-	log.Trace("AddBlock called finished and s.pow.MsgBlock.BlockData has been deleted completely")
+	log.Debug("AddBlock called finished and s.pow.MsgBlock.BlockData has been deleted completely")
 
 	log.Info(sideAuxPow, blockHash)
 	return blockHash, nil

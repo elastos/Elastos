@@ -332,7 +332,6 @@ func (b *BlockChain) ProcessOrphans(hash *Uint256) error {
 			b.RemoveOrphanBlock(orphan)
 			i--
 
-			//log.Trace("deal with orphan block %x", orphanHash.ToArrayReverse())
 			_, err := b.maybeAcceptBlock(orphan.Block)
 			if err != nil {
 				return err
@@ -1053,12 +1052,11 @@ func (b *BlockChain) connectBestChain(node *BlockNode, block *types.Block) (bool
 //3. error
 func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 	blockHash := block.Hash()
-	log.Tracef("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
+	log.Debugf("[ProcessBLock] height = %d, hash = %x", block.Header.Height, blockHash.Bytes())
 
 	// The block must not already exist in the main chain or side chains.
 	exists, err := b.BlockExists(&blockHash)
 	if err != nil {
-		log.Trace("[ProcessBLock] block exists err")
 		return false, false, err
 	}
 	if exists {
@@ -1071,8 +1069,6 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 		str := fmt.Sprintf("already have block (orphan) %v", blockHash)
 		return false, false, fmt.Errorf(str)
 	}
-
-	log.Tracef("[ProcessBLock] orphan already exist= %v", exists)
 
 	// Perform preliminary sanity checks on the block and its transactions.
 	//err = powCheckBlockSanity(block, PowLimit, b.TimeSource)
@@ -1091,9 +1087,8 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 		if err != nil {
 			return false, false, err
 		}
-		//log.Tracef("[ProcessBLock] prev block already exist= %v\n", prevHashExists)
 		if !prevHashExists {
-			log.Tracef("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
+			log.Debugf("Adding orphan block %x with parent %x", blockHash.Bytes(), prevHash.Bytes())
 			b.AddOrphanBlock(block)
 
 			return false, true, nil
@@ -1122,35 +1117,8 @@ func (b *BlockChain) ProcessBlock(block *types.Block) (bool, bool, error) {
 }
 
 func (b *BlockChain) DumpState() {
-	log.Trace("b.BestChain=", b.BestChain.Hash)
-	log.Trace("b.Root=", b.Root.Hash)
-	//log.Trace("b.Index=", b.Index)
-	//log.Trace("b.DepNodes=", b.DepNodes)
-	//for _, nd := range b.Orphans {
-	//	log.Trace(nd)
-	//}
-	//	for _, nd := range b.Index {
-	//		DumpBlockNode(nd)
-	//	}
-}
-
-func DumpBlockNode(node *BlockNode) {
-	log.Tracef("---------------------node:%p\n", node)
-	log.Trace("Hash:", node.Hash)
-	log.Trace("ParentHash:", node.ParentHash)
-	log.Trace("Height:", node.Height)
-	log.Trace("Version:", node.Version)
-	log.Trace("Bits:", node.Bits)
-	log.Trace("Timestamp:", node.Timestamp)
-	log.Trace("WorkSum:", node.WorkSum)
-	log.Trace("InMainChain:", node.InMainChain)
-	if node.Parent != nil {
-		log.Trace("Parent:", node.Parent.Hash)
-	} else {
-		log.Trace("Parent:", node.Parent)
-	}
-	log.Trace("Children:", node.Children)
-	log.Trace("---------------------")
+	log.Info("b.BestChain=", b.BestChain.Hash)
+	log.Info("b.Root=", b.Root.Hash)
 }
 
 func (b *BlockChain) LatestBlockLocator() ([]*Uint256, error) {
@@ -1248,7 +1216,7 @@ func (b *BlockChain) blockLocatorFromHash(inhash *Uint256) []*Uint256 {
 
 		h, err := b.db.GetBlockHash(uint32(blockHeight))
 		if err != nil {
-			log.Tracef("Lookup of known valid height failed %v", blockHeight)
+			log.Debugf("Lookup of known valid height failed %d", blockHeight)
 			continue
 		}
 
