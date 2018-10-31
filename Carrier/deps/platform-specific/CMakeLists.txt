@@ -71,13 +71,13 @@ elseif(WIN32)
     endif()
 
     if(${CYGWIN_ARCH} STREQUAL "x86_64")
-        set(CYGWIN_RUNTIME_HASH "17a1f9e423bfaec29c333f7726ca99c9")
+        set(CYGWIN_RUNTIME_HASH "7178ea06c47302f342c08e790a1bcc76")
         set(CYGWIN_LIBATTR_HASH "7423e99e8de393819ba982239061e7a2")
         set(CYGWIN_LIBICONV_HASH "9fd5294883bacfadb3d50a28abc2ccfd")
         set(CYGWIN_LIBINTL8_HASH "c3453c7896bce5419afefacae6ed5ec9")
         set(CYGWIN_PATCH_HASH "e2a7c92fa552903f3710bb0277e2a461")
     else()
-        set(CYGWIN_RUNTIME_HASH "5c5fa36e2d3356bf96a6da183735923c")
+        set(CYGWIN_RUNTIME_HASH "497d7fbc9756ed8ee5df5312b9d9c8fa")
         set(CYGWIN_LIBATTR_HASH "2c60a11de348a3a694492cd482adfb7e")
         set(CYGWIN_LIBICONV_HASH "d9df418d5cc50dfcbfad971282d6fe1f")
         set(CYGWIN_LIBINTL8_HASH "4225b6d4d30b421341d761a6532156fe")
@@ -90,9 +90,9 @@ elseif(WIN32)
         cygwin-runtime
 
         PREFIX ${CARRIER_DEPS_BUILD_PREFIX}
-        URL "${URL_PREFIX}/cygwin/cygwin-2.10.0-1.tar.xz"
+        URL "${URL_PREFIX}/cygwin/cygwin-2.11.0-1.tar.xz"
         URL_HASH MD5=${CYGWIN_RUNTIME_HASH}
-        DOWNLOAD_NAME "cygwin-2.10.0-1_${CYGWIN_ARCH}.tar.xz"
+        DOWNLOAD_NAME "cygwin-2.11.0-1_${CYGWIN_ARCH}.tar.xz"
         DOWNLOAD_DIR ${CARRIER_DEPS_TARBALL_DIR}
         DOWNLOAD_NO_PROGRESS 1
 
