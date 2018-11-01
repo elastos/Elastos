@@ -9,8 +9,13 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-//for different transaction types with different payload format
-//and transaction process methods
+const (
+	InvalidTransactionSize = -1
+)
+
+// TransactionType represents different transaction types with different payload format.
+// The TransactionType range is 0x00 - 0xBF. When it is greater than 0xBF it will be
+// interpreted as a TransactionVersion.
 type TransactionType byte
 
 const (
@@ -50,11 +55,15 @@ func (self TransactionType) Name() string {
 	}
 }
 
+type TransactionVersion byte
+
 const (
-	InvalidTransactionSize = -1
+	TxVersionDefault TransactionVersion = 0x00
+	TxVersionC0      TransactionVersion = 0xC0
 )
 
 type Transaction struct {
+	Version        TransactionVersion // New field added in TxVersionC0
 	TxType         TransactionType
 	PayloadVersion byte
 	Payload        Payload
@@ -73,6 +82,7 @@ func (tx *Transaction) String() string {
 	hash := tx.Hash()
 	return fmt.Sprint("Transaction: {\n\t",
 		"Hash: ", hash.String(), "\n\t",
+		"Version: ", tx.Version, "\n\t",
 		"TxType: ", tx.TxType.Name(), "\n\t",
 		"PayloadVersion: ", tx.PayloadVersion, "\n\t",
 		"Payload: ", BytesToHexString(tx.Payload.Data(tx.PayloadVersion)), "\n\t",
@@ -84,7 +94,7 @@ func (tx *Transaction) String() string {
 		"}\n")
 }
 
-//Serialize the Transaction
+// Serialize the Transaction
 func (tx *Transaction) Serialize(w io.Writer) error {
 	if err := tx.SerializeUnsigned(w); err != nil {
 		return errors.New("Transaction txSerializeUnsigned Serialize failed, " + err.Error())
@@ -101,13 +111,23 @@ func (tx *Transaction) Serialize(w io.Writer) error {
 	return nil
 }
 
-//Serialize the Transaction data without contracts
+// Serialize the Transaction data without contracts
 func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
-	//txType
-	w.Write([]byte{byte(tx.TxType)})
-	//PayloadVersion
-	w.Write([]byte{tx.PayloadVersion})
-	//Payload
+	// Version
+	if tx.Version >= TxVersionC0 {
+		if _, err := w.Write([]byte{byte(tx.Version)}); err != nil {
+			return err
+		}
+	}
+	// TxType
+	if _, err := w.Write([]byte{byte(tx.TxType)}); err != nil {
+		return err
+	}
+	// PayloadVersion
+	if _, err := w.Write([]byte{tx.PayloadVersion}); err != nil {
+		return err
+	}
+	// Payload
 	if tx.Payload == nil {
 		return errors.New("Transaction Payload is nil.")
 	}
@@ -140,7 +160,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 		return errors.New("Transaction item Outputs length serialization failed.")
 	}
 	for _, output := range tx.Outputs {
-		if err := output.Serialize(w); err != nil {
+		if err := output.Serialize(w, tx.Version); err != nil {
 			return err
 		}
 	}
@@ -148,7 +168,7 @@ func (tx *Transaction) SerializeUnsigned(w io.Writer) error {
 	return WriteUint32(w, tx.LockTime)
 }
 
-//deserialize the Transaction
+// Deserialize the Transaction
 func (tx *Transaction) Deserialize(r io.Reader) error {
 	// tx deserialize
 	if err := tx.DeserializeUnsigned(r); err != nil {
@@ -171,19 +191,28 @@ func (tx *Transaction) Deserialize(r io.Reader) error {
 }
 
 func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
-	var txType = make([]byte, 1)
-	_, err := r.Read(txType)
+	flagByte, err := ReadBytes(r, 1)
 	if err != nil {
 		return err
 	}
-	tx.TxType = TransactionType(txType[0])
 
-	var payloadVersion = make([]byte, 1)
-	_, err = r.Read(payloadVersion)
-	tx.PayloadVersion = payloadVersion[0]
+	if TransactionVersion(flagByte[0]) >= TxVersionC0 {
+		tx.Version = TransactionVersion(flagByte[0])
+		txType, err := ReadUint8(r)
+		if err != nil {
+			return err
+		}
+		tx.TxType = TransactionType(txType)
+	} else {
+		tx.Version = TxVersionDefault
+		tx.TxType = TransactionType(flagByte[0])
+	}
+
+	payloadVersion, err := ReadBytes(r, 1)
 	if err != nil {
 		return err
 	}
+	tx.PayloadVersion = payloadVersion[0]
 
 	tx.Payload, err = GetPayload(tx.TxType)
 	if err != nil {
@@ -225,7 +254,7 @@ func (tx *Transaction) DeserializeUnsigned(r io.Reader) error {
 	}
 	for i := uint64(0); i < count; i++ {
 		var output Output
-		if err := output.Deserialize(r); err != nil {
+		if err := output.Deserialize(r, tx.Version); err != nil {
 			return err
 		}
 		tx.Outputs = append(tx.Outputs, &output)

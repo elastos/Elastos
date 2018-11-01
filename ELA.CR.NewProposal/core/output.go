@@ -7,11 +7,14 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
+const MaxOutputPayloadSize = 1024 // 1KB
+
 type Output struct {
-	AssetID     Uint256
-	Value       Fixed64
-	OutputLock  uint32
-	ProgramHash Uint168
+	AssetID       Uint256
+	Value         Fixed64
+	OutputLock    uint32
+	ProgramHash   Uint168
+	OutputPayload []byte
 }
 
 func (o Output) String() string {
@@ -20,10 +23,11 @@ func (o Output) String() string {
 		"Value: " + o.Value.String() + "\n\t\t" +
 		"OutputLock: " + fmt.Sprint(o.OutputLock) + "\n\t\t" +
 		"ProgramHash: " + o.ProgramHash.String() + "\n\t\t" +
+		"OutputPayload: " + string(o.OutputPayload) + "\n\t\t" +
 		"}"
 }
 
-func (o *Output) Serialize(w io.Writer) error {
+func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 	err := o.AssetID.Serialize(w)
 	if err != nil {
 		return err
@@ -41,10 +45,17 @@ func (o *Output) Serialize(w io.Writer) error {
 		return err
 	}
 
+	if txVersion == TxVersionC0 {
+		err = WriteVarBytes(w, o.OutputPayload)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
-func (o *Output) Deserialize(r io.Reader) error {
+func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 	err := o.AssetID.Deserialize(r)
 	if err != nil {
 		return err
@@ -64,6 +75,12 @@ func (o *Output) Deserialize(r io.Reader) error {
 	err = o.ProgramHash.Deserialize(r)
 	if err != nil {
 		return err
+	}
+
+	if txVersion == TxVersionC0 {
+		if o.OutputPayload, err = ReadVarBytes(r, MaxOutputPayloadSize, "outputpayload data"); err != nil {
+			return err
+		}
 	}
 
 	return nil

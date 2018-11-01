@@ -19,11 +19,12 @@ type InputInfo struct {
 }
 
 type OutputInfo struct {
-	Value      string `json:"value"`
-	Index      uint32 `json:"n"`
-	Address    string `json:"address"`
-	AssetID    string `json:"assetid"`
-	OutputLock uint32 `json:"outputlock"`
+	Value         string `json:"value"`
+	Index         uint32 `json:"n"`
+	Address       string `json:"address"`
+	AssetID       string `json:"assetid"`
+	OutputLock    uint32 `json:"outputlock"`
+	OutputPayload string `json:"outputpayload"`
 }
 
 type ProgramInfo struct {
@@ -32,23 +33,23 @@ type ProgramInfo struct {
 }
 
 type TransactionInfo struct {
-	TxId           string          `json:"txid"`
-	Hash           string          `json:"hash"`
-	Size           uint32          `json:"size"`
-	VSize          uint32          `json:"vsize"`
-	Version        uint32          `json:"version"`
-	LockTime       uint32          `json:"locktime"`
-	Inputs         []InputInfo     `json:"vin"`
-	Outputs        []OutputInfo    `json:"vout"`
-	BlockHash      string          `json:"blockhash"`
-	Confirmations  uint32          `json:"confirmations"`
-	Time           uint32          `json:"time"`
-	BlockTime      uint32          `json:"blocktime"`
-	TxType         TransactionType `json:"type"`
-	PayloadVersion byte            `json:"payloadversion"`
-	Payload        PayloadInfo     `json:"payload"`
-	Attributes     []AttributeInfo `json:"attributes"`
-	Programs       []ProgramInfo   `json:"programs"`
+	TxId           string             `json:"txid"`
+	Hash           string             `json:"hash"`
+	Size           uint32             `json:"size"`
+	VSize          uint32             `json:"vsize"`
+	Version        TransactionVersion `json:"version"`
+	LockTime       uint32             `json:"locktime"`
+	Inputs         []InputInfo        `json:"vin"`
+	Outputs        []OutputInfo       `json:"vout"`
+	BlockHash      string             `json:"blockhash"`
+	Confirmations  uint32             `json:"confirmations"`
+	Time           uint32             `json:"time"`
+	BlockTime      uint32             `json:"blocktime"`
+	TxType         TransactionType    `json:"type"`
+	PayloadVersion byte               `json:"payloadversion"`
+	Payload        PayloadInfo        `json:"payload"`
+	Attributes     []AttributeInfo    `json:"attributes"`
+	Programs       []ProgramInfo      `json:"programs"`
 }
 
 type BlockInfo struct {
