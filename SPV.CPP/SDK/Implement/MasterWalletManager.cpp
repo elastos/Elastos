@@ -5,6 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <SDK/Common/Utils.h>
 #include <Core/BRBase58.h>
+#include <Core/BRBIP39Mnemonic.h>
 
 #include "MasterWalletManager.h"
 #include "Log.h"
@@ -52,6 +53,40 @@ namespace Elastos {
 
 		std::string MasterWalletManager::GenerateMnemonic(const std::string &language) {
 			return MasterWallet::GenerateMnemonic(language, _rootPath);
+		}
+
+		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) {
+			ParamChecker::checkPasswordWithNullLegal(phrasePassword, "Phrase");
+
+			Mnemonic mnemonic(boost::filesystem::path(_rootPath), phrase);
+
+			UInt512 seed;
+			BRBIP39DeriveKey(&seed, phrase.c_str(), phrasePassword.c_str());
+			BRKey masterKey;
+			BRBIP32APIAuthKey(&masterKey, &seed, sizeof(seed));
+
+			Key key(masterKey);
+			key.setPublicKey();
+
+			var_clean(&seed);
+			var_clean(&masterKey);
+
+			return Utils::encodeHex(key.getPubkey());
+		}
+
+		std::string MasterWalletManager::GetMultiSignPubKey(const std::string &privKey) {
+			CMBlock privKeyHex = Utils::decodeHex(privKey);
+			ParamChecker::checkCondition(privKeyHex.GetSize() != sizeof(UInt256), Error::PubKeyFormat,
+										 "Private key length do not as expected");
+			Key key;
+			UInt256 secret;
+			memcpy(secret.u8, privKeyHex, sizeof(secret));
+			key.setSecret(secret, true);
+
+			var_clean(&secret);
+			memset(privKeyHex, 0, privKeyHex.GetSize());
+
+			return Utils::encodeHex(key.getPubkey());
 		}
 
 		IMasterWallet *MasterWalletManager::CreateMasterWallet(

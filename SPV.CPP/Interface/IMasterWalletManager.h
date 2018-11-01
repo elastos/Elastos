@@ -26,6 +26,21 @@ namespace Elastos {
 			virtual std::string GenerateMnemonic(const std::string &language) = 0;
 
 			/**
+			 * Generate a mnemonic by random 128 entropy. We support English, Chinese, French, Italian, Japanese, and
+			 * 	Spanish 6 types of mnemonic currently.
+			 * @param language specify mnemonic language.
+			 * @return a random mnemonic.
+			 */
+			virtual std::string GetMultiSignPubKey(const std::string &phrase, const std::string &phrasePassword) = 0;
+
+			/**
+			 * Get public key for creating multi sign wallet with private key.
+			 * @param privKey private key to do the sign job of related multi-sign accounts.
+			 * @return public key as expected.
+			 */
+			virtual std::string GetMultiSignPubKey(const std::string &privKey) = 0;
+
+			/**
 			  * Create a new master wallet by mnemonic and phrase password, or return existing master wallet if current master wallet manager has the master wallet id.
 			  * @param masterWalletId is the unique identification of a master wallet object.
 			  * @param mnemonic use to generate seed which deriving the master private key and chain code.
