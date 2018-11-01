@@ -100,7 +100,7 @@ int dht_group_number_by_public_key(DHT *dht, const uint8_t *public_key,
 
 int dht_group_new(DHT *dht, uint32_t *grou_number);
 
-int dht_group_delete(DHT *dht, uint32_t group_number);
+int dht_group_leave(DHT *dht, uint32_t group_number);
 
 int dht_group_invite(DHT *dht, uint32_t group_number, uint32_t friend_number);
 

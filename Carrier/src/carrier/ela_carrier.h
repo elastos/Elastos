@@ -1389,12 +1389,12 @@ int ela_new_group(ElaCarrier *carrier, char *groupid, size_t length);
 
 /**
  * \~English
- * Delete a group
+ * Leave a group
  *
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
  * @param
- *      groupid     [in] The Id of group to delete.
+ *      groupid     [in] The Id of group to leave.
  * @param
  *      length      [in] The buffer length to store group Id.
  *
@@ -1403,7 +1403,7 @@ int ela_new_group(ElaCarrier *carrier, char *groupid, size_t length);
  *      error code can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_delete_group(ElaCarrier *carrier, const char *groupid);
+int ela_leave_group(ElaCarrier *carrier, const char *groupid);
 
 /**
  * \~English

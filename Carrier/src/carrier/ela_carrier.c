@@ -2985,7 +2985,7 @@ int ela_new_group(ElaCarrier *w, char *groupid, size_t length)
 
     rc = get_groupid_by_number(w, group_number, groupid, length);
     if (rc < 0) {
-        dht_group_delete(&w->dht, group_number);
+        dht_group_leave(&w->dht, group_number);
         ela_set_error(rc);
         return -1;
     }
@@ -3019,7 +3019,7 @@ int get_group_number(ElaCarrier *w, const char *groupid, uint32_t *group_number)
     return rc;
 }
 
-int ela_delete_group(ElaCarrier *w, const char *groupid)
+int ela_leave_group(ElaCarrier *w, const char *groupid)
 {
     uint32_t group_number;
     int rc;
@@ -3040,7 +3040,7 @@ int ela_delete_group(ElaCarrier *w, const char *groupid)
         return -1;
     }
 
-    rc = dht_group_delete(&w->dht, group_number);
+    rc = dht_group_leave(&w->dht, group_number);
     if (rc < 0) {
         ela_set_error(rc);
         return -1;
@@ -3124,7 +3124,7 @@ int ela_group_join(ElaCarrier *w, const char *friendid, const void *cookie,
 
     rc = get_groupid_by_number(w, group_number, groupid, length);
     if (rc < 0) {
-        dht_group_delete(&w->dht, group_number);
+        dht_group_leave(&w->dht, group_number);
         ela_set_error(rc);
         return -1;
     }

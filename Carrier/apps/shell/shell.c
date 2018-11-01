@@ -1055,7 +1055,7 @@ static void group_new(ElaCarrier *w, int argc, char *argv[])
     }
 }
 
-static void group_delete(ElaCarrier *w, int argc, char *argv[])
+static void group_leave(ElaCarrier *w, int argc, char **argv)
 {
     int rc;
 
@@ -1064,7 +1064,7 @@ static void group_delete(ElaCarrier *w, int argc, char *argv[])
         return;
     }
 
-    rc = ela_delete_group(w, argv[1]);
+    rc = ela_leave_group(w, argv[1]);
     if (rc < 0) {
         output("Exit group[%s] failed.\n", argv[1]);
     } else {
@@ -1763,7 +1763,7 @@ struct command {
     { "ireply",     reply_invite,           "ireply userid [confirm message | refuse reason]" },
 
     { "gnew",       group_new,              "gnew" },
-    { "gexit",      group_delete,           "gexit groupid" },
+    { "gleave",     group_leave,            "gleave groupid" },
     { "ginvite",    group_invite,           "ginvite groupid userid" },
     { "gjoin",      group_join,             "gjoin userid cookie" },
     { "gmsg",       group_send_message,     "gmsg groupid message" },

@@ -1228,7 +1228,7 @@ int dht_group_new(DHT *dht, uint32_t *group_number)
     return 0;
 }
 
-int dht_group_delete(DHT *dht, uint32_t group_number)
+int dht_group_leave(DHT *dht, uint32_t group_number)
 {
     TOX_ERR_CONFERENCE_DELETE error;
     bool rc;
