@@ -5,7 +5,7 @@ import:
 - package: github.com/elastos/Elastos.ELA.Utility
   version: release_v0.1.1
 - package: github.com/elastos/Elastos.ELA.SideChain
-  version: release_v0.0.2
+  version: release_v0.1.1
 - package: github.com/gorilla/websocket
 - package: github.com/mattn/go-sqlite3
 - package: github.com/pborman/uuid
