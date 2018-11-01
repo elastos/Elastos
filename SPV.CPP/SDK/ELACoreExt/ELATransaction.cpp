@@ -16,6 +16,9 @@
 #include <SDK/ELACoreExt/Payload/PayloadWithDrawAsset.h>
 #include <SDK/ELACoreExt/Payload/PayloadTransferCrossChainAsset.h>
 #include <SDK/ELACoreExt/Payload/PayloadRegisterIdentification.h>
+#include <SDK/ELACoreExt/Payload/PayloadCancelProducer.h>
+#include <SDK/ELACoreExt/Payload/PayloadVoteProducer.h>
+#include <SDK/ELACoreExt/Payload/PayloadRegisterProducer.h>
 
 #include "BRArray.h"
 #include "ELATransaction.h"
@@ -48,6 +51,12 @@ namespace Elastos {
 				return new PayloadTransferCrossChainAsset();
 			} else if (type == ELATransaction::RegisterIdentification) {
 				return new PayloadRegisterIdentification();
+			} else if(type == ELATransaction::RegisterProducer) {
+				return new PayloadRegisterProducer;
+			} else if (type == ELATransaction::CancelProducer) {
+				return new PayloadCancelProducer;
+			} else if (type == ELATransaction::VoteProducer) {
+				return new PayloadVoteProducer;
 			}
 
 			return nullptr;
