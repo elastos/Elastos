@@ -250,14 +250,12 @@ namespace Elastos {
 				_confirmingTxs[hash] = _walletManager->getWallet()->transactionForHash(Utils::UInt256FromString(hash));
 			}
 
-			if (_confirmingTxs[hash]->getBlockHeight() != TX_UNCONFIRMED) {
-				uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
-					_confirmingTxs[hash]->getBlockHeight() + 1 : 0;
-				Log::getLogger()->info("onTxUpdated: hash = {}, confirm = {}", hash, confirm);
-				if (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) >= 1.0) {
-					fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-												 _confirmingTxs[hash]->toJson(), confirm);
-				}
+			uint32_t confirm = blockHeight >= _confirmingTxs[hash]->getBlockHeight() ? blockHeight -
+				_confirmingTxs[hash]->getBlockHeight() + 1 : 0;
+			Log::getLogger()->info("onTxUpdated: hash = {}, confirm = {}", hash, confirm);
+			if (_walletManager->getPeerManager()->getSyncProgress(_syncStartHeight) >= 1.0) {
+				fireTransactionStatusChanged(hash, SubWalletCallback::convertToString(SubWalletCallback::Updated),
+											 _confirmingTxs[hash]->toJson(), confirm);
 			}
 		}
 
@@ -384,25 +382,27 @@ namespace Elastos {
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end(); ++it) {
 
 				double process = _walletManager->getPeerManager()->getSyncProgress(_syncStartHeight);
-				if (it->second->getBlockHeight() == TX_UNCONFIRMED || process < 1.0)
+				if (process < 1.0)
 					continue;
 
 				uint32_t confirms =
-						blockHeight > it->second->getBlockHeight() ? blockHeight - it->second->getBlockHeight() + 1 : 0;
+						blockHeight >= it->second->getBlockHeight() ? blockHeight - it->second->getBlockHeight() + 1 : 0;
 				Log::getLogger()->info(
 						"Transaction height increased: txHash = {}, confirms = {}, tx height = {}, last block height = {}",
 						it->first, confirms, it->second->getBlockHeight(),
 						blockHeight);
 
-				fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
-											 it->second->toJson(), confirms);
+				if (confirms > 1) {
+					fireTransactionStatusChanged(it->first, SubWalletCallback::convertToString(SubWalletCallback::Updated),
+												 it->second->toJson(), confirms);
+				}
 			}
 
 			for (TransactionMap::iterator it = _confirmingTxs.begin(); it != _confirmingTxs.end();) {
-				if (it->second->getBlockHeight() == TX_UNCONFIRMED)
-					continue;
+				uint32_t confirms =
+					blockHeight >= it->second->getBlockHeight() ? blockHeight - it->second->getBlockHeight() + 1 : 0;
 
-				if (blockHeight - it->second->getBlockHeight() + 1 >= 6)
+				if (confirms >= 6)
 					_confirmingTxs.erase(it++);
 				else
 					++it;

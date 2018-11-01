@@ -141,7 +141,7 @@ namespace Elastos {
 																			 const std::string &publicKey,
 																			 const std::string &nickName,
 																			 const std::string &url,
-																			 const std::string &location) {
+																			 uint64_t location) {
 			RegisterProducerTxParam txParam;
 			txParam.setFromAddress(fromAddress);
 			txParam.setToAddress(toAddress);

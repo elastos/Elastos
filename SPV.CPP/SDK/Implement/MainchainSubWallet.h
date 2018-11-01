@@ -31,7 +31,7 @@ namespace Elastos {
 					const std::string &publicKey,
 					const std::string &nickName,
 					const std::string &url,
-					const std::string &location);
+					uint64_t location);
 
 			virtual nlohmann::json CreateCancelProducerTransaction(
 					const std::string &fromAddress,
