@@ -163,7 +163,15 @@ func CheckTransactionCoinbaseOutputLock(txn *Transaction) error {
 			lockHeight = transactionCache[referHash].locktime
 			isCoinbase = transactionCache[referHash].isCoinbaseTx
 		} else {
-			referTxn, _, _ = DefaultLedger.Store.GetTransaction(referHash)
+			var err error
+			referTxn, _, err = DefaultLedger.Store.GetTransaction(referHash)
+			// TODO
+			// we have executed DefaultLedger.Store.GetTxReference(txn) before.
+			//So if we can't find referTxn here, there must be a data inconsistent problem,
+			// because we do not add lock correctly.This problem will be fixed later on.
+			if err != nil {
+				return errors.New("[CheckTransactionCoinbaseOutputLock] get tx reference failed:" + err.Error())
+			}
 			lockHeight = referTxn.LockTime
 			isCoinbase = referTxn.IsCoinBaseTx()
 			transactionCache[referHash] = lockTxInfo{isCoinbase, lockHeight}
