@@ -20,6 +20,7 @@ func (o Output) String() string {
 	return "Output: {\n\t\t" +
 		"AssetID: " + o.AssetID.String() + "\n\t\t" +
 		"Value: " + o.Value.String() + "\n\t\t" +
+		"TokenValue: " + o.TokenValue.String() + "\n\t\t" +
 		"OutputLock: " + fmt.Sprint(o.OutputLock) + "\n\t\t" +
 		"ProgramHash: " + o.ProgramHash.String() + "\n\t\t" +
 		"}"
