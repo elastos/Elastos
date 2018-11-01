@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <SDK/Common/Log.h>
 #include "BackgroundExecutor.h"
 
 using namespace boost;
@@ -23,6 +24,7 @@ namespace Elastos {
 		}
 
 		void BackgroundExecutor::initThread(uint8_t threadCount) {
+			_workerService.restart();
 			_workerLoop = boost::shared_ptr<io_service::work>(new io_service::work(_workerService));
 
 			for (uint8_t i = 0; i < threadCount; ++i) {
@@ -31,7 +33,10 @@ namespace Elastos {
 		}
 
 		void BackgroundExecutor::stopThread() {
-			_workerService.stop();
+			if (!_workerService.stopped()) {
+				_workerService.stop();
+				while (!_workerService.stopped());
+			}
 			_workerThreadPool.join_all();
 		}
 

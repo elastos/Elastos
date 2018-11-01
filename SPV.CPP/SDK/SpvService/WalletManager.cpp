@@ -45,23 +45,33 @@ namespace Elastos {
 		}
 
 		WalletManager::~WalletManager() {
-			if (_reconnectTimer != nullptr)
-				_reconnectTimer->cancel();
+
 		}
 
 		void WalletManager::start() {
-			getPeerManager()->connect();
+			_reconnectExecutor.execute(Runnable([this]() -> void {
+				try {
+					getPeerManager()->connect();
+				}
+				catch (std::exception ex) {
+					Log::getLogger()->error("Peer manager callback (blockHeightIncreased) error: {}", ex.what());
+				}
+				catch (...) {
+					Log::error("Peer manager callback (blockHeightIncreased) error.");
+				}
+			}));
 		}
 
 		void WalletManager::stop() {
 			if (_reconnectTimer != nullptr) {
 				_reconnectTimer->cancel();
-				Log::getLogger()->info("Cancel the timer");
+				_reconnectTimer = nullptr;
 			}
 
+			_executor.stopThread();
+			_reconnectExecutor.stopThread();
+
 			getPeerManager()->disconnect();
-			// Wait background executor to finish the work, in case of crash. Think about better solution later.
-			sleep(1);
 		}
 
 		SharedWrapperList<Transaction, BRTransaction *> WalletManager::getTransactions(
@@ -91,10 +101,10 @@ namespace Elastos {
 			Log::getLogger()->debug("Sending transaction, json info: {}",
 								   sendingTx.dump());
 
-			if (_peerManager->getConnectStatus() != Peer::Connected) {
+			if (getPeerManager()->getConnectStatus() != Peer::Connected) {
 				if (_reconnectTimer != nullptr)
 					_reconnectTimer->cancel();
-				_peerManager->connect();
+				getPeerManager()->connect();
 			}
 
 			getPeerManager()->publishTransaction(transaction);
@@ -288,14 +298,16 @@ namespace Elastos {
 		}
 
 		void WalletManager::syncIsInactive(uint32_t time) {
-			pthread_mutex_lock(&_peerManager->getRaw()->lock);
-			_peerManager->getRaw()->reconnectTaskCount++;
-			pthread_mutex_unlock(&_peerManager->getRaw()->lock);
+			pthread_mutex_lock(&getPeerManager()->getRaw()->lock);
+			getPeerManager()->getRaw()->reconnectTaskCount++;
+			pthread_mutex_unlock(&getPeerManager()->getRaw()->lock);
 
-			if (_peerManager->getConnectStatus() != Peer::Disconnected) {
-				_peerManager->disconnect();
+			_executor.stopThread();
+			if (getPeerManager()->getConnectStatus() != Peer::Disconnected) {
+				getPeerManager()->disconnect();
 			}
 
+			_executor.initThread(BACKGROUND_THREAD_COUNT);
 			startReconnect(time);
 		}
 
@@ -404,25 +416,25 @@ namespace Elastos {
 
 		void WalletManager::asyncConnect(const boost::system::error_code &error) {
 			if (error.value() == 0) {
-				if (_peerManager->getConnectStatus() != Peer::Connected) {
+				if (getPeerManager()->getConnectStatus() != Peer::Connected) {
 					Log::getLogger()->info("async connecting...");
-					if (array_count(_peerManager->getRaw()->peers) == 0) {
+					if (array_count(getPeerManager()->getRaw()->peers) == 0) {
 						SharedWrapperList<Peer, BRPeer *> peers = loadPeers();
 						Log::getLogger()->info("loading {} peers...", peers.size());
 						for (size_t i = 0; i < peers.size(); ++i) {
-							array_add(_peerManager->getRaw()->peers, *peers[i]->getRaw());
+							array_add(getPeerManager()->getRaw()->peers, *peers[i]->getRaw());
 						}
 					}
-					_peerManager->connect();
+					getPeerManager()->connect();
 				}
 			} else {
 				Log::getLogger()->warn("asyncConnect err: {}", error.message());
 			}
 
-			if (_peerManager->getRaw()->reconnectTaskCount > 0) {
-				pthread_mutex_lock(&_peerManager->getRaw()->lock);
-				_peerManager->getRaw()->reconnectTaskCount = 0;
-				pthread_mutex_unlock(&_peerManager->getRaw()->lock);
+			if (getPeerManager()->getRaw()->reconnectTaskCount > 0) {
+				pthread_mutex_lock(&getPeerManager()->getRaw()->lock);
+				getPeerManager()->getRaw()->reconnectTaskCount = 0;
+				pthread_mutex_unlock(&getPeerManager()->getRaw()->lock);
 			}
 		}
 

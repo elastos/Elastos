@@ -836,7 +836,6 @@ static void _peerDisconnected(void *info, int error)
         array_clear(manager->peers);
         txError = ENOTCONN; // trigger any pending tx publish callbacks
         willSave = 1;
-        peer_log(peer, "sync failed");
     } else if (manager->connectFailureCount < MAX_CONNECT_FAILURES) {
         willReconnect = 1;
     }

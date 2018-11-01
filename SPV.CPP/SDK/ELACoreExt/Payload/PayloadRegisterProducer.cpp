@@ -74,7 +74,7 @@ namespace Elastos {
 			_publicKey = j["PublicKey"].get<std::string>();
 			_nickName = j["NickName"].get<std::string>();
 			_url = j["Url"].get<std::string>();
-			_location = j["Location"].get<std::string>();
+			_location = j["Location"].get<uint64_t>();
 		}
 	}
 }

@@ -23,11 +23,9 @@ namespace Elastos {
 
 			virtual void execute(const Runnable &runnable);
 
-		protected:
+			void stopThread();
 
 			void initThread(uint8_t threadCount);
-
-			void stopThread();
 
 		protected:
 			boost::asio::io_service _workerService;
