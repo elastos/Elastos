@@ -55,6 +55,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		outputs[i].Address = address
 		outputs[i].AssetID = ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
+		outputs[i].OutputPayload = string(v.OutputPayload)
 	}
 
 	attributes := make([]AttributeInfo, len(tx.Attributes))
@@ -88,7 +89,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		Hash:           txHashStr,
 		Size:           size,
 		VSize:          size,
-		Version:        0x00,
+		Version:        tx.Version,
 		LockTime:       tx.LockTime,
 		Inputs:         inputs,
 		Outputs:        outputs,
