@@ -253,6 +253,9 @@ func (pool *TxPool) verifyDuplicateSidechainTx(txn *Transaction) error {
 
 // check and replace the duplicate sidechainpow tx
 func (pool *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
+	var replaceList []*Transaction
+
+	pool.RLock()
 	for _, v := range pool.txnList {
 		if v.TxType == SideChainPow {
 			oldPayload := v.Payload.Data(SideChainPowPayloadVersion)
@@ -262,11 +265,16 @@ func (pool *TxPool) replaceDuplicateSideChainPowTx(txn *Transaction) {
 			newGenesisHashData := newPayload[32:64]
 
 			if bytes.Equal(oldGenesisHashData, newGenesisHashData) {
-				txid := txn.Hash()
-				log.Warn("replace sidechainpow transaction, txid=", txid.String())
-				pool.removeTransaction(v)
+				replaceList = append(replaceList, txn)
 			}
 		}
+	}
+	pool.RUnlock()
+
+	for _, txn := range replaceList {
+		txid := txn.Hash()
+		log.Info("replace sidechainpow transaction, txid=", txid.String())
+		pool.removeTransaction(txn)
 	}
 }
 
