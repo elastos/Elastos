@@ -176,5 +176,29 @@ namespace Elastos {
 			result->setMemo(memo);
 			return result;
 		}
+
+		const PayloadRegisterProducer &RegisterProducerTxParam::GetPayload() const {
+			return _payload;
+		}
+
+		void RegisterProducerTxParam::SetPayload(const PayloadRegisterProducer &payload) {
+			_payload = payload;
+		}
+
+		const PayloadCancelProducer &CancelProducerTxParam::GetPayload() const {
+			return _payload;
+		}
+
+		void CancelProducerTxParam::SetPayload(const PayloadCancelProducer &payload) {
+			_payload = payload;
+		}
+
+		const PayloadVoteProducer &VoteProducerTxParam::GetPayload() const {
+			return _payload;
+		}
+
+		void VoteProducerTxParam::SetPayload(const PayloadVoteProducer &payload) {
+			_payload = payload;
+		}
 	}
 }

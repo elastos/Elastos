@@ -12,6 +12,9 @@
 
 #include "CMemBlock.h"
 #include "SubWalletType.h"
+#include "Payload/PayloadRegisterProducer.h"
+#include "Payload/PayloadCancelProducer.h"
+#include "Payload/PayloadVoteProducer.h"
 
 namespace Elastos {
 	namespace ElaWallet {
@@ -127,6 +130,36 @@ namespace Elastos {
 		private:
 			std::string _id;
 			CMBlock _data;
+		};
+
+		class RegisterProducerTxParam : public TxParam {
+		public:
+			const PayloadRegisterProducer &GetPayload() const;
+
+			void SetPayload(const PayloadRegisterProducer &payload);
+
+		private:
+			PayloadRegisterProducer _payload;
+		};
+
+		class CancelProducerTxParam : public TxParam {
+		public:
+			const PayloadCancelProducer &GetPayload() const;
+
+			void SetPayload(const PayloadCancelProducer &payload);
+
+		private:
+			PayloadCancelProducer _payload;
+		};
+
+		class VoteProducerTxParam : public TxParam {
+		public:
+			const PayloadVoteProducer &GetPayload() const;
+
+			void SetPayload(const PayloadVoteProducer &payload);
+
+		private:
+			PayloadVoteProducer _payload;
 		};
 
 		class TxParamFactory {
