@@ -352,7 +352,7 @@ namespace Elastos {
 				std::string masterWalletId = temp.filename().string();
 				temp /= MASTER_WALLET_STORE_FILE;
 				if (exists(temp)) {
-					_masterWalletMap[masterWalletId] = nullptr;
+					_masterWalletMap[masterWalletId] = GetWallet(masterWalletId);
 				}
 				++it;
 			}
