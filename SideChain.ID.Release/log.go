@@ -20,20 +20,34 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/connmgr"
 )
 
-const LogPath = "./logs/"
+const (
+	logsPath = "./logs/"
+
+	defaultMaxPerLogFileSize int64 = elalog.MBSize * 20
+	defaultMaxLogsFolderSize int64 = elalog.GBSize * 2
+)
+
+// configFileWriter returns the configured parameters for log file writer.
+func configFileWriter(params *config.Configuration) (string, int64, int64) {
+	maxPerLogFileSize := defaultMaxPerLogFileSize
+	maxLogsFolderSize := defaultMaxLogsFolderSize
+	if params.MaxPerLogSize > 0 {
+		maxPerLogFileSize = int64(params.MaxPerLogSize) * elalog.MBSize
+	}
+	if params.MaxLogsSize > 0 {
+		maxLogsFolderSize = int64(params.MaxLogsSize) * elalog.MBSize
+	}
+	return logsPath, maxPerLogFileSize, maxLogsFolderSize
+}
 
 // log is a logger that is initialized with no output filters.  This
 // means the package will not perform any logging by default until the caller
 // requests it.
 var (
-	fileWriter = elalog.NewFileWriter(
-		LogPath,
-		config.Parameters.MaxPerLogSize,
-		config.Parameters.MaxLogsSize,
-	)
-	logWriter = io.MultiWriter(os.Stdout, fileWriter)
-	level     = elalog.Level(config.Parameters.PrintLevel)
-	backend   = elalog.NewBackend(logWriter, elalog.Llongfile)
+	fileWriter = elalog.NewFileWriter(configFileWriter(config.Parameters.Configuration))
+	logWriter  = io.MultiWriter(os.Stdout, fileWriter)
+	backend    = elalog.NewBackend(logWriter, elalog.Llongfile)
+	level      = elalog.Level(config.Parameters.PrintLevel)
 
 	admrlog = backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog = backend.Logger("CMGR", elalog.LevelOff)
