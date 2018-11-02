@@ -87,12 +87,6 @@ ELAERR_INVALID_CREDENTIAL
 .. doxygendefine:: ELAERR_INVALID_CREDENTIAL
    :project: CarrierAPI
 
-ELAERR_SERVER_FAILED
-####################
-
-.. doxygendefine:: ELAERR_SERVER_FAILED
-   :project: CarrierAPI
-
 ELAERR_ALREADY_RUN
 ##################
 
@@ -133,18 +127,6 @@ ELAERR_INVALID_NODEID
 #####################
 
 .. doxygendefine:: ELAERR_INVALID_NODEID
-   :project: CarrierAPI
-
-ELAERR_INVALID_APPID
-####################
-
-.. doxygendefine:: ELAERR_INVALID_APPID
-   :project: CarrierAPI
-
-ELAERR_INVALID_DESCRIPTOR
-#########################
-
-.. doxygendefine:: ELAERR_INVALID_DESCRIPTOR
    :project: CarrierAPI
 
 ELAERR_WRONG_STATE

@@ -833,8 +833,6 @@ char *ela_get_id_by_address(const char *address, char *userid, size_t len);
  * @param
  *      callbacks   [in] The Application defined callback functions.
  * @param
- *      group_callbacks   [in] The Application defined group callback functions.
- * @param
  *      context     [in] The application defined context data.
  *
  * @return
@@ -1389,17 +1387,15 @@ int ela_new_group(ElaCarrier *carrier, char *groupid, size_t length);
 
 /**
  * \~English
- * Leave a group
+ * Leave from a specified group
  *
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
  * @param
- *      groupid     [in] The Id of group to leave.
- * @param
- *      length      [in] The buffer length to store group Id.
+ *      groupid     [in] The group to leave from.
  *
  * @return
- *      0 if deleting group in success, Otherwise, return -1, and a specific
+ *      0 if leaving from group in success, Otherwise, return -1, and a specific
  *      error code can be retrieved by calling ela_get_error().
  */
 CARRIER_API
@@ -1412,16 +1408,16 @@ int ela_leave_group(ElaCarrier *carrier, const char *groupid);
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
  * @param
- *      groupid     [in] The Id of group into which we invite friend.
+ *      groupid     [in] The group into which we intend to invite friend.
  * @param
- *      friendId    [in] The invited friendId.
+ *      friendid    [in] The friend that we intend to invite.
  *
  * @return
  *      0 on success, or -1 if an error occurred, and a specific error code
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_invite(ElaCarrier *w, const char *groupid, const char *friendId);
+int ela_group_invite(ElaCarrier *carrier, const char *groupid, const char *friendid);
 
 /**
  * \~English
@@ -1433,9 +1429,9 @@ int ela_group_invite(ElaCarrier *w, const char *groupid, const char *friendId);
  * @param
  *      carrier     [in] A handle to the Carrier node instance.
  * @param
- *      friendId    [in] The friend who send a group invitation.
+ *      friendid    [in] The friend who send a group invitation.
  * @param
- *      cookie      [in] The cookie information to join group.
+ *      cookie      [in] The cookie information required to join group.
  * @param
  *      cookie_len  [in] The buffer length to cookie.
  * @param
@@ -1448,7 +1444,7 @@ int ela_group_invite(ElaCarrier *w, const char *groupid, const char *friendId);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_join(ElaCarrier *w, const char *friendid, const void *cookie,
+int ela_group_join(ElaCarrier *carrier, const char *friendid, const void *cookie,
                    size_t cookie_len, char *groupId, size_t group_len);
 
 /**
@@ -1467,14 +1463,14 @@ int ela_group_join(ElaCarrier *w, const char *friendid, const void *cookie,
  * @param
  *      message     [in] The message content defined by application.
  * @param
- *      len         [in] The message length in bytes.
+ *      length      [in] The message length in bytes.
  *
  * @return
  *      0 on success, or -1 if an error occurred, and a specific error code
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_send_message(ElaCarrier *w, const char *groupid,
+int ela_group_send_message(ElaCarrier *carrier, const char *groupid,
                            const void *message, size_t length);
 
 /**
@@ -1486,16 +1482,16 @@ int ela_group_send_message(ElaCarrier *w, const char *groupid,
  * @param
  *      groupid     [in] The target group.
  * @param
- *      title       [in, out] The buffer to store group title.
+ *      title       [out] The buffer to receive group title.
  * @param
- *      length      [in] The length of buffer pointed by @title.
+ *      length      [in] The length of buffer to receive group title.
  *
  * @return
  *      0 on success, or -1 if an error occurred, and a specific error code
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_get_title(ElaCarrier *w, const char *groupid, char *title,
+int ela_group_get_title(ElaCarrier *carrier, const char *groupid, char *title,
                         size_t length);
 
 /**
@@ -1515,7 +1511,7 @@ int ela_group_get_title(ElaCarrier *w, const char *groupid, char *title,
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_set_title(ElaCarrier *w, const char *groupid, const char *title);
+int ela_group_set_title(ElaCarrier *carrier, const char *groupid, const char *title);
 
 /**
  * \~English
@@ -1556,7 +1552,7 @@ typedef bool ElaGroupPeersIterateCallback(const ElaGroupPeer *peer,
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_get_peers(ElaCarrier *w, const char *groupid,
+int ela_group_get_peers(ElaCarrier *carrier, const char *groupid,
                         ElaGroupPeersIterateCallback *callback,
                         void *context);
 
@@ -1579,7 +1575,7 @@ int ela_group_get_peers(ElaCarrier *w, const char *groupid,
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_group_get_peer(ElaCarrier *w, const char *groupid,
+int ela_group_get_peer(ElaCarrier *carrier, const char *groupid,
                        const char *peerId, ElaGroupPeer *peer);
 
 /**
@@ -1617,7 +1613,7 @@ typedef bool ElaIterateGroupCallback(const char *groupid, void *context);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_get_groups(ElaCarrier *w, ElaIterateGroupCallback *callback,
+int ela_get_groups(ElaCarrier *carrier, ElaIterateGroupCallback *callback,
                    void *context);
 
 /******************************************************************************
