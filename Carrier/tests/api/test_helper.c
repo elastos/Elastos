@@ -271,7 +271,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
 
 int test_suite_init(TestContext *context)
 {
-	return test_suite_init_ext(context, false);
+	return test_suite_init_ext(context, !global_config.udp_enabled);
 }
 
 int test_suite_cleanup(TestContext *context)

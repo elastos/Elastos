@@ -139,7 +139,7 @@ ShellConfig *load_config(const char *config_file)
         return NULL;
     }
 
-    rc = config_lookup_bool (&cfg, "udp_enabled", &intopt);
+    rc = config_lookup_bool(&cfg, "udp_enabled", &intopt);
     if (rc && intopt) {
         config->udp_enabled = true;
     }

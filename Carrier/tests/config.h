@@ -36,6 +36,7 @@ typedef struct TestConfig {
     int shuffle;
     int log2file;
     char data_location[PATH_MAX];
+    bool udp_enabled;
 
     struct {
         int loglevel;

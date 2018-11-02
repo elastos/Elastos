@@ -275,7 +275,7 @@ int robot_main(int argc, char *argv[])
     char *cmd;
 
     ElaOptions opts = {
-        .udp_enabled     = true,
+        .udp_enabled     = global_config.udp_enabled,
         .bootstraps      = NULL,
         .bootstraps_size = global_config.bootstraps_size,
         .persistent_location = datadir

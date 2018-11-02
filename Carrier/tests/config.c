@@ -163,6 +163,13 @@ void load_config(const char *config_file)
         exit(-1);
     }
 
+    rc = config_lookup_bool(&cfg, "udp_enabled", &intopt);
+    if (rc && !intopt) {
+        global_config.udp_enabled = false;
+    } else {
+        global_config.udp_enabled = true;
+    }
+
     global_config.shuffle = (int)get_int(&cfg, "shuffle", 1);
     global_config.log2file = (int)get_int(&cfg, "log2file", 0);
 

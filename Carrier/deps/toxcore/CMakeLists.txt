@@ -4,10 +4,6 @@ include(CarrierDefaults)
 include(ExternalProject)
 include(ExternalCMakeArgs)
 
-if(NOT WIN32 AND NOT CMAKE_CROSSCOMPILING)
-    set(TOX_BOOTSTRAP_OPT -DBOOTSTRAP_DAEMON=ON)
-endif()
-
 ExternalProject_Add(
     toxcore0
 
@@ -29,6 +25,5 @@ ExternalProject_Add(
         -DBUILD_NTOX=OFF
         -DDHT_BOOTSTRAP=OFF
         -DBUILD_CARRIER=ON
-        ${TOX_BOOTSTRAP_OPT}
         ${CMAKE_ARGS_INIT}
 )
