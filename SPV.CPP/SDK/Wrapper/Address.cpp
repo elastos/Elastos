@@ -205,7 +205,7 @@ namespace Elastos {
 #endif
 		    }
 
-		    if (r == 0 && strcmp(address.c_str(), "1111111111111111111114oLvT2") == 0) {
+		    if (r == 0 && strcmp(address.c_str(), ELA_SIDECHAIN_DESTROY_ADDR) == 0) {
 		    	r = 1;
 		    }
 

@@ -28,14 +28,13 @@ namespace Elastos {
 		}
 
 		nlohmann::json SidechainSubWallet::CreateWithdrawTransaction(const std::string &fromAddress,
-																	 const std::string &toAddress,
 																	 const uint64_t amount,
 																	 const nlohmann::json &mainchainAccounts,
 																	 const nlohmann::json &mainchainAmounts,
 																	 const nlohmann::json &mainchainIndexs,
 																	 const std::string &memo,
 																	 const std::string &remark) {
-			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Sidechain, fromAddress, toAddress, amount,
+			boost::scoped_ptr<TxParam> txParam(TxParamFactory::createTxParam(Sidechain, fromAddress, ELA_SIDECHAIN_DESTROY_ADDR, amount,
 																			 _info.getMinFee(), memo, remark));
 
 			ParamChecker::checkJsonArray(mainchainAccounts, 1, "Main chain accounts");
