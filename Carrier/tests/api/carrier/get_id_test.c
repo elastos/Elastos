@@ -106,10 +106,24 @@ static void test_get_userid(void)
     CU_ASSERT_TRUE(ela_id_is_valid(userid));
 }
 
+static void test_get_presence(void)
+{
+    CarrierContext *wctxt = test_context.carrier;
+    ElaPresenceStatus presence;
+    int rc;
+
+    rc = ela_set_self_presence(wctxt->carrier, ElaPresenceStatus_Busy);
+    CU_ASSERT_EQUAL(rc, 0);
+    rc = ela_get_self_presence(wctxt->carrier, &presence);
+    CU_ASSERT_EQUAL(rc, 0);
+    CU_ASSERT_EQUAL(presence, ElaPresenceStatus_Busy);
+}
+
 static CU_TestInfo cases[] = {
     { "test_get_address",test_get_address },
     { "test_get_nodeid", test_get_nodeid },
     { "test_get_userid", test_get_userid },
+    { "test_get_presence", test_get_presence },
     { NULL, NULL }
 };
 
