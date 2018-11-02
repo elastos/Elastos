@@ -28,9 +28,9 @@ namespace Elastos {
 
 			void SetUrl(const std::string &url);
 
-			const std::string &GetLocation() const;
+			uint64_t GetLocation() const;
 
-			void SetLocation(const std::string &location);
+			void SetLocation(uint64_t location);
 
 			virtual void Serialize(ByteStream &ostream) const;
 
@@ -44,7 +44,7 @@ namespace Elastos {
 			std::string _publicKey;
 			std::string _nickName;
 			std::string _url;
-			std::string _location;
+			uint64_t _location;
 		};
 
 	}
