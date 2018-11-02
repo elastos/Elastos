@@ -103,6 +103,7 @@ static ElaCallbacks callbacks = {
 static Condition DEFINE_COND(carrier_ready_cond);
 static Condition DEFINE_COND(carrier_cond);
 static Condition DEFINE_COND(friend_status_cond);
+static Condition DEFINE_COND(portforwarding_cond);
 
 static CarrierContext carrier_context = {
     .cbs = &callbacks,
@@ -403,6 +404,8 @@ static void *server_thread_entry(void *argv)
         return NULL;
     }
 
+    cond_signal(&portforwarding_cond);
+
     data_sockfd = accept(sockfd, NULL, NULL);
     tcp_socket_close((sockfd));
 
@@ -457,6 +460,8 @@ int forwarding_data(const char *service_port, const char *shadow_service_port)
         vlogE("create server thread failed (%d)", rc);
         return -1;
     }
+
+    cond_wait(&portforwarding_cond);
 
     client_ctxt.port = shadow_service_port;
     client_ctxt.recv_count = 0;

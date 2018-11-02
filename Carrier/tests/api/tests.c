@@ -159,7 +159,7 @@ char robotaddr[ELA_MAX_ADDRESS_LEN + 1];
 
 int test_main(int argc, char *argv[])
 {
-    int opt, idx, retryCount = 0;
+    int opt, retryCount = 0;
     int i, j;
     CU_pSuite pSuite;
     CU_TestInfo *ti;

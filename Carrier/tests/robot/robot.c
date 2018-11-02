@@ -157,7 +157,6 @@ static void* ela_accept_friend_entry(void *arg)
 {
     TestContext *ctx = (TestContext *)arg;
     CarrierContext *wctx = ctx->carrier;
-    int rc;
     char *argv[] = {"faccept", wctx->extra->userid};
 
     faccept(ctx, 2, argv);
@@ -177,7 +176,6 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
 
     if (!strcmp(hello, "auto-reply")) {
         pthread_t tid;
-        int rc;
 
         strcpy(wctx->extra->userid, userid);
 
@@ -270,7 +268,6 @@ static void* carrier_run_entry(void *arg)
 int robot_main(int argc, char *argv[])
 {
     ElaCarrier *w;
-    int rc;
     char datadir[PATH_MAX];
 
     int i;
@@ -292,7 +289,7 @@ int robot_main(int argc, char *argv[])
         return -1;
     }
 
-    for (i = 0 ; i < opts.bootstraps_size; i++) {
+    for (i = 0 ; i < (int)opts.bootstraps_size; i++) {
         BootstrapNode *b = &opts.bootstraps[i];
         BootstrapNode *node = global_config.bootstraps[i];
 

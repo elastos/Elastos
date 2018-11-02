@@ -54,7 +54,7 @@ static void config_destructor(void *p)
     if (config->bootstraps) {
         int i;
 
-        for (i = 0; i < config->bootstraps_size; i++)
+        for (i = 0; i < (int)config->bootstraps_size; i++)
             deref(config->bootstraps[i]);
 
         free(config->bootstraps);

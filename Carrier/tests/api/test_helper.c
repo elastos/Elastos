@@ -242,7 +242,7 @@ int test_suite_init_ext(TestContext *context, bool udp_disabled)
         return -1;
     }
 
-    for (i = 0 ; i < opts.bootstraps_size; i++) {
+    for (i = 0 ; i < (int)opts.bootstraps_size; i++) {
         BootstrapNode *b = &opts.bootstraps[i];
         BootstrapNode *node = global_config.bootstraps[i];
 

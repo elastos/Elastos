@@ -593,7 +593,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    for (i = 0 ; i < config->bootstraps_size; i++) {
+    for (i = 0 ; i < (int)config->bootstraps_size; i++) {
         BootstrapNode *b = &opts.bootstraps[i];
         BootstrapNode *node = config->bootstraps[i];
 
