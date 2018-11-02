@@ -410,7 +410,7 @@ int BRAddressIsValid(const char *addr)
 #endif
     }
 
-    if (r == 0 && strcmp(addr, "1111111111111111111114oLvT2") == 0) {
+    if (r == 0 && strcmp(addr, ELA_SIDECHAIN_DESTROY_ADDR) == 0) {
         r = 1;
     }
 

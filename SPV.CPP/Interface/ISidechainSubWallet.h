@@ -20,7 +20,6 @@ namespace Elastos {
 			/**
 			 * Create a withdraw transaction and return the content of transaction in json format. Note that \p amount should greater than sum of \p so that we will leave enough fee for mainchain.
 			 * @param fromAddress specify which address we want to spend, or just input empty string to let wallet choose UTXOs automatically.
-			 * @param toAddress specify which address we want to send, in this method to address shall be destroy address of the side chain. Note that destroy address is a special address generate by a program hash that all bytes set to zero.
 			 * @param amount specify amount we want to send.
 			 * @param mainchainAccounts a list of mainchain accounts in json format.
 			 * @param mainchainAmounts a list of mainchain amounts in json format, each amount should correspond to \p mainchainAccounts by order.
@@ -31,7 +30,6 @@ namespace Elastos {
 			 */
 			virtual nlohmann::json CreateWithdrawTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
 					const uint64_t amount,
 					const nlohmann::json& mainchainAccounts,
 					const nlohmann::json& mainchainAmounts,

@@ -17,7 +17,6 @@ namespace Elastos {
 
 			virtual nlohmann::json CreateWithdrawTransaction(
 					const std::string &fromAddress,
-					const std::string &toAddress,
 					const uint64_t amount,
 					const nlohmann::json& mainchainAccounts,
 					const nlohmann::json& mainchainAmounts,
