@@ -38,6 +38,7 @@ extern "C" {
 #pragma message "testnet build"
 #endif
 
+#define ELA_SIDECHAIN_DESTROY_ADDR "1111111111111111111114oLvT2"
 // bitcoin address prefixes
 #define BITCOIN_PUBKEY_ADDRESS      0
 #define BITCOIN_SCRIPT_ADDRESS      5

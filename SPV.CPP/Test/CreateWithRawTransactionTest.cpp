@@ -55,7 +55,7 @@ TEST_CASE("test sideChain Create Transaction", "") {
 //		sleep(5);
 //		if (value > 10000) {
 //
-//			nlohmann::json txJson = sidechainSubWallet->CreateWithdrawTransaction("", "1111111111111111111114oLvT2", 20000, mainChainAccount,
+//			nlohmann::json txJson = sidechainSubWallet->CreateWithdrawTransaction("", ELA_SIDECHAIN_DESTROY_ADDR, 20000, mainChainAccount,
 //			                                              mainChainAmount, mainChainIndex, 10002, "memo", "remark");
 //
 //			nlohmann::json result = sidechainSubWallet->SendRawTransaction(txJson, 10002, payPassword);

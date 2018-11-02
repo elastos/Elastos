@@ -82,9 +82,6 @@ void TestConnectPeer::withdraw(ISubWallet *subWallet, uint64_t amount, const std
 							   const std::string &payPassword) {
 	SidechainSubWallet *sidechainSubWallet = dynamic_cast<SidechainSubWallet *>(subWallet);
 
-	UInt168 u = UINT168_ZERO;
-	std::string destroyAddress = Utils::UInt168ToAddress(u);
-
 	nlohmann::json mainchainAccounts;
 	mainchainAccounts.push_back(mainchainAddress);
 
@@ -95,7 +92,7 @@ void TestConnectPeer::withdraw(ISubWallet *subWallet, uint64_t amount, const std
 	mainchainIndexs.push_back(0);
 
 	nlohmann::json tx = sidechainSubWallet->CreateWithdrawTransaction("",
-																	  destroyAddress, amount + 20000, mainchainAccounts,
+																	  amount + 20000, mainchainAccounts,
 																	  mainchainAmounts,
 																	  mainchainIndexs, "memo", "remark");
 
