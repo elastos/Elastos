@@ -69,7 +69,7 @@ public class CarrierStream: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(TAG(), "Get transport info error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         let info = convertCTransportInfoToCarrierTransportInfo(cinfo)
@@ -100,7 +100,7 @@ public class CarrierStream: NSObject {
         guard bytes > 0 else {
             let errno = getErrorCode()
             Log.e(TAG(), "Write data to stream \(streamId) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         return NSNumber(value: bytes)
@@ -126,7 +126,7 @@ public class CarrierStream: NSObject {
         }
 
         guard channel >= 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
 
         Log.d(TAG(), "Channel \(channel) opened locally")
@@ -153,7 +153,7 @@ public class CarrierStream: NSObject {
                                               Int32(channel))
 
         guard result >= 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
 
         Log.d(TAG(), "Channel \(channel) closed.")
@@ -184,7 +184,7 @@ public class CarrierStream: NSObject {
         }
 
         guard bytes > 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
 
         return NSNumber(value: bytes)
@@ -209,7 +209,7 @@ public class CarrierStream: NSObject {
                                              Int32(channel))
 
         guard result >= 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
     }
 
@@ -232,7 +232,7 @@ public class CarrierStream: NSObject {
                                                Int32(channel))
 
         guard result >= 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
     }
 
@@ -268,7 +268,7 @@ public class CarrierStream: NSObject {
         }
 
         guard pfId > 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
 
         Log.d(TAG(), "Port forwarding \(pfId) to service \(service) created",
@@ -297,7 +297,7 @@ public class CarrierStream: NSObject {
                          Int32(streamId), Int32(portForwarding))
 
         guard result >= 0 else {
-            throw CarrierError.InternalError(errno: getErrorCode())
+            throw CarrierError.FromErrorCode(errno: getErrorCode())
         }
 
         Log.d(TAG(), "Port forwarding \(portForwarding) closed")

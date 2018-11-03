@@ -240,7 +240,7 @@ public class CarrierSession: NSObject {
             manager.release()
             let errno = getErrorCode()
             Log.e(TAG(), "Request to invite session error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(TAG(), "Sended session invite request to \(to)")
@@ -288,7 +288,7 @@ public class CarrierSession: NSObject {
         guard result >= 0 else {
             let errno = getErrorCode()
             Log.e(TAG(), "Reply session invite request error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         if status == 0 {
@@ -319,7 +319,7 @@ public class CarrierSession: NSObject {
         guard result >= 0 else {
             let errno = getErrorCode()
             Log.e(TAG(), "Start to establish session error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(TAG(), "Session to \(to) started")
@@ -374,7 +374,7 @@ public class CarrierSession: NSObject {
         guard streamId >= 0 else {
             let errno = getErrorCode()
             Log.e(TAG(), "Add a stream to session error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(TAG(), "Added a stream to session in success\n")
@@ -402,7 +402,7 @@ public class CarrierSession: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(TAG(), "Remove stream \(streamId) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         self.streams.removeValue(forKey: streamId)
@@ -441,7 +441,7 @@ public class CarrierSession: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(TAG(), "Add service \(serviceName) to session error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(TAG(), "Service \(serviceName) was added to this session, and" +

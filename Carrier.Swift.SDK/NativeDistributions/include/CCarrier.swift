@@ -1168,3 +1168,12 @@ internal func ela_get_error() -> Int32
  */
 @_silgen_name("ela_clear_error")
 internal func ela_clear_error()
+
+/**
+ * \~English
+ * Get string description to error code.
+ */
+@_silgen_name("ela_get_strerror")
+internal func ela_get_strerror(_ errnum: Int,
+                               _ buf: UnsafeMutablePointer<Int8>!,
+                               _ len: Int) -> UnsafeMutablePointer<Int8>!

@@ -127,7 +127,7 @@ public class Carrier: NSObject {
             guard ccarrier != nil else {
                 let errno = getErrorCode()
                 Log.e(TAG, "Create native carrier instance error: 0x%X", errno)
-                throw CarrierError.InternalError(errno: errno)
+                throw CarrierError.FromErrorCode(errno: errno)
             }
 
             carrier.ccarrier = ccarrier
@@ -270,7 +270,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Set self nospam error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.i(Carrier.TAG, "Current nospam updated.")
@@ -292,7 +292,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get self nospam error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.i(Carrier.TAG, "Current node spam: \(nospam)")
@@ -315,7 +315,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Update self user infos error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.i(Carrier.TAG, "Current user information updated.")
@@ -334,7 +334,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get current user infos error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         let info = convertCUserInfoToCarrierUserInfo(cinfo)
@@ -354,7 +354,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Set self presence error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Self presence updated to be: \(newPresence)")
@@ -373,7 +373,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get self presence error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         let presence = convertCPresenceStatusToCarrierPresenceStatus(cpresence.rawValue)
@@ -415,7 +415,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get current user's friends error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Current user's friends listed below: +++>>")
@@ -444,7 +444,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Get infos of friend \(friendId) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         let info = convertCFriendInfoToCarrierFriendInfo(cinfo)
@@ -475,7 +475,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Set friend \(friendId)'s label error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Friend \(friendId)'s label changed -> \(newLabel)")
@@ -520,7 +520,7 @@ public class Carrier: NSObject {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Send friend request to user \(userId)" +
                 " error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Sended a friend request to user \(userId).")
@@ -544,7 +544,7 @@ public class Carrier: NSObject {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Accept user \(userId) as be friend " +
                 "error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Accepted user \(userId) as friend.")
@@ -566,7 +566,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Remove friend \(friendId) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Friend \(friendId) was removed")
@@ -595,7 +595,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Sended message: \(msg) to \(target).")
@@ -623,7 +623,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Send message to \(target) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Sended message: \(data) to \(target).")
@@ -686,7 +686,7 @@ public class Carrier: NSObject {
             unmanaged.release()
             let errno = getErrorCode()
             Log.e(Carrier.TAG, "Invite friend to \(target) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Sended friend invite request to \(target).")
@@ -759,7 +759,7 @@ public class Carrier: NSObject {
         guard result >= 0 else {
             let errno: Int = getErrorCode()
             Log.e(Carrier.TAG, "Reply friend invite to \(target) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.d(Carrier.TAG, "Sended reply to friend invite request to \(target)")

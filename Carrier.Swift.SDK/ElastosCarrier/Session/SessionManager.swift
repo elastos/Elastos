@@ -64,7 +64,7 @@ public class CarrierSessionManager: NSObject {
             guard result >= 0 else {
                 let errno = getErrorCode()
                 Log.e(TAG(), "Initialize native session manager error:0x%X", errno)
-                throw CarrierError.InternalError(errno: errno)
+                throw CarrierError.FromErrorCode(errno: errno)
             }
 
             Log.d(TAG(), "The native carrier session manager initialized.")
@@ -73,7 +73,7 @@ public class CarrierSessionManager: NSObject {
             guard result >= 0 else {
                 let errno = getErrorCode()
                 Log.e(TAG(), "Set session callback error: 0x%x", errno)
-                throw CarrierError.InternalError(errno: errno)
+                throw CarrierError.FromErrorCode(errno: errno)
             }
 
             sessionMgr = CarrierSessionManager(carrier)
@@ -119,7 +119,7 @@ public class CarrierSessionManager: NSObject {
             guard result >= 0 else {
                 let errno = getErrorCode()
                 Log.e(TAG(), "Initialize native session manager error: 0x%X", errno)
-                throw CarrierError.InternalError(errno: errno)
+                throw CarrierError.FromErrorCode(errno: errno)
             }
 
             let cb: CSessionRequestCallback = { (_, _, cfrom, csdp, _, cctxt) in
@@ -142,7 +142,7 @@ public class CarrierSessionManager: NSObject {
                 let errno = getErrorCode()
                 Log.e(TAG(), "Set session callback error: 0x%X", errno)
                 ela_session_cleanup(carrier.ccarrier)
-                throw CarrierError.InternalError(errno: errno)
+                throw CarrierError.FromErrorCode(errno: errno)
             }
 
             Log.d(TAG(), "The native carrier session manager initialized.")
@@ -209,7 +209,7 @@ public class CarrierSessionManager: NSObject {
         guard ctmp != nil else {
             let errno = getErrorCode()
             Log.e(TAG(), "Open session conversation to \(target) error: 0x%X", errno)
-            throw CarrierError.InternalError(errno: errno)
+            throw CarrierError.FromErrorCode(errno: errno)
         }
 
         Log.i(TAG(), "An new session to \(target) created locally.")
