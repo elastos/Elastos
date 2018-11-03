@@ -613,18 +613,22 @@ static void friend_invite_response(ElaCarrier *w, const char *from,
                                    const void *data, size_t len, void *context)
 {
     ElaSession *ws = (ElaSession*)context;
-    const char *bundle;
-    const char *sdp;
+    const char *bundle = NULL;
+    const char *sdp = NULL;
 
-    bundle = (const char *)data;
-    sdp = (const char *)data + strlen(bundle) + 1;
+    if (data)  {
+        bundle = (const char *)data;
+        sdp = (const char *)data + strlen(bundle) + 1;
 
-    // bundle\x0sdp\x0\x0
-    assert(((const char *)data)[len-1] == 0);
-    assert(strlen(bundle) + strlen(sdp) + 3 == len);
+        // bundle\x0sdp\x0\x0
+        assert(((const char *)data)[len-1] == 0);
+        assert(strlen(bundle) + strlen(sdp) + 3 == len);
 
-    vlogD("Session: Session response from %s with bundle: %s, SDP: %s", from, bundle, sdp);
-    len -= strlen(bundle) + 2;
+        vlogD("Session: Session response from %s with bundle: %s, SDP: %s", from, bundle, sdp);
+        len -= strlen(bundle) + 2;
+    } else
+        len = 0;
+
     if (ws->complete_callback) {
         ws->complete_callback(ws, bundle, status, reason, (const char *)sdp, len, ws->context);
     }
