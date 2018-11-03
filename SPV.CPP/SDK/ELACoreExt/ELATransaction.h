@@ -42,9 +42,9 @@ namespace Elastos {
 				WithdrawAsset           = 0x07,
 				TransferCrossChainAsset = 0x08,
 				RegisterIdentification	= 0x09,
-				RegisterProducer		= 0x0A,
-				CancelProducer			= 0x0B,
-				VoteProducer			= 0x0C,
+				RegisterProducer		= 0xC1,
+				CancelProducer			= 0xC2,
+				VoteProducer			= 0xC3,
 				TypeMaxCount
 			};
 
