@@ -329,15 +329,12 @@ namespace Elastos {
 		}
 
 		bool MasterWallet::exportMnemonic(const std::string &payPassword, std::string &mnemonic) {
-
-			CMBlock cb_Mnemonic = Utils::decrypt(_localStore.Account()->GetEncryptedMnemonic(), payPassword);
-			if (false == cb_Mnemonic) {
+			CMBlock encryptedMnemonic = _localStore.Account()->GetEncryptedMnemonic();
+			CMBlock phrase = Utils::decrypt(encryptedMnemonic, payPassword);
+			if (phrase.GetSize() == 0) {
 				return false;
 			}
-			CMemBlock<char> cb_char_Mnemonic(cb_Mnemonic.GetSize() + 1);
-			cb_char_Mnemonic.Zero();
-			memcpy(cb_char_Mnemonic, cb_Mnemonic, cb_Mnemonic.GetSize());
-			mnemonic = (const char *) cb_char_Mnemonic;
+			mnemonic = std::string((const char *)(uint8_t *)phrase, phrase.GetSize());
 			return true;
 		}
 

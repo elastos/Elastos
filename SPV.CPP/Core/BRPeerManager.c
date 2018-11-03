@@ -689,7 +689,7 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
                 inet_ntop(AF_INET, &peer->address.u32[3], host, sizeof(host));
             else
                 inet_ntop(AF_INET6, &peer->address, host, sizeof(host));
-            _peer_log("manager->peers[%zu] = %s\n", i, host);
+            _peer_log("peers[%zu] = %s\n", i, host);
         }
     }
 }
