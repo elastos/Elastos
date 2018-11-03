@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <arpa/inet.h>
 #include "BRPeer.h"
 #include "BRPeerMessages.h"
 #include "BRPeerManager.h"
@@ -52,8 +53,15 @@ namespace Elastos {
 					uint64_t id = UInt64GetLE(&msg[off]);
 					off += sizeof(uint64_t);
 
+					char host[INET6_ADDRSTRLEN] = {0};
+					if ((p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))
+						inet_ntop(AF_INET, &p.address.u32[3], host, sizeof(host));
+					else
+						inet_ntop(AF_INET6, &p.address, host, sizeof(host));
+					peer_log(peer, "peers[%zu] = %s", i, host);
+
 					if (! (p.services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
-					if (! (peer->address.u64[0] == 0 && peer->address.u16[4] == 0 && peer->address.u16[5] == 0xffff))
+					if (! (p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))
 						continue; // ignore IPv6 for now
 
 					// if address time is more than 10 min in the future or unknown, set to 5 days old

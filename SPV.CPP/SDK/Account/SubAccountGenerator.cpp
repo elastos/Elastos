@@ -91,9 +91,17 @@ namespace Elastos {
 
 		MasterPubKeyPtr SubAccountGenerator::GenerateMasterPubKey(IAccount *account, uint32_t coinIndex,
 																  const std::string &payPassword) {
+			UInt256 chainCode;
+			if (account->GetType() == "MultiSign") {
+				MultiSignAccount *multiSignAccount = static_cast<MultiSignAccount *>(account);
+				if ("Simple" == multiSignAccount->GetInnerAccount()->GetType()) {
+					Key prvKey = account->DeriveKey(payPassword);
+					return MasterPubKeyPtr(new MasterPubKey(*prvKey.getRaw(), chainCode));
+				}
+			}
+
 			UInt512 seed = account->DeriveSeed(payPassword);
 			BRKey key;
-			UInt256 chainCode;
 			BRBIP32PrivKeyPath(&key, &chainCode, &seed, sizeof(seed), 3, 44 | BIP32_HARD,
 							   coinIndex | BIP32_HARD, 0 | BIP32_HARD);
 			var_clean(&seed);
