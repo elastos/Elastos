@@ -130,6 +130,18 @@ extern "C" {
 
 /**
  * \~English
+ * Carrier invite request/reply max transmission length.
+ */
+#define ELA_MAX_INVITE_DATA_LEN         8192
+
+/**
+ * \~English
+ * Carrier Invite reply max reason length.
+ */
+#define ELA_MAX_INVITE_REPLY_REASON_LEN 255
+
+/**
+ * \~English
  * Carrier group title max length.
  */
 #define ELA_MAX_GROUP_TITLE_LEN         127

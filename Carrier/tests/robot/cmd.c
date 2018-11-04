@@ -39,6 +39,7 @@
 #include "cond.h"
 #include "cmd.h"
 #include "test_context.h"
+#include "test_helper.h"
 
 const char *stream_state_name(ElaStreamState state);
 
@@ -46,6 +47,12 @@ const char *stream_state_name(ElaStreamState state);
         vlogE("Invalid command syntax"); \
         return; \
     }
+
+struct CarrierContextExtra {
+    char userid[ELA_MAX_ID_LEN + 1];
+    char *data;
+    int len;
+};
 
 struct SessionContextExtra {
     int init_flag;
@@ -454,6 +461,37 @@ static void freplyinvite(TestContext *context, int argc, char *argv[])
               argv[1], ela_get_error());
     else
         vlogD("Reply invite request from friend %s success", argv[1]);
+}
+
+static void freplyinvite_bigdata(TestContext *context, int argc, char *argv[])
+{
+    ElaCarrier *w = context->carrier->carrier;
+    int rc;
+    int status = 0;
+    CarrierContextExtra *extra = context->carrier->extra;
+    const char *reason = NULL;
+
+    CHK_ARGS(argc == 3 || argc == 4);
+
+    if (argc == 3 && strcmp(argv[2], "confirm") == 0) {
+        // Do nothing.
+    } else if (argc == 4 && strcmp(argv[2], "refuse") == 0) {
+        status = -1; // TODO: fix to correct status code.
+        reason = argv[3];
+    } else {
+        vlogE("Unknown sub command: %s", argv[2]);
+        return;
+    }
+
+    rc = ela_reply_friend_invite(w, argv[1], status, reason, extra->data,
+                                 extra->len);
+    if (rc < 0)
+        vlogE("Reply invite request from friend %s error (0x%x)",
+              argv[1], ela_get_error());
+    else
+        vlogD("Reply invite request from friend %s success", argv[1]);
+
+    FREE_ANYWAY(extra->data);
 }
 
 /*
@@ -902,6 +940,7 @@ static struct command {
     { "fremove",      fremove      },
     { "finvite",      finvite      },
     { "freplyinvite", freplyinvite },
+    { "freplyinvite_bigdata", freplyinvite_bigdata },
     { "kill",         wkill        },
     { "sinit",        sinit        },
     { "srequest",     srequest     },

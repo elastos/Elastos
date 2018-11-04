@@ -37,6 +37,8 @@
 #define MAX_IPV4_ADDRESS_LEN (15)
 #define MAX_IPV6_ADDRESS_LEN (47)
 
+#define ELA_MAX_EXTENSION_NAME_LEN  (31)
+
 typedef struct DHT {
     uint8_t padding[32];  // reserved for DHT.
 } DHT;
@@ -94,6 +96,9 @@ struct ElaCarrier {
 
     hashtable_t *tcallbacks;
     hashtable_t *thistory;
+
+    hashtable_t *tassembly_ireqs;
+    hashtable_t *tassembly_irsps;
 
     pthread_t main_thread;
 

@@ -27,10 +27,8 @@
 #include <assert.h>
 
 #include <linkedhashtable.h>
-
+#include "ela_carrier_impl.h"
 #include "ela_carrier.h"
-
-#define ELA_MAX_EXTENSION_NAME_LEN      31
 
 typedef struct HistoryItem {
     hash_entry_t he;
@@ -62,7 +60,7 @@ hashtable_t *transaction_history_create(int capacity)
 
 /* Invite request history from other users */
 static inline
-void tansaction_history_put_invite(hashtable_t *thistory,
+void transaction_history_put_invite(hashtable_t *thistory,
                                    const char *userid, int64_t tid)
 {
     HistoryItem *item;

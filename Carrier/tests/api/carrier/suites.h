@@ -30,6 +30,7 @@ DECL_TESTSUITE(friend_request_test)
 DECL_TESTSUITE(friend_label_test)
 DECL_TESTSUITE(friend_message_test)
 DECL_TESTSUITE(friend_invite_test)
+DECL_TESTSUITE(friend_invite_assembly_test)
 
 #define DEFINE_CARRIER_TESTSUITES \
     DEFINE_TESTSUITE(check_id_test), \
@@ -37,7 +38,8 @@ DECL_TESTSUITE(friend_invite_test)
     DEFINE_TESTSUITE(get_info_test), \
     DEFINE_TESTSUITE(friend_request_test), \
     DEFINE_TESTSUITE(friend_label_test), \
-    DEFINE_TESTSUITE(friend_message_test),\
-    DEFINE_TESTSUITE(friend_invite_test)
+    DEFINE_TESTSUITE(friend_message_test), \
+    DEFINE_TESTSUITE(friend_invite_test), \
+    DEFINE_TESTSUITE(friend_invite_assembly_test)
 
 #endif /* __API_CARRIER_TEST_SUITES_H__ */

@@ -24,6 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#endif
+
 #include <CUnit/Basic.h>
 #include <vlog.h>
 
@@ -112,6 +116,7 @@ static CarrierContext carrier_context = {
 static void test_context_reset(TestContext *context)
 {
     cond_reset(context->carrier->cond);
+    cond_reset(context->carrier->friend_status_cond);
 }
 
 static TestContext test_context = {
@@ -130,18 +135,23 @@ static void friend_invite_response_cb(ElaCarrier *w, const char *from, int statu
     extra->from   = strdup(from);
     extra->status = status;
     extra->reason = (status != 0) ? (reason  ? strdup(reason ) : NULL) : NULL;
-    extra->data   = (status == 0) ? (content ? strdup((const char *)content) : NULL) : NULL;
-    extra->len    = (status == 0) ? (int)len : 0;
+    extra->len    = (int)len;
+    if (content && len > 0) {
+        extra->data = calloc(1, len);
+        memcpy(extra->data, content, len);
+    } else {
+        extra->data = NULL;
+    }
 
     wakeup(context);
 }
 
-static void test_friend_invite_confirm(void)
+static void test_friend_invite_assembly_confirm(int hello_len)
 {
     CarrierContext *wctxt = test_context.carrier;
     CarrierContextExtra *extra = wctxt->extra;
     char userid[ELA_MAX_ID_LEN + 1];
-    char to[ELA_MAX_ID_LEN * 2 + 1];
+    char *hello = alloca(hello_len);
     int rc;
     bool is_wakeup;
 
@@ -151,23 +161,19 @@ static void test_friend_invite_confirm(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    const char* hello = "hello";
-    rc = ela_invite_friend(wctxt->carrier, robotid, hello,
-                               strlen(hello) + 1,
-                               friend_invite_response_cb, wctxt);
+    memset(hello, 'H', hello_len);
+    rc = ela_invite_friend(wctxt->carrier, robotid, hello, hello_len,
+                           friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL_FATAL(rc, 0);
 
-    char in[32] = {0};
-    char in2[32] = {0};
-    rc = read_ack("%32s %32s", in, in2);
+    char val[2][32] = {{0}, {0}};
+    rc = read_ack("%32s %32s", val[0], val[1]);
     CU_ASSERT_EQUAL_FATAL(rc, 2);
-    CU_ASSERT_STRING_EQUAL(in, "data");
-    CU_ASSERT_STRING_EQUAL(in2, hello);
+    CU_ASSERT_STRING_EQUAL(val[0], "data");
+    CU_ASSERT_STRING_EQUAL(val[1], "bigdata");
 
     (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
-    sprintf(to, "%s", userid);
-    const char* invite_rsp_data = "invitation-confirmed";
-    rc = write_cmd("freplyinvite %s confirm %s\n", to, invite_rsp_data);
+    rc = write_cmd("freplyinvite_bigdata %s confirm\n", userid);
     CU_ASSERT_FATAL(rc > 0);
 
     // wait for invite response callback invoked.
@@ -177,23 +183,106 @@ static void test_friend_invite_confirm(void)
         CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
         CU_ASSERT_EQUAL(extra->status, 0);
         CU_ASSERT_PTR_NULL(extra->reason);
-        CU_ASSERT_STRING_EQUAL(extra->data, invite_rsp_data);
-        CU_ASSERT_EQUAL(strlen(extra->data), strlen(invite_rsp_data));
-        CU_ASSERT_EQUAL(extra->len, strlen(invite_rsp_data) + 1);
+        CU_ASSERT_TRUE(memcmp(extra->data, hello, hello_len) == 0);
+        CU_ASSERT_EQUAL(extra->len, hello_len);
 
         FREE_ANYWAY(extra->from);
         FREE_ANYWAY(extra->data);
     }
 }
 
-static void test_friend_invite_reject(void)
+static void test_friend_invite_assembly_confirm_1200(void)
+{
+    test_friend_invite_assembly_confirm(1200);
+}
+
+static void test_friend_invite_assembly_confirm_1500(void)
+{
+    test_friend_invite_assembly_confirm(1500);
+}
+
+static void test_friend_invite_assembly_confirm_2550(void)
+{
+    test_friend_invite_assembly_confirm(2550);
+}
+
+static void test_friend_invite_assembly_confirm_maxlen(void)
+{
+    test_friend_invite_assembly_confirm(ELA_MAX_INVITE_DATA_LEN);
+}
+
+static void test_friend_invite_assembly_reject_base(int hello_len)
 {
     CarrierContext *wctxt = test_context.carrier;
     CarrierContextExtra *extra = wctxt->extra;
     char userid[ELA_MAX_ID_LEN + 1];
-    char to[ELA_MAX_ID_LEN * 2 + 1];
+    char *hello = (char*)alloca(hello_len);
+    char *reason = "IDoNotKnowWhoYouAre!";
     int rc;
-    bool is_wakeup;
+    bool is_wakup;
+
+    CU_ASSERT_PTR_NOT_NULL(hello);
+    test_context.context_reset(&test_context);
+
+    rc = add_friend_anyway(&test_context, robotid, robotaddr);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+    CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
+
+    memset(hello, 'H', hello_len);
+    rc = ela_invite_friend(wctxt->carrier, robotid, hello, hello_len,
+                           friend_invite_response_cb, wctxt);
+    CU_ASSERT_EQUAL_FATAL(rc, 0);
+
+    char val[2][32] = {{0},{0}};
+    rc = read_ack("%32s %32s", val[0], val[1]);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
+    CU_ASSERT_STRING_EQUAL(val[0], "data");
+    CU_ASSERT_STRING_EQUAL(val[1], "bigdata");
+
+    (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
+    rc = write_cmd("freplyinvite_bigdata %s refuse %s\n", userid, reason);
+    CU_ASSERT_FATAL(rc > 0);
+
+    // wait for invite response callback invoked.
+    is_wakup = cond_trywait(wctxt->cond, 60000);
+    CU_ASSERT_TRUE(is_wakup);
+    if (is_wakup) {
+        CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
+        CU_ASSERT(extra->status != 0);
+        CU_ASSERT_STRING_EQUAL(extra->reason, reason);
+        CU_ASSERT_TRUE(memcmp(extra->data, hello, hello_len) == 0);
+        CU_ASSERT_EQUAL(extra->len, hello_len);
+
+        FREE_ANYWAY(extra->from);
+        FREE_ANYWAY(extra->reason);
+    }
+}
+
+static void test_friend_invite_assembly_reject_1200(void)
+{
+    test_friend_invite_assembly_reject_base(1200);
+}
+
+static void test_friend_invite_assembly_reject_1270(void)
+{
+    test_friend_invite_assembly_reject_base(1270);
+}
+
+static void test_friend_invite_assembly_reject_2530(void)
+{
+    test_friend_invite_assembly_reject_base(2530);
+}
+
+static void test_friend_invite_assembly_reject_2550(void)
+{
+    test_friend_invite_assembly_reject_base(2550);
+}
+
+static void test_friend_invite_with_overlong_data(void)
+{
+    CarrierContext *wctxt = test_context.carrier;
+    char data[ELA_MAX_INVITE_DATA_LEN + 1] = {0};
+    int rc;
 
     test_context.context_reset(&test_context);
 
@@ -201,85 +290,32 @@ static void test_friend_invite_reject(void)
     CU_ASSERT_EQUAL_FATAL(rc, 0);
     CU_ASSERT_TRUE_FATAL(ela_is_friend(wctxt->carrier, robotid));
 
-    const char* hello = "hello";
-    rc = ela_invite_friend(wctxt->carrier, robotid, hello, strlen(hello) + 1,
-                               friend_invite_response_cb, wctxt);
-    CU_ASSERT_EQUAL_FATAL(rc, 0);
-
-    char in[32] = {0};
-    char in2[32] = {0};
-    rc = read_ack("%32s %32s", in, in2);
-    CU_ASSERT_EQUAL_FATAL(rc, 2);
-    CU_ASSERT_STRING_EQUAL(in, "data");
-    CU_ASSERT_STRING_EQUAL(in2, hello);
-
-    (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
-    sprintf(to, "%s", userid);
-
-    const char* reason = "unknown-error";
-    rc = write_cmd("freplyinvite %s refuse %s\n", to, reason);
-    CU_ASSERT_FATAL(rc > 0);
-
-    // wait for invite response callback invoked.
-    is_wakeup = cond_trywait(wctxt->cond, 60000);
-    CU_ASSERT_TRUE(is_wakeup);
-    if (is_wakeup) {
-        CU_ASSERT_NSTRING_EQUAL(extra->from, robotid, strlen(robotid));
-        CU_ASSERT(extra->status != 0);
-        CU_ASSERT_STRING_EQUAL(extra->reason, reason);
-        CU_ASSERT_PTR_NULL(extra->data);
-
-        FREE_ANYWAY(extra->from);
-        FREE_ANYWAY(extra->reason);
-    }
-}
-
-static void test_friend_invite_stranger(void)
-{
-    CarrierContext *wctxt = test_context.carrier;
-    const char* hello = "hello";
-    int rc;
-
-    test_context.context_reset(&test_context);
-
-    rc = remove_friend_anyway(&test_context, robotid);
-    CU_ASSERT_EQUAL_FATAL(rc, 0);
-    CU_ASSERT_FALSE_FATAL(ela_is_friend(wctxt->carrier, robotid));
-
-    rc = ela_invite_friend(wctxt->carrier, robotid, hello, strlen(hello) + 1,
-                               friend_invite_response_cb, wctxt);
+    memset(data, 'T', ELA_MAX_INVITE_DATA_LEN);
+    rc = ela_invite_friend(wctxt->carrier, robotid, data, sizeof(data),
+                           friend_invite_response_cb, wctxt);
     CU_ASSERT_EQUAL(rc, -1);
-    CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
-}
-
-static void test_friend_invite_self(void)
-{
-    CarrierContext *wctxt = test_context.carrier;
-    char userid[ELA_MAX_ID_LEN + 1];
-    const char* hello = "hello";
-    int rc;
-
-    (void)ela_get_userid(wctxt->carrier, userid, sizeof(userid));
-    rc = ela_invite_friend(wctxt->carrier, userid, hello, strlen(hello) + 1,
-                               friend_invite_response_cb, wctxt);
-    CU_ASSERT_EQUAL(rc, -1);
-    CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_NOT_EXIST));
+    CU_ASSERT_EQUAL(ela_get_error(), ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
 }
 
 static CU_TestInfo cases[] = {
-    { "test_friend_invite_confirm",  test_friend_invite_confirm },
-    { "test_friend_invite_reject",   test_friend_invite_reject },
-    { "test_friend_invite_stranger", test_friend_invite_stranger },
-    { "test_friend_invite_self",     test_friend_invite_self },
+    { "test_friend_invite_assembly_confirm_1200",  test_friend_invite_assembly_confirm_1200 },
+    { "test_friend_invite_assembly_confirm_1500",  test_friend_invite_assembly_confirm_1500 },
+    { "test_friend_invite_assembly_confirm_2550",  test_friend_invite_assembly_confirm_2550 },
+    { "test_friend_invite_assembly_confirm_maxlen",test_friend_invite_assembly_confirm_maxlen },
+    { "test_friend_invite_assembly_reject_1200", test_friend_invite_assembly_reject_1200 },
+    { "test_friend_invite_assembly_reject_1270", test_friend_invite_assembly_reject_1270 },
+    { "test_friend_invite_assembly_reject_2530", test_friend_invite_assembly_reject_2530 },
+    { "test_friend_invite_assembly_reject_2550", test_friend_invite_assembly_reject_2550 },
+    { "test_friend_invite_with_overlong_data",   test_friend_invite_with_overlong_data },
     { NULL, NULL }
 };
 
-CU_TestInfo *friend_invite_test_get_cases(void)
+CU_TestInfo *friend_invite_assembly_test_get_cases(void)
 {
     return cases;
 }
 
-int friend_invite_test_suite_init(void)
+int friend_invite_assembly_test_suite_init(void)
 {
     int rc;
 
@@ -292,7 +328,7 @@ int friend_invite_test_suite_init(void)
     return 0;
 }
 
-int friend_invite_test_suite_cleanup(void)
+int friend_invite_assembly_test_suite_cleanup(void)
 {
     test_suite_cleanup(&test_context);
 

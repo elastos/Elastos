@@ -47,6 +47,14 @@
 
 struct CarrierContextExtra {
     char userid[ELA_MAX_ID_LEN + 1];
+    char *data;
+    int len;
+};
+
+static CarrierContextExtra extra = {
+    .userid = {0},
+    .data   = NULL,
+    .len    = 0,
 };
 
 static void print_user_info(const ElaUserInfo* info)
@@ -157,10 +165,12 @@ static void* ela_accept_friend_entry(void *arg)
 {
     TestContext *ctx = (TestContext *)arg;
     CarrierContext *wctx = ctx->carrier;
-    char *argv[] = {"faccept", wctx->extra->userid};
+    char *argv[]= {
+        "faccept",
+         wctx->extra->userid
+    };
 
     faccept(ctx, 2, argv);
-
     return NULL;
 }
 
@@ -178,7 +188,6 @@ static void friend_request_cb(ElaCarrier *w, const char *userid,
         pthread_t tid;
 
         strcpy(wctx->extra->userid, userid);
-
         pthread_create(&tid, 0, &ela_accept_friend_entry, ctx);
         pthread_detach(tid);
     } else {
@@ -219,7 +228,14 @@ static void friend_invite_cb(ElaCarrier *w, const char *from,
     vlogD("Recevied friend invite from %s", from);
     vlogD(" data: %s", (const char *)data);
 
-    write_ack("data %s\n", data);
+    if (len <= ELA_MAX_APP_MESSAGE_LEN)
+        write_ack("data %s\n", data);
+    else {
+        CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
+        extra->data = strdup((const char*)data);
+        extra->len = (int)len;
+        write_ack("data bigdata %d\n", (int)len);
+    }
 }
 
 static ElaCallbacks callbacks = {
@@ -269,8 +285,7 @@ int robot_main(int argc, char *argv[])
 {
     ElaCarrier *w;
     char datadir[PATH_MAX];
-
-    int i;
+    size_t i;
     pthread_t tid;
     char *cmd;
 

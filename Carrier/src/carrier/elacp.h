@@ -69,6 +69,8 @@ const char *elacp_get_hello(ElaCP *cp);
 
 int64_t elacp_get_tid(ElaCP *cp);
 
+size_t elacp_get_totalsz(ElaCP *cp);
+
 int elacp_get_status(ElaCP *cp);
 
 const void *elacp_get_raw_data(ElaCP *cp);
@@ -94,6 +96,8 @@ void elacp_set_region(ElaCP *cp, const char *region);
 void elacp_set_hello(ElaCP *cp, const char *hello);
 
 void elacp_set_tid(ElaCP *cp, int64_t *tid);
+
+void elacp_set_totalsz(ElaCP *cp, size_t totalsz);
 
 void elacp_set_status(ElaCP *cp, int status);
 
