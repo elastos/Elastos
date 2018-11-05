@@ -122,7 +122,7 @@ func (server *WebSocketServer) checkSessionsTimeout(done chan bool) {
 			server.SessionList.ForEachSession(func(v *Session) {
 				if v.SessionTimeoverCheck() {
 					resp := ResponsePack(SessionExpired, "")
-					server.response(v.SessionId, resp)
+					server.response(v.SessionID, resp)
 					closeList = append(closeList, v)
 				}
 			})
@@ -149,9 +149,9 @@ func (server *WebSocketServer) webSocketHandler(w http.ResponseWriter, r *http.R
 	newSession := &Session{
 		Connection: wsConn,
 		LastActive: time.Now().Unix(),
-		SessionId:  uuid.NewUUID().String(),
+		SessionID:  uuid.NewUUID().String(),
 	}
-	server.SessionList.OnlineList[newSession.SessionId] = newSession
+	server.SessionList.OnlineList[newSession.SessionID] = newSession
 
 	defer func() {
 		server.SessionList.CloseSession(newSession)
@@ -180,7 +180,7 @@ func (server *WebSocketServer) IsValidMsg(reqMsg map[string]interface{}) bool {
 	if _, ok := reqMsg["Addr"].(string); !ok && reqMsg["Addr"] != nil {
 		return false
 	}
-	if _, ok := reqMsg["AssetId"].(string); !ok && reqMsg["AssetId"] != nil {
+	if _, ok := reqMsg["AssetID"].(string); !ok && reqMsg["AssetID"] != nil {
 		return false
 	}
 	return true
@@ -192,7 +192,7 @@ func (server *WebSocketServer) OnDataHandle(currentSession *Session, bysMsg []by
 
 	if err := json.Unmarshal(bysMsg, &req); err != nil {
 		resp := ResponsePack(IllegalDataFormat, "")
-		server.response(currentSession.SessionId, resp)
+		server.response(currentSession.SessionID, resp)
 		log.Error("websocket OnDataHandle:", err)
 		return false
 	}
@@ -201,12 +201,12 @@ func (server *WebSocketServer) OnDataHandle(currentSession *Session, bysMsg []by
 	action, ok := server.ActionMap[actionName]
 	if !ok {
 		resp := ResponsePack(InvalidMethod, "")
-		server.response(currentSession.SessionId, resp)
+		server.response(currentSession.SessionID, resp)
 		return false
 	}
 	if !server.IsValidMsg(req) {
 		resp := ResponsePack(InvalidParams, "")
-		server.response(currentSession.SessionId, resp)
+		server.response(currentSession.SessionID, resp)
 		return true
 	}
 	if height, ok := req["Height"].(float64); ok {
@@ -219,19 +219,19 @@ func (server *WebSocketServer) OnDataHandle(currentSession *Session, bysMsg []by
 	resp := action(req)
 	resp["Action"] = actionName
 
-	server.response(currentSession.SessionId, resp)
+	server.response(currentSession.SessionID, resp)
 
 	return true
 }
 
-func (server *WebSocketServer) response(sessionId string, resp map[string]interface{}) {
+func (server *WebSocketServer) response(sessionID string, resp map[string]interface{}) {
 	resp["Desc"] = ErrMap[resp["Error"].(ErrCode)]
 	data, err := json.Marshal(resp)
 	if err != nil {
 		log.Error("Websocket response:", err)
 		return
 	}
-	server.SessionList.OnlineList[sessionId].Send(data)
+	server.SessionList.OnlineList[sessionID].Send(data)
 }
 
 func SendTransaction2WSclient(v interface{}) {
