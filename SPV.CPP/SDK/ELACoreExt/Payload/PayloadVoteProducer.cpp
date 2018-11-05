@@ -41,9 +41,9 @@ namespace Elastos {
 
 		void PayloadVoteProducer::Serialize(ByteStream &ostream) const {
 			ostream.writeVarString(_voter);
-			ostream.putUint64(_stake);
+			ostream.writeUint64(_stake);
 
-			ostream.putUint64(_publicKeys.size());
+			ostream.writeVarUint(_publicKeys.size());
 			std::for_each(_publicKeys.begin(), _publicKeys.end(), [&ostream](const std::string &key) {
 				ostream.writeVarString(key);
 			});
@@ -56,7 +56,7 @@ namespace Elastos {
 				return false;
 
 			uint64_t size;
-			if(!istream.readUint64(size))
+			if(!istream.readVarUint(size))
 				return false;
 			_publicKeys.clear();
 			std::string temp;

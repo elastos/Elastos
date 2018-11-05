@@ -873,7 +873,6 @@ static void _peerDisconnected(void *info, int error)
     //if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
     if (willReconnect) {
-        peer_log(peer, "reconnect 60s later");
         if (manager->syncIsInactivate) manager->syncIsInactivate(manager->info, 60);
     }
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);

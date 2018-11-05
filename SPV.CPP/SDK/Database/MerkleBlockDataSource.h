@@ -60,7 +60,7 @@ namespace Elastos {
 			const std::string MB_COLUMN_ID = "_id";
 			const std::string MB_BUFF = "merkleBlockBuff";
 			const std::string MB_HEIGHT = "merkleBlockHeight";
-			const std::string MB_ISO = "merkleBlockIso";
+			const std::string MB_ISO = "merkleBlockISO";
 
 			const std::string MB_DATABASE_CREATE = "create table if not exists " + MB_TABLE_NAME + " (" +
 				MB_COLUMN_ID + " integer primary key autoincrement, " +

@@ -5,7 +5,7 @@
     "NetType": "MainNet",
     "MinFee": 10000,
     "ReconnectSeconds": 300,
-    "BlockType": "ELA",
+    "PluginType": "ELA",
     "GenesisAddress" : ""
   },
   "IdChain": {
@@ -14,7 +14,7 @@
     "NetType": "MainNet",
     "MinFee": 10000,
     "ReconnectSeconds": 300,
-    "BlockType": "SideStandard",
+    "PluginType": "SideStandard",
     "GenesisAddress" : "XKUh4GLhFJiqAMTF6HyWQrV9pK9HcGUdfJ"
   }
 }
