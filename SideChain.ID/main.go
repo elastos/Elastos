@@ -40,6 +40,11 @@ const (
 	restfulTlsPort = 443
 )
 
+var (
+	Version   string
+	GoVersion string
+)
+
 func init() {
 	var coreNum int
 	if config.Parameters.MultiCoreNum > defaultMultiCoreNum {
@@ -53,7 +58,9 @@ func init() {
 }
 
 func main() {
-	eladlog.Info("Node version: ", config.Version)
+	eladlog.Info("Node version: ", Version)
+	eladlog.Info(GoVersion)
+
 	params := config.Parameters
 	foundation, err := common.Uint168FromAddress(config.Parameters.FoundationAddress)
 	if err != nil {
@@ -90,7 +97,6 @@ func main() {
 		ExchangeRage:      params.ExchangeRate,
 		ChainStore:        idChainStore.ChainStore,
 	}
-
 	txFeeHelper := mempool.NewFeeHelper(&mempoolCfg)
 	mempoolCfg.FeeHelper = txFeeHelper
 	chainCfg.GetTxFee = txFeeHelper.GetTxFee
@@ -175,7 +181,7 @@ func main() {
 
 	startHttpJsonRpc(params.HttpJsonPort, service)
 	startHttpRESTful(params.HttpRestPort, params.RestCertPath,
-		params.RestKeyPath, service.HttpService)
+	params.RestKeyPath, service.HttpService)
 
 	if params.HttpInfoStart {
 		go httpnodeinfo.New(&httpnodeinfo.Config{
@@ -339,7 +345,7 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *service.Ht
 
 func printSyncState(db *blockchain.ChainStore, server server.Server) {
 	logger := elalog.NewBackend(logWriter).Logger("STAT",
-		elalog.LevelInfo)
+	elalog.LevelInfo)
 
 	ticker := time.NewTicker(printStateInterval)
 	defer ticker.Stop()

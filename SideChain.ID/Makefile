@@ -2,7 +2,8 @@ GOFMT=gofmt
 GC=go build
 VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
 Minversion := $(shell date)
-BUILD_NODE_PAR = -ldflags "-X github.com/elastos/Elastos.ELA.SideChain/config.Version=$(VERSION)" #-race
+BUILD_NODE_PAR = -ldflags "-X main.Version=$(VERSION) -X 'main.GoVersion=`go version`'" #-race
+
 
 all:
 	$(GC)  $(BUILD_NODE_PAR) -o did log.go main.go
