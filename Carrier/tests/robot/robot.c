@@ -232,7 +232,8 @@ static void friend_invite_cb(ElaCarrier *w, const char *from,
         write_ack("data %s\n", data);
     else {
         CarrierContextExtra *extra = ((TestContext*)context)->carrier->extra;
-        extra->data = strdup((const char*)data);
+        extra->data = (char*)malloc(len);
+        memcpy(extra->data, data, len);
         extra->len = (int)len;
         write_ack("data bigdata %d\n", (int)len);
     }
