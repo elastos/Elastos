@@ -23,7 +23,7 @@ func newTestChainStore() (*ChainStore, error) {
 		IStore:             st,
 		headerIndex:        map[uint32]common.Uint256{},
 		headerCache:        map[common.Uint256]*ela.Header{},
-		headerIdx:          list.New(),
+		headerIDx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,
 		taskCh:             make(chan persistTask, TaskChanCap),

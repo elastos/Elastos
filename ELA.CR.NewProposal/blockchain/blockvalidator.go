@@ -80,17 +80,17 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		version += CheckTxOut
 	}
 
-	txIds := make([]Uint256, 0, len(transactions))
-	existingTxIds := make(map[Uint256]struct{})
+	txIDs := make([]Uint256, 0, len(transactions))
+	existingTxIDs := make(map[Uint256]struct{})
 	existingTxInputs := make(map[string]struct{})
 	existingSideTxs := make(map[Uint256]struct{})
 	for _, txn := range transactions {
-		txId := txn.Hash()
+		txID := txn.Hash()
 		// Check for duplicate transactions.
-		if _, exists := existingTxIds[txId]; exists {
+		if _, exists := existingTxIDs[txID]; exists {
 			return errors.New("[PowCheckBlockSanity] block contains duplicate transaction")
 		}
-		existingTxIds[txId] = struct{}{}
+		existingTxIDs[txID] = struct{}{}
 
 		// Check for transaction sanity
 		if errCode := CheckTransactionSanity(version, txn); errCode != Success {
@@ -119,9 +119,9 @@ func PowCheckBlockSanity(block *Block, powLimit *big.Int, timeSource MedianTimeS
 		}
 
 		// Append transaction to list
-		txIds = append(txIds, txId)
+		txIDs = append(txIDs, txID)
 	}
-	calcTransactionsRoot, err := crypto.ComputeRoot(txIds)
+	calcTransactionsRoot, err := crypto.ComputeRoot(txIDs)
 	if err != nil {
 		return errors.New("[PowCheckBlockSanity] merkleTree compute failed")
 	}

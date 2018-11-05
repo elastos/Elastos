@@ -342,8 +342,8 @@ func (node *node) Relay(from protocol.Noder, message interface{}) error {
 				log.Debug("Relay transaction message")
 				if nbr.BloomFilter().IsLoaded() && nbr.BloomFilter().MatchTxAndUpdate(message) {
 					inv := msg.NewInventory()
-					txId := message.Hash()
-					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txId))
+					txID := message.Hash()
+					inv.AddInvVect(msg.NewInvVect(msg.InvTypeTx, &txID))
 					nbr.SendMessage(inv)
 					continue
 				}
