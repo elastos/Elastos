@@ -105,6 +105,7 @@ namespace Elastos {
 					PayloadCancelProducer *cancelProducer = static_cast<PayloadCancelProducer *>(ptr->getPayload());
 					*cancelProducer = cancelProducerTxParam->GetPayload();
 				} else if (voteProducerTxParam != nullptr) {
+					ptr->setTransactionType(ELATransaction::VoteProducer);
 					PayloadVoteProducer *voteProducer = static_cast<PayloadVoteProducer *>(ptr->getPayload());
 					*voteProducer = voteProducerTxParam->GetPayload();
 				}
@@ -159,12 +160,10 @@ namespace Elastos {
 			return transaction->toJson();
 		}
 
-		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(const std::string &fromAddress,
-																		   const std::string &toAddress,
-																		   const std::string &publicKey) {
+		nlohmann::json MainchainSubWallet::CreateCancelProducerTransaction(const std::string &publicKey) {
 			CancelProducerTxParam txParam;
-			txParam.setFromAddress(fromAddress);
-			txParam.setToAddress(toAddress);
+			txParam.setFromAddress("");
+			txParam.setToAddress(CreateAddress());
 
 			PayloadCancelProducer payload;
 			payload.SetPublicKey(publicKey);
@@ -177,12 +176,10 @@ namespace Elastos {
 		}
 
 		nlohmann::json
-		MainchainSubWallet::CreateVoteProducerTransaction(const std::string &fromAddress,
-														  const std::string &toAddress,
-														  uint64_t stake, const nlohmann::json &pubicKeys) {
+		MainchainSubWallet::CreateVoteProducerTransaction(uint64_t stake, const nlohmann::json &pubicKeys) {
 			VoteProducerTxParam txParam;
-			txParam.setFromAddress(fromAddress);
-			txParam.setToAddress(toAddress);
+			txParam.setFromAddress("");
+			txParam.setToAddress(CreateAddress());
 
 			PayloadVoteProducer payload;
 			payload.SetVoter(_subAccount->GetMainAccountPublicKey());
