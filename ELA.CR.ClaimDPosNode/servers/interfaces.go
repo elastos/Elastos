@@ -84,7 +84,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 	}
 
 	return &TransactionInfo{
-		TxId:           txHashStr,
+		TxID:           txHashStr,
 		Hash:           txHashStr,
 		Size:           size,
 		VSize:          size,
@@ -284,7 +284,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 	}
 
 	type AuxBlock struct {
-		ChainId           int     `json:"chainid"`
+		ChainID           int     `json:"chainid"`
 		Height            uint64  `json:"height"`
 		CoinBaseValue     Fixed64 `json:"coinbasevalue"`
 		Bits              string  `json:"bits"`
@@ -293,7 +293,7 @@ func CreateAuxBlock(param Params) map[string]interface{} {
 	}
 
 	SendToAux := AuxBlock{
-		ChainId:           aux.AuxPowChainID,
+		ChainID:           aux.AuxPowChainID,
 		Height:            ServerNode.Height(),
 		CoinBaseValue:     currentAuxBlock.Transactions[0].Outputs[1].Value,
 		Bits:              fmt.Sprintf("%x", currentAuxBlock.Header.Bits),
@@ -676,15 +676,15 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 
-	assetIdStr, ok := param.String("assetid")
+	assetIDStr, ok := param.String("assetid")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	assetIdBytes, err := FromReversedString(assetIdStr)
+	assetIDBytes, err := FromReversedString(assetIDStr)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	assetId, err := Uint256FromBytes(assetIdBytes)
+	assetID, err := Uint256FromBytes(assetIDBytes)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -693,7 +693,7 @@ func GetBalanceByAsset(param Params) map[string]interface{} {
 	var balance Fixed64 = 0
 	for k, u := range unspents {
 		for _, v := range u {
-			if assetId.IsEqual(k) {
+			if assetID.IsEqual(k) {
 				balance = balance + v.Value
 			}
 		}
@@ -742,14 +742,14 @@ func ListUnspent(param Params) map[string]interface{} {
 		}
 
 		for _, unspent := range unspents[chain.DefaultLedger.Blockchain.AssetID] {
-			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxId)
+			tx, height, err := chain.DefaultLedger.Store.GetTransaction(unspent.TxID)
 			if err != nil {
 				return ResponsePack(InternalError,
-					"unknown transaction "+unspent.TxId.String()+" from persisted utxo")
+					"unknown transaction "+unspent.TxID.String()+" from persisted utxo")
 			}
 			result = append(result, UTXOInfo{
-				AssetId:       ToReversedString(chain.DefaultLedger.Blockchain.AssetID),
-				Txid:          ToReversedString(unspent.TxId),
+				AssetID:       ToReversedString(chain.DefaultLedger.Blockchain.AssetID),
+				TxID:          ToReversedString(unspent.TxID),
 				VOut:          unspent.Index,
 				Amount:        unspent.Value.String(),
 				Address:       address,
@@ -777,7 +777,7 @@ func GetUnspends(param Params) map[string]interface{} {
 		Value string
 	}
 	type Result struct {
-		AssetId   string
+		AssetID   string
 		AssetName string
 		Utxo      []UTXOUnspentInfo
 	}
@@ -791,7 +791,7 @@ func GetUnspends(param Params) map[string]interface{} {
 		}
 		var unspendsInfo []UTXOUnspentInfo
 		for _, v := range u {
-			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{ToReversedString(v.TxId), v.Index, v.Value.String()})
+			unspendsInfo = append(unspendsInfo, UTXOUnspentInfo{ToReversedString(v.TxID), v.Index, v.Value.String()})
 		}
 		results = append(results, Result{ToReversedString(k), asset.Name, unspendsInfo})
 	}
@@ -807,11 +807,11 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
-	assetId, ok := param.String("assetid")
+	assetID, ok := param.String("assetid")
 	if !ok {
 		return ResponsePack(InvalidParams, "")
 	}
-	bys, err := FromReversedString(assetId)
+	bys, err := FromReversedString(assetID)
 	if err != nil {
 		return ResponsePack(InvalidParams, "")
 	}
@@ -832,7 +832,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	}
 	var UTXOoutputs []UTXOUnspentInfo
 	for _, v := range infos {
-		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: ToReversedString(v.TxId), Index: v.Index, Value: v.Value.String()})
+		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: ToReversedString(v.TxID), Index: v.Index, Value: v.Value.String()})
 	}
 	return ResponsePack(Success, UTXOoutputs)
 }

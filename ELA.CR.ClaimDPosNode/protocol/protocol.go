@@ -21,7 +21,7 @@ const (
 	MaxSyncHdrReq      = 2 //Max Concurrent Sync Header Request
 	MaxOutBoundCount   = 8
 	DefaultMaxPeers    = 125
-	MaxIdCached        = 5000
+	MaxIDCached        = 5000
 )
 
 const (

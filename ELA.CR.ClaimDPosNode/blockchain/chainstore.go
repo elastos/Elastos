@@ -40,7 +40,7 @@ type ChainStore struct {
 	mu          sync.RWMutex // guard the following var
 	headerIndex map[uint32]Uint256
 	headerCache map[Uint256]*Header
-	headerIdx   *list.List
+	headerIDx   *list.List
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
@@ -56,7 +56,7 @@ func NewChainStore() (IChainStore, error) {
 		IStore:             st,
 		headerIndex:        map[uint32]Uint256{},
 		headerCache:        map[Uint256]*Header{},
-		headerIdx:          list.New(),
+		headerIDx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,
 		taskCh:             make(chan persistTask, TaskChanCap),
@@ -105,11 +105,11 @@ func (c *ChainStore) clearCache(b *Block) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
+	for e := c.headerIDx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		h := n.Hash()
 		if h.IsEqual(b.Hash()) {
-			c.headerIdx.Remove(e)
+			c.headerIDx.Remove(e)
 		}
 	}
 }
@@ -226,8 +226,8 @@ func (c *ChainStore) IsDoubleSpend(txn *Transaction) bool {
 
 	unspentPrefix := []byte{byte(IX_Unspent)}
 	for i := 0; i < len(txn.Inputs); i++ {
-		txId := txn.Inputs[i].Previous.TxID
-		unspentValue, err := c.Get(append(unspentPrefix, txId.Bytes()...))
+		txID := txn.Inputs[i].Previous.TxID
+		unspentValue, err := c.Get(append(unspentPrefix, txID.Bytes()...))
 		if err != nil {
 			return true
 		}
@@ -271,7 +271,7 @@ func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 }
 
 func (c *ChainStore) getHeaderWithCache(hash Uint256) *Header {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
+	for e := c.headerIDx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		eh := n.Hash()
 		if eh.IsEqual(hash) {
@@ -329,7 +329,7 @@ func (c *ChainStore) GetHeader(hash Uint256) (*Header, error) {
 	return h, err
 }
 
-func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
+func (c *ChainStore) PersistAsset(assetID Uint256, asset Asset) error {
 	w := new(bytes.Buffer)
 
 	asset.Serialize(w)
@@ -339,7 +339,7 @@ func (c *ChainStore) PersistAsset(assetId Uint256, asset Asset) error {
 	// add asset prefix.
 	assetKey.WriteByte(byte(ST_Info))
 	// contact asset id
-	if err := assetId.Serialize(assetKey); err != nil {
+	if err := assetID.Serialize(assetKey); err != nil {
 		return err
 	}
 
@@ -383,8 +383,8 @@ func (c *ChainStore) GetSidechainTx(sidechainTxHash Uint256) (byte, error) {
 	return data[0], nil
 }
 
-func (c *ChainStore) GetTransaction(txId Uint256) (*Transaction, uint32, error) {
-	key := append([]byte{byte(DATA_Transaction)}, txId.Bytes()...)
+func (c *ChainStore) GetTransaction(txID Uint256) (*Transaction, uint32, error) {
+	key := append([]byte{byte(DATA_Transaction)}, txID.Bytes()...)
 	value, err := c.Get(key)
 	if err != nil {
 		return nil, 0, err
@@ -424,7 +424,7 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 				return nil, errors.New("GetTxReference failed, previous transaction not found")
 			}
 			if int(index) >= len(transaction.Outputs) {
-				return nil, errors.New("GetTxReference failed, refIdx out of range.")
+				return nil, errors.New("GetTxReference failed, refIDx out of range.")
 			}
 			reference[input] = transaction.Outputs[index]
 			txOutputsCache[txID] = transaction.Outputs
@@ -546,7 +546,7 @@ func (c *ChainStore) addHeader(header *Header) {
 	c.mu.Lock()
 	c.headerCache[header.Hash()] = header
 	c.headerIndex[header.Height] = hash
-	c.headerIdx.PushBack(*header)
+	c.headerIDx.PushBack(*header)
 	c.mu.Unlock()
 
 	log.Debug("[addHeader]: finish, header height:", header.Height)
@@ -595,9 +595,9 @@ func (c *ChainStore) persistBlock(block *Block) {
 	DefaultLedger.Blockchain.BCEvents.Notify(events.EventBlockPersistCompleted, block)
 }
 
-func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
-	if ok, _ := c.ContainsUnspent(txid, index); ok {
-		tx, _, err := c.GetTransaction(txid)
+func (c *ChainStore) GetUnspent(txID Uint256, index uint16) (*Output, error) {
+	if ok, _ := c.ContainsUnspent(txID, index); ok {
+		tx, _, err := c.GetTransaction(txID)
 		if err != nil {
 			return nil, err
 		}
@@ -608,9 +608,9 @@ func (c *ChainStore) GetUnspent(txid Uint256, index uint16) (*Output, error) {
 	return nil, errors.New("[GetUnspent] NOT ContainsUnspent.")
 }
 
-func (c *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
+func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 	unspentPrefix := []byte{byte(IX_Unspent)}
-	unspentValue, err := c.Get(append(unspentPrefix, txid.Bytes()...))
+	unspentValue, err := c.Get(append(unspentPrefix, txID.Bytes()...))
 
 	if err != nil {
 		return false, err
@@ -631,11 +631,11 @@ func (c *ChainStore) ContainsUnspent(txid Uint256, index uint16) (bool, error) {
 }
 
 func (c *ChainStore) RemoveHeaderListElement(hash Uint256) {
-	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
+	for e := c.headerIDx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		h := n.Hash()
 		if h.IsEqual(hash) {
-			c.headerIdx.Remove(e)
+			c.headerIDx.Remove(e)
 		}
 	}
 }
