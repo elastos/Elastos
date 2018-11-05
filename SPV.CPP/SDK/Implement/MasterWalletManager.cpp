@@ -409,8 +409,6 @@ namespace Elastos {
 				Log::getLogger()->info("({}) Clearing local.", masterWallet->GetId());
 				masterWallet->ClearLocal();
 				delete masterWallet;
-			} else {
-				masterWallet->Save();
 			}
 
 			ParamChecker::checkCondition(hasRedundant, Error::CreateMasterWalletError,

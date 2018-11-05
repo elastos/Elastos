@@ -63,7 +63,7 @@ namespace Elastos {
 			const std::string PEER_ADDRESS = "peerAddress";
 			const std::string PEER_PORT = "peerPort";
 			const std::string PEER_TIMESTAMP = "peerTimestamp";
-			const std::string PEER_ISO = "peerIso";
+			const std::string PEER_ISO = "peerISO";
 
 			const std::string PEER_DATABASE_CREATE = "create table if not exists " + PEER_TABLE_NAME + " (" +
 				PEER_COLUMN_ID + " integer primary key autoincrement, " +
