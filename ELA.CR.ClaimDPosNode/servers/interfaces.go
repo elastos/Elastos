@@ -772,14 +772,14 @@ func GetUnspends(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 	type UTXOUnspentInfo struct {
-		Txid  string
-		Index uint32
-		Value string
+		Txid  string `json:"Txid"`
+		Index uint32 `json:"Index"`
+		Value string `json:"Value"`
 	}
 	type Result struct {
-		AssetID   string
-		AssetName string
-		Utxo      []UTXOUnspentInfo
+		AssetID   string            `json:"AssetId"`
+		AssetName string            `json:"AssetName"`
+		Utxo      []UTXOUnspentInfo `json:"Utxo"`
 	}
 	var results []Result
 	unspends, err := chain.DefaultLedger.Store.GetUnspentsFromProgramHash(*programHash)
@@ -821,9 +821,9 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 	type UTXOUnspentInfo struct {
-		Txid  string
-		Index uint32
-		Value string
+		Txid  string `json:"Txid"`
+		Index uint32 `json:"Index"`
+		Value string `json:"Value"`
 	}
 	infos, err := chain.DefaultLedger.Store.GetUnspentFromProgramHash(*programHash, assetHash)
 	if err != nil {

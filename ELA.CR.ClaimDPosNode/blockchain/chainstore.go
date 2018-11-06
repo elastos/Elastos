@@ -40,7 +40,7 @@ type ChainStore struct {
 	mu          sync.RWMutex // guard the following var
 	headerIndex map[uint32]Uint256
 	headerCache map[Uint256]*Header
-	headerIDx   *list.List
+	headerIdx   *list.List
 
 	currentBlockHeight uint32
 	storedHeaderCount  uint32
@@ -56,7 +56,7 @@ func NewChainStore() (IChainStore, error) {
 		IStore:             st,
 		headerIndex:        map[uint32]Uint256{},
 		headerCache:        map[Uint256]*Header{},
-		headerIDx:          list.New(),
+		headerIdx:          list.New(),
 		currentBlockHeight: 0,
 		storedHeaderCount:  0,
 		taskCh:             make(chan persistTask, TaskChanCap),
@@ -105,11 +105,11 @@ func (c *ChainStore) clearCache(b *Block) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for e := c.headerIDx.Front(); e != nil; e = e.Next() {
+	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		h := n.Hash()
 		if h.IsEqual(b.Hash()) {
-			c.headerIDx.Remove(e)
+			c.headerIdx.Remove(e)
 		}
 	}
 }
@@ -271,7 +271,7 @@ func (c *ChainStore) GetBlockHash(height uint32) (Uint256, error) {
 }
 
 func (c *ChainStore) getHeaderWithCache(hash Uint256) *Header {
-	for e := c.headerIDx.Front(); e != nil; e = e.Next() {
+	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		eh := n.Hash()
 		if eh.IsEqual(hash) {
@@ -424,7 +424,7 @@ func (c *ChainStore) GetTxReference(tx *Transaction) (map[*Input]*Output, error)
 				return nil, errors.New("GetTxReference failed, previous transaction not found")
 			}
 			if int(index) >= len(transaction.Outputs) {
-				return nil, errors.New("GetTxReference failed, refIDx out of range.")
+				return nil, errors.New("GetTxReference failed, refIdx out of range.")
 			}
 			reference[input] = transaction.Outputs[index]
 			txOutputsCache[txID] = transaction.Outputs
@@ -546,7 +546,7 @@ func (c *ChainStore) addHeader(header *Header) {
 	c.mu.Lock()
 	c.headerCache[header.Hash()] = header
 	c.headerIndex[header.Height] = hash
-	c.headerIDx.PushBack(*header)
+	c.headerIdx.PushBack(*header)
 	c.mu.Unlock()
 
 	log.Debug("[addHeader]: finish, header height:", header.Height)
@@ -631,11 +631,11 @@ func (c *ChainStore) ContainsUnspent(txID Uint256, index uint16) (bool, error) {
 }
 
 func (c *ChainStore) RemoveHeaderListElement(hash Uint256) {
-	for e := c.headerIDx.Front(); e != nil; e = e.Next() {
+	for e := c.headerIdx.Front(); e != nil; e = e.Next() {
 		n := e.Value.(Header)
 		h := n.Hash()
 		if h.IsEqual(hash) {
-			c.headerIDx.Remove(e)
+			c.headerIdx.Remove(e)
 		}
 	}
 }
