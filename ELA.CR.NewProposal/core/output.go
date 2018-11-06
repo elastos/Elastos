@@ -7,14 +7,28 @@ import (
 	. "github.com/elastos/Elastos.ELA.Utility/common"
 )
 
-const MaxOutputPayloadSize = 1024 // 1KB
+type OutputPayloadType byte
+
+const (
+	DefaultOutput OutputPayloadType = 0x00
+)
+
+type OutputPayload interface {
+	// Get payload data
+	Data() []byte
+	Serialize(w io.Writer) error
+	Deserialize(r io.Reader) error
+	GetType() (OutputPayloadType, error)
+	GetVersion() (byte, error)
+	String() string
+}
 
 type Output struct {
 	AssetID       Uint256
 	Value         Fixed64
 	OutputLock    uint32
 	ProgramHash   Uint168
-	OutputPayload []byte
+	OutputPayload OutputPayload
 }
 
 func (o Output) String() string {
@@ -23,31 +37,29 @@ func (o Output) String() string {
 		"Value: " + o.Value.String() + "\n\t\t" +
 		"OutputLock: " + fmt.Sprint(o.OutputLock) + "\n\t\t" +
 		"ProgramHash: " + o.ProgramHash.String() + "\n\t\t" +
-		"OutputPayload: " + string(o.OutputPayload) + "\n\t\t" +
+		"OutputPayload: " + o.OutputPayload.String() + "\n\t\t" +
 		"}"
 }
 
 func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
-	err := o.AssetID.Serialize(w)
-	if err != nil {
+	if err := o.AssetID.Serialize(w); err != nil {
 		return err
 	}
 
-	err = o.Value.Serialize(w)
-	if err != nil {
+	if err := o.Value.Serialize(w); err != nil {
 		return err
 	}
 
-	WriteUint32(w, o.OutputLock)
+	if err := WriteUint32(w, o.OutputLock); err != nil {
+		return err
+	}
 
-	err = o.ProgramHash.Serialize(w)
-	if err != nil {
+	if err := o.ProgramHash.Serialize(w); err != nil {
 		return err
 	}
 
 	if txVersion == TxVersionC0 {
-		err = WriteVarBytes(w, o.OutputPayload)
-		if err != nil {
+		if err := o.OutputPayload.Serialize(w); err != nil {
 			return err
 		}
 	}
@@ -56,13 +68,11 @@ func (o *Output) Serialize(w io.Writer, txVersion TransactionVersion) error {
 }
 
 func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
-	err := o.AssetID.Deserialize(r)
-	if err != nil {
+	if err := o.AssetID.Deserialize(r); err != nil {
 		return err
 	}
 
-	err = o.Value.Deserialize(r)
-	if err != nil {
+	if err := o.Value.Deserialize(r); err != nil {
 		return err
 	}
 
@@ -70,15 +80,14 @@ func (o *Output) Deserialize(r io.Reader, txVersion TransactionVersion) error {
 	if err != nil {
 		return err
 	}
-	o.OutputLock = uint32(temp)
+	o.OutputLock = temp
 
-	err = o.ProgramHash.Deserialize(r)
-	if err != nil {
+	if err := o.ProgramHash.Deserialize(r); err != nil {
 		return err
 	}
 
 	if txVersion == TxVersionC0 {
-		if o.OutputPayload, err = ReadVarBytes(r, MaxOutputPayloadSize, "outputpayload data"); err != nil {
+		if err := o.OutputPayload.Deserialize(r); err != nil {
 			return err
 		}
 	}
