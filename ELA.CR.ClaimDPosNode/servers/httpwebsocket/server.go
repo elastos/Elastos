@@ -180,7 +180,7 @@ func (server *WebSocketServer) IsValidMsg(reqMsg map[string]interface{}) bool {
 	if _, ok := reqMsg["Addr"].(string); !ok && reqMsg["Addr"] != nil {
 		return false
 	}
-	if _, ok := reqMsg["AssetID"].(string); !ok && reqMsg["AssetID"] != nil {
+	if _, ok := reqMsg["AssetId"].(string); !ok && reqMsg["AssetId"] != nil {
 		return false
 	}
 	return true
