@@ -55,7 +55,7 @@ func GetTransactionInfo(header *Header, tx *Transaction) *TransactionInfo {
 		outputs[i].Address = address
 		outputs[i].AssetID = ToReversedString(v.AssetID)
 		outputs[i].OutputLock = v.OutputLock
-		outputs[i].OutputPayload = string(v.OutputPayload)
+		outputs[i].OutputPayload = getOutputPayloadInfo(v.OutputPayload)
 	}
 
 	attributes := make([]AttributeInfo, len(tx.Attributes))
@@ -948,6 +948,13 @@ func getPayloadInfo(p Payload) PayloadInfo {
 	case *PayloadTransferAsset:
 	case *PayloadRecord:
 	}
+	return nil
+}
+
+func getOutputPayloadInfo(op OutputPayload) OutputPayloadInfo {
+	//switch object := op.(type) {
+	//case *DefaultOutput:
+	//}
 	return nil
 }
 
