@@ -359,7 +359,7 @@
         "Desc": "Success",
         "Error": 0,
         "Result": [{
-            "AssetID": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
+            "AssetId": "a3d0eaa466df74983b5d7c543de6904f4c9418ead5ffd6d25814234a96db37b0",
             "AssetName": "ELA",
             "Utxo": [{
                 "Txid": "c8d4dc984da78c878b9dab752c077b41a98f6e67e5ee6b04cc3d45cb4f42b81b",
