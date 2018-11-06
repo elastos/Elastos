@@ -19,13 +19,17 @@ type InputInfo struct {
 }
 
 type OutputInfo struct {
-	Value         string `json:"value"`
-	Index         uint32 `json:"n"`
-	Address       string `json:"address"`
-	AssetID       string `json:"assetid"`
-	OutputLock    uint32 `json:"outputlock"`
-	OutputPayload string `json:"outputpayload"`
+	Value         string            `json:"value"`
+	Index         uint32            `json:"n"`
+	Address       string            `json:"address"`
+	AssetID       string            `json:"assetid"`
+	OutputLock    uint32            `json:"outputlock"`
+	OutputPayload OutputPayloadInfo `json:"outputpayload"`
 }
+
+type OutputPayloadInfo interface{}
+
+type DefaultOutputInfo struct{}
 
 type ProgramInfo struct {
 	Code      string `json:"code"`
