@@ -772,7 +772,7 @@ func GetUnspends(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 	type UTXOUnspentInfo struct {
-		Txid  string `json:"Txid"`
+		TxID  string `json:"Txid"`
 		Index uint32 `json:"Index"`
 		Value string `json:"Value"`
 	}
@@ -821,7 +821,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 		return ResponsePack(InvalidParams, "")
 	}
 	type UTXOUnspentInfo struct {
-		Txid  string `json:"Txid"`
+		TxID  string `json:"Txid"`
 		Index uint32 `json:"Index"`
 		Value string `json:"Value"`
 	}
@@ -832,7 +832,7 @@ func GetUnspendOutput(param Params) map[string]interface{} {
 	}
 	var UTXOoutputs []UTXOUnspentInfo
 	for _, v := range infos {
-		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{Txid: ToReversedString(v.TxID), Index: v.Index, Value: v.Value.String()})
+		UTXOoutputs = append(UTXOoutputs, UTXOUnspentInfo{TxID: ToReversedString(v.TxID), Index: v.Index, Value: v.Value.String()})
 	}
 	return ResponsePack(Success, UTXOoutputs)
 }
