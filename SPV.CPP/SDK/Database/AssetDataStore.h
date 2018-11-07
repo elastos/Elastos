@@ -6,30 +6,27 @@
 #define __ELASTOS_SDK_ASSETDATASTORE_H__
 
 #include "TableBase.h"
-#include "Plugin/Transaction/Asset.h"
 
 namespace Elastos {
 	namespace ElaWallet {
 
 		struct AssetEntity {
-			AssetEntity(const Asset &Asset, uint64_t amount, const UInt256 &txHash) :
-					TableID(UINT32_MAX),
+			AssetEntity() :
+				Amount(0) {
+
+			}
+
+			AssetEntity(const std::string &assetID, uint64_t amount, const CMBlock &Asset, const std::string &txHash) :
+					AssetID(assetID),
 					Amount(amount),
 					TxHash(txHash),
 					Asset(Asset) {
 			}
 
-			AssetEntity(uint32_t tableID, const Asset &Asset, uint64_t amount, const UInt256 &txHash) :
-					TableID(tableID),
-					Amount(amount),
-					TxHash(txHash),
-					Asset(Asset) {
-			}
-
-			uint32_t TableID;
+			std::string AssetID;
 			uint64_t Amount;
-			Asset Asset;
-			UInt256 TxHash;
+			CMBlock Asset;
+			std::string TxHash;
 		};
 
 		class AssetDataStore : public TableBase {
@@ -44,14 +41,38 @@ namespace Elastos {
 
 			bool PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets);
 
-			bool DeleteAsset(const std::string &iso, const UInt256 &assetID);
+			bool DeleteAsset(const std::string &iso, const std::string &assetID);
 
 			bool DeleteAllAssets(const std::string &iso);
 
-			AssetEntity GetAssetDetails(uint32_t assetTableID);
+			bool GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
 
 			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
 
+		private:
+			bool SelectAsset(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
+
+			bool InsertAsset(const std::string &iso, const AssetEntity &asset);
+
+			bool UpdateAsset(const std::string &iso, const AssetEntity &asset);
+
+		private:
+			/*
+			 * asset data table
+			 */
+			const std::string ASSET_TABLE_NAME = "assetTable";
+			const std::string ASSET_COLUMN_ID = "_id";
+			const std::string ASSET_AMOUNT = "assetAmount";
+			const std::string ASSET_BUFF = "assetBuff";
+			const std::string ASSET_TXHASH = "assetTxHash";
+			const std::string ASSET_ISO = "assetISO";
+
+			const std::string ASSET_DATABASE_CREATE = "create table if not exists " + ASSET_TABLE_NAME + " (" +
+				ASSET_COLUMN_ID + " text not null, " +
+				ASSET_AMOUNT + " bigint, " +
+				ASSET_BUFF + " blob, " +
+				ASSET_TXHASH + " text not null, " +
+				ASSET_ISO + " text DEFAULT 'ELA');";
 		};
 
 	}

@@ -145,9 +145,9 @@ namespace Elastos {
 
 			void setFee(uint64_t fee);
 
-			uint32_t GetAssetTableID() const;
+			const std::string &GetAssetTableID() const;
 
-			void SetAssetTableID(uint32_t assetTableID);
+			void SetAssetTableID(const std::string &assetTableID);
 
 			void removeDuplicatePrograms();
 
@@ -176,7 +176,7 @@ namespace Elastos {
 		private:
 			bool _isRegistered;
 			mutable UInt256 _txHash;
-			uint32_t _assetTableID;
+			std::string _assetTableID;
 
 			uint32_t _version;
 			uint32_t _lockTime;

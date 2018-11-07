@@ -605,7 +605,7 @@ namespace Elastos {
 			}
 		}
 
-		void TransactionHub::UpdateAssets(const UInt256ValueMap<uint32_t> &assetIDMap) {
+		void TransactionHub::UpdateAssets(const UInt256ValueMap<std::string> &assetIDMap) {
 			boost::mutex::scoped_lock scopedLock(lock);
 			_transactions.UpdateAssets(assetIDMap);
 		}

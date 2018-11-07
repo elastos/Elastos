@@ -31,6 +31,66 @@ TEST_CASE("DatabaseManager test", "[DatabaseManager]") {
 		REQUIRE(!boost::filesystem::exists(DBFILE));
 	}
 
+	SECTION("Asset test") {
+		DatabaseManager dm(DBFILE);
+
+		// save
+		std::vector<AssetEntity> assets;
+		for (int i = 0; i < 20; ++i) {
+			AssetEntity asset;
+			asset.Asset = getRandCMBlock(100);
+			asset.AssetID = getRandString(64);
+			asset.TxHash = getRandString(64);
+			asset.Amount = rand();
+			assets.push_back(asset);
+			REQUIRE(dm.PutAsset(ISO, asset));
+		}
+
+		// verify save
+		std::vector<AssetEntity> assetsVerify = dm.GetAllAssets(ISO);
+		REQUIRE(assetsVerify.size() > 0);
+		REQUIRE(assetsVerify.size() == assets.size());
+		for (size_t i = 0; i < assets.size(); ++i) {
+			REQUIRE(assets[i].Asset.GetSize() == assetsVerify[i].Asset.GetSize());
+			REQUIRE(!memcmp(assets[i].Asset, assetsVerify[i].Asset, assets[i].Asset.GetSize()));
+			REQUIRE(assets[i].AssetID == assetsVerify[i].AssetID);
+			REQUIRE(assets[i].TxHash == assetsVerify[i].TxHash);
+			REQUIRE(assets[i].Amount == assetsVerify[i].Amount);
+		}
+
+		// delete random one
+		int idx = rand() % assetsVerify.size();
+		REQUIRE(dm.DeleteAsset(ISO, assets[idx].AssetID));
+
+		// verify deleted
+		AssetEntity assetGot;
+		REQUIRE(!dm.GetAssetDetails(ISO, assets[idx].AssetID, assetGot));
+
+		// verify count after delete
+		assetsVerify = dm.GetAllAssets(ISO);
+		REQUIRE(assetsVerify.size() == assets.size() - 1);
+
+		// update already exist assetID
+		idx = rand() % assetsVerify.size();
+		std::vector<AssetEntity> assetsUpdate;
+		assetsVerify[idx].TxHash = getRandString(64);
+		assetsVerify[idx].Amount = rand();
+		assetsVerify[idx].Asset = getRandCMBlock(200);
+		assetsUpdate.push_back(assetsVerify[idx]);
+		REQUIRE(dm.PutAssets(ISO, assetsUpdate));
+
+		REQUIRE(dm.GetAssetDetails(ISO, assetsVerify[idx].AssetID, assetGot));
+		REQUIRE(assetsVerify[idx].TxHash == assetGot.TxHash);
+		REQUIRE(assetsVerify[idx].Amount == assetGot.Amount);
+		REQUIRE(assetsVerify[idx].Asset.GetSize() == assetGot.Asset.GetSize());
+		REQUIRE(!memcmp(assetsVerify[idx].Asset, assetGot.Asset, assetGot.Asset.GetSize()));
+
+		// delete all
+		REQUIRE(dm.DeleteAllAssets(ISO));
+		assetsVerify = dm.GetAllAssets(ISO);
+		REQUIRE(assetsVerify.size() == 0);
+	}
+
 	SECTION("Merkle Block test ") {
 #define TEST_MERKLEBLOCK_RECORD_CNT uint64_t(20)
 

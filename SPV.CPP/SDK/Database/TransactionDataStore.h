@@ -19,18 +19,18 @@ namespace Elastos {
 		struct TransactionEntity {
 			TransactionEntity() :
 				blockHeight(0),
-				timeStamp(0),
-				remark(""),
-				txHash("")
+				timeStamp(0)
 			{
 			}
 
-			TransactionEntity(CMBlock buff, uint32_t blockHeight, uint32_t timeStamp, uint32_t assetTableID,
-							  const std::string &remark, const std::string &txHash) :
+			TransactionEntity(CMBlock buff, uint32_t blockHeight, uint32_t timeStamp,
+							  const std::string &assetID,
+							  const std::string &remark,
+							  const std::string &txHash) :
 				buff(buff),
 				blockHeight(blockHeight),
 				timeStamp(timeStamp),
-				assetTableID(assetTableID),
+				assetID(assetID),
 				remark(remark),
 				txHash(txHash)
 			{
@@ -39,7 +39,7 @@ namespace Elastos {
 			CMBlock buff;
 			uint32_t blockHeight;
 			uint32_t timeStamp;
-			uint32_t assetTableID;
+			std::string assetID;
 			std::string remark;
 			std::string txHash;
 		};
@@ -79,7 +79,7 @@ namespace Elastos {
 				TX_BLOCK_HEIGHT + " integer, " +
 				TX_TIME_STAMP + " integer, " +
 				TX_REMARK + " text DEFAULT '', " +
-				TX_ASSETID + " integer, " +
+				TX_ASSETID + " text not null, " +
 				TX_ISO + " text DEFAULT 'ELA' );";
 		};
 

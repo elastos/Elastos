@@ -442,7 +442,7 @@ namespace Elastos {
 		}
 
 		nlohmann::json SubWallet::GetAssetDetails(const std::string &assetID) const {
-			Asset asset = _walletManager->FindAsset(Utils::UInt256FromString(assetID));
+			Asset asset = _walletManager->FindAsset(assetID);
 			return asset.toJson();
 		}
 

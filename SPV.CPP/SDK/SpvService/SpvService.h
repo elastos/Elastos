@@ -10,6 +10,7 @@
 #include <boost/filesystem.hpp>
 
 #include <nlohmann/json.hpp>
+#include <SDK/Plugin/Transaction/Asset.h>
 
 #include "TransactionCreationParams.h"
 #include "CoreSpvService.h"
@@ -54,7 +55,7 @@ namespace Elastos {
 
 			virtual const WalletPtr &getWallet();
 
-			Asset FindAsset(const UInt256 &assetID) const;
+			Asset FindAsset(const std::string &assetID) const;
 
 		public:
 			virtual void balanceChanged();

@@ -669,8 +669,6 @@ namespace Elastos {
 			uint64_t services = SERVICES_NODE_NETWORK | SERVICES_NODE_BLOOM | _chainParams.getRaw()->services;
 			time_t now = time(NULL);
 			struct timespec ts;
-			pthread_t thread;
-			pthread_attr_t attr;
 
 			_peers.clear();
 			size_t peersCount = _fiexedPeers.size();
@@ -689,7 +687,7 @@ namespace Elastos {
 					addrList = addressLookup(_chainParams.getRaw()->dnsSeeds[i]);
 					for (std::vector<UInt128>::iterator addr = addrList.begin();
 						 addr != addrList.end() && !UInt128IsZero(&(*addr)); addr++) {
-						_peers.push_back(PeerInfo(*addr, _chainParams.getRaw()->standardPort, services, now));
+						_peers.push_back(PeerInfo(*addr, _chainParams.getRaw()->standardPort, now, services));
 					}
 				}
 
@@ -697,24 +695,14 @@ namespace Elastos {
 				ts.tv_nsec = 1;
 
 				do {
-					Lock();
-					nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
 					Unlock();
+					nanosleep(&ts, NULL); // pthread_yield() isn't POSIX standard :(
+					Lock();
 				} while (_dnsThreadCount > 0 && _peers.size() < PEER_MAX_CONNECTIONS);
 
 				sortPeers();
 
-				Log::info("peer manager found {} peers\n", _peers.size());
-				for (size_t i = 0; i < _peers.size(); i++) {
-					char host[INET6_ADDRSTRLEN] = {0};
-					PeerInfo peer = _peers[i];
-					if ((peer.Address.u64[0] == 0 && peer.Address.u16[4] == 0 &&
-						 peer.Address.u16[5] == 0xffff))
-						inet_ntop(AF_INET, &peer.Address.u32[3], host, sizeof(host));
-					else
-						inet_ntop(AF_INET6, &peer.Address, host, sizeof(host));
-					Log::info("peers[{}] = {}", i, host);
-				}
+				Log::debug("found {} peers", _peers.size());
 			}
 		}
 
@@ -1596,23 +1584,25 @@ namespace Elastos {
 		std::vector<UInt128> PeerManager::addressLookup(const std::string &hostname) {
 			struct addrinfo hints, *servinfo, *p;
 			std::vector<UInt128> addrList;
-			size_t count = 0, i = 0;
 
 			memset(&hints, 0, sizeof(hints));
 			hints.ai_socktype = SOCK_STREAM;
 			hints.ai_family = PF_UNSPEC;
 			if (getaddrinfo(hostname.c_str(), NULL, &hints, &servinfo) == 0) {
-				for (p = servinfo; p != NULL; p = p->ai_next) count++;
-
 				for (p = servinfo; p != NULL; p = p->ai_next) {
-					addrList.push_back(UInt128());
+					UInt128 addr;
+					memset(&addr, 0, sizeof(addr));
+					char host[INET6_ADDRSTRLEN];
 					if (p->ai_family == AF_INET) {
-						addrList[i].u16[5] = 0xffff;
-						addrList[i].u32[3] = ((struct sockaddr_in *) p->ai_addr)->sin_addr.s_addr;
-						i++;
+						addr.u16[5] = 0xffff;
+						addr.u32[3] = ((struct sockaddr_in *) p->ai_addr)->sin_addr.s_addr;
+						inet_ntop(AF_INET, &addr.u32[3], host, sizeof(host));
 					} else if (p->ai_family == AF_INET6) {
-						addrList[i++] = *(UInt128 *) &((struct sockaddr_in6 *) p->ai_addr)->sin6_addr;
+						addr = *(UInt128 *) &((struct sockaddr_in6 *) p->ai_addr)->sin6_addr;
+						inet_ntop(AF_INET6, &addr, host, sizeof(host));
 					}
+					Log::debug("{} -> {}", hostname, host);
+					addrList.push_back(addr);
 				}
 
 				freeaddrinfo(servinfo);

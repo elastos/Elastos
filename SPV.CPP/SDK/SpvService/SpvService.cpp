@@ -118,18 +118,22 @@ namespace Elastos {
 
 			CMBlock data = stream.getBuffer();
 
-			UInt256 hash = tx->getHash();
-			std::string hashStr = Utils::UInt256ToString(hash);
-			std::string remark = _wallet->GetRemark(hashStr);
+			std::string txHash = Utils::UInt256ToString(tx->getHash());
+			std::string remark = _wallet->GetRemark(txHash);
 			tx->setRemark(remark);
 
 			TransactionEntity txEntity(data, tx->getBlockHeight(), tx->getTimestamp(), tx->GetAssetTableID(),
-									   tx->getRemark(), Utils::UInt256ToString(tx->getHash()));
+									   tx->getRemark(), txHash);
 			_databaseManager.putTransaction(ISO, txEntity);
 
 			if (tx->getTransactionType() == Transaction::RegisterAsset) {
 				PayloadRegisterAsset *registerAsset = static_cast<PayloadRegisterAsset *>(tx->getPayload());
-				AssetEntity assetEntity(registerAsset->getAsset(), registerAsset->getAmount(), tx->getHash());
+
+				Asset asset = registerAsset->getAsset();
+				std::string assetID = Utils::UInt256ToString(asset.GetHash());
+				ByteStream stream;
+				asset.Serialize(stream);
+				AssetEntity assetEntity(assetID, registerAsset->getAmount(), stream.getBuffer(), txHash);
 				_databaseManager.PutAsset(ISO, assetEntity);
 
 				UpdateAssets();
@@ -160,7 +164,7 @@ namespace Elastos {
 										bool recommendRescan) {
 			_databaseManager.deleteTxByHash(ISO, hash);
 			if (!assetID.empty()) {
-				_databaseManager.DeleteAsset(ISO, Utils::UInt256FromString(assetID));
+				_databaseManager.DeleteAsset(ISO, assetID);
 				UpdateAssets();
 			}
 
@@ -323,7 +327,7 @@ namespace Elastos {
 				ByteStream byteStream(txsEntity[i].buff, txsEntity[i].buff.GetSize(), false);
 				transaction->Deserialize(byteStream);
 				transaction->setRemark(txsEntity[i].remark);
-				transaction->SetAssetTableID(txsEntity[i].assetTableID);
+				transaction->SetAssetTableID(txsEntity[i].assetID);
 				transaction->setBlockHeight(txsEntity[i].blockHeight);
 				transaction->setTimestamp(txsEntity[i].timeStamp);
 
@@ -412,22 +416,31 @@ namespace Elastos {
 
 		void SpvService::UpdateAssets() {
 			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
-			UInt256ValueMap<uint32_t> assetIDMap;
+			UInt256ValueMap<std::string> assetIDMap;
 			std::for_each(assets.begin(), assets.end(), [&assetIDMap](const AssetEntity &entity) {
-				assetIDMap.Insert(entity.Asset.GetHash(), entity.TableID);
+				Asset asset;
+				ByteStream stream(entity.Asset);
+				asset.Deserialize(stream);
+				assetIDMap.Insert(asset.GetHash(), entity.AssetID);
 			});
 
 			_wallet->UpdateAssets(assetIDMap);
 		}
 
-		Asset SpvService::FindAsset(const UInt256 &assetID) const {
-			std::vector<AssetEntity> assets = _databaseManager.GetAllAssets(ISO);
-			for (std::vector<AssetEntity>::iterator it = assets.begin(); it != assets.end(); ++it) {
-				if (UInt256Eq(&it->Asset.GetHash(), &assetID))
-					return it->Asset;
+		Asset SpvService::FindAsset(const std::string &assetID) const {
+			AssetEntity assetEntity;
+			Asset asset;
+			if (!_databaseManager.GetAssetDetails(ISO, assetID, assetEntity)) {
+				Log::warn("Asset {} not found", assetID);
+				return asset;
 			}
 
-			return Asset();
+			ByteStream stream(assetEntity.Asset);
+			if (!asset.Deserialize(stream)) {
+				Log::error("Asset {} deserialize fail", assetID);
+				return Asset();
+			}
+			return asset;
 		}
 
 	}

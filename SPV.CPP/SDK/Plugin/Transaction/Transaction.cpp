@@ -38,7 +38,7 @@ namespace Elastos {
 				_blockHeight(TX_UNCONFIRMED),
 				_payloadVersion(0),
 				_fee(0),
-				_assetTableID(UINT32_MAX),
+				_assetTableID(""),
 				_payload(nullptr),
 				_type(DEFAULT_PAYLOAD_TYPE),
 				_isRegistered(false) {
@@ -750,11 +750,11 @@ namespace Elastos {
 			return result;
 		}
 
-		uint32_t Transaction::GetAssetTableID() const {
+		const std::string &Transaction::GetAssetTableID() const {
 			return _assetTableID;
 		}
 
-		void Transaction::SetAssetTableID(uint32_t assetTableID) {
+		void Transaction::SetAssetTableID(const std::string &assetTableID) {
 			_assetTableID = assetTableID;
 		}
 

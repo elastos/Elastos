@@ -115,7 +115,7 @@ namespace Elastos {
 		public:
 			GroupedAssetTransactions(Lockable *lockable, const SubAccountPtr &subAccount);
 
-			typedef UInt256ValueMap<uint32_t> AssetIDMap;
+			typedef UInt256ValueMap<std::string> AssetIDMap;
 
 			void InitListeningAddresses(const std::vector<std::string> &addrs);
 
@@ -125,7 +125,7 @@ namespace Elastos {
 
 			const std::vector<UTXO> &GetUTXOs(const UInt256 &assetID) const;
 
-			const std::vector<UTXO> &GetAllUTXOs() const;
+			const std::vector<UTXO> GetAllUTXOs() const;
 
 			void Append(const TransactionPtr &transaction);
 

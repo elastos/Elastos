@@ -148,7 +148,7 @@ namespace Elastos {
 
 			std::vector<Address> UnusedAddresses(uint32_t gapLimit, bool internal);
 
-			void UpdateAssets(const UInt256ValueMap<uint32_t> &assetIDMap);
+			void UpdateAssets(const UInt256ValueMap<std::string> &assetIDMap);
 
 			nlohmann::json GetAllSupportedAssets() const;
 

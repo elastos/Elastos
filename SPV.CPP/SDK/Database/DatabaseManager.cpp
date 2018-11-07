@@ -148,7 +148,7 @@ namespace Elastos {
 			return _assetDataStore.PutAssets(iso, assets);
 		}
 
-		bool DatabaseManager::DeleteAsset(const std::string &iso, const UInt256 &assetID) {
+		bool DatabaseManager::DeleteAsset(const std::string &iso, const std::string &assetID) {
 			return _assetDataStore.DeleteAsset(iso, assetID);
 		}
 
@@ -156,8 +156,8 @@ namespace Elastos {
 			return _assetDataStore.DeleteAllAssets(iso);
 		}
 
-		AssetEntity DatabaseManager::GetAssetDetails(uint32_t assetTableID) {
-			return _assetDataStore.GetAssetDetails(assetTableID);
+		bool DatabaseManager::GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const {
+			return _assetDataStore.GetAssetDetails(iso, assetID, asset);
 		}
 
 		std::vector<AssetEntity> DatabaseManager::GetAllAssets(const std::string &iso) const {

@@ -48,9 +48,9 @@ namespace Elastos {
 			// Asset's database interface
 			bool PutAsset(const std::string &iso, const AssetEntity &asset);
 			bool PutAssets(const std::string &iso, const std::vector<AssetEntity> &assets);
-			bool DeleteAsset(const std::string &iso, const UInt256 &assetID);
+			bool DeleteAsset(const std::string &iso, const std::string &assetID);
 			bool DeleteAllAssets(const std::string &iso);
-			AssetEntity GetAssetDetails(uint32_t assetTableID);
+			bool GetAssetDetails(const std::string &iso, const std::string &assetID, AssetEntity &asset) const;
 			std::vector<AssetEntity> GetAllAssets(const std::string &iso) const;
 
 

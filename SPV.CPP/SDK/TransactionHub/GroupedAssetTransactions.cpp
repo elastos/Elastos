@@ -656,7 +656,7 @@ namespace Elastos {
 
 		void GroupedAssetTransactions::UpdateAssets(const AssetIDMap &assetIDMap) {
 			_assetIDMap = assetIDMap;
-			_assetIDMap.ForEach([this](const UInt256 &key, uint32_t value) {
+			_assetIDMap.ForEach([this](const UInt256 &key, const std::string &value) {
 				if (!_groupedTransactions.Contains(key))
 					_groupedTransactions.Insert(key, AssetTransactionsPtr(
 							new AssetTransactions(_lockable, _subAccount, _listeningAddrs)));
@@ -674,7 +674,7 @@ namespace Elastos {
 			return _groupedTransactions[assetID]->GetUTXOs();
 		}
 
-		const std::vector<UTXO> &GroupedAssetTransactions::GetAllUTXOs() const {
+		const std::vector<UTXO> GroupedAssetTransactions::GetAllUTXOs() const {
 			std::vector<UTXO> result;
 			_groupedTransactions.ForEach([&result](const UInt256 &key, const AssetTransactionsPtr &value) {
 				result.insert(result.end(), value->GetUTXOs().begin(), value->GetUTXOs().end());
@@ -710,7 +710,7 @@ namespace Elastos {
 																	const boost::function<bool(const std::string &,
 																							   const std::string &)> &filter) {
 			UInt256 assetID = GetUniqueAssetID(outputs);
-			_groupedTransactions[assetID]->CreateTxForOutputs(outputs, fromAddress, filter);
+			return _groupedTransactions[assetID]->CreateTxForOutputs(outputs, fromAddress, filter);
 		}
 
 		TransactionPtr GroupedAssetTransactions::TransactionForHash(const UInt256 &transactionHash) {
@@ -751,7 +751,7 @@ namespace Elastos {
 																		   lastBlockHeight, timestamp);
 				result.insert(result.end(), temp.begin(), temp.end());
 			}
-			result;
+			return result;
 		}
 
 		void GroupedAssetTransactions::InitListeningAddresses(const std::vector<std::string> &addrs) {
