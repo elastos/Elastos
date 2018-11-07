@@ -140,11 +140,11 @@ func (ns *neighbours) GetNeighbourCount() uint {
 	return count
 }
 
-func (ns *neighbours) GetANeighbourRandomly() protocol.Noder {
+func (ns *neighbours) GetExternalNeighbourRandomly() protocol.Noder {
 	ns.Lock()
 	defer ns.Unlock()
 	for _, n := range ns.List {
-		if n.State() == protocol.ESTABLISHED {
+		if n.State() == protocol.ESTABLISHED && n.IsExternal(){
 			return n
 		}
 	}
