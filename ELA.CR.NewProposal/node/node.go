@@ -289,8 +289,8 @@ func (node *node) WaitForSyncFinish() {
 		bc := chain.DefaultLedger.Blockchain
 		log.Info("[", len(bc.Index), len(bc.BlockCache), len(bc.Orphans), "]")
 
-		heights := node.GetNeighborHeights()
-		log.Debug("others height is ", heights)
+		heights := node.GetInternalNeighborHeights()
+		log.Debug("others height is (internal only) ", heights)
 
 		if CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) > 0 {
 			LocalNode.SetSyncHeaders(false)
@@ -396,8 +396,8 @@ func (node *node) SetSyncHeaders(b bool) {
 }
 
 func (node *node) needSync() bool {
-	heights := node.GetNeighborHeights()
-	log.Info("nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
+	heights := node.GetInternalNeighborHeights()
+	log.Info("internal nbr height-->", heights, chain.DefaultLedger.Blockchain.BlockHeight)
 	return CompareHeight(uint64(chain.DefaultLedger.Blockchain.BlockHeight), heights) < 0
 }
 

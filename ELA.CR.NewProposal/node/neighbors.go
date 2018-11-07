@@ -101,12 +101,12 @@ func (ns *neighbours) GetNeighbourAddresses() []*p2p.NetAddress {
 	return addrs
 }
 
-func (ns *neighbours) GetNeighborHeights() []uint64 {
+func (ns *neighbours) GetInternalNeighborHeights() []uint64 {
 	neighbors := ns.GetNeighborNodes()
 
 	heights := make([]uint64, 0, len(neighbors))
 	for _, n := range neighbors {
-		if n.State() == protocol.ESTABLISHED {
+		if n.State() == protocol.ESTABLISHED && !n.IsExternal(){
 			height := n.Height()
 			heights = append(heights, height)
 		}
