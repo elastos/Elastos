@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"path/filepath"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.SPV/util"
@@ -32,8 +33,9 @@ type headers struct {
 	newHeader func() util.BlockHeader
 }
 
-func NewHeaderStore(newHeader func() util.BlockHeader) (*headers, error) {
-	db, err := bolt.Open("headers.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
+func NewHeaderStore(dataDir string, newHeader func() util.BlockHeader) (*headers, error) {
+	db, err := bolt.Open(filepath.Join(dataDir, "headers.bin"), 0644,
+		&bolt.Options{InitialMmapSize: 5000000})
 	if err != nil {
 		return nil, err
 	}

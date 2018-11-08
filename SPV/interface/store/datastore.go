@@ -2,6 +2,7 @@ package store
 
 import (
 	"github.com/boltdb/bolt"
+	"path/filepath"
 	"sync"
 )
 
@@ -17,8 +18,9 @@ type dataStore struct {
 	que   *que
 }
 
-func NewDataStore() (*dataStore, error) {
-	db, err := bolt.Open("data_store.bin", 0644, &bolt.Options{InitialMmapSize: 5000000})
+func NewDataStore(dataDir string) (*dataStore, error) {
+	db, err := bolt.Open(filepath.Join(dataDir, "data_store.bin"), 0644,
+		&bolt.Options{InitialMmapSize: 5000000})
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +43,7 @@ func NewDataStore() (*dataStore, error) {
 		return nil, err
 	}
 
-	store.que, err = NewQue()
+	store.que, err = NewQue(dataDir)
 	if err != nil {
 		return nil, err
 	}

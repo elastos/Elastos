@@ -3,6 +3,7 @@ package store
 import (
 	"database/sql"
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
@@ -10,7 +11,6 @@ import (
 
 const (
 	DriverName = "sqlite3"
-	DBName     = "./queue.db"
 
 	CreateQueueDB = `CREATE TABLE IF NOT EXISTS Queue(
 				NotifyId BLOB NOT NULL,
@@ -29,10 +29,10 @@ type que struct {
 	*sql.DB
 }
 
-func NewQue() (*que, error) {
-	db, err := sql.Open(DriverName, DBName)
+func NewQue(dataDir string) (*que, error) {
+	db, err := sql.Open(DriverName, filepath.Join(dataDir, "queue.db"))
 	if err != nil {
-		fmt.Println("Open sqlite db error:", err)
+		fmt.Println("Open queue db error:", err)
 		return nil, err
 	}
 

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/elastos/Elastos.ELA.SPV/bloom"
 	"github.com/elastos/Elastos.ELA.SPV/database"
@@ -16,6 +17,8 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA/core"
 )
+
+const defaultDataDir = "./data_spv"
 
 type spvservice struct {
 	sdk.IService
@@ -35,12 +38,24 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 		return nil, fmt.Errorf("Parse foundation address error %s", err)
 	}
 
-	headerStore, err := store.NewHeaderStore(newBlockHeader)
+	dataDir := defaultDataDir
+	if len(cfg.DataDir) > 0 {
+		dataDir = cfg.DataDir
+	}
+	_, err = os.Stat(dataDir)
+	if os.IsNotExist(err) {
+		err := os.MkdirAll(dataDir, os.ModePerm)
+		if err != nil {
+			return nil, fmt.Errorf("make data dir failed")
+		}
+	}
+
+	headerStore, err := store.NewHeaderStore(dataDir, newBlockHeader)
 	if err != nil {
 		return nil, err
 	}
 
-	dataStore, err := store.NewDataStore()
+	dataStore, err := store.NewDataStore(dataDir)
 	if err != nil {
 		return nil, err
 	}
@@ -55,12 +70,13 @@ func newSpvService(cfg *Config) (*spvservice, error) {
 	chainStore := database.NewDefaultChainDB(headerStore, service)
 
 	serviceCfg := &sdk.Config{
-		Magic:           cfg.Magic,
-		SeedList:        cfg.SeedList,
-		DefaultPort:     cfg.DefaultPort,
-		MaxPeers:        cfg.MaxConnections,
-		GenesisHeader:   GenesisHeader(foundation),
-		ChainStore:      chainStore,
+		DataDir:       dataDir,
+		Magic:         cfg.Magic,
+		SeedList:      cfg.SeedList,
+		DefaultPort:   cfg.DefaultPort,
+		MaxPeers:      cfg.MaxConnections,
+		GenesisHeader: GenesisHeader(foundation),
+		ChainStore:    chainStore,
 		NewTransaction: func() util.Transaction {
 			return &core.Transaction{}
 		},

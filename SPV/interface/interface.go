@@ -10,6 +10,9 @@ import (
 
 // SPV service config
 type Config struct {
+	// DataDir is the data path to store db files peer addresses etc.
+	DataDir string
+
 	// The magic number that specify which network to connect.
 	Magic uint32
 
