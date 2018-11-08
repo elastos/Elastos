@@ -101,18 +101,21 @@ func (ns *neighbours) GetNeighbourAddresses() []*p2p.NetAddress {
 	return addrs
 }
 
-func (ns *neighbours) GetInternalNeighborHeights() []uint64 {
+func (ns *neighbours) GetInternalNeighborAddressAndHeights() ([]string, []uint64) {
 	neighbors := ns.GetNeighborNodes()
 
 	heights := make([]uint64, 0, len(neighbors))
+	addresses := make([]string, 0, len(neighbors))
 	for _, n := range neighbors {
-		if n.State() == protocol.ESTABLISHED && !n.IsExternal(){
+		if n.State() == protocol.ESTABLISHED && !n.IsExternal() {
 			height := n.Height()
+			address := n.Addr()
 			heights = append(heights, height)
+			addresses = append(addresses, address)
 		}
 	}
 
-	return heights
+	return addresses, heights
 }
 
 func (ns *neighbours) GetNeighborNodes() []protocol.Noder {
@@ -144,7 +147,7 @@ func (ns *neighbours) GetExternalNeighbourRandomly() protocol.Noder {
 	ns.Lock()
 	defer ns.Unlock()
 	for _, n := range ns.List {
-		if n.State() == protocol.ESTABLISHED && n.IsExternal(){
+		if n.State() == protocol.ESTABLISHED && n.IsExternal() {
 			return n
 		}
 	}
