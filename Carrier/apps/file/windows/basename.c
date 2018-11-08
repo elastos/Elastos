@@ -20,24 +20,15 @@
  * SOFTWARE.
  */
 
-#ifndef __FILE_CONFIG_H__
-#define __FILE_CONFIG_H__
+#include <string.h>
 
-#include <stdbool.h>
-#include <ela_carrier.h>
+char *basename(char *realpath)
+{
+	char *p;
 
-typedef struct {
-    bool udp_enabled;
-
-    int loglevel;
-    char *logfile;
-
-    char *datadir;
-
-    int bootstraps_size;
-    BootstrapNode **bootstraps;
-} filecfg_t;
-
-filecfg_t *load_config(const char *config_file);
-
-#endif /* __FILE_CONFIG_H__ */
+	p = strrchr(realpath, '\\');
+	if (!p)
+		return realpath;
+	else
+		return p + 1;
+}

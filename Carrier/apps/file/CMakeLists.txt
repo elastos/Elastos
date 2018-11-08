@@ -4,31 +4,10 @@ include(CarrierDefaults)
 include(CheckIncludeFile)
 include(CheckFunctionExists)
 
-check_include_file(alloca.h HAVE_ALLOCA_H)
-if(HAVE_ALLOCA_H)
-    add_definitions(-DHAVE_ALLOCA_H=1)
-endif()
-
-check_include_file(malloc.h HAVE_MALLOC_H)
-if(HAVE_MALLOC_H)
-    add_definitions(-DHAVE_MALLOC_H=1)
-endif()
-
 check_include_file(unistd.h HAVE_UNISTD_H)
 if(HAVE_UNISTD_H)
     add_definitions(-DHAVE_UNISTD_H=1)
 endif()
-
-check_include_file(process.h HAVE_PROCESS_H)
-if(HAVE_PROCESS_H)
-    add_definitions(-DHAVE_PROCESS_H=1)
-endif()
-
-check_include_file(sys/time.h HAVE_SYS_TIME_H)
-if(HAVE_SYS_TIME_H)
-    add_definitions(-DHAVE_SYS_TIME_H=1)
-endif()
-
 check_include_file(sys/resource.h HAVE_SYS_RESOURCE_H)
 if(HAVE_SYS_RESOURCE_H)
     add_definitions(-DHAVE_SYS_RESOURCE_H=1)
@@ -39,19 +18,30 @@ if(HAVE_SYS_SELECT_H)
     add_definitions(-DHAVE_SYS_SELECT_H=1)
 endif()
 
-check_include_file(winsock2.h HAVE_WINSOCK2_H)
-if(HAVE_WINSOCK2_H)
-    add_definitions(-DHAVE_WINSOCK2_H=1)
-endif()
-
 check_function_exists(sigaction HAVE_SIGACTION)
 if(HAVE_SIGACTION)
     add_definitions(-DHAVE_SIGACTION=1)
 endif()
 
+check_include_file(libgen.h HAVE_LIBGEN_H)
+if(HAVE_LIBGEN_H)
+    add_definitions(-DHAVE_LIBGEN_H=1)
+endif()
+
+check_include_file(fcntl.h HAVE_FCNTL_H)
+if(HAVE_FCNTL_H)
+    add_definitions(-DHAVE_FCNTL_H=1)
+endif()
+
 set(SRC
     filetrans.c
     config.c)
+
+if(WIN32)
+    set(SRC
+        ${SRC}
+        windows/basename.c)
+endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread)
@@ -78,7 +68,7 @@ endif()
 set(LIBS
     elacarrier
     elasession
-    elafiletransfer
+    elafiletrans
     crystal)
 
 if(WIN32)
@@ -93,12 +83,10 @@ if(WIN32)
         ${LIBS}
         pthread
         pdcurses
-        libconfig.lib
-        Shlwapi)
+        libconfig.lib)
 else()
     set(LIBS
         ${LIBS}
-        ncurses
         config)
 endif()
 

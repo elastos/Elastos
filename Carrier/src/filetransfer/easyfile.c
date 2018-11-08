@@ -77,7 +77,7 @@ void notify_state_changed_cb(ElaFileTransfer *ft, FileTransferConnection state,
 }
 
 static
-bool notify_file_cb(ElaFileTransfer *ft, const char *fileid,
+void notify_file_cb(ElaFileTransfer *ft, const char *fileid,
                     const char *filename, uint64_t size, void *context)
 {
     EasyFile *file = (EasyFile *)context;
@@ -93,10 +93,10 @@ bool notify_file_cb(ElaFileTransfer *ft, const char *fileid,
     file->filesz = size;
 
     rc = ela_filetransfer_pull(ft, fileid, file->offset);
-    if (rc < 0)
+    if (rc < 0) {
         vlogE(TAG "filetransfer pulling %s error (0x%x).", fileid, ela_get_error());
-
-    return (rc >= 0);
+        ela_filetransfer_cancel(ft, fileid, ela_get_error(), "error");
+    }
 }
 
 static void *sending_file_routine(void *args)

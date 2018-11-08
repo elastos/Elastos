@@ -29,6 +29,11 @@ if(HAVE_WINSOCK2_H)
     add_definitions(-DHAVE_WINSOCK2_H=1)
 endif()
 
+check_include_file(endian.h HAVE_ENDIAN_H)
+if(HAVE_ENDIAN_H)
+    add_definitions(-DHAVE_ENDIAN_H=1)
+endif()
+
 set(SRC
     filetransfer.c
     easyfile.c)
@@ -43,7 +48,7 @@ set(HEADERS
     ela_filetransfer.h)
 
 if(WIN32)
-    set(SYSTEM_LIBS Ws2_32 Iphlpapi)
+    set(SYSTEM_LIBS Ws2_32 )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(SYSTEM_LIBS pthread m)
 endif()
@@ -86,27 +91,27 @@ add_definitions(-DCARRIER_BUILD)
 add_custom_target(ela-filetransfer)
 
 if(ENABLE_STATIC)
-    add_library(elafiletransfer-static STATIC ${SRC})
+    add_library(elafiletrans-static STATIC ${SRC})
 
-    target_compile_definitions(elafiletransfer-static PRIVATE CARRIER_STATIC CRYSTAL_STATIC)
-    set_target_properties(elafiletransfer-static PROPERTIES OUTPUT_NAME elafiletransfer)
-    add_dependencies(ela-filetransfer elafiletransfer-static)
+    target_compile_definitions(elafiletrans-static PRIVATE CARRIER_STATIC CRYSTAL_STATIC)
+    set_target_properties(elafiletrans-static PROPERTIES OUTPUT_NAME elafiletrans)
+    add_dependencies(ela-filetransfer elafiletrans-static)
 
-    install(TARGETS elafiletransfer-static
+    install(TARGETS elafiletrans-static
         RUNTIME DESTINATION "bin"
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")
 endif()
 
 if(ENABLE_SHARED)
-    add_library(elafiletransfer-shared SHARED ${SRC})
+    add_library(elafiletrans-shared SHARED ${SRC})
 
-    target_compile_definitions(elafiletransfer-shared PRIVATE CARRIER_DYNAMIC CRYSTAL_DYNAMIC)
-    set_target_properties(elafiletransfer-shared PROPERTIES OUTPUT_NAME elafiletransfer)
-    target_link_libraries(elafiletransfer-shared ${LIBS} )
-    add_dependencies(ela-filetransfer elafiletransfer-shared)
+    target_compile_definitions(elafiletrans-shared PRIVATE CARRIER_DYNAMIC CRYSTAL_DYNAMIC)
+    set_target_properties(elafiletrans-shared PROPERTIES OUTPUT_NAME elafiletrans)
+    target_link_libraries(elafiletrans-shared ${LIBS} ${SYSTEM_LIBS} )
+    add_dependencies(ela-filetransfer elafiletrans-shared)
 
-    install(TARGETS elafiletransfer-shared
+    install(TARGETS elafiletrans-shared
         RUNTIME DESTINATION "bin"
         ARCHIVE DESTINATION "lib"
         LIBRARY DESTINATION "lib")

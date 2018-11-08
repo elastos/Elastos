@@ -62,8 +62,8 @@ typedef struct FileTransferItem         FileTransferItem;
 
 struct ElaCarrier       {
     pthread_mutex_t         ext_mutex;
-    void                    *padding_ext;
-    void                    *extension;
+    void                    *session;
+    void                    *filetransfer;
     uint8_t                 padding[1]; // the rest fields belong to Carrier self.
 };
 
@@ -90,6 +90,7 @@ struct FileTransferItem {
     char *filename;
     uint64_t filesz;
 
+    void *userdata;
     int state;
     int channel;
 };

@@ -70,7 +70,8 @@ typedef struct FriendEvent {
 
 struct ElaCarrier {
     pthread_mutex_t ext_mutex;
-    void *session;  // reserved for session.
+    void *session;          //reserved for session extension.
+    void *filetransfer;     //reserved for filetransfer extension.
 
     DHT dht;
 

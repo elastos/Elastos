@@ -43,7 +43,7 @@
 
 static void config_destructor(void *p)
 {
-    ShellConfig *config = (ShellConfig *)p;
+    filecfg_t *config = (filecfg_t *)p;
 
     if (!config)
         return;
@@ -110,9 +110,9 @@ static void qualified_path(const char *path, const char *ref, char *qualified)
     }
 }
 
-ShellConfig *load_config(const char *config_file)
+filecfg_t *load_config(const char *config_file)
 {
-    ShellConfig *config;
+    filecfg_t *config;
     config_t cfg;
     config_setting_t *setting;
     const char *stropt;
@@ -132,7 +132,7 @@ ShellConfig *load_config(const char *config_file)
         return NULL;
     }
 
-    config = (ShellConfig *)rc_zalloc(sizeof(ShellConfig), config_destructor);
+    config = (filecfg_t *)rc_zalloc(sizeof(filecfg_t), config_destructor);
     if (!config) {
         fprintf(stderr, "Load configuration failed, out of memory.\n");
         config_destroy(&cfg);

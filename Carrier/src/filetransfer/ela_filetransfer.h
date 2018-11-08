@@ -59,7 +59,7 @@ extern "C" {
 
 /**
  * \~English
- * Carrier transfer file ID max length.
+ * Carrier transfer file name max length.
  */
 #define ELA_MAX_FILE_NAME_LEN   255
 
@@ -71,7 +71,8 @@ extern "C" {
 
 /**
  * \~English
- * A defined type representing the transaction of file transfer.
+ * A defined type representing the transaction of file transfer between a friend
+ * and us.
  */
 typedef struct ElaFileTransfer ElaFileTransfer;
 
@@ -79,67 +80,58 @@ typedef struct ElaFileTransfer ElaFileTransfer;
  * \~English
  * A structure representing the file transfer meta information.
  *
- * Two peer carrier node use this structure to communicate of what file
- * or file list to transfer.
+ * Two peer carrier nodes use this structure to declare which file to transfer.
  */
 typedef struct ElaFileTransferInfo {
     /**
      * \~English
-     * File name of transfer file, without file path.
+     * File name of file to transfer, without file path.
      */
     char filename[ELA_MAX_FILE_NAME_LEN + 1];
 
     /**
      * \~English
-     * Unique fileid of transfer file, which is being unique to current
-     * node and remote friend node.
+     * Unique fileid of file to transfer, which is being unique in a file
+     * transfer instance.
      */
     char fileid[ELA_MAX_FILE_ID_LEN + 1];
 
     /**
      * \~English
-     * Total file size of transfer file.
+     * Total file size of file transfer.
      */
     uint64_t size;
 } ElaFileTransferInfo;
 
 /**
  * \~English
- * Carrier filetransfer peers' connection numeration.
- * The filetransfer connection will be changed through whole establishment
- * process between peers.
+ * Carrier file transfer connection state enumeration.
  */
 typedef enum FileTransferConnection {
-    /** The filetransfer connection is initalized. */
-    FileTransferConnection_initialized,
+    /** The file transfer connection is initialized. */
+    FileTransferConnection_initialized = 1,
 
-    /** The filetransfer connection is being established.*/
+    /** The file transfer connection is being established.*/
     FileTransferConnection_connecting,
 
-    /** The filetransfer connection has been connected. */
+    /** The file transfer connection has been connected. */
     FileTransferConnection_connected,
 
-    /** The filetransfer connection failed with some reason. */
+    /** The file transfer connection failed with some reason. */
     FileTransferConnection_failed,
 
-    /** The filetransfer connection is closed and disconnected. */
+    /** The file transfer connection is closed and disconnected. */
     FileTransferConnection_closed
 } FileTransferConnection;
 
-typedef enum CancelReason {
-    CancelReason_normal,
-    CancelReason_timeout,
-    CancelReason_other
-} CancelReason;
-
 /**
  * \~English
- * Carrier filetransfer callacks.
+ * Carrier file transfer callbacks.
  */
 typedef struct ElaFileTransferCallbacks {
     /**
      * \~English
-     * An application-defined function that perform the state changed event.
+     * An application-defined function that handle the state changed event.
      *
      * @param
      *      filetransfer    [in] A handle to file transfer instance.
@@ -154,8 +146,7 @@ typedef struct ElaFileTransferCallbacks {
 
     /**
      * \~English
-     * An application-defined function that receive transfer file information
-     * event.
+     * An application-defined function that handle transfer file request event.
      *
      * @param
      *      filetransfer    [in] A handle to the Carrier file transfer
@@ -163,22 +154,17 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      fileid          [in] The file identifier.
      * @param
-     *      filename        [in] The file name;
+     *      filename        [in] The file name.
      * @param
      *      size            [in] The total file size.
      * @param
      *      context         [in] The application defined context data.
-     *
-     * @return
-     *      True on success, or false if an error occurred.
-     *      The filetransfer channel will continue to open only this callback
-     *      return true, otherwise the channel will be closed.
      */
-    bool (*file)(ElaFileTransfer *filetransfer, const char *fileid,
-                          const char *filename, uint64_t size, void *context);
+    void (*file)(ElaFileTransfer *filetransfer, const char *fileid,
+                 const char *filename, uint64_t size, void *context);
     /**
      * \~English
-     * An application-defined function that receive file transfer pull request
+     * An application-defined function that handle file transfer pull request
      * event.
      *
      * @param
@@ -187,7 +173,7 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      fileid          [in] The file identifier.
      * @param
-     *      offset          [in] The start offset of data to transfer in file.
+     *      offset          [in] The offset of file where transfer begins.
      * @param
      *      context         [in] The application defined context data.
      */
@@ -201,26 +187,29 @@ typedef struct ElaFileTransferCallbacks {
      * @param
      *      filetransfer    [in] A handle to file transfer instance.
      * @param
-     *      fileid          [in] The unique idenfier of transfering file.
+     *      fileid          [in] The unique identifier of transferring file.
      * @param
      *      data            [in] The pointer to received data.
      * @param
      *      length          [in] The length of received data.
      * @param
      *      context         [in] The application defined context data.
+     *
+     * @return
+     *      Return True if file transfer has completed, otherwise return False.
      */
     bool (*data)(ElaFileTransfer *filetransfer, const char *fileid,
                  const uint8_t *data, size_t length, void *context);
 
     /**
      * \~English
-     * An application-defined function that perform paused control packet
-     * to pause file transfer.
+     * An application-defined function that handles pause file transfer
+     * notification from the peer.
      *
      * @param
      *      filetransfer    [in] A handle to file transfer instance.
      * @param
-     *      fileid          [in] The unique idenfier of transfering file.
+     *      fileid          [in] The unique identifier of transferring file.
      * @param
      *      context         [in] The application defined context data.
      */
@@ -229,13 +218,13 @@ typedef struct ElaFileTransferCallbacks {
 
     /**
      * \~English
-     * An application-defined function that perform resume control packet
-     * to resume file transfer.
+     * An application-defined function that handles resume file transfer
+     * notification from the peer.
      *
      * @param
      *      filetransfer    [in] A handle to file transfer instance.
      * @param
-     *      fileid          [in] The unique idenfier of transfering file.
+     *      fileid          [in] The unique identifier of transferring file.
      * @param
      *      context         [in] The application defined context data.
      */
@@ -244,33 +233,34 @@ typedef struct ElaFileTransferCallbacks {
 
     /**
      * \~English
-     * An application-defined function that perform cancel control packet
-     * to cancel file transfer.
+     * An application-defined function that handles cancel file transfer
+     * notification from the peer.
      *
      * @param
      *      filetransfer    [in] A handle to file transfer instance.
      * @param
-     *      fileid          [in] The unique idenfier of transfering file.
+     *      fileid          [in] The unique identifier of transferring file.
      * @param
-     *      reason          [in] Cancel transfer reason code.
-     *
+     *      status          [in] Cancel transfer status code.
+     * @param
+     *      reason          [in] The string presents cancel reason.
      * @param
      *      context         [in] The application defined context data.
      */
     void (*cancel)(ElaFileTransfer *filetransfer, const char *fileid,
-                   CancelReason reason, void *context);
+                   int status, const char *reason, void *context);
 
 } ElaFileTransferCallbacks;
 
 /**
  * \~English
- * Generate unique file identifer with random algorithm.
+ * Generate unique file identifier with random algorithm.
  *
  * Application can call this function to explicitly generate transfer fileid,
- * or let filetransfer module to generate fileid implicitly.
+ * or let file transfer module generate fileid implicitly.
  *
  * @param
- *      fileid          [in] The buffer to receiver generated fileid.
+ *      fileid          [in] The buffer to receive generated file identifier.
  * @param
  *      length          [in] The buffer length.
  *
@@ -282,25 +272,18 @@ char *ela_filetransfer_fileid(char *fileid, size_t length);
 
 /**
  * \~English
- * An application-defined function that receive file transfer connect
- * request event.
- *
- * ElaFileTransferConnectCallback is the callback function type.
+ * An application-defined function that handles file transfer connect
+ * request.
  *
  * @param
  *      carrier         [in] A handle to the Carrier node instance.
  * @param
- *      address         [in] The target address.
+ *      address         [in] The requesting address.
  * @param
- *      fileinfo        [in] Array of file informatios.
+ *      fileinfo        [in] Information of the file to transfer.
  * @param
  *      context         [in] The application defined context data.
- *
- * @return
- *      0 on success, or -1 if an error occurred. The specific error code
- *      can be retrieved by calling ela_get_error().
  */
-
 typedef void ElaFileTransferConnectCallback(ElaCarrier *carrier,
                     const char *address, const ElaFileTransferInfo *fileinfo,
                     void *context);
@@ -347,9 +330,10 @@ void ela_filetransfer_cleanup(ElaCarrier *carrier);
  * The application must open file transfer instance before sending
  * request/reply to transfer file.
  *
- * As to send request to transfer file, application may or may not feed file
- * information that want to transfer. And for receiving side, application
- * should feed file information received from request callback.
+ * As to send request to transfer file, application may or may not feed
+ * information of the file that we want to transfer. And for receiving side,
+ * application MUST feed file information received from connect request
+ * callback.
  *
  * @param
  *      carrier         [in] A handle to the Carrier node instance.
@@ -359,13 +343,13 @@ void ela_filetransfer_cleanup(ElaCarrier *carrier);
  *      fileinfo        [in] The information of file to transfer, could be NULL.
  * @param
  *      callbacks       [in] A pointer to ElaFileTransferCallbacks to handle
- *                           all events related to new filetransfer instance.
+ *                           all events related to new file transfer instance.
  * @param
  *      context         [in] The application defined context data.
  *
  * @return
- *      0 on success, or -1 if an error occurred. The specific error code
- *      can be retrieved by calling ela_get_error().
+ *      Return an ElaFileTransfer instance on success, NULL otherwise(The
+ *      specific error code can be retrieved by calling ela_get_error()).
  */
 CARRIER_API
 ElaFileTransfer *ela_filetransfer_new(ElaCarrier *carrier,
@@ -388,7 +372,7 @@ void ela_filetransfer_close(ElaFileTransfer *filetransfer);
  * \~English
  * Get an unique file identifier of specified file.
  *
- * Each file has it's unique fileid used between two peers.
+ * Each file has its unique fileid used between two peers.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
@@ -405,27 +389,27 @@ void ela_filetransfer_close(ElaFileTransfer *filetransfer);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-char *ela_file_transfer_get_fileid(ElaFileTransfer *filetransfer,
-                                   const char *filename,
-                                   char *fileid, size_t length);
+char *ela_filetransfer_get_fileid(ElaFileTransfer *filetransfer,
+                                  const char *filename,
+                                  char *fileid, size_t length);
 
 /**
  * \~English
- * Get an file name according specific fileid.
+ * Get file name by fileid.
  *
- * Each file has it's unique fileid used between two peers.
+ * Each file has its unique fileid used between two peers.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
  * @param
- *      fileid          [in] The target file identifer.
+ *      fileid          [in] The target file identifier.
  * @param
  *      filename        [in] The buffer to receive file name.
  * @param
  *      length          [in] The length of buffer to receive file name.
  *
  * @return
- *      File name is returned if filetransfer instance has specific fileid,
+ *      File name is returned if filetransfer instance has fileid specified,
  *      otherwise, NULL value is returned. The specific error code
  *      can be retrieved by calling ela_get_error().
  */
@@ -450,7 +434,7 @@ int ela_filetransfer_connect(ElaFileTransfer *filetransfer);
 
 /**
  * \~English
- * Accept filet ransfer connection request.
+ * Accept file transfer connection request.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
@@ -464,12 +448,12 @@ int ela_filetransfer_accept_connect(ElaFileTransfer *filetransfer);
 
 /**
  * \~English
- * Add a list of file or a file to queue of file transfer.
+ * Add a file to queue of file transfer.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
  * @param
- *      fileinfo_list   [in] An array of file information.
+ *      fileinfo        [in] Information of the file to be added.
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
@@ -477,18 +461,18 @@ int ela_filetransfer_accept_connect(ElaFileTransfer *filetransfer);
  */
 CARRIER_API
 int ela_filetransfer_add(ElaFileTransfer *filetransfer,
-                         const ElaFileTransferInfo *fileinfo_list);
+                         const ElaFileTransferInfo *fileinfo);
 
 /**
  * \~English
- * To send pull request to transfer file with specified file.
+ * To send pull request to transfer file with specified fileid.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
  * @param
  *      fileid          [in] The file identifier.
  * @param
- *      offset          [in] The start offset of data to transfer in file.
+ *      offset          [in] The offset of file where transfer begins.
  *
  * @return
  *      0 on success, or -1 if an error occurred. The specific error code
@@ -521,7 +505,7 @@ int ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
 
 /**
  * \~English
- * Cancel transfering file data with specified fileid.
+ * Cancel transferring file with specified fileid.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
@@ -533,11 +517,12 @@ int ela_filetransfer_send(ElaFileTransfer *filetransfer, const char *fileid,
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_filetransfer_cancel(ElaFileTransfer *filetransfer, const char *fileid);
+int ela_filetransfer_cancel(ElaFileTransfer *filetransfer, const char *fileid,
+                            int status, const char *reason);
 
 /**
  * \~English
- * Pause transfering file data with specified fileid.
+ * Pause transferring file with specified fileid.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
@@ -549,11 +534,11 @@ int ela_filetransfer_cancel(ElaFileTransfer *filetransfer, const char *fileid);
  *      can be retrieved by calling ela_get_error().
  */
 CARRIER_API
-int ela_filetransfer_pause(ElaFileTransfer *filetransfer, const char *fileid);
+int ela_filetransfer_pend(ElaFileTransfer *filetransfer, const char *fileid);
 
 /**
  * \~English
- * Resume transfering file data with specified fileid.
+ * Resume transferring file with specified fileid.
  *
  * @param
  *      filetransfer    [in] A handle to the Carrier file transfer instance.
@@ -570,13 +555,48 @@ int ela_filetransfer_resume(ElaFileTransfer *filetransfer, const char *fileid);
 
 /**
  * \~English
+ * Bind userdata to specified fileid.
+ *
+ * @param
+ *      filetransfer    [in] A handle to the Carrier file transfer instance.
+ * @param
+ *      fileid          [in] The file identifier.
+ * @param
+ *      userdata        [in] The pointer to userdata.
+ *
+ * @return
+ *      0 on success, or -1 if an error occurred. The specific error code
+ *      can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+int ela_filetransfer_set_userdata(ElaFileTransfer *filetransfer,
+                                  const char *fileid, void *userdata);
+
+/**
+ * \~English
+ * Get userdata bound to specified fileid.
+ *
+ * @param
+ *      filetransfer    [in] A handle to the Carrier file transfer instance.
+ * @param
+ *      fileid          [in] The file identifier.
+ *
+ * @return
+ *      userdata on success, or NULL if an error occurred. The specific error
+ *      code can be retrieved by calling ela_get_error().
+ */
+CARRIER_API
+void *ela_filetransfer_get_userdata(ElaFileTransfer *ft, const char *fileid);
+
+/**
+ * \~English
  * Carrier file progress callbacks.
  */
 typedef struct ElaFileProgressCallbacks {
     /**
      * \~English
-     * An application-defined function that receive file transfer connection
-     * changed event.
+     * An application-defined function that handles file transfer connection
+     * state changed event.
      *
      * @param
      *      state           [in] The file transfer connection state.
@@ -587,7 +607,7 @@ typedef struct ElaFileProgressCallbacks {
 
     /**
      * \~English
-     * An application-defined function that receive file data sent event.
+     * An application-defined function that handles file sent event.
      *
      * @param
      *      length          [in] The amount of data sent.
@@ -600,12 +620,12 @@ typedef struct ElaFileProgressCallbacks {
 
     /**
      * \~English
-     * An application-defined function that receive file data event.
+     * An application-defined function that handles file received event.
      *
      * @param
      *      length          [in] The amount of data sent.
      * @param
-     *      totalsz         [in] The total mount of transfering file.
+     *      totalsz         [in] The total mount of transferring file.
      * @param
      *      context         [in] The application defined context data.
      */
@@ -616,7 +636,7 @@ typedef struct ElaFileProgressCallbacks {
  * \~English
  * Send a file to target friend.
  *
- * This is a convinient API on top of filetransfer APIs set.
+ * This is a convenient API on top of filetransfer APIs set.
  *
  * @param
  *      carrier         [in] A handle to the Carrier node instance.
@@ -642,7 +662,7 @@ int ela_file_send(ElaCarrier *carrier, const char *address, const char *filename
  * \~English
  * Receive a file from target friend
  *
- * This is a convinient API on top of filetransfer APIs set.
+ * This is a convenient API on top of filetransfer APIs set.
  *
  * @param
  *      carrier         [in] A handle to the Carrier node instance.

@@ -20,24 +20,37 @@
  * SOFTWARE.
  */
 
-#ifndef __FILE_CONFIG_H__
-#define __FILE_CONFIG_H__
+#ifndef __FTMESSAGE_H__
+#define __FTMESSAGE_H__
 
-#include <stdbool.h>
-#include <ela_carrier.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum {
+    PACKET_PULL     = 2,
+    PACKET_CANCEL   = 3,
+};
 
 typedef struct {
-    bool udp_enabled;
+    uint64_t type;
+} packet_t;
 
-    int loglevel;
-    char *logfile;
+typedef struct {
+    uint16_t type;
+    int32_t status;
+    char reason[1];
+} packet_cancel_t;
 
-    char *datadir;
+typedef struct {
+    uint16_t type;
+    uint64_t offset;
+} packet_pull_t;
 
-    int bootstraps_size;
-    BootstrapNode **bootstraps;
-} filecfg_t;
+#ifdef __cplusplus
+}
+#endif
 
-filecfg_t *load_config(const char *config_file);
-
-#endif /* __FILE_CONFIG_H__ */
+#endif /* __FTMESSAGE_H__ */
