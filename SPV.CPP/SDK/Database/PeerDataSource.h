@@ -49,6 +49,7 @@ namespace Elastos {
 			bool putPeers(const std::string &iso, const std::vector<PeerEntity> &peerEntities);
 			bool deletePeer(const std::string &iso, const PeerEntity &peerEntity);
 			bool deleteAllPeers(const std::string &iso);
+			size_t getAllPeersCount(const std::string &iso) const;
 			std::vector<PeerEntity> getAllPeers(const std::string &iso) const;
 
 		private:

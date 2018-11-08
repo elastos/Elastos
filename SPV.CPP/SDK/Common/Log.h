@@ -20,7 +20,7 @@ namespace Elastos {
 			}
 
 			static void setLevel(spdlog::level::level_enum lvl) {
-				spdlog::set_level(lvl);
+				_consoleLog->set_level(lvl);
 			}
 
 			template<typename T>
@@ -62,13 +62,6 @@ namespace Elastos {
 
 		private:
 			static std::shared_ptr<spdlog::logger> _consoleLog;
-		};
-
-		class SetLogLevel {
-		public:
-			SetLogLevel() {
-				spdlog::set_level(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
-			}
 		};
 
 	}

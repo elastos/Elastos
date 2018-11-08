@@ -221,14 +221,9 @@ namespace Elastos {
 
 #ifndef NDEBUG
 				if (blocks.size() == 1) {
-					time_t now = time(NULL);
-					char tbuf[20];
-					strftime(tbuf, sizeof(tbuf), "%Y-%m-%d %H:%M:%S", localtime(&now));
-					peer_dbg(getPeerManager()->getRaw()->downloadPeer,
-							 "%s: checkpoint ====> { %d,  uint256(\"%s\"), %d, %d },",
-							 tbuf,
+					Log::getLogger()->debug("checkpoint ====> {{ {},  uint256(\"{}\"), {}, {} }},",
 							 blocks[i]->getHeight(),
-							 Utils::UInt256ToString(blocks[i]->getBlockHash(), true).c_str(),
+							 Utils::UInt256ToString(blocks[i]->getBlockHash(), true),
 							 blocks[i]->getRawBlock()->timestamp,
 							 blocks[i]->getRawBlock()->target);
 				}
@@ -250,6 +245,11 @@ namespace Elastos {
 		}
 
 		void WalletManager::savePeers(bool replace, const SharedWrapperList<Peer, BRPeer *> &peers) {
+			bool willReconnect = false;
+			if (0 == _databaseManager.getAllPeersCount(ISO)) {
+				Log::getLogger()->debug("There is no peers in database, will reconnect");
+				willReconnect = true;
+			}
 
 			if (replace) {
 				_databaseManager.deleteAllPeers(ISO);
@@ -270,6 +270,10 @@ namespace Elastos {
 							  listener->savePeers(replace, peers);
 						  });
 			delete &peers;
+
+			if (willReconnect) {
+				getPeerManager()->disconnect();
+			}
 		}
 
 		bool WalletManager::networkIsReachable() {
@@ -298,6 +302,7 @@ namespace Elastos {
 		}
 
 		void WalletManager::syncIsInactive(uint32_t time) {
+			Log::getLogger()->info("time to disconnect");
 			pthread_mutex_lock(&getPeerManager()->getRaw()->lock);
 			getPeerManager()->getRaw()->reconnectTaskCount++;
 			pthread_mutex_unlock(&getPeerManager()->getRaw()->lock);
