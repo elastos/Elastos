@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/elastos/Elastos.ELA.SPV/blockchain"
@@ -18,6 +19,7 @@ import (
 )
 
 const (
+	defaultDataDir        = "./"
 	TxExpireTime          = time.Hour * 24
 	TxRebroadcastDuration = time.Minute * 15
 )
@@ -91,6 +93,15 @@ func newService(cfg *Config) (*service, error) {
 	service.syncManager = syncManager
 
 	// Initiate P2P server configuration
+	dataDir := defaultDataDir
+	if len(cfg.DataDir) > 0 {
+		dataDir = cfg.DataDir
+	}
+	_, err = os.Stat(dataDir)
+	if os.IsNotExist(err) {
+		os.MkdirAll(dataDir, os.ModePerm)
+	}
+
 	serverCfg := server.NewDefaultConfig(
 		cfg.Magic,
 		p2p.EIP001Version,
@@ -103,6 +114,7 @@ func newService(cfg *Config) (*service, error) {
 		service.makeEmptyMessage,
 		func() uint64 { return uint64(chain.BestHeight()) },
 	)
+	serverCfg.DataDir = dataDir
 	serverCfg.MaxPeers = maxPeers
 	serverCfg.DisableListen = true
 	serverCfg.DisableRelayTx = true

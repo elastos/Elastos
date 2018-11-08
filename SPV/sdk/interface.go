@@ -56,6 +56,9 @@ type StateNotifier interface {
 
 // Config is the configuration settings to the SPV service.
 type Config struct {
+	// DataDir is the data path to store peer addresses etc.
+	DataDir string
+
 	// The magic number to indicate which network to access.
 	Magic uint32
 
