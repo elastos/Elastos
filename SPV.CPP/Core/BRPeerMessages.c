@@ -422,7 +422,6 @@ int BRPeerAcceptGetAddrMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 void BRPeerSendGetAddrMessage(BRPeer *peer)
 {
 	((BRPeerContext *)peer)->sentGetaddr = 1;
-	((BRPeerContext *)peer)->manager->keepAliveTimestamp = time(NULL);
 	BRPeerSendMessage(peer, NULL, 0, MSG_GETADDR);
 }
 
@@ -776,6 +775,7 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 		r = 0;
 	}
 	else {
+		int needRelayPing = 0;
 		BRPeerContext *ctx = (BRPeerContext *)peer;
 		BRPeerManager *manager = ctx->manager;
 		uint8_t buf[sizeof(uint64_t)] = {0};
@@ -784,28 +784,26 @@ int BRPeerAcceptPingMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen)
 
 		pthread_mutex_lock(&manager->lock);
 		UInt64SetLE(buf, manager->lastBlock->height);
-		pthread_mutex_unlock(&manager->lock);
-
-		BRPeerSendMessage(peer, buf, sizeof(buf), MSG_PONG);
-
-		pthread_mutex_lock(&manager->lock);
-		if (manager->isConnected && ctx->sentGetaddr && time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
+		if (manager->isConnected && manager->syncSucceeded &&
+			time_after(time(NULL), manager->keepAliveTimestamp + 30)) {
 			int haveTxPending = 0;
-
 			for (size_t i = array_count(manager->publishedTx); i > 0; i--) {
 				if (manager->publishedTx[i - 1].callback != NULL) {
-					peer_log(peer, "publish pending tx hash = %s", u256hex(manager->publishedTxHashes[i - 1]));
 					haveTxPending++;
 				}
 			}
 
-			if (manager->lastBlock->height >= *(uint64_t *)msg && !haveTxPending) {
-				pthread_mutex_unlock(&manager->lock);
-				ctx->relayedPingMsg(ctx->info);
-				pthread_mutex_lock(&manager->lock);
+			if (!haveTxPending) {
+				needRelayPing = 1;
 			}
 		}
 		pthread_mutex_unlock(&manager->lock);
+
+		BRPeerSendMessage(peer, buf, sizeof(buf), MSG_PONG);
+
+		if (needRelayPing) {
+			ctx->relayedPingMsg(ctx->info);
+		}
 	}
 
 	return r;
@@ -952,8 +950,6 @@ static int _BRPeerAcceptFeeFilterMessage(BRPeer *peer, const uint8_t *msg, size_
 
 static int _BRPeerAcceptMessage(BRPeer *peer, const uint8_t *msg, size_t msgLen, const char *type)
 {
-	//peer_log(peer, "------start _BRPeerAcceptMessage: type %s --------", type);
-
 	BRPeerContext *ctx = (BRPeerContext *)peer;
 	int r = 1;
 

@@ -114,7 +114,7 @@ namespace Elastos {
 		void IdChainSubWallet::onTxAdded(const TransactionPtr &transaction) {
 			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 				std::string txHash = Utils::UInt256ToString(transaction->getHash());
-				Log::getLogger()->info("onTxAdded: hash={}", txHash);
+				Log::getLogger()->debug("ID onTxAdded: hash={}", txHash);
 
 				std::for_each(_callbacks.begin(), _callbacks.end(),
 							  [transaction](ISubWalletCallback *callback) {
@@ -124,7 +124,7 @@ namespace Elastos {
 										  Utils::UInt256ToString(transaction->getHash(), true),
 										  SubWalletCallback::convertToString(
 												  SubWalletCallback::Added),
-										  payload->toJson(), transaction->getBlockHeight());
+										  payload->toJson(), 0);
 							  });
 			} else {
 				SubWallet::onTxAdded(transaction);
@@ -134,18 +134,21 @@ namespace Elastos {
 		void IdChainSubWallet::onTxUpdated(const std::string &hash, uint32_t blockHeight, uint32_t timeStamp) {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
-			if (transaction != nullptr && transaction->getBlockHeight() != TX_UNCONFIRMED
-				&& transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
-				Log::getLogger()->info("onTxUpdated: hash={}", hash);
+			if (transaction != nullptr &&
+				transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
 
+				uint32_t confirm = blockHeight >= transaction->getBlockHeight() ? blockHeight -
+					transaction->getBlockHeight() + 1 : 0;
+
+				Log::getLogger()->debug("ID onTxUpdated: hash = {}, confirm = {}", hash, confirm);
 				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
-							  [&reversedId, blockHeight, timeStamp, &transaction, this](ISubWalletCallback *callback) {
+							  [&reversedId, confirm, timeStamp, &transaction, this](ISubWalletCallback *callback) {
 
 								  const PayloadRegisterIdentification *payload = static_cast<const PayloadRegisterIdentification *>(
 										  transaction->getPayload());
 								  callback->OnTransactionStatusChanged(reversedId, SubWalletCallback::convertToString(
-										  SubWalletCallback::Updated), payload->toJson(), blockHeight);
+										  SubWalletCallback::Updated), payload->toJson(), confirm);
 							  });
 			} else {
 				SubWallet::onTxUpdated(hash, blockHeight, timeStamp);
@@ -156,7 +159,7 @@ namespace Elastos {
 			TransactionPtr transaction = _walletManager->getWallet()->transactionForHash(
 					Utils::UInt256FromString(hash));
 			if (transaction != nullptr && transaction->getTransactionType() == ELATransaction::RegisterIdentification) {
-				Log::getLogger()->info("onTxDeleted");
+				Log::getLogger()->debug("ID onTxDeleted");
 				std::string reversedId(hash.rbegin(), hash.rend());
 				std::for_each(_callbacks.begin(), _callbacks.end(),
 							  [&reversedId, notifyUser, recommendRescan, &transaction, this](

@@ -72,6 +72,10 @@ namespace Elastos {
 			return _peerDataSource.getAllPeers(iso);
 		}
 
+		size_t DatabaseManager::getAllPeersCount(const std::string &iso) const {
+			return _peerDataSource.getAllPeersCount(iso);
+		}
+
 		bool DatabaseManager::putMerkleBlock(const std::string &iso, const MerkleBlockEntity &blockEntity) {
 			return _merkleBlockDataSource.putMerkleBlock(iso, blockEntity);
 		}

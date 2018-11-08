@@ -519,6 +519,8 @@ static void _mempoolDone(void *info, int success)
         if (manager->syncStartHeight > 0) {
             peer_log(peer, "sync succeeded");
             syncFinished = 1;
+            manager->keepAliveTimestamp = time(NULL);
+            manager->syncSucceeded = 1;
             _BRPeerManagerSyncStopped(manager);
         }
 
@@ -548,6 +550,8 @@ static void _loadBloomFilterDone(void *info, int success)
 
         if (peer == manager->downloadPeer) {
             peer_log(peer, "sync succeeded");
+            manager->keepAliveTimestamp = time(NULL);
+            manager->syncSucceeded = 1;
             _BRPeerManagerSyncStopped(manager);
             pthread_mutex_unlock(&manager->lock);
             if (manager->syncStopped) manager->syncStopped(manager->info, 0);
@@ -596,14 +600,19 @@ static UInt128 *_addressLookup(const char *hostname)
 
         for (p = servinfo; p != NULL; p = p->ai_next) {
             if (p->ai_socktype == SOCK_STREAM) {
+                char host[INET6_ADDRSTRLEN] = {0};
                 if (p->ai_family == AF_INET) {
                     addrList[i].u16[5] = 0xffff;
                     addrList[i].u32[3] = ((struct sockaddr_in *)p->ai_addr)->sin_addr.s_addr;
+                    inet_ntop(AF_INET, &addrList[i].u32[3], host, sizeof(host));
                     i++;
                 }
                 else if (p->ai_family == AF_INET6) {
-                    addrList[i++] = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                    addrList[i] = *(UInt128 *)&((struct sockaddr_in6 *)p->ai_addr)->sin6_addr;
+                    inet_ntop(AF_INET6, &addrList[i], host, sizeof(host));
+                    i++;
                 }
+                _peer_log("%s -> %s\n", hostname, host);
             }
         }
 
@@ -681,16 +690,7 @@ static void _BRPeerManagerFindPeers(BRPeerManager *manager)
 
         qsort(manager->peers, array_count(manager->peers), sizeof(*manager->peers), _peerTimestampCompare);
 
-        _peer_log("peer manager found %zu peers\n", array_count(manager->peers));
-        for (size_t i = 0; i < array_count(manager->peers); i++) {
-            char host[INET6_ADDRSTRLEN] = {0};
-            BRPeer *peer = &manager->peers[i];
-            if ((peer->address.u64[0] == 0 && peer->address.u16[4] == 0 && peer->address.u16[5] == 0xffff))
-                inet_ntop(AF_INET, &peer->address.u32[3], host, sizeof(host));
-            else
-                inet_ntop(AF_INET6, &peer->address, host, sizeof(host));
-            _peer_log("peers[%zu] = %s\n", i, host);
-        }
+        _peer_log("found %zu peers\n", array_count(manager->peers));
     }
 }
 
@@ -754,11 +754,13 @@ static void _peerConnected(void *info)
         }
 
         manager->downloadPeer = peer;
+        manager->syncSucceeded = 0;
         manager->isConnected = 1;
         manager->estimatedHeight = BRPeerLastBlock(peer);
+        BRPeerSendGetAddrMessage(peer); // request a list of other bitcoin peers
         manager->loadBloomFilter(manager, peer);
 		BRPeerSetCurrentBlockHeight(peer, manager->lastBlock->height);
-		_BRPeerManagerPublishPendingTx(manager, peer);
+        _BRPeerManagerPublishPendingTx(manager, peer);
 
         if (manager->lastBlock->height < BRPeerLastBlock(peer)) { // start blockchain sync
             UInt256 locators[_BRPeerManagerBlockLocators(manager, NULL, 0)];
@@ -857,7 +859,6 @@ static void _peerDisconnected(void *info, int error)
         break;
     }
 
-    // try very hard to keep at least one alive connected peer.
     if (manager->reconnectTaskCount == 0 && (!manager->isConnected || array_count(manager->connectedPeers) == 0))
         willReconnect = 1;
     else
@@ -872,9 +873,7 @@ static void _peerDisconnected(void *info, int error)
 
     //if (willSave && manager->savePeers) manager->savePeers(manager->info, 1, NULL, 0);
     if (willSave && manager->syncStopped) manager->syncStopped(manager->info, error);
-    if (willReconnect) {
-        if (manager->syncIsInactivate) manager->syncIsInactivate(manager->info, 60);
-    }
+    if (willReconnect && manager->syncIsInactivate) manager->syncIsInactivate(manager->info, 60);
     if (manager->txStatusUpdate) manager->txStatusUpdate(manager->info);
 }
 

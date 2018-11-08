@@ -149,6 +149,30 @@ namespace Elastos {
 			return peers;
 		}
 
+		size_t PeerDataSource::getAllPeersCount(const std::string &iso) const {
+			size_t count = 0;
+
+			doTransaction([&iso, &count, this]() {
+				std::stringstream ss;
+
+				ss << "SELECT " <<
+				   " COUNT(" << PEER_COLUMN_ID << ") AS nums " <<
+				   " FROM " << PEER_TABLE_NAME << ";";
+
+				sqlite3_stmt *stmt;
+				ParamChecker::checkCondition(!_sqlite->prepare(ss.str(), &stmt, nullptr), Error::SqliteError,
+											 "Prepare sql " + ss.str());
+
+				while (SQLITE_ROW == _sqlite->step(stmt)) {
+					count = (uint32_t) _sqlite->columnInt(stmt, 0);
+				}
+
+				_sqlite->finalize(stmt);
+			});
+
+			return count;
+		}
+
 	}
 }
 

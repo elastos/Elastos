@@ -12,8 +12,6 @@ namespace Elastos {
 #else
 		std::shared_ptr<spdlog::logger> Log::_consoleLog = spdlog::stdout_color_mt("console");
 #endif
-		Elastos::ElaWallet::SetLogLevel g_setLogLevel;
-
 		const std::shared_ptr<spdlog::logger> &Log::getLogger() {
 			return _consoleLog;
 		}
