@@ -186,7 +186,7 @@ static void test_add_friend(void)
     CU_ASSERT_TRUE(extra->connection_status == ElaConnectionStatus_Connected);
 
     rc = read_ack("%32s %32s", buf[0], buf[1]);
-    CU_ASSERT_EQUAL(rc, 2);
+    CU_ASSERT_EQUAL_FATAL(rc, 2);
     CU_ASSERT_STRING_EQUAL(buf[0], "fadd");
     CU_ASSERT_STRING_EQUAL(buf[1], "succeeded");
 }
@@ -241,7 +241,7 @@ static void test_accept_friend(void)
         char result[32];
         char buf[32];
         rc = read_ack("%32s %32s", buf, result);
-        CU_ASSERT_EQUAL(rc, 2);
+        CU_ASSERT_EQUAL_FATAL(rc, 2);
         CU_ASSERT_STRING_EQUAL(buf, "fadd");
         CU_ASSERT_STRING_EQUAL(result, "succeeded");
     }

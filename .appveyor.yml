@@ -5,7 +5,7 @@ image:
 platform:
   - x86
   - x64
-  - Any CPU
+  #- Any CPU
 
 build_script:
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat"
@@ -15,5 +15,14 @@ build_script:
   - cmd: nmake install
   - cmd: nmake dist
 
-test_script:
-  - echo TODO
+for:
+-
+  matrix:
+    only:
+      #- platform: x86
+      - platform: x64
+      #- platform: Any CPU
+
+  test_script:
+    - cd outputs\bin
+    - start /b elatests.exe --robot -c ..\etc\carrier\tests.conf && elatests.exe --cases -c ..\etc\carrier\tests.conf -r 3

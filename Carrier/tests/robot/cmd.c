@@ -972,6 +972,14 @@ int start_cmd_listener(const char *host, const char *port)
         return -1;
     }
 
+#ifdef _WIN32
+    struct timeval timeout = {120000,0};//120s
+#else
+    struct timeval timeout = {120,0};//120s
+#endif
+    setsockopt(cmd_sock, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout, sizeof(timeout));
+    setsockopt(cmd_sock, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout, sizeof(timeout));
+
     rc = listen(svr_sock, 1);
     if (rc < 0) {
         vlogE("Listen server socket(%s:%s) error.", host, port);
@@ -1063,10 +1071,12 @@ read_cmd:
     } else if (nfds == 0) {
         goto read_cmd;
     } else {
-        ssize_t
-
-        rc = recv(cmd_sock, cmd_buffer + cmd_len, sizeof(cmd_buffer) - cmd_len, 0);
+        ssize_t rc = recv(cmd_sock, cmd_buffer + cmd_len, sizeof(cmd_buffer) - cmd_len, 0);
         if (rc < 0) {
+            if (errno == EAGAIN) {
+                vlogE("Read command error. TIMEOUT.");
+                goto read_cmd;
+            }
             vlogE("Read command error. Emit a kill command to shutdown robot.");
             return "kill";
         } else if (rc == 0) {
