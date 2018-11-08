@@ -56,7 +56,7 @@ typedef struct {
 typedef struct BRPeerManagerStruct {
 	const BRChainParams *params;
 	BRWallet *wallet;
-	int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, reconnectTaskCount;
+	int isConnected, connectFailureCount, misbehavinCount, dnsThreadCount, maxConnectCount, reconnectTaskCount, syncSucceeded;
 	time_t keepAliveTimestamp;
 	BRPeer *peers, *downloadPeer, fixedPeer, **connectedPeers, *fiexedPeers;
 	char downloadPeerName[INET6_ADDRSTRLEN + 6];

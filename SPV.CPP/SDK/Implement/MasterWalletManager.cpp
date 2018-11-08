@@ -336,6 +336,7 @@ namespace Elastos {
 		void MasterWalletManager::initMasterWallets() {
 			path rootPath = _rootPath;
 
+			Log::setLevel(spdlog::level::from_str(SPVSDK_SPDLOG_LEVEL));
 			Log::getLogger()->critical("spvsdk version {}", SPVSDK_VERSION_MESSAGE);
 
 			ParamChecker::checkPathExists(rootPath);

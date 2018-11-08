@@ -160,9 +160,16 @@ namespace Elastos {
 			j["Type"] = "Multi-Sign";
 			nlohmann::json details;
 			std::vector<std::string> signers = _coSigners;
-			if (_me != nullptr)
+			std::string innerType;
+			if (_me != nullptr) {
+				nlohmann::json basicInfo = _me->GetBasicInfo();
+				innerType = basicInfo["Type"];
 				signers.push_back(_me->GetPublicKey());
-			j["Readonly"] = _me == nullptr;
+			} else {
+				innerType = "Readonly";
+			}
+			j["InnerType"] = innerType;
+
 			details["Signers"] = signers;
 			details["RequiredSignCount"] = _requiredSignCount;
 			j["Details"] = details;
