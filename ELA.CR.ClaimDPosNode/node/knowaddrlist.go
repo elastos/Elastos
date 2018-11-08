@@ -25,7 +25,6 @@ const (
 type KnownAddress struct {
 	srcAddr        *p2p.NetAddress
 	lastattempt    time.Time
-	lastDisconnect time.Time
 	attempts       int
 }
 
@@ -46,11 +45,6 @@ func (ka *KnownAddress) increaseAttempts() {
 func (ka *KnownAddress) updateLastAttempt() {
 	// set last tried time to now
 	ka.lastattempt = time.Now()
-}
-
-func (ka *KnownAddress) updateLastDisconnect() {
-	// set last disconnect time to now
-	ka.lastDisconnect = time.Now()
 }
 
 // chance returns the selection probability for a known address.  The priority
