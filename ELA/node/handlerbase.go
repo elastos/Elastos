@@ -189,6 +189,7 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 
 	for i, addr := range addrs {
 		if h.node.NetAddress().String() == addr.String() {
+			// do not send client's address to the client itself
 			addrs = append(addrs[:i], addrs[i+1:]...)
 		}
 	}
@@ -199,6 +200,10 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 }
 
 func (h *HandlerBase) onAddr(msgAddr *msg.Addr) {
+	if h.node.IsExternal() {
+		// we don't accept address list from a external node/spv...etc.
+		return
+	}
 	for _, addr := range msgAddr.AddrList {
 		if addr.Port == 0 {
 			continue

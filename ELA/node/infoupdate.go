@@ -187,7 +187,7 @@ func (node *node) ConnectNodes() {
 
 func (node *node) NetAddress() *p2p.NetAddress {
 	return &p2p.NetAddress{
-		IP:        node.IP(),
+		IP:        node.IP().To4(),
 		Timestamp: time.Now(),
 		Services:  node.Services(),
 		Port:      node.Port(),
