@@ -222,7 +222,7 @@ namespace Elastos {
 			info.setChainId(chainID);
 			info.setFeePerKb(feePerKb);
 
-			SubWallet *subWallet = SubWalletFactoryMethod(info, ChainParams(coinConfig), PluginTypes(coinConfig), this);
+			SubWallet *subWallet = SubWalletFactoryMethod(info, coinConfig, ChainParams(coinConfig), PluginTypes(coinConfig), this);
 			_createdWallets[chainID] = subWallet;
 			startPeerManager(subWallet);
 			Save();
@@ -255,7 +255,7 @@ namespace Elastos {
 
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
 				_createdWallets[coinInfoList[i].getChainId()] =
-						SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig), PluginTypes(coinConfig), this);
+						SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig), PluginTypes(coinConfig), this);
 			}
 		}
 
@@ -347,7 +347,7 @@ namespace Elastos {
 		void MasterWallet::initSubWallets(const std::vector<CoinInfo> &coinInfoList) {
 			for (int i = 0; i < coinInfoList.size(); ++i) {
 				CoinConfig coinConfig = _coinConfigReader.FindConfig(coinInfoList[i].getChainId());
-				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], ChainParams(coinConfig),
+				ISubWallet *subWallet = SubWalletFactoryMethod(coinInfoList[i], coinConfig, ChainParams(coinConfig),
 															   PluginTypes(coinConfig), this);
 				SubWallet *subWalletImpl = dynamic_cast<SubWallet *>(subWallet);
 				ParamChecker::checkCondition(subWalletImpl == nullptr, Error::CreateSubWalletError,
@@ -382,7 +382,7 @@ namespace Elastos {
 			return Address::isValidIdAddress(id);
 		}
 
-		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const ChainParams &chainParams,
+		SubWallet *MasterWallet::SubWalletFactoryMethod(const CoinInfo &info, const CoinConfig &config, const ChainParams &chainParams,
 														const PluginTypes &pluginTypes, MasterWallet *parent) {
 
 			CoinInfo fixedInfo = info;
@@ -408,6 +408,7 @@ namespace Elastos {
 			Log::getLogger()->info("Master wallet init from {}, ealiest peer time = {}", _initFrom,
 								   fixedInfo.getEarliestPeerTime());
 
+			fixedInfo.setGenesisAddress(config.GenesisAddress);
 			MasterPubKeyMap subWalletsMasterPubKeyMap = _localStore.GetMasterPubKeyMap();
 			const MasterPubKeyPtr masterPubKey =
 				subWalletsMasterPubKeyMap.find(fixedInfo.getChainId()) != subWalletsMasterPubKeyMap.end()

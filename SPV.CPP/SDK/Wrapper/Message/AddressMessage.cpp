@@ -49,15 +49,15 @@ namespace Elastos {
 					off += sizeof(UInt128);
 					p.port = UInt16GetLE(&msg[off]);
 					off += sizeof(uint16_t);
-					uint64_t id = UInt64GetLE(&msg[off]);
-					off += sizeof(uint64_t);
 
 					char host[INET6_ADDRSTRLEN] = {0};
 					if ((p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))
 						inet_ntop(AF_INET, &p.address.u32[3], host, sizeof(host));
 					else
 						inet_ntop(AF_INET6, &p.address, host, sizeof(host));
-					peer_log(peer, "peers[%zu] = %s", i, host);
+
+					peer_dbg(peer, "peers[%zu] = %s, timestamp = %zu, port = %d, services = %zu",
+							 i, host, p.timestamp, p.port, p.services);
 
 					if (! (p.services & SERVICES_NODE_NETWORK)) continue; // skip peers that don't carry full blocks
 					if (! (p.address.u64[0] == 0 && p.address.u16[4] == 0 && p.address.u16[5] == 0xffff))

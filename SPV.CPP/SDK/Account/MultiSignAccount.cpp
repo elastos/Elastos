@@ -201,7 +201,7 @@ namespace Elastos {
 				return false;
 
 			if (!IsReadOnly() && !account.IsReadOnly()) {
-				return account.GetPublicKey() == account.GetPublicKey();
+				return account.GetPublicKey() == GetPublicKey();
 			}
 
 			return account.GetAddress() == GetAddress();
