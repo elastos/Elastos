@@ -1,6 +1,7 @@
 package node
 
 import (
+	"github.com/elastos/Elastos.ELA/log"
 	"sync"
 	"time"
 
@@ -134,6 +135,15 @@ func (al *KnownAddressList) UpdateAddress(na *p2p.NetAddress) {
 }
 
 func (al *KnownAddressList) AddKnownAddress(na *p2p.NetAddress) {
+	if na.IP == nil {
+		log.Error("net address ip is nil, return.")
+		return
+	} else if na.IP.To4() == nil {
+		log.Error("net address ip to4 is nil, return. IP:", na.IP)
+		return
+	} else {
+		log.Info("net address ip to4 successfully. Address:", na.IP.String())
+	}
 	al.Lock()
 	defer al.Unlock()
 
