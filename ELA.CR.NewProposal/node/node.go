@@ -68,12 +68,10 @@ type node struct {
 	 */
 	syncFlag           uint8
 	flagLock           sync.RWMutex
-	cachelock          sync.RWMutex
 	requestedBlockLock sync.RWMutex
 	ConnectingNodes
 	KnownAddressList
 	DefaultMaxPeers    uint
-	headerFirstMode    bool
 	RequestedBlockList map[Uint256]time.Time
 	syncTimer          *syncTimer
 	SyncBlkReqSem      Semaphore
@@ -129,7 +127,7 @@ func NewNode(conn net.Conn, inbound bool) *node {
 	}
 
 	n.handler = NewHandlerBase(&n)
-	n.start()
+	n.start(inbound)
 
 	return &n
 }

@@ -59,10 +59,12 @@ func (node *node) initConnection() {
 	}
 }
 
-func (node *node) start() {
+func (node *node) start(inbound bool) {
 	go node.inHandler()
 	go node.outHandler()
-	go node.pingHandler()
+	if !inbound {
+		go node.pingHandler()
+	}
 }
 
 func listenNodePort() {
