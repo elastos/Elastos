@@ -2,7 +2,6 @@ package node
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	chain "github.com/elastos/Elastos.ELA/blockchain"
@@ -96,13 +95,13 @@ func (h *HandlerBase) onVersion(version *msg.Version) {
 		return
 	}
 
-	// Obsolete node
-	n, ret := LocalNode.DelNeighborNode(version.Nonce)
-	if ret == true {
-		log.Info(fmt.Sprintf("Node %s reconnect", n))
-		// Close the connection and release the node soure
-		n.Disconnect()
-	}
+	//// Obsolete node
+	//n, ret := LocalNode.DelNeighborNode(version.Nonce)
+	//if ret == true {
+	//	log.Info(fmt.Sprintf("Node %s reconnect", n))
+	//	// Close the connection and release the node soure
+	//	n.Disconnect()
+	//}
 
 	node.UpdateInfo(time.Unix(int64(version.TimeStamp), 0), version.Version,
 		version.Services, version.Port, version.Nonce, version.Relay, version.Height)
