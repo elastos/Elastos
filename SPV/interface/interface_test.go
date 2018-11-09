@@ -2,6 +2,7 @@ package _interface
 
 import (
 	"fmt"
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 	"math/rand"
 	"os"
 	"testing"
@@ -50,7 +51,6 @@ func (l *TxListener) Notify(id common.Uint256, proof bloom.MerkleProof, tx core.
 	if !assert.NoError(l.t, err) {
 		l.t.FailNow()
 	}
-
 
 	txIds, err := l.service.GetTransactionIds(proof.Height)
 	if !assert.NotNil(l.t, tx) {
@@ -125,6 +125,8 @@ func TestGetListenerKey(t *testing.T) {
 }
 
 func TestNewSPVService(t *testing.T) {
+	interrupt := signal.NewInterrupt()
+
 	backend := elalog.NewBackend(os.Stdout, elalog.Lshortfile)
 	admrlog := backend.Logger("ADMR", elalog.LevelOff)
 	cmgrlog := backend.Logger("CMGR", elalog.LevelOff)
@@ -198,6 +200,9 @@ func TestNewSPVService(t *testing.T) {
 out:
 	for {
 		select {
+		case <-interrupt.C:
+			break out
+
 		case <-syncTicker.C:
 
 			best, err := service.headers.GetBest()
@@ -230,11 +235,12 @@ out:
 					t.Errorf("service clear data error %s", err)
 				}
 
-				service.Stop()
 				t.Log("successful synchronized to current")
 
 				break out
 			}
 		}
 	}
+
+	service.Stop()
 }
