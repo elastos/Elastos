@@ -187,6 +187,11 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 		addrs = LocalNode.RandSelectAddresses()
 	}
 
+	for i, addr := range addrs {
+		if h.node.NetAddress().String() == addr.String() {
+			addrs = append(addrs[:i], addrs[i+1:]...)
+		}
+	}
 
 	if len(addrs) > 0 {
 		h.node.SendMessage(msg.NewAddr(addrs))
