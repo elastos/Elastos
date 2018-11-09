@@ -24,6 +24,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/http/jsonrpc"
 	"github.com/elastos/Elastos.ELA.Utility/http/restful"
 	"github.com/elastos/Elastos.ELA.Utility/http/util"
+	"github.com/elastos/Elastos.ELA.Utility/signal"
 )
 
 const (
@@ -55,6 +56,9 @@ func main() {
 		eladlog.Info("Please set correct foundation address in config file")
 		os.Exit(-1)
 	}
+
+	// Listen interrupt signals
+	interrupt := signal.NewInterrupt()
 
 	eladlog.Info("1. BlockChain init")
 	genesisBlock, err := blockchain.GenesisBlock()
@@ -106,6 +110,7 @@ func main() {
 		eladlog.Fatalf("SPV module initialize failed, %s", err)
 		os.Exit(1)
 	}
+	defer spvService.Stop()
 	spvService.Start()
 	mempoolCfg.SpvService = spvService
 
@@ -128,6 +133,7 @@ func main() {
 		eladlog.Fatalf("initialize P2P networks failed, %s", err)
 		os.Exit(1)
 	}
+	defer server.Stop()
 	server.Start()
 
 	eladlog.Info("4. --Initialize pow service")
@@ -167,8 +173,8 @@ func main() {
 		GetPayloadInfo:              service.GetPayloadInfo,
 		GetPayload:                  service.GetPayload,
 	})
-	startHttpJsonRpc(params.HttpJsonPort, service)
-	startHttpRESTful(params.HttpRestPort, params.RestCertPath,
+	go startHttpJsonRpc(params.HttpJsonPort, service)
+	go startHttpRESTful(params.HttpRestPort, params.RestCertPath,
 		params.RestKeyPath, service)
 
 	if params.HttpInfoStart {
@@ -185,7 +191,8 @@ func main() {
 	if params.PrintSyncState {
 		go printSyncState(chainStore, server)
 	}
-	select {}
+
+	<-interrupt.C
 }
 
 func startHttpJsonRpc(port uint16, service *service.HttpService) {
@@ -216,11 +223,10 @@ func startHttpJsonRpc(port uint16, service *service.HttpService) {
 	s.RegisterAction("discretemining", service.DiscreteMining, "count")
 	s.RegisterAction("getassetlist", service.GetAssetList)
 
-	go func() {
-		if err := s.Start(); err != nil {
-			eladlog.Errorf("Start HttpJsonRpc service failed, %s", err.Error())
-		}
-	}()
+	defer s.Stop()
+	if err := s.Start(); err != nil {
+		eladlog.Errorf("Start HttpJsonRpc service failed, %s", err.Error())
+	}
 }
 
 func startHttpRESTful(port uint16, certFile, keyFile string, service *service.HttpService) {
@@ -324,11 +330,10 @@ func startHttpRESTful(port uint16, certFile, keyFile string, service *service.Ht
 
 	s.RegisterPostAction(ApiSendRawTransaction, sendRawTransaction)
 
-	go func() {
-		if err := s.Start(); err != nil {
-			restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
-		}
-	}()
+	defer s.Stop()
+	if err := s.Start(); err != nil {
+		restlog.Errorf("Start HttpRESTful server failed, %s", err.Error())
+	}
 }
 
 func printSyncState(db *blockchain.ChainStore, server server.Server) {
