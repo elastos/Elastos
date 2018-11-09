@@ -45,7 +45,7 @@ namespace Elastos {
 			std::vector<uint64_t> amounts = mainchainAmounts.get<std::vector<uint64_t>>();
 			std::vector<uint64_t> indexs = mainchainIndexs.get<std::vector<uint64_t>>();
 
-			ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() == indexs.size(),
+			ParamChecker::checkCondition(accounts.size() != amounts.size() || accounts.size() != indexs.size(),
 										 Error::WithdrawParam, "Invalid withdraw parameters of main chain");
 
 			WithdrawTxParam *withdrawTxParam = dynamic_cast<WithdrawTxParam *>(txParam.get());

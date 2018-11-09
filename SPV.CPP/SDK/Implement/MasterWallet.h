@@ -215,6 +215,7 @@ namespace Elastos {
 			void restoreLocalStore();
 
 			SubWallet *SubWalletFactoryMethod(const CoinInfo &info,
+											  const CoinConfig &config,
 											  const ChainParams &chainParams,
 											  const PluginTypes &pluginTypes,
 											  MasterWallet *parent);

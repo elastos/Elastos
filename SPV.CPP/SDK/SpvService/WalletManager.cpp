@@ -272,7 +272,11 @@ namespace Elastos {
 			delete &peers;
 
 			if (willReconnect) {
+				pthread_mutex_lock(&getPeerManager()->getRaw()->lock);
+				getPeerManager()->getRaw()->reconnectTaskCount++;
+				pthread_mutex_unlock(&getPeerManager()->getRaw()->lock);
 				getPeerManager()->disconnect();
+				startReconnect(2);
 			}
 		}
 
