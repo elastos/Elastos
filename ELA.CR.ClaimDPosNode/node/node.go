@@ -112,10 +112,8 @@ func NewNode(conn net.Conn, inbound bool) *node {
 		conn.LocalAddr(), conn.RemoteAddr(), conn.RemoteAddr().Network())
 
 	addr := conn.RemoteAddr().String()
-	ip := addr
-	if i := strings.LastIndex(addr, ":"); i > 0 {
-		ip = addr[:i-1]
-	}
+	ipPort := strings.Split(addr, ":")
+	ip := ipPort[0]
 	n := node{
 		link: link{
 			magic:     Parameters.Magic,
