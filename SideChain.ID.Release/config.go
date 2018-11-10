@@ -32,35 +32,35 @@ var (
 
 type config struct {
 	// Network settings.
-	ActiveNet   string
-	Magic       uint32
-	DefaultPort uint16
-	SeedList    []string
+	ActiveNet   string   `json:"ActiveNet"`
+	Magic       uint32   `json:"Magic"`
+	DefaultPort uint16   `json:"DefaultPort"`
+	SeedList    []string `json:"SeedList"`
 
 	// SPV config
-	SpvConfig *spvconfig `json:"omitempty"`
+	SpvConfig *spvconfig `json:"SpvConfig,omitempty"`
 
 	// Chain parameters.
-	Foundation         string
-	MinTxFee           int64
-	ExchangeRate       float64
-	DisableTxFilters   bool
-	MinCrossChainTxFee int
+	Foundation         string  `json:"Foundation"`
+	MinTxFee           int64   `json:"MinTxFee"`
+	ExchangeRate       float64 `json:"ExchangeRate"`
+	DisableTxFilters   bool    `json:"DisableTxFilters"`
+	MinCrossChainTxFee int     `json:"MinCrossChainTxFee"`
 
 	// Mining parameters.
-	Mining    bool
-	MinerInfo string
-	MinerAddr string
+	Mining    bool   `json:"Mining"`
+	MinerInfo string `json:"MinerInfo"`
+	MinerAddr string `json:"MinerAddr"`
 
 	// System settings.
-	LogLevel          elalog.Level
-	MaxLogsFolderSize int64
-	MaxPerLogFileSize int64
-	HttpInfoStart     bool
-	HttpInfoPort      uint16
-	HttpRestPort      uint16
-	HttpJsonPort      uint16
-	PrintSyncState    bool
+	LogLevel          elalog.Level `json:"LogLevel"`
+	MaxLogsFolderSize int64        `json:"MaxLogsFolderSize"`
+	MaxPerLogFileSize int64        `json:"MaxPerLogFileSize"`
+	HttpInfoStart     bool         `json:"HttpInfoStart"`
+	HttpInfoPort      uint16       `json:"HttpInfoPort"`
+	HttpRestPort      uint16       `json:"HttpRestPort"`
+	HttpJsonPort      uint16       `json:"HttpJsonPort"`
+	PrintSyncState    bool         `json:"PrintSyncState"`
 
 	dataDir string
 }
