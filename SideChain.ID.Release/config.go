@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"io/ioutil"
 	"os"
 	"strings"
 
 	"github.com/elastos/Elastos.ELA.SideChain.ID/params"
 
+	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
 )
 
