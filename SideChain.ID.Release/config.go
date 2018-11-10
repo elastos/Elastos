@@ -162,6 +162,9 @@ func loadConfig() (*config, error) {
 	if len(cfg.SpvConfig.SeedList) > 0 {
 		activeNetParams.SpvParams.SeedList = cfg.SpvConfig.SeedList
 	}
+	if len(cfg.SpvConfig.Foundation) > 0 {
+		activeNetParams.SpvParams.Foundation = cfg.SpvConfig.Foundation
+	}
 
 	return &cfg, nil
 }
