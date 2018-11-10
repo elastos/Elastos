@@ -208,7 +208,6 @@ func (h *HandlerBase) onAddr(msgAddr *msg.Addr) {
 		if addr.Port == 0 {
 			continue
 		}
-
 		//save the node address in address list
 		LocalNode.AddKnownAddress(addr)
 	}
