@@ -31,11 +31,6 @@ const (
 	auxBlockGenerateInterval = 5
 )
 
-type messageBlock struct {
-	BlockData map[string]*types.Block
-	Mutex     sync.Mutex
-}
-
 type Config struct {
 	ChainParams *config.Params
 	MinerAddr   string
@@ -51,14 +46,14 @@ type Config struct {
 }
 
 type Service struct {
+	mutex        sync.Mutex
 	cfg          Config
-	msgBlock     messageBlock
-	Mutex        sync.Mutex
 	started      bool
 	manualMining bool
 
-	// This params are protected by prelock
-	preLock        sync.Mutex
+	// This params are protected by blockMtx
+	blockMtx       sync.Mutex
+	msgBlocks      map[string]*types.Block
 	preChainHeight uint32
 	preTime        int64
 	preTxCount     int
@@ -72,7 +67,7 @@ func NewService(cfg *Config) *Service {
 		cfg:          *cfg,
 		started:      false,
 		manualMining: false,
-		msgBlock:     messageBlock{BlockData: make(map[string]*types.Block)},
+		msgBlocks:    make(map[string]*types.Block),
 	}
 
 	return &pow
@@ -105,16 +100,16 @@ func (s ByFeeDesc) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s ByFeeDesc) Less(i, j int) bool { return s[i].FeePerKB > s[j].FeePerKB }
 
 func (s *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
-	s.Mutex.Lock()
+	s.mutex.Lock()
 
 	if s.started || s.manualMining {
-		s.Mutex.Unlock()
+		s.mutex.Unlock()
 		return nil, errors.New("Server is already CPU mining.")
 	}
 
 	s.started = true
 	s.manualMining = true
-	s.Mutex.Unlock()
+	s.mutex.Unlock()
 
 	log.Infof("Pow generating %d blocks", n)
 	i := uint32(0)
@@ -146,10 +141,10 @@ func (s *Service) DiscreteMining(n uint32) ([]*common.Uint256, error) {
 				blockHashes[i] = &h
 				i++
 				if i == n {
-					s.Mutex.Lock()
+					s.mutex.Lock()
 					s.started = false
 					s.manualMining = false
-					s.Mutex.Unlock()
+					s.mutex.Unlock()
 					return blockHashes, nil
 				}
 			}
@@ -164,11 +159,15 @@ func (s *Service) GenerateAuxBlock(addr string) (*types.Block, string, bool) {
 		s.cfg.MinerAddr = addr
 	}
 
+	s.blockMtx.Lock()
+	defer s.blockMtx.Unlock()
+
 	msgBlock := &types.Block{}
-	if s.cfg.Chain.GetBestHeight() == 0 || s.preChainHeight != s.cfg.Chain.GetBestHeight() ||
+	bestHeight := s.cfg.Chain.GetBestHeight()
+	if s.cfg.Chain.GetBestHeight() == 0 || s.preChainHeight != bestHeight ||
 		time.Now().Unix()-s.preTime > auxBlockGenerateInterval {
-		if s.preChainHeight != s.cfg.Chain.GetBestHeight() {
-			s.preChainHeight = s.cfg.Chain.GetBestHeight()
+		if s.preChainHeight != bestHeight {
+			s.preChainHeight = bestHeight
 			s.preTime = time.Now().Unix()
 			s.preTxCount = s.GetTransactionCount()
 		}
@@ -186,11 +185,8 @@ func (s *Service) GenerateAuxBlock(addr string) (*types.Block, string, bool) {
 		curHash := msgBlock.Hash()
 		curHashStr := common.BytesToHexString(curHash.Bytes())
 
-		s.msgBlock.Mutex.Lock()
-		s.msgBlock.BlockData[curHashStr] = msgBlock
-		s.msgBlock.Mutex.Unlock()
-
-		s.preChainHeight = s.cfg.Chain.GetBestHeight()
+		s.msgBlocks[curHashStr] = msgBlock
+		s.preChainHeight = bestHeight
 		s.preTime = time.Now().Unix()
 		s.preTxCount = currentTxsCount // Don't Call GetTransactionCount()
 
@@ -200,18 +196,21 @@ func (s *Service) GenerateAuxBlock(addr string) (*types.Block, string, bool) {
 }
 
 func (s *Service) SubmitAuxBlock(blockHash string, sideAuxData []byte) error {
-	if _, ok := s.msgBlock.BlockData[blockHash]; !ok {
+	s.blockMtx.Lock()
+	defer s.blockMtx.Unlock()
+
+	msgBlock, ok := s.msgBlocks[blockHash]
+	if !ok {
 		return fmt.Errorf("receive invalid block hash %s", blockHash)
 	}
 
-	err := s.msgBlock.BlockData[blockHash].Header.SideAuxPow.
-		Deserialize(bytes.NewReader(sideAuxData))
+	err := msgBlock.Header.SideAuxPow.Deserialize(bytes.NewReader(sideAuxData))
 	if err != nil {
 		log.Warn(err)
 		return fmt.Errorf("deserialize side aux pow failed")
 	}
 
-	inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(s.msgBlock.BlockData[blockHash])
+	inMainChain, isOrphan, err := s.cfg.Chain.AddBlock(msgBlock)
 	if err != nil {
 		return err
 	}
@@ -219,11 +218,9 @@ func (s *Service) SubmitAuxBlock(blockHash string, sideAuxData []byte) error {
 	if isOrphan || !inMainChain {
 		return fmt.Errorf("aux block can not be accepted")
 	}
-	s.BroadcastBlock(s.msgBlock.BlockData[blockHash])
+	s.BroadcastBlock(msgBlock)
 
-	s.msgBlock.Mutex.Lock()
-	s.msgBlock.BlockData = make(map[string]*types.Block)
-	s.msgBlock.Mutex.Unlock()
+	s.msgBlocks = make(map[string]*types.Block)
 
 	return nil
 }
@@ -266,8 +263,8 @@ func (s *Service) BroadcastBlock(block *types.Block) {
 }
 
 func (s *Service) Start() {
-	s.Mutex.Lock()
-	defer s.Mutex.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	if s.started || s.manualMining {
 		log.Warn("CpuMining is already started")
 	}
@@ -281,8 +278,8 @@ func (s *Service) Start() {
 
 func (s *Service) Halt() {
 	log.Info("POW Stop")
-	s.Mutex.Lock()
-	defer s.Mutex.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 
 	if !s.started || s.manualMining {
 		return
