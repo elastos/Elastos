@@ -4,7 +4,6 @@ import (
 	"errors"
 	"math/rand"
 	"net"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -112,8 +111,10 @@ func NewNode(conn net.Conn, inbound bool) *node {
 		conn.LocalAddr(), conn.RemoteAddr(), conn.RemoteAddr().Network())
 
 	addr := conn.RemoteAddr().String()
-	ipPort := strings.Split(addr, ":")
-	ip := ipPort[0]
+	ip, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		log.Error("node init err:", err)
+	}
 	n := node{
 		link: link{
 			magic:     Parameters.Magic,
