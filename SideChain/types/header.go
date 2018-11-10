@@ -63,8 +63,8 @@ func (header *Header) Deserialize(r io.Reader) error {
 func (header *Header) serializeNoAux(w io.Writer) error {
 	return WriteElements(w,
 		header.Version,
-		header.Previous,
-		header.MerkleRoot,
+		&header.Previous,
+		&header.MerkleRoot,
 		header.Timestamp,
 		header.Bits,
 		header.Nonce,
