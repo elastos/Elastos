@@ -22,8 +22,7 @@ import (
 const (
 	// defaultServices describes the default services that are supported by
 	// the server.
-	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom |
-		pact.SFOpenService
+	defaultServices = pact.SFNodeNetwork | pact.SFNodeBloom
 )
 
 // relayMsg packages an inventory vector along with the newly discovered
