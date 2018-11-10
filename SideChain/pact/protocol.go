@@ -7,9 +7,6 @@ import (
 
 // Release version numbers
 const (
-	// The Release_0.0.1 version number of side chain
-	Release001Version = 1
-
 	// EBIP002Version is the protocol version which start support
 	// transaction filtering through txfilter message.
 	EBIP002Version uint32 = 10002
@@ -26,9 +23,6 @@ const (
 	// filtering.
 	SFNodeBloom
 
-	// SFOpenService is a flag used to indicate a peer provide open service.
-	SFOpenService
-
 	// SFTxFiltering is a flag used to indicate a peer supports transaction
 	// filtering.
 	SFTxFiltering
@@ -38,7 +32,6 @@ const (
 var sfStrings = map[ServiceFlag]string{
 	SFNodeNetwork: "SFNodeNetwork",
 	SFNodeBloom:   "SFNodeBloom",
-	SFOpenService: "SFOpenService",
 	SFTxFiltering: "SFTxFiltering",
 }
 
@@ -47,7 +40,6 @@ var sfStrings = map[ServiceFlag]string{
 var orderedSFStrings = []ServiceFlag{
 	SFNodeNetwork,
 	SFNodeBloom,
-	SFOpenService,
 	SFTxFiltering,
 }
 
