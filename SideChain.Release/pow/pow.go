@@ -342,7 +342,7 @@ func CreateCoinBaseTx(cfg *Config, nextBlockHeight uint32, addr string) (*types.
 		CoinbaseData: []byte(cfg.MinerInfo),
 	}
 
-	txn := blockchain.NewCoinBaseTransaction(pd, cfg.Chain.GetBestHeight()+1)
+	txn := NewCoinBaseTransaction(pd, cfg.Chain.GetBestHeight()+1)
 	txn.Inputs = []*types.Input{
 		{
 			Previous: types.OutPoint{
@@ -371,6 +371,26 @@ func CreateCoinBaseTx(cfg *Config, nextBlockHeight uint32, addr string) (*types.
 	txn.Attributes = append(txn.Attributes, &txAttr)
 
 	return txn, nil
+}
+
+func NewCoinBaseTransaction(coinBasePayload *types.PayloadCoinBase, currentHeight uint32) *types.Transaction {
+	return &types.Transaction{
+		TxType:         types.CoinBase,
+		PayloadVersion: types.PayloadCoinBaseVersion,
+		Payload:        coinBasePayload,
+		Inputs: []*types.Input{
+			{
+				Previous: types.OutPoint{
+					TxID:  common.EmptyHash,
+					Index: 0x0000,
+				},
+				Sequence: 0x00000000,
+			},
+		},
+		Attributes: []*types.Attribute{},
+		LockTime:   currentHeight,
+		Programs:   []*types.Program{},
+	}
 }
 
 func GenerateBlock(cfg *Config) (*types.Block, error) {
