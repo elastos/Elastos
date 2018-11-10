@@ -20,6 +20,9 @@ const (
 )
 
 type Config struct {
+	// DataDir is the data path to store db files peer addresses etc.
+	DataDir string
+
 	// The magic number that specify which network to connect.
 	Magic uint32
 
@@ -47,6 +50,7 @@ type Service struct {
 
 func NewService(cfg *Config) (*Service, error) {
 	spvCfg := spv.Config{
+		DataDir:        cfg.DataDir,
 		Magic:          cfg.Magic,
 		Foundation:     cfg.Foundation,
 		SeedList:       cfg.SeedList,
