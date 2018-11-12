@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"github.com/elastos/Elastos.ELA/core"
 	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
-	. "github.com/elastos/Elastos.ELA/dpos/chain"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
@@ -56,7 +56,7 @@ func (h *DposNormalHandler) ChangeView(firstBlockHash *common.Uint256) {
 	})
 }
 
-func (h *DposNormalHandler) TryStartNewConsensus(peer *peer.Peer, b *Block) bool {
+func (h *DposNormalHandler) TryStartNewConsensus(peer *peer.Peer, b *core.Block) bool {
 	result := false
 
 	h.consensus.RunWithAllStatusConditions(

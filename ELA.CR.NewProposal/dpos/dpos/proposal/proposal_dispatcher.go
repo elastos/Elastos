@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core"
 	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	"github.com/elastos/Elastos.ELA/dpos/chain"
@@ -16,7 +17,7 @@ import (
 )
 
 type ProposalDispatcher struct {
-	processingBlock  *chain.Block
+	processingBlock  *core.Block
 	currentVoteSlot  *chain.ProposalVoteSlot
 	acceptVotes      []common2.DPosProposalVote
 	rejectedVotes    []common2.DPosProposalVote
@@ -46,7 +47,7 @@ func (p *ProposalDispatcher) RequestAbnormalRecovering() {
 	peer.SendMessage(msg, nil)
 }
 
-func (p *ProposalDispatcher) GetProcessingBlock() *chain.Block {
+func (p *ProposalDispatcher) GetProcessingBlock() *core.Block {
 	return p.processingBlock
 }
 
@@ -62,15 +63,15 @@ func (p *ProposalDispatcher) IsVoteSlotEmpty() bool {
 	return p.currentVoteSlot == nil || len(p.currentVoteSlot.Votes) == 0
 }
 
-func (p *ProposalDispatcher) StartProposal(b *chain.Block) {
+func (p *ProposalDispatcher) StartProposal(b *core.Block) {
 	if p.processingBlock != nil {
 		log.Info("[StartProposal] start proposal failed")
 		return
 	}
 	p.processingBlock = b
-	p.currentVoteSlot = &chain.ProposalVoteSlot{Hash: b.Hash, Votes: make([]common2.DPosProposalVote, 0)}
+	p.currentVoteSlot = &chain.ProposalVoteSlot{Hash: b.Hash(), Votes: make([]common2.DPosProposalVote, 0)}
 
-	proposal := common2.DPosProposal{Sponsor: ArbitratorSingleton.Name, BlockHash: b.Hash}
+	proposal := common2.DPosProposal{Sponsor: ArbitratorSingleton.Name, BlockHash: b.Hash()}
 	proposal.Sign = proposal.SignProposal()
 
 	log.Debug("[StartProposal] sponsor:", ArbitratorSingleton.Name)
@@ -100,17 +101,17 @@ func (p *ProposalDispatcher) StartProposal(b *chain.Block) {
 	p.acceptProposal(proposal)
 }
 
-func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *chain.Block) {
+func (p *ProposalDispatcher) TryStartSpeculatingProposal(b *core.Block) {
 
 	if p.processingBlock != nil {
 		return
 	}
 	p.processingBlock = b
-	p.currentVoteSlot = &chain.ProposalVoteSlot{Hash: b.Hash, Votes: make([]common2.DPosProposalVote, 0)}
+	p.currentVoteSlot = &chain.ProposalVoteSlot{Hash: b.Hash(), Votes: make([]common2.DPosProposalVote, 0)}
 }
 
 func (p *ProposalDispatcher) FinishProposal() {
-	proposal, blockHash := p.acceptVotes[0].Proposal.Sponsor, p.processingBlock.Hash
+	proposal, blockHash := p.acceptVotes[0].Proposal.Sponsor, p.processingBlock.Hash()
 
 	log.Info("[p.consensus.IsOnDuty()]", p.consensus.IsOnDuty())
 	log.Info("[FinishProposal] try append and broad cast confirm block msg")
@@ -165,7 +166,7 @@ func (p *ProposalDispatcher) ProcessProposal(d common2.DPosProposal) {
 		return
 	}
 
-	if !d.BlockHash.IsEqual(p.processingBlock.Hash) {
+	if !d.BlockHash.IsEqual(p.processingBlock.Hash()) {
 		log.Info("[ProcessProposal] Invalid block hash")
 		return
 	}
@@ -199,11 +200,11 @@ func (p *ProposalDispatcher) TryAppendAndBroadcastConfirmBlockMsg() bool {
 	return false
 }
 
-func (p *ProposalDispatcher) OnBlockAdded(b *chain.Block) {
+func (p *ProposalDispatcher) OnBlockAdded(b *core.Block) {
 
 	if p.consensus.IsRunning() {
 		for i, v := range p.pendingProposals {
-			if v.BlockHash.IsEqual(b.Hash) {
+			if v.BlockHash.IsEqual(b.Hash()) {
 				p.ProcessProposal(v)
 				p.pendingProposals = append(p.pendingProposals[0:i], p.pendingProposals[i+1:]...)
 				break

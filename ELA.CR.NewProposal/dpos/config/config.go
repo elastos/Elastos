@@ -22,8 +22,6 @@ type Configuration struct {
 	Name          string `json:"Name"`
 	SignTolerance uint64 `json:"SignTolerance"`
 	SleepDuration uint64 `json:"SleepDuration"`
-	IsProducer    bool   `json:"IsProducer"`
-	IsArbitrator  bool   `json:"IsArbitrator"`
 
 	Magic    uint32   `json:"Magic"`
 	Version  int      `json:"Version"`

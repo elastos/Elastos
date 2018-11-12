@@ -50,7 +50,7 @@ type MessageItem struct {
 }
 
 type P2PListener interface {
-	OnBlockReceived(peer *peer.Peer, b *chain.Block)
+	OnBlockReceived(peer *peer.Peer, b *core.Block)
 	OnConfirmReceived(peer *peer.Peer, p *chain.ProposalVoteSlot)
 }
 
@@ -149,10 +149,15 @@ func (adapter *p2pClientAdapter) ProcessMessage(msgItem MessageItem) {
 	}
 
 	switch msgItem.Message.CMD() {
-	case ReceivedBlock:
-		blockMsg, ok := msgItem.Message.(*BlockMessage)
+	case p2p.CmdBlock:
+		msgBlock, ok := msgItem.Message.(*msg.Block)
 		if ok {
-			adapter.Listener.OnBlockReceived(msgItem.Peer, &blockMsg.Block)
+			block, ok := msgBlock.Serializable.(*core.Block)
+			if !ok {
+				log.Info("[ProcessMessage] received invalid block")
+				return
+			}
+			adapter.Listener.OnBlockReceived(msgItem.Peer, block)
 		}
 		adapter.Broadcast(msgItem.Message)
 	case ReceivedConfirm:
@@ -313,8 +318,8 @@ func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 		message = msg.NewMerkleBlock(new(core.Header))
 	case p2p.CmdReject:
 		message = new(msg.Reject)
-	case ReceivedBlock:
-		message = &BlockMessage{Command: ReceivedBlock}
+	case p2p.CmdBlock:
+		message = msg.NewBlock(&core.Block{})
 	case ReceivedConfirm:
 		message = &ConfirmMessage{Command: ReceivedConfirm}
 	case AcceptVote:

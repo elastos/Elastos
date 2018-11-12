@@ -1,14 +1,16 @@
 package cs
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
-	"github.com/elastos/Elastos.ELA/dpos/chain"
 	"io"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/chain"
 )
 
 type ResponseBlocksMessage struct {
 	Command       string
-	Blocks        []*chain.Block
+	Blocks        []*core.Block
 	BlockConfirms []*chain.ProposalVoteSlot
 }
 
@@ -51,9 +53,9 @@ func (msg *ResponseBlocksMessage) Deserialize(r io.Reader) error {
 		return err
 	}
 
-	msg.Blocks = make([]*chain.Block, 0)
+	msg.Blocks = make([]*core.Block, 0)
 	for i := uint64(0); i < blockCount; i++ {
-		block := &chain.Block{}
+		block := &core.Block{}
 		if err = block.Deserialize(r); err != nil {
 			return err
 		}
