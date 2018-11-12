@@ -7,6 +7,7 @@ import (
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA/blockchain"
 	"github.com/elastos/Elastos.ELA/config"
+	"github.com/elastos/Elastos.ELA/dpos"
 	"github.com/elastos/Elastos.ELA/log"
 	"github.com/elastos/Elastos.ELA/node"
 	"github.com/elastos/Elastos.ELA/pow"
@@ -81,7 +82,7 @@ func main() {
 
 	servers.ServerNode = noder
 
-	log.Info("3. --Start the RPC service")
+	log.Info("3. Start the RPC service")
 	go httpjsonrpc.StartRPCServer()
 
 	noder.WaitForSyncFinish()
@@ -90,7 +91,15 @@ func main() {
 	if config.Parameters.HttpInfoStart {
 		go httpnodeinfo.StartServer()
 	}
+
+	log.Info("4. Start consensus")
 	startConsensus()
+
+	if config.Parameters.EnableArbiter {
+		log.Info("5. Start the dpos")
+		dpos.Start()
+	}
+
 	select {}
 ERROR:
 	log.Error(err)
