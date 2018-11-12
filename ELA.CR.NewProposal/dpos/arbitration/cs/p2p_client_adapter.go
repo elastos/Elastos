@@ -6,17 +6,16 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/elastos/Elastos.ELA/dpos/chain"
-	"github.com/elastos/Elastos.ELA/dpos/config"
-	"github.com/elastos/Elastos.ELA/dpos/log"
-
-	"github.com/elastos/Elastos.ELA.SPV/sdk"
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/server"
 	"github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/chain"
+	"github.com/elastos/Elastos.ELA/dpos/config"
+	"github.com/elastos/Elastos.ELA/dpos/log"
+	"github.com/elastos/Elastos.ELA/protocol"
 )
 
 var (
@@ -347,8 +346,8 @@ func makeEmptyMessage(cmd string) (message p2p.Message, err error) {
 }
 
 func (adapter *p2pClientAdapter) OnHandshake(v *msg.Version) error {
-	if v.Version < sdk.ProtocolVersion {
-		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", sdk.ProtocolVersion))
+	if v.Version < protocol.ProtocolVersion {
+		return errors.New(fmt.Sprint("To support SPV protocol, peer version must greater than ", protocol.ProtocolVersion))
 	}
 
 	return nil
