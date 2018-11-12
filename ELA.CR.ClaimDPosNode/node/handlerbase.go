@@ -179,8 +179,13 @@ func (h *HandlerBase) onGetAddr(getAddr *msg.GetAddr) {
 	if h.node.IsExternal() {
 		for _, addr := range LocalNode.RandSelectAddresses() {
 			if addr.Services&protocol.OpenService == protocol.OpenService {
-				addr.Port = config.Parameters.NodeOpenPort
-				addrs = append(addrs, addr)
+				addrs = append(addrs,
+					&p2p.NetAddress{
+						addr.Timestamp,
+						addr.Services,
+						addr.IP,
+						config.Parameters.NodeOpenPort,
+				})
 			}
 		}
 	} else {
