@@ -49,12 +49,20 @@ struct CarrierContextExtra {
     char userid[ELA_MAX_ID_LEN + 1];
     char *data;
     int len;
+    char gcookie[128];
+    int gcookie_len;
+    char gfrom[ELA_MAX_ID_LEN + 1];
+    char groupid[ELA_MAX_ID_LEN + 1];
 };
 
 static CarrierContextExtra extra = {
     .userid = {0},
     .data   = NULL,
     .len    = 0,
+    .gcookie = {0},
+    .gcookie_len = 0,
+    .gfrom  = {0},
+    .groupid = {0}
 };
 
 static void print_user_info(const ElaUserInfo* info)
@@ -239,6 +247,53 @@ static void friend_invite_cb(ElaCarrier *w, const char *from,
     }
 }
 
+static void group_invite_cb(ElaCarrier *w, const char *from,
+                            const void *cookie, size_t len, void *context)
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+
+    memcpy(wctx->extra->gcookie, cookie, len);
+    wctx->extra->gcookie_len = len;
+    strcpy(wctx->extra->gfrom, from);
+
+    write_ack("ginvite received\n");
+}
+
+static void group_connected_cb(ElaCarrier *carrier, const char *groupid,
+                               void *context)
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+
+    assert(!strcmp(groupid, wctx->extra->groupid));
+
+    cond_signal(wctx->cond);
+}
+
+static void group_message_cb(ElaCarrier *carrier, const char *groupid,
+                      const char *from, const void *message, size_t length,
+                      void *context)
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+
+    assert(!strcmp(groupid, wctx->extra->groupid));
+
+    write_ack("gmsg %s\n", message);
+}
+
+static void peer_list_changed_cb(ElaCarrier *carrier, const char *groupid,
+                                 void *context)
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+
+    assert(!strcmp(groupid, wctx->extra->groupid));
+
+    cond_signal(wctx->cond);
+}
+
 static ElaCallbacks callbacks = {
     .idle            = NULL,
     .connection_status = connection_status_cb,
@@ -252,7 +307,13 @@ static ElaCallbacks callbacks = {
     .friend_added    = friend_added_cb,
     .friend_removed  = friend_removed_cb,
     .friend_message  = friend_message_cb,
-    .friend_invite   = friend_invite_cb
+    .friend_invite   = friend_invite_cb,
+    .group_invite    = group_invite_cb,
+    .group_callbacks = {
+        .group_connected = group_connected_cb,
+        .group_message   = group_message_cb,
+        .peer_list_changed = peer_list_changed_cb
+    }
 };
 
 static Condition DEFINE_COND(friend_status_cond);

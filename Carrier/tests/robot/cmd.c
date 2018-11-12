@@ -52,6 +52,10 @@ struct CarrierContextExtra {
     char userid[ELA_MAX_ID_LEN + 1];
     char *data;
     int len;
+    char gcookie[128];
+    int gcookie_len;
+    char gfrom[ELA_MAX_ID_LEN + 1];
+    char groupid[ELA_MAX_ID_LEN + 1];
 };
 
 struct SessionContextExtra {
@@ -336,6 +340,8 @@ void faccept(TestContext *context, int argc, char *argv[])
         return;
     } else {
         vlogD("Accept friend request from user %s success", argv[1]);
+        // wait for friend_added callback invoked.
+        cond_wait(wctx->cond);
     }
 
     while (wctx->friend_status != ONLINE) {
@@ -929,6 +935,50 @@ static void cresume(TestContext *context, int argc, char *argv[])
     }
 }
 
+static void gjoin(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *wextra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_group_join(wctx->carrier, wextra->gfrom, wextra->gcookie,
+                        wextra->gcookie_len, wextra->groupid,
+                        sizeof(wextra->groupid));
+    if (rc < 0) {
+        write_ack("gjoin failed\n");
+        return;
+    }
+
+    // wait for group connected callback
+    cond_wait(wctx->cond);
+
+    // wait for peer_list_changed callback twice
+    cond_wait(wctx->cond);
+    cond_wait(wctx->cond);
+
+    write_ack("gjoin succeeded\n");
+}
+
+static void gleave(TestContext *context, int argc, char *argv[])
+{
+    TestContext *ctx = (TestContext *)context;
+    CarrierContext *wctx = ctx->carrier;
+    CarrierContextExtra *wextra = wctx->extra;
+    int rc;
+
+    CHK_ARGS(argc == 1);
+
+    rc = ela_leave_group(wctx->carrier, wextra->groupid);
+    if (rc < 0) {
+        write_ack("gleave failed\n");
+        return;
+    }
+    write_ack("gleave succeeded\n");
+}
+
 static struct command {
     const char* name;
     void (*cmd_cb) (TestContext *context, int argc, char *argv[]);
@@ -953,6 +1003,8 @@ static struct command {
     { "cready2open",  cready2open  },
     { "cpend",        cpend        },
     { "cresume",      cresume      },
+    { "gjoin",        gjoin        },
+    { "gleave",       gleave       },
     { NULL, NULL},
 };
 

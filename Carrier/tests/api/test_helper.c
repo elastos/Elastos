@@ -206,6 +206,16 @@ static void carrier_friend_invite_cb(ElaCarrier *w, const char *from,
         cbs->friend_invite(w, from, data, len, context);
 }
 
+static void carrier_peer_list_changed_cb(ElaCarrier *w,
+                                         const char *groupid,
+                                         void *context)
+{
+    ElaCallbacks *cbs = ((CarrierContext*)context)->cbs;
+
+    if (cbs && cbs->group_callbacks.peer_list_changed)
+        cbs->group_callbacks.peer_list_changed(w, groupid, context);
+}
+
 static ElaCallbacks callbacks = {
     .idle            = carrier_idle_cb,
     .connection_status = carrier_connection_status_cb,
@@ -219,7 +229,10 @@ static ElaCallbacks callbacks = {
     .friend_added    = carrier_friend_added_cb,
     .friend_removed  = carrier_friend_removed_cb,
     .friend_message  = carrier_friend_message_cb,
-    .friend_invite   = carrier_friend_invite_cb
+    .friend_invite   = carrier_friend_invite_cb,
+    .group_callbacks = {
+        .peer_list_changed = carrier_peer_list_changed_cb
+    }
 };
 
 int test_suite_init_ext(TestContext *context, bool udp_disabled)
