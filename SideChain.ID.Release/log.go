@@ -54,7 +54,7 @@ var (
 	peerlog = backend.Logger("PEER", cfg.LogLevel)
 	minrlog = backend.Logger("MINR", cfg.LogLevel)
 	spvslog = backend.Logger("SPVS", cfg.LogLevel)
-	srvrlog = backend.Logger("SRVR", elalog.LevelInfo)
+	srvrlog = backend.Logger("SRVR", cfg.LogLevel)
 	httplog = backend.Logger("HTTP", cfg.LogLevel)
 	rpcslog = backend.Logger("RPCS", cfg.LogLevel)
 	restlog = backend.Logger("REST", cfg.LogLevel)
