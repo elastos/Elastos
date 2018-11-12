@@ -5,20 +5,21 @@ import (
 	"encoding/binary"
 	"errors"
 
+	"github.com/elastos/Elastos.ELA/core"
 	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	. "github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	"github.com/elastos/Elastos.ELA/dpos/chain"
+	"github.com/elastos/Elastos.ELA/dpos/config"
 
 	"github.com/elastos/Elastos.ELA.Utility/p2p"
 	"github.com/elastos/Elastos.ELA.Utility/p2p/peer"
-	"github.com/elastos/Elastos.ELA/dpos/config"
 )
 
 type StatusSyncEventListener interface {
 	OnPing(peer *peer.Peer, height uint32)
 	OnPong(peer *peer.Peer, height uint32)
 	OnGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHeight uint32)
-	OnResponseBlocks(peer *peer.Peer, blocks []*chain.Block, blockConfirms []*chain.ProposalVoteSlot)
+	OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*chain.ProposalVoteSlot)
 	OnRequestConsensus(peer *peer.Peer, height uint32)
 	OnResponseConsensus(peer *peer.Peer, status *ConsensusStatus)
 }

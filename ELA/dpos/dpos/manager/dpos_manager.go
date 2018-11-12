@@ -3,6 +3,7 @@ package manager
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/core"
 	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	. "github.com/elastos/Elastos.ELA/dpos/chain"
@@ -14,7 +15,7 @@ import (
 )
 
 type DposEventConditionHandler interface {
-	TryStartNewConsensus(peer *peer.Peer, b *Block) bool
+	TryStartNewConsensus(peer *peer.Peer, b *core.Block) bool
 
 	ChangeView(firstBlockHash *common.Uint256)
 
@@ -54,7 +55,7 @@ func (d *DposManager) Recover() {
 	d.handler.RequestAbnormalRecovering()
 }
 
-func (d *DposManager) ProcessHigherBlock(peer *peer.Peer, b *Block) {
+func (d *DposManager) ProcessHigherBlock(peer *peer.Peer, b *core.Block) {
 	d.handler.TryStartNewConsensus(peer, b)
 }
 
@@ -122,7 +123,7 @@ func (d *DposManager) OnGetBlocks(peer *peer.Peer, startBlockHeight, endBlockHei
 	d.handler.ResponseGetBlocks(peer, startBlockHeight, endBlockHeight)
 }
 
-func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*Block, blockConfirms []*ProposalVoteSlot) {
+func (d *DposManager) OnResponseBlocks(peer *peer.Peer, blocks []*core.Block, blockConfirms []*ProposalVoteSlot) {
 	log.Info("[OnResponseBlocks] start")
 	defer log.Info("[OnResponseBlocks] end")
 	for _, v := range blocks {

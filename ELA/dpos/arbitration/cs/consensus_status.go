@@ -1,16 +1,18 @@
 package cs
 
 import (
-	"github.com/elastos/Elastos.ELA.Utility/common"
 	"io"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	"github.com/elastos/Elastos.ELA/dpos/chain"
+
+	"github.com/elastos/Elastos.ELA.Utility/common"
 )
 
 type ConsensusStatus struct {
-	ProcessingBlock chain.Block
+	ProcessingBlock core.Block
 	ConsensusStatus uint32
 	ViewOffset      uint32
 	ViewStartTime   time.Time
@@ -19,7 +21,7 @@ type ConsensusStatus struct {
 	RejectedVotes    []DPosProposalVote
 	PendingProposals []DPosProposal
 
-	MissingBlocks        []*chain.Block
+	MissingBlocks        []*core.Block
 	MissingBlockConfirms []*chain.ProposalVoteSlot
 }
 
@@ -142,9 +144,9 @@ func (s *ConsensusStatus) Deserialize(r io.Reader) error {
 	if arrayLength, err = common.ReadVarUint(r, 0); err != nil {
 		return err
 	}
-	s.MissingBlocks = make([]*chain.Block, arrayLength)
+	s.MissingBlocks = make([]*core.Block, arrayLength)
 	for i := uint64(0); i < arrayLength; i++ {
-		s.MissingBlocks[i] = &chain.Block{}
+		s.MissingBlocks[i] = &core.Block{}
 		if err = s.MissingBlocks[i].Deserialize(r); err != nil {
 			return err
 		}

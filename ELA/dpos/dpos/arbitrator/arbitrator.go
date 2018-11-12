@@ -3,6 +3,7 @@ package arbitrator
 import (
 	"sync"
 
+	"github.com/elastos/Elastos.ELA/core"
 	. "github.com/elastos/Elastos.ELA/dpos/chain"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/cache"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -17,7 +18,7 @@ type IDposManager interface {
 
 	Recover()
 
-	ProcessHigherBlock(peer *peer.Peer, b *Block)
+	ProcessHigherBlock(peer *peer.Peer, b *core.Block)
 	ConfirmBlock()
 
 	ChangeConsensus(onDuty bool)
@@ -51,14 +52,14 @@ func (a *Arbitrator) OnDutyArbitratorChanged(onDuty bool) {
 	a.DposManager.ChangeConsensus(onDuty)
 }
 
-func (a *Arbitrator) OnBlockReceived(peer *peer.Peer, b *Block) {
+func (a *Arbitrator) OnBlockReceived(peer *peer.Peer, b *core.Block) {
 	a.DposManager.Lock()
 	defer a.DposManager.Unlock()
 
 	log.Info("[OnBlockReceived] start")
 	defer log.Info("[OnBlockReceived] end")
 
-	confirm, ok := ArbitratorSingleton.Leger.GetPendingConfirms(b.Hash)
+	confirm, ok := ArbitratorSingleton.Leger.GetPendingConfirms(b.Hash())
 	if ok && a.tryConfirmBlock(b, confirm) {
 		log.Info("[OnBlockReceived] received confirmed block")
 		return
@@ -90,7 +91,7 @@ func (a *Arbitrator) OnConfirmReceived(peer *peer.Peer, p *ProposalVoteSlot) {
 	}
 }
 
-func (a *Arbitrator) tryConfirmBlock(b *Block, p *ProposalVoteSlot) bool {
+func (a *Arbitrator) tryConfirmBlock(b *core.Block, p *ProposalVoteSlot) bool {
 	if a.Leger.TryAppendBlock(b, p) {
 		log.Info("[TryAppendBlock] succeed")
 		a.DposManager.ConfirmBlock()
