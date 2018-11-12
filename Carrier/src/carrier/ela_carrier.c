@@ -2207,6 +2207,7 @@ int ela_run(ElaCarrier *w, int interval)
         do_friend_events(w);
         do_tassemblies_expire(w->tassembly_ireqs);
         do_tassemblies_expire(w->tassembly_irsps);
+        do_transacted_callabcks_check(w);
 
         if (idle_interval > 0)
             notify_idle(w);
