@@ -1714,8 +1714,9 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     if (!ireq) {
         struct timeval now, expire_interval;
 
-        if (!totalsz) {
-            vlogW("Carrier: Received timeout invite request fragment, dropped.");
+        if (!totalsz || totalsz > ELA_MAX_INVITE_DATA_LEN) {
+            vlogW("Carrier: Received invite request fragment with invalid "
+                  "totalsz %z, dropped.", totalsz);
             return;
         }
 
@@ -1741,8 +1742,8 @@ void handle_invite_request(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     }
 
     if ((name && strcmp(ireq->ext, name)) ||
-        strcmp(ireq->friendid, friendid) ||
-        ireq->data_off + len > ireq->data_len) {
+        strcmp(ireq->friendid, friendid) || !len || len > INVITE_DATA_UNIT ||
+        ireq->data_off + len < len || ireq->data_off + len > ireq->data_len) {
         vlogE("Carrier: Inavlid invite request fragment (or HACKED), dropped.");
         deref(ireq);
         return;
@@ -1834,6 +1835,13 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
     if (!irsp) {
         struct timeval now, expire_interval;
 
+        if (totalsz > ELA_MAX_INVITE_DATA_LEN) {
+            vlogW("Carrier: Received overlong invite request fragment, "
+                  "dropped.");
+            deref(tcb);
+            return;
+        }
+
         irsp = (TransactedAssembly *)rc_alloc(sizeof(*irsp) + totalsz, NULL);
         if (!irsp) {
             vlogW("Carrier: Out of memory, invite response fragment dropped.");
@@ -1857,8 +1865,8 @@ void handle_invite_response(ElaCarrier *w, uint32_t friend_number, ElaCP *cp)
         need_add = true;
     }
 
-    if ((name && strcmp(irsp->ext, name)) ||
-        strcmp(irsp->friendid, friendid) ||
+    if ((name && strcmp(irsp->ext, name)) || strcmp(irsp->friendid, friendid) ||
+        data_len > INVITE_DATA_UNIT || irsp->data_off + data_len < data_len ||
         irsp->data_off + data_len > irsp->data_len) {
         vlogE("Carrier: Inavlid invite response fragment (or HACKED), dropped.");
         deref(irsp);
@@ -2885,10 +2893,16 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
     int64_t tid;
     int count = 0;
     int index = 0;
-    char *my_data = (char*)data;
+    char *pos = (char *)data;
     size_t send_len;
 
-    if (!w || !to || !my_data || !len || len > ELA_MAX_INVITE_DATA_LEN || !callback) {
+    if (!w || !data || !len || len > ELA_MAX_INVITE_DATA_LEN || !callback) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!to || !(*to) || strlen(to) >
+            (ELA_MAX_ID_LEN + sizeof(':') + ELA_MAX_EXTENSION_NAME_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -2902,7 +2916,8 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
         return -1;
     }
 
-    if (ext_name && strlen(ext_name) > ELA_MAX_USER_NAME_LEN) {
+    if (ext_name && (!(*ext_name) || strlen(ext_name) >
+                                     ELA_MAX_EXTENSION_NAME_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -2924,9 +2939,7 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
     }
 
     tid = generate_tid();
-    count = len / INVITE_DATA_UNIT;
-    if (len % INVITE_DATA_UNIT)
-        count += 1;
+    count = (len + INVITE_DATA_UNIT - 1) / INVITE_DATA_UNIT;
 
     do {
         uint8_t *_data;
@@ -2947,7 +2960,7 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
             send_len = len;
 
         elacp_set_totalsz(cp, (index == 1 ? len : 0));
-        elacp_set_raw_data(cp, my_data, send_len);
+        elacp_set_raw_data(cp, pos, send_len);
 
         _data = elacp_encode(cp, &_data_len);
         elacp_free(cp);
@@ -2985,8 +2998,8 @@ int ela_invite_friend(ElaCarrier *w, const char *to,
             return -1;
         }
 
-        my_data += send_len;
-        len  -= send_len;
+        pos += send_len;
+        len -= send_len;
     } while (len > 0);
 
     return 0;
@@ -3002,14 +3015,20 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to,
     int count = 0;
     int index = 0;
     bool reason_parsed = !status;
-    char *my_data = (char*)data;
+    char *pos = (char *)data;
     size_t send_len;
     ElaCP *cp;
     int rc;
 
-    if (!w || !to || !*to || (status != 0 && !reason)
-           || (status != 0 && strlen(reason) > ELA_MAX_INVITE_REPLY_REASON_LEN)
-           || (my_data && (!len || len > ELA_MAX_INVITE_DATA_LEN))) {
+    if (!w || (status != 0 && !reason) ||
+        (status != 0 && strlen(reason) > ELA_MAX_INVITE_REPLY_REASON_LEN) ||
+        (data && (!len || len > ELA_MAX_INVITE_DATA_LEN))) {
+        ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
+        return -1;
+    }
+
+    if (!to || !(*to) || strlen(to) >
+            (ELA_MAX_ID_LEN + sizeof(':') + ELA_MAX_EXTENSION_NAME_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -3023,7 +3042,8 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to,
         return -1;
     }
 
-    if (ext_name && strlen(ext_name) > ELA_MAX_USER_NAME_LEN) {
+    if (ext_name && (!(*ext_name) || strlen(ext_name) >
+                                     ELA_MAX_EXTENSION_NAME_LEN)) {
         ela_set_error(ELA_GENERAL_ERROR(ELAERR_INVALID_ARGS));
         return -1;
     }
@@ -3050,9 +3070,7 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to,
         return -1;
     }
 
-    count = len / INVITE_DATA_UNIT;
-    if (len % INVITE_DATA_UNIT)
-        count += 1;
+    count = (len + INVITE_DATA_UNIT - 1) / INVITE_DATA_UNIT;
 
     do {
         uint8_t *_data;
@@ -3068,17 +3086,17 @@ int ela_reply_friend_invite(ElaCarrier *w, const char *to,
         elacp_set_status(cp, status);
         ++index;
 
-        if (my_data && len > 0) {
+        if (data && len > 0) {
              if (index < count)
                 send_len = INVITE_DATA_UNIT;
             else
                 send_len = len;
 
             elacp_set_totalsz(cp, (index == 1 ? len : 0));
-            elacp_set_raw_data(cp, my_data, send_len);
+            elacp_set_raw_data(cp, pos, send_len);
 
-            my_data += send_len;
-            len  -= send_len;
+            pos += send_len;
+            len -= send_len;
         } else {
             send_len = 0;
         }
