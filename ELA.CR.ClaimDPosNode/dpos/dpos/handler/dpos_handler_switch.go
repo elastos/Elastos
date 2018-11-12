@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core"
 	common2 "github.com/elastos/Elastos.ELA/dpos/arbitration/common"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
-	"github.com/elastos/Elastos.ELA/dpos/chain"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/log"
@@ -28,15 +28,15 @@ type IProposalDispatcher interface {
 	Initialize(consensus IConsensus, eventMonitor *log.EventMonitor)
 
 	//status
-	GetProcessingBlock() *chain.Block
+	GetProcessingBlock() *core.Block
 	IsVoteSlotEmpty() bool
 	CurrentHeight() uint32
 
 	//proposal
-	StartProposal(b *chain.Block)
+	StartProposal(b *core.Block)
 	CleanProposals()
 	FinishProposal()
-	TryStartSpeculatingProposal(b *chain.Block)
+	TryStartSpeculatingProposal(b *core.Block)
 	ProcessProposal(d common2.DPosProposal)
 
 	FinishConsensus()
@@ -64,8 +64,8 @@ type IConsensus interface {
 	IsArbitratorOnDuty(arbitrator string) bool
 	GetOnDutyArbitrator() string
 
-	StartConsensus(b *chain.Block)
-	ProcessBlock(b *chain.Block)
+	StartConsensus(b *core.Block)
+	ProcessBlock(b *core.Block)
 
 	ChangeView()
 	TryChangeView() bool
@@ -161,8 +161,8 @@ func (h *DposHandlerSwitch) ChangeView(firstBlockHash *common.Uint256) {
 	h.eventMonitor.OnViewStarted(viewEvent)
 }
 
-func (h *DposHandlerSwitch) TryStartNewConsensus(peer *peer.Peer, b *chain.Block) bool {
-	if _, ok := ArbitratorSingleton.BlockCache.TryGetValue(b.Hash); ok {
+func (h *DposHandlerSwitch) TryStartNewConsensus(peer *peer.Peer, b *core.Block) bool {
+	if _, ok := ArbitratorSingleton.BlockCache.TryGetValue(b.Hash()); ok {
 		log.Info("[TryStartNewConsensus] failed, already have the block")
 		return false
 	}

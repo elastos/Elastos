@@ -3,8 +3,8 @@ package consensus
 import (
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
-	. "github.com/elastos/Elastos.ELA/dpos/chain"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/arbitrator"
 	. "github.com/elastos/Elastos.ELA/dpos/dpos/monitor"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/view"
@@ -98,10 +98,10 @@ func (c *Consensus) GetOnDutyArbitrator() string {
 	return GetCurrentArbitrator(c.viewOffset)
 }
 
-func (c *Consensus) StartConsensus(b *Block) {
+func (c *Consensus) StartConsensus(b *core.Block) {
 	now := time.Now()
 	ArbitratorSingleton.BlockCache.Reset()
-	ArbitratorSingleton.BlockCache.AddValue(b.Hash, b)
+	ArbitratorSingleton.BlockCache.AddValue(b.Hash(), b)
 
 	c.SetRunning()
 	c.currentView.ResetView(now)
@@ -112,8 +112,8 @@ func (c *Consensus) GetViewOffset() uint32 {
 	return c.viewOffset
 }
 
-func (c *Consensus) ProcessBlock(b *Block) {
-	ArbitratorSingleton.BlockCache.AddValue(b.Hash, b)
+func (c *Consensus) ProcessBlock(b *core.Block) {
+	ArbitratorSingleton.BlockCache.AddValue(b.Hash(), b)
 }
 
 func (c *Consensus) ChangeView() {

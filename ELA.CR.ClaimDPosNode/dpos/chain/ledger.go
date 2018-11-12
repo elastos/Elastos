@@ -6,13 +6,14 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/log"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA/core"
 )
 
 type Ledger struct {
-	BlockMap        map[common.Uint256]*Block
+	BlockMap        map[common.Uint256]*core.Block
 	BlockConfirmMap map[common.Uint256]*ProposalVoteSlot
-	LastBlock       *Block
-	GenesisBlock    *Block
+	LastBlock       *core.Block
+	GenesisBlock    *core.Block
 
 	PendingBlockConfirms map[common.Uint256]*ProposalVoteSlot
 
@@ -28,16 +29,16 @@ func (l *Ledger) GetPendingConfirms(blockHash common.Uint256) (*ProposalVoteSlot
 	return confirm, ok
 }
 
-func (l *Ledger) TryAppendBlock(b *Block, p *ProposalVoteSlot) bool {
+func (l *Ledger) TryAppendBlock(b *core.Block, p *ProposalVoteSlot) bool {
 	return l.appendBlockInner(b, p, false)
 }
 
-func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*Block, []*ProposalVoteSlot, error) {
+func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*core.Block, []*ProposalVoteSlot, error) {
 	if l.LastBlock == nil || l.LastBlock.Height < start {
 		return nil, nil, errors.New("Result empty")
 	}
 
-	blocks := make([]*Block, 0)
+	blocks := make([]*core.Block, 0)
 	blockConfirms := make([]*ProposalVoteSlot, 0)
 
 	//todo improve when merge into arbitrator
@@ -61,7 +62,7 @@ func (l *Ledger) Restore() {
 	l.backup.GenesisBlock = l.GenesisBlock
 	l.backup.LastBlock = l.LastBlock
 
-	l.backup.BlockMap = make(map[common.Uint256]*Block)
+	l.backup.BlockMap = make(map[common.Uint256]*core.Block)
 	for k, v := range l.BlockMap {
 		l.backup.BlockMap[k] = v
 	}
@@ -80,7 +81,7 @@ func (l *Ledger) Rollback() error {
 	l.GenesisBlock = l.backup.GenesisBlock
 	l.LastBlock = l.backup.LastBlock
 
-	l.BlockMap = make(map[common.Uint256]*Block)
+	l.BlockMap = make(map[common.Uint256]*core.Block)
 	for k, v := range l.backup.BlockMap {
 		l.BlockMap[k] = v
 	}
@@ -92,7 +93,7 @@ func (l *Ledger) Rollback() error {
 	return nil
 }
 
-func (l *Ledger) CollectConsensusStatus(height uint32, missingBlocks []*Block, missingBlockConfirms []*ProposalVoteSlot) error {
+func (l *Ledger) CollectConsensusStatus(height uint32, missingBlocks []*core.Block, missingBlockConfirms []*ProposalVoteSlot) error {
 	//todo limit max blocks count for collecting
 	var err error
 	if missingBlocks, missingBlockConfirms, err = l.GetBlocksAndConfirms(height, 0); err != nil {
@@ -101,7 +102,7 @@ func (l *Ledger) CollectConsensusStatus(height uint32, missingBlocks []*Block, m
 	return nil
 }
 
-func (l *Ledger) RecoverFromConsensusStatus(missingBlocks []*Block, missingBlockConfirms []*ProposalVoteSlot) error {
+func (l *Ledger) RecoverFromConsensusStatus(missingBlocks []*core.Block, missingBlockConfirms []*ProposalVoteSlot) error {
 	for i := range missingBlocks {
 		if !l.appendBlockInner(missingBlocks[i], missingBlockConfirms[i], true) {
 			return errors.New("Append block error")
@@ -110,7 +111,7 @@ func (l *Ledger) RecoverFromConsensusStatus(missingBlocks []*Block, missingBlock
 	return nil
 }
 
-func (l *Ledger) appendBlockInner(b *Block, p *ProposalVoteSlot, ignoreIfExist bool) bool {
+func (l *Ledger) appendBlockInner(b *core.Block, p *ProposalVoteSlot, ignoreIfExist bool) bool {
 	if b == nil {
 		log.Info("Block is nil")
 		return false
@@ -126,22 +127,22 @@ func (l *Ledger) appendBlockInner(b *Block, p *ProposalVoteSlot, ignoreIfExist b
 		return false
 	}
 
-	if _, ok := l.BlockMap[b.Hash]; ok {
+	if _, ok := l.BlockMap[b.Hash()]; ok {
 		log.Info("Already has block")
 		return ignoreIfExist
 	}
 
 	if l.LastBlock == nil || b.Height > l.LastBlock.Height {
-		l.BlockMap[b.Hash] = b
-		l.BlockConfirmMap[b.Hash] = p
+		l.BlockMap[b.Hash()] = b
+		l.BlockConfirmMap[b.Hash()] = p
 		l.LastBlock = b
 		return true
 	}
 	return false
 }
 
-func IsValidBlock(b *Block, p *ProposalVoteSlot) bool {
-	if !b.Hash.IsEqual(p.Hash) {
+func IsValidBlock(b *core.Block, p *ProposalVoteSlot) bool {
+	if !p.Hash.IsEqual(b.Hash()) {
 		log.Info("Received block is not current processing block")
 		return false
 	}

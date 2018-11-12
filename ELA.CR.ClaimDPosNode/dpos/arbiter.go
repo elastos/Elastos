@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/elastos/Elastos.ELA/core"
 	"github.com/elastos/Elastos.ELA/dpos/arbitration/cs"
 	"github.com/elastos/Elastos.ELA/dpos/chain"
 	"github.com/elastos/Elastos.ELA/dpos/config"
@@ -15,7 +16,6 @@ import (
 	"github.com/elastos/Elastos.ELA/dpos/dpos/manager"
 	"github.com/elastos/Elastos.ELA/dpos/dpos/proposal"
 	"github.com/elastos/Elastos.ELA/dpos/log"
-	"github.com/elastos/Elastos.ELA/dpos/producer"
 
 	"github.com/elastos/Elastos.ELA.Utility/common"
 	"github.com/elastos/Elastos.ELA.Utility/elalog"
@@ -82,49 +82,37 @@ func Start() {
 	}
 
 	log.Info("2. Start initialize character.")
-	if config.Parameters.IsProducer {
-		producer.ProducerSingleton = &producer.Producer{
-			ReceivedBlocks: make(map[common.Uint256]uint32, 0),
-		}
-		cs.P2PClientSingleton.Listener = producer.ProducerSingleton
+	proposalManager := &proposal.ProposalDispatcher{}
+	consensusManager := &consensus.Consensus{}
+	dposHandlerSwitch := &handler.DposHandlerSwitch{}
+	dposManager := &manager.DposManager{}
+	dposManager.Initialize(dposHandlerSwitch)
+	peerConnectionPool := &arbitrator.PeerConnectionPoolImpl{Listener: dposManager}
+	consensusManager.Initialize(time.Duration(config.Parameters.SignTolerance)*time.Second, proposalManager, dposHandlerSwitch)
+	dposHandlerSwitch.Initialize(proposalManager, consensusManager, dposManager)
 
-		go func() {
-			time.Sleep(5 * time.Second)
-			producer.ProducerSingleton.Produce(common.Uint256{})
-		}()
-	} else if config.Parameters.IsArbitrator {
-		proposalManager := &proposal.ProposalDispatcher{}
-		consensusManager := &consensus.Consensus{}
-		dposHandlerSwitch := &handler.DposHandlerSwitch{}
-		dposManager := &manager.DposManager{}
-		dposManager.Initialize(dposHandlerSwitch)
-		peerConnectionPool := &arbitrator.PeerConnectionPoolImpl{Listener: dposManager}
-		consensusManager.Initialize(time.Duration(config.Parameters.SignTolerance)*time.Second, proposalManager, dposHandlerSwitch)
-		dposHandlerSwitch.Initialize(proposalManager, consensusManager, dposManager)
-
-		arbitrator.ArbitratorSingleton = &arbitrator.Arbitrator{
-			Name:     config.Parameters.Name,
-			IsOnDuty: false,
-			Leger: chain.Ledger{
-				BlockMap:             make(map[common.Uint256]*chain.Block),
-				BlockConfirmMap:      make(map[common.Uint256]*chain.ProposalVoteSlot),
-				PendingBlockConfirms: make(map[common.Uint256]*chain.ProposalVoteSlot),
-			},
-			BlockCache: cache.ConsensusBlockCache{
-				ConsensusBlocks: make(map[common.Uint256]*chain.Block, 0),
-			},
-			DposManager: dposManager,
-		}
-		cs.P2PClientSingleton.PeerHandler = peerConnectionPool
-		cs.P2PClientSingleton.Listener = arbitrator.ArbitratorSingleton
-
-		arbitrator.ArbitratorGroupSingleton.Initialize(arbitrator.ArbitratorSingleton)
-		arbitrator.ArbitratorSingleton.ChangeHeight()
-		arbitrator.ArbitratorSingleton.DposManager.Recover()
-
-		go dposHandlerSwitch.ChangeViewLoop()
-		go consensusManager.StartHeartHeat()
+	arbitrator.ArbitratorSingleton = &arbitrator.Arbitrator{
+		Name:     config.Parameters.Name,
+		IsOnDuty: false,
+		Leger: chain.Ledger{
+			BlockMap:             make(map[common.Uint256]*core.Block),
+			BlockConfirmMap:      make(map[common.Uint256]*chain.ProposalVoteSlot),
+			PendingBlockConfirms: make(map[common.Uint256]*chain.ProposalVoteSlot),
+		},
+		BlockCache: cache.ConsensusBlockCache{
+			ConsensusBlocks: make(map[common.Uint256]*core.Block, 0),
+		},
+		DposManager: dposManager,
 	}
+	cs.P2PClientSingleton.PeerHandler = peerConnectionPool
+	cs.P2PClientSingleton.Listener = arbitrator.ArbitratorSingleton
+
+	arbitrator.ArbitratorGroupSingleton.Initialize(arbitrator.ArbitratorSingleton)
+	arbitrator.ArbitratorSingleton.ChangeHeight()
+	arbitrator.ArbitratorSingleton.DposManager.Recover()
+
+	go dposHandlerSwitch.ChangeViewLoop()
+	go consensusManager.StartHeartHeat()
 
 	log.Info("3. Start loop to process message queue")
 	cs.P2PClientSingleton.Work()
