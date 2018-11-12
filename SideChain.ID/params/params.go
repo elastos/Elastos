@@ -16,8 +16,8 @@ var (
 	bigOne = big.NewInt(1)
 
 	// powLimit is the highest proof of work value a block can have for the network.
-	//  It is the value 2^225 - 1.
-	powLimit = new(big.Int).Sub(new(big.Int).Lsh(bigOne, 225), bigOne)
+	//  It is the value 2^255 - 1.
+	powLimit = new(big.Int).Sub(new(big.Int).Lsh(bigOne, 255), bigOne)
 
 	// "8VYXVxKKSAxkmRrfmGpQR2Kc66XhG6m3ta"
 	mainNetFoundation = common.Uint168{
