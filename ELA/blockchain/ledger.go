@@ -3,14 +3,23 @@ package blockchain
 import (
 	"errors"
 
-	. "github.com/elastos/Elastos.ELA/core"
-
 	. "github.com/elastos/Elastos.ELA.Utility/common"
+	"github.com/elastos/Elastos.ELA.Utility/p2p/msg"
+	. "github.com/elastos/Elastos.ELA/core"
+	"github.com/elastos/Elastos.ELA/dpos/chain"
 )
 
 var FoundationAddress Uint168
 
 var DefaultLedger *Ledger
+
+type NewBlocksListener interface {
+	OnBlockReceived(b *Block)
+}
+
+type NewBlockConfirmsListener interface {
+	OnConfirmReceived(p *chain.ProposalVoteSlot)
+}
 
 // Ledger - the struct for ledger
 type Ledger struct {
@@ -75,4 +84,21 @@ func (l *Ledger) GetTransactionWithHash(hash Uint256) (*Transaction, error) {
 func (l *Ledger) GetLocalBlockChainHeight() uint32 {
 	return l.Blockchain.GetBestHeight()
 
+}
+
+//Get blocks and confirms by height range
+func (l *Ledger) GetBlocksAndConfirms(start, end uint32) ([]*Block, []*msg.DPosProposalVoteSlot, error) {
+	//todo complete me
+	return nil, nil, nil
+}
+
+//Collect consensus related
+func (l *Ledger) CollectMissing(height uint32, missingBlocks []*Block, missingBlockConfirms []*msg.DPosProposalVoteSlot) error {
+	//todo complete me
+	return nil
+}
+
+func (l *Ledger) RecoverFromMissing(missingBlocks []*Block, missingBlockConfirms []*msg.DPosProposalVoteSlot) error {
+	//todo complete me
+	return nil
 }
